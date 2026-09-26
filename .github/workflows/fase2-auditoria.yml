@@ -47,12 +47,11 @@ jobs:
 
           grep -q 'branch: dev' render.yaml
           grep -q 'name: solqaryn-api-dev' render.yaml
-          grep -q 'healthCheckPath: /health/ready' render.yaml
+          grep -q 'healthCheckPath: /health' render.yaml
           grep -A1 'AllowedHosts' render.yaml | grep -q 'solqaryn-api-dev-fxx8.onrender.com'
           grep -A1 'Database__ApplyMigrationsOnStartup' render.yaml | grep -q '"true"'
           grep -A1 'Security__LoginRateLimitPerMinute' render.yaml | grep -q '"20"'
           grep -A1 'Cloudinary__EnvironmentPrefix' render.yaml | grep -q 'solqaryn_dev'
-          grep -q 'AppSettings__LogoPublicUrl' render.yaml
           grep -q 'solqaryn-api-dev-fxx8.onrender.com' frontend/vercel.json
           grep -q 'solqaryn-api-prod.onrender.com' frontend/vercel.json
 
@@ -62,10 +61,23 @@ jobs:
           grep -q 'X-Content-Type-Options' backend/src/API/Program.cs
           grep -q 'EnableRateLimiting("AuthLogin")' backend/src/API/Controllers/AuthController.cs
 
-          if grep -A1 'AppSettings__LogoPublicUrl' render.yaml | grep -q 'varistorehn.vercel.app'; then
-            echo 'Render DEV no debe depender del logo servido por Producción.' >&2
-            exit 1
-          fi
+          grep -q 'Smtp__OAuth2ClientId' render.yaml
+          grep -q 'Smtp__OAuth2RefreshToken' render.yaml
+          ! grep -q 'Smtp__PasswordSmtp' render.yaml
+          ! grep -q 'Smtp__OAuth2ClientSecret' render.yaml
+          ! grep -q 'Smtp__AuthenticationMode' render.yaml
+
+          ruby <<'RUBY'
+          require 'yaml'
+          config = YAML.safe_load(File.read('render.yaml'), permitted_classes: [], aliases: true)
+          services = config.fetch('services').select { |service| %w[solqaryn-api-dev solqaryn-api-prod].include?(service['name']) }
+          abort 'Deben existir exactamente DEV y PROD' unless services.size == 2
+          by_name = services.to_h { |service| [service.fetch('name'), service.fetch('envVars').map { |item| item.fetch('key') }] }
+          dev = by_name.fetch('solqaryn-api-dev')
+          prod = by_name.fetch('solqaryn-api-prod')
+          abort "Paridad DEV/PROD inválida: DEV=#{dev.size}, PROD=#{prod.size}" unless dev == prod
+          abort "Contrato Render esperado=28, actual=#{dev.size}" unless dev.size == 28
+          RUBY
 
   backend-dependencies:
     name: Dependencias vulnerables de .NET
