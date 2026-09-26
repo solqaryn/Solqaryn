@@ -7,7 +7,7 @@ Este documento define el handoff entre Javier Mejía, Codex, AntiG/Antigravity y
 ```text
 PROJECT_ID=SOLQARYN
 REPOSITORY=solqaryn/Solqaryn
-BRANCH=Desarrollo
+BRANCH=dev
 ```
 
 Toda conversación/sesión nueva comienza confirmando esos tres valores. Si alguno no coincide, no se modifica nada con estas reglas.
@@ -25,7 +25,7 @@ Con acceso remoto: comprobación equivalente mediante GitHub.
 - `CHANGELOG_AI.md`: evidencia de cambios.
 - `AGENTS.md`: reglas obligatorias.
 
-Si existe contradicción entre texto histórico/memoria y estas fuentes, prevalecen la evidencia Git y las fuentes canónicas más recientes de `Desarrollo`.
+Si existe contradicción entre texto histórico/memoria y estas fuentes, prevalecen la evidencia Git y las fuentes canónicas más recientes de `dev`.
 
 ## 3. Equipo y acceso
 
@@ -49,7 +49,7 @@ Nadie debe asumir acceso local que no esté documentado.
 
 ## 5. Rama y entornos
 
-- `Desarrollo`: única rama de trabajo.
+- `dev`: única rama de trabajo.
 - `main`: congelada.
 - PR #2: histórico, `CLOSED + MERGED`; no reabrir. Cualquier nuevo merge a `main` exige autorización nueva y explícita.
 - No ramas temporales.
@@ -91,7 +91,7 @@ No repetir arquitectura completa; referenciar `PROJECT_CONTEXT.md`.
 ## 8. Guardrails locales
 
 - `.githooks/pre-commit`: bloquea repo/rama incorrectos y exige `CHANGELOG_AI.md`.
-- `.githooks/post-commit`: auto-push solo si `origin` es Solqaryn y la rama es `Desarrollo`.
+- `.githooks/post-commit`: auto-push solo si `origin` es Solqaryn y la rama es `dev`.
 - `scripts/iniciar-sesion-ia.ps1`: diagnóstico corto de sesión.
 
 ## 9. Mejora continua
