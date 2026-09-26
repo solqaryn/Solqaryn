@@ -723,7 +723,7 @@ Este bloque es estrictamente aditivo/history-preserving. El estado operativo vig
 - [x] `N8.13.A-G` fueron revalidados secuencialmente contra el estándar vigente; el histórico se usó sólo como evidencia de apoyo.
 - [x] `N8.13.F` y `N8.13.G` quedaron certificados con REVIEW_FIRST fresco y `P0=0/P1=0`; gates causales `35258962286=SUCCESS` y `35258969104=SUCCESS`.
 - [x] Functional tested head `6fd3e28cbf28164d110d6b83756b9094cec654a6`; árboles equivalentes vigentes: backend `f8db476310130c169ddb5d8c4ea03cfbab9617f6`, frontend `3d7847eb8817b14942746f1e31114e56c15efbdd`.
-- [x] Runtime DEV verificado: `solqaryn-desarrollo` READY, raíz HTTP 200 y `/api/health/ready` HTTP 200 con base de datos conectada; target backend `solqaryn-api-desarrollo.onrender.com`.
+- [x] Evidencia histórica de staging preservada; los hostnames de esa ejecución fueron retirados. Runtime DEV canónico actual: `solqaryn-dev.vercel.app` -> `solqaryn-api-dev-fxx8.onrender.com`, con readiness en `/health/ready`.
 - [x] Comparación con Producción se realizó sólo read-only; no hubo deploy, cambio de variables, secretos, DNS, certificados ni datos productivos.
 - [x] Certificación current-standard: `vaep/evidence/certifications/N8.13_STAGING_CURRENT_STANDARD_CERT_20260917T205649Z_VAEP48.md`.
 - [x] `TASKS_ADDITIVE_STATE_RECONCILIATION` queda materializada por este append preservando íntegramente la historia previa.
