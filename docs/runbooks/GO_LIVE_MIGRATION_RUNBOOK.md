@@ -1,5 +1,8 @@
 # GO LIVE — migración histórica VariStoreHN -> SOLQARYN
 
+
+> `PROJECT_SCOPE_LOCK=STRICT`
+> Alcance operativo: SOLQARYN / `solqaryn/Solqaryn` / `dev`.
 ## Propósito
 
 Migrar la información histórica de VariStoreHN desde el **respaldo verificado** al primer tenant VariStoreHN de la nueva plataforma SOLQARYN.
