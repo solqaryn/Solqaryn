@@ -85,7 +85,7 @@ Cuando una operación modifica inventario/finanzas/documentos relacionados, debe
 
 - imágenes/documentos: adaptadores Cloudinary;
 - factura PDF: QuestPDF;
-- correo: SMTP;
+- correo: SMTP; PROD autentica Outlook.com mediante OAuth2/Modern Auth y mantiene secretos/tokens fuera del repositorio;
 - enlaces públicos de factura: token seguro, expiración/revocación según implementación vigente.
 
 ## 4. Patrones vigentes
@@ -110,6 +110,7 @@ Cuando una operación modifica inventario/finanzas/documentos relacionados, debe
 - Security headers.
 - Separación estricta de PROD/DEV.
 - Secretos fuera del repositorio.
+- SMTP OAuth2 en PROD usa access tokens efímeros obtenidos desde refresh token; no usa contraseña SMTP básica.
 - `main` congelada durante el trabajo en `dev`.
 
 RBAC debe basarse en relaciones persistentes y permisos explícitos, evitando bypasses implícitos por banderas administrativas.
