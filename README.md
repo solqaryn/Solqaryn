@@ -93,30 +93,42 @@ npm start
 
 ## Configuración
 
-Nunca guardar secretos reales en Git. Configurar mediante variables/secret stores del entorno:
+Nunca guardar secretos reales en Git. Render DEV y PROD comparten exactamente el mismo contrato de 28 variables; solo cambian los valores que son propios de cada entorno.
 
 ```text
-ConnectionStrings__DefaultConnection
+ASPNETCORE_ENVIRONMENT
+AllowedHosts
 Database__ServerVersion
+Database__ApplyMigrationsOnStartup
+ConnectionStrings__DefaultConnection
 Jwt__Secret
 Jwt__Issuer
 Jwt__Audience
+Jwt__ExpiraMinutos
+Security__LoginRateLimitPerMinute
 Cloudinary__CloudName
 Cloudinary__ApiKey
 Cloudinary__ApiSecret
+Cloudinary__EnvironmentPrefix
+Cors__AllowedOrigins__0
+AppSettings__BackendPublicUrl
+AppSettings__EnlacePublicoFacturaHorasValidez
+AppSettings__EnlacePublicoFacturaMaximoAccesos
+AppSettings__CorreoFacturaIdempotenciaMinutos
 Smtp__Host
+Smtp__Port
 Smtp__UsuarioSmtp
-Smtp__AuthenticationMode
 Smtp__OAuth2ClientId
 Smtp__OAuth2RefreshToken
-Smtp__OAuth2TokenEndpoint
-Smtp__OAuth2Scope
-SeedAdmin__Username
-SeedAdmin__Password
-Database__ApplyMigrationsOnStartup
+Smtp__NombreRemitente
+Smtp__TimeoutSeconds
+Smtp__MaxAttempts
+Smtp__RetryBaseDelayMilliseconds
 ```
 
-La lista anterior refleja la configuración canónica desplegada. DEV y PROD usan Outlook.com con OAuth2/Modern Auth; no se provisionan `Smtp__PasswordSmtp` ni `Smtp__OAuth2ClientSecret` en Render. El soporte de autenticación por contraseña permanece únicamente como compatibilidad interna/pruebas y no como secreto de los entornos desplegados.
+SMTP desplegado usa exclusivamente Outlook.com + OAuth2/Modern Auth. No forman parte del contrato de Render `Smtp__PasswordSmtp`, `Smtp__OAuth2ClientSecret`, `Smtp__AuthenticationMode`, `Smtp__OAuth2TokenEndpoint`, `Smtp__OAuth2Scope`, `Smtp__UsarSsl`, `Smtp__RequiereAutenticacion`, `Smtp__CorreoRemitente` ni `Smtp__CorreoRespuesta`. STARTTLS, autenticación OAuth2, endpoint, scope, remitente y Reply-To se resuelven mediante invariantes/defaults seguros del backend.
+
+Tampoco se despliegan `Swagger__Enabled`, `AppSettings__LogoPublicUrl`, `SeedAdmin__Username` ni `SeedAdmin__Password`: sus valores desplegados eran redundantes o de bootstrap y no deben permanecer como variables de servicios ya provisionados.
 
 ## Migraciones
 
