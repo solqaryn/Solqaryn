@@ -107,6 +107,12 @@ Cloudinary__ApiSecret
 Smtp__Host
 Smtp__UsuarioSmtp
 Smtp__PasswordSmtp
+Smtp__AuthenticationMode
+Smtp__OAuth2ClientId
+Smtp__OAuth2RefreshToken
+Smtp__OAuth2ClientSecret
+Smtp__OAuth2TokenEndpoint
+Smtp__OAuth2Scope
 SeedAdmin__Username
 SeedAdmin__Password
 Database__ApplyMigrationsOnStartup
