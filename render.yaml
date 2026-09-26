@@ -90,7 +90,7 @@ services:
     region: virginia
     branch: main
     autoDeployTrigger: checksPass
-    healthCheckPath: /health/ready
+    healthCheckPath: /health
     dockerfilePath: ./backend/Dockerfile
     dockerContext: .
     envVars:
@@ -147,8 +147,6 @@ services:
       - key: Smtp__OAuth2ClientId
         sync: false
       - key: Smtp__OAuth2RefreshToken
-        sync: false
-      - key: Smtp__OAuth2ClientSecret
         sync: false
       - key: Smtp__OAuth2TokenEndpoint
         value: https://login.microsoftonline.com/consumers/oauth2/v2.0/token
