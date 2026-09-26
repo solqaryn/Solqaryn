@@ -126,7 +126,7 @@ public class FacturaCompartirService : IFacturaCompartirService
 
         var resultado = string.Equals(canal, "WhatsApp", StringComparison.OrdinalIgnoreCase)
             ? NormalizarResultadoWhatsApp(dto.Resultado)
-            : (string.IsNullOrWhiteSpace(dto.Resultado) ? "Iniciado" : Truncar(dto.Resultado.Trim(), 50)!);
+            : (string.IsNullOrWhiteSpace(dto.Resultado) ? "Iniciado" : Truncar(dto.Resultado.Trim(), 20)!);
         var error = Truncar(dto.Error?.Trim(), 500);
 
         await _repository.AddHistorialAsync(new HistorialEnvioFactura
@@ -370,14 +370,17 @@ public class FacturaCompartirService : IFacturaCompartirService
 
         var resultadoHistorial = entrega.Exito
             ? entrega.Intentos > 1 ? $"Enviado ({entrega.Intentos} intentos)" : "Enviado"
-            : $"Error {entrega.Codigo}";
+            : "Error";
+        var errorHistorial = entrega.Exito
+            ? null
+            : $"{entrega.Codigo}: {entrega.Error ?? "No se pudo enviar el correo."}";
 
         await RegistrarIntentoAsync(facturaId, new RegistrarEnvioDto
         {
             Canal = "Correo",
             Destinatario = destinatario,
             Resultado = resultadoHistorial,
-            Error = entrega.Exito ? null : entrega.Error
+            Error = errorHistorial
         });
 
         return new ResultadoEnvioCorreoDto

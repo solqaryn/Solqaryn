@@ -15,6 +15,7 @@ HOST = os.environ.get("SMTP_CAPTURE_HOST", "127.0.0.1")
 PORT = int(os.environ.get("SMTP_CAPTURE_PORT", "1025"))
 USERNAME = os.environ.get("SMTP_CAPTURE_USERNAME", "smtp-user")
 PASSWORD = os.environ.get("SMTP_CAPTURE_PASSWORD", "smtp-pass")
+REQUIRE_AUTH = os.environ.get("SMTP_CAPTURE_REQUIRE_AUTH", "true").strip().lower() in {"1", "true", "yes", "on"}
 OUTPUT_DIR = Path(os.environ.get("SMTP_CAPTURE_DIR", "/tmp/solqaryn-smtp"))
 FAIL_FIRST = int(os.environ.get("SMTP_FAIL_FIRST_MESSAGES", "1"))
 
@@ -53,7 +54,7 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
 
     state["connections"] += 1
     await persist_state()
-    authenticated = False
+    authenticated = not REQUIRE_AUTH
     peer = writer.get_extra_info("peername")
     print(f"SMTP connection from {peer}", flush=True)
 
@@ -68,7 +69,8 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
 
             if upper.startswith("EHLO"):
                 await send(writer, "250-fake-smtp.solqaryn")
-                await send(writer, "250-AUTH LOGIN")
+                if REQUIRE_AUTH:
+                    await send(writer, "250-AUTH LOGIN")
                 await send(writer, "250 SIZE 20971520")
             elif upper.startswith("HELO"):
                 await send(writer, "250 fake-smtp.solqaryn")
@@ -92,7 +94,9 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
             elif upper.startswith("MAIL FROM") or upper.startswith("RCPT TO"):
                 await send(
                     writer,
-                    "250 2.1.0 OK" if authenticated else "530 5.7.0 Authentication required",
+                    "250 2.1.0 OK"
+                    if (authenticated or not REQUIRE_AUTH)
+                    else "530 5.7.0 Authentication required",
                 )
             elif upper == "DATA":
                 state["data_attempts"] += 1
