@@ -1,3 +1,13 @@
+## 2026-09-26 — Identidad SOLQARYN y legado bloqueados
+
+- Autoridad operativa fijada en `SOLQARYN / solqaryn/Solqaryn / dev`.
+- El único artefacto heredado permitido como fuente futura es el respaldo verificado de la base histórica de VariStoreHN.
+- Infraestructura, cuentas, deployments, repositorios, dominios y variables legacy no son dependencias ni fallback de SOLQARYN.
+- VariStoreHN permanece como primer tenant/cliente, no como identidad de plataforma.
+- Los defaults de `EmpresaConfiguracion` fueron neutralizados para no imponer la marca de un tenant a nuevas empresas.
+- Runbooks de entornos, rollback, equivalencia, producción y migración fueron actualizados a la topología SOLQARYN vigente.
+- Las entradas históricas inferiores se conservan únicamente como trazabilidad; no tienen autoridad operativa.
+
 ## 2026-09-26 — SMTP y variables Render normalizados en DEV
 
 - DEV y PROD quedan definidos con el mismo contrato canónico de 28 variables en `render.yaml`; solo cambian valores propios del entorno.
