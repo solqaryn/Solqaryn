@@ -2,7 +2,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 
 const expectedRepo = 'solqaryn/Solqaryn';
-const expectedBranch = 'Desarrollo';
+const expectedBranch = 'dev';
 
 function git(...args) {
   return execFileSync('git', args, { encoding: 'utf8' }).trim();
