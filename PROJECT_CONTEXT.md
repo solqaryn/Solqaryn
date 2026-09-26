@@ -59,8 +59,8 @@ Consultar `ARCHITECTURE.md` para cambios estructurales y `PROJECT_INDEX.md` para
 - Contrato Render canónico: 28 claves idénticas por nombre en DEV y PROD; sólo cambian valores dependientes del entorno. Inventario y justificación: `docs/RENDER_ENVIRONMENT_CONTRACT.md`.
 
 ### Vercel
-- Proyecto DEV: `solqaryn-dev`.
-- Proyecto PROD: `solqaryn-prod`.
+- Proyecto DEV activo: `solqaryn-dev`.
+- Proyecto PROD corporativo: **pendiente de creación/configuración**. No se reutiliza ningún proyecto personal o legacy.
 
 ### Aiven
 - Proyecto: `solqaryn`.
@@ -69,9 +69,19 @@ Consultar `ARCHITECTURE.md` para cambios estructurales y `PROJECT_INDEX.md` para
 - Usuarios de aplicación separados por entorno.
 
 ### Cloudflare
-- La gestión de DNS/domino se trata como infraestructura de plataforma y no se asume requisito de DEV salvo que una tarea vigente lo necesite.
+- La cuenta/DNS corporativos pertenecen a SOLQARYN.
+- DEV no depende de un dominio custom mientras use `solqaryn-dev.vercel.app`.
+- La activación DNS de PROD se realiza únicamente cuando el frontend PROD corporativo exista y haya sido certificado.
 
-## 5. Dominios funcionales
+## 5. Regla de legado y migración histórica
+
+- El único artefacto heredado autorizado para reutilización es el **respaldo verificado de la base histórica de VariStoreHN**.
+- Ningún deployment, proyecto, servicio, cuenta personal, repositorio, dominio o variable legacy se considera dependencia de SOLQARYN.
+- No se consulta ni se reactiva infraestructura legacy como fallback.
+- VariStoreHN permanece únicamente como **primer tenant/empresa cliente** dentro de SOLQARYN.
+- La migración histórica se ejecutará al final, después de certificar DEV y PROD, tomando el respaldo como fuente y cargando los datos al tenant VariStoreHN en la nueva base productiva.
+
+## 6. Dominios funcionales
 
 Áreas principales:
 
@@ -88,7 +98,7 @@ Consultar `ARCHITECTURE.md` para cambios estructurales y `PROJECT_INDEX.md` para
 - tienda pública de empresas cliente;
 - automatizaciones de operación y control.
 
-## 6. Invariantes
+## 7. Invariantes
 
 - No exponer secretos.
 - No mezclar datos entre empresas.
@@ -98,7 +108,7 @@ Consultar `ARCHITECTURE.md` para cambios estructurales y `PROJECT_INDEX.md` para
 - Revalidar HEAD antes de publicar.
 - Cambios en `main`, PROD o infraestructura productiva requieren autorización explícita vigente.
 
-## 7. Plan maestro vigente
+## 8. Plan maestro vigente
 
 El plan maestro que ejecutan las diez automatizaciones se define únicamente por objetivos, prioridades y dependencias actuales de SOLQARYN.
 
