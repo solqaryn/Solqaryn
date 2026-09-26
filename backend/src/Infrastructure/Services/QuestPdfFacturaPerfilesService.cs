@@ -229,7 +229,7 @@ public sealed class QuestPdfFacturaPerfilesService : IFacturaPdfService
 
                 page.Footer().BorderTop(1).BorderColor(Colors.Grey.Lighten2).PaddingTop(compacto ? 3 : 5).Row(row =>
                 {
-                    row.RelativeItem().Text(factura.EmpresaCopyright ?? "© VariStorehn. Todos los derechos reservados.")
+                    row.RelativeItem().Text(factura.EmpresaCopyright ?? "Todos los derechos reservados.")
                         .FontSize(compacto ? 5.5f : 7f);
                     row.RelativeItem().AlignRight().Text(text =>
                     {
@@ -360,7 +360,7 @@ public sealed class QuestPdfFacturaPerfilesService : IFacturaPdfService
                         .FontSize(compacto ? 5.5f : 6.5f);
                     if (!string.IsNullOrWhiteSpace(factura.EmpresaTextoLegal))
                         content.Item().AlignCenter().Text(factura.EmpresaTextoLegal).FontSize(compacto ? 5.5f : 6.5f);
-                    content.Item().PaddingTop(2).AlignCenter().Text(factura.EmpresaCopyright ?? "© VariStorehn")
+                    content.Item().PaddingTop(2).AlignCenter().Text(factura.EmpresaCopyright ?? "Todos los derechos reservados.")
                         .FontSize(compacto ? 5.5f : 6.5f);
                 });
             });

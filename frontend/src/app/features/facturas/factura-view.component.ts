@@ -55,7 +55,6 @@ export class FacturaViewComponent implements OnInit {
   private readonly permisosRuntime = inject(PermisosRuntimeService);
   private readonly whatsappShare = inject(WhatsAppShareService);
 
-  readonly defaultLogoUrl = 'assets/varistorehn-logo.png';
   readonly factura = signal<Factura | null>(null);
   readonly loading = signal(true);
   readonly formatosPdf = signal<FacturaFormatoPdf[]>(FORMATOS_FALLBACK);

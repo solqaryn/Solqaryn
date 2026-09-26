@@ -279,7 +279,7 @@
 
       <header class="factura-header">
         <div class="empresa">
-          <img class="empresa-logo" [src]="f.empresaLogoUrl || defaultLogoUrl" alt="Logo de {{ f.empresaNombre }}">
+          @if (f.empresaLogoUrl) { <img class="empresa-logo" [src]="f.empresaLogoUrl" alt="Logo de {{ f.empresaNombre }}"> }
           <h1>{{ f.empresaNombre }}</h1>
           @if (f.empresaEslogan) { <p class="eslogan">{{ f.empresaEslogan }}</p> }
           <p><strong>Comprobante comercial interno</strong></p>
