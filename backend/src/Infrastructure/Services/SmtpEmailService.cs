@@ -262,7 +262,6 @@ public sealed class SmtpEmailService : IEmailService
             Password: NormalizarPassword(_configuration["Smtp:PasswordSmtp"]) ?? string.Empty,
             AuthenticationMode: _configuration["Smtp:AuthenticationMode"]?.Trim() ?? "Password",
             OAuth2ClientId: _configuration["Smtp:OAuth2ClientId"]?.Trim() ?? string.Empty,
-            OAuth2ClientSecret: _configuration["Smtp:OAuth2ClientSecret"]?.Trim() ?? string.Empty,
             OAuth2RefreshToken: _configuration["Smtp:OAuth2RefreshToken"]?.Trim() ?? string.Empty,
             OAuth2TokenEndpoint: _configuration["Smtp:OAuth2TokenEndpoint"]?.Trim() ?? OAuth2TokenEndpointPredeterminado,
             OAuth2Scope: _configuration["Smtp:OAuth2Scope"]?.Trim() ?? OAuth2ScopePredeterminado,
@@ -443,8 +442,6 @@ public sealed class SmtpEmailService : IEmailService
             new("scope", configuracion.OAuth2Scope)
         };
 
-        if (!string.IsNullOrWhiteSpace(configuracion.OAuth2ClientSecret))
-            campos.Add(new("client_secret", configuracion.OAuth2ClientSecret));
 
         using var request = new HttpRequestMessage(HttpMethod.Post, configuracion.OAuth2TokenEndpoint)
         {
@@ -700,7 +697,6 @@ public sealed class SmtpEmailService : IEmailService
         string Password,
         string AuthenticationMode,
         string OAuth2ClientId,
-        string OAuth2ClientSecret,
         string OAuth2RefreshToken,
         string OAuth2TokenEndpoint,
         string OAuth2Scope,
