@@ -6,7 +6,7 @@ services:
     region: oregon
     branch: dev
     autoDeployTrigger: checksPass
-    healthCheckPath: /health/ready
+    healthCheckPath: /health
     dockerfilePath: ./backend/Dockerfile
     dockerContext: .
     envVars:
@@ -53,23 +53,29 @@ services:
       - key: Swagger__Enabled
         value: "false"
       - key: Smtp__Host
-        sync: false
+        value: smtp-mail.outlook.com
       - key: Smtp__Port
         value: "587"
       - key: Smtp__UsuarioSmtp
-        sync: false
-      - key: Smtp__PasswordSmtp
-        sync: false
+        value: solqaryn.platform@outlook.com
       - key: Smtp__AuthenticationMode
-        value: Password
+        value: OAuth2
+      - key: Smtp__OAuth2ClientId
+        value: 86122655-f065-413e-87af-56e7a1134d2c
+      - key: Smtp__OAuth2RefreshToken
+        sync: false
+      - key: Smtp__OAuth2TokenEndpoint
+        value: https://login.microsoftonline.com/consumers/oauth2/v2.0/token
+      - key: Smtp__OAuth2Scope
+        value: https://outlook.office.com/SMTP.Send offline_access
       - key: Smtp__UsarSsl
         value: "true"
       - key: Smtp__RequiereAutenticacion
         value: "true"
       - key: Smtp__CorreoRemitente
-        sync: false
+        value: solqaryn.platform@outlook.com
       - key: Smtp__CorreoRespuesta
-        sync: false
+        value: solqaryn.platform@outlook.com
       - key: Smtp__NombreRemitente
         value: SOLQARYN DEV
       - key: Smtp__TimeoutSeconds
@@ -90,7 +96,7 @@ services:
     region: virginia
     branch: main
     autoDeployTrigger: checksPass
-    healthCheckPath: /health/ready
+    healthCheckPath: /health
     dockerfilePath: ./backend/Dockerfile
     dockerContext: .
     envVars:
@@ -145,10 +151,8 @@ services:
       - key: Smtp__AuthenticationMode
         value: OAuth2
       - key: Smtp__OAuth2ClientId
-        sync: false
+        value: 86122655-f065-413e-87af-56e7a1134d2c
       - key: Smtp__OAuth2RefreshToken
-        sync: false
-      - key: Smtp__OAuth2ClientSecret
         sync: false
       - key: Smtp__OAuth2TokenEndpoint
         value: https://login.microsoftonline.com/consumers/oauth2/v2.0/token
