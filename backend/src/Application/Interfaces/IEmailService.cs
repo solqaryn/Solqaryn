@@ -57,6 +57,6 @@ public interface IEmailService
     EstadoConfiguracionSmtp ObtenerEstadoConfiguracion();
 
     /// Comprueba conexión, negociación TLS y autenticación sin enviar correo ni
-    /// exponer secretos. Está pensado para diagnosticar exclusivamente Desarrollo.
+    /// exponer secretos. Se usa para validar el transporte SMTP del entorno actual.
     Task<ResultadoDiagnosticoSmtp> ProbarConexionAsync(CancellationToken cancellationToken = default);
 }
