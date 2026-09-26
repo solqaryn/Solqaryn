@@ -1,3 +1,12 @@
+## 2026-09-26 — SMTP PROD migrado a Outlook OAuth2
+
+- PROD deja de depender de autenticación SMTP básica/Gmail legacy y adopta OAuth2/Modern Auth para `solqaryn.platform@outlook.com`.
+- Host canónico: `smtp-mail.outlook.com`, puerto `587`, STARTTLS.
+- El backend obtiene access tokens efímeros desde un refresh token OAuth2; `Smtp__PasswordSmtp` deja de ser requerido cuando `Smtp__AuthenticationMode=OAuth2`.
+- Nuevas claves: `Smtp__OAuth2ClientId`, `Smtp__OAuth2RefreshToken`, `Smtp__OAuth2ClientSecret` opcional, `Smtp__OAuth2TokenEndpoint`, `Smtp__OAuth2Scope`.
+- No se versionan Client Secret, refresh token ni access tokens.
+- DEV conserva autenticación Password para compatibilidad hasta migración explícita.
+
 ## 2026-09-25 — Retiro DEV personal: auditoría destructiva previa
 
 - Vercel personal DEV `identidad-retirada-desarrollo`: ya eliminado previamente; el team corporativo sólo contiene `solqaryn-dev`.
