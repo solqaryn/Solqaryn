@@ -106,11 +106,9 @@ Cloudinary__ApiKey
 Cloudinary__ApiSecret
 Smtp__Host
 Smtp__UsuarioSmtp
-Smtp__PasswordSmtp
 Smtp__AuthenticationMode
 Smtp__OAuth2ClientId
 Smtp__OAuth2RefreshToken
-Smtp__OAuth2ClientSecret
 Smtp__OAuth2TokenEndpoint
 Smtp__OAuth2Scope
 SeedAdmin__Username
@@ -118,7 +116,7 @@ SeedAdmin__Password
 Database__ApplyMigrationsOnStartup
 ```
 
-La lista anterior es orientativa; consultar configuración del módulo afectado en lugar de releer toda la infraestructura.
+La lista anterior refleja la configuración canónica desplegada. DEV y PROD usan Outlook.com con OAuth2/Modern Auth; no se provisionan `Smtp__PasswordSmtp` ni `Smtp__OAuth2ClientSecret` en Render. El soporte de autenticación por contraseña permanece únicamente como compatibilidad interna/pruebas y no como secreto de los entornos desplegados.
 
 ## Migraciones
 
