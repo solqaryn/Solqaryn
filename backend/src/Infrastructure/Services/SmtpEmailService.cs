@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
+using System.Text.Json;
 using InventoryApp.Application.Interfaces;
 using MailKit;
 using MailKit.Net.Smtp;
@@ -21,6 +22,9 @@ public sealed class SmtpEmailService : IEmailService
 {
     private const int MaximoAdjuntos = 5;
     private const int MaximoTotalAdjuntosBytes = 20 * 1024 * 1024;
+    private const string OAuth2TokenEndpointPredeterminado = "https://login.microsoftonline.com/consumers/oauth2/v2.0/token";
+    private const string OAuth2ScopePredeterminado = "https://outlook.office.com/SMTP.Send offline_access";
+    private static readonly HttpClient OAuthHttpClient = new();
 
     private readonly IConfiguration _configuration;
     private readonly ILogger<SmtpEmailService> _logger;
@@ -256,6 +260,12 @@ public sealed class SmtpEmailService : IEmailService
             Puerto: _configuration.GetValue<int?>("Smtp:Port") ?? 587,
             Usuario: usuario,
             Password: NormalizarPassword(_configuration["Smtp:PasswordSmtp"]) ?? string.Empty,
+            AuthenticationMode: _configuration["Smtp:AuthenticationMode"]?.Trim() ?? "Password",
+            OAuth2ClientId: _configuration["Smtp:OAuth2ClientId"]?.Trim() ?? string.Empty,
+            OAuth2ClientSecret: _configuration["Smtp:OAuth2ClientSecret"]?.Trim() ?? string.Empty,
+            OAuth2RefreshToken: _configuration["Smtp:OAuth2RefreshToken"]?.Trim() ?? string.Empty,
+            OAuth2TokenEndpoint: _configuration["Smtp:OAuth2TokenEndpoint"]?.Trim() ?? OAuth2TokenEndpointPredeterminado,
+            OAuth2Scope: _configuration["Smtp:OAuth2Scope"]?.Trim() ?? OAuth2ScopePredeterminado,
             UsarSsl: _configuration.GetValue<bool?>("Smtp:UsarSsl") ?? true,
             RequiereAutenticacion: _configuration.GetValue<bool?>("Smtp:RequiereAutenticacion") ?? true,
             CorreoRemitente: remitente ?? string.Empty,
@@ -269,16 +279,34 @@ public sealed class SmtpEmailService : IEmailService
     private static (string? Error, MailboxAddress? Remitente) ValidarConfiguracion(ConfiguracionSmtp configuracion)
     {
         if (string.IsNullOrWhiteSpace(configuracion.Host) || EsPlaceholder(configuracion.Host))
-            return ("El host SMTP de DEV no está configurado.", null);
+            return ("El host SMTP del entorno actual no está configurado.", null);
 
         if (configuracion.Puerto is < 1 or > 65535)
             return ("El puerto SMTP configurado no es válido.", null);
 
-        if (configuracion.RequiereAutenticacion &&
-            (string.IsNullOrWhiteSpace(configuracion.Usuario) || EsPlaceholder(configuracion.Usuario) ||
-             string.IsNullOrWhiteSpace(configuracion.Password) || EsPlaceholder(configuracion.Password)))
+        if (configuracion.RequiereAutenticacion)
         {
-            return ("Las credenciales SMTP de DEV no están configuradas completamente.", null);
+            if (string.IsNullOrWhiteSpace(configuracion.Usuario) || EsPlaceholder(configuracion.Usuario))
+                return ("El usuario SMTP del entorno actual no está configurado.", null);
+
+            if (EsOAuth2(configuracion))
+            {
+                if (string.IsNullOrWhiteSpace(configuracion.OAuth2ClientId) || EsPlaceholder(configuracion.OAuth2ClientId))
+                    return ("El Client ID OAuth2 de SMTP no está configurado.", null);
+
+                if (string.IsNullOrWhiteSpace(configuracion.OAuth2RefreshToken) || EsPlaceholder(configuracion.OAuth2RefreshToken))
+                    return ("El refresh token OAuth2 de SMTP no está configurado.", null);
+
+                if (!Uri.TryCreate(configuracion.OAuth2TokenEndpoint, UriKind.Absolute, out var tokenEndpoint) ||
+                    tokenEndpoint.Scheme != Uri.UriSchemeHttps)
+                {
+                    return ("El endpoint OAuth2 de SMTP debe ser una URL HTTPS válida.", null);
+                }
+            }
+            else if (string.IsNullOrWhiteSpace(configuracion.Password) || EsPlaceholder(configuracion.Password))
+            {
+                return ("La contraseña SMTP del entorno actual no está configurada.", null);
+            }
         }
 
         if (!MailboxAddress.TryParse(configuracion.CorreoRemitente, out var remitente))
@@ -295,6 +323,9 @@ public sealed class SmtpEmailService : IEmailService
         {
             return ("Para Gmail usa el puerto 587 con STARTTLS o el 465 con SSL directo.", null);
         }
+
+        if (EsOutlook(configuracion.Host) && configuracion.Puerto != 587)
+            return ("Para Outlook.com usa el puerto 587 con STARTTLS.", null);
 
         return (null, remitente);
     }
@@ -387,9 +418,67 @@ public sealed class SmtpEmailService : IEmailService
         if (!configuracion.RequiereAutenticacion)
             return;
 
+        if (EsOAuth2(configuracion))
+        {
+            var accessToken = await ObtenerAccessTokenOAuth2Async(configuracion, cancellationToken);
+            var oauth2 = new SaslMechanismOAuth2(configuracion.Usuario, accessToken);
+            await cliente.AuthenticateAsync(oauth2, cancellationToken);
+            return;
+        }
+
         cliente.AuthenticationMechanisms.Remove("XOAUTH2");
         cliente.AuthenticationMechanisms.Remove("OAUTHBEARER");
         await cliente.AuthenticateAsync(configuracion.Usuario, configuracion.Password, cancellationToken);
+    }
+
+    private static async Task<string> ObtenerAccessTokenOAuth2Async(
+        ConfiguracionSmtp configuracion,
+        CancellationToken cancellationToken)
+    {
+        var campos = new List<KeyValuePair<string, string>>
+        {
+            new("client_id", configuracion.OAuth2ClientId),
+            new("grant_type", "refresh_token"),
+            new("refresh_token", configuracion.OAuth2RefreshToken),
+            new("scope", configuracion.OAuth2Scope)
+        };
+
+        if (!string.IsNullOrWhiteSpace(configuracion.OAuth2ClientSecret))
+            campos.Add(new("client_secret", configuracion.OAuth2ClientSecret));
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, configuracion.OAuth2TokenEndpoint)
+        {
+            Content = new FormUrlEncodedContent(campos)
+        };
+
+        using var response = await OAuthHttpClient.SendAsync(
+            request,
+            HttpCompletionOption.ResponseHeadersRead,
+            cancellationToken);
+
+        var payload = await response.Content.ReadAsStringAsync(cancellationToken);
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new SmtpOAuth2Exception(
+                $"Microsoft OAuth2 rechazó la renovación del token SMTP (HTTP {(int)response.StatusCode}).");
+        }
+
+        try
+        {
+            using var json = JsonDocument.Parse(payload);
+            if (!json.RootElement.TryGetProperty("access_token", out var accessTokenElement))
+                throw new SmtpOAuth2Exception("Microsoft OAuth2 no devolvió access_token para SMTP.");
+
+            var accessToken = accessTokenElement.GetString();
+            if (string.IsNullOrWhiteSpace(accessToken))
+                throw new SmtpOAuth2Exception("Microsoft OAuth2 devolvió un access_token SMTP vacío.");
+
+            return accessToken;
+        }
+        catch (JsonException ex)
+        {
+            throw new SmtpOAuth2Exception("Microsoft OAuth2 devolvió una respuesta inválida para SMTP.", ex);
+        }
     }
 
     private static SecureSocketOptions ResolverSeguridad(ConfiguracionSmtp configuracion)
@@ -458,6 +547,9 @@ public sealed class SmtpEmailService : IEmailService
         if (ex is TimeoutException)
             return ("SMTP_TIMEOUT", "El servidor de correo no respondió dentro del tiempo permitido.", true);
 
+        if (ex is SmtpOAuth2Exception)
+            return ("SMTP_OAUTH2", ex.Message, false);
+
         if (ex is MailKit.Security.AuthenticationException or ServiceNotAuthenticatedException)
         {
             var mensaje = EsGmail(configuracion.Host)
@@ -475,7 +567,7 @@ public sealed class SmtpEmailService : IEmailService
             if (status is 534 or 535)
             {
                 var mensaje = EsGmail(configuracion.Host)
-                    ? "Gmail exige una contraseña de aplicación válida. Genera una nueva con la verificación en dos pasos activa y reemplaza Smtp__PasswordSmtp en Render DEV."
+                    ? "Gmail exige una contraseña de aplicación válida. Genera una nueva con la verificación en dos pasos activa y reemplaza Smtp__PasswordSmtp en Render del entorno actual."
                     : "El servidor SMTP rechazó la autenticación.";
                 return ("SMTP_AUTENTICACION", mensaje, false);
             }
@@ -484,15 +576,15 @@ public sealed class SmtpEmailService : IEmailService
                 return ("SMTP_TEMPORAL", "El servidor de correo presentó un problema temporal. Intenta nuevamente más tarde.", true);
 
             if (status is 550 or 551 or 552 or 553 or 554)
-                return ("SMTP_DESTINATARIO_RECHAZADO", "El servidor rechazó el remitente, el destinatario o el contenido del mensaje. Revisa los logs de Desarrollo.", false);
+                return ("SMTP_DESTINATARIO_RECHAZADO", "El servidor rechazó el remitente, el destinatario o el contenido del mensaje. Revisa los logs del entorno actual.", false);
 
-            return ("SMTP_RECHAZADO", "El servidor SMTP rechazó la operación. Revisa el diagnóstico y los logs de Desarrollo.", false);
+            return ("SMTP_RECHAZADO", "El servidor SMTP rechazó la operación. Revisa el diagnóstico y los logs del entorno actual.", false);
         }
 
         if (ex is SocketException or IOException or SmtpProtocolException or ServiceNotConnectedException)
             return ("SMTP_CONEXION", "No fue posible establecer una conexión estable con el servidor SMTP.", true);
 
-        return ("SMTP_ERROR", "No se pudo enviar el correo. Revisa el diagnóstico SMTP y los logs del backend de Desarrollo.", false);
+        return ("SMTP_ERROR", "No se pudo enviar el correo. Revisa el diagnóstico SMTP y los logs del backend del entorno actual.", false);
     }
 
     private static bool EsErrorTransitorio(Exception ex)
@@ -554,6 +646,13 @@ public sealed class SmtpEmailService : IEmailService
         host.Equals("smtp.gmail.com", StringComparison.OrdinalIgnoreCase) ||
         host.EndsWith(".gmail.com", StringComparison.OrdinalIgnoreCase);
 
+    private static bool EsOutlook(string host) =>
+        host.Equals("smtp-mail.outlook.com", StringComparison.OrdinalIgnoreCase) ||
+        host.Equals("smtp.office365.com", StringComparison.OrdinalIgnoreCase);
+
+    private static bool EsOAuth2(ConfiguracionSmtp configuracion) =>
+        configuracion.AuthenticationMode.Equals("OAuth2", StringComparison.OrdinalIgnoreCase);
+
     private static string? NormalizarPassword(string? password)
     {
         if (string.IsNullOrWhiteSpace(password)) return password;
@@ -599,6 +698,12 @@ public sealed class SmtpEmailService : IEmailService
         int Puerto,
         string Usuario,
         string Password,
+        string AuthenticationMode,
+        string OAuth2ClientId,
+        string OAuth2ClientSecret,
+        string OAuth2RefreshToken,
+        string OAuth2TokenEndpoint,
+        string OAuth2Scope,
         bool UsarSsl,
         bool RequiereAutenticacion,
         string CorreoRemitente,
@@ -607,4 +712,10 @@ public sealed class SmtpEmailService : IEmailService
         int TimeoutSegundos,
         int MaximoIntentos,
         int RetryBaseDelayMilliseconds);
+
+    private sealed class SmtpOAuth2Exception : Exception
+    {
+        public SmtpOAuth2Exception(string message) : base(message) { }
+        public SmtpOAuth2Exception(string message, Exception innerException) : base(message, innerException) { }
+    }
 }

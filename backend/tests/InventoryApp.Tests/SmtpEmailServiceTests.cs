@@ -36,6 +36,51 @@ public class SmtpEmailServiceTests
     }
 
     [Fact]
+    public void ObtenerEstadoConfiguracion_OAuth2_No_Requiere_Password_Smtp()
+    {
+        var service = CrearServicio(new Dictionary<string, string?>
+        {
+            ["Smtp:Host"] = "smtp-mail.outlook.com",
+            ["Smtp:Port"] = "587",
+            ["Smtp:UsuarioSmtp"] = "solqaryn.platform@outlook.com",
+            ["Smtp:AuthenticationMode"] = "OAuth2",
+            ["Smtp:OAuth2ClientId"] = "00000000-0000-0000-0000-000000000001",
+            ["Smtp:OAuth2RefreshToken"] = "refresh-token-de-prueba",
+            ["Smtp:UsarSsl"] = "true",
+            ["Smtp:RequiereAutenticacion"] = "true",
+            ["Smtp:CorreoRemitente"] = "solqaryn.platform@outlook.com"
+        });
+
+        var estado = service.ObtenerEstadoConfiguracion();
+
+        Assert.True(estado.Configurado, estado.Mensaje);
+        Assert.Equal("***.outlook.com", estado.Host);
+        Assert.Equal("so***@outlook.com", estado.RemitenteEnmascarado);
+        Assert.Equal("STARTTLS obligatorio", estado.ModoSeguridad);
+    }
+
+    [Fact]
+    public void ObtenerEstadoConfiguracion_OAuth2_Requiere_RefreshToken()
+    {
+        var service = CrearServicio(new Dictionary<string, string?>
+        {
+            ["Smtp:Host"] = "smtp-mail.outlook.com",
+            ["Smtp:Port"] = "587",
+            ["Smtp:UsuarioSmtp"] = "solqaryn.platform@outlook.com",
+            ["Smtp:AuthenticationMode"] = "OAuth2",
+            ["Smtp:OAuth2ClientId"] = "00000000-0000-0000-0000-000000000001",
+            ["Smtp:UsarSsl"] = "true",
+            ["Smtp:RequiereAutenticacion"] = "true",
+            ["Smtp:CorreoRemitente"] = "solqaryn.platform@outlook.com"
+        });
+
+        var estado = service.ObtenerEstadoConfiguracion();
+
+        Assert.False(estado.Configurado);
+        Assert.Contains("refresh token", estado.Mensaje, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task ProbarConexionAsync_Comprueba_Conexion_Y_Autenticacion_Sin_Enviar_Mensaje()
     {
         await using var servidor = new FakeSmtpServer(fallosTransitorios: 0);
