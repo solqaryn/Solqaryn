@@ -99,7 +99,9 @@ public sealed class SmtpEmailService : IEmailService
             return CrearDiagnostico(
                 true,
                 "SMTP_OK",
-                "Conexión, TLS y autenticación SMTP comprobados correctamente.",
+                configuracion.RequiereAutenticacion
+                    ? "Conexión, TLS y autenticación SMTP comprobados correctamente."
+                    : "Conexión SMTP comprobada correctamente; autenticación deshabilitada para este entorno.",
                 configuracion,
                 configuracion.RequiereAutenticacion,
                 cronometro.ElapsedMilliseconds);
