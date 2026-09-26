@@ -130,7 +130,7 @@ test.describe('VariStoreHN Fase 11 — SEO, URLs y rendimiento', () => {
     await expect(meta(page, 'name="description"')).not.toHaveAttribute('content', /administrativ/i);
     await expect(page.locator('head link[rel="canonical"]')).toHaveAttribute(
       'href',
-      'https://varistorehn.vercel.app/varistorehn'
+      'https://solqaryn-prod.vercel.app/varistorehn'
     );
     await expect(meta(page, 'name="robots"')).toHaveAttribute('content', /noindex/);
 
@@ -154,7 +154,7 @@ test.describe('VariStoreHN Fase 11 — SEO, URLs y rendimiento', () => {
     await expect(meta(page, 'name="description"')).toHaveAttribute('content', /pruebas de metadatos públicos/i);
     await expect(page.locator('head link[rel="canonical"]')).toHaveAttribute(
       'href',
-      'https://varistorehn.vercel.app/varistorehn/producto/producto-seo-11'
+      'https://solqaryn-prod.vercel.app/varistorehn/producto/producto-seo-11'
     );
     await expect(meta(page, 'property="og:type"')).toHaveAttribute('content', 'product');
     await expect(meta(page, 'property="og:title"')).toHaveAttribute('content', 'Laptop SEO 11 | VariStore Fase 11');
@@ -167,7 +167,7 @@ test.describe('VariStoreHN Fase 11 — SEO, URLs y rendimiento', () => {
     const schema = JSON.parse(await jsonLd.textContent() || '{}');
     expect(schema['@type']).toBe('Product');
     expect(schema.name).toBe('Laptop SEO 11');
-    expect(schema.url).toBe('https://varistorehn.vercel.app/varistorehn/producto/producto-seo-11');
+    expect(schema.url).toBe('https://solqaryn-prod.vercel.app/varistorehn/producto/producto-seo-11');
     expect(schema.offers?.price).toBe('23999.00');
   });
 
@@ -183,11 +183,11 @@ test.describe('VariStoreHN Fase 11 — SEO, URLs y rendimiento', () => {
     await expect(meta(page, 'name="description"')).toHaveAttribute('content', /Categoría pública preparada/i);
     await expect(page.locator('head link[rel="canonical"]')).toHaveAttribute(
       'href',
-      'https://varistorehn.vercel.app/varistorehn/categoria/tecnologia-seo-11'
+      'https://solqaryn-prod.vercel.app/varistorehn/categoria/tecnologia-seo-11'
     );
     await expect(meta(page, 'property="og:url"')).toHaveAttribute(
       'content',
-      'https://varistorehn.vercel.app/varistorehn/categoria/tecnologia-seo-11'
+      'https://solqaryn-prod.vercel.app/varistorehn/categoria/tecnologia-seo-11'
     );
   });
 
@@ -198,7 +198,7 @@ test.describe('VariStoreHN Fase 11 — SEO, URLs y rendimiento', () => {
     await expect(page).toHaveURL(/q=laptop/);
     await expect(page.locator('head link[rel="canonical"]')).toHaveAttribute(
       'href',
-      'https://varistorehn.vercel.app/varistorehn/productos'
+      'https://solqaryn-prod.vercel.app/varistorehn/productos'
     );
     await expect(page).toHaveTitle('Productos | VariStore Fase 11');
   });
