@@ -259,12 +259,8 @@ public sealed class SmtpEmailService : IEmailService
             Host: _configuration["Smtp:Host"]?.Trim() ?? string.Empty,
             Puerto: _configuration.GetValue<int?>("Smtp:Port") ?? 587,
             Usuario: usuario,
-            Password: NormalizarPassword(_configuration["Smtp:PasswordSmtp"]) ?? string.Empty,
-            AuthenticationMode: _configuration["Smtp:AuthenticationMode"]?.Trim() ?? "Password",
             OAuth2ClientId: _configuration["Smtp:OAuth2ClientId"]?.Trim() ?? string.Empty,
             OAuth2RefreshToken: _configuration["Smtp:OAuth2RefreshToken"]?.Trim() ?? string.Empty,
-            OAuth2TokenEndpoint: _configuration["Smtp:OAuth2TokenEndpoint"]?.Trim() ?? OAuth2TokenEndpointPredeterminado,
-            OAuth2Scope: _configuration["Smtp:OAuth2Scope"]?.Trim() ?? OAuth2ScopePredeterminado,
             UsarSsl: _configuration.GetValue<bool?>("Smtp:UsarSsl") ?? true,
             RequiereAutenticacion: _configuration.GetValue<bool?>("Smtp:RequiereAutenticacion") ?? true,
             CorreoRemitente: remitente ?? string.Empty,
@@ -287,25 +283,11 @@ public sealed class SmtpEmailService : IEmailService
         {
             if (string.IsNullOrWhiteSpace(configuracion.Usuario) || EsPlaceholder(configuracion.Usuario))
                 return ("El usuario SMTP del entorno actual no está configurado.", null);
+            if (string.IsNullOrWhiteSpace(configuracion.OAuth2ClientId) || EsPlaceholder(configuracion.OAuth2ClientId))
+                return ("El Client ID OAuth2 de SMTP no está configurado.", null);
 
-            if (EsOAuth2(configuracion))
-            {
-                if (string.IsNullOrWhiteSpace(configuracion.OAuth2ClientId) || EsPlaceholder(configuracion.OAuth2ClientId))
-                    return ("El Client ID OAuth2 de SMTP no está configurado.", null);
-
-                if (string.IsNullOrWhiteSpace(configuracion.OAuth2RefreshToken) || EsPlaceholder(configuracion.OAuth2RefreshToken))
-                    return ("El refresh token OAuth2 de SMTP no está configurado.", null);
-
-                if (!Uri.TryCreate(configuracion.OAuth2TokenEndpoint, UriKind.Absolute, out var tokenEndpoint) ||
-                    tokenEndpoint.Scheme != Uri.UriSchemeHttps)
-                {
-                    return ("El endpoint OAuth2 de SMTP debe ser una URL HTTPS válida.", null);
-                }
-            }
-            else if (string.IsNullOrWhiteSpace(configuracion.Password) || EsPlaceholder(configuracion.Password))
-            {
-                return ("La contraseña SMTP del entorno actual no está configurada.", null);
-            }
+            if (string.IsNullOrWhiteSpace(configuracion.OAuth2RefreshToken) || EsPlaceholder(configuracion.OAuth2RefreshToken))
+                return ("El refresh token OAuth2 de SMTP no está configurado.", null);
         }
 
         if (!MailboxAddress.TryParse(configuracion.CorreoRemitente, out var remitente))
@@ -315,12 +297,6 @@ public sealed class SmtpEmailService : IEmailService
             !MailboxAddress.TryParse(configuracion.CorreoRespuesta, out _))
         {
             return ("El correo de respuesta SMTP configurado no es válido.", null);
-        }
-
-        if (configuracion.Host.Equals("smtp.gmail.com", StringComparison.OrdinalIgnoreCase) &&
-            configuracion.Puerto is not 465 and not 587)
-        {
-            return ("Para Gmail usa el puerto 587 con STARTTLS o el 465 con SSL directo.", null);
         }
 
         if (EsOutlook(configuracion.Host) && configuracion.Puerto != 587)
@@ -416,18 +392,9 @@ public sealed class SmtpEmailService : IEmailService
 
         if (!configuracion.RequiereAutenticacion)
             return;
-
-        if (EsOAuth2(configuracion))
-        {
-            var accessToken = await ObtenerAccessTokenOAuth2Async(configuracion, cancellationToken);
-            var oauth2 = new SaslMechanismOAuth2(configuracion.Usuario, accessToken);
-            await cliente.AuthenticateAsync(oauth2, cancellationToken);
-            return;
-        }
-
-        cliente.AuthenticationMechanisms.Remove("XOAUTH2");
-        cliente.AuthenticationMechanisms.Remove("OAUTHBEARER");
-        await cliente.AuthenticateAsync(configuracion.Usuario, configuracion.Password, cancellationToken);
+        var accessToken = await ObtenerAccessTokenOAuth2Async(configuracion, cancellationToken);
+        var oauth2 = new SaslMechanismOAuth2(configuracion.Usuario, accessToken);
+        await cliente.AuthenticateAsync(oauth2, cancellationToken);
     }
 
     private static async Task<string> ObtenerAccessTokenOAuth2Async(
@@ -439,11 +406,11 @@ public sealed class SmtpEmailService : IEmailService
             new("client_id", configuracion.OAuth2ClientId),
             new("grant_type", "refresh_token"),
             new("refresh_token", configuracion.OAuth2RefreshToken),
-            new("scope", configuracion.OAuth2Scope)
+            new("scope", OAuth2ScopePredeterminado)
         };
 
 
-        using var request = new HttpRequestMessage(HttpMethod.Post, configuracion.OAuth2TokenEndpoint)
+        using var request = new HttpRequestMessage(HttpMethod.Post, OAuth2TokenEndpointPredeterminado)
         {
             Content = new FormUrlEncodedContent(campos)
         };
@@ -548,26 +515,16 @@ public sealed class SmtpEmailService : IEmailService
             return ("SMTP_OAUTH2", ex.Message, false);
 
         if (ex is MailKit.Security.AuthenticationException or ServiceNotAuthenticatedException)
-        {
-            var mensaje = EsGmail(configuracion.Host)
-                ? "Gmail rechazó las credenciales. Activa la verificación en dos pasos y usa una contraseña de aplicación nueva de 16 caracteres; no uses la contraseña normal de la cuenta."
-                : "El servidor SMTP rechazó las credenciales de DEV.";
-            return ("SMTP_AUTENTICACION", mensaje, false);
-        }
+            return ("SMTP_AUTENTICACION", "Microsoft Outlook rechazó la autenticación OAuth2 del entorno actual.", false);
 
         if (ex is SslHandshakeException or NotSupportedException)
-            return ("SMTP_TLS", "No se pudo establecer la conexión TLS. Para Gmail usa puerto 587 con STARTTLS o 465 con SSL directo.", false);
+            return ("SMTP_TLS", "No se pudo establecer STARTTLS con el servidor SMTP configurado.", false);
 
         if (ex is SmtpCommandException smtp)
         {
             var status = (int)smtp.StatusCode;
             if (status is 534 or 535)
-            {
-                var mensaje = EsGmail(configuracion.Host)
-                    ? "Gmail exige una contraseña de aplicación válida. Genera una nueva con la verificación en dos pasos activa y reemplaza Smtp__PasswordSmtp en Render del entorno actual."
-                    : "El servidor SMTP rechazó la autenticación.";
-                return ("SMTP_AUTENTICACION", mensaje, false);
-            }
+                return ("SMTP_AUTENTICACION", "El servidor SMTP rechazó la autenticación OAuth2.", false);
 
             if (status is >= 400 and <= 499)
                 return ("SMTP_TEMPORAL", "El servidor de correo presentó un problema temporal. Intenta nuevamente más tarde.", true);
@@ -639,22 +596,9 @@ public sealed class SmtpEmailService : IEmailService
         valor.Equals("REPLACE_ME", StringComparison.OrdinalIgnoreCase) ||
         valor.Contains("not-used", StringComparison.OrdinalIgnoreCase);
 
-    private static bool EsGmail(string host) =>
-        host.Equals("smtp.gmail.com", StringComparison.OrdinalIgnoreCase) ||
-        host.EndsWith(".gmail.com", StringComparison.OrdinalIgnoreCase);
-
     private static bool EsOutlook(string host) =>
         host.Equals("smtp-mail.outlook.com", StringComparison.OrdinalIgnoreCase) ||
         host.Equals("smtp.office365.com", StringComparison.OrdinalIgnoreCase);
-
-    private static bool EsOAuth2(ConfiguracionSmtp configuracion) =>
-        configuracion.AuthenticationMode.Equals("OAuth2", StringComparison.OrdinalIgnoreCase);
-
-    private static string? NormalizarPassword(string? password)
-    {
-        if (string.IsNullOrWhiteSpace(password)) return password;
-        return new string(password.Where(c => !char.IsWhiteSpace(c)).ToArray());
-    }
 
     private static string LimpiarEncabezado(string? valor) =>
         (valor ?? string.Empty).Replace("\r", " ").Replace("\n", " ").Trim();
@@ -694,12 +638,8 @@ public sealed class SmtpEmailService : IEmailService
         string Host,
         int Puerto,
         string Usuario,
-        string Password,
-        string AuthenticationMode,
         string OAuth2ClientId,
         string OAuth2RefreshToken,
-        string OAuth2TokenEndpoint,
-        string OAuth2Scope,
         bool UsarSsl,
         bool RequiereAutenticacion,
         string CorreoRemitente,
