@@ -1,0 +1,38 @@
+name: PROD - Runtime read-only probe
+
+on:
+  push:
+    branches:
+      - prod-runtime-readonly-probe-20260926
+    paths:
+      - .github/workflows/prod-runtime-readonly-probe.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Probe read-only PROD runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://solqaryn-api-prod.onrender.com'
+          probe() {
+            local path="$1"
+            local name="$2"
+            local body
+            body="$(mktemp)"
+            code="$(curl --silent --show-error --location --max-time 30 --output "$body" --write-out '%{http_code}' "$base$path" || true)"
+            echo "${name}_HTTP=$code"
+            echo "${name}_BODY=$(tr '\n' ' ' < "$body" | head -c 500)"
+            rm -f "$body"
+          }
+
+          probe '/health' 'HEALTH'
+          probe '/health/ready' 'READY'
+          probe '/api/tienda/categorias' 'PUBLIC_CATEGORIES'
+          echo 'PROD_RUNTIME_READ_ONLY_PROBE=COMPLETE'
