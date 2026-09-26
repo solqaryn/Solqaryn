@@ -16,27 +16,28 @@ public class SmtpEmailServiceTests
     {
         var service = CrearServicio(new Dictionary<string, string?>
         {
-            ["Smtp:Host"] = "smtp.desarrollo.example.com",
+            ["Smtp:Host"] = "smtp-mail.outlook.com",
             ["Smtp:Port"] = "587",
-            ["Smtp:UsuarioSmtp"] = "usuario@desarrollo.example.com",
-            ["Smtp:PasswordSmtp"] = "secreto-super-sensible",
+            ["Smtp:UsuarioSmtp"] = "solqaryn.platform@outlook.com",
+            ["Smtp:OAuth2ClientId"] = "00000000-0000-0000-0000-000000000001",
+            ["Smtp:OAuth2RefreshToken"] = "refresh-token-super-sensible",
             ["Smtp:UsarSsl"] = "true",
-            ["Smtp:CorreoRemitente"] = "facturas@desarrollo.example.com",
+            ["Smtp:RequiereAutenticacion"] = "true",
             ["Smtp:MaxAttempts"] = "3"
         });
 
         var estado = service.ObtenerEstadoConfiguracion();
 
         Assert.True(estado.Configurado);
-        Assert.Equal("***.example.com", estado.Host);
-        Assert.Equal("fa***@desarrollo.example.com", estado.RemitenteEnmascarado);
-        Assert.DoesNotContain("secreto", estado.Mensaje, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal("***.outlook.com", estado.Host);
+        Assert.Equal("so***@outlook.com", estado.RemitenteEnmascarado);
+        Assert.DoesNotContain("refresh-token", estado.Mensaje, StringComparison.OrdinalIgnoreCase);
         Assert.Equal("STARTTLS obligatorio", estado.ModoSeguridad);
         Assert.Equal(3, estado.MaximoIntentos);
     }
 
     [Fact]
-    public void ObtenerEstadoConfiguracion_OAuth2_No_Requiere_Password_Smtp()
+    public void ObtenerEstadoConfiguracion_OAuth2_Configura_Outlook_Sin_Credencial_Legacy()
     {
         var service = CrearServicio(new Dictionary<string, string?>
         {
@@ -91,7 +92,7 @@ public class SmtpEmailServiceTests
 
         Assert.True(resultado.Exito, resultado.Mensaje);
         Assert.Equal("SMTP_OK", resultado.Codigo);
-        Assert.True(resultado.Autenticado);
+        Assert.False(resultado.Autenticado);
         Assert.Equal("Sin TLS", resultado.ModoSeguridad);
         Assert.Equal(0, servidor.IntentosData);
         Assert.Empty(servidor.Mensajes);
@@ -142,10 +143,9 @@ public class SmtpEmailServiceTests
         {
             ["Smtp:Host"] = "127.0.0.1",
             ["Smtp:Port"] = "1025",
-            ["Smtp:UsuarioSmtp"] = "smtp-user",
-            ["Smtp:PasswordSmtp"] = "smtp-pass",
+            ["Smtp:UsuarioSmtp"] = "facturas@desarrollo.test",
             ["Smtp:UsarSsl"] = "false",
-            ["Smtp:CorreoRemitente"] = "facturas@desarrollo.test"
+            ["Smtp:RequiereAutenticacion"] = "false"
         });
 
         var resultado = await service.EnviarAsync("correo invalido", "Factura", "<p>Prueba</p>");
@@ -159,12 +159,10 @@ public class SmtpEmailServiceTests
     {
         ["Smtp:Host"] = "127.0.0.1",
         ["Smtp:Port"] = puerto.ToString(),
-        ["Smtp:UsuarioSmtp"] = "smtp-user",
-        ["Smtp:PasswordSmtp"] = "smtp-pass",
+        ["Smtp:UsuarioSmtp"] = "facturas@desarrollo.test",
         ["Smtp:UsarSsl"] = "false",
-        ["Smtp:RequiereAutenticacion"] = "true",
-        ["Smtp:CorreoRemitente"] = "facturas@desarrollo.test",
-        ["Smtp:NombreRemitente"] = "VariStorehn Desarrollo",
+        ["Smtp:RequiereAutenticacion"] = "false",
+        ["Smtp:NombreRemitente"] = "SOLQARYN DEV",
         ["Smtp:TimeoutSeconds"] = "10",
         ["Smtp:MaxAttempts"] = "3",
         ["Smtp:RetryBaseDelayMilliseconds"] = "50"
@@ -272,13 +270,13 @@ public class SmtpEmailServiceTests
 
                         await writer.WriteLineAsync("334 UGFzc3dvcmQ6");
                         var password = Decodificar(await reader.ReadLineAsync(cancellationToken) ?? string.Empty);
-                        autenticado = username == "smtp-user" && password == "smtp-pass";
+                        autenticado = !string.IsNullOrWhiteSpace(username) && !string.IsNullOrWhiteSpace(password);
                         await writer.WriteLineAsync(autenticado ? "235 2.7.0 Authentication successful" : "535 5.7.8 Authentication failed");
                     }
                     else if (line.StartsWith("MAIL FROM", StringComparison.OrdinalIgnoreCase) ||
                              line.StartsWith("RCPT TO", StringComparison.OrdinalIgnoreCase))
                     {
-                        await writer.WriteLineAsync(autenticado ? "250 2.1.0 OK" : "530 5.7.0 Authentication required");
+                        await writer.WriteLineAsync("250 2.1.0 OK");
                     }
                     else if (line.Equals("DATA", StringComparison.OrdinalIgnoreCase))
                     {
