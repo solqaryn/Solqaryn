@@ -36,7 +36,7 @@ SOLQARYN es una plataforma empresarial multiempresa.
 - Capas: Domain <- Application <- Infrastructure; API compone y expone.
 - Persistencia: MySQL con EF Core 8/Pomelo.
 - Seguridad: JWT, BCrypt, RBAC relacional, auditoría, CORS explícito, rate limiting y security headers.
-- Integraciones vigentes: Cloudinary, QuestPDF y SMTP; PROD usa Outlook.com con OAuth2/Modern Auth para `solqaryn.platform@outlook.com`.
+- Integraciones vigentes: Cloudinary, QuestPDF y SMTP; DEV y PROD usan Outlook.com con OAuth2/Modern Auth para `solqaryn.platform@outlook.com`.
 - E2E/browser: Playwright/Chromium.
 - La autorización del backend es la autoridad; la UI nunca sustituye controles de seguridad.
 - Tenancy, integridad transaccional y trazabilidad deben preservarse en cambios de negocio.
@@ -56,6 +56,7 @@ Consultar `ARCHITECTURE.md` para cambios estructurales y `PROJECT_INDEX.md` para
 - Health de plataforma Render: `/health` (liveness rápida). `/health/ready` se conserva para readiness/diagnóstico de dependencias como MySQL, pero no como probe de despliegue.
 - SMTP DEV y PROD: `smtp-mail.outlook.com:587` + STARTTLS + OAuth2/Modern Auth con identidad `solqaryn.platform@outlook.com`.
 - DEV y PROD no provisionan contraseña SMTP ni client secret OAuth2; cada entorno mantiene su propio refresh token en Render.
+- Contrato Render canónico: 28 claves idénticas por nombre en DEV y PROD; sólo cambian valores dependientes del entorno. Inventario y justificación: `docs/RENDER_ENVIRONMENT_CONTRACT.md`.
 
 ### Vercel
 - Proyecto DEV: `solqaryn-dev`.
