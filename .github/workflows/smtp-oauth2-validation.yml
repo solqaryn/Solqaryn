@@ -1,0 +1,39 @@
+name: SMTP OAuth2 Validation
+
+on:
+  push:
+    branches:
+      - smtp-outlook-oauth2-20260926
+    paths:
+      - backend/src/Infrastructure/Services/SmtpEmailService.cs
+      - backend/tests/InventoryApp.Tests/SmtpEmailServiceTests.cs
+      - render.yaml
+      - .github/workflows/smtp-oauth2-validation.yml
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+          cache: true
+          cache-dependency-path: backend/**/*.csproj
+
+      - name: Restore
+        run: dotnet restore InventoryApp.sln
+
+      - name: Build Release
+        run: dotnet build InventoryApp.sln --configuration Release --no-restore
+
+      - name: Run SMTP tests
+        run: dotnet test tests/InventoryApp.Tests/InventoryApp.Tests.csproj --configuration Release --no-build --filter "FullyQualifiedName~SmtpEmailServiceTests"
