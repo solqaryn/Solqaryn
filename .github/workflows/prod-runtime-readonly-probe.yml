@@ -34,5 +34,5 @@ jobs:
 
           probe '/health' 'HEALTH'
           probe '/health/ready' 'READY'
-          probe '/api/tienda/categorias' 'PUBLIC_CATEGORIES'
+          probe '/tienda/categorias' 'PUBLIC_CATEGORIES'
           echo 'PROD_RUNTIME_READ_ONLY_PROBE=COMPLETE'
