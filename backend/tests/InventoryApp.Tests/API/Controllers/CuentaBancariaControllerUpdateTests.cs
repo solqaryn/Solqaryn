@@ -49,7 +49,7 @@ public sealed class CuentaBancariaControllerUpdateTests
         Assert.Equal(404, problemDetails.Status);
         Assert.Equal("Cuenta bancaria no encontrada", problemDetails.Title);
         Assert.Equal($"No existe una cuenta bancaria con Id {id}.", problemDetails.Detail);
-        Assert.Equal("https://varistorehn.local/problems/cuenta-bancaria-no-encontrada", problemDetails.Type);
+        Assert.Equal("https://solqaryn.local/problems/cuenta-bancaria-no-encontrada", problemDetails.Type);
     }
 
     [Fact]

@@ -38,12 +38,6 @@ public class SeedFiscalService
             activo: false,
             operaciones: new[] { OperacionImpuesto.Compra });
 
-        await CrearDescuentoSiNoExisteAsync(
-            codigo: "VARISTORE10",
-            nombre: "Promoción VariStorehn 10%",
-            descripcion: "Descuento promocional global para ventas usando el código VARISTORE10.",
-            valor: 10m);
-
         await _context.SaveChangesAsync();
     }
 
@@ -91,32 +85,4 @@ public class SeedFiscalService
         _context.Impuestos.Add(impuesto);
     }
 
-    private async Task CrearDescuentoSiNoExisteAsync(
-        string codigo,
-        string nombre,
-        string descripcion,
-        decimal valor)
-    {
-        var normalizado = codigo.Trim().ToUpperInvariant();
-        var existe = await _context.Descuentos
-            .IgnoreQueryFilters()
-            .AnyAsync(d => d.CodigoPromocionalNormalizado == normalizado);
-        if (existe) return;
-
-        _context.Descuentos.Add(new Descuento
-        {
-            CodigoPromocional = codigo,
-            CodigoPromocionalNormalizado = normalizado,
-            Nombre = nombre,
-            Descripcion = descripcion,
-            Tipo = TipoDescuento.Porcentaje,
-            Valor = valor,
-            RequiereAprobacion = false,
-            Acumulable = true,
-            Prioridad = 10,
-            Activo = true,
-            Eliminado = false,
-            FechaCreacion = DateTime.UtcNow
-        });
-    }
 }

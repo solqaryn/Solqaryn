@@ -13,7 +13,7 @@ namespace InventoryApp.API.Controllers;
 [Route("cuentas-bancarias")]
 public class CuentaBancariaController : ControllerBase
 {
-    private const string CuentaNoEncontradaType = "https://varistorehn.local/problems/cuenta-bancaria-no-encontrada";
+    private const string CuentaNoEncontradaType = "https://solqaryn.local/problems/cuenta-bancaria-no-encontrada";
     private readonly ICuentaBancariaService _service;
 
     public CuentaBancariaController(ICuentaBancariaService service)
