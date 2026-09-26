@@ -15,7 +15,7 @@ Resultado esperado:
 ```text
 PROJECT_ID=SOLQARYN
 REPOSITORY=solqaryn/Solqaryn
-BRANCH=Desarrollo
+BRANCH=dev
 ```
 
 Con acceso remoto, verificar los mismos datos mediante GitHub. Si no coinciden, detenerse: solo el contexto canónico de Solqaryn autoriza cambios aquí.
@@ -33,9 +33,9 @@ No volver a indexar todo el repositorio ni releer archivos ya documentados si no
 ## Rama de trabajo
 
 - `main`: referencia productiva congelada.
-- `Desarrollo`: **única rama de trabajo e integración autorizada**.
+- `dev`: **única rama de trabajo e integración autorizada**.
 - No crear ramas temporales sin autorización expresa de Javier Mejía.
-- PR #2 `Desarrollo -> main` es histórico y está `CLOSED + MERGED`; no reabrirlo. Un nuevo PR/merge hacia `main` requiere autorización nueva y explícita de Javier Mejía; auto-merge permanece deshabilitado.
+- PR #2 `dev -> main` es histórico y está `CLOSED + MERGED`; no reabrirlo. Un nuevo PR/merge hacia `main` requiere autorización nueva y explícita de Javier Mejía; auto-merge permanece deshabilitado.
 
 ## Preparación local
 
@@ -70,7 +70,7 @@ Cada changeset debe:
 4. actualizar colaborativos si cambian reglas/accesos/gobierno;
 5. reportar validaciones reales y SHA publicado.
 
-El hook `pre-commit` local bloquea commits fuera de Solqaryn/`Desarrollo` y commits sin `CHANGELOG_AI.md`.
+El hook `pre-commit` local bloquea commits fuera de Solqaryn/`dev` y commits sin `CHANGELOG_AI.md`.
 
 ## Validación
 
@@ -85,7 +85,7 @@ Un commit puede usar `[skip ci]` únicamente bajo la regla estricta de cambios a
 1. revisar diff;
 2. comprobar repo/rama/HEAD;
 3. commit descriptivo;
-4. push a `origin/Desarrollo`;
+4. push a `origin/dev`;
 5. handoff compacto con evidencia.
 
 ## Rendimiento
