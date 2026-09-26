@@ -1,5 +1,8 @@
 # GO LIVE SMOKE — SOLQARYN
 
+
+> `PROJECT_SCOPE_LOCK=STRICT`
+> Alcance operativo: SOLQARYN / `solqaryn/Solqaryn` / `dev`.
 ## DEV
 
 Destinos canónicos:
