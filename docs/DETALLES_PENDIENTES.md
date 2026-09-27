@@ -38,21 +38,7 @@ DEV puede continuar usando las URLs administradas actuales de Vercel y Render. L
 
 ---
 
-## 3. Vercel PROD corporativo
-
-**Estado:** PENDIENTE
-
-**Evidencia actual:** el team corporativo Vercel conectado contiene únicamente el proyecto `solqaryn-dev`; no existe todavía un proyecto `solqaryn-prod`.
-
-**Bloqueo:** el conector Vercel disponible permite inspección/despliegues de proyectos existentes, pero no expone creación/eliminación de proyectos. No se puede cerrar este punto automáticamente desde este entorno.
-
-**Se retoma cuando:** el propietario cree `solqaryn-prod` dentro del mismo team corporativo de SOLQARYN o habilite una herramienta que permita crear proyectos.
-
-**Al retomar, validar:** ownership corporativo, rama `main`, variables PROD, routing al backend PROD, deploy estable y ausencia de proyectos legacy duplicados.
-
----
-
-## 4. Certificación SMTP real de PROD
+## 3. Certificación SMTP real de PROD
 
 **Estado:** PENDIENTE — OAuth2 certificado; transporte SMTP no completado
 
@@ -71,20 +57,6 @@ DEV puede continuar usando las URLs administradas actuales de Vercel y Render. L
 **Decisión vigente:** mantener este punto como pendiente no bloqueante y no cambiar de plan únicamente para esta prueba.
 
 **Al retomar, validar:** `SMTP_OK`, autenticación SMTP OAuth2, envío real controlado, recepción en Outlook, remitente, Reply-To, adjunto PDF y trazabilidad sin exponer secretos.
-
----
-
-## 5. Retiro final de recursos legacy personales
-
-**Estado:** PENDIENTE
-
-**Evidencia actual:** el repositorio personal privado `jmejia31/VariStorehn` todavía existe fuera de la organización `solqaryn`. También permanecen ramas temporales de auditoría/certificación en el repositorio corporativo.
-
-**Bloqueo:** el conector GitHub disponible no expone eliminación de repositorios ni borrado de refs/ramas. No se ejecutará una sustitución destructiva sin una operación explícita soportada.
-
-**Se retoma cuando:** exista herramienta con capacidad de borrar repositorios/refs o el propietario realice la retirada manual después de confirmar el backup requerido.
-
-**Al retomar, validar:** ausencia de repositorios personales legacy que dupliquen SOLQARYN, eliminación de ramas temporales ya fusionadas y conservación únicamente de `dev`/`main` más las ramas operativas realmente necesarias.
 
 ---
 
