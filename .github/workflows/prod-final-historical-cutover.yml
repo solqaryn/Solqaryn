@@ -305,7 +305,7 @@ jobs:
           export MYSQL_PWD="$DB_PASSWORD"
           mysqlc=(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED --default-character-set=utf8mb4 "$DB_NAME" --batch --skip-column-names)
           test "$("${mysqlc[@]}" -e "SELECT COUNT(*) FROM Usuarios WHERE LOWER(NombreUsuario)=LOWER(CONVERT(UNHEX('$username_hex') USING utf8mb4));")" = "1"
-          "${mysqlc[@]}" -e "UPDATE Usuarios SET PasswordHash=CONVERT(UNHEX('$password_hex') USING utf8mb4), Activo=$activo, Bloqueado=$bloqueado WHERE LOWER(NombreUsuario)=LOWER(CONVERT(UNHEX('$username_hex') USING utf8mb4));"
+          "${mysqlc[@]}" -e "UPDATE Usuarios SET PasswordHash=CONVERT(UNHEX('$password_hex') USING utf8mb4), Activo=$activo, Bloqueado=$bloqueado, Eliminado=0, FechaEliminacion=NULL, EliminadoPorUsuarioId=NULL WHERE LOWER(NombreUsuario)=LOWER(CONVERT(UNHEX('$username_hex') USING utf8mb4));"
           test "$("${mysqlc[@]}" -e "SELECT COUNT(*) FROM Usuarios u JOIN Roles r ON r.Id=u.RolId WHERE LOWER(u.NombreUsuario)=LOWER(CONVERT(UNHEX('$username_hex') USING utf8mb4)) AND u.Activo=1 AND u.Eliminado=0 AND r.EsAdministrador=1 AND r.Activo=1 AND r.Eliminado=0;")" = "1"
           rm -f /tmp/bootstrap-auth.json
           echo "PROD_BOOTSTRAP_AUTH_RECONCILED=PASS"
