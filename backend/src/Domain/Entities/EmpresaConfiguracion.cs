@@ -3,9 +3,9 @@ namespace InventoryApp.Domain.Entities;
 public class EmpresaConfiguracion
 {
     public int Id { get; set; }
-    public string NombreComercial { get; set; } = "VariStorehn";
+    public string NombreComercial { get; set; } = "Empresa";
     public string? RazonSocial { get; set; }
-    public string Eslogan { get; set; } = "Eleva tu mundo digital";
+    public string Eslogan { get; set; } = string.Empty;
     public string? RTN { get; set; }
     public string? Telefono { get; set; }
     public string? Correo { get; set; }
@@ -16,10 +16,10 @@ public class EmpresaConfiguracion
     public string? WhatsApp { get; set; }
     public string? LogoUrl { get; set; }
     public string? LogoPublicId { get; set; }
-    public string NombreVisibleSistema { get; set; } = "VariStorehn";
-    public string DescripcionSistema { get; set; } = "Administrativo";
-    public string MensajeLogin { get; set; } = "Inicia sesión para administrar VariStorehn";
-    public string Copyright { get; set; } = "© 2026 VariStorehn. Todos los derechos reservados.";
+    public string NombreVisibleSistema { get; set; } = "SOLQARYN";
+    public string DescripcionSistema { get; set; } = "Plataforma empresarial";
+    public string MensajeLogin { get; set; } = "Inicia sesión para administrar tu empresa";
+    public string Copyright { get; set; } = "© 2026 SOLQARYN. Todos los derechos reservados.";
     public bool MostrarCopyright { get; set; } = true;
     public bool UsarAnioAutomaticoCopyright { get; set; } = true;
     public bool EncabezadoActivo { get; set; } = true;

@@ -109,7 +109,7 @@ test.describe('Fase 7 - correo SMTP aislado', () => {
     expect(smtpStatus.puerto).toBe(1025);
     expect(smtpStatus.usaTls).toBe(false);
     expect(smtpStatus.modoSeguridad).toBe('Sin TLS');
-    expect(smtpStatus.requiereAutenticacion).toBe(true);
+    expect(smtpStatus.requiereAutenticacion).toBe(false);
     expect(smtpStatus.maximoIntentos).toBe(3);
     expect(String(smtpStatus.remitenteEnmascarado)).not.toContain('smtp-pass');
 
@@ -120,7 +120,7 @@ test.describe('Fase 7 - correo SMTP aislado', () => {
     const diagnostic = await dataOf(diagnosticResponse);
     expect(diagnostic.exito).toBe(true);
     expect(diagnostic.codigo).toBe('SMTP_OK');
-    expect(diagnostic.autenticado).toBe(true);
+    expect(diagnostic.autenticado).toBe(false);
     expect(diagnostic.modoSeguridad).toBe('Sin TLS');
 
     const invoice = await createInvoice(request, token);
@@ -173,7 +173,7 @@ test.describe('Fase 7 - correo SMTP aislado', () => {
     const correoInput = panel.locator('input');
     await expect(panel).toBeVisible();
     await expect(panel.getByText('SMTP verificado')).toBeVisible({ timeout: 15_000 });
-    await expect(panel.getByText(/Conexión, TLS y autenticación SMTP comprobados correctamente/)).toBeVisible();
+    await expect(panel.getByText(/Conexión SMTP comprobada correctamente; autenticación deshabilitada para este entorno/)).toBeVisible();
     await correoInput.fill('fase7@example.com');
     await expect(correoInput).toHaveValue('fase7@example.com');
     await expect(panel.getByRole('button', { name: 'Enviar' })).toBeEnabled();

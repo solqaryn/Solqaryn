@@ -1,6 +1,6 @@
-# Solqaryn — ERP para la operación de VariStorehn
+# SOLQARYN — plataforma empresarial multiempresa
 
-Solqaryn es una aplicación web para administrar productos, variantes, inventario, compras, ventas, clientes, proveedores, facturación, finanzas, usuarios, roles, permisos, auditoría y reportes, con evolución planificada hacia un ERP empresarial completo.
+SOLQARYN es una plataforma empresarial multiempresa para administrar productos, variantes, inventario, compras, ventas, clientes, proveedores, facturación, finanzas, usuarios, roles, permisos, auditoría y reportes, con evolución planificada hacia un ERP empresarial completo.
 
 La factura actual se considera comprobante comercial interno mientras no exista habilitación fiscal SAR/CAI aplicable.
 
@@ -93,32 +93,42 @@ npm start
 
 ## Configuración
 
-Nunca guardar secretos reales en Git. Configurar mediante variables/secret stores del entorno:
+Nunca guardar secretos reales en Git. Render DEV y PROD comparten exactamente el mismo contrato de 28 variables; solo cambian los valores que son propios de cada entorno.
 
 ```text
-ConnectionStrings__DefaultConnection
+ASPNETCORE_ENVIRONMENT
+AllowedHosts
 Database__ServerVersion
+Database__ApplyMigrationsOnStartup
+ConnectionStrings__DefaultConnection
 Jwt__Secret
 Jwt__Issuer
 Jwt__Audience
+Jwt__ExpiraMinutos
+Security__LoginRateLimitPerMinute
 Cloudinary__CloudName
 Cloudinary__ApiKey
 Cloudinary__ApiSecret
+Cloudinary__EnvironmentPrefix
+Cors__AllowedOrigins__0
+AppSettings__BackendPublicUrl
+AppSettings__EnlacePublicoFacturaHorasValidez
+AppSettings__EnlacePublicoFacturaMaximoAccesos
+AppSettings__CorreoFacturaIdempotenciaMinutos
 Smtp__Host
+Smtp__Port
 Smtp__UsuarioSmtp
-Smtp__PasswordSmtp
-Smtp__AuthenticationMode
 Smtp__OAuth2ClientId
 Smtp__OAuth2RefreshToken
-Smtp__OAuth2ClientSecret
-Smtp__OAuth2TokenEndpoint
-Smtp__OAuth2Scope
-SeedAdmin__Username
-SeedAdmin__Password
-Database__ApplyMigrationsOnStartup
+Smtp__NombreRemitente
+Smtp__TimeoutSeconds
+Smtp__MaxAttempts
+Smtp__RetryBaseDelayMilliseconds
 ```
 
-La lista anterior es orientativa; consultar configuración del módulo afectado en lugar de releer toda la infraestructura.
+SMTP desplegado usa exclusivamente Outlook.com + OAuth2/Modern Auth. No forman parte del contrato de Render `Smtp__PasswordSmtp`, `Smtp__OAuth2ClientSecret`, `Smtp__AuthenticationMode`, `Smtp__OAuth2TokenEndpoint`, `Smtp__OAuth2Scope`, `Smtp__UsarSsl`, `Smtp__RequiereAutenticacion`, `Smtp__CorreoRemitente` ni `Smtp__CorreoRespuesta`. STARTTLS, autenticación OAuth2, endpoint, scope, remitente y Reply-To se resuelven mediante invariantes/defaults seguros del backend.
+
+Tampoco se despliegan `Swagger__Enabled`, `AppSettings__LogoPublicUrl`, `SeedAdmin__Username` ni `SeedAdmin__Password`: sus valores desplegados eran redundantes o de bootstrap y no deben permanecer como variables de servicios ya provisionados.
 
 ## Migraciones
 

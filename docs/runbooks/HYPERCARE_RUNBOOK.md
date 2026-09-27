@@ -1,10 +1,10 @@
-# HYPERCARE_RUNBOOK — Solqaryn Desarrollo
+# HYPERCARE_RUNBOOK — SOLQARYN DEV
 
 ## Propósito y alcance
 
-Ventana de observación posterior a un cambio o ensayo autorizado de `Desarrollo`. No autoriza cambios de Producción, DNS, certificados, plan, secretos, `main` ni PR #2. Los únicos endpoints públicos usados por este runbook son:
+Ventana de observación posterior a un cambio o ensayo autorizado de `dev`. No autoriza cambios de Producción, DNS, certificados, plan, secretos, `main` ni PR #2. Los únicos endpoints públicos usados por este runbook son:
 
-- `https://solqaryn-desarrollo.vercel.app`
+- `https://solqaryn-dev.vercel.app`
 - `https://solqaryn-api-dev-fxx8.onrender.com/health`
 - `https://solqaryn-api-dev-fxx8.onrender.com/health/ready`
 
@@ -13,7 +13,7 @@ Ventana de observación posterior a un cambio o ensayo autorizado de `Desarrollo
 - `OPERADOR_DEV`: mantiene el lock/lease del scope mientras exista una mutación o validación activa.
 - `REVISOR`: inspecciona evidencia y clasifica P0–P3; no modifica el mismo scope en paralelo.
 - `CLOSER`: libera el lock únicamente después de receipt y readback.
-- `OWNER`: decide sobre cualquier acción fuera de Desarrollo.
+- `OWNER`: decide sobre cualquier acción fuera de DEV.
 
 Regla single-writer: un scope con writer vivo y progreso material fresco no recibe una segunda escritura. Otro agente puede hacer QA no solapado, pero no mutar el mismo servicio/artefacto.
 
@@ -21,9 +21,9 @@ Regla single-writer: un scope con writer vivo y progreso material fresco no reci
 
 ```bash
 set -euo pipefail
-test "$(git branch --show-current)" = "Desarrollo"
+test "$(git branch --show-current)" = "dev"
 git remote get-url origin | grep -Eq '(^git@github.com:|^https://github.com/)solqaryn/Solqaryn(\.git)?$'
-export FRONTEND_URL="https://solqaryn-desarrollo.vercel.app"
+export FRONTEND_URL="https://solqaryn-dev.vercel.app"
 export BACKEND_URL="https://solqaryn-api-dev-fxx8.onrender.com"
 git rev-parse HEAD
 date -u +%Y-%m-%dT%H:%M:%SZ

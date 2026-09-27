@@ -16,8 +16,10 @@ description: "Gobierno tecnico obligatorio y unica skill local de SOLQARYN. Usar
 - `LOCAL_SKILL=solqaryn-project-governance`
 - `EXTERNAL_PROJECT_CONTEXT=DENY_BY_DEFAULT`
 - `CONTEXT_MODE=CURRENT_STATE_ONLY`
+- `LEGACY_INFRASTRUCTURE=DENY`
+- `LEGACY_DATA_SOURCE=VERIFIED_BACKUP_ONLY`
 
-Esta es la unica skill local y la primera puerta de entrada para cualquier chat, agente o automatizacion que trabaje sobre SOLQARYN.
+Esta es la unica skill local y la primera puerta de entrada para cualquier chat, agente o automatizacion que trabaje sobre SOLQARYN. Identidades, repositorios, deployments, servicios o cuentas retirados no se consultan ni se usan como fallback. El único dato heredado autorizado es un respaldo histórico verificado destinado a una migración futura explícita.
 
 ## 2. Fuentes canonicas
 

@@ -22,7 +22,7 @@ export class VaristorehnSeoService {
   private readonly document = inject(DOCUMENT);
   private readonly meta = inject(Meta);
   private readonly title = inject(Title);
-  private readonly productionOrigin = 'https://varistorehn.vercel.app';
+  private readonly productionOrigin = 'https://solqaryn-prod.vercel.app';
 
   aplicarRuta(url: string, nombreMarca = 'Tienda'): void {
     const path = this.normalizarPath(url);
@@ -217,7 +217,7 @@ export class VaristorehnSeoService {
   private entornoIndexable(): boolean {
     if (!environment.production) return false;
     const host = this.document.defaultView?.location.hostname.toLowerCase() || '';
-    return host === 'varistorehn.vercel.app';
+    return host === 'solqaryn-prod.vercel.app';
   }
 
   private urlCanonica(path: string): string {

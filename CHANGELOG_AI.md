@@ -1,11 +1,22 @@
-## 2026-09-26 — SMTP PROD migrado a Outlook OAuth2
+## 2026-09-26 — Identidad SOLQARYN y legado bloqueados
 
-- PROD deja de depender de autenticación SMTP básica/Gmail legacy y adopta OAuth2/Modern Auth para `solqaryn.platform@outlook.com`.
-- Host canónico: `smtp-mail.outlook.com`, puerto `587`, STARTTLS.
-- El backend obtiene access tokens efímeros desde un refresh token OAuth2; `Smtp__PasswordSmtp` deja de ser requerido cuando `Smtp__AuthenticationMode=OAuth2`.
-- Nuevas claves: `Smtp__OAuth2ClientId`, `Smtp__OAuth2RefreshToken`, `Smtp__OAuth2ClientSecret` opcional, `Smtp__OAuth2TokenEndpoint`, `Smtp__OAuth2Scope`.
-- No se versionan Client Secret, refresh token ni access tokens.
-- DEV conserva autenticación Password para compatibilidad hasta migración explícita.
+- Autoridad operativa fijada en `SOLQARYN / solqaryn/Solqaryn / dev`.
+- El único artefacto heredado permitido como fuente futura es el respaldo verificado de la base histórica de VariStoreHN.
+- Infraestructura, cuentas, deployments, repositorios, dominios y variables legacy no son dependencias ni fallback de SOLQARYN.
+- VariStoreHN permanece como primer tenant/cliente, no como identidad de plataforma.
+- Los defaults de `EmpresaConfiguracion` fueron neutralizados para no imponer la marca de un tenant a nuevas empresas.
+- Runbooks de entornos, rollback, equivalencia, producción y migración fueron actualizados a la topología SOLQARYN vigente.
+- Las entradas históricas inferiores se conservan únicamente como trazabilidad; no tienen autoridad operativa.
+
+## 2026-09-26 — SMTP y variables Render normalizados en DEV
+
+- DEV y PROD quedan definidos con el mismo contrato canónico de 28 variables en `render.yaml`; solo cambian valores propios del entorno.
+- SMTP de SOLQARYN usa Outlook.com + OAuth2 exclusivamente para autenticación real.
+- Se retiró del backend el camino de autenticación SMTP por contraseña y también el uso de client secret OAuth2.
+- Se retiraron del contrato desplegado las variables redundantes documentadas en `docs/RENDER_ENVIRONMENT_CONTRACT.md`.
+- El refresh token continúa siendo secreto independiente por entorno.
+- No hubo migración de base de datos.
+- PROD no se cambia en runtime hasta certificar DEV con build/deploy, `SMTP_OK` y envío real controlado.
 
 ## 2026-09-25 — Retiro DEV personal: auditoría destructiva previa
 

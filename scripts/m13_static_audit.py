@@ -126,7 +126,7 @@ for section, key in [
     ("ConnectionStrings", "DefaultConnection"),
     ("Jwt", "Secret"),
     ("Cloudinary", "ApiSecret"),
-    ("Smtp", "PasswordSmtp"),
+    ("Smtp", "OAuth2RefreshToken"),
 ]:
     value = str(appsettings.get(section, {}).get(key, ""))
     if "CHANGE_ME" not in value:

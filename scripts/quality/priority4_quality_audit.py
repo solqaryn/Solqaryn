@@ -161,7 +161,7 @@ ok("MapHealthChecks" in program or 'MapGet("/health' in program, "HEALTH_ENDPOIN
 ok("UseHsts" in program, "HSTS_NON_DEVELOPMENT_PRESENT")
 ok("UseHttpsRedirection" in program, "HTTPS_REDIRECTION_PRESENT")
 appsettings = read("backend/src/API/appsettings.json")
-for placeholder in ["CHANGE_ME_TO_A_LONG_RANDOM_SECRET_MIN_32_CHARS", '"CloudName": "CHANGE_ME"', '"ApiSecret": "CHANGE_ME"', '"PasswordSmtp": "CHANGE_ME"']:
+for placeholder in ["CHANGE_ME_TO_A_LONG_RANDOM_SECRET_MIN_32_CHARS", '"CloudName": "CHANGE_ME"', '"ApiSecret": "CHANGE_ME"', '"OAuth2RefreshToken": "CHANGE_ME"']:
     ok(placeholder in appsettings, f"TRACKED_CONFIG_KEEPS_SECRET_PLACEHOLDER:{placeholder[:36]}")
 ok((ROOT / "docs/PRODUCTION_READINESS_CONTRACT.md").is_file(), "PRODUCTION_READINESS_CONTRACT_PRESENT")
 external_telemetry = any(

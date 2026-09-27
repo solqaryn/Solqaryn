@@ -7,7 +7,7 @@ using InventoryApp.Domain.Enums;
 namespace InventoryApp.Application.Services;
 
 /// <summary>
-/// Proyecta el dominio existente de Descuentos hacia VariStoreHN sin crear
+/// Proyecta el dominio existente de Descuentos hacia la tienda pública sin crear
 /// una segunda fuente de verdad de promociones.
 /// </summary>
 public sealed class PromocionPublicaService : IPromocionPublicaService

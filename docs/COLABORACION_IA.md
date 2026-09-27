@@ -2,14 +2,14 @@
 
 ## Objetivo
 
-Coordinar a Javier Mejía, Codex, ChatGPT, Chat B (ChatGPT Business), Jules J1–J6 y componentes reservados con mínima pérdida de contexto, mínimo trabajo redundante, aislamiento entre proyectos y máxima trazabilidad en `Desarrollo`.
+Coordinar a Javier Mejía, Codex, ChatGPT, Chat B (ChatGPT Business), Jules J1–J6 y componentes reservados con mínima pérdida de contexto, mínimo trabajo redundante, aislamiento entre proyectos y máxima trazabilidad en `dev`.
 
 ## Identidad de este proyecto
 
 ```text
 PROJECT_ID=SOLQARYN
 REPOSITORY=solqaryn/Solqaryn
-BRANCH=Desarrollo
+BRANCH=dev
 AUTOMATION_AUTHORITY=MASTER
 MASTER_FILE=docs/VAEP_AUTHORITY.md
 ```
@@ -43,7 +43,7 @@ Si hay discrepancia entre memoria y repositorio real, prevalece el MAESTRO + est
 ### Codex
 
 - está fuera del flujo operativo vigente salvo orden explícita de Javier;
-- si se reincorpora, trabaja únicamente en `Desarrollo` bajo `docs/VAEP_AUTHORITY.md`;
+- si se reincorpora, trabaja únicamente en `dev` bajo `docs/VAEP_AUTHORITY.md`;
 - debe leer `docs/VAEP_HANDOFF_CURRENT.md` y Git antes de actuar para no repetir diagnóstico ni scopes ya cerrados.
 
 ### ChatGPT / VAEP
@@ -54,7 +54,7 @@ Si hay discrepancia entre memoria y repositorio real, prevalece el MAESTRO + est
 ### Chat B (ChatGPT Business)
 
 - colaborador full-access par de ChatGPT/VAEP para controller, REVIEW_FIRST, QA, corrección, integración, CI, certificación, rollup y failover;
-- opera en `Desarrollo` y consume `docs/VAEP_AUTHORITY.md` como autoridad única;
+- opera en `dev` y consume `docs/VAEP_AUTHORITY.md` como autoridad única;
 - no es una lane Jules, no publica por fuera del flujo ni puede declarar `LISTO_REAL` sin evidencia completa del MAESTRO.
 
 ### Jules J1–J6
@@ -94,7 +94,7 @@ El snapshot compartido vigente está en `docs/VAEP_HANDOFF_CURRENT.md`. Todo col
 5. implementar mínimo cambio correcto;
 6. validar proporcionalmente;
 7. registrar evidencia;
-8. publicar en `Desarrollo`;
+8. publicar en `dev`;
 9. handoff con SHA/pendiente.
 
 ## Optimización de tokens y tiempo
@@ -109,7 +109,7 @@ El snapshot compartido vigente está en `docs/VAEP_HANDOFF_CURRENT.md`. Todo col
 
 ## Git, CI y Producción
 
-- rama única `Desarrollo`;
+- rama única `dev`;
 - no ramas adicionales;
 - `main` no se toca;
 - PR #2 permanece borrador;

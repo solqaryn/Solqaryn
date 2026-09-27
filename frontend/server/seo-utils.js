@@ -1,5 +1,5 @@
-const PRODUCTION_HOST = 'varistorehn.vercel.app';
-const PRODUCTION_ORIGIN = 'https://varistorehn.vercel.app';
+const PRODUCTION_HOST = 'solqaryn-prod.vercel.app';
+const PRODUCTION_ORIGIN = 'https://solqaryn-prod.vercel.app';
 const PROD_API = 'https://solqaryn-api-prod.onrender.com';
 const DEV_API = 'https://solqaryn-api-dev-fxx8.onrender.com';
 
@@ -24,7 +24,7 @@ async function fetchJson(url, timeoutMs = 6000) {
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await fetch(url, {
-      headers: { accept: 'application/json', 'user-agent': 'VariStoreHN-SEO/1.0' },
+      headers: { accept: 'application/json', 'user-agent': 'SOLQARYN-SEO/1.0' },
       signal: controller.signal
     });
     if (!response.ok) {

@@ -281,8 +281,8 @@ public class FacturaCompartirServiceTests
         Assert.Equal("SMTP_TEMPORAL", resultado.Codigo);
         Assert.Equal(3, resultado.Intentos);
         _repository.Verify(r => r.AddHistorialAsync(It.Is<HistorialEnvioFactura>(h =>
-            h.Resultado == "Error SMTP_TEMPORAL" &&
-            h.Error == "El servidor de correo presentó un problema temporal.")), Times.Once);
+            h.Resultado == "Error" &&
+            h.Error == "SMTP_TEMPORAL: El servidor de correo presentó un problema temporal.")), Times.Once);
     }
 
     private static FacturaDto CrearFactura() => new()

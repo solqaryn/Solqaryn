@@ -208,7 +208,7 @@ export class ConfiguracionComponent implements OnInit {
   }
 
   async restaurarLogo(): Promise<void> {
-    if (!await this.alerts.confirmar({ titulo: 'Restaurar logo', mensaje: 'Se reemplazará el logo actual por el logo predeterminado de VariStorehn.', tipo: 'advertencia', confirmarTexto: 'Restaurar logo' })) return;
+    if (!await this.alerts.confirmar({ titulo: 'Restaurar logo', mensaje: 'Se quitará el logo actual y se restaurará la configuración predeterminada de la empresa.', tipo: 'advertencia', confirmarTexto: 'Restaurar logo' })) return;
     this.uploadingLogo.set(true);
     this.empresaService.restaurarLogo().subscribe({
       next: (res) => { this.uploadingLogo.set(false); this.cargarEmpresa(res.data); this.identidadService.refrescarDespuesDeGuardar(res.data); this.snackBar.open('Logo restaurado correctamente.', 'Cerrar', { duration: 4000 }); },

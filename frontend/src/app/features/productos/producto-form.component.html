@@ -61,7 +61,7 @@
         @if (!form.controls.marcaId.value) { <mat-hint>Selecciona una marca si deseas predeterminar el modelo.</mat-hint> } @else { <mat-hint>Solo afecta nuevas variantes.</mat-hint> }
       </mat-form-field>
       <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>Categoría (opcional)</mat-label><mat-select formControlName="categoriaId"><mat-option [value]="null">Sin categoría</mat-option>@for (c of categorias(); track c.id) { <mat-option [value]="c.id">{{ c.nombre }}</mat-option> }</mat-select></mat-form-field>
-      <mat-checkbox class="full-width" formControlName="esDestacado">Destacar este producto en la portada de VariStoreHN</mat-checkbox>
+      <mat-checkbox class="full-width" formControlName="esDestacado">Destacar este producto en la portada de la tienda</mat-checkbox>
       <mat-form-field appearance="outline" class="full-width" subscriptSizing="dynamic"><mat-label>Descripción (opcional)</mat-label><textarea matInput formControlName="descripcion" rows="3"></textarea><mat-hint>Incluye características comunes a toda la familia del producto.</mat-hint></mat-form-field>
     </div>
   </section>
