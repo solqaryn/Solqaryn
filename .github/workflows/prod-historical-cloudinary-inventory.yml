@@ -138,6 +138,31 @@ jobs:
           echo "CLOUDINARY_HISTORICAL_INVENTORY=PASS"
           echo "PRODUCTION_WRITES=0"
 
+      - name: Export exact legacy product-image manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          export MYSQL_PWD=root
+          mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root --ssl-mode=REQUIRED legacy_inventory --batch --skip-column-names \
+            -e "SELECT Id, Url, PublicId FROM ProductoImagenes ORDER BY Id;" > /tmp/product-images.tsv
+          rows="$(wc -l < /tmp/product-images.tsv | tr -d ' ')"
+          test "$rows" = "351"
+          bad_cloud="$(awk -F '\t' '$2 !~ /https:\/\/res\.cloudinary\.com\/vyijnqzq\// {c++} END {print c+0}' /tmp/product-images.tsv)"
+          test "$bad_cloud" = "0"
+          python3 - <<'PY'
+          import csv, json
+          rows=[]
+          with open('/tmp/product-images.tsv', encoding='utf-8') as f:
+              for row in csv.reader(f, delimiter='\t'):
+                  rows.append({"id": int(row[0]), "url": row[1], "publicId": row[2]})
+          assert len(rows) == 351
+          with open('/tmp/product-images-manifest.json','w',encoding='utf-8') as f:
+              json.dump({"sourceCloud":"vyijnqzq","expectedRows":351,"items":rows},f,separators=(',',':'))
+          PY
+          echo "CLOUDINARY_EXACT_MANIFEST=PASS"
+          echo "CLOUDINARY_SOURCE_CLOUD=vyijnqzq"
+          echo "CLOUDINARY_PRODUCT_IMAGE_ROWS=351"
+
       - uses: actions/upload-artifact@v4
         with:
           name: prod-historical-cloudinary-inventory-${{ github.run_id }}
@@ -146,3 +171,4 @@ jobs:
           path: |
             /tmp/cloudinary-inventory.json
             /tmp/cloudinary-columns.tsv
+            /tmp/product-images-manifest.json
