@@ -1,0 +1,116 @@
+name: PROD - Legacy migration rehearsal
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - .github/workflows/prod-legacy-migration-rehearsal.yml
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  rehearsal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    environment: LEGACY_DEV_MIGRATION
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: legacy_rehearsal
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=18
+    env:
+      BACKUP_PASSPHRASE: ${{ secrets.LEGACY_DEV_BACKUP_PASSPHRASE }}
+      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=legacy_rehearsal;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;
+      Database__ServerVersion: 8.4.0
+      Database__ApplyMigrationsOnStartup: "false"
+      Jwt__Secret: Rehearsal-Only-JWT-Secret-At-Least-32-Characters-2026
+      Cloudinary__CloudName: rehearsal-not-used
+      Cloudinary__ApiKey: rehearsal-not-used
+      Cloudinary__ApiSecret: rehearsal-not-used
+      Cloudinary__EnvironmentPrefix: solqaryn_prod
+      Smtp__Host: 127.0.0.1
+      Smtp__Port: "2525"
+      Smtp__OAuth2ClientId: rehearsal-not-used
+      Smtp__OAuth2RefreshToken: rehearsal-not-used
+      Smtp__UsuarioSmtp: rehearsal@example.invalid
+      Smtp__NombreRemitente: SOLQARYN REHEARSAL
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Install tools
+        run: |
+          set -euo pipefail
+          sudo apt-get update >/dev/null
+          sudo apt-get install -y mysql-client gnupg jq >/dev/null
+          dotnet tool install --global dotnet-ef --version 8.0.8 >/dev/null
+      - name: Download verified legacy PROD backup
+        uses: actions/download-artifact@v4
+        with:
+          name: solqaryn-legacy-prod-defaultdb-backup-36228394479
+          run-id: 36228394479
+          github-token: ${{ github.token }}
+          path: /tmp/legacy-backup
+      - name: Decrypt and verify backup
+        run: |
+          set -euo pipefail
+          test -n "$BACKUP_PASSPHRASE"
+          encrypted="$(find /tmp/legacy-backup -type f -name '*.tar.gz.gpg' | head -n1)"
+          checksum="$(find /tmp/legacy-backup -type f -name '*.gpg.sha256' | head -n1)"
+          test -n "$encrypted"
+          test -n "$checksum"
+          (cd "$(dirname "$checksum")" && sha256sum -c "$(basename "$checksum")")
+          printf '%s' "$BACKUP_PASSPHRASE" | gpg --batch --yes --no-tty --pinentry-mode loopback --passphrase-fd 0             --decrypt --output /tmp/legacy.tar.gz "$encrypted"
+          mkdir -p /tmp/legacy
+          tar -C /tmp/legacy -xzf /tmp/legacy.tar.gz
+          (cd /tmp/legacy && sha256sum -c MANIFEST.sha256)
+          test "$(jq -r '.sourceDatabase' /tmp/legacy/metadata.json)" = "defaultdb"
+          test "$(jq -r '.baseTableCount' /tmp/legacy/metadata.json)" = "132"
+          test "$(jq -r '.efMigrationCount' /tmp/legacy/metadata.json)" = "104"
+          echo "LEGACY_BACKUP_VERIFIED=PASS"
+      - name: Restore legacy copy locally
+        run: |
+          set -euo pipefail
+          export MYSQL_PWD=root
+          mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root --ssl-mode=DISABLED -e             "DROP DATABASE IF EXISTS legacy_rehearsal; CREATE DATABASE legacy_rehearsal CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+          mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root --ssl-mode=DISABLED legacy_rehearsal < /tmp/legacy/defaultdb.sql
+          tables="$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root --ssl-mode=DISABLED legacy_rehearsal -Nse "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE';")"
+          migrations="$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root --ssl-mode=DISABLED legacy_rehearsal -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory;")"
+          test "$tables" = "132"
+          test "$migrations" = "104"
+          echo "LEGACY_LOCAL_RESTORE=PASS"
+      - name: Apply current SOLQARYN migrations
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet restore InventoryApp.sln >/dev/null
+          dotnet ef database update             --project src/Infrastructure/InventoryApp.Infrastructure.csproj             --startup-project src/API/InventoryApp.API.csproj             --context AppDbContext
+          export MYSQL_PWD=root
+          tables="$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root --ssl-mode=DISABLED legacy_rehearsal -Nse "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE';")"
+          migrations="$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root --ssl-mode=DISABLED legacy_rehearsal -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory;")"
+          empresas="$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root --ssl-mode=DISABLED legacy_rehearsal -Nse "SELECT COUNT(*) FROM Empresas;")"
+          productos="$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root --ssl-mode=DISABLED legacy_rehearsal -Nse "SELECT COUNT(*) FROM Productos;")"
+          usuarios="$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root --ssl-mode=DISABLED legacy_rehearsal -Nse "SELECT COUNT(*) FROM Usuarios;")"
+          test "$tables" = "137"
+          test "$migrations" = "107"
+          test "$empresas" -gt 0
+          test "$productos" -gt 0
+          test "$usuarios" -gt 0
+          echo "REHEARSED_BASE_TABLES=$tables"
+          echo "REHEARSED_EF_MIGRATIONS=$migrations"
+          echo "REHEARSED_EMPRESAS=$empresas"
+          echo "REHEARSED_PRODUCTOS=$productos"
+          echo "REHEARSED_USUARIOS=$usuarios"
+          echo "LEGACY_TO_CURRENT_REHEARSAL=PASS"
+          echo "PRODUCTION_WRITES=0"
