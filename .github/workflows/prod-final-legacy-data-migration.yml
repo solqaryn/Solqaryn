@@ -1,0 +1,233 @@
+name: PROD - Final legacy data migration
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - .github/workflows/prod-final-legacy-data-migration.yml
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  prod-prep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: PROD
+    env:
+      DB_HOST: ${{ vars.SOLQARYN_PROD_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_PROD_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_PROD_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_PROD_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_PROD_DB_PASSWORD }}
+      PROD_BACKUP_PASSPHRASE: ${{ secrets.SOLQARYN_PROD_BACKUP_PASSPHRASE }}
+    steps:
+      - name: Install tools
+        run: |
+          set -euo pipefail
+          sudo apt-get update >/dev/null
+          sudo apt-get install -y mysql-client gnupg >/dev/null
+      - name: Verify empty canonical target and create encrypted rollback backup
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$DB_NAME" = "solqaryn_prod"
+          test "$DB_USER" = "solqaryn_prod_user"
+          test -n "$DB_PASSWORD"
+          test -n "$PROD_BACKUP_PASSPHRASE"
+          export MYSQL_PWD="$DB_PASSWORD"
+          mysqlc=(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED --default-character-set=utf8mb4 "$DB_NAME" --batch --skip-column-names)
+          test "$("${mysqlc[@]}" -e 'SELECT DATABASE();')" = "solqaryn_prod"
+          tables="$("${mysqlc[@]}" -e "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE';")"
+          migrations="$("${mysqlc[@]}" -e 'SELECT COUNT(*) FROM __EFMigrationsHistory;')"
+          empresas="$("${mysqlc[@]}" -e 'SELECT COUNT(*) FROM Empresas;')"
+          productos="$("${mysqlc[@]}" -e 'SELECT COUNT(*) FROM Productos;')"
+          usuarios="$("${mysqlc[@]}" -e 'SELECT COUNT(*) FROM Usuarios;')"
+          test "$tables" = "137"
+          test "$migrations" = "107"
+          test "$empresas" = "0"
+          test "$productos" = "0"
+          test "$usuarios" = "0"
+          mysqldump --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED             --single-transaction --quick --routines --triggers --events --hex-blob --no-tablespaces "$DB_NAME"             | gzip -9 > /tmp/prod-before-migration.sql.gz
+          printf '%s' "$PROD_BACKUP_PASSPHRASE" | gpg --batch --yes --no-tty --pinentry-mode loopback --passphrase-fd 0             --symmetric --cipher-algo AES256 --digest-algo SHA256             --output /tmp/prod-before-migration.sql.gz.gpg /tmp/prod-before-migration.sql.gz
+          rm -f /tmp/prod-before-migration.sql.gz
+          echo "PROD_EMPTY_TARGET_VERIFIED=PASS"
+          echo "PROD_ROLLBACK_BACKUP=PASS"
+      - name: Generate encrypted bridge keypair
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:4096 -out /tmp/bridge-private.pem >/dev/null 2>&1
+          openssl pkey -in /tmp/bridge-private.pem -pubout -out /tmp/bridge-public.pem >/dev/null 2>&1
+          printf '%s' "$PROD_BACKUP_PASSPHRASE" | gpg --batch --yes --no-tty --pinentry-mode loopback --passphrase-fd 0             --symmetric --cipher-algo AES256 --digest-algo SHA256             --output /tmp/bridge-private.pem.gpg /tmp/bridge-private.pem
+          rm -f /tmp/bridge-private.pem
+          echo "BRIDGE_KEYPAIR=PASS"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: prod-migration-prep-${{ github.run_id }}
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            /tmp/prod-before-migration.sql.gz.gpg
+            /tmp/bridge-private.pem.gpg
+            /tmp/bridge-public.pem
+
+  legacy-bridge:
+    needs: prod-prep
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: LEGACY_DEV_MIGRATION
+    env:
+      LEGACY_BACKUP_PASSPHRASE: ${{ secrets.LEGACY_DEV_BACKUP_PASSPHRASE }}
+    steps:
+      - name: Install tools
+        run: |
+          set -euo pipefail
+          sudo apt-get update >/dev/null
+          sudo apt-get install -y gnupg jq >/dev/null
+      - uses: actions/download-artifact@v4
+        with:
+          name: prod-migration-prep-${{ github.run_id }}
+          path: /tmp/prep
+      - name: Download verified legacy PROD backup
+        uses: actions/download-artifact@v4
+        with:
+          name: solqaryn-legacy-prod-defaultdb-backup-36228394479
+          run-id: 36228394479
+          github-token: ${{ github.token }}
+          path: /tmp/legacy-backup
+      - name: Decrypt legacy source and create encrypted bridge payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$LEGACY_BACKUP_PASSPHRASE"
+          encrypted="$(find /tmp/legacy-backup -type f -name '*.tar.gz.gpg' | head -n1)"
+          checksum="$(find /tmp/legacy-backup -type f -name '*.gpg.sha256' | head -n1)"
+          expected="$(awk '{print $1}' "$checksum")"
+          actual="$(sha256sum "$encrypted" | awk '{print $1}')"
+          test "$actual" = "$expected"
+          printf '%s' "$LEGACY_BACKUP_PASSPHRASE" | gpg --batch --yes --no-tty --pinentry-mode loopback --passphrase-fd 0             --decrypt --output /tmp/legacy.tar.gz "$encrypted"
+          mkdir -p /tmp/legacy
+          tar -C /tmp/legacy -xzf /tmp/legacy.tar.gz
+          (cd /tmp/legacy && sha256sum -c MANIFEST.sha256)
+          test "$(jq -r '.sourceDatabase' /tmp/legacy/metadata.json)" = "defaultdb"
+          test "$(jq -r '.baseTableCount' /tmp/legacy/metadata.json)" = "132"
+          test "$(jq -r '.efMigrationCount' /tmp/legacy/metadata.json)" = "104"
+          umask 077
+          openssl rand -hex 32 > /tmp/payload-key.txt
+          openssl enc -aes-256-cbc -salt -pbkdf2 -iter 200000             -pass file:/tmp/payload-key.txt             -in /tmp/legacy/defaultdb.sql -out /tmp/legacy-defaultdb.sql.enc
+          openssl pkeyutl -encrypt -pubin -inkey /tmp/prep/bridge-public.pem             -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256             -in /tmp/payload-key.txt -out /tmp/payload-key.enc
+          rm -rf /tmp/legacy /tmp/legacy.tar.gz /tmp/payload-key.txt
+          echo "LEGACY_SOURCE_VERIFIED=PASS"
+          echo "LEGACY_BRIDGE_PAYLOAD_ENCRYPTED=PASS"
+          echo "PLAINTEXT_ARTIFACTS=0"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: prod-migration-payload-${{ github.run_id }}
+          if-no-files-found: error
+          retention-days: 1
+          path: |
+            /tmp/legacy-defaultdb.sql.enc
+            /tmp/payload-key.enc
+
+  prod-restore:
+    needs: legacy-bridge
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    environment: PROD
+    env:
+      DB_HOST: ${{ vars.SOLQARYN_PROD_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_PROD_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_PROD_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_PROD_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_PROD_DB_PASSWORD }}
+      PROD_BACKUP_PASSPHRASE: ${{ secrets.SOLQARYN_PROD_BACKUP_PASSPHRASE }}
+      ConnectionStrings__DefaultConnection: Server=${{ vars.SOLQARYN_PROD_DB_HOST }};Port=${{ vars.SOLQARYN_PROD_DB_PORT }};Database=${{ vars.SOLQARYN_PROD_DB_NAME }};User=${{ vars.SOLQARYN_PROD_DB_USER }};Password=${{ secrets.SOLQARYN_PROD_DB_PASSWORD }};SslMode=Required;AllowPublicKeyRetrieval=True;
+      Database__ServerVersion: 8.4.8
+      Database__ApplyMigrationsOnStartup: "false"
+      Jwt__Secret: Migration-Only-JWT-Secret-At-Least-32-Characters-2026
+      Cloudinary__CloudName: migration-not-used
+      Cloudinary__ApiKey: migration-not-used
+      Cloudinary__ApiSecret: migration-not-used
+      Cloudinary__EnvironmentPrefix: solqaryn_prod
+      Smtp__Host: 127.0.0.1
+      Smtp__Port: "2525"
+      Smtp__OAuth2ClientId: migration-not-used
+      Smtp__OAuth2RefreshToken: migration-not-used
+      Smtp__UsuarioSmtp: migration@example.invalid
+      Smtp__NombreRemitente: SOLQARYN MIGRATION
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Install tools
+        run: |
+          set -euo pipefail
+          sudo apt-get update >/dev/null
+          sudo apt-get install -y mysql-client gnupg >/dev/null
+          dotnet tool install --global dotnet-ef --version 8.0.8 >/dev/null
+      - uses: actions/download-artifact@v4
+        with:
+          name: prod-migration-prep-${{ github.run_id }}
+          path: /tmp/prep
+      - uses: actions/download-artifact@v4
+        with:
+          name: prod-migration-payload-${{ github.run_id }}
+          path: /tmp/payload
+      - name: Decrypt bridge payload in PROD only
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$PROD_BACKUP_PASSPHRASE"
+          umask 077
+          printf '%s' "$PROD_BACKUP_PASSPHRASE" | gpg --batch --yes --no-tty --pinentry-mode loopback --passphrase-fd 0             --decrypt --output /tmp/bridge-private.pem /tmp/prep/bridge-private.pem.gpg
+          openssl pkeyutl -decrypt -inkey /tmp/bridge-private.pem             -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256             -in /tmp/payload/payload-key.enc -out /tmp/payload-key.txt
+          openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000             -pass file:/tmp/payload-key.txt             -in /tmp/payload/legacy-defaultdb.sql.enc -out /tmp/legacy-defaultdb.sql
+          rm -f /tmp/bridge-private.pem /tmp/payload-key.txt
+          test -s /tmp/legacy-defaultdb.sql
+          echo "PROD_BRIDGE_DECRYPT=PASS"
+      - name: Restore verified legacy data into canonical PROD
+        shell: bash
+        run: |
+          set -euo pipefail
+          export MYSQL_PWD="$DB_PASSWORD"
+          mysqlc=(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED --default-character-set=utf8mb4 "$DB_NAME" --batch --skip-column-names)
+          grants="$("${mysqlc[@]}" -e 'SHOW GRANTS FOR CURRENT_USER();' | tr '\n' ' ')"
+          printf '%s' "$grants" | grep -Eq 'ALL PRIVILEGES|CREATE'
+          test "$("${mysqlc[@]}" -e 'SELECT COUNT(*) FROM Empresas;')" = "0"
+          mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED --default-character-set=utf8mb4 "$DB_NAME" < /tmp/legacy-defaultdb.sql
+          rm -f /tmp/legacy-defaultdb.sql
+          echo "PROD_LEGACY_RESTORE=PASS"
+      - name: Apply current SOLQARYN migrations to PROD
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet restore InventoryApp.sln >/dev/null
+          dotnet ef database update             --project src/Infrastructure/InventoryApp.Infrastructure.csproj             --startup-project src/API/InventoryApp.API.csproj             --context AppDbContext
+          echo "PROD_EF_UPDATE=PASS"
+      - name: Final PROD data verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          export MYSQL_PWD="$DB_PASSWORD"
+          mysqlc=(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED --default-character-set=utf8mb4 "$DB_NAME" --batch --skip-column-names)
+          tables="$("${mysqlc[@]}" -e "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE';")"
+          migrations="$("${mysqlc[@]}" -e 'SELECT COUNT(*) FROM __EFMigrationsHistory;')"
+          empresas="$("${mysqlc[@]}" -e 'SELECT COUNT(*) FROM Empresas;')"
+          productos="$("${mysqlc[@]}" -e 'SELECT COUNT(*) FROM Productos;')"
+          usuarios="$("${mysqlc[@]}" -e 'SELECT COUNT(*) FROM Usuarios;')"
+          test "$tables" = "137"
+          test "$migrations" = "107"
+          test "$empresas" = "1"
+          test "$productos" = "73"
+          test "$usuarios" = "6"
+          echo "PROD_BASE_TABLES=$tables"
+          echo "PROD_EF_MIGRATIONS=$migrations"
+          echo "PROD_EMPRESAS=$empresas"
+          echo "PROD_PRODUCTOS=$productos"
+          echo "PROD_USUARIOS=$usuarios"
+          echo "PROD_FINAL_DATA_MIGRATION=PASS"
