@@ -12,6 +12,8 @@ permissions:
 jobs:
   backup:
     runs-on: ubuntu-latest
+    outputs:
+      current_user_hash: ${{ steps.identity.outputs.current_user_hash }}
     timeout-minutes: 20
     environment: PROD
     env:
@@ -44,8 +46,23 @@ jobs:
           test "$("${mysqlc[@]}" -e 'SELECT COUNT(*) FROM __EFMigrationsHistory;')" = "107"
           test "$("${mysqlc[@]}" -e 'SELECT COUNT(*) FROM Empresas;')" = "0"
           test "$("${mysqlc[@]}" -e 'SELECT COUNT(*) FROM Productos;')" = "0"
-          test "$("${mysqlc[@]}" -e 'SELECT COUNT(*) FROM Usuarios;')" = "0"
+          test "$("${mysqlc[@]}" -e 'SELECT COUNT(*) FROM Usuarios;')" = "1"
           echo "PROD_EMPTY_CANONICAL_STATE=PASS"
+          echo "PROD_BOOTSTRAP_USERS=1"
+
+      - name: Fingerprint current bootstrap user without exposing identity
+        id: identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          export MYSQL_PWD="$DB_PASSWORD"
+          mysqlc=(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED --default-character-set=utf8mb4 "$DB_NAME" --batch --skip-column-names)
+          user_hash="$("${mysqlc[@]}" -e "SELECT SHA2(LOWER(NombreUsuario),256) FROM Usuarios ORDER BY Id LIMIT 1;")"
+          admin_count="$("${mysqlc[@]}" -e "SELECT COUNT(*) FROM Usuarios u JOIN Roles r ON r.Id=u.RolId WHERE r.EsAdministrador=1 AND u.Activo=1 AND u.Eliminado=0;")"
+          test -n "$user_hash"
+          test "$admin_count" = "1"
+          echo "current_user_hash=$user_hash" >> "$GITHUB_OUTPUT"
+          echo "PROD_BOOTSTRAP_USER_ADMIN=PASS"
 
       - name: Create encrypted rollback backup
         shell: bash
@@ -73,3 +90,88 @@ jobs:
           path: |
             /tmp/solqaryn-prod-empty.sql.gz.gpg
             /tmp/solqaryn-prod-empty.sql.gz.sha256
+
+
+  historical-identity:
+    needs: backup
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    environment: LEGACY_DEV_MIGRATION
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: identity_compare
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=18
+    env:
+      BACKUP_PASSPHRASE: ${{ secrets.LEGACY_DEV_BACKUP_PASSPHRASE }}
+      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=identity_compare;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;
+      Database__ServerVersion: 8.4.0
+      Database__ApplyMigrationsOnStartup: "false"
+      Jwt__Secret: Identity-Compare-Only-JWT-Secret-At-Least-32-Characters-2026
+      Cloudinary__CloudName: compare-not-used
+      Cloudinary__ApiKey: compare-not-used
+      Cloudinary__ApiSecret: compare-not-used
+      Cloudinary__EnvironmentPrefix: solqaryn_prod
+      Smtp__Host: 127.0.0.1
+      Smtp__Port: "2525"
+      Smtp__OAuth2ClientId: compare-not-used
+      Smtp__OAuth2RefreshToken: compare-not-used
+      Smtp__UsuarioSmtp: compare@example.invalid
+      Smtp__NombreRemitente: SOLQARYN COMPARE
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Install compare tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update >/dev/null
+          sudo apt-get install -y mysql-client gnupg jq >/dev/null
+          dotnet tool install --global dotnet-ef --version 8.0.8 >/dev/null
+      - name: Download historical certified backup
+        uses: actions/download-artifact@v4
+        with:
+          name: solqaryn-legacy-prod-defaultdb-backup-36228394479
+          run-id: 36228394479
+          github-token: ${{ github.token }}
+          path: /tmp/legacy-backup
+      - name: Restore historical copy locally and compare bootstrap identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          encrypted="$(find /tmp/legacy-backup -type f -name '*.tar.gz.gpg' | head -n1)"
+          checksum="$(find /tmp/legacy-backup -type f -name '*.gpg.sha256' | head -n1)"
+          test "$(sha256sum "$encrypted" | awk '{print $1}')" = "$(awk '{print $1}' "$checksum")"
+          printf '%s' "$BACKUP_PASSPHRASE" | gpg --batch --yes --no-tty --pinentry-mode loopback --passphrase-fd 0 \
+            --decrypt --output /tmp/legacy.tar.gz "$encrypted"
+          mkdir -p /tmp/legacy
+          tar -C /tmp/legacy -xzf /tmp/legacy.tar.gz
+          (cd /tmp/legacy && sha256sum -c MANIFEST.sha256)
+          export MYSQL_PWD=root
+          mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root --ssl-mode=REQUIRED -e \
+            "DROP DATABASE IF EXISTS identity_compare; CREATE DATABASE identity_compare CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+          mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root --ssl-mode=REQUIRED identity_compare < /tmp/legacy/defaultdb.sql
+          cd backend
+          dotnet restore InventoryApp.sln >/dev/null
+          dotnet ef database update \
+            --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
+            --startup-project src/API/InventoryApp.API.csproj \
+            --context AppDbContext >/dev/null
+          cd ..
+          matches="$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root --ssl-mode=REQUIRED identity_compare --batch --skip-column-names -e "SELECT COUNT(*) FROM Usuarios WHERE SHA2(LOWER(NombreUsuario),256)='${{ needs.backup.outputs.current_user_hash }}';")"
+          historical_users="$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root --ssl-mode=REQUIRED identity_compare --batch --skip-column-names -e "SELECT COUNT(*) FROM Usuarios;")"
+          test "$historical_users" = "6"
+          test "$matches" = "1"
+          echo "HISTORICAL_USERS=6"
+          echo "PROD_BOOTSTRAP_USER_PRESENT_IN_HISTORICAL=PASS"
+          echo "PRODUCTION_WRITES=0"
