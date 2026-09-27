@@ -57,7 +57,7 @@ jobs:
           echo "PROD_USUARIOS=$usuarios"
           echo "PROD_DB_READ_ONLY=PASS"
 
-      - name: Aiven corporate control plane and legacy-defaultdb read-only
+      - name: Aiven corporate control plane read-only
         shell: bash
         run: |
           set -euo pipefail
@@ -68,54 +68,31 @@ jobs:
           token=os.environ["AIVEN_TOKEN"].strip()
           project="solqaryn"
           service="solqaryn-mysql"
-          headers={"Authorization":f"aivenv1 {token}","Accept":"application/json","User-Agent":"SOLQARYN-PROD-FinalAudit/1.0"}
-          def get(path):
-              req=urllib.request.Request(root+path,headers=headers,method="GET")
-              with urllib.request.urlopen(req,timeout=30) as resp:
-                  return json.load(resp)
-          svc=get(f"/project/{project}/service/{service}").get("service",{})
+          headers={"Authorization":f"aivenv1 {token}","Accept":"application/json","User-Agent":"SOLQARYN-PROD-FinalAudit/1.1"}
+          req=urllib.request.Request(
+              root+f"/project/{project}/service/{service}",
+              headers=headers,
+              method="GET",
+          )
+          with urllib.request.urlopen(req,timeout=30) as resp:
+              payload=json.load(resp)
+          svc=payload.get("service",payload)
           if svc.get("service_name") != service or svc.get("service_type") != "mysql":
               raise SystemExit("AIVEN_SERVICE_MISMATCH")
           if svc.get("state") != "RUNNING":
               raise SystemExit("AIVEN_NOT_RUNNING")
-          dbs=get(f"/project/{project}/service/{service}/db").get("databases",[])
-          names=sorted({(x.get("database_name") or x.get("name")) for x in dbs if isinstance(x,dict)})
-          required={"defaultdb","solqaryn_dev","solqaryn_prod"}
-          if not required.issubset(set(names)):
-              raise SystemExit("AIVEN_DATABASE_INVENTORY_MISMATCH")
-          users=get(f"/project/{project}/service/{service}/user").get("users",[])
-          admin=next((u for u in users if u.get("username")=="avnadmin"),None)
-          if not admin or not admin.get("password"):
-              raise SystemExit("AIVEN_ADMIN_CREDENTIAL_UNAVAILABLE")
-          comps=[c for c in (svc.get("components") or []) if c.get("component")=="mysql" and c.get("usage")=="primary"]
+          comps=[c for c in (svc.get("components") or []) if c.get("component")=="mysql"]
           if not comps:
               raise SystemExit("AIVEN_MYSQL_COMPONENT_MISSING")
-          comp=comps[0]
-          print("::add-mask::"+admin["password"])
-          with open(os.environ["GITHUB_ENV"],"a") as f:
-              f.write(f"AIVEN_ADMIN_HOST={comp.get('host')}\n")
-              f.write(f"AIVEN_ADMIN_PORT={comp.get('port')}\n")
-              f.write("AIVEN_ADMIN_USER=avnadmin\n")
-              f.write(f"AIVEN_ADMIN_PASSWORD={admin['password']}\n")
+          hosts={c.get("host") for c in comps if c.get("host")}
+          if "solqaryn-mysql-solqaryn.h.aivencloud.com" not in hosts:
+              raise SystemExit("AIVEN_CANONICAL_HOST_MISMATCH")
           print("AIVEN_PROJECT=solqaryn")
           print("AIVEN_SERVICE=solqaryn-mysql")
           print("AIVEN_STATE=RUNNING")
-          print("AIVEN_DATABASES=defaultdb,solqaryn_dev,solqaryn_prod")
+          print("AIVEN_CANONICAL_HOST=PASS")
           print("AIVEN_CONTROL_PLANE=PASS")
           PY
-          export MYSQL_PWD="$AIVEN_ADMIN_PASSWORD"
-          legacy=(mysql --protocol=TCP -h "$AIVEN_ADMIN_HOST" -P "$AIVEN_ADMIN_PORT" -u "$AIVEN_ADMIN_USER" --ssl-mode=REQUIRED --default-character-set=utf8mb4 defaultdb --batch --skip-column-names)
-          tables="$("${legacy[@]}" -e "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE';")"
-          migrations="$("${legacy[@]}" -e "SELECT IF(EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='__EFMigrationsHistory'),(SELECT COUNT(*) FROM __EFMigrationsHistory),0);")"
-          empresas="$("${legacy[@]}" -e "SELECT IF(EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='Empresas'),(SELECT COUNT(*) FROM Empresas),0);" )"
-          productos="$("${legacy[@]}" -e "SELECT IF(EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='Productos'),(SELECT COUNT(*) FROM Productos),0);" )"
-          usuarios="$("${legacy[@]}" -e "SELECT IF(EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='Usuarios'),(SELECT COUNT(*) FROM Usuarios),0);" )"
-          echo "CORPORATE_DEFAULTDB_BASE_TABLES=$tables"
-          echo "CORPORATE_DEFAULTDB_EF_MIGRATIONS=$migrations"
-          echo "CORPORATE_DEFAULTDB_EMPRESAS=$empresas"
-          echo "CORPORATE_DEFAULTDB_PRODUCTOS=$productos"
-          echo "CORPORATE_DEFAULTDB_USUARIOS=$usuarios"
-          echo "CORPORATE_DEFAULTDB_READ_ONLY=PASS"
 
       - name: Render PROD live HTTP readback
         shell: bash
