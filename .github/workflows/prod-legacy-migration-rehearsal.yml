@@ -70,7 +70,10 @@ jobs:
           checksum="$(find /tmp/legacy-backup -type f -name '*.gpg.sha256' | head -n1)"
           test -n "$encrypted"
           test -n "$checksum"
-          (cd "$(dirname "$checksum")" && sha256sum -c "$(basename "$checksum")")
+          expected="$(awk '{print $1}' "$checksum")"
+          actual="$(sha256sum "$encrypted" | awk '{print $1}')"
+          test "$actual" = "$expected"
+          echo "BACKUP_ENCRYPTED_SHA256=PASS"
           printf '%s' "$BACKUP_PASSPHRASE" | gpg --batch --yes --no-tty --pinentry-mode loopback --passphrase-fd 0             --decrypt --output /tmp/legacy.tar.gz "$encrypted"
           mkdir -p /tmp/legacy
           tar -C /tmp/legacy -xzf /tmp/legacy.tar.gz
