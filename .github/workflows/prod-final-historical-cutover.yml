@@ -147,7 +147,7 @@ jobs:
             exit 1
           fi
           perl -0pi -e 's@/\*!50017 DEFINER=[^*]*\*/[[:space:]]*@@g' /tmp/legacy/defaultdb.sql
-          perl -0pi -e 's@SET @@GLOBAL\.GTID_PURGED[^;]*;@@g' /tmp/legacy/defaultdb.sql
+          sed -i '/SET @@GLOBAL\.GTID_PURGED/d' /tmp/legacy/defaultdb.sql
           umask 077
           openssl rand -hex 32 > /tmp/payload-key.txt
           openssl enc -aes-256-cbc -salt -pbkdf2 -iter 200000 \
