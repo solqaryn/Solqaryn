@@ -94,7 +94,7 @@ DEV puede continuar usando las URLs administradas actuales de Vercel y Render. L
 
 **Evidencia ya cerrada:** el respaldo histórico verificado de VariStoreHN fue descargado, validado por SHA-256, descifrado y restaurado en un MySQL 8.4 aislado. El ensayo completo aplicó las migraciones actuales de SOLQARYN y terminó en `PASS` con 137 tablas, 107 migraciones EF, 1 empresa, 73 productos y 6 usuarios; no hubo escrituras en PROD.
 
-**Bloqueo actual:** el Environment `PROD` de GitHub está restringido a ejecución desde `main`. El intento desde `dev` fue rechazado antes de iniciar el job productivo. La promoción de un workflow que realiza la escritura final sobre PROD fue bloqueada por los controles de seguridad del entorno de ejecución de ChatGPT; no se forzará ni se eludirán esos controles.
+**Bloqueo actual:** el propietario volvió a autorizar explícitamente continuar con la migración productiva. El preflight read-only más reciente, run `36300433869`, volvió a certificar `solqaryn_prod` con 137 tablas / 107 migraciones / 0 empresas / 0 productos / 1 usuario y `PROD_WRITES=0`. Sin embargo, el intento de crear/publicar desde este entorno el workflow destructivo de cutover final fue bloqueado nuevamente por los controles de seguridad de ejecución. No se forzará ni se eludirá ese bloqueo; la escritura final necesita ejecutarse por un canal permitido desde `main`.
 
 **Estado del PROD actual:** `solqaryn_prod` permanece con el esquema canónico (137 tablas / 107 migraciones), 0 empresas históricas, 0 productos históricos y 1 usuario bootstrap administrador. Render PROD está desplegado y operativo sobre `main`.
 
@@ -107,7 +107,7 @@ DEV puede continuar usando las URLs administradas actuales de Vercel y Render. L
 - verificación individual de origen Cloudinary: **351/351** URLs legacy alcanzables, 0 fallos, 0 escrituras PROD;
 - migrador Cloudinary PROD fail-closed e idempotente ya está en `main`, deshabilitado por defecto y limitado a `solqaryn_prod` + `riyrzmob` + prefijo `solqaryn_prod`.
 
-**Bloqueo restante:** falta exclusivamente autorizar y ejecutar la escritura final del respaldo histórico sobre `solqaryn_prod`. Esa operación modifica datos productivos y debe recibir autorización explícita del propietario inmediatamente antes de ejecutarse.
+**Bloqueo restante:** la autorización del propietario ya está vigente. Falta exclusivamente ejecutar la escritura final por un canal permitido, porque la herramienta conectada rechazó la creación/ejecución del cutover destructivo.
 
 **Al ejecutar:** restaurar el respaldo histórico verificado, aplicar EF hasta 107 migraciones, reconciliar exactamente 1 empresa / 73 productos / 6 usuarios / 351 `ProductoImagenes`, aplicar el overlay cifrado de autenticación del usuario bootstrap si corresponde y validar login. Después habilitar una sola vez `CloudinaryHistoricalProdMigration__Enabled=true` con `ExpectedLegacyRows=351`, verificar migración a `riyrzmob/solqaryn_prod/inventoryapp/productos/empresas/1`, exigir cero referencias legacy, volver a deshabilitar el flag y retirar el código temporal cuando quede certificado.
 
