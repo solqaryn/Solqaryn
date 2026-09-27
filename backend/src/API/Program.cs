@@ -138,7 +138,6 @@ builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IImageStorageService, CloudinaryImageStorageService>();
 builder.Services.AddScoped<ICompraDocumentoStorageService, CloudinaryCompraDocumentoStorageService>();
-builder.Services.AddScoped<CloudinaryHistoricalProdMigrationService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<ICompraRepository, CompraRepository>();
 builder.Services.AddScoped<ICompraDocumentoRepository, CompraDocumentoRepository>();
@@ -271,88 +270,6 @@ if (app.Configuration.GetValue<bool>("Database:ApplyMigrationsOnStartup"))
     }
     var seedFiscalService = new SeedFiscalService(db); await seedFiscalService.SeedDefaultsAsync();
 }
-if (app.Configuration.GetValue<bool>("CloudinaryHistoricalProdMigration:Enabled"))
-{
-    await using var scope = app.Services.CreateAsyncScope();
-    var migration = scope.ServiceProvider.GetRequiredService<CloudinaryHistoricalProdMigrationService>();
-    var result = await migration.MigrateAsync();
-    app.Logger.LogInformation(
-        "CloudinaryHistoricalProdMigration status={Status} sourceRows={SourceRows} migratedRows={MigratedRows} remainingLegacyRows={RemainingLegacyRows} sourceDeleted={SourceDeleted}",
-        result.Status,
-        result.SourceRows,
-        result.MigratedRows,
-        result.RemainingLegacyRows,
-        false);
-}
-
-if (app.Configuration.GetValue<bool>("Diagnostics:SmtpOAuth2CertificationOnStartup"))
-{
-    var smtpHost = app.Configuration["Smtp:Host"]?.Trim();
-    var smtpPort = app.Configuration.GetValue<int?>("Smtp:Port") ?? 587;
-    var smtpUser = app.Configuration["Smtp:UsuarioSmtp"]?.Trim();
-    var clientId = app.Configuration["Smtp:OAuth2ClientId"]?.Trim();
-    var refreshToken = app.Configuration["Smtp:OAuth2RefreshToken"]?.Trim();
-
-    if (!string.Equals(smtpHost, "smtp-mail.outlook.com", StringComparison.OrdinalIgnoreCase) ||
-        smtpPort != 587 ||
-        !string.Equals(smtpUser, "solqaryn.platform@outlook.com", StringComparison.OrdinalIgnoreCase) ||
-        string.IsNullOrWhiteSpace(clientId) ||
-        string.IsNullOrWhiteSpace(refreshToken))
-    {
-        throw new InvalidOperationException("SMTP_OAUTH2_PROD_CERT_CONFIGURATION_INVALID");
-    }
-
-    using var oauthClient = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
-    using var oauthRequest = new HttpRequestMessage(
-        HttpMethod.Post,
-        "https://login.microsoftonline.com/consumers/oauth2/v2.0/token")
-    {
-        Content = new FormUrlEncodedContent(new[]
-        {
-            new KeyValuePair<string, string>("client_id", clientId),
-            new KeyValuePair<string, string>("grant_type", "refresh_token"),
-            new KeyValuePair<string, string>("refresh_token", refreshToken),
-            new KeyValuePair<string, string>("scope", "https://outlook.office.com/SMTP.Send offline_access")
-        })
-    };
-
-    using var oauthResponse = await oauthClient.SendAsync(
-        oauthRequest,
-        HttpCompletionOption.ResponseHeadersRead);
-    var oauthPayload = await oauthResponse.Content.ReadAsStringAsync();
-
-    if (!oauthResponse.IsSuccessStatusCode)
-    {
-        throw new InvalidOperationException(
-            $"SMTP_OAUTH2_PROD_CERT_FAILED status={(int)oauthResponse.StatusCode}");
-    }
-
-    using var oauthJson = System.Text.Json.JsonDocument.Parse(oauthPayload);
-    if (!oauthJson.RootElement.TryGetProperty("access_token", out var accessTokenElement) ||
-        string.IsNullOrWhiteSpace(accessTokenElement.GetString()))
-    {
-        throw new InvalidOperationException("SMTP_OAUTH2_PROD_CERT_NO_ACCESS_TOKEN");
-    }
-
-    app.Logger.LogInformation(
-        "SMTP_OAUTH2_PROD_CERT=PASS user={SmtpUser} host={SmtpHost} port={SmtpPort} access_token_received=true",
-        smtpUser,
-        smtpHost,
-        smtpPort);
-
-    await using (var smtpScope = app.Services.CreateAsyncScope())
-    {
-        var emailService = smtpScope.ServiceProvider.GetRequiredService<IEmailService>();
-        var transport = await emailService.ProbarConexionAsync();
-        app.Logger.LogInformation(
-            "SMTP_TRANSPORT_PROD_CERT result={Result} code={Code} authenticated={Authenticated} duration_ms={DurationMs}",
-            transport.Exito ? "PASS" : "FAIL",
-            transport.Codigo,
-            transport.Autenticado,
-            transport.DuracionMilisegundos);
-    }
-}
-
 await app.RunAsync();
 
 public static class TrustedClientIpResolver
