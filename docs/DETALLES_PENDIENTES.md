@@ -52,20 +52,6 @@ DEV puede continuar usando las URLs administradas actuales de Vercel y Render. L
 
 ---
 
-## 4. Certificación externa Cloudinary PROD
-
-**Estado:** PENDIENTE
-
-**Evidencia actual:** el código y el contrato de aislamiento exigen prefijo `solqaryn_prod`, pero el Environment `PROD` de GitHub no contiene credenciales Cloudinary bajo los nombres estándar auditados. El runtime de Render no expone lectura de valores de secretos mediante el conector disponible.
-
-**Bloqueo:** no existe conector Cloudinary autenticado en este entorno para certificar control plane/ownership ni inventariar o retirar recursos legacy sin riesgo.
-
-**Se retoma cuando:** se conecte Cloudinary corporativo o se aporten credenciales PROD mediante un canal autorizado.
-
-**Al retomar, validar:** cuenta/product environment corporativo, prefijo `solqaryn_prod`, aislamiento respecto de DEV, inventario de activos, URLs legacy y retirada segura de duplicados.
-
----
-
 ## 5. Certificación SMTP real de PROD
 
 **Estado:** PENDIENTE
@@ -108,7 +94,7 @@ DEV puede continuar usando las URLs administradas actuales de Vercel y Render. L
 
 **Se retoma cuando:** el workflow de migración final sea autorizado/ejecutado desde `main` por un canal permitido o por el propietario desde GitHub Actions.
 
-**Al retomar:** crear primero respaldo cifrado del PROD vacío, restaurar el respaldo histórico cifrado, aplicar EF hasta 107 migraciones y verificar exactamente 1 empresa / 73 productos / 6 usuarios antes de cerrar.
+**Al retomar:** crear primero respaldo cifrado del PROD vacío, restaurar el respaldo histórico cifrado, aplicar EF hasta 107 migraciones y verificar exactamente 1 empresa / 73 productos / 6 usuarios. Después migrar las 351 referencias históricas de `ProductoImagenes` desde el cloud legacy autorizado hacia `riyrzmob/solqaryn_prod/inventoryapp/productos/empresas/1`, actualizar `Url`/`PublicId`, verificar cero referencias legacy y recién entonces cerrar.
 
 ---
 
