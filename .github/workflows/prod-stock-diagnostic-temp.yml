@@ -1,0 +1,107 @@
+name: PROD - Diagnostico stock admin vs tienda (temporal)
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - .github/checkpoints/prod-stock-diagnostic-temp
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    name: Comparar ProductoVariante vs ExistenciaVariante PROD
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: PROD
+    env:
+      DB_HOST: ${{ vars.SOLQARYN_PROD_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_PROD_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_PROD_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_PROD_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_PROD_DB_PASSWORD }}
+    steps:
+      - name: Instalar cliente MySQL y DNS
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update >/dev/null
+          sudo apt-get install -y mysql-client dnsutils >/dev/null
+
+      - name: Diagnostico read-only PROD
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$DB_NAME" = "solqaryn_prod"
+          test "$DB_USER" = "solqaryn_prod_user"
+          test -n "$DB_HOST"
+          test -n "$DB_PORT"
+          test -n "$DB_PASSWORD"
+          export MYSQL_PWD="$DB_PASSWORD"
+
+          connect_host="$DB_HOST"
+          if ! getent ahostsv4 "$DB_HOST" >/dev/null 2>&1; then
+            fallback_ip="$(dig +short A "$DB_HOST" @1.1.1.1 | grep -E '^[0-9]+([.][0-9]+){3}$' | head -n 1 || true)"
+            test -n "$fallback_ip"
+            connect_host="$fallback_ip"
+            echo "PROD_DB_DNS_FALLBACK=USED"
+          else
+            echo "PROD_DB_DNS_FALLBACK=NOT_NEEDED"
+          fi
+
+          mysql_cmd=(mysql --protocol=TCP -h "$connect_host" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED --default-character-set=utf8mb4 "$DB_NAME" --batch --raw --skip-column-names)
+
+          "${mysql_cmd[@]}" -e "
+            SET SESSION TRANSACTION READ ONLY;
+            START TRANSACTION READ ONLY;
+
+            SELECT 'SUMMARY',
+                   (SELECT COUNT(*) FROM Productos WHERE Eliminado=0 AND Activo=1) AS productos_activos,
+                   (SELECT COUNT(*) FROM ProductoVariantes pv JOIN Productos p ON p.Id=pv.ProductoId WHERE pv.Eliminado=0 AND p.Eliminado=0 AND p.Activo=1) AS variantes_activas_producto,
+                   (SELECT COUNT(*) FROM ExistenciasVariante) AS existencias,
+                   (SELECT COUNT(*) FROM ProductoVariantes pv JOIN Productos p ON p.Id=pv.ProductoId WHERE pv.Eliminado=0 AND p.Eliminado=0 AND p.Activo=1 AND pv.Cantidad>0) AS variantes_legacy_stock_positivo,
+                   (SELECT COUNT(*) FROM ProductoVariantes pv JOIN Productos p ON p.Id=pv.ProductoId LEFT JOIN ExistenciasVariante ev ON ev.ProductoVarianteId=pv.Id WHERE pv.Eliminado=0 AND p.Eliminado=0 AND p.Activo=1 AND pv.Cantidad>0 AND ev.Id IS NULL) AS variantes_stock_sin_existencia,
+                   (SELECT COALESCE(SUM(pv.Cantidad),0) FROM ProductoVariantes pv JOIN Productos p ON p.Id=pv.ProductoId WHERE pv.Eliminado=0 AND p.Eliminado=0 AND p.Activo=1) AS total_variante_cantidad,
+                   (SELECT COALESCE(SUM(ev.StockFisico),0) FROM ExistenciasVariante ev) AS total_stock_fisico,
+                   (SELECT COALESCE(SUM(ev.StockReservado),0) FROM ExistenciasVariante ev) AS total_reservado,
+                   (SELECT COALESCE(SUM(ev.StockDisponible),0) FROM ExistenciasVariante ev) AS total_disponible;
+
+            SELECT 'WAREHOUSE', a.Id, a.Codigo, a.Nombre, a.Tipo, a.Activo, a.Eliminado,
+                   s.Id, s.Nombre, s.Activa, s.Eliminado
+              FROM Almacenes a
+              JOIN Sucursales s ON s.Id=a.SucursalId
+             ORDER BY a.Id;
+
+            SELECT 'MISMATCH_COUNT', COUNT(*)
+              FROM (
+                SELECT pv.Id, pv.Cantidad, COALESCE(SUM(ev.StockFisico),0) AS StockFisico, COUNT(ev.Id) AS Filas
+                  FROM ProductoVariantes pv
+                  JOIN Productos p ON p.Id=pv.ProductoId
+                  LEFT JOIN ExistenciasVariante ev ON ev.ProductoVarianteId=pv.Id
+                 WHERE pv.Eliminado=0 AND p.Eliminado=0 AND p.Activo=1
+                 GROUP BY pv.Id,pv.Cantidad
+                HAVING pv.Cantidad <> COALESCE(SUM(ev.StockFisico),0)
+              ) x;
+
+            SELECT 'MISMATCH_SAMPLE',
+                   p.Id, LEFT(p.Nombre,80), pv.Id, COALESCE(pv.Sku,''),
+                   pv.Cantidad,
+                   COALESCE(SUM(ev.StockFisico),0),
+                   COALESCE(SUM(ev.StockDisponible),0),
+                   COUNT(ev.Id)
+              FROM ProductoVariantes pv
+              JOIN Productos p ON p.Id=pv.ProductoId
+              LEFT JOIN ExistenciasVariante ev ON ev.ProductoVarianteId=pv.Id
+             WHERE pv.Eliminado=0 AND p.Eliminado=0 AND p.Activo=1
+             GROUP BY p.Id,p.Nombre,pv.Id,pv.Sku,pv.Cantidad
+            HAVING pv.Cantidad <> COALESCE(SUM(ev.StockFisico),0)
+             ORDER BY p.Id,pv.Id
+             LIMIT 20;
+
+            COMMIT;
+          "
+
+          echo "PROD_STOCK_DIAGNOSTIC=PASS"
+          echo "PROD_WRITES=0"
