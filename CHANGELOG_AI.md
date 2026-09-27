@@ -1921,3 +1921,17 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Las variantes sin imágenes propias continúan mostrando la galería general como respaldo.
 - La galería de variantes ahora permite descargar tanto imágenes específicas como imágenes generales mostradas como fallback, respetando el permiso `Productos/Exportar`.
 - Sin cambios de esquema ni migraciones. Sin cambios en `main` ni PROD.
+
+
+## 2026-09-27 — Cierre de migración histórica PROD y Cloudinary
+
+- Ejecutado el cutover histórico final de `solqaryn_prod` desde el respaldo certificado, con rollback cifrado verificado antes de la primera escritura.
+- Resultado final certificado: 137 tablas, 107 migraciones EF, 1 empresa, 73 productos, 6 usuarios y 351 registros `ProductoImagenes`.
+- Preservada la autenticación del usuario bootstrap mediante overlay cifrado; ningún secreto fue persistido en el repositorio ni impreso en logs.
+- Ejecutada la migración histórica Cloudinary desde `vyijnqzq` hacia `riyrzmob/solqaryn_prod/inventoryapp/productos/empresas/1`.
+- Cloudinary: 351 assets migrados, 0 referencias legacy restantes, 351/351 assets destino alcanzables y activos origen conservados.
+- Auditoría final read-only `36329897886`: DB + Cloudinary + runtime smoke = PASS, `PRODUCTION_WRITES=0` durante la auditoría.
+- Retirados hooks, servicio y workflows temporales usados exclusivamente para cutover/certificación, conservando evidencia y rollback.
+- `docs/DETALLES_PENDIENTES.md` deja de considerar la migración histórica como pendiente.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO — cierre operativo de migración y limpieza de tooling temporal; se conserva la arquitectura vigente.

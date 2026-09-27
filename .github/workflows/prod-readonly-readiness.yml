@@ -1,3 +1,4 @@
+# Canonical read-only PROD inventory after completed historical migration
 name: PROD - Read-only canonical database inventory
 
 on:

@@ -1,6 +1,6 @@
 # Detalles pendientes — SOLQARYN
 
-Este archivo concentra decisiones que el propietario ha decidido aplazar deliberadamente. No deben bloquear trabajo no dependiente y no deben reinterpretarse como fallos de DEV.
+Este archivo concentra decisiones que el propietario ha decidido aplazar deliberadamente. No deben bloquear trabajo no dependiente y no deben reinterpretarse como fallos de DEV o PROD.
 
 ## 1. Dominio personalizado / corte DNS
 
@@ -52,37 +52,29 @@ DEV puede continuar usando las URLs administradas actuales de Vercel y Render. L
 
 ---
 
-## 4. Certificación externa Cloudinary PROD
+## 4. Certificación SMTP real de PROD
 
-**Estado:** PENDIENTE
+**Estado:** PENDIENTE — OAuth2 certificado; transporte SMTP no completado
 
-**Evidencia actual:** el código y el contrato de aislamiento exigen prefijo `solqaryn_prod`, pero el Environment `PROD` de GitHub no contiene credenciales Cloudinary bajo los nombres estándar auditados. El runtime de Render no expone lectura de valores de secretos mediante el conector disponible.
+**Contrato configurado:** Outlook.com, `smtp-mail.outlook.com:587`, STARTTLS obligatorio, OAuth2/Modern Auth, identidad `solqaryn.platform@outlook.com`.
 
-**Bloqueo:** no existe conector Cloudinary autenticado en este entorno para certificar control plane/ownership ni inventariar o retirar recursos legacy sin riesgo.
+**Evidencia runtime PROD del 2026-09-27:**
 
-**Se retoma cuando:** se conecte Cloudinary corporativo o se aporten credenciales PROD mediante un canal autorizado.
+- Render PROD obtuvo correctamente un access token OAuth2 desde su configuración: **PASS**.
+- El diagnóstico real de transporte desde el runtime intentó conectar a `smtp-mail.outlook.com:587` con STARTTLS obligatorio.
+- Resultado del transporte: `SMTP_TIMEOUT` después de ~60 segundos; no alcanzó autenticación SMTP.
+- El servicio `solqaryn-api-prod` continúa en plan Free.
+- El probe temporal de certificación quedó desactivado después de capturar la evidencia.
 
-**Al retomar, validar:** cuenta/product environment corporativo, prefijo `solqaryn_prod`, aislamiento respecto de DEV, inventario de activos, URLs legacy y retirada segura de duplicados.
+**Bloqueo restante:** no está en la obtención del token OAuth2. Falta conectividad SMTP saliente suficiente para completar conexión + STARTTLS + autenticación y posteriormente un envío/recepción real.
 
----
+**Decisión vigente:** mantener este punto como pendiente no bloqueante y no cambiar de plan únicamente para esta prueba.
 
-## 5. Certificación SMTP real de PROD
-
-**Estado:** PENDIENTE
-
-**Contrato configurado:** Outlook.com, OAuth2/Modern Auth, identidad `solqaryn.platform@outlook.com`.
-
-**Evidencia actual:** Outlook Email está instalado en ChatGPT, pero el Environment `PROD` de GitHub no contiene refresh token SMTP bajo los nombres estándar auditados. Render PROD está operativo, pero su conector no permite leer los valores secretos existentes y no se debe sobrescribir a ciegas.
-
-**Bloqueo:** falta una prueba de envío/recepción real desde el runtime PROD. En DEV ya existe además una limitación conocida de salida SMTP en el plan Free de Render.
-
-**Se retoma cuando:** exista conectividad SMTP saliente válida desde PROD o se adopte una arquitectura de correo distinta aprobada.
-
-**Al retomar, validar:** autenticación OAuth2, envío real controlado, recepción en Outlook, remitente, Reply-To, adjunto PDF y trazabilidad sin exponer secretos.
+**Al retomar, validar:** `SMTP_OK`, autenticación SMTP OAuth2, envío real controlado, recepción en Outlook, remitente, Reply-To, adjunto PDF y trazabilidad sin exponer secretos.
 
 ---
 
-## 6. Retiro final de recursos legacy personales
+## 5. Retiro final de recursos legacy personales
 
 **Estado:** PENDIENTE
 
@@ -93,22 +85,6 @@ DEV puede continuar usando las URLs administradas actuales de Vercel y Render. L
 **Se retoma cuando:** exista herramienta con capacidad de borrar repositorios/refs o el propietario realice la retirada manual después de confirmar el backup requerido.
 
 **Al retomar, validar:** ausencia de repositorios personales legacy que dupliquen SOLQARYN, eliminación de ramas temporales ya fusionadas y conservación únicamente de `dev`/`main` más las ramas operativas realmente necesarias.
-
----
-
-## 7. Migración final de datos históricos a PROD
-
-**Estado:** PENDIENTE DE EJECUCIÓN PRODUCTIVA
-
-**Evidencia ya cerrada:** el respaldo histórico verificado de VariStoreHN fue descargado, validado por SHA-256, descifrado y restaurado en un MySQL 8.4 aislado. El ensayo completo aplicó las migraciones actuales de SOLQARYN y terminó en `PASS` con 137 tablas, 107 migraciones EF, 1 empresa, 73 productos y 6 usuarios; no hubo escrituras en PROD.
-
-**Bloqueo actual:** el Environment `PROD` de GitHub está restringido a ejecución desde `main`. El intento desde `dev` fue rechazado antes de iniciar el job productivo. La promoción de un workflow que realiza la escritura final sobre PROD fue bloqueada por los controles de seguridad del entorno de ejecución de ChatGPT; no se forzará ni se eludirán esos controles.
-
-**Estado del PROD actual:** `solqaryn_prod` permanece con el esquema canónico (137 tablas / 107 migraciones) y sin los datos históricos de VariStoreHN. Render PROD está desplegado y operativo sobre `main`.
-
-**Se retoma cuando:** el workflow de migración final sea autorizado/ejecutado desde `main` por un canal permitido o por el propietario desde GitHub Actions.
-
-**Al retomar:** crear primero respaldo cifrado del PROD vacío, restaurar el respaldo histórico cifrado, aplicar EF hasta 107 migraciones y verificar exactamente 1 empresa / 73 productos / 6 usuarios antes de cerrar.
 
 ---
 
