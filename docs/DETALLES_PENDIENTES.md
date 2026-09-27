@@ -54,17 +54,23 @@ DEV puede continuar usando las URLs administradas actuales de Vercel y Render. L
 
 ## 5. Certificación SMTP real de PROD
 
-**Estado:** PENDIENTE
+**Estado:** PENDIENTE — OAuth2 certificado; transporte SMTP no completado
 
-**Contrato configurado:** Outlook.com, OAuth2/Modern Auth, identidad `solqaryn.platform@outlook.com`.
+**Contrato configurado:** Outlook.com, `smtp-mail.outlook.com:587`, STARTTLS obligatorio, OAuth2/Modern Auth, identidad `solqaryn.platform@outlook.com`.
 
-**Evidencia actual:** Outlook Email está instalado en ChatGPT, pero el Environment `PROD` de GitHub no contiene refresh token SMTP bajo los nombres estándar auditados. Render PROD está operativo, pero su conector no permite leer los valores secretos existentes y no se debe sobrescribir a ciegas.
+**Evidencia runtime PROD del 2026-09-27:**
 
-**Bloqueo:** falta una prueba de envío/recepción real desde el runtime PROD. En DEV ya existe además una limitación conocida de salida SMTP en el plan Free de Render.
+- Render PROD obtuvo correctamente un access token OAuth2 desde su configuración: **PASS**.
+- El diagnóstico real de transporte desde el runtime intentó conectar a `smtp-mail.outlook.com:587` con STARTTLS obligatorio.
+- Resultado del transporte: `SMTP_TIMEOUT` después de ~60 segundos; no alcanzó autenticación SMTP.
+- El servicio `solqaryn-api-prod` continúa en plan Free.
+- El probe temporal de certificación quedó desactivado después de capturar la evidencia.
 
-**Se retoma cuando:** exista conectividad SMTP saliente válida desde PROD o se adopte una arquitectura de correo distinta aprobada.
+**Bloqueo restante:** no está en la obtención del token OAuth2. Falta conectividad SMTP saliente suficiente para completar conexión + STARTTLS + autenticación y posteriormente un envío/recepción real.
 
-**Al retomar, validar:** autenticación OAuth2, envío real controlado, recepción en Outlook, remitente, Reply-To, adjunto PDF y trazabilidad sin exponer secretos.
+**Decisión vigente:** mantener este punto como pendiente no bloqueante y no cambiar de plan únicamente para esta prueba.
+
+**Al retomar, validar:** `SMTP_OK`, autenticación SMTP OAuth2, envío real controlado, recepción en Outlook, remitente, Reply-To, adjunto PDF y trazabilidad sin exponer secretos.
 
 ---
 
