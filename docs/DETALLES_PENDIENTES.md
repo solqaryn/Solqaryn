@@ -38,6 +38,50 @@ DEV puede continuar usando las URLs administradas actuales de Vercel y Render. L
 
 ---
 
+## 3. Vercel PROD corporativo
+
+**Estado:** PENDIENTE
+
+**Evidencia actual:** el team corporativo Vercel conectado contiene únicamente el proyecto `solqaryn-dev`; no existe todavía un proyecto `solqaryn-prod`.
+
+**Bloqueo:** el conector Vercel disponible permite inspección/despliegues de proyectos existentes, pero no expone creación/eliminación de proyectos. No se puede cerrar este punto automáticamente desde este entorno.
+
+**Se retoma cuando:** el propietario cree `solqaryn-prod` dentro del mismo team corporativo de SOLQARYN o habilite una herramienta que permita crear proyectos.
+
+**Al retomar, validar:** ownership corporativo, rama `main`, variables PROD, routing al backend PROD, deploy estable y ausencia de proyectos legacy duplicados.
+
+---
+
+## 4. Certificación externa Cloudinary PROD
+
+**Estado:** PENDIENTE
+
+**Evidencia actual:** el código y el contrato de aislamiento exigen prefijo `solqaryn_prod`, pero el Environment `PROD` de GitHub no contiene credenciales Cloudinary bajo los nombres estándar auditados. El runtime de Render no expone lectura de valores de secretos mediante el conector disponible.
+
+**Bloqueo:** no existe conector Cloudinary autenticado en este entorno para certificar control plane/ownership ni inventariar o retirar recursos legacy sin riesgo.
+
+**Se retoma cuando:** se conecte Cloudinary corporativo o se aporten credenciales PROD mediante un canal autorizado.
+
+**Al retomar, validar:** cuenta/product environment corporativo, prefijo `solqaryn_prod`, aislamiento respecto de DEV, inventario de activos, URLs legacy y retirada segura de duplicados.
+
+---
+
+## 5. Certificación SMTP real de PROD
+
+**Estado:** PENDIENTE
+
+**Contrato configurado:** Outlook.com, OAuth2/Modern Auth, identidad `solqaryn.platform@outlook.com`.
+
+**Evidencia actual:** Outlook Email está instalado en ChatGPT, pero el Environment `PROD` de GitHub no contiene refresh token SMTP bajo los nombres estándar auditados. Render PROD está operativo, pero su conector no permite leer los valores secretos existentes y no se debe sobrescribir a ciegas.
+
+**Bloqueo:** falta una prueba de envío/recepción real desde el runtime PROD. En DEV ya existe además una limitación conocida de salida SMTP en el plan Free de Render.
+
+**Se retoma cuando:** exista conectividad SMTP saliente válida desde PROD o se adopte una arquitectura de correo distinta aprobada.
+
+**Al retomar, validar:** autenticación OAuth2, envío real controlado, recepción en Outlook, remitente, Reply-To, adjunto PDF y trazabilidad sin exponer secretos.
+
+---
+
 ## Regla de uso
 
 Agregar aquí únicamente pendientes deliberadamente pospuestos por decisión del propietario. Cada pendiente debe indicar su estado, motivo, condición de reanudación y no debe bloquear trabajo independiente.
