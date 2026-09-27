@@ -1,4 +1,4 @@
-# Revalidation marker: 2026-09-27 post-failed-cutover recovery check
+# Canonical read-only PROD inventory after completed historical migration
 name: PROD - Read-only canonical database inventory
 
 on:
