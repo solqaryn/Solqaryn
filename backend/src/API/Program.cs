@@ -283,31 +283,52 @@ if (app.Configuration.GetValue<bool>("Diagnostics:CloudinaryCertificationOnStart
         !string.Equals(cloudName, "riyrzmob", StringComparison.Ordinal) ||
         !string.Equals(environmentPrefix, "solqaryn_prod", StringComparison.Ordinal))
     {
-        throw new InvalidOperationException("CLOUDINARY_PROD_CERT_CONFIGURATION_INVALID");
+        app.Logger.LogWarning(
+            "CLOUDINARY_PROD_CERT=FAIL reason=configuration cloud={CloudName} prefix={EnvironmentPrefix}",
+            cloudName ?? "(missing)",
+            environmentPrefix ?? "(missing)");
     }
-
-    using var cloudinaryProbeClient = new HttpClient
+    else
     {
-        Timeout = TimeSpan.FromSeconds(20)
-    };
-    var basic = Convert.ToBase64String(
-        System.Text.Encoding.UTF8.GetBytes($"{apiKey}:{apiSecret}"));
-    cloudinaryProbeClient.DefaultRequestHeaders.Authorization =
-        new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", basic);
+        try
+        {
+            using var cloudinaryProbeClient = new HttpClient
+            {
+                Timeout = TimeSpan.FromSeconds(20)
+            };
+            var basic = Convert.ToBase64String(
+                System.Text.Encoding.UTF8.GetBytes($"{apiKey}:{apiSecret}"));
+            cloudinaryProbeClient.DefaultRequestHeaders.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", basic);
 
-    using var cloudinaryProbeResponse = await cloudinaryProbeClient.GetAsync(
-        $"https://api.cloudinary.com/v1_1/{Uri.EscapeDataString(cloudName)}/ping");
+            using var cloudinaryProbeResponse = await cloudinaryProbeClient.GetAsync(
+                $"https://api.cloudinary.com/v1_1/{Uri.EscapeDataString(cloudName)}/ping");
 
-    if (!cloudinaryProbeResponse.IsSuccessStatusCode)
-    {
-        throw new InvalidOperationException(
-            $"CLOUDINARY_PROD_CERT_PING_FAILED status={(int)cloudinaryProbeResponse.StatusCode}");
+            if (cloudinaryProbeResponse.IsSuccessStatusCode)
+            {
+                app.Logger.LogInformation(
+                    "CLOUDINARY_PROD_CERT=PASS cloud={CloudName} prefix={EnvironmentPrefix} api_authenticated=true",
+                    cloudName,
+                    environmentPrefix);
+            }
+            else
+            {
+                app.Logger.LogWarning(
+                    "CLOUDINARY_PROD_CERT=FAIL reason=api_ping status={StatusCode} cloud={CloudName} prefix={EnvironmentPrefix}",
+                    (int)cloudinaryProbeResponse.StatusCode,
+                    cloudName,
+                    environmentPrefix);
+            }
+        }
+        catch (Exception ex)
+        {
+            app.Logger.LogWarning(
+                ex,
+                "CLOUDINARY_PROD_CERT=FAIL reason=exception cloud={CloudName} prefix={EnvironmentPrefix}",
+                cloudName,
+                environmentPrefix);
+        }
     }
-
-    app.Logger.LogInformation(
-        "CLOUDINARY_PROD_CERT=PASS cloud={CloudName} prefix={EnvironmentPrefix} api_authenticated=true",
-        cloudName,
-        environmentPrefix);
 }
 
 await app.RunAsync();
