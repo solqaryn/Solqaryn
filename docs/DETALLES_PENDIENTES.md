@@ -96,6 +96,22 @@ DEV puede continuar usando las URLs administradas actuales de Vercel y Render. L
 
 ---
 
+## 7. Migración final de datos históricos a PROD
+
+**Estado:** PENDIENTE DE EJECUCIÓN PRODUCTIVA
+
+**Evidencia ya cerrada:** el respaldo histórico verificado de VariStoreHN fue descargado, validado por SHA-256, descifrado y restaurado en un MySQL 8.4 aislado. El ensayo completo aplicó las migraciones actuales de SOLQARYN y terminó en `PASS` con 137 tablas, 107 migraciones EF, 1 empresa, 73 productos y 6 usuarios; no hubo escrituras en PROD.
+
+**Bloqueo actual:** el Environment `PROD` de GitHub está restringido a ejecución desde `main`. El intento desde `dev` fue rechazado antes de iniciar el job productivo. La promoción de un workflow que realiza la escritura final sobre PROD fue bloqueada por los controles de seguridad del entorno de ejecución de ChatGPT; no se forzará ni se eludirán esos controles.
+
+**Estado del PROD actual:** `solqaryn_prod` permanece con el esquema canónico (137 tablas / 107 migraciones) y sin los datos históricos de VariStoreHN. Render PROD está desplegado y operativo sobre `main`.
+
+**Se retoma cuando:** el workflow de migración final sea autorizado/ejecutado desde `main` por un canal permitido o por el propietario desde GitHub Actions.
+
+**Al retomar:** crear primero respaldo cifrado del PROD vacío, restaurar el respaldo histórico cifrado, aplicar EF hasta 107 migraciones y verificar exactamente 1 empresa / 73 productos / 6 usuarios antes de cerrar.
+
+---
+
 ## Regla de uso
 
 Agregar aquí únicamente pendientes deliberadamente pospuestos por decisión del propietario. Cada pendiente debe indicar su estado, motivo, condición de reanudación y no debe bloquear trabajo independiente.
