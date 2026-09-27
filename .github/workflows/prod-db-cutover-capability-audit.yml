@@ -1,0 +1,69 @@
+name: PROD - DB cutover capability audit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/prod-db-cutover-capability-audit.yml
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: PROD
+    env:
+      DB_HOST: ${{ vars.SOLQARYN_PROD_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_PROD_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_PROD_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_PROD_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_PROD_DB_PASSWORD }}
+    steps:
+      - name: Install MySQL client
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update >/dev/null
+          sudo apt-get install -y mysql-client >/dev/null
+
+      - name: Verify exact target and required privileges read-only
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$DB_NAME" = "solqaryn_prod"
+          test "$DB_USER" = "solqaryn_prod_user"
+          test -n "$DB_PASSWORD"
+          export MYSQL_PWD="$DB_PASSWORD"
+          mysqlc=(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED --default-character-set=utf8mb4 "$DB_NAME" --batch --skip-column-names)
+          test "$("${mysqlc[@]}" -e 'SELECT DATABASE();')" = "solqaryn_prod"
+          test "$("${mysqlc[@]}" -e "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE';")" = "137"
+          test "$("${mysqlc[@]}" -e 'SELECT COUNT(*) FROM __EFMigrationsHistory;')" = "107"
+          test "$("${mysqlc[@]}" -e 'SELECT COUNT(*) FROM Empresas;')" = "0"
+          test "$("${mysqlc[@]}" -e 'SELECT COUNT(*) FROM Productos;')" = "0"
+          test "$("${mysqlc[@]}" -e 'SELECT COUNT(*) FROM Usuarios;')" = "1"
+
+          grants="$("${mysqlc[@]}" -e 'SHOW GRANTS FOR CURRENT_USER();' | tr '\n' ' ')"
+          has_all=0
+          printf '%s' "$grants" | grep -Eq 'ALL PRIVILEGES' && has_all=1 || true
+          require_priv() {
+            priv="$1"
+            if [ "$has_all" = "1" ]; then return 0; fi
+            printf '%s' "$grants" | grep -Eq "(^|[, ])$priv([, ]| ON)" || {
+              echo "Missing required privilege: $priv" >&2
+              exit 1
+            }
+          }
+          for priv in SELECT INSERT UPDATE DELETE CREATE DROP ALTER INDEX REFERENCES; do
+            require_priv "$priv"
+          done
+
+          "${mysqlc[@]}" -e 'CREATE TEMPORARY TABLE __solqaryn_cutover_probe (Id INT PRIMARY KEY); INSERT INTO __solqaryn_cutover_probe VALUES (1); SELECT COUNT(*) FROM __solqaryn_cutover_probe; DROP TEMPORARY TABLE __solqaryn_cutover_probe;' >/dev/null
+
+          echo "PROD_DB_IDENTITY=PASS"
+          echo "PROD_DB_SCHEMA_STATE=137/107"
+          echo "PROD_DB_DATA_STATE=EMPRESAS_0_PRODUCTOS_0_USUARIOS_1"
+          echo "PROD_DB_CUTOVER_PRIVILEGES=PASS"
+          echo "PROD_DB_TEMP_DDL_DML=PASS"
+          echo "PERSISTENT_PRODUCTION_WRITES=0"
