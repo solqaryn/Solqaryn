@@ -339,6 +339,18 @@ if (app.Configuration.GetValue<bool>("Diagnostics:SmtpOAuth2CertificationOnStart
         smtpUser,
         smtpHost,
         smtpPort);
+
+    await using (var smtpScope = app.Services.CreateAsyncScope())
+    {
+        var emailService = smtpScope.ServiceProvider.GetRequiredService<IEmailService>();
+        var transport = await emailService.ProbarConexionAsync();
+        app.Logger.LogInformation(
+            "SMTP_TRANSPORT_PROD_CERT result={Result} code={Code} authenticated={Authenticated} duration_ms={DurationMs}",
+            transport.Exito ? "PASS" : "FAIL",
+            transport.Codigo,
+            transport.Autenticado,
+            transport.DuracionMilisegundos);
+    }
 }
 
 await app.RunAsync();
