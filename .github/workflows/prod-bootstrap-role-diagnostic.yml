@@ -120,12 +120,10 @@ jobs:
           match_admin="$("${mysqlc[@]}" -e "SELECT COUNT(*) FROM Usuarios u JOIN Roles r ON r.Id=u.RolId WHERE SHA2(LOWER(u.NombreUsuario),256)='${{ needs.prod-fingerprint.outputs.user_hash }}' AND r.EsAdministrador=1;")"
           admin_roles="$("${mysqlc[@]}" -e "SELECT COUNT(*) FROM Roles WHERE EsAdministrador=1 AND Activo=1 AND Eliminado=0;")"
           active_admin_users="$("${mysqlc[@]}" -e "SELECT COUNT(*) FROM Usuarios u JOIN Roles r ON r.Id=u.RolId WHERE r.EsAdministrador=1 AND u.Activo=1 AND u.Eliminado=0;")"
-          match_memberships="$("${mysqlc[@]}" -e "SELECT COUNT(*) FROM UsuarioEmpresas ue JOIN Usuarios u ON u.Id=ue.UsuarioId WHERE SHA2(LOWER(u.NombreUsuario),256)='${{ needs.prod-fingerprint.outputs.user_hash }}' AND ue.Activo=1;")"
           echo "HISTORICAL_BOOTSTRAP_MATCHES=$match"
           echo "HISTORICAL_BOOTSTRAP_ADMIN_MATCHES=$match_admin"
           echo "HISTORICAL_ACTIVE_ADMIN_ROLES=$admin_roles"
           echo "HISTORICAL_ACTIVE_ADMIN_USERS=$active_admin_users"
-          echo "HISTORICAL_BOOTSTRAP_ACTIVE_MEMBERSHIPS=$match_memberships"
           test "$match" = "1"
           test "$admin_roles" -ge 1
           echo "PRODUCTION_WRITES=0"
