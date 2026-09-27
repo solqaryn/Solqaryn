@@ -1,3 +1,11 @@
+## 2026-09-27 — Retiro de repositorio personal legacy y deudas cerradas
+
+- El repositorio personal privado `jmejia31/VariStorehn` fue eliminado por el propietario y la API de GitHub confirma `404 Not Found`.
+- El repositorio corporativo vigente continúa siendo `solqaryn/Solqaryn`.
+- Las ramas temporales de migración/auditoría ya fueron retiradas; permanecen únicamente `main` y `dev`.
+- `solqaryn-prod` en Vercel ya existe y la certificación final del frontend PROD fue cerrada; por ello se retiró ese ítem de `docs/DETALLES_PENDIENTES.md`.
+- Se eliminó del documento de pendientes la deuda de retiro de recursos GitHub legacy, ya que dejó de ser pendiente.
+
 ## 2026-09-26 — Identidad SOLQARYN y legado bloqueados
 
 - Autoridad operativa fijada en `SOLQARYN / solqaryn/Solqaryn / dev`.
