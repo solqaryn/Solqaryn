@@ -1,0 +1,32 @@
+name: PROD - Trigger privilege audit
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/prod-trigger-privilege-audit.yml]
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: PROD
+    env:
+      DB_HOST: ${{ vars.SOLQARYN_PROD_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_PROD_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_PROD_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_PROD_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_PROD_DB_PASSWORD }}
+    steps:
+      - run: |
+          set -euo pipefail
+          sudo apt-get update >/dev/null
+          sudo apt-get install -y mysql-client >/dev/null
+          export MYSQL_PWD="$DB_PASSWORD"
+          grants="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e 'SHOW GRANTS FOR CURRENT_USER();' | tr '\n' ' ')"
+          if printf '%s' "$grants" | grep -Eq 'ALL PRIVILEGES|(^|[, ])TRIGGER([, ]| ON)'; then
+            echo "PROD_TRIGGER_PRIVILEGE=PASS"
+          else
+            echo "PROD_TRIGGER_PRIVILEGE=FAIL"
+            exit 1
+          fi
+          echo "PRODUCTION_WRITES=0"
