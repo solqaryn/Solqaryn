@@ -64,6 +64,23 @@ jobs:
           echo "current_user_hash=$user_hash" >> "$GITHUB_OUTPUT"
           echo "PROD_BOOTSTRAP_USER_ADMIN=PASS"
 
+      - name: Encrypt bootstrap authentication overlay
+        shell: bash
+        run: |
+          set -euo pipefail
+          export MYSQL_PWD="$DB_PASSWORD"
+          umask 077
+          mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED --default-character-set=utf8mb4 "$DB_NAME" --batch --skip-column-names \
+            -e "SELECT JSON_OBJECT('username',NombreUsuario,'passwordHash',PasswordHash,'activo',Activo,'bloqueado',Bloqueado) FROM Usuarios ORDER BY Id LIMIT 1;" \
+            > /tmp/prod-bootstrap-auth.json
+          test -s /tmp/prod-bootstrap-auth.json
+          printf '%s' "$BACKUP_PASSPHRASE" | gpg --batch --yes --no-tty --pinentry-mode loopback --passphrase-fd 0 \
+            --symmetric --cipher-algo AES256 --digest-algo SHA256 \
+            --output /tmp/prod-bootstrap-auth.json.gpg /tmp/prod-bootstrap-auth.json
+          sha256sum /tmp/prod-bootstrap-auth.json.gpg > /tmp/prod-bootstrap-auth.json.gpg.sha256
+          rm -f /tmp/prod-bootstrap-auth.json
+          echo "PROD_BOOTSTRAP_AUTH_OVERLAY=PASS"
+
       - name: Create encrypted rollback backup
         shell: bash
         run: |
@@ -90,6 +107,8 @@ jobs:
           path: |
             /tmp/solqaryn-prod-empty.sql.gz.gpg
             /tmp/solqaryn-prod-empty.sql.gz.sha256
+            /tmp/prod-bootstrap-auth.json.gpg
+            /tmp/prod-bootstrap-auth.json.gpg.sha256
 
 
   historical-identity:
