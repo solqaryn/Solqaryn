@@ -90,11 +90,20 @@ DEV puede continuar usando las URLs administradas actuales de Vercel y Render. L
 
 **Bloqueo actual:** el Environment `PROD` de GitHub está restringido a ejecución desde `main`. El intento desde `dev` fue rechazado antes de iniciar el job productivo. La promoción de un workflow que realiza la escritura final sobre PROD fue bloqueada por los controles de seguridad del entorno de ejecución de ChatGPT; no se forzará ni se eludirán esos controles.
 
-**Estado del PROD actual:** `solqaryn_prod` permanece con el esquema canónico (137 tablas / 107 migraciones) y sin los datos históricos de VariStoreHN. Render PROD está desplegado y operativo sobre `main`.
+**Estado del PROD actual:** `solqaryn_prod` permanece con el esquema canónico (137 tablas / 107 migraciones), 0 empresas históricas, 0 productos históricos y 1 usuario bootstrap administrador. Render PROD está desplegado y operativo sobre `main`.
 
-**Se retoma cuando:** el workflow de migración final sea autorizado/ejecutado desde `main` por un canal permitido o por el propietario desde GitHub Actions.
+**Preflight adicional ya cerrado (2026-09-27):**
 
-**Al retomar:** crear primero respaldo cifrado del PROD vacío, restaurar el respaldo histórico cifrado, aplicar EF hasta 107 migraciones y verificar exactamente 1 empresa / 73 productos / 6 usuarios. Después migrar las 351 referencias históricas de `ProductoImagenes` desde el cloud legacy autorizado hacia `riyrzmob/solqaryn_prod/inventoryapp/productos/empresas/1`, actualizar `Url`/`PublicId`, verificar cero referencias legacy y recién entonces cerrar.
+- respaldo rollback cifrado del estado PROD previo a migración: **PASS**, run `36298199171`, artifact `solqaryn-prod-empty-rollback-36298199171`, digest `sha256:415e31d932437dd73c1491f1516e06da04de7959f1ab654c394bad0462bbda2f`;
+- el usuario bootstrap actual existe exactamente una vez dentro de los 6 usuarios del respaldo histórico: **PASS**;
+- overlay de autenticación bootstrap almacenado cifrado junto al rollback: **PASS**;
+- inventario histórico Cloudinary: **351** referencias en `ProductoImagenes`;
+- verificación individual de origen Cloudinary: **351/351** URLs legacy alcanzables, 0 fallos, 0 escrituras PROD;
+- migrador Cloudinary PROD fail-closed e idempotente ya está en `main`, deshabilitado por defecto y limitado a `solqaryn_prod` + `riyrzmob` + prefijo `solqaryn_prod`.
+
+**Bloqueo restante:** falta exclusivamente autorizar y ejecutar la escritura final del respaldo histórico sobre `solqaryn_prod`. Esa operación modifica datos productivos y debe recibir autorización explícita del propietario inmediatamente antes de ejecutarse.
+
+**Al ejecutar:** restaurar el respaldo histórico verificado, aplicar EF hasta 107 migraciones, reconciliar exactamente 1 empresa / 73 productos / 6 usuarios / 351 `ProductoImagenes`, aplicar el overlay cifrado de autenticación del usuario bootstrap si corresponde y validar login. Después habilitar una sola vez `CloudinaryHistoricalProdMigration__Enabled=true` con `ExpectedLegacyRows=351`, verificar migración a `riyrzmob/solqaryn_prod/inventoryapp/productos/empresas/1`, exigir cero referencias legacy, volver a deshabilitar el flag y retirar el código temporal cuando quede certificado.
 
 ---
 
