@@ -270,6 +270,67 @@ if (app.Configuration.GetValue<bool>("Database:ApplyMigrationsOnStartup"))
     }
     var seedFiscalService = new SeedFiscalService(db); await seedFiscalService.SeedDefaultsAsync();
 }
+if (app.Configuration.GetValue<bool>("Diagnostics:CloudinaryCertificationOnStartup"))
+{
+    var cloudName = app.Configuration["Cloudinary:CloudName"]?.Trim();
+    var apiKey = app.Configuration["Cloudinary:ApiKey"]?.Trim();
+    var apiSecret = app.Configuration["Cloudinary:ApiSecret"];
+    var environmentPrefix = app.Configuration["Cloudinary:EnvironmentPrefix"]?.Trim();
+
+    if (string.IsNullOrWhiteSpace(cloudName) ||
+        string.IsNullOrWhiteSpace(apiKey) ||
+        string.IsNullOrWhiteSpace(apiSecret) ||
+        !string.Equals(cloudName, "riyrzmob", StringComparison.Ordinal) ||
+        !string.Equals(environmentPrefix, "solqaryn_prod", StringComparison.Ordinal))
+    {
+        app.Logger.LogWarning(
+            "CLOUDINARY_PROD_CERT=FAIL reason=configuration cloud={CloudName} prefix={EnvironmentPrefix}",
+            cloudName ?? "(missing)",
+            environmentPrefix ?? "(missing)");
+    }
+    else
+    {
+        try
+        {
+            using var cloudinaryProbeClient = new HttpClient
+            {
+                Timeout = TimeSpan.FromSeconds(20)
+            };
+            var basic = Convert.ToBase64String(
+                System.Text.Encoding.UTF8.GetBytes($"{apiKey}:{apiSecret}"));
+            cloudinaryProbeClient.DefaultRequestHeaders.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", basic);
+
+            using var cloudinaryProbeResponse = await cloudinaryProbeClient.GetAsync(
+                $"https://api.cloudinary.com/v1_1/{Uri.EscapeDataString(cloudName)}/ping");
+
+            if (cloudinaryProbeResponse.IsSuccessStatusCode)
+            {
+                app.Logger.LogInformation(
+                    "CLOUDINARY_PROD_CERT=PASS cloud={CloudName} prefix={EnvironmentPrefix} api_authenticated=true",
+                    cloudName,
+                    environmentPrefix);
+            }
+            else
+            {
+                app.Logger.LogWarning(
+                    "CLOUDINARY_PROD_CERT=FAIL reason=api_ping status={StatusCode} cloud={CloudName} prefix={EnvironmentPrefix}",
+                    (int)cloudinaryProbeResponse.StatusCode,
+                    cloudName,
+                    environmentPrefix);
+            }
+        }
+        catch (Exception ex)
+        {
+            app.Logger.LogWarning(
+                ex,
+                "CLOUDINARY_PROD_CERT=FAIL reason=exception cloud={CloudName} prefix={EnvironmentPrefix}",
+                cloudName,
+                environmentPrefix);
+        }
+    }
+}
+
 await app.RunAsync();
 
 public static class TrustedClientIpResolver
