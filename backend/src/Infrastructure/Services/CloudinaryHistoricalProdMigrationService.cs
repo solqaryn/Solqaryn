@@ -52,7 +52,7 @@ public sealed class CloudinaryHistoricalProdMigrationService
     public async Task<CloudinaryHistoricalProdMigrationResult> MigrateAsync(
         CancellationToken cancellationToken = default)
     {
-        ExigirScopeDevCanonico();
+        ExigirScopeProdCanonico();
 
         var expectedRows = _configuration.GetValue<int>("CloudinaryHistoricalProdMigration:ExpectedLegacyRows");
         if (expectedRows <= 0)
@@ -216,7 +216,7 @@ public sealed class CloudinaryHistoricalProdMigrationService
             remaining);
     }
 
-    private void ExigirScopeDevCanonico()
+    private void ExigirScopeProdCanonico()
     {
         var dbName = _db.Database.GetDbConnection().Database;
         var cloudName = _configuration["Cloudinary:CloudName"]?.Trim();
