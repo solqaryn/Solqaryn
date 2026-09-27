@@ -123,7 +123,9 @@ jobs:
           echo "HISTORICAL_BOOTSTRAP_MATCHES=$match"
           echo "HISTORICAL_BOOTSTRAP_ADMIN_MATCHES=$match_admin"
           echo "HISTORICAL_ACTIVE_ADMIN_ROLES=$admin_roles"
+          flags="$("${mysqlc[@]}" -e "SELECT CONCAT(u.Activo,',',u.Eliminado,',',r.Activo,',',r.Eliminado,',',r.EsAdministrador) FROM Usuarios u JOIN Roles r ON r.Id=u.RolId WHERE SHA2(LOWER(u.NombreUsuario),256)='${{ needs.prod-fingerprint.outputs.user_hash }}';")"
           echo "HISTORICAL_ACTIVE_ADMIN_USERS=$active_admin_users"
+          echo "HISTORICAL_BOOTSTRAP_FLAGS=$flags"
           test "$match" = "1"
           test "$admin_roles" -ge 1
           echo "PRODUCTION_WRITES=0"
