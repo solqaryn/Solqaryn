@@ -1,0 +1,126 @@
+name: PROD - Final post-migration audit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/prod-final-post-migration-audit.yml
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: PROD
+    env:
+      DB_HOST: ${{ vars.SOLQARYN_PROD_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_PROD_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_PROD_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_PROD_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_PROD_DB_PASSWORD }}
+    steps:
+      - name: Install audit tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update >/dev/null
+          sudo apt-get install -y mysql-client jq >/dev/null
+
+      - name: Verify final canonical PROD state read-only
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$DB_NAME" = "solqaryn_prod"
+          test "$DB_USER" = "solqaryn_prod_user"
+          test -n "$DB_PASSWORD"
+          export MYSQL_PWD="$DB_PASSWORD"
+          mysqlc=(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED --default-character-set=utf8mb4 "$DB_NAME" --batch --skip-column-names)
+
+          test "$("${mysqlc[@]}" -e 'SELECT DATABASE();')" = "solqaryn_prod"
+          tables="$("${mysqlc[@]}" -e "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE';")"
+          migrations="$("${mysqlc[@]}" -e 'SELECT COUNT(*) FROM __EFMigrationsHistory;')"
+          empresas="$("${mysqlc[@]}" -e 'SELECT COUNT(*) FROM Empresas;')"
+          productos="$("${mysqlc[@]}" -e 'SELECT COUNT(*) FROM Productos;')"
+          usuarios="$("${mysqlc[@]}" -e 'SELECT COUNT(*) FROM Usuarios;')"
+          imagenes="$("${mysqlc[@]}" -e 'SELECT COUNT(*) FROM ProductoImagenes;')"
+          legacy_urls="$("${mysqlc[@]}" -e "SELECT COUNT(*) FROM ProductoImagenes WHERE Url LIKE '%res.cloudinary.com/vyijnqzq/%' OR PublicId LIKE 'desarrollo/%' OR PublicId LIKE 'varistorehn_desarrollo/%';")"
+          target_urls="$("${mysqlc[@]}" -e "SELECT COUNT(*) FROM ProductoImagenes WHERE Url LIKE 'https://res.cloudinary.com/riyrzmob/%';")"
+          target_public_ids="$("${mysqlc[@]}" -e "SELECT COUNT(*) FROM ProductoImagenes WHERE PublicId LIKE 'solqaryn_prod/inventoryapp/productos/empresas/1/%';")"
+          active_admins="$("${mysqlc[@]}" -e 'SELECT COUNT(*) FROM Usuarios u JOIN Roles r ON r.Id=u.RolId WHERE u.Activo=1 AND u.Eliminado=0 AND r.EsAdministrador=1 AND r.Activo=1 AND r.Eliminado=0;')"
+
+          test "$tables" = "137"
+          test "$migrations" = "107"
+          test "$empresas" = "1"
+          test "$productos" = "73"
+          test "$usuarios" = "6"
+          test "$imagenes" = "351"
+          test "$legacy_urls" = "0"
+          test "$target_urls" = "351"
+          test "$target_public_ids" = "351"
+          test "$active_admins" -ge 1
+
+          echo "PROD_FINAL_TABLES=$tables"
+          echo "PROD_FINAL_MIGRATIONS=$migrations"
+          echo "PROD_FINAL_EMPRESAS=$empresas"
+          echo "PROD_FINAL_PRODUCTOS=$productos"
+          echo "PROD_FINAL_USUARIOS=$usuarios"
+          echo "PROD_FINAL_PRODUCTO_IMAGENES=$imagenes"
+          echo "PROD_FINAL_LEGACY_CLOUDINARY_REFS=$legacy_urls"
+          echo "PROD_FINAL_TARGET_CLOUDINARY_URLS=$target_urls"
+          echo "PROD_FINAL_TARGET_CLOUDINARY_PUBLIC_IDS=$target_public_ids"
+          echo "PROD_FINAL_ACTIVE_ADMINS=$active_admins"
+          echo "PROD_FINAL_DB_AND_CLOUDINARY_STATE=PASS"
+
+      - name: Verify every migrated Cloudinary URL is reachable
+        shell: bash
+        run: |
+          set -euo pipefail
+          export MYSQL_PWD="$DB_PASSWORD"
+          mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED --default-character-set=utf8mb4 "$DB_NAME" --batch --skip-column-names \
+            -e "SELECT Url FROM ProductoImagenes ORDER BY Id;" > /tmp/prod-image-urls.txt
+          test "$(wc -l < /tmp/prod-image-urls.txt | tr -d ' ')" = "351"
+          : > /tmp/failures.txt
+          check_one() {
+            url="$1"
+            case "$url" in
+              https://res.cloudinary.com/riyrzmob/*) ;;
+              *) printf '%s\n' "$url" >> /tmp/failures.txt; return 0 ;;
+            esac
+            if ! curl --fail --silent --show-error --max-time 30 --output /dev/null "$url"; then
+              printf '%s\n' "$url" >> /tmp/failures.txt
+            fi
+          }
+          export -f check_one
+          xargs -r -n1 -P8 bash -c 'check_one "$1"' _ < /tmp/prod-image-urls.txt
+          failures="$(wc -l < /tmp/failures.txt | tr -d ' ')"
+          test "$failures" = "0"
+          echo "PROD_CLOUDINARY_ASSETS_EXPECTED=351"
+          echo "PROD_CLOUDINARY_ASSETS_REACHABLE=351"
+          echo "PROD_CLOUDINARY_ASSET_FAILURES=0"
+
+      - name: Verify live PROD API
+        shell: bash
+        run: |
+          set -euo pipefail
+          check() {
+            url="$1"
+            file="$2"
+            for i in $(seq 1 24); do
+              code="$(curl -L -sS --connect-timeout 10 --max-time 30 -o "$file" -w '%{http_code}' "$url" || true)"
+              if [ "$code" = "200" ]; then return 0; fi
+              sleep 5
+            done
+            return 1
+          }
+          check "https://solqaryn-api-prod.onrender.com/health" /tmp/health.json
+          jq -e '.status=="ok"' /tmp/health.json >/dev/null
+          check "https://solqaryn-api-prod.onrender.com/health/ready" /tmp/ready.json
+          jq -e '.status=="ready" and .database=="connected"' /tmp/ready.json >/dev/null
+          check "https://solqaryn-api-prod.onrender.com/empresa-configuracion/publica" /tmp/company.json
+          jq -e '.success==true' /tmp/company.json >/dev/null
+          check "https://solqaryn-api-prod.onrender.com/tienda/productos?pagina=1&tamano=100" /tmp/products.json
+          jq -e '.success==true' /tmp/products.json >/dev/null
+          echo "PROD_FINAL_RUNTIME_SMOKE=PASS"
+          echo "PRODUCTION_WRITES=0"
