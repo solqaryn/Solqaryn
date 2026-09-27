@@ -71,7 +71,7 @@ jobs:
           export MYSQL_PWD="$DB_PASSWORD"
           umask 077
           mysqldump --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED \
-            --single-transaction --quick --skip-lock-tables --routines --triggers --events --hex-blob --no-tablespaces "$DB_NAME" \
+            --single-transaction --quick --skip-lock-tables --set-gtid-purged=OFF --routines --triggers --events --hex-blob --no-tablespaces "$DB_NAME" \
             | gzip -9 > /tmp/solqaryn-prod-empty.sql.gz
           sha256sum /tmp/solqaryn-prod-empty.sql.gz > /tmp/solqaryn-prod-empty.sql.gz.sha256
           printf '%s' "$BACKUP_PASSPHRASE" | gpg --batch --yes --no-tty --pinentry-mode loopback --passphrase-fd 0 \
