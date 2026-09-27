@@ -128,7 +128,7 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
   .mobile-menu-panel { padding: 22px; }
 }
 
-@media (min-width: 1367px), (min-width: 1181px) and (hover: hover) and (pointer: fine) {
+@media (min-width: 1181px) {
   .container { width: min(1320px, calc(100% - 64px)); }
   .utility-inner { min-height: 34px; font-size: inherit; }
   .utility-message { overflow: visible; text-overflow: clip; white-space: normal; }
