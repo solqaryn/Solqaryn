@@ -1,6 +1,6 @@
 # Detalles pendientes — SOLQARYN
 
-Este archivo concentra decisiones que el propietario ha decidido aplazar deliberadamente. No deben bloquear trabajo no dependiente y no deben reinterpretarse como fallos de DEV.
+Este archivo concentra decisiones que el propietario ha decidido aplazar deliberadamente. No deben bloquear trabajo no dependiente y no deben reinterpretarse como fallos de DEV o PROD.
 
 ## 1. Dominio personalizado / corte DNS
 
@@ -52,7 +52,7 @@ DEV puede continuar usando las URLs administradas actuales de Vercel y Render. L
 
 ---
 
-## 5. Certificación SMTP real de PROD
+## 4. Certificación SMTP real de PROD
 
 **Estado:** PENDIENTE — OAuth2 certificado; transporte SMTP no completado
 
@@ -74,7 +74,7 @@ DEV puede continuar usando las URLs administradas actuales de Vercel y Render. L
 
 ---
 
-## 6. Retiro final de recursos legacy personales
+## 5. Retiro final de recursos legacy personales
 
 **Estado:** PENDIENTE
 
@@ -85,31 +85,6 @@ DEV puede continuar usando las URLs administradas actuales de Vercel y Render. L
 **Se retoma cuando:** exista herramienta con capacidad de borrar repositorios/refs o el propietario realice la retirada manual después de confirmar el backup requerido.
 
 **Al retomar, validar:** ausencia de repositorios personales legacy que dupliquen SOLQARYN, eliminación de ramas temporales ya fusionadas y conservación únicamente de `dev`/`main` más las ramas operativas realmente necesarias.
-
----
-
-## 7. Migración final de datos históricos a PROD
-
-**Estado:** PENDIENTE DE EJECUCIÓN PRODUCTIVA
-
-**Evidencia ya cerrada:** el respaldo histórico verificado de VariStoreHN fue descargado, validado por SHA-256, descifrado y restaurado en un MySQL 8.4 aislado. El ensayo completo aplicó las migraciones actuales de SOLQARYN y terminó en `PASS` con 137 tablas, 107 migraciones EF, 1 empresa, 73 productos y 6 usuarios; no hubo escrituras en PROD.
-
-**Bloqueo actual:** el propietario volvió a autorizar explícitamente continuar con la migración productiva. El preflight read-only más reciente, run `36300433869`, volvió a certificar `solqaryn_prod` con 137 tablas / 107 migraciones / 0 empresas / 0 productos / 1 usuario y `PROD_WRITES=0`. Sin embargo, el intento de crear/publicar desde este entorno el workflow destructivo de cutover final fue bloqueado nuevamente por los controles de seguridad de ejecución. No se forzará ni se eludirá ese bloqueo; la escritura final necesita ejecutarse por un canal permitido desde `main`.
-
-**Estado del PROD actual:** `solqaryn_prod` permanece con el esquema canónico (137 tablas / 107 migraciones), 0 empresas históricas, 0 productos históricos y 1 usuario bootstrap administrador. Render PROD está desplegado y operativo sobre `main`.
-
-**Preflight adicional ya cerrado (2026-09-27):**
-
-- respaldo rollback cifrado del estado PROD previo a migración: **PASS**, run `36298199171`, artifact `solqaryn-prod-empty-rollback-36298199171`, digest `sha256:415e31d932437dd73c1491f1516e06da04de7959f1ab654c394bad0462bbda2f`;
-- el usuario bootstrap actual existe exactamente una vez dentro de los 6 usuarios del respaldo histórico: **PASS**;
-- overlay de autenticación bootstrap almacenado cifrado junto al rollback: **PASS**;
-- inventario histórico Cloudinary: **351** referencias en `ProductoImagenes`;
-- verificación individual de origen Cloudinary: **351/351** URLs legacy alcanzables, 0 fallos, 0 escrituras PROD;
-- migrador Cloudinary PROD fail-closed e idempotente ya está en `main`, deshabilitado por defecto y limitado a `solqaryn_prod` + `riyrzmob` + prefijo `solqaryn_prod`.
-
-**Bloqueo restante:** la autorización del propietario ya está vigente. Falta exclusivamente ejecutar la escritura final por un canal permitido, porque la herramienta conectada rechazó la creación/ejecución del cutover destructivo.
-
-**Al ejecutar:** restaurar el respaldo histórico verificado, aplicar EF hasta 107 migraciones, reconciliar exactamente 1 empresa / 73 productos / 6 usuarios / 351 `ProductoImagenes`, aplicar el overlay cifrado de autenticación del usuario bootstrap si corresponde y validar login. Después habilitar una sola vez `CloudinaryHistoricalProdMigration__Enabled=true` con `ExpectedLegacyRows=351`, verificar migración a `riyrzmob/solqaryn_prod/inventoryapp/productos/empresas/1`, exigir cero referencias legacy, volver a deshabilitar el flag y retirar el código temporal cuando quede certificado.
 
 ---
 
