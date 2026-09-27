@@ -1,0 +1,75 @@
+name: PROD - Empty canonical rollback backup
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/prod-empty-rollback-backup.yml
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: PROD
+    env:
+      DB_HOST: ${{ vars.SOLQARYN_PROD_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_PROD_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_PROD_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_PROD_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_PROD_DB_PASSWORD }}
+      BACKUP_PASSPHRASE: ${{ secrets.SOLQARYN_PROD_BACKUP_PASSPHRASE }}
+    steps:
+      - name: Install backup tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update >/dev/null
+          sudo apt-get install -y mysql-client gnupg >/dev/null
+
+      - name: Verify canonical empty PROD
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$DB_NAME" = "solqaryn_prod"
+          test "$DB_USER" = "solqaryn_prod_user"
+          test -n "$DB_PASSWORD"
+          test -n "$BACKUP_PASSPHRASE"
+          export MYSQL_PWD="$DB_PASSWORD"
+          mysqlc=(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED --default-character-set=utf8mb4 "$DB_NAME" --batch --skip-column-names)
+          test "$("${mysqlc[@]}" -e 'SELECT DATABASE();')" = "solqaryn_prod"
+          test "$("${mysqlc[@]}" -e "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE';")" = "137"
+          test "$("${mysqlc[@]}" -e 'SELECT COUNT(*) FROM __EFMigrationsHistory;')" = "107"
+          test "$("${mysqlc[@]}" -e 'SELECT COUNT(*) FROM Empresas;')" = "0"
+          test "$("${mysqlc[@]}" -e 'SELECT COUNT(*) FROM Productos;')" = "0"
+          test "$("${mysqlc[@]}" -e 'SELECT COUNT(*) FROM Usuarios;')" = "0"
+          echo "PROD_EMPTY_CANONICAL_STATE=PASS"
+
+      - name: Create encrypted rollback backup
+        shell: bash
+        run: |
+          set -euo pipefail
+          export MYSQL_PWD="$DB_PASSWORD"
+          umask 077
+          mysqldump --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED \
+            --single-transaction --quick --skip-lock-tables --routines --triggers --events --hex-blob --no-tablespaces "$DB_NAME" \
+            | gzip -9 > /tmp/solqaryn-prod-empty.sql.gz
+          sha256sum /tmp/solqaryn-prod-empty.sql.gz > /tmp/solqaryn-prod-empty.sql.gz.sha256
+          printf '%s' "$BACKUP_PASSPHRASE" | gpg --batch --yes --no-tty --pinentry-mode loopback --passphrase-fd 0 \
+            --symmetric --cipher-algo AES256 --digest-algo SHA256 \
+            --output /tmp/solqaryn-prod-empty.sql.gz.gpg /tmp/solqaryn-prod-empty.sql.gz
+          rm -f /tmp/solqaryn-prod-empty.sql.gz
+          test -s /tmp/solqaryn-prod-empty.sql.gz.gpg
+          echo "PROD_EMPTY_ROLLBACK_BACKUP=PASS"
+          echo "PRODUCTION_WRITES=0"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: solqaryn-prod-empty-rollback-${{ github.run_id }}
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            /tmp/solqaryn-prod-empty.sql.gz.gpg
+            /tmp/solqaryn-prod-empty.sql.gz.sha256
