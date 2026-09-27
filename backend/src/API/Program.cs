@@ -138,6 +138,7 @@ builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IImageStorageService, CloudinaryImageStorageService>();
 builder.Services.AddScoped<ICompraDocumentoStorageService, CloudinaryCompraDocumentoStorageService>();
+builder.Services.AddScoped<CloudinaryHistoricalProdMigrationService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<ICompraRepository, CompraRepository>();
 builder.Services.AddScoped<ICompraDocumentoRepository, CompraDocumentoRepository>();
@@ -270,6 +271,20 @@ if (app.Configuration.GetValue<bool>("Database:ApplyMigrationsOnStartup"))
     }
     var seedFiscalService = new SeedFiscalService(db); await seedFiscalService.SeedDefaultsAsync();
 }
+if (app.Configuration.GetValue<bool>("CloudinaryHistoricalProdMigration:Enabled"))
+{
+    await using var scope = app.Services.CreateAsyncScope();
+    var migration = scope.ServiceProvider.GetRequiredService<CloudinaryHistoricalProdMigrationService>();
+    var result = await migration.MigrateAsync();
+    app.Logger.LogInformation(
+        "CloudinaryHistoricalProdMigration status={Status} sourceRows={SourceRows} migratedRows={MigratedRows} remainingLegacyRows={RemainingLegacyRows} sourceDeleted={SourceDeleted}",
+        result.Status,
+        result.SourceRows,
+        result.MigratedRows,
+        result.RemainingLegacyRows,
+        false);
+}
+
 await app.RunAsync();
 
 public static class TrustedClientIpResolver
