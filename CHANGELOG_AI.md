@@ -1,3 +1,11 @@
+## 2026-09-28 — Contexto canónico reconciliado con cierre PROD
+
+- `PROJECT_CONTEXT.md` deja de marcar Vercel PROD como pendiente: `solqaryn-prod` ya está activo y certificado sobre `main`.
+- El contexto canónico registra que la migración histórica de VariStoreHN hacia PROD ya fue ejecutada y certificada.
+- Cloudflare queda descrito en su estado real: `solqaryn.com` delegado, con cutover del dominio personalizado deliberadamente aplazado y no bloqueante.
+- No hubo cambios de código, datos, secretos, runtime ni infraestructura; la corrección es exclusivamente documental.
+- `docs/DETALLES_PENDIENTES.md` permanece sin cambios y conserva únicamente los tres aplazamientos deliberados vigentes.
+
 ## 2026-09-27 — Retiro de repositorio personal legacy y deudas cerradas
 
 - El repositorio personal privado `jmejia31/VariStorehn` fue eliminado por el propietario y la API de GitHub confirma `404 Not Found`.
