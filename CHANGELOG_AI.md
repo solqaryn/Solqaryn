@@ -2023,3 +2023,15 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - `docs/DETALLES_PENDIENTES.md` marca este punto como **CERRADO — POSTCHECK PASS**.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
+## 2026-09-28 — Certificación final PROD con frontend y depuración de pendientes
+
+- Revalidado Vercel corporativo: existen `solqaryn-dev` y `solqaryn-prod`; el deployment productivo de `solqaryn-prod` está `READY` sobre `main` @ `0a63764b2298acb21995332d81aeff4c45162526`.
+- Revalidado Render PROD: `solqaryn-api-prod` permanece `live` sobre el mismo commit productivo; `/health/ready` devuelve `ready` con `database=connected`.
+- Readback vivo del catálogo PROD: 73 productos, 65 con stock, 8 agotados reales, 101 unidades disponibles, 351 URLs de imagen únicas, 0 referencias `vyijnqzq` y 0 URLs fuera de `/solqaryn_prod/`.
+- Cloudinary PROD, Aiven PROD, Render PROD, Cloudflare delegado sin cutover y Clover no integrado permanecen certificados conforme a sus evidencias específicas.
+- `main` fue absorbido en la ascendencia de `dev` mediante merge seguro y sin reescritura: `main...dev` queda con `behind_by=0`.
+- `docs/DETALLES_PENDIENTES.md` fue depurado: contiene únicamente dominio/DNS diferido y SMTP real DEV/PROD diferido; se retiraron del archivo los puntos ya cerrados.
+- Actualizada la evidencia de migración PROD para reflejar que los artifacts históricos/rollback ya fueron eliminados.
+- Añadida `docs/evidencias/PROD_CIERRE_FINAL_2026-09-28.md` con la certificación consolidada `PROD_COMPLETE_WITH_FRONTEND=PASS`.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
