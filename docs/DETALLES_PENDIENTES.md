@@ -4,19 +4,23 @@ Este archivo concentra decisiones que el propietario ha decidido aplazar deliber
 
 ## 1. Dominio personalizado / corte DNS
 
-**Estado:** PENDIENTE
+**Estado:** APLAZADO / NO BLOQUEANTE
 
-**Decisión vigente:** no migrar, activar ni cortar el dominio personalizado en este momento.
+**Evidencia vigente:** `solqaryn.com` ya está delegado correctamente a Cloudflare y Cloudflare fue certificado previamente. No existe cutover activo del dominio hacia frontend/backend PROD.
 
-DEV puede continuar usando las URLs administradas actuales de Vercel y Render. La activación/cambio de dominio se retomará más adelante, cuando el entorno productivo correspondiente esté preparado y exista autorización explícita para el corte de DNS/dominio.
+**Decisión vigente:** no migrar, activar ni cortar el dominio personalizado en este momento. DEV y PROD continúan usando las URLs administradas actuales de Vercel y Render.
 
 **Acción actual:** ninguna.
+
+**Se retoma cuando:** el propietario decida asignar el dominio a PROD y autorice explícitamente el cutover DNS/frontend/backend.
+
+**Al retomar, validar:** hostnames finales, DNS, TLS/certificados, Vercel PROD, backend PROD, CORS/orígenes permitidos, redirects, smoke end-to-end y rollback del corte.
 
 ---
 
 ## 2. Certificación SMTP real de DEV
 
-**Estado:** PENDIENTE
+**Estado:** APLAZADO / NO BLOQUEANTE
 
 **Servicio afectado:** `solqaryn-api-dev`
 
@@ -31,6 +35,8 @@ DEV puede continuar usando las URLs administradas actuales de Vercel y Render. L
 - En la configuración actual, la restricción de salida SMTP del plan Free impide completar la certificación real por el puerto 587.
 
 **Decisión vigente:** mantener Render DEV en plan Free y no contratar un plan de pago únicamente para cerrar esta prueba.
+
+**Acción actual:** ninguna.
 
 **Se retoma cuando:** exista una decisión posterior para habilitar conectividad SMTP real (por cambio de plan autorizado o por una arquitectura de correo distinta aprobada).
 
