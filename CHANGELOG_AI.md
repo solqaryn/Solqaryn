@@ -1992,3 +1992,11 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - `docs/DETALLES_PENDIENTES.md` marca este housekeeping como **CERRADO — POSTCHECK PASS**.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
+## 2026-09-28 — Preparada limpieza de Skills cacheadas de ChatGPT
+
+- Confirmado que la biblioteca instalada de ChatGPT mantiene dos residuos legacy: `skills://solqaryn-project-governance` con `VARIAPP / solqaryn/VariApp / Desarrollo` y `skills://variapp-project-governance`.
+- Confirmado que la fuente canonica del repositorio en `dev` es `SOLQARYN / solqaryn/Solqaryn / dev`.
+- Preparado y validado un `skill.zip` limpio desde `.agents/skills/solqaryn-project-governance`; la validacion no detecta referencias legacy.
+- Queda unicamente la accion manual de biblioteca: borrar ambas skills instaladas obsoletas y reinstalar la version canonica; despues se debe revalidar el registro de skills disponible.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
