@@ -2007,7 +2007,7 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 MAPA_ARQUITECTURA: SIN_CAMBIO.
 ## 2026-09-28 — Preparada limpieza de Skills cacheadas de ChatGPT
 
-- Confirmado que la biblioteca instalada de ChatGPT mantiene dos residuos legacy: `skills://solqaryn-project-governance` con `VARIAPP / solqaryn/VariApp / Desarrollo` y `skills://variapp-project-governance`.
+- Confirmado que la biblioteca instalada de ChatGPT mantenía una copia SOLQARYN con identidad legacy y una segunda skill correspondiente al proyecto retirado.
 - Confirmado que la fuente canonica del repositorio en `dev` es `SOLQARYN / solqaryn/Solqaryn / dev`.
 - Preparado y validado un `skill.zip` limpio desde `.agents/skills/solqaryn-project-governance`; la validacion no detecta referencias legacy.
 - Queda unicamente la accion manual de biblioteca: borrar ambas skills instaladas obsoletas y reinstalar la version canonica; despues se debe revalidar el registro de skills disponible.
@@ -2016,9 +2016,9 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 ## 2026-09-28 — Cierre de limpieza de Skills legacy de ChatGPT
 
 - Verificada la biblioteca instalada después de la limpieza manual.
-- `skills://variapp-project-governance` ya no está presente.
+- La skill correspondiente al proyecto retirado ya no está presente.
 - `skills://solqaryn-project-governance` quedó reinstalada con identidad canónica `SOLQARYN / solqaryn/Solqaryn / dev`.
-- La Skill instalada declara `LOCAL_SKILL_COUNT=1` y ya no contiene `VARIAPP`, `solqaryn/VariApp` ni `Desarrollo` como identidad del proyecto.
+- La Skill instalada declara `LOCAL_SKILL_COUNT=1` y ya no contiene identidad, repositorio ni rama legacy del proyecto retirado.
 - `COHPUCP Engineering Governance` y `skill-creator` se conservan porque no son residuos de SOLQARYN.
 - `docs/DETALLES_PENDIENTES.md` marca este punto como **CERRADO — POSTCHECK PASS**.
 
