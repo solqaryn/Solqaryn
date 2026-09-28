@@ -99,7 +99,7 @@ Resultado: `CLOVER_PROD_STATUS=NOT_INTEGRATED_CERTIFIED`.
 - Cloudinary personal legacy: retirado.
 - Repositorio personal `jmejia31/VariStorehn`: retirado.
 - Artifacts históricos/rollback usados durante el cutover: eliminados.
-- Skill VariApp legacy: eliminada; Skill SOLQARYN reinstalada con `SOLQARYN / solqaryn/Solqaryn / dev`.
+- Skill legacy del proyecto retirado: eliminada; Skill SOLQARYN reinstalada con `SOLQARYN / solqaryn/Solqaryn / dev`.
 
 Resultado: `LEGACY_RETIREMENT=PASS`.
 
