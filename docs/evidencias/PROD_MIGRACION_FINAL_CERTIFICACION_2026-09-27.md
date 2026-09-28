@@ -104,3 +104,12 @@ Conservar hasta que el propietario decida que ya no es necesario para rollback h
 `PROD_LEGACY_CLOUDINARY_REFERENCES=0`  
 `PROD_RUNTIME_SMOKE=PASS`  
 `PROD_MIGRATION_STATUS=CLOSED`
+
+## Seguimiento de housekeeping — 2026-09-28
+
+El propietario aceptó PROD y autorizó retirar la infraestructura personal legacy de SOLQARYN/VariStoreHN.
+
+- El rollback pre-cutover del destino PROD `10924897018` ya no es requisito de recuperación histórica y queda autorizado para eliminación controlada o expiración natural.
+- El backup histórico independiente de la fuente `10901905430` se conserva durante el retiro de la cuenta personal. Es un artifact corporativo cifrado con restore verificado y no depende de la infraestructura legacy viva.
+- La retirada de cuentas/servicios personales no autoriza eliminar proyectos personales ajenos a SOLQARYN/VariStoreHN.
+- El cierre definitivo exige postcheck de DEV/PROD después de la eliminación manual.
