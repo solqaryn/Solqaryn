@@ -91,6 +91,24 @@ Este archivo concentra decisiones que el propietario ha decidido aplazar deliber
 
 ---
 
+## 5. Biblioteca de Skills de ChatGPT — retirar copias legacy
+
+**Estado:** ACCION MANUAL REQUERIDA / NO BLOQUEANTE
+
+**Diagnostico confirmado (2026-09-28):**
+
+- La skill instalada `skills://solqaryn-project-governance` sigue cacheada con identidad obsoleta: `PROJECT_ID=VARIAPP`, `REPOSITORY=solqaryn/VariApp`, `BRANCH=Desarrollo`.
+- La skill instalada `skills://variapp-project-governance` tambien sigue presente y pertenece al proyecto retirado VariApp.
+- El repositorio canonico actual es correcto: `PROJECT_ID=SOLQARYN`, `REPOSITORY=solqaryn/Solqaryn`, `BRANCH=dev`.
+- Se preparo y valido un paquete limpio de `solqaryn-project-governance` directamente desde `.agents/skills/solqaryn-project-governance` de `dev`; no contiene referencias `VARIAPP`, `solqaryn/VariApp` ni `Desarrollo`.
+
+**Accion manual requerida:** desde la biblioteca `/skills` de ChatGPT, eliminar las dos copias instaladas obsoletas (`SOLQARYN - Project Governance` cacheada y `VariApp Project Governance`) y luego instalar el paquete limpio `skill.zip` preparado desde el repositorio canonico.
+
+**Cierre:** volver a listar/leer las skills disponibles y confirmar que `variapp-project-governance` desaparecio y que `solqaryn-project-governance` expone `SOLQARYN / solqaryn/Solqaryn / dev`.
+
+**Impacto runtime:** ninguno; esta limpieza afecta solo el contexto/gobierno que ChatGPT carga para trabajar con el proyecto.
+
+---
 ## Regla de uso
 
 Agregar aquí únicamente pendientes deliberadamente pospuestos por decisión del propietario. Cada pendiente debe indicar su estado, motivo, condición de reanudación y no debe bloquear trabajo independiente.
