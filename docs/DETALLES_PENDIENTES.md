@@ -68,6 +68,31 @@ Este archivo concentra decisiones que el propietario ha decidido aplazar deliber
 
 ---
 
+## 4. Retiro final de infraestructura legacy personal / rollback histórico
+
+**Estado:** LISTO PARA RETIRO MANUAL / NO BLOQUEANTE
+
+**Evidencia vigente (2026-09-28):**
+
+- Vercel corporativo contiene exactamente `solqaryn-dev` y `solqaryn-prod`.
+- Render corporativo contiene `solqaryn-api-dev` y `solqaryn-api-prod`, ambos ligados al repositorio `solqaryn/Solqaryn`.
+- DEV responde `/health/ready = ready` con base conectada y runtime sobre el Aiven corporativo `solqaryn-mysql-solqaryn.h.aivencloud.com` / `solqaryn_dev`.
+- PROD responde `/health/ready = ready` con base conectada y el catálogo público devuelve 73 productos desde `solqaryn_prod`; las imágenes observadas usan `riyrzmob/solqaryn_prod`.
+- El repositorio personal legacy `jmejia31/VariStorehn` ya no aparece entre los repositorios accesibles instalados.
+- La migración histórica PROD está certificada PASS y el runtime canónico no usa infraestructura legacy como fallback.
+
+**Rollback pre-cutover de destino PROD:** artifact GitHub `10924897018` (`solqaryn-prod-empty-rollback-36298199171`), creado antes del cutover y con expiración `2026-10-27T05:49:44Z`. Tras la aceptación de PROD, este artifact ya no es necesario como rollback histórico y puede eliminarse de forma controlada o dejarse expirar.
+
+**Respaldo histórico independiente que SE CONSERVA:** artifact GitHub `10901905430` (`solqaryn-legacy-prod-defaultdb-backup-36228394479`), cifrado y con restore verificado, expiración `2026-12-25T07:58:42Z`. Este respaldo vive en el repositorio corporativo y no depende de la cuenta personal legacy; conservarlo durante el retiro de la infraestructura personal evita perder la última copia independiente de la fuente histórica.
+
+**Autorización vigente:** el propietario autoriza retirar los recursos SOLQARYN/VariStoreHN que permanezcan en cuentas personales históricas. Esta autorización NO alcanza proyectos personales ajenos a SOLQARYN/VariStoreHN.
+
+**Acción manual pendiente:** eliminar únicamente los recursos legacy SOLQARYN/VariStoreHN que todavía existan en las cuentas personales de Aiven, Render, Vercel y Cloudinary, y eliminar manualmente el artifact pre-cutover `10924897018` si se desea limpieza inmediata. No eliminar el artifact histórico `10901905430` en esta etapa.
+
+**Postcheck requerido:** después del retiro manual, revalidar DEV/PROD health, catálogo PROD, Cloudinary corporativo y ausencia de referencias legacy; luego cambiar este punto a CERRADO.
+
+---
+
 ## Regla de uso
 
 Agregar aquí únicamente pendientes deliberadamente pospuestos por decisión del propietario. Cada pendiente debe indicar su estado, motivo, condición de reanudación y no debe bloquear trabajo independiente.
