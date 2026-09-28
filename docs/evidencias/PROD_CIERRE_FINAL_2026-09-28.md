@@ -64,6 +64,7 @@ Resultado: `RENDER_PROD=PASS`.
   - `/login` carga `SOLQARYN | Acceso privado`;
   - `/varistorehn` carga el storefront público;
   - gateway/backend PROD y navegación autenticada ya fueron certificados en el smoke previo del cierre productivo.
+- Observabilidad Vercel desde el deploy productivo `0a63764b...`: **0 runtime errors** en el rango posterior a `2026-09-28T02:25:50Z`.
 
 Resultado: `VERCEL_PROD=PASS` / `FRONTEND_PROD=PASS`.
 
