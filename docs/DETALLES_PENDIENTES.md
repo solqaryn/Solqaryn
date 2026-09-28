@@ -93,20 +93,24 @@ Este archivo concentra decisiones que el propietario ha decidido aplazar deliber
 
 ## 5. Biblioteca de Skills de ChatGPT — retirar copias legacy
 
-**Estado:** ACCION MANUAL REQUERIDA / NO BLOQUEANTE
+**Estado:** CERRADO — POSTCHECK PASS
 
-**Diagnostico confirmado (2026-09-28):**
+**Cierre confirmado (2026-09-28):**
 
-- La skill instalada `skills://solqaryn-project-governance` sigue cacheada con identidad obsoleta: `PROJECT_ID=VARIAPP`, `REPOSITORY=solqaryn/VariApp`, `BRANCH=Desarrollo`.
-- La skill instalada `skills://variapp-project-governance` tambien sigue presente y pertenece al proyecto retirado VariApp.
-- El repositorio canonico actual es correcto: `PROJECT_ID=SOLQARYN`, `REPOSITORY=solqaryn/Solqaryn`, `BRANCH=dev`.
-- Se preparo y valido un paquete limpio de `solqaryn-project-governance` directamente desde `.agents/skills/solqaryn-project-governance` de `dev`; no contiene referencias `VARIAPP`, `solqaryn/VariApp` ni `Desarrollo`.
+- `skills://variapp-project-governance` ya no aparece en la biblioteca instalada.
+- `skills://solqaryn-project-governance` quedó reinstalada y expone la identidad correcta:
+  - `PROJECT_ID=SOLQARYN`
+  - `REPOSITORY=solqaryn/Solqaryn`
+  - `BRANCH=dev`
+  - `LOCAL_SKILL_COUNT=1`
+- La descripción instalada también apunta a `solqaryn/Solqaryn`, sin referencias a `solqaryn/VariApp`.
+- `COHPUCP Engineering Governance` y `skill-creator` permanecen instaladas porque pertenecen a otros fines/proyectos y no son residuos legacy de SOLQARYN.
 
-**Accion manual requerida:** desde la biblioteca `/skills` de ChatGPT, eliminar las dos copias instaladas obsoletas (`SOLQARYN - Project Governance` cacheada y `VariApp Project Governance`) y luego instalar el paquete limpio `skill.zip` preparado desde el repositorio canonico.
+**Resultado:** la biblioteca de Skills ya no contiene la Skill VariApp antigua ni la copia SOLQARYN cacheada con identidad obsoleta.
 
-**Cierre:** volver a listar/leer las skills disponibles y confirmar que `variapp-project-governance` desaparecio y que `solqaryn-project-governance` expone `SOLQARYN / solqaryn/Solqaryn / dev`.
+**Impacto runtime:** ninguno; limpieza exclusiva del contexto/gobierno de ChatGPT.
 
-**Impacto runtime:** ninguno; esta limpieza afecta solo el contexto/gobierno que ChatGPT carga para trabajar con el proyecto.
+**Acción actual:** ninguna.
 
 ---
 ## Regla de uso
