@@ -1,3 +1,11 @@
+## 2026-09-27 — Retiro de repositorio personal legacy y deudas cerradas
+
+- El repositorio personal privado `jmejia31/VariStorehn` fue eliminado por el propietario y la API de GitHub confirma `404 Not Found`.
+- El repositorio corporativo vigente continúa siendo `solqaryn/Solqaryn`.
+- Las ramas temporales de migración/auditoría ya fueron retiradas; permanecen únicamente `main` y `dev`.
+- `solqaryn-prod` en Vercel ya existe y la certificación final del frontend PROD fue cerrada; por ello se retiró ese ítem de `docs/DETALLES_PENDIENTES.md`.
+- Se eliminó del documento de pendientes la deuda de retiro de recursos GitHub legacy, ya que dejó de ser pendiente.
+
 ## 2026-09-26 — Identidad SOLQARYN y legado bloqueados
 
 - Autoridad operativa fijada en `SOLQARYN / solqaryn/Solqaryn / dev`.
@@ -1935,6 +1943,26 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - `docs/DETALLES_PENDIENTES.md` deja de considerar la migración histórica como pendiente.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO — cierre operativo de migración y limpieza de tooling temporal; se conserva la arquitectura vigente.
+
+## 2026-09-27 — SMTP PROD queda aplazado como no bloqueante
+
+- Revalidado `solqaryn-api-prod` en Render: servicio activo sobre plan Free.
+- La evidencia vigente permanece: OAuth2/refresh token certificado; Microsoft entrega access token; el transporte SMTP a `smtp-mail.outlook.com:587` termina en `SMTP_TIMEOUT` antes de autenticación.
+- Se formaliza el estado operativo como **APLAZADO / NO BLOQUEANTE** y sin acción actual; se retomará únicamente al habilitar conectividad SMTP suficiente o adoptar otra arquitectura de correo.
+- No se modifica runtime, secretos, base de datos ni configuración productiva.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+## 2026-09-27 — Dominio personalizado queda aplazado como no bloqueante
+
+- Se formaliza en `docs/DETALLES_PENDIENTES.md` que el cutover de `solqaryn.com` permanece **APLAZADO / NO BLOQUEANTE**.
+- Cloudflare y la delegación del dominio ya estaban certificados; no se ejecuta todavía asignación del dominio hacia Vercel PROD ni backend PROD.
+- DEV y PROD continúan operando con las URLs administradas actuales de Vercel y Render.
+- Se documenta explícitamente que no existe acción actual y que el corte DNS sólo se retomará con autorización expresa del propietario, incluyendo validación de DNS, TLS, CORS, redirects, smoke E2E y rollback.
+- Se normaliza también SMTP DEV como **APLAZADO / NO BLOQUEANTE**, alineado con la decisión vigente de mantener Render Free.
+- No se modifica DNS, Cloudflare, Vercel, Render, certificados, secretos ni runtime.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
 ## 2026-09-27 — Reconciliación de stock PROD y visibilidad WhatsApp storefront
 
 - Diagnosticado PROD: 73 variantes activas y 101 unidades legacy en `ProductoVariantes`, pero 0 filas en `ExistenciasVariante`; el catálogo público fallaba cerrado y mostraba stock 0.
@@ -1947,3 +1975,50 @@ MAPA_ARQUITECTURA: SIN_CAMBIO — cierre operativo de migración y limpieza de t
 - Retirados los workflows/checkpoints temporales de diagnóstico y reconciliación una vez completados.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO — corrección de datos productivos con guardas y ajuste UI responsive; sin cambio de contratos ni esquema.
+
+## 2026-09-28 — Autorizado retiro controlado de infraestructura personal legacy
+
+- Revalidado el runtime corporativo antes del retiro: Vercel expone `solqaryn-dev` y `solqaryn-prod`; Render expone `solqaryn-api-dev` y `solqaryn-api-prod`; DEV y PROD responden readiness con base conectada y PROD sirve el catálogo migrado.
+- El rollback cifrado pre-cutover del destino PROD, artifact `10924897018`, queda autorizado para eliminación controlada o expiración natural tras la aceptación de PROD.
+- Se conserva el backup histórico cifrado de la fuente legacy, artifact `10901905430`, con restore verificado y expiración 2026-12-25; este artifact corporativo no depende de la cuenta personal y permanece como copia independiente durante el retiro.
+- El propietario autoriza eliminar únicamente recursos SOLQARYN/VariStoreHN que permanezcan en cuentas personales históricas de infraestructura; proyectos personales ajenos permanecen fuera de alcance.
+- El cierre definitivo del housekeeping queda condicionado a un postcheck después de la eliminación manual.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+## 2026-09-28 — Postcheck del retiro de infraestructura personal legacy
+
+- El propietario confirmó la eliminación de los recursos personales legacy de SOLQARYN/VariStoreHN en Aiven, Render, Vercel y Cloudinary.
+- Los endpoints Render legacy `solqaryn-api-desarrollo.onrender.com` y `solqaryn-api.onrender.com` y el alias Vercel legacy `varistorehn.vercel.app` responden HTTP 404.
+- Vercel corporativo conserva únicamente `solqaryn-dev` y `solqaryn-prod`; Render corporativo conserva únicamente `solqaryn-api-dev` y `solqaryn-api-prod`.
+- DEV y PROD responden readiness con base conectada; PROD sirve 73 productos y medios desde `riyrzmob/solqaryn_prod`.
+- Los logs corporativos del 2026-09-28 no muestran referencias recientes a `defaultdb`, `varistorehn_desarrollo`, `vyijnqzq` ni a los hosts Render legacy inspeccionados.
+- El artifact pre-cutover `10924897018` todavía existe y no está expirado; es el único housekeeping restante para cierre formal inmediato. El backup histórico `10901905430` también existe y se conserva deliberadamente.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+## 2026-09-28 — Cierre definitivo del housekeeping de rollback/histórico
+
+- Verificados por API los workflow runs `36298199171` y `36228394479`: ambos devuelven `artifacts: []`.
+- Eliminados los artifacts `10924897018` (`solqaryn-prod-empty-rollback-36298199171`) y `10901905430` (`solqaryn-legacy-prod-defaultdb-backup-36228394479`).
+- Se conservan los workflow runs únicamente como evidencia de ejecución; ya no contienen archivos de backup descargables.
+- El postcheck previo permanece válido: infraestructura personal legacy retirada y runtimes corporativos DEV/PROD operativos.
+- `docs/DETALLES_PENDIENTES.md` marca este housekeeping como **CERRADO — POSTCHECK PASS**.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+## 2026-09-28 — Preparada limpieza de Skills cacheadas de ChatGPT
+
+- Confirmado que la biblioteca instalada de ChatGPT mantiene dos residuos legacy: `skills://solqaryn-project-governance` con `VARIAPP / solqaryn/VariApp / Desarrollo` y `skills://variapp-project-governance`.
+- Confirmado que la fuente canonica del repositorio en `dev` es `SOLQARYN / solqaryn/Solqaryn / dev`.
+- Preparado y validado un `skill.zip` limpio desde `.agents/skills/solqaryn-project-governance`; la validacion no detecta referencias legacy.
+- Queda unicamente la accion manual de biblioteca: borrar ambas skills instaladas obsoletas y reinstalar la version canonica; despues se debe revalidar el registro de skills disponible.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+## 2026-09-28 — Cierre de limpieza de Skills legacy de ChatGPT
+
+- Verificada la biblioteca instalada después de la limpieza manual.
+- `skills://variapp-project-governance` ya no está presente.
+- `skills://solqaryn-project-governance` quedó reinstalada con identidad canónica `SOLQARYN / solqaryn/Solqaryn / dev`.
+- La Skill instalada declara `LOCAL_SKILL_COUNT=1` y ya no contiene `VARIAPP`, `solqaryn/VariApp` ni `Desarrollo` como identidad del proyecto.
+- `COHPUCP Engineering Governance` y `skill-creator` se conservan porque no son residuos de SOLQARYN.
+- `docs/DETALLES_PENDIENTES.md` marca este punto como **CERRADO — POSTCHECK PASS**.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
