@@ -60,7 +60,9 @@ Consultar `ARCHITECTURE.md` para cambios estructurales y `PROJECT_INDEX.md` para
 
 ### Vercel
 - Proyecto DEV activo: `solqaryn-dev`.
-- Proyecto PROD corporativo: **pendiente de creación/configuración**. No se reutiliza ningún proyecto personal o legacy.
+- Proyecto PROD corporativo activo: `solqaryn-prod`.
+- PROD fue certificado sobre la rama `main` y permanece operativo mediante el alias administrado `https://solqaryn-prod.vercel.app`.
+- No se reutiliza ningún proyecto personal o legacy.
 
 ### Aiven
 - Proyecto: `solqaryn`.
@@ -70,16 +72,17 @@ Consultar `ARCHITECTURE.md` para cambios estructurales y `PROJECT_INDEX.md` para
 
 ### Cloudflare
 - La cuenta/DNS corporativos pertenecen a SOLQARYN.
-- DEV no depende de un dominio custom mientras use `solqaryn-dev.vercel.app`.
-- La activación DNS de PROD se realiza únicamente cuando el frontend PROD corporativo exista y haya sido certificado.
+- `solqaryn.com` está delegado correctamente a Cloudflare.
+- DEV y PROD continúan usando las URLs administradas actuales mientras el cutover del dominio personalizado permanezca aplazado.
+- El cutover DNS hacia PROD es una decisión deliberadamente diferida y no bloquea el estado productivo certificado.
 
-## 5. Regla de legado y migración histórica
+## 5. Estado de legado y migración histórica
 
-- El único artefacto heredado autorizado para reutilización es el **respaldo verificado de la base histórica de VariStoreHN**.
+- La migración histórica de VariStoreHN hacia PROD ya fue ejecutada y certificada; el respaldo verificado se utilizó como fuente controlada de migración.
 - Ningún deployment, proyecto, servicio, cuenta personal, repositorio, dominio o variable legacy se considera dependencia de SOLQARYN.
-- No se consulta ni se reactiva infraestructura legacy como fallback.
+- La infraestructura legacy retirada no se consulta ni se reactiva como fallback.
 - VariStoreHN permanece únicamente como **primer tenant/empresa cliente** dentro de SOLQARYN.
-- La migración histórica se ejecutará al final, después de certificar DEV y PROD, tomando el respaldo como fuente y cargando los datos al tenant VariStoreHN en la nueva base productiva.
+- El estado productivo vigente se sostiene exclusivamente sobre la infraestructura corporativa certificada de SOLQARYN.
 
 ## 6. Dominios funcionales
 
