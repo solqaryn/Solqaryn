@@ -70,26 +70,27 @@ Este archivo concentra decisiones que el propietario ha decidido aplazar deliber
 
 ## 4. Retiro final de infraestructura legacy personal / rollback histórico
 
-**Estado:** LISTO PARA RETIRO MANUAL / NO BLOQUEANTE
+**Estado:** POSTCHECK PASS / SOLO QUEDA EL ARTIFACT PRE-CUTOVER `10924897018`
 
-**Evidencia vigente (2026-09-28):**
+**Retiro manual confirmado por el propietario (2026-09-28):** Aiven personal legacy, Render personal legacy, Vercel personal legacy y Cloudinary personal legacy de SOLQARYN/VariStoreHN fueron retirados.
 
-- Vercel corporativo contiene exactamente `solqaryn-dev` y `solqaryn-prod`.
-- Render corporativo contiene `solqaryn-api-dev` y `solqaryn-api-prod`, ambos ligados al repositorio `solqaryn/Solqaryn`.
-- DEV responde `/health/ready = ready` con base conectada y runtime sobre el Aiven corporativo `solqaryn-mysql-solqaryn.h.aivencloud.com` / `solqaryn_dev`.
-- PROD responde `/health/ready = ready` con base conectada y el catálogo público devuelve 73 productos desde `solqaryn_prod`; las imágenes observadas usan `riyrzmob/solqaryn_prod`.
-- El repositorio personal legacy `jmejia31/VariStorehn` ya no aparece entre los repositorios accesibles instalados.
-- La migración histórica PROD está certificada PASS y el runtime canónico no usa infraestructura legacy como fallback.
+**Postcheck independiente ejecutado después del retiro:**
 
-**Rollback pre-cutover de destino PROD:** artifact GitHub `10924897018` (`solqaryn-prod-empty-rollback-36298199171`), creado antes del cutover y con expiración `2026-10-27T05:49:44Z`. Tras la aceptación de PROD, este artifact ya no es necesario como rollback histórico y puede eliminarse de forma controlada o dejarse expirar.
+- Los endpoints Render legacy `solqaryn-api-desarrollo.onrender.com` y `solqaryn-api.onrender.com` responden HTTP 404 tanto en raíz como en health/readiness.
+- El alias Vercel legacy `varistorehn.vercel.app` responde HTTP 404.
+- Vercel corporativo contiene únicamente `solqaryn-dev` y `solqaryn-prod`; los deployments corporativos observados están en estado `READY`.
+- Render corporativo contiene únicamente `solqaryn-api-dev` y `solqaryn-api-prod`, ambos ligados a `solqaryn/Solqaryn`.
+- DEV responde `/health/ready` con `status=ready` y `database=connected`.
+- PROD responde `/health/ready` con `status=ready` y `database=connected`.
+- El catálogo PROD responde correctamente con `totalCount=73`; las imágenes observadas usan `res.cloudinary.com/riyrzmob/.../solqaryn_prod/...`.
+- Desde `2026-09-28T00:00:00Z`, los logs de los runtimes corporativos no muestran referencias a `defaultdb`, `varistorehn_desarrollo`, `vyijnqzq` ni a los hosts Render legacy inspeccionados.
+- El repositorio personal legacy `jmejia31/VariStorehn` no aparece entre los repositorios instalados/accesibles; otros repositorios personales ajenos a SOLQARYN/VariStoreHN permanecen fuera de alcance.
 
-**Respaldo histórico independiente que SE CONSERVA:** artifact GitHub `10901905430` (`solqaryn-legacy-prod-defaultdb-backup-36228394479`), cifrado y con restore verificado, expiración `2026-12-25T07:58:42Z`. Este respaldo vive en el repositorio corporativo y no depende de la cuenta personal legacy; conservarlo durante el retiro de la infraestructura personal evita perder la última copia independiente de la fuente histórica.
+**Artifact pre-cutover que TODAVÍA EXISTE:** GitHub Actions artifact `10924897018`, nombre `solqaryn-prod-empty-rollback-36298199171`, workflow run `36298199171` (`PROD - Empty canonical rollback backup`), `expired=false`, expiración `2026-10-27T05:49:44Z`. Ya no es necesario para rollback histórico; puede eliminarse manualmente o dejarse expirar.
 
-**Autorización vigente:** el propietario autoriza retirar los recursos SOLQARYN/VariStoreHN que permanezcan en cuentas personales históricas. Esta autorización NO alcanza proyectos personales ajenos a SOLQARYN/VariStoreHN.
+**Respaldo histórico que SE CONSERVA:** artifact `10901905430`, nombre `solqaryn-legacy-prod-defaultdb-backup-36228394479`, workflow run `36228394479`, `expired=false`, expiración `2026-12-25T07:58:42Z`. Es el respaldo histórico cifrado con restore verificado y no debe eliminarse en este housekeeping.
 
-**Acción manual pendiente:** eliminar únicamente los recursos legacy SOLQARYN/VariStoreHN que todavía existan en las cuentas personales de Aiven, Render, Vercel y Cloudinary, y eliminar manualmente el artifact pre-cutover `10924897018` si se desea limpieza inmediata. No eliminar el artifact histórico `10901905430` en esta etapa.
-
-**Postcheck requerido:** después del retiro manual, revalidar DEV/PROD health, catálogo PROD, Cloudinary corporativo y ausencia de referencias legacy; luego cambiar este punto a CERRADO.
+**Única acción restante para cierre formal inmediato:** eliminar manualmente `10924897018`. Si se decide dejarlo expirar automáticamente, no existe dependencia operativa ni bloqueo para DEV/PROD; el pendiente sería únicamente housekeeping temporal de GitHub Actions.
 
 ---
 
