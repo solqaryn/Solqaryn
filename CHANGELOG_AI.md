@@ -1935,3 +1935,15 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - `docs/DETALLES_PENDIENTES.md` deja de considerar la migración histórica como pendiente.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO — cierre operativo de migración y limpieza de tooling temporal; se conserva la arquitectura vigente.
+## 2026-09-27 — Reconciliación de stock PROD y visibilidad WhatsApp storefront
+
+- Diagnosticado PROD: 73 variantes activas y 101 unidades legacy en `ProductoVariantes`, pero 0 filas en `ExistenciasVariante`; el catálogo público fallaba cerrado y mostraba stock 0.
+- Ejecutada reconciliación transaccional y fail-closed hacia `ExistenciasVariante`: 73 existencias creadas, 101 unidades físicas, 0 variantes sin existencia y 0 diferencias postcheck.
+- Certificado el API público PROD: 73 productos, 65 con stock > 0, 8 realmente agotados y suma de disponibilidad 101.
+- Certificado DEV: 4 productos, 4 con stock > 0 y suma de disponibilidad 52; sin regresión.
+- Cloudinary certificado en ambos entornos: PROD usa exclusivamente `riyrzmob/solqaryn_prod` (351 URLs distintas en el catálogo auditado) y DEV `riyrzmob/solqaryn_dev`; 0 referencias al cloud legacy `vyijnqzq`.
+- Corregida la regla responsive del header para que WhatsApp sea visible de forma determinista en escritorio desde 1181 px, sin depender de `hover`/`pointer`.
+- DEV validado en navegador: WhatsApp visible y enlazado a `wa.me/50497227403`; catálogo e imágenes sin error.
+- Retirados los workflows/checkpoints temporales de diagnóstico y reconciliación una vez completados.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO — corrección de datos productivos con guardas y ajuste UI responsive; sin cambio de contratos ni esquema.
