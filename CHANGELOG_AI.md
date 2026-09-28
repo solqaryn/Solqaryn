@@ -1983,3 +1983,12 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - El artifact pre-cutover `10924897018` todavía existe y no está expirado; es el único housekeeping restante para cierre formal inmediato. El backup histórico `10901905430` también existe y se conserva deliberadamente.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
+## 2026-09-28 — Cierre definitivo del housekeeping de rollback/histórico
+
+- Verificados por API los workflow runs `36298199171` y `36228394479`: ambos devuelven `artifacts: []`.
+- Eliminados los artifacts `10924897018` (`solqaryn-prod-empty-rollback-36298199171`) y `10901905430` (`solqaryn-legacy-prod-defaultdb-backup-36228394479`).
+- Se conservan los workflow runs únicamente como evidencia de ejecución; ya no contienen archivos de backup descargables.
+- El postcheck previo permanece válido: infraestructura personal legacy retirada y runtimes corporativos DEV/PROD operativos.
+- `docs/DETALLES_PENDIENTES.md` marca este housekeeping como **CERRADO — POSTCHECK PASS**.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
