@@ -1963,3 +1963,13 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - No se modifica DNS, Cloudflare, Vercel, Render, certificados, secretos ni runtime.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+## 2026-09-28 — Autorizado retiro controlado de infraestructura personal legacy
+
+- Revalidado el runtime corporativo antes del retiro: Vercel expone `solqaryn-dev` y `solqaryn-prod`; Render expone `solqaryn-api-dev` y `solqaryn-api-prod`; DEV y PROD responden readiness con base conectada y PROD sirve el catálogo migrado.
+- El rollback cifrado pre-cutover del destino PROD, artifact `10924897018`, queda autorizado para eliminación controlada o expiración natural tras la aceptación de PROD.
+- Se conserva el backup histórico cifrado de la fuente legacy, artifact `10901905430`, con restore verificado y expiración 2026-12-25; este artifact corporativo no depende de la cuenta personal y permanece como copia independiente durante el retiro.
+- El propietario autoriza eliminar únicamente recursos SOLQARYN/VariStoreHN que permanezcan en cuentas personales históricas de infraestructura; proyectos personales ajenos permanecen fuera de alcance.
+- El cierre definitivo del housekeeping queda condicionado a un postcheck después de la eliminación manual.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
