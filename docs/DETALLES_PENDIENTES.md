@@ -68,51 +68,7 @@ Este archivo concentra decisiones que el propietario ha decidido aplazar deliber
 
 ---
 
-## 4. Retiro final de infraestructura legacy personal / rollback histórico
 
-**Estado:** CERRADO — POSTCHECK PASS
-
-**Cierre confirmado (2026-09-28):**
-
-- El propietario retiró los recursos personales legacy de SOLQARYN/VariStoreHN en Aiven, Render, Vercel y Cloudinary.
-- Los endpoints Render legacy `solqaryn-api-desarrollo.onrender.com` y `solqaryn-api.onrender.com` responden HTTP 404.
-- El alias Vercel legacy `varistorehn.vercel.app` responde HTTP 404.
-- Vercel corporativo conserva únicamente `solqaryn-dev` y `solqaryn-prod`; Render corporativo conserva únicamente `solqaryn-api-dev` y `solqaryn-api-prod`.
-- DEV y PROD responden readiness con base conectada.
-- PROD mantiene `totalCount=73` y las imágenes observadas usan `res.cloudinary.com/riyrzmob/.../solqaryn_prod/...`.
-- Los logs corporativos posteriores al retiro no muestran referencias activas a `defaultdb`, `varistorehn_desarrollo`, `vyijnqzq` ni a los hosts Render legacy inspeccionados.
-- El repositorio personal legacy `jmejia31/VariStorehn` ya no aparece entre los repositorios instalados/accesibles.
-- GitHub Actions run `36298199171` ahora devuelve `artifacts: []`: eliminado el artifact `10924897018` (`solqaryn-prod-empty-rollback-36298199171`).
-- GitHub Actions run `36228394479` ahora devuelve `artifacts: []`: eliminado el artifact `10901905430` (`solqaryn-legacy-prod-defaultdb-backup-36228394479`).
-
-**Resultado:** no quedan artifacts de rollback/histórico asociados a estos dos runs. Los workflow runs se conservan únicamente como trazabilidad de ejecución exitosa.
-
-**Acción actual:** ninguna.
-
----
-
-## 5. Biblioteca de Skills de ChatGPT — retirar copias legacy
-
-**Estado:** CERRADO — POSTCHECK PASS
-
-**Cierre confirmado (2026-09-28):**
-
-- `skills://variapp-project-governance` ya no aparece en la biblioteca instalada.
-- `skills://solqaryn-project-governance` quedó reinstalada y expone la identidad correcta:
-  - `PROJECT_ID=SOLQARYN`
-  - `REPOSITORY=solqaryn/Solqaryn`
-  - `BRANCH=dev`
-  - `LOCAL_SKILL_COUNT=1`
-- La descripción instalada también apunta a `solqaryn/Solqaryn`, sin referencias a `solqaryn/VariApp`.
-- `COHPUCP Engineering Governance` y `skill-creator` permanecen instaladas porque pertenecen a otros fines/proyectos y no son residuos legacy de SOLQARYN.
-
-**Resultado:** la biblioteca de Skills ya no contiene la Skill VariApp antigua ni la copia SOLQARYN cacheada con identidad obsoleta.
-
-**Impacto runtime:** ninguno; limpieza exclusiva del contexto/gobierno de ChatGPT.
-
-**Acción actual:** ninguna.
-
----
 ## Regla de uso
 
 Agregar aquí únicamente pendientes deliberadamente pospuestos por decisión del propietario. Cada pendiente debe indicar su estado, motivo, condición de reanudación y no debe bloquear trabajo independiente.
