@@ -1973,3 +1973,13 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - El cierre definitivo del housekeeping queda condicionado a un postcheck después de la eliminación manual.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
+## 2026-09-28 — Postcheck del retiro de infraestructura personal legacy
+
+- El propietario confirmó la eliminación de los recursos personales legacy de SOLQARYN/VariStoreHN en Aiven, Render, Vercel y Cloudinary.
+- Los endpoints Render legacy `solqaryn-api-desarrollo.onrender.com` y `solqaryn-api.onrender.com` y el alias Vercel legacy `varistorehn.vercel.app` responden HTTP 404.
+- Vercel corporativo conserva únicamente `solqaryn-dev` y `solqaryn-prod`; Render corporativo conserva únicamente `solqaryn-api-dev` y `solqaryn-api-prod`.
+- DEV y PROD responden readiness con base conectada; PROD sirve 73 productos y medios desde `riyrzmob/solqaryn_prod`.
+- Los logs corporativos del 2026-09-28 no muestran referencias recientes a `defaultdb`, `varistorehn_desarrollo`, `vyijnqzq` ni a los hosts Render legacy inspeccionados.
+- El artifact pre-cutover `10924897018` todavía existe y no está expirado; es el único housekeeping restante para cierre formal inmediato. El backup histórico `10901905430` también existe y se conserva deliberadamente.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
