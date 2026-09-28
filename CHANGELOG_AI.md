@@ -1943,3 +1943,12 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - `docs/DETALLES_PENDIENTES.md` deja de considerar la migración histórica como pendiente.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO — cierre operativo de migración y limpieza de tooling temporal; se conserva la arquitectura vigente.
+
+## 2026-09-27 — SMTP PROD queda aplazado como no bloqueante
+
+- Revalidado `solqaryn-api-prod` en Render: servicio activo sobre plan Free.
+- La evidencia vigente permanece: OAuth2/refresh token certificado; Microsoft entrega access token; el transporte SMTP a `smtp-mail.outlook.com:587` termina en `SMTP_TIMEOUT` antes de autenticación.
+- Se formaliza el estado operativo como **APLAZADO / NO BLOQUEANTE** y sin acción actual; se retomará únicamente al habilitar conectividad SMTP suficiente o adoptar otra arquitectura de correo.
+- No se modifica runtime, secretos, base de datos ni configuración productiva.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
