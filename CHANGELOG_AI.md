@@ -1952,3 +1952,14 @@ MAPA_ARQUITECTURA: SIN_CAMBIO — cierre operativo de migración y limpieza de t
 - No se modifica runtime, secretos, base de datos ni configuración productiva.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+## 2026-09-27 — Dominio personalizado queda aplazado como no bloqueante
+
+- Se formaliza en `docs/DETALLES_PENDIENTES.md` que el cutover de `solqaryn.com` permanece **APLAZADO / NO BLOQUEANTE**.
+- Cloudflare y la delegación del dominio ya estaban certificados; no se ejecuta todavía asignación del dominio hacia Vercel PROD ni backend PROD.
+- DEV y PROD continúan operando con las URLs administradas actuales de Vercel y Render.
+- Se documenta explícitamente que no existe acción actual y que el corte DNS sólo se retomará con autorización expresa del propietario, incluyendo validación de DNS, TLS, CORS, redirects, smoke E2E y rollback.
+- Se normaliza también SMTP DEV como **APLAZADO / NO BLOQUEANTE**, alineado con la decisión vigente de mantener Render Free.
+- No se modifica DNS, Cloudflare, Vercel, Render, certificados, secretos ni runtime.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
