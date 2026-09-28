@@ -40,7 +40,7 @@ DEV puede continuar usando las URLs administradas actuales de Vercel y Render. L
 
 ## 3. Certificación SMTP real de PROD
 
-**Estado:** PENDIENTE — OAuth2 certificado; transporte SMTP no completado
+**Estado:** APLAZADO / NO BLOQUEANTE — OAuth2 certificado; transporte SMTP no completado
 
 **Contrato configurado:** Outlook.com, `smtp-mail.outlook.com:587`, STARTTLS obligatorio, OAuth2/Modern Auth, identidad `solqaryn.platform@outlook.com`.
 
@@ -54,7 +54,9 @@ DEV puede continuar usando las URLs administradas actuales de Vercel y Render. L
 
 **Bloqueo restante:** no está en la obtención del token OAuth2. Falta conectividad SMTP saliente suficiente para completar conexión + STARTTLS + autenticación y posteriormente un envío/recepción real.
 
-**Decisión vigente:** mantener este punto como pendiente no bloqueante y no cambiar de plan únicamente para esta prueba.
+**Decisión vigente:** mantener este punto aplazado y no bloqueante; no cambiar de plan únicamente para esta prueba. El servicio `solqaryn-api-prod` fue revalidado en plan Free el 2026-09-27.
+
+**Acción actual:** ninguna.
 
 **Al retomar, validar:** `SMTP_OK`, autenticación SMTP OAuth2, envío real controlado, recepción en Outlook, remitente, Reply-To, adjunto PDF y trazabilidad sin exponer secretos.
 
