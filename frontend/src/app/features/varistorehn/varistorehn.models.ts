@@ -136,7 +136,7 @@ export interface TiendaTemaPublico {
   colorAdvertencia: string;
   colorError: string;
   colorInformacion: string;
-  fechaActualizacion?: string | null;
+  fechaActualizacion?: string;
 }
 
 export interface TiendaBootstrapPublico {
