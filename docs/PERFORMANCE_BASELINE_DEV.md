@@ -84,6 +84,23 @@ Pasadas calientes observadas posteriormente para `GET /tienda/productos`: **302.
 
 Los cold starts de Render Free permanecen separados del criterio de API caliente. La certificación completa del Punto 2 vive en `docs/evidencias/DEV_CERTIFICACION_PUNTO_2_CATALOGO_ACOTADO_2026-09-29.md`.
 
+### Punto 3 — resumen público vs detalle rico
+
+Functional HEAD: `3d2af21c83403fd7f4fd4f3039a26058be64bf54`.
+
+La separación final reserva galerías y detalle completo para `GET /tienda/productos/{slug}`. El listado usa `TiendaProductoResumenDto` y su proyección EF específica; conserva una imagen principal y variantes mínimas sin galerías.
+
+Pasadas calientes internas de `GET /tienda/productos` posteriores al deploy exact-head:
+
+- **254.1 ms / 5 queries / 109.2 ms DB**;
+- **216.5 ms / 5 queries / 107.5 ms DB**;
+- **225.4 ms / 5 queries / 111.9 ms DB**;
+- **224.3 ms / 5 queries / 112.3 ms DB**.
+
+Frente al read path previo de 6 queries, el resumen dedicado elimina una query adicional. Todas estas pasadas calientes cumplen el target inicial de <=500 ms. Las primeras pasadas posteriores al deploy se mantienen separadas como warm-up/concurrencia de Render Free.
+
+La evidencia completa está en `docs/evidencias/DEV_CERTIFICACION_PUNTO_3_READ_MODELS_PUBLICOS_LIGEROS_2026-09-29.md`.
+
 ### Bundle Angular observado
 
 Build productivo exact-head:
