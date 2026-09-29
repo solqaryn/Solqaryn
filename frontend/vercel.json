@@ -117,6 +117,24 @@
   ],
   "headers": [
     {
+      "source": "/(.*-[A-Za-z0-9]{8,}\\.(?:js|css))",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/api/:path*",
+      "headers": [
+        {
+          "key": "x-vercel-enable-rewrite-caching",
+          "value": "1"
+        }
+      ]
+    },
+    {
       "source": "/(.*)",
       "headers": [
         {
