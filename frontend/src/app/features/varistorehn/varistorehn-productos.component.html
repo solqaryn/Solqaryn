@@ -113,7 +113,7 @@
         <div class="catalog-toolbar">
           <div>
             <p class="eyebrow" id="catalog-results-title">{{ categoriaActiva() || 'TODOS LOS PRODUCTOS' }}</p>
-            <p class="result-count" role="status" aria-live="polite">{{ cargando() ? 'Cargando productos…' : totalResultados() + ' productos encontrados' }}</p>
+            <p class="result-count" role="status" aria-live="polite">{{ cargando() ? 'Cargando productos…' : totalResultadosMostrados() + ' productos encontrados' }}</p>
           </div>
           <button type="button" class="button ghost mobile-filters" [attr.aria-expanded]="filtrosAbiertos()" (click)="filtrosAbiertos.set(!filtrosAbiertos())">
             <app-store-icon nombre="filtro" /> Filtros
@@ -148,7 +148,7 @@
             <h2>Aún no hay productos públicos disponibles</h2>
             <p>Cuando la tienda publique productos activos aparecerán en este catálogo.</p>
           </div>
-        } @else if (!totalResultados()) {
+        } @else if (!totalResultadosMostrados()) {
           <div class="state-card">
             <app-store-icon nombre="buscar" />
             <h2>No encontramos coincidencias</h2>
