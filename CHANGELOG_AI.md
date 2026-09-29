@@ -1,3 +1,11 @@
+## 2026-09-29 — Punto 3: read models públicos ligeros
+
+- Listados y destacados del storefront usan `TiendaProductoResumenDto` y `ProductoCatalogoResumenReadModel`, separados del DTO/read model rico de detalle.
+- La proyección paginada elimina la query intermedia de IDs y no materializa galerías de variantes, color, talla ni descripción completa; conserva sólo los datos necesarios para tarjetas, selector de variante, precio/oferta y disponibilidad.
+- `/tienda/productos/{slug}` conserva la galería y detalle completo; carrito/cuenta siguen usando contexto por IDs y no se amplía su alcance.
+- Angular usa `mapearProductoResumen()` en home, catálogo, categoría y relacionados; el mapper rico queda para detalle/contexto.
+- Sin migraciones, escrituras de datos, cambios de RBAC/tenancy, secretos, PROD, `main` ni servicios pagos. La certificación runtime DEV se registra después del deploy causal.
+
 ## 2026-09-29 — Punto 2 certificado: catálogo público sin descarga completa
 
 - Certificación DEV publicada en `docs/evidencias/DEV_CERTIFICACION_PUNTO_2_CATALOGO_ACOTADO_2026-09-29.md`.

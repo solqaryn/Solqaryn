@@ -6,7 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, Subscription, map, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { VaristorehnIdentidadService } from './varistorehn-identidad.service';
-import { CategoriaTienda, ModeloTienda, ProductoTienda, crearCatalogoEjemplo, etiquetaDisponibilidad, mapearProducto, precioVenta } from './varistorehn.catalog';
+import { CategoriaTienda, ModeloTienda, ProductoTienda, crearCatalogoEjemplo, etiquetaDisponibilidad, mapearProducto, mapearProductoResumen, precioVenta } from './varistorehn.catalog';
 import { VaristorehnCarritoService } from './varistorehn-carrito.service';
 import { crearCategoriasTiendaEjemplo, mapearCategoriaTienda } from './varistorehn-categorias.catalog';
 import { VaristorehnHeaderComponent } from './varistorehn-header.component';
@@ -245,7 +245,7 @@ export class VaristorehnCategoriaComponent implements OnInit {
           if (!res.success || !res.data || !Array.isArray(res.data.items)) {
             throw new Error('Respuesta de productos de categoría no válida.');
           }
-          return res.data.items.map(mapearProducto);
+          return res.data.items.map(mapearProductoResumen);
         }))
       : of(crearCatalogoEjemplo()
           .filter(producto => producto.categoriaId !== null

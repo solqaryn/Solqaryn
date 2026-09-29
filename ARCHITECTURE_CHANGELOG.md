@@ -1,5 +1,13 @@
 # ARCHITECTURE_CHANGELOG — Solqaryn
 
+## 2026-09-29 — Separación resumen público vs detalle rico
+
+- `GET /tienda/productos` y `/tienda/productos/destacados` pasan a `TiendaProductoResumenDto` + `ProductoCatalogoResumenReadModel`.
+- El resumen conserva identidad, categoría, precio/oferta, disponibilidad, imagen principal y variantes mínimas; elimina galerías de variantes, color/talla y descripción completa del payload de listado.
+- `GET /tienda/productos/{slug}` conserva el DTO rico y es la única lectura general que carga la galería completa del producto.
+- `POST /tienda/productos/contexto` conserva el contrato rico acotado a IDs persistidos para rehidratación de carrito/cuenta.
+- No hay migraciones, nueva persistencia, nueva fuente de verdad ni servicio externo/pagado.
+
 ## 2026-09-29 — Read path público ligero para catálogo/storefront
 
 - Se separó la consulta pública de productos del repositorio administrativo con includes completos.

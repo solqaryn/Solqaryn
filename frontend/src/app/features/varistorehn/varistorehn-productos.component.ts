@@ -15,6 +15,7 @@ import {
   etiquetaDisponibilidad,
   filtrarProductos,
   mapearProducto,
+  mapearProductoResumen,
   precioVenta
 } from './varistorehn.catalog';
 import { VaristorehnCarritoService } from './varistorehn-carrito.service';
@@ -340,7 +341,7 @@ export class VaristorehnProductosComponent implements OnInit {
             || !Number.isSafeInteger(datos.totalCount) || datos.totalCount < 0) {
             throw new Error('Respuesta de catálogo no válida.');
           }
-          return { productos: datos.items.map(mapearProducto), total: datos.totalCount };
+          return { productos: datos.items.map(mapearProductoResumen), total: datos.totalCount };
         }))
       : of((() => {
           const todos = filtrarProductos(crearCatalogoEjemplo(), filtros);

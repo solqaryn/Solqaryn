@@ -81,8 +81,40 @@ public sealed class TiendaControllerExactVariantTests
     public async Task GetProducto_ExponeCadaVarianteFisicaConIdentidadExacta()
     {
         var productos = new Mock<IProductoService>(MockBehavior.Strict);
-        productos.Setup(service => service.GetByIdAsync(501)).ReturnsAsync(CrearProductoConVariantesAmbiguas());
-        var controller = CrearController(productos);
+        var catalogo = new Mock<ICatalogoPublicoService>(MockBehavior.Strict);
+        catalogo.Setup(service => service.ObtenerDetalleAsync(501, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ProductoCatalogoPublicoDto
+            {
+                Id = 501,
+                Slug = "laptop-auditada-501",
+                Nombre = "Laptop auditada",
+                Precio = 100m,
+                CantidadDisponible = 10,
+                Modelos =
+                {
+                    new ModeloCatalogoPublicoDto
+                    {
+                        ProductoVarianteId = 9001,
+                        ModeloId = 77,
+                        ModeloNombre = "16 GB / 512 GB",
+                        MarcaNombre = "Audit",
+                        Sku = "AUD-A",
+                        CantidadDisponible = 3,
+                        Precio = 100m
+                    },
+                    new ModeloCatalogoPublicoDto
+                    {
+                        ProductoVarianteId = 9002,
+                        ModeloId = 77,
+                        ModeloNombre = "16 GB / 512 GB",
+                        MarcaNombre = "Audit",
+                        Sku = "AUD-B",
+                        CantidadDisponible = 7,
+                        Precio = 200m
+                    }
+                }
+            });
+        var controller = CrearController(productos, catalogo);
 
         var result = await controller.GetProducto("laptop-auditada-501");
 
@@ -105,11 +137,11 @@ public sealed class TiendaControllerExactVariantTests
                 Assert.Equal(7, modelo.CantidadDisponible);
                 Assert.Equal(200m, modelo.Precio);
             });
-        productos.Verify(service => service.GetByIdAsync(501), Times.Once);
+        catalogo.VerifyAll();
         productos.VerifyNoOtherCalls();
     }
 
-    private static TiendaController CrearController(Mock<IProductoService> productos)
+    private static TiendaController CrearController(Mock<IProductoService> productos, Mock<ICatalogoPublicoService>? catalogo = null)
     {
         var categorias = new Mock<ICategoriaService>(MockBehavior.Strict);
         var promociones = new Mock<IPromocionPublicaService>();
@@ -119,7 +151,12 @@ public sealed class TiendaControllerExactVariantTests
         var inventario = new Mock<IInventarioPublicoService>();
         inventario.Setup(service => service.ObtenerPorVariantesAsync(It.IsAny<IEnumerable<int>>()))
             .ReturnsAsync(new Dictionary<int, InventarioPublicoVarianteDto>());
-        return new TiendaController(productos.Object, categorias.Object, promociones.Object, inventario.Object);
+        return new TiendaController(
+            productos.Object,
+            categorias.Object,
+            promociones.Object,
+            inventario.Object,
+            (catalogo ?? new Mock<ICatalogoPublicoService>()).Object);
     }
 
     private static ProductoDto CrearProductoConVariantesAmbiguas() => new()

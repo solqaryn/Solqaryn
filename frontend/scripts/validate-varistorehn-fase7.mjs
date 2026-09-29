@@ -54,7 +54,7 @@ expect(homeHtml.includes('id="contacto"'), 'La portada debe conservar un punto d
 expect(homeHtml.includes('@for (categoria of categoriasPortada()'), 'La portada debe limitar la muestra de categorías.');
 expect(homeTs.includes('.filter(producto => producto.activo && producto.destacado && Boolean(producto.slug))'), 'Los destacados deben respetar explícitamente la marca destacado.');
 expect(homeTs.includes('this.servicio.obtenerDestacados(4)'), 'La fuente real debe consultar únicamente el endpoint limitado de destacados.');
-expect(homeTs.includes('productos.map(mapearProducto)'), 'Los destacados reales deben usar el mapper público canónico.');
+expect(homeTs.includes('productos.map(mapearProductoResumen)'), 'Los destacados reales deben usar el mapper público ligero de listados.');
 expect(!homeTs.includes('.filter(p => p.disponible).slice(0, 3)'), 'No se deben fabricar destacados reales escogiendo productos disponibles arbitrarios.');
 expect(storeService.includes('urlDestacados') && storeService.includes('/destacados'), 'El servicio debe separar el endpoint público de destacados.');
 expect(storeService.includes('obtenerDestacados(limite = 4)'), 'El servicio debe exponer una lectura limitada de destacados.');

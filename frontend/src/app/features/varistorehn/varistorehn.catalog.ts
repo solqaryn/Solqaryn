@@ -5,6 +5,7 @@ import type {
   ItemCarrito,
   ModeloTienda,
   ProductoCatalogoPublico,
+  ProductoCatalogoResumenPublico,
   ProductoTienda,
   ReferenciaCarrito,
   EstadoDisponibilidad
@@ -21,9 +22,11 @@ export type {
   ImagenCatalogo,
   ItemCarrito,
   ModeloCatalogoPublico,
+  ModeloCatalogoResumenPublico,
   ModeloTienda,
   OrdenCatalogo,
   ProductoCatalogoPublico,
+  ProductoCatalogoResumenPublico,
   ProductoTienda,
   ReferenciaCarrito
 } from './varistorehn.models';
@@ -123,6 +126,102 @@ export function mapearProducto(producto: ProductoCatalogoPublico): ProductoTiend
     disponible: activo && disponibles.length > 0,
     estadoDisponibilidad: estadoDisponibilidad(producto.estadoDisponibilidad, stockProducto, producto.estaAgotado),
     activo,
+    destacado: Boolean(producto.esDestacado),
+    fechaCreacion: producto.fechaCreacion || null,
+    imagenes,
+    modelos
+  };
+}
+
+export function mapearProductoResumen(producto: ProductoCatalogoResumenPublico): ProductoTienda {
+  const imagenes = producto.imagenPrincipalUrl ? [producto.imagenPrincipalUrl] : [];
+  const stockProducto = stockSeguro(producto.cantidadDisponible);
+  const modelos: ModeloTienda[] = (producto.modelos ?? []).map(modelo => {
+    const stock = stockSeguro(modelo.cantidadDisponible);
+    const productoVarianteId = Number.isSafeInteger(modelo.productoVarianteId) && modelo.productoVarianteId > 0
+      ? modelo.productoVarianteId
+      : null;
+    return {
+      clave: productoVarianteId !== null
+        ? `variante:${productoVarianteId}`
+        : JSON.stringify([modelo.modeloId ?? null, modelo.modeloNombre ?? '', modelo.marcaNombre ?? '']),
+      productoVarianteId,
+      modeloId: modelo.modeloId ?? null,
+      nombre: modelo.modeloNombre || 'Modelo general',
+      marca: modelo.marcaNombre || '',
+      sku: modelo.sku?.trim() || '',
+      precio: precioValido(modelo.precio) ? modelo.precio : 0,
+      precioOferta: ofertaValida(modelo.precio, modelo.precioOferta, modelo.ofertaActiva) ? modelo.precioOferta! : null,
+      ofertaActiva: ofertaValida(modelo.precio, modelo.precioOferta, modelo.ofertaActiva),
+      ofertaNombre: modelo.ofertaNombre?.trim() || '',
+      ofertaInicioUtc: null,
+      ofertaFinUtc: null,
+      ahorro: ofertaValida(modelo.precio, modelo.precioOferta, modelo.ofertaActiva)
+        ? Math.max(0, Number(modelo.ahorro) || modelo.precio - modelo.precioOferta!) : 0,
+      porcentajeAhorro: ofertaValida(modelo.precio, modelo.precioOferta, modelo.ofertaActiva)
+        ? Math.max(0, Number(modelo.porcentajeAhorro) || ((modelo.precio - modelo.precioOferta!) * 100 / modelo.precio)) : 0,
+      stock,
+      disponible: stock > 0 && !modelo.estaAgotado && precioValido(modelo.precio),
+      estadoDisponibilidad: estadoDisponibilidad(modelo.estadoDisponibilidad, stock, modelo.estaAgotado),
+      imagenes
+    };
+  });
+
+  if (!modelos.length) {
+    modelos.push({
+      clave: 'base',
+      productoVarianteId: null,
+      modeloId: null,
+      nombre: producto.modeloNombre || 'Modelo general',
+      marca: producto.marcaNombre || '',
+      sku: '',
+      precio: precioValido(producto.precio) ? producto.precio : 0,
+      precioOferta: ofertaValida(producto.precio, producto.precioOferta, producto.ofertaActiva) ? producto.precioOferta! : null,
+      ofertaActiva: ofertaValida(producto.precio, producto.precioOferta, producto.ofertaActiva),
+      ofertaNombre: producto.ofertaNombre?.trim() || '',
+      ofertaInicioUtc: null,
+      ofertaFinUtc: null,
+      ahorro: ofertaValida(producto.precio, producto.precioOferta, producto.ofertaActiva)
+        ? Math.max(0, Number(producto.ahorro) || producto.precio - producto.precioOferta!) : 0,
+      porcentajeAhorro: ofertaValida(producto.precio, producto.precioOferta, producto.ofertaActiva)
+        ? Math.max(0, Number(producto.porcentajeAhorro) || ((producto.precio - producto.precioOferta!) * 100 / producto.precio)) : 0,
+      stock: stockProducto,
+      disponible: stockProducto > 0 && !producto.estaAgotado && precioValido(producto.precio),
+      estadoDisponibilidad: estadoDisponibilidad(producto.estadoDisponibilidad, stockProducto, producto.estaAgotado),
+      imagenes
+    });
+  }
+
+  const disponibles = modelos.filter(modelo => modelo.disponible);
+  const precios = (disponibles.length ? disponibles : modelos).map(modelo => modelo.precio);
+  const precio = precios.length ? Math.min(...precios) : Math.max(0, producto.precio);
+  const precioOferta = ofertaValida(producto.precio, producto.precioOferta, producto.ofertaActiva)
+    ? producto.precioOferta! : null;
+  const marcas = [...new Set(modelos.map(modelo => modelo.marca).filter(Boolean))];
+  const skus = [...new Set(modelos.map(modelo => modelo.sku).filter(Boolean))];
+
+  return {
+    id: producto.id,
+    slug: producto.slug?.trim() || '',
+    nombre: producto.nombre,
+    descripcion: producto.descripcionResumen?.trim() || '',
+    categoriaId: producto.categoriaId ?? null,
+    categoria: producto.categoriaNombre || 'Otros productos',
+    marca: marcas.join(' / '),
+    sku: skus.length === 1 ? skus[0] : '',
+    precio,
+    precioOferta,
+    ofertaActiva: precioOferta !== null,
+    ofertaNombre: precioOferta !== null ? producto.ofertaNombre?.trim() || '' : '',
+    ofertaInicioUtc: null,
+    ofertaFinUtc: null,
+    ahorro: precioOferta !== null ? Math.max(0, Number(producto.ahorro) || producto.precio - precioOferta) : 0,
+    porcentajeAhorro: precioOferta !== null
+      ? Math.max(0, Number(producto.porcentajeAhorro) || ((producto.precio - precioOferta) * 100 / producto.precio)) : 0,
+    stock: stockProducto,
+    disponible: disponibles.length > 0,
+    estadoDisponibilidad: estadoDisponibilidad(producto.estadoDisponibilidad, stockProducto, producto.estaAgotado),
+    activo: true,
     destacado: Boolean(producto.esDestacado),
     fechaCreacion: producto.fechaCreacion || null,
     imagenes,

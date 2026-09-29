@@ -52,7 +52,7 @@ Controladores, middleware, filtros, configuración HTTP, autenticación/autoriza
 
 Performance DEV: `Observability/RequestPerformanceContext.cs`, `Observability/DbQueryTimingInterceptor.cs` y `Middleware/RequestObservabilityMiddleware.cs`; contrato y procedimiento en `docs/PERFORMANCE_BASELINE_DEV.md`.
 
-Storefront de productos: `TiendaController.cs` expone listado/detalle/contexto; la lógica pública vive en `Application/Services/CatalogoPublicoService.cs`, el contrato en `Application/Interfaces/IProductoCatalogoPublicoRepository.cs` y las proyecciones EF ligeras en `Infrastructure/Repositories/ProductoCatalogoPublicoRepository.cs`.
+Storefront de productos: `TiendaController.cs` expone listado/detalle/contexto; listados/destacados usan `Application/DTOs/TiendaProductoResumenDto.cs` + `ProductoCatalogoResumenReadModel.cs`, el detalle/contexto conservan `ProductoCatalogoPublicoDto`; la lógica vive en `Application/Services/CatalogoPublicoService.cs`, el contrato en `Application/Interfaces/IProductoCatalogoPublicoRepository.cs` y las proyecciones EF en `Infrastructure/Repositories/ProductoCatalogoPublicoRepository.cs`.
 
 ### `backend/tests`
 

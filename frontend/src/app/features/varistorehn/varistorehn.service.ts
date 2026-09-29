@@ -9,13 +9,15 @@ import {
   CheckoutTarjetaRequest,
   CheckoutTarjetaResponse,
   CheckoutValidado,
-  ProductoCatalogoPublico
+  ProductoCatalogoPublico,
+  ProductoCatalogoResumenPublico
 } from './varistorehn.models';
 
 export type {
   CategoriaCatalogoPublico,
   ModeloCatalogoPublico,
-  ProductoCatalogoPublico
+  ProductoCatalogoPublico,
+  ProductoCatalogoResumenPublico
 } from './varistorehn.models';
 
 export interface ConsultaProductosPublicos {
@@ -44,7 +46,7 @@ export class VaristorehnService {
     page = 1,
     pageSize = 48,
     consulta: ConsultaProductosPublicos = {}
-  ): Observable<ApiResponse<PagedResult<ProductoCatalogoPublico>>> {
+  ): Observable<ApiResponse<PagedResult<ProductoCatalogoResumenPublico>>> {
     let params = new HttpParams().set('page', page).set('pageSize', pageSize);
     const search = consulta.search?.trim();
     if (search) params = params.set('search', search);
@@ -63,7 +65,7 @@ export class VaristorehnService {
     }
     if (consulta.sortBy) params = params.set('sortBy', consulta.sortBy);
     if (consulta.sortDirection) params = params.set('sortDirection', consulta.sortDirection);
-    return this.http.get<ApiResponse<PagedResult<ProductoCatalogoPublico>>>(this.urlProductos, { params });
+    return this.http.get<ApiResponse<PagedResult<ProductoCatalogoResumenPublico>>>(this.urlProductos, { params });
   }
 
   obtenerProductosContexto(productoIds: number[]): Observable<ProductoCatalogoPublico[]> {
@@ -78,12 +80,12 @@ export class VaristorehnService {
     }));
   }
 
-  obtenerDestacados(limite = 4): Observable<ProductoCatalogoPublico[]> {
+  obtenerDestacados(limite = 4): Observable<ProductoCatalogoResumenPublico[]> {
     const cantidad = Math.max(1, Math.min(4, Math.floor(limite) || 4));
     const params = new HttpParams().set('limite', cantidad);
-    return this.http.get<ApiResponse<ProductoCatalogoPublico[]>>(this.urlDestacados, { params }).pipe(map(res => {
+    return this.http.get<ApiResponse<ProductoCatalogoResumenPublico[]>>(this.urlDestacados, { params }).pipe(map(res => {
       if (!res.success || !Array.isArray(res.data)) throw new Error('Respuesta de destacados no válida.');
-      return res.data.filter(producto => producto.activo !== false && producto.esDestacado === true).slice(0, cantidad);
+      return res.data.filter(producto => producto.esDestacado === true).slice(0, cantidad);
     }));
   }
 

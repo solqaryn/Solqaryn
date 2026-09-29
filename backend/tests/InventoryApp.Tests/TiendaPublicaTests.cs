@@ -28,36 +28,47 @@ public class TiendaPublicaTests
     }
 
     [Fact]
-    public async Task GetProductos_OfertaVigenteYStockBajo_SeProyectanEnProductoYVariante()
+    public async Task GetProductos_UsaResumenLigeroConOfertaYStock()
     {
-        var productos = new Mock<IProductoService>();
-        productos.Setup(x => x.GetPagedAsync(It.IsAny<PagedRequest>())).ReturnsAsync(new PagedResult<ProductoDto>
-        {
-            Items = new List<ProductoDto>
+        var catalogo = new Mock<ICatalogoPublicoService>(MockBehavior.Strict);
+        catalogo.Setup(x => x.BuscarAsync(It.IsAny<ProductoPagedRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PagedResult<TiendaProductoResumenDto>
             {
-                new()
+                Page = 1,
+                PageSize = 48,
+                TotalCount = 1,
+                Items =
                 {
-                    Id = 31, Nombre = "Oferta publica", Activo = true, CategoriaId = 4,
-                    Precio = 1000, PrecioMinimo = 1000, Cantidad = 2, TieneStockBajo = true,
-                    Variantes = new List<ProductoVarianteDto>
+                    new()
                     {
-                        new() { Id = 301, ProductoId = 31, Activo = true, Precio = 1000, Cantidad = 2, TieneStockBajo = true }
+                        Id = 31,
+                        Slug = "oferta-publica-31",
+                        Nombre = "Oferta publica",
+                        Precio = 1000m,
+                        PrecioOferta = 800m,
+                        OfertaActiva = true,
+                        Ahorro = 200m,
+                        CantidadDisponible = 2,
+                        EstadoDisponibilidad = "Últimas unidades",
+                        Modelos =
+                        {
+                            new()
+                            {
+                                ProductoVarianteId = 301,
+                                Precio = 1000m,
+                                PrecioOferta = 800m,
+                                OfertaActiva = true,
+                                CantidadDisponible = 2,
+                                EstadoDisponibilidad = "Últimas unidades"
+                            }
+                        }
                     }
                 }
-            },
-            Page = 1, PageSize = 48, TotalCount = 1
-        });
-        var promociones = new Mock<IPromocionPublicaService>();
-        promociones.Setup(x => x.ResolverAsync(31, 4, 1000m, It.IsAny<DateTime>()))
-            .ReturnsAsync(new OfertaPublicaDto
-            {
-                PrecioNormal = 1000m, PrecioOferta = 800m, Ahorro = 200m,
-                PorcentajeAhorro = 20m, Nombre = "Promo septiembre"
             });
 
-        var controller = CrearController(productos: productos, promociones: promociones);
+        var controller = CrearController(catalogo: catalogo);
         var ok = Assert.IsType<OkObjectResult>(await controller.GetProductos(new ProductoPagedRequest { PageSize = 48 }));
-        var response = Assert.IsType<ApiResponse<PagedResult<ProductoCatalogoPublicoDto>>>(ok.Value);
+        var response = Assert.IsType<ApiResponse<PagedResult<TiendaProductoResumenDto>>>(ok.Value);
         var producto = Assert.Single(response.Data!.Items);
         var variante = Assert.Single(producto.Modelos);
 
@@ -68,8 +79,8 @@ public class TiendaPublicaTests
         Assert.True(variante.OfertaActiva);
         Assert.Equal(800m, variante.PrecioOferta);
         Assert.Equal("Últimas unidades", variante.EstadoDisponibilidad);
+        catalogo.VerifyAll();
     }
-
     [Fact]
     public async Task ValidarCheckout_UsaOfertaVigenteYStockCeroBloquea()
     {
@@ -160,94 +171,90 @@ public class TiendaPublicaTests
     }
 
     [Fact]
-    public async Task GetProductos_ExponeSoloLaProyeccionComercialActiva()
+    public async Task GetProductos_ExponeSoloResumenComercial()
     {
-        var productos = new Mock<IProductoService>();
-        productos.Setup(x => x.GetPagedAsync(It.IsAny<PagedRequest>()))
-            .ReturnsAsync(new PagedResult<ProductoDto>
+        var catalogo = new Mock<ICatalogoPublicoService>(MockBehavior.Strict);
+        catalogo.Setup(x => x.BuscarAsync(It.IsAny<ProductoPagedRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PagedResult<TiendaProductoResumenDto>
             {
-                Items = new List<ProductoDto>
+                Page = 1,
+                PageSize = 48,
+                TotalCount = 1,
+                Items =
                 {
                     new()
                     {
                         Id = 7,
+                        Slug = "producto-publico-7",
                         Nombre = "Producto público",
-                        Activo = true,
                         CategoriaId = 3,
                         CategoriaNombre = "Electrónica",
-                        Precio = 1200,
-                        Costo = 600,
-                        Cantidad = 103,
-                        FechaCreacion = new DateTime(2026, 1, 2),
-                        CreadoPorNombreUsuario = "dato-reservado",
-                        Variantes = new List<ProductoVarianteDto>
+                        Precio = 1200m,
+                        CantidadDisponible = 3,
+                        Modelos =
                         {
-                            new() { Activo = true, Sku = "PUB-001", Cantidad = 3, Precio = 1200 },
-                            new() { Activo = false, Sku = "NO-PUBLICO", Cantidad = 100, Precio = 1 }
+                            new()
+                            {
+                                ProductoVarianteId = 70,
+                                Sku = "PUB-001",
+                                Precio = 1200m,
+                                CantidadDisponible = 3
+                            }
                         }
-                    },
-                    new() { Id = 8, Nombre = "Producto inactivo", Activo = false }
-                },
-                Page = 1,
-                PageSize = 48,
-                TotalCount = 1
+                    }
+                }
             });
 
-        var controller = CrearController(productos: productos);
-        var result = await controller.GetProductos(new ProductoPagedRequest { PageSize = 48 });
-        var ok = Assert.IsType<OkObjectResult>(result);
-        var response = Assert.IsType<ApiResponse<PagedResult<ProductoCatalogoPublicoDto>>>(ok.Value);
+        var controller = CrearController(catalogo: catalogo);
+        var ok = Assert.IsType<OkObjectResult>(await controller.GetProductos(new ProductoPagedRequest { PageSize = 48 }));
+        var response = Assert.IsType<ApiResponse<PagedResult<TiendaProductoResumenDto>>>(ok.Value);
         var producto = Assert.Single(response.Data!.Items);
 
         Assert.Equal(7, producto.Id);
         Assert.Equal("producto-publico-7", producto.Slug);
         Assert.Equal(3, producto.CategoriaId);
-        Assert.Equal("PUB-001", producto.Sku);
-        Assert.Equal(1200, producto.Precio);
-        Assert.Null(producto.PrecioOferta);
-        Assert.False(producto.EsDestacado);
+        Assert.Equal("PUB-001", Assert.Single(producto.Modelos).Sku);
+        Assert.Equal(1200m, producto.Precio);
         Assert.Equal(3, producto.CantidadDisponible);
-        Assert.True(producto.Activo);
+        Assert.Null(typeof(TiendaProductoResumenDto).GetProperty("Imagenes"));
+        Assert.Null(typeof(TiendaProductoVarianteResumenDto).GetProperty("Imagenes"));
+        catalogo.VerifyAll();
     }
-
     [Fact]
-    public async Task GetProducto_ResuelveSlugConIdYDevuelveSlugCanonico()
+    public async Task GetProducto_ResuelveSlugConIdYUsaDetalleRico()
     {
-        var productos = new Mock<IProductoService>();
-        productos.Setup(x => x.GetByIdAsync(21)).ReturnsAsync(new ProductoDto
-        {
-            Id = 21,
-            Nombre = "Cámara Wi-Fi",
-            Activo = true,
-            Cantidad = 2,
-            Precio = 899
-        });
+        var catalogo = new Mock<ICatalogoPublicoService>(MockBehavior.Strict);
+        catalogo.Setup(x => x.ObtenerDetalleAsync(21, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ProductoCatalogoPublicoDto
+            {
+                Id = 21,
+                Slug = "camara-wi-fi-21",
+                Nombre = "Cámara Wi-Fi",
+                Precio = 899m,
+                CantidadDisponible = 2,
+                Imagenes = { new ProductoImagenPublicaDto { Url = "https://cdn.example/1.jpg", Orden = 0, EsPrincipal = true } }
+            });
 
-        var controller = CrearController(productos: productos);
-        var result = await controller.GetProducto("nombre-viejo-21");
-        var ok = Assert.IsType<OkObjectResult>(result);
+        var controller = CrearController(catalogo: catalogo);
+        var ok = Assert.IsType<OkObjectResult>(await controller.GetProducto("nombre-viejo-21"));
         var response = Assert.IsType<ApiResponse<ProductoCatalogoPublicoDto>>(ok.Value);
 
         Assert.Equal("camara-wi-fi-21", response.Data!.Slug);
-        Assert.Equal(21, response.Data.Id);
+        Assert.Single(response.Data.Imagenes);
+        catalogo.VerifyAll();
     }
-
     [Fact]
-    public async Task GetProducto_NoExponeInactivoONoValido()
+    public async Task GetProducto_NoExponeNoValidoONoEncontrado()
     {
-        var productos = new Mock<IProductoService>();
-        productos.Setup(x => x.GetByIdAsync(9)).ReturnsAsync(new ProductoDto
-        {
-            Id = 9,
-            Nombre = "Oculto",
-            Activo = false
-        });
-        var controller = CrearController(productos: productos);
+        var catalogo = new Mock<ICatalogoPublicoService>(MockBehavior.Strict);
+        catalogo.Setup(x => x.ObtenerDetalleAsync(9, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ProductoCatalogoPublicoDto?)null);
+        var controller = CrearController(catalogo: catalogo);
 
         Assert.IsType<NotFoundObjectResult>(await controller.GetProducto("oculto-9"));
         Assert.IsType<NotFoundObjectResult>(await controller.GetProducto("slug-invalido"));
+        catalogo.VerifyAll();
     }
-
     [Fact]
     public async Task GetCategorias_ExponeSoloContratoPublicoActivoSinInventarConteo()
     {
@@ -297,46 +304,57 @@ public class TiendaPublicaTests
     }
 
     [Fact]
-    public async Task StockAutoritativo_CeroBloqueaAunqueCantidadLegacySeaPositiva()
+    public async Task GetProductos_PropagaDisponibilidadAutoritativaDelReadModel()
     {
-        var productos = new Mock<IProductoService>();
-        productos.Setup(x => x.GetPagedAsync(It.IsAny<PagedRequest>())).ReturnsAsync(new PagedResult<ProductoDto>
-        {
-            Items = new List<ProductoDto>
+        var catalogo = new Mock<ICatalogoPublicoService>(MockBehavior.Strict);
+        catalogo.Setup(x => x.BuscarAsync(It.IsAny<ProductoPagedRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PagedResult<TiendaProductoResumenDto>
             {
-                new()
+                Page = 1,
+                PageSize = 48,
+                TotalCount = 1,
+                Items =
                 {
-                    Id = 55, Nombre = "Legacy con stock fantasma", Activo = true,
-                    Variantes = new List<ProductoVarianteDto>
+                    new()
                     {
-                        new() { Id = 550, ProductoId = 55, Activo = true, Precio = 100m, Cantidad = 9 }
+                        Id = 55,
+                        Slug = "legacy-con-stock-fantasma-55",
+                        Nombre = "Legacy con stock fantasma",
+                        Precio = 100m,
+                        CantidadDisponible = 0,
+                        EstaAgotado = true,
+                        EstadoDisponibilidad = "Agotado",
+                        Modelos =
+                        {
+                            new()
+                            {
+                                ProductoVarianteId = 550,
+                                Precio = 100m,
+                                CantidadDisponible = 0,
+                                EstaAgotado = true,
+                                EstadoDisponibilidad = "Agotado"
+                            }
+                        }
                     }
                 }
-            },
-            Page = 1, PageSize = 48, TotalCount = 1
-        });
-        var inventario = new Mock<IInventarioPublicoService>();
-        inventario.Setup(x => x.ObtenerPorVariantesAsync(It.IsAny<IEnumerable<int>>()))
-            .ReturnsAsync(new Dictionary<int, InventarioPublicoVarianteDto>
-            {
-                [550] = new() { ProductoVarianteId = 550, CantidadDisponible = 0, EstaAgotada = true, TieneFuenteAutoritativa = false }
             });
 
-        var controller = CrearController(productos: productos, inventario: inventario);
+        var controller = CrearController(catalogo: catalogo);
         var ok = Assert.IsType<OkObjectResult>(await controller.GetProductos(new ProductoPagedRequest { PageSize = 48 }));
-        var response = Assert.IsType<ApiResponse<PagedResult<ProductoCatalogoPublicoDto>>>(ok.Value);
+        var response = Assert.IsType<ApiResponse<PagedResult<TiendaProductoResumenDto>>>(ok.Value);
         var variante = Assert.Single(Assert.Single(response.Data!.Items).Modelos);
 
         Assert.Equal(0, variante.CantidadDisponible);
         Assert.True(variante.EstaAgotado);
         Assert.Equal("Agotado", variante.EstadoDisponibilidad);
+        catalogo.VerifyAll();
     }
-
     private static TiendaController CrearController(
         Mock<IProductoService>? productos = null,
         Mock<ICategoriaService>? categorias = null,
         Mock<IPromocionPublicaService>? promociones = null,
-        Mock<IInventarioPublicoService>? inventario = null)
+        Mock<IInventarioPublicoService>? inventario = null,
+        Mock<ICatalogoPublicoService>? catalogo = null)
     {
         if (promociones is null)
         {
@@ -357,7 +375,8 @@ public class TiendaPublicaTests
             (productos ?? new Mock<IProductoService>()).Object,
             (categorias ?? new Mock<ICategoriaService>()).Object,
             promociones.Object,
-            inventario.Object);
+            inventario.Object,
+            (catalogo ?? new Mock<ICatalogoPublicoService>()).Object);
     }
 
     private static void AssertEndpoint(string metodo, string plantilla)

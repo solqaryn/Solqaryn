@@ -97,7 +97,8 @@ Las lecturas públicas de productos usan una vía de consulta específica, separ
 Reglas:
 
 - listado público pagina y filtra server-side; no descarga todas las páginas al navegador;
-- detalle público carga galería/variantes sólo para el producto solicitado;
+- listado y destacados responden con `TiendaProductoResumenDto`: descripción acotada, una imagen principal y variantes mínimas sin galerías/color/talla ni grafos administrativos;
+- detalle público mantiene el contrato rico y carga galería/variantes sólo para el producto solicitado;
 - carrito/checkout/cuenta rehidratan únicamente IDs persistidos mediante `POST /tienda/productos/contexto`;
 - el repositorio público proyecta únicamente campos comerciales necesarios y evita `ConIncludes()` del repositorio administrativo;
 - inventario y promociones siguen resolviéndose desde sus autoridades existentes; no se crea una segunda fuente de verdad;

@@ -15,6 +15,7 @@ import {
   ProductoTienda,
   crearCatalogoEjemplo,
   mapearProducto,
+  mapearProductoResumen,
   telefonoWhatsapp
 } from './varistorehn.catalog';
 import { crearCategoriasTiendaEjemplo, mapearCategoriaTienda } from './varistorehn-categorias.catalog';
@@ -145,7 +146,7 @@ export class VaristorehnComponent implements OnInit {
     this.destacados.set([]);
 
     const fuente: Observable<ProductoTienda[]> = this.utilizarDatosBaseDatos()
-      ? this.servicio.obtenerDestacados(4).pipe(map(productos => productos.map(mapearProducto)))
+      ? this.servicio.obtenerDestacados(4).pipe(map(productos => productos.map(mapearProductoResumen)))
       : of(
           crearCatalogoEjemplo()
             .filter(producto => producto.activo && producto.destacado && Boolean(producto.slug))
