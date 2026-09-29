@@ -1,6 +1,7 @@
 import { Injectable, computed, signal } from '@angular/core';
-import { catchError, of, tap } from 'rxjs';
+import { catchError, map, of, switchMap, tap } from 'rxjs';
 import { EmpresaConfiguracion } from '../../core/models/empresa-configuracion.model';
+import { EmpresaConfiguracionService } from '../../services/empresa-configuracion.service';
 import { TiendaBootstrapPublico } from './varistorehn.models';
 import { VaristorehnService } from './varistorehn.service';
 
@@ -50,26 +51,57 @@ export class VaristorehnIdentidadService {
     return actual.copyright.replace(/\b20\d{2}\b/, String(new Date().getFullYear()));
   });
 
-  constructor(private tiendaService: VaristorehnService) {}
+  constructor(
+    private tiendaService: VaristorehnService,
+    private empresaService: EmpresaConfiguracionService
+  ) {}
 
   cargar(force = false) {
     if (this.cargada && !force) return of(this._bootstrap());
 
     return this.tiendaService.obtenerBootstrap(force).pipe(
-      tap((bootstrap) => {
-        this._bootstrap.set(bootstrap);
-        this._config.set({
-          ...STORE_DEFAULT_CONFIG,
-          ...bootstrap.identidad,
-          whatsApp: bootstrap.identidad.whatsApp || undefined,
-          logoUrl: bootstrap.identidad.logoUrl || undefined,
-          telefono: bootstrap.identidad.telefono || undefined,
-          correo: bootstrap.identidad.correo || undefined,
-          encabezadoTexto: bootstrap.identidad.encabezadoTexto || undefined,
-          piePaginaTexto: bootstrap.identidad.piePaginaTexto || undefined
-        });
+      tap((bootstrap) => this.aplicarBootstrap(bootstrap)),
+      catchError(() => this.cargarLegacy())
+    );
+  }
+
+  private aplicarBootstrap(bootstrap: TiendaBootstrapPublico): void {
+    this._bootstrap.set(bootstrap);
+    this._config.set({
+      ...STORE_DEFAULT_CONFIG,
+      ...bootstrap.identidad,
+      whatsApp: bootstrap.identidad.whatsApp || undefined,
+      logoUrl: bootstrap.identidad.logoUrl || undefined,
+      telefono: bootstrap.identidad.telefono || undefined,
+      correo: bootstrap.identidad.correo || undefined,
+      encabezadoTexto: bootstrap.identidad.encabezadoTexto || undefined,
+      piePaginaTexto: bootstrap.identidad.piePaginaTexto || undefined
+    });
+    this.cargada = true;
+  }
+
+  private cargarLegacy() {
+    return this.empresaService.getPublica().pipe(
+      switchMap((res) => {
+        const config = { ...STORE_DEFAULT_CONFIG, ...res.data };
+        if (config.whatsApp?.trim()) return of(config);
+
+        return this.empresaService.getWhatsAppPublico().pipe(
+          map(contacto => ({
+            ...config,
+            whatsApp: contacto.disponible && contacto.numeroTelefonoE164
+              ? contacto.numeroTelefonoE164
+              : undefined
+          })),
+          catchError(() => of(config))
+        );
+      }),
+      tap((config) => {
+        this._bootstrap.set(null);
+        this._config.set(config);
         this.cargada = true;
       }),
+      map(() => null),
       catchError(() => {
         this._bootstrap.set(null);
         this._config.set(STORE_DEFAULT_CONFIG);
@@ -77,4 +109,5 @@ export class VaristorehnIdentidadService {
         return of(null);
       })
     );
-  }}
+  }
+}
