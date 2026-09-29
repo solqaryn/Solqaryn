@@ -57,7 +57,7 @@ public class TiendaPublicaTests
 
         var controller = CrearController(productos: productos, promociones: promociones);
         var ok = Assert.IsType<OkObjectResult>(await controller.GetProductos(new ProductoPagedRequest { PageSize = 48 }));
-        var response = Assert.IsType<ApiResponse<PagedResult<ProductoCatalogoPublicoDto>>>(ok.Value);
+        var response = Assert.IsType<ApiResponse<PagedResult<TiendaProductoResumenDto>>>(ok.Value);
         var producto = Assert.Single(response.Data!.Items);
         var variante = Assert.Single(producto.Modelos);
 
@@ -196,18 +196,19 @@ public class TiendaPublicaTests
         var controller = CrearController(productos: productos);
         var result = await controller.GetProductos(new ProductoPagedRequest { PageSize = 48 });
         var ok = Assert.IsType<OkObjectResult>(result);
-        var response = Assert.IsType<ApiResponse<PagedResult<ProductoCatalogoPublicoDto>>>(ok.Value);
+        var response = Assert.IsType<ApiResponse<PagedResult<TiendaProductoResumenDto>>>(ok.Value);
         var producto = Assert.Single(response.Data!.Items);
 
         Assert.Equal(7, producto.Id);
         Assert.Equal("producto-publico-7", producto.Slug);
         Assert.Equal(3, producto.CategoriaId);
-        Assert.Equal("PUB-001", producto.Sku);
+        Assert.Equal("PUB-001", Assert.Single(producto.Modelos).Sku);
         Assert.Equal(1200, producto.Precio);
         Assert.Null(producto.PrecioOferta);
         Assert.False(producto.EsDestacado);
         Assert.Equal(3, producto.CantidadDisponible);
-        Assert.True(producto.Activo);
+        Assert.Null(typeof(TiendaProductoResumenDto).GetProperty("Imagenes"));
+        Assert.Null(typeof(TiendaProductoVarianteResumenDto).GetProperty("Imagenes"));
     }
 
     [Fact]
@@ -324,7 +325,7 @@ public class TiendaPublicaTests
 
         var controller = CrearController(productos: productos, inventario: inventario);
         var ok = Assert.IsType<OkObjectResult>(await controller.GetProductos(new ProductoPagedRequest { PageSize = 48 }));
-        var response = Assert.IsType<ApiResponse<PagedResult<ProductoCatalogoPublicoDto>>>(ok.Value);
+        var response = Assert.IsType<ApiResponse<PagedResult<TiendaProductoResumenDto>>>(ok.Value);
         var variante = Assert.Single(Assert.Single(response.Data!.Items).Modelos);
 
         Assert.Equal(0, variante.CantidadDisponible);
