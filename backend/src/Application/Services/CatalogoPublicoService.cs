@@ -27,6 +27,9 @@ public sealed class CatalogoPublicoService : ICatalogoPublicoService
         request.Activo = true;
         request.UsuarioIdScope = null;
 
+        if (request.SoloOfertas == true)
+            return await BuscarOfertasAsync(request, cancellationToken);
+
         var (items, totalCount) = await _repository.GetPagedAsync(request, cancellationToken);
         var mapeados = await MapearLoteAsync(items, cancellationToken);
 
@@ -36,6 +39,44 @@ public sealed class CatalogoPublicoService : ICatalogoPublicoService
             Page = request.Page,
             PageSize = request.PageSize,
             TotalCount = totalCount
+        };
+    }
+
+    private async Task<PagedResult<ProductoCatalogoPublicoDto>> BuscarOfertasAsync(
+        ProductoPagedRequest request,
+        CancellationToken cancellationToken)
+    {
+        var idsOrdenados = await _repository.GetOrderedIdsAsync(request, cancellationToken);
+        var inicio = (request.Page - 1) * request.PageSize;
+        var finExclusivo = inicio + request.PageSize;
+        var totalOfertas = 0;
+        var pagina = new List<ProductoCatalogoPublicoDto>(request.PageSize);
+
+        foreach (var loteIds in idsOrdenados.Chunk(50))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var modelos = await _repository.GetByIdsAsync(loteIds, includeGalleries: false, cancellationToken);
+            var porId = modelos.ToDictionary(modelo => modelo.Id);
+            var ordenados = loteIds.Where(porId.ContainsKey).Select(id => porId[id]).ToList();
+            var mapeados = await MapearLoteAsync(ordenados, cancellationToken);
+
+            foreach (var producto in mapeados)
+            {
+                var tieneOferta = producto.OfertaActiva || producto.Modelos.Any(modelo => modelo.OfertaActiva);
+                if (!tieneOferta) continue;
+
+                if (totalOfertas >= inicio && totalOfertas < finExclusivo)
+                    pagina.Add(producto);
+                totalOfertas++;
+            }
+        }
+
+        return new PagedResult<ProductoCatalogoPublicoDto>
+        {
+            Items = pagina,
+            Page = request.Page,
+            PageSize = request.PageSize,
+            TotalCount = totalOfertas
         };
     }
 

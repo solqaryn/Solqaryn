@@ -9,6 +9,10 @@ public interface IProductoCatalogoPublicoRepository
         ProductoPagedRequest request,
         CancellationToken cancellationToken = default);
 
+    Task<List<int>> GetOrderedIdsAsync(
+        ProductoPagedRequest request,
+        CancellationToken cancellationToken = default);
+
     Task<ProductoCatalogoReadModel?> GetByIdAsync(
         int id,
         bool includeGalleries,

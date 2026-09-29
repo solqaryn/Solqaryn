@@ -47,10 +47,18 @@ public sealed class ProductoCatalogoPublicoRepository : IProductoCatalogoPublico
         CancellationToken cancellationToken = default) =>
         CargarPorIdsAsync(ids.Where(id => id > 0).Distinct().Take(100).ToArray(), includeGalleries, cancellationToken);
 
+    public async Task<List<int>> GetOrderedIdsAsync(
+        ProductoPagedRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var query = AplicarOrden(AplicarFiltros(BaseQuery(), request), request);
+        return await query.Select(producto => producto.Id).ToListAsync(cancellationToken);
+    }
+
     private IQueryable<Producto> BaseQuery() =>
         _context.Productos.AsNoTracking().Where(producto => !producto.Eliminado);
 
-    private static IQueryable<Producto> AplicarFiltros(IQueryable<Producto> query, ProductoPagedRequest request)
+    private IQueryable<Producto> AplicarFiltros(IQueryable<Producto> query, ProductoPagedRequest request)
     {
         if (request.CategoriaId.HasValue)
             query = query.Where(p => p.CategoriaId == request.CategoriaId.Value);
@@ -70,6 +78,35 @@ public sealed class ProductoCatalogoPublicoRepository : IProductoCatalogoPublico
             query = request.Agotado.Value
                 ? query.Where(p => !p.Variantes.Any(v => !v.Eliminado && v.Activo && v.Cantidad > 0))
                 : query.Where(p => p.Variantes.Any(v => !v.Eliminado && v.Activo && v.Cantidad > 0));
+
+        if (request.SoloDisponibles == true)
+        {
+            query = query.Where(p =>
+                p.Variantes.Any(v => !v.Eliminado && v.Activo &&
+                    _context.ExistenciasVariante.Any(e =>
+                        e.ProductoVarianteId == v.Id && e.StockDisponible > 0))
+                || (!p.Variantes.Any(v => !v.Eliminado && v.Activo) && p.Cantidad > 0));
+        }
+
+        if (request.PrecioMinimo.HasValue)
+        {
+            var minimo = Math.Max(0m, request.PrecioMinimo.Value);
+            query = query.Where(p =>
+                (p.Variantes
+                    .Where(v => !v.Eliminado && v.Activo && (v.Precio ?? 0m) > 0m)
+                    .Select(v => v.Precio)
+                    .Min() ?? p.Precio) >= minimo);
+        }
+
+        if (request.PrecioMaximo.HasValue)
+        {
+            var maximo = Math.Max(0m, request.PrecioMaximo.Value);
+            query = query.Where(p =>
+                (p.Variantes
+                    .Where(v => !v.Eliminado && v.Activo && (v.Precio ?? 0m) > 0m)
+                    .Select(v => v.Precio)
+                    .Min() ?? p.Precio) <= maximo);
+        }
 
         if (!string.IsNullOrWhiteSpace(request.Search))
         {
