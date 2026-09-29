@@ -2,7 +2,10 @@ using InventoryApp.API.Controllers;
 using InventoryApp.API.Filters;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
@@ -125,10 +128,11 @@ public sealed class PublicHttpCacheAttributeTests
             .AddSingleton<IOptions<JsonOptions>>(Options.Create(new JsonOptions()))
             .BuildServiceProvider();
 
-        var actionContext = new ActionContext
-        {
-            HttpContext = httpContext
-        };
+        var actionContext = new ActionContext(
+            httpContext,
+            new RouteData(),
+            new ActionDescriptor(),
+            new ModelStateDictionary());
         var filters = new List<IFilterMetadata>();
         var controller = new object();
         var context = new ResultExecutingContext(actionContext, filters, result, controller);
