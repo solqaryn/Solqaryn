@@ -1,3 +1,12 @@
+## 2026-09-29 — Punto 2 certificado: catálogo público sin descarga completa
+
+- Certificación DEV publicada en `docs/evidencias/DEV_CERTIFICACION_PUNTO_2_CATALOGO_ACOTADO_2026-09-29.md`.
+- El storefront ya no expone ni consume `obtenerCatalogo()`; catálogo, categoría, detalle, carrito, checkout y cuenta usan paginación/filtros server-side o contexto acotado por IDs.
+- Render DEV y Vercel DEV verificaron el HEAD funcional `ff8743aa14ef018450ebacafb74272076e6ab269` como `live`/`READY`.
+- Baseline de `GET /tienda/productos`: 2912.0 ms antes; pasadas calientes posteriores de 264.9–497.2 ms en la muestra certificada, con reducción aproximada de 83%–91%.
+- Sin migraciones, datos escritos, cambios de RBAC/tenancy, secretos, PROD, `main` ni servicios pagos.
+- Punto 2: **LISTO en DEV**; no requiere acción manual del propietario.
+
 ## 2026-09-29 — Catálogo remoto distingue vacío real de filtros sin coincidencias
 
 - El catálogo paginado server-side ya no confunde una respuesta de cero resultados causada por filtros con un catálogo público realmente vacío.
