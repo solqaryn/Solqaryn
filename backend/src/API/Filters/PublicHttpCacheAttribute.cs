@@ -39,6 +39,14 @@ public sealed class PublicHttpCacheAttribute : Attribute, IAsyncResultFilter
             return;
         }
 
+        if (context.HttpContext.User.Identity?.IsAuthenticated == true
+            || request.Headers.ContainsKey(HeaderNames.Authorization))
+        {
+            SetNoStore(response);
+            await next();
+            return;
+        }
+
         if (!TryGetSuccessfulObject(context.Result, out var payload))
         {
             SetNoStore(response);
