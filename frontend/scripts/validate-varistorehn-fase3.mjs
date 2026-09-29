@@ -76,7 +76,7 @@ expect(productsTs.includes('this.carritoStore.agregar(producto, modelo, 1)'), 'A
 expect(productsTs.includes("params.get('q')"), 'La búsqueda profunda debe hidratarse desde el query param q.');
 expect(productsTs.includes("params.get('categoria')"), 'El filtro de categoría debe hidratarse desde el slug público del query param categoria.');
 expect(productsTs.includes("No se sustituyeron los datos reales por ejemplos"), 'Una falla del catálogo real no debe caer silenciosamente a fixtures.');
-expect(productsTs.includes("const fuente: Observable<ProductoCatalogoPublico[] | null> = this.utilizarDatosBaseDatos()"), 'Demo y fuente real deben estar separados explícitamente.');
+expect(productsTs.includes("const fuente: Observable<{ productos: ProductoTienda[]; total: number }> = this.utilizarDatosBaseDatos()"), 'Demo y fuente real deben permanecer separados explícitamente aun con paginación server-side.');
 expect(productsTs.includes('cargarCatalogo(): void'), 'La acción de reintento del template debe ser pública y comprobable por Angular.');
 expect(!productsTs.includes('private cargarCatalogo(): void'), 'El template no debe depender de un método privado.');
 expect(!productsTs.includes('ProductosListComponent'), 'El catálogo público no debe reutilizar el CRUD administrativo de productos.');
