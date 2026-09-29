@@ -487,6 +487,8 @@ public sealed class TiendaController : ControllerBase
             DescripcionResumen = descripcion,
             CategoriaId = producto.CategoriaId,
             CategoriaNombre = producto.CategoriaNombre,
+            MarcaNombre = producto.MarcaNombre,
+            ModeloNombre = producto.ModeloNombre,
             Precio = producto.Precio,
             PrecioOferta = producto.PrecioOferta,
             OfertaActiva = producto.OfertaActiva,
