@@ -86,6 +86,8 @@ builder.Services.AddScoped<IDescuentoRepository, DescuentoRepository>();
 builder.Services.AddScoped<IDescuentoService, DescuentoService>();
 builder.Services.AddScoped<IPromocionPublicaService, PromocionPublicaService>();
 builder.Services.AddScoped<ICatalogoPublicoService, CatalogoPublicoService>();
+builder.Services.AddScoped<IWhatsAppPublicoService, WhatsAppPublicoService>();
+builder.Services.AddScoped<ITiendaBootstrapService, TiendaBootstrapService>();
 builder.Services.AddScoped<IImpuestoRepository, ImpuestoRepository>();
 builder.Services.AddScoped<IImpuestoService, ImpuestoService>();
 builder.Services.AddScoped<ICostoEnvioRepository, CostoEnvioRepository>();
