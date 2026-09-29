@@ -92,9 +92,21 @@ export class VaristorehnProductosComponent implements OnInit {
   readonly subtotal = computed<number | null>(() => this.carritoStore.listo() ? this.carritoStore.subtotal() : null);
   readonly aviso = signal('');
 
-  readonly resultados = computed(() => this.productos());
+  readonly resultados = computed(() => filtrarProductos(this.productos(), {
+    busqueda: this.busqueda(),
+    categoria: this.categoriaActiva(),
+    soloDisponibles: this.soloDisponibles(),
+    soloOfertas: this.soloOfertas() || this.soloOfertasPagina(),
+    precioMinimo: this.precioMinimo(),
+    precioMaximo: this.precioMaximo(),
+    orden: this.orden()
+  }));
+  readonly totalResultadosMostrados = computed(() => {
+    const locales = this.resultados().length;
+    return locales < this.productos().length ? locales : this.totalResultados();
+  });
   readonly totalPaginas = computed(() => Math.max(1, Math.ceil(this.totalResultados() / this.tamanoPagina)));
-  readonly productosVisibles = computed(() => this.productos());
+  readonly productosVisibles = computed(() => this.resultados());
   readonly hayFiltros = computed(() => Boolean(
     this.busqueda().trim() || this.categoriaSlug() || this.soloDisponibles() || this.soloOfertas()
       || this.precioMinimo() !== null || this.precioMaximo() !== null || this.orden() !== 'relevancia'
