@@ -124,10 +124,8 @@ export class VaristorehnComponent implements OnInit {
       }
 
       if (!bootstrap) {
-        this.errorCategorias.set('No pudimos cargar las categorías. Revisa la conexión e intenta de nuevo.');
-        this.errorDestacados.set('No pudimos cargar los productos destacados. Revisa la conexión e intenta de nuevo.');
-        this.cargandoCategorias.set(false);
-        this.cargandoDestacados.set(false);
+        this.cargarCategorias();
+        this.cargarDestacados();
         return;
       }
 
