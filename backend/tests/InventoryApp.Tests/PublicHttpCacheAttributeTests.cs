@@ -55,6 +55,20 @@ public sealed class PublicHttpCacheAttributeTests
     }
 
     [Fact]
+    public async Task RequestConAuthorization_NoPuedeQuedarEnCachePublica()
+    {
+        var (context, filter) = CreateContext(
+            new OkObjectResult(new { success = true, data = "publico" }),
+            PublicHttpCacheProfile.Categories);
+        context.HttpContext.Request.Headers[HeaderNames.Authorization] = "Bearer test-token";
+
+        await ExecuteAsync(context, filter);
+
+        Assert.Equal("private, no-store, max-age=0", context.HttpContext.Response.Headers[HeaderNames.CacheControl].ToString());
+        Assert.False(context.HttpContext.Response.Headers.ContainsKey(HeaderNames.ETag));
+    }
+
+    [Fact]
     public async Task ErrorPublico_NoPuedeQuedarEnCachePublica()
     {
         var (context, filter) = CreateContext(
