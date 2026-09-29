@@ -5,11 +5,11 @@ namespace InventoryApp.Application.Interfaces;
 
 public interface ICatalogoPublicoService
 {
-    Task<PagedResult<ProductoCatalogoPublicoDto>> BuscarAsync(
+    Task<PagedResult<TiendaProductoResumenDto>> BuscarAsync(
         ProductoPagedRequest request,
         CancellationToken cancellationToken = default);
 
-    Task<List<ProductoCatalogoPublicoDto>> ObtenerDestacadosAsync(
+    Task<List<TiendaProductoResumenDto>> ObtenerDestacadosAsync(
         int limite,
         CancellationToken cancellationToken = default);
 
