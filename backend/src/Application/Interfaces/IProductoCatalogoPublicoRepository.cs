@@ -5,6 +5,14 @@ namespace InventoryApp.Application.Interfaces;
 
 public interface IProductoCatalogoPublicoRepository
 {
+    Task<(List<ProductoCatalogoResumenReadModel> Items, int TotalCount)> GetPagedSummaryAsync(
+        ProductoPagedRequest request,
+        CancellationToken cancellationToken = default);
+
+    Task<List<ProductoCatalogoResumenReadModel>> GetSummariesByIdsAsync(
+        IEnumerable<int> ids,
+        CancellationToken cancellationToken = default);
+
     Task<(List<ProductoCatalogoReadModel> Items, int TotalCount)> GetPagedAsync(
         ProductoPagedRequest request,
         CancellationToken cancellationToken = default);
