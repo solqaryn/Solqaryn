@@ -1,3 +1,15 @@
+## 2026-09-29 — Punto 5: cache público tenant-aware en dos niveles
+
+- Angular: `VaristorehnIdentidadService` conserva el observable en vuelo y lo comparte con `shareReplay`; diez consumidores concurrentes reciben una sola carga.
+- Angular: `VaristorehnService.obtenerCategorias(force = false)` comparte la lista completa de categorías entre rutas y limpia su referencia si la petición falla.
+- Backend: `PublicStoreMemoryCache` usa `IMemoryCache`, lock por key anti-stampede y claves `tenant + segmento + generación + hash de parámetros`.
+- TTL: identidad/tema/categorías 5 min; destacados 30 s; listados 15 s. Detalle/contexto/checkout no se cachean.
+- `PublicStoreTenantKeyProvider` resuelve `empresa:{id}` cuando la identidad pública coincide inequívocamente y usa `public-config:{id}` como partición fail-safe si no puede desambiguar.
+- `AppDbContext.SaveChangesAsync` invalida generaciones después de cambios persistidos de producto, variante, imagen, stock, categoría, identidad/WhatsApp, tema, marca/modelo o descuentos.
+- Nuevas pruebas verifican deduplicación concurrente, separación tenant/parámetros, invalidación generacional, resolución tenant y reutilización del listado.
+- Workflow Fase 7 incluye los contratos y pruebas de cache.
+- Sin migraciones, datos productivos, cambios de RBAC/tenancy, secretos, PROD, `main` ni servicios pagos. Certificación runtime DEV pendiente del deploy causal.
+
 ## 2026-09-29 — Punto 4 certificado: bootstrap único del storefront
 
 - Certificación DEV publicada en `docs/evidencias/DEV_CERTIFICACION_PUNTO_4_BOOTSTRAP_STOREFRONT_2026-09-29.md`.
