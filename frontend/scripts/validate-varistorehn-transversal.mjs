@@ -61,8 +61,17 @@ const [
   readRepo('.github/workflows/varistorehn-fase12-regression.yml')
 ]);
 
+const storefrontIdentity = await readFrontend('src/app/features/varistorehn/varistorehn-identidad.service.ts');
+const appComponent = await readFrontend('src/app/app.component.ts');
+const bootstrapService = await readRepo('backend/src/Application/Services/TiendaBootstrapService.cs');
+
 // Datos: una frontera publica y reglas comerciales centralizadas.
 expect(controller.includes('ICatalogoPublicoService') && !controller.includes('MapearProductoAsync'), 'Datos: TiendaController debe delegar el producto publico al read path dedicado sin mapper legacy duplicado.');
+expect(controller.includes('[HttpGet("bootstrap")]') && controller.includes('_bootstrapService.ObtenerAsync'), 'Datos: la portada debe tener un único endpoint bootstrap público.');
+expect(bootstrapService.includes('_empresaConfiguracion.GetActivaAsync()') && bootstrapService.includes('_temaVisual.GetAsync()') && bootstrapService.includes('_categorias.GetActivasAsync()') && bootstrapService.includes('_catalogo.ObtenerDestacadosAsync(4'), 'Datos: el bootstrap debe componer identidad, tema, categorías y cuatro destacados dentro del mismo caso de uso.');
+expect(service.includes('obtenerBootstrap(force = false)') && service.includes('shareReplay({ bufferSize: 1, refCount: false })'), 'Datos: Angular debe compartir y deduplicar el bootstrap entre consumidores concurrentes.');
+expect(storefrontIdentity.includes('this.tiendaService.obtenerBootstrap(force)') && storefrontIdentity.includes('catchError(() => this.cargarLegacy())'), 'Datos: identidad storefront debe usar bootstrap en camino feliz y reservar legacy sólo como recovery.');
+expect(appComponent.includes('if (bootstrap) this.themeApplier.aplicar(bootstrap.tema)') && !appComponent.includes('this.themeApplier.aplicarTemaGuardado();\n      this.tiendaIdentidad.cargar()'), 'Datos: el tema storefront debe venir del bootstrap y no disparar una lectura paralela en el camino feliz.');
 expect(controller.includes('_inventarioPublicoService.ObtenerPorVariantesAsync'), 'Datos: stock publico debe venir de InventarioPublicoService.');
 expect(controller.includes('_promocionPublicaService.ResolverAsync'), 'Datos: precio promocional debe venir de PromocionPublicaService.');
 expect(catalog.includes('export function mapearProducto') && catalog.includes('export function precioVenta'), 'Datos: frontend debe normalizar producto y precio en reglas compartidas.');

@@ -102,7 +102,10 @@ Reglas:
 - carrito/checkout/cuenta rehidratan únicamente IDs persistidos mediante `POST /tienda/productos/contexto`;
 - el repositorio público proyecta únicamente campos comerciales necesarios y evita `ConIncludes()` del repositorio administrativo;
 - inventario y promociones siguen resolviéndose desde sus autoridades existentes; no se crea una segunda fuente de verdad;
-- no hay migración ni duplicación de datos.
+- `GET /tienda/bootstrap` consolida la carga inicial del storefront en un único request scope: identidad pública mínima + WhatsApp público resuelto + tema visual + hasta 6 categorías de navegación + hasta 4 destacados ligeros;
+- `ITiendaBootstrapService` compone autoridades existentes de forma secuencial dentro del mismo scope HTTP; no paraleliza repositorios EF que comparten `DbContext`;
+- Angular comparte la respuesta bootstrap con `shareReplay`, de modo que shell, identidad y portada no compiten por lecturas públicas duplicadas; los endpoints anteriores quedan disponibles como recovery/rutas específicas, no como camino feliz inicial;
+- no hay migración ni duplicación de datos ni servicio externo/pagado.
 
 ### Baseline de rendimiento DEV
 

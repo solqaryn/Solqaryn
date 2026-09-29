@@ -41,7 +41,8 @@ public sealed class TiendaControllerDestacadosTests
             categorias.Object,
             promociones.Object,
             inventario.Object,
-            catalogo.Object);
+            catalogo.Object,
+            new Mock<ITiendaBootstrapService>().Object);
 
         var result = await controller.GetProductosDestacados(99);
 
@@ -59,6 +60,45 @@ public sealed class TiendaControllerDestacadosTests
         promociones.VerifyNoOtherCalls();
         inventario.VerifyNoOtherCalls();
     }
+    [Fact]
+    public async Task Bootstrap_UsaCasoDeUsoDedicadoSinConsultarControladorPorPartes()
+    {
+        var productos = new Mock<IProductoService>(MockBehavior.Strict);
+        var categorias = new Mock<ICategoriaService>(MockBehavior.Strict);
+        var promociones = new Mock<IPromocionPublicaService>(MockBehavior.Strict);
+        var inventario = new Mock<IInventarioPublicoService>(MockBehavior.Strict);
+        var catalogo = new Mock<ICatalogoPublicoService>(MockBehavior.Strict);
+        var bootstrap = new Mock<ITiendaBootstrapService>(MockBehavior.Strict);
+        bootstrap.Setup(service => service.ObtenerAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TiendaBootstrapDto
+            {
+                Identidad = new TiendaIdentidadPublicaDto { NombreComercial = "Tienda", Moneda = "HNL" },
+                Destacados = { new TiendaProductoResumenDto { Id = 1, Slug = "producto-1", Nombre = "Producto", Precio = 10m } }
+            });
+
+        var controller = new TiendaController(
+            productos.Object,
+            categorias.Object,
+            promociones.Object,
+            inventario.Object,
+            catalogo.Object,
+            bootstrap.Object);
+
+        var result = await controller.GetBootstrap();
+
+        var ok = Assert.IsType<OkObjectResult>(result);
+        var response = Assert.IsType<ApiResponse<TiendaBootstrapDto>>(ok.Value);
+        Assert.True(response.Success);
+        Assert.Equal("Tienda", response.Data!.Identidad.NombreComercial);
+        Assert.Single(response.Data.Destacados);
+        bootstrap.VerifyAll();
+        productos.VerifyNoOtherCalls();
+        categorias.VerifyNoOtherCalls();
+        promociones.VerifyNoOtherCalls();
+        inventario.VerifyNoOtherCalls();
+        catalogo.VerifyNoOtherCalls();
+    }
+
     [Fact]
     public void SnapshotEf_ConstruyeProductoConEsDestacadoSinModeloPendiente()
     {

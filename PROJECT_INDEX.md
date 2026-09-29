@@ -52,7 +52,7 @@ Controladores, middleware, filtros, configuración HTTP, autenticación/autoriza
 
 Performance DEV: `Observability/RequestPerformanceContext.cs`, `Observability/DbQueryTimingInterceptor.cs` y `Middleware/RequestObservabilityMiddleware.cs`; contrato y procedimiento en `docs/PERFORMANCE_BASELINE_DEV.md`.
 
-Storefront de productos: `TiendaController.cs` expone listado/detalle/contexto; listados/destacados usan `Application/DTOs/TiendaProductoResumenDto.cs` + `ProductoCatalogoResumenReadModel.cs`, el detalle/contexto conservan `ProductoCatalogoPublicoDto`; la lógica vive en `Application/Services/CatalogoPublicoService.cs`, el contrato en `Application/Interfaces/IProductoCatalogoPublicoRepository.cs` y las proyecciones EF en `Infrastructure/Repositories/ProductoCatalogoPublicoRepository.cs`.
+Storefront de productos: `TiendaController.cs` expone `bootstrap`, listado/detalle/contexto. La carga inicial vive en `Application/Services/TiendaBootstrapService.cs` + `DTOs/TiendaBootstrapDto.cs`; listados/destacados usan `TiendaProductoResumenDto` + `ProductoCatalogoResumenReadModel.cs`, el detalle/contexto conservan `ProductoCatalogoPublicoDto`; la resolución pública de WhatsApp vive en `Infrastructure/Services/WhatsAppPublicoService.cs`; las proyecciones de catálogo EF viven en `Infrastructure/Repositories/ProductoCatalogoPublicoRepository.cs`.
 
 ### `backend/tests`
 
@@ -68,7 +68,7 @@ Autenticación, guards, interceptores, modelos y utilidades transversales. El ba
 
 Pantallas/módulos funcionales: productos, variantes, catálogos, compras, ventas, facturas, inventario, finanzas, usuarios, roles, permisos, auditoría, etc.
 
-El storefront VariStoreHN usa `varistorehn.service.ts` para catálogo paginado y `obtenerProductosContexto` para rehidratar únicamente referencias del carrito/cuenta, evitando descargas completas.
+El storefront VariStoreHN usa `varistorehn.service.ts`: `obtenerBootstrap()` comparte/deduplica la carga inicial; el catálogo continúa paginado y `obtenerProductosContexto` rehidrata únicamente referencias del carrito/cuenta, evitando descargas completas.
 
 ### `frontend/src/app/services`
 

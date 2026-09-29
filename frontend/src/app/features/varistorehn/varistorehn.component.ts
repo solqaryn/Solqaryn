@@ -14,7 +14,6 @@ import {
   ModeloTienda,
   ProductoTienda,
   crearCatalogoEjemplo,
-  mapearProducto,
   mapearProductoResumen,
   telefonoWhatsapp
 } from './varistorehn.catalog';
@@ -111,9 +110,41 @@ export class VaristorehnComponent implements OnInit {
       return;
     }
 
-    this.identidad.cargar().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
-      this.cargarCategorias();
-      this.cargarDestacados();
+    this.identidad.cargar().pipe(takeUntilDestroyed(this.destroyRef)).subscribe((bootstrap) => {
+      if (!this.utilizarDatosBaseDatos()) {
+        this.categoriasTienda.set(crearCategoriasTiendaEjemplo());
+        this.destacados.set(
+          crearCatalogoEjemplo()
+            .filter(producto => producto.activo && producto.destacado && Boolean(producto.slug))
+            .slice(0, 4)
+        );
+        this.cargandoCategorias.set(false);
+        this.cargandoDestacados.set(false);
+        return;
+      }
+
+      if (!bootstrap) {
+        this.cargarCategorias();
+        this.cargarDestacados();
+        return;
+      }
+
+      try {
+        this.categoriasTienda.set(bootstrap.categorias.map(mapearCategoriaTienda));
+        this.destacados.set(
+          bootstrap.destacados
+            .map(mapearProductoResumen)
+            .filter(producto => producto.activo && producto.destacado && Boolean(producto.slug))
+            .slice(0, 4)
+        );
+        this.cargandoCategorias.set(false);
+        this.cargandoDestacados.set(false);
+      } catch {
+        this.errorCategorias.set('La tienda devolvió categorías con un formato no válido.');
+        this.errorDestacados.set('La tienda devolvió destacados con un formato no válido.');
+        this.cargandoCategorias.set(false);
+        this.cargandoDestacados.set(false);
+      }
     });
   }
 

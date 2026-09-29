@@ -309,6 +309,7 @@ public sealed class TiendaControllerCheckoutTests
             categorias.Object,
             promociones.Object,
             inventario.Object,
-            new Mock<ICatalogoPublicoService>().Object);
+            new Mock<ICatalogoPublicoService>().Object,
+            new Mock<ITiendaBootstrapService>().Object);
     }
 }

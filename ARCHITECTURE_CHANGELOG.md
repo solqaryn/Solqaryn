@@ -1,5 +1,14 @@
 # ARCHITECTURE_CHANGELOG — Solqaryn
 
+## 2026-09-29 — Bootstrap único del storefront público
+
+- Se incorpora `GET /tienda/bootstrap` como carga inicial canónica de identidad pública mínima, WhatsApp público resuelto, tema visual, hasta 6 categorías de navegación y hasta 4 destacados ligeros.
+- La composición vive en `ITiendaBootstrapService`/`TiendaBootstrapService` y reutiliza autoridades existentes; no crea persistencia ni fuente de verdad paralela.
+- El bootstrap resuelve WhatsApp mediante `IWhatsAppPublicoService`/`WhatsAppPublicoService`, preservando las reglas públicas vigentes y sin exponer referencias de secretos.
+- Angular comparte el bootstrap entre consumidores concurrentes mediante `shareReplay`; identidad, tema y portada ya no generan el stampede de requests en el camino feliz.
+- Los endpoints públicos previos permanecen disponibles para recovery y pantallas específicas.
+- Sin migraciones, PROD, `main` ni servicio externo/pagado.
+
 ## 2026-09-29 — Separación resumen público vs detalle rico
 
 - `GET /tienda/productos` y `/tienda/productos/destacados` pasan a `TiendaProductoResumenDto` + `ProductoCatalogoResumenReadModel`.

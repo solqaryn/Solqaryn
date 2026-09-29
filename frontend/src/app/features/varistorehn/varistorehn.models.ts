@@ -103,6 +103,49 @@ export interface ProductoCatalogoResumenPublico {
   modelos: ModeloCatalogoResumenPublico[];
 }
 
+export interface TiendaIdentidadPublica {
+  nombreComercial: string;
+  eslogan: string;
+  telefono?: string | null;
+  correo?: string | null;
+  whatsApp?: string | null;
+  logoUrl?: string | null;
+  moneda: string;
+  encabezadoActivo: boolean;
+  encabezadoTexto?: string | null;
+  piePaginaActivo: boolean;
+  piePaginaTexto?: string | null;
+  copyright: string;
+  mostrarCopyright: boolean;
+  usarAnioAutomaticoCopyright: boolean;
+}
+
+export interface TiendaTemaPublico {
+  colorPrimario: string;
+  colorSecundario: string;
+  colorAcento: string;
+  fondoPrincipal: string;
+  fondoTarjetas: string;
+  menuLateral: string;
+  barraSuperior: string;
+  encabezados: string;
+  botonesPrincipales: string;
+  textoPrincipal: string;
+  textoSecundario: string;
+  colorExito: string;
+  colorAdvertencia: string;
+  colorError: string;
+  colorInformacion: string;
+  fechaActualizacion?: string;
+}
+
+export interface TiendaBootstrapPublico {
+  identidad: TiendaIdentidadPublica;
+  tema: TiendaTemaPublico;
+  categorias: CategoriaCatalogoPublico[];
+  destacados: ProductoCatalogoResumenPublico[];
+}
+
 export interface CategoriaCatalogoPublico {
   id: number;
   slug: string;

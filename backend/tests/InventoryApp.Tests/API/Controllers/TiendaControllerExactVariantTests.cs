@@ -156,7 +156,8 @@ public sealed class TiendaControllerExactVariantTests
             categorias.Object,
             promociones.Object,
             inventario.Object,
-            (catalogo ?? new Mock<ICatalogoPublicoService>()).Object);
+            (catalogo ?? new Mock<ICatalogoPublicoService>()).Object,
+            new Mock<ITiendaBootstrapService>().Object);
     }
 
     private static ProductoDto CrearProductoConVariantesAmbiguas() => new()

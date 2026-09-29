@@ -180,8 +180,9 @@ export class AppComponent implements OnDestroy {
 
   private aplicarContextoRuta(url: string): void {
     if (this.esRutaTienda(url)) {
-      this.themeApplier.aplicarTemaGuardado();
-      this.tiendaIdentidad.cargar().subscribe(() => {
+      this.tiendaIdentidad.cargar().subscribe((bootstrap) => {
+        if (bootstrap) this.themeApplier.aplicar(bootstrap.tema);
+        else this.themeApplier.aplicarTemaGuardado();
         this.seo.aplicarRuta(url, this.tiendaIdentidad.config().nombreComercial || 'Tienda');
       });
       return;

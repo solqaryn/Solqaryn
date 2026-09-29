@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, map, of, throwError } from 'rxjs';
+import { Observable, map, of, shareReplay, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse, PagedResult } from '../../core/models/api-response.model';
 import {
@@ -10,7 +10,8 @@ import {
   CheckoutTarjetaResponse,
   CheckoutValidado,
   ProductoCatalogoPublico,
-  ProductoCatalogoResumenPublico
+  ProductoCatalogoResumenPublico,
+  TiendaBootstrapPublico
 } from './varistorehn.models';
 
 export type {
@@ -37,10 +38,31 @@ export interface ConsultaProductosPublicos {
 export class VaristorehnService {
   private readonly http = inject(HttpClient);
   private readonly urlTienda = `${environment.apiUrl}/tienda`;
+  private bootstrap$?: Observable<TiendaBootstrapPublico>;
   private readonly urlProductos = `${this.urlTienda}/productos`;
   private readonly urlDestacados = `${this.urlProductos}/destacados`;
   private readonly urlCategorias = `${this.urlTienda}/categorias`;
   private readonly urlValidarCheckout = `${this.urlTienda}/checkout/validar`;
+
+  obtenerBootstrap(force = false): Observable<TiendaBootstrapPublico> {
+    if (this.bootstrap$ && !force) return this.bootstrap$;
+
+    const request$ = this.http.get<ApiResponse<TiendaBootstrapPublico>>(`${this.urlTienda}/bootstrap`).pipe(
+      map(res => {
+        const data = res.data;
+        if (!res.success || !data || !data.identidad || !data.tema
+            || !Array.isArray(data.categorias) || !Array.isArray(data.destacados)) {
+          throw new Error('Respuesta de bootstrap de tienda no válida.');
+        }
+        return data;
+      }),
+      tap({ error: () => { this.bootstrap$ = undefined; } }),
+      shareReplay({ bufferSize: 1, refCount: false })
+    );
+
+    this.bootstrap$ = request$;
+    return request$;
+  }
 
   obtenerProductos(
     page = 1,

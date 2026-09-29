@@ -53,11 +53,13 @@ expect(homeHtml.includes('purchase-path'), 'La portada debe explicar el recorrid
 expect(homeHtml.includes('id="contacto"'), 'La portada debe conservar un punto de contacto público.');
 expect(homeHtml.includes('@for (categoria of categoriasPortada()'), 'La portada debe limitar la muestra de categorías.');
 expect(homeTs.includes('.filter(producto => producto.activo && producto.destacado && Boolean(producto.slug))'), 'Los destacados deben respetar explícitamente la marca destacado.');
-expect(homeTs.includes('this.servicio.obtenerDestacados(4)'), 'La fuente real debe consultar únicamente el endpoint limitado de destacados.');
-expect(homeTs.includes('productos.map(mapearProductoResumen)'), 'Los destacados reales deben usar el mapper público ligero de listados.');
+expect(homeTs.includes('bootstrap.destacados') && homeTs.includes('.map(mapearProductoResumen)'), 'La carga inicial del home debe consumir destacados desde el bootstrap público.');
+expect(homeTs.includes('bootstrap.categorias.map(mapearCategoriaTienda)'), 'La carga inicial del home debe consumir categorías desde el mismo bootstrap.');
 expect(!homeTs.includes('.filter(p => p.disponible).slice(0, 3)'), 'No se deben fabricar destacados reales escogiendo productos disponibles arbitrarios.');
 expect(storeService.includes('urlDestacados') && storeService.includes('/destacados'), 'El servicio debe separar el endpoint público de destacados.');
-expect(storeService.includes('obtenerDestacados(limite = 4)'), 'El servicio debe exponer una lectura limitada de destacados.');
+expect(storeService.includes('obtenerDestacados(limite = 4)'), 'El servicio debe conservar la lectura limitada de destacados para retries/rutas específicas.');
+expect(storeService.includes('obtenerBootstrap(force = false)') && storeService.includes('/bootstrap'), 'El storefront debe exponer una única lectura bootstrap para la portada.');
+expect(storeService.includes('shareReplay({ bufferSize: 1, refCount: false })'), 'El bootstrap debe deduplicarse entre consumidores simultáneos.');
 expect(adminProductModel.includes('esDestacado?: boolean'), 'El modelo administrativo debe transportar la bandera de destacado sin romper consumidores legacy.');
 expect(adminProductService.includes("formData.append('EsDestacado'"), 'El CRUD de productos debe enviar EsDestacado al backend.');
 expect(adminFormTs.includes('esDestacado: [false]') && adminFormTs.includes('p.esDestacado === true'), 'El formulario administrativo debe permitir editar la bandera de destacado.');
@@ -90,4 +92,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.info('Fase 7 — home comercial: portada ligera, destacados persistidos y limitados, navegación canónica, carrito compartido, tema y límites aprobados.');
+console.info('Fase 7 — home comercial: bootstrap único, portada ligera, destacados persistidos y limitados, navegación canónica, carrito compartido, tema y límites aprobados.');

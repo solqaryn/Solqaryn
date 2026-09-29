@@ -1,3 +1,14 @@
+## 2026-09-29 — Punto 4: bootstrap único del storefront
+
+- Nuevo `GET /tienda/bootstrap`: identidad pública mínima, WhatsApp público, tema, hasta 6 categorías de navegación y 4 destacados ligeros en una sola respuesta.
+- `TiendaBootstrapService` compone los servicios públicos vigentes dentro de un único request scope; EF se mantiene secuencial para no compartir `DbContext` concurrentemente.
+- `WhatsAppPublicoService` encapsula la resolución usada por el bootstrap con las mismas reglas públicas vigentes y nunca expone referencias de tokens/webhooks.
+- Angular usa una lectura bootstrap compartida con `shareReplay`; `AppComponent`, identidad y home consumen la misma carga inicial.
+- La portada usa categorías/destacados del bootstrap; los endpoints separados se conservan para retries/rutas específicas y como recovery si el bootstrap falla.
+- Se añadió guard transversal contra la reintroducción del stampede y prueba de navegador que cuenta requests iniciales.
+- Workflow Fase 7 incluye los archivos y pruebas del bootstrap.
+- Sin migraciones, escrituras de datos, cambios de RBAC/tenancy, secretos, PROD, `main` ni servicios pagos. Certificación runtime DEV pendiente del deploy causal.
+
 ## 2026-09-29 — Punto 3 certificado: read models públicos ligeros
 
 - Certificación DEV publicada en `docs/evidencias/DEV_CERTIFICACION_PUNTO_3_READ_MODELS_PUBLICOS_LIGEROS_2026-09-29.md`.
