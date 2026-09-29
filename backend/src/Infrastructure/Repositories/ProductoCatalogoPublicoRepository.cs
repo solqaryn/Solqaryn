@@ -13,6 +13,36 @@ public sealed class ProductoCatalogoPublicoRepository : IProductoCatalogoPublico
 
     public ProductoCatalogoPublicoRepository(AppDbContext context) => _context = context;
 
+    public async Task<(List<ProductoCatalogoResumenReadModel> Items, int TotalCount)> GetPagedSummaryAsync(
+        ProductoPagedRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var query = AplicarOrden(AplicarFiltros(BaseQuery(), request), request);
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await ProyectarResumen(query
+                .Skip((request.Page - 1) * request.PageSize)
+                .Take(request.PageSize))
+            .ToListAsync(cancellationToken);
+
+        await CargarVariantesResumenAsync(items, cancellationToken);
+        return (items, totalCount);
+    }
+
+    public async Task<List<ProductoCatalogoResumenReadModel>> GetSummariesByIdsAsync(
+        IEnumerable<int> ids,
+        CancellationToken cancellationToken = default)
+    {
+        var normalizados = ids.Where(id => id > 0).Distinct().Take(100).ToArray();
+        if (normalizados.Length == 0)
+            return new List<ProductoCatalogoResumenReadModel>();
+
+        var items = await ProyectarResumen(BaseQuery().Where(producto => normalizados.Contains(producto.Id)))
+            .ToListAsync(cancellationToken);
+        await CargarVariantesResumenAsync(items, cancellationToken);
+        return items;
+    }
+
     public async Task<(List<ProductoCatalogoReadModel> Items, int TotalCount)> GetPagedAsync(
         ProductoPagedRequest request,
         CancellationToken cancellationToken = default)
@@ -53,6 +83,65 @@ public sealed class ProductoCatalogoPublicoRepository : IProductoCatalogoPublico
     {
         var query = AplicarOrden(AplicarFiltros(BaseQuery(), request), request);
         return await query.Select(producto => producto.Id).ToListAsync(cancellationToken);
+    }
+
+    private IQueryable<ProductoCatalogoResumenReadModel> ProyectarResumen(IQueryable<Producto> query) =>
+        query.Select(p => new ProductoCatalogoResumenReadModel
+        {
+            Id = p.Id,
+            Nombre = p.Nombre,
+            DescripcionResumen = p.Descripcion == null
+                ? null
+                : p.Descripcion.Length > 180
+                    ? p.Descripcion.Substring(0, 180)
+                    : p.Descripcion,
+            CategoriaId = p.CategoriaId,
+            CategoriaNombre = p.Categoria != null ? p.Categoria.Nombre : null,
+            MarcaFallback = p.MarcaCatalogo != null ? p.MarcaCatalogo.Nombre : p.Marca,
+            ModeloFallback = p.ModeloCatalogo != null ? p.ModeloCatalogo.Nombre : p.Modelo,
+            CantidadFallback = p.Cantidad,
+            PrecioFallback = p.Precio,
+            EsDestacado = p.EsDestacado,
+            FechaCreacion = p.FechaCreacion,
+            ImagenPrincipalUrl = p.Imagenes
+                .Where(i => i.ProductoVarianteId == null && !string.IsNullOrEmpty(i.Url))
+                .OrderByDescending(i => i.EsPrincipal)
+                .ThenBy(i => i.Orden)
+                .Select(i => i.Url)
+                .FirstOrDefault()
+        });
+
+    private async Task CargarVariantesResumenAsync(
+        IReadOnlyCollection<ProductoCatalogoResumenReadModel> productos,
+        CancellationToken cancellationToken)
+    {
+        if (productos.Count == 0)
+            return;
+
+        var ids = productos.Select(producto => producto.Id).ToArray();
+        var variantes = await _context.ProductoVariantes
+            .AsNoTracking()
+            .Where(v => ids.Contains(v.ProductoId) && !v.Eliminado && v.Activo)
+            .Select(v => new ProductoVarianteCatalogoResumenReadModel
+            {
+                Id = v.Id,
+                ProductoId = v.ProductoId,
+                ModeloId = v.ModeloId,
+                ModeloNombre = v.Modelo != null ? v.Modelo.Nombre : null,
+                MarcaNombre = v.Marca != null ? v.Marca.Nombre : null,
+                Sku = v.Sku,
+                CantidadFallback = v.Cantidad,
+                UmbralStockBajo = v.UmbralStockBajo,
+                Precio = v.Precio ?? 0m
+            })
+            .ToListAsync(cancellationToken);
+
+        var porProducto = variantes
+            .GroupBy(variante => variante.ProductoId)
+            .ToDictionary(grupo => grupo.Key, grupo => grupo.OrderBy(variante => variante.Id).ToList());
+
+        foreach (var producto in productos)
+            producto.Variantes = porProducto.GetValueOrDefault(producto.Id) ?? new List<ProductoVarianteCatalogoResumenReadModel>();
     }
 
     private IQueryable<Producto> BaseQuery() =>
