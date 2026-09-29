@@ -23,10 +23,16 @@ on:
       - 'frontend/scripts/validate-varistorehn-fase5.mjs'
       - 'frontend/scripts/validate-varistorehn-fase6.mjs'
       - 'frontend/scripts/validate-varistorehn-fase7.mjs'
+      - 'frontend/scripts/validate-http-cache-contract.mjs'
+      - 'frontend/vercel.json'
       - 'frontend/package.json'
       - 'frontend/package-lock.json'
       - '.github/workflows/varistorehn-fase7-regression.yml'
       - 'backend/src/API/Controllers/TiendaController.cs'
+      - 'backend/src/API/Controllers/EmpresaConfiguracionController.cs'
+      - 'backend/src/API/Controllers/TemaVisualController.cs'
+      - 'backend/src/API/Controllers/WhatsAppController.cs'
+      - 'backend/src/API/Filters/PublicHttpCacheAttribute.cs'
       - 'backend/src/API/Program.cs'
       - 'backend/src/Application/DTOs/TiendaBootstrapDto.cs'
       - 'backend/src/Application/Interfaces/ITiendaBootstrapService.cs'
@@ -57,6 +63,7 @@ on:
       - 'backend/tests/InventoryApp.Tests/PublicStoreCacheInvalidationTests.cs'
       - 'backend/tests/InventoryApp.Tests/CatalogoPublicoCacheTests.cs'
       - 'backend/tests/InventoryApp.Tests/TiendaPublicaTests.cs'
+      - 'backend/tests/InventoryApp.Tests/PublicHttpCacheAttributeTests.cs'
       - 'frontend/src/app/core/models/producto.model.ts'
       - 'frontend/src/app/features/productos/producto-form.component.html'
       - 'frontend/src/app/features/productos/producto-form.component.ts'
@@ -82,10 +89,16 @@ on:
       - 'frontend/scripts/validate-varistorehn-fase5.mjs'
       - 'frontend/scripts/validate-varistorehn-fase6.mjs'
       - 'frontend/scripts/validate-varistorehn-fase7.mjs'
+      - 'frontend/scripts/validate-http-cache-contract.mjs'
+      - 'frontend/vercel.json'
       - 'frontend/package.json'
       - 'frontend/package-lock.json'
       - '.github/workflows/varistorehn-fase7-regression.yml'
       - 'backend/src/API/Controllers/TiendaController.cs'
+      - 'backend/src/API/Controllers/EmpresaConfiguracionController.cs'
+      - 'backend/src/API/Controllers/TemaVisualController.cs'
+      - 'backend/src/API/Controllers/WhatsAppController.cs'
+      - 'backend/src/API/Filters/PublicHttpCacheAttribute.cs'
       - 'backend/src/API/Program.cs'
       - 'backend/src/Application/DTOs/TiendaBootstrapDto.cs'
       - 'backend/src/Application/Interfaces/ITiendaBootstrapService.cs'
@@ -116,6 +129,7 @@ on:
       - 'backend/tests/InventoryApp.Tests/PublicStoreCacheInvalidationTests.cs'
       - 'backend/tests/InventoryApp.Tests/CatalogoPublicoCacheTests.cs'
       - 'backend/tests/InventoryApp.Tests/TiendaPublicaTests.cs'
+      - 'backend/tests/InventoryApp.Tests/PublicHttpCacheAttributeTests.cs'
       - 'frontend/src/app/core/models/producto.model.ts'
       - 'frontend/src/app/features/productos/producto-form.component.html'
       - 'frontend/src/app/features/productos/producto-form.component.ts'
@@ -154,7 +168,7 @@ jobs:
         run: dotnet build InventoryApp.sln --configuration Release --no-restore
 
       - name: Pruebas focales de destacados, bootstrap y cache
-        run: dotnet test InventoryApp.sln --configuration Release --no-build --filter "FullyQualifiedName~TiendaControllerDestacadosTests|FullyQualifiedName~TiendaBootstrapServiceTests|FullyQualifiedName~PublicStoreMemoryCacheTests|FullyQualifiedName~PublicStoreTenantKeyProviderTests|FullyQualifiedName~PublicStoreCacheInvalidationTests|FullyQualifiedName~CatalogoPublicoCacheTests|FullyQualifiedName~TiendaPublicaTests"
+        run: dotnet test InventoryApp.sln --configuration Release --no-build --filter "FullyQualifiedName~TiendaControllerDestacadosTests|FullyQualifiedName~TiendaBootstrapServiceTests|FullyQualifiedName~PublicStoreMemoryCacheTests|FullyQualifiedName~PublicStoreTenantKeyProviderTests|FullyQualifiedName~PublicStoreCacheInvalidationTests|FullyQualifiedName~CatalogoPublicoCacheTests|FullyQualifiedName~TiendaPublicaTests|FullyQualifiedName~PublicHttpCacheAttributeTests"
 
   frontend:
     name: Fase 7 - regresion publica acumulada

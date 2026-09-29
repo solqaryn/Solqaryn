@@ -1,3 +1,14 @@
+## 2026-09-29 — Punto 6: cache HTTP + ETag + compresión
+
+- Backend: Response Compression con Brotli/Gzip sobre HTTPS para JSON/text, sin servicio externo.
+- Seguridad: `private, no-store, max-age=0` es el default de toda respuesta API; sólo GET públicos explícitos del storefront pueden sobrescribirlo.
+- `PublicHttpCacheAttribute` emite perfiles diferenciados, ETag débil SHA-256, `Vary: Accept-Encoding` y 304 ante `If-None-Match`.
+- Identidad/tema/WhatsApp/categorías usan TTL moderado + SWR; bootstrap usa TTL corto por contener destacados; productos usan TTL corto + must-revalidate.
+- Contexto de carrito, checkout, endpoints autenticados y administración no reciben atributo de cache público.
+- Vercel: bundles Angular hashados reciben `public, max-age=31536000, immutable`; rewrites `/api/*` habilitan caching para respetar exclusivamente las políticas upstream.
+- Guardas nuevas en `validate-http-cache-contract.mjs` y pruebas backend verifican ETag/304, no-store de errores y exclusión de rutas sensibles.
+- Sin migraciones, datos, secretos, PROD, `main` ni servicios pagos. Certificación CI/runtime DEV pendiente.
+
 ## 2026-09-29 — Punto 5 certificado: cache público tenant-aware en dos niveles
 
 - Certificación DEV publicada en `docs/evidencias/DEV_CERTIFICACION_PUNTO_5_CACHE_DOS_NIVELES_2026-09-29.md`.

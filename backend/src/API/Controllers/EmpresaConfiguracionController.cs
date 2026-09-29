@@ -21,6 +21,7 @@ public class EmpresaConfiguracionController : ControllerBase
 
     [HttpGet("publica")]
     [AllowAnonymous]
+    [PublicHttpCache(PublicHttpCacheProfile.Identity)]
     public async Task<IActionResult> GetPublica()
     {
         var config = await _service.GetActivaAsync();

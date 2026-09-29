@@ -25,6 +25,7 @@ public class TemaVisualController : ControllerBase
     /// sensible (son solo códigos de color).
     [HttpGet]
     [AllowAnonymous]
+    [PublicHttpCache(PublicHttpCacheProfile.Identity)]
     public async Task<IActionResult> Get()
     {
         var tema = await _service.GetAsync();

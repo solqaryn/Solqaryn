@@ -1,3 +1,4 @@
+using InventoryApp.API.Filters;
 using InventoryApp.Application.Common;
 using InventoryApp.Application.DTOs;
 using InventoryApp.Application.Interfaces;
@@ -42,6 +43,7 @@ public sealed class TiendaController : ControllerBase
     }
 
     [HttpGet("bootstrap")]
+    [PublicHttpCache(PublicHttpCacheProfile.Bootstrap)]
     public async Task<IActionResult> GetBootstrap()
     {
         var bootstrap = await _bootstrapService.ObtenerAsync(HttpContext?.RequestAborted ?? CancellationToken.None);
@@ -49,6 +51,7 @@ public sealed class TiendaController : ControllerBase
     }
 
     [HttpGet("productos")]
+    [PublicHttpCache(PublicHttpCacheProfile.Products)]
     public async Task<IActionResult> GetProductos([FromQuery] ProductoPagedRequest request)
     {
         request.Activo = true;
@@ -58,6 +61,7 @@ public sealed class TiendaController : ControllerBase
     }
 
     [HttpGet("productos/destacados")]
+    [PublicHttpCache(PublicHttpCacheProfile.Products)]
     public async Task<IActionResult> GetProductosDestacados([FromQuery] int limite = 4)
     {
         var resumen = await _catalogoPublicoService.ObtenerDestacadosAsync(limite, HttpContext?.RequestAborted ?? CancellationToken.None);
@@ -65,6 +69,7 @@ public sealed class TiendaController : ControllerBase
     }
 
     [HttpGet("productos/{slug}")]
+    [PublicHttpCache(PublicHttpCacheProfile.Products)]
     public async Task<IActionResult> GetProducto(string slug)
     {
         if (!PublicSlug.TryGetId(slug, out var id))
@@ -90,6 +95,7 @@ public sealed class TiendaController : ControllerBase
     }
 
     [HttpGet("categorias")]
+    [PublicHttpCache(PublicHttpCacheProfile.Categories)]
     public async Task<IActionResult> GetCategorias()
     {
         var categorias = await _bootstrapService.ObtenerCategoriasAsync(
@@ -98,6 +104,7 @@ public sealed class TiendaController : ControllerBase
     }
 
     [HttpGet("categorias/{slug}")]
+    [PublicHttpCache(PublicHttpCacheProfile.Categories)]
     public async Task<IActionResult> GetCategoria(string slug)
     {
         if (!PublicSlug.TryGetId(slug, out var id))
