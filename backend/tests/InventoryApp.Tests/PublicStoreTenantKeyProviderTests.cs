@@ -68,8 +68,9 @@ public sealed class PublicStoreTenantKeyProviderTests
                 new("Empresa B") { Id = 2 }
             });
 
-        using var memory = new MemoryCache(new MemoryCacheOptions());
-        var sut = new PublicStoreTenantKeyProvider(memory, configuracion.Object, empresas.Object);
+        using var memory = new Microsoft.Extensions.Caching.Memory.MemoryCache(new Microsoft.Extensions.Caching.Memory.MemoryCacheOptions());
+        var cache = new PublicStoreMemoryCache(memory);
+        var sut = new PublicStoreTenantKeyProvider(cache, configuracion.Object, empresas.Object);
 
         var tenantKey = await sut.GetTenantKeyAsync();
 
