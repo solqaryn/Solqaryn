@@ -1,8 +1,8 @@
 ## 2026-09-29 — Punto 4: bootstrap único del storefront
 
-- Nuevo `GET /tienda/bootstrap`: identidad pública mínima, WhatsApp público, tema, categorías de navegación y 4 destacados ligeros en una sola respuesta.
+- Nuevo `GET /tienda/bootstrap`: identidad pública mínima, WhatsApp público, tema, hasta 6 categorías de navegación y 4 destacados ligeros en una sola respuesta.
 - `TiendaBootstrapService` compone los servicios públicos vigentes dentro de un único request scope; EF se mantiene secuencial para no compartir `DbContext` concurrentemente.
-- `WhatsAppPublicoService` centraliza la resolución pública ya existente y nunca expone referencias de tokens/webhooks.
+- `WhatsAppPublicoService` encapsula la resolución usada por el bootstrap con las mismas reglas públicas vigentes y nunca expone referencias de tokens/webhooks.
 - Angular usa una lectura bootstrap compartida con `shareReplay`; `AppComponent`, identidad y home consumen la misma carga inicial.
 - La portada usa categorías/destacados del bootstrap; los endpoints separados se conservan para retries/rutas específicas y como recovery si el bootstrap falla.
 - Se añadió guard transversal contra la reintroducción del stampede y prueba de navegador que cuenta requests iniciales.
