@@ -62,7 +62,7 @@ const [
 ]);
 
 // Datos: una frontera publica y reglas comerciales centralizadas.
-expect(controller.includes('MapearProductoAsync'), 'Datos: TiendaController debe conservar un unico mapeo publico de producto.');
+expect(controller.includes('ICatalogoPublicoService') && !controller.includes('MapearProductoAsync'), 'Datos: TiendaController debe delegar el producto publico al read path dedicado sin mapper legacy duplicado.');
 expect(controller.includes('_inventarioPublicoService.ObtenerPorVariantesAsync'), 'Datos: stock publico debe venir de InventarioPublicoService.');
 expect(controller.includes('_promocionPublicaService.ResolverAsync'), 'Datos: precio promocional debe venir de PromocionPublicaService.');
 expect(catalog.includes('export function mapearProducto') && catalog.includes('export function precioVenta'), 'Datos: frontend debe normalizar producto y precio en reglas compartidas.');
