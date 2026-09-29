@@ -1,3 +1,15 @@
+## 2026-09-29 — Punto 3 certificado: read models públicos ligeros
+
+- Certificación DEV publicada en `docs/evidencias/DEV_CERTIFICACION_PUNTO_3_READ_MODELS_PUBLICOS_LIGEROS_2026-09-29.md`.
+- Listados/destacados usan `TiendaProductoResumenDto` + `ProductoCatalogoResumenReadModel`; detalle conserva el contrato rico con galería completa.
+- `TiendaController` exige el read path público dedicado y ya no puede caer al repositorio administrativo ni a un mapper público legacy.
+- Render DEV desplegó el functional HEAD `3d2af21c83403fd7f4fd4f3039a26058be64bf54` y quedó `live`.
+- Runtime real confirmó que el listado no devuelve galerías y que `/tienda/productos/{slug}` sí devuelve la galería rica.
+- Pasadas calientes posteriores: 216.5–254.1 ms con 5 queries, dentro del target inicial <=500 ms y una query menos que el read path previo.
+- Vercel alcanzó el límite de builds del plan en commits posteriores; la equivalencia Angular quedó demostrada con preview READY previo y no se compró ni cambió ningún plan.
+- Sin migraciones, datos escritos, RBAC/tenancy, secretos, PROD o `main`.
+- Punto 3: **LISTO en DEV**; no requiere acción manual del propietario.
+
 ## 2026-09-29 — Punto 3: read models públicos ligeros
 
 - Listados y destacados del storefront usan `TiendaProductoResumenDto` y `ProductoCatalogoResumenReadModel`, separados del DTO/read model rico de detalle.
