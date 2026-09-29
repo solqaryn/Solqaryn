@@ -238,7 +238,15 @@ Commit del preview:
 
 La comparación `87f86b3... -> eb1971d...` cambia únicamente tests/guardas; no cambia archivos Angular de runtime. Por tanto, ese preview es runtime-equivalente al frontend funcional del merge.
 
-El alias canónico del proyecto DEV no se forzó a un rebuild adicional porque Vercel alcanzó el límite gratuito diario de deployments. No se compró ni se cambió de plan.
+Posteriormente Vercel aceptó el deployment canónico de `dev` sin upgrade:
+
+- deployment: `dpl_J5KYkQ7FmVs81pMBQsvzsXhw5H7r`;
+- commit: `f7a987a0ffece10ecfdd6b4148a0a2afda807b39`;
+- estado: **READY**;
+- target: **production** del proyecto DEV;
+- alias: `solqaryn-dev.vercel.app`.
+
+Ese commit difiere del functional HEAD únicamente por documentación de certificación, por lo que el runtime desplegado es equivalente al merge funcional del Punto 5.
 
 ## Topología futura
 
@@ -262,6 +270,6 @@ Si SOLQARYN escala horizontalmente a múltiples instancias simultáneas, `IPubli
 
 El Punto 5 queda implementado, integrado y certificado técnicamente en `dev`.
 
-La única limitación operativa observada es el límite gratuito diario de builds de Vercel para volver a apuntar el alias canónico a un artefacto nuevo; el frontend funcional quedó validado en preview READY y es runtime-equivalente al merge.
+El límite gratuito temporal de Vercel se resolvió sin compra ni upgrade y el alias canónico DEV terminó en estado READY sobre un commit documental runtime-equivalente al merge funcional.
 
-No requiere compra de servicios.
+No requiere acción manual ni compra de servicios.
