@@ -148,8 +148,12 @@ export class VaristorehnCarritoComponent implements OnInit {
     this.aviso.set('');
     this.carrito.reiniciarContexto();
 
+    const idsPersistidos = this.carrito.productoIdsPersistidos(
+      this.identidad.config().id,
+      this.utilizarDatosBaseDatos()
+    );
     const fuente: Observable<ProductoCatalogoPublico[] | null> = this.utilizarDatosBaseDatos()
-      ? this.servicio.obtenerCatalogo()
+      ? this.servicio.obtenerProductosContexto(idsPersistidos)
       : of(null);
 
     this.cargaCatalogo = fuente.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({

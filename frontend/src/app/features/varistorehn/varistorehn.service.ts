@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { EMPTY, Observable, expand, map, reduce, throwError } from 'rxjs';
+import { EMPTY, Observable, expand, map, of, reduce, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse, PagedResult } from '../../core/models/api-response.model';
 import {
@@ -18,6 +18,15 @@ export type {
   ProductoCatalogoPublico
 } from './varistorehn.models';
 
+export interface ConsultaProductosPublicos {
+  search?: string;
+  categoriaId?: number | null;
+  agotado?: boolean | null;
+  esDestacado?: boolean | null;
+  sortBy?: 'Nombre' | 'Precio' | 'FechaCreacion';
+  sortDirection?: 'asc' | 'desc';
+}
+
 @Injectable({ providedIn: 'root' })
 export class VaristorehnService {
   private readonly http = inject(HttpClient);
@@ -27,9 +36,34 @@ export class VaristorehnService {
   private readonly urlCategorias = `${this.urlTienda}/categorias`;
   private readonly urlValidarCheckout = `${this.urlTienda}/checkout/validar`;
 
-  obtenerProductos(page = 1, pageSize = 48): Observable<ApiResponse<PagedResult<ProductoCatalogoPublico>>> {
-    const params = new HttpParams().set('page', page).set('pageSize', pageSize);
+  obtenerProductos(
+    page = 1,
+    pageSize = 48,
+    consulta: ConsultaProductosPublicos = {}
+  ): Observable<ApiResponse<PagedResult<ProductoCatalogoPublico>>> {
+    let params = new HttpParams().set('page', page).set('pageSize', pageSize);
+    const search = consulta.search?.trim();
+    if (search) params = params.set('search', search);
+    if (Number.isSafeInteger(consulta.categoriaId) && (consulta.categoriaId ?? 0) > 0) {
+      params = params.set('categoriaId', consulta.categoriaId!);
+    }
+    if (typeof consulta.agotado === 'boolean') params = params.set('agotado', consulta.agotado);
+    if (typeof consulta.esDestacado === 'boolean') params = params.set('esDestacado', consulta.esDestacado);
+    if (consulta.sortBy) params = params.set('sortBy', consulta.sortBy);
+    if (consulta.sortDirection) params = params.set('sortDirection', consulta.sortDirection);
     return this.http.get<ApiResponse<PagedResult<ProductoCatalogoPublico>>>(this.urlProductos, { params });
+  }
+
+  obtenerProductosContexto(productoIds: number[]): Observable<ProductoCatalogoPublico[]> {
+    const ids = [...new Set(productoIds.filter(id => Number.isSafeInteger(id) && id > 0))].slice(0, 100);
+    if (!ids.length) return of([]);
+    return this.http.post<ApiResponse<ProductoCatalogoPublico[]>>(
+      `${this.urlProductos}/contexto`,
+      { productoIds: ids }
+    ).pipe(map(res => {
+      if (!res.success || !Array.isArray(res.data)) throw new Error('Respuesta de contexto de productos no válida.');
+      return res.data;
+    }));
   }
 
   /** Lee todas las paginas para que busqueda/categorias no se corten silenciosamente. */
