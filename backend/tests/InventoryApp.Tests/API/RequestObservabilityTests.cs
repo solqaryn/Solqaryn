@@ -64,6 +64,21 @@ public class RequestObservabilityTests
     }
 
     [Fact]
+    public void PerformanceContext_AggregatesDatabaseCommandsPerRequest()
+    {
+        var context = new DefaultHttpContext();
+        var state = RequestPerformanceContext.GetOrCreate(context);
+
+        state.RecordDatabaseCommand(TimeSpan.FromMilliseconds(12.5));
+        state.RecordDatabaseCommand(TimeSpan.FromMilliseconds(7.5));
+
+        var snapshot = state.Snapshot();
+        Assert.Equal(2, snapshot.QueryCount);
+        Assert.InRange(snapshot.DurationMs, 19.9, 20.1);
+        Assert.Same(state, RequestPerformanceContext.GetOrCreate(context));
+    }
+
+    [Fact]
     public async Task CorrelationMiddleware_ProvidesBoundedCorrelationAndTraceContext()
     {
         var middleware = new CorrelationIdMiddleware(

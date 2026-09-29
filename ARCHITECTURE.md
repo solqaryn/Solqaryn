@@ -88,6 +88,16 @@ Cuando una operación modifica inventario/finanzas/documentos relacionados, debe
 - correo: SMTP; PROD autentica Outlook.com mediante OAuth2/Modern Auth y mantiene secretos/tokens fuera del repositorio;
 - enlaces públicos de factura: token seguro, expiración/revocación según implementación vigente.
 
+### Baseline de rendimiento DEV
+
+La observabilidad de rendimiento DEV es first-party y no requiere un proveedor pagado:
+
+- `RequestObservabilityMiddleware` mide duración HTTP y emite el baseline estructurado;
+- `DbQueryTimingInterceptor` agrega cantidad y duración de comandos EF/MySQL por request sin registrar SQL ni parámetros;
+- `PerformanceBaselineService` mide TTFB, requests/bytes por pantalla y Web Vitals en el navegador DEV;
+- `frontend/scripts/performance-bundle-baseline.mjs` mide bundles raw/gzip/Brotli;
+- la instrumentación está desactivada por defecto fuera de DEV y no modifica autoridad de negocio, RBAC, tenancy ni datos.
+
 ## 4. Patrones vigentes
 
 - Dependency Injection.

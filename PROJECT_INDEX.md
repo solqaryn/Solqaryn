@@ -50,6 +50,8 @@ EF Core, `AppDbContext`, repositorios, configuraciones, migraciones, Cloudinary,
 
 Controladores, middleware, filtros, configuración HTTP, autenticación/autorización, DI y arranque. `Program.cs` es el composition root.
 
+Performance DEV: `Observability/RequestPerformanceContext.cs`, `Observability/DbQueryTimingInterceptor.cs` y `Middleware/RequestObservabilityMiddleware.cs`; contrato y procedimiento en `docs/PERFORMANCE_BASELINE_DEV.md`.
+
 ### `backend/tests`
 
 Pruebas backend. Ejecutar pruebas dirigidas para cambios localizados y suite completa en cierres/cambios transversales.
@@ -58,7 +60,7 @@ Pruebas backend. Ejecutar pruebas dirigidas para cambios localizados y suite com
 
 ### `frontend/src/app/core`
 
-Autenticación, guards, interceptores, modelos y utilidades transversales.
+Autenticación, guards, interceptores, modelos y utilidades transversales. El baseline browser DEV vive en `core/performance/performance-baseline.service.ts`.
 
 ### `frontend/src/app/features`
 

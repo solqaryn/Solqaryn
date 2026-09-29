@@ -1,3 +1,11 @@
+## 2026-09-28 — Baseline de rendimiento DEV sin servicios pagados
+
+- Se instrumentó DEV para registrar duración total API, cantidad y tiempo de queries MySQL por request y correlación `Server-Timing`, sin registrar SQL, parámetros, PII ni secretos.
+- Angular DEV captura TTFB, requests/bytes por pantalla, LCP/INP/CLS y mantiene las muestras en `window.__SOLQARYN_PERF_BASELINE__`; no envía telemetría a terceros.
+- Se añadió `npm run perf:bundle-baseline` para medir bundle inicial y chunks en raw/gzip/Brotli.
+- Targets iniciales: API pública caliente <=500 ms; identidad/categorías calientes <=300 ms; LCP <=2.5 s; INP <=200 ms; CLS <=0.10.
+- La instrumentación queda habilitada por `appsettings.Development.json`; PROD, `main`, datos, secretos e infraestructura productiva no se modifican.
+
 ## 2026-09-28 — Contexto canónico reconciliado con cierre PROD
 
 - `PROJECT_CONTEXT.md` deja de marcar Vercel PROD como pendiente: `solqaryn-prod` ya está activo y certificado sobre `main`.

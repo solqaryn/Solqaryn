@@ -1,5 +1,13 @@
 # ARCHITECTURE_CHANGELOG — Solqaryn
 
+## 2026-09-28 — Baseline first-party de rendimiento DEV
+
+- Instrumentación transversal DEV para separar tiempo HTTP de cantidad/tiempo MySQL sin registrar SQL, parámetros ni secretos.
+- Angular mide TTFB, requests/bytes por pantalla y LCP/INP/CLS únicamente en DEV/local.
+- Baseline reproducible de bundles raw/gzip/Brotli sin SaaS de observabilidad ni servicio pagado.
+- PROD permanece con el baseline desactivado por defecto.
+- Rutas: `backend/src/API/Observability`, `backend/src/API/Middleware/RequestObservabilityMiddleware.cs`, `frontend/src/app/core/performance`, `frontend/scripts/performance-bundle-baseline.mjs`, `docs/PERFORMANCE_BASELINE_DEV.md`.
+
 
 ## 2026-09-24 — Topología Aiven canónica y environments SOLQARYN
 

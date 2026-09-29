@@ -12,6 +12,7 @@ import { TenantContextService } from './core/auth/tenant-context.service';
 import { AppNavigationMenuComponent } from './shared/navigation/app-navigation-menu.component';
 import { VaristorehnSeoService } from './features/varistorehn/varistorehn-seo.service';
 import { VaristorehnIdentidadService } from './features/varistorehn/varistorehn-identidad.service';
+import { PerformanceBaselineService } from './core/performance/performance-baseline.service';
 
 @Component({
   selector: 'app-root',
@@ -106,8 +107,10 @@ export class AppComponent implements OnDestroy {
     private themeApplier: ThemeApplierService,
     private seo: VaristorehnSeoService,
     private tiendaIdentidad: VaristorehnIdentidadService,
+    private performanceBaseline: PerformanceBaselineService,
     @Inject(DOCUMENT) private document: Document
   ) {
+    this.performanceBaseline.start();
     this.aplicarContextoRuta(this.router.url);
     if (this.auth.isAuthenticated()) {
       this.permisosRuntime.cargar().subscribe();

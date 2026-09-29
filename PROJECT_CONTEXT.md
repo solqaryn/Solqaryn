@@ -38,6 +38,7 @@ SOLQARYN es una plataforma empresarial multiempresa.
 - Seguridad: JWT, BCrypt, RBAC relacional, auditoría, CORS explícito, rate limiting y security headers.
 - Integraciones vigentes: Cloudinary, QuestPDF y SMTP; DEV y PROD usan Outlook.com con OAuth2/Modern Auth para `solqaryn.platform@outlook.com`.
 - E2E/browser: Playwright/Chromium.
+- Baseline de rendimiento DEV first-party: duración API, cantidad/tiempo de queries MySQL, TTFB/requests/bytes por pantalla, LCP/INP/CLS y tamaños de bundles; no requiere un servicio de observabilidad pagado.
 - La autorización del backend es la autoridad; la UI nunca sustituye controles de seguridad.
 - Tenancy, integridad transaccional y trazabilidad deben preservarse en cambios de negocio.
 

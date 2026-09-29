@@ -33,8 +33,12 @@ builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateProductoValidator>();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection no configurado.");
 var mysqlServerVersion = Version.Parse(builder.Configuration["Database:ServerVersion"] ?? "8.4.3");
-builder.Services.AddDbContext<AppDbContext>(options => options.UseMySql(connectionString, new MySqlServerVersion(mysqlServerVersion)));
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton<DbQueryTimingInterceptor>();
+builder.Services.AddDbContext<AppDbContext>((serviceProvider, options) =>
+    options
+        .UseMySql(connectionString, new MySqlServerVersion(mysqlServerVersion))
+        .AddInterceptors(serviceProvider.GetRequiredService<DbQueryTimingInterceptor>()));
 builder.Services.Configure<ObservabilityOptions>(builder.Configuration.GetSection("Observability"));
 builder.Services.AddSingleton<RequestObservability>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
