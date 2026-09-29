@@ -26,6 +26,7 @@ import {
   crearCatalogoEjemplo,
   etiquetaDisponibilidad,
   mapearProducto,
+  mapearProductoResumen,
   precioVenta,
   telefonoWhatsapp
 } from './varistorehn.catalog';
@@ -528,7 +529,7 @@ export class VaristorehnProductoComponent implements OnInit {
         if (!res.success || !res.data || !Array.isArray(res.data.items)) {
           throw new Error('Respuesta de relacionados no válida.');
         }
-        return res.data.items.map(mapearProducto);
+        return res.data.items.map(mapearProductoResumen);
       }),
       takeUntilDestroyed(this.destroyRef)
     ).subscribe({
