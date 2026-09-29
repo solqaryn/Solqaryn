@@ -40,6 +40,7 @@ expect(cacheFilter.includes('HeaderNames.IfNoneMatch') && cacheFilter.includes('
 expect(cacheFilter.includes('stale-while-revalidate=600'), 'HTTP: identidad/categorias deben conservar stale-while-revalidate moderado.');
 expect(cacheFilter.includes('public, max-age=5, s-maxage=15, must-revalidate'), 'HTTP: productos deben conservar TTL HTTP corto.');
 expect(cacheFilter.includes('AcceptEncoding'), 'HTTP: ETag debe variar correctamente junto a compresion.');
+expect(cacheFilter.includes('HeaderNames.Authorization') && cacheFilter.includes('IsAuthenticated == true'), 'Seguridad: requests autenticados nunca deben entrar al cache publico.');
 
 for (const signature of [
   '[HttpGet("bootstrap")]\n    [PublicHttpCache(PublicHttpCacheProfile.Bootstrap)]',
