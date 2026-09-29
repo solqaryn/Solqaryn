@@ -55,6 +55,11 @@ public sealed class TiendaBootstrapServiceTests
         {
             new() { Id = 2, Nombre = "Audio", Descripcion = "Sonido", Activa = true },
             new() { Id = 1, Nombre = "Accesorios", Descripcion = "Complementos", Activa = true },
+            new() { Id = 3, Nombre = "Cámaras", Activa = true },
+            new() { Id = 4, Nombre = "Drones", Activa = true },
+            new() { Id = 5, Nombre = "Gaming", Activa = true },
+            new() { Id = 6, Nombre = "Hogar", Activa = true },
+            new() { Id = 7, Nombre = "Zulu", Activa = true },
             new() { Id = 9, Nombre = "Oculta", Activa = false }
         });
 
@@ -81,10 +86,9 @@ public sealed class TiendaBootstrapServiceTests
         Assert.Equal("VariStoreHN", resultado.Identidad.NombreComercial);
         Assert.Equal("+50499999999", resultado.Identidad.WhatsApp);
         Assert.Equal("#111111", resultado.Tema.ColorPrimario);
-        Assert.Collection(
-            resultado.Categorias,
-            categoria => Assert.Equal("Accesorios", categoria.Nombre),
-            categoria => Assert.Equal("Audio", categoria.Nombre));
+        Assert.Equal(6, resultado.Categorias.Count);
+        Assert.Equal("Accesorios", resultado.Categorias[0].Nombre);
+        Assert.DoesNotContain(resultado.Categorias, categoria => categoria.Nombre == "Zulu");
         Assert.Null(resultado.Categorias[0].TotalProductos);
         Assert.Equal("laptop-7", Assert.Single(resultado.Destacados).Slug);
         empresa.VerifyAll();
