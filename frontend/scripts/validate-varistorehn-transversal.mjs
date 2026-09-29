@@ -64,6 +64,10 @@ const [
 const storefrontIdentity = await readFrontend('src/app/features/varistorehn/varistorehn-identidad.service.ts');
 const appComponent = await readFrontend('src/app/app.component.ts');
 const bootstrapService = await readRepo('backend/src/Application/Services/TiendaBootstrapService.cs');
+const publicCache = await readRepo('backend/src/Infrastructure/Services/PublicStoreMemoryCache.cs');
+const tenantKeyProvider = await readRepo('backend/src/Infrastructure/Services/PublicStoreTenantKeyProvider.cs');
+const catalogoPublico = await readRepo('backend/src/Application/Services/CatalogoPublicoService.cs');
+const appDbContext = await readRepo('backend/src/Infrastructure/Persistence/AppDbContext.cs');
 
 // Datos: una frontera publica y reglas comerciales centralizadas.
 expect(controller.includes('ICatalogoPublicoService') && !controller.includes('MapearProductoAsync'), 'Datos: TiendaController debe delegar el producto publico al read path dedicado sin mapper legacy duplicado.');
@@ -72,6 +76,16 @@ expect(bootstrapService.includes('_empresaConfiguracion.GetActivaAsync()') && bo
 expect(service.includes('obtenerBootstrap(force = false)') && service.includes('shareReplay({ bufferSize: 1, refCount: false })'), 'Datos: Angular debe compartir y deduplicar el bootstrap entre consumidores concurrentes.');
 expect(storefrontIdentity.includes('this.tiendaService.obtenerBootstrap(force)') && storefrontIdentity.includes('catchError(() => this.cargarLegacy())'), 'Datos: identidad storefront debe usar bootstrap en camino feliz y reservar legacy sólo como recovery.');
 expect(appComponent.includes('if (bootstrap) this.themeApplier.aplicar(bootstrap.tema)') && !appComponent.includes('this.themeApplier.aplicarTemaGuardado();\n      this.tiendaIdentidad.cargar()'), 'Datos: el tema storefront debe venir del bootstrap y no disparar una lectura paralela en el camino feliz.');
+expect(storefrontIdentity.includes('cargaEnVuelo$') && storefrontIdentity.includes('if (!force && this.cargaEnVuelo$) return this.cargaEnVuelo$'), 'Cache: identidad debe compartir explicitamente la carga en vuelo.');
+expect(service.includes('private categorias$?: Observable<CategoriaCatalogoPublico[]>') && service.includes('if (this.categorias$ && !force) return this.categorias$'), 'Cache: categorias deben compartirse entre rutas Angular.');
+expect(publicCache.includes('solqaryn:store:{tenant}:{normalizedSegment}') && publicCache.includes('parameterHash'), 'Cache: toda key publica debe incluir tenant, segmento y parametros.');
+expect(publicCache.includes('_locks.GetOrAdd(cacheKey') && publicCache.includes('SemaphoreSlim'), 'Cache: el backend debe conservar proteccion anti-stampede por key.');
+expect(tenantKeyProvider.includes('PublicStoreCacheSegments.Identity') && tenantKeyProvider.includes('active-public-tenant:v1'), 'Cache: la resolucion del tenant publico debe compartir la misma invalidacion de identidad.');
+expect(catalogoPublico.includes('PublicStoreCacheSegments.Products') && catalogoPublico.includes('PublicStoreCacheDurations.Products'), 'Cache: listados publicos deben usar TTL corto dedicado.');
+expect(catalogoPublico.includes('PublicStoreCacheSegments.Featured') && catalogoPublico.includes('PublicStoreCacheDurations.Featured'), 'Cache: destacados deben usar su TTL dedicado.');
+expect(!catalogoPublico.includes('PublicStoreCacheSegments.Checkout'), 'Cache: checkout no debe introducirse en cache publica.');
+expect(appDbContext.includes('DetectarInvalidacionesStorefront()') && appDbContext.includes('_publicStoreCache?.InvalidateAll'), 'Cache: las escrituras EF relevantes deben invalidar generaciones del storefront.');
+expect(appDbContext.includes('case Empresa:') && appDbContext.includes('case Producto:') && appDbContext.includes('case Categoria:') && appDbContext.includes('case EmpresaConfiguracion:') && appDbContext.includes('case TemaVisual:'), 'Cache: invalidacion debe cubrir tenant, producto, categoria, identidad y tema.');
 expect(controller.includes('_inventarioPublicoService.ObtenerPorVariantesAsync'), 'Datos: stock publico debe venir de InventarioPublicoService.');
 expect(controller.includes('_promocionPublicaService.ResolverAsync'), 'Datos: precio promocional debe venir de PromocionPublicaService.');
 expect(catalog.includes('export function mapearProducto') && catalog.includes('export function precioVenta'), 'Datos: frontend debe normalizar producto y precio en reglas compartidas.');

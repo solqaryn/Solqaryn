@@ -1,4 +1,5 @@
 using InventoryApp.Application.Exceptions;
+using InventoryApp.Application.Interfaces;
 using InventoryApp.Domain.Entities;
 using InventoryApp.Domain.Entities.Contabilidad;
 using InventoryApp.Domain.Enums;
@@ -8,7 +9,14 @@ namespace InventoryApp.Infrastructure.Persistence;
 
 public class AppDbContext : DbContext
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+    private readonly IPublicStoreCache? _publicStoreCache;
+
+    public AppDbContext(
+        DbContextOptions<AppDbContext> options,
+        IPublicStoreCache? publicStoreCache = null) : base(options)
+    {
+        _publicStoreCache = publicStoreCache;
+    }
 
     public DbSet<Producto> Productos => Set<Producto>();
     public DbSet<ProductoVariante> ProductoVariantes => Set<ProductoVariante>();
@@ -98,9 +106,59 @@ public class AppDbContext : DbContext
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
+        var cacheSegments = DetectarInvalidacionesStorefront();
+
         await ValidarAislamientoComercialVentasAsync(cancellationToken);
         await PrepararValorizacionComprasAsync(cancellationToken);
-        return await base.SaveChangesAsync(cancellationToken);
+        var guardados = await base.SaveChangesAsync(cancellationToken);
+
+        if (guardados > 0 && cacheSegments.Count > 0)
+            _publicStoreCache?.InvalidateAll(cacheSegments.ToArray());
+
+        return guardados;
+    }
+
+    private HashSet<string> DetectarInvalidacionesStorefront()
+    {
+        var segments = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (var entry in ChangeTracker.Entries()
+                     .Where(entry => entry.State is EntityState.Added or EntityState.Modified or EntityState.Deleted))
+        {
+            switch (entry.Entity)
+            {
+                case Empresa:
+                case EmpresaConfiguracion:
+                case ConfiguracionWhatsAppEmpresa:
+                    segments.Add(PublicStoreCacheSegments.Identity);
+                    break;
+
+                case TemaVisual:
+                    segments.Add(PublicStoreCacheSegments.Theme);
+                    break;
+
+                case Categoria:
+                    segments.Add(PublicStoreCacheSegments.Categories);
+                    segments.Add(PublicStoreCacheSegments.Products);
+                    segments.Add(PublicStoreCacheSegments.Featured);
+                    break;
+
+                case Producto:
+                case ProductoVariante:
+                case ProductoImagen:
+                case ExistenciaVariante:
+                case Marca:
+                case Modelo:
+                case Descuento:
+                case DescuentoProducto:
+                case DescuentoCategoria:
+                    segments.Add(PublicStoreCacheSegments.Products);
+                    segments.Add(PublicStoreCacheSegments.Featured);
+                    break;
+            }
+        }
+
+        return segments;
     }
 
     private async Task ValidarAislamientoComercialVentasAsync(CancellationToken cancellationToken)

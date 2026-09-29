@@ -1,5 +1,5 @@
 import { Injectable, computed, signal } from '@angular/core';
-import { catchError, map, of, switchMap, tap } from 'rxjs';
+import { Observable, catchError, finalize, map, of, shareReplay, switchMap, tap } from 'rxjs';
 import { EmpresaConfiguracion } from '../../core/models/empresa-configuracion.model';
 import { EmpresaConfiguracionService } from '../../services/empresa-configuracion.service';
 import { TiendaBootstrapPublico } from './varistorehn.models';
@@ -35,6 +35,7 @@ export class VaristorehnIdentidadService {
   private readonly _config = signal<EmpresaConfiguracion>(STORE_DEFAULT_CONFIG);
   private readonly _bootstrap = signal<TiendaBootstrapPublico | null>(null);
   private cargada = false;
+  private cargaEnVuelo$?: Observable<TiendaBootstrapPublico | null>;
 
   readonly config = this._config.asReadonly();
   readonly bootstrap = this._bootstrap.asReadonly();
@@ -56,13 +57,22 @@ export class VaristorehnIdentidadService {
     private empresaService: EmpresaConfiguracionService
   ) {}
 
-  cargar(force = false) {
-    if (this.cargada && !force) return of(this._bootstrap());
+  cargar(force = false): Observable<TiendaBootstrapPublico | null> {
+    if (!force && this.cargada) return of(this._bootstrap());
+    if (!force && this.cargaEnVuelo$) return this.cargaEnVuelo$;
 
-    return this.tiendaService.obtenerBootstrap(force).pipe(
+    let request$: Observable<TiendaBootstrapPublico | null>;
+    request$ = this.tiendaService.obtenerBootstrap(force).pipe(
       tap((bootstrap) => this.aplicarBootstrap(bootstrap)),
-      catchError(() => this.cargarLegacy())
+      catchError(() => this.cargarLegacy()),
+      finalize(() => {
+        if (this.cargaEnVuelo$ === request$) this.cargaEnVuelo$ = undefined;
+      }),
+      shareReplay({ bufferSize: 1, refCount: false })
     );
+
+    this.cargaEnVuelo$ = request$;
+    return request$;
   }
 
   private aplicarBootstrap(bootstrap: TiendaBootstrapPublico): void {

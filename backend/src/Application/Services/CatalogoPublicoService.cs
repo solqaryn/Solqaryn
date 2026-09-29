@@ -9,15 +9,21 @@ public sealed class CatalogoPublicoService : ICatalogoPublicoService
     private readonly IProductoCatalogoPublicoRepository _repository;
     private readonly IPromocionPublicaService _promociones;
     private readonly IInventarioPublicoService _inventario;
+    private readonly IPublicStoreCache? _cache;
+    private readonly IPublicStoreTenantKeyProvider? _tenantKeyProvider;
 
     public CatalogoPublicoService(
         IProductoCatalogoPublicoRepository repository,
         IPromocionPublicaService promociones,
-        IInventarioPublicoService inventario)
+        IInventarioPublicoService inventario,
+        IPublicStoreCache? cache = null,
+        IPublicStoreTenantKeyProvider? tenantKeyProvider = null)
     {
         _repository = repository;
         _promociones = promociones;
         _inventario = inventario;
+        _cache = cache;
+        _tenantKeyProvider = tenantKeyProvider;
     }
 
     public async Task<PagedResult<TiendaProductoResumenDto>> BuscarAsync(
@@ -27,6 +33,23 @@ public sealed class CatalogoPublicoService : ICatalogoPublicoService
         request.Activo = true;
         request.UsuarioIdScope = null;
 
+        if (_cache is null || _tenantKeyProvider is null)
+            return await BuscarCoreAsync(request, cancellationToken);
+
+        var tenantKey = await _tenantKeyProvider.GetTenantKeyAsync(cancellationToken);
+        return await _cache.GetOrCreateAsync(
+            tenantKey,
+            PublicStoreCacheSegments.Products,
+            BuildListParameters(request),
+            PublicStoreCacheDurations.Products,
+            ct => BuscarCoreAsync(request, ct),
+            cancellationToken);
+    }
+
+    private async Task<PagedResult<TiendaProductoResumenDto>> BuscarCoreAsync(
+        ProductoPagedRequest request,
+        CancellationToken cancellationToken)
+    {
         if (request.SoloOfertas == true)
             return await BuscarOfertasAsync(request, cancellationToken);
 
@@ -84,10 +107,28 @@ public sealed class CatalogoPublicoService : ICatalogoPublicoService
         int limite,
         CancellationToken cancellationToken = default)
     {
+        var cantidad = Math.Clamp(limite, 1, 4);
+        if (_cache is null || _tenantKeyProvider is null)
+            return await ObtenerDestacadosCoreAsync(cantidad, cancellationToken);
+
+        var tenantKey = await _tenantKeyProvider.GetTenantKeyAsync(cancellationToken);
+        return await _cache.GetOrCreateAsync(
+            tenantKey,
+            PublicStoreCacheSegments.Featured,
+            $"limit={cantidad}",
+            PublicStoreCacheDurations.Featured,
+            ct => ObtenerDestacadosCoreAsync(cantidad, ct),
+            cancellationToken);
+    }
+
+    private async Task<List<TiendaProductoResumenDto>> ObtenerDestacadosCoreAsync(
+        int limite,
+        CancellationToken cancellationToken)
+    {
         var request = new ProductoPagedRequest
         {
             Page = 1,
-            PageSize = Math.Clamp(limite, 1, 4),
+            PageSize = limite,
             Activo = true,
             EsDestacado = true,
             UsuarioIdScope = null,
@@ -360,6 +401,21 @@ public sealed class CatalogoPublicoService : ICatalogoPublicoService
             Modelos = modelos
         };
     }
+
+    private static string BuildListParameters(ProductoPagedRequest request) =>
+        string.Join('|',
+            $"page={request.Page}",
+            $"pageSize={request.PageSize}",
+            $"search={request.Search?.Trim().ToLowerInvariant() ?? string.Empty}",
+            $"categoriaId={request.CategoriaId?.ToString() ?? string.Empty}",
+            $"agotado={request.Agotado?.ToString() ?? string.Empty}",
+            $"destacado={request.EsDestacado?.ToString() ?? string.Empty}",
+            $"disponibles={request.SoloDisponibles?.ToString() ?? string.Empty}",
+            $"ofertas={request.SoloOfertas?.ToString() ?? string.Empty}",
+            $"precioMin={request.PrecioMinimo?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty}",
+            $"precioMax={request.PrecioMaximo?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty}",
+            $"sortBy={request.SortBy?.Trim().ToLowerInvariant() ?? string.Empty}",
+            $"sortDirection={request.SortDirection?.Trim().ToLowerInvariant() ?? string.Empty}");
 
     private static bool NoVacio(string? valor) => !string.IsNullOrWhiteSpace(valor);
 

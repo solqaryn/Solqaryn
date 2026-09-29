@@ -39,6 +39,7 @@ export class VaristorehnService {
   private readonly http = inject(HttpClient);
   private readonly urlTienda = `${environment.apiUrl}/tienda`;
   private bootstrap$?: Observable<TiendaBootstrapPublico>;
+  private categorias$?: Observable<CategoriaCatalogoPublico[]>;
   private readonly urlProductos = `${this.urlTienda}/productos`;
   private readonly urlDestacados = `${this.urlProductos}/destacados`;
   private readonly urlCategorias = `${this.urlTienda}/categorias`;
@@ -122,11 +123,20 @@ export class VaristorehnService {
     );
   }
 
-  obtenerCategorias(): Observable<CategoriaCatalogoPublico[]> {
-    return this.http.get<ApiResponse<CategoriaCatalogoPublico[]>>(this.urlCategorias).pipe(map(res => {
-      if (!res.success || !Array.isArray(res.data)) throw new Error('Respuesta de categorías no válida.');
-      return res.data;
-    }));
+  obtenerCategorias(force = false): Observable<CategoriaCatalogoPublico[]> {
+    if (this.categorias$ && !force) return this.categorias$;
+
+    const request$ = this.http.get<ApiResponse<CategoriaCatalogoPublico[]>>(this.urlCategorias).pipe(
+      map(res => {
+        if (!res.success || !Array.isArray(res.data)) throw new Error('Respuesta de categorías no válida.');
+        return res.data;
+      }),
+      tap({ error: () => { this.categorias$ = undefined; } }),
+      shareReplay({ bufferSize: 1, refCount: false })
+    );
+
+    this.categorias$ = request$;
+    return request$;
   }
 
   obtenerCategoriaPorSlug(slug: string): Observable<CategoriaCatalogoPublico> {

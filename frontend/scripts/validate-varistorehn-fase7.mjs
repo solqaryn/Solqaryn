@@ -7,7 +7,7 @@ const frontendDir = path.resolve(scriptsDir, '..');
 const featureDir = path.join(frontendDir, 'src/app/features/varistorehn');
 const read = name => readFile(path.join(featureDir, name), 'utf8');
 
-const [homeTs, homeHtml, homeScss, responsiveScss, productTs, paths, catalog, storeService, adminFormTs, adminProductModel, adminProductService] = await Promise.all([
+const [homeTs, homeHtml, homeScss, responsiveScss, productTs, paths, catalog, storeService, identityService, adminFormTs, adminProductModel, adminProductService] = await Promise.all([
   read('varistorehn.component.ts'),
   read('varistorehn.component.html'),
   read('varistorehn.component.scss'),
@@ -16,6 +16,7 @@ const [homeTs, homeHtml, homeScss, responsiveScss, productTs, paths, catalog, st
   read('varistorehn.paths.ts'),
   read('varistorehn.catalog.ts'),
   read('varistorehn.service.ts'),
+  read('varistorehn-identidad.service.ts'),
   readFile(path.join(frontendDir, 'src/app/features/productos/producto-form.component.ts'), 'utf8'),
   readFile(path.join(frontendDir, 'src/app/core/models/producto.model.ts'), 'utf8'),
   readFile(path.join(frontendDir, 'src/app/services/producto.service.ts'), 'utf8')
@@ -60,6 +61,10 @@ expect(storeService.includes('urlDestacados') && storeService.includes('/destaca
 expect(storeService.includes('obtenerDestacados(limite = 4)'), 'El servicio debe conservar la lectura limitada de destacados para retries/rutas específicas.');
 expect(storeService.includes('obtenerBootstrap(force = false)') && storeService.includes('/bootstrap'), 'El storefront debe exponer una única lectura bootstrap para la portada.');
 expect(storeService.includes('shareReplay({ bufferSize: 1, refCount: false })'), 'El bootstrap debe deduplicarse entre consumidores simultáneos.');
+expect(identityService.includes('cargaEnVuelo$') && identityService.includes('if (!force && this.cargaEnVuelo$) return this.cargaEnVuelo$'), 'La identidad debe compartir explícitamente el observable en vuelo entre consumidores concurrentes.');
+expect(identityService.includes('shareReplay({ bufferSize: 1, refCount: false })'), 'La carga de identidad debe usar replay para evitar stampede concurrente.');
+expect(storeService.includes('private categorias$?: Observable<CategoriaCatalogoPublico[]>') && storeService.includes('obtenerCategorias(force = false)'), 'Las categorías públicas deben conservar una lectura compartida entre rutas.');
+expect(storeService.includes('if (this.categorias$ && !force) return this.categorias$;'), 'Las rutas deben reutilizar la misma respuesta de categorías mientras siga en memoria.');
 expect(adminProductModel.includes('esDestacado?: boolean'), 'El modelo administrativo debe transportar la bandera de destacado sin romper consumidores legacy.');
 expect(adminProductService.includes("formData.append('EsDestacado'"), 'El CRUD de productos debe enviar EsDestacado al backend.');
 expect(adminFormTs.includes('esDestacado: [false]') && adminFormTs.includes('p.esDestacado === true'), 'El formulario administrativo debe permitir editar la bandera de destacado.');

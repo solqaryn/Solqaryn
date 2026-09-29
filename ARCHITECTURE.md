@@ -104,7 +104,14 @@ Reglas:
 - inventario y promociones siguen resolviéndose desde sus autoridades existentes; no se crea una segunda fuente de verdad;
 - `GET /tienda/bootstrap` consolida la carga inicial del storefront en un único request scope: identidad pública mínima + WhatsApp público resuelto + tema visual + hasta 6 categorías de navegación + hasta 4 destacados ligeros;
 - `ITiendaBootstrapService` compone autoridades existentes de forma secuencial dentro del mismo scope HTTP; no paraleliza repositorios EF que comparten `DbContext`;
-- Angular comparte la respuesta bootstrap con `shareReplay`, de modo que shell, identidad y portada no compiten por lecturas públicas duplicadas; los endpoints anteriores quedan disponibles como recovery/rutas específicas, no como camino feliz inicial;
+- Angular comparte la respuesta bootstrap con `shareReplay`, de modo que shell, identidad y portada no compiten por lecturas públicas duplicadas; `VaristorehnIdentidadService` conserva además el observable en vuelo y `VaristorehnService` comparte la lista de categorías entre rutas;
+- el backend usa `IMemoryCache` in-process mediante `IPublicStoreCache`/`PublicStoreMemoryCache`; cada key incorpora tenant, segmento, generación y hash de parámetros;
+- TTL públicos: identidad/tema/categorías 5 minutos, destacados 30 segundos y listados 15 segundos; detalle, contexto de carrito y checkout permanecen sin cache;
+- la cache tiene lock por key contra stampede y generaciones para invalidación sin enumerar entradas;
+- `AppDbContext.SaveChangesAsync` invalida generaciones tras escrituras de producto/variante/imágenes/stock, categoría, identidad/WhatsApp, tema, marca/modelo y descuentos relacionados;
+- la partición tenant se resuelve a `empresa:{EmpresaId}` cuando la identidad pública puede vincularse inequívocamente a una empresa; ante ambigüedad se usa un namespace `public-config:{Id}` fail-safe, evitando mezclar particiones;
+- esta cache es válida para la topología actual de una instancia por servicio; si el API escala horizontalmente a múltiples instancias, el contrato `IPublicStoreCache` debe migrarse a almacenamiento distribuido con invalidación compartida antes de confiar en coherencia cross-instance;
+- los endpoints anteriores quedan disponibles como recovery/rutas específicas, no como camino feliz inicial;
 - no hay migración ni duplicación de datos ni servicio externo/pagado.
 
 ### Baseline de rendimiento DEV
