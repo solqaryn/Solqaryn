@@ -1,14 +1,15 @@
-## 2026-09-29 — Punto 5: cache público tenant-aware en dos niveles
+## 2026-09-29 — Punto 5 certificado: cache público tenant-aware en dos niveles
 
-- Angular: `VaristorehnIdentidadService` conserva el observable en vuelo y lo comparte con `shareReplay`; diez consumidores concurrentes reciben una sola carga.
-- Angular: `VaristorehnService.obtenerCategorias(force = false)` comparte la lista completa de categorías entre rutas y limpia su referencia si la petición falla.
-- Backend: `PublicStoreMemoryCache` usa `IMemoryCache`, lock por key anti-stampede y claves `tenant + segmento + generación + hash de parámetros`.
-- TTL: identidad/tema/categorías 5 min; destacados 30 s; listados 15 s. Detalle/contexto/checkout no se cachean.
-- `PublicStoreTenantKeyProvider` resuelve `empresa:{id}` cuando la identidad pública coincide inequívocamente y usa `public-config:{id}` como partición fail-safe si no puede desambiguar.
-- `AppDbContext.SaveChangesAsync` invalida generaciones después de cambios persistidos de producto, variante, imagen, stock, categoría, identidad/WhatsApp, tema, marca/modelo o descuentos.
-- Nuevas pruebas verifican deduplicación concurrente, separación tenant/parámetros, invalidación generacional, resolución tenant y reutilización del listado.
-- Workflow Fase 7 incluye los contratos y pruebas de cache.
-- Sin migraciones, datos productivos, cambios de RBAC/tenancy, secretos, PROD, `main` ni servicios pagos. Certificación runtime DEV pendiente del deploy causal.
+- Certificación DEV publicada en `docs/evidencias/DEV_CERTIFICACION_PUNTO_5_CACHE_DOS_NIVELES_2026-09-29.md`.
+- Angular comparte identidad en vuelo y categorías entre rutas con replay; backend usa `IMemoryCache` tenant-aware con lock por key e invalidación generacional.
+- TTL: identidad/tema/categorías 5 min; destacados 30 s; listados 15 s. Detalle/contexto/checkout permanecen fuera de cache.
+- Scope Lock y regresiones VariStoreHn Fases 1–7: SUCCESS sobre el HEAD final de la PR.
+- Render DEV desplegó `10f77f08226bd97d966f20fb53ed8b56022d2fb6` y quedó `live`.
+- Runtime: bootstrap hit observado hasta **1.0 ms / 0 queries**; listado hit **1.3–2.3 ms / 0 queries**; categorías compartidas **0.8 ms / 0 queries**.
+- Separación de parámetros comprobada: `pageSize=24` y `pageSize=12` generan misses independientes y cada repetición posterior cae a 0 queries.
+- Vercel preview `dpl_DoZuHfXdPM91YEbyFaVLJopSeqns` quedó READY; desde ese preview al HEAD final sólo cambiaron tests/guardas, por lo que el runtime Angular es equivalente. El alias canónico no se forzó a rebuild por el límite gratuito diario.
+- Sin migraciones, datos productivos, cambios de RBAC/tenancy, secretos, PROD, `main` ni servicios pagos.
+- Punto 5: **LISTO técnicamente en DEV**; no requiere compra de servicios.
 
 ## 2026-09-29 — Punto 4 certificado: bootstrap único del storefront
 
