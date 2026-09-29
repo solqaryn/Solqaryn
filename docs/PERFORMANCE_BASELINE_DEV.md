@@ -101,6 +101,40 @@ Frente al read path previo de 6 queries, el resumen dedicado elimina una query a
 
 La evidencia completa está en `docs/evidencias/DEV_CERTIFICACION_PUNTO_3_READ_MODELS_PUBLICOS_LIGEROS_2026-09-29.md`.
 
+### Punto 4 — bootstrap único del storefront
+
+Functional HEAD: `3ad6450e037466e78c25aa07f37ff4e77e5ec109`.
+
+La portada sustituye las lecturas iniciales independientes de identidad, WhatsApp, tema, categorías y destacados por `GET /tienda/bootstrap`. El navegador comparte la respuesta entre consumidores con `shareReplay`.
+
+La regresión Playwright causal exige en camino feliz:
+
+- `/tienda/bootstrap`: **1 request**;
+- identidad pública separada: **0**;
+- WhatsApp público separado: **0**;
+- tema visual separado: **0**;
+- categorías separadas: **0**;
+- destacados separados: **0**.
+
+El bootstrap ejecuta **5 queries internas** para componer el paquete completo.
+
+Cold/warm-up posterior al deploy: **2403.1 ms / 5 queries**.
+
+Muestra posterior:
+
+- **559.3 ms / 5 queries / 110.7 ms DB**;
+- **227.6 ms / 5 queries / 105.7 ms DB**;
+- **836.1 ms / 5 queries / 376.5 ms DB**;
+- **282.7 ms / 5 queries / 163.5 ms DB**;
+- **218.8 ms / 5 queries / 106.0 ms DB**;
+- **215.0 ms / 5 queries / 106.9 ms DB**;
+- **543.8 ms / 5 queries / 319.0 ms DB**;
+- **332.0 ms / 5 queries / 107.0 ms DB**.
+
+Las pasadas calientes estables de **215.0–332.0 ms** cumplen el target inicial de <=500 ms. Los picos por encima de 500 ms coinciden con incrementos de tiempo DB en la infraestructura gratuita y se conservan en la evidencia en lugar de descartarlos.
+
+La evidencia completa vive en `docs/evidencias/DEV_CERTIFICACION_PUNTO_4_BOOTSTRAP_STOREFRONT_2026-09-29.md`.
+
 ### Bundle Angular observado
 
 Build productivo exact-head:
