@@ -76,6 +76,14 @@ Captura sobre DEV desplegado en Render commit `02ec7994430812543e43371387318cfa9
 
 El listado de productos dedicó sólo ~7.2% del tiempo total medido a comandos DB, por lo que su deuda principal no se explica únicamente por latencia MySQL. El siguiente análisis debe revisar shape del read model, includes/materialización, mapeo y llamadas por producto/variante antes de considerar infraestructura pagada.
 
+### Comparación posterior al read-model ligero — 2026-09-29
+
+El read-model público ligero fue desplegado en DEV a partir de `75c4014a28a25726dae3798a280eec476c257dbe` y quedó incorporado en el HEAD funcional `ff8743aa14ef018450ebacafb74272076e6ab269`.
+
+Pasadas calientes observadas posteriormente para `GET /tienda/productos`: **302.4, 497.2, 326.7, 269.8, 327.9, 287.2, 309.0 y 264.9 ms**, con 6 queries por request. Frente al baseline previo de **2912.0 ms / 7 queries**, la reducción de latencia observada es aproximadamente de **83% a 91%** en esas pasadas calientes y la mayoría cumple el target inicial de <=500 ms.
+
+Los cold starts de Render Free permanecen separados del criterio de API caliente. La certificación completa del Punto 2 vive en `docs/evidencias/DEV_CERTIFICACION_PUNTO_2_CATALOGO_ACOTADO_2026-09-29.md`.
+
 ### Bundle Angular observado
 
 Build productivo exact-head:
