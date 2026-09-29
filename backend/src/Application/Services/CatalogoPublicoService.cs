@@ -30,10 +30,10 @@ public sealed class CatalogoPublicoService : ICatalogoPublicoService
         if (request.SoloOfertas == true)
             return await BuscarOfertasAsync(request, cancellationToken);
 
-        var (items, totalCount) = await _repository.GetPagedAsync(request, cancellationToken);
-        var mapeados = await MapearLoteAsync(items, cancellationToken);
+        var (items, totalCount) = await _repository.GetPagedSummaryAsync(request, cancellationToken);
+        var mapeados = await MapearResumenLoteAsync(items, cancellationToken);
 
-        return new PagedResult<ProductoCatalogoPublicoDto>
+        return new PagedResult<TiendaProductoResumenDto>
         {
             Items = mapeados,
             Page = request.Page,
@@ -71,7 +71,7 @@ public sealed class CatalogoPublicoService : ICatalogoPublicoService
             }
         }
 
-        return new PagedResult<ProductoCatalogoPublicoDto>
+        return new PagedResult<TiendaProductoResumenDto>
         {
             Items = pagina,
             Page = request.Page,
@@ -95,8 +95,8 @@ public sealed class CatalogoPublicoService : ICatalogoPublicoService
             SortDirection = "desc"
         };
 
-        var (items, _) = await _repository.GetPagedAsync(request, cancellationToken);
-        return await MapearLoteAsync(items.Where(item => item.Activo && item.EsDestacado).ToList(), cancellationToken);
+        var (items, _) = await _repository.GetPagedSummaryAsync(request, cancellationToken);
+        return await MapearResumenLoteAsync(items.Where(item => item.EsDestacado).ToList(), cancellationToken);
     }
 
     public async Task<ProductoCatalogoPublicoDto?> ObtenerDetalleAsync(
