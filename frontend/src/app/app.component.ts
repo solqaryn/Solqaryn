@@ -182,6 +182,7 @@ export class AppComponent implements OnDestroy {
     if (this.esRutaTienda(url)) {
       this.tiendaIdentidad.cargar().subscribe((bootstrap) => {
         if (bootstrap) this.themeApplier.aplicar(bootstrap.tema);
+        else this.themeApplier.aplicarTemaGuardado();
         this.seo.aplicarRuta(url, this.tiendaIdentidad.config().nombreComercial || 'Tienda');
       });
       return;
