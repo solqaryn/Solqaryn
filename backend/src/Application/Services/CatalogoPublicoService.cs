@@ -208,6 +208,8 @@ public sealed class CatalogoPublicoService : ICatalogoPublicoService
             DescripcionResumen = producto.DescripcionResumen,
             CategoriaId = producto.CategoriaId,
             CategoriaNombre = producto.CategoriaNombre,
+            MarcaNombre = producto.MarcaFallback,
+            ModeloNombre = producto.ModeloFallback,
             Precio = precioPublico,
             PrecioOferta = ofertaProducto?.PrecioOferta,
             OfertaActiva = ofertaProducto is not null,
