@@ -135,6 +135,59 @@ Las pasadas calientes estables de **215.0–332.0 ms** cumplen el target inicial
 
 La evidencia completa vive en `docs/evidencias/DEV_CERTIFICACION_PUNTO_4_BOOTSTRAP_STOREFRONT_2026-09-29.md`.
 
+### Punto 5 — cache público tenant-aware en dos niveles
+
+Functional HEAD backend: `10f77f08226bd97d966f20fb53ed8b56022d2fb6`.
+
+La cache pública usa `IMemoryCache` in-process con partición tenant-aware, lock por key, TTL diferenciados e invalidación generacional. El frontend comparte identidad en vuelo y categorías entre rutas.
+
+#### Bootstrap
+
+Miss observado:
+
+- **2848.1 ms / 7 queries / 191.8 ms DB**.
+
+Hits posteriores sobre la misma entrada:
+
+- **4.5 ms / 0 queries**;
+- **82.5 ms / 0 queries**;
+- **1.1 ms / 0 queries**;
+- **1.2 ms / 0 queries**.
+
+Otra ventana confirmó:
+
+- miss: **1838.4 ms / 7 queries / 146.0 ms DB**;
+- hit: **1.0 ms / 0 queries**.
+
+#### Categorías compartidas
+
+Después de que bootstrap calentó la lista:
+
+- `GET /tienda/categorias`: **0.8–6.4 ms / 0 queries**.
+
+#### Listado de productos
+
+`pageSize=24`:
+
+- miss: **1675.8 ms / 5 queries / 104.9 ms DB**;
+- hit: **2.3 ms / 0 queries**.
+
+Otra ventana:
+
+- miss: **538.8 ms / 5 queries / 250.3 ms DB**;
+- hit: **1.6 ms / 0 queries**.
+
+#### Separación por parámetros
+
+Con `pageSize=24` ya calentado, `pageSize=12` produjo un miss independiente:
+
+- primer `pageSize=12`: **245.6 ms / 5 queries / 107.2 ms DB**;
+- repetición: **1.3 ms / 0 queries**.
+
+Esto confirma que la key incorpora parámetros y que una variante de listado no reutiliza indebidamente otra.
+
+La evidencia completa vive en `docs/evidencias/DEV_CERTIFICACION_PUNTO_5_CACHE_DOS_NIVELES_2026-09-29.md`.
+
 ### Bundle Angular observado
 
 Build productivo exact-head:
