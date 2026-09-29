@@ -1,6 +1,6 @@
-## 2026-09-29 — Punto 6 CI certificado: cache HTTP + ETag + compresión
+## 2026-09-29 — Punto 6 certificado: cache HTTP + ETag + compresión
 
-- Certificación DEV en progreso publicada en `docs/evidencias/DEV_CERTIFICACION_PUNTO_6_HTTP_CACHE_ETAG_COMPRESION_2026-09-29.md`.
+- Certificación DEV cerrada en `docs/evidencias/DEV_CERTIFICACION_PUNTO_6_HTTP_CACHE_ETAG_COMPRESION_2026-09-29.md`.
 - Backend: Response Compression con Brotli/Gzip sobre HTTPS para JSON/text, sin servicio externo.
 - Seguridad: `private, no-store, max-age=0` es el default de toda respuesta API; sólo GET públicos explícitos del storefront pueden sobrescribirlo, y cualquier request autenticado/Authorization vuelve a `no-store`.
 - `PublicHttpCacheAttribute` emite perfiles diferenciados, ETag débil SHA-256, `Vary: Accept-Encoding` y 304 ante `If-None-Match`.
@@ -10,8 +10,9 @@
 - Guardas en `validate-http-cache-contract.mjs` y pruebas backend verifican ETag/304, no-store de errores/autenticación y exclusión de rutas sensibles.
 - Scope Lock + VariStoreHn Fases 1–7: **SUCCESS** sobre el HEAD exacto `6b364c7c3e1fd24374fbc02cface54ad3f977bee`.
 - PR `#3481` integrada en `dev` como `f3d1119133c1991b742575f8a675c9f012b9b42e`; el fallo intermedio de pruebas fue sólo un harness MVC sin `RouteData` y quedó corregido/revalidado.
-- Runtime DEV todavía no se declara certificado porque Vercel está bloqueando el nuevo deployment por `api-deployments-free-per-day` y Render usa `autoDeployTrigger=checksPass`.
-- Sin migraciones, datos, secretos, PROD, `main` ni servicios pagos. **No se compra ni se requiere ningún servicio.**
+- Runtime DEV certificado: Render `dep-dau37vvlot8c739g9s6g` está `live`; Vercel `dpl_E1h8BhRAVcE97JcnKJjMfcozWjB3` está `READY` y sirve `solqaryn-dev.vercel.app`; el workflow canónico `36638217740` pasó ETag/304, Brotli, Gzip y no-store.
+- CDN DEV verificado: bundles hashados `immutable` por un año y `/api/tienda/bootstrap` conserva Cache-Control, ETag, Brotli y `Vary: Accept-Encoding`.
+- Sin migraciones, datos, secretos, `main`, entorno PROD ni servicios pagos. **Punto 6 LISTO en DEV.**
 
 ## 2026-09-29 — Punto 5 certificado: cache público tenant-aware en dos niveles
 
