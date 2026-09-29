@@ -34,6 +34,9 @@ builder.Services.AddValidatorsFromAssemblyContaining<CreateProductoValidator>();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection no configurado.");
 var mysqlServerVersion = Version.Parse(builder.Configuration["Database:ServerVersion"] ?? "8.4.3");
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddMemoryCache();
+builder.Services.AddSingleton<IPublicStoreCache, PublicStoreMemoryCache>();
+builder.Services.AddScoped<IPublicStoreTenantKeyProvider, PublicStoreTenantKeyProvider>();
 builder.Services.AddSingleton<DbQueryTimingInterceptor>();
 builder.Services.AddDbContext<AppDbContext>((serviceProvider, options) =>
     options
