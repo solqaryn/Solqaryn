@@ -87,8 +87,10 @@ jobs:
           headers="$RUNNER_TEMP/bootstrap.headers"
           trap 'echo "::group::bootstrap response headers"; cat "$headers" 2>/dev/null || true; echo "::endgroup::"' ERR
           curl --retry 3 --fail --silent --show-error -D "$headers" -o /dev/null "$BACKEND/tienda/bootstrap"
-          grep -Eqi '^cache-control:[[:space:]]*public, max-age=15, s-maxage=30, stale-while-revalidate=60\r?$' "$headers"
-          etag="$(awk -F': ' 'tolower($1)=="etag"{gsub("\r","",$2); print $2}' "$headers" | tail -n 1)"
+          normalized="$headers.normalized"
+          tr -d '\r' < "$headers" > "$normalized"
+          grep -Eqi '^cache-control:[[:space:]]*public, max-age=15, s-maxage=30, stale-while-revalidate=60$' "$normalized"
+          etag="$(awk -F': ' 'tolower($1)=="etag"{print $2}' "$normalized" | tail -n 1)"
           test -n "$etag"
           code="$(curl --retry 3 --silent --show-error -o /dev/null -w '%{http_code}' -H "If-None-Match: $etag" "$BACKEND/tienda/bootstrap")"
           test "$code" = "304"
@@ -101,8 +103,10 @@ jobs:
           headers="$RUNNER_TEMP/products.headers"
           trap 'echo "::group::products response headers"; cat "$headers" 2>/dev/null || true; echo "::endgroup::"' ERR
           curl --retry 3 --fail --silent --show-error -D "$headers" -o /dev/null "$BACKEND/tienda/productos?page=1&pageSize=24"
-          grep -Eqi '^cache-control:[[:space:]]*public, max-age=5, s-maxage=15, must-revalidate\r?$' "$headers"
-          grep -Eqi '^etag:[[:space:]]*W/"[0-9a-f]{64}"\r?$' "$headers"
+          normalized="$headers.normalized"
+          tr -d '\r' < "$headers" > "$normalized"
+          grep -Eqi '^cache-control:[[:space:]]*public, max-age=5, s-maxage=15, must-revalidate$' "$normalized"
+          grep -Eqi '^etag:[[:space:]]*W/"[0-9a-f]{64}"$' "$normalized"
           echo "HTTP_PRODUCTS_CACHE_ETAG=PASS"
 
       - name: Compresión Brotli
@@ -112,8 +116,10 @@ jobs:
           headers="$RUNNER_TEMP/bootstrap-br.headers"
           trap 'echo "::group::brotli response headers"; cat "$headers" 2>/dev/null || true; echo "::endgroup::"' ERR
           curl --retry 3 --fail --silent --show-error -D "$headers" -o /dev/null -H 'Accept-Encoding: br' "$BACKEND/tienda/bootstrap"
-          grep -Eqi '^content-encoding:[[:space:]]*br\r?$' "$headers"
-          grep -Eqi '^vary:.*Accept-Encoding' "$headers"
+          normalized="$headers.normalized"
+          tr -d '\r' < "$headers" > "$normalized"
+          grep -Eqi '^content-encoding:[[:space:]]*br$' "$normalized"
+          grep -Eqi '^vary:.*Accept-Encoding' "$normalized"
           echo "HTTP_BROTLI=PASS"
 
       - name: Compresión Gzip
@@ -123,7 +129,9 @@ jobs:
           headers="$RUNNER_TEMP/bootstrap-gzip.headers"
           trap 'echo "::group::gzip response headers"; cat "$headers" 2>/dev/null || true; echo "::endgroup::"' ERR
           curl --retry 3 --fail --silent --show-error -D "$headers" -o /dev/null -H 'Accept-Encoding: gzip' "$BACKEND/tienda/bootstrap"
-          grep -Eqi '^content-encoding:[[:space:]]*gzip\r?$' "$headers"
+          normalized="$headers.normalized"
+          tr -d '\r' < "$headers" > "$normalized"
+          grep -Eqi '^content-encoding:[[:space:]]*gzip$' "$normalized"
           echo "HTTP_GZIP=PASS"
 
       - name: No-store ruta no allowlisted
@@ -133,8 +141,10 @@ jobs:
           headers="$RUNNER_TEMP/health.headers"
           trap 'echo "::group::health response headers"; cat "$headers" 2>/dev/null || true; echo "::endgroup::"' ERR
           curl --retry 3 --fail --silent --show-error -D "$headers" -o /dev/null "$BACKEND/health"
-          grep -Eqi '^cache-control:[[:space:]]*private, no-store, max-age=0\r?$' "$headers"
-          ! grep -Eqi '^etag:' "$headers"
+          normalized="$headers.normalized"
+          tr -d '\r' < "$headers" > "$normalized"
+          grep -Eqi '^cache-control:[[:space:]]*private, no-store, max-age=0$' "$normalized"
+          ! grep -Eqi '^etag:' "$normalized"
           echo "HTTP_NOSTORE_DEFAULT=PASS"
 
       - name: No-store request con Authorization
@@ -144,8 +154,10 @@ jobs:
           headers="$RUNNER_TEMP/auth.headers"
           trap 'echo "::group::authorized response headers"; cat "$headers" 2>/dev/null || true; echo "::endgroup::"' ERR
           curl --retry 3 --fail --silent --show-error -D "$headers" -o /dev/null -H 'Authorization: Bearer runtime-probe' "$BACKEND/tienda/bootstrap"
-          grep -Eqi '^cache-control:[[:space:]]*private, no-store, max-age=0\r?$' "$headers"
-          ! grep -Eqi '^etag:' "$headers"
+          normalized="$headers.normalized"
+          tr -d '\r' < "$headers" > "$normalized"
+          grep -Eqi '^cache-control:[[:space:]]*private, no-store, max-age=0$' "$normalized"
+          ! grep -Eqi '^etag:' "$normalized"
           echo "HTTP_NOSTORE_AUTH=PASS"
 
       - name: Escritura/lectura efímera en solqaryn_dev
