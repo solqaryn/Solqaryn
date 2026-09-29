@@ -61,7 +61,7 @@ public sealed class TiendaControllerDestacadosTests
         var result = await controller.GetProductosDestacados(99);
 
         var ok = Assert.IsType<OkObjectResult>(result);
-        var response = Assert.IsType<ApiResponse<List<ProductoCatalogoPublicoDto>>>(ok.Value);
+        var response = Assert.IsType<ApiResponse<List<TiendaProductoResumenDto>>>(ok.Value);
         Assert.True(response.Success);
         var producto = Assert.Single(response.Data!);
         Assert.Equal(501, producto.Id);
