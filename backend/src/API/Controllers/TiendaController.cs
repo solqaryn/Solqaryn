@@ -23,19 +23,29 @@ public sealed class TiendaController : ControllerBase
     private readonly IPromocionPublicaService _promocionPublicaService;
     private readonly IInventarioPublicoService _inventarioPublicoService;
     private readonly ICatalogoPublicoService _catalogoPublicoService;
+    private readonly ITiendaBootstrapService _bootstrapService;
 
     public TiendaController(
         IProductoService productoService,
         ICategoriaService categoriaService,
         IPromocionPublicaService promocionPublicaService,
         IInventarioPublicoService inventarioPublicoService,
-        ICatalogoPublicoService catalogoPublicoService)
+        ICatalogoPublicoService catalogoPublicoService,
+        ITiendaBootstrapService bootstrapService)
     {
         _productoService = productoService;
         _categoriaService = categoriaService;
         _promocionPublicaService = promocionPublicaService;
         _inventarioPublicoService = inventarioPublicoService;
         _catalogoPublicoService = catalogoPublicoService ?? throw new ArgumentNullException(nameof(catalogoPublicoService));
+        _bootstrapService = bootstrapService ?? throw new ArgumentNullException(nameof(bootstrapService));
+    }
+
+    [HttpGet("bootstrap")]
+    public async Task<IActionResult> GetBootstrap()
+    {
+        var bootstrap = await _bootstrapService.ObtenerAsync(HttpContext?.RequestAborted ?? CancellationToken.None);
+        return Ok(ApiResponse<TiendaBootstrapDto>.Ok(bootstrap));
     }
 
     [HttpGet("productos")]
