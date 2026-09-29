@@ -53,6 +53,7 @@ on:
       - 'backend/tests/InventoryApp.Tests/API/Controllers/TiendaControllerDestacadosTests.cs'
       - 'backend/tests/InventoryApp.Tests/TiendaBootstrapServiceTests.cs'
       - 'backend/tests/InventoryApp.Tests/PublicStoreMemoryCacheTests.cs'
+      - 'backend/tests/InventoryApp.Tests/PublicStoreTenantKeyProviderTests.cs'
       - 'backend/tests/InventoryApp.Tests/PublicStoreCacheInvalidationTests.cs'
       - 'backend/tests/InventoryApp.Tests/CatalogoPublicoCacheTests.cs'
       - 'backend/tests/InventoryApp.Tests/TiendaPublicaTests.cs'
@@ -111,6 +112,7 @@ on:
       - 'backend/tests/InventoryApp.Tests/API/Controllers/TiendaControllerDestacadosTests.cs'
       - 'backend/tests/InventoryApp.Tests/TiendaBootstrapServiceTests.cs'
       - 'backend/tests/InventoryApp.Tests/PublicStoreMemoryCacheTests.cs'
+      - 'backend/tests/InventoryApp.Tests/PublicStoreTenantKeyProviderTests.cs'
       - 'backend/tests/InventoryApp.Tests/PublicStoreCacheInvalidationTests.cs'
       - 'backend/tests/InventoryApp.Tests/CatalogoPublicoCacheTests.cs'
       - 'backend/tests/InventoryApp.Tests/TiendaPublicaTests.cs'
@@ -152,7 +154,7 @@ jobs:
         run: dotnet build InventoryApp.sln --configuration Release --no-restore
 
       - name: Pruebas focales de destacados, bootstrap y cache
-        run: dotnet test InventoryApp.sln --configuration Release --no-build --filter "FullyQualifiedName~TiendaControllerDestacadosTests|FullyQualifiedName~TiendaBootstrapServiceTests|FullyQualifiedName~PublicStoreMemoryCacheTests|FullyQualifiedName~PublicStoreCacheInvalidationTests|FullyQualifiedName~CatalogoPublicoCacheTests|FullyQualifiedName~TiendaPublicaTests"
+        run: dotnet test InventoryApp.sln --configuration Release --no-build --filter "FullyQualifiedName~TiendaControllerDestacadosTests|FullyQualifiedName~TiendaBootstrapServiceTests|FullyQualifiedName~PublicStoreMemoryCacheTests|FullyQualifiedName~PublicStoreTenantKeyProviderTests|FullyQualifiedName~PublicStoreCacheInvalidationTests|FullyQualifiedName~CatalogoPublicoCacheTests|FullyQualifiedName~TiendaPublicaTests"
 
   frontend:
     name: Fase 7 - regresion publica acumulada
