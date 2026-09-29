@@ -86,6 +86,8 @@ export interface ProductoCatalogoResumenPublico {
   descripcionResumen?: string | null;
   categoriaId?: number | null;
   categoriaNombre?: string | null;
+  marcaNombre?: string | null;
+  modeloNombre?: string | null;
   precio: number;
   precioOferta?: number | null;
   ofertaActiva?: boolean;
