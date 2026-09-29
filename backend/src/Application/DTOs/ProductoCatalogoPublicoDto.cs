@@ -63,3 +63,8 @@ public sealed class ModeloCatalogoPublicoDto
     public string EstadoDisponibilidad { get; init; } = "Agotado";
     public List<ProductoImagenPublicaDto> Imagenes { get; init; } = new();
 }
+
+public sealed class ProductosContextoPublicoRequestDto
+{
+    public List<int> ProductoIds { get; init; } = new();
+}
