@@ -191,12 +191,16 @@ test.describe('VariStoreHn Fase 6 — checkout y pedido', () => {
     };
 
     await sembrarCarrito(page, 'bd', `variante:${varianteId}`, productoId, 1);
-    await page.route('**/tienda/productos?*', route => route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      headers: { 'Access-Control-Allow-Origin': '*' },
-      body: JSON.stringify({ success: true, data: { items: [producto], page: 1, pageSize: 96, totalCount: 1 } })
-    }));
+    let requestContexto: unknown = null;
+    await page.route('**/tienda/productos/contexto', route => {
+      requestContexto = route.request().postDataJSON();
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        headers: { 'Access-Control-Allow-Origin': '*' },
+        body: JSON.stringify({ success: true, data: [producto] })
+      });
+    });
 
     let requestCheckout: unknown = null;
     await page.route('**/tienda/checkout/validar', route => {
@@ -231,6 +235,7 @@ test.describe('VariStoreHn Fase 6 — checkout y pedido', () => {
 
     await page.goto('/varistorehn/checkout?fuente=bd');
     await expect(page.getByRole('heading', { name: 'Tu compra' })).toBeVisible();
+    expect(requestContexto).toEqual({ productoIds: [productoId] });
     expect(requestCheckout).toEqual({
       items: [{
         productoId,
