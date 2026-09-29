@@ -92,14 +92,9 @@ public sealed class TiendaController : ControllerBase
     [HttpGet("categorias")]
     public async Task<IActionResult> GetCategorias()
     {
-        var categorias = await _categoriaService.GetActivasAsync();
-        var resultado = categorias
-            .Where(categoria => categoria.Activa)
-            .OrderBy(categoria => categoria.Nombre)
-            .Select(MapearCategoria)
-            .ToList();
-
-        return Ok(ApiResponse<List<CategoriaCatalogoPublicoDto>>.Ok(resultado));
+        var categorias = await _bootstrapService.ObtenerCategoriasAsync(
+            HttpContext?.RequestAborted ?? CancellationToken.None);
+        return Ok(ApiResponse<List<CategoriaCatalogoPublicoDto>>.Ok(categorias));
     }
 
     [HttpGet("categorias/{slug}")]
@@ -108,11 +103,12 @@ public sealed class TiendaController : ControllerBase
         if (!PublicSlug.TryGetId(slug, out var id))
             return NotFound(ApiResponse<CategoriaCatalogoPublicoDto>.Fail("Categoria no encontrada."));
 
-        var categoria = await _categoriaService.GetByIdAsync(id);
-        if (categoria is null || !categoria.Activa)
-            return NotFound(ApiResponse<CategoriaCatalogoPublicoDto>.Fail("Categoria no encontrada."));
-
-        return Ok(ApiResponse<CategoriaCatalogoPublicoDto>.Ok(MapearCategoria(categoria)));
+        var categorias = await _bootstrapService.ObtenerCategoriasAsync(
+            HttpContext?.RequestAborted ?? CancellationToken.None);
+        var categoria = categorias.SingleOrDefault(item => item.Id == id);
+        return categoria is null
+            ? NotFound(ApiResponse<CategoriaCatalogoPublicoDto>.Fail("Categoria no encontrada."))
+            : Ok(ApiResponse<CategoriaCatalogoPublicoDto>.Ok(categoria));
     }
 
     /// <summary>
