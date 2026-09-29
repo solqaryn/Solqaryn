@@ -119,7 +119,12 @@ public sealed class TiendaControllerExactVariantTests
         var inventario = new Mock<IInventarioPublicoService>();
         inventario.Setup(service => service.ObtenerPorVariantesAsync(It.IsAny<IEnumerable<int>>()))
             .ReturnsAsync(new Dictionary<int, InventarioPublicoVarianteDto>());
-        return new TiendaController(productos.Object, categorias.Object, promociones.Object, inventario.Object);
+        return new TiendaController(
+            productos.Object,
+            categorias.Object,
+            promociones.Object,
+            inventario.Object,
+            new Mock<ICatalogoPublicoService>().Object);
     }
 
     private static ProductoDto CrearProductoConVariantesAmbiguas() => new()
