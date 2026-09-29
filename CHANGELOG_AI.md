@@ -1,3 +1,14 @@
+## 2026-09-29 — Rendimiento storefront: read models y lecturas acotadas
+
+- Se añadió un read path público ligero para SOLQARYN/VariStoreHN, separado de `ProductoRepository.ConIncludes()`.
+- Listado: paginación, búsqueda, categoría, disponibilidad, rango de precio y orden se envían al backend; el filtro de ofertas evalúa candidatos ligeros server-side y devuelve sólo la página solicitada.
+- Detalle: carga únicamente el producto solicitado con su galería/variantes.
+- Carrito, checkout, categorías y cuenta: rehidratan sólo los productos cuyos IDs están persistidos o referenciados; no descargan el catálogo completo.
+- Categoría y relacionados: consultan páginas pequeñas por `categoriaId`.
+- Se actualizaron gates estáticos del storefront para prohibir la reintroducción de `obtenerCatalogo()`.
+- Sin migraciones, sin datos escritos, sin cambio de RBAC/tenancy, sin secretos, sin PROD y sin servicios pagos.
+- Medición comparativa DEV queda pendiente del deploy exact-head de este changeset.
+
 ## 2026-09-29 — Primera captura real del baseline DEV
 
 - Render DEV live sobre `02ec7994430812543e43371387318cfa9822e7dd` confirmó la instrumentación API/DB.

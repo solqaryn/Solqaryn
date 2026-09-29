@@ -1,5 +1,15 @@
 # ARCHITECTURE_CHANGELOG — Solqaryn
 
+## 2026-09-29 — Read path público ligero para catálogo/storefront
+
+- Se separó la consulta pública de productos del repositorio administrativo con includes completos.
+- Nueva vía: `ICatalogoPublicoService` + `IProductoCatalogoPublicoRepository` + proyecciones específicas.
+- `GET /tienda/productos` pagina y filtra server-side; detalle carga galerías sólo para un producto.
+- `POST /tienda/productos/contexto` rehidrata únicamente los IDs persistidos de carrito/cuenta.
+- Inventario/promociones conservan sus autoridades existentes; no hay nueva persistencia ni migración.
+- El frontend deja de usar una operación de “descargar catálogo completo” como dependencia transversal.
+
+
 ## 2026-09-28 — Baseline first-party de rendimiento DEV
 
 - Instrumentación transversal DEV para separar tiempo HTTP de cantidad/tiempo MySQL sin registrar SQL, parámetros ni secretos.
