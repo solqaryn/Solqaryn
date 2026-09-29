@@ -224,10 +224,14 @@ export class VaristorehnCheckoutComponent implements OnInit {
     this.error.set('');
     this.validado.set(null);
     this.enlaceWhatsapp.set('');
+    const idsPersistidos = this.carrito.productoIdsPersistidos(
+      this.identidad.config().id,
+      this.utilizarDatosBaseDatos()
+    );
     this.carrito.reiniciarContexto();
 
     const catalogo$ = this.utilizarDatosBaseDatos()
-      ? this.servicio.obtenerCatalogo().pipe(map(productos => productos.map(mapearProducto)))
+      ? this.servicio.obtenerProductosContexto(idsPersistidos).pipe(map(productos => productos.map(mapearProducto)))
       : of(crearCatalogoEjemplo());
 
     return catalogo$.pipe(switchMap(productos => {

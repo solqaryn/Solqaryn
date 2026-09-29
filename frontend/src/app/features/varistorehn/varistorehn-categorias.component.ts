@@ -141,8 +141,12 @@ export class VaristorehnCategoriasComponent implements OnInit {
   private cargarContextoCarrito(): void {
     this.cargaCarrito?.unsubscribe();
     this.carrito.reiniciarContexto();
+    const idsPersistidos = this.carrito.productoIdsPersistidos(
+      this.identidad.config().id,
+      this.utilizarDatosBaseDatos()
+    );
     const fuente: Observable<ProductoTienda[]> = this.utilizarDatosBaseDatos()
-      ? this.servicio.obtenerCatalogo().pipe(map(productos => productos.map(mapearProducto)))
+      ? this.servicio.obtenerProductosContexto(idsPersistidos).pipe(map(productos => productos.map(mapearProducto)))
       : of(crearCatalogoEjemplo());
 
     this.cargaCarrito = fuente.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
