@@ -41,7 +41,8 @@ public sealed class TiendaControllerDestacadosTests
             categorias.Object,
             promociones.Object,
             inventario.Object,
-            catalogo.Object);
+            catalogo.Object,
+            new Mock<ITiendaBootstrapService>().Object);
 
         var result = await controller.GetProductosDestacados(99);
 
