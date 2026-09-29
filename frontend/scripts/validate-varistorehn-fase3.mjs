@@ -45,10 +45,14 @@ expect(!productsRouteLine.includes('authGuard') && !productsRouteLine.includes('
 
 expect(paths.includes("productos: '/varistorehn/productos'"), 'El mapa canónico debe conservar VARISTOREHN_PATHS.productos.');
 expect(models.includes('export interface ProductoTienda'), 'Fase 3 debe usar ProductoTienda como modelo visual canónico.');
+expect(models.includes('export interface ProductoCatalogoResumenPublico'), 'El listado debe tener un contrato HTTP ligero separado del detalle.');
+expect(models.includes('export interface ModeloCatalogoResumenPublico'), 'El listado debe exponer solo el resumen mínimo de variantes.');
 expect(models.includes("export type OrdenCatalogo = 'destacados' | 'relevancia' | 'precio-asc' | 'precio-desc' | 'recientes' | 'nombre'"), 'El orden canónico del catálogo debe conservar compatibilidad y añadir relevancia/recientes.');
 expect(service.includes('obtenerProductos('), 'La página de productos debe consumir la frontera pública paginada del catálogo.');
+expect(service.includes('PagedResult<ProductoCatalogoResumenPublico>'), 'El listado HTTP debe tiparse con el resumen ligero y no con el DTO rico de detalle.');
 expect(service.includes('obtenerProductosContexto(productoIds: number[])'), 'El carrito debe rehidratar únicamente los productos persistidos, no descargar el catálogo completo.');
 expect(!service.includes('obtenerCatalogo()'), 'El cliente público no debe conservar una API que descargue todas las páginas del catálogo.');
+expect(catalog.includes('export function mapearProductoResumen'), 'Las tarjetas deben mapear el contrato ligero sin depender de galerías del detalle.');
 expect(catalog.includes('export function filtrarProductos'), 'Los filtros deben reutilizar la regla pura canónica.');
 expect(catalog.includes('export function referenciasCarrito'), 'La persistencia debe conservar el formato canónico de referencias.');
 expect(catalog.includes('export function restaurarCarrito'), 'El carrito debe restaurarse contra catálogo/precio/stock actuales.');
@@ -59,6 +63,7 @@ for (const required of [
   'EstadoConsultaPublica',
   'filtrarProductos',
   'this.servicio.obtenerProductos(this.pagina(), this.tamanoPagina',
+  'datos.items.map(mapearProductoResumen)',
   'this.servicio.obtenerCategorias()',
   'mapearCategoriaTienda',
   'VaristorehnCarritoService',
