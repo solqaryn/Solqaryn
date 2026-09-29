@@ -12,6 +12,8 @@ public sealed class TiendaProductoResumenDto
     public string? DescripcionResumen { get; init; }
     public int? CategoriaId { get; init; }
     public string? CategoriaNombre { get; init; }
+    public string? MarcaNombre { get; init; }
+    public string? ModeloNombre { get; init; }
     public decimal Precio { get; init; }
     public decimal? PrecioOferta { get; init; }
     public bool OfertaActiva { get; init; }
