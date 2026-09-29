@@ -1,7 +1,6 @@
 using InventoryApp.Application.Interfaces;
 using InventoryApp.Domain.Entities;
 using InventoryApp.Infrastructure.Services;
-using Microsoft.Extensions.Caching.Memory;
 using Moq;
 using Xunit;
 
@@ -29,8 +28,9 @@ public sealed class PublicStoreTenantKeyProviderTests
                 new("VariStoreHN") { Id = 42 }
             });
 
-        using var memory = new MemoryCache(new MemoryCacheOptions());
-        var sut = new PublicStoreTenantKeyProvider(memory, configuracion.Object, empresas.Object);
+        using var memory = new Microsoft.Extensions.Caching.Memory.MemoryCache(new Microsoft.Extensions.Caching.Memory.MemoryCacheOptions());
+        var cache = new PublicStoreMemoryCache(memory);
+        var sut = new PublicStoreTenantKeyProvider(cache, configuracion.Object, empresas.Object);
 
         var tenantKey = await sut.GetTenantKeyAsync();
 
