@@ -7,7 +7,7 @@
 - Render DEV desplegó `10f77f08226bd97d966f20fb53ed8b56022d2fb6` y quedó `live`.
 - Runtime: bootstrap hit observado hasta **1.0 ms / 0 queries**; listado hit **1.3–2.3 ms / 0 queries**; categorías compartidas **0.8 ms / 0 queries**.
 - Separación de parámetros comprobada: `pageSize=24` y `pageSize=12` generan misses independientes y cada repetición posterior cae a 0 queries.
-- Vercel preview `dpl_DoZuHfXdPM91YEbyFaVLJopSeqns` quedó READY; desde ese preview al HEAD final sólo cambiaron tests/guardas, por lo que el runtime Angular es equivalente. El alias canónico no se forzó a rebuild por el límite gratuito diario.
+- Vercel preview `dpl_DoZuHfXdPM91YEbyFaVLJopSeqns` validó el preview runtime-equivalente y luego `dpl_J5KYkQ7FmVs81pMBQsvzsXhw5H7r` quedó READY como deployment canónico de `solqaryn-dev.vercel.app`, sin upgrade ni pago.
 - Sin migraciones, datos productivos, cambios de RBAC/tenancy, secretos, PROD, `main` ni servicios pagos.
 - Punto 5: **LISTO técnicamente en DEV**; no requiere compra de servicios.
 
