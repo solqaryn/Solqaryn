@@ -80,48 +80,73 @@ jobs:
           test "$(curl -sS -o /tmp/health.json -w '%{http_code}' "$BACKEND/health/ready")" = "200"
           echo "RENDER_HEALTH=PASS"
 
-      - name: Cache HTTP, ETag y compresión
+      - name: HTTP cache y ETag bootstrap
         shell: bash
         run: |
           set -euo pipefail
-
-          bootstrap_headers="$RUNNER_TEMP/bootstrap.headers"
-          products_headers="$RUNNER_TEMP/products.headers"
-          health_headers="$RUNNER_TEMP/health.headers"
-          auth_headers="$RUNNER_TEMP/auth.headers"
-          br_headers="$RUNNER_TEMP/bootstrap-br.headers"
-          gzip_headers="$RUNNER_TEMP/bootstrap-gzip.headers"
-
-          curl --retry 3 --fail --silent --show-error -D "$bootstrap_headers" -o /dev/null "$BACKEND/tienda/bootstrap"
-          grep -Eqi '^cache-control:[[:space:]]*public, max-age=15, s-maxage=30, stale-while-revalidate=60\r?$' "$bootstrap_headers"
-
-          etag="$(awk -F': ' 'tolower($1)=="etag"{gsub("\r","",$2); print $2}' "$bootstrap_headers" | tail -n 1)"
+          headers="$RUNNER_TEMP/bootstrap.headers"
+          trap 'echo "::group::bootstrap response headers"; cat "$headers" 2>/dev/null || true; echo "::endgroup::"' ERR
+          curl --retry 3 --fail --silent --show-error -D "$headers" -o /dev/null "$BACKEND/tienda/bootstrap"
+          grep -Eqi '^cache-control:[[:space:]]*public, max-age=15, s-maxage=30, stale-while-revalidate=60\r?$' "$headers"
+          etag="$(awk -F': ' 'tolower($1)=="etag"{gsub("\r","",$2); print $2}' "$headers" | tail -n 1)"
           test -n "$etag"
-
           code="$(curl --retry 3 --silent --show-error -o /dev/null -w '%{http_code}' -H "If-None-Match: $etag" "$BACKEND/tienda/bootstrap")"
           test "$code" = "304"
+          echo "HTTP_BOOTSTRAP_CACHE_ETAG=PASS"
 
-          curl --retry 3 --fail --silent --show-error -D "$products_headers" -o /dev/null "$BACKEND/tienda/productos?page=1&pageSize=24"
-          grep -Eqi '^cache-control:[[:space:]]*public, max-age=5, s-maxage=15, must-revalidate\r?$' "$products_headers"
-          grep -Eqi '^etag:[[:space:]]*W/"[0-9a-f]{64}"\r?$' "$products_headers"
+      - name: HTTP cache y ETag productos
+        shell: bash
+        run: |
+          set -euo pipefail
+          headers="$RUNNER_TEMP/products.headers"
+          trap 'echo "::group::products response headers"; cat "$headers" 2>/dev/null || true; echo "::endgroup::"' ERR
+          curl --retry 3 --fail --silent --show-error -D "$headers" -o /dev/null "$BACKEND/tienda/productos?page=1&pageSize=24"
+          grep -Eqi '^cache-control:[[:space:]]*public, max-age=5, s-maxage=15, must-revalidate\r?$' "$headers"
+          grep -Eqi '^etag:[[:space:]]*W/"[0-9a-f]{64}"\r?$' "$headers"
+          echo "HTTP_PRODUCTS_CACHE_ETAG=PASS"
 
-          curl --retry 3 --fail --silent --show-error -D "$br_headers" -o /dev/null -H 'Accept-Encoding: br' "$BACKEND/tienda/bootstrap"
-          grep -Eqi '^content-encoding:[[:space:]]*br\r?$' "$br_headers"
-          grep -Eqi '^vary:.*Accept-Encoding' "$br_headers"
+      - name: Compresión Brotli
+        shell: bash
+        run: |
+          set -euo pipefail
+          headers="$RUNNER_TEMP/bootstrap-br.headers"
+          trap 'echo "::group::brotli response headers"; cat "$headers" 2>/dev/null || true; echo "::endgroup::"' ERR
+          curl --retry 3 --fail --silent --show-error -D "$headers" -o /dev/null -H 'Accept-Encoding: br' "$BACKEND/tienda/bootstrap"
+          grep -Eqi '^content-encoding:[[:space:]]*br\r?$' "$headers"
+          grep -Eqi '^vary:.*Accept-Encoding' "$headers"
+          echo "HTTP_BROTLI=PASS"
 
-          curl --retry 3 --fail --silent --show-error -D "$gzip_headers" -o /dev/null -H 'Accept-Encoding: gzip' "$BACKEND/tienda/bootstrap"
-          grep -Eqi '^content-encoding:[[:space:]]*gzip\r?$' "$gzip_headers"
+      - name: Compresión Gzip
+        shell: bash
+        run: |
+          set -euo pipefail
+          headers="$RUNNER_TEMP/bootstrap-gzip.headers"
+          trap 'echo "::group::gzip response headers"; cat "$headers" 2>/dev/null || true; echo "::endgroup::"' ERR
+          curl --retry 3 --fail --silent --show-error -D "$headers" -o /dev/null -H 'Accept-Encoding: gzip' "$BACKEND/tienda/bootstrap"
+          grep -Eqi '^content-encoding:[[:space:]]*gzip\r?$' "$headers"
+          echo "HTTP_GZIP=PASS"
 
-          curl --retry 3 --fail --silent --show-error -D "$health_headers" -o /dev/null "$BACKEND/health"
-          grep -Eqi '^cache-control:[[:space:]]*private, no-store, max-age=0\r?$' "$health_headers"
-          ! grep -Eqi '^etag:' "$health_headers"
+      - name: No-store ruta no allowlisted
+        shell: bash
+        run: |
+          set -euo pipefail
+          headers="$RUNNER_TEMP/health.headers"
+          trap 'echo "::group::health response headers"; cat "$headers" 2>/dev/null || true; echo "::endgroup::"' ERR
+          curl --retry 3 --fail --silent --show-error -D "$headers" -o /dev/null "$BACKEND/health"
+          grep -Eqi '^cache-control:[[:space:]]*private, no-store, max-age=0\r?$' "$headers"
+          ! grep -Eqi '^etag:' "$headers"
+          echo "HTTP_NOSTORE_DEFAULT=PASS"
 
-          curl --retry 3 --fail --silent --show-error -D "$auth_headers" -o /dev/null -H 'Authorization: Bearer runtime-probe' "$BACKEND/tienda/bootstrap"
-          grep -Eqi '^cache-control:[[:space:]]*private, no-store, max-age=0\r?$' "$auth_headers"
-          ! grep -Eqi '^etag:' "$auth_headers"
-
-          echo "HTTP_CACHE_ETAG_COMPRESSION=PASS"
-          echo "BOOTSTRAP_ETAG=$etag"
+      - name: No-store request con Authorization
+        shell: bash
+        run: |
+          set -euo pipefail
+          headers="$RUNNER_TEMP/auth.headers"
+          trap 'echo "::group::authorized response headers"; cat "$headers" 2>/dev/null || true; echo "::endgroup::"' ERR
+          curl --retry 3 --fail --silent --show-error -D "$headers" -o /dev/null -H 'Authorization: Bearer runtime-probe' "$BACKEND/tienda/bootstrap"
+          grep -Eqi '^cache-control:[[:space:]]*private, no-store, max-age=0\r?$' "$headers"
+          ! grep -Eqi '^etag:' "$headers"
+          echo "HTTP_NOSTORE_AUTH=PASS"
 
       - name: Escritura/lectura efímera en solqaryn_dev
         shell: bash
