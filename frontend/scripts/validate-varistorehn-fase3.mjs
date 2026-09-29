@@ -46,8 +46,9 @@ expect(!productsRouteLine.includes('authGuard') && !productsRouteLine.includes('
 expect(paths.includes("productos: '/varistorehn/productos'"), 'El mapa canónico debe conservar VARISTOREHN_PATHS.productos.');
 expect(models.includes('export interface ProductoTienda'), 'Fase 3 debe usar ProductoTienda como modelo visual canónico.');
 expect(models.includes("export type OrdenCatalogo = 'destacados' | 'relevancia' | 'precio-asc' | 'precio-desc' | 'recientes' | 'nombre'"), 'El orden canónico del catálogo debe conservar compatibilidad y añadir relevancia/recientes.');
-expect(service.includes('obtenerCatalogo()'), 'La página de productos debe consumir la frontera pública del catálogo.');
-expect(service.includes('expand(datos => datos.page < datos.totalPages'), 'La frontera pública debe leer todas las páginas HTTP antes de filtrar localmente.');
+expect(service.includes('obtenerProductos('), 'La página de productos debe consumir la frontera pública paginada del catálogo.');
+expect(service.includes('obtenerProductosContexto(productoIds: number[])'), 'El carrito debe rehidratar únicamente los productos persistidos, no descargar el catálogo completo.');
+expect(!service.includes('obtenerCatalogo()'), 'El cliente público no debe conservar una API que descargue todas las páginas del catálogo.');
 expect(catalog.includes('export function filtrarProductos'), 'Los filtros deben reutilizar la regla pura canónica.');
 expect(catalog.includes('export function referenciasCarrito'), 'La persistencia debe conservar el formato canónico de referencias.');
 expect(catalog.includes('export function restaurarCarrito'), 'El carrito debe restaurarse contra catálogo/precio/stock actuales.');
@@ -57,11 +58,12 @@ for (const required of [
   'ProductoTienda',
   'EstadoConsultaPublica',
   'filtrarProductos',
-  'this.servicio.obtenerCatalogo()',
+  'this.servicio.obtenerProductos(this.pagina(), this.tamanoPagina',
   'this.servicio.obtenerCategorias()',
   'mapearCategoriaTienda',
   'VaristorehnCarritoService',
   'this.carritoStore.hidratar(productos',
+  'this.servicio.obtenerProductosContexto(idsPersistidos)',
   'VARISTOREHN_PATHS.productos',
   'VARISTOREHN_PATHS.carrito',
   'this.route.queryParamMap'

@@ -10,7 +10,6 @@ import {
   EstadoConsultaPublica,
   ModeloTienda,
   OrdenCatalogo,
-  ProductoCatalogoPublico,
   ProductoTienda,
   crearCatalogoEjemplo,
   etiquetaDisponibilidad,
