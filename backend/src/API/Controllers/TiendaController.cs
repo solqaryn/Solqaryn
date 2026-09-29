@@ -43,14 +43,14 @@ public sealed class TiendaController : ControllerBase
     {
         request.Activo = true;
         request.UsuarioIdScope = null;
-        var resumen = await _catalogoPublicoService.BuscarAsync(request, HttpContext.RequestAborted);
+        var resumen = await _catalogoPublicoService.BuscarAsync(request, HttpContext?.RequestAborted ?? CancellationToken.None);
         return Ok(ApiResponse<PagedResult<TiendaProductoResumenDto>>.Ok(resumen));
     }
 
     [HttpGet("productos/destacados")]
     public async Task<IActionResult> GetProductosDestacados([FromQuery] int limite = 4)
     {
-        var resumen = await _catalogoPublicoService.ObtenerDestacadosAsync(limite, HttpContext.RequestAborted);
+        var resumen = await _catalogoPublicoService.ObtenerDestacadosAsync(limite, HttpContext?.RequestAborted ?? CancellationToken.None);
         return Ok(ApiResponse<List<TiendaProductoResumenDto>>.Ok(resumen));
     }
 
@@ -60,7 +60,7 @@ public sealed class TiendaController : ControllerBase
         if (!PublicSlug.TryGetId(slug, out var id))
             return NotFound(ApiResponse<ProductoCatalogoPublicoDto>.Fail("Producto no encontrado."));
 
-        var detalle = await _catalogoPublicoService.ObtenerDetalleAsync(id, HttpContext.RequestAborted);
+        var detalle = await _catalogoPublicoService.ObtenerDetalleAsync(id, HttpContext?.RequestAborted ?? CancellationToken.None);
         return detalle is null
             ? NotFound(ApiResponse<ProductoCatalogoPublicoDto>.Fail("Producto no encontrado."))
             : Ok(ApiResponse<ProductoCatalogoPublicoDto>.Ok(detalle));
@@ -75,7 +75,7 @@ public sealed class TiendaController : ControllerBase
         if (ids.Length == 0)
             return Ok(ApiResponse<List<ProductoCatalogoPublicoDto>>.Ok(new List<ProductoCatalogoPublicoDto>()));
 
-        var productos = await _catalogoPublicoService.ObtenerPorIdsAsync(ids, HttpContext.RequestAborted);
+        var productos = await _catalogoPublicoService.ObtenerPorIdsAsync(ids, HttpContext?.RequestAborted ?? CancellationToken.None);
         return Ok(ApiResponse<List<ProductoCatalogoPublicoDto>>.Ok(productos));
     }
 
