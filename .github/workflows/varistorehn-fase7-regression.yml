@@ -30,8 +30,14 @@ on:
       - 'backend/src/API/Program.cs'
       - 'backend/src/Application/DTOs/TiendaBootstrapDto.cs'
       - 'backend/src/Application/Interfaces/ITiendaBootstrapService.cs'
+      - 'backend/src/Application/Interfaces/IPublicStoreCache.cs'
+      - 'backend/src/Application/Interfaces/IPublicStoreTenantKeyProvider.cs'
       - 'backend/src/Application/Interfaces/IWhatsAppPublicoService.cs'
       - 'backend/src/Application/Services/TiendaBootstrapService.cs'
+      - 'backend/src/Application/Services/CatalogoPublicoService.cs'
+      - 'backend/src/Infrastructure/Services/PublicStoreMemoryCache.cs'
+      - 'backend/src/Infrastructure/Services/PublicStoreTenantKeyProvider.cs'
+      - 'backend/src/Infrastructure/Persistence/AppDbContext.cs'
       - 'backend/src/Infrastructure/Services/WhatsAppPublicoService.cs'
       - 'backend/src/Application/Common/ProductoPagedRequest.cs'
       - 'backend/src/Application/DTOs/CreateProductoDto.cs'
@@ -46,6 +52,10 @@ on:
       - 'backend/src/Infrastructure/Migrations/AppDbContextModelSnapshot.cs'
       - 'backend/tests/InventoryApp.Tests/API/Controllers/TiendaControllerDestacadosTests.cs'
       - 'backend/tests/InventoryApp.Tests/TiendaBootstrapServiceTests.cs'
+      - 'backend/tests/InventoryApp.Tests/PublicStoreMemoryCacheTests.cs'
+      - 'backend/tests/InventoryApp.Tests/PublicStoreCacheInvalidationTests.cs'
+      - 'backend/tests/InventoryApp.Tests/CatalogoPublicoCacheTests.cs'
+      - 'backend/tests/InventoryApp.Tests/TiendaPublicaTests.cs'
       - 'frontend/src/app/core/models/producto.model.ts'
       - 'frontend/src/app/features/productos/producto-form.component.html'
       - 'frontend/src/app/features/productos/producto-form.component.ts'
@@ -78,8 +88,14 @@ on:
       - 'backend/src/API/Program.cs'
       - 'backend/src/Application/DTOs/TiendaBootstrapDto.cs'
       - 'backend/src/Application/Interfaces/ITiendaBootstrapService.cs'
+      - 'backend/src/Application/Interfaces/IPublicStoreCache.cs'
+      - 'backend/src/Application/Interfaces/IPublicStoreTenantKeyProvider.cs'
       - 'backend/src/Application/Interfaces/IWhatsAppPublicoService.cs'
       - 'backend/src/Application/Services/TiendaBootstrapService.cs'
+      - 'backend/src/Application/Services/CatalogoPublicoService.cs'
+      - 'backend/src/Infrastructure/Services/PublicStoreMemoryCache.cs'
+      - 'backend/src/Infrastructure/Services/PublicStoreTenantKeyProvider.cs'
+      - 'backend/src/Infrastructure/Persistence/AppDbContext.cs'
       - 'backend/src/Infrastructure/Services/WhatsAppPublicoService.cs'
       - 'backend/src/Application/Common/ProductoPagedRequest.cs'
       - 'backend/src/Application/DTOs/CreateProductoDto.cs'
@@ -94,6 +110,10 @@ on:
       - 'backend/src/Infrastructure/Migrations/AppDbContextModelSnapshot.cs'
       - 'backend/tests/InventoryApp.Tests/API/Controllers/TiendaControllerDestacadosTests.cs'
       - 'backend/tests/InventoryApp.Tests/TiendaBootstrapServiceTests.cs'
+      - 'backend/tests/InventoryApp.Tests/PublicStoreMemoryCacheTests.cs'
+      - 'backend/tests/InventoryApp.Tests/PublicStoreCacheInvalidationTests.cs'
+      - 'backend/tests/InventoryApp.Tests/CatalogoPublicoCacheTests.cs'
+      - 'backend/tests/InventoryApp.Tests/TiendaPublicaTests.cs'
       - 'frontend/src/app/core/models/producto.model.ts'
       - 'frontend/src/app/features/productos/producto-form.component.html'
       - 'frontend/src/app/features/productos/producto-form.component.ts'
@@ -131,8 +151,8 @@ jobs:
       - name: Build backend
         run: dotnet build InventoryApp.sln --configuration Release --no-restore
 
-      - name: Pruebas focales de destacados y bootstrap
-        run: dotnet test InventoryApp.sln --configuration Release --no-build --filter "FullyQualifiedName~TiendaControllerDestacadosTests|FullyQualifiedName~TiendaBootstrapServiceTests"
+      - name: Pruebas focales de destacados, bootstrap y cache
+        run: dotnet test InventoryApp.sln --configuration Release --no-build --filter "FullyQualifiedName~TiendaControllerDestacadosTests|FullyQualifiedName~TiendaBootstrapServiceTests|FullyQualifiedName~PublicStoreMemoryCacheTests|FullyQualifiedName~PublicStoreCacheInvalidationTests|FullyQualifiedName~CatalogoPublicoCacheTests|FullyQualifiedName~TiendaPublicaTests"
 
   frontend:
     name: Fase 7 - regresion publica acumulada
