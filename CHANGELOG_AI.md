@@ -1,3 +1,11 @@
+## 2026-09-29 — Primera captura real del baseline DEV
+
+- Render DEV live sobre `02ec7994430812543e43371387318cfa9822e7dd` confirmó la instrumentación API/DB.
+- Identidad caliente observada en 120.0–182.9 ms y categorías calientes en 44.7–184.9 ms: ambas dentro del target inicial <=300 ms.
+- `GET /tienda/productos` observado en 2912.0 ms con 7 queries y 210.4 ms acumulados de DB: falla el target <=500 ms y muestra que la mayor parte del tiempo está fuera de ejecución SQL medida.
+- Build Angular exact-head: 724.32 kB raw / 169.88 kB estimated transfer inicial; cumple el warning vigente de 1 MiB.
+- LCP/INP/CLS y requests/bytes por pantalla quedan instrumentados y requieren únicamente captura real de navegador DEV; no se compró ni contrató ningún servicio.
+
 ## 2026-09-29 — Baseline browser DEV endurecido para Render Free
 
 - El capturador frontend conserva una muestra rápida a 3 s y añade una muestra `settled` a 10 s para incluir requests lentas que todavía estén en vuelo.

@@ -60,6 +60,37 @@ Cold starts de Render Free se miden por separado y no se mezclan con el target d
 7. Correlacionar con logs Render filtrando `PerformanceBaseline`.
 8. Ejecutar `npm run perf:bundle-baseline` para el baseline de bundles.
 
+## Baseline real observado — 2026-09-29
+
+Captura sobre DEV desplegado en Render commit `02ec7994430812543e43371387318cfa9822e7dd`:
+
+| Endpoint / métrica | Total API | Queries DB | Tiempo DB | Resultado |
+| --- | ---: | ---: | ---: | --- |
+| Identidad pública — primera pasada post-deploy | 1606.1 ms | 1 | 20.3 ms | warm-up / fuera de target |
+| Identidad pública — caliente | 182.9 ms | 1 | 20.1 ms | PASS <= 300 ms |
+| Identidad pública — caliente repetida | 120.0 ms | 1 | 20.4 ms | PASS <= 300 ms |
+| Categorías — primera pasada post-deploy | 1652.7 ms | 1 | 80.3 ms | warm-up / fuera de target |
+| Categorías — caliente | 44.7 ms | 1 | 20.0 ms | PASS <= 300 ms |
+| Categorías — caliente repetida | 184.9 ms | 1 | 78.6 ms | PASS <= 300 ms |
+| Productos públicos pageSize 24 | 2912.0 ms | 7 | 210.4 ms | FAIL > 500 ms |
+
+El listado de productos dedicó sólo ~7.2% del tiempo total medido a comandos DB, por lo que su deuda principal no se explica únicamente por latencia MySQL. El siguiente análisis debe revisar shape del read model, includes/materialización, mapeo y llamadas por producto/variante antes de considerar infraestructura pagada.
+
+### Bundle Angular observado
+
+Build productivo exact-head:
+
+- initial raw: **724.32 kB**;
+- estimated transfer: **169.88 kB**;
+- main: **126.05 kB raw / 28.17 kB transfer**;
+- styles: **123.42 kB raw / 11.58 kB transfer**;
+- mayor chunk inicial: **219.32 kB raw / 63.13 kB transfer**;
+- el bundle inicial cumple el warning vigente de 1 MiB.
+
+### Pendiente de captura humana
+
+LCP, INP, CLS, requests y bytes **por pantalla real** requieren una sesión navegador DEV con interacción humana. La instrumentación ya está desplegada; esa captura no requiere instalar, contratar ni comprar ningún servicio.
+
 ## Interpretación
 
 - DB alta + muchas queries: optimizar read model/query antes que infraestructura.
