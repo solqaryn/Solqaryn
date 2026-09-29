@@ -85,7 +85,7 @@ export class VaristorehnService {
     const params = new HttpParams().set('limite', cantidad);
     return this.http.get<ApiResponse<ProductoCatalogoResumenPublico[]>>(this.urlDestacados, { params }).pipe(map(res => {
       if (!res.success || !Array.isArray(res.data)) throw new Error('Respuesta de destacados no válida.');
-      return res.data.filter(producto => producto.activo !== false && producto.esDestacado === true).slice(0, cantidad);
+      return res.data.filter(producto => producto.esDestacado === true).slice(0, cantidad);
     }));
   }
 
