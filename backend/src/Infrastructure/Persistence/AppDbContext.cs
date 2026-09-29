@@ -127,6 +127,7 @@ public class AppDbContext : DbContext
         {
             switch (entry.Entity)
             {
+                case Empresa:
                 case EmpresaConfiguracion:
                 case ConfiguracionWhatsAppEmpresa:
                     segments.Add(PublicStoreCacheSegments.Identity);
