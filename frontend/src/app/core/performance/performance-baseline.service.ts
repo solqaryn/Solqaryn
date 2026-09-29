@@ -16,8 +16,12 @@ export interface PerformanceBaselineSnapshot {
   route: string;
   reason: string;
   capturedAtUtc: string;
-  navigationTtfbMs: number | null;
-  pageLoadMs: number | null;
+  documentNavigationTtfbMs: number | null;
+  documentLoadMs: number | null;
+  documentLcpMs: number | null;
+  documentInpMs: number | null;
+  documentCls: number;
+  routeNavigationMs: number | null;
   observationWindowMs: number;
   requestCount: number;
   apiRequestCount: number;
@@ -27,9 +31,6 @@ export interface PerformanceBaselineSnapshot {
   apiTtfbAverageMs: number | null;
   apiTtfbMaxMs: number | null;
   apiDurationAverageMs: number | null;
-  lcpMs: number | null;
-  inpMs: number | null;
-  cls: number;
 }
 
 declare global {
@@ -48,6 +49,7 @@ export class PerformanceBaselineService {
   private started = false;
   private routeStartMs = 0;
   private routeUrl = '/';
+  private routeNavigationMs: number | null = null;
   private lcpMs = 0;
   private cls = 0;
   private fallbackInpMs = 0;
@@ -65,6 +67,7 @@ export class PerformanceBaselineService {
     this.router.events.subscribe(event => {
       if (event instanceof NavigationStart) {
         this.routeStartMs = view.performance.now();
+        this.routeNavigationMs = null;
         this.routeUrl = event.url;
         this.cancelSnapshot(view);
         return;
@@ -72,6 +75,9 @@ export class PerformanceBaselineService {
 
       if (event instanceof NavigationEnd) {
         this.routeUrl = event.urlAfterRedirects;
+        this.routeNavigationMs = this.routeStartMs > 0
+          ? this.round(Math.max(0, view.performance.now() - this.routeStartMs))
+          : null;
         this.scheduleSnapshot(view, 'navigation');
       }
     });
@@ -174,12 +180,16 @@ export class PerformanceBaselineService {
       route: this.routeUrl,
       reason,
       capturedAtUtc: new Date().toISOString(),
-      navigationTtfbMs: navigation?.responseStart
+      documentNavigationTtfbMs: navigation?.responseStart
         ? this.round(navigation.responseStart - navigation.startTime)
         : null,
-      pageLoadMs: navigation?.loadEventEnd
+      documentLoadMs: navigation?.loadEventEnd
         ? this.round(navigation.loadEventEnd - navigation.startTime)
         : null,
+      documentLcpMs: this.lcpMs > 0 ? this.round(this.lcpMs) : null,
+      documentInpMs: this.inp(),
+      documentCls: Math.round(this.cls * 1000) / 1000,
+      routeNavigationMs: this.routeNavigationMs,
       observationWindowMs: this.round(Math.max(0, now - this.routeStartMs)),
       requestCount: resources.length,
       apiRequestCount: apiResources.length,
@@ -188,10 +198,7 @@ export class PerformanceBaselineService {
       apiTransferBytes: this.sum(apiResources, entry => entry.transferSize),
       apiTtfbAverageMs: this.average(apiTtfb),
       apiTtfbMaxMs: apiTtfb.length ? this.round(Math.max(...apiTtfb)) : null,
-      apiDurationAverageMs: this.average(apiDuration),
-      lcpMs: this.lcpMs > 0 ? this.round(this.lcpMs) : null,
-      inpMs: this.inp(),
-      cls: Math.round(this.cls * 1000) / 1000
+      apiDurationAverageMs: this.average(apiDuration)
     };
 
     const history = view.__SOLQARYN_PERF_BASELINE__ ?? [];
