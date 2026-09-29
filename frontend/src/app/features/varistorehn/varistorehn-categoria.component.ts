@@ -81,6 +81,7 @@ export class VaristorehnCategoriaComponent implements OnInit {
   } as const;
 
   private cargaCategoria?: Subscription;
+  private cargaProductos?: Subscription;
   private cargaCarrito?: Subscription;
 
   ngOnInit(): void {
@@ -169,6 +170,8 @@ export class VaristorehnCategoriaComponent implements OnInit {
   }
 
   recargarProductos(): void {
+    const categoria = this.categoria();
+    if (categoria) this.cargarProductosCategoria(categoria);
     this.cargarContextoCarrito();
   }
 
@@ -190,6 +193,7 @@ export class VaristorehnCategoriaComponent implements OnInit {
       if (categoria) {
         this.seo.aplicarCategoria(categoria, this.identidad.config().nombreComercial || 'Tienda');
         this.estado.set('success');
+        this.cargarProductosCategoria(categoria);
       } else {
         this.seo.aplicarNoIndex(this.identidad.config().nombreComercial || 'Tienda');
         this.estado.set('not-found');
@@ -205,6 +209,7 @@ export class VaristorehnCategoriaComponent implements OnInit {
         this.categoria.set(categoria);
         this.seo.aplicarCategoria(categoria, this.identidad.config().nombreComercial || 'Tienda');
         this.estado.set('success');
+        this.cargarProductosCategoria(categoria);
         if (categoria.slug !== slug) void this.router.navigateByUrl(VARISTOREHN_PATHS.categoria(categoria.slug), { replaceUrl: true });
       },
       error: error => {
@@ -225,26 +230,58 @@ export class VaristorehnCategoriaComponent implements OnInit {
     return error instanceof Error && ['Categoría no encontrada.', 'Slug de categoría no válido.'].includes(error.message);
   }
 
-  private cargarContextoCarrito(): void {
-    this.cargaCarrito?.unsubscribe();
-    this.carrito.reiniciarContexto();
+  private cargarProductosCategoria(categoria: CategoriaTienda): void {
+    this.cargaProductos?.unsubscribe();
     this.catalogo.set([]);
     this.cargandoProductos.set(true);
     this.errorProductos.set('');
-    const fuente: Observable<ProductoTienda[]> = this.utilizarDatosBaseDatos()
-      ? this.servicio.obtenerCatalogo().pipe(map(productos => productos.map(mapearProducto)))
-      : of(crearCatalogoEjemplo());
 
-    this.cargaCarrito = fuente.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    const fuente: Observable<ProductoTienda[]> = this.utilizarDatosBaseDatos()
+      ? this.servicio.obtenerProductos(1, 8, {
+          categoriaId: categoria.id,
+          sortBy: 'Nombre',
+          sortDirection: 'asc'
+        }).pipe(map(res => {
+          if (!res.success || !res.data || !Array.isArray(res.data.items)) {
+            throw new Error('Respuesta de productos de categoría no válida.');
+          }
+          return res.data.items.map(mapearProducto);
+        }))
+      : of(crearCatalogoEjemplo()
+          .filter(producto => producto.categoriaId !== null
+            ? producto.categoriaId === categoria.id
+            : producto.categoria === categoria.nombre)
+          .slice(0, 8));
+
+    this.cargaProductos = fuente.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: productos => {
         this.catalogo.set(productos);
         this.cargandoProductos.set(false);
-        const resultado = this.carrito.hidratar(productos, this.identidad.config().id, this.utilizarDatosBaseDatos());
-        if (resultado.ajustado) this.aviso.set(this.carrito.aviso());
       },
       error: () => {
         this.cargandoProductos.set(false);
         this.errorProductos.set('No pudimos cargar los productos de esta categoría. Intenta nuevamente.');
+      }
+    });
+  }
+
+  private cargarContextoCarrito(): void {
+    this.cargaCarrito?.unsubscribe();
+    this.carrito.reiniciarContexto();
+    const idsPersistidos = this.carrito.productoIdsPersistidos(
+      this.identidad.config().id,
+      this.utilizarDatosBaseDatos()
+    );
+    const fuente: Observable<ProductoTienda[]> = this.utilizarDatosBaseDatos()
+      ? this.servicio.obtenerProductosContexto(idsPersistidos).pipe(map(productos => productos.map(mapearProducto)))
+      : of(crearCatalogoEjemplo());
+
+    this.cargaCarrito = fuente.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: productos => {
+        const resultado = this.carrito.hidratar(productos, this.identidad.config().id, this.utilizarDatosBaseDatos());
+        if (resultado.ajustado) this.aviso.set(this.carrito.aviso());
+      },
+      error: () => {
         this.aviso.set('No pudimos actualizar el resumen del carrito en esta página. Tu selección sigue guardada.');
       }
     });
