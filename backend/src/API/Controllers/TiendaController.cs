@@ -22,20 +22,20 @@ public sealed class TiendaController : ControllerBase
     private readonly ICategoriaService _categoriaService;
     private readonly IPromocionPublicaService _promocionPublicaService;
     private readonly IInventarioPublicoService _inventarioPublicoService;
-    private readonly ICatalogoPublicoService? _catalogoPublicoService;
+    private readonly ICatalogoPublicoService _catalogoPublicoService;
 
     public TiendaController(
         IProductoService productoService,
         ICategoriaService categoriaService,
         IPromocionPublicaService promocionPublicaService,
         IInventarioPublicoService inventarioPublicoService,
-        ICatalogoPublicoService? catalogoPublicoService = null)
+        ICatalogoPublicoService catalogoPublicoService)
     {
         _productoService = productoService;
         _categoriaService = categoriaService;
         _promocionPublicaService = promocionPublicaService;
         _inventarioPublicoService = inventarioPublicoService;
-        _catalogoPublicoService = catalogoPublicoService;
+        _catalogoPublicoService = catalogoPublicoService ?? throw new ArgumentNullException(nameof(catalogoPublicoService));
     }
 
     [HttpGet("productos")]
@@ -43,66 +43,15 @@ public sealed class TiendaController : ControllerBase
     {
         request.Activo = true;
         request.UsuarioIdScope = null;
-
-        if (_catalogoPublicoService is not null)
-        {
-            var ligero = await _catalogoPublicoService.BuscarAsync(request, HttpContext.RequestAborted);
-            return Ok(ApiResponse<PagedResult<TiendaProductoResumenDto>>.Ok(ligero));
-        }
-
-        var resultado = await _productoService.GetPagedAsync(request);
-        var ahoraUtc = DateTime.UtcNow;
-        var productosActivos = resultado.Items.Where(producto => producto.Activo).ToList();
-        var inventario = await _inventarioPublicoService.ObtenerPorVariantesAsync(
-            productosActivos.SelectMany(producto => producto.Variantes)
-                .Where(variante => variante.Activo)
-                .Select(variante => variante.Id));
-        var items = await Task.WhenAll(productosActivos
-            .Select(producto => MapearProductoAsync(producto, ahoraUtc, inventario)));
-        var catalogo = new PagedResult<TiendaProductoResumenDto>
-        {
-            Items = items.Select(ResumirProducto).ToList(),
-            Page = resultado.Page,
-            PageSize = resultado.PageSize,
-            TotalCount = resultado.TotalCount
-        };
-
-        return Ok(ApiResponse<PagedResult<TiendaProductoResumenDto>>.Ok(catalogo));
+        var resumen = await _catalogoPublicoService.BuscarAsync(request, HttpContext.RequestAborted);
+        return Ok(ApiResponse<PagedResult<TiendaProductoResumenDto>>.Ok(resumen));
     }
 
     [HttpGet("productos/destacados")]
     public async Task<IActionResult> GetProductosDestacados([FromQuery] int limite = 4)
     {
-        if (_catalogoPublicoService is not null)
-        {
-            var ligeros = await _catalogoPublicoService.ObtenerDestacadosAsync(limite, HttpContext.RequestAborted);
-            return Ok(ApiResponse<List<TiendaProductoResumenDto>>.Ok(ligeros));
-        }
-
-        var request = new ProductoPagedRequest
-        {
-            Page = 1,
-            PageSize = Math.Clamp(limite, 1, 4),
-            Activo = true,
-            EsDestacado = true,
-            UsuarioIdScope = null,
-            SortBy = "FechaCreacion",
-            SortDirection = "desc"
-        };
-
-        var resultado = await _productoService.GetPagedAsync(request);
-        var ahoraUtc = DateTime.UtcNow;
-        var productosDestacados = resultado.Items
-            .Where(producto => producto.Activo && producto.EsDestacado)
-            .ToList();
-        var inventario = await _inventarioPublicoService.ObtenerPorVariantesAsync(
-            productosDestacados.SelectMany(producto => producto.Variantes)
-                .Where(variante => variante.Activo)
-                .Select(variante => variante.Id));
-        var destacados = await Task.WhenAll(productosDestacados
-            .Select(producto => MapearProductoAsync(producto, ahoraUtc, inventario)));
-
-        return Ok(ApiResponse<List<TiendaProductoResumenDto>>.Ok(destacados.Select(ResumirProducto).ToList()));
+        var resumen = await _catalogoPublicoService.ObtenerDestacadosAsync(limite, HttpContext.RequestAborted);
+        return Ok(ApiResponse<List<TiendaProductoResumenDto>>.Ok(resumen));
     }
 
     [HttpGet("productos/{slug}")]
@@ -111,23 +60,10 @@ public sealed class TiendaController : ControllerBase
         if (!PublicSlug.TryGetId(slug, out var id))
             return NotFound(ApiResponse<ProductoCatalogoPublicoDto>.Fail("Producto no encontrado."));
 
-        if (_catalogoPublicoService is not null)
-        {
-            var ligero = await _catalogoPublicoService.ObtenerDetalleAsync(id, HttpContext.RequestAborted);
-            return ligero is null
-                ? NotFound(ApiResponse<ProductoCatalogoPublicoDto>.Fail("Producto no encontrado."))
-                : Ok(ApiResponse<ProductoCatalogoPublicoDto>.Ok(ligero));
-        }
-
-        var producto = await _productoService.GetByIdAsync(id);
-        if (producto is null || !producto.Activo)
-            return NotFound(ApiResponse<ProductoCatalogoPublicoDto>.Fail("Producto no encontrado."));
-
-        var inventario = await _inventarioPublicoService.ObtenerPorVariantesAsync(
-            producto.Variantes.Where(variante => variante.Activo).Select(variante => variante.Id));
-
-        return Ok(ApiResponse<ProductoCatalogoPublicoDto>.Ok(
-            await MapearProductoAsync(producto, DateTime.UtcNow, inventario)));
+        var detalle = await _catalogoPublicoService.ObtenerDetalleAsync(id, HttpContext.RequestAborted);
+        return detalle is null
+            ? NotFound(ApiResponse<ProductoCatalogoPublicoDto>.Fail("Producto no encontrado."))
+            : Ok(ApiResponse<ProductoCatalogoPublicoDto>.Ok(detalle));
     }
 
     [HttpPost("productos/contexto")]
@@ -139,23 +75,8 @@ public sealed class TiendaController : ControllerBase
         if (ids.Length == 0)
             return Ok(ApiResponse<List<ProductoCatalogoPublicoDto>>.Ok(new List<ProductoCatalogoPublicoDto>()));
 
-        if (_catalogoPublicoService is not null)
-        {
-            var productos = await _catalogoPublicoService.ObtenerPorIdsAsync(ids, HttpContext.RequestAborted);
-            return Ok(ApiResponse<List<ProductoCatalogoPublicoDto>>.Ok(productos));
-        }
-
-        var ahoraUtc = DateTime.UtcNow;
-        var legacy = new List<ProductoCatalogoPublicoDto>();
-        foreach (var id in ids)
-        {
-            var producto = await _productoService.GetByIdAsync(id);
-            if (producto is null || !producto.Activo) continue;
-            var inventario = await _inventarioPublicoService.ObtenerPorVariantesAsync(
-                producto.Variantes.Where(variante => variante.Activo).Select(variante => variante.Id));
-            legacy.Add(await MapearProductoAsync(producto, ahoraUtc, inventario));
-        }
-        return Ok(ApiResponse<List<ProductoCatalogoPublicoDto>>.Ok(legacy));
+        var productos = await _catalogoPublicoService.ObtenerPorIdsAsync(ids, HttpContext.RequestAborted);
+        return Ok(ApiResponse<List<ProductoCatalogoPublicoDto>>.Ok(productos));
     }
 
     [HttpGet("categorias")]
