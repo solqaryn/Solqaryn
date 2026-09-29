@@ -257,17 +257,23 @@ public class TiendaPublicaTests
         catalogo.VerifyAll();
     }
     [Fact]
-    public async Task GetCategorias_ExponeSoloContratoPublicoActivoSinInventarConteo()
+    public async Task GetCategorias_ComparteLaLecturaPublicaCacheada()
     {
-        var categorias = new Mock<ICategoriaService>();
-        categorias.Setup(x => x.GetActivasAsync()).ReturnsAsync(new List<CategoriaDto>
-        {
-            // El servicio de activas no garantiza que este conteo se haya calculado.
-            new() { Id = 4, Nombre = "Audio y Vídeo", Descripcion = "Entretenimiento", Activa = true, TotalProductos = 8 },
-            new() { Id = 5, Nombre = "Oculta", Activa = false, TotalProductos = 99 }
-        });
+        var bootstrap = new Mock<ITiendaBootstrapService>(MockBehavior.Strict);
+        bootstrap.Setup(x => x.ObtenerCategoriasAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<CategoriaCatalogoPublicoDto>
+            {
+                new()
+                {
+                    Id = 4,
+                    Slug = "audio-y-video-4",
+                    Nombre = "Audio y Vídeo",
+                    Descripcion = "Entretenimiento",
+                    TotalProductos = null
+                }
+            });
 
-        var controller = CrearController(categorias: categorias);
+        var controller = CrearController(bootstrap: bootstrap);
         var result = await controller.GetCategorias();
         var ok = Assert.IsType<OkObjectResult>(result);
         var response = Assert.IsType<ApiResponse<List<CategoriaCatalogoPublicoDto>>>(ok.Value);
@@ -276,32 +282,26 @@ public class TiendaPublicaTests
         Assert.Equal(4, categoria.Id);
         Assert.Equal("audio-y-video-4", categoria.Slug);
         Assert.Null(categoria.TotalProductos);
+        bootstrap.VerifyAll();
     }
 
     [Fact]
-    public async Task GetCategoria_ResuelvePorSlugYBloqueaInactiva()
+    public async Task GetCategoria_ResuelveSobreLaMismaListaPublicaCacheada()
     {
-        var categorias = new Mock<ICategoriaService>();
-        categorias.Setup(x => x.GetByIdAsync(4)).ReturnsAsync(new CategoriaDto
-        {
-            Id = 4,
-            Nombre = "Computadoras",
-            Activa = true,
-            TotalProductos = 5
-        });
-        categorias.Setup(x => x.GetByIdAsync(8)).ReturnsAsync(new CategoriaDto
-        {
-            Id = 8,
-            Nombre = "Interna",
-            Activa = false
-        });
-        var controller = CrearController(categorias: categorias);
+        var bootstrap = new Mock<ITiendaBootstrapService>(MockBehavior.Strict);
+        bootstrap.Setup(x => x.ObtenerCategoriasAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<CategoriaCatalogoPublicoDto>
+            {
+                new() { Id = 4, Slug = "computadoras-4", Nombre = "Computadoras", TotalProductos = null }
+            });
+        var controller = CrearController(bootstrap: bootstrap);
 
         var ok = Assert.IsType<OkObjectResult>(await controller.GetCategoria("computadoras-4"));
         var response = Assert.IsType<ApiResponse<CategoriaCatalogoPublicoDto>>(ok.Value);
         Assert.Equal("computadoras-4", response.Data!.Slug);
         Assert.Null(response.Data.TotalProductos);
         Assert.IsType<NotFoundObjectResult>(await controller.GetCategoria("interna-8"));
+        bootstrap.Verify(x => x.ObtenerCategoriasAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
 
     [Fact]
@@ -355,7 +355,8 @@ public class TiendaPublicaTests
         Mock<ICategoriaService>? categorias = null,
         Mock<IPromocionPublicaService>? promociones = null,
         Mock<IInventarioPublicoService>? inventario = null,
-        Mock<ICatalogoPublicoService>? catalogo = null)
+        Mock<ICatalogoPublicoService>? catalogo = null,
+        Mock<ITiendaBootstrapService>? bootstrap = null)
     {
         if (promociones is null)
         {
@@ -378,7 +379,7 @@ public class TiendaPublicaTests
             promociones.Object,
             inventario.Object,
             (catalogo ?? new Mock<ICatalogoPublicoService>()).Object,
-            new Mock<ITiendaBootstrapService>().Object);
+            (bootstrap ?? new Mock<ITiendaBootstrapService>()).Object);
     }
 
     private static void AssertEndpoint(string metodo, string plantilla)
