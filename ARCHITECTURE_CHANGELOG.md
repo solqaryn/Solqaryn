@@ -1,5 +1,16 @@
 # ARCHITECTURE_CHANGELOG — Solqaryn
 
+## 2026-09-29 — Cache público tenant-aware en dos niveles
+
+- Angular conserva el observable de identidad en vuelo y comparte la lista de categorías entre rutas mediante replay, evitando solicitudes concurrentes duplicadas.
+- El backend incorpora `IPublicStoreCache` con `PublicStoreMemoryCache` sobre `IMemoryCache`; las claves incluyen tenant, segmento, generación y hash de parámetros.
+- TTL: identidad/tema/categorías 5 min; destacados 30 s; listados 15 s. Detalle, contexto de carrito y checkout permanecen fuera de cache.
+- La cache usa lock por key contra stampede y generaciones para invalidación.
+- `AppDbContext.SaveChangesAsync` invalida después de escrituras relevantes de producto/variante/imágenes/stock, categorías, identidad/WhatsApp, tema, marca/modelo y descuentos.
+- La partición tenant usa `empresa:{id}` cuando la identidad pública se resuelve inequívocamente; ante ambigüedad usa `public-config:{id}` fail-safe.
+- Topología vigente: cache in-process por instancia. Un escalado horizontal futuro exige implementación distribuida e invalidación compartida antes de asumir coherencia entre instancias.
+- Sin migraciones, persistencia nueva, secretos, PROD, `main` ni servicio pagado.
+
 ## 2026-09-29 — Bootstrap único del storefront público
 
 - Se incorpora `GET /tienda/bootstrap` como carga inicial canónica de identidad pública mínima, WhatsApp público resuelto, tema visual, hasta 6 categorías de navegación y hasta 4 destacados ligeros.
