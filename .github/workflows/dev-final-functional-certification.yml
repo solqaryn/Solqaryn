@@ -93,43 +93,7 @@ jobs:
           gzip_headers="$RUNNER_TEMP/bootstrap-gzip.headers"
 
           curl --retry 3 --fail --silent --show-error -D "$bootstrap_headers" -o /dev/null "$BACKEND/tienda/bootstrap"
-          grep -Eqi '^cache-control:[[:space:]]*public, max-age=15, s-maxage=30, stale-while-revalidate=60\r?      - name: Escritura/lectura efímera en solqaryn_dev
-        shell: bash
-        run: |
-          set -euo pipefail
-          test "$DB_NAME" = "solqaryn_dev"
-          export MYSQL_PWD="$DB_PASSWORD"
-          marker="final-cert-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          readback="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names <<SQL
-          CREATE TEMPORARY TABLE _solqaryn_dev_final_probe (id VARCHAR(128) PRIMARY KEY, created_at DATETIME(6) NOT NULL);
-          INSERT INTO _solqaryn_dev_final_probe(id,created_at) VALUES ('$marker',UTC_TIMESTAMP(6));
-          SELECT id FROM _solqaryn_dev_final_probe WHERE id='$marker';
-          DROP TEMPORARY TABLE _solqaryn_dev_final_probe;
-          SQL
-          )"
-          test "$readback" = "$marker"
-          echo "DB_TEMP_WRITE_READ=PASS"
-
-      - name: Cero referencias operativas legacy en runtime
-        shell: bash
-        run: |
-          set -euo pipefail
-          targets=(frontend/src frontend/server frontend/vercel.json backend/src render.yaml)
-          if grep -RInE 'identidad-retirada-desarrollo|identidad-retirada-mysql-identidad-retirada\.c\.aivencloud\.com' "${targets[@]}"; then
-            echo "Referencia operativa legacy detectada" >&2
-            exit 1
-          fi
-          if grep -RIn 'varistorehn_desarrollo' backend/src frontend/src frontend/server frontend/vercel.json render.yaml; then
-            echo "Referencia operativa a base/prefijo legacy detectada" >&2
-            exit 1
-          fi
-          echo "LEGACY_RUNTIME_REFERENCES=0"
-
-      - name: Resumen
-        run: |
-          echo "FINAL_DEV_CERTIFICATION=PASS"
-          echo "PRODUCTION_TOUCHED=FALSE"
- "$bootstrap_headers"
+          grep -Eqi '^cache-control:[[:space:]]*public, max-age=15, s-maxage=30, stale-while-revalidate=60\r?$' "$bootstrap_headers"
 
           etag="$(awk -F': ' 'tolower($1)=="etag"{gsub("\r","",$2); print $2}' "$bootstrap_headers" | tail -n 1)"
           test -n "$etag"
@@ -138,238 +102,22 @@ jobs:
           test "$code" = "304"
 
           curl --retry 3 --fail --silent --show-error -D "$products_headers" -o /dev/null "$BACKEND/tienda/productos?page=1&pageSize=24"
-          grep -Eqi '^cache-control:[[:space:]]*public, max-age=5, s-maxage=15, must-revalidate\r?      - name: Escritura/lectura efímera en solqaryn_dev
-        shell: bash
-        run: |
-          set -euo pipefail
-          test "$DB_NAME" = "solqaryn_dev"
-          export MYSQL_PWD="$DB_PASSWORD"
-          marker="final-cert-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          readback="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names <<SQL
-          CREATE TEMPORARY TABLE _solqaryn_dev_final_probe (id VARCHAR(128) PRIMARY KEY, created_at DATETIME(6) NOT NULL);
-          INSERT INTO _solqaryn_dev_final_probe(id,created_at) VALUES ('$marker',UTC_TIMESTAMP(6));
-          SELECT id FROM _solqaryn_dev_final_probe WHERE id='$marker';
-          DROP TEMPORARY TABLE _solqaryn_dev_final_probe;
-          SQL
-          )"
-          test "$readback" = "$marker"
-          echo "DB_TEMP_WRITE_READ=PASS"
-
-      - name: Cero referencias operativas legacy en runtime
-        shell: bash
-        run: |
-          set -euo pipefail
-          targets=(frontend/src frontend/server frontend/vercel.json backend/src render.yaml)
-          if grep -RInE 'identidad-retirada-desarrollo|identidad-retirada-mysql-identidad-retirada\.c\.aivencloud\.com' "${targets[@]}"; then
-            echo "Referencia operativa legacy detectada" >&2
-            exit 1
-          fi
-          if grep -RIn 'varistorehn_desarrollo' backend/src frontend/src frontend/server frontend/vercel.json render.yaml; then
-            echo "Referencia operativa a base/prefijo legacy detectada" >&2
-            exit 1
-          fi
-          echo "LEGACY_RUNTIME_REFERENCES=0"
-
-      - name: Resumen
-        run: |
-          echo "FINAL_DEV_CERTIFICATION=PASS"
-          echo "PRODUCTION_TOUCHED=FALSE"
- "$products_headers"
-          grep -Eqi '^etag:[[:space:]]*W/"[0-9a-f]{64}"\r?      - name: Escritura/lectura efímera en solqaryn_dev
-        shell: bash
-        run: |
-          set -euo pipefail
-          test "$DB_NAME" = "solqaryn_dev"
-          export MYSQL_PWD="$DB_PASSWORD"
-          marker="final-cert-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          readback="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names <<SQL
-          CREATE TEMPORARY TABLE _solqaryn_dev_final_probe (id VARCHAR(128) PRIMARY KEY, created_at DATETIME(6) NOT NULL);
-          INSERT INTO _solqaryn_dev_final_probe(id,created_at) VALUES ('$marker',UTC_TIMESTAMP(6));
-          SELECT id FROM _solqaryn_dev_final_probe WHERE id='$marker';
-          DROP TEMPORARY TABLE _solqaryn_dev_final_probe;
-          SQL
-          )"
-          test "$readback" = "$marker"
-          echo "DB_TEMP_WRITE_READ=PASS"
-
-      - name: Cero referencias operativas legacy en runtime
-        shell: bash
-        run: |
-          set -euo pipefail
-          targets=(frontend/src frontend/server frontend/vercel.json backend/src render.yaml)
-          if grep -RInE 'identidad-retirada-desarrollo|identidad-retirada-mysql-identidad-retirada\.c\.aivencloud\.com' "${targets[@]}"; then
-            echo "Referencia operativa legacy detectada" >&2
-            exit 1
-          fi
-          if grep -RIn 'varistorehn_desarrollo' backend/src frontend/src frontend/server frontend/vercel.json render.yaml; then
-            echo "Referencia operativa a base/prefijo legacy detectada" >&2
-            exit 1
-          fi
-          echo "LEGACY_RUNTIME_REFERENCES=0"
-
-      - name: Resumen
-        run: |
-          echo "FINAL_DEV_CERTIFICATION=PASS"
-          echo "PRODUCTION_TOUCHED=FALSE"
- "$products_headers"
+          grep -Eqi '^cache-control:[[:space:]]*public, max-age=5, s-maxage=15, must-revalidate\r?$' "$products_headers"
+          grep -Eqi '^etag:[[:space:]]*W/"[0-9a-f]{64}"\r?$' "$products_headers"
 
           curl --retry 3 --fail --silent --show-error -D "$br_headers" -o /dev/null -H 'Accept-Encoding: br' "$BACKEND/tienda/bootstrap"
-          grep -Eqi '^content-encoding:[[:space:]]*br\r?      - name: Escritura/lectura efímera en solqaryn_dev
-        shell: bash
-        run: |
-          set -euo pipefail
-          test "$DB_NAME" = "solqaryn_dev"
-          export MYSQL_PWD="$DB_PASSWORD"
-          marker="final-cert-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          readback="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names <<SQL
-          CREATE TEMPORARY TABLE _solqaryn_dev_final_probe (id VARCHAR(128) PRIMARY KEY, created_at DATETIME(6) NOT NULL);
-          INSERT INTO _solqaryn_dev_final_probe(id,created_at) VALUES ('$marker',UTC_TIMESTAMP(6));
-          SELECT id FROM _solqaryn_dev_final_probe WHERE id='$marker';
-          DROP TEMPORARY TABLE _solqaryn_dev_final_probe;
-          SQL
-          )"
-          test "$readback" = "$marker"
-          echo "DB_TEMP_WRITE_READ=PASS"
-
-      - name: Cero referencias operativas legacy en runtime
-        shell: bash
-        run: |
-          set -euo pipefail
-          targets=(frontend/src frontend/server frontend/vercel.json backend/src render.yaml)
-          if grep -RInE 'identidad-retirada-desarrollo|identidad-retirada-mysql-identidad-retirada\.c\.aivencloud\.com' "${targets[@]}"; then
-            echo "Referencia operativa legacy detectada" >&2
-            exit 1
-          fi
-          if grep -RIn 'varistorehn_desarrollo' backend/src frontend/src frontend/server frontend/vercel.json render.yaml; then
-            echo "Referencia operativa a base/prefijo legacy detectada" >&2
-            exit 1
-          fi
-          echo "LEGACY_RUNTIME_REFERENCES=0"
-
-      - name: Resumen
-        run: |
-          echo "FINAL_DEV_CERTIFICATION=PASS"
-          echo "PRODUCTION_TOUCHED=FALSE"
- "$br_headers"
+          grep -Eqi '^content-encoding:[[:space:]]*br\r?$' "$br_headers"
           grep -Eqi '^vary:.*Accept-Encoding' "$br_headers"
 
           curl --retry 3 --fail --silent --show-error -D "$gzip_headers" -o /dev/null -H 'Accept-Encoding: gzip' "$BACKEND/tienda/bootstrap"
-          grep -Eqi '^content-encoding:[[:space:]]*gzip\r?      - name: Escritura/lectura efímera en solqaryn_dev
-        shell: bash
-        run: |
-          set -euo pipefail
-          test "$DB_NAME" = "solqaryn_dev"
-          export MYSQL_PWD="$DB_PASSWORD"
-          marker="final-cert-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          readback="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names <<SQL
-          CREATE TEMPORARY TABLE _solqaryn_dev_final_probe (id VARCHAR(128) PRIMARY KEY, created_at DATETIME(6) NOT NULL);
-          INSERT INTO _solqaryn_dev_final_probe(id,created_at) VALUES ('$marker',UTC_TIMESTAMP(6));
-          SELECT id FROM _solqaryn_dev_final_probe WHERE id='$marker';
-          DROP TEMPORARY TABLE _solqaryn_dev_final_probe;
-          SQL
-          )"
-          test "$readback" = "$marker"
-          echo "DB_TEMP_WRITE_READ=PASS"
-
-      - name: Cero referencias operativas legacy en runtime
-        shell: bash
-        run: |
-          set -euo pipefail
-          targets=(frontend/src frontend/server frontend/vercel.json backend/src render.yaml)
-          if grep -RInE 'identidad-retirada-desarrollo|identidad-retirada-mysql-identidad-retirada\.c\.aivencloud\.com' "${targets[@]}"; then
-            echo "Referencia operativa legacy detectada" >&2
-            exit 1
-          fi
-          if grep -RIn 'varistorehn_desarrollo' backend/src frontend/src frontend/server frontend/vercel.json render.yaml; then
-            echo "Referencia operativa a base/prefijo legacy detectada" >&2
-            exit 1
-          fi
-          echo "LEGACY_RUNTIME_REFERENCES=0"
-
-      - name: Resumen
-        run: |
-          echo "FINAL_DEV_CERTIFICATION=PASS"
-          echo "PRODUCTION_TOUCHED=FALSE"
- "$gzip_headers"
+          grep -Eqi '^content-encoding:[[:space:]]*gzip\r?$' "$gzip_headers"
 
           curl --retry 3 --fail --silent --show-error -D "$health_headers" -o /dev/null "$BACKEND/health"
-          grep -Eqi '^cache-control:[[:space:]]*private, no-store, max-age=0\r?      - name: Escritura/lectura efímera en solqaryn_dev
-        shell: bash
-        run: |
-          set -euo pipefail
-          test "$DB_NAME" = "solqaryn_dev"
-          export MYSQL_PWD="$DB_PASSWORD"
-          marker="final-cert-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          readback="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names <<SQL
-          CREATE TEMPORARY TABLE _solqaryn_dev_final_probe (id VARCHAR(128) PRIMARY KEY, created_at DATETIME(6) NOT NULL);
-          INSERT INTO _solqaryn_dev_final_probe(id,created_at) VALUES ('$marker',UTC_TIMESTAMP(6));
-          SELECT id FROM _solqaryn_dev_final_probe WHERE id='$marker';
-          DROP TEMPORARY TABLE _solqaryn_dev_final_probe;
-          SQL
-          )"
-          test "$readback" = "$marker"
-          echo "DB_TEMP_WRITE_READ=PASS"
-
-      - name: Cero referencias operativas legacy en runtime
-        shell: bash
-        run: |
-          set -euo pipefail
-          targets=(frontend/src frontend/server frontend/vercel.json backend/src render.yaml)
-          if grep -RInE 'identidad-retirada-desarrollo|identidad-retirada-mysql-identidad-retirada\.c\.aivencloud\.com' "${targets[@]}"; then
-            echo "Referencia operativa legacy detectada" >&2
-            exit 1
-          fi
-          if grep -RIn 'varistorehn_desarrollo' backend/src frontend/src frontend/server frontend/vercel.json render.yaml; then
-            echo "Referencia operativa a base/prefijo legacy detectada" >&2
-            exit 1
-          fi
-          echo "LEGACY_RUNTIME_REFERENCES=0"
-
-      - name: Resumen
-        run: |
-          echo "FINAL_DEV_CERTIFICATION=PASS"
-          echo "PRODUCTION_TOUCHED=FALSE"
- "$health_headers"
+          grep -Eqi '^cache-control:[[:space:]]*private, no-store, max-age=0\r?$' "$health_headers"
           ! grep -Eqi '^etag:' "$health_headers"
 
           curl --retry 3 --fail --silent --show-error -D "$auth_headers" -o /dev/null -H 'Authorization: Bearer runtime-probe' "$BACKEND/tienda/bootstrap"
-          grep -Eqi '^cache-control:[[:space:]]*private, no-store, max-age=0\r?      - name: Escritura/lectura efímera en solqaryn_dev
-        shell: bash
-        run: |
-          set -euo pipefail
-          test "$DB_NAME" = "solqaryn_dev"
-          export MYSQL_PWD="$DB_PASSWORD"
-          marker="final-cert-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          readback="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names <<SQL
-          CREATE TEMPORARY TABLE _solqaryn_dev_final_probe (id VARCHAR(128) PRIMARY KEY, created_at DATETIME(6) NOT NULL);
-          INSERT INTO _solqaryn_dev_final_probe(id,created_at) VALUES ('$marker',UTC_TIMESTAMP(6));
-          SELECT id FROM _solqaryn_dev_final_probe WHERE id='$marker';
-          DROP TEMPORARY TABLE _solqaryn_dev_final_probe;
-          SQL
-          )"
-          test "$readback" = "$marker"
-          echo "DB_TEMP_WRITE_READ=PASS"
-
-      - name: Cero referencias operativas legacy en runtime
-        shell: bash
-        run: |
-          set -euo pipefail
-          targets=(frontend/src frontend/server frontend/vercel.json backend/src render.yaml)
-          if grep -RInE 'identidad-retirada-desarrollo|identidad-retirada-mysql-identidad-retirada\.c\.aivencloud\.com' "${targets[@]}"; then
-            echo "Referencia operativa legacy detectada" >&2
-            exit 1
-          fi
-          if grep -RIn 'varistorehn_desarrollo' backend/src frontend/src frontend/server frontend/vercel.json render.yaml; then
-            echo "Referencia operativa a base/prefijo legacy detectada" >&2
-            exit 1
-          fi
-          echo "LEGACY_RUNTIME_REFERENCES=0"
-
-      - name: Resumen
-        run: |
-          echo "FINAL_DEV_CERTIFICATION=PASS"
-          echo "PRODUCTION_TOUCHED=FALSE"
- "$auth_headers"
+          grep -Eqi '^cache-control:[[:space:]]*private, no-store, max-age=0\r?$' "$auth_headers"
           ! grep -Eqi '^etag:' "$auth_headers"
 
           echo "HTTP_CACHE_ETAG_COMPRESSION=PASS"
