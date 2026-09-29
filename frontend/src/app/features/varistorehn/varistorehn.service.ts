@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { EMPTY, Observable, expand, map, of, reduce, throwError } from 'rxjs';
+import { Observable, map, of, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse, PagedResult } from '../../core/models/api-response.model';
 import {
@@ -25,6 +25,10 @@ export interface ConsultaProductosPublicos {
   esDestacado?: boolean | null;
   sortBy?: 'Nombre' | 'Precio' | 'FechaCreacion';
   sortDirection?: 'asc' | 'desc';
+  soloDisponibles?: boolean;
+  soloOfertas?: boolean;
+  precioMinimo?: number | null;
+  precioMaximo?: number | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -49,6 +53,14 @@ export class VaristorehnService {
     }
     if (typeof consulta.agotado === 'boolean') params = params.set('agotado', consulta.agotado);
     if (typeof consulta.esDestacado === 'boolean') params = params.set('esDestacado', consulta.esDestacado);
+    if (consulta.soloDisponibles) params = params.set('soloDisponibles', true);
+    if (consulta.soloOfertas) params = params.set('soloOfertas', true);
+    if (typeof consulta.precioMinimo === 'number' && Number.isFinite(consulta.precioMinimo) && consulta.precioMinimo >= 0) {
+      params = params.set('precioMinimo', consulta.precioMinimo);
+    }
+    if (typeof consulta.precioMaximo === 'number' && Number.isFinite(consulta.precioMaximo) && consulta.precioMaximo >= 0) {
+      params = params.set('precioMaximo', consulta.precioMaximo);
+    }
     if (consulta.sortBy) params = params.set('sortBy', consulta.sortBy);
     if (consulta.sortDirection) params = params.set('sortDirection', consulta.sortDirection);
     return this.http.get<ApiResponse<PagedResult<ProductoCatalogoPublico>>>(this.urlProductos, { params });
@@ -64,28 +76,6 @@ export class VaristorehnService {
       if (!res.success || !Array.isArray(res.data)) throw new Error('Respuesta de contexto de productos no válida.');
       return res.data;
     }));
-  }
-
-  /** Lee todas las paginas para que busqueda/categorias no se corten silenciosamente. */
-  obtenerCatalogo(): Observable<ProductoCatalogoPublico[]> {
-    const leer = (pagina: number) => this.obtenerProductos(pagina, 96).pipe(map(res => {
-      const datos = res.data;
-      if (!res.success || !datos || !Array.isArray(datos.items) || datos.page !== pagina
-        || !Number.isSafeInteger(datos.totalCount) || datos.totalCount < 0
-        || !Number.isSafeInteger(datos.pageSize) || datos.pageSize <= 0) {
-        throw new Error('Respuesta de catálogo no válida.');
-      }
-      const paginas = Math.ceil(datos.totalCount / datos.pageSize);
-      return { ...datos, totalPages: paginas };
-    }));
-    return leer(1).pipe(
-      expand(datos => datos.page < datos.totalPages ? leer(datos.page + 1) : EMPTY),
-      reduce((todos, pagina) => {
-        pagina.items.forEach(item => todos.set(item.id, item));
-        return todos;
-      }, new Map<number, ProductoCatalogoPublico>()),
-      map(todos => [...todos.values()])
-    );
   }
 
   obtenerDestacados(limite = 4): Observable<ProductoCatalogoPublico[]> {

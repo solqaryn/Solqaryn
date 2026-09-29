@@ -59,6 +59,7 @@ export class VaristorehnProductosComponent implements OnInit {
   readonly permiteWhatsapp = this.config.modoCarrito !== 'tarjeta';
 
   readonly productos = signal<ProductoTienda[]>([]);
+  readonly totalResultados = signal(0);
   readonly cargando = signal(true);
   readonly errorCatalogo = signal('');
   readonly estadoCatalogo = computed<EstadoConsultaPublica>(() => {
@@ -92,20 +93,9 @@ export class VaristorehnProductosComponent implements OnInit {
   readonly subtotal = computed<number | null>(() => this.carritoStore.listo() ? this.carritoStore.subtotal() : null);
   readonly aviso = signal('');
 
-  readonly resultados = computed(() => filtrarProductos(this.productos(), {
-    busqueda: this.busqueda(),
-    categoria: this.categoriaActiva(),
-    soloDisponibles: this.soloDisponibles(),
-    soloOfertas: this.soloOfertas() || this.soloOfertasPagina(),
-    precioMinimo: this.precioMinimo(),
-    precioMaximo: this.precioMaximo(),
-    orden: this.orden()
-  }));
-  readonly totalPaginas = computed(() => Math.max(1, Math.ceil(this.resultados().length / this.tamanoPagina)));
-  readonly productosVisibles = computed(() => {
-    const inicio = (this.pagina() - 1) * this.tamanoPagina;
-    return this.resultados().slice(inicio, inicio + this.tamanoPagina);
-  });
+  readonly resultados = computed(() => this.productos());
+  readonly totalPaginas = computed(() => Math.max(1, Math.ceil(this.totalResultados() / this.tamanoPagina)));
+  readonly productosVisibles = computed(() => this.productos());
   readonly hayFiltros = computed(() => Boolean(
     this.busqueda().trim() || this.categoriaSlug() || this.soloDisponibles() || this.soloOfertas()
       || this.precioMinimo() !== null || this.precioMaximo() !== null || this.orden() !== 'relevancia'
@@ -124,6 +114,7 @@ export class VaristorehnProductosComponent implements OnInit {
 
   private cargaCatalogo?: Subscription;
   private cargaCategorias?: Subscription;
+  private cargaCarrito?: Subscription;
   private scrollRetorno: number | null = null;
   private scrollRetornoRestaurado = false;
 
@@ -145,13 +136,14 @@ export class VaristorehnProductosComponent implements OnInit {
       this.aplicarCategoriaDesdeSlug();
       if (ordenQuery && ordenQuery !== this.orden()) queueMicrotask(() => this.sincronizarUrl());
       this.normalizarPagina();
+      if (!this.cargandoCategorias()) this.cargarCatalogo();
     });
     this.identidad.cargar().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.recargar());
   }
 
   recargar(): void {
-    this.cargarCatalogo();
     this.cargarCategoriasPublicas();
+    this.cargarContextoCarrito();
   }
 
   cambiarFuente(baseDatos: boolean): void {
@@ -295,17 +287,46 @@ export class VaristorehnProductosComponent implements OnInit {
     this.cargando.set(true);
     this.errorCatalogo.set('');
     this.productos.set([]);
-    this.carritoStore.reiniciarContexto();
+    this.totalResultados.set(0);
 
-    const fuente: Observable<ProductoCatalogoPublico[] | null> = this.utilizarDatosBaseDatos()
-      ? this.servicio.obtenerCatalogo() : of(null);
+    const categoria = this.categorias().find(item => item.slug === this.categoriaSlug()) ?? null;
+    const filtros = {
+      busqueda: this.busqueda(),
+      categoria: this.categoriaActiva(),
+      soloDisponibles: this.soloDisponibles(),
+      soloOfertas: this.soloOfertas() || this.soloOfertasPagina(),
+      precioMinimo: this.precioMinimo(),
+      precioMaximo: this.precioMaximo(),
+      orden: this.orden()
+    };
+
+    const fuente: Observable<{ productos: ProductoTienda[]; total: number }> = this.utilizarDatosBaseDatos()
+      ? this.servicio.obtenerProductos(this.pagina(), this.tamanoPagina, {
+          search: this.busqueda(),
+          categoriaId: categoria?.id ?? null,
+          soloDisponibles: this.soloDisponibles(),
+          soloOfertas: this.soloOfertas() || this.soloOfertasPagina(),
+          precioMinimo: this.precioMinimo(),
+          precioMaximo: this.precioMaximo(),
+          ...this.ordenServidor()
+        }).pipe(map(res => {
+          const datos = res.data;
+          if (!res.success || !datos || !Array.isArray(datos.items)
+            || !Number.isSafeInteger(datos.totalCount) || datos.totalCount < 0) {
+            throw new Error('Respuesta de catálogo no válida.');
+          }
+          return { productos: datos.items.map(mapearProducto), total: datos.totalCount };
+        }))
+      : of((() => {
+          const todos = filtrarProductos(crearCatalogoEjemplo(), filtros);
+          const inicio = (this.pagina() - 1) * this.tamanoPagina;
+          return { productos: todos.slice(inicio, inicio + this.tamanoPagina), total: todos.length };
+        })());
 
     this.cargaCatalogo = fuente.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: datos => {
-        const productos = datos === null ? crearCatalogoEjemplo() : datos.map(mapearProducto);
-        this.productos.set(productos);
-        const resultado = this.carritoStore.hidratar(productos, this.identidad.config().id, this.utilizarDatosBaseDatos());
-        if (resultado.ajustado) this.aviso.set(this.carritoStore.aviso());
+      next: resultado => {
+        this.productos.set(resultado.productos);
+        this.totalResultados.set(resultado.total);
         this.cargando.set(false);
         this.normalizarPagina();
         this.intentarRestaurarScroll();
@@ -331,16 +352,44 @@ export class VaristorehnProductosComponent implements OnInit {
         this.categorias.set(categorias);
         this.cargandoCategorias.set(false);
         this.aplicarCategoriaDesdeSlug();
-        this.normalizarPagina();
-        this.intentarRestaurarScroll();
+        this.cargarCatalogo();
       },
       error: () => {
         this.errorCategorias.set('No pudimos cargar las categorías públicas. Los demás filtros siguen disponibles.');
         this.cargandoCategorias.set(false);
-        this.normalizarPagina();
-        this.intentarRestaurarScroll();
+        this.cargarCatalogo();
       }
     });
+  }
+
+  private cargarContextoCarrito(): void {
+    this.cargaCarrito?.unsubscribe();
+    this.carritoStore.reiniciarContexto();
+    const idsPersistidos = this.carritoStore.productoIdsPersistidos(
+      this.identidad.config().id,
+      this.utilizarDatosBaseDatos()
+    );
+    const fuente: Observable<ProductoTienda[]> = this.utilizarDatosBaseDatos()
+      ? this.servicio.obtenerProductosContexto(idsPersistidos).pipe(map(items => items.map(mapearProducto)))
+      : of(crearCatalogoEjemplo());
+
+    this.cargaCarrito = fuente.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: productos => {
+        const resultado = this.carritoStore.hidratar(productos, this.identidad.config().id, this.utilizarDatosBaseDatos());
+        if (resultado.ajustado) this.aviso.set(this.carritoStore.aviso());
+      },
+      error: () => this.aviso.set('No pudimos actualizar el carrito contra el catálogo vigente. Tu selección sigue guardada.')
+    });
+  }
+
+  private ordenServidor(): { sortBy: 'Nombre' | 'Precio' | 'FechaCreacion'; sortDirection: 'asc' | 'desc' } {
+    switch (this.orden()) {
+      case 'precio-asc': return { sortBy: 'Precio', sortDirection: 'asc' };
+      case 'precio-desc': return { sortBy: 'Precio', sortDirection: 'desc' };
+      case 'recientes': return { sortBy: 'FechaCreacion', sortDirection: 'desc' };
+      case 'nombre': return { sortBy: 'Nombre', sortDirection: 'asc' };
+      default: return { sortBy: 'Nombre', sortDirection: 'asc' };
+    }
   }
 
   private aplicarCategoriaDesdeSlug(): void {
