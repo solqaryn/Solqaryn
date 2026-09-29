@@ -7,7 +7,7 @@ const frontendDir = path.resolve(scriptsDir, '..');
 const featureDir = path.join(frontendDir, 'src/app/features/varistorehn');
 const read = name => readFile(path.join(featureDir, name), 'utf8');
 
-const [homeTs, homeHtml, homeScss, responsiveScss, productTs, paths, catalog, storeService, adminFormTs, adminProductModel, adminProductService] = await Promise.all([
+const [homeTs, homeHtml, homeScss, responsiveScss, productTs, paths, catalog, storeService, identityService, adminFormTs, adminProductModel, adminProductService] = await Promise.all([
   read('varistorehn.component.ts'),
   read('varistorehn.component.html'),
   read('varistorehn.component.scss'),
@@ -16,6 +16,7 @@ const [homeTs, homeHtml, homeScss, responsiveScss, productTs, paths, catalog, st
   read('varistorehn.paths.ts'),
   read('varistorehn.catalog.ts'),
   read('varistorehn.service.ts'),
+  read('varistorehn-identidad.service.ts'),
   readFile(path.join(frontendDir, 'src/app/features/productos/producto-form.component.ts'), 'utf8'),
   readFile(path.join(frontendDir, 'src/app/core/models/producto.model.ts'), 'utf8'),
   readFile(path.join(frontendDir, 'src/app/services/producto.service.ts'), 'utf8')
@@ -60,6 +61,78 @@ expect(storeService.includes('urlDestacados') && storeService.includes('/destaca
 expect(storeService.includes('obtenerDestacados(limite = 4)'), 'El servicio debe conservar la lectura limitada de destacados para retries/rutas específicas.');
 expect(storeService.includes('obtenerBootstrap(force = false)') && storeService.includes('/bootstrap'), 'El storefront debe exponer una única lectura bootstrap para la portada.');
 expect(storeService.includes('shareReplay({ bufferSize: 1, refCount: false })'), 'El bootstrap debe deduplicarse entre consumidores simultáneos.');
+expect(identityService.includes('cargaEnVuelo
+expect(adminProductModel.includes('esDestacado?: boolean'), 'El modelo administrativo debe transportar la bandera de destacado sin romper consumidores legacy.');
+expect(adminProductService.includes("formData.append('EsDestacado'"), 'El CRUD de productos debe enviar EsDestacado al backend.');
+expect(adminFormTs.includes('esDestacado: [false]') && adminFormTs.includes('p.esDestacado === true'), 'El formulario administrativo debe permitir editar la bandera de destacado.');
+expect(homeHtml.includes('Aún no hay productos marcados como destacados'), 'La fuente real sin destacados debe tener un estado comercial honesto.');
+expect(homeHtml.includes('El home no elige productos arbitrarios'), 'La UI debe dejar explícito que no fabrica destacados reales.');
+
+expect(productTs.includes('filtrarProductos'), 'Los filtros deben permanecer en la página independiente de productos.');
+expect(productTs.includes('tamanoPagina = 12'), 'La paginación debe permanecer en el catálogo independiente.');
+expect(paths.includes("productos: '/varistorehn/productos'"), 'Debe conservarse la ruta canónica del catálogo.');
+expect(paths.includes("categorias: '/varistorehn/categorias'"), 'Debe conservarse la ruta canónica de categorías.');
+expect(catalog.includes('destacado: Boolean(producto.esDestacado)'), 'El mapper debe conservar la marca de destacado del contrato público.');
+
+for (const [name, scss] of [['home', homeScss], ['responsive', responsiveScss]]) {
+  expect(!/#[0-9a-f]{3,8}\b/i.test(scss), `${name} no debe introducir colores hexadecimales propios.`);
+  expect(!/\brgb(?:a)?\s*\(/i.test(scss), `${name} no debe introducir colores RGB propios.`);
+  expect(!/\bhsl(?:a)?\s*\(/i.test(scss), `${name} no debe introducir colores HSL propios.`);
+}
+expect(homeScss.includes('var(--color-bg)') && homeScss.includes('var(--color-surface)') && homeScss.includes('var(--color-primary)'), 'El home debe usar los tokens del tema empresarial.');
+expect(homeScss.includes('var(--color-button)') && homeScss.includes('var(--shadow-card)'), 'Botones y elevación deben seguir el tema configurado.');
+expect(responsiveScss.includes('@media (min-width: 381px)') && !/@media\s*\(\s*max-width/i.test(responsiveScss), 'La portada debe usar móvil estrecho como baseline y expandirse con min-width.');
+expect(homeScss.includes('min-height: 44px'), 'Los CTA deben conservar objetivos táctiles de al menos 44px.');
+
+for (const forbidden of ['authGuard', 'permisoGuard', 'ProductosListComponent', 'CategoriasListComponent']) {
+  expect(!homeTs.includes(forbidden) && !homeHtml.includes(forbidden), `La portada pública no debe depender de ${forbidden}.`);
+}
+
+if (failures.length) {
+  console.error('Fase 7 — validación de home comercial FALLÓ:');
+  failures.forEach(failure => console.error(`- ${failure}`));
+  process.exit(1);
+}
+
+console.info('Fase 7 — home comercial: bootstrap único, portada ligera, destacados persistidos y limitados, navegación canónica, carrito compartido, tema y límites aprobados.');
+) && identityService.includes('if (!force && this.cargaEnVuelo$) return this.cargaEnVuelo
+expect(adminProductModel.includes('esDestacado?: boolean'), 'El modelo administrativo debe transportar la bandera de destacado sin romper consumidores legacy.');
+expect(adminProductService.includes("formData.append('EsDestacado'"), 'El CRUD de productos debe enviar EsDestacado al backend.');
+expect(adminFormTs.includes('esDestacado: [false]') && adminFormTs.includes('p.esDestacado === true'), 'El formulario administrativo debe permitir editar la bandera de destacado.');
+expect(homeHtml.includes('Aún no hay productos marcados como destacados'), 'La fuente real sin destacados debe tener un estado comercial honesto.');
+expect(homeHtml.includes('El home no elige productos arbitrarios'), 'La UI debe dejar explícito que no fabrica destacados reales.');
+
+expect(productTs.includes('filtrarProductos'), 'Los filtros deben permanecer en la página independiente de productos.');
+expect(productTs.includes('tamanoPagina = 12'), 'La paginación debe permanecer en el catálogo independiente.');
+expect(paths.includes("productos: '/varistorehn/productos'"), 'Debe conservarse la ruta canónica del catálogo.');
+expect(paths.includes("categorias: '/varistorehn/categorias'"), 'Debe conservarse la ruta canónica de categorías.');
+expect(catalog.includes('destacado: Boolean(producto.esDestacado)'), 'El mapper debe conservar la marca de destacado del contrato público.');
+
+for (const [name, scss] of [['home', homeScss], ['responsive', responsiveScss]]) {
+  expect(!/#[0-9a-f]{3,8}\b/i.test(scss), `${name} no debe introducir colores hexadecimales propios.`);
+  expect(!/\brgb(?:a)?\s*\(/i.test(scss), `${name} no debe introducir colores RGB propios.`);
+  expect(!/\bhsl(?:a)?\s*\(/i.test(scss), `${name} no debe introducir colores HSL propios.`);
+}
+expect(homeScss.includes('var(--color-bg)') && homeScss.includes('var(--color-surface)') && homeScss.includes('var(--color-primary)'), 'El home debe usar los tokens del tema empresarial.');
+expect(homeScss.includes('var(--color-button)') && homeScss.includes('var(--shadow-card)'), 'Botones y elevación deben seguir el tema configurado.');
+expect(responsiveScss.includes('@media (min-width: 381px)') && !/@media\s*\(\s*max-width/i.test(responsiveScss), 'La portada debe usar móvil estrecho como baseline y expandirse con min-width.');
+expect(homeScss.includes('min-height: 44px'), 'Los CTA deben conservar objetivos táctiles de al menos 44px.');
+
+for (const forbidden of ['authGuard', 'permisoGuard', 'ProductosListComponent', 'CategoriasListComponent']) {
+  expect(!homeTs.includes(forbidden) && !homeHtml.includes(forbidden), `La portada pública no debe depender de ${forbidden}.`);
+}
+
+if (failures.length) {
+  console.error('Fase 7 — validación de home comercial FALLÓ:');
+  failures.forEach(failure => console.error(`- ${failure}`));
+  process.exit(1);
+}
+
+console.info('Fase 7 — home comercial: bootstrap único, portada ligera, destacados persistidos y limitados, navegación canónica, carrito compartido, tema y límites aprobados.');
+), 'La identidad debe compartir explícitamente el observable en vuelo entre consumidores concurrentes.');
+expect(identityService.includes('shareReplay({ bufferSize: 1, refCount: false })'), 'La carga de identidad debe usar replay para evitar stampede concurrente.');
+expect(storeService.includes('private categorias$?: Observable<CategoriaCatalogoPublico[]>') && storeService.includes('obtenerCategorias(force = false)'), 'Las categorías públicas deben conservar una lectura compartida entre rutas.');
+expect(storeService.includes('if (this.categorias$ && !force) return this.categorias$;'), 'Las rutas deben reutilizar la misma respuesta de categorías mientras siga en memoria.');
 expect(adminProductModel.includes('esDestacado?: boolean'), 'El modelo administrativo debe transportar la bandera de destacado sin romper consumidores legacy.');
 expect(adminProductService.includes("formData.append('EsDestacado'"), 'El CRUD de productos debe enviar EsDestacado al backend.');
 expect(adminFormTs.includes('esDestacado: [false]') && adminFormTs.includes('p.esDestacado === true'), 'El formulario administrativo debe permitir editar la bandera de destacado.');
