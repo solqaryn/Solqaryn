@@ -47,7 +47,7 @@ public sealed class TiendaController : ControllerBase
         if (_catalogoPublicoService is not null)
         {
             var ligero = await _catalogoPublicoService.BuscarAsync(request, HttpContext.RequestAborted);
-            return Ok(ApiResponse<PagedResult<ProductoCatalogoPublicoDto>>.Ok(ligero));
+            return Ok(ApiResponse<PagedResult<TiendaProductoResumenDto>>.Ok(ligero));
         }
 
         var resultado = await _productoService.GetPagedAsync(request);
@@ -59,15 +59,15 @@ public sealed class TiendaController : ControllerBase
                 .Select(variante => variante.Id));
         var items = await Task.WhenAll(productosActivos
             .Select(producto => MapearProductoAsync(producto, ahoraUtc, inventario)));
-        var catalogo = new PagedResult<ProductoCatalogoPublicoDto>
+        var catalogo = new PagedResult<TiendaProductoResumenDto>
         {
-            Items = items.ToList(),
+            Items = items.Select(ResumirProducto).ToList(),
             Page = resultado.Page,
             PageSize = resultado.PageSize,
             TotalCount = resultado.TotalCount
         };
 
-        return Ok(ApiResponse<PagedResult<ProductoCatalogoPublicoDto>>.Ok(catalogo));
+        return Ok(ApiResponse<PagedResult<TiendaProductoResumenDto>>.Ok(catalogo));
     }
 
     [HttpGet("productos/destacados")]
@@ -76,7 +76,7 @@ public sealed class TiendaController : ControllerBase
         if (_catalogoPublicoService is not null)
         {
             var ligeros = await _catalogoPublicoService.ObtenerDestacadosAsync(limite, HttpContext.RequestAborted);
-            return Ok(ApiResponse<List<ProductoCatalogoPublicoDto>>.Ok(ligeros));
+            return Ok(ApiResponse<List<TiendaProductoResumenDto>>.Ok(ligeros));
         }
 
         var request = new ProductoPagedRequest
@@ -102,7 +102,7 @@ public sealed class TiendaController : ControllerBase
         var destacados = await Task.WhenAll(productosDestacados
             .Select(producto => MapearProductoAsync(producto, ahoraUtc, inventario)));
 
-        return Ok(ApiResponse<List<ProductoCatalogoPublicoDto>>.Ok(destacados.ToList()));
+        return Ok(ApiResponse<List<TiendaProductoResumenDto>>.Ok(destacados.Select(ResumirProducto).ToList()));
     }
 
     [HttpGet("productos/{slug}")]
@@ -470,6 +470,54 @@ public sealed class TiendaController : ControllerBase
                 })
                 .ToList(),
             Modelos = modelos
+        };
+    }
+
+    private static TiendaProductoResumenDto ResumirProducto(ProductoCatalogoPublicoDto producto)
+    {
+        var descripcion = producto.Descripcion?.Trim();
+        if (!string.IsNullOrEmpty(descripcion) && descripcion.Length > 180)
+            descripcion = descripcion[..180];
+
+        return new TiendaProductoResumenDto
+        {
+            Id = producto.Id,
+            Slug = producto.Slug,
+            Nombre = producto.Nombre,
+            DescripcionResumen = descripcion,
+            CategoriaId = producto.CategoriaId,
+            CategoriaNombre = producto.CategoriaNombre,
+            Precio = producto.Precio,
+            PrecioOferta = producto.PrecioOferta,
+            OfertaActiva = producto.OfertaActiva,
+            OfertaNombre = producto.OfertaNombre,
+            Ahorro = producto.Ahorro,
+            PorcentajeAhorro = producto.PorcentajeAhorro,
+            CantidadDisponible = producto.CantidadDisponible,
+            EstaAgotado = producto.EstaAgotado,
+            EstadoDisponibilidad = producto.EstadoDisponibilidad,
+            EsDestacado = producto.EsDestacado,
+            FechaCreacion = producto.FechaCreacion,
+            ImagenPrincipalUrl = producto.ImagenPrincipalUrl
+                ?? producto.Imagenes.OrderByDescending(imagen => imagen.EsPrincipal).ThenBy(imagen => imagen.Orden)
+                    .Select(imagen => imagen.Url).FirstOrDefault(),
+            Modelos = producto.Modelos.Select(modelo => new TiendaProductoVarianteResumenDto
+            {
+                ProductoVarianteId = modelo.ProductoVarianteId,
+                ModeloId = modelo.ModeloId,
+                ModeloNombre = modelo.ModeloNombre,
+                MarcaNombre = modelo.MarcaNombre,
+                Sku = modelo.Sku,
+                Precio = modelo.Precio,
+                PrecioOferta = modelo.PrecioOferta,
+                OfertaActiva = modelo.OfertaActiva,
+                OfertaNombre = modelo.OfertaNombre,
+                Ahorro = modelo.Ahorro,
+                PorcentajeAhorro = modelo.PorcentajeAhorro,
+                CantidadDisponible = modelo.CantidadDisponible,
+                EstaAgotado = modelo.EstaAgotado,
+                EstadoDisponibilidad = modelo.EstadoDisponibilidad
+            }).ToList()
         };
     }
 
