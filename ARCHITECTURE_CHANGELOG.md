@@ -1,5 +1,17 @@
 # ARCHITECTURE_CHANGELOG — Solqaryn
 
+## 2026-09-29 — Cache HTTP + ETag + compresión del storefront
+
+- ASP.NET Core habilita Brotli/Gzip para JSON/text sobre HTTPS.
+- Toda respuesta backend parte de `private, no-store, max-age=0`; sólo GET públicos allowlisted usan `PublicHttpCacheAttribute`.
+- Identidad/tema/WhatsApp/categorías: `max-age=120, s-maxage=300, stale-while-revalidate=600`.
+- Bootstrap: `max-age=15, s-maxage=30, stale-while-revalidate=60` por incluir destacados.
+- Productos/listados/detalle: `max-age=5, s-maxage=15, must-revalidate`.
+- Respuestas públicas cacheables emiten ETag débil SHA-256 y resuelven `If-None-Match` con 304; `Vary: Accept-Encoding` preserva equivalencia con compresión.
+- Contexto de carrito, checkout, sesión, administración, documentos y errores permanecen fuera de cache público.
+- Vercel marca bundles Angular hashados como immutable por un año y habilita caching de rewrites API sólo para respetar el `Cache-Control` upstream.
+- Sin persistencia nueva, migraciones, secretos ni servicios pagos.
+
 ## 2026-09-29 — Cache público tenant-aware en dos niveles
 
 - Angular conserva el observable de identidad en vuelo y comparte la lista de categorías entre rutas mediante replay, evitando solicitudes concurrentes duplicadas.
