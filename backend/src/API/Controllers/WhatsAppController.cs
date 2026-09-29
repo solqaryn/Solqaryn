@@ -70,6 +70,7 @@ public sealed class WhatsAppController : ControllerBase
 
     [HttpGet("publico")]
     [AllowAnonymous]
+    [PublicHttpCache(PublicHttpCacheProfile.Identity)]
     public async Task<IActionResult> GetPublicoAsync(CancellationToken cancellationToken)
     {
         var configuraciones = await _db.Set<ConfiguracionWhatsAppEmpresa>()
