@@ -1,3 +1,10 @@
+## 2026-09-29 — Catálogo remoto distingue vacío real de filtros sin coincidencias
+
+- El catálogo paginado server-side ya no confunde una respuesta de cero resultados causada por filtros con un catálogo público realmente vacío.
+- Con filtros activos se conserva el estado “No encontramos coincidencias” y la acción “Limpiar filtros”; sin filtros y sin productos se mantiene el empty state real.
+- Corrección causal de la regresión Fase 8 detectada tras reemplazar la descarga completa del catálogo.
+- Sin cambios de backend, datos, PROD, RBAC, tenancy ni servicios pagos.
+
 ## 2026-09-29 — Regresiones E2E alineadas con contexto reducido del carrito
 
 - Las regresiones públicas Fases 4/5/6/9/12 mockean `POST /tienda/productos/contexto` cuando usan catálogo real.

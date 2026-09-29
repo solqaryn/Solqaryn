@@ -64,7 +64,8 @@ export class VaristorehnProductosComponent implements OnInit {
   readonly estadoCatalogo = computed<EstadoConsultaPublica>(() => {
     if (this.cargando()) return 'loading';
     if (this.errorCatalogo()) return 'error';
-    return this.productos().length ? 'success' : 'empty';
+    if (this.productos().length || this.totalResultados() > 0 || this.filtrosActivos()) return 'success';
+    return 'empty';
   });
 
   readonly categorias = signal<CategoriaTienda[]>([]);
@@ -114,6 +115,19 @@ export class VaristorehnProductosComponent implements OnInit {
   readonly categoriaFiltroInvalida = computed(() => Boolean(
     !this.cargandoCategorias() && !this.errorCategorias() && this.categoriaSlug() && !this.categoriaActiva()
   ));
+
+  private filtrosActivos(): boolean {
+    return Boolean(
+      this.busqueda().trim()
+      || this.categoriaSlug()
+      || this.soloDisponibles()
+      || this.soloOfertas()
+      || this.soloOfertasPagina()
+      || this.precioMinimo() !== null
+      || this.precioMaximo() !== null
+      || this.orden() !== 'relevancia'
+    );
+  }
 
   readonly enlaces = {
     inicio: VARISTOREHN_PATHS.inicio,
