@@ -45,6 +45,7 @@ public sealed class TiendaBootstrapService : ITiendaBootstrapService
         var categorias = (await _categorias.GetActivasAsync())
             .Where(categoria => categoria.Activa)
             .OrderBy(categoria => categoria.Nombre)
+            .Take(6)
             .Select(categoria => new CategoriaCatalogoPublicoDto
             {
                 Id = categoria.Id,
