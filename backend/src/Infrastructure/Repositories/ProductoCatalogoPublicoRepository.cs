@@ -17,8 +17,9 @@ public sealed class ProductoCatalogoPublicoRepository : IProductoCatalogoPublico
         ProductoPagedRequest request,
         CancellationToken cancellationToken = default)
     {
-        var query = AplicarOrden(AplicarFiltros(BaseQuery(), request), request);
-        var totalCount = await query.CountAsync(cancellationToken);
+        var filtrada = AplicarFiltros(BaseQuery(), request);
+        var totalCount = await filtrada.CountAsync(cancellationToken);
+        var query = AplicarOrden(filtrada, request);
 
         var items = await ProyectarResumen(query
                 .Skip((request.Page - 1) * request.PageSize)
@@ -37,7 +38,7 @@ public sealed class ProductoCatalogoPublicoRepository : IProductoCatalogoPublico
         if (normalizados.Length == 0)
             return new List<ProductoCatalogoResumenReadModel>();
 
-        var items = await ProyectarResumen(BaseQuery().Where(producto => normalizados.Contains(producto.Id)))
+        var items = await ProyectarResumen(BaseQuery().Where(producto => producto.Activo && normalizados.Contains(producto.Id)))
             .ToListAsync(cancellationToken);
         await CargarVariantesResumenAsync(items, cancellationToken);
         return items;
