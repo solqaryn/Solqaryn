@@ -188,6 +188,41 @@ Esto confirma que la key incorpora parámetros y que una variante de listado no 
 
 La evidencia completa vive en `docs/evidencias/DEV_CERTIFICACION_PUNTO_5_CACHE_DOS_NIVELES_2026-09-29.md`.
 
+### Punto 6 — cache HTTP, ETag y compresión
+
+Functional HEAD: `f3d1119133c1991b742575f8a675c9f012b9b42e`.
+
+La certificación runtime DEV se cerró con el workflow canónico `36638217740`, que pasó:
+
+- ETag + `304 Not Modified` para bootstrap;
+- ETag y política pública corta para productos;
+- compresión Brotli;
+- compresión Gzip;
+- `private, no-store, max-age=0` para ruta no allowlisted;
+- `private, no-store, max-age=0` cuando existe `Authorization`.
+
+Render DEV:
+
+- deploy `dep-dau37vvlot8c7399s6g`;
+- estado **live**;
+- runtime equivalente al merge funcional del Punto 6.
+
+Vercel DEV:
+
+- deployment `dpl_E1h8BhRAVcE97JcnKJjMfcozWjB3`;
+- estado **READY**;
+- alias `solqaryn-dev.vercel.app`.
+
+Headers observados en el alias canónico:
+
+- `styles-JXKYC424.css`: `Cache-Control: public, max-age=31536000, immutable` + Brotli;
+- `main-CO5LMMRB.js`: `Cache-Control: public, max-age=31536000, immutable` + Brotli;
+- `/api/tienda/bootstrap`: `public, max-age=15, s-maxage=30, stale-while-revalidate=60`, ETag débil, Brotli y `Vary: Accept-Encoding`.
+
+Las lecturas observadas del rewrite API mostraron `x-vercel-cache: MISS`; esto se conserva como dato de observación y no se interpreta como fallo, porque el backend sigue siendo la autoridad de reusabilidad y el CDN recibe correctamente la política pública upstream.
+
+La evidencia completa vive en `docs/evidencias/DEV_CERTIFICACION_PUNTO_6_HTTP_CACHE_ETAG_COMPRESION_2026-09-29.md`.
+
 ### Bundle Angular observado
 
 Build productivo exact-head:
