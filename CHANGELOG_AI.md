@@ -1,3 +1,9 @@
+## 2026-09-29 — Recuperación causal responsive durante baseline DEV
+
+- Las regresiones Fase 10/11/12 detectaron que una tablet táctil con viewport ancho recibía el header de escritorio aunque el catálogo permanecía en layout táctil.
+- Se alineó el breakpoint del header con la política mobile-first ya usada por el catálogo: el layout de escritorio requiere además `(hover: hover) and (pointer: fine)`.
+- Cambio acotado a CSS responsive; no modifica negocio, datos, backend, PROD, `main` ni la instrumentación del baseline.
+
 ## 2026-09-28 — Baseline de rendimiento DEV sin servicios pagados
 
 - Se instrumentó DEV para registrar duración total API, cantidad y tiempo de queries MySQL por request y correlación `Server-Timing`, sin registrar SQL, parámetros, PII ni secretos.
