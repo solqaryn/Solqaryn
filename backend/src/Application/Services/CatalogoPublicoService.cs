@@ -20,7 +20,7 @@ public sealed class CatalogoPublicoService : ICatalogoPublicoService
         _inventario = inventario;
     }
 
-    public async Task<PagedResult<ProductoCatalogoPublicoDto>> BuscarAsync(
+    public async Task<PagedResult<TiendaProductoResumenDto>> BuscarAsync(
         ProductoPagedRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -42,7 +42,7 @@ public sealed class CatalogoPublicoService : ICatalogoPublicoService
         };
     }
 
-    private async Task<PagedResult<ProductoCatalogoPublicoDto>> BuscarOfertasAsync(
+    private async Task<PagedResult<TiendaProductoResumenDto>> BuscarOfertasAsync(
         ProductoPagedRequest request,
         CancellationToken cancellationToken)
     {
@@ -50,15 +50,15 @@ public sealed class CatalogoPublicoService : ICatalogoPublicoService
         var inicio = (request.Page - 1) * request.PageSize;
         var finExclusivo = inicio + request.PageSize;
         var totalOfertas = 0;
-        var pagina = new List<ProductoCatalogoPublicoDto>(request.PageSize);
+        var pagina = new List<TiendaProductoResumenDto>(request.PageSize);
 
         foreach (var loteIds in idsOrdenados.Chunk(50))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var modelos = await _repository.GetByIdsAsync(loteIds, includeGalleries: false, cancellationToken);
+            var modelos = await _repository.GetSummariesByIdsAsync(loteIds, cancellationToken);
             var porId = modelos.ToDictionary(modelo => modelo.Id);
             var ordenados = loteIds.Where(porId.ContainsKey).Select(id => porId[id]).ToList();
-            var mapeados = await MapearLoteAsync(ordenados, cancellationToken);
+            var mapeados = await MapearResumenLoteAsync(ordenados, cancellationToken);
 
             foreach (var producto in mapeados)
             {
@@ -80,7 +80,7 @@ public sealed class CatalogoPublicoService : ICatalogoPublicoService
         };
     }
 
-    public async Task<List<ProductoCatalogoPublicoDto>> ObtenerDestacadosAsync(
+    public async Task<List<TiendaProductoResumenDto>> ObtenerDestacadosAsync(
         int limite,
         CancellationToken cancellationToken = default)
     {
@@ -123,6 +123,109 @@ public sealed class CatalogoPublicoService : ICatalogoPublicoService
         var orden = normalizados.Select((id, indice) => (id, indice)).ToDictionary(x => x.id, x => x.indice);
         var mapeados = await MapearLoteAsync(items.Where(item => item.Activo).ToList(), cancellationToken);
         return mapeados.OrderBy(item => orden.GetValueOrDefault(item.Id, int.MaxValue)).ToList();
+    }
+
+    private async Task<List<TiendaProductoResumenDto>> MapearResumenLoteAsync(
+        IReadOnlyCollection<ProductoCatalogoResumenReadModel> productos,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (productos.Count == 0)
+            return new List<TiendaProductoResumenDto>();
+
+        var variantesIds = productos
+            .SelectMany(producto => producto.Variantes)
+            .Select(variante => variante.Id)
+            .Distinct()
+            .ToArray();
+
+        var inventario = await _inventario.ObtenerPorVariantesAsync(variantesIds);
+        var ahoraUtc = DateTime.UtcNow;
+        var tareas = productos.Select(producto => MapearResumenProductoAsync(producto, ahoraUtc, inventario));
+        return (await Task.WhenAll(tareas)).ToList();
+    }
+
+    private async Task<TiendaProductoResumenDto> MapearResumenProductoAsync(
+        ProductoCatalogoResumenReadModel producto,
+        DateTime ahoraUtc,
+        IReadOnlyDictionary<int, InventarioPublicoVarianteDto> inventario)
+    {
+        var variantes = producto.Variantes.OrderBy(variante => variante.ModeloNombre).ThenBy(variante => variante.Id).ToList();
+
+        int CantidadDisponible(ProductoVarianteCatalogoResumenReadModel variante) =>
+            inventario.TryGetValue(variante.Id, out var resumen)
+                ? Math.Max(0, resumen.CantidadDisponible)
+                : Math.Max(0, variante.CantidadFallback);
+
+        bool StockBajo(ProductoVarianteCatalogoResumenReadModel variante) =>
+            inventario.TryGetValue(variante.Id, out var resumen)
+                ? resumen.TieneStockBajo
+                : variante.CantidadFallback > 0 && variante.CantidadFallback <= Math.Max(0, variante.UmbralStockBajo);
+
+        var cantidadPublica = variantes.Count > 0
+            ? variantes.Sum(CantidadDisponible)
+            : Math.Max(0, producto.CantidadFallback);
+
+        var preciosVariantes = variantes.Where(variante => variante.Precio > 0).Select(variante => variante.Precio).ToList();
+        var precioPublico = Math.Max(0m, preciosVariantes.Count > 0 ? preciosVariantes.Min() : producto.PrecioFallback);
+        var ofertaProducto = precioPublico > 0
+            ? await _promociones.ResolverAsync(producto.Id, producto.CategoriaId, precioPublico, ahoraUtc)
+            : null;
+
+        var modelos = new List<TiendaProductoVarianteResumenDto>(variantes.Count);
+        foreach (var variante in variantes)
+        {
+            var cantidad = CantidadDisponible(variante);
+            var precioNormal = Math.Max(0m, variante.Precio);
+            var oferta = precioNormal > 0
+                ? await _promociones.ResolverAsync(producto.Id, producto.CategoriaId, precioNormal, ahoraUtc)
+                : null;
+
+            modelos.Add(new TiendaProductoVarianteResumenDto
+            {
+                ProductoVarianteId = variante.Id,
+                ModeloId = variante.ModeloId,
+                ModeloNombre = variante.ModeloNombre,
+                MarcaNombre = variante.MarcaNombre,
+                Sku = variante.Sku,
+                Precio = precioNormal,
+                PrecioOferta = oferta?.PrecioOferta,
+                OfertaActiva = oferta is not null,
+                OfertaNombre = oferta?.Nombre,
+                Ahorro = oferta?.Ahorro ?? 0,
+                PorcentajeAhorro = oferta?.PorcentajeAhorro ?? 0,
+                CantidadDisponible = cantidad,
+                EstaAgotado = cantidad <= 0,
+                EstadoDisponibilidad = EstadoDisponibilidad(cantidad, StockBajo(variante))
+            });
+        }
+
+        return new TiendaProductoResumenDto
+        {
+            Id = producto.Id,
+            Slug = PublicSlug.Create(producto.Nombre, producto.Id),
+            Nombre = producto.Nombre,
+            DescripcionResumen = producto.DescripcionResumen,
+            CategoriaId = producto.CategoriaId,
+            CategoriaNombre = producto.CategoriaNombre,
+            Precio = precioPublico,
+            PrecioOferta = ofertaProducto?.PrecioOferta,
+            OfertaActiva = ofertaProducto is not null,
+            OfertaNombre = ofertaProducto?.Nombre,
+            Ahorro = ofertaProducto?.Ahorro ?? 0,
+            PorcentajeAhorro = ofertaProducto?.PorcentajeAhorro ?? 0,
+            CantidadDisponible = cantidadPublica,
+            EstaAgotado = cantidadPublica <= 0,
+            EstadoDisponibilidad = cantidadPublica <= 0
+                ? "Agotado"
+                : modelos.Any(modelo => modelo.EstadoDisponibilidad == "Últimas unidades")
+                    ? "Últimas unidades"
+                    : "Disponible",
+            EsDestacado = producto.EsDestacado,
+            FechaCreacion = producto.FechaCreacion,
+            ImagenPrincipalUrl = producto.ImagenPrincipalUrl,
+            Modelos = modelos
+        };
     }
 
     private async Task<List<ProductoCatalogoPublicoDto>> MapearLoteAsync(
