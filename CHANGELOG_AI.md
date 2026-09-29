@@ -1,13 +1,14 @@
-## 2026-09-29 — Punto 4: bootstrap único del storefront
+## 2026-09-29 — Punto 4 certificado: bootstrap único del storefront
 
-- Nuevo `GET /tienda/bootstrap`: identidad pública mínima, WhatsApp público, tema, hasta 6 categorías de navegación y 4 destacados ligeros en una sola respuesta.
-- `TiendaBootstrapService` compone los servicios públicos vigentes dentro de un único request scope; EF se mantiene secuencial para no compartir `DbContext` concurrentemente.
-- `WhatsAppPublicoService` encapsula la resolución usada por el bootstrap con las mismas reglas públicas vigentes y nunca expone referencias de tokens/webhooks.
-- Angular usa una lectura bootstrap compartida con `shareReplay`; `AppComponent`, identidad y home consumen la misma carga inicial.
-- La portada usa categorías/destacados del bootstrap; los endpoints separados se conservan para retries/rutas específicas y como recovery si el bootstrap falla.
-- Se añadió guard transversal contra la reintroducción del stampede y prueba de navegador que cuenta requests iniciales.
-- Workflow Fase 7 incluye los archivos y pruebas del bootstrap.
-- Sin migraciones, escrituras de datos, cambios de RBAC/tenancy, secretos, PROD, `main` ni servicios pagos. Certificación runtime DEV pendiente del deploy causal.
+- Certificación DEV publicada en `docs/evidencias/DEV_CERTIFICACION_PUNTO_4_BOOTSTRAP_STOREFRONT_2026-09-29.md`.
+- `GET /tienda/bootstrap` consolida identidad pública mínima, WhatsApp público, tema, hasta 6 categorías de navegación y 4 destacados ligeros.
+- Angular comparte una única carga inicial con `shareReplay`; la prueba Playwright exige 1 request bootstrap y 0 requests iniciales separados a identidad, WhatsApp, tema, categorías y destacados.
+- Scope Lock y regresiones VariStoreHn Fases 1–7: SUCCESS.
+- Render DEV desplegó el functional HEAD `3ad6450e037466e78c25aa07f37ff4e77e5ec109` y quedó `live`.
+- Vercel `solqaryn-dev` desplegó el mismo functional HEAD y quedó `READY` sin upgrade; el rate limit temporal no bloqueó el merge final.
+- Bootstrap runtime: 5 queries internas; pasadas calientes estables observadas de 215.0–332.0 ms, con picos 543.8–836.1 ms asociados a mayor tiempo DB/infraestructura gratuita.
+- Sin migraciones, escrituras de datos de negocio, cambios de RBAC/tenancy, secretos, PROD, `main` ni servicios pagos.
+- Punto 4: **LISTO en DEV**; no requiere acción manual del propietario.
 
 ## 2026-09-29 — Punto 3 certificado: read models públicos ligeros
 
