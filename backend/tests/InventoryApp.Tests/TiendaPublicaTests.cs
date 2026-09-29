@@ -21,6 +21,7 @@ public class TiendaPublicaTests
 
         Assert.Equal("tienda", route.Template);
         Assert.NotNull(allowAnonymous);
+        AssertEndpoint(nameof(TiendaController.GetBootstrap), "bootstrap");
         AssertEndpoint(nameof(TiendaController.GetProductos), "productos");
         AssertEndpoint(nameof(TiendaController.GetProducto), "productos/{slug}");
         AssertEndpoint(nameof(TiendaController.GetCategorias), "categorias");
@@ -376,7 +377,8 @@ public class TiendaPublicaTests
             (categorias ?? new Mock<ICategoriaService>()).Object,
             promociones.Object,
             inventario.Object,
-            (catalogo ?? new Mock<ICatalogoPublicoService>()).Object);
+            (catalogo ?? new Mock<ICatalogoPublicoService>()).Object,
+            new Mock<ITiendaBootstrapService>().Object);
     }
 
     private static void AssertEndpoint(string metodo, string plantilla)
