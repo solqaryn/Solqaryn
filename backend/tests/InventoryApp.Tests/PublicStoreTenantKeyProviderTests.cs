@@ -33,10 +33,19 @@ public sealed class PublicStoreTenantKeyProviderTests
         var sut = new PublicStoreTenantKeyProvider(cache, configuracion.Object, empresas.Object);
 
         var tenantKey = await sut.GetTenantKeyAsync();
+        var cachedTenantKey = await sut.GetTenantKeyAsync();
 
         Assert.Equal("empresa:42", tenantKey);
-        configuracion.VerifyAll();
-        empresas.VerifyAll();
+        Assert.Equal(tenantKey, cachedTenantKey);
+        configuracion.Verify(x => x.GetActivaAsync(), Times.Once);
+        empresas.Verify(x => x.ListAsync(true, It.IsAny<CancellationToken>()), Times.Once);
+
+        cache.InvalidateAll(PublicStoreCacheSegments.Identity);
+        var refreshedTenantKey = await sut.GetTenantKeyAsync();
+
+        Assert.Equal("empresa:42", refreshedTenantKey);
+        configuracion.Verify(x => x.GetActivaAsync(), Times.Exactly(2));
+        empresas.Verify(x => x.ListAsync(true, It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
 
     [Fact]
