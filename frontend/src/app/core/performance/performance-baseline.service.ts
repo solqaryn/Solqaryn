@@ -51,14 +51,14 @@ export class PerformanceBaselineService {
   private lcpMs = 0;
   private cls = 0;
   private fallbackInpMs = 0;
-  private snapshotTimer?: number;
+  private readonly snapshotTimers: number[] = [];
 
   start(): void {
     const view = this.document.defaultView;
     if (this.started || !view || !this.enabled(view)) return;
 
     this.started = true;
-    this.routeStartMs = view.performance.now();
+    this.routeStartMs = 0;
     this.routeUrl = this.router.url || view.location.pathname;
     this.observeVitals();
 
@@ -144,13 +144,17 @@ export class PerformanceBaselineService {
 
   private scheduleSnapshot(view: Window, reason: string): void {
     this.cancelSnapshot(view);
-    this.snapshotTimer = view.setTimeout(() => this.capture(view, reason), 3000);
+    this.snapshotTimers.push(
+      view.setTimeout(() => this.capture(view, reason + '-3s'), 3000),
+      view.setTimeout(() => this.capture(view, reason + '-settled'), 10_000)
+    );
   }
 
   private cancelSnapshot(view: Window): void {
-    if (this.snapshotTimer === undefined) return;
-    view.clearTimeout(this.snapshotTimer);
-    this.snapshotTimer = undefined;
+    while (this.snapshotTimers.length > 0) {
+      const timer = this.snapshotTimers.pop();
+      if (timer !== undefined) view.clearTimeout(timer);
+    }
   }
 
   private capture(view: Window, reason: string): void {

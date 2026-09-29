@@ -55,9 +55,10 @@ Cold starts de Render Free se miden por separado y no se mezclan con el target d
 2. Abrir `https://solqaryn-dev.vercel.app/varistorehn?perf=1`.
 3. Navegar por portada, productos, categoría, producto, carrito y checkout.
 4. Realizar al menos una interacción real por pantalla para obtener INP.
-5. Copiar `window.__SOLQARYN_PERF_BASELINE__` desde DevTools o conservar las líneas `[SOLQARYN_PERF_BASELINE]`.
-6. Correlacionar con logs Render filtrando `PerformanceBaseline`.
-7. Ejecutar `npm run perf:bundle-baseline` para el baseline de bundles.
+5. Esperar al menos 10 s por pantalla y usar preferentemente la muestra cuyo `reason` termina en `-settled`.
+6. Copiar `window.__SOLQARYN_PERF_BASELINE__` desde DevTools o conservar las líneas `[SOLQARYN_PERF_BASELINE]`.
+7. Correlacionar con logs Render filtrando `PerformanceBaseline`.
+8. Ejecutar `npm run perf:bundle-baseline` para el baseline de bundles.
 
 ## Interpretación
 

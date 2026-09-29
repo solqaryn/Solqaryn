@@ -1,3 +1,9 @@
+## 2026-09-29 — Baseline browser DEV endurecido para Render Free
+
+- El capturador frontend conserva una muestra rápida a 3 s y añade una muestra `settled` a 10 s para incluir requests lentas que todavía estén en vuelo.
+- La primera navegación mide recursos desde el inicio del documento, evitando subcontar recursos iniciales anteriores al bootstrap Angular.
+- Alcance exclusivo DEV/local; PROD, datos, secretos, RBAC, tenancy y lógica de negocio permanecen sin cambios.
+
 ## 2026-09-29 — Recuperación causal responsive durante baseline DEV
 
 - Las regresiones Fase 10/11/12 detectaron que una tablet táctil con viewport ancho recibía el header de escritorio aunque el catálogo permanecía en layout táctil.
