@@ -107,6 +107,18 @@ async function mockFuenteReal(
   });
 
   await page.route('**/tienda/productos/*', async route => {
+    const url = new URL(route.request().url());
+    if (route.request().method() === 'POST' && url.pathname.endsWith('/tienda/productos/contexto')) {
+      const body = route.request().postDataJSON() as { productoIds?: number[] } | null;
+      const ids = new Set(Array.isArray(body?.productoIds) ? body!.productoIds : []);
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        headers: { 'Access-Control-Allow-Origin': '*' },
+        body: JSON.stringify({ success: true, data: catalogo.filter(item => ids.has(item.id)) })
+      });
+      return;
+    }
     if (detalleStatus !== 200) {
       await route.fulfill({
         status: detalleStatus,

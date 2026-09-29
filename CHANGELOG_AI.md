@@ -1,3 +1,9 @@
+## 2026-09-29 — Regresiones E2E alineadas con contexto reducido del carrito
+
+- Las regresiones públicas Fases 4/5/6/9/12 mockean `POST /tienda/productos/contexto` cuando usan catálogo real.
+- Se conserva la prueba de rehidratación segura tras reload sin volver a depender de descargar el catálogo completo.
+- El cambio es de QA; no altera lógica de negocio, datos, PROD ni contratos públicos de runtime.
+
 ## 2026-09-29 — Rendimiento storefront: read models y lecturas acotadas
 
 - Se añadió un read path público ligero para SOLQARYN/VariStoreHN, separado de `ProductoRepository.ConIncludes()`.

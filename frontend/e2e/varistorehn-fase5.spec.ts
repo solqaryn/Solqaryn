@@ -71,6 +71,16 @@ async function mockCatalogoReal(page: Page, precio = 1750, stock = 3): Promise<v
       body: JSON.stringify({ success: true, data: { items: [producto], page: 1, pageSize: 96, totalCount: 1 } })
     });
   });
+  await page.route('**/tienda/productos/contexto', async route => {
+    const body = route.request().postDataJSON() as { productoIds?: number[] } | null;
+    const ids = new Set(Array.isArray(body?.productoIds) ? body!.productoIds : []);
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      headers: { 'Access-Control-Allow-Origin': '*' },
+      body: JSON.stringify({ success: true, data: ids.has(producto.id) ? [producto] : [] })
+    });
+  });
   await page.route('**/tienda/categorias', async route => {
     await route.fulfill({
       status: 200,
