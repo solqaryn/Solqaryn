@@ -88,6 +88,21 @@ Cuando una operación modifica inventario/finanzas/documentos relacionados, debe
 - correo: SMTP; PROD autentica Outlook.com mediante OAuth2/Modern Auth y mantiene secretos/tokens fuera del repositorio;
 - enlaces públicos de factura: token seguro, expiración/revocación según implementación vigente.
 
+### Storefront público: read models ligeros
+
+Las lecturas públicas de productos usan una vía de consulta específica, separada del CRUD administrativo:
+
+`TiendaController -> ICatalogoPublicoService -> IProductoCatalogoPublicoRepository -> proyecciones EF/MySQL`
+
+Reglas:
+
+- listado público pagina y filtra server-side; no descarga todas las páginas al navegador;
+- detalle público carga galería/variantes sólo para el producto solicitado;
+- carrito/checkout/cuenta rehidratan únicamente IDs persistidos mediante `POST /tienda/productos/contexto`;
+- el repositorio público proyecta únicamente campos comerciales necesarios y evita `ConIncludes()` del repositorio administrativo;
+- inventario y promociones siguen resolviéndose desde sus autoridades existentes; no se crea una segunda fuente de verdad;
+- no hay migración ni duplicación de datos.
+
 ### Baseline de rendimiento DEV
 
 La observabilidad de rendimiento DEV es first-party y no requiere un proveedor pagado:

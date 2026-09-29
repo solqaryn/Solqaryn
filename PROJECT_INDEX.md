@@ -52,6 +52,8 @@ Controladores, middleware, filtros, configuración HTTP, autenticación/autoriza
 
 Performance DEV: `Observability/RequestPerformanceContext.cs`, `Observability/DbQueryTimingInterceptor.cs` y `Middleware/RequestObservabilityMiddleware.cs`; contrato y procedimiento en `docs/PERFORMANCE_BASELINE_DEV.md`.
 
+Storefront de productos: `TiendaController.cs` expone listado/detalle/contexto; la lógica pública vive en `Application/Services/CatalogoPublicoService.cs`, el contrato en `Application/Interfaces/IProductoCatalogoPublicoRepository.cs` y las proyecciones EF ligeras en `Infrastructure/Repositories/ProductoCatalogoPublicoRepository.cs`.
+
 ### `backend/tests`
 
 Pruebas backend. Ejecutar pruebas dirigidas para cambios localizados y suite completa en cierres/cambios transversales.
@@ -65,6 +67,8 @@ Autenticación, guards, interceptores, modelos y utilidades transversales. El ba
 ### `frontend/src/app/features`
 
 Pantallas/módulos funcionales: productos, variantes, catálogos, compras, ventas, facturas, inventario, finanzas, usuarios, roles, permisos, auditoría, etc.
+
+El storefront VariStoreHN usa `varistorehn.service.ts` para catálogo paginado y `obtenerProductosContexto` para rehidratar únicamente referencias del carrito/cuenta, evitando descargas completas.
 
 ### `frontend/src/app/services`
 

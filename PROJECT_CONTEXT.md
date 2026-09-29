@@ -39,6 +39,7 @@ SOLQARYN es una plataforma empresarial multiempresa.
 - Integraciones vigentes: Cloudinary, QuestPDF y SMTP; DEV y PROD usan Outlook.com con OAuth2/Modern Auth para `solqaryn.platform@outlook.com`.
 - E2E/browser: Playwright/Chromium.
 - Baseline de rendimiento DEV first-party: duración API, cantidad/tiempo de queries MySQL, TTFB/requests/bytes por pantalla, LCP/INP/CLS y tamaños de bundles; no requiere un servicio de observabilidad pagado.
+- Storefront público de productos: read path dedicado con proyecciones ligeras, paginación/filtros server-side y contexto de carrito por IDs; las lecturas públicas ya no requieren materializar el catálogo administrativo completo.
 - La autorización del backend es la autoridad; la UI nunca sustituye controles de seguridad.
 - Tenancy, integridad transaccional y trazabilidad deben preservarse en cambios de negocio.
 
