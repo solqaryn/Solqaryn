@@ -1,3 +1,14 @@
+## 2026-09-30 — Reparto operativo VAEP Javier/Alex y sustitución de Supervisor canónicas
+
+- Workspace ChatGPT Business: `SOLQARYN`, con dos miembros humanos: Javier Mejía y Alex Morales.
+- Javier conserva como canónicas únicamente las cinco Primary `:00/:12/:24/:36/:48`.
+- Alex Morales aporta las cinco Supervisor canónicas `:05/:17/:29/:41/:53` con IDs `6abd62255ae88191a2dba6e1b00d3b4d`, `6abd6235e100819195785fc76a44a8e0`, `6abd6241c3e48191a8856ed7b0f42c5c`, `6abd624e5e108191bef6bb879559328c`, `6abd625b397c8191a49904227946a20f`.
+- Las cinco Supervisor equivalentes de la cuenta de Javier fueron marcadas RETIRADA y permanecen inactivas; no deben reactivarse.
+- Las cinco Primary de Javier fueron repareadas a los IDs Supervisor de Alex y permanecen inactivas.
+- El Google Sheet operativo actualizó `_AUTOMATION_SOURCE`, `AUTOMATIZACIONES`, `TAREAS_PROGRAMADAS` y `TAREAS_DE_SUPERVISION`; readback confirma 5 Primary/Javier + 5 Supervisor/Alex y `0/10` habilitadas.
+- `SOLQARYN - AUTORIDAD OPERATIVA VAEP`, `AGENTS.md`, `docs/VAEP_AUTHORITY.md`, `PROJECT_CONTEXT.md` y el inventario de plataformas fueron reconciliados con el nuevo reparto.
+- No se tocó `main`, PROD, datos productivos, secretos, DNS, certificados ni servicios pagos.
+
 ## 2026-09-30 — Rebase integral del control-plane al Plan Maestro único SOLQARYN
 
 - Se certificó como único roadmap vivo el Google Doc nativo `PLAN MAESTRO SOLQARYN` (ID `1YdQlNJ312HuziyKb9E-GEt55dcgSmuFGgfsHxyzPUaw`), con 354 objetivos continuos `SQ-000..SQ-353`.
@@ -2246,7 +2257,6 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Las 10 automatizaciones permanecen deliberadamente **PAUSADAS (0/10)** por instrucción del propietario. No se ejecutó ninguna activación.
 - Tres duplicados legacy adicionales fueron marcados como `RETIRADA` y permanecen inertes para evitar activación accidental.
 - Sin cambios en `main`, PROD, datos productivos, secretos, DNS, certificados o servicios pagos.
-
 
 ## 2026-09-30 — Canonicalización técnica SOLQARYN
 

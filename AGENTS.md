@@ -47,7 +47,10 @@ Una supervisora que encuentra la primaria trabajando correctamente ejecuta QA/re
 
 ## Equipo
 
-- Javier: propietario y autorización final.
+- Javier Mejía: propietario, autorización final y responsable operativo de las cinco tareas Primary `:00/:12/:24/:36/:48`.
+- Alex Morales: responsable operativo de las cinco tareas Supervisor `:05/:17/:29/:41/:53`.
+- Javier y Alex son los dos miembros humanos del workspace ChatGPT Business `SOLQARYN`.
+- Las conexiones externas utilizadas por VAEP deben apuntar a recursos corporativos SOLQARYN; no se usan cuentas personales como fuente de datos o infraestructura.
 - ChatGPT/VAEP: controller, developer directo, QA, REVIEW_FIRST, integración, CI, certificación, rollup y failover.
 - Otros agentes: sólo dentro del scope y permisos vigentes de SOLQARYN.
 
