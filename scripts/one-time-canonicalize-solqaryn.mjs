@@ -201,8 +201,8 @@ function normalizePublicStorefrontRoutes() {
   for (const file of walk(frontend)) {
     if (!isTextFile(file)) continue;
     mutateTextFile(file, function (input) {
-      const sourceMarker = '__SOLQARYN_STOREFRONT_SOURCE_PATH__/';
-      let value = input.replace(/features\/storefront\//g, 'features/' + sourceMarker);
+      const sourceMarker = '__SOLQARYN_STOREFRONT_SOURCE_PATH__';
+      let value = input.replace(/features\/storefront(?=\/|['\"`])/g, 'features/' + sourceMarker);
       value = value.replace(/\/storefront(?=\/|['"`])/g, '/tienda');
       value = value.replace(/(['"`])storefront(?=['"`])/g, '$1tienda');
       value = value.replace(/(['"`])storefront(?=\/)/g, '$1tienda');
@@ -212,7 +212,7 @@ function normalizePublicStorefrontRoutes() {
       });
       value = value.replace(/STOREFRONT_BASE_PATH\s*=\s*'storefront'/g, "STOREFRONT_BASE_PATH = 'tienda'");
       value = value.replace(/Abrir en Storefront/g, 'Abrir tienda');
-      value = value.split('features/' + sourceMarker).join('features/storefront/');
+      value = value.split('features/' + sourceMarker).join('features/storefront');
       return value;
     });
   }
@@ -224,8 +224,8 @@ function repairStorefrontSourceImports() {
     if (!isTextFile(file)) continue;
     mutateTextFile(file, function (input) {
       return input
-        .replace(/features\/tienda\//g, 'features/storefront/')
-        .replace(/features\\tienda\\/g, 'features\\storefront\\');
+        .replace(/features\/tienda(?=\/|['\"`])/g, 'features/storefront')
+        .replace(/features\\tienda(?=\\|['\"`])/g, 'features\\storefront');
     });
   }
 }
