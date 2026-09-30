@@ -1,0 +1,562 @@
+{
+  "generatedAtUtc": "2026-09-30T00:33:28.694Z",
+  "statsFile": "dist/inventoryapp-frontend/stats.json",
+  "initialRefs": [
+    "styles-TOBEQ5SM.css",
+    "chunk-FBHOMQ5R.js",
+    "chunk-2M43MCBY.js",
+    "chunk-5SR6YZ3B.js",
+    "chunk-AKBG2PPE.js",
+    "chunk-WDXLWDWY.js",
+    "chunk-JAKJGKUX.js",
+    "chunk-APKQO4TZ.js",
+    "chunk-POPTFWPA.js",
+    "chunk-3P5ANWJB.js",
+    "chunk-IHJOUB3D.js",
+    "polyfills-5CFQRCPP.js",
+    "main-PTY4L6WV.js",
+    "chunk-WV2SUSYG.js",
+    "chunk-SAZVZ5LA.js",
+    "chunk-5W4PY2D3.js",
+    "chunk-OSQMNGTH.js",
+    "chunk-NHHJWBDF.js"
+  ],
+  "initialOutputs": [
+    {
+      "outputPath": "chunk-SAZVZ5LA.js",
+      "file": "chunk-SAZVZ5LA.js",
+      "bytes": 178178,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "styles-TOBEQ5SM.css",
+      "file": "styles-TOBEQ5SM.css",
+      "bytes": 123439,
+      "entryPoint": "angular:styles/global:styles"
+    },
+    {
+      "outputPath": "chunk-5W4PY2D3.js",
+      "file": "chunk-5W4PY2D3.js",
+      "bytes": 79562,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "main-PTY4L6WV.js",
+      "file": "main-PTY4L6WV.js",
+      "bytes": 66942,
+      "entryPoint": "src/main.ts"
+    },
+    {
+      "outputPath": "chunk-WV2SUSYG.js",
+      "file": "chunk-WV2SUSYG.js",
+      "bytes": 48265,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "polyfills-5CFQRCPP.js",
+      "file": "polyfills-5CFQRCPP.js",
+      "bytes": 34585,
+      "entryPoint": "angular:polyfills:angular:polyfills"
+    },
+    {
+      "outputPath": "chunk-NHHJWBDF.js",
+      "file": "chunk-NHHJWBDF.js",
+      "bytes": 14607,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-JAKJGKUX.js",
+      "file": "chunk-JAKJGKUX.js",
+      "bytes": 7835,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-WDXLWDWY.js",
+      "file": "chunk-WDXLWDWY.js",
+      "bytes": 6851,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-FBHOMQ5R.js",
+      "file": "chunk-FBHOMQ5R.js",
+      "bytes": 4624,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-2M43MCBY.js",
+      "file": "chunk-2M43MCBY.js",
+      "bytes": 3219,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-POPTFWPA.js",
+      "file": "chunk-POPTFWPA.js",
+      "bytes": 2598,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-AKBG2PPE.js",
+      "file": "chunk-AKBG2PPE.js",
+      "bytes": 2534,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-5SR6YZ3B.js",
+      "file": "chunk-5SR6YZ3B.js",
+      "bytes": 2120,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-3P5ANWJB.js",
+      "file": "chunk-3P5ANWJB.js",
+      "bytes": 1774,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-APKQO4TZ.js",
+      "file": "chunk-APKQO4TZ.js",
+      "bytes": 1371,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-OSQMNGTH.js",
+      "file": "chunk-OSQMNGTH.js",
+      "bytes": 1312,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-IHJOUB3D.js",
+      "file": "chunk-IHJOUB3D.js",
+      "bytes": 1144,
+      "entryPoint": null
+    }
+  ],
+  "initialRawBytesFromStats": 580960,
+  "topInitialPackages": [
+    {
+      "name": "@angular/core",
+      "bytes": 151187
+    },
+    {
+      "name": "(app source)",
+      "bytes": 113116
+    },
+    {
+      "name": "@angular/material",
+      "bytes": 103707
+    },
+    {
+      "name": "@angular/router",
+      "bytes": 78541
+    },
+    {
+      "name": "@angular/common",
+      "bytes": 49438
+    },
+    {
+      "name": "zone.js",
+      "bytes": 34584
+    },
+    {
+      "name": "rxjs",
+      "bytes": 23111
+    },
+    {
+      "name": "@angular/platform-browser",
+      "bytes": 17294
+    },
+    {
+      "name": "tslib",
+      "bytes": 1905
+    }
+  ],
+  "topInitialModules": [
+    {
+      "name": "node_modules/@angular/core/fesm2022/debug_node.mjs",
+      "bytes": 114121
+    },
+    {
+      "name": "node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
+      "bytes": 103707
+    },
+    {
+      "name": "node_modules/@angular/router/fesm2022/router2.mjs",
+      "bytes": 66421
+    },
+    {
+      "name": "node_modules/zone.js/fesm2015/zone.js",
+      "bytes": 34584
+    },
+    {
+      "name": "node_modules/@angular/common/fesm2022/common_module.mjs",
+      "bytes": 23466
+    },
+    {
+      "name": "node_modules/@angular/core/fesm2022/root_effect_scheduler.mjs",
+      "bytes": 18778
+    },
+    {
+      "name": "src/styles.scss",
+      "bytes": 17641
+    },
+    {
+      "name": "node_modules/@angular/common/fesm2022/module.mjs",
+      "bytes": 17361
+    },
+    {
+      "name": "src/app/app.component.ts",
+      "bytes": 15685
+    },
+    {
+      "name": "src/app/app.routes.ts",
+      "bytes": 14368
+    },
+    {
+      "name": "src/app/shared/navigation/app-navigation-menu.component.ts",
+      "bytes": 13179
+    },
+    {
+      "name": "node_modules/@angular/core/fesm2022/core.mjs",
+      "bytes": 12328
+    },
+    {
+      "name": "node_modules/@angular/router/fesm2022/router_module.mjs",
+      "bytes": 12120
+    },
+    {
+      "name": "node_modules/@angular/platform-browser/fesm2022/dom_renderer.mjs",
+      "bytes": 8093
+    },
+    {
+      "name": "src/app/features/varistorehn/varistorehn-seo.service.ts",
+      "bytes": 6652
+    },
+    {
+      "name": "node_modules/@angular/common/fesm2022/location.mjs",
+      "bytes": 5318
+    },
+    {
+      "name": "src/app/features/varistorehn/varistorehn.service.ts",
+      "bytes": 4847
+    },
+    {
+      "name": "src/app/core/performance/performance-baseline.service.ts",
+      "bytes": 4587
+    },
+    {
+      "name": "node_modules/@angular/core/fesm2022/signal.mjs",
+      "bytes": 4052
+    },
+    {
+      "name": "node_modules/@angular/platform-browser/fesm2022/browser.mjs",
+      "bytes": 3198
+    },
+    {
+      "name": "node_modules/@angular/platform-browser/fesm2022/animations/async.mjs",
+      "bytes": 3124
+    },
+    {
+      "name": "src/app/core/auth/session-activity.service.ts",
+      "bytes": 3020
+    },
+    {
+      "name": "node_modules/@angular/platform-browser/fesm2022/platform-browser.mjs",
+      "bytes": 2879
+    },
+    {
+      "name": "src/app/features/compras/facturas-proveedor/facturas-proveedor.routes.ts",
+      "bytes": 2587
+    },
+    {
+      "name": "src/app/core/auth/permisos-runtime.service.ts",
+      "bytes": 2425
+    },
+    {
+      "name": "src/app/core/auth/auth.service.ts",
+      "bytes": 2400
+    },
+    {
+      "name": "src/app/features/varistorehn/varistorehn-identidad.service.ts",
+      "bytes": 2274
+    },
+    {
+      "name": "src/app/features/pedidos-venta/pedidos-venta.routes.ts",
+      "bytes": 2146
+    },
+    {
+      "name": "src/factura-operaciones.scss",
+      "bytes": 2073
+    },
+    {
+      "name": "src/app/features/inventario/ajustes.routes.ts",
+      "bytes": 2015
+    },
+    {
+      "name": "node_modules/rxjs/dist/esm/internal/Subject.js",
+      "bytes": 1976
+    },
+    {
+      "name": "src/app/services/empresa-identidad.service.ts",
+      "bytes": 1923
+    },
+    {
+      "name": "node_modules/tslib/tslib.es6.mjs",
+      "bytes": 1905
+    },
+    {
+      "name": "node_modules/@angular/common/locales/es-HN.js",
+      "bytes": 1819
+    },
+    {
+      "name": "src/app/core/auth/tenant-context.service.ts",
+      "bytes": 1626
+    },
+    {
+      "name": "node_modules/rxjs/dist/esm/internal/Subscriber.js",
+      "bytes": 1571
+    },
+    {
+      "name": "src/app/services/theme-applier.service.ts",
+      "bytes": 1529
+    },
+    {
+      "name": "node_modules/@angular/core/fesm2022/resource.mjs",
+      "bytes": 1481
+    },
+    {
+      "name": "src/app/services/color-contrast.service.ts",
+      "bytes": 1398
+    },
+    {
+      "name": "node_modules/rxjs/dist/esm/internal/Subscription.js",
+      "bytes": 1289
+    }
+  ],
+  "topInitialScriptPackages": [
+    {
+      "name": "@angular/core",
+      "bytes": 151187
+    },
+    {
+      "name": "(app source)",
+      "bytes": 93402
+    },
+    {
+      "name": "@angular/router",
+      "bytes": 78541
+    },
+    {
+      "name": "@angular/common",
+      "bytes": 49438
+    },
+    {
+      "name": "zone.js",
+      "bytes": 34584
+    },
+    {
+      "name": "rxjs",
+      "bytes": 23111
+    },
+    {
+      "name": "@angular/platform-browser",
+      "bytes": 17294
+    },
+    {
+      "name": "tslib",
+      "bytes": 1905
+    }
+  ],
+  "topInitialStylePackages": [
+    {
+      "name": "@angular/material",
+      "bytes": 103707
+    },
+    {
+      "name": "(app source)",
+      "bytes": 19714
+    }
+  ],
+  "largestLazyOutputs": [
+    {
+      "outputPath": "chunk-DJV6Z7LE.js",
+      "file": "chunk-DJV6Z7LE.js",
+      "bytes": 374196,
+      "entryPoint": "node_modules/html5-qrcode/esm/index.js"
+    },
+    {
+      "outputPath": "chunk-LVRX7DU3.js",
+      "file": "chunk-LVRX7DU3.js",
+      "bytes": 119608,
+      "entryPoint": "src/app/features/configuracion/configuracion.component.ts"
+    },
+    {
+      "outputPath": "chunk-BET3BHDT.js",
+      "file": "chunk-BET3BHDT.js",
+      "bytes": 68961,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-NK3TL5VN.js",
+      "file": "chunk-NK3TL5VN.js",
+      "bytes": 68604,
+      "entryPoint": "src/app/features/facturas/factura-view.component.ts"
+    },
+    {
+      "outputPath": "chunk-TSSIUOSO.js",
+      "file": "chunk-TSSIUOSO.js",
+      "bytes": 67780,
+      "entryPoint": "node_modules/@angular/animations/fesm2022/browser.mjs"
+    },
+    {
+      "outputPath": "chunk-ITYZTBFY.js",
+      "file": "chunk-ITYZTBFY.js",
+      "bytes": 61343,
+      "entryPoint": "src/app/features/varistorehn/varistorehn-producto.component.ts"
+    },
+    {
+      "outputPath": "chunk-6OR4QMSI.js",
+      "file": "chunk-6OR4QMSI.js",
+      "bytes": 58181,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-RIP6JFFX.js",
+      "file": "chunk-RIP6JFFX.js",
+      "bytes": 53483,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-UPBSL7LD.js",
+      "file": "chunk-UPBSL7LD.js",
+      "bytes": 51131,
+      "entryPoint": "src/app/features/varistorehn/varistorehn.component.ts"
+    },
+    {
+      "outputPath": "chunk-JSHUMMBC.js",
+      "file": "chunk-JSHUMMBC.js",
+      "bytes": 50927,
+      "entryPoint": "src/app/features/productos/producto-form.component.ts"
+    },
+    {
+      "outputPath": "chunk-L3U6KHHC.js",
+      "file": "chunk-L3U6KHHC.js",
+      "bytes": 49627,
+      "entryPoint": "src/app/features/varistorehn/varistorehn-productos.component.ts"
+    },
+    {
+      "outputPath": "chunk-H37UY7SU.js",
+      "file": "chunk-H37UY7SU.js",
+      "bytes": 47363,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-VZY5SVWR.js",
+      "file": "chunk-VZY5SVWR.js",
+      "bytes": 46890,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-D2RE45DP.js",
+      "file": "chunk-D2RE45DP.js",
+      "bytes": 46653,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-MBPBLOHS.js",
+      "file": "chunk-MBPBLOHS.js",
+      "bytes": 45573,
+      "entryPoint": "src/app/features/cargas-masivas/cargas-masivas.component.ts"
+    },
+    {
+      "outputPath": "chunk-BSHGAX7N.js",
+      "file": "chunk-BSHGAX7N.js",
+      "bytes": 39740,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-EKM2QVDZ.js",
+      "file": "chunk-EKM2QVDZ.js",
+      "bytes": 39400,
+      "entryPoint": "src/app/features/solicitudes-compra/solicitudes-compra-shell.component.ts"
+    },
+    {
+      "outputPath": "chunk-4JWZOQ4E.js",
+      "file": "chunk-4JWZOQ4E.js",
+      "bytes": 39176,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-K2XXLS54.js",
+      "file": "chunk-K2XXLS54.js",
+      "bytes": 37465,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-V2DK3565.js",
+      "file": "chunk-V2DK3565.js",
+      "bytes": 34544,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-SMTARVFE.js",
+      "file": "chunk-SMTARVFE.js",
+      "bytes": 33590,
+      "entryPoint": "src/app/features/compras/devoluciones-proveedor/devoluciones-proveedor.components.ts"
+    },
+    {
+      "outputPath": "chunk-UGCL6G5Y.js",
+      "file": "chunk-UGCL6G5Y.js",
+      "bytes": 32755,
+      "entryPoint": "src/app/features/ventas/venta-form.component.ts"
+    },
+    {
+      "outputPath": "chunk-KU427QUK.js",
+      "file": "chunk-KU427QUK.js",
+      "bytes": 32687,
+      "entryPoint": "src/app/features/productos/producto-variantes.component.ts"
+    },
+    {
+      "outputPath": "chunk-EGE6NZNK.js",
+      "file": "chunk-EGE6NZNK.js",
+      "bytes": 30262,
+      "entryPoint": "src/app/features/compras/compra-form.component.ts"
+    },
+    {
+      "outputPath": "chunk-EKHNEGGU.js",
+      "file": "chunk-EKHNEGGU.js",
+      "bytes": 30254,
+      "entryPoint": "src/app/features/usuarios/usuarios.component.ts"
+    },
+    {
+      "outputPath": "chunk-OTHM35IE.js",
+      "file": "chunk-OTHM35IE.js",
+      "bytes": 29571,
+      "entryPoint": "src/app/features/varistorehn/varistorehn-checkout.component.ts"
+    },
+    {
+      "outputPath": "chunk-3HJ7BFFO.js",
+      "file": "chunk-3HJ7BFFO.js",
+      "bytes": 29074,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-22XXB2BX.js",
+      "file": "chunk-22XXB2BX.js",
+      "bytes": 28666,
+      "entryPoint": "src/app/features/varistorehn/varistorehn-carrito.component.ts"
+    },
+    {
+      "outputPath": "chunk-TT7TPVZH.js",
+      "file": "chunk-TT7TPVZH.js",
+      "bytes": 27980,
+      "entryPoint": "src/app/features/varistorehn/varistorehn-categoria.component.ts"
+    },
+    {
+      "outputPath": "chunk-KXZ5YLEU.js",
+      "file": "chunk-KXZ5YLEU.js",
+      "bytes": 27676,
+      "entryPoint": "src/app/features/productos/productos-list.component.ts"
+    }
+  ],
+  "unresolvedInitialOutputs": []
+}

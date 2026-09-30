@@ -15,6 +15,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, Subscription, map, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { cloudinaryResponsiveSrcset, cloudinaryResponsiveUrl } from '../../shared/cloudinary-image.util';
 import { VaristorehnIdentidadService } from './varistorehn-identidad.service';
 import { construirEnlaceWhatsApp } from '../../core/services/whatsapp-share.service';
 import { mensajeWhatsappCompraDirecta } from './varistorehn-checkout.rules';
@@ -26,6 +27,7 @@ import {
   crearCatalogoEjemplo,
   etiquetaDisponibilidad,
   mapearProducto,
+  mapearProductoResumen,
   precioVenta,
   telefonoWhatsapp
 } from './varistorehn.catalog';
@@ -182,6 +184,7 @@ export class VaristorehnProductoComponent implements OnInit {
 
   private cargaProducto?: Subscription;
   private cargaCatalogo?: Subscription;
+  private cargaRelacionados?: Subscription;
   private cargaCategorias?: Subscription;
   private identidadLista = false;
   private readonly retornoCatalogo = this.leerContextoRetorno();
@@ -369,6 +372,13 @@ export class VaristorehnProductoComponent implements OnInit {
     this.restaurarFocoLightbox = true; this.lightboxAbierto.set(false);
     if (devolverFoco) queueMicrotask(() => this.botonImagenPrincipal?.nativeElement.focus());
   }
+  imagenCloudinary(url: string | null | undefined, width = 800): string {
+    return cloudinaryResponsiveUrl(url, width);
+  }
+  srcsetCloudinary(url: string | null | undefined): string | null {
+    return cloudinaryResponsiveSrcset(url);
+  }
+
   imagenValida(url?: string): boolean { return Boolean(url && !this.imagenesFallidas().has(url)); }
   errorImagen(url: string): void {
     this.imagenesFallidas.update(actual => new Set([...actual, url]));
@@ -414,6 +424,8 @@ export class VaristorehnProductoComponent implements OnInit {
 
   private cargarProducto(): void {
     this.cargaProducto?.unsubscribe();
+    this.cargaRelacionados?.unsubscribe();
+    this.catalogoContexto.set([]);
     this.producto.set(null); this.error.set(''); this.vistaWhatsapp.set(''); this.estado.set('loading');
     this.modeloClave.set(''); this.cantidad.set(0); this.imagenActiva.set(0); this.cerrarLightbox(false);
     const slug = this.slugSolicitado();
@@ -453,6 +465,7 @@ export class VaristorehnProductoComponent implements OnInit {
     }
     this.producto.set(producto);
     this.sincronizarFavorito();
+    this.cargarRelacionados(producto);
     const modelo = producto.modelos.find(item => item.disponible) || producto.modelos[0];
     this.modeloClave.set(modelo?.clave || '');
     this.estado.set('success');
@@ -486,19 +499,50 @@ export class VaristorehnProductoComponent implements OnInit {
 
   private cargarContextoCatalogo(): void {
     this.cargaCatalogo?.unsubscribe();
-    this.catalogoContexto.set([]);
     this.carritoStore.reiniciarContexto();
+    const idsPersistidos = this.carritoStore.productoIdsPersistidos(
+      this.identidad.config().id,
+      this.utilizarDatosBaseDatos()
+    );
     const fuente: Observable<ProductoCatalogoPublico[] | null> = this.utilizarDatosBaseDatos()
-      ? this.servicio.obtenerCatalogo() : of(null);
+      ? this.servicio.obtenerProductosContexto(idsPersistidos)
+      : of(null);
     this.cargaCatalogo = fuente.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: datos => {
         const productos = datos === null ? crearCatalogoEjemplo() : datos.map(mapearProducto);
-        this.catalogoContexto.set(productos);
         const resultado = this.carritoStore.hidratar(productos, this.identidad.config().id, this.utilizarDatosBaseDatos());
         if (resultado.ajustado) this.aviso.set(this.carritoStore.aviso());
         this.reiniciarCantidad();
       },
-      error: () => this.aviso.set('El producto puede consultarse, pero no pudimos actualizar relacionados ni validar el carrito. Tu selección guardada no fue reemplazada.')
+      error: () => this.aviso.set('El producto puede consultarse, pero no pudimos validar el carrito. Tu selección guardada no fue reemplazada.')
+    });
+  }
+
+  private cargarRelacionados(productoActual: ProductoTienda): void {
+    this.cargaRelacionados?.unsubscribe();
+    this.catalogoContexto.set([]);
+
+    if (!this.utilizarDatosBaseDatos()) {
+      this.catalogoContexto.set(crearCatalogoEjemplo());
+      return;
+    }
+    if (productoActual.categoriaId === null) return;
+
+    this.cargaRelacionados = this.servicio.obtenerProductos(1, 5, {
+      categoriaId: productoActual.categoriaId,
+      sortBy: 'Nombre',
+      sortDirection: 'asc'
+    }).pipe(
+      map(res => {
+        if (!res.success || !res.data || !Array.isArray(res.data.items)) {
+          throw new Error('Respuesta de relacionados no válida.');
+        }
+        return res.data.items.map(mapearProductoResumen);
+      }),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
+      next: productos => this.catalogoContexto.set(productos),
+      error: () => this.aviso.set('No pudimos actualizar productos relacionados; el producto actual sigue disponible.')
     });
   }
   private cargarCategorias(): void {

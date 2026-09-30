@@ -85,17 +85,14 @@ PRODUCTION_WRITES=0
 
 La auditoría también confirmó al menos un administrador activo y observó **3** usuarios con rol administrador activo en el conjunto histórico migrado.
 
-## Rollback conservado
+## Rollback histórico retirado
 
-Rollback anterior al cutover:
+Los dos artifacts temporales de rollback/histórico utilizados durante el cutover fueron eliminados de forma controlada después de la aceptación de PROD:
 
-- run: `36298199171`
-- artifact: `solqaryn-prod-empty-rollback-36298199171`
-- artifact id: `10924897018`
-- digest: `sha256:415e31d932437dd73c1491f1516e06da04de7959f1ab654c394bad0462bbda2f`
-- contiene dump cifrado y overlay bootstrap cifrado.
+- run `36298199171` → artifact `10924897018`: eliminado;
+- run `36228394479` → artifact `10901905430`: eliminado.
 
-Conservar hasta que el propietario decida que ya no es necesario para rollback histórico.
+Los workflow runs se conservan únicamente como trazabilidad de ejecución. PROD ya no depende de esos archivos para operar.
 
 ## Resultado
 
@@ -104,3 +101,12 @@ Conservar hasta que el propietario decida que ya no es necesario para rollback h
 `PROD_LEGACY_CLOUDINARY_REFERENCES=0`  
 `PROD_RUNTIME_SMOKE=PASS`  
 `PROD_MIGRATION_STATUS=CLOSED`
+
+## Seguimiento de housekeeping — 2026-09-28
+
+El propietario aceptó PROD y completó el retiro de infraestructura personal legacy de SOLQARYN/VariStoreHN.
+
+- Aiven, Render, Vercel y Cloudinary legacy personales fueron retirados.
+- Los artifacts de rollback/histórico asociados a los runs `36298199171` y `36228394479` fueron eliminados.
+- DEV y PROD fueron revalidados después del retiro y permanecen operativos.
+- No existe dependencia runtime de infraestructura legacy personal.

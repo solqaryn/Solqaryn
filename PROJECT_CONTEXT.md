@@ -38,6 +38,11 @@ SOLQARYN es una plataforma empresarial multiempresa.
 - Seguridad: JWT, BCrypt, RBAC relacional, auditoría, CORS explícito, rate limiting y security headers.
 - Integraciones vigentes: Cloudinary, QuestPDF y SMTP; DEV y PROD usan Outlook.com con OAuth2/Modern Auth para `solqaryn.platform@outlook.com`.
 - E2E/browser: Playwright/Chromium.
+- Baseline de rendimiento DEV first-party: duración API, cantidad/tiempo de queries MySQL, TTFB/requests/bytes por pantalla, LCP/INP/CLS y tamaños de bundles; no requiere un servicio de observabilidad pagado.
+- Storefront público de productos: read path dedicado con proyecciones ligeras, paginación/filtros server-side y contexto de carrito por IDs; `GET /tienda/productos` y destacados usan `TiendaProductoResumenDto` con imagen principal y variantes mínimas, mientras el DTO rico con galería queda reservado al detalle/contexto acotado; las lecturas públicas ya no materializan el catálogo administrativo completo.
+- Bootstrap storefront: `GET /tienda/bootstrap` es la carga inicial canónica y pequeña para identidad pública, WhatsApp, tema, hasta 6 categorías de navegación y 4 destacados; Angular deduplica consumidores concurrentes y reserva las lecturas públicas separadas para recovery o pantallas específicas.
+- Cache storefront: Angular comparte identidad en vuelo y categorías entre rutas; backend usa `IMemoryCache` tenant-aware con invalidación generacional. TTL vigentes: identidad/tema/categorías 5 min, destacados 30 s y listados 15 s. Detalle/contexto/checkout no se cachean. Si Render/API pasa a múltiples instancias simultáneas, esta implementación local debe sustituirse por una cache distribuida con invalidación compartida antes de asumir coherencia cross-instance.
+- Cache HTTP storefront: ASP.NET comprime JSON/text con Brotli/Gzip y usa `no-store` por defecto. Sólo GET públicos allowlisted emiten `Cache-Control` público + ETag/304: identidad/categorías con TTL moderado y SWR, bootstrap corto por contener destacados, productos con TTL corto/must-revalidate. Vercel marca bundles Angular hashados como immutable por un año y permite que rewrites API respeten exclusivamente las políticas cacheables upstream. Sesión, contexto, checkout y administración nunca son cache público.
 - La autorización del backend es la autoridad; la UI nunca sustituye controles de seguridad.
 - Tenancy, integridad transaccional y trazabilidad deben preservarse en cambios de negocio.
 
@@ -53,6 +58,7 @@ Consultar `ARCHITECTURE.md` para cambios estructurales y `PROJECT_INDEX.md` para
 ### Render
 - Servicio DEV: `solqaryn-api-dev`.
 - Servicio PROD: `solqaryn-api-prod`.
+- Estado de compute actual: DEV y PROD están en Render `free`. DEV puede aceptar cold starts para ahorro; PROD no se considera backend comercial `always-on` mientras permanezca Free. Está prohibido usar keep-alive artificial como sustituto de un plan always-on; cualquier upgrade productivo requiere autorización explícita de gasto.
 - Health de plataforma Render: `/health` (liveness rápida). `/health/ready` se conserva para readiness/diagnóstico de dependencias como MySQL, pero no como probe de despliegue.
 - SMTP DEV y PROD: `smtp-mail.outlook.com:587` + STARTTLS + OAuth2/Modern Auth con identidad `solqaryn.platform@outlook.com`.
 - DEV y PROD no provisionan contraseña SMTP ni client secret OAuth2; cada entorno mantiene su propio refresh token en Render.
@@ -60,7 +66,9 @@ Consultar `ARCHITECTURE.md` para cambios estructurales y `PROJECT_INDEX.md` para
 
 ### Vercel
 - Proyecto DEV activo: `solqaryn-dev`.
-- Proyecto PROD corporativo: **pendiente de creación/configuración**. No se reutiliza ningún proyecto personal o legacy.
+- Proyecto PROD corporativo activo: `solqaryn-prod`.
+- PROD fue certificado sobre la rama `main` y permanece operativo mediante el alias administrado `https://solqaryn-prod.vercel.app`.
+- No se reutiliza ningún proyecto personal o legacy.
 
 ### Aiven
 - Proyecto: `solqaryn`.
@@ -70,16 +78,17 @@ Consultar `ARCHITECTURE.md` para cambios estructurales y `PROJECT_INDEX.md` para
 
 ### Cloudflare
 - La cuenta/DNS corporativos pertenecen a SOLQARYN.
-- DEV no depende de un dominio custom mientras use `solqaryn-dev.vercel.app`.
-- La activación DNS de PROD se realiza únicamente cuando el frontend PROD corporativo exista y haya sido certificado.
+- `solqaryn.com` está delegado correctamente a Cloudflare.
+- DEV y PROD continúan usando las URLs administradas actuales mientras el cutover del dominio personalizado permanezca aplazado.
+- El cutover DNS hacia PROD es una decisión deliberadamente diferida y no bloquea el estado productivo certificado.
 
-## 5. Regla de legado y migración histórica
+## 5. Estado de legado y migración histórica
 
-- El único artefacto heredado autorizado para reutilización es el **respaldo verificado de la base histórica de VariStoreHN**.
+- La migración histórica de VariStoreHN hacia PROD ya fue ejecutada y certificada; el respaldo verificado se utilizó como fuente controlada de migración.
 - Ningún deployment, proyecto, servicio, cuenta personal, repositorio, dominio o variable legacy se considera dependencia de SOLQARYN.
-- No se consulta ni se reactiva infraestructura legacy como fallback.
+- La infraestructura legacy retirada no se consulta ni se reactiva como fallback.
 - VariStoreHN permanece únicamente como **primer tenant/empresa cliente** dentro de SOLQARYN.
-- La migración histórica se ejecutará al final, después de certificar DEV y PROD, tomando el respaldo como fuente y cargando los datos al tenant VariStoreHN en la nueva base productiva.
+- El estado productivo vigente se sostiene exclusivamente sobre la infraestructura corporativa certificada de SOLQARYN.
 
 ## 6. Dominios funcionales
 

@@ -59,7 +59,7 @@ for (const required of [
   'this.carritoStore.hidratar(productos',
   'telefonoWhatsapp',
   'crearCatalogoEjemplo',
-  'this.servicio.obtenerCatalogo()',
+  'this.servicio.obtenerProductosContexto(idsPersistidos)',
   'this.servicio.obtenerCategorias()',
   'stockRestante',
   'reiniciarCantidad()',
@@ -123,7 +123,7 @@ expect(!homeHtml.includes('#detalleDialog') && !homeHtml.includes('class="detail
 
 expect(catalog.includes('export function precioVenta'), 'Debe existir una regla única de precio efectivo para detalle y carrito.');
 expect(catalog.includes('precio: precioVenta(producto, modelo)'), 'El carrito debe reconstruir el precio efectivo centralizado, no un precio divergente.');
-expect(cartService.includes('restaurarCarrito') && cartService.includes('referenciasCarrito'), 'El carrito central debe rehidratar el detalle contra la fuente pública sin confiar en precios persistidos.');
+expect(cartService.includes('restaurarCarrito') && cartService.includes('referenciasCarrito') && cartService.includes('productoIdsPersistidos'), 'El carrito central debe rehidratar solo sus productos persistidos contra la fuente pública sin confiar en precios ni catálogo completo.');
 
 expect(/object-fit\s*:\s*contain/.test(productScss), 'Las imágenes deben preservar proporción con object-fit: contain.');
 expect(/touch-action\s*:\s*pan-y/.test(productScss), 'La galería móvil debe permitir swipe horizontal sin romper el scroll vertical.');

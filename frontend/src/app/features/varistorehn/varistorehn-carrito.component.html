@@ -80,7 +80,7 @@
             <article class="cart-item">
               <div class="item-media">
                 @if (imagenValida(item.imagen)) {
-                  <img [src]="item.imagen" [alt]="item.nombre" width="320" height="240" loading="lazy" decoding="async" (error)="errorImagen(item.imagen)">
+                  <img [src]="imagenCloudinary(item.imagen, 320)" [attr.srcset]="srcsetCloudinary(item.imagen)" sizes="112px" [alt]="item.nombre" width="320" height="240" loading="lazy" decoding="async" (error)="errorImagen(item.imagen)">
                 } @else {
                   <app-store-art [tipo]="item.ilustracion" />
                 }

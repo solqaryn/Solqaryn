@@ -142,8 +142,12 @@ ok("forbidOnly: Boolean(process.env['CI'])" in playwright or "forbidOnly: !!proc
 # 33 - performance guardrails that can be proven statically today.
 angular = json.loads(read("frontend/angular.json") or "{}")
 budget_blob = json.dumps(angular)
-ok('"type": "initial"' in budget_blob and '"maximumError": "2mb"' in budget_blob,
-   "ANGULAR_INITIAL_BUNDLE_ERROR_BUDGET_2MB")
+ok(
+    '"type": "initial"' in budget_blob
+    and '"maximumWarning": "650kb"' in budget_blob
+    and '"maximumError": "750kb"' in budget_blob,
+    "ANGULAR_INITIAL_BUNDLE_BUDGET_650KB_WARNING_750KB_ERROR",
+)
 ok('"type": "anyComponentStyle"' in budget_blob and '"maximumError": "32kb"' in budget_blob,
    "ANGULAR_COMPONENT_STYLE_ERROR_BUDGET_32KB")
 ok((ROOT / "backend/src/API/Filters/MedirRendimientoBusquedaFilter.cs").is_file(),

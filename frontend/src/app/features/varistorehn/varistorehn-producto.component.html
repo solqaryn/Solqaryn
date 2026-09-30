@@ -94,7 +94,7 @@
                   [attr.aria-label]="'Ver imagen ' + (indice + 1) + ' de ' + imagenes().length + ' de ' + detalle.nombre"
                   (click)="seleccionarImagen(indice)">
                   @if (imagenValida(imagen)) {
-                    <img [src]="imagen" alt="" width="240" height="180" loading="lazy" decoding="async" (error)="errorImagen(imagen)">
+                    <img [src]="imagenCloudinary(imagen, 320)" [attr.srcset]="srcsetCloudinary(imagen)" sizes="96px" alt="" width="240" height="180" loading="lazy" decoding="async" (error)="errorImagen(imagen)">
                   } @else {
                     <app-store-art [tipo]="detalle.ilustracion || 'paquete'" />
                   }
@@ -116,7 +116,7 @@
                   class="main-image-button"
                   [attr.aria-label]="'Ampliar imagen ' + (imagenActiva() + 1) + ' de ' + imagenes().length + ' de ' + detalle.nombre"
                   (click)="abrirLightbox()">
-                  <img [src]="imagenActual()" [alt]="detalle.nombre + (modelo?.nombre && modelo?.nombre !== 'Modelo general' ? ', ' + modelo?.nombre : '')" width="800" height="600" fetchpriority="high" (error)="errorImagen(imagenActual())">
+                  <img [src]="imagenCloudinary(imagenActual(), 800)" [attr.srcset]="srcsetCloudinary(imagenActual())" sizes="(max-width: 900px) 94vw, 620px" [alt]="detalle.nombre + (modelo?.nombre && modelo?.nombre !== 'Modelo general' ? ', ' + modelo?.nombre : '')" width="800" height="600" decoding="async" fetchpriority="high" (error)="errorImagen(imagenActual())">
                 </button>
               } @else {
                 <div class="image-fallback" aria-label="Imagen del producto no disponible">
@@ -254,7 +254,7 @@
               <article class="related-card">
                 <a class="related-media" [href]="rutaProducto(relacionado)" [attr.aria-label]="'Ver ' + relacionado.nombre">
                   @if (imagenValida(imagenRelacionado(relacionado))) {
-                    <img [src]="imagenRelacionado(relacionado)" [alt]="relacionado.nombre" width="600" height="450" loading="lazy" decoding="async" (error)="errorImagen(imagenRelacionado(relacionado))">
+                    <img [src]="imagenCloudinary(imagenRelacionado(relacionado), 640)" [attr.srcset]="srcsetCloudinary(imagenRelacionado(relacionado))" sizes="(max-width: 720px) 92vw, 280px" [alt]="relacionado.nombre" width="600" height="450" loading="lazy" decoding="async" (error)="errorImagen(imagenRelacionado(relacionado))">
                   } @else {
                     <app-store-art [tipo]="relacionado.ilustracion || 'paquete'" />
                   }
@@ -299,7 +299,7 @@
       @if (producto(); as productoLightbox) {
         <div class="lightbox-stage" (pointerdown)="iniciarSwipe($event)" (pointerup)="finalizarSwipe($event)" (pointercancel)="cancelarSwipe()">
           @if (imagenValida(imagenActual())) {
-            <img [src]="imagenActual()" [alt]="productoLightbox.nombre + ', imagen ampliada ' + (imagenActiva() + 1)" width="1200" height="900" decoding="async" (error)="errorImagen(imagenActual())">
+            <img [src]="imagenCloudinary(imagenActual(), 800)" [attr.srcset]="srcsetCloudinary(imagenActual())" sizes="92vw" [alt]="productoLightbox.nombre + ', imagen ampliada ' + (imagenActiva() + 1)" width="1200" height="900" decoding="async" (error)="errorImagen(imagenActual())">
           }
         </div>
         <div class="lightbox-controls">

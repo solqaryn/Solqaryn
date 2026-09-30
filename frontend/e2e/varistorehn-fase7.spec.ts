@@ -45,6 +45,70 @@ async function activarBaseDatos(page: Page): Promise<void> {
 test.describe('VariStoreHn Fase 7 — home comercial', () => {
   test.describe.configure({ retries: 0 });
 
+  test('bootstrap inicial consolida identidad, tema, categorías y destacados en una sola llamada', async ({ page }) => {
+    const requests = {
+      bootstrap: 0,
+      identidad: 0,
+      whatsapp: 0,
+      tema: 0,
+      categorias: 0,
+      destacados: 0
+    };
+
+    page.on('request', request => {
+      const url = request.url();
+      if (/\/tienda\/bootstrap(?:\?|$)/.test(url)) requests.bootstrap += 1;
+      if (/\/empresa-configuracion\/publica(?:\?|$)/.test(url)) requests.identidad += 1;
+      if (/\/whatsapp\/publico(?:\?|$)/.test(url)) requests.whatsapp += 1;
+      if (/\/tema-visual(?:\?|$)/.test(url)) requests.tema += 1;
+      if (/\/tienda\/categorias(?:\?|$)/.test(url)) requests.categorias += 1;
+      if (/\/tienda\/productos\/destacados(?:\?|$)/.test(url)) requests.destacados += 1;
+    });
+
+    await page.route('**/tienda/bootstrap', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        headers: { 'Access-Control-Allow-Origin': '*' },
+        body: JSON.stringify({
+          success: true,
+          data: {
+            identidad: empresaBase,
+            tema: {
+              colorPrimario: '#8b0000',
+              colorSecundario: '#660000',
+              colorAcento: '#b22222',
+              fondoPrincipal: '#ffffff',
+              fondoTarjetas: '#ffffff',
+              menuLateral: '#8b0000',
+              barraSuperior: '#ffffff',
+              encabezados: '#111111',
+              botonesPrincipales: '#8b0000',
+              textoPrincipal: '#111111',
+              textoSecundario: '#555555',
+              colorExito: '#008000',
+              colorAdvertencia: '#a06000',
+              colorError: '#b00020',
+              colorInformacion: '#005ea8'
+            },
+            categorias: [],
+            destacados: []
+          }
+        })
+      });
+    });
+
+    await abrirHome(page);
+
+    await expect(page.locator('app-varistorehn-header .brand strong')).toContainText('VariStore Home Audit');
+    await expect.poll(() => requests.bootstrap).toBe(1);
+    expect(requests.identidad).toBe(0);
+    expect(requests.whatsapp).toBe(0);
+    expect(requests.tema).toBe(0);
+    expect(requests.categorias).toBe(0);
+    expect(requests.destacados).toBe(0);
+  });
+
   test('demo: portada comercial no duplica catálogo, filtros ni paginación', async ({ page }) => {
     await prepararEmpresa(page);
     await page.setViewportSize({ width: 1366, height: 900 });

@@ -50,6 +50,10 @@ EF Core, `AppDbContext`, repositorios, configuraciones, migraciones, Cloudinary,
 
 Controladores, middleware, filtros, configuración HTTP, autenticación/autorización, DI y arranque. `Program.cs` es el composition root.
 
+Performance DEV: `Observability/RequestPerformanceContext.cs`, `Observability/DbQueryTimingInterceptor.cs` y `Middleware/RequestObservabilityMiddleware.cs`; contrato y procedimiento en `docs/PERFORMANCE_BASELINE_DEV.md`.
+
+Storefront de productos: `TiendaController.cs` expone `bootstrap`, listado/detalle/contexto. La carga inicial vive en `Application/Services/TiendaBootstrapService.cs` + `DTOs/TiendaBootstrapDto.cs`; listados/destacados usan `TiendaProductoResumenDto` + `ProductoCatalogoResumenReadModel.cs`, el detalle/contexto conservan `ProductoCatalogoPublicoDto`; la resolución pública de WhatsApp vive en `Infrastructure/Services/WhatsAppPublicoService.cs`; las proyecciones de catálogo EF viven en `Infrastructure/Repositories/ProductoCatalogoPublicoRepository.cs`. Cache pública: contratos `Application/Interfaces/IPublicStoreCache.cs` + `IPublicStoreTenantKeyProvider.cs`, implementación `Infrastructure/Services/PublicStoreMemoryCache.cs` + `PublicStoreTenantKeyProvider.cs`, invalidación transversal en `AppDbContext.SaveChangesAsync`. Transporte/cache HTTP: `API/Filters/PublicHttpCacheAttribute.cs` clasifica únicamente GET públicos, emite Cache-Control/ETag/304 y `Program.cs` configura Brotli/Gzip + no-store global; `frontend/vercel.json` gobierna immutable de bundles hashados y caching de rewrites API.
+
 ### `backend/tests`
 
 Pruebas backend. Ejecutar pruebas dirigidas para cambios localizados y suite completa en cierres/cambios transversales.
@@ -58,11 +62,13 @@ Pruebas backend. Ejecutar pruebas dirigidas para cambios localizados y suite com
 
 ### `frontend/src/app/core`
 
-Autenticación, guards, interceptores, modelos y utilidades transversales.
+Autenticación, guards, interceptores, modelos y utilidades transversales. El baseline browser DEV vive en `core/performance/performance-baseline.service.ts`.
 
 ### `frontend/src/app/features`
 
 Pantallas/módulos funcionales: productos, variantes, catálogos, compras, ventas, facturas, inventario, finanzas, usuarios, roles, permisos, auditoría, etc.
+
+El storefront VariStoreHN usa `varistorehn.service.ts`: `obtenerBootstrap()` comparte/deduplica la carga inicial, `obtenerCategorias()` comparte la lista entre rutas y `varistorehn-identidad.service.ts` conserva el observable de identidad en vuelo; el catálogo continúa paginado y `obtenerProductosContexto` rehidrata únicamente referencias del carrito/cuenta, evitando descargas completas.
 
 ### `frontend/src/app/services`
 

@@ -1,8 +1,6 @@
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { Component, HostListener, Inject, OnDestroy } from '@angular/core';
 import { RouterOutlet, RouterLink, Router, NavigationEnd } from '@angular/router';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
 import { AuthService } from './core/auth/auth.service';
 import { PermisosRuntimeService } from './core/auth/permisos-runtime.service';
 import { ThemeApplierService } from './services/theme-applier.service';
@@ -12,11 +10,12 @@ import { TenantContextService } from './core/auth/tenant-context.service';
 import { AppNavigationMenuComponent } from './shared/navigation/app-navigation-menu.component';
 import { VaristorehnSeoService } from './features/varistorehn/varistorehn-seo.service';
 import { VaristorehnIdentidadService } from './features/varistorehn/varistorehn-identidad.service';
+import { PerformanceBaselineService } from './core/performance/performance-baseline.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, MatIconModule, MatButtonModule, AppNavigationMenuComponent],
+  imports: [CommonModule, RouterOutlet, RouterLink, AppNavigationMenuComponent],
   template: `
     @if (auth.isAuthenticated()) {
       <a class="skip-link" href="#main-content">Saltar al contenido principal</a>
@@ -29,8 +28,8 @@ import { VaristorehnIdentidadService } from './features/varistorehn/varistorehn-
           <div class="brand">
             <img class="brand-logo" [src]="identidad.logoUrl()" [alt]="identidad.nombreSistema()">
             <span>{{ identidad.nombreSistema() }}</span>
-            <button mat-icon-button class="cerrar-sidebar" (click)="cerrarSidebar(true)" aria-label="Cerrar menú">
-              <mat-icon>close</mat-icon>
+            <button type="button" class="cerrar-sidebar shell-icon-button" (click)="cerrarSidebar(true)" aria-label="Cerrar menú">
+              <span class="material-icons" aria-hidden="true">close</span>
             </button>
           </div>
           <nav aria-label="Navegación principal" (click)="cerrarSidebarEnMovil()">
@@ -41,13 +40,13 @@ import { VaristorehnIdentidadService } from './features/varistorehn/varistorehn-
           <header class="topbar">
             <button
               id="menu-toggle"
-              mat-icon-button
-              class="menu-toggle"
+              type="button"
+              class="menu-toggle shell-icon-button"
               (click)="toggleSidebar()"
               aria-controls="main-sidebar"
               [attr.aria-expanded]="sidebarAbierto"
               [attr.aria-label]="sidebarAbierto ? 'Cerrar menú principal' : 'Abrir menú principal'">
-              <mat-icon>{{ sidebarAbierto ? 'close' : 'menu' }}</mat-icon>
+              <span class="material-icons" aria-hidden="true">{{ sidebarAbierto ? 'close' : 'menu' }}</span>
             </button>
             <span class="header-text">
               @if (identidad.config().encabezadoActivo) {
@@ -59,15 +58,15 @@ import { VaristorehnIdentidadService } from './features/varistorehn/varistorehn-
                 <span class="user-name">{{ auth.nombreCompleto() }}</span>
                 <span class="user-role">{{ auth.rol() }}</span>
               </div>
-              <button mat-icon-button class="profile-button" routerLink="/perfil" aria-label="Abrir mi perfil" title="Mi perfil">
+              <button type="button" class="profile-button shell-icon-button" routerLink="/perfil" aria-label="Abrir mi perfil" title="Mi perfil">
                 @if (auth.fotoPerfilUrl(); as foto) {
                   <img class="user-avatar" [src]="foto" [alt]="'Perfil de ' + (auth.nombreCompleto() || auth.nombreUsuario() || 'usuario')">
                 } @else {
                   <span class="user-initials" aria-hidden="true">{{ inicialesUsuario() }}</span>
                 }
               </button>
-              <button mat-icon-button class="topbar-icon-button" (click)="logout()" aria-label="Cerrar sesión" title="Cerrar sesión">
-                <mat-icon>logout</mat-icon>
+              <button type="button" class="topbar-icon-button shell-icon-button" (click)="logout()" aria-label="Cerrar sesión" title="Cerrar sesión">
+                <span class="material-icons" aria-hidden="true">logout</span>
               </button>
             </div>
           </header>
@@ -106,8 +105,10 @@ export class AppComponent implements OnDestroy {
     private themeApplier: ThemeApplierService,
     private seo: VaristorehnSeoService,
     private tiendaIdentidad: VaristorehnIdentidadService,
+    private performanceBaseline: PerformanceBaselineService,
     @Inject(DOCUMENT) private document: Document
   ) {
+    this.performanceBaseline.start();
     this.aplicarContextoRuta(this.router.url);
     if (this.auth.isAuthenticated()) {
       this.permisosRuntime.cargar().subscribe();
@@ -177,8 +178,9 @@ export class AppComponent implements OnDestroy {
 
   private aplicarContextoRuta(url: string): void {
     if (this.esRutaTienda(url)) {
-      this.themeApplier.aplicarTemaGuardado();
-      this.tiendaIdentidad.cargar().subscribe(() => {
+      this.tiendaIdentidad.cargar().subscribe((bootstrap) => {
+        if (bootstrap) this.themeApplier.aplicar(bootstrap.tema);
+        else this.themeApplier.aplicarTemaGuardado();
         this.seo.aplicarRuta(url, this.tiendaIdentidad.config().nombreComercial || 'Tienda');
       });
       return;

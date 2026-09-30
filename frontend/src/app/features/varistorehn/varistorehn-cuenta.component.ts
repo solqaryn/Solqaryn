@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { forkJoin, map, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { VaristorehnIdentidadService } from './varistorehn-identidad.service';
 import { mapearProducto } from './varistorehn.catalog';
@@ -230,9 +230,19 @@ export class VaristorehnCuentaComponent implements OnInit {
       direcciones: this.cuenta.direcciones(),
       favoritos: this.cuenta.favoritos(),
       pedidos: this.cuenta.pedidos(),
-      notificaciones: this.cuenta.notificaciones(),
-      catalogo: this.tienda.obtenerCatalogo()
-    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      notificaciones: this.cuenta.notificaciones()
+    }).pipe(
+      switchMap(data => {
+        const productoIds = [
+          ...data.favoritos,
+          ...data.pedidos.flatMap(pedido => pedido.lineas.map(linea => linea.productoId))
+        ];
+        return this.tienda.obtenerProductosContexto(productoIds).pipe(
+          map(catalogo => ({ ...data, catalogo }))
+        );
+      }),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
       next: data => {
         this.direcciones.set(data.direcciones);
         this.favoritos.set(data.favoritos);

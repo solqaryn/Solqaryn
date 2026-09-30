@@ -109,7 +109,7 @@
         color var(--motion-fast) var(--ease-standard),
         transform var(--motion-fast) var(--ease-standard);
 
-      mat-icon {
+      .material-icons {
         flex: 0 0 24px;
       }
 
@@ -215,6 +215,25 @@
       overflow-wrap: anywhere;
     }
   }
+}
+
+.shell-icon-button {
+  width: var(--target-min);
+  height: var(--target-min);
+  min-width: var(--target-min);
+  min-height: var(--target-min);
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.shell-icon-button .material-icons {
+  width: 24px;
+  height: 24px;
+  font-size: 24px;
+  line-height: 24px;
 }
 
 .profile-button,

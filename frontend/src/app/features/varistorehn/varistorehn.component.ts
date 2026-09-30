@@ -4,6 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, Subscription, map, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { cloudinaryResponsiveSrcset, cloudinaryResponsiveUrl } from '../../shared/cloudinary-image.util';
 import { VaristorehnIdentidadService } from './varistorehn-identidad.service';
 import { VaristorehnCarritoService } from './varistorehn-carrito.service';
 import { VaristorehnService } from './varistorehn.service';
@@ -14,7 +15,7 @@ import {
   ModeloTienda,
   ProductoTienda,
   crearCatalogoEjemplo,
-  mapearProducto,
+  mapearProductoResumen,
   telefonoWhatsapp
 } from './varistorehn.catalog';
 import { crearCategoriasTiendaEjemplo, mapearCategoriaTienda } from './varistorehn-categorias.catalog';
@@ -31,6 +32,13 @@ import { IconoTiendaComponent, IlustracionTiendaComponent } from './varistorehn.
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class VaristorehnComponent implements OnInit {
+  imagenCloudinary(url: string | null | undefined, width = 800): string {
+    return cloudinaryResponsiveUrl(url, width);
+  }
+  srcsetCloudinary(url: string | null | undefined): string | null {
+    return cloudinaryResponsiveSrcset(url);
+  }
+
   private readonly servicio = inject(VaristorehnService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
@@ -110,9 +118,41 @@ export class VaristorehnComponent implements OnInit {
       return;
     }
 
-    this.identidad.cargar().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
-      this.cargarCategorias();
-      this.cargarDestacados();
+    this.identidad.cargar().pipe(takeUntilDestroyed(this.destroyRef)).subscribe((bootstrap) => {
+      if (!this.utilizarDatosBaseDatos()) {
+        this.categoriasTienda.set(crearCategoriasTiendaEjemplo());
+        this.destacados.set(
+          crearCatalogoEjemplo()
+            .filter(producto => producto.activo && producto.destacado && Boolean(producto.slug))
+            .slice(0, 4)
+        );
+        this.cargandoCategorias.set(false);
+        this.cargandoDestacados.set(false);
+        return;
+      }
+
+      if (!bootstrap) {
+        this.cargarCategorias();
+        this.cargarDestacados();
+        return;
+      }
+
+      try {
+        this.categoriasTienda.set(bootstrap.categorias.map(mapearCategoriaTienda));
+        this.destacados.set(
+          bootstrap.destacados
+            .map(mapearProductoResumen)
+            .filter(producto => producto.activo && producto.destacado && Boolean(producto.slug))
+            .slice(0, 4)
+        );
+        this.cargandoCategorias.set(false);
+        this.cargandoDestacados.set(false);
+      } catch {
+        this.errorCategorias.set('La tienda devolvió categorías con un formato no válido.');
+        this.errorDestacados.set('La tienda devolvió destacados con un formato no válido.');
+        this.cargandoCategorias.set(false);
+        this.cargandoDestacados.set(false);
+      }
     });
   }
 
@@ -145,7 +185,7 @@ export class VaristorehnComponent implements OnInit {
     this.destacados.set([]);
 
     const fuente: Observable<ProductoTienda[]> = this.utilizarDatosBaseDatos()
-      ? this.servicio.obtenerDestacados(4).pipe(map(productos => productos.map(mapearProducto)))
+      ? this.servicio.obtenerDestacados(4).pipe(map(productos => productos.map(mapearProductoResumen)))
       : of(
           crearCatalogoEjemplo()
             .filter(producto => producto.activo && producto.destacado && Boolean(producto.slug))

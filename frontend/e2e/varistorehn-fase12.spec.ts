@@ -117,6 +117,17 @@ async function prepararBase(page: Page): Promise<void> {
     body: JSON.stringify({ success: true, data: [producto] })
   }));
 
+  await page.route('**/tienda/productos/contexto', route => {
+    const body = route.request().postDataJSON() as { productoIds?: number[] } | null;
+    const ids = new Set(Array.isArray(body?.productoIds) ? body!.productoIds : []);
+    return route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      headers: { 'Access-Control-Allow-Origin': '*' },
+      body: JSON.stringify({ success: true, data: ids.has(producto.id) ? [producto] : [] })
+    });
+  });
+
   await page.route('**/tienda/categorias', route => route.fulfill({
     status: 200,
     contentType: 'application/json',

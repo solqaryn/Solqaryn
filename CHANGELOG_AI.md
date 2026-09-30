@@ -1,3 +1,188 @@
+## 2026-09-29 — Punto 10: Render Free y ruta comercial
+
+- Readback vivo: DEV y PROD continúan en Render `free`; no se compró ni activó ningún plan.
+- Auditoría del repo: no existen keep-alives, UptimeRobot ni cron/pings públicos para mantener Render despierto; los `curl /health` existentes son sólo CI local.
+- Añadida guarda `scripts/validate-render-free-policy.mjs` al workflow `SOLQARYN Project Scope Lock` para impedir futuros pings artificiales a `*.onrender.com`.
+- Logs DEV demuestran cold start: bootstrap 3371.5 ms con sólo 130.6 ms DB y 2608.6 ms con 89.1 ms DB; después 13.5 ms y 1.7 ms con 0 queries.
+- DEV puede permanecer Free aceptando warm-up; PROD no se declara always-on mientras siga Free.
+- El tamaño de un futuro plan always-on se decidirá por métricas; no hay evidencia actual que justifique CPU/RAM grande.
+- Sin compras, upgrades, cambios Aiven, datos, secretos, `main` o tráfico PROD.
+- Evidencia: `docs/evidencias/DEV_ANALISIS_PUNTO_10_RENDER_FREE_ALWAYS_ON_2026-09-29.md`.
+
+## 2026-09-29 — Punto 9: Aiven/topología evaluados después de reducir queries
+
+- La decisión se tomó después de optimizar el read path: listado público en 5 queries por miss y hits de cache en 0 queries.
+- Pasadas calientes DEV observadas: 216.5–254.1 ms total con 107.5–112.3 ms DB.
+- Readback vivo: único workspace Render `SOLQARYN`; DEV `oregon/free/dev` y PROD `virginia/free/main`; Aiven permanece `do-sfo`.
+- Logs DEV recientes reconfirman productos en 5 queries y ~207–257 ms calientes, con hits de cache en 0 queries.
+- Render no expuso series HTTP de latencia/request-count en la ventana consultada, por lo que la distancia PROD Virginia ↔ San Francisco queda como riesgo no cuantificado, no como fallo demostrado.
+- DEV se mantiene en Oregon; no existe evidencia que justifique mover Aiven o DEV y no se ejecutó ningún cambio productivo.
+- Si una medición futura confirma penalización material, la vía definida es backend PROD oeste en blue/green, smoke/read-only, comparación causal y cutover únicamente con autorización explícita.
+- Sin compras, upgrades, migraciones, cambios de datos, secretos, `main`, tráfico PROD ni cambios Aiven.
+- Evidencia: `docs/evidencias/DEV_ANALISIS_PUNTO_9_AIVEN_TOPOLOGIA_2026-09-29.md`.
+
+## 2026-09-29 — Punto 8: Angular medido y adelgazado
+
+- Añadido build productivo con `stats.json`, baseline raw/gzip/Brotli y desglose por paquete/módulo.
+- Baseline inicial real Angular CLI: 730.17 kB raw / 171.55 kB transfer estimado.
+- El shell raíz dejó de importar Material Button/Icon; la navegación conserva iconos con la fuente ya existente y botones nativos accesibles.
+- `provideAnimations()` pasó a `provideAnimationsAsync()`; `@angular/animations` (~62.7 kB antes) queda fuera del grafo inicial.
+- Portada VariStoreHN: contenido bajo el fold usa `@defer (on idle)`; catálogo, detalle y categorías usan preload selectivo sólo tras estabilidad. `PreloadAllModules` permanece prohibido.
+- Resultado causal: 580.96 kB raw / 137.46 kB transfer estimado; reducción de 20.4% raw y 19.9% transfer. `main` baja de 126.32 a 66.94 kB (-47.0%).
+- Budget `initial` endurecido de 1 MiB/2 MiB a 650 kB warning / 750 kB error y protegido por `validate-angular-bundle-policy.mjs`.
+- Workflow post-optimización `36650833149`: SUCCESS.
+- No se compró ningún servicio; sin DB, secretos, `main` ni PROD.
+- Evidencia: `docs/evidencias/DEV_CERTIFICACION_PUNTO_8_ANGULAR_BUNDLE_2026-09-29.md`.
+
+## 2026-09-29 — Punto 7 implementado: Cloudinary delivery responsive
+
+- Añadido helper central de delivery Cloudinary con `f_auto,q_auto,c_limit` y variantes 320/480/640/800.
+- `app-producto-imagen` y el storefront público usan `srcset`/`sizes`, dimensiones explícitas, lazy/async fuera del viewport y prioridad alta sólo para la imagen LCP de cada vista.
+- Cobertura storefront: home, catálogo, categoría, detalle, miniaturas, relacionados, carrito y lightbox.
+- El backend ya cumplía el contrato ligero: listados/destacados retornan `TiendaProductoResumenDto` con `ImagenPrincipalUrl`; las galerías completas quedan reservadas al detalle.
+- Añadida guarda `validate-cloudinary-responsive.mjs` al lint canónico.
+- Sin migración de Cloudinary, sin cambios de uploads/assets/credenciales, sin DB, secretos, `main`, PROD ni servicios pagos.
+- Evidencia: `docs/evidencias/DEV_PUNTO_7_CLOUDINARY_DELIVERY_RESPONSIVE_2026-09-29.md`.
+- Validación runtime aún no se declara LISTO: Vercel reporta `build-rate-limit` y el entorno local de ejecución no pudo clonar GitHub por ausencia de DNS. No se realizará upgrade ni compra para resolverlo.
+
+## 2026-09-29 — Punto 6 certificado: cache HTTP + ETag + compresión
+
+- Certificación DEV cerrada en `docs/evidencias/DEV_CERTIFICACION_PUNTO_6_HTTP_CACHE_ETAG_COMPRESION_2026-09-29.md`.
+- Backend: Response Compression con Brotli/Gzip sobre HTTPS para JSON/text, sin servicio externo.
+- Seguridad: `private, no-store, max-age=0` es el default de toda respuesta API; sólo GET públicos explícitos del storefront pueden sobrescribirlo, y cualquier request autenticado/Authorization vuelve a `no-store`.
+- `PublicHttpCacheAttribute` emite perfiles diferenciados, ETag débil SHA-256, `Vary: Accept-Encoding` y 304 ante `If-None-Match`.
+- Identidad/tema/WhatsApp/categorías usan TTL moderado + SWR; bootstrap usa TTL corto por contener destacados; productos usan TTL corto + must-revalidate.
+- Contexto de carrito, checkout, endpoints autenticados y administración permanecen fuera de cache público.
+- Vercel: bundles Angular hashados reciben `public, max-age=31536000, immutable`; rewrites `/api/*` habilitan caching para respetar exclusivamente las políticas upstream.
+- Guardas en `validate-http-cache-contract.mjs` y pruebas backend verifican ETag/304, no-store de errores/autenticación y exclusión de rutas sensibles.
+- Scope Lock + VariStoreHn Fases 1–7: **SUCCESS** sobre el HEAD exacto `6b364c7c3e1fd24374fbc02cface54ad3f977bee`.
+- PR `#3481` integrada en `dev` como `f3d1119133c1991b742575f8a675c9f012b9b42e`; el fallo intermedio de pruebas fue sólo un harness MVC sin `RouteData` y quedó corregido/revalidado.
+- Runtime DEV certificado: Render `dep-dau37vvlot8c739g9s6g` está `live`; Vercel `dpl_E1h8BhRAVcE97JcnKJjMfcozWjB3` está `READY` y sirve `solqaryn-dev.vercel.app`; el workflow canónico `36638217740` pasó ETag/304, Brotli, Gzip y no-store.
+- CDN DEV verificado: bundles hashados `immutable` por un año y `/api/tienda/bootstrap` conserva Cache-Control, ETag, Brotli y `Vary: Accept-Encoding`.
+- Sin migraciones, datos, secretos, `main`, entorno PROD ni servicios pagos. **Punto 6 LISTO en DEV.**
+
+## 2026-09-29 — Punto 5 certificado: cache público tenant-aware en dos niveles
+
+- Certificación DEV publicada en `docs/evidencias/DEV_CERTIFICACION_PUNTO_5_CACHE_DOS_NIVELES_2026-09-29.md`.
+- Angular comparte identidad en vuelo y categorías entre rutas con replay; backend usa `IMemoryCache` tenant-aware con lock por key e invalidación generacional.
+- TTL: identidad/tema/categorías 5 min; destacados 30 s; listados 15 s. Detalle/contexto/checkout permanecen fuera de cache.
+- Scope Lock y regresiones VariStoreHn Fases 1–7: SUCCESS sobre el HEAD final de la PR.
+- Render DEV desplegó `10f77f08226bd97d966f20fb53ed8b56022d2fb6` y quedó `live`.
+- Runtime: bootstrap hit observado hasta **1.0 ms / 0 queries**; listado hit **1.3–2.3 ms / 0 queries**; categorías compartidas **0.8 ms / 0 queries**.
+- Separación de parámetros comprobada: `pageSize=24` y `pageSize=12` generan misses independientes y cada repetición posterior cae a 0 queries.
+- Vercel preview `dpl_DoZuHfXdPM91YEbyFaVLJopSeqns` validó el preview runtime-equivalente y luego `dpl_J5KYkQ7FmVs81pMBQsvzsXhw5H7r` quedó READY como deployment canónico de `solqaryn-dev.vercel.app`, sin upgrade ni pago.
+- Sin migraciones, datos productivos, cambios de RBAC/tenancy, secretos, PROD, `main` ni servicios pagos.
+- Punto 5: **LISTO técnicamente en DEV**; no requiere compra de servicios.
+
+## 2026-09-29 — Punto 4 certificado: bootstrap único del storefront
+
+- Certificación DEV publicada en `docs/evidencias/DEV_CERTIFICACION_PUNTO_4_BOOTSTRAP_STOREFRONT_2026-09-29.md`.
+- `GET /tienda/bootstrap` consolida identidad pública mínima, WhatsApp público, tema, hasta 6 categorías de navegación y 4 destacados ligeros.
+- Angular comparte una única carga inicial con `shareReplay`; la prueba Playwright exige 1 request bootstrap y 0 requests iniciales separados a identidad, WhatsApp, tema, categorías y destacados.
+- Scope Lock y regresiones VariStoreHn Fases 1–7: SUCCESS.
+- Render DEV desplegó el functional HEAD `3ad6450e037466e78c25aa07f37ff4e77e5ec109` y quedó `live`.
+- Vercel `solqaryn-dev` desplegó el mismo functional HEAD y quedó `READY` sin upgrade; el rate limit temporal no bloqueó el merge final.
+- Bootstrap runtime: 5 queries internas; pasadas calientes estables observadas de 215.0–332.0 ms, con picos 543.8–836.1 ms asociados a mayor tiempo DB/infraestructura gratuita.
+- Sin migraciones, escrituras de datos de negocio, cambios de RBAC/tenancy, secretos, PROD, `main` ni servicios pagos.
+- Punto 4: **LISTO en DEV**; no requiere acción manual del propietario.
+
+## 2026-09-29 — Punto 3 certificado: read models públicos ligeros
+
+- Certificación DEV publicada en `docs/evidencias/DEV_CERTIFICACION_PUNTO_3_READ_MODELS_PUBLICOS_LIGEROS_2026-09-29.md`.
+- Listados/destacados usan `TiendaProductoResumenDto` + `ProductoCatalogoResumenReadModel`; detalle conserva el contrato rico con galería completa.
+- `TiendaController` exige el read path público dedicado y ya no puede caer al repositorio administrativo ni a un mapper público legacy.
+- Render DEV desplegó el functional HEAD `3d2af21c83403fd7f4fd4f3039a26058be64bf54` y quedó `live`.
+- Runtime real confirmó que el listado no devuelve galerías y que `/tienda/productos/{slug}` sí devuelve la galería rica.
+- Pasadas calientes posteriores: 216.5–254.1 ms con 5 queries, dentro del target inicial <=500 ms y una query menos que el read path previo.
+- Vercel alcanzó el límite de builds del plan en commits posteriores; la equivalencia Angular quedó demostrada con preview READY previo y no se compró ni cambió ningún plan.
+- Sin migraciones, datos escritos, RBAC/tenancy, secretos, PROD o `main`.
+- Punto 3: **LISTO en DEV**; no requiere acción manual del propietario.
+
+## 2026-09-29 — Punto 3: read models públicos ligeros
+
+- Listados y destacados del storefront usan `TiendaProductoResumenDto` y `ProductoCatalogoResumenReadModel`, separados del DTO/read model rico de detalle.
+- La proyección paginada elimina la query intermedia de IDs y no materializa galerías de variantes, color, talla ni descripción completa; conserva sólo los datos necesarios para tarjetas, selector de variante, precio/oferta y disponibilidad.
+- `/tienda/productos/{slug}` conserva la galería y detalle completo; carrito/cuenta siguen usando contexto por IDs y no se amplía su alcance.
+- Angular usa `mapearProductoResumen()` en home, catálogo, categoría y relacionados; el mapper rico queda para detalle/contexto.
+- Sin migraciones, escrituras de datos, cambios de RBAC/tenancy, secretos, PROD, `main` ni servicios pagos. La certificación runtime DEV se registra después del deploy causal.
+
+## 2026-09-29 — Punto 2 certificado: catálogo público sin descarga completa
+
+- Certificación DEV publicada en `docs/evidencias/DEV_CERTIFICACION_PUNTO_2_CATALOGO_ACOTADO_2026-09-29.md`.
+- El storefront ya no expone ni consume `obtenerCatalogo()`; catálogo, categoría, detalle, carrito, checkout y cuenta usan paginación/filtros server-side o contexto acotado por IDs.
+- Render DEV y Vercel DEV verificaron el HEAD funcional `ff8743aa14ef018450ebacafb74272076e6ab269` como `live`/`READY`.
+- Baseline de `GET /tienda/productos`: 2912.0 ms antes; pasadas calientes posteriores de 264.9–497.2 ms en la muestra certificada, con reducción aproximada de 83%–91%.
+- Sin migraciones, datos escritos, cambios de RBAC/tenancy, secretos, PROD, `main` ni servicios pagos.
+- Punto 2: **LISTO en DEV**; no requiere acción manual del propietario.
+
+## 2026-09-29 — Catálogo remoto distingue vacío real de filtros sin coincidencias
+
+- El catálogo paginado server-side ya no confunde una respuesta de cero resultados causada por filtros con un catálogo público realmente vacío.
+- Con filtros activos se conserva el estado “No encontramos coincidencias” y la acción “Limpiar filtros”; sin filtros y sin productos se mantiene el empty state real.
+- Corrección causal de la regresión Fase 8 detectada tras reemplazar la descarga completa del catálogo.
+- Sin cambios de backend, datos, PROD, RBAC, tenancy ni servicios pagos.
+
+## 2026-09-29 — Regresiones E2E alineadas con contexto reducido del carrito
+
+- Las regresiones públicas Fases 4/5/6/9/12 mockean `POST /tienda/productos/contexto` cuando usan catálogo real.
+- Se conserva la prueba de rehidratación segura tras reload sin volver a depender de descargar el catálogo completo.
+- El cambio es de QA; no altera lógica de negocio, datos, PROD ni contratos públicos de runtime.
+
+## 2026-09-29 — Rendimiento storefront: read models y lecturas acotadas
+
+- Se añadió un read path público ligero para SOLQARYN/VariStoreHN, separado de `ProductoRepository.ConIncludes()`.
+- Listado: paginación, búsqueda, categoría, disponibilidad, rango de precio y orden se envían al backend; el filtro de ofertas evalúa candidatos ligeros server-side y devuelve sólo la página solicitada.
+- Detalle: carga únicamente el producto solicitado con su galería/variantes.
+- Carrito, checkout, categorías y cuenta: rehidratan sólo los productos cuyos IDs están persistidos o referenciados; no descargan el catálogo completo.
+- Categoría y relacionados: consultan páginas pequeñas por `categoriaId`.
+- Se actualizaron gates estáticos del storefront para prohibir la reintroducción de `obtenerCatalogo()`.
+- Sin migraciones, sin datos escritos, sin cambio de RBAC/tenancy, sin secretos, sin PROD y sin servicios pagos.
+- Medición comparativa DEV queda pendiente del deploy exact-head de este changeset.
+
+## 2026-09-29 — Primera captura real del baseline DEV
+
+- Render DEV live sobre `02ec7994430812543e43371387318cfa9822e7dd` confirmó la instrumentación API/DB.
+- Identidad caliente observada en 120.0–182.9 ms y categorías calientes en 44.7–184.9 ms: ambas dentro del target inicial <=300 ms.
+- `GET /tienda/productos` observado en 2912.0 ms con 7 queries y 210.4 ms acumulados de DB: falla el target <=500 ms y muestra que la mayor parte del tiempo está fuera de ejecución SQL medida.
+- Build Angular exact-head: 724.32 kB raw / 169.88 kB estimated transfer inicial; cumple el warning vigente de 1 MiB.
+- LCP/INP/CLS y requests/bytes por pantalla quedan instrumentados y requieren únicamente captura real de navegador DEV; no se compró ni contrató ningún servicio.
+
+## 2026-09-29 — Baseline browser DEV endurecido para Render Free
+
+- El capturador frontend conserva una muestra rápida a 3 s y añade una muestra `settled` a 10 s para incluir requests lentas que todavía estén en vuelo.
+- La primera navegación mide recursos desde el inicio del documento, evitando subcontar recursos iniciales anteriores al bootstrap Angular.
+- Alcance exclusivo DEV/local; PROD, datos, secretos, RBAC, tenancy y lógica de negocio permanecen sin cambios.
+
+## 2026-09-29 — Recuperación causal responsive durante baseline DEV
+
+- Las regresiones Fase 10/11/12 detectaron que una tablet táctil con viewport ancho recibía el header de escritorio aunque el catálogo permanecía en layout táctil.
+- Se alineó el breakpoint del header con la política mobile-first ya usada por el catálogo: el layout de escritorio requiere además `(hover: hover) and (pointer: fine)`.
+- Cambio acotado a CSS responsive; no modifica negocio, datos, backend, PROD, `main` ni la instrumentación del baseline.
+
+## 2026-09-28 — Baseline de rendimiento DEV sin servicios pagados
+
+- Se instrumentó DEV para registrar duración total API, cantidad y tiempo de queries MySQL por request y correlación `Server-Timing`, sin registrar SQL, parámetros, PII ni secretos.
+- Angular DEV captura TTFB, requests/bytes por pantalla, LCP/INP/CLS y mantiene las muestras en `window.__SOLQARYN_PERF_BASELINE__`; no envía telemetría a terceros.
+- Se añadió `npm run perf:bundle-baseline` para medir bundle inicial y chunks en raw/gzip/Brotli.
+- Targets iniciales: API pública caliente <=500 ms; identidad/categorías calientes <=300 ms; LCP <=2.5 s; INP <=200 ms; CLS <=0.10.
+- La instrumentación queda habilitada por `appsettings.Development.json`; PROD, `main`, datos, secretos e infraestructura productiva no se modifican.
+
+## 2026-09-28 — Contexto canónico reconciliado con cierre PROD
+
+- `PROJECT_CONTEXT.md` deja de marcar Vercel PROD como pendiente: `solqaryn-prod` ya está activo y certificado sobre `main`.
+- El contexto canónico registra que la migración histórica de VariStoreHN hacia PROD ya fue ejecutada y certificada.
+- Cloudflare queda descrito en su estado real: `solqaryn.com` delegado, con cutover del dominio personalizado deliberadamente aplazado y no bloqueante.
+- No hubo cambios de código, datos, secretos, runtime ni infraestructura; la corrección es exclusivamente documental.
+- `docs/DETALLES_PENDIENTES.md` permanece sin cambios y conserva únicamente los tres aplazamientos deliberados vigentes.
+
+## 2026-09-27 — Retiro de repositorio personal legacy y deudas cerradas
+
+- El repositorio personal privado `jmejia31/VariStorehn` fue eliminado por el propietario y la API de GitHub confirma `404 Not Found`.
+- El repositorio corporativo vigente continúa siendo `solqaryn/Solqaryn`.
+- Las ramas temporales de migración/auditoría ya fueron retiradas; permanecen únicamente `main` y `dev`.
+- `solqaryn-prod` en Vercel ya existe y la certificación final del frontend PROD fue cerrada; por ello se retiró ese ítem de `docs/DETALLES_PENDIENTES.md`.
+- Se eliminó del documento de pendientes la deuda de retiro de recursos GitHub legacy, ya que dejó de ser pendiente.
+
 ## 2026-09-26 — Identidad SOLQARYN y legado bloqueados
 
 - Autoridad operativa fijada en `SOLQARYN / solqaryn/Solqaryn / dev`.
@@ -1935,6 +2120,27 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - `docs/DETALLES_PENDIENTES.md` deja de considerar la migración histórica como pendiente.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO — cierre operativo de migración y limpieza de tooling temporal; se conserva la arquitectura vigente.
+
+## 2026-09-27 — SMTP PROD queda aplazado como no bloqueante
+
+- Revalidado `solqaryn-api-prod` en Render: servicio activo sobre plan Free.
+- La evidencia vigente permanece: OAuth2/refresh token certificado; Microsoft entrega access token; el transporte SMTP a `smtp-mail.outlook.com:587` termina en `SMTP_TIMEOUT` antes de autenticación.
+- Se formaliza el estado operativo como **APLAZADO / NO BLOQUEANTE** y sin acción actual; se retomará únicamente al habilitar conectividad SMTP suficiente o adoptar otra arquitectura de correo.
+- No se modifica runtime, secretos, base de datos ni configuración productiva.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+## 2026-09-27 — Dominio personalizado queda aplazado como no bloqueante
+
+- Se formaliza en `docs/DETALLES_PENDIENTES.md` que el cutover de `solqaryn.com` permanece **APLAZADO / NO BLOQUEANTE**.
+- Cloudflare y la delegación del dominio ya estaban certificados; no se ejecuta todavía asignación del dominio hacia Vercel PROD ni backend PROD.
+- DEV y PROD continúan operando con las URLs administradas actuales de Vercel y Render.
+- Se documenta explícitamente que no existe acción actual y que el corte DNS sólo se retomará con autorización expresa del propietario, incluyendo validación de DNS, TLS, CORS, redirects, smoke E2E y rollback.
+- Se normaliza también SMTP DEV como **APLAZADO / NO BLOQUEANTE**, alineado con la decisión vigente de mantener Render Free.
+- No se modifica DNS, Cloudflare, Vercel, Render, certificados, secretos ni runtime.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-09-27 — Reconciliación de stock PROD y visibilidad WhatsApp storefront
 
 - Diagnosticado PROD: 73 variantes activas y 101 unidades legacy en `ProductoVariantes`, pero 0 filas en `ExistenciasVariante`; el catálogo público fallaba cerrado y mostraba stock 0.
@@ -1947,3 +2153,69 @@ MAPA_ARQUITECTURA: SIN_CAMBIO — cierre operativo de migración y limpieza de t
 - Retirados los workflows/checkpoints temporales de diagnóstico y reconciliación una vez completados.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO — corrección de datos productivos con guardas y ajuste UI responsive; sin cambio de contratos ni esquema.
+
+## 2026-09-28 — Autorizado retiro controlado de infraestructura personal legacy
+
+- Revalidado el runtime corporativo antes del retiro: Vercel expone `solqaryn-dev` y `solqaryn-prod`; Render expone `solqaryn-api-dev` y `solqaryn-api-prod`; DEV y PROD responden readiness con base conectada y PROD sirve el catálogo migrado.
+- El rollback cifrado pre-cutover del destino PROD, artifact `10924897018`, queda autorizado para eliminación controlada o expiración natural tras la aceptación de PROD.
+- Se conserva el backup histórico cifrado de la fuente legacy, artifact `10901905430`, con restore verificado y expiración 2026-12-25; este artifact corporativo no depende de la cuenta personal y permanece como copia independiente durante el retiro.
+- El propietario autoriza eliminar únicamente recursos SOLQARYN/VariStoreHN que permanezcan en cuentas personales históricas de infraestructura; proyectos personales ajenos permanecen fuera de alcance.
+- El cierre definitivo del housekeeping queda condicionado a un postcheck después de la eliminación manual.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+## 2026-09-28 — Postcheck del retiro de infraestructura personal legacy
+
+- El propietario confirmó la eliminación de los recursos personales legacy de SOLQARYN/VariStoreHN en Aiven, Render, Vercel y Cloudinary.
+- Los endpoints Render legacy `solqaryn-api-desarrollo.onrender.com` y `solqaryn-api.onrender.com` y el alias Vercel legacy `varistorehn.vercel.app` responden HTTP 404.
+- Vercel corporativo conserva únicamente `solqaryn-dev` y `solqaryn-prod`; Render corporativo conserva únicamente `solqaryn-api-dev` y `solqaryn-api-prod`.
+- DEV y PROD responden readiness con base conectada; PROD sirve 73 productos y medios desde `riyrzmob/solqaryn_prod`.
+- Los logs corporativos del 2026-09-28 no muestran referencias recientes a `defaultdb`, `varistorehn_desarrollo`, `vyijnqzq` ni a los hosts Render legacy inspeccionados.
+- El artifact pre-cutover `10924897018` todavía existe y no está expirado; es el único housekeeping restante para cierre formal inmediato. El backup histórico `10901905430` también existe y se conserva deliberadamente.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+## 2026-09-28 — Cierre definitivo del housekeeping de rollback/histórico
+
+- Verificados por API los workflow runs `36298199171` y `36228394479`: ambos devuelven `artifacts: []`.
+- Eliminados los artifacts `10924897018` (`solqaryn-prod-empty-rollback-36298199171`) y `10901905430` (`solqaryn-legacy-prod-defaultdb-backup-36228394479`).
+- Se conservan los workflow runs únicamente como evidencia de ejecución; ya no contienen archivos de backup descargables.
+- El postcheck previo permanece válido: infraestructura personal legacy retirada y runtimes corporativos DEV/PROD operativos.
+- `docs/DETALLES_PENDIENTES.md` marca este housekeeping como **CERRADO — POSTCHECK PASS**.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+## 2026-09-28 — Preparada limpieza de Skills cacheadas de ChatGPT
+
+- Confirmado que la biblioteca instalada de ChatGPT mantenía una copia SOLQARYN con identidad legacy y una segunda skill correspondiente al proyecto retirado.
+- Confirmado que la fuente canonica del repositorio en `dev` es `SOLQARYN / solqaryn/Solqaryn / dev`.
+- Preparado y validado un `skill.zip` limpio desde `.agents/skills/solqaryn-project-governance`; la validacion no detecta referencias legacy.
+- Queda unicamente la accion manual de biblioteca: borrar ambas skills instaladas obsoletas y reinstalar la version canonica; despues se debe revalidar el registro de skills disponible.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+## 2026-09-28 — Cierre de limpieza de Skills legacy de ChatGPT
+
+- Verificada la biblioteca instalada después de la limpieza manual.
+- La skill correspondiente al proyecto retirado ya no está presente.
+- `skills://solqaryn-project-governance` quedó reinstalada con identidad canónica `SOLQARYN / solqaryn/Solqaryn / dev`.
+- La Skill instalada declara `LOCAL_SKILL_COUNT=1` y ya no contiene identidad, repositorio ni rama legacy del proyecto retirado.
+- `COHPUCP Engineering Governance` y `skill-creator` se conservan porque no son residuos de SOLQARYN.
+- `docs/DETALLES_PENDIENTES.md` marca este punto como **CERRADO — POSTCHECK PASS**.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+## 2026-09-28 — Certificación final PROD con frontend y depuración de pendientes
+
+- Revalidado Vercel corporativo: existen `solqaryn-dev` y `solqaryn-prod`; el deployment productivo de `solqaryn-prod` está `READY` sobre `main` @ `0a63764b2298acb21995332d81aeff4c45162526`.
+- Revalidado Render PROD: `solqaryn-api-prod` permanece `live` sobre el mismo commit productivo; `/health/ready` devuelve `ready` con `database=connected`.
+- Readback vivo del catálogo PROD: 73 productos, 65 con stock, 8 agotados reales, 101 unidades disponibles, 351 URLs de imagen únicas, 0 referencias `vyijnqzq` y 0 URLs fuera de `/solqaryn_prod/`.
+- Cloudinary PROD, Aiven PROD, Render PROD, Cloudflare delegado sin cutover y Clover no integrado permanecen certificados conforme a sus evidencias específicas.
+- `main` fue absorbido en la ascendencia de `dev` mediante merge seguro y sin reescritura: `main...dev` queda con `behind_by=0`.
+- `docs/DETALLES_PENDIENTES.md` fue depurado: contiene únicamente dominio/DNS diferido y SMTP real DEV/PROD diferido; se retiraron del archivo los puntos ya cerrados.
+- Actualizada la evidencia de migración PROD para reflejar que los artifacts históricos/rollback ya fueron eliminados.
+- Añadida `docs/evidencias/PROD_CIERRE_FINAL_2026-09-28.md` con la certificación consolidada `PROD_COMPLETE_WITH_FRONTEND=PASS`.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+
+## 2026-09-29 — Release prep: Priority 4 audit aligned with certified Angular budget
+
+- El PR PROD #3486 detectó que `scripts/quality/priority4_quality_audit.py` conservaba el contrato stale de `2mb` para el budget inicial Angular.
+- El gate fue alineado al contrato ya certificado del Punto 8: `650kb` warning / `750kb` error, sin relajar límites ni cambiar runtime.
+- Alcance: CI/gobernanza de calidad únicamente; sin datos, migraciones, secretos, planes, DNS ni cambios productivos directos.

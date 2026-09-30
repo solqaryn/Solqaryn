@@ -14,63 +14,91 @@ namespace InventoryApp.Tests.API.Controllers;
 public sealed class TiendaControllerDestacadosTests
 {
     [Fact]
-    public async Task Destacados_ConsultaSoloMarcadosActivosConLimiteSeguroYOrdenDeterminista()
+    public async Task Destacados_UsaContratoLigeroDedicado()
     {
         var productos = new Mock<IProductoService>(MockBehavior.Strict);
-        productos
-            .Setup(service => service.GetPagedAsync(It.Is<ProductoPagedRequest>(request =>
-                request.Page == 1
-                && request.PageSize == 4
-                && request.Activo == true
-                && request.EsDestacado == true
-                && request.UsuarioIdScope == null
-                && request.SortBy == "FechaCreacion"
-                && request.SortDirection == "desc")))
-            .ReturnsAsync(new PagedResult<ProductoDto>
+        var categorias = new Mock<ICategoriaService>(MockBehavior.Strict);
+        var promociones = new Mock<IPromocionPublicaService>(MockBehavior.Strict);
+        var inventario = new Mock<IInventarioPublicoService>(MockBehavior.Strict);
+        var catalogo = new Mock<ICatalogoPublicoService>(MockBehavior.Strict);
+        catalogo.Setup(service => service.ObtenerDestacadosAsync(99, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<TiendaProductoResumenDto>
             {
-                Page = 1,
-                PageSize = 4,
-                TotalCount = 1,
-                Items =
+                new()
                 {
-                    new ProductoDto
-                    {
-                        Id = 501,
-                        Nombre = "Laptop Real Destacada",
-                        Descripcion = "Producto destacado persistido",
-                        Activo = true,
-                        EsDestacado = true,
-                        Cantidad = 5,
-                        Precio = 12345m,
-                        PrecioMinimo = 12345m,
-                        FechaCreacion = new DateTime(2026, 9, 18, 12, 0, 0, DateTimeKind.Utc)
-                    }
+                    Id = 501,
+                    Slug = "laptop-real-destacada-501",
+                    Nombre = "Laptop Real Destacada",
+                    EsDestacado = true,
+                    Precio = 12345m,
+                    CantidadDisponible = 5,
+                    ImagenPrincipalUrl = "https://cdn.example/producto.jpg"
                 }
             });
 
-        var categorias = new Mock<ICategoriaService>(MockBehavior.Strict);
-        var promociones = new Mock<IPromocionPublicaService>();
-        promociones.Setup(service => service.ResolverAsync(
-                It.IsAny<int>(), It.IsAny<int?>(), It.IsAny<decimal>(), It.IsAny<DateTime>()))
-            .ReturnsAsync((OfertaPublicaDto?)null);
-        var inventario = new Mock<IInventarioPublicoService>();
-        inventario.Setup(service => service.ObtenerPorVariantesAsync(It.IsAny<IEnumerable<int>>()))
-            .ReturnsAsync(new Dictionary<int, InventarioPublicoVarianteDto>());
-        var controller = new TiendaController(productos.Object, categorias.Object, promociones.Object, inventario.Object);
+        var controller = new TiendaController(
+            productos.Object,
+            categorias.Object,
+            promociones.Object,
+            inventario.Object,
+            catalogo.Object,
+            new Mock<ITiendaBootstrapService>().Object);
 
         var result = await controller.GetProductosDestacados(99);
 
         var ok = Assert.IsType<OkObjectResult>(result);
-        var response = Assert.IsType<ApiResponse<List<ProductoCatalogoPublicoDto>>>(ok.Value);
-        Assert.True(response.Success);
+        var response = Assert.IsType<ApiResponse<List<TiendaProductoResumenDto>>>(ok.Value);
         var producto = Assert.Single(response.Data!);
+        Assert.True(response.Success);
         Assert.Equal(501, producto.Id);
         Assert.True(producto.EsDestacado);
         Assert.Equal("Laptop Real Destacada", producto.Nombre);
-        productos.VerifyAll();
+        Assert.Null(typeof(TiendaProductoResumenDto).GetProperty("Imagenes"));
+        catalogo.VerifyAll();
         productos.VerifyNoOtherCalls();
         categorias.VerifyNoOtherCalls();
+        promociones.VerifyNoOtherCalls();
+        inventario.VerifyNoOtherCalls();
     }
+    [Fact]
+    public async Task Bootstrap_UsaCasoDeUsoDedicadoSinConsultarControladorPorPartes()
+    {
+        var productos = new Mock<IProductoService>(MockBehavior.Strict);
+        var categorias = new Mock<ICategoriaService>(MockBehavior.Strict);
+        var promociones = new Mock<IPromocionPublicaService>(MockBehavior.Strict);
+        var inventario = new Mock<IInventarioPublicoService>(MockBehavior.Strict);
+        var catalogo = new Mock<ICatalogoPublicoService>(MockBehavior.Strict);
+        var bootstrap = new Mock<ITiendaBootstrapService>(MockBehavior.Strict);
+        bootstrap.Setup(service => service.ObtenerAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TiendaBootstrapDto
+            {
+                Identidad = new TiendaIdentidadPublicaDto { NombreComercial = "Tienda", Moneda = "HNL" },
+                Destacados = { new TiendaProductoResumenDto { Id = 1, Slug = "producto-1", Nombre = "Producto", Precio = 10m } }
+            });
+
+        var controller = new TiendaController(
+            productos.Object,
+            categorias.Object,
+            promociones.Object,
+            inventario.Object,
+            catalogo.Object,
+            bootstrap.Object);
+
+        var result = await controller.GetBootstrap();
+
+        var ok = Assert.IsType<OkObjectResult>(result);
+        var response = Assert.IsType<ApiResponse<TiendaBootstrapDto>>(ok.Value);
+        Assert.True(response.Success);
+        Assert.Equal("Tienda", response.Data!.Identidad.NombreComercial);
+        Assert.Single(response.Data.Destacados);
+        bootstrap.VerifyAll();
+        productos.VerifyNoOtherCalls();
+        categorias.VerifyNoOtherCalls();
+        promociones.VerifyNoOtherCalls();
+        inventario.VerifyNoOtherCalls();
+        catalogo.VerifyNoOtherCalls();
+    }
+
     [Fact]
     public void SnapshotEf_ConstruyeProductoConEsDestacadoSinModeloPendiente()
     {

@@ -71,6 +71,17 @@ export class VaristorehnCarritoService {
     this._aviso.set('');
   }
 
+  productoIdsPersistidos(empresaId: number, utilizarDatosBaseDatos: boolean): number[] {
+    const referencias = this.leer(this.clave(empresaId, utilizarDatosBaseDatos));
+    if (!Array.isArray(referencias)) return [];
+
+    const ids = referencias
+      .slice(0, 500)
+      .map(ref => ref && typeof ref === 'object' ? Number((ref as Record<string, unknown>)['productoId']) : 0)
+      .filter(id => Number.isSafeInteger(id) && id > 0);
+    return [...new Set(ids)];
+  }
+
   unidadesDe(productoId: number, modeloClave: string): number {
     return this._items().find(item => item.productoId === productoId && item.modeloClave === modeloClave)?.unidades || 0;
   }

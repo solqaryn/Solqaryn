@@ -46,7 +46,8 @@ expect(ts.includes("if (valor === 'destacados') return 'relevancia'"), 'El alias
 expect(scss.includes('max-height: min(70vh, 620px)'), 'El panel móvil abierto debe quedar acotado al viewport.');
 expect(!/#[0-9a-f]{3,8}\b/i.test(scss), 'Fase 8 no debe introducir colores hexadecimales fuera del tema.');
 
-expect(service.includes('obtenerCatalogo()'), 'La hidratación actual debe conservar el catálogo completo mientras el carrito dependa de él.');
+expect(service.includes('obtenerProductosContexto(productoIds: number[])'), 'La hidratación debe consultar solo las referencias persistidas del carrito.');
+expect(!service.includes('obtenerCatalogo()'), 'La frontera pública no debe reintroducir descarga completa del catálogo.');
 expect(cart.includes('restaurarCarrito(originales, productos)'), 'No se debe sustituir la revalidación canónica del carrito por una página parcial.');
 expect(ts.includes('soloOfertas'), 'Tras Fase 9, el filtro opcional de ofertas debe consumir la autoridad comercial real.');
 

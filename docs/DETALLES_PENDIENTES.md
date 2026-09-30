@@ -4,19 +4,23 @@ Este archivo concentra decisiones que el propietario ha decidido aplazar deliber
 
 ## 1. Dominio personalizado / corte DNS
 
-**Estado:** PENDIENTE
+**Estado:** APLAZADO / NO BLOQUEANTE
 
-**Decisión vigente:** no migrar, activar ni cortar el dominio personalizado en este momento.
+**Evidencia vigente:** `solqaryn.com` ya está delegado correctamente a Cloudflare y Cloudflare fue certificado previamente. No existe cutover activo del dominio hacia frontend/backend PROD.
 
-DEV puede continuar usando las URLs administradas actuales de Vercel y Render. La activación/cambio de dominio se retomará más adelante, cuando el entorno productivo correspondiente esté preparado y exista autorización explícita para el corte de DNS/dominio.
+**Decisión vigente:** no migrar, activar ni cortar el dominio personalizado en este momento. DEV y PROD continúan usando las URLs administradas actuales de Vercel y Render.
 
 **Acción actual:** ninguna.
+
+**Se retoma cuando:** el propietario decida asignar el dominio a PROD y autorice explícitamente el cutover DNS/frontend/backend.
+
+**Al retomar, validar:** hostnames finales, DNS, TLS/certificados, Vercel PROD, backend PROD, CORS/orígenes permitidos, redirects, smoke end-to-end y rollback del corte.
 
 ---
 
 ## 2. Certificación SMTP real de DEV
 
-**Estado:** PENDIENTE
+**Estado:** APLAZADO / NO BLOQUEANTE
 
 **Servicio afectado:** `solqaryn-api-dev`
 
@@ -32,29 +36,17 @@ DEV puede continuar usando las URLs administradas actuales de Vercel y Render. L
 
 **Decisión vigente:** mantener Render DEV en plan Free y no contratar un plan de pago únicamente para cerrar esta prueba.
 
+**Acción actual:** ninguna.
+
 **Se retoma cuando:** exista una decisión posterior para habilitar conectividad SMTP real (por cambio de plan autorizado o por una arquitectura de correo distinta aprobada).
 
 **Al retomar, validar:** `SMTP_OK`, autenticación OAuth2, envío real controlado, recepción, remitente, Reply-To y PDF adjunto.
 
 ---
 
-## 3. Vercel PROD corporativo
+## 3. Certificación SMTP real de PROD
 
-**Estado:** PENDIENTE
-
-**Evidencia actual:** el team corporativo Vercel conectado contiene únicamente el proyecto `solqaryn-dev`; no existe todavía un proyecto `solqaryn-prod`.
-
-**Bloqueo:** el conector Vercel disponible permite inspección/despliegues de proyectos existentes, pero no expone creación/eliminación de proyectos. No se puede cerrar este punto automáticamente desde este entorno.
-
-**Se retoma cuando:** el propietario cree `solqaryn-prod` dentro del mismo team corporativo de SOLQARYN o habilite una herramienta que permita crear proyectos.
-
-**Al retomar, validar:** ownership corporativo, rama `main`, variables PROD, routing al backend PROD, deploy estable y ausencia de proyectos legacy duplicados.
-
----
-
-## 4. Certificación SMTP real de PROD
-
-**Estado:** PENDIENTE — OAuth2 certificado; transporte SMTP no completado
+**Estado:** APLAZADO / NO BLOQUEANTE — OAuth2 certificado; transporte SMTP no completado
 
 **Contrato configurado:** Outlook.com, `smtp-mail.outlook.com:587`, STARTTLS obligatorio, OAuth2/Modern Auth, identidad `solqaryn.platform@outlook.com`.
 
@@ -68,25 +60,14 @@ DEV puede continuar usando las URLs administradas actuales de Vercel y Render. L
 
 **Bloqueo restante:** no está en la obtención del token OAuth2. Falta conectividad SMTP saliente suficiente para completar conexión + STARTTLS + autenticación y posteriormente un envío/recepción real.
 
-**Decisión vigente:** mantener este punto como pendiente no bloqueante y no cambiar de plan únicamente para esta prueba.
+**Decisión vigente:** mantener este punto aplazado y no bloqueante; no cambiar de plan únicamente para esta prueba. El servicio `solqaryn-api-prod` fue revalidado en plan Free el 2026-09-27.
+
+**Acción actual:** ninguna.
 
 **Al retomar, validar:** `SMTP_OK`, autenticación SMTP OAuth2, envío real controlado, recepción en Outlook, remitente, Reply-To, adjunto PDF y trazabilidad sin exponer secretos.
 
 ---
 
-## 5. Retiro final de recursos legacy personales
-
-**Estado:** PENDIENTE
-
-**Evidencia actual:** el repositorio personal privado `jmejia31/VariStorehn` todavía existe fuera de la organización `solqaryn`. También permanecen ramas temporales de auditoría/certificación en el repositorio corporativo.
-
-**Bloqueo:** el conector GitHub disponible no expone eliminación de repositorios ni borrado de refs/ramas. No se ejecutará una sustitución destructiva sin una operación explícita soportada.
-
-**Se retoma cuando:** exista herramienta con capacidad de borrar repositorios/refs o el propietario realice la retirada manual después de confirmar el backup requerido.
-
-**Al retomar, validar:** ausencia de repositorios personales legacy que dupliquen SOLQARYN, eliminación de ramas temporales ya fusionadas y conservación únicamente de `dev`/`main` más las ramas operativas realmente necesarias.
-
----
 
 ## Regla de uso
 

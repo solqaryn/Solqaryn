@@ -4,6 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { Observable, Subscription, map, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { cloudinaryResponsiveSrcset, cloudinaryResponsiveUrl } from '../../shared/cloudinary-image.util';
 import { VaristorehnIdentidadService } from './varistorehn-identidad.service';
 import { CategoriaTienda, ProductoCatalogoPublico, ProductoTienda, crearCatalogoEjemplo, mapearProducto } from './varistorehn.catalog';
 import { VaristorehnCarritoService } from './varistorehn-carrito.service';
@@ -24,6 +25,13 @@ import { IconoTiendaComponent, IlustracionTiendaComponent } from './varistorehn.
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class VaristorehnCarritoComponent implements OnInit {
+  imagenCloudinary(url: string | null | undefined, width = 800): string {
+    return cloudinaryResponsiveUrl(url, width);
+  }
+  srcsetCloudinary(url: string | null | undefined): string | null {
+    return cloudinaryResponsiveSrcset(url);
+  }
+
   private readonly servicio = inject(VaristorehnService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
@@ -148,8 +156,12 @@ export class VaristorehnCarritoComponent implements OnInit {
     this.aviso.set('');
     this.carrito.reiniciarContexto();
 
+    const idsPersistidos = this.carrito.productoIdsPersistidos(
+      this.identidad.config().id,
+      this.utilizarDatosBaseDatos()
+    );
     const fuente: Observable<ProductoCatalogoPublico[] | null> = this.utilizarDatosBaseDatos()
-      ? this.servicio.obtenerCatalogo()
+      ? this.servicio.obtenerProductosContexto(idsPersistidos)
       : of(null);
 
     this.cargaCatalogo = fuente.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({

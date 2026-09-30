@@ -68,7 +68,7 @@
               <a [href]="rutaExplorar(categoria)" [attr.aria-label]="'Explorar categoría ' + categoria.nombre">
                 <span class="category-art" aria-hidden="true">
                   @if (imagenValida(categoria)) {
-                    <img [src]="categoria.imagenUrl || ''" alt="" width="800" height="600" loading="lazy" decoding="async">
+                    <img [src]="imagenCloudinary(categoria.imagenUrl, 640)" [attr.srcset]="srcsetCloudinary(categoria.imagenUrl)" sizes="(max-width: 720px) 92vw, 360px" alt="" width="800" height="600" loading="lazy" decoding="async">
                   } @else {
                     <app-store-art tipo="paquete" />
                   }

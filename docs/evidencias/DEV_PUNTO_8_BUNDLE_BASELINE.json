@@ -1,0 +1,192 @@
+{
+  "generatedAtUtc": "2026-09-30T00:33:28.640Z",
+  "buildRoot": "dist/inventoryapp-frontend/browser",
+  "existingInitialBudget": {
+    "warningBytes": 1048576,
+    "errorBytes": 2097152
+  },
+  "initial": {
+    "fileCount": 13,
+    "rawBytes": 259036,
+    "gzipBytes": 53486,
+    "brotliBytes": 46502,
+    "files": [
+      {
+        "file": "styles-TOBEQ5SM.css",
+        "rawBytes": 123439,
+        "gzipBytes": 14052,
+        "brotliBytes": 11570
+      },
+      {
+        "file": "main-PTY4L6WV.js",
+        "rawBytes": 66942,
+        "gzipBytes": 14735,
+        "brotliBytes": 12641
+      },
+      {
+        "file": "polyfills-5CFQRCPP.js",
+        "rawBytes": 34585,
+        "gzipBytes": 12470,
+        "brotliBytes": 11334
+      },
+      {
+        "file": "chunk-JAKJGKUX.js",
+        "rawBytes": 7835,
+        "gzipBytes": 2684,
+        "brotliBytes": 2418
+      },
+      {
+        "file": "chunk-WDXLWDWY.js",
+        "rawBytes": 6851,
+        "gzipBytes": 2279,
+        "brotliBytes": 2031
+      },
+      {
+        "file": "chunk-FBHOMQ5R.js",
+        "rawBytes": 4624,
+        "gzipBytes": 1567,
+        "brotliBytes": 1404
+      },
+      {
+        "file": "chunk-2M43MCBY.js",
+        "rawBytes": 3219,
+        "gzipBytes": 1217,
+        "brotliBytes": 1075
+      },
+      {
+        "file": "chunk-POPTFWPA.js",
+        "rawBytes": 2598,
+        "gzipBytes": 877,
+        "brotliBytes": 811
+      },
+      {
+        "file": "chunk-AKBG2PPE.js",
+        "rawBytes": 2534,
+        "gzipBytes": 841,
+        "brotliBytes": 768
+      },
+      {
+        "file": "chunk-5SR6YZ3B.js",
+        "rawBytes": 2120,
+        "gzipBytes": 987,
+        "brotliBytes": 877
+      },
+      {
+        "file": "chunk-3P5ANWJB.js",
+        "rawBytes": 1774,
+        "gzipBytes": 776,
+        "brotliBytes": 706
+      },
+      {
+        "file": "chunk-APKQO4TZ.js",
+        "rawBytes": 1371,
+        "gzipBytes": 551,
+        "brotliBytes": 470
+      },
+      {
+        "file": "chunk-IHJOUB3D.js",
+        "rawBytes": 1144,
+        "gzipBytes": 450,
+        "brotliBytes": 397
+      }
+    ]
+  },
+  "allBundles": {
+    "fileCount": 196,
+    "rawBytes": 3836251,
+    "gzipBytes": 1096261,
+    "brotliBytes": 956134,
+    "largest": [
+      {
+        "file": "chunk-DJV6Z7LE.js",
+        "rawBytes": 374196,
+        "gzipBytes": 110230,
+        "brotliBytes": 87226
+      },
+      {
+        "file": "chunk-SAZVZ5LA.js",
+        "rawBytes": 178178,
+        "gzipBytes": 59798,
+        "brotliBytes": 52294
+      },
+      {
+        "file": "styles-TOBEQ5SM.css",
+        "rawBytes": 123439,
+        "gzipBytes": 14052,
+        "brotliBytes": 11570
+      },
+      {
+        "file": "chunk-LVRX7DU3.js",
+        "rawBytes": 119608,
+        "gzipBytes": 28097,
+        "brotliBytes": 23184
+      },
+      {
+        "file": "chunk-5W4PY2D3.js",
+        "rawBytes": 79562,
+        "gzipBytes": 21944,
+        "brotliBytes": 19796
+      },
+      {
+        "file": "chunk-BET3BHDT.js",
+        "rawBytes": 68961,
+        "gzipBytes": 17118,
+        "brotliBytes": 15175
+      },
+      {
+        "file": "chunk-NK3TL5VN.js",
+        "rawBytes": 68604,
+        "gzipBytes": 17666,
+        "brotliBytes": 15139
+      },
+      {
+        "file": "chunk-TSSIUOSO.js",
+        "rawBytes": 67780,
+        "gzipBytes": 19829,
+        "brotliBytes": 17786
+      },
+      {
+        "file": "main-PTY4L6WV.js",
+        "rawBytes": 66942,
+        "gzipBytes": 14735,
+        "brotliBytes": 12641
+      },
+      {
+        "file": "chunk-ITYZTBFY.js",
+        "rawBytes": 61343,
+        "gzipBytes": 15303,
+        "brotliBytes": 13599
+      },
+      {
+        "file": "chunk-6OR4QMSI.js",
+        "rawBytes": 58181,
+        "gzipBytes": 11052,
+        "brotliBytes": 9730
+      },
+      {
+        "file": "chunk-RIP6JFFX.js",
+        "rawBytes": 53483,
+        "gzipBytes": 11454,
+        "brotliBytes": 10315
+      },
+      {
+        "file": "chunk-UPBSL7LD.js",
+        "rawBytes": 51131,
+        "gzipBytes": 11207,
+        "brotliBytes": 9781
+      },
+      {
+        "file": "chunk-JSHUMMBC.js",
+        "rawBytes": 50927,
+        "gzipBytes": 13474,
+        "brotliBytes": 11810
+      },
+      {
+        "file": "chunk-L3U6KHHC.js",
+        "rawBytes": 49627,
+        "gzipBytes": 12560,
+        "brotliBytes": 11156
+      }
+    ]
+  }
+}

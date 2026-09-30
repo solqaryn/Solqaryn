@@ -58,6 +58,94 @@ export interface ProductoCatalogoPublico {
   modelos: ModeloCatalogoPublico[];
 }
 
+export interface ModeloCatalogoResumenPublico {
+  productoVarianteId: number;
+  modeloId?: number | null;
+  modeloNombre?: string | null;
+  marcaNombre?: string | null;
+  sku?: string | null;
+  precio: number;
+  precioOferta?: number | null;
+  ofertaActiva?: boolean;
+  ofertaNombre?: string | null;
+  ahorro?: number;
+  porcentajeAhorro?: number;
+  cantidadDisponible: number;
+  estaAgotado: boolean;
+  estadoDisponibilidad?: string;
+}
+
+/**
+ * Contrato ligero para tarjetas/listados. La galería y la descripción completa
+ * pertenecen exclusivamente al detalle público.
+ */
+export interface ProductoCatalogoResumenPublico {
+  id: number;
+  slug: string;
+  nombre: string;
+  descripcionResumen?: string | null;
+  categoriaId?: number | null;
+  categoriaNombre?: string | null;
+  marcaNombre?: string | null;
+  modeloNombre?: string | null;
+  precio: number;
+  precioOferta?: number | null;
+  ofertaActiva?: boolean;
+  ofertaNombre?: string | null;
+  ahorro?: number;
+  porcentajeAhorro?: number;
+  cantidadDisponible: number;
+  estaAgotado: boolean;
+  estadoDisponibilidad?: string;
+  esDestacado?: boolean;
+  fechaCreacion?: string;
+  imagenPrincipalUrl?: string | null;
+  modelos: ModeloCatalogoResumenPublico[];
+}
+
+export interface TiendaIdentidadPublica {
+  nombreComercial: string;
+  eslogan: string;
+  telefono?: string | null;
+  correo?: string | null;
+  whatsApp?: string | null;
+  logoUrl?: string | null;
+  moneda: string;
+  encabezadoActivo: boolean;
+  encabezadoTexto?: string | null;
+  piePaginaActivo: boolean;
+  piePaginaTexto?: string | null;
+  copyright: string;
+  mostrarCopyright: boolean;
+  usarAnioAutomaticoCopyright: boolean;
+}
+
+export interface TiendaTemaPublico {
+  colorPrimario: string;
+  colorSecundario: string;
+  colorAcento: string;
+  fondoPrincipal: string;
+  fondoTarjetas: string;
+  menuLateral: string;
+  barraSuperior: string;
+  encabezados: string;
+  botonesPrincipales: string;
+  textoPrincipal: string;
+  textoSecundario: string;
+  colorExito: string;
+  colorAdvertencia: string;
+  colorError: string;
+  colorInformacion: string;
+  fechaActualizacion?: string;
+}
+
+export interface TiendaBootstrapPublico {
+  identidad: TiendaIdentidadPublica;
+  tema: TiendaTemaPublico;
+  categorias: CategoriaCatalogoPublico[];
+  destacados: ProductoCatalogoResumenPublico[];
+}
+
 export interface CategoriaCatalogoPublico {
   id: number;
   slug: string;

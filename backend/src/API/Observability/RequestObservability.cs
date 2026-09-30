@@ -8,6 +8,9 @@ public sealed class ObservabilityOptions
     public int SlowRequestThresholdMs { get; set; } = 2000;
     public int ErrorAlertStatusCode { get; set; } = 500;
     public bool EnableAlertLogs { get; set; } = true;
+    public bool EnablePerformanceBaseline { get; set; } = false;
+    public int PerformanceApiHotTargetMs { get; set; } = 500;
+    public int PerformanceIdentityCategoryTargetMs { get; set; } = 300;
 }
 
 public sealed record ObservabilitySnapshot(long RequestCount, long ErrorCount, long SlowRequestCount);

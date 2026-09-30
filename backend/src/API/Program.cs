@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using System.Net;
 using System.Text;
 using System.Threading.RateLimiting;
@@ -19,9 +20,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Microsoft.Net.Http.Headers;
 
 var builder = WebApplication.CreateBuilder(args);
 var port = Environment.GetEnvironmentVariable("PORT");
@@ -33,8 +36,28 @@ builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateProductoValidator>();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection no configurado.");
 var mysqlServerVersion = Version.Parse(builder.Configuration["Database:ServerVersion"] ?? "8.4.3");
-builder.Services.AddDbContext<AppDbContext>(options => options.UseMySql(connectionString, new MySqlServerVersion(mysqlServerVersion)));
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddMemoryCache();
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.Providers.Add<BrotliCompressionProvider>();
+    options.Providers.Add<GzipCompressionProvider>();
+    options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[]
+    {
+        "application/json",
+        "application/problem+json"
+    });
+});
+builder.Services.Configure<BrotliCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
+builder.Services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
+builder.Services.AddSingleton<IPublicStoreCache, PublicStoreMemoryCache>();
+builder.Services.AddScoped<IPublicStoreTenantKeyProvider, PublicStoreTenantKeyProvider>();
+builder.Services.AddSingleton<DbQueryTimingInterceptor>();
+builder.Services.AddDbContext<AppDbContext>((serviceProvider, options) =>
+    options
+        .UseMySql(connectionString, new MySqlServerVersion(mysqlServerVersion))
+        .AddInterceptors(serviceProvider.GetRequiredService<DbQueryTimingInterceptor>()));
 builder.Services.Configure<ObservabilityOptions>(builder.Configuration.GetSection("Observability"));
 builder.Services.AddSingleton<RequestObservability>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
@@ -43,6 +66,7 @@ builder.Services.AddScoped<IMensajeOutboxRepository, MensajeOutboxRepository>();
 builder.Services.AddScoped<IMensajeOutboxService, MensajeOutboxService>();
 builder.Services.AddScoped<IEmpresaRepository, EmpresaRepository>();
 builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
+builder.Services.AddScoped<IProductoCatalogoPublicoRepository, ProductoCatalogoPublicoRepository>();
 builder.Services.AddScoped<IProductoVarianteRepository, ProductoVarianteRepository>();
 builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
 builder.Services.AddScoped<ISucursalRepository, SucursalRepository>();
@@ -80,6 +104,9 @@ builder.Services.AddScoped<IPermisoCatalogoService, PermisoCatalogoService>();
 builder.Services.AddScoped<IDescuentoRepository, DescuentoRepository>();
 builder.Services.AddScoped<IDescuentoService, DescuentoService>();
 builder.Services.AddScoped<IPromocionPublicaService, PromocionPublicaService>();
+builder.Services.AddScoped<ICatalogoPublicoService, CatalogoPublicoService>();
+builder.Services.AddScoped<IWhatsAppPublicoService, WhatsAppPublicoService>();
+builder.Services.AddScoped<ITiendaBootstrapService, TiendaBootstrapService>();
 builder.Services.AddScoped<IImpuestoRepository, ImpuestoRepository>();
 builder.Services.AddScoped<IImpuestoService, ImpuestoService>();
 builder.Services.AddScoped<ICostoEnvioRepository, CostoEnvioRepository>();
@@ -215,6 +242,19 @@ else
     app.UseForwardedHeaders(forwardedHeadersOptions);
 }
 if (!app.Environment.IsDevelopment()) app.UseHsts();
+app.UseResponseCompression();
+app.Use(async (context, next) =>
+{
+    context.Response.OnStarting(() =>
+    {
+        if (!context.Response.Headers.ContainsKey(HeaderNames.CacheControl))
+            context.Response.Headers[HeaderNames.CacheControl] = "private, no-store, max-age=0";
+
+        return Task.CompletedTask;
+    });
+
+    await next();
+});
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<RequestObservabilityMiddleware>();
 app.UseMiddleware<ExceptionHandlingMiddleware>();

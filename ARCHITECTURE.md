@@ -88,6 +88,48 @@ Cuando una operación modifica inventario/finanzas/documentos relacionados, debe
 - correo: SMTP; PROD autentica Outlook.com mediante OAuth2/Modern Auth y mantiene secretos/tokens fuera del repositorio;
 - enlaces públicos de factura: token seguro, expiración/revocación según implementación vigente.
 
+### Storefront público: read models ligeros
+
+Las lecturas públicas de productos usan una vía de consulta específica, separada del CRUD administrativo:
+
+`TiendaController -> ICatalogoPublicoService -> IProductoCatalogoPublicoRepository -> proyecciones EF/MySQL`
+
+Reglas:
+
+- listado público pagina y filtra server-side; no descarga todas las páginas al navegador;
+- listado y destacados responden con `TiendaProductoResumenDto`: descripción acotada, una imagen principal y variantes mínimas sin galerías/color/talla ni grafos administrativos;
+- detalle público mantiene el contrato rico y carga galería/variantes sólo para el producto solicitado;
+- carrito/checkout/cuenta rehidratan únicamente IDs persistidos mediante `POST /tienda/productos/contexto`;
+- el repositorio público proyecta únicamente campos comerciales necesarios y evita `ConIncludes()` del repositorio administrativo;
+- inventario y promociones siguen resolviéndose desde sus autoridades existentes; no se crea una segunda fuente de verdad;
+- `GET /tienda/bootstrap` consolida la carga inicial del storefront en un único request scope: identidad pública mínima + WhatsApp público resuelto + tema visual + hasta 6 categorías de navegación + hasta 4 destacados ligeros;
+- `ITiendaBootstrapService` compone autoridades existentes de forma secuencial dentro del mismo scope HTTP; no paraleliza repositorios EF que comparten `DbContext`;
+- Angular comparte la respuesta bootstrap con `shareReplay`, de modo que shell, identidad y portada no compiten por lecturas públicas duplicadas; `VaristorehnIdentidadService` conserva además el observable en vuelo y `VaristorehnService` comparte la lista de categorías entre rutas;
+- el backend usa `IMemoryCache` in-process mediante `IPublicStoreCache`/`PublicStoreMemoryCache`; cada key incorpora tenant, segmento, generación y hash de parámetros;
+- TTL públicos: identidad/tema/categorías 5 minutos, destacados 30 segundos y listados 15 segundos; detalle, contexto de carrito y checkout permanecen sin cache;
+- la capa HTTP comprime respuestas JSON/text con Brotli/Gzip sobre HTTPS mediante Response Compression de ASP.NET Core;
+- el backend aplica `private, no-store, max-age=0` como política por defecto y sólo permite cache HTTP público mediante `PublicHttpCacheAttribute` en GET anónimos explícitamente clasificados;
+- perfiles HTTP públicos: identidad/tema/WhatsApp/categorías `max-age=120, s-maxage=300, stale-while-revalidate=600`; bootstrap `15/30/60` por incluir destacados; productos/listados/detalle `max-age=5, s-maxage=15, must-revalidate`;
+- las respuestas públicas cacheables emiten ETag débil SHA-256 sobre el payload JSON y resuelven `If-None-Match` con `304 Not Modified`; `Vary: Accept-Encoding` preserva corrección con Brotli/Gzip;
+- contexto de carrito, checkout, sesiones, endpoints autenticados, administración, documentos y errores permanecen fuera de cache público;
+- Vercel conserva el SPA/CDN: bundles Angular hashados reciben `Cache-Control: public, max-age=31536000, immutable` y los rewrites `/api/*` habilitan caching únicamente para respetar las políticas upstream emitidas por el backend;
+- la cache tiene lock por key contra stampede y generaciones para invalidación sin enumerar entradas;
+- `AppDbContext.SaveChangesAsync` invalida generaciones tras escrituras de producto/variante/imágenes/stock, categoría, identidad/WhatsApp, tema, marca/modelo y descuentos relacionados;
+- la partición tenant se resuelve a `empresa:{EmpresaId}` cuando la identidad pública puede vincularse inequívocamente a una empresa; ante ambigüedad se usa un namespace `public-config:{Id}` fail-safe, evitando mezclar particiones;
+- esta cache es válida para la topología actual de una instancia por servicio; si el API escala horizontalmente a múltiples instancias, el contrato `IPublicStoreCache` debe migrarse a almacenamiento distribuido con invalidación compartida antes de confiar en coherencia cross-instance;
+- los endpoints anteriores quedan disponibles como recovery/rutas específicas, no como camino feliz inicial;
+- no hay migración ni duplicación de datos ni servicio externo/pagado.
+
+### Baseline de rendimiento DEV
+
+La observabilidad de rendimiento DEV es first-party y no requiere un proveedor pagado:
+
+- `RequestObservabilityMiddleware` mide duración HTTP y emite el baseline estructurado;
+- `DbQueryTimingInterceptor` agrega cantidad y duración de comandos EF/MySQL por request sin registrar SQL ni parámetros;
+- `PerformanceBaselineService` mide TTFB, requests/bytes por pantalla y Web Vitals en el navegador DEV;
+- `frontend/scripts/performance-bundle-baseline.mjs` mide bundles raw/gzip/Brotli;
+- la instrumentación está desactivada por defecto fuera de DEV y no modifica autoridad de negocio, RBAC, tenancy ni datos.
+
 ## 4. Patrones vigentes
 
 - Dependency Injection.

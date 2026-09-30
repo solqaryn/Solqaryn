@@ -61,7 +61,7 @@
         @if (destacadoPrincipal(); as destacado) {
           <button type="button" class="hero-product" (click)="abrirDetalle(destacado)" [attr.aria-label]="'Ver ' + destacado.nombre">
             @if (imagenValida(fotos(destacado)[0])) {
-              <img [src]="fotos(destacado)[0]" [alt]="destacado.nombre" width="800" height="600" fetchpriority="high" (error)="errorImagen(fotos(destacado)[0])">
+              <img [src]="imagenCloudinary(fotos(destacado)[0], 800)" [attr.srcset]="srcsetCloudinary(fotos(destacado)[0])" sizes="(max-width: 900px) 92vw, 560px" [alt]="destacado.nombre" width="800" height="600" decoding="async" fetchpriority="high" (error)="errorImagen(fotos(destacado)[0])">
             } @else {
               <app-store-art [tipo]="destacado.ilustracion || 'paquete'" />
             }
@@ -101,6 +101,7 @@
       <div><app-store-icon nombre="bolsa" /><span><strong>Continúa en tu carrito</strong><small>La selección se valida antes de cerrar la compra</small></span></div>
     </section>
 
+    @defer (on idle) {
     <section class="container categories-section" aria-labelledby="categories-title" [attr.aria-busy]="estadoCategorias() === 'loading'">
       <div class="section-head">
         <div><p class="eyebrow">EXPLORA POR CATEGORÍA</p><h2 id="categories-title">Encuentra una ruta rápida a lo que necesitas</h2></div>
@@ -155,7 +156,7 @@
               <button type="button" class="featured-media" (click)="abrirDetalle(producto)" [attr.aria-label]="'Ver ' + producto.nombre">
                 <span class="featured-badge">Destacado</span>
                 @if (imagenValida(modelo.imagenes[0])) {
-                  <img [src]="modelo.imagenes[0]" [alt]="producto.nombre" width="800" height="600" loading="lazy" decoding="async" (error)="errorImagen(modelo.imagenes[0])">
+                  <img [src]="imagenCloudinary(modelo.imagenes[0], 640)" [attr.srcset]="srcsetCloudinary(modelo.imagenes[0])" sizes="(max-width: 720px) 92vw, (max-width: 1180px) 44vw, 280px" [alt]="producto.nombre" width="800" height="600" loading="lazy" decoding="async" (error)="errorImagen(modelo.imagenes[0])">
                 } @else {
                   <app-store-art [tipo]="producto.ilustracion || 'paquete'" />
                 }
@@ -198,6 +199,8 @@
         @if (identidad.config().telefono) { <span>{{ identidad.config().telefono }}</span> }
       </div>
     </section>
+    }
+
   </main>
 
   @if (identidad.config().piePaginaActivo) {

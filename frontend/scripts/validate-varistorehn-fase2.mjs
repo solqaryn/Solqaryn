@@ -56,7 +56,7 @@ expect(!categoryRouteLine.includes('authGuard') && !categoryRouteLine.includes('
 
 expect(models.includes('export interface CategoriaTienda'), 'Fase 2 debe conservar CategoriaTienda como modelo visual canónico.');
 expect(models.includes('cantidadProductos: number | null'), 'El conteo de CategoriaTienda debe preservar null como desconocido.');
-expect(service.includes('obtenerCategorias()'), 'La página pública debe usar la frontera HTTP de categorías ya definida.');
+expect(service.includes('obtenerCategorias(force = false)'), 'La página pública debe usar la frontera HTTP compartida de categorías ya definida.');
 expect(service.includes('obtenerCategoriaPorSlug(slug: string)'), 'La página canónica debe consumir la frontera HTTP de categoría por slug.');
 expect(categoryRules.includes('mapearCategoriaTienda'), 'Debe existir un mapeo explícito del DTO público a CategoriaTienda.');
 expect(categoryRules.includes('cantidadProductos: cantidad'), 'El mapeo debe conservar el conteo público sin fabricarlo.');

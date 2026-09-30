@@ -134,7 +134,7 @@ async function contrastAudit(page: Page): Promise<Array<{ name: string; ratio: n
       { name: 'título principal', selector: '.page-title, #dashboard-title', minimum: 4.5 },
       { name: 'enlace del menú', selector: '.sidebar nav a', minimum: 3 },
       { name: 'perfil', selector: '.profile-button', minimum: 3 },
-      { name: 'icono cerrar sesión', selector: '.topbar-icon-button mat-icon', minimum: 3 },
+      { name: 'icono cerrar sesión', selector: '.topbar-icon-button .material-icons', minimum: 3 },
       { name: 'botón principal', selector: '.mat-mdc-unelevated-button', minimum: 3 }
     ];
 

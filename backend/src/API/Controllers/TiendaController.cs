@@ -1,3 +1,4 @@
+using InventoryApp.API.Filters;
 using InventoryApp.Application.Common;
 using InventoryApp.Application.DTOs;
 using InventoryApp.Application.Interfaces;
@@ -22,115 +23,99 @@ public sealed class TiendaController : ControllerBase
     private readonly ICategoriaService _categoriaService;
     private readonly IPromocionPublicaService _promocionPublicaService;
     private readonly IInventarioPublicoService _inventarioPublicoService;
+    private readonly ICatalogoPublicoService _catalogoPublicoService;
+    private readonly ITiendaBootstrapService _bootstrapService;
 
     public TiendaController(
         IProductoService productoService,
         ICategoriaService categoriaService,
         IPromocionPublicaService promocionPublicaService,
-        IInventarioPublicoService inventarioPublicoService)
+        IInventarioPublicoService inventarioPublicoService,
+        ICatalogoPublicoService catalogoPublicoService,
+        ITiendaBootstrapService bootstrapService)
     {
         _productoService = productoService;
         _categoriaService = categoriaService;
         _promocionPublicaService = promocionPublicaService;
         _inventarioPublicoService = inventarioPublicoService;
+        _catalogoPublicoService = catalogoPublicoService ?? throw new ArgumentNullException(nameof(catalogoPublicoService));
+        _bootstrapService = bootstrapService ?? throw new ArgumentNullException(nameof(bootstrapService));
+    }
+
+    [HttpGet("bootstrap")]
+    [PublicHttpCache(PublicHttpCacheProfile.Bootstrap)]
+    public async Task<IActionResult> GetBootstrap()
+    {
+        var bootstrap = await _bootstrapService.ObtenerAsync(HttpContext?.RequestAborted ?? CancellationToken.None);
+        return Ok(ApiResponse<TiendaBootstrapDto>.Ok(bootstrap));
     }
 
     [HttpGet("productos")]
+    [PublicHttpCache(PublicHttpCacheProfile.Products)]
     public async Task<IActionResult> GetProductos([FromQuery] ProductoPagedRequest request)
     {
         request.Activo = true;
         request.UsuarioIdScope = null;
-
-        var resultado = await _productoService.GetPagedAsync(request);
-        var ahoraUtc = DateTime.UtcNow;
-        var productosActivos = resultado.Items.Where(producto => producto.Activo).ToList();
-        var inventario = await _inventarioPublicoService.ObtenerPorVariantesAsync(
-            productosActivos.SelectMany(producto => producto.Variantes)
-                .Where(variante => variante.Activo)
-                .Select(variante => variante.Id));
-        var items = await Task.WhenAll(productosActivos
-            .Select(producto => MapearProductoAsync(producto, ahoraUtc, inventario)));
-        var catalogo = new PagedResult<ProductoCatalogoPublicoDto>
-        {
-            Items = items.ToList(),
-            Page = resultado.Page,
-            PageSize = resultado.PageSize,
-            TotalCount = resultado.TotalCount
-        };
-
-        return Ok(ApiResponse<PagedResult<ProductoCatalogoPublicoDto>>.Ok(catalogo));
+        var resumen = await _catalogoPublicoService.BuscarAsync(request, HttpContext?.RequestAborted ?? CancellationToken.None);
+        return Ok(ApiResponse<PagedResult<TiendaProductoResumenDto>>.Ok(resumen));
     }
 
     [HttpGet("productos/destacados")]
+    [PublicHttpCache(PublicHttpCacheProfile.Products)]
     public async Task<IActionResult> GetProductosDestacados([FromQuery] int limite = 4)
     {
-        var request = new ProductoPagedRequest
-        {
-            Page = 1,
-            PageSize = Math.Clamp(limite, 1, 4),
-            Activo = true,
-            EsDestacado = true,
-            UsuarioIdScope = null,
-            SortBy = "FechaCreacion",
-            SortDirection = "desc"
-        };
-
-        var resultado = await _productoService.GetPagedAsync(request);
-        var ahoraUtc = DateTime.UtcNow;
-        var productosDestacados = resultado.Items
-            .Where(producto => producto.Activo && producto.EsDestacado)
-            .ToList();
-        var inventario = await _inventarioPublicoService.ObtenerPorVariantesAsync(
-            productosDestacados.SelectMany(producto => producto.Variantes)
-                .Where(variante => variante.Activo)
-                .Select(variante => variante.Id));
-        var destacados = await Task.WhenAll(productosDestacados
-            .Select(producto => MapearProductoAsync(producto, ahoraUtc, inventario)));
-
-        return Ok(ApiResponse<List<ProductoCatalogoPublicoDto>>.Ok(destacados.ToList()));
+        var resumen = await _catalogoPublicoService.ObtenerDestacadosAsync(limite, HttpContext?.RequestAborted ?? CancellationToken.None);
+        return Ok(ApiResponse<List<TiendaProductoResumenDto>>.Ok(resumen));
     }
 
     [HttpGet("productos/{slug}")]
+    [PublicHttpCache(PublicHttpCacheProfile.Products)]
     public async Task<IActionResult> GetProducto(string slug)
     {
         if (!PublicSlug.TryGetId(slug, out var id))
             return NotFound(ApiResponse<ProductoCatalogoPublicoDto>.Fail("Producto no encontrado."));
 
-        var producto = await _productoService.GetByIdAsync(id);
-        if (producto is null || !producto.Activo)
-            return NotFound(ApiResponse<ProductoCatalogoPublicoDto>.Fail("Producto no encontrado."));
+        var detalle = await _catalogoPublicoService.ObtenerDetalleAsync(id, HttpContext?.RequestAborted ?? CancellationToken.None);
+        return detalle is null
+            ? NotFound(ApiResponse<ProductoCatalogoPublicoDto>.Fail("Producto no encontrado."))
+            : Ok(ApiResponse<ProductoCatalogoPublicoDto>.Ok(detalle));
+    }
 
-        var inventario = await _inventarioPublicoService.ObtenerPorVariantesAsync(
-            producto.Variantes.Where(variante => variante.Activo).Select(variante => variante.Id));
+    [HttpPost("productos/contexto")]
+    public async Task<IActionResult> GetProductosContexto([FromBody] ProductosContextoPublicoRequestDto? request)
+    {
+        var ids = request?.ProductoIds?.Where(id => id > 0).Distinct().Take(101).ToArray() ?? Array.Empty<int>();
+        if (ids.Length > 100)
+            return BadRequest(ApiResponse<List<ProductoCatalogoPublicoDto>>.Fail("El contexto supera el máximo de 100 productos."));
+        if (ids.Length == 0)
+            return Ok(ApiResponse<List<ProductoCatalogoPublicoDto>>.Ok(new List<ProductoCatalogoPublicoDto>()));
 
-        return Ok(ApiResponse<ProductoCatalogoPublicoDto>.Ok(
-            await MapearProductoAsync(producto, DateTime.UtcNow, inventario)));
+        var productos = await _catalogoPublicoService.ObtenerPorIdsAsync(ids, HttpContext?.RequestAborted ?? CancellationToken.None);
+        return Ok(ApiResponse<List<ProductoCatalogoPublicoDto>>.Ok(productos));
     }
 
     [HttpGet("categorias")]
+    [PublicHttpCache(PublicHttpCacheProfile.Categories)]
     public async Task<IActionResult> GetCategorias()
     {
-        var categorias = await _categoriaService.GetActivasAsync();
-        var resultado = categorias
-            .Where(categoria => categoria.Activa)
-            .OrderBy(categoria => categoria.Nombre)
-            .Select(MapearCategoria)
-            .ToList();
-
-        return Ok(ApiResponse<List<CategoriaCatalogoPublicoDto>>.Ok(resultado));
+        var categorias = await _bootstrapService.ObtenerCategoriasAsync(
+            HttpContext?.RequestAborted ?? CancellationToken.None);
+        return Ok(ApiResponse<List<CategoriaCatalogoPublicoDto>>.Ok(categorias));
     }
 
     [HttpGet("categorias/{slug}")]
+    [PublicHttpCache(PublicHttpCacheProfile.Categories)]
     public async Task<IActionResult> GetCategoria(string slug)
     {
         if (!PublicSlug.TryGetId(slug, out var id))
             return NotFound(ApiResponse<CategoriaCatalogoPublicoDto>.Fail("Categoria no encontrada."));
 
-        var categoria = await _categoriaService.GetByIdAsync(id);
-        if (categoria is null || !categoria.Activa)
-            return NotFound(ApiResponse<CategoriaCatalogoPublicoDto>.Fail("Categoria no encontrada."));
-
-        return Ok(ApiResponse<CategoriaCatalogoPublicoDto>.Ok(MapearCategoria(categoria)));
+        var categorias = await _bootstrapService.ObtenerCategoriasAsync(
+            HttpContext?.RequestAborted ?? CancellationToken.None);
+        var categoria = categorias.SingleOrDefault(item => item.Id == id);
+        return categoria is null
+            ? NotFound(ApiResponse<CategoriaCatalogoPublicoDto>.Fail("Categoria no encontrada."))
+            : Ok(ApiResponse<CategoriaCatalogoPublicoDto>.Ok(categoria));
     }
 
     /// <summary>
@@ -306,123 +291,5 @@ public sealed class TiendaController : ControllerBase
         TotalProductos = null
     };
 
-    private async Task<ProductoCatalogoPublicoDto> MapearProductoAsync(
-        ProductoDto producto,
-        DateTime ahoraUtc,
-        IReadOnlyDictionary<int, InventarioPublicoVarianteDto> inventario)
-    {
-        var variantesActivas = producto.Variantes.Where(v => v.Activo).ToList();
-        var skusProducto = variantesActivas.Select(v => v.Sku).Where(sku => !string.IsNullOrWhiteSpace(sku)).Distinct().ToList();
-
-        int CantidadDisponible(ProductoVarianteDto variante) =>
-            inventario.TryGetValue(variante.Id, out var resumen)
-                ? Math.Max(0, resumen.CantidadDisponible)
-                : Math.Max(0, variante.Cantidad);
-
-        bool StockBajo(ProductoVarianteDto variante) =>
-            inventario.TryGetValue(variante.Id, out var resumen)
-                ? resumen.TieneStockBajo
-                : variante.TieneStockBajo;
-
-        var cantidadPublica = variantesActivas.Count > 0
-            ? variantesActivas.Sum(CantidadDisponible)
-            : Math.Max(0, producto.Cantidad);
-        var preciosVariantes = variantesActivas.Where(v => v.Precio > 0).Select(v => v.Precio).ToList();
-        var precioPublico = preciosVariantes.Count > 0
-            ? preciosVariantes.Min()
-            : producto.PrecioMinimo > 0 ? producto.PrecioMinimo : producto.Precio;
-        precioPublico = Math.Max(0, precioPublico);
-
-        var ofertaProducto = precioPublico > 0
-            ? await _promocionPublicaService.ResolverAsync(producto.Id, producto.CategoriaId, precioPublico, ahoraUtc)
-            : null;
-
-        var modelos = new List<ModeloCatalogoPublicoDto>();
-        foreach (var v in variantesActivas.OrderBy(v => v.ModeloNombre).ThenBy(v => v.Id))
-        {
-            var imagenesEspecificas = v.Imagenes
-                .Where(i => !string.IsNullOrWhiteSpace(i.Url))
-                .OrderBy(i => i.Orden)
-                .Select(i => new ProductoImagenPublicaDto { Url = i.Url, Orden = i.Orden, EsPrincipal = i.EsPrincipal })
-                .ToList();
-            var imagenes = (imagenesEspecificas.Count > 0 ? imagenesEspecificas : producto.Imagenes
-                    .OrderBy(i => i.Orden)
-                    .Select(i => new ProductoImagenPublicaDto { Url = i.Url, Orden = i.Orden, EsPrincipal = i.EsPrincipal }))
-                .GroupBy(i => i.Url)
-                .Select(grupo => grupo.First())
-                .ToList();
-            var cantidad = CantidadDisponible(v);
-            var precioNormal = Math.Max(0, v.Precio);
-            var oferta = precioNormal > 0
-                ? await _promocionPublicaService.ResolverAsync(producto.Id, producto.CategoriaId, precioNormal, ahoraUtc)
-                : null;
-
-            modelos.Add(new ModeloCatalogoPublicoDto
-            {
-                ProductoVarianteId = v.Id,
-                ModeloId = v.ModeloId,
-                ModeloNombre = v.ModeloNombre,
-                MarcaNombre = v.MarcaNombre,
-                Sku = v.Sku,
-                Precio = precioNormal,
-                PrecioOferta = oferta?.PrecioOferta,
-                OfertaActiva = oferta is not null,
-                OfertaNombre = oferta?.Nombre,
-                OfertaInicioUtc = oferta?.VigenteDesdeUtc,
-                OfertaFinUtc = oferta?.VigenteHastaUtc,
-                Ahorro = oferta?.Ahorro ?? 0,
-                PorcentajeAhorro = oferta?.PorcentajeAhorro ?? 0,
-                CantidadDisponible = cantidad,
-                EstaAgotado = cantidad <= 0,
-                EstadoDisponibilidad = EstadoDisponibilidad(cantidad, StockBajo(v)),
-                Imagenes = imagenes
-            });
-        }
-
-        return new ProductoCatalogoPublicoDto
-        {
-            Id = producto.Id,
-            Slug = PublicSlug.Create(producto.Nombre, producto.Id),
-            Nombre = producto.Nombre,
-            Descripcion = producto.Descripcion,
-            CategoriaId = producto.CategoriaId,
-            CategoriaNombre = producto.CategoriaNombre,
-            MarcaNombre = producto.MarcaNombre ?? producto.Marca,
-            ModeloNombre = producto.ModeloNombre ?? producto.Modelo,
-            Precio = precioPublico,
-            PrecioOferta = ofertaProducto?.PrecioOferta,
-            OfertaActiva = ofertaProducto is not null,
-            OfertaNombre = ofertaProducto?.Nombre,
-            OfertaInicioUtc = ofertaProducto?.VigenteDesdeUtc,
-            OfertaFinUtc = ofertaProducto?.VigenteHastaUtc,
-            Ahorro = ofertaProducto?.Ahorro ?? 0,
-            PorcentajeAhorro = ofertaProducto?.PorcentajeAhorro ?? 0,
-            CantidadDisponible = cantidadPublica,
-            EstaAgotado = cantidadPublica <= 0,
-            EstadoDisponibilidad = cantidadPublica <= 0
-                ? "Agotado"
-                : modelos.Any(modelo => modelo.EstadoDisponibilidad == "Últimas unidades")
-                    ? "Últimas unidades"
-                    : "Disponible",
-            Sku = skusProducto.Count == 1 ? skusProducto[0] : null,
-            Activo = producto.Activo,
-            EsDestacado = producto.EsDestacado,
-            FechaCreacion = producto.FechaCreacion,
-            ImagenPrincipalUrl = producto.ImagenPrincipalUrl,
-            Imagenes = producto.Imagenes
-                .OrderBy(imagen => imagen.Orden)
-                .Select(imagen => new ProductoImagenPublicaDto
-                {
-                    Url = imagen.Url,
-                    Orden = imagen.Orden,
-                    EsPrincipal = imagen.EsPrincipal
-                })
-                .ToList(),
-            Modelos = modelos
-        };
-    }
-
-    private static string EstadoDisponibilidad(int cantidad, bool stockBajo) =>
-        cantidad <= 0 ? "Agotado" : stockBajo ? "Últimas unidades" : "Disponible";
 
 }

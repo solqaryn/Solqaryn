@@ -61,7 +61,16 @@ async function preparar(page: Page): Promise<void> {
     body: JSON.stringify({ success: true, data: { items: catalogo, page: 1, pageSize: 96, totalCount: catalogo.length } })
   }));
   await page.route('**/tienda/productos/*', route => {
-    const slug = decodeURIComponent(new URL(route.request().url()).pathname.split('/').pop() || '');
+    const url = new URL(route.request().url());
+    if (route.request().method() === 'POST' && url.pathname.endsWith('/tienda/productos/contexto')) {
+      const body = route.request().postDataJSON() as { productoIds?: number[] } | null;
+      const ids = new Set(Array.isArray(body?.productoIds) ? body!.productoIds : []);
+      return route.fulfill({
+        status: 200, contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' },
+        body: JSON.stringify({ success: true, data: catalogo.filter(item => ids.has(item.id)) })
+      });
+    }
+    const slug = decodeURIComponent(url.pathname.split('/').pop() || '');
     const encontrado = catalogo.find(item => item.slug === slug);
     return route.fulfill({
       status: encontrado ? 200 : 404, contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' },

@@ -45,9 +45,14 @@ expect(!productsRouteLine.includes('authGuard') && !productsRouteLine.includes('
 
 expect(paths.includes("productos: '/varistorehn/productos'"), 'El mapa canónico debe conservar VARISTOREHN_PATHS.productos.');
 expect(models.includes('export interface ProductoTienda'), 'Fase 3 debe usar ProductoTienda como modelo visual canónico.');
+expect(models.includes('export interface ProductoCatalogoResumenPublico'), 'El listado debe tener un contrato HTTP ligero separado del detalle.');
+expect(models.includes('export interface ModeloCatalogoResumenPublico'), 'El listado debe exponer solo el resumen mínimo de variantes.');
 expect(models.includes("export type OrdenCatalogo = 'destacados' | 'relevancia' | 'precio-asc' | 'precio-desc' | 'recientes' | 'nombre'"), 'El orden canónico del catálogo debe conservar compatibilidad y añadir relevancia/recientes.');
-expect(service.includes('obtenerCatalogo()'), 'La página de productos debe consumir la frontera pública del catálogo.');
-expect(service.includes('expand(datos => datos.page < datos.totalPages'), 'La frontera pública debe leer todas las páginas HTTP antes de filtrar localmente.');
+expect(service.includes('obtenerProductos('), 'La página de productos debe consumir la frontera pública paginada del catálogo.');
+expect(service.includes('PagedResult<ProductoCatalogoResumenPublico>'), 'El listado HTTP debe tiparse con el resumen ligero y no con el DTO rico de detalle.');
+expect(service.includes('obtenerProductosContexto(productoIds: number[])'), 'El carrito debe rehidratar únicamente los productos persistidos, no descargar el catálogo completo.');
+expect(!service.includes('obtenerCatalogo()'), 'El cliente público no debe conservar una API que descargue todas las páginas del catálogo.');
+expect(catalog.includes('export function mapearProductoResumen'), 'Las tarjetas deben mapear el contrato ligero sin depender de galerías del detalle.');
 expect(catalog.includes('export function filtrarProductos'), 'Los filtros deben reutilizar la regla pura canónica.');
 expect(catalog.includes('export function referenciasCarrito'), 'La persistencia debe conservar el formato canónico de referencias.');
 expect(catalog.includes('export function restaurarCarrito'), 'El carrito debe restaurarse contra catálogo/precio/stock actuales.');
@@ -57,11 +62,13 @@ for (const required of [
   'ProductoTienda',
   'EstadoConsultaPublica',
   'filtrarProductos',
-  'this.servicio.obtenerCatalogo()',
+  'this.servicio.obtenerProductos(this.pagina(), this.tamanoPagina',
+  'datos.items.map(mapearProductoResumen)',
   'this.servicio.obtenerCategorias()',
   'mapearCategoriaTienda',
   'VaristorehnCarritoService',
   'this.carritoStore.hidratar(productos',
+  'this.servicio.obtenerProductosContexto(idsPersistidos)',
   'VARISTOREHN_PATHS.productos',
   'VARISTOREHN_PATHS.carrito',
   'this.route.queryParamMap'
@@ -74,7 +81,7 @@ expect(productsTs.includes('this.carritoStore.agregar(producto, modelo, 1)'), 'A
 expect(productsTs.includes("params.get('q')"), 'La búsqueda profunda debe hidratarse desde el query param q.');
 expect(productsTs.includes("params.get('categoria')"), 'El filtro de categoría debe hidratarse desde el slug público del query param categoria.');
 expect(productsTs.includes("No se sustituyeron los datos reales por ejemplos"), 'Una falla del catálogo real no debe caer silenciosamente a fixtures.');
-expect(productsTs.includes("const fuente: Observable<ProductoCatalogoPublico[] | null> = this.utilizarDatosBaseDatos()"), 'Demo y fuente real deben estar separados explícitamente.');
+expect(productsTs.includes("const fuente: Observable<{ productos: ProductoTienda[]; total: number }> = this.utilizarDatosBaseDatos()"), 'Demo y fuente real deben permanecer separados explícitamente aun con paginación server-side.');
 expect(productsTs.includes('cargarCatalogo(): void'), 'La acción de reintento del template debe ser pública y comprobable por Angular.');
 expect(!productsTs.includes('private cargarCatalogo(): void'), 'El template no debe depender de un método privado.');
 expect(!productsTs.includes('ProductosListComponent'), 'El catálogo público no debe reutilizar el CRUD administrativo de productos.');

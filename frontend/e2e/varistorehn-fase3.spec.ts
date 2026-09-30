@@ -208,36 +208,53 @@ test.describe('VariStoreHn Fase 3 — catálogo público independiente', () => {
     await expect(page.locator('app-varistorehn-header').getByRole('button', { name: 'Abrir carrito con 1 unidades' })).toBeVisible();
   });
 
-  test('fuente real lee todas las páginas HTTP antes de buscar y no corta resultados tardíos', async ({ page }) => {
+  test('fuente real pagina y busca en servidor sin descargar el catálogo completo', async ({ page }) => {
     await prepararEmpresa(page);
     await mockCategoriasReales(page, 97);
-    const paginas = new Set<number>();
+    const solicitudes: Array<{ pagina: number; pageSize: number; search: string }> = [];
 
     await page.route('**/tienda/productos?*', async route => {
       const url = new URL(route.request().url());
       const pagina = Number(url.searchParams.get('page') || '1');
-      paginas.add(pagina);
-      const items = pagina === 1
-        ? Array.from({ length: 96 }, (_, index) => productoReal(index + 1, `Producto real ${String(index + 1).padStart(3, '0')}`, 1000 + index))
-        : [productoReal(97, 'Hallazgo Página Dos', 2500)];
+      const pageSize = Number(url.searchParams.get('pageSize') || '12');
+      const search = url.searchParams.get('search') || '';
+      solicitudes.push({ pagina, pageSize, search });
+
+      const items = search
+        ? [productoReal(97, 'Hallazgo Página Dos', 2500)]
+        : Array.from({ length: pageSize }, (_, index) =>
+            productoReal(index + 1, `Producto real ${String(index + 1).padStart(3, '0')}`, 1000 + index));
+
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
         headers: { 'Access-Control-Allow-Origin': '*' },
-        body: JSON.stringify({ success: true, data: { items, page: pagina, pageSize: 96, totalCount: 97 } })
+        body: JSON.stringify({
+          success: true,
+          data: {
+            items,
+            page: pagina,
+            pageSize,
+            totalCount: search ? 1 : 97
+          }
+        })
       });
     });
 
     await page.goto('/varistorehn/productos');
     await activarBaseDatos(page);
     await expect(page.getByRole('status').filter({ hasText: '97 productos encontrados' })).toBeVisible();
-    expect([...paginas].sort()).toEqual([1, 2]);
+    expect(solicitudes.some(item => item.pagina === 1 && item.pageSize === 12 && item.search === '')).toBeTruthy();
+    expect(solicitudes.some(item => item.pagina === 2 && item.search === '')).toBeFalsy();
 
     const search = page.locator('app-varistorehn-header').getByRole('searchbox');
     await search.fill('Hallazgo Página Dos');
+    await search.press('Enter');
+
     await expect(page.getByRole('status').filter({ hasText: '1 productos encontrados' })).toBeVisible();
     await expect(page.locator('article.product-card')).toHaveCount(1);
     await expect(page.locator('article.product-card')).toContainText('Hallazgo Página Dos');
+    expect(solicitudes.some(item => item.search === 'Hallazgo Página Dos' && item.pagina === 1 && item.pageSize === 12)).toBeTruthy();
     await expect(page.getByText('Datos de la tienda', { exact: true }).last()).toBeVisible();
   });
 
