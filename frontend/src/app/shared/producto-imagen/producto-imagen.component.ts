@@ -1,5 +1,6 @@
 import { Component, HostBinding, Input, OnChanges, SimpleChanges, signal } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
+import { cloudinaryResponsiveSrcset, cloudinaryResponsiveUrl } from '../cloudinary-image.util';
 
 export type ProductoImagenVariant = 'option' | 'thumbnail' | 'line' | 'card' | 'hero' | 'gallery' | 'lightbox';
 
@@ -11,7 +12,9 @@ export type ProductoImagenVariant = 'option' | 'thumbnail' | 'line' | 'card' | '
     <div class="frame" [class.is-loaded]="loaded()" [class.is-fallback]="failed() || !src">
       @if (src && !failed()) {
         <img
-          [src]="src"
+          [src]="responsiveSrc"
+          [attr.srcset]="responsiveSrcset"
+          [attr.sizes]="responsiveSizes"
           [alt]="alt"
           [attr.width]="intrinsicSize"
           [attr.height]="intrinsicSize"
@@ -148,6 +151,26 @@ export class ProductoImagenComponent implements OnChanges {
   @HostBinding('attr.data-variant')
   get dataVariant(): ProductoImagenVariant {
     return this.variant;
+  }
+
+  get responsiveSrc(): string {
+    return cloudinaryResponsiveUrl(this.src, Math.min(800, this.intrinsicSize));
+  }
+
+  get responsiveSrcset(): string | null {
+    return cloudinaryResponsiveSrcset(this.src);
+  }
+
+  get responsiveSizes(): string {
+    switch (this.variant) {
+      case 'option': return '34px';
+      case 'thumbnail': return '44px';
+      case 'line': return '52px';
+      case 'card': return '(max-width: 720px) 64px, 64px';
+      case 'hero': return '(max-width: 720px) 92vw, 360px';
+      case 'gallery': return '(max-width: 720px) 88vw, 480px';
+      case 'lightbox': return '(max-width: 720px) 92vw, 800px';
+    }
   }
 
   get intrinsicSize(): number {
