@@ -9,8 +9,8 @@ on:
       - 'backend/src/API/Program.cs'
       - 'backend/src/Application/Services/EmpresaService.cs'
       - 'backend/src/Application/Interfaces/IEmpresaService.cs'
-      - 'backend/tests/InventoryApp.Tests/N61DEmpresaApplicationApiTests.cs'
-      - 'backend/tests/InventoryApp.Tests/N61FEmpresaSecurityAuditTests.cs'
+      - 'backend/tests/Solqaryn.Tests/N61DEmpresaApplicationApiTests.cs'
+      - 'backend/tests/Solqaryn.Tests/N61FEmpresaSecurityAuditTests.cs'
   workflow_dispatch:
 
 permissions:
@@ -35,11 +35,11 @@ jobs:
         with:
           dotnet-version: '8.0.x'
       - name: Restore backend
-        run: dotnet restore InventoryApp.sln
+        run: dotnet restore Solqaryn.sln
       - name: Build backend Release
-        run: dotnet build InventoryApp.sln --configuration Release --no-restore
+        run: dotnet build Solqaryn.sln --configuration Release --no-restore
       - name: Test N6.1 Empresa application and security audit regressions
-        run: dotnet test tests/InventoryApp.Tests/InventoryApp.Tests.csproj --configuration Release --no-restore --filter 'FullyQualifiedName~N61DEmpresaApplicationApiTests|FullyQualifiedName~N61FEmpresaSecurityAuditTests' --verbosity normal
+        run: dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-restore --filter 'FullyQualifiedName~N61DEmpresaApplicationApiTests|FullyQualifiedName~N61FEmpresaSecurityAuditTests' --verbosity normal
       - name: Verify exact-head security wiring markers
         run: |
           set -euo pipefail
