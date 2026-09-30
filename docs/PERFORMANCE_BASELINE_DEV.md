@@ -1,5 +1,13 @@
 # Baseline de rendimiento DEV — SOLQARYN
 
+## Punto 9 — Aiven y topología después de reducir queries (2026-09-29)
+
+La decisión de topología ya se toma después de reducir round trips: el listado público pasó de 7 a **5 queries por miss**, mientras los hits de cache pública operan con **0 queries**. Las pasadas calientes DEV del read-model ligero quedaron en **216.5–254.1 ms** totales con **107.5–112.3 ms DB**.
+
+Topología versionada: Aiven MySQL `do-sfo`; Render DEV `oregon`; Render PROD `virginia`. Con la evidencia actual, DEV se mantiene en Oregon y no se mueve Aiven. PROD conserva una deuda potencial por distancia Virginia ↔ San Francisco, pero cualquier corrección futura debe ser blue/green, medida y autorizada expresamente; no se hará mudanza destructiva ni se comprará servicio para este punto.
+
+Evidencia: `docs/evidencias/DEV_ANALISIS_PUNTO_9_AIVEN_TOPOLOGIA_2026-09-29.md`.
+
 ## Punto 8 — Angular medido y adelgazado (2026-09-29/30)
 
 La medición canónica usa `ng build --configuration production --stats-json` y conserva tanto el baseline raw/gzip/Brotli como el desglose del grafo inicial.
