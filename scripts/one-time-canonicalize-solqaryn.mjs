@@ -93,10 +93,10 @@ function caseStyledReplacement(match, replacement) {
 
 function canonicalizeText(input) {
   let value = input;
-  value = value.replace(/vari[-_\s]?store[-_\s]?hn/gi, function (match) {
+  value = value.replace(/vari[-_\s]?store(?:[-_\s]?hn)?/gi, function (match) {
     return caseStyledReplacement(match, 'storefront');
   });
-  value = value.replace(/inventory[-_\s]?app/gi, function (match) {
+  value = value.replace(/inventory[-_\s]?(?:app|api)/gi, function (match) {
     return caseStyledReplacement(match, 'solqaryn');
   });
   value = value.replace(/vari[-_\s]?app/gi, function (match) {
@@ -105,24 +105,23 @@ function canonicalizeText(input) {
   value = value.replace(/javiermejia3112@gmail\.com/gi, 'solqaryn.platform@outlook.com');
   value = value.replace(/jmejia31/gi, 'solqaryn');
   value = value.replace(/solqaryn-api-desarrollo/gi, 'solqaryn-api-dev');
-  value = value.replace(/\bDesarrollo\b/g, 'dev');
+  value = value.replace(/\bdesarrollo\b/gi, 'dev');
   return value;
 }
 
 function canonicalizePath(rel) {
   let value = posixPath(rel);
-  value = value.replace(/varistorehn/gi, function (match) {
+  value = value.replace(/varistore(?:hn)?/gi, function (match) {
     return caseStyledReplacement(match, 'storefront');
   });
-  value = value.replace(/inventoryapp/gi, function (match) {
+  value = value.replace(/inventory(?:app|api)/gi, function (match) {
     return caseStyledReplacement(match, 'solqaryn');
   });
   value = value.replace(/variapp/gi, function (match) {
     return caseStyledReplacement(match, 'solqaryn');
   });
   value = value.replace(/jmejia31/gi, 'solqaryn');
-  value = value.replace(/Desarrollo/g, 'dev');
-  value = value.replace(/desarrollo/g, 'dev');
+  value = value.replace(/desarrollo/gi, 'dev');
   return value;
 }
 
