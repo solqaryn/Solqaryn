@@ -1,17 +1,17 @@
 using System.Net.Mail;
 using System.Security.Cryptography;
 using System.Text;
-using InventoryApp.Application.Common;
-using InventoryApp.Application.DTOs;
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Domain.Entities;
-using InventoryApp.Infrastructure.Persistence;
+using Solqaryn.Application.Common;
+using Solqaryn.Application.DTOs;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Entities;
+using Solqaryn.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
-namespace InventoryApp.API.Controllers;
+namespace Solqaryn.API.Controllers;
 
 [ApiController]
 [AllowAnonymous]
@@ -19,7 +19,7 @@ namespace InventoryApp.API.Controllers;
 [Route("tienda/cuenta")]
 public sealed class TiendaCuentaController : ControllerBase
 {
-    private const string SessionHeader = "X-VaristoreHN-Session";
+    private const string SessionHeader = "X-Storefront-Session";
     private static readonly TimeSpan SessionLifetime = TimeSpan.FromHours(12);
     private readonly AppDbContext _db;
     private readonly ITipoClientePredeterminadoResolver _tipoClienteResolver;
@@ -58,7 +58,7 @@ public sealed class TiendaCuentaController : ControllerBase
                 Correo = correo,
                 Activo = true,
                 TipoClienteId = tipoClienteId,
-                CreadoPorNombreUsuario = "varistorehn-cuenta"
+                CreadoPorNombreUsuario = "storefront-cuenta"
             };
             _db.Clientes.Add(cliente);
             await _db.SaveChangesAsync();

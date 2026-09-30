@@ -1,0 +1,85 @@
+name: Storefront Fase 8 - busqueda filtros ordenamiento
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - 'frontend/src/app/features/storefront/**'
+      - 'frontend/e2e/storefront-fase*.spec.ts'
+      - 'frontend/scripts/validate-storefront-fase*.mjs'
+      - 'frontend/package.json'
+      - 'frontend/package-lock.json'
+      - '.github/workflows/storefront-fase8-regression.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: storefront-fase8-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    name: Fase 8 - regresion publica acumulada
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Lint TypeScript y guardas Fases 1-8
+        run: npm run lint
+      - name: Build de produccion
+        run: npm run build:prod
+      - name: Instalar Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Iniciar Angular
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > storefront-fase8-regression.log 2>&1 &
+      - name: Esperar Angular
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:4200/tienda/productos > /dev/null; then
+              echo 'Angular listo para regresión acumulada Fase 8.'
+              exit 0
+            fi
+            sleep 2
+          done
+          cat storefront-fase8-regression.log >&2 || true
+          exit 1
+      - name: Regresion Fases 1-8
+        env:
+          PLAYWRIGHT_TEST_BASE_URL: http://127.0.0.1:4200
+        shell: bash
+        run: |
+          set -euo pipefail
+          for fase in 1 2 3 4 5 6 7 8; do
+            npm run "test:e2e:storefront-fase${fase}"
+          done
+      - name: Publicar evidencia
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: storefront-fase8-frontend
+          path: |
+            frontend/storefront-fase8-regression.log
+            frontend/playwright-report/
+            frontend/test-results/
+          if-no-files-found: warn
+          retention-days: 7

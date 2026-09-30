@@ -1,6 +1,6 @@
-using InventoryApp.Application.DTOs;
+using Solqaryn.Application.DTOs;
 
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 public interface IAjusteInventarioService
 {

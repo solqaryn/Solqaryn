@@ -1,9 +1,9 @@
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Domain.Entities;
-using InventoryApp.Infrastructure.Persistence;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Entities;
+using Solqaryn.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace InventoryApp.Infrastructure.Repositories;
+namespace Solqaryn.Infrastructure.Repositories;
 
 public sealed class PreparacionPedidoVentaRepository : IPreparacionPedidoVentaRepository
 {

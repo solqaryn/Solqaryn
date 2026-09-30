@@ -1,0 +1,114 @@
+name: Storefront Fase 9 - ofertas inventario
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - 'frontend/src/app/features/storefront/**'
+      - 'frontend/src/app/app.routes.ts'
+      - 'frontend/e2e/storefront-fase*.spec.ts'
+      - 'frontend/scripts/validate-storefront-fase*.mjs'
+      - 'frontend/package.json'
+      - 'frontend/package-lock.json'
+      - 'backend/src/API/Controllers/TiendaController.cs'
+      - 'backend/src/API/Program.cs'
+      - 'backend/src/Application/DTOs/ProductoCatalogoPublicoDto.cs'
+      - 'backend/src/Application/DTOs/OfertaPublicaDto.cs'
+      - 'backend/src/Application/Interfaces/IPromocionPublicaService.cs'
+      - 'backend/src/Application/Interfaces/IInventarioPublicoService.cs'
+      - 'backend/src/Application/Interfaces/IDescuentoRepository.cs'
+      - 'backend/src/Application/Interfaces/IExistenciaVarianteRepository.cs'
+      - 'backend/src/Application/Services/PromocionPublicaService.cs'
+      - 'backend/src/Application/Services/InventarioPublicoService.cs'
+      - 'backend/src/Infrastructure/Repositories/ExistenciaVarianteRepository.cs'
+      - 'backend/src/Domain/Entities/Descuento.cs'
+      - 'backend/src/Infrastructure/Repositories/DescuentoRepository.cs'
+      - 'backend/tests/Solqaryn.Tests/TiendaPublicaTests.cs'
+      - 'backend/tests/Solqaryn.Tests/PromocionPublicaServiceTests.cs'
+      - 'backend/tests/Solqaryn.Tests/InventarioPublicoServiceTests.cs'
+      - 'backend/tests/Solqaryn.Tests/API/Controllers/TiendaController*.cs'
+      - 'scripts/quality/priority4_quality_audit.py'
+      - '.github/workflows/storefront-fase9-regression.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: storefront-fase9-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Fase 9 - autoridad de oferta y stock
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - run: dotnet restore Solqaryn.sln
+      - run: dotnet build Solqaryn.sln --configuration Release --no-restore
+      - name: Pruebas Fase 9
+        run: dotnet test Solqaryn.sln --configuration Release --no-build --filter "FullyQualifiedName~TiendaPublicaTests|FullyQualifiedName~PromocionPublicaServiceTests|FullyQualifiedName~InventarioPublicoServiceTests|FullyQualifiedName~TiendaController"
+
+  frontend:
+    name: Fase 9 - regresion publica acumulada
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - name: Lint y guardas Fases 1-9
+        run: npm run lint
+      - name: Build produccion
+        run: npm run build:prod
+      - run: npx playwright install --with-deps chromium
+      - name: Iniciar Angular
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > storefront-fase9-regression.log 2>&1 &
+      - name: Esperar Angular
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:4200/tienda/ofertas > /dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat storefront-fase9-regression.log >&2 || true
+          exit 1
+      - name: Regresion Fases 1-9
+        env:
+          PLAYWRIGHT_TEST_BASE_URL: http://127.0.0.1:4200
+        shell: bash
+        run: |
+          set -euo pipefail
+          for fase in 1 2 3 4 5 6 7 8 9; do
+            npm run "test:e2e:storefront-fase${fase}"
+          done
+      - name: Evidencia
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: storefront-fase9
+          path: |
+            frontend/storefront-fase9-regression.log
+            frontend/playwright-report/
+            frontend/test-results/
+          if-no-files-found: warn
+          retention-days: 7

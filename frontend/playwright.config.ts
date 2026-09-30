@@ -12,7 +12,7 @@ const hasTenantBootstrapContext = Boolean(
   process.env['PHASE7_ADMIN_PASSWORD']
 );
 const requiresExplicitTenantSelection =
-  process.env['CI'] === 'true' && connectionString.includes('Database=inventoryapp_n11_sucursales;');
+  process.env['CI'] === 'true' && connectionString.includes('Database=solqaryn_n11_sucursales;');
 
 function enableTenantAwareFixtureForCi(): void {
   if (!process.env['CI']) return;
@@ -66,7 +66,7 @@ export default defineConfig({
             {
               origin: new URL(baseURL).origin,
               localStorage: [
-                { name: 'inventoryapp_empresa_solicitada_id', value: tenantId }
+                { name: 'solqaryn_empresa_solicitada_id', value: tenantId }
               ]
             }
           ]

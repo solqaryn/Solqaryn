@@ -1,4 +1,4 @@
-namespace InventoryApp.Domain.Entities;
+namespace Solqaryn.Domain.Entities;
 
 /// Registro de cada intento de compartir una factura (sección 14/15/18:
 /// "registrar el intento", "registrar el resultado"). Un intento por

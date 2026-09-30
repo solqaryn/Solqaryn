@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace InventoryApp.Infrastructure.Migrations
+namespace Solqaryn.Infrastructure.Migrations
 {
     partial class AppDbContextModelSnapshot
     {
@@ -12,7 +12,7 @@ namespace InventoryApp.Infrastructure.Migrations
         /// </summary>
         private static void ApplyN63CModel(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity("InventoryApp.Domain.Entities.Sucursal", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Sucursal", b =>
             {
                 b.Property<string>("CodigoActivoUnico")
                     .ValueGeneratedOnAddOrUpdate()

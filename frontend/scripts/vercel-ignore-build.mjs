@@ -4,10 +4,10 @@ const branch = process.env.VERCEL_GIT_COMMIT_REF;
 const current = process.env.VERCEL_GIT_COMMIT_SHA || 'HEAD';
 const configuredPrevious = process.env.VERCEL_GIT_PREVIOUS_SHA;
 
-// This optimization is deliberately Desarrollo-only. Production/main and any
-// unknown branch always build. The file exists on Desarrollo only until an
+// This optimization is deliberately dev-only. Production/main and any
+// unknown branch always build. The file exists on dev only until an
 // explicitly authorized publication changes that fact.
-if (branch !== 'Desarrollo') {
+if (branch !== 'dev') {
   process.exit(1);
 }
 

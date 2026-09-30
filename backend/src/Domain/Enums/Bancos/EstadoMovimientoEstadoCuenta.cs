@@ -1,4 +1,4 @@
-namespace InventoryApp.Domain.Enums.Bancos;
+namespace Solqaryn.Domain.Enums.Bancos;
 
 public enum EstadoMovimientoEstadoCuenta
 {

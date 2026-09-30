@@ -1,4 +1,4 @@
-namespace InventoryApp.Application.Exceptions;
+namespace Solqaryn.Application.Exceptions;
 
 /// <summary>
 /// Señala que otra solicitud ganó concurrentemente la clave durable de idempotencia.

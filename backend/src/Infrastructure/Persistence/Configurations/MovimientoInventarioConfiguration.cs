@@ -1,10 +1,10 @@
-using InventoryApp.Domain.Common;
-using InventoryApp.Domain.Entities;
-using InventoryApp.Domain.Enums;
+using Solqaryn.Domain.Common;
+using Solqaryn.Domain.Entities;
+using Solqaryn.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace InventoryApp.Infrastructure.Persistence.Configurations;
+namespace Solqaryn.Infrastructure.Persistence.Configurations;
 
 public class MovimientoInventarioConfiguration : IEntityTypeConfiguration<MovimientoInventario>
 {

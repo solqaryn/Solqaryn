@@ -4,7 +4,7 @@ param(
 
     [string]$RootUser = "root",
     [string]$AppUser = "Solqaryn",
-    [string]$Database = "inventoryapp",
+    [string]$Database = "solqaryn",
     [string]$Server = "localhost",
     [int]$Port = 3306,
     [string]$AppPassword

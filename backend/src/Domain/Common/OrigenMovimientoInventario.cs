@@ -1,6 +1,6 @@
-using InventoryApp.Domain.Enums;
+using Solqaryn.Domain.Enums;
 
-namespace InventoryApp.Domain.Common;
+namespace Solqaryn.Domain.Common;
 
 /// <summary>
 /// Contrato de dominio para identificar de forma tipada el documento empresarial

@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Text;
 
-namespace InventoryApp.Application.Common;
+namespace Solqaryn.Application.Common;
 
 /// <summary>
 /// Slug publico canonico con id estable al final. El texto mejora legibilidad,

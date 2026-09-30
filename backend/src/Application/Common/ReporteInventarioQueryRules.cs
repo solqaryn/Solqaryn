@@ -1,6 +1,6 @@
-using InventoryApp.Application.DTOs;
+using Solqaryn.Application.DTOs;
 
-namespace InventoryApp.Application.Common;
+namespace Solqaryn.Application.Common;
 
 public static class ReporteInventarioQueryRules
 {

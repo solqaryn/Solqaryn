@@ -1,7 +1,7 @@
-using InventoryApp.Application.DTOs;
-using InventoryApp.Application.Interfaces;
+using Solqaryn.Application.DTOs;
+using Solqaryn.Application.Interfaces;
 
-namespace InventoryApp.Application.Common;
+namespace Solqaryn.Application.Common;
 
 /// <summary>
 /// Fail-closed guard for explicit physical-scope filters in inventory analytics.

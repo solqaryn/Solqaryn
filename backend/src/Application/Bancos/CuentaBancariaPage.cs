@@ -1,4 +1,4 @@
-namespace InventoryApp.Application.Bancos;
+namespace Solqaryn.Application.Bancos;
 
 /// <summary>
 /// Contrato de resultado paginado para cuentas bancarias.

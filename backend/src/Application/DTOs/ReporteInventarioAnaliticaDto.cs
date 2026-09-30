@@ -1,6 +1,6 @@
-using InventoryApp.Application.Common;
+using Solqaryn.Application.Common;
 
-namespace InventoryApp.Application.DTOs;
+namespace Solqaryn.Application.DTOs;
 
 public sealed class ReporteInventarioKardexFiltroDto : ReporteInventarioFiltroBaseDto
 {

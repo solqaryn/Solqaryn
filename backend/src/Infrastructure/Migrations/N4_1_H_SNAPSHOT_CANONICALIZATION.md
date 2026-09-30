@@ -10,4 +10,4 @@ This marker records the structural snapshot reconciliation performed for N4.1.H 
 
 The generated canonical `AppDbContextModelSnapshot.cs` replaces the stale delegated split-snapshot representation as the migration snapshot authority. Existing migration history files are preserved; no migration is applied to Production by this change.
 
-This file is intentionally placed under `backend/src/Infrastructure/Migrations/**` so the normal exact-head migration/ERP and M11 push gates certify the reconciled snapshot on `Desarrollo`.
+This file is intentionally placed under `backend/src/Infrastructure/Migrations/**` so the normal exact-head migration/ERP and M11 push gates certify the reconciled snapshot on `dev`.

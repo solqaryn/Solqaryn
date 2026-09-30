@@ -1,8 +1,8 @@
-using InventoryApp.Application.Exceptions;
-using InventoryApp.Domain.Security;
+using Solqaryn.Application.Exceptions;
+using Solqaryn.Domain.Security;
 using Microsoft.AspNetCore.Http;
 
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 /// <summary>
 /// Contexto de almacenamiento tenant-aware construido exclusivamente desde un

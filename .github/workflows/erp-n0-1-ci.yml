@@ -28,7 +28,7 @@ jobs:
         image: mysql:8.4
         env:
           MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: inventoryapp_n01_ci
+          MYSQL_DATABASE: solqaryn_n01_ci
         ports: ['3306:3306']
         options: >-
           --health-cmd="mysqladmin ping -h localhost -proot"
@@ -37,7 +37,7 @@ jobs:
           --health-retries=12
     env:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=inventoryapp_n01_ci;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;
+      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=solqaryn_n01_ci;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;
       Database__ServerVersion: 8.4.0
       Database__ApplyMigrationsOnStartup: 'false'
       Jwt__Secret: ERP-N0-1-CI-Only-Secret-With-More-Than-32-Characters-2026
@@ -50,26 +50,26 @@ jobs:
           dotnet-version: '8.0.x'
       - name: Restaurar backend
         working-directory: backend
-        run: dotnet restore InventoryApp.sln
+        run: dotnet restore Solqaryn.sln
       - name: Instalar EF
         run: dotnet tool install --global dotnet-ef --version 8.0.8
       - name: Crear esquema actual
         working-directory: backend
         run: |
           dotnet ef database update \
-            --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-            --startup-project src/API/InventoryApp.API.csproj \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext
       - name: Sembrar producto legacy sin variante
         run: |
           set -euo pipefail
           mysql_container="${{ job.services.mysql.id }}"
-          docker exec "$mysql_container" mysql -uroot -proot inventoryapp_n01_ci -e "
+          docker exec "$mysql_container" mysql -uroot -proot solqaryn_n01_ci -e "
             INSERT INTO Productos
               (Nombre, Marca, Modelo, Cantidad, Costo, Precio, UmbralStockBajo, Activo, Eliminado, FechaCreacion, FechaActualizacion)
             VALUES
               ('ERP N0.1 Legacy CI', 'Marca legacy CI', 'Modelo legacy CI', 7, 12.50, 25.00, 2, 1, 0, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6));"
-          count="$(docker exec "$mysql_container" mysql -uroot -proot inventoryapp_n01_ci -Nse "
+          count="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_n01_ci -Nse "
             SELECT COUNT(*)
             FROM ProductoVariantes pv
             JOIN Productos p ON p.Id = pv.ProductoId
@@ -79,7 +79,7 @@ jobs:
         run: |
           set -euo pipefail
           mysql_container="${{ job.services.mysql.id }}"
-          docker exec -i "$mysql_container" mysql -uroot -proot inventoryapp_n01_ci \
+          docker exec -i "$mysql_container" mysql -uroot -proot solqaryn_n01_ci \
             < backend/scripts/preflight-erp-n0-1-producto-variante.sql \
             > /tmp/n01-preflight-before.txt
           test -s /tmp/n01-preflight-before.txt
@@ -87,25 +87,25 @@ jobs:
         run: |
           set -euo pipefail
           mysql_container="${{ job.services.mysql.id }}"
-          resultado="$(docker exec -i "$mysql_container" mysql -uroot -proot inventoryapp_n01_ci --batch --skip-column-names \
+          resultado="$(docker exec -i "$mysql_container" mysql -uroot -proot solqaryn_n01_ci --batch --skip-column-names \
             < backend/scripts/backfill-erp-n0-1-producto-variante.sql | tail -n 1)"
           test "$resultado" = '0'
       - name: Validar autoridad N0.1 posterior
         run: |
           set -euo pipefail
           mysql_container="${{ job.services.mysql.id }}"
-          errores="$(docker exec -i "$mysql_container" mysql -uroot -proot inventoryapp_n01_ci --batch --skip-column-names \
+          errores="$(docker exec -i "$mysql_container" mysql -uroot -proot solqaryn_n01_ci --batch --skip-column-names \
             < backend/scripts/preflight-erp-n0-1-producto-variante.sql | tail -n 1)"
           test "$errores" = '0'
 
-          variante="$(docker exec "$mysql_container" mysql -uroot -proot inventoryapp_n01_ci -Nse "
+          variante="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_n01_ci -Nse "
             SELECT CONCAT(pv.EsTecnica, '|', pv.Cantidad, '|', FORMAT(pv.Costo, 2), '|', FORMAT(pv.Precio, 2))
             FROM ProductoVariantes pv
             JOIN Productos p ON p.Id = pv.ProductoId
             WHERE p.Nombre = 'ERP N0.1 Legacy CI' AND pv.Eliminado = 0;")"
           test "$variante" = '1|7|12.50|25.00'
 
-          alineado="$(docker exec "$mysql_container" mysql -uroot -proot inventoryapp_n01_ci -Nse "
+          alineado="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_n01_ci -Nse "
             SELECT COUNT(*)
             FROM Productos p
             JOIN ProductoVariantes pv ON pv.ProductoId = p.Id AND pv.Eliminado = 0
@@ -118,5 +118,5 @@ jobs:
       - name: Ejecutar pruebas de autoridad N0.1
         working-directory: backend
         run: |
-          dotnet test InventoryApp.sln --configuration Release \
+          dotnet test Solqaryn.sln --configuration Release \
             --filter "FullyQualifiedName~ProductoVarianteAuthorityTests"

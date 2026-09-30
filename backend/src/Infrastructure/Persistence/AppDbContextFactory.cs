@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
-namespace InventoryApp.Infrastructure.Persistence;
+namespace Solqaryn.Infrastructure.Persistence;
 
 /// <summary>
 /// Permite que las herramientas de EF Core creen el contexto sin arrancar toda

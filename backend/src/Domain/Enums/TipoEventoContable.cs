@@ -1,4 +1,4 @@
-namespace InventoryApp.Domain.Enums;
+namespace Solqaryn.Domain.Enums;
 
 /// <summary>
 /// Tipos de evento de negocio admitidos por el motor de contabilización.

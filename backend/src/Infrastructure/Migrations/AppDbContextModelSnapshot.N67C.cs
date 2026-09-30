@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 #nullable disable
 
-namespace InventoryApp.Infrastructure.Migrations
+namespace Solqaryn.Infrastructure.Migrations
 {
     partial class AppDbContextModelSnapshot
     {
@@ -17,7 +17,7 @@ namespace InventoryApp.Infrastructure.Migrations
         private static void ApplyN67CModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.Entity("InventoryApp.Domain.Entities.ConfigEmpresa", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ConfigEmpresa", b =>
             {
                 b.Property<int>("Id")
                     .ValueGeneratedOnAdd()
@@ -108,7 +108,7 @@ namespace InventoryApp.Infrastructure.Migrations
                 });
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.Empresa", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Empresa", b =>
             {
                 b.Property<string>("Direccion")
                     .HasMaxLength(500)
@@ -132,7 +132,7 @@ namespace InventoryApp.Infrastructure.Migrations
                     .HasDatabaseName("UX_Empresas_RTN");
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.PlantillaCorreoEmpresa", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.PlantillaCorreoEmpresa", b =>
             {
                 b.Property<int>("Id")
                     .ValueGeneratedOnAdd()
@@ -189,20 +189,20 @@ namespace InventoryApp.Infrastructure.Migrations
                 b.ToTable("PlantillasCorreoEmpresa", (string)null);
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.ConfigEmpresa", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ConfigEmpresa", b =>
             {
-                b.HasOne("InventoryApp.Domain.Entities.Empresa", "Empresa")
+                b.HasOne("Solqaryn.Domain.Entities.Empresa", "Empresa")
                     .WithOne()
-                    .HasForeignKey("InventoryApp.Domain.Entities.ConfigEmpresa", "EmpresaId")
+                    .HasForeignKey("Solqaryn.Domain.Entities.ConfigEmpresa", "EmpresaId")
                     .OnDelete(DeleteBehavior.Restrict)
                     .IsRequired();
 
                 b.Navigation("Empresa");
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.PlantillaCorreoEmpresa", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.PlantillaCorreoEmpresa", b =>
             {
-                b.HasOne("InventoryApp.Domain.Entities.Empresa", "Empresa")
+                b.HasOne("Solqaryn.Domain.Entities.Empresa", "Empresa")
                     .WithMany()
                     .HasForeignKey("EmpresaId")
                     .OnDelete(DeleteBehavior.Restrict)

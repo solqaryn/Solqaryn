@@ -1,6 +1,6 @@
-using InventoryApp.Domain.Entities;
+using Solqaryn.Domain.Entities;
 
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 /// <summary>
 /// Persistencia especializada del motor de costeo. Los métodos ForUpdate forman

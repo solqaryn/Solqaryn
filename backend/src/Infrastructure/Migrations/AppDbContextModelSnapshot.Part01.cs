@@ -5,28 +5,28 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 #nullable disable
 
-namespace InventoryApp.Infrastructure.Migrations
+namespace Solqaryn.Infrastructure.Migrations
 {
     internal static partial class AppDbContextSnapshotN14D
     {
         private static void ApplyPart1(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity("InventoryApp.Domain.Entities.Factura", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Factura", b =>
             {
                 b.Property<string>("MetodoPagoCodigoSnapshot").HasMaxLength(50).HasColumnType("varchar(50)");
                 b.Property<string>("MetodoPagoNombreSnapshot").HasMaxLength(120).HasColumnType("varchar(120)");
             });
-            modelBuilder.Entity("InventoryApp.Domain.Entities.FacturaPago", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.FacturaPago", b =>
             {
                 b.Property<string>("MetodoPagoCodigoSnapshot").HasMaxLength(50).HasColumnType("varchar(50)");
                 b.Property<string>("MetodoPagoNombreSnapshot").HasMaxLength(120).HasColumnType("varchar(120)");
             });
-            modelBuilder.Entity("InventoryApp.Domain.Entities.Compra", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Compra", b =>
             {
                 b.Property<int?>("MetodoPagoId").HasColumnType("int");
                 b.HasIndex("MetodoPagoId").HasDatabaseName("IX_Compras_MetodoPagoId");
             });
-            modelBuilder.Entity("InventoryApp.Domain.Entities.MovimientoInventario", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.MovimientoInventario", b =>
             {
                 b.Property<int?>("CompraId").HasColumnType("int");
                 b.Property<int?>("VentaId").HasColumnType("int");
@@ -43,7 +43,7 @@ namespace InventoryApp.Infrastructure.Migrations
                 b.HasIndex("RecepcionCompraId").HasDatabaseName("IX_MovimientosInventario_RecepcionCompraId");
                 b.HasIndex("RecepcionCompraId", "Fecha").HasDatabaseName("IX_MovInv_RecepcionCompra_Fecha_N23");
             });
-            modelBuilder.Entity("InventoryApp.Domain.Entities.AjusteInventario", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.AjusteInventario", b =>
             {
                 b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("int");
                 MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));

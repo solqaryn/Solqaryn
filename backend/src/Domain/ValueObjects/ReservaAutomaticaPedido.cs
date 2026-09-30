@@ -1,6 +1,6 @@
-using InventoryApp.Domain.Entities;
+using Solqaryn.Domain.Entities;
 
-namespace InventoryApp.Domain.ValueObjects;
+namespace Solqaryn.Domain.ValueObjects;
 
 public sealed record AsignacionReservaAutomatica(
     int ProductoVarianteId,

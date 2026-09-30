@@ -1,4 +1,4 @@
-namespace InventoryApp.Domain.Entities;
+namespace Solqaryn.Domain.Entities;
 
 /// Tema visual global de la aplicación (sección 16 del prompt). Fila única
 /// (Id=1) — configuración global administrada solo por usuarios

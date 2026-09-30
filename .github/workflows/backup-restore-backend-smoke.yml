@@ -43,7 +43,7 @@ jobs:
         id: backup
         shell: bash
         env:
-          SOLQARYN_ENVIRONMENT: desarrollo
+          SOLQARYN_ENVIRONMENT: dev
           DB_HOST: ${{ vars.SOLQARYN_DEV_DB_HOST }}
           DB_PORT: ${{ vars.SOLQARYN_DEV_DB_PORT }}
           DB_NAME: ${{ vars.SOLQARYN_DEV_DB_NAME }}
@@ -53,7 +53,7 @@ jobs:
           BACKUP_PASSPHRASE: ${{ secrets.SOLQARYN_DEV_BACKUP_PASSPHRASE }}
           OUTPUT_DIR: ${{ runner.temp }}/n821d-backups
           RETENTION_DAYS: '0'
-          BACKUP_LABEL: desarrollo
+          BACKUP_LABEL: dev
         run: |
           set -euo pipefail
           chmod +x scripts/backup_dev.sh
@@ -106,12 +106,12 @@ jobs:
 
       - name: Build backend exact HEAD
         shell: bash
-        run: dotnet build backend/src/API/InventoryApp.API.csproj -c Release --nologo
+        run: dotnet build backend/src/API/Solqaryn.API.csproj -c Release --nologo
 
       - name: Tenant isolation directed tests
         shell: bash
         run: >-
-          dotnet test backend/tests/InventoryApp.Tests/InventoryApp.Tests.csproj -c Release --no-restore --nologo
+          dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj -c Release --no-restore --nologo
           --filter "FullyQualifiedName~N65BTenantIsolationDomainContractsTests|FullyQualifiedName~N65FTenantPermissionIsolationTests|FullyQualifiedName~N67FTenantMutationFailClosedTests"
 
       - name: Start temporary backend against restored DB
@@ -133,7 +133,7 @@ jobs:
           Cloudinary__ApiSecret: ci-invalid
         run: |
           set -euo pipefail
-          dotnet run --project backend/src/API/InventoryApp.API.csproj -c Release --no-build > "$RUNNER_TEMP/n821d-api.log" 2>&1 &
+          dotnet run --project backend/src/API/Solqaryn.API.csproj -c Release --no-build > "$RUNNER_TEMP/n821d-api.log" 2>&1 &
           echo $! > "$RUNNER_TEMP/n821d-api.pid"
           for i in $(seq 1 45); do
             if curl --fail --silent http://127.0.0.1:5088/health > "$RUNNER_TEMP/health.json"; then break; fi

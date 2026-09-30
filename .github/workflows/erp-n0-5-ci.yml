@@ -8,8 +8,8 @@ on:
       - 'backend/src/**/*CompraMetodoPagoResolver*.cs'
       - 'backend/src/Infrastructure/Migrations/*N0_5*.cs'
       - 'backend/src/Infrastructure/Migrations/*ERP_N05*.cs'
-      - 'backend/tests/InventoryApp.Tests/*MetodoPago*.cs'
-      - 'backend/tests/InventoryApp.Tests/CompraMetodoPagoResolverTests.cs'
+      - 'backend/tests/Solqaryn.Tests/*MetodoPago*.cs'
+      - 'backend/tests/Solqaryn.Tests/CompraMetodoPagoResolverTests.cs'
       - 'backend/scripts/*erp-n0-5*'
       - 'frontend/e2e/n0-5-metodos-pago-regresion.spec.ts'
       - '.github/workflows/erp-n0-5-ci.yml'
@@ -20,8 +20,8 @@ on:
       - 'backend/src/**/*CompraMetodoPagoResolver*.cs'
       - 'backend/src/Infrastructure/Migrations/*N0_5*.cs'
       - 'backend/src/Infrastructure/Migrations/*ERP_N05*.cs'
-      - 'backend/tests/InventoryApp.Tests/*MetodoPago*.cs'
-      - 'backend/tests/InventoryApp.Tests/CompraMetodoPagoResolverTests.cs'
+      - 'backend/tests/Solqaryn.Tests/*MetodoPago*.cs'
+      - 'backend/tests/Solqaryn.Tests/CompraMetodoPagoResolverTests.cs'
       - 'backend/scripts/*erp-n0-5*'
       - 'frontend/e2e/n0-5-metodos-pago-regresion.spec.ts'
       - '.github/workflows/erp-n0-5-ci.yml'
@@ -43,14 +43,14 @@ jobs:
         image: mysql:8.4
         env:
           MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: inventoryapp_n05_ci
+          MYSQL_DATABASE: solqaryn_n05_ci
         ports: ['3306:3306']
         options: >-
           --health-cmd="mysqladmin ping -h localhost -proot"
           --health-interval=10s --health-timeout=5s --health-retries=12
     env:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=inventoryapp_n05_ci;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;
+      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=solqaryn_n05_ci;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;
       Database__ServerVersion: 8.4.0
       Database__ApplyMigrationsOnStartup: 'false'
       Jwt__Secret: ERP-N0-5-CI-Only-Secret-With-More-Than-32-Characters-2026
@@ -67,9 +67,9 @@ jobs:
       - name: Restaurar, compilar y probar backend
         working-directory: backend
         run: |
-          dotnet restore InventoryApp.sln
-          dotnet build InventoryApp.sln -c Release --no-restore -warnaserror
-          dotnet test InventoryApp.sln -c Release --no-build --filter "Category!=Integration"
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln -c Release --no-restore -warnaserror
+          dotnet test Solqaryn.sln -c Release --no-build --filter "Category!=Integration"
 
       - name: Instalar EF
         run: dotnet tool install --global dotnet-ef --version 8.0.8
@@ -78,8 +78,8 @@ jobs:
         working-directory: backend
         run: |
           dotnet ef database update 20260812022343_N0_5_MetodoPagoRelacionalBase \
-            --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-            --startup-project src/API/InventoryApp.API.csproj \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext
 
       - name: Sembrar historia representativa y desacoplar Id de enum
@@ -87,7 +87,7 @@ jobs:
         run: |
           set -euo pipefail
           c="${{ job.services.mysql.id }}"
-          docker exec "$c" mysql -uroot -proot inventoryapp_n05_ci -e "
+          docker exec "$c" mysql -uroot -proot solqaryn_n05_ci -e "
             INSERT INTO MetodosPago
               (Codigo,Nombre,Tipo,Activo,RequiereReferencia,RequiereBanco,PermiteCambio,Orden,Metadata,Eliminado,FechaCreacion,FechaActualizacion)
             VALUES
@@ -136,49 +136,49 @@ jobs:
         run: |
           set -euo pipefail
           c="${{ job.services.mysql.id }}"
-          docker exec "$c" mysql -uroot -proot inventoryapp_n05_ci -e "
+          docker exec "$c" mysql -uroot -proot solqaryn_n05_ci -e "
             INSERT INTO MovimientosFinancieros
               (Id,Fecha,Tipo,Categoria,Concepto,Monto,Estado,MetodoPago,MetodoPagoId,EsAutomatico,ModuloOrigen)
             VALUES
               (9599,UTC_TIMESTAMP(6),'Ajuste','Otro','N05 dato inválido',0,'Pagado','Cheque',NULL,0,'Manual');
           "
 
-          resultado="$(docker exec -i "$c" mysql -uroot -proot inventoryapp_n05_ci --batch --skip-column-names < backend/scripts/preflight-erp-n0-5-metodo-pago.sql | tail -n 1)"
+          resultado="$(docker exec -i "$c" mysql -uroot -proot solqaryn_n05_ci --batch --skip-column-names < backend/scripts/preflight-erp-n0-5-metodo-pago.sql | tail -n 1)"
           test "$resultado" -gt 0
 
           if (
             cd backend
             dotnet ef database update 20260812023600_N0_5_BackfillMetodoPagoHistorico \
-              --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-              --startup-project src/API/InventoryApp.API.csproj \
+              --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+              --startup-project src/API/Solqaryn.API.csproj \
               --context AppDbContext
           ); then
             echo 'N0.5 debía bloquear un método legacy desconocido.' >&2
             exit 1
           fi
 
-          test "$(docker exec "$c" mysql -uroot -proot inventoryapp_n05_ci -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20260812023600_N0_5_BackfillMetodoPagoHistorico';")" = '0'
-          test "$(docker exec "$c" mysql -uroot -proot inventoryapp_n05_ci -Nse "SELECT COUNT(*) FROM MetodosPago WHERE Codigo IN ('Efectivo','Transferencia','Tarjeta','Otro');")" = '0'
-          test "$(docker exec "$c" mysql -uroot -proot inventoryapp_n05_ci -Nse "SELECT COUNT(*) FROM Ventas WHERE MetodoPagoId IS NOT NULL;")" = '0'
-          test "$(docker exec "$c" mysql -uroot -proot inventoryapp_n05_ci -Nse "SELECT COUNT(*) FROM FacturaPagos WHERE MetodoPagoId IS NOT NULL;")" = '0'
-          test "$(docker exec "$c" mysql -uroot -proot inventoryapp_n05_ci -Nse "SELECT COUNT(*) FROM MovimientosFinancieros WHERE MetodoPagoId IS NOT NULL;")" = '0'
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n05_ci -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20260812023600_N0_5_BackfillMetodoPagoHistorico';")" = '0'
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n05_ci -Nse "SELECT COUNT(*) FROM MetodosPago WHERE Codigo IN ('Efectivo','Transferencia','Tarjeta','Otro');")" = '0'
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n05_ci -Nse "SELECT COUNT(*) FROM Ventas WHERE MetodoPagoId IS NOT NULL;")" = '0'
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n05_ci -Nse "SELECT COUNT(*) FROM FacturaPagos WHERE MetodoPagoId IS NOT NULL;")" = '0'
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n05_ci -Nse "SELECT COUNT(*) FROM MovimientosFinancieros WHERE MetodoPagoId IS NOT NULL;")" = '0'
 
-          docker exec "$c" mysql -uroot -proot inventoryapp_n05_ci -e "DELETE FROM MovimientosFinancieros WHERE Id=9599;"
+          docker exec "$c" mysql -uroot -proot solqaryn_n05_ci -e "DELETE FROM MovimientosFinancieros WHERE Id=9599;"
 
       - name: Preflight N0.5 válido
         shell: bash
         run: |
           set -euo pipefail
           c="${{ job.services.mysql.id }}"
-          resultado="$(docker exec -i "$c" mysql -uroot -proot inventoryapp_n05_ci --batch --skip-column-names < backend/scripts/preflight-erp-n0-5-metodo-pago.sql | tail -n 1)"
+          resultado="$(docker exec -i "$c" mysql -uroot -proot solqaryn_n05_ci --batch --skip-column-names < backend/scripts/preflight-erp-n0-5-metodo-pago.sql | tail -n 1)"
           test "$resultado" = '0'
 
       - name: Aplicar backfill histórico N0.5 exacto
         working-directory: backend
         run: |
           dotnet ef database update 20260812023600_N0_5_BackfillMetodoPagoHistorico \
-            --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-            --startup-project src/API/InventoryApp.API.csproj \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext
 
       - name: Verificar aislamiento, postcheck y preservación 1 a 1
@@ -189,17 +189,17 @@ jobs:
           base='20260812022343_N0_5_MetodoPagoRelacionalBase'
           backfill='20260812023600_N0_5_BackfillMetodoPagoHistorico'
 
-          test "$(docker exec "$c" mysql -uroot -proot inventoryapp_n05_ci -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='${base}';")" = '1'
-          test "$(docker exec "$c" mysql -uroot -proot inventoryapp_n05_ci -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='${backfill}';")" = '1'
-          test "$(docker exec "$c" mysql -uroot -proot inventoryapp_n05_ci -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId > '${backfill}';")" = '0'
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n05_ci -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='${base}';")" = '1'
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n05_ci -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='${backfill}';")" = '1'
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n05_ci -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId > '${backfill}';")" = '0'
 
-          resultado="$(docker exec -i "$c" mysql -uroot -proot inventoryapp_n05_ci --batch --skip-column-names < backend/scripts/postdeploy-erp-n0-5-metodo-pago.sql | tail -n 1)"
+          resultado="$(docker exec -i "$c" mysql -uroot -proot solqaryn_n05_ci --batch --skip-column-names < backend/scripts/postdeploy-erp-n0-5-metodo-pago.sql | tail -n 1)"
           test "$resultado" = '0'
 
-          test "$(docker exec "$c" mysql -uroot -proot inventoryapp_n05_ci -Nse "SELECT COUNT(*) FROM MetodosPago WHERE Codigo='ChequeExterno' AND Id=1;")" = '1'
-          test "$(docker exec "$c" mysql -uroot -proot inventoryapp_n05_ci -Nse "SELECT COUNT(*) FROM MetodosPago WHERE (Codigo='Efectivo' AND Id=1) OR (Codigo='Transferencia' AND Id=2) OR (Codigo='Tarjeta' AND Id=3) OR (Codigo='Otro' AND Id=4);")" = '0'
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n05_ci -Nse "SELECT COUNT(*) FROM MetodosPago WHERE Codigo='ChequeExterno' AND Id=1;")" = '1'
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n05_ci -Nse "SELECT COUNT(*) FROM MetodosPago WHERE (Codigo='Efectivo' AND Id=1) OR (Codigo='Transferencia' AND Id=2) OR (Codigo='Tarjeta' AND Id=3) OR (Codigo='Otro' AND Id=4);")" = '0'
 
-          test "$(docker exec "$c" mysql -uroot -proot inventoryapp_n05_ci -Nse "
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n05_ci -Nse "
             SELECT COUNT(*) FROM Ventas v JOIN MetodosPago mp ON mp.Id=v.MetodoPagoId
              WHERE v.Id BETWEEN 9501 AND 9504
                AND ((v.Id=9501 AND BINARY v.MetodoPago=BINARY 'Efectivo' AND BINARY mp.Codigo=BINARY 'Efectivo')
@@ -207,7 +207,7 @@ jobs:
                  OR (v.Id=9503 AND BINARY v.MetodoPago=BINARY 'Tarjeta' AND BINARY mp.Codigo=BINARY 'Tarjeta')
                  OR (v.Id=9504 AND BINARY v.MetodoPago=BINARY 'Otro' AND BINARY mp.Codigo=BINARY 'Otro'));" )" = '4'
 
-          test "$(docker exec "$c" mysql -uroot -proot inventoryapp_n05_ci -Nse "
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n05_ci -Nse "
             SELECT COUNT(*) FROM FacturaPagos fp JOIN MetodosPago mp ON mp.Id=fp.MetodoPagoId
              WHERE fp.Id BETWEEN 9521 AND 9524
                AND ((fp.MetodoPago=1 AND BINARY mp.Codigo=BINARY 'Efectivo')
@@ -215,17 +215,17 @@ jobs:
                  OR (fp.MetodoPago=3 AND BINARY mp.Codigo=BINARY 'Tarjeta')
                  OR (fp.MetodoPago=4 AND BINARY mp.Codigo=BINARY 'Otro'));" )" = '4'
 
-          test "$(docker exec "$c" mysql -uroot -proot inventoryapp_n05_ci -Nse "
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n05_ci -Nse "
             SELECT COUNT(*) FROM MovimientosFinancieros mf JOIN MetodosPago mp ON mp.Id=mf.MetodoPagoId
              WHERE mf.Id BETWEEN 9531 AND 9534 AND BINARY mf.MetodoPago=BINARY mp.Codigo;" )" = '4'
-          test "$(docker exec "$c" mysql -uroot -proot inventoryapp_n05_ci -Nse "SELECT COUNT(*) FROM MovimientosFinancieros WHERE Id=9535 AND MetodoPago IS NULL AND MetodoPagoId IS NULL;")" = '1'
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n05_ci -Nse "SELECT COUNT(*) FROM MovimientosFinancieros WHERE Id=9535 AND MetodoPago IS NULL AND MetodoPagoId IS NULL;")" = '1'
 
       - name: Snapshot EF consistente
         working-directory: backend
         run: |
           dotnet ef migrations has-pending-model-changes \
-            --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-            --startup-project src/API/InventoryApp.API.csproj \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext
 
       - name: Configurar Node.js para regresión frontend N0.5

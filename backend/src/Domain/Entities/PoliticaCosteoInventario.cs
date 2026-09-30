@@ -1,7 +1,7 @@
-using InventoryApp.Domain.Common;
-using InventoryApp.Domain.Enums;
+using Solqaryn.Domain.Common;
+using Solqaryn.Domain.Enums;
 
-namespace InventoryApp.Domain.Entities;
+namespace Solqaryn.Domain.Entities;
 
 /// <summary>
 /// Versión temporal de la política de costeo para el ámbito empresarial activo.

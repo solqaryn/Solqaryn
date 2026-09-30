@@ -2,9 +2,9 @@ import { test, expect, Page } from '@playwright/test';
 
 const ADMIN_USERNAME = process.env['PHASE7_ADMIN_USERNAME'] ?? 'e2e_admin';
 const ADMIN_PASSWORD = process.env['PHASE7_ADMIN_PASSWORD'] ?? 'E2E.Admin#2026!';
-const LAST_ACTIVITY_KEY = 'inventoryapp_last_activity';
-const LAST_RENEW_KEY = 'inventoryapp_last_renew';
-const TOKEN_KEY = 'inventoryapp_token';
+const LAST_ACTIVITY_KEY = 'solqaryn_last_activity';
+const LAST_RENEW_KEY = 'solqaryn_last_renew';
+const TOKEN_KEY = 'solqaryn_token';
 const THIRTY_ONE_MINUTES_MS = 31 * 60 * 1000;
 const SIX_MINUTES_MS = 6 * 60 * 1000;
 

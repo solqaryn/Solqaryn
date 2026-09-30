@@ -21,7 +21,7 @@ describe('TenantContextService', () => {
   });
 
   it('no restaura autoridad desde localStorage', () => {
-    localStorage.setItem('inventoryapp_empresa_solicitada_id', '8');
+    localStorage.setItem('solqaryn_empresa_solicitada_id', '8');
     const service = TestBed.inject(TenantContextService);
 
     expect(service.empresaSolicitadaId()).toBe(8);
@@ -81,6 +81,6 @@ describe('TenantContextService', () => {
 
     expect(service.contextoVerificado()).toBeNull();
     expect(service.empresaSolicitadaId()).toBeNull();
-    expect(localStorage.getItem('inventoryapp_empresa_solicitada_id')).toBeNull();
+    expect(localStorage.getItem('solqaryn_empresa_solicitada_id')).toBeNull();
   });
 });

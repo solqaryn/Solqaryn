@@ -39,7 +39,7 @@ jobs:
         image: mysql:8.4
         env:
           MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: inventoryapp_m11_source
+          MYSQL_DATABASE: solqaryn_m11_source
         ports:
           - 3306:3306
         options: >-
@@ -51,19 +51,19 @@ jobs:
     env:
       ASPNETCORE_ENVIRONMENT: Development
       PORT: '5005'
-      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=inventoryapp_m11_source;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_m11_source;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
       Database__ServerVersion: '8.4.0'
       Database__ApplyMigrationsOnStartup: 'true'
       Jwt__Secret: 'SOLQARYN-CI-Only-Secret-With-More-Than-32-Characters-2026'
-      Jwt__Issuer: 'InventoryApp.API'
-      Jwt__Audience: 'InventoryApp.Frontend'
+      Jwt__Issuer: 'Solqaryn.API'
+      Jwt__Audience: 'Solqaryn.Frontend'
       Jwt__ExpiraMinutos: '120'
       Security__LoginRateLimitPerMinute: '300'
       SeedAdmin__Username: 'm11_restore_admin'
       SeedAdmin__Password: 'SOLQARYN.Restore#2026!'
       Cors__AllowedOrigins__0: 'http://127.0.0.1:4200'
       AppSettings__BackendPublicUrl: 'https://preview.solqaryn.invalid'
-      AppSettings__LogoPublicUrl: 'https://solqaryn-dev.vercel.app/assets/varistorehn-logo.png'
+      AppSettings__LogoPublicUrl: 'https://solqaryn-dev.vercel.app/assets/storefront-logo.png'
       Cloudinary__CloudName: 'ci-not-used'
       Cloudinary__ApiKey: 'ci-not-used'
       Cloudinary__ApiSecret: 'ci-not-used'
@@ -85,7 +85,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          dotnet restore InventoryApp.sln
+          dotnet restore Solqaryn.sln
           dotnet tool install --global dotnet-ef --version 8.0.8
           mysql_container="${{ job.services.mysql.id }}"
           docker exec "$mysql_container" mysql -uroot -proot -e "SET GLOBAL sql_require_primary_key=ON;"
@@ -95,8 +95,8 @@ jobs:
         working-directory: backend
         run: |
           dotnet ef database update \
-            --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-            --startup-project src/API/InventoryApp.API.csproj \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext
 
       - name: Sembrar registros y referencias de activos SOLQARYN
@@ -104,7 +104,7 @@ jobs:
         run: |
           set -euo pipefail
           export MYSQL_PWD=root
-          mysql --protocol=TCP -h 127.0.0.1 -P 3306 -uroot inventoryapp_m11_source <<'SQL'
+          mysql --protocol=TCP -h 127.0.0.1 -P 3306 -uroot solqaryn_m11_source <<'SQL'
           INSERT INTO Productos
             (Nombre, Marca, Modelo, TipoInventario, Cantidad, Costo, Precio, UmbralStockBajo,
              Activo, Eliminado, FechaCreacion, FechaActualizacion)
@@ -117,7 +117,7 @@ jobs:
             (ProductoId, ProductoVarianteId, Url, PublicId, Orden, EsPrincipal, FechaCreacion)
           VALUES
             (@producto_id, NULL, 'https://assets.invalid/backup-drill/producto-sentinel.webp',
-             'desarrollo/backup-drill/producto-sentinel', 0, 1, UTC_TIMESTAMP(6));
+             'dev/backup-drill/producto-sentinel', 0, 1, UTC_TIMESTAMP(6));
 
           INSERT INTO Compras
             (NumeroCompra, Fecha, ProveedorNombre, Estado, EstadoPago, MetodoPago,
@@ -133,7 +133,7 @@ jobs:
           VALUES
             (@compra_id, 'factura-m11.pdf', 'application/pdf', 3210,
              'https://assets.invalid/backup-drill/factura-sentinel.pdf',
-             'desarrollo/backup-drill/factura-sentinel', 'raw', 0, UTC_TIMESTAMP(6));
+             'dev/backup-drill/factura-sentinel', 'raw', 0, UTC_TIMESTAMP(6));
           SQL
           unset MYSQL_PWD
 
@@ -157,13 +157,13 @@ jobs:
           SOLQARYN_ENVIRONMENT: ci
           DB_HOST: 127.0.0.1
           DB_PORT: '3306'
-          DB_NAME: inventoryapp_m11_source
+          DB_NAME: solqaryn_m11_source
           DB_USER: root
           DB_PASSWORD: root
           BACKUP_PASSPHRASE: ${{ env.SOLQARYN_BACKUP_CI_PASSPHRASE }}
           OUTPUT_DIR: ${{ runner.temp }}/solqaryn-backups
           RETENTION_DAYS: '14'
-          BACKUP_LABEL: desarrollo
+          BACKUP_LABEL: dev
         run: |
           set -euo pipefail
           chmod +x scripts/backup_dev.sh scripts/restore_dev.sh
@@ -196,7 +196,7 @@ jobs:
           RESTORE_ENVIRONMENT: ci
           TARGET_DB_HOST: 127.0.0.1
           TARGET_DB_PORT: '3306'
-          TARGET_DB_NAME: inventoryapp_m11_restore
+          TARGET_DB_NAME: solqaryn_m11_restore
           TARGET_DB_USER: root
           TARGET_DB_PASSWORD: root
           BACKUP_PASSPHRASE: ${{ env.SOLQARYN_BACKUP_CI_PASSPHRASE }}
@@ -211,29 +211,29 @@ jobs:
           test -s "$RUNNER_TEMP/solqaryn-restore-report.json"
           grep -q '"status": "SUCCESS"' "$RUNNER_TEMP/solqaryn-restore-report.json"
           grep -q '"productionTouched": false' "$RUNNER_TEMP/solqaryn-restore-report.json"
-          grep -q 'desarrollo/backup-drill/producto-sentinel' "$RUNNER_TEMP/solqaryn-restored-files/references/producto-imagenes.tsv"
-          grep -q 'desarrollo/backup-drill/factura-sentinel' "$RUNNER_TEMP/solqaryn-restored-files/references/compra-documentos.tsv"
+          grep -q 'dev/backup-drill/producto-sentinel' "$RUNNER_TEMP/solqaryn-restored-files/references/producto-imagenes.tsv"
+          grep -q 'dev/backup-drill/factura-sentinel' "$RUNNER_TEMP/solqaryn-restored-files/references/compra-documentos.tsv"
 
       - name: Verificar datos sentinel tras restore
         shell: bash
         run: |
           set -euo pipefail
           export MYSQL_PWD=root
-          test "$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -uroot inventoryapp_m11_restore -Nse "SELECT COUNT(*) FROM Productos WHERE Nombre='Producto Sentinel SOLQARYN';")" = 1
-          test "$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -uroot inventoryapp_m11_restore -Nse "SELECT COUNT(*) FROM ProductoImagenes WHERE PublicId='desarrollo/backup-drill/producto-sentinel';")" = 1
-          test "$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -uroot inventoryapp_m11_restore -Nse "SELECT COUNT(*) FROM CompraDocumentos WHERE PublicId='desarrollo/backup-drill/factura-sentinel';")" = 1
+          test "$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -uroot solqaryn_m11_restore -Nse "SELECT COUNT(*) FROM Productos WHERE Nombre='Producto Sentinel SOLQARYN';")" = 1
+          test "$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -uroot solqaryn_m11_restore -Nse "SELECT COUNT(*) FROM ProductoImagenes WHERE PublicId='dev/backup-drill/producto-sentinel';")" = 1
+          test "$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -uroot solqaryn_m11_restore -Nse "SELECT COUNT(*) FROM CompraDocumentos WHERE PublicId='dev/backup-drill/factura-sentinel';")" = 1
           unset MYSQL_PWD
 
       - name: Arrancar API contra restore descartable
         working-directory: backend
         shell: bash
         env:
-          ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=inventoryapp_m11_restore;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
+          ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_m11_restore;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
         run: |
           set -euo pipefail
-          dotnet build InventoryApp.sln --configuration Release --no-restore
+          dotnet build Solqaryn.sln --configuration Release --no-restore
           nohup dotnet run \
-            --project src/API/InventoryApp.API.csproj \
+            --project src/API/Solqaryn.API.csproj \
             --configuration Release \
             --no-build \
             --no-launch-profile \
@@ -259,14 +259,14 @@ jobs:
         run: |
           set -euo pipefail
           if SOLQARYN_ENVIRONMENT=produccion \
-             DB_HOST=127.0.0.1 DB_PORT=3306 DB_NAME=varistorehn_produccion DB_USER=root DB_PASSWORD=root \
+             DB_HOST=127.0.0.1 DB_PORT=3306 DB_NAME=storefront_produccion DB_USER=root DB_PASSWORD=root \
              BACKUP_PASSPHRASE="$SOLQARYN_BACKUP_CI_PASSPHRASE" \
              scripts/backup_dev.sh > /dev/null 2>&1; then
             echo 'El backup no bloqueó Producción.' >&2
             exit 1
           fi
 
-          if RESTORE_ENVIRONMENT=desarrollo-descartable \
+          if RESTORE_ENVIRONMENT=dev-descartable \
              TARGET_DB_HOST=127.0.0.1 TARGET_DB_PORT=3306 TARGET_DB_NAME=solqaryn_dev \
              TARGET_DB_USER=root TARGET_DB_PASSWORD=root BACKUP_PASSPHRASE="$SOLQARYN_BACKUP_CI_PASSPHRASE" \
              BACKUP_FILE="${{ steps.backup.outputs.backup_file }}" \

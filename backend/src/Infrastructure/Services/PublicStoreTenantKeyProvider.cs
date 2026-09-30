@@ -1,6 +1,6 @@
-using InventoryApp.Application.Interfaces;
+using Solqaryn.Application.Interfaces;
 
-namespace InventoryApp.Infrastructure.Services;
+namespace Solqaryn.Infrastructure.Services;
 
 public sealed class PublicStoreTenantKeyProvider : IPublicStoreTenantKeyProvider
 {
@@ -44,7 +44,7 @@ public sealed class PublicStoreTenantKeyProvider : IPublicStoreTenantKeyProvider
         int? configuracionId,
         string? nombreComercial,
         string? nombreVisibleSistema,
-        IReadOnlyCollection<InventoryApp.Domain.Entities.Empresa> empresas)
+        IReadOnlyCollection<Solqaryn.Domain.Entities.Empresa> empresas)
     {
         var nombres = new[] { nombreComercial, nombreVisibleSistema }
             .Where(nombre => !string.IsNullOrWhiteSpace(nombre))

@@ -1,10 +1,10 @@
-using InventoryApp.Infrastructure.Persistence;
+using Solqaryn.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace InventoryApp.Infrastructure.Migrations;
+namespace Solqaryn.Infrastructure.Migrations;
 
 /// <summary>
 /// Finaliza la transición de los maestros normalizados creada en M1.

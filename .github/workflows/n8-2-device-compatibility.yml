@@ -59,7 +59,7 @@ jobs:
           nohup npm start -- --host 127.0.0.1 --port 4200 > n82-frontend.log 2>&1 &
           echo $! > n82-frontend.pid
           for attempt in $(seq 1 60); do
-            if curl --fail --silent http://127.0.0.1:4200/varistorehn > /dev/null; then
+            if curl --fail --silent http://127.0.0.1:4200/storefront > /dev/null; then
               echo 'Angular listo para N8.2.'
               exit 0
             fi

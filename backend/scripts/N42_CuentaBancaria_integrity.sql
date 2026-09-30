@@ -1,5 +1,5 @@
 -- N4.2.C DATA_INTEGRITY — QA_TAKEOVER
--- Fail-closed validation for CuentasBancarias on Desarrollo.
+-- Fail-closed validation for CuentasBancarias on dev.
 -- Read-only with respect to application schema/data: only a session-scoped TEMPORARY table is used.
 -- No historical Banco relationship is invented; backfill is N/A unless real legacy data exists.
 -- This script does not execute rollback/reconciliation or any Production change.
@@ -70,4 +70,4 @@ DROP TEMPORARY TABLE _vaep_n42_integrity_assert;
 -- * No destructive SQL is executed by this gate.
 -- * If invalid legacy rows are detected, remediation must be based on verified business history.
 -- * Never guess a BancoId, delete duplicates, or rewrite balances automatically.
--- * Any future repair must be a separately reviewed Desarrollo-only migration/runbook.
+-- * Any future repair must be a separately reviewed dev-only migration/runbook.

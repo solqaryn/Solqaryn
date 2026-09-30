@@ -2,7 +2,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace InventoryApp.Infrastructure.Migrations
+namespace Solqaryn.Infrastructure.Migrations
 {
     partial class AppDbContextModelSnapshot
     {
@@ -14,7 +14,7 @@ namespace InventoryApp.Infrastructure.Migrations
         /// </summary>
         private static void ApplyN46CModel(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity("InventoryApp.Domain.Entities.CuentaContable", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.CuentaContable", b =>
             {
                 b.Property<int>("Id")
                     .ValueGeneratedOnAdd()
@@ -91,9 +91,9 @@ namespace InventoryApp.Infrastructure.Migrations
                 });
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.CuentaContable", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.CuentaContable", b =>
             {
-                b.HasOne("InventoryApp.Domain.Entities.CuentaContable", "CuentaPadre")
+                b.HasOne("Solqaryn.Domain.Entities.CuentaContable", "CuentaPadre")
                     .WithMany("Subcuentas")
                     .HasForeignKey("CuentaPadreId")
                     .OnDelete(DeleteBehavior.Restrict);
@@ -101,7 +101,7 @@ namespace InventoryApp.Infrastructure.Migrations
                 b.Navigation("CuentaPadre");
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.CuentaContable", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.CuentaContable", b =>
             {
                 b.Navigation("Subcuentas");
             });

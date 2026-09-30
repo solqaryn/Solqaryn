@@ -1,7 +1,7 @@
-using InventoryApp.Application.Exceptions;
-using InventoryApp.Domain.Entities;
+using Solqaryn.Application.Exceptions;
+using Solqaryn.Domain.Entities;
 
-namespace InventoryApp.Application.Services;
+namespace Solqaryn.Application.Services;
 
 /// <summary>
 /// Distribuye los componentes monetarios ya persistidos en el encabezado de una

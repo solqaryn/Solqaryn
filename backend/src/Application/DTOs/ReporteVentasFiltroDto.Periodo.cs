@@ -1,6 +1,6 @@
-using InventoryApp.Application.Common;
+using Solqaryn.Application.Common;
 
-namespace InventoryApp.Application.DTOs;
+namespace Solqaryn.Application.DTOs;
 
 /// <summary>
 /// Domain contract for the period/time-range part of the sales-report filter (N5.3.B).

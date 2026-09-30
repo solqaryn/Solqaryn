@@ -1,7 +1,7 @@
-using InventoryApp.Application.Common;
-using InventoryApp.Application.DTOs;
+using Solqaryn.Application.Common;
+using Solqaryn.Application.DTOs;
 
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 public interface IVentaService
 {

@@ -1,8 +1,8 @@
 using FluentValidation;
-using InventoryApp.Application.DTOs;
-using InventoryApp.Domain.Enums;
+using Solqaryn.Application.DTOs;
+using Solqaryn.Domain.Enums;
 
-namespace InventoryApp.Application.Validators;
+namespace Solqaryn.Application.Validators;
 
 public sealed class CreateUbicacionAlmacenValidator : AbstractValidator<CreateUbicacionAlmacenDto>
 {

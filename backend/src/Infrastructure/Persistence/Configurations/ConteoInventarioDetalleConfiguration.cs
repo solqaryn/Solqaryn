@@ -1,8 +1,8 @@
-using InventoryApp.Domain.Entities;
+using Solqaryn.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace InventoryApp.Infrastructure.Persistence.Configurations;
+namespace Solqaryn.Infrastructure.Persistence.Configurations;
 
 /// <summary>
 /// Persistencia de líneas físicas de conteo. La clave operativa es

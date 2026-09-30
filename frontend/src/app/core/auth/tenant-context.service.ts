@@ -4,7 +4,7 @@ import { Observable, catchError, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
 
-const EMPRESA_SOLICITADA_KEY = 'inventoryapp_empresa_solicitada_id';
+const EMPRESA_SOLICITADA_KEY = 'solqaryn_empresa_solicitada_id';
 
 export interface TenantContextoVerificado {
   usuarioId: number;

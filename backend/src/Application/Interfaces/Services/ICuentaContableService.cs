@@ -1,6 +1,6 @@
-using InventoryApp.Application.DTOs;
+using Solqaryn.Application.DTOs;
 
-namespace InventoryApp.Application.Interfaces.Services;
+namespace Solqaryn.Application.Interfaces.Services;
 
 public interface ICuentaContableService
 {

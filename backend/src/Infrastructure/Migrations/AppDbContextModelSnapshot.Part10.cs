@@ -5,14 +5,14 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 #nullable disable
 
-namespace InventoryApp.Infrastructure.Migrations
+namespace Solqaryn.Infrastructure.Migrations
 {
     internal static partial class AppDbContextSnapshotN14D
     {
         private static void ApplyPart10(ModelBuilder modelBuilder)
         {
             // ERP-N1.8.C — persistencia normalizada de reservas de inventario.
-            modelBuilder.Entity<InventoryApp.Domain.Entities.ReservaInventario>(b =>
+            modelBuilder.Entity<Solqaryn.Domain.Entities.ReservaInventario>(b =>
             {
                 b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("int");
                 MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
@@ -23,7 +23,7 @@ namespace InventoryApp.Infrastructure.Migrations
                 b.Property<int?>("ConsumidaPorUsuarioId").HasColumnType("int");
                 b.Property<string>("CreadoPorNombreUsuario").HasMaxLength(150).HasColumnType("varchar(150)");
                 b.Property<int?>("CreadoPorUsuarioId").HasColumnType("int");
-                b.Property<InventoryApp.Domain.Enums.EstadoReservaInventario>("Estado").HasColumnType("int");
+                b.Property<Solqaryn.Domain.Enums.EstadoReservaInventario>("Estado").HasColumnType("int");
                 b.Property<int?>("ExpiradaPorUsuarioId").HasColumnType("int");
                 b.Property<DateTime>("FechaActualizacion").HasColumnType("datetime(6)");
                 b.Property<DateTime?>("FechaActivacion").HasColumnType("datetime(6)");
@@ -48,7 +48,7 @@ namespace InventoryApp.Infrastructure.Migrations
                 b.ToTable("ReservasInventario");
             });
 
-            modelBuilder.Entity<InventoryApp.Domain.Entities.ReservaInventarioDetalle>(b =>
+            modelBuilder.Entity<Solqaryn.Domain.Entities.ReservaInventarioDetalle>(b =>
             {
                 b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("int");
                 MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
@@ -82,45 +82,45 @@ namespace InventoryApp.Infrastructure.Migrations
                 b.ToTable("ReservaInventarioDetalles");
             });
 
-            modelBuilder.Entity<InventoryApp.Domain.Entities.ReservaInventario>(b =>
+            modelBuilder.Entity<Solqaryn.Domain.Entities.ReservaInventario>(b =>
             {
-                b.HasOne(typeof(InventoryApp.Domain.Entities.PedidoVenta), "PedidoVenta").WithMany().HasForeignKey("PedidoVentaId")
+                b.HasOne(typeof(Solqaryn.Domain.Entities.PedidoVenta), "PedidoVenta").WithMany().HasForeignKey("PedidoVentaId")
                     .OnDelete(DeleteBehavior.Restrict).HasConstraintName("FK_ReservasInventario_PedidosVenta_PedidoVentaId");
                 // Venta is still represented by the generated N0.5 shared-type baseline in this
                 // historical snapshot. Force the non-generic overload so the string is interpreted
                 // as the related entity type name, not as a shadow navigation name on ReservaInventario.
                 ((Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder)b)
-                    .HasOne("InventoryApp.Domain.Entities.Venta", null).WithMany().HasForeignKey("VentaId")
+                    .HasOne("Solqaryn.Domain.Entities.Venta", null).WithMany().HasForeignKey("VentaId")
                     .OnDelete(DeleteBehavior.Restrict).HasConstraintName("FK_ReservasInventario_Ventas_VentaId");
                 b.Navigation("PedidoVenta");
             });
 
-            modelBuilder.Entity<InventoryApp.Domain.Entities.ReservaInventarioDetalle>(b =>
+            modelBuilder.Entity<Solqaryn.Domain.Entities.ReservaInventarioDetalle>(b =>
             {
                 // Almacen is still represented by the historical shared-type baseline in this snapshot.
                 // Preserve the FK by entity-type name without binding the CLR navigation to the
                 // Dictionary-backed historical identity.
                 ((Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder)b)
-                    .HasOne("InventoryApp.Domain.Entities.Almacen", null).WithMany().HasForeignKey("AlmacenId")
+                    .HasOne("Solqaryn.Domain.Entities.Almacen", null).WithMany().HasForeignKey("AlmacenId")
                     .OnDelete(DeleteBehavior.Restrict).IsRequired().HasConstraintName("FK_ReservaDetalles_Almacenes_AlmacenId");
                 // ProductoVariante is also represented by a historical shared-type identity in this
                 // snapshot. Preserve the FK without coercing that identity to the modern CLR navigation.
                 ((Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder)b)
-                    .HasOne("InventoryApp.Domain.Entities.ProductoVariante", null).WithMany().HasForeignKey("ProductoVarianteId")
+                    .HasOne("Solqaryn.Domain.Entities.ProductoVariante", null).WithMany().HasForeignKey("ProductoVarianteId")
                     .OnDelete(DeleteBehavior.Restrict).IsRequired().HasConstraintName("FK_ReservaDetalles_ProductoVariantes_ProductoVarianteId");
-                b.HasOne(typeof(InventoryApp.Domain.Entities.ReservaInventario), "ReservaInventario").WithMany("Detalles").HasForeignKey("ReservaInventarioId")
+                b.HasOne(typeof(Solqaryn.Domain.Entities.ReservaInventario), "ReservaInventario").WithMany("Detalles").HasForeignKey("ReservaInventarioId")
                     .OnDelete(DeleteBehavior.Cascade).IsRequired().HasConstraintName("FK_ReservaInventarioDetalles_ReservasInventario_ReservaInventarioId");
                 // UbicacionAlmacen remains represented by the historical shared-type baseline.
                 // Preserve the composite FK/principal key by entity-type name without binding the
                 // modern CLR navigation to the Dictionary-backed historical identity.
                 ((Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder)b)
-                    .HasOne("InventoryApp.Domain.Entities.UbicacionAlmacen", null).WithMany()
+                    .HasOne("Solqaryn.Domain.Entities.UbicacionAlmacen", null).WithMany()
                     .HasForeignKey("AlmacenId", "UbicacionAlmacenId").HasPrincipalKey("AlmacenId", "Id")
                     .OnDelete(DeleteBehavior.Restrict).HasConstraintName("FK_ReservaDetalles_Ubicacion_MismoAlmacen");
                 b.Navigation("ReservaInventario");
             });
 
-            modelBuilder.Entity<InventoryApp.Domain.Entities.ReservaInventario>(b =>
+            modelBuilder.Entity<Solqaryn.Domain.Entities.ReservaInventario>(b =>
             {
                 b.Navigation("Detalles");
             });

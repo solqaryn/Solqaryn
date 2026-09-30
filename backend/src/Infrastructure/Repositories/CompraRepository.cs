@@ -1,12 +1,12 @@
-using InventoryApp.Application.Common;
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Domain.Entities;
-using InventoryApp.Domain.Enums;
-using InventoryApp.Infrastructure.Persistence;
+using Solqaryn.Application.Common;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Entities;
+using Solqaryn.Domain.Enums;
+using Solqaryn.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
-using CatalogoMetodoPago = InventoryApp.Domain.Entities.Catalogos.MetodoPago;
+using CatalogoMetodoPago = Solqaryn.Domain.Entities.Catalogos.MetodoPago;
 
-namespace InventoryApp.Infrastructure.Repositories;
+namespace Solqaryn.Infrastructure.Repositories;
 
 public class CompraRepository : ICompraRepository
 {

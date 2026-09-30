@@ -1,10 +1,10 @@
-using InventoryApp.Application.DTOs.Bancos;
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Domain.Entities.Bancos;
-using InventoryApp.Domain.Enums;
-using InventoryApp.Domain.Enums.Bancos;
+using Solqaryn.Application.DTOs.Bancos;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Entities.Bancos;
+using Solqaryn.Domain.Enums;
+using Solqaryn.Domain.Enums.Bancos;
 
-namespace InventoryApp.Application.Services;
+namespace Solqaryn.Application.Services;
 
 public class ConciliacionBancariaService : IConciliacionBancariaService
 {

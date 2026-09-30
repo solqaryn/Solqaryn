@@ -1,7 +1,7 @@
 using FluentValidation;
-using InventoryApp.Application.DTOs;
+using Solqaryn.Application.DTOs;
 
-namespace InventoryApp.Application.Validators;
+namespace Solqaryn.Application.Validators;
 
 public class CreateProductoValidator : AbstractValidator<CreateProductoDto>
 {

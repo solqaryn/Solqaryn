@@ -9,12 +9,12 @@ module.exports = async function handler(req, res) {
         'User-agent: *',
         'Disallow: /',
         'Allow: /$',
-        'Allow: /varistorehn$',
-        'Allow: /varistorehn/',
-        'Disallow: /varistorehn/carrito',
-        'Disallow: /varistorehn/checkout',
-        'Disallow: /varistorehn/cuenta',
-        'Disallow: /varistorehn/pedido/',
+        'Allow: /tienda$',
+        'Allow: /tienda/',
+        'Disallow: /tienda/carrito',
+        'Disallow: /tienda/checkout',
+        'Disallow: /tienda/cuenta',
+        'Disallow: /tienda/pedido/',
         `Sitemap: ${origin}/sitemap.xml`,
         ''
       ].join('\n')

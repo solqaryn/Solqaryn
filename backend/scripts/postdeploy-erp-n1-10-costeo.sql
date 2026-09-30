@@ -1,5 +1,5 @@
 -- ERP-N1.10.C — postcheck de persistencia/cutover de costeo.
--- Ejecutar después de aplicar migraciones en un ambiente Desarrollo/CI.
+-- Ejecutar después de aplicar migraciones en un ambiente dev/CI.
 
 DROP TEMPORARY TABLE IF EXISTS __N110Postcheck;
 CREATE TEMPORARY TABLE __N110Postcheck

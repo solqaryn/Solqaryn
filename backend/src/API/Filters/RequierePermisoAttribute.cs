@@ -1,8 +1,8 @@
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Domain.Enums;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Enums;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace InventoryApp.API.Filters;
+namespace Solqaryn.API.Filters;
 
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
 public class RequierePermisoAttribute : Attribute, IAsyncActionFilter

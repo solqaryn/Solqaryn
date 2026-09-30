@@ -1,9 +1,9 @@
-using InventoryApp.Application.Exceptions;
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Domain.Enums;
-using CatalogoMetodoPago = InventoryApp.Domain.Entities.Catalogos.MetodoPago;
+using Solqaryn.Application.Exceptions;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Enums;
+using CatalogoMetodoPago = Solqaryn.Domain.Entities.Catalogos.MetodoPago;
 
-namespace InventoryApp.Application.Services;
+namespace Solqaryn.Application.Services;
 
 /// <summary>
 /// Centraliza la transición de Compras hacia MetodoPagoId como autoridad relacional.

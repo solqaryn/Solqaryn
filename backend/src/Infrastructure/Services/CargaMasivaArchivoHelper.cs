@@ -1,10 +1,10 @@
 using System.Globalization;
 using System.Text;
 using ClosedXML.Excel;
-using InventoryApp.Application.DTOs;
-using InventoryApp.Domain.Enums;
+using Solqaryn.Application.DTOs;
+using Solqaryn.Domain.Enums;
 
-namespace InventoryApp.Infrastructure.Services;
+namespace Solqaryn.Infrastructure.Services;
 
 internal static class CargaMasivaArchivoHelper
 {

@@ -1,7 +1,7 @@
-using InventoryApp.Application.Models;
-using InventoryApp.Domain.Enums;
+using Solqaryn.Application.Models;
+using Solqaryn.Domain.Enums;
 
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 public interface ICatalogoProductoRepository
 {

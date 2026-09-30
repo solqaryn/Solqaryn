@@ -1,6 +1,6 @@
-using InventoryApp.Application.DTOs;
+using Solqaryn.Application.DTOs;
 
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 /// Genera el PDF oficial de la factura. A4 se conserva como formato
 /// predeterminado para correo, WhatsApp y enlaces públicos; descarga e impresión

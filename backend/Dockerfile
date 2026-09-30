@@ -2,8 +2,8 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 COPY backend/ ./backend/
-RUN dotnet restore backend/InventoryApp.sln
-RUN dotnet publish backend/src/API/InventoryApp.API.csproj \
+RUN dotnet restore backend/Solqaryn.sln
+RUN dotnet publish backend/src/API/Solqaryn.API.csproj \
     --configuration Release \
     --no-restore \
     --output /app/publish
@@ -19,4 +19,4 @@ COPY --from=build /app/publish .
 USER $APP_UID
 
 EXPOSE 10000
-ENTRYPOINT ["dotnet", "InventoryApp.API.dll"]
+ENTRYPOINT ["dotnet", "Solqaryn.API.dll"]

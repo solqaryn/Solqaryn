@@ -1,10 +1,10 @@
 using System.Linq;
 using System.Threading.Tasks;
-using InventoryApp.Application.Exceptions;
-using InventoryApp.Application.Interfaces;
+using Solqaryn.Application.Exceptions;
+using Solqaryn.Application.Interfaces;
 using Microsoft.Extensions.Logging;
 
-namespace InventoryApp.Application.Services;
+namespace Solqaryn.Application.Services;
 
 public class TipoClientePredeterminadoResolver : ITipoClientePredeterminadoResolver
 {

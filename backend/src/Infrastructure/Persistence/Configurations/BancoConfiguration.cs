@@ -1,8 +1,8 @@
-using InventoryApp.Domain.Entities.Catalogos;
+using Solqaryn.Domain.Entities.Catalogos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace InventoryApp.Infrastructure.Persistence.Configurations;
+namespace Solqaryn.Infrastructure.Persistence.Configurations;
 
 public class BancoConfiguration : IEntityTypeConfiguration<Banco>
 {

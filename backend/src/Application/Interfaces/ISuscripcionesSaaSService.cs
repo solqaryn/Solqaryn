@@ -1,7 +1,7 @@
-using InventoryApp.Application.DTOs;
-using InventoryApp.Domain.Entities;
+using Solqaryn.Application.DTOs;
+using Solqaryn.Domain.Entities;
 
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 /// <summary>
 /// Puerto de persistencia mínimo N6.9.D. Todos los accesos tenant-owned reciben

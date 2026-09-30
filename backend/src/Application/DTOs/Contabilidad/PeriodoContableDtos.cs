@@ -1,6 +1,6 @@
-using InventoryApp.Domain.Entities.Contabilidad;
+using Solqaryn.Domain.Entities.Contabilidad;
 
-namespace InventoryApp.Application.DTOs.Contabilidad;
+namespace Solqaryn.Application.DTOs.Contabilidad;
 
 public sealed class PeriodoContableDto
 {

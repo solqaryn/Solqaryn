@@ -1,6 +1,6 @@
-using InventoryApp.Domain.Enums.Bancos;
+using Solqaryn.Domain.Enums.Bancos;
 
-namespace InventoryApp.Application.DTOs.Bancos;
+namespace Solqaryn.Application.DTOs.Bancos;
 
 public sealed class CuentaBancariaDto
 {

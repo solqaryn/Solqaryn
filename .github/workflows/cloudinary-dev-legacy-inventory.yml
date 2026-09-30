@@ -23,8 +23,8 @@ jobs:
       DB_USER: ${{ vars.SOLQARYN_DEV_DB_USER }}
       DB_PASSWORD: ${{ secrets.SOLQARYN_DEV_DB_PASSWORD }}
       LEGACY_CLOUD: vyijnqzq
-      LEGACY_PREFIX_A: desarrollo/
-      LEGACY_PREFIX_B: varistorehn_desarrollo/
+      LEGACY_PREFIX_A: dev/
+      LEGACY_PREFIX_B: storefront_desarrollo/
     steps:
       - name: Instalar cliente MySQL
         run: sudo apt-get update && sudo apt-get install -y mysql-client

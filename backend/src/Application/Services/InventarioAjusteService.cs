@@ -1,7 +1,7 @@
-using InventoryApp.Application.DTOs;
-using InventoryApp.Application.Interfaces;
+using Solqaryn.Application.DTOs;
+using Solqaryn.Application.Interfaces;
 
-namespace InventoryApp.Application.Services;
+namespace Solqaryn.Application.Services;
 
 /// <summary>
 /// Adaptador de compatibilidad para los endpoints legacy de ajuste directo.

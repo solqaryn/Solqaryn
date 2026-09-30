@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 
-namespace InventoryApp.API.Observability;
+namespace Solqaryn.API.Observability;
 
 public sealed class ObservabilityOptions
 {
@@ -17,7 +17,7 @@ public sealed record ObservabilitySnapshot(long RequestCount, long ErrorCount, l
 
 public sealed class RequestObservability : IDisposable
 {
-    public const string MeterName = "InventoryApp.API";
+    public const string MeterName = "Solqaryn.API";
     public const string MeterVersion = "1.0.0";
 
     private readonly Meter _meter = new(MeterName, MeterVersion);
@@ -31,10 +31,10 @@ public sealed class RequestObservability : IDisposable
 
     public RequestObservability()
     {
-        _requests = _meter.CreateCounter<long>("inventoryapp.http.server.requests", unit: "{request}", description: "Total HTTP requests handled by the API.");
-        _errors = _meter.CreateCounter<long>("inventoryapp.http.server.errors", unit: "{request}", description: "HTTP requests that completed with a 5xx response.");
-        _slowRequests = _meter.CreateCounter<long>("inventoryapp.http.server.slow_requests", unit: "{request}", description: "HTTP requests that exceeded the configured latency threshold.");
-        _durationMs = _meter.CreateHistogram<double>("inventoryapp.http.server.duration", unit: "ms", description: "HTTP server request duration in milliseconds.");
+        _requests = _meter.CreateCounter<long>("solqaryn.http.server.requests", unit: "{request}", description: "Total HTTP requests handled by the API.");
+        _errors = _meter.CreateCounter<long>("solqaryn.http.server.errors", unit: "{request}", description: "HTTP requests that completed with a 5xx response.");
+        _slowRequests = _meter.CreateCounter<long>("solqaryn.http.server.slow_requests", unit: "{request}", description: "HTTP requests that exceeded the configured latency threshold.");
+        _durationMs = _meter.CreateHistogram<double>("solqaryn.http.server.duration", unit: "ms", description: "HTTP server request duration in milliseconds.");
     }
 
     public void Record(string method, int statusCode, double durationMs, bool isSlow)

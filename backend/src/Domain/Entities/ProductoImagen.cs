@@ -1,4 +1,4 @@
-namespace InventoryApp.Domain.Entities;
+namespace Solqaryn.Domain.Entities;
 
 public class ProductoImagen
 {

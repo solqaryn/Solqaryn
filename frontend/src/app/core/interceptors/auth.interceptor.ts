@@ -4,7 +4,7 @@ import { catchError, throwError } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 import { SessionActivityService } from '../auth/session-activity.service';
 
-const EMPRESA_SOLICITADA_KEY = 'inventoryapp_empresa_solicitada_id';
+const EMPRESA_SOLICITADA_KEY = 'solqaryn_empresa_solicitada_id';
 const TENANT_HEADER = 'X-Empresa-Id';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {

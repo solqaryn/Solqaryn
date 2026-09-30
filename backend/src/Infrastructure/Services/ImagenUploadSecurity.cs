@@ -1,4 +1,4 @@
-using InventoryApp.Application.Exceptions;
+using Solqaryn.Application.Exceptions;
 using Microsoft.AspNetCore.Http;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats;
@@ -6,7 +6,7 @@ using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Formats.Webp;
 
-namespace InventoryApp.Infrastructure.Services;
+namespace Solqaryn.Infrastructure.Services;
 
 /// <summary>
 /// Valida y sanitiza imágenes no confiables antes de enviarlas a almacenamiento externo.

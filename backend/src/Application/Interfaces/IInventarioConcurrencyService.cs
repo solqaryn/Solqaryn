@@ -1,8 +1,8 @@
-using InventoryApp.Domain.Entities;
+using Solqaryn.Domain.Entities;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 public sealed record InventarioDemanda(
     int ProductoId,

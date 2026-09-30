@@ -54,17 +54,17 @@ try {
 
     Invoke-Git @("fetch", "origin", "--prune")
 
-    & git show-ref --verify --quiet refs/heads/Desarrollo
+    & git show-ref --verify --quiet refs/heads/dev
     $localBranchExists = $LASTEXITCODE -eq 0
 
     if ($localBranchExists) {
-        Invoke-Git @("switch", "Desarrollo")
+        Invoke-Git @("switch", "dev")
     }
     else {
-        Invoke-Git @("switch", "--create", "Desarrollo", "--track", "origin/Desarrollo")
+        Invoke-Git @("switch", "--create", "dev", "--track", "origin/dev")
     }
 
-    Invoke-Git @("pull", "--rebase", "origin", "Desarrollo")
+    Invoke-Git @("pull", "--rebase", "origin", "dev")
     Invoke-Git @("config", "core.hooksPath", ".githooks")
     Invoke-Git @("config", "pull.rebase", "true")
     Invoke-Git @("config", "fetch.prune", "true")
@@ -81,7 +81,7 @@ try {
     Write-Host ""
     Write-Host "Colaboración configurada correctamente." -ForegroundColor Green
     Write-Host "Proyecto confirmado: SOLQARYN / $ExpectedRepo"
-    Write-Host "Rama activa: Desarrollo"
+    Write-Host "Rama activa: dev"
     Write-Host "Hooks activos: pre-commit (identidad + evidencia) y post-commit (push seguro)."
     Write-Host "Main permanece congelada y no se fusionará automáticamente."
 }

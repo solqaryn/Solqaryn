@@ -1,6 +1,6 @@
-using InventoryApp.Application.DTOs.Contabilidad;
+using Solqaryn.Application.DTOs.Contabilidad;
 
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 public sealed record AsientoContableWriteResult(
     AsientoContableDto Asiento,

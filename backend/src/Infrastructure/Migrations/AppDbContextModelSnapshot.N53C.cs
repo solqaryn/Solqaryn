@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace InventoryApp.Infrastructure.Migrations
+namespace Solqaryn.Infrastructure.Migrations
 {
     partial class AppDbContextModelSnapshot
     {
@@ -12,7 +12,7 @@ namespace InventoryApp.Infrastructure.Migrations
         /// </summary>
         private static void ApplyN53CModel(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity("InventoryApp.Domain.Entities.Venta", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Venta", b =>
             {
                 b.HasIndex("Fecha")
                     .HasDatabaseName("IX_Ventas_Fecha");
@@ -21,7 +21,7 @@ namespace InventoryApp.Infrastructure.Migrations
                     .HasDatabaseName("IX_Ventas_CreadoPorUsuarioId");
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.VentaDetalle", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.VentaDetalle", b =>
             {
                 b.HasIndex("ProductoId")
                     .HasDatabaseName("IX_VentaDetalles_ProductoId");

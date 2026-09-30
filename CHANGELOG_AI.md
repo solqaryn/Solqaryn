@@ -2276,3 +2276,8 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Las 10 automatizaciones permanecen deliberadamente **PAUSADAS (0/10)** por instrucción del propietario. No se ejecutó ninguna activación.
 - Tres duplicados legacy adicionales fueron marcados como `RETIRADA` y permanecen inertes para evitar activación accidental.
 - Sin cambios en `main`, PROD, datos productivos, secretos, DNS, certificados o servicios pagos.
+
+## 2026-09-30 — Canonicalización técnica SOLQARYN
+
+- Refactor nominal transversal en DEV: proyectos, namespaces, artefactos, storefront, pruebas y scripts quedan bajo identidad técnica SOLQARYN y nombres tenant-neutral.
+- Sin cambios de datos productivos, sin migraciones destructivas y sin cambios en main/PROD.

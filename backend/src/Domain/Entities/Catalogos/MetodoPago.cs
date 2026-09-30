@@ -1,8 +1,8 @@
 using System.Text;
 using System.Text.Json;
-using InventoryApp.Domain.Common;
+using Solqaryn.Domain.Common;
 
-namespace InventoryApp.Domain.Entities.Catalogos;
+namespace Solqaryn.Domain.Entities.Catalogos;
 
 /// <summary>
 /// Catálogo relacional y administrable de métodos de pago.

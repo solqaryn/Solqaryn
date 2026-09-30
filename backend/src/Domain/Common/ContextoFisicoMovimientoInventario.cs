@@ -1,4 +1,4 @@
-namespace InventoryApp.Domain.Common;
+namespace Solqaryn.Domain.Common;
 
 /// <summary>
 /// Contexto físico y de correlación obligatorio para todo movimiento de Kardex

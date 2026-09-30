@@ -1,9 +1,9 @@
 using System;
-using InventoryApp.Domain.Entities;
+using Solqaryn.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace InventoryApp.Infrastructure.Migrations
+namespace Solqaryn.Infrastructure.Migrations
 {
     partial class AppDbContextModelSnapshot
     {
@@ -25,7 +25,7 @@ namespace InventoryApp.Infrastructure.Migrations
 
         private static void ApplyN43CModel(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity("InventoryApp.Domain.Entities.Bancos.ConciliacionBancaria", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Bancos.ConciliacionBancaria", b =>
             {
                 b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("int");
                 MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
@@ -54,7 +54,7 @@ namespace InventoryApp.Infrastructure.Migrations
                 });
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.Bancos.MatchConciliacion", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Bancos.MatchConciliacion", b =>
             {
                 b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("int");
                 MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
@@ -79,7 +79,7 @@ namespace InventoryApp.Infrastructure.Migrations
                 });
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.Bancos.MovimientoEstadoCuenta", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Bancos.MovimientoEstadoCuenta", b =>
             {
                 b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("int");
                 MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
@@ -111,26 +111,26 @@ namespace InventoryApp.Infrastructure.Migrations
                 });
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.Bancos.ConciliacionBancaria", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Bancos.ConciliacionBancaria", b =>
             {
-                b.HasOne("InventoryApp.Domain.Entities.Bancos.CuentaBancaria", "CuentaBancaria").WithMany().HasForeignKey("CuentaBancariaId").OnDelete(DeleteBehavior.Restrict).IsRequired();
+                b.HasOne("Solqaryn.Domain.Entities.Bancos.CuentaBancaria", "CuentaBancaria").WithMany().HasForeignKey("CuentaBancariaId").OnDelete(DeleteBehavior.Restrict).IsRequired();
                 b.Navigation("CuentaBancaria");
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.Bancos.MatchConciliacion", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Bancos.MatchConciliacion", b =>
             {
-                b.HasOne("InventoryApp.Domain.Entities.Bancos.MovimientoEstadoCuenta", "MovimientoEstadoCuenta").WithMany("Matches").HasForeignKey("MovimientoEstadoCuentaId").OnDelete(DeleteBehavior.Cascade).IsRequired();
-                b.HasOne("InventoryApp.Domain.Entities.MovimientoFinanciero", null).WithMany().HasForeignKey("MovimientoFinancieroId").OnDelete(DeleteBehavior.Restrict).IsRequired();
+                b.HasOne("Solqaryn.Domain.Entities.Bancos.MovimientoEstadoCuenta", "MovimientoEstadoCuenta").WithMany("Matches").HasForeignKey("MovimientoEstadoCuentaId").OnDelete(DeleteBehavior.Cascade).IsRequired();
+                b.HasOne("Solqaryn.Domain.Entities.MovimientoFinanciero", null).WithMany().HasForeignKey("MovimientoFinancieroId").OnDelete(DeleteBehavior.Restrict).IsRequired();
                 b.Navigation("MovimientoEstadoCuenta");
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.Bancos.MovimientoEstadoCuenta", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Bancos.MovimientoEstadoCuenta", b =>
             {
-                b.HasOne("InventoryApp.Domain.Entities.Bancos.ConciliacionBancaria", null).WithMany("Movimientos").HasForeignKey("ConciliacionBancariaId").OnDelete(DeleteBehavior.Cascade).IsRequired();
+                b.HasOne("Solqaryn.Domain.Entities.Bancos.ConciliacionBancaria", null).WithMany("Movimientos").HasForeignKey("ConciliacionBancariaId").OnDelete(DeleteBehavior.Cascade).IsRequired();
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.Bancos.ConciliacionBancaria", b => b.Navigation("Movimientos"));
-            modelBuilder.Entity("InventoryApp.Domain.Entities.Bancos.MovimientoEstadoCuenta", b => b.Navigation("Matches"));
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Bancos.ConciliacionBancaria", b => b.Navigation("Movimientos"));
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Bancos.MovimientoEstadoCuenta", b => b.Navigation("Matches"));
         }
     }
 }

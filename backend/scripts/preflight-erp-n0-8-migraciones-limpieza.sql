@@ -1,7 +1,7 @@
 -- ERP-N0.8.A — Preflight de migraciones y limpieza
 -- Objetivo: producir evidencia de deuda legacy, históricos, autoridades y dependencias
 -- antes de cualquier eliminación física. Este script es ESTRICTAMENTE DE SOLO LECTURA.
--- Compatible con MySQL 8.x. Ejecutar únicamente contra una base de DESARROLLO.
+-- Compatible con MySQL 8.x. Ejecutar únicamente contra una base de dev.
 
 SET @schema_name := DATABASE();
 

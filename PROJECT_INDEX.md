@@ -32,7 +32,7 @@ No leer todos los documentos administrativos en cada tarea. Consultarlos solo cu
 
 ## Backend
 
-`backend/InventoryApp.sln` — solución .NET.
+`backend/Solqaryn.sln` — solución .NET.
 
 ### `backend/src/Domain`
 
@@ -68,7 +68,7 @@ Autenticación, guards, interceptores, modelos y utilidades transversales. El ba
 
 Pantallas/módulos funcionales: productos, variantes, catálogos, compras, ventas, facturas, inventario, finanzas, usuarios, roles, permisos, auditoría, etc.
 
-El storefront VariStoreHN usa `varistorehn.service.ts`: `obtenerBootstrap()` comparte/deduplica la carga inicial, `obtenerCategorias()` comparte la lista entre rutas y `varistorehn-identidad.service.ts` conserva el observable de identidad en vuelo; el catálogo continúa paginado y `obtenerProductosContexto` rehidrata únicamente referencias del carrito/cuenta, evitando descargas completas.
+El storefront Storefront usa `storefront.service.ts`: `obtenerBootstrap()` comparte/deduplica la carga inicial, `obtenerCategorias()` comparte la lista entre rutas y `storefront-identidad.service.ts` conserva el observable de identidad en vuelo; el catálogo continúa paginado y `obtenerProductosContexto` rehidrata únicamente referencias del carrito/cuenta, evitando descargas completas.
 
 ### `frontend/src/app/services`
 
@@ -135,14 +135,14 @@ No listar recursivamente todo `backend`, `frontend` o `docs` salvo cambio estruc
 | Login, JWT o permisos | `AuthController.cs`, `Program.cs` y servicios Auth/RBAC | `core/auth`, `core/guards`, interceptor y pruebas de acceso |
 | Imagen, PDF, correo o exportación | interfaz en `Application/Interfaces` | implementación en `Infrastructure/Services` y registro DI en `Program.cs` |
 | Variable o entorno | `backend/src/API/appsettings*.json`, `frontend/src/environments`, `frontend/vercel.json`, `render.yaml` | `docs/ENTORNOS_DEV_PROD.md`; nunca copiar secretos |
-| Prueba localizada | `backend/tests/InventoryApp.Tests` o `frontend/e2e` | workflow específico en `.github/workflows` |
+| Prueba localizada | `backend/tests/Solqaryn.Tests` o `frontend/e2e` | workflow específico en `.github/workflows` |
 
 ## Puntos de entrada, API y datos
 
 - Backend: `backend/src/API/Program.cs`; controladores bajo `backend/src/API/Controllers`. La mayoría declara una base con `[Route("...")]`; salud se expone directamente como `/health` y `/health/ready`.
 - Frontend: `frontend/src/main.ts` -> `frontend/src/app/app.config.ts` -> `frontend/src/app/app.routes.ts`. Algunas áreas agregan rutas en archivos `*.routes.ts` dentro de su feature.
 - Datos: `backend/src/Infrastructure/Persistence/AppDbContext.cs` y `Persistence/Configurations`. Existen migraciones en `backend/src/Infrastructure/Migrations` y `backend/src/Infrastructure/Persistence/Migrations`; inspeccionar ambas ubicaciones y no moverlas ni consolidarlas desde un cambio local.
-- Dependencias: proyectos `backend/src/*/*.csproj`, solución `backend/InventoryApp.sln`, `frontend/package.json` y `frontend/angular.json`.
+- Dependencias: proyectos `backend/src/*/*.csproj`, solución `backend/Solqaryn.sln`, `frontend/package.json` y `frontend/angular.json`.
 
 ## Mapa operativo por capas
 
@@ -213,10 +213,10 @@ Para CSS, texto, validación de formulario o CRUD localizado, no inspeccionar mi
 Desde `backend`:
 
 ```powershell
-dotnet restore InventoryApp.sln
-dotnet build InventoryApp.sln --configuration Release
-dotnet test InventoryApp.sln --configuration Release
-dotnet run --project src/API/InventoryApp.API.csproj
+dotnet restore Solqaryn.sln
+dotnet build Solqaryn.sln --configuration Release
+dotnet test Solqaryn.sln --configuration Release
+dotnet run --project src/API/Solqaryn.API.csproj
 ```
 
 Desde `frontend`:

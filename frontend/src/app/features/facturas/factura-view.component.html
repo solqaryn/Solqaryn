@@ -129,7 +129,7 @@
     @if (cargandoEstadoSmtp()) {
       <div class="smtp-status smtp-loading" aria-live="polite">
         <mat-spinner diameter="20"></mat-spinner>
-        <span>Revisando la configuración SMTP de Desarrollo…</span>
+        <span>Revisando la configuración SMTP de dev…</span>
       </div>
     } @else if (estadoSmtp(); as estado) {
       <div class="smtp-summary" [class.smtp-error]="!estado.configurado">

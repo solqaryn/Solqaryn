@@ -1,5 +1,5 @@
-using InventoryApp.Domain.Entities.Bancos;
-namespace InventoryApp.Application.Interfaces;
+using Solqaryn.Domain.Entities.Bancos;
+namespace Solqaryn.Application.Interfaces;
 public interface IConciliacionBancariaRepository
 {
     Task<ConciliacionBancaria?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
@@ -10,7 +10,7 @@ public interface IConciliacionBancariaRepository
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     Task<(IEnumerable<ConciliacionBancaria> Items, int TotalCount)> GetPagedAsync(
         int? cuentaBancariaId,
-        InventoryApp.Domain.Enums.Bancos.EstadoConciliacionBancaria? estado,
+        Solqaryn.Domain.Enums.Bancos.EstadoConciliacionBancaria? estado,
         int? mes,
         int? anio,
         int pageNumber,

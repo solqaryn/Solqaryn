@@ -1,13 +1,13 @@
-using InventoryApp.Application.Common;
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Application.Services;
-using InventoryApp.Domain.Entities;
-using InventoryApp.Infrastructure.Persistence;
+using Solqaryn.Application.Common;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Application.Services;
+using Solqaryn.Domain.Entities;
+using Solqaryn.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using CatalogoBanco = InventoryApp.Domain.Entities.Catalogos.Banco;
-using CatalogoMetodoPago = InventoryApp.Domain.Entities.Catalogos.MetodoPago;
-namespace InventoryApp.Infrastructure.Repositories;
+using CatalogoBanco = Solqaryn.Domain.Entities.Catalogos.Banco;
+using CatalogoMetodoPago = Solqaryn.Domain.Entities.Catalogos.MetodoPago;
+namespace Solqaryn.Infrastructure.Repositories;
 public class FacturaRepository : IFacturaRepository
 {
     private readonly AppDbContext _context; private readonly IUsuarioScopeService _usuarioScope; private readonly IHttpContextAccessor? _httpContextAccessor;

@@ -1,12 +1,12 @@
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Application.Exceptions;
-using InventoryApp.Infrastructure.Persistence;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Application.Exceptions;
+using Solqaryn.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using MySqlConnector;
 using System;
 using System.Threading.Tasks;
 
-namespace InventoryApp.Infrastructure.Services;
+namespace Solqaryn.Infrastructure.Services;
 
 public class UnitOfWork : IUnitOfWork
 {

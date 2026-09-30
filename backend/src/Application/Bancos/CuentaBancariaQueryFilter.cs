@@ -1,6 +1,6 @@
-using InventoryApp.Domain.Enums.Bancos;
+using Solqaryn.Domain.Enums.Bancos;
 
-namespace InventoryApp.Application.Bancos;
+namespace Solqaryn.Application.Bancos;
 
 /// <summary>
 /// Contrato normalizado para filtros y paginación de cuentas bancarias.

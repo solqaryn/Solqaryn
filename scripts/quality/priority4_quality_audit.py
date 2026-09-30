@@ -33,10 +33,10 @@ def read(rel: str) -> str:
 
 # 29/31 - composition root and Clean Architecture project references.
 expected_refs = {
-    "backend/src/Domain/InventoryApp.Domain.csproj": set(),
-    "backend/src/Application/InventoryApp.Application.csproj": {"InventoryApp.Domain.csproj"},
-    "backend/src/Infrastructure/InventoryApp.Infrastructure.csproj": {"InventoryApp.Application.csproj"},
-    "backend/src/API/InventoryApp.API.csproj": {"InventoryApp.Application.csproj", "InventoryApp.Infrastructure.csproj"},
+    "backend/src/Domain/Solqaryn.Domain.csproj": set(),
+    "backend/src/Application/Solqaryn.Application.csproj": {"Solqaryn.Domain.csproj"},
+    "backend/src/Infrastructure/Solqaryn.Infrastructure.csproj": {"Solqaryn.Application.csproj"},
+    "backend/src/API/Solqaryn.API.csproj": {"Solqaryn.Application.csproj", "Solqaryn.Infrastructure.csproj"},
 }
 for rel, expected in expected_refs.items():
     text = read(rel)
@@ -65,10 +65,10 @@ ok("responses arrive out of order" in empresa_spec and "Respuesta Obsoleta" in e
 # 30/31 - every lazy route must declare an authentication/permission intent,
 # except the intentionally public storefront/login allowlist. For permisoGuard,
 # Customer account shell is public for optional login/registration; customer PII and
-# order data remain server-protected by the separate X-VaristoreHN-Session boundary.
+# order data remain server-protected by the separate X-Storefront-Session boundary.
 # modulo+accion are mandatory. The small balanced-brace extractor handles
 # multiline route objects without trying to execute Angular source.
-public_paths = {"", "login", "varistorehn", "varistorehn/productos", "varistorehn/ofertas", "varistorehn/producto/:slug", "varistorehn/categorias", "varistorehn/categoria/:slug", "varistorehn/carrito", "varistorehn/checkout", "varistorehn/cuenta", "varistorehn/pedido/:id"}
+public_paths = {"", "login", "storefront", "storefront/productos", "storefront/ofertas", "storefront/producto/:slug", "storefront/categorias", "storefront/categoria/:slug", "storefront/carrito", "storefront/checkout", "storefront/cuenta", "storefront/pedido/:id"}
 route_files = [ROOT / "frontend/src/app/app.routes.ts"] + sorted((ROOT / "frontend/src/app").rglob("*.routes.ts"))
 route_findings: list[str] = []
 

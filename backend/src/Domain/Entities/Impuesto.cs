@@ -1,6 +1,6 @@
-using InventoryApp.Domain.Enums;
+using Solqaryn.Domain.Enums;
 
-namespace InventoryApp.Domain.Entities;
+namespace Solqaryn.Domain.Entities;
 
 /// Módulo real y administrable de impuestos. La configuración se gestiona
 /// desde la interfaz y el motor conserva un snapshot monetario de cada aplicación.

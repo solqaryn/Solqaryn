@@ -1,6 +1,6 @@
-using InventoryApp.Domain.Entities.Contabilidad;
+using Solqaryn.Domain.Entities.Contabilidad;
 
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 public interface ICentroCostoRepository
 {

@@ -1,6 +1,6 @@
-using InventoryApp.Domain.Fiscal;
+using Solqaryn.Domain.Fiscal;
 
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 /// <summary>
 /// Puerto provider-neutral para facturación fiscal/electrónica. Cada adaptador implementa las

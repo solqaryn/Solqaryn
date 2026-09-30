@@ -1,4 +1,4 @@
-namespace InventoryApp.Application.Exceptions;
+namespace Solqaryn.Application.Exceptions;
 
 public sealed class ResourceNotFoundException : Exception
 {

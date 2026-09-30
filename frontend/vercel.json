@@ -11,7 +11,7 @@
       "destination": "/api/sitemap"
     },
     {
-      "source": "/varistorehn",
+      "source": "/tienda",
       "has": [
         {
           "type": "header",
@@ -22,7 +22,7 @@
       "destination": "/api/seo?kind=home"
     },
     {
-      "source": "/varistorehn/productos",
+      "source": "/tienda/productos",
       "has": [
         {
           "type": "header",
@@ -33,7 +33,7 @@
       "destination": "/api/seo?kind=products"
     },
     {
-      "source": "/varistorehn/ofertas",
+      "source": "/tienda/ofertas",
       "has": [
         {
           "type": "header",
@@ -44,7 +44,7 @@
       "destination": "/api/seo?kind=offers"
     },
     {
-      "source": "/varistorehn/categorias",
+      "source": "/tienda/categorias",
       "has": [
         {
           "type": "header",
@@ -55,7 +55,7 @@
       "destination": "/api/seo?kind=categories"
     },
     {
-      "source": "/varistorehn/categoria/:slug",
+      "source": "/tienda/categoria/:slug",
       "has": [
         {
           "type": "header",
@@ -66,7 +66,7 @@
       "destination": "/api/seo?kind=category&slug=:slug"
     },
     {
-      "source": "/varistorehn/producto/:slug",
+      "source": "/tienda/producto/:slug",
       "has": [
         {
           "type": "header",

@@ -1,10 +1,10 @@
-using InventoryApp.Application.DTOs;
-using InventoryApp.Application.Exceptions;
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Application.Models;
-using InventoryApp.Domain.Enums;
+using Solqaryn.Application.DTOs;
+using Solqaryn.Application.Exceptions;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Application.Models;
+using Solqaryn.Domain.Enums;
 
-namespace InventoryApp.Application.Services;
+namespace Solqaryn.Application.Services;
 
 /// <summary>
 /// Fachada de compatibilidad HTTP para los cuatro maestros normalizados de producto.

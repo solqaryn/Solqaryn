@@ -4,7 +4,7 @@ set -euo pipefail
 readonly MASTER_FILE="docs/VAEP_AUTHORITY.md"
 readonly PARSER=".github/scripts/vaep-policy-parser.sh"
 readonly ADMISSION="vaep/control/dispatch-admission.json"
-readonly BRANCH="Desarrollo"
+readonly BRANCH="dev"
 
 fail(){ echo "VAEP_CHECKPOINT_ERROR=$1" >&2; exit 2; }
 usage(){ echo 'usage: vaep-checkpoint.sh --checkpoint :00|:12|:24|:36|:48 | --self-test'; }

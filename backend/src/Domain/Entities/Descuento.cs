@@ -1,6 +1,6 @@
-using InventoryApp.Domain.Enums;
+using Solqaryn.Domain.Enums;
 
-namespace InventoryApp.Domain.Entities;
+namespace Solqaryn.Domain.Entities;
 
 /// Módulo real y administrable de descuentos (sección 11). Reemplaza el campo
 /// decimal manual que antes se enviaba directo desde Angular.

@@ -1,12 +1,12 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Domain.Entities;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Entities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
-namespace InventoryApp.Infrastructure.Services;
+namespace Solqaryn.Infrastructure.Services;
 
 public class JwtService : IJwtService
 {

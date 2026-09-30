@@ -43,21 +43,21 @@ jobs:
           cache-dependency-path: backend/**/*.csproj
 
       - name: Restore
-        run: dotnet restore InventoryApp.sln
+        run: dotnet restore Solqaryn.sln
 
       - name: Install EF Core CLI
         run: dotnet tool install --global dotnet-ef --version 8.0.2
 
       - name: Build exact head
-        run: dotnet build InventoryApp.sln --configuration Release --no-restore
+        run: dotnet build Solqaryn.sln --configuration Release --no-restore
 
       - name: Verify effective snapshot has no pending model changes
         shell: bash
         run: |
           set -euo pipefail
           dotnet ef migrations has-pending-model-changes \
-            --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-            --startup-project src/API/InventoryApp.API.csproj \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext 2>&1 | tee vaep-n57c-exact-head-model-gate.log
           grep -q 'DashboardKpiConfiguracion' src/Infrastructure/Migrations/AppDbContextModelSnapshot.N57C.cs
           grep -q 'ApplyN57CModel(modelBuilder);' src/Infrastructure/Migrations/AppDbContextModelSnapshot.N43C.cs

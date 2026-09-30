@@ -1,8 +1,8 @@
-using InventoryApp.Domain.Common;
-using InventoryApp.Domain.Enums;
-using InventoryApp.Domain.ValueObjects;
+using Solqaryn.Domain.Common;
+using Solqaryn.Domain.Enums;
+using Solqaryn.Domain.ValueObjects;
 
-namespace InventoryApp.Domain.Entities;
+namespace Solqaryn.Domain.Entities;
 
 /// <summary>
 /// Documento comercial de pedido. N3.2 lo mantiene independiente de la Venta legacy

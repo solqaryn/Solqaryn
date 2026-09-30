@@ -1,13 +1,13 @@
 using System.Security.Claims;
-using InventoryApp.API.Filters;
-using InventoryApp.Application.Common;
-using InventoryApp.Application.DTOs;
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Domain.Enums;
+using Solqaryn.API.Filters;
+using Solqaryn.Application.Common;
+using Solqaryn.Application.DTOs;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace InventoryApp.API.Controllers;
+namespace Solqaryn.API.Controllers;
 
 /// La factura se genera y anula automáticamente junto con su venta origen.
 /// Correo, WhatsApp y enlaces públicos conservan A4 como PDF oficial; descarga
@@ -57,7 +57,7 @@ public class FacturasController : ControllerBase
         var estado = _emailService.ObtenerEstadoConfiguracion();
         return Ok(ApiResponse<EstadoConfiguracionSmtp>.Ok(
             estado,
-            estado.Configurado ? "SMTP disponible." : "SMTP requiere configuración en Desarrollo."));
+            estado.Configurado ? "SMTP disponible." : "SMTP requiere configuración en dev."));
     }
 
     [HttpGet("{id:int}")]

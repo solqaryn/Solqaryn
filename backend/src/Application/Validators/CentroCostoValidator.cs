@@ -1,8 +1,8 @@
 using FluentValidation;
-using InventoryApp.Application.DTOs.Contabilidad;
-using InventoryApp.Domain.Entities.Contabilidad;
+using Solqaryn.Application.DTOs.Contabilidad;
+using Solqaryn.Domain.Entities.Contabilidad;
 
-namespace InventoryApp.Application.Validators;
+namespace Solqaryn.Application.Validators;
 
 public sealed class CreateCentroCostoValidator : AbstractValidator<CreateCentroCostoDto>
 {

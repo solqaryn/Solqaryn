@@ -1,12 +1,12 @@
-using InventoryApp.Application.DTOs;
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Domain.Entities;
-using InventoryApp.Domain.Enums;
-using InventoryApp.Infrastructure.Persistence;
+using Solqaryn.Application.DTOs;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Entities;
+using Solqaryn.Domain.Enums;
+using Solqaryn.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using MySqlConnector;
 
-namespace InventoryApp.Infrastructure.Repositories;
+namespace Solqaryn.Infrastructure.Repositories;
 
 public sealed class TrazabilidadInventarioRepository : ITrazabilidadInventarioRepository
 {

@@ -1,10 +1,10 @@
-using InventoryApp.Application.DTOs;
-using InventoryApp.Application.Exceptions;
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Domain.Enums;
-using MetodoPagoEntity = InventoryApp.Domain.Entities.Catalogos.MetodoPago;
+using Solqaryn.Application.DTOs;
+using Solqaryn.Application.Exceptions;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Enums;
+using MetodoPagoEntity = Solqaryn.Domain.Entities.Catalogos.MetodoPago;
 
-namespace InventoryApp.Application.Services;
+namespace Solqaryn.Application.Services;
 
 public sealed class MetodoPagoService : IMetodoPagoService
 {

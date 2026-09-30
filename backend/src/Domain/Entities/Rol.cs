@@ -1,4 +1,4 @@
-namespace InventoryApp.Domain.Entities;
+namespace Solqaryn.Domain.Entities;
 
 /// Catálogo dinámico de roles (reemplaza el enum estático RolUsuario como fuente
 /// de verdad). RolUsuario se conserva únicamente para compatibilidad de JWTs
@@ -16,8 +16,8 @@ public class Rol
     /// Delimita la autoridad del rol. Empresa mantiene el RBAC tenant actual;
     /// Plataforma queda reservado para autoridad global del SaaS.
     /// </summary>
-    public InventoryApp.Domain.Enums.AmbitoAutorizacion Ambito { get; set; } =
-        InventoryApp.Domain.Enums.AmbitoAutorizacion.Empresa;
+    public Solqaryn.Domain.Enums.AmbitoAutorizacion Ambito { get; set; } =
+        Solqaryn.Domain.Enums.AmbitoAutorizacion.Empresa;
 
     /// <summary>
     /// Propietario opcional de un rol empresarial personalizado.

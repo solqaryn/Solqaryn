@@ -1,7 +1,7 @@
-using InventoryApp.Domain.Common;
-using InventoryApp.Domain.Enums.Bancos;
+using Solqaryn.Domain.Common;
+using Solqaryn.Domain.Enums.Bancos;
 
-namespace InventoryApp.Domain.Entities.Bancos;
+namespace Solqaryn.Domain.Entities.Bancos;
 
 public class ConciliacionBancaria : AuditableEntity
 {

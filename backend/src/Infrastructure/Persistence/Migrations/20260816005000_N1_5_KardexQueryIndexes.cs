@@ -1,10 +1,10 @@
-using InventoryApp.Infrastructure.Persistence;
+using Solqaryn.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace InventoryApp.Infrastructure.Persistence.Migrations;
+namespace Solqaryn.Infrastructure.Persistence.Migrations;
 
 /// <summary>
 /// Refuerza ERP-N1.5 con índices compuestos alineados a los filtros y al orden

@@ -1,4 +1,4 @@
-namespace InventoryApp.Domain.Fiscal;
+namespace Solqaryn.Domain.Fiscal;
 
 /// <summary>
 /// Identifica el perfil fiscal aplicable a un documento sin convertir ninguna legislación,

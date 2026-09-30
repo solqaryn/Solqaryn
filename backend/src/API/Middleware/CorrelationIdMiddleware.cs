@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace InventoryApp.API.Middleware;
+namespace Solqaryn.API.Middleware;
 
 public sealed class CorrelationIdMiddleware
 {

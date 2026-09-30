@@ -1,6 +1,6 @@
-using InventoryApp.Domain.Common;
+using Solqaryn.Domain.Common;
 
-namespace InventoryApp.Domain.Entities;
+namespace Solqaryn.Domain.Entities;
 
 /// <summary>Modelo normalizado. Todo modelo pertenece a una marca.</summary>
 public class Modelo : AuditableEntity

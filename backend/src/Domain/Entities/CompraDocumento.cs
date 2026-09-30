@@ -1,4 +1,4 @@
-namespace InventoryApp.Domain.Entities;
+namespace Solqaryn.Domain.Entities;
 
 /// Respaldo documental de una compra: factura, recibo o comprobante entregado
 /// por el proveedor. El archivo puede ser imagen o PDF y se conserva separado

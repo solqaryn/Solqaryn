@@ -77,15 +77,15 @@ module.exports = async function handler(req, res) {
     const [categories, products] = await Promise.all([loadCategories(req), loadProducts(req)]);
     const urls = new Map();
 
-    for (const path of ['/varistorehn', '/varistorehn/productos', '/varistorehn/ofertas', '/varistorehn/categorias']) {
+    for (const path of ['/tienda', '/tienda/productos', '/tienda/ofertas', '/tienda/categorias']) {
       urls.set(`${origin}${path}`, '');
     }
     for (const category of categories) {
-      urls.set(`${origin}/varistorehn/categoria/${encodeURIComponent(category.slug)}`, '');
+      urls.set(`${origin}/tienda/categoria/${encodeURIComponent(category.slug)}`, '');
     }
     for (const product of products) {
       urls.set(
-        `${origin}/varistorehn/producto/${encodeURIComponent(product.slug)}`,
+        `${origin}/tienda/producto/${encodeURIComponent(product.slug)}`,
         product.fechaCreacion || ''
       );
     }

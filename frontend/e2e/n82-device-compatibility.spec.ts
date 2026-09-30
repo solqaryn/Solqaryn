@@ -2,12 +2,12 @@ import { expect, Page, test } from '@playwright/test';
 
 const empresaBase = {
   id: 982,
-  nombreComercial: 'VariStore Device Audit',
-  nombreVisibleSistema: 'VariStore Device Audit',
+  nombreComercial: 'Storefront Device Audit',
+  nombreVisibleSistema: 'Storefront Device Audit',
   eslogan: 'Compatibilidad verificable',
   descripcionSistema: 'Tienda pública para regresión responsive',
   mensajeLogin: 'Administración',
-  copyright: '© 2026 VariStore Device Audit',
+  copyright: '© 2026 Storefront Device Audit',
   mostrarCopyright: true,
   usarAnioAutomaticoCopyright: true,
   encabezadoActivo: true,
@@ -48,7 +48,7 @@ test.describe('N8.2 — compatibilidad explícita por perfil de dispositivo', ()
     for (const perfil of perfiles) {
       await test.step(perfil.nombre, async () => {
         await page.setViewportSize({ width: perfil.width, height: perfil.height });
-        await page.goto('/varistorehn');
+        await page.goto('/tienda');
 
         await expect(page.locator('.storefront')).toBeVisible();
         await expect(page.getByRole('heading', { name: /Todo lo que buscas/i })).toBeVisible();
@@ -63,7 +63,7 @@ test.describe('N8.2 — compatibilidad explícita por perfil de dispositivo', ()
         expect(layout.documentWidth, `overflow documentElement en ${perfil.nombre}`).toBeLessThanOrEqual(perfil.width);
         expect(layout.bodyWidth, `overflow body en ${perfil.nombre}`).toBeLessThanOrEqual(perfil.width);
 
-        const header = page.locator('app-varistorehn-header');
+        const header = page.locator('app-storefront-header');
         await expect(header).toBeVisible();
         await expect(header.getByRole('button', { name: /carrito/i })).toBeVisible();
 

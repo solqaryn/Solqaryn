@@ -1,8 +1,8 @@
-using InventoryApp.Domain.Common;
-using InventoryApp.Domain.Enums;
-using CatalogoMetodoPago = InventoryApp.Domain.Entities.Catalogos.MetodoPago;
+using Solqaryn.Domain.Common;
+using Solqaryn.Domain.Enums;
+using CatalogoMetodoPago = Solqaryn.Domain.Entities.Catalogos.MetodoPago;
 
-namespace InventoryApp.Domain.Entities;
+namespace Solqaryn.Domain.Entities;
 
 public class Compra : ConfirmableEntity
 {

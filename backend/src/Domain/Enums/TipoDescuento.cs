@@ -1,4 +1,4 @@
-namespace InventoryApp.Domain.Enums;
+namespace Solqaryn.Domain.Enums;
 
 public enum TipoDescuento { Porcentaje = 1, MontoFijo = 2 }
 

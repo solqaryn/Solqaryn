@@ -1,7 +1,7 @@
-using InventoryApp.Application.DTOs;
+using Solqaryn.Application.DTOs;
 using Microsoft.AspNetCore.Http;
 
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 public interface IProductoVarianteImagenService
 {

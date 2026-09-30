@@ -1,11 +1,11 @@
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Domain.Entities.Bancos;
-using InventoryApp.Domain.Enums.Bancos;
-using InventoryApp.Infrastructure.Persistence;
-using InventoryApp.Application.Bancos;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Entities.Bancos;
+using Solqaryn.Domain.Enums.Bancos;
+using Solqaryn.Infrastructure.Persistence;
+using Solqaryn.Application.Bancos;
 using Microsoft.EntityFrameworkCore;
 
-namespace InventoryApp.Infrastructure.Repositories;
+namespace Solqaryn.Infrastructure.Repositories;
 
 public class CuentaBancariaRepository : ICuentaBancariaRepository
 {

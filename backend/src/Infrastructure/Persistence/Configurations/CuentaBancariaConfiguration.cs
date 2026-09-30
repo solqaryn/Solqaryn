@@ -1,9 +1,9 @@
-using InventoryApp.Domain.Entities.Bancos;
-using InventoryApp.Domain.Entities.Catalogos;
+using Solqaryn.Domain.Entities.Bancos;
+using Solqaryn.Domain.Entities.Catalogos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace InventoryApp.Infrastructure.Persistence.Configurations;
+namespace Solqaryn.Infrastructure.Persistence.Configurations;
 
 /// <summary>
 /// N4.2.C — persistencia de CuentaBancaria.

@@ -4,17 +4,17 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using InventoryApp.Application.Common;
-using InventoryApp.Application.DTOs;
-using InventoryApp.Application.Exceptions;
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Domain.Entities;
-using InventoryApp.Domain.Enums;
-using InventoryApp.Infrastructure.Persistence;
+using Solqaryn.Application.Common;
+using Solqaryn.Application.DTOs;
+using Solqaryn.Application.Exceptions;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Entities;
+using Solqaryn.Domain.Enums;
+using Solqaryn.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace InventoryApp.Infrastructure.Services;
+namespace Solqaryn.Infrastructure.Services;
 
 public sealed class CargaMasivaService : ICargaMasivaService
 {
@@ -1457,7 +1457,7 @@ public sealed class CargaMasivaService : ICargaMasivaService
     private static string? NuloSiVacio(string? value) => Limpiar(value);
     private static string? Limitar(string? value, int maximo) => string.IsNullOrWhiteSpace(value) ? null : value.Trim()[..Math.Min(value.Trim().Length, maximo)];
 
-    private void MarcarActualizacion(InventoryApp.Domain.Common.AuditableEntity entity)
+    private void MarcarActualizacion(Solqaryn.Domain.Common.AuditableEntity entity)
     {
         entity.ActualizadoPorUsuarioId = _currentUser.UsuarioId;
         entity.ActualizadoPorNombreUsuario = _currentUser.NombreUsuario;

@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace InventoryApp.Application.DTOs;
+namespace Solqaryn.Application.DTOs;
 
 /// <summary>
 /// Closed catalog of dashboard metrics that are already backed by the existing

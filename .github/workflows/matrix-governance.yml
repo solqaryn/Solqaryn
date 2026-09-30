@@ -15,7 +15,7 @@ on:
       - 'scripts/validate_n8_18_c_db_mig.py'
       - 'scripts/validate_n8_18_d_backend_refactor.py'
       - 'scripts/validate_n8_18_e_frontend_refactor.py'
-      - 'backend/tests/InventoryApp.Tests/Application/N818BackendArchitectureTests.cs'
+      - 'backend/tests/Solqaryn.Tests/Application/N818BackendArchitectureTests.cs'
       - 'frontend/src/app/app.component.ts'
       - 'frontend/src/app/shared/alerts/**'
       - 'frontend/src/app/shared/navigation/**'

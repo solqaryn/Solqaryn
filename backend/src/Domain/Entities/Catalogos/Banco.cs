@@ -1,6 +1,6 @@
-using InventoryApp.Domain.Common;
+using Solqaryn.Domain.Common;
 
-namespace InventoryApp.Domain.Entities.Catalogos;
+namespace Solqaryn.Domain.Entities.Catalogos;
 
 /// <summary>
 /// Catálogo normalizado de instituciones bancarias. Es autoridad relacional

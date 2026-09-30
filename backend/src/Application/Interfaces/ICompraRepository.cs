@@ -1,8 +1,8 @@
-using InventoryApp.Application.Common;
-using InventoryApp.Domain.Entities;
-using CatalogoMetodoPago = InventoryApp.Domain.Entities.Catalogos.MetodoPago;
+using Solqaryn.Application.Common;
+using Solqaryn.Domain.Entities;
+using CatalogoMetodoPago = Solqaryn.Domain.Entities.Catalogos.MetodoPago;
 
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 public interface ICompraRepository
 {
