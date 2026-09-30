@@ -20,7 +20,7 @@ if (!statsPath) {
 const stats = JSON.parse(readFileSync(statsPath, 'utf8'));
 const outputs = stats.outputs ?? {};
 const index = readFileSync(indexPath, 'utf8');
-const initialRefs = [...index.matchAll(/(?:src|href)=["']([^"']+\.(?:js|css))["']/g)]
+const documentRefs = [...index.matchAll(/(?:src|href)=["']([^"']+\.(?:js|css))["']/g)]
   .map(match => match[1].replace(/^\.\//, '').replace(/^\//, ''));
 
 const normalized = value => String(value).replaceAll('\\', '/');
@@ -90,7 +90,27 @@ const allOutputs = Object.entries(outputs)
   }))
   .filter(item => /\.(?:js|css)$/.test(item.file));
 
-const initialSet = new Set(initialRefs.map(ref => basename(normalized(ref))));
+const outputKeyByFile = new Map();
+for (const outputPath of Object.keys(outputs)) {
+  outputKeyByFile.set(basename(normalized(outputPath)), outputPath);
+}
+
+const initialSet = new Set(documentRefs.map(ref => basename(normalized(ref))));
+const queue = [...initialSet];
+while (queue.length) {
+  const currentFile = queue.shift();
+  const outputKey = outputKeyByFile.get(currentFile);
+  const output = outputKey ? outputs[outputKey] : null;
+  for (const imported of output?.imports ?? []) {
+    if (imported.external) continue;
+    const importedFile = basename(normalized(imported.path));
+    if (!/\.(?:js|css)$/.test(importedFile) || initialSet.has(importedFile)) continue;
+    initialSet.add(importedFile);
+    queue.push(importedFile);
+  }
+}
+
+const initialRefs = [...initialSet];
 const initialOutputs = allOutputs
   .filter(item => initialSet.has(item.file))
   .sort((a, b) => b.bytes - a.bytes);
