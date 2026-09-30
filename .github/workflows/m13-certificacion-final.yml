@@ -68,13 +68,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          dotnet restore InventoryApp.sln
-          dotnet list InventoryApp.sln package --vulnerable --include-transitive | tee ../m13-dotnet-vulnerable.txt
+          dotnet restore Solqaryn.sln
+          dotnet list Solqaryn.sln package --vulnerable --include-transitive | tee ../m13-dotnet-vulnerable.txt
           if grep -q 'has the following vulnerable packages' ../m13-dotnet-vulnerable.txt; then
             echo 'M13 bloqueada: paquetes .NET vulnerables.' >&2
             exit 1
           fi
-          dotnet list InventoryApp.sln package --deprecated --include-transitive | tee ../m13-dotnet-deprecated.txt
+          dotnet list Solqaryn.sln package --deprecated --include-transitive | tee ../m13-dotnet-deprecated.txt
       - name: Auditar npm runtime y registrar tooling
         working-directory: frontend
         shell: bash
@@ -107,14 +107,14 @@ jobs:
         image: mysql:8.4
         env:
           MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: inventoryapp_m13_fresh
+          MYSQL_DATABASE: solqaryn_m13_fresh
         ports: ['3306:3306']
         options: >-
           --health-cmd="mysqladmin ping -h localhost -proot"
           --health-interval=10s --health-timeout=5s --health-retries=12
     env:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=inventoryapp_m13_fresh;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_m13_fresh;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
       Database__ServerVersion: '8.4.0'
       Database__ApplyMigrationsOnStartup: 'false'
       Jwt__Secret: 'M13-CI-Only-Secret-With-More-Than-32-Characters-2026'
@@ -136,17 +136,17 @@ jobs:
       - name: Restaurar y compilar Release con warnings como error
         working-directory: backend
         run: |
-          dotnet restore InventoryApp.sln
-          dotnet build InventoryApp.sln --configuration Release --no-restore -warnaserror
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore -warnaserror
       - name: Unitarias y contrato no integración
         working-directory: backend
-        run: dotnet test InventoryApp.sln --configuration Release --no-build --filter "Category!=Integration" --logger "trx;LogFileName=m13-unit.trx"
+        run: dotnet test Solqaryn.sln --configuration Release --no-build --filter "Category!=Integration" --logger "trx;LogFileName=m13-unit.trx"
       - name: Preparar EF y MySQL administrado estricto
         shell: bash
         run: |
           dotnet tool install --global dotnet-ef --version 8.0.8
           mysql_container="${{ job.services.mysql.id }}"
-          docker exec "$mysql_container" mysql -uroot -proot -e "SET GLOBAL sql_require_primary_key=ON; CREATE DATABASE IF NOT EXISTS inventoryapp_m13_upgrade;"
+          docker exec "$mysql_container" mysql -uroot -proot -e "SET GLOBAL sql_require_primary_key=ON; CREATE DATABASE IF NOT EXISTS solqaryn_m13_upgrade;"
           test "$(docker exec "$mysql_container" mysql -uroot -proot -Nse 'SELECT @@GLOBAL.sql_require_primary_key;')" = 1
       - name: Historial completo desde cero y esquema ERP-N1 materializado
         working-directory: backend
@@ -154,19 +154,19 @@ jobs:
         run: |
           set -euo pipefail
           dotnet ef database update \
-            --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-            --startup-project src/API/InventoryApp.API.csproj \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext
 
           mysql_container="${{ job.services.mysql.id }}"
-          table_count="$(docker exec "$mysql_container" mysql -uroot -proot inventoryapp_m13_fresh -Nse "
+          table_count="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_m13_fresh -Nse "
             SELECT COUNT(*) FROM information_schema.tables
-            WHERE table_schema='inventoryapp_m13_fresh' AND table_name='ExistenciasVariante';")"
+            WHERE table_schema='solqaryn_m13_fresh' AND table_name='ExistenciasVariante';")"
           test "$table_count" = '1'
 
-          correlation_column="$(docker exec "$mysql_container" mysql -uroot -proot inventoryapp_m13_fresh -Nse "
+          correlation_column="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_m13_fresh -Nse "
             SELECT COUNT(*) FROM information_schema.columns
-            WHERE table_schema='inventoryapp_m13_fresh'
+            WHERE table_schema='solqaryn_m13_fresh'
               AND table_name='MovimientosInventario'
               AND column_name='CorrelationId';")"
           test "$correlation_column" = '1'
@@ -178,9 +178,9 @@ jobs:
             IX_MovInv_Venta_Fecha_N15 \
             IX_MovInv_Consumo_Fecha_N15 \
             IX_MovInv_Ajuste_Fecha_N15; do
-            index_count="$(docker exec "$mysql_container" mysql -uroot -proot inventoryapp_m13_fresh -Nse "
+            index_count="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_m13_fresh -Nse "
               SELECT COUNT(DISTINCT index_name) FROM information_schema.statistics
-              WHERE table_schema='inventoryapp_m13_fresh'
+              WHERE table_schema='solqaryn_m13_fresh'
                 AND table_name='MovimientosInventario'
                 AND index_name='$index_name';")"
             test "$index_count" = '1'
@@ -190,20 +190,20 @@ jobs:
             20260815012500_N1_4_ExistenciaVariante \
             20260815202500_N1_5_KardexCorrelation \
             20260816005000_N1_5_KardexQueryIndexes; do
-            migration_count="$(docker exec "$mysql_container" mysql -uroot -proot inventoryapp_m13_fresh -Nse "
+            migration_count="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_m13_fresh -Nse "
               SELECT COUNT(*) FROM __EFMigrationsHistory
               WHERE MigrationId='$migration_id';")"
             test "$migration_count" = '1'
           done
       - name: Integración MySQL sobre esquema actual
         working-directory: backend
-        run: dotnet test InventoryApp.sln --configuration Release --no-build --filter "Category=Integration" --logger "trx;LogFileName=m13-integration.trx"
+        run: dotnet test Solqaryn.sln --configuration Release --no-build --filter "Category=Integration" --logger "trx;LogFileName=m13-integration.trx"
       - name: SQL forward completo e idempotente
         working-directory: backend
         run: |
           dotnet ef migrations script --idempotent \
-            --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-            --startup-project src/API/InventoryApp.API.csproj \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext \
             --output m13-forward-idempotent.sql
           test -s m13-forward-idempotent.sql
@@ -211,17 +211,17 @@ jobs:
       - name: Construir esquema anterior representativo
         working-directory: backend
         env:
-          ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=inventoryapp_m13_upgrade;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
+          ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_m13_upgrade;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
         run: |
           dotnet ef database update 20260722142118_Fase6SeguridadFacturacionPerfil \
-            --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-            --startup-project src/API/InventoryApp.API.csproj \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext
       - name: Sembrar dato legado representativo
         shell: bash
         run: |
           mysql_container="${{ job.services.mysql.id }}"
-          docker exec "$mysql_container" mysql -uroot -proot inventoryapp_m13_upgrade -e "
+          docker exec "$mysql_container" mysql -uroot -proot solqaryn_m13_upgrade -e "
             INSERT INTO Productos
               (Nombre, Marca, Modelo, Cantidad, Costo, Precio, UmbralStockBajo, Activo, Eliminado, FechaCreacion, FechaActualizacion)
             VALUES
@@ -229,20 +229,20 @@ jobs:
       - name: Evolucionar esquema representativo hasta actual
         working-directory: backend
         env:
-          ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=inventoryapp_m13_upgrade;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
+          ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_m13_upgrade;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
         run: |
           dotnet ef database update 20260728152434_Fase3CostoEnvioEnVentas \
-            --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-            --startup-project src/API/InventoryApp.API.csproj \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext
       - name: Preparar catálogo legado y completar upgrade
         working-directory: backend
         env:
-          ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=inventoryapp_m13_upgrade;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
+          ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_m13_upgrade;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
         shell: bash
         run: |
           mysql_container="${{ job.services.mysql.id }}"
-          docker exec "$mysql_container" mysql -uroot -proot inventoryapp_m13_upgrade -e "
+          docker exec "$mysql_container" mysql -uroot -proot solqaryn_m13_upgrade -e "
             INSERT INTO CatalogosProducto
               (Tipo, Nombre, Descripcion, CodigoVisual, Orden, Activo, Eliminado, FechaCreacion, FechaActualizacion)
             VALUES
@@ -250,15 +250,15 @@ jobs:
             SET @color_id = LAST_INSERT_ID();
             UPDATE Productos SET ColorId=@color_id WHERE Nombre='M13 Legacy Sentinel';"
           dotnet ef database update \
-            --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-            --startup-project src/API/InventoryApp.API.csproj \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext
       - name: Verificar preservación histórica tras upgrade
         shell: bash
         run: |
           set -euo pipefail
           mysql_container="${{ job.services.mysql.id }}"
-          count="$(docker exec "$mysql_container" mysql -uroot -proot inventoryapp_m13_upgrade -Nse "
+          count="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_m13_upgrade -Nse "
             SELECT COUNT(*) FROM ProductoVariantes pv
             JOIN Productos p ON p.Id=pv.ProductoId
             WHERE p.Nombre='M13 Legacy Sentinel' AND pv.Cantidad=4 AND pv.Costo=100 AND pv.Precio=160;")"
@@ -304,7 +304,7 @@ jobs:
         image: mysql:8.4
         env:
           MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: inventoryapp_m13_runtime
+          MYSQL_DATABASE: solqaryn_m13_runtime
         ports: ['3306:3306']
         options: >-
           --health-cmd="mysqladmin ping -h localhost -proot"
@@ -313,7 +313,7 @@ jobs:
       ASPNETCORE_ENVIRONMENT: Staging
       PORT: '5005'
       AllowedHosts: '127.0.0.1;localhost'
-      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=inventoryapp_m13_runtime;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_m13_runtime;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
       Database__ServerVersion: '8.4.0'
       Database__ApplyMigrationsOnStartup: 'true'
       Jwt__Secret: 'M13-E2E-Only-Secret-With-More-Than-32-Characters-2026'
@@ -368,8 +368,8 @@ jobs:
       - name: Backend Release
         working-directory: backend
         run: |
-          dotnet restore InventoryApp.sln
-          dotnet build InventoryApp.sln --configuration Release --no-restore
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
       - name: SMTP efímero
         shell: bash
         run: |
@@ -380,7 +380,7 @@ jobs:
       - name: API Staging y migraciones
         shell: bash
         run: |
-          nohup dotnet run --project backend/src/API/InventoryApp.API.csproj --configuration Release --no-build --no-launch-profile > backend/m13-api.log 2>&1 &
+          nohup dotnet run --project backend/src/API/Solqaryn.API.csproj --configuration Release --no-build --no-launch-profile > backend/m13-api.log 2>&1 &
           for attempt in $(seq 1 60); do
             curl --fail --silent http://127.0.0.1:5005/health/ready >/dev/null && exit 0
             sleep 2

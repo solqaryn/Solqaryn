@@ -21,7 +21,7 @@ on:
       - backend/src/Infrastructure/Persistence/Configurations/SucursalConfiguration.cs
       - backend/src/Infrastructure/Repositories/SucursalRepository.cs
       - backend/src/Infrastructure/Repositories/AuditoriaRepository.cs
-      - backend/tests/InventoryApp.Tests/Sucursal*.cs
+      - backend/tests/Solqaryn.Tests/Sucursal*.cs
       - frontend/src/app/app.component.ts
       - frontend/src/app/app.routes.ts
       - frontend/src/app/core/models/sucursal.model.ts
@@ -37,7 +37,7 @@ on:
       - backend/src/API/Controllers/SucursalesController.cs
       - backend/src/API/Filters/MedirRendimientoBusquedaFilter.cs
       - backend/src/Infrastructure/Repositories/AuditoriaRepository.cs
-      - backend/tests/InventoryApp.Tests/Sucursal*.cs
+      - backend/tests/Solqaryn.Tests/Sucursal*.cs
       - frontend/src/app/features/sucursales/**
       - frontend/src/app/core/models/sucursal.model.ts
       - frontend/src/app/services/sucursal.service.ts
@@ -62,7 +62,7 @@ jobs:
         image: mysql:8.4
         env:
           MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: inventoryapp_n11_sucursales
+          MYSQL_DATABASE: solqaryn_n11_sucursales
         ports:
           - 3306:3306
         options: >-
@@ -74,12 +74,12 @@ jobs:
     env:
       ASPNETCORE_ENVIRONMENT: Development
       PORT: '5005'
-      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=inventoryapp_n11_sucursales;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_n11_sucursales;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
       Database__ServerVersion: '8.4.0'
       Database__ApplyMigrationsOnStartup: 'true'
       Jwt__Secret: 'N11-Sucursales-E2E-Only-Secret-With-More-Than-32-Characters-2026'
-      Jwt__Issuer: 'InventoryApp.API'
-      Jwt__Audience: 'InventoryApp.Frontend'
+      Jwt__Issuer: 'Solqaryn.API'
+      Jwt__Audience: 'Solqaryn.Frontend'
       Jwt__ExpiraMinutos: '120'
       Security__LoginRateLimitPerMinute: '300'
       SeedAdmin__Username: 'e2e_admin'
@@ -87,7 +87,7 @@ jobs:
       Cors__AllowedOrigins__0: 'http://127.0.0.1:4200'
       Cors__AllowedOrigins__1: 'http://localhost:4200'
       AppSettings__BackendPublicUrl: 'https://preview.solqaryn.invalid'
-      AppSettings__LogoPublicUrl: 'https://solqaryn-dev.vercel.app/assets/varistorehn-logo.png'
+      AppSettings__LogoPublicUrl: 'https://solqaryn-dev.vercel.app/assets/storefront-logo.png'
       Cloudinary__CloudName: 'e2e-not-used'
       Cloudinary__ApiKey: 'e2e-not-used'
       Cloudinary__ApiSecret: 'e2e-not-used'
@@ -110,9 +110,9 @@ jobs:
       - name: Restaurar, compilar y probar backend
         working-directory: backend
         run: |
-          dotnet restore InventoryApp.sln
-          dotnet build InventoryApp.sln --configuration Release --no-restore -warnaserror
-          dotnet test InventoryApp.sln --configuration Release --no-build --filter "Category!=Integration"
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore -warnaserror
+          dotnet test Solqaryn.sln --configuration Release --no-build --filter "Category!=Integration"
 
       - name: Iniciar API con migraciones MySQL
         working-directory: backend
@@ -120,7 +120,7 @@ jobs:
         run: |
           set -euo pipefail
           nohup dotnet run \
-            --project src/API/InventoryApp.API.csproj \
+            --project src/API/Solqaryn.API.csproj \
             --configuration Release \
             --no-build \
             --no-launch-profile \

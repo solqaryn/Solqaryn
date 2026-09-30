@@ -28,7 +28,7 @@ jobs:
         image: mysql:8.4
         env:
           MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: inventoryapp_migration_recovery
+          MYSQL_DATABASE: solqaryn_migration_recovery
         ports:
           - 3306:3306
         options: >-
@@ -40,19 +40,19 @@ jobs:
     env:
       ASPNETCORE_ENVIRONMENT: Development
       PORT: '5005'
-      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=inventoryapp_migration_recovery;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_migration_recovery;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
       Database__ServerVersion: '8.4.0'
       Database__ApplyMigrationsOnStartup: 'true'
       Jwt__Secret: 'Migration-Recovery-CI-Only-Secret-With-More-Than-32-Characters-2026'
-      Jwt__Issuer: 'InventoryApp.API'
-      Jwt__Audience: 'InventoryApp.Frontend'
+      Jwt__Issuer: 'Solqaryn.API'
+      Jwt__Audience: 'Solqaryn.Frontend'
       Jwt__ExpiraMinutos: '120'
       Security__LoginRateLimitPerMinute: '300'
       SeedAdmin__Username: 'migration_recovery_admin'
       SeedAdmin__Password: 'Migration.Recovery#2026!'
       Cors__AllowedOrigins__0: 'http://127.0.0.1:4200'
       AppSettings__BackendPublicUrl: 'https://preview.solqaryn.invalid'
-      AppSettings__LogoPublicUrl: 'https://solqaryn-dev.vercel.app/assets/varistorehn-logo.png'
+      AppSettings__LogoPublicUrl: 'https://solqaryn-dev.vercel.app/assets/storefront-logo.png'
       Cloudinary__CloudName: 'ci-not-used'
       Cloudinary__ApiKey: 'ci-not-used'
       Cloudinary__ApiSecret: 'ci-not-used'
@@ -71,7 +71,7 @@ jobs:
       - name: Restaurar e instalar EF
         working-directory: backend
         run: |
-          dotnet restore InventoryApp.sln
+          dotnet restore Solqaryn.sln
           dotnet tool install --global dotnet-ef --version 8.0.8
 
       - name: Activar restricción de primary key equivalente a Aiven
@@ -87,8 +87,8 @@ jobs:
         working-directory: backend
         run: |
           dotnet ef database update 20260808164317_M1NormalizarMaestrosProducto \
-            --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-            --startup-project src/API/InventoryApp.API.csproj \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext
 
       - name: Preparar configuración empresarial del baseline efímero
@@ -96,7 +96,7 @@ jobs:
         run: |
           set -euo pipefail
           mysql_container="${{ job.services.mysql.id }}"
-          q(){ docker exec "$mysql_container" mysql -uroot -proot inventoryapp_migration_recovery -Nse "$1"; }
+          q(){ docker exec "$mysql_container" mysql -uroot -proot solqaryn_migration_recovery -Nse "$1"; }
 
           activas="$(q "SELECT COUNT(*) FROM EmpresaConfiguraciones WHERE Activa = 1;")"
           if [ "$activas" -gt 1 ]; then
@@ -105,7 +105,7 @@ jobs:
           fi
 
           if [ "$activas" -eq 0 ]; then
-            docker exec "$mysql_container" mysql -uroot -proot inventoryapp_migration_recovery -e "
+            docker exec "$mysql_container" mysql -uroot -proot solqaryn_migration_recovery -e "
               INSERT INTO EmpresaConfiguraciones (
                 NombreComercial,
                 Eslogan,
@@ -123,9 +123,9 @@ jobs:
                 Activa,
                 FechaActualizacion
               ) VALUES (
-                'VariStorehn CI Recovery',
+                'Storefront CI Recovery',
                 'Eleva tu mundo digital',
-                'VariStorehn CI Recovery',
+                'Storefront CI Recovery',
                 'Baseline efimero de recuperacion',
                 'CI migration recovery',
                 'CI only',
@@ -153,7 +153,7 @@ jobs:
 
           # Reproduce el síntoma observado en Render: M1 no está en historial pero
           # algunos DDL ya quedaron confirmados por MySQL.
-          docker exec "$mysql_container" mysql -uroot -proot inventoryapp_migration_recovery -e "
+          docker exec "$mysql_container" mysql -uroot -proot solqaryn_migration_recovery -e "
             ALTER TABLE Proveedores DROP INDEX IX_Proveedores_Nombre;
             ALTER TABLE Clientes DROP INDEX IX_Clientes_Nombre;
             ALTER TABLE Proveedores
@@ -168,13 +168,13 @@ jobs:
             ALTER TABLE ImpuestoProveedores DROP INDEX IX_ImpuestoProveedores_ImpuestoId;
           "
 
-          test "$(docker exec "$mysql_container" mysql -uroot -proot inventoryapp_migration_recovery -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20260808165129_M1EndurecerIntegridadRelacional';")" = 0
-          test "$(docker exec "$mysql_container" mysql -uroot -proot inventoryapp_migration_recovery -Nse "SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='Proveedores' AND INDEX_NAME='IX_Proveedores_Nombre';")" = 0
-          test "$(docker exec "$mysql_container" mysql -uroot -proot inventoryapp_migration_recovery -Nse "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='Proveedores' AND COLUMN_NAME='DocumentoNormalizado';")" = 1
+          test "$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_migration_recovery -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20260808165129_M1EndurecerIntegridadRelacional';")" = 0
+          test "$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_migration_recovery -Nse "SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='Proveedores' AND INDEX_NAME='IX_Proveedores_Nombre';")" = 0
+          test "$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_migration_recovery -Nse "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='Proveedores' AND COLUMN_NAME='DocumentoNormalizado';")" = 1
 
       - name: Compilar backend Release
         working-directory: backend
-        run: dotnet build InventoryApp.sln --configuration Release --no-restore
+        run: dotnet build Solqaryn.sln --configuration Release --no-restore
 
       - name: Arrancar API y reanudar migraciones como Render
         working-directory: backend
@@ -182,7 +182,7 @@ jobs:
         run: |
           set -euo pipefail
           nohup dotnet run \
-            --project src/API/InventoryApp.API.csproj \
+            --project src/API/Solqaryn.API.csproj \
             --configuration Release \
             --no-build \
             --no-launch-profile \
@@ -212,7 +212,7 @@ jobs:
         run: |
           set -euo pipefail
           mysql_container="${{ job.services.mysql.id }}"
-          q(){ docker exec "$mysql_container" mysql -uroot -proot inventoryapp_migration_recovery -Nse "$1"; }
+          q(){ docker exec "$mysql_container" mysql -uroot -proot solqaryn_migration_recovery -Nse "$1"; }
 
           test "$(q "SELECT @@GLOBAL.sql_require_primary_key;")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20260808165128_M1ReconciliarReintentoIntegridadRelacional';")" = 1
@@ -234,7 +234,7 @@ jobs:
           wait "$(cat migration-recovery-api.pid)" 2>/dev/null || true
 
           nohup dotnet run \
-            --project src/API/InventoryApp.API.csproj \
+            --project src/API/Solqaryn.API.csproj \
             --configuration Release \
             --no-build \
             --no-launch-profile \
