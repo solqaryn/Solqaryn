@@ -1,14 +1,17 @@
-# VAEP — MAESTRO OPERATIVO ÚNICO
+# VAEP — CONTRATO OPERATIVO ÚNICO
 
-Este archivo es la única autoridad operativa vigente de VAEP para SOLQARYN.
+Este archivo gobierna exclusivamente cómo ejecuta VAEP. No es un segundo Plan Maestro ni un roadmap paralelo. El único Plan Maestro de roadmap y arquitectura objetivo es el Google Doc `PLAN MAESTRO SOLQARYN`.
 
 ```text
 PROJECT_ID=SOLQARYN
 PROJECT_SCOPE_LOCK=STRICT
 REPOSITORY=solqaryn/Solqaryn
 BRANCH=dev
-AUTOMATION_AUTHORITY=MASTER
-MASTER_FILE=docs/VAEP_AUTHORITY.md
+AUTOMATION_AUTHORITY=VAEP_CONTRACT
+VAEP_CONTRACT_FILE=docs/VAEP_AUTHORITY.md
+ROADMAP_MASTER_GOOGLE_DOC_ID=1YdQlNJ312HuziyKb9E-GEt55dcgSmuFGgfsHxyzPUaw
+ROADMAP_MASTER_TITLE=PLAN_MAESTRO_SOLQARYN
+NOTES_EXECUTABLE=FALSE
 CONTEXT_MODE=CURRENT_STATE_ONLY
 CERTIFIED_DONE_STATE=LISTO
 ALTERNATE_DONE_STATES=PROHIBITED
@@ -57,12 +60,13 @@ END_AUTOMATION_POLICY
 
 ## 1. Fuente única y precedencia
 
-1. `docs/VAEP_AUTHORITY.md` es el único MAESTRO ejecutable de reglas.
-2. GitHub manda para código y evidencia técnica; el estado operativo fresco manda para ejecución; este MAESTRO manda para reglas.
-3. El plan maestro vigente se construye desde el estado actual de SOLQARYN, sus objetivos actuales y las dependencias técnicas actuales.
-4. Ninguna fase, secuencia, fila, gate, excepción, protocolo o decisión que no esté incorporada expresamente en este archivo puede condicionar la ejecución.
-5. El historial Git no se reescribe, pero tampoco se usa como autoridad operativa.
-6. Ante contradicción, gana el MAESTRO vigente y la superficie stale se corrige cuando sea seguro.
+1. El único Plan Maestro de roadmap y arquitectura objetivo es `PLAN MAESTRO SOLQARYN` (Google Doc ID `1YdQlNJ312HuziyKb9E-GEt55dcgSmuFGgfsHxyzPUaw`).
+2. `docs/VAEP_AUTHORITY.md` es el contrato operativo de las diez automatizaciones y no puede inventar objetivos, fases o prioridades fuera de ese Plan Maestro.
+3. GitHub manda para código y evidencia técnica; el estado operativo fresco manda para ejecución; el Plan Maestro manda para roadmap; este contrato manda para coordinación y controles de ejecución.
+4. `Notas SOLQARYN_DEV.docx` es sólo una bandeja de observaciones y no es ejecutable hasta incorporación aprobada al Plan Maestro.
+5. Ninguna fase, secuencia, fila, gate, excepción, protocolo o decisión histórica puede condicionar la ejecución actual.
+6. El historial Git no se reescribe, pero tampoco se usa como autoridad operativa.
+7. Ante contradicción, se corrige la superficie stale para quedar alineada al Plan Maestro único + este contrato operativo.
 
 ## 2. Modelo de ejecución: TASKS_ONLY
 
@@ -164,6 +168,8 @@ Las superficies operativas deben usar exclusivamente:
 `PENDIENTE`, `EN_PROGRESO`, `VALIDANDO`, `LISTO`, `BLOQUEADO`, `CANCELADO`.
 
 Las vistas derivadas se calculan desde estado fuente vivo. No usar snapshots manuales como autoridad de ejecución.
+
+El Google Sheet operativo canónico es `SOLQARYN - PLAN MAESTRO DE AUTOMATIZACIONES` (ID `1gcVyCoyhLU0jFMwRtf0s5_x8FSnfBs38ojml1QF7Xwk`). Las pestañas visibles son vistas derivadas por fórmulas. Las escrituras de runtime pertenecen únicamente a las fuentes técnicas ocultas `_MASTER_SOURCE`, `_RUNTIME_SOURCE`, `_AUTOMATION_SOURCE` y `_EVENTS_SOURCE`. COLA, PLAN_MAESTRO y BITACORA no conservan autoridad histórica.
 
 ## 9. Cierre
 
