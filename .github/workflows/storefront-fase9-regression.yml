@@ -24,10 +24,10 @@ on:
       - 'backend/src/Infrastructure/Repositories/ExistenciaVarianteRepository.cs'
       - 'backend/src/Domain/Entities/Descuento.cs'
       - 'backend/src/Infrastructure/Repositories/DescuentoRepository.cs'
-      - 'backend/tests/InventoryApp.Tests/TiendaPublicaTests.cs'
-      - 'backend/tests/InventoryApp.Tests/PromocionPublicaServiceTests.cs'
-      - 'backend/tests/InventoryApp.Tests/InventarioPublicoServiceTests.cs'
-      - 'backend/tests/InventoryApp.Tests/API/Controllers/TiendaController*.cs'
+      - 'backend/tests/Solqaryn.Tests/TiendaPublicaTests.cs'
+      - 'backend/tests/Solqaryn.Tests/PromocionPublicaServiceTests.cs'
+      - 'backend/tests/Solqaryn.Tests/InventarioPublicoServiceTests.cs'
+      - 'backend/tests/Solqaryn.Tests/API/Controllers/TiendaController*.cs'
       - 'scripts/quality/priority4_quality_audit.py'
       - '.github/workflows/storefront-fase9-regression.yml'
   workflow_dispatch:
@@ -52,10 +52,10 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
-      - run: dotnet restore InventoryApp.sln
-      - run: dotnet build InventoryApp.sln --configuration Release --no-restore
+      - run: dotnet restore Solqaryn.sln
+      - run: dotnet build Solqaryn.sln --configuration Release --no-restore
       - name: Pruebas Fase 9
-        run: dotnet test InventoryApp.sln --configuration Release --no-build --filter "FullyQualifiedName~TiendaPublicaTests|FullyQualifiedName~PromocionPublicaServiceTests|FullyQualifiedName~InventarioPublicoServiceTests|FullyQualifiedName~TiendaController"
+        run: dotnet test Solqaryn.sln --configuration Release --no-build --filter "FullyQualifiedName~TiendaPublicaTests|FullyQualifiedName~PromocionPublicaServiceTests|FullyQualifiedName~InventarioPublicoServiceTests|FullyQualifiedName~TiendaController"
 
   frontend:
     name: Fase 9 - regresion publica acumulada

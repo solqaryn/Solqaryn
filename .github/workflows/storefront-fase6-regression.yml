@@ -24,7 +24,7 @@ on:
       - 'frontend/package-lock.json'
       - 'backend/src/API/Controllers/TiendaController.cs'
       - 'backend/src/Application/DTOs/TiendaCheckoutDto.cs'
-      - 'backend/tests/InventoryApp.Tests/API/Controllers/TiendaControllerCheckoutTests.cs'
+      - 'backend/tests/Solqaryn.Tests/API/Controllers/TiendaControllerCheckoutTests.cs'
       - '.github/workflows/storefront-fase6-regression.yml'
   pull_request:
     branches:
@@ -48,7 +48,7 @@ on:
       - 'frontend/package-lock.json'
       - 'backend/src/API/Controllers/TiendaController.cs'
       - 'backend/src/Application/DTOs/TiendaCheckoutDto.cs'
-      - 'backend/tests/InventoryApp.Tests/API/Controllers/TiendaControllerCheckoutTests.cs'
+      - 'backend/tests/Solqaryn.Tests/API/Controllers/TiendaControllerCheckoutTests.cs'
       - '.github/workflows/storefront-fase6-regression.yml'
 
 permissions:
@@ -79,20 +79,20 @@ jobs:
           cache-dependency-path: backend/**/*.csproj
 
       - name: Restore
-        run: dotnet restore InventoryApp.sln
+        run: dotnet restore Solqaryn.sln
 
       - name: Build Release
-        run: dotnet build InventoryApp.sln --configuration Release --no-restore
+        run: dotnet build Solqaryn.sln --configuration Release --no-restore
 
       - name: Pruebas quirurgicas de checkout publico
-        run: dotnet test tests/InventoryApp.Tests/InventoryApp.Tests.csproj --configuration Release --no-build --filter "FullyQualifiedName~TiendaControllerCheckoutTests" --logger "trx;LogFileName=storefront-fase6.trx"
+        run: dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-build --filter "FullyQualifiedName~TiendaControllerCheckoutTests" --logger "trx;LogFileName=storefront-fase6.trx"
 
       - name: Publicar resultados backend
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: storefront-fase6-backend
-          path: backend/tests/InventoryApp.Tests/TestResults/*.trx
+          path: backend/tests/Solqaryn.Tests/TestResults/*.trx
           if-no-files-found: warn
           retention-days: 7
 

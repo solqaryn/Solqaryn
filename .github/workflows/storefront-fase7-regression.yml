@@ -54,16 +54,16 @@ on:
       - 'backend/src/Domain/Entities/Producto.cs'
       - 'backend/src/Infrastructure/Repositories/ProductoRepository.cs'
       - 'backend/src/Infrastructure/Persistence/Configurations/ProductoConfiguration.cs'
-      - 'backend/src/Infrastructure/Migrations/20260918162000_VaristorehnFase7ProductoDestacado.cs'
+      - 'backend/src/Infrastructure/Migrations/20260918162000_StorefrontFase7ProductoDestacado.cs'
       - 'backend/src/Infrastructure/Migrations/AppDbContextModelSnapshot.cs'
-      - 'backend/tests/InventoryApp.Tests/API/Controllers/TiendaControllerDestacadosTests.cs'
-      - 'backend/tests/InventoryApp.Tests/TiendaBootstrapServiceTests.cs'
-      - 'backend/tests/InventoryApp.Tests/PublicStoreMemoryCacheTests.cs'
-      - 'backend/tests/InventoryApp.Tests/PublicStoreTenantKeyProviderTests.cs'
-      - 'backend/tests/InventoryApp.Tests/PublicStoreCacheInvalidationTests.cs'
-      - 'backend/tests/InventoryApp.Tests/CatalogoPublicoCacheTests.cs'
-      - 'backend/tests/InventoryApp.Tests/TiendaPublicaTests.cs'
-      - 'backend/tests/InventoryApp.Tests/PublicHttpCacheAttributeTests.cs'
+      - 'backend/tests/Solqaryn.Tests/API/Controllers/TiendaControllerDestacadosTests.cs'
+      - 'backend/tests/Solqaryn.Tests/TiendaBootstrapServiceTests.cs'
+      - 'backend/tests/Solqaryn.Tests/PublicStoreMemoryCacheTests.cs'
+      - 'backend/tests/Solqaryn.Tests/PublicStoreTenantKeyProviderTests.cs'
+      - 'backend/tests/Solqaryn.Tests/PublicStoreCacheInvalidationTests.cs'
+      - 'backend/tests/Solqaryn.Tests/CatalogoPublicoCacheTests.cs'
+      - 'backend/tests/Solqaryn.Tests/TiendaPublicaTests.cs'
+      - 'backend/tests/Solqaryn.Tests/PublicHttpCacheAttributeTests.cs'
       - 'frontend/src/app/core/models/producto.model.ts'
       - 'frontend/src/app/features/productos/producto-form.component.html'
       - 'frontend/src/app/features/productos/producto-form.component.ts'
@@ -120,16 +120,16 @@ on:
       - 'backend/src/Domain/Entities/Producto.cs'
       - 'backend/src/Infrastructure/Repositories/ProductoRepository.cs'
       - 'backend/src/Infrastructure/Persistence/Configurations/ProductoConfiguration.cs'
-      - 'backend/src/Infrastructure/Migrations/20260918162000_VaristorehnFase7ProductoDestacado.cs'
+      - 'backend/src/Infrastructure/Migrations/20260918162000_StorefrontFase7ProductoDestacado.cs'
       - 'backend/src/Infrastructure/Migrations/AppDbContextModelSnapshot.cs'
-      - 'backend/tests/InventoryApp.Tests/API/Controllers/TiendaControllerDestacadosTests.cs'
-      - 'backend/tests/InventoryApp.Tests/TiendaBootstrapServiceTests.cs'
-      - 'backend/tests/InventoryApp.Tests/PublicStoreMemoryCacheTests.cs'
-      - 'backend/tests/InventoryApp.Tests/PublicStoreTenantKeyProviderTests.cs'
-      - 'backend/tests/InventoryApp.Tests/PublicStoreCacheInvalidationTests.cs'
-      - 'backend/tests/InventoryApp.Tests/CatalogoPublicoCacheTests.cs'
-      - 'backend/tests/InventoryApp.Tests/TiendaPublicaTests.cs'
-      - 'backend/tests/InventoryApp.Tests/PublicHttpCacheAttributeTests.cs'
+      - 'backend/tests/Solqaryn.Tests/API/Controllers/TiendaControllerDestacadosTests.cs'
+      - 'backend/tests/Solqaryn.Tests/TiendaBootstrapServiceTests.cs'
+      - 'backend/tests/Solqaryn.Tests/PublicStoreMemoryCacheTests.cs'
+      - 'backend/tests/Solqaryn.Tests/PublicStoreTenantKeyProviderTests.cs'
+      - 'backend/tests/Solqaryn.Tests/PublicStoreCacheInvalidationTests.cs'
+      - 'backend/tests/Solqaryn.Tests/CatalogoPublicoCacheTests.cs'
+      - 'backend/tests/Solqaryn.Tests/TiendaPublicaTests.cs'
+      - 'backend/tests/Solqaryn.Tests/PublicHttpCacheAttributeTests.cs'
       - 'frontend/src/app/core/models/producto.model.ts'
       - 'frontend/src/app/features/productos/producto-form.component.html'
       - 'frontend/src/app/features/productos/producto-form.component.ts'
@@ -162,13 +162,13 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Restore backend
-        run: dotnet restore InventoryApp.sln
+        run: dotnet restore Solqaryn.sln
 
       - name: Build backend
-        run: dotnet build InventoryApp.sln --configuration Release --no-restore
+        run: dotnet build Solqaryn.sln --configuration Release --no-restore
 
       - name: Pruebas focales de destacados, bootstrap y cache
-        run: dotnet test InventoryApp.sln --configuration Release --no-build --filter "FullyQualifiedName~TiendaControllerDestacadosTests|FullyQualifiedName~TiendaBootstrapServiceTests|FullyQualifiedName~PublicStoreMemoryCacheTests|FullyQualifiedName~PublicStoreTenantKeyProviderTests|FullyQualifiedName~PublicStoreCacheInvalidationTests|FullyQualifiedName~CatalogoPublicoCacheTests|FullyQualifiedName~TiendaPublicaTests|FullyQualifiedName~PublicHttpCacheAttributeTests"
+        run: dotnet test Solqaryn.sln --configuration Release --no-build --filter "FullyQualifiedName~TiendaControllerDestacadosTests|FullyQualifiedName~TiendaBootstrapServiceTests|FullyQualifiedName~PublicStoreMemoryCacheTests|FullyQualifiedName~PublicStoreTenantKeyProviderTests|FullyQualifiedName~PublicStoreCacheInvalidationTests|FullyQualifiedName~CatalogoPublicoCacheTests|FullyQualifiedName~TiendaPublicaTests|FullyQualifiedName~PublicHttpCacheAttributeTests"
 
   frontend:
     name: Fase 7 - regresion publica acumulada

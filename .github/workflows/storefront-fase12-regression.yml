@@ -10,10 +10,10 @@ on:
       - 'backend/src/Domain/Entities/TiendaCuentaCliente.cs'
       - 'backend/src/Infrastructure/Persistence/AppDbContext.cs'
       - 'backend/src/Infrastructure/Persistence/Configurations/TiendaCuentaClienteConfiguration.cs'
-      - 'backend/src/Infrastructure/Migrations/20260919011500_VaristorehnFase12CuentaCliente.cs'
+      - 'backend/src/Infrastructure/Migrations/20260919011500_StorefrontFase12CuentaCliente.cs'
       - 'backend/src/Infrastructure/Migrations/AppDbContextModelSnapshot.cs'
-      - 'backend/tests/InventoryApp.Tests/TiendaCuentaClienteTests.cs'
-      - 'backend/tests/InventoryApp.Tests/Priority3AuthorizationSurfaceTests.cs'
+      - 'backend/tests/Solqaryn.Tests/TiendaCuentaClienteTests.cs'
+      - 'backend/tests/Solqaryn.Tests/Priority3AuthorizationSurfaceTests.cs'
       - 'scripts/quality/priority4_quality_audit.py'
       - 'frontend/src/app/features/storefront/**'
       - 'frontend/src/app/app.routes.ts'
@@ -45,9 +45,9 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
-      - run: dotnet restore InventoryApp.sln
-      - run: dotnet build InventoryApp.sln --configuration Release --no-restore
-      - run: dotnet test InventoryApp.sln --configuration Release --no-build --filter "Category!=Integration" --verbosity minimal
+      - run: dotnet restore Solqaryn.sln
+      - run: dotnet build Solqaryn.sln --configuration Release --no-restore
+      - run: dotnet test Solqaryn.sln --configuration Release --no-build --filter "Category!=Integration" --verbosity minimal
 
   frontend:
     name: Fase 12 - cuenta opcional y regresion 1-12

@@ -22,14 +22,14 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
-      - run: dotnet restore InventoryApp.sln
+      - run: dotnet restore Solqaryn.sln
       - run: dotnet tool install --global dotnet-ef --version 8.0.8
       - name: Generate verified canonical snapshot
         run: |
           set -euo pipefail
           dotnet ef migrations add VAEP_N5_7_C_SnapshotProbe \
-            --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-            --startup-project src/API/InventoryApp.API.csproj \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext \
             --output-dir Migrations
           generated="$(ls src/Infrastructure/Migrations/*VAEP_N5_7_C_SnapshotProbe.cs | grep -v Designer | head -n 1)"
@@ -42,7 +42,7 @@ jobs:
           grep -q 'DashboardKpiConfiguracion' src/Infrastructure/Migrations/AppDbContextModelSnapshot.cs
           rm -f src/Infrastructure/Migrations/*VAEP_N5_7_C_SnapshotProbe*.cs
       - name: Build snapshot-aligned model
-        run: dotnet build InventoryApp.sln --configuration Release
+        run: dotnet build Solqaryn.sln --configuration Release
       - name: Publish snapshot only
         run: |
           set -euo pipefail

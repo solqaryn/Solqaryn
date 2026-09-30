@@ -13,7 +13,7 @@ on:
       - 'backend/src/Infrastructure/Migrations/20260913050800_N71COutboxPersistence.cs'
       - 'backend/src/Infrastructure/Migrations/AppDbContextModelSnapshot.N69C.cs'
       - 'backend/src/Infrastructure/Migrations/AppDbContextModelSnapshot.N71C.cs'
-      - 'backend/tests/InventoryApp.Tests/N71COutboxPersistenceModelTests.cs'
+      - 'backend/tests/Solqaryn.Tests/N71COutboxPersistenceModelTests.cs'
       - '.github/workflows/vaep-n7-1-c-outbox.yml'
   workflow_dispatch:
 
@@ -38,11 +38,11 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
-      - run: dotnet restore InventoryApp.sln
-      - run: dotnet build InventoryApp.sln --configuration Release --no-restore
+      - run: dotnet restore Solqaryn.sln
+      - run: dotnet build Solqaryn.sln --configuration Release --no-restore
       - name: Regresión dirigida del modelo outbox
         run: >
-          dotnet test tests/InventoryApp.Tests/InventoryApp.Tests.csproj
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj
           --configuration Release
           --no-build
           --filter "FullyQualifiedName~N71COutboxPersistenceModelTests"
