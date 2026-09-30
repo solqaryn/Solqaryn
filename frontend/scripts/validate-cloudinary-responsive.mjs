@@ -26,7 +26,7 @@ expect(helper.includes('f_auto,q_auto,c_limit,w_'), 'helper debe aplicar f_auto,
 expect(helper.includes("parsed.hostname === 'res.cloudinary.com'"), 'URLs no Cloudinary no deben reescribirse');
 expect(shared.includes('[attr.srcset]="responsiveSrcset"'), 'componente compartido debe emitir srcset');
 expect(shared.includes('[attr.sizes]="responsiveSizes"'), 'componente compartido debe emitir sizes');
-expect(shared.includes("fetchpriority]="priority ? 'high' : null"), 'fetchpriority high debe depender de prioridad explícita');
+expect(shared.includes(`[attr.fetchpriority]="priority ? 'high' : null"`), 'fetchpriority high debe depender de prioridad explícita');
 
 expect(listado.includes('[attr.srcset]="srcsetCloudinary(modelo.imagenes[0])"'), 'tarjetas de catálogo deben usar srcset');
 expect(listado.includes('loading="lazy"') && listado.includes('decoding="async"'), 'tarjetas deben conservar lazy + async');
