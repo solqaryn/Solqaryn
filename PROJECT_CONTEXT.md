@@ -119,16 +119,27 @@ Consultar `ARCHITECTURE.md` para cambios estructurales y `PROJECT_INDEX.md` para
 
 ## 8. Plan maestro vigente
 
-El plan maestro que ejecutan las diez automatizaciones se define únicamente por objetivos, prioridades y dependencias actuales de SOLQARYN.
+Existe **un solo Plan Maestro vivo** para roadmap y arquitectura objetivo:
 
-No hereda restricciones, numeraciones, fases, filas, gates ni prioridades que no hayan sido incorporadas expresamente a la versión vigente del MAESTRO.
+- Google Doc nativo: `PLAN MAESTRO SOLQARYN`.
+- ID: `1YdQlNJ312HuziyKb9E-GEt55dcgSmuFGgfsHxyzPUaw`.
+- No existen V1/V2/V3/V5 ni roadmaps paralelos con autoridad ejecutable.
+- Cualquier cambio aprobado de alcance, arquitectura objetivo, programa u objetivo SQ modifica ese mismo documento.
+- `Notas SOLQARYN_DEV.docx` (ID `1WlqyRz09P7jARAg948Plg2UDKbKLSndT`) es exclusivamente una bandeja de observaciones; no es ejecutable hasta que el propietario apruebe su incorporación al Plan Maestro.
 
-La implementación existente puede ser modificada, reemplazada o retirada cuando el objetivo vigente lo requiera, siempre bajo controles de seguridad, integridad, trazabilidad, revisión y rollback proporcionales.
+Contrato operativo y superficie administrativa:
 
-Superficies corporativas de apoyo de VAEP en Google Drive, propiedad de `solqaryn.platform@outlook.com`:
+- `docs/VAEP_AUTHORITY.md` es el contrato operativo de VAEP; no crea roadmap.
+- Google Doc operativo auxiliar `SOLQARYN - AUTORIDAD OPERATIVA VAEP`: ID `1frrmekon0pBTrLcXk0yUZSJa4uISjEzrwrni3ja5y38`.
+- Google Sheet `SOLQARYN - PLAN MAESTRO DE AUTOMATIZACIONES`: ID `1gcVyCoyhLU0jFMwRtf0s5_x8FSnfBs38ojml1QF7Xwk`.
+- El Sheet fue rebasado al Plan Maestro actual: `SQ-000..SQ-353`; COLA, PLAN_MAESTRO y BITACORA históricos fueron retirados de la superficie viva.
+- `PLAN_MAESTRO`, `COLA`, `BITACORA`, `DASHBOARD`, `CONFIG`, `LEYENDA`, `TAREAS_PROGRAMADAS`, `CONTROL_TOWER`, `AUTOMATIZACIONES` y `TAREAS_DE_SUPERVISION` son superficies administrativas derivadas.
+- Fuentes técnicas ocultas: `_MASTER_SOURCE`, `_RUNTIME_SOURCE`, `_AUTOMATION_SOURCE`, `_EVENTS_SOURCE`.
+- CURRENT_STATE_ONLY: planes, fases, filas, parents, queues, gates y receipts históricos no condicionan ejecución nueva.
+- Estados únicos: `PENDIENTE`, `EN_PROGRESO`, `VALIDANDO`, `LISTO`, `BLOQUEADO`, `CANCELADO`.
+- Las diez automatizaciones canónicas usan slots `:00,:05,:12,:17,:24,:29,:36,:41,:48,:53` y permanecen **PAUSADAS (0/10 habilitadas)** hasta autorización explícita del propietario.
+- Las automatizaciones escriben estado únicamente en fuentes técnicas autorizadas y ejecutan readback; las vistas visibles no son superficies de escritura de runtime.
+- Los backups de Drive conservan historia únicamente como respaldo; no poseen autoridad operativa.
+- Queda prohibido usar `javiermejia3112@gmail.com`, `jmejia31/VariApp`, rama `Desarrollo` o infraestructura legacy como fallback.
 
-- Google Sheet nativo `SOLQARYN - PLAN MAESTRO DE AUTOMATIZACIONES`: ID `1gcVyCoyhLU0jFMwRtf0s5_x8FSnfBs38ojml1QF7Xwk`.
-- Google Doc nativo `Plan Maestro SOLQARYN - FUENTE RECTORA VAEP`: ID `1l0sy55GJu5bJAsXWDB8ciXfQOB9jBaNO7Mkx-N80vWk`.
-- Estas superficies son apoyo operativo y no sustituyen `docs/VAEP_AUTHORITY.md` ni el estado vivo de GitHub.
-- Las diez automatizaciones canónicas están configuradas en los slots `:00,:05,:12,:17,:24,:29,:36,:41,:48,:53`, corregidas a `solqaryn/Solqaryn` + `dev` y permanecen **PAUSADAS (0/10 habilitadas)** hasta autorización explícita del propietario.
-- Queda prohibido usar `javiermejia3112@gmail.com`, `jmejia31/VariApp`, rama `Desarrollo` o infraestructura legacy como fallback del runtime SOLQARYN.
+La implementación existente puede ser reutilizada, extendida, refactorizada o reemplazada cuando el objetivo vigente lo requiera, siempre preservando seguridad, RBAC, tenancy, integridad de datos, trazabilidad, revisión, rollback y las autorizaciones explícitas requeridas para `main`/PROD.
