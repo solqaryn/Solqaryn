@@ -1,3 +1,14 @@
+## 2026-09-30 — Reconstrucción y resincronización de las cinco Supervisor VAEP
+
+- Se detectó que el Sheet canónico conservaba las cinco Supervisor, pero los objetos runtime ya no estaban presentes en el inventario vivo.
+- Se recrearon las cinco Supervisor canónicas :05/:17/:29/:41/:53 con RESPONSABLE_OPERATIVO=ALEX_MORALES, zona America/Tegucigalpa, horarios canónicos y estado deshabilitado.
+- Nuevos IDs Supervisor canónicos: :05=6abd7946e7c881919c60ed6b3bf9a81a, :17=6abd79517d908191b08f770920ae63d4, :29=6abd795d81d08191b58518eddd62ffac, :41=6abd7970c2288191ac452301b3bc4df2, :53=6abd797bbf008191a9939cc2ccc11a06.
+- Las cinco Primary fueron repareadas a estos IDs y permanecen deshabilitadas.
+- _AUTOMATION_SOURCE fue actualizado con los IDs nuevos y las relaciones cruzadas; las vistas derivadas continúan 0/10 habilitadas.
+- docs/VAEP_AUTHORITY.md fue actualizado para eliminar los cinco IDs Supervisor retirados.
+- Las cinco Supervisor recreadas tienen last_run_time=null; no se ejecutó ningún run durante la reconstrucción.
+- No se tocó main, PROD, datos productivos, secretos, DNS, certificados ni servicios pagos.
+
 ## 2026-09-30 — Recreación controlada de SOLQARYN VAEP Primary :24
 
 - La tarea `SOLQARYN VAEP Primary :24` fue eliminada accidentalmente desde la cuenta de Javier y recreada con el mismo horario `:24`, mismo responsable operativo, mismo contrato VAEP y estado PAUSADO.
