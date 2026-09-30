@@ -55,7 +55,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          dotnet restore InventoryApp.sln
+          dotnet restore Solqaryn.sln
           dotnet tool install --global dotnet-ef --version 8.0.8
 
       - name: Create isolated database with random temporary credentials
@@ -94,10 +94,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          dotnet build InventoryApp.sln --configuration Release --no-restore
+          dotnet build Solqaryn.sln --configuration Release --no-restore
           dotnet ef migrations list \
-            --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-            --startup-project src/API/InventoryApp.API.csproj \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext \
             | tee "$RUNNER_TEMP/n823g/migrations-list.txt"
 
@@ -115,8 +115,8 @@ jobs:
 
           first_start="$(date +%s%3N)"
           dotnet ef database update \
-            --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-            --startup-project src/API/InventoryApp.API.csproj \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext \
             | tee "$RUNNER_TEMP/n823g/first-apply.log"
           first_end="$(date +%s%3N)"
@@ -126,8 +126,8 @@ jobs:
 
           second_start="$(date +%s%3N)"
           dotnet ef database update \
-            --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-            --startup-project src/API/InventoryApp.API.csproj \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext \
             | tee "$RUNNER_TEMP/n823g/second-apply.log"
           second_end="$(date +%s%3N)"
@@ -136,8 +136,8 @@ jobs:
           test "$history_second" = "$history_first"
 
           pending="$(dotnet ef migrations list \
-            --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-            --startup-project src/API/InventoryApp.API.csproj \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext \
             | grep -c '(Pending)' || true)"
           test "$pending" = 0
