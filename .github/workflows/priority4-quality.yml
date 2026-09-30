@@ -40,7 +40,7 @@ jobs:
         image: mysql:8.4
         env:
           MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: inventoryapp_priority4_ci
+          MYSQL_DATABASE: solqaryn_priority4_ci
         ports: ['3306:3306']
         options: >-
           --health-cmd="mysqladmin ping -h localhost -proot"
@@ -49,7 +49,7 @@ jobs:
           --health-retries=12
     env:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=inventoryapp_priority4_ci;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;
+      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=solqaryn_priority4_ci;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;
       Database__ServerVersion: 8.4.0
       Database__ApplyMigrationsOnStartup: 'false'
       Jwt__Secret: Priority4-CI-Only-Secret-With-More-Than-32-Characters-2026
@@ -72,9 +72,9 @@ jobs:
       - name: Restore, build and test backend
         working-directory: backend
         run: |
-          dotnet restore InventoryApp.sln
-          dotnet build InventoryApp.sln --configuration Release --no-restore
-          dotnet test InventoryApp.sln --configuration Release --no-build --no-restore
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+          dotnet test Solqaryn.sln --configuration Release --no-build --no-restore
 
       - name: Configure Node.js
         uses: actions/setup-node@v4
