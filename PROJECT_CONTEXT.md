@@ -124,3 +124,11 @@ El plan maestro que ejecutan las diez automatizaciones se define únicamente por
 No hereda restricciones, numeraciones, fases, filas, gates ni prioridades que no hayan sido incorporadas expresamente a la versión vigente del MAESTRO.
 
 La implementación existente puede ser modificada, reemplazada o retirada cuando el objetivo vigente lo requiera, siempre bajo controles de seguridad, integridad, trazabilidad, revisión y rollback proporcionales.
+
+Superficies corporativas de apoyo de VAEP en Google Drive, propiedad de `solqaryn.platform@outlook.com`:
+
+- Google Sheet nativo `SOLQARYN - PLAN MAESTRO DE AUTOMATIZACIONES`: ID `1gcVyCoyhLU0jFMwRtf0s5_x8FSnfBs38ojml1QF7Xwk`.
+- Google Doc nativo `Plan Maestro SOLQARYN - FUENTE RECTORA VAEP`: ID `1l0sy55GJu5bJAsXWDB8ciXfQOB9jBaNO7Mkx-N80vWk`.
+- Estas superficies son apoyo operativo y no sustituyen `docs/VAEP_AUTHORITY.md` ni el estado vivo de GitHub.
+- Las diez automatizaciones canónicas están configuradas en los slots `:00,:05,:12,:17,:24,:29,:36,:41,:48,:53`, corregidas a `solqaryn/Solqaryn` + `dev` y permanecen **PAUSADAS (0/10 habilitadas)** hasta autorización explícita del propietario.
+- Queda prohibido usar `javiermejia3112@gmail.com`, `jmejia31/VariApp`, rama `Desarrollo` o infraestructura legacy como fallback del runtime SOLQARYN.
