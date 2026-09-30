@@ -1,8 +1,7 @@
 {
-  "generatedAtUtc": "2026-09-30T00:26:21.636Z",
+  "generatedAtUtc": "2026-09-30T00:28:05.838Z",
   "statsFile": "dist/inventoryapp-frontend/stats.json",
   "initialRefs": [
-    "styles-JXKYC424.css",
     "styles-JXKYC424.css",
     "chunk-2YQNGINA.js",
     "chunk-52RMNBPI.js",
@@ -15,310 +14,190 @@
     "chunk-YVXBDJVL.js",
     "chunk-JBPQPD2S.js",
     "polyfills-5CFQRCPP.js",
-    "main-7WDHAJ6A.js"
+    "main-7WDHAJ6A.js",
+    "chunk-GRE2L7GB.js",
+    "chunk-XGE6LL7U.js",
+    "chunk-OSQMNGTH.js",
+    "chunk-Y75JS7EJ.js",
+    "chunk-NOFEEP47.js",
+    "chunk-UZS253ED.js",
+    "chunk-MEYXIUWO.js",
+    "chunk-G3EGWP5V.js",
+    "chunk-AMHZLIH3.js",
+    "chunk-CSGIKXGA.js",
+    "chunk-S7MCYSB5.js",
+    "chunk-JUMGWYQA.js",
+    "chunk-KNIPARGM.js",
+    "chunk-SKEGFNZT.js",
+    "chunk-RM5TKQP7.js",
+    "chunk-F4TMKEJ6.js",
+    "chunk-WDKGB34E.js",
+    "chunk-CNAA67IT.js",
+    "chunk-653P4HQ3.js",
+    "chunk-PTECP4UB.js",
+    "chunk-ZNTPWEGW.js",
+    "chunk-4YSLO345.js",
+    "chunk-KWGPNUHB.js",
+    "chunk-BHMSZT5G.js",
+    "chunk-WEN6HA3N.js",
+    "chunk-VI5MYTHS.js",
+    "chunk-44G2JIBL.js",
+    "chunk-Y3G7PTSN.js",
+    "chunk-3V5HCEHD.js",
+    "chunk-MAWHO3XP.js",
+    "chunk-B7B4JXTP.js",
+    "chunk-RIUJRXOO.js",
+    "chunk-6GXNF4TQ.js",
+    "chunk-JPRZYDU7.js",
+    "chunk-OOODDPIJ.js",
+    "chunk-7LMM7CLP.js",
+    "chunk-5RJPHYKK.js",
+    "chunk-YOSYI5WU.js",
+    "chunk-OIXLJPZH.js",
+    "chunk-OMDUASXT.js",
+    "chunk-FXAJ7OMK.js",
+    "chunk-65ELPSAL.js",
+    "chunk-UVIEFJII.js",
+    "chunk-TLRKJ35A.js",
+    "chunk-QS53SA7J.js",
+    "chunk-MGIBT7AE.js",
+    "chunk-6N3IMMYF.js",
+    "chunk-AVTPFAIA.js",
+    "chunk-VIQLQ3JJ.js",
+    "chunk-VEBAOA2V.js",
+    "chunk-FJPP7BP3.js",
+    "chunk-VXJOTYVT.js",
+    "chunk-ARC7KS4I.js",
+    "chunk-SRFIDDZB.js",
+    "chunk-VKIWSL5Q.js",
+    "chunk-SCI7O5DE.js",
+    "chunk-4KHBWKNP.js",
+    "chunk-CIJ466B6.js",
+    "chunk-TRY3WCLC.js",
+    "chunk-5BCBDCJS.js",
+    "chunk-SLLZ5B66.js",
+    "chunk-3AKGXST6.js",
+    "chunk-VFFTD525.js",
+    "chunk-3JK6X6UL.js",
+    "chunk-CQKZNB7X.js",
+    "chunk-7CXGRRAI.js",
+    "chunk-GRVSPNKR.js",
+    "chunk-SMSKXLCR.js",
+    "chunk-AGDDETO3.js",
+    "chunk-6ETR2SNC.js",
+    "chunk-52MIKYSL.js",
+    "chunk-A3CGDBRH.js",
+    "chunk-GMOSUSXD.js",
+    "chunk-AOYTQNEK.js",
+    "chunk-SXYWHGBB.js",
+    "chunk-XCNCZNL3.js",
+    "chunk-HLIM5GQC.js",
+    "chunk-SZQ52E4Z.js",
+    "chunk-O3FBKNAL.js",
+    "chunk-DPMSG3PT.js",
+    "chunk-TOLVY7TW.js",
+    "chunk-6TRUBAWA.js",
+    "chunk-WQJSEOG4.js",
+    "chunk-RXBVADHK.js",
+    "chunk-NIWXSF7Q.js",
+    "chunk-4E4NZ7LD.js",
+    "chunk-UAKWFAKB.js",
+    "chunk-P3LH46GO.js",
+    "chunk-A6YCX3MF.js",
+    "chunk-KMPKRPFH.js",
+    "chunk-X6BVMEMG.js",
+    "chunk-H6FVBTQA.js",
+    "chunk-PR7QSREK.js",
+    "chunk-ZPX5FXGH.js",
+    "chunk-F5OLRV3M.js",
+    "chunk-GY2J2ZBB.js",
+    "chunk-YPX5UFGH.js",
+    "chunk-F6PKBS2I.js",
+    "chunk-MOV2LG4X.js",
+    "chunk-3XD7ZX4O.js",
+    "chunk-43KNYKPA.js",
+    "chunk-XOZ6OHPJ.js",
+    "chunk-QS3B7C4Z.js",
+    "chunk-X7EJ4IPZ.js",
+    "chunk-EZZ72XDO.js",
+    "chunk-S6FWANPO.js",
+    "chunk-3TZYC4TE.js",
+    "chunk-UMGKCLWQ.js",
+    "chunk-CDU3GNNH.js",
+    "chunk-AV4DAZIC.js",
+    "chunk-ZH7H3GRR.js",
+    "chunk-AYZ4LRBJ.js",
+    "chunk-6VKUW2UV.js",
+    "chunk-PO4LH3EQ.js",
+    "chunk-JTQTM4KP.js",
+    "chunk-JEE6SOHB.js",
+    "chunk-MS4AQ6UA.js",
+    "chunk-63RPH3SG.js",
+    "chunk-KTOFV2IL.js",
+    "chunk-VV7QGBKN.js",
+    "chunk-PZLPFX7U.js",
+    "chunk-AO6MLGID.js",
+    "chunk-KPWXIQCZ.js",
+    "chunk-Q2R3NUHI.js",
+    "chunk-Q65GIHT5.js",
+    "chunk-7ZF4SUVE.js",
+    "chunk-OD4SU5FW.js",
+    "chunk-E7YALZSY.js",
+    "chunk-KRDFOS3K.js",
+    "chunk-M2KTSRAO.js",
+    "chunk-M5KJPTOH.js",
+    "chunk-UY2VSUGZ.js",
+    "chunk-YZDRB7YJ.js",
+    "chunk-7L54HAQO.js",
+    "chunk-D25JE7VC.js",
+    "chunk-VJZLBC6M.js",
+    "chunk-D6IZNANV.js",
+    "chunk-IUN5B63F.js",
+    "chunk-YCELZYVW.js",
+    "chunk-PV6XVHRJ.js",
+    "chunk-I6MOOUDL.js",
+    "chunk-3YRDSWFP.js",
+    "chunk-C5XY2QP4.js",
+    "chunk-32LS5ADX.js",
+    "chunk-DLQBPBBA.js",
+    "chunk-EHMIS4NB.js",
+    "chunk-FSNP7AI4.js",
+    "chunk-P4LGD35K.js",
+    "chunk-HWLCOOKN.js",
+    "chunk-6OJT3Z4I.js",
+    "chunk-MH62QXPK.js",
+    "chunk-3AKXVDB4.js",
+    "chunk-EMRTZYEE.js",
+    "chunk-UULMUO6R.js",
+    "chunk-5VVUBNFS.js",
+    "chunk-BK3PTFWZ.js",
+    "chunk-JJPB27Y4.js",
+    "chunk-FLZ7PCK4.js",
+    "chunk-7SKYX254.js",
+    "chunk-XTDDGKXV.js",
+    "chunk-PINHIWIJ.js",
+    "chunk-U6PMZXBN.js",
+    "chunk-YGMPRRQN.js",
+    "chunk-IPNT2SEC.js",
+    "chunk-BPWYLHOV.js",
+    "chunk-3KILRR7P.js",
+    "chunk-ALVMTHDY.js",
+    "chunk-NYHQ4PSF.js",
+    "chunk-GK4AJWVY.js",
+    "chunk-XBEYZZW2.js",
+    "chunk-MYGVNTXS.js",
+    "chunk-RDPKFWDU.js",
+    "chunk-PVDG46DZ.js",
+    "chunk-GBES5PBY.js",
+    "chunk-AJSNKHNK.js",
+    "chunk-PPUPVX4J.js",
+    "chunk-TWW4MPJ4.js",
+    "chunk-FJ7EBRBB.js",
+    "chunk-FWPAESOG.js",
+    "chunk-C6ORN4RU.js",
+    "chunk-DJV6Z7LE.js"
   ],
   "initialOutputs": [
-    {
-      "outputPath": "main-7WDHAJ6A.js",
-      "file": "main-7WDHAJ6A.js",
-      "bytes": 126322,
-      "entryPoint": "src/main.ts"
-    },
-    {
-      "outputPath": "styles-JXKYC424.css",
-      "file": "styles-JXKYC424.css",
-      "bytes": 123418,
-      "entryPoint": "angular:styles/global:styles"
-    },
-    {
-      "outputPath": "polyfills-5CFQRCPP.js",
-      "file": "polyfills-5CFQRCPP.js",
-      "bytes": 34585,
-      "entryPoint": "angular:polyfills:angular:polyfills"
-    },
-    {
-      "outputPath": "chunk-E2SFLBC7.js",
-      "file": "chunk-E2SFLBC7.js",
-      "bytes": 7805,
-      "entryPoint": null
-    },
-    {
-      "outputPath": "chunk-BUNUI3FX.js",
-      "file": "chunk-BUNUI3FX.js",
-      "bytes": 6819,
-      "entryPoint": null
-    },
-    {
-      "outputPath": "chunk-2YQNGINA.js",
-      "file": "chunk-2YQNGINA.js",
-      "bytes": 4593,
-      "entryPoint": null
-    },
-    {
-      "outputPath": "chunk-52RMNBPI.js",
-      "file": "chunk-52RMNBPI.js",
-      "bytes": 3219,
-      "entryPoint": null
-    },
-    {
-      "outputPath": "chunk-EVACUK5D.js",
-      "file": "chunk-EVACUK5D.js",
-      "bytes": 2598,
-      "entryPoint": null
-    },
-    {
-      "outputPath": "chunk-S7CBD7YI.js",
-      "file": "chunk-S7CBD7YI.js",
-      "bytes": 2503,
-      "entryPoint": null
-    },
-    {
-      "outputPath": "chunk-VP26K2BN.js",
-      "file": "chunk-VP26K2BN.js",
-      "bytes": 2120,
-      "entryPoint": null
-    },
-    {
-      "outputPath": "chunk-YVXBDJVL.js",
-      "file": "chunk-YVXBDJVL.js",
-      "bytes": 1743,
-      "entryPoint": null
-    },
-    {
-      "outputPath": "chunk-HJPWUS3J.js",
-      "file": "chunk-HJPWUS3J.js",
-      "bytes": 1340,
-      "entryPoint": null
-    },
-    {
-      "outputPath": "chunk-JBPQPD2S.js",
-      "file": "chunk-JBPQPD2S.js",
-      "bytes": 1113,
-      "entryPoint": null
-    }
-  ],
-  "initialRawBytesFromStats": 318178,
-  "topInitialPackages": [
-    {
-      "name": "@angular/material",
-      "bytes": 207414
-    },
-    {
-      "name": "(app source)",
-      "bytes": 131887
-    },
-    {
-      "name": "@angular/animations",
-      "bytes": 62683
-    },
-    {
-      "name": "zone.js",
-      "bytes": 34584
-    },
-    {
-      "name": "@angular/common",
-      "bytes": 1819
-    },
-    {
-      "name": "@angular/platform-browser",
-      "bytes": 619
-    }
-  ],
-  "topInitialModules": [
-    {
-      "name": "node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
-      "bytes": 207414
-    },
-    {
-      "name": "node_modules/@angular/animations/fesm2022/browser.mjs",
-      "bytes": 53602
-    },
-    {
-      "name": "src/styles.scss",
-      "bytes": 35240
-    },
-    {
-      "name": "node_modules/zone.js/fesm2015/zone.js",
-      "bytes": 34584
-    },
-    {
-      "name": "src/app/app.component.ts",
-      "bytes": 15283
-    },
-    {
-      "name": "src/app/app.routes.ts",
-      "bytes": 14282
-    },
-    {
-      "name": "src/app/shared/navigation/app-navigation-menu.component.ts",
-      "bytes": 13138
-    },
-    {
-      "name": "src/app/features/varistorehn/varistorehn-seo.service.ts",
-      "bytes": 6652
-    },
-    {
-      "name": "node_modules/@angular/animations/fesm2022/util.mjs",
-      "bytes": 5457
-    },
-    {
-      "name": "src/app/features/varistorehn/varistorehn.service.ts",
-      "bytes": 4847
-    },
-    {
-      "name": "src/app/core/performance/performance-baseline.service.ts",
-      "bytes": 4591
-    },
-    {
-      "name": "src/factura-operaciones.scss",
-      "bytes": 4146
-    },
-    {
-      "name": "node_modules/@angular/animations/fesm2022/private_export.mjs",
-      "bytes": 3624
-    },
-    {
-      "name": "src/app/core/auth/session-activity.service.ts",
-      "bytes": 3020
-    },
-    {
-      "name": "src/app/features/compras/facturas-proveedor/facturas-proveedor.routes.ts",
-      "bytes": 2588
-    },
-    {
-      "name": "src/app/core/auth/permisos-runtime.service.ts",
-      "bytes": 2425
-    },
-    {
-      "name": "src/app/core/auth/auth.service.ts",
-      "bytes": 2400
-    },
-    {
-      "name": "src/app/features/varistorehn/varistorehn-identidad.service.ts",
-      "bytes": 2274
-    },
-    {
-      "name": "src/app/features/pedidos-venta/pedidos-venta.routes.ts",
-      "bytes": 2146
-    },
-    {
-      "name": "src/app/features/inventario/ajustes.routes.ts",
-      "bytes": 2017
-    },
-    {
-      "name": "src/app/services/empresa-identidad.service.ts",
-      "bytes": 1923
-    },
-    {
-      "name": "node_modules/@angular/common/locales/es-HN.js",
-      "bytes": 1819
-    },
-    {
-      "name": "src/app/core/auth/tenant-context.service.ts",
-      "bytes": 1626
-    },
-    {
-      "name": "src/app/services/theme-applier.service.ts",
-      "bytes": 1529
-    },
-    {
-      "name": "src/app/services/color-contrast.service.ts",
-      "bytes": 1398
-    },
-    {
-      "name": "src/app/services/empresa-configuracion.service.ts",
-      "bytes": 1260
-    },
-    {
-      "name": "src/app/core/models/tema-visual.model.ts",
-      "bytes": 1201
-    },
-    {
-      "name": "src/app/services/permiso.service.ts",
-      "bytes": 1033
-    },
-    {
-      "name": "src/app/features/inventario/transferencias.routes.ts",
-      "bytes": 798
-    },
-    {
-      "name": "src/app/features/inventario/reservas.routes.ts",
-      "bytes": 790
-    },
-    {
-      "name": "src/app/features/inventario/conteos.routes.ts",
-      "bytes": 782
-    },
-    {
-      "name": "src/app/features/cotizaciones/cotizaciones.routes.ts",
-      "bytes": 675
-    },
-    {
-      "name": "node_modules/@angular/platform-browser/fesm2022/animations.mjs",
-      "bytes": 619
-    },
-    {
-      "name": "src/app/features/ubicaciones-almacen/ubicaciones-almacen.routes.ts",
-      "bytes": 585
-    },
-    {
-      "name": "src/app/features/almacenes/almacenes.routes.ts",
-      "bytes": 501
-    },
-    {
-      "name": "src/app/core/interceptors/auth.interceptor.ts",
-      "bytes": 473
-    },
-    {
-      "name": "src/app/features/varistorehn/varistorehn.paths.ts",
-      "bytes": 415
-    },
-    {
-      "name": "src/app/core/guards/auth.guard.ts",
-      "bytes": 404
-    },
-    {
-      "name": "src/app/core/guards/permiso.guard.ts",
-      "bytes": 390
-    },
-    {
-      "name": "src/app/services/tema-visual.service.ts",
-      "bytes": 371
-    }
-  ],
-  "topInitialScriptPackages": [
-    {
-      "name": "(app source)",
-      "bytes": 92501
-    },
-    {
-      "name": "@angular/animations",
-      "bytes": 62683
-    },
-    {
-      "name": "zone.js",
-      "bytes": 34584
-    },
-    {
-      "name": "@angular/common",
-      "bytes": 1819
-    },
-    {
-      "name": "@angular/platform-browser",
-      "bytes": 619
-    }
-  ],
-  "topInitialStylePackages": [
-    {
-      "name": "@angular/material",
-      "bytes": 207414
-    },
-    {
-      "name": "(app source)",
-      "bytes": 39386
-    }
-  ],
-  "largestLazyOutputs": [
     {
       "outputPath": "chunk-DJV6Z7LE.js",
       "file": "chunk-DJV6Z7LE.js",
@@ -330,6 +209,18 @@
       "file": "chunk-GRE2L7GB.js",
       "bytes": 219156,
       "entryPoint": null
+    },
+    {
+      "outputPath": "main-7WDHAJ6A.js",
+      "file": "main-7WDHAJ6A.js",
+      "bytes": 126322,
+      "entryPoint": "src/main.ts"
+    },
+    {
+      "outputPath": "styles-JXKYC424.css",
+      "file": "styles-JXKYC424.css",
+      "bytes": 123418,
+      "entryPoint": "angular:styles/global:styles"
     },
     {
       "outputPath": "chunk-EZZ72XDO.js",
@@ -440,6 +331,12 @@
       "entryPoint": null
     },
     {
+      "outputPath": "polyfills-5CFQRCPP.js",
+      "file": "polyfills-5CFQRCPP.js",
+      "bytes": 34585,
+      "entryPoint": "angular:polyfills:angular:polyfills"
+    },
+    {
       "outputPath": "chunk-TWW4MPJ4.js",
       "file": "chunk-TWW4MPJ4.js",
       "bytes": 34512,
@@ -498,6 +395,1435 @@
       "file": "chunk-OMDUASXT.js",
       "bytes": 27950,
       "entryPoint": "src/app/features/varistorehn/varistorehn-categoria.component.ts"
+    },
+    {
+      "outputPath": "chunk-AVTPFAIA.js",
+      "file": "chunk-AVTPFAIA.js",
+      "bytes": 27645,
+      "entryPoint": "src/app/features/productos/productos-list.component.ts"
+    },
+    {
+      "outputPath": "chunk-PV6XVHRJ.js",
+      "file": "chunk-PV6XVHRJ.js",
+      "bytes": 27367,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-7L54HAQO.js",
+      "file": "chunk-7L54HAQO.js",
+      "bytes": 27186,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-MOV2LG4X.js",
+      "file": "chunk-MOV2LG4X.js",
+      "bytes": 25473,
+      "entryPoint": "src/app/features/reportes-compras/reportes-compras.component.ts"
+    },
+    {
+      "outputPath": "chunk-QS3B7C4Z.js",
+      "file": "chunk-QS3B7C4Z.js",
+      "bytes": 25469,
+      "entryPoint": "src/app/features/inventario/movimientos-list.component.ts"
+    },
+    {
+      "outputPath": "chunk-4E4NZ7LD.js",
+      "file": "chunk-4E4NZ7LD.js",
+      "bytes": 25435,
+      "entryPoint": "src/app/features/facturas/factura-pagos.component.ts"
+    },
+    {
+      "outputPath": "chunk-A6YCX3MF.js",
+      "file": "chunk-A6YCX3MF.js",
+      "bytes": 25424,
+      "entryPoint": "src/app/features/asientos-contables/asientos-contables.component.ts"
+    },
+    {
+      "outputPath": "chunk-XOZ6OHPJ.js",
+      "file": "chunk-XOZ6OHPJ.js",
+      "bytes": 25195,
+      "entryPoint": "src/app/features/cuentas-bancarias/cuentas-bancarias.component.ts"
+    },
+    {
+      "outputPath": "chunk-44G2JIBL.js",
+      "file": "chunk-44G2JIBL.js",
+      "bytes": 24621,
+      "entryPoint": "src/app/features/inventario/ajustes-list.component.ts"
+    },
+    {
+      "outputPath": "chunk-6N3IMMYF.js",
+      "file": "chunk-6N3IMMYF.js",
+      "bytes": 24018,
+      "entryPoint": "src/app/features/dashboard/dashboard.component.ts"
+    },
+    {
+      "outputPath": "chunk-PINHIWIJ.js",
+      "file": "chunk-PINHIWIJ.js",
+      "bytes": 23792,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-KMPKRPFH.js",
+      "file": "chunk-KMPKRPFH.js",
+      "bytes": 23271,
+      "entryPoint": "src/app/features/finanzas/finanzas.component.ts"
+    },
+    {
+      "outputPath": "chunk-5BCBDCJS.js",
+      "file": "chunk-5BCBDCJS.js",
+      "bytes": 23112,
+      "entryPoint": "src/app/features/clientes/clientes-list.component.ts"
+    },
+    {
+      "outputPath": "chunk-PTECP4UB.js",
+      "file": "chunk-PTECP4UB.js",
+      "bytes": 22843,
+      "entryPoint": "src/app/features/compras/facturas-proveedor/facturas-proveedor.components.ts"
+    },
+    {
+      "outputPath": "chunk-SZQ52E4Z.js",
+      "file": "chunk-SZQ52E4Z.js",
+      "bytes": 22641,
+      "entryPoint": "src/app/features/ordenes-compra/ordenes-compra-shell.component.ts"
+    },
+    {
+      "outputPath": "chunk-UVIEFJII.js",
+      "file": "chunk-UVIEFJII.js",
+      "bytes": 22513,
+      "entryPoint": "src/app/features/varistorehn/varistorehn-cuenta.component.ts"
+    },
+    {
+      "outputPath": "chunk-CNAA67IT.js",
+      "file": "chunk-CNAA67IT.js",
+      "bytes": 22480,
+      "entryPoint": "src/app/features/finanzas/cuentas-por-pagar/cuentas-por-pagar.component.ts"
+    },
+    {
+      "outputPath": "chunk-3TZYC4TE.js",
+      "file": "chunk-3TZYC4TE.js",
+      "bytes": 22354,
+      "entryPoint": "src/app/features/perfil/perfil.component.ts"
+    },
+    {
+      "outputPath": "chunk-AV4DAZIC.js",
+      "file": "chunk-AV4DAZIC.js",
+      "bytes": 21757,
+      "entryPoint": "src/app/features/ubicaciones-almacen/ubicaciones-almacen-list.component.ts"
+    },
+    {
+      "outputPath": "chunk-VI5MYTHS.js",
+      "file": "chunk-VI5MYTHS.js",
+      "bytes": 21748,
+      "entryPoint": "src/app/features/inventario/trazabilidad-variante-page.component.ts"
+    },
+    {
+      "outputPath": "chunk-OOODDPIJ.js",
+      "file": "chunk-OOODDPIJ.js",
+      "bytes": 21080,
+      "entryPoint": "src/app/features/ventas/devoluciones-cliente/devoluciones-cliente.components.ts"
+    },
+    {
+      "outputPath": "chunk-FJPP7BP3.js",
+      "file": "chunk-FJPP7BP3.js",
+      "bytes": 20821,
+      "entryPoint": "src/app/features/productos/producto-detail.component.ts"
+    },
+    {
+      "outputPath": "chunk-6GXNF4TQ.js",
+      "file": "chunk-6GXNF4TQ.js",
+      "bytes": 20570,
+      "entryPoint": "src/app/features/pedidos-venta/pedidos-venta.components.ts"
+    },
+    {
+      "outputPath": "chunk-6TRUBAWA.js",
+      "file": "chunk-6TRUBAWA.js",
+      "bytes": 20468,
+      "entryPoint": "src/app/features/compras/compra-detail.component.ts"
+    },
+    {
+      "outputPath": "chunk-SRFIDDZB.js",
+      "file": "chunk-SRFIDDZB.js",
+      "bytes": 20154,
+      "entryPoint": "src/app/features/sucursales/sucursales-list.component.ts"
+    },
+    {
+      "outputPath": "chunk-AYZ4LRBJ.js",
+      "file": "chunk-AYZ4LRBJ.js",
+      "bytes": 19789,
+      "entryPoint": "src/app/features/cotizaciones/cotizaciones.components.ts"
+    },
+    {
+      "outputPath": "chunk-UMGKCLWQ.js",
+      "file": "chunk-UMGKCLWQ.js",
+      "bytes": 19417,
+      "entryPoint": "src/app/features/almacenes/almacenes-list.component.ts"
+    },
+    {
+      "outputPath": "chunk-OIXLJPZH.js",
+      "file": "chunk-OIXLJPZH.js",
+      "bytes": 19197,
+      "entryPoint": "src/app/features/varistorehn/varistorehn-categorias.component.ts"
+    },
+    {
+      "outputPath": "chunk-4YSLO345.js",
+      "file": "chunk-4YSLO345.js",
+      "bytes": 18927,
+      "entryPoint": "src/app/features/compras/notas-credito-proveedor/notas-credito-proveedor.components.ts"
+    },
+    {
+      "outputPath": "chunk-Y3G7PTSN.js",
+      "file": "chunk-Y3G7PTSN.js",
+      "bytes": 18583,
+      "entryPoint": "src/app/features/inventario/ajuste-form.component.ts"
+    },
+    {
+      "outputPath": "chunk-O3FBKNAL.js",
+      "file": "chunk-O3FBKNAL.js",
+      "bytes": 18044,
+      "entryPoint": "src/app/features/ordenes-compra/orden-compra-form.component.ts"
+    },
+    {
+      "outputPath": "chunk-4KHBWKNP.js",
+      "file": "chunk-4KHBWKNP.js",
+      "bytes": 17650,
+      "entryPoint": "src/app/features/metodos-pago/metodos-pago.component.ts"
+    },
+    {
+      "outputPath": "chunk-JEE6SOHB.js",
+      "file": "chunk-JEE6SOHB.js",
+      "bytes": 17631,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-SLLZ5B66.js",
+      "file": "chunk-SLLZ5B66.js",
+      "bytes": 17505,
+      "entryPoint": "src/app/features/clientes/cliente-form.component.ts"
+    },
+    {
+      "outputPath": "chunk-X7EJ4IPZ.js",
+      "file": "chunk-X7EJ4IPZ.js",
+      "bytes": 17441,
+      "entryPoint": "src/app/features/inventario/costeo-inventario.component.ts"
+    },
+    {
+      "outputPath": "chunk-XCNCZNL3.js",
+      "file": "chunk-XCNCZNL3.js",
+      "bytes": 17147,
+      "entryPoint": "src/app/features/auditoria/auditoria-list.component.ts"
+    },
+    {
+      "outputPath": "chunk-SCI7O5DE.js",
+      "file": "chunk-SCI7O5DE.js",
+      "bytes": 16695,
+      "entryPoint": "src/app/features/catalogos-producto/catalogo-producto-list.component.ts"
+    },
+    {
+      "outputPath": "chunk-KNIPARGM.js",
+      "file": "chunk-KNIPARGM.js",
+      "bytes": 16638,
+      "entryPoint": "src/app/features/inventario/conteo-inventario-detail.component.ts"
+    },
+    {
+      "outputPath": "chunk-F6PKBS2I.js",
+      "file": "chunk-F6PKBS2I.js",
+      "bytes": 16620,
+      "entryPoint": "src/app/features/reportes-ventas/reportes-ventas.component.ts"
+    },
+    {
+      "outputPath": "chunk-CSGIKXGA.js",
+      "file": "chunk-CSGIKXGA.js",
+      "bytes": 16351,
+      "entryPoint": "src/app/features/inventario/transferencia-detail.component.ts"
+    },
+    {
+      "outputPath": "chunk-WEN6HA3N.js",
+      "file": "chunk-WEN6HA3N.js",
+      "bytes": 15961,
+      "entryPoint": "src/app/features/inventario/existencia-variante-form.component.ts"
+    },
+    {
+      "outputPath": "chunk-6VKUW2UV.js",
+      "file": "chunk-6VKUW2UV.js",
+      "bytes": 15657,
+      "entryPoint": "src/app/features/centros-costo/centros-costo.component.ts"
+    },
+    {
+      "outputPath": "chunk-MGIBT7AE.js",
+      "file": "chunk-MGIBT7AE.js",
+      "bytes": 15547,
+      "entryPoint": "src/app/features/login/login.component.ts"
+    },
+    {
+      "outputPath": "chunk-JPRZYDU7.js",
+      "file": "chunk-JPRZYDU7.js",
+      "bytes": 15285,
+      "entryPoint": "src/app/features/preparaciones-pedido-venta/preparaciones-pedido-venta.component.ts"
+    },
+    {
+      "outputPath": "chunk-AMHZLIH3.js",
+      "file": "chunk-AMHZLIH3.js",
+      "bytes": 15067,
+      "entryPoint": "src/app/features/inventario/transferencia-form.component.ts"
+    },
+    {
+      "outputPath": "chunk-3XD7ZX4O.js",
+      "file": "chunk-3XD7ZX4O.js",
+      "bytes": 15036,
+      "entryPoint": "src/app/features/rentabilidad/rentabilidad.component.ts"
+    },
+    {
+      "outputPath": "chunk-32LS5ADX.js",
+      "file": "chunk-32LS5ADX.js",
+      "bytes": 15001,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-Y75JS7EJ.js",
+      "file": "chunk-Y75JS7EJ.js",
+      "bytes": 14580,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-BHMSZT5G.js",
+      "file": "chunk-BHMSZT5G.js",
+      "bytes": 14009,
+      "entryPoint": "src/app/features/inventario/existencias-variante-list.component.ts"
+    },
+    {
+      "outputPath": "chunk-KWGPNUHB.js",
+      "file": "chunk-KWGPNUHB.js",
+      "bytes": 14003,
+      "entryPoint": "src/app/features/compras/evaluaciones-proveedor/evaluaciones-proveedor.component.ts"
+    },
+    {
+      "outputPath": "chunk-MAWHO3XP.js",
+      "file": "chunk-MAWHO3XP.js",
+      "bytes": 13794,
+      "entryPoint": "src/app/features/recepciones-compra/recepcion-compra-form.component.ts"
+    },
+    {
+      "outputPath": "chunk-AOYTQNEK.js",
+      "file": "chunk-AOYTQNEK.js",
+      "bytes": 13433,
+      "entryPoint": "src/app/features/costos-envio/costos-envio.component.ts"
+    },
+    {
+      "outputPath": "chunk-43KNYKPA.js",
+      "file": "chunk-43KNYKPA.js",
+      "bytes": 13425,
+      "entryPoint": "src/app/features/plan-cuentas/plan-cuentas.component.ts"
+    },
+    {
+      "outputPath": "chunk-SKEGFNZT.js",
+      "file": "chunk-SKEGFNZT.js",
+      "bytes": 13309,
+      "entryPoint": "src/app/features/inventario/reservas-inventario-list.component.ts"
+    },
+    {
+      "outputPath": "chunk-NIWXSF7Q.js",
+      "file": "chunk-NIWXSF7Q.js",
+      "bytes": 13303,
+      "entryPoint": "src/app/features/ventas/venta-detail.component.ts"
+    },
+    {
+      "outputPath": "chunk-RM5TKQP7.js",
+      "file": "chunk-RM5TKQP7.js",
+      "bytes": 12841,
+      "entryPoint": "src/app/features/inventario/reserva-inventario-form.component.ts"
+    },
+    {
+      "outputPath": "chunk-JTQTM4KP.js",
+      "file": "chunk-JTQTM4KP.js",
+      "bytes": 12794,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-CQKZNB7X.js",
+      "file": "chunk-CQKZNB7X.js",
+      "bytes": 12717,
+      "entryPoint": "src/app/features/usuarios/usuario-form.component.ts"
+    },
+    {
+      "outputPath": "chunk-UZS253ED.js",
+      "file": "chunk-UZS253ED.js",
+      "bytes": 12621,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-F4TMKEJ6.js",
+      "file": "chunk-F4TMKEJ6.js",
+      "bytes": 12536,
+      "entryPoint": "src/app/features/inventario/reserva-inventario-detail.component.ts"
+    },
+    {
+      "outputPath": "chunk-S7MCYSB5.js",
+      "file": "chunk-S7MCYSB5.js",
+      "bytes": 12510,
+      "entryPoint": "src/app/features/inventario/conteos-inventario-list.component.ts"
+    },
+    {
+      "outputPath": "chunk-JUMGWYQA.js",
+      "file": "chunk-JUMGWYQA.js",
+      "bytes": 12350,
+      "entryPoint": "src/app/features/inventario/conteo-inventario-form.component.ts"
+    },
+    {
+      "outputPath": "chunk-AGDDETO3.js",
+      "file": "chunk-AGDDETO3.js",
+      "bytes": 12311,
+      "entryPoint": "src/app/features/permisos/permisos-matrix.component.ts"
+    },
+    {
+      "outputPath": "chunk-VKIWSL5Q.js",
+      "file": "chunk-VKIWSL5Q.js",
+      "bytes": 12311,
+      "entryPoint": "src/app/features/sucursales/sucursal-form.component.ts"
+    },
+    {
+      "outputPath": "chunk-TLRKJ35A.js",
+      "file": "chunk-TLRKJ35A.js",
+      "bytes": 12207,
+      "entryPoint": "src/app/features/varistorehn/varistorehn-pedido.component.ts"
+    },
+    {
+      "outputPath": "chunk-ZH7H3GRR.js",
+      "file": "chunk-ZH7H3GRR.js",
+      "bytes": 12156,
+      "entryPoint": "src/app/features/ubicaciones-almacen/ubicacion-almacen-form.component.ts"
+    },
+    {
+      "outputPath": "chunk-653P4HQ3.js",
+      "file": "chunk-653P4HQ3.js",
+      "bytes": 12110,
+      "entryPoint": "src/app/features/compras/three-way-match/three-way-match.component.ts"
+    },
+    {
+      "outputPath": "chunk-WQJSEOG4.js",
+      "file": "chunk-WQJSEOG4.js",
+      "bytes": 12046,
+      "entryPoint": "src/app/features/ventas/ventas-list.component.ts"
+    },
+    {
+      "outputPath": "chunk-S6FWANPO.js",
+      "file": "chunk-S6FWANPO.js",
+      "bytes": 11808,
+      "entryPoint": "src/app/features/periodos-contables/periodos-contables.component.ts"
+    },
+    {
+      "outputPath": "chunk-DPMSG3PT.js",
+      "file": "chunk-DPMSG3PT.js",
+      "bytes": 11791,
+      "entryPoint": "src/app/features/compras/compras-list.component.ts"
+    },
+    {
+      "outputPath": "chunk-3AKGXST6.js",
+      "file": "chunk-3AKGXST6.js",
+      "bytes": 11486,
+      "entryPoint": "src/app/features/tipo-clientes/tipo-clientes-list.component.ts"
+    },
+    {
+      "outputPath": "chunk-B7B4JXTP.js",
+      "file": "chunk-B7B4JXTP.js",
+      "bytes": 11011,
+      "entryPoint": "src/app/features/recepciones-compra/recepcion-compra-detail.component.ts"
+    },
+    {
+      "outputPath": "chunk-GRVSPNKR.js",
+      "file": "chunk-GRVSPNKR.js",
+      "bytes": 10618,
+      "entryPoint": "src/app/features/roles/roles-list.component.ts"
+    },
+    {
+      "outputPath": "chunk-6ETR2SNC.js",
+      "file": "chunk-6ETR2SNC.js",
+      "bytes": 10489,
+      "entryPoint": "src/app/features/descuentos/descuentos-list.component.ts"
+    },
+    {
+      "outputPath": "chunk-7LMM7CLP.js",
+      "file": "chunk-7LMM7CLP.js",
+      "bytes": 10424,
+      "entryPoint": "src/app/features/ventas/notas-credito-cliente/notas-credito-cliente.components.ts"
+    },
+    {
+      "outputPath": "chunk-CDU3GNNH.js",
+      "file": "chunk-CDU3GNNH.js",
+      "bytes": 10396,
+      "entryPoint": "src/app/features/almacenes/almacen-form.component.ts"
+    },
+    {
+      "outputPath": "chunk-RIUJRXOO.js",
+      "file": "chunk-RIUJRXOO.js",
+      "bytes": 10218,
+      "entryPoint": "src/app/features/recepciones-compra/recepciones-compra-shell.component.ts"
+    },
+    {
+      "outputPath": "chunk-A3CGDBRH.js",
+      "file": "chunk-A3CGDBRH.js",
+      "bytes": 10106,
+      "entryPoint": "src/app/features/impuestos/impuestos-list.component.ts"
+    },
+    {
+      "outputPath": "chunk-PZLPFX7U.js",
+      "file": "chunk-PZLPFX7U.js",
+      "bytes": 10049,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-VFFTD525.js",
+      "file": "chunk-VFFTD525.js",
+      "bytes": 9961,
+      "entryPoint": "src/app/features/tipo-clientes/tipo-cliente-form.component.ts"
+    },
+    {
+      "outputPath": "chunk-X6BVMEMG.js",
+      "file": "chunk-X6BVMEMG.js",
+      "bytes": 9807,
+      "entryPoint": "src/app/features/estados-financieros/estados-financieros.component.ts"
+    },
+    {
+      "outputPath": "chunk-P3LH46GO.js",
+      "file": "chunk-P3LH46GO.js",
+      "bytes": 9733,
+      "entryPoint": "src/app/features/cuentas-por-cobrar/cuentas-por-cobrar.component.ts"
+    },
+    {
+      "outputPath": "chunk-G3EGWP5V.js",
+      "file": "chunk-G3EGWP5V.js",
+      "bytes": 9577,
+      "entryPoint": "src/app/features/inventario/transferencias-list.component.ts"
+    },
+    {
+      "outputPath": "chunk-7ZF4SUVE.js",
+      "file": "chunk-7ZF4SUVE.js",
+      "bytes": 9205,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-CIJ466B6.js",
+      "file": "chunk-CIJ466B6.js",
+      "bytes": 9185,
+      "entryPoint": "src/app/features/proveedores/proveedores-list.component.ts"
+    },
+    {
+      "outputPath": "chunk-VXJOTYVT.js",
+      "file": "chunk-VXJOTYVT.js",
+      "bytes": 9066,
+      "entryPoint": "src/app/features/categorias/categorias-list.component.ts"
+    },
+    {
+      "outputPath": "chunk-52MIKYSL.js",
+      "file": "chunk-52MIKYSL.js",
+      "bytes": 8925,
+      "entryPoint": "src/app/features/descuentos/descuento-form.component.ts"
+    },
+    {
+      "outputPath": "chunk-GMOSUSXD.js",
+      "file": "chunk-GMOSUSXD.js",
+      "bytes": 8723,
+      "entryPoint": "src/app/features/impuestos/impuesto-form.component.ts"
+    },
+    {
+      "outputPath": "chunk-3V5HCEHD.js",
+      "file": "chunk-3V5HCEHD.js",
+      "bytes": 8643,
+      "entryPoint": "src/app/features/inventario/ajuste-detail.component.ts"
+    },
+    {
+      "outputPath": "chunk-YPX5UFGH.js",
+      "file": "chunk-YPX5UFGH.js",
+      "bytes": 7998,
+      "entryPoint": "src/app/features/reportes-inventario/reconciliacion/reconciliacion.component.ts"
+    },
+    {
+      "outputPath": "chunk-E2SFLBC7.js",
+      "file": "chunk-E2SFLBC7.js",
+      "bytes": 7805,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-WDKGB34E.js",
+      "file": "chunk-WDKGB34E.js",
+      "bytes": 7724,
+      "entryPoint": "src/app/features/finanzas/cuentas-por-cobrar/cuentas-por-cobrar.component.ts"
+    },
+    {
+      "outputPath": "chunk-YCELZYVW.js",
+      "file": "chunk-YCELZYVW.js",
+      "bytes": 7355,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-F5OLRV3M.js",
+      "file": "chunk-F5OLRV3M.js",
+      "bytes": 7014,
+      "entryPoint": "src/app/features/reportes-inventario/kardex/kardex.component.ts"
+    },
+    {
+      "outputPath": "chunk-GY2J2ZBB.js",
+      "file": "chunk-GY2J2ZBB.js",
+      "bytes": 6901,
+      "entryPoint": "src/app/features/reportes-inventario/stock-health/stock-health.component.ts"
+    },
+    {
+      "outputPath": "chunk-M2KTSRAO.js",
+      "file": "chunk-M2KTSRAO.js",
+      "bytes": 6884,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-BUNUI3FX.js",
+      "file": "chunk-BUNUI3FX.js",
+      "bytes": 6819,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-TRY3WCLC.js",
+      "file": "chunk-TRY3WCLC.js",
+      "bytes": 6059,
+      "entryPoint": "src/app/features/proveedores/proveedor-form.component.ts"
+    },
+    {
+      "outputPath": "chunk-Q65GIHT5.js",
+      "file": "chunk-Q65GIHT5.js",
+      "bytes": 5839,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-7CXGRRAI.js",
+      "file": "chunk-7CXGRRAI.js",
+      "bytes": 5461,
+      "entryPoint": "src/app/features/usuarios/usuario-detail.component.ts"
+    },
+    {
+      "outputPath": "chunk-XTDDGKXV.js",
+      "file": "chunk-XTDDGKXV.js",
+      "bytes": 5299,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-H6FVBTQA.js",
+      "file": "chunk-H6FVBTQA.js",
+      "bytes": 4887,
+      "entryPoint": "src/app/features/centro-reportes/centro-reportes.component.ts"
+    },
+    {
+      "outputPath": "chunk-OD4SU5FW.js",
+      "file": "chunk-OD4SU5FW.js",
+      "bytes": 4775,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-SMSKXLCR.js",
+      "file": "chunk-SMSKXLCR.js",
+      "bytes": 4743,
+      "entryPoint": "src/app/features/roles/rol-form.component.ts"
+    },
+    {
+      "outputPath": "chunk-2YQNGINA.js",
+      "file": "chunk-2YQNGINA.js",
+      "bytes": 4593,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-ZPX5FXGH.js",
+      "file": "chunk-ZPX5FXGH.js",
+      "bytes": 3885,
+      "entryPoint": "src/app/features/reportes-inventario/valorizacion/valorizacion.component.ts"
+    },
+    {
+      "outputPath": "chunk-ARC7KS4I.js",
+      "file": "chunk-ARC7KS4I.js",
+      "bytes": 3729,
+      "entryPoint": "src/app/features/categorias/categoria-form.component.ts"
+    },
+    {
+      "outputPath": "chunk-FWPAESOG.js",
+      "file": "chunk-FWPAESOG.js",
+      "bytes": 3651,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-UULMUO6R.js",
+      "file": "chunk-UULMUO6R.js",
+      "bytes": 3566,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-52RMNBPI.js",
+      "file": "chunk-52RMNBPI.js",
+      "bytes": 3219,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-KTOFV2IL.js",
+      "file": "chunk-KTOFV2IL.js",
+      "bytes": 2801,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-EMRTZYEE.js",
+      "file": "chunk-EMRTZYEE.js",
+      "bytes": 2662,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-EVACUK5D.js",
+      "file": "chunk-EVACUK5D.js",
+      "bytes": 2598,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-S7CBD7YI.js",
+      "file": "chunk-S7CBD7YI.js",
+      "bytes": 2503,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-VP26K2BN.js",
+      "file": "chunk-VP26K2BN.js",
+      "bytes": 2120,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-UY2VSUGZ.js",
+      "file": "chunk-UY2VSUGZ.js",
+      "bytes": 1929,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-C6ORN4RU.js",
+      "file": "chunk-C6ORN4RU.js",
+      "bytes": 1768,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-YVXBDJVL.js",
+      "file": "chunk-YVXBDJVL.js",
+      "bytes": 1743,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-PPUPVX4J.js",
+      "file": "chunk-PPUPVX4J.js",
+      "bytes": 1720,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-FLZ7PCK4.js",
+      "file": "chunk-FLZ7PCK4.js",
+      "bytes": 1607,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-3YRDSWFP.js",
+      "file": "chunk-3YRDSWFP.js",
+      "bytes": 1595,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-RDPKFWDU.js",
+      "file": "chunk-RDPKFWDU.js",
+      "bytes": 1583,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-FSNP7AI4.js",
+      "file": "chunk-FSNP7AI4.js",
+      "bytes": 1553,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-PO4LH3EQ.js",
+      "file": "chunk-PO4LH3EQ.js",
+      "bytes": 1443,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-FJ7EBRBB.js",
+      "file": "chunk-FJ7EBRBB.js",
+      "bytes": 1405,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-E7YALZSY.js",
+      "file": "chunk-E7YALZSY.js",
+      "bytes": 1347,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-HJPWUS3J.js",
+      "file": "chunk-HJPWUS3J.js",
+      "bytes": 1340,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-5VVUBNFS.js",
+      "file": "chunk-5VVUBNFS.js",
+      "bytes": 1333,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-DLQBPBBA.js",
+      "file": "chunk-DLQBPBBA.js",
+      "bytes": 1326,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-OSQMNGTH.js",
+      "file": "chunk-OSQMNGTH.js",
+      "bytes": 1312,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-3AKXVDB4.js",
+      "file": "chunk-3AKXVDB4.js",
+      "bytes": 1290,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-C5XY2QP4.js",
+      "file": "chunk-C5XY2QP4.js",
+      "bytes": 1287,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-VJZLBC6M.js",
+      "file": "chunk-VJZLBC6M.js",
+      "bytes": 1267,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-D25JE7VC.js",
+      "file": "chunk-D25JE7VC.js",
+      "bytes": 1230,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-ALVMTHDY.js",
+      "file": "chunk-ALVMTHDY.js",
+      "bytes": 1229,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-KRDFOS3K.js",
+      "file": "chunk-KRDFOS3K.js",
+      "bytes": 1173,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-D6IZNANV.js",
+      "file": "chunk-D6IZNANV.js",
+      "bytes": 1152,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-EHMIS4NB.js",
+      "file": "chunk-EHMIS4NB.js",
+      "bytes": 1122,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-JBPQPD2S.js",
+      "file": "chunk-JBPQPD2S.js",
+      "bytes": 1113,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-7SKYX254.js",
+      "file": "chunk-7SKYX254.js",
+      "bytes": 1093,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-P4LGD35K.js",
+      "file": "chunk-P4LGD35K.js",
+      "bytes": 1093,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-AJSNKHNK.js",
+      "file": "chunk-AJSNKHNK.js",
+      "bytes": 1091,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-YGMPRRQN.js",
+      "file": "chunk-YGMPRRQN.js",
+      "bytes": 1066,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-JJPB27Y4.js",
+      "file": "chunk-JJPB27Y4.js",
+      "bytes": 960,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-XBEYZZW2.js",
+      "file": "chunk-XBEYZZW2.js",
+      "bytes": 923,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-GK4AJWVY.js",
+      "file": "chunk-GK4AJWVY.js",
+      "bytes": 908,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-NYHQ4PSF.js",
+      "file": "chunk-NYHQ4PSF.js",
+      "bytes": 903,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-I6MOOUDL.js",
+      "file": "chunk-I6MOOUDL.js",
+      "bytes": 839,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-BPWYLHOV.js",
+      "file": "chunk-BPWYLHOV.js",
+      "bytes": 836,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-IPNT2SEC.js",
+      "file": "chunk-IPNT2SEC.js",
+      "bytes": 835,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-BK3PTFWZ.js",
+      "file": "chunk-BK3PTFWZ.js",
+      "bytes": 776,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-3KILRR7P.js",
+      "file": "chunk-3KILRR7P.js",
+      "bytes": 764,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-YZDRB7YJ.js",
+      "file": "chunk-YZDRB7YJ.js",
+      "bytes": 761,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-MYGVNTXS.js",
+      "file": "chunk-MYGVNTXS.js",
+      "bytes": 718,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-PR7QSREK.js",
+      "file": "chunk-PR7QSREK.js",
+      "bytes": 586,
+      "entryPoint": "src/app/features/reportes-administrativos/reportes-administrativos.component.ts"
+    },
+    {
+      "outputPath": "chunk-HWLCOOKN.js",
+      "file": "chunk-HWLCOOKN.js",
+      "bytes": 561,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-U6PMZXBN.js",
+      "file": "chunk-U6PMZXBN.js",
+      "bytes": 503,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-AO6MLGID.js",
+      "file": "chunk-AO6MLGID.js",
+      "bytes": 300,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-6OJT3Z4I.js",
+      "file": "chunk-6OJT3Z4I.js",
+      "bytes": 293,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-PVDG46DZ.js",
+      "file": "chunk-PVDG46DZ.js",
+      "bytes": 0,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-MS4AQ6UA.js",
+      "file": "chunk-MS4AQ6UA.js",
+      "bytes": 0,
+      "entryPoint": null
+    }
+  ],
+  "initialRawBytesFromStats": 3815702,
+  "topInitialPackages": [
+    {
+      "name": "(app source)",
+      "bytes": 2197507
+    },
+    {
+      "name": "@angular/material",
+      "bytes": 502646
+    },
+    {
+      "name": "html5-qrcode",
+      "bytes": 374006
+    },
+    {
+      "name": "@angular/core",
+      "bytes": 144278
+    },
+    {
+      "name": "@angular/cdk",
+      "bytes": 134011
+    },
+    {
+      "name": "@angular/router",
+      "bytes": 78541
+    },
+    {
+      "name": "@angular/animations",
+      "bytes": 62683
+    },
+    {
+      "name": "@angular/forms",
+      "bytes": 52835
+    },
+    {
+      "name": "@angular/common",
+      "bytes": 49637
+    },
+    {
+      "name": "zone.js",
+      "bytes": 34584
+    },
+    {
+      "name": "rxjs",
+      "bytes": 23111
+    },
+    {
+      "name": "@angular/platform-browser",
+      "bytes": 14789
+    },
+    {
+      "name": "tslib",
+      "bytes": 1905
+    }
+  ],
+  "topInitialModules": [
+    {
+      "name": "node_modules/html5-qrcode/third_party/zxing-js.umd.js",
+      "bytes": 290673
+    },
+    {
+      "name": "node_modules/@angular/core/fesm2022/debug_node.mjs",
+      "bytes": 107043
+    },
+    {
+      "name": "node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
+      "bytes": 103707
+    },
+    {
+      "name": "node_modules/@angular/router/fesm2022/router2.mjs",
+      "bytes": 66421
+    },
+    {
+      "name": "src/app/features/varistorehn/varistorehn-producto.component.ts",
+      "bytes": 60295
+    },
+    {
+      "name": "node_modules/@angular/material/fesm2022/form-field2.mjs",
+      "bytes": 55498
+    },
+    {
+      "name": "node_modules/@angular/animations/fesm2022/browser.mjs",
+      "bytes": 53602
+    },
+    {
+      "name": "src/app/features/facturas/factura-view.component.ts",
+      "bytes": 53600
+    },
+    {
+      "name": "node_modules/@angular/forms/fesm2022/forms.mjs",
+      "bytes": 52835
+    },
+    {
+      "name": "src/app/features/varistorehn/varistorehn.component.ts",
+      "bytes": 50238
+    },
+    {
+      "name": "src/app/features/varistorehn/varistorehn-productos.component.ts",
+      "bytes": 48730
+    },
+    {
+      "name": "node_modules/@angular/material/fesm2022/tabs.mjs",
+      "bytes": 41768
+    },
+    {
+      "name": "node_modules/@angular/cdk/fesm2022/overlay-module.mjs",
+      "bytes": 40808
+    },
+    {
+      "name": "src/app/features/solicitudes-compra/solicitudes-compra-shell.component.ts",
+      "bytes": 37878
+    },
+    {
+      "name": "src/app/features/productos/producto-form.component.ts",
+      "bytes": 37589
+    },
+    {
+      "name": "node_modules/zone.js/fesm2015/zone.js",
+      "bytes": 34584
+    },
+    {
+      "name": "src/app/features/cargas-masivas/cargas-masivas.component.ts",
+      "bytes": 32022
+    },
+    {
+      "name": "src/app/features/ventas/venta-form.component.ts",
+      "bytes": 31070
+    },
+    {
+      "name": "src/app/features/productos/producto-variantes.component.ts",
+      "bytes": 31029
+    },
+    {
+      "name": "src/app/features/compras/devoluciones-proveedor/devoluciones-proveedor.components.ts",
+      "bytes": 30729
+    },
+    {
+      "name": "src/app/features/compras/compra-form.component.ts",
+      "bytes": 28731
+    },
+    {
+      "name": "src/app/features/varistorehn/varistorehn-checkout.component.ts",
+      "bytes": 28637
+    },
+    {
+      "name": "src/app/features/usuarios/usuarios.component.ts",
+      "bytes": 28450
+    },
+    {
+      "name": "src/app/features/varistorehn/varistorehn-carrito.component.ts",
+      "bytes": 27891
+    },
+    {
+      "name": "node_modules/@angular/cdk/fesm2022/table.mjs",
+      "bytes": 27648
+    },
+    {
+      "name": "src/app/features/varistorehn/varistorehn-categoria.component.ts",
+      "bytes": 27104
+    },
+    {
+      "name": "node_modules/@angular/material/fesm2022/chips.mjs",
+      "bytes": 26854
+    },
+    {
+      "name": "node_modules/@angular/material/fesm2022/checkbox.mjs",
+      "bytes": 26639
+    },
+    {
+      "name": "src/app/features/productos/productos-list.component.ts",
+      "bytes": 26011
+    },
+    {
+      "name": "node_modules/@angular/material/fesm2022/button.mjs",
+      "bytes": 25576
+    },
+    {
+      "name": "node_modules/@angular/material/fesm2022/select-module.mjs",
+      "bytes": 25244
+    },
+    {
+      "name": "src/app/features/reportes-administrativos/reportes-administrativos.component.ts",
+      "bytes": 24762
+    },
+    {
+      "name": "node_modules/@angular/common/fesm2022/common_module.mjs",
+      "bytes": 23589
+    },
+    {
+      "name": "src/app/features/inventario/ajustes-list.component.ts",
+      "bytes": 23386
+    },
+    {
+      "name": "src/app/features/facturas/factura-pagos.component.ts",
+      "bytes": 23270
+    },
+    {
+      "name": "node_modules/@angular/material/fesm2022/slide-toggle.mjs",
+      "bytes": 23247
+    },
+    {
+      "name": "src/app/features/inventario/movimientos-list.component.ts",
+      "bytes": 22990
+    },
+    {
+      "name": "src/app/features/cuentas-bancarias/cuentas-bancarias.component.ts",
+      "bytes": 22850
+    },
+    {
+      "name": "src/app/features/dashboard/dashboard.component.ts",
+      "bytes": 22776
+    },
+    {
+      "name": "src/app/features/configuracion/configuracion.component.ts",
+      "bytes": 22637
+    }
+  ],
+  "topInitialScriptPackages": [
+    {
+      "name": "(app source)",
+      "bytes": 2177814
+    },
+    {
+      "name": "@angular/material",
+      "bytes": 398939
+    },
+    {
+      "name": "html5-qrcode",
+      "bytes": 374006
+    },
+    {
+      "name": "@angular/core",
+      "bytes": 144278
+    },
+    {
+      "name": "@angular/cdk",
+      "bytes": 134011
+    },
+    {
+      "name": "@angular/router",
+      "bytes": 78541
+    },
+    {
+      "name": "@angular/animations",
+      "bytes": 62683
+    },
+    {
+      "name": "@angular/forms",
+      "bytes": 52835
+    },
+    {
+      "name": "@angular/common",
+      "bytes": 49637
+    },
+    {
+      "name": "zone.js",
+      "bytes": 34584
+    },
+    {
+      "name": "rxjs",
+      "bytes": 23111
+    },
+    {
+      "name": "@angular/platform-browser",
+      "bytes": 14789
+    },
+    {
+      "name": "tslib",
+      "bytes": 1905
+    }
+  ],
+  "topInitialStylePackages": [
+    {
+      "name": "@angular/material",
+      "bytes": 103707
+    },
+    {
+      "name": "(app source)",
+      "bytes": 19693
+    }
+  ],
+  "largestLazyOutputs": [
+    {
+      "outputPath": "varistorehn-producto.component-STPDTMJE.css",
+      "file": "varistorehn-producto.component-STPDTMJE.css",
+      "bytes": 17594,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "varistorehn-productos.component-BHVLXIZP.css",
+      "file": "varistorehn-productos.component-BHVLXIZP.css",
+      "bytes": 14533,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "varistorehn.component-5CL5LNFZ.css",
+      "file": "varistorehn.component-5CL5LNFZ.css",
+      "bytes": 13228,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "factura-view.component-2Q6J4U22.css",
+      "file": "factura-view.component-2Q6J4U22.css",
+      "bytes": 12219,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "varistorehn-carrito.component-WQSRBGDG.css",
+      "file": "varistorehn-carrito.component-WQSRBGDG.css",
+      "bytes": 10159,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "varistorehn-header.component-TNDJBSLG.css",
+      "file": "varistorehn-header.component-TNDJBSLG.css",
+      "bytes": 8621,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "cargas-masivas.component-QWUB5B5A.css",
+      "file": "cargas-masivas.component-QWUB5B5A.css",
+      "bytes": 7647,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "varistorehn-categoria.component-AXR5QESB.css",
+      "file": "varistorehn-categoria.component-AXR5QESB.css",
+      "bytes": 7623,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "dashboard.component-IXDYKCTX.css",
+      "file": "dashboard.component-IXDYKCTX.css",
+      "bytes": 6873,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "varistorehn-categorias.component-PQQH7H5W.css",
+      "file": "varistorehn-categorias.component-PQQH7H5W.css",
+      "bytes": 6584,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "varistorehn-checkout.component-4Z7XADO4.css",
+      "file": "varistorehn-checkout.component-4Z7XADO4.css",
+      "bytes": 6504,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "solicitudes-compra-shell.component-26YL3FLM.css",
+      "file": "solicitudes-compra-shell.component-26YL3FLM.css",
+      "bytes": 6346,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "app.component-27EGEF2P.css",
+      "file": "app.component-27EGEF2P.css",
+      "bytes": 6300,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "varistorehn.responsive-N4AV7OCQ.css",
+      "file": "varistorehn.responsive-N4AV7OCQ.css",
+      "bytes": 5753,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "productos-list.component-YJO2DOJ4.css",
+      "file": "productos-list.component-YJO2DOJ4.css",
+      "bytes": 5676,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "perfil.component-4NFYJ6R3.css",
+      "file": "perfil.component-4NFYJ6R3.css",
+      "bytes": 5621,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "producto-form.component-EFRUSHUR.css",
+      "file": "producto-form.component-EFRUSHUR.css",
+      "bytes": 5606,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "producto-detail.component-G27FFKV4.css",
+      "file": "producto-detail.component-G27FFKV4.css",
+      "bytes": 5243,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "varistorehn-cuenta.component-46E7JSPL.css",
+      "file": "varistorehn-cuenta.component-46E7JSPL.css",
+      "bytes": 4778,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "ajustes-list.component-S4UKLO7I.css",
+      "file": "ajustes-list.component-S4UKLO7I.css",
+      "bytes": 4462,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "reportes-administrativos.component-OHLVYBRJ.css",
+      "file": "reportes-administrativos.component-OHLVYBRJ.css",
+      "bytes": 4415,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "movimientos-list.component-TD5O6R4Y.css",
+      "file": "movimientos-list.component-TD5O6R4Y.css",
+      "bytes": 4127,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "varistorehn-pedido.component-JZO7F5EO.css",
+      "file": "varistorehn-pedido.component-JZO7F5EO.css",
+      "bytes": 3920,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "producto-variantes.component-5QMDYPHT.css",
+      "file": "producto-variantes.component-5QMDYPHT.css",
+      "bytes": 3710,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "clientes-list.component-VRI7MFUR.css",
+      "file": "clientes-list.component-VRI7MFUR.css",
+      "bytes": 3680,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "venta-form.component-ORLSYRMZ.css",
+      "file": "venta-form.component-ORLSYRMZ.css",
+      "bytes": 3583,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "auditoria-list.component-RHTUBYG3.css",
+      "file": "auditoria-list.component-RHTUBYG3.css",
+      "bytes": 3529,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "sucursales-list.component-SJ4GZRNS.css",
+      "file": "sucursales-list.component-SJ4GZRNS.css",
+      "bytes": 3399,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "ubicaciones-almacen-list.component-IULVM4LX.css",
+      "file": "ubicaciones-almacen-list.component-IULVM4LX.css",
+      "bytes": 3351,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "almacenes-list.component-HWR2H6FO.css",
+      "file": "almacenes-list.component-HWR2H6FO.css",
+      "bytes": 3343,
+      "entryPoint": null
     }
   ],
   "unresolvedInitialOutputs": []
