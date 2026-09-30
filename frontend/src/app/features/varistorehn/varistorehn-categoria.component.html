@@ -127,7 +127,7 @@
                 <article class="category-product-card">
                   <a class="category-product-media" [href]="rutaProducto(producto)" [attr.aria-label]="'Ver ' + producto.nombre">
                     @if (imagenValida(imagen)) {
-                      <img [src]="imagen" [alt]="producto.nombre" width="640" height="480" loading="lazy" decoding="async" (error)="errorImagen(imagen)">
+                      <img [src]="imagenCloudinary(imagen, 640)" [attr.srcset]="srcsetCloudinary(imagen)" sizes="(max-width: 720px) 92vw, 300px" [alt]="producto.nombre" width="640" height="480" loading="lazy" decoding="async" (error)="errorImagen(imagen)">
                     } @else {
                       <app-store-art [tipo]="producto.ilustracion || 'paquete'" />
                     }
