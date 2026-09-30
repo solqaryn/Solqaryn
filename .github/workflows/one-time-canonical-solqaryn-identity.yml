@@ -99,9 +99,16 @@ jobs:
           set -euo pipefail
           git config user.name "SOLQARYN Automation"
           git config user.email "solqaryn.platform@outlook.com"
+
+          # GitHub Actions GITHUB_TOKEN cannot publish workflow-file changes
+          # without the separate workflows permission. Keep those files and
+          # this one-time driver untouched in this push; they are published
+          # atomically afterward through the repository connector.
+          git restore --source=HEAD -- .github/workflows scripts/one-time-canonicalize-solqaryn.mjs
+
           git add -A
           if git diff --cached --quiet; then
-            echo "No changes to commit."
+            echo "No non-workflow changes to commit."
             exit 0
           fi
           git commit -m "refactor(identity): canonicalize SOLQARYN identifiers"
