@@ -8,8 +8,10 @@ Este archivo es vinculante para Javier Mejía, ChatGPT/VAEP y cualquier agente a
 PROJECT_ID=SOLQARYN
 REPOSITORY=solqaryn/Solqaryn
 BRANCH=dev
-AUTOMATION_AUTHORITY=MASTER
-MASTER_FILE=docs/VAEP_AUTHORITY.md
+AUTOMATION_AUTHORITY=VAEP_CONTRACT
+VAEP_CONTRACT_FILE=docs/VAEP_AUTHORITY.md
+ROADMAP_MASTER=PLAN_MAESTRO_SOLQARYN
+ROADMAP_MASTER_GOOGLE_DOC_ID=1YdQlNJ312HuziyKb9E-GEt55dcgSmuFGgfsHxyzPUaw
 EXECUTION_MODEL=TASKS_ONLY
 CONTEXT_MODE=CURRENT_STATE_ONLY
 ```
@@ -18,11 +20,13 @@ Antes de analizar, editar, ejecutar o publicar trabajo VAEP, leer `docs/VAEP_AUT
 
 ## Autoridad única
 
-- `docs/VAEP_AUTHORITY.md` es el único MAESTRO operativo.
-- El MAESTRO se define exclusivamente por el estado y objetivos vigentes de SOLQARYN.
-- Planes, fases, filas, protocolos, handoffs, prompts, issues, receipts o decisiones que no estén expresamente incorporados al MAESTRO vigente no imponen restricciones, dependencias ni orden de ejecución.
+- Existe un solo Plan Maestro de roadmap y arquitectura objetivo: Google Doc `PLAN MAESTRO SOLQARYN` (`1YdQlNJ312HuziyKb9E-GEt55dcgSmuFGgfsHxyzPUaw`).
+- `docs/VAEP_AUTHORITY.md` es el contrato operativo de ejecución de VAEP; no crea un segundo roadmap ni una versión paralela del Plan Maestro.
+- El trabajo se decide exclusivamente desde el Plan Maestro vigente, el estado vivo y las dependencias técnicas actuales.
+- Planes, fases, filas, protocolos, handoffs, prompts, issues, receipts o decisiones históricas no imponen restricciones, dependencias ni orden de ejecución.
+- `Notas SOLQARYN_DEV.docx` es sólo bandeja de observaciones; una nota no es ejecutable hasta que el propietario la apruebe y se incorpore al único Plan Maestro.
 - Git, CHANGELOG, BITACORA, Issues, artifacts y receipts son evidencia; no son autoridad de planificación.
-- Si una superficie operativa contradice al MAESTRO vigente, debe corregirse o neutralizarse.
+- Si una superficie operativa contradice al Plan Maestro vigente o al contrato operativo, debe corregirse o neutralizarse.
 
 ## Modelo vigente
 
