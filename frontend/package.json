@@ -22,7 +22,8 @@
     "test:e2e:varistorehn-fase10": "playwright test e2e/varistorehn-fase10.spec.ts --config=playwright.config.ts",
     "test:e2e:varistorehn-fase11": "playwright test e2e/varistorehn-fase11.spec.ts --config=playwright.config.ts",
     "test:e2e:varistorehn-fase12": "playwright test e2e/varistorehn-fase12.spec.ts --config=playwright.config.ts",
-    "perf:bundle-baseline": "npm run build:prod && node scripts/performance-bundle-baseline.mjs"
+    "perf:bundle-baseline": "npm run build:stats && node scripts/performance-bundle-baseline.mjs && node scripts/analyze-angular-stats.mjs",
+    "build:stats": "ng build --configuration production --stats-json"
   },
   "private": true,
   "dependencies": {
