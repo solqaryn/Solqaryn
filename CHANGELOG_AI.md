@@ -2219,3 +2219,17 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - El PR PROD #3486 detectó que `scripts/quality/priority4_quality_audit.py` conservaba el contrato stale de `2mb` para el budget inicial Angular.
 - El gate fue alineado al contrato ya certificado del Punto 8: `650kb` warning / `750kb` error, sin relajar límites ni cambiar runtime.
 - Alcance: CI/gobernanza de calidad únicamente; sin datos, migraciones, secretos, planes, DNS ni cambios productivos directos.
+
+
+## 2026-09-30 — VAEP: migración Google corporativa y corrección de las 10 automatizaciones
+
+- Se verificó la cuenta Google corporativa `solqaryn.platform@outlook.com` y la propiedad de los dos artefactos migrados de VAEP.
+- Se crearon versiones nativas corporativas para operación segura mediante el conector Google Drive:
+  - Sheet `SOLQARYN - PLAN MAESTRO DE AUTOMATIZACIONES`: `1gcVyCoyhLU0jFMwRtf0s5_x8FSnfBs38ojml1QF7Xwk`.
+  - Doc `Plan Maestro SOLQARYN - FUENTE RECTORA VAEP`: `1l0sy55GJu5bJAsXWDB8ciXfQOB9jBaNO7Mkx-N80vWk`.
+- El Sheet nativo quedó con timezone `America/Tegucigalpa`, nombres canónicos SOLQARYN, fuentes del plan apuntando al Doc corporativo, estado de runtime reconciliado a `0/10` habilitadas y sin CURRENT_PARENT activo durante la pausa.
+- Se corrigieron las diez automatizaciones canónicas a `solqaryn/Solqaryn` + rama `dev`, con `docs/VAEP_AUTHORITY.md` como única autoridad operativa, Google Drive corporativo exclusivamente y bloqueo explícito de `javiermejia3112@gmail.com`, `jmejia31/VariApp`, rama `Desarrollo` e infraestructura legacy como fallback.
+- Slots canónicos preservados: primarias `:00/:12/:24/:36/:48`; supervisoras `:05/:17/:29/:41/:53`.
+- Las 10 automatizaciones permanecen deliberadamente **PAUSADAS (0/10)** por instrucción del propietario. No se ejecutó ninguna activación.
+- Tres duplicados legacy adicionales fueron marcados como `RETIRADA` y permanecen inertes para evitar activación accidental.
+- Sin cambios en `main`, PROD, datos productivos, secretos, DNS, certificados o servicios pagos.
