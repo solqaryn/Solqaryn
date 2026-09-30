@@ -2,9 +2,10 @@
 
 - La decisión se tomó después de optimizar el read path: listado público en 5 queries por miss y hits de cache en 0 queries.
 - Pasadas calientes DEV observadas: 216.5–254.1 ms total con 107.5–112.3 ms DB.
-- Topología versionada: Aiven MySQL `do-sfo`, Render DEV `oregon`, Render PROD `virginia`.
-- DEV se mantiene en Oregon; no existe evidencia que justifique mover Aiven o DEV.
-- PROD conserva una deuda potencial de latencia interregional Virginia ↔ San Francisco, pero no se ejecutó ningún cambio productivo.
+- Readback vivo: único workspace Render `SOLQARYN`; DEV `oregon/free/dev` y PROD `virginia/free/main`; Aiven permanece `do-sfo`.
+- Logs DEV recientes reconfirman productos en 5 queries y ~207–257 ms calientes, con hits de cache en 0 queries.
+- Render no expuso series HTTP de latencia/request-count en la ventana consultada, por lo que la distancia PROD Virginia ↔ San Francisco queda como riesgo no cuantificado, no como fallo demostrado.
+- DEV se mantiene en Oregon; no existe evidencia que justifique mover Aiven o DEV y no se ejecutó ningún cambio productivo.
 - Si una medición futura confirma penalización material, la vía definida es backend PROD oeste en blue/green, smoke/read-only, comparación causal y cutover únicamente con autorización explícita.
 - Sin compras, upgrades, migraciones, cambios de datos, secretos, `main`, tráfico PROD ni cambios Aiven.
 - Evidencia: `docs/evidencias/DEV_ANALISIS_PUNTO_9_AIVEN_TOPOLOGIA_2026-09-29.md`.
