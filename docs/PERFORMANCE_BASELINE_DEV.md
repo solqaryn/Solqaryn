@@ -4,7 +4,7 @@
 
 La decisión de topología ya se toma después de reducir round trips: el listado público pasó de 7 a **5 queries por miss**, mientras los hits de cache pública operan con **0 queries**. Las pasadas calientes DEV del read-model ligero quedaron en **216.5–254.1 ms** totales con **107.5–112.3 ms DB**.
 
-Topología versionada: Aiven MySQL `do-sfo`; Render DEV `oregon`; Render PROD `virginia`. Con la evidencia actual, DEV se mantiene en Oregon y no se mueve Aiven. PROD conserva una deuda potencial por distancia Virginia ↔ San Francisco, pero cualquier corrección futura debe ser blue/green, medida y autorizada expresamente; no se hará mudanza destructiva ni se comprará servicio para este punto.
+Readback vivo Render: workspace único `SOLQARYN`; DEV `oregon/free/dev`, PROD `virginia/free/main`. Aiven permanece en `do-sfo`. Los logs DEV recientes reconfirman listados calientes de 5 queries en 207.4–257.0 ms con 104.1–113.3 ms DB y hits de cache con 0 queries. Render no devolvió series `http_latency`/`http_request_count` en la ventana consultada, por lo que la penalización PROD Virginia ↔ San Francisco queda como riesgo no cuantificado, no como defecto demostrado. DEV se mantiene en Oregon y no se mueve Aiven; cualquier candidato PROD oeste futuro deberá ser blue/green, medido y autorizado expresamente.
 
 Evidencia: `docs/evidencias/DEV_ANALISIS_PUNTO_9_AIVEN_TOPOLOGIA_2026-09-29.md`.
 
