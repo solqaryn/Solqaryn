@@ -7,7 +7,7 @@ on:
       - 'backend/src/**/*CatalogoProducto*.cs'
       - 'backend/src/**/*TipoCatalogoProducto*.cs'
       - 'backend/src/Infrastructure/Migrations/20260811013917_N0_2_RetirarCatalogoProductoLegacy*.cs'
-      - 'backend/tests/InventoryApp.Tests/CatalogoProductoServiceTests.cs'
+      - 'backend/tests/Solqaryn.Tests/CatalogoProductoServiceTests.cs'
       - 'frontend/e2e/catalogos-mantenimientos.spec.ts'
       - 'backend/scripts/preflight-erp-n0-2-catalogos-normalizados.sql'
       - 'backend/scripts/postdeploy-erp-n0-2-catalogos-normalizados.sql'
@@ -18,7 +18,7 @@ on:
       - 'backend/src/**/*CatalogoProducto*.cs'
       - 'backend/src/**/*TipoCatalogoProducto*.cs'
       - 'backend/src/Infrastructure/Migrations/20260811013917_N0_2_RetirarCatalogoProductoLegacy*.cs'
-      - 'backend/tests/InventoryApp.Tests/CatalogoProductoServiceTests.cs'
+      - 'backend/tests/Solqaryn.Tests/CatalogoProductoServiceTests.cs'
       - 'frontend/e2e/catalogos-mantenimientos.spec.ts'
       - 'backend/scripts/preflight-erp-n0-2-catalogos-normalizados.sql'
       - 'backend/scripts/postdeploy-erp-n0-2-catalogos-normalizados.sql'
@@ -42,7 +42,7 @@ jobs:
         image: mysql:8.4
         env:
           MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: inventoryapp_n02_ci
+          MYSQL_DATABASE: solqaryn_n02_ci
         ports: ['3306:3306']
         options: >-
           --health-cmd="mysqladmin ping -h localhost -proot"
@@ -51,7 +51,7 @@ jobs:
           --health-retries=12
     env:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=inventoryapp_n02_ci;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;
+      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=solqaryn_n02_ci;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;
       Database__ServerVersion: 8.4.0
       Database__ApplyMigrationsOnStartup: 'false'
       Jwt__Secret: ERP-N0-2-CI-Only-Secret-With-More-Than-32-Characters-2026
@@ -65,15 +65,15 @@ jobs:
 
       - name: Restaurar backend
         working-directory: backend
-        run: dotnet restore InventoryApp.sln
+        run: dotnet restore Solqaryn.sln
 
       - name: Compilar backend sin advertencias
         working-directory: backend
-        run: dotnet build InventoryApp.sln --configuration Release --no-restore -warnaserror
+        run: dotnet build Solqaryn.sln --configuration Release --no-restore -warnaserror
 
       - name: Ejecutar pruebas backend
         working-directory: backend
-        run: dotnet test InventoryApp.sln --configuration Release --no-build
+        run: dotnet test Solqaryn.sln --configuration Release --no-build
 
       - name: Instalar EF
         run: dotnet tool install --global dotnet-ef --version 8.0.8
@@ -82,8 +82,8 @@ jobs:
         working-directory: backend
         run: |
           dotnet ef database update 20260810174200_M12AutomatizacionTransversal \
-            --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-            --startup-project src/API/InventoryApp.API.csproj \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext
 
       - name: Sembrar caso representativo legacy y normalizado
@@ -91,7 +91,7 @@ jobs:
         run: |
           set -euo pipefail
           mysql_container="${{ job.services.mysql.id }}"
-          docker exec "$mysql_container" mysql -uroot -proot inventoryapp_n02_ci -e "
+          docker exec "$mysql_container" mysql -uroot -proot solqaryn_n02_ci -e "
             INSERT INTO CatalogosProducto
               (Id, Tipo, Nombre, Descripcion, CodigoVisual, Orden, Activo, Eliminado, FechaCreacion, FechaActualizacion)
             VALUES
@@ -126,7 +126,7 @@ jobs:
         run: |
           set -euo pipefail
           mysql_container="${{ job.services.mysql.id }}"
-          bloqueos="$(docker exec -i "$mysql_container" mysql -uroot -proot inventoryapp_n02_ci --batch --skip-column-names \
+          bloqueos="$(docker exec -i "$mysql_container" mysql -uroot -proot solqaryn_n02_ci --batch --skip-column-names \
             < backend/scripts/preflight-erp-n0-2-catalogos-normalizados.sql | tail -n 1)"
           test "$bloqueos" = '0'
 
@@ -134,8 +134,8 @@ jobs:
         working-directory: backend
         run: |
           dotnet ef database update \
-            --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-            --startup-project src/API/InventoryApp.API.csproj \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext
 
       - name: Validar integridad posterior N0.2
@@ -143,16 +143,16 @@ jobs:
         run: |
           set -euo pipefail
           mysql_container="${{ job.services.mysql.id }}"
-          errores="$(docker exec -i "$mysql_container" mysql -uroot -proot inventoryapp_n02_ci --batch --skip-column-names \
+          errores="$(docker exec -i "$mysql_container" mysql -uroot -proot solqaryn_n02_ci --batch --skip-column-names \
             < backend/scripts/postdeploy-erp-n0-2-catalogos-normalizados.sql | tail -n 1)"
           test "$errores" = '0'
 
-          legado="$(docker exec "$mysql_container" mysql -uroot -proot inventoryapp_n02_ci -Nse "
+          legado="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_n02_ci -Nse "
             SELECT COUNT(*) FROM information_schema.tables
             WHERE table_schema = DATABASE() AND table_name = 'CatalogosProducto';")"
           test "$legado" = '0'
 
-          relaciones="$(docker exec "$mysql_container" mysql -uroot -proot inventoryapp_n02_ci -Nse "
+          relaciones="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_n02_ci -Nse "
             SELECT COUNT(*)
             FROM Productos p
             JOIN Marcas ma ON ma.Id = p.MarcaId
@@ -170,8 +170,8 @@ jobs:
         working-directory: backend
         run: |
           dotnet ef migrations has-pending-model-changes \
-            --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-            --startup-project src/API/InventoryApp.API.csproj \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext
 
       - name: Guardas estáticas de retiro legacy

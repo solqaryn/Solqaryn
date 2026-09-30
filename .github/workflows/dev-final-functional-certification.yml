@@ -41,11 +41,11 @@ jobs:
           set -euo pipefail
           curl --retry 3 --fail --silent --show-error "$FRONTEND/login" -o "$RUNNER_TEMP/login.html"
           curl --retry 3 --fail --silent --show-error "$FRONTEND/dashboard" -o "$RUNNER_TEMP/dashboard.html"
-          curl --retry 3 --fail --silent --show-error "$FRONTEND/varistorehn" -o "$RUNNER_TEMP/storefront.html"
-          curl --retry 3 --fail --silent --show-error "$FRONTEND/varistorehn/productos" -o "$RUNNER_TEMP/products-page.html"
+          curl --retry 3 --fail --silent --show-error "$FRONTEND/storefront" -o "$RUNNER_TEMP/storefront.html"
+          curl --retry 3 --fail --silent --show-error "$FRONTEND/storefront/productos" -o "$RUNNER_TEMP/products-page.html"
           grep -qi "SOLQARYN" "$RUNNER_TEMP/login.html"
           grep -qi "SOLQARYN" "$RUNNER_TEMP/dashboard.html"
-          ! grep -qi "identidad-retirada-desarrollo" "$RUNNER_TEMP/login.html"
+          ! grep -qi "identidad-retirada-dev" "$RUNNER_TEMP/login.html"
           ! grep -qi "identidad-retirada-mysql-identidad-retirada.c.aivencloud.com" "$RUNNER_TEMP/login.html"
           echo "HTTP_ROUTE_CHECK=PASS"
 
@@ -57,13 +57,13 @@ jobs:
           curl -fsS "$FRONTEND/api/tienda/categorias" -o /tmp/categories.json
           curl -fsS "$FRONTEND/api/tienda/productos?pagina=1&tamano=100" -o /tmp/products.json
 
-          jq -e '.success == true and (.data.nombreComercial | ascii_downcase | contains("varistorehn"))' /tmp/identity.json >/dev/null
+          jq -e '.success == true and (.data.nombreComercial | ascii_downcase | contains("storefront"))' /tmp/identity.json >/dev/null
           jq -e '.success == true and (.data | length) >= 1' /tmp/categories.json >/dev/null
           jq -e '.success == true and (.data.items | length) >= 1' /tmp/products.json >/dev/null
 
           jq -r '.data.items[] | .imagenPrincipalUrl // empty, (.imagenes[]?.url // empty)' /tmp/products.json | sort -u > /tmp/images.txt
           test -s /tmp/images.txt
-          if grep -E 'res\.cloudinary\.com/(vyijnqzq|[^/]+/.*/(desarrollo|varistorehn_desarrollo)/)' /tmp/images.txt; then
+          if grep -E 'res\.cloudinary\.com/(vyijnqzq|[^/]+/.*/(dev|storefront_desarrollo)/)' /tmp/images.txt; then
             echo "Legacy Cloudinary reference detected" >&2
             exit 1
           fi
@@ -182,11 +182,11 @@ jobs:
         run: |
           set -euo pipefail
           targets=(frontend/src frontend/server frontend/vercel.json backend/src render.yaml)
-          if grep -RInE 'identidad-retirada-desarrollo|identidad-retirada-mysql-identidad-retirada\.c\.aivencloud\.com' "${targets[@]}"; then
+          if grep -RInE 'identidad-retirada-dev|identidad-retirada-mysql-identidad-retirada\.c\.aivencloud\.com' "${targets[@]}"; then
             echo "Referencia operativa legacy detectada" >&2
             exit 1
           fi
-          if grep -RIn 'varistorehn_desarrollo' backend/src frontend/src frontend/server frontend/vercel.json render.yaml; then
+          if grep -RIn 'storefront_desarrollo' backend/src frontend/src frontend/server frontend/vercel.json render.yaml; then
             echo "Referencia operativa a base/prefijo legacy detectada" >&2
             exit 1
           fi

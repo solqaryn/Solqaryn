@@ -7,9 +7,9 @@ on:
       - 'backend/src/**/*ProductoVariante*.cs'
       - 'backend/src/**/*TipoCatalogoProducto*.cs'
       - 'backend/src/Infrastructure/Migrations/20260811032000_N0_3_ConsolidarProductoVariante.cs'
-      - 'backend/tests/InventoryApp.Tests/ProductoVarianteAuthorityTests.cs'
-      - 'backend/tests/InventoryApp.Tests/ProductoVarianteServiceTests.cs'
-      - 'backend/tests/InventoryApp.Tests/N03AutoridadOperativaRegressionTests.cs'
+      - 'backend/tests/Solqaryn.Tests/ProductoVarianteAuthorityTests.cs'
+      - 'backend/tests/Solqaryn.Tests/ProductoVarianteServiceTests.cs'
+      - 'backend/tests/Solqaryn.Tests/N03AutoridadOperativaRegressionTests.cs'
       - 'backend/scripts/*erp-n0-3*'
       - 'backend/scripts/check-erp-n0-3-runtime.py'
       - '.github/workflows/erp-n0-3-ci.yml'
@@ -19,9 +19,9 @@ on:
       - 'backend/src/**/*ProductoVariante*.cs'
       - 'backend/src/**/*TipoCatalogoProducto*.cs'
       - 'backend/src/Infrastructure/Migrations/20260811032000_N0_3_ConsolidarProductoVariante.cs'
-      - 'backend/tests/InventoryApp.Tests/ProductoVarianteAuthorityTests.cs'
-      - 'backend/tests/InventoryApp.Tests/ProductoVarianteServiceTests.cs'
-      - 'backend/tests/InventoryApp.Tests/N03AutoridadOperativaRegressionTests.cs'
+      - 'backend/tests/Solqaryn.Tests/ProductoVarianteAuthorityTests.cs'
+      - 'backend/tests/Solqaryn.Tests/ProductoVarianteServiceTests.cs'
+      - 'backend/tests/Solqaryn.Tests/N03AutoridadOperativaRegressionTests.cs'
       - 'backend/scripts/*erp-n0-3*'
       - 'backend/scripts/check-erp-n0-3-runtime.py'
       - '.github/workflows/erp-n0-3-ci.yml'
@@ -43,14 +43,14 @@ jobs:
         image: mysql:8.4
         env:
           MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: inventoryapp_n03_ci
+          MYSQL_DATABASE: solqaryn_n03_ci
         ports: ['3306:3306']
         options: >-
           --health-cmd="mysqladmin ping -h localhost -proot"
           --health-interval=10s --health-timeout=5s --health-retries=12
     env:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=inventoryapp_n03_ci;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;
+      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=solqaryn_n03_ci;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;
       Database__ServerVersion: 8.4.0
       Database__ApplyMigrationsOnStartup: 'false'
       Jwt__Secret: ERP-N0-3-CI-Only-Secret-With-More-Than-32-Characters-2026
@@ -65,23 +65,23 @@ jobs:
       - name: Restaurar, compilar y probar backend
         working-directory: backend
         run: |
-          dotnet restore InventoryApp.sln
-          dotnet build InventoryApp.sln -c Release --no-restore -warnaserror
-          dotnet test InventoryApp.sln -c Release --no-build
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln -c Release --no-restore -warnaserror
+          dotnet test Solqaryn.sln -c Release --no-build
       - name: Instalar EF
         run: dotnet tool install --global dotnet-ef --version 8.0.8
       - name: Crear esquema N0.2
         working-directory: backend
         run: |
           dotnet ef database update 20260811013917_N0_2_RetirarCatalogoProductoLegacy \
-            --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-            --startup-project src/API/InventoryApp.API.csproj --context AppDbContext
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj --context AppDbContext
       - name: Sembrar caso representativo pre-N0.3
         shell: bash
         run: |
           set -euo pipefail
           c="${{ job.services.mysql.id }}"
-          docker exec "$c" mysql -uroot -proot inventoryapp_n03_ci -e "
+          docker exec "$c" mysql -uroot -proot solqaryn_n03_ci -e "
             INSERT INTO Marcas (Id,Nombre,Orden,Activo,Eliminado,FechaCreacion,FechaActualizacion) VALUES (9301,'N03 Marca',1,1,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
             INSERT INTO Modelos (Id,MarcaId,Nombre,Orden,Activo,Eliminado,FechaCreacion,FechaActualizacion) VALUES (9302,9301,'N03 Modelo',1,1,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
             INSERT INTO Colores (Id,Nombre,CodigoVisual,Orden,Activo,Eliminado,FechaCreacion,FechaActualizacion) VALUES (9303,'N03 Color','#112233',1,1,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
@@ -94,26 +94,26 @@ jobs:
         shell: bash
         run: |
           c="${{ job.services.mysql.id }}"
-          test "$(docker exec -i "$c" mysql -uroot -proot inventoryapp_n03_ci --batch --skip-column-names < backend/scripts/preflight-erp-n0-3-producto-variante.sql | tail -n 1)" = '0'
+          test "$(docker exec -i "$c" mysql -uroot -proot solqaryn_n03_ci --batch --skip-column-names < backend/scripts/preflight-erp-n0-3-producto-variante.sql | tail -n 1)" = '0'
       - name: Aplicar N0.3 aislado
         working-directory: backend
         run: |
           dotnet ef database update 20260811032000_N0_3_ConsolidarProductoVariante \
-            --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-            --startup-project src/API/InventoryApp.API.csproj --context AppDbContext
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj --context AppDbContext
       - name: Postcheck N0.3 y datos preservados
         shell: bash
         run: |
           set -euo pipefail
           c="${{ job.services.mysql.id }}"
-          test "$(docker exec -i "$c" mysql -uroot -proot inventoryapp_n03_ci --batch --skip-column-names < backend/scripts/postdeploy-erp-n0-3-producto-variante.sql | tail -n 1)" = '0'
-          test "$(docker exec "$c" mysql -uroot -proot inventoryapp_n03_ci -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20260811032000_N0_3_ConsolidarProductoVariante';")" = '1'
-          test "$(docker exec "$c" mysql -uroot -proot inventoryapp_n03_ci -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20260811174745_N0_4_ConsolidarRbacRelacional';")" = '0'
-          test "$(docker exec "$c" mysql -uroot -proot inventoryapp_n03_ci -Nse "SELECT COUNT(*) FROM ProductoVariantes WHERE Id=9350 AND Sku='TEC-N03-9300' AND MarcaId=9301 AND ModeloId=9302 AND ColorId=9303 AND TallaId=9304 AND Cantidad=7 AND Costo=10.00 AND Precio=20.00 AND UmbralStockBajo=2;")" = '1'
-          if docker exec "$c" mysql -uroot -proot inventoryapp_n03_ci -e "UPDATE ProductoVariantes SET Sku=' ' WHERE Id=9350;"; then echo 'CHECK SKU vacío no bloqueó' >&2; exit 1; fi
-          if docker exec "$c" mysql -uroot -proot inventoryapp_n03_ci -e "UPDATE ProductoVariantes SET ModeloId=9302, MarcaId=NULL WHERE Id=9350;"; then echo 'CHECK Modelo/Marca no bloqueó' >&2; exit 1; fi
+          test "$(docker exec -i "$c" mysql -uroot -proot solqaryn_n03_ci --batch --skip-column-names < backend/scripts/postdeploy-erp-n0-3-producto-variante.sql | tail -n 1)" = '0'
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n03_ci -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20260811032000_N0_3_ConsolidarProductoVariante';")" = '1'
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n03_ci -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20260811174745_N0_4_ConsolidarRbacRelacional';")" = '0'
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n03_ci -Nse "SELECT COUNT(*) FROM ProductoVariantes WHERE Id=9350 AND Sku='TEC-N03-9300' AND MarcaId=9301 AND ModeloId=9302 AND ColorId=9303 AND TallaId=9304 AND Cantidad=7 AND Costo=10.00 AND Precio=20.00 AND UmbralStockBajo=2;")" = '1'
+          if docker exec "$c" mysql -uroot -proot solqaryn_n03_ci -e "UPDATE ProductoVariantes SET Sku=' ' WHERE Id=9350;"; then echo 'CHECK SKU vacío no bloqueó' >&2; exit 1; fi
+          if docker exec "$c" mysql -uroot -proot solqaryn_n03_ci -e "UPDATE ProductoVariantes SET ModeloId=9302, MarcaId=NULL WHERE Id=9350;"; then echo 'CHECK Modelo/Marca no bloqueó' >&2; exit 1; fi
       - name: Snapshot EF consistente
         working-directory: backend
         run: |
-          dotnet ef migrations has-pending-model-changes --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-            --startup-project src/API/InventoryApp.API.csproj --context AppDbContext
+          dotnet ef migrations has-pending-model-changes --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj --context AppDbContext
