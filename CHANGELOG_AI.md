@@ -1,3 +1,14 @@
+## 2026-09-29 — Punto 9: Aiven/topología evaluados después de reducir queries
+
+- La decisión se tomó después de optimizar el read path: listado público en 5 queries por miss y hits de cache en 0 queries.
+- Pasadas calientes DEV observadas: 216.5–254.1 ms total con 107.5–112.3 ms DB.
+- Topología versionada: Aiven MySQL `do-sfo`, Render DEV `oregon`, Render PROD `virginia`.
+- DEV se mantiene en Oregon; no existe evidencia que justifique mover Aiven o DEV.
+- PROD conserva una deuda potencial de latencia interregional Virginia ↔ San Francisco, pero no se ejecutó ningún cambio productivo.
+- Si una medición futura confirma penalización material, la vía definida es backend PROD oeste en blue/green, smoke/read-only, comparación causal y cutover únicamente con autorización explícita.
+- Sin compras, upgrades, migraciones, cambios de datos, secretos, `main`, tráfico PROD ni cambios Aiven.
+- Evidencia: `docs/evidencias/DEV_ANALISIS_PUNTO_9_AIVEN_TOPOLOGIA_2026-09-29.md`.
+
 ## 2026-09-29 — Punto 8: Angular medido y adelgazado
 
 - Añadido build productivo con `stats.json`, baseline raw/gzip/Brotli y desglose por paquete/módulo.
