@@ -357,9 +357,9 @@ h3,
   color: var(--color-icon) !important;
 }
 
-.topbar-icon-button mat-icon,
-.profile-button mat-icon,
-.menu-toggle mat-icon {
+.topbar-icon-button .material-icons,
+.profile-button .material-icons,
+.menu-toggle .material-icons {
   color: currentColor !important;
 }
 
