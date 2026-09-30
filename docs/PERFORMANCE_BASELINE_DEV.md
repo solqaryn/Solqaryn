@@ -1,5 +1,20 @@
 # Baseline de rendimiento DEV — SOLQARYN
 
+## Punto 8 — Angular medido y adelgazado (2026-09-29/30)
+
+La medición canónica usa `ng build --configuration production --stats-json` y conserva tanto el baseline raw/gzip/Brotli como el desglose del grafo inicial.
+
+| Bundle inicial Angular | Antes | Después | Cambio |
+| --- | ---: | ---: | ---: |
+| Raw | 730.17 kB | 580.96 kB | -20.4% |
+| Transfer estimado Angular CLI | 171.55 kB | 137.46 kB | -19.9% |
+| `main` raw | 126.32 kB | 66.94 kB | -47.0% |
+| `styles` raw | 123.42 kB | 123.44 kB | estable |
+
+Cambios causales: shell raíz sin Material Button/Icon eager, animaciones legacy async, `@defer (on idle)` bajo el fold del home y preload selectivo post-estabilidad sólo para rutas probables del storefront. `PreloadAllModules` permanece prohibido. El budget `initial` queda en 650 kB warning / 750 kB error.
+
+Evidencia completa: `docs/evidencias/DEV_CERTIFICACION_PUNTO_8_ANGULAR_BUNDLE_2026-09-29.md`.
+
 ## Objetivo
 
 Medir antes de optimizar. Este baseline no usa ni compra servicios de observabilidad externos. Toda la instrumentación vive en SOLQARYN y se activa únicamente en DEV/local.

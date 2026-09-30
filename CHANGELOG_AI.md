@@ -1,3 +1,16 @@
+## 2026-09-29 — Punto 8: Angular medido y adelgazado
+
+- Añadido build productivo con `stats.json`, baseline raw/gzip/Brotli y desglose por paquete/módulo.
+- Baseline inicial real Angular CLI: 730.17 kB raw / 171.55 kB transfer estimado.
+- El shell raíz dejó de importar Material Button/Icon; la navegación conserva iconos con la fuente ya existente y botones nativos accesibles.
+- `provideAnimations()` pasó a `provideAnimationsAsync()`; `@angular/animations` (~62.7 kB antes) queda fuera del grafo inicial.
+- Portada VariStoreHN: contenido bajo el fold usa `@defer (on idle)`; catálogo, detalle y categorías usan preload selectivo sólo tras estabilidad. `PreloadAllModules` permanece prohibido.
+- Resultado causal: 580.96 kB raw / 137.46 kB transfer estimado; reducción de 20.4% raw y 19.9% transfer. `main` baja de 126.32 a 66.94 kB (-47.0%).
+- Budget `initial` endurecido de 1 MiB/2 MiB a 650 kB warning / 750 kB error y protegido por `validate-angular-bundle-policy.mjs`.
+- Workflow post-optimización `36650833149`: SUCCESS.
+- No se compró ningún servicio; sin DB, secretos, `main` ni PROD.
+- Evidencia: `docs/evidencias/DEV_CERTIFICACION_PUNTO_8_ANGULAR_BUNDLE_2026-09-29.md`.
+
 ## 2026-09-29 — Punto 7 implementado: Cloudinary delivery responsive
 
 - Añadido helper central de delivery Cloudinary con `f_auto,q_auto,c_limit` y variantes 320/480/640/800.

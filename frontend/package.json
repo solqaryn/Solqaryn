@@ -6,7 +6,7 @@
     "start": "ng serve",
     "build": "ng build",
     "build:prod": "ng build --configuration production",
-    "lint": "tsc --noEmit -p tsconfig.app.json && node scripts/lint-quality.mjs && node scripts/validate-scanner-2c4.mjs && node scripts/validate-varistorehn-fase1.mjs && node scripts/validate-varistorehn-fase2.mjs && node scripts/validate-varistorehn-fase3.mjs && node scripts/validate-varistorehn-fase4.mjs && node scripts/validate-varistorehn-fase5.mjs && node scripts/validate-varistorehn-fase6.mjs && node scripts/validate-varistorehn-mvp.mjs && node scripts/validate-varistorehn-fase7.mjs && node scripts/validate-varistorehn-fase8.mjs && node scripts/validate-varistorehn-fase9.mjs && node scripts/validate-varistorehn-fase10.mjs && node --check api/seo.js && node --check api/robots.js && node --check api/sitemap.js && node --check server/seo-utils.js && node scripts/validate-varistorehn-fase11.mjs && node scripts/validate-varistorehn-fase12.mjs && node scripts/validate-varistorehn-transversal.mjs && node scripts/validate-http-cache-contract.mjs && node scripts/validate-cloudinary-responsive.mjs",
+    "lint": "tsc --noEmit -p tsconfig.app.json && node scripts/lint-quality.mjs && node scripts/validate-scanner-2c4.mjs && node scripts/validate-varistorehn-fase1.mjs && node scripts/validate-varistorehn-fase2.mjs && node scripts/validate-varistorehn-fase3.mjs && node scripts/validate-varistorehn-fase4.mjs && node scripts/validate-varistorehn-fase5.mjs && node scripts/validate-varistorehn-fase6.mjs && node scripts/validate-varistorehn-mvp.mjs && node scripts/validate-varistorehn-fase7.mjs && node scripts/validate-varistorehn-fase8.mjs && node scripts/validate-varistorehn-fase9.mjs && node scripts/validate-varistorehn-fase10.mjs && node --check api/seo.js && node --check api/robots.js && node --check api/sitemap.js && node --check server/seo-utils.js && node scripts/validate-varistorehn-fase11.mjs && node scripts/validate-varistorehn-fase12.mjs && node scripts/validate-varistorehn-transversal.mjs && node scripts/validate-http-cache-contract.mjs && node scripts/validate-cloudinary-responsive.mjs && node scripts/validate-angular-bundle-policy.mjs",
     "test:e2e:varistorehn-fase1": "playwright test e2e/varistorehn-fase1.spec.ts --config=playwright.config.ts",
     "test:e2e:varistorehn-fase2": "playwright test e2e/varistorehn-fase2.spec.ts --config=playwright.config.ts",
     "test:e2e:varistorehn-fase3": "playwright test e2e/varistorehn-fase3.spec.ts --config=playwright.config.ts",
@@ -22,7 +22,8 @@
     "test:e2e:varistorehn-fase10": "playwright test e2e/varistorehn-fase10.spec.ts --config=playwright.config.ts",
     "test:e2e:varistorehn-fase11": "playwright test e2e/varistorehn-fase11.spec.ts --config=playwright.config.ts",
     "test:e2e:varistorehn-fase12": "playwright test e2e/varistorehn-fase12.spec.ts --config=playwright.config.ts",
-    "perf:bundle-baseline": "npm run build:prod && node scripts/performance-bundle-baseline.mjs"
+    "perf:bundle-baseline": "npm run build:stats && node scripts/performance-bundle-baseline.mjs && node scripts/analyze-angular-stats.mjs",
+    "build:stats": "ng build --configuration production --stats-json"
   },
   "private": true,
   "dependencies": {

@@ -7,10 +7,10 @@ import { PEDIDOS_VENTA_ROUTES } from './features/pedidos-venta/pedidos-venta.rou
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
-  { path: 'varistorehn/productos', loadComponent: () => import('./features/varistorehn/varistorehn-productos.component').then(m => m.VaristorehnProductosComponent) },
+  { path: 'varistorehn/productos', data: { preloadAfterRender: true }, loadComponent: () => import('./features/varistorehn/varistorehn-productos.component').then(m => m.VaristorehnProductosComponent) },
   { path: 'varistorehn/ofertas', data: { soloOfertas: true }, loadComponent: () => import('./features/varistorehn/varistorehn-productos.component').then(m => m.VaristorehnProductosComponent) },
-  { path: 'varistorehn/producto/:slug', loadComponent: () => import('./features/varistorehn/varistorehn-producto.component').then(m => m.VaristorehnProductoComponent) },
-  { path: 'varistorehn/categorias', loadComponent: () => import('./features/varistorehn/varistorehn-categorias.component').then(m => m.VaristorehnCategoriasComponent) },
+  { path: 'varistorehn/producto/:slug', data: { preloadAfterRender: true }, loadComponent: () => import('./features/varistorehn/varistorehn-producto.component').then(m => m.VaristorehnProductoComponent) },
+  { path: 'varistorehn/categorias', data: { preloadAfterRender: true }, loadComponent: () => import('./features/varistorehn/varistorehn-categorias.component').then(m => m.VaristorehnCategoriasComponent) },
   { path: 'varistorehn/categoria/:slug', loadComponent: () => import('./features/varistorehn/varistorehn-categoria.component').then(m => m.VaristorehnCategoriaComponent) },
   { path: 'varistorehn/carrito', loadComponent: () => import('./features/varistorehn/varistorehn-carrito.component').then(m => m.VaristorehnCarritoComponent) },
   { path: 'varistorehn/checkout', loadComponent: () => import('./features/varistorehn/varistorehn-checkout.component').then(m => m.VaristorehnCheckoutComponent) },
