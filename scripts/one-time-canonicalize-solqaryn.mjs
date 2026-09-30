@@ -152,15 +152,22 @@ function activeTextFiles() {
 }
 
 function renameActivePaths() {
-  const entries = [];
+  const files = [];
+  const directories = [];
+
   for (const rel of activeRoots) {
-    entries.push(...walk(join(root, rel), true));
+    const abs = join(root, rel);
+    for (const entry of walk(abs, true)) {
+      if (!existsSync(entry)) continue;
+      const info = lstatSync(entry);
+      if (info.isDirectory()) directories.push(entry);
+      else files.push(entry);
+    }
   }
 
-  entries
-    .filter(function (abs) { return abs !== root; })
+  files
     .sort(function (a, b) {
-      return posixPath(relative(root, b)).split('/').length - posixPath(relative(root, a)).split('/').length;
+      return posixPath(relative(root, a)).localeCompare(posixPath(relative(root, b)));
     })
     .forEach(function (abs) {
       if (!existsSync(abs)) return;
@@ -169,10 +176,22 @@ function renameActivePaths() {
       if (newRel === oldRel) return;
       const target = join(root, ...newRel.split('/'));
       if (existsSync(target)) {
-        throw new Error('Canonical rename collision: ' + oldRel + ' -> ' + newRel);
+        throw new Error('Canonical file collision: ' + oldRel + ' -> ' + newRel);
       }
       mkdirSync(dirname(target), { recursive: true });
       renameSync(abs, target);
+    });
+
+  directories
+    .sort(function (a, b) {
+      return posixPath(relative(root, b)).split('/').length - posixPath(relative(root, a)).split('/').length;
+    })
+    .forEach(function (abs) {
+      if (!existsSync(abs)) return;
+      if (!lstatSync(abs).isDirectory()) return;
+      if (readdirSync(abs).length === 0) {
+        rmSync(abs, { recursive: false, force: true });
+      }
     });
 }
 
