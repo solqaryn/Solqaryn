@@ -52,15 +52,15 @@ async function preparar(page: Page): Promise<void> {
     status: 200, contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' },
     body: JSON.stringify({ success: true, data: empresa })
   }));
-  await page.route('**/tienda/categorias', route => route.fulfill({
+  await page.route('http://localhost:5005/tienda/categorias', route => route.fulfill({
     status: 200, contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' },
     body: JSON.stringify({ success: true, data: [{ id: 81, slug: 'tecnologia-81', nombre: 'Tecnología', descripcion: '', totalProductos: 4 }] })
   }));
-  await page.route('**/tienda/productos?*', route => route.fulfill({
+  await page.route('http://localhost:5005/tienda/productos?*', route => route.fulfill({
     status: 200, contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' },
     body: JSON.stringify({ success: true, data: { items: catalogo, page: 1, pageSize: 96, totalCount: catalogo.length } })
   }));
-  await page.route('**/tienda/productos/*', route => {
+  await page.route('http://localhost:5005/tienda/productos/*', route => {
     const url = new URL(route.request().url());
     if (route.request().method() === 'POST' && url.pathname.endsWith('/tienda/productos/contexto')) {
       const body = route.request().postDataJSON() as { productoIds?: number[] } | null;

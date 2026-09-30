@@ -69,7 +69,7 @@ function productoReal(precio = 1750, stock = 3) {
 
 async function mockCatalogoReal(page: Page, precio = 1750, stock = 3): Promise<void> {
   const producto = productoReal(precio, stock);
-  await page.route('**/tienda/productos?*', async route => {
+  await page.route('http://localhost:5005/tienda/productos?*', async route => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -77,7 +77,7 @@ async function mockCatalogoReal(page: Page, precio = 1750, stock = 3): Promise<v
       body: JSON.stringify({ success: true, data: { items: [producto], page: 1, pageSize: 96, totalCount: 1 } })
     });
   });
-  await page.route('**/tienda/productos/contexto', async route => {
+  await page.route('http://localhost:5005/tienda/productos/contexto', async route => {
     const body = route.request().postDataJSON() as { productoIds?: number[] } | null;
     const ids = new Set(Array.isArray(body?.productoIds) ? body!.productoIds : []);
     await route.fulfill({
@@ -90,7 +90,7 @@ async function mockCatalogoReal(page: Page, precio = 1750, stock = 3): Promise<v
 }
 
 async function mockCheckoutValido(page: Page, total = 4200): Promise<void> {
-  await page.route('**/tienda/checkout/validar', async route => {
+  await page.route('http://localhost:5005/tienda/checkout/validar', async route => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -192,7 +192,7 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
 
     await sembrarCarrito(page, 'bd', `variante:${varianteId}`, productoId, 1);
     let requestContexto: unknown = null;
-    await page.route('**/tienda/productos/contexto', route => {
+    await page.route('http://localhost:5005/tienda/productos/contexto', route => {
       requestContexto = route.request().postDataJSON();
       return route.fulfill({
         status: 200,
@@ -203,7 +203,7 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
     });
 
     let requestCheckout: unknown = null;
-    await page.route('**/tienda/checkout/validar', route => {
+    await page.route('http://localhost:5005/tienda/checkout/validar', route => {
       requestCheckout = route.request().postDataJSON();
       return route.fulfill({
         status: 200,
@@ -275,7 +275,7 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
     await mockCatalogoReal(page, 1750, 3);
 
     let requestCheckout: unknown = null;
-    await page.route('**/tienda/checkout/validar', async route => {
+    await page.route('http://localhost:5005/tienda/checkout/validar', async route => {
       requestCheckout = route.request().postDataJSON();
       await route.fulfill({
         status: 200,
@@ -415,7 +415,7 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
     await prepararEmpresa(page);
     await sembrarCarrito(page, 'bd', modeloClaveReal, 501, 2);
     await mockCatalogoReal(page, 1750, 3);
-    await page.route('**/tienda/checkout/validar', async route => {
+    await page.route('http://localhost:5005/tienda/checkout/validar', async route => {
       await route.fulfill({
         status: 409,
         contentType: 'application/json',

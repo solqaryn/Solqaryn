@@ -100,7 +100,7 @@ async function prepararBase(page: Page): Promise<void> {
     body: JSON.stringify({ success: true, data: empresa })
   }));
 
-  await page.route('**/tienda/productos?*', route => route.fulfill({
+  await page.route('http://localhost:5005/tienda/productos?*', route => route.fulfill({
     status: 200,
     contentType: 'application/json',
     headers: { 'Access-Control-Allow-Origin': '*' },
@@ -110,14 +110,14 @@ async function prepararBase(page: Page): Promise<void> {
     })
   }));
 
-  await page.route('**/tienda/productos/destacados*', route => route.fulfill({
+  await page.route('http://localhost:5005/tienda/productos/destacados*', route => route.fulfill({
     status: 200,
     contentType: 'application/json',
     headers: { 'Access-Control-Allow-Origin': '*' },
     body: JSON.stringify({ success: true, data: [producto] })
   }));
 
-  await page.route('**/tienda/productos/contexto', route => {
+  await page.route('http://localhost:5005/tienda/productos/contexto', route => {
     const body = route.request().postDataJSON() as { productoIds?: number[] } | null;
     const ids = new Set(Array.isArray(body?.productoIds) ? body!.productoIds : []);
     return route.fulfill({
@@ -128,7 +128,7 @@ async function prepararBase(page: Page): Promise<void> {
     });
   });
 
-  await page.route('**/tienda/categorias', route => route.fulfill({
+  await page.route('http://localhost:5005/tienda/categorias', route => route.fulfill({
     status: 200,
     contentType: 'application/json',
     headers: { 'Access-Control-Allow-Origin': '*' },
@@ -151,7 +151,7 @@ async function prepararCuentaAutenticada(
     return ok;
   };
 
-  await page.route('**/tienda/cuenta', route => {
+  await page.route('http://localhost:5005/tienda/cuenta', route => {
     if (!autorizado(route.request())) return route.fulfill({ status: 401, contentType: 'application/json', body: JSON.stringify({ success: false, message: 'No autorizado' }) });
     return route.fulfill({
       status: 200,
@@ -160,7 +160,7 @@ async function prepararCuentaAutenticada(
     });
   });
 
-  await page.route('**/tienda/cuenta/direcciones', route => {
+  await page.route('http://localhost:5005/tienda/cuenta/direcciones', route => {
     if (!autorizado(route.request())) return route.fulfill({ status: 401, contentType: 'application/json', body: JSON.stringify({ success: false }) });
     return route.fulfill({
       status: 200,
@@ -172,17 +172,17 @@ async function prepararCuentaAutenticada(
     });
   });
 
-  await page.route('**/tienda/cuenta/favoritos', route => {
+  await page.route('http://localhost:5005/tienda/cuenta/favoritos', route => {
     if (!autorizado(route.request())) return route.fulfill({ status: 401, contentType: 'application/json', body: JSON.stringify({ success: false }) });
     return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, data: [11] }) });
   });
 
-  await page.route('**/tienda/cuenta/pedidos', route => {
+  await page.route('http://localhost:5005/tienda/cuenta/pedidos', route => {
     if (!autorizado(route.request())) return route.fulfill({ status: 401, contentType: 'application/json', body: JSON.stringify({ success: false }) });
     return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, data: pedidosMock }) });
   });
 
-  await page.route('**/tienda/cuenta/notificaciones', route => {
+  await page.route('http://localhost:5005/tienda/cuenta/notificaciones', route => {
     if (!autorizado(route.request())) return route.fulfill({ status: 401, contentType: 'application/json', body: JSON.stringify({ success: false }) });
     return route.fulfill({
       status: 200,
@@ -198,7 +198,7 @@ test.describe('Storefront Fase 12 — cuenta de cliente y evolución', () => {
   test('checkout y catálogo siguen disponibles sin cuenta', async ({ page }) => {
     await prepararBase(page);
     let llamadasCuenta = 0;
-    await page.route('**/tienda/cuenta**', route => {
+    await page.route('http://localhost:5005/tienda/cuenta**', route => {
       llamadasCuenta += 1;
       return route.fulfill({ status: 500, contentType: 'application/json', body: '{}' });
     });
@@ -217,7 +217,7 @@ test.describe('Storefront Fase 12 — cuenta de cliente y evolución', () => {
   test('crear cuenta es opcional y guarda la sesión solo en sessionStorage', async ({ page }) => {
     await prepararBase(page);
 
-    await page.route('**/tienda/cuenta/registrar', route => route.fulfill({
+    await page.route('http://localhost:5005/tienda/cuenta/registrar', route => route.fulfill({
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({
@@ -229,10 +229,10 @@ test.describe('Storefront Fase 12 — cuenta de cliente y evolución', () => {
         }
       })
     }));
-    await page.route('**/tienda/cuenta/direcciones', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, data: [] }) }));
-    await page.route('**/tienda/cuenta/favoritos', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, data: [] }) }));
-    await page.route('**/tienda/cuenta/pedidos', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, data: [] }) }));
-    await page.route('**/tienda/cuenta/notificaciones', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, data: [] }) }));
+    await page.route('http://localhost:5005/tienda/cuenta/direcciones', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, data: [] }) }));
+    await page.route('http://localhost:5005/tienda/cuenta/favoritos', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, data: [] }) }));
+    await page.route('http://localhost:5005/tienda/cuenta/pedidos', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, data: [] }) }));
+    await page.route('http://localhost:5005/tienda/cuenta/notificaciones', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, data: [] }) }));
 
     await page.goto('/tienda/cuenta');
     await expect(page.getByText('La cuenta es opcional.', { exact: false })).toBeVisible();

@@ -87,25 +87,25 @@ async function preparar(page: Page): Promise<void> {
 }
 
 async function mockCatalogoReal(page: Page): Promise<void> {
-  await page.route('**/tienda/productos?*', route => route.fulfill({
+  await page.route('http://localhost:5005/tienda/productos?*', route => route.fulfill({
     status: 200,
     contentType: 'application/json',
     headers: { 'Access-Control-Allow-Origin': '*' },
     body: JSON.stringify({ success: true, data: { items: [producto], page: 1, pageSize: 96, totalCount: 1 } })
   }));
-  await page.route('**/tienda/productos/*', route => route.fulfill({
+  await page.route('http://localhost:5005/tienda/productos/*', route => route.fulfill({
     status: 200,
     contentType: 'application/json',
     headers: { 'Access-Control-Allow-Origin': '*' },
     body: JSON.stringify({ success: true, data: producto })
   }));
-  await page.route('**/tienda/categorias', route => route.fulfill({
+  await page.route('http://localhost:5005/tienda/categorias', route => route.fulfill({
     status: 200,
     contentType: 'application/json',
     headers: { 'Access-Control-Allow-Origin': '*' },
     body: JSON.stringify({ success: true, data: [categoria] })
   }));
-  await page.route('**/tienda/categorias/*', route => route.fulfill({
+  await page.route('http://localhost:5005/tienda/categorias/*', route => route.fulfill({
     status: 200,
     contentType: 'application/json',
     headers: { 'Access-Control-Allow-Origin': '*' },

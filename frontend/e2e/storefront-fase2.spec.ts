@@ -32,7 +32,7 @@ async function prepararEmpresa(page: Page): Promise<void> {
 }
 
 async function mockCatalogoVacio(page: Page): Promise<void> {
-  await page.route('**/tienda/productos?*', async route => {
+  await page.route('http://localhost:5005/tienda/productos?*', async route => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -69,7 +69,7 @@ async function mockCatalogoCategoria(page: Page): Promise<void> {
     producto(701, 'Audífonos de categoría', 21, 'Audio y Vídeo'),
     producto(702, 'Laptop de otra categoría', 22, 'Computadoras')
   ];
-  await page.route('**/tienda/productos?*', async route => {
+  await page.route('http://localhost:5005/tienda/productos?*', async route => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -117,7 +117,7 @@ test.describe('Storefront Fase 2 — categorías públicas', () => {
   test('fuente real consume CategoriaTienda y conserva conteo desconocido como desconocido', async ({ page }) => {
     await prepararEmpresa(page);
     await mockCatalogoVacio(page);
-    await page.route('**/tienda/categorias', async route => {
+    await page.route('http://localhost:5005/tienda/categorias', async route => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -150,7 +150,7 @@ test.describe('Storefront Fase 2 — categorías públicas', () => {
   test('entrar a una categoría muestra sus productos relacionados directamente', async ({ page }) => {
     await prepararEmpresa(page);
     await mockCatalogoCategoria(page);
-    await page.route('**/tienda/categorias/audio-y-video-21', async route => {
+    await page.route('http://localhost:5005/tienda/categorias/audio-y-video-21', async route => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -181,7 +181,7 @@ test.describe('Storefront Fase 2 — categorías públicas', () => {
   test('fuente real vacía representa empty sin fabricar categorías', async ({ page }) => {
     await prepararEmpresa(page);
     await mockCatalogoVacio(page);
-    await page.route('**/tienda/categorias', async route => {
+    await page.route('http://localhost:5005/tienda/categorias', async route => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -201,7 +201,7 @@ test.describe('Storefront Fase 2 — categorías públicas', () => {
   test('error de categorías reales no cae silenciosamente a datos demo', async ({ page }) => {
     await prepararEmpresa(page);
     await mockCatalogoVacio(page);
-    await page.route('**/tienda/categorias', async route => {
+    await page.route('http://localhost:5005/tienda/categorias', async route => {
       await route.fulfill({
         status: 503,
         contentType: 'application/json',
@@ -267,7 +267,7 @@ test.describe('Storefront Fase 2 — categorías públicas', () => {
   test('ruta canónica consume categoría por slug y corrige el prefijo con el slug devuelto por backend', async ({ page }) => {
     await prepararEmpresa(page);
     await mockCatalogoCategoria(page);
-    await page.route('**/tienda/categorias/audio-viejo-21', async route => {
+    await page.route('http://localhost:5005/tienda/categorias/audio-viejo-21', async route => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -278,7 +278,7 @@ test.describe('Storefront Fase 2 — categorías públicas', () => {
         })
       });
     });
-    await page.route('**/tienda/categorias/audio-y-video-21', async route => {
+    await page.route('http://localhost:5005/tienda/categorias/audio-y-video-21', async route => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -310,7 +310,7 @@ test.describe('Storefront Fase 2 — categorías públicas', () => {
   test('categoría inexistente representa not-found y no fabrica un fixture', async ({ page }) => {
     await prepararEmpresa(page);
     await mockCatalogoVacio(page);
-    await page.route('**/tienda/categorias/no-existe', async route => {
+    await page.route('http://localhost:5005/tienda/categorias/no-existe', async route => {
       await route.fulfill({
         status: 404,
         contentType: 'application/json',
@@ -330,7 +330,7 @@ test.describe('Storefront Fase 2 — categorías públicas', () => {
   test('error de categoría por slug mantiene el fallo real sin fallback silencioso', async ({ page }) => {
     await prepararEmpresa(page);
     await mockCatalogoVacio(page);
-    await page.route('**/tienda/categorias/audio-error', async route => {
+    await page.route('http://localhost:5005/tienda/categorias/audio-error', async route => {
       await route.fulfill({
         status: 503,
         contentType: 'application/json',

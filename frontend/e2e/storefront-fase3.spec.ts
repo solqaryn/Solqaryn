@@ -58,7 +58,7 @@ function productoReal(id: number, nombre: string, precio = 1000, categoria = 'Co
 }
 
 async function mockCategoriasReales(page: Page, totalProductos: number | null = null): Promise<void> {
-  await page.route('**/tienda/categorias', async route => {
+  await page.route('http://localhost:5005/tienda/categorias', async route => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -213,7 +213,7 @@ test.describe('Storefront Fase 3 — catálogo público independiente', () => {
     await mockCategoriasReales(page, 97);
     const solicitudes: Array<{ pagina: number; pageSize: number; search: string }> = [];
 
-    await page.route('**/tienda/productos?*', async route => {
+    await page.route('http://localhost:5005/tienda/productos?*', async route => {
       const url = new URL(route.request().url());
       const pagina = Number(url.searchParams.get('page') || '1');
       const pageSize = Number(url.searchParams.get('pageSize') || '12');
@@ -260,7 +260,7 @@ test.describe('Storefront Fase 3 — catálogo público independiente', () => {
 
   test('catálogo real vacío muestra empty y nunca fabrica los catorce fixtures demo', async ({ page }) => {
     await prepararEmpresa(page);
-    await page.route('**/tienda/productos?*', async route => {
+    await page.route('http://localhost:5005/tienda/productos?*', async route => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -268,7 +268,7 @@ test.describe('Storefront Fase 3 — catálogo público independiente', () => {
         body: JSON.stringify({ success: true, data: { items: [], page: 1, pageSize: 96, totalCount: 0 } })
       });
     });
-    await page.route('**/tienda/categorias', async route => {
+    await page.route('http://localhost:5005/tienda/categorias', async route => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -286,7 +286,7 @@ test.describe('Storefront Fase 3 — catálogo público independiente', () => {
 
   test('error del catálogo real permanece visible y no cae silenciosamente a datos demo', async ({ page }) => {
     await prepararEmpresa(page);
-    await page.route('**/tienda/productos?*', async route => {
+    await page.route('http://localhost:5005/tienda/productos?*', async route => {
       await route.fulfill({
         status: 503,
         contentType: 'application/json',
@@ -294,7 +294,7 @@ test.describe('Storefront Fase 3 — catálogo público independiente', () => {
         body: JSON.stringify({ success: false, message: 'Servicio no disponible' })
       });
     });
-    await page.route('**/tienda/categorias', async route => {
+    await page.route('http://localhost:5005/tienda/categorias', async route => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -315,7 +315,7 @@ test.describe('Storefront Fase 3 — catálogo público independiente', () => {
 
   test('fallo de categorías reales no inventa categorías y mantiene disponible el catálogo recibido', async ({ page }) => {
     await prepararEmpresa(page);
-    await page.route('**/tienda/productos?*', async route => {
+    await page.route('http://localhost:5005/tienda/productos?*', async route => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -323,7 +323,7 @@ test.describe('Storefront Fase 3 — catálogo público independiente', () => {
         body: JSON.stringify({ success: true, data: { items: [productoReal(501, 'Producto independiente')], page: 1, pageSize: 96, totalCount: 1 } })
       });
     });
-    await page.route('**/tienda/categorias', async route => {
+    await page.route('http://localhost:5005/tienda/categorias', async route => {
       await route.fulfill({
         status: 503,
         contentType: 'application/json',

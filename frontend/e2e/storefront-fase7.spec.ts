@@ -65,7 +65,7 @@ test.describe('Storefront Fase 7 — home comercial', () => {
       if (/\/tienda\/productos\/destacados(?:\?|$)/.test(url)) requests.destacados += 1;
     });
 
-    await page.route('**/tienda/bootstrap', async route => {
+    await page.route('http://localhost:5005/tienda/bootstrap', async route => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -168,7 +168,7 @@ test.describe('Storefront Fase 7 — home comercial', () => {
       if (/\/tienda\/productos(?:\?|$)/.test(request.url())) solicitudesCatalogoCompleto += 1;
       if (/\/tienda\/productos\/destacados(?:\?|$)/.test(request.url())) solicitudesDestacados += 1;
     });
-    await page.route('**/tienda/categorias', async route => {
+    await page.route('http://localhost:5005/tienda/categorias', async route => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -182,7 +182,7 @@ test.describe('Storefront Fase 7 — home comercial', () => {
         })
       });
     });
-    await page.route('**/tienda/productos/destacados?*', async route => {
+    await page.route('http://localhost:5005/tienda/productos/destacados?*', async route => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -239,7 +239,7 @@ test.describe('Storefront Fase 7 — home comercial', () => {
 
   test('fuente real sin destacados mantiene fallback comercial honesto', async ({ page }) => {
     await prepararEmpresa(page);
-    await page.route('**/tienda/categorias', async route => {
+    await page.route('http://localhost:5005/tienda/categorias', async route => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -247,7 +247,7 @@ test.describe('Storefront Fase 7 — home comercial', () => {
         body: JSON.stringify({ success: true, data: [] })
       });
     });
-    await page.route('**/tienda/productos/destacados?*', async route => {
+    await page.route('http://localhost:5005/tienda/productos/destacados?*', async route => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -265,7 +265,7 @@ test.describe('Storefront Fase 7 — home comercial', () => {
   });
   test('error de categorías reales permanece visible y nunca cae silenciosamente a demo', async ({ page }) => {
     await prepararEmpresa(page);
-    await page.route('**/tienda/categorias', async route => {
+    await page.route('http://localhost:5005/tienda/categorias', async route => {
       await route.fulfill({
         status: 503,
         contentType: 'application/json',
@@ -273,7 +273,7 @@ test.describe('Storefront Fase 7 — home comercial', () => {
         body: JSON.stringify({ success: false, message: 'Servicio no disponible' })
       });
     });
-    await page.route('**/tienda/productos/destacados?*', async route => {
+    await page.route('http://localhost:5005/tienda/productos/destacados?*', async route => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',

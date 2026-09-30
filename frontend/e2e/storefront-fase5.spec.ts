@@ -63,7 +63,7 @@ function productoReal(precio = 1750, stock = 3) {
 
 async function mockCatalogoReal(page: Page, precio = 1750, stock = 3): Promise<void> {
   const producto = productoReal(precio, stock);
-  await page.route('**/tienda/productos?*', async route => {
+  await page.route('http://localhost:5005/tienda/productos?*', async route => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -71,7 +71,7 @@ async function mockCatalogoReal(page: Page, precio = 1750, stock = 3): Promise<v
       body: JSON.stringify({ success: true, data: { items: [producto], page: 1, pageSize: 96, totalCount: 1 } })
     });
   });
-  await page.route('**/tienda/productos/contexto', async route => {
+  await page.route('http://localhost:5005/tienda/productos/contexto', async route => {
     const body = route.request().postDataJSON() as { productoIds?: number[] } | null;
     const ids = new Set(Array.isArray(body?.productoIds) ? body!.productoIds : []);
     await route.fulfill({
@@ -81,7 +81,7 @@ async function mockCatalogoReal(page: Page, precio = 1750, stock = 3): Promise<v
       body: JSON.stringify({ success: true, data: ids.has(producto.id) ? [producto] : [] })
     });
   });
-  await page.route('**/tienda/categorias', async route => {
+  await page.route('http://localhost:5005/tienda/categorias', async route => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',

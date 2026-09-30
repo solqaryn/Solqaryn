@@ -97,7 +97,7 @@ async function mockFuenteReal(
   catalogo: ReturnType<typeof productoReal>[] = [producto],
   detalleStatus = 200
 ): Promise<void> {
-  await page.route('**/tienda/productos?*', async route => {
+  await page.route('http://localhost:5005/tienda/productos?*', async route => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -106,7 +106,7 @@ async function mockFuenteReal(
     });
   });
 
-  await page.route('**/tienda/productos/*', async route => {
+  await page.route('http://localhost:5005/tienda/productos/*', async route => {
     const url = new URL(route.request().url());
     if (route.request().method() === 'POST' && url.pathname.endsWith('/tienda/productos/contexto')) {
       const body = route.request().postDataJSON() as { productoIds?: number[] } | null;
@@ -136,7 +136,7 @@ async function mockFuenteReal(
     });
   });
 
-  await page.route('**/tienda/categorias', async route => {
+  await page.route('http://localhost:5005/tienda/categorias', async route => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
