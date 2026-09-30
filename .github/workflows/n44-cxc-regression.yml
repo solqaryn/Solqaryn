@@ -5,7 +5,7 @@ on:
     branches: [dev]
     paths:
       - 'backend/src/API/Controllers/CuentasPorCobrarController.cs'
-      - 'backend/tests/InventoryApp.Tests/API/Controllers/CuentasPorCobrarControllerTests.cs'
+      - 'backend/tests/Solqaryn.Tests/API/Controllers/CuentasPorCobrarControllerTests.cs'
       - 'frontend/src/app/features/cuentas-por-cobrar/**'
       - 'frontend/src/app/services/factura.service.ts'
       - '.github/workflows/n44-cxc-regression.yml'
@@ -13,7 +13,7 @@ on:
     branches: [main]
     paths:
       - 'backend/src/API/Controllers/CuentasPorCobrarController.cs'
-      - 'backend/tests/InventoryApp.Tests/API/Controllers/CuentasPorCobrarControllerTests.cs'
+      - 'backend/tests/Solqaryn.Tests/API/Controllers/CuentasPorCobrarControllerTests.cs'
       - 'frontend/src/app/features/cuentas-por-cobrar/**'
       - 'frontend/src/app/services/factura.service.ts'
       - '.github/workflows/n44-cxc-regression.yml'
@@ -30,9 +30,9 @@ jobs:
         with:
           dotnet-version: '8.0.x'
       - name: Restore backend tests
-        run: dotnet restore backend/tests/InventoryApp.Tests/InventoryApp.Tests.csproj
+        run: dotnet restore backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj
       - name: Run CxC API and RBAC regression
-        run: dotnet test backend/tests/InventoryApp.Tests/InventoryApp.Tests.csproj --no-restore --configuration Release --filter "FullyQualifiedName~CuentasPorCobrarControllerTests"
+        run: dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj --no-restore --configuration Release --filter "FullyQualifiedName~CuentasPorCobrarControllerTests"
 
   frontend-cxc:
     runs-on: ubuntu-latest
