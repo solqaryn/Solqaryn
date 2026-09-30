@@ -5,6 +5,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, Subscription, map, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { cloudinaryResponsiveSrcset, cloudinaryResponsiveUrl } from '../../shared/cloudinary-image.util';
 import { VaristorehnIdentidadService } from './varistorehn-identidad.service';
 import { CategoriaTienda, ModeloTienda, ProductoTienda, crearCatalogoEjemplo, etiquetaDisponibilidad, mapearProducto, mapearProductoResumen, precioVenta } from './varistorehn.catalog';
 import { VaristorehnCarritoService } from './varistorehn-carrito.service';
@@ -26,6 +27,13 @@ import { IconoTiendaComponent, IlustracionTiendaComponent } from './varistorehn.
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class VaristorehnCategoriaComponent implements OnInit {
+  imagenCloudinary(url: string | null | undefined, width = 800): string {
+    return cloudinaryResponsiveUrl(url, width);
+  }
+  srcsetCloudinary(url: string | null | undefined): string | null {
+    return cloudinaryResponsiveSrcset(url);
+  }
+
   private readonly servicio = inject(VaristorehnService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
