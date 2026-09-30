@@ -53,8 +53,8 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p docs/evidencias
-          cp frontend/dist/inventoryapp-frontend/performance-bundle-baseline.json docs/evidencias/DEV_PUNTO_8_BUNDLE_BASELINE.json
-          cp frontend/dist/inventoryapp-frontend/angular-stats-summary.json docs/evidencias/DEV_PUNTO_8_ANGULAR_STATS_SUMMARY.json
+          cp frontend/dist/solqaryn-frontend/performance-bundle-baseline.json docs/evidencias/DEV_PUNTO_8_BUNDLE_BASELINE.json
+          cp frontend/dist/solqaryn-frontend/angular-stats-summary.json docs/evidencias/DEV_PUNTO_8_ANGULAR_STATS_SUMMARY.json
           git config user.name "solqaryn-actions"
           git config user.email "actions@users.noreply.github.com"
           git add docs/evidencias/DEV_PUNTO_8_BUNDLE_BASELINE.json docs/evidencias/DEV_PUNTO_8_ANGULAR_STATS_SUMMARY.json
@@ -71,8 +71,8 @@ jobs:
         with:
           name: punto-8-angular-bundle
           path: |
-            frontend/dist/inventoryapp-frontend/**/stats.json
-            frontend/dist/inventoryapp-frontend/performance-bundle-baseline.json
-            frontend/dist/inventoryapp-frontend/angular-stats-summary.json
+            frontend/dist/solqaryn-frontend/**/stats.json
+            frontend/dist/solqaryn-frontend/performance-bundle-baseline.json
+            frontend/dist/solqaryn-frontend/angular-stats-summary.json
           if-no-files-found: warn
           retention-days: 7
