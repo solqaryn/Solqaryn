@@ -1,5 +1,15 @@
 # Baseline de rendimiento DEV — SOLQARYN
 
+## Punto 10 — Render Free y cold start (2026-09-29)
+
+Readback vivo: tanto `solqaryn-api-dev` como `solqaryn-api-prod` continúan en plan `free`. No existe keep-alive artificial en el repositorio y se añadió `scripts/validate-render-free-policy.mjs` al Scope Lock para rechazar cron/pings a `*.onrender.com`.
+
+Evidencia DEV separa claramente instancia fría de aplicación caliente: bootstrap **3371.5 ms / 3 queries / 130.6 ms DB** y **2608.6 ms / 4 queries / 89.1 ms DB**, seguidos por **13.5 ms / 0 queries** y **1.7 ms / 0 queries**. Esto no respalda sobredimensionar CPU/RAM; respalda tratar Render Free como entorno con cold start.
+
+DEV puede seguir Free aceptando warm-up antes de benchmarks. PROD permanece Free por la regla de cero compras y, por tanto, no se declara backend comercial always-on. Cualquier transición futura requiere autorización explícita de gasto y dimensionamiento basado en métricas.
+
+Evidencia: `docs/evidencias/DEV_ANALISIS_PUNTO_10_RENDER_FREE_ALWAYS_ON_2026-09-29.md`.
+
 ## Punto 9 — Aiven y topología después de reducir queries (2026-09-29)
 
 La decisión de topología ya se toma después de reducir round trips: el listado público pasó de 7 a **5 queries por miss**, mientras los hits de cache pública operan con **0 queries**. Las pasadas calientes DEV del read-model ligero quedaron en **216.5–254.1 ms** totales con **107.5–112.3 ms DB**.
