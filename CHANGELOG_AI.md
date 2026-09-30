@@ -1,3 +1,11 @@
+## 2026-09-30 — Recreación controlada de SOLQARYN VAEP Primary :24
+
+- La tarea `SOLQARYN VAEP Primary :24` fue eliminada accidentalmente desde la cuenta de Javier y recreada con el mismo horario `:24`, mismo responsable operativo, mismo contrato VAEP y estado PAUSADO.
+- Nuevo ID canónico de Primary :24: `6abd70e42cb4819190b3b28916dc9dbb`.
+- Se actualizó el Sheet operativo y las autoridades canónicas actuales para sustituir el ID retirado `6aa153545c5c819199047566bda1cdac`.
+- Las cinco Primary de Javier permanecen pausadas; no se activó ninguna automatización.
+- La Supervisor :29 de Alex debe releer/actualizar su `PRIMARY_PAIR_ID` al nuevo ID antes de declarar certificación runtime 10/10 definitiva.
+
 ## 2026-09-30 — Reparto operativo VAEP Javier/Alex y sustitución de Supervisor canónicas
 
 - Workspace ChatGPT Business: `SOLQARYN`, con dos miembros humanos: Javier Mejía y Alex Morales.
