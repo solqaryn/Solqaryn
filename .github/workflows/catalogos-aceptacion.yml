@@ -20,7 +20,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: desarrollo-aceptacion-${{ github.workflow }}-${{ github.ref }}
+  group: dev-aceptacion-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -34,7 +34,7 @@ jobs:
         image: mysql:8.4
         env:
           MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: inventoryapp_catalogos_e2e
+          MYSQL_DATABASE: solqaryn_catalogos_e2e
         ports:
           - 3306:3306
         options: >-
@@ -46,12 +46,12 @@ jobs:
     env:
       ASPNETCORE_ENVIRONMENT: Development
       PORT: '5005'
-      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=inventoryapp_catalogos_e2e;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_catalogos_e2e;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
       Database__ServerVersion: '8.4.0'
       Database__ApplyMigrationsOnStartup: 'true'
       Jwt__Secret: 'Catalogos-E2E-Only-Secret-With-More-Than-32-Characters-2026'
-      Jwt__Issuer: 'InventoryApp.API'
-      Jwt__Audience: 'InventoryApp.Frontend'
+      Jwt__Issuer: 'Solqaryn.API'
+      Jwt__Audience: 'Solqaryn.Frontend'
       Jwt__ExpiraMinutos: '120'
       Security__LoginRateLimitPerMinute: '300'
       SeedAdmin__Username: 'e2e_admin'
@@ -71,8 +71,8 @@ jobs:
       Smtp__UsuarioSmtp: 'smtp-user'
       Smtp__UsarSsl: 'false'
       Smtp__RequiereAutenticacion: 'false'
-      Smtp__CorreoRemitente: 'facturas@desarrollo.test'
-      Smtp__CorreoRespuesta: 'soporte@desarrollo.test'
+      Smtp__CorreoRemitente: 'facturas@dev.test'
+      Smtp__CorreoRespuesta: 'soporte@dev.test'
       Smtp__NombreRemitente: 'Solqaryn E2E'
       Smtp__TimeoutSeconds: '10'
       Smtp__MaxAttempts: '3'
@@ -104,8 +104,8 @@ jobs:
       - name: Restaurar y compilar backend
         working-directory: backend
         run: |
-          dotnet restore InventoryApp.sln
-          dotnet build InventoryApp.sln --configuration Release --no-restore
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
 
       - name: Iniciar SMTP efímero con captura
         shell: bash
@@ -131,7 +131,7 @@ jobs:
         run: |
           set -euo pipefail
           nohup dotnet run \
-            --project src/API/InventoryApp.API.csproj \
+            --project src/API/Solqaryn.API.csproj \
             --configuration Release \
             --no-build \
             --no-launch-profile \
@@ -164,7 +164,7 @@ jobs:
             exit 1
           fi
 
-          docker exec -i "$mysql_container" mysql -uroot -proot inventoryapp_catalogos_e2e <<'SQL'
+          docker exec -i "$mysql_container" mysql -uroot -proot solqaryn_catalogos_e2e <<'SQL'
           INSERT INTO `Empresas` (`Id`,`Nombre`,`Activa`,`FechaCreacion`,`FechaActualizacion`)
           VALUES (1,'Empresa E2E Acceptance',TRUE,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6))
           ON DUPLICATE KEY UPDATE
@@ -208,13 +208,13 @@ jobs:
             );
           SQL
 
-          membership_count="$(docker exec "$mysql_container" mysql -uroot -proot inventoryapp_catalogos_e2e -Nse "SELECT COUNT(*) FROM UsuarioEmpresas ue INNER JOIN Usuarios u ON u.Id=ue.UsuarioId INNER JOIN Empresas e ON e.Id=ue.EmpresaId WHERE u.NombreUsuario='e2e_admin' AND e.Id=1 AND e.Activa=TRUE AND ue.Activa=TRUE;")"
+          membership_count="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_catalogos_e2e -Nse "SELECT COUNT(*) FROM UsuarioEmpresas ue INNER JOIN Usuarios u ON u.Id=ue.UsuarioId INNER JOIN Empresas e ON e.Id=ue.EmpresaId WHERE u.NombreUsuario='e2e_admin' AND e.Id=1 AND e.Activa=TRUE AND ue.Activa=TRUE;")"
           if [[ "$membership_count" != '1' ]]; then
             echo "La membresía tenant E2E del SeedAdmin no quedó materializada: count=$membership_count" >&2
             exit 1
           fi
 
-          subscription_count="$(docker exec "$mysql_container" mysql -uroot -proot inventoryapp_catalogos_e2e -Nse "SELECT COUNT(*) FROM Suscripciones WHERE EmpresaId=1 AND Estado=1 AND InicioUtc <= UTC_TIMESTAMP(6) AND (FinUtc IS NULL OR FinUtc > UTC_TIMESTAMP(6));")"
+          subscription_count="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_catalogos_e2e -Nse "SELECT COUNT(*) FROM Suscripciones WHERE EmpresaId=1 AND Estado=1 AND InicioUtc <= UTC_TIMESTAMP(6) AND (FinUtc IS NULL OR FinUtc > UTC_TIMESTAMP(6));")"
           if [[ "$subscription_count" != '1' ]]; then
             echo "La suscripción SaaS activa del tenant E2E no quedó materializada: count=$subscription_count" >&2
             exit 1
@@ -312,7 +312,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: desarrollo-aceptacion-integral
+          name: dev-aceptacion-integral
           path: |
             backend/catalogos-api.log
             frontend/catalogos-frontend.log
