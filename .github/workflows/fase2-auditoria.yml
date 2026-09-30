@@ -95,14 +95,14 @@ jobs:
 
       - name: Restaurar
         working-directory: backend
-        run: dotnet restore InventoryApp.sln
+        run: dotnet restore Solqaryn.sln
 
       - name: Auditar paquetes vulnerables
         working-directory: backend
         shell: bash
         run: |
           set -euo pipefail
-          dotnet list InventoryApp.sln package --vulnerable --include-transitive | tee dotnet-vulnerabilities.txt
+          dotnet list Solqaryn.sln package --vulnerable --include-transitive | tee dotnet-vulnerabilities.txt
           if grep -q 'has the following vulnerable packages' dotnet-vulnerabilities.txt; then
             echo 'Se detectaron paquetes .NET vulnerables.' >&2
             exit 1
