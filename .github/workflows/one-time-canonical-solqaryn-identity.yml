@@ -1,0 +1,88 @@
+name: one-time-canonical-solqaryn-identity
+
+on:
+  push:
+    branches:
+      - cleanup/canonical-solqaryn-identity-20260930
+
+permissions:
+  contents: write
+
+jobs:
+  canonicalize:
+    if: ${{ !startsWith(github.event.head_commit.message, 'refactor(identity): canonicalize SOLQARYN identifiers') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout exact branch head
+        uses: actions/checkout@v4
+        with:
+          ref: cleanup/canonical-solqaryn-identity-20260930
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Apply canonical SOLQARYN identity refactor
+        run: node scripts/one-time-canonicalize-solqaryn.mjs
+
+      - name: Verify no retired identifiers remain in operational code
+        shell: bash
+        run: |
+          set -euo pipefail
+          roots=(backend frontend scripts .github/workflows .github/scripts .githooks .agents)
+          pattern='inventoryapp|inventoryapi|variapp|varistore|jmejia31|javiermejia3112@gmail\.com|\bDesarrollo\b'
+          if find "${roots[@]}" \( -type f -o -type d \) | grep -Eis "$pattern"; then
+            echo "Retired identifier remains in an operational path."
+            exit 1
+          fi
+          if grep -RInEis "$pattern" "${roots[@]}" Dockerfile render.yaml .dockerignore .gitignore README.md PROJECT_INDEX.md ARCHITECTURE.md 2>/dev/null; then
+            echo "Retired identifier remains in operational content."
+            exit 1
+          fi
+
+      - name: Project scope gate
+        run: node scripts/verify-project-scope.mjs
+
+      - name: Restore backend
+        run: dotnet restore backend/Solqaryn.sln
+
+      - name: Build backend
+        run: dotnet build backend/Solqaryn.sln --configuration Release --no-restore
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build:prod
+
+      - name: Frontend quality gates
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Diff integrity
+        run: git diff --check
+
+      - name: Commit validated refactor
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "SOLQARYN Automation"
+          git config user.email "solqaryn.platform@outlook.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "refactor(identity): canonicalize SOLQARYN identifiers"
+          git push origin HEAD:cleanup/canonical-solqaryn-identity-20260930
