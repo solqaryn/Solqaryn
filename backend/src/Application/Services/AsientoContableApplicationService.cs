@@ -1,8 +1,8 @@
-using InventoryApp.Application.DTOs.Contabilidad;
-using InventoryApp.Application.Exceptions;
-using InventoryApp.Domain.Entities.Contabilidad;
+using Solqaryn.Application.DTOs.Contabilidad;
+using Solqaryn.Application.Exceptions;
+using Solqaryn.Domain.Entities.Contabilidad;
 
-namespace InventoryApp.Application.Services;
+namespace Solqaryn.Application.Services;
 
 public static class AsientoContableApplicationService
 {

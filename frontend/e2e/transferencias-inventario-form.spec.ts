@@ -3,11 +3,11 @@ import { test, expect } from '@playwright/test';
 test.describe('Transferencias de inventario - formulario', () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
-      localStorage.setItem('inventoryapp_token', 'e2e-token-transferencias-form');
-      localStorage.setItem('inventoryapp_user', 'admin-e2e');
-      localStorage.setItem('inventoryapp_nombre_completo', 'Admin E2E');
-      localStorage.setItem('inventoryapp_rol', 'Administrador');
-      localStorage.setItem('inventoryapp_expira_en', '2099-12-31T23:59:59Z');
+      localStorage.setItem('solqaryn_token', 'e2e-token-transferencias-form');
+      localStorage.setItem('solqaryn_user', 'admin-e2e');
+      localStorage.setItem('solqaryn_nombre_completo', 'Admin E2E');
+      localStorage.setItem('solqaryn_rol', 'Administrador');
+      localStorage.setItem('solqaryn_expira_en', '2099-12-31T23:59:59Z');
     });
 
     await page.route('**/permisos/mis-permisos/empresa/*', route => route.fulfill({
@@ -56,7 +56,7 @@ test.describe('Transferencias de inventario - formulario', () => {
           items: [{
             id: 7,
             nombre: 'Funda Premium',
-            marca: 'VariStore',
+            marca: 'Storefront',
             modelo: 'S24',
             cantidad: 10,
             costo: 100,
@@ -78,7 +78,7 @@ test.describe('Transferencias de inventario - formulario', () => {
               id: 77,
               productoId: 7,
               productoNombre: 'Funda Premium',
-              marcaNombre: 'VariStore',
+              marcaNombre: 'Storefront',
               modeloNombre: 'S24',
               colorNombre: 'Negro',
               tallaNombre: 'Única',

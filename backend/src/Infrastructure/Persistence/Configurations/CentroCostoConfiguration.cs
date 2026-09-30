@@ -1,8 +1,8 @@
-using InventoryApp.Domain.Entities.Contabilidad;
+using Solqaryn.Domain.Entities.Contabilidad;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace InventoryApp.Infrastructure.Persistence.Configurations;
+namespace Solqaryn.Infrastructure.Persistence.Configurations;
 
 /// <summary>
 /// N4.11.C — persistencia canónica de centros de costo.

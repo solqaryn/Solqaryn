@@ -1,10 +1,10 @@
-using InventoryApp.Infrastructure.Persistence;
+using Solqaryn.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace InventoryApp.Infrastructure.Migrations;
+namespace Solqaryn.Infrastructure.Migrations;
 
 /// <summary>
 /// N6.2.C: establece la FK de ownership tenant-aware sin asignar una Empresa arbitraria.

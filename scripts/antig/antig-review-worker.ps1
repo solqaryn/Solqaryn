@@ -6,7 +6,7 @@ param(
     [switch]$ContractSelfTest,
     [int]$PollSeconds = 60,
     [string]$Repository = "solqaryn/Solqaryn",
-    [string]$Branch = "Desarrollo"
+    [string]$Branch = "dev"
 )
 
 $ErrorActionPreference = "Stop"
@@ -30,7 +30,7 @@ function Write-AntiGReservedState {
     Write-Host "ANTIG_FUTURE_REINCORPORATION=$script:AntiGFutureReincorporation"
 }
 
-if ($Repository -ne "solqaryn/Solqaryn" -or $Branch -ne "Desarrollo") {
+if ($Repository -ne "solqaryn/Solqaryn" -or $Branch -ne "dev") {
     throw "PROJECT GUARD: unauthorized repository/branch."
 }
 

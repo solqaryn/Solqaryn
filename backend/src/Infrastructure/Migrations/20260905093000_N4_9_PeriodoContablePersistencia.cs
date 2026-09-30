@@ -1,12 +1,12 @@
 using System;
-using InventoryApp.Infrastructure.Persistence;
+using Solqaryn.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Metadata;
 
 #nullable disable
 
-namespace InventoryApp.Infrastructure.Migrations;
+namespace Solqaryn.Infrastructure.Migrations;
 
 [DbContext(typeof(AppDbContext))]
 [Migration("20260905093000_N4_9_PeriodoContablePersistencia")]

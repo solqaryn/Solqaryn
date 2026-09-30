@@ -1,7 +1,7 @@
-using InventoryApp.Domain.Common;
-using InventoryApp.Domain.Entities;
+using Solqaryn.Domain.Common;
+using Solqaryn.Domain.Entities;
 
-namespace InventoryApp.Domain.Entities.Contabilidad;
+namespace Solqaryn.Domain.Entities.Contabilidad;
 
 /// <summary>
 /// Clasificación funcional de un centro de costo. Solo Sucursal tiene hoy un

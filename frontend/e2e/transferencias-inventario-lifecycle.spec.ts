@@ -54,11 +54,11 @@ async function confirmarAlerta(page: import('@playwright/test').Page, titulo: st
 test.describe('Transferencias de inventario - lifecycle UI', () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
-      localStorage.setItem('inventoryapp_token', 'e2e-token-transferencias-lifecycle');
-      localStorage.setItem('inventoryapp_user', 'admin-e2e');
-      localStorage.setItem('inventoryapp_nombre_completo', 'Admin E2E');
-      localStorage.setItem('inventoryapp_rol', 'Administrador');
-      localStorage.setItem('inventoryapp_expira_en', '2099-12-31T23:59:59Z');
+      localStorage.setItem('solqaryn_token', 'e2e-token-transferencias-lifecycle');
+      localStorage.setItem('solqaryn_user', 'admin-e2e');
+      localStorage.setItem('solqaryn_nombre_completo', 'Admin E2E');
+      localStorage.setItem('solqaryn_rol', 'Administrador');
+      localStorage.setItem('solqaryn_expira_en', '2099-12-31T23:59:59Z');
     });
 
     await page.route('**/permisos/mis-permisos/empresa/*', route => route.fulfill({

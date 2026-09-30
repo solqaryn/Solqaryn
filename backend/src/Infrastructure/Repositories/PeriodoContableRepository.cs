@@ -1,11 +1,11 @@
-using InventoryApp.Application.Common;
-using InventoryApp.Application.DTOs.Contabilidad;
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Domain.Entities.Contabilidad;
-using InventoryApp.Infrastructure.Persistence;
+using Solqaryn.Application.Common;
+using Solqaryn.Application.DTOs.Contabilidad;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Entities.Contabilidad;
+using Solqaryn.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace InventoryApp.Infrastructure.Repositories;
+namespace Solqaryn.Infrastructure.Repositories;
 
 public sealed class PeriodoContableRepository : IPeriodoContableRepository
 {

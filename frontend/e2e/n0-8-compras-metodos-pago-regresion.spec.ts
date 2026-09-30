@@ -8,11 +8,11 @@ function api<T>(data: T) {
 
 async function prepararSesion(page: Page): Promise<void> {
   await page.addInitScript(() => {
-    localStorage.setItem('inventoryapp_token', 'e2e-token-n08');
-    localStorage.setItem('inventoryapp_user', 'e2e_admin');
-    localStorage.setItem('inventoryapp_nombre_completo', 'Administrador E2E N0.8');
-    localStorage.setItem('inventoryapp_rol', 'Administrador');
-    localStorage.setItem('inventoryapp_expira_en', '2099-12-31T23:59:59Z');
+    localStorage.setItem('solqaryn_token', 'e2e-token-n08');
+    localStorage.setItem('solqaryn_user', 'e2e_admin');
+    localStorage.setItem('solqaryn_nombre_completo', 'Administrador E2E N0.8');
+    localStorage.setItem('solqaryn_rol', 'Administrador');
+    localStorage.setItem('solqaryn_expira_en', '2099-12-31T23:59:59Z');
   });
 
   await page.route(`${API_URL}/permisos/mis-permisos/empresa/*`, route => route.fulfill({

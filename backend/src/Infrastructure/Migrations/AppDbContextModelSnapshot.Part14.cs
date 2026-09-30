@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 #nullable disable
 
-namespace InventoryApp.Infrastructure.Migrations
+namespace Solqaryn.Infrastructure.Migrations
 {
     internal static partial class AppDbContextSnapshotN14D
     {
@@ -13,7 +13,7 @@ namespace InventoryApp.Infrastructure.Migrations
         {
             // ERP-N2.1 / N2.2 — solicitudes y órdenes de compra documentales.
             // Snapshot congelado: no enlaza configuraciones vivas para conservar detección de drift futura.
-            modelBuilder.Entity("InventoryApp.Domain.Entities.SolicitudCompra", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.SolicitudCompra", b =>
             {
                 b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("int");
                 MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
@@ -41,7 +41,7 @@ namespace InventoryApp.Infrastructure.Migrations
                 b.ToTable("SolicitudesCompra");
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.SolicitudCompraDetalle", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.SolicitudCompraDetalle", b =>
             {
                 b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("int");
                 MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
@@ -70,7 +70,7 @@ namespace InventoryApp.Infrastructure.Migrations
                 b.ToTable("SolicitudCompraDetalles");
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.OrdenCompra", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.OrdenCompra", b =>
             {
                 b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("int");
                 MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
@@ -109,7 +109,7 @@ namespace InventoryApp.Infrastructure.Migrations
                 b.ToTable("OrdenesCompra");
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.OrdenCompraDetalle", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.OrdenCompraDetalle", b =>
             {
                 b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("int");
                 MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
@@ -140,23 +140,23 @@ namespace InventoryApp.Infrastructure.Migrations
                 b.ToTable("OrdenCompraDetalles");
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.SolicitudCompra", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.SolicitudCompra", b =>
             {
-                b.HasOne("InventoryApp.Domain.Entities.Proveedor", "Proveedor").WithMany()
+                b.HasOne("Solqaryn.Domain.Entities.Proveedor", "Proveedor").WithMany()
                     .HasForeignKey("ProveedorId").OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_SolicitudesCompra_Proveedores_ProveedorId");
                 b.Navigation("Proveedor");
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.SolicitudCompraDetalle", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.SolicitudCompraDetalle", b =>
             {
-                b.HasOne("InventoryApp.Domain.Entities.Producto", "Producto").WithMany()
+                b.HasOne("Solqaryn.Domain.Entities.Producto", "Producto").WithMany()
                     .HasForeignKey("ProductoId").OnDelete(DeleteBehavior.Restrict).IsRequired()
                     .HasConstraintName("FK_SolicitudCompraDetalles_Productos_ProductoId");
-                b.HasOne("InventoryApp.Domain.Entities.ProductoVariante", "ProductoVariante").WithMany()
+                b.HasOne("Solqaryn.Domain.Entities.ProductoVariante", "ProductoVariante").WithMany()
                     .HasForeignKey("ProductoVarianteId").OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_SolicitudCompraDetalles_ProductoVariantes_ProductoVarianteId");
-                b.HasOne("InventoryApp.Domain.Entities.SolicitudCompra", "SolicitudCompra").WithMany("Detalles")
+                b.HasOne("Solqaryn.Domain.Entities.SolicitudCompra", "SolicitudCompra").WithMany("Detalles")
                     .HasForeignKey("SolicitudCompraId").OnDelete(DeleteBehavior.Cascade).IsRequired()
                     .HasConstraintName("FK_SolicitudCompraDetalles_SolicitudesCompra_SolicitudCompraId");
                 b.Navigation("Producto");
@@ -164,27 +164,27 @@ namespace InventoryApp.Infrastructure.Migrations
                 b.Navigation("SolicitudCompra");
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.OrdenCompra", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.OrdenCompra", b =>
             {
-                b.HasOne("InventoryApp.Domain.Entities.Proveedor", "Proveedor").WithMany()
+                b.HasOne("Solqaryn.Domain.Entities.Proveedor", "Proveedor").WithMany()
                     .HasForeignKey("ProveedorId").OnDelete(DeleteBehavior.Restrict).IsRequired()
                     .HasConstraintName("FK_OrdenesCompra_Proveedores_ProveedorId");
-                b.HasOne("InventoryApp.Domain.Entities.SolicitudCompra", "SolicitudCompra").WithMany()
+                b.HasOne("Solqaryn.Domain.Entities.SolicitudCompra", "SolicitudCompra").WithMany()
                     .HasForeignKey("SolicitudCompraId").OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_OrdenesCompra_SolicitudesCompra_SolicitudCompraId");
                 b.Navigation("Proveedor");
                 b.Navigation("SolicitudCompra");
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.OrdenCompraDetalle", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.OrdenCompraDetalle", b =>
             {
-                b.HasOne("InventoryApp.Domain.Entities.OrdenCompra", "OrdenCompra").WithMany("Detalles")
+                b.HasOne("Solqaryn.Domain.Entities.OrdenCompra", "OrdenCompra").WithMany("Detalles")
                     .HasForeignKey("OrdenCompraId").OnDelete(DeleteBehavior.Cascade).IsRequired()
                     .HasConstraintName("FK_OrdenCompraDetalles_OrdenesCompra_OrdenCompraId");
-                b.HasOne("InventoryApp.Domain.Entities.Producto", "Producto").WithMany()
+                b.HasOne("Solqaryn.Domain.Entities.Producto", "Producto").WithMany()
                     .HasForeignKey("ProductoId").OnDelete(DeleteBehavior.Restrict).IsRequired()
                     .HasConstraintName("FK_OrdenCompraDetalles_Productos_ProductoId");
-                b.HasOne("InventoryApp.Domain.Entities.ProductoVariante", "ProductoVariante").WithMany()
+                b.HasOne("Solqaryn.Domain.Entities.ProductoVariante", "ProductoVariante").WithMany()
                     .HasForeignKey("ProductoVarianteId").OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_OrdenCompraDetalles_ProductoVariantes_ProductoVarianteId");
                 b.Navigation("OrdenCompra");
@@ -192,8 +192,8 @@ namespace InventoryApp.Infrastructure.Migrations
                 b.Navigation("ProductoVariante");
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.SolicitudCompra", b => b.Navigation("Detalles"));
-            modelBuilder.Entity("InventoryApp.Domain.Entities.OrdenCompra", b => b.Navigation("Detalles"));
+            modelBuilder.Entity("Solqaryn.Domain.Entities.SolicitudCompra", b => b.Navigation("Detalles"));
+            modelBuilder.Entity("Solqaryn.Domain.Entities.OrdenCompra", b => b.Navigation("Detalles"));
         }
     }
 }

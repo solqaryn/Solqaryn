@@ -1,0 +1,83 @@
+<div class="tienda">
+  <app-storefront-header
+    [totalUnidades]="totalUnidades()"
+    [subtotal]="subtotal()"
+    destinoSaltar="#pedido-principal"
+    etiquetaSaltar="Saltar a la confirmación"
+    (carritoSolicitado)="abrirCarrito()" />
+
+  <main id="pedido-principal" class="container order-page" tabindex="-1" [attr.aria-busy]="estado() === 'loading'">
+    <nav class="breadcrumbs" aria-label="Migas de pan">
+      <a [href]="enlaces.inicio">Inicio</a><span aria-hidden="true">/</span>
+      <span aria-current="page">Confirmación</span>
+    </nav>
+
+    @if (cargando()) {
+      <section class="state-card" role="status" aria-live="polite">
+        <span class="spinner" aria-hidden="true"></span>
+        <h1>Recuperando tu referencia</h1>
+      </section>
+    } @else if (estado() === 'error') {
+      <section class="state-card missing" role="alert">
+        <app-store-icon nombre="escudo" />
+        <p class="eyebrow">CONFIRMACIÓN NO DISPONIBLE</p>
+        <h1>No pudimos cargar tu referencia</h1>
+        <p>{{ error() }}</p>
+        <div class="actions">
+          <a class="button primary" [href]="enlaces.carrito">Volver al carrito</a>
+          <a class="button ghost" [href]="enlaces.productos">Ver productos</a>
+        </div>
+      </section>
+    } @else if (recibo(); as pedido) {
+      <section class="confirmation-card">
+        <span class="success-icon"><app-store-icon nombre="check" /></span>
+        <p class="eyebrow">REFERENCIA DE TU SOLICITUD</p>
+        <h1>{{ titulo(pedido) }}</h1>
+        <p class="lead">{{ descripcion(pedido) }}</p>
+
+        <div class="reference-box">
+          <span>Referencia</span>
+          <strong>{{ pedido.referencia }}</strong>
+        </div>
+
+        <div class="order-grid">
+          <section aria-labelledby="productos-title">
+            <h2 id="productos-title">Resumen validado</h2>
+            <ul class="order-lines">
+              @for (linea of pedido.lineas; track linea.productoId + '-' + linea.modeloId) {
+                <li>
+                  <div><strong>{{ linea.nombre }}</strong>@if (linea.modelo) { <small>{{ linea.modelo }}</small> }</div>
+                  <span>{{ linea.unidades }} × {{ moneda(linea.precioUnitario, pedido.moneda) }}</span>
+                  <b>{{ moneda(linea.total, pedido.moneda) }}</b>
+                </li>
+              }
+            </ul>
+          </section>
+
+          <aside class="total-box">
+            <span>Total validado</span>
+            <strong>{{ moneda(pedido.total, pedido.moneda) }}</strong>
+            <small>Este importe es el snapshot validado durante el checkout y no sustituye la confirmación comercial o del proveedor de pago.</small>
+          </aside>
+        </div>
+
+        <div class="notice"><app-store-icon nombre="escudo" /><span>Por seguridad, esta confirmación no contiene ni almacena tus datos de contacto ni información de tarjetas.</span></div>
+        <div class="actions">
+          <a class="button primary" [href]="enlaces.productos">Seguir comprando</a>
+          <a class="button ghost" [href]="enlaces.inicio">Volver al inicio</a>
+        </div>
+      </section>
+    } @else {
+      <section class="state-card missing" role="status">
+        <app-store-icon nombre="escudo" />
+        <p class="eyebrow">REFERENCIA NO DISPONIBLE</p>
+        <h1>No encontramos una confirmación vigente en esta sesión</h1>
+        <p>Puede haber expirado, haberse abierto en otro navegador o no corresponder a un checkout realizado aquí. No inventamos un estado de pedido cuando no podemos comprobarlo.</p>
+        <div class="actions">
+          <a class="button primary" [href]="enlaces.carrito">Volver al carrito</a>
+          <a class="button ghost" [href]="enlaces.productos">Ver productos</a>
+        </div>
+      </section>
+    }
+  </main>
+</div>

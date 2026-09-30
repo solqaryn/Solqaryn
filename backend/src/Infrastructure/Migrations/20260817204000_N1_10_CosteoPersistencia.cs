@@ -1,12 +1,12 @@
 using System;
-using InventoryApp.Infrastructure.Persistence;
+using Solqaryn.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace InventoryApp.Infrastructure.Migrations
+namespace Solqaryn.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     [Migration("20260817204000_N1_10_CosteoPersistencia")]
@@ -42,12 +42,12 @@ namespace InventoryApp.Infrastructure.Migrations
                      `Copyright`,`MostrarCopyright`,`UsarAnioAutomaticoCopyright`,`EncabezadoActivo`,`PiePaginaActivo`,
                      `Moneda`,`ZonaHoraria`,`FormatoFecha`,`Activa`,`FechaActualizacion`)
                 SELECT
-                    'VariStorehn',
+                    'Storefront',
                     'Eleva tu mundo digital',
-                    'VariStorehn',
+                    'Storefront',
                     'Sistema integral de inventario y ventas',
-                    'Bienvenido a VariStorehn',
-                    'VariStorehn',
+                    'Bienvenido a Storefront',
+                    'Storefront',
                     1,
                     1,
                     1,

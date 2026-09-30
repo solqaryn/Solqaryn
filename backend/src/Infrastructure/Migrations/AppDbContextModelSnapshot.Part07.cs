@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 #nullable disable
 
-namespace InventoryApp.Infrastructure.Migrations
+namespace Solqaryn.Infrastructure.Migrations
 {
     internal static partial class AppDbContextSnapshotN14D
     {
@@ -14,7 +14,7 @@ namespace InventoryApp.Infrastructure.Migrations
             // ERP-N1.5.C — correlación durable del Kardex. Este delta mantiene
             // el snapshot versionado alineado con MovimientoInventarioConfiguration
             // sin convertirlo en una proyección dinámica del modelo vigente.
-            modelBuilder.Entity("InventoryApp.Domain.Entities.MovimientoInventario", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.MovimientoInventario", b =>
             {
                 b.Property<string>("CorrelationId")
                     .IsRequired()

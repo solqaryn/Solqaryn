@@ -1,4 +1,4 @@
-namespace InventoryApp.Application.Common;
+namespace Solqaryn.Application.Common;
 
 /// <summary>
 /// Reglas transversales del cierre ERP-N0.4.

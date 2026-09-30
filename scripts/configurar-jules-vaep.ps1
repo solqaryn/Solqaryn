@@ -9,7 +9,7 @@
 [CmdletBinding()]
 param(
     [string]$Repository = "solqaryn/Solqaryn",
-    [string]$Branch = "Desarrollo",
+    [string]$Branch = "dev",
     [ValidateSet("ALL", "J1", "J2", "J3", "J4", "J5", "J6")]
     [string]$Worker = "ALL"
 )
@@ -47,7 +47,7 @@ Write-Step "Validando identidad Solqaryn"
 if ($Repository -ne "solqaryn/Solqaryn") {
     throw "Repositorio no autorizado para este script: $Repository"
 }
-if ($Branch -ne "Desarrollo") {
+if ($Branch -ne "dev") {
     throw "Rama no autorizada para este script: $Branch"
 }
 

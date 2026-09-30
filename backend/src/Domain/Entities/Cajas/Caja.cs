@@ -1,7 +1,7 @@
-using InventoryApp.Domain.Common;
-using InventoryApp.Domain.Enums.Cajas;
+using Solqaryn.Domain.Common;
+using Solqaryn.Domain.Enums.Cajas;
 
-namespace InventoryApp.Domain.Entities.Cajas;
+namespace Solqaryn.Domain.Entities.Cajas;
 
 public class Caja : BaseEntity
 {

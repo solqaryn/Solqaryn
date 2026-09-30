@@ -1,7 +1,7 @@
-using InventoryApp.Domain.Common;
-using InventoryApp.Domain.Fiscal;
+using Solqaryn.Domain.Common;
+using Solqaryn.Domain.Fiscal;
 
-namespace InventoryApp.Domain.Entities;
+namespace Solqaryn.Domain.Entities;
 
 /// <summary>
 /// Registro durable y provider-neutral de una emisión fiscal/electrónica.

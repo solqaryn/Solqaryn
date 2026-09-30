@@ -1,4 +1,4 @@
-namespace InventoryApp.Domain.Common;
+namespace Solqaryn.Domain.Common;
 
 public abstract class BaseEntity
 {

@@ -1,7 +1,7 @@
 using FluentValidation;
-using InventoryApp.Application.DTOs.Contabilidad;
+using Solqaryn.Application.DTOs.Contabilidad;
 
-namespace InventoryApp.Application.Validators;
+namespace Solqaryn.Application.Validators;
 
 public sealed class EstadoFinancieroFiltroValidator : AbstractValidator<EstadoFinancieroFiltroDto>
 {

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 #nullable disable
 
-namespace InventoryApp.Infrastructure.Migrations
+namespace Solqaryn.Infrastructure.Migrations
 {
     partial class AppDbContextModelSnapshot
     {
@@ -16,7 +16,7 @@ namespace InventoryApp.Infrastructure.Migrations
         private static void ApplyN76CModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.Entity("InventoryApp.Domain.Entities.ConfiguracionWhatsAppEmpresa", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ConfiguracionWhatsAppEmpresa", b =>
             {
                 b.Property<int>("Id")
                     .ValueGeneratedOnAdd()
@@ -89,9 +89,9 @@ namespace InventoryApp.Infrastructure.Migrations
                 });
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.ConfiguracionWhatsAppEmpresa", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ConfiguracionWhatsAppEmpresa", b =>
             {
-                b.HasOne("InventoryApp.Domain.Entities.Empresa", "Empresa")
+                b.HasOne("Solqaryn.Domain.Entities.Empresa", "Empresa")
                     .WithMany()
                     .HasForeignKey("EmpresaId")
                     .OnDelete(DeleteBehavior.Restrict)

@@ -1,12 +1,12 @@
-using InventoryApp.Application.DTOs;
-using InventoryApp.Application.Exceptions;
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Domain.Entities;
-using InventoryApp.Domain.Enums;
-using CatalogoBanco = InventoryApp.Domain.Entities.Catalogos.Banco;
-using CatalogoMetodoPago = InventoryApp.Domain.Entities.Catalogos.MetodoPago;
+using Solqaryn.Application.DTOs;
+using Solqaryn.Application.Exceptions;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Entities;
+using Solqaryn.Domain.Enums;
+using CatalogoBanco = Solqaryn.Domain.Entities.Catalogos.Banco;
+using CatalogoMetodoPago = Solqaryn.Domain.Entities.Catalogos.MetodoPago;
 
-namespace InventoryApp.Application.Services;
+namespace Solqaryn.Application.Services;
 
 public class FacturaService : IFacturaService
 {

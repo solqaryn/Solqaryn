@@ -1,6 +1,6 @@
-using InventoryApp.Domain.Entities.Cajas;
+using Solqaryn.Domain.Entities.Cajas;
 
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 /// <summary>
 /// Persistence boundary for N4.1.D Caja application flows.

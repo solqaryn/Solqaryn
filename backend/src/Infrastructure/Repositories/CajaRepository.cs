@@ -1,9 +1,9 @@
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Domain.Entities.Cajas;
-using InventoryApp.Infrastructure.Persistence;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Entities.Cajas;
+using Solqaryn.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace InventoryApp.Infrastructure.Repositories;
+namespace Solqaryn.Infrastructure.Repositories;
 
 /// <summary>
 /// EF/MySQL repository for the Caja aggregate. Locking reads are fail-closed and require

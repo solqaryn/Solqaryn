@@ -1,9 +1,9 @@
-using InventoryApp.Application.Exceptions;
-using InventoryApp.Application.Interfaces;
+using Solqaryn.Application.Exceptions;
+using Solqaryn.Application.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace InventoryApp.API.Filters;
+namespace Solqaryn.API.Filters;
 
 internal static class TenantPermissionContext
 {

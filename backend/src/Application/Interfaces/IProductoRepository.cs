@@ -1,8 +1,8 @@
-using InventoryApp.Application.Common;
-using InventoryApp.Domain.Entities;
-using InventoryApp.Domain.Enums;
+using Solqaryn.Application.Common;
+using Solqaryn.Domain.Entities;
+using Solqaryn.Domain.Enums;
 
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 public interface IProductoRepository
 {

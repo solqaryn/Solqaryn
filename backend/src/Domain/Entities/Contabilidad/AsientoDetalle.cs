@@ -1,6 +1,6 @@
-using InventoryApp.Domain.Common;
+using Solqaryn.Domain.Common;
 
-namespace InventoryApp.Domain.Entities.Contabilidad;
+namespace Solqaryn.Domain.Entities.Contabilidad;
 
 public class AsientoDetalle : AuditableEntity
 {

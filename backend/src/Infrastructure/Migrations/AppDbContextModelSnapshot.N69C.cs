@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 #nullable disable
 
-namespace InventoryApp.Infrastructure.Migrations
+namespace Solqaryn.Infrastructure.Migrations
 {
     partial class AppDbContextModelSnapshot
     {
@@ -17,7 +17,7 @@ namespace InventoryApp.Infrastructure.Migrations
         private static void ApplyN69CModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.Entity("InventoryApp.Domain.Entities.Plan", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Plan", b =>
             {
                 b.Property<int>("Id")
                     .ValueGeneratedOnAdd()
@@ -72,7 +72,7 @@ namespace InventoryApp.Infrastructure.Migrations
                 b.ToTable("Planes", (string)null);
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.Suscripcion", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Suscripcion", b =>
             {
                 b.Property<int>("Id")
                     .ValueGeneratedOnAdd()
@@ -129,7 +129,7 @@ namespace InventoryApp.Infrastructure.Migrations
                 b.ToTable("Suscripciones", (string)null);
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.PlanModulo", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.PlanModulo", b =>
             {
                 b.Property<int>("Id")
                     .ValueGeneratedOnAdd()
@@ -187,9 +187,9 @@ namespace InventoryApp.Infrastructure.Migrations
                 b.ToTable("PlanModulos", (string)null);
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.Plan", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Plan", b =>
             {
-                b.OwnsMany("InventoryApp.Domain.Entities.PlanLimite", "Limites", b1 =>
+                b.OwnsMany("Solqaryn.Domain.Entities.PlanLimite", "Limites", b1 =>
                 {
                     b1.Property<int>("PlanId")
                         .HasColumnType("int");
@@ -215,24 +215,24 @@ namespace InventoryApp.Infrastructure.Migrations
                 b.Navigation("Limites");
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.Suscripcion", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Suscripcion", b =>
             {
-                b.HasOne("InventoryApp.Domain.Entities.Empresa", null)
+                b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
                     .WithMany()
                     .HasForeignKey("EmpresaId")
                     .OnDelete(DeleteBehavior.Restrict)
                     .IsRequired();
 
-                b.HasOne("InventoryApp.Domain.Entities.Plan", null)
+                b.HasOne("Solqaryn.Domain.Entities.Plan", null)
                     .WithMany()
                     .HasForeignKey("PlanId")
                     .OnDelete(DeleteBehavior.Restrict)
                     .IsRequired();
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.PlanModulo", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.PlanModulo", b =>
             {
-                b.HasOne("InventoryApp.Domain.Entities.Plan", null)
+                b.HasOne("Solqaryn.Domain.Entities.Plan", null)
                     .WithMany()
                     .HasForeignKey("PlanId", "PlanCodigo")
                     .HasPrincipalKey("Id", "Codigo")

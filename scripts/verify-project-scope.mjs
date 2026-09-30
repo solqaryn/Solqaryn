@@ -155,57 +155,78 @@ for (const rel of identityFiles) {
 }
 
 
-const retiredIdentityToken = ['vari', 'app'].join('');
-const retiredIdentityPattern = new RegExp(retiredIdentityToken, 'i');
-
-function looksBinary(buffer) {
-  return buffer.includes(0);
+const canonicalSolution = join(root, "backend", "Solqaryn.sln");
+if (!existsSync(canonicalSolution)) {
+  errors.push("backend/Solqaryn.sln is required as the canonical solution");
 }
 
-for (const abs of walk(root)) {
-  const rel = relative(root, abs).split(sep).join('/');
-  if (rel.startsWith('.git/')) continue;
-  if (retiredIdentityPattern.test(rel)) {
-    errors.push(`retired project identity remains in path: ${rel}`);
-  }
-
-  const raw = readFileSync(abs);
-  if (looksBinary(raw)) continue;
-
-  let content;
-  try {
-    content = raw.toString('utf8');
-  } catch {
-    continue;
-  }
-
-  if (retiredIdentityPattern.test(content)) {
-    errors.push(`retired project identity remains in content: ${rel}`);
+const angularPath = join(root, "frontend", "angular.json");
+if (existsSync(angularPath)) {
+  const angular = JSON.parse(readFileSync(angularPath, "utf8"));
+  const project = angular.projects?.["solqaryn-frontend"];
+  if (!project) errors.push("Angular project must be named solqaryn-frontend");
+  const outputPath = project?.architect?.build?.options?.outputPath;
+  if (outputPath !== "dist/solqaryn-frontend") {
+    errors.push("Angular outputPath must be dist/solqaryn-frontend");
   }
 }
 
+const packagePath = join(root, "frontend", "package.json");
+if (existsSync(packagePath)) {
+  const packageJson = JSON.parse(readFileSync(packagePath, "utf8"));
+  if (packageJson.name !== "solqaryn-frontend") {
+    errors.push("frontend package name must be solqaryn-frontend");
+  }
+}
 
-const legacyOperationalIdentifiers = [
-  'M11_DESARROLLO_',
-  'M11_BACKUP_PASSPHRASE',
-  'SOLQARYN_DEV_DB_CONNECTION',
-  'secrets.AIVEN_TOKEN',
-  'Desarrollo - solqaryn-api-desarrollo',
-  'jmejia31/Solqaryn',
-  'scripts/m11_',
-  '.github/workflows/m11-',
+const storefrontPath = join(root, "frontend", "src", "app", "features", "storefront");
+if (!existsSync(storefrontPath)) {
+  errors.push("public storefront feature must use the tenant-neutral storefront module");
+}
+
+for (const abs of walk(join(root, "backend"))) {
+  const rel = relative(root, abs).split(sep).join("/");
+  if (rel.includes("/bin/") || rel.includes("/obj/")) continue;
+
+  if (rel.endsWith(".csproj")) {
+    const fileName = rel.split("/").at(-1) || "";
+    if (!fileName.startsWith("Solqaryn.")) {
+      errors.push("backend project must use Solqaryn.* identity: " + rel);
+    }
+  }
+
+  if (rel.endsWith(".cs")) {
+    const source = readFileSync(abs, "utf8");
+    for (const match of source.matchAll(/^\s*namespace\s+([A-Za-z0-9_.]+)/gm)) {
+      if (!match[1].startsWith("Solqaryn.")) {
+        errors.push("backend namespace must use Solqaryn.* identity: " + rel + " -> " + match[1]);
+      }
+    }
+  }
+}
+
+const legacyOperationalPatterns = [
+  new RegExp(["inventory", "(?:app|api)"].join("[\\s_-]*"), "i"),
+  new RegExp(["vari", "app"].join("[\\s_-]*"), "i"),
+  new RegExp(["vari", "store", "(?:hn)?"].join("[\\s_-]*"), "i"),
+  new RegExp(["jmejia", "31"].join(""), "i"),
+  new RegExp(["javiermejia", "3112", "@gmail\\.com"].join(""), "i")
 ];
 
-for (const rel of ['.github/workflows', 'scripts/backup_dev.sh', 'scripts/restore_dev.sh', 'docs/BACKUP_RESTORE_DESARROLLO_RUNBOOK.md']) {
-  const abs = join(root, rel);
-  if (!existsSync(abs)) continue;
-  const files = statSync(abs).isDirectory() ? walk(abs) : [abs];
-  for (const file of files) {
-    const operationalContent = readFileSync(file, 'utf8');
-    for (const legacy of legacyOperationalIdentifiers) {
-      if (operationalContent.includes(legacy)) {
-        errors.push(`legacy operational identifier remains in ${relative(root, file).split(sep).join('/')}: ${legacy}`);
-      }
+const operationalRoots = ["backend", "frontend", "scripts", ".github/workflows", ".github/scripts", ".githooks", ".agents"];
+for (const rootRel of operationalRoots) {
+  const rootAbs = join(root, rootRel);
+  if (!existsSync(rootAbs)) continue;
+  for (const abs of walk(rootAbs)) {
+    const rel = relative(root, abs).split(sep).join("/");
+    if (legacyOperationalPatterns.some(pattern => pattern.test(rel))) {
+      errors.push("retired project or tenant identity remains in path: " + rel);
+    }
+    const raw = readFileSync(abs);
+    if (raw.includes(0)) continue;
+    const source = raw.toString("utf8");
+    if (legacyOperationalPatterns.some(pattern => pattern.test(source))) {
+      errors.push("retired project or tenant identity remains in content: " + rel);
     }
   }
 }

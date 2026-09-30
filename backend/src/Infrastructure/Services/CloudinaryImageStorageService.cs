@@ -2,13 +2,13 @@ using System.Security.Cryptography;
 using System.Text;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
-using InventoryApp.Application.Exceptions;
-using InventoryApp.Application.Interfaces;
+using Solqaryn.Application.Exceptions;
+using Solqaryn.Application.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace InventoryApp.Infrastructure.Services;
+namespace Solqaryn.Infrastructure.Services;
 
 public class CloudinaryImageStorageService : IImageStorageService
 {
@@ -19,7 +19,7 @@ public class CloudinaryImageStorageService : IImageStorageService
     private readonly IHttpContextAccessor? _httpContextAccessor;
     private readonly IUsuarioScopeService? _usuarioScopeService;
     private readonly ILogger<CloudinaryImageStorageService>? _logger;
-    private const string BaseFolder = "inventoryapp/productos";
+    private const string BaseFolder = "solqaryn/productos";
     private const string TenantAuditMarker = "TENANT_STORAGE_AUDIT";
 
     public CloudinaryImageStorageService(
@@ -123,7 +123,7 @@ public class CloudinaryImageStorageService : IImageStorageService
         if (!CloudinaryFolderResolver.CanDelete(_environmentPrefix, publicId))
         {
             throw new BusinessRuleException(
-                "El entorno de Desarrollo no puede eliminar una imagen que pertenece a Producción.");
+                "El entorno de dev no puede eliminar una imagen que pertenece a Producción.");
         }
 
         var tenant = await ResolverTenantActualAsync();
@@ -150,7 +150,7 @@ public class CloudinaryImageStorageService : IImageStorageService
         if (!CloudinaryFolderResolver.CanDelete(_environmentPrefix, publicId))
         {
             throw new BusinessRuleException(
-                "El entorno de Desarrollo no puede eliminar una imagen que pertenece a Producción.");
+                "El entorno de dev no puede eliminar una imagen que pertenece a Producción.");
         }
 
         var deleteParams = new DeletionParams(publicId);

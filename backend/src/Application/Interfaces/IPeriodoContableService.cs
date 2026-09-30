@@ -1,7 +1,7 @@
-using InventoryApp.Application.Common;
-using InventoryApp.Application.DTOs.Contabilidad;
+using Solqaryn.Application.Common;
+using Solqaryn.Application.DTOs.Contabilidad;
 
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 public interface IPeriodoContableService
 {

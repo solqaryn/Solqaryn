@@ -1,8 +1,8 @@
-using InventoryApp.Domain.Entities;
+using Solqaryn.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace InventoryApp.Infrastructure.Persistence.Configurations;
+namespace Solqaryn.Infrastructure.Persistence.Configurations;
 
 /// <summary>
 /// Persistencia de las líneas documentales de una solicitud de compra ERP-N2.1.

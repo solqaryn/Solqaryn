@@ -73,13 +73,13 @@ if (Test-RootPing -PingPort $Port) {
 $appPassword = (Get-Content $appPasswordFile -Raw).Trim()
 $appEscaped = $appPassword.Replace("'", "''")
 $sql = @"
-CREATE DATABASE IF NOT EXISTS inventoryapp CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS solqaryn CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE USER IF NOT EXISTS 'Solqaryn'@'localhost' IDENTIFIED BY '$appEscaped';
 ALTER USER 'Solqaryn'@'localhost' IDENTIFIED BY '$appEscaped';
 CREATE USER IF NOT EXISTS 'Solqaryn'@'127.0.0.1' IDENTIFIED BY '$appEscaped';
 ALTER USER 'Solqaryn'@'127.0.0.1' IDENTIFIED BY '$appEscaped';
-GRANT ALL PRIVILEGES ON inventoryapp.* TO 'Solqaryn'@'localhost';
-GRANT ALL PRIVILEGES ON inventoryapp.* TO 'Solqaryn'@'127.0.0.1';
+GRANT ALL PRIVILEGES ON solqaryn.* TO 'Solqaryn'@'localhost';
+GRANT ALL PRIVILEGES ON solqaryn.* TO 'Solqaryn'@'127.0.0.1';
 FLUSH PRIVILEGES;
 "@
 
@@ -88,7 +88,7 @@ if ($LASTEXITCODE -ne 0) {
     throw "Solqaryn MySQL user/database setup failed."
 }
 
-$connectionString = "Server=127.0.0.1;Port=$Port;Database=inventoryapp;User=Solqaryn;Password=$appPassword;"
+$connectionString = "Server=127.0.0.1;Port=$Port;Database=solqaryn;User=Solqaryn;Password=$appPassword;"
 Push-Location (Join-Path $workspace "backend\src\API")
 dotnet user-secrets set "ConnectionStrings:DefaultConnection" $connectionString | Out-Null
 Pop-Location

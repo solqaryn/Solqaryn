@@ -1,10 +1,10 @@
-using InventoryApp.Application.DTOs.Bancos;
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Domain.Entities.Bancos;
-using InventoryApp.Application.Bancos;
-using InventoryApp.Domain.Enums;
+using Solqaryn.Application.DTOs.Bancos;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Entities.Bancos;
+using Solqaryn.Application.Bancos;
+using Solqaryn.Domain.Enums;
 
-namespace InventoryApp.Application.Services;
+namespace Solqaryn.Application.Services;
 
 public sealed class CuentaBancariaService : ICuentaBancariaService
 {

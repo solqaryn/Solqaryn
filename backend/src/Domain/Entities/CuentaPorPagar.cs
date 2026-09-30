@@ -1,6 +1,6 @@
-using InventoryApp.Domain.Common;
+using Solqaryn.Domain.Common;
 
-namespace InventoryApp.Domain.Enums
+namespace Solqaryn.Domain.Enums
 {
     public enum CondicionPagoProveedor
     {
@@ -25,9 +25,9 @@ namespace InventoryApp.Domain.Enums
     }
 }
 
-namespace InventoryApp.Domain.Entities
+namespace Solqaryn.Domain.Entities
 {
-    using InventoryApp.Domain.Enums;
+    using Solqaryn.Domain.Enums;
 
     /// <summary>
     /// Obligación empresarial generada por una factura de proveedor registrada.

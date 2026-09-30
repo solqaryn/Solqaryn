@@ -1,7 +1,7 @@
-using InventoryApp.Domain.Entities.Bancos;
-using InventoryApp.Domain.Enums.Bancos;
+using Solqaryn.Domain.Entities.Bancos;
+using Solqaryn.Domain.Enums.Bancos;
 
-namespace InventoryApp.Application.Bancos;
+namespace Solqaryn.Application.Bancos;
 
 public static class BancosOperationPolicy
 {

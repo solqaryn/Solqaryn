@@ -79,8 +79,8 @@ Backend:
 
 ```powershell
 cd backend
-dotnet restore InventoryApp.sln
-dotnet build InventoryApp.sln
+dotnet restore Solqaryn.sln
+dotnet build Solqaryn.sln
 ```
 
 Frontend:
@@ -146,8 +146,8 @@ Comandos globales disponibles cuando el alcance lo justifique:
 
 ```powershell
 cd backend
-dotnet build InventoryApp.sln --configuration Release
-dotnet test InventoryApp.sln --configuration Release
+dotnet build Solqaryn.sln --configuration Release
+dotnet test Solqaryn.sln --configuration Release
 ```
 
 ```powershell

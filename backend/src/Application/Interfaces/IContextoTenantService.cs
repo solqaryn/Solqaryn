@@ -1,6 +1,6 @@
-using InventoryApp.Domain.Security;
+using Solqaryn.Domain.Security;
 
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 /// <summary>
 /// Resuelve el contexto tenant efectivo del usuario autenticado.

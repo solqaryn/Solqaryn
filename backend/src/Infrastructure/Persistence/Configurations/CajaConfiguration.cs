@@ -1,8 +1,8 @@
-using InventoryApp.Domain.Entities.Cajas;
+using Solqaryn.Domain.Entities.Cajas;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace InventoryApp.Infrastructure.Persistence.Configurations;
+namespace Solqaryn.Infrastructure.Persistence.Configurations;
 
 /// <summary>
 /// N4.1.C — persistencia grounded de la caja física.

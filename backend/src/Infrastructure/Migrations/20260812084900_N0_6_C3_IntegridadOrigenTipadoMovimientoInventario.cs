@@ -1,10 +1,10 @@
-using InventoryApp.Infrastructure.Persistence;
+using Solqaryn.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace InventoryApp.Infrastructure.Migrations;
+namespace Solqaryn.Infrastructure.Migrations;
 
 /// <summary>
 /// ERP-N0.6 C3: certifica la integridad histórica del backfill tipado y

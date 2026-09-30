@@ -1,7 +1,7 @@
-using InventoryApp.Application.Common;
-using InventoryApp.Application.Exceptions;
+using Solqaryn.Application.Common;
+using Solqaryn.Application.Exceptions;
 
-namespace InventoryApp.Application.DTOs;
+namespace Solqaryn.Application.DTOs;
 
 public sealed class EvaluacionProveedorFiltroDto : PagedRequest
 {

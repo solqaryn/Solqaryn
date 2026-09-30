@@ -1,4 +1,4 @@
-namespace InventoryApp.Application.Exceptions;
+namespace Solqaryn.Application.Exceptions;
 
 public class UniqueConstraintViolationException : Exception
 {

@@ -1,9 +1,9 @@
-using InventoryApp.Domain.Entities;
-using InventoryApp.Domain.Enums;
-using InventoryApp.Infrastructure.Persistence;
+using Solqaryn.Domain.Entities;
+using Solqaryn.Domain.Enums;
+using Solqaryn.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace InventoryApp.Infrastructure.Services;
+namespace Solqaryn.Infrastructure.Services;
 
 /// Crea configuraciones fiscales iniciales solo cuando no existen. Nunca
 /// reactiva, modifica tasas ni revierte decisiones realizadas desde la interfaz.

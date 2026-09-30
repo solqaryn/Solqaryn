@@ -2,7 +2,7 @@ import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { brotliCompressSync, gzipSync } from 'node:zlib';
 
-const distRoot = resolve(process.cwd(), 'dist/inventoryapp-frontend');
+const distRoot = resolve(process.cwd(), 'dist/solqaryn-frontend');
 const browserRoot = existsSync(join(distRoot, 'browser')) ? join(distRoot, 'browser') : distRoot;
 const indexPath = join(browserRoot, 'index.html');
 

@@ -1,10 +1,10 @@
-using InventoryApp.Application.Common;
-using InventoryApp.Application.DTOs;
-using InventoryApp.Application.Exceptions;
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Domain.Entities;
+using Solqaryn.Application.Common;
+using Solqaryn.Application.DTOs;
+using Solqaryn.Application.Exceptions;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Entities;
 
-namespace InventoryApp.Application.Services;
+namespace Solqaryn.Application.Services;
 
 public class MovimientoInventarioService : IMovimientoInventarioService
 {

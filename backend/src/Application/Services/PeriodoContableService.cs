@@ -1,11 +1,11 @@
-using InventoryApp.Application.Common;
-using InventoryApp.Application.DTOs.Contabilidad;
-using InventoryApp.Application.Exceptions;
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Domain.Entities.Contabilidad;
-using InventoryApp.Domain.Enums;
+using Solqaryn.Application.Common;
+using Solqaryn.Application.DTOs.Contabilidad;
+using Solqaryn.Application.Exceptions;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Entities.Contabilidad;
+using Solqaryn.Domain.Enums;
 
-namespace InventoryApp.Application.Services;
+namespace Solqaryn.Application.Services;
 
 public sealed class PeriodoContableService : IPeriodoContableService
 {

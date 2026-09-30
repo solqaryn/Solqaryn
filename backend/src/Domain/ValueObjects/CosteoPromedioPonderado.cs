@@ -1,4 +1,4 @@
-namespace InventoryApp.Domain.ValueObjects;
+namespace Solqaryn.Domain.ValueObjects;
 
 /// <summary>
 /// Regla pura de Promedio Ponderado Móvil compatible con la valoración histórica

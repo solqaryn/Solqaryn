@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace InventoryApp.Infrastructure.Migrations
+namespace Solqaryn.Infrastructure.Migrations
 {
     /// <inheritdoc />
     public partial class M1CompletarModeloRelacional : Migration

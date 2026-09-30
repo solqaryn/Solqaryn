@@ -8,8 +8,8 @@ import { EmpresaIdentidadService } from './services/empresa-identidad.service';
 import { SessionActivityService } from './core/auth/session-activity.service';
 import { TenantContextService } from './core/auth/tenant-context.service';
 import { AppNavigationMenuComponent } from './shared/navigation/app-navigation-menu.component';
-import { VaristorehnSeoService } from './features/varistorehn/varistorehn-seo.service';
-import { VaristorehnIdentidadService } from './features/varistorehn/varistorehn-identidad.service';
+import { StorefrontSeoService } from './features/storefront/storefront-seo.service';
+import { StorefrontIdentidadService } from './features/storefront/storefront-identidad.service';
 import { PerformanceBaselineService } from './core/performance/performance-baseline.service';
 
 @Component({
@@ -103,8 +103,8 @@ export class AppComponent implements OnDestroy {
     private tenantContext: TenantContextService,
     private router: Router,
     private themeApplier: ThemeApplierService,
-    private seo: VaristorehnSeoService,
-    private tiendaIdentidad: VaristorehnIdentidadService,
+    private seo: StorefrontSeoService,
+    private tiendaIdentidad: StorefrontIdentidadService,
     private performanceBaseline: PerformanceBaselineService,
     @Inject(DOCUMENT) private document: Document
   ) {
@@ -199,7 +199,7 @@ export class AppComponent implements OnDestroy {
 
   private esRutaTienda(url: string): boolean {
     const path = (url || '/').split(/[?#]/, 1)[0].replace(/\/+$/, '') || '/';
-    return path === '/varistorehn' || path.startsWith('/varistorehn/');
+    return path === '/tienda' || path.startsWith('/tienda/');
   }
 
   private gestionarFocoTrasNavegacion(): void {

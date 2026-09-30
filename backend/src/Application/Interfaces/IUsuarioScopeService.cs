@@ -1,4 +1,4 @@
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 /// <summary>
 /// Contexto de seguridad legacy del usuario autenticado. Se conserva únicamente

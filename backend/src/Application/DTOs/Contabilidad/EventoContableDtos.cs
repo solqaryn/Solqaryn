@@ -1,6 +1,6 @@
-using InventoryApp.Domain.Enums;
+using Solqaryn.Domain.Enums;
 
-namespace InventoryApp.Application.DTOs.Contabilidad;
+namespace Solqaryn.Application.DTOs.Contabilidad;
 
 /// <summary>
 /// Boundary estricto para solicitar contabilización desde un módulo de negocio.

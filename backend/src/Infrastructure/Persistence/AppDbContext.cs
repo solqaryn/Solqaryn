@@ -1,11 +1,11 @@
-using InventoryApp.Application.Exceptions;
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Domain.Entities;
-using InventoryApp.Domain.Entities.Contabilidad;
-using InventoryApp.Domain.Enums;
+using Solqaryn.Application.Exceptions;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Entities;
+using Solqaryn.Domain.Entities.Contabilidad;
+using Solqaryn.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
-namespace InventoryApp.Infrastructure.Persistence;
+namespace Solqaryn.Infrastructure.Persistence;
 
 public class AppDbContext : DbContext
 {
@@ -67,7 +67,7 @@ public class AppDbContext : DbContext
     public DbSet<Permiso> Permisos => Set<Permiso>();
     public DbSet<Cotizacion> Cotizaciones => Set<Cotizacion>();
     public DbSet<CotizacionDetalle> CotizacionDetalles => Set<CotizacionDetalle>();
-    public DbSet<InventoryApp.Domain.Entities.Bancos.CuentaBancaria> CuentasBancarias => Set<InventoryApp.Domain.Entities.Bancos.CuentaBancaria>();
+    public DbSet<Solqaryn.Domain.Entities.Bancos.CuentaBancaria> CuentasBancarias => Set<Solqaryn.Domain.Entities.Bancos.CuentaBancaria>();
     public DbSet<PreparacionPedidoVenta> PreparacionesPedidoVenta => Set<PreparacionPedidoVenta>();
     public DbSet<PreparacionPedidoVentaDetalle> PreparacionPedidoVentaDetalles => Set<PreparacionPedidoVentaDetalle>();
 

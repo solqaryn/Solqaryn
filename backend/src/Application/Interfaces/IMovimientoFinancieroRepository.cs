@@ -1,6 +1,6 @@
-using InventoryApp.Domain.Entities;
+using Solqaryn.Domain.Entities;
 
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 public interface IMovimientoFinancieroRepository
 {
@@ -10,7 +10,7 @@ public interface IMovimientoFinancieroRepository
     Task<MovimientoFinanciero?> GetByVentaIdAsync(int ventaId);
     Task<List<MovimientoFinanciero>> GetByBancosIdempotencyKeyAsync(string key, int usuarioId);
     Task<List<MovimientoFinanciero>> GetFilteredAsync(DateTime? desde, DateTime? hasta);
-    Task<InventoryApp.Domain.Entities.Catalogos.MetodoPago?> GetMetodoPagoPorCodigoONombreAsync(string valor);
+    Task<Solqaryn.Domain.Entities.Catalogos.MetodoPago?> GetMetodoPagoPorCodigoONombreAsync(string valor);
     void Update(MovimientoFinanciero movimiento);
     Task<bool> SaveChangesAsync();
 }

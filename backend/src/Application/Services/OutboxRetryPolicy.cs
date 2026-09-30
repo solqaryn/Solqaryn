@@ -1,4 +1,4 @@
-namespace InventoryApp.Application.Services;
+namespace Solqaryn.Application.Services;
 
 public sealed record OutboxRetryDecision(
     bool DebeReintentar,

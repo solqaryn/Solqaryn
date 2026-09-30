@@ -2,7 +2,7 @@ using System.Data.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
-namespace InventoryApp.API.Observability;
+namespace Solqaryn.API.Observability;
 
 public sealed class DbQueryTimingInterceptor : DbCommandInterceptor
 {

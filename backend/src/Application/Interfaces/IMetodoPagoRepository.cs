@@ -1,6 +1,6 @@
-using InventoryApp.Domain.Entities.Catalogos;
+using Solqaryn.Domain.Entities.Catalogos;
 
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 public interface IMetodoPagoRepository
 {

@@ -12,11 +12,11 @@ const expect = (condition, message) => {
 
 const helper = read('src/app/shared/cloudinary-image.util.ts');
 const shared = read('src/app/shared/producto-imagen/producto-imagen.component.ts');
-const listado = read('src/app/features/varistorehn/varistorehn-productos.component.html');
-const detalle = read('src/app/features/varistorehn/varistorehn-producto.component.html');
-const home = read('src/app/features/varistorehn/varistorehn.component.html');
-const categoria = read('src/app/features/varistorehn/varistorehn-categoria.component.html');
-const carrito = read('src/app/features/varistorehn/varistorehn-carrito.component.html');
+const listado = read('src/app/features/storefront/storefront-productos.component.html');
+const detalle = read('src/app/features/storefront/storefront-producto.component.html');
+const home = read('src/app/features/storefront/storefront.component.html');
+const categoria = read('src/app/features/storefront/storefront-categoria.component.html');
+const carrito = read('src/app/features/storefront/storefront-carrito.component.html');
 const catalogoService = read('../backend/src/Application/Services/CatalogoPublicoService.cs');
 
 for (const width of [320, 480, 640, 800]) {

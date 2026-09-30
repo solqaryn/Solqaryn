@@ -5,13 +5,13 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 #nullable disable
 
-namespace InventoryApp.Infrastructure.Migrations
+namespace Solqaryn.Infrastructure.Migrations
 {
     internal static partial class AppDbContextSnapshotN14D
     {
         private static void ApplyPart3(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity("InventoryApp.Domain.Entities.Almacen", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Almacen", b =>
             {
                 b.Property<int>("Id")
                     .ValueGeneratedOnAdd()
@@ -91,7 +91,7 @@ namespace InventoryApp.Infrastructure.Migrations
 
                 b.ToTable("Almacenes", (string)null);
             });
-            modelBuilder.Entity("InventoryApp.Domain.Entities.UbicacionAlmacen", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.UbicacionAlmacen", b =>
             {
                 b.Property<int>("Id")
                     .ValueGeneratedOnAdd()

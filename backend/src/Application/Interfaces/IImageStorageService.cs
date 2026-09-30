@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http;
 
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 public interface IImageStorageService
 {

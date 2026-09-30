@@ -10,9 +10,9 @@ import { join } from 'node:path';
  */
 export const RESPONSIVE_ROUTES = [
   '/', '/login',
-  '/varistorehn', '/varistorehn/productos', '/varistorehn/categorias',
-  '/varistorehn/carrito', '/varistorehn/checkout', '/varistorehn/producto/demo',
-  '/varistorehn/categoria/demo', '/varistorehn/pedido/1',
+  '/tienda', '/tienda/productos', '/tienda/categorias',
+  '/tienda/carrito', '/tienda/checkout', '/tienda/producto/demo',
+  '/tienda/categoria/demo', '/tienda/pedido/1',
   '/dashboard', '/productos', '/productos/nuevo', '/productos/1', '/productos/1/editar', '/productos/1/variantes',
   '/categorias', '/categorias/nueva', '/categorias/1/editar',
   '/sucursales', '/sucursales/nueva', '/sucursales/1/editar',
@@ -235,14 +235,14 @@ async function certifyRoute(page: Page, route: string, mobile: boolean, errors: 
   errors.length = 0;
   await page.goto(route, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(150);
-  if (route === '/' || route.startsWith('/varistorehn') || route === '/login') {
+  if (route === '/' || route.startsWith('/tienda') || route === '/login') {
     await expect(page.locator('body')).toBeVisible();
   } else {
     await expect(page.locator('#main-content')).toBeVisible();
     await expect(page.locator('#main-content h1').first()).toBeVisible({ timeout: 15_000 });
   }
   await expect.poll(() => bodyOverflow(page), { timeout: 5_000 }).toBeLessThanOrEqual(2);
-  if (route !== '/' && !route.startsWith('/varistorehn') && route !== '/login') {
+  if (route !== '/' && !route.startsWith('/tienda') && route !== '/login') {
     await auditGeometry(page, route, mobile);
     await auditFirstSelectOverlay(page, route);
     if (route === '/ventas/nueva') {

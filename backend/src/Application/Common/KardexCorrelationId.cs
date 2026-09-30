@@ -1,4 +1,4 @@
-namespace InventoryApp.Application.Common;
+namespace Solqaryn.Application.Common;
 
 /// <summary>
 /// Genera identificadores de correlación determinísticos para operaciones de inventario

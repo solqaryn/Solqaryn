@@ -1,6 +1,6 @@
-using InventoryApp.Domain.Enums;
+using Solqaryn.Domain.Enums;
 
-namespace InventoryApp.Domain.Entities;
+namespace Solqaryn.Domain.Entities;
 
 /// Catálogo real de permisos (módulo + acción), almacenado en base de datos.
 /// Es la fuente de verdad de qué combinaciones módulo/acción son válidas y

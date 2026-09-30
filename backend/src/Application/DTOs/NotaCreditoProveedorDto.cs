@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-using InventoryApp.Domain.Enums;
+using Solqaryn.Domain.Enums;
 
-namespace InventoryApp.Application.DTOs;
+namespace Solqaryn.Application.DTOs;
 
 public class NotaCreditoProveedorDto
 {

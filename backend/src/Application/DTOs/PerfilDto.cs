@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http;
 
-namespace InventoryApp.Application.DTOs;
+namespace Solqaryn.Application.DTOs;
 
 public class PerfilDto
 {

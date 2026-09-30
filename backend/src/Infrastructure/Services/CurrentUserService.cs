@@ -1,8 +1,8 @@
 using System.Security.Claims;
-using InventoryApp.Application.Interfaces;
+using Solqaryn.Application.Interfaces;
 using Microsoft.AspNetCore.Http;
 
-namespace InventoryApp.Infrastructure.Services;
+namespace Solqaryn.Infrastructure.Services;
 
 public class CurrentUserService : ICurrentUserService
 {

@@ -3,16 +3,16 @@ using Microsoft.EntityFrameworkCore;
 
 #nullable disable
 
-namespace InventoryApp.Infrastructure.Migrations
+namespace Solqaryn.Infrastructure.Migrations
 {
     internal static partial class AppDbContextSnapshotN14D
     {
         private static void ApplyPart16(ModelBuilder modelBuilder)
         {
             // ERP-N2.3.D — RecepcionCompra como origen relacional tipado del Kardex.
-            modelBuilder.Entity("InventoryApp.Domain.Entities.MovimientoInventario", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.MovimientoInventario", b =>
             {
-                b.HasOne("InventoryApp.Domain.Entities.RecepcionCompra", null)
+                b.HasOne("Solqaryn.Domain.Entities.RecepcionCompra", null)
                     .WithMany()
                     .HasForeignKey("RecepcionCompraId")
                     .OnDelete(DeleteBehavior.Restrict)

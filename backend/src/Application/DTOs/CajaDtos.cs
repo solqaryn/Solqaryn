@@ -1,6 +1,6 @@
-using InventoryApp.Domain.Enums.Cajas;
+using Solqaryn.Domain.Enums.Cajas;
 
-namespace InventoryApp.Application.DTOs;
+namespace Solqaryn.Application.DTOs;
 
 public sealed class CajaDto
 {

@@ -1,6 +1,6 @@
-using InventoryApp.Domain.Enums;
+using Solqaryn.Domain.Enums;
 
-namespace InventoryApp.Application.Models;
+namespace Solqaryn.Application.Models;
 
 /// <summary>
 /// Proyección tipada de los maestros normalizados de producto. No es una entidad

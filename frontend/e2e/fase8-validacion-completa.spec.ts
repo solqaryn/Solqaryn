@@ -307,7 +307,7 @@ test.describe('Fase 8 — validación completa automatizada', () => {
     });
     expect(response.status()).toBe(404);
     const body = await response.text();
-    expect(body).not.toMatch(/MySql|Pomelo|stack| at InventoryApp|System\./i);
+    expect(body).not.toMatch(/MySql|Pomelo|stack| at Solqaryn|System\./i);
   });
 
   test('API y navegación cumplen presupuestos de rendimiento controlados', async ({ page, request }, testInfo) => {

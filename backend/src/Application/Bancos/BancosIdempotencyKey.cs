@@ -1,4 +1,4 @@
-namespace InventoryApp.Application.Bancos;
+namespace Solqaryn.Application.Bancos;
 
 /// <summary>
 /// Validated idempotency key for banking write operations.

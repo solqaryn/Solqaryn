@@ -1,10 +1,10 @@
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
-using InventoryApp.Application.Interfaces;
+using Solqaryn.Application.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
 
-namespace InventoryApp.Infrastructure.Services;
+namespace Solqaryn.Infrastructure.Services;
 
 public sealed class PublicStoreMemoryCache : IPublicStoreCache
 {

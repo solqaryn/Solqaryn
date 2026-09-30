@@ -1,4 +1,4 @@
-namespace InventoryApp.Domain.ValueObjects;
+namespace Solqaryn.Domain.ValueObjects;
 
 public sealed record FacturaProveedorMontos
 {

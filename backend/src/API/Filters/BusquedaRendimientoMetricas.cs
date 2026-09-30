@@ -1,4 +1,4 @@
-namespace InventoryApp.API.Filters;
+namespace Solqaryn.API.Filters;
 
 public sealed record BusquedaRendimientoResumen(int Muestras, long P50Ms, long P95Ms);
 

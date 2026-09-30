@@ -1,7 +1,7 @@
 using System.IO.Compression;
-using InventoryApp.Application.Exceptions;
+using Solqaryn.Application.Exceptions;
 
-namespace InventoryApp.Infrastructure.Services;
+namespace Solqaryn.Infrastructure.Services;
 
 public static class CargaMasivaArchivoSecurity
 {

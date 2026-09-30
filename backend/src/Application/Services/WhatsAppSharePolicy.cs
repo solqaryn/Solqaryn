@@ -1,4 +1,4 @@
-namespace InventoryApp.Application.Services;
+namespace Solqaryn.Application.Services;
 
 /// Canonical policy for user initiated WhatsApp handoff (wa.me), without a provider API.
 public static class WhatsAppSharePolicy

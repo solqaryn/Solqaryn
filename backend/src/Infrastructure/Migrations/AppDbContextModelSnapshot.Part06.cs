@@ -5,19 +5,19 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 #nullable disable
 
-namespace InventoryApp.Infrastructure.Migrations
+namespace Solqaryn.Infrastructure.Migrations
 {
     internal static partial class AppDbContextSnapshotN14D
     {
         private static void ApplyPart6(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity("InventoryApp.Domain.Entities.VentaDetalle", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.VentaDetalle", b =>
             {
-                b.HasOne("InventoryApp.Domain.Entities.Almacen", "Almacen")
+                b.HasOne("Solqaryn.Domain.Entities.Almacen", "Almacen")
                     .WithMany().HasForeignKey("AlmacenId")
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_VentaDetalles_Almacenes_AlmacenId_N14");
-                b.HasOne("InventoryApp.Domain.Entities.UbicacionAlmacen", "UbicacionAlmacen")
+                b.HasOne("Solqaryn.Domain.Entities.UbicacionAlmacen", "UbicacionAlmacen")
                     .WithMany().HasForeignKey("AlmacenId", "UbicacionAlmacenId")
                     .HasPrincipalKey("AlmacenId", "Id")
                     .OnDelete(DeleteBehavior.Restrict)
@@ -25,13 +25,13 @@ namespace InventoryApp.Infrastructure.Migrations
                 b.Navigation("Almacen");
                 b.Navigation("UbicacionAlmacen");
             });
-            modelBuilder.Entity("InventoryApp.Domain.Entities.ConsumoInsumoDetalle", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ConsumoInsumoDetalle", b =>
             {
-                b.HasOne("InventoryApp.Domain.Entities.Almacen", "Almacen")
+                b.HasOne("Solqaryn.Domain.Entities.Almacen", "Almacen")
                     .WithMany().HasForeignKey("AlmacenId")
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_ConsumoInsumoDetalles_Almacenes_AlmacenId_N14");
-                b.HasOne("InventoryApp.Domain.Entities.UbicacionAlmacen", "UbicacionAlmacen")
+                b.HasOne("Solqaryn.Domain.Entities.UbicacionAlmacen", "UbicacionAlmacen")
                     .WithMany().HasForeignKey("AlmacenId", "UbicacionAlmacenId")
                     .HasPrincipalKey("AlmacenId", "Id")
                     .OnDelete(DeleteBehavior.Restrict)
@@ -39,13 +39,13 @@ namespace InventoryApp.Infrastructure.Migrations
                 b.Navigation("Almacen");
                 b.Navigation("UbicacionAlmacen");
             });
-            modelBuilder.Entity("InventoryApp.Domain.Entities.MovimientoInventario", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.MovimientoInventario", b =>
             {
-                b.HasOne("InventoryApp.Domain.Entities.Almacen", "Almacen")
+                b.HasOne("Solqaryn.Domain.Entities.Almacen", "Almacen")
                     .WithMany().HasForeignKey("AlmacenId")
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_MovimientosInventario_Almacenes_AlmacenId_N14");
-                b.HasOne("InventoryApp.Domain.Entities.UbicacionAlmacen", "UbicacionAlmacen")
+                b.HasOne("Solqaryn.Domain.Entities.UbicacionAlmacen", "UbicacionAlmacen")
                     .WithMany().HasForeignKey("AlmacenId", "UbicacionAlmacenId")
                     .HasPrincipalKey("AlmacenId", "Id")
                     .OnDelete(DeleteBehavior.Restrict)
@@ -53,13 +53,13 @@ namespace InventoryApp.Infrastructure.Migrations
                 b.Navigation("Almacen");
                 b.Navigation("UbicacionAlmacen");
             });
-            modelBuilder.Entity("InventoryApp.Domain.Entities.AjusteInventarioDetalle", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.AjusteInventarioDetalle", b =>
             {
-                b.HasOne("InventoryApp.Domain.Entities.Almacen", "Almacen")
+                b.HasOne("Solqaryn.Domain.Entities.Almacen", "Almacen")
                     .WithMany().HasForeignKey("AlmacenId")
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_AjusteInventarioDetalles_Almacenes_AlmacenId_N14");
-                b.HasOne("InventoryApp.Domain.Entities.UbicacionAlmacen", "UbicacionAlmacen")
+                b.HasOne("Solqaryn.Domain.Entities.UbicacionAlmacen", "UbicacionAlmacen")
                     .WithMany().HasForeignKey("AlmacenId", "UbicacionAlmacenId")
                     .HasPrincipalKey("AlmacenId", "Id")
                     .OnDelete(DeleteBehavior.Restrict)
@@ -67,11 +67,11 @@ namespace InventoryApp.Infrastructure.Migrations
                 b.Navigation("Almacen");
                 b.Navigation("UbicacionAlmacen");
             });
-            modelBuilder.Entity("InventoryApp.Domain.Entities.AjusteInventario", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.AjusteInventario", b =>
             {
                 b.Navigation("Detalles");
             });
-            modelBuilder.Entity("InventoryApp.Domain.Entities.UbicacionAlmacen", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.UbicacionAlmacen", b =>
             {
                 b.Navigation("Hijas");
             });

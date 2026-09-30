@@ -32,6 +32,7 @@ Ningún plan, fila, gate, fase o secuencia que no esté incorporado al MAESTRO v
 SOLQARYN es una plataforma empresarial multiempresa.
 
 - Frontend: Angular 20 standalone, Signals y Angular Material.
+- Identidad técnica de código: namespaces/assemblies/proyectos usan Solqaryn.*; el storefront fuente es tenant-neutral y vive bajo features/storefront.
 - Backend: ASP.NET Core 8 Web API.
 - Capas: Domain <- Application <- Infrastructure; API compone y expone.
 - Persistencia: MySQL con EF Core 8/Pomelo.

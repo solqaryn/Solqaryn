@@ -1,4 +1,4 @@
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 public class AdjuntoCorreo
 {

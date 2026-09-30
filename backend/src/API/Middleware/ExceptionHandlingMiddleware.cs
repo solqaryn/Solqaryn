@@ -1,12 +1,12 @@
 using System.Net;
 using System.Text.Json;
 using FluentValidation;
-using InventoryApp.Application.Common;
-using InventoryApp.Application.Exceptions;
+using Solqaryn.Application.Common;
+using Solqaryn.Application.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace InventoryApp.API.Middleware;
+namespace Solqaryn.API.Middleware;
 
 public class ExceptionHandlingMiddleware
 {

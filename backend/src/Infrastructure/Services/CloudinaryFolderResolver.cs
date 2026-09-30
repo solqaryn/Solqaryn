@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Configuration;
 
-namespace InventoryApp.Infrastructure.Services;
+namespace Solqaryn.Infrastructure.Services;
 
 internal static class CloudinaryFolderResolver
 {

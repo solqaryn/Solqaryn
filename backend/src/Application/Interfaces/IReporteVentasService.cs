@@ -1,9 +1,9 @@
-using InventoryApp.Application.Common;
-using InventoryApp.Application.DTOs;
+using Solqaryn.Application.Common;
+using Solqaryn.Application.DTOs;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 public interface IReporteVentasService
 {

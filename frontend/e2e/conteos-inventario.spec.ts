@@ -17,11 +17,11 @@ const conteoBase = {
 
 async function autenticar(page: Page): Promise<void> {
   await page.addInitScript(() => {
-    localStorage.setItem('inventoryapp_token', 'e2e-token-conteos');
-    localStorage.setItem('inventoryapp_user', 'e2e-conteos');
-    localStorage.setItem('inventoryapp_nombre_completo', 'E2E Conteos');
-    localStorage.setItem('inventoryapp_rol', 'Administrador');
-    localStorage.setItem('inventoryapp_expira_en', '2099-12-31T23:59:59Z');
+    localStorage.setItem('solqaryn_token', 'e2e-token-conteos');
+    localStorage.setItem('solqaryn_user', 'e2e-conteos');
+    localStorage.setItem('solqaryn_nombre_completo', 'E2E Conteos');
+    localStorage.setItem('solqaryn_rol', 'Administrador');
+    localStorage.setItem('solqaryn_expira_en', '2099-12-31T23:59:59Z');
   });
   await page.route('**/permisos/mis-permisos/empresa/*', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, message: 'Permisos cargados', errors: [], data: { permisos: ['MovimientosInventario:Ver','MovimientosInventario:Crear','MovimientosInventario:Editar','MovimientosInventario:CambiarEstado','MovimientosInventario:Cerrar','MovimientosInventario:Aprobar','MovimientosInventario:Anular'], esAdministrador: false } }) }));
   await page.route('**/almacenes/activos', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, message: 'OK', errors: [], data: [almacenActivo] }) }));

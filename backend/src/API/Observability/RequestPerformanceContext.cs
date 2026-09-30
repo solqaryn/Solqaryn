@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http;
 
-namespace InventoryApp.API.Observability;
+namespace Solqaryn.API.Observability;
 
 public sealed record RequestDbPerformanceSnapshot(int QueryCount, double DurationMs);
 

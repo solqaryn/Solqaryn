@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace InventoryApp.Infrastructure.Migrations
+namespace Solqaryn.Infrastructure.Migrations
 {
     /// <inheritdoc />
     public partial class Fases18SesionConfigPermisosCalculos : Migration
@@ -29,7 +29,7 @@ namespace InventoryApp.Infrastructure.Migrations
                 type: "varchar(50)",
                 maxLength: 50,
                 nullable: false,
-                defaultValue: "© 2026 VariStorehn. Todos los derechos reservados.")
+                defaultValue: "© 2026 Storefront. Todos los derechos reservados.")
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.AddColumn<string>(
@@ -119,7 +119,7 @@ namespace InventoryApp.Infrastructure.Migrations
                 type: "varchar(300)",
                 maxLength: 300,
                 nullable: false,
-                defaultValue: "Inicia sesión para administrar VariStorehn")
+                defaultValue: "Inicia sesión para administrar Storefront")
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.AddColumn<string>(
@@ -144,7 +144,7 @@ namespace InventoryApp.Infrastructure.Migrations
                 type: "varchar(120)",
                 maxLength: 120,
                 nullable: false,
-                defaultValue: "VariStorehn")
+                defaultValue: "Storefront")
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.AddColumn<bool>(

@@ -1,13 +1,13 @@
-using InventoryApp.Application.Common;
-using InventoryApp.Application.DTOs.Contabilidad;
-using InventoryApp.Application.Interfaces;
-using InventoryApp.API.Filters;
-using InventoryApp.Domain.Entities.Contabilidad;
-using InventoryApp.Domain.Enums;
+using Solqaryn.Application.Common;
+using Solqaryn.Application.DTOs.Contabilidad;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.API.Filters;
+using Solqaryn.Domain.Entities.Contabilidad;
+using Solqaryn.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace InventoryApp.API.Controllers;
+namespace Solqaryn.API.Controllers;
 
 [ApiController]
 [Authorize]

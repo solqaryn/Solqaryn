@@ -1,6 +1,6 @@
-using InventoryApp.Application.Common;
+using Solqaryn.Application.Common;
 
-namespace InventoryApp.Application.DTOs;
+namespace Solqaryn.Application.DTOs;
 
 /// <summary>
 /// Envelope transversal mínimo para filtros de reportes analíticos de inventario.

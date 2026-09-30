@@ -1,7 +1,7 @@
-using InventoryApp.Application.Common;
-using InventoryApp.Domain.Entities;
+using Solqaryn.Application.Common;
+using Solqaryn.Domain.Entities;
 
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 public interface IUsuarioRepository
 {

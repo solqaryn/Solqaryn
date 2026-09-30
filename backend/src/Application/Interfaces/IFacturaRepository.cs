@@ -1,8 +1,8 @@
-using InventoryApp.Domain.Entities;
-using CatalogoBanco = InventoryApp.Domain.Entities.Catalogos.Banco;
-using CatalogoMetodoPago = InventoryApp.Domain.Entities.Catalogos.MetodoPago;
+using Solqaryn.Domain.Entities;
+using CatalogoBanco = Solqaryn.Domain.Entities.Catalogos.Banco;
+using CatalogoMetodoPago = Solqaryn.Domain.Entities.Catalogos.MetodoPago;
 
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 public interface IFacturaRepository
 {

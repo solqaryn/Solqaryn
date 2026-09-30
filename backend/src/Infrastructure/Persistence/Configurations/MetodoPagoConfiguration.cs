@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using MetodoPagoCatalogo = InventoryApp.Domain.Entities.Catalogos.MetodoPago;
+using MetodoPagoCatalogo = Solqaryn.Domain.Entities.Catalogos.MetodoPago;
 
-namespace InventoryApp.Infrastructure.Persistence.Configurations;
+namespace Solqaryn.Infrastructure.Persistence.Configurations;
 
 public class MetodoPagoConfiguration : IEntityTypeConfiguration<MetodoPagoCatalogo>
 {

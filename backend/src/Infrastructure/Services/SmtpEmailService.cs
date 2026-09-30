@@ -3,7 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using System.Text.Json;
-using InventoryApp.Application.Interfaces;
+using Solqaryn.Application.Interfaces;
 using MailKit;
 using MailKit.Net.Smtp;
 using MailKit.Security;
@@ -13,7 +13,7 @@ using MimeKit;
 using MimeKit.Utils;
 using MailKitSmtpClient = MailKit.Net.Smtp.SmtpClient;
 
-namespace InventoryApp.Infrastructure.Services;
+namespace Solqaryn.Infrastructure.Services;
 
 /// Envío SMTP transaccional para facturas. Usa MailKit para negociar STARTTLS
 /// de forma explícita en el puerto 587, SSL directo en 465 y errores SMTP más
