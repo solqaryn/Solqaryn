@@ -12,6 +12,25 @@ jobs:
   canonicalize:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: solqaryn_identity_ci
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_identity_ci;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
+      Database__ServerVersion: '8.4.0'
+      Database__ApplyMigrationsOnStartup: 'false'
+      Jwt__Secret: 'SOLQARYN-Identity-CI-Only-Secret-With-More-Than-32-Characters-2026'
 
     steps:
       - name: Checkout exact branch head
