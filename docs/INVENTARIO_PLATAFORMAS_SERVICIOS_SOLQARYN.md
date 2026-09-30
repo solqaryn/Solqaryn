@@ -15,7 +15,7 @@ Reglas:
 
 - Los accesos deben otorgarse mediante usuarios individuales, equipos, roles o invitaciones cuando el proveedor lo permita.
 - No compartir contraseñas, refresh tokens, cookies, sesiones, API secrets ni llaves privadas entre miembros.
-- Alex Morales debe recibir acceso nominal a las plataformas indicadas en la matriz de acceso; cualquier permiso destructivo/productivo continúa sujeto a las reglas vigentes de SOLQARYN.
+- Modelo vigente de acceso humano: Javier Mejía y Alex Morales son los dos miembros del workspace ChatGPT Business `SOLQARYN`. GitHub puede usar sus identidades personales como miembros de la organización; el resto de proveedores se opera por defecto mediante recursos/cuentas corporativas SOLQARYN y conectores autorizados, sin crear membresías personales adicionales salvo necesidad administrativa explícita.
 - `main`, PROD, datos productivos, dominios, certificados, secretos e infraestructura productiva siguen requiriendo autorización explícita vigente del propietario para cambios materiales.
 - Las cuentas o recursos legacy/personales retirados no forman parte de este inventario.
 
@@ -301,11 +301,9 @@ Uso actual:
 - automatizaciones/Tasks programadas;
 - revisión, desarrollo, QA, evidencias y coordinación operativa.
 
-Las diez automatizaciones canónicas permanecen actualmente PAUSADAS hasta autorización explícita.
+Las diez automatizaciones canónicas permanecen actualmente PAUSADAS hasta autorización explícita. Reparto vigente: Javier Mejía = cinco Primary `:00/:12/:24/:36/:48`; Alex Morales = cinco Supervisor `:05/:17/:29/:41/:53`.
 
-**Acceso Alex Morales:** REQUERIDO si participará en la operación de VAEP y en el trabajo técnico coordinado desde ChatGPT.
-
-Debe usarse una identidad propia. Las conexiones OAuth/plugins pueden requerir autorización propia del usuario y no deben basarse en compartir sesiones de Javier.
+**Acceso Alex Morales:** REQUERIDO al workspace ChatGPT Business `SOLQARYN` con su identidad personal. Las conexiones/plugins que consumen datos de SOLQARYN deben autenticarse contra recursos corporativos SOLQARYN; no contra cuentas personales de Javier o Alex.
 
 ### 6.2 TinyFish
 
@@ -361,24 +359,24 @@ Su operación está contenida en el repositorio, CI o infraestructura ya enumera
 
 ## 9. Matriz de acceso para Alex Morales
 
-| Plataforma | Acceso Alex | Motivo |
+| Plataforma | Modelo de acceso Alex | Motivo |
 |---|---|---|
-| GitHub | SÍ | Código, PR, CI, documentación y releases |
-| Vercel | SÍ | Frontend DEV/PROD |
-| Render | SÍ | Backend DEV/PROD, logs y configuración |
-| Aiven | SÍ | MySQL DEV/PROD |
-| Cloudinary | SÍ | Media DEV/PROD |
-| Cloudflare | SÍ | DNS `solqaryn.com` |
-| Outlook.com / Microsoft | SÍ | Identidad/correo corporativo según función |
-| Microsoft Entra / App Registration | SÍ | OAuth2 del correo |
-| Google Drive / Docs / Sheets | SÍ | Plan Maestro y operación documental |
-| ChatGPT | SÍ | VAEP, Tasks y operación asistida |
-| TinyFish | SÍ | Browser automation administrativa |
-| Clover | OPCIONAL / FUTURO | No integrado al runtime actual |
+| GitHub | MIEMBRO PERSONAL | Código, PR, CI y documentación dentro de la organización SOLQARYN |
+| ChatGPT Business | MIEMBRO PERSONAL | Workspace SOLQARYN y cinco Supervisor VAEP |
+| Google Drive / Docs / Sheets | CONECTOR A CUENTA CORPORATIVA | Plan Maestro, Sheet y notas bajo `solqaryn.platform@outlook.com` |
+| Vercel | CORPORATIVO / SIN MIEMBRO PERSONAL POR DEFECTO | Operación mediante recursos/conectores SOLQARYN; membresía directa sólo si se necesita administración manual |
+| Render | CORPORATIVO / SIN MIEMBRO PERSONAL POR DEFECTO | Backend y configuración mediante recursos/conectores SOLQARYN |
+| Aiven | CORPORATIVO / SIN MIEMBRO PERSONAL POR DEFECTO | MySQL SOLQARYN; acceso individual sólo si se autoriza administración directa |
+| Cloudinary | CORPORATIVO / SIN MIEMBRO PERSONAL POR DEFECTO | Media administrada desde la cuenta SOLQARYN |
+| Cloudflare | CORPORATIVO / SIN MIEMBRO PERSONAL POR DEFECTO | DNS/zona SOLQARYN |
+| Outlook.com / Microsoft | CORPORATIVO | Identidad `solqaryn.platform@outlook.com`; no crear otra identidad para Alex |
+| Microsoft Entra / App Registration | CORPORATIVO | App OAuth2 de SOLQARYN |
+| TinyFish | SOPORTE EN CHATGPT | Navegación asistida con sesiones corporativas autorizadas |
+| Clover | NO NECESARIO ACTUALMENTE | No integrado al runtime vigente |
 
 ## 10. Checklist seguro para provisionar a Alex Morales
 
-1. Crear/invitar a Alex con **su propia identidad** en cada proveedor que soporte equipos/miembros.
+1. Mantener sólo las identidades humanas necesarias: Javier y Alex en ChatGPT Business; ambos pueden ser miembros personales de GitHub. No crear membresías personales adicionales en proveedores externos salvo necesidad administrativa explícita.
 2. No reutilizar usuarios personales legacy.
 3. No enviar por chat contraseñas, tokens, API secrets, cookies, connection strings ni códigos MFA.
 4. Aplicar mínimo privilegio inicialmente y ampliar sólo cuando su función lo requiera.
