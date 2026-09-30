@@ -204,6 +204,7 @@ function normalizePublicStorefrontRoutes() {
       let value = input;
       value = value.replace(/(['"`])\/storefront(?=\/|['"`])/g, '$1/tienda');
       value = value.replace(/(['"`])storefront(?=['"`])/g, '$1tienda');
+      value = value.replace(/(['"`])storefront(?=\/)/g, '$1tienda');
       value = value.replace(/(\s)\/storefront\b/g, '$1/tienda');
       value = value.replace(/path:\s*'storefront(?=\/|')/g, function (match) {
         return match.replace('storefront', 'tienda');
