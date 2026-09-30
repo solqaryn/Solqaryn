@@ -308,7 +308,7 @@ function rewriteScopeGate() {
     '      errors.push("retired project or tenant identity remains in path: " + rel);',
     '    }',
     '    const raw = readFileSync(abs);',
-    '    if (looksBinary(raw)) continue;',
+    '    if (raw.includes(0)) continue;',
     '    const source = raw.toString("utf8");',
     '    if (legacyOperationalPatterns.some(pattern => pattern.test(source))) {',
     '      errors.push("retired project or tenant identity remains in content: " + rel);',
