@@ -58,6 +58,7 @@ Consultar `ARCHITECTURE.md` para cambios estructurales y `PROJECT_INDEX.md` para
 ### Render
 - Servicio DEV: `solqaryn-api-dev`.
 - Servicio PROD: `solqaryn-api-prod`.
+- Estado de compute actual: DEV y PROD están en Render `free`. DEV puede aceptar cold starts para ahorro; PROD no se considera backend comercial `always-on` mientras permanezca Free. Está prohibido usar keep-alive artificial como sustituto de un plan always-on; cualquier upgrade productivo requiere autorización explícita de gasto.
 - Health de plataforma Render: `/health` (liveness rápida). `/health/ready` se conserva para readiness/diagnóstico de dependencias como MySQL, pero no como probe de despliegue.
 - SMTP DEV y PROD: `smtp-mail.outlook.com:587` + STARTTLS + OAuth2/Modern Auth con identidad `solqaryn.platform@outlook.com`.
 - DEV y PROD no provisionan contraseña SMTP ni client secret OAuth2; cada entorno mantiene su propio refresh token en Render.
