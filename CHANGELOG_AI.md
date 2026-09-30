@@ -2212,3 +2212,10 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Añadida `docs/evidencias/PROD_CIERRE_FINAL_2026-09-28.md` con la certificación consolidada `PROD_COMPLETE_WITH_FRONTEND=PASS`.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+
+## 2026-09-29 — Release prep: Priority 4 audit aligned with certified Angular budget
+
+- El PR PROD #3486 detectó que `scripts/quality/priority4_quality_audit.py` conservaba el contrato stale de `2mb` para el budget inicial Angular.
+- El gate fue alineado al contrato ya certificado del Punto 8: `650kb` warning / `750kb` error, sin relajar límites ni cambiar runtime.
+- Alcance: CI/gobernanza de calidad únicamente; sin datos, migraciones, secretos, planes, DNS ni cambios productivos directos.
