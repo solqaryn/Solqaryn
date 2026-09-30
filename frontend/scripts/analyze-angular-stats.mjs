@@ -102,7 +102,7 @@ while (queue.length) {
   const outputKey = outputKeyByFile.get(currentFile);
   const output = outputKey ? outputs[outputKey] : null;
   for (const imported of output?.imports ?? []) {
-    if (imported.external) continue;
+    if (imported.external || imported.kind === 'dynamic-import') continue;
     const importedFile = basename(normalized(imported.path));
     if (!/\.(?:js|css)$/.test(importedFile) || initialSet.has(importedFile)) continue;
     initialSet.add(importedFile);
