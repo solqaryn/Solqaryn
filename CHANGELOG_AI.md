@@ -1,3 +1,14 @@
+## 2026-09-29 — Punto 7 implementado: Cloudinary delivery responsive
+
+- Añadido helper central de delivery Cloudinary con `f_auto,q_auto,c_limit` y variantes 320/480/640/800.
+- `app-producto-imagen` y el storefront público usan `srcset`/`sizes`, dimensiones explícitas, lazy/async fuera del viewport y prioridad alta sólo para la imagen LCP de cada vista.
+- Cobertura storefront: home, catálogo, categoría, detalle, miniaturas, relacionados, carrito y lightbox.
+- El backend ya cumplía el contrato ligero: listados/destacados retornan `TiendaProductoResumenDto` con `ImagenPrincipalUrl`; las galerías completas quedan reservadas al detalle.
+- Añadida guarda `validate-cloudinary-responsive.mjs` al lint canónico.
+- Sin migración de Cloudinary, sin cambios de uploads/assets/credenciales, sin DB, secretos, `main`, PROD ni servicios pagos.
+- Evidencia: `docs/evidencias/DEV_PUNTO_7_CLOUDINARY_DELIVERY_RESPONSIVE_2026-09-29.md`.
+- Validación runtime aún no se declara LISTO: Vercel reporta `build-rate-limit` y el entorno local de ejecución no pudo clonar GitHub por ausencia de DNS. No se realizará upgrade ni compra para resolverlo.
+
 ## 2026-09-29 — Punto 6 certificado: cache HTTP + ETag + compresión
 
 - Certificación DEV cerrada en `docs/evidencias/DEV_CERTIFICACION_PUNTO_6_HTTP_CACHE_ETAG_COMPRESION_2026-09-29.md`.
