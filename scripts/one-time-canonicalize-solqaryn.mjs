@@ -43,7 +43,8 @@ const rootTextFiles = [
 const textExtensions = new Set([
   '.cs', '.csproj', '.sln', '.ts', '.tsx', '.js', '.mjs', '.cjs',
   '.json', '.html', '.scss', '.css', '.ps1', '.sh', '.yml', '.yaml',
-  '.xml', '.props', '.targets', '.md', '.txt'
+  '.xml', '.props', '.targets', '.md', '.txt', '.py', '.sql', '.toml',
+  '.ini', '.conf', '.config', '.http', '.svg', '.feature'
 ]);
 
 function posixPath(value) {
