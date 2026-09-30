@@ -30,7 +30,7 @@ Con cache tenant-aware:
 
 Conclusión: el código dejó de hacer un número excesivo de round trips en el camino caliente. La deuda restante ya puede analizarse como topología/infraestructura y no como sustituto de una optimización de queries pendiente.
 
-## Topología actual versionada
+## Topología actual verificada
 
 ### Aiven
 
@@ -40,20 +40,30 @@ Conclusión: el código dejó de hacer un número excesivo de round trips en el 
 - plan registrado: `free-1-1gb`;
 - DEV y PROD comparten el servicio físico, con bases y usuarios separados.
 
-### Render DEV
+### Render DEV — readback vivo
 
+- workspace: `SOLQARYN` (`solqaryn.platform@outlook.com`);
+- service ID: `srv-daqvla49v7es738up9vg`;
 - servicio: `solqaryn-api-dev`;
+- rama: `dev`;
 - región: `oregon`;
 - plan: `free`;
+- instancias configuradas: 1;
+- health: `/health`;
 - DB: `solqaryn_dev`.
 
 Oregon y San Francisco permanecen en la costa oeste. Con las métricas actuales no existe evidencia que justifique mover DEV.
 
-### Render PROD
+### Render PROD — readback vivo
 
+- workspace: `SOLQARYN` (`solqaryn.platform@outlook.com`);
+- service ID: `srv-dapl2j49v7es73907om0`;
 - servicio: `solqaryn-api-prod`;
-- región versionada: `virginia`;
+- rama: `main`;
+- región: `virginia`;
 - plan: `free`;
+- instancias configuradas: 1;
+- health: `/health`;
 - DB objetivo: `solqaryn_prod`.
 
 Virginia -> San Francisco introduce un trayecto interregional mucho mayor que DEV. Con 5 queries por miss, cada request sensible a DB paga varias veces la latencia de red entre backend y MySQL.
@@ -114,8 +124,27 @@ Sólo si el candidato oeste mejora de forma consistente la parte atribuible a DB
 - cero migraciones productivas;
 - cero acciones destructivas.
 
-## Bloqueo operativo actual
+## Readback vivo y cierre
 
-La conexión Render disponible en esta sesión no tiene un workspace seleccionado. El conector exige que el propietario confirme explícitamente cuál workspace usar antes de cualquier lectura de servicios/métricas. Por seguridad no se seleccionó uno automáticamente.
+Después de retirar la conexión duplicada, Render expone un único workspace corporativo: `SOLQARYN` con `solqaryn.platform@outlook.com`.
 
-Esto no invalida la conclusión de DEV porque la evidencia causal de rendimiento y la topología versionada ya son suficientes para descartar una mudanza DEV. Una lectura fresca de Render sólo es necesaria para certificar metadata/métricas vivas adicionales o preparar una futura comparación blue/green PROD.
+La lectura viva de servicios confirma la topología versionada:
+
+- DEV = Oregon / free / `dev`;
+- PROD = Virginia / free / `main`.
+
+La consulta de métricas Render en la ventana 2026-09-29 00:00Z -> 2026-09-30 00:30Z devolvió CPU/memoria, pero no series de `http_latency` ni `http_request_count` para ninguno de los dos servicios. Por tanto **no existe hoy evidencia provider-side suficiente para cuantificar una penalización PROD Virginia -> San Francisco**.
+
+Los logs de observabilidad DEV sí confirman nuevamente el camino caliente del storefront:
+
+- productos: 212.4 ms / 5 queries / 110.2 ms DB;
+- productos: 208.1 ms / 5 queries / 106.9 ms DB;
+- productos: 207.4 ms / 5 queries / 104.1 ms DB;
+- productos: 220.3 ms / 5 queries / 113.3 ms DB;
+- productos: 257.0 ms / 5 queries / 106.4 ms DB;
+- productos: 230.6 ms / 5 queries / 109.9 ms DB;
+- hits de bootstrap/categorías observados con 0 queries y tiempos de pocos milisegundos.
+
+También existen outliers de warm-up/cold-start donde el tiempo total crece mucho más que el tiempo DB, por lo que no deben atribuirse a Aiven ni a la distancia de red.
+
+**Cierre del Punto 9:** no se mueve Aiven, no se cambia DEV y no se crea un backend PROD oeste ahora. La diferencia de región PROD queda como riesgo técnico documentado, no como defecto demostrado. Un blue/green oeste sólo se abre si una medición productiva comparable demuestra una mejora material y existe autorización explícita del propietario.
