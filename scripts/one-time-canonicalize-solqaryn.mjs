@@ -216,6 +216,18 @@ function normalizePublicStorefrontRoutes() {
   }
 }
 
+function repairStorefrontSourceImports() {
+  const frontend = join(root, 'frontend');
+  for (const file of walk(frontend)) {
+    if (!isTextFile(file)) continue;
+    mutateTextFile(file, function (input) {
+      return input
+        .replace(/features\/tienda\//g, 'features/storefront/')
+        .replace(/features\\tienda\\/g, 'features\\storefront\\');
+    });
+  }
+}
+
 function rewriteScopeGate() {
   const rel = 'scripts/verify-project-scope.mjs';
   const abs = join(root, rel);
@@ -378,6 +390,7 @@ for (const file of activeTextFiles()) {
 
 renameActivePaths();
 normalizePublicStorefrontRoutes();
+repairStorefrontSourceImports();
 rewriteScopeGate();
 updateCanonicalDocs();
 removeTransientFiles();
