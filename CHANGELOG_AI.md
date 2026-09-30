@@ -1,3 +1,14 @@
+## 2026-09-29 — Punto 10: Render Free y ruta comercial
+
+- Readback vivo: DEV y PROD continúan en Render `free`; no se compró ni activó ningún plan.
+- Auditoría del repo: no existen keep-alives, UptimeRobot ni cron/pings públicos para mantener Render despierto; los `curl /health` existentes son sólo CI local.
+- Añadida guarda `scripts/validate-render-free-policy.mjs` al workflow `SOLQARYN Project Scope Lock` para impedir futuros pings artificiales a `*.onrender.com`.
+- Logs DEV demuestran cold start: bootstrap 3371.5 ms con sólo 130.6 ms DB y 2608.6 ms con 89.1 ms DB; después 13.5 ms y 1.7 ms con 0 queries.
+- DEV puede permanecer Free aceptando warm-up; PROD no se declara always-on mientras siga Free.
+- El tamaño de un futuro plan always-on se decidirá por métricas; no hay evidencia actual que justifique CPU/RAM grande.
+- Sin compras, upgrades, cambios Aiven, datos, secretos, `main` o tráfico PROD.
+- Evidencia: `docs/evidencias/DEV_ANALISIS_PUNTO_10_RENDER_FREE_ALWAYS_ON_2026-09-29.md`.
+
 ## 2026-09-29 — Punto 9: Aiven/topología evaluados después de reducir queries
 
 - La decisión se tomó después de optimizar el read path: listado público en 5 queries por miss y hits de cache en 0 queries.
