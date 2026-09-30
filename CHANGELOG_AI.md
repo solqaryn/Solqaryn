@@ -1,3 +1,12 @@
+## 2026-09-30 — Corrección final de ownership VAEP Javier/Alex
+
+- Se confirmó que las cinco Supervisor canónicas pertenecen físicamente a la cuenta de Alex Morales con IDs: :05=6abd62255ae88191a2dba6e1b00d3b4d, :17=6abd6235e100819195785fc76a44a8e0, :29=6abd6241c3e48191a8856ed7b0f42c5c, :41=6abd624e5e108191bef6bb879559328c, :53=6abd625b397c8191a49904227946a20f.
+- Las cinco Primary canónicas permanecen en Javier Mejía y fueron repareadas a esos IDs de Alex: :00=6aa15346f5408191bdd9043fd26ff7aa, :12=6aa1534deee481918280def1343adcfa, :24=6abd70e42cb4819190b3b28916dc9dbb, :36=6aa1535a51508191a610e6cdb90a2a4d, :48=6aa1535f8cd48191b73e10f17843372a.
+- Las cinco Supervisor creadas por error en la cuenta de Javier (IDs 6abd7946e7c881919c60ed6b3bf9a81a, 6abd79517d908191b08f770920ae63d4, 6abd795d81d08191b58518eddd62ffac, 6abd7970c2288191ac452301b3bc4df2, 6abd797bbf008191a9939cc2ccc11a06) quedaron RETIRADAS, deshabilitadas y marcadas explícitamente DO_NOT_RUN.
+- `_AUTOMATION_SOURCE` ya contiene los IDs reales de Alex, responsables correctos, parejas bidireccionales y 0/10 habilitadas.
+- `docs/VAEP_AUTHORITY.md` fue reconciliado nuevamente para apuntar exclusivamente a los IDs reales de Alex.
+- No se activó ninguna automation ni se ejecutaron runs nuevos durante esta corrección.
+
 ## 2026-09-30 — Reconstrucción y resincronización de las cinco Supervisor VAEP
 
 - Se detectó que el Sheet canónico conservaba las cinco Supervisor, pero los objetos runtime ya no estaban presentes en el inventario vivo.
