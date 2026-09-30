@@ -168,7 +168,7 @@
                     <span class="discount-badge">-{{ porcentajeAhorro(modelo) }}%</span>
                   }
                   @if (imagenValida(modelo.imagenes[0])) {
-                    <img [src]="modelo.imagenes[0]" [alt]="producto.nombre" width="800" height="600" loading="lazy" decoding="async" (error)="errorImagen(modelo.imagenes[0])">
+                    <img [src]="imagenCloudinary(modelo.imagenes[0], 640)" [attr.srcset]="srcsetCloudinary(modelo.imagenes[0])" sizes="(max-width: 720px) 92vw, (max-width: 1180px) 44vw, 280px" [alt]="producto.nombre" width="800" height="600" loading="lazy" decoding="async" (error)="errorImagen(modelo.imagenes[0])">
                   } @else {
                     <app-store-art [tipo]="producto.ilustracion || 'paquete'" />
                   }
