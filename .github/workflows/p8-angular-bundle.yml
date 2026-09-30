@@ -16,7 +16,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   bundle:
@@ -46,6 +46,24 @@ jobs:
       - name: Production stats and bundle baseline
         working-directory: frontend
         run: npm run perf:bundle-baseline
+
+      - name: Persist measured summary on branch
+        if: github.event_name == 'push' && success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p docs/evidencias
+          cp frontend/dist/inventoryapp-frontend/performance-bundle-baseline.json docs/evidencias/DEV_PUNTO_8_BUNDLE_BASELINE.json
+          cp frontend/dist/inventoryapp-frontend/angular-stats-summary.json docs/evidencias/DEV_PUNTO_8_ANGULAR_STATS_SUMMARY.json
+          git config user.name "solqaryn-actions"
+          git config user.email "actions@users.noreply.github.com"
+          git add docs/evidencias/DEV_PUNTO_8_BUNDLE_BASELINE.json docs/evidencias/DEV_PUNTO_8_ANGULAR_STATS_SUMMARY.json
+          if git diff --cached --quiet; then
+            echo "Bundle evidence unchanged."
+            exit 0
+          fi
+          git commit -m "docs(perf): capture Point 8 Angular bundle baseline [skip ci]"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
 
       - name: Upload bundle evidence
         if: always()
