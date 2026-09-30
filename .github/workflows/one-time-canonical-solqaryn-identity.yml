@@ -56,6 +56,8 @@ jobs:
 
       - name: Build backend
         run: dotnet build backend/Solqaryn.sln --configuration Release --no-restore
+      - name: Test backend
+        run: dotnet test backend/Solqaryn.sln --configuration Release --no-build --verbosity normal
 
       - name: Install frontend dependencies
         working-directory: frontend
