@@ -1,0 +1,504 @@
+{
+  "generatedAtUtc": "2026-09-30T00:26:21.636Z",
+  "statsFile": "dist/inventoryapp-frontend/stats.json",
+  "initialRefs": [
+    "styles-JXKYC424.css",
+    "styles-JXKYC424.css",
+    "chunk-2YQNGINA.js",
+    "chunk-52RMNBPI.js",
+    "chunk-VP26K2BN.js",
+    "chunk-S7CBD7YI.js",
+    "chunk-BUNUI3FX.js",
+    "chunk-E2SFLBC7.js",
+    "chunk-HJPWUS3J.js",
+    "chunk-EVACUK5D.js",
+    "chunk-YVXBDJVL.js",
+    "chunk-JBPQPD2S.js",
+    "polyfills-5CFQRCPP.js",
+    "main-7WDHAJ6A.js"
+  ],
+  "initialOutputs": [
+    {
+      "outputPath": "main-7WDHAJ6A.js",
+      "file": "main-7WDHAJ6A.js",
+      "bytes": 126322,
+      "entryPoint": "src/main.ts"
+    },
+    {
+      "outputPath": "styles-JXKYC424.css",
+      "file": "styles-JXKYC424.css",
+      "bytes": 123418,
+      "entryPoint": "angular:styles/global:styles"
+    },
+    {
+      "outputPath": "polyfills-5CFQRCPP.js",
+      "file": "polyfills-5CFQRCPP.js",
+      "bytes": 34585,
+      "entryPoint": "angular:polyfills:angular:polyfills"
+    },
+    {
+      "outputPath": "chunk-E2SFLBC7.js",
+      "file": "chunk-E2SFLBC7.js",
+      "bytes": 7805,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-BUNUI3FX.js",
+      "file": "chunk-BUNUI3FX.js",
+      "bytes": 6819,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-2YQNGINA.js",
+      "file": "chunk-2YQNGINA.js",
+      "bytes": 4593,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-52RMNBPI.js",
+      "file": "chunk-52RMNBPI.js",
+      "bytes": 3219,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-EVACUK5D.js",
+      "file": "chunk-EVACUK5D.js",
+      "bytes": 2598,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-S7CBD7YI.js",
+      "file": "chunk-S7CBD7YI.js",
+      "bytes": 2503,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-VP26K2BN.js",
+      "file": "chunk-VP26K2BN.js",
+      "bytes": 2120,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-YVXBDJVL.js",
+      "file": "chunk-YVXBDJVL.js",
+      "bytes": 1743,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-HJPWUS3J.js",
+      "file": "chunk-HJPWUS3J.js",
+      "bytes": 1340,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-JBPQPD2S.js",
+      "file": "chunk-JBPQPD2S.js",
+      "bytes": 1113,
+      "entryPoint": null
+    }
+  ],
+  "initialRawBytesFromStats": 318178,
+  "topInitialPackages": [
+    {
+      "name": "@angular/material",
+      "bytes": 207414
+    },
+    {
+      "name": "(app source)",
+      "bytes": 131887
+    },
+    {
+      "name": "@angular/animations",
+      "bytes": 62683
+    },
+    {
+      "name": "zone.js",
+      "bytes": 34584
+    },
+    {
+      "name": "@angular/common",
+      "bytes": 1819
+    },
+    {
+      "name": "@angular/platform-browser",
+      "bytes": 619
+    }
+  ],
+  "topInitialModules": [
+    {
+      "name": "node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
+      "bytes": 207414
+    },
+    {
+      "name": "node_modules/@angular/animations/fesm2022/browser.mjs",
+      "bytes": 53602
+    },
+    {
+      "name": "src/styles.scss",
+      "bytes": 35240
+    },
+    {
+      "name": "node_modules/zone.js/fesm2015/zone.js",
+      "bytes": 34584
+    },
+    {
+      "name": "src/app/app.component.ts",
+      "bytes": 15283
+    },
+    {
+      "name": "src/app/app.routes.ts",
+      "bytes": 14282
+    },
+    {
+      "name": "src/app/shared/navigation/app-navigation-menu.component.ts",
+      "bytes": 13138
+    },
+    {
+      "name": "src/app/features/varistorehn/varistorehn-seo.service.ts",
+      "bytes": 6652
+    },
+    {
+      "name": "node_modules/@angular/animations/fesm2022/util.mjs",
+      "bytes": 5457
+    },
+    {
+      "name": "src/app/features/varistorehn/varistorehn.service.ts",
+      "bytes": 4847
+    },
+    {
+      "name": "src/app/core/performance/performance-baseline.service.ts",
+      "bytes": 4591
+    },
+    {
+      "name": "src/factura-operaciones.scss",
+      "bytes": 4146
+    },
+    {
+      "name": "node_modules/@angular/animations/fesm2022/private_export.mjs",
+      "bytes": 3624
+    },
+    {
+      "name": "src/app/core/auth/session-activity.service.ts",
+      "bytes": 3020
+    },
+    {
+      "name": "src/app/features/compras/facturas-proveedor/facturas-proveedor.routes.ts",
+      "bytes": 2588
+    },
+    {
+      "name": "src/app/core/auth/permisos-runtime.service.ts",
+      "bytes": 2425
+    },
+    {
+      "name": "src/app/core/auth/auth.service.ts",
+      "bytes": 2400
+    },
+    {
+      "name": "src/app/features/varistorehn/varistorehn-identidad.service.ts",
+      "bytes": 2274
+    },
+    {
+      "name": "src/app/features/pedidos-venta/pedidos-venta.routes.ts",
+      "bytes": 2146
+    },
+    {
+      "name": "src/app/features/inventario/ajustes.routes.ts",
+      "bytes": 2017
+    },
+    {
+      "name": "src/app/services/empresa-identidad.service.ts",
+      "bytes": 1923
+    },
+    {
+      "name": "node_modules/@angular/common/locales/es-HN.js",
+      "bytes": 1819
+    },
+    {
+      "name": "src/app/core/auth/tenant-context.service.ts",
+      "bytes": 1626
+    },
+    {
+      "name": "src/app/services/theme-applier.service.ts",
+      "bytes": 1529
+    },
+    {
+      "name": "src/app/services/color-contrast.service.ts",
+      "bytes": 1398
+    },
+    {
+      "name": "src/app/services/empresa-configuracion.service.ts",
+      "bytes": 1260
+    },
+    {
+      "name": "src/app/core/models/tema-visual.model.ts",
+      "bytes": 1201
+    },
+    {
+      "name": "src/app/services/permiso.service.ts",
+      "bytes": 1033
+    },
+    {
+      "name": "src/app/features/inventario/transferencias.routes.ts",
+      "bytes": 798
+    },
+    {
+      "name": "src/app/features/inventario/reservas.routes.ts",
+      "bytes": 790
+    },
+    {
+      "name": "src/app/features/inventario/conteos.routes.ts",
+      "bytes": 782
+    },
+    {
+      "name": "src/app/features/cotizaciones/cotizaciones.routes.ts",
+      "bytes": 675
+    },
+    {
+      "name": "node_modules/@angular/platform-browser/fesm2022/animations.mjs",
+      "bytes": 619
+    },
+    {
+      "name": "src/app/features/ubicaciones-almacen/ubicaciones-almacen.routes.ts",
+      "bytes": 585
+    },
+    {
+      "name": "src/app/features/almacenes/almacenes.routes.ts",
+      "bytes": 501
+    },
+    {
+      "name": "src/app/core/interceptors/auth.interceptor.ts",
+      "bytes": 473
+    },
+    {
+      "name": "src/app/features/varistorehn/varistorehn.paths.ts",
+      "bytes": 415
+    },
+    {
+      "name": "src/app/core/guards/auth.guard.ts",
+      "bytes": 404
+    },
+    {
+      "name": "src/app/core/guards/permiso.guard.ts",
+      "bytes": 390
+    },
+    {
+      "name": "src/app/services/tema-visual.service.ts",
+      "bytes": 371
+    }
+  ],
+  "topInitialScriptPackages": [
+    {
+      "name": "(app source)",
+      "bytes": 92501
+    },
+    {
+      "name": "@angular/animations",
+      "bytes": 62683
+    },
+    {
+      "name": "zone.js",
+      "bytes": 34584
+    },
+    {
+      "name": "@angular/common",
+      "bytes": 1819
+    },
+    {
+      "name": "@angular/platform-browser",
+      "bytes": 619
+    }
+  ],
+  "topInitialStylePackages": [
+    {
+      "name": "@angular/material",
+      "bytes": 207414
+    },
+    {
+      "name": "(app source)",
+      "bytes": 39386
+    }
+  ],
+  "largestLazyOutputs": [
+    {
+      "outputPath": "chunk-DJV6Z7LE.js",
+      "file": "chunk-DJV6Z7LE.js",
+      "bytes": 374196,
+      "entryPoint": "node_modules/html5-qrcode/esm/index.js"
+    },
+    {
+      "outputPath": "chunk-GRE2L7GB.js",
+      "file": "chunk-GRE2L7GB.js",
+      "bytes": 219156,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-EZZ72XDO.js",
+      "file": "chunk-EZZ72XDO.js",
+      "bytes": 119581,
+      "entryPoint": "src/app/features/configuracion/configuracion.component.ts"
+    },
+    {
+      "outputPath": "chunk-XGE6LL7U.js",
+      "file": "chunk-XGE6LL7U.js",
+      "bytes": 79527,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-GBES5PBY.js",
+      "file": "chunk-GBES5PBY.js",
+      "bytes": 68933,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-UAKWFAKB.js",
+      "file": "chunk-UAKWFAKB.js",
+      "bytes": 68576,
+      "entryPoint": "src/app/features/facturas/factura-view.component.ts"
+    },
+    {
+      "outputPath": "chunk-YOSYI5WU.js",
+      "file": "chunk-YOSYI5WU.js",
+      "bytes": 61313,
+      "entryPoint": "src/app/features/varistorehn/varistorehn-producto.component.ts"
+    },
+    {
+      "outputPath": "chunk-KPWXIQCZ.js",
+      "file": "chunk-KPWXIQCZ.js",
+      "bytes": 58149,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-Q2R3NUHI.js",
+      "file": "chunk-Q2R3NUHI.js",
+      "bytes": 53451,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-QS53SA7J.js",
+      "file": "chunk-QS53SA7J.js",
+      "bytes": 51040,
+      "entryPoint": "src/app/features/varistorehn/varistorehn.component.ts"
+    },
+    {
+      "outputPath": "chunk-VIQLQ3JJ.js",
+      "file": "chunk-VIQLQ3JJ.js",
+      "bytes": 50896,
+      "entryPoint": "src/app/features/productos/producto-form.component.ts"
+    },
+    {
+      "outputPath": "chunk-5RJPHYKK.js",
+      "file": "chunk-5RJPHYKK.js",
+      "bytes": 49596,
+      "entryPoint": "src/app/features/varistorehn/varistorehn-productos.component.ts"
+    },
+    {
+      "outputPath": "chunk-NOFEEP47.js",
+      "file": "chunk-NOFEEP47.js",
+      "bytes": 47363,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-VV7QGBKN.js",
+      "file": "chunk-VV7QGBKN.js",
+      "bytes": 46858,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-MH62QXPK.js",
+      "file": "chunk-MH62QXPK.js",
+      "bytes": 46621,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-SXYWHGBB.js",
+      "file": "chunk-SXYWHGBB.js",
+      "bytes": 45545,
+      "entryPoint": "src/app/features/cargas-masivas/cargas-masivas.component.ts"
+    },
+    {
+      "outputPath": "chunk-IUN5B63F.js",
+      "file": "chunk-IUN5B63F.js",
+      "bytes": 39740,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-HLIM5GQC.js",
+      "file": "chunk-HLIM5GQC.js",
+      "bytes": 39370,
+      "entryPoint": "src/app/features/solicitudes-compra/solicitudes-compra-shell.component.ts"
+    },
+    {
+      "outputPath": "chunk-63RPH3SG.js",
+      "file": "chunk-63RPH3SG.js",
+      "bytes": 39144,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-MEYXIUWO.js",
+      "file": "chunk-MEYXIUWO.js",
+      "bytes": 37433,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-TWW4MPJ4.js",
+      "file": "chunk-TWW4MPJ4.js",
+      "bytes": 34512,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-ZNTPWEGW.js",
+      "file": "chunk-ZNTPWEGW.js",
+      "bytes": 33564,
+      "entryPoint": "src/app/features/compras/devoluciones-proveedor/devoluciones-proveedor.components.ts"
+    },
+    {
+      "outputPath": "chunk-RXBVADHK.js",
+      "file": "chunk-RXBVADHK.js",
+      "bytes": 32724,
+      "entryPoint": "src/app/features/ventas/venta-form.component.ts"
+    },
+    {
+      "outputPath": "chunk-VEBAOA2V.js",
+      "file": "chunk-VEBAOA2V.js",
+      "bytes": 32656,
+      "entryPoint": "src/app/features/productos/producto-variantes.component.ts"
+    },
+    {
+      "outputPath": "chunk-TOLVY7TW.js",
+      "file": "chunk-TOLVY7TW.js",
+      "bytes": 30231,
+      "entryPoint": "src/app/features/compras/compra-form.component.ts"
+    },
+    {
+      "outputPath": "chunk-3JK6X6UL.js",
+      "file": "chunk-3JK6X6UL.js",
+      "bytes": 30224,
+      "entryPoint": "src/app/features/usuarios/usuarios.component.ts"
+    },
+    {
+      "outputPath": "chunk-65ELPSAL.js",
+      "file": "chunk-65ELPSAL.js",
+      "bytes": 29540,
+      "entryPoint": "src/app/features/varistorehn/varistorehn-checkout.component.ts"
+    },
+    {
+      "outputPath": "chunk-M5KJPTOH.js",
+      "file": "chunk-M5KJPTOH.js",
+      "bytes": 29074,
+      "entryPoint": null
+    },
+    {
+      "outputPath": "chunk-FXAJ7OMK.js",
+      "file": "chunk-FXAJ7OMK.js",
+      "bytes": 28635,
+      "entryPoint": "src/app/features/varistorehn/varistorehn-carrito.component.ts"
+    },
+    {
+      "outputPath": "chunk-OMDUASXT.js",
+      "file": "chunk-OMDUASXT.js",
+      "bytes": 27950,
+      "entryPoint": "src/app/features/varistorehn/varistorehn-categoria.component.ts"
+    }
+  ],
+  "unresolvedInitialOutputs": []
+}
