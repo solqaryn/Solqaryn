@@ -169,7 +169,7 @@ test.describe('Storefront Fase 4 — detalle público de producto', () => {
     await page.goto('/tienda/producto/demo-producto-1');
     await esperarDetalleDemo(page);
 
-    await expect(page).toHaveURL(/\/storefront\/producto\/demo-producto-1$/);
+    await expect(page).toHaveURL(/\/tienda\/producto\/demo-producto-1$/);
     await expect(page.getByRole('navigation', { name: 'Migas de pan' })).toContainText('Computadoras');
     await expect(page.locator('dialog.detail-dialog')).toHaveCount(0);
     await expect(page.locator('dialog.lightbox')).toHaveCount(1);
@@ -214,7 +214,7 @@ test.describe('Storefront Fase 4 — detalle público de producto', () => {
     await expect(verProducto).toHaveAttribute('href', '/tienda/producto/demo-producto-1');
     await verProducto.click();
     await esperarDetalleDemo(page);
-    await expect(page).toHaveURL(/\/storefront\/producto\/demo-producto-1$/);
+    await expect(page).toHaveURL(/\/tienda\/producto\/demo-producto-1$/);
     const retornoGuardado = await page.evaluate(() => sessionStorage.getItem('storefront:retorno-catalogo:v1'));
     expect(retornoGuardado).toContain(modeloAntes);
 
@@ -224,7 +224,7 @@ test.describe('Storefront Fase 4 — detalle público de producto', () => {
     await expect(volver).toHaveText('');
     await volver.click();
 
-    await expect(page).toHaveURL(/\/storefront\/productos\?q=Laptop&orden=precio-desc$/);
+    await expect(page).toHaveURL(/\/tienda\/productos\?q=Laptop&orden=precio-desc$/);
     await expect(page.locator('app-storefront-header').getByRole('searchbox')).toHaveValue('Laptop');
     await expect(tarjeta).toBeVisible();
     await expect(modeloCatalogo).toHaveValue(modeloAntes);
@@ -351,10 +351,10 @@ test.describe('Storefront Fase 4 — detalle público de producto', () => {
     await page.goto('/tienda/producto/nombre-viejo-128');
     await activarBaseDatos(page);
     await expect(page.getByRole('heading', { level: 1, name: 'Producto Canónico' })).toBeVisible();
-    await expect(page).toHaveURL(/\/storefront\/producto\/producto-canonico-128$/);
+    await expect(page).toHaveURL(/\/tienda\/producto\/producto-canonico-128$/);
 
     await page.goBack();
-    await expect(page).not.toHaveURL(/\/storefront\/producto\/nombre-viejo-128$/);
+    await expect(page).not.toHaveURL(/\/tienda\/producto\/nombre-viejo-128$/);
   });
 
   test('404 e inactivo se controlan sin convertirlos en productos demo', async ({ page }) => {

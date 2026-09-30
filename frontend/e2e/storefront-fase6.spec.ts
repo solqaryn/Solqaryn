@@ -141,7 +141,7 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
     await prepararEmpresa(page);
     await page.goto('/tienda/checkout');
 
-    await expect(page).toHaveURL(/\/storefront\/checkout$/);
+    await expect(page).toHaveURL(/\/tienda\/checkout$/);
     await expect(page.getByRole('heading', { level: 1, name: 'Confirma tus datos y tu forma de compra' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Tu carrito está vacío' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Preparar pedido por WhatsApp' })).toHaveCount(0);
@@ -261,7 +261,7 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
     expect(mensaje).toContain('📦 *Producto 1*');
     expect(mensaje).toContain('*UAT Modelo General*');
     expect(mensaje).toContain('SKU: UAT-GENERAL');
-    expect(mensaje).toMatch(/🔗 Ver producto: http:\/\/(?:localhost|127\.0\.0\.1):4200\/storefront\/producto\/uat-modelo-general-509/);
+    expect(mensaje).toMatch(/🔗 Ver producto: http:\/\/(?:localhost|127\.0\.0\.1):4200\/tienda\/producto\/uat-modelo-general-509/);
     expect(mensaje).toContain('Cantidad: 1');
     expect(mensaje).toContain('Precio unitario:');
     expect(mensaje).toContain('💰 *TOTAL:');
@@ -343,7 +343,7 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
     expect(mensaje).toContain('📱 *Teléfono:* 50499991111');
     expect(mensaje).toContain('✉️ *Correo:* cliente@example.com');
     expect(mensaje).toContain('SKU: SKU-501-A');
-    expect(mensaje).toMatch(/🔗 Ver producto: http:\/\/(?:localhost|127\.0\.0\.1):4200\/storefront\/producto\/producto-checkout-real-501/);
+    expect(mensaje).toMatch(/🔗 Ver producto: http:\/\/(?:localhost|127\.0\.0\.1):4200\/tienda\/producto\/producto-checkout-real-501/);
     expect(mensaje).toContain('Cantidad: 2');
     expect(mensaje).toContain('Precio unitario:');
     expect(mensaje).toContain('Subtotal:');
@@ -402,7 +402,7 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
     });
     await enlace.click();
 
-    await expect(page).toHaveURL(/\/storefront\/checkout\?fuente=bd$/);
+    await expect(page).toHaveURL(/\/tienda\/checkout\?fuente=bd$/);
     await expect(page.getByText('La validación del carrito venció antes de abrir WhatsApp. Actualiza precios y existencias para continuar.')).toBeVisible();
     await expect(page.getByRole('link', { name: 'Abrir WhatsApp y continuar' })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Preparar pedido por WhatsApp' })).toBeDisabled();
@@ -447,7 +447,7 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
 
     await llenarComprador(page);
     await page.getByRole('button', { name: 'Simular continuación segura' }).click();
-    await expect(page).toHaveURL(/\/storefront\/pedido\/demo-[a-z0-9]+$/i);
+    await expect(page).toHaveURL(/\/tienda\/pedido\/demo-[a-z0-9]+$/i);
     await expect(page.getByRole('heading', { level: 1, name: 'Vista previa completada' })).toBeVisible();
 
     const recibos = await page.evaluate(() => Object.entries(sessionStorage)

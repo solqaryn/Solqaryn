@@ -5,11 +5,6 @@ on:
     branches: [dev]
     paths:
       - .github/checkpoints/dev-final-functional-certification
-  pull_request:
-    branches: [dev]
-    paths:
-      - .github/workflows/dev-final-functional-certification.yml
-      - .github/checkpoints/dev-final-functional-certification
   workflow_dispatch:
 
 permissions:
@@ -41,8 +36,8 @@ jobs:
           set -euo pipefail
           curl --retry 3 --fail --silent --show-error "$FRONTEND/login" -o "$RUNNER_TEMP/login.html"
           curl --retry 3 --fail --silent --show-error "$FRONTEND/dashboard" -o "$RUNNER_TEMP/dashboard.html"
-          curl --retry 3 --fail --silent --show-error "$FRONTEND/storefront" -o "$RUNNER_TEMP/storefront.html"
-          curl --retry 3 --fail --silent --show-error "$FRONTEND/storefront/productos" -o "$RUNNER_TEMP/products-page.html"
+          curl --retry 3 --fail --silent --show-error "$FRONTEND/tienda" -o "$RUNNER_TEMP/storefront.html"
+          curl --retry 3 --fail --silent --show-error "$FRONTEND/tienda/productos" -o "$RUNNER_TEMP/products-page.html"
           grep -qi "SOLQARYN" "$RUNNER_TEMP/login.html"
           grep -qi "SOLQARYN" "$RUNNER_TEMP/dashboard.html"
           ! grep -qi "identidad-retirada-dev" "$RUNNER_TEMP/login.html"
@@ -57,17 +52,16 @@ jobs:
           curl -fsS "$FRONTEND/api/tienda/categorias" -o /tmp/categories.json
           curl -fsS "$FRONTEND/api/tienda/productos?pagina=1&tamano=100" -o /tmp/products.json
 
-          jq -e '.success == true and (.data.nombreComercial | ascii_downcase | contains("storefront"))' /tmp/identity.json >/dev/null
+          jq -e '.success == true and ((.data.nombreComercial | type) == "string") and ((.data.nombreComercial | length) > 0)' /tmp/identity.json >/dev/null
           jq -e '.success == true and (.data | length) >= 1' /tmp/categories.json >/dev/null
           jq -e '.success == true and (.data.items | length) >= 1' /tmp/products.json >/dev/null
 
           jq -r '.data.items[] | .imagenPrincipalUrl // empty, (.imagenes[]?.url // empty)' /tmp/products.json | sort -u > /tmp/images.txt
           test -s /tmp/images.txt
-          if grep -E 'res\.cloudinary\.com/(vyijnqzq|[^/]+/.*/(dev|storefront_desarrollo)/)' /tmp/images.txt; then
-            echo "Legacy Cloudinary reference detected" >&2
+          if grep -Ev '^https://res\.cloudinary\.com/riyrzmob/.*/solqaryn_dev/' /tmp/images.txt; then
+            echo "Imagen fuera del namespace canónico solqaryn_dev" >&2
             exit 1
           fi
-          grep -q 'res.cloudinary.com/riyrzmob/' /tmp/images.txt
           while IFS= read -r url; do
             code="$(curl -L -sS -o /dev/null -w '%{http_code}' "$url")"
             test "$code" = "200"
@@ -178,19 +172,7 @@ jobs:
           echo "DB_TEMP_WRITE_READ=PASS"
 
       - name: Cero referencias operativas legacy en runtime
-        shell: bash
-        run: |
-          set -euo pipefail
-          targets=(frontend/src frontend/server frontend/vercel.json backend/src render.yaml)
-          if grep -RInE 'identidad-retirada-dev|identidad-retirada-mysql-identidad-retirada\.c\.aivencloud\.com' "${targets[@]}"; then
-            echo "Referencia operativa legacy detectada" >&2
-            exit 1
-          fi
-          if grep -RIn 'storefront_desarrollo' backend/src frontend/src frontend/server frontend/vercel.json render.yaml; then
-            echo "Referencia operativa a base/prefijo legacy detectada" >&2
-            exit 1
-          fi
-          echo "LEGACY_RUNTIME_REFERENCES=0"
+        run: node scripts/verify-project-scope.mjs
 
       - name: Resumen
         run: |

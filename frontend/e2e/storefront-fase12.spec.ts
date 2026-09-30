@@ -204,11 +204,11 @@ test.describe('Storefront Fase 12 — cuenta de cliente y evolución', () => {
     });
 
     await page.goto('/tienda/productos');
-    await expect(page).toHaveURL(/\/storefront\/productos/);
+    await expect(page).toHaveURL(/\/tienda\/productos/);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 
     await page.goto('/tienda/checkout');
-    await expect(page).toHaveURL(/\/storefront\/checkout/);
+    await expect(page).toHaveURL(/\/tienda\/checkout/);
     await expect(page.getByRole('heading', { level: 1, name: 'Confirma tus datos y tu forma de compra' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Tu carrito está vacío' })).toBeVisible();
     expect(llamadasCuenta).toBe(0);
@@ -274,7 +274,7 @@ test.describe('Storefront Fase 12 — cuenta de cliente y evolución', () => {
     await page.goto('/tienda/cuenta');
     await page.locator('details summary').filter({ hasText: 'Pedido #7002' }).click();
     await page.getByRole('button', { name: 'Recomprar con stock y precio actuales' }).click();
-    await expect(page).toHaveURL(/\/storefront\/carrito/);
+    await expect(page).toHaveURL(/\/tienda\/carrito/);
 
     const carrito = await page.evaluate(() => {
       const key = Object.keys(localStorage).find(item => item.startsWith('storefront:carrito:v2:') && item.endsWith(':bd')) || '';
@@ -290,7 +290,7 @@ test.describe('Storefront Fase 12 — cuenta de cliente y evolución', () => {
     await page.goto('/tienda/cuenta');
     await page.locator('details summary').filter({ hasText: 'Pedido #7001' }).click();
     await page.getByRole('button', { name: 'Recomprar con stock y precio actuales' }).click();
-    await expect(page).toHaveURL(/\/storefront\/carrito/);
+    await expect(page).toHaveURL(/\/tienda\/carrito/);
 
     const carrito = await page.evaluate(() => {
       const key = Object.keys(localStorage).find(item => item.startsWith('storefront:carrito:v2:') && item.endsWith(':bd')) || '';

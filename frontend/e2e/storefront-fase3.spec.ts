@@ -126,15 +126,15 @@ test.describe('Storefront Fase 3 — catálogo público independiente', () => {
     await expect(page.locator('article.product-card')).toHaveCount(1);
     await expect(page.locator('article.product-card')).toContainText('Audífonos Wireless Studio');
     await search.press('Enter');
-    await expect(page).toHaveURL(/\/storefront\/productos\?q=Wireless(?:%20|\+)Studio$/);
+    await expect(page).toHaveURL(/\/tienda\/productos\?q=Wireless(?:%20|\+)Studio$/);
 
     await page.getByRole('button', { name: 'Limpiar' }).click();
-    await expect(page).toHaveURL(/\/storefront\/productos$/);
+    await expect(page).toHaveURL(/\/tienda\/productos$/);
     await expect(page.getByRole('status').filter({ hasText: '14 productos encontrados' })).toBeVisible();
 
     const filtros = page.locator('aside.filters');
     await filtros.getByRole('button', { name: /Hogar inteligente/ }).click();
-    await expect(page).toHaveURL(/\/storefront\/productos\?categoria=demo-categoria-6$/);
+    await expect(page).toHaveURL(/\/tienda\/productos\?categoria=demo-categoria-6$/);
     await expect(page.getByRole('status').filter({ hasText: '2 productos encontrados' })).toBeVisible();
     await expect(page.locator('article.product-card')).toHaveCount(2);
 
@@ -201,7 +201,7 @@ test.describe('Storefront Fase 3 — catálogo público independiente', () => {
     await expect(categoriesHeader.getByRole('button', { name: 'Abrir carrito con 1 unidades' })).toBeVisible();
     await expect(categoriesHeader.locator('.cart-copy small')).toContainText('20,990');
     await categoriesHeader.getByRole('button', { name: 'Abrir carrito con 1 unidades' }).click();
-    await expect(page).toHaveURL(/\/storefront\/carrito$/);
+    await expect(page).toHaveURL(/\/tienda\/carrito$/);
     const carrito = page.locator('.cart-item').filter({ hasText: 'Laptop Pro 14' });
     await expect(carrito).toBeVisible();
     await expect(carrito).toContainText('16 GB / 512 GB');

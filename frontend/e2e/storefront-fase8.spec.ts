@@ -102,7 +102,7 @@ test.describe('Storefront Fase 8 — búsqueda, filtros y ordenamiento', () => {
     await expect(page.getByRole('heading', { name: 'No encontramos coincidencias' })).toBeVisible();
     await page.getByRole('button', { name: 'Limpiar filtros' }).click();
     await expect(page.getByRole('status').filter({ hasText: '14 productos encontrados' })).toBeVisible();
-    await expect(page).toHaveURL(/\/storefront\/productos$/);
+    await expect(page).toHaveURL(/\/tienda\/productos$/);
   });
 
   test('móvil mantiene filtros colapsables, acotados y sin overflow horizontal', async ({ page }) => {

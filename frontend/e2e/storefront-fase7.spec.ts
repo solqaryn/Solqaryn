@@ -133,7 +133,7 @@ test.describe('Storefront Fase 7 — home comercial', () => {
     await search.fill('Wireless Studio');
     await search.press('Enter');
 
-    await expect(page).toHaveURL(/\/storefront\/productos\?q=Wireless(?:%20|\+)Studio/);
+    await expect(page).toHaveURL(/\/tienda\/productos\?q=Wireless(?:%20|\+)Studio/);
     await expect(page.getByRole('heading', { level: 1, name: 'Productos', exact: true })).toBeVisible();
     await expect(page.getByRole('status').filter({ hasText: '1 productos encontrados' })).toBeVisible();
     await expect(page.locator('article.product-card')).toContainText('Audífonos Wireless Studio');
@@ -144,7 +144,7 @@ test.describe('Storefront Fase 7 — home comercial', () => {
     await abrirHome(page);
 
     await page.getByRole('button', { name: 'Explorar Audio', exact: true }).click();
-    await expect(page).toHaveURL(/\/storefront\/categoria\/demo-categoria-2$/);
+    await expect(page).toHaveURL(/\/tienda\/categoria\/demo-categoria-2$/);
     await expect(page.getByRole('heading', { level: 1, name: 'Audio', exact: true })).toBeVisible();
   });
 
@@ -156,7 +156,7 @@ test.describe('Storefront Fase 7 — home comercial', () => {
     await expect(destacados).toHaveCount(3);
     await expect(destacados.nth(0)).toContainText('Laptop Pro 14');
     await destacados.nth(0).getByRole('button', { name: 'Ver Laptop Pro 14' }).click();
-    await expect(page).toHaveURL(/\/storefront\/producto\/demo-producto-1$/);
+    await expect(page).toHaveURL(/\/tienda\/producto\/demo-producto-1$/);
     await expect(page.getByRole('heading', { level: 1, name: 'Laptop Pro 14', exact: true })).toBeVisible();
   });
 
@@ -302,11 +302,11 @@ test.describe('Storefront Fase 7 — home comercial', () => {
     await expect(catalogHeader.getByRole('button', { name: 'Abrir carrito con 1 unidades' })).toBeVisible();
     await catalogHeader.getByRole('link', { name: 'Inicio', exact: true }).click();
 
-    await expect(page).toHaveURL(/\/storefront$/);
+    await expect(page).toHaveURL(/\/tienda$/);
     const homeHeader = page.locator('app-storefront-header');
     await expect(homeHeader.getByRole('button', { name: 'Abrir carrito con 1 unidades' })).toBeVisible();
     await homeHeader.getByRole('button', { name: 'Abrir carrito con 1 unidades' }).click();
-    await expect(page).toHaveURL(/\/storefront\/carrito$/);
+    await expect(page).toHaveURL(/\/tienda\/carrito$/);
     await expect(page.locator('.cart-item')).toContainText('Laptop Pro 14');
 
     await page.goto('/tienda');

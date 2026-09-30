@@ -111,7 +111,7 @@ test.describe('Storefront Fase 5 — carrito global y persistente', () => {
     await limpiarCarritos(page);
     await page.reload();
 
-    await expect(page).toHaveURL(/\/storefront\/carrito$/);
+    await expect(page).toHaveURL(/\/tienda\/carrito$/);
     await expect(page.getByRole('heading', { level: 1, name: 'Mi carrito' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Encuentra algo que te encante' })).toBeVisible();
     await expect(page.getByText('Agrega al menos un producto antes de continuar con tu compra.')).toBeVisible();
@@ -137,7 +137,7 @@ test.describe('Storefront Fase 5 — carrito global y persistente', () => {
     await expect(homeHeader.getByRole('button', { name: 'Abrir carrito' })).toBeVisible();
     await expect(homeHeader.locator('.cart-copy small')).toHaveText('Ver carrito');
     await homeHeader.getByRole('link', { name: 'Productos', exact: true }).click();
-    await expect(page).toHaveURL(/\/storefront\/productos$/);
+    await expect(page).toHaveURL(/\/tienda\/productos$/);
     await expect(page.getByRole('status').filter({ hasText: '14 productos encontrados' })).toBeVisible();
 
     const tarjeta = page.locator('article.product-card').filter({ hasText: 'Laptop Pro 14' });
@@ -146,14 +146,14 @@ test.describe('Storefront Fase 5 — carrito global y persistente', () => {
     await expect(catalogHeader.getByRole('button', { name: 'Abrir carrito con 1 unidades' })).toBeVisible();
     await catalogHeader.getByRole('link', { name: 'Inicio', exact: true }).click();
 
-    await expect(page).toHaveURL(/\/storefront$/);
+    await expect(page).toHaveURL(/\/tienda$/);
     await expect(page.locator('app-storefront-header').getByRole('button', { name: 'Abrir carrito con 1 unidades' })).toBeVisible();
     await page.locator('app-storefront-header').getByRole('button', { name: 'Abrir carrito con 1 unidades' }).click();
-    await expect(page).toHaveURL(/\/storefront\/carrito$/);
+    await expect(page).toHaveURL(/\/tienda\/carrito$/);
     await expect(page.locator('.cart-item').filter({ hasText: 'Laptop Pro 14' })).toBeVisible();
 
-    await page.goto('/storefront?carrito=1');
-    await expect(page).toHaveURL(/\/storefront\/carrito$/);
+    await page.goto('/tienda?carrito=1');
+    await expect(page).toHaveURL(/\/tienda\/carrito$/);
   });
 
   test('agregar desde catálogo sincroniza header, página de carrito y sobrevive recarga', async ({ page }) => {
@@ -167,7 +167,7 @@ test.describe('Storefront Fase 5 — carrito global y persistente', () => {
     await expect(page.locator('app-storefront-header').getByRole('button', { name: 'Abrir carrito con 1 unidades' })).toBeVisible();
 
     await page.locator('app-storefront-header').getByRole('button', { name: 'Abrir carrito con 1 unidades' }).click();
-    await expect(page).toHaveURL(/\/storefront\/carrito$/);
+    await expect(page).toHaveURL(/\/tienda\/carrito$/);
     await expect(page.locator('.cart-item').filter({ hasText: 'Laptop Pro 14' })).toBeVisible();
     await expect(page.locator('.cart-summary')).toContainText('1');
 

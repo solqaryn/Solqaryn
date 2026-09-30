@@ -68,7 +68,7 @@ test.describe('Storefront Fase 1 — navegación y header', () => {
     await expect(header.locator('.cart-copy small')).toContainText('18,490');
 
     await header.getByRole('button', { name: 'Abrir carrito con 1 unidades' }).click();
-    await expect(page).toHaveURL(/\/storefront\/carrito$/);
+    await expect(page).toHaveURL(/\/tienda\/carrito$/);
     await expect(page.getByRole('heading', { level: 1, name: 'Mi carrito', exact: true })).toBeVisible();
     await expect(page.locator('.cart-item')).toContainText('Laptop Pro 14');
 
@@ -82,7 +82,7 @@ test.describe('Storefront Fase 1 — navegación y header', () => {
     await expect(page.locator('article.product-card')).toContainText('Audífonos Wireless Studio');
 
     await search.press('Enter');
-    await expect(page).toHaveURL(/\/storefront\/productos\?q=Wireless(?:%20|\+)Studio/);
+    await expect(page).toHaveURL(/\/tienda\/productos\?q=Wireless(?:%20|\+)Studio/);
     await expect.poll(
       () => page.locator('#catalogo-productos').evaluate(element => element.getBoundingClientRect().top),
       { message: 'El buscador debe mantener visible el catálogo canónico.' }

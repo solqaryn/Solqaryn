@@ -231,7 +231,7 @@ test.describe('Storefront Fase 2 — categorías públicas', () => {
     await expect(page.locator('dialog.cart-dialog')).toHaveCount(0);
 
     await page.locator('app-storefront-header').getByRole('link', { name: 'Categorías', exact: true }).first().click();
-    await expect(page).toHaveURL(/\/storefront\/categorias$/);
+    await expect(page).toHaveURL(/\/tienda\/categorias$/);
     const categoriesHeader = page.locator('app-storefront-header');
     await expect(categoriesHeader.getByRole('button', { name: 'Abrir carrito con 1 unidades' })).toBeVisible();
     await expect(categoriesHeader.locator('.cart-copy small')).toContainText('18,490');
@@ -239,26 +239,26 @@ test.describe('Storefront Fase 2 — categorías públicas', () => {
     const search = categoriesHeader.getByRole('searchbox', { name: 'Buscar productos, marcas o modelos' });
     await search.fill('Wireless Studio');
     await search.press('Enter');
-    await expect(page).toHaveURL(/\/storefront\/productos\?q=Wireless(?:%20|\+)Studio$/);
+    await expect(page).toHaveURL(/\/tienda\/productos\?q=Wireless(?:%20|\+)Studio$/);
     await expect(page.getByRole('status').filter({ hasText: '1 productos encontrados' })).toBeVisible();
     await expect(page.locator('article.product-card')).toContainText('Audífonos Wireless Studio');
 
     await page.goto('/tienda/categorias');
     await page.getByRole('link', { name: 'Explorar categoría Audio', exact: true }).click();
-    await expect(page).toHaveURL(/\/storefront\/categoria\/demo-categoria-2$/);
+    await expect(page).toHaveURL(/\/tienda\/categoria\/demo-categoria-2$/);
     await expect(page.getByRole('heading', { level: 1, name: 'Audio', exact: true })).toBeVisible();
     const productosCategoria = page.locator('.category-products-grid .category-product-card');
     await expect(productosCategoria).toHaveCount(3);
     await expect(productosCategoria).toContainText(['Audífonos Wireless Studio', 'Bocina Sound Mini', 'Audífonos Travel']);
     await expect(productosCategoria.first().getByRole('link', { name: /Ver producto/ })).toBeVisible();
     await page.getByRole('link', { name: 'Ver productos de esta categoría', exact: true }).click();
-    await expect(page).toHaveURL(/\/storefront\/productos\?categoria=demo-categoria-2$/);
+    await expect(page).toHaveURL(/\/tienda\/productos\?categoria=demo-categoria-2$/);
     await expect(page.locator('#catalog-results-title')).toHaveText('Audio');
     await expect(page.getByRole('status').filter({ hasText: '3 productos encontrados' })).toBeVisible();
 
     await page.goto('/tienda/categorias');
     await page.locator('app-storefront-header').getByRole('button', { name: 'Abrir carrito con 1 unidades' }).click();
-    await expect(page).toHaveURL(/\/storefront\/carrito$/);
+    await expect(page).toHaveURL(/\/tienda\/carrito$/);
     await expect(page.getByRole('heading', { level: 1, name: 'Mi carrito', exact: true })).toBeVisible();
     await expect(page.locator('.cart-item')).toContainText('Laptop Pro 14');
     await expect(page.locator('app-storefront-header').getByRole('button', { name: 'Abrir carrito con 1 unidades' })).toBeVisible();
@@ -293,7 +293,7 @@ test.describe('Storefront Fase 2 — categorías públicas', () => {
     await page.goto('/tienda/categoria/audio-viejo-21');
     await activarBaseDatos(page);
 
-    await expect(page).toHaveURL(/\/storefront\/categoria\/audio-y-video-21$/);
+    await expect(page).toHaveURL(/\/tienda\/categoria\/audio-y-video-21$/);
     await expect(page.getByRole('heading', { level: 1, name: 'Audio y Vídeo', exact: true })).toBeVisible();
     await expect(page.getByText('Sonido e imagen para tu espacio.', { exact: true })).toBeVisible();
     await expect(page.getByText('Cantidad no disponible', { exact: true })).toBeVisible();
