@@ -191,7 +191,7 @@ function renameActivePaths() {
       if (!existsSync(abs)) return;
       if (!lstatSync(abs).isDirectory()) return;
       if (readdirSync(abs).length === 0) {
-        rmSync(abs, { recursive: false, force: true });
+        rmSync(abs, { recursive: true, force: true });
       }
     });
 }
