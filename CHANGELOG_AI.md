@@ -1,3 +1,16 @@
+## 2026-09-30 — Rebase integral del control-plane al Plan Maestro único SOLQARYN
+
+- Se certificó como único roadmap vivo el Google Doc nativo `PLAN MAESTRO SOLQARYN` (ID `1YdQlNJ312HuziyKb9E-GEt55dcgSmuFGgfsHxyzPUaw`), con 354 objetivos continuos `SQ-000..SQ-353`.
+- El antiguo Doc rector VAEP con contenido ERP-N/M0-M13/V5/Jules fue retirado de la carpeta operativa y preservado sólo en backup histórico.
+- Se creó `SOLQARYN - AUTORIDAD OPERATIVA VAEP` (ID `1frrmekon0pBTrLcXk0yUZSJa4uISjEzrwrni3ja5y38`) como contrato operativo auxiliar; explícitamente no es un segundo Plan Maestro.
+- `Notas SOLQARYN_DEV.docx` queda definida como bandeja de observaciones no ejecutables hasta aprobación e incorporación al Plan Maestro único.
+- El Sheet `SOLQARYN - PLAN MAESTRO DE AUTOMATIZACIONES` fue limpiado de COLA/PLAN_MAESTRO/BITACORA históricos y rebasado a fuentes nuevas: `_MASTER_SOURCE`, `_RUNTIME_SOURCE`, `_AUTOMATION_SOURCE`, `_EVENTS_SOURCE`.
+- PLAN_MAESTRO y COLA visibles ahora contienen exclusivamente los objetivos SQ del Maestro actual y estado runtime derivado por fórmulas; BITACORA visible parte vacía y deriva únicamente eventos nuevos.
+- DASHBOARD, CONFIG, LEYENDA, TAREAS_PROGRAMADAS, CONTROL_TOWER, AUTOMATIZACIONES y TAREAS_DE_SUPERVISION fueron reconciliadas al modelo actual; se retiraron N8/ERP-N/M0/Jules como autoridad vigente.
+- Las 14 pestañas del Sheet tienen protección administrativa; las cuatro fuentes técnicas permanecen ocultas. Nota técnica: Google Drive siempre conserva al propietario capacidad final de edición, por lo que la prohibición absoluta de edición manual se implementa como política + protección + vistas derivadas, no como imposibilidad criptográfica para el propietario.
+- Las diez Tasks canónicas fueron repunteadas al nuevo Plan Maestro/contrato operativo y permanecen deliberadamente **INACTIVAS (0/10)**.
+- No se tocó `main`, PROD, datos productivos, secretos, DNS, certificados ni servicios pagos.
+
 ## 2026-09-29 — Punto 10: Render Free y ruta comercial
 
 - Readback vivo: DEV y PROD continúan en Render `free`; no se compró ni activó ningún plan.
