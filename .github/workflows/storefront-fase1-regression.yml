@@ -1,14 +1,14 @@
-name: VariStoreHn Fase 1 - regresion publica
+name: Storefront Fase 1 - regresion publica
 
 on:
   pull_request:
     branches:
       - dev
     paths:
-      - '.github/workflows/varistorehn-fase1-regression.yml'
-      - 'frontend/e2e/varistorehn-fase1.spec.ts'
-      - 'frontend/scripts/validate-varistorehn-fase1.mjs'
-      - 'frontend/src/app/features/varistorehn/**'
+      - '.github/workflows/storefront-fase1-regression.yml'
+      - 'frontend/e2e/storefront-fase1.spec.ts'
+      - 'frontend/scripts/validate-storefront-fase1.mjs'
+      - 'frontend/src/app/features/storefront/**'
       - 'frontend/src/app/app.routes.ts'
       - 'frontend/src/app/app.component.ts'
       - 'frontend/src/app/app.config.ts'
@@ -27,10 +27,10 @@ on:
     branches:
       - dev
     paths:
-      - '.github/workflows/varistorehn-fase1-regression.yml'
-      - 'frontend/e2e/varistorehn-fase1.spec.ts'
-      - 'frontend/scripts/validate-varistorehn-fase1.mjs'
-      - 'frontend/src/app/features/varistorehn/**'
+      - '.github/workflows/storefront-fase1-regression.yml'
+      - 'frontend/e2e/storefront-fase1.spec.ts'
+      - 'frontend/scripts/validate-storefront-fase1.mjs'
+      - 'frontend/src/app/features/storefront/**'
       - 'frontend/src/app/app.routes.ts'
       - 'frontend/src/app/app.component.ts'
       - 'frontend/src/app/app.config.ts'
@@ -51,7 +51,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: varistorehn-fase1-regression-${{ github.workflow }}-${{ github.ref }}
+  group: storefront-fase1-regression-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -90,35 +90,35 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          nohup npm start -- --host 127.0.0.1 --port 4200 > varistorehn-fase1-regression.log 2>&1 &
+          nohup npm start -- --host 127.0.0.1 --port 4200 > storefront-fase1-regression.log 2>&1 &
 
       - name: Esperar Angular
         shell: bash
         run: |
           set -euo pipefail
           for attempt in $(seq 1 60); do
-            if curl --fail --silent http://127.0.0.1:4200/varistorehn > /dev/null; then
+            if curl --fail --silent http://127.0.0.1:4200/tienda > /dev/null; then
               echo 'Angular listo para la regresion publica de Fase 1.'
               exit 0
             fi
             sleep 2
           done
           echo 'Angular no respondio dentro del tiempo esperado.' >&2
-          cat varistorehn-fase1-regression.log >&2 || true
+          cat storefront-fase1-regression.log >&2 || true
           exit 1
 
       - name: Ejecutar Playwright Fase 1
         env:
           PLAYWRIGHT_TEST_BASE_URL: http://127.0.0.1:4200
-        run: npm run test:e2e:varistorehn-fase1
+        run: npm run test:e2e:storefront-fase1
 
       - name: Publicar evidencia
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: varistorehn-fase1-regression
+          name: storefront-fase1-regression
           path: |
-            frontend/varistorehn-fase1-regression.log
+            frontend/storefront-fase1-regression.log
             frontend/playwright-report/
             frontend/test-results/
           if-no-files-found: warn

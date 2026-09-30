@@ -1,61 +1,61 @@
-name: VariStoreHn Fase 6 - checkout y pedido
+name: Storefront Fase 6 - checkout y pedido
 
 on:
   push:
     branches:
       - dev
-      - chatgpt/varistorehn-fase6-checkout
+      - chatgpt/storefront-fase6-checkout
     paths:
-      - 'frontend/src/app/features/varistorehn/**'
+      - 'frontend/src/app/features/storefront/**'
       - 'frontend/src/app/app.routes.ts'
-      - 'frontend/e2e/varistorehn-fase1.spec.ts'
-      - 'frontend/e2e/varistorehn-fase2.spec.ts'
-      - 'frontend/e2e/varistorehn-fase3.spec.ts'
-      - 'frontend/e2e/varistorehn-fase4.spec.ts'
-      - 'frontend/e2e/varistorehn-fase5.spec.ts'
-      - 'frontend/e2e/varistorehn-fase6.spec.ts'
-      - 'frontend/scripts/validate-varistorehn-fase1.mjs'
-      - 'frontend/scripts/validate-varistorehn-fase2.mjs'
-      - 'frontend/scripts/validate-varistorehn-fase3.mjs'
-      - 'frontend/scripts/validate-varistorehn-fase4.mjs'
-      - 'frontend/scripts/validate-varistorehn-fase5.mjs'
-      - 'frontend/scripts/validate-varistorehn-fase6.mjs'
+      - 'frontend/e2e/storefront-fase1.spec.ts'
+      - 'frontend/e2e/storefront-fase2.spec.ts'
+      - 'frontend/e2e/storefront-fase3.spec.ts'
+      - 'frontend/e2e/storefront-fase4.spec.ts'
+      - 'frontend/e2e/storefront-fase5.spec.ts'
+      - 'frontend/e2e/storefront-fase6.spec.ts'
+      - 'frontend/scripts/validate-storefront-fase1.mjs'
+      - 'frontend/scripts/validate-storefront-fase2.mjs'
+      - 'frontend/scripts/validate-storefront-fase3.mjs'
+      - 'frontend/scripts/validate-storefront-fase4.mjs'
+      - 'frontend/scripts/validate-storefront-fase5.mjs'
+      - 'frontend/scripts/validate-storefront-fase6.mjs'
       - 'frontend/package.json'
       - 'frontend/package-lock.json'
       - 'backend/src/API/Controllers/TiendaController.cs'
       - 'backend/src/Application/DTOs/TiendaCheckoutDto.cs'
       - 'backend/tests/InventoryApp.Tests/API/Controllers/TiendaControllerCheckoutTests.cs'
-      - '.github/workflows/varistorehn-fase6-regression.yml'
+      - '.github/workflows/storefront-fase6-regression.yml'
   pull_request:
     branches:
       - dev
     paths:
-      - 'frontend/src/app/features/varistorehn/**'
+      - 'frontend/src/app/features/storefront/**'
       - 'frontend/src/app/app.routes.ts'
-      - 'frontend/e2e/varistorehn-fase1.spec.ts'
-      - 'frontend/e2e/varistorehn-fase2.spec.ts'
-      - 'frontend/e2e/varistorehn-fase3.spec.ts'
-      - 'frontend/e2e/varistorehn-fase4.spec.ts'
-      - 'frontend/e2e/varistorehn-fase5.spec.ts'
-      - 'frontend/e2e/varistorehn-fase6.spec.ts'
-      - 'frontend/scripts/validate-varistorehn-fase1.mjs'
-      - 'frontend/scripts/validate-varistorehn-fase2.mjs'
-      - 'frontend/scripts/validate-varistorehn-fase3.mjs'
-      - 'frontend/scripts/validate-varistorehn-fase4.mjs'
-      - 'frontend/scripts/validate-varistorehn-fase5.mjs'
-      - 'frontend/scripts/validate-varistorehn-fase6.mjs'
+      - 'frontend/e2e/storefront-fase1.spec.ts'
+      - 'frontend/e2e/storefront-fase2.spec.ts'
+      - 'frontend/e2e/storefront-fase3.spec.ts'
+      - 'frontend/e2e/storefront-fase4.spec.ts'
+      - 'frontend/e2e/storefront-fase5.spec.ts'
+      - 'frontend/e2e/storefront-fase6.spec.ts'
+      - 'frontend/scripts/validate-storefront-fase1.mjs'
+      - 'frontend/scripts/validate-storefront-fase2.mjs'
+      - 'frontend/scripts/validate-storefront-fase3.mjs'
+      - 'frontend/scripts/validate-storefront-fase4.mjs'
+      - 'frontend/scripts/validate-storefront-fase5.mjs'
+      - 'frontend/scripts/validate-storefront-fase6.mjs'
       - 'frontend/package.json'
       - 'frontend/package-lock.json'
       - 'backend/src/API/Controllers/TiendaController.cs'
       - 'backend/src/Application/DTOs/TiendaCheckoutDto.cs'
       - 'backend/tests/InventoryApp.Tests/API/Controllers/TiendaControllerCheckoutTests.cs'
-      - '.github/workflows/varistorehn-fase6-regression.yml'
+      - '.github/workflows/storefront-fase6-regression.yml'
 
 permissions:
   contents: read
 
 concurrency:
-  group: varistorehn-fase6-${{ github.workflow }}-${{ github.ref }}
+  group: storefront-fase6-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -85,13 +85,13 @@ jobs:
         run: dotnet build InventoryApp.sln --configuration Release --no-restore
 
       - name: Pruebas quirurgicas de checkout publico
-        run: dotnet test tests/InventoryApp.Tests/InventoryApp.Tests.csproj --configuration Release --no-build --filter "FullyQualifiedName~TiendaControllerCheckoutTests" --logger "trx;LogFileName=varistorehn-fase6.trx"
+        run: dotnet test tests/InventoryApp.Tests/InventoryApp.Tests.csproj --configuration Release --no-build --filter "FullyQualifiedName~TiendaControllerCheckoutTests" --logger "trx;LogFileName=storefront-fase6.trx"
 
       - name: Publicar resultados backend
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: varistorehn-fase6-backend
+          name: storefront-fase6-backend
           path: backend/tests/InventoryApp.Tests/TestResults/*.trx
           if-no-files-found: warn
           retention-days: 7
@@ -131,60 +131,60 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          nohup npm start -- --host 127.0.0.1 --port 4200 > varistorehn-fase6-regression.log 2>&1 &
+          nohup npm start -- --host 127.0.0.1 --port 4200 > storefront-fase6-regression.log 2>&1 &
 
       - name: Esperar Angular
         shell: bash
         run: |
           set -euo pipefail
           for attempt in $(seq 1 60); do
-            if curl --fail --silent http://127.0.0.1:4200/varistorehn/checkout > /dev/null; then
+            if curl --fail --silent http://127.0.0.1:4200/tienda/checkout > /dev/null; then
               echo 'Angular listo para la regresion publica de Fase 6.'
               exit 0
             fi
             sleep 2
           done
           echo 'Angular no respondio dentro del tiempo esperado.' >&2
-          cat varistorehn-fase6-regression.log >&2 || true
+          cat storefront-fase6-regression.log >&2 || true
           exit 1
 
       - name: Regresion Fase 1
         env:
           PLAYWRIGHT_TEST_BASE_URL: http://127.0.0.1:4200
-        run: npm run test:e2e:varistorehn-fase1
+        run: npm run test:e2e:storefront-fase1
 
       - name: Regresion Fase 2
         env:
           PLAYWRIGHT_TEST_BASE_URL: http://127.0.0.1:4200
-        run: npm run test:e2e:varistorehn-fase2
+        run: npm run test:e2e:storefront-fase2
 
       - name: Regresion Fase 3
         env:
           PLAYWRIGHT_TEST_BASE_URL: http://127.0.0.1:4200
-        run: npm run test:e2e:varistorehn-fase3
+        run: npm run test:e2e:storefront-fase3
 
       - name: Regresion Fase 4
         env:
           PLAYWRIGHT_TEST_BASE_URL: http://127.0.0.1:4200
-        run: npm run test:e2e:varistorehn-fase4
+        run: npm run test:e2e:storefront-fase4
 
       - name: Regresion Fase 5
         env:
           PLAYWRIGHT_TEST_BASE_URL: http://127.0.0.1:4200
-        run: npm run test:e2e:varistorehn-fase5
+        run: npm run test:e2e:storefront-fase5
 
       - name: Playwright Fase 6
         env:
           PLAYWRIGHT_TEST_BASE_URL: http://127.0.0.1:4200
-        run: npm run test:e2e:varistorehn-fase6
+        run: npm run test:e2e:storefront-fase6
 
       - name: Publicar evidencia frontend
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: varistorehn-fase6-frontend
+          name: storefront-fase6-frontend
           path: |
-            frontend/varistorehn-fase6-regression.log
+            frontend/storefront-fase6-regression.log
             frontend/playwright-report/
             frontend/test-results/
           if-no-files-found: warn

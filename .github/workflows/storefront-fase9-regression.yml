@@ -1,14 +1,14 @@
-name: VariStoreHn Fase 9 - ofertas inventario
+name: Storefront Fase 9 - ofertas inventario
 
 on:
   push:
     branches:
       - dev
     paths:
-      - 'frontend/src/app/features/varistorehn/**'
+      - 'frontend/src/app/features/storefront/**'
       - 'frontend/src/app/app.routes.ts'
-      - 'frontend/e2e/varistorehn-fase*.spec.ts'
-      - 'frontend/scripts/validate-varistorehn-fase*.mjs'
+      - 'frontend/e2e/storefront-fase*.spec.ts'
+      - 'frontend/scripts/validate-storefront-fase*.mjs'
       - 'frontend/package.json'
       - 'frontend/package-lock.json'
       - 'backend/src/API/Controllers/TiendaController.cs'
@@ -29,14 +29,14 @@ on:
       - 'backend/tests/InventoryApp.Tests/InventarioPublicoServiceTests.cs'
       - 'backend/tests/InventoryApp.Tests/API/Controllers/TiendaController*.cs'
       - 'scripts/quality/priority4_quality_audit.py'
-      - '.github/workflows/varistorehn-fase9-regression.yml'
+      - '.github/workflows/storefront-fase9-regression.yml'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: varistorehn-fase9-${{ github.workflow }}-${{ github.ref }}
+  group: storefront-fase9-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -81,16 +81,16 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          nohup npm start -- --host 127.0.0.1 --port 4200 > varistorehn-fase9-regression.log 2>&1 &
+          nohup npm start -- --host 127.0.0.1 --port 4200 > storefront-fase9-regression.log 2>&1 &
       - name: Esperar Angular
         shell: bash
         run: |
           set -euo pipefail
           for attempt in $(seq 1 60); do
-            if curl --fail --silent http://127.0.0.1:4200/varistorehn/ofertas > /dev/null; then exit 0; fi
+            if curl --fail --silent http://127.0.0.1:4200/tienda/ofertas > /dev/null; then exit 0; fi
             sleep 2
           done
-          cat varistorehn-fase9-regression.log >&2 || true
+          cat storefront-fase9-regression.log >&2 || true
           exit 1
       - name: Regresion Fases 1-9
         env:
@@ -99,15 +99,15 @@ jobs:
         run: |
           set -euo pipefail
           for fase in 1 2 3 4 5 6 7 8 9; do
-            npm run "test:e2e:varistorehn-fase${fase}"
+            npm run "test:e2e:storefront-fase${fase}"
           done
       - name: Evidencia
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: varistorehn-fase9
+          name: storefront-fase9
           path: |
-            frontend/varistorehn-fase9-regression.log
+            frontend/storefront-fase9-regression.log
             frontend/playwright-report/
             frontend/test-results/
           if-no-files-found: warn

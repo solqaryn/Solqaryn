@@ -1,43 +1,43 @@
-name: VariStoreHn Fase 3 - regresion catalogo
+name: Storefront Fase 3 - regresion catalogo
 
 on:
   push:
     branches:
       - dev
-      - chatgpt/varistorehn-fase3-catalogo
+      - chatgpt/storefront-fase3-catalogo
     paths:
-      - 'frontend/src/app/features/varistorehn/**'
+      - 'frontend/src/app/features/storefront/**'
       - 'frontend/src/app/app.routes.ts'
-      - 'frontend/e2e/varistorehn-fase1.spec.ts'
-      - 'frontend/e2e/varistorehn-fase2.spec.ts'
-      - 'frontend/e2e/varistorehn-fase3.spec.ts'
-      - 'frontend/scripts/validate-varistorehn-fase1.mjs'
-      - 'frontend/scripts/validate-varistorehn-fase2.mjs'
-      - 'frontend/scripts/validate-varistorehn-fase3.mjs'
+      - 'frontend/e2e/storefront-fase1.spec.ts'
+      - 'frontend/e2e/storefront-fase2.spec.ts'
+      - 'frontend/e2e/storefront-fase3.spec.ts'
+      - 'frontend/scripts/validate-storefront-fase1.mjs'
+      - 'frontend/scripts/validate-storefront-fase2.mjs'
+      - 'frontend/scripts/validate-storefront-fase3.mjs'
       - 'frontend/package.json'
       - 'frontend/package-lock.json'
-      - '.github/workflows/varistorehn-fase3-regression.yml'
+      - '.github/workflows/storefront-fase3-regression.yml'
   pull_request:
     branches:
       - dev
     paths:
-      - 'frontend/src/app/features/varistorehn/**'
+      - 'frontend/src/app/features/storefront/**'
       - 'frontend/src/app/app.routes.ts'
-      - 'frontend/e2e/varistorehn-fase1.spec.ts'
-      - 'frontend/e2e/varistorehn-fase2.spec.ts'
-      - 'frontend/e2e/varistorehn-fase3.spec.ts'
-      - 'frontend/scripts/validate-varistorehn-fase1.mjs'
-      - 'frontend/scripts/validate-varistorehn-fase2.mjs'
-      - 'frontend/scripts/validate-varistorehn-fase3.mjs'
+      - 'frontend/e2e/storefront-fase1.spec.ts'
+      - 'frontend/e2e/storefront-fase2.spec.ts'
+      - 'frontend/e2e/storefront-fase3.spec.ts'
+      - 'frontend/scripts/validate-storefront-fase1.mjs'
+      - 'frontend/scripts/validate-storefront-fase2.mjs'
+      - 'frontend/scripts/validate-storefront-fase3.mjs'
       - 'frontend/package.json'
       - 'frontend/package-lock.json'
-      - '.github/workflows/varistorehn-fase3-regression.yml'
+      - '.github/workflows/storefront-fase3-regression.yml'
 
 permissions:
   contents: read
 
 concurrency:
-  group: varistorehn-fase3-${{ github.workflow }}-${{ github.ref }}
+  group: storefront-fase3-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -76,45 +76,45 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          nohup npm start -- --host 127.0.0.1 --port 4200 > varistorehn-fase3-regression.log 2>&1 &
+          nohup npm start -- --host 127.0.0.1 --port 4200 > storefront-fase3-regression.log 2>&1 &
 
       - name: Esperar Angular
         shell: bash
         run: |
           set -euo pipefail
           for attempt in $(seq 1 60); do
-            if curl --fail --silent http://127.0.0.1:4200/varistorehn/productos > /dev/null; then
+            if curl --fail --silent http://127.0.0.1:4200/tienda/productos > /dev/null; then
               echo 'Angular listo para la regresion publica de Fase 3.'
               exit 0
             fi
             sleep 2
           done
           echo 'Angular no respondio dentro del tiempo esperado.' >&2
-          cat varistorehn-fase3-regression.log >&2 || true
+          cat storefront-fase3-regression.log >&2 || true
           exit 1
 
       - name: Regresion Fase 1
         env:
           PLAYWRIGHT_TEST_BASE_URL: http://127.0.0.1:4200
-        run: npm run test:e2e:varistorehn-fase1
+        run: npm run test:e2e:storefront-fase1
 
       - name: Regresion Fase 2
         env:
           PLAYWRIGHT_TEST_BASE_URL: http://127.0.0.1:4200
-        run: npm run test:e2e:varistorehn-fase2
+        run: npm run test:e2e:storefront-fase2
 
       - name: Playwright Fase 3
         env:
           PLAYWRIGHT_TEST_BASE_URL: http://127.0.0.1:4200
-        run: npm run test:e2e:varistorehn-fase3
+        run: npm run test:e2e:storefront-fase3
 
       - name: Publicar evidencia
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: varistorehn-fase3-regression
+          name: storefront-fase3-regression
           path: |
-            frontend/varistorehn-fase3-regression.log
+            frontend/storefront-fase3-regression.log
             frontend/playwright-report/
             frontend/test-results/
           if-no-files-found: warn
