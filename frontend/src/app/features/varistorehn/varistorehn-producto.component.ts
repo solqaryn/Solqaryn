@@ -15,6 +15,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, Subscription, map, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { cloudinaryResponsiveSrcset, cloudinaryResponsiveUrl } from '../../shared/cloudinary-image.util';
 import { VaristorehnIdentidadService } from './varistorehn-identidad.service';
 import { construirEnlaceWhatsApp } from '../../core/services/whatsapp-share.service';
 import { mensajeWhatsappCompraDirecta } from './varistorehn-checkout.rules';
@@ -371,6 +372,13 @@ export class VaristorehnProductoComponent implements OnInit {
     this.restaurarFocoLightbox = true; this.lightboxAbierto.set(false);
     if (devolverFoco) queueMicrotask(() => this.botonImagenPrincipal?.nativeElement.focus());
   }
+  imagenCloudinary(url: string | null | undefined, width = 800): string {
+    return cloudinaryResponsiveUrl(url, width);
+  }
+  srcsetCloudinary(url: string | null | undefined): string | null {
+    return cloudinaryResponsiveSrcset(url);
+  }
+
   imagenValida(url?: string): boolean { return Boolean(url && !this.imagenesFallidas().has(url)); }
   errorImagen(url: string): void {
     this.imagenesFallidas.update(actual => new Set([...actual, url]));
