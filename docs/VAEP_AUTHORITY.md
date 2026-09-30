@@ -83,7 +83,7 @@ Reglas:
 - Cinco slots primarios: `:00/:12/:24/:36/:48`, responsabilidad operativa de Javier Mejía.
 - Cinco slots supervisores: `:05/:17/:29/:41/:53`, responsabilidad operativa de Alex Morales.
 - IDs canónicos Primary (Javier): `:00=6aa15346f5408191bdd9043fd26ff7aa`, `:12=6aa1534deee481918280def1343adcfa`, `:24=6abd70e42cb4819190b3b28916dc9dbb`, `:36=6aa1535a51508191a610e6cdb90a2a4d`, `:48=6aa1535f8cd48191b73e10f17843372a`.
-- IDs canónicos Supervisor (Alex): `:05=6abd7946e7c881919c60ed6b3bf9a81a`, `:17=6abd79517d908191b08f770920ae63d4`, `:29=6abd795d81d08191b58518eddd62ffac`, `:41=6abd7970c2288191ac452301b3bc4df2`, `:53=6abd797bbf008191a9939cc2ccc11a06`.
+- IDs canónicos Supervisor (Alex): `:05=6abd62255ae88191a2dba6e1b00d3b4d`, `:17=6abd6235e100819195785fc76a44a8e0`, `:29=6abd6241c3e48191a8856ed7b0f42c5c`, `:41=6abd624e5e108191bef6bb879559328c`, `:53=6abd625b397c8191a49904227946a20f`.
 - Las tareas equivalentes antiguas en la cuenta de Javier están RETIRADAS e inactivas; no son canónicas ni deben reactivarse.
 - Un slot no termina en reporte o espera si existe acción material segura.
 - Un checkpoint es un disparador, no una frontera de ownership.
