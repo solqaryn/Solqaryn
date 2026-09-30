@@ -101,6 +101,7 @@
       <div><app-store-icon nombre="bolsa" /><span><strong>Continúa en tu carrito</strong><small>La selección se valida antes de cerrar la compra</small></span></div>
     </section>
 
+    @defer (on idle) {
     <section class="container categories-section" aria-labelledby="categories-title" [attr.aria-busy]="estadoCategorias() === 'loading'">
       <div class="section-head">
         <div><p class="eyebrow">EXPLORA POR CATEGORÍA</p><h2 id="categories-title">Encuentra una ruta rápida a lo que necesitas</h2></div>
@@ -198,6 +199,8 @@
         @if (identidad.config().telefono) { <span>{{ identidad.config().telefono }}</span> }
       </div>
     </section>
+    }
+
   </main>
 
   @if (identidad.config().piePaginaActivo) {
