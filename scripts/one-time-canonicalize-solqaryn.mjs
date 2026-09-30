@@ -202,7 +202,7 @@ function normalizePublicStorefrontRoutes() {
     if (!isTextFile(file)) continue;
     mutateTextFile(file, function (input) {
       let value = input;
-      value = value.replace(/\/storefront(?=\/|['"\s<])/g, '/tienda');
+      value = value.replace(/(['"`])\/storefront(?=\/|['"`])/g, '$1/tienda');
       value = value.replace(/path:\s*'storefront(?=\/|')/g, function (match) {
         return match.replace('storefront', 'tienda');
       });
