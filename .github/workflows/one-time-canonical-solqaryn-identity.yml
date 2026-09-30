@@ -105,6 +105,7 @@ jobs:
           # this one-time driver untouched in this push; they are published
           # atomically afterward through the repository connector.
           git restore --source=HEAD -- .github/workflows scripts/one-time-canonicalize-solqaryn.mjs
+          git clean -fd -- .github/workflows
 
           git add -A
           if git diff --cached --quiet; then
