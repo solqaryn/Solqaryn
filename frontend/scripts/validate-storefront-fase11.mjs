@@ -58,7 +58,7 @@ for (const token of ['Title', 'Meta', 'link[rel="canonical"]', 'og:title', 'og:i
 }
 expect(seoService.includes('noindex,nofollow,noarchive'), 'SEO dinámico debe poder bloquear rutas privadas y entornos no publicados.');
 expect(seoService.includes("return host === 'solqaryn-prod.vercel.app'"), 'El cliente solo debe habilitar indexación en el host productivo autorizado.');
-expect(seoUtilsSource.includes("return hostFromRequest(req) === PRODUCTION_HOST"), 'El SEO server-side debe fallar cerrado para cualquier host no autorizado.');
+expect(seoUtilsSource.includes("resolveEnvironmentBinding") && seoUtilsSource.includes("binding.seoIndexingEnabled") && seoUtilsSource.includes("new URL(binding.publicOrigin).hostname"), 'El SEO server-side debe usar binding explícito y fallar cerrado para cualquier host no autorizado.');
 expect(!seoUtilsSource.includes('nombreComercial || data?.nombreVisibleSistema'), 'El SEO server-side nunca debe caer al nombre interno si falta la marca comercial.');
 expect(!appComponent.includes('nombreComercial || this.identidad.nombreSistema()'), 'El SEO cliente nunca debe caer al nombre interno si falta la marca comercial.');
 expect(!productoTs.includes('nombreComercial || this.identidad.nombreSistema()'), 'Producto público nunca debe caer al nombre interno.');
@@ -111,9 +111,21 @@ if (vercel) {
   expect(rewrites.some(item => item.source === '/tienda/categoria/:slug' && String(item.destination).includes('kind=category')), 'Bots de categoría deben recibir HTML SEO server-side.');
   expect(rewrites.some(item => item.source === '/api/:path*'), 'El proxy API existente debe preservarse.');
   expect(!rewrites.some(item => item.source === '/' && String(item.destination).includes('kind=home')), 'La raiz SOLQARYN no debe reescribirse al SEO del cliente Storefront.');
-  expect(rewrites.some(item => item.source === '/api/:path*' && String(item.destination).includes('solqaryn-api-dev-fxx8.onrender.com')), 'El proxy DEV debe usar el hostname canonico real de Render.');
+  expect(rewrites.some(item => item.source === '/api/:path*' && item.destination === '/api/backend-proxy?path=:path*'), 'El proxy API debe usar la frontera project-bound local y no seleccionar Render por hostname.');
+  expect(!rewrites.some(item => String(item.destination).includes('onrender.com')), 'Vercel no debe contener fallback directo a Render DEV/PROD.');
   expect(rewrites.at(-1)?.source === '/(.*)' && rewrites.at(-1)?.destination === '/index.html', 'El fallback SPA debe permanecer al final.');
 }
+
+const previousBindingEnv = {
+  SOLQARYN_ENV: process.env.SOLQARYN_ENV,
+  API_UPSTREAM: process.env.API_UPSTREAM,
+  PUBLIC_ORIGIN: process.env.PUBLIC_ORIGIN,
+  SEO_INDEXING_ENABLED: process.env.SEO_INDEXING_ENABLED
+};
+process.env.SOLQARYN_ENV = 'PROD';
+process.env.API_UPSTREAM = 'https://solqaryn-api-prod.onrender.com';
+process.env.PUBLIC_ORIGIN = 'https://solqaryn-prod.vercel.app';
+process.env.SEO_INDEXING_ENABLED = 'true';
 
 const seoHandler = require('../api/seo.js');
 const robotsHandler = require('../api/robots.js');
@@ -226,6 +238,10 @@ try {
   forceSitemapFailure = false;
 } finally {
   globalThis.fetch = originalFetch;
+  for (const [key, value] of Object.entries(previousBindingEnv)) {
+    if (value === undefined) delete process.env[key];
+    else process.env[key] = value;
+  }
 }
 
 if (failures.length) {
