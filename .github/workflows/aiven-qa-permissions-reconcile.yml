@@ -23,6 +23,7 @@ jobs:
       AIVEN_SERVICE: solqaryn-mysql
       QA_USER: solqaryn_qa_user
       QA_DB: solqaryn_qa
+      TEMP_ADMIN: solqaryn_qa_grant_admin
     steps:
       - name: Instalar cliente MySQL
         shell: bash
@@ -31,75 +32,112 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y mysql-client
 
-      - name: Resolver credencial administrativa Aiven sin exponerla
+      - name: Crear administrador temporal Aiven
         shell: bash
         run: |
           set -euo pipefail
           test -n "$AIVEN_TOKEN"
           python3 - <<'PY'
-          import json, os, urllib.request
+          import json, os, urllib.request, urllib.error
 
           token=os.environ['AIVEN_TOKEN'].strip()
           project=os.environ['AIVEN_PROJECT']
           service=os.environ['AIVEN_SERVICE']
-          url=f'https://api.aiven.io/v1/project/{project}/service/{service}/user/avnadmin'
-          req=urllib.request.Request(
-              url,
-              headers={
-                  'Authorization': f'aivenv1 {token}',
-                  'Accept': 'application/json',
-                  'User-Agent': 'SOLQARYN-Aiven-QA-Permissions/1.0'
-              }
-          )
-          with urllib.request.urlopen(req, timeout=30) as resp:
-              payload=json.load(resp)
+          username=os.environ['TEMP_ADMIN']
+          root='https://api.aiven.io/v1'
+          base=f'/project/{project}/service/{service}/user'
+          headers={
+              'Authorization': f'aivenv1 {token}',
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'User-Agent': 'SOLQARYN-Aiven-QA-Permissions/1.0'
+          }
 
-          def find_password(v):
-              if isinstance(v, dict):
-                  for k, x in v.items():
-                      if k.lower() == 'password' and isinstance(x, str) and x:
-                          return x
-                  for x in v.values():
-                      found=find_password(x)
-                      if found:
-                          return found
-              elif isinstance(v, list):
-                  for x in v:
-                      found=find_password(x)
-                      if found:
-                          return found
-              return None
+          def request(path, method='GET', body=None, allow_404=False):
+              data=json.dumps(body).encode() if body is not None else None
+              req=urllib.request.Request(root+path, data=data, headers=headers, method=method)
+              try:
+                  with urllib.request.urlopen(req, timeout=30) as resp:
+                      raw=resp.read()
+                      return json.loads(raw) if raw else {}
+              except urllib.error.HTTPError as exc:
+                  if allow_404 and exc.code == 404:
+                      return None
+                  raise SystemExit(f'Aiven API HTTP {exc.code} en operacion temporal QA')
 
-          password=find_password(payload)
+          existing=request(f'{base}/{username}', allow_404=True)
+          if existing is not None:
+              request(f'{base}/{username}', method='DELETE')
+
+          created=request(base, method='POST', body={
+              'username': username,
+              'authentication': 'caching_sha2_password'
+          })
+          password=created.get('password')
           if not password:
-              raise SystemExit('Aiven API no entrego credencial administrativa utilizable.')
+              details=request(f'{base}/{username}')
+              password=details.get('password')
+          if not isinstance(password, str) or not password:
+              raise SystemExit('Aiven no entrego password del administrador temporal.')
+
           print(f'::add-mask::{password}')
           with open(os.environ['GITHUB_ENV'], 'a', encoding='utf-8') as env_file:
-              env_file.write(f'AVNADMIN_PASSWORD={password}\\n')
+              env_file.write(f'TEMP_ADMIN_PASSWORD={password}\\n')
           PY
 
       - name: Restringir grants del usuario QA
         shell: bash
         run: |
           set -euo pipefail
-          export MYSQL_PWD="$AVNADMIN_PASSWORD"
+          export MYSQL_PWD="$TEMP_ADMIN_PASSWORD"
 
-          account_host="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u avnadmin --ssl-mode=REQUIRED mysql             --batch --skip-column-names             -e "SELECT Host FROM mysql.user WHERE User='${QA_USER}' ORDER BY Host LIMIT 1;")"
+          account_host="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$TEMP_ADMIN" --ssl-mode=REQUIRED mysql             --batch --skip-column-names             -e "SELECT Host FROM mysql.user WHERE User='${QA_USER}' ORDER BY Host LIMIT 1;")"
 
           test -n "$account_host"
           case "$account_host" in
             *[!A-Za-z0-9.%:_-]*) echo "Host de cuenta inesperado." >&2; exit 31 ;;
           esac
 
-          mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u avnadmin --ssl-mode=REQUIRED mysql <<SQL
+          mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$TEMP_ADMIN" --ssl-mode=REQUIRED mysql <<SQL
           REVOKE ALL PRIVILEGES, GRANT OPTION FROM '${QA_USER}'@'${account_host}';
           GRANT ALL PRIVILEGES ON \`${QA_DB}\`.* TO '${QA_USER}'@'${account_host}';
           SQL
 
-          grants="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u avnadmin --ssl-mode=REQUIRED mysql             --batch --skip-column-names             -e "SHOW GRANTS FOR '${QA_USER}'@'${account_host}';")"
+          grants="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$TEMP_ADMIN" --ssl-mode=REQUIRED mysql             --batch --skip-column-names             -e "SHOW GRANTS FOR '${QA_USER}'@'${account_host}';")"
 
           echo "$grants" | grep -Fq "\`${QA_DB}\`.*"
           ! echo "$grants" | grep -Eq 'ON \*\.\*|WITH GRANT OPTION'
           ! echo "$grants" | grep -Fq '\`solqaryn_dev\`.*'
           ! echo "$grants" | grep -Fq '\`solqaryn_prod\`.*'
           echo "AIVEN_QA_GRANTS_RECONCILED=PASS"
+
+      - name: Eliminar administrador temporal Aiven
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os, urllib.request, urllib.error
+
+          token=os.environ['AIVEN_TOKEN'].strip()
+          project=os.environ['AIVEN_PROJECT']
+          service=os.environ['AIVEN_SERVICE']
+          username=os.environ['TEMP_ADMIN']
+          url=f'https://api.aiven.io/v1/project/{project}/service/{service}/user/{username}'
+          req=urllib.request.Request(
+              url,
+              headers={
+                  'Authorization': f'aivenv1 {token}',
+                  'Accept': 'application/json',
+                  'User-Agent': 'SOLQARYN-Aiven-QA-Permissions/1.0'
+              },
+              method='DELETE'
+          )
+          try:
+              with urllib.request.urlopen(req, timeout=30):
+                  pass
+          except urllib.error.HTTPError as exc:
+              if exc.code != 404:
+                  raise
+          print('TEMP_AIVEN_ADMIN_REMOVED=PASS')
+          PY
