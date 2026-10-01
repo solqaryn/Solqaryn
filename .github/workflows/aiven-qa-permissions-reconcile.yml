@@ -69,11 +69,10 @@ jobs:
           if existing is not None:
               request(f'{base}/{username}', method='DELETE')
 
-          request(base, method='POST', body={
+          created=request(base, method='POST', body={
               'username': username,
               'authentication': 'caching_sha2_password'
           })
-          created=request(f'{base}/{username}/reset-credentials', method='POST')
           def find_password(v):
               if isinstance(v, dict):
                   for k, x in v.items():
@@ -91,11 +90,11 @@ jobs:
               return None
 
           password=find_password(created)
-          if not password:
-              details=request(f'{base}/{username}')
+          if not password or password == '<redacted>':
+              details=request(f'{base}/{username}?include_secrets=true')
               password=find_password(details)
-          if not isinstance(password, str) or not password:
-              raise SystemExit('Aiven no entrego password del administrador temporal.')
+          if not isinstance(password, str) or not password or password == '<redacted>':
+              raise SystemExit('Aiven no entrego password utilizable del administrador temporal.')
 
           print(f'::add-mask::{password}')
           with open(os.environ['GITHUB_ENV'], 'a', encoding='utf-8') as env_file:
