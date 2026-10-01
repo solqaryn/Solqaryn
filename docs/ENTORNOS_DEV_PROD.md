@@ -39,7 +39,7 @@ El contrato de variables vive en `docs/RENDER_ENVIRONMENT_CONTRACT.md` y exige p
 - DEV puede aplicar migraciones de la app según política explícita.
 - PROD no aplica migraciones automáticamente.
 
-La base productiva nueva no recibe la data histórica de VariStoreHN hasta el cierre final de plataforma y autorización de migración.
+La migración histórica de VariStoreHN hacia `solqaryn_prod` ya fue ejecutada y certificada. Una futura promoción de código no repite esa migración ni usa DEV como fuente de datos; cualquier nueva operación de datos productivos requiere autorización explícita.
 
 ## Cloudinary
 
@@ -69,7 +69,7 @@ La base productiva nueva no recibe la data histórica de VariStoreHN hasta el ci
 ## Cloudflare
 
 - DEV no depende de dominio custom mientras use el dominio administrado por Vercel.
-- La activación DNS de PROD se hace únicamente después de crear y certificar el frontend PROD corporativo.
+- El frontend PROD corporativo ya existe. El cutover del dominio personalizado permanece deliberadamente aplazado; no forma parte de esta fase ni de una futura promoción salvo autorización específica.
 - Infraestructura personal/legacy no se usa como fallback.
 
 ## Correo
@@ -86,13 +86,11 @@ DEV y PROD usan el mismo contrato:
 - sin contraseña SMTP;
 - sin client secret OAuth2.
 
-La certificación real exige `SMTP_OK` y un envío controlado en DEV antes de repetir la prueba en PROD.
+El transporte SMTP real permanece aplazado/no bloqueante mientras la conectividad del plan Render Free no lo permita de forma fiable. No se compra ni activa un servicio para forzarlo. Si correo SMTP vuelve a entrar explícitamente en alcance, se exigirá diagnóstico OAuth2 y envío controlado antes de declararlo certificado.
 
 ## Legado
 
-El único artefacto legacy autorizado es el **respaldo verificado de la base histórica de VariStoreHN**. No son dependencias de SOLQARYN los despliegues, proyectos, cuentas, dominios, repositorios, variables o servicios personales antiguos.
-
-La migración final usa el respaldo como fuente y carga los datos en el tenant VariStoreHN dentro de la nueva arquitectura SOLQARYN.
+El único origen heredado autorizado fue el **respaldo verificado de la base histórica de VariStoreHN**, utilizado durante la migración ya cerrada. No son dependencias de SOLQARYN los despliegues, proyectos, cuentas, dominios, repositorios, variables o servicios personales antiguos, y no se reactivan como fallback.
 
 ## Promoción futura
 

@@ -1,3 +1,9 @@
+## 2026-09-30 — Fase 4: reconciliación final de documentación de entornos
+
+- Corregidas referencias stale en `docs/ENTORNOS_DEV_PROD.md`: Vercel PROD ya existe, la migración histórica PROD ya está cerrada y el custom domain continúa aplazado.
+- Alineado `docs/RENDER_ENVIRONMENT_CONTRACT.md` con la decisión vigente de SMTP aplazado/no bloqueante sobre Render Free; no se introduce compra ni requisito artificial de keep-alive.
+- Cambio documental únicamente; sin runtime, `main`, PROD, datos, secretos, DNS ni Plan Maestro.
+
 ## 2026-09-30 — Fase 4: cierre técnico DEV y runbook de promoción futura
 
 - Consolidada evidencia exact-head del runtime DEV `7452c43c489f467727ab2569f34d43074ce3e06a`: CI, aceptación integral, recuperación MySQL, Vercel DEV y Render DEV certificados.
