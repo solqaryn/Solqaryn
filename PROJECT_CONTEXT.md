@@ -93,6 +93,12 @@ Consultar `ARCHITECTURE.md` para cambios estructurales y `PROJECT_INDEX.md` para
 - DEV y PROD continúan usando las URLs administradas actuales mientras el cutover del dominio personalizado permanezca aplazado.
 - El cutover DNS hacia PROD es una decisión deliberadamente diferida y no bloquea el estado productivo certificado.
 
+### Cierre técnico DEV / futura promoción
+
+- El contrato de evidencia, rollback y precondiciones para una futura promoción vive en `docs/DEV_CIERRE_TECNICO_PROMOCION.md`.
+- Ese runbook no autoriza `main`/PROD ni modifica el Plan Maestro; cualquier promoción requiere autorización explícita nueva y certificación exact-head.
+- La promoción nunca puede resolver PROD mediante infraestructura DEV ni reintroducir fallback por hostname/alias.
+
 ## 5. Estado de legado y migración histórica
 
 - La migración histórica de VariStoreHN hacia PROD ya fue ejecutada y certificada; el respaldo verificado se utilizó como fuente controlada de migración.

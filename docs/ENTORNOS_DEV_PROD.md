@@ -53,8 +53,18 @@ La base productiva nueva no recibe la data histórica de VariStoreHN hasta el ci
 
 - Proyecto DEV activo: `solqaryn-dev`.
 - Dominio DEV: `https://solqaryn-dev.vercel.app`.
-- Proyecto PROD corporativo: **pendiente de crear/configurar**.
+- Proyecto PROD corporativo activo: `solqaryn-prod`.
+- Dominio administrado PROD: `https://solqaryn-prod.vercel.app`.
+- El proyecto PROD permanece separado del proyecto DEV; una futura promoción de código/configuración se ejecuta únicamente con autorización explícita.
 - No se reutiliza ningún proyecto personal o legacy para PROD.
+
+## Binding Vercel -> API
+
+- `/api/*` usa binding explícito por proyecto/entorno; no selecciona backend por hostname ni alias.
+- DEV sólo acepta `solqaryn-api-dev-fxx8.onrender.com` y PROD sólo `solqaryn-api-prod.onrender.com`.
+- Configuración ausente, ambigua o cruzada falla cerrada.
+- Render valida además la pareja entorno/base/usuario: Development -> `solqaryn_dev`/`solqaryn_dev_user`; Production -> `solqaryn_prod`/`solqaryn_prod_user`.
+- Contrato de cierre y promoción: `docs/DEV_CIERRE_TECNICO_PROMOCION.md`.
 
 ## Cloudflare
 
@@ -83,3 +93,7 @@ La certificación real exige `SMTP_OK` y un envío controlado en DEV antes de re
 El único artefacto legacy autorizado es el **respaldo verificado de la base histórica de VariStoreHN**. No son dependencias de SOLQARYN los despliegues, proyectos, cuentas, dominios, repositorios, variables o servicios personales antiguos.
 
 La migración final usa el respaldo como fuente y carga los datos en el tenant VariStoreHN dentro de la nueva arquitectura SOLQARYN.
+
+## Promoción futura
+
+El merge `dev -> main` y cualquier actualización productiva constituyen una operación independiente. Requieren autorización nueva, gates exact-head, snapshot/rollback de configuración, revisión de migraciones y certificación de las cuatro URLs definidas en `docs/DEV_CIERRE_TECNICO_PROMOCION.md`. Este documento no autoriza la promoción.

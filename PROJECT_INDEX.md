@@ -29,6 +29,7 @@ No leer todos los documentos administrativos en cada tarea. Consultarlos solo cu
 - `CONTRIBUTING.md`: flujo Git y criterios de contribución.
 - `render.yaml`: configuración versionada relacionada con Render; tratar con cautela por separación de entornos.
 - `docs/ENTORNOS_DEV_PROD.md`: fuente canónica para GitHub Environments y topología Aiven DEV/PROD (`DEV`, `PROD`, `solqaryn-mysql`, bases/usuarios aislados).
+- `docs/DEV_CIERRE_TECNICO_PROMOCION.md`: evidencia del cierre DEV, rollback y precondiciones fail-closed para una futura promoción autorizada `dev -> main/PROD`; no es roadmap ni autorización productiva.
 
 ## Backend
 

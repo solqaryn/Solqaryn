@@ -1,3 +1,11 @@
+## 2026-09-30 — Fase 4: cierre técnico DEV y runbook de promoción futura
+
+- Consolidada evidencia exact-head del runtime DEV `7452c43c489f467727ab2569f34d43074ce3e06a`: CI, aceptación integral, recuperación MySQL, Vercel DEV y Render DEV certificados.
+- Añadido `docs/DEV_CIERRE_TECNICO_PROMOCION.md` con snapshot de datos, aislamiento, rollback y precondiciones de una futura promoción independiente `dev -> main/PROD`.
+- Corregido `docs/ENTORNOS_DEV_PROD.md` para reflejar el estado corporativo vigente de Vercel PROD y la migración histórica ya cerrada.
+- El Plan Maestro no fue modificado. La regla reforzada de aislamiento y la revisión de `SQ-350`/`SQ-351` quedan reservadas para una actualización mayor posterior y no adquieren autoridad ejecutable por este changeset.
+- Sin cambios de runtime, `main`, PROD, datos, secretos, DNS ni compra de servicios.
+
 ## 2026-09-30 — Evitar metadata locks al adoptar DDL Fase 12 ya existente
 
 - El smoke DEV mostró que CREATE TABLE IF NOT EXISTS todavía podía quedar esperando metadata lock sobre tablas ya materializadas.
