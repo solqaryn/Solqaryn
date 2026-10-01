@@ -43,7 +43,7 @@ async function documentOverflow(page: Page): Promise<number> {
 }
 
 async function assertVisibleIcons(page: Page): Promise<void> {
-  const result = await page.locator('mat-icon:visible').evaluateAll((icons) => icons.slice(0, 30).map((icon) => {
+  const result = await page.locator('mat-icon:visible, .material-icons:visible').evaluateAll((icons) => icons.slice(0, 30).map((icon) => {
     const style = getComputedStyle(icon);
     const rect = icon.getBoundingClientRect();
     return {
