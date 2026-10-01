@@ -1,6 +1,6 @@
-using InventoryApp.Domain.Common;
+using Solqaryn.Domain.Common;
 
-namespace InventoryApp.Domain.Entities;
+namespace Solqaryn.Domain.Entities;
 
 /// <summary>
 /// Regla explicita de entitlement de un modulo para un plan SaaS.

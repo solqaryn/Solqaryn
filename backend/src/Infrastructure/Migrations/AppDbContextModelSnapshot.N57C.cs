@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace InventoryApp.Infrastructure.Migrations
+namespace Solqaryn.Infrastructure.Migrations
 {
     partial class AppDbContextModelSnapshot
     {
@@ -12,7 +12,7 @@ namespace InventoryApp.Infrastructure.Migrations
         /// </summary>
         private static void ApplyN57CModel(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity("InventoryApp.Domain.Entities.DashboardKpiConfiguracion", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.DashboardKpiConfiguracion", b =>
             {
                 b.Property<int>("Id")
                     .ValueGeneratedOnAdd()
@@ -62,14 +62,14 @@ namespace InventoryApp.Infrastructure.Migrations
                 });
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.DashboardKpiConfiguracion", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.DashboardKpiConfiguracion", b =>
             {
-                b.HasOne("InventoryApp.Domain.Entities.Rol", "Rol")
+                b.HasOne("Solqaryn.Domain.Entities.Rol", "Rol")
                     .WithMany()
                     .HasForeignKey("RolId")
                     .OnDelete(DeleteBehavior.Cascade);
 
-                b.HasOne("InventoryApp.Domain.Entities.Usuario", "Usuario")
+                b.HasOne("Solqaryn.Domain.Entities.Usuario", "Usuario")
                     .WithMany()
                     .HasForeignKey("UsuarioId")
                     .OnDelete(DeleteBehavior.Cascade);

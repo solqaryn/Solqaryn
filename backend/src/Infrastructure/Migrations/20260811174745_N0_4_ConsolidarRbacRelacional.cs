@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace InventoryApp.Infrastructure.Migrations
+namespace Solqaryn.Infrastructure.Migrations
 {
     /// <summary>
     /// ERP-N0.4: consolida RBAC relacional sin borrar usuarios ni grants efectivos.

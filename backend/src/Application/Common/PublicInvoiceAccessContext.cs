@@ -1,4 +1,4 @@
-namespace InventoryApp.Application.Common;
+namespace Solqaryn.Application.Common;
 
 /// <summary>
 /// Clave interna utilizada para transportar, dentro de una única solicitud HTTP,
@@ -7,5 +7,5 @@ namespace InventoryApp.Application.Common;
 /// </summary>
 public static class PublicInvoiceAccessContext
 {
-    public const string FacturaIdKey = "InventoryApp.PublicInvoiceAccess.FacturaId";
+    public const string FacturaIdKey = "Solqaryn.PublicInvoiceAccess.FacturaId";
 }

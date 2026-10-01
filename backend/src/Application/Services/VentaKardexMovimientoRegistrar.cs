@@ -1,9 +1,9 @@
-using InventoryApp.Application.Common;
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Domain.Common;
-using InventoryApp.Domain.Entities;
+using Solqaryn.Application.Common;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Common;
+using Solqaryn.Domain.Entities;
 
-namespace InventoryApp.Application.Services;
+namespace Solqaryn.Application.Services;
 
 /// <summary>
 /// Encapsula la escritura canónica de Kardex para el ciclo de vida de Venta.

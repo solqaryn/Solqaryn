@@ -1,13 +1,13 @@
 using System.Security.Claims;
-using InventoryApp.Application.Common;
-using InventoryApp.Application.DTOs;
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Domain.Enums;
+using Solqaryn.Application.Common;
+using Solqaryn.Application.DTOs;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
-namespace InventoryApp.API.Controllers;
+namespace Solqaryn.API.Controllers;
 
 [ApiController]
 [Route("auth")]

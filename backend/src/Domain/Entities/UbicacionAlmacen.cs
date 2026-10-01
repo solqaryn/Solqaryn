@@ -1,7 +1,7 @@
-using InventoryApp.Domain.Common;
-using InventoryApp.Domain.Enums;
+using Solqaryn.Domain.Common;
+using Solqaryn.Domain.Enums;
 
-namespace InventoryApp.Domain.Entities;
+namespace Solqaryn.Domain.Entities;
 
 /// <summary>
 /// Ubicación física/lógica dentro de un Almacén. ERP-N1.3 modela únicamente

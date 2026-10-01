@@ -1,8 +1,8 @@
-using InventoryApp.Domain.Entities;
+using Solqaryn.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace InventoryApp.Infrastructure.Persistence.Configurations;
+namespace Solqaryn.Infrastructure.Persistence.Configurations;
 
 /// <summary>
 /// N7.8.C/D — persistencia tenant-bound para pagos iniciados mediante proveedores externos.

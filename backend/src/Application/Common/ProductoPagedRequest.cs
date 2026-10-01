@@ -1,4 +1,4 @@
-namespace InventoryApp.Application.Common;
+namespace Solqaryn.Application.Common;
 
 /// <summary>
 /// Filtros específicos del inventario. Todos son opcionales y se combinan con

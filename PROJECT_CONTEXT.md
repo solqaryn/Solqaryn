@@ -32,6 +32,7 @@ Ningún plan, fila, gate, fase o secuencia que no esté incorporado al MAESTRO v
 SOLQARYN es una plataforma empresarial multiempresa.
 
 - Frontend: Angular 20 standalone, Signals y Angular Material.
+- Identidad técnica de código: namespaces/assemblies/proyectos usan Solqaryn.*; el storefront fuente es tenant-neutral y vive bajo features/storefront.
 - Backend: ASP.NET Core 8 Web API.
 - Capas: Domain <- Application <- Infrastructure; API compone y expone.
 - Persistencia: MySQL con EF Core 8/Pomelo.
@@ -42,7 +43,7 @@ SOLQARYN es una plataforma empresarial multiempresa.
 - Storefront público de productos: read path dedicado con proyecciones ligeras, paginación/filtros server-side y contexto de carrito por IDs; `GET /tienda/productos` y destacados usan `TiendaProductoResumenDto` con imagen principal y variantes mínimas, mientras el DTO rico con galería queda reservado al detalle/contexto acotado; las lecturas públicas ya no materializan el catálogo administrativo completo.
 - Bootstrap storefront: `GET /tienda/bootstrap` es la carga inicial canónica y pequeña para identidad pública, WhatsApp, tema, hasta 6 categorías de navegación y 4 destacados; Angular deduplica consumidores concurrentes y reserva las lecturas públicas separadas para recovery o pantallas específicas.
 - Cache storefront: Angular comparte identidad en vuelo y categorías entre rutas; backend usa `IMemoryCache` tenant-aware con invalidación generacional. TTL vigentes: identidad/tema/categorías 5 min, destacados 30 s y listados 15 s. Detalle/contexto/checkout no se cachean. Si Render/API pasa a múltiples instancias simultáneas, esta implementación local debe sustituirse por una cache distribuida con invalidación compartida antes de asumir coherencia cross-instance.
-- Cache HTTP storefront: ASP.NET comprime JSON/text con Brotli/Gzip y usa `no-store` por defecto. Sólo GET públicos allowlisted emiten `Cache-Control` público + ETag/304: identidad/categorías con TTL moderado y SWR, bootstrap corto por contener destacados, productos con TTL corto/must-revalidate. Vercel marca bundles Angular hashados como immutable por un año y permite que rewrites API respeten exclusivamente las políticas cacheables upstream. Sesión, contexto, checkout y administración nunca son cache público.
+- Cache HTTP storefront: ASP.NET comprime JSON/text con Brotli/Gzip y usa `no-store` por defecto. Sólo GET públicos allowlisted emiten `Cache-Control` público + ETag/304: identidad/categorías con TTL moderado y SWR, bootstrap corto por contener destacados, productos con TTL corto/must-revalidate. Vercel marca bundles Angular hashados como immutable por un año; el proxy server-side preserva `Cache-Control`/ETag/Vary emitidos por el backend. Sesión, contexto, checkout y administración nunca son cache público.
 - La autorización del backend es la autoridad; la UI nunca sustituye controles de seguridad.
 - Tenancy, integridad transaccional y trazabilidad deben preservarse en cambios de negocio.
 
@@ -63,6 +64,16 @@ Consultar `ARCHITECTURE.md` para cambios estructurales y `PROJECT_INDEX.md` para
 - SMTP DEV y PROD: `smtp-mail.outlook.com:587` + STARTTLS + OAuth2/Modern Auth con identidad `solqaryn.platform@outlook.com`.
 - DEV y PROD no provisionan contraseña SMTP ni client secret OAuth2; cada entorno mantiene su propio refresh token en Render.
 - Contrato Render canónico: 28 claves idénticas por nombre en DEV y PROD; sólo cambian valores dependientes del entorno. Inventario y justificación: `docs/RENDER_ENVIRONMENT_CONTRACT.md`.
+- En Render, el arranque backend aplica `EnvironmentDatabaseGuard`: `Development` sólo acepta `solqaryn_dev` + `solqaryn_dev_user`, y `Production` sólo `solqaryn_prod` + `solqaryn_prod_user`; entorno, base o usuario incompatibles fallan cerrados antes de registrar `AppDbContext`.
+
+### Binding Vercel -> API
+
+- El backend de un deployment no se decide por hostname ni alias.
+- Cada proyecto Vercel define explícitamente `SOLQARYN_ENV`, `API_UPSTREAM`, `PUBLIC_ORIGIN` y `SEO_INDEXING_ENABLED`.
+- `frontend/server/environment-binding.js` valida entorno/upstream y falla cerrado ante ausencia, ambigüedad o cruce DEV/PROD.
+- `frontend/api/backend-proxy.js` es la frontera server-side de `/api/*`; alias y custom domains no cambian el upstream.
+- DEV sólo admite `solqaryn-api-dev-fxx8.onrender.com`; PROD sólo `solqaryn-api-prod.onrender.com`.
+- La configuración PROD se aplicará únicamente durante una promoción autorizada; el changeset actual es DEV-first.
 
 ### Vercel
 - Proyecto DEV activo: `solqaryn-dev`.
@@ -81,6 +92,12 @@ Consultar `ARCHITECTURE.md` para cambios estructurales y `PROJECT_INDEX.md` para
 - `solqaryn.com` está delegado correctamente a Cloudflare.
 - DEV y PROD continúan usando las URLs administradas actuales mientras el cutover del dominio personalizado permanezca aplazado.
 - El cutover DNS hacia PROD es una decisión deliberadamente diferida y no bloquea el estado productivo certificado.
+
+### Cierre técnico DEV / futura promoción
+
+- El contrato de evidencia, rollback y precondiciones para una futura promoción vive en `docs/DEV_CIERRE_TECNICO_PROMOCION.md`.
+- Ese runbook no autoriza `main`/PROD ni modifica el Plan Maestro; cualquier promoción requiere autorización explícita nueva y certificación exact-head.
+- La promoción nunca puede resolver PROD mediante infraestructura DEV ni reintroducir fallback por hostname/alias.
 
 ## 5. Estado de legado y migración histórica
 
@@ -119,8 +136,31 @@ Consultar `ARCHITECTURE.md` para cambios estructurales y `PROJECT_INDEX.md` para
 
 ## 8. Plan maestro vigente
 
-El plan maestro que ejecutan las diez automatizaciones se define únicamente por objetivos, prioridades y dependencias actuales de SOLQARYN.
+Existe **un solo Plan Maestro vivo** para roadmap y arquitectura objetivo:
 
-No hereda restricciones, numeraciones, fases, filas, gates ni prioridades que no hayan sido incorporadas expresamente a la versión vigente del MAESTRO.
+- Google Doc nativo: `PLAN MAESTRO SOLQARYN`.
+- ID: `1YdQlNJ312HuziyKb9E-GEt55dcgSmuFGgfsHxyzPUaw`.
+- No existen V1/V2/V3/V5 ni roadmaps paralelos con autoridad ejecutable.
+- Cualquier cambio aprobado de alcance, arquitectura objetivo, programa u objetivo SQ modifica ese mismo documento.
+- `Notas SOLQARYN_DEV.docx` (ID `1WlqyRz09P7jARAg948Plg2UDKbKLSndT`) es exclusivamente una bandeja de observaciones; no es ejecutable hasta que el propietario apruebe su incorporación al Plan Maestro.
 
-La implementación existente puede ser modificada, reemplazada o retirada cuando el objetivo vigente lo requiera, siempre bajo controles de seguridad, integridad, trazabilidad, revisión y rollback proporcionales.
+Contrato operativo y superficie administrativa:
+
+- `docs/VAEP_AUTHORITY.md` es el contrato operativo de VAEP; no crea roadmap.
+- Google Doc operativo auxiliar `SOLQARYN - AUTORIDAD OPERATIVA VAEP`: ID `1frrmekon0pBTrLcXk0yUZSJa4uISjEzrwrni3ja5y38`.
+- Google Sheet `SOLQARYN - PLAN MAESTRO DE AUTOMATIZACIONES`: ID `1gcVyCoyhLU0jFMwRtf0s5_x8FSnfBs38ojml1QF7Xwk`.
+- El Sheet fue rebasado al Plan Maestro actual: `SQ-000..SQ-353`; COLA, PLAN_MAESTRO y BITACORA históricos fueron retirados de la superficie viva.
+- `PLAN_MAESTRO`, `COLA`, `BITACORA`, `DASHBOARD`, `CONFIG`, `LEYENDA`, `TAREAS_PROGRAMADAS`, `CONTROL_TOWER`, `AUTOMATIZACIONES` y `TAREAS_DE_SUPERVISION` son superficies administrativas derivadas.
+- Fuentes técnicas ocultas: `_MASTER_SOURCE`, `_RUNTIME_SOURCE`, `_AUTOMATION_SOURCE`, `_EVENTS_SOURCE`.
+- CURRENT_STATE_ONLY: planes, fases, filas, parents, queues, gates y receipts históricos no condicionan ejecución nueva.
+- Estados únicos: `PENDIENTE`, `EN_PROGRESO`, `VALIDANDO`, `LISTO`, `BLOQUEADO`, `CANCELADO`.
+- Las diez automatizaciones canónicas usan slots `:00,:05,:12,:17,:24,:29,:36,:41,:48,:53` y permanecen **PAUSADAS (0/10 habilitadas)** hasta autorización explícita del propietario.
+- Responsabilidad operativa: Javier Mejía controla las cinco Primary `:00/:12/:24/:36/:48`; Alex Morales controla las cinco Supervisor `:05/:17/:29/:41/:53`.
+- IDs Primary/Javier: `:00=6aa15346f5408191bdd9043fd26ff7aa`, `:12=6aa1534deee481918280def1343adcfa`, `:24=6abd70e42cb4819190b3b28916dc9dbb`, `:36=6aa1535a51508191a610e6cdb90a2a4d`, `:48=6aa1535f8cd48191b73e10f17843372a`.
+- IDs Supervisor/Alex: `:05=6abd62255ae88191a2dba6e1b00d3b4d`, `:17=6abd6235e100819195785fc76a44a8e0`, `:29=6abd6241c3e48191a8856ed7b0f42c5c`, `:41=6abd624e5e108191bef6bb879559328c`, `:53=6abd625b397c8191a49904227946a20f`.
+- Las cinco Supervisor antiguas que existían en la cuenta de Javier quedaron retiradas e inactivas; no deben reactivarse.
+- Las automatizaciones escriben estado únicamente en fuentes técnicas autorizadas y ejecutan readback; las vistas visibles no son superficies de escritura de runtime.
+- Los backups de Drive conservan historia únicamente como respaldo; no poseen autoridad operativa.
+- Queda prohibido usar `javiermejia3112@gmail.com`, `jmejia31/VariApp`, rama `Desarrollo` o infraestructura legacy como fallback.
+
+La implementación existente puede ser reutilizada, extendida, refactorizada o reemplazada cuando el objetivo vigente lo requiera, siempre preservando seguridad, RBAC, tenancy, integridad de datos, trazabilidad, revisión, rollback y las autorizaciones explícitas requeridas para `main`/PROD.

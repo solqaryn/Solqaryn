@@ -1,8 +1,8 @@
-using InventoryApp.Application.DTOs;
-using InventoryApp.Domain.Entities;
+using Solqaryn.Application.DTOs;
+using Solqaryn.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 public interface IEmpresaConfiguracionService
 {

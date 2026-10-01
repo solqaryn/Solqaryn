@@ -9,7 +9,7 @@ export class AfterRenderSelectivePreloadingStrategy implements PreloadingStrateg
 
   preload(route: Route, load: () => Observable<unknown>): Observable<unknown> {
     if (route.data?.['preloadAfterRender'] !== true) return of(null);
-    if (!this.router.url.startsWith('/varistorehn')) return of(null);
+    if (!this.router.url.startsWith('/tienda')) return of(null);
 
     return this.appRef.isStable.pipe(
       filter(Boolean),

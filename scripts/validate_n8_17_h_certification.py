@@ -32,7 +32,7 @@ if len(catalog_ids) != 49 or set(catalog_ids) != expected or len(set(catalog_ids
     fail("canonical catalog must map exactly the 49 frozen MATRIX_ID values")
 
 cert = load_json(GOV / "N8_17_H_CERTIFICATION.json")
-if cert.get("parent") != "N8.17.H" or cert.get("branch") != "Desarrollo":
+if cert.get("parent") != "N8.17.H" or cert.get("branch") != "dev":
     fail("certification parent/branch mismatch")
 if cert.get("expected_total") != 49 or cert.get("spec_complete_count") != 49:
     fail("all 49 frozen roots must be published at least SPEC_COMPLETE")

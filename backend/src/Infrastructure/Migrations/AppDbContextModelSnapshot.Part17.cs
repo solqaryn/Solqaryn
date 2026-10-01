@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 #nullable disable
 
-namespace InventoryApp.Infrastructure.Migrations
+namespace Solqaryn.Infrastructure.Migrations
 {
     internal static partial class AppDbContextSnapshotN14D
     {
@@ -13,7 +13,7 @@ namespace InventoryApp.Infrastructure.Migrations
         {
             // ERP-N2.4.C — factura documental de proveedor.
             // No materializa recepción, stock, Kardex, costeo ni finanzas.
-            modelBuilder.Entity("InventoryApp.Domain.Entities.FacturaProveedor", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.FacturaProveedor", b =>
             {
                 b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("int");
                 MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
@@ -55,7 +55,7 @@ namespace InventoryApp.Infrastructure.Migrations
                 });
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.FacturaProveedorDetalle", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.FacturaProveedorDetalle", b =>
             {
                 b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("int");
                 MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
@@ -96,30 +96,30 @@ namespace InventoryApp.Infrastructure.Migrations
                 });
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.FacturaProveedor", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.FacturaProveedor", b =>
             {
-                b.HasOne("InventoryApp.Domain.Entities.OrdenCompra", "OrdenCompra").WithMany()
+                b.HasOne("Solqaryn.Domain.Entities.OrdenCompra", "OrdenCompra").WithMany()
                     .HasForeignKey("OrdenCompraId").OnDelete(DeleteBehavior.Restrict).IsRequired()
                     .HasConstraintName("FK_FacturasProveedor_OrdenesCompra_OrdenCompraId");
-                b.HasOne("InventoryApp.Domain.Entities.Proveedor", "Proveedor").WithMany()
+                b.HasOne("Solqaryn.Domain.Entities.Proveedor", "Proveedor").WithMany()
                     .HasForeignKey("ProveedorId").OnDelete(DeleteBehavior.Restrict).IsRequired()
                     .HasConstraintName("FK_FacturasProveedor_Proveedores_ProveedorId");
                 b.Navigation("OrdenCompra");
                 b.Navigation("Proveedor");
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.FacturaProveedorDetalle", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.FacturaProveedorDetalle", b =>
             {
-                b.HasOne("InventoryApp.Domain.Entities.FacturaProveedor", "FacturaProveedor").WithMany("Detalles")
+                b.HasOne("Solqaryn.Domain.Entities.FacturaProveedor", "FacturaProveedor").WithMany("Detalles")
                     .HasForeignKey("FacturaProveedorId").OnDelete(DeleteBehavior.Cascade).IsRequired()
                     .HasConstraintName("FK_FacturaProveedorDetalles_FacturasProveedor_FacturaProveedorId");
-                b.HasOne("InventoryApp.Domain.Entities.OrdenCompraDetalle", "OrdenCompraDetalle").WithMany()
+                b.HasOne("Solqaryn.Domain.Entities.OrdenCompraDetalle", "OrdenCompraDetalle").WithMany()
                     .HasForeignKey("OrdenCompraDetalleId").OnDelete(DeleteBehavior.Restrict).IsRequired()
                     .HasConstraintName("FK_FacturaProveedorDetalles_OrdenCompraDetalles_OrdenCompraDetalleId");
-                b.HasOne("InventoryApp.Domain.Entities.Producto", "Producto").WithMany()
+                b.HasOne("Solqaryn.Domain.Entities.Producto", "Producto").WithMany()
                     .HasForeignKey("ProductoId").OnDelete(DeleteBehavior.Restrict).IsRequired()
                     .HasConstraintName("FK_FacturaProveedorDetalles_Productos_ProductoId");
-                b.HasOne("InventoryApp.Domain.Entities.ProductoVariante", "ProductoVariante").WithMany()
+                b.HasOne("Solqaryn.Domain.Entities.ProductoVariante", "ProductoVariante").WithMany()
                     .HasForeignKey("ProductoVarianteId").OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_FacturaProveedorDetalles_ProductoVariantes_ProductoVarianteId");
                 b.Navigation("FacturaProveedor");
@@ -128,7 +128,7 @@ namespace InventoryApp.Infrastructure.Migrations
                 b.Navigation("ProductoVariante");
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.FacturaProveedor", b => b.Navigation("Detalles"));
+            modelBuilder.Entity("Solqaryn.Domain.Entities.FacturaProveedor", b => b.Navigation("Detalles"));
         }
     }
 }

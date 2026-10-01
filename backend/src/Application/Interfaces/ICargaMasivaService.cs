@@ -1,8 +1,8 @@
-using InventoryApp.Application.Common;
-using InventoryApp.Application.DTOs;
-using InventoryApp.Domain.Enums;
+using Solqaryn.Application.Common;
+using Solqaryn.Application.DTOs;
+using Solqaryn.Domain.Enums;
 
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 public interface ICargaMasivaService
 {

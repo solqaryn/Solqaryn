@@ -1,4 +1,4 @@
-namespace InventoryApp.Application.DTOs.Contabilidad;
+namespace Solqaryn.Application.DTOs.Contabilidad;
 
 public sealed class EstadoFinancieroFiltroDto
 {

@@ -10,9 +10,9 @@ on:
       - 'backend/src/Infrastructure/Services/CloudinaryFolderResolver.cs'
       - 'backend/src/Infrastructure/Services/CloudinaryImageStorageService.cs'
       - 'backend/src/Infrastructure/Services/CloudinaryCompraDocumentoStorageService.cs'
-      - 'backend/tests/InventoryApp.Tests/Application/Storage/**'
-      - 'backend/tests/InventoryApp.Tests/Priority3FileSecurityTests.cs'
-      - 'backend/tests/InventoryApp.Tests/CloudinaryEnvironmentIsolationTests.cs'
+      - 'backend/tests/Solqaryn.Tests/Application/Storage/**'
+      - 'backend/tests/Solqaryn.Tests/Priority3FileSecurityTests.cs'
+      - 'backend/tests/Solqaryn.Tests/CloudinaryEnvironmentIsolationTests.cs'
       - '.github/workflows/n6-8-storage-isolation-ci.yml'
   workflow_dispatch:
 
@@ -37,12 +37,12 @@ jobs:
           cache-dependency-path: backend/**/*.csproj
       - name: Restore backend
         working-directory: backend
-        run: dotnet restore InventoryApp.sln
+        run: dotnet restore Solqaryn.sln
       - name: Build backend Release
         working-directory: backend
-        run: dotnet build InventoryApp.sln --configuration Release --no-restore
+        run: dotnet build Solqaryn.sln --configuration Release --no-restore
       - name: Verify isolated storage regressions
         working-directory: backend
         run: >-
-          dotnet test InventoryApp.sln --configuration Release --no-build
+          dotnet test Solqaryn.sln --configuration Release --no-build
           --filter "FullyQualifiedName~Application.Storage.CloudinaryTenantOwnershipTests|FullyQualifiedName~Application.Storage.StorageTenantContextTests|FullyQualifiedName~Priority3FileSecurityTests|FullyQualifiedName~CloudinaryEnvironmentIsolationTests"

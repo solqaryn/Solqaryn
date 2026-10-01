@@ -1,8 +1,8 @@
 using System.Diagnostics;
-using InventoryApp.API.Observability;
+using Solqaryn.API.Observability;
 using Microsoft.Extensions.Options;
 
-namespace InventoryApp.API.Middleware;
+namespace Solqaryn.API.Middleware;
 
 public sealed class RequestObservabilityMiddleware
 {
@@ -28,7 +28,7 @@ public sealed class RequestObservabilityMiddleware
         var stopwatch = Stopwatch.StartNew();
         var activity = Activity.Current;
         var performanceState = RequestPerformanceContext.GetOrCreate(context);
-        activity?.SetTag("service.name", "InventoryApp.API");
+        activity?.SetTag("service.name", "Solqaryn.API");
 
         if (_options.EnablePerformanceBaseline)
         {

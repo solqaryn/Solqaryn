@@ -5,14 +5,14 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 #nullable disable
 
-namespace InventoryApp.Infrastructure.Migrations
+namespace Solqaryn.Infrastructure.Migrations
 {
     internal static partial class AppDbContextSnapshotN14D
     {
         private static void ApplyPart12(ModelBuilder modelBuilder)
         {
             // ERP-N1.10.C — política de costeo, capas FIFO, estándar y evidencia histórica.
-            modelBuilder.Entity("InventoryApp.Domain.Entities.PoliticaCosteoInventario", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.PoliticaCosteoInventario", b =>
             {
                 b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("int");
                 MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
@@ -39,7 +39,7 @@ namespace InventoryApp.Infrastructure.Migrations
                 });
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.CostoEstandarInventario", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.CostoEstandarInventario", b =>
             {
                 b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("int");
                 MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
@@ -67,7 +67,7 @@ namespace InventoryApp.Infrastructure.Migrations
                 });
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.CapaCostoInventario", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.CapaCostoInventario", b =>
             {
                 b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("int");
                 MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
@@ -103,7 +103,7 @@ namespace InventoryApp.Infrastructure.Migrations
                 });
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.AsignacionCostoMovimientoInventario", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.AsignacionCostoMovimientoInventario", b =>
             {
                 b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("int");
                 MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
@@ -132,7 +132,7 @@ namespace InventoryApp.Infrastructure.Migrations
                 });
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.VariacionCostoEstandarInventario", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.VariacionCostoEstandarInventario", b =>
             {
                 b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("int");
                 MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
@@ -160,61 +160,61 @@ namespace InventoryApp.Infrastructure.Migrations
                 });
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.PoliticaCosteoInventario", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.PoliticaCosteoInventario", b =>
             {
-                b.HasOne("InventoryApp.Domain.Entities.EmpresaConfiguracion", null).WithMany()
+                b.HasOne("Solqaryn.Domain.Entities.EmpresaConfiguracion", null).WithMany()
                     .HasForeignKey("EmpresaConfiguracionId").OnDelete(DeleteBehavior.Restrict).IsRequired()
                     .HasConstraintName("FK_PoliticasCosteo_EmpresaConfiguracion");
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.CostoEstandarInventario", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.CostoEstandarInventario", b =>
             {
-                b.HasOne("InventoryApp.Domain.Entities.ProductoVariante", null).WithMany()
+                b.HasOne("Solqaryn.Domain.Entities.ProductoVariante", null).WithMany()
                     .HasForeignKey("ProductoVarianteId").OnDelete(DeleteBehavior.Restrict).IsRequired()
                     .HasConstraintName("FK_CostosEstandar_ProductoVariantes");
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.CapaCostoInventario", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.CapaCostoInventario", b =>
             {
-                b.HasOne("InventoryApp.Domain.Entities.Almacen", null).WithMany()
+                b.HasOne("Solqaryn.Domain.Entities.Almacen", null).WithMany()
                     .HasForeignKey("AlmacenId").OnDelete(DeleteBehavior.Restrict).IsRequired()
                     .HasConstraintName("FK_CapasCosto_Almacenes");
-                b.HasOne("InventoryApp.Domain.Entities.CapaCostoInventario", null).WithMany()
+                b.HasOne("Solqaryn.Domain.Entities.CapaCostoInventario", null).WithMany()
                     .HasForeignKey("ProductoVarianteId", "CapaCostoOrigenId").HasPrincipalKey("ProductoVarianteId", "Id")
                     .OnDelete(DeleteBehavior.Restrict).HasConstraintName("FK_CapasCosto_CapaOrigen_MismaVariante");
-                b.HasOne("InventoryApp.Domain.Entities.MovimientoInventario", null).WithMany()
+                b.HasOne("Solqaryn.Domain.Entities.MovimientoInventario", null).WithMany()
                     .HasForeignKey("MovimientoInventarioOrigenId").OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_CapasCosto_MovimientoOrigen");
-                b.HasOne("InventoryApp.Domain.Entities.ProductoVariante", null).WithMany()
+                b.HasOne("Solqaryn.Domain.Entities.ProductoVariante", null).WithMany()
                     .HasForeignKey("ProductoVarianteId").OnDelete(DeleteBehavior.Restrict).IsRequired()
                     .HasConstraintName("FK_CapasCosto_ProductoVariantes");
-                b.HasOne("InventoryApp.Domain.Entities.UbicacionAlmacen", null).WithMany()
+                b.HasOne("Solqaryn.Domain.Entities.UbicacionAlmacen", null).WithMany()
                     .HasForeignKey("AlmacenId", "UbicacionAlmacenId").HasPrincipalKey("AlmacenId", "Id")
                     .OnDelete(DeleteBehavior.Restrict).HasConstraintName("FK_CapasCosto_Ubicacion_MismoAlmacen");
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.AsignacionCostoMovimientoInventario", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.AsignacionCostoMovimientoInventario", b =>
             {
-                b.HasOne("InventoryApp.Domain.Entities.CapaCostoInventario", null).WithMany()
+                b.HasOne("Solqaryn.Domain.Entities.CapaCostoInventario", null).WithMany()
                     .HasForeignKey("ProductoVarianteId", "CapaCostoInventarioId").HasPrincipalKey("ProductoVarianteId", "Id")
                     .OnDelete(DeleteBehavior.Restrict).HasConstraintName("FK_AsignacionesCosto_Capa_MismaVariante");
-                b.HasOne("InventoryApp.Domain.Entities.MovimientoInventario", null).WithMany()
+                b.HasOne("Solqaryn.Domain.Entities.MovimientoInventario", null).WithMany()
                     .HasForeignKey("MovimientoInventarioId").OnDelete(DeleteBehavior.Restrict).IsRequired()
                     .HasConstraintName("FK_AsignacionesCosto_MovimientosInventario");
-                b.HasOne("InventoryApp.Domain.Entities.ProductoVariante", null).WithMany()
+                b.HasOne("Solqaryn.Domain.Entities.ProductoVariante", null).WithMany()
                     .HasForeignKey("ProductoVarianteId").OnDelete(DeleteBehavior.Restrict).IsRequired()
                     .HasConstraintName("FK_AsignacionesCosto_ProductoVariantes");
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.VariacionCostoEstandarInventario", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.VariacionCostoEstandarInventario", b =>
             {
-                b.HasOne("InventoryApp.Domain.Entities.CostoEstandarInventario", null).WithMany()
+                b.HasOne("Solqaryn.Domain.Entities.CostoEstandarInventario", null).WithMany()
                     .HasForeignKey("ProductoVarianteId", "CostoEstandarInventarioId").HasPrincipalKey("ProductoVarianteId", "Id")
                     .OnDelete(DeleteBehavior.Restrict).IsRequired().HasConstraintName("FK_VariacionesCostoEstandar_Version_MismaVariante");
-                b.HasOne("InventoryApp.Domain.Entities.MovimientoInventario", null).WithMany()
+                b.HasOne("Solqaryn.Domain.Entities.MovimientoInventario", null).WithMany()
                     .HasForeignKey("MovimientoInventarioId").OnDelete(DeleteBehavior.Restrict).IsRequired()
                     .HasConstraintName("FK_VariacionesCostoEstandar_MovimientosInventario");
-                b.HasOne("InventoryApp.Domain.Entities.ProductoVariante", null).WithMany()
+                b.HasOne("Solqaryn.Domain.Entities.ProductoVariante", null).WithMany()
                     .HasForeignKey("ProductoVarianteId").OnDelete(DeleteBehavior.Restrict).IsRequired()
                     .HasConstraintName("FK_VariacionesCostoEstandar_ProductoVariantes");
             });

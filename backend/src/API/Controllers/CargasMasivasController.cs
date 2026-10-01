@@ -1,15 +1,15 @@
-using InventoryApp.API.Filters;
-using InventoryApp.Application.Common;
-using InventoryApp.Application.DTOs;
-using InventoryApp.Application.Exceptions;
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Domain.Enums;
-using InventoryApp.Infrastructure.Persistence;
-using InventoryApp.Infrastructure.Services;
+using Solqaryn.API.Filters;
+using Solqaryn.Application.Common;
+using Solqaryn.Application.DTOs;
+using Solqaryn.Application.Exceptions;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Enums;
+using Solqaryn.Infrastructure.Persistence;
+using Solqaryn.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace InventoryApp.API.Controllers;
+namespace Solqaryn.API.Controllers;
 
 [ApiController]
 [Authorize]

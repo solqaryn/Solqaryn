@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "inventoryapp-frontend": {
+    "solqaryn-frontend": {
       "projectType": "application",
       "root": "",
       "sourceRoot": "src",
@@ -12,7 +12,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/inventoryapp-frontend",
+            "outputPath": "dist/solqaryn-frontend",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
@@ -63,10 +63,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "inventoryapp-frontend:build:production"
+              "buildTarget": "solqaryn-frontend:build:production"
             },
             "development": {
-              "buildTarget": "inventoryapp-frontend:build:development"
+              "buildTarget": "solqaryn-frontend:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -76,7 +76,7 @@
           "options": {
             "tsConfig": "tsconfig.spec.json",
             "runner": "vitest",
-            "buildTarget": "inventoryapp-frontend:build:development"
+            "buildTarget": "solqaryn-frontend:build:development"
           }
         }
       }

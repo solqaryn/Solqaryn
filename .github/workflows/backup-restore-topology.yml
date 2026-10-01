@@ -44,7 +44,7 @@ jobs:
         id: backup
         shell: bash
         env:
-          SOLQARYN_ENVIRONMENT: desarrollo
+          SOLQARYN_ENVIRONMENT: dev
           DB_HOST: ${{ vars.SOLQARYN_DEV_DB_HOST }}
           DB_PORT: ${{ vars.SOLQARYN_DEV_DB_PORT }}
           DB_NAME: ${{ vars.SOLQARYN_DEV_DB_NAME }}
@@ -54,7 +54,7 @@ jobs:
           BACKUP_PASSPHRASE: ${{ secrets.SOLQARYN_DEV_BACKUP_PASSPHRASE }}
           OUTPUT_DIR: ${{ runner.temp }}/m11-n821c-backups
           RETENTION_DAYS: '0'
-          BACKUP_LABEL: desarrollo
+          BACKUP_LABEL: dev
         run: |
           set -euo pipefail
           chmod +x scripts/backup_dev.sh

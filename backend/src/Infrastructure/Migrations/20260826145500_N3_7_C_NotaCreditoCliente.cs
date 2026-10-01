@@ -1,11 +1,11 @@
-using InventoryApp.Infrastructure.Persistence;
+using Solqaryn.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace InventoryApp.Infrastructure.Migrations
+namespace Solqaryn.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     [Migration("20260826145500_N3_7_C_NotaCreditoCliente")]

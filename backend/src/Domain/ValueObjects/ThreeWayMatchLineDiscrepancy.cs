@@ -1,6 +1,6 @@
-using InventoryApp.Domain.Enums;
+using Solqaryn.Domain.Enums;
 
-namespace InventoryApp.Domain.ValueObjects;
+namespace Solqaryn.Domain.ValueObjects;
 
 public sealed record ThreeWayMatchLineDiscrepancy(
     int OrdenCompraDetalleId,

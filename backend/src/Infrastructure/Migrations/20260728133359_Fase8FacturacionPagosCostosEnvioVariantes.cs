@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace InventoryApp.Infrastructure.Migrations
+namespace Solqaryn.Infrastructure.Migrations
 {
     /// <inheritdoc />
     public partial class Fase8FacturacionPagosCostosEnvioVariantes : Migration
@@ -274,7 +274,7 @@ namespace InventoryApp.Infrastructure.Migrations
             migrationBuilder.InsertData(
                 table: "CostosEnvio",
                 columns: new[] { "Id", "Nombre", "Descripcion", "Monto", "Prioridad", "EsPredeterminado", "Activo", "Eliminado", "FechaCreacion", "FechaActualizacion" },
-                values: new object[] { 1, "Envío estándar", "Costo de envío predeterminado de VariStorehn", 80.00m, 1, true, true, false, new DateTime(2026, 7, 28, 0, 0, 0, DateTimeKind.Utc), new DateTime(2026, 7, 28, 0, 0, 0, DateTimeKind.Utc) });
+                values: new object[] { 1, "Envío estándar", "Costo de envío predeterminado de Storefront", 80.00m, 1, true, true, false, new DateTime(2026, 7, 28, 0, 0, 0, DateTimeKind.Utc), new DateTime(2026, 7, 28, 0, 0, 0, DateTimeKind.Utc) });
 
             migrationBuilder.CreateIndex(
                 name: "IX_CostosEnvio_Activo_EsPredeterminado",

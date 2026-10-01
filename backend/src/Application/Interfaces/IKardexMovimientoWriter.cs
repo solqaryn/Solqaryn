@@ -1,7 +1,7 @@
-using InventoryApp.Domain.Common;
-using InventoryApp.Domain.Entities;
+using Solqaryn.Domain.Common;
+using Solqaryn.Domain.Entities;
 
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 /// <summary>
 /// Punto único de escritura de Kardex para operaciones ERP-N1.5.

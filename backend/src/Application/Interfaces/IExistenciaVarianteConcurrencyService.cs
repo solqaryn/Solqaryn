@@ -1,6 +1,6 @@
-using InventoryApp.Domain.Entities;
+using Solqaryn.Domain.Entities;
 
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 /// <summary>
 /// Clave autoritativa de stock vivo en ERP-N1.4. El valor null de ubicación

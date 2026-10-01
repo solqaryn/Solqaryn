@@ -1,4 +1,4 @@
-namespace InventoryApp.Application.DTOs;
+namespace Solqaryn.Application.DTOs;
 
 /// <summary>
 /// Proyección pública mínima para listados del storefront.

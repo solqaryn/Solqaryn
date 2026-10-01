@@ -14,7 +14,8 @@ const [
   empresaConfiguracion,
   temaVisual,
   whatsapp,
-  vercelRaw
+  vercelRaw,
+  backendProxy
 ] = await Promise.all([
   readRepo('backend/src/API/Program.cs'),
   readRepo('backend/src/API/Filters/PublicHttpCacheAttribute.cs'),
@@ -22,7 +23,8 @@ const [
   readRepo('backend/src/API/Controllers/EmpresaConfiguracionController.cs'),
   readRepo('backend/src/API/Controllers/TemaVisualController.cs'),
   readRepo('backend/src/API/Controllers/WhatsAppController.cs'),
-  readFrontend('vercel.json')
+  readFrontend('vercel.json'),
+  readFrontend('api/backend-proxy.js')
 ]);
 
 const vercel = JSON.parse(vercelRaw);
@@ -69,10 +71,9 @@ expect(
   'CDN: bundles hashados deben ser immutable por un anio.'
 );
 
-const rewriteCache = headers.find(item => item?.source === '/api/:path*');
 expect(
-  rewriteCache?.headers?.some(header => header.key === 'x-vercel-enable-rewrite-caching' && header.value === '1'),
-  'CDN: Vercel debe respetar el Cache-Control del backend en rewrites API.'
+  backendProxy.includes('Object.entries(upstreamRes.headers') && backendProxy.includes('res.setHeader(name, value)'),
+  'CDN: el proxy Vercel debe preservar Cache-Control/ETag/Vary emitidos por el backend.'
 );
 
 if (failures.length > 0) {

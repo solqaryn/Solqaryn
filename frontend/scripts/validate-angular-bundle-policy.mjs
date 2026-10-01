@@ -13,9 +13,9 @@ const appConfig = read('src/app/app.config.ts');
 const routes = read('src/app/app.routes.ts');
 const app = read('src/app/app.component.ts');
 const navigation = read('src/app/shared/navigation/app-navigation-menu.component.ts');
-const home = read('src/app/features/varistorehn/varistorehn.component.html');
+const home = read('src/app/features/storefront/storefront.component.html');
 
-const budgets = angular.projects['inventoryapp-frontend'].architect.build.configurations.production.budgets;
+const budgets = angular.projects['solqaryn-frontend'].architect.build.configurations.production.budgets;
 const initial = budgets.find(budget => budget.type === 'initial');
 
 if (!initial || initial.maximumWarning !== '650kb' || initial.maximumError !== '750kb') {

@@ -1,4 +1,4 @@
-namespace InventoryApp.Domain.Enums;
+namespace Solqaryn.Domain.Enums;
 
 /// <summary>
 /// Fuente verificable que concede autoridad a una sesión u operación.

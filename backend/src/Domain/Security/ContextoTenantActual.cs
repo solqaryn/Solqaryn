@@ -1,6 +1,6 @@
-using InventoryApp.Domain.Entities;
+using Solqaryn.Domain.Entities;
 
-namespace InventoryApp.Domain.Security;
+namespace Solqaryn.Domain.Security;
 
 /// <summary>
 /// Contexto tenant autenticado y verificado contra una membresía UsuarioEmpresa activa.

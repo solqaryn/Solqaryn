@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace InventoryApp.Application.DTOs;
+namespace Solqaryn.Application.DTOs;
 
 public sealed class RechazarCotizacionDto
 {

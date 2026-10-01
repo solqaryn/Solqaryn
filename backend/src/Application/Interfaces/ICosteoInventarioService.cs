@@ -1,8 +1,8 @@
-using InventoryApp.Application.DTOs;
-using InventoryApp.Domain.Enums;
-using InventoryApp.Domain.ValueObjects;
+using Solqaryn.Application.DTOs;
+using Solqaryn.Domain.Enums;
+using Solqaryn.Domain.ValueObjects;
 
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 /// <summary>
 /// Boundary único de valoración de inventario para Compras, Ventas, Ajustes y

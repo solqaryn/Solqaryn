@@ -4,18 +4,19 @@ using System.Text;
 using System.Threading.RateLimiting;
 using FluentValidation;
 using FluentValidation.AspNetCore;
-using InventoryApp.API.Middleware;
-using InventoryApp.API.Observability;
-using InventoryApp.Application.Common;
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Application.Interfaces.Services;
-using InventoryApp.Application.Services;
-using InventoryApp.Application.Validators;
-using InventoryApp.Domain.Entities;
-using InventoryApp.Domain.Enums;
-using InventoryApp.Infrastructure.Persistence;
-using InventoryApp.Infrastructure.Repositories;
-using InventoryApp.Infrastructure.Services;
+using Solqaryn.API.Configuration;
+using Solqaryn.API.Middleware;
+using Solqaryn.API.Observability;
+using Solqaryn.Application.Common;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Application.Interfaces.Services;
+using Solqaryn.Application.Services;
+using Solqaryn.Application.Validators;
+using Solqaryn.Domain.Entities;
+using Solqaryn.Domain.Enums;
+using Solqaryn.Infrastructure.Persistence;
+using Solqaryn.Infrastructure.Repositories;
+using Solqaryn.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -30,11 +31,12 @@ var builder = WebApplication.CreateBuilder(args);
 var port = Environment.GetEnvironmentVariable("PORT");
 var isRender = string.Equals(Environment.GetEnvironmentVariable("RENDER"), "true", StringComparison.OrdinalIgnoreCase);
 if (!string.IsNullOrWhiteSpace(port)) builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
-builder.Services.AddControllers(options => options.Filters.Add<InventoryApp.API.Filters.MedirRendimientoBusquedaFilter>());
+builder.Services.AddControllers(options => options.Filters.Add<Solqaryn.API.Filters.MedirRendimientoBusquedaFilter>());
 builder.Services.Configure<FormOptions>(options => options.MultipartBodyLengthLimit = 30 * 1024 * 1024);
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateProductoValidator>();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection no configurado.");
+if (isRender) EnvironmentDatabaseGuard.ValidateRenderBinding(builder.Environment.EnvironmentName, connectionString);
 var mysqlServerVersion = Version.Parse(builder.Configuration["Database:ServerVersion"] ?? "8.4.3");
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMemoryCache();
@@ -207,7 +209,7 @@ builder.Services.AddScoped<IPeriodoContableRepository, PeriodoContableRepository
 builder.Services.AddScoped<IPeriodoContableService, PeriodoContableService>();
 builder.Services.AddScoped<IEstadoFinancieroService, EstadoFinancieroService>();
 builder.Services.AddScoped<IConciliacionBancariaRepository, ConciliacionBancariaRepository>();
-builder.Services.AddScoped<IOperacionBancariaService, InventoryApp.Application.Bancos.OperacionBancariaService>();
+builder.Services.AddScoped<IOperacionBancariaService, Solqaryn.Application.Bancos.OperacionBancariaService>();
 builder.Services.AddScoped<IConciliacionBancariaService, ConciliacionBancariaService>();
 var jwtSecret = builder.Configuration["Jwt:Secret"] ?? throw new InvalidOperationException("Jwt:Secret no configurado.");
 var jwtIssuer = builder.Configuration["Jwt:Issuer"];
@@ -226,7 +228,7 @@ var corsOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<st
 if (corsOrigins.Length == 0 || corsOrigins.Any(string.IsNullOrWhiteSpace)) throw new InvalidOperationException("Cors:AllowedOrigins debe contener al menos un origen válido.");
 builder.Services.AddCors(options => options.AddPolicy("FrontendPolicy", policy => policy.WithOrigins(corsOrigins).AllowAnyHeader().AllowAnyMethod()));
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options => { options.SwaggerDoc("v1", new OpenApiInfo { Title = "InventoryApp API", Version = "v1" }); options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme { Name = "Authorization", Type = SecuritySchemeType.Http, Scheme = "Bearer", BearerFormat = "JWT", In = ParameterLocation.Header, Description = "Ingresa: Bearer {tu token}" }); options.AddSecurityRequirement(new OpenApiSecurityRequirement { { new OpenApiSecurityScheme { Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" } }, Array.Empty<string>() } }); });
+builder.Services.AddSwaggerGen(options => { options.SwaggerDoc("v1", new OpenApiInfo { Title = "Solqaryn API", Version = "v1" }); options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme { Name = "Authorization", Type = SecuritySchemeType.Http, Scheme = "Bearer", BearerFormat = "JWT", In = ParameterLocation.Header, Description = "Ingresa: Bearer {tu token}" }); options.AddSecurityRequirement(new OpenApiSecurityRequirement { { new OpenApiSecurityScheme { Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" } }, Array.Empty<string>() } }); });
 var app = builder.Build();
 if (isRender)
 {
@@ -284,7 +286,7 @@ if (maintenanceEnabled)
     });
 }
 app.UseAuthentication(); app.UseAuthorization();
-app.MapGet("/health", () => Results.Ok(new { status = "ok", service = "InventoryApp API" })).ExcludeFromDescription();
+app.MapGet("/health", () => Results.Ok(new { status = "ok", service = "Solqaryn API" })).ExcludeFromDescription();
 app.MapGet("/health/ready", async (AppDbContext db, CancellationToken cancellationToken) => { var databaseReady = false; try { databaseReady = await db.Database.CanConnectAsync(cancellationToken); } catch { databaseReady = false; } return databaseReady ? Results.Ok(new { status = "ready", database = "connected" }) : Results.Json(new { status = "not_ready", database = "unavailable" }, statusCode: StatusCodes.Status503ServiceUnavailable); }).ExcludeFromDescription();
 app.MapControllers();
 if (app.Configuration.GetValue<bool>("Database:ApplyMigrationsOnStartup"))

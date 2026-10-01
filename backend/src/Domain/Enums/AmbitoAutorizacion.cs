@@ -1,4 +1,4 @@
-namespace InventoryApp.Domain.Enums;
+namespace Solqaryn.Domain.Enums;
 
 /// <summary>
 /// Separa explícitamente la autoridad tenant de la autoridad global del SaaS.

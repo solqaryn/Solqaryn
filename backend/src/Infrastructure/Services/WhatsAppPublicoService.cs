@@ -1,11 +1,11 @@
-using InventoryApp.Application.DTOs;
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Domain.Entities;
-using InventoryApp.Infrastructure.Persistence;
+using Solqaryn.Application.DTOs;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Entities;
+using Solqaryn.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace InventoryApp.Infrastructure.Services;
+namespace Solqaryn.Infrastructure.Services;
 
 public sealed class WhatsAppPublicoService : IWhatsAppPublicoService
 {

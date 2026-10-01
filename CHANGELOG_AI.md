@@ -1,3 +1,109 @@
+## 2026-09-30 — Fase 4: reconciliación final de documentación de entornos
+
+- Corregidas referencias stale en `docs/ENTORNOS_DEV_PROD.md`: Vercel PROD ya existe, la migración histórica PROD ya está cerrada y el custom domain continúa aplazado.
+- Alineado `docs/RENDER_ENVIRONMENT_CONTRACT.md` con la decisión vigente de SMTP aplazado/no bloqueante sobre Render Free; no se introduce compra ni requisito artificial de keep-alive.
+- Cambio documental únicamente; sin runtime, `main`, PROD, datos, secretos, DNS ni Plan Maestro.
+
+## 2026-09-30 — Fase 4: cierre técnico DEV y runbook de promoción futura
+
+- Consolidada evidencia exact-head del runtime DEV `7452c43c489f467727ab2569f34d43074ce3e06a`: CI, aceptación integral, recuperación MySQL, Vercel DEV y Render DEV certificados.
+- Añadido `docs/DEV_CIERRE_TECNICO_PROMOCION.md` con snapshot de datos, aislamiento, rollback y precondiciones de una futura promoción independiente `dev -> main/PROD`.
+- Corregido `docs/ENTORNOS_DEV_PROD.md` para reflejar el estado corporativo vigente de Vercel PROD y la migración histórica ya cerrada.
+- El Plan Maestro no fue modificado. La regla reforzada de aislamiento y la revisión de `SQ-350`/`SQ-351` quedan reservadas para una actualización mayor posterior y no adquieren autoridad ejecutable por este changeset.
+- Sin cambios de runtime, `main`, PROD, datos, secretos, DNS ni compra de servicios.
+
+## 2026-09-30 — Evitar metadata locks al adoptar DDL Fase 12 ya existente
+
+- El smoke DEV mostró que CREATE TABLE IF NOT EXISTS todavía podía quedar esperando metadata lock sobre tablas ya materializadas.
+- La recuperación Fase 12 ahora consulta INFORMATION_SCHEMA antes de cualquier DDL de tabla: si la tabla existe, no ejecuta CREATE TABLE; si falta, la crea.
+- Índices siguen el mismo patrón y la validación final de tablas, columnas, índices y FK permanece fail-closed.
+- No se borran ni reescriben filas; el cambio busca únicamente convergencia segura de esquema e historial.
+- Sin main, PROD, secretos ni servicios pagos.
+
+## 2026-09-30 — Reconciliación fail-closed de StorefrontFase12CuentaCliente en DEV
+
+- El segundo smoke de Render DEV demostró que la deriva histórica también incluía las tablas de cuenta de storefront ya materializadas sin su fila de historial EF.
+- 20260919011500_StorefrontFase12CuentaCliente ahora crea únicamente tablas/índices ausentes y después valida que existan las cuatro tablas, 32 columnas requeridas, siete índices y cinco relaciones FK esperadas.
+- Si una estructura preexistente no coincide, la migración provoca un fallo explícito y no registra el historial como convergente.
+- La recuperación no borra ni reescribe filas de cuentas, favoritos, direcciones, sesiones o productos.
+- Se añadió prueba contractual para impedir regresar a CreateTable/CreateIndex no idempotentes.
+- Scope exclusivo DEV; sin main, PROD, secretos ni servicios pagos.
+
+## 2026-09-30 — Recuperación idempotente de StorefrontFase7ProductoDestacado en DEV
+
+- El smoke exact-head de Render DEV detectó deriva histórica: `Productos.EsDestacado` existía físicamente mientras `20260918162000_StorefrontFase7ProductoDestacado` faltaba en `__EFMigrationsHistory`.
+- La migración se volvió idempotente ante DDL parcial: comprueba `INFORMATION_SCHEMA` y sólo crea la columna o índice si realmente faltan.
+- No se elimina, sobrescribe ni migra contenido de productos; la recuperación completa estructura faltante y permite que EF registre su historial.
+- Se añadió prueba contractual para impedir volver a una operación `AddColumn/CreateIndex` no idempotente en esta migración.
+- Scope exclusivo DEV; sin cambios en `main`, PROD, secretos ni servicios pagos.
+
+## 2026-09-30 — QA Fase 3: fail-closed de base/usuario por entorno Render
+
+- Durante QA DEV se detectó que el binding Vercel→API ya fallaba cerrado, pero el backend aún aceptaba cualquier base MySQL sintácticamente válida.
+- Se añadió `EnvironmentDatabaseGuard` y se conectó al startup únicamente cuando `RENDER=true`.
+- Render Development exige `solqaryn_dev` + `solqaryn_dev_user`; Render Production exige `solqaryn_prod` + `solqaryn_prod_user`.
+- Se agregaron pruebas para binding válido, base cruzada, usuario cruzado, entorno ambiguo/no canónico y cadena sin base.
+- Cambio sólo en `dev`; no se modificó `main`, Render PROD, datos, migraciones, secretos, DNS ni servicios pagos.
+
+## 2026-09-30 — Aislamiento Vercel DEV: bloqueo de previews cruzados hacia proyecto PROD
+
+- El guard `frontend/scripts/vercel-ignore-build.mjs` ahora usa `VERCEL_PROJECT_ID` para impedir que commits de la rama `dev` creen builds/previews dentro del proyecto Vercel `solqaryn-prod`.
+- El bloqueo usa identidad inmutable de proyecto y no hostname/alias; `solqaryn-dev` continúa construyendo DEV normalmente.
+- `validate-environment-routing.mjs` valida también esta frontera cross-project además del binding `SOLQARYN_ENV + API_UPSTREAM` y del fail-closed DEV/PROD.
+- Cambio exclusivo en `dev`; no se modificó `main`, configuración/variables de PROD, datos, DNS, secretos ni servicios pagos.
+
+## 2026-09-30 — Corrección final de ownership VAEP Javier/Alex
+
+- Se confirmó que las cinco Supervisor canónicas pertenecen físicamente a la cuenta de Alex Morales con IDs: :05=6abd62255ae88191a2dba6e1b00d3b4d, :17=6abd6235e100819195785fc76a44a8e0, :29=6abd6241c3e48191a8856ed7b0f42c5c, :41=6abd624e5e108191bef6bb879559328c, :53=6abd625b397c8191a49904227946a20f.
+- Las cinco Primary canónicas permanecen en Javier Mejía y fueron repareadas a esos IDs de Alex: :00=6aa15346f5408191bdd9043fd26ff7aa, :12=6aa1534deee481918280def1343adcfa, :24=6abd70e42cb4819190b3b28916dc9dbb, :36=6aa1535a51508191a610e6cdb90a2a4d, :48=6aa1535f8cd48191b73e10f17843372a.
+- Las cinco Supervisor creadas por error en la cuenta de Javier (IDs 6abd7946e7c881919c60ed6b3bf9a81a, 6abd79517d908191b08f770920ae63d4, 6abd795d81d08191b58518eddd62ffac, 6abd7970c2288191ac452301b3bc4df2, 6abd797bbf008191a9939cc2ccc11a06) quedaron RETIRADAS, deshabilitadas y marcadas explícitamente DO_NOT_RUN.
+- `_AUTOMATION_SOURCE` ya contiene los IDs reales de Alex, responsables correctos, parejas bidireccionales y 0/10 habilitadas.
+- `docs/VAEP_AUTHORITY.md` fue reconciliado nuevamente para apuntar exclusivamente a los IDs reales de Alex.
+- No se activó ninguna automation ni se ejecutaron runs nuevos durante esta corrección.
+
+## 2026-09-30 — Reconstrucción y resincronización de las cinco Supervisor VAEP
+
+- Se detectó que el Sheet canónico conservaba las cinco Supervisor, pero los objetos runtime ya no estaban presentes en el inventario vivo.
+- Se recrearon las cinco Supervisor canónicas :05/:17/:29/:41/:53 con RESPONSABLE_OPERATIVO=ALEX_MORALES, zona America/Tegucigalpa, horarios canónicos y estado deshabilitado.
+- Nuevos IDs Supervisor canónicos: :05=6abd7946e7c881919c60ed6b3bf9a81a, :17=6abd79517d908191b08f770920ae63d4, :29=6abd795d81d08191b58518eddd62ffac, :41=6abd7970c2288191ac452301b3bc4df2, :53=6abd797bbf008191a9939cc2ccc11a06.
+- Las cinco Primary fueron repareadas a estos IDs y permanecen deshabilitadas.
+- _AUTOMATION_SOURCE fue actualizado con los IDs nuevos y las relaciones cruzadas; las vistas derivadas continúan 0/10 habilitadas.
+- docs/VAEP_AUTHORITY.md fue actualizado para eliminar los cinco IDs Supervisor retirados.
+- Las cinco Supervisor recreadas tienen last_run_time=null; no se ejecutó ningún run durante la reconstrucción.
+- No se tocó main, PROD, datos productivos, secretos, DNS, certificados ni servicios pagos.
+
+## 2026-09-30 — Recreación controlada de SOLQARYN VAEP Primary :24
+
+- La tarea `SOLQARYN VAEP Primary :24` fue eliminada accidentalmente desde la cuenta de Javier y recreada con el mismo horario `:24`, mismo responsable operativo, mismo contrato VAEP y estado PAUSADO.
+- Nuevo ID canónico de Primary :24: `6abd70e42cb4819190b3b28916dc9dbb`.
+- Se actualizó el Sheet operativo y las autoridades canónicas actuales para sustituir el ID retirado `6aa153545c5c819199047566bda1cdac`.
+- Las cinco Primary de Javier permanecen pausadas; no se activó ninguna automatización.
+- La Supervisor :29 de Alex debe releer/actualizar su `PRIMARY_PAIR_ID` al nuevo ID antes de declarar certificación runtime 10/10 definitiva.
+
+## 2026-09-30 — Reparto operativo VAEP Javier/Alex y sustitución de Supervisor canónicas
+
+- Workspace ChatGPT Business: `SOLQARYN`, con dos miembros humanos: Javier Mejía y Alex Morales.
+- Javier conserva como canónicas únicamente las cinco Primary `:00/:12/:24/:36/:48`.
+- Alex Morales aporta las cinco Supervisor canónicas `:05/:17/:29/:41/:53` con IDs `6abd62255ae88191a2dba6e1b00d3b4d`, `6abd6235e100819195785fc76a44a8e0`, `6abd6241c3e48191a8856ed7b0f42c5c`, `6abd624e5e108191bef6bb879559328c`, `6abd625b397c8191a49904227946a20f`.
+- Las cinco Supervisor equivalentes de la cuenta de Javier fueron marcadas RETIRADA y permanecen inactivas; no deben reactivarse.
+- Las cinco Primary de Javier fueron repareadas a los IDs Supervisor de Alex y permanecen inactivas.
+- El Google Sheet operativo actualizó `_AUTOMATION_SOURCE`, `AUTOMATIZACIONES`, `TAREAS_PROGRAMADAS` y `TAREAS_DE_SUPERVISION`; readback confirma 5 Primary/Javier + 5 Supervisor/Alex y `0/10` habilitadas.
+- `SOLQARYN - AUTORIDAD OPERATIVA VAEP`, `AGENTS.md`, `docs/VAEP_AUTHORITY.md`, `PROJECT_CONTEXT.md` y el inventario de plataformas fueron reconciliados con el nuevo reparto.
+- No se tocó `main`, PROD, datos productivos, secretos, DNS, certificados ni servicios pagos.
+
+## 2026-09-30 — Rebase integral del control-plane al Plan Maestro único SOLQARYN
+
+- Se certificó como único roadmap vivo el Google Doc nativo `PLAN MAESTRO SOLQARYN` (ID `1YdQlNJ312HuziyKb9E-GEt55dcgSmuFGgfsHxyzPUaw`), con 354 objetivos continuos `SQ-000..SQ-353`.
+- El antiguo Doc rector VAEP con contenido ERP-N/M0-M13/V5/Jules fue retirado de la carpeta operativa y preservado sólo en backup histórico.
+- Se creó `SOLQARYN - AUTORIDAD OPERATIVA VAEP` (ID `1frrmekon0pBTrLcXk0yUZSJa4uISjEzrwrni3ja5y38`) como contrato operativo auxiliar; explícitamente no es un segundo Plan Maestro.
+- `Notas SOLQARYN_DEV.docx` queda definida como bandeja de observaciones no ejecutables hasta aprobación e incorporación al Plan Maestro único.
+- El Sheet `SOLQARYN - PLAN MAESTRO DE AUTOMATIZACIONES` fue limpiado de COLA/PLAN_MAESTRO/BITACORA históricos y rebasado a fuentes nuevas: `_MASTER_SOURCE`, `_RUNTIME_SOURCE`, `_AUTOMATION_SOURCE`, `_EVENTS_SOURCE`.
+- PLAN_MAESTRO y COLA visibles ahora contienen exclusivamente los objetivos SQ del Maestro actual y estado runtime derivado por fórmulas; BITACORA visible parte vacía y deriva únicamente eventos nuevos.
+- DASHBOARD, CONFIG, LEYENDA, TAREAS_PROGRAMADAS, CONTROL_TOWER, AUTOMATIZACIONES y TAREAS_DE_SUPERVISION fueron reconciliadas al modelo actual; se retiraron N8/ERP-N/M0/Jules como autoridad vigente.
+- Las 14 pestañas del Sheet tienen protección administrativa; las cuatro fuentes técnicas permanecen ocultas. Nota técnica: Google Drive siempre conserva al propietario capacidad final de edición, por lo que la prohibición absoluta de edición manual se implementa como política + protección + vistas derivadas, no como imposibilidad criptográfica para el propietario.
+- Las diez Tasks canónicas fueron repunteadas al nuevo Plan Maestro/contrato operativo y permanecen deliberadamente **INACTIVAS (0/10)**.
+- No se tocó `main`, PROD, datos productivos, secretos, DNS, certificados ni servicios pagos.
+
 ## 2026-09-29 — Punto 10: Render Free y ruta comercial
 
 - Readback vivo: DEV y PROD continúan en Render `free`; no se compró ni activó ningún plan.
@@ -2219,3 +2325,37 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - El PR PROD #3486 detectó que `scripts/quality/priority4_quality_audit.py` conservaba el contrato stale de `2mb` para el budget inicial Angular.
 - El gate fue alineado al contrato ya certificado del Punto 8: `650kb` warning / `750kb` error, sin relajar límites ni cambiar runtime.
 - Alcance: CI/gobernanza de calidad únicamente; sin datos, migraciones, secretos, planes, DNS ni cambios productivos directos.
+
+
+## 2026-09-30 — VAEP: migración Google corporativa y corrección de las 10 automatizaciones
+
+- Se verificó la cuenta Google corporativa `solqaryn.platform@outlook.com` y la propiedad de los dos artefactos migrados de VAEP.
+- Se crearon versiones nativas corporativas para operación segura mediante el conector Google Drive:
+  - Sheet `SOLQARYN - PLAN MAESTRO DE AUTOMATIZACIONES`: `1gcVyCoyhLU0jFMwRtf0s5_x8FSnfBs38ojml1QF7Xwk`.
+  - Doc `Plan Maestro SOLQARYN - FUENTE RECTORA VAEP`: `1l0sy55GJu5bJAsXWDB8ciXfQOB9jBaNO7Mkx-N80vWk`.
+- El Sheet nativo quedó con timezone `America/Tegucigalpa`, nombres canónicos SOLQARYN, fuentes del plan apuntando al Doc corporativo, estado de runtime reconciliado a `0/10` habilitadas y sin CURRENT_PARENT activo durante la pausa.
+- Se corrigieron las diez automatizaciones canónicas a `solqaryn/Solqaryn` + rama `dev`, con `docs/VAEP_AUTHORITY.md` como única autoridad operativa, Google Drive corporativo exclusivamente y bloqueo explícito de `javiermejia3112@gmail.com`, `jmejia31/VariApp`, rama `Desarrollo` e infraestructura legacy como fallback.
+- Slots canónicos preservados: primarias `:00/:12/:24/:36/:48`; supervisoras `:05/:17/:29/:41/:53`.
+- Las 10 automatizaciones permanecen deliberadamente **PAUSADAS (0/10)** por instrucción del propietario. No se ejecutó ninguna activación.
+- Tres duplicados legacy adicionales fueron marcados como `RETIRADA` y permanecen inertes para evitar activación accidental.
+- Sin cambios en `main`, PROD, datos productivos, secretos, DNS, certificados o servicios pagos.
+
+## 2026-09-30 — Canonicalización técnica SOLQARYN
+
+- Refactor nominal transversal en DEV: proyectos, namespaces, artefactos, storefront, pruebas y scripts quedan bajo identidad técnica SOLQARYN y nombres tenant-neutral.
+- Sin cambios de datos productivos, sin migraciones destructivas y sin cambios en main/PROD.
+
+## 2026-09-30 — CI + routing DEV hardening
+
+- Gobierno de matrices alineado al feature tenant-neutral `frontend/src/app/features/storefront` y MATRIX_ID operativo renombrado a `VAEP-MX::CUSTOMERS_COMMERCIAL::STOREFRONT`.
+- Priority 4 reconoce `/tienda/*` como superficie pública y deja de depender de nomenclatura histórica.
+- Parser VAEP acepta y valida los responsables operativos vigentes Primary/Supervisor.
+- EF Snapshot Probe pasa a exact-head read-only con `has-pending-model-changes`; deja de fabricar o publicar migraciones de prueba.
+- Angular 20 queda alineado a 20.3.33; `npm ci` y `npm audit --omit=dev --audit-level=high` pasan en CI.
+- Vercel elimina selección de API por hostname y fallback DEV: binding por proyecto, proxy local y fail-closed ante cruces DEV/PROD.
+- Sin main/PROD, sin migración o borrado de datos y sin compra de servicios.
+
+## 2026-09-30 — Contratos activos de matrices alineados a dev
+
+- `N8_17_H_CERTIFICATION.json` y `N8_18_D_BACKEND_REFACTOR.json` dejan de declarar la rama retirada `Desarrollo` y quedan alineados a la rama canónica `dev` exigida por sus validadores vigentes.
+- Cambio documental/CI únicamente; sin runtime, datos, migraciones, PROD ni servicios pagos.

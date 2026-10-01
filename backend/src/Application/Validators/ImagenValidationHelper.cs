@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http;
 
-namespace InventoryApp.Application.Validators;
+namespace Solqaryn.Application.Validators;
 
 public static class ImagenValidationHelper
 {

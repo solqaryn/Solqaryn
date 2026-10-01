@@ -1,4 +1,4 @@
-namespace InventoryApp.Domain.Common;
+namespace Solqaryn.Domain.Common;
 
 /// Entidad con auditoría básica de creación/actualización por usuario.
 public abstract class AuditableEntity : BaseEntity

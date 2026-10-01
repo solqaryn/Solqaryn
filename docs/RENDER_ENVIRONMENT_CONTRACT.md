@@ -73,4 +73,6 @@ Estas claves no deben existir como configuración desplegada de DEV/PROD:
 
 ## Regla de promoción
 
-No promover cambios de configuración a PROD hasta certificar en DEV: build/deploy, health, diagnóstico SMTP `SMTP_OK` y envío real controlado.
+No promover cambios de configuración a PROD sin autorización explícita y sin certificar en DEV el build/deploy, health/readiness y los contratos de aislamiento aplicables.
+
+El SMTP real está actualmente aplazado/no bloqueante por la conectividad disponible en Render Free. La promoción no autoriza comprar un plan ni introducir keep-alive. Si SMTP entra expresamente en el alcance de una release futura, entonces sí debe superar diagnóstico OAuth2 y envío real controlado antes de declarar ese componente certificado.

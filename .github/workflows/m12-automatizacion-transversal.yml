@@ -10,7 +10,7 @@ on:
       - backend/src/Application/Interfaces/IAutomatizacionService.cs
       - backend/src/Infrastructure/Services/AutomatizacionService.cs
       - backend/src/Infrastructure/Migrations/20260810174200_M12AutomatizacionTransversal.cs
-      - backend/tests/InventoryApp.Tests/M12AutomatizacionTransversalTests.cs
+      - backend/tests/Solqaryn.Tests/M12AutomatizacionTransversalTests.cs
       - frontend/src/app/core/models/automatizacion.model.ts
       - frontend/src/app/services/automatizacion.service.ts
       - frontend/src/app/features/dashboard/**
@@ -25,7 +25,7 @@ on:
       - backend/src/Application/Interfaces/IAutomatizacionService.cs
       - backend/src/Infrastructure/Services/AutomatizacionService.cs
       - backend/src/Infrastructure/Migrations/20260810174200_M12AutomatizacionTransversal.cs
-      - backend/tests/InventoryApp.Tests/M12AutomatizacionTransversalTests.cs
+      - backend/tests/Solqaryn.Tests/M12AutomatizacionTransversalTests.cs
       - frontend/src/app/core/models/automatizacion.model.ts
       - frontend/src/app/services/automatizacion.service.ts
       - frontend/src/app/features/dashboard/**
@@ -50,7 +50,7 @@ jobs:
         image: mysql:8.4
         env:
           MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: inventoryapp_m12_e2e
+          MYSQL_DATABASE: solqaryn_m12_e2e
         ports: ['3306:3306']
         options: >-
           --health-cmd="mysqladmin ping -h localhost -proot"
@@ -58,12 +58,12 @@ jobs:
     env:
       ASPNETCORE_ENVIRONMENT: Development
       PORT: '5005'
-      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=inventoryapp_m12_e2e;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_m12_e2e;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
       Database__ServerVersion: '8.4.0'
       Database__ApplyMigrationsOnStartup: 'true'
       Jwt__Secret: 'M12-E2E-Only-Secret-With-More-Than-32-Characters-2026'
-      Jwt__Issuer: 'InventoryApp.API'
-      Jwt__Audience: 'InventoryApp.Frontend'
+      Jwt__Issuer: 'Solqaryn.API'
+      Jwt__Audience: 'Solqaryn.Frontend'
       Jwt__ExpiraMinutos: '120'
       Security__LoginRateLimitPerMinute: '300'
       SeedAdmin__Username: 'e2e_admin'
@@ -71,7 +71,7 @@ jobs:
       Cors__AllowedOrigins__0: 'http://127.0.0.1:4200'
       Cors__AllowedOrigins__1: 'http://localhost:4200'
       AppSettings__BackendPublicUrl: 'https://preview.solqaryn.invalid'
-      AppSettings__LogoPublicUrl: 'https://solqaryn-dev.vercel.app/assets/varistorehn-logo.png'
+      AppSettings__LogoPublicUrl: 'https://solqaryn-dev.vercel.app/assets/storefront-logo.png'
       Cloudinary__CloudName: 'e2e-not-used'
       Cloudinary__ApiKey: 'e2e-not-used'
       Cloudinary__ApiSecret: 'e2e-not-used'
@@ -91,19 +91,19 @@ jobs:
       - name: Compilar y probar backend M12
         working-directory: backend
         run: |
-          dotnet restore InventoryApp.sln
-          dotnet build InventoryApp.sln --configuration Release --no-restore
-          dotnet test InventoryApp.sln --configuration Release --no-build --filter "FullyQualifiedName~M12AutomatizacionTransversalTests" --logger "trx;LogFileName=m12-tests.trx"
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+          dotnet test Solqaryn.sln --configuration Release --no-build --filter "FullyQualifiedName~M12AutomatizacionTransversalTests" --logger "trx;LogFileName=m12-tests.trx"
       - name: Iniciar API y migrar MySQL real
         working-directory: backend
         shell: bash
         run: |
           set -euo pipefail
-          nohup dotnet run --project src/API/InventoryApp.API.csproj --configuration Release --no-build --no-launch-profile > m12-api.log 2>&1 &
+          nohup dotnet run --project src/API/Solqaryn.API.csproj --configuration Release --no-build --no-launch-profile > m12-api.log 2>&1 &
           for attempt in $(seq 1 60); do
             if curl --fail --silent http://127.0.0.1:5005/health/ready > /dev/null; then
-              mysql -h127.0.0.1 -uroot -proot inventoryapp_m12_e2e -e "SELECT * FROM AutomatizacionConfiguraciones WHERE Id=1;"
-              mysql -h127.0.0.1 -uroot -proot inventoryapp_m12_e2e -e "SELECT MigrationId FROM __EFMigrationsHistory WHERE MigrationId='20260810174200_M12AutomatizacionTransversal';" | grep -q M12AutomatizacionTransversal
+              mysql -h127.0.0.1 -uroot -proot solqaryn_m12_e2e -e "SELECT * FROM AutomatizacionConfiguraciones WHERE Id=1;"
+              mysql -h127.0.0.1 -uroot -proot solqaryn_m12_e2e -e "SELECT MigrationId FROM __EFMigrationsHistory WHERE MigrationId='20260810174200_M12AutomatizacionTransversal';" | grep -q M12AutomatizacionTransversal
               exit 0
             fi
             sleep 2

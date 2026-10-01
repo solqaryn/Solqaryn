@@ -1,14 +1,14 @@
-using InventoryApp.Application.Common;
-using InventoryApp.Application.DTOs;
-using InventoryApp.Application.Exceptions;
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Application.Mappings;
-using InventoryApp.Application.Validators;
-using InventoryApp.Domain.Entities;
-using InventoryApp.Domain.Enums;
+using Solqaryn.Application.Common;
+using Solqaryn.Application.DTOs;
+using Solqaryn.Application.Exceptions;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Application.Mappings;
+using Solqaryn.Application.Validators;
+using Solqaryn.Domain.Entities;
+using Solqaryn.Domain.Enums;
 using Microsoft.AspNetCore.Http;
 
-namespace InventoryApp.Application.Services;
+namespace Solqaryn.Application.Services;
 
 public class ProductoService : IProductoService
 {

@@ -1,4 +1,4 @@
-namespace InventoryApp.Domain.Enums.Cajas;
+namespace Solqaryn.Domain.Enums.Cajas;
 
 public enum TipoMovimientoCaja
 {

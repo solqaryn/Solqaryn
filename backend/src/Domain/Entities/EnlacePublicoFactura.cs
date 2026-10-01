@@ -1,4 +1,4 @@
-namespace InventoryApp.Domain.Entities;
+namespace Solqaryn.Domain.Entities;
 
 /// Enlace público y temporal para acceder al PDF de una factura sin JWT.
 ///

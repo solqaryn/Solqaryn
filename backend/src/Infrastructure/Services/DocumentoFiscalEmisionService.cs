@@ -1,12 +1,12 @@
 using System.Security.Cryptography;
 using System.Text;
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Domain.Entities;
-using InventoryApp.Domain.Fiscal;
-using InventoryApp.Infrastructure.Persistence;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Entities;
+using Solqaryn.Domain.Fiscal;
+using Solqaryn.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace InventoryApp.Infrastructure.Services;
+namespace Solqaryn.Infrastructure.Services;
 
 /// <summary>
 /// Orquesta una emisión fiscal sin asumir legislación, autoridad o formato nacional único.

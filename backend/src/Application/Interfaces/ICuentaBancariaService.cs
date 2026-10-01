@@ -1,7 +1,7 @@
-using InventoryApp.Application.DTOs.Bancos;
-using InventoryApp.Application.Bancos;
+using Solqaryn.Application.DTOs.Bancos;
+using Solqaryn.Application.Bancos;
 
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 public interface ICuentaBancariaService
 {

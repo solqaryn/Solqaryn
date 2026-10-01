@@ -1,9 +1,9 @@
-using InventoryApp.Application.Common;
-using InventoryApp.Application.Interfaces;
+using Solqaryn.Application.Common;
+using Solqaryn.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace InventoryApp.API.Controllers;
+namespace Solqaryn.API.Controllers;
 
 /// <summary>
 /// Materializa la selección de empresa como una solicitud no autoritativa del

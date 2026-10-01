@@ -1,6 +1,6 @@
-using InventoryApp.Application.DTOs;
+using Solqaryn.Application.DTOs;
 
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 /// Autogestión del propio usuario autenticado. Está separada de la
 /// administración de terceros y no depende de permisos de módulo.

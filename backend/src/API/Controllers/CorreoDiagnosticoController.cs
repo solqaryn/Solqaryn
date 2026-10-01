@@ -1,13 +1,13 @@
-using InventoryApp.Application.Common;
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Domain.Enums;
-using InventoryApp.API.Filters;
+using Solqaryn.Application.Common;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Enums;
+using Solqaryn.API.Filters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace InventoryApp.API.Controllers;
+namespace Solqaryn.API.Controllers;
 
-/// Diagnóstico seguro del transporte SMTP de Desarrollo. Nunca devuelve usuario,
+/// Diagnóstico seguro del transporte SMTP de dev. Nunca devuelve usuario,
 /// contraseña, certificados ni mensajes técnicos completos del proveedor.
 [ApiController]
 [Authorize]

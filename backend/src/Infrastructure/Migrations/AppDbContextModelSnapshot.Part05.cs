@@ -5,61 +5,61 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 #nullable disable
 
-namespace InventoryApp.Infrastructure.Migrations
+namespace Solqaryn.Infrastructure.Migrations
 {
     internal static partial class AppDbContextSnapshotN14D
     {
         private static void ApplyPart5(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity("InventoryApp.Domain.Entities.MovimientoInventario", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.MovimientoInventario", b =>
             {
-                b.HasOne("InventoryApp.Domain.Entities.Compra", null)
+                b.HasOne("Solqaryn.Domain.Entities.Compra", null)
                     .WithMany()
                     .HasForeignKey("CompraId")
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_MovimientosInventario_Compras_CompraId_N06");
 
-                b.HasOne("InventoryApp.Domain.Entities.Venta", null)
+                b.HasOne("Solqaryn.Domain.Entities.Venta", null)
                     .WithMany()
                     .HasForeignKey("VentaId")
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_MovimientosInventario_Ventas_VentaId_N06");
 
-                b.HasOne("InventoryApp.Domain.Entities.ConsumoInsumo", null)
+                b.HasOne("Solqaryn.Domain.Entities.ConsumoInsumo", null)
                     .WithMany()
                     .HasForeignKey("ConsumoInsumoId")
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_MovimientosInventario_ConsumosInsumos_ConsumoInsumoId_N06");
 
-                b.HasOne("InventoryApp.Domain.Entities.AjusteInventario", null)
+                b.HasOne("Solqaryn.Domain.Entities.AjusteInventario", null)
                     .WithMany()
                     .HasForeignKey("AjusteInventarioId")
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_MovInv_AjusteInventarioId_N07");
 
-                b.HasOne("InventoryApp.Domain.Entities.TransferenciaInventario", null)
+                b.HasOne("Solqaryn.Domain.Entities.TransferenciaInventario", null)
                     .WithMany()
                     .HasForeignKey("TransferenciaInventarioId")
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_MovInv_TransferenciaInventarioId_N16");
             });
-            modelBuilder.Entity("InventoryApp.Domain.Entities.AjusteInventarioDetalle", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.AjusteInventarioDetalle", b =>
             {
-                b.HasOne("InventoryApp.Domain.Entities.AjusteInventario", "AjusteInventario")
+                b.HasOne("Solqaryn.Domain.Entities.AjusteInventario", "AjusteInventario")
                     .WithMany("Detalles")
                     .HasForeignKey("AjusteInventarioId")
                     .OnDelete(DeleteBehavior.Cascade)
                     .IsRequired()
                     .HasConstraintName("FK_AjusteInventarioDetalles_AjustesInventario");
 
-                b.HasOne("InventoryApp.Domain.Entities.Producto", "Producto")
+                b.HasOne("Solqaryn.Domain.Entities.Producto", "Producto")
                     .WithMany()
                     .HasForeignKey("ProductoId")
                     .OnDelete(DeleteBehavior.Restrict)
                     .IsRequired()
                     .HasConstraintName("FK_AjusteInventarioDetalles_Productos");
 
-                b.HasOne("InventoryApp.Domain.Entities.ProductoVariante", "ProductoVariante")
+                b.HasOne("Solqaryn.Domain.Entities.ProductoVariante", "ProductoVariante")
                     .WithMany()
                     .HasForeignKey("ProductoVarianteId")
                     .OnDelete(DeleteBehavior.Restrict)
@@ -70,7 +70,7 @@ namespace InventoryApp.Infrastructure.Migrations
                 b.Navigation("ProductoVariante");
             });
             // ERP-N1.4.D — contexto físico histórico de operaciones.
-            modelBuilder.Entity("InventoryApp.Domain.Entities.CompraDetalle", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.CompraDetalle", b =>
             {
                 b.Property<int?>("AlmacenId").HasColumnType("int");
                 b.Property<int?>("UbicacionAlmacenId").HasColumnType("int");
@@ -81,7 +81,7 @@ namespace InventoryApp.Infrastructure.Migrations
                     t.HasCheckConstraint("CK_CompraDetalles_Ubicacion_RequiereAlmacen", "`UbicacionAlmacenId` IS NULL OR `AlmacenId` IS NOT NULL");
                 });
             });
-            modelBuilder.Entity("InventoryApp.Domain.Entities.VentaDetalle", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.VentaDetalle", b =>
             {
                 b.Property<int?>("AlmacenId").HasColumnType("int");
                 b.Property<int?>("UbicacionAlmacenId").HasColumnType("int");
@@ -92,7 +92,7 @@ namespace InventoryApp.Infrastructure.Migrations
                     t.HasCheckConstraint("CK_VentaDetalles_Ubicacion_RequiereAlmacen", "`UbicacionAlmacenId` IS NULL OR `AlmacenId` IS NOT NULL");
                 });
             });
-            modelBuilder.Entity("InventoryApp.Domain.Entities.ConsumoInsumoDetalle", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ConsumoInsumoDetalle", b =>
             {
                 b.Property<int?>("AlmacenId").HasColumnType("int");
                 b.Property<int?>("UbicacionAlmacenId").HasColumnType("int");
@@ -103,7 +103,7 @@ namespace InventoryApp.Infrastructure.Migrations
                     t.HasCheckConstraint("CK_ConsumoInsumoDetalles_Ubicacion_RequiereAlmacen", "`UbicacionAlmacenId` IS NULL OR `AlmacenId` IS NOT NULL");
                 });
             });
-            modelBuilder.Entity("InventoryApp.Domain.Entities.MovimientoInventario", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.MovimientoInventario", b =>
             {
                 b.Property<int?>("AlmacenId").HasColumnType("int");
                 b.Property<int?>("UbicacionAlmacenId").HasColumnType("int");
@@ -130,7 +130,7 @@ namespace InventoryApp.Infrastructure.Migrations
                     t.HasCheckConstraint("CK_MovimientosInventario_Ubicacion_RequiereAlmacen", "`UbicacionAlmacenId` IS NULL OR `AlmacenId` IS NOT NULL");
                 });
             });
-            modelBuilder.Entity("InventoryApp.Domain.Entities.AjusteInventarioDetalle", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.AjusteInventarioDetalle", b =>
             {
                 b.Property<int?>("AlmacenId").HasColumnType("int");
                 b.Property<int?>("UbicacionAlmacenId").HasColumnType("int");
@@ -141,13 +141,13 @@ namespace InventoryApp.Infrastructure.Migrations
                     t.HasCheckConstraint("CK_AjusteInventarioDetalles_Ubicacion_RequiereAlmacen", "`UbicacionAlmacenId` IS NULL OR `AlmacenId` IS NOT NULL");
                 });
             });
-            modelBuilder.Entity("InventoryApp.Domain.Entities.CompraDetalle", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.CompraDetalle", b =>
             {
-                b.HasOne("InventoryApp.Domain.Entities.Almacen", "Almacen")
+                b.HasOne("Solqaryn.Domain.Entities.Almacen", "Almacen")
                     .WithMany().HasForeignKey("AlmacenId")
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_CompraDetalles_Almacenes_AlmacenId_N14");
-                b.HasOne("InventoryApp.Domain.Entities.UbicacionAlmacen", "UbicacionAlmacen")
+                b.HasOne("Solqaryn.Domain.Entities.UbicacionAlmacen", "UbicacionAlmacen")
                     .WithMany().HasForeignKey("AlmacenId", "UbicacionAlmacenId")
                     .HasPrincipalKey("AlmacenId", "Id")
                     .OnDelete(DeleteBehavior.Restrict)

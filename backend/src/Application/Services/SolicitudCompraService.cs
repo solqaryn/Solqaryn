@@ -1,10 +1,10 @@
-using InventoryApp.Application.Common;
-using InventoryApp.Application.DTOs;
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Domain.Entities;
-using InventoryApp.Domain.Enums;
+using Solqaryn.Application.Common;
+using Solqaryn.Application.DTOs;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Entities;
+using Solqaryn.Domain.Enums;
 
-namespace InventoryApp.Application.Services;
+namespace Solqaryn.Application.Services;
 
 public sealed class SolicitudCompraService : ISolicitudCompraService
 {

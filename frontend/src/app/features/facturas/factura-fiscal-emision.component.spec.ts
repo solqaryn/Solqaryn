@@ -41,7 +41,7 @@ describe('N7.10.E fiscal issuance UX', () => {
     vi.clearAllMocks();
     empresaVerificada.set(7);
     permisoCrear.set(true);
-    localStorage.removeItem('inventoryapp_empresa_solicitada_id');
+    localStorage.removeItem('solqaryn_empresa_solicitada_id');
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
@@ -54,7 +54,7 @@ describe('N7.10.E fiscal issuance UX', () => {
   });
 
   afterEach(() => {
-    localStorage.removeItem('inventoryapp_empresa_solicitada_id');
+    localStorage.removeItem('solqaryn_empresa_solicitada_id');
     httpMock.verify();
   });
 
@@ -68,7 +68,7 @@ describe('N7.10.E fiscal issuance UX', () => {
   }
 
   it('uses only the server-verified tenant in the provider-neutral emission contract', async () => {
-    localStorage.setItem('inventoryapp_empresa_solicitada_id', '999');
+    localStorage.setItem('solqaryn_empresa_solicitada_id', '999');
     const component = createComponent();
 
     await component.emitir();

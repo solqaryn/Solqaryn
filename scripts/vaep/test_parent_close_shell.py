@@ -27,16 +27,16 @@ class ParentCloseShellTests(unittest.TestCase):
         self.assertEqual(subprocess.run(['bash', '-n', str(SCRIPT)], capture_output=True).returncode, 0)
 
     def test_newer_failure_blocks_old_success(self):
-        runs = {'workflow_runs': [dict(head_sha='a'*40, head_branch='Desarrollo', event='push', created_at='2026-01-01', id=1, status='completed', conclusion='success'), dict(head_sha='a'*40, head_branch='Desarrollo', event='push', created_at='2026-01-02', id=2, status='completed', conclusion='failure')]}
+        runs = {'workflow_runs': [dict(head_sha='a'*40, head_branch='dev', event='push', created_at='2026-01-01', id=1, status='completed', conclusion='success'), dict(head_sha='a'*40, head_branch='dev', event='push', created_at='2026-01-02', id=2, status='completed', conclusion='failure')]}
         r = bash("latest_push_success " + 'a'*40 + " <<'DATA'\n" + json.dumps(runs) + '\nDATA')
         self.assertNotEqual(r.returncode, 0)
 
     def test_running_latest_blocks(self):
-        runs = {'workflow_runs': [dict(head_sha='a'*40, head_branch='Desarrollo', event='push', created_at='2026', id=1, status='in_progress', conclusion=None)]}
+        runs = {'workflow_runs': [dict(head_sha='a'*40, head_branch='dev', event='push', created_at='2026', id=1, status='in_progress', conclusion=None)]}
         self.assertNotEqual(bash("latest_push_success " + 'a'*40 + " <<'DATA'\n" + json.dumps(runs) + '\nDATA').returncode, 0)
 
     def test_wrong_head_does_not_pass(self):
-        runs = {'workflow_runs': [dict(head_sha='b'*40, head_branch='Desarrollo', event='push', created_at='2026', id=1, status='completed', conclusion='success')]}
+        runs = {'workflow_runs': [dict(head_sha='b'*40, head_branch='dev', event='push', created_at='2026', id=1, status='completed', conclusion='success')]}
         self.assertNotEqual(bash("latest_push_success " + 'a'*40 + " <<'DATA'\n" + json.dumps(runs) + '\nDATA').returncode, 0)
 
     def test_both_migration_locations(self):

@@ -1,4 +1,4 @@
-namespace InventoryApp.Application.DTOs;
+namespace Solqaryn.Application.DTOs;
 
 /// <summary>
 /// Promocion publica ya resuelta para un precio normal. El cliente nunca

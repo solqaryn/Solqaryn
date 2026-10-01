@@ -1,6 +1,6 @@
-using InventoryApp.Domain.Enums;
+using Solqaryn.Domain.Enums;
 
-namespace InventoryApp.Domain.Entities;
+namespace Solqaryn.Domain.Entities;
 
 public class MovimientoFinanciero
 {
@@ -17,7 +17,7 @@ public class MovimientoFinanciero
     // servicios actuales hasta migrarlos al catálogo relacional.
     public MetodoPago? MetodoPago { get; set; }
     public int? MetodoPagoId { get; set; }
-    public InventoryApp.Domain.Entities.Catalogos.MetodoPago? MetodoPagoCatalogo { get; set; }
+    public Solqaryn.Domain.Entities.Catalogos.MetodoPago? MetodoPagoCatalogo { get; set; }
 
     public bool EsAutomatico { get; set; }
     /// "Compra" | "Venta" | "Factura" | "Reversion" | "Manual"

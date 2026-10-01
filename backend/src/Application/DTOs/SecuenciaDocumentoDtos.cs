@@ -1,4 +1,4 @@
-namespace InventoryApp.Application.DTOs;
+namespace Solqaryn.Application.DTOs;
 
 public sealed record ReservarSecuenciaDocumentoRequest(
     int EmpresaId,

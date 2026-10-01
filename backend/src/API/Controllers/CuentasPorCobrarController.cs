@@ -1,12 +1,12 @@
-using InventoryApp.API.Filters;
-using InventoryApp.Application.Common;
-using InventoryApp.Application.DTOs;
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Domain.Enums;
+using Solqaryn.API.Filters;
+using Solqaryn.Application.Common;
+using Solqaryn.Application.DTOs;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace InventoryApp.API.Controllers;
+namespace Solqaryn.API.Controllers;
 
 /// <summary>
 /// Proyección read-only de cuentas por cobrar sobre la autoridad vigente Factura/FacturaPago.

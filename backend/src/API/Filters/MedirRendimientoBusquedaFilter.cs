@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
 
-namespace InventoryApp.API.Filters;
+namespace Solqaryn.API.Filters;
 
 /// <summary>
 /// Métrica segura para endpoints operativos de búsqueda y escaneo.

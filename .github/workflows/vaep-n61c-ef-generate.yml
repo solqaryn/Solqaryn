@@ -27,11 +27,11 @@ jobs:
         with:
           dotnet-version: '8.0.x'
       - name: Restore backend
-        run: dotnet restore InventoryApp.sln
+        run: dotnet restore Solqaryn.sln
       - name: Build backend Release
-        run: dotnet build InventoryApp.sln --configuration Release --no-restore
+        run: dotnet build Solqaryn.sln --configuration Release --no-restore
       - name: Test N6.1 tenant empresa causal regression
-        run: dotnet test tests/InventoryApp.Tests/InventoryApp.Tests.csproj --configuration Release --no-restore --filter 'FullyQualifiedName~N61BTenantEmpresaDomainTests' --verbosity normal
+        run: dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-restore --filter 'FullyQualifiedName~N61BTenantEmpresaDomainTests' --verbosity normal
       - name: Validate canonical N6.1.C migration and snapshot
         run: |
           set -euo pipefail
@@ -43,7 +43,7 @@ jobs:
           grep -q 'Empresas' "$generated"
           grep -q 'CK_Empresas_Nombre_NoVacio' "$generated"
           grep -q 'IX_Empresas_Activa_Nombre' "$generated"
-          grep -q 'InventoryApp.Domain.Entities.Empresa' src/Infrastructure/Migrations/AppDbContextModelSnapshot.cs
+          grep -q 'Solqaryn.Domain.Entities.Empresa' src/Infrastructure/Migrations/AppDbContextModelSnapshot.cs
           grep -q 'Empresas' src/Infrastructure/Migrations/AppDbContextModelSnapshot.cs
           grep -q 'DropTable' "$generated"
           printf 'N6.1.C persistence markers validated on %s\n' "$(git rev-parse HEAD)"

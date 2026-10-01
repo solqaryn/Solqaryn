@@ -1,9 +1,9 @@
-namespace InventoryApp.Application.DTOs.Bancos;
+namespace Solqaryn.Application.DTOs.Bancos;
 
 public sealed record ConciliacionBancariaFilterDto
 {
     public int? CuentaBancariaId { get; init; }
-    public InventoryApp.Domain.Enums.Bancos.EstadoConciliacionBancaria? Estado { get; init; }
+    public Solqaryn.Domain.Enums.Bancos.EstadoConciliacionBancaria? Estado { get; init; }
     public int? Mes { get; init; }
     public int? Anio { get; init; }
     public int PageNumber { get; init; } = 1;

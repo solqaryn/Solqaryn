@@ -13,7 +13,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 $ExpectedRepo = "solqaryn/Solqaryn"
-$ExpectedBranch = "Desarrollo"
+$ExpectedBranch = "dev"
 $ExpectedOrigins = @(
     "https://github.com/solqaryn/Solqaryn",
     "https://github.com/solqaryn/Solqaryn.git",
@@ -78,8 +78,8 @@ try {
     }
 
     $head = Invoke-GitCapture @("rev-parse", "--short=12", "HEAD")
-    $originHead = Invoke-GitCapture @("rev-parse", "--short=12", "origin/Desarrollo")
-    $divergenceRaw = Invoke-GitCapture @("rev-list", "--left-right", "--count", "HEAD...origin/Desarrollo")
+    $originHead = Invoke-GitCapture @("rev-parse", "--short=12", "origin/dev")
+    $divergenceRaw = Invoke-GitCapture @("rev-list", "--left-right", "--count", "HEAD...origin/dev")
     $parts = $divergenceRaw -split "\s+"
     $ahead = [int]$parts[0]
     $behind = [int]$parts[1]
@@ -98,10 +98,10 @@ try {
     Write-Host "DIRTY=$($dirty.ToString().ToLowerInvariant())"
 
     if ($behind -gt 0) {
-        Write-Warning "El checkout está $behind commit(s) detrás de origin/Desarrollo. No empieces cambios nuevos hasta sincronizar."
+        Write-Warning "El checkout está $behind commit(s) detrás de origin/dev. No empieces cambios nuevos hasta sincronizar."
     }
     if ($ahead -gt 0) {
-        Write-Warning "Hay $ahead commit(s) locales aún no reflejados en origin/Desarrollo. Presérvalos y resuelve el handoff antes de una tarea nueva."
+        Write-Warning "Hay $ahead commit(s) locales aún no reflejados en origin/dev. Presérvalos y resuelve el handoff antes de una tarea nueva."
     }
     if ($dirty) {
         Write-Warning "Hay cambios locales sin commit. No los descartes. Determina si pertenecen a la tarea en recuperación antes de editar."

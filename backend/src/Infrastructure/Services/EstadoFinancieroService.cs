@@ -1,12 +1,12 @@
-using InventoryApp.Application.DTOs.Contabilidad;
-using InventoryApp.Application.Exceptions;
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Domain.Entities;
-using InventoryApp.Domain.Enums;
-using InventoryApp.Infrastructure.Persistence;
+using Solqaryn.Application.DTOs.Contabilidad;
+using Solqaryn.Application.Exceptions;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Entities;
+using Solqaryn.Domain.Enums;
+using Solqaryn.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace InventoryApp.Infrastructure.Services;
+namespace Solqaryn.Infrastructure.Services;
 
 public sealed class EstadoFinancieroService : IEstadoFinancieroService
 {

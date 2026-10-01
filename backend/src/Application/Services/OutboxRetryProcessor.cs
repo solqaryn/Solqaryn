@@ -1,8 +1,8 @@
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Domain.Entities;
-using InventoryApp.Domain.Enums;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Entities;
+using Solqaryn.Domain.Enums;
 
-namespace InventoryApp.Application.Services;
+namespace Solqaryn.Application.Services;
 
 public interface IOutboxEffectDispatcher
 {

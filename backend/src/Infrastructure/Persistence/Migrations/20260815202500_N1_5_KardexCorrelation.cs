@@ -1,11 +1,11 @@
-using InventoryApp.Domain.Common;
-using InventoryApp.Infrastructure.Persistence;
+using Solqaryn.Domain.Common;
+using Solqaryn.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace InventoryApp.Infrastructure.Persistence.Migrations;
+namespace Solqaryn.Infrastructure.Persistence.Migrations;
 
 /// <summary>
 /// Añade la correlación durable del Kardex empresarial de ERP-N1.5.

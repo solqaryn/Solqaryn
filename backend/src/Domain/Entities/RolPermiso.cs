@@ -1,4 +1,4 @@
-namespace InventoryApp.Domain.Entities;
+namespace Solqaryn.Domain.Entities;
 
 /// <summary>
 /// Grant relacional explícito entre un rol y un permiso.

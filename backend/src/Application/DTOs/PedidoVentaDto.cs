@@ -1,7 +1,7 @@
-using InventoryApp.Application.Common;
-using InventoryApp.Domain.Enums;
+using Solqaryn.Application.Common;
+using Solqaryn.Domain.Enums;
 
-namespace InventoryApp.Application.DTOs;
+namespace Solqaryn.Application.DTOs;
 
 public sealed class PedidoVentaDto
 {

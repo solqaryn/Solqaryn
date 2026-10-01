@@ -1,10 +1,10 @@
-using InventoryApp.Application.Common;
-using InventoryApp.Application.DTOs;
-using InventoryApp.Application.Interfaces;
+using Solqaryn.Application.Common;
+using Solqaryn.Application.DTOs;
+using Solqaryn.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace InventoryApp.API.Controllers;
+namespace Solqaryn.API.Controllers;
 
 /// Autogestión exclusiva del usuario autenticado. No depende de permisos de
 /// administración porque nunca recibe un UsuarioId externo: todas las acciones

@@ -1,6 +1,6 @@
-using InventoryApp.Domain.Common;
+using Solqaryn.Domain.Common;
 
-namespace InventoryApp.Domain.Entities;
+namespace Solqaryn.Domain.Entities;
 
 /// <summary>
 /// Autoridad de dominio para el contador de numeración documental dentro de un scope

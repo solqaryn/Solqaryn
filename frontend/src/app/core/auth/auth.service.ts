@@ -5,12 +5,12 @@ import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
 import { LoginRequest, LoginResponse } from '../models/auth.model';
 
-const TOKEN_KEY = 'inventoryapp_token';
-const USER_KEY = 'inventoryapp_user';
-const NOMBRE_COMPLETO_KEY = 'inventoryapp_nombre_completo';
-const ROL_KEY = 'inventoryapp_rol';
-const FOTO_PERFIL_KEY = 'inventoryapp_foto_perfil';
-const EXPIRA_KEY = 'inventoryapp_expira_en';
+const TOKEN_KEY = 'solqaryn_token';
+const USER_KEY = 'solqaryn_user';
+const NOMBRE_COMPLETO_KEY = 'solqaryn_nombre_completo';
+const ROL_KEY = 'solqaryn_rol';
+const FOTO_PERFIL_KEY = 'solqaryn_foto_perfil';
+const EXPIRA_KEY = 'solqaryn_expira_en';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {

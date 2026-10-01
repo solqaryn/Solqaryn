@@ -24,8 +24,8 @@ d = load(REFACTOR)
 
 if d.get("parent") != "N8.18.D" or d.get("stage") != "BACKEND_API":
     fail("invalid parent/stage")
-if d.get("branch") != "Desarrollo":
-    fail("branch is not Desarrollo")
+if d.get("branch") != "dev":
+    fail("branch is not dev")
 if d.get("unresolved"):
     fail("unresolved backend refactor findings remain")
 if d.get("domain_count") != b.get("domain_count") or d.get("domain_count") != 9:
@@ -123,11 +123,11 @@ for key in ("speculative_relocations", "speculative_deletions", "api_compatibili
 service_text = (ROOT / banking["application_service"]).read_text(encoding="utf-8")
 interface_text = (ROOT / banking["service_interface"]).read_text(encoding="utf-8")
 idempotency_text = (ROOT / banking["idempotency_value_object"]).read_text(encoding="utf-8")
-if "namespace InventoryApp.Application.Bancos;" not in service_text:
+if "namespace Solqaryn.Application.Bancos;" not in service_text:
     fail("banking service is not in the Bancos application namespace")
 if ": IOperacionBancariaService" not in service_text:
     fail("banking service no longer implements its interface")
-if "namespace InventoryApp.Application.Interfaces;" not in interface_text:
+if "namespace Solqaryn.Application.Interfaces;" not in interface_text:
     fail("banking interface boundary drift")
 if "MaxLength = 100" not in idempotency_text or "string.IsNullOrWhiteSpace" not in idempotency_text:
     fail("banking idempotency guard drift")

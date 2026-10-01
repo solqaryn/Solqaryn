@@ -1,7 +1,7 @@
-using InventoryApp.Domain.Enums;
+using Solqaryn.Domain.Enums;
 using Microsoft.AspNetCore.Http;
 
-namespace InventoryApp.Application.DTOs;
+namespace Solqaryn.Application.DTOs;
 
 /// <summary>
 /// Unidad exacta de inventario capturada dentro del formulario principal.

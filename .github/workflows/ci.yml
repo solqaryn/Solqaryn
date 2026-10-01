@@ -43,7 +43,7 @@ jobs:
           cache-dependency-path: backend/**/*.csproj
 
       - name: Restore
-        run: dotnet restore InventoryApp.sln
+        run: dotnet restore Solqaryn.sln
 
       - name: Install EF Core CLI
         run: dotnet tool install --global dotnet-ef --version 8.0.2
@@ -56,8 +56,8 @@ jobs:
             echo 'La migración de Fase 6 ya existe; se verificará sin regenerarla.'
           else
             dotnet ef migrations add Fase6SeguridadFacturacionPerfil \
-              --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-              --startup-project src/API/InventoryApp.API.csproj \
+              --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+              --startup-project src/API/Solqaryn.API.csproj \
               --context AppDbContext \
               --output-dir Migrations
           fi
@@ -86,8 +86,8 @@ jobs:
       - name: Verify model and migration alignment
         run: |
           dotnet ef migrations has-pending-model-changes \
-            --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-            --startup-project src/API/InventoryApp.API.csproj \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext
 
       - name: Generate reviewable forward SQL
@@ -98,8 +98,8 @@ jobs:
           dotnet ef migrations script \
             20260720101639_Fases18SesionConfigPermisosCalculos \
             20260722142118_Fase6SeguridadFacturacionPerfil \
-            --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-            --startup-project src/API/InventoryApp.API.csproj \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext \
             --output ../docs/migraciones/004_fase6_seguridad_facturacion_perfil.sql
 
@@ -126,10 +126,10 @@ jobs:
           retention-days: 7
 
       - name: Build backend
-        run: dotnet build InventoryApp.sln --configuration Release --no-restore
+        run: dotnet build Solqaryn.sln --configuration Release --no-restore
 
       - name: Run backend tests
-        run: dotnet test InventoryApp.sln --configuration Release --no-build --filter "Category!=Integration" --logger "trx;LogFileName=tests.trx"
+        run: dotnet test Solqaryn.sln --configuration Release --no-build --filter "Category!=Integration" --logger "trx;LogFileName=tests.trx"
 
       - name: Upload backend test results
         if: always()
@@ -200,7 +200,7 @@ jobs:
         image: mysql:8.4
         env:
           MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: inventoryapp_e2e
+          MYSQL_DATABASE: solqaryn_e2e
         ports:
           - 3306:3306
         options: >-
@@ -212,19 +212,19 @@ jobs:
     env:
       ASPNETCORE_ENVIRONMENT: Development
       PORT: '5005'
-      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=inventoryapp_e2e;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_e2e;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
       Database__ServerVersion: '8.4.0'
       Database__ApplyMigrationsOnStartup: 'true'
       Jwt__Secret: 'Phase7-E2E-Only-Secret-With-More-Than-32-Characters-2026'
-      Jwt__Issuer: 'InventoryApp.API'
-      Jwt__Audience: 'InventoryApp.Frontend'
+      Jwt__Issuer: 'Solqaryn.API'
+      Jwt__Audience: 'Solqaryn.Frontend'
       Jwt__ExpiraMinutos: '120'
       SeedAdmin__Username: 'e2e_admin'
       SeedAdmin__Password: 'E2E.Admin#2026!'
       Cors__AllowedOrigins__0: 'http://127.0.0.1:4200'
       Cors__AllowedOrigins__1: 'http://localhost:4200'
       AppSettings__BackendPublicUrl: 'https://preview.solqaryn.invalid'
-      AppSettings__LogoPublicUrl: 'https://solqaryn-dev.vercel.app/assets/varistorehn-logo.png'
+      AppSettings__LogoPublicUrl: 'https://solqaryn-dev.vercel.app/assets/storefront-logo.png'
       AppSettings__EnlacePublicoFacturaHorasValidez: '1'
       AppSettings__EnlacePublicoFacturaMaximoAccesos: '5'
       Cloudinary__CloudName: 'phase7-not-used'
@@ -258,11 +258,11 @@ jobs:
 
       - name: Restore backend
         working-directory: backend
-        run: dotnet restore InventoryApp.sln
+        run: dotnet restore Solqaryn.sln
 
       - name: Build backend Release
         working-directory: backend
-        run: dotnet build InventoryApp.sln --configuration Release --no-restore
+        run: dotnet build Solqaryn.sln --configuration Release --no-restore
 
       - name: Start API with disposable MySQL
         working-directory: backend
@@ -270,7 +270,7 @@ jobs:
         run: |
           set -euo pipefail
           nohup dotnet run \
-            --project src/API/InventoryApp.API.csproj \
+            --project src/API/Solqaryn.API.csproj \
             --configuration Release \
             --no-build \
             --no-launch-profile \

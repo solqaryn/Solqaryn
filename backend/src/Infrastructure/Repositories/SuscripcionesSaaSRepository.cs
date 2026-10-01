@@ -1,12 +1,12 @@
 using System.Data;
-using InventoryApp.Application.Exceptions;
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Domain.Entities;
-using InventoryApp.Infrastructure.Persistence;
+using Solqaryn.Application.Exceptions;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Entities;
+using Solqaryn.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using MySqlConnector;
 
-namespace InventoryApp.Infrastructure.Repositories;
+namespace Solqaryn.Infrastructure.Repositories;
 
 /// <summary>
 /// Persistencia N6.9.D para suscripciones SaaS. El ledger de idempotencia es una

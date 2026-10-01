@@ -1,4 +1,4 @@
-namespace InventoryApp.Domain.Enums;
+namespace Solqaryn.Domain.Enums;
 
 /// <summary>
 /// Clasificación principal del plan de cuentas contable.

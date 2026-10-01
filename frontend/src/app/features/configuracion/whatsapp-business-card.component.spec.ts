@@ -34,7 +34,7 @@ describe('N7.6.E WhatsApp Business UX', () => {
   }
 
   it('uses only the verified tenant context when consulting WhatsApp', () => {
-    localStorage.setItem('inventoryapp_empresa_solicitada_id', '999');
+    localStorage.setItem('solqaryn_empresa_solicitada_id', '999');
     const component = createComponent();
 
     component.consultarEstado();
@@ -51,7 +51,7 @@ describe('N7.6.E WhatsApp Business UX', () => {
 
     expect(component.empresaId()).toBe(7);
     expect(component.etiquetaProveedor()).toBe('Requerido');
-    localStorage.removeItem('inventoryapp_empresa_solicitada_id');
+    localStorage.removeItem('solqaryn_empresa_solicitada_id');
   });
 
   it('fails closed without a verified tenant and sends no request', () => {

@@ -1,4 +1,4 @@
-namespace InventoryApp.Application.DTOs;
+namespace Solqaryn.Application.DTOs;
 
 /// <summary>
 /// Entrada autoritativa a la valoración. El costo real de adquisición siempre

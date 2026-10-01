@@ -1,7 +1,7 @@
-using InventoryApp.Application.DTOs;
-using InventoryApp.Domain.Entities;
+using Solqaryn.Application.DTOs;
+using Solqaryn.Domain.Entities;
 
-namespace InventoryApp.Application.Mappings;
+namespace Solqaryn.Application.Mappings;
 
 public static class ProductoMapper
 {

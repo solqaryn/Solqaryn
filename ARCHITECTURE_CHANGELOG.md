@@ -1,4 +1,20 @@
+## 2026-09-30 — Guard fail-closed Render → MySQL por entorno
+
+- Se incorpora `EnvironmentDatabaseGuard` en el arranque de API cuando `RENDER=true`.
+- `Development` sólo admite `solqaryn_dev` con `solqaryn_dev_user`; `Production` sólo `solqaryn_prod` con `solqaryn_prod_user`.
+- Base cruzada, usuario cruzado, cadena incompleta o entorno ambiguo/no canónico abortan startup antes de registrar/usar `AppDbContext`.
+- El guard se valida con pruebas negativas y deja preparado el mismo código para una futura promoción autorizada a PROD sin modificar infraestructura productiva ahora.
+- Sin migraciones, escrituras de datos, cambios en `main`, secretos ni servicios pagos.
+
 # ARCHITECTURE_CHANGELOG — Solqaryn
+
+## 2026-09-30 — Binding Vercel/API fail-closed por proyecto
+
+- Se elimina la selección de backend mediante hostname y el fallback genérico hacia DEV.
+- `/api/*` usa un proxy server-side local y `environment-binding.js` exige `SOLQARYN_ENV` + `API_UPSTREAM` coherentes.
+- DEV sólo admite Render DEV y PROD sólo Render PROD; alias/custom domain no seleccionan entorno.
+- SEO/canonical usa `PUBLIC_ORIGIN` + `SEO_INDEXING_ENABLED`; un entorno desconocido o cruzado falla cerrado.
+- Sin cambios en main/PROD, datos, migraciones ni servicios pagos.
 
 ## 2026-09-29 — Cache HTTP + ETag + compresión del storefront
 
@@ -95,3 +111,10 @@ Cada entrada debe indicar fecha, cambio observable, documentos/rutas afectados y
 - Cobertura: backend .NET por capas, frontend Angular por features, puntos de entrada, API, persistencia, configuración, dependencias, comandos y pruebas.
 - Evidencia: inspección estática selectiva de manifiestos, solución/proyectos, `Program.cs`, rutas Angular, controladores, `AppDbContext`, migraciones y directorios de pruebas.
 - Verificación: rutas, archivos, scripts y ejecutables de comandos comprobados localmente; no se ejecutó la aplicación ni se modificó código de producción.
+
+
+## 2026-09-30 — Identidad técnica canónica y storefront tenant-neutral
+
+- Se normalizaron nombres de solución, proyectos, namespaces, build outputs, claves técnicas, tests y scripts a SOLQARYN.
+- El frontend público quedó desacoplado de nombres comerciales y pasó a un módulo genérico de storefront con ruta técnica /tienda.
+- No hubo migración ni eliminación de datos; los valores históricos persistidos permanecen bajo control de datos/migraciones explícitas.

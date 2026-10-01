@@ -1,6 +1,6 @@
-using InventoryApp.Domain.Common;
+using Solqaryn.Domain.Common;
 
-namespace InventoryApp.Domain.Entities;
+namespace Solqaryn.Domain.Entities;
 
 /// <summary>
 /// Membresía tenant-aware entre un Usuario y una Empresa.

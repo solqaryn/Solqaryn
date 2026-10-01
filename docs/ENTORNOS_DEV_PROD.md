@@ -39,7 +39,7 @@ El contrato de variables vive en `docs/RENDER_ENVIRONMENT_CONTRACT.md` y exige p
 - DEV puede aplicar migraciones de la app según política explícita.
 - PROD no aplica migraciones automáticamente.
 
-La base productiva nueva no recibe la data histórica de VariStoreHN hasta el cierre final de plataforma y autorización de migración.
+La migración histórica de VariStoreHN hacia `solqaryn_prod` ya fue ejecutada y certificada. Una futura promoción de código no repite esa migración ni usa DEV como fuente de datos; cualquier nueva operación de datos productivos requiere autorización explícita.
 
 ## Cloudinary
 
@@ -53,13 +53,23 @@ La base productiva nueva no recibe la data histórica de VariStoreHN hasta el ci
 
 - Proyecto DEV activo: `solqaryn-dev`.
 - Dominio DEV: `https://solqaryn-dev.vercel.app`.
-- Proyecto PROD corporativo: **pendiente de crear/configurar**.
+- Proyecto PROD corporativo activo: `solqaryn-prod`.
+- Dominio administrado PROD: `https://solqaryn-prod.vercel.app`.
+- El proyecto PROD permanece separado del proyecto DEV; una futura promoción de código/configuración se ejecuta únicamente con autorización explícita.
 - No se reutiliza ningún proyecto personal o legacy para PROD.
+
+## Binding Vercel -> API
+
+- `/api/*` usa binding explícito por proyecto/entorno; no selecciona backend por hostname ni alias.
+- DEV sólo acepta `solqaryn-api-dev-fxx8.onrender.com` y PROD sólo `solqaryn-api-prod.onrender.com`.
+- Configuración ausente, ambigua o cruzada falla cerrada.
+- Render valida además la pareja entorno/base/usuario: Development -> `solqaryn_dev`/`solqaryn_dev_user`; Production -> `solqaryn_prod`/`solqaryn_prod_user`.
+- Contrato de cierre y promoción: `docs/DEV_CIERRE_TECNICO_PROMOCION.md`.
 
 ## Cloudflare
 
 - DEV no depende de dominio custom mientras use el dominio administrado por Vercel.
-- La activación DNS de PROD se hace únicamente después de crear y certificar el frontend PROD corporativo.
+- El frontend PROD corporativo ya existe. El cutover del dominio personalizado permanece deliberadamente aplazado; no forma parte de esta fase ni de una futura promoción salvo autorización específica.
 - Infraestructura personal/legacy no se usa como fallback.
 
 ## Correo
@@ -76,10 +86,12 @@ DEV y PROD usan el mismo contrato:
 - sin contraseña SMTP;
 - sin client secret OAuth2.
 
-La certificación real exige `SMTP_OK` y un envío controlado en DEV antes de repetir la prueba en PROD.
+El transporte SMTP real permanece aplazado/no bloqueante mientras la conectividad del plan Render Free no lo permita de forma fiable. No se compra ni activa un servicio para forzarlo. Si correo SMTP vuelve a entrar explícitamente en alcance, se exigirá diagnóstico OAuth2 y envío controlado antes de declararlo certificado.
 
 ## Legado
 
-El único artefacto legacy autorizado es el **respaldo verificado de la base histórica de VariStoreHN**. No son dependencias de SOLQARYN los despliegues, proyectos, cuentas, dominios, repositorios, variables o servicios personales antiguos.
+El único origen heredado autorizado fue el **respaldo verificado de la base histórica de VariStoreHN**, utilizado durante la migración ya cerrada. No son dependencias de SOLQARYN los despliegues, proyectos, cuentas, dominios, repositorios, variables o servicios personales antiguos, y no se reactivan como fallback.
 
-La migración final usa el respaldo como fuente y carga los datos en el tenant VariStoreHN dentro de la nueva arquitectura SOLQARYN.
+## Promoción futura
+
+El merge `dev -> main` y cualquier actualización productiva constituyen una operación independiente. Requieren autorización nueva, gates exact-head, snapshot/rollback de configuración, revisión de migraciones y certificación de las cuatro URLs definidas en `docs/DEV_CIERRE_TECNICO_PROMOCION.md`. Este documento no autoriza la promoción.

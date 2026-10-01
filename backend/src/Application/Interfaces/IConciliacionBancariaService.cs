@@ -1,6 +1,6 @@
-using InventoryApp.Application.DTOs.Bancos;
+using Solqaryn.Application.DTOs.Bancos;
 
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 public interface IConciliacionBancariaService
 {

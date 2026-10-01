@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http;
 
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 /// Almacenamiento dedicado para fotografías de perfil. Se separa de las
 /// imágenes de productos para poder aplicar carpeta, límites y políticas

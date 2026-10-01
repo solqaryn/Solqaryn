@@ -8,7 +8,7 @@ on:
       - backend/src/Infrastructure/Persistence/Configurations/ProductoVarianteConfiguration.cs
       - backend/src/Infrastructure/Migrations/**
       - backend/scripts/preflight-variante-tecnica.sql
-      - backend/tests/InventoryApp.Tests/ProductoVarianteTecnicaModelTests.cs
+      - backend/tests/Solqaryn.Tests/ProductoVarianteTecnicaModelTests.cs
       - .github/workflows/fase2c1-variante-tecnica.yml
   pull_request:
     branches: [main]
@@ -17,7 +17,7 @@ on:
       - backend/src/Infrastructure/Persistence/Configurations/ProductoVarianteConfiguration.cs
       - backend/src/Infrastructure/Migrations/**
       - backend/scripts/preflight-variante-tecnica.sql
-      - backend/tests/InventoryApp.Tests/ProductoVarianteTecnicaModelTests.cs
+      - backend/tests/Solqaryn.Tests/ProductoVarianteTecnicaModelTests.cs
       - .github/workflows/fase2c1-variante-tecnica.yml
   workflow_dispatch:
 
@@ -32,12 +32,12 @@ jobs:
         image: mysql:8.4
         env:
           MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: inventoryapp_2c1
+          MYSQL_DATABASE: solqaryn_2c1
         ports: ['3306:3306']
         options: --health-cmd="mysqladmin ping -h localhost -proot" --health-interval=10s --health-timeout=5s --health-retries=12
     env:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=inventoryapp_2c1;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;
+      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=solqaryn_2c1;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;
       Database__ServerVersion: 8.4.0
       Database__ApplyMigrationsOnStartup: 'false'
       Jwt__Secret: Fase-2C1-CI-Only-Secret-With-More-Than-32-Characters
@@ -51,15 +51,15 @@ jobs:
       - name: Restaurar e instalar EF
         working-directory: backend
         run: |
-          dotnet restore InventoryApp.sln
+          dotnet restore Solqaryn.sln
           dotnet tool install --global dotnet-ef --version 8.0.8
       - name: Aplicar historial previo
         working-directory: backend
-        run: dotnet ef database update 20260806015852_AddTipoClientePredeterminadoUnico --project src/Infrastructure/InventoryApp.Infrastructure.csproj --startup-project src/API/InventoryApp.API.csproj --context AppDbContext
+        run: dotnet ef database update 20260806015852_AddTipoClientePredeterminadoUnico --project src/Infrastructure/Solqaryn.Infrastructure.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext
       - name: Sembrar escenarios
         run: |
           mysql_container="${{ job.services.mysql.id }}"
-          docker exec "$mysql_container" mysql -uroot -proot inventoryapp_2c1 -e "
+          docker exec "$mysql_container" mysql -uroot -proot solqaryn_2c1 -e "
             INSERT INTO Productos (Nombre, Marca, Modelo, Cantidad, Costo, Precio, UmbralStockBajo, Activo, Eliminado, FechaCreacion, FechaActualizacion) VALUES
             ('Simple activo 2C1','Solqaryn','SIMPLE-A',7,12.34,20.50,2,1,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)),
             ('Simple inactivo 2C1','Solqaryn','SIMPLE-I',0,8.00,15.00,1,0,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)),
@@ -73,36 +73,36 @@ jobs:
         run: |
           set -euo pipefail
           mysql_container="${{ job.services.mysql.id }}"
-          value(){ docker exec -i "$mysql_container" mysql -uroot -proot inventoryapp_2c1 --batch --skip-column-names < backend/scripts/preflight-variante-tecnica.sql | tr -d '[:space:]'; }
+          value(){ docker exec -i "$mysql_container" mysql -uroot -proot solqaryn_2c1 --batch --skip-column-names < backend/scripts/preflight-variante-tecnica.sql | tr -d '[:space:]'; }
           test "$(value)" = 0
-          docker exec "$mysql_container" mysql -uroot -proot inventoryapp_2c1 -e "UPDATE Productos SET Cantidad=-1 WHERE Nombre='Simple activo 2C1';"
+          docker exec "$mysql_container" mysql -uroot -proot solqaryn_2c1 -e "UPDATE Productos SET Cantidad=-1 WHERE Nombre='Simple activo 2C1';"
           test "$(value)" -gt 0
-          docker exec "$mysql_container" mysql -uroot -proot inventoryapp_2c1 -e "UPDATE Productos SET Cantidad=7 WHERE Nombre='Simple activo 2C1'; UPDATE Productos SET Cantidad=5 WHERE Nombre='Comercial 2C1';"
+          docker exec "$mysql_container" mysql -uroot -proot solqaryn_2c1 -e "UPDATE Productos SET Cantidad=7 WHERE Nombre='Simple activo 2C1'; UPDATE Productos SET Cantidad=5 WHERE Nombre='Comercial 2C1';"
           test "$(value)" -gt 0
-          docker exec "$mysql_container" mysql -uroot -proot inventoryapp_2c1 -e "UPDATE Productos SET Cantidad=4 WHERE Nombre='Comercial 2C1';"
+          docker exec "$mysql_container" mysql -uroot -proot solqaryn_2c1 -e "UPDATE Productos SET Cantidad=4 WHERE Nombre='Comercial 2C1';"
           test "$(value)" = 0
       - name: Aplicar migración
         working-directory: backend
-        run: dotnet ef database update --project src/Infrastructure/InventoryApp.Infrastructure.csproj --startup-project src/API/InventoryApp.API.csproj --context AppDbContext
+        run: dotnet ef database update --project src/Infrastructure/Solqaryn.Infrastructure.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext
       - name: Verificar backfill y unicidad
         run: |
           set -euo pipefail
           mysql_container="${{ job.services.mysql.id }}"
-          test "$(docker exec "$mysql_container" mysql -uroot -proot inventoryapp_2c1 -Nse "SELECT COUNT(*) FROM ProductoVariantes pv JOIN Productos p ON p.Id=pv.ProductoId WHERE pv.EsTecnica=1 AND pv.Eliminado=0 AND p.Nombre IN ('Simple activo 2C1','Simple inactivo 2C1');")" = 2
-          test "$(docker exec "$mysql_container" mysql -uroot -proot inventoryapp_2c1 -Nse "SELECT COUNT(*) FROM ProductoVariantes pv JOIN Productos p ON p.Id=pv.ProductoId WHERE p.Nombre='Simple activo 2C1' AND pv.EsTecnica=1 AND pv.ColorId IS NULL AND pv.Sku=CONCAT('TEC-',LPAD(p.Id,10,'0')) AND pv.Cantidad=7 AND pv.Costo=12.34 AND pv.Precio=20.50 AND pv.UmbralStockBajo=2 AND pv.Activo=1 AND pv.ProductoTecnicoUnico=p.Id;")" = 1
-          test "$(docker exec "$mysql_container" mysql -uroot -proot inventoryapp_2c1 -Nse "SELECT COUNT(*) FROM ProductoVariantes pv JOIN Productos p ON p.Id=pv.ProductoId WHERE p.Nombre='Comercial 2C1' AND pv.EsTecnica=1;")" = 0
-          if docker exec "$mysql_container" mysql -uroot -proot inventoryapp_2c1 -e "SET @p=(SELECT Id FROM Productos WHERE Nombre='Simple activo 2C1'); INSERT INTO ProductoVariantes (ProductoId,Sku,Cantidad,UmbralStockBajo,Costo,Precio,Activo,Eliminado,FechaCreacion,FechaActualizacion,EsTecnica) VALUES (@p,'TEC-DUP-2C1',0,1,0,0,1,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6),1);"; then exit 1; fi
+          test "$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_2c1 -Nse "SELECT COUNT(*) FROM ProductoVariantes pv JOIN Productos p ON p.Id=pv.ProductoId WHERE pv.EsTecnica=1 AND pv.Eliminado=0 AND p.Nombre IN ('Simple activo 2C1','Simple inactivo 2C1');")" = 2
+          test "$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_2c1 -Nse "SELECT COUNT(*) FROM ProductoVariantes pv JOIN Productos p ON p.Id=pv.ProductoId WHERE p.Nombre='Simple activo 2C1' AND pv.EsTecnica=1 AND pv.ColorId IS NULL AND pv.Sku=CONCAT('TEC-',LPAD(p.Id,10,'0')) AND pv.Cantidad=7 AND pv.Costo=12.34 AND pv.Precio=20.50 AND pv.UmbralStockBajo=2 AND pv.Activo=1 AND pv.ProductoTecnicoUnico=p.Id;")" = 1
+          test "$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_2c1 -Nse "SELECT COUNT(*) FROM ProductoVariantes pv JOIN Productos p ON p.Id=pv.ProductoId WHERE p.Nombre='Comercial 2C1' AND pv.EsTecnica=1;")" = 0
+          if docker exec "$mysql_container" mysql -uroot -proot solqaryn_2c1 -e "SET @p=(SELECT Id FROM Productos WHERE Nombre='Simple activo 2C1'); INSERT INTO ProductoVariantes (ProductoId,Sku,Cantidad,UmbralStockBajo,Costo,Precio,Activo,Eliminado,FechaCreacion,FechaActualizacion,EsTecnica) VALUES (@p,'TEC-DUP-2C1',0,1,0,0,1,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6),1);"; then exit 1; fi
       - name: Compilar y probar
         working-directory: backend
         run: |
-          dotnet build InventoryApp.sln --configuration Release --no-restore
-          dotnet test InventoryApp.sln --configuration Release --no-build --filter "Category!=Integration"
-          dotnet test InventoryApp.sln --configuration Release --filter "Category=Integration"
-          dotnet ef migrations has-pending-model-changes --project src/Infrastructure/InventoryApp.Infrastructure.csproj --startup-project src/API/InventoryApp.API.csproj --context AppDbContext
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+          dotnet test Solqaryn.sln --configuration Release --no-build --filter "Category!=Integration"
+          dotnet test Solqaryn.sln --configuration Release --filter "Category=Integration"
+          dotnet ef migrations has-pending-model-changes --project src/Infrastructure/Solqaryn.Infrastructure.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext
       - name: SQL forward
         working-directory: backend
         run: |
-          dotnet ef migrations script 20260806015852_AddTipoClientePredeterminadoUnico 20260806163904_AddVarianteTecnicaProductoSimple --project src/Infrastructure/InventoryApp.Infrastructure.csproj --startup-project src/API/InventoryApp.API.csproj --context AppDbContext --output fase2c1-variante-tecnica-forward.sql
+          dotnet ef migrations script 20260806015852_AddTipoClientePredeterminadoUnico 20260806163904_AddVarianteTecnicaProductoSimple --project src/Infrastructure/Solqaryn.Infrastructure.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --output fase2c1-variante-tecnica-forward.sql
           grep -q 'EsTecnica' fase2c1-variante-tecnica-forward.sql
           grep -q 'ProductoTecnicoUnico' fase2c1-variante-tecnica-forward.sql
           grep -q 'INSERT INTO ProductoVariantes' fase2c1-variante-tecnica-forward.sql

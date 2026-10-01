@@ -1,4 +1,4 @@
-namespace InventoryApp.Application.DTOs.Bancos;
+namespace Solqaryn.Application.DTOs.Bancos;
 
 public abstract record OperacionBancariaBaseDto
 {

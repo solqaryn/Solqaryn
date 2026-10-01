@@ -33,14 +33,14 @@ jobs:
           cache-dependency-path: backend/**/*.csproj
       - name: Restore backend
         working-directory: backend
-        run: dotnet restore InventoryApp.sln
+        run: dotnet restore Solqaryn.sln
       - name: Build backend Release
         working-directory: backend
-        run: dotnet build InventoryApp.sln --configuration Release --no-restore
+        run: dotnet build Solqaryn.sln --configuration Release --no-restore
       - name: Verify controller authorization and file-security regressions
         working-directory: backend
         run: >-
-          dotnet test InventoryApp.sln --configuration Release --no-build
+          dotnet test Solqaryn.sln --configuration Release --no-build
           --filter "FullyQualifiedName~Priority3AuthorizationSurfaceTests|FullyQualifiedName~Priority3FileSecurityTests"
       - name: Verify multi-tenant certification state without false claims
         run: python3 scripts/security/priority3_tenant_isolation_audit.py
@@ -94,14 +94,14 @@ jobs:
       - name: Restore backend and install EF tooling
         working-directory: backend
         run: |
-          dotnet restore InventoryApp.sln
+          dotnet restore Solqaryn.sln
           dotnet tool install --global dotnet-ef --version 8.0.8
       - name: Materialize current schema in isolated source database
         working-directory: backend
         run: |
           dotnet ef database update \
-            --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-            --startup-project src/API/InventoryApp.API.csproj \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext
       - name: Seed deterministic backup probe
         shell: bash

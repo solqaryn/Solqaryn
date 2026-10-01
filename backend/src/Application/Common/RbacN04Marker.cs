@@ -1,4 +1,4 @@
-namespace InventoryApp.Application.Common;
+namespace Solqaryn.Application.Common;
 
 /// <summary>
 /// Marcador técnico de ERP-N0.4. La autorización efectiva se resuelve exclusivamente

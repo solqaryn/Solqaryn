@@ -1,0 +1,83 @@
+name: Storefront Fase 11 - SEO URLs rendimiento
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - 'frontend/src/app/features/storefront/**'
+      - 'frontend/src/app/app.component.ts'
+      - 'frontend/src/index.html'
+      - 'frontend/api/**'
+      - 'frontend/server/**'
+      - 'frontend/e2e/storefront-fase*.spec.ts'
+      - 'frontend/scripts/validate-storefront-fase*.mjs'
+      - 'frontend/package.json'
+      - 'frontend/package-lock.json'
+      - 'frontend/vercel.json'
+      - '.github/workflows/storefront-fase11-regression.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: storefront-fase11-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    name: Fase 11 - SEO URLs rendimiento
+    runs-on: ubuntu-latest
+    timeout-minutes: 85
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - name: Lint y guardas Fases 1-11
+        run: npm run lint
+      - name: Build produccion
+        run: npm run build:prod
+      - run: npx playwright install --with-deps chromium
+      - name: Iniciar Angular
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > storefront-fase11-regression.log 2>&1 &
+      - name: Esperar Angular
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:4200/tienda > /dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat storefront-fase11-regression.log >&2 || true
+          exit 1
+      - name: Regresion Fases 1-11
+        env:
+          PLAYWRIGHT_TEST_BASE_URL: http://127.0.0.1:4200
+        shell: bash
+        run: |
+          set -euo pipefail
+          for fase in 1 2 3 4 5 6 7 8 9 10 11; do
+            npm run "test:e2e:storefront-fase${fase}"
+          done
+      - name: Evidencia
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: storefront-fase11
+          path: |
+            frontend/storefront-fase11-regression.log
+            frontend/playwright-report/
+            frontend/test-results/
+          if-no-files-found: warn
+          retention-days: 7

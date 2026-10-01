@@ -1,6 +1,6 @@
-using InventoryApp.Domain.Enums;
+using Solqaryn.Domain.Enums;
 
-namespace InventoryApp.Domain.Entities;
+namespace Solqaryn.Domain.Entities;
 
 /// Bitácora centralizada de acciones del sistema. Complementa (no reemplaza) los
 /// campos de auditoría que ya vive en cada entidad (CreadoPor/ConfirmadoPor/etc.) —

@@ -1,8 +1,8 @@
-using InventoryApp.Application.Common;
-using InventoryApp.Application.DTOs.Contabilidad;
-using InventoryApp.Domain.Entities.Contabilidad;
+using Solqaryn.Application.Common;
+using Solqaryn.Application.DTOs.Contabilidad;
+using Solqaryn.Domain.Entities.Contabilidad;
 
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 public interface IPeriodoContableRepository
 {

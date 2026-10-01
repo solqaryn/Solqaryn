@@ -4,18 +4,18 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 
 #nullable disable
 
-namespace InventoryApp.Infrastructure.Migrations
+namespace Solqaryn.Infrastructure.Migrations
 {
     internal static partial class AppDbContextSnapshotN14D
     {
         private static void ApplyPart13(ModelBuilder modelBuilder)
         {
             // Normalización de anotación heredada del charset global MySQL para N1.10.
-            modelBuilder.Entity("InventoryApp.Domain.Entities.PoliticaCosteoInventario", b => b.HasCharSet("utf8mb4"));
-            modelBuilder.Entity("InventoryApp.Domain.Entities.CostoEstandarInventario", b => b.HasCharSet("utf8mb4"));
-            modelBuilder.Entity("InventoryApp.Domain.Entities.CapaCostoInventario", b => b.HasCharSet("utf8mb4"));
-            modelBuilder.Entity("InventoryApp.Domain.Entities.AsignacionCostoMovimientoInventario", b => b.HasCharSet("utf8mb4"));
-            modelBuilder.Entity("InventoryApp.Domain.Entities.VariacionCostoEstandarInventario", b => b.HasCharSet("utf8mb4"));
+            modelBuilder.Entity("Solqaryn.Domain.Entities.PoliticaCosteoInventario", b => b.HasCharSet("utf8mb4"));
+            modelBuilder.Entity("Solqaryn.Domain.Entities.CostoEstandarInventario", b => b.HasCharSet("utf8mb4"));
+            modelBuilder.Entity("Solqaryn.Domain.Entities.CapaCostoInventario", b => b.HasCharSet("utf8mb4"));
+            modelBuilder.Entity("Solqaryn.Domain.Entities.AsignacionCostoMovimientoInventario", b => b.HasCharSet("utf8mb4"));
+            modelBuilder.Entity("Solqaryn.Domain.Entities.VariacionCostoEstandarInventario", b => b.HasCharSet("utf8mb4"));
         }
     }
 }

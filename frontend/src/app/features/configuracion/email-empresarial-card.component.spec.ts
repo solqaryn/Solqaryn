@@ -38,7 +38,7 @@ describe('N7.7.E correo empresarial UX', () => {
   }
 
   it('queries only the verified tenant and ignores a requested tenant from localStorage', () => {
-    localStorage.setItem('inventoryapp_empresa_solicitada_id', '999');
+    localStorage.setItem('solqaryn_empresa_solicitada_id', '999');
     const component = createComponent();
 
     component.cargar();
@@ -52,7 +52,7 @@ describe('N7.7.E correo empresarial UX', () => {
 
     expect(component.empresaId()).toBe(7);
     expect(component.total()).toBe(0);
-    localStorage.removeItem('inventoryapp_empresa_solicitada_id');
+    localStorage.removeItem('solqaryn_empresa_solicitada_id');
   });
 
   it('sends Idempotency-Key and preserves it after a failed retryable request', () => {

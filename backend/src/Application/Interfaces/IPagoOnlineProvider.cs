@@ -1,6 +1,6 @@
-using InventoryApp.Domain.Enums;
+using Solqaryn.Domain.Enums;
 
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 /// <summary>
 /// Puerto provider-agnostic para iniciar pagos online. Las credenciales permanecen

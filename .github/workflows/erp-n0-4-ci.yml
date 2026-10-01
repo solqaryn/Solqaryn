@@ -6,9 +6,9 @@ on:
     paths:
       - 'backend/src/**/*RbacN04*.cs'
       - 'backend/src/Infrastructure/Migrations/20260811174745_N0_4_ConsolidarRbacRelacional*.cs'
-      - 'backend/tests/InventoryApp.Tests/N04AdministradorSemanticaTests.cs'
-      - 'backend/tests/InventoryApp.Tests/N04CatalogoPermisosRuntimeTests.cs'
-      - 'backend/tests/InventoryApp.Tests/N04RbacRelacionalTests.cs'
+      - 'backend/tests/Solqaryn.Tests/N04AdministradorSemanticaTests.cs'
+      - 'backend/tests/Solqaryn.Tests/N04CatalogoPermisosRuntimeTests.cs'
+      - 'backend/tests/Solqaryn.Tests/N04RbacRelacionalTests.cs'
       - 'backend/scripts/*erp-n0-4*'
       - '.github/workflows/erp-n0-4-ci.yml'
   pull_request:
@@ -16,9 +16,9 @@ on:
     paths:
       - 'backend/src/**/*RbacN04*.cs'
       - 'backend/src/Infrastructure/Migrations/20260811174745_N0_4_ConsolidarRbacRelacional*.cs'
-      - 'backend/tests/InventoryApp.Tests/N04AdministradorSemanticaTests.cs'
-      - 'backend/tests/InventoryApp.Tests/N04CatalogoPermisosRuntimeTests.cs'
-      - 'backend/tests/InventoryApp.Tests/N04RbacRelacionalTests.cs'
+      - 'backend/tests/Solqaryn.Tests/N04AdministradorSemanticaTests.cs'
+      - 'backend/tests/Solqaryn.Tests/N04CatalogoPermisosRuntimeTests.cs'
+      - 'backend/tests/Solqaryn.Tests/N04RbacRelacionalTests.cs'
       - 'backend/scripts/*erp-n0-4*'
       - '.github/workflows/erp-n0-4-ci.yml'
   workflow_dispatch:
@@ -39,14 +39,14 @@ jobs:
         image: mysql:8.4
         env:
           MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: inventoryapp_n04_ci
+          MYSQL_DATABASE: solqaryn_n04_ci
         ports: ['3306:3306']
         options: >-
           --health-cmd="mysqladmin ping -h localhost -proot"
           --health-interval=10s --health-timeout=5s --health-retries=12
     env:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=inventoryapp_n04_ci;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;
+      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=solqaryn_n04_ci;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;
       Database__ServerVersion: 8.4.0
       Database__ApplyMigrationsOnStartup: 'false'
       Jwt__Secret: ERP-N0-4-CI-Only-Secret-With-More-Than-32-Characters-2026
@@ -63,9 +63,9 @@ jobs:
       - name: Restaurar, compilar y probar backend
         working-directory: backend
         run: |
-          dotnet restore InventoryApp.sln
-          dotnet build InventoryApp.sln -c Release --no-restore -warnaserror
-          dotnet test InventoryApp.sln -c Release --no-build
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln -c Release --no-restore -warnaserror
+          dotnet test Solqaryn.sln -c Release --no-build
 
       - name: Instalar EF
         run: dotnet tool install --global dotnet-ef --version 8.0.8
@@ -74,8 +74,8 @@ jobs:
         working-directory: backend
         run: |
           dotnet ef database update 20260811032000_N0_3_ConsolidarProductoVariante \
-            --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-            --startup-project src/API/InventoryApp.API.csproj \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext
 
       - name: Sembrar legacy, duplicados retry-safe y denegación
@@ -83,7 +83,7 @@ jobs:
         run: |
           set -euo pipefail
           c="${{ job.services.mysql.id }}"
-          docker exec "$c" mysql -uroot -proot inventoryapp_n04_ci -e "
+          docker exec "$c" mysql -uroot -proot solqaryn_n04_ci -e "
             DELETE FROM Permisos WHERE Modulo=23 AND Accion=27;
 
             INSERT INTO Permisos
@@ -122,15 +122,15 @@ jobs:
         run: |
           set -euo pipefail
           c="${{ job.services.mysql.id }}"
-          resultado="$(docker exec -i "$c" mysql -uroot -proot inventoryapp_n04_ci --batch --skip-column-names < backend/scripts/preflight-erp-n0-4-rbac.sql | tail -n 1)"
+          resultado="$(docker exec -i "$c" mysql -uroot -proot solqaryn_n04_ci --batch --skip-column-names < backend/scripts/preflight-erp-n0-4-rbac.sql | tail -n 1)"
           test "$resultado" = '0'
 
       - name: Aplicar N0.4 exacta
         working-directory: backend
         run: |
           dotnet ef database update 20260811174745_N0_4_ConsolidarRbacRelacional \
-            --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-            --startup-project src/API/InventoryApp.API.csproj \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext
 
       - name: Verificar aislamiento histórico N0.4
@@ -141,28 +141,28 @@ jobs:
           n03='20260811032000_N0_3_ConsolidarProductoVariante'
           n04='20260811174745_N0_4_ConsolidarRbacRelacional'
 
-          test "$(docker exec "$c" mysql -uroot -proot inventoryapp_n04_ci -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='${n03}';")" = '1'
-          test "$(docker exec "$c" mysql -uroot -proot inventoryapp_n04_ci -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='${n04}';")" = '1'
-          test "$(docker exec "$c" mysql -uroot -proot inventoryapp_n04_ci -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId > '${n04}';")" = '0'
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n04_ci -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='${n03}';")" = '1'
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n04_ci -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='${n04}';")" = '1'
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n04_ci -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId > '${n04}';")" = '0'
 
       - name: Postcheck N0.4, preservación y deduplicación
         shell: bash
         run: |
           set -euo pipefail
           c="${{ job.services.mysql.id }}"
-          resultado="$(docker exec -i "$c" mysql -uroot -proot inventoryapp_n04_ci --batch --skip-column-names < backend/scripts/postdeploy-erp-n0-4-rbac.sql | tail -n 1)"
+          resultado="$(docker exec -i "$c" mysql -uroot -proot solqaryn_n04_ci --batch --skip-column-names < backend/scripts/postdeploy-erp-n0-4-rbac.sql | tail -n 1)"
           test "$resultado" = '0'
 
-          test "$(docker exec "$c" mysql -uroot -proot inventoryapp_n04_ci -Nse "SELECT COUNT(*) FROM Usuarios u JOIN Roles r ON r.Id=u.RolId WHERE u.Id=1 AND r.NombreNormalizado='ADMINISTRADOR';")" = '1'
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n04_ci -Nse "SELECT COUNT(*) FROM Usuarios u JOIN Roles r ON r.Id=u.RolId WHERE u.Id=1 AND r.NombreNormalizado='ADMINISTRADOR';")" = '1'
 
-          test "$(docker exec "$c" mysql -uroot -proot inventoryapp_n04_ci -Nse "SELECT COUNT(*) FROM Permisos WHERE Modulo=23 AND Accion=27 AND Codigo='LEGACY.N04.23.27';")" = '1'
-          test "$(docker exec "$c" mysql -uroot -proot inventoryapp_n04_ci -Nse "SELECT COUNT(*) FROM RolPermisos rp JOIN Roles r ON r.Id=rp.RolId JOIN Permisos p ON p.Id=rp.PermisoId WHERE r.NombreNormalizado='ADMINISTRADOR' AND p.Modulo=23 AND p.Accion=27;")" = '1'
-          test "$(docker exec "$c" mysql -uroot -proot inventoryapp_n04_ci -Nse "SELECT COUNT(*) FROM RolPermisos WHERE Id=9411;")" = '0'
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n04_ci -Nse "SELECT COUNT(*) FROM Permisos WHERE Modulo=23 AND Accion=27 AND Codigo='LEGACY.N04.23.27';")" = '1'
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n04_ci -Nse "SELECT COUNT(*) FROM RolPermisos rp JOIN Roles r ON r.Id=rp.RolId JOIN Permisos p ON p.Id=rp.PermisoId WHERE r.NombreNormalizado='ADMINISTRADOR' AND p.Modulo=23 AND p.Accion=27;")" = '1'
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n04_ci -Nse "SELECT COUNT(*) FROM RolPermisos WHERE Id=9411;")" = '0'
 
-          test "$(docker exec "$c" mysql -uroot -proot inventoryapp_n04_ci -Nse "SELECT COUNT(*) FROM RolPermisos WHERE Id=9420;")" = '1'
-          test "$(docker exec "$c" mysql -uroot -proot inventoryapp_n04_ci -Nse "SELECT COUNT(*) FROM RolPermisos WHERE Id=9421;")" = '0'
-          test "$(docker exec "$c" mysql -uroot -proot inventoryapp_n04_ci -Nse "SELECT COUNT(*) FROM RolPermisos WHERE Id=9430;")" = '1'
-          test "$(docker exec "$c" mysql -uroot -proot inventoryapp_n04_ci -Nse "SELECT COUNT(*) FROM RolPermisos WHERE Id=9431;")" = '0'
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n04_ci -Nse "SELECT COUNT(*) FROM RolPermisos WHERE Id=9420;")" = '1'
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n04_ci -Nse "SELECT COUNT(*) FROM RolPermisos WHERE Id=9421;")" = '0'
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n04_ci -Nse "SELECT COUNT(*) FROM RolPermisos WHERE Id=9430;")" = '1'
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n04_ci -Nse "SELECT COUNT(*) FROM RolPermisos WHERE Id=9431;")" = '0'
 
       - name: Guard fail-closed N0.4 ante grant legacy inválido
         working-directory: backend
@@ -171,25 +171,25 @@ jobs:
           set -euo pipefail
           c="${{ job.services.mysql.id }}"
           docker exec "$c" mysql -uroot -proot -e "
-            DROP DATABASE IF EXISTS inventoryapp_n04_negative;
-            CREATE DATABASE inventoryapp_n04_negative CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+            DROP DATABASE IF EXISTS solqaryn_n04_negative;
+            CREATE DATABASE solqaryn_n04_negative CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
           "
 
-          export ConnectionStrings__DefaultConnection='Server=127.0.0.1;Port=3306;Database=inventoryapp_n04_negative;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
+          export ConnectionStrings__DefaultConnection='Server=127.0.0.1;Port=3306;Database=solqaryn_n04_negative;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
           dotnet ef database update 20260811032000_N0_3_ConsolidarProductoVariante \
-            --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-            --startup-project src/API/InventoryApp.API.csproj \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext
 
-          docker exec "$c" mysql -uroot -proot inventoryapp_n04_negative -e "
+          docker exec "$c" mysql -uroot -proot solqaryn_n04_negative -e "
             INSERT INTO RolPermisos (Id,Rol,Modulo,Accion,Permitido)
             VALUES (9499,1,999,999,1);
           "
 
           set +e
           salida="$(dotnet ef database update 20260811174745_N0_4_ConsolidarRbacRelacional \
-            --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-            --startup-project src/API/InventoryApp.API.csproj \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext 2>&1)"
           status=$?
           set -e
@@ -197,7 +197,7 @@ jobs:
           printf '%s\n' "$salida"
           test "$status" -ne 0
           printf '%s\n' "$salida" | grep -Fq 'BAD_GRANT:id=9499'
-          test "$(docker exec "$c" mysql -uroot -proot inventoryapp_n04_negative -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20260811174745_N0_4_ConsolidarRbacRelacional';")" = '0'
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n04_negative -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20260811174745_N0_4_ConsolidarRbacRelacional';")" = '0'
 
       - name: Guard fail-closed de downgrade N0.4
         working-directory: backend
@@ -206,17 +206,17 @@ jobs:
           set -euo pipefail
           c="${{ job.services.mysql.id }}"
           docker exec "$c" mysql -uroot -proot -e "
-            DROP DATABASE IF EXISTS inventoryapp_n04_down_negative;
-            CREATE DATABASE inventoryapp_n04_down_negative CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+            DROP DATABASE IF EXISTS solqaryn_n04_down_negative;
+            CREATE DATABASE solqaryn_n04_down_negative CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
           "
 
-          export ConnectionStrings__DefaultConnection='Server=127.0.0.1;Port=3306;Database=inventoryapp_n04_down_negative;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
+          export ConnectionStrings__DefaultConnection='Server=127.0.0.1;Port=3306;Database=solqaryn_n04_down_negative;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
           dotnet ef database update 20260811174745_N0_4_ConsolidarRbacRelacional \
-            --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-            --startup-project src/API/InventoryApp.API.csproj \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext
 
-          docker exec "$c" mysql -uroot -proot inventoryapp_n04_down_negative -e "
+          docker exec "$c" mysql -uroot -proot solqaryn_n04_down_negative -e "
             INSERT INTO Permisos
               (Codigo,Nombre,Descripcion,Modulo,Accion,EsSistema,Activo,Eliminado,FechaCreacion)
             SELECT 'CI.N04.DOWN.31.29','CI N0.4 downgrade','Permiso CI para guard de downgrade.',31,29,1,1,0,UTC_TIMESTAMP(6)
@@ -231,8 +231,8 @@ jobs:
 
           set +e
           salida="$(dotnet ef database update 20260811032000_N0_3_ConsolidarProductoVariante \
-            --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-            --startup-project src/API/InventoryApp.API.csproj \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext 2>&1)"
           status=$?
           set -e
@@ -240,7 +240,7 @@ jobs:
           printf '%s\n' "$salida"
           test "$status" -ne 0
           printf '%s\n' "$salida" | grep -Fq 'BAD_DOWNGRADE:rolId='
-          test "$(docker exec "$c" mysql -uroot -proot inventoryapp_n04_down_negative -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20260811174745_N0_4_ConsolidarRbacRelacional';")" = '1'
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n04_down_negative -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20260811174745_N0_4_ConsolidarRbacRelacional';")" = '1'
 
       - name: Snapshot EF consistente
         working-directory: backend
@@ -249,8 +249,8 @@ jobs:
           set -euo pipefail
 
           if dotnet ef migrations has-pending-model-changes \
-            --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-            --startup-project src/API/InventoryApp.API.csproj \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext; then
             exit 0
           fi
@@ -258,8 +258,8 @@ jobs:
           echo '::group::Diagnóstico EF del drift detectado'
           rm -rf /tmp/solqaryn-ef-diagnostic
           dotnet ef migrations add __CI_ModelDiff \
-            --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-            --startup-project src/API/InventoryApp.API.csproj \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext \
             --output-dir /tmp/solqaryn-ef-diagnostic
 

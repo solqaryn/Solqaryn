@@ -104,7 +104,7 @@ Reglas:
 - inventario y promociones siguen resolviéndose desde sus autoridades existentes; no se crea una segunda fuente de verdad;
 - `GET /tienda/bootstrap` consolida la carga inicial del storefront en un único request scope: identidad pública mínima + WhatsApp público resuelto + tema visual + hasta 6 categorías de navegación + hasta 4 destacados ligeros;
 - `ITiendaBootstrapService` compone autoridades existentes de forma secuencial dentro del mismo scope HTTP; no paraleliza repositorios EF que comparten `DbContext`;
-- Angular comparte la respuesta bootstrap con `shareReplay`, de modo que shell, identidad y portada no compiten por lecturas públicas duplicadas; `VaristorehnIdentidadService` conserva además el observable en vuelo y `VaristorehnService` comparte la lista de categorías entre rutas;
+- Angular comparte la respuesta bootstrap con `shareReplay`, de modo que shell, identidad y portada no compiten por lecturas públicas duplicadas; `StorefrontIdentidadService` conserva además el observable en vuelo y `StorefrontService` comparte la lista de categorías entre rutas;
 - el backend usa `IMemoryCache` in-process mediante `IPublicStoreCache`/`PublicStoreMemoryCache`; cada key incorpora tenant, segmento, generación y hash de parámetros;
 - TTL públicos: identidad/tema/categorías 5 minutos, destacados 30 segundos y listados 15 segundos; detalle, contexto de carrito y checkout permanecen sin cache;
 - la capa HTTP comprime respuestas JSON/text con Brotli/Gzip sobre HTTPS mediante Response Compression de ASP.NET Core;
@@ -112,7 +112,7 @@ Reglas:
 - perfiles HTTP públicos: identidad/tema/WhatsApp/categorías `max-age=120, s-maxage=300, stale-while-revalidate=600`; bootstrap `15/30/60` por incluir destacados; productos/listados/detalle `max-age=5, s-maxage=15, must-revalidate`;
 - las respuestas públicas cacheables emiten ETag débil SHA-256 sobre el payload JSON y resuelven `If-None-Match` con `304 Not Modified`; `Vary: Accept-Encoding` preserva corrección con Brotli/Gzip;
 - contexto de carrito, checkout, sesiones, endpoints autenticados, administración, documentos y errores permanecen fuera de cache público;
-- Vercel conserva el SPA/CDN: bundles Angular hashados reciben `Cache-Control: public, max-age=31536000, immutable` y los rewrites `/api/*` habilitan caching únicamente para respetar las políticas upstream emitidas por el backend;
+- Vercel conserva el SPA/CDN: bundles Angular hashados reciben `Cache-Control: public, max-age=31536000, immutable`; `/api/*` entra a un proxy server-side que preserva `Cache-Control`/ETag/Vary emitidos por el backend;
 - la cache tiene lock por key contra stampede y generaciones para invalidación sin enumerar entradas;
 - `AppDbContext.SaveChangesAsync` invalida generaciones tras escrituras de producto/variante/imágenes/stock, categoría, identidad/WhatsApp, tema, marca/modelo y descuentos relacionados;
 - la partición tenant se resuelve a `empresa:{EmpresaId}` cuando la identidad pública puede vincularse inequívocamente a una empresa; ante ambigüedad se usa un namespace `public-config:{Id}` fail-safe, evitando mezclar particiones;
@@ -151,6 +151,7 @@ La observabilidad de rendimiento DEV es first-party y no requiere un proveedor p
 - Rate limiting de login.
 - Security headers.
 - Separación estricta de PROD/DEV.
+- En runtime Render, `EnvironmentDatabaseGuard` enlaza fail-closed `ASPNETCORE_ENVIRONMENT` con base y usuario MySQL canónicos: Development → `solqaryn_dev`/`solqaryn_dev_user`; Production → `solqaryn_prod`/`solqaryn_prod_user`. Cualquier cruce, ausencia o entorno no canónico aborta el arranque antes de usar EF Core.
 - Secretos fuera del repositorio.
 - SMTP OAuth2 en PROD usa access tokens efímeros obtenidos desde refresh token; no usa contraseña SMTP básica.
 - `main` congelada durante el trabajo en `dev`.
@@ -212,3 +213,15 @@ Requiere renovar el mapa arquitectónico una vez si ocurre, por ejemplo:
 - cambio fuerte de despliegue, observabilidad o seguridad transversal.
 
 No requieren reescaneo completo: correcciones de UI, CRUD, validaciones puntuales, nuevos campos localizados, pequeños endpoints o refactors internos sin cambio de fronteras.
+
+
+### Identidad técnica canónica SOLQARYN
+
+- Assemblies, namespaces, proyectos, solución, artefactos de build y claves técnicas propias usan únicamente la identidad Solqaryn / SOLQARYN.
+- El storefront público es un módulo tenant-neutral bajo frontend/src/app/features/storefront; las marcas comerciales y nombres de empresas se resuelven desde datos/configuración, nunca desde nombres de código.
+- La ruta pública técnica canónica del storefront es /tienda; dominios y nombres comerciales pertenecen a configuración, no al source code.
+
+
+### Aislamiento de entornos en Vercel
+
+`/api/*` no selecciona backend por hostname. El proyecto Vercel aporta `SOLQARYN_ENV` + `API_UPSTREAM`; `environment-binding.js` valida que DEV apunte exclusivamente a Render DEV y PROD exclusivamente a Render PROD. Configuración ausente o cruzada falla cerrada. `PUBLIC_ORIGIN` y `SEO_INDEXING_ENABLED` controlan canonical/SEO sin decidir el backend. Alias, preview o custom domain no alteran el entorno.

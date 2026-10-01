@@ -1,7 +1,7 @@
-using InventoryApp.Domain.Common;
-using InventoryApp.Domain.Enums;
+using Solqaryn.Domain.Common;
+using Solqaryn.Domain.Enums;
 
-namespace InventoryApp.Domain.Entities;
+namespace Solqaryn.Domain.Entities;
 
 /// <summary>
 /// N3.7.B — contrato mínimo de dominio para una nota de crédito de cliente ligada a una factura.

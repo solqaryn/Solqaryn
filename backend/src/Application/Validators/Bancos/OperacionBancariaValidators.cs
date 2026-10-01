@@ -1,8 +1,8 @@
 using FluentValidation;
-using InventoryApp.Application.Bancos;
-using InventoryApp.Application.DTOs.Bancos;
+using Solqaryn.Application.Bancos;
+using Solqaryn.Application.DTOs.Bancos;
 
-namespace InventoryApp.Application.Validators.Bancos;
+namespace Solqaryn.Application.Validators.Bancos;
 
 public class OperacionBancariaBaseValidator<T> : AbstractValidator<T> where T : OperacionBancariaBaseDto
 {

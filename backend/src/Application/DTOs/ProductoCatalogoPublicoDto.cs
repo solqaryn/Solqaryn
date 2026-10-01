@@ -1,4 +1,4 @@
-namespace InventoryApp.Application.DTOs;
+namespace Solqaryn.Application.DTOs;
 
 /// <summary>
 /// Proyeccion segura y canonica para el escaparate publico. Excluye costos,

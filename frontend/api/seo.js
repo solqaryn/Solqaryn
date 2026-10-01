@@ -50,7 +50,7 @@ function renderPage({ title, description, canonical, brand, image, imageAlt, typ
   <main>
     <h1>${escapeHtml(bodyTitle || title)}</h1>
     <p>${escapeHtml(bodyText || description)}</p>
-    <p><a href="${escapeHtml(canonical)}">Abrir en VariStoreHN</a></p>
+    <p><a href="${escapeHtml(canonical)}">Abrir tienda</a></p>
   </main>
 </body>
 </html>`;
@@ -64,7 +64,7 @@ async function productPage(req, slug, brand) {
   if (!product || product.activo === false || !product.slug) return null;
 
   const origin = publicOrigin(req);
-  const canonical = `${origin}/varistorehn/producto/${encodeURIComponent(product.slug)}`;
+  const canonical = `${origin}/tienda/producto/${encodeURIComponent(product.slug)}`;
   const description = cleanText(product.descripcion, `Compra ${product.nombre} en ${brand.name}. Consulta precio, disponibilidad y opciones del producto.`);
   const images = Array.isArray(product.imagenes) ? product.imagenes : [];
   const primary = String(
@@ -116,7 +116,7 @@ async function categoryPage(req, slug, brand) {
   const category = payload && payload.success ? payload.data : null;
   if (!category || !category.slug || !category.nombre) return null;
 
-  const canonical = `${publicOrigin(req)}/varistorehn/categoria/${encodeURIComponent(category.slug)}`;
+  const canonical = `${publicOrigin(req)}/tienda/categoria/${encodeURIComponent(category.slug)}`;
   const description = cleanText(
     category.descripcion,
     `Explora productos de ${category.nombre} en ${brand.name}. Consulta disponibilidad y opciones del catálogo público.`
@@ -136,25 +136,25 @@ function staticPage(req, kind, brand) {
   const origin = publicOrigin(req);
   const pages = {
     home: {
-      path: '/varistorehn',
+      path: '/tienda',
       title: `${brand.name} | Tecnología y compras en línea`,
       description: `Compra tecnología, accesorios y productos seleccionados en ${brand.name}. Explora categorías, ofertas y disponibilidad en línea.`,
       heading: brand.name
     },
     products: {
-      path: '/varistorehn/productos',
+      path: '/tienda/productos',
       title: `Productos | ${brand.name}`,
       description: `Explora el catálogo público de ${brand.name}, consulta precios, disponibilidad, categorías y modelos.`,
       heading: 'Productos'
     },
     offers: {
-      path: '/varistorehn/ofertas',
+      path: '/tienda/ofertas',
       title: `Ofertas vigentes | ${brand.name}`,
       description: `Descubre promociones vigentes de ${brand.name} con precios y disponibilidad actualizados.`,
       heading: 'Ofertas vigentes'
     },
     categories: {
-      path: '/varistorehn/categorias',
+      path: '/tienda/categorias',
       title: `Categorías | ${brand.name}`,
       description: `Explora las categorías públicas de ${brand.name} y encuentra productos por tipo de compra.`,
       heading: 'Categorías'

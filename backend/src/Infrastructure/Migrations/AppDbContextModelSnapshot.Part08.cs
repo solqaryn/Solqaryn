@@ -5,14 +5,14 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 #nullable disable
 
-namespace InventoryApp.Infrastructure.Migrations
+namespace Solqaryn.Infrastructure.Migrations
 {
     internal static partial class AppDbContextSnapshotN14D
     {
         private static void ApplyPart8(ModelBuilder modelBuilder)
         {
             // ERP-N1.6.C — persistencia normalizada de transferencias internas.
-            modelBuilder.Entity("InventoryApp.Domain.Entities.TransferenciaInventario", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.TransferenciaInventario", b =>
             {
                 b.Property<int>("Id")
                     .ValueGeneratedOnAdd()
@@ -55,7 +55,7 @@ namespace InventoryApp.Infrastructure.Migrations
                 });
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.TransferenciaInventarioDetalle", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.TransferenciaInventarioDetalle", b =>
             {
                 b.Property<int>("Id")
                     .ValueGeneratedOnAdd()
@@ -100,13 +100,13 @@ namespace InventoryApp.Infrastructure.Migrations
                 });
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.TransferenciaInventario", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.TransferenciaInventario", b =>
             {
-                b.HasOne("InventoryApp.Domain.Entities.Almacen", "AlmacenDestino")
+                b.HasOne("Solqaryn.Domain.Entities.Almacen", "AlmacenDestino")
                     .WithMany().HasForeignKey("AlmacenDestinoId")
                     .OnDelete(DeleteBehavior.Restrict).IsRequired()
                     .HasConstraintName("FK_TransferenciasInventario_Almacenes_Destino");
-                b.HasOne("InventoryApp.Domain.Entities.Almacen", "AlmacenOrigen")
+                b.HasOne("Solqaryn.Domain.Entities.Almacen", "AlmacenOrigen")
                     .WithMany().HasForeignKey("AlmacenOrigenId")
                     .OnDelete(DeleteBehavior.Restrict).IsRequired()
                     .HasConstraintName("FK_TransferenciasInventario_Almacenes_Origen");
@@ -114,21 +114,21 @@ namespace InventoryApp.Infrastructure.Migrations
                 b.Navigation("AlmacenOrigen");
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.TransferenciaInventarioDetalle", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.TransferenciaInventarioDetalle", b =>
             {
-                b.HasOne("InventoryApp.Domain.Entities.ProductoVariante", "ProductoVariante")
+                b.HasOne("Solqaryn.Domain.Entities.ProductoVariante", "ProductoVariante")
                     .WithMany().HasForeignKey("ProductoVarianteId")
                     .OnDelete(DeleteBehavior.Restrict).IsRequired()
                     .HasConstraintName("FK_TransferenciaInventarioDetalles_ProductoVariantes");
-                b.HasOne("InventoryApp.Domain.Entities.TransferenciaInventario", "TransferenciaInventario")
+                b.HasOne("Solqaryn.Domain.Entities.TransferenciaInventario", "TransferenciaInventario")
                     .WithMany("Detalles").HasForeignKey("TransferenciaInventarioId")
                     .OnDelete(DeleteBehavior.Cascade).IsRequired()
                     .HasConstraintName("FK_TransferenciaInventarioDetalles_TransferenciasInventario");
-                b.HasOne("InventoryApp.Domain.Entities.UbicacionAlmacen", "UbicacionDestino")
+                b.HasOne("Solqaryn.Domain.Entities.UbicacionAlmacen", "UbicacionDestino")
                     .WithMany().HasForeignKey("UbicacionDestinoId")
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_TransferenciaInventarioDetalles_Ubicaciones_Destino");
-                b.HasOne("InventoryApp.Domain.Entities.UbicacionAlmacen", "UbicacionOrigen")
+                b.HasOne("Solqaryn.Domain.Entities.UbicacionAlmacen", "UbicacionOrigen")
                     .WithMany().HasForeignKey("UbicacionOrigenId")
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("FK_TransferenciaInventarioDetalles_Ubicaciones_Origen");
@@ -138,7 +138,7 @@ namespace InventoryApp.Infrastructure.Migrations
                 b.Navigation("UbicacionOrigen");
             });
 
-            modelBuilder.Entity("InventoryApp.Domain.Entities.TransferenciaInventario", b =>
+            modelBuilder.Entity("Solqaryn.Domain.Entities.TransferenciaInventario", b =>
             {
                 b.Navigation("Detalles");
             });

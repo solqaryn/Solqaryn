@@ -1,15 +1,15 @@
-using InventoryApp.API.Filters;
-using InventoryApp.Application.Common;
-using InventoryApp.Application.DTOs;
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Application.Services;
-using InventoryApp.Domain.Enums;
-using InventoryApp.Infrastructure.Persistence;
-using InventoryApp.Infrastructure.Repositories;
+using Solqaryn.API.Filters;
+using Solqaryn.Application.Common;
+using Solqaryn.Application.DTOs;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Application.Services;
+using Solqaryn.Domain.Enums;
+using Solqaryn.Infrastructure.Persistence;
+using Solqaryn.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace InventoryApp.API.Controllers;
+namespace Solqaryn.API.Controllers;
 
 /// <summary>
 /// N7.8.D — boundary provider-agnostic para pagos online.

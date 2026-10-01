@@ -2,7 +2,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, join, relative, resolve } from 'node:path';
 
 const cwd = process.cwd();
-const distRoot = resolve(cwd, 'dist/inventoryapp-frontend');
+const distRoot = resolve(cwd, 'dist/solqaryn-frontend');
 const browserRoot = existsSync(join(distRoot, 'browser')) ? join(distRoot, 'browser') : distRoot;
 const indexPath = join(browserRoot, 'index.html');
 const statsPath = [join(distRoot, 'stats.json'), join(browserRoot, 'stats.json')]

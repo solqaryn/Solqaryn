@@ -1,11 +1,11 @@
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Application.Models;
-using InventoryApp.Domain.Entities;
-using InventoryApp.Domain.Enums;
-using InventoryApp.Infrastructure.Persistence;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Application.Models;
+using Solqaryn.Domain.Entities;
+using Solqaryn.Domain.Enums;
+using Solqaryn.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace InventoryApp.Infrastructure.Repositories;
+namespace Solqaryn.Infrastructure.Repositories;
 
 /// <summary>
 /// Persistencia común sobre los cuatro maestros normalizados. El contrato conserva

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
-namespace InventoryApp.API.Filters;
+namespace Solqaryn.API.Filters;
 
 public enum PublicHttpCacheProfile
 {

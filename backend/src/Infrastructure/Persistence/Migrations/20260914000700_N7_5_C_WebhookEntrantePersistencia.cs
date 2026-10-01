@@ -1,10 +1,10 @@
-using InventoryApp.Infrastructure.Persistence;
+using Solqaryn.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace InventoryApp.Infrastructure.Persistence.Migrations;
+namespace Solqaryn.Infrastructure.Persistence.Migrations;
 
 /// <summary>
 /// N7.5.C: persistencia aditiva y reversible para webhooks entrantes ya

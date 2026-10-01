@@ -1,12 +1,12 @@
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
-using InventoryApp.Application.Exceptions;
-using InventoryApp.Application.Interfaces;
+using Solqaryn.Application.Exceptions;
+using Solqaryn.Application.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace InventoryApp.Infrastructure.Services;
+namespace Solqaryn.Infrastructure.Services;
 
 public class CloudinaryPerfilImagenStorageService : IPerfilImagenStorageService
 {

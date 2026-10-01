@@ -1,4 +1,4 @@
-namespace InventoryApp.Domain.Common;
+namespace Solqaryn.Domain.Common;
 
 /// Entidad de flujo documental: Borrador -> Confirmada -> Anulada (Compras, Ventas).
 public abstract class ConfirmableEntity : AuditableEntity

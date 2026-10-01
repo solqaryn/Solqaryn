@@ -1,8 +1,8 @@
-using InventoryApp.Application.DTOs;
-using InventoryApp.Domain.Common;
-using InventoryApp.Domain.Entities;
+using Solqaryn.Application.DTOs;
+using Solqaryn.Domain.Common;
+using Solqaryn.Domain.Entities;
 
-namespace InventoryApp.Application.Interfaces;
+namespace Solqaryn.Application.Interfaces;
 
 public sealed record MovimientoInventarioOrigenPersistido(
     int MovimientoId,

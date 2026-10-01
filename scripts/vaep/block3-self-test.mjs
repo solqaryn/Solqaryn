@@ -11,7 +11,7 @@ const invoke = (script, args, env = {}) => {
   catch (error) { return JSON.parse(error.stdout); }
 };
 const payload = path.join(temp, 'payload.json');
-fs.writeFileSync(payload, JSON.stringify({ projectId: 'SOLQARYN', repository: 'jmejia31/Solqaryn', branch: 'Desarrollo', taskId: 'N4.7.A.PREFLIGHT', parentId: 'N4.7.A', commitSha: sha, workflow: 'self-test', runId: '1', conclusion: 'success', timestamp: '2026-09-04T00:00:00Z', artifactRefs: [], p0: 0, p1: 0 }));
+fs.writeFileSync(payload, JSON.stringify({ projectId: 'SOLQARYN', repository: 'solqaryn/Solqaryn', branch: 'dev', taskId: 'N4.7.A.PREFLIGHT', parentId: 'N4.7.A', commitSha: sha, workflow: 'self-test', runId: '1', conclusion: 'success', timestamp: '2026-09-04T00:00:00Z', artifactRefs: [], p0: 0, p1: 0 }));
 const sync = invoke('sync-bitacora.mjs', ['--payload', payload]);
 const readyInput = path.join(temp, 'ready.json');
 fs.writeFileSync(readyInput, JSON.stringify({ parentId: 'N4.7.A', currentHead: sha, gates: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map((id) => ({ id, head: sha, status: 'SUCCESS' })), p0: 0, p1: 0, documentationPresent: true, ownershipConflict: false, dependenciesSatisfied: true }));

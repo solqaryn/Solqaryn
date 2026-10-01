@@ -2,17 +2,17 @@ using System.Security.Cryptography;
 using System.Text;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
-using InventoryApp.Application.Exceptions;
-using InventoryApp.Application.Interfaces;
+using Solqaryn.Application.Exceptions;
+using Solqaryn.Application.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace InventoryApp.Infrastructure.Services;
+namespace Solqaryn.Infrastructure.Services;
 
 public class CloudinaryCompraDocumentoStorageService : ICompraDocumentoStorageService
 {
-    private const string BaseFolder = "inventoryapp/compras";
+    private const string BaseFolder = "solqaryn/compras";
     private const long MaxDownloadBytes = 10 * 1024 * 1024;
     private const string TenantAuditMarker = "TENANT_STORAGE_AUDIT";
     private readonly Cloudinary _cloudinary;
@@ -147,7 +147,7 @@ public class CloudinaryCompraDocumentoStorageService : ICompraDocumentoStorageSe
         if (!CloudinaryFolderResolver.CanDelete(_environmentPrefix, publicId))
         {
             throw new BusinessRuleException(
-                "El entorno de Desarrollo no puede eliminar un comprobante que pertenece a Producción.");
+                "El entorno de dev no puede eliminar un comprobante que pertenece a Producción.");
         }
 
         var tenant = await ResolverTenantActualAsync();
@@ -177,7 +177,7 @@ public class CloudinaryCompraDocumentoStorageService : ICompraDocumentoStorageSe
         if (!CloudinaryFolderResolver.CanDelete(_environmentPrefix, publicId))
         {
             throw new BusinessRuleException(
-                "El entorno de Desarrollo no puede eliminar un comprobante que pertenece a Producción.");
+                "El entorno de dev no puede eliminar un comprobante que pertenece a Producción.");
         }
 
         var parametros = new DeletionParams(publicId)

@@ -7,9 +7,9 @@ import { PermisosRuntimeService } from './permisos-runtime.service';
 const INACTIVITY_LIMIT_MS = 30 * 60 * 1000;
 const TOKEN_RENEW_INTERVAL_MS = 5 * 60 * 1000;
 const ACTIVITY_WRITE_THROTTLE_MS = 1_000;
-const SESSION_MESSAGE_KEY = 'inventoryapp_session_message';
-const LAST_ACTIVITY_KEY = 'inventoryapp_last_activity';
-const LAST_RENEW_KEY = 'inventoryapp_last_renew';
+const SESSION_MESSAGE_KEY = 'solqaryn_session_message';
+const LAST_ACTIVITY_KEY = 'solqaryn_last_activity';
+const LAST_RENEW_KEY = 'solqaryn_last_renew';
 
 @Injectable({ providedIn: 'root' })
 export class SessionActivityService {

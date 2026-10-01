@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace InventoryApp.Infrastructure.Persistence.Migrations
+namespace Solqaryn.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
     public partial class M7SnapshotsProfesionalesEnvio : Migration

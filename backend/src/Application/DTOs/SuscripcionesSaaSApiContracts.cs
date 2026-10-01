@@ -1,6 +1,6 @@
-using InventoryApp.Domain.Entities;
+using Solqaryn.Domain.Entities;
 
-namespace InventoryApp.Application.DTOs;
+namespace Solqaryn.Application.DTOs;
 
 /// <summary>
 /// Contratos mínimos N6.9.D para exponer suscripción SaaS y límites al tenant.

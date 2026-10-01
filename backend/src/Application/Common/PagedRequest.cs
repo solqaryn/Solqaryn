@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace InventoryApp.Application.Common;
+namespace Solqaryn.Application.Common;
 
 public class PagedRequest
 {

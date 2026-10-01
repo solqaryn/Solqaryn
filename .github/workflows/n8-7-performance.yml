@@ -25,7 +25,7 @@ jobs:
         image: mysql:8.4
         env:
           MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: inventoryapp_perf
+          MYSQL_DATABASE: solqaryn_perf
         ports:
           - 3306:3306
         options: >-
@@ -36,7 +36,7 @@ jobs:
     env:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://127.0.0.1:5080
-      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=inventoryapp_perf;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;
+      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=solqaryn_perf;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;
       Database__ServerVersion: 8.4.0
       Database__ApplyMigrationsOnStartup: 'false'
       Jwt__Secret: N87-Performance-CI-Only-Secret-More-Than-32-Characters-2026
@@ -62,23 +62,23 @@ jobs:
       - name: Restore and build exact head
         run: |
           set -euo pipefail
-          dotnet restore InventoryApp.sln
-          dotnet build InventoryApp.sln --configuration Release --no-restore
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
 
       - name: Directed concurrency and performance guard tests
         run: |
           set -euo pipefail
-          dotnet test InventoryApp.sln --configuration Release --no-build --filter 'FullyQualifiedName~CargaMasivaConcurrencyTests' --logger 'trx;LogFileName=n87-concurrency.trx'
-          dotnet test InventoryApp.sln --configuration Release --no-build --filter 'FullyQualifiedName~BusquedaRendimiento' --logger 'trx;LogFileName=n87-search-performance.trx'
-          dotnet test InventoryApp.sln --configuration Release --no-build --filter 'FullyQualifiedName~RequestObservabilityTests|FullyQualifiedName~SecurityBoundaryContractTests' --logger 'trx;LogFileName=n87-observability-security.trx'
+          dotnet test Solqaryn.sln --configuration Release --no-build --filter 'FullyQualifiedName~CargaMasivaConcurrencyTests' --logger 'trx;LogFileName=n87-concurrency.trx'
+          dotnet test Solqaryn.sln --configuration Release --no-build --filter 'FullyQualifiedName~BusquedaRendimiento' --logger 'trx;LogFileName=n87-search-performance.trx'
+          dotnet test Solqaryn.sln --configuration Release --no-build --filter 'FullyQualifiedName~RequestObservabilityTests|FullyQualifiedName~SecurityBoundaryContractTests' --logger 'trx;LogFileName=n87-observability-security.trx'
 
       - name: Apply current schema to ephemeral MySQL
         run: |
           set -euo pipefail
           dotnet tool install --global dotnet-ef --version 8.0.8
           dotnet ef database update \
-            --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-            --startup-project src/API/InventoryApp.API.csproj \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext
 
       - name: Seed synthetic relational-role performance identity
@@ -108,16 +108,16 @@ jobs:
             echo 'BCrypt hash generation failed.' >&2
             exit 1
           fi
-          docker exec "$mysql_container" mysql -uroot -proot inventoryapp_perf \
+          docker exec "$mysql_container" mysql -uroot -proot solqaryn_perf \
             -e "INSERT INTO Roles (Id, Nombre, NombreNormalizado, Descripcion, EsSistema, EsAdministrador, Activo, Eliminado, FechaCreacion) VALUES (900001, 'N87 Performance CI', 'N87 PERFORMANCE CI', 'Synthetic CI-only performance role', 1, 0, 1, 0, UTC_TIMESTAMP(6)) ON DUPLICATE KEY UPDATE Activo=1, Eliminado=0;"
-          docker exec "$mysql_container" mysql -uroot -proot inventoryapp_perf \
+          docker exec "$mysql_container" mysql -uroot -proot solqaryn_perf \
             -e "INSERT INTO Usuarios (Id, NombreUsuario, NombreCompleto, PasswordHash, RolId, Activo, Bloqueado, Eliminado, FechaCreacion) VALUES (900001, 'n87_perf_ci', 'N8.7 Performance CI', '${password_hash}', 900001, 1, 0, 0, UTC_TIMESTAMP(6)) ON DUPLICATE KEY UPDATE PasswordHash=VALUES(PasswordHash), RolId=900001, Activo=1, Bloqueado=0, Eliminado=0;"
           echo 'Synthetic identity seeded with a runtime BCrypt.Net-Next hash.'
 
       - name: Start Development API against ephemeral database
         run: |
           set -euo pipefail
-          nohup dotnet run --project src/API/InventoryApp.API.csproj --configuration Release --no-build > /tmp/n87-api.log 2>&1 &
+          nohup dotnet run --project src/API/Solqaryn.API.csproj --configuration Release --no-build > /tmp/n87-api.log 2>&1 &
           echo $! > /tmp/n87-api.pid
           for i in $(seq 1 45); do
             if curl --silent --fail --max-time 2 http://127.0.0.1:5080/health >/dev/null; then

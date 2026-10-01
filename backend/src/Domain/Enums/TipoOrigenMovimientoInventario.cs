@@ -1,4 +1,4 @@
-namespace InventoryApp.Domain.Enums;
+namespace Solqaryn.Domain.Enums;
 
 /// <summary>
 /// Tipo de documento empresarial que origina un movimiento de inventario.

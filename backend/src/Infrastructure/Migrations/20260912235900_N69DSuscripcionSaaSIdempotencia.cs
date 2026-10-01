@@ -1,11 +1,11 @@
 using System;
-using InventoryApp.Infrastructure.Persistence;
+using Solqaryn.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace InventoryApp.Infrastructure.Migrations
+namespace Solqaryn.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     [Migration("20260912235900_N69DSuscripcionSaaSIdempotencia")]

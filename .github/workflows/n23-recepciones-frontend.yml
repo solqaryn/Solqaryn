@@ -46,7 +46,7 @@ jobs:
         image: mysql:8.4
         env:
           MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: inventoryapp_n23_e2e
+          MYSQL_DATABASE: solqaryn_n23_e2e
         ports: ['3306:3306']
         options: >-
           --health-cmd="mysqladmin ping -h localhost -proot"
@@ -54,12 +54,12 @@ jobs:
     env:
       ASPNETCORE_ENVIRONMENT: Development
       PORT: '5005'
-      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=inventoryapp_n23_e2e;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_n23_e2e;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
       Database__ServerVersion: '8.4.0'
       Database__ApplyMigrationsOnStartup: 'true'
       Jwt__Secret: 'N23-E2E-Only-Secret-With-More-Than-32-Characters-2026'
-      Jwt__Issuer: 'InventoryApp.API'
-      Jwt__Audience: 'InventoryApp.Frontend'
+      Jwt__Issuer: 'Solqaryn.API'
+      Jwt__Audience: 'Solqaryn.Frontend'
       Jwt__ExpiraMinutos: '120'
       Security__LoginRateLimitPerMinute: '300'
       SeedAdmin__Username: 'e2e_admin'
@@ -67,7 +67,7 @@ jobs:
       Cors__AllowedOrigins__0: 'http://127.0.0.1:4200'
       Cors__AllowedOrigins__1: 'http://localhost:4200'
       AppSettings__BackendPublicUrl: 'https://preview.solqaryn.invalid'
-      AppSettings__LogoPublicUrl: 'https://solqaryn-dev.vercel.app/assets/varistorehn-logo.png'
+      AppSettings__LogoPublicUrl: 'https://solqaryn-dev.vercel.app/assets/storefront-logo.png'
       Cloudinary__CloudName: 'e2e-not-used'
       Cloudinary__ApiKey: 'e2e-not-used'
       Cloudinary__ApiSecret: 'e2e-not-used'
@@ -84,14 +84,14 @@ jobs:
       - name: Compilar backend
         working-directory: backend
         run: |
-          dotnet restore InventoryApp.sln
-          dotnet build InventoryApp.sln --configuration Release --no-restore
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
       - name: Iniciar API y migrar MySQL
         working-directory: backend
         shell: bash
         run: |
           set -euo pipefail
-          nohup dotnet run --project src/API/InventoryApp.API.csproj --configuration Release --no-build --no-launch-profile > n23-api.log 2>&1 &
+          nohup dotnet run --project src/API/Solqaryn.API.csproj --configuration Release --no-build --no-launch-profile > n23-api.log 2>&1 &
           for attempt in $(seq 1 60); do
             if curl --fail --silent http://127.0.0.1:5005/health/ready > /dev/null; then exit 0; fi
             sleep 2

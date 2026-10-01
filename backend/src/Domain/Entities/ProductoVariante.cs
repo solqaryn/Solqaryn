@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
-using InventoryApp.Domain.Common;
+using Solqaryn.Domain.Common;
 
-namespace InventoryApp.Domain.Entities;
+namespace Solqaryn.Domain.Entities;
 
 public class ProductoVariante : AuditableEntity
 {

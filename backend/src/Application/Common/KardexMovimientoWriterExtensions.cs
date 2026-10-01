@@ -1,8 +1,8 @@
-using InventoryApp.Application.Interfaces;
-using InventoryApp.Domain.Common;
-using InventoryApp.Domain.Entities;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Common;
+using Solqaryn.Domain.Entities;
 
-namespace InventoryApp.Application.Common;
+namespace Solqaryn.Application.Common;
 
 /// <summary>
 /// Operaciones empresariales tipadas para registrar movimientos de Kardex sin
