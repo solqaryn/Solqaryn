@@ -1,3 +1,10 @@
+## 2026-10-01 — Paridad estructural del GitHub Environment QA
+
+- `qa-live-certification.yml` dejó de requerir variables redundantes de URL; los endpoints canónicos QA quedan fijados en el workflow.
+- El Environment `QA` vuelve al contrato estructural de cuatro variables DB: host, port, name y user, más el password como secret.
+- La regla de protección esperada para QA queda ligada exclusivamente a la rama `qa`; no se autoriza cruce DEV/QA/PROD.
+- Sin cambios en `main`, PROD, datos productivos, DNS, certificados ni servicios pagos.
+
 ## 2026-10-01 — Fundación QA persistente y aislamiento DEV/QA/PROD
 
 - Incorporado QA persistente al contrato técnico: rama `qa`, Vercel `solqaryn-qa`, Render `solqaryn-api-qa`, base/usuario esperados `solqaryn_qa`/`solqaryn_qa_user` y prefijo Cloudinary `solqaryn_qa`.
