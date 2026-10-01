@@ -1,3 +1,11 @@
+## 2026-09-30 — Evitar metadata locks al adoptar DDL Fase 12 ya existente
+
+- El smoke DEV mostró que CREATE TABLE IF NOT EXISTS todavía podía quedar esperando metadata lock sobre tablas ya materializadas.
+- La recuperación Fase 12 ahora consulta INFORMATION_SCHEMA antes de cualquier DDL de tabla: si la tabla existe, no ejecuta CREATE TABLE; si falta, la crea.
+- Índices siguen el mismo patrón y la validación final de tablas, columnas, índices y FK permanece fail-closed.
+- No se borran ni reescriben filas; el cambio busca únicamente convergencia segura de esquema e historial.
+- Sin main, PROD, secretos ni servicios pagos.
+
 ## 2026-09-30 — Reconciliación fail-closed de StorefrontFase12CuentaCliente en DEV
 
 - El segundo smoke de Render DEV demostró que la deriva histórica también incluía las tablas de cuenta de storefront ya materializadas sin su fila de historial EF.

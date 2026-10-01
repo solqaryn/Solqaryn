@@ -12,9 +12,11 @@ namespace Solqaryn.Infrastructure.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql(
+            CreateTableIfMissing(
+                migrationBuilder,
+                "TiendaCuentasCliente",
                 """
-                CREATE TABLE IF NOT EXISTS TiendaCuentasCliente (
+                CREATE TABLE TiendaCuentasCliente (
                     Id int NOT NULL AUTO_INCREMENT,
                     ClienteId int NOT NULL,
                     Nombre varchar(120) NOT NULL,
@@ -28,12 +30,14 @@ namespace Solqaryn.Infrastructure.Migrations
                     CONSTRAINT PK_TiendaCuentasCliente PRIMARY KEY (Id),
                     CONSTRAINT FK_TiendaCuentasCliente_Clientes_ClienteId
                         FOREIGN KEY (ClienteId) REFERENCES Clientes (Id) ON DELETE RESTRICT
-                ) CHARACTER SET=utf8mb4;
+                ) CHARACTER SET=utf8mb4
                 """);
 
-            migrationBuilder.Sql(
+            CreateTableIfMissing(
+                migrationBuilder,
+                "TiendaDireccionesCliente",
                 """
-                CREATE TABLE IF NOT EXISTS TiendaDireccionesCliente (
+                CREATE TABLE TiendaDireccionesCliente (
                     Id int NOT NULL AUTO_INCREMENT,
                     CuentaClienteId int NOT NULL,
                     Alias varchar(60) NOT NULL,
@@ -46,12 +50,14 @@ namespace Solqaryn.Infrastructure.Migrations
                     CONSTRAINT PK_TiendaDireccionesCliente PRIMARY KEY (Id),
                     CONSTRAINT FK_TiendaDireccionesCliente_TiendaCuentasCliente_CuentaClienteId
                         FOREIGN KEY (CuentaClienteId) REFERENCES TiendaCuentasCliente (Id) ON DELETE CASCADE
-                ) CHARACTER SET=utf8mb4;
+                ) CHARACTER SET=utf8mb4
                 """);
 
-            migrationBuilder.Sql(
+            CreateTableIfMissing(
+                migrationBuilder,
+                "TiendaFavoritosCliente",
                 """
-                CREATE TABLE IF NOT EXISTS TiendaFavoritosCliente (
+                CREATE TABLE TiendaFavoritosCliente (
                     Id int NOT NULL AUTO_INCREMENT,
                     CuentaClienteId int NOT NULL,
                     ProductoId int NOT NULL,
@@ -62,12 +68,14 @@ namespace Solqaryn.Infrastructure.Migrations
                         FOREIGN KEY (ProductoId) REFERENCES Productos (Id) ON DELETE CASCADE,
                     CONSTRAINT FK_TiendaFavoritosCliente_TiendaCuentasCliente_CuentaClienteId
                         FOREIGN KEY (CuentaClienteId) REFERENCES TiendaCuentasCliente (Id) ON DELETE CASCADE
-                ) CHARACTER SET=utf8mb4;
+                ) CHARACTER SET=utf8mb4
                 """);
 
-            migrationBuilder.Sql(
+            CreateTableIfMissing(
+                migrationBuilder,
+                "TiendaSesionesCliente",
                 """
-                CREATE TABLE IF NOT EXISTS TiendaSesionesCliente (
+                CREATE TABLE TiendaSesionesCliente (
                     Id int NOT NULL AUTO_INCREMENT,
                     CuentaClienteId int NOT NULL,
                     TokenHash char(64) NOT NULL,
@@ -79,7 +87,7 @@ namespace Solqaryn.Infrastructure.Migrations
                     CONSTRAINT PK_TiendaSesionesCliente PRIMARY KEY (Id),
                     CONSTRAINT FK_TiendaSesionesCliente_TiendaCuentasCliente_CuentaClienteId
                         FOREIGN KEY (CuentaClienteId) REFERENCES TiendaCuentasCliente (Id) ON DELETE CASCADE
-                ) CHARACTER SET=utf8mb4;
+                ) CHARACTER SET=utf8mb4
                 """);
 
             AddIndexIfMissing(migrationBuilder, "TiendaCuentasCliente", "UX_TiendaCuentasCliente_Correo",
@@ -152,6 +160,31 @@ namespace Solqaryn.Infrastructure.Migrations
             migrationBuilder.DropTable(name: "TiendaFavoritosCliente");
             migrationBuilder.DropTable(name: "TiendaSesionesCliente");
             migrationBuilder.DropTable(name: "TiendaCuentasCliente");
+        }
+
+        private static void CreateTableIfMissing(
+            MigrationBuilder migrationBuilder,
+            string table,
+            string createSql)
+        {
+            var escapedCreateSql = createSql.Replace("'", "''", StringComparison.Ordinal);
+
+            migrationBuilder.Sql(
+                $"""
+                SET @solqaryn_table_sql = IF(
+                    (
+                        SELECT COUNT(*)
+                        FROM INFORMATION_SCHEMA.TABLES
+                        WHERE TABLE_SCHEMA = DATABASE()
+                          AND TABLE_NAME = '{table}'
+                    ) = 0,
+                    '{escapedCreateSql}',
+                    'SELECT 1'
+                );
+                PREPARE solqaryn_stmt FROM @solqaryn_table_sql;
+                EXECUTE solqaryn_stmt;
+                DEALLOCATE PREPARE solqaryn_stmt;
+                """);
         }
 
         private static void AddIndexIfMissing(
