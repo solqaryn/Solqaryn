@@ -41,7 +41,12 @@ jobs:
           actual="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e 'SELECT DATABASE();')"
           test "$actual" = "solqaryn_dev"
 
-          mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e "SHOW GRANTS FOR CURRENT_USER();"
+          grants="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e "SHOW GRANTS FOR CURRENT_USER();")"
+          echo "$grants"
+          echo "$grants" | grep -Fq 'GRANT USAGE ON *.* TO "solqaryn_dev_user"@"%"'
+          echo "$grants" | grep -Fq 'GRANT ALL PRIVILEGES ON "solqaryn_dev".* TO "solqaryn_dev_user"@"%"'
+          ! echo "$grants" | grep -Eq 'WITH GRANT OPTION|ROLE_ADMIN|REPLICATION_APPLIER|solqaryn_qa|solqaryn_prod'
+          echo "AIVEN_DEV_LEAST_PRIVILEGE=PASS"
 
           if mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED solqaryn_qa --batch --skip-column-names -e 'SELECT 1;' >/dev/null 2>&1; then
             echo "DEV_TO_QA=CROSS_ACCESS"
