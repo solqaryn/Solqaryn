@@ -1,3 +1,11 @@
+## 2026-10-01 — Vercel runtime binding por identidad de proyecto
+
+- `frontend/server/environment-binding.js` deja de depender de variables manuales como requisito primario y usa `VERCEL_PROJECT_ID` como identidad inmutable del deployment.
+- Sólo los project IDs corporativos DEV y PROD están allowlisted; cada uno resuelve un único API upstream, public origin y política SEO.
+- Variables explícitas, si existen, se validan como overrides de coherencia; cualquier contradicción, project ID desconocido o intento de cruce falla cerrado.
+- Se conserva la prohibición de seleccionar backend por hostname/alias y no se introduce fallback entre entornos.
+- Sin datos, migraciones, secretos ni servicios pagos.
+
 ## 2026-09-30 — Guard fail-closed Render → MySQL por entorno
 
 - Se incorpora `EnvironmentDatabaseGuard` en el arranque de API cuando `RENDER=true`.
