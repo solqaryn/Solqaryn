@@ -73,10 +73,26 @@ jobs:
               'username': username,
               'authentication': 'caching_sha2_password'
           })
-          password=created.get('password')
+          def find_password(v):
+              if isinstance(v, dict):
+                  for k, x in v.items():
+                      if k.lower() == 'password' and isinstance(x, str) and x:
+                          return x
+                  for x in v.values():
+                      found=find_password(x)
+                      if found:
+                          return found
+              elif isinstance(v, list):
+                  for x in v:
+                      found=find_password(x)
+                      if found:
+                          return found
+              return None
+
+          password=find_password(created)
           if not password:
               details=request(f'{base}/{username}')
-              password=details.get('password')
+              password=find_password(details)
           if not isinstance(password, str) or not password:
               raise SystemExit('Aiven no entrego password del administrador temporal.')
 
