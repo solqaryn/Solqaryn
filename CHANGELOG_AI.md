@@ -1,3 +1,10 @@
+## 2026-09-30 — Aislamiento Vercel DEV: bloqueo de previews cruzados hacia proyecto PROD
+
+- El guard `frontend/scripts/vercel-ignore-build.mjs` ahora usa `VERCEL_PROJECT_ID` para impedir que commits de la rama `dev` creen builds/previews dentro del proyecto Vercel `solqaryn-prod`.
+- El bloqueo usa identidad inmutable de proyecto y no hostname/alias; `solqaryn-dev` continúa construyendo DEV normalmente.
+- `validate-environment-routing.mjs` valida también esta frontera cross-project además del binding `SOLQARYN_ENV + API_UPSTREAM` y del fail-closed DEV/PROD.
+- Cambio exclusivo en `dev`; no se modificó `main`, configuración/variables de PROD, datos, DNS, secretos ni servicios pagos.
+
 ## 2026-09-30 — Corrección final de ownership VAEP Javier/Alex
 
 - Se confirmó que las cinco Supervisor canónicas pertenecen físicamente a la cuenta de Alex Morales con IDs: :05=6abd62255ae88191a2dba6e1b00d3b4d, :17=6abd6235e100819195785fc76a44a8e0, :29=6abd6241c3e48191a8856ed7b0f42c5c, :41=6abd624e5e108191bef6bb879559328c, :53=6abd625b397c8191a49904227946a20f.

@@ -3,6 +3,16 @@ import { execFileSync } from 'node:child_process';
 const branch = process.env.VERCEL_GIT_COMMIT_REF;
 const current = process.env.VERCEL_GIT_COMMIT_SHA || 'HEAD';
 const configuredPrevious = process.env.VERCEL_GIT_PREVIOUS_SHA;
+const vercelProjectId = process.env.VERCEL_PROJECT_ID;
+const PROD_PROJECT_ID = 'prj_si3ORH7lBhM4aSAYfYvXsbJT2lHA';
+
+// A commit on dev must never create a preview/build inside the PROD project.
+// This guard uses Vercel's immutable project identity rather than hostname/alias.
+// Exit 0 is the Vercel contract for "ignore this build".
+if (branch === 'dev' && vercelProjectId === PROD_PROJECT_ID) {
+  console.log(`CROSS_ENV_PROJECT_SKIP branch=${branch} project=${vercelProjectId}`);
+  process.exit(0);
+}
 
 // This optimization is deliberately dev-only. Production/main and any
 // unknown branch always build. The file exists on dev only until an
