@@ -11,9 +11,10 @@ public static class EnvironmentDatabaseGuard
         var expected = environmentName?.Trim() switch
         {
             "Development" => new ExpectedBinding("solqaryn_dev", "solqaryn_dev_user"),
+            "Staging" => new ExpectedBinding("solqaryn_qa", "solqaryn_qa_user"),
             "Production" => new ExpectedBinding("solqaryn_prod", "solqaryn_prod_user"),
             _ => throw new InvalidOperationException(
-                "Aislamiento de entorno: ASPNETCORE_ENVIRONMENT de Render debe ser Development o Production.")
+                "Aislamiento de entorno: ASPNETCORE_ENVIRONMENT de Render debe ser Development, Staging o Production.")
         };
 
         MySqlConnectionStringBuilder parsed;
