@@ -69,11 +69,11 @@ Consultar `ARCHITECTURE.md` para cambios estructurales y `PROJECT_INDEX.md` para
 ### Binding Vercel -> API
 
 - El backend de un deployment no se decide por hostname ni alias.
-- Cada proyecto Vercel define explícitamente `SOLQARYN_ENV`, `API_UPSTREAM`, `PUBLIC_ORIGIN` y `SEO_INDEXING_ENABLED`.
-- `frontend/server/environment-binding.js` valida entorno/upstream y falla cerrado ante ausencia, ambigüedad o cruce DEV/PROD.
-- `frontend/api/backend-proxy.js` es la frontera server-side de `/api/*`; alias y custom domains no cambian el upstream.
-- DEV sólo admite `solqaryn-api-dev-fxx8.onrender.com`; PROD sólo `solqaryn-api-prod.onrender.com`.
-- La configuración PROD se aplicará únicamente durante una promoción autorizada; el changeset actual es DEV-first.
+- `frontend/server/environment-binding.js` usa `VERCEL_PROJECT_ID` como identidad primaria del deployment y sólo reconoce los dos proyectos corporativos autorizados.
+- Proyecto `prj_1Anhx5mWyXEBX89lWC24Py6JXe7A` resuelve exclusivamente DEV -> `solqaryn-api-dev-fxx8.onrender.com`; proyecto `prj_si3ORH7lBhM4aSAYfYvXsbJT2lHA` resuelve exclusivamente PROD -> `solqaryn-api-prod.onrender.com`.
+- `SOLQARYN_ENV`, `API_UPSTREAM`, `PUBLIC_ORIGIN` y `SEO_INDEXING_ENABLED` son controles opcionales de coherencia: si existen, deben coincidir con el proyecto canónico o el runtime falla cerrado.
+- `frontend/api/backend-proxy.js` es la frontera server-side de `/api/*`; alias, previews y custom domains no cambian el upstream.
+- Un `VERCEL_PROJECT_ID` desconocido jamás obtiene fallback DEV/PROD.
 
 ### Vercel
 - Proyecto DEV activo: `solqaryn-dev`.
