@@ -2359,3 +2359,13 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 
 - `N8_17_H_CERTIFICATION.json` y `N8_18_D_BACKEND_REFACTOR.json` dejan de declarar la rama retirada `Desarrollo` y quedan alineados a la rama canónica `dev` exigida por sus validadores vigentes.
 - Cambio documental/CI únicamente; sin runtime, datos, migraciones, PROD ni servicios pagos.
+
+
+## 2026-10-01 — Corrección versionada del output Vercel Angular para PROD
+
+- Diagnosticado el deployment PROD posterior a la promoción `dev -> main`: Vercel finalizó el build pero falló con `STATIC_BUILD_NO_OUT_DIR` porque la configuración productiva buscaba `browser` en la raíz.
+- `frontend/vercel.json` fija ahora `outputDirectory=dist/solqaryn-frontend/browser`, alineado con `angular.json` (`outputPath=dist/solqaryn-frontend`) y el builder Angular Application que emite el bundle navegable bajo `browser`.
+- La configuración queda versionada y compartida por DEV/PROD, evitando depender de un valor manual divergente en el dashboard de Vercel.
+- Cambio de build/deployment únicamente; sin datos, migraciones, secretos, DNS ni compra de servicios.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
