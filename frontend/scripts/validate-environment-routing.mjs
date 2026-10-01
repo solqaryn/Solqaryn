@@ -24,7 +24,7 @@ expect(apiRewrites[0]?.destination === '/api/backend-proxy?path=:path*', 'Routin
 expect(!apiRewrites.some(item => Array.isArray(item.has) && item.has.some(c => c?.type === 'host')), 'Routing: el backend no puede seleccionarse por hostname.');
 expect(!(vercel.rewrites || []).some(item => typeof item?.destination === 'string' && /onrender\.com/i.test(item.destination)), 'Routing: vercel.json no puede hardcodear backends Render.');
 expect(proxy.includes('resolveEnvironmentBinding()') && proxy.includes("headers['x-solqaryn-environment']"), 'Routing: el proxy debe exigir binding explícito.');
-expect(ignoreBuild.includes("VERCEL_PROJECT_ID") && ignoreBuild.includes(PROD_PROJECT_ID) && ignoreBuild.includes("branch === 'dev'"), 'Routing: commits dev deben ser ignorados por el proyecto Vercel PROD mediante identidad de proyecto, no hostname.');
+expect(ignoreBuild.includes('PROJECT_BRANCH_BINDINGS') && ignoreBuild.includes(DEV_PROJECT_ID) && ignoreBuild.includes(QA_PROJECT_ID) && ignoreBuild.includes(PROD_PROJECT_ID), 'Routing: cada proyecto Vercel debe quedar ligado a su rama canónica por identidad de proyecto, no hostname.');
 expect(seoUtils.includes("require('./environment-binding')") && !/PROD_API|DEV_API|PRODUCTION_HOST/.test(seoUtils), 'SEO: host no puede seleccionar API ni fallback.');
 
 const resolves = env => { try { return resolveEnvironmentBinding(env); } catch { return null; } };
