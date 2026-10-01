@@ -1,0 +1,180 @@
+name: DEV - Aiven granular user probe
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/aiven-granular-user-probe.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    name: Probar recreate seguro sin tocar usuarios canonicos
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: DEV
+    env:
+      AIVEN_TOKEN: ${{ secrets.SOLQARYN_AIVEN_TOKEN }}
+      DB_HOST: ${{ vars.SOLQARYN_DEV_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_DEV_DB_PORT }}
+      AIVEN_PROJECT: solqaryn
+      AIVEN_SERVICE: solqaryn-mysql
+      PROBE_USER: solqaryn_qa_grants_probe
+    steps:
+      - name: Instalar cliente MySQL
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+
+      - name: Crear probe granular y fijar password conocido
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, secrets, urllib.parse, urllib.request, urllib.error
+
+          token=os.environ['AIVEN_TOKEN'].strip()
+          project=urllib.parse.quote(os.environ['AIVEN_PROJECT'], safe='')
+          service=urllib.parse.quote(os.environ['AIVEN_SERVICE'], safe='')
+          username=os.environ['PROBE_USER']
+          root='https://api.aiven.io/v1'
+          base=f'{root}/project/{project}/service/{service}/user'
+          headers={
+              'Authorization': f'aivenv1 {token}',
+              'Accept':'application/json',
+              'Content-Type':'application/json',
+              'User-Agent':'SOLQARYN-Aiven-Granular-Probe/1.0'
+          }
+
+          def req(url, method='GET', body=None, allow_404=False):
+              data=json.dumps(body).encode() if body is not None else None
+              request=urllib.request.Request(url, data=data, headers=headers, method=method)
+              try:
+                  with urllib.request.urlopen(request, timeout=30) as resp:
+                      raw=resp.read()
+                      return json.loads(raw) if raw else {}
+              except urllib.error.HTTPError as exc:
+                  if allow_404 and exc.code==404:
+                      return None
+                  detail=exc.read().decode('utf-8','replace')[:500]
+                  raise SystemExit(f'Aiven HTTP {exc.code}: {detail}')
+
+          current=req(f'{base}/{urllib.parse.quote(username,safe="")}', allow_404=True)
+          if current is not None:
+              req(f'{base}/{urllib.parse.quote(username,safe="")}', method='DELETE')
+
+          req(base, method='POST', body={
+              'username': username,
+              'authentication': 'caching_sha2_password',
+              'mysql_grants': []
+          })
+
+          password=secrets.token_urlsafe(32)
+          print(f'::add-mask::{password}')
+          req(
+              f'{base}/{urllib.parse.quote(username,safe="")}',
+              method='PUT',
+              body={
+                  'operation':'reset-credentials',
+                  'authentication':'caching_sha2_password',
+                  'new_password': password
+              }
+          )
+          with open(os.environ['GITHUB_ENV'],'a',encoding='utf-8') as f:
+              f.write(f'PROBE_PASSWORD={password}\n')
+          PY
+
+      - name: Resolver avnadmin
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, urllib.parse, urllib.request
+          token=os.environ['AIVEN_TOKEN'].strip()
+          project=urllib.parse.quote(os.environ['AIVEN_PROJECT'], safe='')
+          service=urllib.parse.quote(os.environ['AIVEN_SERVICE'], safe='')
+          url=f'https://api.aiven.io/v1/project/{project}/service/{service}/user/avnadmin?include_secrets=true'
+          req=urllib.request.Request(url,headers={
+              'Authorization':f'aivenv1 {token}',
+              'Accept':'application/json',
+              'User-Agent':'SOLQARYN-Aiven-Granular-Probe/1.0'
+          })
+          with urllib.request.urlopen(req,timeout=30) as resp:
+              payload=json.load(resp)
+          def find_password(v):
+              if isinstance(v,dict):
+                  for k,x in v.items():
+                      if k.lower()=='password' and isinstance(x,str) and x and x!='<redacted>':
+                          return x
+                  for x in v.values():
+                      p=find_password(x)
+                      if p: return p
+              elif isinstance(v,list):
+                  for x in v:
+                      p=find_password(x)
+                      if p: return p
+          password=find_password(payload)
+          if not password:
+              raise SystemExit('avnadmin password missing')
+          print(f'::add-mask::{password}')
+          with open(os.environ['GITHUB_ENV'],'a',encoding='utf-8') as f:
+              f.write(f'AVNADMIN_PASSWORD={password}\n')
+          PY
+
+      - name: Conceder solo SELECT QA y validar aislamiento probe
+        shell: bash
+        run: |
+          set -euo pipefail
+          export MYSQL_PWD="$AVNADMIN_PASSWORD"
+          mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u avnadmin --ssl-mode=REQUIRED mysql             -e "GRANT SELECT ON \`solqaryn_qa\`.* TO '${PROBE_USER}'@'%';"
+
+          ready=false
+          for attempt in $(seq 1 20); do
+            export MYSQL_PWD="$PROBE_PASSWORD"
+            if mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$PROBE_USER" --ssl-mode=REQUIRED solqaryn_qa --batch --skip-column-names -e 'SHOW TABLES;' >/dev/null 2>&1; then
+              ready=true
+              break
+            fi
+            sleep 2
+          done
+          test "$ready" = "true"
+
+          if mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$PROBE_USER" --ssl-mode=REQUIRED solqaryn_dev --batch --skip-column-names -e 'SHOW TABLES;' >/dev/null 2>&1; then
+            echo "PROBE_CROSS_DEV=FAIL" >&2
+            exit 41
+          fi
+          if mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$PROBE_USER" --ssl-mode=REQUIRED solqaryn_prod --batch --skip-column-names -e 'SHOW TABLES;' >/dev/null 2>&1; then
+            echo "PROBE_CROSS_PROD=FAIL" >&2
+            exit 42
+          fi
+          echo "AIVEN_GRANULAR_PROBE=PASS"
+
+      - name: Eliminar probe
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os, urllib.parse, urllib.request, urllib.error
+          token=os.environ['AIVEN_TOKEN'].strip()
+          project=urllib.parse.quote(os.environ['AIVEN_PROJECT'], safe='')
+          service=urllib.parse.quote(os.environ['AIVEN_SERVICE'], safe='')
+          username=urllib.parse.quote(os.environ['PROBE_USER'], safe='')
+          url=f'https://api.aiven.io/v1/project/{project}/service/{service}/user/{username}'
+          req=urllib.request.Request(url,method='DELETE',headers={
+              'Authorization':f'aivenv1 {token}',
+              'Accept':'application/json',
+              'User-Agent':'SOLQARYN-Aiven-Granular-Probe/1.0'
+          })
+          try:
+              with urllib.request.urlopen(req,timeout=30):
+                  pass
+          except urllib.error.HTTPError as exc:
+              if exc.code != 404:
+                  raise
+          print('AIVEN_GRANULAR_PROBE_REMOVED=PASS')
+          PY
