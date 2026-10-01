@@ -1,3 +1,12 @@
+## 2026-09-30 — Reconciliación fail-closed de StorefrontFase12CuentaCliente en DEV
+
+- El segundo smoke de Render DEV demostró que la deriva histórica también incluía las tablas de cuenta de storefront ya materializadas sin su fila de historial EF.
+- 20260919011500_StorefrontFase12CuentaCliente ahora crea únicamente tablas/índices ausentes y después valida que existan las cuatro tablas, 32 columnas requeridas, siete índices y cinco relaciones FK esperadas.
+- Si una estructura preexistente no coincide, la migración provoca un fallo explícito y no registra el historial como convergente.
+- La recuperación no borra ni reescribe filas de cuentas, favoritos, direcciones, sesiones o productos.
+- Se añadió prueba contractual para impedir regresar a CreateTable/CreateIndex no idempotentes.
+- Scope exclusivo DEV; sin main, PROD, secretos ni servicios pagos.
+
 ## 2026-09-30 — Recuperación idempotente de StorefrontFase7ProductoDestacado en DEV
 
 - El smoke exact-head de Render DEV detectó deriva histórica: `Productos.EsDestacado` existía físicamente mientras `20260918162000_StorefrontFase7ProductoDestacado` faltaba en `__EFMigrationsHistory`.
