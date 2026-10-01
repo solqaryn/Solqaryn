@@ -53,18 +53,6 @@ jobs:
           export MYSQL_PWD="$DB_PASSWORD"
           mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e "SHOW GRANTS FOR CURRENT_USER();"
 
-      - name: Evidencia read-only de grants peer
-        shell: bash
-        run: |
-          set -euo pipefail
-          export MYSQL_PWD="$DB_PASSWORD"
-          echo "DEV_GRANTS_BEGIN"
-          mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e "SHOW GRANTS FOR 'solqaryn_dev_user'@'%';"
-          echo "DEV_GRANTS_END"
-          echo "PROD_GRANTS_BEGIN"
-          mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e "SHOW GRANTS FOR 'solqaryn_prod_user'@'%';"
-          echo "PROD_GRANTS_END"
-
       - name: Certificar acceso exclusivo a solqaryn_qa
         shell: bash
         run: |
