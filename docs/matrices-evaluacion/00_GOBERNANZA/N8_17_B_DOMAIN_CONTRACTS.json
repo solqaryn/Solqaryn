@@ -194,7 +194,7 @@
       "idempotency": "Repeated submission of the same type definition produces one effective type."
     },
     {
-      "matrix_id": "VAEP-MX::CUSTOMERS_COMMERCIAL::VARISTOREHN",
+      "matrix_id": "VAEP-MX::CUSTOMERS_COMMERCIAL::STOREFRONT",
       "domain": "CUSTOMERS_COMMERCIAL",
       "objective": "Provide the public/customer storefront journey for browsing products, cart, checkout and order status without exposing internal authority.",
       "actors": ["Storefront visitor/customer", "Storefront backend"],
