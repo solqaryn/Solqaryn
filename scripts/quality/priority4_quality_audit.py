@@ -68,7 +68,7 @@ ok("responses arrive out of order" in empresa_spec and "Respuesta Obsoleta" in e
 # order data remain server-protected by the separate X-Storefront-Session boundary.
 # modulo+accion are mandatory. The small balanced-brace extractor handles
 # multiline route objects without trying to execute Angular source.
-public_paths = {"", "login", "storefront", "storefront/productos", "storefront/ofertas", "storefront/producto/:slug", "storefront/categorias", "storefront/categoria/:slug", "storefront/carrito", "storefront/checkout", "storefront/cuenta", "storefront/pedido/:id"}
+public_paths = {"", "login", "tienda", "tienda/productos", "tienda/ofertas", "tienda/producto/:slug", "tienda/categorias", "tienda/categoria/:slug", "tienda/carrito", "tienda/checkout", "tienda/cuenta", "tienda/pedido/:id"}
 route_files = [ROOT / "frontend/src/app/app.routes.ts"] + sorted((ROOT / "frontend/src/app").rglob("*.routes.ts"))
 route_findings: list[str] = []
 

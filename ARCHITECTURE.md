@@ -112,7 +112,7 @@ Reglas:
 - perfiles HTTP públicos: identidad/tema/WhatsApp/categorías `max-age=120, s-maxage=300, stale-while-revalidate=600`; bootstrap `15/30/60` por incluir destacados; productos/listados/detalle `max-age=5, s-maxage=15, must-revalidate`;
 - las respuestas públicas cacheables emiten ETag débil SHA-256 sobre el payload JSON y resuelven `If-None-Match` con `304 Not Modified`; `Vary: Accept-Encoding` preserva corrección con Brotli/Gzip;
 - contexto de carrito, checkout, sesiones, endpoints autenticados, administración, documentos y errores permanecen fuera de cache público;
-- Vercel conserva el SPA/CDN: bundles Angular hashados reciben `Cache-Control: public, max-age=31536000, immutable` y los rewrites `/api/*` habilitan caching únicamente para respetar las políticas upstream emitidas por el backend;
+- Vercel conserva el SPA/CDN: bundles Angular hashados reciben `Cache-Control: public, max-age=31536000, immutable`; `/api/*` entra a un proxy server-side que preserva `Cache-Control`/ETag/Vary emitidos por el backend;
 - la cache tiene lock por key contra stampede y generaciones para invalidación sin enumerar entradas;
 - `AppDbContext.SaveChangesAsync` invalida generaciones tras escrituras de producto/variante/imágenes/stock, categoría, identidad/WhatsApp, tema, marca/modelo y descuentos relacionados;
 - la partición tenant se resuelve a `empresa:{EmpresaId}` cuando la identidad pública puede vincularse inequívocamente a una empresa; ante ambigüedad se usa un namespace `public-config:{Id}` fail-safe, evitando mezclar particiones;
@@ -219,3 +219,8 @@ No requieren reescaneo completo: correcciones de UI, CRUD, validaciones puntuale
 - Assemblies, namespaces, proyectos, solución, artefactos de build y claves técnicas propias usan únicamente la identidad Solqaryn / SOLQARYN.
 - El storefront público es un módulo tenant-neutral bajo frontend/src/app/features/storefront; las marcas comerciales y nombres de empresas se resuelven desde datos/configuración, nunca desde nombres de código.
 - La ruta pública técnica canónica del storefront es /tienda; dominios y nombres comerciales pertenecen a configuración, no al source code.
+
+
+### Aislamiento de entornos en Vercel
+
+`/api/*` no selecciona backend por hostname. El proyecto Vercel aporta `SOLQARYN_ENV` + `API_UPSTREAM`; `environment-binding.js` valida que DEV apunte exclusivamente a Render DEV y PROD exclusivamente a Render PROD. Configuración ausente o cruzada falla cerrada. `PUBLIC_ORIGIN` y `SEO_INDEXING_ENABLED` controlan canonical/SEO sin decidir el backend. Alias, preview o custom domain no alteran el entorno.

@@ -5,9 +5,15 @@ on:
     branches: [dev]
     paths:
       - '.github/workflows/vaep-ef-snapshot-probe.yml'
+      - 'backend/src/Domain/Entities/DashboardKpiConfiguracion.cs'
+      - 'backend/src/Infrastructure/Persistence/Configurations/DashboardKpiConfiguracionConfiguration.cs'
+      - 'backend/src/Infrastructure/Persistence/AppDbContextFactory.cs'
+      - 'backend/src/Infrastructure/Migrations/AppDbContextModelSnapshot.cs'
+      - 'backend/src/Infrastructure/Migrations/AppDbContextModelSnapshot.N57C.cs'
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   probe:
@@ -15,42 +21,34 @@ jobs:
     defaults:
       run:
         working-directory: backend
+    env:
+      ASPNETCORE_ENVIRONMENT: Development
+      Jwt__Secret: SOLQARYN_CI_DESIGN_TIME_ONLY_0123456789ABCDEF
+      Jwt__Issuer: SOLQARYN-CI
+      Jwt__Audience: SOLQARYN-CI
+      Cors__AllowedOrigins__0: http://localhost
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
       - run: dotnet restore Solqaryn.sln
       - run: dotnet tool install --global dotnet-ef --version 8.0.8
-      - name: Generate verified canonical snapshot
+      - name: Verify canonical snapshot has no pending model changes
         run: |
           set -euo pipefail
-          dotnet ef migrations add VAEP_N5_7_C_SnapshotProbe \
+          dotnet ef migrations has-pending-model-changes \
             --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
             --startup-project src/API/Solqaryn.API.csproj \
-            --context AppDbContext \
-            --output-dir Migrations
-          generated="$(ls src/Infrastructure/Migrations/*VAEP_N5_7_C_SnapshotProbe.cs | grep -v Designer | head -n 1)"
-          test -n "$generated"
-          grep -q 'CreateTable' "$generated"
-          grep -q 'DashboardKpiConfiguraciones' "$generated"
-          grep -q 'CK_DashboardKpiConfiguraciones_Owner' "$generated"
-          grep -q 'UX_DashboardKpiConfiguraciones_Usuario_MetricKey' "$generated"
-          grep -q 'UX_DashboardKpiConfiguraciones_Rol_MetricKey' "$generated"
-          grep -q 'DashboardKpiConfiguracion' src/Infrastructure/Migrations/AppDbContextModelSnapshot.cs
-          rm -f src/Infrastructure/Migrations/*VAEP_N5_7_C_SnapshotProbe*.cs
-      - name: Build snapshot-aligned model
-        run: dotnet build Solqaryn.sln --configuration Release
-      - name: Publish snapshot only
+            --context AppDbContext
+      - name: Verify N5.7.C canonical snapshot contract
         run: |
           set -euo pipefail
-          git config user.name 'VAEP Controller'
-          git config user.email 'actions@users.noreply.github.com'
-          git add src/Infrastructure/Migrations/AppDbContextModelSnapshot.cs
-          cached="$(git diff --cached --name-only)"
-          test "$(printf '%s\n' "$cached" | sed '/^$/d' | wc -l | tr -d ' ')" = '1'
-          printf '%s\n' "$cached" | grep -Eq '(^|/)AppDbContextModelSnapshot\.cs$'
-          git commit -m 'fix(vaep): align canonical EF snapshot for N5.7.C'
-          git push origin HEAD:dev
+          snapshot=src/Infrastructure/Migrations/AppDbContextModelSnapshot.cs
+          grep -q 'DashboardKpiConfiguracion' "$snapshot"
+          grep -q 'DashboardKpiConfiguraciones' "$snapshot"
+          grep -q 'CK_DashboardKpiConfiguraciones_Owner' "$snapshot"
+          grep -q 'UX_DashboardKpiConfiguraciones_Usuario_MetricKey' "$snapshot"
+          grep -q 'UX_DashboardKpiConfiguraciones_Rol_MetricKey' "$snapshot"
+      - name: Build snapshot-aligned model
+        run: dotnet build Solqaryn.sln --configuration Release --no-restore

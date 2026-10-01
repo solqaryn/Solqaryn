@@ -2290,3 +2290,13 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 
 - Refactor nominal transversal en DEV: proyectos, namespaces, artefactos, storefront, pruebas y scripts quedan bajo identidad técnica SOLQARYN y nombres tenant-neutral.
 - Sin cambios de datos productivos, sin migraciones destructivas y sin cambios en main/PROD.
+
+## 2026-09-30 — CI + routing DEV hardening
+
+- Gobierno de matrices alineado al feature tenant-neutral `frontend/src/app/features/storefront` y MATRIX_ID operativo renombrado a `VAEP-MX::CUSTOMERS_COMMERCIAL::STOREFRONT`.
+- Priority 4 reconoce `/tienda/*` como superficie pública y deja de depender de nomenclatura histórica.
+- Parser VAEP acepta y valida los responsables operativos vigentes Primary/Supervisor.
+- EF Snapshot Probe pasa a exact-head read-only con `has-pending-model-changes`; deja de fabricar o publicar migraciones de prueba.
+- Angular 20 queda alineado a 20.3.33; `npm ci` y `npm audit --omit=dev --audit-level=high` pasan en CI.
+- Vercel elimina selección de API por hostname y fallback DEV: binding por proyecto, proxy local y fail-closed ante cruces DEV/PROD.
+- Sin main/PROD, sin migración o borrado de datos y sin compra de servicios.

@@ -1,23 +1,16 @@
-const PRODUCTION_HOST = 'solqaryn-prod.vercel.app';
-const PRODUCTION_ORIGIN = 'https://solqaryn-prod.vercel.app';
-const PROD_API = 'https://solqaryn-api-prod.onrender.com';
-const DEV_API = 'https://solqaryn-api-dev-fxx8.onrender.com';
+const { resolveEnvironmentBinding } = require('./environment-binding');
 
 function hostFromRequest(req) {
   return String(req.headers['x-forwarded-host'] || req.headers.host || '').split(':')[0].toLowerCase();
 }
-
+function currentBinding() { return resolveEnvironmentBinding(); }
 function isIndexableHost(req) {
-  return hostFromRequest(req) === PRODUCTION_HOST;
+  let binding;
+  try { binding = currentBinding(); } catch { return false; }
+  return binding.seoIndexingEnabled && hostFromRequest(req) === new URL(binding.publicOrigin).hostname.toLowerCase();
 }
-
-function publicOrigin(_req) {
-  return PRODUCTION_ORIGIN;
-}
-
-function apiBase(req) {
-  return isIndexableHost(req) ? PROD_API : DEV_API;
-}
+function publicOrigin(_req) { return currentBinding().publicOrigin; }
+function apiBase(_req) { return currentBinding().apiUpstream; }
 
 async function fetchJson(url, timeoutMs = 6000) {
   const controller = new AbortController();
@@ -106,8 +99,6 @@ function sendNoIndex(res, status, message) {
 }
 
 module.exports = {
-  PRODUCTION_HOST,
-  PRODUCTION_ORIGIN,
   apiBase,
   publicOrigin,
   isIndexableHost,
