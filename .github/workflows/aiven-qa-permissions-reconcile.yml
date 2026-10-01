@@ -1,0 +1,104 @@
+name: DEV - Reconciliar privilegios Aiven QA
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/aiven-qa-permissions-reconcile.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  reconcile:
+    name: Restringir solqaryn_qa_user a solqaryn_qa
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: DEV
+    env:
+      AIVEN_TOKEN: ${{ secrets.SOLQARYN_AIVEN_TOKEN }}
+      DB_HOST: ${{ vars.SOLQARYN_DEV_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_DEV_DB_PORT }}
+      AIVEN_PROJECT: solqaryn
+      AIVEN_SERVICE: solqaryn-mysql
+      QA_USER: solqaryn_qa_user
+      QA_DB: solqaryn_qa
+    steps:
+      - name: Instalar cliente MySQL
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+
+      - name: Resolver credencial administrativa Aiven sin exponerla
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$AIVEN_TOKEN"
+          python3 - <<'PY' >> "$GITHUB_ENV"
+          import json, os, urllib.request
+
+          token=os.environ['AIVEN_TOKEN'].strip()
+          project=os.environ['AIVEN_PROJECT']
+          service=os.environ['AIVEN_SERVICE']
+          url=f'https://api.aiven.io/v1/project/{project}/service/{service}/user/avnadmin'
+          req=urllib.request.Request(
+              url,
+              headers={
+                  'Authorization': f'aivenv1 {token}',
+                  'Accept': 'application/json',
+                  'User-Agent': 'SOLQARYN-Aiven-QA-Permissions/1.0'
+              }
+          )
+          with urllib.request.urlopen(req, timeout=30) as resp:
+              payload=json.load(resp)
+
+          def find_password(v):
+              if isinstance(v, dict):
+                  for k, x in v.items():
+                      if k.lower() == 'password' and isinstance(x, str) and x:
+                          return x
+                  for x in v.values():
+                      found=find_password(x)
+                      if found:
+                          return found
+              elif isinstance(v, list):
+                  for x in v:
+                      found=find_password(x)
+                      if found:
+                          return found
+              return None
+
+          password=find_password(payload)
+          if not password:
+              raise SystemExit('Aiven API no entrego credencial administrativa utilizable.')
+          print(f'::add-mask::{password}')
+          print(f'AVNADMIN_PASSWORD={password}')
+          PY
+
+      - name: Restringir grants del usuario QA
+        shell: bash
+        run: |
+          set -euo pipefail
+          export MYSQL_PWD="$AVNADMIN_PASSWORD"
+
+          account_host="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u avnadmin --ssl-mode=REQUIRED mysql             --batch --skip-column-names             -e "SELECT Host FROM mysql.user WHERE User='${QA_USER}' ORDER BY Host LIMIT 1;")"
+
+          test -n "$account_host"
+          case "$account_host" in
+            *[!A-Za-z0-9.%:_-]*) echo "Host de cuenta inesperado." >&2; exit 31 ;;
+          esac
+
+          mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u avnadmin --ssl-mode=REQUIRED mysql <<SQL
+          REVOKE ALL PRIVILEGES, GRANT OPTION FROM '${QA_USER}'@'${account_host}';
+          GRANT ALL PRIVILEGES ON \`${QA_DB}\`.* TO '${QA_USER}'@'${account_host}';
+          SQL
+
+          grants="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u avnadmin --ssl-mode=REQUIRED mysql             --batch --skip-column-names             -e "SHOW GRANTS FOR '${QA_USER}'@'${account_host}';")"
+
+          echo "$grants" | grep -Fq "\`${QA_DB}\`.*"
+          ! echo "$grants" | grep -Eq 'ON \*\.\*|WITH GRANT OPTION'
+          ! echo "$grants" | grep -Fq '\`solqaryn_dev\`.*'
+          ! echo "$grants" | grep -Fq '\`solqaryn_prod\`.*'
+          echo "AIVEN_QA_GRANTS_RECONCILED=PASS"
