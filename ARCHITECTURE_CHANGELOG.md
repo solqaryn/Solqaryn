@@ -1,5 +1,13 @@
 # ARCHITECTURE_CHANGELOG — Solqaryn
 
+## 2026-09-30 — Binding Vercel/API fail-closed por proyecto
+
+- Se elimina la selección de backend mediante hostname y el fallback genérico hacia DEV.
+- `/api/*` usa un proxy server-side local y `environment-binding.js` exige `SOLQARYN_ENV` + `API_UPSTREAM` coherentes.
+- DEV sólo admite Render DEV y PROD sólo Render PROD; alias/custom domain no seleccionan entorno.
+- SEO/canonical usa `PUBLIC_ORIGIN` + `SEO_INDEXING_ENABLED`; un entorno desconocido o cruzado falla cerrado.
+- Sin cambios en main/PROD, datos, migraciones ni servicios pagos.
+
 ## 2026-09-29 — Cache HTTP + ETag + compresión del storefront
 
 - ASP.NET Core habilita Brotli/Gzip para JSON/text sobre HTTPS.
