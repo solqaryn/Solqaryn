@@ -10,6 +10,10 @@ on:
       - frontend/package.json
       - frontend/package-lock.json
       - frontend/vercel.json
+      - frontend/api/backend-proxy.js
+      - frontend/server/environment-binding.js
+      - frontend/server/seo-utils.js
+      - frontend/scripts/validate-environment-routing.mjs
       - render.yaml
   pull_request:
     branches:
@@ -20,6 +24,10 @@ on:
       - frontend/package.json
       - frontend/package-lock.json
       - frontend/vercel.json
+      - frontend/api/backend-proxy.js
+      - frontend/server/environment-binding.js
+      - frontend/server/seo-utils.js
+      - frontend/scripts/validate-environment-routing.mjs
       - render.yaml
   workflow_dispatch:
 
@@ -52,8 +60,7 @@ jobs:
           grep -A1 'Database__ApplyMigrationsOnStartup' render.yaml | grep -q '"true"'
           grep -A1 'Security__LoginRateLimitPerMinute' render.yaml | grep -q '"20"'
           grep -A1 'Cloudinary__EnvironmentPrefix' render.yaml | grep -q 'solqaryn_dev'
-          grep -q 'solqaryn-api-dev-fxx8.onrender.com' frontend/vercel.json
-          grep -q 'solqaryn-api-prod.onrender.com' frontend/vercel.json
+          node frontend/scripts/validate-environment-routing.mjs
 
           grep -Fq 'USER $APP_UID' backend/Dockerfile
           grep -q 'AddRateLimiter' backend/src/API/Program.cs

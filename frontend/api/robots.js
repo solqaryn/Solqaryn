@@ -2,9 +2,12 @@ const { publicOrigin, isIndexableHost } = require('../server/seo-utils');
 
 module.exports = async function handler(req, res) {
   const indexable = isIndexableHost(req);
-  const origin = publicOrigin(req);
+  let origin = '';
+  if (indexable) {
+    try { origin = publicOrigin(req); } catch { origin = ''; }
+  }
 
-  const body = indexable
+  const body = indexable && origin
     ? [
         'User-agent: *',
         'Disallow: /',
