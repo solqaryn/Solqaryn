@@ -19,6 +19,7 @@ Estado operativo vigente. Este documento reemplaza referencias históricas de in
 - Trabajo de implementación ocurre en `dev`.
 - QA persistente se publica desde `qa` para pruebas internas y de clientes.
 - Flujo canónico de promoción: `dev -> qa -> main`; `main` sólo recibe cambios certificados en QA y autorizados.
+- Contrato canónico de ramas permitidas, variables y secretos de GitHub Environments: `docs/GITHUB_ENVIRONMENT_CONTRACT.md`.
 
 ## Render
 

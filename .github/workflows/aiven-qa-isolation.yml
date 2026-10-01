@@ -46,12 +46,17 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y mysql-client
 
-      - name: Evidencia de grants QA
+      - name: Certificar grants mínimos QA
         shell: bash
         run: |
           set -euo pipefail
           export MYSQL_PWD="$DB_PASSWORD"
-          mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e "SHOW GRANTS FOR CURRENT_USER();"
+          grants="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e "SHOW GRANTS FOR CURRENT_USER();")"
+          echo "$grants"
+          echo "$grants" | grep -Fq 'GRANT USAGE ON *.* TO "solqaryn_qa_user"@"%"'
+          echo "$grants" | grep -Fq 'GRANT ALL PRIVILEGES ON "solqaryn_qa".* TO "solqaryn_qa_user"@"%"'
+          ! echo "$grants" | grep -Eq 'WITH GRANT OPTION|ROLE_ADMIN|REPLICATION_APPLIER|solqaryn_dev|solqaryn_prod'
+          echo "AIVEN_QA_LEAST_PRIVILEGE=PASS"
 
       - name: Certificar acceso exclusivo a solqaryn_qa
         shell: bash

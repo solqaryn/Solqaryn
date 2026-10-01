@@ -1,3 +1,14 @@
+## 2026-10-01 — Cierre de aislamiento Aiven QA y contrato GitHub Environments
+
+- Certificado con MySQL real que `solqaryn_dev_user` conserva únicamente `USAGE ON *.*` + `ALL PRIVILEGES ON solqaryn_dev.*`; run DEV `36932283653` en verde y sin acceso a QA/PROD.
+- Auditoría autoritativa con `avnadmin` confirmó que `solqaryn_prod_user` conserva únicamente `USAGE ON *.*` + `ALL PRIVILEGES ON solqaryn_prod.*`; no tiene grants sobre DEV/QA.
+- `solqaryn_qa_user` fue recreado preservando su password vigente, con `mysql_grants=[]`, y recibió después únicamente `ALL PRIVILEGES ON solqaryn_qa.*`; run `36932132076` = SUCCESS y `AIVEN_QA_LEAST_PRIVILEGE=PASS`.
+- QA ya no conserva `WITH GRANT OPTION`, `ROLE_ADMIN`, `REPLICATION_APPLIER` ni grants cruzados hacia `solqaryn_dev`/`solqaryn_prod`.
+- Los workflows permanentes de aislamiento DEV/QA ahora fallan si reaparecen grants administrativos o referencias a otra base.
+- Añadido `docs/GITHUB_ENVIRONMENT_CONTRACT.md`: QA usa exactamente cuatro variables DB y un único secreto DB; no se duplican Aiven token, backup passphrase ni URLs sin consumidor real.
+- La regla de deployment esperada para QA queda restringida exclusivamente a la rama `qa`.
+- Sin cambios en `main`, datos PROD, DNS, certificados ni servicios pagos.
+
 ## 2026-10-01 — Paridad estructural del GitHub Environment QA
 
 - `qa-live-certification.yml` dejó de requerir variables redundantes de URL; los endpoints canónicos QA quedan fijados en el workflow.
