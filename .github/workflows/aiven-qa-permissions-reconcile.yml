@@ -69,10 +69,11 @@ jobs:
           if existing is not None:
               request(f'{base}/{username}', method='DELETE')
 
-          created=request(base, method='POST', body={
+          request(base, method='POST', body={
               'username': username,
               'authentication': 'caching_sha2_password'
           })
+          created=request(f'{base}/{username}/reset-credentials', method='POST')
           def find_password(v):
               if isinstance(v, dict):
                   for k, x in v.items():
