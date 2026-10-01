@@ -35,7 +35,7 @@ jobs:
 
       - name: Refresh exact Angular lockfile
         working-directory: frontend
-        run: npm install --package-lock-only --ignore-scripts
+        run: npm install --package-lock-only --ignore-scripts --force
 
       - name: Install frontend exact dependencies
         working-directory: frontend
