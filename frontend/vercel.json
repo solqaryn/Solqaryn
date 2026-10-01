@@ -78,37 +78,7 @@
     },
     {
       "source": "/api/:path*",
-      "has": [
-        {
-          "type": "host",
-          "value": "solqaryn-prod.vercel.app"
-        }
-      ],
-      "destination": "https://solqaryn-api-prod.onrender.com/:path*"
-    },
-    {
-      "source": "/api/:path*",
-      "has": [
-        {
-          "type": "host",
-          "value": "solqaryn.com"
-        }
-      ],
-      "destination": "https://solqaryn-api-prod.onrender.com/:path*"
-    },
-    {
-      "source": "/api/:path*",
-      "has": [
-        {
-          "type": "host",
-          "value": "www.solqaryn.com"
-        }
-      ],
-      "destination": "https://solqaryn-api-prod.onrender.com/:path*"
-    },
-    {
-      "source": "/api/:path*",
-      "destination": "https://solqaryn-api-dev-fxx8.onrender.com/:path*"
+      "destination": "/api/backend-proxy?path=:path*"
     },
     {
       "source": "/(.*)",
@@ -122,15 +92,6 @@
         {
           "key": "Cache-Control",
           "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/api/:path*",
-      "headers": [
-        {
-          "key": "x-vercel-enable-rewrite-caching",
-          "value": "1"
         }
       ]
     },
