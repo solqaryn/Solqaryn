@@ -46,30 +46,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y mysql-client
 
-      - name: Reconciliar grants QA si existe cruce
-        shell: bash
-        run: |
-          set -euo pipefail
-          export MYSQL_PWD="$DB_PASSWORD"
-
-          cross=0
-          if mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED solqaryn_dev --batch --skip-column-names -e 'SELECT 1;' >/dev/null 2>&1; then cross=1; fi
-          if mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED solqaryn_prod --batch --skip-column-names -e 'SELECT 1;' >/dev/null 2>&1; then cross=1; fi
-
-          if [ "$cross" = "0" ]; then
-            echo "AIVEN_QA_ALREADY_ISOLATED=PASS"
-            exit 0
-          fi
-
-          mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" <<'SQL'
-          GRANT ALL PRIVILEGES ON `solqaryn_qa`.* TO 'solqaryn_qa_user'@'%';
-          REVOKE SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, RELOAD, PROCESS, REFERENCES, INDEX, ALTER, SHOW DATABASES, CREATE TEMPORARY TABLES, LOCK TABLES, EXECUTE, REPLICATION SLAVE, REPLICATION CLIENT, CREATE VIEW, SHOW VIEW, CREATE ROUTINE, ALTER ROUTINE, CREATE USER, EVENT, TRIGGER ON *.* FROM 'solqaryn_qa_user'@'%';
-          REVOKE REPLICATION_APPLIER, ROLE_ADMIN ON *.* FROM 'solqaryn_qa_user'@'%';
-          REVOKE GRANT OPTION ON *.* FROM 'solqaryn_qa_user'@'%';
-          SQL
-
-          echo "AIVEN_QA_GRANTS_RECONCILED=PASS"
-
       - name: Evidencia de grants QA
         shell: bash
         run: |
