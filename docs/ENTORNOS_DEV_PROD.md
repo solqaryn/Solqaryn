@@ -60,9 +60,9 @@ La migración histórica de VariStoreHN hacia `solqaryn_prod` ya fue ejecutada y
 
 ## Binding Vercel -> API
 
-- `/api/*` usa binding explícito por proyecto/entorno; no selecciona backend por hostname ni alias.
-- DEV sólo acepta `solqaryn-api-dev-fxx8.onrender.com` y PROD sólo `solqaryn-api-prod.onrender.com`.
-- Configuración ausente, ambigua o cruzada falla cerrada.
+- `/api/*` usa binding explícito por `VERCEL_PROJECT_ID`; no selecciona backend por hostname ni alias.
+- `prj_1Anhx5mWyXEBX89lWC24Py6JXe7A` sólo acepta DEV -> `solqaryn-api-dev-fxx8.onrender.com`; `prj_si3ORH7lBhM4aSAYfYvXsbJT2lHA` sólo acepta PROD -> `solqaryn-api-prod.onrender.com`.
+- Overrides opcionales `SOLQARYN_ENV`/`API_UPSTREAM`/`PUBLIC_ORIGIN`/`SEO_INDEXING_ENABLED` deben coincidir con el proyecto canónico; proyecto desconocido o cruce falla cerrado.
 - Render valida además la pareja entorno/base/usuario: Development -> `solqaryn_dev`/`solqaryn_dev_user`; Production -> `solqaryn_prod`/`solqaryn_prod_user`.
 - Contrato de cierre y promoción: `docs/DEV_CIERRE_TECNICO_PROMOCION.md`.
 
