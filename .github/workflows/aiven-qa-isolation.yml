@@ -46,6 +46,147 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y mysql-client
 
+      - name: Reconciliar privilegios QA si existe cruce
+        shell: bash
+        run: |
+          set -euo pipefail
+          export MYSQL_PWD="$DB_PASSWORD"
+
+          cross=0
+          if mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED solqaryn_dev --batch --skip-column-names -e 'SELECT 1;' >/dev/null 2>&1; then
+            cross=1
+          fi
+          if mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED solqaryn_prod --batch --skip-column-names -e 'SELECT 1;' >/dev/null 2>&1; then
+            cross=1
+          fi
+
+          if [ "$cross" = "0" ]; then
+            echo "AIVEN_QA_ALREADY_ISOLATED=PASS"
+            exit 0
+          fi
+
+          qa_host="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e "SELECT SUBSTRING_INDEX(CURRENT_USER(),'@',-1);")"
+          test -n "$qa_host"
+          case "$qa_host" in
+            *[!A-Za-z0-9.%:_-]*) echo "Host efectivo QA inesperado." >&2; exit 31 ;;
+          esac
+
+          mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e "SHOW GRANTS FOR CURRENT_USER();" > /tmp/qa-current-grants.txt
+
+          temp_user="solqaryn_qa_grant_admin"
+          temp_pass="$(openssl rand -hex 32)"
+          echo "::add-mask::$temp_pass"
+          export TEMP_USER="$temp_user" TEMP_PASS="$temp_pass" QA_HOST="$qa_host"
+
+          python3 - <<'PY' > /tmp/qa-bootstrap-admin.sql
+          import os, re
+          temp_user=os.environ['TEMP_USER']
+          temp_pass=os.environ['TEMP_PASS']
+          lines=[x.strip() for x in open('/tmp/qa-current-grants.txt', encoding='utf-8') if x.strip()]
+
+          print(f"DROP USER IF EXISTS '{temp_user}'@'%';")
+          print(f"CREATE USER '{temp_user}'@'%' IDENTIFIED WITH caching_sha2_password BY '{temp_pass}';")
+
+          copied=0
+          for line in lines:
+              m=re.match(r'^GRANT (.+) ON \\*\\.\\* TO .+?( WITH GRANT OPTION)?          set -euo pipefail
+          export MYSQL_PWD="$DB_PASSWORD"
+
+          actual="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e 'SELECT DATABASE();')"
+          test "$actual" = "solqaryn_qa"
+
+          if mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED solqaryn_dev --batch --skip-column-names -e 'SELECT 1;' >/dev/null 2>&1; then
+            echo "AISLAMIENTO FALLIDO: solqaryn_qa_user puede acceder a solqaryn_dev." >&2
+            exit 41
+          fi
+
+          if mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED solqaryn_prod --batch --skip-column-names -e 'SELECT 1;' >/dev/null 2>&1; then
+            echo "AISLAMIENTO FALLIDO: solqaryn_qa_user puede acceder a solqaryn_prod." >&2
+            exit 42
+          fi
+
+          echo "AIVEN_QA_ISOLATION=PASS"
+, line, re.I)
+              if not m:
+                  continue
+              privileges=m.group(1).strip()
+              if privileges.upper() == 'USAGE':
+                  continue
+              print(f"GRANT {privileges} ON *.* TO '{temp_user}'@'%' WITH GRANT OPTION;")
+              copied += 1
+
+          if copied == 0:
+              raise SystemExit('No se encontro grant global delegable para crear el admin temporal.')
+          PY
+
+          mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" < /tmp/qa-bootstrap-admin.sql
+
+          cleanup_temp() {
+            MYSQL_PWD="$temp_pass" mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$temp_user" --ssl-mode=REQUIRED mysql --batch --skip-column-names -e "DROP USER IF EXISTS '$temp_user'@'%';" >/dev/null 2>&1 || true
+          }
+          trap cleanup_temp EXIT
+
+          export MYSQL_PWD="$temp_pass"
+
+          python3 - <<'PY' > /tmp/qa-restrict.sql
+          import os, re
+          qa_user='solqaryn_qa_user'
+          qa_host=os.environ['QA_HOST']
+          lines=[x.strip() for x in open('/tmp/qa-current-grants.txt', encoding='utf-8') if x.strip()]
+
+          print(f"GRANT ALL PRIVILEGES ON \`solqaryn_qa\`.* TO '{qa_user}'@'{qa_host}';")
+
+          revoke_grant_option=False
+          for line in lines:
+              m=re.match(r'^GRANT (.+) ON \\*\\.\\* TO .+?( WITH GRANT OPTION)?          set -euo pipefail
+          export MYSQL_PWD="$DB_PASSWORD"
+
+          actual="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e 'SELECT DATABASE();')"
+          test "$actual" = "solqaryn_qa"
+
+          if mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED solqaryn_dev --batch --skip-column-names -e 'SELECT 1;' >/dev/null 2>&1; then
+            echo "AISLAMIENTO FALLIDO: solqaryn_qa_user puede acceder a solqaryn_dev." >&2
+            exit 41
+          fi
+
+          if mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED solqaryn_prod --batch --skip-column-names -e 'SELECT 1;' >/dev/null 2>&1; then
+            echo "AISLAMIENTO FALLIDO: solqaryn_qa_user puede acceder a solqaryn_prod." >&2
+            exit 42
+          fi
+
+          echo "AIVEN_QA_ISOLATION=PASS"
+, line, re.I)
+              if not m:
+                  continue
+              privileges=m.group(1).strip()
+              if privileges.upper() != 'USAGE':
+                  print(f"REVOKE {privileges} ON *.* FROM '{qa_user}'@'{qa_host}';")
+              if m.group(2):
+                  revoke_grant_option=True
+
+          if revoke_grant_option:
+              print(f"REVOKE GRANT OPTION ON *.* FROM '{qa_user}'@'{qa_host}';")
+          PY
+
+          mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$temp_user" --ssl-mode=REQUIRED mysql < /tmp/qa-restrict.sql
+
+          export MYSQL_PWD="$DB_PASSWORD"
+          actual="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e 'SELECT DATABASE();')"
+          test "$actual" = "solqaryn_qa"
+
+          if mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED solqaryn_dev --batch --skip-column-names -e 'SELECT 1;' >/dev/null 2>&1; then
+            echo "AISLAMIENTO FALLIDO DESPUES DE RECONCILIAR: QA aun accede DEV." >&2
+            exit 41
+          fi
+          if mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED solqaryn_prod --batch --skip-column-names -e 'SELECT 1;' >/dev/null 2>&1; then
+            echo "AISLAMIENTO FALLIDO DESPUES DE RECONCILIAR: QA aun accede PROD." >&2
+            exit 42
+          fi
+
+          cleanup_temp
+          trap - EXIT
+          echo "AIVEN_QA_GRANTS_RECONCILED=PASS"
+
       - name: Certificar acceso exclusivo a solqaryn_qa
         shell: bash
         run: |
