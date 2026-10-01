@@ -1,3 +1,11 @@
+## 2026-09-30 — QA Fase 3: fail-closed de base/usuario por entorno Render
+
+- Durante QA DEV se detectó que el binding Vercel→API ya fallaba cerrado, pero el backend aún aceptaba cualquier base MySQL sintácticamente válida.
+- Se añadió `EnvironmentDatabaseGuard` y se conectó al startup únicamente cuando `RENDER=true`.
+- Render Development exige `solqaryn_dev` + `solqaryn_dev_user`; Render Production exige `solqaryn_prod` + `solqaryn_prod_user`.
+- Se agregaron pruebas para binding válido, base cruzada, usuario cruzado, entorno ambiguo/no canónico y cadena sin base.
+- Cambio sólo en `dev`; no se modificó `main`, Render PROD, datos, migraciones, secretos, DNS ni servicios pagos.
+
 ## 2026-09-30 — Aislamiento Vercel DEV: bloqueo de previews cruzados hacia proyecto PROD
 
 - El guard `frontend/scripts/vercel-ignore-build.mjs` ahora usa `VERCEL_PROJECT_ID` para impedir que commits de la rama `dev` creen builds/previews dentro del proyecto Vercel `solqaryn-prod`.

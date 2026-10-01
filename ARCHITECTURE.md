@@ -151,6 +151,7 @@ La observabilidad de rendimiento DEV es first-party y no requiere un proveedor p
 - Rate limiting de login.
 - Security headers.
 - Separación estricta de PROD/DEV.
+- En runtime Render, `EnvironmentDatabaseGuard` enlaza fail-closed `ASPNETCORE_ENVIRONMENT` con base y usuario MySQL canónicos: Development → `solqaryn_dev`/`solqaryn_dev_user`; Production → `solqaryn_prod`/`solqaryn_prod_user`. Cualquier cruce, ausencia o entorno no canónico aborta el arranque antes de usar EF Core.
 - Secretos fuera del repositorio.
 - SMTP OAuth2 en PROD usa access tokens efímeros obtenidos desde refresh token; no usa contraseña SMTP básica.
 - `main` congelada durante el trabajo en `dev`.

@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.RateLimiting;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Solqaryn.API.Configuration;
 using Solqaryn.API.Middleware;
 using Solqaryn.API.Observability;
 using Solqaryn.Application.Common;
@@ -35,6 +36,7 @@ builder.Services.Configure<FormOptions>(options => options.MultipartBodyLengthLi
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateProductoValidator>();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection no configurado.");
+if (isRender) EnvironmentDatabaseGuard.ValidateRenderBinding(builder.Environment.EnvironmentName, connectionString);
 var mysqlServerVersion = Version.Parse(builder.Configuration["Database:ServerVersion"] ?? "8.4.3");
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMemoryCache();

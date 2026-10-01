@@ -64,6 +64,7 @@ Consultar `ARCHITECTURE.md` para cambios estructurales y `PROJECT_INDEX.md` para
 - SMTP DEV y PROD: `smtp-mail.outlook.com:587` + STARTTLS + OAuth2/Modern Auth con identidad `solqaryn.platform@outlook.com`.
 - DEV y PROD no provisionan contraseña SMTP ni client secret OAuth2; cada entorno mantiene su propio refresh token en Render.
 - Contrato Render canónico: 28 claves idénticas por nombre en DEV y PROD; sólo cambian valores dependientes del entorno. Inventario y justificación: `docs/RENDER_ENVIRONMENT_CONTRACT.md`.
+- En Render, el arranque backend aplica `EnvironmentDatabaseGuard`: `Development` sólo acepta `solqaryn_dev` + `solqaryn_dev_user`, y `Production` sólo `solqaryn_prod` + `solqaryn_prod_user`; entorno, base o usuario incompatibles fallan cerrados antes de registrar `AppDbContext`.
 
 ### Binding Vercel -> API
 

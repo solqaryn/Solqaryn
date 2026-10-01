@@ -1,3 +1,11 @@
+## 2026-09-30 — Guard fail-closed Render → MySQL por entorno
+
+- Se incorpora `EnvironmentDatabaseGuard` en el arranque de API cuando `RENDER=true`.
+- `Development` sólo admite `solqaryn_dev` con `solqaryn_dev_user`; `Production` sólo `solqaryn_prod` con `solqaryn_prod_user`.
+- Base cruzada, usuario cruzado, cadena incompleta o entorno ambiguo/no canónico abortan startup antes de registrar/usar `AppDbContext`.
+- El guard se valida con pruebas negativas y deja preparado el mismo código para una futura promoción autorizada a PROD sin modificar infraestructura productiva ahora.
+- Sin migraciones, escrituras de datos, cambios en `main`, secretos ni servicios pagos.
+
 # ARCHITECTURE_CHANGELOG — Solqaryn
 
 ## 2026-09-30 — Binding Vercel/API fail-closed por proyecto
