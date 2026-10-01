@@ -1,3 +1,12 @@
+## 2026-10-01 — Fundación QA persistente y aislamiento DEV/QA/PROD
+
+- Incorporado QA persistente al contrato técnico: rama `qa`, Vercel `solqaryn-qa`, Render `solqaryn-api-qa`, base/usuario esperados `solqaryn_qa`/`solqaryn_qa_user` y prefijo Cloudinary `solqaryn_qa`.
+- Añadido binding Vercel por `VERCEL_PROJECT_ID` para QA, guard fail-closed de Render `Staging`, CI/certificación viva QA y guard de promoción `dev -> qa -> main`.
+- Corregida la ruta Dockerfile declarativa de Render QA a `./backend/Dockerfile` para mantener paridad con DEV/PROD.
+- Reconciliados `PROJECT_CONTEXT.md`, `docs/ENTORNOS_DEV_PROD.md` y `docs/RENDER_ENVIRONMENT_CONTRACT.md` con la topología de tres entornos.
+- En Render QA se aplicaron únicamente variables no sensibles del entorno; el servicio permanece fail-closed hasta provisionar/conectar sus secretos y recursos QA propios.
+- Sin cambios en `main`, configuración PROD, datos productivos, DNS, certificados ni servicios pagos.
+
 ## 2026-09-30 — Fase 4: reconciliación final de documentación de entornos
 
 - Corregidas referencias stale en `docs/ENTORNOS_DEV_PROD.md`: Vercel PROD ya existe, la migración histórica PROD ya está cerrada y el custom domain continúa aplazado.
