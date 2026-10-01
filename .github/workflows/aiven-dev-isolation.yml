@@ -1,0 +1,56 @@
+name: DEV - Aiven isolation proof
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/aiven-dev-isolation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  isolation:
+    name: Certificar DEV sin acceso QA PROD
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: DEV
+    env:
+      DB_HOST: ${{ vars.SOLQARYN_DEV_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_DEV_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_DEV_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_DEV_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_DEV_DB_PASSWORD }}
+    steps:
+      - name: Instalar cliente MySQL
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+
+      - name: Certificar identidad y cruces DEV
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$DB_NAME" = "solqaryn_dev"
+          test "$DB_USER" = "solqaryn_dev_user"
+          export MYSQL_PWD="$DB_PASSWORD"
+
+          actual="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e 'SELECT DATABASE();')"
+          test "$actual" = "solqaryn_dev"
+
+          mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e "SHOW GRANTS FOR CURRENT_USER();"
+
+          if mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED solqaryn_qa --batch --skip-column-names -e 'SELECT 1;' >/dev/null 2>&1; then
+            echo "DEV_TO_QA=CROSS_ACCESS"
+            exit 41
+          fi
+
+          if mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED solqaryn_prod --batch --skip-column-names -e 'SELECT 1;' >/dev/null 2>&1; then
+            echo "DEV_TO_PROD=CROSS_ACCESS"
+            exit 42
+          fi
+
+          echo "AIVEN_DEV_ISOLATION=PASS"
