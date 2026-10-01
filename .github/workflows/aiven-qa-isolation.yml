@@ -1,0 +1,68 @@
+name: QA - Aiven isolation proof
+
+on:
+  push:
+    branches: [qa]
+    paths:
+      - '.github/workflows/aiven-qa-isolation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aiven-qa-isolation
+  cancel-in-progress: true
+
+jobs:
+  isolation:
+    name: Certificar QA sin acceso DEV/PROD
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: QA
+    env:
+      DB_HOST: ${{ vars.SOLQARYN_QA_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_QA_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_QA_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_QA_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_QA_DB_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validar contrato QA
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$DB_NAME" = "solqaryn_qa"
+          test "$DB_USER" = "solqaryn_qa_user"
+          test -n "$DB_HOST"
+          test -n "$DB_PORT"
+          test -n "$DB_PASSWORD"
+
+      - name: Instalar cliente MySQL
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+
+      - name: Certificar acceso exclusivo a solqaryn_qa
+        shell: bash
+        run: |
+          set -euo pipefail
+          export MYSQL_PWD="$DB_PASSWORD"
+
+          actual="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e 'SELECT DATABASE();')"
+          test "$actual" = "solqaryn_qa"
+
+          if mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED solqaryn_dev --batch --skip-column-names -e 'SELECT 1;' >/dev/null 2>&1; then
+            echo "AISLAMIENTO FALLIDO: solqaryn_qa_user puede acceder a solqaryn_dev." >&2
+            exit 41
+          fi
+
+          if mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED solqaryn_prod --batch --skip-column-names -e 'SELECT 1;' >/dev/null 2>&1; then
+            echo "AISLAMIENTO FALLIDO: solqaryn_qa_user puede acceder a solqaryn_prod." >&2
+            exit 42
+          fi
+
+          echo "AIVEN_QA_ISOLATION=PASS"
