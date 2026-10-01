@@ -2300,3 +2300,8 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Angular 20 queda alineado a 20.3.33; `npm ci` y `npm audit --omit=dev --audit-level=high` pasan en CI.
 - Vercel elimina selección de API por hostname y fallback DEV: binding por proyecto, proxy local y fail-closed ante cruces DEV/PROD.
 - Sin main/PROD, sin migración o borrado de datos y sin compra de servicios.
+
+## 2026-09-30 — Contratos activos de matrices alineados a dev
+
+- `N8_17_H_CERTIFICATION.json` y `N8_18_D_BACKEND_REFACTOR.json` dejan de declarar la rama retirada `Desarrollo` y quedan alineados a la rama canónica `dev` exigida por sus validadores vigentes.
+- Cambio documental/CI únicamente; sin runtime, datos, migraciones, PROD ni servicios pagos.

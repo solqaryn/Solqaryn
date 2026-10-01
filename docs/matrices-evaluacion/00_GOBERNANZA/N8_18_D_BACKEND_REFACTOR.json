@@ -2,7 +2,7 @@
   "schema": "vaep-n8.18-d-backend-refactor/v1",
   "parent": "N8.18.D",
   "stage": "BACKEND_API",
-  "branch": "Desarrollo",
+  "branch": "dev",
   "sources": {
     "refactor_plan": "docs/matrices-evaluacion/00_GOBERNANZA/N8_18_A_REFACTOR_PLAN.md",
     "domain_boundaries": "docs/matrices-evaluacion/00_GOBERNANZA/N8_18_B_DOMAIN_BOUNDARIES.json",
