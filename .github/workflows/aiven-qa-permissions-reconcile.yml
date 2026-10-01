@@ -36,7 +36,7 @@ jobs:
         run: |
           set -euo pipefail
           test -n "$AIVEN_TOKEN"
-          python3 - <<'PY' >> "$GITHUB_ENV"
+          python3 - <<'PY'
           import json, os, urllib.request
 
           token=os.environ['AIVEN_TOKEN'].strip()
@@ -74,7 +74,8 @@ jobs:
           if not password:
               raise SystemExit('Aiven API no entrego credencial administrativa utilizable.')
           print(f'::add-mask::{password}')
-          print(f'AVNADMIN_PASSWORD={password}')
+          with open(os.environ['GITHUB_ENV'], 'a', encoding='utf-8') as env_file:
+              env_file.write(f'AVNADMIN_PASSWORD={password}\\n')
           PY
 
       - name: Restringir grants del usuario QA
