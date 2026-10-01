@@ -4,19 +4,32 @@ const branch = process.env.VERCEL_GIT_COMMIT_REF;
 const current = process.env.VERCEL_GIT_COMMIT_SHA || 'HEAD';
 const configuredPrevious = process.env.VERCEL_GIT_PREVIOUS_SHA;
 const vercelProjectId = process.env.VERCEL_PROJECT_ID;
-const PROD_PROJECT_ID = 'prj_si3ORH7lBhM4aSAYfYvXsbJT2lHA';
 
-// A commit on dev must never create a preview/build inside the PROD project.
-// This guard uses Vercel's immutable project identity rather than hostname/alias.
-// Exit 0 is the Vercel contract for "ignore this build".
-if (branch === 'dev' && vercelProjectId === PROD_PROJECT_ID) {
-  console.log(`CROSS_ENV_PROJECT_SKIP branch=${branch} project=${vercelProjectId}`);
+const PROJECT_BRANCH_BINDINGS = Object.freeze({
+  'prj_1Anhx5mWyXEBX89lWC24Py6JXe7A': 'dev',
+  'prj_n5STx5F6VboqXd1oLUMR8AvZZtml': 'qa',
+  'prj_si3ORH7lBhM4aSAYfYvXsbJT2lHA': 'main'
+});
+
+const expectedBranch = PROJECT_BRANCH_BINDINGS[vercelProjectId];
+
+// Cada proyecto Vercel corporativo sólo construye su rama canónica.
+// Exit 0 es el contrato de Vercel para ignorar el build.
+if (expectedBranch && branch !== expectedBranch) {
+  console.log(`CROSS_ENV_PROJECT_SKIP branch=${branch} expected=${expectedBranch} project=${vercelProjectId}`);
   process.exit(0);
 }
 
-// This optimization is deliberately dev-only. Production/main and any
-// unknown branch always build. The file exists on dev only until an
-// explicitly authorized publication changes that fact.
+// Un project ID desconocido falla abierto a build para no ocultar una
+// configuración nueva accidental; environment-binding.js fallará cerrado
+// en runtime hasta que el proyecto sea explícitamente autorizado.
+if (!expectedBranch) {
+  process.exit(1);
+}
+
+// La optimización de cambios de control-plane permanece deliberadamente
+// limitada a DEV. QA y PROD siempre construyen su rama canónica para que
+// cada promoción tenga evidencia de deployment exact-head.
 if (branch !== 'dev') {
   process.exit(1);
 }
@@ -26,10 +39,6 @@ const resolveCommit = ref =>
 
 let previous;
 try {
-  // VERCEL_GIT_PREVIOUS_SHA is the last successful deployment SHA, not
-  // necessarily HEAD^. Prefer it when trustworthy so a chain of control-plane
-  // commits can be ignored together. If Vercel omits it, HEAD^ is a safe
-  // fallback for a normal Git push. Any resolution failure remains fail-open.
   if (configuredPrevious && /^[0-9a-f]{40}$/i.test(configuredPrevious)) {
     previous = resolveCommit(configuredPrevious);
   } else {
@@ -72,11 +81,8 @@ const explicitlyNonRuntime = file =>
   ].includes(file);
 
 if (changedFiles.length > 0 && changedFiles.every(explicitlyNonRuntime)) {
-  // Vercel contract: exit 0 ignores the build; exit 1 continues it.
   console.log(`VAEP_CONTROL_PLANE_ONLY_SKIP files=${changedFiles.length} branch=${branch}`);
   process.exit(0);
 }
 
-// Frontend, backend, infrastructure, vercel config, broad docs and every
-// unclassified change fail open to a normal preview build.
 process.exit(1);
