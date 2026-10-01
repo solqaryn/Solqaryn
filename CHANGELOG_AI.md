@@ -2381,3 +2381,13 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Sin datos, migraciones, secretos, DNS ni compra de servicios.
 
 MAPA_ARQUITECTURA: ACTUALIZADO.
+
+
+## 2026-10-01 — Corrección de falso negativo E2E en matriz visual
+
+- La aceptación integral fallaba en `/finanzas` aunque la interfaz mostraba correctamente iconos visibles del shell.
+- La causa era el helper E2E: sólo buscaba elementos `<mat-icon>`, mientras la navegación canónica usa también `<span class="material-icons">`.
+- `matriz-modulos-visual.spec.ts` valida ahora ambos contratos de iconografía visibles sin relajar contraste, tamaño, opacidad ni navegación.
+- Cambio exclusivo de prueba E2E; sin runtime funcional, datos, migraciones, secretos, DNS ni servicios pagos.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
