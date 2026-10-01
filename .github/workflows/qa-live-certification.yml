@@ -24,8 +24,8 @@ jobs:
     timeout-minutes: 25
     environment: QA
     env:
-      FRONTEND: ${{ vars.SOLQARYN_QA_FRONTEND_URL }}
-      BACKEND: ${{ vars.SOLQARYN_QA_BACKEND_URL }}
+      FRONTEND: https://solqaryn-qa.vercel.app
+      BACKEND: https://solqaryn-api-qa.onrender.com
       DB_HOST: ${{ vars.SOLQARYN_QA_DB_HOST }}
       DB_PORT: ${{ vars.SOLQARYN_QA_DB_PORT }}
       DB_NAME: ${{ vars.SOLQARYN_QA_DB_NAME }}
