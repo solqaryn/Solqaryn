@@ -1,3 +1,11 @@
+## 2026-09-30 — Recuperación idempotente de StorefrontFase7ProductoDestacado en DEV
+
+- El smoke exact-head de Render DEV detectó deriva histórica: `Productos.EsDestacado` existía físicamente mientras `20260918162000_StorefrontFase7ProductoDestacado` faltaba en `__EFMigrationsHistory`.
+- La migración se volvió idempotente ante DDL parcial: comprueba `INFORMATION_SCHEMA` y sólo crea la columna o índice si realmente faltan.
+- No se elimina, sobrescribe ni migra contenido de productos; la recuperación completa estructura faltante y permite que EF registre su historial.
+- Se añadió prueba contractual para impedir volver a una operación `AddColumn/CreateIndex` no idempotente en esta migración.
+- Scope exclusivo DEV; sin cambios en `main`, PROD, secretos ni servicios pagos.
+
 ## 2026-09-30 — QA Fase 3: fail-closed de base/usuario por entorno Render
 
 - Durante QA DEV se detectó que el binding Vercel→API ya fallaba cerrado, pero el backend aún aceptaba cualquier base MySQL sintácticamente válida.
