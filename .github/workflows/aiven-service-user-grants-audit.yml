@@ -1,0 +1,82 @@
+name: DEV - Aiven service-user grants audit
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/aiven-service-user-grants-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Auditar grants configurados QA y PROD
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: DEV
+    env:
+      AIVEN_TOKEN: ${{ secrets.SOLQARYN_AIVEN_TOKEN }}
+      AIVEN_PROJECT: solqaryn
+      AIVEN_SERVICE: solqaryn-mysql
+    steps:
+      - name: Consultar metadata no sensible de usuarios Aiven
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$AIVEN_TOKEN"
+          python3 - <<'PY'
+          import json, os, urllib.parse, urllib.request
+
+          token=os.environ['AIVEN_TOKEN'].strip()
+          project=os.environ['AIVEN_PROJECT']
+          service=os.environ['AIVEN_SERVICE']
+          root='https://api.aiven.io/v1'
+
+          def get_user(username):
+              url=(
+                  f"{root}/project/{urllib.parse.quote(project, safe='')}/service/"
+                  f"{urllib.parse.quote(service, safe='')}/user/{urllib.parse.quote(username, safe='')}"
+              )
+              req=urllib.request.Request(
+                  url,
+                  headers={
+                      'Authorization': f'aivenv1 {token}',
+                      'Accept': 'application/json',
+                      'User-Agent': 'SOLQARYN-Aiven-Grants-Audit/1.0'
+                  }
+              )
+              with urllib.request.urlopen(req, timeout=30) as resp:
+                  return json.load(resp)
+
+          def find_user(payload, username):
+              if isinstance(payload, dict):
+                  if payload.get('username') == username:
+                      return payload
+                  for value in payload.values():
+                      found=find_user(value, username)
+                      if found is not None:
+                          return found
+              elif isinstance(payload, list):
+                  for value in payload:
+                      found=find_user(value, username)
+                      if found is not None:
+                          return found
+              return None
+
+          report={}
+          for username in ('solqaryn_qa_user','solqaryn_prod_user'):
+              payload=get_user(username)
+              record=find_user(payload, username) or payload
+              grants=record.get('mysql_grants') if isinstance(record, dict) else None
+              report[username]={
+                  'username': username,
+                  'mysql_grants': grants,
+                  'mysql_grants_present': isinstance(grants, list)
+              }
+
+          print(json.dumps(report, indent=2, sort_keys=True))
+          if not all(v['mysql_grants_present'] for v in report.values()):
+              raise SystemExit('Aiven API no expuso mysql_grants para todos los usuarios.')
+          PY
