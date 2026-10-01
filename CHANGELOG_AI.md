@@ -2369,3 +2369,15 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Cambio de build/deployment únicamente; sin datos, migraciones, secretos, DNS ni compra de servicios.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+
+## 2026-10-01 — Recuperación PROD: binding Vercel por project id
+
+- El nuevo frontend PROD ya compilaba y quedaba `READY`, pero `/api/*` devolvía 503 porque el runtime esperaba variables manuales de binding que no estaban disponibles en el deployment recién promovido.
+- El binding ahora usa `VERCEL_PROJECT_ID` como autoridad primaria: proyecto DEV -> API DEV y proyecto PROD -> API PROD, con origen/SEO canónicos incluidos.
+- Overrides manuales permanecen admitidos sólo como controles de coherencia y cualquier cruce/valor incompatible falla cerrado.
+- Se amplió `validate-environment-routing.mjs` con pruebas de project IDs conocidos/desconocidos, overrides cruzados y modo explícito local.
+- Se actualizaron `ARCHITECTURE.md`, `PROJECT_CONTEXT.md`, `PROJECT_INDEX.md`, `ARCHITECTURE_CHANGELOG.md` y `docs/ENTORNOS_DEV_PROD.md` en el mismo changeset.
+- Sin datos, migraciones, secretos, DNS ni compra de servicios.
+
+MAPA_ARQUITECTURA: ACTUALIZADO.
