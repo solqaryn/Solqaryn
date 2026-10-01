@@ -7,6 +7,7 @@ public sealed class EnvironmentDatabaseGuardTests
 {
     [Theory]
     [InlineData("Development", "solqaryn_dev", "solqaryn_dev_user")]
+    [InlineData("Staging", "solqaryn_qa", "solqaryn_qa_user")]
     [InlineData("Production", "solqaryn_prod", "solqaryn_prod_user")]
     public void ValidateRenderBinding_AceptaBindingCanonico(string environment, string database, string user)
     {
@@ -17,8 +18,13 @@ public sealed class EnvironmentDatabaseGuardTests
     [Theory]
     [InlineData("Development", "solqaryn_prod", "solqaryn_dev_user")]
     [InlineData("Development", "solqaryn_dev", "solqaryn_prod_user")]
+    [InlineData("Development", "solqaryn_qa", "solqaryn_qa_user")]
+    [InlineData("Staging", "solqaryn_dev", "solqaryn_qa_user")]
+    [InlineData("Staging", "solqaryn_qa", "solqaryn_dev_user")]
+    [InlineData("Staging", "solqaryn_prod", "solqaryn_prod_user")]
     [InlineData("Production", "solqaryn_dev", "solqaryn_prod_user")]
     [InlineData("Production", "solqaryn_prod", "solqaryn_dev_user")]
+    [InlineData("Production", "solqaryn_qa", "solqaryn_qa_user")]
     public void ValidateRenderBinding_RechazaBaseOUsuarioCruzado(string environment, string database, string user)
     {
         var connection = $"Server=db.example;Port=3306;Database={database};User ID={user};Password=test;SslMode=Required;";
@@ -28,7 +34,7 @@ public sealed class EnvironmentDatabaseGuardTests
 
     [Theory]
     [InlineData("")]
-    [InlineData("Staging")]
+    [InlineData("QA")]
     [InlineData("DEV")]
     [InlineData("PROD")]
     public void ValidateRenderBinding_RechazaEntornoAmbiguoONoCanonico(string environment)
