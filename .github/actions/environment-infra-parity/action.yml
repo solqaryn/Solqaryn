@@ -55,7 +55,8 @@ runs:
         esac
 
         grants="$("${mysql_cmd[@]}" -e "SHOW GRANTS FOR CURRENT_USER();")"
-        printf '%s\n' "$grants" | grep -Fq "ON `$EXPECTED_DB`.*" || {
+        expected_grant_fragment='ON `'"$EXPECTED_DB"'`.*'
+        printf '%s\n' "$grants" | grep -Fq "$expected_grant_fragment" || {
           echo "Expected database grant is missing." >&2
           exit 1
         }
