@@ -82,7 +82,7 @@ export class ConfirmarRecepcionDialogComponent {
 
         <div class="actions">
           @if (esBorrador(item.estado) && puedeConfirmar()) {
-            <button mat-flat-button type="button" [disabled]="procesando()" (click)="confirmar()" data-testid="confirmar-recepcion"><mat-icon>inventory</mat-icon> Confirmar recepción</button>
+            <button mat-flat-button type="button" [disabled]="procesando()" (click)="confirmar()" data-testid="confirmar-recepcion"><mat-icon>check_circle</mat-icon> Confirmar recepción</button>
           }
           @if (esRecibida(item.estado) && puedeAnular()) {
             <button mat-stroked-button type="button" [disabled]="procesando()" (click)="anular()" data-testid="anular-recepcion"><mat-icon>undo</mat-icon> Anular recepción</button>
