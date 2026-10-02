@@ -130,7 +130,7 @@ const MODULOS_SAAS: ReadonlyArray<Pick<ModuloSaaSUx, 'clave' | 'nombre' | 'descr
         @if (loadingLimites()) {
           <div class="state compact" role="status" aria-live="polite"><mat-spinner diameter="28"></mat-spinner><span>Cargando límites…</span></div>
         } @else if (limites().length === 0) {
-          <div class="state compact" role="status"><mat-icon>inventory_2</mat-icon><span>No hay límites para el filtro indicado.</span></div>
+          <div class="state compact" role="status"><mat-icon>rule</mat-icon><span>No hay límites para el filtro indicado.</span></div>
         } @else {
           <div class="table-wrap">
             <table>
