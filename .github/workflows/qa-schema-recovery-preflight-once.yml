@@ -1,4 +1,4 @@
-name: QA - preflight recuperacion esquema once
+name: QA - recuperacion esquema once
 
 on:
   push:
@@ -10,14 +10,14 @@ permissions:
   contents: read
 
 concurrency:
-  group: qa-schema-recovery-preflight-once
+  group: qa-schema-recovery-once
   cancel-in-progress: false
 
 jobs:
-  preflight:
-    name: Diagnostico read-only de esquema QA
+  recovery:
+    name: Materializar esquema QA desde migraciones canonicas
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 40
     environment: QA
     env:
       DB_HOST: ${{ vars.SOLQARYN_QA_DB_HOST }}
@@ -26,6 +26,7 @@ jobs:
       DB_USER: ${{ vars.SOLQARYN_QA_DB_USER }}
       DB_PASSWORD: ${{ secrets.SOLQARYN_QA_DB_PASSWORD }}
       Database__ServerVersion: '8.4.8'
+      BACKEND: https://solqaryn-api-qa.onrender.com
     steps:
       - name: Checkout QA exact-head
         uses: actions/checkout@v4
@@ -40,20 +41,21 @@ jobs:
           test "$DB_NAME" = "solqaryn_qa"
           test "$DB_USER" = "solqaryn_qa_user"
           test -n "$DB_PASSWORD"
+          test "$BACKEND" = "https://solqaryn-api-qa.onrender.com"
           echo "QA_TARGET_BINDING=PASS"
-          echo "QA_HEAD=$GITHUB_SHA"
+          echo "QA_RECOVERY_HEAD=$GITHUB_SHA"
 
       - name: Instalar cliente MySQL y .NET EF
         shell: bash
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y mysql-client
+          sudo apt-get install -y mysql-client jq
           dotnet restore backend/src/Infrastructure/Solqaryn.Infrastructure.csproj
           dotnet tool install --global dotnet-ef --version 8.0.8
           dotnet build backend/src/Infrastructure/Solqaryn.Infrastructure.csproj --configuration Release --no-restore
 
-      - name: Diagnostico DB QA read-only
+      - name: Preflight fail-closed de base vacia
         shell: bash
         run: |
           set -euo pipefail
@@ -63,58 +65,105 @@ jobs:
           }
 
           actual_db="$(q 'SELECT DATABASE();')"
-          echo "QA_DATABASE=$actual_db"
           test "$actual_db" = "solqaryn_qa"
 
           tables_total="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE();")"
-          history_table="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='__EFMigrationsHistory';")"
-          empresa_cfg="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='EmpresaConfiguraciones';")"
-          ventas="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='Ventas';")"
-          facturas="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='Facturas';")"
-          revisiones="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='RevisionesFinancieras';")"
-          empresas="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='Empresas';")"
-          config_empresas="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='ConfigEmpresas';")"
-          pedidos="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='PedidosVenta';")"
-          cuentas_pagar="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='CuentasPorPagar';")"
-
-          echo "QA_TABLES_TOTAL=$tables_total"
-          echo "QA_EF_HISTORY_TABLE=$history_table"
-          echo "QA_TABLE_EmpresaConfiguraciones=$empresa_cfg"
-          echo "QA_TABLE_Ventas=$ventas"
-          echo "QA_TABLE_Facturas=$facturas"
-          echo "QA_TABLE_RevisionesFinancieras=$revisiones"
-          echo "QA_TABLE_Empresas=$empresas"
-          echo "QA_TABLE_ConfigEmpresas=$config_empresas"
-          echo "QA_TABLE_PedidosVenta=$pedidos"
-          echo "QA_TABLE_CuentasPorPagar=$cuentas_pagar"
-
-          if [ "$history_table" = "1" ]; then
-            history_count="$(q 'SELECT COUNT(*) FROM __EFMigrationsHistory;')"
-            create_migration="$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20260710050958_Fase3Fase4VentasFacturacionFinanzas';")"
-            echo "QA_SCHEMA_HISTORY_COUNT=$history_count"
-            echo "QA_CREATE_MIGRATION_APPLIED=$create_migration"
-            echo "QA_HISTORY_TAIL_BEGIN"
-            q 'SELECT MigrationId FROM __EFMigrationsHistory ORDER BY MigrationId DESC LIMIT 30;'
-            echo "QA_HISTORY_TAIL_END"
-          else
-            echo "QA_SCHEMA_HISTORY_COUNT=0"
-            echo "QA_CREATE_MIGRATION_APPLIED=0"
-            echo "QA_HISTORY_TAIL=ABSENT"
+          echo "QA_TABLES_BEFORE=$tables_total"
+          if [ "$tables_total" != "0" ]; then
+            echo "ABORT: QA dejo de estar vacia despues del preflight certificado; no se escribe." >&2
+            exit 61
           fi
 
-          echo "QA_TABLE_SAMPLE_BEGIN"
-          q "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() ORDER BY TABLE_NAME LIMIT 80;"
-          echo "QA_TABLE_SAMPLE_END"
-          echo "QA_DB_READONLY_DIAGNOSTIC=PASS"
+          echo "QA_EMPTY_DATABASE_GATE=PASS"
 
-      - name: Comparar historial EF con codigo QA
+      - name: Contar migraciones canonicas QA
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet ef migrations list             --project src/Infrastructure/Solqaryn.Infrastructure.csproj             --context AppDbContext             --configuration Release             --no-build             --no-connect | tee /tmp/qa-code-migrations.txt
+
+          expected="$(grep -Ec '^[0-9]{14}_' /tmp/qa-code-migrations.txt)"
+          test "$expected" -gt 0
+          echo "QA_EXPECTED_MIGRATIONS=$expected"
+          echo "EXPECTED_MIGRATIONS=$expected" >> "$GITHUB_ENV"
+
+      - name: Aplicar migraciones EF a solqaryn_qa
         working-directory: backend
         shell: bash
         run: |
           set -euo pipefail
           export ConnectionStrings__DefaultConnection="Server=$DB_HOST;Port=$DB_PORT;Database=$DB_NAME;User=$DB_USER;Password=$DB_PASSWORD;SslMode=Required;AllowPublicKeyRetrieval=True;"
-          dotnet ef migrations list             --project src/Infrastructure/Solqaryn.Infrastructure.csproj             --context AppDbContext             --configuration Release             --no-build | tee /tmp/qa-migrations-list.txt
+          dotnet ef database update             --project src/Infrastructure/Solqaryn.Infrastructure.csproj             --context AppDbContext             --configuration Release             --no-build
+          echo "QA_EF_DATABASE_UPDATE=PASS"
 
-          pending="$(grep -c '(Pending)' /tmp/qa-migrations-list.txt || true)"
-          echo "QA_EF_PENDING_COUNT=$pending"
-          echo "QA_SCHEMA_PREFLIGHT=PASS"
+      - name: Postcheck de esquema e historial
+        shell: bash
+        run: |
+          set -euo pipefail
+          export MYSQL_PWD="$DB_PASSWORD"
+          q() {
+            mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e "$1"
+          }
+
+          history_table="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='__EFMigrationsHistory';")"
+          test "$history_table" = "1"
+
+          history_count="$(q 'SELECT COUNT(*) FROM __EFMigrationsHistory;')"
+          test "$history_count" = "$EXPECTED_MIGRATIONS"
+
+          for table in EmpresaConfiguraciones Ventas Facturas Empresas ConfigEmpresas PedidosVenta CuentasPorPagar; do
+            exists="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='$table';")"
+            test "$exists" = "1"
+          done
+
+          tables_after="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE();")"
+          test "$tables_after" -gt 0
+          echo "QA_TABLES_AFTER=$tables_after"
+          echo "QA_HISTORY_AFTER=$history_count"
+          echo "QA_SCHEMA_POSTCHECK=PASS"
+
+      - name: Confirmar cero migraciones pendientes
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          export ConnectionStrings__DefaultConnection="Server=$DB_HOST;Port=$DB_PORT;Database=$DB_NAME;User=$DB_USER;Password=$DB_PASSWORD;SslMode=Required;AllowPublicKeyRetrieval=True;"
+          dotnet ef migrations list             --project src/Infrastructure/Solqaryn.Infrastructure.csproj             --context AppDbContext             --configuration Release             --no-build | tee /tmp/qa-migrations-after.txt
+
+          pending="$(grep -c '(Pending)' /tmp/qa-migrations-after.txt || true)"
+          test "$pending" = "0"
+          echo "QA_EF_PENDING_COUNT=0"
+
+      - name: Smoke backend QA
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for attempt in $(seq 1 60); do
+            ready_code="$(curl --silent --show-error -o /tmp/qa-ready.json -w '%{http_code}' "$BACKEND/health/ready" || true)"
+            if [ "$ready_code" = "200" ] && jq -e '.database == "connected"' /tmp/qa-ready.json >/dev/null 2>&1; then
+              echo "QA_READY=PASS"
+              break
+            fi
+            if [ "$attempt" = "60" ]; then
+              echo "QA /health/ready no quedo saludable." >&2
+              cat /tmp/qa-ready.json 2>/dev/null || true
+              exit 71
+            fi
+            sleep 5
+          done
+
+          for attempt in $(seq 1 30); do
+            bootstrap_code="$(curl --silent --show-error -o /tmp/qa-bootstrap.json -w '%{http_code}' "$BACKEND/tienda/bootstrap" || true)"
+            if [ "$bootstrap_code" = "200" ] && jq -e '.success == true' /tmp/qa-bootstrap.json >/dev/null 2>&1; then
+              echo "QA_STOREFRONT_BOOTSTRAP=PASS"
+              echo "QA_SCHEMA_RECOVERY=PASS"
+              exit 0
+            fi
+            sleep 3
+          done
+
+          echo "QA storefront bootstrap no quedo saludable." >&2
+          cat /tmp/qa-bootstrap.json 2>/dev/null || true
+          exit 72
