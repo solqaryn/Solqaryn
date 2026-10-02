@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using Solqaryn.Application.DTOs;
@@ -92,6 +93,24 @@ public class QuestPdfFacturaPerfilesServiceTests
         Assert.True(
             altoLargo > altoCorto + 100,
             $"La altura continua debe responder al contenido. Corto={altoCorto}; largo={altoLargo}.");
+    }
+
+    [Theory]
+    [InlineData("Acme", "AC")]
+    [InlineData("Mi Empresa", "ME")]
+    [InlineData("SOLQARYN", "SO")]
+    [InlineData("", "SQ")]
+    public void Monograma_Fallback_Se_Deriva_De_La_Empresa_Y_No_De_Una_Marca_Global(
+        string nombreEmpresa,
+        string esperado)
+    {
+        var metodo = typeof(QuestPdfFacturaPerfilesService).GetMethod(
+            "ConstruirMonogramaEmpresa",
+            BindingFlags.NonPublic | BindingFlags.Static);
+
+        Assert.NotNull(metodo);
+        var actual = Assert.IsType<string>(metodo!.Invoke(null, [nombreEmpresa]));
+        Assert.Equal(esperado, actual);
     }
 
     [Fact]

@@ -11,7 +11,7 @@
 - Repositorio: `solqaryn/Solqaryn`.
 - Rama ordinaria de trabajo: `dev`.
 - Rama productiva: `main`; cualquier cambio requiere autorización explícita vigente.
-- GitHub Environments canónicos: `DEV` y `PROD`.
+- GitHub Environments canónicos: `DEV`, `QA` y `PROD`.
 - Identidad corporativa operativa: `solqaryn.platform@outlook.com`.
 - VariStoreHN es una empresa cliente alojada en SOLQARYN; no define la identidad de la plataforma.
 
@@ -37,7 +37,8 @@ SOLQARYN es una plataforma empresarial multiempresa.
 - Capas: Domain <- Application <- Infrastructure; API compone y expone.
 - Persistencia: MySQL con EF Core 8/Pomelo.
 - Seguridad: JWT, BCrypt, RBAC relacional, auditoría, CORS explícito, rate limiting y security headers.
-- Integraciones vigentes: Cloudinary, QuestPDF y SMTP; DEV y PROD usan Outlook.com con OAuth2/Modern Auth para `solqaryn.platform@outlook.com`.
+- Integraciones vigentes: Cloudinary, QuestPDF y SMTP; DEV, QA y PROD usan Outlook.com con OAuth2/Modern Auth para `solqaryn.platform@outlook.com`.
+- Facturas PDF: el branding visual se resuelve por empresa/tenant (`EmpresaConfiguracion.LogoUrl`); si no existe logo válido, QuestPDF usa un monograma derivado de `EmpresaNombre`. No existe fallback global `AppSettings__LogoPublicUrl` en Render ni branding fijo de un cliente.
 - E2E/browser: Playwright/Chromium.
 - Baseline de rendimiento DEV first-party: duración API, cantidad/tiempo de queries MySQL, TTFB/requests/bytes por pantalla, LCP/INP/CLS y tamaños de bundles; no requiere un servicio de observabilidad pagado.
 - Storefront público de productos: read path dedicado con proyecciones ligeras, paginación/filtros server-side y contexto de carrito por IDs; `GET /tienda/productos` y destacados usan `TiendaProductoResumenDto` con imagen principal y variantes mínimas, mientras el DTO rico con galería queda reservado al detalle/contexto acotado; las lecturas públicas ya no materializan el catálogo administrativo completo.
@@ -54,29 +55,32 @@ Consultar `ARCHITECTURE.md` para cambios estructurales y `PROJECT_INDEX.md` para
 ### GitHub
 - Repositorio: `solqaryn/Solqaryn`.
 - Trabajo: `dev`.
-- Environments: `DEV` y `PROD`.
+- Environments: `DEV`, `QA` y `PROD`.
 
 ### Render
 - Servicio DEV: `solqaryn-api-dev`.
+- Servicio QA: `solqaryn-api-qa`.
 - Servicio PROD: `solqaryn-api-prod`.
-- Estado de compute actual: DEV y PROD están en Render `free`. DEV puede aceptar cold starts para ahorro; PROD no se considera backend comercial `always-on` mientras permanezca Free. Está prohibido usar keep-alive artificial como sustituto de un plan always-on; cualquier upgrade productivo requiere autorización explícita de gasto.
+- Estado de compute actual: DEV, QA y PROD están en Render `free`. DEV/QA pueden aceptar cold starts para ahorro; PROD no se considera backend comercial `always-on` mientras permanezca Free. Está prohibido usar keep-alive artificial como sustituto de un plan always-on; cualquier upgrade productivo requiere autorización explícita de gasto.
 - Health de plataforma Render: `/health` (liveness rápida). `/health/ready` se conserva para readiness/diagnóstico de dependencias como MySQL, pero no como probe de despliegue.
-- SMTP DEV y PROD: `smtp-mail.outlook.com:587` + STARTTLS + OAuth2/Modern Auth con identidad `solqaryn.platform@outlook.com`.
-- DEV y PROD no provisionan contraseña SMTP ni client secret OAuth2; cada entorno mantiene su propio refresh token en Render.
-- Contrato Render canónico: 28 claves idénticas por nombre en DEV y PROD; sólo cambian valores dependientes del entorno. Inventario y justificación: `docs/RENDER_ENVIRONMENT_CONTRACT.md`.
-- En Render, el arranque backend aplica `EnvironmentDatabaseGuard`: `Development` sólo acepta `solqaryn_dev` + `solqaryn_dev_user`, y `Production` sólo `solqaryn_prod` + `solqaryn_prod_user`; entorno, base o usuario incompatibles fallan cerrados antes de registrar `AppDbContext`.
+- SMTP DEV, QA y PROD: `smtp-mail.outlook.com:587` + STARTTLS + OAuth2/Modern Auth con identidad `solqaryn.platform@outlook.com`.
+- DEV, QA y PROD no provisionan contraseña SMTP ni client secret OAuth2; cada entorno mantiene su propio refresh token en Render.
+- Contrato Render canónico: 28 claves idénticas por nombre en DEV, QA y PROD; sólo cambian valores dependientes del entorno. Inventario y justificación: `docs/RENDER_ENVIRONMENT_CONTRACT.md`.
+- En Render, el arranque backend aplica `EnvironmentDatabaseGuard`: `Development` sólo acepta `solqaryn_dev` + `solqaryn_dev_user`, `Staging` sólo `solqaryn_qa` + `solqaryn_qa_user`, y `Production` sólo `solqaryn_prod` + `solqaryn_prod_user`; además exige el endpoint Aiven corporativo `solqaryn-mysql-solqaryn.h.aivencloud.com:14402` con `SslMode=Required`. Entorno, host, puerto, TLS, base o usuario incompatibles fallan cerrados antes de registrar `AppDbContext`.
+- `RenderEnvironmentContractGuard` valida en cada arranque Render las 28 claves administradas: mismo conjunto de nombres en DEV/QA/PROD, valores obligatorios no vacíos y constantes públicas compartidas coherentes; los secretos y las identidades propias del entorno pueden diferir. El runtime sólo registra conteo y fingerprints no sensibles.
 
 ### Binding Vercel -> API
 
 - El backend de un deployment no se decide por hostname ni alias.
-- `frontend/server/environment-binding.js` usa `VERCEL_PROJECT_ID` como identidad primaria del deployment y sólo reconoce los dos proyectos corporativos autorizados.
-- Proyecto `prj_1Anhx5mWyXEBX89lWC24Py6JXe7A` resuelve exclusivamente DEV -> `solqaryn-api-dev-fxx8.onrender.com`; proyecto `prj_si3ORH7lBhM4aSAYfYvXsbJT2lHA` resuelve exclusivamente PROD -> `solqaryn-api-prod.onrender.com`.
+- `frontend/server/environment-binding.js` usa `VERCEL_PROJECT_ID` como identidad primaria del deployment y sólo reconoce los tres proyectos corporativos autorizados.
+- Proyecto `prj_1Anhx5mWyXEBX89lWC24Py6JXe7A` resuelve exclusivamente DEV -> `solqaryn-api-dev-fxx8.onrender.com`; `prj_n5STx5F6VboqXd1oLUMR8AvZZtml` resuelve exclusivamente QA -> `solqaryn-api-qa.onrender.com`; `prj_si3ORH7lBhM4aSAYfYvXsbJT2lHA` resuelve exclusivamente PROD -> `solqaryn-api-prod.onrender.com`.
 - `SOLQARYN_ENV`, `API_UPSTREAM`, `PUBLIC_ORIGIN` y `SEO_INDEXING_ENABLED` son controles opcionales de coherencia: si existen, deben coincidir con el proyecto canónico o el runtime falla cerrado.
 - `frontend/api/backend-proxy.js` es la frontera server-side de `/api/*`; alias, previews y custom domains no cambian el upstream.
 - Un `VERCEL_PROJECT_ID` desconocido jamás obtiene fallback DEV/PROD.
 
 ### Vercel
 - Proyecto DEV activo: `solqaryn-dev`.
+- Proyecto QA activo: `solqaryn-qa`.
 - Proyecto PROD corporativo activo: `solqaryn-prod`.
 - PROD fue certificado sobre la rama `main` y permanece operativo mediante el alias administrado `https://solqaryn-prod.vercel.app`.
 - No se reutiliza ningún proyecto personal o legacy.
@@ -84,8 +88,8 @@ Consultar `ARCHITECTURE.md` para cambios estructurales y `PROJECT_INDEX.md` para
 ### Aiven
 - Proyecto: `solqaryn`.
 - Servicio MySQL: `solqaryn-mysql`.
-- Bases: `solqaryn_dev` y `solqaryn_prod`.
-- Usuarios de aplicación separados por entorno.
+- Bases: `solqaryn_dev`, `solqaryn_qa` y `solqaryn_prod`.
+- Usuarios de aplicación separados por entorno: `solqaryn_dev_user`, `solqaryn_qa_user`, `solqaryn_prod_user`.
 
 ### Cloudflare
 - La cuenta/DNS corporativos pertenecen a SOLQARYN.

@@ -1,0 +1,188 @@
+name: QA - schema recovery and certification
+
+on:
+  push:
+    branches: [qa]
+    paths:
+      - backend/src/Infrastructure/Migrations/**
+      - backend/src/Infrastructure/Persistence/AppDbContextFactory.cs
+      - .github/workflows/qa-schema-recovery.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qa-schema-recovery
+  cancel-in-progress: false
+
+jobs:
+  recover:
+    name: Recover QA schema fail-closed
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    environment: QA
+    env:
+      DB_HOST: ${{ vars.SOLQARYN_QA_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_QA_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_QA_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_QA_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_QA_DB_PASSWORD }}
+      BACKUP_PASSPHRASE: ${{ secrets.SOLQARYN_QA_BACKUP_PASSPHRASE }}
+      Database__ServerVersion: "8.4.8"
+    steps:
+      - name: Checkout QA
+        uses: actions/checkout@v4
+
+      - name: Verify SOLQARYN scope
+        run: node scripts/verify-project-scope.mjs
+
+      - name: Validate canonical QA binding
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$DB_HOST" = "solqaryn-mysql-solqaryn.h.aivencloud.com"
+          test "$DB_PORT" = "14402"
+          test "$DB_NAME" = "solqaryn_qa"
+          test "$DB_USER" = "solqaryn_qa_user"
+          test -n "$DB_PASSWORD"
+          test -n "$BACKUP_PASSPHRASE"
+          echo "QA_SCHEMA_BINDING=PASS"
+
+      - name: Install MySQL client and .NET
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v mysql >/dev/null 2>&1 || ! command -v mysqldump >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y mysql-client
+          fi
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+          cache: true
+          cache-dependency-path: backend/**/*.csproj
+
+      - name: Resolve Aiven endpoint and audit schema before write
+        id: audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          export MYSQL_PWD="$DB_PASSWORD"
+
+          mysql_cmd=(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED --batch --skip-column-names "$DB_NAME")
+
+          base_tables="$("${mysql_cmd[@]}" -e "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE';")"
+          history_exists="$("${mysql_cmd[@]}" -e "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='__EFMigrationsHistory';")"
+          empresa_exists="$("${mysql_cmd[@]}" -e "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='EmpresaConfiguraciones';")"
+
+          history_count=0
+          if [ "$history_exists" = "1" ]; then
+            history_count="$("${mysql_cmd[@]}" -e "SELECT COUNT(*) FROM __EFMigrationsHistory;")"
+          fi
+
+          echo "QA_SCHEMA_AUDIT base_tables=$base_tables history_exists=$history_exists history_count=$history_count empresa_config_exists=$empresa_exists"
+
+          if [ "$base_tables" -gt 0 ] && [ "$history_exists" != "1" ]; then
+            echo "QA schema is partially materialized without EF migration history; refusing automatic recovery." >&2
+            exit 1
+          fi
+
+          echo "base_tables=$base_tables" >> "$GITHUB_OUTPUT"
+          echo "history_exists=$history_exists" >> "$GITHUB_OUTPUT"
+          echo "history_count=$history_count" >> "$GITHUB_OUTPUT"
+          echo "empresa_exists=$empresa_exists" >> "$GITHUB_OUTPUT"
+
+      - name: Backup QA before schema write
+        shell: bash
+        run: |
+          set -euo pipefail
+          export MYSQL_PWD="$DB_PASSWORD"
+          mkdir -p "$RUNNER_TEMP/qa-schema-backup"
+
+          dump="$RUNNER_TEMP/qa-schema-backup/solqaryn_qa_before.sql"
+          encrypted="$RUNNER_TEMP/qa-schema-backup/solqaryn_qa_before.sql.enc"
+
+          mysqldump             --protocol=TCP             -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER"             --ssl-mode=REQUIRED             --single-transaction --skip-lock-tables --no-tablespaces --set-gtid-purged=OFF             --routines --triggers             "$DB_NAME" > "$dump"
+
+          test -s "$dump"
+          sha256sum "$dump" > "$RUNNER_TEMP/qa-schema-backup/SHA256SUMS.txt"
+          openssl enc -aes-256-cbc -pbkdf2 -salt             -pass env:BACKUP_PASSPHRASE             -in "$dump" -out "$encrypted"
+          rm -f "$dump"
+          test -s "$encrypted"
+          echo "QA_SCHEMA_BACKUP=PASS"
+
+      - name: Upload encrypted pre-recovery backup
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-schema-pre-recovery-${{ github.run_id }}
+          path: ${{ runner.temp }}/qa-schema-backup/
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Restore dependencies and install EF CLI
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet restore Solqaryn.sln
+          dotnet tool install --global dotnet-ef --version 8.0.8
+
+      - name: Apply only versioned EF migrations to QA
+        working-directory: backend
+        shell: bash
+        env:
+          ConnectionStrings__DefaultConnection: Server=${{ vars.SOLQARYN_QA_DB_HOST }};Port=${{ vars.SOLQARYN_QA_DB_PORT }};Database=${{ vars.SOLQARYN_QA_DB_NAME }};User=${{ vars.SOLQARYN_QA_DB_USER }};Password=${{ secrets.SOLQARYN_QA_DB_PASSWORD }};SslMode=Required;AllowPublicKeyRetrieval=True;
+        run: |
+          set -euo pipefail
+          dotnet ef database update             --project src/Infrastructure/Solqaryn.Infrastructure.csproj             --startup-project src/API/Solqaryn.API.csproj             --context AppDbContext
+          echo "QA_SCHEMA_EF_UPDATE=PASS"
+
+      - name: Certify complete current migration set and required schema
+        shell: bash
+        run: |
+          set -euo pipefail
+          export MYSQL_PWD="$DB_PASSWORD"
+          mysql_cmd=(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED --batch --skip-column-names "$DB_NAME")
+
+          test "$("${mysql_cmd[@]}" -e "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='EmpresaConfiguraciones';")" = "1"
+          test "$("${mysql_cmd[@]}" -e "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='__EFMigrationsHistory';")" = "1"
+
+          expected="$RUNNER_TEMP/expected-migrations.txt"
+          actual="$RUNNER_TEMP/actual-migrations.txt"
+
+          find backend/src/Infrastructure/Migrations -maxdepth 1 -type f -name '*.cs'             ! -name '*.Designer.cs' ! -name 'AppDbContextModelSnapshot.cs'             -printf '%f\n'             | sed -E 's/[.]cs$//'             | grep -E '^[0-9]{14}_'             | sort > "$expected"
+
+          "${mysql_cmd[@]}" -e "SELECT MigrationId FROM __EFMigrationsHistory ORDER BY MigrationId;" | sort > "$actual"
+
+          missing="$RUNNER_TEMP/missing-current-migrations.txt"
+          historical="$RUNNER_TEMP/historical-retained-migrations.txt"
+          comm -23 "$expected" "$actual" > "$missing"
+          comm -13 "$expected" "$actual" > "$historical"
+
+          if [ -s "$missing" ]; then
+            echo "QA is missing versioned migrations from the current repository:" >&2
+            cat "$missing" >&2
+            exit 1
+          fi
+
+          latest_expected="$(tail -n 1 "$expected" | cut -d_ -f1)"
+          if [ -s "$historical" ] && awk -F_ -v max="$latest_expected" '$1 > max { exit 1 }' "$historical"; then
+            :
+          elif [ -s "$historical" ]; then
+            echo "QA contains an unknown migration newer than the current repository migration set." >&2
+            cat "$historical" >&2
+            exit 1
+          fi
+
+          base_tables="$("${mysql_cmd[@]}" -e "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE';")"
+          migrations="$("${mysql_cmd[@]}" -e "SELECT COUNT(*) FROM __EFMigrationsHistory;")"
+          current_migrations="$(wc -l < "$expected" | tr -d ' ')"
+          historical_migrations="$(wc -l < "$historical" | tr -d ' ')"
+          echo "QA_SCHEMA_HISTORY current=$current_migrations actual=$migrations historical_retained=$historical_migrations"
+          if [ -s "$historical" ]; then
+            echo "QA_SCHEMA_HISTORICAL_RETAINED_BEGIN"
+            cat "$historical"
+            echo "QA_SCHEMA_HISTORICAL_RETAINED_END"
+          fi
+          echo "QA_SCHEMA_CERT=PASS base_tables=$base_tables migrations=$migrations current_migrations=$current_migrations historical_retained=$historical_migrations EmpresaConfiguraciones=present"

@@ -1,0 +1,140 @@
+name: QA - Certificación viva
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [qa]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'render.yaml'
+      - '.github/workflows/qa-live-certification.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qa-live-certification
+  cancel-in-progress: true
+
+jobs:
+  live:
+    name: QA exact-head, aislamiento y smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment: QA
+    env:
+      FRONTEND: https://solqaryn-qa.vercel.app
+      BACKEND: https://solqaryn-api-qa.onrender.com
+      DB_HOST: ${{ vars.SOLQARYN_QA_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_QA_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_QA_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_QA_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_QA_DB_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Contrato QA obligatorio
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${GITHUB_REF_NAME}" = "qa"
+          test -n "$FRONTEND"
+          test -n "$BACKEND"
+          test "$DB_NAME" = "solqaryn_qa"
+          test "$DB_USER" = "solqaryn_qa_user"
+          test -n "$DB_HOST"
+          test -n "$DB_PORT"
+          test -n "$DB_PASSWORD"
+          case "$FRONTEND" in
+            https://solqaryn-qa.vercel.app) ;;
+            *) echo "FRONTEND QA no canónico: $FRONTEND" >&2; exit 1 ;;
+          esac
+          case "$BACKEND" in
+            https://solqaryn-api-qa*.onrender.com) ;;
+            *) echo "BACKEND QA no canónico: $BACKEND" >&2; exit 1 ;;
+          esac
+
+      - name: Instalar cliente MySQL
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+
+      - name: Esperar backend QA
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 90); do
+            code="$(curl --silent --show-error -o /tmp/qa-ready.json -w '%{http_code}' "$BACKEND/health/ready" || true)"
+            if [ "$code" = "200" ]; then
+              cat /tmp/qa-ready.json
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "Backend QA no quedó ready." >&2
+          cat /tmp/qa-ready.json 2>/dev/null || true
+          exit 1
+
+      - name: Esperar frontend QA
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 90); do
+            login="$(curl --silent --show-error -o /tmp/qa-login.html -w '%{http_code}' "$FRONTEND/login" || true)"
+            store="$(curl --silent --show-error -o /tmp/qa-store.html -w '%{http_code}' "$FRONTEND/tienda" || true)"
+            if [ "$login" = "200" ] && [ "$store" = "200" ]; then
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "Frontend QA no quedó disponible." >&2
+          exit 1
+
+      - name: Certificar proxy QA y noindex
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error -D /tmp/qa-proxy.headers -o /tmp/qa-proxy.json "$FRONTEND/api/health/ready"
+          tr -d '\r' < /tmp/qa-proxy.headers > /tmp/qa-proxy.normalized
+          grep -Eqi '^x-solqaryn-environment:[[:space:]]*QA$' /tmp/qa-proxy.normalized
+          jq -e '.database == "connected" or .data.database == "connected"' /tmp/qa-proxy.json >/dev/null
+
+          curl --fail --silent --show-error "$FRONTEND/robots.txt" -o /tmp/qa-robots.txt
+          grep -Eqi 'Disallow:[[:space:]]*/' /tmp/qa-robots.txt
+
+      - name: Certificar storefront QA
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error "$FRONTEND/api/tienda/bootstrap" -o /tmp/qa-bootstrap.json
+          jq -e '.success == true and ((.data.identidad.nombreComercial | type) == "string") and ((.data.identidad.nombreComercial | length) > 0)' /tmp/qa-bootstrap.json >/dev/null
+
+      - name: Certificar binding DB QA
+        shell: bash
+        run: |
+          set -euo pipefail
+          export MYSQL_PWD="$DB_PASSWORD"
+          actual="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e 'SELECT DATABASE();')"
+          test "$actual" = "solqaryn_qa"
+
+          marker="qa-cert-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          readback="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names <<SQL
+          CREATE TEMPORARY TABLE _solqaryn_qa_probe (id VARCHAR(128) PRIMARY KEY);
+          INSERT INTO _solqaryn_qa_probe(id) VALUES ('$marker');
+          SELECT id FROM _solqaryn_qa_probe WHERE id='$marker';
+          DROP TEMPORARY TABLE _solqaryn_qa_probe;
+          SQL
+          )"
+          test "$readback" = "$marker"
+
+      - name: Bloquear referencias DEV/PROD en identidad QA
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -Eqi 'solqaryn-api-dev|solqaryn-api-prod|solqaryn-dev\.vercel\.app|solqaryn-prod\.vercel\.app' /tmp/qa-proxy.headers
+          echo "QA_LIVE_CERTIFICATION=PASS"

@@ -37,11 +37,12 @@ function requestHeaders(req, environment, bodyBuffer) {
   return headers;
 }
 
-function responseHeaders(upstreamRes, res) {
+function responseHeaders(upstreamRes, res, environment) {
   for (const [name, value] of Object.entries(upstreamRes.headers || {})) {
     if (HOP_BY_HOP_HEADERS.has(name.toLowerCase()) || value === undefined) continue;
     res.setHeader(name, value);
   }
+  res.setHeader('x-solqaryn-environment', environment);
 }
 
 module.exports = function handler(req, res) {
@@ -63,7 +64,7 @@ module.exports = function handler(req, res) {
   const bodyBuffer = requestBodyBuffer(req);
   const upstreamReq = https.request(target, { method: req.method, headers: requestHeaders(req, binding.environment, bodyBuffer) }, upstreamRes => {
     res.statusCode = upstreamRes.statusCode || 502;
-    responseHeaders(upstreamRes, res);
+    responseHeaders(upstreamRes, res, binding.environment);
     upstreamRes.pipe(res);
   });
   upstreamReq.setTimeout(30000, () => upstreamReq.destroy(new Error('API upstream timeout')));

@@ -1,5 +1,6 @@
 const CANONICAL_API_UPSTREAMS = Object.freeze({
   DEV: 'https://solqaryn-api-dev-fxx8.onrender.com',
+  QA: 'https://solqaryn-api-qa.onrender.com',
   PROD: 'https://solqaryn-api-prod.onrender.com'
 });
 
@@ -8,6 +9,12 @@ const VERCEL_PROJECT_BINDINGS = Object.freeze({
     environment: 'DEV',
     apiUpstream: CANONICAL_API_UPSTREAMS.DEV,
     publicOrigin: 'https://solqaryn-dev.vercel.app',
+    seoIndexingEnabled: false
+  }),
+  'prj_n5STx5F6VboqXd1oLUMR8AvZZtml': Object.freeze({
+    environment: 'QA',
+    apiUpstream: CANONICAL_API_UPSTREAMS.QA,
+    publicOrigin: 'https://solqaryn-qa.vercel.app',
     seoIndexingEnabled: false
   }),
   'prj_si3ORH7lBhM4aSAYfYvXsbJT2lHA': Object.freeze({
@@ -44,7 +51,7 @@ function validateOptionalOverride(env, key, expected, normalizer = value => Stri
 
 function resolveExplicitBinding(env) {
   const environment = String(env.SOLQARYN_ENV || '').trim().toUpperCase();
-  if (!Object.hasOwn(CANONICAL_API_UPSTREAMS, environment)) throw new Error('SOLQARYN_ENV debe ser DEV o PROD.');
+  if (!Object.hasOwn(CANONICAL_API_UPSTREAMS, environment)) throw new Error('SOLQARYN_ENV debe ser DEV, QA o PROD.');
   const apiUpstream = normalizeHttpsOrigin(env.API_UPSTREAM, 'API_UPSTREAM');
   if (apiUpstream !== CANONICAL_API_UPSTREAMS[environment]) throw new Error('API_UPSTREAM no coincide con el entorno SOLQARYN declarado.');
   const publicOrigin = normalizeHttpsOrigin(env.PUBLIC_ORIGIN, 'PUBLIC_ORIGIN');

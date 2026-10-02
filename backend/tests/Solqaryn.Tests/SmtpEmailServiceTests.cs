@@ -60,6 +60,32 @@ public class SmtpEmailServiceTests
     }
 
     [Fact]
+    public void ObtenerEstadoConfiguracion_Usa_Defaults_Seguros_Sin_Variables_Legacy_Render()
+    {
+        var service = CrearServicio(new Dictionary<string, string?>
+        {
+            ["Smtp:Host"] = "smtp-mail.outlook.com",
+            ["Smtp:Port"] = "587",
+            ["Smtp:UsuarioSmtp"] = "solqaryn.platform@outlook.com",
+            ["Smtp:OAuth2ClientId"] = "00000000-0000-0000-0000-000000000001",
+            ["Smtp:OAuth2RefreshToken"] = "refresh-token-de-prueba",
+            ["Smtp:NombreRemitente"] = "SOLQARYN DEV",
+            ["Smtp:TimeoutSeconds"] = "60",
+            ["Smtp:MaxAttempts"] = "3",
+            ["Smtp:RetryBaseDelayMilliseconds"] = "500"
+        });
+
+        var estado = service.ObtenerEstadoConfiguracion();
+
+        Assert.True(estado.Configurado, estado.Mensaje);
+        Assert.True(estado.UsaTls);
+        Assert.True(estado.RequiereAutenticacion);
+        Assert.Equal("STARTTLS obligatorio", estado.ModoSeguridad);
+        Assert.Equal("so***@outlook.com", estado.RemitenteEnmascarado);
+        Assert.Equal(3, estado.MaximoIntentos);
+    }
+
+    [Fact]
     public void ObtenerEstadoConfiguracion_OAuth2_Requiere_RefreshToken()
     {
         var service = CrearServicio(new Dictionary<string, string?>

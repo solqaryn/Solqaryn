@@ -1,3 +1,90 @@
+## 2026-10-02 — Smoke QA alineado al contrato storefront vigente
+
+- La certificación viva QA aún esperaba `data.nombreComercial`, forma previa al bootstrap tenant-aware actual.
+- El contrato vivo de `GET /tienda/bootstrap` expone la identidad bajo `data.identidad.nombreComercial`; el gate se actualiza a esa ruta sin cambiar API ni datos.
+- El cambio evita un falso negativo después de promover la build QA con attestation `x-solqaryn-environment`.
+- Sin cambios en main/PROD, secretos, grants ni datos.
+
+## 2026-10-02 — Certificación QA preserva historial EF válido
+
+- El recovery QA confirmó backup cifrado, 137 tablas, 107 filas de historial EF y cero migraciones pendientes; no fue necesario aplicar migraciones nuevas.
+- El gate anterior exigía igualdad byte-a-byte entre archivos de migración actuales e historial persistido, lo que rechazaba 18 IDs históricos legítimos ya ejecutados cuyos archivos fueron retirados del árbol vigente.
+- El gate ahora falla si falta cualquier migración versionada actual y también rechaza IDs históricos con timestamp posterior al conjunto vigente, pero preserva filas históricas anteriores sin borrar ni reescribir `__EFMigrationsHistory`.
+- No se modifican datos de negocio, grants, secretos ni PROD; el cambio se promueve primero DEV → QA y se recertifica exact-head.
+
+## 2026-10-02 — Recovery de promoción controlada DEV → QA
+
+- El PR #3512 fue integrado mediante merge normal para preservar los fixes propios de QA y absorber el baseline DEV vigente; tras el merge, QA quedó `behind_by=0` respecto de DEV.
+- La certificación post-merge detectó dos defectos de infraestructura de prueba, no de datos ni negocio: `mysqldump` intentaba `FLUSH TABLES` bajo el usuario mínimo QA y el smoke esperaba una attestation HTTP que el proxy sólo enviaba hacia el upstream.
+- El backup QA fija `--set-gtid-purged=OFF` para evitar exigir privilegios globales `RELOAD/FLUSH_TABLES`; se mantiene el principio de mínimo privilegio y no se amplían grants de `solqaryn_qa_user`.
+- El proxy Vercel devuelve ahora `x-solqaryn-environment` con el entorno resuelto por `VERCEL_PROJECT_ID`, y el validador de routing exige esa attestation canónica.
+- Este recovery se publica primero en `dev`; `main`/PROD aún no se modifica hasta que QA complete nuevamente todos los gates.
+
+## 2026-10-01 — Validación post-limpieza SMTP DEV y corrección de fallback de logo
+
+- Readback Render DEV posterior a la limpieza manual: el nuevo deployment ya no detecta las siete claves SMTP legacy retiradas; el único extra restante es `AppSettings__LogoPublicUrl` (29 observadas vs 28 canónicas), por lo que el guard abortó el deployment nuevo sin sustituir la instancia sana.
+- Se confirmó en código que `Smtp__PasswordSmtp`, `Smtp__OAuth2TokenEndpoint`, `Smtp__OAuth2Scope`, `Smtp__UsarSsl`, `Smtp__RequiereAutenticacion`, `Smtp__CorreoRemitente` y `Smtp__CorreoRespuesta` no son requeridas por Render: OAuth2 usa refresh token/client id, endpoint/scope son constantes seguras, TLS/autenticación default a true y remitente/Reply-To derivan de `Smtp__UsuarioSmtp`.
+- Añadida prueba dirigida que certifica `SmtpEmailService` con únicamente las nueve claves SMTP canónicas desplegadas.
+- La auditoría de facturas reveló que `AppSettings__LogoPublicUrl` aún era leído como fallback y que, sin logo, QuestPDF mostraba un monograma fijo de cliente. Se eliminó ese fallback global: la autoridad pasa a `EmpresaConfiguracion.LogoUrl` y la ausencia de logo usa monograma derivado de `EmpresaNombre`.
+- El bootstrap vivo DEV y PROD devuelve actualmente `logoUrl=null`; por tanto, el fallback tenant-derived es necesario para evitar branding fijo de un cliente.
+- Durante la misma verificación viva, QA reveló una deuda independiente de esquema: `solqaryn_qa.EmpresaConfiguraciones` no existe y `/api/tienda/bootstrap` devuelve 500. Queda abierto recuperar el esquema QA antes de certificar los tres entornos.
+- No se tocaron datos PROD en este changeset.
+
+## 2026-10-01 — Hardening y certificación estructural de infraestructura DEV/QA/PROD
+
+- Añadido `RenderEnvironmentContractGuard`: el backend Render exige exactamente las 28 claves canónicas, valores requeridos no vacíos y constantes públicas coherentes; registra sólo conteo/fingerprints no sensibles.
+- `EnvironmentDatabaseGuard` ahora cubre Development/Staging/Production y exige el endpoint Aiven corporativo `solqaryn-mysql-solqaryn.h.aivencloud.com:14402` con TLS requerido, además de base/usuario exclusivos.
+- Añadido workflow reutilizable `Environment infrastructure parity` para DEV/QA/PROD: 4 variables DB + 3 secretos requeridos, binding real MySQL, cross-access DENY, mínimo privilegio, token Aiven y passphrase de backup.
+- DEV: run `36954462879` certificó GitHub/Aiven; el deploy Render `dep-davh89id0e5s73800o9g` falló cerrado al detectar ocho variables legacy extra y conservó la instancia sana anterior.
+- QA: run `36954576441` certificó GitHub/Aiven; Render `dep-davh760u01pc73eomtg0` quedó LIVE con 28 claves y readiness conectado; CI QA `36954576416` terminó SUCCESS.
+- QA Vercel sigue bloqueado únicamente en control-plane: el deployment nuevo está READY pero el alias canónico permanece en un deployment anterior porque el proyecto aún no promueve `qa` como Production Branch.
+- La evidencia viva y los bloqueos externos se registran en `docs/evidencias/INFRA_PARITY_DEV_QA_PROD_2026-10-01.md`.
+- No se exponen valores secretos ni se ejecutan migraciones/datos productivos en este changeset.
+
+## 2026-10-01 — Cloudinary QA certificado y probe temporal retirado
+
+- Render QA desplegó `4d01204d0303875437edb97a7500ef3312147e77` como `dep-davgkfpsrm7s73bu69r0` y quedó `LIVE`.
+- Certificación runtime: `CLOUDINARY_QA_CERT=PASS` con cloud `riyrzmob`, prefijo `solqaryn_qa`, autenticación API real, upload bajo namespace QA y cleanup inmediato del activo temporal.
+- Evidencia persistida en `docs/evidencias/CLOUDINARY_QA_CERTIFICACION_2026-10-01.md`.
+- El probe temporal fue retirado de `dev` inmediatamente después de capturar la evidencia; no queda hook diagnóstico permanente.
+- No se modificaron `main`, PROD, datos productivos, DNS, certificados ni activos DEV/PROD.
+
+## 2026-10-01 — Cierre operativo GitHub + Aiven QA
+
+- GitHub Environment `QA` quedó restringido a la rama `qa`, con protection rule activa y sin bypass administrativo.
+- Variables QA canónicas: host, port, database y user de `solqaryn_qa`/`solqaryn_qa_user`.
+- Secretos QA provisionados: `SOLQARYN_QA_DB_PASSWORD`, `SOLQARYN_AIVEN_TOKEN` y `SOLQARYN_QA_BACKUP_PASSPHRASE`.
+- El token Aiven QA queda reservado exclusivamente a control-plane/GitHub Actions; no se expone al backend Render.
+- Aiven quedó certificado con mínimo privilegio por usuario: DEV sólo `solqaryn_dev.*`, QA sólo `solqaryn_qa.*`, PROD sólo `solqaryn_prod.*`.
+- Sin cambios en `main`, datos PROD, DNS, certificados ni servicios pagos.
+
+## 2026-10-01 — Cierre de aislamiento Aiven QA y contrato GitHub Environments
+
+- Certificado con MySQL real que `solqaryn_dev_user` conserva únicamente `USAGE ON *.*` + `ALL PRIVILEGES ON solqaryn_dev.*`; run DEV `36932283653` en verde y sin acceso a QA/PROD.
+- Auditoría autoritativa con `avnadmin` confirmó que `solqaryn_prod_user` conserva únicamente `USAGE ON *.*` + `ALL PRIVILEGES ON solqaryn_prod.*`; no tiene grants sobre DEV/QA.
+- `solqaryn_qa_user` fue recreado preservando su password vigente, con `mysql_grants=[]`, y recibió después únicamente `ALL PRIVILEGES ON solqaryn_qa.*`; run `36932132076` = SUCCESS y `AIVEN_QA_LEAST_PRIVILEGE=PASS`.
+- QA ya no conserva `WITH GRANT OPTION`, `ROLE_ADMIN`, `REPLICATION_APPLIER` ni grants cruzados hacia `solqaryn_dev`/`solqaryn_prod`.
+- Los workflows permanentes de aislamiento DEV/QA ahora fallan si reaparecen grants administrativos o referencias a otra base.
+- Añadido `docs/GITHUB_ENVIRONMENT_CONTRACT.md`: QA usa exactamente cuatro variables DB y un único secreto DB; no se duplican Aiven token, backup passphrase ni URLs sin consumidor real.
+- La regla de deployment esperada para QA queda restringida exclusivamente a la rama `qa`.
+- Sin cambios en `main`, datos PROD, DNS, certificados ni servicios pagos.
+
+## 2026-10-01 — Paridad estructural del GitHub Environment QA
+
+- `qa-live-certification.yml` dejó de requerir variables redundantes de URL; los endpoints canónicos QA quedan fijados en el workflow.
+- El Environment `QA` vuelve al contrato estructural de cuatro variables DB: host, port, name y user, más el password como secret.
+- La regla de protección esperada para QA queda ligada exclusivamente a la rama `qa`; no se autoriza cruce DEV/QA/PROD.
+- Sin cambios en `main`, PROD, datos productivos, DNS, certificados ni servicios pagos.
+
+## 2026-10-01 — Fundación QA persistente y aislamiento DEV/QA/PROD
+
+- Incorporado QA persistente al contrato técnico: rama `qa`, Vercel `solqaryn-qa`, Render `solqaryn-api-qa`, base/usuario esperados `solqaryn_qa`/`solqaryn_qa_user` y prefijo Cloudinary `solqaryn_qa`.
+- Añadido binding Vercel por `VERCEL_PROJECT_ID` para QA, guard fail-closed de Render `Staging`, CI/certificación viva QA y guard de promoción `dev -> qa -> main`.
+- Corregida la ruta Dockerfile declarativa de Render QA a `./backend/Dockerfile` para mantener paridad con DEV/PROD.
+- Reconciliados `PROJECT_CONTEXT.md`, `docs/ENTORNOS_DEV_PROD.md` y `docs/RENDER_ENVIRONMENT_CONTRACT.md` con la topología de tres entornos.
+- En Render QA se aplicaron únicamente variables no sensibles del entorno; el servicio permanece fail-closed hasta provisionar/conectar sus secretos y recursos QA propios.
+- Sin cambios en `main`, configuración PROD, datos productivos, DNS, certificados ni servicios pagos.
+
 ## 2026-09-30 — Fase 4: reconciliación final de documentación de entornos
 
 - Corregidas referencias stale en `docs/ENTORNOS_DEV_PROD.md`: Vercel PROD ya existe, la migración histórica PROD ya está cerrada y el custom domain continúa aplazado.
