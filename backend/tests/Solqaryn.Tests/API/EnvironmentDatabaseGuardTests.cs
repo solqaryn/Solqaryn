@@ -11,7 +11,7 @@ public sealed class EnvironmentDatabaseGuardTests
     [InlineData("Production", "solqaryn_prod", "solqaryn_prod_user")]
     public void ValidateRenderBinding_AceptaBindingCanonico(string environment, string database, string user)
     {
-        var connection = $"Server=db.example;Port=3306;Database={database};User ID={user};Password=test;SslMode=Required;";
+        var connection = $"Server=solqaryn-mysql-solqaryn.h.aivencloud.com;Port=14402;Database={database};User ID={user};Password=test;SslMode=Required;";
         EnvironmentDatabaseGuard.ValidateRenderBinding(environment, connection);
     }
 
@@ -27,7 +27,7 @@ public sealed class EnvironmentDatabaseGuardTests
     [InlineData("Production", "solqaryn_qa", "solqaryn_qa_user")]
     public void ValidateRenderBinding_RechazaBaseOUsuarioCruzado(string environment, string database, string user)
     {
-        var connection = $"Server=db.example;Port=3306;Database={database};User ID={user};Password=test;SslMode=Required;";
+        var connection = $"Server=solqaryn-mysql-solqaryn.h.aivencloud.com;Port=14402;Database={database};User ID={user};Password=test;SslMode=Required;";
         Assert.Throws<InvalidOperationException>(() =>
             EnvironmentDatabaseGuard.ValidateRenderBinding(environment, connection));
     }
@@ -39,15 +39,25 @@ public sealed class EnvironmentDatabaseGuardTests
     [InlineData("PROD")]
     public void ValidateRenderBinding_RechazaEntornoAmbiguoONoCanonico(string environment)
     {
-        const string connection = "Server=db.example;Port=3306;Database=solqaryn_dev;User ID=solqaryn_dev_user;Password=test;SslMode=Required;";
+        const string connection = "Server=solqaryn-mysql-solqaryn.h.aivencloud.com;Port=14402;Database=solqaryn_dev;User ID=solqaryn_dev_user;Password=test;SslMode=Required;";
         Assert.Throws<InvalidOperationException>(() =>
             EnvironmentDatabaseGuard.ValidateRenderBinding(environment, connection));
+    }
+
+    [Theory]
+    [InlineData("Server=otro.example;Port=14402;Database=solqaryn_dev;User ID=solqaryn_dev_user;Password=test;SslMode=Required;")]
+    [InlineData("Server=solqaryn-mysql-solqaryn.h.aivencloud.com;Port=3306;Database=solqaryn_dev;User ID=solqaryn_dev_user;Password=test;SslMode=Required;")]
+    [InlineData("Server=solqaryn-mysql-solqaryn.h.aivencloud.com;Port=14402;Database=solqaryn_dev;User ID=solqaryn_dev_user;Password=test;SslMode=None;")]
+    public void ValidateRenderBinding_RechazaEndpointOTlsNoCanonico(string connection)
+    {
+        Assert.Throws<InvalidOperationException>(() =>
+            EnvironmentDatabaseGuard.ValidateRenderBinding("Development", connection));
     }
 
     [Fact]
     public void ValidateRenderBinding_RechazaCadenaSinBaseCanonica()
     {
-        const string connection = "Server=db.example;Port=3306;User ID=solqaryn_dev_user;Password=test;SslMode=Required;";
+        const string connection = "Server=solqaryn-mysql-solqaryn.h.aivencloud.com;Port=14402;User ID=solqaryn_dev_user;Password=test;SslMode=Required;";
         Assert.Throws<InvalidOperationException>(() =>
             EnvironmentDatabaseGuard.ValidateRenderBinding("Development", connection));
     }
