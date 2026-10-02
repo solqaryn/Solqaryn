@@ -206,12 +206,34 @@ for (const abs of walk(join(root, "backend"))) {
 }
 
 const legacyOperationalPatterns = [
-  new RegExp(["inventory", "(?:app|api)"].join("[\\s_-]*"), "i"),
+  new RegExp(["inven", "tory"].join(""), "i"),
   new RegExp(["vari", "app"].join("[\\s_-]*"), "i"),
   new RegExp(["vari", "store", "(?:hn)?"].join("[\\s_-]*"), "i"),
   new RegExp(["jmejia", "31"].join(""), "i"),
   new RegExp(["javiermejia", "3112", "@gmail\\.com"].join(""), "i")
 ];
+
+const currentStateIdentityFiles = [
+  "AGENTS.md",
+  "PROJECT_CONTEXT.md",
+  "PROJECT_INDEX.md",
+  "ARCHITECTURE.md",
+  "README.md",
+  "CONTRIBUTING.md",
+  "docs/PROJECT_SCOPE_LOCK.md",
+  "docs/VAEP_AUTHORITY.md",
+  "docs/ENTORNOS_DEV_PROD.md",
+  "docs/RENDER_ENVIRONMENT_CONTRACT.md",
+  "docs/DETALLES_PENDIENTES.md",
+];
+
+for (const rel of currentStateIdentityFiles) {
+  if (!existsSync(join(root, rel))) continue;
+  const source = read(rel);
+  if (legacyOperationalPatterns.some(pattern => pattern.test(source))) {
+    errors.push("retired project identity remains in current-state document: " + rel);
+  }
+}
 
 const operationalRoots = ["backend", "frontend", "scripts", ".github/workflows", ".github/scripts", ".githooks", ".agents"];
 for (const rootRel of operationalRoots) {
