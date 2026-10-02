@@ -5,6 +5,7 @@ on:
     branches: [dev, qa, main]
     paths:
       - .github/workflows/environment-infra-parity.yml
+      - .github/actions/environment-infra-parity/**
   workflow_dispatch:
 
 permissions:
