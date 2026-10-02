@@ -10,7 +10,7 @@ Estado operativo vigente. Este documento reemplaza referencias históricas de in
 - Rama QA: `qa`.
 - Rama PROD: `main`.
 - Cuenta corporativa operativa: `solqaryn.platform@outlook.com`.
-- VariStoreHN es el primer tenant/cliente; no es la identidad de la plataforma.
+- Los tenants/clientes no forman parte de la identidad técnica de la plataforma.
 
 ## GitHub
 
@@ -44,7 +44,7 @@ El contrato de variables vive en `docs/RENDER_ENVIRONMENT_CONTRACT.md` y exige p
 - DEV puede aplicar migraciones de la app según política explícita.
 - QA y PROD no aplican migraciones automáticamente; las migraciones llegan mediante promoción controlada.
 
-La migración histórica de VariStoreHN hacia `solqaryn_prod` ya fue ejecutada y certificada. Una futura promoción de código no repite esa migración ni usa DEV como fuente de datos; cualquier nueva operación de datos productivos requiere autorización explícita.
+La migración histórica del tenant inicial hacia `solqaryn_prod` ya fue ejecutada y certificada. Una futura promoción de código no repite esa migración ni usa DEV como fuente de datos; cualquier nueva operación de datos productivos requiere autorización explícita.
 
 ## Cloudinary
 
@@ -98,7 +98,7 @@ El transporte SMTP real permanece aplazado/no bloqueante mientras la conectivida
 
 ## Legado
 
-El único origen heredado autorizado fue el **respaldo verificado de la base histórica de VariStoreHN**, utilizado durante la migración ya cerrada. No son dependencias de SOLQARYN los despliegues, proyectos, cuentas, dominios, repositorios, variables o servicios personales antiguos, y no se reactivan como fallback.
+El único origen heredado autorizado fue el **respaldo verificado de la base histórica del tenant inicial**, utilizado durante la migración ya cerrada. No son dependencias de SOLQARYN los despliegues, proyectos, cuentas, dominios, repositorios, variables o servicios personales antiguos, y no se reactivan como fallback.
 
 ## Promoción futura
 
