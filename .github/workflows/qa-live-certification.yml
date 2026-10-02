@@ -112,7 +112,7 @@ jobs:
         run: |
           set -euo pipefail
           curl --fail --silent --show-error "$FRONTEND/api/tienda/bootstrap" -o /tmp/qa-bootstrap.json
-          jq -e '.success == true and ((.data.nombreComercial | type) == "string") and ((.data.nombreComercial | length) > 0)' /tmp/qa-bootstrap.json >/dev/null
+          jq -e '.success == true and ((.data.identidad.nombreComercial | type) == "string") and ((.data.identidad.nombreComercial | length) > 0)' /tmp/qa-bootstrap.json >/dev/null
 
       - name: Certificar binding DB QA
         shell: bash
