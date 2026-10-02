@@ -353,7 +353,7 @@ export function telefonoWhatsapp(valor?: string): string {
   return normalizarTelefonoWhatsApp(valor);
 }
 
-/** Illustrative inventory only. Never written to the database or sent to a checkout. */
+/** Illustrative stock only. Never written to the database or sent to a checkout. */
 export function crearCatalogoEjemplo(): ProductoTienda[] {
   const ejemplos: Array<[string, string, number, number, string, string]> = [
     ['Laptop Pro 14', 'Computadoras', 18490, 8, 'laptop', 'Tu espacio de trabajo, donde quieras. Pantalla de 14 pulgadas, SSD y diseño ligero.'],
