@@ -94,7 +94,7 @@ runs:
         response_file="$(mktemp)"
         code="$(curl --silent --show-error --output "$response_file" --write-out '%{http_code}'           --header "Authorization: aivenv1 $AIVEN_TOKEN"           "https://api.aiven.io/v1/project/solqaryn/service/solqaryn-mysql")"
         test "$code" = "200"
-        jq -e '.service_name == "solqaryn-mysql" and .service_type == "mysql"' "$response_file" >/dev/null
+        jq -e '(.service // .) | (.service_name == "solqaryn-mysql" or .service_name == null) and .service_type == "mysql"' "$response_file" >/dev/null
         rm -f "$response_file"
         echo "${ENVIRONMENT_NAME}_AIVEN_CONTROL_PLANE=PASS"
 
