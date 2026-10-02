@@ -1,3 +1,10 @@
+## 2026-10-01 — Certificación runtime Cloudinary QA (temporal)
+
+- Se añadió un probe temporal exclusivamente para Render `Staging` que valida fail-closed el cloud `riyrzmob`, el prefijo `solqaryn_qa` y la autenticación real de la API key/secret configurados en Render QA.
+- El probe crea un PNG mínimo únicamente bajo `solqaryn_qa/certification/runtime/`, comprueba el PublicId y elimina el activo inmediatamente; cualquier fallo de autenticación, prefijo, upload o cleanup aborta el deploy.
+- DEV y PROD quedan fuera del probe por condición explícita de entorno; no se modifican `main`, datos PROD, DNS, certificados ni recursos productivos.
+- El probe se retirará inmediatamente después de obtener evidencia `CLOUDINARY_QA_CERT=PASS`.
+
 ## 2026-10-01 — Cierre operativo GitHub + Aiven QA
 
 - GitHub Environment `QA` quedó restringido a la rama `qa`, con protection rule activa y sin bypass administrativo.
