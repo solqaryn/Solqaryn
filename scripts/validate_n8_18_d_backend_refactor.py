@@ -50,7 +50,7 @@ expected_paths = {
 entries = arch03.get("paths", [])
 actual_paths = {item.get("path") for item in entries}
 if actual_paths != expected_paths:
-    fail("ARCH-03 path inventory differs from the N8.18.B scope")
+    fail("ARCH-03 path list differs from the N8.18.B scope")
 
 allowed_dispositions = {"DOMAIN_SLICE_KEEP", "KEEP_PENDING_PER_FILE_MOVE_PROOF"}
 for item in entries:
@@ -72,7 +72,7 @@ expected_files = {
     "OperacionBancariaService.cs",
 }
 if required_files != expected_files:
-    fail("Bancos required-file inventory drift")
+    fail("Bancos required-file list drift")
 for name in expected_files:
     if not (ROOT / "backend/src/Application/Bancos" / name).exists():
         fail(f"Bancos domain file missing: {name}")
