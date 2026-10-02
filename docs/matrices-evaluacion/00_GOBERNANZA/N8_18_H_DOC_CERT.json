@@ -51,7 +51,7 @@
         "scope": "shell/navigation/routes/responsive/accessibility"
       },
       {
-        "matrix_id": "VAEP-MX::INVENTORY_LOGISTICS::SUCURSALES",
+        "matrix_id": "VAEP-MX::INVENTARIO_LOGISTICA::SUCURSALES",
         "evidence": [
           "ERP-N1.1 run 35058750310 success on exact functional candidate",
           "N8.18.F RBAC/audit review PASS",
@@ -60,7 +60,7 @@
         "scope": "API/RBAC/auditoria/MySQL/Angular/E2E"
       },
       {
-        "matrix_id": "VAEP-MX::INVENTORY_LOGISTICS::ALMACENES",
+        "matrix_id": "VAEP-MX::INVENTARIO_LOGISTICA::ALMACENES",
         "evidence": [
           "ERP-N1.2 run 35058750263 success on exact functional candidate",
           "N8.18.F tenant/RBAC/audit review PASS",
@@ -87,7 +87,7 @@
   },
   "documentation_reconciliation": {
     "history_preserved": true,
-    "historical_catalog_lifecycle_snapshot": "N8.16.H inventory-complete section remains historical evidence and is not rewritten.",
+    "historical_catalog_lifecycle_snapshot": "N8.16.H inventario-complete section remains historical evidence and is not rewritten.",
     "historical_n8_17_lifecycle_snapshot": "N8.17.H SPEC_COMPLETE publication remains historical evidence and is superseded for current lifecycle status by this N8.18.H artifact.",
     "current_lifecycle_authority_within_n8_18": "docs/matrices-evaluacion/00_GOBERNANZA/N8_18_H_DOC_CERT.json",
     "files_deleted": 0,
