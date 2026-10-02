@@ -89,15 +89,15 @@
       "env_value_read_primitive_present": false,
       "env_write_primitive_present_but_not_invoked": "update_environment_variables",
       "secret_values_exposed": 0,
-      "note": "The current Render connector exposes service/deploy/log/metrics reads and an environment-variable write primitive, but no read-only sanitized environment-key-name inventory primitive. get_service returns service metadata only. No environment-variable write or secret read was attempted."
+      "note": "The current Render connector exposes service/deploy/log/metrics reads and an environment-variable write primitive, but no read-only sanitized environment-key-name inventario primitive. get_service returns service metadata only. No environment-variable write or secret read was attempted."
     }
   },
   "blocker": {
-    "cause": "FRESH_SANITIZED_RENDER_ENV_KEY_NAME_INVENTORY_UNAVAILABLE_VIA_READ_ONLY_CONNECTOR",
-    "why_causal": "N8.22.F requires fresh DEV/PROD secret-name/config parity classification and UNKNOWN forbids LISTO. A fresh name-only inventory cannot be obtained with the currently exposed read-only Render primitives, while using the write primitive as a probe would violate safety and authorization.",
-    "required_resolution": "Enable a read-only sanitized environment-variable key-name inventory for Render services srv-d9jblq7avr4c73c74jng and srv-d983qti8qa3s73eqqne0, or owner-supply a fresh sanitized name-only inventory. Never expose values."
+    "cause": "FRESH_SANITIZED_RENDER_ENV_KEY_NAME_inventario_UNAVAILABLE_VIA_READ_ONLY_CONNECTOR",
+    "why_causal": "N8.22.F requires fresh DEV/PROD secret-name/config parity classification and UNKNOWN forbids LISTO. A fresh name-only inventario cannot be obtained with the currently exposed read-only Render primitives, while using the write primitive as a probe would violate safety and authorization.",
+    "required_resolution": "Enable a read-only sanitized environment-variable key-name inventario for Render services srv-d9jblq7avr4c73c74jng and srv-d983qti8qa3s73eqqne0, or owner-supply a fresh sanitized name-only inventario. Never expose values."
   },
-  "next_action": "OBTAIN_FRESH_SANITIZED_RENDER_ENV_KEY_NAME_INVENTORY_FOR_DEV_AND_PROD_READ_ONLY__VALUES_NEVER_EXPOSED__COMPARE_WITH_CURRENT_SOURCE__IF_UNKNOWN_0_THEN_REVIEW_FIRST_RECEIPT_READBACK__DO_NOT_ADVANCE_N8.22.G",
+  "next_action": "OBTAIN_FRESH_SANITIZED_RENDER_ENV_KEY_NAME_inventario_FOR_DEV_AND_PROD_READ_ONLY__VALUES_NEVER_EXPOSED__COMPARE_WITH_CURRENT_SOURCE__IF_UNKNOWN_0_THEN_REVIEW_FIRST_RECEIPT_READBACK__DO_NOT_ADVANCE_N8.22.G",
   "chain": {
     "next_parent": "N8.22.G",
     "advanced": false

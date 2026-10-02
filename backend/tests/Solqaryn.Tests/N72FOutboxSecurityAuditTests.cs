@@ -62,7 +62,7 @@ public sealed class N72FOutboxSecurityAuditTests
     {
         var mensaje = MensajeOutbox.Crear(
             7,
-            "inventory.changed",
+            "inventario.cambiado",
             payload,
             idempotencyKey,
             creadoEnUtc: AhoraUtc.AddMinutes(-1));

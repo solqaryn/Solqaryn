@@ -25,7 +25,7 @@
     "currentHeadNature": "EVIDENCE_DISPATCH_CONTROL_PLANE_ONLY_SINCE_CAUSAL_FUNCTIONAL_HEAD",
     "controlPlaneHeadEquivalence": "ACCEPTED",
     "exactObservedTakeoverHeadDiagnosticRun34467940787": "SUCCESS",
-    "existingFocusedFinanceTests": "backend/tests/InventoryApp.Tests/FinanzasServiceTests.cs",
+    "existingFocusedFinanceTests": "backend/tests/Solqaryn.Tests/FinanzasServiceTests.cs",
     "additionalFunctionalGateRequired": false
   },
   "p0": 0,

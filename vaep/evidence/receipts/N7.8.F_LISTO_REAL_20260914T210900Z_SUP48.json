@@ -44,9 +44,9 @@
       "status": "completed",
       "conclusion": "success",
       "evidence": [
-        "dotnet restore InventoryApp.sln = success",
-        "dotnet build InventoryApp.sln --configuration Release --no-restore = success",
-        "dotnet test InventoryApp.sln --configuration Release --no-build --filter Category!=Integration = success"
+        "dotnet restore Solqaryn.sln = success",
+        "dotnet build Solqaryn.sln --configuration Release --no-restore = success",
+        "dotnet test Solqaryn.sln --configuration Release --no-build --filter Category!=Integration = success"
       ]
     }
   ],

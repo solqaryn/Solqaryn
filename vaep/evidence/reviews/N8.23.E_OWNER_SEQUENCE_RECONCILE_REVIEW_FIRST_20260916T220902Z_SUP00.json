@@ -5,7 +5,7 @@
   "reviewed_head": "2cfda5b6d06c8ab76d78384bdf8b8cb79e149d3d",
   "scope": "Vercel DEV project solqaryn-desarrollo only",
   "authority": "docs/VAEP_AUTHORITY.md",
-  "acceptance": "Execute frontend DEV CURRENT -> PREVIOUS_KNOWN_GOOD -> HEALTHY -> CURRENT -> HEALTHY using existing READY deployments, validate route/smoke, restore current, no productive varistorehn/main/PR2 changes.",
+  "acceptance": "Execute frontend DEV CURRENT -> PREVIOUS_KNOWN_GOOD -> HEALTHY -> CURRENT -> HEALTHY using existing READY deployments, validate route/smoke, restore current, no productive SOLQARYN/main/PR2 changes.",
   "evidence": {
     "owner_receipt": "vaep/evidence/receipts/N8.23.E_LISTO_20260916T215728Z_OWNER_VERIFIED.json",
     "owner_receipt_commit": "2cfda5b6d06c8ab76d78384bdf8b8cb79e149d3d",
@@ -34,7 +34,7 @@
     "CURRENT_RESTORED": "PASS",
     "CURRENT_HEALTH": "PASS",
     "NO_NEW_BUILD_SUBSTITUTE": "PASS",
-    "PRODUCTION_VARISTOREHN_TOUCHED": false,
+    "PRODUCTION_SOLQARYN_TOUCHED": false,
     "MAIN_TOUCHED": false,
     "PR2_TOUCHED": false,
     "SECRETS_EXPOSED": false

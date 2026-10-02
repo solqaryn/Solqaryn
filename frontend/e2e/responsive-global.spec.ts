@@ -6,7 +6,7 @@ import { join } from 'node:path';
  * This is the one route list used by the responsive regression gate.  Every
  * parameter is represented by a harmless, read-only fixture id.  The list is
  * deliberately kept here (rather than in a feature spec) so adding a route
- * without adding it to the gate fails the inventory check below.
+ * without adding it to the gate fails the route catalog check below.
  */
 export const RESPONSIVE_ROUTES = [
   '/', '/login',
@@ -79,7 +79,7 @@ function canonicalRoute(path: string): string {
   ) : part).join('/').replace(/^/, '/');
 }
 
-function sourceRouteInventory(): string[] {
+function sourceRouteCatalog(): string[] {
   const root = join(process.cwd(), 'src', 'app');
   const paths = routeSourceFiles(root).flatMap((path) => {
     const source = readFileSync(path, 'utf8');
@@ -87,7 +87,7 @@ function sourceRouteInventory(): string[] {
   });
   return [...new Set(paths.filter((path) => path && path !== '**').map((path) => {
     // The report center declares its children relative to the parent route.
-    // Keep that relationship explicit so the source inventory compares the
+    // Keep that relationship explicit so the source catalog compares the
     // same URL that the browser actually navigates to.
     const canonical = canonicalRoute(path);
     const reportChild = new Set([
@@ -261,7 +261,7 @@ test.describe('Responsive global — route sweep y regression gate', () => {
 
   test('inventario de rutas permanece cubierto por el gate', () => {
     const listed = new Set(RESPONSIVE_ROUTES.map(canonicalRoute));
-    const missing = sourceRouteInventory().filter((route) => !listed.has(route));
+    const missing = sourceRouteCatalog().filter((route) => !listed.has(route));
     expect(missing, `Rutas nuevas sin cobertura responsive: ${missing.join(', ')}`).toEqual([]);
   });
 

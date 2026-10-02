@@ -20,7 +20,7 @@
     "provider_project": "solqaryn-desarrollo",
     "required_sequence": "CURRENT->PREVIOUS_KNOWN_GOOD->HEALTHY->CURRENT->HEALTHY",
     "prefer_existing_ready_deployments": true,
-    "production_project_prohibited": "varistorehn",
+    "production_project_prohibited": "SOLQARYN",
     "main_allowed": false,
     "pr2_allowed": false,
     "dns_allowed": false,
@@ -58,7 +58,7 @@
       "current_deployment_id": "dpl_GAsApuet5Ec9VTQ5qDLKyHanTS65",
       "previous_known_good_deployment_id": "dpl_56XN9Lrt7tEtuBK2MW9LmQ7iTAtU",
       "source_receipt": "vaep/evidence/receipts/N8.23.A_LISTO_20260916T193552Z_SUP24.json",
-      "note": "Historical targets remain evidence; fresh deployment inventory supersedes them for current provider-state review."
+      "note": "Historical targets remain evidence; fresh deployment inventario supersedes them for current provider-state review."
     }
   },
   "exact_head_equivalence": {
@@ -105,7 +105,7 @@
   "guards": {
     "main_write": 0,
     "production_project_write": 0,
-    "varistorehn_write": 0,
+    "SOLQARYN_write": 0,
     "provider_mutation": 0,
     "secret_values_read": false,
     "secret_values_exposed": 0,

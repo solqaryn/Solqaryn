@@ -27,7 +27,7 @@
   "changes": {
     "files": [
       "backend/src/API/Controllers/FacturacionFiscalController.cs",
-      "backend/tests/InventoryApp.Tests/N710FFacturacionFiscalSecurityAuditTests.cs"
+      "backend/tests/Solqaryn.Tests/N710FFacturacionFiscalSecurityAuditTests.cs"
     ],
     "summary": "Add tenant-safe fiscal audit outcomes, fixed public failure contracts and directed RBAC/audit dependency regression coverage."
   },

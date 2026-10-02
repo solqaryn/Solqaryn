@@ -10,7 +10,7 @@
     "git_relationship":"Desarrollo ahead of main; main is merge-base",
     "ahead_by_commits":10254,
     "prod_backend_container_contract":"root Dockerfile copies backend API/Application/Domain/Infrastructure projects",
-    "dev_backend_container_contract":"backend/Dockerfile builds backend/InventoryApp.sln and publishes API with same layered solution"
+    "dev_backend_container_contract":"backend/Dockerfile builds backend/Solqaryn.sln and publishes API with same layered solution"
   },
   "matrix":[
     {

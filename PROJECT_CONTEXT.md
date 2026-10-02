@@ -13,7 +13,9 @@
 - Rama productiva: `main`; cualquier cambio requiere autorización explícita vigente.
 - GitHub Environments canónicos: `DEV`, `QA` y `PROD`.
 - Identidad corporativa operativa: `solqaryn.platform@outlook.com`.
-- VariStoreHN es una empresa cliente alojada en SOLQARYN; no define la identidad de la plataforma.
+- Las empresas cliente/tenants no definen la identidad técnica ni operativa de SOLQARYN.
+- El árbol versionado vigente aplica un gate repository-wide que rechaza cualquier identificador de plataforma retirado y la terminología inglesa heredada del dominio de inventario; no existe una identidad paralela a SOLQARYN.
+- `Inventario` permanece como módulo funcional ERP legítimo en español. Sus rutas administrativas canónicas viven bajo `/inventario/...`; no existe un wrapper `/app/inventario/...` ni un store/plataforma legacy separado.
 
 ## 2. Regla de estado vivo
 
@@ -105,10 +107,10 @@ Consultar `ARCHITECTURE.md` para cambios estructurales y `PROJECT_INDEX.md` para
 
 ## 5. Estado de legado y migración histórica
 
-- La migración histórica de VariStoreHN hacia PROD ya fue ejecutada y certificada; el respaldo verificado se utilizó como fuente controlada de migración.
+- La migración histórica del tenant inicial hacia PROD ya fue ejecutada y certificada; el respaldo verificado se utilizó como fuente controlada de migración.
 - Ningún deployment, proyecto, servicio, cuenta personal, repositorio, dominio o variable legacy se considera dependencia de SOLQARYN.
 - La infraestructura legacy retirada no se consulta ni se reactiva como fallback.
-- VariStoreHN permanece únicamente como **primer tenant/empresa cliente** dentro de SOLQARYN.
+- Los tenants/empresas cliente permanecen como datos de negocio dentro de SOLQARYN y nunca como identidad del código, rutas, proyectos o infraestructura.
 - El estado productivo vigente se sostiene exclusivamente sobre la infraestructura corporativa certificada de SOLQARYN.
 
 ## 6. Dominios funcionales
@@ -165,6 +167,6 @@ Contrato operativo y superficie administrativa:
 - Las cinco Supervisor antiguas que existían en la cuenta de Javier quedaron retiradas e inactivas; no deben reactivarse.
 - Las automatizaciones escriben estado únicamente en fuentes técnicas autorizadas y ejecutan readback; las vistas visibles no son superficies de escritura de runtime.
 - Los backups de Drive conservan historia únicamente como respaldo; no poseen autoridad operativa.
-- Queda prohibido usar `javiermejia3112@gmail.com`, `jmejia31/VariApp`, rama `Desarrollo` o infraestructura legacy como fallback.
+- Queda prohibido usar cuentas personales, repositorios retirados, ramas legacy o infraestructura legacy como fallback.
 
 La implementación existente puede ser reutilizada, extendida, refactorizada o reemplazada cuando el objetivo vigente lo requiera, siempre preservando seguridad, RBAC, tenancy, integridad de datos, trazabilidad, revisión, rollback y las autorizaciones explícitas requeridas para `main`/PROD.

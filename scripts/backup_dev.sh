@@ -164,7 +164,7 @@ if [[ -d "$REPO_ROOT/docs" ]]; then
   tar -C "$REPO_ROOT" -cf - docs | tar -C "$PAYLOAD/repository-docs" -xf -
 fi
 
-cat > "$PAYLOAD/ASSET_INVENTORY.md" <<'EOF'
+cat > "$PAYLOAD/ASSET_LISTADO.md" <<'EOF'
 # Inventario respaldado SOLQARYN
 
 - `database/mysql.sql`: estructura y datos MySQL de DEV.

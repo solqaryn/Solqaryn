@@ -132,7 +132,7 @@ public sealed class N72DOutboxRepositoryClaimTests
             await using var db = NewContext();
             var mensaje = MensajeOutbox.Crear(
                 empresaId ?? EmpresaId,
-                "inventory.changed",
+                "inventario.cambiado",
                 "{\"safe\":true}",
                 idempotencyKey,
                 creadoEnUtc: AhoraUtc.AddMinutes(-1));

@@ -40,7 +40,7 @@
     "directedRisksForSubsequentN8_11Stages": [
       "Verify ForwardedHeaders trust configuration under the real reverse proxy because KnownNetworks/KnownProxies are cleared while login throttling partitions by RemoteIpAddress.",
       "Enumerate AllowAnonymous/public token routes and verify intended scope, bounded lifetime/access and abuse controls.",
-      "Exercise horizontal/vertical tenant and RBAC negative tests on sensitive admin, finance and inventory surfaces.",
+      "Exercise horizontal/vertical tenant and RBAC negative tests on sensitive admin, finance and inventario surfaces.",
       "Exercise malformed/boundary upload cases including type/content mismatch, resource exhaustion and cross-tenant write prevention.",
       "Run current .NET/frontend dependency vulnerability scans and repair any causal high/critical exposure before final certification.",
       "Verify deployed headers/CORS/rate limiting and confirm no secret material leaks to logs/errors/evidence."

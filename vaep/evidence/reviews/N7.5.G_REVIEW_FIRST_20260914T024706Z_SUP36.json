@@ -14,7 +14,7 @@
   },
   "scope_reviewed": [
     "backend/src/API/Controllers/InboundWebhooksController.cs",
-    "backend/tests/InventoryApp.Tests/API/InboundWebhookIngressTests.cs"
+    "backend/tests/Solqaryn.Tests/API/InboundWebhookIngressTests.cs"
   ],
   "existing_positive_evidence": [
     "Invalid HMAC signature is rejected before persistence.",

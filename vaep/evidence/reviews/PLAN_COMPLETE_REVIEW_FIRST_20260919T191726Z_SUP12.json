@@ -31,9 +31,9 @@
     "product_delta_from_prior_certified_product_head_55eb58a1": {
       "files": [
         "backend/src/API/Controllers/WhatsAppController.cs",
-        "backend/tests/InventoryApp.Tests/API/Controllers/WhatsAppControllerTests.cs",
-        "frontend/e2e/varistorehn-fase2.spec.ts",
-        "frontend/scripts/validate-varistorehn-fase6.mjs"
+        "backend/tests/Solqaryn.Tests/API/Controllers/WhatsAppControllerTests.cs",
+        "frontend/e2e/SOLQARYN-fase2.spec.ts",
+        "frontend/scripts/validate-SOLQARYN-fase6.mjs"
       ],
       "product_additions": 108,
       "product_deletions": 11,

@@ -32,7 +32,7 @@ HEAD final probado antes del merge:
 
 ### Identidad/bootstrap
 
-`VaristorehnIdentidadService` conserva explícitamente `cargaEnVuelo$`.
+`SOLQARYNIdentidadService` conserva explícitamente `cargaEnVuelo$`.
 
 Reglas:
 
@@ -46,7 +46,7 @@ Esto evita que consumidores concurrentes creen solicitudes HTTP duplicadas.
 
 ### Categorías
 
-`VaristorehnService.obtenerCategorias(force = false)` conserva `categorias$` compartido:
+`SOLQARYNService.obtenerCategorias(force = false)` conserva `categorias$` compartido:
 
 - múltiples rutas reutilizan la misma respuesta;
 - usa `shareReplay({ bufferSize: 1, refCount: false })`;
@@ -134,13 +134,13 @@ La invalidación generacional evita enumerar/borrar manualmente todas las combin
 Sobre el HEAD final de la PR:
 
 - SOLQARYN Project Scope Lock: **SUCCESS**;
-- VariStoreHn Fase 1: **SUCCESS**;
-- VariStoreHn Fase 2: **SUCCESS**;
-- VariStoreHn Fase 3: **SUCCESS**;
-- VariStoreHn Fase 4: **SUCCESS**;
-- VariStoreHn Fase 5: **SUCCESS**;
-- VariStoreHn Fase 6: **SUCCESS**;
-- VariStoreHn Fase 7: **SUCCESS**;
+- SOLQARYN Fase 1: **SUCCESS**;
+- SOLQARYN Fase 2: **SUCCESS**;
+- SOLQARYN Fase 3: **SUCCESS**;
+- SOLQARYN Fase 4: **SUCCESS**;
+- SOLQARYN Fase 5: **SUCCESS**;
+- SOLQARYN Fase 6: **SUCCESS**;
+- SOLQARYN Fase 7: **SUCCESS**;
 - backend Release build: **SUCCESS**;
 - pruebas focales de destacados/bootstrap/cache: **SUCCESS**;
 - frontend lint/guardas: **SUCCESS**;
@@ -230,7 +230,7 @@ El preview del proyecto `solqaryn-dev`:
 
 `dpl_DoZuHfXdPM91YEbyFaVLJopSeqns`
 
-está **READY** y responde HTTP 200 en `/varistorehn`.
+está **READY** y responde HTTP 200 en `/SOLQARYN`.
 
 Commit del preview:
 

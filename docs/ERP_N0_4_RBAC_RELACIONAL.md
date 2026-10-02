@@ -99,7 +99,7 @@ Playwright: 107 passed / 0 failed / 0 skipped
 Archivo:
 
 ```text
-backend/tests/InventoryApp.Tests/N04CatalogoPermisosRuntimeTests.cs
+backend/tests/Solqaryn.Tests/N04CatalogoPermisosRuntimeTests.cs
 ```
 
 La guarda ya no se limita a Facturación. Mediante reflexión sobre el assembly API inspecciona controllers y acciones protegidas que declaran:
@@ -208,8 +208,8 @@ La aplicación de migración dejó de ejecutar `database update` sin target. El 
 
 ```bash
 dotnet ef database update 20260811174745_N0_4_ConsolidarRbacRelacional \
-  --project src/Infrastructure/InventoryApp.Infrastructure.csproj \
-  --startup-project src/API/InventoryApp.API.csproj \
+  --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+  --startup-project src/API/Solqaryn.API.csproj \
   --context AppDbContext
 ```
 
@@ -318,10 +318,10 @@ backend/src/Infrastructure/Services/SeedPermisoService.cs
 backend/src/Infrastructure/Migrations/20260811174745_N0_4_ConsolidarRbacRelacional.cs
 backend/scripts/preflight-erp-n0-4-rbac.sql
 backend/scripts/postdeploy-erp-n0-4-rbac.sql
-backend/tests/InventoryApp.Tests/N04RbacRelacionalTests.cs
-backend/tests/InventoryApp.Tests/N04AdministradorSemanticaTests.cs
-backend/tests/InventoryApp.Tests/N04CatalogoPermisosRuntimeTests.cs
-backend/tests/InventoryApp.Tests/SeedPermisoServiceTests.cs
+backend/tests/Solqaryn.Tests/N04RbacRelacionalTests.cs
+backend/tests/Solqaryn.Tests/N04AdministradorSemanticaTests.cs
+backend/tests/Solqaryn.Tests/N04CatalogoPermisosRuntimeTests.cs
+backend/tests/Solqaryn.Tests/SeedPermisoServiceTests.cs
 frontend/e2e/fase6-reportes-administrativos.spec.ts
 .github/workflows/erp-n0-4-ci.yml
 docs/ERP_N0_4_RBAC_RELACIONAL.md

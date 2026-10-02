@@ -4,7 +4,7 @@ Estado: `LISTO_REAL`.
 
 ## Checks automatizados
 
-El validador canónico es `scripts/validate_matrix_governance.py` y el gate dedicado es `.github/workflows/matrix-governance.yml` (`Desarrollo - Gobierno de matrices`). El contrato de regresión en backend es `backend/tests/InventoryApp.Tests/MatrixGovernanceContractTests.cs` y forma parte del gate causal de `Desarrollo`.
+El validador canónico es `scripts/validate_matrix_governance.py` y el gate dedicado es `.github/workflows/matrix-governance.yml` (`Desarrollo - Gobierno de matrices`). El contrato de regresión en backend es `backend/tests/Solqaryn.Tests/MatrixGovernanceContractTests.cs` y forma parte del gate causal de `Desarrollo`.
 
 Debe rechazar, al menos:
 

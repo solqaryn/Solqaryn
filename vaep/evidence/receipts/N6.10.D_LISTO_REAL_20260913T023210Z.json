@@ -15,7 +15,7 @@
     "backend/src/Infrastructure/Repositories/SuscripcionesSaaSRepository.cs",
     "backend/src/Application/Services/SuscripcionesSaaSService.cs",
     "backend/src/API/Controllers/SuscripcionesSaaSController.cs",
-    "backend/tests/InventoryApp.Tests/N610DFeatureFlagsApiTests.cs"
+    "backend/tests/Solqaryn.Tests/N610DFeatureFlagsApiTests.cs"
   ],
   "review_result": "PASS",
   "p0_count": 0,

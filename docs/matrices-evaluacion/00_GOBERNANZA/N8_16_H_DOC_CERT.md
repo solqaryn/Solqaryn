@@ -39,9 +39,9 @@ Se corrigió la ambigüedad entre materialidad y ciclo de vida:
 - `STATUS` del catálogo raíz expresa materialidad/descubrimiento (`MATERIAL | DISCOVERY_CONTAINER`);
 - `IMPLEMENTATION_STATUS` de la plantilla expresa estado de implementación/materialidad del contrato;
 - `MATRIX_STATE` expresa exclusivamente el ciclo canónico definido por la intervención:
-  `BASELINE_CREATED -> INVENTORY_COMPLETE -> SPEC_COMPLETE -> IMPLEMENTATION_REVIEWED -> CERTIFIED`.
+  `BASELINE_CREATED -> LEVANTAMIENTO_COMPLETO -> SPEC_COMPLETE -> IMPLEMENTATION_REVIEWED -> CERTIFIED`.
 
-En este corte, los **49/49 contract roots están fijados en `MATRIX_STATE = INVENTORY_COMPLETE`**. Ninguno se declara `CERTIFIED` prematuramente: N8.17 debe crear/completar las matrices materiales y los gates posteriores deben aportar evidencia antes de avanzar estados.
+En este corte, los **49/49 contract roots están fijados en `MATRIX_STATE = LEVANTAMIENTO_COMPLETO`**. Ninguno se declara `CERTIFIED` prematuramente: N8.17 debe crear/completar las matrices materiales y los gates posteriores deben aportar evidencia antes de avanzar estados.
 
 ## Conteos de cierre
 
@@ -55,7 +55,7 @@ En este corte, los **49/49 contract roots están fijados en `MATRIX_STATE = INVE
 - contract roots sin ID: **0**;
 - child contracts certificados `MATERIAL` sin ID: **0**;
 - roots sin `MATRIX_STATE`: **0**;
-- `MATRIX_STATE=INVENTORY_COMPLETE`: **49/49**;
+- `MATRIX_STATE=LEVANTAMIENTO_COMPLETO`: **49/49**;
 - `MATRIX_STATE=CERTIFIED`: **0**.
 
 ## REVIEW_FIRST y recovery

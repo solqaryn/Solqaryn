@@ -23,7 +23,7 @@
         "name": "Priority 4 - Interfaces architecture and quality",
         "runId": 34652966923,
         "conclusion": "SUCCESS",
-        "evidence": "InventoryApp.sln Release build 0 warnings/0 errors; InventoryApp.Tests 2049 passed, 0 failed, 0 skipped; workflow completed success"
+        "evidence": "Solqaryn.sln Release build 0 warnings/0 errors; Solqaryn.Tests 2049 passed, 0 failed, 0 skipped; workflow completed success"
       },
       {
         "name": "VAEP engine lightweight checks",

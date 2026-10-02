@@ -12,8 +12,8 @@
   "scopeReviewed": [
     "backend/src/API/Controllers/UsuariosController.cs",
     "backend/src/Application/Services/UsuarioService.cs",
-    "backend/tests/InventoryApp.Tests/API/Controllers/UsuariosEmpresaAuthorizationContractTests.cs",
-    "backend/tests/InventoryApp.Tests/Application/Services/UsuarioEmpresaAuditContractTests.cs"
+    "backend/tests/Solqaryn.Tests/API/Controllers/UsuariosEmpresaAuthorizationContractTests.cs",
+    "backend/tests/Solqaryn.Tests/Application/Services/UsuarioEmpresaAuditContractTests.cs"
   ],
   "dodReview": {
     "authenticatedMembershipEndpoints": "PASS",

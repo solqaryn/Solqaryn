@@ -18,7 +18,7 @@ public sealed class N73FOutboxAuditTrailTests
     {
         var mensaje = MensajeOutbox.Crear(
             7,
-            "inventory.audit.certificate",
+            "inventario.auditoria.certificado",
             "{\"secret\":\"must-not-leak\"}",
             "n73f-idempotency-must-not-leak",
             correlationId: "corr-n73f-001",

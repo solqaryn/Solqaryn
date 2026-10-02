@@ -86,7 +86,7 @@
     "causalUnknown": "Fresh sanitized environment-variable key-name parity between the Desarrollo and production-reference Render services.",
     "finding": "The available Render connector exposes an environment-variable mutation primitive but no read-only primitive that lists sanitized key names. A write primitive was not used as a probe.",
     "requiredResolution": [
-      "Enable a read-only sanitized environment-variable key-name inventory primitive for both named Render services, or",
+      "Enable a read-only sanitized environment-variable key-name inventario primitive for both named Render services, or",
       "Have the owner provide fresh sanitized name-only inventories for both services."
     ],
     "forbiddenData": "Secret values must never be read, logged, compared, or written.",

@@ -105,9 +105,9 @@ La superficie N0.7 permite consulta, creación/edición de borrador, confirmaci�
 
 Cobertura relevante:
 
-- `backend/tests/InventoryApp.Tests/AjusteInventarioServiceTests.cs`;
-- `backend/tests/InventoryApp.Tests/InventarioAjusteServiceTests.cs`;
-- `backend/tests/InventoryApp.Tests/N07AjusteInventarioSeguridadRegressionTests.cs`.
+- `backend/tests/Solqaryn.Tests/AjusteInventarioServiceTests.cs`;
+- `backend/tests/Solqaryn.Tests/InventarioAjusteServiceTests.cs`;
+- `backend/tests/Solqaryn.Tests/N07AjusteInventarioSeguridadRegressionTests.cs`.
 
 La regresión protege snapshots, origen tipado, reversión histórica, doble confirmación/anulación fail-closed, compatibilidad legacy atómica, stale-write fail-closed, adaptador sin autoridad propia, permisos legacy y auditoría estricta.
 

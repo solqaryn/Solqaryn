@@ -42,7 +42,7 @@ Incluye siete PDFs y ocho capturas. Los PDFs fueron renderizados e inspeccionado
 
 ## Pendiente físico
 
-Solo en `varistorehn_desarrollo`: impresoras reales, drivers, conectividad, márgenes, densidad, corte, avance, escalado y ancho imprimible.
+Solo en `SOLQARYN_desarrollo`: impresoras reales, drivers, conectividad, márgenes, densidad, corte, avance, escalado y ancho imprimible.
 
 ## Cierre
 

@@ -82,7 +82,7 @@
     "historicalTargetedObservabilityRun": {
       "id": 35029570267,
       "result": "SUCCESS",
-      "test": "dotnet test backend/tests/InventoryApp.Tests/InventoryApp.Tests.csproj --filter FullyQualifiedName~RequestObservabilityTests --configuration Release",
+      "test": "dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj --filter FullyQualifiedName~RequestObservabilityTests --configuration Release",
       "use": "supporting evidence only; freshness supplied by exact backend source/tests equivalence to the 2026-09-17 tested functional head"
     }
   },

@@ -20,7 +20,7 @@
   "findings": {"p0": 0, "p1": 0},
   "material_delta": {
     "entity": "backend/src/Domain/Entities/ConfiguracionWhatsAppEmpresa.cs",
-    "tests": "backend/tests/InventoryApp.Tests/N76BWhatsAppConfigurationDomainTests.cs",
+    "tests": "backend/tests/Solqaryn.Tests/N76BWhatsAppConfigurationDomainTests.cs",
     "contract": "tenant-scoped E.164 phone plus opaque secret-store references for access token and webhook secret; no clear-text credential fields"
   },
   "causal_gates": {

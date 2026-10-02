@@ -28,7 +28,7 @@
     "backend/src/Application/DTOs/TiendaCheckoutDto.cs": "+2/-0",
     "backend/src/Application/DTOs/ProductoCatalogoPublicoDto.cs": "+1/-0",
     "backend/src/API/Controllers/TiendaController.cs": "+59/-32",
-    "backend/tests/InventoryApp.Tests/API/Controllers/TiendaControllerExactVariantTests.cs": "+151/-0"
+    "backend/tests/Solqaryn.Tests/API/Controllers/TiendaControllerExactVariantTests.cs": "+151/-0"
   },
   "resolved_gap": {
     "id": "PUBLIC_CHECKOUT_PHYSICAL_VARIANT_AMBIGUITY",
@@ -47,7 +47,7 @@
     "Fail closed on ambiguous physical variants rather than aggregating their stock or selecting the lowest price."
   ],
   "directed_tests": {
-    "path": "backend/tests/InventoryApp.Tests/API/Controllers/TiendaControllerExactVariantTests.cs",
+    "path": "backend/tests/Solqaryn.Tests/API/Controllers/TiendaControllerExactVariantTests.cs",
     "cases": [
       "ProductoVarianteId selects one exact physical stock/price/SKU",
       "legacy label-only ambiguous selection returns 409 conflict",

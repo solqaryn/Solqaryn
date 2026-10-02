@@ -31,7 +31,7 @@
     "r3Used": false
   },
   "review": {
-    "changedFile": "backend/tests/InventoryApp.Tests/API/Controllers/ReportesVentasContractTests.cs",
+    "changedFile": "backend/tests/Solqaryn.Tests/API/Controllers/ReportesVentasContractTests.cs",
     "productionContractInspected": "backend/src/API/Controllers/ReportesVentasController.cs",
     "findings": [
       "Controller remains authenticated and both report endpoints require Ventas/Ver.",

@@ -1,4 +1,4 @@
-# Fase 9 — Informe final de Solqaryn / VariStorehn
+# Fase 9 — Informe final de Solqaryn / SOLQARYN
 
 Fecha: 2026-07-29  
 Repositorio: `jmejia31/Solqaryn`  
@@ -32,7 +32,7 @@ MERGE A MAIN: NO AUTORIZADO
 DESPLIEGUE PRODUCTIVO: NO AUTORIZADO
 ```
 
-El sistema está técnicamente preparado para continuar con pruebas controladas en `varistorehn_desarrollo`. No existe evidencia suficiente para autorizar Producción porque faltan validaciones reales de correo, infraestructura externa, almacenamiento de imágenes, dispositivos e impresión física.
+El sistema está técnicamente preparado para continuar con pruebas controladas en `SOLQARYN_desarrollo`. No existe evidencia suficiente para autorizar Producción porque faltan validaciones reales de correo, infraestructura externa, almacenamiento de imágenes, dispositivos e impresión física.
 
 ## 3. Cambios consolidados
 

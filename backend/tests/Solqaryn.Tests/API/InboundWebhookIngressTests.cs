@@ -25,7 +25,7 @@ public sealed class InboundWebhookIngressTests
     {
         await using var db = await CreateDbAsync();
         var service = new InboundWebhookIngressService(db, Secret);
-        var body = Body("evt-invalid", "inventory.updated");
+        var body = Body("evt-invalid", "inventario.actualizado");
 
         var result = await service.ReceiveAsync(
             1,
@@ -45,7 +45,7 @@ public sealed class InboundWebhookIngressTests
         await using var db = await CreateDbAsync();
         var now = new DateTime(2026, 9, 14, 2, 48, 0, DateTimeKind.Utc);
         var service = new InboundWebhookIngressService(db, Secret, () => now);
-        var body = Body("evt-stale", "inventory.updated", now.AddMinutes(-6));
+        var body = Body("evt-stale", "inventario.actualizado", now.AddMinutes(-6));
 
         var result = await service.ReceiveAsync(
             1,
@@ -64,7 +64,7 @@ public sealed class InboundWebhookIngressTests
     {
         await using var db = await CreateDbAsync();
         var service = new InboundWebhookIngressService(db, Secret);
-        var body = Body("evt-accepted", "inventory.updated");
+        var body = Body("evt-accepted", "inventario.actualizado");
 
         var result = await service.ReceiveAsync(
             1,
@@ -83,7 +83,7 @@ public sealed class InboundWebhookIngressTests
         Assert.Equal("corr-accepted", stored.CorrelationId);
         Assert.Equal(64, stored.PayloadHash.Length);
         Assert.DoesNotContain(Secret, stored.PayloadHash, StringComparison.Ordinal);
-        Assert.DoesNotContain("inventory.updated", stored.PayloadHash, StringComparison.Ordinal);
+        Assert.DoesNotContain("inventario.actualizado", stored.PayloadHash, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -91,7 +91,7 @@ public sealed class InboundWebhookIngressTests
     {
         await using var db = await CreateDbAsync();
         var service = new InboundWebhookIngressService(db, Secret);
-        var body = Body("evt-repeat", "inventory.updated");
+        var body = Body("evt-repeat", "inventario.actualizado");
         var signature = Signature(body);
 
         var first = await service.ReceiveAsync(
@@ -110,8 +110,8 @@ public sealed class InboundWebhookIngressTests
     {
         await using var db = await CreateDbAsync();
         var service = new InboundWebhookIngressService(db, Secret);
-        var firstBody = Body("evt-conflict", "inventory.updated");
-        var secondBody = Body("evt-conflict", "inventory.deleted");
+        var firstBody = Body("evt-conflict", "inventario.actualizado");
+        var secondBody = Body("evt-conflict", "inventario.eliminado");
 
         var first = await service.ReceiveAsync(
             1, "provider-a", firstBody, Signature(firstBody), "corr-1", CancellationToken.None);
@@ -131,7 +131,7 @@ public sealed class InboundWebhookIngressTests
         db.Set<Empresa>().Add(otherTenant);
         await db.SaveChangesAsync();
 
-        var body = Body("evt-tenant-mismatch", "inventory.updated");
+        var body = Body("evt-tenant-mismatch", "inventario.actualizado");
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
@@ -247,7 +247,7 @@ public sealed class InboundWebhookIngressTests
     public async Task Controller_uses_trace_identifier_and_logs_without_sensitive_material()
     {
         await using var db = await CreateDbAsync();
-        var body = Body("evt-observable", "inventory.updated");
+        var body = Body("evt-observable", "inventario.actualizado");
         var signature = Signature(body);
         var logger = new CaptureLogger<InboundWebhooksController>();
         var configuration = new ConfigurationBuilder()

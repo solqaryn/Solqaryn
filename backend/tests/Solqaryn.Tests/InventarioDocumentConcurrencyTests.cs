@@ -18,7 +18,7 @@ using Xunit;
 namespace Solqaryn.Tests;
 
 [Trait("Category", "Integration")]
-public class InventoryDocumentConcurrencyTests
+public class InventarioDocumentConcurrencyTests
 {
     private static DbContextOptions<AppDbContext> CrearOpciones(string nombreBase) =>
         new DbContextOptionsBuilder<AppDbContext>()

@@ -22,7 +22,7 @@
     "r3Created": false,
     "acceptedFacets": [
       {
-        "taskId": "N5.2.C.1.INVENTORY_REPORT_PERSISTENCE_QUERY_PLAN",
+        "taskId": "N5.2.C.1.inventario_REPORT_PERSISTENCE_QUERY_PLAN",
         "worker": "J2",
         "reviewCommit": "0005be4b36dd82854a06d58bbaae6e1f814c7e15",
         "artifactId": "10113598983",

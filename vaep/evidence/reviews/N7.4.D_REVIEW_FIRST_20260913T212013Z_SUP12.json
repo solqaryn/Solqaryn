@@ -14,7 +14,7 @@
     "new_key": "stages one normalized durable intent",
     "tenant_lookup": "repository lookup is scoped by EmpresaId and normalized ClaveIdempotencia"
   },
-  "directed_test_file": "backend/tests/InventoryApp.Tests/N74DOutboxIdempotentReplayTests.cs",
+  "directed_test_file": "backend/tests/Solqaryn.Tests/N74DOutboxIdempotentReplayTests.cs",
   "causal_gates": [
     {
       "workflow": "Desarrollo - Compilación y pruebas",

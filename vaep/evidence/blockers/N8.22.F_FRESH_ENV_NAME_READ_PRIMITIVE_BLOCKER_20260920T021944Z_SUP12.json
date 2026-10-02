@@ -63,16 +63,16 @@
       "env_value_read_primitive_present": false,
       "env_write_primitive_present_but_not_invoked": "update_environment_variables",
       "secret_values_exposed": 0,
-      "note": "Fresh Render connector capability inventory exposes service/deploy/log/metrics reads and an environment-variable write primitive, but no read-only sanitized key-name inventory primitive. No environment write was attempted."
+      "note": "Fresh Render connector capability inventario exposes service/deploy/log/metrics reads and an environment-variable write primitive, but no read-only sanitized key-name inventario primitive. No environment write was attempted."
     },
-    "correction_from_prior_support": "Fresh Render service inventory identifies production reference srv-d983qti8qa3s73eqqne0; older blocker support named a different production service id and is not used as current provider identity."
+    "correction_from_prior_support": "Fresh Render service inventario identifies production reference srv-d983qti8qa3s73eqqne0; older blocker support named a different production service id and is not used as current provider identity."
   },
   "blocker": {
-    "cause": "FRESH_SANITIZED_RENDER_ENV_KEY_NAME_INVENTORY_UNAVAILABLE_VIA_READ_ONLY_CONNECTOR",
+    "cause": "FRESH_SANITIZED_RENDER_ENV_KEY_NAME_inventario_UNAVAILABLE_VIA_READ_ONLY_CONNECTOR",
     "why_causal": "N8.22.F requires a current DEV/PROD environment key-name parity check without secret values. The connected Render surface has no name-only read primitive, so UNKNOWN cannot be reduced to zero safely.",
-    "required_resolution": "Enable/provide a read-only sanitized environment-variable key-name inventory for both current Render services, or provide a fresh owner-supplied sanitized name-only inventory. Never expose values."
+    "required_resolution": "Enable/provide a read-only sanitized environment-variable key-name inventario for both current Render services, or provide a fresh owner-supplied sanitized name-only inventario. Never expose values."
   },
-  "next_action": "OBTAIN_FRESH_SANITIZED_RENDER_ENV_KEY_NAME_INVENTORY_FOR_srv-d9jblq7avr4c73c74jng_AND_srv-d983qti8qa3s73eqqne0_READ_ONLY__VALUES_NEVER_EXPOSED__COMPARE_WITH_CURRENT_SOURCE__IF_UNKNOWN_0_THEN_REVIEW_FIRST_RECEIPT_READBACK__DO_NOT_ADVANCE_N8.22.G",
+  "next_action": "OBTAIN_FRESH_SANITIZED_RENDER_ENV_KEY_NAME_inventario_FOR_srv-d9jblq7avr4c73c74jng_AND_srv-d983qti8qa3s73eqqne0_READ_ONLY__VALUES_NEVER_EXPOSED__COMPARE_WITH_CURRENT_SOURCE__IF_UNKNOWN_0_THEN_REVIEW_FIRST_RECEIPT_READBACK__DO_NOT_ADVANCE_N8.22.G",
   "chain": {
     "next_parent": "N8.22.G",
     "advanced": false

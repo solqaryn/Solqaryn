@@ -26,8 +26,8 @@
   },
   "blocker": {
     "type": "EXTERNAL_READ_PRIMITIVE_ABSENT",
-    "cause": "Fresh capability discovery of the connected Render surface exposes environment-variable mutation but no read-only sanitized names-only inventory operation. Current-standard DEV-to-PROD environment-key parity therefore cannot be certified without reading secret values, which is prohibited.",
-    "required_resolution": "Provide or enable a fresh read-only sanitized names-only environment-variable inventory, with values omitted, for both Render services; compare the two key sets and, only if UNKNOWN becomes 0 and all remaining current-standard checks remain passing, issue fresh REVIEW_FIRST, receipt, exact-head/equivalence and write/readback before advancing N8.22.G.",
+    "cause": "Fresh capability discovery of the connected Render surface exposes environment-variable mutation but no read-only sanitized names-only inventario operation. Current-standard DEV-to-PROD environment-key parity therefore cannot be certified without reading secret values, which is prohibited.",
+    "required_resolution": "Provide or enable a fresh read-only sanitized names-only environment-variable inventario, with values omitted, for both Render services; compare the two key sets and, only if UNKNOWN becomes 0 and all remaining current-standard checks remain passing, issue fresh REVIEW_FIRST, receipt, exact-head/equivalence and write/readback before advancing N8.22.G.",
     "secret_values_read": false,
     "environment_mutation_invoked": false,
     "production_write_invoked": false
@@ -76,7 +76,7 @@
     "next_parent_promoted": false,
     "reason": "UNKNOWN remains 1 on a causal current-standard DoD requirement."
   },
-  "next_action": "OBTAIN_FRESH_SANITIZED_RENDER_ENV_KEY_NAME_INVENTORY_FOR_srv-d9jblq7avr4c73c74jng_AND_srv-d983qti8qa3s73eqqne0_READ_ONLY__VALUES_NEVER_EXPOSED__COMPARE_WITH_CURRENT_SOURCE__IF_UNKNOWN_0_THEN_REVIEW_FIRST_RECEIPT_READBACK__DO_NOT_ADVANCE_N8.22.G",
+  "next_action": "OBTAIN_FRESH_SANITIZED_RENDER_ENV_KEY_NAME_inventario_FOR_srv-d9jblq7avr4c73c74jng_AND_srv-d983qti8qa3s73eqqne0_READ_ONLY__VALUES_NEVER_EXPOSED__COMPARE_WITH_CURRENT_SOURCE__IF_UNKNOWN_0_THEN_REVIEW_FIRST_RECEIPT_READBACK__DO_NOT_ADVANCE_N8.22.G",
   "safety": {
     "development_only": true,
     "main_modified": false,

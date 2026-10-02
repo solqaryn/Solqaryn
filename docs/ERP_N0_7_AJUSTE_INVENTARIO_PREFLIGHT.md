@@ -25,7 +25,7 @@ Existe una superficie de ajuste directo:
 - `backend/src/Application/Interfaces/IInventarioAjusteService.cs`
 - `backend/src/Application/Services/InventarioAjusteService.cs`
 - `backend/src/Application/DTOs/AjusteStockDto.cs`
-- `backend/tests/InventoryApp.Tests/InventarioAjusteServiceTests.cs`
+- `backend/tests/Solqaryn.Tests/InventarioAjusteServiceTests.cs`
 
 El flujo actual recibe `NuevaCantidad + Motivo`, toma lock, muta stock inmediatamente, crea `MovimientoInventario` y audita. No existe cabecera/detalle, número documental, Borrador, Confirmar, Anular ni snapshot documental de costo.
 

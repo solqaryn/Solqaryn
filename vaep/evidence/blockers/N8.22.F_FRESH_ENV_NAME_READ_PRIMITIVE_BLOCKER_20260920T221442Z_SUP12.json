@@ -55,7 +55,7 @@
   },
   "render_read_only_observations": {
     "capability_discovery": {
-      "read_only_environment_variable_inventory_available": false,
+      "read_only_environment_variable_inventario_available": false,
       "environment_variable_mutation_operation_available": true,
       "mutation_invoked": false
     },
@@ -78,8 +78,8 @@
   },
   "blocker": {
     "type": "EXTERNAL_READ_PRIMITIVE_ABSENT",
-    "cause": "The connected Render surface exposes environment-variable mutation but no read-only sanitized names-only environment-variable inventory operation. Fresh DEV-to-PROD environment-key parity therefore cannot be certified without reading secret values, which is prohibited.",
-    "required_resolution": "Provide or enable a fresh read-only sanitized names-only environment-variable inventory, with values omitted, for srv-d9jblq7avr4c73c74jng and srv-d983qti8qa3s73eqqne0. Compare key sets and only if UNKNOWN becomes 0 and all remaining current-standard checks remain passing may N8.22.F receive a fresh LISTO receipt and N8.22.G be promoted.",
+    "cause": "The connected Render surface exposes environment-variable mutation but no read-only sanitized names-only environment-variable inventario operation. Fresh DEV-to-PROD environment-key parity therefore cannot be certified without reading secret values, which is prohibited.",
+    "required_resolution": "Provide or enable a fresh read-only sanitized names-only environment-variable inventario, with values omitted, for srv-d9jblq7avr4c73c74jng and srv-d983qti8qa3s73eqqne0. Compare key sets and only if UNKNOWN becomes 0 and all remaining current-standard checks remain passing may N8.22.F receive a fresh LISTO receipt and N8.22.G be promoted.",
     "secret_values_read": false,
     "environment_mutation_invoked": false,
     "production_write_invoked": false
@@ -101,7 +101,7 @@
     "next_parent_promoted": false,
     "reason": "UNKNOWN remains 1 on a causal current-standard DoD requirement."
   },
-  "next_action": "OBTAIN_FRESH_SANITIZED_RENDER_ENV_KEY_NAME_INVENTORY_FOR_DEV_AND_PROD_READ_ONLY_VALUES_OMITTED__COMPARE_KEY_SETS__IF_UNKNOWN_0_THEN_FRESH_REVIEW_FIRST_RECEIPT_EXACT_HEAD_EQUIVALENCE_WRITE_READBACK__DO_NOT_ADVANCE_N8.22.G_BEFORE_THEN",
+  "next_action": "OBTAIN_FRESH_SANITIZED_RENDER_ENV_KEY_NAME_inventario_FOR_DEV_AND_PROD_READ_ONLY_VALUES_OMITTED__COMPARE_KEY_SETS__IF_UNKNOWN_0_THEN_FRESH_REVIEW_FIRST_RECEIPT_EXACT_HEAD_EQUIVALENCE_WRITE_READBACK__DO_NOT_ADVANCE_N8.22.G_BEFORE_THEN",
   "safety": {
     "development_only": true,
     "main_modified": false,

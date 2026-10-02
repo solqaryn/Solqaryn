@@ -11,7 +11,7 @@ Baseline de inventario: `N8.15.H` (`158` registros ancla arquitectónicos certif
 - Por definición de gobierno, `MATERIAL_WITHOUT_ID` es inválido.
 - Aliases no crean nuevas identidades; splits/merges/supersession se documentan explícitamente.
 - La columna `STATUS` de este catálogo raíz expresa **materialidad/descubrimiento** (`MATERIAL | DISCOVERY_CONTAINER`); no es el estado de ciclo de vida de la matriz.
-- El ciclo canónico independiente es `MATRIX_STATE`: `BASELINE_CREATED -> INVENTORY_COMPLETE -> SPEC_COMPLETE -> IMPLEMENTATION_REVIEWED -> CERTIFIED`. `CERTIFIED` exige evidencia material y no se obtiene por la mera existencia de documentación.
+- El ciclo canónico independiente es `MATRIX_STATE`: `BASELINE_CREATED -> LEVANTAMIENTO_COMPLETO -> SPEC_COMPLETE -> IMPLEMENTATION_REVIEWED -> CERTIFIED`. `CERTIFIED` exige evidencia material y no se obtiene por la mera existencia de documentación.
 
 ## Catálogo inicial gobernado
 
@@ -20,7 +20,7 @@ Conteo exacto: **49 contract roots** = 1 shell + 48 feature roots inventariados 
 | MATRIX_ID | DOMAIN | CONTRACT_KIND | IMPLEMENTATION_REF | PARENT_MATRIX_ID | STATUS | CLASSIFICATION |
 |---|---|---|---|---|---|---|
 | VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL | GOV_CONFIG_INTEGRATIONS | SHELL | `frontend/src/app/app.component.*`; `frontend/src/app/app.routes.ts` | ROOT | MATERIAL | KEEP |
-| VAEP-MX::INVENTORY_LOGISTICS::ALMACENES | INVENTORY_LOGISTICS | FEATURE_GROUP | `frontend/src/app/features/almacenes` | VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL | DISCOVERY_CONTAINER | KEEP |
+| VAEP-MX::INVENTARIO_LOGISTICA::ALMACENES | INVENTARIO_LOGISTICA | FEATURE_GROUP | `frontend/src/app/features/almacenes` | VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL | DISCOVERY_CONTAINER | KEEP |
 | VAEP-MX::FINANCE_ACCOUNTING::ASIENTOS_CONTABLES | FINANCE_ACCOUNTING | FEATURE_GROUP | `frontend/src/app/features/asientos-contables` | VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL | DISCOVERY_CONTAINER | KEEP |
 | VAEP-MX::GOV_CONFIG_INTEGRATIONS::AUDITORIA | GOV_CONFIG_INTEGRATIONS | FEATURE_GROUP | `frontend/src/app/features/auditoria` | VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL | DISCOVERY_CONTAINER | KEEP |
 | VAEP-MX::CASH_BANKS::CAJA | CASH_BANKS | FEATURE_GROUP | `frontend/src/app/features/caja` | VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL | DISCOVERY_CONTAINER | KEEP |
@@ -42,7 +42,7 @@ Conteo exacto: **49 contract roots** = 1 shell + 48 feature roots inventariados 
 | VAEP-MX::CUSTOMERS_COMMERCIAL::FACTURAS | CUSTOMERS_COMMERCIAL | FEATURE_GROUP | `frontend/src/app/features/facturas` | VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL | DISCOVERY_CONTAINER | KEEP |
 | VAEP-MX::FINANCE_ACCOUNTING::FINANZAS | FINANCE_ACCOUNTING | FEATURE_GROUP | `frontend/src/app/features/finanzas` | VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL | DISCOVERY_CONTAINER | KEEP |
 | VAEP-MX::FINANCE_ACCOUNTING::IMPUESTOS | FINANCE_ACCOUNTING | FEATURE_GROUP | `frontend/src/app/features/impuestos` | VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL | DISCOVERY_CONTAINER | KEEP |
-| VAEP-MX::INVENTORY_LOGISTICS::INVENTARIO | INVENTORY_LOGISTICS | FEATURE_GROUP | `frontend/src/app/features/inventario` | VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL | DISCOVERY_CONTAINER | KEEP |
+| VAEP-MX::INVENTARIO_LOGISTICA::INVENTARIO | INVENTARIO_LOGISTICA | FEATURE_GROUP | `frontend/src/app/features/inventario` | VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL | DISCOVERY_CONTAINER | KEEP |
 | VAEP-MX::IDENTITY_ACCESS::LOGIN | IDENTITY_ACCESS | FEATURE_GROUP | `frontend/src/app/features/login` | VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL | DISCOVERY_CONTAINER | KEEP |
 | VAEP-MX::CASH_BANKS::METODOS_PAGO | CASH_BANKS | FEATURE_GROUP | `frontend/src/app/features/metodos-pago` | VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL | DISCOVERY_CONTAINER | KEEP |
 | VAEP-MX::PURCHASES_SUPPLIERS::ORDENES_COMPRA | PURCHASES_SUPPLIERS | FEATURE_GROUP | `frontend/src/app/features/ordenes-compra` | VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL | DISCOVERY_CONTAINER | KEEP |
@@ -51,7 +51,7 @@ Conteo exacto: **49 contract roots** = 1 shell + 48 feature roots inventariados 
 | VAEP-MX::FINANCE_ACCOUNTING::PERIODOS_CONTABLES | FINANCE_ACCOUNTING | FEATURE_GROUP | `frontend/src/app/features/periodos-contables` | VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL | DISCOVERY_CONTAINER | KEEP |
 | VAEP-MX::IDENTITY_ACCESS::PERMISOS | IDENTITY_ACCESS | FEATURE_GROUP | `frontend/src/app/features/permisos` | VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL | DISCOVERY_CONTAINER | KEEP |
 | VAEP-MX::FINANCE_ACCOUNTING::PLAN_CUENTAS | FINANCE_ACCOUNTING | FEATURE_GROUP | `frontend/src/app/features/plan-cuentas` | VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL | DISCOVERY_CONTAINER | KEEP |
-| VAEP-MX::INVENTORY_LOGISTICS::PREPARACIONES_PEDIDO_VENTA | INVENTORY_LOGISTICS | FEATURE_GROUP | `frontend/src/app/features/preparaciones-pedido-venta` | VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL | DISCOVERY_CONTAINER | KEEP |
+| VAEP-MX::INVENTARIO_LOGISTICA::PREPARACIONES_PEDIDO_VENTA | INVENTARIO_LOGISTICA | FEATURE_GROUP | `frontend/src/app/features/preparaciones-pedido-venta` | VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL | DISCOVERY_CONTAINER | KEEP |
 | VAEP-MX::PRODUCT_CATALOG::PRODUCTOS | PRODUCT_CATALOG | FEATURE_GROUP | `frontend/src/app/features/productos` | VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL | DISCOVERY_CONTAINER | KEEP |
 | VAEP-MX::PURCHASES_SUPPLIERS::PROVEEDORES | PURCHASES_SUPPLIERS | FEATURE_GROUP | `frontend/src/app/features/proveedores` | VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL | DISCOVERY_CONTAINER | KEEP |
 | VAEP-MX::PURCHASES_SUPPLIERS::RECEPCIONES_COMPRA | PURCHASES_SUPPLIERS | FEATURE_GROUP | `frontend/src/app/features/recepciones-compra` | VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL | DISCOVERY_CONTAINER | KEEP |
@@ -62,23 +62,23 @@ Conteo exacto: **49 contract roots** = 1 shell + 48 feature roots inventariados 
 | VAEP-MX::BI_REPORTING::REPORTES_VENTAS | BI_REPORTING | FEATURE_GROUP | `frontend/src/app/features/reportes-ventas` | VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL | DISCOVERY_CONTAINER | KEEP |
 | VAEP-MX::IDENTITY_ACCESS::ROLES | IDENTITY_ACCESS | FEATURE_GROUP | `frontend/src/app/features/roles` | VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL | DISCOVERY_CONTAINER | KEEP |
 | VAEP-MX::PURCHASES_SUPPLIERS::SOLICITUDES_COMPRA | PURCHASES_SUPPLIERS | FEATURE_GROUP | `frontend/src/app/features/solicitudes-compra` | VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL | DISCOVERY_CONTAINER | KEEP |
-| VAEP-MX::INVENTORY_LOGISTICS::SUCURSALES | INVENTORY_LOGISTICS | FEATURE_GROUP | `frontend/src/app/features/sucursales` | VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL | DISCOVERY_CONTAINER | KEEP |
+| VAEP-MX::INVENTARIO_LOGISTICA::SUCURSALES | INVENTARIO_LOGISTICA | FEATURE_GROUP | `frontend/src/app/features/sucursales` | VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL | DISCOVERY_CONTAINER | KEEP |
 | VAEP-MX::CUSTOMERS_COMMERCIAL::TIPO_CLIENTES | CUSTOMERS_COMMERCIAL | FEATURE_GROUP | `frontend/src/app/features/tipo-clientes` | VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL | DISCOVERY_CONTAINER | KEEP |
-| VAEP-MX::INVENTORY_LOGISTICS::UBICACIONES_ALMACEN | INVENTORY_LOGISTICS | FEATURE_GROUP | `frontend/src/app/features/ubicaciones-almacen` | VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL | DISCOVERY_CONTAINER | KEEP |
+| VAEP-MX::INVENTARIO_LOGISTICA::UBICACIONES_ALMACEN | INVENTARIO_LOGISTICA | FEATURE_GROUP | `frontend/src/app/features/ubicaciones-almacen` | VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL | DISCOVERY_CONTAINER | KEEP |
 | VAEP-MX::IDENTITY_ACCESS::USUARIOS | IDENTITY_ACCESS | FEATURE_GROUP | `frontend/src/app/features/usuarios` | VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL | DISCOVERY_CONTAINER | KEEP |
 | VAEP-MX::CUSTOMERS_COMMERCIAL::STOREFRONT | CUSTOMERS_COMMERCIAL | FEATURE_GROUP | `frontend/src/app/features/storefront` | VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL | DISCOVERY_CONTAINER | KEEP |
 | VAEP-MX::CUSTOMERS_COMMERCIAL::VENTAS | CUSTOMERS_COMMERCIAL | FEATURE_GROUP | `frontend/src/app/features/ventas` | VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL | DISCOVERY_CONTAINER | KEEP |
 
 ## Estado de matriz canónico en N8.16.H
 
-El mapping de ciclo de vida es exacto y separado de `STATUS`: **los 49/49 contract roots anteriores tienen `MATRIX_STATE = INVENTORY_COMPLETE` en N8.16.H**. La identidad, ownership, parentage, implementación raíz y materialidad/discovery están inventariados, pero N8.17 todavía debe materializar y especificar los contratos hijos de screen/dialog/widget/shared primitive antes de cualquier avance a `SPEC_COMPLETE`.
+El mapping de ciclo de vida es exacto y separado de `STATUS`: **los 49/49 contract roots anteriores tienen `MATRIX_STATE = LEVANTAMIENTO_COMPLETO` en N8.16.H**. La identidad, ownership, parentage, implementación raíz y materialidad/discovery están inventariados, pero N8.17 todavía debe materializar y especificar los contratos hijos de screen/dialog/widget/shared primitive antes de cualquier avance a `SPEC_COMPLETE`.
 
 Distribución exacta en este corte:
 
 | MATRIX_STATE | Conteo |
 |---|---:|
 | BASELINE_CREATED | 0 |
-| INVENTORY_COMPLETE | 49 |
+| LEVANTAMIENTO_COMPLETO | 49 |
 | SPEC_COMPLETE | 0 |
 | IMPLEMENTATION_REVIEWED | 0 |
 | CERTIFIED | 0 |

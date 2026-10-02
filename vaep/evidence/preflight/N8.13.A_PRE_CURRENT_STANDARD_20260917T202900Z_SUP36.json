@@ -64,14 +64,14 @@
     },
     "vercel_production_reference_project": {
       "id": "prj_djMCand2yYeY3AvaUWsjwHDDJDkM",
-      "name": "varistorehn",
+      "name": "SOLQARYN",
       "observation": "The current deployment listing page contains target=null historical deployments sourced from Desarrollo; this listing alone is insufficient to reassert the active production frontend deployment/domain identity.",
       "writes_performed": false
     }
   },
   "current_repo_contract": {
     "development_backend": "render.yaml binds solqaryn-api-desarrollo to Desarrollo/Oregon/free, /health/ready, Staging environment and DEV URLs; secret values remain sync:false/generated and were not read.",
-    "frontend_routing": "frontend/vercel.json routes varistorehn.vercel.app API traffic to solqaryn-api.onrender.com and all other API traffic to solqaryn-api-desarrollo.onrender.com; security headers remain configured.",
+    "frontend_routing": "frontend/vercel.json routes SOLQARYN.vercel.app API traffic to solqaryn-api.onrender.com and all other API traffic to solqaryn-api-desarrollo.onrender.com; security headers remain configured.",
     "production_write": false,
     "main_write": false,
     "secret_values_read": false

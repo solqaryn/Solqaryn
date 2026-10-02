@@ -10,9 +10,9 @@
   "functional_candidate": "00400ffac33aa0ae8edc855ab28d81dc24b896aa",
   "scope": "Desarrollo only",
   "files_changed": [
-    "frontend/src/app/features/varistorehn/varistorehn.catalog.ts",
-    "frontend/src/app/features/varistorehn/varistorehn.models.ts",
-    "frontend/src/app/features/varistorehn/varistorehn.service.ts"
+    "frontend/src/app/features/SOLQARYN/SOLQARYN.catalog.ts",
+    "frontend/src/app/features/SOLQARYN/SOLQARYN.models.ts",
+    "frontend/src/app/features/SOLQARYN/SOLQARYN.service.ts"
   ],
   "review": {
     "p0_open": 0,

@@ -24,7 +24,7 @@
   },
   "reviewedFiles": [
     "backend/src/Domain/Entities/Empresa.cs",
-    "backend/tests/InventoryApp.Tests/N61BTenantEmpresaDomainTests.cs"
+    "backend/tests/Solqaryn.Tests/N61BTenantEmpresaDomainTests.cs"
   ],
   "findings": {
     "P0": 0,

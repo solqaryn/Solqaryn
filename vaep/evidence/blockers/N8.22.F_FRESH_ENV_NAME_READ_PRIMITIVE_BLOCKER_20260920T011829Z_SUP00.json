@@ -19,16 +19,16 @@
     "causal_tests": "PASS__functional product head current check set previously fresh-read as 21 terminal successful checks; current exact-head product delta remains 0"
   },
   "historical_support_only": {
-    "sanitized_env_name_inventory": "vaep/evidence/reconciliations/N8.22.G_OWNER_RENDER_ENV_NAME_INVENTORY_20260916T182900Z.json",
-    "prior_inventory_properties": "35 DEV names, 21 PROD names, values never read/persisted, all differences classified at capture time",
+    "sanitized_env_name_inventario": "vaep/evidence/reconciliations/N8.22.G_OWNER_RENDER_ENV_NAME_inventario_20260916T182900Z.json",
+    "prior_inventario_properties": "35 DEV names, 21 PROD names, values never read/persisted, all differences classified at capture time",
     "current_staging_matrix": "docs/STAGING_EQUIVALENCE.md"
   },
   "unresolved_current_standard_item": {
     "classification": "UNKNOWN",
     "count": 1,
     "item": "FRESH_RENDER_ENVIRONMENT_VARIABLE_NAME_PARITY_DEV_VS_PROD",
-    "reason": "The connected Render read primitives expose service/deploy/runtime metadata but do not expose a sanitized current environment-variable-name inventory. The only env-variable primitive available is a write operation and must not be used to discover state. Historical sanitized names are support only under REVALIDATE_PRIOR_DONE_HARD.",
-    "required_safe_evidence": "Fresh read-only sanitized key-name inventory for both Render services, values masked/not returned, then compare against current source-required configuration names and prior classifications.",
+    "reason": "The connected Render read primitives expose service/deploy/runtime metadata but do not expose a sanitized current environment-variable-name inventario. The only env-variable primitive available is a write operation and must not be used to discover state. Historical sanitized names are support only under REVALIDATE_PRIOR_DONE_HARD.",
+    "required_safe_evidence": "Fresh read-only sanitized key-name inventario for both Render services, values masked/not returned, then compare against current source-required configuration names and prior classifications.",
     "unsafe_actions_not_taken": [
       "No environment-variable write/read-by-overwrite",
       "No secret values requested or exposed",
@@ -42,7 +42,7 @@
   "p1": 0,
   "dod": "NOT_SATISFIED_UNTIL_UNKNOWN_0",
   "review_first": "NOT_EMITTED_BECAUSE_LISTO_PRECONDITIONS_NOT_MET",
-  "next_action": "OBTAIN_FRESH_SANITIZED_RENDER_ENV_KEY_NAME_INVENTORY_DEV_AND_PROD_READ_ONLY__VALUES_NEVER_EXPOSED__COMPARE_CURRENT_SOURCE__IF_UNKNOWN_0_THEN_REVIEW_FIRST_RECEIPT_READBACK__DO_NOT_ADVANCE_N8.22.G",
+  "next_action": "OBTAIN_FRESH_SANITIZED_RENDER_ENV_KEY_NAME_inventario_DEV_AND_PROD_READ_ONLY__VALUES_NEVER_EXPOSED__COMPARE_CURRENT_SOURCE__IF_UNKNOWN_0_THEN_REVIEW_FIRST_RECEIPT_READBACK__DO_NOT_ADVANCE_N8.22.G",
   "safety": {
     "desarrollo_only_writes": true,
     "product_write": false,

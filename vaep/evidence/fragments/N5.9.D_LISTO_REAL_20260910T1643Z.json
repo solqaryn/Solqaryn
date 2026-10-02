@@ -62,7 +62,7 @@
   "evidence": [
     "vaep/evidence/reviews/N5.9.D.1_J1_OWNERSHIP_RECONCILIATION_20260910T1637Z.json",
     "aafe94255e1eff9e3687c1716bb238393b1822f6",
-    "backend/tests/InventoryApp.Tests/N59DReportPerformanceStockHealthQueryTests.cs",
+    "backend/tests/Solqaryn.Tests/N59DReportPerformanceStockHealthQueryTests.cs",
     "check-run:102958669638"
   ],
   "nextParent": "N5.9.E",

@@ -1,4 +1,4 @@
-# N8.15.D — BACKEND_API inventory
+# N8.15.D — BACKEND_API inventario
 
 Estado: `LISTO_REAL`
 

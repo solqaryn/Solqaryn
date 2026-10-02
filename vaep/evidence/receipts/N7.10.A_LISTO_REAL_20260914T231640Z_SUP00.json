@@ -20,7 +20,7 @@
     "readback_required": true
   },
   "inspection_acceptance": {
-    "directed_inventory_complete": true,
+    "directed_inventario_complete": true,
     "scope_and_out_of_scope_defined": true,
     "affected_domain_api_frontend_surfaces_identified": true,
     "dependencies_resolved": true,

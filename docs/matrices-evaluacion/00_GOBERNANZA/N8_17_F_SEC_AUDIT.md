@@ -2,7 +2,7 @@
 
 Estado de trabajo: `REVIEW_FIRST / SEC_AUDIT`.
 
-Base: `N8_17_A_BATCH_MANIFEST.json` + contratos N8.17.B/C/D/E + `N8_15_F_SEC_AUDIT_INVENTORY.md`.
+Base: `N8_17_A_BATCH_MANIFEST.json` + contratos N8.17.B/C/D/E + `N8_15_F_SEC_AUDIT_INVENTARIO.md`.
 
 ## Contrato global obligatorio
 
@@ -39,11 +39,11 @@ Base: `N8_17_A_BATCH_MANIFEST.json` + contratos N8.17.B/C/D/E + `N8_15_F_SEC_AUD
 | `VAEP-MX::PURCHASES_SUPPLIERS::PROVEEDORES` | purchasing by operation | supplier/contact + purchase data | qty/price/status/IDs; cross-tenant supplier/document ownership; auditar mutaciones/lifecycle relevantes; fail-closed |
 | `VAEP-MX::PURCHASES_SUPPLIERS::RECEPCIONES_COMPRA` | purchasing by operation | supplier/contact + purchase data | qty/price/status/IDs; cross-tenant supplier/document ownership; auditar mutaciones/lifecycle relevantes; fail-closed |
 | `VAEP-MX::PURCHASES_SUPPLIERS::SOLICITUDES_COMPRA` | purchasing by operation | supplier/contact + purchase data | qty/price/status/IDs; cross-tenant supplier/document ownership; auditar mutaciones/lifecycle relevantes; fail-closed |
-| `VAEP-MX::INVENTORY_LOGISTICS::ALMACENES` | inventory/logistics by operation | stock/location/lot/serial | stock/location/lot/serial tamper; cross-tenant warehouse ownership; auditar mutaciones/lifecycle relevantes; fail-closed |
-| `VAEP-MX::INVENTORY_LOGISTICS::INVENTARIO` | inventory auth | stock/location/lot/serial | authoritative stock cannot be set from client balance; auditar mutaciones/lifecycle relevantes; fail-closed |
-| `VAEP-MX::INVENTORY_LOGISTICS::PREPARACIONES_PEDIDO_VENTA` | inventory/logistics by operation | stock/location/lot/serial | stock/location/lot/serial tamper; cross-tenant warehouse ownership; auditar mutaciones/lifecycle relevantes; fail-closed |
-| `VAEP-MX::INVENTORY_LOGISTICS::SUCURSALES` | inventory/logistics by operation | stock/location/lot/serial | stock/location/lot/serial tamper; cross-tenant warehouse ownership; auditar mutaciones/lifecycle relevantes; fail-closed |
-| `VAEP-MX::INVENTORY_LOGISTICS::UBICACIONES_ALMACEN` | inventory/logistics by operation | stock/location/lot/serial | stock/location/lot/serial tamper; cross-tenant warehouse ownership; auditar mutaciones/lifecycle relevantes; fail-closed |
+| `VAEP-MX::INVENTARIO_LOGISTICA::ALMACENES` | inventario/logistics by operation | stock/location/lot/serial | stock/location/lot/serial tamper; cross-tenant warehouse ownership; auditar mutaciones/lifecycle relevantes; fail-closed |
+| `VAEP-MX::INVENTARIO_LOGISTICA::INVENTARIO` | inventario auth | stock/location/lot/serial | authoritative stock cannot be set from client balance; auditar mutaciones/lifecycle relevantes; fail-closed |
+| `VAEP-MX::INVENTARIO_LOGISTICA::PREPARACIONES_PEDIDO_VENTA` | inventario/logistics by operation | stock/location/lot/serial | stock/location/lot/serial tamper; cross-tenant warehouse ownership; auditar mutaciones/lifecycle relevantes; fail-closed |
+| `VAEP-MX::INVENTARIO_LOGISTICA::SUCURSALES` | inventario/logistics by operation | stock/location/lot/serial | stock/location/lot/serial tamper; cross-tenant warehouse ownership; auditar mutaciones/lifecycle relevantes; fail-closed |
+| `VAEP-MX::INVENTARIO_LOGISTICA::UBICACIONES_ALMACEN` | inventario/logistics by operation | stock/location/lot/serial | stock/location/lot/serial tamper; cross-tenant warehouse ownership; auditar mutaciones/lifecycle relevantes; fail-closed |
 | `VAEP-MX::CASH_BANKS::CAJA` | restricted treasury | cash/session/movement | session state + amount validated server-side; auditar mutaciones/lifecycle relevantes; fail-closed |
 | `VAEP-MX::CASH_BANKS::CUENTAS_BANCARIAS` | restricted treasury | bank-account metadata | mask when full value not required; server ownership enforced; auditar mutaciones/lifecycle relevantes; fail-closed |
 | `VAEP-MX::CASH_BANKS::METODOS_PAGO` | restricted treasury by operation | cash/bank/payment data | amount/session/account tamper; cross-tenant treasury ownership; auditar mutaciones/lifecycle relevantes; fail-closed |
@@ -55,13 +55,13 @@ Base: `N8_17_A_BATCH_MANIFEST.json` + contratos N8.17.B/C/D/E + `N8_15_F_SEC_AUD
 | `VAEP-MX::FINANCE_ACCOUNTING::IMPUESTOS` | restricted finance/accounting | ledger/receivable/tax/financial data | period/amount/account/source tamper; cross-tenant financial scope; auditar mutaciones/lifecycle relevantes; fail-closed |
 | `VAEP-MX::FINANCE_ACCOUNTING::PERIODOS_CONTABLES` | restricted finance/accounting | ledger/receivable/tax/financial data | period/amount/account/source tamper; cross-tenant financial scope; auditar mutaciones/lifecycle relevantes; fail-closed |
 | `VAEP-MX::FINANCE_ACCOUNTING::PLAN_CUENTAS` | restricted finance/accounting | ledger/receivable/tax/financial data | period/amount/account/source tamper; cross-tenant financial scope; auditar mutaciones/lifecycle relevantes; fail-closed |
-| `VAEP-MX::BI_REPORTING::CENTRO_REPORTES` | report capability + source authorization | derived commercial/inventory/financial/audit data | filter/source tamper; cross-tenant report scope; auditar mutaciones/lifecycle relevantes; fail-closed |
-| `VAEP-MX::BI_REPORTING::DASHBOARD` | report capability + source authorization | derived commercial/inventory/financial/audit data | filter/source tamper; cross-tenant report scope; auditar mutaciones/lifecycle relevantes; fail-closed |
-| `VAEP-MX::BI_REPORTING::RENTABILIDAD` | report capability + source authorization | derived commercial/inventory/financial/audit data | filter/source tamper; cross-tenant report scope; auditar mutaciones/lifecycle relevantes; fail-closed |
-| `VAEP-MX::BI_REPORTING::REPORTES_ADMINISTRATIVOS` | report capability + source authorization | derived commercial/inventory/financial/audit data | filter/source tamper; cross-tenant report scope; auditar mutaciones/lifecycle relevantes; fail-closed |
-| `VAEP-MX::BI_REPORTING::REPORTES_COMPRAS` | report capability + source authorization | derived commercial/inventory/financial/audit data | filter/source tamper; cross-tenant report scope; auditar mutaciones/lifecycle relevantes; fail-closed |
-| `VAEP-MX::BI_REPORTING::REPORTES_INVENTARIO` | report capability + source authorization | derived commercial/inventory/financial/audit data | filter/source tamper; cross-tenant report scope; auditar mutaciones/lifecycle relevantes; fail-closed |
-| `VAEP-MX::BI_REPORTING::REPORTES_VENTAS` | report capability + source authorization | derived commercial/inventory/financial/audit data | filter/source tamper; cross-tenant report scope; auditar mutaciones/lifecycle relevantes; fail-closed |
+| `VAEP-MX::BI_REPORTING::CENTRO_REPORTES` | report capability + source authorization | derived commercial/inventario/financial/audit data | filter/source tamper; cross-tenant report scope; auditar mutaciones/lifecycle relevantes; fail-closed |
+| `VAEP-MX::BI_REPORTING::DASHBOARD` | report capability + source authorization | derived commercial/inventario/financial/audit data | filter/source tamper; cross-tenant report scope; auditar mutaciones/lifecycle relevantes; fail-closed |
+| `VAEP-MX::BI_REPORTING::RENTABILIDAD` | report capability + source authorization | derived commercial/inventario/financial/audit data | filter/source tamper; cross-tenant report scope; auditar mutaciones/lifecycle relevantes; fail-closed |
+| `VAEP-MX::BI_REPORTING::REPORTES_ADMINISTRATIVOS` | report capability + source authorization | derived commercial/inventario/financial/audit data | filter/source tamper; cross-tenant report scope; auditar mutaciones/lifecycle relevantes; fail-closed |
+| `VAEP-MX::BI_REPORTING::REPORTES_COMPRAS` | report capability + source authorization | derived commercial/inventario/financial/audit data | filter/source tamper; cross-tenant report scope; auditar mutaciones/lifecycle relevantes; fail-closed |
+| `VAEP-MX::BI_REPORTING::REPORTES_INVENTARIO` | report capability + source authorization | derived commercial/inventario/financial/audit data | filter/source tamper; cross-tenant report scope; auditar mutaciones/lifecycle relevantes; fail-closed |
+| `VAEP-MX::BI_REPORTING::REPORTES_VENTAS` | report capability + source authorization | derived commercial/inventario/financial/audit data | filter/source tamper; cross-tenant report scope; auditar mutaciones/lifecycle relevantes; fail-closed |
 | `VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL` | authenticated navigation | identity/navigation context | menu/route visibility is UX only; backend grants authority; auditar mutaciones/lifecycle relevantes; fail-closed |
 | `VAEP-MX::GOV_CONFIG_INTEGRATIONS::AUDITORIA` | governance restricted | audit actor/event metadata | append-only source; no client edit; tokens/secrets excluded; auditar mutaciones/lifecycle relevantes; fail-closed |
 | `VAEP-MX::GOV_CONFIG_INTEGRATIONS::CARGAS_MASIVAS` | admin restricted | uploaded business data may include PII | server parse/validate; reject tenant spoofing/partial unauthorized writes; auditar mutaciones/lifecycle relevantes; fail-closed |

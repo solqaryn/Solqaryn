@@ -12,7 +12,7 @@
   "review_evidence": "vaep/evidence/reviews/N8.18.D_REVIEW_FIRST_20260916T045751Z_SUP48.json",
   "backend_refactor_contract": "docs/matrices-evaluacion/00_GOBERNANZA/N8_18_D_BACKEND_REFACTOR.json",
   "validator": "scripts/validate_n8_18_d_backend_refactor.py",
-  "directed_test": "backend/tests/InventoryApp.Tests/Application/N818BackendArchitectureTests.cs",
+  "directed_test": "backend/tests/Solqaryn.Tests/Application/N818BackendArchitectureTests.cs",
   "review_result": "PASS",
   "p0_count": 0,
   "p1_count": 0,

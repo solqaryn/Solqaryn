@@ -91,10 +91,10 @@
       "historical_state": "LISTO_REAL",
       "classification": "SUPERSEDED_BY_LATER_EVIDENCE",
       "underlying_evidence": [
-        "docs/matrices-evaluacion/00_GOBERNANZA/N8_15_C_DB_MIG_INVENTORY.md",
+        "docs/matrices-evaluacion/00_GOBERNANZA/N8_15_C_DB_MIG_inventario.md",
         "vaep/evidence/receipts/N8.15.H_LISTO_REAL_20260916T000800Z_SUP53.json"
       ],
-      "verdict": "The C-stage artifact inventories the authoritative DbContext/provider, relational configurations and both physical migration roots, preserves history, executes no DDL and records REVIEW_FIRST P0=0/P1=0. A standalone C receipt is not required retroactively because the later N8.15 macro certification causally validates the same DB/migration inventory inside its functional baseline gate.",
+      "verdict": "The C-stage artifact inventories the authoritative DbContext/provider, relational configurations and both physical migration roots, preserves history, executes no DDL and records REVIEW_FIRST P0=0/P1=0. A standalone C receipt is not required retroactively because the later N8.15 macro certification causally validates the same DB/migration inventario inside its functional baseline gate.",
       "p0": 0,
       "p1": 0
     },

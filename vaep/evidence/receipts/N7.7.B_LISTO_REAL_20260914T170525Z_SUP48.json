@@ -21,7 +21,7 @@
   "findings": {"p0": 0, "p1": 0},
   "material_delta": {
     "entity": "backend/src/Domain/Entities/EmailEmpresarial.cs",
-    "tests": "backend/tests/InventoryApp.Tests/EmailEmpresarialDomainTests.cs",
+    "tests": "backend/tests/Solqaryn.Tests/EmailEmpresarialDomainTests.cs",
     "contract": "tenant-scoped durable enterprise-email intent with required idempotency, direct-content/template-version intent, bounded retry scheduling/final failure, provider correlation/tracking, legal delivery/bounce state transitions and no persisted provider/SMTP secrets"
   },
   "causal_gates": {

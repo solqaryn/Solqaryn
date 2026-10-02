@@ -18,7 +18,7 @@
   "material_delta": {
     "configuration": "backend/src/Infrastructure/Persistence/Configurations/EmailEmpresarialConfiguration.cs",
     "migration": "backend/src/Infrastructure/Persistence/Migrations/20260914170700_N7_7_C_EmailEmpresarialPersistencia.cs",
-    "tests": "backend/tests/InventoryApp.Tests/EmailEmpresarialPersistenceModelTests.cs",
+    "tests": "backend/tests/Solqaryn.Tests/EmailEmpresarialPersistenceModelTests.cs",
     "tables": ["EmailsEmpresariales", "PlantillasEmailEmpresarial"],
     "additive": true,
     "backfill": false,
@@ -44,7 +44,7 @@
     "model_snapshot_policy": "PASS__repository uses explicit migrations without generated ModelSnapshot; desarrollo-ci validates applied material schema/history rather than pending-model-changes"
   },
   "directed_tests": {
-    "file": "backend/tests/InventoryApp.Tests/EmailEmpresarialPersistenceModelTests.cs",
+    "file": "backend/tests/Solqaryn.Tests/EmailEmpresarialPersistenceModelTests.cs",
     "coverage": [
       "tenant FK Restrict",
       "tenant-scoped idempotency/message/provider uniqueness",

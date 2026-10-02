@@ -22,7 +22,7 @@
       "functionalHead": "b46846b2a93e7484dee97e2ef93a5b303a126ab8"
     },
     "modelTest": {
-      "path": "backend/tests/InventoryApp.Tests/N71COutboxPersistenceModelTests.cs",
+      "path": "backend/tests/Solqaryn.Tests/N71COutboxPersistenceModelTests.cs",
       "blobSha": "690fc2a0a57918fb0b67b19301c9b986163dc877"
     },
     "gates": {

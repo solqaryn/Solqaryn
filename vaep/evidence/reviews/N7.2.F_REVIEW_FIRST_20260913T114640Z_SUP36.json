@@ -24,7 +24,7 @@
     "directedTestsCommit": "a64da88d411f90933ed604092eea6654aa6ebfae",
     "files": [
       "backend/src/Application/Services/OutboxRetryProcessor.cs",
-      "backend/tests/InventoryApp.Tests/N72FOutboxSecurityAuditTests.cs"
+      "backend/tests/Solqaryn.Tests/N72FOutboxSecurityAuditTests.cs"
     ]
   },
   "securityReview": {

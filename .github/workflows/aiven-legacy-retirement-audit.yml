@@ -4,14 +4,14 @@ on:
   push:
     branches: [dev]
     paths:
-      - .github/checkpoints/aiven-legacy-retirement-inventory
+      - .github/checkpoints/aiven-legacy-retirement-audit
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  inventory:
+  audit:
     name: Inventariar proyectos y servicios visibles para el token canónico
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -37,7 +37,7 @@ jobs:
                   headers={
                       'Authorization': f'aivenv1 {token}',
                       'Accept':'application/json',
-                      'User-Agent':'SOLQARYN-Aiven-Legacy-Retirement-Inventory/1.0'
+                      'User-Agent':'SOLQARYN-Aiven-Legacy-Retirement-Audit/1.0'
                   },
                   method='GET'
               )
@@ -74,7 +74,7 @@ jobs:
                               if d.get('database_name')
                           )
                       elif isinstance(db_payload, dict) and db_payload.get('_http_error'):
-                          entry['databaseInventoryHttp']=db_payload['_http_error']
+                          entry['databaseAuditHttp']=db_payload['_http_error']
                   svc_out.append(entry)
               out.append({
                   'projectName':pn,
@@ -91,13 +91,13 @@ jobs:
               'secretValuesPrinted':False,
           }
           print(json.dumps(report,separators=(',',':')))
-          with open('evidence/aiven-legacy-retirement-inventory.json','w',encoding='utf-8') as f:
+          with open('evidence/aiven-legacy-retirement-audit.json','w',encoding='utf-8') as f:
               json.dump(report,f,indent=2); f.write('\n')
           PY
 
       - name: Publicar evidencia
         uses: actions/upload-artifact@v4
         with:
-          name: aiven-legacy-retirement-inventory-${{ github.run_id }}
+          name: aiven-legacy-retirement-audit-${{ github.run_id }}
           retention-days: 14
           path: evidence/

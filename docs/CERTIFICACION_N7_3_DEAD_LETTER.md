@@ -34,7 +34,7 @@ El alcance no introduce una segunda cola, una tabla DeadLetter separada, un endp
 - Receipt: `vaep/evidence/receipts/N7.3.C_LISTO_REAL_20260913T170100Z.json`, commit `c1bed91798d2f759d6c78d7858455b4933e64238`.
 - Candidate funcional: `734a85911009faf352fe7d89a87f6575f0a112e5`.
 - REVIEW_FIRST: `vaep/evidence/reviews/N7.3.C_REVIEW_FIRST_20260913T165037Z_SUP48.json`, P0=0/P1=0.
-- Certificado dirigido: `backend/tests/InventoryApp.Tests/N73COutboxDeadLetterPersistenceTests.cs`.
+- Certificado dirigido: `backend/tests/Solqaryn.Tests/N73COutboxDeadLetterPersistenceTests.cs`.
 - Gate causal: run `34768580714`, job `103753938935`; Release build 0 warnings/0 errors, backend 2205/2205 y MySQL 8.4 PASS.
 - Se reutilizó `20260913050800_N71COutboxPersistence`; no se creó migración duplicada o destructiva.
 
@@ -43,7 +43,7 @@ El alcance no introduce una segunda cola, una tabla DeadLetter separada, un endp
 - Receipt: `vaep/evidence/receipts/N7.3.D_LISTO_REAL_20260913T173523Z.json`, commit `2359480b211d359035a521555d15be92b86ffc7b`.
 - Candidate funcional: `ca7870f7e565fe408861db04850bcbdd085c8f02`.
 - REVIEW_FIRST: `vaep/evidence/reviews/N7.3.D_REVIEW_FIRST_20260913T172708Z_SUP12.json`, P0=0/P1=0.
-- Certificado dirigido: `backend/tests/InventoryApp.Tests/N73DOutboxDeadLetterApplicationTests.cs`.
+- Certificado dirigido: `backend/tests/Solqaryn.Tests/N73DOutboxDeadLetterApplicationTests.cs`.
 - Backend gate `34771524112` / `103761874096` PASS; gate estático recuperado same-run `34771650570` / `103762215012` SUCCESS.
 - No se agregó endpoint nuevo: el comportamiento requerido queda cubierto por `OutboxRetryProcessor` y el CAS tenant-bound existente.
 

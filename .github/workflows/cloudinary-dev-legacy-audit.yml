@@ -4,14 +4,14 @@ on:
   push:
     branches: [dev]
     paths:
-      - .github/checkpoints/cloudinary-dev-legacy-inventory
+      - .github/checkpoints/cloudinary-dev-legacy-audit
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  inventory:
+  audit:
     name: Inventariar referencias Cloudinary legacy en solqaryn_dev
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -96,7 +96,7 @@ jobs:
               'productionTouched':False,
               'writeOperations':False,
           }
-          Path('evidence/cloudinary-legacy-inventory.json').write_text(json.dumps(report,indent=2),encoding='utf-8')
+          Path('evidence/cloudinary-legacy-audit.json').write_text(json.dumps(report,indent=2),encoding='utf-8')
           print(json.dumps({
               'status':report['status'],
               'database':db,
@@ -111,6 +111,6 @@ jobs:
       - name: Publicar inventario
         uses: actions/upload-artifact@v4
         with:
-          name: cloudinary-dev-legacy-inventory-${{ github.run_id }}
+          name: cloudinary-dev-legacy-audit-${{ github.run_id }}
           retention-days: 14
           path: evidence/

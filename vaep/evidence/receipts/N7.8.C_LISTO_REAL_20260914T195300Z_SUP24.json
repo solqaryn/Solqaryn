@@ -23,7 +23,7 @@
     "entity_source": "backend/src/Domain/Entities/PagoOnline.cs",
     "configuration": "backend/src/Infrastructure/Persistence/Configurations/PagoOnlineConfiguration.cs",
     "migration": "backend/src/Infrastructure/Persistence/Migrations/20260914193800_N7_8_C_PagosOnlinePersistence.cs",
-    "directed_tests": "backend/tests/InventoryApp.Tests/Infrastructure/Persistence/Configurations/PagoOnlineConfigurationTests.cs",
+    "directed_tests": "backend/tests/Solqaryn.Tests/Infrastructure/Persistence/Configurations/PagoOnlineConfigurationTests.cs",
     "schema_changed": true,
     "migration_id": "20260914193800_N7_8_C_PagosOnlinePersistence",
     "snapshot": "NOT_APPLICABLE_REPO_DOES_NOT_VERSION_MODEL_SNAPSHOT",

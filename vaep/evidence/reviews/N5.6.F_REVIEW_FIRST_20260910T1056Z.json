@@ -11,8 +11,8 @@
     "backend/src/API/Controllers/CuentasPorPagarController.cs",
     "frontend/src/app/features/finanzas/cuentas-por-cobrar/cuentas-por-cobrar.routes.ts",
     "frontend/src/app/features/finanzas/cuentas-por-pagar/cuentas-por-pagar.routes.ts",
-    "backend/tests/InventoryApp.Tests/FinanzasServiceTests.cs",
-    "backend/tests/InventoryApp.Tests/N28CuentaPorPagarSecurityRegressionTests.cs"
+    "backend/tests/Solqaryn.Tests/FinanzasServiceTests.cs",
+    "backend/tests/Solqaryn.Tests/N28CuentaPorPagarSecurityRegressionTests.cs"
   ],
   "decision": "PASS_EXISTING_SECURITY_CONTROLS_NO_CHANGE",
   "findings": {

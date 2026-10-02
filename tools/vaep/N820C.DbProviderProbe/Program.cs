@@ -126,7 +126,7 @@ try
     }
 
     var engine = serverVersion.Contains("mariadb", StringComparison.OrdinalIgnoreCase) ? "MARIADB" : "MYSQL";
-    var infrastructureProject = Path.Combine(repoRoot, "backend", "src", "Infrastructure", "InventoryApp.Infrastructure.csproj");
+    var infrastructureProject = Path.Combine(repoRoot, "backend", "src", "Infrastructure", "Solqaryn.Infrastructure.csproj");
     var programFile = Path.Combine(repoRoot, "backend", "src", "API", "Program.cs");
     var migrationsRoot = Path.Combine(repoRoot, "backend", "src", "Infrastructure", "Migrations");
 

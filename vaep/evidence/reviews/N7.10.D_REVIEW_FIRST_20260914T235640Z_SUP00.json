@@ -27,7 +27,7 @@
   "implementation": {
     "service": "backend/src/Infrastructure/Services/DocumentoFiscalEmisionService.cs",
     "controller": "backend/src/API/Controllers/FacturacionFiscalController.cs",
-    "tests": "backend/tests/InventoryApp.Tests/DocumentoFiscalEmisionServiceTests.cs",
+    "tests": "backend/tests/Solqaryn.Tests/DocumentoFiscalEmisionServiceTests.cs",
     "permission_seed": "backend/src/Application/Common/CatalogoPermisosBase.cs",
     "provider_jurisdiction_neutral": true,
     "durable_idempotency_claim": true,

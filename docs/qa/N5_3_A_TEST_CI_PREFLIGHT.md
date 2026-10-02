@@ -9,10 +9,10 @@ J5 R2 exhausted the Jules retry budget (`ATTEMPT2/2`) and remained transport-onl
 
 The repository already contains sales-domain regression material that N5.3 implementation must preserve rather than replace:
 
-- `backend/tests/InventoryApp.Tests/VentaServiceTests.cs` covers core `VentaService` behavior.
+- `backend/tests/Solqaryn.Tests/VentaServiceTests.cs` covers core `VentaService` behavior.
 - Sales-adjacent API/RBAC contract suites include `N31CotizacionApiContractTests.cs`, `N32PedidoVentaApiContractTests.cs`, `N36DevolucionClienteApplicationContractTests.cs` and `N37NotaCreditoClienteSecurityAuditTests.cs`; these establish a live pattern for explicit `ModuloSistema.Ventas` permission assertions.
 - `N04RbacRelacionalTests.cs` covers relational RBAC catalog invariants.
-- `InsumosAislamientoVentasTests.cs` and inventory/concurrency suites exercise data interactions that sales-report queries must not destabilize.
+- `InsumosAislamientoVentasTests.cs` and inventario/concurrency suites exercise data interactions that sales-report queries must not destabilize.
 
 These suites are evidence sources and regression anchors. They do not prove a future N5.3 reporting contract until the corresponding N5.3.B–D implementation exists.
 

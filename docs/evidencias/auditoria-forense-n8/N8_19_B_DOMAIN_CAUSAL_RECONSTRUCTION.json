@@ -93,7 +93,7 @@
       "sheet_state": "LISTO",
       "dependency": "COLA records N8.15.A -> N8.15.B and baseline 7f6da862a8ae3173b93fb48f8faeeee7f2223d8a",
       "lease": "SUP53-N815B-20260915T235719Z",
-      "work": "docs/matrices-evaluacion/00_GOBERNANZA/N8_15_B_DOMAIN_INVENTORY.md physically inventories 9 bounded areas, ownership, cross-domain dependencies and alias/coupling policy with P0=0/P1=0.",
+      "work": "docs/matrices-evaluacion/00_GOBERNANZA/N8_15_B_DOMAIN_inventario.md physically inventories 9 bounded areas, ownership, cross-domain dependencies and alias/coupling policy with P0=0/P1=0.",
       "candidate_head": "80e63559500fbed7864b834027f024e890346740",
       "gate": "N8.15.G and N8.15.H later validate/certify A-G against static references and causal CI without claiming a runtime delta for B.",
       "receipt": "No standalone N8.15.B receipt exists in the current receipt corpus; the macro closure is vaep/evidence/receipts/N8.15.H_LISTO_REAL_20260916T000800Z_SUP53.json.",

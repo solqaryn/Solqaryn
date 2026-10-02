@@ -25,8 +25,8 @@
   },
   "blocker": {
     "type": "EXTERNAL_READ_PRIMITIVE_ABSENT",
-    "cause": "The connected Render surface exposes an environment-variable mutation operation but no read-only sanitized names-only inventory operation. Fresh DEV-to-PROD environment-key parity therefore cannot be certified without accessing secret values, which is prohibited.",
-    "required_resolution": "Provide or enable a fresh read-only sanitized names-only environment-variable inventory, with values omitted, for both Render services; compare the two key sets and, only if UNKNOWN becomes 0 and all remaining current-standard checks remain passing, issue fresh REVIEW_FIRST, receipt, exact-head/equivalence and write/readback before advancing.",
+    "cause": "The connected Render surface exposes an environment-variable mutation operation but no read-only sanitized names-only inventario operation. Fresh DEV-to-PROD environment-key parity therefore cannot be certified without accessing secret values, which is prohibited.",
+    "required_resolution": "Provide or enable a fresh read-only sanitized names-only environment-variable inventario, with values omitted, for both Render services; compare the two key sets and, only if UNKNOWN becomes 0 and all remaining current-standard checks remain passing, issue fresh REVIEW_FIRST, receipt, exact-head/equivalence and write/readback before advancing.",
     "secret_values_read": false,
     "environment_mutation_invoked": false,
     "production_write_invoked": false
@@ -67,7 +67,7 @@
     "next_parent_promoted": false,
     "reason": "UNKNOWN remains 1 on a causal DoD requirement."
   },
-  "next_action": "OBTAIN_FRESH_SANITIZED_RENDER_ENV_KEY_NAME_INVENTORY_FOR_srv-d9jblq7avr4c73c74jng_AND_srv-d983qti8qa3s73eqqne0_READ_ONLY__VALUES_NEVER_EXPOSED__COMPARE_WITH_CURRENT_SOURCE__IF_UNKNOWN_0_THEN_REVIEW_FIRST_RECEIPT_READBACK__DO_NOT_ADVANCE_N8.22.G",
+  "next_action": "OBTAIN_FRESH_SANITIZED_RENDER_ENV_KEY_NAME_inventario_FOR_srv-d9jblq7avr4c73c74jng_AND_srv-d983qti8qa3s73eqqne0_READ_ONLY__VALUES_NEVER_EXPOSED__COMPARE_WITH_CURRENT_SOURCE__IF_UNKNOWN_0_THEN_REVIEW_FIRST_RECEIPT_READBACK__DO_NOT_ADVANCE_N8.22.G",
   "safety": {
     "development_only": true,
     "main_modified": false,

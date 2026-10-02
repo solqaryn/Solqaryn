@@ -23,7 +23,7 @@
   "material_delta": {
     "files": [
       "backend/src/API/Controllers/InboundWebhooksController.cs",
-      "backend/tests/InventoryApp.Tests/API/InboundWebhookIngressTests.cs"
+      "backend/tests/Solqaryn.Tests/API/InboundWebhookIngressTests.cs"
     ],
     "schema_changed": false,
     "frontend_changed": false,

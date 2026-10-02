@@ -45,14 +45,14 @@
       "deletions": 4,
       "paths": [
         "frontend/package.json",
-        "frontend/scripts/validate-varistorehn-fase1.mjs",
-        "frontend/scripts/validate-varistorehn-fase6.mjs",
-        "frontend/scripts/validate-varistorehn-mvp.mjs",
-        "frontend/src/app/features/varistorehn/varistorehn-checkout.component.ts",
-        "frontend/src/app/features/varistorehn/varistorehn-header.component.html"
+        "frontend/scripts/validate-SOLQARYN-fase1.mjs",
+        "frontend/scripts/validate-SOLQARYN-fase6.mjs",
+        "frontend/scripts/validate-SOLQARYN-mvp.mjs",
+        "frontend/src/app/features/SOLQARYN/SOLQARYN-checkout.component.ts",
+        "frontend/src/app/features/SOLQARYN/SOLQARYN-header.component.html"
       ]
     },
-    "requirements_and_dod": "PASS__VARISTOREHN_MVP_PHASES_0_6_REVIEWED",
+    "requirements_and_dod": "PASS__SOLQARYN_MVP_PHASES_0_6_REVIEWED",
     "implementation_and_relevant_diffs": "PASS__SIX_PRODUCT_TEST_FILES_REVIEWED_FRESH",
     "dependencies": "PASS__NO_DEPENDENCY_VERSION_DELTA",
     "security_rbac_tenant": "PASS__PUBLIC_ROUTES_NO_ADMIN_GUARDS__BACKEND_PRICE_STOCK_AUTHORITY__PAYMENT_FAIL_CLOSED__NO_TENANT_OR_ADMIN_SCOPE_DELTA",
@@ -68,7 +68,7 @@
       "status": "completed",
       "conclusion": "success"
     },
-    "varistorehn_phase6": {
+    "SOLQARYN_phase6": {
       "run_id": 35445175492,
       "head": "8c51d1190ae389d15e27a2aeda189ddcce53982d",
       "status": "completed",

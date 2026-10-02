@@ -14,7 +14,7 @@ namespace Solqaryn.Tests;
 public sealed class N71DOutboxApplicationApiTests
 {
     private static readonly RegistrarMensajeOutboxRequest Request = new(
-        "inventory.stock.changed",
+        "inventario.stock.cambiado",
         "{\"sku\":\"ABC\"}",
         "Producto",
         "42",

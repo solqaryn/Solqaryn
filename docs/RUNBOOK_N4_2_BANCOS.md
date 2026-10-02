@@ -28,8 +28,8 @@ Este runbook cubre el módulo N4.2 Bancos en `Desarrollo`: ciclo de vida CRUD de
 
 ```bash
 cd backend
-dotnet build InventoryApp.sln --configuration Release
-dotnet test InventoryApp.sln --configuration Release --no-build
+dotnet build Solqaryn.sln --configuration Release
+dotnet test Solqaryn.sln --configuration Release --no-build
 ```
 
 Para cambios frontend, ejecutar además build/lint/tests aplicables del workspace `frontend` y los E2E de CuentaBancaria cuando corresponda.

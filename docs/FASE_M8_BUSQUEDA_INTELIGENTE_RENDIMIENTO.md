@@ -137,7 +137,7 @@ Backend:
 - `backend/src/Infrastructure/Repositories/ProveedorRepository.cs`
 - `backend/src/Infrastructure/Repositories/VentaRepository.cs`
 - `backend/src/Infrastructure/Repositories/CompraRepository.cs`
-- `backend/tests/InventoryApp.Tests/M8BusquedaRepositoriosTests.cs`
+- `backend/tests/Solqaryn.Tests/M8BusquedaRepositoriosTests.cs`
 
 Frontend:
 

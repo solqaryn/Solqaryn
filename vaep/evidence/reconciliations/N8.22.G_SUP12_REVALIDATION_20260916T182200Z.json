@@ -42,8 +42,8 @@
   },
   "evidence_discovery": {
     "drive_search_query": "solqaryn-api-desarrollo environment variable",
-    "authoritative_new_dev_env_name_inventory_found": false,
-    "production_env_name_inventory_reference": "vaep/evidence/reconciliations/N8.22.G_OWNER_CONTROL_PLANE_EVIDENCE_20260916T172800Z.json",
+    "authoritative_new_dev_env_name_inventario_found": false,
+    "production_env_name_inventario_reference": "vaep/evidence/reconciliations/N8.22.G_OWNER_CONTROL_PLANE_EVIDENCE_20260916T172800Z.json",
     "production_env_values": "MASKED_NOT_CAPTURED"
   },
   "canonical_liveness_recovery": {
@@ -79,7 +79,7 @@
     "material_gap_count": 0,
     "unknown_count": 1,
     "classification": "BLOCKER_EXTERNAL_CAUSAL",
-    "required_owner_action": "Provide or authorize a sanitized provider-authoritative Render DEV environment-variable NAME inventory for solqaryn-api-desarrollo; names only, never values."
+    "required_owner_action": "Provide or authorize a sanitized provider-authoritative Render DEV environment-variable NAME inventario for solqaryn-api-desarrollo; names only, never values."
   },
   "guards": {
     "main_write": 0,

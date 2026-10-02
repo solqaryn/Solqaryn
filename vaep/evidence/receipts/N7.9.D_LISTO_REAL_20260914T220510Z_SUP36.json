@@ -29,18 +29,18 @@
     "backend/src/Application/DTOs/TiendaCheckoutDto.cs": "+2/-0",
     "backend/src/Application/DTOs/ProductoCatalogoPublicoDto.cs": "+1/-0",
     "backend/src/API/Controllers/TiendaController.cs": "+59/-32",
-    "backend/tests/InventoryApp.Tests/API/Controllers/TiendaControllerExactVariantTests.cs": "+151/-0"
+    "backend/tests/Solqaryn.Tests/API/Controllers/TiendaControllerExactVariantTests.cs": "+151/-0"
   },
   "resolved_gap": "PUBLIC_CHECKOUT_PHYSICAL_VARIANT_AMBIGUITY",
   "behavior": [
     "Public catalog exposes ProductoVarianteId for each active physical variant.",
     "Checkout accepts and returns exact ProductoVarianteId and recalculates current stock, price, SKU and model from that exact active variant.",
     "Legacy label-only selection fails closed with 409 when it maps to more than one physical variant.",
-    "Anonymous Tienda checkout remains validation-only and does not reserve inventory, create ERP orders or initiate payments.",
+    "Anonymous Tienda checkout remains validation-only and does not reserve inventario, create ERP orders or initiate payments.",
     "Existing protected idempotent PedidoVenta and tenant-scoped PagoOnline authorities remain the only mutation authorities."
   ],
   "directed_tests": {
-    "path": "backend/tests/InventoryApp.Tests/API/Controllers/TiendaControllerExactVariantTests.cs",
+    "path": "backend/tests/Solqaryn.Tests/API/Controllers/TiendaControllerExactVariantTests.cs",
     "cases": 3,
     "execution": "PASS_ON_EXACT_EVIDENCE_HEAD_AS_PART_OF_BACKEND_TEST_SUITE"
   },

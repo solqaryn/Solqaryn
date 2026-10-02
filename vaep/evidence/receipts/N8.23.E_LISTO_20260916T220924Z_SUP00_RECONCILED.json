@@ -39,7 +39,7 @@
   },
   "guards": {
     "new_build_used_for_rollback": false,
-    "production_varistorehn_touched": false,
+    "production_SOLQARYN_touched": false,
     "main_touched": false,
     "pr2_touched": false,
     "dns_touched": false,

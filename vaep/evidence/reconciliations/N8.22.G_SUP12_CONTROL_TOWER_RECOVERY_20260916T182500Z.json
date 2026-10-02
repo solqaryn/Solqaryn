@@ -64,7 +64,7 @@
     "remaining_unknown": "RENDER_DEV_ENV_NAME_PARITY_INCOMPLETE",
     "classification": "BLOCKER_EXTERNAL_CAUSAL",
     "independent_dependency_valid_open_scope_found": false,
-    "required_owner_action": "Provide or authorize a sanitized provider-authoritative Render DEV environment-variable NAME inventory for solqaryn-api-desarrollo; names only, never values."
+    "required_owner_action": "Provide or authorize a sanitized provider-authoritative Render DEV environment-variable NAME inventario for solqaryn-api-desarrollo; names only, never values."
   },
   "guards": {
     "main_write": 0,

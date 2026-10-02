@@ -49,7 +49,7 @@ public sealed class ReporteInventarioService : IReporteInventarioService
         var hasta = filtro.Hasta ?? now;
         var cutoff = now.AddDays(-filtro.Dias);
 
-        // N6 tenant boundary: every inventory row must belong to the Empresa selected
+        // N6 tenant boundary: cada fila de inventario must belong to the Empresa selected
         // by the already-validated tenant context. Nullable/legacy ownership fails closed.
         var existencias = _context.Set<ExistenciaVariante>()
             .AsNoTracking()

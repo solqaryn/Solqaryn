@@ -5,17 +5,17 @@
   "reviewed_at_utc": "2026-09-12T16:07:10Z",
   "base_head": "7c7030fe04410fb100c0db4be357823ae1c535db",
   "material_candidate_head": "dcce218eda4e2dd802e749ccfa43a7d02d3a3489",
-  "material_artifact": "vaep/evidence/reviews/N6.8.A_STORAGE_INVENTORY_20260912T1606Z.json",
+  "material_artifact": "vaep/evidence/reviews/N6.8.A_STORAGE_inventario_20260912T1606Z.json",
   "diff_review": {
     "ahead_by": 1,
     "files_changed": 1,
-    "only_file": "vaep/evidence/reviews/N6.8.A_STORAGE_INVENTORY_20260912T1606Z.json",
+    "only_file": "vaep/evidence/reviews/N6.8.A_STORAGE_inventario_20260912T1606Z.json",
     "additions": 109,
     "deletions": 0,
     "product_runtime_code_changed": false
   },
   "acceptance_review": {
-    "storage_files_images_exports_inventory": "PASS",
+    "storage_files_images_exports_inventario": "PASS",
     "public_private_classification": "PASS",
     "empresa_usuario_scope_mapping": "PASS",
     "expiration_retention_mapping": "PASS",
@@ -32,14 +32,14 @@
   },
   "directed_validation": [
     {"check":"material artifact readback from Desarrollo","status":"PASS"},
-    {"check":"base-to-candidate diff contains only inventory evidence","status":"PASS"},
+    {"check":"base-to-candidate diff contains only inventario evidence","status":"PASS"},
     {"check":"classification includes EmpresaId/UsuarioId and expiration semantics","status":"PASS"},
     {"check":"successor stage boundaries match N6.8.B/C/D sequence","status":"PASS"}
   ],
   "causal_gate_matrix": [
     {"gate":"REVIEW_FIRST","required":true,"status":"PASS"},
     {"gate":"P0_P1_zero","required":true,"status":"PASS"},
-    {"gate":"directed_inventory_validation","required":true,"status":"PASS"},
+    {"gate":"directed_inventario_validation","required":true,"status":"PASS"},
     {"gate":"backend_compile","required":false,"status":"NOT_APPLICABLE","reason":"No backend/runtime code changed"},
     {"gate":"frontend_build","required":false,"status":"NOT_APPLICABLE","reason":"No frontend/runtime code changed"},
     {"gate":"e2e","required":false,"status":"NOT_APPLICABLE","reason":"No behavior changed"}

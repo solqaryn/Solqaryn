@@ -7,13 +7,13 @@
   "current": {
     "deployment_id": "dpl_4yGzfFqgmNahG4vNcEAmw7ncMiq1",
     "commit": "e0a205fdb082dc9dbbbc48f7f107a62f1a7e200f",
-    "url": "solqaryn-desarrollo-bmexuoon7-vari-app.vercel.app",
+    "url": "solqaryn-desarrollo-bmexuoon7-SOLQARYN.vercel.app",
     "state": "READY"
   },
   "previous_known_good": {
     "deployment_id": "dpl_3opgmr8C7PKpnmYHUCSyiSxa2B8E",
     "commit": "738fdf1dd202c9eed72d53a6ee297c76d5533e90",
-    "url": "solqaryn-desarrollo-8iuon3yst-vari-app.vercel.app",
+    "url": "solqaryn-desarrollo-8iuon3yst-SOLQARYN.vercel.app",
     "state": "READY"
   },
   "rollback": {
@@ -32,7 +32,7 @@
     "P0": 0,
     "P1": 0,
     "build_rate_limit_bypassed_without_new_build": true,
-    "production_varistorehn_touched": false,
+    "production_SOLQARYN_touched": false,
     "main_touched": false,
     "pr2_touched": false
   },

@@ -114,7 +114,7 @@ public sealed class TtlValidationTests
             await using var db = NewContext();
             db.Add(MensajeOutbox.Crear(
                 empresaId ?? EmpresaId,
-                "inventory.changed",
+                "inventario.cambiado",
                 "{\"safe\":true}",
                 key,
                 creadoEnUtc: ClaimUtc.AddMinutes(-1)));

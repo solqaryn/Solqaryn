@@ -16,7 +16,7 @@
     "backend/src/Domain/Entities/Sucursal.cs",
     "backend/src/Domain/Entities/Almacen.cs",
     "backend/src/Domain/Entities/UbicacionAlmacen.cs",
-    "backend/tests/InventoryApp.Tests/N62BTenantOwnershipDomainTests.cs"
+    "backend/tests/Solqaryn.Tests/N62BTenantOwnershipDomainTests.cs"
   ],
   "controlPlaneFilesTouchedByFunctionalDelta": false,
   "testsExecuted": [

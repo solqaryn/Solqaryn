@@ -1,4 +1,4 @@
-# N8.15.E — FRONTEND_UX inventory
+# N8.15.E — FRONTEND_UX inventario
 
 Estado: `LISTO_REAL`
 
@@ -14,7 +14,7 @@ Baseline de entrada: `844d3982bd9baddacf5b02dc0c5a274f581089ff`.
 
 `app.routes.ts` es la entrada principal. Las rutas ERP autenticadas usan `authGuard` + `permisoGuard` con metadata `data.modulo/data.accion`; algunas features agregan route arrays propios (por ejemplo ajustes de inventario, facturas proveedor y pedidos de venta).
 
-Existe además storefront público `varistorehn/**` y `login` fuera del guard ERP. Esa exposición no se trata como defecto por sí sola: las operaciones y datos sensibles deben seguir protegidos por API/backend.
+Existe además storefront público `SOLQARYN/**` y `login` fuera del guard ERP. Esa exposición no se trata como defecto por sí sola: las operaciones y datos sensibles deben seguir protegidos por API/backend.
 
 ## Candidatos de contrato UI
 
@@ -33,7 +33,7 @@ Los archivos decorativos/SCSS sin datos, permisos o interacción material no rec
 1. `catalogos-producto` reutiliza una UI común parametrizada para colores/tallas/marcas/modelos; se clasifica `KEEP` como shared pattern y evita cuatro implementaciones separadas.
 2. List/form/detail del mismo aggregate son contratos `SCREEN` distintos si son rutas distintas, no duplicados automáticos.
 3. Route specs en `frontend/src/app/*.spec.ts` y routes feature son evidencia de uso; no se clasifican orphan por no aparecer directamente en menú.
-4. Storefront `varistorehn` comparte catálogo/comercial con ERP pero es un canal/UI bounded area distinto; ownership backend compartido, UI `KEEP`.
+4. Storefront `SOLQARYN` comparte catálogo/comercial con ERP pero es un canal/UI bounded area distinto; ownership backend compartido, UI `KEEP`.
 5. Cualquier component/route sin referencia confirmada queda `UNKNOWN` hasta N8.15.G; `REMOVE_SAFE=0` en E.
 
 ## Menú, servicios y autoridad

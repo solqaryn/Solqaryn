@@ -24,7 +24,7 @@ Estos hallazgos **no bloquean el cierre del preflight N2.4.A**; son requisitos o
 - No adelantar N2.5 (three-way match).
 
 ## Validaciones realmente ejecutadas por Jules A
-- Ejecutó `dotnet test backend/tests/InventoryApp.Tests/InventoryApp.Tests.csproj`.
+- Ejecutó `dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj`.
 - La ejecución tuvo fallos de integración asociados a MySQL local no disponible; las pruebas unitarias compiladas/ejecutadas no evidenciaron regresiones atribuibles al cambio documental.
 - **No se declara PASS integral** de la suite.
 - Auto-review Jules: patch limitado al archivo autorizado, sin cambios funcionales, ramas, PR, push, merge, Producción ni secretos.

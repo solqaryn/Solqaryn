@@ -9,11 +9,11 @@
   "actor": {
     "technical": "Codex",
     "humanAcceptancePresent": false,
-    "authorizedHumanContext": "Javier Mejia authenticated in VariStorehn Desarrollo/UAT"
+    "authorizedHumanContext": "Javier Mejia authenticated in SOLQARYN Desarrollo/UAT"
   },
   "environment": {
     "deployment": "https://solqaryn-desarrollo.vercel.app",
-    "tenantCompany": "VariStorehn",
+    "tenantCompany": "SOLQARYN",
     "scope": "Desarrollo/UAT",
     "secretsRead": false,
     "productionTouched": false,
@@ -33,12 +33,12 @@
       "steps": [
         "Opened the authenticated purchase-order form and selected provider Javier.",
         "Selected Cargador, the Samsung S25 Ultra Azul variant, quantity 1 and unit cost HNL 60.00.",
-        "Saved the order with the UAT observation N81G Codex UAT 20260915 - orden y recepción técnica; the list persisted it as Borrador with total HNL 60.00 and no inventory impact.",
+        "Saved the order with the UAT observation N81G Codex UAT 20260915 - orden y recepción técnica; the list persisted it as Borrador with total HNL 60.00 and no inventario impact.",
         "Read an existing confirmed purchase detail and verified supplier, method, payment state, SKU, quantity, unit cost, totals and audit timestamps.",
-        "Receipt, transition, inventory-impact and invalid-payload contracts were exercised by the directed N21-N24 and Kardex suites; no production receipt was created from the draft UAT order."
+        "Receipt, transition, inventario-impact and invalid-payload contracts were exercised by the directed N21-N24 and Kardex suites; no production receipt was created from the draft UAT order."
       ],
-      "expectedResult": "Supplier and purchase documents preserve snapshots, quantities, cost, state transitions and traceability; drafts do not affect inventory and authorized receipts do.",
-      "actualResult": "PASS. The UAT order persisted as Borrador at HNL 60.00 without stock impact, and COM-000003 confirmed the persisted purchase snapshot. Receipt and inventory-transition behavior is green in the causal backend suites.",
+      "expectedResult": "Supplier and purchase documents preserve snapshots, quantities, cost, state transitions and traceability; drafts do not affect inventario and authorized receipts do.",
+      "actualResult": "PASS. The UAT order persisted as Borrador at HNL 60.00 without stock impact, and COM-000003 confirmed the persisted purchase snapshot. Receipt and inventario-transition behavior is green in the causal backend suites.",
       "tests": [
         "Purchase/sales directed filter: 294 passed, 0 failed.",
         "Included CompraServiceTests, CompraMetodoPagoResolverTests, CompraValorizacionSnapshotTests, N21SolicitudCompra*, N22OrdenCompra*, N23Recepcion*, N24FacturaProveedor*, N15 Kardex contracts and invalid-state guards."
@@ -67,7 +67,7 @@
         "Verified the fiscal fail-closed presentation: Comprobante comercial interno and no SAR authorization were shown because no external fiscal provider is configured.",
         "Registered and read back the full HNL 200.00 cash payment; the invoice moved to Pagada and the balance became HNL 0.00."
       ],
-      "expectedResult": "A sale persists its client/product/variant, price and tax snapshots, creates the applicable invoice, applies the payment and preserves inventory/fiscal safeguards.",
+      "expectedResult": "A sale persists its client/product/variant, price and tax snapshots, creates the applicable invoice, applies the payment and preserves inventario/fiscal safeguards.",
       "actualResult": "PASS. VEN-000003 and FAC-000003 reconcile at HNL 200.00; the payment is Pagada with zero balance. Fiscal authorization remains fail-closed as required in this UAT environment.",
       "tests": [
         "Purchase/sales directed filter: 294 passed, 0 failed.",
@@ -150,12 +150,12 @@
       "status": "PASS",
       "humanAcceptancePresent": false,
       "uatData": [
-        "Authenticated actor Javier Mejia, role ADMINISTRADOR, tenant VariStorehn",
+        "Authenticated actor Javier Mejia, role ADMINISTRADOR, tenant SOLQARYN",
         "Auditoria page: 4 users, 4 privileged users, 2 roles, 239 permissions, 58 audit events (55 successful, 3 rejected)"
       ],
       "steps": [
-        "Verified the authenticated UI exposes only the authorized administrative modules for the VariStorehn tenant.",
-        "Read the Auditoria report and verified login, inventory, product/warehouse and administrative events with success/rejection counters.",
+        "Verified the authenticated UI exposes only the authorized administrative modules for the SOLQARYN tenant.",
+        "Read the Auditoria report and verified login, inventario, product/warehouse and administrative events with success/rejection counters.",
         "Ran tenant-aware persistence, ownership/isolation, RBAC, IDOR and negative authorization contracts, including cross-tenant storage ownership checks.",
         "Confirmed no secrets, production tenant or main branch were used."
       ],
@@ -205,13 +205,13 @@
   ],
   "correctiveChanges": [
     "backend/src/Application/Services/FacturaService.cs: synchronize automatic Venta financial movement state after payment registration and annulment.",
-    "backend/tests/InventoryApp.Tests/FacturaServicePagosTests.cs: regression for Pagado and Pendiente transitions."
+    "backend/tests/Solqaryn.Tests/FacturaServicePagosTests.cs: regression for Pagado and Pendiente transitions."
   ],
   "ciEvidence": {
     "previousDirectedReviewWorkflowRun": 34928064452,
     "previousDirectedReviewResult": "success",
-    "localExactHeadBuild": "dotnet build backend/InventoryApp.sln --configuration Release: 0 warnings, 0 errors",
-    "localExactHeadRegression": "dotnet test backend/InventoryApp.sln --configuration Release --no-build --filter Category!=Integration: 2269 passed, 0 failed",
+    "localExactHeadBuild": "dotnet build backend/Solqaryn.sln --configuration Release: 0 warnings, 0 errors",
+    "localExactHeadRegression": "dotnet test backend/Solqaryn.sln --configuration Release --no-build --filter Category!=Integration: 2269 passed, 0 failed",
     "postPushWorkflow": "PENDING_PUSH"
   },
   "quality": {
@@ -224,7 +224,7 @@
   },
   "parentClosure": {
     "eligibleForListoReal": false,
-    "inventoryHumanPassReference": "vaep/evidence/reviews/N8.1.G_HUMAN_UAT_INVENTORY_PASS_20260915T064700Z.json",
+    "inventarioHumanPassReference": "vaep/evidence/reviews/N8.1.G_HUMAN_UAT_inventario_PASS_20260915T064700Z.json",
     "humanAcceptancePresentForAll7": false,
     "reason": "Codex technical validation is complete for the six remaining groups, but Codex cannot self-declare authorized human PASS evidence; Integrations also needs the exact external provider action recorded above."
   },

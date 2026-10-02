@@ -23,7 +23,7 @@
         "purpose": "reject non-HTTPS checkout URLs returned by payment providers"
       },
       {
-        "path": "backend/tests/InventoryApp.Tests/N78DPagoOnlineServiceTests.cs",
+        "path": "backend/tests/Solqaryn.Tests/N78DPagoOnlineServiceTests.cs",
         "additions": 35,
         "deletions": 0,
         "purpose": "directed negative-path test proving HTTP checkout rejection"

@@ -30,4 +30,4 @@ Smoke mínimo:
 
 Se ejecuta el mismo smoke únicamente cuando exista `solqaryn-prod` y después de promover código certificado. No se usan proyectos o dominios legacy.
 
-VariStoreHN puede validarse como primer tenant mediante sus rutas/identidad configuradas dentro de SOLQARYN, no mediante infraestructura antigua.
+SOLQARYN puede validarse como primer tenant mediante sus rutas/identidad configuradas dentro de SOLQARYN, no mediante infraestructura antigua.

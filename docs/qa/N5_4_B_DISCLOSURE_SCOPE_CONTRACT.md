@@ -4,7 +4,7 @@ Authority: `docs/VAEP_AUTHORITY.md`.
 
 ## REVIEW_FIRST source inspection
 
-J6 R2 completed with a valid terminal envelope and useful tests/review, but controller REVIEW_FIRST found one material overclaim: the patch promoted an inventory-report financial-disclosure precedent into an exclusive N5.4 sales-profitability rule. The live sales-report code does not currently establish that mapping, so this ATTEMPT2 scope is corrected by controller takeover; there is no R3.
+J6 R2 completed with a valid terminal envelope and useful tests/review, but controller REVIEW_FIRST found one material overclaim: the patch promoted an inventario-report financial-disclosure precedent into an exclusive N5.4 sales-profitability rule. The live sales-report code does not currently establish that mapping, so this ATTEMPT2 scope is corrected by controller takeover; there is no R3.
 
 ## Source-backed row-scope contract for sales reports
 
@@ -20,7 +20,7 @@ This row-scope contract is source-backed for the existing sales reports and is t
 
 ## Sensitive profitability disclosure: precedent vs. current sales contract
 
-The repository also contains a **separate precedent** in `ReportesInventarioValorizacionController`: base access is `Inventario:Ver`, while a runtime `Finanzas:Ver` check controls whether inventory financial values are returned; the censored and authorized paths are audited.
+The repository also contains a **separate precedent** in `ReportesInventarioValorizacionController`: base access is `Inventario:Ver`, while a runtime `Finanzas:Ver` check controls whether inventario financial values are returned; the censored and authorized paths are audited.
 
 That is evidence that Solqaryn already uses `Finanzas:Ver` as a financial-disclosure pivot in at least one non-Finanzas report. It is **not**, by itself, proof that N5.4 sales-profitability fields must automatically inherit the same rule.
 
@@ -30,10 +30,10 @@ The current `ReportesVentasController` requires `Ventas:Ver` and does not perfor
 
 - Do **not** invent a new profitability/cost permission.
 - Preserve the existing source-backed sales row scope described above.
-- Treat the inventory `Finanzas:Ver` censorship behavior as a candidate precedent for the later security/RBAC implementation, not as an already-established N5.4 sales rule.
+- Treat the inventario `Finanzas:Ver` censorship behavior as a candidate precedent for the later security/RBAC implementation, not as an already-established N5.4 sales rule.
 - Any change that adds financial censorship to sales-profitability outputs must be decided and tested explicitly in the N5.4 security/RBAC stage; until then, this disclosure sub-contract remains an explicit dependency rather than a fabricated permission rule.
 - Existing sales-report audit behavior records report queries; do not claim a censored-vs-full sales audit branch exists until such a branch is actually implemented.
 
 ## REVIEW_FIRST disposition
 
-**CONTROLLER TAKEOVER ACCEPTED.** J6 R2 supplied valid evidence and passed its requested backend test suite, but its content overclaimed the applicability of the inventory financial-disclosure precedent. Because this was ATTEMPT2, no R3 is permitted. The controller corrected the scope directly against `ReportesVentasController`, `ReporteVentasService`, `VentaRepository`, and `ReportesInventarioValorizacionController`. The resulting contract is source-backed, fail-closed on row scope, and explicitly preserves the unresolved disclosure dependency without inventing a permission.
+**CONTROLLER TAKEOVER ACCEPTED.** J6 R2 supplied valid evidence and passed its requested backend test suite, but its content overclaimed the applicability of the inventario financial-disclosure precedent. Because this was ATTEMPT2, no R3 is permitted. The controller corrected the scope directly against `ReportesVentasController`, `ReporteVentasService`, `VentaRepository`, and `ReportesInventarioValorizacionController`. The resulting contract is source-backed, fail-closed on row scope, and explicitly preserves the unresolved disclosure dependency without inventing a permission.

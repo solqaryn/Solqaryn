@@ -1,4 +1,4 @@
-# N8.15.C — DB_MIG inventory
+# N8.15.C — DB_MIG inventario
 
 Estado: `LISTO_REAL`
 
@@ -7,7 +7,7 @@ Baseline de entrada: `80e63559500fbed7864b834027f024e890346740`.
 ## Persistence root
 
 - DbContext autoritativo localizado: `backend/src/Infrastructure/Persistence/AppDbContext.cs` (`AppDbContext : DbContext`).
-- Provider/runtime: EF Core 8.0.2 + `Pomelo.EntityFrameworkCore.MySql` 8.0.2 + `MySqlConnector` 2.3.7, definidos en `InventoryApp.Infrastructure.csproj`.
+- Provider/runtime: EF Core 8.0.2 + `Pomelo.EntityFrameworkCore.MySql` 8.0.2 + `MySqlConnector` 2.3.7, definidos en `Solqaryn.Infrastructure.csproj`.
 - Persistencia principal: MySQL.
 - Configuraciones relacionales: `backend/src/Infrastructure/Persistence/Configurations/**`.
 - Repositorios: `backend/src/Infrastructure/Repositories/**`.

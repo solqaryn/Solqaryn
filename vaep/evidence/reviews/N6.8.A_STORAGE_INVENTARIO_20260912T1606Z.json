@@ -1,5 +1,5 @@
 {
-  "schema": "VAEP_PREPARE_INVENTORY_V1",
+  "schema": "VAEP_PREPARE_inventario_V1",
   "task_id": "N6.8.A",
   "parent": "N6.8",
   "branch": "Desarrollo",
@@ -7,13 +7,13 @@
   "result": "DELTA_MATERIAL_VERIFICADO",
   "generated_at_utc": "2026-09-12T16:06:31Z",
   "acceptance": {
-    "inventory_storage_files_images_exports": "PASS",
+    "inventario_storage_files_images_exports": "PASS",
     "public_private_classification": "PASS",
     "empresa_usuario_scope_mapping": "PASS",
     "expiration_retention_mapping": "PASS",
     "ready_for_implementation": "PASS"
   },
-  "inventory": [
+  "inventario": [
     {
       "surface": "product_images",
       "contracts": [
@@ -84,12 +84,12 @@
     "fail_closed_requirement": "N6.8.B must introduce/propagate explicit tenant-aware storage context and fail closed when active tenant is missing or mismatched."
   },
   "causal_gate_matrix": [
-    {"gate":"source_inventory_same_branch","required":true,"status":"PASS"},
+    {"gate":"source_inventario_same_branch","required":true,"status":"PASS"},
     {"gate":"public_private_scope_map","required":true,"status":"PASS"},
     {"gate":"expiration_retention_map","required":true,"status":"PASS"},
-    {"gate":"backend_compile","required":false,"status":"NOT_APPLICABLE","reason":"PREPARAR evidence-only inventory; no product/runtime code changed"},
-    {"gate":"frontend_build","required":false,"status":"NOT_APPLICABLE","reason":"PREPARAR evidence-only inventory; no frontend code changed"},
-    {"gate":"e2e","required":false,"status":"NOT_APPLICABLE","reason":"PREPARAR evidence-only inventory; no behavior changed"}
+    {"gate":"backend_compile","required":false,"status":"NOT_APPLICABLE","reason":"PREPARAR evidence-only inventario; no product/runtime code changed"},
+    {"gate":"frontend_build","required":false,"status":"NOT_APPLICABLE","reason":"PREPARAR evidence-only inventario; no frontend code changed"},
+    {"gate":"e2e","required":false,"status":"NOT_APPLICABLE","reason":"PREPARAR evidence-only inventario; no behavior changed"}
   ],
   "next_stage_contract": {
     "N6.8.B": "Backend storage context tenant-aware and fail-closed without active tenant.",

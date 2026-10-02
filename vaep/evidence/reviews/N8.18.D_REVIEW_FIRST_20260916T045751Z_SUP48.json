@@ -14,7 +14,7 @@
     "docs/matrices-evaluacion/00_GOBERNANZA/N8_18_D_BACKEND_REFACTOR.json",
     "scripts/validate_n8_18_d_backend_refactor.py",
     ".github/workflows/matrix-governance.yml",
-    "backend/tests/InventoryApp.Tests/Application/N818BackendArchitectureTests.cs"
+    "backend/tests/Solqaryn.Tests/Application/N818BackendArchitectureTests.cs"
   ],
   "review_assertions": {
     "n8_18_a_cs03_policy_followed": true,

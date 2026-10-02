@@ -9,9 +9,9 @@
   "p1": 0,
   "findings": [],
   "verifiedDeliverables": [
-    "backend/tests/InventoryApp.Tests/RetryMappingContractTests.cs",
-    "backend/tests/InventoryApp.Tests/TtlValidationTests.cs",
-    "backend/tests/InventoryApp.Tests/NotificationDedupContractTests.cs"
+    "backend/tests/Solqaryn.Tests/RetryMappingContractTests.cs",
+    "backend/tests/Solqaryn.Tests/TtlValidationTests.cs",
+    "backend/tests/Solqaryn.Tests/NotificationDedupContractTests.cs"
   ],
   "coverageSummary": {
     "retryMapping": "retry/backoff/cap/dead-letter mapping is deterministic",

@@ -13,7 +13,7 @@ Una devolución a proveedor afecta mercancía que previamente ingresó mediante 
 1. `ExistenciaVariante` es la única autoridad cuantitativa física utilizada por N2.6.
 2. `ProductoVariante.Cantidad` no se usa para decidir ni validar la devolución.
 3. Confirmar una devolución bloquea previamente las claves físicas mediante `IExistenciaVarianteConcurrencyService`.
-4. La mutación física se encapsula en `IDevolucionProveedorInventoryProcessor`.
+4. La mutación física se encapsula en `IDevolucionProveedorinventarioProcessor`.
 5. El movimiento de inventario se registra mediante `IDevolucionProveedorKardexWriter` dentro de la misma frontera transaccional.
 6. La anulación de una devolución confirmada revierte mediante el mismo modelo de autoridad, locks y Kardex; no se implementa como una simple transición documental desconectada del stock.
 7. Auditoría, persistencia del estado y mutación física deben compartir la unidad transaccional para impedir estados parciales.

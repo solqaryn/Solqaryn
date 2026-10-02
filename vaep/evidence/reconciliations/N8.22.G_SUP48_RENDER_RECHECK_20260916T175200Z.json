@@ -33,8 +33,8 @@
     "remaining_unknown_count": 1,
     "remaining_unknown": {
       "id": "RENDER_DEV_ENV_NAME_PARITY_INCOMPLETE",
-      "fact": "The connected Render toolset exposes service metadata and environment-variable writes, but no read/list operation for existing environment variables. Exact provider-authoritative DEV environment-variable NAME inventory therefore cannot be certified with the currently authorized tools.",
-      "required_owner_action": "Provide or authorize a sanitized Render DEV environment-variable NAME inventory for solqaryn-api-desarrollo; names only, never values."
+      "fact": "The connected Render toolset exposes service metadata and environment-variable writes, but no read/list operation for existing environment variables. Exact provider-authoritative DEV environment-variable NAME inventario therefore cannot be certified with the currently authorized tools.",
+      "required_owner_action": "Provide or authorize a sanitized Render DEV environment-variable NAME inventario for solqaryn-api-desarrollo; names only, never values."
     },
     "staging_equivalent": false,
     "n8_22_h_promotable": false

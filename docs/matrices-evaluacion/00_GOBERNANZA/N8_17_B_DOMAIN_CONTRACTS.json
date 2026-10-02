@@ -100,10 +100,10 @@
     {
       "matrix_id": "VAEP-MX::PRODUCT_CATALOG::PRODUCTOS",
       "domain": "PRODUCT_CATALOG",
-      "objective": "Manage sellable product definitions and their catalog-facing attributes while preserving inventory and accounting boundaries.",
+      "objective": "Manage sellable product definitions and their catalog-facing attributes while preserving inventario and accounting boundaries.",
       "actors": ["Authorized product operator", "Product backend"],
       "preconditions": ["Authenticated tenant context", "Product permission for the requested action", "Referenced catalog entities are valid"],
-      "invariants": ["Product identity and tenant ownership are server-authoritative", "Commercial/catalog attributes cannot directly forge inventory movements", "Referenced category/catalog values must exist in the same tenant"],
+      "invariants": ["Product identity and tenant ownership are server-authoritative", "Commercial/catalog attributes cannot directly forge inventario movements", "Referenced category/catalog values must exist in the same tenant"],
       "happy_path": ["List or open a product", "Create/edit permitted product data", "Backend validates references and uniqueness", "Persist and read back authoritative product"],
       "alternate_flows": ["Invalid references or duplicate business keys are rejected", "Forbidden action fails closed", "Protected products follow explicit lifecycle policy rather than silent deletion"],
       "side_effects": ["Product catalog data/variants may change", "Downstream sales/purchase presentation may observe the new product state"],
@@ -172,7 +172,7 @@
     {
       "matrix_id": "VAEP-MX::CUSTOMERS_COMMERCIAL::PEDIDOS_VENTA",
       "domain": "CUSTOMERS_COMMERCIAL",
-      "objective": "Manage sales orders from commercial commitment through fulfillment handoff while preserving inventory and billing traceability.",
+      "objective": "Manage sales orders from commercial commitment through fulfillment handoff while preserving inventario and billing traceability.",
       "actors": ["Authorized sales operator", "Sales-order backend"],
       "preconditions": ["Authenticated tenant context", "Customer/items are valid", "Sales-order action is authorized"],
       "invariants": ["Order totals and lifecycle are backend-authoritative", "Order lines remain tenant-scoped and traceable", "Fulfillment/billing transitions cannot be forged by presentation state"],
@@ -208,14 +208,14 @@
     {
       "matrix_id": "VAEP-MX::CUSTOMERS_COMMERCIAL::VENTAS",
       "domain": "CUSTOMERS_COMMERCIAL",
-      "objective": "Record and manage sales transactions with authoritative commercial totals and traceable inventory/financial effects.",
+      "objective": "Record and manage sales transactions with authoritative commercial totals and traceable inventario/financial effects.",
       "actors": ["Authorized sales operator", "Sales backend"],
       "preconditions": ["Authenticated tenant context", "Sales permission", "Customer/product/payment references required by the transaction are valid"],
-      "invariants": ["Totals/discounts/taxes are server-authoritative", "Tenant and document ownership are enforced", "Inventory/payment/accounting effects occur only once per accepted sale lifecycle"],
+      "invariants": ["Totals/discounts/taxes are server-authoritative", "Tenant and document ownership are enforced", "Inventario/payment/accounting effects occur only once per accepted sale lifecycle"],
       "happy_path": ["Create/open sale", "Capture permitted items and terms", "Backend validates and calculates", "Persist transaction and return authoritative status"],
       "alternate_flows": ["Invalid stock/price/customer/payment inputs are rejected", "Forbidden/stale transition fails closed", "Cancellation/reversal follows explicit compensating policy"],
-      "side_effects": ["Sale and lines may change", "Inventory, receivable/payment or accounting effects may be triggered through authorized transactional boundaries"],
-      "idempotency": "Retrying the same logical sale operation must not duplicate the sale or its inventory/financial side effects."
+      "side_effects": ["Sale and lines may change", "Inventario, receivable/payment or accounting effects may be triggered through authorized transactional boundaries"],
+      "idempotency": "Retrying the same logical sale operation must not duplicate the sale or its inventario/financial side effects."
     },
     {
       "matrix_id": "VAEP-MX::PURCHASES_SUPPLIERS::COMPRAS",
@@ -223,10 +223,10 @@
       "objective": "Manage purchase transactions from supplier sourcing/commitment to receipt/invoice-linked state with traceability.",
       "actors": ["Authorized purchasing operator", "Purchasing backend"],
       "preconditions": ["Authenticated tenant context", "Purchasing permission", "Supplier/items are valid"],
-      "invariants": ["Purchase totals and lifecycle are backend-authoritative", "Supplier/document ownership is tenant-scoped", "Receipt/inventory/payable effects cannot be duplicated"],
+      "invariants": ["Purchase totals and lifecycle are backend-authoritative", "Supplier/document ownership is tenant-scoped", "Receipt/inventario/payable effects cannot be duplicated"],
       "happy_path": ["Create/open purchase", "Capture supplier/items/terms", "Backend validates and calculates", "Persist and expose authoritative state"],
       "alternate_flows": ["Invalid supplier/item/terms are rejected", "Forbidden transition fails closed", "Receipt/invoice discrepancies use explicit reconciliation paths"],
-      "side_effects": ["Purchase document/lines may change", "Authorized receipt, inventory and payable flows may be enabled with traceability"],
+      "side_effects": ["Purchase document/lines may change", "Authorized receipt, inventario and payable flows may be enabled with traceability"],
       "idempotency": "Retries must not duplicate a purchase document or repeat the same receipt/financial effect."
     },
     {
@@ -256,14 +256,14 @@
     {
       "matrix_id": "VAEP-MX::PURCHASES_SUPPLIERS::RECEPCIONES_COMPRA",
       "domain": "PURCHASES_SUPPLIERS",
-      "objective": "Record purchase receptions against valid purchasing commitments and produce authoritative received-quantity/inventory effects.",
-      "actors": ["Authorized receiving operator", "Receiving/inventory backend"],
+      "objective": "Record purchase receptions against valid purchasing commitments and produce authoritative received-quantity/inventario effects.",
+      "actors": ["Authorized receiving operator", "Receiving/inventario backend"],
       "preconditions": ["Authenticated tenant context", "Reception permission", "Referenced supplier/order/items are valid"],
-      "invariants": ["Received quantities are server-validated", "A reception is traceable to its source and tenant", "Inventory effects occur once per accepted reception event"],
+      "invariants": ["Received quantities are server-validated", "A reception is traceable to its source and tenant", "Inventario effects occur once per accepted reception event"],
       "happy_path": ["Open source purchase/order", "Capture received quantities/metadata", "Backend validates remaining/allowed receipt", "Persist reception and resulting authoritative state"],
-      "alternate_flows": ["Over-receipt/invalid references are rejected", "Duplicate/stale reception is prevented", "Forbidden action fails without inventory mutation"],
-      "side_effects": ["Reception record/status may change", "Inventory and purchase fulfillment state may change transactionally"],
-      "idempotency": "Retrying the same logical reception must not apply the same inventory increment twice."
+      "alternate_flows": ["Over-receipt/invalid references are rejected", "Duplicate/stale reception is prevented", "Forbidden action fails without inventario mutation"],
+      "side_effects": ["Reception record/status may change", "Inventario and purchase fulfillment state may change transactionally"],
+      "idempotency": "Retrying the same logical reception must not apply the same inventario increment twice."
     },
     {
       "matrix_id": "VAEP-MX::PURCHASES_SUPPLIERS::SOLICITUDES_COMPRA",
@@ -278,44 +278,44 @@
       "idempotency": "Repeated save/transition requests must not duplicate the request or repeat the same conversion."
     },
     {
-      "matrix_id": "VAEP-MX::INVENTORY_LOGISTICS::ALMACENES",
-      "domain": "INVENTORY_LOGISTICS",
-      "objective": "Manage warehouses as tenant-scoped inventory ownership/location anchors.",
-      "actors": ["Authorized inventory administrator", "Inventory backend"],
+      "matrix_id": "VAEP-MX::INVENTARIO_LOGISTICA::ALMACENES",
+      "domain": "INVENTARIO_LOGISTICA",
+      "objective": "Manage warehouses as tenant-scoped inventario ownership/location anchors.",
+      "actors": ["Authorized inventario administrator", "Inventario backend"],
       "preconditions": ["Authenticated tenant context", "Warehouse action is permitted"],
-      "invariants": ["Warehouse identity is tenant-scoped", "Referenced warehouses cannot be silently deleted", "Inventory balances are not edited by warehouse master presentation state"],
+      "invariants": ["Warehouse identity is tenant-scoped", "Referenced warehouses cannot be silently deleted", "Inventario balances are not edited by warehouse master presentation state"],
       "happy_path": ["List/open warehouse", "Create/edit permitted master fields", "Backend validates constraints", "Persist and refresh"],
       "alternate_flows": ["Duplicate/invalid warehouse is rejected", "Forbidden mutation fails closed", "Warehouse with protected dependencies follows explicit lifecycle policy"],
-      "side_effects": ["Warehouse master metadata may change", "Location/inventory workflows may consume updated warehouse state"],
+      "side_effects": ["Warehouse master metadata may change", "Location/inventario workflows may consume updated warehouse state"],
       "idempotency": "Repeated desired warehouse state converges without duplicate warehouses."
     },
     {
-      "matrix_id": "VAEP-MX::INVENTORY_LOGISTICS::INVENTARIO",
-      "domain": "INVENTORY_LOGISTICS",
-      "objective": "Present and control authoritative stock state and allowed inventory adjustments/movements across tenant locations.",
-      "actors": ["Authorized inventory operator", "Inventory backend"],
-      "preconditions": ["Authenticated tenant context", "Inventory action is permitted", "Product/warehouse/location references are valid"],
+      "matrix_id": "VAEP-MX::INVENTARIO_LOGISTICA::INVENTARIO",
+      "domain": "INVENTARIO_LOGISTICA",
+      "objective": "Present and control authoritative stock state and allowed inventario adjustments/movements across tenant locations.",
+      "actors": ["Authorized inventario operator", "Inventario backend"],
+      "preconditions": ["Authenticated tenant context", "Inventario action is permitted", "Product/warehouse/location references are valid"],
       "invariants": ["Stock quantities are derived from authoritative movements/transactions", "No client-only quantity override", "Movement effects are tenant-scoped and applied once"],
       "happy_path": ["Load authoritative balances/movements", "Initiate an allowed adjustment or movement", "Backend validates stock/rules", "Persist transactional movement and refresh balances"],
       "alternate_flows": ["Insufficient/invalid stock transition is rejected", "Stale/concurrent change returns controlled conflict", "Forbidden action creates no movement"],
-      "side_effects": ["Inventory movement ledger and balances may change", "Related order/purchase fulfillment state may observe resulting stock"],
-      "idempotency": "A retry of the same logical inventory movement must not apply quantity twice."
+      "side_effects": ["Inventario movement ledger and balances may change", "Related order/purchase fulfillment state may observe resulting stock"],
+      "idempotency": "A retry of the same logical inventario movement must not apply quantity twice."
     },
     {
-      "matrix_id": "VAEP-MX::INVENTORY_LOGISTICS::PREPARACIONES_PEDIDO_VENTA",
-      "domain": "INVENTORY_LOGISTICS",
-      "objective": "Prepare sales-order items for fulfillment using authoritative order and inventory state.",
+      "matrix_id": "VAEP-MX::INVENTARIO_LOGISTICA::PREPARACIONES_PEDIDO_VENTA",
+      "domain": "INVENTARIO_LOGISTICA",
+      "objective": "Prepare sales-order items for fulfillment using authoritative order and inventario state.",
       "actors": ["Authorized warehouse/fulfillment operator", "Fulfillment backend"],
       "preconditions": ["Authenticated tenant context", "Fulfillment action is permitted", "Referenced sales order is eligible"],
-      "invariants": ["Prepared quantities cannot exceed authorized remaining quantities/stock", "Order and inventory tenant ownership must match", "Preparation effects are traceable and non-duplicated"],
+      "invariants": ["Prepared quantities cannot exceed authorized remaining quantities/stock", "Order and inventario tenant ownership must match", "Preparation effects are traceable and non-duplicated"],
       "happy_path": ["Open eligible order", "Capture picked/prepared quantities", "Backend validates order and stock", "Persist preparation and authoritative fulfillment state"],
       "alternate_flows": ["Insufficient stock/over-prepare is rejected", "Stale or already completed order is rejected", "Forbidden action changes nothing"],
-      "side_effects": ["Preparation records/status may change", "Inventory reservation/movement and order fulfillment state may change through authoritative transaction"],
+      "side_effects": ["Preparation records/status may change", "Inventario reservation/movement and order fulfillment state may change through authoritative transaction"],
       "idempotency": "Retrying the same preparation event must not consume/prepare the same quantity twice."
     },
     {
-      "matrix_id": "VAEP-MX::INVENTORY_LOGISTICS::SUCURSALES",
-      "domain": "INVENTORY_LOGISTICS",
+      "matrix_id": "VAEP-MX::INVENTARIO_LOGISTICA::SUCURSALES",
+      "domain": "INVENTARIO_LOGISTICA",
       "objective": "Manage tenant branches used to scope operational locations and business activity.",
       "actors": ["Authorized organization administrator", "Organization backend"],
       "preconditions": ["Authenticated tenant context", "Branch management permission"],
@@ -326,15 +326,15 @@
       "idempotency": "Repeated application of the same branch state yields one branch record."
     },
     {
-      "matrix_id": "VAEP-MX::INVENTORY_LOGISTICS::UBICACIONES_ALMACEN",
-      "domain": "INVENTORY_LOGISTICS",
-      "objective": "Manage warehouse sub-locations/bins used to locate inventory within a valid warehouse.",
-      "actors": ["Authorized inventory administrator", "Inventory backend"],
+      "matrix_id": "VAEP-MX::INVENTARIO_LOGISTICA::UBICACIONES_ALMACEN",
+      "domain": "INVENTARIO_LOGISTICA",
+      "objective": "Manage warehouse sub-locations/bins used to locate inventario within a valid warehouse.",
+      "actors": ["Authorized inventario administrator", "Inventario backend"],
       "preconditions": ["Authenticated tenant context", "Location management permission", "Parent warehouse is valid"],
       "invariants": ["Location belongs to exactly the valid tenant/warehouse context", "Referenced locations cannot be silently removed", "Stock state is changed through movement authority, not master-data edits"],
       "happy_path": ["List warehouse locations", "Create/edit a permitted location", "Backend validates parent and uniqueness", "Persist and refresh"],
       "alternate_flows": ["Invalid parent/duplicate location is rejected", "Forbidden action fails closed", "Location with stock/dependencies follows explicit lifecycle policy"],
-      "side_effects": ["Warehouse location metadata may change", "Inventory placement options may change"],
+      "side_effects": ["Warehouse location metadata may change", "Inventario placement options may change"],
       "idempotency": "Repeating the same location definition converges without duplicate locations."
     },
     {
@@ -532,11 +532,11 @@
     {
       "matrix_id": "VAEP-MX::BI_REPORTING::REPORTES_INVENTARIO",
       "domain": "BI_REPORTING",
-      "objective": "Report stock, movements and logistics state from authoritative inventory sources.",
-      "actors": ["Authorized inventory/report consumer", "Reporting backend"],
-      "preconditions": ["Authenticated tenant context", "Inventory report permission"],
-      "invariants": ["Reported quantities derive from authoritative inventory state", "Tenant/warehouse scope is enforced", "Reporting cannot mutate stock"],
-      "happy_path": ["Choose warehouse/product/date filters", "Backend validates scope and aggregates inventory data", "Return report", "User inspects/exports"],
+      "objective": "Report stock, movements and logistics state from authoritative inventario sources.",
+      "actors": ["Authorized inventario/report consumer", "Reporting backend"],
+      "preconditions": ["Authenticated tenant context", "Inventario report permission"],
+      "invariants": ["Reported quantities derive from authoritative inventario state", "Tenant/warehouse scope is enforced", "Reporting cannot mutate stock"],
+      "happy_path": ["Choose warehouse/product/date filters", "Backend validates scope and aggregates inventario data", "Return report", "User inspects/exports"],
       "alternate_flows": ["Invalid scope/filter is rejected", "Forbidden warehouse/tenant data is denied", "No data is explicit"],
       "side_effects": ["Read-only; optional export artifact"],
       "idempotency": "Repeated reads are idempotent for unchanged source state and filters."

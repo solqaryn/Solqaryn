@@ -29,7 +29,7 @@
   ],
   "material_delta": [
     "backend/src/API/Controllers/InboundWebhooksController.cs",
-    "backend/tests/InventoryApp.Tests/API/InboundWebhookIngressTests.cs"
+    "backend/tests/Solqaryn.Tests/API/InboundWebhookIngressTests.cs"
   ],
   "verification": {
     "signature_before_persistence": "PASS_BY_CODE_REVIEW: HMAC-SHA256 fixed-time validation happens before parsing and before all DbContext reads/writes.",

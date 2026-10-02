@@ -18,7 +18,7 @@
       "evidence": [
         "backend/src/Domain/Entities/WebhookEntrante.cs",
         "backend/src/Domain/Enums/EstadoWebhookEntrante.cs",
-        "backend/tests/InventoryApp.Tests/Domain/WebhookEntranteTests.cs"
+        "backend/tests/Solqaryn.Tests/Domain/WebhookEntranteTests.cs"
       ],
       "result": "Existe agregado de dominio tenant-bound para una entrega de webhook ya verificada, con identidad externa, hash de payload para replay idempotente, correlation, timestamps UTC y estados terminales; no persiste firma ni secretos."
     }
@@ -40,7 +40,7 @@
     "productDelta": [
       "backend/src/Domain/Entities/WebhookEntrante.cs",
       "backend/src/Domain/Enums/EstadoWebhookEntrante.cs",
-      "backend/tests/InventoryApp.Tests/Domain/WebhookEntranteTests.cs"
+      "backend/tests/Solqaryn.Tests/Domain/WebhookEntranteTests.cs"
     ],
     "deferredToSuccessors": [
       "persistence/indexes/migration",

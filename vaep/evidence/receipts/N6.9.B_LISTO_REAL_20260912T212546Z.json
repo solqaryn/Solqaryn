@@ -27,7 +27,7 @@
       "head": "b78ae5926bf77d32ba7676b5940061605cd9fe94",
       "conclusion": "PASS",
       "checkRunId": 103621444618,
-      "evidence": "dotnet build InventoryApp.sln -c Release PASS; non-integration backend tests 2099 PASS; integration tests 24 PASS. N6.9.B directed domain tests are included in the passing backend suite."
+      "evidence": "dotnet build Solqaryn.sln -c Release PASS; non-integration backend tests 2099 PASS; integration tests 24 PASS. N6.9.B directed domain tests are included in the passing backend suite."
     }
   ],
   "runtimeDeltaAfterFunctionalCandidate": false,

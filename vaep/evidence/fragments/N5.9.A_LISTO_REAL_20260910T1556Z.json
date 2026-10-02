@@ -24,7 +24,7 @@
   "applicableEvidence": {
     "preflight": "docs/N5.9_REPORT_PERFORMANCE_PREFLIGHT.md",
     "salesQuery": "backend/src/Infrastructure/Services/ReporteVentasService.cs",
-    "inventoryQuery": "backend/src/Infrastructure/Services/ReporteInventarioService.cs",
+    "inventarioQuery": "backend/src/Infrastructure/Services/ReporteInventarioService.cs",
     "purchaseQuery": "backend/src/Infrastructure/Services/ReporteComprasService.cs",
     "review": "vaep/evidence/reviews/N5.9.A.1_CONTROLLER_REVIEW_FIRST_20260910T1555Z.json",
     "tracks": ["T0", "T11"],

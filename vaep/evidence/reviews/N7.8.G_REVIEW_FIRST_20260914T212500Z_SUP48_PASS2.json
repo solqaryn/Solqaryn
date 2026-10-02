@@ -28,7 +28,7 @@
     "head": "b217cc00bfa9bfc452674f0bdacbef52e50186a7",
     "files": [
       "backend/src/Application/Services/PagoOnlineService.cs",
-      "backend/tests/InventoryApp.Tests/N78DPagoOnlineServiceTests.cs"
+      "backend/tests/Solqaryn.Tests/N78DPagoOnlineServiceTests.cs"
     ],
     "frontend_files_changed": 0,
     "configuration_ui_files_changed": 0,

@@ -1,6 +1,6 @@
 {
   "generatedAtUtc": "2026-09-30T00:33:28.694Z",
-  "statsFile": "dist/inventoryapp-frontend/stats.json",
+  "statsFile": "dist/Solqaryn-frontend/stats.json",
   "initialRefs": [
     "styles-TOBEQ5SM.css",
     "chunk-FBHOMQ5R.js",
@@ -228,7 +228,7 @@
       "bytes": 8093
     },
     {
-      "name": "src/app/features/varistorehn/varistorehn-seo.service.ts",
+      "name": "src/app/features/SOLQARYN/SOLQARYN-seo.service.ts",
       "bytes": 6652
     },
     {
@@ -236,7 +236,7 @@
       "bytes": 5318
     },
     {
-      "name": "src/app/features/varistorehn/varistorehn.service.ts",
+      "name": "src/app/features/SOLQARYN/SOLQARYN.service.ts",
       "bytes": 4847
     },
     {
@@ -276,7 +276,7 @@
       "bytes": 2400
     },
     {
-      "name": "src/app/features/varistorehn/varistorehn-identidad.service.ts",
+      "name": "src/app/features/SOLQARYN/SOLQARYN-identidad.service.ts",
       "bytes": 2274
     },
     {
@@ -411,7 +411,7 @@
       "outputPath": "chunk-ITYZTBFY.js",
       "file": "chunk-ITYZTBFY.js",
       "bytes": 61343,
-      "entryPoint": "src/app/features/varistorehn/varistorehn-producto.component.ts"
+      "entryPoint": "src/app/features/SOLQARYN/SOLQARYN-producto.component.ts"
     },
     {
       "outputPath": "chunk-6OR4QMSI.js",
@@ -429,7 +429,7 @@
       "outputPath": "chunk-UPBSL7LD.js",
       "file": "chunk-UPBSL7LD.js",
       "bytes": 51131,
-      "entryPoint": "src/app/features/varistorehn/varistorehn.component.ts"
+      "entryPoint": "src/app/features/SOLQARYN/SOLQARYN.component.ts"
     },
     {
       "outputPath": "chunk-JSHUMMBC.js",
@@ -441,7 +441,7 @@
       "outputPath": "chunk-L3U6KHHC.js",
       "file": "chunk-L3U6KHHC.js",
       "bytes": 49627,
-      "entryPoint": "src/app/features/varistorehn/varistorehn-productos.component.ts"
+      "entryPoint": "src/app/features/SOLQARYN/SOLQARYN-productos.component.ts"
     },
     {
       "outputPath": "chunk-H37UY7SU.js",
@@ -531,7 +531,7 @@
       "outputPath": "chunk-OTHM35IE.js",
       "file": "chunk-OTHM35IE.js",
       "bytes": 29571,
-      "entryPoint": "src/app/features/varistorehn/varistorehn-checkout.component.ts"
+      "entryPoint": "src/app/features/SOLQARYN/SOLQARYN-checkout.component.ts"
     },
     {
       "outputPath": "chunk-3HJ7BFFO.js",
@@ -543,13 +543,13 @@
       "outputPath": "chunk-22XXB2BX.js",
       "file": "chunk-22XXB2BX.js",
       "bytes": 28666,
-      "entryPoint": "src/app/features/varistorehn/varistorehn-carrito.component.ts"
+      "entryPoint": "src/app/features/SOLQARYN/SOLQARYN-carrito.component.ts"
     },
     {
       "outputPath": "chunk-TT7TPVZH.js",
       "file": "chunk-TT7TPVZH.js",
       "bytes": 27980,
-      "entryPoint": "src/app/features/varistorehn/varistorehn-categoria.component.ts"
+      "entryPoint": "src/app/features/SOLQARYN/SOLQARYN-categoria.component.ts"
     },
     {
       "outputPath": "chunk-KXZ5YLEU.js",

@@ -39,8 +39,8 @@
     "certified_total": 3,
     "certified_ids": [
       "VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL",
-      "VAEP-MX::INVENTORY_LOGISTICS::SUCURSALES",
-      "VAEP-MX::INVENTORY_LOGISTICS::ALMACENES"
+      "VAEP-MX::inventario_LOGISTICS::SUCURSALES",
+      "VAEP-MX::inventario_LOGISTICS::ALMACENES"
     ],
     "certification_inflation": false,
     "history_preserved": true,

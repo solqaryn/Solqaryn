@@ -26,7 +26,7 @@
       "result": "PASS",
       "evidence": [
         "Producto/ProductoVariante are the current product/variant entities; normalized catalog usage is resolved through ProductoVariantes.",
-        "Current inventory persistence uses ExistenciaVariante after N1 evolution; historical StockProducto wording is not treated as current certification."
+        "Current inventario persistence uses ExistenciaVariante after N1 evolution; historical StockProducto wording is not treated as current certification."
       ]
     },
     "rbac": {

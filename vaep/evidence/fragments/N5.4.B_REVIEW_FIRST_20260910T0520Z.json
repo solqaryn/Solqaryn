@@ -19,7 +19,7 @@
   "explicitImplementationDependencies": [
     "Sales profitability percentage denominator is not source-backed; do not invent one.",
     "Sale-header discount allocation across product/category profitability is not source-backed; do not reuse tax proration by analogy.",
-    "Finanzas:Ver is an inventory-report disclosure precedent, not an established sales-profitability censorship rule; security stage must decide explicitly before changing sales disclosure."
+    "Finanzas:Ver is an inventario-report disclosure precedent, not an established sales-profitability censorship rule; security stage must decide explicitly before changing sales disclosure."
   ],
   "contractOutcome": "N5.4.B completed its domain/contract responsibility by proving source-backed invariants and preserving unsupported business semantics as explicit downstream dependency gates rather than fabricating them.",
   "causalGates": {

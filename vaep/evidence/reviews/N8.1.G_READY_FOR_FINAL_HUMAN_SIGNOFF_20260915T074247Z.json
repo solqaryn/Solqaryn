@@ -14,7 +14,7 @@
     "BI/Reporting": "TECHNICAL_PASS",
     "Multi-company/RBAC": "TECHNICAL_PASS",
     "Integrations": "BLOCKED_EXTERNAL: provider sandbox credentials/endpoints are not provisioned; internal contracts are green",
-    "Inventory": "HUMAN_PASS_EXISTING"
+    "inventario": "HUMAN_PASS_EXISTING"
   },
   "evidenceReference": "vaep/evidence/reviews/N8.1.G_CODEX_TECHNICAL_UAT_REMAINING_6_20260915T074247Z.json",
   "onlyMissingEvidence": "Authorized human PASS evidence for the six remaining groups, plus the single approved Desarrollo/UAT provider sandbox action for Integrations.",

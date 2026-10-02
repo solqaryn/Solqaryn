@@ -27,16 +27,16 @@
     "existing_environment_variable_read_or_list_action_available": false,
     "available_environment_variable_action": "update_environment_variables only; merge-safe write action does not return existing variables",
     "application_logs_inspected": true,
-    "application_logs_are_exhaustive_provider_env_inventory": false,
+    "application_logs_are_exhaustive_provider_env_inventario": false,
     "secret_values_read": false,
     "secret_values_persisted": false
   },
   "evidence_discovery": {
-    "google_drive_search_for_dev_render_env_name_inventory": "NO_AUTHORITATIVE_NEW_SOURCE_FOUND",
+    "google_drive_search_for_dev_render_env_name_inventario": "NO_AUTHORITATIVE_NEW_SOURCE_FOUND",
     "repo_owner_control_plane_receipt_rechecked": "vaep/evidence/reconciliations/N8.22.G_OWNER_CONTROL_PLANE_EVIDENCE_20260916T172800Z.json",
     "repo_render_recheck_receipt_rechecked": "vaep/evidence/reconciliations/N8.22.G_SUP48_RENDER_RECHECK_20260916T175200Z.json",
     "production_env_names_known_with_values_masked": true,
-    "dev_provider_authoritative_env_name_inventory_known": false
+    "dev_provider_authoritative_env_name_inventario_known": false
   },
   "review_first": {
     "p0": 0,
@@ -51,7 +51,7 @@
     "independent_dependency_valid_open_scope_found": false,
     "escape_outside_intervention_allowed": false
   },
-  "required_owner_action": "Provide or authorize a sanitized provider-authoritative Render DEV environment-variable NAME inventory for solqaryn-api-desarrollo; names only, never values. Then re-run N8.22.G parity and certify only if MATERIAL_GAP=0 and UNKNOWN=0.",
+  "required_owner_action": "Provide or authorize a sanitized provider-authoritative Render DEV environment-variable NAME inventario for solqaryn-api-desarrollo; names only, never values. Then re-run N8.22.G parity and certify only if MATERIAL_GAP=0 and UNKNOWN=0.",
   "gate_result": {
     "staging_equivalent": false,
     "n8_22_g_listo_real": false,

@@ -19,7 +19,7 @@ using Xunit;
 namespace Solqaryn.Tests;
 
 [Trait("Category", "Integration")]
-public class InventoryConcurrencyTests
+public class InventarioConcurrencyTests
 {
     private static string GetConnectionString(string dbName) =>
         $"Server=localhost;Port=3306;Database={dbName};User=root;Password=root;";

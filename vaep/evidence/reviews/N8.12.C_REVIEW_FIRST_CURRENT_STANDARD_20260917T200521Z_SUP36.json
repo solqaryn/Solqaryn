@@ -29,7 +29,7 @@
     "testedFunctionalInfrastructureTree": "e536536c3c89076253da917f188575e5b6a2d521",
     "infrastructureExactMatch": true,
     "currentMigrationsTree": "8bda108be74f026a99c821bc6c1e6449af11f41a",
-    "migrationInventoryInspected": true,
+    "migrationinventarioInspected": true,
     "observabilityMigrationPresent": false,
     "observabilityImplementationLocation": "backend/src/API only",
     "databaseConfigurationImpact": "NONE"

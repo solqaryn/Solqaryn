@@ -1,6 +1,6 @@
 {
   "generatedAtUtc": "2026-09-30T00:33:28.640Z",
-  "buildRoot": "dist/inventoryapp-frontend/browser",
+  "buildRoot": "dist/Solqaryn-frontend/browser",
   "existingInitialBudget": {
     "warningBytes": 1048576,
     "errorBytes": 2097152

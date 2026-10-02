@@ -14,7 +14,7 @@ SELECT
 
 -- 1) Inventario de tablas que participan directamente en el saneamiento ERP-N0.8.
 SELECT
-    'N0.8_TABLE_INVENTORY' AS check_id,
+    'N0.8_TABLE_INVENTARIO' AS check_id,
     t.TABLE_NAME,
     t.ENGINE,
     t.TABLE_ROWS,

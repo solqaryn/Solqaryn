@@ -11,7 +11,7 @@
   "dod_material":true,
   "implementation_delta":"N/A_GROUNDED",
   "exact_frontend_equivalence":{"tree":"3d7847eb8817b14942746f1e31114e56c15efbdd","exact":true},
-  "fresh_vercel_read_only":{"development_project":"solqaryn-desarrollo","production_reference_project":"varistorehn","production_active_target_proof":"P2_TO_RESOLVE_BEFORE_H","production_write":false},
+  "fresh_vercel_read_only":{"development_project":"solqaryn-desarrollo","production_reference_project":"SOLQARYN","production_active_target_proof":"P2_TO_RESOLVE_BEFORE_H","production_write":false},
   "routing_contract":{"production_host_to_production_api":true,"default_to_development_api":true,"security_headers_present":true},
   "causal_quality_run":35258969104,
   "security":{"main_or_production_touched":false,"pr2_merged":false,"secrets_touched":false,"dns_or_certificates_touched":false,"production_data_touched":false},

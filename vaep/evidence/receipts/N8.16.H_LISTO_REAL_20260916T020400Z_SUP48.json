@@ -16,7 +16,7 @@
   "p1_count": 0,
   "dod": "PASS",
   "resolved_findings": [
-    "P1 N816H_MATRIX_LIFECYCLE_STATUS_AMBIGUOUS: resolved by separating materiality/implementation status from MATRIX_STATE and fixing all 49 current roots at INVENTORY_COMPLETE",
+    "P1 N816H_MATRIX_LIFECYCLE_STATUS_AMBIGUOUS: resolved by separating materiality/implementation status from MATRIX_STATE and fixing all 49 current roots at inventario_COMPLETE",
     "CONTROL_PLANE SUP48_CONFIG_ROW_ALIGNMENT: immediate readback detected row-shifted CONFIG values; restored same-run before continuing"
   ],
   "reconciliation": {
@@ -29,7 +29,7 @@
     "duplicate_matrix_ids": 0,
     "contract_roots_without_id": 0,
     "material_child_contracts_without_id": 0,
-    "matrix_state": "49/49 INVENTORY_COMPLETE",
+    "matrix_state": "49/49 inventario_COMPLETE",
     "certified_matrices": 0
   },
   "causal_gate_matrix": [

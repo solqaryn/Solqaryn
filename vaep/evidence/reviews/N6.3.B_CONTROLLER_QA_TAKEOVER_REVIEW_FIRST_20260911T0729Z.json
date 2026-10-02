@@ -22,7 +22,7 @@
     "status": "PASS",
     "files": [
       "backend/src/Domain/Entities/Sucursal.cs",
-      "backend/tests/InventoryApp.Tests/N63BSucursalesEmpresaDomainContractsTests.cs"
+      "backend/tests/Solqaryn.Tests/N63BSucursalesEmpresaDomainContractsTests.cs"
     ],
     "forbiddenScopeTouched": false,
     "persistenceTouched": false,
@@ -54,7 +54,7 @@
     "p1": 0
   },
   "tests": {
-    "targetedTestsAdded": "backend/tests/InventoryApp.Tests/N63BSucursalesEmpresaDomainContractsTests.cs",
+    "targetedTestsAdded": "backend/tests/Solqaryn.Tests/N63BSucursalesEmpresaDomainContractsTests.cs",
     "localExecution": "UNAVAILABLE_CONTAINER_NETWORK_DNS",
     "causalWorkflow": {
       "name": "ERP-N1.1 - Certificación Sucursales",

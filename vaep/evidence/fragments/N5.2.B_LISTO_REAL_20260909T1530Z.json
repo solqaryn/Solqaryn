@@ -22,7 +22,7 @@
     "r3Created": false,
     "acceptedFacets": [
       {
-        "taskId": "N5.2.B.1.INVENTORY_REPORT_DOMAIN_CONTRACTS",
+        "taskId": "N5.2.B.1.inventario_REPORT_DOMAIN_CONTRACTS",
         "worker": "J2",
         "reviewCommit": "e9d3f742bce510411f5264367e6359766aca1dc1",
         "artifactId": "10110597206",

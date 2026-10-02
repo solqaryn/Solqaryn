@@ -18,7 +18,7 @@
     "files": [
       "backend/src/Application/DTOs/CreateProductoDto.cs",
       "backend/src/Application/DTOs/UpdateProductoDto.cs",
-      "backend/tests/InventoryApp.Tests/ProductoDtoNullabilityContractTests.cs"
+      "backend/tests/Solqaryn.Tests/ProductoDtoNullabilityContractTests.cs"
     ],
     "summary": "Partial UAT exposed an internal product DTO model-binding defect. Create and Update legacy Marca/Modelo inputs were made nullable and a nullability contract regression test was added."
   },
@@ -44,7 +44,7 @@
   },
   "uatAcceptanceStillMissing": true,
   "requiredHumanUat": [
-    "Inventory",
+    "inventario",
     "Purchasing",
     "Sales/Invoicing",
     "Treasury/Finance",

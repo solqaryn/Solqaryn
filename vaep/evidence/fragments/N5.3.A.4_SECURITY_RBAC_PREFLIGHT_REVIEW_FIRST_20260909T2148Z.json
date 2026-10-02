@@ -19,7 +19,7 @@
   "retryBudgetExhausted": true,
   "correctionOwner": "CHATGPT_VAEP",
   "sourcePatchIntegratedVerbatim": false,
-  "qaCorrectionReason": "Removed unsupported requirements for exact future permission/module, HTTP behavior, direct reuse of a private repository helper and automatic transfer of inventory financial-censorship semantics to sales; retained verified RBAC, row-scope and financial-disclosure gates.",
+  "qaCorrectionReason": "Removed unsupported requirements for exact future permission/module, HTTP behavior, direct reuse of a private repository helper and automatic transfer of inventario financial-censorship semantics to sales; retained verified RBAC, row-scope and financial-disclosure gates.",
   "materialCommit": "532422d8feab9846970b37509d84b38a77cce7c6",
   "materialPath": "docs/qa/N5_3_A_SECURITY_RBAC_PREFLIGHT.md",
   "p0Open": 0,

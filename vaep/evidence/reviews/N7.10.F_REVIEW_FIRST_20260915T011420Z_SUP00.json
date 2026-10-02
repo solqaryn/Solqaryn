@@ -23,7 +23,7 @@
     ],
     "files": [
       "backend/src/API/Controllers/FacturacionFiscalController.cs",
-      "backend/tests/InventoryApp.Tests/N710FFacturacionFiscalSecurityAuditTests.cs"
+      "backend/tests/Solqaryn.Tests/N710FFacturacionFiscalSecurityAuditTests.cs"
     ],
     "intent": "Close N7.10.F security/audit gap without changing fiscal domain, persistence, provider credentials or deployment behavior."
   },
@@ -70,7 +70,7 @@
       "evidence": "Global CorrelationIdMiddleware is active; IAuditoriaService captures correlation from HttpContext; /health and /health/ready endpoints already exist."
     }
   },
-  "directed_test": "backend/tests/InventoryApp.Tests/N710FFacturacionFiscalSecurityAuditTests.cs",
+  "directed_test": "backend/tests/Solqaryn.Tests/N710FFacturacionFiscalSecurityAuditTests.cs",
   "causal_gate": {
     "workflow": "Priority 4 - Interfaces architecture and quality",
     "run_id": 34916355931,

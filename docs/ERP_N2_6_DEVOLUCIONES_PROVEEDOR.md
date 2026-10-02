@@ -54,7 +54,7 @@ La confirmación se ejecuta dentro de una unidad transaccional que:
 
 - bloquea las claves físicas requeridas mediante `IExistenciaVarianteConcurrencyService`;
 - materializa las demandas de devolución;
-- delega la modificación física a `IDevolucionProveedorInventoryProcessor`;
+- delega la modificación física a `IDevolucionProveedorinventarioProcessor`;
 - registra el movimiento correspondiente mediante `IDevolucionProveedorKardexWriter`;
 - persiste el nuevo estado y la auditoría estricta en la misma frontera transaccional.
 

@@ -19,7 +19,7 @@
   "functional_equivalence_after_candidate": "PASS_CONTROL_EVIDENCE_OR_GOVERNANCE_DOC_ONLY",
   "material_evidence": [
     "scripts/validate_matrix_governance.py",
-    "backend/tests/InventoryApp.Tests/MatrixGovernanceContractTests.cs",
+    "backend/tests/Solqaryn.Tests/MatrixGovernanceContractTests.cs",
     "docs/matrices-evaluacion/00_GOBERNANZA/N8_16_G_TEST_CI.md",
     "docs/matrices-evaluacion/00_GOBERNANZA/PLANTILLA_MATRIZ_UI.md",
     "docs/matrices-evaluacion/00_GOBERNANZA/CATALOGO_MATRICES.md"

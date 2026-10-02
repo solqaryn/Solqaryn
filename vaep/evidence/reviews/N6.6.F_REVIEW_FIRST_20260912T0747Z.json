@@ -7,8 +7,8 @@
   "scope": "Tenant-aware document sequence reservation audit plus authenticated tenant refresh/deep-link continuity",
   "files": [
     "backend/src/Infrastructure/Services/SecuenciaDocumentoService.cs",
-    "backend/tests/InventoryApp.Tests/InventoryApp.Tests.csproj",
-    "backend/tests/InventoryApp.Tests/SecuenciaDocumentoServiceTests.cs",
+    "backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj",
+    "backend/tests/Solqaryn.Tests/SecuenciaDocumentoServiceTests.cs",
     "frontend/src/app/core/guards/auth.guard.ts",
     "frontend/src/app/features/login/login.component.ts"
   ],
