@@ -2494,3 +2494,15 @@ MAPA_ARQUITECTURA: ACTUALIZADO.
 - Cambio exclusivo de prueba E2E; sin runtime funcional, datos, migraciones, secretos, DNS ni servicios pagos.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+## 2026-10-02 — Retiro de superficies de planificación histórica
+
+- `TASKS.md` deja de almacenar rollups históricos numerados, parents, gates y snapshots de planes retirados; queda como superficie compacta de estado actual.
+- Se retiran del árbol vivo los artefactos locales de planificación anteriores que ya no tienen autoridad; la trazabilidad histórica permanece en Git y la evidencia técnica/certificaciones funcionales no se convierten en roadmap.
+- Los checks operativos dejan de depender de índices locales de planes históricos y validan directamente la autoridad vigente: Plan Maestro único + `docs/VAEP_AUTHORITY.md` + `CURRENT_STATE_ONLY`.
+- Se corrigen referencias operativas residuales a ramas/PRs históricos y se normaliza la colaboración IA al modelo CURRENT_STATE_ONLY sin lanes, fases ni handoffs retirados como autoridad.
+- Se endurece el gate de scope para impedir la reintroducción de superficies de planificación retiradas, identificadores operativos históricos o autoridades antiguas en documentos de estado actual.
+- Cambio de gobierno/documentación/CI únicamente; sin cambios funcionales de backend/frontend, datos, migraciones, secretos, QA, main ni PROD.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+

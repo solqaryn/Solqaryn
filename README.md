@@ -188,7 +188,7 @@ scripts/
 
 1. Trabajar **únicamente en `dev`**.
 2. No crear ramas adicionales sin autorización expresa.
-3. PR #2 es histórico y está cerrado/fusionado; no reabrirlo. No abrir ni fusionar un nuevo PR hacia `main` sin autorización nueva y explícita de Javier Mejía.
+3. No abrir ni fusionar un PR hacia `main` sin autorización nueva y explícita del propietario.
 4. Ejecutar validación proporcional y CI cuando aplique.
 5. No tocar Producción.
 6. Fusionar a `main` únicamente cuando Javier Mejía lo autorice expresamente.

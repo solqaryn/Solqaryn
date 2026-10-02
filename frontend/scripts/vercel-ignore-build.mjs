@@ -75,9 +75,7 @@ const explicitlyNonRuntime = file =>
     'ARCHITECTURE.md',
     'ARCHITECTURE_CHANGELOG.md',
     'TASKS.md',
-    'CHANGELOG_AI.md',
-    'PLAN_EJECUCION_AUTONOMA.md',
-    'implementation_plan.md'
+    'CHANGELOG_AI.md'
   ].includes(file);
 
 if (changedFiles.length > 0 && changedFiles.every(explicitlyNonRuntime)) {
