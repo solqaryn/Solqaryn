@@ -51,7 +51,7 @@ Nadie debe asumir acceso local que no esté documentado.
 
 - `dev`: única rama de trabajo.
 - `main`: congelada.
-- PR #2: histórico, `CLOSED + MERGED`; no reabrir. Cualquier nuevo merge a `main` exige autorización nueva y explícita.
+- Cualquier merge a `main` exige autorización nueva y explícita del propietario.
 - No ramas temporales.
 - No auto-merge.
 - Producción no se modifica.

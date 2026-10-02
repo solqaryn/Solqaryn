@@ -35,7 +35,7 @@ No volver a indexar todo el repositorio ni releer archivos ya documentados si no
 - `main`: referencia productiva congelada.
 - `dev`: **única rama de trabajo e integración autorizada**.
 - No crear ramas temporales sin autorización expresa de Javier Mejía.
-- PR #2 `dev -> main` es histórico y está `CLOSED + MERGED`; no reabrirlo. Un nuevo PR/merge hacia `main` requiere autorización nueva y explícita de Javier Mejía; auto-merge permanece deshabilitado.
+- Cualquier PR/merge hacia `main` requiere autorización nueva y explícita del propietario; auto-merge permanece deshabilitado.
 
 ## Preparación local
 
@@ -43,8 +43,8 @@ Después del gate, si el checkout está limpio y detrás de remoto:
 
 ```bash
 git fetch origin
-git switch Desarrollo
-git pull --rebase origin Desarrollo
+git switch dev
+git pull --rebase origin dev
 git status --short --branch
 ```
 
