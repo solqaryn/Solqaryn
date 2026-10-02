@@ -84,7 +84,7 @@ Cuando una operación modifica inventario/finanzas/documentos relacionados, debe
 ### Archivos y documentos
 
 - imágenes/documentos: adaptadores Cloudinary;
-- factura PDF: QuestPDF;
+- factura PDF: QuestPDF; el logo se toma de la configuración tenant de empresa y, si falta/no es descargable, se deriva un monograma del nombre empresarial; no existe logo global de cliente ni fallback `AppSettings__LogoPublicUrl` en runtime Render;
 - correo: SMTP; PROD autentica Outlook.com mediante OAuth2/Modern Auth y mantiene secretos/tokens fuera del repositorio;
 - enlaces públicos de factura: token seguro, expiración/revocación según implementación vigente.
 
