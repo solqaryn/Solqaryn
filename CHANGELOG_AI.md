@@ -1,3 +1,10 @@
+## 2026-10-02 — Certificación QA preserva historial EF válido
+
+- El recovery QA confirmó backup cifrado, 137 tablas, 107 filas de historial EF y cero migraciones pendientes; no fue necesario aplicar migraciones nuevas.
+- El gate anterior exigía igualdad byte-a-byte entre archivos de migración actuales e historial persistido, lo que rechazaba 18 IDs históricos legítimos ya ejecutados cuyos archivos fueron retirados del árbol vigente.
+- El gate ahora falla si falta cualquier migración versionada actual y también rechaza IDs históricos con timestamp posterior al conjunto vigente, pero preserva filas históricas anteriores sin borrar ni reescribir `__EFMigrationsHistory`.
+- No se modifican datos de negocio, grants, secretos ni PROD; el cambio se promueve primero DEV → QA y se recertifica exact-head.
+
 ## 2026-10-02 — Recovery de promoción controlada DEV → QA
 
 - El PR #3512 fue integrado mediante merge normal para preservar los fixes propios de QA y absorber el baseline DEV vigente; tras el merge, QA quedó `behind_by=0` respecto de DEV.
