@@ -49,7 +49,7 @@ import { ConteoInventarioService } from '../../services/conteo-inventario.servic
       <div *ngIf="catalogoError" class="catalog-warning" role="status"><mat-icon>info</mat-icon><span>{{ catalogoError }}</span><button mat-button type="button" (click)="cargarAlmacenes()">Reintentar catálogo</button></div>
       <div *ngIf="loading" class="state" aria-live="polite"><mat-spinner diameter="36"></mat-spinner><span>Cargando conteos…</span></div>
       <div *ngIf="!loading && error" class="state error" role="alert"><mat-icon>error_outline</mat-icon><span>{{ error }}</span><button mat-button type="button" (click)="cargar()">Reintentar</button></div>
-      <div *ngIf="!loading && !error && items.length === 0" class="state empty"><mat-icon>inventory_2</mat-icon><strong>No hay conteos para los filtros seleccionados.</strong></div>
+      <div *ngIf="!loading && !error && items.length === 0" class="state empty"><mat-icon>warehouse</mat-icon><strong>No hay conteos para los filtros seleccionados.</strong></div>
 
       <div *ngIf="!loading && !error && items.length" class="table-wrap">
         <table>
