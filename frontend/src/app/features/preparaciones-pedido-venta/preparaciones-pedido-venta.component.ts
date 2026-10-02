@@ -48,7 +48,7 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
       } @else if (error()) {
         <mat-card class="empty" role="alert">
           <mat-card-content>
-            <mat-icon>inventory_2</mat-icon>
+            <mat-icon>warehouse</mat-icon>
             <h2>No hay preparación disponible</h2>
             <p>{{ error() }}</p>
             @if (pedidoBuscado() && puede('Crear')) {
@@ -84,7 +84,7 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
                 <button mat-flat-button color="primary" (click)="accion('picking')" [disabled]="saving()"><mat-icon>checklist</mat-icon> Completar picking</button>
               }
               @if (p.estado === Estado.PickingCompletado && puede('Editar')) {
-                <button mat-flat-button color="primary" (click)="accion('packing')" [disabled]="saving()"><mat-icon>inventory</mat-icon> Completar packing</button>
+                <button mat-flat-button color="primary" (click)="accion('packing')" [disabled]="saving()"><mat-icon>check_circle</mat-icon> Completar packing</button>
               }
               @if (p.estado === Estado.PackingCompletado && puede('Confirmar')) {
                 <button mat-flat-button color="primary" (click)="accion('despachar')" [disabled]="saving()"><mat-icon>local_shipping</mat-icon> Marcar despachado</button>
