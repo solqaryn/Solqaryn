@@ -41,9 +41,11 @@ Variables canónicas, y sólo estas cuatro:
 - `SOLQARYN_QA_DB_NAME=solqaryn_qa`
 - `SOLQARYN_QA_DB_USER=solqaryn_qa_user`
 
-Secreto canónico activo:
+Secretos canónicos de QA:
 
-- `SOLQARYN_QA_DB_PASSWORD`
+- `SOLQARYN_QA_DB_PASSWORD` — credencial de aplicación para `solqaryn_qa_user`.
+- `SOLQARYN_AIVEN_TOKEN` — token de control-plane Aiven reservado a workflows GitHub Actions QA; nunca se expone al runtime Render.
+- `SOLQARYN_QA_BACKUP_PASSPHRASE` — passphrase de cifrado reservada a backup/restore QA.
 
 No son variables del Environment QA:
 
@@ -52,7 +54,7 @@ No son variables del Environment QA:
 
 Los endpoints QA son identidades canónicas declaradas en los workflows y bindings del repositorio, no configuración mutable del Environment.
 
-Tampoco se copia `SOLQARYN_AIVEN_TOKEN` ni se crea `SOLQARYN_QA_BACKUP_PASSPHRASE` mientras no exista un workflow QA aprobado que necesite esos secretos. Mantener un solo secreto en QA es, por tanto, intencional y más seguro que replicar DEV/PROD sin necesidad.
+Los tres secretos QA permanecen segregados en el Environment `QA`. El token Aiven y la passphrase de backup son secretos de automatización/control-plane y no forman parte de la configuración del backend desplegado. Los workflows sólo deben leerlos cuando una certificación o backup QA aprobado los requiera.
 
 ## PROD
 
