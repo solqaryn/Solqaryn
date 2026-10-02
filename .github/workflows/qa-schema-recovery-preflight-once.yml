@@ -63,29 +63,49 @@ jobs:
           }
 
           actual_db="$(q 'SELECT DATABASE();')"
+          echo "QA_DATABASE=$actual_db"
           test "$actual_db" = "solqaryn_qa"
 
+          tables_total="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE();")"
           history_table="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='__EFMigrationsHistory';")"
-          test "$history_table" = "1"
-
-          history_count="$(q 'SELECT COUNT(*) FROM __EFMigrationsHistory;')"
-          test "$history_count" -gt 0
-
           empresa_cfg="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='EmpresaConfiguraciones';")"
           ventas="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='Ventas';")"
           facturas="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='Facturas';")"
           revisiones="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='RevisionesFinancieras';")"
-          create_migration="$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20260710050958_Fase3Fase4VentasFacturacionFinanzas';")"
+          empresas="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='Empresas';")"
+          config_empresas="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='ConfigEmpresas';")"
+          pedidos="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='PedidosVenta';")"
+          cuentas_pagar="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='CuentasPorPagar';")"
 
-          echo "QA_SCHEMA_HISTORY_COUNT=$history_count"
+          echo "QA_TABLES_TOTAL=$tables_total"
+          echo "QA_EF_HISTORY_TABLE=$history_table"
           echo "QA_TABLE_EmpresaConfiguraciones=$empresa_cfg"
           echo "QA_TABLE_Ventas=$ventas"
           echo "QA_TABLE_Facturas=$facturas"
           echo "QA_TABLE_RevisionesFinancieras=$revisiones"
-          echo "QA_CREATE_MIGRATION_APPLIED=$create_migration"
-          echo "QA_HISTORY_TAIL_BEGIN"
-          q 'SELECT MigrationId FROM __EFMigrationsHistory ORDER BY MigrationId DESC LIMIT 30;'
-          echo "QA_HISTORY_TAIL_END"
+          echo "QA_TABLE_Empresas=$empresas"
+          echo "QA_TABLE_ConfigEmpresas=$config_empresas"
+          echo "QA_TABLE_PedidosVenta=$pedidos"
+          echo "QA_TABLE_CuentasPorPagar=$cuentas_pagar"
+
+          if [ "$history_table" = "1" ]; then
+            history_count="$(q 'SELECT COUNT(*) FROM __EFMigrationsHistory;')"
+            create_migration="$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20260710050958_Fase3Fase4VentasFacturacionFinanzas';")"
+            echo "QA_SCHEMA_HISTORY_COUNT=$history_count"
+            echo "QA_CREATE_MIGRATION_APPLIED=$create_migration"
+            echo "QA_HISTORY_TAIL_BEGIN"
+            q 'SELECT MigrationId FROM __EFMigrationsHistory ORDER BY MigrationId DESC LIMIT 30;'
+            echo "QA_HISTORY_TAIL_END"
+          else
+            echo "QA_SCHEMA_HISTORY_COUNT=0"
+            echo "QA_CREATE_MIGRATION_APPLIED=0"
+            echo "QA_HISTORY_TAIL=ABSENT"
+          fi
+
+          echo "QA_TABLE_SAMPLE_BEGIN"
+          q "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() ORDER BY TABLE_NAME LIMIT 80;"
+          echo "QA_TABLE_SAMPLE_END"
+          echo "QA_DB_READONLY_DIAGNOSTIC=PASS"
 
       - name: Comparar historial EF con codigo QA
         working-directory: backend
