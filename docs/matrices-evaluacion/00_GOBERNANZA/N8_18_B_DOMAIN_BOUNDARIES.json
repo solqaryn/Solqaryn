@@ -13,7 +13,7 @@
     {"domain":"PRODUCT_CATALOG","parent_id":"VAEP-DOMAIN::PRODUCT_CATALOG","ownership":"product master, categories and typed product lookup catalogs"},
     {"domain":"CUSTOMERS_COMMERCIAL","parent_id":"VAEP-DOMAIN::CUSTOMERS_COMMERCIAL","ownership":"customers, commercial documents, sales, invoicing and storefront orchestration"},
     {"domain":"PURCHASES_SUPPLIERS","parent_id":"VAEP-DOMAIN::PURCHASES_SUPPLIERS","ownership":"suppliers and purchasing lifecycle"},
-    {"domain":"INVENTORY_LOGISTICS","parent_id":"VAEP-DOMAIN::INVENTORY_LOGISTICS","ownership":"warehouses, stock, locations and fulfillment"},
+    {"domain":"INVENTARIO_LOGISTICA","parent_id":"VAEP-DOMAIN::INVENTARIO_LOGISTICA","ownership":"warehouses, stock, locations and fulfillment"},
     {"domain":"CASH_BANKS","parent_id":"VAEP-DOMAIN::CASH_BANKS","ownership":"cash sessions, bank accounts and payment-method treasury configuration"},
     {"domain":"FINANCE_ACCOUNTING","parent_id":"VAEP-DOMAIN::FINANCE_ACCOUNTING","ownership":"ledger, receivables, financial statements, taxes, periods and chart of accounts"},
     {"domain":"BI_REPORTING","parent_id":"VAEP-DOMAIN::BI_REPORTING","ownership":"reporting/read models; source-domain authorization remains authoritative"},
