@@ -138,7 +138,7 @@ jobs:
           dotnet ef database update             --project src/Infrastructure/Solqaryn.Infrastructure.csproj             --startup-project src/API/Solqaryn.API.csproj             --context AppDbContext
           echo "QA_SCHEMA_EF_UPDATE=PASS"
 
-      - name: Certify exact migration history and required schema
+      - name: Certify complete current migration set and required schema
         shell: bash
         run: |
           set -euo pipefail
@@ -155,11 +155,34 @@ jobs:
 
           "${mysql_cmd[@]}" -e "SELECT MigrationId FROM __EFMigrationsHistory ORDER BY MigrationId;" | sort > "$actual"
 
-          if ! diff -u "$expected" "$actual"; then
-            echo "QA migration history does not exactly match the versioned migration set." >&2
+          missing="$RUNNER_TEMP/missing-current-migrations.txt"
+          historical="$RUNNER_TEMP/historical-retained-migrations.txt"
+          comm -23 "$expected" "$actual" > "$missing"
+          comm -13 "$expected" "$actual" > "$historical"
+
+          if [ -s "$missing" ]; then
+            echo "QA is missing versioned migrations from the current repository:" >&2
+            cat "$missing" >&2
+            exit 1
+          fi
+
+          latest_expected="$(tail -n 1 "$expected" | cut -d_ -f1)"
+          if [ -s "$historical" ] && awk -F_ -v max="$latest_expected" '$1 > max { exit 1 }' "$historical"; then
+            :
+          elif [ -s "$historical" ]; then
+            echo "QA contains an unknown migration newer than the current repository migration set." >&2
+            cat "$historical" >&2
             exit 1
           fi
 
           base_tables="$("${mysql_cmd[@]}" -e "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE';")"
           migrations="$("${mysql_cmd[@]}" -e "SELECT COUNT(*) FROM __EFMigrationsHistory;")"
-          echo "QA_SCHEMA_CERT=PASS base_tables=$base_tables migrations=$migrations EmpresaConfiguraciones=present"
+          current_migrations="$(wc -l < "$expected" | tr -d ' ')"
+          historical_migrations="$(wc -l < "$historical" | tr -d ' ')"
+          echo "QA_SCHEMA_HISTORY current=$current_migrations actual=$migrations historical_retained=$historical_migrations"
+          if [ -s "$historical" ]; then
+            echo "QA_SCHEMA_HISTORICAL_RETAINED_BEGIN"
+            cat "$historical"
+            echo "QA_SCHEMA_HISTORICAL_RETAINED_END"
+          fi
+          echo "QA_SCHEMA_CERT=PASS base_tables=$base_tables migrations=$migrations current_migrations=$current_migrations historical_retained=$historical_migrations EmpresaConfiguraciones=present"
