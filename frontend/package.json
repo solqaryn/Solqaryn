@@ -2,6 +2,7 @@
   "name": "solqaryn-frontend",
   "version": "1.0.0",
   "scripts": {
+    "preinstall": "node scripts/verify-toolchain.mjs",
     "verify:toolchain": "node scripts/verify-toolchain.mjs",
     "ng": "ng serve",
     "start": "ng serve",
