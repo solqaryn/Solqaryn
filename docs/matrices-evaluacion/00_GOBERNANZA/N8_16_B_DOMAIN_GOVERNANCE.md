@@ -16,7 +16,7 @@ Los nueve bounded areas certificados en N8.15.B son los padres lógicos de gobie
 - `PRODUCT_CATALOG`
 - `CUSTOMERS_COMMERCIAL`
 - `PURCHASES_SUPPLIERS`
-- `INVENTORY_LOGISTICS`
+- `INVENTARIO_LOGISTICA`
 - `CASH_BANKS`
 - `FINANCE_ACCOUNTING`
 - `BI_REPORTING`
