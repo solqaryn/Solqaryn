@@ -1,3 +1,11 @@
+## 2026-10-01 — Branding de factura tenant-owned y retiro del fallback global
+
+- QuestPDF deja de consultar `AppSettings:LogoPublicUrl` como fallback global.
+- La autoridad del logo de factura es `EmpresaConfiguracion.LogoUrl` propagada como `FacturaDto.EmpresaLogoUrl`.
+- Si no existe logo válido o la descarga falla, se genera un monograma a partir del nombre de la empresa; se retira el monograma fijo `VS`.
+- Esto elimina una dependencia de configuración global incompatible con multiempresa y mantiene `AppSettings__LogoPublicUrl` fuera del contrato Render.
+- SMTP conserva su contrato OAuth2 actual; pruebas dirigidas validan que las claves legacy retiradas no son necesarias para configuración desplegada.
+
 ## 2026-10-01 — Paridad fail-closed DEV/QA/PROD en Render, GitHub y Aiven
 
 - `RenderEnvironmentContractGuard` valida en startup exactamente 28 claves Render administradas, sin exponer valores, y mantiene separadas las identidades/secretos propios de DEV, QA y PROD.
