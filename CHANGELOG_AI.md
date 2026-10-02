@@ -1,3 +1,10 @@
+## 2026-10-02 — Smoke QA alineado al contrato storefront vigente
+
+- La certificación viva QA aún esperaba `data.nombreComercial`, forma previa al bootstrap tenant-aware actual.
+- El contrato vivo de `GET /tienda/bootstrap` expone la identidad bajo `data.identidad.nombreComercial`; el gate se actualiza a esa ruta sin cambiar API ni datos.
+- El cambio evita un falso negativo después de promover la build QA con attestation `x-solqaryn-environment`.
+- Sin cambios en main/PROD, secretos, grants ni datos.
+
 ## 2026-10-02 — Certificación QA preserva historial EF válido
 
 - El recovery QA confirmó backup cifrado, 137 tablas, 107 filas de historial EF y cero migraciones pendientes; no fue necesario aplicar migraciones nuevas.
