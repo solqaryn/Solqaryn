@@ -8,7 +8,7 @@ const rootDir = path.resolve(frontendDir, '..');
 const readFrontend = name => readFile(path.join(frontendDir, name), 'utf8');
 const readRoot = name => readFile(path.join(rootDir, name), 'utf8');
 
-const [routes, models, catalog, productsTs, productsHtml, detailTs, detailHtml, cartHtml, headerHtml, controller, promoService, inventoryService, inventoryRepository] = await Promise.all([
+const [routes, models, catalog, productsTs, productsHtml, detailTs, detailHtml, cartHtml, headerHtml, controller, promoService, existenciaService, existenciaRepository] = await Promise.all([
   readFrontend('src/app/app.routes.ts'),
   readFrontend('src/app/features/storefront/storefront.models.ts'),
   readFrontend('src/app/features/storefront/storefront.catalog.ts'),
@@ -48,20 +48,20 @@ expect(promoService.includes('TipoDescuento.Porcentaje'), 'Solo reglas reproduci
 expect(controller.includes('precioVigente = oferta?.PrecioOferta ?? precio'), 'Checkout debe recalcular el mismo precio promocional.');
 expect(controller.includes('stock <= 0 || stock < solicitud.Unidades'), 'Checkout debe bloquear explícitamente stock 0.');
 expect(controller.includes('_inventarioPublicoService.ObtenerPorVariantesAsync'), 'Catálogo y checkout deben consultar la autoridad pública de ExistenciaVariante.');
-expect(inventoryService.includes('GetOperativasPublicasPorVariantesAsync') && inventoryService.includes('CantidadDisponible = 0'),
+expect(existenciaService.includes('GetOperativasPublicasPorVariantesAsync') && existenciaService.includes('CantidadDisponible = 0'),
   'Una variante sin existencia autoritativa debe fallar cerrada en stock 0.');
-const inventoryPublicQuery = inventoryRepository.split('GetOperativasPublicasPorVariantesAsync')[1]
+const existenciaPublicQuery = existenciaRepository.split('GetOperativasPublicasPorVariantesAsync')[1]
   ?.split('public async Task<(List<ExistenciaVariante> Items, int Total)> BuscarAsync')[0] ?? '';
-expect(inventoryPublicQuery.length > 0
-    && /e\.UbicacionAlmacenId\s*==\s*null\s*\|\|/.test(inventoryPublicQuery),
+expect(existenciaPublicQuery.length > 0
+    && /e\.UbicacionAlmacenId\s*==\s*null\s*\|\|/.test(existenciaPublicQuery),
   'El total público debe incluir existencias raíz y también stock físico ubicado dentro de un almacén operativo.');
-expect(inventoryRepository.includes('TipoAlmacen.Tienda') && inventoryRepository.includes('TipoAlmacen.Bodega'),
+expect(existenciaRepository.includes('TipoAlmacen.Tienda') && existenciaRepository.includes('TipoAlmacen.Bodega'),
   'El stock público solo debe agregar almacenes operativos Tienda/Bodega.');
-expect(inventoryRepository.includes('e.Almacen.Sucursal.Activa') && inventoryRepository.includes('!e.Almacen.Sucursal.Eliminado'),
+expect(existenciaRepository.includes('e.Almacen.Sucursal.Activa') && existenciaRepository.includes('!e.Almacen.Sucursal.Eliminado'),
   'El stock público no debe sumar sucursales inactivas o eliminadas.');
-expect(inventoryPublicQuery.includes('e.UbicacionAlmacenId == null')
-    && inventoryPublicQuery.includes('e.UbicacionAlmacen.Activa')
-    && inventoryPublicQuery.includes('!e.UbicacionAlmacen.Eliminado'),
+expect(existenciaPublicQuery.includes('e.UbicacionAlmacenId == null')
+    && existenciaPublicQuery.includes('e.UbicacionAlmacen.Activa')
+    && existenciaPublicQuery.includes('!e.UbicacionAlmacen.Eliminado'),
   'El stock público debe excluir ubicaciones internas inactivas o eliminadas sin descartar existencias raíz.');
 expect(!controller.includes('stock = Math.Max(0, varianteSeleccionada.Cantidad);'),
   'Checkout no debe confiar directamente en ProductoVariante.Cantidad cuando existe autoridad de existencias.');
