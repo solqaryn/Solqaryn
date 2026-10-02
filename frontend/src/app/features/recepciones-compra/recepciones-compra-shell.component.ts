@@ -65,7 +65,7 @@ import { RecepcionCompraService } from '../../services/recepcion-compra.service'
         } @else if (error()) {
           <div class="state-panel error" role="alert"><mat-icon>error_outline</mat-icon><span>{{ error() }}</span><button mat-stroked-button type="button" (click)="cargar()">Reintentar</button></div>
         } @else if (recepciones().length === 0) {
-          <div class="state-panel" role="status"><mat-icon>inventory_2</mat-icon><span>No hay recepciones que coincidan con los filtros.</span></div>
+          <div class="state-panel" role="status"><mat-icon>move_to_inbox</mat-icon><span>No hay recepciones que coincidan con los filtros.</span></div>
         } @else {
           <div class="table-wrap">
             <table>
