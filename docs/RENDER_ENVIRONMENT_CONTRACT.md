@@ -55,7 +55,7 @@ Estas claves no deben existir como configuración desplegada de DEV/QA/PROD:
 - `Smtp__CorreoRemitente`: se deriva de `Smtp__UsuarioSmtp`.
 - `Smtp__CorreoRespuesta`: por defecto se deriva del remitente.
 - `Swagger__Enabled`: redundante; PROD ya queda deshabilitado por configuración base y DEV se habilita por `ASPNETCORE_ENVIRONMENT=Development`.
-- `AppSettings__LogoPublicUrl`: redundante mientras no exista un fallback externo; el logo empresarial se resuelve desde la configuración de empresa.
+- `AppSettings__LogoPublicUrl`: retirado del runtime multiempresa. La factura usa primero `EmpresaConfiguracion.LogoUrl`; si la empresa no tiene logo o la descarga falla, QuestPDF genera un monograma derivado del nombre de esa empresa. No existe fallback global de marca ni monograma `VS`.
 - `SeedAdmin__Username`: secreto/parametrización de bootstrap innecesaria en servicios ya provisionados.
 - `SeedAdmin__Password`: secreto de bootstrap innecesario en servicios ya provisionados.
 
