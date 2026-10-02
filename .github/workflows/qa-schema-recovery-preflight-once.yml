@@ -1,0 +1,100 @@
+name: QA - preflight recuperacion esquema once
+
+on:
+  push:
+    branches: [qa]
+    paths:
+      - '.github/workflows/qa-schema-recovery-preflight-once.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qa-schema-recovery-preflight-once
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    name: Diagnostico read-only de esquema QA
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: QA
+    env:
+      DB_HOST: ${{ vars.SOLQARYN_QA_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_QA_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_QA_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_QA_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_QA_DB_PASSWORD }}
+      Database__ServerVersion: '8.4.8'
+    steps:
+      - name: Checkout QA exact-head
+        uses: actions/checkout@v4
+
+      - name: Gate de identidad QA
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "qa"
+          test "$DB_HOST" = "solqaryn-mysql-solqaryn.h.aivencloud.com"
+          test "$DB_PORT" = "14402"
+          test "$DB_NAME" = "solqaryn_qa"
+          test "$DB_USER" = "solqaryn_qa_user"
+          test -n "$DB_PASSWORD"
+          echo "QA_TARGET_BINDING=PASS"
+          echo "QA_HEAD=$GITHUB_SHA"
+
+      - name: Instalar cliente MySQL y .NET EF
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+          dotnet restore backend/src/Infrastructure/Solqaryn.Infrastructure.csproj
+          dotnet tool install --global dotnet-ef --version 8.0.8
+          dotnet build backend/src/Infrastructure/Solqaryn.Infrastructure.csproj --configuration Release --no-restore
+
+      - name: Diagnostico DB QA read-only
+        shell: bash
+        run: |
+          set -euo pipefail
+          export MYSQL_PWD="$DB_PASSWORD"
+          q() {
+            mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e "$1"
+          }
+
+          actual_db="$(q 'SELECT DATABASE();')"
+          test "$actual_db" = "solqaryn_qa"
+
+          history_table="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='__EFMigrationsHistory';")"
+          test "$history_table" = "1"
+
+          history_count="$(q 'SELECT COUNT(*) FROM __EFMigrationsHistory;')"
+          test "$history_count" -gt 0
+
+          empresa_cfg="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='EmpresaConfiguraciones';")"
+          ventas="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='Ventas';")"
+          facturas="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='Facturas';")"
+          revisiones="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='RevisionesFinancieras';")"
+          create_migration="$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20260710050958_Fase3Fase4VentasFacturacionFinanzas';")"
+
+          echo "QA_SCHEMA_HISTORY_COUNT=$history_count"
+          echo "QA_TABLE_EmpresaConfiguraciones=$empresa_cfg"
+          echo "QA_TABLE_Ventas=$ventas"
+          echo "QA_TABLE_Facturas=$facturas"
+          echo "QA_TABLE_RevisionesFinancieras=$revisiones"
+          echo "QA_CREATE_MIGRATION_APPLIED=$create_migration"
+          echo "QA_HISTORY_TAIL_BEGIN"
+          q 'SELECT MigrationId FROM __EFMigrationsHistory ORDER BY MigrationId DESC LIMIT 30;'
+          echo "QA_HISTORY_TAIL_END"
+
+      - name: Comparar historial EF con codigo QA
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          export ConnectionStrings__DefaultConnection="Server=$DB_HOST;Port=$DB_PORT;Database=$DB_NAME;User=$DB_USER;Password=$DB_PASSWORD;SslMode=Required;AllowPublicKeyRetrieval=True;"
+          dotnet ef migrations list             --project src/Infrastructure/Solqaryn.Infrastructure.csproj             --context AppDbContext             --configuration Release             --no-build | tee /tmp/qa-migrations-list.txt
+
+          pending="$(grep -c '(Pending)' /tmp/qa-migrations-list.txt || true)"
+          echo "QA_EF_PENDING_COUNT=$pending"
+          echo "QA_SCHEMA_PREFLIGHT=PASS"
