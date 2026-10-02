@@ -100,6 +100,8 @@ El deployment Git más reciente de QA está READY, pero no está promovido como 
 
 ## PROD — evidencia viva
 
+Cloudinary PROD ya dispone de certificación runtime persistida en `docs/evidencias/CLOUDINARY_PROD_CERTIFICACION_2026-09-27.md`: `CLOUDINARY_PROD_CERT=PASS`, cloud `riyrzmob`, prefijo `solqaryn_prod` y autenticación API real sin exposición de credenciales. La migración productiva certificada conserva además 351 URLs/public IDs esperados en Cloudinary.
+
 Render PROD continúa `live` sobre `main@d6d967f42bad99613bfb4c19621800877c63a71d`. Tras despertar el servicio Free:
 
 ```text
@@ -114,6 +116,6 @@ La certificación de paridad estricta no se declara todavía para PROD: el contr
 1. **Render DEV:** eliminar ocho variables legacy detectadas arriba; el API conectado permite merge/replace pero no eliminación individual segura sin releer secretos, por lo que no se usa `replace=true`.
 2. **Vercel QA:** fijar Production Branch a `qa`, promover el deployment correcto y comprobar paridad de Root Directory/Framework/Build/Output/Install con DEV y PROD.
 3. **GitHub Environments:** readback administrativo de nombres/conteos para demostrar que no existen extras además de las 4 variables + 3 secretos requeridos.
-4. Tras cerrar 1–3: promover infraestructura QA -> main y ejecutar los mismos gates en PROD, incluido Cloudinary write/delete/cleanup.
+4. Tras cerrar 1–3: promover infraestructura QA -> main y ejecutar en PROD los gates exact-head de GitHub/Aiven/Render/Vercel. Cloudinary PROD ya cuenta con certificación runtime propia; sólo se repetirá un write/delete si el HEAD promovido cambia el adaptador o las credenciales productivas.
 
 No se considera `LISTO` hasta cerrar estos puntos con evidencia viva.
