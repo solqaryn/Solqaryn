@@ -1,0 +1,66 @@
+# Modernización — Fase 1 Aiven / MySQL DEV — 2026-10-02
+
+Estado: **PASS / CERRADA SIN CAMBIO DE VERSIÓN**
+
+## Alcance
+
+- Repositorio: `solqaryn/Solqaryn`
+- Rama: `dev`
+- Aiven project: `solqaryn`
+- Aiven service: `solqaryn-mysql`
+- Base DEV: `solqaryn_dev`
+- Usuario DEV: `solqaryn_dev_user`
+- Objetivo evaluado: MySQL `8.4.11`
+- QA/main/PROD: fuera de alcance y no tocados
+
+## Evidencia causal
+
+- Workflow: `Modernización - Fase 1 Aiven MySQL 8.4.11 DEV`
+- Run final: `37066644421`
+- HEAD evaluado: `d9b7af721dde5decf0411f055a6524637b9f46b9`
+- Resultado del job: `SUCCESS`
+- Artifact de evidencia: `modernization-phase1-aiven-mysql-37066644421`
+- Backup lógico cifrado previo: `modernization-phase1-aiven-prebackup-37066644421`
+
+## Disponibilidad Aiven observada
+
+El control-plane del servicio DEV devolvió:
+
+- service type: `mysql`
+- service state: `RUNNING`
+- versión 8.4.x expuesta en metadata: `8.4.8`
+- target `8.4.11` en metadata de mantenimiento: `false`
+- target `8.4.11` en cualquier metadata del servicio: `false`
+
+Por la regla fail-closed de esta fase, no se ejecutó `maintenance-start`.
+
+## Readback MySQL antes/después
+
+- Antes: `8.4.8`
+- Después: `8.4.8`
+- Acción: `not_available_no_change`
+- Tablas base: `137`
+- Historial EF: `109`
+- Productos: `8`
+- Categorías: `2`
+- Conteos críticos preservados: **PASS**
+- Secretos expuestos: `0`
+- Producción tocada: `false`
+
+## Recovery del backup pre-cambio
+
+La primera ejecución, run `37066495962`, falló de forma segura antes de consultar/aplicar mantenimiento porque `mysqldump` intentó `FLUSH TABLES` con el usuario DEV de mínimo privilegio.
+
+Se corrigió causalmente sin ampliar grants, reutilizando el contrato ya probado de mínimo privilegio:
+
+`--single-transaction --skip-lock-tables --no-tablespaces --set-gtid-purged=OFF`
+
+La segunda ejecución completó el backup cifrado y todos los gates.
+
+## Dictamen
+
+`FASE_1_AIVEN_MYSQL=PASS_NO_CHANGE_TARGET_NOT_AVAILABLE`
+
+A la fecha de esta certificación, el servicio Aiven DEV de SOLQARYN no ofrece MySQL `8.4.11` como mantenimiento aplicable. Por tanto, conforme a la decisión del propietario, **se conserva MySQL 8.4.8 y no se fuerza ningún cambio**.
+
+Esta fase no autoriza ni implica cambios en QA o PROD.
