@@ -54,7 +54,7 @@ import { ExistenciaVarianteService } from '../../services/existencia-variante.se
 
       <ng-container *ngIf="!loading() && !error()">
         <div class="empty" *ngIf="existencias().length === 0">
-          <mat-icon>inventory_2</mat-icon><h2>No hay existencias para los filtros seleccionados</h2><p>Modifica los filtros o registra una existencia para la combinación variante/almacén/ubicación.</p>
+          <mat-icon>warehouse</mat-icon><h2>No hay existencias para los filtros seleccionados</h2><p>Modifica los filtros o registra una existencia para la combinación variante/almacén/ubicación.</p>
           <button *ngIf="puedeCrear()" mat-flat-button color="primary" type="button" (click)="nueva()">Crear existencia</button>
         </div>
         <div class="table-shell" *ngIf="existencias().length > 0">
