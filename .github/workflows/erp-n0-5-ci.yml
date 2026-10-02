@@ -231,7 +231,7 @@ jobs:
       - name: Configurar Node.js para regresión frontend N0.5
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24.21.0'
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
