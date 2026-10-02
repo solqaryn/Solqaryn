@@ -1,3 +1,12 @@
+## 2026-10-01 — Paridad fail-closed DEV/QA/PROD en Render, GitHub y Aiven
+
+- `RenderEnvironmentContractGuard` valida en startup exactamente 28 claves Render administradas, sin exponer valores, y mantiene separadas las identidades/secretos propios de DEV, QA y PROD.
+- `EnvironmentDatabaseGuard` amplía la frontera de datos a los tres entornos y exige endpoint Aiven corporativo, puerto `14402` y `SslMode=Required` además de la pareja base/usuario.
+- Se añade `Environment infrastructure parity` para certificar por GitHub Environment la estructura 4 variables + 3 secretos, binding MySQL, mínimo privilegio, denegación cross-env, token Aiven y passphrase de backup.
+- QA demostró el contrato Render exacto en runtime; DEV detectó y bloqueó ocho variables legacy antes de reemplazar la instancia sana, dejando la limpieza como deuda de control-plane explícita.
+- La topología Vercel queda definida como tres proyectos corporativos con binding por `VERCEL_PROJECT_ID`; QA requiere que su Production Branch canónico sea `qa`.
+- No se introducen datos, migraciones ni servicios pagos.
+
 ## 2026-10-01 — Vercel runtime binding por identidad de proyecto
 
 - `frontend/server/environment-binding.js` deja de depender de variables manuales como requisito primario y usa `VERCEL_PROJECT_ID` como identidad inmutable del deployment.
