@@ -2,7 +2,7 @@
 
 - QuestPDF deja de consultar `AppSettings:LogoPublicUrl` como fallback global.
 - La autoridad del logo de factura es `EmpresaConfiguracion.LogoUrl` propagada como `FacturaDto.EmpresaLogoUrl`.
-- Si no existe logo válido o la descarga falla, se genera un monograma a partir del nombre de la empresa; se retira el monograma fijo `VS`.
+- Si no existe logo válido o la descarga falla, se genera un monograma a partir del nombre de la empresa; se retira el monograma fijo de cliente.
 - Esto elimina una dependencia de configuración global incompatible con multiempresa y mantiene `AppSettings__LogoPublicUrl` fuera del contrato Render.
 - SMTP conserva su contrato OAuth2 actual; pruebas dirigidas validan que las claves legacy retiradas no son necesarias para configuración desplegada.
 
