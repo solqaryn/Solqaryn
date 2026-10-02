@@ -8,7 +8,7 @@ Estado canónico para los GitHub Environments `DEV`, `QA` y `PROD`. Este contrat
 - Cada Environment permite despliegues únicamente desde su rama canónica.
 - No se comparten contraseñas de base de datos entre entornos.
 - Las variables no sensibles de MySQL son exactamente cuatro por entorno: host, port, database y user.
-- Un Environment no debe almacenar secretos o variables “por simetría” si ningún workflow activo los consume.
+- Los tres Environments mantienen la misma estructura: exactamente cuatro variables MySQL y tres secretos operativos. Los nombres se especializan por entorno cuando contienen identidad de base/passphrase; el token de control-plane conserva el nombre común `SOLQARYN_AIVEN_TOKEN` pero su valor sigue siendo secreto del Environment.
 - Required reviewers y wait timer permanecen desactivados salvo decisión posterior explícita; la restricción obligatoria es la rama de despliegue.
 - QA y PROD no permiten bypass administrativo de su regla de rama como estado canónico.
 - Los valores sensibles nunca se documentan en el repositorio.
@@ -67,7 +67,13 @@ Variables:
 - `SOLQARYN_PROD_DB_NAME=solqaryn_prod`
 - `SOLQARYN_PROD_DB_USER=solqaryn_prod_user`
 
-El password de aplicación es `SOLQARYN_PROD_DB_PASSWORD`. Otros secretos productivos sólo permanecen si un workflow PROD autorizado los consume; no se usan para justificar secretos extra en QA.
+Secretos canónicos de PROD, exactamente tres:
+
+- `SOLQARYN_PROD_DB_PASSWORD` — credencial de aplicación para `solqaryn_prod_user`.
+- `SOLQARYN_AIVEN_TOKEN` — token de control-plane Aiven reservado a workflows PROD autorizados.
+- `SOLQARYN_PROD_BACKUP_PASSPHRASE` — passphrase de cifrado reservada a backup/restore PROD autorizado.
+
+Por tanto, la cardinalidad contractual es idéntica en los tres Environments: **4 variables + 3 secretos**. Ningún valor sensible se comparte o documenta; sólo se replica la estructura.
 
 ## Aiven — contrato de mínimo privilegio
 
@@ -79,4 +85,6 @@ Los usuarios de aplicación deben conservar únicamente:
 
 No se permiten grants de datos cruzados, `WITH GRANT OPTION`, `ROLE_ADMIN` ni `REPLICATION_APPLIER` en usuarios de aplicación.
 
-La aplicación refuerza la misma frontera con `EnvironmentDatabaseGuard`: Development sólo acepta DEV, Staging sólo QA y Production sólo PROD.
+La aplicación refuerza la misma frontera con `EnvironmentDatabaseGuard`: Development sólo acepta DEV, Staging sólo QA y Production sólo PROD; además exige el endpoint Aiven corporativo canónico, puerto `14402` y `SslMode=Required`.
+
+El workflow `Environment infrastructure parity` certifica por rama la presencia de la estructura requerida, binding MySQL, denegación de cruces, mínimo privilegio, autenticación del token Aiven y usabilidad de la passphrase sin imprimir valores secretos.
