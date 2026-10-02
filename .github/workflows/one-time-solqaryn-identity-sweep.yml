@@ -1,0 +1,128 @@
+name: One-time SOLQARYN identity sweep
+
+on:
+  push:
+    paths:
+      - '.github/workflows/one-time-solqaryn-identity-sweep.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout dev
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+          fetch-depth: 0
+
+      - name: Normalize retired identifiers in tracked text
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          import re
+          import subprocess
+
+          root = pathlib.Path(".")
+          tracked = subprocess.check_output(["git", "ls-files", "-z"]).split(b"\0")
+
+          identity_patterns = [
+              (re.compile("inven" + "tory(?:app|store)", re.IGNORECASE), "Solqaryn"),
+              (re.compile("vari" + r"[\s_-]*app", re.IGNORECASE), "SOLQARYN"),
+              (re.compile("vari" + r"[\s_-]*store(?:[\s_-]*hn)?", re.IGNORECASE), "SOLQARYN"),
+              (re.compile("vari" + r"[\s_-]*storage", re.IGNORECASE), "SOLQARYN"),
+              (re.compile("varia" + r"[\s_-]*storage", re.IGNORECASE), "SOLQARYN"),
+          ]
+          english_domain = re.compile("inven" + "tory", re.IGNORECASE)
+
+          changed = []
+          for raw_path in tracked:
+              if not raw_path:
+                  continue
+              path = root / raw_path.decode("utf-8")
+              try:
+                  data = path.read_bytes()
+              except OSError:
+                  continue
+              if b"\0" in data:
+                  continue
+              try:
+                  text = data.decode("utf-8")
+              except UnicodeDecodeError:
+                  continue
+
+              updated = text
+              for pattern, replacement in identity_patterns:
+                  updated = pattern.sub(replacement, updated)
+              updated = english_domain.sub("inventario", updated)
+
+              if updated != text:
+                  path.write_text(updated, encoding="utf-8")
+                  changed.append(str(path))
+
+          print(f"SOLQARYN_IDENTITY_SWEEP_CHANGED={len(changed)}")
+          for path in changed:
+              print(path)
+          PY
+
+      - name: Ensure no retired identifiers remain in tracked paths or text
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          import re
+          import subprocess
+          import sys
+
+          root = pathlib.Path(".")
+          tracked = [p.decode("utf-8") for p in subprocess.check_output(["git", "ls-files", "-z"]).split(b"\0") if p]
+          forbidden = [
+              re.compile("inven" + "tory", re.IGNORECASE),
+              re.compile("vari" + r"[\s_-]*app", re.IGNORECASE),
+              re.compile("vari" + r"[\s_-]*store(?:[\s_-]*hn)?", re.IGNORECASE),
+              re.compile("vari" + r"[\s_-]*storage", re.IGNORECASE),
+              re.compile("varia" + r"[\s_-]*storage", re.IGNORECASE),
+          ]
+
+          failures = []
+          for rel in tracked:
+              if any(pattern.search(rel) for pattern in forbidden):
+                  failures.append(f"path:{rel}")
+              path = root / rel
+              try:
+                  data = path.read_bytes()
+              except OSError:
+                  continue
+              if b"\0" in data:
+                  continue
+              try:
+                  text = data.decode("utf-8")
+              except UnicodeDecodeError:
+                  continue
+              if any(pattern.search(text) for pattern in forbidden):
+                  failures.append(f"content:{rel}")
+
+          if failures:
+              print("SOLQARYN_IDENTITY_SWEEP=FAIL")
+              for item in failures:
+                  print(item)
+              sys.exit(1)
+
+          print("SOLQARYN_IDENTITY_SWEEP=PASS")
+          PY
+
+      - name: Commit normalized tree
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "No content changes required."
+            exit 0
+          fi
+          git config user.name "SOLQARYN Platform"
+          git config user.email "solqaryn.platform@outlook.com"
+          git add -A
+          git commit -m "refactor(identity): eliminar residuos legacy del arbol vigente"
+          git push origin HEAD:dev
