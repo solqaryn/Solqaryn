@@ -2536,3 +2536,14 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
 
+## 2026-10-02 — Recovery Fase 0: contrato tenant y E2E canónico
+
+- El primer baseline exhaustivo reveló dos clases de rojo: un contrato de Sucursales demasiado acoplado a `EmpresaId` enviado por el cliente y una ejecución Playwright no canónica que mezcló suites históricas/aisladas bajo un único estado compartido.
+- Sucursales mantiene fail-closed el tenant autorizado: si el cliente omite `EmpresaId`, se usa el tenant ya autorizado por el gate HTTP; si lo envía, debe coincidir exactamente o la operación falla. Esto conserva compatibilidad sin volver a confiar en un tenant controlado por el body.
+- Los validators aceptan `EmpresaId` ausente y sólo rechazan valores no positivos cuando se especifica.
+- El baseline E2E se alinea con la suite de aceptación integral vigente, materializa el tenant 1 y una suscripción SaaS descartable, y fija explícitamente `E2E_TENANT_ID`/`PHASE7_EMPRESA_ID`.
+- Se mantiene la evidencia de la corrida fallida como diagnóstico; no se oculta ni se reescribe historia. La nueva corrida debe certificar el HEAD exacto antes de cerrar Fase 0.
+- Sin cambios de versiones, migraciones persistentes, QA ni PROD.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+

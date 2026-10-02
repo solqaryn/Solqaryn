@@ -38,6 +38,22 @@ public sealed class N63DSucursalesEmpresaApplicationApiTests
     }
 
     [Fact]
+    public async Task CreateAsync_SinEmpresaId_UsaTenantAutorizado()
+    {
+        var repository = new Mock<ISucursalRepository>();
+        repository.Setup(x => x.ExisteCodigoAsync("CENTRO", 42, null)).ReturnsAsync(false);
+        repository.Setup(x => x.SaveChangesAsync()).ReturnsAsync(true);
+        var service = CreateService(repository);
+
+        var result = await service.CreateAsync(
+            new CreateSucursalDto { Codigo = "CENTRO", Nombre = "Sucursal Centro", ZonaHoraria = "America/Tegucigalpa" },
+            42);
+
+        Assert.Equal(42, result.EmpresaId);
+        repository.Verify(x => x.AddAsync(It.Is<Sucursal>(s => s.EmpresaId == 42)), Times.Once);
+    }
+
+    [Fact]
     public async Task CreateAsync_CodigoDuplicadoEnMismaEmpresa_FallaAntesDePersistir()
     {
         var repository = new Mock<ISucursalRepository>();

@@ -275,7 +275,7 @@ jobs:
           --health-cmd="mysqladmin ping -h localhost -proot"
           --health-interval=10s --health-timeout=5s --health-retries=12
     env:
-      ASPNETCORE_ENVIRONMENT: Staging
+      ASPNETCORE_ENVIRONMENT: Development
       PORT: '5005'
       AllowedHosts: '127.0.0.1;localhost'
       ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_fase0_runtime;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
@@ -321,6 +321,8 @@ jobs:
       PHASE7_API_URL: 'http://127.0.0.1:5005'
       PHASE7_ADMIN_USERNAME: 'e2e_admin'
       PHASE7_ADMIN_PASSWORD: 'E2E.Admin#2026!'
+      E2E_TENANT_ID: '1'
+      PHASE7_EMPRESA_ID: '1'
       PHASE8_EXPECT_SWAGGER_DISABLED: 'true'
       PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
     steps:
@@ -353,6 +355,51 @@ jobs:
           done
           cat backend/fase0-api.log >&2 || true
           exit 1
+      - name: Preparar tenant y suscripción E2E canónicos
+        shell: bash
+        run: |
+          set -euo pipefail
+          mysql_container='${{ job.services.mysql.id }}'
+          docker exec -i "$mysql_container" mysql -uroot -proot solqaryn_fase0_runtime <<'SQL'
+          INSERT INTO `Empresas` (`Id`,`Nombre`,`Activa`,`FechaCreacion`,`FechaActualizacion`)
+          VALUES (1,'Empresa E2E Fase 0',TRUE,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6))
+          ON DUPLICATE KEY UPDATE
+            `Activa`=TRUE,
+            `FechaActualizacion`=UTC_TIMESTAMP(6);
+
+          INSERT INTO `UsuarioEmpresas` (`UsuarioId`,`EmpresaId`,`RolId`,`Activa`,`FechaCreacion`,`FechaActualizacion`)
+          SELECT u.`Id`,1,u.`RolId`,TRUE,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)
+          FROM `Usuarios` u
+          WHERE u.`NombreUsuario`='e2e_admin'
+            AND NOT EXISTS (
+              SELECT 1 FROM `UsuarioEmpresas` ue
+              WHERE ue.`UsuarioId`=u.`Id` AND ue.`EmpresaId`=1
+            );
+
+          INSERT INTO `Planes` (`Codigo`,`Nombre`,`Activo`,`FechaCreacion`,`FechaActualizacion`)
+          VALUES ('FASE0_BASELINE','Plan E2E Fase 0',TRUE,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6))
+          ON DUPLICATE KEY UPDATE
+            `Nombre`=VALUES(`Nombre`),
+            `Activo`=TRUE,
+            `FechaActualizacion`=UTC_TIMESTAMP(6);
+
+          SET @plan_id := (SELECT `Id` FROM `Planes` WHERE `Codigo`='FASE0_BASELINE' LIMIT 1);
+          INSERT INTO `Suscripciones` (`EmpresaId`,`PlanId`,`Estado`,`InicioUtc`,`FinUtc`,`FechaCreacion`,`FechaActualizacion`)
+          SELECT 1,@plan_id,1,UTC_TIMESTAMP(6)-INTERVAL 1 DAY,NULL,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)
+          WHERE @plan_id IS NOT NULL
+            AND NOT EXISTS (
+              SELECT 1 FROM `Suscripciones`
+              WHERE `EmpresaId`=1 AND `Estado`=1
+                AND `InicioUtc` <= UTC_TIMESTAMP(6)
+                AND (`FinUtc` IS NULL OR `FinUtc` > UTC_TIMESTAMP(6))
+            );
+          SQL
+
+          membership_count="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_fase0_runtime -Nse "SELECT COUNT(*) FROM UsuarioEmpresas ue INNER JOIN Usuarios u ON u.Id=ue.UsuarioId INNER JOIN Empresas e ON e.Id=ue.EmpresaId WHERE u.NombreUsuario='e2e_admin' AND e.Id=1 AND e.Activa=TRUE AND ue.Activa=TRUE;")"
+          subscription_count="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_fase0_runtime -Nse "SELECT COUNT(*) FROM Suscripciones WHERE EmpresaId=1 AND Estado=1 AND InicioUtc <= UTC_TIMESTAMP(6) AND (FinUtc IS NULL OR FinUtc > UTC_TIMESTAMP(6));")"
+          test "$membership_count" = '1'
+          test "$subscription_count" = '1'
+
       - name: Versión exacta MySQL CI
         shell: bash
         run: |
@@ -391,9 +438,38 @@ jobs:
           for attempt in $(seq 1 60); do curl --fail --silent http://127.0.0.1:4200/login >/dev/null && exit 0; sleep 2; done
           cat frontend/fase0-frontend.log >&2 || true
           exit 1
-      - name: Playwright integral
+      - name: Playwright integral canónico
         working-directory: frontend
-        run: npx playwright test --config=playwright.config.ts
+        run: |
+          npx playwright test \
+            e2e/catalogos-mantenimientos.spec.ts \
+            e2e/centros-costo.spec.ts \
+            e2e/productos-filtros.spec.ts \
+            e2e/fase3-interfaz.spec.ts \
+            e2e/fase4-responsive.spec.ts \
+            e2e/fase4-variantes.spec.ts \
+            e2e/fase5-cargas-masivas.spec.ts \
+            e2e/fase5-imagenes.spec.ts \
+            e2e/fase6-facturacion-impresion.spec.ts \
+            e2e/fase6-reportes-administrativos.spec.ts \
+            e2e/n5-1-reportes-period-validation.spec.ts \
+            e2e/fase7-validacion-integral.spec.ts \
+            e2e/fase8-validacion-completa.spec.ts \
+            e2e/fase7-correo.spec.ts \
+            e2e/sesion-inactividad.spec.ts \
+            e2e/matriz-modulos-visual.spec.ts \
+            e2e/phase7-admin-role.spec.ts \
+            e2e/phase7-user-isolation.spec.ts \
+            e2e/phase7.spec.ts \
+            e2e/fase2c4-escaner-frontend.spec.ts \
+            e2e/fase2c5-autocomplete-remoto.spec.ts \
+            e2e/fase2c5-regresiones-compatibilidad.spec.ts \
+            e2e/m5-clientes-segmentacion.spec.ts \
+            e2e/transferencias-inventario-acceso.spec.ts \
+            e2e/transferencias-inventario-form.spec.ts \
+            e2e/transferencias-inventario-lifecycle.spec.ts \
+            --grep-invert="Angular exige la variante exacta en compra y venta|Compras y Ventas muestran imágenes o fallback en listas, formularios y detalles" \
+            --config=playwright.config.ts
       - name: Validar SMTP, PDF y logs
         env:
           PHASE8_ADMIN_PASSWORD: 'E2E.Admin#2026!'

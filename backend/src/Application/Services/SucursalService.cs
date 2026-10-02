@@ -66,8 +66,7 @@ public sealed class SucursalService : ISucursalService
 
     public async Task<SucursalDto> CreateAsync(CreateSucursalDto dto, int empresaIdAutorizada)
     {
-        var empresaId = ResolverEmpresaIdRequerida(dto.EmpresaId);
-        ExigirCoincidenciaTenant(empresaId, empresaIdAutorizada);
+        var empresaId = ResolverEmpresaIdPropietaria(dto.EmpresaId, empresaIdAutorizada);
         await ValidarEmpresaPropietariaActivaAsync(empresaId);
         var codigo = NormalizarCodigo(dto.Codigo);
         var nombre = NormalizarRequerido(dto.Nombre, "El nombre de la sucursal es obligatorio.");
@@ -113,8 +112,7 @@ public sealed class SucursalService : ISucursalService
         if (sucursal is null || !PerteneceAlTenantAutorizado(sucursal, empresaIdAutorizada))
             return null;
 
-        var empresaId = ResolverEmpresaIdRequerida(dto.EmpresaId);
-        ExigirCoincidenciaTenant(empresaId, empresaIdAutorizada);
+        var empresaId = ResolverEmpresaIdPropietaria(dto.EmpresaId, empresaIdAutorizada);
         await ValidarEmpresaPropietariaActivaAsync(empresaId);
         var codigo = NormalizarCodigo(dto.Codigo);
         var nombre = NormalizarRequerido(dto.Nombre, "El nombre de la sucursal es obligatorio.");
@@ -215,12 +213,16 @@ public sealed class SucursalService : ISucursalService
             throw new BusinessRuleException($"La empresa propietaria {empresaId} está inactiva.");
     }
 
-    private static int ResolverEmpresaIdRequerida(int? empresaId)
+    private static int ResolverEmpresaIdPropietaria(int? empresaIdSolicitada, int empresaIdAutorizada)
     {
-        if (!empresaId.HasValue || empresaId.Value <= 0)
-            throw new BusinessRuleException(
-                "EmpresaId es obligatorio y debe ser mayor que cero para establecer el tenant propietario de la sucursal.");
-        return empresaId.Value;
+        var autorizada = ExigirEmpresaAutorizada(empresaIdAutorizada);
+        if (!empresaIdSolicitada.HasValue)
+            return autorizada;
+        if (empresaIdSolicitada.Value <= 0)
+            throw new BusinessRuleException("EmpresaId debe ser mayor que cero cuando se especifica.");
+
+        ExigirCoincidenciaTenant(empresaIdSolicitada.Value, autorizada);
+        return autorizada;
     }
 
     private static int ResolverEmpresaIdConsulta(int? empresaIdSolicitada, int empresaIdAutorizada)
