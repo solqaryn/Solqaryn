@@ -96,7 +96,7 @@ public class QuestPdfFacturaPerfilesServiceTests
     }
 
     [Theory]
-    [InlineData("VariStorehn", "VA")]
+    [InlineData("Acme", "AC")]
     [InlineData("Mi Empresa", "ME")]
     [InlineData("SOLQARYN", "SO")]
     [InlineData("", "SQ")]
