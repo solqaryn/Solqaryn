@@ -1,0 +1,82 @@
+name: Environment infrastructure parity
+
+on:
+  push:
+    branches: [dev, qa, main]
+    paths:
+      - .github/workflows/environment-infra-parity.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  dev:
+    if: github.ref_name == 'dev'
+    name: DEV infrastructure contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: DEV
+    env:
+      ENVIRONMENT_NAME: DEV
+      DB_HOST: ${{ vars.SOLQARYN_DEV_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_DEV_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_DEV_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_DEV_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_DEV_DB_PASSWORD }}
+      AIVEN_TOKEN: ${{ secrets.SOLQARYN_AIVEN_TOKEN }}
+      BACKUP_PASSPHRASE: ${{ secrets.SOLQARYN_DEV_BACKUP_PASSPHRASE }}
+      EXPECTED_DB: solqaryn_dev
+      EXPECTED_USER: solqaryn_dev_user
+      FORBIDDEN_DB_1: solqaryn_qa
+      FORBIDDEN_DB_2: solqaryn_prod
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/environment-infra-parity
+
+  qa:
+    if: github.ref_name == 'qa'
+    name: QA infrastructure contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: QA
+    env:
+      ENVIRONMENT_NAME: QA
+      DB_HOST: ${{ vars.SOLQARYN_QA_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_QA_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_QA_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_QA_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_QA_DB_PASSWORD }}
+      AIVEN_TOKEN: ${{ secrets.SOLQARYN_AIVEN_TOKEN }}
+      BACKUP_PASSPHRASE: ${{ secrets.SOLQARYN_QA_BACKUP_PASSPHRASE }}
+      EXPECTED_DB: solqaryn_qa
+      EXPECTED_USER: solqaryn_qa_user
+      FORBIDDEN_DB_1: solqaryn_dev
+      FORBIDDEN_DB_2: solqaryn_prod
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/environment-infra-parity
+
+  prod:
+    if: github.ref_name == 'main'
+    name: PROD infrastructure contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: PROD
+    env:
+      ENVIRONMENT_NAME: PROD
+      DB_HOST: ${{ vars.SOLQARYN_PROD_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_PROD_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_PROD_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_PROD_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_PROD_DB_PASSWORD }}
+      AIVEN_TOKEN: ${{ secrets.SOLQARYN_AIVEN_TOKEN }}
+      BACKUP_PASSPHRASE: ${{ secrets.SOLQARYN_PROD_BACKUP_PASSPHRASE }}
+      EXPECTED_DB: solqaryn_prod
+      EXPECTED_USER: solqaryn_prod_user
+      FORBIDDEN_DB_1: solqaryn_dev
+      FORBIDDEN_DB_2: solqaryn_qa
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/environment-infra-parity
