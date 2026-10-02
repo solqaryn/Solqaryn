@@ -1,5 +1,5 @@
-# Canonical read-only PROD inventory after completed historical migration
-name: PROD - Read-only canonical database inventory
+# Canonical read-only PROD snapshot after completed historical migration
+name: PROD - Read-only canonical database snapshot
 
 on:
   push:
