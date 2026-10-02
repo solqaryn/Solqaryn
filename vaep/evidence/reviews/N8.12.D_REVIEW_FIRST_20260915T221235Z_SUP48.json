@@ -25,7 +25,7 @@
       "backend/src/API/Observability/RequestObservability.cs",
       "backend/src/API/Program.cs",
       "backend/src/API/appsettings.json",
-      "backend/tests/InventoryApp.Tests/API/RequestObservabilityTests.cs"
+      "backend/tests/Solqaryn.Tests/API/RequestObservabilityTests.cs"
     ]
   },
   "review": {
@@ -64,7 +64,7 @@
     "workflowRun": 35029570267,
     "job": 104584633361,
     "result": "SUCCESS",
-    "test": "dotnet test backend/tests/InventoryApp.Tests/InventoryApp.Tests.csproj --filter FullyQualifiedName~RequestObservabilityTests --configuration Release"
+    "test": "dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj --filter FullyQualifiedName~RequestObservabilityTests --configuration Release"
   },
   "findings": [],
   "P0": 0,

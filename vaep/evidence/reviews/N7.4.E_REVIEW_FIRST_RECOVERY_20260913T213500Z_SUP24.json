@@ -30,7 +30,7 @@
       "backend/src/Application/Interfaces/IMensajeOutboxRepository.cs",
       "backend/src/Application/Services/MensajeOutboxService.cs",
       "backend/src/Infrastructure/Repositories/MensajeOutboxRepository.cs",
-      "backend/tests/InventoryApp.Tests/N74DOutboxIdempotentReplayTests.cs"
+      "backend/tests/Solqaryn.Tests/N74DOutboxIdempotentReplayTests.cs"
     ]
   },
   "currentSurfaceInspection": {

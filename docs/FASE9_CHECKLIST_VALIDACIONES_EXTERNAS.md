@@ -1,7 +1,7 @@
 # Fase 9 — Checklist de validaciones externas del propietario
 
 Fecha de preparación: 2026-07-29  
-Entorno permitido: `varistorehn_desarrollo`  
+Entorno permitido: `SOLQARYN_desarrollo`  
 Producción: prohibida para estas pruebas
 
 ## Instrucciones generales
@@ -53,7 +53,7 @@ Correo recibido una sola vez, contenido correcto, PDF válido y logs seguros.
 ## 2. Render Desarrollo
 
 - [ ] Confirmar rama desplegada: `Desarrollo`.
-- [ ] Confirmar nombre lógico: `varistorehn_desarrollo`.
+- [ ] Confirmar nombre lógico: `SOLQARYN_desarrollo`.
 - [ ] Confirmar health `/health`.
 - [ ] Confirmar readiness `/health/ready`.
 - [ ] Confirmar que el servicio inicia sin errores.

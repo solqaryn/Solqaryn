@@ -35,7 +35,7 @@ No se ejecutó DDL/DML contra Producción.
 Scripts y evidencia principales:
 
 - `backend/scripts/preflight-erp-n0-8-migraciones-limpieza.sql`
-- `backend/tests/InventoryApp.Tests/N08MigracionesLimpiezaPreflightIntegrationTests.cs`
+- `backend/tests/Solqaryn.Tests/N08MigracionesLimpiezaPreflightIntegrationTests.cs`
 
 El preflight es de solo lectura e inventaría:
 

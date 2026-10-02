@@ -10,7 +10,7 @@
     "backend/src/Application/DTOs/SecuenciaDocumentoDtos.cs",
     "backend/src/Application/Interfaces/ISecuenciaDocumentoService.cs",
     "backend/src/Infrastructure/Services/SecuenciaDocumentoService.cs",
-    "backend/tests/InventoryApp.Tests/SecuenciaDocumentoServiceTests.cs"
+    "backend/tests/Solqaryn.Tests/SecuenciaDocumentoServiceTests.cs"
   ],
   "findings": {
     "P0": 0,

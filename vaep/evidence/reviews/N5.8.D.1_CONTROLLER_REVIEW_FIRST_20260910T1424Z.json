@@ -32,7 +32,7 @@
   ],
   "reviewedFiles": [
     "backend/src/Infrastructure/Services/ReporteAdministrativoService.cs",
-    "backend/tests/InventoryApp.Tests/N58DExportPdfServiceTests.cs"
+    "backend/tests/Solqaryn.Tests/N58DExportPdfServiceTests.cs"
   ],
   "contract": {
     "formatsClosed": ["csv", "xlsx", "pdf"],
@@ -47,7 +47,7 @@
     "controllerChangedByD1": false
   },
   "directedTests": {
-    "file": "backend/tests/InventoryApp.Tests/N58DExportPdfServiceTests.cs",
+    "file": "backend/tests/Solqaryn.Tests/N58DExportPdfServiceTests.cs",
     "coversPdfSignatureContentTypeFilename": true,
     "coversUnknownFormatFailClosed": true,
     "compileImportFirstDetectorFix": "e8ba8885f15ae0a53a2f6a02427e4694ab9672d5"

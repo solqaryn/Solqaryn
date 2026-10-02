@@ -25,7 +25,7 @@
       "backend/src/Infrastructure/Persistence/Configurations/WebhookEntranteConfiguration.cs",
       "backend/src/Infrastructure/Persistence/Migrations/*N75WebhookEntrantePersistencia*",
       "backend/src/Infrastructure/Persistence/Migrations/AppDbContextModelSnapshot.cs",
-      "backend/tests/InventoryApp.Tests/Infrastructure/*WebhookEntrante*"
+      "backend/tests/Solqaryn.Tests/Infrastructure/*WebhookEntrante*"
     ],
     "forbiddenNow": [
       "Produccion",

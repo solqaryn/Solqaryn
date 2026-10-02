@@ -27,7 +27,7 @@
     "reviewFirst": "PASS_APPLICATION_API_ALREADY_SATISFIES_ACCEPTED_CONTRACT",
     "functionalChange": "NONE",
     "additionalFunctionalCIRequired": false,
-    "existingFocusedTest": "backend/tests/InventoryApp.Tests/FinanzasServiceTests.cs::GetResumenAsync_Separa_GastosOperativos_De_Otros_Egresos"
+    "existingFocusedTest": "backend/tests/Solqaryn.Tests/FinanzasServiceTests.cs::GetResumenAsync_Separa_GastosOperativos_De_Otros_Egresos"
   },
   "p0": 0,
   "p1": 0,

@@ -29,7 +29,7 @@
       "scope": "RequestObservabilityTests"
     }
   ],
-  "inventory": {
+  "inventario": {
     "anchorRecordsExact": 158,
     "backendSourceLayers": 4,
     "boundedAreas": 9,

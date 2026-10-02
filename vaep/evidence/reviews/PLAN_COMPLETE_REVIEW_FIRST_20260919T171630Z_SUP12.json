@@ -36,12 +36,12 @@
     "persistence_migrations_rollback": "NOT_APPLICABLE_TO_SUP12_EVIDENCE_WRITE__CURRENT_PRODUCT_CONTRACT_REVIEWED_WHERE_APPLICABLE"
   },
   "reviewed_material": [
-    "docs/varistorehn/REGLAS_TRANSVERSALES.md",
+    "docs/SOLQARYN/REGLAS_TRANSVERSALES.md",
     "frontend/package.json",
-    "frontend/scripts/validate-varistorehn-transversal.mjs",
-    "frontend/src/app/features/varistorehn/varistorehn.service.ts",
-    "frontend/e2e/varistorehn-fase10.spec.ts",
-    "frontend/e2e/varistorehn-fase12.spec.ts"
+    "frontend/scripts/validate-SOLQARYN-transversal.mjs",
+    "frontend/src/app/features/SOLQARYN/SOLQARYN.service.ts",
+    "frontend/e2e/SOLQARYN-fase10.spec.ts",
+    "frontend/e2e/SOLQARYN-fase12.spec.ts"
   ],
   "current_standard_findings": {
     "tenant_boundary": "PASS__client DTO/payload tenant fields are forbidden by transversal validator and session-derived tenant contract remains authoritative",

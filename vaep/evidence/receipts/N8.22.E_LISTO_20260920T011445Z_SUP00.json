@@ -24,7 +24,7 @@
   },
   "fresh_current_standard": {
     "framework_build_output_project": "PASS",
-    "routes_behavior": "PASS__canonical DEV /varistorehn/productos HTTP 200",
+    "routes_behavior": "PASS__canonical DEV /SOLQARYN/productos HTTP 200",
     "security_rbac_tenant": "PASS_PROPORTIONAL",
     "persistence_migrations_rollback": "N_A_NO_APPLICABLE_DELTA",
     "causal_gates": "PASS__functional product head current gate set terminal success; no active Desarrollo Actions writer before review",

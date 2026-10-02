@@ -33,7 +33,7 @@
       "backend/src/Application/Services/EmailEmpresarialService.cs",
       "backend/src/Infrastructure/Repositories/EmailEmpresarialRepository.cs",
       "backend/src/API/Controllers/EmailEmpresarialController.cs",
-      "backend/tests/InventoryApp.Tests/EmailEmpresarialServiceTests.cs"
+      "backend/tests/Solqaryn.Tests/EmailEmpresarialServiceTests.cs"
     ],
     "tenant_isolation": "route tenant equals authorized TenantPermissionContext; service rechecks active membership; repository predicates always include EmpresaId",
     "idempotency": "EmpresaId + Idempotency-Key; same request replays existing durable message; different payload fails closed",

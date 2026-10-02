@@ -17,7 +17,7 @@
   "functional_candidate": "3dbcc8b54842215c8ea49dcd51e6ec1e8a5bab27",
   "material_delta": {
     "entity": "backend/src/Domain/Entities/EmailEmpresarial.cs",
-    "tests": "backend/tests/InventoryApp.Tests/EmailEmpresarialDomainTests.cs",
+    "tests": "backend/tests/Solqaryn.Tests/EmailEmpresarialDomainTests.cs",
     "contract": [
       "tenant-scoped durable enterprise-email intent",
       "idempotency key and correlation identity",

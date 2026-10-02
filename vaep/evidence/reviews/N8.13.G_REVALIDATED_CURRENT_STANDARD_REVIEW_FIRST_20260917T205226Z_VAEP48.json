@@ -48,8 +48,8 @@
     },
     "production_reference": {
       "inspection_only": true,
-      "project": "varistorehn",
-      "canonical_alias": "varistorehn.vercel.app",
+      "project": "SOLQARYN",
+      "canonical_alias": "SOLQARYN.vercel.app",
       "deployment": "dpl_53hXtv5e8oedhKe6wQRCtz5bDHfq",
       "git_ref": "main",
       "git_sha": "85b4e02814823e9671803c23798a6ff0bf05c8f6",

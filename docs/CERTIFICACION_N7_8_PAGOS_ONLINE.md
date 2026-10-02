@@ -47,7 +47,7 @@ Sobre el candidate `b217cc00bfa9bfc452674f0bdacbef52e50186a7` quedaron terminale
 - `34896693717` — `Priority 3 - Security, Compliance, and Multi-tenancy`: SUCCESS;
 - `34896693820` — `Fase 2 - Auditoría de configuración y dependencias`: SUCCESS.
 
-El run de aceptación integral `34896693703` terminó failure por suites legacy/global de responsive/navigation: recursos 404 genéricos y overflow de `/configuracion`. El compare causal de N7.8 posterior al receipt UI cambia exclusivamente `backend/src/Application/Services/PagoOnlineService.cs` y `backend/tests/InventoryApp.Tests/N78DPagoOnlineServiceTests.cs`; no modifica frontend, `/configuracion`, assets, rutas ni responsive. Conforme a `docs/VAEP_AUTHORITY.md`, ese fallo no relacionado no bloquea N7.8 y tampoco se usa como PASS.
+El run de aceptación integral `34896693703` terminó failure por suites legacy/global de responsive/navigation: recursos 404 genéricos y overflow de `/configuracion`. El compare causal de N7.8 posterior al receipt UI cambia exclusivamente `backend/src/Application/Services/PagoOnlineService.cs` y `backend/tests/Solqaryn.Tests/N78DPagoOnlineServiceTests.cs`; no modifica frontend, `/configuracion`, assets, rutas ni responsive. Conforme a `docs/VAEP_AUTHORITY.md`, ese fallo no relacionado no bloquea N7.8 y tampoco se usa como PASS.
 
 No existe criterio de aceptación performance-specific ni gate dedicado atribuible a N7.8; performance se clasifica N/A, no como PASS fabricado.
 

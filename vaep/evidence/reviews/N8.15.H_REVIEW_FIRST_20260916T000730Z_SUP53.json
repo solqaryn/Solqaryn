@@ -10,11 +10,11 @@
   "functionalBaseline": "e03dbfe786bd3ba323414e8af1f3e53f91872a98",
   "artifacts": [
     "docs/matrices-evaluacion/00_GOBERNANZA/N8_15_A_BASELINE_PRE.md",
-    "docs/matrices-evaluacion/00_GOBERNANZA/N8_15_B_DOMAIN_INVENTORY.md",
-    "docs/matrices-evaluacion/00_GOBERNANZA/N8_15_C_DB_MIG_INVENTORY.md",
-    "docs/matrices-evaluacion/00_GOBERNANZA/N8_15_D_BACKEND_API_INVENTORY.md",
-    "docs/matrices-evaluacion/00_GOBERNANZA/N8_15_E_FRONTEND_UX_INVENTORY.md",
-    "docs/matrices-evaluacion/00_GOBERNANZA/N8_15_F_SEC_AUDIT_INVENTORY.md",
+    "docs/matrices-evaluacion/00_GOBERNANZA/N8_15_B_DOMAIN_inventario.md",
+    "docs/matrices-evaluacion/00_GOBERNANZA/N8_15_C_DB_MIG_inventario.md",
+    "docs/matrices-evaluacion/00_GOBERNANZA/N8_15_D_BACKEND_API_inventario.md",
+    "docs/matrices-evaluacion/00_GOBERNANZA/N8_15_E_FRONTEND_UX_inventario.md",
+    "docs/matrices-evaluacion/00_GOBERNANZA/N8_15_F_SEC_AUDIT_inventario.md",
     "docs/matrices-evaluacion/00_GOBERNANZA/N8_15_G_TEST_CI_VALIDATION.md",
     "docs/matrices-evaluacion/00_GOBERNANZA/N8_15_H_DOC_CERT.md"
   ],

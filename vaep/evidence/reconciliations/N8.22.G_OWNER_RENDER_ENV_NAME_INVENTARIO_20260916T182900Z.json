@@ -1,11 +1,11 @@
 {
-  "schema": "vaep-n8.22.g-owner-render-env-name-inventory/v1",
+  "schema": "vaep-n8.22.g-owner-render-env-name-inventario/v1",
   "scope": "N8.22.G",
   "parent": "N8.22",
   "branch": "Desarrollo",
   "captured_at_utc": "2026-09-16T18:29:00Z",
   "source": "Owner-provided Render dashboard screenshots in the active project conversation; names only, values remained masked.",
-  "inventory_complete": true,
+  "inventario_complete": true,
   "secret_values_read": false,
   "secret_values_persisted": false,
   "dev_service": {
@@ -110,5 +110,5 @@
     "production": "Current production deployment is pinned to older commit 85b4e02814823e9671803c23798a6ff0bf05c8f6, whose appsettings surface is smaller.",
     "health_policy": "Production health check is /health and live; DEV health check is /health/ready. Difference is version-aware and both endpoints correspond to their deployed code versions."
   },
-  "controller_instruction": "Re-read this owner-supplied sanitized name inventory, current Render service metadata, current code/config on both deployed versions, then classify each difference as EQUIVALENT, EXPECTED_ENV_DIFFERENCE, MATERIAL_GAP, or UNKNOWN. If MATERIAL_GAP=0 and UNKNOWN=0 with P0=0/P1=0, perform REVIEW_FIRST, causal receipt/readback, close N8.22.G LISTO_REAL and promote N8.22.H. Do not expose or request secret values."
+  "controller_instruction": "Re-read this owner-supplied sanitized name inventario, current Render service metadata, current code/config on both deployed versions, then classify each difference as EQUIVALENT, EXPECTED_ENV_DIFFERENCE, MATERIAL_GAP, or UNKNOWN. If MATERIAL_GAP=0 and UNKNOWN=0 with P0=0/P1=0, perform REVIEW_FIRST, causal receipt/readback, close N8.22.G LISTO_REAL and promote N8.22.H. Do not expose or request secret values."
 }

@@ -80,8 +80,8 @@ Todas las fases: **no iniciadas** hasta este documento. Comenzando Fase 1.
 
 ## Revisión de producción — 19/07/2026
 
-La URL pública final del frontend es `https://varistorehn.vercel.app/login`.
-Se verificó que responde 200 y que el HTML visible ya usa `VariStorehn`.
+La URL pública final del frontend es `https://SOLQARYN.vercel.app/login`.
+Se verificó que responde 200 y que el HTML visible ya usa `SOLQARYN`.
 
 Estado actualizado de las secciones solicitadas:
 
@@ -146,7 +146,7 @@ Alcance aplicado:
 3. Categorias, clientes y proveedores: eliminacion logica, con auditoria y sin
    borrado fisico.
 4. Impuestos/descuentos: seed idempotente para ISV 15%, ISC 5% y promocion
-   VariStorehn 10%; los calculos siguen realizandose desde backend.
+   SOLQARYN 10%; los calculos siguen realizandose desde backend.
 5. Facturas: fallback de logo institucional para que la factura siempre lleve
    membrete cuando no venga logo de configuracion empresarial.
 6. Frontend: correccion de desbordes en permisos y configuracion visual.

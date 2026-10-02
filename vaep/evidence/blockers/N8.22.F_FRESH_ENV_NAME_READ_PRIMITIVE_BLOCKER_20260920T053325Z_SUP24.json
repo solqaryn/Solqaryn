@@ -59,7 +59,7 @@
     }
   },
   "renderCapabilityAndMetadataReadOnly": {
-    "environmentKeyInventoryReadPrimitiveAvailable": false,
+    "environmentKeyinventarioReadPrimitiveAvailable": false,
     "environmentVariableMutationPrimitiveAvailableButUnused": true,
     "desarrollo": {
       "serviceId": "srv-d9jblq7avr4c73c74jng",
@@ -85,9 +85,9 @@
   "blocker": {
     "type": "EXTERNAL_READ_PRIMITIVE_ABSENT",
     "causalUnknown": "Fresh sanitized environment-variable key-name parity between the Desarrollo and production-reference Render services.",
-    "finding": "Fresh connector capability discovery exposes an environment-variable mutation primitive but no read-only primitive that lists sanitized environment-variable key names. The mutation primitive was not used as a probe. Fresh service and deploy metadata are readable, but they do not expose the required key-name inventory.",
+    "finding": "Fresh connector capability discovery exposes an environment-variable mutation primitive but no read-only primitive that lists sanitized environment-variable key names. The mutation primitive was not used as a probe. Fresh service and deploy metadata are readable, but they do not expose the required key-name inventario.",
     "requiredResolution": [
-      "Enable a read-only sanitized environment-variable key-name inventory primitive for both named Render services, or",
+      "Enable a read-only sanitized environment-variable key-name inventario primitive for both named Render services, or",
       "Have the owner provide fresh sanitized name-only inventories for both services."
     ],
     "forbiddenData": "Secret values must never be read, logged, compared, or written.",

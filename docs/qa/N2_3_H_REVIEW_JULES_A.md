@@ -10,7 +10,7 @@
 Se revisaron contratos API/DTOs, lifecycle, RBAC, auditoría, idempotencia, concurrencia, separación OrdenCompra→RecepcionCompra y evidencia CI.
 
 Jules declaró la ejecución de:
-`dotnet test backend/tests/InventoryApp.Tests/InventoryApp.Tests.csproj --filter "FullyQualifiedName~RecepcionCompra"`
+`dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj --filter "FullyQualifiedName~RecepcionCompra"`
 
 Resultado declarado: **36/36 PASS**.
 

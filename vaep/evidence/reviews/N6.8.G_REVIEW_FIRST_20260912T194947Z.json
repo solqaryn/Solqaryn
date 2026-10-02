@@ -16,7 +16,7 @@
   "acceptance_review": {
     "workflow_name": "N6.8 - Storage isolation regression",
     "branch_scope": "Desarrollo",
-    "build": "backend/InventoryApp.sln Release",
+    "build": "backend/Solqaryn.sln Release",
     "directed_tests": [
       "Application.Storage.CloudinaryTenantOwnershipTests",
       "Application.Storage.StorageTenantContextTests",

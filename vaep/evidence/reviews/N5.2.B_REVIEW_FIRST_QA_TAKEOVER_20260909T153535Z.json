@@ -25,7 +25,7 @@
       "reason": "REVIEW_FIRST revalidated the live QA-takeover contract, its causal domain assertions and P0/P1=0. The canonical takeover is already present in Desarrollo; integrating the later R2 literally would duplicate a resolved semantic scope. No R3."
     },
     {
-      "taskId": "N5.2.B.1.INVENTORY_REPORT_DOMAIN_CONTRACTS",
+      "taskId": "N5.2.B.1.inventario_REPORT_DOMAIN_CONTRACTS",
       "dispatchId": "N5-2-B-1-DOMAIN-J2",
       "workerId": "J2",
       "taskAttempt": 1,

@@ -99,13 +99,13 @@ El rewrite no convierte respuestas privadas en públicas: Vercel conserva la pol
 Sobre `6b364c7c3e1fd24374fbc02cface54ad3f977bee`:
 
 - SOLQARYN Project Scope Lock: **SUCCESS**;
-- VariStoreHn Fase 1: **SUCCESS**;
-- VariStoreHn Fase 2: **SUCCESS**;
-- VariStoreHn Fase 3: **SUCCESS**;
-- VariStoreHn Fase 4: **SUCCESS**;
-- VariStoreHn Fase 5: **SUCCESS**;
-- VariStoreHn Fase 6: **SUCCESS**;
-- VariStoreHn Fase 7: **SUCCESS**;
+- SOLQARYN Fase 1: **SUCCESS**;
+- SOLQARYN Fase 2: **SUCCESS**;
+- SOLQARYN Fase 3: **SUCCESS**;
+- SOLQARYN Fase 4: **SUCCESS**;
+- SOLQARYN Fase 5: **SUCCESS**;
+- SOLQARYN Fase 6: **SUCCESS**;
+- SOLQARYN Fase 7: **SUCCESS**;
 - backend Release build: **SUCCESS**;
 - pruebas focales storefront/cache/HTTP: **SUCCESS**;
 - frontend lint + guardas: **SUCCESS**;

@@ -21,7 +21,7 @@
   "review_first": {
     "requirements_and_dod": {
       "result": "PASS",
-      "evidence": "Fresh proportional review covered purchase requests, purchase orders, receipts, supplier invoices, three-way match, supplier returns, supplier credit notes, accounts payable, supplier evaluation and inventory transfer interactions. Historical N2 certification was treated only as supporting evidence."
+      "evidence": "Fresh proportional review covered purchase requests, purchase orders, receipts, supplier invoices, three-way match, supplier returns, supplier credit notes, accounts payable, supplier evaluation and inventario transfer interactions. Historical N2 certification was treated only as supporting evidence."
     },
     "implementation_and_diff": {
       "result": "PASS",

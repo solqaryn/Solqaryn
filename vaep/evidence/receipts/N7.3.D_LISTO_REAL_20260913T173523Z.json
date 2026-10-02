@@ -45,7 +45,7 @@
   },
   "evidence": {
     "certificate_test": {
-      "path": "backend/tests/InventoryApp.Tests/N73DOutboxDeadLetterApplicationTests.cs",
+      "path": "backend/tests/Solqaryn.Tests/N73DOutboxDeadLetterApplicationTests.cs",
       "blob": "915968c1d78fcbd3361637c86de8a27fc699774e"
     },
     "backend_release": {

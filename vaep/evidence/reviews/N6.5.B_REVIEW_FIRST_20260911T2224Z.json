@@ -26,7 +26,7 @@
     "files": [
       "backend/src/Application/Interfaces/IContextoTenantService.cs",
       "backend/src/Domain/Security/ContextoTenantActual.cs",
-      "backend/tests/InventoryApp.Tests/N65BTenantIsolationDomainContractsTests.cs"
+      "backend/tests/Solqaryn.Tests/N65BTenantIsolationDomainContractsTests.cs"
     ]
   },
   "findings": {
@@ -55,7 +55,7 @@
       "status": "completed",
       "conclusion": "success",
       "exactHead": "f6f0d26c7f6e1f5613355c64750a78158023da85",
-      "evidence": "full InventoryApp.sln Release build succeeded with 0 warnings/0 errors and test suite passed 2049/2049, 0 failed, 0 skipped"
+      "evidence": "full Solqaryn.sln Release build succeeded with 0 warnings/0 errors and test suite passed 2049/2049, 0 failed, 0 skipped"
     },
     {
       "name": "VAEP engine lightweight checks",

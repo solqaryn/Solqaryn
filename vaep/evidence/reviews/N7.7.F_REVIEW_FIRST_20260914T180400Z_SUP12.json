@@ -39,7 +39,7 @@
   "changed_files": [
     "backend/src/API/Controllers/EmailEmpresarialController.cs",
     "backend/src/Application/Services/EmailEmpresarialService.cs",
-    "backend/tests/InventoryApp.Tests/EmailEmpresarialServiceTests.cs"
+    "backend/tests/Solqaryn.Tests/EmailEmpresarialServiceTests.cs"
   ],
   "causal_gates": {
     "desarrollo_backend": {

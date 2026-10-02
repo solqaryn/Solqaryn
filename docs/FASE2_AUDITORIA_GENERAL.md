@@ -1,4 +1,4 @@
-# FASE 2 — Auditoría general de Solqaryn / VariStorehn
+# FASE 2 — Auditoría general de Solqaryn / SOLQARYN
 
 Fecha de cierre técnico: 27 de julio de 2026.
 
@@ -29,11 +29,11 @@ Se revisaron:
 Solo se reconocen dos entornos lógicos:
 
 ```text
-varistorehn_producción (Producción)
-varistorehn_desarrollo
+SOLQARYN_producción (Producción)
+SOLQARYN_desarrollo
 ```
 
-La base confirmada para Desarrollo es `varistorehn_desarrollo`. La aplicación de Desarrollo no debe utilizar `defaultdb`, una base sin destino claro ni el usuario administrativo `avnadmin`.
+La base confirmada para Desarrollo es `SOLQARYN_desarrollo`. La aplicación de Desarrollo no debe utilizar `defaultdb`, una base sin destino claro ni el usuario administrativo `avnadmin`.
 
 Las migraciones automáticas permanecen deshabilitadas:
 
@@ -119,12 +119,12 @@ Esto evita aceptar hosts arbitrarios en el servicio autorizado de Desarrollo.
 
 ### 3.8 Dependencia visual de Producción — corregido
 
-Hallazgo: Render Desarrollo obtenía el logo desde `varistorehn.vercel.app`.
+Hallazgo: Render Desarrollo obtenía el logo desde `SOLQARYN.vercel.app`.
 
 Corrección:
 
 ```text
-https://solqaryn-desarrollo.vercel.app/assets/varistorehn-logo.png
+https://solqaryn-desarrollo.vercel.app/assets/SOLQARYN-logo.png
 ```
 
 Desarrollo ya no depende del frontend productivo para generar documentos o correos.
@@ -163,7 +163,7 @@ Corrección:
 
 ### Base de datos
 
-- Desarrollo usa la base `varistorehn_desarrollo`.
+- Desarrollo usa la base `SOLQARYN_desarrollo`.
 - EF Core se prueba con MySQL 8.4 descartable.
 - El modelo y snapshot se verifican.
 - El SQL forward se analiza para bloquear `DROP TABLE`, `TRUNCATE` y `DELETE FROM`.
@@ -188,8 +188,8 @@ Corrección:
 
 ### Cloudinary
 
-- Clave autorizada de Desarrollo: `varistorehn_desarrollo`.
-- Prefijo obligatorio: `varistorehn_desarrollo/`.
+- Clave autorizada de Desarrollo: `SOLQARYN_desarrollo`.
+- Prefijo obligatorio: `SOLQARYN_desarrollo/`.
 - El backend bloquea eliminaciones de `PublicId` ajenos al prefijo.
 - Producción mantiene sus rutas actuales.
 - `avnadmin`, claves Raíz, moderación y flujos de medios se conservan.

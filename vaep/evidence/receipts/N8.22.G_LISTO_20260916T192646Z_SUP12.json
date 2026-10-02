@@ -15,7 +15,7 @@
   "evidence":"docs/evidencias/staging-equivalence/N8.22.G_REVALIDATION_20260916T192607Z_SUP12.json",
   "review_first":{"ref":"vaep/evidence/reviews/N8.22.G_REVALIDATION_REVIEW_FIRST_20260916T192640Z_SUP12.json","P0":0,"P1":0,"P2":0,"verdict":"PASS_STAGING_EQUIVALENT_REVALIDATED_CURRENT_STANDARD"},
   "gate_result":{"staging_equivalent":true,"MATERIAL_GAP":0,"UNKNOWN":0,"P0":0,"P1":0},
-  "causal_gates":{"fresh_render_provider_readback":"PASS","fresh_vercel_project_identity":"PASS","owner_prod_build_settings_reconciliation":"PASS","sanitized_render_env_inventory":"PASS","exact_head_equivalence":"DEMONSTRATED_CONTROL_ONLY_DELTA"},
+  "causal_gates":{"fresh_render_provider_readback":"PASS","fresh_vercel_project_identity":"PASS","owner_prod_build_settings_reconciliation":"PASS","sanitized_render_env_inventario":"PASS","exact_head_equivalence":"DEMONSTRATED_CONTROL_ONLY_DELTA"},
   "guards":{"main_write":0,"production_write":0,"deploy":0,"secret_values_read":false,"secret_values_exposed":0,"pr_2_write":0},
   "next_dependency_valid_scope":"N8.22.H"
 }

@@ -35,8 +35,8 @@
       "review": "PASS",
       "qaTakeoverEvidenceAccepted": true,
       "integrationRequired": false,
-      "fileScopeHint": "backend/tests/InventoryApp.Tests/API/Controllers/RentabilidadVentasContractTests.cs",
-      "evidencePath": "backend/tests/InventoryApp.Tests/API/Controllers/RentabilidadVentasContractTests.cs",
+      "fileScopeHint": "backend/tests/Solqaryn.Tests/API/Controllers/RentabilidadVentasContractTests.cs",
+      "evidencePath": "backend/tests/Solqaryn.Tests/API/Controllers/RentabilidadVentasContractTests.cs",
       "controllerCorrection": "df5eca6fa7ccd66f06031a050141ac247dcffec4",
       "originalRunId": 34450724400,
       "originalRunDisposition": "OWNERSHIP_REVOKED_LATE_RESULT_EVIDENCE_ONLY"

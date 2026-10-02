@@ -52,9 +52,9 @@
       "authenticated_mutation_routes_unchanged": true
     },
     "tests_reviewed": [
-      "backend/tests/InventoryApp.Tests/API/Controllers/WhatsAppControllerTests.cs",
-      "frontend/e2e/varistorehn-fase2.spec.ts",
-      "frontend/scripts/validate-varistorehn-fase6.mjs"
+      "backend/tests/Solqaryn.Tests/API/Controllers/WhatsAppControllerTests.cs",
+      "frontend/e2e/SOLQARYN-fase2.spec.ts",
+      "frontend/scripts/validate-SOLQARYN-fase6.mjs"
     ],
     "product_head_check_runs": {
       "total": 19,

@@ -49,7 +49,7 @@
     {"run_id": 35460417001, "name": "Desarrollo - Compilacion y pruebas", "status": "completed", "conclusion": "success"},
     {"run_id": 35460416975, "name": "Priority 4 - Interfaces architecture and quality", "status": "completed", "conclusion": "success"},
     {"run_id": 35460416983, "name": "Priority 3 security", "status": "completed", "conclusion": "success"},
-    {"run_id": 35460416988, "name": "VariStoreHN Fase 12 - cuenta cliente evolucion", "status": "completed", "conclusion": "success"},
+    {"run_id": 35460416988, "name": "SOLQARYN Fase 12 - cuenta cliente evolucion", "status": "completed", "conclusion": "success"},
     {"run_id": 35460416980, "name": "VAEP OPEN-only admission invariant", "status": "completed", "conclusion": "success"},
     {"run_id": 35460416984, "name": "ERP-N0.1 certification", "status": "completed", "conclusion": "success"},
     {"run_id": 35460416976, "name": "Fase2 config/dependencies", "status": "completed", "conclusion": "success"}

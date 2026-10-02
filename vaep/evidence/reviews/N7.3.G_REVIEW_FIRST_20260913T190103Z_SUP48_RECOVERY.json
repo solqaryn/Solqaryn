@@ -33,7 +33,7 @@
   "scope_review": {
     "compare_base": "98c14b1eca2a07d33337e0ed7117f1de99cc7bf8",
     "compare_head": "2c19221fdbb0a3cdfdcf8afdc839999bf8e80265",
-    "files": ["backend/tests/InventoryApp.Tests/N73GDeadLetterQaRegressionTests.cs"],
+    "files": ["backend/tests/Solqaryn.Tests/N73GDeadLetterQaRegressionTests.cs"],
     "production_files_changed": 0,
     "scope_change": false
   },

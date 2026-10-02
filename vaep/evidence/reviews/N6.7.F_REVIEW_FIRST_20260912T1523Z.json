@@ -15,8 +15,8 @@
   "scopeReview": {
     "materialFiles": [
       "backend/src/Application/Services/EmpresaConfiguracionService.cs",
-      "backend/tests/InventoryApp.Tests/N67FConfiguracionEmpresaSecurityAuditTests.cs",
-      "backend/tests/InventoryApp.Tests/N67FTenantMutationFailClosedTests.cs"
+      "backend/tests/Solqaryn.Tests/N67FConfiguracionEmpresaSecurityAuditTests.cs",
+      "backend/tests/Solqaryn.Tests/N67FTenantMutationFailClosedTests.cs"
     ],
     "functionalAdvance": [
       "Tenant configuration mutations fail closed when persistence fails before emitting success audit side effects.",

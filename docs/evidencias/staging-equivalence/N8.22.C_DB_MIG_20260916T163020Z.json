@@ -39,8 +39,8 @@
   ],
   "evidence_refs":[
     "docs/evidencias/database-provider/n8-20-f/github-actions/35101887861-1/N8.20.F_AIVEN_CAPABILITIES_EVIDENCE.json",
-    "backend/src/Infrastructure/InventoryApp.Infrastructure.csproj@Desarrollo",
-    "backend/src/Infrastructure/InventoryApp.Infrastructure.csproj@main"
+    "backend/src/Infrastructure/Solqaryn.Infrastructure.csproj@Desarrollo",
+    "backend/src/Infrastructure/Solqaryn.Infrastructure.csproj@main"
   ],
   "summary":{"EQUIVALENT":2,"EXPECTED_ENV_DIFFERENCE":1,"MATERIAL_GAP":0,"UNKNOWN":2,"P0":0,"P1":0},
   "certification_effect":"UNKNOWN blocks N8.22.G/H until authoritative PROD DB metadata is available; this stage records the unknown rather than fabricating parity.",

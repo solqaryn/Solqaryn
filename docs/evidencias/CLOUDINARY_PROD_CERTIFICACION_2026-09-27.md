@@ -39,7 +39,7 @@ El prefijo productivo es distinto del prefijo DEV y el código de storage conser
 
 Workflow read-only:
 
-- `PROD - Historical Cloudinary inventory`
+- `PROD - Historical Cloudinary inventario`
 - run: `36296747821`
 - resultado: **SUCCESS**
 - escrituras productivas: **0**
@@ -59,7 +59,7 @@ El cloud legacy autorizado por la migración DEV histórica es `vyijnqzq`; la mi
 ```text
 riyrzmob
 └── solqaryn_prod/
-    └── inventoryapp/
+    └── Solqaryn/
         └── productos/
             └── empresas/
                 └── 1/
@@ -72,7 +72,7 @@ La migración debe ser determinista e idempotente, actualizar `ProductoImagenes.
 `CLOUDINARY_PROD_CREDENTIALS=PASS`  
 `CLOUDINARY_PROD_RUNTIME_AUTH=PASS`  
 `CLOUDINARY_PROD_PREFIX_ISOLATION=PASS`  
-`HISTORICAL_MEDIA_INVENTORY=351`  
+`HISTORICAL_MEDIA_inventario=351`  
 `HISTORICAL_MEDIA_MIGRATION=PASS`  
 `HISTORICAL_MEDIA_MIGRATED_ROWS=351`  
 `HISTORICAL_MEDIA_REMAINING_LEGACY_ROWS=0`  
@@ -87,7 +87,7 @@ Deploy Render de migración:
 - commit: `09251c84d949e6357269b0fbf008ab0f3b770511`
 - resultado: **LIVE**
 - fuente legacy: `vyijnqzq`
-- destino: `riyrzmob/solqaryn_prod/inventoryapp/productos/empresas/1`
+- destino: `riyrzmob/solqaryn_prod/Solqaryn/productos/empresas/1`
 - filas origen: **351**
 - filas migradas: **351**
 - referencias legacy restantes: **0**

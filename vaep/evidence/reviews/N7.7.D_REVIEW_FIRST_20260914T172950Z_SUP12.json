@@ -31,7 +31,7 @@
       "backend/src/Application/Services/EmailEmpresarialService.cs",
       "backend/src/Infrastructure/Repositories/EmailEmpresarialRepository.cs",
       "backend/src/API/Controllers/EmailEmpresarialController.cs",
-      "backend/tests/InventoryApp.Tests/EmailEmpresarialServiceTests.cs"
+      "backend/tests/Solqaryn.Tests/EmailEmpresarialServiceTests.cs"
     ],
     "main_touched": false,
     "production_touched": false,

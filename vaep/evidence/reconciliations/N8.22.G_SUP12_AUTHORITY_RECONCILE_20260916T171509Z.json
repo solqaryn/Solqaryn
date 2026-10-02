@@ -34,8 +34,8 @@
   },
   "external_action_required": [
     "Owner-authorized decision/change for production Render healthCheckPath parity, outside this Desarrollo-only run.",
-    "Provide/authorize sanitized environment-variable NAME inventory for Render parity; never values.",
-    "Provide/authorize authoritative Vercel production project/settings plus sanitized environment-variable NAME inventory; never values."
+    "Provide/authorize sanitized environment-variable NAME inventario for Render parity; never values.",
+    "Provide/authorize authoritative Vercel production project/settings plus sanitized environment-variable NAME inventario; never values."
   ],
   "guards": {
     "main_write": 0,

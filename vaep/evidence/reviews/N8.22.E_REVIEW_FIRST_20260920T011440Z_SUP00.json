@@ -17,8 +17,8 @@
   "fresh_review": {
     "framework": "EQUIVALENT__Angular 20 current source with application builder",
     "build": "EQUIVALENT__package scripts use ng build and production configuration; current production build gate is success",
-    "output_project": "EQUIVALENT__dist/inventoryapp-frontend and Vercel DEV project solqaryn-desarrollo",
-    "routes": "EQUIVALENT__current Angular source contains public VariStoreHN routes; vercel catch-all preserves SPA routing; canonical DEV alias /varistorehn/productos returned HTTP 200 in this execution",
+    "output_project": "EQUIVALENT__dist/Solqaryn-frontend and Vercel DEV project solqaryn-desarrollo",
+    "routes": "EQUIVALENT__current Angular source contains public SOLQARYN routes; vercel catch-all preserves SPA routing; canonical DEV alias /SOLQARYN/productos returned HTTP 200 in this execution",
     "api_environment": "EXPECTED_ENV_DIFFERENCE__DEV rewrite targets solqaryn-api-desarrollo.onrender.com while prod-host-only rule targets production API",
     "deployment_state": "EXPECTED_ENV_DIFFERENCE__some evidence-only commits were canceled/rate-limited, while an evidence-equivalent DEV deployment is READY and live canonical DEV deep-route runtime returned 200; no deploy was requested this run",
     "security_rbac_tenant": "PASS_PROPORTIONAL__public storefront routes remain intentionally public; administrative/business routes retain authGuard plus permisoGuard; DEV API isolation and security headers remain configured",
@@ -45,7 +45,7 @@
     "reviewed_head_equivalence": "17 commits/files ahead of functional product head; all changed files are additive vaep/evidence JSON; product delta 0; deletions 0",
     "development_actions_in_progress_before_review": 0,
     "canonical_dev_runtime_root_http": 200,
-    "canonical_dev_runtime_deep_route": "/varistorehn/productos",
+    "canonical_dev_runtime_deep_route": "/SOLQARYN/productos",
     "canonical_dev_runtime_deep_route_http": 200,
     "vercel_dev_project": "solqaryn-desarrollo",
     "write_scope": "review evidence only"

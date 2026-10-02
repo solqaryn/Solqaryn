@@ -12,7 +12,7 @@
   "freshInspection": {
     "objective": "Determine whether the current OWASP/security scope requires domain model, invariant or contract changes before proceeding to persistence/API/security testing.",
     "inspectedPaths": [
-      "backend/src/Domain/InventoryApp.Domain.csproj",
+      "backend/src/Domain/Solqaryn.Domain.csproj",
       "backend/src/Domain/Security/ContextoTenantActual.cs",
       "backend/src/Domain/Entities/UsuarioEmpresa.cs",
       "backend/src/API/Filters/TenantPermissionContext.cs",

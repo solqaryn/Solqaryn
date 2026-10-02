@@ -10,7 +10,7 @@
   "recovery": {
     "first_detector_owns_recovery": true,
     "cause": "Fresh exact-head regression failures were caused by the Fase 4 WhatsApp preview assertion still expecting 'Cantidad: 2' after the shared formatter intentionally changed the canonical message to bold quantity as 'Cantidad: *2*'.",
-    "scope": "frontend/e2e/varistorehn-fase4.spec.ts only",
+    "scope": "frontend/e2e/SOLQARYN-fase4.spec.ts only",
     "action": "Aligned the stale regression assertion with the current shared WhatsApp formatter without changing product behavior.",
     "recovery_commit": "5b5a2433c1e400e8340aea9e80147b93d151a3df",
     "product_code_changed_by_recovery": false
@@ -27,11 +27,11 @@
   },
   "material_review_scope": {
     "files_reviewed": [
-      "frontend/src/app/features/varistorehn/varistorehn-checkout.rules.ts",
-      "frontend/src/app/features/varistorehn/varistorehn-checkout.component.ts",
-      "frontend/src/app/features/varistorehn/varistorehn-producto.component.ts",
-      "frontend/e2e/varistorehn-fase6.spec.ts",
-      "frontend/e2e/varistorehn-fase4.spec.ts"
+      "frontend/src/app/features/SOLQARYN/SOLQARYN-checkout.rules.ts",
+      "frontend/src/app/features/SOLQARYN/SOLQARYN-checkout.component.ts",
+      "frontend/src/app/features/SOLQARYN/SOLQARYN-producto.component.ts",
+      "frontend/e2e/SOLQARYN-fase6.spec.ts",
+      "frontend/e2e/SOLQARYN-fase4.spec.ts"
     ],
     "security_findings": "No P0/P1 found. Server-side checkout remains authoritative for price, stock and total; browser does not submit those authoritative values. WhatsApp/product URL formatting remains sanitized and constrained; direct product WhatsApp uses current product/model/stock and shared formatter.",
     "historical_evidence_use": "Supporting only; this receipt is based on fresh current-head review and fresh gates."

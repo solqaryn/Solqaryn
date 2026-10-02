@@ -29,7 +29,7 @@
   ],
   "changed_files": [
     "backend/src/Domain/Entities/ConfiguracionWhatsAppEmpresa.cs",
-    "backend/tests/InventoryApp.Tests/N76BWhatsAppConfigurationDomainTests.cs"
+    "backend/tests/Solqaryn.Tests/N76BWhatsAppConfigurationDomainTests.cs"
   ],
   "static_review": {
     "tenant_isolation": "PASS__EmpresaId_REQUIRED_IMMUTABLE",

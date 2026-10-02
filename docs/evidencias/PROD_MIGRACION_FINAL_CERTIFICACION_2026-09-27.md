@@ -104,7 +104,7 @@ Los workflow runs se conservan únicamente como trazabilidad de ejecución. PROD
 
 ## Seguimiento de housekeeping — 2026-09-28
 
-El propietario aceptó PROD y completó el retiro de infraestructura personal legacy de SOLQARYN/VariStoreHN.
+El propietario aceptó PROD y completó el retiro de infraestructura personal legacy de SOLQARYN/SOLQARYN.
 
 - Aiven, Render, Vercel y Cloudinary legacy personales fueron retirados.
 - Los artifacts de rollback/histórico asociados a los runs `36298199171` y `36228394479` fueron eliminados.

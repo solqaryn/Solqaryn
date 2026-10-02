@@ -19,7 +19,7 @@
     "ahead_by": 3,
     "files": [
       "backend/src/API/Controllers/InboundWebhooksController.cs",
-      "backend/tests/InventoryApp.Tests/API/InboundWebhookIngressTests.cs",
+      "backend/tests/Solqaryn.Tests/API/InboundWebhookIngressTests.cs",
       "vaep/evidence/reviews/N7.5.G_REVIEW_FIRST_20260914T024706Z_SUP36.json"
     ]
   },

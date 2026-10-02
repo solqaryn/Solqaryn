@@ -65,7 +65,7 @@
       "result": "PASS"
     },
     {
-      "name": "frontend/scripts/validate-varistorehn-fase6.mjs",
+      "name": "frontend/scripts/validate-SOLQARYN-fase6.mjs",
       "result": "PASS"
     }
   ],
@@ -84,7 +84,7 @@
     },
     {
       "run_id": 35461907034,
-      "name": "VariStoreHn Fase 6 - checkout y pedido",
+      "name": "SOLQARYN Fase 6 - checkout y pedido",
       "conclusion": "success",
       "coverage": [
         "backend contract",
@@ -103,7 +103,7 @@
     },
     {
       "run_id": 35461907044,
-      "name": "VariStoreHN Fase 12 - cuenta cliente evolución",
+      "name": "SOLQARYN Fase 12 - cuenta cliente evolución",
       "conclusion": "success"
     }
   ],

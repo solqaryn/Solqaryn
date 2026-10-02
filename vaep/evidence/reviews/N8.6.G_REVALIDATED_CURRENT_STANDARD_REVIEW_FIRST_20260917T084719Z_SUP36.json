@@ -35,7 +35,7 @@
     "configuration_isolation_hardening": {"run_id":35198655092,"job_id":105127824870,"conclusion":"success"},
     "dotnet_vulnerable_dependencies": {"run_id":35198655092,"job_id":105127825070,"conclusion":"success"}
   },
-  "check_run_inventory": {
+  "check_run_inventario": {
     "total_on_functional_head": 29,
     "failure_found": false,
     "cancelled_found": false,

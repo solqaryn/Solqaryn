@@ -29,7 +29,7 @@
   "tasks": [
     {"taskId":"N5.1.A.1.ARCHITECTURE_REUSE","latestDispatchId":"N5-1-A-1-ARCH-REUSE-A-R2-20260908T221202Z-6181","workerId":"JULES_A","taskAttempt":2,"evidencePath":"docs/N5.1_REPORTES_PREFLIGHT_ARCHITECTURE.md","review":"PASS","qaTakeoverEvidenceAccepted":true,"julesPatchIntegrated":false},
     {"taskId":"N5.1.A.2.DATA_QUERY_BOUNDARIES","latestDispatchId":"N5-1-A-2-DATA-BOUNDARIES-B-R2-20260908T221353Z-6244","workerId":"JULES_B","taskAttempt":2,"evidencePath":"docs/N5.1_REPORTES_PREFLIGHT_DATOS.md","review":"PASS","qaTakeoverEvidenceAccepted":true,"julesPatchIntegrated":false},
-    {"taskId":"N5.1.A.3.UI_AUTHORIZATION_INVENTORY","latestDispatchId":"N5-1-A-3-UI-RBAC-C","workerId":"JULES_C","taskAttempt":1,"evidencePath":"docs/N5.1_REPORTES_PREFLIGHT_UI_RBAC.md","review":"PASS","qaTakeoverEvidenceAccepted":true,"julesPatchIntegrated":false},
+    {"taskId":"N5.1.A.3.UI_AUTHORIZATION_inventario","latestDispatchId":"N5-1-A-3-UI-RBAC-C","workerId":"JULES_C","taskAttempt":1,"evidencePath":"docs/N5.1_REPORTES_PREFLIGHT_UI_RBAC.md","review":"PASS","qaTakeoverEvidenceAccepted":true,"julesPatchIntegrated":false},
     {"taskId":"N5.1.A.4.ACCEPTANCE_ROLLBACK_PREFLIGHT","latestDispatchId":"N5-1-A-4-QA-ROLLBACK-D","workerId":"JULES_D","taskAttempt":1,"evidencePath":"docs/N5.1_REPORTES_PREFLIGHT_QA.md","review":"PASS","qaTakeoverEvidenceAccepted":true,"julesPatchIntegrated":false}
   ]
 }

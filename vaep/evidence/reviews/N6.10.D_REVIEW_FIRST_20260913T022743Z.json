@@ -45,7 +45,7 @@
       "run_id": 34732964429,
       "job_id": 103659076823,
       "exact_head": "f6557529d21b8a94248cf71c365459d651a8db14",
-      "detail": "Restore, build and test backend completed success; dotnet test InventoryApp.sln includes N610DFeatureFlagsApiTests."
+      "detail": "Restore, build and test backend completed success; dotnet test Solqaryn.sln includes N610DFeatureFlagsApiTests."
     },
     {
       "gate": "AUTHORIZATION_AND_TENANT_SECURITY",

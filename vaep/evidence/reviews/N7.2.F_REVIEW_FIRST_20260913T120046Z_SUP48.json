@@ -12,7 +12,7 @@
   "reviewedDelta": {
     "files": [
       "backend/src/Application/Services/OutboxRetryProcessor.cs",
-      "backend/tests/InventoryApp.Tests/N72FOutboxSecurityAuditTests.cs"
+      "backend/tests/Solqaryn.Tests/N72FOutboxSecurityAuditTests.cs"
     ],
     "finding": "Recovery aligns both the production audit call and its N7.2.F security test doubles with the current IAuditoriaService contract. The audit payload remains allow-listed and excludes message payload, idempotency key, provider exception text and secrets. Test fakes implement the current interface without changing runtime behavior. No schema, frontend, deploy, production, secret, main or PR #2 delta."
   },

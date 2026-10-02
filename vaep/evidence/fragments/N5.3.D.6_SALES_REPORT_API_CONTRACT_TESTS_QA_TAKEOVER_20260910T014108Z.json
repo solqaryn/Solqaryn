@@ -39,10 +39,10 @@
   "takeoverActor": "CHATGPT_VAEP",
   "takeoverCommit": "d0b0fddcacc2ebab65bb81a68ccc1dadb1ee9795",
   "requestedScope": [
-    "backend/tests/InventoryApp.Tests/API/Controllers/ReportesVentasContractTests.cs"
+    "backend/tests/Solqaryn.Tests/API/Controllers/ReportesVentasContractTests.cs"
   ],
   "changedFiles": [
-    "backend/tests/InventoryApp.Tests/API/Controllers/ReportesVentasContractTests.cs"
+    "backend/tests/Solqaryn.Tests/API/Controllers/ReportesVentasContractTests.cs"
   ],
   "reviewFirst": {
     "state": "PENDING_EXACT_HEAD_CI",

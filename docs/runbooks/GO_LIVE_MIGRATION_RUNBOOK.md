@@ -1,11 +1,11 @@
-# GO LIVE — migración histórica VariStoreHN -> SOLQARYN
+# GO LIVE — migración histórica SOLQARYN -> SOLQARYN
 
 
 > `PROJECT_SCOPE_LOCK=STRICT`
 > Alcance operativo: SOLQARYN / `solqaryn/Solqaryn` / `dev`.
 ## Propósito
 
-Migrar la información histórica de VariStoreHN desde el **respaldo verificado** al primer tenant VariStoreHN de la nueva plataforma SOLQARYN.
+Migrar la información histórica de SOLQARYN desde el **respaldo verificado** al primer tenant SOLQARYN de la nueva plataforma SOLQARYN.
 
 ## Precondiciones obligatorias
 
@@ -20,9 +20,9 @@ No ejecutar hasta que:
 
 ## Fuente y destino
 
-- Fuente: archivo de respaldo histórico verificado de VariStoreHN.
+- Fuente: archivo de respaldo histórico verificado de SOLQARYN.
 - Destino: `solqaryn_prod`.
-- Tenant destino: VariStoreHN.
+- Tenant destino: SOLQARYN.
 - Prohibido usar una base o deployment legacy vivo como fuente implícita.
 
 ## Secuencia

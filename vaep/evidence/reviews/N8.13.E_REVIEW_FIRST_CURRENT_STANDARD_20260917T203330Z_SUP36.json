@@ -30,13 +30,13 @@
     },
     "production_reference_project": {
       "id": "prj_djMCand2yYeY3AvaUWsjwHDDJDkM",
-      "name": "varistorehn",
+      "name": "SOLQARYN",
       "write": false,
       "active_target_proof_from_current_listing": "INSUFFICIENT_BY_ITSELF"
     }
   },
   "routing_contract": {
-    "production_host_api_rewrite": "varistorehn.vercel.app -> https://solqaryn-api.onrender.com/:path*",
+    "production_host_api_rewrite": "SOLQARYN.vercel.app -> https://solqaryn-api.onrender.com/:path*",
     "default_development_api_rewrite": "https://solqaryn-api-desarrollo.onrender.com/:path*",
     "spa_fallback": true,
     "security_headers_present": true

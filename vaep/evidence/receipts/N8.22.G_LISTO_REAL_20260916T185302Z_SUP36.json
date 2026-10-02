@@ -13,7 +13,7 @@
   "existing_receipt_reconcile": {
     "prior_listo_real_receipt_found": false,
     "prior_blocker": "RENDER_DEV_ENV_NAME_PARITY_INCOMPLETE",
-    "prior_blocker_resolved_by": "vaep/evidence/reconciliations/N8.22.G_OWNER_RENDER_ENV_NAME_INVENTORY_20260916T182900Z.json"
+    "prior_blocker_resolved_by": "vaep/evidence/reconciliations/N8.22.G_OWNER_RENDER_ENV_NAME_inventario_20260916T182900Z.json"
   },
   "review_first": {
     "p0": 0,
@@ -25,7 +25,7 @@
   },
   "causal_evidence": [
     "vaep/evidence/reconciliations/N8.22.G_SUP12_REVALIDATION_20260916T182200Z.json",
-    "vaep/evidence/reconciliations/N8.22.G_OWNER_RENDER_ENV_NAME_INVENTORY_20260916T182900Z.json",
+    "vaep/evidence/reconciliations/N8.22.G_OWNER_RENDER_ENV_NAME_inventario_20260916T182900Z.json",
     "vaep/evidence/reconciliations/N8.22.G_OWNER_EVIDENCE_RECONCILED_20260916T183900Z.json",
     "vaep/evidence/reconciliations/N8.22.G_OWNER_CONTROL_PLANE_EVIDENCE_20260916T172800Z.json"
   ],
@@ -46,7 +46,7 @@
     },
     "vercel_production_metadata_read_only": {
       "team": "Solqaryn",
-      "project": "varistorehn",
+      "project": "SOLQARYN",
       "project_id": "prj_djMCand2yYeY3AvaUWsjwHDDJDkM",
       "identity_readback": "PASS"
     }

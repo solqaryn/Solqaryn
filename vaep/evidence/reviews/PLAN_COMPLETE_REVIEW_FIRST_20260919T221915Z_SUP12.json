@@ -36,7 +36,7 @@
     "tests_gates": "PASS_PRODUCT_HEAD_21_CHECK_RUNS_TERMINAL_AND_CURRENT_REVIEWED_HEAD_OPEN_ONLY_AND_ENGINE_SUCCESS",
     "documentation_evidence": "PASS",
     "exact_head_equivalence": "PASS_PRODUCT_HEAD_TO_REVIEWED_HEAD_ONLY_4_VAEP_EVIDENCE_JSON_FILES_PLUS290_MINUS0_PRODUCT_DELTA_0",
-    "latest_product_delta": "96a068726a29ee5f5d1d95dd16c09fa9f20523fd_TO_5b5a2433c1e400e8340aea9e80147b93d151a3df__frontend/e2e/varistorehn-fase4.spec.ts__PLUS1_MINUS1__EXPECT_Cantidad_2_TO_Cantidad_BOLD_2",
+    "latest_product_delta": "96a068726a29ee5f5d1d95dd16c09fa9f20523fd_TO_5b5a2433c1e400e8340aea9e80147b93d151a3df__frontend/e2e/SOLQARYN-fase4.spec.ts__PLUS1_MINUS1__EXPECT_Cantidad_2_TO_Cantidad_BOLD_2",
     "current_source_checks": [
       "latest material product delta modifies only a Playwright expectation, not production implementation",
       "the changed expectation asserts the shared WhatsApp quantity formatting instead of weakening the behavior",

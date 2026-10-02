@@ -33,7 +33,7 @@
     "viewportMeta": "PASS__frontend/src/index.html declares width=device-width, initial-scale=1",
     "globalResponsiveBase": "PASS__frontend/src/styles.scss uses min-width 320px, responsive media queries, bounded dialogs and horizontal table scrolling",
     "applicationShell": "PASS__frontend/src/app/app.component.scss has adaptive sidebar/topbar/content at 1180/1000/900/680/480px and safe-area-aware vertical layout",
-    "recentInventorySurface": "PASS__frontend/src/app/features/inventario/ajustes-list.component.ts includes responsive 1050/640px layouts and viewport-bounded modal behavior",
+    "recentinventarioSurface": "PASS__frontend/src/app/features/inventario/ajustes-list.component.ts includes responsive 1050/640px layouts and viewport-bounded modal behavior",
     "testCapability": "PASS__frontend/package.json exposes lint/build and Playwright E2E tooling",
     "runtimeDeltaRequiredForPreflight": false,
     "schemaDeltaRequiredForPreflight": false

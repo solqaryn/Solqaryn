@@ -74,7 +74,7 @@ La certificación automatizada ejecutó:
 9. política de retención de 14 días sin borrar un archivo ajeno de control;
 10. verificación del checksum cifrado;
 11. descifrado en espacio temporal;
-12. restore en `inventoryapp_m11_restore`;
+12. restore en `Solqaryn_m11_restore`;
 13. comparación exacta de todas las tablas y filas;
 14. comprobación de referencias sentinel de imagen y documento;
 15. arranque real de la API contra la base restaurada;
@@ -103,8 +103,8 @@ La fase fue recertificada posteriormente sobre el hardening operativo de M11; lo
 El reporte generado por el propio drill certificó:
 
 - formato: `M11.1`;
-- base origen CI: `inventoryapp_m11_source`;
-- base restaurada: `inventoryapp_m11_restore`;
+- base origen CI: `Solqaryn_m11_source`;
+- base restaurada: `Solqaryn_m11_restore`;
 - **54 tablas base**;
 - **32 migraciones EF**;
 - `checksumsVerified = true`;

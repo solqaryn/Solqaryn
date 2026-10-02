@@ -23,7 +23,7 @@
       "severity": "P1",
       "id": "N816H_MATRIX_LIFECYCLE_STATUS_AMBIGUOUS",
       "status": "RESOLVED_SAME_RUN",
-      "detail": "The root catalog used STATUS for MATERIAL/DISCOVERY_CONTAINER while the intervention specification defines the matrix lifecycle BASELINE_CREATED -> INVENTORY_COMPLETE -> SPEC_COMPLETE -> IMPLEMENTATION_REVIEWED -> CERTIFIED. The template and catalog now separate materiality/implementation status from MATRIX_STATE and fix all 49 current contract roots at INVENTORY_COMPLETE, avoiding a false CERTIFIED claim before N8.17."
+      "detail": "The root catalog used STATUS for MATERIAL/DISCOVERY_CONTAINER while the intervention specification defines the matrix lifecycle BASELINE_CREATED -> inventario_COMPLETE -> SPEC_COMPLETE -> IMPLEMENTATION_REVIEWED -> CERTIFIED. The template and catalog now separate materiality/implementation status from MATRIX_STATE and fix all 49 current contract roots at inventario_COMPLETE, avoiding a false CERTIFIED claim before N8.17."
     },
     {
       "severity": "CONTROL_PLANE_RECOVERY",
@@ -55,7 +55,7 @@
     "duplicate_matrix_ids": 0,
     "inventoried_contract_roots_without_id": 0,
     "material_child_contracts_without_id": 0,
-    "matrix_state_assignment": "49/49 INVENTORY_COMPLETE",
+    "matrix_state_assignment": "49/49 inventario_COMPLETE",
     "certified_matrix_count": 0
   },
   "acceptance_review": {

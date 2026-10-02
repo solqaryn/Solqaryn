@@ -24,10 +24,10 @@
     "gate_n9": "LISTO preserved; no historical state used as sole certification",
     "next_dependency_valid_parent": "NONE",
     "files_reviewed": [
-      "frontend/src/app/features/varistorehn/varistorehn-checkout.rules.ts",
-      "frontend/src/app/features/varistorehn/varistorehn-checkout.component.ts",
-      "frontend/src/app/features/varistorehn/varistorehn-producto.component.ts",
-      "frontend/e2e/varistorehn-fase4.spec.ts"
+      "frontend/src/app/features/SOLQARYN/SOLQARYN-checkout.rules.ts",
+      "frontend/src/app/features/SOLQARYN/SOLQARYN-checkout.component.ts",
+      "frontend/src/app/features/SOLQARYN/SOLQARYN-producto.component.ts",
+      "frontend/e2e/SOLQARYN-fase4.spec.ts"
     ],
     "implementation_findings": "Checkout remains server-authoritative for validated price/stock/total in DB mode; payment redirect remains HTTPS plus allowlisted-origin; WhatsApp buyer/product text is sanitized; product links are same-origin and unsafe URLs are omitted; direct-product WhatsApp uses the shared formatter and the Fase 4 regression now matches its canonical bold quantity format.",
     "p0": 0,

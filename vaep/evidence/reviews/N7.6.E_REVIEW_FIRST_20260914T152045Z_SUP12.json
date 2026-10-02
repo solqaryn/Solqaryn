@@ -12,7 +12,7 @@
   "first_detector_recovery": {
     "applied": true,
     "defects_resolved_same_run": [
-      "Removed trust in inventoryapp_empresa_solicitada_id for the WhatsApp request and bound the UX to TenantContextService.empresaIdVerificada().",
+      "Removed trust in Solqaryn_empresa_solicitada_id for the WhatsApp request and bound the UX to TenantContextService.empresaIdVerificada().",
       "Made Configuracion:Editar permission reactive instead of freezing the initial permission value.",
       "Stopped reporting the provider as Listo before the first verified API response."
     ],

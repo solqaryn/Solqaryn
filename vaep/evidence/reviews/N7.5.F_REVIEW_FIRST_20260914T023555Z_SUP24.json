@@ -35,7 +35,7 @@
   "functional_candidate_head": "5367d51d39e4f4181b51f8037609c87c2ddba493",
   "material_delta": [
     "backend/src/API/Controllers/InboundWebhooksController.cs",
-    "backend/tests/InventoryApp.Tests/API/InboundWebhookIngressTests.cs"
+    "backend/tests/Solqaryn.Tests/API/InboundWebhookIngressTests.cs"
   ],
   "review": {
     "anonymous_ingress_auth_model": "PASS__HMAC_SHA256_TENANT_PROVIDER_SECRET__EXPLICIT_ALLOWLIST",

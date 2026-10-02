@@ -31,9 +31,9 @@
     }
   ],
   "changed_files": [
-    "frontend/src/app/features/varistorehn/varistorehn.catalog.ts",
-    "frontend/src/app/features/varistorehn/varistorehn.models.ts",
-    "frontend/src/app/features/varistorehn/varistorehn.service.ts"
+    "frontend/src/app/features/SOLQARYN/SOLQARYN.catalog.ts",
+    "frontend/src/app/features/SOLQARYN/SOLQARYN.models.ts",
+    "frontend/src/app/features/SOLQARYN/SOLQARYN.service.ts"
   ],
   "acceptance": {
     "variant_identity": "PASS: productoVarianteId propagates from public catalog mapping through cart and checkout validation without conflating sibling variants.",
@@ -44,7 +44,7 @@
   },
   "causal_gates": [
     {
-      "name": "VariStoreHn Fase 5 - regresion carrito",
+      "name": "SOLQARYN Fase 5 - regresion carrito",
       "run_id": 34904785675,
       "job_id": 104178812685,
       "head_sha": "94879ce9dc85048e63a76f51d10c7443614595da",
@@ -52,7 +52,7 @@
       "updated_at_utc": "2026-09-14T22:38:07Z"
     },
     {
-      "name": "VariStoreHn Fase 6 - regresion publica acumulada",
+      "name": "SOLQARYN Fase 6 - regresion publica acumulada",
       "run_id": 34904785679,
       "job_id": 104178812985,
       "head_sha": "94879ce9dc85048e63a76f51d10c7443614595da",
@@ -60,7 +60,7 @@
       "updated_at_utc": "2026-09-14T22:38:18Z"
     },
     {
-      "name": "VariStoreHn Fase 6 - contrato backend checkout",
+      "name": "SOLQARYN Fase 6 - contrato backend checkout",
       "run_id": 34904785679,
       "job_id": 104178813091,
       "head_sha": "94879ce9dc85048e63a76f51d10c7443614595da",

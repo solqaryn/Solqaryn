@@ -17,10 +17,10 @@
   },
   "vercel_production": {
     "team": "Solqaryn",
-    "project": "varistorehn",
+    "project": "SOLQARYN",
     "project_id": "prj_djMCand2yYeY3AvaUWsjwHDDJDkM",
     "authoritative_production_identity": "CONFIRMED_BY_OWNER_CONTROL_PLANE",
-    "production_domain": "varistorehn.vercel.app",
+    "production_domain": "SOLQARYN.vercel.app",
     "production_branch": "main",
     "production_deployment_observed": {
       "status": "READY",
@@ -30,7 +30,7 @@
     "build_settings": {
       "framework_preset": "Other",
       "build_command": "npm run build",
-      "output_directory": "dist/inventoryapp-frontend/browser",
+      "output_directory": "dist/Solqaryn-frontend/browser",
       "install_command": "npm install",
       "root_directory": "frontend",
       "node_version": "24.x",
@@ -106,7 +106,7 @@
     "remaining_unknown": [
       {
         "id": "RENDER_DEV_ENV_NAME_PARITY_INCOMPLETE",
-        "fact": "Production environment-variable names are now captured with values masked; DEV environment-variable NAME inventory is still needed for exact parity comparison.",
+        "fact": "Production environment-variable names are now captured with values masked; DEV environment-variable NAME inventario is still needed for exact parity comparison.",
         "action": "Capture/provide DEV Render environment-variable names only; never values."
       }
     ],

@@ -17,7 +17,7 @@ Estado: **PASS / CERRADO**
 - `Cloudinary__CloudName=riyrzmob`.
 - `Cloudinary__EnvironmentPrefix=solqaryn_dev`.
 - API Key / API Secret: secretos configurados fuera del repositorio.
-- Upload funcional bajo `solqaryn_dev/inventoryapp/productos/empresas/1/`: certificado.
+- Upload funcional bajo `solqaryn_dev/Solqaryn/productos/empresas/1/`: certificado.
 - URLs públicas canónicas en `res.cloudinary.com/riyrzmob/`: certificadas.
 
 ## Re-scan final de referencias legacy
@@ -37,4 +37,4 @@ Por tanto, la base DEV ya no contiene referencias al cloud/prefijos legacy inspe
 
 ## Regla de legado
 
-No se necesita ni se reactiva ningún Cloudinary legacy. El único artefacto heredado autorizado para la futura migración histórica es el respaldo verificado de la base de datos de VariStoreHN.
+No se necesita ni se reactiva ningún Cloudinary legacy. El único artefacto heredado autorizado para la futura migración histórica es el respaldo verificado de la base de datos de SOLQARYN.

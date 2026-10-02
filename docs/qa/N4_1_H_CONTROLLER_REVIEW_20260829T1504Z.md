@@ -46,7 +46,7 @@
 ## Gates y P0/P1
 
 - Consulta fresca de Issues abiertos con label `P0` o `P1`: **0 resultados**. Esto acredita `P0=0/P1=0` únicamente para el mecanismo de labels consultado; un defecto reproducible nuevo reabre el gate.
-- El combined status de `a1522d589940e87e6ca48dd8adf32d309cce2fb3` conserva dos contextos `failure`: `Vercel – varistorehn` y `Vercel – solqaryn-desarrollo`, ambos apuntando a build/deployment rate limit.
+- El combined status de `a1522d589940e87e6ca48dd8adf32d309cce2fb3` conserva dos contextos `failure`: `Vercel – SOLQARYN` y `Vercel – solqaryn-desarrollo`, ambos apuntando a build/deployment rate limit.
 - Esos contextos no se convierten en PASS. Se clasifican como señal externa de despliegue, no como evidencia causal positiva de Caja, y no se intenta deploy porque está expresamente prohibido.
 
 ## Lanes vigentes al corte

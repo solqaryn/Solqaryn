@@ -14,7 +14,7 @@
   "productDelta": [
     "backend/src/Domain/Enums/EstadoWebhookEntrante.cs",
     "backend/src/Domain/Entities/WebhookEntrante.cs",
-    "backend/tests/InventoryApp.Tests/Domain/WebhookEntranteTests.cs"
+    "backend/tests/Solqaryn.Tests/Domain/WebhookEntranteTests.cs"
   ],
   "causalGates": [
     {

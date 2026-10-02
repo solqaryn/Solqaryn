@@ -9,7 +9,7 @@
   "reviewedAtUtc": "2026-09-09T20:51:00Z",
   "reviewedHead": "f9cd966bc0f49a85997386fb3006053c97a2eb3c",
   "evidence": [
-    "backend/tests/InventoryApp.Tests/API/Controllers/ReportesInventarioAuthorizationContractTests.cs",
+    "backend/tests/Solqaryn.Tests/API/Controllers/ReportesInventarioAuthorizationContractTests.cs",
     "frontend/e2e/n5-1-reportes-period-validation.spec.ts"
   ],
   "findings": [

@@ -203,12 +203,12 @@ No duplicar un nuevo catálogo en TypeScript. Consumir un endpoint de métodos d
 
 Pruebas directamente relacionadas revisadas:
 
-- `backend/tests/InventoryApp.Tests/CompraServiceTests.cs`
-- `backend/tests/InventoryApp.Tests/VentaServiceTests.cs`
-- `backend/tests/InventoryApp.Tests/FacturaServicePagosTests.cs`
-- `backend/tests/InventoryApp.Tests/FinanzasServiceTests.cs`
-- `backend/tests/InventoryApp.Tests/MovimientoFinancieroRepositoryTests.cs`
-- `backend/tests/InventoryApp.Tests/QuestPdfFacturaPerfilesServiceTests.cs`
+- `backend/tests/Solqaryn.Tests/CompraServiceTests.cs`
+- `backend/tests/Solqaryn.Tests/VentaServiceTests.cs`
+- `backend/tests/Solqaryn.Tests/FacturaServicePagosTests.cs`
+- `backend/tests/Solqaryn.Tests/FinanzasServiceTests.cs`
+- `backend/tests/Solqaryn.Tests/MovimientoFinancieroRepositoryTests.cs`
+- `backend/tests/Solqaryn.Tests/QuestPdfFacturaPerfilesServiceTests.cs`
 - `frontend/e2e/fase6-facturacion-impresion.spec.ts`
 - `frontend/e2e/fase7-validacion-integral.spec.ts`
 - `frontend/e2e/fase8-validacion-completa.spec.ts`

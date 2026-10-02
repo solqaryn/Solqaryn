@@ -38,7 +38,7 @@
   },
   "evidence": {
     "domain_entity": {"path": "backend/src/Domain/Entities/MensajeOutbox.cs", "blob": "b970800c7ea9c996a5cce40f57250585b308e3ea"},
-    "domain_tests": {"path": "backend/tests/InventoryApp.Tests/Domain/MensajeOutboxTests.cs", "blob": "d252beb28ba7b2d6d5b471c28d53958cd97da7f8"},
+    "domain_tests": {"path": "backend/tests/Solqaryn.Tests/Domain/MensajeOutboxTests.cs", "blob": "d252beb28ba7b2d6d5b471c28d53958cd97da7f8"},
     "persistence_mapping": {"path": "backend/src/Infrastructure/Persistence/Configurations/MensajeOutboxConfiguration.cs", "blob": "a56141a489f59034df65e91b7146dfe74a644d4b"}
   },
   "causal_gate_matrix": [

@@ -47,7 +47,7 @@
   "directed_security_regression": {
     "head": "792078bfd46321fb84a31c1d7ec60bd6d5a00247",
     "commit": "792078bfd46321fb84a31c1d7ec60bd6d5a00247",
-    "path": "backend/tests/InventoryApp.Tests/Priority3FileSecurityTests.cs",
+    "path": "backend/tests/Solqaryn.Tests/Priority3FileSecurityTests.cs",
     "status": "PASS_VIA_EXACT_HEAD_BACKEND_TEST_JOB",
     "verification": "Spoofed PDF rejection is exercised with verified tenant context and storage is asserted never to receive the invalid upload."
   },

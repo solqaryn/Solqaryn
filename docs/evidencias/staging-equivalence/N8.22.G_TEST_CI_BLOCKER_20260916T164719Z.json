@@ -14,12 +14,12 @@
     "render_dev":{"service":"solqaryn-api-desarrollo","branch":"Desarrollo","region":"oregon","plan":"free","healthCheckPath":"/health/ready"},
     "render_prod":{"service":"solqaryn-api","branch":"main","region":"virginia","plan":"free","healthCheckPath":""},
     "vercel_team":"Solqaryn",
-    "vercel_visible_projects":[{"name":"solqaryn-desarrollo","id":"prj_JkRGpdSnGlMQ4Qc3eqw4bscY4Flu"},{"name":"varistorehn","id":"prj_djMCand2yYeY3AvaUWsjwHDDJDkM"}],
-    "vercel_varistorehn_recent_deployments_observed":"recent connector-visible deployments are GitHub ref Desarrollo / PR #2 / target null; therefore they are not accepted as authoritative production-frontend parity evidence"
+    "vercel_visible_projects":[{"name":"solqaryn-desarrollo","id":"prj_JkRGpdSnGlMQ4Qc3eqw4bscY4Flu"},{"name":"SOLQARYN","id":"prj_djMCand2yYeY3AvaUWsjwHDDJDkM"}],
+    "vercel_SOLQARYN_recent_deployments_observed":"recent connector-visible deployments are GitHub ref Desarrollo / PR #2 / target null; therefore they are not accepted as authoritative production-frontend parity evidence"
   },
   "matrix_gate":{
     "MATERIAL_GAP":[{"dimension":"production_health_policy_control_plane","dev":"/health/ready","prod":"empty","status":"CONFIRMED_REAL_GAP","required_action":"owner-authorized production control-plane decision/change outside this Desarrollo-only run"}],
-    "UNKNOWN":[{"dimension":"render_sanitized_env_name_parity","reason":"current authorized Render connector exposes service metadata but no read operation for environment-variable names","required_action":"authorize/provide sanitized variable NAME inventory only; never values"},{"dimension":"vercel_authoritative_prod_project_settings_and_sanitized_env_name_parity","reason":"visible production-named project lacks authoritative production deployment/settings/env-name evidence through current read-only connector; recent varistorehn deployments are Desarrollo PR #2 previews/target-null","required_action":"authorize/provide authoritative PROD project/settings and sanitized variable NAME inventory only; never values"}]
+    "UNKNOWN":[{"dimension":"render_sanitized_env_name_parity","reason":"current authorized Render connector exposes service metadata but no read operation for environment-variable names","required_action":"authorize/provide sanitized variable NAME inventario only; never values"},{"dimension":"vercel_authoritative_prod_project_settings_and_sanitized_env_name_parity","reason":"visible production-named project lacks authoritative production deployment/settings/env-name evidence through current read-only connector; recent SOLQARYN deployments are Desarrollo PR #2 previews/target-null","required_action":"authorize/provide authoritative PROD project/settings and sanitized variable NAME inventario only; never values"}]
   },
   "directed_dev_tests":{"required":false,"reason":"no DEV product/control-plane gap was corrected in this invocation; TEST_CI criterion only calls for directed DEV tests if a gap was corrected"},
   "result":{"status":"BLOCKER_EXTERNAL_CAUSAL","staging_equivalent":false,"P0":0,"P1":0,"P2":0},

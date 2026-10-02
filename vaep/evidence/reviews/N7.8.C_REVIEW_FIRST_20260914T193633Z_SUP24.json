@@ -30,7 +30,7 @@
   "intended_scope": [
     "backend/src/Infrastructure/Persistence/Configurations/PagoOnlineConfiguration.cs",
     "backend/src/Infrastructure/Persistence/Migrations/20260914193800_N7_8_C_PagosOnlinePersistence.cs",
-    "backend/tests/InventoryApp.Tests/Infrastructure/Persistence/Configurations/PagoOnlineConfigurationTests.cs"
+    "backend/tests/Solqaryn.Tests/Infrastructure/Persistence/Configurations/PagoOnlineConfigurationTests.cs"
   ],
   "security_invariants": [
     "EmpresaId debe ser parte de las barreras de unicidad/idempotencia.",

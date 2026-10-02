@@ -56,9 +56,9 @@
     "deletions": 11,
     "paths": [
       "backend/src/API/Controllers/WhatsAppController.cs",
-      "backend/tests/InventoryApp.Tests/API/Controllers/WhatsAppControllerTests.cs",
-      "frontend/e2e/varistorehn-fase2.spec.ts",
-      "frontend/scripts/validate-varistorehn-fase6.mjs"
+      "backend/tests/Solqaryn.Tests/API/Controllers/WhatsAppControllerTests.cs",
+      "frontend/e2e/SOLQARYN-fase2.spec.ts",
+      "frontend/scripts/validate-SOLQARYN-fase6.mjs"
     ]
   },
   "directed_local_gates": [
@@ -67,7 +67,7 @@
       "result": "PASS"
     },
     {
-      "name": "node frontend/scripts/validate-varistorehn-fase6.mjs",
+      "name": "node frontend/scripts/validate-SOLQARYN-fase6.mjs",
       "result": "PASS"
     }
   ],
@@ -82,7 +82,7 @@
     },
     {
       "run_id": 35461907034,
-      "name": "VariStoreHn Fase 6 - checkout y pedido",
+      "name": "SOLQARYN Fase 6 - checkout y pedido",
       "head": "99ef56d6e18e5a5b136e4ed0f0a5ff107172a259",
       "status": "completed",
       "conclusion": "success",
@@ -104,7 +104,7 @@
     },
     {
       "run_id": 35461907044,
-      "name": "VariStoreHN Fase 12 - cuenta cliente evolución",
+      "name": "SOLQARYN Fase 12 - cuenta cliente evolución",
       "head": "99ef56d6e18e5a5b136e4ed0f0a5ff107172a259",
       "status": "completed",
       "conclusion": "success"

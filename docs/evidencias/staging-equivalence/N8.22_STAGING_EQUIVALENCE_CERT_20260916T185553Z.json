@@ -20,7 +20,7 @@
     "render_region": "EXPECTED_ENV_DIFFERENCE",
     "render_health_check_path": "EXPECTED_ENV_DIFFERENCE__VERSION_AWARE",
     "render_env_name_surface": "RECONCILED__UNKNOWN_0",
-    "vercel_production_identity": "CONFIRMED__varistorehn__prj_djMCand2yYeY3AvaUWsjwHDDJDkM",
+    "vercel_production_identity": "CONFIRMED__SOLQARYN__prj_djMCand2yYeY3AvaUWsjwHDDJDkM",
     "vercel_custom_env_parity": "N_A_JUSTIFIED_FOR_CURRENT_PRODUCTION_FRONTEND_CONTRACT"
   },
   "fresh_readback": {
@@ -31,7 +31,7 @@
     "render_prod_branch": "main",
     "render_prod_health_check_path": "/health",
     "vercel_team": "Solqaryn",
-    "vercel_prod_project": "varistorehn",
+    "vercel_prod_project": "SOLQARYN",
     "vercel_prod_project_id": "prj_djMCand2yYeY3AvaUWsjwHDDJDkM"
   },
   "evidence_chain": [
@@ -44,7 +44,7 @@
     "vaep/evidence/reconciliations/N8.22.G_OWNER_CONTROL_PLANE_EVIDENCE_20260916T172800Z.json",
     "vaep/evidence/reconciliations/N8.22.G_SUP48_FULL_BLOCK_REVALIDATION_20260916T181600Z.json",
     "vaep/evidence/reconciliations/N8.22.G_SUP12_REVALIDATION_20260916T182200Z.json",
-    "vaep/evidence/reconciliations/N8.22.G_OWNER_RENDER_ENV_NAME_INVENTORY_20260916T182900Z.json",
+    "vaep/evidence/reconciliations/N8.22.G_OWNER_RENDER_ENV_NAME_inventario_20260916T182900Z.json",
     "vaep/evidence/reconciliations/N8.22.G_OWNER_EVIDENCE_RECONCILED_20260916T183900Z.json",
     "vaep/evidence/receipts/N8.22.G_LISTO_REAL_20260916T185302Z_SUP36.json"
   ],

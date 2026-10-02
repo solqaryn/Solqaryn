@@ -11,27 +11,27 @@
     {
       "severity": "P1",
       "code": "N72G_DELIVERABLE_RETRY_MAPPING_MISSING",
-      "evidence": "backend/tests/InventoryApp.Tests/RetryMappingContractTests.cs is absent on Desarrollo",
+      "evidence": "backend/tests/Solqaryn.Tests/RetryMappingContractTests.cs is absent on Desarrollo",
       "requiredAction": "Add a deterministic retry/dead-letter mapping contract over OutboxRetryPolicy."
     },
     {
       "severity": "P1",
       "code": "N72G_DELIVERABLE_TTL_VALIDATION_MISSING",
-      "evidence": "backend/tests/InventoryApp.Tests/TtlValidationTests.cs is absent on Desarrollo",
+      "evidence": "backend/tests/Solqaryn.Tests/TtlValidationTests.cs is absent on Desarrollo",
       "requiredAction": "Add stale-claim TTL boundary coverage proving recovery occurs only at/after the cutoff."
     },
     {
       "severity": "P1",
       "code": "N72G_DELIVERABLE_NOTIFICATION_DEDUP_MISSING",
-      "evidence": "backend/tests/InventoryApp.Tests/NotificationDedupContractTests.cs is absent on Desarrollo",
+      "evidence": "backend/tests/Solqaryn.Tests/NotificationDedupContractTests.cs is absent on Desarrollo",
       "requiredAction": "Add tenant-scoped idempotency/dedup contract coverage for outbox notification intents."
     }
   ],
   "existingUsefulCoverage": [
-    "backend/tests/InventoryApp.Tests/N72DOutboxRetryPolicyTests.cs",
-    "backend/tests/InventoryApp.Tests/N72DOutboxRetryProcessorTests.cs",
-    "backend/tests/InventoryApp.Tests/N72DOutboxRepositoryClaimTests.cs",
-    "backend/tests/InventoryApp.Tests/N72FOutboxSecurityAuditTests.cs"
+    "backend/tests/Solqaryn.Tests/N72DOutboxRetryPolicyTests.cs",
+    "backend/tests/Solqaryn.Tests/N72DOutboxRetryProcessorTests.cs",
+    "backend/tests/Solqaryn.Tests/N72DOutboxRepositoryClaimTests.cs",
+    "backend/tests/Solqaryn.Tests/N72FOutboxSecurityAuditTests.cs"
   ],
   "causalGate": "CI_SUBSET",
   "candidateFrozen": false,

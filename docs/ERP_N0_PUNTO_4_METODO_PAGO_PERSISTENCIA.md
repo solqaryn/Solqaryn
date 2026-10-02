@@ -31,7 +31,7 @@ La entidad incluye:
 - soft-delete: `Eliminado`, `FechaEliminacion`, `EliminadoPorUsuarioId`
 - `CodigoNormalizado` calculado para imponer unicidad funcional estable
 
-La entidad se ubica temporalmente en `InventoryApp.Domain.Entities.Catalogos` para evitar una colisión nominal con `InventoryApp.Domain.Enums.MetodoPago` mientras dura la transición.
+La entidad se ubica temporalmente en `Solqaryn.Domain.Entities.Catalogos` para evitar una colisión nominal con `Solqaryn.Domain.Enums.MetodoPago` mientras dura la transición.
 
 ## 3. Configuración EF Core
 
@@ -80,7 +80,7 @@ Las tres relaciones usan `DeleteBehavior.Restrict` / `ReferentialAction.Restrict
 
 ## 6. Compatibilidad legacy intencional
 
-En este punto **no se eliminó** `InventoryApp.Domain.Enums.MetodoPago` ni se modificaron destructivamente las columnas legacy actuales.
+En este punto **no se eliminó** `Solqaryn.Domain.Enums.MetodoPago` ni se modificaron destructivamente las columnas legacy actuales.
 
 Se mantienen temporalmente:
 

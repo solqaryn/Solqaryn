@@ -30,4 +30,4 @@ Un rollback productivo requiere autorización explícita vigente del propietario
 
 ## Base histórica
 
-El respaldo histórico de VariStoreHN es fuente futura de migración, no mecanismo de rollback de infraestructura.
+El respaldo histórico de SOLQARYN es fuente futura de migración, no mecanismo de rollback de infraestructura.

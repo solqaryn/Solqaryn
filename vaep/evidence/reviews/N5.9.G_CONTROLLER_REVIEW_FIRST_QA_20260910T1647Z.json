@@ -10,7 +10,7 @@
   "liveControlPlaneHeadAtReview":"8926feb0bb98c90baf6283af1a12ae49bdf7684e",
   "decision":"ACCEPTED",
   "findings":{"P0":0,"P1":0},
-  "qaAssessment":{"directedStructuralTest":"backend/tests/InventoryApp.Tests/N59DReportPerformanceStockHealthQueryTests.cs","backendBuildTestGate":"PASS","frontendRegressionGates":"PASS","ciChangeRequired":false,"migrationChangeRequired":false,"e2eChangeRequired":false},
+  "qaAssessment":{"directedStructuralTest":"backend/tests/Solqaryn.Tests/N59DReportPerformanceStockHealthQueryTests.cs","backendBuildTestGate":"PASS","frontendRegressionGates":"PASS","ciChangeRequired":false,"migrationChangeRequired":false,"e2eChangeRequired":false},
   "applicableGates":[
     {"name":"Backend Release y pruebas","head":"aafe94255e1eff9e3687c1716bb238393b1822f6","checkRunId":102958669638,"status":"completed","conclusion":"success"},
     {"name":"unit-frontend","head":"aafe94255e1eff9e3687c1716bb238393b1822f6","status":"completed","conclusion":"success"},

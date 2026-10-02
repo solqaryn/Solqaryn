@@ -18,7 +18,7 @@
     "docs/matrices-evaluacion/00_GOBERNANZA/CATALOGO_MATRICES.md",
     "docs/matrices-evaluacion/00_GOBERNANZA/N8_16_G_TEST_CI.md",
     "scripts/validate_matrix_governance.py",
-    "backend/tests/InventoryApp.Tests/MatrixGovernanceContractTests.cs"
+    "backend/tests/Solqaryn.Tests/MatrixGovernanceContractTests.cs"
   ],
   "resolved_findings": [
     {

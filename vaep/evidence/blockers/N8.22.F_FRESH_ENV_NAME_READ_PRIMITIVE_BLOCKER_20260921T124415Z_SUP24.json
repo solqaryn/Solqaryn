@@ -68,16 +68,16 @@
       "deploy_status": "live",
       "deploy_commit": "6ad48116a93bb1d02a85b941994395ba7382dc93"
     },
-    "environment_inventory": {
+    "environment_inventario": {
       "safe_read_only_names_only_primitive_available": false,
       "mutation_primitive_used_as_probe": false,
       "secret_values_read": false,
-      "unknown_reason": "The connected Render surface exposes environment-variable mutation but no safe read-only sanitized names-only operation for a fresh DEV-vs-PROD key inventory."
+      "unknown_reason": "The connected Render surface exposes environment-variable mutation but no safe read-only sanitized names-only operation for a fresh DEV-vs-PROD key inventario."
     }
   },
   "decision": {
     "listo_allowed": false,
-    "causal_blocker": "Fresh names-only environment-key inventory for DEV and PROD reference cannot be obtained through the available read-only Render surface without risking secret values or mutation.",
+    "causal_blocker": "Fresh names-only environment-key inventario for DEV and PROD reference cannot be obtained through the available read-only Render surface without risking secret values or mutation.",
     "next_action": "Obtain fresh read-only names-only environment key inventories for srv-d9jblq7avr4c73c74jng and srv-d983qti8qa3s73eqqne0 without values; compare key sets; reduce UNKNOWN to 0; rerun REVIEW_FIRST; only then issue receipt/write-readback and promote N8.22.G if all LISTO_HARD conditions remain satisfied."
   },
   "safety": {

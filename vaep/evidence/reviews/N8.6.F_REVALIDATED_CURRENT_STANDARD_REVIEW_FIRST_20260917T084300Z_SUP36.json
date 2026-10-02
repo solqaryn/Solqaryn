@@ -15,7 +15,7 @@
   },
   "security_surfaces": {
     "backend_controller": {"path":"backend/src/API/Controllers/WhatsAppController.cs","blob":"ab111c58b81053589b3ca3e5bf7b2a67d121239b"},
-    "backend_tests": {"path":"backend/tests/InventoryApp.Tests/API/Controllers/WhatsAppControllerTests.cs","blob":"682b90c902b7d427396f47d9813095290a0bc7eb"},
+    "backend_tests": {"path":"backend/tests/Solqaryn.Tests/API/Controllers/WhatsAppControllerTests.cs","blob":"682b90c902b7d427396f47d9813095290a0bc7eb"},
     "frontend_handoff": {"path":"frontend/src/app/core/services/whatsapp-share.service.ts","blob":"0f36e116ecdcfad6714f17bca5b770b211f5bc84"},
     "frontend_contract_tests": {"path":"frontend/src/app/core/services/factura-whatsapp-handoff.contract.spec.ts","blob":"195bc4e279bbefa59a9030cab4d122d1de9114d8"}
   },

@@ -22,7 +22,7 @@
     "n8_8_c_na_causal": "PASS",
     "n8_11_c_na_causal": "PASS",
     "n8_12_c_na_causal": "PASS",
-    "n8_15_c_underlying_inventory_present": "PASS",
+    "n8_15_c_underlying_inventario_present": "PASS",
     "n8_16_c_underlying_contract_present": "PASS",
     "n8_17_c_contract_and_exact_head_gate": "PASS",
     "n8_18_c_integrity_and_exact_head_gate": "PASS",

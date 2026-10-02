@@ -10,7 +10,7 @@
   "baseHead": "fe5caf740a6c91c7bf323be363fe177f78795c79",
   "artifactsReviewed": [
     "backend/src/Domain/Entities/UsuarioEmpresa.cs",
-    "backend/tests/InventoryApp.Tests/N64BUsuarioEmpresaDomainContractsTests.cs",
+    "backend/tests/Solqaryn.Tests/N64BUsuarioEmpresaDomainContractsTests.cs",
     "docs/N6.4.A_USUARIOS_EMPRESA_PREFLIGHT.md"
   ],
   "findings": {

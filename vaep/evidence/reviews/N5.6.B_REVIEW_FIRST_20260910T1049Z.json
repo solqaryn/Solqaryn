@@ -17,7 +17,7 @@
     "preflight": "docs/VAEP_N5_6_FINANCE_REPORTS_PREFLIGHT.md",
     "contract": "backend/src/Application/DTOs/FinanzasDto.cs",
     "service": "backend/src/Application/Services/FinanzasService.cs",
-    "tests": "backend/tests/InventoryApp.Tests/FinanzasServiceTests.cs",
+    "tests": "backend/tests/Solqaryn.Tests/FinanzasServiceTests.cs",
     "finding": "EXISTING_CONTRACT_ALREADY_COVERS_SOURCE_BACKED_FINANCE_SUMMARY__NO_DOMAIN_CHANGE_REQUIRED",
     "newPersistenceRequired": false,
     "inventedBankTaxAccountingSemantics": false
