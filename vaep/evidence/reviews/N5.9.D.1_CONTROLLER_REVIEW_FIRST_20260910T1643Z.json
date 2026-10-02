@@ -25,7 +25,7 @@
   },
   "scopeReviewed": [
     "backend/src/Infrastructure/Services/ReporteInventarioService.cs",
-    "backend/tests/InventoryApp.Tests/N59DReportPerformanceStockHealthQueryTests.cs"
+    "backend/tests/Solqaryn.Tests/N59DReportPerformanceStockHealthQueryTests.cs"
   ],
   "acceptance": {
     "securityOwnerScopePreserved": true,

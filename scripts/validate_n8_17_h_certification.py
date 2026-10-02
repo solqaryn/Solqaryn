@@ -106,7 +106,7 @@ for stage in "BCDEFG":
         fail(f"invalid latest receipt for N8.17.{stage}: {receipts[-1].name}")
 
 # H must not mutate historical evidence in-place. Catalog baseline remains explicit.
-if "MATRIX_STATE = INVENTORY_COMPLETE" not in catalog:
+if "MATRIX_STATE = LEVANTAMIENTO_COMPLETO" not in catalog:
     fail("historical catalog baseline marker disappeared")
 
 print("N8.17.H CERTIFICATION PASS")

@@ -42,8 +42,8 @@ Los accesos EF se mantienen secuenciales dentro del mismo scope HTTP porque comp
 
 ### Frontend
 
-- `VaristorehnService.obtenerBootstrap()` comparte la petición con `shareReplay({ bufferSize: 1, refCount: false })`.
-- `VaristorehnIdentidadService` hidrata identidad desde el bootstrap.
+- `SOLQARYNService.obtenerBootstrap()` comparte la petición con `shareReplay({ bufferSize: 1, refCount: false })`.
+- `SOLQARYNIdentidadService` hidrata identidad desde el bootstrap.
 - `AppComponent` aplica el tema directamente desde el bootstrap.
 - La portada consume categorías y destacados de la misma respuesta.
 - Los endpoints separados permanecen como recovery y para pantallas específicas; no son el camino feliz inicial.
@@ -56,13 +56,13 @@ PR: #3479 — `perf(storefront): bootstrap unico para portada publica`.
 Sobre el HEAD funcional exacto:
 
 - SOLQARYN Project Scope Lock: **SUCCESS**.
-- VariStoreHn Fase 1 — regresión pública: **SUCCESS**.
-- VariStoreHn Fase 2 — categorías: **SUCCESS**.
-- VariStoreHn Fase 3 — catálogo: **SUCCESS**.
-- VariStoreHn Fase 4 — detalle: **SUCCESS**.
-- VariStoreHn Fase 5 — carrito: **SUCCESS**.
-- VariStoreHn Fase 6 — checkout y pedido: **SUCCESS**.
-- VariStoreHn Fase 7 — home comercial: **SUCCESS**.
+- SOLQARYN Fase 1 — regresión pública: **SUCCESS**.
+- SOLQARYN Fase 2 — categorías: **SUCCESS**.
+- SOLQARYN Fase 3 — catálogo: **SUCCESS**.
+- SOLQARYN Fase 4 — detalle: **SUCCESS**.
+- SOLQARYN Fase 5 — carrito: **SUCCESS**.
+- SOLQARYN Fase 6 — checkout y pedido: **SUCCESS**.
+- SOLQARYN Fase 7 — home comercial: **SUCCESS**.
 - Build backend Release: **SUCCESS**.
 - Pruebas focales de destacados + bootstrap: **SUCCESS**.
 - Lint/guardas frontend: **SUCCESS**.

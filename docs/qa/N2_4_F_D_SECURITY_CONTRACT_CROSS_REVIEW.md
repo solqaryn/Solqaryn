@@ -29,5 +29,5 @@ Ejecutar un cross-review independiente sin intervenir con F.1/F.2/F.3, analizand
 - Faltan logs explícitos de correlación (ILogger no parece estar inyectado ni usado prominentemente en Service, auqnue las excepciones manejan bien la información).
 
 ## 4. Pruebas Nuevas (QA)
-Se implementará una prueba en `backend/tests/InventoryApp.Tests/FacturaProveedorSecurityJulesDTests.cs` (aislado de los demás tests) para verificar el fail-closed de la seguridad y el rechazo en caso de usuarios no autenticados en FacturaProveedor.
+Se implementará una prueba en `backend/tests/Solqaryn.Tests/FacturaProveedorSecurityJulesDTests.cs` (aislado de los demás tests) para verificar el fail-closed de la seguridad y el rechazo en caso de usuarios no autenticados en FacturaProveedor.
 

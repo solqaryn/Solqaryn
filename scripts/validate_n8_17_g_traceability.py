@@ -104,7 +104,7 @@ for stage in "BCDEF":
         fail(f"invalid latest receipt for N8.17.{stage}: {paths[-1].name}")
 
 # No silent lifecycle inflation: G validates traceability; H owns SPEC_COMPLETE/CERTIFIED publication.
-if "MATRIX_STATE = INVENTORY_COMPLETE" not in catalog_text:
+if "MATRIX_STATE = LEVANTAMIENTO_COMPLETO" not in catalog_text:
     fail("catalog baseline lifecycle state is not explicitly preserved before N8.17.H")
 
 print("N8.17.G TRACEABILITY PASS")

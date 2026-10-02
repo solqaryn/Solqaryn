@@ -48,7 +48,7 @@
     "blocking_reason": "Current connected tools provide Render service/log reads but no Render environment-value read or shell, no authenticated database query tool, and no Aiven/provider control-plane connector. Historical provider mentions are not accepted as proof by N8.20."
   },
   "source_refs": [
-    "backend/src/Infrastructure/InventoryApp.Infrastructure.csproj",
+    "backend/src/Infrastructure/Solqaryn.Infrastructure.csproj",
     "backend/src/API/Program.cs",
     "backend/src/API/appsettings.json",
     "backend/src/Infrastructure/Migrations/AppDbContextModelSnapshot.cs",

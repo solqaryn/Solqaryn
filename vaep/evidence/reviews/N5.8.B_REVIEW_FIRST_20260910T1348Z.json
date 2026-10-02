@@ -15,7 +15,7 @@
   },
   "scopeReviewed": [
     "backend/src/Application/DTOs/ExportacionDto.cs",
-    "backend/tests/InventoryApp.Tests/Application/ExportacionFormatoContractTests.cs"
+    "backend/tests/Solqaryn.Tests/Application/ExportacionFormatoContractTests.cs"
   ],
   "acceptance": {
     "closedCatalog": ["csv", "xlsx", "pdf"],

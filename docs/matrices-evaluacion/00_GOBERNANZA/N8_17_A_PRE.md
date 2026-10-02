@@ -18,7 +18,7 @@ El manifest particiona los 49 contract roots en los nueve dominios canónicos y 
 | PRODUCT_CATALOG | 3 |
 | CUSTOMERS_COMMERCIAL | 9 |
 | PURCHASES_SUPPLIERS | 5 |
-| INVENTORY_LOGISTICS | 5 |
+| INVENTARIO_LOGISTICA | 5 |
 | CASH_BANKS | 3 |
 | FINANCE_ACCOUNTING | 8 |
 | BI_REPORTING | 7 |

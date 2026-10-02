@@ -10,11 +10,11 @@
   "p1": 0,
   "artifactComplete": true,
   "gitPatchPresent": false,
-  "gitPatchReason": "N6.7.A is a material preflight/audit parent. Its DoD is actual-state inventory, scope, dependencies, risks, acceptance, rollback and test strategy; large functional implementation is explicitly out of scope.",
+  "gitPatchReason": "N6.7.A is a material preflight/audit parent. Its DoD is actual-state inventario, scope, dependencies, risks, acceptance, rollback and test strategy; large functional implementation is explicitly out of scope.",
   "scope": {
     "included": [
-      "Inventory current Empresa tenant-root contract",
-      "Inventory current EmpresaConfiguracion contract and API surface",
+      "inventario current Empresa tenant-root contract",
+      "inventario current EmpresaConfiguracion contract and API surface",
       "Identify tenant-isolation gap before N6.7 implementation",
       "Define acceptance, rollback and test strategy for the next implementation parent"
     ],

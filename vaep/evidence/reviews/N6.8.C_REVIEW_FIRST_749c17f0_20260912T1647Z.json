@@ -41,7 +41,7 @@
     "exact_head_static_contracts_tests_build": "SUCCESS — check 103585654182 on 749c17f0750a58e27ad637c238ed56ca8dba6dbc.",
     "exact_head_mysql_migration_integrity_runtime": "SUCCESS — check 103585688242 on 749c17f0750a58e27ad637c238ed56ca8dba6dbc.",
     "exact_head_backup_restore_mysql_disposable": "SUCCESS — check 103585664093 on 749c17f0750a58e27ad637c238ed56ca8dba6dbc.",
-    "exact_head_preflight_inventory": "SUCCESS — check 103585684902 on 749c17f0750a58e27ad637c238ed56ca8dba6dbc."
+    "exact_head_preflight_inventario": "SUCCESS — check 103585684902 on 749c17f0750a58e27ad637c238ed56ca8dba6dbc."
   },
   "causal_gate_matrix": {
     "static_contracts_tests_build": {
@@ -65,7 +65,7 @@
       "head": "749c17f0750a58e27ad637c238ed56ca8dba6dbc",
       "conclusion": "SUCCESS"
     },
-    "preflight_inventory": {
+    "preflight_inventario": {
       "required": true,
       "causal": true,
       "job_id": 103585684902,

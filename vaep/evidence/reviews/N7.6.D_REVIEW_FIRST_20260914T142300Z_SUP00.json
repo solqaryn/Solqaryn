@@ -10,8 +10,8 @@
   "candidate_sha": "987e07e2f2d328ad21aa1558f1674e67048970b6",
   "scope_files": [
     "backend/src/API/Controllers/WhatsAppController.cs",
-    "backend/tests/InventoryApp.Tests/API/Controllers/WhatsAppControllerTests.cs",
-    "backend/tests/InventoryApp.Tests/Priority3AuthorizationSurfaceTests.cs"
+    "backend/tests/Solqaryn.Tests/API/Controllers/WhatsAppControllerTests.cs",
+    "backend/tests/Solqaryn.Tests/Priority3AuthorizationSurfaceTests.cs"
   ],
   "review_first": {
     "p0": 0,

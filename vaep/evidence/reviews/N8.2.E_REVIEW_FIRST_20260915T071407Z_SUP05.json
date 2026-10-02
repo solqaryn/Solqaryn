@@ -17,7 +17,7 @@
     "viewportMeta": "PASS",
     "globalResponsivePrimitives": "PASS",
     "applicationShellResponsive": "PASS",
-    "publicStoreDesktopTabletMobileE2E": "PASS__existing varistorehn-fase1.spec.ts covers 1366, 1120/900/761 and 760/390/320 widths",
+    "publicStoreDesktopTabletMobileE2E": "PASS__existing SOLQARYN-fase1.spec.ts covers 1366, 1120/900/761 and 760/390/320 widths",
     "touchTargets": "PASS__existing mobile E2E audits >=44px targets",
     "mobileDrawerKeyboardAccessibility": "PASS__existing E2E verifies focus/Escape/aria-expanded"
   },

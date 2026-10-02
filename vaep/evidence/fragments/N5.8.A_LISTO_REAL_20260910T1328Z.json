@@ -17,7 +17,7 @@
     "backend/src/Application/Interfaces/IReporteAdministrativoService.cs",
     "backend/src/Application/DTOs/CargaMasivaDto.cs",
     "backend/src/Infrastructure/Services/QuestPdfFacturaPerfilesService.cs",
-    "backend/src/Infrastructure/InventoryApp.Infrastructure.csproj",
+    "backend/src/Infrastructure/Solqaryn.Infrastructure.csproj",
     "docs/VAEP_N5_8_EXPORTACIONES_PREFLIGHT.md"
   ],
   "reviewExecuted": true,

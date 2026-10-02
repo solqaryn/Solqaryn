@@ -21,7 +21,7 @@
       "blobSha": "b970800c7ea9c996a5cce40f57250585b308e3ea"
     },
     "tests": {
-      "path": "backend/tests/InventoryApp.Tests/Domain/MensajeOutboxTests.cs",
+      "path": "backend/tests/Solqaryn.Tests/Domain/MensajeOutboxTests.cs",
       "blobSha": "d252beb28ba7b2d6d5b471c28d53958cd97da7f8"
     },
     "priorCertification": {

@@ -34,9 +34,9 @@
   },
   "product_head": {
     "sha": "5b5a2433c1e400e8340aea9e80147b93d151a3df",
-    "message": "test(varistorehn): alinear Fase 4 con formato WhatsApp compartido",
+    "message": "test(SOLQARYN): alinear Fase 4 con formato WhatsApp compartido",
     "latest_material_delta": {
-      "file": "frontend/e2e/varistorehn-fase4.spec.ts",
+      "file": "frontend/e2e/SOLQARYN-fase4.spec.ts",
       "additions": 1,
       "deletions": 1,
       "scope": "E2E expectation only",
@@ -81,7 +81,7 @@
     "representative_causal_checks": [
       "Backend Release y pruebas",
       "Frontend producción",
-      "VariStoreHn Fase 4 - regresion detalle",
+      "SOLQARYN Fase 4 - regresion detalle",
       "Docker y aislamiento de entornos",
       "Enforce canonical OPEN-only admission"
     ]

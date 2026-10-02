@@ -53,7 +53,7 @@
   },
   "changed_files": [
     "backend/src/API/Controllers/TiendaController.cs",
-    "backend/tests/InventoryApp.Tests/API/Controllers/TiendaControllerSecurityTests.cs"
+    "backend/tests/Solqaryn.Tests/API/Controllers/TiendaControllerSecurityTests.cs"
   ],
   "schema_changed": false,
   "frontend_changed": false,

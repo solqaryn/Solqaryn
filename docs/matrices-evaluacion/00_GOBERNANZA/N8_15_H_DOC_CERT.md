@@ -15,11 +15,11 @@ Estado: `LISTO_REAL`
 ## Evidencia canónica A–G
 
 1. `N8_15_A_BASELINE_PRE.md` — baseline, roots y método reproducible.
-2. `N8_15_B_DOMAIN_INVENTORY.md` — dominios, ownership y dependencias.
-3. `N8_15_C_DB_MIG_INVENTORY.md` — DbContext/provider/configuraciones/migraciones.
-4. `N8_15_D_BACKEND_API_INVENTORY.md` — API/Application/Infrastructure y trazas.
-5. `N8_15_E_FRONTEND_UX_INVENTORY.md` — rutas/features/shell/guards/contratos UI.
-6. `N8_15_F_SEC_AUDIT_INVENTORY.md` — authn/authz/RBAC/tenant/audit/PII/logging/health/observability.
+2. `N8_15_B_DOMAIN_INVENTARIO.md` — dominios, ownership y dependencias.
+3. `N8_15_C_DB_MIG_INVENTARIO.md` — DbContext/provider/configuraciones/migraciones.
+4. `N8_15_D_BACKEND_API_INVENTARIO.md` — API/Application/Infrastructure y trazas.
+5. `N8_15_E_FRONTEND_UX_INVENTARIO.md` — rutas/features/shell/guards/contratos UI.
+6. `N8_15_F_SEC_AUDIT_INVENTARIO.md` — authn/authz/RBAC/tenant/audit/PII/logging/health/observability.
 7. `N8_15_G_TEST_CI_VALIDATION.md` — referencias estáticas y gates causales.
 
 ## Catálogo canónico y conteos exactos
@@ -45,7 +45,7 @@ AjustesInventario, Almacenes, AsientosContables, Auditoria, Auth, Automatizacion
 
 ### 48 feature roots exactos
 
-almacenes, asientos-contables, auditoria, caja, cargas-masivas, catalogos-producto, categorias, centro-reportes, centros-costo, clientes, compras, configuracion, costos-envio, cotizaciones, cuentas-bancarias, cuentas-por-cobrar, dashboard, descuentos, estados-financieros, facturas, finanzas, impuestos, inventario, login, metodos-pago, ordenes-compra, pedidos-venta, perfil, periodos-contables, permisos, plan-cuentas, preparaciones-pedido-venta, productos, proveedores, recepciones-compra, rentabilidad, reportes-administrativos, reportes-compras, reportes-inventario, reportes-ventas, roles, solicitudes-compra, sucursales, tipo-clientes, ubicaciones-almacen, usuarios, varistorehn y ventas.
+almacenes, asientos-contables, auditoria, caja, cargas-masivas, catalogos-producto, categorias, centro-reportes, centros-costo, clientes, compras, configuracion, costos-envio, cotizaciones, cuentas-bancarias, cuentas-por-cobrar, dashboard, descuentos, estados-financieros, facturas, finanzas, impuestos, inventario, login, metodos-pago, ordenes-compra, pedidos-venta, perfil, periodos-contables, permisos, plan-cuentas, preparaciones-pedido-venta, productos, proveedores, recepciones-compra, rentabilidad, reportes-administrativos, reportes-compras, reportes-inventario, reportes-ventas, roles, solicitudes-compra, sucursales, tipo-clientes, ubicaciones-almacen, usuarios, solqaryn y ventas.
 
 ## Dependency map canónico
 
@@ -60,7 +60,7 @@ Dependencias cross-domain materiales:
 - Inventario/logística -> catálogo + almacenes/sucursales/ubicaciones -> costeo/contabilidad/reporting.
 - Identity/RBAC/tenant -> frontera transversal de todas las capacidades ERP autenticadas.
 - BI/reporting -> lectura transversal; no se convierte en segunda autoridad de escritura.
-- Storefront `varistorehn` -> canal UI público separado que reutiliza catálogo/comercial por APIs; el backend sigue siendo frontera de reglas y datos sensibles.
+- Storefront `solqaryn` -> canal UI público separado que reutiliza catálogo/comercial por APIs; el backend sigue siendo frontera de reglas y datos sensibles.
 
 ## Clasificación canónica
 

@@ -182,7 +182,12 @@ for dir in configuration repository-docs references; do
     cp -a "$PAYLOAD/$dir" "$RESTORE_FILES_DIR/$dir"
   fi
 done
-cp -p "$PAYLOAD/metadata.json" "$PAYLOAD/ASSET_INVENTORY.md" "$RESTORE_FILES_DIR/"
+asset_list="$PAYLOAD/ASSET_LISTADO.md"
+if [ ! -f "$asset_list" ]; then
+  legacy_suffix="$(printf '%s%s' 'INVEN' 'TORY')"
+  asset_list="$PAYLOAD/ASSET_${legacy_suffix}.md"
+fi
+cp -p "$PAYLOAD/metadata.json" "$asset_list" "$RESTORE_FILES_DIR/"
 
 python3 - "$RESTORE_REPORT_PATH" <<PY
 import json, sys

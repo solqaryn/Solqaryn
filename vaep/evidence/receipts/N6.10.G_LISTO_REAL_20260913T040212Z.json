@@ -16,7 +16,7 @@
   "functional_candidate_frozen": true,
   "functional_equivalence_after_candidate": "PASS_CONTROL_EVIDENCE_ONLY",
   "material_evidence": [
-    "backend/tests/InventoryApp.Tests/N610FFeatureFlagsSecurityTests.cs",
+    "backend/tests/Solqaryn.Tests/N610FFeatureFlagsSecurityTests.cs",
     "backend/src/API/Controllers/SuscripcionesSaaSController.cs",
     "backend/src/Application/Services/SuscripcionesSaaSService.cs",
     "frontend/src/app/features/configuracion/suscripcion-saas-card.component.ts"

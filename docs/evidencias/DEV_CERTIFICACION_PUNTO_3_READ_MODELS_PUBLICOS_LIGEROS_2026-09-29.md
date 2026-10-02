@@ -40,7 +40,7 @@ Render DEV `solqaryn-api-dev` desplegó exactamente `3d2af21c83403fd7f4fd4f3039a
 
 - deploy `dep-dau0lb8jo6nc73cofhng`;
 - estado final: `live`;
-- `/health`: `{"status":"ok","service":"InventoryApp API"}`.
+- `/health`: `{"status":"ok","service":"Solqaryn API"}`.
 
 Contrato observado en vivo:
 

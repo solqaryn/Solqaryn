@@ -13,7 +13,7 @@ El storefront público ya no depende de descargar todas las páginas del catálo
 
 ## Evidencia funcional
 
-- `VaristorehnService` ya no expone `obtenerCatalogo()`.
+- `SOLQARYNService` ya no expone `obtenerCatalogo()`.
 - Listado: `GET /tienda/productos` recibe paginación y filtros server-side.
 - Categoría: solicita únicamente la categoría y una página pequeña filtrada por `categoriaId`.
 - Detalle: `GET /tienda/productos/{slug}` carga un solo producto.

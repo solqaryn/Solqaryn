@@ -82,7 +82,7 @@ Cada matriz debe contener como mínimo:
 
 Estados permitidos de una matriz:
 
-`BASELINE_CREATED -> INVENTORY_COMPLETE -> SPEC_COMPLETE -> IMPLEMENTATION_REVIEWED -> CERTIFIED`
+`BASELINE_CREATED -> LEVANTAMIENTO_COMPLETO -> SPEC_COMPLETE -> IMPLEMENTATION_REVIEWED -> CERTIFIED`
 
 `CERTIFIED` exige evidencia material; un archivo `.md` por sí solo no certifica nada.
 

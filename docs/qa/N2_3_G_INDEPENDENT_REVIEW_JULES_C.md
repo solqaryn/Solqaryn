@@ -15,11 +15,11 @@ Se revisó exclusivamente el alcance asignado a RecepcionCompra, focalizado en:
 - Evidencia de CI
 
 **Pruebas Ejecutadas:**
-- `dotnet test tests/InventoryApp.Tests/InventoryApp.Tests.csproj --filter "FullyQualifiedName~RecepcionCompra"`
+- `dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --filter "FullyQualifiedName~RecepcionCompra"`
   - **Resultado:** 36 pruebas ejecutadas, 36 pasaron (0 fallidas).
 
 **Nota de Regresión Global (Limitación):**
-Al ejecutar el suite completo de pruebas `dotnet test tests/InventoryApp.Tests/InventoryApp.Tests.csproj`, se registraron **24 fallos** (sobre 1104 pruebas).
+Al ejecutar el suite completo de pruebas `dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj`, se registraron **24 fallos** (sobre 1104 pruebas).
 Estos fallos reportan `System.InvalidOperationException` y `MySqlConnector.MySqlException: Unable to connect to any of the specified MySQL hosts`.
 Esta es una **limitación de infraestructura/entorno** al momento de la ejecución de esta revisión (aparentemente la base de datos MySQL requerida por las pruebas de integración no estaba accesible o en el estado esperado).
 No se realizaron modificaciones de código para ocultar estos fallos, dado que provienen de módulos externos a `RecepcionCompra` y/o de configuración de entorno local (ej. Integraciones).

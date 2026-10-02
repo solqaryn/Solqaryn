@@ -47,7 +47,7 @@
     "tenantScopedIdempotency": "PASS",
     "httpApiProblemDetailsContract": "PASS__cf26f6c5a6e9df331f8c2271f26cd02bb2853dda",
     "persistenceRaceConflictScoped": "PASS__a122d1a4bdf5097979a44e786e51be7ec29ff7ea",
-    "directedTests": "PASS__backend/tests/InventoryApp.Tests/N71DOutboxApplicationApiTests.cs",
+    "directedTests": "PASS__backend/tests/Solqaryn.Tests/N71DOutboxApplicationApiTests.cs",
     "P0": 0,
     "P1": 0
   },

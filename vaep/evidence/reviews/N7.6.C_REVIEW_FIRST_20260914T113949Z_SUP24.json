@@ -38,7 +38,7 @@
     "backend/src/Infrastructure/Persistence/Configurations/ConfiguracionWhatsAppEmpresaConfiguration.cs",
     "backend/src/Infrastructure/Migrations/<timestamp>_N76CWhatsAppProviderPersistence.cs",
     "backend/src/Infrastructure/Migrations/AppDbContextModelSnapshot.cs",
-    "backend/tests/InventoryApp.Tests/N76CWhatsAppProviderPersistenceTests.cs"
+    "backend/tests/Solqaryn.Tests/N76CWhatsAppProviderPersistenceTests.cs"
   ],
   "sheet_schema_guard": "PASS_COLA_ROW_586_26_CANONICAL_COLUMNS_NO_REPAIR",
   "sheet_lease_write": "CONTROL_PLANE_WRITE_REJECTED_BY_CONNECTOR_SAFETY_CHECKS_READBACK_UNCHANGED_OWNER_NONE",

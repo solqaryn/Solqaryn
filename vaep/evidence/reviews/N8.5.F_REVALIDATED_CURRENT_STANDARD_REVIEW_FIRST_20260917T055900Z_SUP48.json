@@ -22,9 +22,9 @@
       "backend/src/Infrastructure/Repositories/EmailEmpresarialRepository.cs":"203c2deb820aa8790ce96a11ffeef5efb21264bd",
       "backend/src/Infrastructure/Persistence/Configurations/EmailEmpresarialConfiguration.cs":"396a036b7db3a00060fc83290995bc0831d70632",
       "backend/src/Infrastructure/Services/SmtpEmailService.cs":"d9d4fb8fc4ad2026bb8ece91a44f872cbf0e6ca7",
-      "backend/tests/InventoryApp.Tests/EmailEmpresarialServiceTests.cs":"f8e61aedf6e9be9d4d5dfde1da1d812c36cc12af",
-      "backend/tests/InventoryApp.Tests/EmailEmpresarialPersistenceModelTests.cs":"c79d5c6501a00f5e980f608148cb41cf9c60148f",
-      "backend/tests/InventoryApp.Tests/SmtpEmailServiceTests.cs":"8894d0e154a1a2d1f2227ebddb4d8f06aa6d1cf3"
+      "backend/tests/Solqaryn.Tests/EmailEmpresarialServiceTests.cs":"f8e61aedf6e9be9d4d5dfde1da1d812c36cc12af",
+      "backend/tests/Solqaryn.Tests/EmailEmpresarialPersistenceModelTests.cs":"c79d5c6501a00f5e980f608148cb41cf9c60148f",
+      "backend/tests/Solqaryn.Tests/SmtpEmailServiceTests.cs":"8894d0e154a1a2d1f2227ebddb4d8f06aa6d1cf3"
     }
   },
   "causal_gate": {"run_id":35181609623,"job_id":105074775861,"head":"eb5850e53b9374852dc39a864720ed36665fb95c","conclusion":"success","backend_restore_build_test":"PASS","api_mysql_migrations":"PASS","reuse_basis":"exact product and directed-test blob equivalence"},

@@ -244,7 +244,7 @@ async function financialMovementsFor(request: APIRequestContext, token: string):
   return await dataOf(response) as Array<Record<string, any>>;
 }
 
-async function inventoryMovementsFor(request: APIRequestContext, token: string): Promise<Array<Record<string, any>>> {
+async function movimientosInventarioFor(request: APIRequestContext, token: string): Promise<Array<Record<string, any>>> {
   const response = await request.get(`${API_URL}/inventario/movimientos`, {
     headers: authHeaders(token)
   });
@@ -352,14 +352,14 @@ test.describe('Fase 7 — permisos exactos y aislamiento por UsuarioId', () => {
     expect(financialA[0].concepto).toContain('Cliente exclusivo A');
     expect(financialB[0].concepto).toContain('Cliente exclusivo B');
 
-    const inventoryA = await inventoryMovementsFor(request, tokenA);
-    const inventoryB = await inventoryMovementsFor(request, tokenB);
-    expect(inventoryA.length).toBe(1);
-    expect(inventoryB.length).toBe(1);
-    expect(inventoryA[0].creadoPorNombreUsuario).toBe(USER_A.nombreUsuario);
-    expect(inventoryB[0].creadoPorNombreUsuario).toBe(USER_B.nombreUsuario);
-    expect(Number(inventoryA[0].referenciaId)).toBe(ventaAId);
-    expect(Number(inventoryB[0].referenciaId)).toBe(ventaBId);
+    const movimientosA = await movimientosInventarioFor(request, tokenA);
+    const movimientosB = await movimientosInventarioFor(request, tokenB);
+    expect(movimientosA.length).toBe(1);
+    expect(movimientosB.length).toBe(1);
+    expect(movimientosA[0].creadoPorNombreUsuario).toBe(USER_A.nombreUsuario);
+    expect(movimientosB[0].creadoPorNombreUsuario).toBe(USER_B.nombreUsuario);
+    expect(Number(movimientosA[0].referenciaId)).toBe(ventaAId);
+    expect(Number(movimientosB[0].referenciaId)).toBe(ventaBId);
   });
 
   test('El menú y las guardas ocultan módulos no concedidos', async ({ page }) => {

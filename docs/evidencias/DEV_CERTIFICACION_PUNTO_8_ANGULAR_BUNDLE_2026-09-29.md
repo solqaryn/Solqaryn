@@ -30,7 +30,7 @@ Angular CLI:
 1. El shell raíz y la navegación dejaron de importar `MatButtonModule` y `MatIconModule`; conservan los mismos iconos mediante la fuente Material Icons ya cargada y botones nativos accesibles.
 2. `provideAnimations()` se sustituyó por `provideAnimationsAsync()`, por lo que el renderer legacy de animaciones deja de formar parte del grafo inicial y queda en chunk lazy.
 3. La portada usa `@defer (on idle)` para contenido por debajo del fold; hero y LCP permanecen inmediatos.
-4. Se añadió `AfterRenderSelectivePreloadingStrategy`: sólo precarga rutas marcadas, después de que la aplicación esté estable y únicamente dentro del storefront VariStoreHN.
+4. Se añadió `AfterRenderSelectivePreloadingStrategy`: sólo precarga rutas marcadas, después de que la aplicación esté estable y únicamente dentro del storefront SOLQARYN.
 5. Rutas seleccionadas: catálogo, detalle de producto y categorías. No se usa `PreloadAllModules`.
 6. Se añadió medición reproducible con `ng build --configuration production --stats-json`, baseline raw/gzip/Brotli y análisis de contributors por paquete/módulo.
 7. Se añadió `validate-angular-bundle-policy.mjs` al lint canónico.
@@ -75,4 +75,4 @@ El pipeline de Punto 8 ejecuta:
 - baseline raw/gzip/Brotli;
 - artifact con evidencia.
 
-Permanece una advertencia preexistente e independiente: `varistorehn-producto.component.scss` mide 17.59 kB frente al warning de estilo individual de 16 kB. No se elevó ese límite para ocultarla.
+Permanece una advertencia preexistente e independiente: `SOLQARYN-producto.component.scss` mide 17.59 kB frente al warning de estilo individual de 16 kB. No se elevó ese límite para ocultarla.

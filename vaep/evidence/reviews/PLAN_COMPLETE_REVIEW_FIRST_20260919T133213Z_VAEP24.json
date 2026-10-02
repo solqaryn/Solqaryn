@@ -22,7 +22,7 @@
     "p1": 0,
     "historical_state_used_as_support_only": true,
     "reimplemented_existing_correct_work": false,
-    "reviewed_scope": "Issue #3407 VariStoreHN MVP phases 0-6; all six post-certification commits and six changed frontend files"
+    "reviewed_scope": "Issue #3407 SOLQARYN MVP phases 0-6; all six post-certification commits and six changed frontend files"
   },
   "base_certified_head": "7e6d940d60b681635254daeef796fabd1704489d",
   "functional_product_head": "8c51d1190ae389d15e27a2aeda189ddcce53982d",
@@ -34,11 +34,11 @@
     "deletions": 4,
     "files": [
       "frontend/package.json",
-      "frontend/scripts/validate-varistorehn-fase1.mjs",
-      "frontend/scripts/validate-varistorehn-fase6.mjs",
-      "frontend/scripts/validate-varistorehn-mvp.mjs",
-      "frontend/src/app/features/varistorehn/varistorehn-checkout.component.ts",
-      "frontend/src/app/features/varistorehn/varistorehn-header.component.html"
+      "frontend/scripts/validate-SOLQARYN-fase1.mjs",
+      "frontend/scripts/validate-SOLQARYN-fase6.mjs",
+      "frontend/scripts/validate-SOLQARYN-mvp.mjs",
+      "frontend/src/app/features/SOLQARYN/SOLQARYN-checkout.component.ts",
+      "frontend/src/app/features/SOLQARYN/SOLQARYN-header.component.html"
     ],
     "findings_corrected": [
       "literal backslash-n sequences removed from public desktop/mobile header navigation",
@@ -57,7 +57,7 @@
     "head_equivalence": "PASS__FUNCTIONAL_HEAD_EXACTLY_8C51D119"
   },
   "causal_gates": {
-    "varistorehn_phase6": {
+    "SOLQARYN_phase6": {
       "run_id": 35445175492,
       "head": "8c51d1190ae389d15e27a2aeda189ddcce53982d",
       "status": "completed",

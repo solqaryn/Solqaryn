@@ -32,7 +32,7 @@
     "development_health": {"status": "ready", "database": "connected"},
     "development_backend_target": "solqaryn-api-desarrollo.onrender.com",
     "production_reference_read_only": true,
-    "production_active_project": "varistorehn",
+    "production_active_project": "SOLQARYN",
     "production_active_ref": "main",
     "production_active_sha": "85b4e02814823e9671803c23798a6ff0bf05c8f6",
     "production_write": false,

@@ -26,7 +26,7 @@
     "backend/src/Infrastructure/Repositories/EmpresaRepository.cs",
     "backend/src/API/Controllers/EmpresasController.cs",
     "backend/src/Application/Common/CatalogoPermisosBase.cs",
-    "backend/tests/InventoryApp.Tests/N61DEmpresaApplicationApiTests.cs"
+    "backend/tests/Solqaryn.Tests/N61DEmpresaApplicationApiTests.cs"
   ],
   "acceptance": {
     "crudApplicationApi": true,

@@ -13,7 +13,7 @@
   "dod_material_status": "READY_FOR_LISTO_REAL",
   "scope_reviewed": [
     "vaep/evidence/receipts/N6.10.F_LISTO_REAL_20260913T034815Z.json",
-    "backend/tests/InventoryApp.Tests/N610FFeatureFlagsSecurityTests.cs",
+    "backend/tests/Solqaryn.Tests/N610FFeatureFlagsSecurityTests.cs",
     "frontend/src/app/features/configuracion/suscripcion-saas-card.component.ts",
     "backend/src/API/Controllers/SuscripcionesSaaSController.cs",
     "backend/src/Application/Services/SuscripcionesSaaSService.cs"

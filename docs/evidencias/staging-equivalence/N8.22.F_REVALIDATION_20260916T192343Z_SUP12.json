@@ -13,7 +13,7 @@
     "docs/evidencias/staging-equivalence/N8.22.F_SEC_AUDIT_20260916T163400Z.json",
     "vaep/evidence/reviews/N8.22.F_REVIEW_FIRST_20260916T163415Z_SUP00.json",
     "vaep/evidence/receipts/N8.22.F_LISTO_REAL_20260916T164432Z_SUP36.json",
-    "vaep/evidence/reconciliations/N8.22.G_OWNER_RENDER_ENV_NAME_INVENTORY_20260916T182900Z.json",
+    "vaep/evidence/reconciliations/N8.22.G_OWNER_RENDER_ENV_NAME_inventario_20260916T182900Z.json",
     "docs/evidencias/staging-equivalence/N8.22_STAGING_EQUIVALENCE_CERT_20260916T185553Z.json"
   ],
   "fresh_sources":{
@@ -38,8 +38,8 @@
     "render_health_difference":"EXPECTED_ENV_DIFFERENCE__VERSION_AWARE",
     "render_dev_service_updated_at":"2026-09-16T17:09:28.668023Z",
     "render_prod_service_updated_at":"2026-09-16T17:59:05.334381Z",
-    "sanitized_env_inventory_captured_at":"2026-09-16T18:29:00Z",
-    "render_service_metadata_changed_after_sanitized_inventory":false,
+    "sanitized_env_inventario_captured_at":"2026-09-16T18:29:00Z",
+    "render_service_metadata_changed_after_sanitized_inventario":false,
     "vercel_custom_env_dependency_search_matches":0,
     "frontend_api_routing":"versioned host-aware rewrites in frontend/vercel.json"
   },
@@ -49,7 +49,7 @@
     {"dimension":"cors_policy_shape","classification":"EXPECTED_ENV_DIFFERENCE","basis":"server-side allowlist contract is common; environment origin counts differ by deployment"},
     {"dimension":"rate_limit_policy_shape","classification":"EXPECTED_ENV_DIFFERENCE","basis":"current Desarrollo Security__LoginRateLimitPerMinute and AuthLogin limiter are candidate hardening"},
     {"dimension":"render_health_policy","classification":"EXPECTED_ENV_DIFFERENCE","basis":"fresh Render metadata confirms /health/ready DEV and /health PROD; both correspond to version-aware deployed code"},
-    {"dimension":"render_sanitized_env_name_parity","classification":"EXPECTED_ENV_DIFFERENCE","basis":"complete names-only inventory is newer than both current Render service updatedAt timestamps; differences map to newer Desarrollo capabilities"},
+    {"dimension":"render_sanitized_env_name_parity","classification":"EXPECTED_ENV_DIFFERENCE","basis":"complete names-only inventario is newer than both current Render service updatedAt timestamps; differences map to newer Desarrollo capabilities"},
     {"dimension":"vercel_custom_env_name_parity","classification":"EQUIVALENT","basis":"current frontend contract uses repository rewrites and code search found no custom runtime env dependency; production project identity is freshly confirmed"}
   ],
   "summary":{"EQUIVALENT":2,"EXPECTED_ENV_DIFFERENCE":5,"MATERIAL_GAP":0,"UNKNOWN":0,"P0":0,"P1":0},

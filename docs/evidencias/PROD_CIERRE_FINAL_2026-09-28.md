@@ -62,7 +62,7 @@ Resultado: `RENDER_PROD=PASS`.
 - Alias administrado: `https://solqaryn-prod.vercel.app`.
 - Readback:
   - `/login` carga `SOLQARYN | Acceso privado`;
-  - `/varistorehn` carga el storefront público;
+  - `/SOLQARYN` carga el storefront público;
   - gateway/backend PROD y navegación autenticada ya fueron certificados en el smoke previo del cierre productivo.
 - Observabilidad Vercel desde el deploy productivo `0a63764b...`: **0 runtime errors** en el rango posterior a `2026-09-28T02:25:50Z`.
 
@@ -97,7 +97,7 @@ Resultado: `CLOVER_PROD_STATUS=NOT_INTEGRATED_CERTIFIED`.
 - Render personal legacy: retirado.
 - Vercel personal legacy: retirado.
 - Cloudinary personal legacy: retirado.
-- Repositorio personal `jmejia31/VariStorehn`: retirado.
+- Repositorio personal `jmejia31/SOLQARYN`: retirado.
 - Artifacts históricos/rollback usados durante el cutover: eliminados.
 - Skill legacy del proyecto retirado: eliminada; Skill SOLQARYN reinstalada con `SOLQARYN / solqaryn/Solqaryn / dev`.
 

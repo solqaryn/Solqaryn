@@ -10,9 +10,9 @@
     "vaepJulesDiagnostic": {"runId":34465360516,"conclusion":"success"},
     "vaepEngineLightweight": {"runId":34465360767,"conclusion":"success"},
     "cxcRegression": {"runId":34465360495,"conclusion":"success"},
-    "financeFocusedTestsSource": "backend/tests/InventoryApp.Tests/FinanzasServiceTests.cs",
-    "cxpSecurityRegressionSource": "backend/tests/InventoryApp.Tests/N28CuentaPorPagarSecurityRegressionTests.cs",
-    "cxpApplicationContractSource": "backend/tests/InventoryApp.Tests/N28CuentaPorPagarApplicationContractTests.cs"
+    "financeFocusedTestsSource": "backend/tests/Solqaryn.Tests/FinanzasServiceTests.cs",
+    "cxpSecurityRegressionSource": "backend/tests/Solqaryn.Tests/N28CuentaPorPagarSecurityRegressionTests.cs",
+    "cxpApplicationContractSource": "backend/tests/Solqaryn.Tests/N28CuentaPorPagarApplicationContractTests.cs"
   },
   "decision": "PASS_QA_REGRESSION_CI_CAUSAL_HEAD",
   "functionalDeltaSinceCausalHead": false,

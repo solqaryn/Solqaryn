@@ -22,13 +22,13 @@
     }
   },
   "vercel": {
-    "project": "varistorehn",
+    "project": "SOLQARYN",
     "runtimeErrorsLast6h": 0,
-    "publicUrl": "https://varistorehn.vercel.app"
+    "publicUrl": "https://SOLQARYN.vercel.app"
   },
   "p0": 0,
   "p1": 0,
   "parent": "N9.5.E",
   "status": "PASS_NA_GROUNDED",
-  "conclusion": "No new frontend/UX implementation is required for smoke. Canonical frontend shell varistorehn.vercel.app responds 200 and Vercel reports no runtime errors in the inspected window."
+  "conclusion": "No new frontend/UX implementation is required for smoke. Canonical frontend shell SOLQARYN.vercel.app responds 200 and Vercel reports no runtime errors in the inspected window."
 }

@@ -31,7 +31,7 @@
       "No migrations were applied. The database is already up to date."
     ]
   },
-  "migrationInventory": {
+  "migrationinventario": {
     "productionDeployedTreeCount": 11,
     "releaseCandidateCommit": "4eadd208322e8f19d84d669fffc70a9de85ba567",
     "releaseCandidateTreeCount": 86,

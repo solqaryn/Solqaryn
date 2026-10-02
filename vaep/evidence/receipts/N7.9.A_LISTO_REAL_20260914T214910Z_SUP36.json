@@ -39,7 +39,7 @@
   "dod": {
     "dependency_validation": "PASS",
     "scope_and_out_of_scope": "PASS",
-    "risk_inventory": "PASS",
+    "risk_inventario": "PASS",
     "rollback_strategy": "PASS",
     "test_strategy": "PASS",
     "review_first_p0_p1": "PASS",

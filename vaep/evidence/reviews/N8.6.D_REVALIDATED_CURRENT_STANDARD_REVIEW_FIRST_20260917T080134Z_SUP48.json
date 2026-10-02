@@ -27,7 +27,7 @@
       "blob": "ab111c58b81053589b3ca3e5bf7b2a67d121239b"
     },
     "directed_tests": {
-      "path": "backend/tests/InventoryApp.Tests/API/Controllers/WhatsAppControllerTests.cs",
+      "path": "backend/tests/Solqaryn.Tests/API/Controllers/WhatsAppControllerTests.cs",
       "blob": "682b90c902b7d427396f47d9813095290a0bc7eb",
       "cases_readback": [
         "webhook missing or incorrect verify token returns 401 and exact token is accepted",

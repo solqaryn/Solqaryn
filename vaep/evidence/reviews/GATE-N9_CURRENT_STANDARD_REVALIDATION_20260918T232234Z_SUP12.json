@@ -52,8 +52,8 @@
     "changedFiles": [
       "backend/src/API/Controllers/TiendaController.cs",
       "backend/src/Infrastructure/Repositories/ExistenciaVarianteRepository.cs",
-      "backend/tests/InventoryApp.Tests/TiendaPublicaTests.cs",
-      "frontend/scripts/validate-varistorehn-fase9.mjs"
+      "backend/tests/Solqaryn.Tests/TiendaPublicaTests.cs",
+      "frontend/scripts/validate-SOLQARYN-fase9.mjs"
     ],
     "assessment": "Fresh owner delta hardens public-stock filtering and authoritative checkout grouping, with matching backend/static regression coverage; no schema/migration change in this delta and no P0/P1 gap detected."
   },
@@ -64,7 +64,7 @@
     "functionalAcceptance": 35401799240,
     "priority3Security": 35401799085,
     "priority4Quality": 35401799131,
-    "varistorehnFase9Regression": 35401799086,
+    "SOLQARYNFase9Regression": 35401799086,
     "erpN01Certification": 35401799102,
     "fase2Audit": 35401799147,
     "vaepAdmissionGuard": 35401799077,

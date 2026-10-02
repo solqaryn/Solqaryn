@@ -19,8 +19,8 @@
   "uatAcceptanceStillMissing":true,
   "reason":"The N8.1 acceptance condition explicitly requires real users to validate complete business processes. An automation can verify code, CI and evidence, but cannot truthfully impersonate a real business user or attest human acceptance.",
   "requiredHumanUat": [
-    {"scenario":"Inventory","minimum":"representative user executes product/variant and stock movement flow and verifies resulting stock/audit evidence"},
-    {"scenario":"Purchasing","minimum":"representative purchasing user executes purchase/receipt flow and verifies inventory and payable effects where applicable"},
+    {"scenario":"inventario","minimum":"representative user executes product/variant and stock movement flow and verifies resulting stock/audit evidence"},
+    {"scenario":"Purchasing","minimum":"representative purchasing user executes purchase/receipt flow and verifies inventario and payable effects where applicable"},
     {"scenario":"Sales/Invoicing","minimum":"representative sales user executes customer-sale-invoice flow and verifies totals, stock and document result"},
     {"scenario":"Treasury/Finance","minimum":"representative finance user executes payment/receivable/payable/accounting flow applicable to the tenant and verifies traceability"},
     {"scenario":"BI/Reporting","minimum":"representative user validates at least one operational report/dashboard against source transactions"},

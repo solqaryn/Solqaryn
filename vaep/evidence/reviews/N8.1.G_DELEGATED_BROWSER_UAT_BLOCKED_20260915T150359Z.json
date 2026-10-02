@@ -15,7 +15,7 @@
   "environment": {
     "deployment": "https://solqaryn-desarrollo.vercel.app",
     "scope": "Desarrollo/UAT",
-    "tenant": "VariStorehn",
+    "tenant": "SOLQARYN",
     "productionTouched": false,
     "mainTouched": false,
     "secretsRead": false
@@ -27,7 +27,7 @@
     "authSurface": "https://solqaryn-desarrollo.vercel.app/login"
   },
   "scenarioGroups": [
-    {"name":"Inventory","status":"HUMAN_PASS_EXISTING","evidence":"vaep/evidence/reviews/N8.1.G_HUMAN_UAT_INVENTORY_PASS_20260915T064700Z.json"},
+    {"name":"inventario","status":"HUMAN_PASS_EXISTING","evidence":"vaep/evidence/reviews/N8.1.G_HUMAN_UAT_inventario_PASS_20260915T064700Z.json"},
     {"name":"Purchasing","status":"TECHNICAL_PASS_BROWSER_REPLAY_PENDING","evidence":"vaep/evidence/reviews/N8.1.G_CODEX_TECHNICAL_UAT_REMAINING_6_20260915T074247Z.json"},
     {"name":"Sales/Invoicing","status":"TECHNICAL_PASS_BROWSER_REPLAY_PENDING","evidence":"vaep/evidence/reviews/N8.1.G_CODEX_TECHNICAL_UAT_REMAINING_6_20260915T074247Z.json"},
     {"name":"Treasury/Finance","status":"TECHNICAL_PASS_BROWSER_REPLAY_PENDING","evidence":"vaep/evidence/reviews/N8.1.G_CODEX_TECHNICAL_UAT_REMAINING_6_20260915T074247Z.json"},

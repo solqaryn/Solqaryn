@@ -10,7 +10,7 @@
   "p1_count": 0,
   "dod_material_status": "PARTIAL_PENDING_CAUSAL_CI",
   "scope_reviewed": [
-    "backend/tests/InventoryApp.Tests/N610FFeatureFlagsSecurityTests.cs",
+    "backend/tests/Solqaryn.Tests/N610FFeatureFlagsSecurityTests.cs",
     "backend/src/API/Controllers/SuscripcionesSaaSController.cs",
     "backend/src/API/Filters/RequierePermisoAttribute.cs",
     "backend/src/Application/Services/SuscripcionesSaaSService.cs"

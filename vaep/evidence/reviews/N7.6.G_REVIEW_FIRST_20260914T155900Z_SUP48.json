@@ -25,7 +25,7 @@
     "ci_adjustment": "NOT_REQUIRED"
   },
   "directed_scope": {
-    "backend_tests": "backend/tests/InventoryApp.Tests/API/Controllers/WhatsAppControllerTests.cs",
+    "backend_tests": "backend/tests/Solqaryn.Tests/API/Controllers/WhatsAppControllerTests.cs",
     "frontend_tests": "frontend/src/app/features/configuracion/whatsapp-business-card.component.spec.ts",
     "coverage": [
       "webhook signature validation and fail-closed verification",

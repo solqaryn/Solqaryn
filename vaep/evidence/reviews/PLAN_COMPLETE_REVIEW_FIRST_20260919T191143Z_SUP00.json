@@ -59,9 +59,9 @@
     "deletions": 11,
     "reviewed_files": [
       "backend/src/API/Controllers/WhatsAppController.cs",
-      "backend/tests/InventoryApp.Tests/API/Controllers/WhatsAppControllerTests.cs",
-      "frontend/e2e/varistorehn-fase2.spec.ts",
-      "frontend/scripts/validate-varistorehn-fase6.mjs"
+      "backend/tests/Solqaryn.Tests/API/Controllers/WhatsAppControllerTests.cs",
+      "frontend/e2e/SOLQARYN-fase2.spec.ts",
+      "frontend/scripts/validate-SOLQARYN-fase6.mjs"
     ],
     "findings": [
       "WhatsApp public endpoint resolves a unique active number, otherwise matches one public-store identity and fails closed if ambiguous.",

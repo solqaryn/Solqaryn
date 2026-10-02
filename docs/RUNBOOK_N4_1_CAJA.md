@@ -59,8 +59,8 @@ Para una recertificación causal del módulo, ejecutar los gates aplicables sobr
 
 ```bash
 cd backend
-dotnet build InventoryApp.sln --configuration Release
-dotnet test InventoryApp.sln --configuration Release --no-build
+dotnet build Solqaryn.sln --configuration Release
+dotnet test Solqaryn.sln --configuration Release --no-build
 ```
 
 Las validaciones que dependan de MySQL deben ejecutarse únicamente en el entorno de pruebas autorizado/configurado. Una base local ausente en una auditoría documental no debe reinterpretarse como PASS de integración; debe registrarse como validación no ejecutada/no causal según corresponda.

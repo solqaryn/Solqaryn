@@ -19,7 +19,7 @@
     "configurationHardeningJob":"105242294463",
     "dependencyAuditHead":"abd61462f2063587433e2e17d4609296aa018a51",
     "dependencyBlobEquivalence":"PASS_NO_PACKAGE_LOCK_OR_CSPROJ_DIFF_IN_COMPARE_abd61462_TO_6fd3e28",
-    "sourceReview":["backend/src/API/Program.cs","backend/tests/InventoryApp.Tests/API/SecurityBoundaryContractTests.cs","backend/tests/InventoryApp.Tests/API/Controllers/UsuariosEmpresaAuthorizationContractTests.cs","backend/tests/InventoryApp.Tests/API/RequestObservabilityTests.cs",".github/workflows/priority3-erp-security.yml",".github/workflows/priority4-quality.yml"]
+    "sourceReview":["backend/src/API/Program.cs","backend/tests/Solqaryn.Tests/API/SecurityBoundaryContractTests.cs","backend/tests/Solqaryn.Tests/API/Controllers/UsuariosEmpresaAuthorizationContractTests.cs","backend/tests/Solqaryn.Tests/API/RequestObservabilityTests.cs",".github/workflows/priority3-erp-security.yml",".github/workflows/priority4-quality.yml"]
   },
   "materialResult":{
     "tenantIsolation":"PASS_FAIL_CLOSED",

@@ -8,7 +8,7 @@
 
 - `identidad-retirada-desarrollo`: eliminado previamente de la cuenta personal.
 - Team corporativo `SOLQARYN`: sólo proyecto `solqaryn-dev`.
-- `varistorehn` PROD legacy: fuera de alcance y no tocado.
+- `SOLQARYN` PROD legacy: fuera de alcance y no tocado.
 
 ## Render
 
@@ -44,7 +44,7 @@ Inventario visible para el token corporativo:
 - estado: `RUNNING`
 - proyectos legacy visibles: ninguno
 
-Conclusión actual: la cuenta corporativa sólo expone el proyecto `solqaryn` y el servicio `solqaryn-mysql`, pero el endpoint de inventario de bases devolvió HTTP 404 y no permitió enumerar las bases. Además, el servicio corporativo actual `solqaryn-api-prod` (`srv-dapl2j49v7es73907om0`) registra consultas a `defaultdb` hasta el 2026-09-25. Por tanto, `defaultdb` tiene dependencia productiva activa demostrada y queda terminantemente bloqueada cualquier destrucción del Aiven personal o de `defaultdb`/`varistorehn_desarrollo` hasta identificar el host/servicio exacto que atiende esa conexión.
+Conclusión actual: la cuenta corporativa sólo expone el proyecto `solqaryn` y el servicio `solqaryn-mysql`, pero el endpoint de inventario de bases devolvió HTTP 404 y no permitió enumerar las bases. Además, el servicio corporativo actual `solqaryn-api-prod` (`srv-dapl2j49v7es73907om0`) registra consultas a `defaultdb` hasta el 2026-09-25. Por tanto, `defaultdb` tiene dependencia productiva activa demostrada y queda terminantemente bloqueada cualquier destrucción del Aiven personal o de `defaultdb`/`SOLQARYN_desarrollo` hasta identificar el host/servicio exacto que atiende esa conexión.
 
 ## Cloudinary
 
@@ -85,7 +85,7 @@ La autoridad vigente ratificada el 2026-09-25 conserva `jmejia31` como Owner sec
 
 - GitHub: `jmejia31=admin` se conserva intencionalmente como Owner secundario/de recuperación; no es deuda a retirar.
 - Render corporativo: sólo `solqaryn-api-dev` y `solqaryn-api-prod`.
-- Aiven inventory run `36193976802`: SUCCESS; sólo proyecto `solqaryn` y servicio `solqaryn-mysql`; listado de databases respondió HTTP 404.
+- Aiven inventario run `36193976802`: SUCCESS; sólo proyecto `solqaryn` y servicio `solqaryn-mysql`; listado de databases respondió HTTP 404.
 - Render PROD corporativo: evidencia de logs confirma consultas a `defaultdb` hasta 2026-09-25.
 - Decisión: NO BORRAR Aiven personal, `defaultdb`, credenciales relacionadas ni recursos potencialmente compartidos hasta identificar el servicio/host exacto de la conexión productiva.
 - Producción no fue modificada durante esta verificación.

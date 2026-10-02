@@ -10,8 +10,8 @@ El identificador oficial del entorno de DEV es `solqaryn_dev`.
 
 Cuando `Cloudinary__EnvironmentPrefix=solqaryn_dev`:
 
-- las nuevas imágenes de productos se almacenan bajo `solqaryn_dev/inventoryapp/productos`;
-- los nuevos comprobantes se almacenan bajo `solqaryn_dev/inventoryapp/compras`;
+- las nuevas imágenes de productos se almacenan bajo `solqaryn_dev/Solqaryn/productos`;
+- los nuevos comprobantes se almacenan bajo `solqaryn_dev/Solqaryn/compras`;
 - las nuevas fotografías de perfil se almacenan bajo `solqaryn_dev/solqaryn/perfiles`;
 - cualquier eliminación cuyo `PublicId` no comience con `solqaryn_dev/` queda bloqueada antes de llamar a Cloudinary.
 
@@ -101,12 +101,12 @@ El redeploy manual `dep-darcsc0jo6nc73fffmtg` terminó `live` y el health poster
 - Health posterior: `/health/ready` HTTP 200.
 - Upload real desde SOLQARYN DEV: PASS.
 - Cloud destino: `riyrzmob`.
-- Prefijo observado en Media Library: `solqaryn_dev/inventoryapp/productos/empresas/1/`.
+- Prefijo observado en Media Library: `solqaryn_dev/Solqaryn/productos/empresas/1/`.
 - La API pública de tienda devuelve el asset nuevo desde `res.cloudinary.com/riyrzmob/.../solqaryn_dev/...`.
 
 ### Inventario read-only de referencias legacy
 
-GitHub Actions run `36182095589` / artifact `cloudinary-dev-legacy-inventory-36182095589`:
+GitHub Actions run `36182095589` / artifact `cloudinary-dev-legacy-inventario-36182095589`:
 
 - `ProductoImagenes.Url`: 10 filas;
 - `ProductoImagenes.PublicId`: 10 filas;

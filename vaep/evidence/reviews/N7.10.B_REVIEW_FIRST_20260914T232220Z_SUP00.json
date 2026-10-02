@@ -19,7 +19,7 @@
     "files_added": [
       "backend/src/Domain/Fiscal/FiscalDocumentContracts.cs",
       "backend/src/Application/Interfaces/IProveedorDocumentoFiscal.cs",
-      "backend/tests/InventoryApp.Tests/FacturacionFiscalDomainTests.cs"
+      "backend/tests/Solqaryn.Tests/FacturacionFiscalDomainTests.cs"
     ],
     "files_deleted": [],
     "scope_coherent": true

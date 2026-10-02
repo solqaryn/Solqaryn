@@ -21,13 +21,13 @@
   ],
   "existingReusableFoundation": [
     "backend/src/Domain/Entities/MensajeOutbox.cs",
-    "backend/tests/InventoryApp.Tests/Domain/MensajeOutboxTests.cs"
+    "backend/tests/Solqaryn.Tests/Domain/MensajeOutboxTests.cs"
   ],
   "scopeGuard": {
     "allowedNow": [
       "backend/src/Domain/Entities/WebhookEntrante.cs",
       "backend/src/Domain/Enums/EstadoWebhookEntrante.cs",
-      "backend/tests/InventoryApp.Tests/Domain/WebhookEntranteTests.cs"
+      "backend/tests/Solqaryn.Tests/Domain/WebhookEntranteTests.cs"
     ],
     "deferredToSuccessors": [
       "persistence/indexes/migration",

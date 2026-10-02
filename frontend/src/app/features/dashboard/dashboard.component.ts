@@ -123,7 +123,7 @@ export class DashboardComponent implements OnInit {
   iconoKpi(metricKey: string): string {
     return ({
       INGRESOS_MES: 'payments', VENTAS_MES: 'point_of_sale', COMPRAS_MES: 'shopping_cart',
-      TOTAL_PRODUCTOS: 'inventory_2', TOTAL_UNIDADES: 'warehouse', VALOR_INVENTARIO: 'account_balance_wallet',
+      TOTAL_PRODUCTOS: 'warehouse', TOTAL_UNIDADES: 'warehouse', VALOR_INVENTARIO: 'account_balance_wallet',
       UTILIDAD_BRUTA: 'trending_up', BALANCE_OPERATIVO: 'monitoring', CUENTAS_POR_COBRAR: 'request_quote',
       CUENTAS_POR_PAGAR: 'receipt_long', PRODUCTOS_STOCK_BAJO: 'warning_amber'
     } as Record<string, string>)[metricKey] ?? 'analytics';
@@ -148,7 +148,7 @@ export class DashboardComponent implements OnInit {
 
   iconoSugerencia(modulo: string): string {
     return ({
-      Inventario: 'inventory_2', Productos: 'sell', Compras: 'shopping_cart', Ventas: 'point_of_sale',
+      Inventario: 'warehouse', Productos: 'sell', Compras: 'shopping_cart', Ventas: 'point_of_sale',
       Clientes: 'groups', Facturación: 'receipt_long', Finanzas: 'account_balance_wallet',
       Cargas: 'upload_file', Configuración: 'settings'
     } as Record<string, string>)[modulo] ?? 'tips_and_updates';

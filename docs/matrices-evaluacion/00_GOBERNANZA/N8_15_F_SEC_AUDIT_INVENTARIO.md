@@ -1,4 +1,4 @@
-# N8.15.F — SEC_AUDIT inventory
+# N8.15.F — SEC_AUDIT inventario
 
 Estado: `LISTO_REAL`
 
@@ -37,7 +37,7 @@ Login tiene rate-limit fixed-window por IP mediante policy `AuthLogin`; CORS exi
 
 No se detectó una regla de negocio **certificada** como client-only a partir de las rutas/guards inspeccionadas: el propio contrato arquitectónico exige backend authority y `AppDbContext`/Application implementan invariantes. Sin embargo, toda regla visible sólo en formulario/guard que no tenga correlato backend debe permanecer candidato de hallazgo en N8.17/N8.19; no se declara segura por presencia del guard.
 
-Storefront `varistorehn/**` es navegación pública por diseño de rutas; seguridad se decide en sus APIs. No se clasifica como bypass sin evidencia de un endpoint sensible sin enforcement.
+Storefront `SOLQARYN/**` es navegación pública por diseño de rutas; seguridad se decide en sus APIs. No se clasifica como bypass sin evidencia de un endpoint sensible sin enforcement.
 
 ## Clasificación
 

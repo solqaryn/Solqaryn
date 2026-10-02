@@ -151,10 +151,10 @@ La prueba específica de Fase 5 ejecutó cuatro casos y los cuatro terminaron co
 
 ## 11. Riesgos y validaciones externas pendientes
 
-La certificación aislada no utiliza credenciales reales de Cloudinary y no modifica activos externos. Continúan pendientes para la Fase 8 o una validación manual autorizada en `varistorehn_desarrollo`:
+La certificación aislada no utiliza credenciales reales de Cloudinary y no modifica activos externos. Continúan pendientes para la Fase 8 o una validación manual autorizada en `SOLQARYN_desarrollo`:
 
 - cargar una imagen real desde cámara y galería;
-- reemplazar y eliminar un activo real con prefijo `varistorehn_desarrollo/`;
+- reemplazar y eliminar un activo real con prefijo `SOLQARYN_desarrollo/`;
 - confirmar que Desarrollo no puede eliminar un activo productivo;
 - revisar consumo, huérfanos y duplicados;
 - probar conexión móvil lenta y archivos cercanos al límite.

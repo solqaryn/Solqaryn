@@ -3,24 +3,24 @@
   "authority": "docs/VAEP_AUTHORITY.md",
   "parent": "N8.1.G",
   "branch": "Desarrollo",
-  "scenarioGroup": "Inventory",
+  "scenarioGroup": "inventario",
   "result": "PASS",
   "acceptedBy": {
     "actor": "Javier Mejia",
     "role": "ADMINISTRADOR",
-    "tenantCompany": "VariStorehn",
+    "tenantCompany": "SOLQARYN",
     "environment": "Desarrollo/UAT"
   },
   "acceptedAtUtc": "2026-09-15T06:47:00Z",
   "steps": [
     "Verified UAT Producto 001 / UAT-VAR-001 existed with consolidated stock 0.",
     "Created the physical existence for UAT-VAR-001 in UAT-ALM-001 / UAT Almacen Principal at warehouse root with physical stock 0.",
-    "Created formal inventory adjustment AI-000001 with target quantity 10 and UAT reason/observations.",
-    "Confirmed AI-000001 through the inventory adjustment flow.",
+    "Created formal inventario adjustment AI-000001 with target quantity 10 and UAT reason/observations.",
+    "Confirmed AI-000001 through the inventario adjustment flow.",
     "Verified the confirmed adjustment materialized previous quantity 0, target 10, difference 10, unit cost HNL 100.00 and total impact HNL 1,000.00.",
     "Verified the native browser confirmation UX defect was removed and the professional in-app confirmation modal is deployed."
   ],
-  "expectedResult": "A zero-stock variant can be materialized in a concrete warehouse existence and adjusted through the formal inventory adjustment workflow from physical stock 0 to 10 with traceability and no native browser prompt/confirm UI.",
+  "expectedResult": "A zero-stock variant can be materialized in a concrete warehouse existence and adjusted through the formal inventario adjustment workflow from physical stock 0 to 10 with traceability and no native browser prompt/confirm UI.",
   "actualResult": "PASS. AI-000001 is Confirmed; the detail shows UAT Producto 001, SKU UAT-VAR-001, previous 0, target 10, difference 10, unit cost HNL 100.00 and impact HNL 1,000.00. Confirmation traceability is present.",
   "references": {
     "adjustmentNumber": "AI-000001",
@@ -38,11 +38,11 @@
   },
   "defectReferences": [
     "Physical existence context was not reachable from the legacy variant stock action; fixed in cb270df4 and 8736a575.",
-    "Native window.confirm/window.prompt inventory dialogs were replaced by structured in-app modals in 06164016626f0208c3c28f1d2550062c4eec8406."
+    "Native window.confirm/window.prompt inventario dialogs were replaced by structured in-app modals in 06164016626f0208c3c28f1d2550062c4eec8406."
   ],
   "parentClosure": {
     "eligible": false,
-    "completedMandatoryScenarioGroups": ["Inventory"],
+    "completedMandatoryScenarioGroups": ["inventario"],
     "remainingMandatoryScenarioGroups": [
       "Purchasing",
       "Sales/Invoicing",
@@ -51,7 +51,7 @@
       "Multi-company/RBAC",
       "Integrations"
     ],
-    "reason": "N8.1.G requires human PASS evidence for all seven mandatory scenario groups before LISTO_REAL. Inventory is now accepted; six groups remain."
+    "reason": "N8.1.G requires human PASS evidence for all seven mandatory scenario groups before LISTO_REAL. inventario is now accepted; six groups remain."
   },
   "guards": {
     "falsePass": false,

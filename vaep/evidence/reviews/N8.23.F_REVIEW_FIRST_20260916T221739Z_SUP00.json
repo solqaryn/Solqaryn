@@ -37,8 +37,8 @@
   "causal_command_grounding": {
     "backend_restore_build_test": "matches Desarrollo CI commands",
     "ef_tool_version": "8.0.8 as used by Desarrollo CI",
-    "ef_project": "src/Infrastructure/InventoryApp.Infrastructure.csproj",
-    "ef_startup_project": "src/API/InventoryApp.API.csproj",
+    "ef_project": "src/Infrastructure/Solqaryn.Infrastructure.csproj",
+    "ef_startup_project": "src/API/Solqaryn.API.csproj",
     "health": "/health from Program.cs",
     "readiness": "/health/ready from Program.cs with database connectivity",
     "frontend_build": "npm ci + npm run lint + npm run build:prod from package/workflow",

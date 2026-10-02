@@ -13,7 +13,7 @@
   "reviewedFiles": [
     "backend/src/Domain/Entities/SecuenciaDocumento.cs",
     "backend/src/Application/DTOs/NumeracionDocumentoDto.cs",
-    "backend/tests/InventoryApp.Tests/NumeracionDocumentoDomainTests.cs"
+    "backend/tests/Solqaryn.Tests/NumeracionDocumentoDomainTests.cs"
   ],
   "checks": {
     "explicitScopeEmpresaSucursalTipo": "PASS",

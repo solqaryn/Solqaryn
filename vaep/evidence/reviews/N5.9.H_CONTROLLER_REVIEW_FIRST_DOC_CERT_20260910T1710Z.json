@@ -34,7 +34,7 @@
   "evidenceReviewed": [
     "docs/N5.9_REPORT_PERFORMANCE_PREFLIGHT.md",
     "backend/src/Infrastructure/Services/ReporteInventarioService.cs@aafe94255e1eff9e3687c1716bb238393b1822f6",
-    "backend/tests/InventoryApp.Tests/N59DReportPerformanceStockHealthQueryTests.cs@aafe94255e1eff9e3687c1716bb238393b1822f6",
+    "backend/tests/Solqaryn.Tests/N59DReportPerformanceStockHealthQueryTests.cs@aafe94255e1eff9e3687c1716bb238393b1822f6",
     "vaep/evidence/fragments/N5.9.C_LISTO_REAL_20260910T1617Z.json",
     "vaep/evidence/fragments/N5.9.D_LISTO_REAL_20260910T1643Z.json",
     "vaep/evidence/fragments/N5.9.E_LISTO_REAL_20260910T1645Z.json",

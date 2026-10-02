@@ -139,7 +139,7 @@ M9 no requirió una nueva migración de esquema.
 
 Archivo:
 
-`backend/tests/InventoryApp.Tests/M9CargaMasivaProfesionalTests.cs`
+`backend/tests/Solqaryn.Tests/M9CargaMasivaProfesionalTests.cs`
 
 Cubre:
 
@@ -231,7 +231,7 @@ Backend:
 
 - `backend/src/API/Controllers/CargasMasivasController.cs`;
 - `backend/src/Application/DTOs/CargaMasivaDto.cs`;
-- `backend/tests/InventoryApp.Tests/M9CargaMasivaProfesionalTests.cs`.
+- `backend/tests/Solqaryn.Tests/M9CargaMasivaProfesionalTests.cs`.
 
 Frontend:
 

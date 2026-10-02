@@ -95,14 +95,14 @@ Crear/Editar/Enviar/Aprobar/Rechazar dejan auditoría con actor, fecha, entidad/
 
 Cobertura específica relevante:
 
-- `backend/tests/InventoryApp.Tests/N21SolicitudCompraContractTests.cs`;
-- `backend/tests/InventoryApp.Tests/N21SolicitudCompraDomainRegressionTests.cs`;
+- `backend/tests/Solqaryn.Tests/N21SolicitudCompraContractTests.cs`;
+- `backend/tests/Solqaryn.Tests/N21SolicitudCompraDomainRegressionTests.cs`;
 - regresiones de API/concurrencia/RBAC/auditoría incorporadas durante D y F;
 - build/lint/frontend y aceptación Playwright dentro de gates causales E/F/G.
 
 Cierre G: `a1a6f699cbad0186d0e0d7d7ac7f366c51009f7c`, CI `32172981351` SUCCESS y 994/994 pruebas backend.
 
-El check de Vercel `solqaryn-desarrollo` puede aparecer limitado por build-rate-limit externo; no es el gate de compilación backend/MySQL/Angular utilizado para certificar N2.1.G. La aplicación `varistorehn` sí reportó status success en el baseline consultado.
+El check de Vercel `solqaryn-desarrollo` puede aparecer limitado por build-rate-limit externo; no es el gate de compilación backend/MySQL/Angular utilizado para certificar N2.1.G. La aplicación `SOLQARYN` sí reportó status success en el baseline consultado.
 
 ## 8. Trazabilidad A-H
 

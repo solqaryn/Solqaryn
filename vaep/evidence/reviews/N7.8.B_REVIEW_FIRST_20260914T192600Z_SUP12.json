@@ -37,7 +37,7 @@
     "provider_abstraction": "PASS__IPagoOnlineProvider",
     "secret_boundary": "PASS__no secret/token/api-key credential properties or parameters",
     "status_contract": "PASS__Pendiente/Pagado/Fallido only",
-    "directed_tests_added": "backend/tests/InventoryApp.Tests/N78BPagoOnlineDomainTests.cs",
+    "directed_tests_added": "backend/tests/Solqaryn.Tests/N78BPagoOnlineDomainTests.cs",
     "delta": "4 files added; 134 additions; 0 deletions"
   },
   "decision": "READY_FOR_CAUSAL_GATES"

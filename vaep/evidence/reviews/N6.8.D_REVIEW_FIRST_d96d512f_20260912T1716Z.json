@@ -38,7 +38,7 @@
     {
       "id": "N68D-P1-01",
       "surface": "product_images",
-      "finding": "ProductoService still calls legacy IImageStorageService UploadAsync/DeleteAsync and Producto has no authoritative EmpresaId binding. The N6.8.A inventory requires private product-image mutations to resolve EmpresaId authoritatively before storage mutation.",
+      "finding": "ProductoService still calls legacy IImageStorageService UploadAsync/DeleteAsync and Producto has no authoritative EmpresaId binding. The N6.8.A inventario requires private product-image mutations to resolve EmpresaId authoritatively before storage mutation.",
       "causal": true,
       "next_action": "Introduce or reuse an authoritative server-side Producto-to-Empresa ownership binding, then migrate product image mutations to StorageTenantContext. Do not accept client EmpresaId/folder as authority."
     },

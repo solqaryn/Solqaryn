@@ -15,24 +15,24 @@
   ],
   "owner_control_plane_evidence":[
     "vaep/evidence/reconciliations/N8.22.G_OWNER_CONTROL_PLANE_EVIDENCE_20260916T172800Z.json",
-    "vaep/evidence/reconciliations/N8.22.G_OWNER_RENDER_ENV_NAME_INVENTORY_20260916T182900Z.json",
+    "vaep/evidence/reconciliations/N8.22.G_OWNER_RENDER_ENV_NAME_inventario_20260916T182900Z.json",
     "vaep/evidence/reconciliations/N8.22.G_OWNER_EVIDENCE_RECONCILED_20260916T183900Z.json"
   ],
   "fresh_provider_readback":{
     "render_dev":{"service_id":"srv-d9jblq7avr4c73c74jng","branch":"Desarrollo","health_check_path":"/health/ready","plan":"free","region":"oregon","updated_at":"2026-09-16T17:09:28.668023Z"},
     "render_prod_metadata_read_only":{"service_id":"srv-d983qti8qa3s73eqqne0","branch":"main","health_check_path":"/health","plan":"free","region":"virginia","updated_at":"2026-09-16T17:59:05.334381Z"},
     "vercel_dev":{"project":"solqaryn-desarrollo","project_id":"prj_JkRGpdSnGlMQ4Qc3eqw4bscY4Flu","node":"24.x"},
-    "vercel_prod":{"project":"varistorehn","project_id":"prj_djMCand2yYeY3AvaUWsjwHDDJDkM","node":"24.x"}
+    "vercel_prod":{"project":"SOLQARYN","project_id":"prj_djMCand2yYeY3AvaUWsjwHDDJDkM","node":"24.x"}
   },
   "matrix":[
     {"dimension":"vercel_production_identity","classification":"EQUIVALENT","basis":"owner control-plane evidence plus fresh project identity readback"},
-    {"dimension":"vercel_prod_branch_root_build_output","classification":"EQUIVALENT","basis":"owner control-plane evidence confirms main/frontend/npm run build/dist/inventoryapp-frontend/browser; no contradictory fresh project evidence"},
+    {"dimension":"vercel_prod_branch_root_build_output","classification":"EQUIVALENT","basis":"owner control-plane evidence confirms main/frontend/npm run build/dist/Solqaryn-frontend/browser; no contradictory fresh project evidence"},
     {"dimension":"vercel_custom_env_contract","classification":"EQUIVALENT","basis":"N/A justified: frontend uses static/rewrite API routing and current code search has no custom runtime env dependency"},
     {"dimension":"render_plan_runtime","classification":"EQUIVALENT","basis":"fresh services are docker/free; build-plan class consistent"},
     {"dimension":"render_branch","classification":"EXPECTED_ENV_DIFFERENCE","basis":"Desarrollo vs main by environment role"},
     {"dimension":"render_region","classification":"EXPECTED_ENV_DIFFERENCE","basis":"oregon vs virginia by environment role"},
     {"dimension":"render_health_policy","classification":"EXPECTED_ENV_DIFFERENCE","basis":"fresh /health/ready DEV and /health PROD are version-aware valid endpoints; historical empty PROD gap no longer exists"},
-    {"dimension":"render_env_name_surface","classification":"EXPECTED_ENV_DIFFERENCE","basis":"complete names-only inventory, values never read; differences map to newer Desarrollo config surface"},
+    {"dimension":"render_env_name_surface","classification":"EXPECTED_ENV_DIFFERENCE","basis":"complete names-only inventario, values never read; differences map to newer Desarrollo config surface"},
     {"dimension":"security_observability_contract","classification":"EXPECTED_ENV_DIFFERENCE","basis":"current N8.22.F revalidation proves candidate hardening with zero material gap/unknown"}
   ],
   "gate":{"staging_equivalent":true,"material_gap_count":0,"unknown_count":0,"P0":0,"P1":0,"P2":0},

@@ -33,7 +33,7 @@
     },
     "implementation_and_diff": {
       "result": "PASS",
-      "evidence": "Current-head review included the post-reopen inventory reporting tenant-isolation delta. The only current-standard P1 detected was a stale security-contract test after TenantPermissionContext became mandatory; it was repaired same-run without reverting the production tenant enforcement."
+      "evidence": "Current-head review included the post-reopen inventario reporting tenant-isolation delta. The only current-standard P1 detected was a stale security-contract test after TenantPermissionContext became mandatory; it was repaired same-run without reverting the production tenant enforcement."
     },
     "security_rbac_tenant": {
       "result": "PASS",

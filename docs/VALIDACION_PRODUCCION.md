@@ -37,9 +37,9 @@ PROD no es laboratorio. Esta lista se ejecuta sólo después de certificar el mi
 
 Sólo después de completar lo anterior:
 
-- [ ] verificar de nuevo el respaldo histórico de VariStoreHN;
+- [ ] verificar de nuevo el respaldo histórico de SOLQARYN;
 - [ ] ejecutar ensayo de migración;
-- [ ] migrar al tenant VariStoreHN en la nueva base `solqaryn_prod`;
+- [ ] migrar al tenant SOLQARYN en la nueva base `solqaryn_prod`;
 - [ ] reconciliar conteos, totales y relaciones;
 - [ ] ejecutar smoke post-migración;
 - [ ] conservar evidencia y rollback de datos.

@@ -23,7 +23,7 @@
     "secret_boundary": "API response exposes status, QR=null, phone and provider-session requirement only; ConfiguracionWhatsAppEmpresa secret references are not returned"
   },
   "directed_tests": {
-    "file": "backend/tests/InventoryApp.Tests/API/Controllers/WhatsAppControllerTests.cs",
+    "file": "backend/tests/Solqaryn.Tests/API/Controllers/WhatsAppControllerTests.cs",
     "coverage": [
       "missing/incorrect webhook token rejected; exact token accepted",
       "webhook fails closed without configured verification token",

@@ -8,6 +8,6 @@
   "reviewFirst":"vaep/evidence/reviews/N8.3.E_REVIEW_FIRST_20260915T074700Z_SUP48.json",
   "causalGate":{"workflow":"N8.3 - Compatibilidad de navegadores","workflowRunId":34943377733,"jobId":104296994230,"headSha":"b833e44a976f92a426fff7f969a3f3f757234f20","status":"completed","conclusion":"success","checks":{"npmCi":"PASS","lint":"PASS","buildProd":"PASS","installChromiumFirefoxWebKit":"PASS","angularStart":"PASS","crossBrowserRegression":"PASS","artifactUpload":"PASS"}},
   "postCandidateHead":"83375caa63a4d9b71809062de19a180a833706c3",
-  "postCandidateAudit":{"overlapsN83BrowserFiles":false,"files":["CHANGELOG_AI.md","backend/src/Application/Services/FacturaService.cs","backend/tests/InventoryApp.Tests/FacturaServicePagosTests.cs","vaep/evidence/reviews/N8.1.G_CODEX_TECHNICAL_UAT_REMAINING_6_20260915T074247Z.json","vaep/evidence/reviews/N8.1.G_READY_FOR_FINAL_HUMAN_SIGNOFF_20260915T074247Z.json"],"classification":"UNRELATED_N8.1.G_MATERIAL_PROGRESS__NO_N8.3_E_FILE_OVERLAP"},
+  "postCandidateAudit":{"overlapsN83BrowserFiles":false,"files":["CHANGELOG_AI.md","backend/src/Application/Services/FacturaService.cs","backend/tests/Solqaryn.Tests/FacturaServicePagosTests.cs","vaep/evidence/reviews/N8.1.G_CODEX_TECHNICAL_UAT_REMAINING_6_20260915T074247Z.json","vaep/evidence/reviews/N8.1.G_READY_FOR_FINAL_HUMAN_SIGNOFF_20260915T074247Z.json"],"classification":"UNRELATED_N8.1.G_MATERIAL_PROGRESS__NO_N8.3_E_FILE_OVERLAP"},
   "result":"PASS__CAUSAL_GATE_SUCCESS__P0_0__P1_0"
 }

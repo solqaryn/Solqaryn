@@ -18,7 +18,7 @@
     {"path":"backend/src/API/Controllers/CorreoDiagnosticoController.cs","blob":"ae3d59366ca29f30aa908ce5c34399963bc8a633","finding":"Authenticated diagnostic endpoint requires Facturacion/Compartir and returns sanitized status."},
     {"path":"backend/src/API/Controllers/EmailEmpresarialController.cs","blob":"87d3df38279e76538f0d55349d967bf2c28d8f28","finding":"Tenant/idempotency/permission/ProblemDetails HTTP contract is current and fail-closed."},
     {"path":"backend/src/API/Program.cs","finding":"IEmailService, email repository and email application service are registered in DI."},
-    {"path":"backend/tests/InventoryApp.Tests/EmailEmpresarialServiceTests.cs","blob":"f8e61aedf6e9be9d4d5dfde1da1d812c36cc12af","finding":"Directed unit coverage includes idempotent replay, idempotency conflict, cross-tenant rejection, redacted audit metadata and tenant/filter/pagination behavior."}
+    {"path":"backend/tests/Solqaryn.Tests/EmailEmpresarialServiceTests.cs","blob":"f8e61aedf6e9be9d4d5dfde1da1d812c36cc12af","finding":"Directed unit coverage includes idempotent replay, idempotency conflict, cross-tenant rejection, redacted audit metadata and tenant/filter/pagination behavior."}
   ],
   "causal_gate":{"run_id":35181609623,"job_id":105074775861,"head":"eb5850e53b9374852dc39a864720ed36665fb95c","status":"SUCCESS","steps":{"restore_build_test_backend":"PASS","api_with_mysql_migrations":"PASS","frontend_lint_build":"PASS"},"applicability":"Exact functional head; later commits are evidence-only."},
   "assessment":{"backend_build_tests":"PASS","http_contract":"PASS","problem_details":"PASS","authorization":"PASS","tenant_isolation":"PASS","idempotency":"PASS","smtp_transport_contract":"PASS","material_gap":0,"code_delta_required":false},

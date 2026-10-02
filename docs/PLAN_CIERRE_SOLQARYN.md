@@ -1,4 +1,4 @@
-# Plan obligatorio de trabajo por fases — Solqaryn / VariStorehn
+# Plan obligatorio de trabajo por fases — Solqaryn / SOLQARYN
 
 Rama exclusiva de trabajo: `Desarrollo`.
 
@@ -9,8 +9,8 @@ Pull Request: `Desarrollo -> main`, en borrador hasta autorización expresa de J
 Solo existen dos entornos lógicos autorizados:
 
 ```text
-varistorehn_producción (Producción)
-varistorehn_desarrollo
+SOLQARYN_producción (Producción)
+SOLQARYN_desarrollo
 ```
 
 Los nombres técnicos actuales de proyectos, servicios, dominios, usuarios y claves se conservan cuando renombrarlos o recrearlos pueda afectar funcionamiento. Cada recurso debe estar asignado documentalmente a uno de los dos entornos; un nombre técnico diferente no constituye un tercer entorno por sí solo.
@@ -31,7 +31,7 @@ Producción queda congelada durante todo el plan. No se modifican `main`, variab
 
 ## FASE 1 — Entornos y recursos — COMPLETA
 
-Se estandarizaron los entornos `varistorehn_producción` y `varistorehn_desarrollo`. `main` permanece de solo lectura, `Desarrollo` es la única rama de cambios, `avnadmin` se conserva, Cloudinary usa prefijo de Desarrollo y las migraciones productivas permanecen deshabilitadas.
+Se estandarizaron los entornos `SOLQARYN_producción` y `SOLQARYN_desarrollo`. `main` permanece de solo lectura, `Desarrollo` es la única rama de cambios, `avnadmin` se conserva, Cloudinary usa prefijo de Desarrollo y las migraciones productivas permanecen deshabilitadas.
 
 ## FASE 2 — Auditoría general — COMPLETA Y CERTIFICADA
 

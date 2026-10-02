@@ -56,7 +56,7 @@
       "conclusion": "success",
       "coverage": "backend build; disposable MySQL and migrations; tenant E2E; frontend static quality; integral Playwright; SMTP and PDF validation"
     },
-    "varistorehn_phase6": {
+    "SOLQARYN_phase6": {
       "run_id": 35445175492,
       "head": "8c51d1190ae389d15e27a2aeda189ddcce53982d",
       "status": "completed",

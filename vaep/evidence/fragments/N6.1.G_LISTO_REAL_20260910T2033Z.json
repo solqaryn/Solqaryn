@@ -23,7 +23,7 @@
     "r3": "PROHIBITED"
   },
   "acceptedScope": [
-    "backend/tests/InventoryApp.Tests/N61GTenantEmpresaRegressionTests.cs"
+    "backend/tests/Solqaryn.Tests/N61GTenantEmpresaRegressionTests.cs"
   ],
   "acceptance": {
     "singleCanonicalEmpresaRootCovered": true,

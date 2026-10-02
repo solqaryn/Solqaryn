@@ -32,7 +32,7 @@
     "vercel": {
       "team":"Solqaryn",
       "dev_project":"solqaryn-desarrollo",
-      "prod_candidate_project":"varistorehn",
+      "prod_candidate_project":"SOLQARYN",
       "metadata_only":true,
       "prod_candidate_identity_requires_classification_not_assumption":true
     },

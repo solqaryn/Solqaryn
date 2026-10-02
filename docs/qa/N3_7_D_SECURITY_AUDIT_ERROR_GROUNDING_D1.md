@@ -8,7 +8,7 @@ N3.7.D may implement only the Application/repository/service/API/DI/RBAC/error s
 
 ## Grounded domain boundary
 
-`NotaCreditoCliente.CrearDesdeFactura` requires a persisted invoice with a valid sale, rejects Borrador/Anulada/Cancelada invoices, inherits and normalizes the invoice currency, requires a positive credit amount not greater than the invoice total, and requires a non-empty reason. The entity currently exposes no fiscal lifecycle, numbering, accounting application, cancellation or inventory mutation contract.
+`NotaCreditoCliente.CrearDesdeFactura` requires a persisted invoice with a valid sale, rejects Borrador/Anulada/Cancelada invoices, inherits and normalizes the invoice currency, requires a positive credit amount not greater than the invoice total, and requires a non-empty reason. The entity currently exposes no fiscal lifecycle, numbering, accounting application, cancellation or inventario mutation contract.
 
 Therefore the N3.7.D application/API layer MUST NOT manufacture Confirmar/Registrar/Anular, fiscal-number assignment, balance posting, idempotency, cumulative-cardinality, return, stock/Kardex or cash behavior merely by analogy with `NotaCreditoProveedorService` or `DevolucionClienteService`.
 
@@ -33,7 +33,7 @@ Therefore the N3.7.D application/API layer MUST NOT manufacture Confirmar/Regist
 | API | Yes | Authenticated/RBAC-protected create/read routes using existing error middleware/contracts. No invented lifecycle endpoints. |
 | DI | Yes | Repository/service registration resolves at startup. |
 | Directed tests | Yes | Auth/RBAC denial, invoice not found, invalid invoice state, amount <=0, amount > invoice total, blank reason, successful creation, audit failure/fail-closed, safe error response. |
-| Deferred fiscal/accounting/inventory semantics | No | Must remain absent unless separately grounded. |
+| Deferred fiscal/accounting/inventario semantics | No | Must remain absent unless separately grounded. |
 
 ## Transport reconciliation
 

@@ -14,10 +14,10 @@
     {"dimension":"maintenance_mode","dev":false,"prod":false,"classification":"EQUIVALENT"},
     {"dimension":"branch","dev":"Desarrollo","prod":"main","classification":"EXPECTED_ENV_DIFFERENCE"},
     {"dimension":"region","dev":"oregon","prod":"virginia","classification":"EXPECTED_ENV_DIFFERENCE","reason":"environment-specific placement; both are explicit provider regions"},
-    {"dimension":"dockerfile_path","dev":"./backend/Dockerfile","prod":"./Dockerfile","classification":"EXPECTED_ENV_DIFFERENCE","reason":"release candidate reorganized Dockerfile; both publish InventoryApp.API on .NET 8"},
+    {"dimension":"dockerfile_path","dev":"./backend/Dockerfile","prod":"./Dockerfile","classification":"EXPECTED_ENV_DIFFERENCE","reason":"release candidate reorganized Dockerfile; both publish Solqaryn.API on .NET 8"},
     {"dimension":"health_check_path","dev":"/health/ready","prod":"<empty>","classification":"MATERIAL_GAP","owner_action":"configure a production health check path before staging equivalence can be certified; N8.22 does not authorize PROD writes"},
     {"dimension":"auto_deploy_gate","dev":"checksPass","prod":"commit","classification":"MATERIAL_GAP","owner_action":"decide/authorize production deploy gating parity; current PROD trigger can deploy on commit without the DEV checksPass gate"},
-    {"dimension":"environment_variable_names","dev":"not exposed by current read-only connector","prod":"not exposed by current read-only connector","classification":"UNKNOWN","owner_action":"provide/authorize non-secret environment-variable NAME inventory for both services; values must remain hidden"},
+    {"dimension":"environment_variable_names","dev":"not exposed by current read-only connector","prod":"not exposed by current read-only connector","classification":"UNKNOWN","owner_action":"provide/authorize non-secret environment-variable NAME inventario for both services; values must remain hidden"},
     {"dimension":"current_live_deploy","dev":"e083135cbc0d29fe017c93e61d3d667db7730e21","prod":"85b4e02814823e9671803c23798a6ff0bf05c8f6","classification":"EXPECTED_ENV_DIFFERENCE","reason":"staging release candidate is intentionally ahead of current production baseline"}
   ],
   "summary":{"EQUIVALENT":6,"EXPECTED_ENV_DIFFERENCE":4,"MATERIAL_GAP":2,"UNKNOWN":1,"P0":0,"P1":0},

@@ -141,7 +141,7 @@ Fue ejecutada en el gate M12 contra MySQL 8.4 con `sql_require_primary_key=ON` y
 
 Backend:
 
-`backend/tests/InventoryApp.Tests/M12AutomatizacionTransversalTests.cs`
+`backend/tests/Solqaryn.Tests/M12AutomatizacionTransversalTests.cs`
 
 Resultado certificado: **6/6 aprobadas, 0 fallos, 0 errores**.
 
@@ -201,7 +201,7 @@ Backend:
 - `backend/src/Application/Interfaces/IAutomatizacionService.cs`;
 - `backend/src/Infrastructure/Services/AutomatizacionService.cs`;
 - `backend/src/Infrastructure/Migrations/20260810174200_M12AutomatizacionTransversal.cs`;
-- `backend/tests/InventoryApp.Tests/M12AutomatizacionTransversalTests.cs`.
+- `backend/tests/Solqaryn.Tests/M12AutomatizacionTransversalTests.cs`.
 
 Frontend:
 

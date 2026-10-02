@@ -24,8 +24,8 @@ Salida final del gate:
 |---|---|
 | `/login` | HTTP 200; branding SOLQARYN |
 | `/dashboard` | HTTP 200; shell SOLQARYN; administrativo autenticado confirmado visualmente |
-| `/varistorehn` | HTTP 200 |
-| `/varistorehn/productos` | HTTP 200 |
+| `/SOLQARYN` | HTTP 200 |
+| `/SOLQARYN/productos` | HTTP 200 |
 
 ## APIs públicas
 
@@ -33,7 +33,7 @@ Salida final del gate:
 
 `/api/empresa-configuracion/publica`:
 
-- nombre comercial: `VariStorehn`;
+- nombre comercial: `SOLQARYN`;
 - eslogan: `Eleva tu mundo digital`;
 - contexto cliente separado del shell SOLQARYN.
 
@@ -104,7 +104,7 @@ Resultado:
 
 - `identidad-retirada-desarrollo`: 0;
 - `identidad-retirada-mysql-identidad-retirada.c.aivencloud.com`: 0;
-- `varistorehn_desarrollo`: 0.
+- `SOLQARYN_desarrollo`: 0.
 
 ## Cierre
 

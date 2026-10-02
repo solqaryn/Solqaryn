@@ -44,7 +44,7 @@
     "functional_delta_files": 6,
     "functional_delta_additions": 141,
     "functional_delta_deletions": 4,
-    "applicable_scope": "VariStoreHN issue #3407 MVP phases 0-6; six frontend product/test files",
+    "applicable_scope": "SOLQARYN issue #3407 MVP phases 0-6; six frontend product/test files",
     "requirements_dod": "PASS",
     "implementation_diffs": "PASS",
     "dependencies": "PASS__NO_DEPENDENCY_VERSION_DELTA",

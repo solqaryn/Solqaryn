@@ -28,7 +28,7 @@
   "material_delta": {
     "configuration": "backend/src/Infrastructure/Persistence/Configurations/EmailEmpresarialConfiguration.cs",
     "migration": "backend/src/Infrastructure/Persistence/Migrations/20260914170700_N7_7_C_EmailEmpresarialPersistencia.cs",
-    "tests": "backend/tests/InventoryApp.Tests/EmailEmpresarialPersistenceModelTests.cs",
+    "tests": "backend/tests/Solqaryn.Tests/EmailEmpresarialPersistenceModelTests.cs",
     "tables": ["EmailsEmpresariales", "PlantillasEmailEmpresarial"],
     "additive": true,
     "backfill": false,

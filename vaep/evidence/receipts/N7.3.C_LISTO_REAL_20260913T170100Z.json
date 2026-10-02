@@ -47,7 +47,7 @@
   },
   "evidence": {
     "certificate_test": {
-      "path": "backend/tests/InventoryApp.Tests/N73COutboxDeadLetterPersistenceTests.cs",
+      "path": "backend/tests/Solqaryn.Tests/N73COutboxDeadLetterPersistenceTests.cs",
       "blob": "f26ccce8b093f2f5ca0c6ce44f741fa3f163ccd1"
     },
     "existing_migration": {

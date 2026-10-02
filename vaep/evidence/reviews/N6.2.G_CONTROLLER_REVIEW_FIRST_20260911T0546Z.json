@@ -29,8 +29,8 @@
     "vaep/evidence/fragments/N6.2.D_LISTO_REAL_20260911T0308Z.json",
     "vaep/evidence/fragments/N6.2.E_LISTO_REAL_20260911T0402Z.json",
     "vaep/evidence/fragments/N6.2.F_LISTO_REAL_20260911T0524Z.json",
-    "backend/tests/InventoryApp.Tests/TenantAwareDataModelPersistenceTests.cs",
-    "backend/tests/InventoryApp.Tests/N62DTenantAwareApplicationApiTests.cs",
+    "backend/tests/Solqaryn.Tests/TenantAwareDataModelPersistenceTests.cs",
+    "backend/tests/Solqaryn.Tests/N62DTenantAwareApplicationApiTests.cs",
     "frontend/src/app/features/sucursales/sucursal-form.component.spec.ts"
   ],
   "findings": [

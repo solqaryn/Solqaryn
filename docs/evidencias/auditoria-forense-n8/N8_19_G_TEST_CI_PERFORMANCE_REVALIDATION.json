@@ -14,7 +14,7 @@
   ],
   "required_performance_proof":"Controlled authorized non-production concurrency with latency distribution including p50/p95/p99, error/5xx rate, effective throttling/saturation behavior, and business-integrity validation.",
   "fresh_revalidation":{
-    "repo_native_load_harness":{"status":"NOT_FOUND","checks":["repository search: k6","repository search: performance","recursive tree search: k6/stress/performance",".github/workflows inventory"],"finding":"No repository-native controlled-load harness or dedicated performance workflow was found that can safely satisfy the acceptance without external target/auth context."},
+    "repo_native_load_harness":{"status":"NOT_FOUND","checks":["repository search: k6","repository search: performance","recursive tree search: k6/stress/performance",".github/workflows inventario"],"finding":"No repository-native controlled-load harness or dedicated performance workflow was found that can safely satisfy the acceptance without external target/auth context."},
     "authorized_nonprod_identity":{"status":"MISSING","finding":"No authorized test tenant/user/API credential or safe authentication mechanism is available to this invocation for controlled concurrent write/read load."},
     "approved_test_data_path":{"status":"MISSING","finding":"No approved disposable test dataset/write-return path is available for integrity-preserving load."},
     "load_runner":{"status":"MISSING_OR_UNCONFIRMED","finding":"No currently authorized runner capable of real concurrent HTTP load is available from the repository/runtime tools without introducing unapproved external execution."},

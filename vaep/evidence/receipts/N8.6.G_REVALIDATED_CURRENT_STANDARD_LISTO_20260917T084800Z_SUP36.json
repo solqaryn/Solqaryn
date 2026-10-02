@@ -34,7 +34,7 @@
     {"name":"Configuración, aislamiento y endurecimiento","run_id":35198655092,"job_id":105127824870,"conclusion":"success"},
     {"name":"Dependencias vulnerables de .NET","run_id":35198655092,"job_id":105127825070,"conclusion":"success"}
   ],
-  "check_run_inventory": {"total":29,"failure_found":false,"cancelled_found":false},
+  "check_run_inventario": {"total":29,"failure_found":false,"cancelled_found":false},
   "provider_boundary": {
     "verified_behavior": "REAL_BROWSER_HANDOFF_TO_PUBLIC_WHATSAPP_WA_ME",
     "server_side_meta_or_twilio_send_claimed": false,

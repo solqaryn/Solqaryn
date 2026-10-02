@@ -67,7 +67,7 @@ Desde `frontend`:
 npm run perf:bundle-baseline
 ```
 
-Genera `dist/inventoryapp-frontend/performance-bundle-baseline.json` con tamaño raw, gzip y Brotli del bundle inicial y de los chunks JS/CSS.
+Genera `dist/Solqaryn-frontend/performance-bundle-baseline.json` con tamaño raw, gzip y Brotli del bundle inicial y de los chunks JS/CSS.
 
 ## Targets iniciales
 
@@ -85,7 +85,7 @@ Cold starts de Render Free se miden por separado y no se mezclan con el target d
 ## Procedimiento de captura DEV
 
 1. Dejar que Render DEV esté despierto y ejecutar una pasada caliente.
-2. Abrir `https://solqaryn-dev.vercel.app/varistorehn?perf=1`.
+2. Abrir `https://solqaryn-dev.vercel.app/SOLQARYN?perf=1`.
 3. Navegar por portada, productos, categoría, producto, carrito y checkout.
 4. Realizar al menos una interacción real por pantalla para obtener INP.
 5. Esperar al menos 10 s por pantalla y usar preferentemente la muestra cuyo `reason` termina en `-settled`.

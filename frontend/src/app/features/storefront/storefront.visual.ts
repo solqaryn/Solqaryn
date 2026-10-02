@@ -28,7 +28,7 @@ export class IconoTiendaComponent {
   };
 }
 
-/** Local SVG illustrations for demo inventory and unavailable images. All colors inherit the system theme. */
+/** Local SVG illustrations for demo stock and unavailable images. All colors inherit the system theme. */
 @Component({
   selector: 'app-store-art', standalone: true, changeDetection: ChangeDetectionStrategy.OnPush,
   template: `

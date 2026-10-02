@@ -14,7 +14,7 @@
   "headRevalidated": true,
   "materialScope": {
     "entity": "backend/src/Domain/Entities/UsuarioEmpresa.cs",
-    "tests": "backend/tests/InventoryApp.Tests/N64BUsuarioEmpresaDomainContractsTests.cs",
+    "tests": "backend/tests/Solqaryn.Tests/N64BUsuarioEmpresaDomainContractsTests.cs",
     "guarantees": [
       "UsuarioId, EmpresaId and tenant-scoped RolId are positive and immutable membership identity",
       "same Usuario may have distinct roles in distinct Empresas",

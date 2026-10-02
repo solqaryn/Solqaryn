@@ -10,7 +10,7 @@
 - Diferencias pequeñas de precio siguen siendo discrepancia; no se inventan thresholds ni FX.
 
 ## Pruebas
-- Nueva suite: `backend/tests/InventoryApp.Tests/ThreeWayMatchRegressionTests.cs`.
+- Nueva suite: `backend/tests/Solqaryn.Tests/ThreeWayMatchRegressionTests.cs`.
 - El artifact Jules reportó ejecución focalizada de dominio/application/regresión y `git diff --check`; ese reporte se conserva como input.
 - La certificación final depende del CI causal del HEAD donde ChatGPT/VAEP integre este takeover.
 

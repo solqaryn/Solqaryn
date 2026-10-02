@@ -37,7 +37,7 @@
   "functionalHead": "bbd3792f7cc42b1e62163a76735dc2ad6eacb899",
   "integratedBy": "CHATGPT_VAEP",
   "scopeReviewed": [
-    "backend/tests/InventoryApp.Tests/N61GTenantEmpresaRegressionTests.cs",
+    "backend/tests/Solqaryn.Tests/N61GTenantEmpresaRegressionTests.cs",
     "backend/src/Domain/Entities/Empresa.cs",
     "backend/src/Application/Services/EmpresaService.cs",
     "backend/src/API/Controllers/EmpresasController.cs",
@@ -60,7 +60,7 @@
     "intermediateDefectsCorrectedBeforeTerminal": true,
     "finalSelfReviewPass1": true,
     "finalSelfReviewPass2": true,
-    "directedWorkerTest": "dotnet test InventoryApp.sln --filter N61GTenantEmpresaRegressionTests",
+    "directedWorkerTest": "dotnet test Solqaryn.sln --filter N61GTenantEmpresaRegressionTests",
     "directedWorkerTestResult": "PASS"
   },
   "exactHeadGate": {

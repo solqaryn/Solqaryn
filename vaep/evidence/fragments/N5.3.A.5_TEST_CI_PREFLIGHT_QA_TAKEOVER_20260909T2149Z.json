@@ -19,10 +19,10 @@
   "materialCommit": "34cdc7c14fca5dfd74588db2122b2b6ed884b1e1",
   "materialPath": "docs/qa/N5_3_A_TEST_CI_PREFLIGHT.md",
   "sourceEvidence": [
-    "backend/tests/InventoryApp.Tests/VentaServiceTests.cs",
-    "backend/tests/InventoryApp.Tests/N31CotizacionApiContractTests.cs",
-    "backend/tests/InventoryApp.Tests/N32PedidoVentaApiContractTests.cs",
-    "backend/tests/InventoryApp.Tests/N04RbacRelacionalTests.cs",
+    "backend/tests/Solqaryn.Tests/VentaServiceTests.cs",
+    "backend/tests/Solqaryn.Tests/N31CotizacionApiContractTests.cs",
+    "backend/tests/Solqaryn.Tests/N32PedidoVentaApiContractTests.cs",
+    "backend/tests/Solqaryn.Tests/N04RbacRelacionalTests.cs",
     ".github/workflows/desarrollo-ci.yml",
     ".github/workflows/ci.yml"
   ],

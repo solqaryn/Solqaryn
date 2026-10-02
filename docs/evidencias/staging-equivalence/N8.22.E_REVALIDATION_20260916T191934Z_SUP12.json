@@ -21,7 +21,7 @@
     "vercel_team": "Solqaryn",
     "vercel_dev_project": "solqaryn-desarrollo",
     "vercel_dev_project_id": "prj_JkRGpdSnGlMQ4Qc3eqw4bscY4Flu",
-    "vercel_prod_project": "varistorehn",
+    "vercel_prod_project": "SOLQARYN",
     "vercel_prod_project_id": "prj_djMCand2yYeY3AvaUWsjwHDDJDkM",
     "ready_equivalence_head": "93c4eb4c574e3c1ecfe694ac7146f6683e09d002"
   },
@@ -33,7 +33,7 @@
     "prod_vercel_node_version": "24.x",
     "dev_git_link": "jmejia31/Solqaryn",
     "prod_git_link": "jmejia31/Solqaryn",
-    "dev_branch_alias": "solqaryn-desarrollo-git-desarrollo-vari-app.vercel.app",
+    "dev_branch_alias": "solqaryn-desarrollo-git-desarrollo-SOLQARYN.vercel.app",
     "current_head_vercel_deployment_state": "CANCELED",
     "current_head_vercel_deployment_target": "production",
     "last_ready_dev_equivalence_head": "93c4eb4c574e3c1ecfe694ac7146f6683e09d002",
@@ -44,7 +44,7 @@
     {"dimension":"vercel_node_version","result":"EQUIVALENT","basis":"fresh Vercel project reads show 24.x on both projects"},
     {"dimension":"repository_link","result":"EQUIVALENT","basis":"fresh Vercel project reads link both projects to jmejia31/Solqaryn"},
     {"dimension":"development_project_identity","result":"EQUIVALENT","basis":"fresh Vercel read confirms solqaryn-desarrollo"},
-    {"dimension":"production_project_identity","result":"EQUIVALENT","basis":"owner-confirmed historical control-plane evidence identifies varistorehn and fresh Vercel read confirms that project still exists under the same team"},
+    {"dimension":"production_project_identity","result":"EQUIVALENT","basis":"owner-confirmed historical control-plane evidence identifies SOLQARYN and fresh Vercel read confirms that project still exists under the same team"},
     {"dimension":"release_branch_code_delta","result":"EXPECTED_ENV_DIFFERENCE","basis":"Desarrollo remains the development branch; no main write or production deployment performed"},
     {"dimension":"production_git_branch_root_build_output_settings","result":"UNKNOWN","basis":"current read-only Vercel get_project response does not expose these settings; preserved for later parent gate revalidation"},
     {"dimension":"current_head_deployment_canceled_vs_last_ready","result":"EXPECTED_ENV_DIFFERENCE","basis":"current head contains governance/evidence-only delta from last READY equivalent head; no frontend/runtime files changed"}

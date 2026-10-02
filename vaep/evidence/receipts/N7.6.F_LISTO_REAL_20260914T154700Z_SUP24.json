@@ -36,7 +36,7 @@
     },
     {
       "kind": "DIRECTED_WHATSAPP_SECURITY_TESTS_INCLUDED_IN_BACKEND_SUITE",
-      "file": "backend/tests/InventoryApp.Tests/API/Controllers/WhatsAppControllerTests.cs",
+      "file": "backend/tests/Solqaryn.Tests/API/Controllers/WhatsAppControllerTests.cs",
       "conclusion": "pass_via_backend_suite"
     }
   ],

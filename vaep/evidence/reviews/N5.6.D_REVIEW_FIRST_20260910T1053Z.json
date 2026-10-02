@@ -10,7 +10,7 @@
     "backend/src/Application/Interfaces/IFinanzasService.cs",
     "backend/src/Application/Services/FinanzasService.cs",
     "backend/src/API/Controllers/FinanzasController.cs",
-    "backend/tests/InventoryApp.Tests/FinanzasServiceTests.cs"
+    "backend/tests/Solqaryn.Tests/FinanzasServiceTests.cs"
   ],
   "decision": "PASS_APPLICATION_API_ALREADY_SATISFIES_ACCEPTED_CONTRACT",
   "finding": "The accepted N5.6.B contract is already exposed end-to-end by IFinanzasService.GetResumenAsync, FinanzasService.GetResumenAsync and authorized GET /finanzas/resumen. The service reuses existing CxC/CxP and financial authorities and the controller enforces Finanzas/Ver. No additional application/API code is justified by the accepted contract; adding bank, reconciliation, tax, ledger or financial-statement endpoints would exceed source-backed authority.",
@@ -18,7 +18,7 @@
   "apiChangeRequired": false,
   "authorizationPreserved": true,
   "acceptedContractExposed": true,
-  "existingFocusedTest": "backend/tests/InventoryApp.Tests/FinanzasServiceTests.cs::GetResumenAsync_Separa_GastosOperativos_De_Otros_Egresos",
+  "existingFocusedTest": "backend/tests/Solqaryn.Tests/FinanzasServiceTests.cs::GetResumenAsync_Separa_GastosOperativos_De_Otros_Egresos",
   "additionalFunctionalGateRequired": false,
   "tests": "NOT_RERUN:NO_FUNCTIONAL_CHANGE__EXISTING_FOCUSED_TEST_PRESENT",
   "rollback": "NO_CHANGE",

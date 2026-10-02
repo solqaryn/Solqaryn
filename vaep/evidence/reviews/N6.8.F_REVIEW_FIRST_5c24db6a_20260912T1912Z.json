@@ -9,7 +9,7 @@
   "scope": [
     "backend/src/Infrastructure/Services/CloudinaryImageStorageService.cs",
     "backend/src/Infrastructure/Services/CloudinaryCompraDocumentoStorageService.cs",
-    "backend/tests/InventoryApp.Tests/Application/Storage/CloudinaryTenantOwnershipTests.cs"
+    "backend/tests/Solqaryn.Tests/Application/Storage/CloudinaryTenantOwnershipTests.cs"
   ],
   "acceptance_review": {
     "tenant_storage_writes_observable": "PASS",

@@ -105,7 +105,7 @@ import { AjusteInventarioService } from '../../services/ajuste-inventario.servic
 
       <ng-container *ngIf="!loading() && !error()">
         <div class="empty" *ngIf="ajustes().length === 0">
-          <mat-icon>inventory_2</mat-icon>
+          <mat-icon>warehouse</mat-icon>
           <h2>No hay ajustes para los filtros seleccionados</h2>
           <p>Modifica los filtros o crea un borrador desde el flujo de inventario.</p>
         </div>
@@ -191,7 +191,7 @@ import { AjusteInventarioService } from '../../services/ajuste-inventario.servic
         class="modal-card"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="inventory-action-dialog-title"
+        aria-labelledby="inventario-action-dialog-title"
         (click)="$event.stopPropagation()">
         <button
           class="modal-close"
@@ -204,11 +204,11 @@ import { AjusteInventarioService } from '../../services/ajuste-inventario.servic
         </button>
 
         <div class="modal-icon" [class.danger]="dialogAction() === 'anular'">
-          <mat-icon>{{ dialogAction() === 'confirmar' ? 'inventory' : 'undo' }}</mat-icon>
+          <mat-icon>{{ dialogAction() === 'confirmar' ? 'check_circle' : 'undo' }}</mat-icon>
         </div>
 
         <p class="modal-eyebrow">Inventario empresarial</p>
-        <h2 id="inventory-action-dialog-title">
+        <h2 id="inventario-action-dialog-title">
           {{ dialogAction() === 'confirmar' ? 'Confirmar ajuste de inventario' : 'Anular ajuste de inventario' }}
         </h2>
         <p class="modal-description" *ngIf="dialogAction() === 'confirmar'">

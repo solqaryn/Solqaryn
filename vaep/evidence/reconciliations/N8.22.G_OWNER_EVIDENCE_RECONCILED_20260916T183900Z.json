@@ -7,12 +7,12 @@
   "authority": "docs/VAEP_AUTHORITY.md",
   "inputs": [
     "vaep/evidence/reconciliations/N8.22.G_SUP12_REVALIDATION_20260916T182200Z.json",
-    "vaep/evidence/reconciliations/N8.22.G_OWNER_RENDER_ENV_NAME_INVENTORY_20260916T182900Z.json"
+    "vaep/evidence/reconciliations/N8.22.G_OWNER_RENDER_ENV_NAME_inventario_20260916T182900Z.json"
   ],
   "owner_action_reconciliation": {
-    "previous_required_owner_action": "Provide a sanitized provider-authoritative Render DEV environment-variable NAME inventory for solqaryn-api-desarrollo; names only, never values.",
+    "previous_required_owner_action": "Provide a sanitized provider-authoritative Render DEV environment-variable NAME inventario for solqaryn-api-desarrollo; names only, never values.",
     "fulfilled": true,
-    "fulfillment_evidence": "N8.22.G_OWNER_RENDER_ENV_NAME_INVENTORY_20260916T182900Z.json",
+    "fulfillment_evidence": "N8.22.G_OWNER_RENDER_ENV_NAME_inventario_20260916T182900Z.json",
     "secret_values_read": false,
     "secret_values_persisted": false
   },
@@ -36,7 +36,7 @@
       "health_check_path": "/health"
     }
   },
-  "env_name_inventory": {
+  "env_name_inventario": {
     "dev_count": 35,
     "production_count": 21,
     "common_count": 20,

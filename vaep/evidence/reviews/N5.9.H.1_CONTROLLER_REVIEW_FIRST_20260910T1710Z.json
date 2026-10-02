@@ -25,7 +25,7 @@
   "scopeReviewed": [
     "docs/N5.9_REPORT_PERFORMANCE_CERTIFICATION.md",
     "backend/src/Infrastructure/Services/ReporteInventarioService.cs",
-    "backend/tests/InventoryApp.Tests/N59DReportPerformanceStockHealthQueryTests.cs",
+    "backend/tests/Solqaryn.Tests/N59DReportPerformanceStockHealthQueryTests.cs",
     "vaep/evidence/fragments/N5.9.B_LISTO_REAL_20260910T1559Z.json",
     "vaep/evidence/fragments/N5.9.C_LISTO_REAL_20260910T1617Z.json",
     "vaep/evidence/fragments/N5.9.D_LISTO_REAL_20260910T1643Z.json",

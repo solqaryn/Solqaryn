@@ -241,7 +241,7 @@ El workflow general `Desarrollo - Compilación y pruebas`, run `31558300370`, ce
 
 Este punto **no elimina** todavía:
 
-- `InventoryApp.Domain.Enums.MetodoPago`;
+- `Solqaryn.Domain.Enums.MetodoPago`;
 - las columnas legacy `MetodoPago`;
 - la nulabilidad transicional de `MetodoPagoId`.
 

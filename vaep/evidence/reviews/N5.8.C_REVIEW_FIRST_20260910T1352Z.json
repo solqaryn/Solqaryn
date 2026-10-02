@@ -12,7 +12,7 @@
     "acceptedBFunctionalHead": "40779a570cea5bb7025fbc2681fd378f5891a3d4",
     "acceptedBChangedMaterial": [
       "backend/src/Application/DTOs/ExportacionDto.cs",
-      "backend/tests/InventoryApp.Tests/Application/ExportacionFormatoContractTests.cs"
+      "backend/tests/Solqaryn.Tests/Application/ExportacionFormatoContractTests.cs"
     ],
     "newPersistence": false,
     "newEfModel": false,

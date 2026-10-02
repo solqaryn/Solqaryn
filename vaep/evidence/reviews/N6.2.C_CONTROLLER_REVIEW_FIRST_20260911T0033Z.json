@@ -20,7 +20,7 @@
     "backend/src/Infrastructure/Persistence/Configurations/SucursalConfiguration.cs",
     "backend/src/Infrastructure/Migrations/20260911002500_N62CTenantAwareEmpresaId.cs",
     "backend/src/Infrastructure/Migrations/AppDbContextModelSnapshot.cs",
-    "backend/tests/InventoryApp.Tests/TenantAwareDataModelPersistenceTests.cs"
+    "backend/tests/Solqaryn.Tests/TenantAwareDataModelPersistenceTests.cs"
   ],
   "findingsResolved": [
     "P0: initial EF snapshot did not match the runtime relationship; snapshot was aligned.",
@@ -53,6 +53,6 @@
   "r3Used": false,
   "oneWriterPolicy": "J2 canonical run preserved; no second manifest or content attempt created",
   "lateResultPolicy": "TX2 ended by timeout without proven session/useful content after controller recovery; any late result is evidence-only and cannot overwrite the reviewed live head.",
-  "compatibilityWithLiveHead": "PASS__d2d2fb4_is_ancestor_of_live_Desarrollo_and_post_gate_commit_2dc89a8_is_VariStorehn_scope_only",
+  "compatibilityWithLiveHead": "PASS__d2d2fb4_is_ancestor_of_live_Desarrollo_and_post_gate_commit_2dc89a8_is_SOLQARYN_scope_only",
   "notes": "REVIEW_FIRST is final PASS. The rollout-safe optional restrictive FK boundary is accepted, P0/P1 remain zero, and fresh exact-head causal gates are terminal without failures. N6.2.C is eligible for LISTO_REAL certification."
 }

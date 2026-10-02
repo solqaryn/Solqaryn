@@ -31,4 +31,4 @@ Factura, catálogo público y checkout consumen la misma política reusable. No 
 
 ## Pruebas y límites
 
-Las pruebas cubren normalización, invalidación, prefijo duplicado y enmascarado (`backend/tests/InventoryApp.Tests/WhatsAppSharePolicyTests.cs`), además de los contratos existentes de autorización del controlador. La validación E2E abre únicamente el destino externo en Desarrollo; no envía mensajes reales sin autorización explícita.
+Las pruebas cubren normalización, invalidación, prefijo duplicado y enmascarado (`backend/tests/Solqaryn.Tests/WhatsAppSharePolicyTests.cs`), además de los contratos existentes de autorización del controlador. La validación E2E abre únicamente el destino externo en Desarrollo; no envía mensajes reales sin autorización explícita.

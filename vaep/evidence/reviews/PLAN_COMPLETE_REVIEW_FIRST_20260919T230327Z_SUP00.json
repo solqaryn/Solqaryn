@@ -53,10 +53,10 @@
   },
   "product": {
     "functional_head": "5b5a2433c1e400e8340aea9e80147b93d151a3df",
-    "functional_head_commit": "test(varistorehn): alinear Fase 4 con formato WhatsApp compartido",
+    "functional_head_commit": "test(SOLQARYN): alinear Fase 4 con formato WhatsApp compartido",
     "latest_material_parent": "96a068726a29ee5f5d1d95dd16c09fa9f20523fd",
-    "latest_material_parent_scope": "frontend/src/app/features/varistorehn/varistorehn-producto.component.ts reuses mensajeWhatsappCompraDirecta",
-    "functional_head_scope": "frontend/e2e/varistorehn-fase4.spec.ts test-only +1/-1",
+    "latest_material_parent_scope": "frontend/src/app/features/SOLQARYN/SOLQARYN-producto.component.ts reuses mensajeWhatsappCompraDirecta",
+    "functional_head_scope": "frontend/e2e/SOLQARYN-fase4.spec.ts test-only +1/-1",
     "check_runs_total": 21,
     "check_runs_failure": 0,
     "check_runs_cancelled": 0,

@@ -13,7 +13,7 @@ Este árbol define el contrato verificable de cada interfaz de Solqaryn. Ninguna
 Está prohibido eliminar código, rutas, tablas, campos, endpoints o documentación únicamente por parecer obsoletos. Debe demostrarse ausencia de uso/dependencia y existir rollback o recuperación segura.
 
 ## Estados de una matriz
-`BASELINE_CREATED → INVENTORY_COMPLETE → SPEC_COMPLETE → IMPLEMENTATION_REVIEWED → CERTIFIED`.
+`BASELINE_CREATED → LEVANTAMIENTO_COMPLETO → SPEC_COMPLETE → IMPLEMENTATION_REVIEWED → CERTIFIED`.
 
 `CERTIFIED` exige evidencia material; un Markdown por sí solo no certifica nada.
 

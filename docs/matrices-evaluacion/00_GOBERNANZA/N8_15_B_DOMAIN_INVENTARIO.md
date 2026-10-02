@@ -1,4 +1,4 @@
-# N8.15.B — DOMAIN inventory
+# N8.15.B — DOMAIN inventario
 
 Estado: `LISTO_REAL`
 

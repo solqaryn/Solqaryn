@@ -18,7 +18,7 @@
     "fresh_render_metadata":true,
     "fresh_vercel_identity":true,
     "owner_control_plane_build_settings_reconciled":true,
-    "sanitized_render_env_inventory_reconciled":true,
+    "sanitized_render_env_inventario_reconciled":true,
     "material_gap_count":0,
     "unknown_count":0,
     "product_runtime_delta_since_gate_base":0,

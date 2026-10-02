@@ -9,7 +9,7 @@ namespace Solqaryn.Tests;
 public sealed class N74DOutboxIdempotentReplayTests
 {
     private static readonly RegistrarMensajeOutboxRequest Request = new(
-        "inventory.stock.changed",
+        "inventario.stock.cambiado",
         "{\"sku\":\"ABC\"}",
         "Producto",
         "42",

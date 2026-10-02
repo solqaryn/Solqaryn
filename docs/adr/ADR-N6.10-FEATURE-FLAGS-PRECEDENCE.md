@@ -40,6 +40,6 @@ Las claves de caché y la telemetría no deben contener secretos. Identificadore
 ## Evidencia
 
 - `backend/src/Application/Services/SuscripcionesSaaSService.cs`
-- `backend/tests/InventoryApp.Tests/N610FFeatureFlagsSecurityTests.cs`
+- `backend/tests/Solqaryn.Tests/N610FFeatureFlagsSecurityTests.cs`
 - `vaep/evidence/reviews/N6.10.G_REVIEW_FIRST_20260913T035239Z.json`
 - `vaep/evidence/receipts/N6.10.G_LISTO_REAL_20260913T040212Z.json`

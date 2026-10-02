@@ -27,7 +27,7 @@
     "vercel_project": "solqaryn-desarrollo",
     "required_sequence": "CURRENT->PREVIOUS_KNOWN_GOOD->HEALTHY->CURRENT->HEALTHY",
     "prefer_existing_ready_deployments": true,
-    "production_project_prohibited": "varistorehn",
+    "production_project_prohibited": "SOLQARYN",
     "main_allowed": false,
     "pr2_allowed": false,
     "dns_allowed": false,
@@ -89,7 +89,7 @@
     "class": "AUTHORIZED_PROVIDER_ACTION_NOT_EXPOSED_BY_CONNECTED_TOOL",
     "detail": "The owner authorized the DEV-only rollback cycle, and two READY rollback candidates are visible, but the connected Vercel tool exposes no Instant Rollback, rollback-existing-deployment, promote-existing-deployment, or equivalent alias-switch action. deploy_to_vercel would create a new deployment and cannot prove the required rollback to an existing PREVIOUS_KNOWN_GOOD target, so using it would not satisfy the acceptance contract.",
     "exact_action_required": "For Vercel project solqaryn-desarrollo only, use an authorized Vercel action/API/UI capable of Instant Rollback or Promote to switch the project to a fresh verified PREVIOUS_KNOWN_GOOD READY deployment, validate project routes/smoke and record rollback timing, then Promote/restore the fresh CURRENT READY deployment and repeat route/smoke/readback and timing. Re-resolve CURRENT and PREVIOUS_KNOWN_GOOD immediately before mutation because provider state may advance.",
-    "safe_constraints": "Do not touch varistorehn, main, PR #2, DNS, certificates, secrets, Production data, purchases, upgrades, or plan changes. Do not create a new build as a substitute for rollback evidence.",
+    "safe_constraints": "Do not touch SOLQARYN, main, PR #2, DNS, certificates, secrets, Production data, purchases, upgrades, or plan changes. Do not create a new build as a substitute for rollback evidence.",
     "owner_action_if_tooling_remains_unavailable": "Provide or connect an authorized Vercel control-plane action that supports Instant Rollback/Promote for the DEV project, or perform the DEV-only sequence in Vercel and leave verifiable deployment IDs/timings for readback. Do not send tokens or secrets in chat."
   },
   "causal_gate": {
@@ -106,7 +106,7 @@
   "guards": {
     "main_write": 0,
     "production_project_write": 0,
-    "varistorehn_write": 0,
+    "SOLQARYN_write": 0,
     "provider_mutation": 0,
     "secret_values_read": false,
     "secret_values_exposed": 0,

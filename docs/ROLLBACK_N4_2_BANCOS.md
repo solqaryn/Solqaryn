@@ -51,8 +51,8 @@ Definir una recuperación segura y verificable para incidentes del módulo N4.2 
 
 ```bash
 cd backend
-dotnet build InventoryApp.sln --configuration Release
-dotnet test InventoryApp.sln --configuration Release --no-build
+dotnet build Solqaryn.sln --configuration Release
+dotnet test Solqaryn.sln --configuration Release --no-build
 ```
 
 5. Cuando el cambio afecte persistencia/migraciones de Bancos, ejecutar además gates MySQL/migración aplicables en entorno de pruebas autorizado.

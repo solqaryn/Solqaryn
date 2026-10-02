@@ -20,7 +20,7 @@
     "docs/matrices-evaluacion/00_GOBERNANZA/N8_17_D_BACKEND_CONTRACTS.json",
     "docs/matrices-evaluacion/00_GOBERNANZA/N8_17_E_FRONTEND_CONTRACTS.json",
     "docs/matrices-evaluacion/00_GOBERNANZA/N8_17_F_SEC_AUDIT.md",
-    "docs/matrices-evaluacion/00_GOBERNANZA/N8_15_F_SEC_AUDIT_INVENTORY.md"
+    "docs/matrices-evaluacion/00_GOBERNANZA/N8_15_F_SEC_AUDIT_inventario.md"
   ],
   "acceptance_review": {
     "frozen_root_contracts": 49,

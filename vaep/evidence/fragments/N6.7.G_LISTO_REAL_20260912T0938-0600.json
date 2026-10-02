@@ -15,7 +15,7 @@
       "backend/src/Application/Interfaces/IEmpresaConfiguracionRepository.cs",
       "backend/src/Application/Services/EmpresaConfiguracionService.cs",
       "backend/src/Infrastructure/Repositories/EmpresaConfiguracionRepository.cs",
-      "backend/tests/InventoryApp.Tests/N67GTenantConfigConcurrencyTests.cs"
+      "backend/tests/Solqaryn.Tests/N67GTenantConfigConcurrencyTests.cs"
     ]
   },
   "review_first": {
@@ -32,7 +32,7 @@
       "conclusion": "success",
       "release_build": "PASS; 0 warnings; 0 errors",
       "tests": "PASS; 2072 passed; 0 failed; 0 skipped; Category!=Integration",
-      "targeted_test_included": "backend/tests/InventoryApp.Tests/N67GTenantConfigConcurrencyTests.cs is a non-Integration test and is included in the passing exact-head suite"
+      "targeted_test_included": "backend/tests/Solqaryn.Tests/N67GTenantConfigConcurrencyTests.cs is a non-Integration test and is included in the passing exact-head suite"
     },
     "tenant_security_gate": {
       "workflow_run_id": 34702577997,

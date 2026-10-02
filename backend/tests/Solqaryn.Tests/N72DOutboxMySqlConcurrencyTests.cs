@@ -35,7 +35,7 @@ public sealed class N72DOutboxMySqlConcurrencyTests
 
                 var mensaje = MensajeOutbox.Crear(
                     empresaId,
-                    "inventory.changed",
+                    "inventario.cambiado",
                     "{\"safe\":true}",
                     $"mysql-concurrency-{Guid.NewGuid():N}",
                     creadoEnUtc: AhoraUtc.AddMinutes(-1));

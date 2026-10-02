@@ -8,7 +8,7 @@
   "base_head": "7c7030fe04410fb100c0db4be357823ae1c535db",
   "functional_candidate_head": "dcce218eda4e2dd802e749ccfa43a7d02d3a3489",
   "review_head": "c259c7f1a463a27db66caa7a07d73d5a02f32f0b",
-  "material_artifact": "vaep/evidence/reviews/N6.8.A_STORAGE_INVENTORY_20260912T1606Z.json",
+  "material_artifact": "vaep/evidence/reviews/N6.8.A_STORAGE_inventario_20260912T1606Z.json",
   "review_artifact": "vaep/evidence/reviews/N6.8.A_REVIEW_FIRST_20260912T1607Z.json",
   "acceptance": "PASS",
   "dod": "PASS",
@@ -16,7 +16,7 @@
   "p0": 0,
   "p1": 0,
   "causal_gate_matrix": [
-    {"gate":"storage/images/exports inventory","required":true,"status":"PASS"},
+    {"gate":"storage/images/exports inventario","required":true,"status":"PASS"},
     {"gate":"public/private + EmpresaId/UsuarioId + expiration mapping","required":true,"status":"PASS"},
     {"gate":"REVIEW_FIRST","required":true,"status":"PASS"},
     {"gate":"P0/P1","required":true,"status":"PASS","detail":"P0=0; P1=0"},

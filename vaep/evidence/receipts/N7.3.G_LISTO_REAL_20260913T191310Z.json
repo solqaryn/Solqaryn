@@ -32,7 +32,7 @@
     "failed_job_id": 103770603867,
     "root_cause": "N73GDeadLetterQaRegressionTests.cs referenced obsolete application namespaces and an obsolete MensajeOutbox API contract.",
     "recovery_commit": "2c19221fdbb0a3cdfdcf8afdc839999bf8e80265",
-    "scope": ["backend/tests/InventoryApp.Tests/N73GDeadLetterQaRegressionTests.cs"],
+    "scope": ["backend/tests/Solqaryn.Tests/N73GDeadLetterQaRegressionTests.cs"],
     "production_files_changed": 0
   },
   "causal_gates": [

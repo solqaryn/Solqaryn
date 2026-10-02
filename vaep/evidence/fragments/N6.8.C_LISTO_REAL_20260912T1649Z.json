@@ -59,7 +59,7 @@
       "head": "749c17f0750a58e27ad637c238ed56ca8dba6dbc",
       "conclusion": "SUCCESS"
     },
-    "preflight_inventory": {
+    "preflight_inventario": {
       "required": true,
       "applicable": true,
       "causal": true,

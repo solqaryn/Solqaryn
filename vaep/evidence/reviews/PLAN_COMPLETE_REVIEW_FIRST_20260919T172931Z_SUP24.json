@@ -49,9 +49,9 @@
     "exact_head_equivalence": "PASS"
   },
   "fresh_material_reviewed": [
-    "frontend/scripts/validate-varistorehn-transversal.mjs@fa014d5b",
-    "frontend/src/app/features/varistorehn/varistorehn.service.ts@fa014d5b",
-    "frontend/e2e/varistorehn-fase12.spec.ts@fa014d5b",
+    "frontend/scripts/validate-SOLQARYN-transversal.mjs@fa014d5b",
+    "frontend/src/app/features/SOLQARYN/SOLQARYN.service.ts@fa014d5b",
+    "frontend/e2e/SOLQARYN-fase12.spec.ts@fa014d5b",
     "backend/src/API/Controllers/TiendaController.cs@fa014d5b",
     "vaep/evidence/reviews/PLAN_COMPLETE_REVIEW_FIRST_20260919T171630Z_SUP12.json@dcafb3d1"
   ],
@@ -59,7 +59,7 @@
     "public_boundary_and_server_authority": "PASS__public /tienda boundary remains explicit; checkout recalculates stock and price server-side and client does not provide authoritative amounts",
     "tenant_and_admin_separation": "PASS__public storefront remains separated from administrative guards and client-side tenant authority is not introduced by reviewed delta",
     "checkout_endpoint_containment": "PASS__configurable card checkout is constrained to tienda/ and rejects absolute or traversal routes",
-    "customer_session": "PASS__Phase 12 tests keep customer session in sessionStorage and verify X-VaristoreHN-Session use",
+    "customer_session": "PASS__Phase 12 tests keep customer session in sessionStorage and verify X-SOLQARYN-Session use",
     "cart_reference_integrity": "PASS__Phase 12 tests keep reference-only cart persistence and revalidate current catalog state",
     "mobile_security_quality_contract": "PASS__transversal validator retains mobile-first, public-boundary, data-authority and cumulative quality assertions"
   },

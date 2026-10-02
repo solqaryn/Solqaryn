@@ -55,7 +55,7 @@
     "conclusion": "failure",
     "classification": "UNRELATED_WORKFLOW_FAILURE__DOES_NOT_BLOCK",
     "observed": "83 passed, 10 failed, 7 not run; failures are legacy/global responsive/navigation checks driven by generic 404 resources plus /configuracion horizontal overflow",
-    "proof": "The N7.8 delta since the N7.8.E receipt changes only backend/src/Application/Services/PagoOnlineService.cs and backend/tests/InventoryApp.Tests/N78DPagoOnlineServiceTests.cs; zero frontend/configuration UI/assets/routes changed."
+    "proof": "The N7.8 delta since the N7.8.E receipt changes only backend/src/Application/Services/PagoOnlineService.cs and backend/tests/Solqaryn.Tests/N78DPagoOnlineServiceTests.cs; zero frontend/configuration UI/assets/routes changed."
   },
   "applicable_performance": "N_A",
   "dod": {

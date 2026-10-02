@@ -16,7 +16,7 @@
 5. No se introducen tolerancias, FX, CxP ni acciones transaccionales nuevas.
 
 ## Pruebas
-- Nueva prueba: `backend/tests/InventoryApp.Tests/ThreeWayMatchSecurityObservabilityTests.cs`.
+- Nueva prueba: `backend/tests/Solqaryn.Tests/ThreeWayMatchSecurityObservabilityTests.cs`.
 - Artifact Jules reportó ejecución focalizada PASS y `git diff --check` PASS; este reporte se conserva como input, pero la certificación final depende del CI causal del HEAD donde ChatGPT/VAEP integre el takeover.
 
 ## Riesgos / límites

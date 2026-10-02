@@ -4,7 +4,7 @@ using Solqaryn.Application.Interfaces;
 namespace Solqaryn.Application.Common;
 
 /// <summary>
-/// Fail-closed guard for explicit physical-scope filters in inventory analytics.
+/// Fail-closed guard for explicit physical-scope filters in analítica de inventario.
 /// The current canonical user scope exposes administrator/global access and
 /// row ownership, but no independent sucursal/almacen grant model. Therefore
 /// a non-admin request cannot safely assert an explicit physical scope: it must

@@ -10,7 +10,7 @@
 Se revisaron `docs/ERP_N2_3_RECEPCION_MERCANCIA.md`, `docs/RUNBOOK_N2_3_RECEPCION_MERCANCIA.md` y `docs/OPENAPI_N2_3_RECEPCION_MERCANCIA.md`.
 
 Jules declaró la ejecución de:
-`dotnet test backend/tests/InventoryApp.Tests/InventoryApp.Tests.csproj --filter "FullyQualifiedName~RecepcionCompra"`
+`dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj --filter "FullyQualifiedName~RecepcionCompra"`
 
 Resultado declarado: **36/36 PASS**.
 

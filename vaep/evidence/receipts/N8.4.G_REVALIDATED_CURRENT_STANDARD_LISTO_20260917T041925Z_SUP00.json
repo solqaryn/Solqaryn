@@ -19,7 +19,7 @@
     "frontend_dependency": "html5-qrcode 2.3.8 pinned",
     "validator_contract": "frontend/scripts/validate-scanner-2c4.mjs asserts lazy camera loading, local scanFile, stop/clear, file/dimension limits, POS integration, exact code resolution and Vercel camera policy",
     "input_contract": "codigo-scanner-input uses focused input suitable for keyboard/HID-style scanners and camera dialog without global event capture",
-    "github_exact_head_checks": "Exact-head check suite inventory inspected; generic PR CI jobs were skipped by workflow condition on evidence-only HEAD. No hidden failure was converted to PASS.",
+    "github_exact_head_checks": "Exact-head check suite inventario inspected; generic PR CI jobs were skipped by workflow condition on evidence-only HEAD. No hidden failure was converted to PASS.",
     "exact_head_equivalence": "The functional code tree is materially unchanged across the N8.4.F evidence-only commit to the review; repository compare shows the prior delta was only a VAEP receipt and this review commit is evidence-only."
   },
   "review_first": {

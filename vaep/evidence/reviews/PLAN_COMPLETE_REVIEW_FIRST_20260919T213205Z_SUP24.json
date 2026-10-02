@@ -19,11 +19,11 @@
   },
   "scope": {
     "productDeltaFromPreviousCertifiedHead": [
-      "frontend/e2e/varistorehn-fase4.spec.ts",
-      "frontend/e2e/varistorehn-fase6.spec.ts",
-      "frontend/src/app/features/varistorehn/varistorehn-checkout.component.ts",
-      "frontend/src/app/features/varistorehn/varistorehn-checkout.rules.ts",
-      "frontend/src/app/features/varistorehn/varistorehn-producto.component.ts"
+      "frontend/e2e/SOLQARYN-fase4.spec.ts",
+      "frontend/e2e/SOLQARYN-fase6.spec.ts",
+      "frontend/src/app/features/SOLQARYN/SOLQARYN-checkout.component.ts",
+      "frontend/src/app/features/SOLQARYN/SOLQARYN-checkout.rules.ts",
+      "frontend/src/app/features/SOLQARYN/SOLQARYN-producto.component.ts"
     ],
     "backendOrPersistenceDelta": false,
     "migrationDelta": false,
@@ -43,7 +43,7 @@
   "causalGates": [
     {"name": "Desarrollo - aceptación funcional integral", "runId": 35469737689, "head": "5b5a2433c1e400e8340aea9e80147b93d151a3df", "result": "SUCCESS"},
     {"name": "VAEP OPEN-only admission invariant", "runId": 35469737703, "head": "5b5a2433c1e400e8340aea9e80147b93d151a3df", "result": "SUCCESS"},
-    {"name": "VariStoreHn Fase 4 - regresion detalle", "runId": 35469737697, "head": "5b5a2433c1e400e8340aea9e80147b93d151a3df", "result": "SUCCESS"},
+    {"name": "SOLQARYN Fase 4 - regresion detalle", "runId": 35469737697, "head": "5b5a2433c1e400e8340aea9e80147b93d151a3df", "result": "SUCCESS"},
     {"name": "Priority 4 - Interfaces architecture and quality", "runId": 35469737720, "head": "5b5a2433c1e400e8340aea9e80147b93d151a3df", "result": "SUCCESS"},
     {"name": "Fase 10 - responsive UX accesibilidad", "runId": 35469737779, "head": "5b5a2433c1e400e8340aea9e80147b93d151a3df", "result": "SUCCESS"}
   ],

@@ -18,7 +18,7 @@ Este documento es el índice canónico para evidencia de seguridad/aislamiento u
 
 ## Inventario base
 
-La enumeración transversal está en `N8_15_F_SEC_AUDIT_INVENTORY.md`: 49 artefactos/49 MATRIX_ID, sin duplicados ni reportes faltantes en ese corte. Los breakpoints y clases `REPORT / DB_RLS / APP_RLS` de ese inventario deben conservarse como fuente de cobertura y no como afirmación de runtime global.
+La enumeración transversal está en `N8_15_F_SEC_AUDIT_INVENTARIO.md`: 49 artefactos/49 MATRIX_ID, sin duplicados ni reportes faltantes en ese corte. Los breakpoints y clases `REPORT / DB_RLS / APP_RLS` de ese inventario deben conservarse como fuente de cobertura y no como afirmación de runtime global.
 
 ## Evidencia causal vigente para N8.18.F
 
