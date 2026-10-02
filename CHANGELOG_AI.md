@@ -1,3 +1,11 @@
+## 2026-10-02 — Reconciliación canónica de pendientes vigentes
+
+- `docs/DETALLES_PENDIENTES.md` queda reconciliado como fuente canónica de pendientes deliberadamente diferidos/activos.
+- Se consolidan cinco puntos vigentes: Render paid/always-on; certificación SMTP real end-to-end; cutover `solqaryn.com` -> PROD; diez automatizaciones VAEP pausadas; y continuidad del Plan Maestro/ERP como roadmap normal de producto.
+- DEV/QA/PROD permanecen certificados bajo Render Free con contrato 28/28, aislamiento DB y binding Vercel -> API; Free se acepta temporalmente y no se declara always-on.
+- No se modifica main/PROD, secretos, datos, DNS, planes ni automatizaciones en este changeset documental.
+- Tras contrastar las fuentes canónicas actuales, no se identifica otro pendiente deliberadamente aplazado fuera de esos cinco puntos; el trabajo funcional futuro queda englobado por el Plan Maestro vigente.
+
 ## 2026-10-02 — Smoke QA alineado al contrato storefront vigente
 
 - La certificación viva QA aún esperaba `data.nombreComercial`, forma previa al bootstrap tenant-aware actual.
