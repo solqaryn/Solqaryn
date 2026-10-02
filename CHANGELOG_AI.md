@@ -1,3 +1,12 @@
+## 2026-10-02 — Modernización Fase 2 Node 24.21.0 + npm 11.19.0 DEV
+
+- Toolchain frontend migrado a Node.js `24.21.0` LTS y npm `11.19.0` sin modificar Angular `20.3.33`.
+- `frontend/package.json` declara `engines.node=24.x`, `engines.npm=11.19.0` y `packageManager=npm@11.19.0`; `.nvmrc`/`.node-version` fijan el patch local exacto.
+- 36 workflows operativos que usaban Node 20 fueron migrados a `actions/setup-node@v4` con `24.21.0`. El workflow histórico de Fase 0 conserva Node 20 únicamente para reproducir el baseline pre-modernización.
+- Se añadió `frontend/scripts/verify-toolchain.mjs` y el workflow causal `Modernización - Fase 2 Node 24 npm 11 DEV` con npm ci, lint, audit productivo, build PROD y Playwright completo.
+- Vercel DEV se gobierna por `engines.node=24.x`; Vercel sólo permite seleccionar la versión major y resuelve automáticamente el patch 24.x disponible.
+- Alcance exclusivo DEV. QA, main/PROD, datos, secretos y Aiven no se modifican.
+
 ## 2026-10-02 — Hardening quirúrgico Fase 0/Fase 1 Aiven compartido
 
 - La revisión de topología confirmó que Aiven usa un único servicio MySQL `solqaryn-mysql` para las bases aisladas DEV/QA/PROD; no existen tres servicios MySQL independientes.
