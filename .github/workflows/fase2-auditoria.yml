@@ -73,15 +73,27 @@ jobs:
           ! grep -q 'Smtp__PasswordSmtp' render.yaml
           ! grep -q 'Smtp__OAuth2ClientSecret' render.yaml
           ! grep -q 'Smtp__AuthenticationMode' render.yaml
+          ! grep -q 'Smtp__OAuth2TokenEndpoint' render.yaml
+          ! grep -q 'Smtp__OAuth2Scope' render.yaml
+          ! grep -q 'Smtp__UsarSsl' render.yaml
+          ! grep -q 'Smtp__RequiereAutenticacion' render.yaml
+          ! grep -q 'Smtp__CorreoRemitente' render.yaml
+          ! grep -q 'Smtp__CorreoRespuesta' render.yaml
+          ! grep -q 'AppSettings__LogoPublicUrl' render.yaml
+          ! grep -q '"LogoPublicUrl"' backend/src/API/appsettings.json
+          ! grep -Fq 'AppSettings:LogoPublicUrl' backend/src/Infrastructure/Services/QuestPdfFacturaPerfilesService.cs
 
           ruby <<'RUBY'
           require 'yaml'
           config = YAML.safe_load(File.read('render.yaml'), permitted_classes: [], aliases: true)
-          services = config.fetch('services').select { |service| %w[solqaryn-api-dev solqaryn-api-prod].include?(service['name']) }
-          abort 'Deben existir exactamente DEV y PROD' unless services.size == 2
+          expected = %w[solqaryn-api-dev solqaryn-api-qa solqaryn-api-prod]
+          services = config.fetch('services').select { |service| expected.include?(service['name']) }
+          abort 'Deben existir exactamente DEV, QA y PROD' unless services.map { |s| s['name'] }.sort == expected.sort
           by_name = services.to_h { |service| [service.fetch('name'), service.fetch('envVars').map { |item| item.fetch('key') }] }
           dev = by_name.fetch('solqaryn-api-dev')
+          qa = by_name.fetch('solqaryn-api-qa')
           prod = by_name.fetch('solqaryn-api-prod')
+          abort "Paridad DEV/QA inválida: DEV=#{dev.size}, QA=#{qa.size}" unless dev == qa
           abort "Paridad DEV/PROD inválida: DEV=#{dev.size}, PROD=#{prod.size}" unless dev == prod
           abort "Contrato Render esperado=28, actual=#{dev.size}" unless dev.size == 28
           RUBY

@@ -15,7 +15,6 @@ namespace Solqaryn.Infrastructure.Services;
 /// </summary>
 public sealed class QuestPdfFacturaPerfilesService : IFacturaPdfService
 {
-    private readonly IConfiguration _configuration;
     private readonly ILogger<QuestPdfFacturaPerfilesService> _logger;
 
     static QuestPdfFacturaPerfilesService()
@@ -27,7 +26,7 @@ public sealed class QuestPdfFacturaPerfilesService : IFacturaPdfService
         IConfiguration configuration,
         ILogger<QuestPdfFacturaPerfilesService> logger)
     {
-        _configuration = configuration;
+        _ = configuration; // Compatibilidad DI; el logo fallback global dejó de ser autoridad multiempresa.
         _logger = logger;
     }
 
@@ -38,13 +37,14 @@ public sealed class QuestPdfFacturaPerfilesService : IFacturaPdfService
     {
         ArgumentNullException.ThrowIfNull(factura);
         var logo = await ObtenerLogoAsync(factura.EmpresaLogoUrl);
+        var monogramaEmpresa = ConstruirMonogramaEmpresa(factura.EmpresaNombre);
 
         return formato is FacturaFormatoPdf.Pos58 or FacturaFormatoPdf.Pos80
-            ? GenerarTermico(factura, formato, logo)
-            : GenerarPapel(factura, formato, logo);
+            ? GenerarTermico(factura, formato, logo, monogramaEmpresa)
+            : GenerarPapel(factura, formato, logo, monogramaEmpresa);
     }
 
-    private static byte[] GenerarPapel(FacturaDto factura, FacturaFormatoPdf formato, byte[]? logo)
+    private static byte[] GenerarPapel(FacturaDto factura, FacturaFormatoPdf formato, byte[]? logo, string monogramaEmpresa)
     {
         var compacto = formato == FacturaFormatoPdf.A5;
         var colorPrimario = Colors.Blue.Darken2;
@@ -88,7 +88,7 @@ public sealed class QuestPdfFacturaPerfilesService : IFacturaPdfService
                         {
                             var logoSize = compacto ? 48f : 68f;
                             empresaRow.ConstantItem(logoSize).Height(logoSize)
-                                .Element(c => DibujarLogo(c, logo, colorPrimario, colorAcento));
+                                .Element(c => DibujarLogo(c, logo, monogramaEmpresa, colorPrimario, colorAcento));
                             empresaRow.RelativeItem().PaddingLeft(compacto ? 7 : 11).AlignMiddle().Column(empresa =>
                             {
                                 empresa.Item().Text(factura.EmpresaNombre).FontSize(compacto ? 13 : 18).Bold().FontColor(colorPrimario);
@@ -245,7 +245,7 @@ public sealed class QuestPdfFacturaPerfilesService : IFacturaPdfService
         return documento.GeneratePdf();
     }
 
-    private static byte[] GenerarTermico(FacturaDto factura, FacturaFormatoPdf formato, byte[]? logo)
+    private static byte[] GenerarTermico(FacturaDto factura, FacturaFormatoPdf formato, byte[]? logo, string monogramaEmpresa)
     {
         var ancho = formato == FacturaFormatoPdf.Pos58 ? 58f : 80f;
         var compacto = formato == FacturaFormatoPdf.Pos58;
@@ -266,7 +266,7 @@ public sealed class QuestPdfFacturaPerfilesService : IFacturaPdfService
                     content.Spacing(compacto ? 3 : 4);
 
                     content.Item().AlignCenter().Width(compacto ? 34 : 42).Height(compacto ? 26 : 32)
-                        .Element(c => DibujarLogoTermico(c, logo));
+                        .Element(c => DibujarLogoTermico(c, logo, monogramaEmpresa));
                     content.Item().AlignCenter().Text(factura.EmpresaNombre).FontSize(compacto ? 10 : 12).Bold();
                     if (!string.IsNullOrWhiteSpace(factura.EmpresaEslogan))
                         content.Item().AlignCenter().Text(factura.EmpresaEslogan).FontSize(fuente).Italic();
@@ -463,7 +463,7 @@ public sealed class QuestPdfFacturaPerfilesService : IFacturaPdfService
         });
     }
 
-    private static void DibujarLogo(IContainer contenedor, byte[]? logo, string primario, string acento)
+    private static void DibujarLogo(IContainer contenedor, byte[]? logo, string monogramaEmpresa, string primario, string acento)
     {
         if (logo is { Length: > 0 })
         {
@@ -472,10 +472,10 @@ public sealed class QuestPdfFacturaPerfilesService : IFacturaPdfService
         }
 
         contenedor.Background(primario).Border(2).BorderColor(acento)
-            .AlignCenter().AlignMiddle().Text("VS").FontSize(20).Bold().FontColor(Colors.White);
+            .AlignCenter().AlignMiddle().Text(monogramaEmpresa).FontSize(20).Bold().FontColor(Colors.White);
     }
 
-    private static void DibujarLogoTermico(IContainer contenedor, byte[]? logo)
+    private static void DibujarLogoTermico(IContainer contenedor, byte[]? logo, string monogramaEmpresa)
     {
         if (logo is { Length: > 0 })
         {
@@ -483,7 +483,7 @@ public sealed class QuestPdfFacturaPerfilesService : IFacturaPdfService
             return;
         }
 
-        contenedor.Border(1).AlignCenter().AlignMiddle().Text("VS").FontSize(14).Bold();
+        contenedor.Border(1).AlignCenter().AlignMiddle().Text(monogramaEmpresa).FontSize(14).Bold();
     }
 
     private static void EncabezadoCelda(IContainer contenedor, string texto, string color, bool compacto) =>
@@ -525,12 +525,31 @@ public sealed class QuestPdfFacturaPerfilesService : IFacturaPdfService
     private static void Separador(ColumnDescriptor columna) =>
         columna.Item().PaddingVertical(1).LineHorizontal(0.7f).LineColor(Colors.Grey.Darken1);
 
+    private static string ConstruirMonogramaEmpresa(string? nombreEmpresa)
+    {
+        var tokens = (nombreEmpresa ?? string.Empty)
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(token => new string(token.Where(char.IsLetterOrDigit).ToArray()))
+            .Where(token => token.Length > 0)
+            .ToArray();
+
+        if (tokens.Length >= 2)
+            return string.Concat(char.ToUpperInvariant(tokens[0][0]), char.ToUpperInvariant(tokens[1][0]));
+
+        if (tokens.Length == 1)
+        {
+            var token = tokens[0];
+            return new string(token.Take(2).Select(char.ToUpperInvariant).ToArray());
+        }
+
+        return "SQ";
+    }
+
     private async Task<byte[]?> ObtenerLogoAsync(string? logoConfigurado)
     {
         var candidatos = new[]
         {
-            logoConfigurado,
-            _configuration["AppSettings:LogoPublicUrl"]
+            logoConfigurado
         }
         .Where(x => !string.IsNullOrWhiteSpace(x))
         .Select(x => x!.Trim())
@@ -542,7 +561,7 @@ public sealed class QuestPdfFacturaPerfilesService : IFacturaPdfService
             if (resultado is { Length: > 0 }) return resultado;
         }
 
-        _logger.LogWarning("No fue posible descargar el logo configurado; se utilizará el monograma VS.");
+        _logger.LogWarning("No fue posible descargar el logo empresarial configurado; se utilizará el monograma derivado del nombre de la empresa.");
         return null;
     }
 

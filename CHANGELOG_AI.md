@@ -1,3 +1,24 @@
+## 2026-10-01 — Validación post-limpieza SMTP DEV y corrección de fallback de logo
+
+- Readback Render DEV posterior a la limpieza manual: el nuevo deployment ya no detecta las siete claves SMTP legacy retiradas; el único extra restante es `AppSettings__LogoPublicUrl` (29 observadas vs 28 canónicas), por lo que el guard abortó el deployment nuevo sin sustituir la instancia sana.
+- Se confirmó en código que `Smtp__PasswordSmtp`, `Smtp__OAuth2TokenEndpoint`, `Smtp__OAuth2Scope`, `Smtp__UsarSsl`, `Smtp__RequiereAutenticacion`, `Smtp__CorreoRemitente` y `Smtp__CorreoRespuesta` no son requeridas por Render: OAuth2 usa refresh token/client id, endpoint/scope son constantes seguras, TLS/autenticación default a true y remitente/Reply-To derivan de `Smtp__UsuarioSmtp`.
+- Añadida prueba dirigida que certifica `SmtpEmailService` con únicamente las nueve claves SMTP canónicas desplegadas.
+- La auditoría de facturas reveló que `AppSettings__LogoPublicUrl` aún era leído como fallback y que, sin logo, QuestPDF mostraba un monograma fijo de cliente. Se eliminó ese fallback global: la autoridad pasa a `EmpresaConfiguracion.LogoUrl` y la ausencia de logo usa monograma derivado de `EmpresaNombre`.
+- El bootstrap vivo DEV y PROD devuelve actualmente `logoUrl=null`; por tanto, el fallback tenant-derived es necesario para evitar branding fijo de un cliente.
+- Durante la misma verificación viva, QA reveló una deuda independiente de esquema: `solqaryn_qa.EmpresaConfiguraciones` no existe y `/api/tienda/bootstrap` devuelve 500. Queda abierto recuperar el esquema QA antes de certificar los tres entornos.
+- No se tocaron datos PROD en este changeset.
+
+## 2026-10-01 — Hardening y certificación estructural de infraestructura DEV/QA/PROD
+
+- Añadido `RenderEnvironmentContractGuard`: el backend Render exige exactamente las 28 claves canónicas, valores requeridos no vacíos y constantes públicas coherentes; registra sólo conteo/fingerprints no sensibles.
+- `EnvironmentDatabaseGuard` ahora cubre Development/Staging/Production y exige el endpoint Aiven corporativo `solqaryn-mysql-solqaryn.h.aivencloud.com:14402` con TLS requerido, además de base/usuario exclusivos.
+- Añadido workflow reutilizable `Environment infrastructure parity` para DEV/QA/PROD: 4 variables DB + 3 secretos requeridos, binding real MySQL, cross-access DENY, mínimo privilegio, token Aiven y passphrase de backup.
+- DEV: run `36954462879` certificó GitHub/Aiven; el deploy Render `dep-davh89id0e5s73800o9g` falló cerrado al detectar ocho variables legacy extra y conservó la instancia sana anterior.
+- QA: run `36954576441` certificó GitHub/Aiven; Render `dep-davh760u01pc73eomtg0` quedó LIVE con 28 claves y readiness conectado; CI QA `36954576416` terminó SUCCESS.
+- QA Vercel sigue bloqueado únicamente en control-plane: el deployment nuevo está READY pero el alias canónico permanece en un deployment anterior porque el proyecto aún no promueve `qa` como Production Branch.
+- La evidencia viva y los bloqueos externos se registran en `docs/evidencias/INFRA_PARITY_DEV_QA_PROD_2026-10-01.md`.
+- No se exponen valores secretos ni se ejecutan migraciones/datos productivos en este changeset.
+
 ## 2026-10-01 — Cloudinary QA certificado y probe temporal retirado
 
 - Render QA desplegó `4d01204d0303875437edb97a7500ef3312147e77` como `dep-davgkfpsrm7s73bu69r0` y quedó `LIVE`.

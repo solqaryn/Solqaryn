@@ -63,7 +63,6 @@ public static class RenderEnvironmentContractGuard
         "Database__ServerVersion",
         "Jwt__ExpiraMinutos",
         "Security__LoginRateLimitPerMinute",
-        "Cloudinary__CloudName",
         "AppSettings__EnlacePublicoFacturaHorasValidez",
         "AppSettings__EnlacePublicoFacturaMaximoAccesos",
         "AppSettings__CorreoFacturaIdempotenciaMinutos",
@@ -147,7 +146,6 @@ public static class RenderEnvironmentContractGuard
         Expect(variables, "Jwt__Audience", expected.JwtAudience);
         Expect(variables, "Jwt__ExpiraMinutos", "120");
         Expect(variables, "Security__LoginRateLimitPerMinute", "20");
-        Expect(variables, "Cloudinary__CloudName", "riyrzmob");
         Expect(variables, "Cloudinary__EnvironmentPrefix", expected.CloudinaryPrefix);
         Expect(variables, "Cors__AllowedOrigins__0", expected.CorsOrigin);
         Expect(variables, "AppSettings__BackendPublicUrl", expected.BackendPublicUrl);

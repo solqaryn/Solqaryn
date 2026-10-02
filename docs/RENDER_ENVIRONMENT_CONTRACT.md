@@ -8,6 +8,8 @@ DEV, QA y PROD deben tener exactamente las mismas claves administradas por SOLQA
 
 Contrato canónico: **28 claves en DEV, 28 claves en QA y 28 claves en PROD**.
 
+El backend refuerza este contrato en runtime con `RenderEnvironmentContractGuard`: cualquier clave administrada faltante o extra, valor requerido vacío o constante pública compartida incompatible aborta el arranque del nuevo deployment antes de reemplazar la instancia sana. El guard no registra valores; sólo conteo y fingerprints no sensibles. Las identidades/secretos propios de cada entorno —incluyendo conexión, JWT, Cloudinary y refresh token SMTP— pueden diferir.
+
 | Variable | Estado | Motivo | Valor por entorno |
 |---|---|---|---|
 | `ASPNETCORE_ENVIRONMENT` | REQUERIDA | Selecciona comportamiento Development/Staging/Production del host ASP.NET. | Diferente |
@@ -53,7 +55,7 @@ Estas claves no deben existir como configuración desplegada de DEV/QA/PROD:
 - `Smtp__CorreoRemitente`: se deriva de `Smtp__UsuarioSmtp`.
 - `Smtp__CorreoRespuesta`: por defecto se deriva del remitente.
 - `Swagger__Enabled`: redundante; PROD ya queda deshabilitado por configuración base y DEV se habilita por `ASPNETCORE_ENVIRONMENT=Development`.
-- `AppSettings__LogoPublicUrl`: redundante mientras no exista un fallback externo; el logo empresarial se resuelve desde la configuración de empresa.
+- `AppSettings__LogoPublicUrl`: retirado del runtime multiempresa. La factura usa primero `EmpresaConfiguracion.LogoUrl`; si la empresa no tiene logo o la descarga falla, QuestPDF genera un monograma derivado del nombre de esa empresa. No existe fallback global de marca ni monograma fijo de cliente.
 - `SeedAdmin__Username`: secreto/parametrización de bootstrap innecesaria en servicios ya provisionados.
 - `SeedAdmin__Password`: secreto de bootstrap innecesario en servicios ya provisionados.
 
