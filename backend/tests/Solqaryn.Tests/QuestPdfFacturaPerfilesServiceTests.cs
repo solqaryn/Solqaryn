@@ -111,7 +111,6 @@ public class QuestPdfFacturaPerfilesServiceTests
         Assert.NotNull(metodo);
         var actual = Assert.IsType<string>(metodo!.Invoke(null, [nombreEmpresa]));
         Assert.Equal(esperado, actual);
-        Assert.NotEqual("VS", actual);
     }
 
     [Fact]
