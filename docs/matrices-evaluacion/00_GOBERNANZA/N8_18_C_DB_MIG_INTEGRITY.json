@@ -6,7 +6,7 @@
   "base_head": "dcb63731ccb463a17be4977b18d0121f60a864c9",
   "decision": "NO_SCHEMA_DELTA_REQUIRED__PRESERVE_HISTORY",
   "sources": {
-    "baseline_db_inventory": "docs/matrices-evaluacion/00_GOBERNANZA/N8_15_C_DB_MIG_INVENTORY.md",
+    "baseline_db_inventario": "docs/matrices-evaluacion/00_GOBERNANZA/N8_15_C_DB_MIG_INVENTARIO.md",
     "data_contracts": "docs/matrices-evaluacion/00_GOBERNANZA/N8_17_C_DATA_CONTRACTS.json",
     "refactor_plan": "docs/matrices-evaluacion/00_GOBERNANZA/N8_18_A_REFACTOR_PLAN.md",
     "domain_boundaries": "docs/matrices-evaluacion/00_GOBERNANZA/N8_18_B_DOMAIN_BOUNDARIES.json",
