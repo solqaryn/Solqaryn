@@ -150,8 +150,9 @@ La observabilidad de rendimiento DEV es first-party y no requiere un proveedor p
 - CORS por lista explícita.
 - Rate limiting de login.
 - Security headers.
-- Separación estricta de PROD/DEV.
-- En runtime Render, `EnvironmentDatabaseGuard` enlaza fail-closed `ASPNETCORE_ENVIRONMENT` con base y usuario MySQL canónicos: Development → `solqaryn_dev`/`solqaryn_dev_user`; Production → `solqaryn_prod`/`solqaryn_prod_user`. Cualquier cruce, ausencia o entorno no canónico aborta el arranque antes de usar EF Core.
+- Separación estricta de DEV/QA/PROD.
+- En runtime Render, `EnvironmentDatabaseGuard` enlaza fail-closed `ASPNETCORE_ENVIRONMENT` con endpoint Aiven, TLS, base y usuario MySQL canónicos: Development → `solqaryn_dev`/`solqaryn_dev_user`; Staging → `solqaryn_qa`/`solqaryn_qa_user`; Production → `solqaryn_prod`/`solqaryn_prod_user`; todos sobre `solqaryn-mysql-solqaryn.h.aivencloud.com:14402` y `SslMode=Required`.
+- `RenderEnvironmentContractGuard` exige el mismo conjunto de 28 claves administradas en los tres servicios Render y valida constantes públicas compartidas sin comparar ni exponer secretos. Cloudinary, conexión, JWT, URLs/prefijos y refresh tokens pueden conservar valores propios del entorno.
 - Secretos fuera del repositorio.
 - SMTP OAuth2 en PROD usa access tokens efímeros obtenidos desde refresh token; no usa contraseña SMTP básica.
 - `main` congelada durante el trabajo en `dev`.
@@ -167,9 +168,10 @@ Topología operacional vigente en Aiven:
 - proyecto `solqaryn`;
 - un único servicio MySQL Free `solqaryn-mysql`;
 - base `solqaryn_dev` con usuario `solqaryn_dev_user` para DEV;
+- base `solqaryn_qa` con usuario `solqaryn_qa_user` para QA;
 - base `solqaryn_prod` con usuario `solqaryn_prod_user` para PROD;
 - `avnadmin` reservado para administración;
-- aislamiento DEV/PROD lógico por base, usuario y GitHub Environment; ambos comparten el mismo servicio físico Aiven.
+- aislamiento DEV/QA/PROD lógico por base, usuario y GitHub Environment; los tres comparten el mismo servicio físico Aiven y el mismo endpoint/TLS corporativo.
 
 Reglas:
 
@@ -224,4 +226,4 @@ No requieren reescaneo completo: correcciones de UI, CRUD, validaciones puntuale
 
 ### Aislamiento de entornos en Vercel
 
-`/api/*` no selecciona backend por hostname. `environment-binding.js` usa `VERCEL_PROJECT_ID` —variable de sistema inmutable del deployment— como identidad primaria y mantiene una allowlist canónica de los proyectos corporativos: `prj_1Anhx5mWyXEBX89lWC24Py6JXe7A` -> DEV/Render DEV y `prj_si3ORH7lBhM4aSAYfYvXsbJT2lHA` -> PROD/Render PROD. `SOLQARYN_ENV`, `API_UPSTREAM`, `PUBLIC_ORIGIN` y `SEO_INDEXING_ENABLED`, si están definidos, sólo actúan como overrides de coherencia y deben coincidir exactamente con el binding canónico; nunca seleccionan otro entorno. Proyecto desconocido, override incompatible o cualquier cruce falla cerrado. Alias, preview o custom domain no alteran el entorno.
+`/api/*` no selecciona backend por hostname. `environment-binding.js` usa `VERCEL_PROJECT_ID` —variable de sistema inmutable del deployment— como identidad primaria y mantiene una allowlist canónica de los tres proyectos corporativos: `prj_1Anhx5mWyXEBX89lWC24Py6JXe7A` -> DEV/Render DEV, `prj_n5STx5F6VboqXd1oLUMR8AvZZtml` -> QA/Render QA y `prj_si3ORH7lBhM4aSAYfYvXsbJT2lHA` -> PROD/Render PROD. `SOLQARYN_ENV`, `API_UPSTREAM`, `PUBLIC_ORIGIN` y `SEO_INDEXING_ENABLED`, si están definidos, sólo actúan como overrides de coherencia y deben coincidir exactamente con el binding canónico; nunca seleccionan otro entorno. Proyecto desconocido, override incompatible o cualquier cruce falla cerrado. Alias, preview o custom domain no alteran el entorno.
