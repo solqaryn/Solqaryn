@@ -112,7 +112,7 @@ runs:
         rm -f "$plain" "$encrypted" "$restored"
         echo "${ENVIRONMENT_NAME}_BACKUP_PASSPHRASE=PASS"
 
-    - name: Inventory GitHub Environment names when permitted
+    - name: Read GitHub Environment names when permitted
       shell: bash
       env:
         GH_TOKEN: ${{ github.token }}
@@ -130,9 +130,9 @@ runs:
           secret_count="$(jq -r '.total_count' "$secrets_file")"
           test "$var_count" = "4"
           test "$secret_count" = "3"
-          echo "${ENVIRONMENT_NAME}_GITHUB_NAME_INVENTORY=PASS vars=$var_count secrets=$secret_count"
+          echo "${ENVIRONMENT_NAME}_GITHUB_NAME_AUDIT=PASS vars=$var_count secrets=$secret_count"
         else
-          echo "${ENVIRONMENT_NAME}_GITHUB_NAME_INVENTORY=UNAVAILABLE vars_http=$vars_code secrets_http=$secrets_code"
+          echo "${ENVIRONMENT_NAME}_GITHUB_NAME_AUDIT=UNAVAILABLE vars_http=$vars_code secrets_http=$secrets_code"
         fi
 
         rm -f "$vars_file" "$secrets_file"
