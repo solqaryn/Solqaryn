@@ -1,3 +1,14 @@
+## 2026-10-01 — Hardening y certificación estructural de infraestructura DEV/QA/PROD
+
+- Añadido `RenderEnvironmentContractGuard`: el backend Render exige exactamente las 28 claves canónicas, valores requeridos no vacíos y constantes públicas coherentes; registra sólo conteo/fingerprints no sensibles.
+- `EnvironmentDatabaseGuard` ahora cubre Development/Staging/Production y exige el endpoint Aiven corporativo `solqaryn-mysql-solqaryn.h.aivencloud.com:14402` con TLS requerido, además de base/usuario exclusivos.
+- Añadido workflow reutilizable `Environment infrastructure parity` para DEV/QA/PROD: 4 variables DB + 3 secretos requeridos, binding real MySQL, cross-access DENY, mínimo privilegio, token Aiven y passphrase de backup.
+- DEV: run `36954462879` certificó GitHub/Aiven; el deploy Render `dep-davh89id0e5s73800o9g` falló cerrado al detectar ocho variables legacy extra y conservó la instancia sana anterior.
+- QA: run `36954576441` certificó GitHub/Aiven; Render `dep-davh760u01pc73eomtg0` quedó LIVE con 28 claves y readiness conectado; CI QA `36954576416` terminó SUCCESS.
+- QA Vercel sigue bloqueado únicamente en control-plane: el deployment nuevo está READY pero el alias canónico permanece en un deployment anterior porque el proyecto aún no promueve `qa` como Production Branch.
+- La evidencia viva y los bloqueos externos se registran en `docs/evidencias/INFRA_PARITY_DEV_QA_PROD_2026-10-01.md`.
+- No se exponen valores secretos ni se ejecutan migraciones/datos productivos en este changeset.
+
 ## 2026-10-01 — Cloudinary QA certificado y probe temporal retirado
 
 - Render QA desplegó `4d01204d0303875437edb97a7500ef3312147e77` como `dep-davgkfpsrm7s73bu69r0` y quedó `LIVE`.
