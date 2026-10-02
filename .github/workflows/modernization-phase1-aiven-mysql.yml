@@ -253,21 +253,21 @@ jobs:
           action="${{ steps.apply.outputs.action }}"
           after="${{ steps.after.outputs.after_version }}"
           {
-            echo "## Modernización — Fase 1 Aiven/MySQL DEV"
-            echo
-            echo "- HEAD: `$GITHUB_SHA`"
-            echo "- Acción: `$action`"
-            echo "- MySQL final: `$after`"
-            echo "- Target: `$TARGET_VERSION`"
-            echo "- Base: `$EXPECTED_DB`"
-            echo "- PROD tocado: `false`"
-            echo "- Backup cifrado pre-cambio: `PASS`"
-            echo "- Identidad DB/usuario: `PASS`"
-            echo "- Conteos críticos preservados: `PASS`"
+            printf '%s\n' '## Modernización — Fase 1 Aiven/MySQL DEV'
+            printf '\n'
+            printf '%s\n' "- HEAD: $GITHUB_SHA"
+            printf '%s\n' "- Acción: $action"
+            printf '%s\n' "- MySQL final: $after"
+            printf '%s\n' "- Target: $TARGET_VERSION"
+            printf '%s\n' "- Base: $EXPECTED_DB"
+            printf '%s\n' '- PROD tocado: false'
+            printf '%s\n' '- Backup cifrado pre-cambio: PASS'
+            printf '%s\n' '- Identidad DB/usuario: PASS'
+            printf '%s\n' '- Conteos críticos preservados: PASS'
             if [ "$action" = "maintenance_started" ] || [ "$action" = "already_target" ]; then
-              echo "- FASE_1_AIVEN_MYSQL: `PASS_TARGET_8_4_11`"
+              printf '%s\n' '- FASE_1_AIVEN_MYSQL: PASS_TARGET_8_4_11'
             else
-              echo "- FASE_1_AIVEN_MYSQL: `PASS_NO_CHANGE_TARGET_NOT_AVAILABLE`"
+              printf '%s\n' '- FASE_1_AIVEN_MYSQL: PASS_NO_CHANGE_TARGET_NOT_AVAILABLE'
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
