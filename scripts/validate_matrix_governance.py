@@ -23,7 +23,7 @@ PLACEHOLDER_RE = re.compile(
 )
 ALLOWED_MATRIX_STATES = {
     "BASELINE_CREATED",
-    "INVENTORY_COMPLETE",
+    "LEVANTAMIENTO_COMPLETO",
     "SPEC_COMPLETE",
     "IMPLEMENTATION_REVIEWED",
     "CERTIFIED",
@@ -134,7 +134,7 @@ def self_test_negative_contracts() -> list[str]:
         if token == "MATRIX_ID:":
             value = "VAEP-MX::SELF_TEST::VALID"
         elif token == "MATRIX_STATE:":
-            value = "INVENTORY_COMPLETE"
+            value = "LEVANTAMIENTO_COMPLETO"
         else:
             value = "N/A:self-test"
         lines.append(f"- {token} {value}")
@@ -153,7 +153,7 @@ def self_test_negative_contracts() -> list[str]:
     invalid_id = valid.replace("VAEP-MX::SELF_TEST::VALID", "ROW-17")
     if not any("invalid stable MATRIX_ID" in e for e in validate_material_matrix_text(invalid_id, "self-test invalid-id")):
         errors.append("self-test invalid-id fixture did not trigger rejection")
-    invalid_state = valid.replace("- MATRIX_STATE: INVENTORY_COMPLETE", "- MATRIX_STATE: MATERIAL")
+    invalid_state = valid.replace("- MATRIX_STATE: LEVANTAMIENTO_COMPLETO", "- MATRIX_STATE: MATERIAL")
     if not any("invalid MATRIX_STATE" in e for e in validate_material_matrix_text(invalid_state, "self-test invalid-state")):
         errors.append("self-test invalid-state fixture did not trigger rejection")
     return errors
