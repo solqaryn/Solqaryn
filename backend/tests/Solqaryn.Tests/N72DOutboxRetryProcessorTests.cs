@@ -115,7 +115,7 @@ public sealed class N72DOutboxRetryProcessorTests
     {
         var mensaje = MensajeOutbox.Crear(
             7,
-            "inventory.changed",
+            "inventario.cambiado",
             "{\"safe\":true}",
             "idem-1",
             creadoEnUtc: AhoraUtc.AddMinutes(-1));
