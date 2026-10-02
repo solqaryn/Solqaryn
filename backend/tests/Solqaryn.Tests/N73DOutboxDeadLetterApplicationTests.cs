@@ -64,7 +64,7 @@ public sealed class N73DOutboxDeadLetterApplicationTests
     {
         var mensaje = MensajeOutbox.Crear(
             empresaId,
-            "inventory.dead-letter.certificate",
+            "inventario.dead-letter.certificado",
             "{\"safe\":true}",
             "n73d-idem-1",
             creadoEnUtc: AhoraUtc.AddMinutes(-1));
