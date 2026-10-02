@@ -76,7 +76,7 @@ import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service
         <h2 id="nav-compras" class="nav-group__title">Compras</h2>
         <a routerLink="/solicitudes-compra" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">request_quote</span> Solicitudes</a>
         <a routerLink="/ordenes-compra" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">receipt_long</span> Órdenes</a>
-        <a routerLink="/recepciones-compra" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">inventory_2</span> Recepciones</a>
+        <a routerLink="/recepciones-compra" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">warehouse</span> Recepciones</a>
         <a routerLink="/devoluciones-proveedor" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">assignment_return</span> Devoluciones</a>
         <a routerLink="/compras" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">shopping_cart</span> Compras</a>
       </section>
