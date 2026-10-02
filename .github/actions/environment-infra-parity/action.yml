@@ -1,0 +1,127 @@
+name: SOLQARYN environment infrastructure parity
+description: Certifies canonical Aiven binding, least privilege and required GitHub Environment secrets without exposing values.
+
+runs:
+  using: composite
+  steps:
+    - name: Validate canonical Environment inputs
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        test -n "${ENVIRONMENT_NAME:-}"
+        test "${DB_HOST:-}" = "solqaryn-mysql-solqaryn.h.aivencloud.com"
+        test "${DB_PORT:-}" = "14402"
+        test "${DB_NAME:-}" = "${EXPECTED_DB:-}"
+        test "${DB_USER:-}" = "${EXPECTED_USER:-}"
+        test -n "${DB_PASSWORD:-}"
+        test -n "${AIVEN_TOKEN:-}"
+        test -n "${BACKUP_PASSPHRASE:-}"
+
+        echo "${ENVIRONMENT_NAME}_GITHUB_REQUIRED_STRUCTURE=PASS vars=4 secrets=3"
+        echo "${ENVIRONMENT_NAME}_AIVEN_ENDPOINT_CONTRACT=PASS"
+
+    - name: Install MySQL client and DNS tools
+      shell: bash
+      run: |
+        set -euo pipefail
+        if ! command -v mysql >/dev/null 2>&1 || ! command -v dig >/dev/null 2>&1; then
+          sudo apt-get update
+          sudo apt-get install -y mysql-client dnsutils
+        fi
+
+    - name: Certify Aiven database binding and least privilege
+      shell: bash
+      run: |
+        set -euo pipefail
+        export MYSQL_PWD="$DB_PASSWORD"
+
+        connect_host="$DB_HOST"
+        if ! getent ahostsv4 "$DB_HOST" >/dev/null 2>&1; then
+          fallback_ip="$(dig +short A "$DB_HOST" @1.1.1.1 | grep -E '^[0-9]+([.][0-9]+){3}$' | head -n 1 || true)"
+          test -n "$fallback_ip"
+          connect_host="$fallback_ip"
+        fi
+
+        mysql_cmd=(mysql --protocol=TCP -h "$connect_host" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED --default-character-set=utf8mb4 "$DB_NAME" --batch --skip-column-names)
+
+        database="$("${mysql_cmd[@]}" -e "SET SESSION TRANSACTION READ ONLY; START TRANSACTION READ ONLY; SELECT DATABASE(); COMMIT;")"
+        test "$database" = "$EXPECTED_DB"
+
+        current_user="$("${mysql_cmd[@]}" -e "SELECT CURRENT_USER();")"
+        case "$current_user" in
+          "$EXPECTED_USER"@*) ;;
+          *) echo "Current MySQL user does not match expected environment identity." >&2; exit 1 ;;
+        esac
+
+        grants="$("${mysql_cmd[@]}" -e "SHOW GRANTS FOR CURRENT_USER();")"
+        printf '%s\n' "$grants" | grep -Fq "ON `$EXPECTED_DB`.*" || {
+          echo "Expected database grant is missing." >&2
+          exit 1
+        }
+
+        if printf '%s\n' "$grants" | grep -Fq "$FORBIDDEN_DB_1"; then
+          echo "Cross-environment database grant detected." >&2
+          exit 1
+        fi
+        if printf '%s\n' "$grants" | grep -Fq "$FORBIDDEN_DB_2"; then
+          echo "Cross-environment database grant detected." >&2
+          exit 1
+        fi
+        if printf '%s\n' "$grants" | grep -Eqi 'GRANT OPTION|ROLE_ADMIN|REPLICATION_APPLIER'; then
+          echo "Administrative privilege detected on application user." >&2
+          exit 1
+        fi
+
+        echo "${ENVIRONMENT_NAME}_AIVEN_DB_BINDING=PASS"
+        echo "${ENVIRONMENT_NAME}_AIVEN_LEAST_PRIVILEGE=PASS"
+
+    - name: Certify Aiven control-plane token
+      shell: bash
+      run: |
+        set -euo pipefail
+        response_file="$(mktemp)"
+        code="$(curl --silent --show-error --output "$response_file" --write-out '%{http_code}'           --header "Authorization: aivenv1 $AIVEN_TOKEN"           "https://api.aiven.io/v1/project/solqaryn/service/solqaryn-mysql")"
+        test "$code" = "200"
+        jq -e '.service_name == "solqaryn-mysql" and .service_type == "mysql"' "$response_file" >/dev/null
+        rm -f "$response_file"
+        echo "${ENVIRONMENT_NAME}_AIVEN_CONTROL_PLANE=PASS"
+
+    - name: Certify backup passphrase is usable
+      shell: bash
+      run: |
+        set -euo pipefail
+        plain="$(mktemp)"
+        encrypted="$(mktemp)"
+        restored="$(mktemp)"
+        printf 'SOLQARYN-%s-backup-parity\n' "$ENVIRONMENT_NAME" > "$plain"
+        openssl enc -aes-256-cbc -pbkdf2 -salt -pass env:BACKUP_PASSPHRASE -in "$plain" -out "$encrypted"
+        openssl enc -d -aes-256-cbc -pbkdf2 -pass env:BACKUP_PASSPHRASE -in "$encrypted" -out "$restored"
+        cmp -s "$plain" "$restored"
+        rm -f "$plain" "$encrypted" "$restored"
+        echo "${ENVIRONMENT_NAME}_BACKUP_PASSPHRASE=PASS"
+
+    - name: Inventory GitHub Environment names when permitted
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        set -euo pipefail
+        base="https://api.github.com/repos/$GITHUB_REPOSITORY/environments/$ENVIRONMENT_NAME"
+        vars_file="$(mktemp)"
+        secrets_file="$(mktemp)"
+
+        vars_code="$(curl --silent --show-error --output "$vars_file" --write-out '%{http_code}'           -H "Accept: application/vnd.github+json"           -H "Authorization: Bearer $GH_TOKEN"           -H "X-GitHub-Api-Version: 2022-11-28"           "$base/variables?per_page=100" || true)"
+        secrets_code="$(curl --silent --show-error --output "$secrets_file" --write-out '%{http_code}'           -H "Accept: application/vnd.github+json"           -H "Authorization: Bearer $GH_TOKEN"           -H "X-GitHub-Api-Version: 2022-11-28"           "$base/secrets?per_page=100" || true)"
+
+        if [ "$vars_code" = "200" ] && [ "$secrets_code" = "200" ]; then
+          var_count="$(jq -r '.total_count' "$vars_file")"
+          secret_count="$(jq -r '.total_count' "$secrets_file")"
+          test "$var_count" = "4"
+          test "$secret_count" = "3"
+          echo "${ENVIRONMENT_NAME}_GITHUB_NAME_INVENTORY=PASS vars=$var_count secrets=$secret_count"
+        else
+          echo "${ENVIRONMENT_NAME}_GITHUB_NAME_INVENTORY=UNAVAILABLE vars_http=$vars_code secrets_http=$secrets_code"
+        fi
+
+        rm -f "$vars_file" "$secrets_file"
