@@ -1,0 +1,292 @@
+name: Modernización - Fase 1 Aiven MySQL 8.4.11 DEV
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/modernization-phase1-aiven-mysql.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: modernization-phase1-aiven-mysql-dev
+  cancel-in-progress: false
+
+jobs:
+  phase1:
+    name: Verificar y aplicar MySQL 8.4.11 solo si Aiven lo ofrece en DEV
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: DEV
+    env:
+      AIVEN_TOKEN: ${{ secrets.SOLQARYN_AIVEN_TOKEN }}
+      DB_HOST: ${{ vars.SOLQARYN_DEV_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_DEV_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_DEV_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_DEV_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_DEV_DB_PASSWORD }}
+      BACKUP_PASSPHRASE: ${{ secrets.SOLQARYN_DEV_BACKUP_PASSPHRASE }}
+      AIVEN_PROJECT: solqaryn
+      AIVEN_SERVICE: solqaryn-mysql
+      TARGET_VERSION: 8.4.11
+      EXPECTED_DB: solqaryn_dev
+      EXPECTED_DB_USER: solqaryn_dev_user
+
+    steps:
+      - name: Checkout exact DEV head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Verificar scope SOLQARYN
+        run: node scripts/verify-project-scope.mjs
+
+      - name: Instalar clientes oficiales
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+          python3 -m pip install --quiet aiven-client
+
+      - name: Guardas DEV y snapshot previo
+        id: before
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$AIVEN_TOKEN"
+          test -n "$DB_HOST"
+          test -n "$DB_PORT"
+          test -n "$DB_NAME"
+          test -n "$DB_USER"
+          test -n "$DB_PASSWORD"
+          test -n "$BACKUP_PASSPHRASE"
+          test "$DB_NAME" = "$EXPECTED_DB"
+          test "$DB_USER" = "$EXPECTED_DB_USER"
+
+          export MYSQL_PWD="$DB_PASSWORD"
+          mkdir -p evidence backup
+
+          read -r actual_db actual_user before_version <<< "$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e "SELECT DATABASE(), SUBSTRING_INDEX(CURRENT_USER(),'@',1), VERSION();" | tr '\t' ' ')"
+          test "$actual_db" = "$EXPECTED_DB"
+          test "$actual_user" = "$EXPECTED_DB_USER"
+          echo "before_version=$before_version" >> "$GITHUB_OUTPUT"
+
+          tables_before="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE';")"
+          migrations_before="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e "SELECT COUNT(*) FROM __EFMigrationsHistory;")"
+          products_before="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e "SELECT COUNT(*) FROM Productos;")"
+          categories_before="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e "SELECT COUNT(*) FROM Categorias;")"
+
+          mysqldump --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED             --single-transaction --quick --routines --triggers --events --hex-blob "$DB_NAME"             > backup/solqaryn-dev-pre-phase1.sql
+          sha256sum backup/solqaryn-dev-pre-phase1.sql > backup/solqaryn-dev-pre-phase1.sql.sha256
+          openssl enc -aes-256-cbc -pbkdf2 -salt -in backup/solqaryn-dev-pre-phase1.sql             -out backup/solqaryn-dev-pre-phase1.sql.enc -pass env:BACKUP_PASSPHRASE
+          rm backup/solqaryn-dev-pre-phase1.sql
+
+          python3 - "$before_version" "$tables_before" "$migrations_before" "$products_before" "$categories_before" <<'PY'
+          import json,sys
+          d={
+            "phase":"before",
+            "mysqlVersion":sys.argv[1],
+            "baseTables":int(sys.argv[2]),
+            "efMigrations":int(sys.argv[3]),
+            "products":int(sys.argv[4]),
+            "categories":int(sys.argv[5]),
+            "database":"solqaryn_dev",
+            "productionTouched":False,
+            "secretsExposed":0
+          }
+          open("evidence/phase1-before.json","w").write(json.dumps(d,indent=2)+"\n")
+          PY
+
+      - name: Verificar disponibilidad exacta 8.4.11 en Aiven
+        id: availability
+        shell: bash
+        run: |
+          set -euo pipefail
+          avn --auth-token "$AIVEN_TOKEN" user info --json >/tmp/aiven-user.json
+          avn --auth-token "$AIVEN_TOKEN" service get "$AIVEN_SERVICE" --project "$AIVEN_PROJECT" --json >/tmp/aiven-service.json
+
+          python3 - <<'PY'
+          import json,os,re
+          target=os.environ["TARGET_VERSION"]
+          raw=json.load(open("/tmp/aiven-service.json"))
+          svc=raw[0] if isinstance(raw,list) and raw else raw
+          if isinstance(svc,dict) and isinstance(svc.get("service"),dict):
+              svc=svc["service"]
+          if not isinstance(svc,dict):
+              raise SystemExit("Aiven service payload shape is not recognized")
+          if svc.get("service_type")!="mysql":
+              raise SystemExit("Canonical Aiven DEV service is not MySQL")
+          if svc.get("service_name") not in (None,os.environ["AIVEN_SERVICE"]):
+              raise SystemExit("Unexpected Aiven service name")
+          if svc.get("state") not in ("RUNNING","REBALANCING"):
+              raise SystemExit(f"Unexpected Aiven service state: {svc.get('state')}")
+
+          text=json.dumps(svc,sort_keys=True)
+          versions=sorted(set(re.findall(r'(?<!\d)(8\.4\.\d+)(?!\d)',text)))
+          maintenance=svc.get("maintenance") if isinstance(svc.get("maintenance"),dict) else {}
+          maint_text=json.dumps(maintenance,sort_keys=True)
+          target_in_maintenance=target in maint_text
+          target_anywhere=target in text
+
+          result={
+            "status":"PASS",
+            "service":"solqaryn-mysql",
+            "serviceType":"mysql",
+            "serviceState":svc.get("state"),
+            "targetVersion":target,
+            "versionsExposedInServiceMetadata":versions,
+            "targetExposedInMaintenanceMetadata":target_in_maintenance,
+            "targetExposedAnywhereInServiceMetadata":target_anywhere,
+            "maintenanceRequired":svc.get("maintenance_required"),
+            "maintenanceScheduledAt":svc.get("maintenance_scheduled_at"),
+            "productionTouched":False,
+            "secretsExposed":0
+          }
+          open("evidence/phase1-availability.json","w").write(json.dumps(result,indent=2)+"\n")
+          with open(os.environ["GITHUB_OUTPUT"],"a") as f:
+              f.write("target_in_maintenance="+("true" if target_in_maintenance else "false")+"\n")
+              f.write("target_anywhere="+("true" if target_anywhere else "false")+"\n")
+          print(json.dumps(result,separators=(",",":")))
+          PY
+
+      - name: Aplicar mantenimiento solo con evidencia exacta de 8.4.11
+        id: apply
+        shell: bash
+        run: |
+          set -euo pipefail
+          before="${{ steps.before.outputs.before_version }}"
+          target="$TARGET_VERSION"
+
+          if [ "$before" = "$target" ]; then
+            echo "action=already_target" >> "$GITHUB_OUTPUT"
+            echo "MySQL DEV ya está en $target; no se inicia mantenimiento."
+            exit 0
+          fi
+
+          if [ "${{ steps.availability.outputs.target_in_maintenance }}" != "true" ]; then
+            echo "action=not_available_no_change" >> "$GITHUB_OUTPUT"
+            echo "Aiven no expone $target como mantenimiento disponible para el servicio DEV. No se modifica la base."
+            exit 0
+          fi
+
+          avn --auth-token "$AIVEN_TOKEN" service maintenance-start "$AIVEN_SERVICE" --project "$AIVEN_PROJECT"
+          echo "action=maintenance_started" >> "$GITHUB_OUTPUT"
+
+          avn --auth-token "$AIVEN_TOKEN" service wait "$AIVEN_SERVICE" --project "$AIVEN_PROJECT"
+
+          export MYSQL_PWD="$DB_PASSWORD"
+          for attempt in $(seq 1 60); do
+            current="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e "SELECT VERSION();" 2>/dev/null || true)"
+            if [ "$current" = "$target" ]; then
+              echo "Aiven DEV alcanzó MySQL $target."
+              exit 0
+            fi
+            sleep 20
+          done
+
+          echo "El mantenimiento terminó pero MySQL DEV no reportó $target dentro de la ventana de verificación." >&2
+          exit 40
+
+      - name: Certificación post-cambio / no-cambio
+        id: after
+        shell: bash
+        run: |
+          set -euo pipefail
+          export MYSQL_PWD="$DB_PASSWORD"
+
+          result="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e "SELECT DATABASE(), SUBSTRING_INDEX(CURRENT_USER(),'@',1), VERSION();")"
+          IFS=$'\t' read -r actual_db actual_user after_version <<< "$result"
+          test "$actual_db" = "$EXPECTED_DB"
+          test "$actual_user" = "$EXPECTED_DB_USER"
+
+          tables_after="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE';")"
+          migrations_after="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e "SELECT COUNT(*) FROM __EFMigrationsHistory;")"
+          products_after="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e "SELECT COUNT(*) FROM Productos;")"
+          categories_after="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e "SELECT COUNT(*) FROM Categorias;")"
+
+          python3 - "$after_version" "$tables_after" "$migrations_after" "$products_after" "$categories_after" "${{ steps.apply.outputs.action }}" "${{ steps.before.outputs.before_version }}" <<'PY'
+          import json,sys
+          after=sys.argv[1]
+          action=sys.argv[6]
+          before=sys.argv[7]
+          d={
+            "phase":"after",
+            "action":action,
+            "beforeVersion":before,
+            "afterVersion":after,
+            "targetVersion":"8.4.11",
+            "baseTables":int(sys.argv[2]),
+            "efMigrations":int(sys.argv[3]),
+            "products":int(sys.argv[4]),
+            "categories":int(sys.argv[5]),
+            "database":"solqaryn_dev",
+            "productionTouched":False,
+            "secretsExposed":0
+          }
+          if action=="maintenance_started" and after!="8.4.11":
+              raise SystemExit("Maintenance was started but final version is not 8.4.11")
+          if action=="not_available_no_change" and after!=before:
+              raise SystemExit("Aiven version changed even though target was not certified available")
+          open("evidence/phase1-after.json","w").write(json.dumps(d,indent=2)+"\n")
+          print(json.dumps(d,separators=(",",":")))
+          PY
+
+          before_tables="$(python3 -c 'import json;print(json.load(open("evidence/phase1-before.json"))["baseTables"])')"
+          before_migrations="$(python3 -c 'import json;print(json.load(open("evidence/phase1-before.json"))["efMigrations"])')"
+          before_products="$(python3 -c 'import json;print(json.load(open("evidence/phase1-before.json"))["products"])')"
+          before_categories="$(python3 -c 'import json;print(json.load(open("evidence/phase1-before.json"))["categories"])')"
+          test "$tables_after" = "$before_tables"
+          test "$migrations_after" = "$before_migrations"
+          test "$products_after" = "$before_products"
+          test "$categories_after" = "$before_categories"
+
+          echo "after_version=$after_version" >> "$GITHUB_OUTPUT"
+
+      - name: Dictamen Fase 1
+        shell: bash
+        run: |
+          set -euo pipefail
+          action="${{ steps.apply.outputs.action }}"
+          after="${{ steps.after.outputs.after_version }}"
+          {
+            echo "## Modernización — Fase 1 Aiven/MySQL DEV"
+            echo
+            echo "- HEAD: `$GITHUB_SHA`"
+            echo "- Acción: `$action`"
+            echo "- MySQL final: `$after`"
+            echo "- Target: `$TARGET_VERSION`"
+            echo "- Base: `$EXPECTED_DB`"
+            echo "- PROD tocado: `false`"
+            echo "- Backup cifrado pre-cambio: `PASS`"
+            echo "- Identidad DB/usuario: `PASS`"
+            echo "- Conteos críticos preservados: `PASS`"
+            if [ "$action" = "maintenance_started" ] || [ "$action" = "already_target" ]; then
+              echo "- FASE_1_AIVEN_MYSQL: `PASS_TARGET_8_4_11`"
+            else
+              echo "- FASE_1_AIVEN_MYSQL: `PASS_NO_CHANGE_TARGET_NOT_AVAILABLE`"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Subir evidencia Fase 1
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: modernization-phase1-aiven-mysql-${{ github.run_id }}
+          retention-days: 90
+          path: evidence/
+          if-no-files-found: warn
+
+      - name: Subir backup cifrado pre-Fase 1
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: modernization-phase1-aiven-prebackup-${{ github.run_id }}
+          retention-days: 14
+          path: |
+            backup/solqaryn-dev-pre-phase1.sql.enc
+            backup/solqaryn-dev-pre-phase1.sql.sha256
+          if-no-files-found: warn
