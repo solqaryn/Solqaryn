@@ -65,7 +65,8 @@ Consultar `ARCHITECTURE.md` para cambios estructurales y `PROJECT_INDEX.md` para
 - SMTP DEV, QA y PROD: `smtp-mail.outlook.com:587` + STARTTLS + OAuth2/Modern Auth con identidad `solqaryn.platform@outlook.com`.
 - DEV, QA y PROD no provisionan contraseña SMTP ni client secret OAuth2; cada entorno mantiene su propio refresh token en Render.
 - Contrato Render canónico: 28 claves idénticas por nombre en DEV, QA y PROD; sólo cambian valores dependientes del entorno. Inventario y justificación: `docs/RENDER_ENVIRONMENT_CONTRACT.md`.
-- En Render, el arranque backend aplica `EnvironmentDatabaseGuard`: `Development` sólo acepta `solqaryn_dev` + `solqaryn_dev_user`, `Staging` sólo `solqaryn_qa` + `solqaryn_qa_user`, y `Production` sólo `solqaryn_prod` + `solqaryn_prod_user`; entorno, base o usuario incompatibles fallan cerrados antes de registrar `AppDbContext`.
+- En Render, el arranque backend aplica `EnvironmentDatabaseGuard`: `Development` sólo acepta `solqaryn_dev` + `solqaryn_dev_user`, `Staging` sólo `solqaryn_qa` + `solqaryn_qa_user`, y `Production` sólo `solqaryn_prod` + `solqaryn_prod_user`; además exige el endpoint Aiven corporativo `solqaryn-mysql-solqaryn.h.aivencloud.com:14402` con `SslMode=Required`. Entorno, host, puerto, TLS, base o usuario incompatibles fallan cerrados antes de registrar `AppDbContext`.
+- `RenderEnvironmentContractGuard` valida en cada arranque Render las 28 claves administradas: mismo conjunto de nombres en DEV/QA/PROD, valores obligatorios no vacíos y constantes públicas compartidas coherentes; los secretos y las identidades propias del entorno pueden diferir. El runtime sólo registra conteo y fingerprints no sensibles.
 
 ### Binding Vercel -> API
 
