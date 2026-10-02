@@ -30,6 +30,8 @@ using Microsoft.Net.Http.Headers;
 var builder = WebApplication.CreateBuilder(args);
 var port = Environment.GetEnvironmentVariable("PORT");
 var isRender = string.Equals(Environment.GetEnvironmentVariable("RENDER"), "true", StringComparison.OrdinalIgnoreCase);
+RenderEnvironmentContractSnapshot? renderEnvironmentContract = null;
+if (isRender) renderEnvironmentContract = RenderEnvironmentContractGuard.ValidateProcessEnvironment(builder.Environment.EnvironmentName);
 if (!string.IsNullOrWhiteSpace(port)) builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 builder.Services.AddControllers(options => options.Filters.Add<Solqaryn.API.Filters.MedirRendimientoBusquedaFilter>());
 builder.Services.Configure<FormOptions>(options => options.MultipartBodyLengthLimit = 30 * 1024 * 1024);
@@ -230,6 +232,15 @@ builder.Services.AddCors(options => options.AddPolicy("FrontendPolicy", policy =
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options => { options.SwaggerDoc("v1", new OpenApiInfo { Title = "Solqaryn API", Version = "v1" }); options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme { Name = "Authorization", Type = SecuritySchemeType.Http, Scheme = "Bearer", BearerFormat = "JWT", In = ParameterLocation.Header, Description = "Ingresa: Bearer {tu token}" }); options.AddSecurityRequirement(new OpenApiSecurityRequirement { { new OpenApiSecurityScheme { Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" } }, Array.Empty<string>() } }); });
 var app = builder.Build();
+if (renderEnvironmentContract is not null)
+{
+    app.Logger.LogInformation(
+        "RENDER_ENV_CONTRACT=PASS environment={Environment} managed_keys={ManagedKeyCount} keyset_fingerprint={KeySetFingerprint} shared_fingerprint={SharedConfigurationFingerprint}",
+        renderEnvironmentContract.Environment,
+        renderEnvironmentContract.ManagedKeyCount,
+        renderEnvironmentContract.KeySetFingerprint,
+        renderEnvironmentContract.SharedConfigurationFingerprint);
+}
 if (isRender)
 {
     app.Use(async (context, next) =>
