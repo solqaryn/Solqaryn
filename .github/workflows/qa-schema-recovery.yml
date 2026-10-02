@@ -103,7 +103,7 @@ jobs:
           dump="$RUNNER_TEMP/qa-schema-backup/solqaryn_qa_before.sql"
           encrypted="$RUNNER_TEMP/qa-schema-backup/solqaryn_qa_before.sql.enc"
 
-          mysqldump             --protocol=TCP             -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER"             --ssl-mode=REQUIRED             --single-transaction --skip-lock-tables --no-tablespaces             --routines --triggers             "$DB_NAME" > "$dump"
+          mysqldump             --protocol=TCP             -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER"             --ssl-mode=REQUIRED             --single-transaction --skip-lock-tables --no-tablespaces --set-gtid-purged=OFF             --routines --triggers             "$DB_NAME" > "$dump"
 
           test -s "$dump"
           sha256sum "$dump" > "$RUNNER_TEMP/qa-schema-backup/SHA256SUMS.txt"

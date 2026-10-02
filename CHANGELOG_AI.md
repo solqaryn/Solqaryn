@@ -1,3 +1,11 @@
+## 2026-10-02 — Recovery de promoción controlada DEV → QA
+
+- El PR #3512 fue integrado mediante merge normal para preservar los fixes propios de QA y absorber el baseline DEV vigente; tras el merge, QA quedó `behind_by=0` respecto de DEV.
+- La certificación post-merge detectó dos defectos de infraestructura de prueba, no de datos ni negocio: `mysqldump` intentaba `FLUSH TABLES` bajo el usuario mínimo QA y el smoke esperaba una attestation HTTP que el proxy sólo enviaba hacia el upstream.
+- El backup QA fija `--set-gtid-purged=OFF` para evitar exigir privilegios globales `RELOAD/FLUSH_TABLES`; se mantiene el principio de mínimo privilegio y no se amplían grants de `solqaryn_qa_user`.
+- El proxy Vercel devuelve ahora `x-solqaryn-environment` con el entorno resuelto por `VERCEL_PROJECT_ID`, y el validador de routing exige esa attestation canónica.
+- Este recovery se publica primero en `dev`; `main`/PROD aún no se modifica hasta que QA complete nuevamente todos los gates.
+
 ## 2026-10-01 — Validación post-limpieza SMTP DEV y corrección de fallback de logo
 
 - Readback Render DEV posterior a la limpieza manual: el nuevo deployment ya no detecta las siete claves SMTP legacy retiradas; el único extra restante es `AppSettings__LogoPublicUrl` (29 observadas vs 28 canónicas), por lo que el guard abortó el deployment nuevo sin sustituir la instancia sana.
