@@ -10,10 +10,27 @@ const onlyLocalSkill = '.agents/skills/solqaryn-project-governance/SKILL.md';
 const registryPath = 'docs/REGISTRO_REFERENCIAS_SKILLS_SOLQARYN.md';
 const allowlistPath = 'docs/PROJECT_EXTERNAL_CONTEXT_ALLOWLIST.md';
 
+const retiredPlanningArtifacts = [
+  ['PLAN', 'EJECUCION', 'AUTONOMA.md'].join('_'),
+  ['implementation', 'plan.md'].join('_'),
+  ['docs', ['PLAN', 'CIERRE', 'SOLQARYN.md'].join('_')].join('/'),
+  ['docs', ['PLAN', 'MAESTRO', 'MEJORAS', 'EMPRESARIALES', '2026.md'].join('_')].join('/'),
+  ['docs', ['PLAN', 'MAESTRO', 'TRACEABILITY.md'].join('_')].join('/'),
+  ['docs', 'seguimiento', ['01', 'PLAN', 'FASES.md'].join('-')].join('/'),
+  ['docs', ['FASE8', 'PLAN', 'FACTURACION', 'ENVIOS', 'VARIANTES', 'CARGAS.md'].join('_')].join('/'),
+  ['docs', ['FASE9', 'PLAN', 'LIBERACION', 'Y', 'ROLLBACK.md'].join('_')].join('/'),
+  ['docs', ['N5.2', 'REPORTES', 'INVENTARIO', 'PERSISTENCE', 'QA', 'PLAN.md'].join('_')].join('/'),
+  ['docs', ['N5.2', 'REPORTES', 'INVENTARIO', 'PERSISTENCE', 'QUERY', 'PLAN.md'].join('_')].join('/'),
+  ['docs', 'matrices-evaluacion', '00_GOBERNANZA', ['N8', '18', 'A', 'REFACTOR', 'PLAN.md'].join('_')].join('/'),
+  ['docs', 'matrices-evaluacion', '00_GOBERNANZA', ['PLAN', 'INTERVENCION', 'N8', '15', 'N8', '24.md'].join('_')].join('/'),
+  ['vaep', 'prearm', ['N28A', 'R2', 'PLAN', 'DO', 'NOT', 'DISPATCH.md'].join('_')].join('/'),
+  ['docs', ['CONTEXTO', 'CHATGPT', 'VAEP.md'].join('_')].join('/'),
+];
+
+
 const mandatory = [
   'AGENTS.md',
   'PROJECT_CONTEXT.md',
-  'PLAN_EJECUCION_AUTONOMA.md',
   'CONTRIBUTING.md',
   'docs/VAEP_AUTHORITY.md',
   'docs/COLABORATIVO.md',
@@ -66,6 +83,12 @@ function walk(dir) {
 for (const rel of mandatory) {
   if (!existsSync(join(root, rel))) {
     errors.push(`missing required SOLQARYN file: ${rel}`);
+  }
+}
+
+for (const rel of retiredPlanningArtifacts) {
+  if (existsSync(join(root, rel))) {
+    errors.push(`retired planning artifact must not exist in current tree: ${rel}`);
   }
 }
 
@@ -233,6 +256,30 @@ for (const rel of currentStateIdentityFiles) {
   const source = read(rel);
   if (legacyOperationalPatterns.some(pattern => pattern.test(source))) {
     errors.push("retired project identity remains in current-state document: " + rel);
+  }
+}
+
+const currentStatePlanningFiles = [
+  ...currentStateIdentityFiles,
+  "TASKS.md",
+  "docs/COLABORATIVO.md",
+  "docs/COLABORACION_IA.md",
+  "docs/VAEP_HANDOFF_CURRENT.md",
+];
+
+const retiredPlanningTokens = [
+  ['Plan Maestro ERP', 'V5'].join(' '),
+  ['1rWGOP', '_Z64kM4Q2NZbrTvge3ReqJkJ_vJmhByogbPbR8'].join(''),
+  ['19RrOmbhcqQf7zXWCuqjNPORlVOfuHMa9i43wjOyy8eY'].join(''),
+];
+
+for (const rel of currentStatePlanningFiles) {
+  if (!existsSync(join(root, rel))) continue;
+  const source = read(rel);
+  for (const token of retiredPlanningTokens) {
+    if (source.includes(token)) {
+      errors.push("retired planning authority remains in current-state document: " + rel);
+    }
   }
 }
 

@@ -175,27 +175,16 @@ external_telemetry = any(
 if not external_telemetry:
     warnings.append("EXTERNAL_TELEMETRY_NOT_CONFIGURED__N8.12_T9_REMAINS_NOT_CERTIFIED")
 
-# 35 - every current Plan Maestro ID must exist in the traceability index.
-traceability = read("docs/PLAN_MAESTRO_TRACEABILITY.md")
-expected_ids: list[str] = []
-expected_ids += [f"N0.{i}" for i in range(0, 9)]
-expected_ids += [f"N1.{i}" for i in range(1, 11)]
-expected_ids += [f"N2.{i}" for i in range(1, 10)]
-expected_ids += [f"N3.{i}" for i in range(1, 12)]
-expected_ids += [f"N4.{i}" for i in range(1, 12)]
-expected_ids += [f"N5.{i}" for i in range(1, 10)]
-expected_ids += [f"N6.{i}" for i in range(1, 11)]
-expected_ids += [f"N7.{i}" for i in range(1, 11)]
-expected_ids += [f"N8.{i}" for i in range(1, 15)]
-expected_ids += [f"N9.{i}" for i in range(1, 8)]
-expected_ids += [f"GATE-N{i}" for i in range(0, 10)]
-expected_ids += [f"T{i}" for i in range(0, 13)]
-expected_ids += ["FUT-RRHH", "FUT-CRM", "FUT-MRP", "FUT-AF", "FUT-PROY", "FUT-ST"]
-missing_ids = [item for item in expected_ids if not re.search(rf"(?<![A-Z0-9.\-]){re.escape(item)}(?![A-Z0-9.\-])", traceability)]
-ok(not missing_ids and len(expected_ids) == 129,
-   f"PLAN_MAESTRO_TRACEABILITY_129_IDS:{missing_ids or 'PASS'}")
-ok("PLANIFICADO != ACEPTADO" in traceability and "NO_AUTORIZADO != IMPLEMENTADO" in traceability,
-   "TRACEABILITY_FAILS_CLOSED_FOR_FUTURE_WORK")
+# 35 - current planning authority must be canonical and current-state only.
+agents = read("AGENTS.md")
+vaep = read("docs/VAEP_AUTHORITY.md")
+master_id = "1YdQlNJ312HuziyKb9E-GEt55dcgSmuFGgfsHxyzPUaw"
+ok(master_id in agents and master_id in vaep,
+   "CURRENT_PLAN_MAESTRO_AUTHORITY_PINNED")
+ok("CURRENT_MASTER_ONLY=TRUE" in vaep and "PREVIOUS_PLAN_DEPENDENCY=PROHIBITED" in vaep,
+   "RETIRED_PLAN_DEPENDENCIES_BLOCKED")
+ok("CONTEXT_MODE=CURRENT_STATE_ONLY" in agents and "CONTEXT_MODE=CURRENT_STATE_ONLY" in vaep,
+   "CURRENT_STATE_ONLY_PLANNING")
 
 print("PRIORITY4_QUALITY_AUDIT")
 for item in passes:
