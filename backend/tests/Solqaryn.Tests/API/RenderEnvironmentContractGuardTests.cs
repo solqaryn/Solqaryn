@@ -90,30 +90,32 @@ public sealed class RenderEnvironmentContractGuardTests
     public void Validate_ComparteFingerprintPublicoEntreEntornos()
     {
         var dev = RenderEnvironmentContractGuard.Validate("Development", CanonicalDev());
-        var qa = RenderEnvironmentContractGuard.Validate(
+        var qaVariables = Canonical(
             "Staging",
-            Canonical(
-                "Staging",
-                "solqaryn-api-qa.onrender.com",
-                "false",
-                "Solqaryn.QA.API",
-                "Solqaryn.QA.Frontend",
-                "solqaryn_qa",
-                "https://solqaryn-qa.vercel.app",
-                "https://solqaryn-api-qa.onrender.com",
-                "SOLQARYN QA"));
-        var prod = RenderEnvironmentContractGuard.Validate(
+            "solqaryn-api-qa.onrender.com",
+            "false",
+            "Solqaryn.QA.API",
+            "Solqaryn.QA.Frontend",
+            "solqaryn_qa",
+            "https://solqaryn-qa.vercel.app",
+            "https://solqaryn-api-qa.onrender.com",
+            "SOLQARYN QA");
+        qaVariables["Cloudinary__CloudName"] = "qa-cloud";
+
+        var prodVariables = Canonical(
             "Production",
-            Canonical(
-                "Production",
-                "solqaryn-api-prod.onrender.com",
-                "false",
-                "Solqaryn.PROD.API",
-                "Solqaryn.PROD.Frontend",
-                "solqaryn_prod",
-                "https://solqaryn-prod.vercel.app",
-                "https://solqaryn-api-prod.onrender.com",
-                "SOLQARYN PROD"));
+            "solqaryn-api-prod.onrender.com",
+            "false",
+            "Solqaryn.PROD.API",
+            "Solqaryn.PROD.Frontend",
+            "solqaryn_prod",
+            "https://solqaryn-prod.vercel.app",
+            "https://solqaryn-api-prod.onrender.com",
+            "SOLQARYN PROD");
+        prodVariables["Cloudinary__CloudName"] = "prod-cloud";
+
+        var qa = RenderEnvironmentContractGuard.Validate("Staging", qaVariables);
+        var prod = RenderEnvironmentContractGuard.Validate("Production", prodVariables);
 
         Assert.Equal(dev.KeySetFingerprint, qa.KeySetFingerprint);
         Assert.Equal(dev.KeySetFingerprint, prod.KeySetFingerprint);
