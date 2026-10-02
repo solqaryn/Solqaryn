@@ -14,6 +14,8 @@
 - GitHub Environments canónicos: `DEV`, `QA` y `PROD`.
 - Identidad corporativa operativa: `solqaryn.platform@outlook.com`.
 - Las empresas cliente/tenants no definen la identidad técnica ni operativa de SOLQARYN.
+- El árbol versionado vigente aplica un gate repository-wide que rechaza cualquier identificador de plataforma retirado y la terminología inglesa heredada del dominio de inventario; no existe una identidad paralela a SOLQARYN.
+- `Inventario` permanece como módulo funcional ERP legítimo en español. Sus rutas administrativas canónicas viven bajo `/inventario/...`; no existe un wrapper `/app/inventario/...` ni un store/plataforma legacy separado.
 
 ## 2. Regla de estado vivo
 
