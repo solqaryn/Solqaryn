@@ -2528,3 +2528,11 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
 
+## 2026-10-02 — Fase 0: cancelar certificaciones stale al avanzar HEAD
+
+- El workflow de baseline pasa a `cancel-in-progress: true` para que una ejecución ya invalidada por un recovery no bloquee la certificación del HEAD vigente.
+- La política mantiene una única certificación exact-head activa y evita consumir runners en candidatos que ya no pueden cerrar la Fase 0.
+- Sin cambios funcionales, versiones, datos, QA ni PROD.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
