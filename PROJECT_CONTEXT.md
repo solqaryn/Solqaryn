@@ -33,7 +33,7 @@ Ningún plan, fila, gate, fase o secuencia que no esté incorporado al MAESTRO v
 
 SOLQARYN es una plataforma empresarial multiempresa.
 
-- Frontend: Angular 20 standalone, Signals y Angular Material.
+- Frontend: Angular 20 standalone, Signals y Angular Material. Toolchain frontend vigente: Node.js 24.21.0 LTS + npm 11.19.0; CI operativo usa el patch exacto y Vercel se gobierna por `engines.node=24.x`.
 - Identidad técnica de código: namespaces/assemblies/proyectos usan Solqaryn.*; el storefront fuente es tenant-neutral y vive bajo features/storefront.
 - Backend: ASP.NET Core 8 Web API.
 - Capas: Domain <- Application <- Infrastructure; API compone y expone.
