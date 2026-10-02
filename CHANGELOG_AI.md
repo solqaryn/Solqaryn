@@ -2506,3 +2506,14 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
 
+## 2026-10-02 — Fase 0 de modernización: baseline técnico reproducible
+
+- Se incorpora un baseline de estado actual previo a cualquier migración de versiones, sin modificar runtime funcional ni versiones productivas.
+- El baseline congela dependencias directas, TargetFramework, imágenes Docker, MySQL configurado y el blob vigente de `frontend/package-lock.json` en `docs/evidencias/modernizacion/BASELINE_FASE_0.json`.
+- Se agrega un workflow exact-head que exige scope SOLQARYN, backend Release + tests, Docker, auditoría NuGet, frontend lint/audit/bundle, seguridad/tenancy/secret scan, MySQL 8.4 efímero, Playwright integral, versión MySQL Aiven DEV, backup cifrado real de DEV y restore del mismo artifact en MySQL descartable.
+- El workflow también captura las versiones realmente resueltas de Node, npm, .NET SDK, SO del runner, árbol npm directo, hashes SHA-256 y evidencia de bundle.
+- Toda operación de base real queda limitada a DEV; el restore está fail-closed a un MySQL local descartable y declara `productionTouched=false`.
+- Este changeset sólo crea evidencia/gates de modernización. No cambia Angular, Node, .NET, EF, provider MySQL, datos productivos, QA ni PROD.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+

@@ -1,0 +1,577 @@
+name: Modernización - Fase 0 baseline técnico
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/modernization-baseline.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: modernization-baseline-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  versiones:
+    name: HEAD, versiones exactas y lockfiles
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+          cache: true
+          cache-dependency-path: backend/**/*.csproj
+      - name: Verificar scope SOLQARYN
+        run: node scripts/verify-project-scope.mjs
+      - name: Validar baseline declarado y producir manifest resuelto
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence
+          python3 - <<'PY'
+          import hashlib, json, os, platform, re, subprocess, xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          root=Path('.')
+          expected=json.loads((root/'docs/evidencias/modernizacion/BASELINE_FASE_0.json').read_text(encoding='utf-8'))
+          package=json.loads((root/'frontend/package.json').read_text(encoding='utf-8'))
+          lock=json.loads((root/'frontend/package-lock.json').read_text(encoding='utf-8'))
+
+          assert package['dependencies'] == expected['frontend']['dependencies']
+          assert package['devDependencies'] == expected['frontend']['devDependencies']
+          assert lock['lockfileVersion'] == expected['frontend']['lockfileVersion']
+
+          csproj_paths=[
+            root/'backend/src/API/Solqaryn.API.csproj',
+            root/'backend/src/Application/Solqaryn.Application.csproj',
+            root/'backend/src/Infrastructure/Solqaryn.Infrastructure.csproj',
+            root/'backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj',
+          ]
+          refs={}
+          frameworks={}
+          for path in csproj_paths:
+            tree=ET.parse(path)
+            frameworks[str(path)]=[x.text for x in tree.findall('.//TargetFramework') if x.text]
+            for node in tree.findall('.//PackageReference'):
+              name=node.attrib.get('Include')
+              version=node.attrib.get('Version')
+              if name and version:
+                refs.setdefault(name,set()).add(version)
+
+          for name,version in expected['backend']['packages'].items():
+            assert version in refs.get(name,set()), (name, version, sorted(refs.get(name,set())))
+          for name,version in expected['backend']['testing'].items():
+            assert version in refs.get(name,set()), (name, version, sorted(refs.get(name,set())))
+          assert all(v == ['net8.0'] for v in frameworks.values()), frameworks
+
+          docker=(root/'backend/Dockerfile').read_text(encoding='utf-8')
+          assert expected['backend']['dockerSdk'] in docker
+          assert expected['backend']['dockerRuntime'] in docker
+
+          render=(root/'render.yaml').read_text(encoding='utf-8')
+          assert 'value: 8.4.8' in render
+
+          files=[
+            'frontend/package.json','frontend/package-lock.json',
+            'backend/src/API/Solqaryn.API.csproj',
+            'backend/src/Application/Solqaryn.Application.csproj',
+            'backend/src/Domain/Solqaryn.Domain.csproj',
+            'backend/src/Infrastructure/Solqaryn.Infrastructure.csproj',
+            'backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj',
+            'backend/Dockerfile','Dockerfile','render.yaml','frontend/vercel.json'
+          ]
+          hashes={}
+          for rel in files:
+            data=(root/rel).read_bytes()
+            hashes[rel]=hashlib.sha256(data).hexdigest()
+
+          def out(*cmd):
+            return subprocess.check_output(cmd, text=True).strip()
+
+          resolved={
+            'status':'PASS',
+            'gitSha':os.environ['GITHUB_SHA'],
+            'gitRef':os.environ['GITHUB_REF_NAME'],
+            'node':out('node','--version'),
+            'npm':out('npm','--version'),
+            'dotnetSdk':out('dotnet','--version'),
+            'dotnetInfo':out('dotnet','--info'),
+            'osRelease':Path('/etc/os-release').read_text(encoding='utf-8',errors='replace'),
+            'machine':platform.machine(),
+            'frontendDirect':{
+              'dependencies':package['dependencies'],
+              'devDependencies':package['devDependencies'],
+              'lockfileVersion':lock['lockfileVersion'],
+            },
+            'backendTargetFrameworks':frameworks,
+            'backendPackageReferences':{k:sorted(v) for k,v in sorted(refs.items())},
+            'sha256':hashes,
+            'productionTouched':False
+          }
+          (root/'evidence/baseline-resolved-versions.json').write_text(json.dumps(resolved,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
+          print(json.dumps({k:resolved[k] for k in ('status','gitSha','node','npm','dotnetSdk','machine')},separators=(',',':')))
+          PY
+      - name: Guardar npm tree directo
+        working-directory: frontend
+        run: |
+          npm ci
+          npm ls --depth=0 --json > ../evidence/npm-direct-tree.json
+      - name: Guardar checksum del lockfile
+        shell: bash
+        run: sha256sum frontend/package-lock.json | tee evidence/package-lock.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fase0-versiones-${{ github.run_id }}
+          path: evidence/
+          retention-days: 90
+
+  backend:
+    name: Backend, tests, Docker y vulnerabilidades
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+          cache: true
+          cache-dependency-path: backend/**/*.csproj
+      - name: Restore, build y tests no integración
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+          dotnet test Solqaryn.sln --configuration Release --no-build --filter "Category!=Integration" --logger "trx;LogFileName=fase0-backend.trx"
+      - name: Auditoría de paquetes vulnerables
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet list Solqaryn.sln package --vulnerable --include-transitive | tee fase0-nuget-vulnerable.txt
+          if grep -Eqi 'has the following vulnerable packages|tiene los siguientes paquetes vulnerables' fase0-nuget-vulnerable.txt; then
+            echo 'Se detectaron paquetes NuGet vulnerables; baseline bloqueado.' >&2
+            exit 1
+          fi
+      - name: Build Docker exact-head
+        run: docker build --file backend/Dockerfile --tag solqaryn-api:fase0 .
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fase0-backend-${{ github.run_id }}
+          path: |
+            backend/**/TestResults/fase0-backend.trx
+            backend/fase0-nuget-vulnerable.txt
+          if-no-files-found: warn
+          retention-days: 90
+
+  frontend:
+    name: Frontend, bundle, lint y audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Dependencias bloqueadas
+        working-directory: frontend
+        run: npm ci
+      - name: Lint y contratos estáticos
+        working-directory: frontend
+        run: npm run lint
+      - name: Audit productivo high+
+        working-directory: frontend
+        run: npm audit --omit=dev --audit-level=high
+      - name: Bundle productivo medido
+        working-directory: frontend
+        run: npm run perf:bundle-baseline
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fase0-frontend-${{ github.run_id }}
+          path: |
+            frontend/dist/solqaryn-frontend/performance-bundle-baseline.json
+            frontend/dist/solqaryn-frontend/angular-stats-summary.json
+            frontend/dist/solqaryn-frontend/**/stats.json
+          if-no-files-found: warn
+          retention-days: 90
+
+  seguridad:
+    name: Seguridad, autorización, tenancy y secretos
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+          cache: true
+          cache-dependency-path: backend/**/*.csproj
+      - name: Restore y build
+        working-directory: backend
+        run: |
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+      - name: Tests de fronteras de seguridad
+        working-directory: backend
+        run: >-
+          dotnet test Solqaryn.sln --configuration Release --no-build
+          --filter "FullyQualifiedName~Priority3AuthorizationSurfaceTests|FullyQualifiedName~Priority3FileSecurityTests|FullyQualifiedName~SecurityBoundaryContractTests"
+          --logger "trx;LogFileName=fase0-security.trx"
+      - name: Certificación estructural multi-tenant
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/security/priority3_tenant_isolation_audit.py --require-certified | tee fase0-tenant-security.txt
+      - name: Scan de secretos en árbol e historia
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/security/priority3_secret_audit.py | tee fase0-secret-scan.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fase0-seguridad-${{ github.run_id }}
+          path: |
+            backend/**/TestResults/fase0-security.trx
+            fase0-tenant-security.txt
+            fase0-secret-scan.txt
+          if-no-files-found: warn
+          retention-days: 90
+
+  runtime_e2e:
+    name: MySQL efímero, runtime, HTTP y Playwright integral
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: solqaryn_fase0_runtime
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-interval=10s --health-timeout=5s --health-retries=12
+    env:
+      ASPNETCORE_ENVIRONMENT: Staging
+      PORT: '5005'
+      AllowedHosts: '127.0.0.1;localhost'
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_fase0_runtime;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
+      Database__ServerVersion: '8.4.0'
+      Database__ApplyMigrationsOnStartup: 'true'
+      Jwt__Secret: 'Fase0-E2E-Only-Secret-With-More-Than-32-Characters-2026'
+      Jwt__Issuer: 'Solqaryn.Fase0.API'
+      Jwt__Audience: 'Solqaryn.Fase0.Frontend'
+      Jwt__ExpiraMinutos: '120'
+      Security__LoginRateLimitPerMinute: '300'
+      SeedAdmin__Username: 'e2e_admin'
+      SeedAdmin__Password: 'E2E.Admin#2026!'
+      Cors__AllowedOrigins__0: 'http://127.0.0.1:4200'
+      Cors__AllowedOrigins__1: 'http://localhost:4200'
+      Swagger__Enabled: 'false'
+      AppSettings__BackendPublicUrl: 'https://preview.solqaryn.invalid'
+      AppSettings__LogoPublicUrl: ''
+      AppSettings__EnlacePublicoFacturaHorasValidez: '1'
+      AppSettings__EnlacePublicoFacturaMaximoAccesos: '5'
+      AppSettings__CorreoFacturaIdempotenciaMinutos: '15'
+      Cloudinary__CloudName: 'fase0-not-used'
+      Cloudinary__ApiKey: 'fase0-not-used'
+      Cloudinary__ApiSecret: 'fase0-not-used'
+      Cloudinary__EnvironmentPrefix: 'solqaryn_dev'
+      Smtp__Host: '127.0.0.1'
+      Smtp__Port: '1025'
+      Smtp__UsuarioSmtp: 'smtp-user'
+      Smtp__UsarSsl: 'false'
+      Smtp__RequiereAutenticacion: 'false'
+      Smtp__CorreoRemitente: 'facturas@fase0.test'
+      Smtp__CorreoRespuesta: 'soporte@fase0.test'
+      Smtp__NombreRemitente: 'SOLQARYN Fase 0'
+      Smtp__TimeoutSeconds: '10'
+      Smtp__MaxAttempts: '3'
+      Smtp__RetryBaseDelayMilliseconds: '100'
+      SMTP_CAPTURE_DIR: '/tmp/solqaryn-fase0-smtp'
+      SMTP_CAPTURE_HOST: '127.0.0.1'
+      SMTP_CAPTURE_PORT: '1025'
+      SMTP_CAPTURE_REQUIRE_AUTH: 'false'
+      SMTP_CAPTURE_USERNAME: 'smtp-user'
+      SMTP_CAPTURE_PASSWORD: 'smtp-pass'
+      SMTP_FAIL_FIRST_MESSAGES: '1'
+      PHASE7_API_URL: 'http://127.0.0.1:5005'
+      PHASE7_ADMIN_USERNAME: 'e2e_admin'
+      PHASE7_ADMIN_PASSWORD: 'E2E.Admin#2026!'
+      PHASE8_EXPECT_SWAGGER_DISABLED: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+          cache: true
+          cache-dependency-path: backend/**/*.csproj
+      - name: Backend Release
+        working-directory: backend
+        run: |
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+      - name: SMTP efímero
+        shell: bash
+        run: |
+          rm -rf "$SMTP_CAPTURE_DIR" && mkdir -p "$SMTP_CAPTURE_DIR"
+          nohup python3 scripts/fase7_fake_smtp.py > fase0-smtp.log 2>&1 &
+          for attempt in $(seq 1 30); do (echo > /dev/tcp/127.0.0.1/1025) >/dev/null 2>&1 && exit 0; sleep 1; done
+          cat fase0-smtp.log >&2 || true
+          exit 1
+      - name: API Staging y migraciones
+        shell: bash
+        run: |
+          nohup dotnet run --project backend/src/API/Solqaryn.API.csproj --configuration Release --no-build --no-launch-profile > backend/fase0-api.log 2>&1 &
+          for attempt in $(seq 1 60); do
+            curl --fail --silent http://127.0.0.1:5005/health/ready >/dev/null && exit 0
+            sleep 2
+          done
+          cat backend/fase0-api.log >&2 || true
+          exit 1
+      - name: Versión exacta MySQL CI
+        shell: bash
+        run: |
+          set -euo pipefail
+          mysql_container='${{ job.services.mysql.id }}'
+          docker exec "$mysql_container" mysql -uroot -proot -Nse "SELECT VERSION();" | tee fase0-mysql-ci-version.txt
+      - name: Seguridad HTTP y autorización fail-closed
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --silent --show-error --dump-header fase0-headers.txt --output fase0-health.json http://127.0.0.1:5005/health
+          grep -qi '^X-Content-Type-Options: nosniff' fase0-headers.txt
+          grep -qi '^X-Frame-Options: DENY' fase0-headers.txt
+          grep -qi '^Referrer-Policy: no-referrer' fase0-headers.txt
+          grep -qi '^Permissions-Policy:.*camera=()' fase0-headers.txt
+          test "$(curl --silent -o /dev/null -w '%{http_code}' http://127.0.0.1:5005/swagger/index.html)" = 404
+          test "$(curl --silent -o /dev/null -w '%{http_code}' 'http://127.0.0.1:5005/productos?page=1&pageSize=1')" = 401
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run lint
+          npm run build:prod
+      - name: Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Angular
+        shell: bash
+        run: |
+          nohup npm --prefix frontend start -- --host 127.0.0.1 --port 4200 > frontend/fase0-frontend.log 2>&1 &
+          for attempt in $(seq 1 60); do curl --fail --silent http://127.0.0.1:4200/login >/dev/null && exit 0; sleep 2; done
+          cat frontend/fase0-frontend.log >&2 || true
+          exit 1
+      - name: Playwright integral
+        working-directory: frontend
+        run: npx playwright test --config=playwright.config.ts
+      - name: Validar SMTP, PDF y logs
+        env:
+          PHASE8_ADMIN_PASSWORD: 'E2E.Admin#2026!'
+          PHASE8_JWT_SECRET: 'Fase0-E2E-Only-Secret-With-More-Than-32-Characters-2026'
+          PHASE8_SMTP_PASSWORD: 'smtp-pass'
+          PHASE8_DATABASE_PASSWORD: 'root'
+        shell: bash
+        run: |
+          python3 scripts/fase7_validate_email.py
+          python3 scripts/fase8_validate_runtime.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fase0-runtime-e2e-${{ github.run_id }}
+          path: |
+            backend/fase0-api.log
+            frontend/fase0-frontend.log
+            frontend/playwright-report/
+            frontend/test-results/
+            fase0-smtp.log
+            fase0-headers.txt
+            fase0-health.json
+            fase0-mysql-ci-version.txt
+            fase8-runtime-report.json
+          if-no-files-found: warn
+          retention-days: 90
+
+  aiven_backup_restore:
+    name: Aiven DEV exacto + backup cifrado + restore same-artifact
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: DEV
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: solqaryn-ci-root-only
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -psolqaryn-ci-root-only --silent"
+          --health-interval=10s --health-timeout=5s --health-retries=12
+    env:
+      DB_HOST: ${{ vars.SOLQARYN_DEV_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_DEV_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_DEV_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_DEV_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_DEV_DB_PASSWORD }}
+      BACKUP_PASSPHRASE: ${{ secrets.SOLQARYN_DEV_BACKUP_PASSPHRASE }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Cliente MySQL y GPG
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mysql-client gnupg
+      - name: Validar binding DEV y capturar versión Aiven
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$DB_NAME" = 'solqaryn_dev'
+          test "$DB_USER" = 'solqaryn_dev_user'
+          test -n "$DB_PASSWORD"
+          test -n "$BACKUP_PASSPHRASE"
+          export MYSQL_PWD="$DB_PASSWORD"
+          mkdir -p evidence
+          result="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e "SELECT DATABASE(), SUBSTRING_INDEX(CURRENT_USER(),'@',1), VERSION();")"
+          IFS=$'\t' read -r actual_db actual_user version <<< "$result"
+          test "$actual_db" = 'solqaryn_dev'
+          test "$actual_user" = 'solqaryn_dev_user'
+          python3 - "$version" <<'PY'
+          import json,sys
+          data={'status':'PASS','engine':'MySQL','liveDevVersion':sys.argv[1],'database':'solqaryn_dev','effectiveUser':'solqaryn_dev_user','tlsRequired':True,'productionTouched':False}
+          open('evidence/aiven-dev-version.json','w',encoding='utf-8').write(json.dumps(data,indent=2)+'\n')
+          print(json.dumps(data,separators=(',',':')))
+          PY
+      - name: Backup cifrado DEV real
+        id: backup
+        shell: bash
+        env:
+          SOLQARYN_ENVIRONMENT: dev
+          DB_SSL_MODE: REQUIRED
+          OUTPUT_DIR: ${{ runner.temp }}/solqaryn-fase0-backups
+          RETENTION_DAYS: '14'
+          BACKUP_LABEL: fase0-dev
+        run: |
+          set -euo pipefail
+          chmod +x scripts/backup_dev.sh
+          scripts/backup_dev.sh | tee "$RUNNER_TEMP/fase0-backup.log"
+          backup_file="$(grep '^SOLQARYN_BACKUP_FILE=' "$RUNNER_TEMP/fase0-backup.log" | cut -d= -f2-)"
+          checksum_file="$(grep '^SOLQARYN_BACKUP_SHA256=' "$RUNNER_TEMP/fase0-backup.log" | cut -d= -f2-)"
+          metadata_file="$(grep '^SOLQARYN_BACKUP_METADATA=' "$RUNNER_TEMP/fase0-backup.log" | cut -d= -f2-)"
+          test -s "$backup_file"
+          test -s "$checksum_file"
+          test -s "$metadata_file"
+          grep -q '"encrypted": true' "$metadata_file"
+          grep -q '"productionInScope": false' "$metadata_file"
+          echo "backup_file=$backup_file" >> "$GITHUB_OUTPUT"
+          echo "checksum_file=$checksum_file" >> "$GITHUB_OUTPUT"
+          echo "metadata_file=$metadata_file" >> "$GITHUB_OUTPUT"
+      - name: Restore del mismo artifact en MySQL descartable
+        id: restore
+        shell: bash
+        env:
+          RESTORE_ENVIRONMENT: ci
+          TARGET_DB_HOST: 127.0.0.1
+          TARGET_DB_PORT: '3306'
+          TARGET_DB_NAME: solqaryn_fase0_restore
+          TARGET_DB_USER: root
+          TARGET_DB_PASSWORD: solqaryn-ci-root-only
+          TARGET_DB_SSL_MODE: DISABLED
+          BACKUP_FILE: ${{ steps.backup.outputs.backup_file }}
+          BACKUP_CHECKSUM_FILE: ${{ steps.backup.outputs.checksum_file }}
+          ALLOW_DESTRUCTIVE_RESTORE: YES_SOLQARYN_DISPOSABLE_RESTORE
+          RESTORE_FILES_DIR: ${{ runner.temp }}/solqaryn-fase0-restored-files
+          RESTORE_REPORT_PATH: ${{ runner.temp }}/solqaryn-fase0-restore-report.json
+        run: |
+          set -euo pipefail
+          chmod +x scripts/restore_dev.sh
+          scripts/restore_dev.sh | tee "$RUNNER_TEMP/fase0-restore.log"
+          report_file="$(grep '^SOLQARYN_RESTORE_REPORT=' "$RUNNER_TEMP/fase0-restore.log" | cut -d= -f2-)"
+          test -s "$report_file"
+          grep -q '"checksumsVerified": true' "$report_file"
+          grep -q '"allTableRowCountsVerified": true' "$report_file"
+          grep -q '"productionTouched": false' "$report_file"
+          grep -q '"status": "SUCCESS"' "$report_file"
+          cp "$report_file" evidence/restore-report.json
+      - name: Smoke DEV vivo
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-delay 3 --retry-all-errors --fail --silent --show-error https://solqaryn-api-dev-fxx8.onrender.com/health/ready > evidence/render-health.json
+          curl --retry 5 --retry-delay 3 --retry-all-errors --fail --silent --show-error https://solqaryn-dev.vercel.app/login > /tmp/solqaryn-login.html
+          grep -qi 'SOLQARYN' /tmp/solqaryn-login.html
+          echo '{"status":"PASS","renderReady":true,"vercelLogin":true,"productionTouched":false}' > evidence/live-dev-smoke.json
+      - name: Copiar metadata segura
+        run: |
+          cp '${{ steps.backup.outputs.metadata_file }}' evidence/backup-metadata.json
+          cp '${{ steps.backup.outputs.checksum_file }}' evidence/backup.sha256
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fase0-aiven-backup-restore-${{ github.run_id }}
+          path: |
+            evidence/
+            ${{ steps.backup.outputs.backup_file }}
+          if-no-files-found: warn
+          retention-days: 14
+
+  certificar:
+    name: Dictamen Fase 0
+    if: always()
+    needs: [versiones, backend, frontend, seguridad, runtime_e2e, aiven_backup_restore]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Exigir todos los gates verdes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test '${{ needs.versiones.result }}' = success
+          test '${{ needs.backend.result }}' = success
+          test '${{ needs.frontend.result }}' = success
+          test '${{ needs.seguridad.result }}' = success
+          test '${{ needs.runtime_e2e.result }}' = success
+          test '${{ needs.aiven_backup_restore.result }}' = success
+          {
+            echo 'FASE_0_BASELINE=PASS'
+            echo 'HEAD=${{ github.sha }}'
+            echo 'BACKEND=PASS'
+            echo 'FRONTEND=PASS'
+            echo 'E2E=PASS'
+            echo 'MYSQL_DEV_LIVE=PASS'
+            echo 'SECURITY=PASS'
+            echo 'BUNDLE=PASS'
+            echo 'BACKUP_RESTORE_SAME_ARTIFACT=PASS'
+            echo 'PRODUCTION_TOUCHED=false'
+          } | tee fase0-certificacion.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fase0-certificacion-${{ github.run_id }}
+          path: fase0-certificacion.txt
+          retention-days: 90
