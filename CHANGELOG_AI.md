@@ -2497,7 +2497,7 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 
 ## 2026-10-02 — Retiro de superficies de planificación histórica
 
-- `TASKS.md` deja de almacenar rollups N3/N4/N7/N8/N9, parents, gates y snapshots de planes retirados; queda como superficie compacta de estado actual.
+- `TASKS.md` deja de almacenar rollups históricos numerados, parents, gates y snapshots de planes retirados; queda como superficie compacta de estado actual.
 - Se retiran del árbol vivo los artefactos locales de planificación anteriores que ya no tienen autoridad; la trazabilidad histórica permanece en Git y la evidencia técnica/certificaciones funcionales no se convierten en roadmap.
 - Los checks operativos dejan de depender de índices locales de planes históricos y validan directamente la autoridad vigente: Plan Maestro único + `docs/VAEP_AUTHORITY.md` + `CURRENT_STATE_ONLY`.
 - Se corrigen referencias operativas residuales a la rama histórica y a PRs históricos en documentación de contribución/colaboración.

@@ -20,7 +20,7 @@ CONTEXT_MODE=CURRENT_STATE_ONLY
 ## Estado operativo
 
 - DEV, QA y PROD están reconciliados sobre la infraestructura corporativa vigente.
-- Los rollups históricos N3/N4/N7/N8/N9 y las secuencias de planes anteriores fueron retirados de esta superficie viva.
+- Los rollups históricos numerados y las secuencias de planes anteriores fueron retirados de esta superficie viva.
 - Las diez automatizaciones VAEP permanecen pausadas hasta autorización explícita del propietario.
 - No existe una cola, parent, gate o fase histórica con autoridad ejecutable desde este archivo.
 - El trabajo futuro se selecciona únicamente desde el Plan Maestro vigente + estado vivo + dependencias técnicas reales.
