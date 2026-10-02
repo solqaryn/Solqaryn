@@ -38,6 +38,7 @@ SOLQARYN es una plataforma empresarial multiempresa.
 - Persistencia: MySQL con EF Core 8/Pomelo.
 - Seguridad: JWT, BCrypt, RBAC relacional, auditoría, CORS explícito, rate limiting y security headers.
 - Integraciones vigentes: Cloudinary, QuestPDF y SMTP; DEV, QA y PROD usan Outlook.com con OAuth2/Modern Auth para `solqaryn.platform@outlook.com`.
+- Facturas PDF: el branding visual se resuelve por empresa/tenant (`EmpresaConfiguracion.LogoUrl`); si no existe logo válido, QuestPDF usa un monograma derivado de `EmpresaNombre`. No existe fallback global `AppSettings__LogoPublicUrl` en Render ni branding fijo de un cliente.
 - E2E/browser: Playwright/Chromium.
 - Baseline de rendimiento DEV first-party: duración API, cantidad/tiempo de queries MySQL, TTFB/requests/bytes por pantalla, LCP/INP/CLS y tamaños de bundles; no requiere un servicio de observabilidad pagado.
 - Storefront público de productos: read path dedicado con proyecciones ligeras, paginación/filtros server-side y contexto de carrito por IDs; `GET /tienda/productos` y destacados usan `TiendaProductoResumenDto` con imagen principal y variantes mínimas, mientras el DTO rico con galería queda reservado al detalle/contexto acotado; las lecturas públicas ya no materializan el catálogo administrativo completo.
