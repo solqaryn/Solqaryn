@@ -80,7 +80,7 @@ jobs:
           products_before="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e "SELECT COUNT(*) FROM Productos;")"
           categories_before="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e "SELECT COUNT(*) FROM Categorias;")"
 
-          mysqldump --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED             --single-transaction --quick --routines --triggers --events --hex-blob "$DB_NAME"             > backup/solqaryn-dev-pre-phase1.sql
+          mysqldump --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED             --single-transaction --skip-lock-tables --no-tablespaces --set-gtid-purged=OFF             --quick --routines --triggers --hex-blob "$DB_NAME"             > backup/solqaryn-dev-pre-phase1.sql
           sha256sum backup/solqaryn-dev-pre-phase1.sql > backup/solqaryn-dev-pre-phase1.sql.sha256
           openssl enc -aes-256-cbc -pbkdf2 -salt -in backup/solqaryn-dev-pre-phase1.sql             -out backup/solqaryn-dev-pre-phase1.sql.enc -pass env:BACKUP_PASSPHRASE
           rm backup/solqaryn-dev-pre-phase1.sql
