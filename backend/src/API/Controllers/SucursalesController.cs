@@ -20,11 +20,13 @@ public sealed class SucursalesController : ControllerBase
         _sucursalService = sucursalService;
     }
 
+    private int EmpresaAutorizada() => TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext);
+
     [HttpGet]
     [RequierePermiso(ModuloSistema.Sucursales, AccionPermiso.Ver)]
     public async Task<IActionResult> Buscar([FromQuery] SucursalFiltroDto filtro)
     {
-        var pagina = await _sucursalService.BuscarAsync(filtro);
+        var pagina = await _sucursalService.BuscarAsync(filtro, EmpresaAutorizada());
         return Ok(ApiResponse<SucursalPaginaDto>.Ok(pagina));
     }
 
@@ -32,7 +34,7 @@ public sealed class SucursalesController : ControllerBase
     [RequierePermiso(ModuloSistema.Sucursales, AccionPermiso.Ver)]
     public async Task<IActionResult> GetActivas([FromQuery] int? empresaId = null)
     {
-        var sucursales = await _sucursalService.GetActivasAsync(empresaId);
+        var sucursales = await _sucursalService.GetActivasAsync(EmpresaAutorizada(), empresaId);
         return Ok(ApiResponse<List<SucursalDto>>.Ok(sucursales));
     }
 
@@ -40,7 +42,7 @@ public sealed class SucursalesController : ControllerBase
     [RequierePermiso(ModuloSistema.Sucursales, AccionPermiso.Ver)]
     public async Task<IActionResult> GetById(int id)
     {
-        var sucursal = await _sucursalService.GetByIdAsync(id);
+        var sucursal = await _sucursalService.GetByIdAsync(id, EmpresaAutorizada());
         if (sucursal is null)
             return NotFound(ApiResponse<object>.Fail("Sucursal no encontrada."));
 
@@ -51,7 +53,7 @@ public sealed class SucursalesController : ControllerBase
     [RequierePermiso(ModuloSistema.Sucursales, AccionPermiso.Crear)]
     public async Task<IActionResult> Create([FromBody] CreateSucursalDto dto)
     {
-        var creada = await _sucursalService.CreateAsync(dto);
+        var creada = await _sucursalService.CreateAsync(dto, EmpresaAutorizada());
         return CreatedAtAction(
             nameof(GetById),
             new { id = creada.Id },
@@ -62,7 +64,7 @@ public sealed class SucursalesController : ControllerBase
     [RequierePermiso(ModuloSistema.Sucursales, AccionPermiso.Editar)]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateSucursalDto dto)
     {
-        var actualizada = await _sucursalService.UpdateAsync(id, dto);
+        var actualizada = await _sucursalService.UpdateAsync(id, dto, EmpresaAutorizada());
         if (actualizada is null)
             return NotFound(ApiResponse<object>.Fail("Sucursal no encontrada."));
 
@@ -73,7 +75,7 @@ public sealed class SucursalesController : ControllerBase
     [RequierePermiso(ModuloSistema.Sucursales, AccionPermiso.Activar)]
     public async Task<IActionResult> Activar(int id)
     {
-        var sucursal = await _sucursalService.CambiarEstadoAsync(id, true);
+        var sucursal = await _sucursalService.CambiarEstadoAsync(id, true, EmpresaAutorizada());
         if (sucursal is null)
             return NotFound(ApiResponse<object>.Fail("Sucursal no encontrada."));
 
@@ -84,7 +86,7 @@ public sealed class SucursalesController : ControllerBase
     [RequierePermiso(ModuloSistema.Sucursales, AccionPermiso.Desactivar)]
     public async Task<IActionResult> Desactivar(int id)
     {
-        var sucursal = await _sucursalService.CambiarEstadoAsync(id, false);
+        var sucursal = await _sucursalService.CambiarEstadoAsync(id, false, EmpresaAutorizada());
         if (sucursal is null)
             return NotFound(ApiResponse<object>.Fail("Sucursal no encontrada."));
 
@@ -95,7 +97,7 @@ public sealed class SucursalesController : ControllerBase
     [RequierePermiso(ModuloSistema.Sucursales, AccionPermiso.EliminarLogico)]
     public async Task<IActionResult> Delete(int id)
     {
-        var eliminada = await _sucursalService.DeleteAsync(id);
+        var eliminada = await _sucursalService.DeleteAsync(id, EmpresaAutorizada());
         if (!eliminada)
             return NotFound(ApiResponse<object>.Fail("Sucursal no encontrada."));
 

@@ -2517,3 +2517,14 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
 
+## 2026-10-02 — Recovery Fase 0: aislamiento tenant exacto en Sucursales
+
+- El baseline de modernización detectó un rojo real: el permiso HTTP validaba una Empresa, pero el servicio de Sucursales todavía aceptaba un EmpresaId independiente en query/body y lecturas sin filtro, permitiendo desacoplar el tenant autorizado del recurso consultado.
+- El gate de permisos conserva ahora, sólo después de verificar membresía/rol/grant, el EmpresaId efectivamente autorizado en HttpContext; Sucursales consume exactamente ese valor en búsquedas, lecturas y mutaciones.
+- Buscar/listar sin EmpresaId queda acotado automáticamente al tenant autorizado; un EmpresaId explícito distinto falla cerrado. Lectura/estado/eliminación de una sucursal de otro tenant se comportan como no encontrada y update/create no pueden cruzar tenants.
+- El auditor multi-tenant se corrige para reconocer UsuarioEmpresa como binding canónico, validar el handoff de tenant realmente autorizado, tratar BackgroundService como N/A cuando no existe runtime de background y reconocer la clave de idempotencia de correo acotada por PK global de Factura + usuario + destinatario + clave.
+- Se añadieron/ajustaron regresiones tenant-aware y se fuerza una nueva certificación Fase 0 sobre el HEAD exacto del recovery.
+- Sin cambios de versiones, migraciones, datos productivos, QA ni PROD.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+

@@ -27,34 +27,47 @@ public sealed class SucursalService : ISucursalService
         _auditoria = auditoria;
     }
 
-    public async Task<SucursalPaginaDto> BuscarAsync(SucursalFiltroDto filtro)
+    public async Task<SucursalPaginaDto> BuscarAsync(SucursalFiltroDto filtro, int empresaIdAutorizada)
     {
-        ValidarEmpresaIdFiltro(filtro.EmpresaId);
+        var empresaId = ResolverEmpresaIdConsulta(filtro.EmpresaId, empresaIdAutorizada);
         var pagina = Math.Max(1, filtro.Pagina);
         var tamanoPagina = Math.Clamp(filtro.TamanoPagina, 1, TamanoPaginaMaximo);
-        var (items, total) = await _repository.BuscarAsync(Limpiar(filtro.Buscar), filtro.Activa, filtro.EmpresaId, pagina, tamanoPagina);
+        var (items, total) = await _repository.BuscarAsync(
+            Limpiar(filtro.Buscar),
+            filtro.Activa,
+            empresaId,
+            pagina,
+            tamanoPagina);
         return new SucursalPaginaDto
         {
-            Items = items.Select(ToDto).ToList(), Pagina = pagina, TamanoPagina = tamanoPagina, Total = total,
+            Items = items.Select(ToDto).ToList(),
+            Pagina = pagina,
+            TamanoPagina = tamanoPagina,
+            Total = total,
             TotalPaginas = total == 0 ? 0 : (int)Math.Ceiling(total / (double)tamanoPagina)
         };
     }
 
-    public async Task<List<SucursalDto>> GetActivasAsync(int? empresaId = null)
+    public async Task<List<SucursalDto>> GetActivasAsync(
+        int empresaIdAutorizada,
+        int? empresaIdSolicitada = null)
     {
-        ValidarEmpresaIdFiltro(empresaId);
+        var empresaId = ResolverEmpresaIdConsulta(empresaIdSolicitada, empresaIdAutorizada);
         return (await _repository.GetActivasAsync(empresaId)).Select(ToDto).ToList();
     }
 
-    public async Task<SucursalDto?> GetByIdAsync(int id)
+    public async Task<SucursalDto?> GetByIdAsync(int id, int empresaIdAutorizada)
     {
         var sucursal = await _repository.GetByIdAsync(id);
-        return sucursal is null ? null : ToDto(sucursal);
+        return sucursal is null || !PerteneceAlTenantAutorizado(sucursal, empresaIdAutorizada)
+            ? null
+            : ToDto(sucursal);
     }
 
-    public async Task<SucursalDto> CreateAsync(CreateSucursalDto dto)
+    public async Task<SucursalDto> CreateAsync(CreateSucursalDto dto, int empresaIdAutorizada)
     {
         var empresaId = ResolverEmpresaIdRequerida(dto.EmpresaId);
+        ExigirCoincidenciaTenant(empresaId, empresaIdAutorizada);
         await ValidarEmpresaPropietariaActivaAsync(empresaId);
         var codigo = NormalizarCodigo(dto.Codigo);
         var nombre = NormalizarRequerido(dto.Nombre, "El nombre de la sucursal es obligatorio.");
@@ -65,9 +78,16 @@ public sealed class SucursalService : ISucursalService
 
         var sucursal = new Sucursal
         {
-            EmpresaId = empresaId, Codigo = codigo, Nombre = nombre, Direccion = Limpiar(dto.Direccion),
-            Telefono = Limpiar(dto.Telefono), Correo = Limpiar(dto.Correo), ZonaHoraria = zonaHoraria,
-            Activa = true, Eliminado = false, CreadoPorUsuarioId = _currentUser.UsuarioId,
+            EmpresaId = empresaId,
+            Codigo = codigo,
+            Nombre = nombre,
+            Direccion = Limpiar(dto.Direccion),
+            Telefono = Limpiar(dto.Telefono),
+            Correo = Limpiar(dto.Correo),
+            ZonaHoraria = zonaHoraria,
+            Activa = true,
+            Eliminado = false,
+            CreadoPorUsuarioId = _currentUser.UsuarioId,
             CreadoPorNombreUsuario = _currentUser.NombreUsuario
         };
         await _repository.AddAsync(sucursal);
@@ -84,12 +104,17 @@ public sealed class SucursalService : ISucursalService
         return ToDto(sucursal);
     }
 
-    public async Task<SucursalDto?> UpdateAsync(int id, UpdateSucursalDto dto)
+    public async Task<SucursalDto?> UpdateAsync(
+        int id,
+        UpdateSucursalDto dto,
+        int empresaIdAutorizada)
     {
         var sucursal = await _repository.GetByIdAsync(id);
-        if (sucursal is null) return null;
+        if (sucursal is null || !PerteneceAlTenantAutorizado(sucursal, empresaIdAutorizada))
+            return null;
 
         var empresaId = ResolverEmpresaIdRequerida(dto.EmpresaId);
+        ExigirCoincidenciaTenant(empresaId, empresaIdAutorizada);
         await ValidarEmpresaPropietariaActivaAsync(empresaId);
         var codigo = NormalizarCodigo(dto.Codigo);
         var nombre = NormalizarRequerido(dto.Nombre, "El nombre de la sucursal es obligatorio.");
@@ -114,13 +139,10 @@ public sealed class SucursalService : ISucursalService
         if (!await _repository.SaveChangesAsync())
             throw new BusinessRuleException("No se pudo actualizar la sucursal.");
 
-        var ownership = empresaAnterior == empresaId
-            ? $"EmpresaId={empresaId}"
-            : $"reasignación EmpresaId {empresaAnterior?.ToString() ?? "NULL"}->{empresaId}";
         await _auditoria.RegistrarAsync(
             ModuloSistema.Sucursales,
             AccionPermiso.Editar,
-            $"Sucursal actualizada: {sucursal.Codigo} - {sucursal.Nombre}; {ownership}",
+            $"Sucursal actualizada: {sucursal.Codigo} - {sucursal.Nombre}; EmpresaId={empresaId}; tenant autorizado verificado",
             sucursal.Id,
             entidad: "Sucursal",
             valoresAnteriores: new { EmpresaId = empresaAnterior, Codigo = codigoAnterior, Nombre = nombreAnterior },
@@ -128,11 +150,17 @@ public sealed class SucursalService : ISucursalService
         return ToDto(sucursal);
     }
 
-    public async Task<SucursalDto?> CambiarEstadoAsync(int id, bool activa)
+    public async Task<SucursalDto?> CambiarEstadoAsync(
+        int id,
+        bool activa,
+        int empresaIdAutorizada)
     {
         var sucursal = await _repository.GetByIdAsync(id);
-        if (sucursal is null) return null;
-        if (sucursal.Activa == activa) return ToDto(sucursal);
+        if (sucursal is null || !PerteneceAlTenantAutorizado(sucursal, empresaIdAutorizada))
+            return null;
+        if (sucursal.Activa == activa)
+            return ToDto(sucursal);
+
         sucursal.Activa = activa;
         sucursal.ActualizadoPorUsuarioId = _currentUser.UsuarioId;
         sucursal.ActualizadoPorNombreUsuario = _currentUser.NombreUsuario;
@@ -141,63 +169,144 @@ public sealed class SucursalService : ISucursalService
         if (!await _repository.SaveChangesAsync())
             throw new BusinessRuleException("No se pudo cambiar el estado de la sucursal.");
 
-        await _auditoria.RegistrarAsync(ModuloSistema.Sucursales, activa ? AccionPermiso.Activar : AccionPermiso.Desactivar,
-            $"Sucursal {(activa ? "activada" : "desactivada")}: {sucursal.Codigo} - {sucursal.Nombre}; EmpresaId={sucursal.EmpresaId?.ToString() ?? "NULL"}", sucursal.Id, entidad: "Sucursal");
+        await _auditoria.RegistrarAsync(
+            ModuloSistema.Sucursales,
+            activa ? AccionPermiso.Activar : AccionPermiso.Desactivar,
+            $"Sucursal {(activa ? "activada" : "desactivada")}: {sucursal.Codigo} - {sucursal.Nombre}; EmpresaId={sucursal.EmpresaId}",
+            sucursal.Id,
+            entidad: "Sucursal");
         return ToDto(sucursal);
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task<bool> DeleteAsync(int id, int empresaIdAutorizada)
     {
         var sucursal = await _repository.GetByIdAsync(id);
-        if (sucursal is null) return false;
-        sucursal.Activa = false; sucursal.Eliminado = true; sucursal.FechaEliminacion = DateTime.UtcNow;
-        sucursal.EliminadoPorUsuarioId = _currentUser.UsuarioId; sucursal.ActualizadoPorUsuarioId = _currentUser.UsuarioId;
-        sucursal.ActualizadoPorNombreUsuario = _currentUser.NombreUsuario; sucursal.FechaActualizacion = DateTime.UtcNow;
+        if (sucursal is null || !PerteneceAlTenantAutorizado(sucursal, empresaIdAutorizada))
+            return false;
+
+        sucursal.Activa = false;
+        sucursal.Eliminado = true;
+        sucursal.FechaEliminacion = DateTime.UtcNow;
+        sucursal.EliminadoPorUsuarioId = _currentUser.UsuarioId;
+        sucursal.ActualizadoPorUsuarioId = _currentUser.UsuarioId;
+        sucursal.ActualizadoPorNombreUsuario = _currentUser.NombreUsuario;
+        sucursal.FechaActualizacion = DateTime.UtcNow;
         _repository.Update(sucursal);
         var eliminado = await _repository.SaveChangesAsync();
         if (eliminado)
-            await _auditoria.RegistrarAsync(ModuloSistema.Sucursales, AccionPermiso.EliminarLogico,
-                $"Sucursal eliminada lógicamente: {sucursal.Codigo} - {sucursal.Nombre}; EmpresaId={sucursal.EmpresaId?.ToString() ?? "NULL"}", sucursal.Id, entidad: "Sucursal");
+        {
+            await _auditoria.RegistrarAsync(
+                ModuloSistema.Sucursales,
+                AccionPermiso.EliminarLogico,
+                $"Sucursal eliminada lógicamente: {sucursal.Codigo} - {sucursal.Nombre}; EmpresaId={sucursal.EmpresaId}",
+                sucursal.Id,
+                entidad: "Sucursal");
+        }
+
         return eliminado;
     }
 
     private async Task ValidarEmpresaPropietariaActivaAsync(int empresaId)
     {
         var empresa = await _empresaRepository.GetByIdAsync(empresaId, CancellationToken.None);
-        if (empresa is null) throw new BusinessRuleException($"La empresa propietaria {empresaId} no existe.");
-        if (!empresa.Activa) throw new BusinessRuleException($"La empresa propietaria {empresaId} está inactiva.");
+        if (empresa is null)
+            throw new BusinessRuleException($"La empresa propietaria {empresaId} no existe.");
+        if (!empresa.Activa)
+            throw new BusinessRuleException($"La empresa propietaria {empresaId} está inactiva.");
     }
 
     private static int ResolverEmpresaIdRequerida(int? empresaId)
     {
         if (!empresaId.HasValue || empresaId.Value <= 0)
-            throw new BusinessRuleException("EmpresaId es obligatorio y debe ser mayor que cero para establecer el tenant propietario de la sucursal.");
+            throw new BusinessRuleException(
+                "EmpresaId es obligatorio y debe ser mayor que cero para establecer el tenant propietario de la sucursal.");
         return empresaId.Value;
     }
-    private static void ValidarEmpresaIdFiltro(int? empresaId)
+
+    private static int ResolverEmpresaIdConsulta(int? empresaIdSolicitada, int empresaIdAutorizada)
     {
-        if (empresaId.HasValue && empresaId.Value <= 0)
+        var autorizada = ExigirEmpresaAutorizada(empresaIdAutorizada);
+        if (!empresaIdSolicitada.HasValue)
+            return autorizada;
+        if (empresaIdSolicitada.Value <= 0)
             throw new BusinessRuleException("EmpresaId debe ser mayor que cero cuando se especifica.");
+
+        ExigirCoincidenciaTenant(empresaIdSolicitada.Value, autorizada);
+        return autorizada;
     }
-    private static string NormalizarCodigo(string? valor) => NormalizarRequerido(valor, "El código de la sucursal es obligatorio.").ToUpperInvariant();
+
+    private static bool PerteneceAlTenantAutorizado(Sucursal sucursal, int empresaIdAutorizada)
+    {
+        var autorizada = ExigirEmpresaAutorizada(empresaIdAutorizada);
+        return sucursal.EmpresaId.HasValue && sucursal.EmpresaId.Value == autorizada;
+    }
+
+    private static void ExigirCoincidenciaTenant(int empresaIdSolicitada, int empresaIdAutorizada)
+    {
+        var autorizada = ExigirEmpresaAutorizada(empresaIdAutorizada);
+        if (empresaIdSolicitada != autorizada)
+        {
+            throw new ForbiddenAccessException(
+                "La empresa solicitada no coincide con el tenant autorizado para esta operación.");
+        }
+    }
+
+    private static int ExigirEmpresaAutorizada(int empresaIdAutorizada)
+    {
+        if (empresaIdAutorizada <= 0)
+        {
+            throw new ForbiddenAccessException(
+                "No existe un tenant autorizado válido para esta operación.");
+        }
+
+        return empresaIdAutorizada;
+    }
+
+    private static string NormalizarCodigo(string? valor) =>
+        NormalizarRequerido(valor, "El código de la sucursal es obligatorio.").ToUpperInvariant();
+
     private static string NormalizarRequerido(string? valor, string mensaje)
     {
-        if (string.IsNullOrWhiteSpace(valor)) throw new BusinessRuleException(mensaje);
+        if (string.IsNullOrWhiteSpace(valor))
+            throw new BusinessRuleException(mensaje);
         return valor.Trim();
     }
+
     private static string ValidarZonaHoraria(string? valor)
     {
         var zona = NormalizarRequerido(valor, "La zona horaria es obligatoria.");
-        try { _ = TimeZoneInfo.FindSystemTimeZoneById(zona); return zona; }
-        catch (TimeZoneNotFoundException) { throw new BusinessRuleException($"La zona horaria '{zona}' no es válida."); }
-        catch (InvalidTimeZoneException) { throw new BusinessRuleException($"La zona horaria '{zona}' no es válida."); }
+        try
+        {
+            _ = TimeZoneInfo.FindSystemTimeZoneById(zona);
+            return zona;
+        }
+        catch (TimeZoneNotFoundException)
+        {
+            throw new BusinessRuleException($"La zona horaria '{zona}' no es válida.");
+        }
+        catch (InvalidTimeZoneException)
+        {
+            throw new BusinessRuleException($"La zona horaria '{zona}' no es válida.");
+        }
     }
-    private static string? Limpiar(string? valor) => string.IsNullOrWhiteSpace(valor) ? null : valor.Trim();
+
+    private static string? Limpiar(string? valor) =>
+        string.IsNullOrWhiteSpace(valor) ? null : valor.Trim();
+
     private static SucursalDto ToDto(Sucursal s) => new()
     {
-        Id = s.Id, EmpresaId = s.EmpresaId, Codigo = s.Codigo, Nombre = s.Nombre, Direccion = s.Direccion,
-        Telefono = s.Telefono, Correo = s.Correo, ZonaHoraria = s.ZonaHoraria, Activa = s.Activa,
-        CreadoPorNombreUsuario = s.CreadoPorNombreUsuario, ActualizadoPorNombreUsuario = s.ActualizadoPorNombreUsuario,
-        FechaCreacion = s.FechaCreacion, FechaActualizacion = s.FechaActualizacion
+        Id = s.Id,
+        EmpresaId = s.EmpresaId,
+        Codigo = s.Codigo,
+        Nombre = s.Nombre,
+        Direccion = s.Direccion,
+        Telefono = s.Telefono,
+        Correo = s.Correo,
+        ZonaHoraria = s.ZonaHoraria,
+        Activa = s.Activa,
+        CreadoPorNombreUsuario = s.CreadoPorNombreUsuario,
+        ActualizadoPorNombreUsuario = s.ActualizadoPorNombreUsuario,
+        FechaCreacion = s.FechaCreacion,
+        FechaActualizacion = s.FechaActualizacion
     };
 }

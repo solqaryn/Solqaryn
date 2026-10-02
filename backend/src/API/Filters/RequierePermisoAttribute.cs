@@ -21,6 +21,7 @@ public class RequierePermisoAttribute : Attribute, IAsyncActionFilter
         var empresaId = await TenantPermissionContext.RequireEmpresaIdAsync(context.HttpContext, context.HttpContext.RequestAborted);
         var permisoService = context.HttpContext.RequestServices.GetRequiredService<IPermisoService>();
         await permisoService.VerificarPermisoAsync(empresaId, _modulo, _accion);
+        TenantPermissionContext.MarkAuthorizedEmpresaId(context.HttpContext, empresaId);
         await next();
     }
 }

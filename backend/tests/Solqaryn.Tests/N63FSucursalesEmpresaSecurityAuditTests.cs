@@ -71,25 +71,22 @@ public sealed class N63FSucursalesEmpresaSecurityAuditTests
     }
 
     [Fact]
-    public async Task UpdateAsync_AuditsOwnerReassignmentWithPreviousAndNewTenant()
+    public async Task UpdateAsync_TenantDistinto_FallaAntesDePersistirOAuditar()
     {
         var sucursal = new Sucursal { Id = 9, EmpresaId = 7, Codigo = "NORTE", Nombre = "Norte", ZonaHoraria = "America/Tegucigalpa", Activa = true };
         _repository.Setup(x => x.GetByIdAsync(9)).ReturnsAsync(sucursal);
-        _repository.Setup(x => x.ExisteCodigoAsync("CENTRO", 42, 9)).ReturnsAsync(false);
-        _repository.Setup(x => x.SaveChangesAsync()).ReturnsAsync(true);
 
-        await CreateService().UpdateAsync(9, new UpdateSucursalDto
+        var result = await CreateService().UpdateAsync(9, new UpdateSucursalDto
         {
             EmpresaId = 42, Codigo = "centro", Nombre = "Centro", ZonaHoraria = "America/Tegucigalpa"
-        });
+        }, 42);
 
+        Assert.Null(result);
+        _repository.Verify(x => x.Update(It.IsAny<Sucursal>()), Times.Never);
         _auditoria.Verify(x => x.RegistrarAsync(
-            ModuloSistema.Sucursales, AccionPermiso.Editar,
-            It.Is<string>(value => value.Contains("reasignación EmpresaId 7->42")),
-            9, "Sucursal",
-            It.Is<object>(value => value.ToString()!.Contains("EmpresaId = 7")),
-            It.Is<object>(value => value.ToString()!.Contains("EmpresaId = 42")),
-            It.IsAny<string?>(), It.IsAny<string>(), It.IsAny<string?>()), Times.Once);
+            It.IsAny<ModuloSistema>(), It.IsAny<AccionPermiso>(), It.IsAny<string>(),
+            It.IsAny<int?>(), It.IsAny<string?>(), It.IsAny<object?>(), It.IsAny<object?>(),
+            It.IsAny<string?>(), It.IsAny<string>(), It.IsAny<string?>()), Times.Never);
     }
 
     [Fact]
@@ -102,7 +99,7 @@ public sealed class N63FSucursalesEmpresaSecurityAuditTests
         await Assert.ThrowsAsync<BusinessRuleException>(() => CreateService().CreateAsync(new CreateSucursalDto
         {
             EmpresaId = 42, Codigo = "centro", Nombre = "Centro", ZonaHoraria = "America/Tegucigalpa"
-        }));
+        }, 42));
 
         _auditoria.Verify(x => x.RegistrarAsync(
             It.IsAny<ModuloSistema>(), It.IsAny<AccionPermiso>(), It.IsAny<string>(),

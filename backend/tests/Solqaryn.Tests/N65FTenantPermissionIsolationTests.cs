@@ -54,6 +54,7 @@ public sealed class N65FTenantPermissionIsolationTests
 
         Assert.True(nextInvoked);
         Assert.Equal(31, fake.EmpresaVerificada);
+        Assert.Equal(31, context.HttpContext.Items["SOLQARYN_AUTHORIZED_EMPRESA_ID"]);
         Assert.False(fake.LegacyInvocado);
     }
 
@@ -76,6 +77,7 @@ public sealed class N65FTenantPermissionIsolationTests
 
         Assert.True(nextInvoked);
         Assert.Equal(17, fake.EmpresaVerificada);
+        Assert.Equal(17, context.HttpContext.Items["SOLQARYN_AUTHORIZED_EMPRESA_ID"]);
         Assert.False(fake.LegacyInvocado);
     }
 
@@ -92,6 +94,7 @@ public sealed class N65FTenantPermissionIsolationTests
         await filter.OnActionExecutionAsync(context, CreateNext(context));
 
         Assert.Equal(23, fake.EmpresaVerificada);
+        Assert.Equal(23, context.HttpContext.Items["SOLQARYN_AUTHORIZED_EMPRESA_ID"]);
         Assert.False(fake.LegacyInvocado);
     }
 

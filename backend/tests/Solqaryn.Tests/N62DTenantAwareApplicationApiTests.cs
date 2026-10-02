@@ -43,7 +43,7 @@ public sealed class N62DTenantAwareApplicationApiTests
     {
         var repository = new Mock<ISucursalRepository>();
         var service = CreateService(repository);
-        await Assert.ThrowsAsync<BusinessRuleException>(() => service.CreateAsync(new CreateSucursalDto { EmpresaId = null, Codigo = "TGU-01", Nombre = "Centro", ZonaHoraria = "America/Tegucigalpa" }));
+        await Assert.ThrowsAsync<BusinessRuleException>(() => service.CreateAsync(new CreateSucursalDto { EmpresaId = null, Codigo = "TGU-01", Nombre = "Centro", ZonaHoraria = "America/Tegucigalpa" }, 42));
         repository.Verify(x => x.AddAsync(It.IsAny<Sucursal>()), Times.Never);
     }
 
@@ -55,7 +55,7 @@ public sealed class N62DTenantAwareApplicationApiTests
         repository.Setup(x => x.SaveChangesAsync()).ReturnsAsync(true);
         Sucursal? persisted = null;
         repository.Setup(x => x.AddAsync(It.IsAny<Sucursal>())).Callback<Sucursal>(entity => persisted = entity).Returns(Task.CompletedTask);
-        var result = await CreateService(repository).CreateAsync(new CreateSucursalDto { EmpresaId = 42, Codigo = "tgu-01", Nombre = "Centro", ZonaHoraria = "America/Tegucigalpa" });
+        var result = await CreateService(repository).CreateAsync(new CreateSucursalDto { EmpresaId = 42, Codigo = "tgu-01", Nombre = "Centro", ZonaHoraria = "America/Tegucigalpa" }, 42);
         Assert.NotNull(persisted);
         Assert.Equal(42, persisted!.ObtenerEmpresaIdTenant());
         Assert.Equal(42, result.EmpresaId);
@@ -67,27 +67,36 @@ public sealed class N62DTenantAwareApplicationApiTests
         var repository = new Mock<ISucursalRepository>();
         var existing = new Sucursal { Id = 9, EmpresaId = 42, Codigo = "TGU-01", Nombre = "Centro", ZonaHoraria = "America/Tegucigalpa", Activa = true };
         repository.Setup(x => x.GetByIdAsync(9)).ReturnsAsync(existing);
-        await Assert.ThrowsAsync<BusinessRuleException>(() => CreateService(repository).UpdateAsync(9, new UpdateSucursalDto { EmpresaId = null, Codigo = "TGU-01", Nombre = "Centro editado", ZonaHoraria = "America/Tegucigalpa" }));
+        await Assert.ThrowsAsync<BusinessRuleException>(() => CreateService(repository).UpdateAsync(9, new UpdateSucursalDto { EmpresaId = null, Codigo = "TGU-01", Nombre = "Centro editado", ZonaHoraria = "America/Tegucigalpa" }, 42));
         Assert.Equal(42, existing.EmpresaId);
         repository.Verify(x => x.Update(It.IsAny<Sucursal>()), Times.Never);
     }
 
     [Fact]
-    public async Task ReadLegacyNullable_NoSeRompeDuranteRolloutPersistente()
+    public async Task ReadLegacyNullable_FallaCerradoEnEndpointTenant()
     {
         var repository = new Mock<ISucursalRepository>();
         repository.Setup(x => x.GetByIdAsync(10)).ReturnsAsync(new Sucursal { Id = 10, EmpresaId = null, Codigo = "LEGACY", Nombre = "Legacy", ZonaHoraria = "America/Tegucigalpa", Activa = true });
-        var result = await CreateService(repository).GetByIdAsync(10);
-        Assert.NotNull(result);
-        Assert.Null(result!.EmpresaId);
+        var result = await CreateService(repository).GetByIdAsync(10, 42);
+        Assert.Null(result);
     }
 
     [Fact]
-    public async Task BuscarAsync_EmpresaIdOpcionalSigueSiendoFiltro_NoFronteraDeAutorizacion()
+    public async Task BuscarAsync_SinEmpresaExplicita_UsaTenantAutorizado()
     {
         var repository = new Mock<ISucursalRepository>();
         repository.Setup(x => x.BuscarAsync(null, null, 42, 1, 25)).ReturnsAsync((new List<Sucursal>(), 0));
-        await CreateService(repository).BuscarAsync(new SucursalFiltroDto { EmpresaId = 42, Pagina = 1, TamanoPagina = 25 });
+        await CreateService(repository).BuscarAsync(new SucursalFiltroDto { EmpresaId = null, Pagina = 1, TamanoPagina = 25 }, 42);
         repository.Verify(x => x.BuscarAsync(null, null, 42, 1, 25), Times.Once);
+    }
+
+    [Fact]
+    public async Task BuscarAsync_EmpresaDistintaAlTenantAutorizado_FallaCerrado()
+    {
+        var repository = new Mock<ISucursalRepository>();
+        await Assert.ThrowsAsync<ForbiddenAccessException>(() =>
+            CreateService(repository).BuscarAsync(new SucursalFiltroDto { EmpresaId = 99, Pagina = 1, TamanoPagina = 25 }, 42));
+        repository.Verify(x => x.BuscarAsync(
+            It.IsAny<string?>(), It.IsAny<bool?>(), It.IsAny<int?>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never);
     }
 }
