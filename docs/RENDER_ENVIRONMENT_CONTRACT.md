@@ -8,6 +8,8 @@ DEV, QA y PROD deben tener exactamente las mismas claves administradas por SOLQA
 
 Contrato canónico: **28 claves en DEV, 28 claves en QA y 28 claves en PROD**.
 
+El backend refuerza este contrato en runtime con `RenderEnvironmentContractGuard`: cualquier clave administrada faltante o extra, valor requerido vacío o constante pública compartida incompatible aborta el arranque del nuevo deployment antes de reemplazar la instancia sana. El guard no registra valores; sólo conteo y fingerprints no sensibles. Las identidades/secretos propios de cada entorno —incluyendo conexión, JWT, Cloudinary y refresh token SMTP— pueden diferir.
+
 | Variable | Estado | Motivo | Valor por entorno |
 |---|---|---|---|
 | `ASPNETCORE_ENVIRONMENT` | REQUERIDA | Selecciona comportamiento Development/Staging/Production del host ASP.NET. | Diferente |
