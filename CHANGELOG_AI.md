@@ -1,3 +1,12 @@
+## 2026-10-02 — Modernización Fase 1 Aiven/MySQL cerrada sin cambio
+
+- Se añadió el gate `Modernización - Fase 1 Aiven MySQL 8.4.11 DEV` para verificar el servicio canónico `solqaryn-mysql` y aplicar mantenimiento únicamente si Aiven expone exactamente `8.4.11` como disponible.
+- El readback vivo del control-plane expuso únicamente MySQL `8.4.8`; `8.4.11` no apareció en metadata de mantenimiento ni del servicio, por lo que se aplicó fail-closed y no se inició mantenimiento.
+- MySQL DEV permaneció `8.4.8 -> 8.4.8`; se preservaron 137 tablas, 109 migraciones EF, 8 productos y 2 categorías, con `productionTouched=false` y cero secretos expuestos.
+- El backup previo fue corregido para funcionar con el usuario de mínimo privilegio mediante `--skip-lock-tables --no-tablespaces --set-gtid-purged=OFF`, sin ampliar grants, y quedó almacenado cifrado como artifact.
+- Evidencia causal: run `37066644421` y `docs/evidencias/modernizacion/FASE_1_AIVEN_MYSQL_2026-10-02.md`.
+- Dictamen: `FASE_1_AIVEN_MYSQL=PASS_NO_CHANGE_TARGET_NOT_AVAILABLE`. QA, `main` y PROD no fueron tocados.
+
 ## 2026-10-02 — Limpieza integral de identidad legacy en DEV
 
 - Se ejecutó un barrido repository-wide sobre todos los archivos versionados de texto y se normalizaron **378 archivos** que aún contenían terminología o identificadores retirados.
