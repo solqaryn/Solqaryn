@@ -23,28 +23,40 @@ public sealed class N62DTenantAwareApplicationApiTests
     }
 
     [Fact]
-    public void CreateValidator_ExigeEmpresaIdParaOwnershipTenant()
+    public void CreateValidator_PermiteOmitirEmpresaId_CuandoElTenantLoResuelveElServidor()
     {
         var result = new CreateSucursalValidator().Validate(new CreateSucursalDto { EmpresaId = null, Codigo = "TGU-01", Nombre = "Centro", ZonaHoraria = "America/Tegucigalpa" });
-        Assert.False(result.IsValid);
-        Assert.Contains(result.Errors, error => error.PropertyName == nameof(CreateSucursalDto.EmpresaId));
+        Assert.True(result.IsValid);
+        Assert.DoesNotContain(result.Errors, error => error.PropertyName == nameof(CreateSucursalDto.EmpresaId));
     }
 
     [Fact]
-    public void UpdateValidator_ExigeEmpresaIdParaConservarOwnershipTenant()
+    public void UpdateValidator_PermiteOmitirEmpresaId_CuandoElTenantLoResuelveElServidor()
     {
         var result = new UpdateSucursalValidator().Validate(new UpdateSucursalDto { EmpresaId = null, Codigo = "TGU-01", Nombre = "Centro", ZonaHoraria = "America/Tegucigalpa" });
-        Assert.False(result.IsValid);
-        Assert.Contains(result.Errors, error => error.PropertyName == nameof(UpdateSucursalDto.EmpresaId));
+        Assert.True(result.IsValid);
+        Assert.DoesNotContain(result.Errors, error => error.PropertyName == nameof(UpdateSucursalDto.EmpresaId));
     }
 
     [Fact]
-    public async Task CreateAsync_SinEmpresaId_FallaCerradoAntesDePersistir()
+    public async Task CreateAsync_SinEmpresaId_UsaTenantAutorizadoYPersisteOwnership()
     {
         var repository = new Mock<ISucursalRepository>();
-        var service = CreateService(repository);
-        await Assert.ThrowsAsync<BusinessRuleException>(() => service.CreateAsync(new CreateSucursalDto { EmpresaId = null, Codigo = "TGU-01", Nombre = "Centro", ZonaHoraria = "America/Tegucigalpa" }, 42));
-        repository.Verify(x => x.AddAsync(It.IsAny<Sucursal>()), Times.Never);
+        repository.Setup(x => x.ExisteCodigoAsync("TGU-01", 42, null)).ReturnsAsync(false);
+        repository.Setup(x => x.SaveChangesAsync()).ReturnsAsync(true);
+        Sucursal? persisted = null;
+        repository.Setup(x => x.AddAsync(It.IsAny<Sucursal>()))
+            .Callback<Sucursal>(entity => persisted = entity)
+            .Returns(Task.CompletedTask);
+
+        var result = await CreateService(repository).CreateAsync(
+            new CreateSucursalDto { EmpresaId = null, Codigo = "TGU-01", Nombre = "Centro", ZonaHoraria = "America/Tegucigalpa" },
+            42);
+
+        Assert.NotNull(persisted);
+        Assert.Equal(42, persisted!.EmpresaId);
+        Assert.Equal(42, result.EmpresaId);
+        repository.Verify(x => x.AddAsync(It.Is<Sucursal>(s => s.EmpresaId == 42)), Times.Once);
     }
 
     [Fact]
@@ -62,14 +74,24 @@ public sealed class N62DTenantAwareApplicationApiTests
     }
 
     [Fact]
-    public async Task UpdateAsync_SinEmpresaId_NoPuedeDejarOwnershipAmbiguo()
+    public async Task UpdateAsync_SinEmpresaId_ConservaTenantAutorizado()
     {
         var repository = new Mock<ISucursalRepository>();
         var existing = new Sucursal { Id = 9, EmpresaId = 42, Codigo = "TGU-01", Nombre = "Centro", ZonaHoraria = "America/Tegucigalpa", Activa = true };
         repository.Setup(x => x.GetByIdAsync(9)).ReturnsAsync(existing);
-        await Assert.ThrowsAsync<BusinessRuleException>(() => CreateService(repository).UpdateAsync(9, new UpdateSucursalDto { EmpresaId = null, Codigo = "TGU-01", Nombre = "Centro editado", ZonaHoraria = "America/Tegucigalpa" }, 42));
+        repository.Setup(x => x.ExisteCodigoAsync("TGU-01", 42, 9)).ReturnsAsync(false);
+        repository.Setup(x => x.SaveChangesAsync()).ReturnsAsync(true);
+
+        var result = await CreateService(repository).UpdateAsync(
+            9,
+            new UpdateSucursalDto { EmpresaId = null, Codigo = "TGU-01", Nombre = "Centro editado", ZonaHoraria = "America/Tegucigalpa" },
+            42);
+
+        Assert.NotNull(result);
         Assert.Equal(42, existing.EmpresaId);
-        repository.Verify(x => x.Update(It.IsAny<Sucursal>()), Times.Never);
+        Assert.Equal(42, result!.EmpresaId);
+        Assert.Equal("Centro editado", result.Nombre);
+        repository.Verify(x => x.Update(It.Is<Sucursal>(s => s.EmpresaId == 42)), Times.Once);
     }
 
     [Fact]

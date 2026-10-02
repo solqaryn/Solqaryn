@@ -275,7 +275,7 @@ jobs:
           --health-cmd="mysqladmin ping -h localhost -proot"
           --health-interval=10s --health-timeout=5s --health-retries=12
     env:
-      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_ENVIRONMENT: Staging
       PORT: '5005'
       AllowedHosts: '127.0.0.1;localhost'
       ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_fase0_runtime;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'

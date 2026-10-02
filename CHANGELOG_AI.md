@@ -2547,3 +2547,12 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
 
+## 2026-10-02 — Recovery Fase 0: alinear contratos tenant y entorno runtime
+
+- Se corrigen cuatro pruebas N6.2 que aún exigían que el cliente enviara `EmpresaId`, aunque el servicio actual ya resuelve el tenant propietario exclusivamente desde el contexto previamente autorizado del servidor.
+- Las regresiones ahora certifican que omitir `EmpresaId` conserva/persiste exactamente el tenant autorizado y que el cliente no puede sustituirlo por otro tenant.
+- El runtime E2E de Fase 0 vuelve a `Staging`; el seed canónico no depende de `Development` y Swagger debe permanecer deshabilitado durante la certificación fail-closed.
+- Sin cambios de versiones, migraciones, datos productivos, QA ni PROD.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
