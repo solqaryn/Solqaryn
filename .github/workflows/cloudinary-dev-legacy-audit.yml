@@ -1,0 +1,116 @@
+name: DEV - Inventario Cloudinary legacy
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - .github/checkpoints/cloudinary-dev-legacy-audit
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Inventariar referencias Cloudinary legacy en solqaryn_dev
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: DEV
+    env:
+      DB_HOST: ${{ vars.SOLQARYN_DEV_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_DEV_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_DEV_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_DEV_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_DEV_DB_PASSWORD }}
+      LEGACY_CLOUD: vyijnqzq
+      LEGACY_PREFIX_A: dev/
+      LEGACY_PREFIX_B: storefront_desarrollo/
+    steps:
+      - name: Instalar cliente MySQL
+        run: sudo apt-get update && sudo apt-get install -y mysql-client
+
+      - name: Escanear referencias legacy en modo solo lectura
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$DB_NAME" = "solqaryn_dev"
+          export MYSQL_PWD="$DB_PASSWORD"
+          mkdir -p evidence
+          mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME"             --batch --skip-column-names -e "
+              SELECT TABLE_NAME, COLUMN_NAME
+              FROM INFORMATION_SCHEMA.COLUMNS
+              WHERE TABLE_SCHEMA=DATABASE()
+                AND DATA_TYPE IN ('char','varchar','tinytext','text','mediumtext','longtext')
+              ORDER BY TABLE_NAME, ORDINAL_POSITION;
+            " > evidence/text-columns.tsv
+
+          python3 - <<'PY'
+          import json, os, subprocess
+          from pathlib import Path
+
+          host=os.environ['DB_HOST']; port=os.environ['DB_PORT']; user=os.environ['DB_USER']; db=os.environ['DB_NAME']
+          legacy_cloud=os.environ['LEGACY_CLOUD']
+          markers=[
+              f"res.cloudinary.com/{legacy_cloud}/",
+              os.environ['LEGACY_PREFIX_A'],
+              os.environ['LEGACY_PREFIX_B'],
+          ]
+
+          def qident(value):
+              tick=chr(96)
+              return tick + value.replace(tick,tick+tick) + tick
+
+          def mysql_scalar(sql):
+              cmd=['mysql','--protocol=TCP','-h',host,'-P',port,'-u',user,'--ssl-mode=REQUIRED',db,'--batch','--skip-column-names','-e',sql]
+              out=subprocess.check_output(cmd,text=True).strip()
+              return out
+
+          matches=[]
+          for line in Path('evidence/text-columns.tsv').read_text().splitlines():
+              if not line.strip():
+                  continue
+              table,col=line.split('\t',1)
+              clauses=[]
+              for marker in markers:
+                  esc=marker.replace('\\','\\\\').replace("'","''").replace('%','\\%').replace('_','\\_')
+                  clauses.append(f"{qident(col)} LIKE '%{esc}%' ESCAPE '\\\\'")
+              where=' OR '.join(clauses)
+              sql=f"SELECT COUNT(*) FROM {qident(table)} WHERE {qident(col)} IS NOT NULL AND ({where});"
+              try:
+                  count=int(mysql_scalar(sql) or '0')
+              except Exception:
+                  continue
+              if count:
+                  sample_sql=f"SELECT DISTINCT LEFT({qident(col)},1000) FROM {qident(table)} WHERE {qident(col)} IS NOT NULL AND ({where}) LIMIT 20;"
+                  sample=mysql_scalar(sample_sql).splitlines()
+                  matches.append({'table':table,'column':col,'count':count,'samples':sample})
+
+          report={
+              'status':'PASS',
+              'database':db,
+              'legacyCloud':legacy_cloud,
+              'legacyMarkers':markers,
+              'matchedColumns':len(matches),
+              'matchedRowsByColumn':sum(x['count'] for x in matches),
+              'matches':matches,
+              'productionTouched':False,
+              'writeOperations':False,
+          }
+          Path('evidence/cloudinary-legacy-audit.json').write_text(json.dumps(report,indent=2),encoding='utf-8')
+          print(json.dumps({
+              'status':report['status'],
+              'database':db,
+              'matchedColumns':report['matchedColumns'],
+              'matchedRowsByColumn':report['matchedRowsByColumn'],
+              'productionTouched':False,
+              'writeOperations':False,
+              'locations':[{'table':x['table'],'column':x['column'],'count':x['count']} for x in matches],
+          },separators=(',',':')))
+          PY
+
+      - name: Publicar inventario
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloudinary-dev-legacy-audit-${{ github.run_id }}
+          retention-days: 14
+          path: evidence/
