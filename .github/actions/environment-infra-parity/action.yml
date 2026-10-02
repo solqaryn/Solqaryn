@@ -55,11 +55,10 @@ runs:
         esac
 
         grants="$("${mysql_cmd[@]}" -e "SHOW GRANTS FOR CURRENT_USER();")"
-        expected_grant_fragment='ON `'"$EXPECTED_DB"'`.*'
-        printf '%s\n' "$grants" | grep -Fq "$expected_grant_fragment" || {
+        if ! printf '%s\n' "$grants" | grep -Fq 'ALL PRIVILEGES' ||            ! printf '%s\n' "$grants" | grep -Fq "$EXPECTED_DB"; then
           echo "Expected database grant is missing." >&2
           exit 1
-        }
+        fi
 
         if printf '%s\n' "$grants" | grep -Fq "$FORBIDDEN_DB_1"; then
           echo "Cross-environment database grant detected." >&2
@@ -74,8 +73,19 @@ runs:
           exit 1
         fi
 
+        cross_cmd=(mysql --protocol=TCP -h "$connect_host" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED --batch --skip-column-names)
+        if "${cross_cmd[@]}" "$FORBIDDEN_DB_1" -e 'SELECT 1;' >/dev/null 2>&1; then
+          echo "Cross-environment database connection unexpectedly succeeded." >&2
+          exit 1
+        fi
+        if "${cross_cmd[@]}" "$FORBIDDEN_DB_2" -e 'SELECT 1;' >/dev/null 2>&1; then
+          echo "Cross-environment database connection unexpectedly succeeded." >&2
+          exit 1
+        fi
+
         echo "${ENVIRONMENT_NAME}_AIVEN_DB_BINDING=PASS"
         echo "${ENVIRONMENT_NAME}_AIVEN_LEAST_PRIVILEGE=PASS"
+        echo "${ENVIRONMENT_NAME}_AIVEN_CROSS_ACCESS=DENY_PASS"
 
     - name: Certify Aiven control-plane token
       shell: bash
