@@ -1,3 +1,11 @@
+## 2026-10-02 — Limpieza integral de identidad legacy en DEV
+
+- Se ejecutó un barrido repository-wide sobre todos los archivos versionados de texto y se normalizaron **378 archivos** que aún contenían terminología o identificadores retirados.
+- Se retiraron paths legacy, documentación obsoleta y nomenclatura inglesa heredada del dominio de inventario; el módulo funcional vigente permanece en español bajo `/inventario/...`.
+- `scripts/verify-project-scope.mjs` ahora aplica un gate fail-closed sobre **todo el árbol versionado**, no sólo sobre código operativo: cualquier reintroducción de identidades retiradas o de la terminología inglesa prohibida falla CI.
+- El árbol vigente no contiene paths de identidades retiradas y la verificación repository-wide del sweep terminó en `PASS`.
+- Alcance: exclusivamente `dev`. No se modificaron QA, `main`, PROD, bases de datos, secretos ni infraestructura productiva.
+
 ## 2026-10-02 — Reconciliación canónica de pendientes vigentes
 
 - `docs/DETALLES_PENDIENTES.md` queda reconciliado como fuente canónica de pendientes deliberadamente diferidos/activos.
