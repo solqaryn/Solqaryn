@@ -2556,3 +2556,11 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
 
+## 2026-10-02 — Recovery Fase 0: contrato de logs runtime
+
+- El E2E canónico exact-head completó 100/100 pruebas y la validación SMTP produjo evidencia válida, pero el auditor de runtime esperaba sus nombres de log canónicos `fase8-*`.
+- El workflow de baseline ahora copia explícitamente los logs `fase0-*` a esos nombres canónicos antes de ejecutar `fase8_validate_runtime.py`; no se rebaja ningún gate ni se omite la auditoría.
+- Sin cambios funcionales, versiones, datos, QA ni PROD.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+

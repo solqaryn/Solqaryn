@@ -478,6 +478,10 @@ jobs:
           PHASE8_DATABASE_PASSWORD: 'root'
         shell: bash
         run: |
+          set -euo pipefail
+          cp backend/fase0-api.log backend/fase8-api.log
+          cp frontend/fase0-frontend.log frontend/fase8-frontend.log
+          cp fase0-smtp.log fase8-smtp.log
           python3 scripts/fase7_validate_email.py
           python3 scripts/fase8_validate_runtime.py
       - uses: actions/upload-artifact@v4
