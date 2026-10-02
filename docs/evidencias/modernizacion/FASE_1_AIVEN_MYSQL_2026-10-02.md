@@ -13,6 +13,12 @@ Estado: **PASS / CERRADA SIN CAMBIO DE VERSIÓN**
 - Objetivo evaluado: MySQL `8.4.11`
 - QA/main/PROD: fuera de alcance y no tocados
 
+## Corrección de topología y seguridad
+
+SOLQARYN no tiene tres servicios MySQL Aiven. La topología canónica vigente es **un solo servicio** `solqaryn-mysql` que aloja tres bases y tres usuarios aislados: `solqaryn_dev`, `solqaryn_qa` y `solqaryn_prod`.
+
+Por tanto, Maintenance es una propiedad del **servicio compartido**. Un `maintenance-start` no puede considerarse una actualización “DEV primero” a nivel de motor: puede reciclar/actualizar los nodos que sirven también QA y PROD. El gate queda endurecido para **no iniciar mantenimiento automáticamente**. Si `8.4.11` aparece disponible, el workflow falla cerrado y exige autorización productiva explícita vigente o una topología con servicios separados antes de ejecutar el cambio.
+
 ## Evidencia causal
 
 - Workflow: `Modernización - Fase 1 Aiven MySQL 8.4.11 DEV`

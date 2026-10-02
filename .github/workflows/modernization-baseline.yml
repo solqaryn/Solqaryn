@@ -1,4 +1,5 @@
 name: Modernización - Fase 0 baseline técnico
+# recertification: exact-head after hardening the shared Aiven service gate
 # recovery: enforce exact authorized tenant in Sucursales and re-certify the exact HEAD
 
 on:

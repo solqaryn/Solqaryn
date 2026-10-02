@@ -1,3 +1,11 @@
+## 2026-10-02 — Hardening quirúrgico Fase 0/Fase 1 Aiven compartido
+
+- La revisión de topología confirmó que Aiven usa un único servicio MySQL `solqaryn-mysql` para las bases aisladas DEV/QA/PROD; no existen tres servicios MySQL independientes.
+- Se elimina del gate Fase 1 cualquier ejecución automática de `maintenance-start`: un mantenimiento es service-wide y podría afectar PROD desde un workflow DEV.
+- Si `8.4.11` aparece disponible, el gate falla cerrado con `BLOCKED_SHARED_SERVICE_REQUIRES_EXPLICIT_PROD_AUTH_OR_TOPOLOGY_SPLIT`; si no aparece, certifica no-cambio.
+- Fase 0 se vuelve a disparar en el mismo HEAD que Fase 1 para recuperar certificación exact-head después del hardening.
+- No se modifica QA, `main`, PROD, datos, secretos, grants ni configuración Aiven en este changeset.
+
 ## 2026-10-02 — Modernización Fase 1 Aiven/MySQL cerrada sin cambio
 
 - Se añadió el gate `Modernización - Fase 1 Aiven MySQL 8.4.11 DEV` para verificar el servicio canónico `solqaryn-mysql` y aplicar mantenimiento únicamente si Aiven expone exactamente `8.4.11` como disponible.

@@ -1,4 +1,5 @@
-name: Modernización - Fase 1 Aiven MySQL 8.4.11 DEV
+name: Modernización - Fase 1 Aiven MySQL 8.4.11 shared-service gate
+# Aiven topology: one MySQL service hosts isolated DEV/QA/PROD databases; this workflow is fail-closed and never starts maintenance.
 
 on:
   push:
@@ -17,7 +18,7 @@ concurrency:
 
 jobs:
   phase1:
-    name: Verificar y aplicar MySQL 8.4.11 solo si Aiven lo ofrece en DEV
+    name: Verificar MySQL 8.4.11 y bloquear cambios del servicio compartido
     runs-on: ubuntu-latest
     timeout-minutes: 60
     environment: DEV
@@ -119,7 +120,7 @@ jobs:
           if not isinstance(svc,dict):
               raise SystemExit("Aiven service payload shape is not recognized")
           if svc.get("service_type")!="mysql":
-              raise SystemExit("Canonical Aiven DEV service is not MySQL")
+              raise SystemExit("Canonical shared Aiven service is not MySQL")
           if svc.get("service_name") not in (None,os.environ["AIVEN_SERVICE"]):
               raise SystemExit("Unexpected Aiven service name")
           if svc.get("state") not in ("RUNNING","REBALANCING"):
@@ -136,6 +137,9 @@ jobs:
             "status":"PASS",
             "service":"solqaryn-mysql",
             "serviceType":"mysql",
+            "topology":"ONE_SHARED_SERVICE__DEV_QA_PROD_DATABASES_ISOLATED",
+            "maintenanceScope":"SERVICE_WIDE",
+            "automaticMaintenanceStartAllowed":False,
             "serviceState":svc.get("state"),
             "targetVersion":target,
             "versionsExposedInServiceMetadata":versions,
@@ -153,7 +157,7 @@ jobs:
           print(json.dumps(result,separators=(",",":")))
           PY
 
-      - name: Aplicar mantenimiento solo con evidencia exacta de 8.4.11
+      - name: Resolver decisión fail-closed del servicio Aiven compartido
         id: apply
         shell: bash
         run: |
@@ -163,33 +167,20 @@ jobs:
 
           if [ "$before" = "$target" ]; then
             echo "action=already_target" >> "$GITHUB_OUTPUT"
-            echo "MySQL DEV ya está en $target; no se inicia mantenimiento."
+            echo "El servicio compartido ya reporta $target; no se inicia mantenimiento."
             exit 0
           fi
 
           if [ "${{ steps.availability.outputs.target_in_maintenance }}" != "true" ]; then
             echo "action=not_available_no_change" >> "$GITHUB_OUTPUT"
-            echo "Aiven no expone $target como mantenimiento disponible para el servicio DEV. No se modifica la base."
+            echo "Aiven no expone $target como mantenimiento disponible para el servicio compartido. No se modifica la base."
             exit 0
           fi
 
-          avn --auth-token "$AIVEN_TOKEN" service maintenance-start "$AIVEN_SERVICE" --project "$AIVEN_PROJECT"
-          echo "action=maintenance_started" >> "$GITHUB_OUTPUT"
-
-          avn --auth-token "$AIVEN_TOKEN" service wait "$AIVEN_SERVICE" --project "$AIVEN_PROJECT"
-
-          export MYSQL_PWD="$DB_PASSWORD"
-          for attempt in $(seq 1 60); do
-            current="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e "SELECT VERSION();" 2>/dev/null || true)"
-            if [ "$current" = "$target" ]; then
-              echo "Aiven DEV alcanzó MySQL $target."
-              exit 0
-            fi
-            sleep 20
-          done
-
-          echo "El mantenimiento terminó pero MySQL DEV no reportó $target dentro de la ventana de verificación." >&2
-          exit 40
+          echo "action=blocked_shared_service_target_available" >> "$GITHUB_OUTPUT"
+          echo "Aiven expone $target, pero solqaryn-mysql hospeda DEV/QA/PROD. Iniciar mantenimiento sería un cambio service-wide con impacto potencial en PROD." >&2
+          echo "Fail-closed: se requiere autorización productiva explícita vigente o separar servicios antes de ejecutar el mantenimiento." >&2
+          exit 41
 
       - name: Certificación post-cambio / no-cambio
         id: after
@@ -227,8 +218,8 @@ jobs:
             "productionTouched":False,
             "secretsExposed":0
           }
-          if action=="maintenance_started" and after!="8.4.11":
-              raise SystemExit("Maintenance was started but final version is not 8.4.11")
+          if action=="already_target" and after!="8.4.11":
+              raise SystemExit("Service claimed target version but final version is not 8.4.11")
           if action=="not_available_no_change" and after!=before:
               raise SystemExit("Aiven version changed even though target was not certified available")
           open("evidence/phase1-after.json","w").write(json.dumps(d,indent=2)+"\n")
@@ -264,10 +255,12 @@ jobs:
             printf '%s\n' '- Backup cifrado pre-cambio: PASS'
             printf '%s\n' '- Identidad DB/usuario: PASS'
             printf '%s\n' '- Conteos críticos preservados: PASS'
-            if [ "$action" = "maintenance_started" ] || [ "$action" = "already_target" ]; then
-              printf '%s\n' '- FASE_1_AIVEN_MYSQL: PASS_TARGET_8_4_11'
-            else
+            if [ "$action" = "already_target" ]; then
+              printf '%s\n' '- FASE_1_AIVEN_MYSQL: PASS_TARGET_ALREADY_PRESENT'
+            elif [ "$action" = "not_available_no_change" ]; then
               printf '%s\n' '- FASE_1_AIVEN_MYSQL: PASS_NO_CHANGE_TARGET_NOT_AVAILABLE'
+            else
+              printf '%s\n' '- FASE_1_AIVEN_MYSQL: BLOCKED_SHARED_SERVICE_REQUIRES_EXPLICIT_PROD_AUTH_OR_TOPOLOGY_SPLIT'
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
