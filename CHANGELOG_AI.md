@@ -2501,7 +2501,7 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Se retiran del árbol vivo los artefactos locales de planificación anteriores que ya no tienen autoridad; la trazabilidad histórica permanece en Git y la evidencia técnica/certificaciones funcionales no se convierten en roadmap.
 - Los checks operativos dejan de depender de índices locales de planes históricos y validan directamente la autoridad vigente: Plan Maestro único + `docs/VAEP_AUTHORITY.md` + `CURRENT_STATE_ONLY`.
 - Se corrigen referencias operativas residuales a la rama histórica y a PRs históricos en documentación de contribución/colaboración.
-- Se endurece el gate de scope para impedir la reintroducción de superficies de planificación retiradas o autoridades antiguas en documentos de estado actual.
+- Se endurece el gate de scope para impedir la reintroducción de superficies de planificación retiradas, identificadores operativos históricos o autoridades antiguas en documentos de estado actual.
 - Cambio de gobierno/documentación/CI únicamente; sin cambios funcionales de backend/frontend, datos, migraciones, secretos, QA, main ni PROD.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.

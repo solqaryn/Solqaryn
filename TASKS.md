@@ -27,4 +27,4 @@ CONTEXT_MODE=CURRENT_STATE_ONLY
 
 ## Regla de mantenimiento
 
-No volver a agregar aquí snapshots de planes retirados, `CURRENT_PARENT`, `NEXT_ACTION`, filas históricas, gates antiguos, receipts, handoffs o cierres de fases. Cuando sea necesario conservar evidencia, Git/CI/CHANGELOG y los artefactos técnicos son la fuente de auditoría; no convierten esa evidencia en planificación vigente.
+No volver a agregar aquí snapshots de planes retirados, filas históricas, gates antiguos, receipts, handoffs o cierres de fases. Cuando sea necesario conservar evidencia, Git/CI/CHANGELOG y los artefactos técnicos son la fuente de auditoría; no convierten esa evidencia en planificación vigente.
