@@ -1,3 +1,12 @@
+## 2026-10-01 — Cierre operativo GitHub + Aiven QA
+
+- GitHub Environment `QA` quedó restringido a la rama `qa`, con protection rule activa y sin bypass administrativo.
+- Variables QA canónicas: host, port, database y user de `solqaryn_qa`/`solqaryn_qa_user`.
+- Secretos QA provisionados: `SOLQARYN_QA_DB_PASSWORD`, `SOLQARYN_AIVEN_TOKEN` y `SOLQARYN_QA_BACKUP_PASSPHRASE`.
+- El token Aiven QA queda reservado exclusivamente a control-plane/GitHub Actions; no se expone al backend Render.
+- Aiven quedó certificado con mínimo privilegio por usuario: DEV sólo `solqaryn_dev.*`, QA sólo `solqaryn_qa.*`, PROD sólo `solqaryn_prod.*`.
+- Sin cambios en `main`, datos PROD, DNS, certificados ni servicios pagos.
+
 ## 2026-10-01 — Cierre de aislamiento Aiven QA y contrato GitHub Environments
 
 - Certificado con MySQL real que `solqaryn_dev_user` conserva únicamente `USAGE ON *.*` + `ALL PRIVILEGES ON solqaryn_dev.*`; run DEV `36932283653` en verde y sin acceso a QA/PROD.
