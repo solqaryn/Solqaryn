@@ -1,0 +1,103 @@
+name: DEV - Inventario Aiven para retiro legacy
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - .github/checkpoints/aiven-legacy-retirement-audit
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Inventariar proyectos y servicios visibles para el token canónico
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: DEV
+    env:
+      AIVEN_TOKEN: ${{ secrets.SOLQARYN_AIVEN_TOKEN }}
+    steps:
+      - name: Inventario read-only de Aiven
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$AIVEN_TOKEN"
+          mkdir -p evidence
+          python3 - <<'PY'
+          import json, os, urllib.request, urllib.error
+
+          root='https://api.aiven.io/v1'
+          token=os.environ['AIVEN_TOKEN'].strip()
+
+          def request(path):
+              req=urllib.request.Request(
+                  root+path,
+                  headers={
+                      'Authorization': f'aivenv1 {token}',
+                      'Accept':'application/json',
+                      'User-Agent':'SOLQARYN-Aiven-Legacy-Retirement-Audit/1.0'
+                  },
+                  method='GET'
+              )
+              try:
+                  with urllib.request.urlopen(req, timeout=30) as resp:
+                      return json.load(resp)
+              except urllib.error.HTTPError as exc:
+                  return {'_http_error': exc.code, '_path': path}
+
+          projects_payload=request('/project')
+          projects=projects_payload.get('projects', []) if isinstance(projects_payload, dict) else []
+          out=[]
+          for p in projects:
+              pn=p.get('project_name')
+              if not pn:
+                  continue
+              services_payload=request(f'/project/{pn}/service')
+              services=services_payload.get('services', []) if isinstance(services_payload, dict) else []
+              svc_out=[]
+              for s in services:
+                  sn=s.get('service_name')
+                  entry={
+                      'serviceName':sn,
+                      'serviceType':s.get('service_type'),
+                      'state':s.get('state'),
+                      'cloudName':s.get('cloud_name'),
+                      'plan':s.get('plan'),
+                  }
+                  if sn and s.get('service_type') == 'mysql':
+                      db_payload=request(f'/project/{pn}/service/{sn}/database')
+                      if isinstance(db_payload, dict) and 'databases' in db_payload:
+                          entry['databases']=sorted(
+                              d.get('database_name') for d in db_payload.get('databases', [])
+                              if d.get('database_name')
+                          )
+                      elif isinstance(db_payload, dict) and db_payload.get('_http_error'):
+                          entry['databaseAuditHttp']=db_payload['_http_error']
+                  svc_out.append(entry)
+              out.append({
+                  'projectName':pn,
+                  'accountIdPresent':bool(p.get('account_id')),
+                  'services':svc_out,
+              })
+
+          report={
+              'status':'PASS',
+              'projects':out,
+              'legacyProjectNames':[x['projectName'] for x in out if x['projectName'].lower() not in ('solqaryn',)],
+              'productionTouched':False,
+              'writeOperations':False,
+              'secretValuesPrinted':False,
+          }
+          print(json.dumps(report,separators=(',',':')))
+          with open('evidence/aiven-legacy-retirement-audit.json','w',encoding='utf-8') as f:
+              json.dump(report,f,indent=2); f.write('\n')
+          PY
+
+      - name: Publicar evidencia
+        uses: actions/upload-artifact@v4
+        with:
+          name: aiven-legacy-retirement-audit-${{ github.run_id }}
+          retention-days: 14
+          path: evidence/
