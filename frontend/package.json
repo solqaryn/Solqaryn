@@ -2,6 +2,7 @@
   "name": "solqaryn-frontend",
   "version": "1.0.0",
   "scripts": {
+    "verify:toolchain": "node scripts/verify-toolchain.mjs",
     "ng": "ng serve",
     "start": "ng serve",
     "build": "ng build",
@@ -54,5 +55,10 @@
   "overrides": {
     "@babel/core": "7.29.7",
     "http-proxy-middleware": "3.0.7"
-  }
+  },
+  "engines": {
+    "node": "24.x",
+    "npm": "11.19.0"
+  },
+  "packageManager": "npm@11.19.0"
 }
