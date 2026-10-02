@@ -1,5 +1,6 @@
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
+import { execFileSync } from 'node:child_process';
 
 const root = process.cwd();
 const expectedRepo = 'solqaryn/Solqaryn';
@@ -232,6 +233,33 @@ for (const rel of currentStateIdentityFiles) {
   const source = read(rel);
   if (legacyOperationalPatterns.some(pattern => pattern.test(source))) {
     errors.push("retired project identity remains in current-state document: " + rel);
+  }
+}
+
+const repositoryWideRetiredPatterns = [
+  new RegExp(["inven", "tory"].join(""), "i"),
+  new RegExp(["vari", "app"].join("[\\s_-]*"), "i"),
+  new RegExp(["vari", "store", "(?:hn)?"].join("[\\s_-]*"), "i"),
+  new RegExp(["vari", "storage"].join("[\\s_-]*"), "i"),
+  new RegExp(["varia", "storage"].join("[\\s_-]*"), "i"),
+];
+
+const trackedFiles = execFileSync("git", ["ls-files", "-z"], { cwd: root })
+  .toString("utf8")
+  .split("\0")
+  .filter(Boolean);
+
+for (const rel of trackedFiles) {
+  if (repositoryWideRetiredPatterns.some(pattern => pattern.test(rel))) {
+    errors.push("retired identity token remains in tracked path: " + rel);
+  }
+  const abs = join(root, rel);
+  if (!existsSync(abs)) continue;
+  const raw = readFileSync(abs);
+  if (raw.includes(0)) continue;
+  const source = raw.toString("utf8");
+  if (repositoryWideRetiredPatterns.some(pattern => pattern.test(source))) {
+    errors.push("retired identity token remains in tracked content: " + rel);
   }
 }
 
