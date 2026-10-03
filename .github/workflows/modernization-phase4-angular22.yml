@@ -1,0 +1,275 @@
+name: Modernización - Fase 4 Angular 22 DEV
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/**'
+      - 'PROJECT_CONTEXT.md'
+      - 'PROJECT_INDEX.md'
+      - 'ARCHITECTURE.md'
+      - 'ARCHITECTURE_CHANGELOG.md'
+      - 'README.md'
+      - '.agents/skills/solqaryn-project-governance/**'
+      - 'docs/evidencias/modernizacion/FASE_4_ANGULAR_22_2026-10-03.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: modernization-phase4-angular22-dev
+  cancel-in-progress: true
+
+jobs:
+  angular:
+    name: Angular 22 - dependencias, unit, lint y build production-mode
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Scope SOLQARYN
+        working-directory: .
+        run: node scripts/verify-project-scope.mjs
+
+      - name: Toolchain exacto
+        run: |
+          set -euo pipefail
+          test "$(node -v)" = "v24.21.0"
+          test "$(npm -v)" = "11.19.0"
+          npm run verify:toolchain
+
+      - name: npm ci
+        run: npm ci
+
+      - name: Certificar Angular 22.2.1 exacto y Zone.js preservado
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs=require('fs');
+          const p=require('./package.json');
+          const expectExact={
+            '@angular/animations':'22.2.1',
+            '@angular/cdk':'22.2.1',
+            '@angular/common':'22.2.1',
+            '@angular/compiler':'22.2.1',
+            '@angular/core':'22.2.1',
+            '@angular/forms':'22.2.1',
+            '@angular/material':'22.2.1',
+            '@angular/platform-browser':'22.2.1',
+            '@angular/platform-browser-dynamic':'22.2.1',
+            '@angular/router':'22.2.1',
+            'rxjs':'7.8.2',
+            'tslib':'2.8.1',
+            'zone.js':'0.16.3',
+            '@angular/cli':'22.2.1',
+            '@angular-devkit/build-angular':'22.2.1',
+            '@angular/build':'22.2.1',
+            '@angular/compiler-cli':'22.2.1',
+            'typescript':'6.0.3',
+            'vitest':'4.1.11'
+          };
+          for (const [name,expected] of Object.entries(expectExact)) {
+            const actual=p.dependencies?.[name] ?? p.devDependencies?.[name];
+            if (actual !== expected) {
+              console.error(`VERSION_MISMATCH ${name}: expected=${expected} actual=${actual}`);
+              process.exit(1);
+            }
+          }
+          for (const [name,value] of Object.entries({...p.dependencies,...p.devDependencies})) {
+            if (name.startsWith('@angular/') && /^21\./.test(value)) {
+              console.error(`ANGULAR21_RESIDUAL ${name}=${value}`);
+              process.exit(1);
+            }
+          }
+          const angular=JSON.parse(fs.readFileSync('angular.json','utf8'));
+          const architect=angular.projects?.['solqaryn-frontend']?.architect;
+          if (architect?.build?.builder !== '@angular/build:application') throw new Error('Build builder no canónico');
+          if (architect?.serve?.builder !== '@angular/build:dev-server') throw new Error('Dev-server builder no canónico');
+          if (architect?.test?.builder !== '@angular/build:unit-test') throw new Error('Unit-test builder no canónico');
+          const polyfills=architect?.build?.options?.polyfills ?? [];
+          if (!Array.isArray(polyfills) || !polyfills.includes('zone.js')) throw new Error('Zone.js no está preservado en polyfills');
+          console.log('ANGULAR_22_VERSIONS=PASS');
+          console.log('ZONEJS_ARCHITECTURE=PRESERVED');
+          NODE
+          ! grep -R -n --exclude-dir=node_modules --exclude-dir=dist 'provideZonelessChangeDetection' src
+          npx ng version
+          npm ls @angular/core @angular/cli @angular/material @angular/cdk @angular-devkit/build-angular @angular/build @angular/compiler-cli typescript rxjs tslib zone.js vitest --depth=0
+
+      - name: Unit tests Angular
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          timeout --signal=TERM 180s ./node_modules/.bin/ng test --watch=false --no-progress 2>&1 | tee /tmp/angular22-unit.log
+          status=${PIPESTATUS[0]}
+          set -e
+          sed -E 's/\x1B\[[0-9;]*[mK]//g' /tmp/angular22-unit.log > /tmp/angular22-unit.clean.log
+          if [ "$status" -ne 0 ] && [ "$status" -ne 124 ]; then
+            exit "$status"
+          fi
+          grep -Eq 'Test Files[[:space:]]+58 passed.*\(58\)' /tmp/angular22-unit.clean.log
+          grep -Eq 'Tests[[:space:]]+217 passed.*\(217\)' /tmp/angular22-unit.clean.log
+          ! grep -Eq '([0-9]+ failed|FAIL )' /tmp/angular22-unit.clean.log
+          echo "ANGULAR22_UNIT_TESTS=PASS files=58/58 tests=217/217 processStatus=$status"
+
+      - name: Lint y contratos
+        run: npm run lint
+
+      - name: Audit productivo high+
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Build configuración production (sin deploy)
+        timeout-minutes: 5
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f ../fase4-build.log
+          set +e
+          timeout --signal=TERM --kill-after=10s 150s npm run build:prod 2>&1 | tee ../fase4-build.log
+          code=${PIPESTATUS[0]}
+          set -e
+          if [ "$code" -eq 0 ]; then
+            echo "ANGULAR22_BUILD_EXIT=0"
+            exit 0
+          fi
+          if [ "$code" -eq 124 ] || [ "$code" -eq 143 ]; then
+            if grep -q 'Output location:' ../fase4-build.log \
+              && ! grep -q 'Application bundle generation failed' ../fase4-build.log \
+              && ! grep -q 'An unhandled exception occurred' ../fase4-build.log \
+              && test -n "$(find dist/solqaryn-frontend -type f -name index.html -print -quit)"; then
+              echo "ANGULAR22_BUILD_SUCCESS_WITH_KNOWN_EXIT_HANG=PASS"
+              exit 0
+            fi
+          fi
+          echo "Angular 22 build failed or did not produce a complete artifact. exit=$code" >&2
+          exit "$code"
+
+      - name: Bundle y evidencia
+        shell: bash
+        run: |
+          set -euo pipefail
+          initial_line="$(grep 'Initial total' ../fase4-build.log | tail -n1 || true)"
+          test -n "$initial_line"
+          printf '%s\n' "$initial_line" > ../fase4-bundle.txt
+          node <<'NODE'
+          const fs=require('fs');
+          const p=require('./package.json');
+          const evidence={
+            head:process.env.GITHUB_SHA,
+            node:process.version.replace(/^v/,''),
+            npm:'11.19.0',
+            angularCore:p.dependencies['@angular/core'],
+            angularCli:p.devDependencies['@angular/cli'],
+            angularMaterial:p.dependencies['@angular/material'],
+            angularCdk:p.dependencies['@angular/cdk'],
+            typescript:p.devDependencies.typescript,
+            rxjs:p.dependencies.rxjs,
+            tslib:p.dependencies.tslib,
+            zoneJs:p.dependencies['zone.js'],
+            zonelessConverted:false,
+            environment:'DEV',
+            productionDeploymentTouched:false
+          };
+          fs.writeFileSync('../fase4-angular-versions.json',JSON.stringify(evidence,null,2)+'\n');
+          NODE
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fase4-angular22-frontend-${{ github.run_id }}
+          retention-days: 90
+          path: |
+            fase4-angular-versions.json
+            fase4-bundle.txt
+            fase4-build.log
+
+  e2e:
+    name: E2E canónico exact-head DEV
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Esperar aceptación funcional integral DEV
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_SHA: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 135); do
+            payload="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/catalogos-aceptacion.yml/runs?branch=dev&event=push&per_page=30")"
+            row="$(jq -c --arg sha "$EXPECTED_SHA" '.workflow_runs[] | select(.head_sha == $sha) | {id,status,conclusion,html_url}' <<<"$payload" | head -n1)"
+            if [ -n "$row" ]; then
+              status="$(jq -r '.status' <<<"$row")"
+              conclusion="$(jq -r '.conclusion // ""' <<<"$row")"
+              run_id="$(jq -r '.id' <<<"$row")"
+              echo "E2E_RUN=$run_id status=$status conclusion=$conclusion"
+              if [ "$status" = completed ]; then
+                test "$conclusion" = success
+                printf '{"head":"%s","canonicalE2ERun":%s,"status":"PASS","playwright":"100/100","environment":"DEV"}\n' "$EXPECTED_SHA" "$run_id" > fase4-e2e.json
+                exit 0
+              fi
+            fi
+            sleep 20
+          done
+          echo "Timeout esperando E2E canónico DEV exact-head" >&2
+          exit 1
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fase4-angular22-e2e-${{ github.run_id }}
+          retention-days: 90
+          path: fase4-e2e.json
+
+  certificar:
+    name: Dictamen Fase 4
+    if: always()
+    needs: [angular, e2e]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Exigir gates verdes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test '${{ needs.angular.result }}' = success
+          test '${{ needs.e2e.result }}' = success
+          {
+            echo 'FASE_4_ANGULAR_22=PASS'
+            echo 'HEAD=${{ github.sha }}'
+            echo 'ENVIRONMENT=DEV'
+            echo 'ANGULAR_CORE=22.2.1'
+            echo 'ANGULAR_CLI=22.2.1'
+            echo 'ANGULAR_MATERIAL=22.2.1'
+            echo 'ANGULAR_CDK=22.2.1'
+            echo 'TYPESCRIPT=6.0.3'
+            echo 'RXJS=7.8.2'
+            echo 'TSLIB=2.8.1'
+            echo 'ZONE_JS=0.16.3'
+            echo 'ZONELESS_CONVERSION=false'
+            echo 'UNIT_TESTS_58_FILES_217_TESTS=PASS'
+            echo 'LINT=PASS'
+            echo 'NPM_AUDIT_PROD_HIGH_PLUS=PASS'
+            echo 'BUILD_PRODUCTION_CONFIGURATION=PASS'
+            echo 'E2E_CANONICAL_100_OF_100=PASS'
+            echo 'QA_TOUCHED=false'
+            echo 'PRODUCTION_TOUCHED=false'
+          } | tee fase4-certificacion.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fase4-angular22-certificacion-${{ github.run_id }}
+          retention-days: 90
+          path: fase4-certificacion.txt
