@@ -248,7 +248,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          nohup npm start -- --host 127.0.0.1 --port 4200 > catalogos-frontend.log 2>&1 &
+          nohup env -u PORT npm start -- --host 127.0.0.1 --port 4200 > catalogos-frontend.log 2>&1 &
           echo $! > catalogos-frontend.pid
 
       - name: Esperar Angular
