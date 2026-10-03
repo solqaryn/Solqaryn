@@ -75,15 +75,22 @@ jobs:
           test "$(node -p "require('vitest/package.json').version")" = "4.1.11"
           npx ng version
 
-      - name: Pruebas pre-publicación
+      - name: Unit tests pre-publicación
+        timeout-minutes: 12
         working-directory: frontend
-        shell: bash
-        run: |
-          set -euo pipefail
-          npm test -- --watch=false
-          npm run lint
-          npm audit --omit=dev --audit-level=high
-          npm run build:prod
+        run: npm test -- --watch=false
+
+      - name: Lint pre-publicación
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Audit productivo pre-publicación
+        working-directory: frontend
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Build PROD pre-publicación
+        working-directory: frontend
+        run: npm run build:prod
 
       - name: Commit y push DEV
         shell: bash
