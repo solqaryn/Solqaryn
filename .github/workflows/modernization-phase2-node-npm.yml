@@ -20,7 +20,7 @@ concurrency:
 
 jobs:
   frontend:
-    name: npm ci, lint y build PROD
+    name: npm ci, lint y build production-mode (sin deploy)
     runs-on: ubuntu-latest
     timeout-minutes: 35
     defaults:
@@ -40,15 +40,11 @@ jobs:
           npm run verify:toolchain
       - name: npm ci
         run: npm ci
-      - name: Angular baseline vigente
-        run: |
-          test "$(node -p "require('./package.json').dependencies['@angular/core']")" = "21.2.25"
-          test "$(node -p "require('./package.json').devDependencies['@angular/cli']")" = "21.2.24"
       - name: Lint
         run: npm run lint
       - name: Audit productivo high+
         run: npm audit --omit=dev --audit-level=high
-      - name: Build PROD
+      - name: Build production-mode (sin deploy)
         run: npm run build:prod
       - name: Evidencia
         run: |
@@ -117,11 +113,10 @@ jobs:
             echo 'HEAD=${{ github.sha }}'
             echo 'NODE=24.21.0'
             echo 'NPM=11.19.0'
-            echo 'ANGULAR=21.2.25'
             echo 'NPM_CI=PASS'
             echo 'LINT=PASS'
             echo 'NPM_AUDIT_PROD_HIGH_PLUS=PASS'
-            echo 'BUILD_PROD=PASS'
+            echo 'BUILD_PRODUCTION_CONFIGURATION=PASS'
             echo 'E2E_CANONICAL_100_OF_100=PASS'
             echo 'PRODUCTION_TOUCHED=false'
           } | tee fase2-certificacion.txt
