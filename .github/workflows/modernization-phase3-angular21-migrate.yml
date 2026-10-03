@@ -11,7 +11,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: modernization-phase3-angular21-migrate-dev
+  group: modernization-phase3-angular21-migrate-dev-v2
   cancel-in-progress: true
 
 jobs:
