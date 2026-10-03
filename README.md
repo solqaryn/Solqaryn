@@ -19,7 +19,7 @@ No volver a recorrer todo el repositorio ni releer archivos documentados si no c
 
 ## Stack
 
-- Frontend: Angular 20, standalone components, Signals, Angular Material.
+- Frontend: Angular 21.2.x, standalone components, Signals, Angular Material/CDK 21.2.x.
 - Backend: ASP.NET Core 8 Web API.
 - Capas backend: Domain, Application, Infrastructure, API.
 - Datos: MySQL + EF Core 8/Pomelo.
