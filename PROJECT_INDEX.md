@@ -67,6 +67,8 @@ Pruebas backend. Ejecutar pruebas dirigidas para cambios localizados y suite com
 
 ## Frontend
 
+Stack vigente: Angular 21.2.x + Angular Material/CDK 21.2.x sobre Node 24.21.0, npm 11.19.0 y TypeScript 5.9.3.
+
 ### `frontend/src/app/core`
 
 Autenticación, guards, interceptores, modelos y utilidades transversales. El baseline browser DEV vive en `core/performance/performance-baseline.service.ts`.
