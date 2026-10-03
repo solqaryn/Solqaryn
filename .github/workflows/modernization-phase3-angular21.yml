@@ -76,7 +76,8 @@ jobs:
             '@angular-devkit/build-angular':'21.2.24',
             '@angular/build':'21.2.24',
             '@angular/compiler-cli':'21.2.25',
-            'typescript':'~5.9.3'
+            'typescript':'~5.9.3',
+            'vitest':'4.1.11'
           };
           for (const [name,expected] of Object.entries(expectExact)) {
             const actual=p.dependencies?.[name] ?? p.devDependencies?.[name];
@@ -198,6 +199,7 @@ jobs:
             echo 'ANGULAR_MATERIAL=21.2.14'
             echo 'ANGULAR_CDK=21.2.14'
             echo 'TYPESCRIPT=5.9.3'
+            echo 'VITEST=4.1.11'
             echo 'UNIT_TESTS=PASS'
             echo 'LINT=PASS'
             echo 'NPM_AUDIT_PROD_HIGH_PLUS=PASS'
