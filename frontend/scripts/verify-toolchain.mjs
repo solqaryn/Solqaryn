@@ -1,3 +1,4 @@
+// Angular 22.2.1 Phase 4 exact-head certification marker; no runtime behavior.
 // Fase 2/4: autoridad exacta Node/npm y contrato declarativo del toolchain; Angular 22.2.1 se certifica en su gate dedicado y Vercel ejecuta este guard vía preinstall.
 import fs from 'node:fs';
 
