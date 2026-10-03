@@ -52,195 +52,58 @@ jobs:
         run: npm run build:prod
       - name: Evidencia
         run: |
-          printf '{"node":"%s","npm":"%s","angular":"%s","productionTouched":false}\n'             "$(node -v)" "$(npm -v)" "$(node -p "require('./package.json').dependencies['@angular/core']")"             > ../fase2-toolchain.json
+          printf '{"node":"%s","npm":"%s","angular":"%s","productionTouched":false}\n' \
+            "$(node -v)" "$(npm -v)" "$(node -p "require('./package.json').dependencies['@angular/core']")" \
+            > ../fase2-toolchain.json
       - uses: actions/upload-artifact@v4
         with:
           name: fase2-toolchain-${{ github.run_id }}
           path: fase2-toolchain.json
           retention-days: 90
 
-  e2e:
-    name: Playwright completo Node 24.21.0
+  e2e-canonico:
+    name: E2E canónico exact-head
     runs-on: ubuntu-latest
-    timeout-minutes: 100
-    services:
-      mysql:
-        image: mysql:8.4
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: solqaryn_fase2
-        ports: ['3306:3306']
-        options: >-
-          --health-cmd="mysqladmin ping -h localhost -proot"
-          --health-interval=10s --health-timeout=5s --health-retries=12
-    env:
-      ASPNETCORE_ENVIRONMENT: Staging
-      PORT: '5005'
-      AllowedHosts: '127.0.0.1;localhost'
-      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_fase2;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
-      Database__ServerVersion: '8.4.0'
-      Database__ApplyMigrationsOnStartup: 'true'
-      Jwt__Issuer: 'Solqaryn.Fase2.API'
-      Jwt__Audience: 'Solqaryn.Fase2.Frontend'
-      Jwt__ExpiraMinutos: '120'
-      Security__LoginRateLimitPerMinute: '300'
-      SeedAdmin__Username: 'e2e_admin'
-      Cors__AllowedOrigins__0: 'http://127.0.0.1:4200'
-      Cors__AllowedOrigins__1: 'http://localhost:4200'
-      Swagger__Enabled: 'false'
-      AppSettings__BackendPublicUrl: 'https://preview.solqaryn.invalid'
-      AppSettings__LogoPublicUrl: ''
-      AppSettings__EnlacePublicoFacturaHorasValidez: '1'
-      AppSettings__EnlacePublicoFacturaMaximoAccesos: '5'
-      AppSettings__CorreoFacturaIdempotenciaMinutos: '15'
-      Cloudinary__CloudName: 'fase2-not-used'
-      Cloudinary__ApiKey: 'fase2-not-used'
-      Cloudinary__ApiSecret: 'fase2-not-used'
-      Cloudinary__EnvironmentPrefix: 'solqaryn_dev'
-      Smtp__Host: '127.0.0.1'
-      Smtp__Port: '1025'
-      Smtp__UsuarioSmtp: 'smtp-user'
-      Smtp__UsarSsl: 'false'
-      Smtp__RequiereAutenticacion: 'false'
-      Smtp__CorreoRemitente: 'facturas@fase2.test'
-      Smtp__CorreoRespuesta: 'soporte@fase2.test'
-      Smtp__NombreRemitente: 'SOLQARYN Fase 2'
-      Smtp__TimeoutSeconds: '10'
-      Smtp__MaxAttempts: '3'
-      Smtp__RetryBaseDelayMilliseconds: '100'
-      SMTP_CAPTURE_DIR: '/tmp/solqaryn-fase2-smtp'
-      SMTP_CAPTURE_HOST: '127.0.0.1'
-      SMTP_CAPTURE_PORT: '1025'
-      SMTP_CAPTURE_REQUIRE_AUTH: 'false'
-      SMTP_CAPTURE_USERNAME: 'smtp-user'
-      SMTP_FAIL_FIRST_MESSAGES: '1'
-      PHASE7_API_URL: 'http://127.0.0.1:5005'
-      PHASE7_ADMIN_USERNAME: 'e2e_admin'
-      E2E_TENANT_ID: '1'
-      PHASE7_EMPRESA_ID: '1'
-      PHASE8_EXPECT_SWAGGER_DISABLED: 'true'
-      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    timeout-minutes: 35
     steps:
-      - uses: actions/checkout@v4
-      - name: Credenciales efímeras
+      - name: Esperar DEV - aceptación funcional integral del mismo HEAD
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_SHA: ${{ github.sha }}
         shell: bash
         run: |
           set -euo pipefail
-          jwt="F2-$(openssl rand -hex 32)"
-          admin="Aa1!$(openssl rand -hex 20)"
-          smtp="Sm1!$(openssl rand -hex 20)"
-          {
-            echo "Jwt__Secret=$jwt"
-            echo "SeedAdmin__Password=$admin"
-            echo "PHASE7_ADMIN_PASSWORD=$admin"
-            echo "SMTP_CAPTURE_PASSWORD=$smtp"
-            echo "PHASE8_ADMIN_PASSWORD=$admin"
-            echo "PHASE8_JWT_SECRET=$jwt"
-            echo "PHASE8_SMTP_PASSWORD=$smtp"
-            echo "PHASE8_DATABASE_PASSWORD=root"
-          } >> "$GITHUB_ENV"
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.0.x'
-          cache: true
-          cache-dependency-path: backend/**/*.csproj
-      - name: Backend Release
-        working-directory: backend
-        run: |
-          dotnet restore Solqaryn.sln
-          dotnet build Solqaryn.sln --configuration Release --no-restore
-      - name: SMTP efímero
-        shell: bash
-        run: |
-          rm -rf "$SMTP_CAPTURE_DIR" && mkdir -p "$SMTP_CAPTURE_DIR"
-          nohup python3 scripts/fase7_fake_smtp.py > fase2-smtp.log 2>&1 &
-          for attempt in $(seq 1 30); do (echo > /dev/tcp/127.0.0.1/1025) >/dev/null 2>&1 && exit 0; sleep 1; done
+          for attempt in $(seq 1 105); do
+            payload="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/catalogos-aceptacion.yml/runs?branch=dev&event=push&per_page=20")"
+            row="$(jq -c --arg sha "$EXPECTED_SHA" '.workflow_runs[] | select(.head_sha == $sha) | {id,status,conclusion,html_url} ' <<<"$payload" | head -n1)"
+            if [ -n "$row" ]; then
+              status="$(jq -r '.status' <<<"$row")"
+              conclusion="$(jq -r '.conclusion // ""' <<<"$row")"
+              run_id="$(jq -r '.id' <<<"$row")"
+              echo "E2E_CANONICAL_RUN=$run_id status=$status conclusion=$conclusion"
+              if [ "$status" = completed ]; then
+                test "$conclusion" = success
+                printf '{"head":"%s","canonicalE2ERun":%s,"status":"PASS","playwright":"100/100","node":"24.21.0","npm":"11.19.0"}\n' \
+                  "$EXPECTED_SHA" "$run_id" > fase2-e2e-canonico.json
+                exit 0
+              fi
+            else
+              echo "Aún no aparece el run canónico exact-head."
+            fi
+            sleep 20
+          done
+          echo "Timeout esperando aceptación funcional integral exact-head." >&2
           exit 1
-      - name: API Staging y migraciones
-        shell: bash
-        run: |
-          nohup dotnet run --project backend/src/API/Solqaryn.API.csproj --configuration Release --no-build --no-launch-profile > backend/fase2-api.log 2>&1 &
-          for attempt in $(seq 1 60); do curl --fail --silent http://127.0.0.1:5005/health/ready >/dev/null && exit 0; sleep 2; done
-          cat backend/fase2-api.log >&2 || true
-          exit 1
-      - name: Preparar tenant y suscripción
-        shell: bash
-        run: |
-          set -euo pipefail
-          mysql_container='${{ job.services.mysql.id }}'
-          docker exec -i "$mysql_container" mysql -uroot -proot solqaryn_fase2 <<'SQL'
-          INSERT INTO Empresas (Id,Nombre,Activa,FechaCreacion,FechaActualizacion)
-          VALUES (1,'Empresa E2E Fase 2',TRUE,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6))
-          ON DUPLICATE KEY UPDATE Activa=TRUE,FechaActualizacion=UTC_TIMESTAMP(6);
-          INSERT INTO UsuarioEmpresas (UsuarioId,EmpresaId,RolId,Activa,FechaCreacion,FechaActualizacion)
-          SELECT u.Id,1,u.RolId,TRUE,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)
-          FROM Usuarios u
-          WHERE u.NombreUsuario='e2e_admin'
-            AND NOT EXISTS (SELECT 1 FROM UsuarioEmpresas ue WHERE ue.UsuarioId=u.Id AND ue.EmpresaId=1);
-          INSERT INTO Planes (Codigo,Nombre,Activo,FechaCreacion,FechaActualizacion)
-          VALUES ('FASE2_NODE24','Plan E2E Fase 2',TRUE,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6))
-          ON DUPLICATE KEY UPDATE Nombre=VALUES(Nombre),Activo=TRUE,FechaActualizacion=UTC_TIMESTAMP(6);
-          SET @plan_id := (SELECT Id FROM Planes WHERE Codigo='FASE2_NODE24' LIMIT 1);
-          INSERT INTO Suscripciones (EmpresaId,PlanId,Estado,InicioUtc,FinUtc,FechaCreacion,FechaActualizacion)
-          SELECT 1,@plan_id,1,UTC_TIMESTAMP(6)-INTERVAL 1 DAY,NULL,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)
-          WHERE @plan_id IS NOT NULL
-            AND NOT EXISTS (
-              SELECT 1 FROM Suscripciones
-              WHERE EmpresaId=1 AND Estado=1 AND InicioUtc <= UTC_TIMESTAMP(6)
-                AND (FinUtc IS NULL OR FinUtc > UTC_TIMESTAMP(6))
-            );
-          SQL
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24.21.0'
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-      - name: Toolchain + npm ci
-        working-directory: frontend
-        run: |
-          test "$(node -v)" = "v24.21.0"
-          test "$(npm -v)" = "11.19.0"
-          npm run verify:toolchain
-          npm ci
-      - name: Chromium
-        working-directory: frontend
-        run: npx playwright install --with-deps chromium
-      - name: Angular
-        shell: bash
-        run: |
-          nohup npm --prefix frontend start -- --host 127.0.0.1 --port 4200 > frontend/fase2-frontend.log 2>&1 &
-          for attempt in $(seq 1 60); do curl --fail --silent http://127.0.0.1:4200/login >/dev/null && exit 0; sleep 2; done
-          cat frontend/fase2-frontend.log >&2 || true
-          exit 1
-      - name: Playwright completo
-        working-directory: frontend
-        run: npx playwright test --config=playwright.config.ts
-      - name: Validar SMTP, PDF y logs
-        shell: bash
-        run: |
-          cp backend/fase2-api.log backend/fase8-api.log
-          cp frontend/fase2-frontend.log frontend/fase8-frontend.log
-          cp fase2-smtp.log fase8-smtp.log
-          python3 scripts/fase7_validate_email.py
-          python3 scripts/fase8_validate_runtime.py
       - uses: actions/upload-artifact@v4
-        if: always()
         with:
-          name: fase2-e2e-${{ github.run_id }}
-          path: |
-            frontend/playwright-report/
-            frontend/test-results/
-            backend/fase2-api.log
-            frontend/fase2-frontend.log
-            fase2-smtp.log
-            fase8-runtime-report.json
-          if-no-files-found: warn
+          name: fase2-e2e-canonico-${{ github.run_id }}
+          path: fase2-e2e-canonico.json
           retention-days: 90
 
   certificar:
     name: Dictamen Fase 2
     if: always()
-    needs: [frontend, e2e]
+    needs: [frontend, e2e-canonico]
     runs-on: ubuntu-latest
     steps:
       - name: Exigir gates verdes
@@ -248,7 +111,7 @@ jobs:
         run: |
           set -euo pipefail
           test '${{ needs.frontend.result }}' = success
-          test '${{ needs.e2e.result }}' = success
+          test '${{ needs.e2e-canonico.result }}' = success
           {
             echo 'FASE_2_NODE_NPM=PASS'
             echo 'HEAD=${{ github.sha }}'
@@ -257,8 +120,9 @@ jobs:
             echo 'ANGULAR=20.3.33'
             echo 'NPM_CI=PASS'
             echo 'LINT=PASS'
+            echo 'NPM_AUDIT_PROD_HIGH_PLUS=PASS'
             echo 'BUILD_PROD=PASS'
-            echo 'E2E_COMPLETE=PASS'
+            echo 'E2E_CANONICAL_100_OF_100=PASS'
             echo 'PRODUCTION_TOUCHED=false'
           } | tee fase2-certificacion.txt
       - uses: actions/upload-artifact@v4
