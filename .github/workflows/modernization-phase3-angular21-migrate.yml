@@ -58,14 +58,6 @@ jobs:
         working-directory: frontend
         run: npm install --save-dev --save-exact vitest@4.1.11
 
-      - name: Migración oficial application builder
-        timeout-minutes: 8
-        working-directory: frontend
-        shell: bash
-        run: |
-          set -euo pipefail
-          npx --yes --package @angular/cli@21.2.24 ng update @angular/cli --name use-application-builder --allow-dirty
-
       - name: ng update Material y CDK 20 a 21
         timeout-minutes: 12
         working-directory: frontend
@@ -76,14 +68,28 @@ jobs:
           set -euo pipefail
           npx --yes --package @angular/cli@21.2.24 ng update @angular/material@21.2.14 --allow-dirty
 
-      - name: Alinear TypeScript y builder Angular 21
-        timeout-minutes: 6
+      - name: Alinear TypeScript y builders Angular 21
+        timeout-minutes: 8
         working-directory: frontend
         shell: bash
         run: |
           set -euo pipefail
           npm install --save-dev typescript@~5.9.3
           npm install --save-dev --save-exact @angular/build@21.2.24
+          npm uninstall @angular-devkit/build-angular
+          node <<'NODE'
+          const fs = require('fs');
+          const path = 'angular.json';
+          const data = JSON.parse(fs.readFileSync(path, 'utf8'));
+          const text = JSON.stringify(data);
+          if (!text.includes('@angular-devkit/build-angular:')) {
+            console.log('BUILDERS_ALREADY_ALIGNED=true');
+            process.exit(0);
+          }
+          const migrated = text.replaceAll('@angular-devkit/build-angular:', '@angular/build:');
+          fs.writeFileSync(path, JSON.stringify(JSON.parse(migrated), null, 2) + '\n');
+          console.log('ANGULAR_BUILDERS_21_ALIGNED=PASS');
+          NODE
 
       - name: Verificar versiones migradas
         working-directory: frontend
@@ -94,6 +100,10 @@ jobs:
           test "$(node -p "require('./package.json').dependencies['@angular/core']")" = "21.2.25"
           test "$(node -p "require('./package.json').devDependencies['@angular/cli']")" = "21.2.24"
           test "$(node -p "require('./package.json').devDependencies['@angular/build']")" = "21.2.24"
+          test "$(node -p "require('./package.json').devDependencies['@angular-devkit/build-angular'] || ''")" = ""
+          ! grep -q '@angular-devkit/build-angular:' angular.json
+          grep -q '@angular/build:application' angular.json
+          grep -q '@angular/build:unit-test' angular.json
           test "$(node -p "require('./package.json').dependencies['@angular/material']")" = "21.2.14"
           test "$(node -p "require('./package.json').dependencies['@angular/cdk']")" = "21.2.14"
           test "$(node -p "require('./package.json').devDependencies['@angular/build']")" = "21.2.24"
