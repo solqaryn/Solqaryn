@@ -14,7 +14,7 @@ El frontend Angular se organiza por funcionalidades con servicios compartidos y 
 
 ### Frontend Angular
 
-Versión de framework vigente: **Angular 21.2.x** (Core 21.2.25, CLI 21.2.24, Material/CDK 21.2.14), migrada desde Angular 20 mediante `ng update` oficial major-a-major. Node 24.21.0, npm 11.19.0 y TypeScript 5.9.3 completan el toolchain frontend certificado.
+Versión de framework vigente: **Angular 22.2.1** (Core/CLI/Material/CDK 22.2.1), migrada desde Angular 21 mediante `ng update` oficial major-a-major. Node 24.21.0, npm 11.19.0, TypeScript 6.0.3, RxJS 7.8.2, tslib 2.8.1 y Zone.js 0.16.3 completan el toolchain frontend. SOLQARYN conserva `provideZoneChangeDetection` y `zone.js` como polyfill; la migración a zoneless queda fuera de este cambio arquitectónico.
 
 Responsabilidades:
 
