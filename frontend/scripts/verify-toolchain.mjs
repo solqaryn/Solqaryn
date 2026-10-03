@@ -1,3 +1,4 @@
+// Fase 2: este guard es autoridad local/CI para el pin exacto Node/npm; Vercel también lo ejecuta vía preinstall.
 const expectedNode = '24.21.0';
 const expectedNpm = '11.19.0';
 const actualNode = process.versions.node;
