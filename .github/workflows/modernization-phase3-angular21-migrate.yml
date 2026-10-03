@@ -51,7 +51,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          npx ng update @angular/cli@^21 @angular/core@^21
+          npx --yes --package @angular/cli@21.2.24 ng update @angular/cli@21.2.24 @angular/core@21.2.25
 
       - name: Alinear Vitest para Angular build 21
         timeout-minutes: 6
@@ -64,7 +64,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          npx ng update @angular/cli --name use-application-builder --allow-dirty
+          npx --yes --package @angular/cli@21.2.24 ng update @angular/cli --name use-application-builder --allow-dirty
 
       - name: ng update Material y CDK 20 a 21
         timeout-minutes: 12
