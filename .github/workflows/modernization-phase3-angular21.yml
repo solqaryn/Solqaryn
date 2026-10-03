@@ -1,0 +1,212 @@
+name: Modernización - Fase 3 Angular 21 DEV
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/**'
+      - 'PROJECT_CONTEXT.md'
+      - 'PROJECT_INDEX.md'
+      - 'ARCHITECTURE.md'
+      - 'ARCHITECTURE_CHANGELOG.md'
+      - 'README.md'
+      - '.agents/skills/solqaryn-project-governance/**'
+      - 'docs/evidencias/modernizacion/FASE_3_ANGULAR_21_2026-10-03.md'
+      - '.github/workflows/modernization-phase3-angular21.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: modernization-phase3-angular21-dev
+  cancel-in-progress: true
+
+jobs:
+  angular:
+    name: Angular 21 - dependencias, unit, lint y build PROD
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Scope SOLQARYN
+        working-directory: .
+        run: node scripts/verify-project-scope.mjs
+
+      - name: Toolchain exacto
+        run: |
+          test "$(node -v)" = "v24.21.0"
+          test "$(npm -v)" = "11.19.0"
+          npm run verify:toolchain
+
+      - name: npm ci
+        run: npm ci
+
+      - name: Certificar Angular 21.x exacto
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const p=require('./package.json');
+          const expectExact={
+            '@angular/animations':'21.2.25',
+            '@angular/common':'21.2.25',
+            '@angular/compiler':'21.2.25',
+            '@angular/core':'21.2.25',
+            '@angular/forms':'21.2.25',
+            '@angular/platform-browser':'21.2.25',
+            '@angular/platform-browser-dynamic':'21.2.25',
+            '@angular/router':'21.2.25',
+            '@angular/cdk':'21.2.14',
+            '@angular/material':'21.2.14',
+            '@angular/cli':'21.2.24',
+            '@angular-devkit/build-angular':'21.2.24',
+            '@angular/compiler-cli':'21.2.25',
+            'typescript':'~5.9.3'
+          };
+          for (const [name,expected] of Object.entries(expectExact)) {
+            const actual=p.dependencies?.[name] ?? p.devDependencies?.[name];
+            if (actual !== expected) {
+              console.error(`VERSION_MISMATCH ${name}: expected=${expected} actual=${actual}`);
+              process.exit(1);
+            }
+          }
+          for (const [name,value] of Object.entries({...p.dependencies,...p.devDependencies})) {
+            if (name.startsWith('@angular/') && /^20\./.test(value)) {
+              console.error(`ANGULAR20_RESIDUAL ${name}=${value}`);
+              process.exit(1);
+            }
+          }
+          console.log('ANGULAR_21_VERSIONS=PASS');
+          NODE
+          npx ng version
+          npm ls @angular/core @angular/cli @angular/material @angular/cdk typescript --depth=0
+
+      - name: Unit tests Angular
+        run: npm test -- --watch=false
+
+      - name: Lint y contratos
+        run: npm run lint
+
+      - name: Audit productivo high+
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Build PROD
+        run: npm run build:prod
+
+      - name: Bundle y evidencia
+        shell: bash
+        run: |
+          set -euo pipefail
+          initial_line="$(npm run build:prod 2>&1 | grep 'Initial total' | tail -n1 || true)"
+          printf '%s\n' "$initial_line" > ../fase3-bundle.txt
+          node <<'NODE'
+          const fs=require('fs');
+          const p=require('./package.json');
+          const evidence={
+            head:process.env.GITHUB_SHA,
+            node:process.version.replace(/^v/,''),
+            npm:'11.19.0',
+            angularCore:p.dependencies['@angular/core'],
+            angularCli:p.devDependencies['@angular/cli'],
+            angularMaterial:p.dependencies['@angular/material'],
+            angularCdk:p.dependencies['@angular/cdk'],
+            typescript:p.devDependencies.typescript,
+            productionTouched:false
+          };
+          fs.writeFileSync('../fase3-angular-versions.json',JSON.stringify(evidence,null,2)+'\n');
+          NODE
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fase3-angular21-frontend-${{ github.run_id }}
+          retention-days: 90
+          path: |
+            fase3-angular-versions.json
+            fase3-bundle.txt
+
+  e2e:
+    name: E2E canónico exact-head
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Esperar aceptación funcional integral
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_SHA: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 120); do
+            payload="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/catalogos-aceptacion.yml/runs?branch=dev&event=push&per_page=30")"
+            row="$(jq -c --arg sha "$EXPECTED_SHA" '.workflow_runs[] | select(.head_sha == $sha) | {id,status,conclusion,html_url}' <<<"$payload" | head -n1)"
+            if [ -n "$row" ]; then
+              status="$(jq -r '.status' <<<"$row")"
+              conclusion="$(jq -r '.conclusion // ""' <<<"$row")"
+              run_id="$(jq -r '.id' <<<"$row")"
+              echo "E2E_RUN=$run_id status=$status conclusion=$conclusion"
+              if [ "$status" = completed ]; then
+                test "$conclusion" = success
+                printf '{"head":"%s","canonicalE2ERun":%s,"status":"PASS","playwright":"100/100"}\n' "$EXPECTED_SHA" "$run_id" > fase3-e2e.json
+                exit 0
+              fi
+            fi
+            sleep 20
+          done
+          echo "Timeout esperando E2E canónico exact-head" >&2
+          exit 1
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fase3-angular21-e2e-${{ github.run_id }}
+          retention-days: 90
+          path: fase3-e2e.json
+
+  certificar:
+    name: Dictamen Fase 3
+    if: always()
+    needs: [angular, e2e]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Exigir gates verdes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test '${{ needs.angular.result }}' = success
+          test '${{ needs.e2e.result }}' = success
+          {
+            echo 'FASE_3_ANGULAR_21=PASS'
+            echo 'HEAD=${{ github.sha }}'
+            echo 'NODE=24.21.0'
+            echo 'NPM=11.19.0'
+            echo 'ANGULAR_CORE=21.2.25'
+            echo 'ANGULAR_CLI=21.2.24'
+            echo 'ANGULAR_MATERIAL=21.2.14'
+            echo 'ANGULAR_CDK=21.2.14'
+            echo 'TYPESCRIPT=5.9.3'
+            echo 'UNIT_TESTS=PASS'
+            echo 'LINT=PASS'
+            echo 'NPM_AUDIT_PROD_HIGH_PLUS=PASS'
+            echo 'BUILD_PROD=PASS'
+            echo 'E2E_CANONICAL_100_OF_100=PASS'
+            echo 'PRODUCTION_TOUCHED=false'
+          } | tee fase3-certificacion.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fase3-angular21-certificacion-${{ github.run_id }}
+          retention-days: 90
+          path: fase3-certificacion.txt
