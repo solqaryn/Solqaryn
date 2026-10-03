@@ -58,7 +58,7 @@ La arquitectura vigente se resume en `references/architecture.md`.
 
 Reglas no negociables:
 
-- Frontend Angular 20 standalone con Signals y Angular Material.
+- Frontend Angular 21.2.x standalone con Signals y Angular Material/CDK 21.2.x.
 - Backend ASP.NET Core 8 Web API.
 - Capas backend: Domain <- Application <- Infrastructure; API compone y expone.
 - Persistencia MySQL con EF Core 8/Pomelo.
