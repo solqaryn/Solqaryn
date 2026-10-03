@@ -1,3 +1,12 @@
+## 2026-10-03 — Modernización Fase 3 Angular 20 → 21 DEV
+
+- Migración publicada por el run causal `37141861945`, que ejecutó `ng update` oficial Core/CLI 20→21 y Material/CDK 20→21 antes de publicar.
+- Versiones resultantes: Angular Core/framework 21.2.25, CLI/build-angular/angular-build 21.2.24, Material/CDK 21.2.14, TypeScript 5.9.3 y Vitest 4.1.11.
+- Se preservan Node 24.21.0, npm 11.19.0, RxJS 7.8.1 y el alcance DEV.
+- Antes del push pasaron versiones exactas, 58/58 archivos y 217/217 unit tests, lint/contratos, audit productivo high+ y build PROD.
+- La certificación final vuelve a ejecutar esos gates y consume el E2E canónico 100/100 sobre el HEAD final.
+- QA, main/PROD, bases, migraciones EF, RBAC, tenancy, secretos, Aiven y Render no se promueven ni modifican.
+
 ## 2026-10-02 — Modernización Fase 2 Node 24.21.0 + npm 11.19.0 DEV
 
 - Toolchain frontend migrado a Node.js `24.21.0` LTS y npm `11.19.0` sin modificar Angular `20.3.33`.
