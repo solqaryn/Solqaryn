@@ -113,7 +113,7 @@ jobs:
           npx ng version
 
       - name: Unit tests pre-publicación
-        timeout-minutes: 12
+        timeout-minutes: 4
         working-directory: frontend
         run: npm test -- --watch=false
 
