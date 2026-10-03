@@ -1,3 +1,10 @@
+## 2026-10-03 — Hardening final de certificación Angular 21 DEV
+
+- Corregido el workflow permanente de Fase 2 que seguía exigiendo Angular 20.3.33 después de la migración; ahora valida el baseline vigente Angular 21.2.25 / CLI 21.2.24.
+- Retirados los workflows temporales de diagnóstico y migración 20→21 para evitar reejecuciones stale contra un árbol ya migrado.
+- La evidencia histórica del run causal 37141861945 se preserva; no se toca QA, main/PROD, datos, secretos ni infraestructura productiva.
+- La certificación final permanece exact-head y exige Fase 3 + E2E canónico verdes.
+
 ## 2026-10-03 — Modernización Fase 3 Angular 20 → 21 DEV
 
 - Migración publicada por el run causal `37141861945`, que ejecutó `ng update` oficial Core/CLI 20→21 y Material/CDK 20→21 antes de publicar.
