@@ -1,3 +1,11 @@
+## 2026-10-03 — Hardening quirúrgico Fase 4 Angular 22 DEV
+
+- Eliminadas dependencias directas obsoletas no consumidas: @angular-devkit/build-angular y @angular/platform-browser-dynamic; SOLQARYN permanece sobre @angular/build.
+- Lockfile refrescado sin cambiar la matriz Angular 22.2.1 / TypeScript 6.0.3 / RxJS 7.8.2 / tslib 2.8.1 / Zone.js 0.16.3.
+- Certifier Fase 4 endurecido con npm audit completo high+, además del audit productivo.
+- Corregidos warnings propios Angular 22: RouterLink no usados, allowSignalWrites deprecado, NG8011 de proyección Material y config Vitest ESM.
+- Alcance exclusivo dev; QA, main y PROD no se modifican.
+
 ## 2026-10-03 — Modernización Fase 4 Angular 21 → 22.2.1 DEV
 
 - Precondición: Fase 3 Angular 21 exact-head cerró SUCCESS en run `37144981807`, incluido E2E canónico.
