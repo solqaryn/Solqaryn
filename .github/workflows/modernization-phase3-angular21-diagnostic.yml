@@ -1,4 +1,5 @@
 name: Modernización - Diagnóstico Angular 21 DEV
+# diagnostic-rerun-2026-10-03
 
 on:
   push:
@@ -41,6 +42,7 @@ jobs:
           npm install --save-dev typescript@~5.9.3
           npm install --save-dev --save-exact @angular/build@21.2.24 vitest@4.1.11
       - name: Unit tests
+        timeout-minutes: 20
         working-directory: frontend
         run: npm test -- --watch=false
       - name: Lint
