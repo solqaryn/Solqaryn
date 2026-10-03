@@ -52,7 +52,7 @@ jobs:
           set -euo pipefail
           npx ng update @angular/cli@^21 @angular/core@^21
           npx ng update @angular/material@^21 --allow-dirty
-          npm install --save-dev typescript@~5.9.3 @angular/build@21.2.24
+          npm install --save-dev typescript@~5.9.3 @angular/build@21.2.24 vitest@4.1.11
 
       - name: Verificar versiones migradas
         working-directory: frontend
@@ -66,6 +66,7 @@ jobs:
           test "$(node -p "require('./package.json').dependencies['@angular/material']")" = "21.2.14"
           test "$(node -p "require('./package.json').dependencies['@angular/cdk']")" = "21.2.14"
           test "$(node -p "require('typescript/package.json').version")" = "5.9.3"
+          test "$(node -p "require('vitest/package.json').version")" = "4.1.11"
           npx ng version
 
       - name: Pruebas pre-publicación
