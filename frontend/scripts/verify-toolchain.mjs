@@ -1,4 +1,4 @@
-// Fase 2/3: autoridad exacta Node/npm y contrato declarativo del toolchain; Vercel ejecuta este guard vía preinstall.
+// Fase 2/4: autoridad exacta Node/npm y contrato declarativo del toolchain; Angular 22.2.1 se certifica en su gate dedicado y Vercel ejecuta este guard vía preinstall.
 import fs from 'node:fs';
 
 const expectedNode = '24.21.0';
