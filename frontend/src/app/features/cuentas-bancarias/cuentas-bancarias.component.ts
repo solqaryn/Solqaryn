@@ -123,7 +123,7 @@ export class CuentasBancariasComponent implements OnInit {
         this.formulario.reset({ moneda: 'HNL', saldoInicial: 0, bancoId: 0, nombre: '', numeroCuenta: '' });
         this.errorMessage.set(null);
       }
-    }, { allowSignalWrites: true });
+    });
   }
 
   ngOnInit(): void {
