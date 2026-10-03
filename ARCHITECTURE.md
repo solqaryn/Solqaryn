@@ -14,6 +14,8 @@ El frontend Angular se organiza por funcionalidades con servicios compartidos y 
 
 ### Frontend Angular
 
+Versión de framework vigente: **Angular 21.2.x** (Core 21.2.25, CLI 21.2.24, Material/CDK 21.2.14), migrada desde Angular 20 mediante `ng update` oficial major-a-major. Node 24.21.0, npm 11.19.0 y TypeScript 5.9.3 completan el toolchain frontend certificado.
+
 Responsabilidades:
 
 - navegación y UX;
