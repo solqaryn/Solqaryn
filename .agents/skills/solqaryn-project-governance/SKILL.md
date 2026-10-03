@@ -58,7 +58,7 @@ La arquitectura vigente se resume en `references/architecture.md`.
 
 Reglas no negociables:
 
-- Frontend Angular 21.2.x standalone con Signals y Angular Material/CDK 21.2.x.
+- Frontend Angular 22.2.1 standalone con Signals y Angular Material/CDK 22.2.1; Zone.js 0.16.3 permanece activo y la conversión a zoneless requiere un cambio arquitectónico separado.
 - Backend ASP.NET Core 8 Web API.
 - Capas backend: Domain <- Application <- Infrastructure; API compone y expone.
 - Persistencia MySQL con EF Core 8/Pomelo.
