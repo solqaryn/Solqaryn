@@ -1,4 +1,5 @@
 name: Modernización - Aplicar Angular 20 a 21 DEV
+# trigger: final Angular 21 migration
 
 on:
   push:
