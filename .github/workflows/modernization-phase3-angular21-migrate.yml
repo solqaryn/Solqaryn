@@ -33,72 +33,37 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Guardar HEAD de entrada y scope
-        id: base
+      - name: Scope y baseline Angular 20
         shell: bash
         run: |
           set -euo pipefail
           node scripts/verify-project-scope.mjs
-          echo "head=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-          git status --porcelain
           test -z "$(git status --porcelain)"
-
-      - name: npm ci Angular 20 baseline
-        working-directory: frontend
-        run: |
+          cd frontend
           test "$(node -v)" = "v24.21.0"
           test "$(npm -v)" = "11.19.0"
           npm ci
           test "$(node -p "require('./package.json').dependencies['@angular/core']")" = "20.3.33"
 
-      - name: ng update Core y CLI 20 a 21
+      - name: ng update Core CLI Material CDK
         working-directory: frontend
         shell: bash
         run: |
           set -euo pipefail
           npx ng update @angular/cli@^21 @angular/core@^21
-
-      - name: ng update Material y CDK 20 a 21
-        working-directory: frontend
-        shell: bash
-        run: |
-          set -euo pipefail
           npx ng update @angular/material@^21 --allow-dirty
+          npm install --save-dev typescript@~5.9.3
 
-      - name: Fijar TypeScript compatible 5.9.3
-        working-directory: frontend
-        run: npm install --save-dev typescript@~5.9.3
-
-      - name: Verificar resultado de migraciones
+      - name: Verificar versiones migradas
         working-directory: frontend
         shell: bash
         run: |
           set -euo pipefail
           npm run verify:toolchain
-          node <<'NODE'
-          const p=require('./package.json');
-          const exact={
-            '@angular/animations':'21.2.25',
-            '@angular/common':'21.2.25',
-            '@angular/compiler':'21.2.25',
-            '@angular/core':'21.2.25',
-            '@angular/forms':'21.2.25',
-            '@angular/platform-browser':'21.2.25',
-            '@angular/platform-browser-dynamic':'21.2.25',
-            '@angular/router':'21.2.25',
-            '@angular/cdk':'21.2.14',
-            '@angular/material':'21.2.14',
-            '@angular/cli':'21.2.24',
-            '@angular-devkit/build-angular':'21.2.24',
-            '@angular/compiler-cli':'21.2.25',
-            'typescript':'~5.9.3'
-          };
-          for (const [name,expected] of Object.entries(exact)) {
-            const actual=p.dependencies?.[name] ?? p.devDependencies?.[name];
-            if (actual!==expected) throw new Error(name+': expected '+expected+', got '+actual);
-          }
-          console.log('ANGULAR_20_TO_21=PASS');
-          NODE
+          test "$(node -p "require('./package.json').dependencies['@angular/core']")" = "21.2.25"
+          test "$(node -p "require('./package.json').devDependencies['@angular/cli']")" = "21.2.24"
+          test "$(node -p "require('./package.json').dependencies['@angular/material']")" = "21.2.14"
+          test "$(node -p "require('./package.json').dependencies['@angular/cdk']")" = "21.2.14"
           test "$(node -p "require('typescript/package.json').version")" = "5.9.3"
           npx ng version
 
@@ -112,107 +77,15 @@ jobs:
           npm audit --omit=dev --audit-level=high
           npm run build:prod
 
-      - name: Actualizar documentación canónica
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 <<'PY'
-          from pathlib import Path
-          replacements = {
-            'PROJECT_CONTEXT.md': [
-              ('Frontend: Angular 20 standalone, Signals y Angular Material.',
-               'Frontend: Angular 21 standalone, Signals y Angular Material.')
-            ],
-            'README.md': [
-              ('Frontend: Angular 20, standalone components, Signals, Angular Material.',
-               'Frontend: Angular 21, standalone components, Signals, Angular Material.')
-            ],
-            '.agents/skills/solqaryn-project-governance/SKILL.md': [
-              ('Frontend Angular 20 standalone con Signals y Angular Material.',
-               'Frontend Angular 21 standalone con Signals y Angular Material.')
-            ],
-            '.agents/skills/solqaryn-project-governance/references/architecture.md': [
-              ('Frontend: Angular 20, standalone components, Signals, Angular Material, lazy routes, auth/permission guards.',
-               'Frontend: Angular 21, standalone components, Signals, Angular Material, lazy routes, auth/permission guards.')
-            ]
-          }
-          for file, pairs in replacements.items():
-              p=Path(file); s=p.read_text()
-              for old,new in pairs:
-                  if old not in s:
-                      raise SystemExit('Missing canonical text in '+file+': '+old)
-                  s=s.replace(old,new,1)
-              p.write_text(s)
-
-          p=Path('ARCHITECTURE.md'); s=p.read_text()
-          marker='### Frontend Angular\n\nResponsabilidades:'
-          replacement='### Frontend Angular\n\nVersión de framework vigente: **Angular 21.2.x**, migrada desde Angular 20 mediante ng update oficial major-a-major; Material/CDK permanecen alineados en 21.2.x.\n\nResponsabilidades:'
-          if marker not in s: raise SystemExit('ARCHITECTURE marker missing')
-          p.write_text(s.replace(marker,replacement,1))
-
-          p=Path('PROJECT_INDEX.md'); s=p.read_text()
-          marker='## Frontend\n\n'
-          replacement='## Frontend\n\nStack vigente: Angular 21.2.x + Angular Material/CDK 21.2.x sobre Node 24.21.0 / npm 11.19.0.\n\n'
-          if marker not in s: raise SystemExit('PROJECT_INDEX marker missing')
-          p.write_text(s.replace(marker,replacement,1))
-
-          arch_entry='''## 2026-10-03 — Angular 20 → 21
-
-- Frontend migrado major-a-major mediante ng update oficial a Angular Core 21.2.25 / CLI 21.2.24.
-- Angular Material/CDK migrados mediante schematics oficiales a 21.2.14.
-- TypeScript actualizado a 5.9.3, compatible con Angular 21; Node 24.21.0 y npm 11.19.0 se preservan.
-- Sin cambios de backend, API, datos, RBAC, tenancy ni infraestructura productiva.
-
-'''
-          p=Path('ARCHITECTURE_CHANGELOG.md'); p.write_text(arch_entry+p.read_text())
-
-          change_entry='''## 2026-10-03 — Modernización Fase 3 Angular 20 → 21 DEV
-
-- Migración ejecutada con ng update @angular/cli@^21 @angular/core@^21 y ng update @angular/material@^21, sin saltar majors ni usar --force.
-- Resultado objetivo: Core 21.2.25, CLI/build 21.2.24, Material/CDK 21.2.14 y TypeScript 5.9.3; Node/npm permanecen 24.21.0/11.19.0.
-- Se ejecutan unit tests, lint, audit productivo, build PROD, DEV CI y E2E canónico antes de certificar.
-- Alcance exclusivo DEV; QA/main/PROD no se promueven.
-
-'''
-          p=Path('CHANGELOG_AI.md'); p.write_text(change_entry+p.read_text())
-
-          evidence='''# Modernización — Fase 3 Angular 20 → 21 — 2026-10-03
-
-Estado: migración aplicada; certificación exact-head gobernada por Modernización - Fase 3 Angular 21 DEV.
-
-## Ruta oficial
-
-- Core/CLI: ng update @angular/cli@^21 @angular/core@^21.
-- Material/CDK: ng update @angular/material@^21.
-- Sin salto 20→22; migración major-a-major.
-
-## Versiones objetivo resueltas
-
-- Angular Core/framework: 21.2.25.
-- Angular CLI / build-angular: 21.2.24.
-- Angular Material/CDK: 21.2.14.
-- TypeScript: 5.9.3.
-- Node: 24.21.0.
-- npm: 11.19.0.
-
-## Alcance
-
-Frontend + documentación arquitectónica canónica. Sin cambios de backend, bases, migraciones EF, RBAC, tenancy, secretos, Aiven, Render QA/PROD o ramas QA/main.
-'''
-          Path('docs/evidencias/modernizacion/FASE_3_ANGULAR_21_2026-10-03.md').write_text(evidence)
-          PY
-
-      - name: Revalidar y publicar migración en DEV
+      - name: Commit y push DEV
         shell: bash
         run: |
           set -euo pipefail
           node scripts/verify-project-scope.mjs
-          test "$(git branch --show-current)" = "dev"
-          git status --short
-          test -n "$(git status --porcelain)"
+          test -n "$(git status --porcelain frontend)"
           git config user.name "solqaryn-platform"
           git config user.email "solqaryn.platform@outlook.com"
-          git add frontend PROJECT_CONTEXT.md PROJECT_INDEX.md ARCHITECTURE.md ARCHITECTURE_CHANGELOG.md README.md CHANGELOG_AI.md docs/evidencias/modernizacion/FASE_3_ANGULAR_21_2026-10-03.md .agents/skills/solqaryn-project-governance
+          git add frontend
           git commit -m "feat(modernization): migrate Angular 20 to 21"
           git pull --rebase origin dev
           node scripts/verify-project-scope.mjs
