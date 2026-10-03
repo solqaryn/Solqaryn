@@ -40,7 +40,7 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
           <mat-form-field appearance="outline" class="full"><mat-label>Descripción</mat-label><textarea matInput rows="3" formControlName="descripcion" maxlength="500"></textarea></mat-form-field>
           @if (editandoId()) { <mat-slide-toggle formControlName="activo">Activo</mat-slide-toggle> }
           @if (errorFormulario()) { <p class="error" role="alert">{{ errorFormulario() }}</p> }
-          <div class="actions"><button mat-button type="button" (click)="cancelar()">Cancelar</button><button mat-flat-button color="primary" type="submit" [disabled]="saving()">@if (saving()) { <mat-spinner diameter="20"></mat-spinner> } @else { <mat-icon>save</mat-icon> Guardar }</button></div>
+          <div class="actions"><button mat-button type="button" (click)="cancelar()">Cancelar</button><button mat-flat-button color="primary" type="submit" [disabled]="saving()">@if (saving()) { <mat-spinner diameter="20"></mat-spinner> } @if (!saving()) { <mat-icon>save</mat-icon> }<span>{{ saving() ? 'Guardando…' : 'Guardar' }}</span></button></div>
         </form>
       }
       <div class="card" aria-live="polite">
