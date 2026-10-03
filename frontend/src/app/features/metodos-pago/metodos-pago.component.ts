@@ -100,7 +100,9 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
           <div class="form-actions">
             <button mat-button type="button" (click)="cancelar()">Cancelar</button>
             <button mat-flat-button color="primary" type="submit" [disabled]="saving()">
-              @if (saving()) { <mat-spinner diameter="20"></mat-spinner> } @else { <mat-icon>save</mat-icon> Guardar }
+              @if (saving()) { <mat-spinner diameter="20"></mat-spinner> }
+              @if (!saving()) { <mat-icon>save</mat-icon> }
+              <span>{{ saving() ? 'Guardando…' : 'Guardar' }}</span>
             </button>
           </div>
         </form>
