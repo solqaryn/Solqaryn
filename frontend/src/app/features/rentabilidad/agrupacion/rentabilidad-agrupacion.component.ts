@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RentabilidadAgrupacion } from '../../../core/models/reporte-rentabilidad.models';
@@ -8,7 +8,7 @@ export type { RentabilidadAgrupacion } from '../../../core/models/reporte-rentab
 @Component({
   selector: 'app-rentabilidad-agrupacion',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [ReactiveFormsModule],
   template: `
     <div class="agrupacion-container">
       <label for="agrupacion-select" class="agrupacion-label">Agrupar por</label>

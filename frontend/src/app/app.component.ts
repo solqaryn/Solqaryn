@@ -1,4 +1,4 @@
-import { CommonModule, DOCUMENT } from '@angular/common';
+import { DOCUMENT } from '@angular/common';
 import { Component, HostListener, Inject, OnDestroy } from '@angular/core';
 import { RouterOutlet, RouterLink, Router, NavigationEnd } from '@angular/router';
 import { AuthService } from './core/auth/auth.service';
@@ -15,7 +15,7 @@ import { PerformanceBaselineService } from './core/performance/performance-basel
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, AppNavigationMenuComponent],
+  imports: [RouterOutlet, RouterLink, AppNavigationMenuComponent],
   template: `
     @if (auth.isAuthenticated()) {
       <a class="skip-link" href="#main-content">Saltar al contenido principal</a>

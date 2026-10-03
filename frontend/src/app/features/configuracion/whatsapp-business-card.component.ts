@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { HttpClient } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
 import { finalize } from 'rxjs';
@@ -16,7 +16,7 @@ interface WhatsAppSessionStatus {
 @Component({
   selector: 'app-whatsapp-business-card',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
     <section class="card whatsapp-card" aria-labelledby="whatsapp-business-title">
       <div class="header-row">

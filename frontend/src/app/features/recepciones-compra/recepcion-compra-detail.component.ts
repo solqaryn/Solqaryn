@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, Inject, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -31,7 +31,7 @@ export class ConfirmarRecepcionDialogComponent {
 @Component({
   selector: 'app-recepcion-compra-detail',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatDialogModule, MatIconModule, MatProgressSpinnerModule],
+  imports: [MatButtonModule, MatDialogModule, MatIconModule, MatProgressSpinnerModule],
   template: `
     <section class="page-shell" aria-labelledby="recepcion-detail-title">
       <header class="page-header">

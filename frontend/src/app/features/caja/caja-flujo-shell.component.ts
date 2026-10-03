@@ -90,141 +90,164 @@ export type CajaAccionUi = 'ABRIR' | 'INICIAR_OPERACIONES' | 'REGISTRAR_MOVIMIEN
           {{ caja?.estado === 2 ? 'Activa' : 'Inactiva' }}
         </span>
       </header>
-
-      <div *ngIf="loading" class="state-panel" role="status" aria-live="polite">
-        <mat-spinner diameter="32"></mat-spinner>
-        <span>Cargando información de caja…</span>
-      </div>
-
-      <div *ngIf="!loading && error" class="state-panel error" role="alert">
-        <mat-icon aria-hidden="true">error_outline</mat-icon>
-        <span>{{ error }}</span>
-      </div>
-
-      <ng-container *ngIf="!loading && !error">
-        <nav class="steps" aria-label="Ciclo de vida de la sesión">
-          <div *ngFor="let step of pasos" class="step" [class.current]="sesion?.estado === step.id" [class.done]="sesion && sesion.estado > step.id">
-            <span>{{ step.id }}</span><strong>{{ step.label }}</strong>
-          </div>
-        </nav>
-
-        <div *ngIf="!sesion" class="state-panel empty">
-          <mat-icon aria-hidden="true">point_of_sale</mat-icon>
-          <div>
-            <strong>No hay una sesión activa</strong>
-            <p>La caja está lista para iniciar una nueva apertura cuando el flujo autorizado lo permita.</p>
-          </div>
+    
+      @if (loading) {
+        <div class="state-panel" role="status" aria-live="polite">
+          <mat-spinner diameter="32"></mat-spinner>
+          <span>Cargando información de caja…</span>
         </div>
-
-        <form *ngIf="!sesion && caja?.estado === 2" class="operation-form" #aperturaForm="ngForm" (ngSubmit)="solicitarApertura()" aria-labelledby="apertura-title">
-          <div class="form-heading">
-            <div><p class="eyebrow">Apertura</p><h2 id="apertura-title">Preparar nueva sesión</h2></div>
-            <span>Defina el fondo inicial antes de continuar.</span>
+      }
+    
+      @if (!loading && error) {
+        <div class="state-panel error" role="alert">
+          <mat-icon aria-hidden="true">error_outline</mat-icon>
+          <span>{{ error }}</span>
+        </div>
+      }
+    
+      @if (!loading && !error) {
+        <nav class="steps" aria-label="Ciclo de vida de la sesión">
+          @for (step of pasos; track step) {
+            <div class="step" [class.current]="sesion?.estado === step.id" [class.done]="sesion && sesion.estado > step.id">
+              <span>{{ step.id }}</span><strong>{{ step.label }}</strong>
+            </div>
+          }
+        </nav>
+        @if (!sesion) {
+          <div class="state-panel empty">
+            <mat-icon aria-hidden="true">point_of_sale</mat-icon>
+            <div>
+              <strong>No hay una sesión activa</strong>
+              <p>La caja está lista para iniciar una nueva apertura cuando el flujo autorizado lo permita.</p>
+            </div>
           </div>
-          <mat-form-field appearance="outline">
-            <mat-label>Fondo inicial</mat-label>
-            <input matInput type="number" name="fondoInicial" [(ngModel)]="fondoInicial" min="0" step="0.01" required autocomplete="off">
-            <span matTextPrefix>L&nbsp;</span>
-          </mat-form-field>
-          <div class="form-actions">
-            <button mat-flat-button type="submit" [disabled]="!puedeOperar || aperturaForm.invalid || !montoNoNegativo(fondoInicial)">Abrir sesión</button>
-          </div>
-        </form>
-
-        <ng-container *ngIf="sesion as s">
+        }
+        @if (!sesion && caja?.estado === 2) {
+          <form class="operation-form" #aperturaForm="ngForm" (ngSubmit)="solicitarApertura()" aria-labelledby="apertura-title">
+            <div class="form-heading">
+              <div><p class="eyebrow">Apertura</p><h2 id="apertura-title">Preparar nueva sesión</h2></div>
+              <span>Defina el fondo inicial antes de continuar.</span>
+            </div>
+            <mat-form-field appearance="outline">
+              <mat-label>Fondo inicial</mat-label>
+              <input matInput type="number" name="fondoInicial" [(ngModel)]="fondoInicial" min="0" step="0.01" required autocomplete="off">
+              <span matTextPrefix>L&nbsp;</span>
+            </mat-form-field>
+            <div class="form-actions">
+              <button mat-flat-button type="submit" [disabled]="!puedeOperar || aperturaForm.invalid || !montoNoNegativo(fondoInicial)">Abrir sesión</button>
+            </div>
+          </form>
+        }
+        @if (sesion; as s) {
           <section class="metrics" aria-label="Resumen de sesión">
             <article><span>Fondo inicial</span><strong>{{ s.fondoInicial | currency:'HNL':'symbol-narrow':'1.2-2' }}</strong></article>
             <article><span>Ingresos</span><strong>{{ s.totalIngresos | currency:'HNL':'symbol-narrow':'1.2-2' }}</strong></article>
             <article><span>Retiros</span><strong>{{ s.totalRetiros | currency:'HNL':'symbol-narrow':'1.2-2' }}</strong></article>
             <article><span>Depósitos</span><strong>{{ s.totalDepositos | currency:'HNL':'symbol-narrow':'1.2-2' }}</strong></article>
-            <article *ngIf="s.saldoEsperado !== null"><span>Saldo esperado</span><strong>{{ s.saldoEsperado | currency:'HNL':'symbol-narrow':'1.2-2' }}</strong></article>
-            <article *ngIf="s.diferencia !== null"><span>Diferencia</span><strong>{{ s.diferencia | currency:'HNL':'symbol-narrow':'1.2-2' }}</strong></article>
+            @if (s.saldoEsperado !== null) {
+              <article><span>Saldo esperado</span><strong>{{ s.saldoEsperado | currency:'HNL':'symbol-narrow':'1.2-2' }}</strong></article>
+            }
+            @if (s.diferencia !== null) {
+              <article><span>Diferencia</span><strong>{{ s.diferencia | currency:'HNL':'symbol-narrow':'1.2-2' }}</strong></article>
+            }
           </section>
-
           <div class="actions" aria-label="Acciones disponibles">
-            <button mat-stroked-button type="button" *ngIf="s.estado === 1" [disabled]="!puedeOperar" (click)="accion.emit('INICIAR_OPERACIONES')">Iniciar operaciones</button>
-            <button mat-stroked-button type="button" *ngIf="s.estado === 2" [disabled]="!puedeOperar" (click)="accion.emit('INICIAR_ARQUEO')">Iniciar arqueo</button>
-            <button mat-flat-button type="button" *ngIf="s.estado === 3" [disabled]="!puedeOperar || !montoNoNegativo(saldoContado)" (click)="accion.emit('CERRAR')">Cerrar sesión</button>
+            @if (s.estado === 1) {
+              <button mat-stroked-button type="button" [disabled]="!puedeOperar" (click)="accion.emit('INICIAR_OPERACIONES')">Iniciar operaciones</button>
+            }
+            @if (s.estado === 2) {
+              <button mat-stroked-button type="button" [disabled]="!puedeOperar" (click)="accion.emit('INICIAR_ARQUEO')">Iniciar arqueo</button>
+            }
+            @if (s.estado === 3) {
+              <button mat-flat-button type="button" [disabled]="!puedeOperar || !montoNoNegativo(saldoContado)" (click)="accion.emit('CERRAR')">Cerrar sesión</button>
+            }
           </div>
-
-          <form *ngIf="s.estado === 2" class="operation-form" #movimientoForm="ngForm" (ngSubmit)="solicitarMovimiento()" aria-labelledby="movimiento-title">
-            <div class="form-heading">
-              <div><p class="eyebrow">Operaciones</p><h2 id="movimiento-title">Registrar movimiento</h2></div>
-              <span>Los tipos disponibles corresponden al contrato de presentación de Caja.</span>
-            </div>
-            <div class="form-grid">
-              <mat-form-field appearance="outline">
-                <mat-label>Tipo de movimiento</mat-label>
-                <mat-select name="tipoMovimientoSeleccionado" [(ngModel)]="tipoMovimientoSeleccionado" required>
-                  <mat-option *ngFor="let tipo of tiposMovimiento" [value]="tipo.id">{{ tipo.label }}</mat-option>
-                </mat-select>
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>Monto</mat-label>
-                <input matInput type="number" name="montoMovimiento" [(ngModel)]="montoMovimiento" min="0.01" step="0.01" required autocomplete="off">
-                <span matTextPrefix>L&nbsp;</span>
-              </mat-form-field>
-              <mat-form-field appearance="outline" class="wide-field">
-                <mat-label>Referencia</mat-label>
-                <input matInput name="referenciaMovimiento" [(ngModel)]="referenciaMovimiento" maxlength="160" autocomplete="off">
-              </mat-form-field>
-            </div>
-            <div class="form-actions">
-              <button mat-flat-button type="submit" [disabled]="!puedeOperar || movimientoForm.invalid || !montoPositivo(montoMovimiento)">Registrar movimiento</button>
-            </div>
-          </form>
-
-          <form *ngIf="s.estado === 3" class="operation-form" #arqueoForm="ngForm" (ngSubmit)="solicitarArqueo()" aria-labelledby="arqueo-title">
-            <div class="form-heading">
-              <div><p class="eyebrow">Arqueo</p><h2 id="arqueo-title">Registrar saldo contado</h2></div>
-              <span>El cierre permanece separado del registro de arqueo.</span>
-            </div>
-            <div class="form-grid">
-              <mat-form-field appearance="outline">
-                <mat-label>Saldo contado</mat-label>
-                <input matInput type="number" name="saldoContado" [(ngModel)]="saldoContado" min="0" step="0.01" required autocomplete="off">
-                <span matTextPrefix>L&nbsp;</span>
-              </mat-form-field>
-              <mat-form-field appearance="outline" class="wide-field">
-                <mat-label>Observaciones de arqueo</mat-label>
-                <textarea matInput name="observacionesArqueo" [(ngModel)]="observacionesArqueo" maxlength="500" rows="3"></textarea>
-              </mat-form-field>
-            </div>
-            <div class="form-actions">
-              <button mat-stroked-button type="submit" [disabled]="!puedeOperar || arqueoForm.invalid || !montoNoNegativo(saldoContado)">Registrar arqueo</button>
-            </div>
-          </form>
-
+          @if (s.estado === 2) {
+            <form class="operation-form" #movimientoForm="ngForm" (ngSubmit)="solicitarMovimiento()" aria-labelledby="movimiento-title">
+              <div class="form-heading">
+                <div><p class="eyebrow">Operaciones</p><h2 id="movimiento-title">Registrar movimiento</h2></div>
+                <span>Los tipos disponibles corresponden al contrato de presentación de Caja.</span>
+              </div>
+              <div class="form-grid">
+                <mat-form-field appearance="outline">
+                  <mat-label>Tipo de movimiento</mat-label>
+                  <mat-select name="tipoMovimientoSeleccionado" [(ngModel)]="tipoMovimientoSeleccionado" required>
+                    @for (tipo of tiposMovimiento; track tipo) {
+                      <mat-option [value]="tipo.id">{{ tipo.label }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Monto</mat-label>
+                  <input matInput type="number" name="montoMovimiento" [(ngModel)]="montoMovimiento" min="0.01" step="0.01" required autocomplete="off">
+                  <span matTextPrefix>L&nbsp;</span>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="wide-field">
+                  <mat-label>Referencia</mat-label>
+                  <input matInput name="referenciaMovimiento" [(ngModel)]="referenciaMovimiento" maxlength="160" autocomplete="off">
+                </mat-form-field>
+              </div>
+              <div class="form-actions">
+                <button mat-flat-button type="submit" [disabled]="!puedeOperar || movimientoForm.invalid || !montoPositivo(montoMovimiento)">Registrar movimiento</button>
+              </div>
+            </form>
+          }
+          @if (s.estado === 3) {
+            <form class="operation-form" #arqueoForm="ngForm" (ngSubmit)="solicitarArqueo()" aria-labelledby="arqueo-title">
+              <div class="form-heading">
+                <div><p class="eyebrow">Arqueo</p><h2 id="arqueo-title">Registrar saldo contado</h2></div>
+                <span>El cierre permanece separado del registro de arqueo.</span>
+              </div>
+              <div class="form-grid">
+                <mat-form-field appearance="outline">
+                  <mat-label>Saldo contado</mat-label>
+                  <input matInput type="number" name="saldoContado" [(ngModel)]="saldoContado" min="0" step="0.01" required autocomplete="off">
+                  <span matTextPrefix>L&nbsp;</span>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="wide-field">
+                  <mat-label>Observaciones de arqueo</mat-label>
+                  <textarea matInput name="observacionesArqueo" [(ngModel)]="observacionesArqueo" maxlength="500" rows="3"></textarea>
+                </mat-form-field>
+              </div>
+              <div class="form-actions">
+                <button mat-stroked-button type="submit" [disabled]="!puedeOperar || arqueoForm.invalid || !montoNoNegativo(saldoContado)">Registrar arqueo</button>
+              </div>
+            </form>
+          }
           <section class="movements" aria-labelledby="movements-title">
             <div class="section-heading">
               <div><p class="eyebrow">Trazabilidad</p><h2 id="movements-title">Movimientos</h2></div>
               <span>{{ s.movimientos.length }} registro{{ s.movimientos.length === 1 ? '' : 's' }}</span>
             </div>
-
-            <div *ngIf="s.movimientos.length === 0" class="state-panel empty compact">
-              <mat-icon aria-hidden="true">receipt_long</mat-icon>
-              <span>Aún no hay movimientos registrados en esta sesión.</span>
-            </div>
-
-            <div class="table-wrap" *ngIf="s.movimientos.length > 0">
-              <table>
-                <thead><tr><th>Fecha</th><th>Tipo</th><th>Referencia</th><th class="amount">Monto</th><th class="amount">Impacto</th></tr></thead>
-                <tbody>
-                  <tr *ngFor="let movimiento of s.movimientos; trackBy: trackMovimiento">
-                    <td>{{ movimiento.fechaOperacion | date:'dd/MM/yyyy HH:mm' }}</td>
-                    <td><span class="movement-type">{{ tipoMovimiento(movimiento.tipo) }}</span></td>
-                    <td>{{ movimiento.referencia || '—' }}</td>
-                    <td class="amount">{{ movimiento.monto | currency:'HNL':'symbol-narrow':'1.2-2' }}</td>
-                    <td class="amount" [class.negative]="movimiento.impactoSaldo < 0">{{ movimiento.impactoSaldo | currency:'HNL':'symbol-narrow':'1.2-2' }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            @if (s.movimientos.length === 0) {
+              <div class="state-panel empty compact">
+                <mat-icon aria-hidden="true">receipt_long</mat-icon>
+                <span>Aún no hay movimientos registrados en esta sesión.</span>
+              </div>
+            }
+            @if (s.movimientos.length > 0) {
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Fecha</th><th>Tipo</th><th>Referencia</th><th class="amount">Monto</th><th class="amount">Impacto</th></tr></thead>
+                  <tbody>
+                    @for (movimiento of s.movimientos; track trackMovimiento($index, movimiento)) {
+                      <tr>
+                        <td>{{ movimiento.fechaOperacion | date:'dd/MM/yyyy HH:mm' }}</td>
+                        <td><span class="movement-type">{{ tipoMovimiento(movimiento.tipo) }}</span></td>
+                        <td>{{ movimiento.referencia || '—' }}</td>
+                        <td class="amount">{{ movimiento.monto | currency:'HNL':'symbol-narrow':'1.2-2' }}</td>
+                        <td class="amount" [class.negative]="movimiento.impactoSaldo < 0">{{ movimiento.impactoSaldo | currency:'HNL':'symbol-narrow':'1.2-2' }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
           </section>
-        </ng-container>
-      </ng-container>
+        }
+      }
     </section>
-  `,
+    `,
   styles: [`
     :host { display: block; }
     .caja-shell { display: grid; gap: 1rem; padding: 1rem; color: var(--mat-app-text-color, #1f2937); }

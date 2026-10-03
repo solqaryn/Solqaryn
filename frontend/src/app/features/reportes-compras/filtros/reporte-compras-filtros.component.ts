@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ReporteComprasFiltroDto } from '../../../core/models/reporte-compras.models';
@@ -19,7 +19,7 @@ type ReporteComprasSelectorControl = 'proveedorId' | 'productoId' | 'productoVar
 @Component({
   selector: 'app-reporte-compras-filtros',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [ReactiveFormsModule],
   template: `
     <form class="filter-grid" [formGroup]="form" (ngSubmit)="emitir()" aria-label="Filtros del reporte de compras">
       <label>Desde<input type="date" formControlName="desdeUtc" [disabled]="disabled || cargandoSelectores" /></label>

@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
@@ -7,7 +7,7 @@ import { TenantContextService } from './tenant-context.service';
 @Component({
   selector: 'app-tenant-selector',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   template: `
     <section class="tenant-card" aria-labelledby="tenant-title">
       <div class="tenant-icon" aria-hidden="true">🏢</div>

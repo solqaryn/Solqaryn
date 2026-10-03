@@ -35,11 +35,13 @@ import { PeriodoContableService } from '../../core/services/periodo-contable.ser
           <h1 id="periodos-title">Períodos contables</h1>
           <p>Administra períodos abiertos y cerrados con control de fechas y permisos.</p>
         </div>
-        <button mat-raised-button color="primary" type="button" (click)="mostrarAlta.set(!mostrarAlta())" *ngIf="puedeCrear()">
-          <mat-icon>add</mat-icon> Nuevo período
-        </button>
+        @if (puedeCrear()) {
+          <button mat-raised-button color="primary" type="button" (click)="mostrarAlta.set(!mostrarAlta())">
+            <mat-icon>add</mat-icon> Nuevo período
+          </button>
+        }
       </header>
-
+    
       <form class="filters" [formGroup]="filtros" (ngSubmit)="aplicarFiltros()" aria-label="Filtros de períodos contables">
         <mat-form-field appearance="outline">
           <mat-label>Desde</mat-label>
@@ -59,64 +61,75 @@ import { PeriodoContableService } from '../../core/services/periodo-contable.ser
         </mat-form-field>
         <button mat-stroked-button type="submit">Aplicar</button>
       </form>
-
-      <form class="create" *ngIf="mostrarAlta()" [formGroup]="alta" (ngSubmit)="crear()" aria-label="Crear período contable">
-        <mat-form-field appearance="outline">
-          <mat-label>Fecha inicial</mat-label>
-          <input matInput type="date" formControlName="fechaInicio">
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>Fecha final</mat-label>
-          <input matInput type="date" formControlName="fechaFin">
-        </mat-form-field>
-        <button mat-raised-button color="primary" type="submit" [disabled]="alta.invalid || guardando()">
-          <mat-spinner *ngIf="guardando()" diameter="18"></mat-spinner>
-          Guardar
-        </button>
-      </form>
-
-      <div class="loading" *ngIf="loading()" role="status" aria-live="polite">
-        <mat-spinner diameter="40"></mat-spinner><span>Cargando períodos…</span>
-      </div>
-
-      <ng-container *ngIf="!loading()">
-        <div class="table-wrap" *ngIf="periodos().length; else emptyState">
-          <table mat-table [dataSource]="periodos()">
-            <ng-container matColumnDef="rango">
-              <th mat-header-cell *matHeaderCellDef>Rango</th>
-              <td mat-cell *matCellDef="let p">{{ p.fechaInicio | date:'shortDate' }} — {{ p.fechaFin | date:'shortDate' }}</td>
-            </ng-container>
-            <ng-container matColumnDef="estado">
-              <th mat-header-cell *matHeaderCellDef>Estado</th>
-              <td mat-cell *matCellDef="let p">{{ estadoTexto(p.estado) }}</td>
-            </ng-container>
-            <ng-container matColumnDef="cierre">
-              <th mat-header-cell *matHeaderCellDef>Cierre UTC</th>
-              <td mat-cell *matCellDef="let p">{{ p.cerradoEnUtc ? (p.cerradoEnUtc | date:'short') : '—' }}</td>
-            </ng-container>
-            <ng-container matColumnDef="acciones">
-              <th mat-header-cell *matHeaderCellDef>Acciones</th>
-              <td mat-cell *matCellDef="let p">
-                <button mat-stroked-button color="warn" type="button" (click)="cerrar(p)"
-                  [disabled]="p.estado === EstadoPeriodoContable.Cerrado || cerrandoId() === p.id"
-                  *ngIf="puedeCerrar()">Cerrar</button>
-              </td>
-            </ng-container>
-            <tr mat-header-row *matHeaderRowDef="columnas"></tr>
-            <tr mat-row *matRowDef="let row; columns: columnas"></tr>
-          </table>
+    
+      @if (mostrarAlta()) {
+        <form class="create" [formGroup]="alta" (ngSubmit)="crear()" aria-label="Crear período contable">
+          <mat-form-field appearance="outline">
+            <mat-label>Fecha inicial</mat-label>
+            <input matInput type="date" formControlName="fechaInicio">
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Fecha final</mat-label>
+            <input matInput type="date" formControlName="fechaFin">
+          </mat-form-field>
+          <button mat-raised-button color="primary" type="submit" [disabled]="alta.invalid || guardando()">
+            @if (guardando()) {
+              <mat-spinner diameter="18"></mat-spinner>
+            }
+            Guardar
+          </button>
+        </form>
+      }
+    
+      @if (loading()) {
+        <div class="loading" role="status" aria-live="polite">
+          <mat-spinner diameter="40"></mat-spinner><span>Cargando períodos…</span>
         </div>
-        <ng-template #emptyState>
+      }
+    
+      @if (!loading()) {
+        @if (periodos().length) {
+          <div class="table-wrap">
+            <table mat-table [dataSource]="periodos()">
+              <ng-container matColumnDef="rango">
+                <th mat-header-cell *matHeaderCellDef>Rango</th>
+                <td mat-cell *matCellDef="let p">{{ p.fechaInicio | date:'shortDate' }} — {{ p.fechaFin | date:'shortDate' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="estado">
+                <th mat-header-cell *matHeaderCellDef>Estado</th>
+                <td mat-cell *matCellDef="let p">{{ estadoTexto(p.estado) }}</td>
+              </ng-container>
+              <ng-container matColumnDef="cierre">
+                <th mat-header-cell *matHeaderCellDef>Cierre UTC</th>
+                <td mat-cell *matCellDef="let p">{{ p.cerradoEnUtc ? (p.cerradoEnUtc | date:'short') : '—' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="acciones">
+                <th mat-header-cell *matHeaderCellDef>Acciones</th>
+                <td mat-cell *matCellDef="let p">
+                  @if (puedeCerrar()) {
+                    <button mat-stroked-button color="warn" type="button" (click)="cerrar(p)"
+                      [disabled]="p.estado === EstadoPeriodoContable.Cerrado || cerrandoId() === p.id"
+                    >Cerrar</button>
+                  }
+                </td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+              <tr mat-row *matRowDef="let row; columns: columnas"></tr>
+            </table>
+          </div>
+        } @else {
           <div class="empty" role="status">No hay períodos contables que coincidan con los filtros.</div>
-        </ng-template>
-        <nav class="pager" aria-label="Paginación" *ngIf="totalPages() > 1">
-          <button mat-button type="button" (click)="cambiarPagina(-1)" [disabled]="page() <= 1">Anterior</button>
-          <span>Página {{ page() }} de {{ totalPages() }}</span>
-          <button mat-button type="button" (click)="cambiarPagina(1)" [disabled]="page() >= totalPages()">Siguiente</button>
-        </nav>
-      </ng-container>
+        }
+        @if (totalPages() > 1) {
+          <nav class="pager" aria-label="Paginación">
+            <button mat-button type="button" (click)="cambiarPagina(-1)" [disabled]="page() <= 1">Anterior</button>
+            <span>Página {{ page() }} de {{ totalPages() }}</span>
+            <button mat-button type="button" (click)="cambiarPagina(1)" [disabled]="page() >= totalPages()">Siguiente</button>
+          </nav>
+        }
+      }
     </section>
-  `,
+    `,
   styles: [`
     .page { padding: 24px; max-width: 1200px; margin: 0 auto; }
     .page__header, .filters, .create, .pager, .loading { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }

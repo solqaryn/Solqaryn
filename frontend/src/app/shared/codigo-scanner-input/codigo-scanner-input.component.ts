@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import {
   AfterViewInit,
   Component,
@@ -22,7 +22,6 @@ import { CodigoScannerDialogComponent } from '../codigo-scanner-dialog/codigo-sc
   selector: 'app-codigo-scanner-input',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     MatButtonModule,
     MatDialogModule,
@@ -30,7 +29,7 @@ import { CodigoScannerDialogComponent } from '../codigo-scanner-dialog/codigo-sc
     MatIconModule,
     MatInputModule,
     MatProgressSpinnerModule
-  ],
+],
   templateUrl: './codigo-scanner-input.component.html',
   styleUrl: './codigo-scanner-input.component.scss'
 })

@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -19,7 +19,6 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
   selector: 'app-metodos-pago',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     MatButtonModule,
     MatCheckboxModule,
@@ -29,7 +28,7 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
     MatProgressSpinnerModule,
     MatSelectModule,
     MatSlideToggleModule
-  ],
+],
   template: `
     <section class="page-shell">
       <header class="page-header">

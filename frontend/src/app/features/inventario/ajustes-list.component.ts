@@ -41,23 +41,25 @@ import { AjusteInventarioService } from '../../services/ajuste-inventario.servic
           <p class="subtitle">Consulta y controla el ciclo Borrador → Confirmado → Anulado.</p>
         </div>
         <div class="page-actions">
-          <button *ngIf="puedeCrear()" mat-flat-button color="primary" type="button" (click)="nuevo()" [disabled]="loading()">
-            <mat-icon>add</mat-icon>
-            Nuevo ajuste
-          </button>
+          @if (puedeCrear()) {
+            <button mat-flat-button color="primary" type="button" (click)="nuevo()" [disabled]="loading()">
+              <mat-icon>add</mat-icon>
+              Nuevo ajuste
+            </button>
+          }
           <button mat-stroked-button type="button" (click)="cargar()" [disabled]="loading()">
             <mat-icon>refresh</mat-icon>
             Actualizar
           </button>
         </div>
       </header>
-
+    
       <form class="filters" (ngSubmit)="aplicarFiltros()">
         <mat-form-field appearance="outline">
           <mat-label>Buscar</mat-label>
           <input matInput name="search" [(ngModel)]="search" placeholder="Número o motivo" />
         </mat-form-field>
-
+    
         <mat-form-field appearance="outline">
           <mat-label>Estado</mat-label>
           <mat-select name="estado" [(ngModel)]="estado">
@@ -67,217 +69,247 @@ import { AjusteInventarioService } from '../../services/ajuste-inventario.servic
             <mat-option value="Anulado">Anulado</mat-option>
           </mat-select>
         </mat-form-field>
-
+    
         <mat-form-field appearance="outline">
           <mat-label>Desde</mat-label>
           <input matInput type="date" name="desde" [(ngModel)]="desde" />
         </mat-form-field>
-
+    
         <mat-form-field appearance="outline">
           <mat-label>Hasta</mat-label>
           <input matInput type="date" name="hasta" [(ngModel)]="hasta" />
         </mat-form-field>
-
+    
         <div class="filter-actions">
           <button mat-flat-button color="primary" type="submit" [disabled]="loading()">Aplicar</button>
           <button mat-button type="button" (click)="limpiarFiltros()" [disabled]="loading()">Limpiar</button>
         </div>
       </form>
-
-      <div class="feedback success" *ngIf="success()" role="status" aria-live="polite">
-        <mat-icon>check_circle</mat-icon>
-        <span>{{ success() }}</span>
-        <button mat-icon-button type="button" aria-label="Cerrar mensaje" (click)="success.set('')">
-          <mat-icon>close</mat-icon>
-        </button>
-      </div>
-
-      <div class="feedback error" *ngIf="error()" role="alert">
-        <mat-icon>error_outline</mat-icon>
-        <span>{{ error() }}</span>
-        <button mat-button type="button" (click)="cargar()">Reintentar</button>
-      </div>
-
-      <div class="loading" *ngIf="loading()" aria-live="polite">
-        <mat-spinner diameter="36"></mat-spinner>
-        <span>Cargando ajustes…</span>
-      </div>
-
-      <ng-container *ngIf="!loading() && !error()">
-        <div class="empty" *ngIf="ajustes().length === 0">
-          <mat-icon>warehouse</mat-icon>
-          <h2>No hay ajustes para los filtros seleccionados</h2>
-          <p>Modifica los filtros o crea un borrador desde el flujo de inventario.</p>
+    
+      @if (success()) {
+        <div class="feedback success" role="status" aria-live="polite">
+          <mat-icon>check_circle</mat-icon>
+          <span>{{ success() }}</span>
+          <button mat-icon-button type="button" aria-label="Cerrar mensaje" (click)="success.set('')">
+            <mat-icon>close</mat-icon>
+          </button>
         </div>
-
-        <div class="table-shell" *ngIf="ajustes().length > 0">
-          <table>
-            <thead>
-              <tr>
-                <th>Número</th>
-                <th>Fecha</th>
-                <th>Estado</th>
-                <th>Motivo</th>
-                <th>Detalles</th>
-                <th>Impacto</th>
-                <th class="actions-column">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let ajuste of ajustes(); trackBy: trackById">
-                <td data-label="Número"><strong>{{ ajuste.numeroAjuste }}</strong></td>
-                <td data-label="Fecha">{{ ajuste.fechaAjuste | date:'dd/MM/yyyy HH:mm' }}</td>
-                <td data-label="Estado">
-                  <span class="status" [class]="'status ' + ajuste.estado.toLowerCase()">{{ ajuste.estado }}</span>
-                </td>
-                <td data-label="Motivo">{{ ajuste.motivo }}</td>
-                <td data-label="Detalles">{{ ajuste.detalles.length }}</td>
-                <td data-label="Impacto">{{ (ajuste.impactoCostoTotalSnapshot || 0) | currency:'HNL':'symbol-narrow':'1.2-2' }}</td>
-                <td data-label="Acciones" class="row-actions">
-                  <button mat-button type="button" [disabled]="processingId() !== null" (click)="ver(ajuste)">
-                    <mat-icon>visibility</mat-icon>
-                    Ver
-                  </button>
-                  <button
-                    mat-button
-                    color="primary"
-                    type="button"
-                    *ngIf="puedeEditar() && ajuste.estado === 'Borrador'"
-                    [disabled]="processingId() !== null"
-                    (click)="editar(ajuste)">
-                    <mat-icon>edit</mat-icon>
-                    Editar
-                  </button>
-                  <button
-                    mat-stroked-button
-                    color="primary"
-                    type="button"
-                    *ngIf="puedeConfirmar() && ajuste.estado === 'Borrador'"
-                    [disabled]="processingId() === ajuste.id"
-                    (click)="confirmar(ajuste)">
-                    <mat-icon>check_circle</mat-icon>
-                    Confirmar
-                  </button>
-                  <button
-                    mat-stroked-button
-                    color="warn"
-                    type="button"
-                    *ngIf="puedeAnular() && ajuste.estado === 'Confirmado'"
-                    [disabled]="processingId() === ajuste.id"
-                    (click)="anular(ajuste)">
-                    <mat-icon>undo</mat-icon>
-                    Anular
-                  </button>
-                  <span class="muted" *ngIf="ajuste.estado === 'Anulado'">Solo lectura</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-
-          <mat-paginator
-            [length]="totalCount()"
-            [pageIndex]="page - 1"
-            [pageSize]="pageSize"
-            [pageSizeOptions]="[10, 25, 50]"
-            showFirstLastButtons
-            (page)="onPageChange($event)">
-          </mat-paginator>
-        </div>
-      </ng-container>
-    </section>
-
-    <div class="modal-backdrop" *ngIf="dialogAjuste() as ajusteDialog" (click)="cerrarModal()">
-      <section
-        class="modal-card"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="inventario-action-dialog-title"
-        (click)="$event.stopPropagation()">
-        <button
-          class="modal-close"
-          mat-icon-button
-          type="button"
-          aria-label="Cerrar"
-          [disabled]="processingId() !== null"
-          (click)="cerrarModal()">
-          <mat-icon>close</mat-icon>
-        </button>
-
-        <div class="modal-icon" [class.danger]="dialogAction() === 'anular'">
-          <mat-icon>{{ dialogAction() === 'confirmar' ? 'check_circle' : 'undo' }}</mat-icon>
-        </div>
-
-        <p class="modal-eyebrow">Inventario empresarial</p>
-        <h2 id="inventario-action-dialog-title">
-          {{ dialogAction() === 'confirmar' ? 'Confirmar ajuste de inventario' : 'Anular ajuste de inventario' }}
-        </h2>
-        <p class="modal-description" *ngIf="dialogAction() === 'confirmar'">
-          Revisa la información antes de continuar. Esta acción aplicará físicamente el inventario y dejará trazabilidad del movimiento.
-        </p>
-        <p class="modal-description" *ngIf="dialogAction() === 'anular'">
-          La anulación revertirá el ajuste confirmado y quedará registrada en la trazabilidad. Debes indicar el motivo.
-        </p>
-
-        <div class="modal-summary">
-          <div><span>Ajuste</span><strong>{{ ajusteDialog.numeroAjuste }}</strong></div>
-          <div><span>Motivo</span><strong>{{ ajusteDialog.motivo }}</strong></div>
-          <div><span>Detalles</span><strong>{{ ajusteDialog.detalles.length }}</strong></div>
-          <div><span>Estado actual</span><strong>{{ ajusteDialog.estado }}</strong></div>
-        </div>
-
-        <div class="modal-notice" *ngIf="dialogAction() === 'confirmar'">
-          <mat-icon>info</mat-icon>
-          <div>
-            <strong>Acción con efecto real</strong>
-            <span>El sistema actualizará las existencias físicas y generará la trazabilidad/Kardex correspondiente.</span>
-          </div>
-        </div>
-
-        <mat-form-field appearance="outline" class="modal-field" *ngIf="dialogAction() === 'anular'">
-          <mat-label>Motivo de anulación</mat-label>
-          <textarea
-            matInput
-            rows="4"
-            maxlength="500"
-            name="motivoAnulacionModal"
-            [(ngModel)]="motivoAnulacion"
-            placeholder="Describe claramente por qué se anula este ajuste"></textarea>
-          <mat-hint align="end">{{ motivoAnulacion.length }}/500</mat-hint>
-        </mat-form-field>
-
-        <div class="modal-error" *ngIf="modalError()" role="alert">
+      }
+    
+      @if (error()) {
+        <div class="feedback error" role="alert">
           <mat-icon>error_outline</mat-icon>
-          <span>{{ modalError() }}</span>
+          <span>{{ error() }}</span>
+          <button mat-button type="button" (click)="cargar()">Reintentar</button>
         </div>
-
-        <div class="modal-actions">
-          <button mat-button type="button" [disabled]="processingId() !== null" (click)="cerrarModal()">Cancelar</button>
+      }
+    
+      @if (loading()) {
+        <div class="loading" aria-live="polite">
+          <mat-spinner diameter="36"></mat-spinner>
+          <span>Cargando ajustes…</span>
+        </div>
+      }
+    
+      @if (!loading() && !error()) {
+        @if (ajustes().length === 0) {
+          <div class="empty">
+            <mat-icon>warehouse</mat-icon>
+            <h2>No hay ajustes para los filtros seleccionados</h2>
+            <p>Modifica los filtros o crea un borrador desde el flujo de inventario.</p>
+          </div>
+        }
+        @if (ajustes().length > 0) {
+          <div class="table-shell">
+            <table>
+              <thead>
+                <tr>
+                  <th>Número</th>
+                  <th>Fecha</th>
+                  <th>Estado</th>
+                  <th>Motivo</th>
+                  <th>Detalles</th>
+                  <th>Impacto</th>
+                  <th class="actions-column">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (ajuste of ajustes(); track trackById($index, ajuste)) {
+                  <tr>
+                    <td data-label="Número"><strong>{{ ajuste.numeroAjuste }}</strong></td>
+                    <td data-label="Fecha">{{ ajuste.fechaAjuste | date:'dd/MM/yyyy HH:mm' }}</td>
+                    <td data-label="Estado">
+                      <span class="status" [class]="'status ' + ajuste.estado.toLowerCase()">{{ ajuste.estado }}</span>
+                    </td>
+                    <td data-label="Motivo">{{ ajuste.motivo }}</td>
+                    <td data-label="Detalles">{{ ajuste.detalles.length }}</td>
+                    <td data-label="Impacto">{{ (ajuste.impactoCostoTotalSnapshot || 0) | currency:'HNL':'symbol-narrow':'1.2-2' }}</td>
+                    <td data-label="Acciones" class="row-actions">
+                      <button mat-button type="button" [disabled]="processingId() !== null" (click)="ver(ajuste)">
+                        <mat-icon>visibility</mat-icon>
+                        Ver
+                      </button>
+                      @if (puedeEditar() && ajuste.estado === 'Borrador') {
+                        <button
+                          mat-button
+                          color="primary"
+                          type="button"
+                          [disabled]="processingId() !== null"
+                          (click)="editar(ajuste)">
+                          <mat-icon>edit</mat-icon>
+                          Editar
+                        </button>
+                      }
+                      @if (puedeConfirmar() && ajuste.estado === 'Borrador') {
+                        <button
+                          mat-stroked-button
+                          color="primary"
+                          type="button"
+                          [disabled]="processingId() === ajuste.id"
+                          (click)="confirmar(ajuste)">
+                          <mat-icon>check_circle</mat-icon>
+                          Confirmar
+                        </button>
+                      }
+                      @if (puedeAnular() && ajuste.estado === 'Confirmado') {
+                        <button
+                          mat-stroked-button
+                          color="warn"
+                          type="button"
+                          [disabled]="processingId() === ajuste.id"
+                          (click)="anular(ajuste)">
+                          <mat-icon>undo</mat-icon>
+                          Anular
+                        </button>
+                      }
+                      @if (ajuste.estado === 'Anulado') {
+                        <span class="muted">Solo lectura</span>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+            <mat-paginator
+              [length]="totalCount()"
+              [pageIndex]="page - 1"
+              [pageSize]="pageSize"
+              [pageSizeOptions]="[10, 25, 50]"
+              showFirstLastButtons
+              (page)="onPageChange($event)">
+            </mat-paginator>
+          </div>
+        }
+      }
+    </section>
+    
+    @if (dialogAjuste(); as ajusteDialog) {
+      <div class="modal-backdrop" (click)="cerrarModal()">
+        <section
+          class="modal-card"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="inventario-action-dialog-title"
+          (click)="$event.stopPropagation()">
           <button
-            *ngIf="dialogAction() === 'confirmar'"
-            mat-flat-button
-            color="primary"
+            class="modal-close"
+            mat-icon-button
             type="button"
+            aria-label="Cerrar"
             [disabled]="processingId() !== null"
-            (click)="ejecutarAccionModal()">
-            <mat-spinner *ngIf="processingId() !== null" diameter="18"></mat-spinner>
-            <mat-icon *ngIf="processingId() === null">check_circle</mat-icon>
-            {{ processingId() !== null ? 'Confirmando…' : 'Confirmar ajuste' }}
+            (click)="cerrarModal()">
+            <mat-icon>close</mat-icon>
           </button>
-          <button
-            *ngIf="dialogAction() === 'anular'"
-            mat-flat-button
-            color="warn"
-            type="button"
-            [disabled]="processingId() !== null || !motivoAnulacion.trim()"
-            (click)="ejecutarAccionModal()">
-            <mat-spinner *ngIf="processingId() !== null" diameter="18"></mat-spinner>
-            <mat-icon *ngIf="processingId() === null">undo</mat-icon>
-            {{ processingId() !== null ? 'Anulando…' : 'Anular ajuste' }}
-          </button>
-        </div>
-      </section>
-    </div>
-  `,
+          <div class="modal-icon" [class.danger]="dialogAction() === 'anular'">
+            <mat-icon>{{ dialogAction() === 'confirmar' ? 'check_circle' : 'undo' }}</mat-icon>
+          </div>
+          <p class="modal-eyebrow">Inventario empresarial</p>
+          <h2 id="inventario-action-dialog-title">
+            {{ dialogAction() === 'confirmar' ? 'Confirmar ajuste de inventario' : 'Anular ajuste de inventario' }}
+          </h2>
+          @if (dialogAction() === 'confirmar') {
+            <p class="modal-description">
+              Revisa la información antes de continuar. Esta acción aplicará físicamente el inventario y dejará trazabilidad del movimiento.
+            </p>
+          }
+          @if (dialogAction() === 'anular') {
+            <p class="modal-description">
+              La anulación revertirá el ajuste confirmado y quedará registrada en la trazabilidad. Debes indicar el motivo.
+            </p>
+          }
+          <div class="modal-summary">
+            <div><span>Ajuste</span><strong>{{ ajusteDialog.numeroAjuste }}</strong></div>
+            <div><span>Motivo</span><strong>{{ ajusteDialog.motivo }}</strong></div>
+            <div><span>Detalles</span><strong>{{ ajusteDialog.detalles.length }}</strong></div>
+            <div><span>Estado actual</span><strong>{{ ajusteDialog.estado }}</strong></div>
+          </div>
+          @if (dialogAction() === 'confirmar') {
+            <div class="modal-notice">
+              <mat-icon>info</mat-icon>
+              <div>
+                <strong>Acción con efecto real</strong>
+                <span>El sistema actualizará las existencias físicas y generará la trazabilidad/Kardex correspondiente.</span>
+              </div>
+            </div>
+          }
+          @if (dialogAction() === 'anular') {
+            <mat-form-field appearance="outline" class="modal-field">
+              <mat-label>Motivo de anulación</mat-label>
+              <textarea
+                matInput
+                rows="4"
+                maxlength="500"
+                name="motivoAnulacionModal"
+                [(ngModel)]="motivoAnulacion"
+              placeholder="Describe claramente por qué se anula este ajuste"></textarea>
+              <mat-hint align="end">{{ motivoAnulacion.length }}/500</mat-hint>
+            </mat-form-field>
+          }
+          @if (modalError()) {
+            <div class="modal-error" role="alert">
+              <mat-icon>error_outline</mat-icon>
+              <span>{{ modalError() }}</span>
+            </div>
+          }
+          <div class="modal-actions">
+            <button mat-button type="button" [disabled]="processingId() !== null" (click)="cerrarModal()">Cancelar</button>
+            @if (dialogAction() === 'confirmar') {
+              <button
+                mat-flat-button
+                color="primary"
+                type="button"
+                [disabled]="processingId() !== null"
+                (click)="ejecutarAccionModal()">
+                @if (processingId() !== null) {
+                  <mat-spinner diameter="18"></mat-spinner>
+                }
+                @if (processingId() === null) {
+                  <mat-icon>check_circle</mat-icon>
+                }
+                {{ processingId() !== null ? 'Confirmando…' : 'Confirmar ajuste' }}
+              </button>
+            }
+            @if (dialogAction() === 'anular') {
+              <button
+                mat-flat-button
+                color="warn"
+                type="button"
+                [disabled]="processingId() !== null || !motivoAnulacion.trim()"
+                (click)="ejecutarAccionModal()">
+                @if (processingId() !== null) {
+                  <mat-spinner diameter="18"></mat-spinner>
+                }
+                @if (processingId() === null) {
+                  <mat-icon>undo</mat-icon>
+                }
+                {{ processingId() !== null ? 'Anulando…' : 'Anular ajuste' }}
+              </button>
+            }
+          </div>
+        </section>
+      </div>
+    }
+    `,
   styles: [`
     :host { display: block; }
     .ajustes-page { padding: 24px; max-width: 1500px; margin: 0 auto; }

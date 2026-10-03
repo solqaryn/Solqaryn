@@ -46,56 +46,73 @@ import {
           <mat-icon>refresh</mat-icon>Actualizar
         </button>
       </header>
-
-      <div *ngIf="loading && !vigente" class="state" aria-live="polite">
-        <mat-spinner diameter="36"></mat-spinner><span>Cargando política de costeo…</span>
-      </div>
-
-      <div *ngIf="error" class="state error" role="alert">
-        <mat-icon>error_outline</mat-icon><span>{{ error }}</span>
-        <button mat-button type="button" (click)="recargar()">Reintentar</button>
-      </div>
-
-      <div *ngIf="vigente" class="summary-grid">
-        <mat-card>
-          <mat-card-header><mat-card-title>Política vigente</mat-card-title></mat-card-header>
-          <mat-card-content>
-            <div class="current-method"><mat-icon>calculate</mat-icon><strong>{{ vigente.metodoNombre }}</strong></div>
-            <dl>
-              <div><dt>Vigente desde</dt><dd>{{ vigente.vigenteDesdeUtc | date:'medium' }}</dd></div>
-              <div><dt>Motivo</dt><dd>{{ vigente.motivo || 'Sin detalle' }}</dd></div>
-              <div><dt>Última actualización</dt><dd>{{ vigente.fechaActualizacion | date:'medium' }}</dd></div>
-            </dl>
-          </mat-card-content>
-        </mat-card>
-
-        <mat-card *ngIf="puedeEditar">
-          <mat-card-header><mat-card-title>Cambiar política</mat-card-title></mat-card-header>
-          <mat-card-content>
-            <form class="change-form" (ngSubmit)="cambiarPolitica()">
-              <mat-form-field appearance="outline">
-                <mat-label>Método</mat-label>
-                <mat-select name="metodo" [(ngModel)]="metodoSeleccionado" required>
-                  <mat-option *ngFor="let metodo of metodos" [value]="metodo.id">{{ metodo.nombre }}</mat-option>
-                </mat-select>
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>Motivo del cambio</mat-label>
-                <textarea matInput name="motivo" [(ngModel)]="motivo" minlength="3" maxlength="500" rows="3" required></textarea>
-                <mat-hint align="end">{{ motivo.length }}/500</mat-hint>
-              </mat-form-field>
-              <p *ngIf="changeError" class="inline-error" role="alert">{{ changeError }}</p>
-              <p *ngIf="changeSuccess" class="inline-success" role="status">{{ changeSuccess }}</p>
-              <button mat-flat-button color="primary" type="submit" [disabled]="saving || !cambioValido">
-                <mat-spinner *ngIf="saving" diameter="18"></mat-spinner>
-                <mat-icon *ngIf="!saving">published_with_changes</mat-icon>
-                {{ saving ? 'Guardando…' : 'Aplicar política' }}
-              </button>
-            </form>
-          </mat-card-content>
-        </mat-card>
-      </div>
-
+    
+      @if (loading && !vigente) {
+        <div class="state" aria-live="polite">
+          <mat-spinner diameter="36"></mat-spinner><span>Cargando política de costeo…</span>
+        </div>
+      }
+    
+      @if (error) {
+        <div class="state error" role="alert">
+          <mat-icon>error_outline</mat-icon><span>{{ error }}</span>
+          <button mat-button type="button" (click)="recargar()">Reintentar</button>
+        </div>
+      }
+    
+      @if (vigente) {
+        <div class="summary-grid">
+          <mat-card>
+            <mat-card-header><mat-card-title>Política vigente</mat-card-title></mat-card-header>
+            <mat-card-content>
+              <div class="current-method"><mat-icon>calculate</mat-icon><strong>{{ vigente.metodoNombre }}</strong></div>
+              <dl>
+                <div><dt>Vigente desde</dt><dd>{{ vigente.vigenteDesdeUtc | date:'medium' }}</dd></div>
+                <div><dt>Motivo</dt><dd>{{ vigente.motivo || 'Sin detalle' }}</dd></div>
+                <div><dt>Última actualización</dt><dd>{{ vigente.fechaActualizacion | date:'medium' }}</dd></div>
+              </dl>
+            </mat-card-content>
+          </mat-card>
+          @if (puedeEditar) {
+            <mat-card>
+              <mat-card-header><mat-card-title>Cambiar política</mat-card-title></mat-card-header>
+              <mat-card-content>
+                <form class="change-form" (ngSubmit)="cambiarPolitica()">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Método</mat-label>
+                    <mat-select name="metodo" [(ngModel)]="metodoSeleccionado" required>
+                      @for (metodo of metodos; track metodo) {
+                        <mat-option [value]="metodo.id">{{ metodo.nombre }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Motivo del cambio</mat-label>
+                    <textarea matInput name="motivo" [(ngModel)]="motivo" minlength="3" maxlength="500" rows="3" required></textarea>
+                    <mat-hint align="end">{{ motivo.length }}/500</mat-hint>
+                  </mat-form-field>
+                  @if (changeError) {
+                    <p class="inline-error" role="alert">{{ changeError }}</p>
+                  }
+                  @if (changeSuccess) {
+                    <p class="inline-success" role="status">{{ changeSuccess }}</p>
+                  }
+                  <button mat-flat-button color="primary" type="submit" [disabled]="saving || !cambioValido">
+                    @if (saving) {
+                      <mat-spinner diameter="18"></mat-spinner>
+                    }
+                    @if (!saving) {
+                      <mat-icon>published_with_changes</mat-icon>
+                    }
+                    {{ saving ? 'Guardando…' : 'Aplicar política' }}
+                  </button>
+                </form>
+              </mat-card-content>
+            </mat-card>
+          }
+        </div>
+      }
+    
       <mat-card>
         <mat-card-header><mat-card-title>Historial de políticas</mat-card-title></mat-card-header>
         <mat-card-content>
@@ -104,7 +121,9 @@ import {
               <mat-label>Método</mat-label>
               <mat-select name="filtroMetodo" [(ngModel)]="filtroMetodo">
                 <mat-option [value]="null">Todos</mat-option>
-                <mat-option *ngFor="let metodo of metodos" [value]="metodo.id">{{ metodo.nombre }}</mat-option>
+                @for (metodo of metodos; track metodo) {
+                  <mat-option [value]="metodo.id">{{ metodo.nombre }}</mat-option>
+                }
               </mat-select>
             </mat-form-field>
             <mat-form-field appearance="outline">
@@ -128,31 +147,45 @@ import {
               <button mat-button type="button" (click)="limpiarFiltros()">Limpiar</button>
             </div>
           </form>
-
-          <p *ngIf="filterError" class="inline-error" role="alert">{{ filterError }}</p>
-          <div *ngIf="historyLoading" class="state compact" aria-live="polite"><mat-spinner diameter="28"></mat-spinner><span>Cargando historial…</span></div>
-          <div *ngIf="!historyLoading && historyError" class="state compact error" role="alert"><mat-icon>error_outline</mat-icon><span>{{ historyError }}</span><button mat-button type="button" (click)="cargarHistorial()">Reintentar</button></div>
-          <div *ngIf="!historyLoading && !historyError && historial.length === 0" class="state compact empty"><mat-icon>history</mat-icon><span>No hay políticas para los filtros seleccionados.</span></div>
-
-          <div *ngIf="!historyLoading && !historyError && historial.length" class="table-wrap">
-            <table>
-              <thead><tr><th>Método</th><th>Desde</th><th>Hasta</th><th>Estado</th><th>Motivo</th></tr></thead>
-              <tbody>
-                <tr *ngFor="let politica of historial">
-                  <td><strong>{{ politica.metodoNombre }}</strong></td>
-                  <td>{{ politica.vigenteDesdeUtc | date:'medium' }}</td>
-                  <td>{{ politica.vigenteHastaUtc ? (politica.vigenteHastaUtc | date:'medium') : '—' }}</td>
-                  <td><span class="badge" [class.active]="politica.estaVigente">{{ politica.estaVigente ? 'Vigente' : 'Histórica' }}</span></td>
-                  <td>{{ politica.motivo }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <mat-paginator *ngIf="totalCount > 0" [length]="totalCount" [pageIndex]="page - 1" [pageSize]="pageSize" [pageSizeOptions]="[10,20,50,100]" (page)="cambiarPagina($event)"></mat-paginator>
+    
+          @if (filterError) {
+            <p class="inline-error" role="alert">{{ filterError }}</p>
+          }
+          @if (historyLoading) {
+            <div class="state compact" aria-live="polite"><mat-spinner diameter="28"></mat-spinner><span>Cargando historial…</span></div>
+          }
+          @if (!historyLoading && historyError) {
+            <div class="state compact error" role="alert"><mat-icon>error_outline</mat-icon><span>{{ historyError }}</span><button mat-button type="button" (click)="cargarHistorial()">Reintentar</button></div>
+          }
+          @if (!historyLoading && !historyError && historial.length === 0) {
+            <div class="state compact empty"><mat-icon>history</mat-icon><span>No hay políticas para los filtros seleccionados.</span></div>
+          }
+    
+          @if (!historyLoading && !historyError && historial.length) {
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Método</th><th>Desde</th><th>Hasta</th><th>Estado</th><th>Motivo</th></tr></thead>
+                <tbody>
+                  @for (politica of historial; track politica) {
+                    <tr>
+                      <td><strong>{{ politica.metodoNombre }}</strong></td>
+                      <td>{{ politica.vigenteDesdeUtc | date:'medium' }}</td>
+                      <td>{{ politica.vigenteHastaUtc ? (politica.vigenteHastaUtc | date:'medium') : '—' }}</td>
+                      <td><span class="badge" [class.active]="politica.estaVigente">{{ politica.estaVigente ? 'Vigente' : 'Histórica' }}</span></td>
+                      <td>{{ politica.motivo }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+          @if (totalCount > 0) {
+            <mat-paginator [length]="totalCount" [pageIndex]="page - 1" [pageSize]="pageSize" [pageSizeOptions]="[10,20,50,100]" (page)="cambiarPagina($event)"></mat-paginator>
+          }
         </mat-card-content>
       </mat-card>
     </section>
-  `,
+    `,
   styles: [`
     .page{padding:24px;display:grid;gap:20px}.header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.header h1{margin:0;font-size:1.75rem}.header p{margin:6px 0 0;color:var(--text-secondary,#667085)}.eyebrow{text-transform:uppercase;letter-spacing:.08em;font-size:.72rem;font-weight:700;color:var(--primary,#3f51b5)!important}.header button mat-icon{margin-right:6px}.summary-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}.current-method{display:flex;align-items:center;gap:10px;font-size:1.35rem;margin:18px 0}.current-method mat-icon{color:var(--primary,#3f51b5)}dl{display:grid;gap:10px;margin:0}dl div{display:grid;grid-template-columns:160px 1fr;gap:12px}dt{font-weight:600;color:#667085}dd{margin:0}.change-form{display:grid;gap:10px;margin-top:16px}.change-form button{justify-self:start}.change-form button mat-icon{margin-right:6px}.change-form mat-spinner{display:inline-block;margin-right:8px}.filters{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr)) auto;gap:12px;align-items:start;margin-top:16px}.filter-actions{display:flex;gap:6px;padding-top:4px}.state{min-height:160px;display:flex;align-items:center;justify-content:center;gap:12px;border:1px dashed #d0d5dd;border-radius:12px;padding:20px}.state.compact{min-height:100px;margin-top:10px}.state.error,.inline-error{color:#b42318}.state.empty{color:#667085}.inline-success{color:#067647}.table-wrap{overflow:auto;border:1px solid #e4e7ec;border-radius:12px;margin-top:8px}table{width:100%;border-collapse:collapse;min-width:820px}th,td{padding:13px 14px;text-align:left;border-bottom:1px solid #eaecf0;vertical-align:top}th{font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;color:#667085;background:#f9fafb}.badge{display:inline-flex;border-radius:999px;padding:4px 9px;background:#f2f4f7;font-size:.78rem;font-weight:600}.badge.active{background:#ecfdf3;color:#067647}@media(max-width:1000px){.summary-grid{grid-template-columns:1fr}.filters{grid-template-columns:1fr 1fr}.filter-actions{grid-column:1/-1}}@media(max-width:600px){.page{padding:16px}.header{flex-direction:column}.filters{grid-template-columns:1fr}dl div{grid-template-columns:1fr;gap:2px}}
   `]

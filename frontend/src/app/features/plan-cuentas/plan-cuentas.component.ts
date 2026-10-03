@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -21,7 +21,6 @@ interface CuentaRow extends CuentaContable {
   selector: 'app-plan-cuentas',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     MatButtonModule,
     MatCheckboxModule,
@@ -30,7 +29,7 @@ interface CuentaRow extends CuentaContable {
     MatInputModule,
     MatProgressSpinnerModule,
     MatSelectModule
-  ],
+],
   template: `
     <main class="plan-cuentas" aria-labelledby="plan-cuentas-title">
       <header class="page-header">

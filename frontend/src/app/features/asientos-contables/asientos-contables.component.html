@@ -1,63 +1,62 @@
 <div class="container">
   <h2>Asientos Contables</h2>
 
-  <div class="actions" *ngIf="!mostrarFormulario()">
-    <mat-form-field appearance="outline">
-      <mat-label>Buscar</mat-label>
-      <input matInput [(ngModel)]="search" (ngModelChange)="onSearchChange($event)" placeholder="Número de asiento">
-    </mat-form-field>
+  @if (!mostrarFormulario()) {
+    <div class="actions">
+      <mat-form-field appearance="outline">
+        <mat-label>Buscar</mat-label>
+        <input matInput [(ngModel)]="search" (ngModelChange)="onSearchChange($event)" placeholder="Número de asiento">
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Desde</mat-label>
+        <input matInput type="date" [(ngModel)]="fechaDesde" (ngModelChange)="onFiltroChange()">
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Hasta</mat-label>
+        <input matInput type="date" [(ngModel)]="fechaHasta" (ngModelChange)="onFiltroChange()">
+      </mat-form-field>
+      @if (puedeCrearAsiento()) {
+        <button mat-raised-button color="primary" (click)="nuevoAsiento()">
+          <mat-icon>add</mat-icon> Nuevo Asiento
+        </button>
+      }
+    </div>
+  }
 
-    <mat-form-field appearance="outline">
-      <mat-label>Desde</mat-label>
-      <input matInput type="date" [(ngModel)]="fechaDesde" (ngModelChange)="onFiltroChange()">
-    </mat-form-field>
+  @if (!mostrarFormulario() && puedeCrearAsiento()) {
+    <app-evento-contable-panel
+      (contabilizado)="cargarAsientos()">
+    </app-evento-contable-panel>
+  }
 
-    <mat-form-field appearance="outline">
-      <mat-label>Hasta</mat-label>
-      <input matInput type="date" [(ngModel)]="fechaHasta" (ngModelChange)="onFiltroChange()">
-    </mat-form-field>
+  @if (loading()) {
+    <div style="display: flex; justify-content: center; padding: 2rem;">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  }
 
-    <button mat-raised-button color="primary" (click)="nuevoAsiento()" *ngIf="puedeCrearAsiento()">
-      <mat-icon>add</mat-icon> Nuevo Asiento
-    </button>
-  </div>
-
-  <app-evento-contable-panel
-    *ngIf="!mostrarFormulario() && puedeCrearAsiento()"
-    (contabilizado)="cargarAsientos()">
-  </app-evento-contable-panel>
-
-  <div *ngIf="loading()" style="display: flex; justify-content: center; padding: 2rem;">
-    <mat-spinner diameter="40"></mat-spinner>
-  </div>
-
-  <ng-container *ngIf="!mostrarFormulario() && !loading()">
+  @if (!mostrarFormulario() && !loading()) {
     <table mat-table [dataSource]="asientos()" class="mat-elevation-z8">
       <ng-container matColumnDef="numero">
         <th mat-header-cell *matHeaderCellDef> Número </th>
         <td mat-cell *matCellDef="let a"> {{a.numero}} </td>
       </ng-container>
-
       <ng-container matColumnDef="fecha">
         <th mat-header-cell *matHeaderCellDef> Fecha </th>
         <td mat-cell *matCellDef="let a"> {{a.fecha | date:'shortDate'}} </td>
       </ng-container>
-
       <ng-container matColumnDef="concepto">
         <th mat-header-cell *matHeaderCellDef> Concepto </th>
         <td mat-cell *matCellDef="let a"> {{a.concepto}} </td>
       </ng-container>
-
       <ng-container matColumnDef="totalDebe">
         <th mat-header-cell *matHeaderCellDef> Total Debe </th>
         <td mat-cell *matCellDef="let a"> {{a.totalDebe | number:'1.2-2'}} </td>
       </ng-container>
-
       <ng-container matColumnDef="totalHaber">
         <th mat-header-cell *matHeaderCellDef> Total Haber </th>
         <td mat-cell *matCellDef="let a"> {{a.totalHaber | number:'1.2-2'}} </td>
       </ng-container>
-
       <ng-container matColumnDef="acciones">
         <th mat-header-cell *matHeaderCellDef> Acciones </th>
         <td mat-cell *matCellDef="let a">
@@ -66,17 +65,17 @@
           </button>
         </td>
       </ng-container>
-
       <tr mat-header-row *matHeaderRowDef="['numero', 'fecha', 'concepto', 'totalDebe', 'totalHaber', 'acciones']"></tr>
       <tr mat-row *matRowDef="let row; columns: ['numero', 'fecha', 'concepto', 'totalDebe', 'totalHaber', 'acciones'];"></tr>
     </table>
-    
-    <div *ngIf="asientos().length === 0" style="text-align: center; padding: 2rem; color: gray;">
-      No hay asientos contables que coincidan con los filtros.
-    </div>
-  </ng-container>
+    @if (asientos().length === 0) {
+      <div style="text-align: center; padding: 2rem; color: gray;">
+        No hay asientos contables que coincidan con los filtros.
+      </div>
+    }
+  }
 
-  <ng-container *ngIf="mostrarFormulario() && !asientoSeleccionado()">
+  @if (mostrarFormulario() && !asientoSeleccionado()) {
     <h3>Crear Asiento Contable</h3>
     <form [formGroup]="asientoForm" (ngSubmit)="guardarAsiento()">
       <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
@@ -84,120 +83,117 @@
           <mat-label>Fecha (Opcional)</mat-label>
           <input matInput type="date" formControlName="fecha">
         </mat-form-field>
-
         <mat-form-field appearance="outline" style="flex: 1; min-width: 300px;">
           <mat-label>Concepto</mat-label>
           <input matInput formControlName="concepto">
-          <mat-error *ngIf="asientoForm.get('concepto')?.hasError('required')">El concepto es requerido</mat-error>
+          @if (asientoForm.get('concepto')?.hasError('required')) {
+            <mat-error>El concepto es requerido</mat-error>
+          }
         </mat-form-field>
-        
         <mat-form-field appearance="outline">
           <mat-label>Número (Opcional)</mat-label>
           <input matInput formControlName="numero">
         </mat-form-field>
       </div>
-
       <h4>Detalles</h4>
       <div formArrayName="detalles">
-        <div *ngFor="let detalle of detallesFormArray.controls; let i=index" [formGroupName]="i" style="display: flex; gap: 1rem; align-items: baseline;">
-          <mat-form-field appearance="outline" style="flex: 2;">
-            <mat-label>Cuenta</mat-label>
-            <mat-select formControlName="cuentaContableId">
-              <mat-option *ngFor="let c of cuentasContables()" [value]="c.id">
-                {{c.codigo}} - {{c.nombre}}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" style="flex: 1;">
-            <mat-label>Debe</mat-label>
-            <input matInput type="number" formControlName="debe" min="0" step="0.01">
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" style="flex: 1;">
-            <mat-label>Haber</mat-label>
-            <input matInput type="number" formControlName="haber" min="0" step="0.01">
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" style="flex: 1;">
-            <mat-label>Referencia</mat-label>
-            <input matInput formControlName="referencia">
-          </mat-form-field>
-
-          <button type="button" mat-icon-button color="warn" (click)="removerDetalle(i)" [disabled]="detallesFormArray.length <= 2">
-            <mat-icon>delete</mat-icon>
-          </button>
-        </div>
+        @for (detalle of detallesFormArray.controls; track detalle; let i = $index) {
+          <div [formGroupName]="i" style="display: flex; gap: 1rem; align-items: baseline;">
+            <mat-form-field appearance="outline" style="flex: 2;">
+              <mat-label>Cuenta</mat-label>
+              <mat-select formControlName="cuentaContableId">
+                @for (c of cuentasContables(); track c) {
+                  <mat-option [value]="c.id">
+                    {{c.codigo}} - {{c.nombre}}
+                  </mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline" style="flex: 1;">
+              <mat-label>Debe</mat-label>
+              <input matInput type="number" formControlName="debe" min="0" step="0.01">
+            </mat-form-field>
+            <mat-form-field appearance="outline" style="flex: 1;">
+              <mat-label>Haber</mat-label>
+              <input matInput type="number" formControlName="haber" min="0" step="0.01">
+            </mat-form-field>
+            <mat-form-field appearance="outline" style="flex: 1;">
+              <mat-label>Referencia</mat-label>
+              <input matInput formControlName="referencia">
+            </mat-form-field>
+            <button type="button" mat-icon-button color="warn" (click)="removerDetalle(i)" [disabled]="detallesFormArray.length <= 2">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        }
       </div>
-
       <div style="margin-bottom: 1rem;">
         <button type="button" mat-stroked-button (click)="agregarDetalle()">
           <mat-icon>add</mat-icon> Agregar Detalle
         </button>
       </div>
-
       <div class="total-row">
         Total Debe: {{ totalDebe | number:'1.2-2' }} | Total Haber: {{ totalHaber | number:'1.2-2' }}
       </div>
-      
-      <div class="balance-error" *ngIf="totalDebe !== totalHaber && (totalDebe > 0 || totalHaber > 0)">
-        El asiento está descuadrado por {{ Math.abs(totalDebe - totalHaber) | number:'1.2-2' }}
-      </div>
-      <div class="balance-error" *ngIf="asientoForm.hasError('descuadrado')">
-        El asiento debe estar cuadrado (Total Debe = Total Haber) y los montos deben ser mayores a cero.
-      </div>
-      <div class="balance-error" *ngIf="asientoForm.hasError('sinDetalles')">
-        El asiento debe tener al menos dos detalles.
-      </div>
-
+      @if (totalDebe !== totalHaber && (totalDebe > 0 || totalHaber > 0)) {
+        <div class="balance-error">
+          El asiento está descuadrado por {{ Math.abs(totalDebe - totalHaber) | number:'1.2-2' }}
+        </div>
+      }
+      @if (asientoForm.hasError('descuadrado')) {
+        <div class="balance-error">
+          El asiento debe estar cuadrado (Total Debe = Total Haber) y los montos deben ser mayores a cero.
+        </div>
+      }
+      @if (asientoForm.hasError('sinDetalles')) {
+        <div class="balance-error">
+          El asiento debe tener al menos dos detalles.
+        </div>
+      }
       <div style="margin-top: 2rem; display: flex; gap: 1rem;">
         <button type="button" mat-button (click)="cancelar()">Cancelar</button>
         <button type="submit" mat-raised-button color="primary" [disabled]="asientoForm.invalid || guardando()">
-          <mat-spinner *ngIf="guardando()" diameter="20" style="display: inline-block; margin-right: 8px;"></mat-spinner>
+          @if (guardando()) {
+            <mat-spinner diameter="20" style="display: inline-block; margin-right: 8px;"></mat-spinner>
+          }
           Guardar Asiento
         </button>
       </div>
     </form>
-  </ng-container>
+  }
 
-  <ng-container *ngIf="mostrarFormulario() && asientoSeleccionado()">
+  @if (mostrarFormulario() && asientoSeleccionado()) {
     <h3>Detalles del Asiento</h3>
     <div style="display: flex; gap: 2rem; margin-bottom: 1rem;">
       <div><strong>Número:</strong> {{ asientoSeleccionado()?.numero || 'N/A' }}</div>
       <div><strong>Fecha:</strong> {{ asientoSeleccionado()?.fecha | date:'shortDate' }}</div>
       <div><strong>Concepto:</strong> {{ asientoSeleccionado()?.concepto }}</div>
     </div>
-    
     <table mat-table [dataSource]="asientoSeleccionado()?.detalles || []" class="mat-elevation-z8">
       <ng-container matColumnDef="cuenta">
         <th mat-header-cell *matHeaderCellDef> Cuenta </th>
         <td mat-cell *matCellDef="let d"> {{d.cuentaCodigo}} - {{d.cuentaNombre}} </td>
       </ng-container>
-
       <ng-container matColumnDef="referencia">
         <th mat-header-cell *matHeaderCellDef> Referencia </th>
         <td mat-cell *matCellDef="let d"> {{d.referencia}} </td>
       </ng-container>
-
       <ng-container matColumnDef="debe">
         <th mat-header-cell *matHeaderCellDef> Debe </th>
         <td mat-cell *matCellDef="let d"> {{d.debe | number:'1.2-2'}} </td>
         <td mat-footer-cell *matFooterCellDef> <strong>{{ asientoSeleccionado()?.totalDebe | number:'1.2-2' }}</strong> </td>
       </ng-container>
-
       <ng-container matColumnDef="haber">
         <th mat-header-cell *matHeaderCellDef> Haber </th>
         <td mat-cell *matCellDef="let d"> {{d.haber | number:'1.2-2'}} </td>
         <td mat-footer-cell *matFooterCellDef> <strong>{{ asientoSeleccionado()?.totalHaber | number:'1.2-2' }}</strong> </td>
       </ng-container>
-
       <tr mat-header-row *matHeaderRowDef="['cuenta', 'referencia', 'debe', 'haber']"></tr>
       <tr mat-row *matRowDef="let row; columns: ['cuenta', 'referencia', 'debe', 'haber'];"></tr>
       <tr mat-footer-row *matFooterRowDef="['cuenta', 'referencia', 'debe', 'haber']"></tr>
     </table>
-
     <div style="margin-top: 2rem;">
       <button mat-button (click)="cancelar()">Volver</button>
     </div>
-  </ng-container>
+  }
 </div>

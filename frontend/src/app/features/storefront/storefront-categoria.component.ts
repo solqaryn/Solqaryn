@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -21,7 +21,7 @@ import { IconoTiendaComponent, IlustracionTiendaComponent } from './storefront.v
 @Component({
   selector: 'app-storefront-categoria',
   standalone: true,
-  imports: [CommonModule, StorefrontHeaderComponent, IconoTiendaComponent, IlustracionTiendaComponent],
+  imports: [StorefrontHeaderComponent, IconoTiendaComponent, IlustracionTiendaComponent],
   templateUrl: './storefront-categoria.component.html',
   styleUrl: './storefront-categoria.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

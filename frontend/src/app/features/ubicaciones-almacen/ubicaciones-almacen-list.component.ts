@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -26,7 +26,6 @@ type PadreFiltro = 'todos' | 'raiz' | number;
   selector: 'app-ubicaciones-almacen-list',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     RouterLink,
     MatButtonModule,
@@ -37,7 +36,7 @@ type PadreFiltro = 'todos' | 'raiz' | number;
     MatProgressSpinnerModule,
     MatSelectModule,
     MatSlideToggleModule
-  ],
+],
   templateUrl: './ubicaciones-almacen-list.component.html',
   styleUrl: './ubicaciones-almacen-list.component.scss'
 })

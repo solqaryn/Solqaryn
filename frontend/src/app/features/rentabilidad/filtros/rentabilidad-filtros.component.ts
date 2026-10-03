@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ReporteVentasFiltroDto } from '../../../core/models/reporte-ventas.models';
@@ -36,7 +36,7 @@ type RentabilidadSelectorControl =
 @Component({
   selector: 'app-rentabilidad-filtros',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [ReactiveFormsModule],
   template: `
     <form class="filter-grid" [formGroup]="form" (ngSubmit)="emitir()" aria-label="Filtros de rentabilidad">
       <label>Desde<input type="date" formControlName="desde" /></label>

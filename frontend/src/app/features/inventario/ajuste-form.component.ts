@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, OnInit, signal } from '@angular/core';
 import {
   ReactiveFormsModule,
@@ -26,7 +26,6 @@ import { ProductoService } from '../../services/producto.service';
   selector: 'app-ajuste-form',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     MatButtonModule,
     MatFormFieldModule,
@@ -34,7 +33,7 @@ import { ProductoService } from '../../services/producto.service';
     MatInputModule,
     MatProgressSpinnerModule,
     MatSelectModule
-  ],
+],
   template: `
     <section class="form-page" aria-labelledby="ajuste-form-title">
       <header>
@@ -47,123 +46,140 @@ import { ProductoService } from '../../services/producto.service';
           <p>Cada detalle establece la cantidad física objetivo sobre una existencia concreta. El ajuste se aplicará únicamente al confirmar.</p>
         </div>
       </header>
-
-      <div class="error" *ngIf="error()" role="alert">
-        <mat-icon>error_outline</mat-icon>
-        <span>{{ error() }}</span>
-      </div>
-
-      <div class="loading" *ngIf="loading() || catalogLoading()" aria-live="polite">
-        <mat-spinner diameter="36"></mat-spinner>
-        <span>{{ loading() ? 'Cargando borrador…' : 'Cargando productos…' }}</span>
-      </div>
-
-      <form *ngIf="!loading() && !catalogLoading()" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
-        <div class="grid two">
-          <mat-form-field appearance="outline">
-            <mat-label>Fecha de ajuste</mat-label>
-            <input matInput type="datetime-local" formControlName="fechaAjuste" />
-          </mat-form-field>
-
-          <mat-form-field appearance="outline">
-            <mat-label>Motivo</mat-label>
-            <input matInput formControlName="motivo" maxlength="250" required />
-            <mat-error *ngIf="form.get('motivo')?.hasError('required')">El motivo es obligatorio.</mat-error>
-          </mat-form-field>
+    
+      @if (error()) {
+        <div class="error" role="alert">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ error() }}</span>
         </div>
-
-        <mat-form-field appearance="outline" class="full">
-          <mat-label>Observaciones</mat-label>
-          <textarea matInput rows="3" formControlName="observaciones" maxlength="1000"></textarea>
-        </mat-form-field>
-
-        <div class="details-header">
-          <div>
-            <h2>Conteo físico</h2>
-            <p>Selecciona producto, variante y la existencia exacta por almacén/ubicación antes de indicar la cantidad objetivo.</p>
+      }
+    
+      @if (loading() || catalogLoading()) {
+        <div class="loading" aria-live="polite">
+          <mat-spinner diameter="36"></mat-spinner>
+          <span>{{ loading() ? 'Cargando borrador…' : 'Cargando productos…' }}</span>
+        </div>
+      }
+    
+      @if (!loading() && !catalogLoading()) {
+        <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+          <div class="grid two">
+            <mat-form-field appearance="outline">
+              <mat-label>Fecha de ajuste</mat-label>
+              <input matInput type="datetime-local" formControlName="fechaAjuste" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Motivo</mat-label>
+              <input matInput formControlName="motivo" maxlength="250" required />
+              @if (form.get('motivo')?.hasError('required')) {
+                <mat-error>El motivo es obligatorio.</mat-error>
+              }
+            </mat-form-field>
           </div>
-          <button mat-stroked-button color="primary" type="button" (click)="agregarDetalle()">
-            <mat-icon>add</mat-icon>
-            Agregar detalle
-          </button>
-        </div>
-
-        <div formArrayName="detalles" class="details">
-          <article class="detail" *ngFor="let detail of detalles.controls; let i = index" [formGroupName]="i">
-            <span class="detail-number">#{{ i + 1 }}</span>
-
-            <mat-form-field appearance="outline">
-              <mat-label>Producto</mat-label>
-              <mat-select formControlName="productoId" required (selectionChange)="onProductoChange(i, $event.value)">
-                <mat-option *ngFor="let producto of productos()" [value]="producto.id">
-                  {{ etiquetaProducto(producto) }}
-                </mat-option>
-              </mat-select>
-              <mat-error>Selecciona un producto válido.</mat-error>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline">
-              <mat-label>Variante</mat-label>
-              <mat-select
-                formControlName="productoVarianteId"
-                required
-                (selectionChange)="onVarianteChange(i, $event.value)">
-                <mat-option *ngFor="let variante of variantesProducto(detail.get('productoId')?.value)" [value]="variante.id">
-                  {{ etiquetaVariante(variante) }}
-                </mat-option>
-              </mat-select>
-              <mat-hint *ngIf="variantesProducto(detail.get('productoId')?.value).length > 0">Selecciona la variante física concreta.</mat-hint>
-              <mat-hint *ngIf="detail.get('productoId')?.value && variantesProducto(detail.get('productoId')?.value).length === 0">El producto no tiene una variante operativa disponible.</mat-hint>
-              <mat-error>Selecciona una variante válida.</mat-error>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline">
-              <mat-label>Existencia física</mat-label>
-              <mat-select
-                formControlName="existenciaId"
-                required
-                [disabled]="!detail.get('productoVarianteId')?.value || cargandoExistenciasVariante(detail.get('productoVarianteId')?.value)"
-                (selectionChange)="onExistenciaChange(i, $event.value)">
-                <mat-option
-                  *ngFor="let existencia of existenciasVariante(detail.get('productoVarianteId')?.value)"
-                  [value]="existencia.id">
-                  {{ etiquetaExistencia(existencia) }}
-                </mat-option>
-              </mat-select>
-              <mat-hint *ngIf="cargandoExistenciasVariante(detail.get('productoVarianteId')?.value)">Cargando existencias físicas…</mat-hint>
-              <mat-hint *ngIf="detail.get('productoVarianteId')?.value && !cargandoExistenciasVariante(detail.get('productoVarianteId')?.value) && existenciasVariante(detail.get('productoVarianteId')?.value).length === 0">La variante no tiene existencias por almacén disponibles.</mat-hint>
-              <mat-error>Selecciona una existencia física válida.</mat-error>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline">
-              <mat-label>Cantidad objetivo</mat-label>
-              <input matInput type="number" min="0" step="1" formControlName="cantidadObjetivo" required />
-              <mat-error>La cantidad objetivo debe ser 0 o mayor.</mat-error>
-            </mat-form-field>
-
-            <button
-              mat-icon-button
-              color="warn"
-              type="button"
-              aria-label="Eliminar detalle"
-              [disabled]="detalles.length === 1"
-              (click)="eliminarDetalle(i)">
-              <mat-icon>delete</mat-icon>
+          <mat-form-field appearance="outline" class="full">
+            <mat-label>Observaciones</mat-label>
+            <textarea matInput rows="3" formControlName="observaciones" maxlength="1000"></textarea>
+          </mat-form-field>
+          <div class="details-header">
+            <div>
+              <h2>Conteo físico</h2>
+              <p>Selecciona producto, variante y la existencia exacta por almacén/ubicación antes de indicar la cantidad objetivo.</p>
+            </div>
+            <button mat-stroked-button color="primary" type="button" (click)="agregarDetalle()">
+              <mat-icon>add</mat-icon>
+              Agregar detalle
             </button>
-          </article>
-        </div>
-
-        <div class="actions">
-          <button mat-button type="button" (click)="volver()" [disabled]="saving()">Cancelar</button>
-          <button mat-flat-button color="primary" type="submit" [disabled]="saving() || form.invalid || productos().length === 0">
-            <mat-spinner *ngIf="saving()" diameter="20"></mat-spinner>
-            <mat-icon *ngIf="!saving()">save</mat-icon>
-            {{ saving() ? 'Guardando…' : 'Guardar borrador' }}
-          </button>
-        </div>
-      </form>
+          </div>
+          <div formArrayName="detalles" class="details">
+            @for (detail of detalles.controls; track detail; let i = $index) {
+              <article class="detail" [formGroupName]="i">
+                <span class="detail-number">#{{ i + 1 }}</span>
+                <mat-form-field appearance="outline">
+                  <mat-label>Producto</mat-label>
+                  <mat-select formControlName="productoId" required (selectionChange)="onProductoChange(i, $event.value)">
+                    @for (producto of productos(); track producto) {
+                      <mat-option [value]="producto.id">
+                        {{ etiquetaProducto(producto) }}
+                      </mat-option>
+                    }
+                  </mat-select>
+                  <mat-error>Selecciona un producto válido.</mat-error>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Variante</mat-label>
+                  <mat-select
+                    formControlName="productoVarianteId"
+                    required
+                    (selectionChange)="onVarianteChange(i, $event.value)">
+                    @for (variante of variantesProducto(detail.get('productoId')?.value); track variante) {
+                      <mat-option [value]="variante.id">
+                        {{ etiquetaVariante(variante) }}
+                      </mat-option>
+                    }
+                  </mat-select>
+                  @if (variantesProducto(detail.get('productoId')?.value).length > 0) {
+                    <mat-hint>Selecciona la variante física concreta.</mat-hint>
+                  }
+                  @if (detail.get('productoId')?.value && variantesProducto(detail.get('productoId')?.value).length === 0) {
+                    <mat-hint>El producto no tiene una variante operativa disponible.</mat-hint>
+                  }
+                  <mat-error>Selecciona una variante válida.</mat-error>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Existencia física</mat-label>
+                  <mat-select
+                    formControlName="existenciaId"
+                    required
+                    [disabled]="!detail.get('productoVarianteId')?.value || cargandoExistenciasVariante(detail.get('productoVarianteId')?.value)"
+                    (selectionChange)="onExistenciaChange(i, $event.value)">
+                    @for (existencia of existenciasVariante(detail.get('productoVarianteId')?.value); track existencia) {
+                      <mat-option
+                        [value]="existencia.id">
+                        {{ etiquetaExistencia(existencia) }}
+                      </mat-option>
+                    }
+                  </mat-select>
+                  @if (cargandoExistenciasVariante(detail.get('productoVarianteId')?.value)) {
+                    <mat-hint>Cargando existencias físicas…</mat-hint>
+                  }
+                  @if (detail.get('productoVarianteId')?.value && !cargandoExistenciasVariante(detail.get('productoVarianteId')?.value) && existenciasVariante(detail.get('productoVarianteId')?.value).length === 0) {
+                    <mat-hint>La variante no tiene existencias por almacén disponibles.</mat-hint>
+                  }
+                  <mat-error>Selecciona una existencia física válida.</mat-error>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Cantidad objetivo</mat-label>
+                  <input matInput type="number" min="0" step="1" formControlName="cantidadObjetivo" required />
+                  <mat-error>La cantidad objetivo debe ser 0 o mayor.</mat-error>
+                </mat-form-field>
+                <button
+                  mat-icon-button
+                  color="warn"
+                  type="button"
+                  aria-label="Eliminar detalle"
+                  [disabled]="detalles.length === 1"
+                  (click)="eliminarDetalle(i)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </article>
+            }
+          </div>
+          <div class="actions">
+            <button mat-button type="button" (click)="volver()" [disabled]="saving()">Cancelar</button>
+            <button mat-flat-button color="primary" type="submit" [disabled]="saving() || form.invalid || productos().length === 0">
+              @if (saving()) {
+                <mat-spinner diameter="20"></mat-spinner>
+              }
+              @if (!saving()) {
+                <mat-icon>save</mat-icon>
+              }
+              {{ saving() ? 'Guardando…' : 'Guardar borrador' }}
+            </button>
+          </div>
+        </form>
+      }
     </section>
-  `,
+    `,
   styles: [`
     :host { display: block; }
     .form-page { max-width: 1240px; margin: 0 auto; padding: 24px; }

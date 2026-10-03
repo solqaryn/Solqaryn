@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, OnDestroy, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -15,12 +15,11 @@ const MIME_PERMITIDOS = new Set(['image/jpeg', 'image/png', 'image/webp']);
   selector: 'app-codigo-scanner-dialog',
   standalone: true,
   imports: [
-    CommonModule,
     MatButtonModule,
     MatDialogModule,
     MatIconModule,
     MatProgressSpinnerModule
-  ],
+],
   templateUrl: './codigo-scanner-dialog.component.html',
   styleUrl: './codigo-scanner-dialog.component.scss'
 })

@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -24,7 +24,6 @@ interface EmpresaOpcion {
   selector: 'app-sucursal-form',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     RouterLink,
     MatButtonModule,
@@ -33,7 +32,7 @@ interface EmpresaOpcion {
     MatInputModule,
     MatProgressSpinnerModule,
     MatSelectModule
-  ],
+],
   templateUrl: './sucursal-form.component.html',
   styleUrl: './sucursal-form.component.scss'
 })

@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, EventEmitter, Output, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -31,7 +31,6 @@ interface EventoContableDto {
   selector: 'app-evento-contable-panel',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     MatButtonModule,
     MatFormFieldModule,
@@ -39,67 +38,78 @@ interface EventoContableDto {
     MatSelectModule,
     MatProgressSpinnerModule,
     MatSnackBarModule
-  ],
+],
   template: `
-    <section class="evento-card" *ngIf="puedeContabilizar">
-      <div class="evento-header">
-        <div>
-          <h3>Contabilizar evento</h3>
-          <p>Genera el asiento desde la configuración contable vigente, sin seleccionar cuentas manualmente.</p>
-        </div>
-        <button mat-stroked-button type="button" (click)="toggle()">
-          {{ abierto() ? 'Ocultar' : 'Nuevo evento' }}
-        </button>
-      </div>
-
-      <form *ngIf="abierto()" [formGroup]="form" (ngSubmit)="contabilizar()" class="evento-form">
-        <mat-form-field appearance="outline">
-          <mat-label>Tipo de evento</mat-label>
-          <mat-select formControlName="tipo">
-            <mat-option *ngFor="let tipo of tipos" [value]="tipo.value">{{ tipo.label }}</mat-option>
-          </mat-select>
-          <mat-error *ngIf="form.get('tipo')?.hasError('required')">Selecciona un tipo</mat-error>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>ID documento origen</mat-label>
-          <input matInput type="number" min="1" formControlName="documentoOrigenId">
-          <mat-error *ngIf="form.get('documentoOrigenId')?.invalid">Debe ser mayor que cero</mat-error>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Fecha</mat-label>
-          <input matInput type="datetime-local" formControlName="fecha">
-          <mat-error *ngIf="form.get('fecha')?.hasError('required')">La fecha es obligatoria</mat-error>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Monto</mat-label>
-          <input matInput type="number" min="0.01" step="0.01" formControlName="monto">
-          <mat-error *ngIf="form.get('monto')?.invalid">Debe ser mayor que cero</mat-error>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Costo (opcional)</mat-label>
-          <input matInput type="number" min="0" step="0.01" formControlName="costo">
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="referencia">
-          <mat-label>Referencia</mat-label>
-          <input matInput maxlength="200" formControlName="referencia">
-          <mat-error *ngIf="form.get('referencia')?.hasError('required')">La referencia es obligatoria</mat-error>
-        </mat-form-field>
-
-        <div class="evento-actions">
-          <button mat-button type="button" (click)="toggle()" [disabled]="guardando()">Cancelar</button>
-          <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || guardando()">
-            <mat-spinner *ngIf="guardando()" diameter="18"></mat-spinner>
-            <span>{{ guardando() ? 'Contabilizando…' : 'Contabilizar' }}</span>
+    @if (puedeContabilizar) {
+      <section class="evento-card">
+        <div class="evento-header">
+          <div>
+            <h3>Contabilizar evento</h3>
+            <p>Genera el asiento desde la configuración contable vigente, sin seleccionar cuentas manualmente.</p>
+          </div>
+          <button mat-stroked-button type="button" (click)="toggle()">
+            {{ abierto() ? 'Ocultar' : 'Nuevo evento' }}
           </button>
         </div>
-      </form>
-    </section>
-  `,
+        @if (abierto()) {
+          <form [formGroup]="form" (ngSubmit)="contabilizar()" class="evento-form">
+            <mat-form-field appearance="outline">
+              <mat-label>Tipo de evento</mat-label>
+              <mat-select formControlName="tipo">
+                @for (tipo of tipos; track tipo) {
+                  <mat-option [value]="tipo.value">{{ tipo.label }}</mat-option>
+                }
+              </mat-select>
+              @if (form.get('tipo')?.hasError('required')) {
+                <mat-error>Selecciona un tipo</mat-error>
+              }
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>ID documento origen</mat-label>
+              <input matInput type="number" min="1" formControlName="documentoOrigenId">
+              @if (form.get('documentoOrigenId')?.invalid) {
+                <mat-error>Debe ser mayor que cero</mat-error>
+              }
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Fecha</mat-label>
+              <input matInput type="datetime-local" formControlName="fecha">
+              @if (form.get('fecha')?.hasError('required')) {
+                <mat-error>La fecha es obligatoria</mat-error>
+              }
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Monto</mat-label>
+              <input matInput type="number" min="0.01" step="0.01" formControlName="monto">
+              @if (form.get('monto')?.invalid) {
+                <mat-error>Debe ser mayor que cero</mat-error>
+              }
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Costo (opcional)</mat-label>
+              <input matInput type="number" min="0" step="0.01" formControlName="costo">
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="referencia">
+              <mat-label>Referencia</mat-label>
+              <input matInput maxlength="200" formControlName="referencia">
+              @if (form.get('referencia')?.hasError('required')) {
+                <mat-error>La referencia es obligatoria</mat-error>
+              }
+            </mat-form-field>
+            <div class="evento-actions">
+              <button mat-button type="button" (click)="toggle()" [disabled]="guardando()">Cancelar</button>
+              <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || guardando()">
+                @if (guardando()) {
+                  <mat-spinner diameter="18"></mat-spinner>
+                }
+                <span>{{ guardando() ? 'Contabilizando…' : 'Contabilizar' }}</span>
+              </button>
+            </div>
+          </form>
+        }
+      </section>
+    }
+    `,
   styles: [`
     .evento-card { margin: 0 0 1.5rem; padding: 1rem; border: 1px solid rgba(0,0,0,.12); border-radius: 8px; }
     .evento-header { display: flex; gap: 1rem; align-items: center; justify-content: space-between; }

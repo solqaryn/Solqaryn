@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output, OnInit, OnChanges, SimpleChanges } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
@@ -9,18 +9,20 @@ export type TipoEstadoCompra = 'EstadoOrden' | 'EstadoFactura' | 'EstadoRecepcio
 @Component({
   selector: 'app-estado-selector',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MatFormFieldModule, MatSelectModule],
+  imports: [ReactiveFormsModule, MatFormFieldModule, MatSelectModule],
   template: `
     <mat-form-field appearance="outline" class="w-full">
       <mat-label>{{ label }}</mat-label>
       <mat-select [formControl]="control" (selectionChange)="onSelectionChange($event.value)">
         <mat-option [value]="null">Todos</mat-option>
-        <mat-option *ngFor="let estado of opciones" [value]="estado.value">
-          {{ estado.label }}
-        </mat-option>
+        @for (estado of opciones; track estado) {
+          <mat-option [value]="estado.value">
+            {{ estado.label }}
+          </mat-option>
+        }
       </mat-select>
     </mat-form-field>
-  `
+    `
 })
 export class EstadoSelectorComponent implements OnInit, OnChanges {
   @Input() tipoEstado: TipoEstadoCompra | null = null;

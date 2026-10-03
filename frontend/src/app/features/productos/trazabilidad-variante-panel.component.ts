@@ -44,19 +44,25 @@ import { TrazabilidadInventarioService } from '../../services/trazabilidad-inven
           <mat-icon>refresh</mat-icon> Actualizar
         </button>
       </header>
-
-      <div class="feedback error" *ngIf="error()" role="alert">
-        <mat-icon>error_outline</mat-icon><span>{{ error() }}</span>
-      </div>
-      <div class="feedback success" *ngIf="success()" role="status">
-        <mat-icon>check_circle</mat-icon><span>{{ success() }}</span>
-      </div>
-
-      <div class="loading" *ngIf="loading()">
-        <mat-spinner diameter="32"></mat-spinner><span>Cargando trazabilidad de la variante…</span>
-      </div>
-
-      <ng-container *ngIf="!loading()">
+    
+      @if (error()) {
+        <div class="feedback error" role="alert">
+          <mat-icon>error_outline</mat-icon><span>{{ error() }}</span>
+        </div>
+      }
+      @if (success()) {
+        <div class="feedback success" role="status">
+          <mat-icon>check_circle</mat-icon><span>{{ success() }}</span>
+        </div>
+      }
+    
+      @if (loading()) {
+        <div class="loading">
+          <mat-spinner diameter="32"></mat-spinner><span>Cargando trazabilidad de la variante…</span>
+        </div>
+      }
+    
+      @if (!loading()) {
         <fieldset class="policy" [disabled]="saving()">
           <legend>Política operativa</legend>
           <div class="checks">
@@ -64,102 +70,141 @@ import { TrazabilidadInventarioService } from '../../services/trazabilidad-inven
             <mat-checkbox [(ngModel)]="controlaNumeroSerie" name="controlaNumeroSerie">Controlar número de serie</mat-checkbox>
             <mat-checkbox [(ngModel)]="controlaFechaVencimiento" name="controlaFechaVencimiento">Controlar fecha de vencimiento</mat-checkbox>
           </div>
-          <mat-form-field appearance="outline" *ngIf="controlaFechaVencimiento">
-            <mat-label>Días de alerta de vencimiento</mat-label>
-            <input matInput type="number" min="0" step="1" [(ngModel)]="diasAlertaVencimiento" name="diasAlertaVencimiento" />
-            <mat-hint>Opcional. Permite anticipar lotes próximos a vencer.</mat-hint>
-          </mat-form-field>
+          @if (controlaFechaVencimiento) {
+            <mat-form-field appearance="outline">
+              <mat-label>Días de alerta de vencimiento</mat-label>
+              <input matInput type="number" min="0" step="1" [(ngModel)]="diasAlertaVencimiento" name="diasAlertaVencimiento" />
+              <mat-hint>Opcional. Permite anticipar lotes próximos a vencer.</mat-hint>
+            </mat-form-field>
+          }
           <div class="policy-actions">
             <button mat-flat-button color="primary" type="button" (click)="guardarPolitica()" [disabled]="saving() || !politicaValida()">
-              <mat-spinner *ngIf="saving()" diameter="18"></mat-spinner>
-              <mat-icon *ngIf="!saving()">save</mat-icon>
+              @if (saving()) {
+                <mat-spinner diameter="18"></mat-spinner>
+              }
+              @if (!saving()) {
+                <mat-icon>save</mat-icon>
+              }
               Guardar política
             </button>
           </div>
         </fieldset>
-
-        <div class="trace-grid" *ngIf="controlaLote || controlaNumeroSerie">
-          <section class="subcard" *ngIf="controlaLote">
-            <header>
-              <div><h4>Lotes</h4><p>Captura el lote y sus fechas sólo cuando esta variante lo requiera.</p></div>
-              <span class="count">{{ lotes().length }}</span>
-            </header>
-            <div class="form-grid">
-              <mat-form-field appearance="outline">
-                <mat-label>Código de lote</mat-label>
-                <input matInput [(ngModel)]="nuevoLoteCodigo" name="nuevoLoteCodigo" maxlength="100" />
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>Fabricación</mat-label>
-                <input matInput type="date" [(ngModel)]="nuevoLoteFabricacion" name="nuevoLoteFabricacion" />
-              </mat-form-field>
-              <mat-form-field appearance="outline" *ngIf="controlaFechaVencimiento">
-                <mat-label>Vencimiento</mat-label>
-                <input matInput type="date" [(ngModel)]="nuevoLoteVencimiento" name="nuevoLoteVencimiento" />
-              </mat-form-field>
-            </div>
-            <button mat-stroked-button type="button" (click)="crearLote()" [disabled]="savingLote() || !nuevoLoteCodigo.trim()">
-              <mat-spinner *ngIf="savingLote()" diameter="18"></mat-spinner>
-              <mat-icon *ngIf="!savingLote()">add</mat-icon> Registrar lote
-            </button>
-
-            <div class="empty" *ngIf="lotes().length === 0">Aún no hay lotes registrados para esta variante.</div>
-            <div class="records" *ngIf="lotes().length > 0">
-              <article class="record" *ngFor="let lote of lotes()">
-                <div>
-                  <strong>{{ lote.codigo }}</strong>
-                  <p>
-                    <span *ngIf="lote.fechaFabricacion">Fab. {{ lote.fechaFabricacion | date:'yyyy-MM-dd' }}</span>
-                    <span *ngIf="lote.fechaVencimiento"> · Vence {{ lote.fechaVencimiento | date:'yyyy-MM-dd' }}</span>
-                  </p>
+        @if (controlaLote || controlaNumeroSerie) {
+          <div class="trace-grid">
+            @if (controlaLote) {
+              <section class="subcard">
+                <header>
+                  <div><h4>Lotes</h4><p>Captura el lote y sus fechas sólo cuando esta variante lo requiera.</p></div>
+                  <span class="count">{{ lotes().length }}</span>
+                </header>
+                <div class="form-grid">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Código de lote</mat-label>
+                    <input matInput [(ngModel)]="nuevoLoteCodigo" name="nuevoLoteCodigo" maxlength="100" />
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Fabricación</mat-label>
+                    <input matInput type="date" [(ngModel)]="nuevoLoteFabricacion" name="nuevoLoteFabricacion" />
+                  </mat-form-field>
+                  @if (controlaFechaVencimiento) {
+                    <mat-form-field appearance="outline">
+                      <mat-label>Vencimiento</mat-label>
+                      <input matInput type="date" [(ngModel)]="nuevoLoteVencimiento" name="nuevoLoteVencimiento" />
+                    </mat-form-field>
+                  }
                 </div>
-                <span class="status" [class.off]="!lote.activo">{{ lote.activo ? 'Activo' : 'Inactivo' }}</span>
-              </article>
-            </div>
-          </section>
-
-          <section class="subcard" *ngIf="controlaNumeroSerie">
-            <header>
-              <div><h4>Series</h4><p>Una serie identifica una unidad individual; puede asociarse a un lote activo.</p></div>
-              <span class="count">{{ series().length }}</span>
-            </header>
-            <div class="form-grid">
-              <mat-form-field appearance="outline">
-                <mat-label>Número de serie</mat-label>
-                <input matInput [(ngModel)]="nuevaSerieNumero" name="nuevaSerieNumero" maxlength="160" />
-              </mat-form-field>
-              <mat-form-field appearance="outline" *ngIf="controlaLote">
-                <mat-label>Lote</mat-label>
-                <mat-select [(ngModel)]="nuevaSerieLoteId" name="nuevaSerieLoteId">
-                  <mat-option [value]="null">Sin lote</mat-option>
-                  <mat-option *ngFor="let lote of lotesActivos" [value]="lote.id">{{ lote.codigo }}</mat-option>
-                </mat-select>
-              </mat-form-field>
-            </div>
-            <button mat-stroked-button type="button" (click)="crearSerie()" [disabled]="savingSerie() || !nuevaSerieNumero.trim()">
-              <mat-spinner *ngIf="savingSerie()" diameter="18"></mat-spinner>
-              <mat-icon *ngIf="!savingSerie()">add</mat-icon> Registrar serie
-            </button>
-
-            <div class="empty" *ngIf="series().length === 0">Aún no hay números de serie registrados para esta variante.</div>
-            <div class="records" *ngIf="series().length > 0">
-              <article class="record" *ngFor="let serie of series()">
-                <div>
-                  <strong>{{ serie.numeroSerie }}</strong>
-                  <p>{{ loteCodigo(serie.loteInventarioId) }}</p>
-                </div>
-                <span class="status">Estado {{ serie.estado }}</span>
-              </article>
-            </div>
-          </section>
-        </div>
-
-        <div class="empty policy-empty" *ngIf="!controlaLote && !controlaNumeroSerie">
-          La variante no exige captura de lote ni serie. Activa una política sólo si el negocio necesita esa trazabilidad.
-        </div>
-      </ng-container>
-    </section>
-  `,
+                <button mat-stroked-button type="button" (click)="crearLote()" [disabled]="savingLote() || !nuevoLoteCodigo.trim()">
+                  @if (savingLote()) {
+                    <mat-spinner diameter="18"></mat-spinner>
+                  }
+                  @if (!savingLote()) {
+                    <mat-icon>add</mat-icon>
+                    } Registrar lote
+                  </button>
+                  @if (lotes().length === 0) {
+                    <div class="empty">Aún no hay lotes registrados para esta variante.</div>
+                  }
+                  @if (lotes().length > 0) {
+                    <div class="records">
+                      @for (lote of lotes(); track lote) {
+                        <article class="record">
+                          <div>
+                            <strong>{{ lote.codigo }}</strong>
+                            <p>
+                              @if (lote.fechaFabricacion) {
+                                <span>Fab. {{ lote.fechaFabricacion | date:'yyyy-MM-dd' }}</span>
+                              }
+                              @if (lote.fechaVencimiento) {
+                                <span> · Vence {{ lote.fechaVencimiento | date:'yyyy-MM-dd' }}</span>
+                              }
+                            </p>
+                          </div>
+                          <span class="status" [class.off]="!lote.activo">{{ lote.activo ? 'Activo' : 'Inactivo' }}</span>
+                        </article>
+                      }
+                    </div>
+                  }
+                </section>
+              }
+              @if (controlaNumeroSerie) {
+                <section class="subcard">
+                  <header>
+                    <div><h4>Series</h4><p>Una serie identifica una unidad individual; puede asociarse a un lote activo.</p></div>
+                    <span class="count">{{ series().length }}</span>
+                  </header>
+                  <div class="form-grid">
+                    <mat-form-field appearance="outline">
+                      <mat-label>Número de serie</mat-label>
+                      <input matInput [(ngModel)]="nuevaSerieNumero" name="nuevaSerieNumero" maxlength="160" />
+                    </mat-form-field>
+                    @if (controlaLote) {
+                      <mat-form-field appearance="outline">
+                        <mat-label>Lote</mat-label>
+                        <mat-select [(ngModel)]="nuevaSerieLoteId" name="nuevaSerieLoteId">
+                          <mat-option [value]="null">Sin lote</mat-option>
+                          @for (lote of lotesActivos; track lote) {
+                            <mat-option [value]="lote.id">{{ lote.codigo }}</mat-option>
+                          }
+                        </mat-select>
+                      </mat-form-field>
+                    }
+                  </div>
+                  <button mat-stroked-button type="button" (click)="crearSerie()" [disabled]="savingSerie() || !nuevaSerieNumero.trim()">
+                    @if (savingSerie()) {
+                      <mat-spinner diameter="18"></mat-spinner>
+                    }
+                    @if (!savingSerie()) {
+                      <mat-icon>add</mat-icon>
+                      } Registrar serie
+                    </button>
+                    @if (series().length === 0) {
+                      <div class="empty">Aún no hay números de serie registrados para esta variante.</div>
+                    }
+                    @if (series().length > 0) {
+                      <div class="records">
+                        @for (serie of series(); track serie) {
+                          <article class="record">
+                            <div>
+                              <strong>{{ serie.numeroSerie }}</strong>
+                              <p>{{ loteCodigo(serie.loteInventarioId) }}</p>
+                            </div>
+                            <span class="status">Estado {{ serie.estado }}</span>
+                          </article>
+                        }
+                      </div>
+                    }
+                  </section>
+                }
+              </div>
+            }
+            @if (!controlaLote && !controlaNumeroSerie) {
+              <div class="empty policy-empty">
+                La variante no exige captura de lote ni serie. Activa una política sólo si el negocio necesita esa trazabilidad.
+              </div>
+            }
+          }
+        </section>
+    `,
   styles: [`
     :host{display:block}.trace-card{border:1px solid rgba(127,127,127,.24);border-radius:16px;padding:20px;background:rgba(127,127,127,.025)}.trace-header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:18px}.eyebrow{margin:0 0 4px;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.62}h3,h4{margin:0}.subtitle,.subcard header p,.record p{margin:5px 0 0;opacity:.7}.feedback,.loading{display:flex;align-items:center;gap:9px;padding:12px 14px;border-radius:10px;margin:10px 0}.feedback.error{background:rgba(244,67,54,.08);border:1px solid rgba(244,67,54,.25)}.feedback.success{background:rgba(76,175,80,.08);border:1px solid rgba(76,175,80,.25)}.loading{justify-content:center;min-height:110px}.policy{border:0;padding:0;margin:0}.policy legend{font-weight:700;margin-bottom:10px}.checks{display:flex;flex-wrap:wrap;gap:8px 24px;margin-bottom:14px}.policy mat-form-field{width:min(330px,100%)}.policy-actions{display:flex;justify-content:flex-end}.trace-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:20px}.subcard{border:1px solid rgba(127,127,127,.2);border-radius:12px;padding:16px}.subcard>header{display:flex;justify-content:space-between;gap:12px;margin-bottom:14px}.count{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:30px;border-radius:999px;background:rgba(127,127,127,.12);font-weight:700}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.records{display:grid;gap:8px;margin-top:14px}.record{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 12px;border-radius:9px;background:rgba(127,127,127,.07)}.record p{font-size:12px}.status{font-size:12px;font-weight:700;white-space:nowrap}.status.off{opacity:.5}.empty{padding:14px;border-radius:9px;background:rgba(127,127,127,.06);opacity:.75;margin-top:14px}.policy-empty{margin-top:20px}@media(max-width:900px){.trace-grid{grid-template-columns:1fr}}@media(max-width:640px){.trace-card{padding:15px}.trace-header{flex-direction:column}.form-grid{grid-template-columns:1fr}.policy-actions button,.subcard>button{width:100%}}
   `]

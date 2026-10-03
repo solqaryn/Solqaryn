@@ -18,29 +18,57 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
     <section class="page" aria-labelledby="reserva-title">
       <header class="header">
         <div><button mat-button type="button" (click)="volver()"><mat-icon>arrow_back</mat-icon>Reservas</button><p class="eyebrow">Inventario empresarial</p><h1 id="reserva-title">{{ reserva?.numero || 'Reserva' }}</h1></div>
-        <div *ngIf="reserva" class="actions">
-          <button *ngIf="puedeEditar && reserva.estado === 'Borrador'" mat-stroked-button type="button" (click)="editar()"><mat-icon>edit</mat-icon>Editar</button>
-          <button *ngIf="puedeConfirmar && reserva.estado === 'Borrador'" mat-flat-button color="primary" type="button" [disabled]="procesando" (click)="activar()">Activar</button>
-          <button *ngIf="puedeConfirmar && reserva.estado === 'Activa'" mat-flat-button color="primary" type="button" [disabled]="procesando" (click)="consumir()">Consumir</button>
-          <button *ngIf="puedeAnular && reserva.estado === 'Activa'" mat-stroked-button type="button" [disabled]="procesando" (click)="liberar()">Liberar</button>
-          <button *ngIf="puedeCambiarEstado && reserva.estado === 'Activa'" mat-stroked-button type="button" [disabled]="procesando || !reservaPuedeExpirar" [attr.aria-disabled]="procesando || !reservaPuedeExpirar" [title]="reservaPuedeExpirar ? 'Marcar reserva como expirada' : 'Disponible cuando alcance su fecha de expiración'" (click)="expirar()">Expirar</button>
-          <button *ngIf="puedeAnular && (reserva.estado === 'Borrador' || reserva.estado === 'Activa')" mat-stroked-button color="warn" type="button" [disabled]="procesando" (click)="cancelar()">Cancelar</button>
-        </div>
+        @if (reserva) {
+          <div class="actions">
+            @if (puedeEditar && reserva.estado === 'Borrador') {
+              <button mat-stroked-button type="button" (click)="editar()"><mat-icon>edit</mat-icon>Editar</button>
+            }
+            @if (puedeConfirmar && reserva.estado === 'Borrador') {
+              <button mat-flat-button color="primary" type="button" [disabled]="procesando" (click)="activar()">Activar</button>
+            }
+            @if (puedeConfirmar && reserva.estado === 'Activa') {
+              <button mat-flat-button color="primary" type="button" [disabled]="procesando" (click)="consumir()">Consumir</button>
+            }
+            @if (puedeAnular && reserva.estado === 'Activa') {
+              <button mat-stroked-button type="button" [disabled]="procesando" (click)="liberar()">Liberar</button>
+            }
+            @if (puedeCambiarEstado && reserva.estado === 'Activa') {
+              <button mat-stroked-button type="button" [disabled]="procesando || !reservaPuedeExpirar" [attr.aria-disabled]="procesando || !reservaPuedeExpirar" [title]="reservaPuedeExpirar ? 'Marcar reserva como expirada' : 'Disponible cuando alcance su fecha de expiración'" (click)="expirar()">Expirar</button>
+            }
+            @if (puedeAnular && (reserva.estado === 'Borrador' || reserva.estado === 'Activa')) {
+              <button mat-stroked-button color="warn" type="button" [disabled]="procesando" (click)="cancelar()">Cancelar</button>
+            }
+          </div>
+        }
       </header>
-
-      <div *ngIf="loading" class="state"><mat-spinner diameter="36"></mat-spinner><span>Cargando reserva…</span></div>
-      <div *ngIf="!loading && error" class="state error" role="alert"><mat-icon>error_outline</mat-icon><span>{{ error }}</span><button mat-button type="button" (click)="cargar()">Reintentar</button></div>
-
-      <ng-container *ngIf="!loading && reserva as item">
+    
+      @if (loading) {
+        <div class="state"><mat-spinner diameter="36"></mat-spinner><span>Cargando reserva…</span></div>
+      }
+      @if (!loading && error) {
+        <div class="state error" role="alert"><mat-icon>error_outline</mat-icon><span>{{ error }}</span><button mat-button type="button" (click)="cargar()">Reintentar</button></div>
+      }
+    
+      @if (!loading && reserva; as item) {
         <section class="summary">
           <div><span>Estado</span><strong>{{ item.estado }}</strong></div><div><span>Venta</span><strong>{{ item.ventaId ? ('#' + item.ventaId) : 'Sin venta' }}</strong></div><div><span>Creada</span><strong>{{ item.fechaCreacion | date:'short' }}</strong></div><div><span>Expira</span><strong>{{ item.fechaExpiracion ? (item.fechaExpiracion | date:'short') : 'Sin expiración' }}</strong></div>
         </section>
-        <div *ngIf="mensaje" class="message" role="status">{{ mensaje }}</div>
-        <div class="table-wrap"><table><thead><tr><th>SKU / variante</th><th>Almacén</th><th>Ubicación</th><th>Reservado</th><th>Consumido</th><th>Pendiente</th></tr></thead><tbody><tr *ngFor="let detalle of item.detalles"><td><strong>{{ detalle.productoSku || ('Variante #' + detalle.productoVarianteId) }}</strong><small>{{ descripcionProducto(detalle) }}</small></td><td>#{{ detalle.almacenId }}</td><td>{{ detalle.ubicacionAlmacenId ? ('#' + detalle.ubicacionAlmacenId) : 'Sin ubicación' }}</td><td>{{ detalle.cantidadReservada }}</td><td>{{ detalle.cantidadConsumida }}</td><td>{{ detalle.cantidadReservada - detalle.cantidadConsumida }}</td></tr></tbody></table></div>
-        <section *ngIf="item.motivoLiberacion || item.motivoCancelacion" class="audit"><strong>Trazabilidad</strong><p *ngIf="item.motivoLiberacion">Liberación: {{ item.motivoLiberacion }}</p><p *ngIf="item.motivoCancelacion">Cancelación: {{ item.motivoCancelacion }}</p></section>
-      </ng-container>
+        @if (mensaje) {
+          <div class="message" role="status">{{ mensaje }}</div>
+        }
+        <div class="table-wrap"><table><thead><tr><th>SKU / variante</th><th>Almacén</th><th>Ubicación</th><th>Reservado</th><th>Consumido</th><th>Pendiente</th></tr></thead><tbody>@for (detalle of item.detalles; track detalle) {
+        <tr><td><strong>{{ detalle.productoSku || ('Variante #' + detalle.productoVarianteId) }}</strong><small>{{ descripcionProducto(detalle) }}</small></td><td>#{{ detalle.almacenId }}</td><td>{{ detalle.ubicacionAlmacenId ? ('#' + detalle.ubicacionAlmacenId) : 'Sin ubicación' }}</td><td>{{ detalle.cantidadReservada }}</td><td>{{ detalle.cantidadConsumida }}</td><td>{{ detalle.cantidadReservada - detalle.cantidadConsumida }}</td></tr>
+      }</tbody></table></div>
+      @if (item.motivoLiberacion || item.motivoCancelacion) {
+        <section class="audit"><strong>Trazabilidad</strong>@if (item.motivoLiberacion) {
+        <p>Liberación: {{ item.motivoLiberacion }}</p>
+        }@if (item.motivoCancelacion) {
+        <p>Cancelación: {{ item.motivoCancelacion }}</p>
+      }</section>
+    }
+    }
     </section>
-  `,
+    `,
   styles: [`.page{padding:24px;display:grid;gap:20px}.header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.header h1{margin:4px 0}.eyebrow{margin:12px 0 0;text-transform:uppercase;letter-spacing:.08em;font-size:.72rem;font-weight:700;color:var(--primary,#3f51b5)}.actions{display:flex;flex-wrap:wrap;gap:8px}.actions mat-icon{margin-right:5px}.state{min-height:180px;display:flex;align-items:center;justify-content:center;gap:12px;border:1px dashed #d0d5dd;border-radius:12px}.state.error{color:#b42318}.summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.summary div,.audit{padding:14px;border:1px solid #e4e7ec;border-radius:12px;background:#fff}.summary span{display:block;color:#667085;font-size:.78rem;margin-bottom:4px}.message{padding:12px;border-radius:10px;background:#ecfdf3;color:#027a48}.table-wrap{overflow:auto;border:1px solid #e4e7ec;border-radius:12px}table{width:100%;border-collapse:collapse;min-width:780px}th,td{padding:14px 16px;text-align:left;border-bottom:1px solid #eaecf0}th{font-size:.78rem;text-transform:uppercase;color:#667085;background:#f9fafb}td small{display:block;color:#667085;margin-top:3px}.audit p{margin:6px 0 0;color:#475467}@media(max-width:800px){.page{padding:16px}.header{flex-direction:column}.summary{grid-template-columns:1fr 1fr}}@media(max-width:520px){.summary{grid-template-columns:1fr}}`]
 })
 export class ReservaInventarioDetailComponent implements OnInit {

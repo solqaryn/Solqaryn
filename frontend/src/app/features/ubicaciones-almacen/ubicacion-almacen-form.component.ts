@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -31,7 +31,6 @@ interface PadreOpcion {
   selector: 'app-ubicacion-almacen-form',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     RouterLink,
     MatButtonModule,
@@ -40,7 +39,7 @@ interface PadreOpcion {
     MatInputModule,
     MatProgressSpinnerModule,
     MatSelectModule
-  ],
+],
   templateUrl: './ubicacion-almacen-form.component.html',
   styleUrl: './ubicacion-almacen-form.component.scss'
 })

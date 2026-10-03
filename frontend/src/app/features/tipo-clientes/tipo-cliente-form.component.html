@@ -7,72 +7,71 @@
     </a>
   </div>
 
-  <div class="form-container" *ngIf="!saving() else loadingTemplate">
-    <form [formGroup]="form" (ngSubmit)="submit()">
-      <div *ngIf="isEdit() && esSistema()" class="system-badge">
-        <mat-icon>lock</mat-icon>
-        <span>Esta clasificación pertenece al sistema. Código: <strong>{{ codigo() }}</strong></span>
-      </div>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Nombre *</mat-label>
-        <input matInput formControlName="nombre" required placeholder="Ej. VIP, Mayorista, Frecuente">
-        <mat-error>El nombre es obligatorio y no debe exceder 100 caracteres</mat-error>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Descripción</mat-label>
-        <textarea matInput formControlName="descripcion" rows="3" placeholder="Descripción de las condiciones o beneficios..."></textarea>
-        <mat-error>La descripción no debe exceder 500 caracteres</mat-error>
-      </mat-form-field>
-
-      <div class="color-picker-container">
-        <div class="color-preview" [style.background-color]="form.get('colorHex')?.value"></div>
-        <mat-form-field appearance="outline" class="hex-input">
-          <mat-label>Color Hexadecimal *</mat-label>
-          <input matInput formControlName="colorHex" required placeholder="#HEXADECIMAL">
-          <mat-error>Código de color inválido (debe ser #RRGGBB)</mat-error>
+  @if (!saving()) {
+    <div class="form-container">
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        @if (isEdit() && esSistema()) {
+          <div class="system-badge">
+            <mat-icon>lock</mat-icon>
+            <span>Esta clasificación pertenece al sistema. Código: <strong>{{ codigo() }}</strong></span>
+          </div>
+        }
+        <mat-form-field appearance="outline">
+          <mat-label>Nombre *</mat-label>
+          <input matInput formControlName="nombre" required placeholder="Ej. VIP, Mayorista, Frecuente">
+          <mat-error>El nombre es obligatorio y no debe exceder 100 caracteres</mat-error>
         </mat-form-field>
-        <input type="color" class="native-color-picker" [value]="form.get('colorHex')?.value" (input)="form.get('colorHex')?.setValue($any($event.target).value)">
-      </div>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Orden de Visualización *</mat-label>
-        <input matInput type="number" formControlName="orden" required min="0">
-        <mat-error>El orden debe ser un número entero mayor o igual a 0</mat-error>
-      </mat-form-field>
-
-      <div class="toggle-group">
-        <mat-slide-toggle formControlName="esPredeterminado">
-          Clasificación por Defecto
-        </mat-slide-toggle>
-        <div class="toggle-desc">Si se marca, los nuevos clientes recibirán esta clasificación de manera automática si no se les asigna ninguna otra.</div>
-      </div>
-
-      <div class="toggle-group" *ngIf="codigo() !== 'SIN_CLASIFICAR'">
-        <mat-slide-toggle formControlName="activo">
-          Activo
-        </mat-slide-toggle>
-        <div class="toggle-desc">Los tipos inactivos no pueden asignarse a nuevos clientes.</div>
-      </div>
-
-      <div class="error-message" *ngIf="errorMessage()">
-        {{ errorMessage() }}
-      </div>
-
-      <div class="actions">
-        <button type="submit" mat-raised-button color="primary" [disabled]="form.invalid">
-          {{ isEdit() ? 'Actualizar' : 'Crear' }}
-        </button>
-        <a routerLink="/tipo-clientes" mat-button>Cancelar</a>
-      </div>
-    </form>
-  </div>
-
-  <ng-template #loadingTemplate>
+        <mat-form-field appearance="outline">
+          <mat-label>Descripción</mat-label>
+          <textarea matInput formControlName="descripcion" rows="3" placeholder="Descripción de las condiciones o beneficios..."></textarea>
+          <mat-error>La descripción no debe exceder 500 caracteres</mat-error>
+        </mat-form-field>
+        <div class="color-picker-container">
+          <div class="color-preview" [style.background-color]="form.get('colorHex')?.value"></div>
+          <mat-form-field appearance="outline" class="hex-input">
+            <mat-label>Color Hexadecimal *</mat-label>
+            <input matInput formControlName="colorHex" required placeholder="#HEXADECIMAL">
+            <mat-error>Código de color inválido (debe ser #RRGGBB)</mat-error>
+          </mat-form-field>
+          <input type="color" class="native-color-picker" [value]="form.get('colorHex')?.value" (input)="form.get('colorHex')?.setValue($any($event.target).value)">
+        </div>
+        <mat-form-field appearance="outline">
+          <mat-label>Orden de Visualización *</mat-label>
+          <input matInput type="number" formControlName="orden" required min="0">
+          <mat-error>El orden debe ser un número entero mayor o igual a 0</mat-error>
+        </mat-form-field>
+        <div class="toggle-group">
+          <mat-slide-toggle formControlName="esPredeterminado">
+            Clasificación por Defecto
+          </mat-slide-toggle>
+          <div class="toggle-desc">Si se marca, los nuevos clientes recibirán esta clasificación de manera automática si no se les asigna ninguna otra.</div>
+        </div>
+        @if (codigo() !== 'SIN_CLASIFICAR') {
+          <div class="toggle-group">
+            <mat-slide-toggle formControlName="activo">
+              Activo
+            </mat-slide-toggle>
+            <div class="toggle-desc">Los tipos inactivos no pueden asignarse a nuevos clientes.</div>
+          </div>
+        }
+        @if (errorMessage()) {
+          <div class="error-message">
+            {{ errorMessage() }}
+          </div>
+        }
+        <div class="actions">
+          <button type="submit" mat-raised-button color="primary" [disabled]="form.invalid">
+            {{ isEdit() ? 'Actualizar' : 'Crear' }}
+          </button>
+          <a routerLink="/tipo-clientes" mat-button>Cancelar</a>
+        </div>
+      </form>
+    </div>
+  } @else {
     <div class="loading-container">
       <mat-spinner></mat-spinner>
       <p>Guardando...</p>
     </div>
-  </ng-template>
+  }
+
 </div>

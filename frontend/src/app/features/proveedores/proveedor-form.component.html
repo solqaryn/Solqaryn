@@ -7,51 +7,48 @@
     </a>
   </div>
 
-  <div class="form-container" *ngIf="!saving() else loadingTemplate">
-    <form [formGroup]="form" (ngSubmit)="submit()">
-      <mat-form-field appearance="outline">
-        <mat-label>Nombre *</mat-label>
-        <input matInput formControlName="nombre" required>
-        <mat-error>El nombre es obligatorio</mat-error>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Teléfono</mat-label>
-        <input matInput formControlName="telefono">
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Documento</mat-label>
-        <input matInput formControlName="documento">
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Correo</mat-label>
-        <input matInput formControlName="correo" type="email">
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Dirección</mat-label>
-        <input matInput formControlName="direccion">
-      </mat-form-field>
-
-      <div class="error-message" *ngIf="errorMessage()">
-        {{ errorMessage() }}
-      </div>
-
-      <div class="actions">
-        <button type="submit" mat-raised-button color="primary" [disabled]="form.invalid">
-          {{ isEdit() ? 'Actualizar' : 'Crear' }}
-        </button>
-        <a routerLink="/proveedores" mat-button>Cancelar</a>
-      </div>
-    </form>
-  </div>
-
-  <ng-template #loadingTemplate>
+  @if (!saving()) {
+    <div class="form-container">
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <mat-form-field appearance="outline">
+          <mat-label>Nombre *</mat-label>
+          <input matInput formControlName="nombre" required>
+          <mat-error>El nombre es obligatorio</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Teléfono</mat-label>
+          <input matInput formControlName="telefono">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Documento</mat-label>
+          <input matInput formControlName="documento">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Correo</mat-label>
+          <input matInput formControlName="correo" type="email">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Dirección</mat-label>
+          <input matInput formControlName="direccion">
+        </mat-form-field>
+        @if (errorMessage()) {
+          <div class="error-message">
+            {{ errorMessage() }}
+          </div>
+        }
+        <div class="actions">
+          <button type="submit" mat-raised-button color="primary" [disabled]="form.invalid">
+            {{ isEdit() ? 'Actualizar' : 'Crear' }}
+          </button>
+          <a routerLink="/proveedores" mat-button>Cancelar</a>
+        </div>
+      </form>
+    </div>
+  } @else {
     <div class="loading-container">
       <mat-spinner></mat-spinner>
       <p>Guardando...</p>
     </div>
-  </ng-template>
+  }
+
 </div>

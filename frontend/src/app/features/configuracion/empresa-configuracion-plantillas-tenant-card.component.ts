@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, OnInit, effect, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -20,14 +20,13 @@ import {
   selector: 'app-empresa-configuracion-plantillas-tenant-card',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     MatButtonModule,
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
     MatProgressSpinnerModule
-  ],
+],
   template: `
     <section class="card templates-card" aria-labelledby="tenant-mail-templates-title">
       <div class="header-row">

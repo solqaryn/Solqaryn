@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { HttpClient } from '@angular/common/http';
 import { Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -32,7 +32,6 @@ interface EmpresaOpcion {
   selector: 'app-sucursales-list',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     RouterLink,
     MatButtonModule,
@@ -43,7 +42,7 @@ interface EmpresaOpcion {
     MatProgressSpinnerModule,
     MatSelectModule,
     MatSlideToggleModule
-  ],
+],
   templateUrl: './sucursales-list.component.html',
   styleUrl: './sucursales-list.component.scss'
 })

@@ -1,4 +1,4 @@
-import { CommonModule, DOCUMENT } from '@angular/common';
+import { DOCUMENT } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import {
   ChangeDetectionStrategy,
@@ -56,7 +56,7 @@ const RETORNO_CATALOGO_STORAGE = 'storefront:retorno-catalogo:v1';
 @Component({
   selector: 'app-storefront-producto',
   standalone: true,
-  imports: [CommonModule, StorefrontHeaderComponent, IconoTiendaComponent, IlustracionTiendaComponent],
+  imports: [StorefrontHeaderComponent, IconoTiendaComponent, IlustracionTiendaComponent],
   templateUrl: './storefront-producto.component.html',
   styleUrl: './storefront-producto.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, OnInit, inject } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
@@ -13,7 +13,7 @@ import { ReportesComprasTablaComponent } from './tabla/reportes-compras-tabla.co
 @Component({
   selector: 'app-reportes-compras',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ReporteComprasFiltrosComponent, EstadoSelectorComponent, PurchaseReportDisclosureComponent, ReportesComprasTablaComponent],
+  imports: [ReactiveFormsModule, ReporteComprasFiltrosComponent, EstadoSelectorComponent, PurchaseReportDisclosureComponent, ReportesComprasTablaComponent],
   templateUrl: './reportes-compras.component.html',
   styleUrls: ['./reportes-compras.component.scss'],
 })

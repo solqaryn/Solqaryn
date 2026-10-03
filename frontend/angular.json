@@ -76,7 +76,8 @@
           "options": {
             "tsConfig": "tsconfig.spec.json",
             "runner": "vitest",
-            "buildTarget": "solqaryn-frontend:build:development"
+            "buildTarget": "solqaryn-frontend:build:development",
+            "runnerConfig": "vitest-base.config.ts"
           }
         }
       }

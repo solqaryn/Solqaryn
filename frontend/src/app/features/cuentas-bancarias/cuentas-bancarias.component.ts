@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, effect, inject, signal } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -56,7 +56,6 @@ interface RegistrarMatchesDto {
   selector: 'app-cuentas-bancarias',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     ReactiveFormsModule,
     MatFormFieldModule,
@@ -65,7 +64,7 @@ interface RegistrarMatchesDto {
     MatButtonModule,
     MatTableModule,
     MatProgressSpinnerModule
-  ],
+],
   templateUrl: './cuentas-bancarias.component.html',
   styleUrls: ['./cuentas-bancarias.component.scss']
 })

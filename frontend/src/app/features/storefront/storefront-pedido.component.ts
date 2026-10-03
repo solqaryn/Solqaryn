@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -13,7 +13,7 @@ import { IconoTiendaComponent } from './storefront.visual';
 @Component({
   selector: 'app-storefront-pedido',
   standalone: true,
-  imports: [CommonModule, StorefrontHeaderComponent, IconoTiendaComponent],
+  imports: [StorefrontHeaderComponent, IconoTiendaComponent],
   templateUrl: './storefront-pedido.component.html',
   styleUrl: './storefront-pedido.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

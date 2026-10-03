@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ReactiveFormsModule, FormArray, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
@@ -32,10 +32,18 @@ const MAX_IMAGENES = 5;
   selector: 'app-producto-form',
   standalone: true,
   imports: [
-    CommonModule, ReactiveFormsModule, RouterLink, MatFormFieldModule,
-    MatInputModule, MatSelectModule, MatButtonModule, MatCheckboxModule, MatIconModule,
-    MatProgressSpinnerModule, ProductoImagenComponent, ProductoCombinationGeneratorComponent
-  ],
+    ReactiveFormsModule,
+    RouterLink,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatButtonModule,
+    MatCheckboxModule,
+    MatIconModule,
+    MatProgressSpinnerModule,
+    ProductoImagenComponent,
+    ProductoCombinationGeneratorComponent
+],
   templateUrl: './producto-form.component.html',
   styleUrls: ['./producto-form.component.scss', './producto-form-variants.component.scss']
 })

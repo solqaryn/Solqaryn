@@ -1,4 +1,4 @@
-import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -13,7 +13,7 @@ const PANEL_STYLES = `
 @Component({
   selector: 'app-notas-credito-cliente-home',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink],
   template: `
     <section class="page">
       <div class="hero">
@@ -52,7 +52,7 @@ export class NotasCreditoClienteHomeComponent {
 @Component({
   selector: 'app-nota-credito-cliente-detail',
   standalone: true,
-  imports: [CommonModule, DatePipe, DecimalPipe, RouterLink],
+  imports: [DatePipe, DecimalPipe, RouterLink],
   template: `
     <section class="page">
       <div class="hero">
@@ -96,7 +96,7 @@ export class NotaCreditoClienteDetailComponent implements OnInit {
 @Component({
   selector: 'app-nota-credito-cliente-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink],
   template: `
     <section class="page">
       <div class="hero">

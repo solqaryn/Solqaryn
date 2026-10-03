@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -16,37 +16,55 @@ import { ReservaInventarioService } from '../../services/reserva-inventario.serv
 @Component({
   selector: 'app-reserva-inventario-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressSpinnerModule, MatSelectModule],
+  imports: [ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressSpinnerModule, MatSelectModule],
   template: `
     <section class="page" aria-labelledby="reserva-form-title">
       <header><button mat-button type="button" (click)="volver()"><mat-icon>arrow_back</mat-icon>Reservas</button><p class="eyebrow">Inventario empresarial</p><h1 id="reserva-form-title">{{ editando ? 'Editar reserva' : 'Nueva reserva' }}</h1><p>Selecciona existencias físicas reales y cantidades que quedarán reservadas al activar el documento.</p></header>
-      <div *ngIf="loading" class="state"><mat-spinner diameter="36"></mat-spinner><span>Cargando…</span></div>
-      <div *ngIf="error" class="error" role="alert">{{ error }}</div>
-      <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="guardar()">
-        <section class="card general">
-          <mat-form-field appearance="outline"><mat-label>Venta (opcional)</mat-label><input matInput type="number" min="1" formControlName="ventaId" /></mat-form-field>
-          <mat-form-field appearance="outline"><mat-label>Fecha de expiración</mat-label><input matInput type="datetime-local" [min]="fechaExpiracionMinima" formControlName="fechaExpiracion" /><mat-hint>Debe ser futura.</mat-hint></mat-form-field>
+      @if (loading) {
+        <div class="state"><mat-spinner diameter="36"></mat-spinner><span>Cargando…</span></div>
+      }
+      @if (error) {
+        <div class="error" role="alert">{{ error }}</div>
+      }
+      @if (!loading) {
+        <form [formGroup]="form" (ngSubmit)="guardar()">
+          <section class="card general">
+            <mat-form-field appearance="outline"><mat-label>Venta (opcional)</mat-label><input matInput type="number" min="1" formControlName="ventaId" /></mat-form-field>
+            <mat-form-field appearance="outline"><mat-label>Fecha de expiración</mat-label><input matInput type="datetime-local" [min]="fechaExpiracionMinima" formControlName="fechaExpiracion" /><mat-hint>Debe ser futura.</mat-hint></mat-form-field>
+          </section>
+          <section class="card" formArrayName="detalles">
+            <div class="section-title"><div><h2>Detalle físico</h2><p>La existencia seleccionada define variante, almacén y ubicación sin pedir IDs manuales.</p></div><button mat-stroked-button type="button" (click)="agregarDetalle()"><mat-icon>add</mat-icon>Agregar línea</button></div>
+            @for (grupo of detalles.controls; track grupo; let i = $index) {
+              <div class="line" [formGroupName]="i">
+                <mat-form-field appearance="outline" class="physical-select">
+                  <mat-label>Existencia física</mat-label>
+                  <mat-select formControlName="existenciaVarianteId" required (selectionChange)="onExistenciaChange(i)">
+                    @for (existencia of existencias; track existencia) {
+                      <mat-option [value]="existencia.id" [disabled]="existencia.stockDisponible <= 0">
+                        {{ etiquetaExistencia(existencia) }}
+                      </mat-option>
+                    }
+                  </mat-select>
+                  @if (!existencias.length) {
+                    <mat-hint>No hay existencias físicas disponibles.</mat-hint>
+                  }
+                </mat-form-field>
+                <mat-form-field appearance="outline"><mat-label>Cantidad</mat-label><input matInput type="number" min="1" formControlName="cantidad" required />@if (existenciaSeleccionada(i); as existencia) {
+                <mat-hint>Disponible: {{ existencia.stockDisponible }}</mat-hint>
+              }</mat-form-field>
+              <button mat-icon-button color="warn" type="button" aria-label="Quitar línea" [disabled]="detalles.length === 1" (click)="quitarDetalle(i)"><mat-icon>delete_outline</mat-icon></button>
+            </div>
+          }
         </section>
-        <section class="card" formArrayName="detalles">
-          <div class="section-title"><div><h2>Detalle físico</h2><p>La existencia seleccionada define variante, almacén y ubicación sin pedir IDs manuales.</p></div><button mat-stroked-button type="button" (click)="agregarDetalle()"><mat-icon>add</mat-icon>Agregar línea</button></div>
-          <div *ngFor="let grupo of detalles.controls; let i = index" class="line" [formGroupName]="i">
-            <mat-form-field appearance="outline" class="physical-select">
-              <mat-label>Existencia física</mat-label>
-              <mat-select formControlName="existenciaVarianteId" required (selectionChange)="onExistenciaChange(i)">
-                <mat-option *ngFor="let existencia of existencias" [value]="existencia.id" [disabled]="existencia.stockDisponible <= 0">
-                  {{ etiquetaExistencia(existencia) }}
-                </mat-option>
-              </mat-select>
-              <mat-hint *ngIf="!existencias.length">No hay existencias físicas disponibles.</mat-hint>
-            </mat-form-field>
-            <mat-form-field appearance="outline"><mat-label>Cantidad</mat-label><input matInput type="number" min="1" formControlName="cantidad" required /><mat-hint *ngIf="existenciaSeleccionada(i) as existencia">Disponible: {{ existencia.stockDisponible }}</mat-hint></mat-form-field>
-            <button mat-icon-button color="warn" type="button" aria-label="Quitar línea" [disabled]="detalles.length === 1" (click)="quitarDetalle(i)"><mat-icon>delete_outline</mat-icon></button>
-          </div>
-        </section>
-        <footer><button mat-button type="button" (click)="volver()">Cancelar</button><button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || guardando || !hayExistenciasReservables"><mat-spinner *ngIf="guardando" diameter="20"></mat-spinner><span *ngIf="!guardando">Guardar reserva</span></button></footer>
-      </form>
+        <footer><button mat-button type="button" (click)="volver()">Cancelar</button><button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || guardando || !hayExistenciasReservables">@if (guardando) {
+        <mat-spinner diameter="20"></mat-spinner>
+        }@if (!guardando) {
+        <span>Guardar reserva</span>
+      }</button></footer>
+    </form>
+    }
     </section>
-  `,
+    `,
   styles: [`.page{padding:24px;display:grid;gap:18px;max-width:1120px;margin:0 auto}.eyebrow{margin:12px 0 0;text-transform:uppercase;letter-spacing:.08em;font-size:.72rem;font-weight:700;color:var(--primary,#3f51b5)}h1{margin:4px 0}header p{color:#667085}.state{min-height:160px;display:flex;align-items:center;justify-content:center;gap:12px}.error{padding:12px;border-radius:10px;background:#fef3f2;color:#b42318}.card{border:1px solid #e4e7ec;border-radius:12px;padding:18px;background:#fff;display:grid;gap:14px}.general{grid-template-columns:1fr 1fr}.section-title{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.section-title h2{margin:0;font-size:1.1rem}.section-title p{margin:4px 0 0;color:#667085}.line{display:grid;grid-template-columns:minmax(0,3fr) minmax(150px,1fr) auto;gap:10px;align-items:start;border-top:1px solid #eaecf0;padding-top:14px}.physical-select{min-width:0}footer{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}footer button mat-spinner{display:inline-block}@media(max-width:850px){.page{padding:16px}.general,.line{grid-template-columns:1fr 1fr}.line>button{justify-self:start}}@media(max-width:520px){.general,.line{grid-template-columns:1fr}.section-title{flex-direction:column}}`]
 })
 export class ReservaInventarioFormComponent implements OnInit {

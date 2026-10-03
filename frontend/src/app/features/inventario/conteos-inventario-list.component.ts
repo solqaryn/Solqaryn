@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -24,7 +24,7 @@ import { ConteoInventarioService } from '../../services/conteo-inventario.servic
 @Component({
   selector: 'app-conteos-inventario-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatPaginatorModule, MatProgressSpinnerModule, MatSelectModule],
+  imports: [FormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatPaginatorModule, MatProgressSpinnerModule, MatSelectModule],
   template: `
     <section class="page" aria-labelledby="conteos-title">
       <header class="header">
@@ -33,44 +33,72 @@ import { ConteoInventarioService } from '../../services/conteo-inventario.servic
           <h1 id="conteos-title">Conteos físicos</h1>
           <p>Gestiona conteos generales, cíclicos, por ubicación, categoría y ciegos con trazabilidad de diferencias.</p>
         </div>
-        <button *ngIf="puedeCrear" mat-flat-button color="primary" type="button" (click)="nuevo()">
-          <mat-icon>fact_check</mat-icon>Nuevo conteo
-        </button>
+        @if (puedeCrear) {
+          <button mat-flat-button color="primary" type="button" (click)="nuevo()">
+            <mat-icon>fact_check</mat-icon>Nuevo conteo
+          </button>
+        }
       </header>
-
+    
       <form class="filters" (ngSubmit)="aplicarFiltros()">
         <mat-form-field appearance="outline"><mat-label>Buscar</mat-label><input matInput name="search" [(ngModel)]="search" placeholder="Número, almacén..." /></mat-form-field>
-        <mat-form-field appearance="outline"><mat-label>Estado</mat-label><mat-select name="estado" [(ngModel)]="estado"><mat-option [value]="null">Todos</mat-option><mat-option *ngFor="let item of estados" [value]="item.value">{{ item.label }}</mat-option></mat-select></mat-form-field>
-        <mat-form-field appearance="outline"><mat-label>Tipo</mat-label><mat-select name="tipo" [(ngModel)]="tipo"><mat-option [value]="null">Todos</mat-option><mat-option *ngFor="let item of tipos" [value]="item.value">{{ item.label }}</mat-option></mat-select></mat-form-field>
-        <mat-form-field appearance="outline"><mat-label>Almacén</mat-label><mat-select name="almacen" [(ngModel)]="almacenId"><mat-option [value]="null">Todos</mat-option><mat-option *ngFor="let almacen of almacenes" [value]="almacen.id">{{ almacen.codigo }} · {{ almacen.nombre }}</mat-option></mat-select></mat-form-field>
-        <div class="filter-actions"><button mat-flat-button color="primary" type="submit">Filtrar</button><button mat-button type="button" (click)="limpiar()">Limpiar</button></div>
-      </form>
-
-      <div *ngIf="catalogoError" class="catalog-warning" role="status"><mat-icon>info</mat-icon><span>{{ catalogoError }}</span><button mat-button type="button" (click)="cargarAlmacenes()">Reintentar catálogo</button></div>
-      <div *ngIf="loading" class="state" aria-live="polite"><mat-spinner diameter="36"></mat-spinner><span>Cargando conteos…</span></div>
-      <div *ngIf="!loading && error" class="state error" role="alert"><mat-icon>error_outline</mat-icon><span>{{ error }}</span><button mat-button type="button" (click)="cargar()">Reintentar</button></div>
-      <div *ngIf="!loading && !error && items.length === 0" class="state empty"><mat-icon>warehouse</mat-icon><strong>No hay conteos para los filtros seleccionados.</strong></div>
-
-      <div *ngIf="!loading && !error && items.length" class="table-wrap">
+        <mat-form-field appearance="outline"><mat-label>Estado</mat-label><mat-select name="estado" [(ngModel)]="estado"><mat-option [value]="null">Todos</mat-option>@for (item of estados; track item) {
+        <mat-option [value]="item.value">{{ item.label }}</mat-option>
+      }</mat-select></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Tipo</mat-label><mat-select name="tipo" [(ngModel)]="tipo"><mat-option [value]="null">Todos</mat-option>@for (item of tipos; track item) {
+      <mat-option [value]="item.value">{{ item.label }}</mat-option>
+    }</mat-select></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Almacén</mat-label><mat-select name="almacen" [(ngModel)]="almacenId"><mat-option [value]="null">Todos</mat-option>@for (almacen of almacenes; track almacen) {
+    <mat-option [value]="almacen.id">{{ almacen.codigo }} · {{ almacen.nombre }}</mat-option>
+    }</mat-select></mat-form-field>
+    <div class="filter-actions"><button mat-flat-button color="primary" type="submit">Filtrar</button><button mat-button type="button" (click)="limpiar()">Limpiar</button></div>
+    </form>
+    
+    @if (catalogoError) {
+      <div class="catalog-warning" role="status"><mat-icon>info</mat-icon><span>{{ catalogoError }}</span><button mat-button type="button" (click)="cargarAlmacenes()">Reintentar catálogo</button></div>
+    }
+    @if (loading) {
+      <div class="state" aria-live="polite"><mat-spinner diameter="36"></mat-spinner><span>Cargando conteos…</span></div>
+    }
+    @if (!loading && error) {
+      <div class="state error" role="alert"><mat-icon>error_outline</mat-icon><span>{{ error }}</span><button mat-button type="button" (click)="cargar()">Reintentar</button></div>
+    }
+    @if (!loading && !error && items.length === 0) {
+      <div class="state empty"><mat-icon>warehouse</mat-icon><strong>No hay conteos para los filtros seleccionados.</strong></div>
+    }
+    
+    @if (!loading && !error && items.length) {
+      <div class="table-wrap">
         <table>
           <thead><tr><th>Número</th><th>Tipo</th><th>Estado</th><th>Almacén / ubicación</th><th>Captura</th><th>Diferencias</th><th>Acciones</th></tr></thead>
           <tbody>
-            <tr *ngFor="let item of items">
-              <td><strong>{{ item.numero }}</strong><small *ngIf="item.esCiego">Conteo ciego</small></td>
+            @for (item of items; track item) {
+              <tr>
+                <td><strong>{{ item.numero }}</strong>@if (item.esCiego) {
+                <small>Conteo ciego</small>
+              }</td>
               <td>{{ item.tipoNombre }}</td>
               <td><span class="badge" [attr.data-estado]="item.estadoNombre">{{ item.estadoNombre }}</span></td>
-              <td>{{ item.almacenNombre || ('#' + item.almacenId) }}<small *ngIf="item.ubicacionNombre">{{ item.ubicacionNombre }}</small></td>
+              <td>{{ item.almacenNombre || ('#' + item.almacenId) }}@if (item.ubicacionNombre) {
+                <small>{{ item.ubicacionNombre }}</small>
+              }</td>
               <td>{{ item.cantidadCapturadas }} / {{ item.cantidadLineas }}</td>
               <td><strong [class.diff]="item.cantidadConDiferencia > 0">{{ item.cantidadConDiferencia }}</strong><small>Neto: {{ item.diferenciaNeta }}</small></td>
-              <td class="actions"><button mat-icon-button type="button" aria-label="Ver conteo" (click)="ver(item.id)"><mat-icon>visibility</mat-icon></button><button *ngIf="puedeEditar && item.estado === EstadoConteoInventario.Borrador" mat-icon-button type="button" aria-label="Editar conteo" (click)="editar(item.id)"><mat-icon>edit</mat-icon></button></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <mat-paginator *ngIf="totalCount > 0" [length]="totalCount" [pageIndex]="page - 1" [pageSize]="pageSize" [pageSizeOptions]="[10,20,50,100]" (page)="cambiarPagina($event)"></mat-paginator>
+              <td class="actions"><button mat-icon-button type="button" aria-label="Ver conteo" (click)="ver(item.id)"><mat-icon>visibility</mat-icon></button>@if (puedeEditar && item.estado === EstadoConteoInventario.Borrador) {
+              <button mat-icon-button type="button" aria-label="Editar conteo" (click)="editar(item.id)"><mat-icon>edit</mat-icon></button>
+            }</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    </div>
+    }
+    
+    @if (totalCount > 0) {
+      <mat-paginator [length]="totalCount" [pageIndex]="page - 1" [pageSize]="pageSize" [pageSizeOptions]="[10,20,50,100]" (page)="cambiarPagina($event)"></mat-paginator>
+    }
     </section>
-  `,
+    `,
   styles: [`
     .page{padding:24px;display:grid;gap:20px}.header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.header h1{margin:0;font-size:1.75rem}.header p{margin:6px 0 0;color:var(--text-secondary,#667085)}.eyebrow{text-transform:uppercase;letter-spacing:.08em;font-size:.72rem;font-weight:700;color:var(--primary,#3f51b5)!important}.header button mat-icon{margin-right:6px}.filters{display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:12px;align-items:start}.filter-actions{display:flex;gap:6px;padding-top:4px}.catalog-warning{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;background:#fffaeb;color:#7a2e0e}.state{min-height:180px;display:flex;align-items:center;justify-content:center;gap:12px;border:1px dashed #d0d5dd;border-radius:12px;padding:24px}.state.error{color:#b42318}.state.empty{flex-direction:column;color:#667085}.table-wrap{overflow:auto;border:1px solid #e4e7ec;border-radius:12px}table{width:100%;border-collapse:collapse;min-width:900px}th,td{padding:14px 16px;text-align:left;border-bottom:1px solid #eaecf0;vertical-align:middle}th{font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;color:#667085;background:#f9fafb}td small{display:block;margin-top:3px;color:#667085}.badge{display:inline-flex;border-radius:999px;padding:4px 9px;background:#f2f4f7;font-size:.78rem;font-weight:600}.diff{color:#b54708}.actions{white-space:nowrap}@media(max-width:900px){.page{padding:16px}.header{flex-direction:column}.filters{grid-template-columns:1fr 1fr}.filter-actions{grid-column:1/-1}}@media(max-width:560px){.filters{grid-template-columns:1fr}}
   `]

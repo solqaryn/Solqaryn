@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, Input, OnInit, forwardRef, inject, signal } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -10,7 +10,7 @@ import { MetodoPagoService } from '../../services/metodo-pago.service';
 @Component({
   selector: 'app-metodo-pago-select',
   standalone: true,
-  imports: [CommonModule, MatFormFieldModule, MatSelectModule, MatProgressSpinnerModule],
+  imports: [MatFormFieldModule, MatSelectModule, MatProgressSpinnerModule],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,

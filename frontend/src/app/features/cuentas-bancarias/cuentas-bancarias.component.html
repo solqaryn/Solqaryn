@@ -1,55 +1,77 @@
 <div class="cuentas-bancarias-container">
-  <div *ngIf="errorMessage()" class="error-alert" role="alert" aria-live="assertive">
-    {{ errorMessage() }}
-  </div>
+  @if (errorMessage()) {
+    <div class="error-alert" role="alert" aria-live="assertive">
+      {{ errorMessage() }}
+    </div>
+  }
 
   <div class="header-section">
     <h1>Cuentas Bancarias</h1>
-    <button mat-raised-button color="primary" type="button" *ngIf="puedeCrear() && !cuentaEnEdicion()" (click)="mostrarFormulario.set(!mostrarFormulario())" [attr.aria-expanded]="mostrarFormulario()" aria-controls="formulario-cuenta">
-      {{ mostrarFormulario() ? 'Cancelar' : 'Nueva Cuenta' }}
-    </button>
-    <button mat-button type="button" *ngIf="cuentaEnEdicion()" (click)="mostrarFormulario.set(false)" [attr.aria-expanded]="mostrarFormulario()" aria-controls="formulario-cuenta">
-      Cancelar edición
-    </button>
+    @if (puedeCrear() && !cuentaEnEdicion()) {
+      <button mat-raised-button color="primary" type="button" (click)="mostrarFormulario.set(!mostrarFormulario())" [attr.aria-expanded]="mostrarFormulario()" aria-controls="formulario-cuenta">
+        {{ mostrarFormulario() ? 'Cancelar' : 'Nueva Cuenta' }}
+      </button>
+    }
+    @if (cuentaEnEdicion()) {
+      <button mat-button type="button" (click)="mostrarFormulario.set(false)" [attr.aria-expanded]="mostrarFormulario()" aria-controls="formulario-cuenta">
+        Cancelar edición
+      </button>
+    }
   </div>
 
-  <div *ngIf="mostrarFormulario()" class="form-section" id="formulario-cuenta" aria-live="polite">
-    <h2>{{ cuentaEnEdicion() ? 'Editar Cuenta' : 'Registrar Nueva Cuenta' }}</h2>
-    <form [formGroup]="formulario" (ngSubmit)="guardarCuenta()" [attr.aria-label]="cuentaEnEdicion() ? 'Formulario de edición de cuenta bancaria' : 'Formulario de nueva cuenta bancaria'">
-      <div class="form-grid">
-        <mat-form-field>
-          <mat-label>ID de Banco</mat-label>
-          <input matInput type="number" formControlName="bancoId" aria-label="ID de Banco" [readonly]="!!cuentaEnEdicion()" />
-          <mat-error *ngIf="formulario.controls.bancoId.hasError('required')">Requerido</mat-error>
-          <mat-error *ngIf="formulario.controls.bancoId.hasError('min')">Mínimo 1</mat-error>
-        </mat-form-field>
-        <mat-form-field>
-          <mat-label>Nombre</mat-label>
-          <input matInput formControlName="nombre" aria-label="Nombre de la cuenta" />
-          <mat-error *ngIf="formulario.controls.nombre.hasError('required')">Requerido</mat-error>
-        </mat-form-field>
-        <mat-form-field>
-          <mat-label>Número de Cuenta</mat-label>
-          <input matInput formControlName="numeroCuenta" aria-label="Número de la cuenta" [readonly]="!!cuentaEnEdicion()" />
-          <mat-error *ngIf="formulario.controls.numeroCuenta.hasError('required')">Requerido</mat-error>
-        </mat-form-field>
-        <mat-form-field>
-          <mat-label>Moneda</mat-label>
-          <input matInput formControlName="moneda" aria-label="Moneda" [readonly]="!!cuentaEnEdicion()" />
-          <mat-error *ngIf="formulario.controls.moneda.hasError('required')">Requerido</mat-error>
-        </mat-form-field>
-        <mat-form-field>
-          <mat-label>Saldo Inicial</mat-label>
-          <input matInput type="number" formControlName="saldoInicial" aria-label="Saldo Inicial" [readonly]="!!cuentaEnEdicion()" />
-          <mat-error *ngIf="formulario.controls.saldoInicial.hasError('required')">Requerido</mat-error>
-          <mat-error *ngIf="formulario.controls.saldoInicial.hasError('min')">Mínimo 0</mat-error>
-        </mat-form-field>
-      </div>
-      <button mat-raised-button color="primary" type="submit" [disabled]="formulario.invalid || submitting()">
-        {{ cuentaEnEdicion() ? 'Guardar cambios' : 'Guardar Cuenta' }}
-      </button>
-    </form>
-  </div>
+  @if (mostrarFormulario()) {
+    <div class="form-section" id="formulario-cuenta" aria-live="polite">
+      <h2>{{ cuentaEnEdicion() ? 'Editar Cuenta' : 'Registrar Nueva Cuenta' }}</h2>
+      <form [formGroup]="formulario" (ngSubmit)="guardarCuenta()" [attr.aria-label]="cuentaEnEdicion() ? 'Formulario de edición de cuenta bancaria' : 'Formulario de nueva cuenta bancaria'">
+        <div class="form-grid">
+          <mat-form-field>
+            <mat-label>ID de Banco</mat-label>
+            <input matInput type="number" formControlName="bancoId" aria-label="ID de Banco" [readonly]="!!cuentaEnEdicion()" />
+            @if (formulario.controls.bancoId.hasError('required')) {
+              <mat-error>Requerido</mat-error>
+            }
+            @if (formulario.controls.bancoId.hasError('min')) {
+              <mat-error>Mínimo 1</mat-error>
+            }
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Nombre</mat-label>
+            <input matInput formControlName="nombre" aria-label="Nombre de la cuenta" />
+            @if (formulario.controls.nombre.hasError('required')) {
+              <mat-error>Requerido</mat-error>
+            }
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Número de Cuenta</mat-label>
+            <input matInput formControlName="numeroCuenta" aria-label="Número de la cuenta" [readonly]="!!cuentaEnEdicion()" />
+            @if (formulario.controls.numeroCuenta.hasError('required')) {
+              <mat-error>Requerido</mat-error>
+            }
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Moneda</mat-label>
+            <input matInput formControlName="moneda" aria-label="Moneda" [readonly]="!!cuentaEnEdicion()" />
+            @if (formulario.controls.moneda.hasError('required')) {
+              <mat-error>Requerido</mat-error>
+            }
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Saldo Inicial</mat-label>
+            <input matInput type="number" formControlName="saldoInicial" aria-label="Saldo Inicial" [readonly]="!!cuentaEnEdicion()" />
+            @if (formulario.controls.saldoInicial.hasError('required')) {
+              <mat-error>Requerido</mat-error>
+            }
+            @if (formulario.controls.saldoInicial.hasError('min')) {
+              <mat-error>Mínimo 0</mat-error>
+            }
+          </mat-form-field>
+        </div>
+        <button mat-raised-button color="primary" type="submit" [disabled]="formulario.invalid || submitting()">
+          {{ cuentaEnEdicion() ? 'Guardar cambios' : 'Guardar Cuenta' }}
+        </button>
+      </form>
+    </div>
+  }
 
   <div class="filters-section" role="search" aria-label="Filtros de búsqueda">
     <mat-form-field>
@@ -68,9 +90,11 @@
   </div>
 
   <div class="table-container" aria-live="polite">
-    <div class="loading-shade" *ngIf="loading()">
-      <mat-spinner aria-label="Cargando cuentas bancarias"></mat-spinner>
-    </div>
+    @if (loading()) {
+      <div class="loading-shade">
+        <mat-spinner aria-label="Cargando cuentas bancarias"></mat-spinner>
+      </div>
+    }
     <table mat-table [dataSource]="cuentas()" aria-label="Tabla de cuentas bancarias" [class.is-loading]="loading()">
       <ng-container matColumnDef="nombre"><th mat-header-cell *matHeaderCellDef scope="col">Nombre</th><td mat-cell *matCellDef="let element">{{ element.nombre }}</td></ng-container>
       <ng-container matColumnDef="numeroCuenta"><th mat-header-cell *matHeaderCellDef scope="col">Número</th><td mat-cell *matCellDef="let element">{{ element.numeroCuenta }}</td></ng-container>
@@ -79,58 +103,86 @@
       <ng-container matColumnDef="acciones">
         <th mat-header-cell *matHeaderCellDef scope="col">Acciones</th>
         <td mat-cell *matCellDef="let element" class="acciones-cell">
-          <button mat-button type="button" *ngIf="puedeEditar()" (click)="editar(element)" [attr.aria-label]="'Editar cuenta ' + element.nombre">Editar</button>
-          <button mat-button type="button" color="primary" *ngIf="puedeActivar() && element.estado === 2" (click)="activar(element)" [attr.aria-label]="'Activar cuenta ' + element.nombre">Activar</button>
-          <button mat-button type="button" color="warn" *ngIf="puedeDesactivar() && element.estado === 1" (click)="desactivar(element)" [attr.aria-label]="'Desactivar cuenta ' + element.nombre">Desactivar</button>
-          <button mat-button type="button" *ngIf="puedeImportar() || puedeCrear()" (click)="seleccionarCuentaParaConciliacion(element)" [attr.aria-label]="'Conciliar cuenta ' + element.nombre">Conciliar</button>
+          @if (puedeEditar()) {
+            <button mat-button type="button" (click)="editar(element)" [attr.aria-label]="'Editar cuenta ' + element.nombre">Editar</button>
+          }
+          @if (puedeActivar() && element.estado === 2) {
+            <button mat-button type="button" color="primary" (click)="activar(element)" [attr.aria-label]="'Activar cuenta ' + element.nombre">Activar</button>
+          }
+          @if (puedeDesactivar() && element.estado === 1) {
+            <button mat-button type="button" color="warn" (click)="desactivar(element)" [attr.aria-label]="'Desactivar cuenta ' + element.nombre">Desactivar</button>
+          }
+          @if (puedeImportar() || puedeCrear()) {
+            <button mat-button type="button" (click)="seleccionarCuentaParaConciliacion(element)" [attr.aria-label]="'Conciliar cuenta ' + element.nombre">Conciliar</button>
+          }
         </td>
       </ng-container>
       <tr mat-header-row *matHeaderRowDef="columnasMostradas"></tr>
       <tr mat-row *matRowDef="let row; columns: columnasMostradas"></tr>
-      <tr class="mat-row" *matNoDataRow><td class="mat-cell empty-cell" [attr.colspan]="columnasMostradas.length"><div *ngIf="!loading()" role="status" aria-live="polite">No se encontraron cuentas bancarias.</div></td></tr>
+      <tr class="mat-row" *matNoDataRow><td class="mat-cell empty-cell" [attr.colspan]="columnasMostradas.length">@if (!loading()) {
+        <div role="status" aria-live="polite">No se encontraron cuentas bancarias.</div>
+      }</td></tr>
     </table>
   </div>
 
-  <section *ngIf="reconSelectedAccount() as cuenta" class="form-section reconciliation-section" aria-labelledby="conciliacion-title">
-    <div class="header-section">
-      <div>
-        <h2 id="conciliacion-title">Conciliación bancaria</h2>
-        <p>Cuenta seleccionada: <strong>{{ cuenta.nombre }}</strong> · {{ cuenta.numeroCuenta }}</p>
+  @if (reconSelectedAccount(); as cuenta) {
+    <section class="form-section reconciliation-section" aria-labelledby="conciliacion-title">
+      <div class="header-section">
+        <div>
+          <h2 id="conciliacion-title">Conciliación bancaria</h2>
+          <p>Cuenta seleccionada: <strong>{{ cuenta.nombre }}</strong> · {{ cuenta.numeroCuenta }}</p>
+        </div>
+        <button mat-button type="button" (click)="reconSelectedAccount.set(null)" aria-label="Cerrar conciliación">Cerrar</button>
       </div>
-      <button mat-button type="button" (click)="reconSelectedAccount.set(null)" aria-label="Cerrar conciliación">Cerrar</button>
-    </div>
-
-    <div *ngIf="reconError()" class="error-alert" role="alert" aria-live="assertive">{{ reconError() }}</div>
-    <div *ngIf="reconSuccess()" role="status" aria-live="polite">Operación de conciliación registrada correctamente.</div>
-    <div *ngIf="reconEmpty()" role="status" aria-live="polite">La operación no contiene movimientos o coincidencias para mostrar.</div>
-    <div *ngIf="reconSubmitting()" class="loading-shade" aria-live="polite">
-      <mat-spinner diameter="32" aria-label="Procesando conciliación bancaria"></mat-spinner>
-    </div>
-
-    <form *ngIf="puedeImportar()" class="form-grid" aria-label="Importar estado de cuenta" (ngSubmit)="importarEstadoCuenta(importKey.value, [{ fechaOperacion: importFecha.value, monto: importMonto.valueAsNumber, referenciaExterna: importReferencia.value, descripcion: importDescripcion.value, identificadorExternoTransaccion: importIdentificador.value }])">
-      <mat-form-field><mat-label>Clave de idempotencia</mat-label><input matInput #importKey required aria-label="Clave de idempotencia de importación" /></mat-form-field>
-      <mat-form-field><mat-label>Fecha de operación</mat-label><input matInput #importFecha type="date" required aria-label="Fecha del movimiento importado" /></mat-form-field>
-      <mat-form-field><mat-label>Monto</mat-label><input matInput #importMonto type="number" required aria-label="Monto del movimiento importado" /></mat-form-field>
-      <mat-form-field><mat-label>Referencia externa</mat-label><input matInput #importReferencia required aria-label="Referencia externa del movimiento" /></mat-form-field>
-      <mat-form-field><mat-label>Descripción</mat-label><input matInput #importDescripcion aria-label="Descripción del movimiento" /></mat-form-field>
-      <mat-form-field><mat-label>Identificador externo</mat-label><input matInput #importIdentificador required aria-label="Identificador externo de transacción" /></mat-form-field>
-      <button mat-raised-button color="primary" type="submit" [disabled]="reconSubmitting()">Importar estado de cuenta</button>
-    </form>
-
-    <form *ngIf="puedeCrear()" class="form-grid" aria-label="Registrar coincidencia bancaria" (ngSubmit)="registrarMatches(matchKey.value, [{ movimientoInternoId: matchMovimientoId.valueAsNumber, identificadorExternoTransaccion: matchIdentificador.value }])">
-      <mat-form-field><mat-label>Clave de idempotencia</mat-label><input matInput #matchKey required aria-label="Clave de idempotencia de coincidencia" /></mat-form-field>
-      <mat-form-field><mat-label>Movimiento interno</mat-label><input matInput #matchMovimientoId type="number" required aria-label="ID de movimiento interno" /></mat-form-field>
-      <mat-form-field><mat-label>Identificador externo</mat-label><input matInput #matchIdentificador required aria-label="Identificador externo para coincidencia" /></mat-form-field>
-      <button mat-raised-button color="primary" type="submit" [disabled]="reconSubmitting()">Registrar coincidencia</button>
-    </form>
-
-    <div *ngIf="reconMovementRows().length > 0" aria-label="Movimientos importados">
-      <h3>Movimientos importados</h3>
-      <p *ngFor="let movimiento of reconMovementRows()">{{ movimiento.fechaOperacion }} · {{ movimiento.referenciaExterna }} · {{ movimiento.monto }}</p>
-    </div>
-    <div *ngIf="reconMatchRows().length > 0" aria-label="Coincidencias registradas">
-      <h3>Coincidencias registradas</h3>
-      <p *ngFor="let match of reconMatchRows()">Movimiento {{ match.movimientoInternoId }} · {{ match.identificadorExternoTransaccion }}</p>
-    </div>
-  </section>
+      @if (reconError()) {
+        <div class="error-alert" role="alert" aria-live="assertive">{{ reconError() }}</div>
+      }
+      @if (reconSuccess()) {
+        <div role="status" aria-live="polite">Operación de conciliación registrada correctamente.</div>
+      }
+      @if (reconEmpty()) {
+        <div role="status" aria-live="polite">La operación no contiene movimientos o coincidencias para mostrar.</div>
+      }
+      @if (reconSubmitting()) {
+        <div class="loading-shade" aria-live="polite">
+          <mat-spinner diameter="32" aria-label="Procesando conciliación bancaria"></mat-spinner>
+        </div>
+      }
+      @if (puedeImportar()) {
+        <form class="form-grid" aria-label="Importar estado de cuenta" (ngSubmit)="importarEstadoCuenta(importKey.value, [{ fechaOperacion: importFecha.value, monto: importMonto.valueAsNumber, referenciaExterna: importReferencia.value, descripcion: importDescripcion.value, identificadorExternoTransaccion: importIdentificador.value }])">
+          <mat-form-field><mat-label>Clave de idempotencia</mat-label><input matInput #importKey required aria-label="Clave de idempotencia de importación" /></mat-form-field>
+          <mat-form-field><mat-label>Fecha de operación</mat-label><input matInput #importFecha type="date" required aria-label="Fecha del movimiento importado" /></mat-form-field>
+          <mat-form-field><mat-label>Monto</mat-label><input matInput #importMonto type="number" required aria-label="Monto del movimiento importado" /></mat-form-field>
+          <mat-form-field><mat-label>Referencia externa</mat-label><input matInput #importReferencia required aria-label="Referencia externa del movimiento" /></mat-form-field>
+          <mat-form-field><mat-label>Descripción</mat-label><input matInput #importDescripcion aria-label="Descripción del movimiento" /></mat-form-field>
+          <mat-form-field><mat-label>Identificador externo</mat-label><input matInput #importIdentificador required aria-label="Identificador externo de transacción" /></mat-form-field>
+          <button mat-raised-button color="primary" type="submit" [disabled]="reconSubmitting()">Importar estado de cuenta</button>
+        </form>
+      }
+      @if (puedeCrear()) {
+        <form class="form-grid" aria-label="Registrar coincidencia bancaria" (ngSubmit)="registrarMatches(matchKey.value, [{ movimientoInternoId: matchMovimientoId.valueAsNumber, identificadorExternoTransaccion: matchIdentificador.value }])">
+          <mat-form-field><mat-label>Clave de idempotencia</mat-label><input matInput #matchKey required aria-label="Clave de idempotencia de coincidencia" /></mat-form-field>
+          <mat-form-field><mat-label>Movimiento interno</mat-label><input matInput #matchMovimientoId type="number" required aria-label="ID de movimiento interno" /></mat-form-field>
+          <mat-form-field><mat-label>Identificador externo</mat-label><input matInput #matchIdentificador required aria-label="Identificador externo para coincidencia" /></mat-form-field>
+          <button mat-raised-button color="primary" type="submit" [disabled]="reconSubmitting()">Registrar coincidencia</button>
+        </form>
+      }
+      @if (reconMovementRows().length > 0) {
+        <div aria-label="Movimientos importados">
+          <h3>Movimientos importados</h3>
+          @for (movimiento of reconMovementRows(); track movimiento) {
+            <p>{{ movimiento.fechaOperacion }} · {{ movimiento.referenciaExterna }} · {{ movimiento.monto }}</p>
+          }
+        </div>
+      }
+      @if (reconMatchRows().length > 0) {
+        <div aria-label="Coincidencias registradas">
+          <h3>Coincidencias registradas</h3>
+          @for (match of reconMatchRows(); track match) {
+            <p>Movimiento {{ match.movimientoInternoId }} · {{ match.identificadorExternoTransaccion }}</p>
+          }
+        </div>
+      }
+    </section>
+  }
 </div>

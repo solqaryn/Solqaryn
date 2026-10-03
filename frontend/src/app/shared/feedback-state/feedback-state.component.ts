@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, Input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -8,7 +8,7 @@ export type FeedbackStateType = 'loading' | 'empty' | 'success' | 'error' | 'war
 @Component({
   selector: 'app-feedback-state',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MatProgressSpinnerModule],
+  imports: [MatIconModule, MatProgressSpinnerModule],
   template: `
     <section
       class="app-feedback"

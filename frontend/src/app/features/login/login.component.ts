@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { HttpErrorResponse } from '@angular/common/http';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -19,10 +19,14 @@ import { EmpresaIdentidadService } from '../../services/empresa-identidad.servic
   selector: 'app-login',
   standalone: true,
   imports: [
-    CommonModule, ReactiveFormsModule, MatFormFieldModule,
-    MatInputModule, MatButtonModule, MatIconModule, MatProgressSpinnerModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
+    MatProgressSpinnerModule,
     TenantSelectorComponent
-  ],
+],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })

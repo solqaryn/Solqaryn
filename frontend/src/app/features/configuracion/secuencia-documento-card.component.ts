@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -16,14 +16,13 @@ import { SecuenciaDocumentoService } from '../../services/secuencia-documento.se
   selector: 'app-secuencia-documento-card',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     MatButtonModule,
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
     MatProgressSpinnerModule
-  ],
+],
   template: `
     <section class="card numeracion-card" aria-labelledby="numeracion-title">
       <div class="header-row">

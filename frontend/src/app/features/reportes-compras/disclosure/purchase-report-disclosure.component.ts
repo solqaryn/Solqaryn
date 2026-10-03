@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FeedbackStateComponent } from '../../../shared/feedback-state/feedback-state.component';
 
 export type PurchaseReportState = 'loading' | 'empty' | 'error' | 'loaded';
@@ -7,7 +7,7 @@ export type PurchaseReportState = 'loading' | 'empty' | 'error' | 'loaded';
 @Component({
   selector: 'app-purchase-report-disclosure',
   standalone: true,
-  imports: [CommonModule, FeedbackStateComponent],
+  imports: [FeedbackStateComponent],
   template: `
     <div class="purchase-report-disclosure">
       @if (state === 'loading') {

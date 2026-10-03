@@ -1,4 +1,4 @@
-import { CommonModule, DOCUMENT } from '@angular/common';
+import { DOCUMENT } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -23,7 +23,7 @@ type IdentidadAgrupacion = { modeloNombre: string | null; marcaNombre: string | 
 @Component({
   selector: 'app-storefront-checkout',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, StorefrontHeaderComponent, IconoTiendaComponent],
+  imports: [ReactiveFormsModule, StorefrontHeaderComponent, IconoTiendaComponent],
   templateUrl: './storefront-checkout.component.html',
   styleUrl: './storefront-checkout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -21,7 +21,7 @@ import { UbicacionAlmacenService } from '../../services/ubicacion-almacen.servic
 @Component({
   selector: 'app-transferencia-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressSpinnerModule, MatSelectModule],
+  imports: [FormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressSpinnerModule, MatSelectModule],
   template: `
     <section class="page" aria-labelledby="transferencia-form-title">
       <header class="header">
@@ -32,77 +32,95 @@ import { UbicacionAlmacenService } from '../../services/ubicacion-almacen.servic
         </div>
         <button mat-stroked-button type="button" (click)="volver()"><mat-icon>arrow_back</mat-icon>Volver</button>
       </header>
-
-      <div class="state" *ngIf="loading || catalogLoading" aria-live="polite">
-        <mat-spinner diameter="36"></mat-spinner><span>{{ loading ? 'Cargando transferencia…' : 'Cargando catálogos…' }}</span>
-      </div>
-      <form *ngIf="!loading && !catalogLoading" class="card" (ngSubmit)="guardar()">
-        <div class="grid two">
-          <mat-form-field appearance="outline">
-            <mat-label>Almacén origen</mat-label>
-            <mat-select name="almacenOrigenId" [(ngModel)]="model.almacenOrigenId" (selectionChange)="onAlmacenOrigenChange()" required>
-              <mat-option *ngFor="let almacen of almacenes" [value]="almacen.id">{{ etiquetaAlmacen(almacen) }}</mat-option>
-            </mat-select>
-            <mat-hint>Origen físico del stock.</mat-hint>
-          </mat-form-field>
-          <mat-form-field appearance="outline">
-            <mat-label>Almacén destino</mat-label>
-            <mat-select name="almacenDestinoId" [(ngModel)]="model.almacenDestinoId" (selectionChange)="onAlmacenDestinoChange()" required>
-              <mat-option *ngFor="let almacen of almacenes" [value]="almacen.id" [disabled]="almacen.id === model.almacenOrigenId">{{ etiquetaAlmacen(almacen) }}</mat-option>
-            </mat-select>
-            <mat-hint>Debe ser diferente del origen.</mat-hint>
-          </mat-form-field>
+    
+      @if (loading || catalogLoading) {
+        <div class="state" aria-live="polite">
+          <mat-spinner diameter="36"></mat-spinner><span>{{ loading ? 'Cargando transferencia…' : 'Cargando catálogos…' }}</span>
         </div>
-
-        <mat-form-field appearance="outline" class="full">
-          <mat-label>Observaciones</mat-label>
-          <textarea matInput rows="3" name="observaciones" [(ngModel)]="model.observaciones" maxlength="1000"></textarea>
-        </mat-form-field>
-
-        <div class="details-header">
-          <div><h2>Detalle solicitado</h2><p>Una línea por variante y contexto físico.</p></div>
-          <button mat-stroked-button type="button" (click)="agregarDetalle()"><mat-icon>add</mat-icon>Agregar línea</button>
-        </div>
-
-        <div class="detail" *ngFor="let detalle of model.detalles; let i = index; trackBy: trackByIndex">
-          <div class="grid detail-grid">
+      }
+      @if (!loading && !catalogLoading) {
+        <form class="card" (ngSubmit)="guardar()">
+          <div class="grid two">
             <mat-form-field appearance="outline">
-              <mat-label>Variante</mat-label>
-              <mat-select [name]="'variante-' + i" [(ngModel)]="detalle.productoVarianteId" required>
-                <mat-option *ngFor="let variante of variantes" [value]="variante.id">{{ etiquetaVariante(variante) }}</mat-option>
+              <mat-label>Almacén origen</mat-label>
+              <mat-select name="almacenOrigenId" [(ngModel)]="model.almacenOrigenId" (selectionChange)="onAlmacenOrigenChange()" required>
+                @for (almacen of almacenes; track almacen) {
+                  <mat-option [value]="almacen.id">{{ etiquetaAlmacen(almacen) }}</mat-option>
+                }
               </mat-select>
-              <mat-hint>SKU y atributos de la variante operativa.</mat-hint>
+              <mat-hint>Origen físico del stock.</mat-hint>
             </mat-form-field>
             <mat-form-field appearance="outline">
-              <mat-label>Ubicación origen</mat-label>
-              <mat-select [name]="'ubicacion-origen-' + i" [(ngModel)]="detalle.ubicacionOrigenId" [disabled]="!model.almacenOrigenId">
-                <mat-option [value]="null">Sin ubicación específica</mat-option>
-                <mat-option *ngFor="let ubicacion of ubicacionesOrigen" [value]="ubicacion.id">{{ etiquetaUbicacion(ubicacion) }}</mat-option>
+              <mat-label>Almacén destino</mat-label>
+              <mat-select name="almacenDestinoId" [(ngModel)]="model.almacenDestinoId" (selectionChange)="onAlmacenDestinoChange()" required>
+                @for (almacen of almacenes; track almacen) {
+                  <mat-option [value]="almacen.id" [disabled]="almacen.id === model.almacenOrigenId">{{ etiquetaAlmacen(almacen) }}</mat-option>
+                }
               </mat-select>
+              <mat-hint>Debe ser diferente del origen.</mat-hint>
             </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Ubicación destino</mat-label>
-              <mat-select [name]="'ubicacion-destino-' + i" [(ngModel)]="detalle.ubicacionDestinoId" [disabled]="!model.almacenDestinoId">
-                <mat-option [value]="null">Sin ubicación específica</mat-option>
-                <mat-option *ngFor="let ubicacion of ubicacionesDestino" [value]="ubicacion.id">{{ etiquetaUbicacion(ubicacion) }}</mat-option>
-              </mat-select>
-            </mat-form-field>
-            <mat-form-field appearance="outline"><mat-label>Cantidad</mat-label><input matInput type="number" min="1" step="1" [name]="'cantidad-' + i" [(ngModel)]="detalle.cantidadSolicitada" required /></mat-form-field>
-            <button mat-icon-button type="button" aria-label="Eliminar línea" (click)="quitarDetalle(i)" [disabled]="model.detalles.length === 1"><mat-icon>delete</mat-icon></button>
           </div>
-        </div>
-
-        <div class="error" *ngIf="error" role="alert">{{ error }}</div>
-        <div class="actions">
-          <button mat-stroked-button type="button" (click)="volver()" [disabled]="saving">Cancelar</button>
-          <button mat-flat-button color="primary" type="submit" [disabled]="saving || almacenes.length < 2 || variantes.length === 0">
-            <mat-spinner *ngIf="saving" diameter="20"></mat-spinner>
-            <span *ngIf="!saving">{{ editando ? 'Guardar cambios' : 'Crear transferencia' }}</span>
-          </button>
-        </div>
-      </form>
+          <mat-form-field appearance="outline" class="full">
+            <mat-label>Observaciones</mat-label>
+            <textarea matInput rows="3" name="observaciones" [(ngModel)]="model.observaciones" maxlength="1000"></textarea>
+          </mat-form-field>
+          <div class="details-header">
+            <div><h2>Detalle solicitado</h2><p>Una línea por variante y contexto físico.</p></div>
+            <button mat-stroked-button type="button" (click)="agregarDetalle()"><mat-icon>add</mat-icon>Agregar línea</button>
+          </div>
+          @for (detalle of model.detalles; track trackByIndex(i, detalle); let i = $index) {
+            <div class="detail">
+              <div class="grid detail-grid">
+                <mat-form-field appearance="outline">
+                  <mat-label>Variante</mat-label>
+                  <mat-select [name]="'variante-' + i" [(ngModel)]="detalle.productoVarianteId" required>
+                    @for (variante of variantes; track variante) {
+                      <mat-option [value]="variante.id">{{ etiquetaVariante(variante) }}</mat-option>
+                    }
+                  </mat-select>
+                  <mat-hint>SKU y atributos de la variante operativa.</mat-hint>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Ubicación origen</mat-label>
+                  <mat-select [name]="'ubicacion-origen-' + i" [(ngModel)]="detalle.ubicacionOrigenId" [disabled]="!model.almacenOrigenId">
+                    <mat-option [value]="null">Sin ubicación específica</mat-option>
+                    @for (ubicacion of ubicacionesOrigen; track ubicacion) {
+                      <mat-option [value]="ubicacion.id">{{ etiquetaUbicacion(ubicacion) }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Ubicación destino</mat-label>
+                  <mat-select [name]="'ubicacion-destino-' + i" [(ngModel)]="detalle.ubicacionDestinoId" [disabled]="!model.almacenDestinoId">
+                    <mat-option [value]="null">Sin ubicación específica</mat-option>
+                    @for (ubicacion of ubicacionesDestino; track ubicacion) {
+                      <mat-option [value]="ubicacion.id">{{ etiquetaUbicacion(ubicacion) }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline"><mat-label>Cantidad</mat-label><input matInput type="number" min="1" step="1" [name]="'cantidad-' + i" [(ngModel)]="detalle.cantidadSolicitada" required /></mat-form-field>
+                <button mat-icon-button type="button" aria-label="Eliminar línea" (click)="quitarDetalle(i)" [disabled]="model.detalles.length === 1"><mat-icon>delete</mat-icon></button>
+              </div>
+            </div>
+          }
+          @if (error) {
+            <div class="error" role="alert">{{ error }}</div>
+          }
+          <div class="actions">
+            <button mat-stroked-button type="button" (click)="volver()" [disabled]="saving">Cancelar</button>
+            <button mat-flat-button color="primary" type="submit" [disabled]="saving || almacenes.length < 2 || variantes.length === 0">
+              @if (saving) {
+                <mat-spinner diameter="20"></mat-spinner>
+              }
+              @if (!saving) {
+                <span>{{ editando ? 'Guardar cambios' : 'Crear transferencia' }}</span>
+              }
+            </button>
+          </div>
+        </form>
+      }
     </section>
-  `,
+    `,
   styles: [`
     .page{padding:24px;display:grid;gap:20px}.header{display:flex;justify-content:space-between;gap:16px}.eyebrow{text-transform:uppercase;letter-spacing:.08em;font-size:12px;font-weight:700;margin:0}.header h1{margin:4px 0}.header p,.details-header p{margin:0;color:var(--text-secondary,#667085)}.card{display:grid;gap:18px;padding:20px;border:1px solid rgba(0,0,0,.12);border-radius:14px}.grid{display:grid;gap:12px}.two{grid-template-columns:1fr 1fr}.detail-grid{grid-template-columns:minmax(260px,1.5fr) minmax(190px,1fr) minmax(190px,1fr) minmax(120px,.6fr) auto;align-items:start}.full{width:100%}.details-header{display:flex;justify-content:space-between;align-items:center;gap:16px}.details-header h2{margin:0}.detail{padding:14px;border:1px solid rgba(0,0,0,.08);border-radius:10px}.actions{display:flex;justify-content:flex-end;gap:10px}.error{color:#b42318}.state{min-height:160px;display:flex;justify-content:center;align-items:center;gap:12px}@media(max-width:1050px){.detail-grid{grid-template-columns:1fr 1fr}.two{grid-template-columns:1fr}}@media(max-width:600px){.page{padding:16px}.header,.details-header{flex-direction:column;align-items:stretch}.detail-grid{grid-template-columns:1fr}}
   `]

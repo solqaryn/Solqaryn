@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ReactiveFormsModule, FormsModule, FormBuilder, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -28,12 +28,22 @@ import { WhatsappBusinessCardComponent } from './whatsapp-business-card.componen
   selector: 'app-configuracion',
   standalone: true,
   imports: [
-    CommonModule, ReactiveFormsModule, FormsModule, MatFormFieldModule, MatInputModule,
-    MatButtonModule, MatIconModule, MatProgressSpinnerModule, AutomatizacionConfiguracionCardComponent,
-    EmailEmpresarialCardComponent, EmpresaAdministracionCardComponent, EmpresaConfiguracionTenantCardComponent,
-    EmpresaConfiguracionPlantillasTenantCardComponent, SecuenciaDocumentoCardComponent,
-    SuscripcionSaaSCardComponent, WhatsappBusinessCardComponent
-  ],
+    ReactiveFormsModule,
+    FormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
+    MatProgressSpinnerModule,
+    AutomatizacionConfiguracionCardComponent,
+    EmailEmpresarialCardComponent,
+    EmpresaAdministracionCardComponent,
+    EmpresaConfiguracionTenantCardComponent,
+    EmpresaConfiguracionPlantillasTenantCardComponent,
+    SecuenciaDocumentoCardComponent,
+    SuscripcionSaaSCardComponent,
+    WhatsappBusinessCardComponent
+],
   templateUrl: './configuracion.component.html',
   styleUrl: './configuracion.component.scss'
 })

@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -21,7 +21,6 @@ import { RecepcionCompraService } from '../../services/recepcion-compra.service'
   selector: 'app-recepcion-compra-form',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     MatButtonModule,
     MatFormFieldModule,
@@ -29,7 +28,7 @@ import { RecepcionCompraService } from '../../services/recepcion-compra.service'
     MatInputModule,
     MatProgressSpinnerModule,
     MatSelectModule
-  ],
+],
   template: `
     <section class="page-shell" aria-labelledby="recepcion-form-title">
       <header class="page-header">

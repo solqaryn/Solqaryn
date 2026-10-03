@@ -1,5 +1,5 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
@@ -18,10 +18,15 @@ import { Rol } from '../../core/models/rol.model';
   selector: 'app-permisos-matrix',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, MatCheckboxModule, MatButtonModule,
-    MatProgressSpinnerModule, MatFormFieldModule, MatInputModule, MatSelectModule,
+    FormsModule,
+    MatCheckboxModule,
+    MatButtonModule,
+    MatProgressSpinnerModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
     MatIconModule
-  ],
+],
   templateUrl: './permisos-matrix.component.html',
   styleUrl: './permisos-matrix.component.scss'
 })

@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, OnInit, inject } from '@angular/core';
 import { ReporteVentasFiltroDto } from '../../core/models/reporte-ventas.models';
 import { RentabilidadAgrupacion, ReporteRentabilidadDto } from '../../core/models/reporte-rentabilidad.models';
@@ -12,12 +12,11 @@ import { RentabilidadResultadosTablaComponent } from './tabla/rentabilidad-resul
   selector: 'app-rentabilidad',
   standalone: true,
   imports: [
-    CommonModule,
     RentabilidadAgrupacionComponent,
     RentabilidadDisclosureComponent,
     RentabilidadFiltrosComponent,
-    RentabilidadResultadosTablaComponent,
-  ],
+    RentabilidadResultadosTablaComponent
+],
   templateUrl: './rentabilidad.component.html',
   styleUrl: './rentabilidad.component.scss',
 })

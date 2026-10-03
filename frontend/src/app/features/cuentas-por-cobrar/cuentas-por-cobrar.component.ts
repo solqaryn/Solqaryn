@@ -22,7 +22,7 @@ import { FacturaService } from '../../services/factura.service';
           Actualizar
         </button>
       </header>
-
+    
       <div class="summary" aria-live="polite">
         <div class="summary-card">
           <span>Documentos pendientes</span>
@@ -37,66 +37,76 @@ import { FacturaService } from '../../services/factura.service';
           <strong>{{ totalVencidos() }}</strong>
         </div>
       </div>
-
-      <div *ngIf="loading()" class="state" role="status" aria-live="polite">
-        <div class="spinner" aria-hidden="true"></div>
-        <span>Cargando cuentas por cobrar…</span>
-      </div>
-
-      <div *ngIf="!loading() && errorMessage()" class="state error" role="alert">
-        <strong>No fue posible cargar las cuentas por cobrar.</strong>
-        <span>{{ errorMessage() }}</span>
-        <button type="button" class="primary" (click)="cargar()">Reintentar</button>
-      </div>
-
-      <div *ngIf="!loading() && !errorMessage() && cuentas().length === 0" class="state empty">
-        <strong>No hay saldos pendientes.</strong>
-        <span>Las facturas activas están al día.</span>
-      </div>
-
-      <div *ngIf="!loading() && !errorMessage() && cuentas().length > 0" class="table-shell">
-        <table>
-          <thead>
-            <tr>
-              <th>Factura</th>
-              <th>Venta</th>
-              <th>Cliente</th>
-              <th>Vencimiento</th>
-              <th>Estado</th>
-              <th class="numeric">Total</th>
-              <th class="numeric">Pagado</th>
-              <th class="numeric">Saldo</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let cuenta of cuentas(); trackBy: trackByFactura">
-              <td data-label="Factura">
-                <a class="document-link" [routerLink]="['/facturas', cuenta.id]">{{ cuenta.numeroFactura }}</a>
-              </td>
-              <td data-label="Venta">
-                <a [routerLink]="['/ventas', cuenta.ventaId]">{{ cuenta.numeroVentaOrigen || ('#' + cuenta.ventaId) }}</a>
-              </td>
-              <td data-label="Cliente">{{ cuenta.clienteNombre }}</td>
-              <td data-label="Vencimiento">
-                <span [class.overdue]="estaVencida(cuenta)">
-                  {{ cuenta.fechaVencimiento ? (cuenta.fechaVencimiento | date:'dd/MM/yyyy') : 'Sin fecha' }}
-                </span>
-              </td>
-              <td data-label="Estado"><span class="status">{{ cuenta.estadoPago || cuenta.estado }}</span></td>
-              <td data-label="Total" class="numeric">{{ cuenta.moneda }} {{ cuenta.total | number:'1.2-2' }}</td>
-              <td data-label="Pagado" class="numeric">{{ cuenta.moneda }} {{ cuenta.totalPagado | number:'1.2-2' }}</td>
-              <td data-label="Saldo" class="numeric balance">{{ cuenta.moneda }} {{ cuenta.saldoPendiente | number:'1.2-2' }}</td>
-              <td data-label="Acciones" class="actions">
-                <a class="secondary link-button" [routerLink]="['/facturas', cuenta.id]">Ver factura</a>
-                <a class="primary link-button" [routerLink]="['/facturas', cuenta.id, 'pagos']">Pagos</a>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+    
+      @if (loading()) {
+        <div class="state" role="status" aria-live="polite">
+          <div class="spinner" aria-hidden="true"></div>
+          <span>Cargando cuentas por cobrar…</span>
+        </div>
+      }
+    
+      @if (!loading() && errorMessage()) {
+        <div class="state error" role="alert">
+          <strong>No fue posible cargar las cuentas por cobrar.</strong>
+          <span>{{ errorMessage() }}</span>
+          <button type="button" class="primary" (click)="cargar()">Reintentar</button>
+        </div>
+      }
+    
+      @if (!loading() && !errorMessage() && cuentas().length === 0) {
+        <div class="state empty">
+          <strong>No hay saldos pendientes.</strong>
+          <span>Las facturas activas están al día.</span>
+        </div>
+      }
+    
+      @if (!loading() && !errorMessage() && cuentas().length > 0) {
+        <div class="table-shell">
+          <table>
+            <thead>
+              <tr>
+                <th>Factura</th>
+                <th>Venta</th>
+                <th>Cliente</th>
+                <th>Vencimiento</th>
+                <th>Estado</th>
+                <th class="numeric">Total</th>
+                <th class="numeric">Pagado</th>
+                <th class="numeric">Saldo</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (cuenta of cuentas(); track trackByFactura($index, cuenta)) {
+                <tr>
+                  <td data-label="Factura">
+                    <a class="document-link" [routerLink]="['/facturas', cuenta.id]">{{ cuenta.numeroFactura }}</a>
+                  </td>
+                  <td data-label="Venta">
+                    <a [routerLink]="['/ventas', cuenta.ventaId]">{{ cuenta.numeroVentaOrigen || ('#' + cuenta.ventaId) }}</a>
+                  </td>
+                  <td data-label="Cliente">{{ cuenta.clienteNombre }}</td>
+                  <td data-label="Vencimiento">
+                    <span [class.overdue]="estaVencida(cuenta)">
+                      {{ cuenta.fechaVencimiento ? (cuenta.fechaVencimiento | date:'dd/MM/yyyy') : 'Sin fecha' }}
+                    </span>
+                  </td>
+                  <td data-label="Estado"><span class="status">{{ cuenta.estadoPago || cuenta.estado }}</span></td>
+                  <td data-label="Total" class="numeric">{{ cuenta.moneda }} {{ cuenta.total | number:'1.2-2' }}</td>
+                  <td data-label="Pagado" class="numeric">{{ cuenta.moneda }} {{ cuenta.totalPagado | number:'1.2-2' }}</td>
+                  <td data-label="Saldo" class="numeric balance">{{ cuenta.moneda }} {{ cuenta.saldoPendiente | number:'1.2-2' }}</td>
+                  <td data-label="Acciones" class="actions">
+                    <a class="secondary link-button" [routerLink]="['/facturas', cuenta.id]">Ver factura</a>
+                    <a class="primary link-button" [routerLink]="['/facturas', cuenta.id, 'pagos']">Pagos</a>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
     </section>
-  `,
+    `,
   styles: [`
     :host { display: block; }
     .page { display: grid; gap: 1.25rem; }

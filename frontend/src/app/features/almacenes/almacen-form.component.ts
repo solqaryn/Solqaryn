@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -24,7 +24,6 @@ interface SucursalAlmacenOpcion {
   selector: 'app-almacen-form',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     RouterLink,
     MatButtonModule,
@@ -33,7 +32,7 @@ interface SucursalAlmacenOpcion {
     MatInputModule,
     MatProgressSpinnerModule,
     MatSelectModule
-  ],
+],
   templateUrl: './almacen-form.component.html',
   styleUrl: './almacen-form.component.scss'
 })

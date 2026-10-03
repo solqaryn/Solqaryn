@@ -1,8 +1,8 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, OnInit, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service';
-@Component({selector:'app-centro-reportes',standalone:true,imports:[CommonModule,RouterLink,RouterLinkActive,RouterOutlet],templateUrl:'./centro-reportes.component.html',styleUrl:'./centro-reportes.component.scss'})
+@Component({selector:'app-centro-reportes',standalone:true,imports: [RouterLink, RouterLinkActive, RouterOutlet],templateUrl:'./centro-reportes.component.html',styleUrl:'./centro-reportes.component.scss'})
 export class CentroReportesComponent implements OnInit {
   readonly permisosRuntime = inject(PermisosRuntimeService);
 

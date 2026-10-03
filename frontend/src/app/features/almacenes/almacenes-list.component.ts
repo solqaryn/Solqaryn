@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -25,7 +25,6 @@ type EstadoAlmacenFiltro = 'todos' | 'activos' | 'inactivos';
   selector: 'app-almacenes-list',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     RouterLink,
     MatButtonModule,
@@ -36,7 +35,7 @@ type EstadoAlmacenFiltro = 'todos' | 'activos' | 'inactivos';
     MatProgressSpinnerModule,
     MatSelectModule,
     MatSlideToggleModule
-  ],
+],
   templateUrl: './almacenes-list.component.html',
   styleUrl: './almacenes-list.component.scss'
 })

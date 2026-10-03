@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -21,7 +21,7 @@ import { TransferenciaInventarioService } from '../../services/transferencia-inv
 @Component({
   selector: 'app-transferencias-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatPaginatorModule, MatProgressSpinnerModule, MatSelectModule],
+  imports: [FormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatPaginatorModule, MatProgressSpinnerModule, MatSelectModule],
   template: `
     <section class="page" aria-labelledby="transferencias-title">
       <header class="header">
@@ -30,18 +30,22 @@ import { TransferenciaInventarioService } from '../../services/transferencia-inv
           <h1 id="transferencias-title">Transferencias de inventario</h1>
           <p>Controla solicitud, aprobación, tránsito, recepción y cancelación entre almacenes.</p>
         </div>
-        <button *ngIf="puedeCrear" mat-flat-button color="primary" type="button" (click)="nueva()">
-          <mat-icon>swap_horiz</mat-icon>Nueva transferencia
-        </button>
+        @if (puedeCrear) {
+          <button mat-flat-button color="primary" type="button" (click)="nueva()">
+            <mat-icon>swap_horiz</mat-icon>Nueva transferencia
+          </button>
+        }
       </header>
-
+    
       <form class="filters" (ngSubmit)="aplicarFiltros()">
         <mat-form-field appearance="outline"><mat-label>Número</mat-label><input matInput name="numero" [(ngModel)]="numero" /></mat-form-field>
         <mat-form-field appearance="outline">
           <mat-label>Estado</mat-label>
           <mat-select name="estado" [(ngModel)]="estado">
             <mat-option [value]="null">Todos</mat-option>
-            <mat-option *ngFor="let option of estados" [value]="option.value">{{ option.label }}</mat-option>
+            @for (option of estados; track option) {
+              <mat-option [value]="option.value">{{ option.label }}</mat-option>
+            }
           </mat-select>
         </mat-form-field>
         <mat-form-field appearance="outline"><mat-label>Almacén origen</mat-label><input matInput type="number" min="1" name="origen" [(ngModel)]="almacenOrigenId" /></mat-form-field>
@@ -51,33 +55,45 @@ import { TransferenciaInventarioService } from '../../services/transferencia-inv
           <button mat-stroked-button type="button" (click)="limpiar()" [disabled]="loading">Limpiar</button>
         </div>
       </form>
-
-      <div class="state" *ngIf="loading"><mat-spinner diameter="36"></mat-spinner><span>Cargando transferencias…</span></div>
-      <div class="state error" *ngIf="!loading && error">{{ error }}</div>
-      <div class="state" *ngIf="!loading && !error && items.length === 0">No hay transferencias que coincidan con los filtros.</div>
-
-      <div class="table-wrap" *ngIf="!loading && items.length > 0">
-        <table>
-          <thead><tr><th>Número</th><th>Origen</th><th>Destino</th><th>Estado</th><th>Detalles</th><th>Acciones</th></tr></thead>
-          <tbody>
-            <tr *ngFor="let item of items">
-              <td><strong>{{ item.numero }}</strong></td>
-              <td>{{ item.almacenOrigenNombre || ('#' + item.almacenOrigenId) }}</td>
-              <td>{{ item.almacenDestinoNombre || ('#' + item.almacenDestinoId) }}</td>
-              <td><span class="status" [attr.data-state]="item.estado">{{ item.estado }}</span></td>
-              <td>{{ item.detalles.length }}</td>
-              <td class="actions">
-                <button mat-button type="button" (click)="ver(item.id)">Ver</button>
-                <button *ngIf="puedeEditar && item.estado === 'Borrador'" mat-button type="button" (click)="editar(item.id)">Editar</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
+    
+      @if (loading) {
+        <div class="state"><mat-spinner diameter="36"></mat-spinner><span>Cargando transferencias…</span></div>
+      }
+      @if (!loading && error) {
+        <div class="state error">{{ error }}</div>
+      }
+      @if (!loading && !error && items.length === 0) {
+        <div class="state">No hay transferencias que coincidan con los filtros.</div>
+      }
+    
+      @if (!loading && items.length > 0) {
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Número</th><th>Origen</th><th>Destino</th><th>Estado</th><th>Detalles</th><th>Acciones</th></tr></thead>
+            <tbody>
+              @for (item of items; track item) {
+                <tr>
+                  <td><strong>{{ item.numero }}</strong></td>
+                  <td>{{ item.almacenOrigenNombre || ('#' + item.almacenOrigenId) }}</td>
+                  <td>{{ item.almacenDestinoNombre || ('#' + item.almacenDestinoId) }}</td>
+                  <td><span class="status" [attr.data-state]="item.estado">{{ item.estado }}</span></td>
+                  <td>{{ item.detalles.length }}</td>
+                  <td class="actions">
+                    <button mat-button type="button" (click)="ver(item.id)">Ver</button>
+                    @if (puedeEditar && item.estado === 'Borrador') {
+                      <button mat-button type="button" (click)="editar(item.id)">Editar</button>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    
       <mat-paginator [length]="totalCount" [pageIndex]="page - 1" [pageSize]="pageSize" [pageSizeOptions]="[10, 20, 50]" (page)="cambiarPagina($event)"></mat-paginator>
     </section>
-  `,
+    `,
   styles: [`
     .page{padding:24px;display:grid;gap:20px}.header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.eyebrow{text-transform:uppercase;letter-spacing:.08em;font-size:12px;font-weight:700;margin:0}.header h1{margin:4px 0}.header p{margin:0;color:var(--text-secondary,#667085)}.filters{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr)) auto;gap:12px;align-items:start}.filter-actions{display:flex;gap:8px;padding-top:4px}.state{min-height:100px;display:flex;gap:12px;align-items:center;justify-content:center}.error{color:#b42318}.table-wrap{overflow:auto;border:1px solid rgba(0,0,0,.12);border-radius:12px}table{width:100%;border-collapse:collapse}th,td{padding:14px;text-align:left;border-bottom:1px solid rgba(0,0,0,.08);white-space:nowrap}.actions{display:flex;gap:4px}.status{display:inline-flex;padding:4px 10px;border-radius:999px;background:rgba(0,0,0,.06);font-weight:600}@media(max-width:1000px){.filters{grid-template-columns:1fr 1fr}.header{flex-direction:column}}@media(max-width:640px){.page{padding:16px}.filters{grid-template-columns:1fr}}
   `]

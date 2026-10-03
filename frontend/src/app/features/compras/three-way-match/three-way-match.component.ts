@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -15,7 +15,6 @@ import { finalize } from 'rxjs/operators';
   selector: 'app-three-way-match',
   standalone: true,
   imports: [
-    CommonModule,
     RouterModule,
     MatCardModule,
     MatProgressSpinnerModule,
@@ -23,7 +22,7 @@ import { finalize } from 'rxjs/operators';
     MatButtonModule,
     MatTableModule,
     MatChipsModule
-  ],
+],
   templateUrl: './three-way-match.component.html',
   styleUrls: ['./three-way-match.component.scss']
 })
