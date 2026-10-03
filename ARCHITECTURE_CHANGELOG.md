@@ -3,7 +3,7 @@
 - Frontend migrado major-a-major mediante `ng update` oficial: Angular Core 21.2.25 / CLI 21.2.24.
 - Angular Material/CDK migrados mediante schematics oficiales a 21.2.14.
 - TypeScript queda en 5.9.3; Node 24.21.0 y npm 11.19.0 se preservan.
-- `@angular/build` 21.2.24 + Vitest 4.1.11 soportan el target unit-test; build productivo conserva `@angular-devkit/build-angular:application` 21.2.24.
+- `@angular/build` 21.2.24 + Vitest 4.1.11 soportan el target unit-test; build y dev-server quedan alineados a `@angular/build:application` / `@angular/build:dev-server` para evitar mezcla de familias de builders.
 - La migración automática actualizó plantillas/control-flow y código compatible; no cambia backend, API, datos, RBAC, tenancy ni infraestructura productiva.
 - Run causal de publicación: `37141861945` — SUCCESS antes de push.
 
