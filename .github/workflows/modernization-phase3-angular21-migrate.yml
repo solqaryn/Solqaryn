@@ -100,7 +100,7 @@ jobs:
       - name: Unit tests pre-publicación
         timeout-minutes: 4
         working-directory: frontend
-        run: npm test -- --watch=false
+        run: npm test -- --no-watch --no-progress
 
       - name: Lint pre-publicación
         working-directory: frontend
