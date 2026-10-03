@@ -192,6 +192,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          rm -rf frontend/node_modules frontend/dist
           node scripts/verify-project-scope.mjs
           git fetch origin dev
           test "$(git rev-parse origin/dev)" = "$BASE_SHA"
