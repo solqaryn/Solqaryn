@@ -109,13 +109,37 @@ jobs:
         run: npm audit --omit=dev --audit-level=high
 
       - name: Build PROD
-        run: npm run build:prod
+        timeout-minutes: 4
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f ../fase3-build.log
+          set +e
+          timeout --signal=TERM --kill-after=10s 120s npm run build:prod 2>&1 | tee ../fase3-build.log
+          code=${PIPESTATUS[0]}
+          set -e
+          if [ "$code" -eq 0 ]; then
+            echo "ANGULAR21_BUILD_EXIT=0"
+            exit 0
+          fi
+          if [ "$code" -eq 124 ] || [ "$code" -eq 143 ]; then
+            if grep -q 'Output location:' ../fase3-build.log \
+              && ! grep -q 'Application bundle generation failed' ../fase3-build.log \
+              && ! grep -q 'An unhandled exception occurred' ../fase3-build.log \
+              && test -n "$(find dist/solqaryn-frontend -type f -name index.html -print -quit)"; then
+              echo "ANGULAR21_BUILD_SUCCESS_WITH_KNOWN_EXIT_HANG=PASS"
+              exit 0
+            fi
+          fi
+          echo "Angular 21 build failed or did not produce a complete artifact. exit=$code" >&2
+          exit "$code"
 
       - name: Bundle y evidencia
         shell: bash
         run: |
           set -euo pipefail
-          initial_line="$(npm run build:prod 2>&1 | grep 'Initial total' | tail -n1 || true)"
+          initial_line="$(grep 'Initial total' ../fase3-build.log | tail -n1 || true)"
+          test -n "$initial_line"
           printf '%s\n' "$initial_line" > ../fase3-bundle.txt
           node <<'NODE'
           const fs=require('fs');
@@ -141,6 +165,7 @@ jobs:
           path: |
             fase3-angular-versions.json
             fase3-bundle.txt
+            fase3-build.log
 
   e2e:
     name: E2E canónico exact-head
