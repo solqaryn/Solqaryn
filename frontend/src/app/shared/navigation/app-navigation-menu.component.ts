@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service';
 
@@ -142,6 +142,7 @@ import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service
       </section>
     }
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     :host { display: flex; flex-direction: column; gap: 10px; }
     .nav-group { display: grid; gap: 4px; }

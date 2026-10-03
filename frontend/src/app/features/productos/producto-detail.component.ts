@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit, signal } from '@angular/core';
+import { Component, HostListener, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -17,6 +17,7 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
   standalone: true,
   imports: [CommonModule, RouterLink, MatIconModule, MatButtonModule, MatProgressSpinnerModule, ProductoImagenComponent],
   templateUrl: './producto-detail.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './producto-detail.component.scss'
 })
 export class ProductoDetailComponent implements OnInit {

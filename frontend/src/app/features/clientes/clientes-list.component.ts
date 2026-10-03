@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -42,6 +42,7 @@ interface SegmentoClienteResumen {
     MatSlideToggleModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatPaginatorModule, FormsModule
   ],
   templateUrl: './clientes-list.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './clientes-list.component.scss'
 })
 export class ClientesListComponent implements OnInit {

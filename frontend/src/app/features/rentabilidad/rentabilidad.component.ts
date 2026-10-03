@@ -1,5 +1,5 @@
 
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
 import { ReporteVentasFiltroDto } from '../../core/models/reporte-ventas.models';
 import { RentabilidadAgrupacion, ReporteRentabilidadDto } from '../../core/models/reporte-rentabilidad.models';
 import { ReporteRentabilidadService } from '../../core/services/reporte-rentabilidad.service';
@@ -18,6 +18,7 @@ import { RentabilidadResultadosTablaComponent } from './tabla/rentabilidad-resul
     RentabilidadResultadosTablaComponent
 ],
   templateUrl: './rentabilidad.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './rentabilidad.component.scss',
 })
 export class RentabilidadComponent implements OnInit {

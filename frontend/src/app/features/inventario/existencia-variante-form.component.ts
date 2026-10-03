@@ -1,5 +1,5 @@
 
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -138,6 +138,7 @@ import { UbicacionAlmacenService } from '../../services/ubicacion-almacen.servic
       }
     </section>
     `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     :host{display:block}.page{padding:24px;max-width:1180px;margin:0 auto}.header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:24px}.eyebrow{margin:0 0 4px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;opacity:.65}h1{margin:0;font-size:clamp(24px,3vw,34px)}.subtitle{margin:6px 0 0;opacity:.72}.card{border:1px solid rgba(127,127,127,.22);border-radius:14px;padding:22px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.stock-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.policy-grid{max-width:600px}fieldset{border:0;padding:0;margin:0 0 24px}legend{font-size:14px;font-weight:700;margin-bottom:14px}.actions{display:flex;justify-content:flex-end;gap:10px;padding-top:4px}.feedback,.loading{display:flex;align-items:center;gap:10px;padding:22px;border-radius:12px}.feedback.error{border:1px solid rgba(244,67,54,.32);background:rgba(244,67,54,.06);margin-bottom:16px}.loading{justify-content:center;min-height:180px}@media(max-width:900px){.stock-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:640px){.page{padding:16px}.header{flex-direction:column}.card{padding:16px}.grid,.stock-grid{grid-template-columns:1fr}.actions{flex-direction:column-reverse}.actions button{width:100%}}
   `]

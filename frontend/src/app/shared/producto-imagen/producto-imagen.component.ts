@@ -1,4 +1,4 @@
-import { Component, HostBinding, Input, OnChanges, SimpleChanges, signal } from '@angular/core';
+import { Component, HostBinding, Input, OnChanges, SimpleChanges, signal, ChangeDetectionStrategy } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { cloudinaryResponsiveSrcset, cloudinaryResponsiveUrl } from '../cloudinary-image.util';
 
@@ -31,6 +31,7 @@ export type ProductoImagenVariant = 'option' | 'thumbnail' | 'line' | 'card' | '
       }
     </div>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     :host {
       display: block;

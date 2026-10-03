@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -186,6 +186,7 @@ import {
       </mat-card>
     </section>
     `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     .page{padding:24px;display:grid;gap:20px}.header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.header h1{margin:0;font-size:1.75rem}.header p{margin:6px 0 0;color:var(--text-secondary,#667085)}.eyebrow{text-transform:uppercase;letter-spacing:.08em;font-size:.72rem;font-weight:700;color:var(--primary,#3f51b5)!important}.header button mat-icon{margin-right:6px}.summary-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}.current-method{display:flex;align-items:center;gap:10px;font-size:1.35rem;margin:18px 0}.current-method mat-icon{color:var(--primary,#3f51b5)}dl{display:grid;gap:10px;margin:0}dl div{display:grid;grid-template-columns:160px 1fr;gap:12px}dt{font-weight:600;color:#667085}dd{margin:0}.change-form{display:grid;gap:10px;margin-top:16px}.change-form button{justify-self:start}.change-form button mat-icon{margin-right:6px}.change-form mat-spinner{display:inline-block;margin-right:8px}.filters{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr)) auto;gap:12px;align-items:start;margin-top:16px}.filter-actions{display:flex;gap:6px;padding-top:4px}.state{min-height:160px;display:flex;align-items:center;justify-content:center;gap:12px;border:1px dashed #d0d5dd;border-radius:12px;padding:20px}.state.compact{min-height:100px;margin-top:10px}.state.error,.inline-error{color:#b42318}.state.empty{color:#667085}.inline-success{color:#067647}.table-wrap{overflow:auto;border:1px solid #e4e7ec;border-radius:12px;margin-top:8px}table{width:100%;border-collapse:collapse;min-width:820px}th,td{padding:13px 14px;text-align:left;border-bottom:1px solid #eaecf0;vertical-align:top}th{font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;color:#667085;background:#f9fafb}.badge{display:inline-flex;border-radius:999px;padding:4px 9px;background:#f2f4f7;font-size:.78rem;font-weight:600}.badge.active{background:#ecfdf3;color:#067647}@media(max-width:1000px){.summary-grid{grid-template-columns:1fr}.filters{grid-template-columns:1fr 1fr}.filter-actions{grid-column:1/-1}}@media(max-width:600px){.page{padding:16px}.header{flex-direction:column}.filters{grid-template-columns:1fr}dl div{grid-template-columns:1fr;gap:2px}}
   `]

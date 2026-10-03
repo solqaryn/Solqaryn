@@ -1,5 +1,5 @@
 
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { PagedResult } from '../../core/models/api-response.model';
@@ -15,6 +15,7 @@ import { ReportesComprasTablaComponent } from './tabla/reportes-compras-tabla.co
   standalone: true,
   imports: [ReactiveFormsModule, ReporteComprasFiltrosComponent, EstadoSelectorComponent, PurchaseReportDisclosureComponent, ReportesComprasTablaComponent],
   templateUrl: './reportes-compras.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./reportes-compras.component.scss'],
 })
 export class ReportesComprasComponent implements OnInit {

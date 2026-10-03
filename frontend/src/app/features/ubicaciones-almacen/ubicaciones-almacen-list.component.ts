@@ -1,5 +1,5 @@
 
-import { Component, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -38,6 +38,7 @@ type PadreFiltro = 'todos' | 'raiz' | number;
     MatSlideToggleModule
 ],
   templateUrl: './ubicaciones-almacen-list.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './ubicaciones-almacen-list.component.scss'
 })
 export class UbicacionesAlmacenListComponent implements OnInit, OnDestroy {

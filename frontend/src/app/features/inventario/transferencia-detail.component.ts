@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -167,6 +167,7 @@ type RecepcionLinea = {
       }
     </section>
     `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     .page{padding:24px;display:grid;gap:20px}.header{display:flex;justify-content:space-between;gap:16px}.header-actions,.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.eyebrow{text-transform:uppercase;letter-spacing:.08em;font-size:12px;font-weight:700;margin:0}.header h1{margin:4px 0}.header p,.section-heading p{margin:0;color:var(--text-secondary,#667085)}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.summary div,.timeline,.details,.recepcion,.lifecycle{padding:18px;border:1px solid rgba(0,0,0,.12);border-radius:12px}.summary span{display:block;color:var(--text-secondary,#667085);font-size:12px}.summary strong{display:block;margin-top:6px}.dates{display:flex;gap:14px;flex-wrap:wrap}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse}th,td{padding:12px;text-align:left;border-bottom:1px solid rgba(0,0,0,.08);white-space:nowrap}.quantity{width:76px;padding:8px;border:1px solid rgba(0,0,0,.2);border-radius:8px}.state{min-height:160px;display:flex;justify-content:center;align-items:center;gap:12px}.error{color:#b42318}.ok{color:#027a48;font-weight:700}@media(max-width:800px){.summary{grid-template-columns:1fr 1fr}.header{flex-direction:column}}@media(max-width:520px){.page{padding:16px}.summary{grid-template-columns:1fr}}
   `]

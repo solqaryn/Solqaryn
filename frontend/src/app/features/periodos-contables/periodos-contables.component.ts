@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -130,6 +130,7 @@ import { PeriodoContableService } from '../../core/services/periodo-contable.ser
       }
     </section>
     `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     .page { padding: 24px; max-width: 1200px; margin: 0 auto; }
     .page__header, .filters, .create, .pager, .loading { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }

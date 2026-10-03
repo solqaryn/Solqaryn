@@ -1,5 +1,5 @@
 
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -35,6 +35,7 @@ import { TrazabilidadVariantePanelComponent } from '../productos/trazabilidad-va
       }
     </section>
     `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     :host{display:block}.page{max-width:1180px;margin:0 auto;padding:24px}.header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:22px}.eyebrow{margin:0 0 4px;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.65}h1{margin:0;font-size:clamp(24px,3vw,34px)}.subtitle{margin:6px 0 0;max-width:760px;opacity:.72}.feedback{display:flex;align-items:center;gap:9px;padding:14px;border-radius:10px}.feedback.error{border:1px solid rgba(244,67,54,.28);background:rgba(244,67,54,.07)}@media(max-width:640px){.page{padding:16px}.header{flex-direction:column}}
   `]

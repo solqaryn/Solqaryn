@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 
 import { ReactiveFormsModule, FormBuilder, FormControl, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -39,6 +39,7 @@ const PASSWORD_SEGURA = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{10,1
     MatProgressSpinnerModule
 ],
   templateUrl: './usuarios.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './usuarios.component.scss'
 })
 export class UsuariosComponent implements OnInit {

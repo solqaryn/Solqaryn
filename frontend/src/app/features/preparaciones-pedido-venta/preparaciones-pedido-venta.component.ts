@@ -1,5 +1,5 @@
 
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -125,6 +125,7 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
       }
     </section>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     .page{max-width:1180px;margin:auto;padding:16px;display:grid;gap:16px}.hero{display:flex;justify-content:space-between;gap:20px;align-items:flex-start}.hero h1{margin:.15rem 0}.hero p{margin:.2rem 0;max-width:760px}.eyebrow{text-transform:uppercase;letter-spacing:.08em;font-weight:700;font-size:.78rem;opacity:.7}.lookup-form{display:flex;gap:12px;align-items:flex-start}.lookup-form mat-form-field{flex:1;max-width:520px}.center{display:flex;flex-direction:column;align-items:center;gap:12px;padding:40px}.empty{text-align:center}.empty mat-icon{font-size:40px;width:40px;height:40px}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.summary mat-card-content{display:flex;flex-direction:column;gap:4px}.summary span{font-size:.8rem;opacity:.7}.summary strong{font-size:1.05rem}.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.steps li{display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid var(--color-border);border-radius:10px;opacity:.62}.steps li>span{display:grid;place-items:center;width:28px;height:28px;border-radius:999px;border:1px solid currentColor;font-weight:700}.steps li div{display:flex;flex-direction:column}.steps small{opacity:.75}.steps .done,.steps .current{opacity:1}.steps .current{outline:2px solid currentColor;outline-offset:1px}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.cancelled{display:flex;gap:10px;align-items:center;padding:14px;border:1px solid var(--color-border);border-radius:10px;margin-top:14px}.cancelled div{display:flex;flex-direction:column}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:11px;border-bottom:1px solid var(--color-border)}@media(max-width:850px){.summary,.steps{grid-template-columns:1fr 1fr}}@media(max-width:650px){.hero,.lookup-form{flex-direction:column}.summary,.steps{grid-template-columns:1fr}.lookup-form mat-form-field{width:100%}}
   `]

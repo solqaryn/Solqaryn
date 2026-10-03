@@ -1,5 +1,5 @@
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -65,6 +65,7 @@ import { UbicacionAlmacenService } from '../../services/ubicacion-almacen.servic
     </form>
     </section>
     `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     .page{max-width:980px;margin:0 auto;padding:24px;display:grid;gap:20px}header{display:flex;align-items:flex-start;gap:12px}header h1{margin:0}header p{margin:5px 0;color:#667085}.eyebrow{text-transform:uppercase;letter-spacing:.08em;font-size:.72rem;font-weight:700;color:var(--primary,#3f51b5)!important}.card{display:grid;gap:18px;padding:24px;border:1px solid #e4e7ec;border-radius:14px;background:var(--surface,#fff)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.full{width:100%}.actions{display:flex;justify-content:flex-end;gap:8px}.error{padding:12px;border-radius:8px;background:#fef3f2;color:#b42318}@media(max-width:640px){.page{padding:16px}.grid{grid-template-columns:1fr}.card{padding:16px}}
   `]

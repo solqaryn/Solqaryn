@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -20,6 +20,7 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
     MatFormFieldModule, MatIconModule, MatInputModule, MatProgressSpinnerModule, MatTableModule
   ],
   templateUrl: './costos-envio.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './costos-envio.component.scss'
 })
 export class CostosEnvioComponent implements OnInit {

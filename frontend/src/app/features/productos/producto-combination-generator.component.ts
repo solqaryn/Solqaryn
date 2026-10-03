@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output, inject, signal } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -24,6 +24,7 @@ const MAX_COMBINACIONES = 100;
     MatIconModule, MatInputModule, MatSelectModule
   ],
   templateUrl: './producto-combination-generator.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './producto-combination-generator.component.scss'
 })
 export class ProductoCombinationGeneratorComponent {

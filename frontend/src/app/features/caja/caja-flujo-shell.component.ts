@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -248,6 +248,7 @@ export type CajaAccionUi = 'ABRIR' | 'INICIAR_OPERACIONES' | 'REGISTRAR_MOVIMIEN
       }
     </section>
     `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     :host { display: block; }
     .caja-shell { display: grid; gap: 1rem; padding: 1rem; color: var(--mat-app-text-color, #1f2937); }

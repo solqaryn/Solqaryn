@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -134,6 +134,7 @@ type EstadoFiltro = 'todas' | 'activas' | 'inactivas';
       }
     </section>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     .empresa-card { margin-top: 1.25rem; padding: 1.25rem; }
     .header-row, .toolbar, .editor-actions, .detail { display:flex; align-items:center; gap:1rem; }

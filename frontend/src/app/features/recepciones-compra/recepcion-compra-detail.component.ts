@@ -1,5 +1,5 @@
 
-import { Component, Inject, OnInit, inject, signal } from '@angular/core';
+import { Component, Inject, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -15,6 +15,7 @@ import { AnularDialogComponent } from '../../shared/anular-dialog.component';
   selector: 'app-confirmar-recepcion-dialog',
   standalone: true,
   imports: [MatDialogModule, MatButtonModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <h2 mat-dialog-title>{{ data.title }}</h2>
     <mat-dialog-content>{{ data.message }}</mat-dialog-content>
@@ -92,6 +93,7 @@ export class ConfirmarRecepcionDialogComponent {
       }
     </section>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     .page-shell{display:grid;gap:1.25rem;max-width:1400px;margin:0 auto}.page-header{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem}.eyebrow{margin:0 0 .25rem;text-transform:uppercase;letter-spacing:.08em;font-size:.75rem;font-weight:700;opacity:.7}h1{margin:.1rem 0}.state-panel{min-height:120px;display:flex;align-items:center;justify-content:center;gap:.75rem;border:1px solid rgba(127,127,127,.18);border-radius:14px}.error{color:var(--mat-sys-error,#b3261e)}.summary-grid{display:grid;grid-template-columns:repeat(6,minmax(120px,1fr));gap:.75rem}.summary-grid>div{display:grid;gap:.3rem;padding:1rem;border:1px solid rgba(127,127,127,.18);border-radius:12px}.summary-grid small{opacity:.7}.summary-grid strong{font-size:1.1rem}.note{padding:1rem;border-radius:12px;background:rgba(127,127,127,.08)}.note p{margin:.4rem 0 0}.table-wrap{overflow:auto;border:1px solid rgba(127,127,127,.18);border-radius:12px}table{width:100%;border-collapse:collapse;min-width:900px}th,td{padding:.75rem;border-bottom:1px solid rgba(127,127,127,.15);text-align:left}td:first-child{display:grid;gap:.2rem}td:first-child span{opacity:.72}.numeric{text-align:right}.actions{display:flex;justify-content:flex-end;align-items:center;gap:.75rem}@media(max-width:900px){.summary-grid{grid-template-columns:repeat(3,1fr)}}@media(max-width:620px){.page-header{flex-direction:column}.summary-grid{grid-template-columns:repeat(2,1fr)}}
   `]

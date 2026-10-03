@@ -1,5 +1,5 @@
 
-import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ReporteComprasFiltroDto } from '../../../core/models/reporte-compras.models';
 
@@ -59,6 +59,7 @@ type ReporteComprasSelectorControl = 'proveedorId' | 'productoId' | 'productoVar
       }
     </form>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [
     `.filter-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.75rem;align-items:end}`,
     `.filter-grid label{display:grid;gap:.25rem}`,

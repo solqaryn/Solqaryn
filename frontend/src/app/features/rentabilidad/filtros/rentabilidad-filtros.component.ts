@@ -1,5 +1,5 @@
 
-import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ReporteVentasFiltroDto } from '../../../core/models/reporte-ventas.models';
 
@@ -67,6 +67,7 @@ type RentabilidadSelectorControl =
       }
     </form>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [
     `.filter-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.75rem;align-items:end}`,
     `.filter-grid label{display:grid;gap:.25rem}`,

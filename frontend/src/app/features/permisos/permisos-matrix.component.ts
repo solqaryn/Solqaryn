@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -28,6 +28,7 @@ import { Rol } from '../../core/models/rol.model';
     MatIconModule
 ],
   templateUrl: './permisos-matrix.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './permisos-matrix.component.scss'
 })
 export class PermisosMatrixComponent implements OnInit {

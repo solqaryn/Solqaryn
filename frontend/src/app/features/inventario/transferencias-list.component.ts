@@ -1,5 +1,5 @@
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -94,6 +94,7 @@ import { TransferenciaInventarioService } from '../../services/transferencia-inv
       <mat-paginator [length]="totalCount" [pageIndex]="page - 1" [pageSize]="pageSize" [pageSizeOptions]="[10, 20, 50]" (page)="cambiarPagina($event)"></mat-paginator>
     </section>
     `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     .page{padding:24px;display:grid;gap:20px}.header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.eyebrow{text-transform:uppercase;letter-spacing:.08em;font-size:12px;font-weight:700;margin:0}.header h1{margin:4px 0}.header p{margin:0;color:var(--text-secondary,#667085)}.filters{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr)) auto;gap:12px;align-items:start}.filter-actions{display:flex;gap:8px;padding-top:4px}.state{min-height:100px;display:flex;gap:12px;align-items:center;justify-content:center}.error{color:#b42318}.table-wrap{overflow:auto;border:1px solid rgba(0,0,0,.12);border-radius:12px}table{width:100%;border-collapse:collapse}th,td{padding:14px;text-align:left;border-bottom:1px solid rgba(0,0,0,.08);white-space:nowrap}.actions{display:flex;gap:4px}.status{display:inline-flex;padding:4px 10px;border-radius:999px;background:rgba(0,0,0,.06);font-weight:600}@media(max-width:1000px){.filters{grid-template-columns:1fr 1fr}.header{flex-direction:column}}@media(max-width:640px){.page{padding:16px}.filters{grid-template-columns:1fr}}
   `]

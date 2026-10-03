@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -69,6 +69,7 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
     }
     </section>
     `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`.page{padding:24px;display:grid;gap:20px}.header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.header h1{margin:4px 0}.eyebrow{margin:12px 0 0;text-transform:uppercase;letter-spacing:.08em;font-size:.72rem;font-weight:700;color:var(--primary,#3f51b5)}.actions{display:flex;flex-wrap:wrap;gap:8px}.actions mat-icon{margin-right:5px}.state{min-height:180px;display:flex;align-items:center;justify-content:center;gap:12px;border:1px dashed #d0d5dd;border-radius:12px}.state.error{color:#b42318}.summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.summary div,.audit{padding:14px;border:1px solid #e4e7ec;border-radius:12px;background:#fff}.summary span{display:block;color:#667085;font-size:.78rem;margin-bottom:4px}.message{padding:12px;border-radius:10px;background:#ecfdf3;color:#027a48}.table-wrap{overflow:auto;border:1px solid #e4e7ec;border-radius:12px}table{width:100%;border-collapse:collapse;min-width:780px}th,td{padding:14px 16px;text-align:left;border-bottom:1px solid #eaecf0}th{font-size:.78rem;text-transform:uppercase;color:#667085;background:#f9fafb}td small{display:block;color:#667085;margin-top:3px}.audit p{margin:6px 0 0;color:#475467}@media(max-width:800px){.page{padding:16px}.header{flex-direction:column}.summary{grid-template-columns:1fr 1fr}}@media(max-width:520px){.summary{grid-template-columns:1fr}}`]
 })
 export class ReservaInventarioDetailComponent implements OnInit {

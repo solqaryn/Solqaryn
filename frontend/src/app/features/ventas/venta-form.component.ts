@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, inject, signal } from '@angular/core';
+import { Component, OnInit, ViewChild, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, AbstractControl, FormBuilder, FormArray, FormControl, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -34,6 +34,7 @@ import { MetodoPagoSelectComponent } from '../../shared/metodo-pago-select/metod
     CodigoScannerInputComponent, MetodoPagoSelectComponent
   ],
   templateUrl: './venta-form.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './venta-form.component.scss'
 })
 export class VentaFormComponent implements OnInit {

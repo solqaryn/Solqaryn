@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Component, Input, computed, inject, signal } from '@angular/core';
+import { Component, Input, computed, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -198,6 +198,7 @@ type AmbitoSucursal = 'empresa' | 'sucursal';
       </section>
     }
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     .fiscal-card{margin:18px 0;padding:20px;border:1px solid #d8dee8;border-radius:14px;background:#fff;box-shadow:0 8px 24px rgba(15,23,42,.06)}
     .fiscal-heading{display:flex;gap:18px;justify-content:space-between;align-items:flex-start}.fiscal-heading h2{margin:2px 0 6px;font-size:20px}.fiscal-heading p{margin:0;color:#526071;max-width:760px}.eyebrow{font-size:12px!important;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#0f5f91!important}

@@ -1,5 +1,5 @@
 
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -45,6 +45,7 @@ import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service
       }
     </section>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     .automation-settings{margin:24px 0;padding:24px}.heading{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.heading h2{margin:0 0 6px}.heading p{margin:0;max-width:760px}.heading>span{font-weight:700}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:20px}.toggle{display:flex;gap:10px;align-items:center;margin:4px 0 14px}.hint{opacity:.78}.readonly{display:flex;gap:8px;align-items:center}.error{color:var(--color-danger)}button{min-height:44px}.loading{display:flex;justify-content:center;padding:24px}@media(max-width:600px){.automation-settings{padding:18px}.heading{flex-direction:column}}
   `]

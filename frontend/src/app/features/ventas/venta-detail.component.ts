@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -16,6 +16,7 @@ import { ProductoImagenComponent } from '../../shared/producto-imagen/producto-i
   standalone: true,
   imports: [CommonModule, RouterLink, MatButtonModule, MatIconModule, MatProgressSpinnerModule, MatDialogModule, ProductoImagenComponent],
   templateUrl: './venta-detail.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './venta-detail.component.scss'
 })
 export class VentaDetailComponent implements OnInit {

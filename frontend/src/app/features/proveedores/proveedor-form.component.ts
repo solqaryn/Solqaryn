@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -14,6 +14,7 @@ import { ProveedorService } from '../../services/proveedor.service';
   standalone: true,
   imports: [ReactiveFormsModule, RouterLink, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, MatProgressSpinnerModule],
   templateUrl: './proveedor-form.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './proveedor-form.component.scss'
 })
 export class ProveedorFormComponent implements OnInit {

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -29,6 +29,7 @@ function parseIds(texto: string | null | undefined): number[] {
     MatCheckboxModule
 ],
   templateUrl: './descuento-form.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './descuento-form.component.scss'
 })
 export class DescuentoFormComponent implements OnInit {

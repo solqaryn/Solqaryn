@@ -1,6 +1,6 @@
 
 import { HttpClient } from '@angular/common/http';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { finalize } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service';
@@ -95,6 +95,7 @@ interface WhatsAppSessionStatus {
       }
     </section>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     .whatsapp-card { margin-top: 1rem; padding: 1.25rem; }
     .header-row { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; }

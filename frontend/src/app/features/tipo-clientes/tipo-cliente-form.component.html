@@ -33,7 +33,7 @@
             <input matInput formControlName="colorHex" required placeholder="#HEXADECIMAL">
             <mat-error>Código de color inválido (debe ser #RRGGBB)</mat-error>
           </mat-form-field>
-          <input type="color" class="native-color-picker" [value]="form.get('colorHex')?.value" (input)="form.get('colorHex')?.setValue($any($event.target).value)">
+          <input type="color" class="native-color-picker" [value]="$safeNavigationMigration(form.get('colorHex')?.value)" (input)="form.get('colorHex')?.setValue($any($event.target).value)">
         </div>
         <mat-form-field appearance="outline">
           <mat-label>Orden de Visualización *</mat-label>

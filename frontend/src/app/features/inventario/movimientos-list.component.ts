@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -42,6 +42,7 @@ interface OpcionFiltro {
     ProductoImagenComponent
   ],
   templateUrl: './movimientos-list.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './movimientos-list.component.scss'
 })
 export class MovimientosListComponent implements OnInit {

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
 import { PagedResult } from '../../../core/models/api-response.model';
 import { ReporteVentasDetalleDto } from '../../../core/models/reporte-ventas.models';
 
@@ -86,6 +86,7 @@ import { ReporteVentasDetalleDto } from '../../../core/models/reporte-ventas.mod
       }
     </section>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     .detail-card {
       background: #fff;

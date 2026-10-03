@@ -1,5 +1,5 @@
 
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -157,6 +157,7 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
       </div>
     </section>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     .page-shell{display:grid;gap:20px}.page-header{display:flex;justify-content:space-between;gap:20px;align-items:flex-start}.page-header h1{margin:2px 0 6px;font-size:clamp(1.6rem,2.5vw,2.2rem)}.page-header p{margin:0;color:var(--text-secondary,#64748b)}.eyebrow{text-transform:uppercase;letter-spacing:.09em;font-weight:700;font-size:.75rem;color:var(--primary,#2563eb)!important}.editor,.list-card{background:var(--surface,#fff);border:1px solid var(--border,#e2e8f0);border-radius:16px;padding:20px;box-shadow:0 8px 24px rgba(15,23,42,.05)}.editor-title{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:18px}.editor-title h2{margin:0 0 4px}.editor-title p{margin:0;color:var(--text-secondary,#64748b)}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.flags{display:flex;flex-wrap:wrap;gap:18px 28px;align-items:center;margin:4px 0 18px}.metadata-field{width:100%}.form-actions{display:flex;justify-content:flex-end;gap:10px;align-items:center}.form-error{color:#b91c1c;margin:0 0 12px}.loading,.empty{min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--text-secondary,#64748b)}.empty mat-icon{font-size:42px;width:42px;height:42px}.empty h2,.empty p{margin:0}.table-scroll{overflow:auto}table{width:100%;border-collapse:collapse;min-width:900px}th,td{text-align:left;padding:13px 10px;border-bottom:1px solid var(--border,#e2e8f0);vertical-align:middle}th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-secondary,#64748b)}tr.inactivo{opacity:.68}.actions-col,.actions{text-align:right}.actions{white-space:nowrap}.order-cell{display:flex;align-items:center;gap:6px}.order-buttons{display:inline-flex}.order-buttons button{width:30px;height:30px}.chips{display:flex;gap:5px;flex-wrap:wrap}.chips span,.status{display:inline-flex;padding:3px 8px;border-radius:999px;background:#eef2ff;font-size:.76rem}.chips .muted-chip{background:#f1f5f9}.status{background:#fee2e2;color:#991b1b}.status.ok{background:#dcfce7;color:#166534}code{font-size:.85rem}@media(max-width:760px){.page-header{flex-direction:column}.form-grid{grid-template-columns:1fr}.editor,.list-card{padding:14px}}
   `]

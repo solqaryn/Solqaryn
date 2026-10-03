@@ -1,5 +1,5 @@
 
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import {
   ReactiveFormsModule,
   UntypedFormArray,
@@ -111,16 +111,16 @@ import { ProductoService } from '../../services/producto.service';
                     formControlName="productoVarianteId"
                     required
                     (selectionChange)="onVarianteChange(i, $event.value)">
-                    @for (variante of variantesProducto(detail.get('productoId')?.value); track variante) {
+                    @for (variante of variantesProducto($safeNavigationMigration(detail.get('productoId')?.value)); track variante) {
                       <mat-option [value]="variante.id">
                         {{ etiquetaVariante(variante) }}
                       </mat-option>
                     }
                   </mat-select>
-                  @if (variantesProducto(detail.get('productoId')?.value).length > 0) {
+                  @if (variantesProducto($safeNavigationMigration(detail.get('productoId')?.value)).length > 0) {
                     <mat-hint>Selecciona la variante física concreta.</mat-hint>
                   }
-                  @if (detail.get('productoId')?.value && variantesProducto(detail.get('productoId')?.value).length === 0) {
+                  @if (detail.get('productoId')?.value && variantesProducto($safeNavigationMigration(detail.get('productoId')?.value)).length === 0) {
                     <mat-hint>El producto no tiene una variante operativa disponible.</mat-hint>
                   }
                   <mat-error>Selecciona una variante válida.</mat-error>
@@ -130,19 +130,19 @@ import { ProductoService } from '../../services/producto.service';
                   <mat-select
                     formControlName="existenciaId"
                     required
-                    [disabled]="!detail.get('productoVarianteId')?.value || cargandoExistenciasVariante(detail.get('productoVarianteId')?.value)"
+                    [disabled]="!detail.get('productoVarianteId')?.value || cargandoExistenciasVariante($safeNavigationMigration(detail.get('productoVarianteId')?.value))"
                     (selectionChange)="onExistenciaChange(i, $event.value)">
-                    @for (existencia of existenciasVariante(detail.get('productoVarianteId')?.value); track existencia) {
+                    @for (existencia of existenciasVariante($safeNavigationMigration(detail.get('productoVarianteId')?.value)); track existencia) {
                       <mat-option
                         [value]="existencia.id">
                         {{ etiquetaExistencia(existencia) }}
                       </mat-option>
                     }
                   </mat-select>
-                  @if (cargandoExistenciasVariante(detail.get('productoVarianteId')?.value)) {
+                  @if (cargandoExistenciasVariante($safeNavigationMigration(detail.get('productoVarianteId')?.value))) {
                     <mat-hint>Cargando existencias físicas…</mat-hint>
                   }
-                  @if (detail.get('productoVarianteId')?.value && !cargandoExistenciasVariante(detail.get('productoVarianteId')?.value) && existenciasVariante(detail.get('productoVarianteId')?.value).length === 0) {
+                  @if (detail.get('productoVarianteId')?.value && !cargandoExistenciasVariante($safeNavigationMigration(detail.get('productoVarianteId')?.value)) && existenciasVariante($safeNavigationMigration(detail.get('productoVarianteId')?.value)).length === 0) {
                     <mat-hint>La variante no tiene existencias por almacén disponibles.</mat-hint>
                   }
                   <mat-error>Selecciona una existencia física válida.</mat-error>
@@ -180,6 +180,7 @@ import { ProductoService } from '../../services/producto.service';
       }
     </section>
     `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     :host { display: block; }
     .form-page { max-width: 1240px; margin: 0 auto; padding: 24px; }

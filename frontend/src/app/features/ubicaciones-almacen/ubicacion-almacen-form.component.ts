@@ -1,5 +1,5 @@
 
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -41,6 +41,7 @@ interface PadreOpcion {
     MatSelectModule
 ],
   templateUrl: './ubicacion-almacen-form.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './ubicacion-almacen-form.component.scss'
 })
 export class UbicacionAlmacenFormComponent implements OnInit {

@@ -1,5 +1,5 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { PermisosRuntimeService } from '../../../core/auth/permisos-runtime.service';
@@ -38,6 +38,7 @@ const PANEL_STYLES = `
       </div>
     </section>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [PANEL_STYLES]
 })
 export class NotasCreditoClienteHomeComponent {
@@ -76,6 +77,7 @@ export class NotasCreditoClienteHomeComponent {
       }
     </section>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [PANEL_STYLES]
 })
 export class NotaCreditoClienteDetailComponent implements OnInit {
@@ -130,6 +132,7 @@ export class NotaCreditoClienteDetailComponent implements OnInit {
       </form>
     </section>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [PANEL_STYLES]
 })
 export class NotaCreditoClienteFormComponent {

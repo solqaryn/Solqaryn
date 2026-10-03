@@ -1,5 +1,5 @@
 
-import { Component, OnInit, effect, inject, signal } from '@angular/core';
+import { Component, OnInit, effect, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -120,6 +120,7 @@ import {
       }
     </section>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     .templates-card{margin-top:1.25rem;padding:1.25rem}.header-row,.list-header,.actions,.error-banner,.conflict,.readonly{display:flex;align-items:center;gap:.75rem}.header-row,.list-header{justify-content:space-between;flex-wrap:wrap}.hint{margin:.25rem 0;opacity:.78}.state{min-height:100px;display:flex;align-items:center;justify-content:center;gap:.75rem;text-align:center}.error,.error-banner,.conflict{color:var(--color-error,#b3261e)}.error-banner,.conflict,.readonly{padding:.75rem 1rem;border:1px solid rgba(0,0,0,.12);border-radius:8px}.layout{display:grid;grid-template-columns:minmax(230px,.75fr) minmax(0,1.25fr);gap:1rem;margin-top:1rem}.template-list,.editor{display:grid;align-content:start;gap:.75rem}.template-item{width:100%;display:flex;align-items:center;justify-content:space-between;gap:.75rem;text-align:left;padding:.8rem;border:1px solid rgba(0,0,0,.12);border-radius:8px;background:transparent;color:inherit;cursor:pointer}.template-item.selected{outline:2px solid var(--color-primary,#2563eb);outline-offset:1px}.template-item span:first-child{display:grid;gap:.2rem;min-width:0}.template-item small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.status{font-size:.8rem;font-weight:700;color:#1b5e20}.status.inactive{color:#6b7280}.editor{padding:1rem;border:1px solid rgba(0,0,0,.12);border-radius:10px}.check-row{display:flex;align-items:center;gap:.5rem;min-height:44px}.actions{justify-content:flex-end;flex-wrap:wrap}.readonly{width:fit-content}@media(max-width:820px){.layout{grid-template-columns:1fr}.actions button{flex:1}}
   `]

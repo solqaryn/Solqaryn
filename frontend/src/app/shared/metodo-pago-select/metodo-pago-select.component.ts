@@ -1,5 +1,5 @@
 
-import { Component, Input, OnInit, forwardRef, inject, signal } from '@angular/core';
+import { Component, Input, OnInit, forwardRef, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -43,6 +43,7 @@ import { MetodoPagoService } from '../../services/metodo-pago.service';
       }
     </mat-form-field>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [':host { display: block; min-width: 0; } .full-width { width: 100%; }']
 })
 export class MetodoPagoSelectComponent implements OnInit, ControlValueAccessor {

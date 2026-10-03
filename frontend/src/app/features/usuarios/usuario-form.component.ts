@@ -1,5 +1,5 @@
 
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -31,6 +31,7 @@ const PASSWORD_SEGURA = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{10,1
     MatSelectModule
 ],
   templateUrl: './usuario-form.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './usuario-form.component.scss'
 })
 export class UsuarioFormComponent implements OnInit {

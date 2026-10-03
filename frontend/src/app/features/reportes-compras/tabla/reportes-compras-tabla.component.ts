@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, DecimalPipe, DatePipe } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
@@ -22,6 +22,7 @@ import { PagedResult } from '../../../core/models/api-response.model';
   ],
   templateUrl: './reportes-compras-tabla.component.html',
   styleUrls: ['./reportes-compras-tabla.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   providers: [DecimalPipe, DatePipe]
 })
 export class ReportesComprasTablaComponent {

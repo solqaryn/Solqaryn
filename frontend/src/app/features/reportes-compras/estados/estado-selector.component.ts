@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -10,6 +10,7 @@ export type TipoEstadoCompra = 'EstadoOrden' | 'EstadoFactura' | 'EstadoRecepcio
   selector: 'app-estado-selector',
   standalone: true,
   imports: [ReactiveFormsModule, MatFormFieldModule, MatSelectModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <mat-form-field appearance="outline" class="w-full">
       <mat-label>{{ label }}</mat-label>

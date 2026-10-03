@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { ReporteVentasResumenDto } from '../../../core/models/reporte-ventas.models';
 
 @Component({
@@ -48,6 +48,7 @@ import { ReporteVentasResumenDto } from '../../../core/models/reporte-ventas.mod
       }
     </div>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [
     `
       .summary-card {

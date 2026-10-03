@@ -166,7 +166,7 @@
     <h3>Detalles del Asiento</h3>
     <div style="display: flex; gap: 2rem; margin-bottom: 1rem;">
       <div><strong>Número:</strong> {{ asientoSeleccionado()?.numero || 'N/A' }}</div>
-      <div><strong>Fecha:</strong> {{ asientoSeleccionado()?.fecha | date:'shortDate' }}</div>
+      <div><strong>Fecha:</strong> {{ $safeNavigationMigration(asientoSeleccionado()?.fecha) | date:'shortDate' }}</div>
       <div><strong>Concepto:</strong> {{ asientoSeleccionado()?.concepto }}</div>
     </div>
     <table mat-table [dataSource]="asientoSeleccionado()?.detalles || []" class="mat-elevation-z8">
@@ -181,12 +181,12 @@
       <ng-container matColumnDef="debe">
         <th mat-header-cell *matHeaderCellDef> Debe </th>
         <td mat-cell *matCellDef="let d"> {{d.debe | number:'1.2-2'}} </td>
-        <td mat-footer-cell *matFooterCellDef> <strong>{{ asientoSeleccionado()?.totalDebe | number:'1.2-2' }}</strong> </td>
+        <td mat-footer-cell *matFooterCellDef> <strong>{{ $safeNavigationMigration(asientoSeleccionado()?.totalDebe) | number:'1.2-2' }}</strong> </td>
       </ng-container>
       <ng-container matColumnDef="haber">
         <th mat-header-cell *matHeaderCellDef> Haber </th>
         <td mat-cell *matCellDef="let d"> {{d.haber | number:'1.2-2'}} </td>
-        <td mat-footer-cell *matFooterCellDef> <strong>{{ asientoSeleccionado()?.totalHaber | number:'1.2-2' }}</strong> </td>
+        <td mat-footer-cell *matFooterCellDef> <strong>{{ $safeNavigationMigration(asientoSeleccionado()?.totalHaber) | number:'1.2-2' }}</strong> </td>
       </ng-container>
       <tr mat-header-row *matHeaderRowDef="['cuenta', 'referencia', 'debe', 'haber']"></tr>
       <tr mat-row *matRowDef="let row; columns: ['cuenta', 'referencia', 'debe', 'haber'];"></tr>

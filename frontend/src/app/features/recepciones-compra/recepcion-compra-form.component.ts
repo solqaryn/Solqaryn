@@ -1,5 +1,5 @@
 
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -120,6 +120,7 @@ import { RecepcionCompraService } from '../../services/recepcion-compra.service'
       }
     </section>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     .page-shell{display:grid;gap:1.25rem;max-width:1280px;margin:0 auto}.page-header{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem}.eyebrow{margin:0 0 .25rem;text-transform:uppercase;letter-spacing:.08em;font-size:.75rem;font-weight:700;opacity:.7}h1{margin:.1rem 0}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}.span-2{grid-column:1/-1}.state-panel{min-height:96px;display:flex;align-items:center;justify-content:center;gap:.75rem;border:1px solid rgba(127,127,127,.18);border-radius:14px;padding:1rem}.error,.line-error{color:var(--mat-sys-error,#b3261e)}.summary{display:flex;justify-content:space-between;gap:1rem;padding:1rem;border-radius:12px;background:rgba(127,127,127,.08)}.summary span{opacity:.78}.lines{display:grid;gap:1rem}.line-card{padding:1rem;border:1px solid rgba(127,127,127,.2);border-radius:14px}.line-card header{display:flex;justify-content:space-between;gap:1rem;margin-bottom:1rem}.line-card header div:first-child{display:grid;gap:.2rem}.line-card header span{opacity:.72}.pending{display:grid;text-align:right}.line-grid{display:grid;grid-template-columns:minmax(220px,1.5fr) repeat(4,minmax(110px,1fr));gap:.75rem}.line-error{margin:.1rem 0 0;font-size:.9rem}.actions{display:flex;justify-content:flex-end;gap:.75rem;align-items:center}@media(max-width:960px){.line-grid{grid-template-columns:repeat(2,minmax(140px,1fr))}.warehouse{grid-column:1/-1}}@media(max-width:680px){.page-header{flex-direction:column}.form-grid,.line-grid{grid-template-columns:1fr}.span-2,.warehouse{grid-column:1}.summary{flex-direction:column}.line-card header{flex-direction:column}.pending{text-align:left}}
   `]

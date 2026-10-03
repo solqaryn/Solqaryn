@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize } from 'rxjs';
 import {
@@ -13,6 +13,7 @@ import { EstadoFinancieroService } from '../../services/estado-financiero.servic
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './estados-financieros.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './estados-financieros.component.scss',
 })
 export class EstadosFinancierosComponent {

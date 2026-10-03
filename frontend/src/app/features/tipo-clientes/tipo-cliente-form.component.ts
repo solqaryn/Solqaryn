@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -25,6 +25,7 @@ import { TipoCliente } from '../../core/models/tipo-cliente.model';
     MatSlideToggleModule
 ],
   templateUrl: './tipo-cliente-form.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './tipo-cliente-form.component.scss'
 })
 export class TipoClienteFormComponent implements OnInit {

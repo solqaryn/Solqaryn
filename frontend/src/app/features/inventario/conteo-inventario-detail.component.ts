@@ -1,5 +1,5 @@
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -85,6 +85,7 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
     }
     
     `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     .page{padding:24px;display:grid;gap:20px}.header,.title,.toolbar,.section-title{display:flex;align-items:center}.header,.section-title{justify-content:space-between;gap:16px}.title{gap:10px;align-items:flex-start}.title h1,.section-title h2{margin:0}.title p,.section-title p{margin:4px 0;color:#667085}.eyebrow{text-transform:uppercase;letter-spacing:.08em;font-size:.72rem;font-weight:700;color:var(--primary,#3f51b5)!important}.badge{padding:6px 12px;border-radius:999px;background:#f2f4f7;font-weight:700}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.summary article,.meta{border:1px solid #e4e7ec;border-radius:12px;padding:16px}.summary span,.meta span{display:block;font-size:.78rem;color:#667085}.summary strong{font-size:1.45rem}.meta{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}.toolbar{gap:8px;flex-wrap:wrap}.toolbar mat-icon{margin-right:5px}.table-wrap{border:1px solid #e4e7ec;border-radius:12px;overflow:hidden}.section-title{padding:16px}.scroll{overflow:auto}table{width:100%;border-collapse:collapse;min-width:850px}th,td{padding:12px 14px;text-align:left;border-top:1px solid #eaecf0}th{font-size:.78rem;color:#667085;background:#f9fafb}.cantidad{width:120px;margin-bottom:-20px}td small{display:block;color:#667085;margin-top:3px}.diff{font-weight:700;color:#b54708}.state{min-height:260px;display:flex;gap:12px;align-items:center;justify-content:center}.error{color:#b42318}.page>.error{padding:12px;border-radius:8px;background:#fef3f2}@media(max-width:850px){.page{padding:16px}.summary{grid-template-columns:1fr 1fr}.meta{grid-template-columns:1fr 1fr}.header,.section-title{align-items:flex-start;flex-direction:column}}@media(max-width:520px){.summary,.meta{grid-template-columns:1fr}}
   `]

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 
 import { ReactiveFormsModule, FormsModule, FormBuilder, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -45,6 +45,7 @@ import { WhatsappBusinessCardComponent } from './whatsapp-business-card.componen
     WhatsappBusinessCardComponent
 ],
   templateUrl: './configuracion.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './configuracion.component.scss'
 })
 export class ConfiguracionComponent implements OnInit {

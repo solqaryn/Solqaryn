@@ -1,5 +1,5 @@
 
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
@@ -9,6 +9,7 @@ export type FeedbackStateType = 'loading' | 'empty' | 'success' | 'error' | 'war
   selector: 'app-feedback-state',
   standalone: true,
   imports: [MatIconModule, MatProgressSpinnerModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <section
       class="app-feedback"

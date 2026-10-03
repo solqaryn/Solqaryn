@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -22,6 +22,7 @@ import { RolService } from '../../services/rol.service';
     MatCheckboxModule
 ],
   templateUrl: './rol-form.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './rol-form.component.scss'
 })
 export class RolFormComponent implements OnInit {

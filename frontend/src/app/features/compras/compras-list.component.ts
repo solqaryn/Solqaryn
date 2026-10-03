@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -20,6 +20,7 @@ import { ProductoImagenComponent } from '../../shared/producto-imagen/producto-i
   standalone: true,
   imports: [CommonModule, RouterLink, FormsModule, MatIconModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatPaginatorModule, MatProgressSpinnerModule, ProductoImagenComponent],
   templateUrl: './compras-list.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './compras-list.component.scss'
 })
 export class ComprasListComponent implements OnInit, OnDestroy {

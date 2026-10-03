@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -202,6 +202,7 @@ import { AppAlertService } from '../../../shared/alerts/app-alert.service';
       }
     </section>
     `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     .cxp-page{display:grid;gap:16px;padding:20px;max-width:1500px;margin:auto}.page-header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.eyebrow{margin:0;color:var(--color-primary);font-weight:700}.subtitle{margin:4px 0 0;color:var(--color-text-muted)}h1{margin:2px 0}.panel{border:1px solid var(--color-border)}.form-grid,.filters,.apply-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;align-items:center}.form-action{align-self:stretch;display:flex;align-items:center}.table-wrap{overflow:auto}table{width:100%;min-width:850px}.loading{min-height:160px;display:grid;place-items:center;gap:10px}.empty{padding:24px;text-align:center;color:var(--color-text-muted)}.status{display:inline-flex;padding:4px 9px;border-radius:999px;background:var(--color-bg);font-weight:650}.status[data-status='1']{color:#8a4b00}.status[data-status='2']{color:#075985}.status[data-status='3']{color:#166534}.status[data-status='4']{color:#991b1b}.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px}.summary-grid div{display:grid;gap:4px;padding:12px;border:1px solid var(--color-border);border-radius:8px}.summary-grid span{color:var(--color-text-muted);font-size:.86rem}.apply-form{margin:16px 0;padding:16px;background:var(--color-bg);border-radius:10px}.apply-form h3{grid-column:1/-1;margin:0}.applications{display:grid;gap:10px}.application{display:grid;grid-template-columns:2fr 2fr auto auto;gap:12px;align-items:center;padding:12px;border:1px solid var(--color-border);border-radius:8px}.application>div{display:flex;gap:8px;flex-wrap:wrap}@media(max-width:760px){.page-header{display:grid}.application{grid-template-columns:1fr}.cxp-page{padding:12px}}
   `]

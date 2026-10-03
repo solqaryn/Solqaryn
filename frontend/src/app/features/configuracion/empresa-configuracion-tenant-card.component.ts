@@ -1,5 +1,5 @@
 
-import { Component, OnInit, effect, inject, signal } from '@angular/core';
+import { Component, OnInit, effect, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -125,6 +125,7 @@ import { ConfigEmpresaTenant, EmpresaConfiguracionService } from '../../services
       }
     </section>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     .tenant-card{margin-top:1.25rem;padding:1.25rem}.header-row,.section-title,.actions,.mail-status,.conflict,.readonly,.logo-row,.logo-actions{display:flex;align-items:center;gap:.75rem}.header-row,.section-title{justify-content:space-between;flex-wrap:wrap}h2,h3{margin:0}.tenant-form{display:grid;gap:1rem}.hint{margin:.25rem 0;opacity:.78}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}.wide{grid-column:1/-1}.state{min-height:120px;display:flex;align-items:center;justify-content:center;gap:.75rem;text-align:center}.error,.conflict{color:var(--color-error,#b3261e)}.state.error{flex-wrap:wrap}.mail-status,.conflict,.readonly{padding:.75rem 1rem;border:1px solid rgba(0,0,0,.12);border-radius:8px}.mail-status.configured{color:#1b5e20}.logo-row{align-items:flex-start;flex-wrap:wrap}.tenant-logo,.logo-placeholder{width:120px;height:72px;border:1px solid rgba(0,0,0,.12);border-radius:8px;object-fit:contain;background:rgba(0,0,0,.02)}.logo-placeholder{display:grid;place-items:center}.logo-actions{flex-wrap:wrap}.templates{display:grid;gap:.5rem}.templates article{display:grid;grid-template-columns:minmax(140px,1fr) auto;gap:.25rem 1rem;padding:.75rem 1rem;border:1px solid rgba(0,0,0,.12);border-radius:8px}.templates small{grid-column:1/-1;opacity:.75}.actions{justify-content:flex-end}.readonly{width:fit-content}@media(max-width:760px){.grid{grid-template-columns:1fr}.wide{grid-column:auto}.header-row>button,.actions button,.conflict button{width:100%}.conflict{align-items:flex-start;flex-wrap:wrap}.logo-actions{width:100%}.logo-actions button{flex:1}}
   `]

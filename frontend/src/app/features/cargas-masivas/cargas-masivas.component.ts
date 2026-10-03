@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -44,6 +44,7 @@ import { FeedbackStateComponent } from '../../shared/feedback-state/feedback-sta
     FeedbackStateComponent
   ],
   templateUrl: './cargas-masivas.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './cargas-masivas.component.scss'
 })
 export class CargasMasivasComponent implements OnInit {

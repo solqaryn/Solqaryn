@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormArray, FormBuilder, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -50,6 +50,7 @@ export function asientoBalanceValidator(control: AbstractControl): ValidationErr
     EventoContablePanelComponent
   ],
   templateUrl: './asientos-contables.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './asientos-contables.component.scss'
 })
 export class AsientosContablesComponent implements OnInit, OnDestroy {

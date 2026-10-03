@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -24,6 +24,7 @@ import { finalize } from 'rxjs/operators';
     MatChipsModule
 ],
   templateUrl: './three-way-match.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./three-way-match.component.scss']
 })
 export class ThreeWayMatchComponent implements OnInit {

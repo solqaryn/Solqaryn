@@ -1,5 +1,5 @@
 
-import { Component, EventEmitter, Output, inject, signal } from '@angular/core';
+import { Component, EventEmitter, Output, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { MatButtonModule } from '@angular/material/button';
@@ -110,6 +110,7 @@ interface EventoContableDto {
       </section>
     }
     `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     .evento-card { margin: 0 0 1.5rem; padding: 1rem; border: 1px solid rgba(0,0,0,.12); border-radius: 8px; }
     .evento-header { display: flex; gap: 1rem; align-items: center; justify-content: space-between; }

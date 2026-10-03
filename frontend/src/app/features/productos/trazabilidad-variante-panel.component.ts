@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnChanges, SimpleChanges, signal } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -205,6 +205,7 @@ import { TrazabilidadInventarioService } from '../../services/trazabilidad-inven
           }
         </section>
     `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     :host{display:block}.trace-card{border:1px solid rgba(127,127,127,.24);border-radius:16px;padding:20px;background:rgba(127,127,127,.025)}.trace-header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:18px}.eyebrow{margin:0 0 4px;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.62}h3,h4{margin:0}.subtitle,.subcard header p,.record p{margin:5px 0 0;opacity:.7}.feedback,.loading{display:flex;align-items:center;gap:9px;padding:12px 14px;border-radius:10px;margin:10px 0}.feedback.error{background:rgba(244,67,54,.08);border:1px solid rgba(244,67,54,.25)}.feedback.success{background:rgba(76,175,80,.08);border:1px solid rgba(76,175,80,.25)}.loading{justify-content:center;min-height:110px}.policy{border:0;padding:0;margin:0}.policy legend{font-weight:700;margin-bottom:10px}.checks{display:flex;flex-wrap:wrap;gap:8px 24px;margin-bottom:14px}.policy mat-form-field{width:min(330px,100%)}.policy-actions{display:flex;justify-content:flex-end}.trace-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:20px}.subcard{border:1px solid rgba(127,127,127,.2);border-radius:12px;padding:16px}.subcard>header{display:flex;justify-content:space-between;gap:12px;margin-bottom:14px}.count{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:30px;border-radius:999px;background:rgba(127,127,127,.12);font-weight:700}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.records{display:grid;gap:8px;margin-top:14px}.record{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 12px;border-radius:9px;background:rgba(127,127,127,.07)}.record p{font-size:12px}.status{font-size:12px;font-weight:700;white-space:nowrap}.status.off{opacity:.5}.empty{padding:14px;border-radius:9px;background:rgba(127,127,127,.06);opacity:.75;margin-top:14px}.policy-empty{margin-top:20px}@media(max-width:900px){.trace-grid{grid-template-columns:1fr}}@media(max-width:640px){.trace-card{padding:15px}.trace-header{flex-direction:column}.form-grid{grid-template-columns:1fr}.policy-actions button,.subcard>button{width:100%}}
   `]

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 
 import { ReactiveFormsModule, FormArray, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -45,6 +45,7 @@ const MAX_IMAGENES = 5;
     ProductoCombinationGeneratorComponent
 ],
   templateUrl: './producto-form.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./producto-form.component.scss', './producto-form-variants.component.scss']
 })
 export class ProductoFormComponent implements OnInit {

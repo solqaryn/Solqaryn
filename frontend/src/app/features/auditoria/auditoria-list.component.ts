@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -21,6 +21,7 @@ import { ReportesAdministrativosComponent } from '../reportes-administrativos/re
     ReportesAdministrativosComponent
   ],
   templateUrl: './auditoria-list.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './auditoria-list.component.scss'
 })
 export class AuditoriaListComponent implements OnInit, OnDestroy {

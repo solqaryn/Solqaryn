@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
@@ -28,6 +28,7 @@ type OrdenMovimientoFinanciero = 'fecha' | 'concepto' | 'tipo' | 'monto';
     MatButtonModule, MatIconModule, MatProgressSpinnerModule, MatDialogModule, MetodoPagoSelectComponent
   ],
   templateUrl: './finanzas.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './finanzas.component.scss'
 })
 export class FinanzasComponent implements OnInit {

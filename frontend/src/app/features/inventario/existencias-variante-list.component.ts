@@ -1,5 +1,5 @@
 
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -103,6 +103,7 @@ import { ExistenciaVarianteService } from '../../services/existencia-variante.se
     }
     </section>
     `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     :host{display:block}.page{padding:24px;max-width:1500px;margin:0 auto}.header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:24px}.header-actions{display:flex;gap:8px;flex-wrap:wrap}.eyebrow{margin:0 0 4px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;opacity:.65}h1{margin:0;font-size:clamp(24px,3vw,34px)}.subtitle{margin:6px 0 0;opacity:.72}.filters{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr)) auto;gap:12px;align-items:start;margin-bottom:18px}.filter-actions{display:flex;gap:8px;min-height:56px;align-items:center}.feedback,.loading,.empty{display:flex;align-items:center;justify-content:center;gap:10px;padding:28px;border-radius:12px}.feedback.error{justify-content:flex-start;border:1px solid rgba(244,67,54,.32);background:rgba(244,67,54,.06)}.empty{min-height:220px;flex-direction:column;text-align:center;border:1px dashed rgba(127,127,127,.35)}.empty h2,.empty p{margin:0}.table-shell{overflow-x:auto;border:1px solid rgba(127,127,127,.22);border-radius:12px}table{width:100%;border-collapse:collapse;min-width:1200px}th,td{padding:14px 16px;text-align:left;border-bottom:1px solid rgba(127,127,127,.16);vertical-align:middle}th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;opacity:.72}td small{display:block;margin-top:3px;opacity:.65}.row-actions{display:flex;align-items:center;gap:2px;white-space:nowrap}.status{display:inline-flex;padding:4px 9px;border-radius:999px;font-size:12px;font-weight:700}.status.ok{background:rgba(46,125,50,.14)}.status.bajo{background:rgba(245,124,0,.14)}.status.agotado{background:rgba(198,40,40,.14)}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}@media(max-width:1050px){.filters{grid-template-columns:repeat(2,minmax(0,1fr))}.filter-actions{grid-column:span 2}}@media(max-width:640px){.page{padding:16px}.header{flex-direction:column}.header-actions{width:100%}.filters{grid-template-columns:1fr}.filter-actions{grid-column:auto}}
   `]

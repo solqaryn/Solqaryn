@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -20,6 +20,7 @@ import { descargarBlobSeguro } from '../../shared/descarga-segura';
   standalone: true,
   imports: [CommonModule, RouterLink, MatButtonModule, MatIconModule, MatProgressSpinnerModule, MatDialogModule, ProductoImagenComponent],
   templateUrl: './compra-detail.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './compra-detail.component.scss'
 })
 export class CompraDetailComponent implements OnInit {

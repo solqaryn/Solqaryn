@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 
 import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -16,6 +16,7 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
   standalone: true,
   imports: [RouterLink, MatIconModule, MatButtonModule, MatProgressSpinnerModule, MatSlideToggleModule],
   templateUrl: './categorias-list.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './categorias-list.component.scss'
 })
 export class CategoriasListComponent implements OnInit {

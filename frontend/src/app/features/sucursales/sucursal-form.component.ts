@@ -1,6 +1,6 @@
 
 import { HttpClient } from '@angular/common/http';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -34,6 +34,7 @@ interface EmpresaOpcion {
     MatSelectModule
 ],
   templateUrl: './sucursal-form.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './sucursal-form.component.scss'
 })
 export class SucursalFormComponent implements OnInit {

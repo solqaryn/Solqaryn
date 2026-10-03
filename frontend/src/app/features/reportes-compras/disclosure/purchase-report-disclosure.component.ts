@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 
 import { FeedbackStateComponent } from '../../../shared/feedback-state/feedback-state.component';
 
@@ -37,6 +37,7 @@ export type PurchaseReportState = 'loading' | 'empty' | 'error' | 'loaded';
       }
     </div>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     .purchase-report-disclosure {
       margin-top: 1rem;

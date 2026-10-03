@@ -1,5 +1,5 @@
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -121,6 +121,7 @@ import { UbicacionAlmacenService } from '../../services/ubicacion-almacen.servic
       }
     </section>
     `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     .page{padding:24px;display:grid;gap:20px}.header{display:flex;justify-content:space-between;gap:16px}.eyebrow{text-transform:uppercase;letter-spacing:.08em;font-size:12px;font-weight:700;margin:0}.header h1{margin:4px 0}.header p,.details-header p{margin:0;color:var(--text-secondary,#667085)}.card{display:grid;gap:18px;padding:20px;border:1px solid rgba(0,0,0,.12);border-radius:14px}.grid{display:grid;gap:12px}.two{grid-template-columns:1fr 1fr}.detail-grid{grid-template-columns:minmax(260px,1.5fr) minmax(190px,1fr) minmax(190px,1fr) minmax(120px,.6fr) auto;align-items:start}.full{width:100%}.details-header{display:flex;justify-content:space-between;align-items:center;gap:16px}.details-header h2{margin:0}.detail{padding:14px;border:1px solid rgba(0,0,0,.08);border-radius:10px}.actions{display:flex;justify-content:flex-end;gap:10px}.error{color:#b42318}.state{min-height:160px;display:flex;justify-content:center;align-items:center;gap:12px}@media(max-width:1050px){.detail-grid{grid-template-columns:1fr 1fr}.two{grid-template-columns:1fr}}@media(max-width:600px){.page{padding:16px}.header,.details-header{flex-direction:column;align-items:stretch}.detail-grid{grid-template-columns:1fr}}
   `]

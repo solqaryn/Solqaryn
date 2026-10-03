@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
@@ -36,6 +36,7 @@ import { ReporteAdministrativoService } from '../../services/reporte-administrat
     MatTooltipModule
   ],
   templateUrl: './reportes-administrativos.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './reportes-administrativos.component.scss'
 })
 export class ReportesAdministrativosComponent implements OnInit {

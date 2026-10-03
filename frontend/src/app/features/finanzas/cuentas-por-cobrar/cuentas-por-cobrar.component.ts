@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Component, Injectable, OnInit, inject, signal } from '@angular/core';
+import { Component, Injectable, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -108,6 +108,7 @@ export class CuentasPorCobrarService {
       }
     </section>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     .cxc-page{display:grid;gap:16px;padding:20px;max-width:1500px;margin:0 auto}.page-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}.eyebrow{margin:0;color:var(--color-primary);font-weight:700}.subtitle{margin:4px 0 0;color:var(--color-text-muted)}h1{margin:2px 0}.panel,.state{border:1px solid var(--color-border)}.state{min-height:170px;display:grid;place-items:center;text-align:center}.state mat-card-content{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}.state p{margin:4px 0;color:var(--color-text-muted)}.error mat-icon{color:var(--color-error,#b91c1c)}.empty mat-icon{color:var(--color-success,#15803d)}.table-wrap{overflow:auto;border-radius:8px}.table-wrap:focus-visible{outline:3px solid var(--color-primary);outline-offset:2px}table{width:100%;min-width:900px}.status{display:inline-flex;padding:4px 9px;border-radius:999px;background:var(--color-bg);font-weight:650}@media(max-width:760px){.cxc-page{padding:12px}.page-header{display:grid}}
   `]

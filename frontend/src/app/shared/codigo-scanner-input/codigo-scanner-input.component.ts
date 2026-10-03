@@ -7,7 +7,8 @@ import {
   Input,
   Output,
   ViewChild,
-  signal
+  signal,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -31,6 +32,7 @@ import { CodigoScannerDialogComponent } from '../codigo-scanner-dialog/codigo-sc
     MatProgressSpinnerModule
 ],
   templateUrl: './codigo-scanner-input.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './codigo-scanner-input.component.scss'
 })
 export class CodigoScannerInputComponent implements AfterViewInit {

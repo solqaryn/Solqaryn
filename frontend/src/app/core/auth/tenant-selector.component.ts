@@ -1,5 +1,5 @@
 
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { TenantContextService } from './tenant-context.service';
@@ -46,6 +46,7 @@ import { TenantContextService } from './tenant-context.service';
       }
     </section>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     :host { display: block; width: min(100%, 430px); }
     .tenant-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 18px; padding: 2rem; box-shadow: 0 18px 45px rgba(15, 23, 42, .10); }
