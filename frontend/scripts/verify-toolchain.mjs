@@ -1,4 +1,4 @@
-// Fase 2/3: este guard es autoridad local/CI para Node/npm; Angular 21.2.x y sus builders alineados mantienen el mismo toolchain y Vercel lo ejecuta vía preinstall.
+// Fase 2/3: autoridad exacta Node/npm; Angular 21.2.x usa builders @angular/build alineados y Vercel ejecuta este guard vía preinstall.
 const expectedNode = '24.21.0';
 const expectedNpm = '11.19.0';
 const actualNode = process.versions.node;

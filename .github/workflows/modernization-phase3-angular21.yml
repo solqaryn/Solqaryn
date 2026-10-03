@@ -96,7 +96,8 @@ jobs:
           NODE
           npx ng version
           npm ls @angular/core @angular/cli @angular/material @angular/cdk @angular-devkit/build-angular @angular/build typescript vitest --depth=0
-          grep -q '@angular-devkit/build-angular:application' angular.json
+          grep -q '@angular/build:application' angular.json
+          grep -q '@angular/build:dev-server' angular.json
           grep -q '@angular/build:unit-test' angular.json
 
       - name: Unit tests Angular
