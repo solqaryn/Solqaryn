@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -52,7 +52,7 @@ export class NotasCreditoClienteHomeComponent {
 @Component({
   selector: 'app-nota-credito-cliente-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, DatePipe, DecimalPipe, RouterLink],
   template: `
     <section class="page">
       <div class="hero">
