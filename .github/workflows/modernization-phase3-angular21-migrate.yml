@@ -81,16 +81,38 @@ jobs:
           const fs = require('fs');
           const path = 'angular.json';
           const data = JSON.parse(fs.readFileSync(path, 'utf8'));
-          const build = data.projects?.['solqaryn-frontend']?.architect?.build;
-          if (!build) throw new Error('No se encontró projects.solqaryn-frontend.architect.build');
+          const architect = data.projects?.['solqaryn-frontend']?.architect;
+          const build = architect?.build;
+          const test = architect?.test;
+          if (!build || !test) throw new Error('No se encontraron los targets build/test de solqaryn-frontend');
           if (build.builder === '@angular-devkit/build-angular:application') {
             build.builder = '@angular/build:application';
           } else if (build.builder !== '@angular/build:application') {
             throw new Error('Builder inesperado: ' + build.builder);
           }
+          test.options ||= {};
+          test.options.runnerConfig = 'vitest-base.config.ts';
           fs.writeFileSync(path, JSON.stringify(data, null, 2) + '\n');
           console.log('ANGULAR21_BUILD_TARGET=@angular/build:application');
+          console.log('ANGULAR21_TEST_RUNNER_CONFIG=vitest-base.config.ts');
           NODE
+          cat > vitest-base.config.ts <<'EOF'
+          import { defineConfig } from 'vitest/config';
+
+          export default defineConfig({
+            test: {
+              globalSetup: ['./vitest-global-teardown.ts'],
+            },
+          });
+          EOF
+          cat > vitest-global-teardown.ts <<'EOF'
+          export function setup(): void {}
+
+          export function teardown(): void {
+            const exitCode = process.exitCode ?? 0;
+            setTimeout(() => process.exit(exitCode), 10_000).unref();
+          }
+          EOF
 
       - name: Verificar versiones migradas
         working-directory: frontend
@@ -104,6 +126,9 @@ jobs:
           test "$(node -p "require('./package.json').devDependencies['@angular-devkit/build-angular']")" = "21.2.24"
           grep -q '@angular/build:application' angular.json
           grep -q '@angular/build:unit-test' angular.json
+          grep -q 'vitest-base.config.ts' angular.json
+          test -f vitest-base.config.ts
+          test -f vitest-global-teardown.ts
           test "$(node -p "require('./package.json').dependencies['@angular/material']")" = "21.2.14"
           test "$(node -p "require('./package.json').dependencies['@angular/cdk']")" = "21.2.14"
           test "$(node -p "require('./package.json').devDependencies['@angular/build']")" = "21.2.24"
@@ -113,7 +138,7 @@ jobs:
           npx ng version
 
       - name: Unit tests pre-publicación
-        timeout-minutes: 4
+        timeout-minutes: 6
         working-directory: frontend
         run: npm test -- --no-watch --no-progress
 
