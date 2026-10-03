@@ -19,10 +19,10 @@ import {
 } from '../../../core/models/devolucion-cliente.model';
 import { DevolucionClienteService } from '../../../services/devolucion-cliente.service';
 
-const UI = [CommonModule, RouterLink, MatButtonModule, MatCardModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressSpinnerModule, MatSelectModule];
+const UI = [CommonModule, MatButtonModule, MatCardModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressSpinnerModule, MatSelectModule];
 
 @Component({
-  selector: 'app-devoluciones-cliente-list', standalone: true, imports: UI,
+  selector: 'app-devoluciones-cliente-list', standalone: true, imports: [...UI, RouterLink],
   template: `
   <section class="page-shell" aria-labelledby="returns-title">
     <header class="page-header"><div><p class="eyebrow">Ventas</p><h1 id="returns-title">Devoluciones de clientes</h1><p>Consulta borradores, confirmaciones y anulaciones sin alterar el contrato de la venta original.</p></div>
@@ -82,7 +82,7 @@ export class DevolucionClienteFormComponent implements OnInit {
 }
 
 @Component({
-  selector:'app-devolucion-cliente-detail',standalone:true,imports:UI,
+  selector:'app-devolucion-cliente-detail',standalone:true,imports:[...UI,RouterLink],
   template:`<section class="page-shell"><header class="page-header"><div><p class="eyebrow">Ventas</p><h1>Devolución #{{item()?.id}}</h1><p>Venta #{{item()?.ventaId}} · Estado {{item()?estadoNombre(item()!.estado):'—'}}</p></div><a mat-stroked-button routerLink="/devoluciones-clientes"><mat-icon>arrow_back</mat-icon>Volver</a></header>
   @if(loading()){<div class="state"><mat-spinner diameter="34"></mat-spinner>Cargando…</div>}@else if(error()){<div class="state error" role="alert">{{error()}}</div>}@else if(item();as d){<mat-card><mat-card-content><div class="summary"><div><small>Factura</small><strong>{{d.facturaId?'#'+d.facturaId:'Sin factura asociada'}}</strong></div><div><small>Monto referencia</small><strong>{{d.montoReferencia|number:'1.2-2'}}</strong></div><div><small>Creada</small><strong>{{d.fechaCreacion|date:'short'}}</strong></div></div><p>{{d.observaciones||'Sin observaciones.'}}</p><div class="table-wrap"><table><thead><tr><th>Detalle venta</th><th>Producto</th><th>Cantidad</th><th>Resolución</th><th>Monto ref.</th></tr></thead><tbody>@for(x of d.detalles;track x.id){<tr><td>#{{x.ventaDetalleId}}</td><td>{{x.productoNombreSnapshot||('Producto #'+x.productoId)}}</td><td>{{x.cantidad}}</td><td>{{resolucionNombre(x.resolucion)}}</td><td>{{x.montoReferencia|number:'1.2-2'}}</td></tr>}</tbody></table></div>
   @if((esBorrador(d.estado)&&puedeConfirmar())||(esConfirmada(d.estado)&&puedeAnular())){<div class="actions">@if(esBorrador(d.estado)&&puedeConfirmar()){<button mat-flat-button type="button" (click)="confirmar()" [disabled]="acting()" data-testid="confirmar-devolucion-cliente"><mat-icon>check_circle</mat-icon>Confirmar</button>}@if(esConfirmada(d.estado)&&puedeAnular()){<mat-form-field appearance="outline"><mat-label>Motivo de anulación</mat-label><input matInput [value]="motivo" (input)="motivo=$any($event.target).value"></mat-form-field><button mat-stroked-button type="button" (click)="anular()" [disabled]="acting()||!motivo.trim()"><mat-icon>cancel</mat-icon>Anular</button>}</div>}
