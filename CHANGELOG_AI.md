@@ -1,3 +1,13 @@
+## 2026-10-03 — Modernización Fase 4 Angular 21 → 22.2.1 DEV
+
+- Precondición: Fase 3 Angular 21 exact-head cerró SUCCESS en run `37144981807`, incluido E2E canónico.
+- Run causal `37146078214` ejecutó `ng update` oficial Core/CLI 21→22 y Material/CDK 21→22 sin `--force`.
+- Versiones finales: Angular Core/CLI/Material/CDK/build/compiler-cli 22.2.1, TypeScript 6.0.3, RxJS 7.8.2, tslib 2.8.1, Zone.js 0.16.3 y Vitest 4.1.11.
+- Zone.js permanece deliberadamente activo: polyfill `zone.js` + `provideZoneChangeDetection`; no se realizó conversión a zoneless.
+- Antes de publicar en `dev` pasaron npm ci limpio, 58/58 archivos + 217/217 unit tests, lint/contratos, npm audit productivo high+ y build Angular configuration production sin deploy.
+- Se retiró el migrador una vez consumido y la certificación permanente de Fase 4 exige exact-head + Playwright canónico 100/100.
+- Alcance exclusivo DEV. No se modificaron QA, `main`, PROD, bases productivas, secretos, DNS ni infraestructura productiva.
+
 ## 2026-10-03 — Hardening final de certificación Angular 21 DEV
 
 - Corregido el workflow permanente de Fase 2 que seguía exigiendo Angular 20.3.33 después de la migración; ahora valida el baseline vigente Angular 21.2.25 / CLI 21.2.24.
