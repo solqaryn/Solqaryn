@@ -19,7 +19,7 @@ No volver a recorrer todo el repositorio ni releer archivos documentados si no c
 
 ## Stack
 
-- Frontend: Angular 21.2.x, standalone components, Signals, Angular Material/CDK 21.2.x.
+- Frontend: Angular 22.2.1, standalone components, Signals, Angular Material/CDK 22.2.1; Zone.js 0.16.3 permanece activo y no se ha migrado a zoneless.
 - Backend: ASP.NET Core 8 Web API.
 - Capas backend: Domain, Application, Infrastructure, API.
 - Datos: MySQL + EF Core 8/Pomelo.
