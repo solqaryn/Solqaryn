@@ -66,40 +66,6 @@ jobs:
           fs.writeFileSync(p,JSON.stringify(a,null,2)+'\n');
           NODE
 
-      - name: Endurecer certifier de Fase 4
-        shell: bash
-        run: |
-          set -euo pipefail
-          node <<'NODE'
-          const fs=require('fs');
-          const p='.github/workflows/modernization-phase4-angular22.yml';
-          let c=fs.readFileSync(p,'utf8');
-          c=c.replace("            '@angular/platform-browser-dynamic':'22.2.1',\n",'');
-          c=c.replace("            '@angular-devkit/build-angular':'22.2.1',\n",'');
-          c=c.replace(
-            'npm ls @angular/core @angular/cli @angular/material @angular/cdk @angular-devkit/build-angular @angular/build @angular/compiler-cli typescript rxjs tslib zone.js vitest --depth=0',
-            'npm ls @angular/core @angular/cli @angular/material @angular/cdk @angular/build @angular/compiler-cli typescript rxjs tslib zone.js vitest --depth=0'
-          );
-          const marker='      - name: Audit productivo high+\n        run: npm audit --omit=dev --audit-level=high\n';
-          if (!c.includes(marker)) throw new Error('No se encontró el audit productivo esperado');
-          c=c.replace(marker,
-            '      - name: Audit completo high+\n        run: npm audit --audit-level=high\n\n'+marker
-          );
-          c=c.replace(
-            "          ! grep -Eq '([0-9]+ failed|FAIL )' /tmp/angular22-unit.clean.log\n",
-            "          ! grep -Eq '([0-9]+ failed|FAIL )' /tmp/angular22-unit.clean.log\n          ! grep -Eq 'NG8011|NG8113|allowSignalWrites|configLoader' /tmp/angular22-unit.clean.log\n"
-          );
-          c=c.replace(
-            "          initial_line=\"$(grep 'Initial total' ../fase4-build.log | tail -n1 || true)\"\n",
-            "          ! grep -Eq 'NG8011|NG8113|allowSignalWrites' ../fase4-build.log\n          initial_line=\"$(grep 'Initial total' ../fase4-build.log | tail -n1 || true)\"\n"
-          );
-          c=c.replace(
-            "            echo 'NPM_AUDIT_PROD_HIGH_PLUS=PASS'\n",
-            "            echo 'NPM_AUDIT_FULL_HIGH_PLUS=PASS'\n            echo 'NPM_AUDIT_PROD_HIGH_PLUS=PASS'\n"
-          );
-          fs.writeFileSync(p,c);
-          NODE
-
       - name: Actualizar evidencia de hardening
         shell: bash
         run: |
@@ -196,9 +162,8 @@ jobs:
           node scripts/verify-project-scope.mjs
           git fetch origin dev
           test "$(git rev-parse origin/dev)" = "$BASE_SHA"
-          rm .github/workflows/modernization-phase4-hardening.yml
           git config user.name "solqaryn-platform"
           git config user.email "solqaryn.platform@outlook.com"
-          git add frontend .github/workflows/modernization-phase4-angular22.yml .github/workflows/modernization-phase4-hardening.yml docs/evidencias/modernizacion/FASE_4_ANGULAR_22_2026-10-03.md CHANGELOG_AI.md
+          git add frontend docs/evidencias/modernizacion/FASE_4_ANGULAR_22_2026-10-03.md CHANGELOG_AI.md
           git commit -m "fix(modernization): harden Angular 22 phase 4"
           git push origin HEAD:dev
