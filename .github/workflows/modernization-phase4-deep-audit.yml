@@ -1,0 +1,60 @@
+name: Modernización - Fase 4 deep audit DEV
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/modernization-phase4-deep-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Scope
+        working-directory: .
+        run: node scripts/verify-project-scope.mjs
+      - name: Install exact lock
+        run: npm ci
+      - name: Full audit including dev dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm audit --json > ../phase4-full-audit.json || true
+          node <<'NODE'
+          const fs=require('fs');
+          const data=JSON.parse(fs.readFileSync('../phase4-full-audit.json','utf8'));
+          const rows=Object.entries(data.vulnerabilities||{})
+            .filter(([,v])=>['high','critical'].includes(v.severity))
+            .map(([name,v])=>({
+              name,
+              severity:v.severity,
+              direct:!!v.isDirect,
+              range:v.range,
+              fixAvailable:v.fixAvailable,
+              via:(v.via||[]).map(x=>typeof x==='string'?x:{source:x.source,name:x.name,severity:x.severity,title:x.title,range:x.range,url:x.url})
+            }));
+          console.log('FULL_AUDIT_COUNTS='+JSON.stringify(data.metadata?.vulnerabilities||{}));
+          console.log('FULL_AUDIT_HIGH_CRITICAL='+JSON.stringify(rows,null,2));
+          NODE
+      - name: Dependency explanations
+        shell: bash
+        run: |
+          set -euo pipefail
+          for pkg in @angular-devkit/build-angular @ngtools/webpack webpack-dev-server vite esbuild; do
+            echo "===== npm explain $pkg ====="
+            npm explain "$pkg" || true
+          done
