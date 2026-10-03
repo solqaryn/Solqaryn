@@ -40,10 +40,10 @@ jobs:
           npm run verify:toolchain
       - name: npm ci
         run: npm ci
-      - name: Angular sin cambios
+      - name: Angular baseline vigente
         run: |
-          test "$(node -p "require('./package.json').dependencies['@angular/core']")" = "20.3.33"
-          test "$(node -p "require('./package.json').devDependencies['@angular/cli']")" = "20.3.33"
+          test "$(node -p "require('./package.json').dependencies['@angular/core']")" = "21.2.25"
+          test "$(node -p "require('./package.json').devDependencies['@angular/cli']")" = "21.2.24"
       - name: Lint
         run: npm run lint
       - name: Audit productivo high+
@@ -117,7 +117,7 @@ jobs:
             echo 'HEAD=${{ github.sha }}'
             echo 'NODE=24.21.0'
             echo 'NPM=11.19.0'
-            echo 'ANGULAR=20.3.33'
+            echo 'ANGULAR=21.2.25'
             echo 'NPM_CI=PASS'
             echo 'LINT=PASS'
             echo 'NPM_AUDIT_PROD_HIGH_PLUS=PASS'
