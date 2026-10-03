@@ -7,6 +7,7 @@
 - Antes de publicar en `dev` pasaron npm ci limpio, 58/58 archivos + 217/217 unit tests, lint/contratos, npm audit productivo high+ y build Angular configuration production sin deploy.
 - Se retiró el migrador una vez consumido y la certificación permanente de Fase 4 exige exact-head + Playwright canónico 100/100.
 - Alcance exclusivo DEV. No se modificaron QA, `main`, PROD, bases productivas, secretos, DNS ni infraestructura productiva.
+- Recovery exact-head: Angular CLI 22 heredó `PORT=5005` del harness API y `ng serve` intentó colisionar con la API; el harness DEV aísla el proceso frontend del `PORT` backend para preservar frontend `4200` + API `5005`, y se recertifica sobre el mismo HEAD.
 
 ## 2026-10-03 — Hardening final de certificación Angular 21 DEV
 
