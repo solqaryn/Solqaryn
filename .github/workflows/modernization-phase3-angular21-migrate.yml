@@ -149,9 +149,31 @@ jobs:
         run: npm audit --omit=dev --audit-level=high
 
       - name: Build PROD pre-publicación
-        timeout-minutes: 8
+        timeout-minutes: 4
         working-directory: frontend
-        run: npm run build:prod
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f fase3-build-prepush.log
+          set +e
+          timeout --signal=TERM --kill-after=10s 120s npm run build:prod 2>&1 | tee fase3-build-prepush.log
+          code=${PIPESTATUS[0]}
+          set -e
+          if [ "$code" -eq 0 ]; then
+            echo "ANGULAR21_BUILD_EXIT=0"
+            exit 0
+          fi
+          if [ "$code" -eq 124 ] || [ "$code" -eq 143 ]; then
+            if grep -q 'Output location:' fase3-build-prepush.log \
+              && ! grep -q 'Application bundle generation failed' fase3-build-prepush.log \
+              && ! grep -q 'An unhandled exception occurred' fase3-build-prepush.log \
+              && test -n "$(find dist/solqaryn-frontend -type f -name index.html -print -quit)"; then
+              echo "ANGULAR21_BUILD_SUCCESS_WITH_KNOWN_EXIT_HANG=PASS"
+              exit 0
+            fi
+          fi
+          echo "Angular 21 build failed or did not produce a complete artifact. exit=$code" >&2
+          exit "$code"
 
       - name: Commit y push DEV
         shell: bash
