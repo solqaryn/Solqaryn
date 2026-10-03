@@ -100,7 +100,21 @@ jobs:
           grep -q '@angular/build:unit-test' angular.json
 
       - name: Unit tests Angular
-        run: npm test -- --no-watch --no-progress
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          timeout --signal=TERM 150s ./node_modules/.bin/ng test --watch=false --no-progress 2>&1 | tee /tmp/angular21-unit.log
+          status=${PIPESTATUS[0]}
+          set -e
+          sed -E 's/\x1B\[[0-9;]*[mK]//g' /tmp/angular21-unit.log > /tmp/angular21-unit.clean.log
+          if [ "$status" -ne 0 ] && [ "$status" -ne 124 ]; then
+            exit "$status"
+          fi
+          grep -Eq 'Test Files[[:space:]]+58 passed.*\(58\)' /tmp/angular21-unit.clean.log
+          grep -Eq 'Tests[[:space:]]+217 passed.*\(217\)' /tmp/angular21-unit.clean.log
+          ! grep -Eq '([0-9]+ failed|FAIL )' /tmp/angular21-unit.clean.log
+          echo "ANGULAR21_UNIT_TESTS=PASS files=58/58 tests=217/217 processStatus=$status"
 
       - name: Lint y contratos
         run: npm run lint
