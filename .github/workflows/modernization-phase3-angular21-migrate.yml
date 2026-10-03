@@ -85,15 +85,13 @@ jobs:
           const build = architect?.build;
           const test = architect?.test;
           if (!build || !test) throw new Error('No se encontraron los targets build/test de solqaryn-frontend');
-          if (build.builder === '@angular-devkit/build-angular:application') {
-            build.builder = '@angular/build:application';
-          } else if (build.builder !== '@angular/build:application') {
-            throw new Error('Builder inesperado: ' + build.builder);
+          if (build.builder !== '@angular-devkit/build-angular:application') {
+            throw new Error('Builder de producción inesperado: ' + build.builder);
           }
           test.options ||= {};
           test.options.runnerConfig = 'vitest-base.config.ts';
           fs.writeFileSync(path, JSON.stringify(data, null, 2) + '\n');
-          console.log('ANGULAR21_BUILD_TARGET=@angular/build:application');
+          console.log('ANGULAR21_BUILD_TARGET=@angular-devkit/build-angular:application');
           console.log('ANGULAR21_TEST_RUNNER_CONFIG=vitest-base.config.ts');
           NODE
           cat > vitest-base.config.ts <<'EOF'
@@ -124,7 +122,7 @@ jobs:
           test "$(node -p "require('./package.json').devDependencies['@angular/cli']")" = "21.2.24"
           test "$(node -p "require('./package.json').devDependencies['@angular/build']")" = "21.2.24"
           test "$(node -p "require('./package.json').devDependencies['@angular-devkit/build-angular']")" = "21.2.24"
-          grep -q '@angular/build:application' angular.json
+          grep -q '@angular-devkit/build-angular:application' angular.json
           grep -q '@angular/build:unit-test' angular.json
           grep -q 'vitest-base.config.ts' angular.json
           test -f vitest-base.config.ts
@@ -151,6 +149,7 @@ jobs:
         run: npm audit --omit=dev --audit-level=high
 
       - name: Build PROD pre-publicación
+        timeout-minutes: 8
         working-directory: frontend
         run: npm run build:prod
 
