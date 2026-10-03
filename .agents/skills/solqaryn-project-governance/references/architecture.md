@@ -2,7 +2,7 @@
 
 ## Stack vigente
 
-- Frontend: Angular 21.2.x, standalone components, Signals, Angular Material/CDK 21.2.x, lazy routes, auth/permission guards.
+- Frontend: Angular 22.2.1, standalone components, Signals, Angular Material/CDK 22.2.1, lazy routes, auth/permission guards; Zone.js 0.16.3 y `provideZoneChangeDetection` permanecen activos.
 - Backend: ASP.NET Core 8 Web API.
 - Capas: Domain <- Application <- Infrastructure; API como composition root y superficie HTTP.
 - Persistencia: MySQL, EF Core 8, Pomelo, migraciones versionadas.
