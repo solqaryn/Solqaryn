@@ -166,7 +166,7 @@ export class TransferenciaFormComponent implements OnInit {
 
   agregarDetalle(): void { this.model.detalles.push(this.nuevoDetalle()); }
   quitarDetalle(index: number): void { if (this.model.detalles.length > 1) this.model.detalles.splice(index, 1); }
-  trackByIndex(index: number): number { return index; }
+  trackByIndex(index: number, _detalle?: TransferenciaInventarioDetalleInput): number { return index; }
   volver(): void { void this.router.navigate(['/inventario/transferencias']); }
   etiquetaAlmacen(almacen: Almacen): string { return `${almacen.codigo} — ${almacen.nombre} · ${almacen.sucursalNombre}`; }
   etiquetaUbicacion(ubicacion: UbicacionAlmacen): string { return `${ubicacion.codigo} — ${ubicacion.nombre}`; }
