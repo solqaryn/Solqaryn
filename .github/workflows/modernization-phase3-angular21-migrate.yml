@@ -12,7 +12,7 @@ permissions:
 
 concurrency:
   group: modernization-phase3-angular21-migrate-dev
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   migrate:
