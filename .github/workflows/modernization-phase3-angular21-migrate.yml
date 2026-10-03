@@ -76,6 +76,20 @@ jobs:
           set -euo pipefail
           npm install --save-dev typescript@~5.9.3
           npm install --save-dev --save-exact @angular/build@21.2.24
+          node <<'NODE'
+          const fs = require('fs');
+          const path = 'angular.json';
+          const data = JSON.parse(fs.readFileSync(path, 'utf8'));
+          const build = data.projects?.['solqaryn-frontend']?.architect?.build;
+          if (!build) throw new Error('No se encontró projects.solqaryn-frontend.architect.build');
+          if (build.builder === '@angular-devkit/build-angular:application') {
+            build.builder = '@angular/build:application';
+          } else if (build.builder !== '@angular/build:application') {
+            throw new Error('Builder inesperado: ' + build.builder);
+          }
+          fs.writeFileSync(path, JSON.stringify(data, null, 2) + '\n');
+          console.log('ANGULAR21_BUILD_TARGET=@angular/build:application');
+          NODE
 
       - name: Verificar versiones migradas
         working-directory: frontend
@@ -87,7 +101,7 @@ jobs:
           test "$(node -p "require('./package.json').devDependencies['@angular/cli']")" = "21.2.24"
           test "$(node -p "require('./package.json').devDependencies['@angular/build']")" = "21.2.24"
           test "$(node -p "require('./package.json').devDependencies['@angular-devkit/build-angular']")" = "21.2.24"
-          grep -q '@angular-devkit/build-angular:application' angular.json
+          grep -q '@angular/build:application' angular.json
           grep -q '@angular/build:unit-test' angular.json
           test "$(node -p "require('./package.json').dependencies['@angular/material']")" = "21.2.14"
           test "$(node -p "require('./package.json').dependencies['@angular/cdk']")" = "21.2.14"
