@@ -98,7 +98,7 @@ jobs:
           npm ls @angular/core @angular/cli @angular/material @angular/cdk @angular-devkit/build-angular @angular/build typescript vitest --depth=0
 
       - name: Unit tests Angular
-        run: npm test -- --watch=false
+        run: npm test -- --no-watch --no-progress
 
       - name: Lint y contratos
         run: npm run lint
