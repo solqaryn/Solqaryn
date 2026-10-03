@@ -12,6 +12,7 @@ on:
       - 'README.md'
       - '.agents/skills/solqaryn-project-governance/**'
       - 'docs/evidencias/modernizacion/FASE_4_ANGULAR_22_2026-10-03.md'
+      - '.github/workflows/catalogos-aceptacion.yml'
   workflow_dispatch:
 
 permissions:
