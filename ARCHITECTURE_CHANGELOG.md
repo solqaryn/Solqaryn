@@ -1,3 +1,14 @@
+## 2026-10-03 — Angular 21 → 22.2.1
+
+- Frontend migrado major-a-major mediante `ng update` oficial: Angular Core/CLI 22.2.1.
+- Angular Material/CDK migrados mediante schematics oficiales a 22.2.1.
+- Matriz fijada exactamente a TypeScript 6.0.3, RxJS 7.8.2, tslib 2.8.1 y Zone.js 0.16.3; Node 24.21.0 y npm 11.19.0 se preservan.
+- Se mantienen `@angular/build:application`, `@angular/build:dev-server` y `@angular/build:unit-test` con Vitest 4.1.11.
+- No se adopta zoneless: `zone.js` permanece en polyfills y `provideZoneChangeDetection({ eventCoalescing: true })` sigue siendo explícito.
+- Los schematics oficiales preservaron semántica existente mediante `ChangeDetectionStrategy.Eager`, `withXhr()` y ajustes de safe-navigation donde Angular 22 lo requirió.
+- Run causal de migración: `37146078214` — SUCCESS; antes del push pasaron reinstalación limpia, 58/58 archivos + 217/217 unit tests, lint/contratos, audit productivo high+ y build configuration production sin deploy.
+- Alcance exclusivo `dev`; QA, `main`, PROD, datos, secretos e infraestructura productiva no fueron modificados.
+
 ## 2026-10-03 — Angular 20 → 21
 
 - Frontend migrado major-a-major mediante `ng update` oficial: Angular Core 21.2.25 / CLI 21.2.24.
