@@ -24,12 +24,12 @@ import { DevolucionProveedorService } from '../../../services/devolucion-proveed
 import { FacturaProveedorService } from '../../../services/factura-proveedor.service';
 import { RecepcionCompraService } from '../../../services/recepcion-compra.service';
 
-const UI = [CommonModule, RouterLink, MatButtonModule, MatCardModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressSpinnerModule, MatSelectModule];
+const UI = [CommonModule, MatButtonModule, MatCardModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressSpinnerModule, MatSelectModule];
 
 @Component({
   selector: 'app-devoluciones-proveedor-list',
   standalone: true,
-  imports: UI,
+  imports: [...UI, RouterLink],
   template: `
     <section class="page-shell" aria-labelledby="devoluciones-title">
       <header class="page-header"><div><p class="eyebrow">Compras empresariales</p><h1 id="devoluciones-title">Devoluciones a proveedor</h1><p>Consulta devoluciones, su estado y el crédito documental asociado.</p></div>@if (puedeCrear()) {<a mat-flat-button routerLink="/devoluciones-proveedor/nueva" data-testid="nueva-devolucion"><mat-icon>assignment_return</mat-icon> Nueva devolución</a>}</header>
