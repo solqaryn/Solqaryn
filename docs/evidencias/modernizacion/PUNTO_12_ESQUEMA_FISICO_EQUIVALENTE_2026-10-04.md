@@ -26,10 +26,11 @@ Cada exportación se ordena de forma determinista y se compara con `diff`; cualq
 - Primera ejecución ampliada `37241337349` falló porque `INFORMATION_SCHEMA.PARTITIONS` no contiene `ENGINE` ni `CREATE_OPTIONS`; se quitaron esos campos.
 - Segunda ejecución `37241647354` llegó al comparator, pero detectó que `CHECK_CONSTRAINTS` no contiene `ENFORCED`; ese atributo sí se compara desde `TABLE_CONSTRAINTS.ENFORCED`, por lo que se quitó la referencia duplicada inválida. No se declaró PASS.
 - Run exact-head `37241930023` sobre `d0d79c158aef29ae913833e0611e7eb7cfe8db48`: job completo `success`; `ORACLE_EF10_SCRIPT_BOOTSTRAP_SCHEMA_EQUIVALENT=true`; `ORACLE_BASELINE_SCHEMA_EQUIVALENT=true`; paquete limpio `ORACLE_EF10_SQL_PACKAGE_FRESH_BOOTSTRAP=PASS tables=136`. El step de adopción sobre el esquema Pomelo existente también terminó success.
+- Gate integral exact-head `37242192452` sobre `15289cf5557afdc0f39a65f665802fc16f8221d8`: 5/5 jobs success, `P0=0`, `P1=0`, `FASE_6_MYSQL_EF_PROVIDER=PASS` y `PHASE7_EXECUTED=false`.
 - Se comprobó que entre el baseline previo y el HEAD de trabajo no cambiaron modelo, configuraciones ni historia de migraciones; el nuevo run valida ahora además el comparador ampliado.
 
 ## Alcance
 
-La prueba compara el contrato físico producido por las rutas CI efímeras en MySQL 8.4. No modifica esquemas persistentes ni datos reales y no ejecuta Fase 7. El gate integral de Fase 6 se reejecuta al registrar esta evidencia y deberá pasar contra el HEAD documental actualizado.
+La prueba compara el contrato físico producido por las rutas CI efímeras en MySQL 8.4. No modifica esquemas persistentes ni datos reales y no ejecuta Fase 7. El gate integral pasó contra el HEAD vigente al cerrar este punto.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
