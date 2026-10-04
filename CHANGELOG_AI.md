@@ -1,3 +1,9 @@
+## 2026-10-04 — Revalidación exact-head del Punto 1 de Fase 6
+
+- Se confirmó que la ruta Oracle EF Core 10.0.12 / MySql.EntityFrameworkCore 10.0.9 pasa en el HEAD vivo `228df9cff10e6c3003e949f47d2cf951768dfdc1` mediante el run `37226132134`; los cinco jobs de la certificación terminaron `success`.
+- Se actualizó la evidencia individual del punto 1, que sólo citaba el HEAD anterior `4069ce1a074145d10e68003c110296a4b39b655a`.
+- Sin cambios al runtime, `.csproj` productivos, QA, `main`, PROD ni datos; Fase 7 permanece sin ejecutar.
+
 ## 2026-10-04 — Hardening cierre Punto 2 Pomelo 10 DEV
 
 - El dictamen exact-head de Fase 6 materializa explícitamente `P0=0` y `P1=0` cuando la ruta Oracle EF10 pasa y Pomelo 10 queda clasificado como no bloqueante.

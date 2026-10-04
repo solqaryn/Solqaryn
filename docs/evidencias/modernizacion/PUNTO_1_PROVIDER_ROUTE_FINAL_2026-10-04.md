@@ -44,3 +44,11 @@ Job de dictamen: `111497236868`
 El Punto 1 queda **CERRADO**. La Fase 7 continúa **sin ejecutar**. Este cierre autoriza técnicamente el cambio futuro de TargetFramework sólo cuando se inicie formalmente la Fase 7 y se apliquen sus versiones/gates completos.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+## Revalidación exact-head — 2026-10-04
+
+- HEAD de `dev`: `228df9cff10e6c3003e949f47d2cf951768dfdc1`.
+- Run causal de GitHub Actions: [37226132134](https://github.com/solqaryn/Solqaryn/actions/runs/37226132134), asociado al mismo HEAD.
+- Resultado general: `success`; los cinco jobs (`Pomelo actual`, `Oracle Connector NET`, `net10 aislado`, `Oracle EF10 net10` y `Dictamen Fase 6`) terminaron `success`.
+- La referencia viva `dev` se confirmó en el mismo commit antes de actualizar esta evidencia.
+- Dictamen del punto 1: `PASS`; Fase 7 no se ejecutó y el `TargetFramework` productivo no cambió.
