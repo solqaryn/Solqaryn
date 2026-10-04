@@ -1,3 +1,13 @@
+## 2026-10-04 — Cierre del Punto 8: retry transitorio independiente del provider
+
+- El `UnitOfWork` mantiene retry sólo para MySQL 1205/1213, máximo tres intentos y sin exponer tipos de providers fuera de Infrastructure.
+- La lane Oracle Connector/NET comprobó lock wait 1205 real y retry 1213 para el tipo Oracle `MySqlException`; su resultado ahora es condición obligatoria del contrato provider-neutral.
+- Run exact-head `37234393499` sobre `9a93e43110430123364710d49f91ec741d9e2e84`: cinco jobs de Fase 6 en success, `exception_contract=true`, `P0=0`, `P1=0`; Fase 7 no ejecutada.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_8_RETRY_TRANSITORIO_PROVIDER_NEUTRAL_2026-10-04.md`.
+- Sin cambio de dependencias productivas, sin despliegues a QA/main/PROD.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-10-04 — Cierre del Punto 7: errores MySQL aislados del provider
 
 - El clasificador de Infrastructure cubre MySqlConnector y Oracle Connector/NET por el contrato público `Number`; Application/Domain no contienen referencias a tipos de ninguno de los providers.

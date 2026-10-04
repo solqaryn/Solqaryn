@@ -9,6 +9,7 @@ on:
       - '.github/workflows/modernization-phase6-mysql-ef-provider.yml'
       - 'docs/evidencias/modernizacion/FASE_6_MYSQL_EF_PROVIDER_2026-10-04.md'
       - 'docs/evidencias/modernizacion/PUNTO_2_POMELO10_NO_BLOQUEANTE_2026-10-04.md'
+      - 'docs/evidencias/modernizacion/PUNTO_8_RETRY_TRANSITORIO_PROVIDER_NEUTRAL_2026-10-04.md'
       - 'CHANGELOG_AI.md'
       - 'ARCHITECTURE_CHANGELOG.md'
   workflow_dispatch:
