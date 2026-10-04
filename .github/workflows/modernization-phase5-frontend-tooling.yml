@@ -63,7 +63,7 @@ jobs:
           const expected={
             '@playwright/test':'1.63.0',
             'vitest':'5.0.3',
-            'jsdom':'30.1.1',
+            'jsdom':'30.0.1',
             'html5-qrcode':'2.3.8'
           };
           for (const [name,want] of Object.entries(expected)) {
@@ -86,7 +86,7 @@ jobs:
           NODE
           test "$(node -p "require('./node_modules/@playwright/test/package.json').version")" = "1.63.0"
           test "$(node -p "require('./node_modules/vitest/package.json').version")" = "5.0.3"
-          test "$(node -p "require('./node_modules/jsdom/package.json').version")" = "30.1.1"
+          test "$(node -p "require('./node_modules/jsdom/package.json').version")" = "30.0.1"
           test "$(node -p "require('./node_modules/html5-qrcode/package.json').version")" = "2.3.8"
           npx playwright --version
           npx vitest --version
@@ -207,7 +207,7 @@ jobs:
             echo 'ENVIRONMENT=DEV'
             echo 'PLAYWRIGHT=1.63.0'
             echo 'VITEST=5.0.3'
-            echo 'JSDOM=30.1.1'
+            echo 'JSDOM=30.0.1'
             echo 'HTML5_QRCODE=2.3.8'
             echo 'UNIT_TESTS_58_FILES_217_TESTS=PASS'
             echo 'PLAYWRIGHT_E2E_100_OF_100=PASS'
