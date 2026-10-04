@@ -1,3 +1,12 @@
+## 2026-10-04 — Cierre del Punto 7: errores MySQL aislados del provider
+
+- El clasificador de Infrastructure cubre MySqlConnector y Oracle Connector/NET por el contrato público `Number`; Application/Domain no contienen referencias a tipos de ninguno de los providers.
+- La lane Oracle EF10 exact-head `37232938552` pasó duplicate key 1062 → excepción de Application y retry 1205 vía UnitOfWork; Phase 6 terminó success en sus cinco jobs.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_7_MYSQL_EXCEPTION_CONTRACT_PROVIDER_NEUTRAL_2026-10-04.md`.
+- Sin dependencias productivas nuevas, sin Fase 7 ni despliegue a QA/main/PROD.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-10-04 — Cierre del Punto 6: bootstrap Oracle EF10 de base limpia certificado
 
 - Run exact-head `37232587801` sobre `0e4b552ed058b538f9b7bbe38d642a28191e7720`: 21/21 pasos success; paquete SQL aplicado a una base MySQL 8.4 vacía, baseline EF10 registrado y `has-pending-model-changes` verde.
