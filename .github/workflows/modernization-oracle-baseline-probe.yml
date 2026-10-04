@@ -350,6 +350,11 @@ jobs:
           capture() {
             db="$1"
             docker exec "$mysql_container" mysql -uroot -proot -Nse "
+              SELECT TABLE_NAME,COALESCE(ENGINE,''),COALESCE(TABLE_COLLATION,''),COALESCE(CREATE_OPTIONS,'')
+              FROM INFORMATION_SCHEMA.TABLES
+              WHERE TABLE_SCHEMA='$db' AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME <> '__EFMigrationsHistory'
+              ORDER BY TABLE_NAME;" > "$RUNNER_TEMP/$db-tables.tsv"
+            docker exec "$mysql_container" mysql -uroot -proot -Nse "
               SELECT TABLE_NAME,COLUMN_NAME,COLUMN_TYPE,IS_NULLABLE,COALESCE(COLUMN_DEFAULT,'<NULL>'),EXTRA,COALESCE(COLLATION_NAME,'')
               FROM INFORMATION_SCHEMA.COLUMNS
               WHERE TABLE_SCHEMA='$db' AND TABLE_NAME <> '__EFMigrationsHistory'
@@ -360,10 +365,20 @@ jobs:
               WHERE TABLE_SCHEMA='$db' AND TABLE_NAME <> '__EFMigrationsHistory'
               ORDER BY TABLE_NAME,INDEX_NAME,SEQ_IN_INDEX;" > "$RUNNER_TEMP/$db-indexes.tsv"
             docker exec "$mysql_container" mysql -uroot -proot -Nse "
-              SELECT TABLE_NAME,CONSTRAINT_NAME,REFERENCED_TABLE_NAME,UNIQUE_CONSTRAINT_NAME
+              SELECT TABLE_NAME,CONSTRAINT_NAME,REFERENCED_TABLE_NAME,UNIQUE_CONSTRAINT_NAME,UPDATE_RULE,DELETE_RULE,MATCH_OPTION
               FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS
               WHERE CONSTRAINT_SCHEMA='$db'
               ORDER BY TABLE_NAME,CONSTRAINT_NAME;" > "$RUNNER_TEMP/$db-fks.tsv"
+            docker exec "$mysql_container" mysql -uroot -proot -Nse "
+              SELECT TABLE_NAME,CONSTRAINT_NAME,COLUMN_NAME,ORDINAL_POSITION,REFERENCED_TABLE_NAME,REFERENCED_COLUMN_NAME,POSITION_IN_UNIQUE_CONSTRAINT
+              FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+              WHERE TABLE_SCHEMA='$db' AND REFERENCED_TABLE_NAME IS NOT NULL
+              ORDER BY TABLE_NAME,CONSTRAINT_NAME,ORDINAL_POSITION;" > "$RUNNER_TEMP/$db-fk-columns.tsv"
+            docker exec "$mysql_container" mysql -uroot -proot -Nse "
+              SELECT TABLE_NAME,CONSTRAINT_NAME,CONSTRAINT_TYPE
+              FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
+              WHERE CONSTRAINT_SCHEMA='$db'
+              ORDER BY TABLE_NAME,CONSTRAINT_NAME,CONSTRAINT_TYPE;" > "$RUNNER_TEMP/$db-constraints.tsv"
             docker exec "$mysql_container" mysql -uroot -proot -Nse "
               SELECT tc.TABLE_NAME,tc.CONSTRAINT_NAME,cc.CHECK_CLAUSE
               FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc
@@ -371,12 +386,32 @@ jobs:
                 ON cc.CONSTRAINT_SCHEMA=tc.CONSTRAINT_SCHEMA AND cc.CONSTRAINT_NAME=tc.CONSTRAINT_NAME
               WHERE tc.CONSTRAINT_SCHEMA='$db' AND tc.CONSTRAINT_TYPE='CHECK'
               ORDER BY tc.TABLE_NAME,tc.CONSTRAINT_NAME;" > "$RUNNER_TEMP/$db-checks.tsv"
+            docker exec "$mysql_container" mysql -uroot -proot -Nse "
+              SELECT TABLE_NAME,VIEW_DEFINITION,CHECK_OPTION,IS_UPDATABLE,SECURITY_TYPE,CHARACTER_SET_CLIENT,COLLATION_CONNECTION
+              FROM INFORMATION_SCHEMA.VIEWS
+              WHERE TABLE_SCHEMA='$db'
+              ORDER BY TABLE_NAME;" > "$RUNNER_TEMP/$db-views.tsv"
+            docker exec "$mysql_container" mysql -uroot -proot -Nse "
+              SELECT TRIGGER_NAME,EVENT_MANIPULATION,EVENT_OBJECT_TABLE,ACTION_ORDER,ACTION_STATEMENT,ACTION_ORIENTATION,ACTION_TIMING,SQL_MODE,CHARACTER_SET_CLIENT,COLLATION_CONNECTION,DATABASE_COLLATION
+              FROM INFORMATION_SCHEMA.TRIGGERS
+              WHERE TRIGGER_SCHEMA='$db'
+              ORDER BY EVENT_OBJECT_TABLE,TRIGGER_NAME;" > "$RUNNER_TEMP/$db-triggers.tsv"
+            docker exec "$mysql_container" mysql -uroot -proot -Nse "
+              SELECT ROUTINE_NAME,ROUTINE_TYPE,DTD_IDENTIFIER,SQL_DATA_ACCESS,IS_DETERMINISTIC,SECURITY_TYPE,COALESCE(ROUTINE_DEFINITION,'')
+              FROM INFORMATION_SCHEMA.ROUTINES
+              WHERE ROUTINE_SCHEMA='$db'
+              ORDER BY ROUTINE_NAME,ROUTINE_TYPE;" > "$RUNNER_TEMP/$db-routines.tsv"
+            docker exec "$mysql_container" mysql -uroot -proot -Nse "
+              SELECT EVENT_NAME,EVENT_TYPE,COALESCE(EVENT_DEFINITION,''),STATUS,ON_COMPLETION,COALESCE(INTERVAL_VALUE,''),COALESCE(INTERVAL_FIELD,''),TIME_ZONE,COALESCE(DATE_FORMAT(EXECUTE_AT,'%Y-%m-%d %H:%i:%s'),'')
+              FROM INFORMATION_SCHEMA.EVENTS
+              WHERE EVENT_SCHEMA='$db'
+              ORDER BY EVENT_NAME;" > "$RUNNER_TEMP/$db-events.tsv"
           }
           capture phase6_pomelo_reference
           capture phase6_oracle_fresh
 
           equivalent=true
-          for part in columns indexes fks checks; do
+          for part in tables columns indexes constraints fks fk-columns checks views triggers routines events; do
             if ! diff -u "$RUNNER_TEMP/phase6_pomelo_reference-$part.tsv" "$RUNNER_TEMP/phase6_oracle_fresh-$part.tsv" > "$RUNNER_TEMP/oracle-baseline-$part.diff"; then
               equivalent=false
             fi
@@ -445,7 +480,7 @@ jobs:
             echo "- Oracle EF10 baseline adoption on fresh canonical restore: PASS"
             echo "- has-pending-model-changes: PASS"
             echo "- Existing Pomelo schema adoption without physical DDL: $ADOPTED"
-            echo "- Physical schema equivalence after canonical restore: $SCHEMA_EQUIVALENT"
+            echo "- Physical schema equivalence (tables/engine/collation, columns, indexes, constraints, FK rules/columns, CHECK, views, triggers, routines, events): $SCHEMA_EQUIVALENT"
           } >> "$GITHUB_STEP_SUMMARY"
 
           test "$ADOPTED" = true
