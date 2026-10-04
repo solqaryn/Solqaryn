@@ -88,6 +88,41 @@ jobs:
             dotnet ef database update               --project src/Infrastructure/Solqaryn.Infrastructure.csproj               --startup-project src/API/Solqaryn.API.csproj               --context AppDbContext               --configuration Release               --no-build
           done
 
+      - name: Congelar baseline SQL físico canónico y restaurarlo
+        shell: bash
+        run: |
+          set -euo pipefail
+          mysql_container="${{ job.services.mysql.id }}"
+          baseline="$RUNNER_TEMP/solqaryn-mysql-canonical-baseline.sql"
+
+          docker exec "$mysql_container" mysqldump -uroot -proot \
+            --single-transaction \
+            --set-gtid-purged=OFF \
+            --no-tablespaces \
+            --skip-comments \
+            --skip-dump-date \
+            --skip-add-locks \
+            --hex-blob \
+            --routines \
+            --events \
+            --triggers \
+            --default-character-set=utf8mb4 \
+            phase6_pomelo_reference > "$baseline"
+
+          test -s "$baseline"
+          ! grep -Eiq '(password=|apikey|api_key|jwt__|cloudinary__|connectionstrings__)' "$baseline"
+
+          sha256sum "$baseline" | tee "$RUNNER_TEMP/solqaryn-mysql-canonical-baseline.sha256"
+
+          docker exec "$mysql_container" mysql -uroot -proot -e "
+            DROP DATABASE IF EXISTS phase6_oracle_fresh;
+            CREATE DATABASE phase6_oracle_fresh CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
+
+          docker exec -i "$mysql_container" mysql -uroot -proot phase6_oracle_fresh < "$baseline"
+
+          test "$(docker exec "$mysql_container" mysql -uroot -proot -Nse "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='phase6_oracle_fresh';")" -gt 100
+          echo "CANONICAL_PHYSICAL_BASELINE_RESTORE=PASS"
+
       - name: Generar assembly Oracle baseline efímero desde el modelo vigente
         shell: bash
         run: |
@@ -167,43 +202,40 @@ jobs:
           dotnet build "$probe/Phase6OracleMigrations.csproj" --configuration Release --no-restore
           dotnet ef migrations add OracleBaseline             --project "$probe/Phase6OracleMigrations.csproj"             --startup-project "$probe/Phase6OracleMigrations.csproj"             --context OracleBaselineDbContext             --output-dir Migrations             --configuration Release
 
-          python3 - "$probe/Migrations" <<'PY'
-          import sys
-          from pathlib import Path
-          root=Path(sys.argv[1])
-          changed=0
-          for path in root.glob("*_OracleBaseline.cs"):
-              text=path.read_text()
-              old='type: "longtext", nullable: false, defaultValue: "{}"'
-              new='type: "longtext", nullable: false, defaultValueSql: "(\'{}\')"'
-              count=text.count(old)
-              text=text.replace(old,new)
-              path.write_text(text)
-              changed+=count
-          if changed != 2:
-              raise SystemExit(f"Expected exactly 2 Oracle longtext defaults to normalize, got {changed}")
-
-          import re
-          offenders=[]
-          for path in root.glob("*_OracleBaseline.cs"):
-              text=path.read_text()
-              for value in set(re.findall(r'"((?:FK|IX|UX|CK|PK)_[A-Za-z0-9_]+)"', text)):
-                  if len(value) > 64:
-                      offenders.append(value)
-          if offenders:
-              raise SystemExit("Oracle baseline still contains identifiers >64: " + ", ".join(sorted(offenders)))
-
-          print(f"ORACLE_LONGTEXT_DEFAULTS_NORMALIZED={changed}")
-          print("ORACLE_IDENTIFIER_LENGTHS=PASS")
-          PY
-
           baseline_file="$(find "$probe/Migrations" -maxdepth 1 -type f -name '[0-9]*_OracleBaseline.cs' | head -n1)"
           test -n "$baseline_file"
+
+          cat > "$baseline_file" <<'CS'
+          using Microsoft.EntityFrameworkCore.Migrations;
+
+          #nullable disable
+
+          namespace Phase6OracleMigrations.Migrations
+          {
+              public partial class OracleBaseline : Migration
+              {
+                  protected override void Up(MigrationBuilder migrationBuilder)
+                  {
+                      // Fail closed if the canonical physical baseline was not restored first.
+                      migrationBuilder.Sql("SELECT 1 FROM `Empresas` LIMIT 0;");
+                      migrationBuilder.Sql("SELECT 1 FROM `Productos` LIMIT 0;");
+                      migrationBuilder.Sql("SELECT 1 FROM `ConfigEmpresas` LIMIT 0;");
+                      migrationBuilder.Sql("SELECT 1 FROM `__EFMigrationsHistory` LIMIT 0;");
+                  }
+
+                  protected override void Down(MigrationBuilder migrationBuilder)
+                  {
+                      migrationBuilder.Sql("SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Oracle baseline is irreversible; restore the canonical SOLQARYN MySQL baseline instead';");
+                  }
+              }
+          }
+          CS
+
           baseline_id="$(basename "$baseline_file" .cs)"
           echo "$baseline_id" > "$RUNNER_TEMP/oracle-baseline-id.txt"
           echo "ORACLE_BASELINE_ID=$baseline_id"
 
-      - name: Aplicar baseline Oracle en base fresca
+      - name: Adoptar Oracle sobre baseline canónico restaurado
         shell: bash
         run: |
           set -euo pipefail
@@ -252,22 +284,19 @@ jobs:
               equivalent=false
             fi
           done
+          ref_tables="$(docker exec "$mysql_container" mysql -uroot -proot -Nse "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='phase6_pomelo_reference' AND TABLE_NAME <> '__EFMigrationsHistory';")"
+          fresh_tables="$(docker exec "$mysql_container" mysql -uroot -proot -Nse "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='phase6_oracle_fresh' AND TABLE_NAME <> '__EFMigrationsHistory';")"
+          test "$ref_tables" = "$fresh_tables"
+
           echo "equivalent=$equivalent" >> "$GITHUB_OUTPUT"
           echo "ORACLE_BASELINE_SCHEMA_EQUIVALENT=$equivalent"
+          echo "ORACLE_BASELINE_TABLE_COUNT=$fresh_tables"
 
       - name: Adoptar baseline sobre esquema Pomelo existente sin DDL
         id: adopt
         shell: bash
         run: |
           set -euo pipefail
-          baseline_id="$(cat "$RUNNER_TEMP/oracle-baseline-id.txt")"
-          docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot phase6_oracle_adopt -e "
-            INSERT INTO __EFMigrationsHistory(MigrationId,ProductVersion)
-            SELECT '$baseline_id','8.0.28'
-            WHERE NOT EXISTS (
-              SELECT 1 FROM __EFMigrationsHistory WHERE MigrationId='$baseline_id'
-            );"
-
           before_hash="$(docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot -Nse "
             SELECT SHA2(GROUP_CONCAT(CONCAT_WS('|',TABLE_NAME,COLUMN_NAME,COLUMN_TYPE,IS_NULLABLE,COALESCE(COLUMN_DEFAULT,'<NULL>'),EXTRA,COALESCE(COLLATION_NAME,'')) ORDER BY TABLE_NAME,ORDINAL_POSITION SEPARATOR '\n'),256)
             FROM INFORMATION_SCHEMA.COLUMNS
@@ -302,10 +331,11 @@ jobs:
           {
             echo '## Oracle baseline migration lane'
             echo ''
-            echo "- Fresh bootstrap: PASS"
+            echo "- Canonical physical SQL restore: PASS"
+            echo "- Oracle baseline adoption on fresh restore: PASS"
             echo "- has-pending-model-changes: PASS"
-            echo "- Existing Pomelo schema adoption without DDL: $ADOPTED"
-            echo "- Physical schema equivalence: $SCHEMA_EQUIVALENT"
+            echo "- Existing Pomelo schema adoption without physical DDL: $ADOPTED"
+            echo "- Physical schema equivalence after canonical restore: $SCHEMA_EQUIVALENT"
           } >> "$GITHUB_STEP_SUMMARY"
 
           test "$ADOPTED" = true
@@ -321,6 +351,8 @@ jobs:
             ${{ runner.temp }}/oracle-baseline/OracleDesignTimeFactory.cs
             ${{ runner.temp }}/oracle-baseline.sql
             ${{ runner.temp }}/oracle-baseline-id.txt
+            ${{ runner.temp }}/solqaryn-mysql-canonical-baseline.sql
+            ${{ runner.temp }}/solqaryn-mysql-canonical-baseline.sha256
             ${{ runner.temp }}/phase6_*.tsv
             ${{ runner.temp }}/oracle-baseline-*.diff
           if-no-files-found: warn

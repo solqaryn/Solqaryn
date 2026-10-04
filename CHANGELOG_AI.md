@@ -1,3 +1,12 @@
+## 2026-10-04 — Lane Oracle adopta baseline físico canónico MySQL DEV
+
+- La historia Pomelo se congela como SQL físico MySQL generado desde una base descartable creada exclusivamente por las migraciones certificadas.
+- Una base nueva se restaura primero desde ese baseline exacto; Oracle agrega después una migración baseline no-op/fail-closed y conserva el snapshot para migraciones futuras.
+- Una base histórica Pomelo adopta la misma migración Oracle sin DDL físico; se verifica hash antes/después excluyendo únicamente el historial EF.
+- Se preservan tablas, columnas, defaults, generated columns, índices, FK, CHECK, triggers/routines/events y datos sembrados por migraciones, sin reescribir las migraciones históricas.
+- El baseline se escanea contra patrones de secretos y se publica como artifact con SHA-256 para revisión antes de versionarlo.
+- Fase 7 y TargetFramework permanecen bloqueados hasta certificar esta lane exact-head y persistir el baseline canónico.
+
 ## 2026-10-04 — Oracle baseline normaliza nombres físicos MySQL DEV
 
 - El contexto efímero Oracle aplica a foreign keys e índices la misma regla física observada en el SQL Pomelo vigente: máximo 64 caracteres con truncación determinista.
