@@ -12,6 +12,7 @@ on:
       - 'docs/evidencias/modernizacion/FASE_6_PROVIDER_LEASE.json'
       - 'docs/evidencias/modernizacion/PUNTO_4_ORACLE_BASELINE_ADOPTION_2026-10-04.md'
       - 'docs/evidencias/modernizacion/PUNTO_5_MIGRATION_HISTORY_PRESERVED_2026-10-04.md'
+      - 'docs/evidencias/modernizacion/PUNTO_6_ORACLE_CLEAN_BOOTSTRAP_2026-10-04.md'
   workflow_dispatch:
 
 permissions:
@@ -323,6 +324,13 @@ jobs:
           baseline_id="$(basename "$baseline_file" .cs)"
           echo "$baseline_id" > "$RUNNER_TEMP/oracle-baseline-id.txt"
           echo "ORACLE_BASELINE_ID=$baseline_id"
+          "$RUNNER_TEMP/dotnet-ef10/dotnet-ef" migrations script 0 \
+            --project "$probe/Phase6OracleMigrations.csproj" \
+            --startup-project "$probe/Phase6OracleMigrations.csproj" \
+            --context OracleBaselineDbContext \
+            --configuration Release \
+            --output "$RUNNER_TEMP/oracle-baseline.sql"
+          test -s "$RUNNER_TEMP/oracle-baseline.sql"
 
       - name: Adoptar Oracle sobre baseline canónico restaurado
         shell: bash
@@ -340,6 +348,27 @@ jobs:
             --startup-project "$probe/Phase6OracleMigrations.csproj" \
             --context OracleBaselineDbContext \
             --configuration Release
+
+      - name: Instalar paquete SQL en una base completamente vacía
+        shell: bash
+        run: |
+          set -euo pipefail
+          mysql_container="${{ job.services.mysql.id }}"
+          docker exec "$mysql_container" mysql -uroot -proot -e "DROP DATABASE IF EXISTS phase6_oracle_script; CREATE DATABASE phase6_oracle_script CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
+          docker exec -i "$mysql_container" mysql -uroot -proot phase6_oracle_script < "$RUNNER_TEMP/solqaryn-mysql-canonical-baseline.sql"
+          docker exec -i "$mysql_container" mysql -uroot -proot phase6_oracle_script < "$RUNNER_TEMP/oracle-baseline.sql"
+          baseline_id="$(cat "$RUNNER_TEMP/oracle-baseline-id.txt")"
+          applied="$(docker exec "$mysql_container" mysql -uroot -proot -Nse "SELECT COUNT(*) FROM phase6_oracle_script.__EFMigrationsHistory WHERE MigrationId='$baseline_id';")"
+          test "$applied" = 1
+          tables="$(docker exec "$mysql_container" mysql -uroot -proot -Nse "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='phase6_oracle_script' AND TABLE_NAME <> '__EFMigrationsHistory';")"
+          test "$tables" -gt 100
+          export ORACLE_MIGRATION_CONNECTION="Server=127.0.0.1;Port=3306;Database=phase6_oracle_script;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+          "$RUNNER_TEMP/dotnet-ef10/dotnet-ef" migrations has-pending-model-changes \
+            --project "$RUNNER_TEMP/oracle-baseline/Phase6OracleMigrations.csproj" \
+            --startup-project "$RUNNER_TEMP/oracle-baseline/Phase6OracleMigrations.csproj" \
+            --context OracleBaselineDbContext \
+            --configuration Release
+          echo "ORACLE_EF10_SQL_PACKAGE_FRESH_BOOTSTRAP=PASS tables=$tables"
 
       - name: Capturar y comparar esquema físico Pomelo vs Oracle baseline
         id: schema
@@ -409,18 +438,24 @@ jobs:
           }
           capture phase6_pomelo_reference
           capture phase6_oracle_fresh
+          capture phase6_oracle_script
 
           equivalent=true
-          for part in tables columns indexes constraints fks fk-columns checks views triggers routines events; do
-            if ! diff -u "$RUNNER_TEMP/phase6_pomelo_reference-$part.tsv" "$RUNNER_TEMP/phase6_oracle_fresh-$part.tsv" > "$RUNNER_TEMP/oracle-baseline-$part.diff"; then
-              equivalent=false
-            fi
+          for candidate in phase6_oracle_fresh phase6_oracle_script; do
+            for part in tables columns indexes constraints fks fk-columns checks views triggers routines events; do
+              if ! diff -u "$RUNNER_TEMP/phase6_pomelo_reference-$part.tsv" "$RUNNER_TEMP/$candidate-$part.tsv" > "$RUNNER_TEMP/oracle-baseline-$candidate-$part.diff"; then
+                equivalent=false
+              fi
+            done
           done
           ref_tables="$(docker exec "$mysql_container" mysql -uroot -proot -Nse "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='phase6_pomelo_reference' AND TABLE_NAME <> '__EFMigrationsHistory';")"
           fresh_tables="$(docker exec "$mysql_container" mysql -uroot -proot -Nse "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='phase6_oracle_fresh' AND TABLE_NAME <> '__EFMigrationsHistory';")"
+          script_tables="$(docker exec "$mysql_container" mysql -uroot -proot -Nse "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='phase6_oracle_script' AND TABLE_NAME <> '__EFMigrationsHistory';")"
           test "$ref_tables" = "$fresh_tables"
+          test "$ref_tables" = "$script_tables"
 
           echo "equivalent=$equivalent" >> "$GITHUB_OUTPUT"
+          echo "ORACLE_EF10_SCRIPT_BOOTSTRAP_SCHEMA_EQUIVALENT=$equivalent"
           echo "ORACLE_BASELINE_SCHEMA_EQUIVALENT=$equivalent"
           echo "ORACLE_BASELINE_TABLE_COUNT=$fresh_tables"
 
@@ -465,22 +500,15 @@ jobs:
           set -euo pipefail
           probe="$RUNNER_TEMP/oracle-baseline"
           export ORACLE_MIGRATION_CONNECTION="Server=127.0.0.1;Port=3306;Database=phase6_oracle_fresh;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
-          "$RUNNER_TEMP/dotnet-ef10/dotnet-ef" migrations script 0 \
-            --project "$probe/Phase6OracleMigrations.csproj" \
-            --startup-project "$probe/Phase6OracleMigrations.csproj" \
-            --context OracleBaselineDbContext \
-            --configuration Release \
-            --output "$RUNNER_TEMP/oracle-baseline.sql"
-          test -s "$RUNNER_TEMP/oracle-baseline.sql"
-
           {
             echo '## Oracle baseline migration lane'
             echo ''
             echo "- Canonical physical SQL restore: PASS"
             echo "- Oracle EF10 baseline adoption on fresh canonical restore: PASS"
+            echo "- Downloadable SQL package applied to a completely empty database: PASS"
             echo "- has-pending-model-changes: PASS"
             echo "- Existing Pomelo schema adoption without physical DDL: $ADOPTED"
-            echo "- Physical schema equivalence (tables/engine/collation, columns, indexes, constraints, FK rules/columns, CHECK, views, triggers, routines, events): $SCHEMA_EQUIVALENT"
+            echo "- Physical equivalence of EF and SQL-package bootstrap (tables/engine/collation, columns, indexes, constraints, FK rules/columns, CHECK, views, triggers, routines, events): $SCHEMA_EQUIVALENT"
           } >> "$GITHUB_STEP_SUMMARY"
 
           test "$ADOPTED" = true
@@ -502,4 +530,4 @@ jobs:
             ${{ runner.temp }}/phase6_*.tsv
             ${{ runner.temp }}/oracle-baseline-*.diff
           if-no-files-found: warn
-          retention-days: 14
+          retention-days: 90
