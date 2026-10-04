@@ -117,14 +117,14 @@ jobs:
             --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
             --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext \
-            --configuration Release | tee ../phase6-pomelo-migrations.txt
+            --configuration Release | tee $RUNNER_TEMP/phase6-pomelo-migrations.txt
           dotnet ef migrations script \
             --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
             --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext \
             --configuration Release \
-            --output ../phase6-pomelo-forward.sql
-          test -s ../phase6-pomelo-forward.sql
+            --output $RUNNER_TEMP/phase6-pomelo-forward.sql
+          test -s $RUNNER_TEMP/phase6-pomelo-forward.sql
 
       - name: Certificar historial, tipos, collation, índices y constraints
         id: schema
@@ -172,7 +172,7 @@ jobs:
             echo "POMELO_FKS=$fk_count"
             echo "POMELO_CHECKS=$check_count"
             echo "POMELO_UTF8MB4_TABLES=$utf8mb4_tables"
-          } | tee phase6-pomelo-schema.env
+          } | tee $RUNNER_TEMP/phase6-pomelo-schema.env
 
       - name: Semántica MySQL transacción decimal fecha JSON collation y 1062
         shell: bash
@@ -245,7 +245,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 - <<'PY' | tee phase6-provider-lockin.json
+          python3 - <<'PY' | tee $RUNNER_TEMP/phase6-provider-lockin.json
           import json
           from pathlib import Path
           root=Path("backend")
@@ -295,7 +295,8 @@ jobs:
         with:
           name: phase6-pomelo-baseline-${{ github.run_id }}
           path: |
-            phase6-pomelo-*.*
+            ${{ runner.temp }}/phase6-pomelo-*.*
+            ${{ runner.temp }}/phase6-provider-lockin.json
             backend/**/TestResults/*.trx
           if-no-files-found: warn
           retention-days: 14
@@ -340,7 +341,7 @@ jobs:
       - name: Preparar esquema runtime con Pomelo
         working-directory: backend
         env:
-          ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=phase6_oracle_runtime;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;
+          ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=phase6_oracle_runtime;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;
         shell: bash
         run: |
           set -euo pipefail
@@ -513,8 +514,8 @@ jobs:
       - name: Ejecutar comparación Oracle
         shell: bash
         env:
-          ORACLE_FRESH_CONNECTION: Server=127.0.0.1;Port=3306;Database=phase6_oracle_fresh;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;
-          ORACLE_RUNTIME_CONNECTION: Server=127.0.0.1;Port=3306;Database=phase6_oracle_runtime;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;
+          ORACLE_FRESH_CONNECTION: Server=127.0.0.1;Port=3306;Database=phase6_oracle_fresh;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;
+          ORACLE_RUNTIME_CONNECTION: Server=127.0.0.1;Port=3306;Database=phase6_oracle_runtime;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;
           ORACLE_RESULT: ${{ runner.temp }}/phase6-oracle-result.json
         run: |
           set -euo pipefail
@@ -706,19 +707,30 @@ jobs:
         id: tests
         shell: bash
         run: |
-          set -euo pipefail
+          set -uo pipefail
           candidate="$RUNNER_TEMP/solqaryn-net10/backend"
           cd "$candidate"
+
           dotnet test Solqaryn.sln \
             --configuration Release \
             --no-build \
             --filter "Category!=Integration" \
             --logger "trx;LogFileName=phase6-net10-unit.trx"
+          unit_rc=$?
+
           dotnet test Solqaryn.sln \
             --configuration Release \
             --no-build \
             --filter "Category=Integration" \
             --logger "trx;LogFileName=phase6-net10-integration.trx"
+          integration_rc=$?
+
+          if [ "$unit_rc" -eq 0 ]; then unit_pass=true; else unit_pass=false; fi
+          if [ "$integration_rc" -eq 0 ]; then integration_pass=true; else integration_pass=false; fi
+          echo "unit_pass=$unit_pass" >> "$GITHUB_OUTPUT"
+          echo "integration_pass=$integration_pass" >> "$GITHUB_OUTPUT"
+          echo "NET10_CURRENT_EF8_UNIT_PASS=$unit_pass"
+          echo "NET10_CURRENT_EF8_INTEGRATION_PASS=$integration_pass"
 
       - name: Resultado TargetFramework aislado
         id: result
@@ -769,6 +781,8 @@ jobs:
           ORACLE_FRESH: ${{ needs.oracle-comparison.outputs.fresh_migrations }}
           ORACLE_EXCEPTION: ${{ needs.oracle-comparison.outputs.exception_contract }}
           ORACLE_SCHEMA: ${{ needs.oracle-comparison.outputs.schema_equivalent }}
+          ORACLE_JOB_RESULT: ${{ needs.oracle-comparison.result }}
+          NET10_JOB_RESULT: ${{ needs.net10-probe.result }}
           NET10_COMPILE: ${{ needs.net10-probe.outputs.compile_pass }}
           NET10_INTEGRATION: ${{ needs.net10-probe.outputs.integration_pass }}
           POMELO10: ${{ needs.net10-probe.outputs.pomelo10_available }}
@@ -789,7 +803,7 @@ jobs:
             echo "- ORACLE_EF10_STABLE_AVAILABLE=$ORACLE10"
           } | tee phase6-verdict.txt
 
-          if [ "$POMELO_STABLE" = true ]; then
+          if [ "$POMELO_STABLE" = true ] && [ "$ORACLE_JOB_RESULT" = success ] && [ "$NET10_JOB_RESULT" = success ]; then
             {
               echo 'FASE_6_MYSQL_EF_PROVIDER=PASS'
               echo 'SELECTED_PROVIDER=POMELO'
