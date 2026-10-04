@@ -1,4 +1,5 @@
 name: DEV - aceptación funcional integral
+# Fase 5: exact-head Playwright runtime pin
 
 on:
   push:
