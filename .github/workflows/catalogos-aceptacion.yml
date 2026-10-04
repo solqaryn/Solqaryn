@@ -1,5 +1,5 @@
 name: DEV - aceptación funcional integral
-# Fase 5: exact-head Playwright runtime pin
+# Fase 5: exact-head Playwright 1.63.0 + suite unitaria 218 tests
 
 on:
   push:
