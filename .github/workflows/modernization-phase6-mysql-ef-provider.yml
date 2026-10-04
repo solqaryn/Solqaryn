@@ -117,11 +117,13 @@ jobs:
             --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
             --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext \
+            --configuration Release \
             --no-build | tee ../phase6-pomelo-migrations.txt
           dotnet ef migrations script \
             --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
             --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext \
+            --configuration Release \
             --no-build \
             --output ../phase6-pomelo-forward.sql
           test -s ../phase6-pomelo-forward.sql
@@ -367,7 +369,7 @@ jobs:
           cat > "$probe/Program.cs" <<'CS'
           using System.Text.Json;
           using Microsoft.EntityFrameworkCore;
-          using MySQL.EntityFrameworkCore.Extensions;
+          using MySql.EntityFrameworkCore.Extensions;
           using Solqaryn.Application.Exceptions;
           using Solqaryn.Infrastructure.Persistence;
           using Solqaryn.Infrastructure.Services;
@@ -679,8 +681,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          candidate="$RUNNER_TEMP/backend-net10"
-          cp -a backend "$candidate"
+          repo_copy="$RUNNER_TEMP/solqaryn-net10"
+          mkdir -p "$repo_copy"
+          cp -a "$GITHUB_WORKSPACE/." "$repo_copy/"
+          candidate="$repo_copy/backend"
           python3 - "$candidate" <<'PY'
           import sys
           from pathlib import Path
@@ -705,7 +709,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          candidate="$RUNNER_TEMP/backend-net10"
+          candidate="$RUNNER_TEMP/solqaryn-net10/backend"
           cd "$candidate"
           dotnet test Solqaryn.sln \
             --configuration Release \
