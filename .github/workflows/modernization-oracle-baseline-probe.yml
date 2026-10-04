@@ -132,6 +132,24 @@ jobs:
           dotnet build "$probe/Phase6OracleMigrations.csproj" --configuration Release --no-restore
           dotnet ef migrations add OracleBaseline             --project "$probe/Phase6OracleMigrations.csproj"             --startup-project "$probe/Phase6OracleMigrations.csproj"             --context AppDbContext             --output-dir Migrations             --configuration Release
 
+          python3 - "$probe/Migrations" <<'PY'
+          import sys
+          from pathlib import Path
+          root=Path(sys.argv[1])
+          changed=0
+          for path in root.glob("*_OracleBaseline.cs"):
+              text=path.read_text()
+              old='type: "longtext", nullable: false, defaultValue: "{}"'
+              new='type: "longtext", nullable: false, defaultValueSql: "(\'{}\')"'
+              count=text.count(old)
+              text=text.replace(old,new)
+              path.write_text(text)
+              changed+=count
+          if changed != 2:
+              raise SystemExit(f"Expected exactly 2 Oracle longtext defaults to normalize, got {changed}")
+          print(f"ORACLE_LONGTEXT_DEFAULTS_NORMALIZED={changed}")
+          PY
+
           baseline_file="$(find "$probe/Migrations" -maxdepth 1 -type f -name '[0-9]*_OracleBaseline.cs' | head -n1)"
           test -n "$baseline_file"
           baseline_id="$(basename "$baseline_file" .cs)"

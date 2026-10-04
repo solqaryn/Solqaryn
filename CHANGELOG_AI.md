@@ -1,3 +1,9 @@
+## 2026-10-04 — Normalización DDL Oracle para defaults longtext DEV
+
+- El probe Oracle detectó que Connector/NET genera `DEFAULT '{}'` para las dos columnas `longtext` JSON-text de `ConfigEmpresas`, sintaxis rechazada por MySQL 8.4.
+- El baseline Oracle efímero normaliza exclusivamente esas dos operaciones a un default SQL parentizado equivalente, sin modificar el modelo canónico ni las migraciones históricas Pomelo.
+- El gate falla cerrado si aparecen más o menos de dos defaults a normalizar, evitando parches silenciosos ante drift futuro.
+
 ## 2026-10-04 — Probe de baseline Oracle preservando historia Pomelo DEV
 
 - Se añade un gate aislado para generar una migración baseline Oracle desde el modelo vigente sin editar las migraciones históricas Pomelo.
