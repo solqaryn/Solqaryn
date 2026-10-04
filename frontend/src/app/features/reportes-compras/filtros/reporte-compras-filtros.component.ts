@@ -1,5 +1,5 @@
 
-import { Component, EventEmitter, Input, Output, inject, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ReporteComprasFiltroDto } from '../../../core/models/reporte-compras.models';
 
@@ -22,13 +22,13 @@ type ReporteComprasSelectorControl = 'proveedorId' | 'productoId' | 'productoVar
   imports: [ReactiveFormsModule],
   template: `
     <form class="filter-grid" [formGroup]="form" (ngSubmit)="emitir()" aria-label="Filtros del reporte de compras">
-      <label>Desde<input type="date" formControlName="desdeUtc" [disabled]="disabled || cargandoSelectores" /></label>
-      <label>Hasta<input type="date" formControlName="hastaUtc" [disabled]="disabled || cargandoSelectores" /></label>
+      <label>Desde<input type="date" formControlName="desdeUtc" /></label>
+      <label>Hasta<input type="date" formControlName="hastaUtc" /></label>
 
       @for (selector of selectores; track selector.control) {
         <label>
           {{ selector.label }}
-          <select [formControlName]="selector.control" [disabled]="disabled || cargandoSelectores" [attr.aria-busy]="cargandoSelectores">
+          <select [formControlName]="selector.control" [attr.aria-busy]="cargandoSelectores">
             <option [ngValue]="null">Todos</option>
             @for (opcion of selector.options; track opcion.id) {
               <option [ngValue]="opcion.id">{{ opcion.nombre }}</option>
@@ -39,7 +39,7 @@ type ReporteComprasSelectorControl = 'proveedorId' | 'productoId' | 'productoVar
 
       <label>
         Tamaño de página
-        <select formControlName="pageSize" [disabled]="disabled || cargandoSelectores">
+        <select formControlName="pageSize">
           <option [ngValue]="20">20</option>
           <option [ngValue]="50">50</option>
           <option [ngValue]="100">100</option>
@@ -68,7 +68,7 @@ type ReporteComprasSelectorControl = 'proveedorId' | 'productoId' | 'productoVar
     `.error{color:#b91c1c}`,
   ],
 })
-export class ReporteComprasFiltrosComponent {
+export class ReporteComprasFiltrosComponent implements OnChanges {
   private readonly fb = inject(FormBuilder);
 
   @Input() opciones: ReporteComprasFiltroOpciones = {};
@@ -85,6 +85,15 @@ export class ReporteComprasFiltrosComponent {
     productoVarianteId: [null as number | null, [Validators.min(1)]],
     pageSize: [50, [Validators.required, Validators.min(1), Validators.max(100)]],
   });
+
+  ngOnChanges(_changes: SimpleChanges): void {
+    if (this.disabled || this.cargandoSelectores) {
+      this.form.disable({ emitEvent: false });
+      return;
+    }
+
+    this.form.enable({ emitEvent: false });
+  }
 
   get selectores(): Array<{ label: string; control: ReporteComprasSelectorControl; options: ReporteComprasFiltroOpcion[] }> {
     return [
