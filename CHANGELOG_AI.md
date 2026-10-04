@@ -1,3 +1,13 @@
+## 2026-10-04 — Cierre Punto 1: ruta estable de provider para .NET 10 DEV
+
+- Run causal `37222690061` sobre HEAD `4069ce1a074145d10e68003c110296a4b39b655a` cerró el dictamen final en SUCCESS con `P0=0` y `P1=0`.
+- Stack vigente Pomelo/EF8/net8 recertificado; lane objetivo `net10 + EF Core 10.0.12 + MySql.EntityFrameworkCore 10.0.9` certificada en copia efímera del backend real.
+- La ruta preserva el historial Pomelo mediante baseline físico canónico y adopción Oracle sin DDL, con contratos provider-neutral para 1062/1205/1213.
+- `TARGETFRAMEWORK_CHANGE=ALLOWED_AFTER_PHASE6_CLOSE`; Fase 7 no se ejecuta en este cierre y los proyectos productivos continúan en `net8.0`.
+- Alcance exclusivo DEV/CI; sin QA, main, PROD, datos reales ni secretos.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-10-04 — Lane Oracle adopta baseline físico canónico MySQL DEV
 
 - La historia Pomelo se congela como SQL físico MySQL generado desde una base descartable creada exclusivamente por las migraciones certificadas.
