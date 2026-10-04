@@ -4,7 +4,6 @@ using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Enums;
 using Solqaryn.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
-using MySqlConnector;
 
 namespace Solqaryn.Infrastructure.Repositories;
 
@@ -190,5 +189,6 @@ public sealed class TrazabilidadInventarioRepository : ITrazabilidadInventarioRe
     public Task SaveChangesAsync() => _context.SaveChangesAsync();
 
     private static bool EsClaveDuplicada(DbUpdateException exception) =>
-        exception.InnerException is MySqlException { Number: 1062 };
+        MySqlProviderErrorClassifier.TryFind(exception, out var error) &&
+        error.Number == 1062;
 }
