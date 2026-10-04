@@ -6,6 +6,10 @@ on:
     branches: [dev]
     paths:
       - .github/workflows/fase2c4-escaner-frontend.yml
+      - frontend/package.json
+      - frontend/package-lock.json
+      - frontend/angular.json
+      - frontend/scripts/validate-scanner-2c4.mjs
       - frontend/src/app/shared/codigo-scanner-*/**
       - frontend/src/app/features/ventas/venta-form.component.*
       - frontend/src/app/features/compras/compra-form.component.*
@@ -123,22 +127,36 @@ jobs:
 
       - name: Instalar frontend y Chromium
         working-directory: frontend
+        shell: bash
         run: |
+          set -euo pipefail
           npm ci
+          test "$(node -p "require('./node_modules/barcode-detector/package.json').version")" = "3.2.2"
+          test "$(node -p "require('./node_modules/zxing-wasm/package.json').version")" = "3.1.3"
+          test -f node_modules/zxing-wasm/dist/reader/zxing_reader.wasm
+          if npm ls html5-qrcode --depth=0 >/dev/null 2>&1; then
+            echo 'html5-qrcode no debe existir en el runtime vigente.' >&2
+            exit 1
+          fi
           npx playwright install --with-deps chromium
 
       - name: Validar frontend
         working-directory: frontend
+        shell: bash
         run: |
+          set -euo pipefail
           npm run lint
+          npm audit --audit-level=high
+          npm audit --omit=dev --audit-level=high
           npm run build:prod
+          test -n "$(find dist/solqaryn-frontend -type f -path '*/assets/wasm/zxing_reader.wasm' -print -quit)"
 
       - name: Iniciar Angular
         working-directory: frontend
         shell: bash
         run: |
           set -euo pipefail
-          nohup npm start -- --host 127.0.0.1 --port 4200 > fase2c4-frontend.log 2>&1 &
+          nohup env -u PORT npm start -- --host 127.0.0.1 --port 4200 > fase2c4-frontend.log 2>&1 &
           echo $! > fase2c4-frontend.pid
           for attempt in $(seq 1 60); do
             if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then
