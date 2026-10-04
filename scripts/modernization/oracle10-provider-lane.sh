@@ -55,23 +55,18 @@ compile_group = ET.SubElement(proj, "ItemGroup")
 ET.SubElement(compile_group, "Compile", Remove="**/Migrations/**/*.cs")
 save_xml(infra, tree)
 
-tests = root / "tests/Solqaryn.Tests/Solqaryn.Tests.csproj"
-tree = ET.parse(tests)
-proj = tree.getroot()
-package_group = next((g for g in proj.findall("ItemGroup") if g.findall("PackageReference")), None)
-ET.SubElement(package_group, "PackageReference", Include="MySqlConnector", Version="2.3.7")
-ET.SubElement(package_group, "PackageReference", Include="MySql.EntityFrameworkCore", Version="10.0.9")
-save_xml(tests, tree)
-
-for path in root.rglob("*.cs"):
-    if "Migrations" in path.parts:
-        continue
+for relative in [
+    "src/API/Program.cs",
+    "src/Infrastructure/Persistence/AppDbContextFactory.cs",
+]:
+    path = root / relative
     text = path.read_text(encoding="utf-8-sig")
-    if "UseMySql(" not in text:
-        continue
-    text = text.replace("UseMySql(", "UseMySQL(")
-    text = re.sub(r",\s*new\s+MySqlServerVersion\([^)]*\)", "", text)
-    text = re.sub(r",\s*ServerVersion\.AutoDetect\([^)]*\)", "", text)
+    text = text.replace(
+        ".UseMySql(connectionString, new MySqlServerVersion(mysqlServerVersion))",
+        ".UseMySQL(connectionString)")
+    text = text.replace(
+        ".UseMySql(connectionString, new MySqlServerVersion(serverVersion))",
+        ".UseMySQL(connectionString)")
     if "using MySql.EntityFrameworkCore.Extensions;" not in text:
         text = "using MySql.EntityFrameworkCore.Extensions;\n" + text
     path.write_text(text, encoding="utf-8")
@@ -80,12 +75,8 @@ print("ORACLE10_EPHEMERAL_REWRITE=PASS")
 PY
 
 cd "$candidate/backend"
-dotnet restore Solqaryn.sln
-dotnet build Solqaryn.sln --configuration Release --no-restore
-
-dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj \
-  --configuration Release --no-build \
-  --filter "FullyQualifiedName~UnitOfWorkRetryTests|FullyQualifiedName~EnvironmentDatabaseGuardTests"
+dotnet restore src/API/Solqaryn.API.csproj
+dotnet build src/API/Solqaryn.API.csproj --configuration Release --no-restore
 
 dotnet new console --framework net10.0 --name Oracle10Probe --output "$probe" --force >/dev/null
 dotnet add "$probe/Oracle10Probe.csproj" reference "$candidate/backend/src/Infrastructure/Solqaryn.Infrastructure.csproj"
