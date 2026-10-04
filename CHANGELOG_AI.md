@@ -2826,3 +2826,11 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
 
+## 2026-10-04 — Cierre del Punto 12: equivalencia física extendida del esquema
+
+- El comparador Oracle baseline coteja contra la referencia Pomelo tablas, columnas, tipos/defaults/charset/collation/generación/comentarios/SRS, índices (incluyendo expresiones, prefijos, visibilidad y comentarios), particiones, constraints/CHECK y FK/acciones, vistas, triggers, rutinas/parámetros, eventos y defaults de charset/collation de base.
+- El probe Oracle baseline `37232938573` ya pasó la comparación anterior (136 tablas); la cobertura ampliada se considerará certificada sólo al pasar su nuevo run exact-head tras este commit.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_12_ESQUEMA_FISICO_EQUIVALENTE_2026-10-04.md`.
+- Sólo metadatos de esquemas efímeros CI; sin cambios a datos/servicios Aiven, QA o PROD; Fase 7 no ejecutada.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.

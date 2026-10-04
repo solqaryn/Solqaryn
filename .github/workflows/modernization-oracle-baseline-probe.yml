@@ -379,20 +379,25 @@ jobs:
           capture() {
             db="$1"
             docker exec "$mysql_container" mysql -uroot -proot -Nse "
-              SELECT TABLE_NAME,COALESCE(ENGINE,''),COALESCE(TABLE_COLLATION,''),COALESCE(CREATE_OPTIONS,'')
+              SELECT TABLE_NAME,COALESCE(ENGINE,''),COALESCE(ROW_FORMAT,''),COALESCE(TABLE_COLLATION,''),COALESCE(CREATE_OPTIONS,''),COALESCE(TABLE_COMMENT,'')
               FROM INFORMATION_SCHEMA.TABLES
               WHERE TABLE_SCHEMA='$db' AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME <> '__EFMigrationsHistory'
               ORDER BY TABLE_NAME;" > "$RUNNER_TEMP/$db-tables.tsv"
             docker exec "$mysql_container" mysql -uroot -proot -Nse "
-              SELECT TABLE_NAME,COLUMN_NAME,COLUMN_TYPE,IS_NULLABLE,COALESCE(COLUMN_DEFAULT,'<NULL>'),EXTRA,COALESCE(COLLATION_NAME,'')
+              SELECT TABLE_NAME,COLUMN_NAME,COLUMN_TYPE,IS_NULLABLE,COALESCE(COLUMN_DEFAULT,'<NULL>'),EXTRA,COALESCE(CHARACTER_SET_NAME,''),COALESCE(COLLATION_NAME,''),COALESCE(GENERATION_EXPRESSION,''),COALESCE(COLUMN_COMMENT,''),COALESCE(SRS_ID,'')
               FROM INFORMATION_SCHEMA.COLUMNS
               WHERE TABLE_SCHEMA='$db' AND TABLE_NAME <> '__EFMigrationsHistory'
               ORDER BY TABLE_NAME,ORDINAL_POSITION;" > "$RUNNER_TEMP/$db-columns.tsv"
             docker exec "$mysql_container" mysql -uroot -proot -Nse "
-              SELECT TABLE_NAME,INDEX_NAME,NON_UNIQUE,SEQ_IN_INDEX,COALESCE(COLUMN_NAME,''),INDEX_TYPE
+              SELECT TABLE_NAME,INDEX_NAME,NON_UNIQUE,SEQ_IN_INDEX,COALESCE(COLUMN_NAME,''),COALESCE(SUB_PART,''),COALESCE(COLLATION,''),INDEX_TYPE,COALESCE(INDEX_COMMENT,''),IS_VISIBLE,COALESCE(EXPRESSION,'')
               FROM INFORMATION_SCHEMA.STATISTICS
               WHERE TABLE_SCHEMA='$db' AND TABLE_NAME <> '__EFMigrationsHistory'
               ORDER BY TABLE_NAME,INDEX_NAME,SEQ_IN_INDEX;" > "$RUNNER_TEMP/$db-indexes.tsv"
+            docker exec "$mysql_container" mysql -uroot -proot -Nse "
+              SELECT TABLE_NAME,COALESCE(PARTITION_NAME,''),COALESCE(SUBPARTITION_NAME,''),COALESCE(PARTITION_METHOD,''),COALESCE(SUBPARTITION_METHOD,''),COALESCE(PARTITION_EXPRESSION,''),COALESCE(SUBPARTITION_EXPRESSION,''),COALESCE(PARTITION_DESCRIPTION,''),COALESCE(NODEGROUP,''),COALESCE(TABLESPACE_NAME,''),COALESCE(ENGINE,''),COALESCE(CREATE_OPTIONS,''),COALESCE(PARTITION_COMMENT,'')
+              FROM INFORMATION_SCHEMA.PARTITIONS
+              WHERE TABLE_SCHEMA='$db' AND TABLE_NAME <> '__EFMigrationsHistory'
+              ORDER BY TABLE_NAME,PARTITION_ORDINAL_POSITION,SUBPARTITION_ORDINAL_POSITION;" > "$RUNNER_TEMP/$db-partitions.tsv"
             docker exec "$mysql_container" mysql -uroot -proot -Nse "
               SELECT TABLE_NAME,CONSTRAINT_NAME,REFERENCED_TABLE_NAME,UNIQUE_CONSTRAINT_NAME,UPDATE_RULE,DELETE_RULE,MATCH_OPTION
               FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS
@@ -404,12 +409,12 @@ jobs:
               WHERE TABLE_SCHEMA='$db' AND REFERENCED_TABLE_NAME IS NOT NULL
               ORDER BY TABLE_NAME,CONSTRAINT_NAME,ORDINAL_POSITION;" > "$RUNNER_TEMP/$db-fk-columns.tsv"
             docker exec "$mysql_container" mysql -uroot -proot -Nse "
-              SELECT TABLE_NAME,CONSTRAINT_NAME,CONSTRAINT_TYPE
+              SELECT TABLE_NAME,CONSTRAINT_NAME,CONSTRAINT_TYPE,COALESCE(ENFORCED,'')
               FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
               WHERE CONSTRAINT_SCHEMA='$db'
               ORDER BY TABLE_NAME,CONSTRAINT_NAME,CONSTRAINT_TYPE;" > "$RUNNER_TEMP/$db-constraints.tsv"
             docker exec "$mysql_container" mysql -uroot -proot -Nse "
-              SELECT tc.TABLE_NAME,tc.CONSTRAINT_NAME,cc.CHECK_CLAUSE
+              SELECT tc.TABLE_NAME,tc.CONSTRAINT_NAME,cc.CHECK_CLAUSE,COALESCE(cc.ENFORCED,'')
               FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc
               JOIN INFORMATION_SCHEMA.CHECK_CONSTRAINTS cc
                 ON cc.CONSTRAINT_SCHEMA=tc.CONSTRAINT_SCHEMA AND cc.CONSTRAINT_NAME=tc.CONSTRAINT_NAME
@@ -435,6 +440,15 @@ jobs:
               FROM INFORMATION_SCHEMA.EVENTS
               WHERE EVENT_SCHEMA='$db'
               ORDER BY EVENT_NAME;" > "$RUNNER_TEMP/$db-events.tsv"
+            docker exec "$mysql_container" mysql -uroot -proot -Nse "
+              SELECT SPECIFIC_NAME,ROUTINE_TYPE,ORDINAL_POSITION,COALESCE(PARAMETER_MODE,''),COALESCE(PARAMETER_NAME,''),DTD_IDENTIFIER,COALESCE(CHARACTER_SET_NAME,''),COALESCE(COLLATION_NAME,'')
+              FROM INFORMATION_SCHEMA.PARAMETERS
+              WHERE SPECIFIC_SCHEMA='$db'
+              ORDER BY SPECIFIC_NAME,ROUTINE_TYPE,ORDINAL_POSITION;" > "$RUNNER_TEMP/$db-routine-parameters.tsv"
+            docker exec "$mysql_container" mysql -uroot -proot -Nse "
+              SELECT DEFAULT_CHARACTER_SET_NAME,DEFAULT_COLLATION_NAME
+              FROM INFORMATION_SCHEMA.SCHEMATA
+              WHERE SCHEMA_NAME='$db';" > "$RUNNER_TEMP/$db-database-defaults.tsv"
           }
           capture phase6_pomelo_reference
           capture phase6_oracle_fresh
@@ -442,7 +456,7 @@ jobs:
 
           equivalent=true
           for candidate in phase6_oracle_fresh phase6_oracle_script; do
-            for part in tables columns indexes constraints fks fk-columns checks views triggers routines events; do
+            for part in tables columns indexes partitions constraints fks fk-columns checks views triggers routines events routine-parameters database-defaults; do
               if ! diff -u "$RUNNER_TEMP/phase6_pomelo_reference-$part.tsv" "$RUNNER_TEMP/$candidate-$part.tsv" > "$RUNNER_TEMP/oracle-baseline-$candidate-$part.diff"; then
                 equivalent=false
               fi
