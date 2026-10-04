@@ -1,3 +1,10 @@
+## 2026-10-04 — Probe de baseline Oracle preservando historia Pomelo DEV
+
+- Se añade un gate aislado para generar una migración baseline Oracle desde el modelo vigente sin editar las migraciones históricas Pomelo.
+- El gate exige bootstrap desde cero, `has-pending-model-changes` verde, equivalencia física de columnas/índices/FK/CHECK y adopción sin DDL sobre un esquema ya creado por Pomelo.
+- La migración Oracle se genera únicamente en `RUNNER_TEMP`; el runtime productivo sigue en net8/EF8/Pomelo y Fase 7 permanece bloqueada.
+- Alcance exclusivo DEV/CI; QA, main, PROD, Aiven real, secretos y datos reales no se modifican.
+
 ## 2026-10-04 — Desacoplamiento de errores MySQL para modernización de provider DEV
 
 - `UnitOfWork` deja de depender en compile-time de `MySqlConnector.MySqlException` para clasificar 1205/1213/1062.

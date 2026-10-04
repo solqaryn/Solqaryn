@@ -1,0 +1,262 @@
+name: Modernización - Oracle baseline migration probe DEV
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/modernization-oracle-baseline-probe.yml'
+      - 'backend/src/Infrastructure/Persistence/**'
+      - 'backend/src/Infrastructure/Services/MySqlProviderErrorClassifier.cs'
+      - 'backend/src/Infrastructure/Solqaryn.Infrastructure.csproj'
+      - 'docs/evidencias/modernizacion/FASE_6_PROVIDER_LEASE.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: modernization-oracle-baseline-probe-dev
+  cancel-in-progress: true
+
+jobs:
+  oracle-baseline:
+    name: Oracle baseline fresh + adoption sobre historia Pomelo
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: phase6_pomelo_reference
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      ASPNETCORE_ENVIRONMENT: Development
+      Database__ServerVersion: 8.4.0
+      Database__ApplyMigrationsOnStartup: 'false'
+      Jwt__Secret: Phase6-Oracle-Baseline-CI-Only-Secret-With-More-Than-32-Characters
+      Jwt__Issuer: Solqaryn.Phase6
+      Jwt__Audience: Solqaryn.Phase6.Frontend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Scope y HEAD
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "dev"
+          node scripts/verify-project-scope.mjs
+          test -z "$(git status --porcelain)"
+
+      - name: Preparar herramientas y bases efímeras
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet tool install --global dotnet-ef --version 8.0.28
+          docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot -e "
+            DROP DATABASE IF EXISTS phase6_pomelo_reference;
+            CREATE DATABASE phase6_pomelo_reference CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+            DROP DATABASE IF EXISTS phase6_oracle_fresh;
+            CREATE DATABASE phase6_oracle_fresh CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+            DROP DATABASE IF EXISTS phase6_oracle_adopt;
+            CREATE DATABASE phase6_oracle_adopt CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
+
+      - name: Crear dos esquemas de referencia mediante historia Pomelo
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+          for db in phase6_pomelo_reference phase6_oracle_adopt; do
+            export ConnectionStrings__DefaultConnection="Server=127.0.0.1;Port=3306;Database=$db;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;"
+            dotnet ef database update               --project src/Infrastructure/Solqaryn.Infrastructure.csproj               --startup-project src/API/Solqaryn.API.csproj               --context AppDbContext               --configuration Release               --no-build
+          done
+
+      - name: Generar assembly Oracle baseline efímero desde el modelo vigente
+        shell: bash
+        run: |
+          set -euo pipefail
+          probe="$RUNNER_TEMP/oracle-baseline"
+          dotnet new console --framework net8.0 --name Phase6OracleMigrations --output "$probe" --force
+          dotnet add "$probe/Phase6OracleMigrations.csproj" reference "$GITHUB_WORKSPACE/backend/src/Infrastructure/Solqaryn.Infrastructure.csproj"
+          dotnet add "$probe/Phase6OracleMigrations.csproj" package Microsoft.EntityFrameworkCore.Design --version 8.0.28
+          dotnet add "$probe/Phase6OracleMigrations.csproj" package MySql.EntityFrameworkCore --version 8.0.28
+
+          cat > "$probe/OracleDesignTimeFactory.cs" <<'CS'
+          using Microsoft.EntityFrameworkCore;
+          using Microsoft.EntityFrameworkCore.Design;
+          using MySql.EntityFrameworkCore.Extensions;
+          using Solqaryn.Infrastructure.Persistence;
+
+          namespace Phase6OracleMigrations;
+
+          public sealed class OracleDesignTimeFactory : IDesignTimeDbContextFactory<AppDbContext>
+          {
+              public AppDbContext CreateDbContext(string[] args)
+              {
+                  var connectionString = Environment.GetEnvironmentVariable("ORACLE_MIGRATION_CONNECTION")
+                      ?? "Server=127.0.0.1;Port=3306;Database=phase6_oracle_design;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;";
+
+                  var assemblyName = typeof(OracleDesignTimeFactory).Assembly.GetName().Name!;
+                  var options = new DbContextOptionsBuilder<AppDbContext>()
+                      .UseMySQL(connectionString, mysql => mysql.MigrationsAssembly(assemblyName))
+                      .Options;
+
+                  return new AppDbContext(options);
+              }
+          }
+          CS
+
+          cat > "$probe/Program.cs" <<'CS'
+          Console.WriteLine("Phase6 Oracle migrations design-time host");
+          CS
+
+          export ORACLE_MIGRATION_CONNECTION="Server=127.0.0.1;Port=3306;Database=phase6_oracle_fresh;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+          dotnet restore "$probe/Phase6OracleMigrations.csproj"
+          dotnet build "$probe/Phase6OracleMigrations.csproj" --configuration Release --no-restore
+          dotnet ef migrations add OracleBaseline             --project "$probe/Phase6OracleMigrations.csproj"             --startup-project "$probe/Phase6OracleMigrations.csproj"             --context AppDbContext             --output-dir Migrations             --configuration Release
+
+          baseline_file="$(find "$probe/Migrations" -maxdepth 1 -type f -name '[0-9]*_OracleBaseline.cs' | head -n1)"
+          test -n "$baseline_file"
+          baseline_id="$(basename "$baseline_file" .cs)"
+          echo "$baseline_id" > "$RUNNER_TEMP/oracle-baseline-id.txt"
+          echo "ORACLE_BASELINE_ID=$baseline_id"
+
+      - name: Aplicar baseline Oracle en base fresca
+        shell: bash
+        run: |
+          set -euo pipefail
+          probe="$RUNNER_TEMP/oracle-baseline"
+          export ORACLE_MIGRATION_CONNECTION="Server=127.0.0.1;Port=3306;Database=phase6_oracle_fresh;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+          dotnet ef database update             --project "$probe/Phase6OracleMigrations.csproj"             --startup-project "$probe/Phase6OracleMigrations.csproj"             --context AppDbContext             --configuration Release
+          dotnet ef migrations has-pending-model-changes             --project "$probe/Phase6OracleMigrations.csproj"             --startup-project "$probe/Phase6OracleMigrations.csproj"             --context AppDbContext             --configuration Release
+
+      - name: Capturar y comparar esquema físico Pomelo vs Oracle baseline
+        id: schema
+        shell: bash
+        run: |
+          set -euo pipefail
+          mysql_container="${{ job.services.mysql.id }}"
+          capture() {
+            db="$1"
+            docker exec "$mysql_container" mysql -uroot -proot -Nse "
+              SELECT TABLE_NAME,COLUMN_NAME,COLUMN_TYPE,IS_NULLABLE,COALESCE(COLUMN_DEFAULT,'<NULL>'),EXTRA,COALESCE(COLLATION_NAME,'')
+              FROM INFORMATION_SCHEMA.COLUMNS
+              WHERE TABLE_SCHEMA='$db' AND TABLE_NAME <> '__EFMigrationsHistory'
+              ORDER BY TABLE_NAME,ORDINAL_POSITION;" > "$RUNNER_TEMP/$db-columns.tsv"
+            docker exec "$mysql_container" mysql -uroot -proot -Nse "
+              SELECT TABLE_NAME,INDEX_NAME,NON_UNIQUE,SEQ_IN_INDEX,COALESCE(COLUMN_NAME,''),INDEX_TYPE
+              FROM INFORMATION_SCHEMA.STATISTICS
+              WHERE TABLE_SCHEMA='$db' AND TABLE_NAME <> '__EFMigrationsHistory'
+              ORDER BY TABLE_NAME,INDEX_NAME,SEQ_IN_INDEX;" > "$RUNNER_TEMP/$db-indexes.tsv"
+            docker exec "$mysql_container" mysql -uroot -proot -Nse "
+              SELECT TABLE_NAME,CONSTRAINT_NAME,REFERENCED_TABLE_NAME,UNIQUE_CONSTRAINT_NAME
+              FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS
+              WHERE CONSTRAINT_SCHEMA='$db'
+              ORDER BY TABLE_NAME,CONSTRAINT_NAME;" > "$RUNNER_TEMP/$db-fks.tsv"
+            docker exec "$mysql_container" mysql -uroot -proot -Nse "
+              SELECT tc.TABLE_NAME,tc.CONSTRAINT_NAME,cc.CHECK_CLAUSE
+              FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc
+              JOIN INFORMATION_SCHEMA.CHECK_CONSTRAINTS cc
+                ON cc.CONSTRAINT_SCHEMA=tc.CONSTRAINT_SCHEMA AND cc.CONSTRAINT_NAME=tc.CONSTRAINT_NAME
+              WHERE tc.CONSTRAINT_SCHEMA='$db' AND tc.CONSTRAINT_TYPE='CHECK'
+              ORDER BY tc.TABLE_NAME,tc.CONSTRAINT_NAME;" > "$RUNNER_TEMP/$db-checks.tsv"
+          }
+          capture phase6_pomelo_reference
+          capture phase6_oracle_fresh
+
+          equivalent=true
+          for part in columns indexes fks checks; do
+            if ! diff -u "$RUNNER_TEMP/phase6_pomelo_reference-$part.tsv" "$RUNNER_TEMP/phase6_oracle_fresh-$part.tsv" > "$RUNNER_TEMP/oracle-baseline-$part.diff"; then
+              equivalent=false
+            fi
+          done
+          echo "equivalent=$equivalent" >> "$GITHUB_OUTPUT"
+          echo "ORACLE_BASELINE_SCHEMA_EQUIVALENT=$equivalent"
+
+      - name: Adoptar baseline sobre esquema Pomelo existente sin DDL
+        id: adopt
+        shell: bash
+        run: |
+          set -euo pipefail
+          baseline_id="$(cat "$RUNNER_TEMP/oracle-baseline-id.txt")"
+          docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot phase6_oracle_adopt -e "
+            INSERT INTO __EFMigrationsHistory(MigrationId,ProductVersion)
+            SELECT '$baseline_id','8.0.28'
+            WHERE NOT EXISTS (
+              SELECT 1 FROM __EFMigrationsHistory WHERE MigrationId='$baseline_id'
+            );"
+
+          before_hash="$(docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot -Nse "
+            SELECT SHA2(GROUP_CONCAT(CONCAT_WS('|',TABLE_NAME,COLUMN_NAME,COLUMN_TYPE,IS_NULLABLE,COALESCE(COLUMN_DEFAULT,'<NULL>'),EXTRA,COALESCE(COLLATION_NAME,'')) ORDER BY TABLE_NAME,ORDINAL_POSITION SEPARATOR '\n'),256)
+            FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_SCHEMA='phase6_oracle_adopt' AND TABLE_NAME <> '__EFMigrationsHistory';")"
+
+          probe="$RUNNER_TEMP/oracle-baseline"
+          export ORACLE_MIGRATION_CONNECTION="Server=127.0.0.1;Port=3306;Database=phase6_oracle_adopt;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+          dotnet ef database update             --project "$probe/Phase6OracleMigrations.csproj"             --startup-project "$probe/Phase6OracleMigrations.csproj"             --context AppDbContext             --configuration Release
+          dotnet ef migrations has-pending-model-changes             --project "$probe/Phase6OracleMigrations.csproj"             --startup-project "$probe/Phase6OracleMigrations.csproj"             --context AppDbContext             --configuration Release
+
+          after_hash="$(docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot -Nse "
+            SELECT SHA2(GROUP_CONCAT(CONCAT_WS('|',TABLE_NAME,COLUMN_NAME,COLUMN_TYPE,IS_NULLABLE,COALESCE(COLUMN_DEFAULT,'<NULL>'),EXTRA,COALESCE(COLLATION_NAME,'')) ORDER BY TABLE_NAME,ORDINAL_POSITION SEPARATOR '\n'),256)
+            FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_SCHEMA='phase6_oracle_adopt' AND TABLE_NAME <> '__EFMigrationsHistory';")"
+          test -n "$before_hash"
+          test "$before_hash" = "$after_hash"
+          echo "adopted=true" >> "$GITHUB_OUTPUT"
+          echo "ORACLE_BASELINE_ADOPTION_NO_DDL=PASS"
+
+      - name: Generar SQL baseline y dictamen
+        shell: bash
+        env:
+          SCHEMA_EQUIVALENT: ${{ steps.schema.outputs.equivalent }}
+          ADOPTED: ${{ steps.adopt.outputs.adopted }}
+        run: |
+          set -euo pipefail
+          probe="$RUNNER_TEMP/oracle-baseline"
+          export ORACLE_MIGRATION_CONNECTION="Server=127.0.0.1;Port=3306;Database=phase6_oracle_fresh;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+          dotnet ef migrations script 0             --project "$probe/Phase6OracleMigrations.csproj"             --startup-project "$probe/Phase6OracleMigrations.csproj"             --context AppDbContext             --configuration Release             --output "$RUNNER_TEMP/oracle-baseline.sql"
+          test -s "$RUNNER_TEMP/oracle-baseline.sql"
+
+          {
+            echo '## Oracle baseline migration lane'
+            echo ''
+            echo "- Fresh bootstrap: PASS"
+            echo "- has-pending-model-changes: PASS"
+            echo "- Existing Pomelo schema adoption without DDL: $ADOPTED"
+            echo "- Physical schema equivalence: $SCHEMA_EQUIVALENT"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          test "$ADOPTED" = true
+          test "$SCHEMA_EQUIVALENT" = true
+
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: oracle-baseline-candidate-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/oracle-baseline/Migrations/**
+            ${{ runner.temp }}/oracle-baseline/Phase6OracleMigrations.csproj
+            ${{ runner.temp }}/oracle-baseline/OracleDesignTimeFactory.cs
+            ${{ runner.temp }}/oracle-baseline.sql
+            ${{ runner.temp }}/oracle-baseline-id.txt
+            ${{ runner.temp }}/phase6_*.tsv
+            ${{ runner.temp }}/oracle-baseline-*.diff
+          if-no-files-found: warn
+          retention-days: 14
