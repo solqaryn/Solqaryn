@@ -1,3 +1,12 @@
+## 2026-10-04 — Tooling frontend Fase 5
+
+- Playwright Test pasa de 1.62.1 a 1.63.0.
+- Vitest pasa de 4.1.11 a 5.0.3 sobre el target canónico `@angular/build:unit-test`.
+- jsdom pasa de 29.1.1 a 30.0.1 exactamente según el alcance autorizado.
+- html5-qrcode se conserva exactamente en 2.3.8; su mantenibilidad futura queda como deuda no bloqueante y no se sustituye en esta fase.
+- Se preservan Angular 22.2.1, TypeScript 6.0.3, RxJS 7.8.2, tslib 2.8.1, Zone.js 0.16.3, Node 24.21.0 y npm 11.19.0.
+- Alcance exclusivo dev; QA, main y PROD no se modifican.
+
 ## 2026-10-03 — Angular 21 → 22.2.1
 
 - Frontend migrado major-a-major mediante `ng update` oficial: Angular Core/CLI 22.2.1.

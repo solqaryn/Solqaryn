@@ -47,10 +47,10 @@
     "@angular/build": "22.2.1",
     "@angular/cli": "22.2.1",
     "@angular/compiler-cli": "22.2.1",
-    "@playwright/test": "1.62.1",
-    "jsdom": "^29.1.1",
+    "@playwright/test": "1.63.0",
+    "jsdom": "30.0.1",
     "typescript": "6.0.3",
-    "vitest": "4.1.11"
+    "vitest": "5.0.3"
   },
   "overrides": {
     "@babel/core": "7.29.7",
