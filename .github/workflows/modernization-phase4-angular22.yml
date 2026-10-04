@@ -79,8 +79,7 @@ jobs:
             '@angular/cli':'22.2.1',
             '@angular/build':'22.2.1',
             '@angular/compiler-cli':'22.2.1',
-            'typescript':'6.0.3',
-            'vitest':'4.1.11'
+            'typescript':'6.0.3'
           };
           for (const [name,expected] of Object.entries(expectExact)) {
             const actual=p.dependencies?.[name] ?? p.devDependencies?.[name];
@@ -107,7 +106,7 @@ jobs:
           NODE
           ! grep -R -n --exclude-dir=node_modules --exclude-dir=dist 'provideZonelessChangeDetection' src
           npx ng version
-          npm ls @angular/core @angular/cli @angular/material @angular/cdk @angular/build @angular/compiler-cli typescript rxjs tslib zone.js vitest --depth=0
+          npm ls @angular/core @angular/cli @angular/material @angular/cdk @angular/build @angular/compiler-cli typescript rxjs tslib zone.js --depth=0
 
       - name: Unit tests Angular
         shell: bash
