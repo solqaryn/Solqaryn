@@ -46,3 +46,10 @@ El certifier permanente de Fase 5 exige aceptación Playwright integral DEV 100/
 - Esto elimina la dependencia implícita en el lockfile como única prueba de versión runtime y hace causal la evidencia de los 100 tests E2E.
 - `jsdom@30.0.1` se mantiene por alcance exacto de Fase 5 aunque exista una release posterior; no se amplía el scope sin autorización.
 - QA, `main` y PROD permanecen fuera de alcance.
+
+## Limpieza de warnings propios detectados en Vitest 5
+
+- La recertificación detectó warnings Angular de Reactive Forms provocados por `[disabled]` sobre controles con `formControlName` en filtros de reportes de compras.
+- Se movió el estado disabled al `FormGroup` mediante `disable()/enable()` con `emitEvent:false`, preservando el contrato funcional y eliminando el warning de Angular.
+- Se añade prueba dirigida para verificar que los inputs `disabled` y `cargandoSelectores` gobiernan el estado del formulario.
+- Reactive Forms sin disabled nativo: PASS esperado en la recertificación exact-head.
