@@ -1,3 +1,9 @@
+## 2026-10-04 — Hardening exact-head Fase 5 Tooling frontend DEV
+
+- El E2E canónico ahora prueba explícitamente @playwright/test 1.63.0, playwright-core 1.63.0 y CLI Playwright 1.63.0 antes de instalar Chromium y ejecutar la aceptación integral.
+- Se conserva Vitest 5.0.3, jsdom 30.0.1 y html5-qrcode 2.3.8; no se amplía Fase 5 a releases posteriores de jsdom.
+- Alcance exclusivo dev; QA, main y PROD no se modifican.
+
 ## 2026-10-04 — Modernización Fase 5 Tooling frontend DEV
 
 - Playwright Test actualizado 1.62.1 -> 1.63.0.
