@@ -83,6 +83,51 @@ jobs:
               p.write_text(t)
           PY
 
+      - name: Adaptar nombres efímeros de integración al lock EF9
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          files=[
+            "SeedFiscalMySqlIntegrationTests.cs",
+            "ProductoEscanerIntegrationTests.cs",
+            "N110CosteoMigrationIntegrationTests.cs",
+            "CargaMasivaConcurrencyTests.cs",
+            "ProductionDataRepairTenantIntegrationTests.cs",
+            "InventarioDocumentConcurrencyTests.cs",
+            "InventarioConcurrencyTests.cs",
+            "N72DOutboxMySqlConcurrencyTests.cs",
+            "ProductoAutocompleteIntegrationTests.cs",
+            "TipoClienteConcurrencyTests.cs",
+            "MovimientoInventarioOrigenTipadoIntegrationTests.cs",
+            "ProductoImagenVarianteIntegrationTests.cs",
+            "ProductoVarianteTecnicaLifecycleIntegrationTests.cs",
+            "ConsumoInsumoIntegrationTests.cs",
+            "N08MigracionesLimpiezaPreflightIntegrationTests.cs",
+            "N08PersistenciaLimpiezaIntegrationTests.cs",
+          ]
+          root=Path("backend/tests/Solqaryn.Tests")
+          changed=0
+          for name in files:
+              p=root/name
+              lines=p.read_text().splitlines()
+              out=[]
+              local=0
+              for line in lines:
+                  if "test_" in line and "Guid.NewGuid():N" in line:
+                      line=line.replace("Guid.NewGuid():N",'Guid.NewGuid().ToString("N")[..8]')
+                      local+=1
+                  out.append(line)
+              if local:
+                  p.write_text("\n".join(out)+"\n")
+                  changed+=local
+          if changed < 10:
+              raise SystemExit(f"Se esperaban >=10 nombres MySQL efímeros; cambiados={changed}")
+          print(f"EF9_SHORT_TEST_DATABASE_NAMES={changed}")
+          PY
+
       - name: Crear bases
         shell: bash
         run: |
