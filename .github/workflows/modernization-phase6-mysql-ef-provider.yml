@@ -117,6 +117,7 @@ jobs:
             --context AppDbContext \
             --configuration Release \
             --no-build
+
           dotnet ef migrations has-pending-model-changes \
             --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
             --startup-project src/API/Solqaryn.API.csproj \
@@ -135,6 +136,14 @@ jobs:
             --configuration Release \
             --output $RUNNER_TEMP/phase6-pomelo-forward.sql
           test -s $RUNNER_TEMP/phase6-pomelo-forward.sql
+
+      - name: Round-trip y extracción de las tres columnas JSON con Pomelo
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet restore scripts/Solqaryn.JsonProbe.csproj
+          dotnet run --project scripts/Solqaryn.JsonProbe.csproj --configuration Release --no-restore
 
       - name: Certificar historial, tipos, collation, índices y constraints
         id: schema

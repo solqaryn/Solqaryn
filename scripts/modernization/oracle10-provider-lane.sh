@@ -316,6 +316,8 @@ CS
 
 dotnet restore "$probe/Oracle10Probe.csproj"
 dotnet run --project "$probe/Oracle10Probe.csproj" --configuration Release
+ConnectionStrings__DefaultConnection="$ORACLE10_CONNECTION" \
+  dotnet run --project "$candidate/backend/scripts/Solqaryn.JsonProbe.csproj" --configuration Release
 
 cd "$repo_root"
 python3 scripts/security/priority3_tenant_isolation_audit.py
