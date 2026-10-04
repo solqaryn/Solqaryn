@@ -50,6 +50,7 @@ package_group = next((g for g in proj.findall("ItemGroup") if g.findall("Package
 if package_group is None:
     package_group = ET.SubElement(proj, "ItemGroup")
 ET.SubElement(package_group, "PackageReference", Include="MySql.EntityFrameworkCore", Version="10.0.9")
+ET.SubElement(package_group, "PackageReference", Include="Microsoft.EntityFrameworkCore.Relational", Version="10.0.12")
 
 compile_group = ET.SubElement(proj, "ItemGroup")
 ET.SubElement(compile_group, "Compile", Remove="**/Migrations/**/*.cs")
@@ -81,6 +82,7 @@ dotnet build src/API/Solqaryn.API.csproj --configuration Release --no-restore
 dotnet new console --framework net10.0 --name Oracle10Probe --output "$probe" --force >/dev/null
 dotnet add "$probe/Oracle10Probe.csproj" reference "$candidate/backend/src/Infrastructure/Solqaryn.Infrastructure.csproj"
 dotnet add "$probe/Oracle10Probe.csproj" package MySql.EntityFrameworkCore --version 10.0.9 >/dev/null
+dotnet add "$probe/Oracle10Probe.csproj" package Microsoft.EntityFrameworkCore.Relational --version 10.0.12 >/dev/null
 
 cat > "$probe/Program.cs" <<'CS'
 using Microsoft.EntityFrameworkCore;
