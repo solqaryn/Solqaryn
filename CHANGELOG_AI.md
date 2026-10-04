@@ -2826,10 +2826,11 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
 
-## 2026-10-04 — Avance del Punto 12: equivalencia física extendida del esquema
+## 2026-10-04 — Cierre del Punto 12: equivalencia física extendida del esquema
 
 - El comparador Oracle baseline coteja contra la referencia Pomelo tablas, columnas, tipos/defaults/charset/collation/generación/comentarios/SRS, índices (incluyendo expresiones, prefijos, visibilidad y comentarios), particiones, constraints/CHECK y FK/acciones, vistas, triggers, rutinas/parámetros, eventos y defaults de charset/collation de base.
-- Los probes `37241337349` y `37241647354` detectaron referencias a campos inexistentes (`PARTITIONS.ENGINE/CREATE_OPTIONS` y `CHECK_CONSTRAINTS.ENFORCED`); se corrigieron. El estado de enforcement queda cubierto por `TABLE_CONSTRAINTS.ENFORCED`. Falta un run success exact-head.
+- Los probes `37241337349` y `37241647354` detectaron referencias a campos inexistentes (`PARTITIONS.ENGINE/CREATE_OPTIONS` y `CHECK_CONSTRAINTS.ENFORCED`); se corrigieron. El estado de enforcement queda cubierto por `TABLE_CONSTRAINTS.ENFORCED`.
+- Probe exact-head `37241930023` sobre `d0d79c158aef29ae913833e0611e7eb7cfe8db48`: job success, ambos comparativos `equivalent=true`, bootstrap limpio con 136 tablas y adopción sin DDL success.
 - Evidencia: `docs/evidencias/modernizacion/PUNTO_12_ESQUEMA_FISICO_EQUIVALENTE_2026-10-04.md`.
 - Sólo metadatos de esquemas efímeros CI; sin cambios a datos/servicios Aiven, QA o PROD; Fase 7 no ejecutada.
 

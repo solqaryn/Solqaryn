@@ -25,11 +25,11 @@ Cada exportación se ordena de forma determinista y se compara con `diff`; cualq
 - Run previo `37232938573` sobre `aeee293abb4beb757ff4196ebd52308bd54f2320`: comparator anterior success, 136 tablas en el paquete SQL limpio y adopción sin DDL. No basta por sí solo para certificar los nuevos campos.
 - Primera ejecución ampliada `37241337349` falló porque `INFORMATION_SCHEMA.PARTITIONS` no contiene `ENGINE` ni `CREATE_OPTIONS`; se quitaron esos campos.
 - Segunda ejecución `37241647354` llegó al comparator, pero detectó que `CHECK_CONSTRAINTS` no contiene `ENFORCED`; ese atributo sí se compara desde `TABLE_CONSTRAINTS.ENFORCED`, por lo que se quitó la referencia duplicada inválida. No se declaró PASS.
-- Run exact-head de la comparación corregida: **pendiente de CI posterior a este commit**. No se declarará PASS hasta que su step `Capturar y comparar esquema físico Pomelo vs Oracle baseline` pase.
+- Run exact-head `37241930023` sobre `d0d79c158aef29ae913833e0611e7eb7cfe8db48`: job completo `success`; `ORACLE_EF10_SCRIPT_BOOTSTRAP_SCHEMA_EQUIVALENT=true`; `ORACLE_BASELINE_SCHEMA_EQUIVALENT=true`; paquete limpio `ORACLE_EF10_SQL_PACKAGE_FRESH_BOOTSTRAP=PASS tables=136`. El step de adopción sobre el esquema Pomelo existente también terminó success.
 - Se comprobó que entre el baseline previo y el HEAD de trabajo no cambiaron modelo, configuraciones ni historia de migraciones; el nuevo run valida ahora además el comparador ampliado.
 
 ## Alcance
 
-La prueba compara el contrato físico producido por las rutas CI efímeras en MySQL 8.4. No modifica esquemas persistentes ni datos reales y no ejecuta Fase 7.
+La prueba compara el contrato físico producido por las rutas CI efímeras en MySQL 8.4. No modifica esquemas persistentes ni datos reales y no ejecuta Fase 7. El gate integral de Fase 6 se reejecuta al registrar esta evidencia y deberá pasar contra el HEAD documental actualizado.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
