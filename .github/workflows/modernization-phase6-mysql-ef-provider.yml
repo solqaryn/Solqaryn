@@ -8,6 +8,7 @@ on:
       - 'scripts/security/priority3_tenant_isolation_audit.py'
       - '.github/workflows/modernization-phase6-mysql-ef-provider.yml'
       - 'docs/evidencias/modernizacion/FASE_6_MYSQL_EF_PROVIDER_2026-10-04.md'
+      - 'docs/evidencias/modernizacion/PUNTO_2_POMELO10_NO_BLOQUEANTE_2026-10-04.md'
       - 'CHANGELOG_AI.md'
       - 'ARCHITECTURE_CHANGELOG.md'
   workflow_dispatch:
@@ -710,6 +711,13 @@ jobs:
           echo "POMELO_EF10_STABLE_AVAILABLE=$pomelo10"
           echo "ORACLE_EF10_STABLE_AVAILABLE=$oracle10"
 
+          if [ "$pomelo10" = true ]; then
+            echo 'POMELO10_ROUTE_STATUS=AVAILABLE_NOT_SELECTED_PENDING_SEPARATE_CERTIFICATION'
+          else
+            echo 'POMELO10_ROUTE_STATUS=UNAVAILABLE_INFORMATIONAL'
+          fi
+          echo 'POMELO10_REQUIRED_FOR_TARGET_ROUTE=false'
+
       - name: Preparar baseline MySQL con código vigente
         working-directory: backend
         shell: bash
@@ -804,6 +812,7 @@ jobs:
             echo "- MySQL integration tests with current EF8/Pomelo8 under net10: $integration_pass"
             echo "- Pomelo stable EF10 package 10.0.0 available: ${{ steps.packages.outputs.pomelo10_available }}"
             echo "- Oracle stable EF10 package 10.0.9 available: ${{ steps.packages.outputs.oracle10_available }}"
+            echo '- Pomelo 10 required for selected target route: false'
             if [ "$unit_pass" != true ] || [ "$integration_pass" != true ]; then
               echo '- TargetFramework decision: STOP changing TFM alone; EF/provider lane must be upgraded together.'
             fi
@@ -915,6 +924,11 @@ jobs:
           ORACLE10_LANE_RESULT: ${{ needs.oracle10-final-lane.result }}
         run: |
           set -euo pipefail
+          if [ "$POMELO10" = true ]; then
+            pomelo10_state='AVAILABLE_NOT_SELECTED_PENDING_SEPARATE_CERTIFICATION'
+          else
+            pomelo10_state='UNAVAILABLE_NON_BLOCKING'
+          fi
           {
             echo '## Fase 6 - Dictamen'
             echo ''
@@ -929,6 +943,8 @@ jobs:
             echo "- POMELO_EF10_STABLE_AVAILABLE=$POMELO10"
             echo "- ORACLE_EF10_STABLE_AVAILABLE=$ORACLE10"
             echo "- ORACLE_EF10_NET10_LANE=$ORACLE10_LANE"
+            echo "- POMELO10_ROUTE_STATUS=$pomelo10_state"
+            echo "- POMELO10_REQUIRED_FOR_TARGET_ROUTE=false"
           } | tee phase6-verdict.txt
 
           if [ "$POMELO_STABLE" = true ] && [ "$ORACLE_JOB_RESULT" = success ] && [ "$NET10_JOB_RESULT" = success ]; then
@@ -946,6 +962,12 @@ jobs:
                 echo 'TARGET_NET_SELECTED=net10.0'
                 echo 'TARGETFRAMEWORK_CHANGE=ALLOWED_AFTER_PHASE6_CLOSE'
                 echo 'PHASE7_EXECUTED=false'
+                echo 'POINT_2_POMELO10_DEPENDENCY=PASS'
+                echo "POMELO10_CURRENTLY_AVAILABLE=$POMELO10"
+                echo "POMELO10_ROUTE_STATUS=$pomelo10_state"
+                echo 'POMELO10_ROUTE_SELECTED=false'
+                echo 'POMELO10_BLOCKS_MODERNIZATION=false'
+                echo 'POMELO10_REQUIRED_FOR_TARGET_ROUTE=false'
               else
                 echo 'FASE_6_MYSQL_EF_PROVIDER=STOP'
                 echo 'TARGET_PROVIDER_SELECTED=NONE'

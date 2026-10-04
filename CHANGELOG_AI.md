@@ -1,3 +1,13 @@
+## 2026-10-04 — Cierre Punto 2: Pomelo 10 deja de ser dependencia bloqueante DEV
+
+- El gate conserva el probe explícito de `Pomelo.EntityFrameworkCore.MySql 10.0.0`, pero su disponibilidad pasa a ser informativa y no participa en la condición de éxito de la ruta .NET 10.
+- Ausencia actual: `UNAVAILABLE_NON_BLOCKING`; una futura release estable se clasifica como alternativa no seleccionada y exige certificación independiente.
+- La ruta objetivo permanece `net10.0 + EF Core 10.0.12 + MySql.EntityFrameworkCore 10.0.9` y debe pasar en el mismo gate exact-head.
+- Se añaden contratos explícitos `POINT_2_POMELO10_DEPENDENCY=PASS`, `POMELO10_BLOCKS_MODERNIZATION=false` y `POMELO10_REQUIRED_FOR_TARGET_ROUTE=false`.
+- Fase 7 no se ejecuta; sin cambios a QA, main, PROD, datos reales ni secretos.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-10-04 — Cierre Punto 1: ruta estable de provider para .NET 10 DEV
 
 - Run causal `37222690061` sobre HEAD `4069ce1a074145d10e68003c110296a4b39b655a` cerró el dictamen final en SUCCESS con `P0=0` y `P1=0`.
