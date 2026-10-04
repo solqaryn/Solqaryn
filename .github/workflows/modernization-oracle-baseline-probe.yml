@@ -9,6 +9,7 @@ on:
       - 'backend/src/Infrastructure/Services/MySqlProviderErrorClassifier.cs'
       - 'backend/src/Infrastructure/Solqaryn.Infrastructure.csproj'
       - 'docs/evidencias/modernizacion/FASE_6_PROVIDER_LEASE.json'
+      - 'docs/evidencias/modernizacion/PUNTO_4_ORACLE_BASELINE_ADOPTION_2026-10-04.md'
   workflow_dispatch:
 
 permissions:

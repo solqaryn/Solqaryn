@@ -1,3 +1,12 @@
+## 2026-10-04 — Cierre del Punto 4: Oracle EF10 adopta baseline físico sin reescribir historia
+
+- El probe exact-head `37230813349` sobre `4ea2142fb76458d58c0f699e782395e44e3a85c1` terminó success en sus veinte pasos con Oracle EF10.12/Connector/NET 10.0.9.
+- Restauración de baseline canónico, migración/adopción Oracle, equivalencia de columnas/índices/FK/CHECK y adopción sin DDL sobre esquema existente Pomelo pasaron.
+- Oracle no se declara drop-in para las 107 migraciones históricas: se preservan, con una ruta explícita de baseline y adopción. El empaquetado operativo de bootstrap queda para el Punto 6.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_4_ORACLE_BASELINE_ADOPTION_2026-10-04.md`.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-10-04 — Cierre del Punto 3: EF9/Pomelo9 queda sólo como puente de CI
 
 - Probe EF9.0.20/Pomelo9.0.0/MySqlConnector 2.6.2 final `37216002726` SUCCESS para net8 y copia net10; dos intentos previos fallidos no se cuentan como aprobación.
