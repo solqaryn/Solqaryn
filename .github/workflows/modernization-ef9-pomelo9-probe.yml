@@ -62,9 +62,11 @@ jobs:
           reps={
             "backend/src/Infrastructure/Solqaryn.Infrastructure.csproj":[
               ('Microsoft.EntityFrameworkCore" Version="8.0.2','Microsoft.EntityFrameworkCore" Version="9.0.20'),
+              ('Microsoft.Extensions.Caching.Memory" Version="8.0.1','Microsoft.Extensions.Caching.Memory" Version="9.0.20'),
               ('Pomelo.EntityFrameworkCore.MySql" Version="8.0.2','Pomelo.EntityFrameworkCore.MySql" Version="9.0.0'),
               ('MySqlConnector" Version="2.3.7','MySqlConnector" Version="2.6.2'),
-              ('Microsoft.EntityFrameworkCore.Design" Version="8.0.2','Microsoft.EntityFrameworkCore.Design" Version="9.0.20')],
+              ('Microsoft.EntityFrameworkCore.Design" Version="8.0.2','Microsoft.EntityFrameworkCore.Design" Version="9.0.20'),
+              ('System.Text.Json" Version="8.0.5','System.Text.Json" Version="9.0.20')],
             "backend/src/API/Solqaryn.API.csproj":[
               ('Microsoft.EntityFrameworkCore.Design" Version="8.0.2','Microsoft.EntityFrameworkCore.Design" Version="9.0.20')],
             "backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj":[
