@@ -79,43 +79,11 @@ jobs:
           fs.writeFileSync(angularPath,JSON.stringify(angular,null,2)+'\n');
           NODE
 
-      - name: Actualizar gates vigentes
+      - name: Preparar gates para actualización autorizada posterior
         shell: bash
         run: |
           set -euo pipefail
-          node <<'NODE'
-          const fs=require('fs');
-
-          {
-            const p='.github/workflows/modernization-phase5-frontend-tooling.yml';
-            let c=fs.readFileSync(p,'utf8');
-            c=c.replace("            'jsdom':'30.0.1',\n            'html5-qrcode':'2.3.8'\n", "            'jsdom':'30.0.1'\n");
-            c=c.replace("          test \"$(node -p \"require('./node_modules/html5-qrcode/package.json').version\")\" = \"2.3.8\"\n", "");
-            c=c.replace("          npm ls @playwright/test vitest jsdom html5-qrcode --depth=0", "          npm ls @playwright/test vitest jsdom --depth=0");
-            c=c.replace("            html5Qrcode:p.dependencies['html5-qrcode'],\n", "");
-            c=c.replace("            echo 'HTML5_QRCODE=2.3.8'\n", "");
-            fs.writeFileSync(p,c);
-          }
-
-          {
-            const p='.github/workflows/fase2c4-escaner-frontend.yml';
-            let c=fs.readFileSync(p,'utf8');
-            c=c.replace(
-              "          npm ci\n          npx playwright install --with-deps chromium",
-              "          npm ci\n          test \"$(node -p \"require('./node_modules/barcode-detector/package.json').version\")\" = \"3.2.2\"\n          test \"$(node -p \"require('./node_modules/zxing-wasm/package.json').version\")\" = \"3.1.4\"\n          test -f node_modules/zxing-wasm/dist/reader/zxing_reader.wasm\n          ! npm ls html5-qrcode --depth=0\n          npx playwright install --with-deps chromium"
-            );
-            c=c.replace(
-              "          npm run lint\n          npm run build:prod",
-              "          npm run lint\n          npm audit --audit-level=high\n          npm audit --omit=dev --audit-level=high\n          npm run build:prod\n          test -n \"$(find dist/solqaryn-frontend -type f -path '*/assets/wasm/zxing_reader.wasm' -print -quit)\""
-            );
-            c=c.replace(
-              "          nohup npm start -- --host 127.0.0.1 --port 4200 > fase2c4-frontend.log 2>&1 &",
-              "          nohup env -u PORT npm start -- --host 127.0.0.1 --port 4200 > fase2c4-frontend.log 2>&1 &"
-            );
-            fs.writeFileSync(p,c);
-          }
-          NODE
-
+          echo 'Los workflows permanentes se actualizarán mediante la API GitHub autorizada después del push de código.'
       - name: Retirar deuda documental y actualizar arquitectura
         shell: bash
         run: |
@@ -237,7 +205,6 @@ jobs:
           set -euo pipefail
           git fetch origin dev
           test "$(git rev-parse origin/dev)" = "$BASE_SHA"
-          rm .github/workflows/modernization-retire-html5-qrcode.yml
           git config user.name "solqaryn-platform"
           git config user.email "solqaryn.platform@outlook.com"
           git add -A
