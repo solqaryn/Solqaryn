@@ -1,5 +1,6 @@
 name: Modernización - Aplicar Fase 5 Tooling frontend DEV
 # Exact-scope executor: Playwright 1.63.0 / Vitest 5.0.3 / jsdom 30.0.1
+# Exact-result unit and build completion gates enabled.
 
 on:
   push:
