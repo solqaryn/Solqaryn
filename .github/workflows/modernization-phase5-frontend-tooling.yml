@@ -105,7 +105,7 @@ jobs:
           fi
           sed -E 's/\x1B\[[0-9;]*[mK]//g' /tmp/phase5-unit.log > /tmp/phase5-unit.clean.log
           grep -Eq 'Test Files[[:space:]]+58 passed.*\(58\)' /tmp/phase5-unit.clean.log
-          grep -Eq 'Tests[[:space:]]+218 passed.*\(217\)' /tmp/phase5-unit.clean.log
+          grep -Eq 'Tests[[:space:]]+218 passed.*\(218\)' /tmp/phase5-unit.clean.log
           ! grep -Eq '([0-9]+ failed|FAIL |Unhandled Error|Unhandled Rejection)' /tmp/phase5-unit.clean.log
           echo 'PHASE5_UNIT=PASS files=58/58 tests=218/218'
 
