@@ -1,3 +1,12 @@
+## 2026-10-04 — Cierre del Punto 3: EF9/Pomelo9 queda sólo como puente de CI
+
+- Probe EF9.0.20/Pomelo9.0.0/MySqlConnector 2.6.2 final `37216002726` SUCCESS para net8 y copia net10; dos intentos previos fallidos no se cuentan como aprobación.
+- Los proyectos productivos siguen net8/EF8/Pomelo8; el probe sólo retargetea una copia temporal. No hay cambios posteriores al run en workflow/proyectos que afecten sus inputs.
+- El gate de Fase 6 exact-head `37228972369` pasó y selecciona Oracle EF10, no el puente EF9/Pomelo9. Fase 7 no se ejecutó.
+- Evidencia detallada: `docs/evidencias/modernizacion/PUNTO_3_EF9_POMELO9_SOLO_PUENTE_2026-10-04.md`.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-10-04 — Revalidación exact-head del Punto 2 de Fase 6
 
 - El feed oficial de NuGet confirma que Pomelo.EntityFrameworkCore.MySql llega a 9.0.0 estable y no ofrece release estable 10.x.
