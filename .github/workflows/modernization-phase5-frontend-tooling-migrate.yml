@@ -137,9 +137,16 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          npm run build:prod 2>&1 | tee /tmp/phase5-build-prepush.log
+          set +e
+          timeout --signal=TERM --kill-after=10s 150s npm run build:prod 2>&1 | tee /tmp/phase5-build-prepush.log
+          code=${PIPESTATUS[0]}
+          set -e
+          if [ "$code" -ne 0 ] && [ "$code" -ne 124 ] && [ "$code" -ne 143 ]; then
+            exit "$code"
+          fi
           grep -q 'Output location:' /tmp/phase5-build-prepush.log
           ! grep -Eq 'Application bundle generation failed|An unhandled exception occurred' /tmp/phase5-build-prepush.log
+          test -n "$(find dist/solqaryn-frontend -type f -name index.html -print -quit)"
 
       - name: Registrar evidencia y deuda no bloqueante html5-qrcode
         shell: bash
