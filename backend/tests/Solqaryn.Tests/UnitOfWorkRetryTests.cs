@@ -158,6 +158,10 @@ public class UnitOfWorkRetryTests
 
         Assert.Equal(1, attempts);
         Assert.Equal("TipoClientePredeterminadoUnico", thrown.ConstraintName);
+        Assert.Equal(
+            "Conflicto de concurrencia: Ya existe otro tipo de cliente marcado como predeterminado único. Inténtalo de nuevo.",
+            thrown.Message);
+        Assert.Same(dbEx, thrown.InnerException);
     }
 
     [Fact]

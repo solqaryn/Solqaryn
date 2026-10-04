@@ -92,6 +92,23 @@ using Solqaryn.Application.Exceptions;
 using Solqaryn.Infrastructure.Persistence;
 using Solqaryn.Infrastructure.Services;
 
+static IEnumerable<Exception> ExceptionChain(Exception exception)
+{
+    for (Exception? current = exception; current is not null; current = current.InnerException)
+        yield return current;
+}
+
+static int? ErrorNumber(Exception exception)
+{
+    foreach (var item in ExceptionChain(exception))
+    {
+        var property = item.GetType().GetProperty("Number");
+        if (property?.GetValue(item) is int number)
+            return number;
+    }
+    return null;
+}
+
 var connectionString = Environment.GetEnvironmentVariable("ORACLE10_CONNECTION")
     ?? throw new InvalidOperationException("ORACLE10_CONNECTION missing");
 
@@ -147,16 +164,33 @@ await db.Database.ExecuteSqlRawAsync(
     "INSERT INTO Phase6Oracle10Contract(Code,Amount,AtUtc,Payload) VALUES('DUP',1,UTC_TIMESTAMP(6),JSON_OBJECT('x',1));");
 
 var uow = new UnitOfWork(db);
+var duplicateAttempts = 0;
+UniqueConstraintViolationException? translatedDuplicate = null;
 try
 {
     await uow.ExecuteInTransactionAsync(async () =>
+    {
+        duplicateAttempts++;
         await db.Database.ExecuteSqlRawAsync(
-            "INSERT INTO Phase6Oracle10Contract(Code,Amount,AtUtc,Payload) VALUES('DUP',2,UTC_TIMESTAMP(6),JSON_OBJECT('x',2));"));
-    throw new InvalidOperationException("ORACLE10_1062_NOT_THROWN");
+            "INSERT INTO Phase6Oracle10Contract(Code,Amount,AtUtc,Payload) VALUES('DUP',2,UTC_TIMESTAMP(6),JSON_OBJECT('x',2));");
+    });
 }
-catch (UniqueConstraintViolationException)
+catch (UniqueConstraintViolationException exception)
 {
+    translatedDuplicate = exception;
 }
+
+if (translatedDuplicate is null)
+    throw new InvalidOperationException("ORACLE10_1062_NOT_TRANSLATED");
+if (duplicateAttempts != 1)
+    throw new InvalidOperationException($"ORACLE10_1062_RETRIED attempts={duplicateAttempts}");
+if (translatedDuplicate.ConstraintName != "TipoClientePredeterminadoUnico")
+    throw new InvalidOperationException($"ORACLE10_1062_CONSTRAINT_CHANGED name={translatedDuplicate.ConstraintName}");
+if (translatedDuplicate.Message != "Conflicto de concurrencia: Ya existe otro tipo de cliente marcado como predeterminado único. Inténtalo de nuevo.")
+    throw new InvalidOperationException("ORACLE10_1062_MESSAGE_CHANGED");
+if (ErrorNumber(translatedDuplicate) != 1062 ||
+    !ExceptionChain(translatedDuplicate).Any(exception => exception.GetType().FullName == "MySql.Data.MySqlClient.MySqlException"))
+    throw new InvalidOperationException("ORACLE10_1062_PROVIDER_ERROR_NOT_PRESERVED");
 
 await db.Database.ExecuteSqlRawAsync("DROP TABLE IF EXISTS Phase6Oracle10Retry;");
 await db.Database.ExecuteSqlRawAsync("CREATE TABLE Phase6Oracle10Retry(Id INT PRIMARY KEY, Value INT NOT NULL);");
