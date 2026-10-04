@@ -24,7 +24,7 @@ const vercel = read('vercel.json');
 
 assert(!packageJson.dependencies?.['html5-qrcode'], 'html5-qrcode debe estar completamente retirado.');
 assert(packageJson.dependencies?.['barcode-detector'] === '3.2.2', 'barcode-detector debe quedar fijado en 3.2.2.');
-assert(packageJson.dependencies?.['zxing-wasm'] === '3.1.4', 'zxing-wasm debe quedar fijado en 3.1.4.');
+assert(packageJson.dependencies?.['zxing-wasm'] === '3.1.3', 'zxing-wasm debe quedar fijado en 3.1.3.');
 assert(dialog.includes("await import('barcode-detector/ponyfill')"), 'el detector debe cargarse de forma diferida.');
 assert(dialog.includes('prepareZXingModule'), 'ZXing WASM debe inicializarse explícitamente.');
 assert(dialog.includes("assets/wasm/zxing_reader.wasm"), 'el WASM debe servirse same-origin desde assets.');
