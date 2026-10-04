@@ -32,7 +32,7 @@ Se aplica `jsdom@30.0.1` exactamente según el alcance autorizado de Fase 5; no 
 - matriz exacta de versiones;
 - audit completo high+;
 - audit productivo high+;
-- 58/58 archivos + 217/217 unit tests;
+- 58/58 archivos + 218/218 unit tests;
 - lint/contratos;
 - build production-mode sin deploy.
 
@@ -53,3 +53,5 @@ El certifier permanente de Fase 5 exige aceptación Playwright integral DEV 100/
 - Se movió el estado disabled al `FormGroup` mediante `disable()/enable()` con `emitEvent:false`, preservando el contrato funcional y eliminando el warning de Angular.
 - Se añade prueba dirigida para verificar que los inputs `disabled` y `cargandoSelectores` gobiernan el estado del formulario.
 - Reactive Forms sin disabled nativo: PASS esperado en la recertificación exact-head.
+
+- La corrección Reactive Forms añadió una prueba de regresión; la suite exact-head vigente pasó de 217 a 218 tests sin reducir cobertura.
