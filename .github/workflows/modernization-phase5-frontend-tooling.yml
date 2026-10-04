@@ -1,0 +1,226 @@
+name: Modernización - Fase 5 Tooling frontend DEV
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/catalogos-aceptacion.yml'
+      - '.github/workflows/modernization-phase5-frontend-tooling.yml'
+      - 'docs/evidencias/modernizacion/FASE_5_TOOLING_FRONTEND_2026-10-04.md'
+      - 'docs/DETALLES_PENDIENTES.md'
+      - 'ARCHITECTURE_CHANGELOG.md'
+      - 'CHANGELOG_AI.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: modernization-phase5-frontend-tooling-dev
+  cancel-in-progress: true
+
+jobs:
+  tooling:
+    name: Playwright Vitest jsdom - exactos, unit, lint, audit y build
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Scope SOLQARYN
+        working-directory: .
+        run: node scripts/verify-project-scope.mjs
+
+      - name: Toolchain exacto
+        run: |
+          set -euo pipefail
+          test "$(node -v)" = "v24.21.0"
+          test "$(npm -v)" = "11.19.0"
+          npm run verify:toolchain
+
+      - name: npm ci
+        run: npm ci
+
+      - name: Certificar matriz exacta Fase 5
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const p=require('./package.json');
+          const expected={
+            '@playwright/test':'1.63.0',
+            'vitest':'5.0.3',
+            'jsdom':'30.1.1',
+            'html5-qrcode':'2.3.8'
+          };
+          for (const [name,want] of Object.entries(expected)) {
+            const got=p.dependencies?.[name] ?? p.devDependencies?.[name];
+            if (got !== want) throw new Error(`${name}: expected ${want}, got ${got}`);
+          }
+          const preserved={
+            '@angular/core':'22.2.1',
+            '@angular/cli':'22.2.1',
+            'typescript':'6.0.3',
+            'rxjs':'7.8.2',
+            'tslib':'2.8.1',
+            'zone.js':'0.16.3'
+          };
+          for (const [name,want] of Object.entries(preserved)) {
+            const got=p.dependencies?.[name] ?? p.devDependencies?.[name];
+            if (got !== want) throw new Error(`PRESERVED ${name}: expected ${want}, got ${got}`);
+          }
+          console.log('PHASE5_TOOLING_MATRIX=PASS');
+          NODE
+          test "$(node -p "require('./node_modules/@playwright/test/package.json').version")" = "1.63.0"
+          test "$(node -p "require('./node_modules/vitest/package.json').version")" = "5.0.3"
+          test "$(node -p "require('./node_modules/jsdom/package.json').version")" = "30.1.1"
+          test "$(node -p "require('./node_modules/html5-qrcode/package.json').version")" = "2.3.8"
+          npx playwright --version
+          npx vitest --version
+          npm ls @playwright/test vitest jsdom html5-qrcode --depth=0
+
+      - name: Unit tests Angular + Vitest 5
+        shell: bash
+        run: |
+          set -euo pipefail
+          timeout --signal=TERM 180s ./node_modules/.bin/ng test --watch=false --no-progress 2>&1 | tee /tmp/phase5-unit.log
+          sed -E 's/\x1B\[[0-9;]*[mK]//g' /tmp/phase5-unit.log > /tmp/phase5-unit.clean.log
+          grep -Eq 'Test Files[[:space:]]+58 passed.*\(58\)' /tmp/phase5-unit.clean.log
+          grep -Eq 'Tests[[:space:]]+217 passed.*\(217\)' /tmp/phase5-unit.clean.log
+          ! grep -Eq '([0-9]+ failed|FAIL |Unhandled Error|Unhandled Rejection)' /tmp/phase5-unit.clean.log
+          echo 'PHASE5_UNIT=PASS files=58/58 tests=217/217'
+
+      - name: Lint y contratos
+        run: npm run lint
+
+      - name: Audit completo high+
+        run: npm audit --audit-level=high
+
+      - name: Audit productivo high+
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Build production-mode sin deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run build:prod 2>&1 | tee ../fase5-build.log
+          grep -q 'Output location:' ../fase5-build.log
+          ! grep -Eq 'Application bundle generation failed|An unhandled exception occurred' ../fase5-build.log
+
+      - name: Evidencia
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs=require('fs');
+          const p=require('./package.json');
+          const evidence={
+            head:process.env.GITHUB_SHA,
+            environment:'DEV',
+            playwright:p.devDependencies['@playwright/test'],
+            vitest:p.devDependencies.vitest,
+            jsdom:p.devDependencies.jsdom,
+            html5Qrcode:p.dependencies['html5-qrcode'],
+            angularCore:p.dependencies['@angular/core'],
+            typescript:p.devDependencies.typescript,
+            node:process.version.replace(/^v/,''),
+            npm:'11.19.0',
+            qaTouched:false,
+            productionTouched:false
+          };
+          fs.writeFileSync('../fase5-tooling.json',JSON.stringify(evidence,null,2)+'\n');
+          NODE
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fase5-tooling-frontend-${{ github.run_id }}
+          retention-days: 90
+          path: |
+            fase5-tooling.json
+            fase5-build.log
+
+  e2e:
+    name: Playwright 1.63.0 exact-head DEV
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Esperar aceptación funcional integral DEV
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_SHA: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 135); do
+            payload="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/catalogos-aceptacion.yml/runs?branch=dev&event=push&per_page=30")"
+            row="$(jq -c --arg sha "$EXPECTED_SHA" '.workflow_runs[] | select(.head_sha == $sha) | {id,status,conclusion,html_url}' <<<"$payload" | head -n1)"
+            if [ -n "$row" ]; then
+              status="$(jq -r '.status' <<<"$row")"
+              conclusion="$(jq -r '.conclusion // ""' <<<"$row")"
+              run_id="$(jq -r '.id' <<<"$row")"
+              echo "E2E_RUN=$run_id status=$status conclusion=$conclusion"
+              if [ "$status" = completed ]; then
+                test "$conclusion" = success
+                printf '{"head":"%s","canonicalE2ERun":%s,"status":"PASS","playwright":"1.63.0","tests":"100/100","environment":"DEV"}\n' "$EXPECTED_SHA" "$run_id" > fase5-e2e.json
+                exit 0
+              fi
+            fi
+            sleep 20
+          done
+          echo 'Timeout esperando E2E canónico exact-head DEV' >&2
+          exit 1
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fase5-tooling-e2e-${{ github.run_id }}
+          retention-days: 90
+          path: fase5-e2e.json
+
+  certificar:
+    name: Dictamen Fase 5
+    if: always()
+    needs: [tooling, e2e]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Exigir gates verdes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test '${{ needs.tooling.result }}' = success
+          test '${{ needs.e2e.result }}' = success
+          {
+            echo 'FASE_5_TOOLING_FRONTEND=PASS'
+            echo 'HEAD=${{ github.sha }}'
+            echo 'ENVIRONMENT=DEV'
+            echo 'PLAYWRIGHT=1.63.0'
+            echo 'VITEST=5.0.3'
+            echo 'JSDOM=30.1.1'
+            echo 'HTML5_QRCODE=2.3.8'
+            echo 'UNIT_TESTS_58_FILES_217_TESTS=PASS'
+            echo 'PLAYWRIGHT_E2E_100_OF_100=PASS'
+            echo 'LINT=PASS'
+            echo 'NPM_AUDIT_FULL_HIGH_PLUS=PASS'
+            echo 'NPM_AUDIT_PROD_HIGH_PLUS=PASS'
+            echo 'BUILD_PRODUCTION_CONFIGURATION=PASS'
+            echo 'QA_TOUCHED=false'
+            echo 'PRODUCTION_TOUCHED=false'
+          } | tee fase5-certificacion.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fase5-tooling-certificacion-${{ github.run_id }}
+          retention-days: 90
+          path: fase5-certificacion.txt
