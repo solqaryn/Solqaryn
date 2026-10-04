@@ -105,11 +105,13 @@ jobs:
             --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
             --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext \
+            --configuration Release \
             --no-build
           dotnet ef migrations has-pending-model-changes \
             --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
             --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext \
+            --configuration Release \
             --no-build
           dotnet ef migrations list \
             --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
@@ -349,6 +351,7 @@ jobs:
             --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
             --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext \
+            --configuration Release \
             --no-build
           docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot -e \
             "DROP DATABASE IF EXISTS phase6_oracle_fresh; CREATE DATABASE phase6_oracle_fresh CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
@@ -656,46 +659,62 @@ jobs:
           echo "POMELO_EF10_STABLE_AVAILABLE=$pomelo10"
           echo "ORACLE_EF10_STABLE_AVAILABLE=$oracle10"
 
-      - name: Compilar todo backend como net10 sin cambiar archivos
-        id: compile
+      - name: Preparar baseline MySQL con código vigente
         working-directory: backend
         shell: bash
         run: |
           set -euo pipefail
-          dotnet restore Solqaryn.sln -p:TargetFramework=net10.0
-          dotnet build Solqaryn.sln \
-            --configuration Release \
-            --no-restore \
-            -p:TargetFramework=net10.0
-          test -z "$(git status --porcelain)"
-
-      - name: Migrar baseline con provider actual
-        working-directory: backend
-        shell: bash
-        run: |
-          set -euo pipefail
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
           dotnet tool install --global dotnet-ef --version 8.0.8
           dotnet ef database update \
             --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
             --startup-project src/API/Solqaryn.API.csproj \
-            --context AppDbContext
+            --context AppDbContext \
+            --configuration Release \
+            --no-build
 
-      - name: Ejecutar unit y toda integración bajo TargetFramework net10 override
-        id: tests
-        working-directory: backend
+      - name: Crear copia efímera y retargetearla a net10
+        id: compile
         shell: bash
         run: |
           set -euo pipefail
+          candidate="$RUNNER_TEMP/backend-net10"
+          cp -a backend "$candidate"
+          python3 - "$candidate" <<'PY'
+          import sys
+          from pathlib import Path
+          root=Path(sys.argv[1])
+          changed=0
+          for path in root.rglob("*.csproj"):
+              text=path.read_text()
+              if "<TargetFramework>net8.0</TargetFramework>" in text:
+                  path.write_text(text.replace("<TargetFramework>net8.0</TargetFramework>","<TargetFramework>net10.0</TargetFramework>"))
+                  changed+=1
+          if changed < 5:
+              raise SystemExit(f"Se esperaban al menos 5 csproj net8; sólo se retargetearon {changed}.")
+          print(f"PHASE6_NET10_CSPROJ_RETARGETED={changed}")
+          PY
+          cd "$candidate"
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+          test -z "$(git -C "$GITHUB_WORKSPACE" status --porcelain)"
+
+      - name: Ejecutar unit y toda integración en copia net10
+        id: tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          candidate="$RUNNER_TEMP/backend-net10"
+          cd "$candidate"
           dotnet test Solqaryn.sln \
             --configuration Release \
-            --no-restore \
-            -p:TargetFramework=net10.0 \
+            --no-build \
             --filter "Category!=Integration" \
             --logger "trx;LogFileName=phase6-net10-unit.trx"
           dotnet test Solqaryn.sln \
             --configuration Release \
-            --no-restore \
-            -p:TargetFramework=net10.0 \
+            --no-build \
             --filter "Category=Integration" \
             --logger "trx;LogFileName=phase6-net10-integration.trx"
 
