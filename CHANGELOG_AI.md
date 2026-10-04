@@ -1,3 +1,13 @@
+## 2026-10-04 — Cierre del Punto 9: duplicate key 1062 mantiene contrato funcional
+
+- Pomelo/MySqlConnector y Oracle EF10/Connector/NET preservan la traducción específica del índice al mismo `UniqueConstraintViolationException`, nombre funcional y mensaje.
+- Las pruebas fijan 1062, excepción Oracle interna, intento único, preservación de excepción y rechazo de traducir otros índices.
+- Gate exact-head `37235823306` en commit `41753c563381280ae07387dc611d839d347ea342`: cinco jobs success, `P0=0`, `P1=0`; Fase 7 no ejecutada. Lane Oracle EF10 `37235823229` success.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_9_DUPLICATE_KEY_1062_CONTRATO_FUNCIONAL_2026-10-04.md`.
+- Sin cambios productivos ni despliegues a QA/main/PROD.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-10-04 — Cierre del Punto 8: retry transitorio independiente del provider
 
 - El `UnitOfWork` mantiene retry sólo para MySQL 1205/1213, máximo tres intentos y sin exponer tipos de providers fuera de Infrastructure.
