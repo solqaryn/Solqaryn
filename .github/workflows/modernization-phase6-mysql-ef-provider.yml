@@ -13,6 +13,7 @@ on:
       - 'docs/evidencias/modernizacion/PUNTO_8_RETRY_TRANSITORIO_PROVIDER_NEUTRAL_2026-10-04.md'
       - 'docs/evidencias/modernizacion/PUNTO_9_DUPLICATE_KEY_1062_CONTRATO_FUNCIONAL_2026-10-04.md'
       - 'docs/evidencias/modernizacion/PUNTO_10_LINQ_ORACLE_EF10_2026-10-04.md'
+      - 'docs/evidencias/modernizacion/PUNTO_11_MIGRATIONS_PENDING_MODEL_ORACLE_EF10_2026-10-04.md'
       - 'CHANGELOG_AI.md'
       - 'ARCHITECTURE_CHANGELOG.md'
   workflow_dispatch:

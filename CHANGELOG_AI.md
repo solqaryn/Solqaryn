@@ -1,3 +1,13 @@
+## 2026-10-04 — Cierre del Punto 11: migraciones forward y modelo sin drift
+
+- Pomelo aplicó la historia histórica vigente y `dotnet-ef 8.0.8 migrations has-pending-model-changes` pasó en el gate de Fase 6 exact-head `37237921281` (`915c4853d0c2bd695adc79bb5386a3fe64032be8`).
+- Oracle EF10.12 generó y aplicó su baseline/adopción desde el modelo actual; `has-pending-model-changes` pasó antes/después en el run `37232938573` y no se cambió modelo, snapshot ni migraciones desde ese run.
+- Se preservan las 107 migraciones Pomelo; la ruta Oracle no intenta replay incompatible.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_11_MIGRATIONS_PENDING_MODEL_ORACLE_EF10_2026-10-04.md`.
+- Fase 7 no ejecutada ni despliegues a QA/main/PROD.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-10-04 — Cierre del Punto 10: LINQ ejecutado en la lane final Oracle EF10
 
 - La lane Oracle EF10/net10 ahora ejecuta al menos 34 probes sobre Producto, Cliente, ExistenciaVariante, Compra y Venta: búsqueda, filtros, todas las ramas de ordenamiento de producto, paginación, includes, scope, normalización y agregados.
