@@ -25,7 +25,8 @@
     "test:e2e:storefront-fase11": "playwright test e2e/storefront-fase11.spec.ts --config=playwright.config.ts",
     "test:e2e:storefront-fase12": "playwright test e2e/storefront-fase12.spec.ts --config=playwright.config.ts",
     "perf:bundle-baseline": "npm run build:stats && node scripts/performance-bundle-baseline.mjs && node scripts/analyze-angular-stats.mjs",
-    "build:stats": "ng build --configuration production --stats-json"
+    "build:stats": "ng build --configuration production --stats-json",
+    "test:unit": "ng test --watch=false --no-progress"
   },
   "private": true,
   "dependencies": {
