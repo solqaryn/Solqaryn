@@ -1,6 +1,6 @@
 ## 2026-10-04 — Retiro total de deuda html5-qrcode DEV
 
-- Sustituido `html5-qrcode@2.3.8` por `barcode-detector@3.2.2` + `zxing-wasm@3.1.4`.
+- Sustituido `html5-qrcode@2.3.8` por `barcode-detector@3.2.2` + `zxing-wasm@3.1.3`.
 - ZXing reader WASM se sirve same-origin desde el build Angular; no hay dependencia CDN runtime.
 - Se preservan formatos QR/EAN/UPC/Code128/Code39, cámara, imagen local, privacidad, límites y liberación del stream.
 - Retirado el punto de deuda de `docs/DETALLES_PENDIENTES.md` y actualizada la arquitectura canónica.

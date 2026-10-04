@@ -136,7 +136,7 @@ test.describe('Fase 2C.4 — frontend del escáner', () => {
     await expect(page.getByLabel(/Escanear SKU o código de barras/i)).toBeFocused();
   });
 
-  test('cámara, imagen y ZXing WASM same-origin quedan cableados al formulario', async ({ page, request }) => {
+  test('cámara, imagen y ZXing WASM 3.1.3 same-origin quedan cableados al formulario', async ({ page, request }) => {
     await loginUi(page);
     await page.goto('/ventas/nueva');
     await page.getByRole('button', { name: 'Cámara o imagen' }).click();
