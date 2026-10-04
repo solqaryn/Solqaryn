@@ -1,0 +1,194 @@
+name: Modernización - Fase 6 Provider Final DEV
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/**'
+      - 'scripts/modernization/oracle10-provider-lane.sh'
+      - '.github/workflows/modernization-phase6-provider-final.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: modernization-phase6-provider-final-dev
+  cancel-in-progress: true
+
+jobs:
+  pomelo-current:
+    name: Pomelo net8 actual - regresión completa
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: phase6_final_pomelo
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=phase6_final_pomelo;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;
+      Database__ServerVersion: 8.4.0
+      Database__ApplyMigrationsOnStartup: 'false'
+      Jwt__Secret: Phase6-Final-Pomelo-CI-Only-Secret-With-More-Than-32-Characters
+      Jwt__Issuer: Solqaryn.Phase6
+      Jwt__Audience: Solqaryn.Phase6.Frontend
+    outputs:
+      stable: ${{ steps.result.outputs.stable }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Certificar stack actual
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE"
+          node scripts/verify-project-scope.mjs
+          cd backend
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+          dotnet tool install --global dotnet-ef --version 8.0.8
+          dotnet ef database update \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
+            --context AppDbContext \
+            --configuration Release \
+            --no-build
+          dotnet ef migrations has-pending-model-changes \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
+            --context AppDbContext \
+            --configuration Release \
+            --no-build
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj \
+            --configuration Release --no-build \
+            --filter "FullyQualifiedName~UnitOfWorkRetryTests|FullyQualifiedName~EnvironmentDatabaseGuardTests"
+          dotnet test Solqaryn.sln \
+            --configuration Release --no-build \
+            --filter "Category=Integration"
+          cd "$GITHUB_WORKSPACE"
+          python3 scripts/security/priority3_tenant_isolation_audit.py
+          test -z "$(git status --porcelain)"
+      - name: Resultado Pomelo actual
+        id: result
+        run: echo "stable=true" >> "$GITHUB_OUTPUT"
+
+  oracle10:
+    name: Oracle EF10 net10 - lane objetivo
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: phase6_oracle10
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=phase6_oracle10;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;
+      Database__ServerVersion: 8.4.0
+      Database__ApplyMigrationsOnStartup: 'false'
+      Jwt__Secret: Phase6-Final-Oracle10-CI-Only-Secret-With-More-Than-32-Characters
+      Jwt__Issuer: Solqaryn.Phase6
+      Jwt__Audience: Solqaryn.Phase6.Frontend
+      ORACLE10_CONNECTION: Server=127.0.0.1;Port=3306;Database=phase6_oracle10;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;
+    outputs:
+      stable: ${{ steps.result.outputs.stable }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Preparar baseline físico actual
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE"
+          node scripts/verify-project-scope.mjs
+          cd backend
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+          dotnet tool install --global dotnet-ef --version 8.0.8
+          dotnet ef database update \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
+            --context AppDbContext \
+            --configuration Release \
+            --no-build
+      - name: Certificar Oracle EF10 net10
+        shell: bash
+        run: bash scripts/modernization/oracle10-provider-lane.sh
+      - name: Resultado Oracle EF10
+        id: result
+        run: echo "stable=true" >> "$GITHUB_OUTPUT"
+
+  verdict:
+    name: Dictamen final Punto 1
+    needs: [pomelo-current, oracle10]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Emitir cierre
+        shell: bash
+        env:
+          POMELO: ${{ needs.pomelo-current.outputs.stable }}
+          POMELO_RESULT: ${{ needs.pomelo-current.result }}
+          ORACLE10: ${{ needs.oracle10.outputs.stable }}
+          ORACLE10_RESULT: ${{ needs.oracle10.result }}
+        run: |
+          set -euo pipefail
+          if [ "$POMELO_RESULT" = success ] && [ "$POMELO" = true ] && \
+             [ "$ORACLE10_RESULT" = success ] && [ "$ORACLE10" = true ]; then
+            {
+              echo 'POINT_1_PROVIDER_STABLE_ROUTE=PASS'
+              echo 'FASE_6_PROVIDER_MODERNIZATION_ROUTE=PASS'
+              echo 'CURRENT_PROVIDER=POMELO_EF8_NET8_CERTIFIED'
+              echo 'TARGET_PROVIDER=ORACLE_MYSQL_EFCORE_10_0_9'
+              echo 'TARGET_EF=10.0.12'
+              echo 'TARGET_NET=net10.0'
+              echo 'TARGETFRAMEWORK_CHANGE=ALLOWED_AFTER_PHASE6_CLOSE'
+              echo 'PHASE7_EXECUTED=false'
+              echo 'P0=0'
+              echo 'P1=0'
+            } | tee final-provider-verdict.txt
+          else
+            {
+              echo 'POINT_1_PROVIDER_STABLE_ROUTE=STOP'
+              echo 'TARGETFRAMEWORK_CHANGE=BLOCKED'
+              echo 'PHASE7_EXECUTED=false'
+            } | tee final-provider-verdict.txt
+            exit 1
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase6-provider-final-verdict-${{ github.run_id }}
+          path: final-provider-verdict.txt
+          retention-days: 30
