@@ -39,3 +39,10 @@ Se aplica `jsdom@30.0.1` exactamente según el alcance autorizado de Fase 5; no 
 ## Cierre exact-head
 
 El certifier permanente de Fase 5 exige aceptación Playwright integral DEV 100/100 sobre el mismo HEAD y emite `FASE_5_TOOLING_FRONTEND=PASS`.
+
+## Hardening quirúrgico de aceptación exact-head
+
+- El harness canónico DEV valida explícitamente antes de Chromium que `@playwright/test`, `playwright-core` y `npx playwright --version` resuelvan exactamente `1.63.0`.
+- Esto elimina la dependencia implícita en el lockfile como única prueba de versión runtime y hace causal la evidencia de los 100 tests E2E.
+- `jsdom@30.0.1` se mantiene por alcance exacto de Fase 5 aunque exista una release posterior; no se amplía el scope sin autorización.
+- QA, `main` y PROD permanecen fuera de alcance.
