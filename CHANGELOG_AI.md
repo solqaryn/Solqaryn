@@ -1,3 +1,11 @@
+## 2026-10-04 — Revalidación exact-head del Punto 2 de Fase 6
+
+- El feed oficial de NuGet confirma que Pomelo.EntityFrameworkCore.MySql llega a 9.0.0 estable y no ofrece release estable 10.x.
+- Run exact-head `37228315030` sobre `04b71f798680a64d300084f26135d3d16ebe6030`: cinco jobs exitosos; Oracle EF10 net10 y dictamen final incluidos.
+- Punto 2 confirmado PASS; Pomelo 10 sigue no bloqueante, sin cambios al runtime productivo ni ejecución de Fase 7.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-10-04 — Revalidación exact-head del Punto 1 de Fase 6
 
 - Se confirmó que la ruta Oracle EF Core 10.0.12 / MySql.EntityFrameworkCore 10.0.9 pasa en el HEAD vivo `228df9cff10e6c3003e949f47d2cf951768dfdc1` mediante el run `37226132134`; los cinco jobs de la certificación terminaron `success`.

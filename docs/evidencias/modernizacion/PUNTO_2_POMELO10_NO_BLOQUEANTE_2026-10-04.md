@@ -41,4 +41,12 @@ El Punto 2 queda certificado sólo si, sobre el HEAD exacto de `dev`:
 - P0=0 y P1=0 para este scope;
 - no se modifica ningún `.csproj` productivo ni se ejecuta Fase 7.
 
+## Revalidación exact-head — 2026-10-04
+
+- El índice oficial de NuGet consultado en esta fecha lista `9.0.0` como última versión de `Pomelo.EntityFrameworkCore.MySql` y no contiene ninguna versión estable `10.x`: [índice oficial del paquete](https://api.nuget.org/v3-flatcontainer/pomelo.entityframeworkcore.mysql/index.json).
+- El workflow permanente intentó resolver exactamente `10.0.0`; su sonda clasifica la ausencia como informativa y el dictamen final la normaliza a `UNAVAILABLE_NON_BLOCKING`.
+- El run `37228315030`, sobre HEAD `04b71f798680a64d300084f26135d3d16ebe6030`, terminó `success`: los cinco jobs, incluida `Oracle EF10 net10 - lane final certificada` y `Dictamen Fase 6`, fueron exitosos. [Ejecución de Fase 6 en GitHub](https://github.com/solqaryn/Solqaryn/actions/runs/37228315030).
+- El resultado de esa lane confirma `POINT_2_POMELO10_DEPENDENCY=PASS`, con Pomelo 10 fuera de la ruta seleccionada y sin convertir la falta de release en bloqueo.
+- Esta revalidación no cambia paquetes, `.csproj` productivos, TargetFramework ni despliega Fase 7.
+
 MAPA_ARQUITECTURA: SIN_CAMBIO.
