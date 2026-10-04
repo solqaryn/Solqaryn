@@ -1,3 +1,12 @@
+## 2026-10-04 — Modernización Fase 6 MySQL/EF Provider Gate DEV
+
+- Pomelo 8.0.2 + EF Core 8.0.2 + MySqlConnector 2.3.7 queda certificado como provider estable del baseline vigente net8.
+- Gate profundo: 107 migraciones, 137 tablas, SQL forward/model snapshot, decimal/fecha/JSON/collation/índices/FK/CHECK, transacciones, 9/9 retry/exception tests, 27/27 integración MySQL y tenant audit PASS.
+- Oracle MySql.EntityFrameworkCore 8.0.28 queda rechazado como drop-in: no reconstruye el historial desde cero y rompe los contratos actuales MySqlConnector de 1062/1205/1213.
+- El probe net10 compila la copia efímera pero EF8 falla en runtime LINQ con TypeLoadException/ReadOnlySpan; Pomelo 10.0.0 estable no está disponible en el probe.
+- Dictamen fail-closed: provider actual Pomelo certificado, pero Fase 6 emite STOP para cambiar TargetFramework hasta disponer de una lane EF/provider net10 estable y certificada.
+- Alcance exclusivo dev; QA, main, PROD, datos, secretos y .csproj productivos no se modifican.
+
 ## 2026-10-04 — Retiro total de deuda html5-qrcode DEV
 
 - Sustituido `html5-qrcode@2.3.8` por `barcode-detector@3.2.2` + `zxing-wasm@3.1.3`.

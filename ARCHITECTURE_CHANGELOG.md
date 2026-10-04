@@ -1,3 +1,11 @@
+## 2026-10-04 — Gate arquitectónico MySQL/EF previo a net10
+
+- El provider autoritativo vigente permanece Pomelo 8.0.2 / MySqlConnector 2.3.7 sobre EF Core 8.0.2 y net8.0; su baseline MySQL queda certificado con migraciones, SQL, semántica relacional, integración y aislamiento tenant.
+- Oracle Connector/NET no es intercambiable sin migración arquitectónica: el historial Pomelo no reconstruye correctamente una base vacía y las excepciones cambian de MySqlConnector.MySqlException a MySql.Data.MySqlClient.MySqlException, rompiendo retry/traducciones existentes.
+- Cambiar sólo TargetFramework a net10 queda prohibido: EF8 reproduce TypeLoadException en LINQ aunque la solución compile.
+- La modernización net10 exige una lane EF/provider soportada y probada como unidad; hasta entonces el gate emite STOP y no altera runtime productivo.
+- No se modifica QA, main, PROD, Aiven real ni ningún .csproj productivo.
+
 ## 2026-10-04 — Retiro de html5-qrcode y scanner WASM same-origin
 
 - Se retira por completo `html5-qrcode@2.3.8` del runtime y lockfile.

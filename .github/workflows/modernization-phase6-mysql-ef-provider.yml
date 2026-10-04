@@ -7,6 +7,9 @@ on:
       - 'backend/**'
       - 'scripts/security/priority3_tenant_isolation_audit.py'
       - '.github/workflows/modernization-phase6-mysql-ef-provider.yml'
+      - 'docs/evidencias/modernizacion/FASE_6_MYSQL_EF_PROVIDER_2026-10-04.md'
+      - 'CHANGELOG_AI.md'
+      - 'ARCHITECTURE_CHANGELOG.md'
   workflow_dispatch:
 
 permissions:
@@ -626,6 +629,7 @@ jobs:
       Jwt__Audience: Solqaryn.Phase6.Frontend
     outputs:
       compile_pass: ${{ steps.result.outputs.compile_pass }}
+      unit_pass: ${{ steps.result.outputs.unit_pass }}
       integration_pass: ${{ steps.result.outputs.integration_pass }}
       pomelo10_available: ${{ steps.packages.outputs.pomelo10_available }}
       oracle10_available: ${{ steps.packages.outputs.oracle10_available }}
@@ -708,6 +712,7 @@ jobs:
         shell: bash
         run: |
           set -uo pipefail
+          set +e
           candidate="$RUNNER_TEMP/solqaryn-net10/backend"
           cd "$candidate"
 
@@ -724,6 +729,7 @@ jobs:
             --filter "Category=Integration" \
             --logger "trx;LogFileName=phase6-net10-integration.trx"
           integration_rc=$?
+          set -e
 
           if [ "$unit_rc" -eq 0 ]; then unit_pass=true; else unit_pass=false; fi
           if [ "$integration_rc" -eq 0 ]; then integration_pass=true; else integration_pass=false; fi
@@ -741,6 +747,7 @@ jobs:
           unit_pass="${{ steps.tests.outputs.unit_pass }}"
           integration_pass="${{ steps.tests.outputs.integration_pass }}"
           echo 'compile_pass=true' >> "$GITHUB_OUTPUT"
+          echo "unit_pass=$unit_pass" >> "$GITHUB_OUTPUT"
           echo "integration_pass=$integration_pass" >> "$GITHUB_OUTPUT"
           {
             echo '## Fase 6 - net10 isolated probe'
@@ -784,6 +791,7 @@ jobs:
           ORACLE_JOB_RESULT: ${{ needs.oracle-comparison.result }}
           NET10_JOB_RESULT: ${{ needs.net10-probe.result }}
           NET10_COMPILE: ${{ needs.net10-probe.outputs.compile_pass }}
+          NET10_UNIT: ${{ needs.net10-probe.outputs.unit_pass }}
           NET10_INTEGRATION: ${{ needs.net10-probe.outputs.integration_pass }}
           POMELO10: ${{ needs.net10-probe.outputs.pomelo10_available }}
           ORACLE10: ${{ needs.net10-probe.outputs.oracle10_available }}
@@ -798,32 +806,38 @@ jobs:
             echo "- ORACLE_EXCEPTION_CONTRACT=$ORACLE_EXCEPTION"
             echo "- ORACLE_SCHEMA_EQUIVALENT=$ORACLE_SCHEMA"
             echo "- NET10_OVERRIDE_COMPILE=$NET10_COMPILE"
-            echo "- NET10_OVERRIDE_INTEGRATION=$NET10_INTEGRATION"
+            echo "- NET10_CURRENT_EF8_UNIT=$NET10_UNIT"
+            echo "- NET10_CURRENT_EF8_INTEGRATION=$NET10_INTEGRATION"
             echo "- POMELO_EF10_STABLE_AVAILABLE=$POMELO10"
             echo "- ORACLE_EF10_STABLE_AVAILABLE=$ORACLE10"
           } | tee phase6-verdict.txt
 
           if [ "$POMELO_STABLE" = true ] && [ "$ORACLE_JOB_RESULT" = success ] && [ "$NET10_JOB_RESULT" = success ]; then
             {
-              echo 'FASE_6_MYSQL_EF_PROVIDER=PASS'
-              echo 'SELECTED_PROVIDER=POMELO'
+              echo 'CURRENT_PROVIDER_CERTIFIED=POMELO'
+              echo 'CURRENT_PROVIDER_STATUS=STABLE_ON_NET8_EF8'
               echo "ORACLE_DROP_IN=$ORACLE_DROPIN"
-              if [ "$NET10_COMPILE" = true ] && [ "$NET10_INTEGRATION" = true ]; then
-                echo 'TARGETFRAMEWORK_CHANGE=ALLOWED_WITH_CURRENT_EF8_PROVIDER'
+              echo "POMELO_EF10_STABLE_AVAILABLE=$POMELO10"
+              echo "ORACLE_EF10_STABLE_AVAILABLE=$ORACLE10"
+
+              if [ "$NET10_COMPILE" = true ] && [ "$NET10_UNIT" = true ] && [ "$NET10_INTEGRATION" = true ]; then
+                echo 'FASE_6_MYSQL_EF_PROVIDER=PASS'
+                echo 'TARGET_PROVIDER_SELECTED=POMELO_CURRENT_LANE'
+                echo 'TARGETFRAMEWORK_CHANGE=ALLOWED'
               else
-                echo 'TARGETFRAMEWORK_CHANGE=STOP_UNTIL_EF_PROVIDER_LANE_UPGRADE'
-              fi
-              if [ "$POMELO10" = true ]; then
-                echo 'EF10_POMELO_PATH=AVAILABLE'
-              else
-                echo 'EF10_POMELO_PATH=NO_STABLE_10_0_0_IN_NUGET_PROBE'
+                echo 'FASE_6_MYSQL_EF_PROVIDER=STOP'
+                echo 'TARGET_PROVIDER_SELECTED=NONE'
+                echo 'TARGETFRAMEWORK_CHANGE=BLOCKED'
+                echo 'STOP_REASON=NO_CERTIFIED_STABLE_PROVIDER_LANE_FOR_NET10'
               fi
             } | tee -a phase6-verdict.txt
           else
             {
               echo 'FASE_6_MYSQL_EF_PROVIDER=STOP'
-              echo 'SELECTED_PROVIDER=NONE'
+              echo 'CURRENT_PROVIDER_CERTIFIED=NO'
+              echo 'TARGET_PROVIDER_SELECTED=NONE'
               echo 'TARGETFRAMEWORK_CHANGE=BLOCKED'
+              echo 'STOP_REASON=PROVIDER_GATE_EXECUTION_OR_CURRENT_BASELINE_FAILED'
             } | tee -a phase6-verdict.txt
             cat phase6-verdict.txt >> "$GITHUB_STEP_SUMMARY"
             exit 1
