@@ -105,9 +105,9 @@ jobs:
           fi
           sed -E 's/\x1B\[[0-9;]*[mK]//g' /tmp/phase5-unit.log > /tmp/phase5-unit.clean.log
           grep -Eq 'Test Files[[:space:]]+58 passed.*\(58\)' /tmp/phase5-unit.clean.log
-          grep -Eq 'Tests[[:space:]]+217 passed.*\(217\)' /tmp/phase5-unit.clean.log
+          grep -Eq 'Tests[[:space:]]+218 passed.*\(217\)' /tmp/phase5-unit.clean.log
           ! grep -Eq '([0-9]+ failed|FAIL |Unhandled Error|Unhandled Rejection)' /tmp/phase5-unit.clean.log
-          echo 'PHASE5_UNIT=PASS files=58/58 tests=217/217'
+          echo 'PHASE5_UNIT=PASS files=58/58 tests=218/218'
 
       - name: Lint y contratos
         run: npm run lint
@@ -222,7 +222,7 @@ jobs:
             echo 'VITEST=5.0.3'
             echo 'JSDOM=30.0.1'
             echo 'HTML5_QRCODE=2.3.8'
-            echo 'UNIT_TESTS_58_FILES_217_TESTS=PASS'
+            echo 'UNIT_TESTS_58_FILES_218_TESTS=PASS'
             echo 'PLAYWRIGHT_E2E_100_OF_100=PASS'
             echo 'LINT=PASS'
             echo 'NPM_AUDIT_FULL_HIGH_PLUS=PASS'
