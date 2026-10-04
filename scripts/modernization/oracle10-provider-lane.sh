@@ -52,7 +52,7 @@ if package_group is None:
 ET.SubElement(package_group, "PackageReference", Include="MySql.EntityFrameworkCore", Version="10.0.9")
 
 compile_group = ET.SubElement(proj, "ItemGroup")
-ET.SubElement(compile_group, "Compile", Remove="Migrations/**/*.cs")
+ET.SubElement(compile_group, "Compile", Remove="**/Migrations/**/*.cs")
 save_xml(infra, tree)
 
 tests = root / "tests/Solqaryn.Tests/Solqaryn.Tests.csproj"
