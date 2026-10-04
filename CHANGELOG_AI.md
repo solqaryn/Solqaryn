@@ -1,3 +1,10 @@
+## 2026-10-04 — Hardening cierre Punto 2 Pomelo 10 DEV
+
+- El dictamen exact-head de Fase 6 materializa explícitamente `P0=0` y `P1=0` cuando la ruta Oracle EF10 pasa y Pomelo 10 queda clasificado como no bloqueante.
+- Sin cambios funcionales, paquetes productivos, TargetFramework, QA, main ni PROD.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-10-04 — Cierre Punto 2: Pomelo 10 deja de ser dependencia bloqueante DEV
 
 - El gate conserva el probe explícito de `Pomelo.EntityFrameworkCore.MySql 10.0.0`, pero su disponibilidad pasa a ser informativa y no participa en la condición de éxito de la ruta .NET 10.

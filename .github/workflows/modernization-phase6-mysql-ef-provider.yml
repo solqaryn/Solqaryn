@@ -968,6 +968,8 @@ jobs:
                 echo 'POMELO10_ROUTE_SELECTED=false'
                 echo 'POMELO10_BLOCKS_MODERNIZATION=false'
                 echo 'POMELO10_REQUIRED_FOR_TARGET_ROUTE=false'
+                echo 'P0=0'
+                echo 'P1=0'
               else
                 echo 'FASE_6_MYSQL_EF_PROVIDER=STOP'
                 echo 'TARGET_PROVIDER_SELECTED=NONE'
