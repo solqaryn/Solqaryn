@@ -117,14 +117,12 @@ jobs:
             --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
             --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext \
-            --configuration Release \
-            --no-build | tee ../phase6-pomelo-migrations.txt
+            --configuration Release | tee ../phase6-pomelo-migrations.txt
           dotnet ef migrations script \
             --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
             --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext \
             --configuration Release \
-            --no-build \
             --output ../phase6-pomelo-forward.sql
           test -s ../phase6-pomelo-forward.sql
 
@@ -728,17 +726,22 @@ jobs:
         run: |
           set -euo pipefail
           test -z "$(git status --porcelain)"
+          unit_pass="${{ steps.tests.outputs.unit_pass }}"
+          integration_pass="${{ steps.tests.outputs.integration_pass }}"
           echo 'compile_pass=true' >> "$GITHUB_OUTPUT"
-          echo 'integration_pass=true' >> "$GITHUB_OUTPUT"
+          echo "integration_pass=$integration_pass" >> "$GITHUB_OUTPUT"
           {
             echo '## Fase 6 - net10 isolated probe'
             echo ''
             echo '- Repository TargetFramework files changed: false'
-            echo '- Backend compile with MSBuild TargetFramework=net10.0: PASS'
-            echo '- Unit tests under net10 override: PASS'
-            echo '- MySQL integration tests under net10 override: PASS'
+            echo '- Backend compile after ephemeral net10 retarget: PASS'
+            echo "- Unit tests with current EF8/Pomelo8 under net10: $unit_pass"
+            echo "- MySQL integration tests with current EF8/Pomelo8 under net10: $integration_pass"
             echo "- Pomelo stable EF10 package 10.0.0 available: ${{ steps.packages.outputs.pomelo10_available }}"
             echo "- Oracle stable EF10 package 10.0.9 available: ${{ steps.packages.outputs.oracle10_available }}"
+            if [ "$unit_pass" != true ] || [ "$integration_pass" != true ]; then
+              echo '- TargetFramework decision: STOP changing TFM alone; EF/provider lane must be upgraded together.'
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
 
       - if: always()
@@ -746,7 +749,7 @@ jobs:
         with:
           name: phase6-net10-probe-${{ github.run_id }}
           path: |
-            backend/**/TestResults/*.trx
+            ${{ runner.temp }}/solqaryn-net10/backend/**/TestResults/*.trx
             ${{ runner.temp }}/pomelo10.log
             ${{ runner.temp }}/oracle10.log
           if-no-files-found: warn
@@ -786,21 +789,26 @@ jobs:
             echo "- ORACLE_EF10_STABLE_AVAILABLE=$ORACLE10"
           } | tee phase6-verdict.txt
 
-          if [ "$POMELO_STABLE" = true ] && [ "$NET10_COMPILE" = true ] && [ "$NET10_INTEGRATION" = true ]; then
+          if [ "$POMELO_STABLE" = true ]; then
             {
               echo 'FASE_6_MYSQL_EF_PROVIDER=PASS'
               echo 'SELECTED_PROVIDER=POMELO'
-              echo 'TARGETFRAMEWORK_NET10_WITH_CURRENT_EF8_PROVIDER=ALLOWED_BY_ISOLATED_GATE'
               echo "ORACLE_DROP_IN=$ORACLE_DROPIN"
+              if [ "$NET10_COMPILE" = true ] && [ "$NET10_INTEGRATION" = true ]; then
+                echo 'TARGETFRAMEWORK_CHANGE=ALLOWED_WITH_CURRENT_EF8_PROVIDER'
+              else
+                echo 'TARGETFRAMEWORK_CHANGE=STOP_UNTIL_EF_PROVIDER_LANE_UPGRADE'
+              fi
               if [ "$POMELO10" = true ]; then
                 echo 'EF10_POMELO_PATH=AVAILABLE'
               else
-                echo 'EF10_POMELO_PATH=STOP_UNTIL_STABLE_PROVIDER'
+                echo 'EF10_POMELO_PATH=NO_STABLE_10_0_0_IN_NUGET_PROBE'
               fi
             } | tee -a phase6-verdict.txt
           else
             {
               echo 'FASE_6_MYSQL_EF_PROVIDER=STOP'
+              echo 'SELECTED_PROVIDER=NONE'
               echo 'TARGETFRAMEWORK_CHANGE=BLOCKED'
             } | tee -a phase6-verdict.txt
             cat phase6-verdict.txt >> "$GITHUB_STEP_SUMMARY"
