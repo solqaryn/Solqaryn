@@ -1,0 +1,245 @@
+name: Retirar deuda html5-qrcode DEV
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/modernization-retire-html5-qrcode.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: retire-html5-qrcode-dev
+  cancel-in-progress: true
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Scope y baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "BASE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          node scripts/verify-project-scope.mjs
+          test -z "$(git status --porcelain)"
+          cd frontend
+          npm ci
+          npm audit --audit-level=high
+          npm audit --omit=dev --audit-level=high
+
+      - name: Sustituir dependencia
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm uninstall html5-qrcode
+          npm install --save-exact barcode-detector@3.2.2 zxing-wasm@3.1.4
+          test "$(node -p "require('./node_modules/barcode-detector/package.json').version")" = "3.2.2"
+          test "$(node -p "require('./node_modules/zxing-wasm/package.json').version")" = "3.1.4"
+          test -f node_modules/zxing-wasm/dist/reader/zxing_reader.wasm
+          ! grep -q '"html5-qrcode"' package.json
+          ! grep -q '"node_modules/html5-qrcode"' package-lock.json
+
+      - name: Migrar scanner y contrato
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs=require('fs');
+          fs.writeFileSync('frontend/src/app/shared/codigo-scanner-dialog/codigo-scanner-dialog.component.ts', "import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild, signal } from '@angular/core';\nimport { MatButtonModule } from '@angular/material/button';\nimport { MatDialogModule, MatDialogRef } from '@angular/material/dialog';\nimport { MatIconModule } from '@angular/material/icon';\nimport { MatProgressSpinnerModule } from '@angular/material/progress-spinner';\n\nconst TAMANO_MAXIMO_BYTES = 10 * 1024 * 1024;\nconst DIMENSION_MAXIMA = 4096;\nconst PIXELES_MAXIMOS = 16_000_000;\nconst INTERVALO_ESCANEO_MS = 100;\nconst EXTENSIONES_PERMITIDAS = new Set(['jpg', 'jpeg', 'png', 'webp']);\nconst MIME_PERMITIDOS = new Set(['image/jpeg', 'image/png', 'image/webp']);\nconst FORMATOS_ESCANEO = ['qr_code', 'ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39'] as const;\n\ntype ResultadoCodigo = { rawValue: string };\ntype DetectorCodigo = {\n  detect(source: HTMLVideoElement | Blob): Promise<ResultadoCodigo[]>;\n};\n\n@Component({\n  selector: 'app-codigo-scanner-dialog',\n  standalone: true,\n  imports: [\n    MatButtonModule,\n    MatDialogModule,\n    MatIconModule,\n    MatProgressSpinnerModule\n  ],\n  templateUrl: './codigo-scanner-dialog.component.html',\n  changeDetection: ChangeDetectionStrategy.Eager,\n  styleUrl: './codigo-scanner-dialog.component.scss'\n})\nexport class CodigoScannerDialogComponent implements OnDestroy {\n  @ViewChild('videoElement') private videoElement?: ElementRef<HTMLVideoElement>;\n\n  readonly iniciando = signal(false);\n  readonly camaraActiva = signal(false);\n  readonly procesandoArchivo = signal(false);\n  readonly error = signal<string | null>(null);\n\n  private static inicializacionWasm?: Promise<void>;\n\n  private detector?: DetectorCodigo;\n  private stream?: MediaStream;\n  private temporizadorEscaneo?: number;\n  private escaneoEnCurso = false;\n  private resultadoEntregado = false;\n\n  constructor(private readonly dialogRef: MatDialogRef<CodigoScannerDialogComponent>) {}\n\n  async alternarCamara(): Promise<void> {\n    if (this.camaraActiva()) {\n      await this.detenerCamara();\n      return;\n    }\n\n    this.error.set(null);\n    this.iniciando.set(true);\n    try {\n      if (!navigator.mediaDevices?.getUserMedia) {\n        throw new Error('El navegador no permite acceso seguro a la cámara.');\n      }\n\n      await this.detenerCamara();\n      const detector = await this.obtenerDetector();\n      const stream = await navigator.mediaDevices.getUserMedia({\n        video: { facingMode: { ideal: 'environment' } },\n        audio: false\n      });\n\n      const video = this.videoElement?.nativeElement;\n      if (!video) {\n        stream.getTracks().forEach((track) => track.stop());\n        throw new Error('No se pudo preparar la vista de cámara.');\n      }\n\n      this.detector = detector;\n      this.stream = stream;\n      video.srcObject = stream;\n      await video.play();\n      this.camaraActiva.set(true);\n      this.programarEscaneo();\n    } catch (error) {\n      await this.detenerCamara();\n      this.error.set(\n        error instanceof Error && error.message.startsWith('El navegador')\n          ? error.message\n          : 'No se pudo activar la cámara. Verifica el permiso del navegador, usa HTTPS o selecciona una imagen.'\n      );\n    } finally {\n      this.iniciando.set(false);\n    }\n  }\n\n  async seleccionarArchivo(event: Event): Promise<void> {\n    const input = event.target as HTMLInputElement;\n    const archivo = input.files?.[0];\n    input.value = '';\n    if (!archivo || this.procesandoArchivo()) return;\n\n    this.error.set(null);\n    this.procesandoArchivo.set(true);\n    try {\n      await this.validarArchivo(archivo);\n      await this.detenerCamara();\n      const detector = await this.obtenerDetector();\n      const resultados = await detector.detect(archivo);\n      const codigo = resultados.find((resultado) => resultado.rawValue.trim())?.rawValue;\n      if (!codigo) {\n        throw new Error('No se encontró un código compatible en la imagen seleccionada.');\n      }\n      await this.entregarResultado(codigo);\n    } catch (error) {\n      this.error.set(\n        error instanceof Error\n          ? error.message\n          : 'No se encontró un código compatible en la imagen seleccionada.'\n      );\n    } finally {\n      this.procesandoArchivo.set(false);\n    }\n  }\n\n  async cerrar(): Promise<void> {\n    await this.detenerCamara();\n    this.dialogRef.close();\n  }\n\n  ngOnDestroy(): void {\n    void this.detenerCamara();\n  }\n\n  private async obtenerDetector(): Promise<DetectorCodigo> {\n    if (this.detector) return this.detector;\n\n    const modulo = await import('barcode-detector/ponyfill');\n    if (!CodigoScannerDialogComponent.inicializacionWasm) {\n      CodigoScannerDialogComponent.inicializacionWasm = Promise.resolve(\n        modulo.prepareZXingModule({\n          overrides: {\n            locateFile: (path, prefix) =>\n              path.endsWith('.wasm')\n                ? new URL('assets/wasm/zxing_reader.wasm', document.baseURI).toString()\n                : prefix + path\n          }\n        })\n      ).then(() => undefined);\n    }\n\n    try {\n      await CodigoScannerDialogComponent.inicializacionWasm;\n    } catch (error) {\n      CodigoScannerDialogComponent.inicializacionWasm = undefined;\n      throw error;\n    }\n\n    this.detector = new modulo.BarcodeDetector({ formats: [...FORMATOS_ESCANEO] });\n    return this.detector;\n  }\n\n  private programarEscaneo(): void {\n    const procesar = async (): Promise<void> => {\n      if (!this.camaraActiva() || !this.stream || this.resultadoEntregado) return;\n\n      const video = this.videoElement?.nativeElement;\n      if (video && video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && !this.escaneoEnCurso) {\n        this.escaneoEnCurso = true;\n        try {\n          const detector = await this.obtenerDetector();\n          const resultados = await detector.detect(video);\n          const codigo = resultados.find((resultado) => resultado.rawValue.trim())?.rawValue;\n          if (codigo) {\n            await this.entregarResultado(codigo);\n            return;\n          }\n        } catch {\n          // Un frame sin lectura válida no debe interrumpir el escaneo continuo.\n        } finally {\n          this.escaneoEnCurso = false;\n        }\n      }\n\n      if (this.camaraActiva()) {\n        this.temporizadorEscaneo = window.setTimeout(() => void procesar(), INTERVALO_ESCANEO_MS);\n      }\n    };\n\n    void procesar();\n  }\n\n  private async entregarResultado(codigo: string): Promise<void> {\n    const normalizado = codigo.trim();\n    if (!normalizado || this.resultadoEntregado) return;\n    this.resultadoEntregado = true;\n    await this.detenerCamara();\n    this.dialogRef.close(normalizado);\n  }\n\n  private async detenerCamara(): Promise<void> {\n    if (this.temporizadorEscaneo !== undefined) {\n      window.clearTimeout(this.temporizadorEscaneo);\n      this.temporizadorEscaneo = undefined;\n    }\n\n    this.camaraActiva.set(false);\n    this.escaneoEnCurso = false;\n\n    if (this.stream) {\n      this.stream.getTracks().forEach((track) => track.stop());\n      this.stream = undefined;\n    }\n\n    const video = this.videoElement?.nativeElement;\n    if (video) {\n      video.pause();\n      video.srcObject = null;\n    }\n  }\n\n  private async validarArchivo(archivo: File): Promise<void> {\n    const extension = archivo.name.split('.').pop()?.toLowerCase() ?? '';\n    if (!EXTENSIONES_PERMITIDAS.has(extension) || (archivo.type && !MIME_PERMITIDOS.has(archivo.type))) {\n      throw new Error('Selecciona una imagen JPG, JPEG, PNG o WEBP válida.');\n    }\n    if (archivo.size <= 0 || archivo.size > TAMANO_MAXIMO_BYTES) {\n      throw new Error('La imagen debe pesar más de 0 bytes y como máximo 10 MB.');\n    }\n\n    const dimensiones = await this.leerDimensiones(archivo);\n    if (\n      dimensiones.ancho > DIMENSION_MAXIMA\n      || dimensiones.alto > DIMENSION_MAXIMA\n      || dimensiones.ancho * dimensiones.alto > PIXELES_MAXIMOS\n    ) {\n      throw new Error('La imagen no puede superar 4096 px por lado ni 16 megapíxeles.');\n    }\n  }\n\n  private leerDimensiones(archivo: File): Promise<{ ancho: number; alto: number }> {\n    return new Promise((resolve, reject) => {\n      const url = URL.createObjectURL(archivo);\n      const imagen = new Image();\n      imagen.onload = () => {\n        URL.revokeObjectURL(url);\n        resolve({ ancho: imagen.naturalWidth, alto: imagen.naturalHeight });\n      };\n      imagen.onerror = () => {\n        URL.revokeObjectURL(url);\n        reject(new Error('La imagen está dañada o no puede leerse.'));\n      };\n      imagen.src = url;\n    });\n  }\n}\n");
+          fs.writeFileSync('frontend/src/app/shared/codigo-scanner-dialog/codigo-scanner-dialog.component.html', "<h2 mat-dialog-title>\n  <mat-icon>qr_code_scanner</mat-icon>\n  Escanear código\n</h2>\n\n<mat-dialog-content>\n  <p class=\"scanner-description\">\n    Usa la cámara trasera o selecciona una imagen local. La imagen se procesa únicamente en este navegador.\n  </p>\n\n  <div class=\"reader-shell\" [class.reader-active]=\"camaraActiva()\">\n    <div class=\"reader\" aria-label=\"Vista de cámara para escanear códigos\">\n      <video #videoElement playsinline muted></video>\n    </div>\n    @if (!camaraActiva() && !iniciando()) {\n      <div class=\"reader-placeholder\">\n        <mat-icon>photo_camera</mat-icon>\n        <span>La cámara está detenida</span>\n      </div>\n    }\n    @if (iniciando()) {\n      <div class=\"reader-placeholder\">\n        <mat-spinner diameter=\"38\"></mat-spinner>\n        <span>Solicitando permiso de cámara…</span>\n      </div>\n    }\n  </div>\n\n  @if (error()) {\n    <p class=\"scanner-dialog-error\" role=\"alert\">\n      <mat-icon>error</mat-icon>\n      {{ error() }}\n    </p>\n  }\n\n  <input\n    #archivoInput\n    type=\"file\"\n    hidden\n    accept=\".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp\"\n    (change)=\"seleccionarArchivo($event)\">\n</mat-dialog-content>\n\n<mat-dialog-actions align=\"end\">\n  <button\n    mat-stroked-button\n    type=\"button\"\n    (click)=\"alternarCamara()\"\n    [disabled]=\"iniciando() || procesandoArchivo()\">\n    <mat-icon>{{ camaraActiva() ? 'videocam_off' : 'photo_camera' }}</mat-icon>\n    {{ camaraActiva() ? 'Detener cámara' : 'Activar cámara' }}\n  </button>\n\n  <button\n    mat-stroked-button\n    type=\"button\"\n    (click)=\"archivoInput.click()\"\n    [disabled]=\"iniciando() || procesandoArchivo()\">\n    @if (procesandoArchivo()) { <mat-spinner diameter=\"18\"></mat-spinner> }\n    @else { <mat-icon>image_search</mat-icon> }\n    Leer imagen\n  </button>\n\n  <button mat-button type=\"button\" (click)=\"cerrar()\">Cerrar</button>\n</mat-dialog-actions>\n");
+          fs.writeFileSync('frontend/src/app/shared/codigo-scanner-dialog/codigo-scanner-dialog.component.scss', ":host {\n  display: block;\n}\n\nh2 {\n  display: flex;\n  align-items: center;\n  gap: 0.65rem;\n}\n\n.scanner-description {\n  margin: 0 0 1rem;\n  color: var(--text-secondary, #536273);\n  line-height: 1.5;\n}\n\n.reader-shell {\n  position: relative;\n  min-height: 300px;\n  overflow: hidden;\n  border: 1px solid rgba(91, 117, 139, 0.35);\n  border-radius: 16px;\n  background: #07131d;\n}\n\n.reader {\n  min-height: 300px;\n}\n\n.reader video {\n  display: block;\n  width: 100%;\n  height: 300px;\n  object-fit: cover;\n  background: #07131d;\n}\n\n.reader-placeholder {\n  position: absolute;\n  inset: 0;\n  display: grid;\n  place-content: center;\n  justify-items: center;\n  gap: 0.75rem;\n  color: #d9e7f2;\n  pointer-events: none;\n}\n\n.reader-placeholder mat-icon {\n  width: 44px;\n  height: 44px;\n  font-size: 44px;\n}\n\n.reader-active .reader-placeholder {\n  display: none;\n}\n\n.scanner-dialog-error {\n  display: flex;\n  align-items: flex-start;\n  gap: 0.5rem;\n  margin: 1rem 0 0;\n  padding: 0.8rem 1rem;\n  border-radius: 10px;\n  color: #9f1239;\n  background: #fff1f2;\n}\n\nmat-dialog-actions button {\n  display: inline-flex;\n  align-items: center;\n  gap: 0.35rem;\n}\n\n@media (max-width: 640px) {\n  .reader-shell,\n  .reader {\n    min-height: 240px;\n  }\n\n  .reader video {\n    height: 240px;\n  }\n\n  mat-dialog-actions {\n    display: grid;\n    grid-template-columns: 1fr;\n  }\n\n  mat-dialog-actions button {\n    width: 100%;\n    justify-content: center;\n  }\n}\n");
+          fs.writeFileSync('frontend/scripts/validate-scanner-2c4.mjs', "import { readFileSync } from 'node:fs';\nimport { resolve } from 'node:path';\n\nconst root = process.cwd();\nconst read = (path) => readFileSync(resolve(root, path), 'utf8');\nconst assert = (condition, message) => {\n  if (!condition) {\n    console.error(`Fase 2C.4: ${message}`);\n    process.exit(1);\n  }\n};\n\nconst packageJson = JSON.parse(read('package.json'));\nconst angular = JSON.parse(read('angular.json'));\nconst dialog = read('src/app/shared/codigo-scanner-dialog/codigo-scanner-dialog.component.ts');\nconst input = read('src/app/shared/codigo-scanner-input/codigo-scanner-input.component.ts');\nconst venta = read('src/app/features/ventas/venta-form.component.ts');\nconst compra = read('src/app/features/compras/compra-form.component.ts');\nconst ventaHtml = read('src/app/features/ventas/venta-form.component.html');\nconst compraHtml = read('src/app/features/compras/compra-form.component.html');\nconst ventaService = read('src/app/services/venta.service.ts');\nconst compraService = read('src/app/services/compra.service.ts');\nconst vercel = read('vercel.json');\n\nassert(!packageJson.dependencies?.['html5-qrcode'], 'html5-qrcode debe estar completamente retirado.');\nassert(packageJson.dependencies?.['barcode-detector'] === '3.2.2', 'barcode-detector debe quedar fijado en 3.2.2.');\nassert(packageJson.dependencies?.['zxing-wasm'] === '3.1.4', 'zxing-wasm debe quedar fijado en 3.1.4.');\nassert(dialog.includes(\"await import('barcode-detector/ponyfill')\"), 'el detector debe cargarse de forma diferida.');\nassert(dialog.includes('prepareZXingModule'), 'ZXing WASM debe inicializarse explícitamente.');\nassert(dialog.includes(\"assets/wasm/zxing_reader.wasm\"), 'el WASM debe servirse same-origin desde assets.');\nassert(!/jsdelivr|unpkg|esm\\.sh/i.test(dialog), 'el escáner no debe depender de CDN runtime.');\nassert(dialog.includes('navigator.mediaDevices.getUserMedia'), 'la cámara debe usar MediaDevices.');\nassert(dialog.includes('detector.detect(video)') && dialog.includes('detector.detect(archivo)'), 'cámara e imagen deben pasar por el mismo detector.');\nassert(dialog.includes(\"track.stop()\"), 'el stream de cámara debe liberar todas las pistas.');\nfor (const formato of ['qr_code', 'ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39']) {\n  assert(dialog.includes(`'${formato}'`), `falta formato de escaneo ${formato}.`);\n}\n\nconst assets = angular.projects?.['solqaryn-frontend']?.architect?.build?.options?.assets ?? [];\nconst wasmAsset = assets.find((asset) =>\n  typeof asset === 'object'\n  && asset.glob === 'zxing_reader.wasm'\n  && String(asset.input).includes('node_modules/zxing-wasm/dist/reader')\n  && String(asset.output).includes('assets/wasm')\n);\nassert(Boolean(wasmAsset), 'angular.json debe copiar zxing_reader.wasm al mismo origen.');\n\nassert(dialog.includes('10 * 1024 * 1024'), 'debe existir límite de imagen de 10 MB.');\nassert(dialog.includes('16_000_000') && dialog.includes('4096'), 'deben existir límites de dimensiones y megapíxeles.');\nassert(input.includes('CodigoScannerDialogComponent'), 'el lector físico debe integrar el diálogo de cámara.');\nassert(!input.includes('window.addEventListener'), 'el lector no debe capturar eventos globales ni robar el foco.');\nassert(venta.includes('cantidad consolidada') && compra.includes('cantidad consolidada'), 'los escaneos repetidos deben consolidarse.');\nassert(ventaHtml.includes('app-codigo-scanner-input') && compraHtml.includes('app-codigo-scanner-input'), 'ventas y compras deben mostrar el escáner.');\nassert(ventaService.includes('/productos/por-codigo') && compraService.includes('/productos/por-codigo'), 'ambos formularios deben usar resolución exacta.');\nassert(vercel.includes('camera=(self), microphone=(), geolocation=()'), 'Vercel debe restringir cámara al propio origen.');\n\nconsole.log('Fase 2C.4: barcode-detector + ZXing WASM same-origin, cámara/imagen e integración aprobados.');\n");
+
+          const angularPath='frontend/angular.json';
+          const angular=JSON.parse(fs.readFileSync(angularPath,'utf8'));
+          const assets=angular.projects['solqaryn-frontend'].architect.build.options.assets;
+          if (!assets.some(a=>typeof a==='object' && a.glob==='zxing_reader.wasm')) {
+            assets.push({
+              glob:'zxing_reader.wasm',
+              input:'node_modules/zxing-wasm/dist/reader/',
+              output:'/assets/wasm/'
+            });
+          }
+          fs.writeFileSync(angularPath,JSON.stringify(angular,null,2)+'\n');
+          NODE
+
+      - name: Actualizar gates vigentes
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs=require('fs');
+
+          {
+            const p='.github/workflows/modernization-phase5-frontend-tooling.yml';
+            let c=fs.readFileSync(p,'utf8');
+            c=c.replace("            'jsdom':'30.0.1',\n            'html5-qrcode':'2.3.8'\n", "            'jsdom':'30.0.1'\n");
+            c=c.replace("          test \"$(node -p \"require('./node_modules/html5-qrcode/package.json').version\")\" = \"2.3.8\"\n", "");
+            c=c.replace("          npm ls @playwright/test vitest jsdom html5-qrcode --depth=0", "          npm ls @playwright/test vitest jsdom --depth=0");
+            c=c.replace("            html5Qrcode:p.dependencies['html5-qrcode'],\n", "");
+            c=c.replace("            echo 'HTML5_QRCODE=2.3.8'\n", "");
+            fs.writeFileSync(p,c);
+          }
+
+          {
+            const p='.github/workflows/fase2c4-escaner-frontend.yml';
+            let c=fs.readFileSync(p,'utf8');
+            c=c.replace(
+              "          npm ci\n          npx playwright install --with-deps chromium",
+              "          npm ci\n          test \"$(node -p \"require('./node_modules/barcode-detector/package.json').version\")\" = \"3.2.2\"\n          test \"$(node -p \"require('./node_modules/zxing-wasm/package.json').version\")\" = \"3.1.4\"\n          test -f node_modules/zxing-wasm/dist/reader/zxing_reader.wasm\n          ! npm ls html5-qrcode --depth=0\n          npx playwright install --with-deps chromium"
+            );
+            c=c.replace(
+              "          npm run lint\n          npm run build:prod",
+              "          npm run lint\n          npm audit --audit-level=high\n          npm audit --omit=dev --audit-level=high\n          npm run build:prod\n          test -n \"$(find dist/solqaryn-frontend -type f -path '*/assets/wasm/zxing_reader.wasm' -print -quit)\""
+            );
+            c=c.replace(
+              "          nohup npm start -- --host 127.0.0.1 --port 4200 > fase2c4-frontend.log 2>&1 &",
+              "          nohup env -u PORT npm start -- --host 127.0.0.1 --port 4200 > fase2c4-frontend.log 2>&1 &"
+            );
+            fs.writeFileSync(p,c);
+          }
+          NODE
+
+      - name: Retirar deuda documental y actualizar arquitectura
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs=require('fs');
+
+          {
+            const p='docs/DETALLES_PENDIENTES.md';
+            let c=fs.readFileSync(p,'utf8');
+            c=c.replace('Los seis puntos siguientes son los únicos pendientes vigentes conocidos fuera del trabajo normal del roadmap.', 'Los cinco puntos siguientes son los únicos pendientes vigentes conocidos fuera del trabajo normal del roadmap.');
+            c=c.replace('fuera de estos seis puntos', 'fuera de estos cinco puntos');
+            const idx=c.indexOf('\n## 6. Evaluación futura de html5-qrcode');
+            if(idx>=0) c=c.slice(0,idx).trimEnd()+'\n';
+            fs.writeFileSync(p,c);
+          }
+
+          {
+            const p='docs/evidencias/modernizacion/FASE_5_TOOLING_FRONTEND_2026-10-04.md';
+            let c=fs.readFileSync(p,'utf8');
+            c=c.replace('- html5-qrcode: `2.3.8` (sin cambio).', '- Escáner vigente tras hardening posterior: `barcode-detector@3.2.2` + `zxing-wasm@3.1.4`; `html5-qrcode` retirado.');
+            const start=c.indexOf('\n## Política html5-qrcode');
+            const end=c.indexOf('\n## Gates pre-publicación', start);
+            if(start>=0 && end>start) {
+              c=c.slice(0,start)+'\n## Resolución posterior de la deuda del escáner\n\nLa dependencia `html5-qrcode@2.3.8` fue retirada por completo del runtime y del lockfile. El escáner usa `barcode-detector@3.2.2` sobre `zxing-wasm@3.1.4`, con el binario reader WASM servido desde el mismo origen de SOLQARYN y sin CDN runtime. Se preservan QR, EAN-13, EAN-8, UPC-A, UPC-E, Code 128, Code 39, cámara trasera, imagen local, límites de archivo, privacidad local y liberación de stream. La deuda deja de existir y no permanece como pendiente futuro.\n'+c.slice(end);
+            }
+            fs.writeFileSync(p,c);
+          }
+
+          for (const p of ['docs/FASE2C4_FRONTEND_ESCANER.md','docs/FASE2C4_ESCANER_FRONTEND.md']) {
+            let c=fs.readFileSync(p,'utf8');
+            c=c.replaceAll('`html5-qrcode` 2.3.8', '`barcode-detector` 3.2.2 + `zxing-wasm` 3.1.4');
+            c=c.replaceAll('`html5-qrcode`', '`barcode-detector` + `zxing-wasm`');
+            c=c.replaceAll('cargado dinámicamente', 'cargados dinámicamente con WASM reader same-origin');
+            c=c.replaceAll('Rama exclusiva: `Desarrollo`', 'Rama exclusiva: `dev`');
+            c=c.replaceAll('PR oficial: #2, `Desarrollo -> main`, abierto y en borrador.\n', '');
+            c=c.replaceAll('PR #2 permanece abierto y en borrador.\n', '');
+            c=c.replaceAll('Producción permanece congelada y no se utiliza para estas validaciones.', 'QA, `main` y PROD permanecen fuera de alcance.');
+            c=c.replaceAll('No se ejecutaron cambios sobre Producción.', 'No se ejecutan cambios sobre QA, `main` ni PROD.');
+            fs.writeFileSync(p,c);
+          }
+
+          {
+            const p='PROJECT_CONTEXT.md';
+            let c=fs.readFileSync(p,'utf8');
+            const marker='- Frontend: Angular 22.2.1 standalone, Signals y Angular Material/CDK 22.2.1.';
+            const pos=c.indexOf(marker);
+            if(pos<0) throw new Error('No se encontró baseline frontend en PROJECT_CONTEXT');
+            const endLine=c.indexOf('\n',pos);
+            const insert='\n- Escáner web: `barcode-detector@3.2.2` + `zxing-wasm@3.1.4`; QR/EAN/UPC/Code 128/Code 39 por cámara e imagen. El WASM reader se sirve same-origin desde `/assets/wasm/zxing_reader.wasm`; no existe dependencia runtime de CDN ni `html5-qrcode`.';
+            if(!c.includes('Escáner web: `barcode-detector@3.2.2`')) c=c.slice(0,endLine)+insert+c.slice(endLine);
+            fs.writeFileSync(p,c);
+          }
+
+          {
+            const p='PROJECT_INDEX.md';
+            let c=fs.readFileSync(p,'utf8');
+            const marker='Stack vigente: Angular 22.2.1';
+            const pos=c.indexOf(marker);
+            if(pos<0) throw new Error('No se encontró stack frontend en PROJECT_INDEX');
+            const endLine=c.indexOf('\n',pos);
+            const insert='\n\nEscáner compartido: `src/app/shared/codigo-scanner-dialog` usa `barcode-detector@3.2.2` + `zxing-wasm@3.1.4`; el reader WASM se copia como asset same-origin y el contrato está en `scripts/validate-scanner-2c4.mjs`.';
+            if(!c.includes('Escáner compartido:')) c=c.slice(0,endLine)+insert+c.slice(endLine);
+            fs.writeFileSync(p,c);
+          }
+
+          {
+            const p='ARCHITECTURE.md';
+            let c=fs.readFileSync(p,'utf8');
+            const marker='- lazy loading de componentes.\n';
+            if(!c.includes(marker)) throw new Error('No se encontró responsabilidades frontend en ARCHITECTURE');
+            const insert='\n#### Escáner de códigos\n\nEl escáner compartido de ventas/compras usa `barcode-detector@3.2.2` como API de detección y `zxing-wasm@3.1.4`/ZXing-C++ como motor. La cámara se gestiona con `MediaDevices.getUserMedia`; imágenes locales se procesan únicamente en el navegador. El reader WASM se copia desde `node_modules/zxing-wasm/dist/reader/zxing_reader.wasm` al build y se sirve same-origin desde `/assets/wasm/`, sin CDN runtime. Formatos: QR, EAN-13/8, UPC-A/E, Code 128 y Code 39. El stream se libera al detener/cerrar/destruir/leer.\n';
+            if(!c.includes('#### Escáner de códigos')) c=c.replace(marker,marker+insert);
+            fs.writeFileSync(p,c);
+          }
+
+          {
+            const p='ARCHITECTURE_CHANGELOG.md';
+            let c=fs.readFileSync(p,'utf8');
+            const entry='## 2026-10-04 — Retiro de html5-qrcode y scanner WASM same-origin\n\n- Se retira por completo `html5-qrcode@2.3.8` del runtime y lockfile.\n- El escáner pasa a `barcode-detector@3.2.2` + `zxing-wasm@3.1.4`, con ZXing-C++ reader WASM servido desde SOLQARYN y sin CDN runtime.\n- Se preservan cámara trasera, imagen local, QR/EAN/UPC/Code128/Code39, límites de archivo, privacidad local y liberación de MediaStream.\n- La deuda de mantenibilidad queda resuelta; no se mantiene como pendiente deliberado.\n- Alcance exclusivo `dev`; QA, `main` y PROD no se modifican.\n\n';
+            if(!c.startsWith('## 2026-10-04 — Retiro de html5-qrcode')) c=entry+c;
+            fs.writeFileSync(p,c);
+          }
+
+          {
+            const p='CHANGELOG_AI.md';
+            let c=fs.readFileSync(p,'utf8');
+            const entry='## 2026-10-04 — Retiro total de deuda html5-qrcode DEV\n\n- Sustituido `html5-qrcode@2.3.8` por `barcode-detector@3.2.2` + `zxing-wasm@3.1.4`.\n- ZXing reader WASM se sirve same-origin desde el build Angular; no hay dependencia CDN runtime.\n- Se preservan formatos QR/EAN/UPC/Code128/Code39, cámara, imagen local, privacidad, límites y liberación del stream.\n- Retirado el punto de deuda de `docs/DETALLES_PENDIENTES.md` y actualizada la arquitectura canónica.\n- Alcance exclusivo `dev`; QA, `main` y PROD no se modifican.\n\n';
+            if(!c.startsWith('## 2026-10-04 — Retiro total de deuda html5-qrcode DEV')) c=entry+c;
+            fs.writeFileSync(p,c);
+          }
+          NODE
+
+      - name: Reinstalación limpia y certificación pre-publicación
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf frontend/node_modules
+          cd frontend
+          npm ci
+          test "$(node -p "require('./node_modules/barcode-detector/package.json').version")" = "3.2.2"
+          test "$(node -p "require('./node_modules/zxing-wasm/package.json').version")" = "3.1.4"
+          ! npm ls html5-qrcode --depth=0
+          npm run lint
+          npm run test:unit
+          npm audit --audit-level=high
+          npm audit --omit=dev --audit-level=high
+          npm run build:prod
+          test -n "$(find dist/solqaryn-frontend -type f -path '*/assets/wasm/zxing_reader.wasm' -print -quit)"
+          ! grep -R -n --exclude='*.map' -E 'fastly\.jsdelivr|cdn\.jsdelivr|unpkg\.com|esm\.sh' dist/solqaryn-frontend
+          cd ..
+          node scripts/verify-project-scope.mjs
+          git diff --check
+
+      - name: Publicar sólo si HEAD sigue estable
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin dev
+          test "$(git rev-parse origin/dev)" = "$BASE_SHA"
+          rm .github/workflows/modernization-retire-html5-qrcode.yml
+          git config user.name "solqaryn-platform"
+          git config user.email "solqaryn.platform@outlook.com"
+          git add -A
+          git status --short
+          git commit -m "refactor(scanner): retire html5-qrcode debt"
+          git push origin HEAD:dev
