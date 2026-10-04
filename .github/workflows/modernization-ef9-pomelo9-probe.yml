@@ -1,0 +1,166 @@
+name: Modernización - Probe EF9 Pomelo9 DEV
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/modernization-ef9-pomelo9-probe.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    name: EF9 Pomelo9 net8 y net10
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: phase6_ef9_net8
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      ASPNETCORE_ENVIRONMENT: Development
+      Database__ServerVersion: 8.4.0
+      Database__ApplyMigrationsOnStartup: 'false'
+      Jwt__Secret: Phase6-EF9-CI-Only-Secret-With-More-Than-32-Characters
+      Jwt__Issuer: Solqaryn.Phase6
+      Jwt__Audience: Solqaryn.Phase6.Frontend
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Scope
+        run: node scripts/verify-project-scope.mjs
+
+      - name: Preparar candidate EF9 Pomelo9 en checkout efímero
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          reps={
+            "backend/src/Infrastructure/Solqaryn.Infrastructure.csproj":[
+              ('Microsoft.EntityFrameworkCore" Version="8.0.2','Microsoft.EntityFrameworkCore" Version="9.0.20'),
+              ('Pomelo.EntityFrameworkCore.MySql" Version="8.0.2','Pomelo.EntityFrameworkCore.MySql" Version="9.0.0'),
+              ('MySqlConnector" Version="2.3.7','MySqlConnector" Version="2.6.2'),
+              ('Microsoft.EntityFrameworkCore.Design" Version="8.0.2','Microsoft.EntityFrameworkCore.Design" Version="9.0.20')],
+            "backend/src/API/Solqaryn.API.csproj":[
+              ('Microsoft.EntityFrameworkCore.Design" Version="8.0.2','Microsoft.EntityFrameworkCore.Design" Version="9.0.20')],
+            "backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj":[
+              ('Microsoft.EntityFrameworkCore.InMemory" Version="8.0.8','Microsoft.EntityFrameworkCore.InMemory" Version="9.0.20'),
+              ('Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.8','Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.20')],
+            "tools/vaep/N820C.DbProviderProbe/N820C.DbProviderProbe.csproj":[
+              ('MySqlConnector" Version="2.3.7','MySqlConnector" Version="2.6.2')]
+          }
+          for name,items in reps.items():
+              p=Path(name); t=p.read_text()
+              for old,new in items:
+                  if old not in t: raise SystemExit(f"Missing baseline {old} in {name}")
+                  t=t.replace(old,new)
+              p.write_text(t)
+          PY
+
+      - name: Crear bases
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot -e "
+            DROP DATABASE IF EXISTS phase6_ef9_net8;
+            CREATE DATABASE phase6_ef9_net8 CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+            DROP DATABASE IF EXISTS phase6_ef9_net10;
+            CREATE DATABASE phase6_ef9_net10 CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
+
+      - name: Certificar candidate net8
+        working-directory: backend
+        env:
+          ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=phase6_ef9_net8;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+          dotnet tool install --global dotnet-ef --version 9.0.20
+          dotnet ef database update --project src/Infrastructure/Solqaryn.Infrastructure.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --configuration Release
+          dotnet ef migrations has-pending-model-changes --project src/Infrastructure/Solqaryn.Infrastructure.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --configuration Release
+          dotnet test Solqaryn.sln --configuration Release --no-build --filter "Category!=Integration"
+          dotnet test Solqaryn.sln --configuration Release --no-build --filter "Category=Integration"
+          cd ..
+          python3 scripts/security/priority3_tenant_isolation_audit.py
+
+      - name: Preparar copia net10
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/solqaryn-net10"
+          cp -a "$GITHUB_WORKSPACE" "$root"
+          python3 - "$root" <<'PY'
+          import sys
+          from pathlib import Path
+          root=Path(sys.argv[1]); n=0
+          for base in (root/"backend",root/"tools"/"vaep"/"N820C.DbProviderProbe"):
+              if not base.exists(): continue
+              for p in base.rglob("*.csproj"):
+                  t=p.read_text()
+                  if "<TargetFramework>net8.0</TargetFramework>" in t:
+                      p.write_text(t.replace("<TargetFramework>net8.0</TargetFramework>","<TargetFramework>net10.0</TargetFramework>"))
+                      n+=1
+          if n < 5: raise SystemExit(f"Retarget incompleto: {n}")
+          print(f"RETARGETED={n}")
+          PY
+
+      - name: Certificar mismo candidate en net10
+        env:
+          ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=phase6_ef9_net10;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/solqaryn-net10/backend"
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+          dotnet ef database update --project src/Infrastructure/Solqaryn.Infrastructure.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --configuration Release
+          dotnet ef migrations has-pending-model-changes --project src/Infrastructure/Solqaryn.Infrastructure.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --configuration Release
+          dotnet test Solqaryn.sln --configuration Release --no-build --filter "Category!=Integration"
+          dotnet test Solqaryn.sln --configuration Release --no-build --filter "Category=Integration"
+          cd ..
+          python3 scripts/security/priority3_tenant_isolation_audit.py
+
+      - name: Verificar schemas equivalentes
+        shell: bash
+        run: |
+          set -euo pipefail
+          for db in phase6_ef9_net8 phase6_ef9_net10; do
+            docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot -Nse "
+              SELECT TABLE_NAME,COLUMN_NAME,COLUMN_TYPE,IS_NULLABLE,COALESCE(COLUMN_DEFAULT,'<NULL>'),EXTRA,COALESCE(COLLATION_NAME,'')
+              FROM INFORMATION_SCHEMA.COLUMNS
+              WHERE TABLE_SCHEMA='$db' AND TABLE_NAME <> '__EFMigrationsHistory'
+              ORDER BY TABLE_NAME,ORDINAL_POSITION;" > "$RUNNER_TEMP/$db-columns.tsv"
+            docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot -Nse "
+              SELECT TABLE_NAME,INDEX_NAME,NON_UNIQUE,SEQ_IN_INDEX,COALESCE(COLUMN_NAME,''),INDEX_TYPE
+              FROM INFORMATION_SCHEMA.STATISTICS
+              WHERE TABLE_SCHEMA='$db' AND TABLE_NAME <> '__EFMigrationsHistory'
+              ORDER BY TABLE_NAME,INDEX_NAME,SEQ_IN_INDEX;" > "$RUNNER_TEMP/$db-indexes.tsv"
+          done
+          diff -u "$RUNNER_TEMP/phase6_ef9_net8-columns.tsv" "$RUNNER_TEMP/phase6_ef9_net10-columns.tsv"
+          diff -u "$RUNNER_TEMP/phase6_ef9_net8-indexes.tsv" "$RUNNER_TEMP/phase6_ef9_net10-indexes.tsv"
+          echo "EF9_POMELO9_NET8_NET10=PASS"
