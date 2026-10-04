@@ -1,3 +1,12 @@
+## 2026-10-04 — Cierre del Punto 6: bootstrap Oracle EF10 de base limpia certificado
+
+- Run exact-head `37232587801` sobre `0e4b552ed058b538f9b7bbe38d642a28191e7720`: 21/21 pasos success; paquete SQL aplicado a una base MySQL 8.4 vacía, baseline EF10 registrado y `has-pending-model-changes` verde.
+- El comparator coteja metadatos físicos de tablas, columnas, índices, constraints, FK, CHECK, vistas, triggers, rutinas y eventos frente al esquema Pomelo vigente; adopción de schema existente sin DDL también pasó.
+- Paquete CI `oracle-baseline-candidate-37232587801` (227,854 bytes) disponible 90 días y regenerable desde CI; sin datos de entornos reales ni Fase 7.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_6_ORACLE_CLEAN_BOOTSTRAP_2026-10-04.md`.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-10-04 — Cierre del Punto 5: se preservan las 107 migraciones históricas
 
 - Inventario DEV: 107 archivos de migración, 107 IDs únicos, 0 duplicados; 67 fuentes incluyen metadata/anotaciones MySQL/Pomelo.
