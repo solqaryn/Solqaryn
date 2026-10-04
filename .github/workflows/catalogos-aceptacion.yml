@@ -235,8 +235,14 @@ jobs:
 
       - name: Instalar frontend y Chromium
         working-directory: frontend
+        shell: bash
         run: |
+          set -euo pipefail
           npm ci
+          test "$(node -p "require('./node_modules/@playwright/test/package.json').version")" = "1.63.0"
+          test "$(node -p "require('./node_modules/playwright-core/package.json').version")" = "1.63.0"
+          test "$(npx playwright --version)" = "Version 1.63.0"
+          echo 'PLAYWRIGHT_E2E_RUNTIME=1.63.0'
           npx playwright install --with-deps chromium
 
       - name: Validar tipado y calidad estática
