@@ -1,7 +1,7 @@
 # Punto 13 — Contrato JSON en ambos providers
 
-Fecha: 2026-10-04  
-Repositorio: `solqaryn/Solqaryn`  
+Fecha: 2026-10-04
+Repositorio: `solqaryn/Solqaryn`
 Rama: `dev`
 
 ## Hallazgo
