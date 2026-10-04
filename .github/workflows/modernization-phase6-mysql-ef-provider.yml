@@ -394,12 +394,38 @@ jobs:
               return null;
           }
 
+          static MySqlException CreateOracleMySqlException(int number, string message)
+          {
+              var type=typeof(MySqlException);
+              var exception=(MySqlException)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(type);
+              var numberProperty=type.GetProperty("Number");
+              var setter=numberProperty?.GetSetMethod(nonPublic:true);
+              if (setter is not null)
+              {
+                  setter.Invoke(exception,new object[]{number});
+              }
+              else
+              {
+                  var numberField=type.GetFields(System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)
+                      .FirstOrDefault(field=>field.FieldType==typeof(int)
+                          && field.Name.Contains("number",StringComparison.OrdinalIgnoreCase));
+                  if(numberField is null)
+                      throw new InvalidOperationException("Oracle MySqlException no expone un almacenamiento entero identificable para Number.");
+                  numberField.SetValue(exception,number);
+              }
+              typeof(Exception).GetField("_message",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)
+                  ?.SetValue(exception,message);
+              if(ErrorNumber(exception)!=number)
+                  throw new InvalidOperationException($"Oracle MySqlException.Number no conservó el código {number}.");
+              return exception;
+          }
+
           var freshConnection=Environment.GetEnvironmentVariable("ORACLE_FRESH_CONNECTION")!;
           var runtimeConnection=Environment.GetEnvironmentVariable("ORACLE_RUNTIME_CONNECTION")!;
           var output=Environment.GetEnvironmentVariable("ORACLE_RESULT")!;
 
           bool freshMigration=false, runtimeConnect=false, pendingZero=false, linq=false, transactionRollback=false;
-          bool duplicateTranslated=false, exceptionTypeCompatible=false, retryContractCompatible=false;
+          bool duplicateTranslated=false, exceptionTypeCompatible=false, retryContractCompatible=false, oracle1213RetryCompatible=false;
           bool jsonModel=false, decimalModel=false, datetimeModel=false, indexModel=false;
           string? freshError=null, runtimeError=null, duplicateException=null;
           int? duplicateNumber=null;
@@ -484,6 +510,16 @@ jobs:
                   exceptionTypeCompatible=Chain(ex).Any(x=>x.GetType().FullName=="MySql.Data.MySqlClient.MySqlException");
               }
 
+              var oracle1213Attempts=0;
+              await uow.ExecuteInTransactionAsync(() =>
+              {
+                  oracle1213Attempts++;
+                  if(oracle1213Attempts==1)
+                      throw CreateOracleMySqlException(1213,"Synthetic Oracle Connector/NET deadlock for retry contract");
+                  return Task.CompletedTask;
+              });
+              oracle1213RetryCompatible=oracle1213Attempts==2;
+
               await db.Database.ExecuteSqlRawAsync("DROP TABLE IF EXISTS Phase6OracleRetry;");
               await db.Database.ExecuteSqlRawAsync("""
                   CREATE TABLE Phase6OracleRetry (
@@ -553,6 +589,7 @@ jobs:
               duplicateException,
               exceptionTypeCompatible,
               retryContractCompatible,
+              oracle1213RetryCompatible,
               runtimeError
           };
           await File.WriteAllTextAsync(output,JsonSerializer.Serialize(result,new JsonSerializerOptions{WriteIndented=true})+Environment.NewLine);
@@ -620,7 +657,7 @@ jobs:
         run: |
           set -euo pipefail
           fresh="$(jq -r '.freshMigration' "$ORACLE_RESULT")"
-          exception="$(jq -r '.exceptionTypeCompatible and .duplicateTranslated and (.duplicateNumber == 1062) and .retryContractCompatible' "$ORACLE_RESULT")"
+          exception="$(jq -r '.exceptionTypeCompatible and .duplicateTranslated and (.duplicateNumber == 1062) and .retryContractCompatible and .oracle1213RetryCompatible' "$ORACLE_RESULT")"
           runtime="$(jq -r '.runtimeConnect and .pendingZero and .linq and .transactionRollback and .jsonModel and .decimalModel and .datetimeModel and .indexModel' "$ORACLE_RESULT")"
           dropin=false
           if [ "$fresh" = true ] && [ "$runtime" = true ] && [ "$exception" = true ] && [ "$SCHEMA_EQUIVALENT" = true ]; then
