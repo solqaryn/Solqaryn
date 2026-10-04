@@ -3,6 +3,7 @@ using Solqaryn.Application.Exceptions;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Infrastructure.Persistence;
+using Solqaryn.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace Solqaryn.Infrastructure.Repositories;
