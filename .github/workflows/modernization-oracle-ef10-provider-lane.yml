@@ -1,0 +1,89 @@
+name: Modernización - Oracle EF10 provider lane DEV
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/**'
+      - 'scripts/modernization/oracle10-provider-lane.sh'
+      - '.github/workflows/modernization-oracle-ef10-provider-lane.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: modernization-oracle-ef10-provider-lane-dev
+  cancel-in-progress: true
+
+jobs:
+  oracle-ef10-net10:
+    name: Oracle EF10 net10 provider lane aislada
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: phase6_oracle10
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=phase6_oracle10;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;
+      Database__ServerVersion: 8.4.0
+      Database__ApplyMigrationsOnStartup: 'false'
+      Jwt__Secret: Phase6-Oracle10-CI-Only-Secret-With-More-Than-32-Characters
+      Jwt__Issuer: Solqaryn.Phase6
+      Jwt__Audience: Solqaryn.Phase6.Frontend
+      ORACLE10_CONNECTION: Server=127.0.0.1;Port=3306;Database=phase6_oracle10;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Scope y baseline físico
+        shell: bash
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "dev"
+          cd "$GITHUB_WORKSPACE"
+          node scripts/verify-project-scope.mjs
+          cd backend
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+          dotnet tool install --global dotnet-ef --version 8.0.8
+          dotnet ef database update \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
+            --context AppDbContext \
+            --configuration Release \
+            --no-build
+          test "$(docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot -Nse "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='phase6_oracle10';")" -gt 100
+
+      - name: Ejecutar lane Oracle EF10 net10
+        shell: bash
+        run: bash scripts/modernization/oracle10-provider-lane.sh
+
+      - name: Resultado
+        shell: bash
+        run: |
+          echo '## Oracle EF10 net10 provider lane' >> "$GITHUB_STEP_SUMMARY"
+          echo '' >> "$GITHUB_STEP_SUMMARY"
+          echo '- net10 + EF Core 10.0.12 + MySql.EntityFrameworkCore 10.0.9: PASS' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Product TargetFramework changed: false' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Build/runtime/LINQ/model/transaction/1062/retry/tenancy: PASS' >> "$GITHUB_STEP_SUMMARY"
