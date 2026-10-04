@@ -2845,3 +2845,12 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - No se ejecutó Fase 7 ni se cambiaron migraciones o datos persistentes.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
+## 2026-10-04 — Cierre del Punto 14: precisión decimal exacta
+
+- La sonda ahora exige `Compras.Total=decimal(18,2)` y `CuentasPorPagar.MontoOriginal=decimal(18,4)` tanto en el modelo EF como en `INFORMATION_SCHEMA`; persiste/lee una compra con el máximo `18,2` y comprueba ambos valores máximos exactos con parámetros del provider en transacción revertida.
+- Pomelo: gate exact-head `37244974128` sobre `ef3ea812482e4ba7e258ea5dc1cf5d9d56c97db1`; `DECIMAL_PROVIDER_CONTRACT=PASS`, `POMELO_DECIMAL_18_2=54`, `POMELO_DECIMAL_18_4=64`, integración MySQL 27/27 pass. Oracle EF10/net10 `37244974112` PASS; gate provider-final `37244974157` PASS.
+- Gate de Fase 6: 5/5 jobs success, `P0=0`, `P1=0`, `PHASE7_EXECUTED=false`.
+- La deuda ajena de EF8/Pomelo en net10 sigue abierta para puntos 20/21, según `PUNTO_13_JSON_PROVIDER_CONTRACT_2026-10-04.md`.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_14_DECIMAL_PRECISION_SCALE_2026-10-04.md`.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
