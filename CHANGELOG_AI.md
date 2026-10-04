@@ -12,7 +12,7 @@
 - jsdom actualizado 29.1.1 -> 30.0.1 exactamente según el alcance autorizado.
 - html5-qrcode permanece en 2.3.8; se registra evaluación futura de mantenibilidad sin reemplazo actual.
 - Angular 22.2.1 y su matriz asociada se preservan.
-- Cierre condicionado a audit completo/productivo, unit 58/58 + 217/217, lint, build y Playwright canónico 100/100 exact-head.
+- Cierre condicionado a audit completo/productivo, unit 58/58 + 218/218, lint, build y Playwright canónico 100/100 exact-head.
 - Alcance exclusivo dev; QA, main y PROD no se modifican.
 
 ## 2026-10-03 — Hardening quirúrgico Fase 4 Angular 22 DEV
