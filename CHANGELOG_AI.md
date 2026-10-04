@@ -1,3 +1,9 @@
+## 2026-10-04 — Oracle baseline normaliza nombres físicos MySQL DEV
+
+- El contexto efímero Oracle aplica a foreign keys e índices la misma regla física observada en el SQL Pomelo vigente: máximo 64 caracteres con truncación determinista.
+- El probe falla cerrado si la migración baseline contiene cualquier identificador FK/IX/UX/CK/PK superior a 64 caracteres.
+- No se renombran constraints productivos ni se modifica el modelo o historial Pomelo; la adaptación permanece aislada a la lane Oracle de Fase 6.
+
 ## 2026-10-04 — Oracle baseline respeta límite MySQL de identificadores DEV
 
 - El contexto efímero Oracle fija `Relational:MaxIdentifierLength=64`, igualando el límite físico de MySQL y evitando FK/índices generados con nombres inválidos.

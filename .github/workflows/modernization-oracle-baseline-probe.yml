@@ -118,6 +118,26 @@ jobs:
               {
                   base.OnModelCreating(modelBuilder);
                   modelBuilder.HasAnnotation(RelationalAnnotationNames.MaxIdentifierLength, 64);
+
+                  static string LimitIdentifier(string name) =>
+                      name.Length <= 64 ? name : name[..64];
+
+                  foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+                  {
+                      foreach (var foreignKey in entityType.GetForeignKeys())
+                      {
+                          var name = foreignKey.GetConstraintName();
+                          if (!string.IsNullOrEmpty(name) && name.Length > 64)
+                              foreignKey.SetConstraintName(LimitIdentifier(name));
+                      }
+
+                      foreach (var index in entityType.GetIndexes())
+                      {
+                          var name = index.GetDatabaseName();
+                          if (!string.IsNullOrEmpty(name) && name.Length > 64)
+                              index.SetDatabaseName(LimitIdentifier(name));
+                      }
+                  }
               }
           }
 
@@ -162,7 +182,19 @@ jobs:
               changed+=count
           if changed != 2:
               raise SystemExit(f"Expected exactly 2 Oracle longtext defaults to normalize, got {changed}")
+
+          import re
+          offenders=[]
+          for path in root.glob("*_OracleBaseline.cs"):
+              text=path.read_text()
+              for value in set(re.findall(r'"((?:FK|IX|UX|CK|PK)_[A-Za-z0-9_]+)"', text)):
+                  if len(value) > 64:
+                      offenders.append(value)
+          if offenders:
+              raise SystemExit("Oracle baseline still contains identifiers >64: " + ", ".join(sorted(offenders)))
+
           print(f"ORACLE_LONGTEXT_DEFAULTS_NORMALIZED={changed}")
+          print("ORACLE_IDENTIFIER_LENGTHS=PASS")
           PY
 
           baseline_file="$(find "$probe/Migrations" -maxdepth 1 -type f -name '[0-9]*_OracleBaseline.cs' | head -n1)"
