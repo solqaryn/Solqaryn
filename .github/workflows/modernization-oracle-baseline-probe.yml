@@ -414,7 +414,7 @@ jobs:
               WHERE CONSTRAINT_SCHEMA='$db'
               ORDER BY TABLE_NAME,CONSTRAINT_NAME,CONSTRAINT_TYPE;" > "$RUNNER_TEMP/$db-constraints.tsv"
             docker exec "$mysql_container" mysql -uroot -proot -Nse "
-              SELECT tc.TABLE_NAME,tc.CONSTRAINT_NAME,cc.CHECK_CLAUSE,COALESCE(cc.ENFORCED,'')
+              SELECT tc.TABLE_NAME,tc.CONSTRAINT_NAME,cc.CHECK_CLAUSE
               FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc
               JOIN INFORMATION_SCHEMA.CHECK_CONSTRAINTS cc
                 ON cc.CONSTRAINT_SCHEMA=tc.CONSTRAINT_SCHEMA AND cc.CONSTRAINT_NAME=tc.CONSTRAINT_NAME

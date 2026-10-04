@@ -23,7 +23,8 @@ Cada exportación se ordena de forma determinista y se compara con `diff`; cualq
 ## Evidencia
 
 - Run previo `37232938573` sobre `aeee293abb4beb757ff4196ebd52308bd54f2320`: comparator anterior success, 136 tablas en el paquete SQL limpio y adopción sin DDL. No basta por sí solo para certificar los nuevos campos.
-- Primera ejecución ampliada `37241337349` falló porque `INFORMATION_SCHEMA.PARTITIONS` no contiene `ENGINE` ni `CREATE_OPTIONS`; se corrigió la consulta quitando esos campos. No se declaró PASS.
+- Primera ejecución ampliada `37241337349` falló porque `INFORMATION_SCHEMA.PARTITIONS` no contiene `ENGINE` ni `CREATE_OPTIONS`; se quitaron esos campos.
+- Segunda ejecución `37241647354` llegó al comparator, pero detectó que `CHECK_CONSTRAINTS` no contiene `ENFORCED`; ese atributo sí se compara desde `TABLE_CONSTRAINTS.ENFORCED`, por lo que se quitó la referencia duplicada inválida. No se declaró PASS.
 - Run exact-head de la comparación corregida: **pendiente de CI posterior a este commit**. No se declarará PASS hasta que su step `Capturar y comparar esquema físico Pomelo vs Oracle baseline` pase.
 - Se comprobó que entre el baseline previo y el HEAD de trabajo no cambiaron modelo, configuraciones ni historia de migraciones; el nuevo run valida ahora además el comparador ampliado.
 
