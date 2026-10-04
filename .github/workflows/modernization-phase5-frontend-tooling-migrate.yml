@@ -140,80 +140,83 @@ jobs:
           set -euo pipefail
           node <<'NODE'
           const fs=require('fs');
-
-          const evidencePath='docs/evidencias/modernizacion/FASE_5_TOOLING_FRONTEND_2026-10-04.md';
-          const evidence=`# Modernización — Fase 5 Tooling frontend — 2026-10-04
-
-## Alcance
-
-- Repositorio: \`solqaryn/Solqaryn\`.
-- Rama: \`dev\`.
-- Entorno autorizado: DEV exclusivamente.
-- QA, \`main\`, PROD, datos, secretos e infraestructura productiva: fuera de alcance y no modificados.
-
-## Precondición
-
-- Fase 4 Angular 22.2.1 certificada exact-head.
-- Angular/TypeScript/RxJS/tslib/Zone.js permanecen sin cambios.
-
-## Matriz aplicada
-
-- Playwright Test: \`1.63.0\`.
-- Vitest: \`5.0.3\`.
-- jsdom: \`30.1.1\`.
-- html5-qrcode: \`2.3.8\` (sin cambio).
-
-La propuesta inicial de Fase 5 citaba jsdom \`30.0.1\`; al ejecutar la fase, npm ya publicaba \`30.1.1\` como estable más reciente. Se adopta \`30.1.1\` porque la regresión completa la valida y evita certificar una dependencia ya desactualizada.
-
-## Política html5-qrcode
-
-\`html5-qrcode@2.3.8\` continúa siendo la última versión publicada y se mantiene sin cambios funcionales. Su antigüedad de publicación se registra como deuda técnica no bloqueante para una evaluación futura de mantenimiento, alternativas, compatibilidad de navegadores/cámara, seguridad y costo de migración. No se reemplaza en esta fase.
-
-## Gates pre-publicación
-
-- scope SOLQARYN;
-- reinstalación limpia con \`npm ci\`;
-- matriz exacta de versiones;
-- audit completo high+;
-- audit productivo high+;
-- 58/58 archivos + 217/217 unit tests;
-- lint/contratos;
-- build production-mode sin deploy.
-
-## Cierre exact-head
-
-El certifier permanente de Fase 5 exige además aceptación Playwright integral DEV 100/100 sobre el mismo HEAD y emite \`FASE_5_TOOLING_FRONTEND=PASS\`.
-
-\`;
-          fs.writeFileSync(evidencePath,evidence);
+          const evidence=[
+            '# Modernización — Fase 5 Tooling frontend — 2026-10-04',
+            '',
+            '## Alcance',
+            '',
+            '- Repositorio: `solqaryn/Solqaryn`.',
+            '- Rama: `dev`.',
+            '- Entorno autorizado: DEV exclusivamente.',
+            '- QA, `main`, PROD, datos, secretos e infraestructura productiva: fuera de alcance y no modificados.',
+            '',
+            '## Precondición',
+            '',
+            '- Fase 4 Angular 22.2.1 certificada exact-head.',
+            '- Angular/TypeScript/RxJS/tslib/Zone.js permanecen sin cambios.',
+            '',
+            '## Matriz aplicada',
+            '',
+            '- Playwright Test: `1.63.0`.',
+            '- Vitest: `5.0.3`.',
+            '- jsdom: `30.1.1`.',
+            '- html5-qrcode: `2.3.8` (sin cambio).',
+            '',
+            'La propuesta inicial citaba jsdom `30.0.1`; al ejecutar la fase npm ya publicaba `30.1.1` como estable más reciente. Se adopta `30.1.1` porque la regresión completa la valida y evita certificar una dependencia ya desactualizada.',
+            '',
+            '## Política html5-qrcode',
+            '',
+            '`html5-qrcode@2.3.8` continúa siendo la última versión publicada y se mantiene sin cambios funcionales. Su antigüedad se registra como deuda técnica no bloqueante para evaluación futura de mantenimiento, alternativas, compatibilidad de navegador/cámara, seguridad y costo de migración.',
+            '',
+            '## Gates pre-publicación',
+            '',
+            '- scope SOLQARYN;',
+            '- reinstalación limpia con `npm ci`;',
+            '- matriz exacta de versiones;',
+            '- audit completo high+;',
+            '- audit productivo high+;',
+            '- 58/58 archivos + 217/217 unit tests;',
+            '- lint/contratos;',
+            '- build production-mode sin deploy.',
+            '',
+            '## Cierre exact-head',
+            '',
+            'El certifier permanente de Fase 5 exige aceptación Playwright integral DEV 100/100 sobre el mismo HEAD y emite `FASE_5_TOOLING_FRONTEND=PASS`.',
+            ''
+          ].join('\n');
+          fs.writeFileSync('docs/evidencias/modernizacion/FASE_5_TOOLING_FRONTEND_2026-10-04.md',evidence);
 
           const ac='ARCHITECTURE_CHANGELOG.md';
           let arch=fs.readFileSync(ac,'utf8');
-          const archEntry=`## 2026-10-04 — Tooling frontend Fase 5
-
-- Playwright Test pasa de 1.62.1 a 1.63.0.
-- Vitest pasa de 4.1.11 a 5.0.3 sobre el target canónico \`@angular/build:unit-test\`.
-- jsdom pasa de 29.1.1 a 30.1.1; 30.0.1 quedó superado antes de ejecutar la fase.
-- html5-qrcode se conserva exactamente en 2.3.8; su mantenibilidad futura queda como deuda no bloqueante y no se sustituye en esta fase.
-- Se preservan Angular 22.2.1, TypeScript 6.0.3, RxJS 7.8.2, tslib 2.8.1, Zone.js 0.16.3, Node 24.21.0 y npm 11.19.0.
-- Alcance exclusivo dev; QA, main y PROD no se modifican.
-
-`;
+          const archEntry=[
+            '## 2026-10-04 — Tooling frontend Fase 5',
+            '',
+            '- Playwright Test pasa de 1.62.1 a 1.63.0.',
+            '- Vitest pasa de 4.1.11 a 5.0.3 sobre el target canónico `@angular/build:unit-test`.',
+            '- jsdom pasa de 29.1.1 a 30.1.1; 30.0.1 quedó superado antes de ejecutar la fase.',
+            '- html5-qrcode se conserva exactamente en 2.3.8; su mantenibilidad futura queda como deuda no bloqueante y no se sustituye en esta fase.',
+            '- Se preservan Angular 22.2.1, TypeScript 6.0.3, RxJS 7.8.2, tslib 2.8.1, Zone.js 0.16.3, Node 24.21.0 y npm 11.19.0.',
+            '- Alcance exclusivo dev; QA, main y PROD no se modifican.',
+            '',
+            ''
+          ].join('\n');
           if (!arch.startsWith('## 2026-10-04 — Tooling frontend Fase 5')) fs.writeFileSync(ac,archEntry+arch);
 
           const ch='CHANGELOG_AI.md';
           let changelog=fs.readFileSync(ch,'utf8');
-          const changeEntry=`## 2026-10-04 — Modernización Fase 5 Tooling frontend DEV
-
-- Playwright Test actualizado 1.62.1 -> 1.63.0.
-- Vitest actualizado 4.1.11 -> 5.0.3.
-- jsdom actualizado 29.1.1 -> 30.1.1; el 30.0.1 propuesto inicialmente ya no era latest al ejecutar la fase.
-- html5-qrcode permanece en 2.3.8; se registra evaluación futura de mantenibilidad sin reemplazo actual.
-- Angular 22.2.1 y su matriz asociada se preservan.
-- Cierre condicionado a audit completo/productivo, unit 58/58 + 217/217, lint, build y Playwright canónico 100/100 exact-head.
-- Alcance exclusivo dev; QA, main y PROD no se modifican.
-
-`;
+          const changeEntry=[
+            '## 2026-10-04 — Modernización Fase 5 Tooling frontend DEV',
+            '',
+            '- Playwright Test actualizado 1.62.1 -> 1.63.0.',
+            '- Vitest actualizado 4.1.11 -> 5.0.3.',
+            '- jsdom actualizado 29.1.1 -> 30.1.1; el 30.0.1 propuesto inicialmente ya no era latest al ejecutar la fase.',
+            '- html5-qrcode permanece en 2.3.8; se registra evaluación futura de mantenibilidad sin reemplazo actual.',
+            '- Angular 22.2.1 y su matriz asociada se preservan.',
+            '- Cierre condicionado a audit completo/productivo, unit 58/58 + 217/217, lint, build y Playwright canónico 100/100 exact-head.',
+            '- Alcance exclusivo dev; QA, main y PROD no se modifican.',
+            '',
+            ''
+          ].join('\n');
           if (!changelog.startsWith('## 2026-10-04 — Modernización Fase 5 Tooling frontend DEV')) fs.writeFileSync(ch,changeEntry+changelog);
 
           const pp='docs/DETALLES_PENDIENTES.md';
@@ -221,23 +224,25 @@ El certifier permanente de Fase 5 exige además aceptación Playwright integral 
           pending=pending.replace('Última reconciliación: **2026-10-02**.','Última reconciliación: **2026-10-04**.');
           pending=pending.replace('Los cinco puntos siguientes son los únicos pendientes vigentes conocidos fuera del trabajo normal del roadmap.','Los seis puntos siguientes son los únicos pendientes vigentes conocidos fuera del trabajo normal del roadmap.');
           if (!pending.includes('## 6. Evaluación futura de html5-qrcode')) {
-            pending += `
-## 6. Evaluación futura de html5-qrcode
-
-**Estado:** DEUDA TÉCNICA NO BLOQUEANTE / SIN REEMPLAZO ACTUAL
-
-**Versión vigente:** \`html5-qrcode@2.3.8\`, última publicación estable disponible al ejecutar Fase 5.
-
-**Decisión vigente:** mantener la librería sin cambios porque Fase 5 certifica compatibilidad funcional completa y no existe una actualización publicada que aplicar.
-
-**Motivo de seguimiento:** la ausencia prolongada de nuevas releases justifica evaluar mantenimiento upstream, compatibilidad futura de navegador/cámara, postura de seguridad, alternativas activamente mantenidas y costo/riesgo de migración.
-
-**Acción actual:** ninguna sustitución ni rediseño del escáner.
-
-**Se retoma cuando:** exista una incompatibilidad real, una vulnerabilidad relevante, un cambio de APIs web/cámara o una alternativa claramente superior que justifique migración controlada.
-
-**Al retomar, validar:** contratos de escaneo, permisos de cámara, dispositivos móviles, códigos QR/barra soportados, accesibilidad, rendimiento, privacidad, bundle y Playwright E2E.
-`;
+            pending += [
+              '',
+              '## 6. Evaluación futura de html5-qrcode',
+              '',
+              '**Estado:** DEUDA TÉCNICA NO BLOQUEANTE / SIN REEMPLAZO ACTUAL',
+              '',
+              '**Versión vigente:** `html5-qrcode@2.3.8`, última publicación estable disponible al ejecutar Fase 5.',
+              '',
+              '**Decisión vigente:** mantener la librería sin cambios porque Fase 5 certifica compatibilidad funcional completa y no existe una actualización publicada que aplicar.',
+              '',
+              '**Motivo de seguimiento:** la ausencia prolongada de nuevas releases justifica evaluar mantenimiento upstream, compatibilidad futura de navegador/cámara, postura de seguridad, alternativas activamente mantenidas y costo/riesgo de migración.',
+              '',
+              '**Acción actual:** ninguna sustitución ni rediseño del escáner.',
+              '',
+              '**Se retoma cuando:** exista una incompatibilidad real, una vulnerabilidad relevante, un cambio de APIs web/cámara o una alternativa claramente superior que justifique migración controlada.',
+              '',
+              '**Al retomar, validar:** contratos de escaneo, permisos de cámara, dispositivos móviles, códigos QR/barra soportados, accesibilidad, rendimiento, privacidad, bundle y Playwright E2E.',
+              ''
+            ].join('\n');
           }
           fs.writeFileSync(pp,pending);
           NODE
