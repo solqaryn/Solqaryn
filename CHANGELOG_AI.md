@@ -1,3 +1,12 @@
+## 2026-10-04 — Cierre del Punto 5: se preservan las 107 migraciones históricas
+
+- Inventario DEV: 107 archivos de migración, 107 IDs únicos, 0 duplicados; 67 fuentes incluyen metadata/anotaciones MySQL/Pomelo.
+- La sonda Oracle EF10 exact-head `37231172751` sobre `0b92db7a7829aaf3353635d52d7e7899e7700e9` aplicó la historia intacta para formar el esquema canónico y pasó baseline/adopción Oracle sin editarla.
+- El gate ahora se activa ante cambios en ambos directorios de migraciones. El bootstrap operativo empaquetado queda para el Punto 6.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_5_MIGRATION_HISTORY_PRESERVED_2026-10-04.md`.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-10-04 — Cierre del Punto 4: Oracle EF10 adopta baseline físico sin reescribir historia
 
 - El probe exact-head `37230813349` sobre `4ea2142fb76458d58c0f699e782395e44e3a85c1` terminó success en sus veinte pasos con Oracle EF10.12/Connector/NET 10.0.9.

@@ -6,10 +6,12 @@ on:
     paths:
       - '.github/workflows/modernization-oracle-baseline-probe.yml'
       - 'backend/src/Infrastructure/Persistence/**'
+      - 'backend/src/Infrastructure/Migrations/**'
       - 'backend/src/Infrastructure/Services/MySqlProviderErrorClassifier.cs'
       - 'backend/src/Infrastructure/Solqaryn.Infrastructure.csproj'
       - 'docs/evidencias/modernizacion/FASE_6_PROVIDER_LEASE.json'
       - 'docs/evidencias/modernizacion/PUNTO_4_ORACLE_BASELINE_ADOPTION_2026-10-04.md'
+      - 'docs/evidencias/modernizacion/PUNTO_5_MIGRATION_HISTORY_PRESERVED_2026-10-04.md'
   workflow_dispatch:
 
 permissions:
