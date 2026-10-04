@@ -2836,3 +2836,12 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Sólo metadatos de esquemas efímeros CI; sin cambios a datos/servicios Aiven, QA o PROD; Fase 7 no ejecutada.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
+## 2026-10-04 — Cierre del Punto 13: contrato real de las tres columnas JSON
+
+- Se añadió `backend/scripts/Solqaryn.JsonProbe.csproj`, usado con el provider vigente y con la copia Oracle EF10, para validar asignaciones exactas (`MetodosPago.Metadata`, `RegistrosAuditoria.ValoresAnteriores/ValoresNuevos`), tipo JSON, guardado/lectura EF y `JSON_EXTRACT` por columna; todo dentro de transacción revertida.
+- Gate Fase 6 exact-head `37243621617` sobre `cd90b923a5e42ea22f1ad9d249dc5329409bb1b3`: Pomelo `JSON_PROVIDER_CONTRACT=PASS mappings=3 efRoundTrips=3 sqlExtractions=3 rolledBack=true`; `POMELO_JSON_COLUMNS=3`; main gate success. Oracle EF10 standalone `37243621620` y provider-final `37243621639` success; Oracle reportó el mismo contrato PASS.
+- Deuda separada, no atribuida al JSON: el lane informativo EF8/Pomelo bajo net10 registró 8 fallos unitarios y 3 de integración en `37243621617`. Queda explícitamente abierta para auditoría de los puntos 20/21 y no se considera resuelta por el gate JSON.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_13_JSON_PROVIDER_CONTRACT_2026-10-04.md`.
+- No se ejecutó Fase 7 ni se cambiaron migraciones o datos persistentes.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
