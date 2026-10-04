@@ -126,7 +126,7 @@ Este archivo es la fuente canónica de pendientes deliberadamente aplazados o de
 
 ## Dictamen de pendientes
 
-Con la reconciliación del 2026-10-02, **no existe otro pendiente deliberadamente aplazado conocido fuera de estos cinco puntos** en las fuentes canónicas actuales de SOLQARYN.
+Con la reconciliación del 2026-10-04, **no existe otro pendiente deliberadamente aplazado conocido fuera de estos seis puntos** en las fuentes canónicas actuales de SOLQARYN.
 
 Esto no significa que el producto esté terminado: el punto 5 engloba el trabajo futuro normal del Plan Maestro/ERP. Los puntos 1-4 son decisiones operativas o de infraestructura diferidas explícitamente.
 
