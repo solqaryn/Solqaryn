@@ -113,7 +113,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          set +e
           timeout --signal=TERM 180s ./node_modules/.bin/ng test --watch=false --no-progress 2>&1 | tee /tmp/phase5-unit.log
+          status=${PIPESTATUS[0]}
+          set -e
+          if [ "$status" -ne 0 ] && [ "$status" -ne 124 ]; then
+            exit "$status"
+          fi
           sed -E 's/\x1B\[[0-9;]*[mK]//g' /tmp/phase5-unit.log > /tmp/phase5-unit.clean.log
           grep -Eq 'Test Files[[:space:]]+58 passed.*\(58\)' /tmp/phase5-unit.clean.log
           grep -Eq 'Tests[[:space:]]+217 passed.*\(217\)' /tmp/phase5-unit.clean.log
