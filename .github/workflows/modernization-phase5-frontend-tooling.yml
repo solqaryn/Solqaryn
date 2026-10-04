@@ -63,8 +63,7 @@ jobs:
           const expected={
             '@playwright/test':'1.63.0',
             'vitest':'5.0.3',
-            'jsdom':'30.0.1',
-            'html5-qrcode':'2.3.8'
+            'jsdom':'30.0.1'
           };
           for (const [name,want] of Object.entries(expected)) {
             const got=p.dependencies?.[name] ?? p.devDependencies?.[name];
@@ -76,7 +75,9 @@ jobs:
             'typescript':'6.0.3',
             'rxjs':'7.8.2',
             'tslib':'2.8.1',
-            'zone.js':'0.16.3'
+            'zone.js':'0.16.3',
+            'barcode-detector':'3.2.2',
+            'zxing-wasm':'3.1.3'
           };
           for (const [name,want] of Object.entries(preserved)) {
             const got=p.dependencies?.[name] ?? p.devDependencies?.[name];
@@ -87,10 +88,9 @@ jobs:
           test "$(node -p "require('./node_modules/@playwright/test/package.json').version")" = "1.63.0"
           test "$(node -p "require('./node_modules/vitest/package.json').version")" = "5.0.3"
           test "$(node -p "require('./node_modules/jsdom/package.json').version")" = "30.0.1"
-          test "$(node -p "require('./node_modules/html5-qrcode/package.json').version")" = "2.3.8"
           npx playwright --version
           npx vitest --version
-          npm ls @playwright/test vitest jsdom html5-qrcode --depth=0
+          npm ls @playwright/test vitest jsdom barcode-detector zxing-wasm --depth=0
 
       - name: Unit tests Angular + Vitest 5
         shell: bash
@@ -146,7 +146,8 @@ jobs:
             playwright:p.devDependencies['@playwright/test'],
             vitest:p.devDependencies.vitest,
             jsdom:p.devDependencies.jsdom,
-            html5Qrcode:p.dependencies['html5-qrcode'],
+            barcodeDetector:p.dependencies['barcode-detector'],
+            zxingWasm:p.dependencies['zxing-wasm'],
             angularCore:p.dependencies['@angular/core'],
             typescript:p.devDependencies.typescript,
             node:process.version.replace(/^v/,''),
@@ -221,7 +222,9 @@ jobs:
             echo 'PLAYWRIGHT=1.63.0'
             echo 'VITEST=5.0.3'
             echo 'JSDOM=30.0.1'
-            echo 'HTML5_QRCODE=2.3.8'
+            echo 'SCANNER_ENGINE=barcode-detector@3.2.2'
+            echo 'ZXING_WASM=3.1.3'
+            echo 'HTML5_QRCODE=RETIRED'
             echo 'UNIT_TESTS_58_FILES_218_TESTS=PASS'
             echo 'PLAYWRIGHT_E2E_100_OF_100=PASS'
             echo 'LINT=PASS'
