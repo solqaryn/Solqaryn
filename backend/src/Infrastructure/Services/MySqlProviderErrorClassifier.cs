@@ -9,6 +9,20 @@ internal static class MySqlProviderErrorClassifier
     private const string MySqlConnectorExceptionType = "MySqlConnector.MySqlException";
     private const string OracleMySqlExceptionType = "MySql.Data.MySqlClient.MySqlException";
 
+    public static bool TryFind(Exception exception, out MySqlProviderError error)
+    {
+        ArgumentNullException.ThrowIfNull(exception);
+
+        for (Exception? current = exception; current is not null; current = current.InnerException)
+        {
+            if (TryClassify(current, out error))
+                return true;
+        }
+
+        error = default;
+        return false;
+    }
+
     public static bool TryClassify(Exception exception, out MySqlProviderError error)
     {
         ArgumentNullException.ThrowIfNull(exception);
