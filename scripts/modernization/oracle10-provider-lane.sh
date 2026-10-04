@@ -86,10 +86,14 @@ dotnet add "$probe/Oracle10Probe.csproj" package Microsoft.EntityFrameworkCore.R
 
 cat > "$probe/Program.cs" <<'CS'
 using Microsoft.EntityFrameworkCore;
+using Solqaryn.Application.Common;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Enums;
 using MySql.EntityFrameworkCore.Extensions;
 using MySql.Data.MySqlClient;
 using Solqaryn.Application.Exceptions;
 using Solqaryn.Infrastructure.Persistence;
+using Solqaryn.Infrastructure.Repositories;
 using Solqaryn.Infrastructure.Services;
 
 static IEnumerable<Exception> ExceptionChain(Exception exception)
@@ -134,6 +138,71 @@ var sql = db.Productos.AsNoTracking().Where(x => x.Id > 0).OrderBy(x => x.Id).Ta
 if (!sql.Contains("SELECT", StringComparison.OrdinalIgnoreCase))
     throw new InvalidOperationException("ORACLE10_LINQ_FAIL");
 _ = await db.Productos.AsNoTracking().OrderBy(x => x.Id).Take(1).ToListAsync();
+
+var repositoryLinqProbes = 0;
+var productoRepository = new ProductoRepository(db);
+await productoRepository.GetByIdAsync(1);
+repositoryLinqProbes++;
+foreach (var sortBy in new[] { "marca", "modelo", "color", "talla", "cantidad", "costo", "precio", "fechacreacion", "nombre" })
+{
+    await productoRepository.GetPagedAsync(new ProductoPagedRequest
+    {
+        Page = 1,
+        PageSize = 3,
+        Search = "oracle-linq-probe",
+        SortBy = sortBy,
+        SortDirection = "desc",
+        CategoriaId = 1,
+        ColorId = 1,
+        TallaId = 1,
+        MarcaId = 1,
+        ModeloId = 1,
+        Activo = true,
+        EsDestacado = false,
+        Agotado = true
+    });
+    repositoryLinqProbes++;
+}
+await productoRepository.GetStockBajoAsync();
+await productoRepository.GetUltimosAgregadosAsync(3);
+await productoRepository.GetTotalUnidadesPorTipoAsync(TipoInventario.MercaderiaVenta);
+await productoRepository.GetValorTotalCostoPorTipoAsync(TipoInventario.MercaderiaVenta);
+await productoRepository.GetValorTotalPrecioPorTipoAsync(TipoInventario.MercaderiaVenta);
+repositoryLinqProbes += 6;
+
+var clienteRepository = new ClienteRepository(db);
+await clienteRepository.GetByIdConVentasAsync(1);
+await clienteRepository.BuscarActivosAsync("oracle-linq-probe", 3);
+await clienteRepository.BuscarCoincidenciaActivaAsync("12-345", "oracle@example.invalid", "555-0100", "Oracle Probe");
+await clienteRepository.ExisteNombreAsync("Oracle Probe", 1);
+await clienteRepository.ExisteIdentidadAsync("12-345", 1);
+repositoryLinqProbes += 5;
+
+var existenciaRepository = new ExistenciaVarianteRepository(db);
+await existenciaRepository.BuscarAsync(1, 1, 1, 1, true, true, false, 1, 3);
+await existenciaRepository.GetOperativasPublicasPorVariantesAsync(new[] { 1, 2, 3 });
+await existenciaRepository.ExisteClaveAsync(1, 1, 1, 2);
+repositoryLinqProbes += 3;
+
+var currentUser = new OracleProbeCurrentUser();
+var usuarioScope = new OracleProbeUserScope();
+var compraRepository = new CompraRepository(db, currentUser, usuarioScope);
+await compraRepository.GetPagedAsync(new PagedRequest { Page = 1, PageSize = 3, Search = "oracle-linq-probe", SortBy = "total", SortDirection = "desc" });
+await compraRepository.GetTotalDelMesAsync();
+await compraRepository.GetCuentasPorPagarAsync();
+await compraRepository.GetUltimasAsync(3);
+repositoryLinqProbes += 4;
+
+var ventaRepository = new VentaRepository(db, currentUser, usuarioScope);
+await ventaRepository.GetPagedAsync(new PagedRequest { Page = 1, PageSize = 3, Search = "oracle-linq-probe", SortBy = "total", SortDirection = "desc" });
+await ventaRepository.GetTotalDelMesAsync();
+await ventaRepository.GetIngresosDelMesAsync();
+await ventaRepository.GetCuentasPorCobrarAsync();
+await ventaRepository.GetUtilidadBrutaTotalAsync();
+await ventaRepository.GetUltimasAsync(3);
+repositoryLinqProbes += 6;
+if (repositoryLinqProbes < 34)
+    throw new InvalidOperationException($"ORACLE10_REPOSITORY_LINQ_COVERAGE_INCOMPLETE probes={repositoryLinqProbes}");
 
 await db.Database.ExecuteSqlRawAsync("DROP TABLE IF EXISTS Phase6Oracle10Contract;");
 await db.Database.ExecuteSqlRawAsync("""
@@ -226,7 +295,23 @@ await release;
 if (attempts < 2)
     throw new InvalidOperationException("ORACLE10_RETRY_FAIL");
 
-Console.WriteLine($"ORACLE10_PROVIDER_LANE_RUNTIME=PASS attempts={attempts}");
+Console.WriteLine($"ORACLE10_PROVIDER_LANE_RUNTIME=PASS attempts={attempts} repositoryLinqProbes={repositoryLinqProbes}");
+
+sealed class OracleProbeCurrentUser : ICurrentUserService
+{
+    public int? UsuarioId => 1;
+    public string? NombreUsuario => "oracle-linq-probe";
+    public string? NombreCompleto => "Oracle LINQ Probe";
+    public int? RolId => 1;
+    public bool EsAdministrador => true;
+    public bool EstaAutenticado => true;
+}
+
+sealed class OracleProbeUserScope : IUsuarioScopeService
+{
+    public Task<UsuarioScopeActual?> ObtenerActualAsync() =>
+        Task.FromResult<UsuarioScopeActual?>(new UsuarioScopeActual(1, 1, "Administrador", true));
+}
 CS
 
 dotnet restore "$probe/Oracle10Probe.csproj"
