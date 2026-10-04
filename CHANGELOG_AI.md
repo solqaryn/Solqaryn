@@ -1,3 +1,11 @@
+## 2026-10-04 — Retiro total de deuda html5-qrcode DEV
+
+- Sustituido `html5-qrcode@2.3.8` por `barcode-detector@3.2.2` + `zxing-wasm@3.1.4`.
+- ZXing reader WASM se sirve same-origin desde el build Angular; no hay dependencia CDN runtime.
+- Se preservan formatos QR/EAN/UPC/Code128/Code39, cámara, imagen local, privacidad, límites y liberación del stream.
+- Retirado el punto de deuda de `docs/DETALLES_PENDIENTES.md` y actualizada la arquitectura canónica.
+- Alcance exclusivo `dev`; QA, `main` y PROD no se modifican.
+
 ## 2026-10-04 — Hardening exact-head Fase 5 Tooling frontend DEV
 
 - Eliminado warning Angular de Reactive Forms en filtros de reportes de compras: el estado disabled ahora se modela desde FormGroup y no mediante [disabled] sobre formControlName.

@@ -10,7 +10,7 @@
 - Conservación del costo únicamente en el flujo de compras.
 - Restablecimiento del foco después de cada lectura.
 - Mensajes accesibles de éxito y error.
-- Escáner por cámara con carga diferida de `html5-qrcode`.
+- Escáner por cámara con carga diferida de `barcode-detector` + `zxing-wasm`.
 - Lectura desde imágenes locales JPG, JPEG, PNG y WEBP sin enviarlas al servidor.
 - Liberación del stream al cerrar el diálogo o destruir el componente.
 - Formatos habilitados: QR, EAN-13, EAN-8, UPC-A, UPC-E, Code 128 y Code 39.
@@ -24,7 +24,6 @@
 
 ## Gobernanza
 
-- Rama exclusiva: `Desarrollo`.
+- Rama exclusiva: `dev`.
 - `main` permanece congelada.
-- PR #2 permanece abierto y en borrador.
-- No se ejecutaron cambios sobre Producción.
+- - No se ejecutan cambios sobre QA, `main` ni PROD.

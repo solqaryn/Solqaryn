@@ -34,6 +34,7 @@ Ningún plan, fila, gate, fase o secuencia que no esté incorporado al MAESTRO v
 SOLQARYN es una plataforma empresarial multiempresa.
 
 - Frontend: Angular 22.2.1 standalone, Signals y Angular Material/CDK 22.2.1. Toolchain frontend vigente: Node.js 24.21.0 LTS + npm 11.19.0 + TypeScript 6.0.3 + RxJS 7.8.2 + tslib 2.8.1 + Zone.js 0.16.3; `provideZoneChangeDetection` y el polyfill `zone.js` permanecen activos, sin conversión a zoneless. CI usa patches exactos y Vercel se gobierna por `engines.node=24.x`.
+- Escáner web: `barcode-detector@3.2.2` + `zxing-wasm@3.1.4`; QR/EAN/UPC/Code 128/Code 39 por cámara e imagen. El WASM reader se sirve same-origin desde `/assets/wasm/zxing_reader.wasm`; no existe dependencia runtime de CDN ni `html5-qrcode`.
 - Identidad técnica de código: namespaces/assemblies/proyectos usan Solqaryn.*; el storefront fuente es tenant-neutral y vive bajo features/storefront.
 - Backend: ASP.NET Core 8 Web API.
 - Capas: Domain <- Application <- Infrastructure; API compone y expone.

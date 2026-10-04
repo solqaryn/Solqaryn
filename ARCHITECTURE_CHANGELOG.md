@@ -1,3 +1,11 @@
+## 2026-10-04 — Retiro de html5-qrcode y scanner WASM same-origin
+
+- Se retira por completo `html5-qrcode@2.3.8` del runtime y lockfile.
+- El escáner pasa a `barcode-detector@3.2.2` + `zxing-wasm@3.1.4`, con ZXing-C++ reader WASM servido desde SOLQARYN y sin CDN runtime.
+- Se preservan cámara trasera, imagen local, QR/EAN/UPC/Code128/Code39, límites de archivo, privacidad local y liberación de MediaStream.
+- La deuda de mantenibilidad queda resuelta; no se mantiene como pendiente deliberado.
+- Alcance exclusivo `dev`; QA, `main` y PROD no se modifican.
+
 ## 2026-10-04 — Tooling frontend Fase 5
 
 - Playwright Test pasa de 1.62.1 a 1.63.0.

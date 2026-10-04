@@ -9,7 +9,9 @@
   </p>
 
   <div class="reader-shell" [class.reader-active]="camaraActiva()">
-    <div [id]="readerId" class="reader" aria-label="Vista de cámara para escanear códigos"></div>
+    <div class="reader" aria-label="Vista de cámara para escanear códigos">
+      <video #videoElement playsinline muted></video>
+    </div>
     @if (!camaraActiva() && !iniciando()) {
       <div class="reader-placeholder">
         <mat-icon>photo_camera</mat-icon>
