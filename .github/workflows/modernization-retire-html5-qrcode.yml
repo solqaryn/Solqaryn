@@ -226,6 +226,7 @@ jobs:
           npm run build:prod
           test -n "$(find dist/solqaryn-frontend -type f -path '*/assets/wasm/zxing_reader.wasm' -print -quit)"
           ! grep -R -n --exclude='*.map' -E 'fastly\.jsdelivr|cdn\.jsdelivr|unpkg\.com|esm\.sh' dist/solqaryn-frontend
+          rm -rf node_modules dist
           cd ..
           node scripts/verify-project-scope.mjs
           git diff --check
