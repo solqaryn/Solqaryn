@@ -1,3 +1,10 @@
+## 2026-10-04 — Desacoplamiento de errores MySQL para modernización de provider DEV
+
+- `UnitOfWork` deja de depender en compile-time de `MySqlConnector.MySqlException` para clasificar 1205/1213/1062.
+- Se introduce un clasificador fail-closed con allowlist exclusiva de `MySqlConnector.MySqlException` y `MySql.Data.MySqlClient.MySqlException`; excepciones arbitrarias con propiedad `Number` siguen rechazadas.
+- El probe Oracle de Fase 6 exige ahora traducción real de 1062 y retry transitorio real mediante Connector/NET, sin añadir Oracle al runtime productivo.
+- No se cambian paquetes productivos, EF, migraciones, `TargetFramework`, QA, main ni PROD.
+
 ## 2026-10-04 — Modernización Fase 6 MySQL/EF Provider Gate DEV
 
 - Pomelo 8.0.2 + EF Core 8.0.2 + MySqlConnector 2.3.7 queda certificado como provider estable del baseline vigente net8.
