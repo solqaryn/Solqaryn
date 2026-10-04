@@ -1,7 +1,7 @@
 # Punto 12 — Equivalencia física de esquema
 
-Fecha: 2026-10-04  
-Repositorio: `solqaryn/Solqaryn`  
+Fecha: 2026-10-04
+Repositorio: `solqaryn/Solqaryn`
 Rama: `dev`
 
 ## Hallazgo y corrección
@@ -13,7 +13,7 @@ La captura ahora compara, entre la referencia creada aplicando las migraciones P
 - Tablas: engine, row format, collation, create options y comentario.
 - Columnas: tipo completo, nullabilidad, default, extra, charset/collation, expresión generada, comentario y SRS.
 - Índices: unicidad, orden, columna/expresión, longitud de prefijo, dirección, tipo, visibilidad y comentario.
-- Particiones/subparticiones y sus expresiones, límites, engine y opciones.
+- Particiones/subparticiones, método, expresiones, límites, nodegroup, tablespace y comentario.
 - Constraints, estado de enforcement de CHECK, FK y columnas/orden/reglas referenciales.
 - Vistas, triggers, rutinas, parámetros de rutinas y eventos.
 - Charset y collation por defecto de cada schema.
@@ -23,7 +23,8 @@ Cada exportación se ordena de forma determinista y se compara con `diff`; cualq
 ## Evidencia
 
 - Run previo `37232938573` sobre `aeee293abb4beb757ff4196ebd52308bd54f2320`: comparator anterior success, 136 tablas en el paquete SQL limpio y adopción sin DDL. No basta por sí solo para certificar los nuevos campos.
-- Run exact-head de la comparación ampliada: **pendiente de CI posterior a este commit**. No se declarará PASS hasta que su step `Capturar y comparar esquema físico Pomelo vs Oracle baseline` pase.
+- Primera ejecución ampliada `37241337349` falló porque `INFORMATION_SCHEMA.PARTITIONS` no contiene `ENGINE` ni `CREATE_OPTIONS`; se corrigió la consulta quitando esos campos. No se declaró PASS.
+- Run exact-head de la comparación corregida: **pendiente de CI posterior a este commit**. No se declarará PASS hasta que su step `Capturar y comparar esquema físico Pomelo vs Oracle baseline` pase.
 - Se comprobó que entre el baseline previo y el HEAD de trabajo no cambiaron modelo, configuraciones ni historia de migraciones; el nuevo run valida ahora además el comparador ampliado.
 
 ## Alcance
