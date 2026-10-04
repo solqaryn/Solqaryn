@@ -1,3 +1,13 @@
+## 2026-10-04 — Cierre del Punto 10: LINQ ejecutado en la lane final Oracle EF10
+
+- La lane Oracle EF10/net10 ahora ejecuta al menos 34 probes sobre Producto, Cliente, ExistenciaVariante, Compra y Venta: búsqueda, filtros, todas las ramas de ordenamiento de producto, paginación, includes, scope, normalización y agregados.
+- Exact-head `37237322033` sobre `87cce67c7846e361448c390810366d9126ffb490`: `repositoryLinqProbes=34`, runtime PASS y tenant PASS.
+- Gate Fase 6 `37237322283`: 5/5 jobs success, `P0=0`, `P1=0`; Fase 7 no ejecutada.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_10_LINQ_ORACLE_EF10_2026-10-04.md`.
+- No se cambiaron dependencias ni frameworks productivos.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-10-04 — Cierre del Punto 9: duplicate key 1062 mantiene contrato funcional
 
 - Pomelo/MySqlConnector y Oracle EF10/Connector/NET preservan la traducción específica del índice al mismo `UniqueConstraintViolationException`, nombre funcional y mensaje.
