@@ -1,3 +1,9 @@
+## 2026-10-04 — Oracle baseline respeta límite MySQL de identificadores DEV
+
+- El contexto efímero Oracle fija `Relational:MaxIdentifierLength=64`, igualando el límite físico de MySQL y evitando FK/índices generados con nombres inválidos.
+- La regla vive sólo en el probe de baseline: no renombra constraints productivos ni modifica el modelo/migraciones Pomelo vigentes.
+- Fase 7 y `TargetFramework` permanecen bloqueados hasta que el baseline Oracle complete equivalencia física y adopción sin DDL.
+
 ## 2026-10-04 — Normalización DDL Oracle para defaults longtext DEV
 
 - El probe Oracle detectó que Connector/NET genera `DEFAULT '{}'` para las dos columnas `longtext` JSON-text de `ConfigEmpresas`, sintaxis rechazada por MySQL 8.4.

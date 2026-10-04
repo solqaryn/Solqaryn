@@ -101,14 +101,29 @@ jobs:
           cat > "$probe/OracleDesignTimeFactory.cs" <<'CS'
           using Microsoft.EntityFrameworkCore;
           using Microsoft.EntityFrameworkCore.Design;
+          using Microsoft.EntityFrameworkCore.Metadata;
           using MySql.EntityFrameworkCore.Extensions;
           using Solqaryn.Infrastructure.Persistence;
 
           namespace Phase6OracleMigrations;
 
-          public sealed class OracleDesignTimeFactory : IDesignTimeDbContextFactory<AppDbContext>
+          public sealed class OracleBaselineDbContext : AppDbContext
           {
-              public AppDbContext CreateDbContext(string[] args)
+              public OracleBaselineDbContext(DbContextOptions<AppDbContext> options)
+                  : base(options)
+              {
+              }
+
+              protected override void OnModelCreating(ModelBuilder modelBuilder)
+              {
+                  base.OnModelCreating(modelBuilder);
+                  modelBuilder.HasAnnotation(RelationalAnnotationNames.MaxIdentifierLength, 64);
+              }
+          }
+
+          public sealed class OracleDesignTimeFactory : IDesignTimeDbContextFactory<OracleBaselineDbContext>
+          {
+              public OracleBaselineDbContext CreateDbContext(string[] args)
               {
                   var connectionString = Environment.GetEnvironmentVariable("ORACLE_MIGRATION_CONNECTION")
                       ?? "Server=127.0.0.1;Port=3306;Database=phase6_oracle_design;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;";
@@ -118,7 +133,7 @@ jobs:
                       .UseMySQL(connectionString, mysql => mysql.MigrationsAssembly(assemblyName))
                       .Options;
 
-                  return new AppDbContext(options);
+                  return new OracleBaselineDbContext(options);
               }
           }
           CS
@@ -130,7 +145,7 @@ jobs:
           export ORACLE_MIGRATION_CONNECTION="Server=127.0.0.1;Port=3306;Database=phase6_oracle_fresh;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
           dotnet restore "$probe/Phase6OracleMigrations.csproj"
           dotnet build "$probe/Phase6OracleMigrations.csproj" --configuration Release --no-restore
-          dotnet ef migrations add OracleBaseline             --project "$probe/Phase6OracleMigrations.csproj"             --startup-project "$probe/Phase6OracleMigrations.csproj"             --context AppDbContext             --output-dir Migrations             --configuration Release
+          dotnet ef migrations add OracleBaseline             --project "$probe/Phase6OracleMigrations.csproj"             --startup-project "$probe/Phase6OracleMigrations.csproj"             --context OracleBaselineDbContext             --output-dir Migrations             --configuration Release
 
           python3 - "$probe/Migrations" <<'PY'
           import sys
@@ -162,8 +177,8 @@ jobs:
           set -euo pipefail
           probe="$RUNNER_TEMP/oracle-baseline"
           export ORACLE_MIGRATION_CONNECTION="Server=127.0.0.1;Port=3306;Database=phase6_oracle_fresh;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
-          dotnet ef database update             --project "$probe/Phase6OracleMigrations.csproj"             --startup-project "$probe/Phase6OracleMigrations.csproj"             --context AppDbContext             --configuration Release
-          dotnet ef migrations has-pending-model-changes             --project "$probe/Phase6OracleMigrations.csproj"             --startup-project "$probe/Phase6OracleMigrations.csproj"             --context AppDbContext             --configuration Release
+          dotnet ef database update             --project "$probe/Phase6OracleMigrations.csproj"             --startup-project "$probe/Phase6OracleMigrations.csproj"             --context OracleBaselineDbContext             --configuration Release
+          dotnet ef migrations has-pending-model-changes             --project "$probe/Phase6OracleMigrations.csproj"             --startup-project "$probe/Phase6OracleMigrations.csproj"             --context OracleBaselineDbContext             --configuration Release
 
       - name: Capturar y comparar esquema físico Pomelo vs Oracle baseline
         id: schema
@@ -228,8 +243,8 @@ jobs:
 
           probe="$RUNNER_TEMP/oracle-baseline"
           export ORACLE_MIGRATION_CONNECTION="Server=127.0.0.1;Port=3306;Database=phase6_oracle_adopt;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
-          dotnet ef database update             --project "$probe/Phase6OracleMigrations.csproj"             --startup-project "$probe/Phase6OracleMigrations.csproj"             --context AppDbContext             --configuration Release
-          dotnet ef migrations has-pending-model-changes             --project "$probe/Phase6OracleMigrations.csproj"             --startup-project "$probe/Phase6OracleMigrations.csproj"             --context AppDbContext             --configuration Release
+          dotnet ef database update             --project "$probe/Phase6OracleMigrations.csproj"             --startup-project "$probe/Phase6OracleMigrations.csproj"             --context OracleBaselineDbContext             --configuration Release
+          dotnet ef migrations has-pending-model-changes             --project "$probe/Phase6OracleMigrations.csproj"             --startup-project "$probe/Phase6OracleMigrations.csproj"             --context OracleBaselineDbContext             --configuration Release
 
           after_hash="$(docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot -Nse "
             SELECT SHA2(GROUP_CONCAT(CONCAT_WS('|',TABLE_NAME,COLUMN_NAME,COLUMN_TYPE,IS_NULLABLE,COALESCE(COLUMN_DEFAULT,'<NULL>'),EXTRA,COALESCE(COLLATION_NAME,'')) ORDER BY TABLE_NAME,ORDINAL_POSITION SEPARATOR '\n'),256)
@@ -249,7 +264,7 @@ jobs:
           set -euo pipefail
           probe="$RUNNER_TEMP/oracle-baseline"
           export ORACLE_MIGRATION_CONNECTION="Server=127.0.0.1;Port=3306;Database=phase6_oracle_fresh;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
-          dotnet ef migrations script 0             --project "$probe/Phase6OracleMigrations.csproj"             --startup-project "$probe/Phase6OracleMigrations.csproj"             --context AppDbContext             --configuration Release             --output "$RUNNER_TEMP/oracle-baseline.sql"
+          dotnet ef migrations script 0             --project "$probe/Phase6OracleMigrations.csproj"             --startup-project "$probe/Phase6OracleMigrations.csproj"             --context OracleBaselineDbContext             --configuration Release             --output "$RUNNER_TEMP/oracle-baseline.sql"
           test -s "$RUNNER_TEMP/oracle-baseline.sql"
 
           {
