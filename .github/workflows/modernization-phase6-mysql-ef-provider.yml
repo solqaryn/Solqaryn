@@ -820,10 +820,80 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+  oracle10-final-lane:
+    name: Oracle EF10 net10 - lane final certificada
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: phase6_oracle10
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=phase6_oracle10;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;
+      Database__ServerVersion: 8.4.0
+      Database__ApplyMigrationsOnStartup: 'false'
+      Jwt__Secret: Phase6-Oracle10-CI-Only-Secret-With-More-Than-32-Characters
+      Jwt__Issuer: Solqaryn.Phase6
+      Jwt__Audience: Solqaryn.Phase6.Frontend
+      ORACLE10_CONNECTION: Server=127.0.0.1;Port=3306;Database=phase6_oracle10;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;
+    outputs:
+      stable: ${{ steps.result.outputs.stable }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Preparar baseline físico actual
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE"
+          node scripts/verify-project-scope.mjs
+          cd backend
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+          dotnet tool install --global dotnet-ef --version 8.0.8
+          dotnet ef database update \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
+            --context AppDbContext \
+            --configuration Release \
+            --no-build
+
+      - name: Certificar Oracle EF10 net10
+        shell: bash
+        run: bash scripts/modernization/oracle10-provider-lane.sh
+
+      - name: Resultado Oracle EF10
+        id: result
+        shell: bash
+        run: |
+          echo "stable=true" >> "$GITHUB_OUTPUT"
+          echo "ORACLE_EF10_NET10_PROVIDER_LANE=PASS"
+
+
   verdict:
     name: Dictamen Fase 6
     runs-on: ubuntu-latest
-    needs: [pomelo-baseline, oracle-comparison, net10-probe]
+    needs: [pomelo-baseline, oracle-comparison, net10-probe, oracle10-final-lane]
     if: always()
     steps:
       - name: Exigir provider estable o STOP
@@ -841,6 +911,8 @@ jobs:
           NET10_INTEGRATION: ${{ needs.net10-probe.outputs.integration_pass }}
           POMELO10: ${{ needs.net10-probe.outputs.pomelo10_available }}
           ORACLE10: ${{ needs.net10-probe.outputs.oracle10_available }}
+          ORACLE10_LANE: ${{ needs.oracle10-final-lane.outputs.stable }}
+          ORACLE10_LANE_RESULT: ${{ needs.oracle10-final-lane.result }}
         run: |
           set -euo pipefail
           {
@@ -856,6 +928,7 @@ jobs:
             echo "- NET10_CURRENT_EF8_INTEGRATION=$NET10_INTEGRATION"
             echo "- POMELO_EF10_STABLE_AVAILABLE=$POMELO10"
             echo "- ORACLE_EF10_STABLE_AVAILABLE=$ORACLE10"
+            echo "- ORACLE_EF10_NET10_LANE=$ORACLE10_LANE"
           } | tee phase6-verdict.txt
 
           if [ "$POMELO_STABLE" = true ] && [ "$ORACLE_JOB_RESULT" = success ] && [ "$NET10_JOB_RESULT" = success ]; then
@@ -866,10 +939,13 @@ jobs:
               echo "POMELO_EF10_STABLE_AVAILABLE=$POMELO10"
               echo "ORACLE_EF10_STABLE_AVAILABLE=$ORACLE10"
 
-              if [ "$NET10_COMPILE" = true ] && [ "$NET10_UNIT" = true ] && [ "$NET10_INTEGRATION" = true ]; then
+              if [ "$ORACLE10" = true ] && [ "$ORACLE10_LANE_RESULT" = success ] && [ "$ORACLE10_LANE" = true ]; then
                 echo 'FASE_6_MYSQL_EF_PROVIDER=PASS'
-                echo 'TARGET_PROVIDER_SELECTED=POMELO_CURRENT_LANE'
-                echo 'TARGETFRAMEWORK_CHANGE=ALLOWED'
+                echo 'TARGET_PROVIDER_SELECTED=ORACLE_MYSQL_EFCORE_10_0_9'
+                echo 'TARGET_EF_SELECTED=10.0.12'
+                echo 'TARGET_NET_SELECTED=net10.0'
+                echo 'TARGETFRAMEWORK_CHANGE=ALLOWED_AFTER_PHASE6_CLOSE'
+                echo 'PHASE7_EXECUTED=false'
               else
                 echo 'FASE_6_MYSQL_EF_PROVIDER=STOP'
                 echo 'TARGET_PROVIDER_SELECTED=NONE'
