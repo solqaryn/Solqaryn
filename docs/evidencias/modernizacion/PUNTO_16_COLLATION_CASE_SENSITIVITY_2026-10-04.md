@@ -22,7 +22,8 @@ La inspección de las migraciones/configuración de infraestructura no encontró
 - Pomelo/MySQL 8.4, run `37247332277`, SHA `fc44057c93cd3aaf1667aad2d84ca9eb073d3130`: `POMELO_COLLATION_CASE_CONTRACT=PASS column=utf8mb4_bin table=utf8mb4_0900_ai_ci distinctCaseVariants=2`; integración MySQL 27/27.
 - Oracle EF10/net10, run `37247332312`, mismo SHA: `ORACLE10_COLLATION_CASE_CONTRACT=PASS column=utf8mb4_bin table=utf8mb4_0900_ai_ci distinctCaseVariants=2`.
 - Gate Fase 6 exact-head run `37247332277`: todos los jobs success, `P0=0`, `P1=0`, `FASE_6_MYSQL_EF_PROVIDER=PASS`, `PHASE7_EXECUTED=false`.
+- Reejecución del HEAD documental `d36712405c6aa871cedc014c493e43d66b7cd506`, run `37248001520`: los dos contratos de collation repitieron PASS; gate Fase 6 completo success, `P0=0`, `P1=0`, `PHASE7_EXECUTED=false`.
 
-El lane informativo EF8/Pomelo retargeteado a net10 conserva 8 fallos unitarios y 3 de integración, pertenecientes a los puntos 20/21. Fase 7 no se ejecutó.
+El lane informativo EF8/Pomelo retargeteado a net10 conserva 8 fallos unitarios. Los fallos de integración variaron entre 3/27 en `37247332277` y 4/27 (23/27 pasan) en la repetición exact-head `37248001520`; esto requiere diagnóstico en los puntos 20/21 y no debe presentarse como deuda resuelta ni estable. Fase 7 no se ejecutó.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.

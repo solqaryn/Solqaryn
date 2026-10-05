@@ -2867,7 +2867,7 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Se amplió el contrato MySQL de Pomelo y Oracle EF10: verifica que la columna de código conserve `utf8mb4_bin` aun cuando la tabla usa `utf8mb4_0900_ai_ci`, inserta ambas variantes `CaseProbe`/`caseprobe` bajo índice único, y exige que cada búsqueda exacta devuelva sólo su variante.
 - Pomelo y Oracle EF10/net10 reportan `COLLATION_CASE_CONTRACT=PASS column=utf8mb4_bin table=utf8mb4_0900_ai_ci distinctCaseVariants=2`; la suite MySQL actual pasa 27/27.
 - Run `37247332277` exact-head sobre `fc44057c93cd3aaf1667aad2d84ca9eb073d3130`: gate Fase 6 5/5 success, `P0=0`, `P1=0`, `FASE_6_MYSQL_EF_PROVIDER=PASS`, `PHASE7_EXECUTED=false`.
-- La búsqueda de migraciones/configuración productiva no encontró overrides de collation binaria por columna; el contrato sensible se prueba explícitamente en el harness de provider. No se alteraron collations ni datos productivos. La deuda separada EF8/Pomelo→net10 permanece en 8 fallos unitarios y 3 de integración para puntos 20/21.
+- La búsqueda de migraciones/configuración productiva no encontró overrides de collation binaria por columna; el contrato sensible se prueba explícitamente en el harness de provider. No se alteraron collations ni datos productivos. La deuda separada EF8/Pomelo→net10 queda para puntos 20/21: 8 fallos unitarios; integración fluctuó entre 3 y 4 fallos en los runs de código y exact-head documental.
 - Evidencia: `docs/evidencias/modernizacion/PUNTO_16_COLLATION_CASE_SENSITIVITY_2026-10-04.md`.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
