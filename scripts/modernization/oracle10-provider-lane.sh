@@ -473,6 +473,7 @@ migration_only = {
 included = []
 excluded = []
 unit_files = []
+unit_history_excluded = []
 
 for path in sorted(test_root.rglob("*.cs")):
     if any(part in {"bin", "obj"} for part in path.parts):
@@ -481,6 +482,15 @@ for path in sorted(test_root.rglob("*.cs")):
     is_integration = '[Trait("Category", "Integration")]' in source
     if is_integration and path.name in migration_only:
         excluded.append(path.name)
+        continue
+    if not is_integration and any(
+        marker in source
+        for marker in (
+            "using Solqaryn.Infrastructure.Migrations;",
+            "using Solqaryn.Infrastructure.Persistence.Migrations;",
+        )
+    ):
+        unit_history_excluded.append(path.relative_to(test_root).as_posix())
         continue
 
     source = source.replace("using MySqlConnector;", "using MySql.Data.MySqlClient;")
@@ -513,7 +523,7 @@ for path in sorted(test_root.rglob("*.cs")):
     else:
         unit_files.append(relative)
 
-if len(included) + len(excluded) != 17 or len(included) != 13:
+if len(included) + len(excluded) != 17 or len(included) != 13 or len(unit_files) < 400:
     raise SystemExit(
         f"ORACLE10_INTEGRATION_FILESET_MISMATCH included={len(included)} excluded={len(excluded)}"
     )
@@ -756,9 +766,10 @@ for relative in unit_files + included + [bootstrap.name]:
 ET.indent(tree, space="  ")
 tree.write(project, encoding="unicode")
 print(f"ORACLE10_INTEGRATION_FILESET=PASS included={len(included)} historySpecificExcluded={len(excluded)}")
-print(f"ORACLE10_UNIT_FILESET=PASS included={len(unit_files)}")
+print(f"ORACLE10_UNIT_FILESET=PASS included={len(unit_files)} historySpecificExcluded={len(unit_history_excluded)}")
 print("ORACLE10_INTEGRATION_INCLUDED=" + ",".join(included))
 print("ORACLE10_INTEGRATION_EXCLUDED=" + ",".join(excluded))
+print("ORACLE10_UNIT_HISTORY_EXCLUDED=" + ",".join(unit_history_excluded))
 PY
 
 dotnet test "$candidate/backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj" \
