@@ -108,6 +108,7 @@ jobs:
             "ProductoImagenVarianteIntegrationTests.cs",
             "ProductoVarianteTecnicaLifecycleIntegrationTests.cs",
             "ConsumoInsumoIntegrationTests.cs",
+            "SecuenciaDocumentoConcurrencyIntegrationTests.cs",
             "N08MigracionesLimpiezaPreflightIntegrationTests.cs",
             "N08PersistenciaLimpiezaIntegrationTests.cs",
           ]

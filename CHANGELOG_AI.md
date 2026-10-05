@@ -1,3 +1,9 @@
+## 2026-10-05 — Punto 3: corregir fixture de longitud de base efímera
+
+- El probe exact-head `37277207917` aisló el fallo a un test MySQL de concurrencia agregado recientemente: el nombre temporal más el sufijo del lock EF excedía el límite de 64 caracteres. Net8 unitarios pasaron 2388/2388 e integración 27/28; se conserva esta corrida fallida como evidencia.
+- Se añade `SecuenciaDocumentoConcurrencyIntegrationTests.cs` a la lista que acorta identificadores sólo dentro del checkout efímero del probe. Revalidación pendiente del commit correctivo; Punto 3 sigue abierto.
+- No cambia producción, `.csproj`, historial de migraciones ni Fase 7.
+
 ## 2026-10-05 — Reapertura del Punto 3 por deriva en inputs del probe
 
 - La auditoría comprobó que el probe EF9/Pomelo9 `37216002726` fue exitoso en su HEAD, pero quedó desactualizado: el workflow endureció el tenant audit con `--require-certified` y cambiaron tests de concurrencia/retry utilizados por la matriz.

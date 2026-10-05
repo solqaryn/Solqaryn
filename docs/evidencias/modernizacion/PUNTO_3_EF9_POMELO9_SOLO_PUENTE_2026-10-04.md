@@ -13,7 +13,7 @@ Rama: `dev`
 - El workflow [Modernización - Probe EF9 Pomelo9 DEV](../../../.github/workflows/modernization-ef9-pomelo9-probe.yml) prueba EF Core `9.0.20` + Pomelo `9.0.0` + MySqlConnector `2.6.2` en `net8.0` y luego en una copia temporal `net10.0`.
 - El run final `37216002726`, sobre `005d516a74d3ebc52a5799b43ba8a3b062ba45e0`, terminó `success`; su job `EF9 Pomelo9 net8 y net10` y los pasos de ambas lanes, migraciones, `has-pending-model-changes`, suites unitarias/integración, audit tenant y comparación de columnas/índices terminaron correctamente. [Run del probe](https://github.com/solqaryn/Solqaryn/actions/runs/37216002726).
 - Hubo dos intentos anteriores fallidos en la etapa de certificación `net8` (`37215447812`, `37215532912`); no se toman como evidencia de aprobación. La conclusión se basa en el run final exitoso.
-- Comparación del HEAD vigente `9d2dad3da651d604bd392aef49e2580dbd3d30fa` contra el run exitoso: no hay cambios en el workflow del probe ni en los `.csproj` de Infrastructure, API o tests que éste usa. Por ello, la prueba sigue correspondiendo a los mismos inputs de código relevantes.
+- En la fecha de aquella revisión, el HEAD `9d2dad3da651d604bd392aef49e2580dbd3d30fa` no tenía cambios relevantes respecto al run. Esa conclusión era temporal y dejó de ser válida tras cambios posteriores descritos abajo.
 
 ## Auditoría de vigencia — 2026-10-05
 
@@ -23,6 +23,8 @@ La comparación anterior quedó obsoleta y no se usa para declarar el punto cerr
 - Cambió `TipoClienteConcurrencyTests.cs` y se reforzó `UnitOfWorkRetryTests.cs`; son tests que ejecuta la matriz candidata. El run histórico no contiene esas revisiones.
 - En el HEAD `bf744ccd63bb4ce0509efd80c2f1e59fdd4fee64`, esos inputs ya están presentes, pero el workflow sólo se disparaba en push cuando cambiaba su propio archivo. No había automatización por cambios en código backend.
 - Se amplía el disparador de push a `backend/**`, la sonda de provider y el auditor tenant. El próximo commit de este Punto 3 ejecutará el probe actualizado en la rama autorizada `dev`.
+- La revalidación exact-head [37277207917](https://github.com/solqaryn/Solqaryn/actions/runs/37277207917), HEAD `248c63b75c74c28738d79c59567d1831c04b56e6`, encontró un defecto del harness, no del provider: net8 unitarios pasaron `2388/2388`, pero integración quedó `27/28`. El test nuevo `SecuenciaDocumentoConcurrencyIntegrationTests` no estaba en la lista que acorta nombres de bases efímeras; MySQL rechazó `__test_sequence_concurrency_<guid>_EFMigrationsLock` por exceder 64 caracteres.
+- Se incorpora ese archivo a la adaptación temporal de nombres del probe. El fallo se conserva como diagnóstico y debe repetirse la certificación en net8/net10 antes de cerrar el punto.
 
 **No cerrar el Punto 3** hasta que la corrida nueva, contra el HEAD que contiene este hardening, termine `success` en net8 y net10, migraciones, tests, auditor tenant en modo certificado y comparación de esquema. El resultado de la corrida se añadirá después; no se anticipa.
 
