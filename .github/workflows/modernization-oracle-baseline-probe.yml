@@ -505,6 +505,75 @@ jobs:
           echo "adopted=true" >> "$GITHUB_OUTPUT"
           echo "ORACLE_BASELINE_ADOPTION_NO_DDL=PASS"
 
+      - name: Volver al provider certificado Pomelo sin alterar esquema ni datos
+        shell: bash
+        working-directory: backend
+        env:
+          DOTNET_CLI_UI_LANGUAGE: en
+        run: |
+          set -euo pipefail
+          mysql_container="${{ job.services.mysql.id }}"
+          database="phase6_oracle_adopt"
+          export ConnectionStrings__DefaultConnection="Server=127.0.0.1;Port=3306;Database=$database;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;"
+          export Database__ServerVersion=8.4.0
+
+          schema_dump() {
+            docker exec "$mysql_container" mysqldump -uroot -proot \
+              --no-data --skip-comments --skip-dump-date --compact \
+              --ignore-table="$database.__EFMigrationsHistory" "$database"
+          }
+          data_dump() {
+            docker exec "$mysql_container" mysqldump -uroot -proot \
+              --no-create-info --skip-comments --skip-dump-date --compact \
+              --skip-extended-insert --order-by-primary \
+              --ignore-table="$database.__EFMigrationsHistory" "$database"
+          }
+          schema_before="$(schema_dump | sha256sum | cut -d' ' -f1)"
+          data_before="$(data_dump | sha256sum | cut -d' ' -f1)"
+          oracle_baseline_id="$(cat "$RUNNER_TEMP/oracle-baseline-id.txt")"
+
+          # Pomelo must reopen the exact database adopted by Oracle and observe its full known history.
+          "$RUNNER_TEMP/dotnet-ef8/dotnet-ef" dbcontext info \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
+            --context AppDbContext \
+            --configuration Release \
+            --no-build | tee "$RUNNER_TEMP/pomelo-provider-rollback-context.txt"
+          grep -F 'Pomelo.EntityFrameworkCore.MySql' "$RUNNER_TEMP/pomelo-provider-rollback-context.txt"
+          "$RUNNER_TEMP/dotnet-ef8/dotnet-ef" database update \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
+            --context AppDbContext \
+            --configuration Release \
+            --no-build | tee "$RUNNER_TEMP/pomelo-provider-rollback.log"
+          grep -F 'No migrations were applied. The database is already up to date.' \
+            "$RUNNER_TEMP/pomelo-provider-rollback.log"
+          "$RUNNER_TEMP/dotnet-ef8/dotnet-ef" migrations has-pending-model-changes \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
+            --context AppDbContext \
+            --configuration Release \
+            --no-build
+          "$RUNNER_TEMP/dotnet-ef8/dotnet-ef" migrations list \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
+            --context AppDbContext \
+            --configuration Release | tee "$RUNNER_TEMP/pomelo-provider-rollback-migrations.txt"
+          grep -F '20260919011500_StorefrontFase12CuentaCliente' \
+            "$RUNNER_TEMP/pomelo-provider-rollback-migrations.txt"
+
+          schema_after="$(schema_dump | sha256sum | cut -d' ' -f1)"
+          data_after="$(data_dump | sha256sum | cut -d' ' -f1)"
+          oracle_history_count="$(docker exec "$mysql_container" mysql -uroot -proot -Nse \
+            "SELECT COUNT(*) FROM $database.__EFMigrationsHistory WHERE MigrationId='$oracle_baseline_id';")"
+          pomelo_history_count="$(docker exec "$mysql_container" mysql -uroot -proot -Nse \
+            "SELECT COUNT(*) FROM $database.__EFMigrationsHistory WHERE MigrationId<>'$oracle_baseline_id';")"
+          test "$schema_before" = "$schema_after"
+          test "$data_before" = "$data_after"
+          test "$oracle_history_count" = 1
+          test "$pomelo_history_count" = 107
+          echo "ORACLE_TO_POMELO_PROVIDER_ROLLBACK=PASS schema_unchanged=true application_data_unchanged=true pomelo_history=$pomelo_history_count oracle_baseline_marker_retained=true"
+
       - name: Generar SQL baseline y dictamen
         shell: bash
         env:
