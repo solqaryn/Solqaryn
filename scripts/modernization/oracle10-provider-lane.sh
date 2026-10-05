@@ -578,21 +578,23 @@ internal static class OracleCandidateDatabaseBootstrap
             await create.ExecuteNonQueryAsync();
         }
 
-        var checkConstraints = new List<(string Table, string Name, string Clause)>();
-        await using (var listChecks = source.CreateCommand())
+        foreach (var table in tables)
         {
-            listChecks.CommandText = "SELECT tc.TABLE_NAME, cc.CONSTRAINT_NAME, cc.CHECK_CLAUSE FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc JOIN INFORMATION_SCHEMA.CHECK_CONSTRAINTS cc ON cc.CONSTRAINT_SCHEMA=tc.CONSTRAINT_SCHEMA AND cc.CONSTRAINT_NAME=tc.CONSTRAINT_NAME WHERE tc.CONSTRAINT_SCHEMA=@schema AND tc.CONSTRAINT_TYPE='CHECK' ORDER BY tc.TABLE_NAME, cc.CONSTRAINT_NAME;";
-            listChecks.Parameters.AddWithValue("@schema", sourceDatabase);
-            await using var reader = await listChecks.ExecuteReaderAsync();
-            while (await reader.ReadAsync())
-                checkConstraints.Add((reader.GetString(0), reader.GetString(1), reader.GetString(2)));
-        }
-        foreach (var (table, name, clause) in checkConstraints)
-        {
-            var escapedClause = clause.Replace("\\", "\\\\", StringComparison.Ordinal);
+            string createTableSql;
+            await using (var showCreate = source.CreateCommand())
+            {
+                showCreate.CommandText = $"SHOW CREATE TABLE `{Quote(sourceDatabase)}`.`{Quote(table)}`;";
+                await using var reader = await showCreate.ExecuteReaderAsync();
+                if (!await reader.ReadAsync())
+                    throw new InvalidOperationException($"SHOW CREATE TABLE returned no DDL for {table}.");
+                createTableSql = reader.GetString(1);
+            }
+            foreach (var definition in ExtractCheckConstraints(createTableSql))
+            {
             await using var addCheck = target.CreateCommand();
-            addCheck.CommandText = $"ALTER TABLE `{Quote(targetDatabase)}`.`{Quote(table)}` ADD CONSTRAINT `{Quote(name)}` CHECK ({escapedClause});";
+                addCheck.CommandText = $"ALTER TABLE `{Quote(targetDatabase)}`.`{Quote(table)}` ADD {definition};";
             await addCheck.ExecuteNonQueryAsync();
+            }
         }
 
         var foreignKeys = new Dictionary<(string Table, string Name), (string ReferencedTable, List<(string Column, string ReferencedColumn)> Parts)>();
@@ -664,6 +666,73 @@ internal static class OracleCandidateDatabaseBootstrap
     }
 
     private static string Quote(string identifier) => identifier.Replace("`", "``");
+
+    private static IEnumerable<string> ExtractCheckConstraints(string ddl)
+    {
+        var searchFrom = 0;
+        while (true)
+        {
+            var start = ddl.IndexOf("CONSTRAINT", searchFrom, StringComparison.OrdinalIgnoreCase);
+            if (start < 0)
+                yield break;
+            var check = ddl.IndexOf("CHECK", start + "CONSTRAINT".Length, StringComparison.OrdinalIgnoreCase);
+            var nextConstraint = ddl.IndexOf("CONSTRAINT", start + "CONSTRAINT".Length, StringComparison.OrdinalIgnoreCase);
+            if (check < 0 || (nextConstraint >= 0 && nextConstraint < check))
+            {
+                searchFrom = start + "CONSTRAINT".Length;
+                continue;
+            }
+
+            var open = ddl.IndexOf('(', check + "CHECK".Length);
+            if (open < 0)
+                throw new InvalidOperationException("SHOW CREATE TABLE contains CHECK without an expression.");
+            var depth = 0;
+            var quote = '\0';
+            var escaped = false;
+            for (var index = open; index < ddl.Length; index++)
+            {
+                var current = ddl[index];
+                if (quote != '\0')
+                {
+                    if (escaped)
+                    {
+                        escaped = false;
+                        continue;
+                    }
+                    if (current == '\\' && quote != '`')
+                    {
+                        escaped = true;
+                        continue;
+                    }
+                    if (current == quote)
+                    {
+                        if (index + 1 < ddl.Length && ddl[index + 1] == quote)
+                        {
+                            index++;
+                            continue;
+                        }
+                        quote = '\0';
+                    }
+                    continue;
+                }
+                if (current is '\'' or '"' or '`')
+                {
+                    quote = current;
+                    continue;
+                }
+                if (current == '(')
+                    depth++;
+                else if (current == ')' && --depth == 0)
+                {
+                    yield return ddl[start..(index + 1)];
+                    searchFrom = index + 1;
+                    break;
+                }
+            }
+            if (searchFrom <= start)
+                throw new InvalidOperationException("Could not balance a CHECK expression in SHOW CREATE TABLE.");
+        }
+    }
 }
 ''', encoding="utf-8")
 
