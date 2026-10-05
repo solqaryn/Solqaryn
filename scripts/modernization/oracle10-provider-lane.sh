@@ -101,8 +101,12 @@ dotnet_ef_tools="$work_root/tools"
 mkdir -p "$dotnet_ef_tools"
 dotnet tool install --tool-path "$dotnet_ef_tools" dotnet-ef --version 10.0.12 >/dev/null
 dotnet_ef="$dotnet_ef_tools/dotnet-ef"
-dotnet_ef_version="$("$dotnet_ef" --version)"
-test "$dotnet_ef_version" = "Entity Framework Core .NET Command-line Tools 10.0.12"
+dotnet_ef_version="$("$dotnet_ef" --version 2>&1)"
+printf '%s\n' "$dotnet_ef_version"
+if [[ "$dotnet_ef_version" != *"10.0.12"* ]]; then
+    echo "ORACLE10_EF_TOOL_VERSION_MISMATCH: expected 10.0.12" >&2
+    exit 1
+fi
 "$dotnet_ef" dbcontext info \
     --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
     --startup-project src/API/Solqaryn.API.csproj \
