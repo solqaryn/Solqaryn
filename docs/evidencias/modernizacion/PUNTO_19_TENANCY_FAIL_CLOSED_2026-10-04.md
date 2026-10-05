@@ -2,21 +2,22 @@
 
 Fecha: 2026-10-04 (hora local)  
 Repositorio: `solqaryn/Solqaryn`  
-Rama: `dev`  
-Commit de código certificado: `b52e063bbd222e7ed9e74ed150a8b457a0b66e27`
+Rama: `dev`
 
 ## Cobertura reforzada
 
 - La auditoría tenant es obligatoria en CI mediante `--require-certified`; una dimensión ausente hace fallar la lane.
 - Identidad/empresa, scope vigente, autorización del recurso, persistencia, reportes, archivos, claves de caché y procesamiento background tenant-bound devuelven `PASS`.
 - El Outbox se reconoce como procesador por empresa y se distingue de un worker hospedado: existe un `OutboxRetryProcessor` tenant-bound y hay cero `BackgroundService`/`IHostedService`.
-- La lane Pomelo ejecutó el conjunto dirigido de tenancy, reportes, ownership de archivos/caché y Outbox: **107/107**. Integración MySQL completa: **28/28**.
-- La lane Oracle EF10/net10 ejecutó el audit obligatorio sobre el candidato y terminó `ORACLE_EF10_NET10_PROVIDER_LANE=PASS`.
+- El audit `--require-certified` exige todas las dimensiones y falla cerrado si falta alguna. En la evidencia exact-head actual pasó en ambas lanes; no se limita a una revisión estática opcional.
+- La lane certificada Oracle EF10/net10 pasó 2336/2336 unitarias y 22/22 integraciones; la integración MySQL Pomelo pasó 28/28.
 
-## Runs exact-head
+## Evidencia exact-head
 
-- Provider Final DEV `37254920829`, sobre el commit indicado: ambos jobs (Pomelo y Oracle) `success`; pruebas dirigidas 107/107; auditoría multi-tenant `PASS` en ambas lanes.
-- Fase 6 MySQL/EF `37254920857`, mismo commit: todos los jobs `success`; integración MySQL 28/28; `FASE_6_MYSQL_EF_PROVIDER=PASS`, `P0=0`, `P1=0`, `PHASE7_EXECUTED=false`.
+- Fase 6 exact-head run `37309393715`, HEAD `eb505b3ae36232d6456f538246b876bec0cac938`: todos los jobs success; `FASE_6_MYSQL_EF_PROVIDER=PASS`, `P0=0`, `P1=0`, `PHASE7_EXECUTED=false`.
+- Pomelo ejecutó `priority3_tenant_isolation_audit.py --require-certified`: `PRIORITY3_MULTITENANT_CERTIFICATION=PASS`; identity/company, scope vigente, autorización del recurso, persistencia, reportes, archivos, cache y background tenant-aware todos `PASS`; `TENANT_BACKGROUND_RUNTIME_COUNT=1`, `TENANT_BACKGROUND_HOSTED_WORKER_COUNT=0`, `TENANT_BACKGROUND_OUTBOX_PROCESSOR_COUNT=1`; integración 28/28.
+- Oracle EF10/net10 repitió `PRIORITY3_MULTITENANT_CERTIFICATION=PASS` y las ocho dimensiones `TENANT_CHECK` en `PASS`; runtime background 1, hosted workers 0, Outbox processor 1; 2336/2336 unitarias y 22/22 integraciones.
+- [Fase 6 exact-head](https://github.com/solqaryn/Solqaryn/actions/runs/37309393715); aceptación DEV del mismo HEAD también success: [run](https://github.com/solqaryn/Solqaryn/actions/runs/37309393739).
 
 ## Resultado
 
