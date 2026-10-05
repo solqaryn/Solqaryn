@@ -5,6 +5,7 @@ on:
     branches: [dev]
     paths:
       - '.github/workflows/modernization-oracle-baseline-probe.yml'
+      - 'backend/**'
       - 'backend/src/Infrastructure/Persistence/**'
       - 'backend/src/Infrastructure/Migrations/**'
       - 'backend/src/Infrastructure/Services/MySqlProviderErrorClassifier.cs'

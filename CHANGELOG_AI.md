@@ -1,3 +1,10 @@
+## 2026-10-05 — Reapertura del Punto 4 por ampliación del probe Oracle baseline
+
+- La certificación histórica `37230813349` fue exitosa en su SHA, pero el workflow añadió posteriormente SQL bootstrap en base vacía, comparación física ampliada y prueba de rollback Oracle→Pomelo. El éxito viejo no cubre esos pasos.
+- Se amplió el disparador de push a `backend/**`; se reejecutará el workflow actualizado como parte de la revalidación del Punto 4.
+- El punto queda abierto hasta la nueva corrida. No se toca producción ni se ejecuta Fase 7.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_4_ORACLE_BASELINE_ADOPTION_2026-10-04.md`.
+
 ## 2026-10-05 — Cierre del Punto 3: probe EF9/Pomelo9 net8 y net10
 
 - Tras conservar el fallo `37277207917` (límite de 64 caracteres en el lock EF de una base efímera), se añadió el test nuevo a la transformación de nombres temporales del probe.
