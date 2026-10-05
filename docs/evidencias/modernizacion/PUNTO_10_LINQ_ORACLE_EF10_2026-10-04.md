@@ -22,13 +22,14 @@ No se limita a `ToQueryString`: son materializaciones y agregaciones ejecutadas 
 
 ## Certificación exact-head
 
-- Commit: `87cce67c7846e361448c390810366d9126ffb490`.
-- Lane Oracle EF10 dedicada `37237322033`: `success`; salida `ORACLE10_PROVIDER_LANE_RUNTIME=PASS attempts=2 repositoryLinqProbes=34` y auditoría tenant PASS.
-- Gate exact-head de Fase 6 `37237322283`: los cinco jobs terminaron `success`, incluido Pomelo con suite integral, Oracle Connector/NET, Oracle EF10/net10, copia net10 y dictamen; `P0=0`, `P1=0`.
-- Fase 7 permaneció sin ejecutar. [Lane LINQ Oracle EF10](https://github.com/solqaryn/Solqaryn/actions/runs/37237322033) · [Gate exact-head Fase 6](https://github.com/solqaryn/Solqaryn/actions/runs/37237322283).
+- Certificación exact-head vigente: gate Fase 6 `37286379704`, HEAD `f5e0c4e3c409e8081850857461554c6c0e705955`; los cuatro jobs de provider y el dictamen terminaron `success`, con `P0=0`, `P1=0` y `PHASE7_EXECUTED=false`. [Gate exact-head Fase 6](https://github.com/solqaryn/Solqaryn/actions/runs/37286379704).
+- En la lane Oracle EF10/net10 de ese mismo run: backend compilado, 2336/2336 unitarias, 22/22 integraciones y salida `ORACLE10_PROVIDER_LANE_RUNTIME=PASS attempts=2 repositoryLinqProbes=34`. El job valida una consulta ejecutada/materializada por cada probe y termina en error si la cobertura no llega a 34.
+- El run confirma auditoría tenant en la lane y no modifica los `TargetFramework` productivos; el retarget net10 sigue siendo una copia temporal aislada.
 
 ## Alcance
 
 La matriz se enfoca en rutas de consulta de repositorios reales con filtros, paginación, navegación y agregaciones. No afirma ejecutar cada endpoint ni toda combinación de datos de negocio; la suite completa de integración y regresión continúa siendo un gate separado. Sin cambios a dependencias productivas ni ejecución de Fase 7.
+
+**Punto 10: CERRADO.** Las 34 consultas obligatorias de repositorios reales se ejecutaron sobre Oracle EF10 y pasaron en el HEAD certificado.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
