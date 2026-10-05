@@ -1,3 +1,10 @@
+## 2026-10-05 — Cierre del Punto 29: certificación exact-head integrada
+
+- HEAD `c8cf5e23704c3da6c17b9eab6782bb78d02b281a`: aceptación funcional DEV, Fase 4 Angular 22, Fase 5 frontend y Fase 6 MySQL/EF completaron en success sobre el mismo SHA.
+- Runs Fase 4 `37266823462`, Fase 5 `37266823544`, aceptación `37266823477` y Fase 6 `37266823449`; el dictamen de Fase 6 fue `PASS`, `P0=0`, `P1=0`, `PHASE7_EXECUTED=false`.
+- Scope lock `37266823494` y VAEP admission guard `37266823620` también pasaron en el mismo HEAD.
+- Se mantuvo fail-closed la infraestructura Aiven: no se inició maintenance ni se repitió un backup de datos reales en esta revalidación. Evidencia: `docs/evidencias/modernizacion/PUNTO_29_CERTIFICACION_EXACT_HEAD_2026-10-05.md`.
+
 ## 2026-10-05 — Corrección de disparadores para certificación exact-head
 
 - La auditoría del punto 29 detectó que el workflow frontend Fase 5 espera el E2E canónico de aceptación sobre el mismo SHA, pero cambios de documentación disparaban sólo Fase 5 y no `catalogos-aceptacion.yml`.
