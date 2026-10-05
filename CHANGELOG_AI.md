@@ -2881,3 +2881,12 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Evidencia: `docs/evidencias/modernizacion/PUNTO_17_TRANSACTION_ISOLATION_ROLLBACK_2026-10-04.md`.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
+## 2026-10-04 — Cierre del Punto 18: concurrencia de stock y numeración
+
+- Oracle EF10/net10 verificó serialización del lock de stock `FOR UPDATE` entre conexiones (espera medida 352 ms) y diez reservas documentales simultáneas: números únicos 101–110, contador final 110 y diez auditorías atómicas.
+- Se corrigió el agotamiento de ocho intentos CAS bajo esa ráfaga: 32 intentos máximos con backoff aleatorio acotado (1–100 ms), conservando compare-and-swap, rollback y auditoría dentro de la transacción.
+- Pomelo/MySQL: integración 28/28, incluida la nueva regresión de diez reservas concurrentes; provider-final y gate Fase 6 exact-head `37251986975`/`37251986973` success, `P0=0`, `P1=0`, `PHASE7_EXECUTED=false`.
+- El lane informativo EF8/Pomelo retargeteado a net10 conserva 8 fallos unitarios y 3 de integración (25/28 pasan), pendiente de puntos 20/21. Sin datos persistentes ni despliegues modificados.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_18_CONCURRENCY_STOCK_SEQUENCE_2026-10-04.md`.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.

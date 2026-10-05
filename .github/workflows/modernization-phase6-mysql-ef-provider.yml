@@ -20,6 +20,7 @@ on:
       - 'docs/evidencias/modernizacion/PUNTO_15_DATETIME6_MICROSECONDS_2026-10-04.md'
       - 'docs/evidencias/modernizacion/PUNTO_16_COLLATION_CASE_SENSITIVITY_2026-10-04.md'
       - 'docs/evidencias/modernizacion/PUNTO_17_TRANSACTION_ISOLATION_ROLLBACK_2026-10-04.md'
+      - 'docs/evidencias/modernizacion/PUNTO_18_CONCURRENCY_STOCK_SEQUENCE_2026-10-04.md'
       - 'CHANGELOG_AI.md'
       - 'ARCHITECTURE_CHANGELOG.md'
   workflow_dispatch:
