@@ -6,7 +6,7 @@ Rama: `dev`
 
 ## Dictamen
 
-**PASS — el historial vigente se conserva sin reescribir migraciones.** La migración a Oracle EF10 se resuelve con un baseline físico canónico y una migración Oracle separada de adopción; las migraciones antiguas no se transforman ni se eliminan.
+**PASS — revalidado exact-head; el historial vigente se conserva sin reescribir migraciones.** La migración a Oracle EF10 se resuelve con un baseline físico canónico y una migración Oracle separada de adopción; las migraciones antiguas no se transforman ni se eliminan.
 
 ## Inventario verificado
 
@@ -21,6 +21,15 @@ Rama: `dev`
 - Exporta/restaura el esquema físico completo para Oracle EF10.12, sin borrar ni modificar fuentes históricas; Oracle registra una migración de baseline aparte.
 - El run `37231172751`, sobre HEAD `0b92db7a7829aaf3353635d52d7e7899e7700e9e`, terminó `success` en sus 20 pasos: aplicación de la historia, baseline restaurado, generación/adopción Oracle, `has-pending-model-changes`, comparación física y adopción existente sin DDL. [Run exact-head del baseline](https://github.com/solqaryn/Solqaryn/actions/runs/37231172751).
 - El workflow valida rama `dev`, scope y checkout limpio antes de empezar. Las copias Oracle y los artefactos se generan en el runner; los cambios de TFM/dependencias se hacen sólo en una copia efímera.
+
+## Revalidación actual — 2026-10-05
+
+- El inventario local sobre las dos rutas de migraciones confirma 107 fuentes timestamped y 107 atributos `[Migration]` únicos, cero duplicados.
+- De `dff086d8178489212a795a74c828b89d844435de` al HEAD `b86bf80b9cd2f3ca223fa3c59b810e123781db7a` no hay diferencias en los árboles `Infrastructure/Migrations/**`, `Infrastructure/Persistence/Migrations/**` ni en `Solqaryn.Infrastructure.csproj`.
+- Como reproducción de la métrica de provider-specific files, 67/107 fuentes coinciden con tokens `MySql:`, `MySqlValueGenerationStrategy` o `Pomelo`; no se propone portar ni reescribir esas migraciones.
+- El probe ampliado exact-head [37280097642](https://github.com/solqaryn/Solqaryn/actions/runs/37280097642), sobre `b86bf80b9cd2f3ca223fa3c59b810e123781db7a`, terminó `success`: aplicó la historia Pomelo, produjo/restauró la baseline y rollback posterior confirmó `pomelo_history=107`, preservando esquema y datos.
+
+**Punto 5: CERRADO.** Los 107 IDs/fuentes permanecen intactos; Fase 7 no se ejecutó.
 
 ## Alcance
 

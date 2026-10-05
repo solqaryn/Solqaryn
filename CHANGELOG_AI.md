@@ -1,3 +1,11 @@
+## 2026-10-05 — Revalidación del Punto 5: historial Pomelo preservado
+
+- Inventario actual: 107 fuentes timestamped, 107 atributos `[Migration]` únicos y cero duplicados; 67/107 contienen tokens de provider MySQL/Pomelo.
+- No hay diferencias de las migraciones ni del `.csproj` de Infrastructure entre el baseline del probe y `b86bf80b9cd2f3ca223fa3c59b810e123781db7a`.
+- Probe Oracle baseline `37280097642` sobre ese HEAD pasó; aplicó la historia y el rollback dejó `pomelo_history=107` con esquema/datos intactos.
+- Punto 5 cerrado; sin reescribir historia, cambiar producción o iniciar Fase 7.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_5_MIGRATION_HISTORY_PRESERVED_2026-10-04.md`.
+
 ## 2026-10-05 — Cierre del Punto 4: Oracle baseline, paquete SQL y rollback
 
 - Probe exact-head `37279558796`, HEAD `3dbc3d33f1ee79466a7b53e9ce6e323f492e071e`: success.
