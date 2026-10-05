@@ -459,7 +459,12 @@ dotnet run --project "$probe/Oracle10Probe.csproj" --configuration Release
 ConnectionStrings__DefaultConnection="$ORACLE10_CONNECTION" \
   dotnet run --project "$candidate/backend/scripts/Solqaryn.JsonProbe.csproj" --configuration Release
 
+dotnet test "$candidate/backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj" \
+  --configuration Release \
+  --filter "FullyQualifiedName~N61FEmpresaSecurityAuditTests|FullyQualifiedName~N62DTenantAwareApplicationApiTests|FullyQualifiedName~N63FSucursalesEmpresaSecurityAuditTests|FullyQualifiedName~N65BTenantIsolationDomainContractsTests|FullyQualifiedName~N65FTenantPermissionIsolationTests|FullyQualifiedName~N67FTenantMutationFailClosedTests|FullyQualifiedName~Priority3FileSecurityTests|FullyQualifiedName~Application.Storage.CloudinaryTenantOwnershipTests|FullyQualifiedName~Application.Storage.StorageTenantContextTests|FullyQualifiedName~ReportesInventarioAuthorizationContractTests" \
+  --logger "console;verbosity=normal"
+
 cd "$repo_root"
-python3 scripts/security/priority3_tenant_isolation_audit.py
+python3 scripts/security/priority3_tenant_isolation_audit.py --require-certified
 test -z "$(git status --porcelain)"
 echo "ORACLE_EF10_NET10_PROVIDER_LANE=PASS"

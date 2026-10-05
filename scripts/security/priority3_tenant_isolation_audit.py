@@ -53,7 +53,7 @@ def main() -> int:
         if ": BackgroundService" in content or "IHostedService" in content
     ]
     background_ok = (
-        not background_sources or
+        None if not background_sources else
         all("EmpresaId" in content for _, content in background_sources)
     )
 
@@ -98,11 +98,12 @@ def main() -> int:
         "background_process_tenant_aware": background_ok,
     }
 
-    missing = [name for name, ok in checks.items() if not ok]
+    missing = [name for name, ok in checks.items() if ok is False]
     certified = not missing
     print("PRIORITY3_MULTITENANT_CERTIFICATION=" + ("PASS" if certified else "NOT_CERTIFIED"))
     for name, ok in checks.items():
-        print(f"TENANT_CHECK {name}={'PASS' if ok else 'MISSING'}")
+        result = "NOT_APPLICABLE" if ok is None else "PASS" if ok else "MISSING"
+        print(f"TENANT_CHECK {name}={result}")
     print(f"TENANT_BACKGROUND_RUNTIME_COUNT={len(background_sources)}")
     if missing:
         print("TENANT_MISSING=" + ",".join(missing))

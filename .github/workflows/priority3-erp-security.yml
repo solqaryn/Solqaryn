@@ -43,7 +43,7 @@ jobs:
           dotnet test Solqaryn.sln --configuration Release --no-build
           --filter "FullyQualifiedName~Priority3AuthorizationSurfaceTests|FullyQualifiedName~Priority3FileSecurityTests"
       - name: Verify multi-tenant certification state without false claims
-        run: python3 scripts/security/priority3_tenant_isolation_audit.py
+        run: python3 scripts/security/priority3_tenant_isolation_audit.py --require-certified
       - name: Export recent completed Actions logs and artifacts for secret scanning
         env:
           GH_TOKEN: ${{ github.token }}

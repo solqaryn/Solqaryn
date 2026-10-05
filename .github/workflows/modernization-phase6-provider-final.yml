@@ -83,7 +83,7 @@ jobs:
             --configuration Release --no-build \
             --filter "Category=Integration"
           cd "$GITHUB_WORKSPACE"
-          python3 scripts/security/priority3_tenant_isolation_audit.py
+          python3 scripts/security/priority3_tenant_isolation_audit.py --require-certified
           test -z "$(git status --porcelain)"
       - name: Resultado Pomelo actual
         id: result
