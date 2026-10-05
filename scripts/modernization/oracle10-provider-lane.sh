@@ -472,12 +472,14 @@ migration_only = {
 }
 included = []
 excluded = []
+unit_files = []
 
 for path in sorted(test_root.rglob("*.cs")):
-    source = path.read_text(encoding="utf-8-sig")
-    if '[Trait("Category", "Integration")]' not in source:
+    if any(part in {"bin", "obj"} for part in path.parts):
         continue
-    if path.name in migration_only:
+    source = path.read_text(encoding="utf-8-sig")
+    is_integration = '[Trait("Category", "Integration")]' in source
+    if is_integration and path.name in migration_only:
         excluded.append(path.name)
         continue
 
@@ -488,7 +490,7 @@ for path in sorted(test_root.rglob("*.cs")):
     )
     source = source.replace(".UseMySql(", ".UseMySQL(")
     source, _ = re.subn(
-        r",\s*new MySqlServerVersion\s*\(\s*new Version\([^)]*\)\s*\)\s*\)",
+        r",\s*(?:new MySqlServerVersion\s*\(\s*new (?:System\.)?Version\([^)]*\)\s*\)|ServerVersion\.Parse\([^)]*\))\s*\)",
         ")",
         source,
     )
@@ -502,9 +504,14 @@ for path in sorted(test_root.rglob("*.cs")):
     if "UseMySql(" in source or "MySqlServerVersion" in source or "MySqlConnector" in source:
         raise SystemExit(f"ORACLE10_INTEGRATION_PROVIDER_REWRITE_INCOMPLETE={path.name}")
     if ".Database.MigrateAsync(" in source or "IMigrator" in source:
-        raise SystemExit(f"ORACLE10_INTEGRATION_HISTORY_DEPENDENCY_UNCLASSIFIED={path.name}")
+        if is_integration:
+            raise SystemExit(f"ORACLE10_INTEGRATION_HISTORY_DEPENDENCY_UNCLASSIFIED={path.name}")
     path.write_text(source, encoding="utf-8")
-    included.append(path.name)
+    relative = path.relative_to(test_root).as_posix()
+    if is_integration:
+        included.append(relative)
+    else:
+        unit_files.append(relative)
 
 if len(included) + len(excluded) != 17 or len(included) != 13:
     raise SystemExit(
@@ -744,14 +751,20 @@ if props is None:
     props = ET.SubElement(root, "PropertyGroup")
 ET.SubElement(props, "EnableDefaultCompileItems").text = "false"
 items = ET.SubElement(root, "ItemGroup")
-for relative in included + [bootstrap.name]:
+for relative in unit_files + included + [bootstrap.name]:
     ET.SubElement(items, "Compile", Include=relative)
 ET.indent(tree, space="  ")
 tree.write(project, encoding="unicode")
 print(f"ORACLE10_INTEGRATION_FILESET=PASS included={len(included)} historySpecificExcluded={len(excluded)}")
+print(f"ORACLE10_UNIT_FILESET=PASS included={len(unit_files)}")
 print("ORACLE10_INTEGRATION_INCLUDED=" + ",".join(included))
 print("ORACLE10_INTEGRATION_EXCLUDED=" + ",".join(excluded))
 PY
+
+dotnet test "$candidate/backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj" \
+  --configuration Release \
+  --filter "Category!=Integration" \
+  --logger "console;verbosity=normal"
 
 dotnet test "$candidate/backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj" \
   --configuration Release \
