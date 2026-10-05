@@ -454,11 +454,6 @@ sealed class OracleProbeUserScope : IUsuarioScopeService
 }
 CS
 
-dotnet restore "$probe/Oracle10Probe.csproj"
-dotnet run --project "$probe/Oracle10Probe.csproj" --configuration Release
-ConnectionStrings__DefaultConnection="$ORACLE10_CONNECTION" \
-  dotnet run --project "$candidate/backend/scripts/Solqaryn.JsonProbe.csproj" --configuration Release
-
 python3 - "$candidate/backend/tests/Solqaryn.Tests" <<'PY'
 import re
 import sys
@@ -513,29 +508,127 @@ bootstrap = test_root / "OracleCandidateDatabaseBootstrap.cs"
 bootstrap.write_text(r'''using Microsoft.EntityFrameworkCore;
 using MySql.Data.MySqlClient;
 using Solqaryn.Infrastructure.Persistence;
+using System.Collections.Concurrent;
 
 internal static class OracleCandidateDatabaseBootstrap
 {
+    private static readonly ConcurrentDictionary<string, Task> Copies = new(StringComparer.OrdinalIgnoreCase);
+
     public static async Task EnsureCreatedAsync(AppDbContext context)
     {
-        var connectionString = context.Database.GetConnectionString()
+        var targetConnectionString = context.Database.GetConnectionString()
             ?? throw new InvalidOperationException("Oracle candidate test connection string is missing.");
-        var builder = new MySqlConnectionStringBuilder(connectionString);
-        var database = builder.Database;
-        if (string.IsNullOrWhiteSpace(database))
-            throw new InvalidOperationException("Oracle candidate integration database name is missing.");
+        var sourceConnectionString = Environment.GetEnvironmentVariable("ORACLE10_CONNECTION")
+            ?? throw new InvalidOperationException("ORACLE10_CONNECTION is required as the certified Pomelo schema template.");
+        var targetDatabase = new MySqlConnectionStringBuilder(targetConnectionString).Database;
+        var sourceDatabase = new MySqlConnectionStringBuilder(sourceConnectionString).Database;
+        if (string.IsNullOrWhiteSpace(targetDatabase) || string.IsNullOrWhiteSpace(sourceDatabase))
+            throw new InvalidOperationException("Oracle candidate source/target database name is missing.");
+        if (string.Equals(targetDatabase, sourceDatabase, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("Oracle candidate integration tests must not mutate the schema template.");
 
-        builder.Database = string.Empty;
-        await using (var server = new MySqlConnection(builder.ConnectionString))
+        await Copies.GetOrAdd(targetDatabase, _ => CloneCertifiedSchemaAsync(
+            sourceConnectionString, sourceDatabase, targetConnectionString, targetDatabase));
+    }
+
+    private static async Task CloneCertifiedSchemaAsync(
+        string sourceConnectionString,
+        string sourceDatabase,
+        string targetConnectionString,
+        string targetDatabase)
+    {
+        var targetBuilder = new MySqlConnectionStringBuilder(targetConnectionString);
+        targetBuilder.Database = string.Empty;
+        await using (var server = new MySqlConnection(targetBuilder.ConnectionString))
         {
             await server.OpenAsync();
-            await using var command = server.CreateCommand();
-            command.CommandText = $"CREATE DATABASE IF NOT EXISTS `{database.Replace("`", "``")}` CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;";
-            await command.ExecuteNonQueryAsync();
+            await using var create = server.CreateCommand();
+            create.CommandText = $"CREATE DATABASE IF NOT EXISTS `{Quote(targetDatabase)}` CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;";
+            await create.ExecuteNonQueryAsync();
         }
 
-        await context.Database.EnsureCreatedAsync();
+        await using var source = new MySqlConnection(sourceConnectionString);
+        await using var target = new MySqlConnection(targetConnectionString);
+        await source.OpenAsync();
+        await target.OpenAsync();
+
+        var tables = new List<string>();
+        await using (var list = source.CreateCommand())
+        {
+            list.CommandText = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=@schema AND TABLE_TYPE='BASE TABLE' ORDER BY TABLE_NAME;";
+            list.Parameters.AddWithValue("@schema", sourceDatabase);
+            await using var reader = await list.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+                tables.Add(reader.GetString(0));
+        }
+        if (tables.Count == 0)
+            throw new InvalidOperationException("Certified Pomelo integration schema template has no tables.");
+
+        var pending = new HashSet<string>(tables, StringComparer.OrdinalIgnoreCase);
+        while (pending.Count > 0)
+        {
+            var createdThisPass = new List<string>();
+            MySqlException? lastCreateError = null;
+            foreach (var table in pending)
+            {
+                string ddl;
+                await using (var show = source.CreateCommand())
+                {
+                    show.CommandText = $"SHOW CREATE TABLE `{Quote(sourceDatabase)}`.`{Quote(table)}`;";
+                    await using var reader = await show.ExecuteReaderAsync();
+                    if (!await reader.ReadAsync())
+                        throw new InvalidOperationException($"Missing DDL for template table {table}.");
+                    ddl = reader.GetString(1);
+                }
+
+                try
+                {
+                    await using var create = target.CreateCommand();
+                    create.CommandText = ddl;
+                    await create.ExecuteNonQueryAsync();
+                    createdThisPass.Add(table);
+                }
+                catch (MySqlException exception)
+                {
+                    lastCreateError = exception;
+                }
+            }
+            if (createdThisPass.Count == 0)
+                throw new InvalidOperationException("Could not reproduce certified table DDL in the isolated test database.", lastCreateError);
+            foreach (var table in createdThisPass)
+                pending.Remove(table);
+        }
+
+        await using (var checks = target.CreateCommand())
+        {
+            checks.CommandText = "SET FOREIGN_KEY_CHECKS=0;";
+            await checks.ExecuteNonQueryAsync();
+        }
+        foreach (var table in tables)
+        {
+            var columns = new List<string>();
+            await using (var listColumns = source.CreateCommand())
+            {
+                listColumns.CommandText = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=@schema AND TABLE_NAME=@table AND (GENERATION_EXPRESSION IS NULL OR GENERATION_EXPRESSION='') ORDER BY ORDINAL_POSITION;";
+                listColumns.Parameters.AddWithValue("@schema", sourceDatabase);
+                listColumns.Parameters.AddWithValue("@table", table);
+                await using var reader = await listColumns.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                    columns.Add(reader.GetString(0));
+            }
+            if (columns.Count == 0)
+                continue;
+            var names = string.Join(",", columns.Select(name => $"`{Quote(name)}`"));
+            await using var copyRows = target.CreateCommand();
+            copyRows.CommandText = $"INSERT INTO `{Quote(targetDatabase)}`.`{Quote(table)}` ({names}) SELECT {names} FROM `{Quote(sourceDatabase)}`.`{Quote(table)}`;";
+            await copyRows.ExecuteNonQueryAsync();
+        }
+        await using var restoreChecks = target.CreateCommand();
+        restoreChecks.CommandText = "SET FOREIGN_KEY_CHECKS=1;";
+        await restoreChecks.ExecuteNonQueryAsync();
     }
+
+    private static string Quote(string identifier) => identifier.Replace("`", "``");
 }
 ''', encoding="utf-8")
 
@@ -559,6 +652,11 @@ dotnet test "$candidate/backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj" \
   --configuration Release \
   --filter "Category=Integration" \
   --logger "console;verbosity=normal"
+
+dotnet restore "$probe/Oracle10Probe.csproj"
+dotnet run --project "$probe/Oracle10Probe.csproj" --configuration Release
+ConnectionStrings__DefaultConnection="$ORACLE10_CONNECTION" \
+  dotnet run --project "$candidate/backend/scripts/Solqaryn.JsonProbe.csproj" --configuration Release
 
 cd "$repo_root"
 python3 scripts/security/priority3_tenant_isolation_audit.py --require-certified
