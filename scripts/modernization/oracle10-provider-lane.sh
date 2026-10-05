@@ -531,6 +531,12 @@ for path in sorted(test_root.rglob("*.cs")):
         continue
 
     source = source.replace("using MySqlConnector;", "using MySql.Data.MySqlClient;")
+    # The candidate runs on a disposable local MySQL service without TLS. Some
+    # copied integration tests construct raw connection strings instead of
+    # going through the normalized builder below; force those connections to
+    # skip MySql.Data TLS negotiation as well. Connector/NET's concurrent TLS
+    # handshake can race its internal dictionary when xUnit runs tests in parallel.
+    source = source.replace("Password=root;", "Password=root;SslMode=Disabled;")
     source = source.replace(
         "new MySqlConnectionStringBuilder(raw)",
         'new MySqlConnectionStringBuilder(raw.Replace("SslMode=None", "SslMode=Disabled", StringComparison.OrdinalIgnoreCase))',
