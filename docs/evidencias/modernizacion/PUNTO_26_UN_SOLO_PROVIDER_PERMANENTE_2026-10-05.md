@@ -2,21 +2,29 @@
 
 Fecha: 2026-10-05 (UTC)  
 Repositorio: `solqaryn/Solqaryn`  
-Rama: `dev`  
-HEAD exacto validado: `d3a4084870b1f5afe16c387ead17a2f9b09beb98`
+Rama: `dev`
 
-## Estado productivo observado
+## Estado productivo inspeccionado
 
-- El único `PackageReference` provider en `backend/src/**/*.csproj` es `Pomelo.EntityFrameworkCore.MySql 8.0.2`; no hay `MySql.EntityFrameworkCore` Oracle ni otra referencia de provider permanente.
-- La API registra una sola autoridad de persistencia: `AddDbContext<AppDbContext>` con `UseMySql`; `AppDbContextFactory` también crea el contexto con Pomelo. El candidato Oracle aún no se configura en código productivo.
-- La lane `oracle10-provider-lane.sh` copia el repo a `$RUNNER_TEMP/solqaryn-oracle10-lane/repo` y modifica sólo esa copia. La lane de baseline Oracle copia backend/proyecto a `$RUNNER_TEMP`; ambas incorporan Connector/NET temporal para certificar la ruta futura.
+- En `backend/src/**/*.csproj` existe una sola referencia EF provider: `Pomelo.EntityFrameworkCore.MySql 8.0.2`, en `Infrastructure/Solqaryn.Infrastructure.csproj`. No hay una referencia permanente a `MySql.EntityFrameworkCore`.
+- La API configura una sola autoridad runtime (`AddDbContext<AppDbContext>` + `UseMySql`); `AppDbContextFactory` también usa Pomelo. No hay `UseMySQL` Oracle productivo ni configuración de dos providers.
+- `MySqlConnector 2.3.7` es la implementación/conector que acompaña a Pomelo, no un segundo EF provider. El clasificador también reconoce el tipo Oracle por nombre para mantener el contrato provider-neutral, pero no añade su paquete, registro ni uso en DI productiva.
+- Los carriles Oracle EF10 retargetean copias efímeras bajo `$RUNNER_TEMP`; no escriben provider Oracle en el checkout ni en proyectos productivos.
 
-## Guard permanente de CI
+## Guard permanente endurecido
 
-En el gate `.github/workflows/modernization-phase6-mysql-ef-provider.yml`, la matriz inicial inspecciona todos los `.csproj` productivos. Ahora exige que el conjunto de providers sea exactamente `{ Pomelo.EntityFrameworkCore.MySql: 8.0.2 }`; agregar Oracle o dejar dos providers hace fallar el job antes de correr las pruebas.
+La matriz de `.github/workflows/modernization-phase6-mysql-ef-provider.yml` recorre todos los `.csproj` de `backend/src` y ahora recopila **cada ocurrencia** de referencia provider junto con versión y ruta. Exige que la lista completa sea exactamente:
 
-En el run exact-head `37264684835`, job Pomelo `111618872888`, el guard reportó `PHASE6_SINGLE_PROVIDER_AUTHORITY=PASS product=Pomelo.EntityFrameworkCore.MySql/8.0.2`. Las 28 integraciones MySQL pasaron; los cuatro jobs del gate y el dictamen Fase 6 `111620301963` terminaron `success`.
+`[Pomelo.EntityFrameworkCore.MySql, 8.0.2, backend/src/Infrastructure/Solqaryn.Infrastructure.csproj]`
 
-**Punto 26: CERRADO**: hay una sola autoridad productiva y Oracle permanece temporal, aislado y verificable en CI. No se migró el código productivo a Oracle ni se inició Fase 7.
+Esto rechaza Oracle, versiones inesperadas, referencias Pomelo duplicadas y provider agregado a otro proyecto. La versión anterior del guard usaba un diccionario; una referencia duplicada con la misma clave podía colapsarse, por lo que se reemplazó por la lista exacta.
+
+## Certificación
+
+- HEAD: `f5dfad3778b4c0921a88c983e46068d594bce3a8`.
+- Fase 6 exact-head: run `37329458164`, `success`; scope lock `37329458328`, `success`.
+- El log confirmó `PHASE6_SINGLE_PROVIDER_AUTHORITY=PASS product=Pomelo.EntityFrameworkCore.MySql/8.0.2`; las pruebas de integración MySQL Pomelo pasaron 28/28. El resto de lanes del gate y el dictamen Fase 6 también terminaron `success`.
+
+**Punto 26: CERRADO.** Existe una sola autoridad productiva y CI impide introducir más de una referencia provider; Oracle queda sólo como candidato en copias temporales. No se cambió el provider productivo ni se inició Fase 7.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
