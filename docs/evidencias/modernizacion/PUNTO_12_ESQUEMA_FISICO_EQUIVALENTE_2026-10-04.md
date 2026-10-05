@@ -25,12 +25,14 @@ Cada exportación se ordena de forma determinista y se compara con `diff`; cualq
 - Run previo `37232938573` sobre `aeee293abb4beb757ff4196ebd52308bd54f2320`: comparator anterior success, 136 tablas en el paquete SQL limpio y adopción sin DDL. No basta por sí solo para certificar los nuevos campos.
 - Primera ejecución ampliada `37241337349` falló porque `INFORMATION_SCHEMA.PARTITIONS` no contiene `ENGINE` ni `CREATE_OPTIONS`; se quitaron esos campos.
 - Segunda ejecución `37241647354` llegó al comparator, pero detectó que `CHECK_CONSTRAINTS` no contiene `ENFORCED`; ese atributo sí se compara desde `TABLE_CONSTRAINTS.ENFORCED`, por lo que se quitó la referencia duplicada inválida. No se declaró PASS.
-- Run exact-head `37241930023` sobre `d0d79c158aef29ae913833e0611e7eb7cfe8db48`: job completo `success`; `ORACLE_EF10_SCRIPT_BOOTSTRAP_SCHEMA_EQUIVALENT=true`; `ORACLE_BASELINE_SCHEMA_EQUIVALENT=true`; paquete limpio `ORACLE_EF10_SQL_PACKAGE_FRESH_BOOTSTRAP=PASS tables=136`. El step de adopción sobre el esquema Pomelo existente también terminó success.
-- Gate integral exact-head `37242192452` sobre `15289cf5557afdc0f39a65f665802fc16f8221d8`: 5/5 jobs success, `P0=0`, `P1=0`, `FASE_6_MYSQL_EF_PROVIDER=PASS` y `PHASE7_EXECUTED=false`.
-- Se comprobó que entre el baseline previo y el HEAD de trabajo no cambiaron modelo, configuraciones ni historia de migraciones; el nuevo run valida ahora además el comparador ampliado.
+- El comparator ampliado se volvió a ejecutar en `37280729749`, HEAD `cf0607908701e5a9e3015dcc463f2a6beb87b2cf`: job completo `success`; `ORACLE_EF10_SCRIPT_BOOTSTRAP_SCHEMA_EQUIVALENT=true`; `ORACLE_BASELINE_SCHEMA_EQUIVALENT=true`; `ORACLE_EF10_SQL_PACKAGE_FRESH_BOOTSTRAP=PASS tables=136`; `ORACLE_BASELINE_ADOPTION_NO_DDL=PASS`.
+- El gate integral más reciente `37298140358`, HEAD `a02a6049bed532ae0d26ffcc49c4ea3151985932`, terminó `success` en provider/net10 y dictamen: `P0=0`, `P1=0`, `FASE_6_MYSQL_EF_PROVIDER=PASS`, `PHASE7_EXECUTED=false`.
+- Continuidad comprobada hasta ese HEAD: no hubo cambios en `.github/workflows/modernization-oracle-baseline-probe.yml`, `backend/src/Infrastructure/Persistence`, `backend/src/Infrastructure/Migrations` ni `Solqaryn.Infrastructure.csproj` desde el run comparator `37280729749`. Por tanto, sus entradas de esquema/modelo/historia siguen siendo las mismas; los cambios posteriores relevantes de provider se volvieron a probar en el gate integral.
 
 ## Alcance
 
 La prueba compara el contrato físico producido por las rutas CI efímeras en MySQL 8.4. No modifica esquemas persistentes ni datos reales y no ejecuta Fase 7. El gate integral pasó contra el HEAD vigente al cerrar este punto.
+
+**Punto 12: CERRADO.** Comparador físico ampliado, bootstrap limpio de 136 tablas y adopción sin DDL pasan; sus entradas permanecen sin cambios desde la corrida comparator.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
