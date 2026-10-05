@@ -1,3 +1,9 @@
+## 2026-10-05 — Corrección de disparadores para certificación exact-head
+
+- La auditoría del punto 29 detectó que el workflow frontend Fase 5 espera el E2E canónico de aceptación sobre el mismo SHA, pero cambios de documentación disparaban sólo Fase 5 y no `catalogos-aceptacion.yml`.
+- Se alinearon sus filtros para que los cambios que disparan Fase 5 (frontend/backend, evidencias de modernización y changelogs) disparen también aceptación DEV; así el E2E exact-head no espera un run que nunca se creó.
+- Este cambio es sólo CI; no ejecuta Fase 7 ni modifica runtime, migraciones o infraestructura.
+
 ## 2026-10-05 — Cierre del Punto 28: gate permanente de provider
 
 - `modernization-phase6-mysql-ef-provider.yml` ahora se dispara automáticamente en push relevante a `dev` y en pull request hacia `dev`; conserva además la opción manual.

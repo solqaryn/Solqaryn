@@ -7,14 +7,15 @@ on:
       - dev
     paths:
       - .github/workflows/catalogos-aceptacion.yml
-      - frontend/e2e/**
-      - frontend/scripts/**
-      - frontend/package.json
-      - frontend/src/**
-      - backend/src/**
-      - backend/tests/**
+      - .github/workflows/modernization-phase5-frontend-tooling.yml
+      - frontend/**
+      - backend/**
       - scripts/fase7_*
       - scripts/fase8_*
+      - docs/evidencias/modernizacion/**
+      - docs/DETALLES_PENDIENTES.md
+      - ARCHITECTURE_CHANGELOG.md
+      - CHANGELOG_AI.md
   workflow_dispatch:
 
 permissions:
