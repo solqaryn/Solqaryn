@@ -18,10 +18,12 @@ La sonda compartida Pomelo/Oracle EF10 ahora:
 
 ## Evidencia exact-head
 
-- Pomelo y gate Fase 6: run `37244974128` sobre `ef3ea812482e4ba7e258ea5dc1cf5d9d56c97db1`, completed/success. `DECIMAL_PROVIDER_CONTRACT=PASS model18_2=Compras.Total model18_4=CuentasPorPagar.MontoOriginal maxPrecisionScaleRoundTrips=2 rolledBack=true`; inventario físico: `POMELO_DECIMAL_18_2=54`, `POMELO_DECIMAL_18_4=64`; tests integración MySQL 27/27 pass.
-- Oracle EF10/net10 aislado: run `37244974112` success, mismo `DECIMAL_PROVIDER_CONTRACT=PASS`; provider-final del gate: run `37244974157` success.
-- Dictamen del gate: 5/5 jobs success, `P0=0`, `P1=0`, `FASE_6_MYSQL_EF_PROVIDER=PASS`, `PHASE7_EXECUTED=false`.
+- Certificación exact-head vigente: Fase 6 run `37301253292`, HEAD `8a0ecd6531aa43cba19a063a4a5ec58beecd4ef1`; todos los jobs y el dictamen terminaron `success`, `P0=0`, `P1=0`, `FASE_6_MYSQL_EF_PROVIDER=PASS`, `PHASE7_EXECUTED=false`.
+- Pomelo/MySqlConnector en ese HEAD: `DECIMAL_PROVIDER_CONTRACT=PASS model18_2=Compras.Total model18_4=CuentasPorPagar.MontoOriginal maxPrecisionScaleRoundTrips=2 rolledBack=true`; inventario físico `POMELO_DECIMAL_18_2=54`, `POMELO_DECIMAL_18_4=64`; integración MySQL 28/28.
+- Oracle EF10/net10 en el mismo HEAD: el mismo `DECIMAL_PROVIDER_CONTRACT=PASS`; 2336/2336 unitarias y 22/22 integraciones. [Fase 6 exact-head](https://github.com/solqaryn/Solqaryn/actions/runs/37301253292).
 
 La brecha conocida de tests EF8/Pomelo retargeteado a net10 es independiente del decimal y permanece abierta para los puntos 20/21; véase la evidencia del punto 13. No se cambió escala del modelo productivo ni se ejecutó Fase 7.
+
+**Punto 14: CERRADO.** Precisión y escala física/modelo, round-trip de máximos y rollback pasan en Pomelo y Oracle EF10.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
