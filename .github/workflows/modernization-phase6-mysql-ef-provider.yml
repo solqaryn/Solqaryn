@@ -17,6 +17,7 @@ on:
       - 'docs/evidencias/modernizacion/PUNTO_12_ESQUEMA_FISICO_EQUIVALENTE_2026-10-04.md'
       - 'docs/evidencias/modernizacion/PUNTO_13_JSON_PROVIDER_CONTRACT_2026-10-04.md'
       - 'docs/evidencias/modernizacion/PUNTO_14_DECIMAL_PRECISION_SCALE_2026-10-04.md'
+      - 'docs/evidencias/modernizacion/PUNTO_15_DATETIME6_MICROSECONDS_2026-10-04.md'
       - 'CHANGELOG_AI.md'
       - 'ARCHITECTURE_CHANGELOG.md'
   workflow_dispatch:

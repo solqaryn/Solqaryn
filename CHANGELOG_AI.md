@@ -2854,3 +2854,12 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Evidencia: `docs/evidencias/modernizacion/PUNTO_14_DECIMAL_PRECISION_SCALE_2026-10-04.md`.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
+## 2026-10-04 — Cierre del Punto 15: fechas `datetime(6)` y microsegundos
+
+- La sonda compartida Pomelo/Oracle EF10 exige que `Compra.Fecha` esté mapeada como `datetime(6)` en EF y en el esquema físico; guarda y vuelve a leer `2026-10-04 12:34:56.123456` mediante EF, y confirma los microsegundos con `DATE_FORMAT` dentro de una transacción revertida.
+- Pomelo/MySQL 8.4.11 y Oracle EF10/net10: `DATETIME6_PROVIDER_CONTRACT=PASS model=Compras.Fecha physical=datetime(6) efRoundTrip=true sqlMicroseconds=123456 rolledBack=true`.
+- Run exact-head `37246049107` sobre `32536e867c3ef04021007054762b7d5eeabbe060`: integración MySQL actual 27/27; gate Fase 6 5/5 jobs success, `P0=0`, `P1=0`, `FASE_6_MYSQL_EF_PROVIDER=PASS`, `PHASE7_EXECUTED=false`.
+- El lane informativo de EF8/Pomelo retargeteado a net10 mantiene deuda distinta: 8 fallos unitarios (2380/2388 pasan) y 3 fallos de integración (24/27 pasan). Queda abierta para los puntos 20/21; no se oculta ni se atribuye al contrato temporal.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_15_DATETIME6_MICROSECONDS_2026-10-04.md`.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
