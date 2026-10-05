@@ -169,6 +169,8 @@ RBAC debe basarse en relaciones persistentes y permisos explícitos, evitando by
 
 Persistencia principal: MySQL mediante EF Core/Pomelo.
 
+Estado de la migración de versiones (2026-10-05): Fase 6 está certificada `PASS` en el gate exact-head `37264684835` (commit `d3a408487...`). El runtime productivo/local sigue en net8.0 + EF Core/Pomelo 8; la ruta objetivo certificada para la futura Fase 7 es net10.0 + EF Core 10.0.12 + Oracle `MySql.EntityFrameworkCore` 10.0.9, probada en una lane/copia aislada. Esta certificación no ejecuta Fase 7 ni autoriza cambiar proyectos productivos, QA, `main` o PROD.
+
 Topología operacional vigente en Aiven:
 
 - proyecto `solqaryn`;

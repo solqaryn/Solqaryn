@@ -1,9 +1,17 @@
+## 2026-10-05 — Reconciliación exact-head: Fase 6 PASS (puntos 20–26)
+
+- El `STOP` consignado inicialmente en el cierre del Punto 20 fue superado por ejecuciones posteriores; no es el estado vigente. El gate más reciente exact-head `37264684835` sobre `d3a408487...` completó con éxito y dictaminó Fase 6 `PASS`.
+- Evidencia del gate: provider productivo único Pomelo 8.0.2; integración MySQL 8.4 28/28; lane Oracle EF10/net10 portable 22/22; unitarios del candidato 2,336/2,336; tooling EF alineado 10.0.12; rollback a Pomelo sin cambio de esquema ni datos.
+- Los 107 archivos de migración histórica Pomelo permanecen intactos; Oracle usa baseline/adopción SQL y no intenta reproducir esa historia. El runtime continúa net8/EF8/Pomelo.
+- La discrepancia de concurrencia anterior (21/22) fue resuelta y reemplazada por la certificación posterior; véanse `PUNTO_20_INTEGRACION_MYSQL_COMPLETA_2026-10-05.md` y los informes de puntos 21–26.
+- Fase 7 sigue sin ejecutar. El resultado certifica la puerta de provider, no migra proyectos productivos ni promueve QA/PROD.
+
 ## 2026-10-05 — Cierre del Punto 20: suite completa de integración MySQL
 
 - Exact-head de código `6cb63f4918`: gate Fase 6 ejecutó `Category=Integration` completo contra MySQL 8.4: 28/28, sin fallos ni skips.
 - Lane Oracle EF10/net10 adaptó y pasó 22/22 pruebas portables; cuatro pruebas ligadas al replay/rollback del historial MySQL se clasifican explícitamente como no portables y siguen cubiertas por Pomelo.
 - El DDL de CHECK se conserva desde `SHOW CREATE TABLE` y el bootstrap de esquemas paralelos se serializa por base temporal.
-- Fase 6 global continúa `STOP`: el job Oracle del gate compuesto tuvo un fallo de concurrencia (21/22), mientras que la lane Oracle aislada del mismo HEAD pasó 22/22. Se conserva como deuda visible para el punto correspondiente.
+- Nota histórica: el primer gate compuesto registró 21/22 por una discrepancia de concurrencia. La deuda fue resuelta en la certificación exact-head posterior `37264684835` (commit `d3a408487...`), que pasó el gate completo; por tanto, ese `STOP` ya no es vigente. Fase 7 permanece sin ejecutar.
 - Evidencia: `docs/evidencias/modernizacion/PUNTO_20_INTEGRACION_MYSQL_COMPLETA_2026-10-05.md`. Fase 7 no ejecutada.
 
 ## 2026-10-04 — Cierre del Punto 19: tenancy fail-closed en provider lanes

@@ -1,3 +1,10 @@
+## 2026-10-05 — Reconciliación del cierre de Fase 6/provider
+
+- El gate compuesto exact-head `37264684835`, sobre `d3a408487...`, certificó Fase 6 `PASS`; el workflow confirmó un único provider productivo Pomelo 8.0.2 y la suite MySQL 8.4 pasó 28/28.
+- La ruta candidata net10.0 + EF Core 10.0.12 + `MySql.EntityFrameworkCore` 10.0.9 pasó en lanes aisladas. La ruta de migración/adopción Oracle no hace replay de las 107 migraciones Pomelo: parte del baseline SQL canónico y conserva un marcador de adopción; el rollback certificado vuelve a Pomelo sin alterar esquema ni datos.
+- El runtime continúa net8.0 + EF Core 8/Pomelo. Fase 7 no se ejecutó; este cierre no cambia `.csproj` productivos ni autoriza despliegues.
+- La entrada del 2026-10-04 que reporta `STOP` es una fotografía histórica previa a la resolución de la discrepancia de concurrencia; no representa el resultado vigente.
+
 ## 2026-10-04 — Gate arquitectónico MySQL/EF previo a net10
 
 - El provider autoritativo vigente permanece Pomelo 8.0.2 / MySqlConnector 2.3.7 sobre EF Core 8.0.2 y net8.0; su baseline MySQL queda certificado con migraciones, SQL, semántica relacional, integración y aislamiento tenant.

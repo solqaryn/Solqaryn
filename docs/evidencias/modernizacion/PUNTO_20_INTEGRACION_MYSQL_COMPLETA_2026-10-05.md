@@ -14,12 +14,12 @@ Commit exact-head de código: `6cb63f4918` (`test(mysql): serialize Oracle test 
 
 ## Estado de Fase 6
 
-El punto 20 mide la suite MySQL y queda cubierto por el resultado 28/28 anterior. **Fase 6 global continúa en STOP**: en la ejecución compuesta exact-head `37258284249`, el job separado de certificación Oracle EF10 registró 21/22, con fallo en `TipoClienteConcurrencyTests.Concurrency_MarcarPredeterminado_ConDosContextosIndependientes_SoloUnGanador` (`Assert.NotNull`); la lane Oracle aislada del mismo HEAD sí pasó 22/22. Esta diferencia queda visible y pendiente de resolver en su punto correspondiente; no se usa para invalidar ni para ocultar el resultado Pomelo/MySQL.
+El punto 20 mide la suite MySQL y queda cubierto por 28/28. El `STOP` inicial de la ejecución compuesta `37258284249` (21/22 en la prueba de concurrencia Oracle) fue un resultado histórico y quedó superado: el gate posterior exact-head `37264684835`, sobre el commit `d3a408487...`, pasó con éxito, incluida la lane Oracle y la suite MySQL 28/28. La causa/discrepancia ya no está pendiente y el dictamen vigente de Fase 6 es `PASS`.
 
 No se cambió el TargetFramework productivo, no se ejecutó Fase 7 y no hubo despliegues.
 
 ## Resultado
 
-**Punto 20: CERRADO** — categoría completa de integración MySQL: 28/28 en MySQL 8.4 real de CI. La certificación total de Fase 6 permanece bloqueada por la discrepancia de concurrencia Oracle indicada arriba.
+**Punto 20: CERRADO** — categoría completa de integración MySQL: 28/28 en MySQL 8.4 real de CI. La posterior certificación exact-head `37264684835` cerró también el gate compuesto de Fase 6 (`PASS`). Fase 7 no ejecutada.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.

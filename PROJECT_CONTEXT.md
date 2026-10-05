@@ -39,6 +39,7 @@ SOLQARYN es una plataforma empresarial multiempresa.
 - Backend: ASP.NET Core 8 Web API.
 - Capas: Domain <- Application <- Infrastructure; API compone y expone.
 - Persistencia: MySQL con EF Core 8/Pomelo.
+- Migración de versiones: Fase 6/provider gate `PASS` en exact-head `37264684835` (`d3a408487...`); el runtime permanece EF Core 8/Pomelo. La ruta certificada para Fase 7 es net10.0 + EF Core 10.0.12 + `MySql.EntityFrameworkCore` 10.0.9, aislada del runtime actual. Fase 7 todavía no se ejecuta.
 - Seguridad: JWT, BCrypt, RBAC relacional, auditoría, CORS explícito, rate limiting y security headers.
 - Integraciones vigentes: Cloudinary, QuestPDF y SMTP; DEV, QA y PROD usan Outlook.com con OAuth2/Modern Auth para `solqaryn.platform@outlook.com`.
 - Facturas PDF: el branding visual se resuelve por empresa/tenant (`EmpresaConfiguracion.LogoUrl`); si no existe logo válido, QuestPDF usa un monograma derivado de `EmpresaNombre`. No existe fallback global `AppSettings__LogoPublicUrl` en Render ni branding fijo de un cliente.
