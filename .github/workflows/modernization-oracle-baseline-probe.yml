@@ -67,7 +67,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$GITHUB_REF_NAME" = "dev"
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            test "$GITHUB_BASE_REF" = "dev"
+          else
+            test "$GITHUB_REF_NAME" = "dev"
+          fi
           node scripts/verify-project-scope.mjs
           test -z "$(git status --porcelain)"
 
