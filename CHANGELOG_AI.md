@@ -1,3 +1,10 @@
+## 2026-10-04 — Cierre del Punto 19: tenancy fail-closed en provider lanes
+
+- La certificación tenant es obligatoria en CI y distingue el procesador Outbox tenant-bound de los workers hospedados (actualmente: 0).
+- Identidad, scope, autorización, persistencia, reportes, archivos, caché y Outbox: `PASS` en Pomelo y Oracle EF10/net10.
+- Exact-head `b52e063bbd222e7ed9e74ed150a8b457a0b66e27`: pruebas dirigidas 107/107; integración MySQL 28/28; Fase 6 `PASS`, `P0=0`, `P1=0`; Fase 7 no ejecutada.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_19_TENANCY_FAIL_CLOSED_2026-10-04.md`.
+
 ## 2026-10-04 — Cierre del Punto 11: migraciones forward y modelo sin drift
 
 - Pomelo aplicó la historia histórica vigente y `dotnet-ef 8.0.8 migrations has-pending-model-changes` pasó en el gate de Fase 6 exact-head `37237921281` (`915c4853d0c2bd695adc79bb5386a3fe64032be8`).
