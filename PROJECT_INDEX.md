@@ -172,7 +172,7 @@ Angular route/component
 - Application: `backend/src/Application/{Services,Interfaces,DTOs,Validators}`.
 - Domain: `backend/src/Domain/{Entities,Enums,Common}`.
 - Infrastructure/DB: `backend/src/Infrastructure/{Repositories,Services,Persistence}` y las dos carpetas de migraciones indicadas arriba.
-- Migración de versiones DB/.NET: el runtime sigue net8/EF8/Pomelo; Fase 6 fue certificada `PASS` por el gate exact-head `37264684835` (`d3a408487...`). La ruta objetivo net10/EF10/Oracle Connector/NET se mantiene aislada y no se aplica antes de Fase 7. Evidencias: `docs/evidencias/modernizacion/` y workflows `modernization-*`.
+- Migración de versiones DB/.NET: el runtime sigue net8/EF8/Pomelo 8; Fase 6 fue certificada `PASS` por el gate exact-head `37268913820` sobre `dev` HEAD `2d84babb2863cbaadf0e201b9ff03ed113ecd476`. La ruta objetivo net10/EF10/Oracle Connector/NET se mantiene aislada y no se aplica antes de Fase 7. Evidencias: `docs/evidencias/modernizacion/` y workflows `modernization-*`.
 - Integraciones: contratos en `Application/Interfaces`, adaptadores concretos en `Infrastructure/Services` y registro DI en `Program.cs` (Cloudinary, QuestPDF, SMTP y exportaciones).
 
 ## Mapa por dominio

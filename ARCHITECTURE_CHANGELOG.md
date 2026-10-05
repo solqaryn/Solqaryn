@@ -5,6 +5,12 @@
 - Se conserva el runtime net8/EF8/Pomelo hasta que se inicie Fase 7 por decisión separada. El cambio de estado no autoriza ni ejecuta retarget productivo, QA, `main` o PROD.
 - Evidencia: `docs/evidencias/modernizacion/PUNTO_30_FASE6_STOP_A_PASS_2026-10-05.md`.
 
+## 2026-10-05 — Punto 27: documentación arquitectónica reconciliada
+
+- `ARCHITECTURE.md`, `PROJECT_CONTEXT.md` y `PROJECT_INDEX.md` identifican el mismo estado: runtime `net8.0`/EF Core 8/Pomelo 8; ruta futura certificada Oracle EF Core 10/net10 aislada; Fase 7 no ejecutada.
+- La referencia vigente de Fase 6 es el run `37268913820` sobre el HEAD `2d84babb2863cbaadf0e201b9ff03ed113ecd476`; las referencias antiguas quedan como historia, no como certificación actual.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_27_DOCUMENTACION_ARQUITECTONICA_2026-10-05.md`.
+
 ## 2026-10-05 — Reconciliación del cierre de Fase 6/provider
 
 - El gate compuesto exact-head `37264684835`, sobre `d3a408487...`, certificó Fase 6 `PASS`; el workflow confirmó un único provider productivo Pomelo 8.0.2 y la suite MySQL 8.4 pasó 28/28.

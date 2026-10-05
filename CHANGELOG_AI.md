@@ -5,6 +5,12 @@
 - Fase 6 queda formalmente cerrada y deja de emitir STOP. El runtime sigue net8/EF8/Pomelo; Fase 7 no se inició y sus cambios productivos continúan pendientes de iniciar esa fase.
 - Evidencia: `docs/evidencias/modernizacion/PUNTO_30_FASE6_STOP_A_PASS_2026-10-05.md`.
 
+## 2026-10-05 — Punto 27: documentación arquitectónica reconciliada
+
+- Los cinco documentos requeridos reflejan la decisión definitiva de Fase 6 y separan explícitamente runtime vigente `net8.0`/EF8/Pomelo 8 de la ruta futura certificada Oracle EF10/net10, aún aislada.
+- Referencia técnica vigente al momento de esta reconciliación: gate `37268913820`, HEAD `2d84babb2863cbaadf0e201b9ff03ed113ecd476`; Fase 7 continúa sin ejecutar.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_27_DOCUMENTACION_ARQUITECTONICA_2026-10-05.md`.
+
 ## 2026-10-05 — Cierre del Punto 29: certificación exact-head integrada
 
 - HEAD `c8cf5e23704c3da6c17b9eab6782bb78d02b281a`: aceptación funcional DEV, Fase 4 Angular 22, Fase 5 frontend y Fase 6 MySQL/EF completaron en success sobre el mismo SHA.
