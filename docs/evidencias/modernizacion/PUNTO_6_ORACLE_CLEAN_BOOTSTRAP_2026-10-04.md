@@ -6,7 +6,7 @@ Rama: `dev`
 
 ## Dictamen
 
-**PASS — existe un paquete reproducible y probado para crear una instalación limpia con el esquema canónico y adoptarlo con Oracle EF10.** El flujo no necesita ejecutar las 107 migraciones históricas con Oracle: importa el baseline físico derivado de ellas y aplica el baseline Oracle EF10.
+**PASS — revalidado exact-head.** Existe un paquete reproducible y probado para crear una instalación limpia con el esquema canónico y adoptarlo con Oracle EF10. El flujo no necesita ejecutar las 107 migraciones históricas con Oracle: importa el baseline físico derivado de ellas y aplica el baseline Oracle EF10.
 
 ## Procedimiento certificado
 
@@ -25,6 +25,15 @@ La equivalencia coteja tablas, engine, collation de tabla y create options; colu
 - Run `37232587801`, HEAD `0e4b552ed058b538f9b7bbe38d642a28191e7720`: 21/21 pasos `success`, incluyendo aplicación real del paquete SQL a una base vacía, `has-pending-model-changes`, equivalencia física completa y adopción sin DDL. [Ejecución del bootstrap Oracle EF10](https://github.com/solqaryn/Solqaryn/actions/runs/37232587801).
 - Artefacto descargable `oracle-baseline-candidate-37232587801`, 227,854 bytes, con expiración 2027-01-02. El workflow lo regenera al cambiar cualquiera de los dos árboles de migraciones, los proyectos/providers del scope o las evidencias de estos puntos.
 - Scope gate y rama `dev` pasaron; el baseline proviene sólo de bases vacías efímeras. No contiene backup ni datos de Aiven/QA/PROD.
+
+## Revalidación del HEAD vigente — 2026-10-05
+
+- Run [37280729749](https://github.com/solqaryn/Solqaryn/actions/runs/37280729749), HEAD `cf0607908701e5a9e3015dcc463f2a6beb87b2cf`: el único job del probe terminó `success`.
+- `ORACLE_EF10_SQL_PACKAGE_FRESH_BOOTSTRAP=PASS tables=136`; `ORACLE_EF10_SCRIPT_BOOTSTRAP_SCHEMA_EQUIVALENT=true`; `ORACLE_BASELINE_SCHEMA_EQUIVALENT=true`; `ORACLE_BASELINE_ADOPTION_NO_DDL=PASS`; `has-pending-model-changes` completó correctamente.
+- Rollback confirmado: `ORACLE_TO_POMELO_PROVIDER_ROLLBACK=PASS`, esquema y datos sin cambio, usuario semilla preservado, 107 migraciones Pomelo y marcador Oracle retenidos.
+- Artefacto de este HEAD: `oracle-baseline-candidate-37280729749`, 237,107 bytes, digest `sha256:309175859be6cc938e2a4edfdc3a162055a79c20fce31cb1828b79ccbde626a8`, expira `2027-01-03T07:58:03Z`.
+
+**Punto 6: CERRADO.** Bootstrap reproducible validado en MySQL descartable; no se usaron servicios persistentes ni se inició Fase 7.
 
 ## Alcance
 

@@ -1,3 +1,10 @@
+## 2026-10-05 — Revalidación del Punto 6: bootstrap Oracle desde SQL package
+
+- Probe `37280729749`, HEAD `cf0607908701e5a9e3015dcc463f2a6beb87b2cf`: `success`; SQL bootstrap de base vacía produjo 136 tablas, equivalencia SQL/EF y baseline `true`, adopción sin DDL, `has-pending-model-changes` y rollback a Pomelo con 107 migraciones preservadas.
+- Artefacto `oracle-baseline-candidate-37280729749`, 237,107 bytes, SHA-256 `309175859be6cc938e2a4edfdc3a162055a79c20fce31cb1828b79ccbde626a8`, expiración 2027-01-03.
+- Punto 6 cerrado. Únicamente CI efímero; sin uso de bases persistentes ni Fase 7.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_6_ORACLE_CLEAN_BOOTSTRAP_2026-10-04.md`.
+
 ## 2026-10-05 — Revalidación del Punto 5: historial Pomelo preservado
 
 - Inventario actual: 107 fuentes timestamped, 107 atributos `[Migration]` únicos y cero duplicados; 67/107 contienen tokens de provider MySQL/Pomelo.
