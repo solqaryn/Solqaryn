@@ -18,10 +18,13 @@ No se cambió la implementación de negocio, el default global de aislamiento ni
 
 ## Evidencia exact-head
 
-- Pomelo/MySQL 8.4.11, gate run `37249770325`, SHA `b5ae33500`: `POMELO_TRANSACTION_CONTRACT=PASS isolation=READ-COMMITTED commit=true rollback=true errorRollback=true`; integración MySQL 27/27.
-- Oracle EF10/net10, provider lane `37249770331`, mismo SHA: `ORACLE10_TRANSACTION_CONTRACT=PASS isolation=READ-COMMITTED commit=true rollback=true errorRollback=true`.
-- Gate Fase 6 `37249770325`: todos los jobs success, `P0=0`, `P1=0`, `FASE_6_MYSQL_EF_PROVIDER=PASS`, `PHASE7_EXECUTED=false`. Provider-final run `37249770301` también success.
+- Gate Fase 6 exact-head run `37306094850`, SHA `e2688576076860f0fb3d254a31061d6c9b142a3c`: 5/5 jobs success; `P0=0`, `P1=0`, `FASE_6_MYSQL_EF_PROVIDER=PASS`, `PHASE7_EXECUTED=false`.
+- Pomelo/MySQL 8.4.11: `POMELO_TRANSACTION_CONTRACT=PASS isolation=READ-COMMITTED commit=true rollback=true errorRollback=true`; integración MySQL 28/28 pass.
+- Oracle EF10/net10: `ORACLE10_TRANSACTION_CONTRACT=PASS isolation=READ-COMMITTED commit=true rollback=true errorRollback=true`.
+- [Fase 6 exact-head](https://github.com/solqaryn/Solqaryn/actions/runs/37306094850); aceptación DEV Playwright también success en el mismo HEAD: [run](https://github.com/solqaryn/Solqaryn/actions/runs/37306094896).
 
-El lane informativo EF8/Pomelo retargeteado a net10 conserva 8 fallos unitarios y 3 de integración en esta ejecución; queda pendiente para puntos 20/21. Fase 7 no se ejecutó.
+El lane informativo EF8/Pomelo retargeteado a net10 en ese HEAD reporta 8 fallos unitarios (2380/2388 pasan) y 3 de integración (25/28 pasan); queda pendiente para puntos 20/21. Fase 7 no se ejecutó.
+
+**Punto 17: CERRADO.** Aislamiento solicitado, commit, rollback explícito y rollback tras error/1062 se verifican en ambos carriles sin modificar defaults productivos.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
