@@ -530,6 +530,9 @@ jobs:
           }
           schema_before="$(schema_dump | sha256sum | cut -d' ' -f1)"
           data_before="$(data_dump | sha256sum | cut -d' ' -f1)"
+          seeded_user_before="$(docker exec "$mysql_container" mysql -uroot -proot -Nse \
+            "SELECT SHA2(CONCAT_WS('|',Id,NombreUsuario,PasswordHash),256) FROM $database.Usuarios WHERE Id=1 AND NombreUsuario='admin';")"
+          test -n "$seeded_user_before"
           oracle_baseline_id="$(cat "$RUNNER_TEMP/oracle-baseline-id.txt")"
 
           # Pomelo must reopen the exact database adopted by Oracle and observe its full known history.
@@ -564,15 +567,18 @@ jobs:
 
           schema_after="$(schema_dump | sha256sum | cut -d' ' -f1)"
           data_after="$(data_dump | sha256sum | cut -d' ' -f1)"
+          seeded_user_after="$(docker exec "$mysql_container" mysql -uroot -proot -Nse \
+            "SELECT SHA2(CONCAT_WS('|',Id,NombreUsuario,PasswordHash),256) FROM $database.Usuarios WHERE Id=1 AND NombreUsuario='admin';")"
           oracle_history_count="$(docker exec "$mysql_container" mysql -uroot -proot -Nse \
             "SELECT COUNT(*) FROM $database.__EFMigrationsHistory WHERE MigrationId='$oracle_baseline_id';")"
           pomelo_history_count="$(docker exec "$mysql_container" mysql -uroot -proot -Nse \
             "SELECT COUNT(*) FROM $database.__EFMigrationsHistory WHERE MigrationId<>'$oracle_baseline_id';")"
           test "$schema_before" = "$schema_after"
           test "$data_before" = "$data_after"
+          test "$seeded_user_before" = "$seeded_user_after"
           test "$oracle_history_count" = 1
           test "$pomelo_history_count" = 107
-          echo "ORACLE_TO_POMELO_PROVIDER_ROLLBACK=PASS schema_unchanged=true application_data_unchanged=true pomelo_history=$pomelo_history_count oracle_baseline_marker_retained=true"
+          echo "ORACLE_TO_POMELO_PROVIDER_ROLLBACK=PASS schema_unchanged=true application_data_unchanged=true seeded_user_preserved=true pomelo_history=$pomelo_history_count oracle_baseline_marker_retained=true"
 
       - name: Generar SQL baseline y dictamen
         shell: bash
