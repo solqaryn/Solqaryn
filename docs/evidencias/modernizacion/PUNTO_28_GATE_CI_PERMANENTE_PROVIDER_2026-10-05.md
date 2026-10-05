@@ -12,6 +12,11 @@ Para ambos eventos automáticos valida el destino/branch `dev`, el scope canóni
 
 ## Resultado
 
-**Punto 28: CERRADO** — el gate es reproducible automáticamente tanto antes de integrar cambios en `dev` como después de cada push relevante a `dev`; una ejecución manual ya no es la única barrera. La certificación exact-head posterior del punto 29 debe confirmar el run del HEAD de cierre. Fase 7 permanece sin ejecutar.
+**Punto 28: CERRADO** — el gate es reproducible automáticamente tanto antes de integrar cambios en `dev` como después de cada push relevante a `dev`; una ejecución manual ya no es la única barrera.
+
+- Push automático verificado: run `37265475905`, commit exact-head `a5c93f14d0a3ee29573e7f0dcd23d4addeddd699`.
+- Cuatro jobs de certificación y job Dictamen: `success`; dictamen `FASE_6_MYSQL_EF_PROVIDER=PASS`, `P0=0`, `P1=0`, `PHASE7_EXECUTED=false`.
+- Run: <https://github.com/solqaryn/Solqaryn/actions/runs/37265475905>.
+- El punto 29 validará la certificación contra el HEAD posterior de `dev`. Fase 7 permanece sin ejecutar.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.

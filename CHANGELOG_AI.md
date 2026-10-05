@@ -2,7 +2,8 @@
 
 - `modernization-phase6-mysql-ef-provider.yml` ahora se dispara automáticamente en push relevante a `dev` y en pull request hacia `dev`; conserva además la opción manual.
 - La validación de rama distingue correctamente push/dispatch en `dev` de PR cuyo branch base es `dev`. En ambos casos conserva scope gate, matriz exacta y autoridad única Pomelo en proyectos productivos, y falla cerrado si la certificación de provider no pasa.
-- Evidencia: `docs/evidencias/modernizacion/PUNTO_28_GATE_CI_PERMANENTE_PROVIDER_2026-10-05.md`. El resultado del run automático de este commit se registrará al completar el punto 29.
+- Push automático exact-head `37265475905` sobre `a5c93f14d0a3ee29573e7f0dcd23d4addeddd699`: cuatro jobs de certificación y dictamen `success`, Fase 6 `PASS`, `P0=0`, `P1=0`, Fase 7 no ejecutada.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_28_GATE_CI_PERMANENTE_PROVIDER_2026-10-05.md`. El punto 29 certificará el HEAD de cierre.
 - Fase 7 no ejecutada.
 
 ## 2026-10-05 — Reconciliación exact-head: Fase 6 PASS (puntos 20–26)
