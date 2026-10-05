@@ -1,3 +1,11 @@
+## 2026-10-05 — Cierre del Punto 20: suite completa de integración MySQL
+
+- Exact-head de código `6cb63f4918`: gate Fase 6 ejecutó `Category=Integration` completo contra MySQL 8.4: 28/28, sin fallos ni skips.
+- Lane Oracle EF10/net10 adaptó y pasó 22/22 pruebas portables; cuatro pruebas ligadas al replay/rollback del historial MySQL se clasifican explícitamente como no portables y siguen cubiertas por Pomelo.
+- El DDL de CHECK se conserva desde `SHOW CREATE TABLE` y el bootstrap de esquemas paralelos se serializa por base temporal.
+- Fase 6 global continúa `STOP`: el job Oracle del gate compuesto tuvo un fallo de concurrencia (21/22), mientras que la lane Oracle aislada del mismo HEAD pasó 22/22. Se conserva como deuda visible para el punto correspondiente.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_20_INTEGRACION_MYSQL_COMPLETA_2026-10-05.md`. Fase 7 no ejecutada.
+
 ## 2026-10-04 — Cierre del Punto 19: tenancy fail-closed en provider lanes
 
 - La certificación tenant es obligatoria en CI y distingue el procesador Outbox tenant-bound de los workers hospedados (actualmente: 0).
