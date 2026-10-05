@@ -30,11 +30,11 @@ Sobre el HEAD `2f8c465cc0397c2e00a526dc0bc79c1d116587aa`, antes del readback fin
 - [Scope lock — run 37334512579](https://github.com/solqaryn/Solqaryn/actions/runs/37334512579): `success`.
 - [VAEP — run 37334512834](https://github.com/solqaryn/Solqaryn/actions/runs/37334512834): `success`.
 
-El PR que incorpora este readback a `dev` debe satisfacer el status check ahora requerido antes de poder integrarse; su ejecución se registra al terminar.
+La integración de este cambio quedó validada por el [PR #3521](https://github.com/solqaryn/Solqaryn/pull/3521), cuyo [run Fase 6 37338106482](https://github.com/solqaryn/Solqaryn/actions/runs/37338106482) terminó `success` en todos los jobs, incluido el check requerido `Dictamen Fase 6`. Se integró por squash en `dev` como commit `54cd08041598967bc8e98ec7dfa1010e3c88d195`.
 
 ## Resultado y límites
 
-**Punto 28: enforcement configurado y leído de vuelta; integración de esta evidencia pendiente del PR/check obligatorio.** El gate automático existe y GitHub ya exige tanto PR como `Dictamen Fase 6` para `dev`.
+**Punto 28: CERRADO.** El workflow del gate está versionado; la protección de GitHub fue leída de vuelta y exige PR más `Dictamen Fase 6`; el PR que registró el cambio superó el check requerido y ya forma parte de `dev`.
 
 No se inició Fase 7, no se cambió `main`/PROD y el runtime productivo permanece en net8/EF8/Pomelo.
 
