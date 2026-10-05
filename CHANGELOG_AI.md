@@ -320,7 +320,8 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - El readback vivo del control-plane expuso únicamente MySQL `8.4.8`; `8.4.11` no apareció en metadata de mantenimiento ni del servicio, por lo que se aplicó fail-closed y no se inició mantenimiento.
 - MySQL DEV permaneció `8.4.8 -> 8.4.8`; se preservaron 137 tablas, 109 migraciones EF, 8 productos y 2 categorías, con `productionTouched=false` y cero secretos expuestos.
 - El backup previo fue corregido para funcionar con el usuario de mínimo privilegio mediante `--skip-lock-tables --no-tablespaces --set-gtid-purged=OFF`, sin ampliar grants, y quedó almacenado cifrado como artifact.
-- Evidencia causal: run `37066644421` y `docs/evidencias/modernizacion/FASE_1_AIVEN_MYSQL_2026-10-02.md`.
+- Revalidación exact-head posterior al hardening: run `37067448903` sobre `ffe3ac936cbcdaa65e513042b1efa9242805b28a`, `SUCCESS`; mismo HEAD que Fase 0 `37067448864`.
+- Evidencia causal: runs `37066644421`/`37067448903` y `docs/evidencias/modernizacion/FASE_1_AIVEN_MYSQL_2026-10-02.md`.
 - Dictamen: `FASE_1_AIVEN_MYSQL=PASS_NO_CHANGE_TARGET_NOT_AVAILABLE`. QA, `main` y PROD no fueron tocados.
 
 ## 2026-10-02 — Limpieza integral de identidad legacy en DEV

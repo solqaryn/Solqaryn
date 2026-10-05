@@ -22,11 +22,13 @@ Por tanto, Maintenance es una propiedad del **servicio compartido**. Un `mainten
 ## Evidencia causal
 
 - Workflow: `Modernización - Fase 1 Aiven MySQL 8.4.11 DEV`
-- Run final: `37066644421`
-- HEAD evaluado: `d9b7af721dde5decf0411f055a6524637b9f46b9`
+- Run final exact-head tras el hardening del servicio compartido: [37067448903](https://github.com/solqaryn/Solqaryn/actions/runs/37067448903)
+- HEAD evaluado: `ffe3ac936cbcdaa65e513042b1efa9242805b28a`
 - Resultado del job: `SUCCESS`
-- Artifact de evidencia: `modernization-phase1-aiven-mysql-37066644421`
-- Backup lógico cifrado previo: `modernization-phase1-aiven-prebackup-37066644421`
+- Backup lógico cifrado previo: `modernization-phase1-aiven-prebackup-37067448903`
+- En el mismo HEAD, el baseline de Fase 0 [37067448864](https://github.com/solqaryn/Solqaryn/actions/runs/37067448864) terminó `success` en los siete jobs.
+
+La certificación previa [37066644421](https://github.com/solqaryn/Solqaryn/actions/runs/37066644421), sobre `d9b7af721dde5decf0411f055a6524637b9f46b9`, también pasó el gate de disponibilidad/no-cambio. El run `37067448903` es la última revalidación histórica antes de cerrar Fase 1: su único job pasó y conservó el comportamiento fail-closed de no ejecutar maintenance.
 
 ## Disponibilidad Aiven observada
 
