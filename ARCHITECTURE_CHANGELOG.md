@@ -1,3 +1,10 @@
+## 2026-10-05 — Cierre formal de Fase 6 (STOP → PASS)
+
+- Gate exact-head `37268035079` sobre `877af434ee15c8fd3a08f974bf58a62c91c03179`: todos los jobs `success`; `FASE_6_MYSQL_EF_PROVIDER=PASS`, `P0=0`, `P1=0`, `TARGETFRAMEWORK_CHANGE=ALLOWED_AFTER_PHASE6_CLOSE` y `PHASE7_EXECUTED=false`.
+- Aceptación integral DEV `37268035136`, Fase 5 `37268035072`, Scope Lock `37268035185` y VAEP admission `37268035138` pasaron en el mismo HEAD.
+- Se conserva el runtime net8/EF8/Pomelo hasta que se inicie Fase 7 por decisión separada. El cambio de estado no autoriza ni ejecuta retarget productivo, QA, `main` o PROD.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_30_FASE6_STOP_A_PASS_2026-10-05.md`.
+
 ## 2026-10-05 — Reconciliación del cierre de Fase 6/provider
 
 - El gate compuesto exact-head `37264684835`, sobre `d3a408487...`, certificó Fase 6 `PASS`; el workflow confirmó un único provider productivo Pomelo 8.0.2 y la suite MySQL 8.4 pasó 28/28.

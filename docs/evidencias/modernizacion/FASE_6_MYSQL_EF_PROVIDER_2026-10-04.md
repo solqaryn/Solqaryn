@@ -1,5 +1,11 @@
 # Modernización — Fase 6 MySQL / EF Provider Gate — Estado vigente 2026-10-04
 
+## Actualización formal de cierre — 2026-10-05
+
+El estado anterior de bloqueo queda reemplazado por el dictamen exact-head del gate `37268035079`, sobre `dev` HEAD `877af434ee15c8fd3a08f974bf58a62c91c03179`: **`FASE_6_MYSQL_EF_PROVIDER=PASS`, `P0=0`, `P1=0`, `TARGETFRAMEWORK_CHANGE=ALLOWED_AFTER_PHASE6_CLOSE`, `PHASE7_EXECUTED=false`**. Los cinco jobs del gate terminaron `success`. La aceptación integral DEV (`37268035136`) y el tooling frontend Fase 5 (`37268035072`) también pasaron sobre el mismo HEAD. Fase 6 queda formalmente cerrada; este resultado no inicia Fase 7 ni cambia el runtime productivo.
+
+Evidencia del cierre formal: `docs/evidencias/modernizacion/PUNTO_30_FASE6_STOP_A_PASS_2026-10-05.md`.
+
 ## Alcance
 
 Esta evidencia describe el estado vigente de la modernización del provider MySQL en `dev`. No modifica QA, `main`, PROD, Aiven real, datos productivos ni secretos. Fase 7 continúa sin ejecutarse mientras esta fase sólo certifica la ruta técnica.

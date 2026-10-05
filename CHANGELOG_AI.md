@@ -1,3 +1,10 @@
+## 2026-10-05 — Cierre formal del Punto 30: Fase 6 STOP → PASS
+
+- Gate exact-head `37268035079`, HEAD `877af434ee15c8fd3a08f974bf58a62c91c03179`: `FASE_6_MYSQL_EF_PROVIDER=PASS`, `P0=0`, `P1=0`, `TARGETFRAMEWORK_CHANGE=ALLOWED_AFTER_PHASE6_CLOSE`, `PHASE7_EXECUTED=false`; los cinco jobs terminaron `success`.
+- Aceptación funcional integral DEV `37268035136`, Fase 5 tooling/E2E `37268035072`, Scope Lock `37268035185` y VAEP admission guard `37268035138` terminaron `success` sobre el mismo HEAD.
+- Fase 6 queda formalmente cerrada y deja de emitir STOP. El runtime sigue net8/EF8/Pomelo; Fase 7 no se inició y sus cambios productivos continúan pendientes de iniciar esa fase.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_30_FASE6_STOP_A_PASS_2026-10-05.md`.
+
 ## 2026-10-05 — Cierre del Punto 29: certificación exact-head integrada
 
 - HEAD `c8cf5e23704c3da6c17b9eab6782bb78d02b281a`: aceptación funcional DEV, Fase 4 Angular 22, Fase 5 frontend y Fase 6 MySQL/EF completaron en success sobre el mismo SHA.
