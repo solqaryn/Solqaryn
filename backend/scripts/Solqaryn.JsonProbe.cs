@@ -89,6 +89,10 @@ var compraTotalProperty = compraEntity.FindProperty(nameof(Compra.Total))
     ?? throw new InvalidOperationException("DECIMAL_PROBE_COMPRA_TOTAL_MISSING");
 Require(string.Equals(compraTotalProperty.GetColumnType(), "decimal(18,2)", StringComparison.OrdinalIgnoreCase),
     $"DECIMAL_PROBE_MODEL_18_2_MISMATCH:{compraTotalProperty.GetColumnType()}");
+var compraFechaProperty = compraEntity.FindProperty(nameof(Compra.Fecha))
+    ?? throw new InvalidOperationException("DATETIME6_PROBE_COMPRA_FECHA_MISSING");
+Require(string.Equals(compraFechaProperty.GetColumnType(), "datetime(6)", StringComparison.OrdinalIgnoreCase),
+    $"DATETIME6_PROBE_MODEL_MISMATCH:{compraFechaProperty.GetColumnType()}");
 
 var cuentasPorPagarEntity = db.Model.FindEntityType(typeof(CuentaPorPagar))
     ?? throw new InvalidOperationException("DECIMAL_PROBE_CXP_ENTITY_MISSING");
@@ -103,6 +107,7 @@ var oldValue = $"before-{marker}";
 var newValue = $"after-{marker}";
 const decimal amount18_2 = 9999999999999999.99m;
 const decimal amount18_4 = 99999999999999.9999m;
+var expectedCompraFecha = new DateTime(2026, 10, 4, 12, 34, 56, DateTimeKind.Utc).AddTicks(1_234_560);
 
 await db.Database.OpenConnectionAsync();
 await db.Database.ExecuteSqlRawAsync("DROP TEMPORARY TABLE IF EXISTS SolqarynModernizationDecimalProbe");
@@ -130,6 +135,7 @@ var compra = new Compra
 {
     NumeroCompra = $"D{marker[..18]}",
     ProveedorNombre = "Modernization decimal probe",
+    Fecha = expectedCompraFecha,
     Subtotal = amount18_2,
     Total = amount18_2
 };
@@ -149,6 +155,7 @@ Require(ReadJsonValue(metodoPagoRead.Metadata, "probe") == metadataValue, "JSON_
 Require(ReadJsonValue(auditoriaRead.ValoresAnteriores, "probe") == oldValue, "JSON_PROBE_BEFORE_EF_ROUNDTRIP_FAIL");
 Require(ReadJsonValue(auditoriaRead.ValoresNuevos, "probe") == newValue, "JSON_PROBE_AFTER_EF_ROUNDTRIP_FAIL");
 Require(compraRead.Total == amount18_2 && compraRead.Subtotal == amount18_2, "DECIMAL_PROBE_18_2_EF_ROUNDTRIP_FAIL");
+Require(compraRead.Fecha.Ticks == expectedCompraFecha.Ticks, "DATETIME6_PROBE_EF_MICROSECONDS_ROUNDTRIP_FAIL");
 
 var metadataExtracted = await ExtractAsync(db, "MetodosPago", "Metadata", metodoPago.Id);
 var oldExtracted = await ExtractAsync(db, "RegistrosAuditoria", "ValoresAnteriores", auditoria.Id);
@@ -159,12 +166,27 @@ Require(newExtracted == newValue, "JSON_PROBE_AFTER_SQL_EXTRACTION_FAIL");
 
 var physical18_2 = await ReadPhysicalColumnTypeAsync(db, "Compras", "Total");
 var physical18_4 = await ReadPhysicalColumnTypeAsync(db, "CuentasPorPagar", "MontoOriginal");
+var physicalDateTime6 = await ReadPhysicalColumnTypeAsync(db, "Compras", "Fecha");
 Require(string.Equals(physical18_2, "decimal(18,2)", StringComparison.OrdinalIgnoreCase),
     $"DECIMAL_PROBE_PHYSICAL_18_2_MISMATCH:{physical18_2}");
 Require(string.Equals(physical18_4, "decimal(18,4)", StringComparison.OrdinalIgnoreCase),
     $"DECIMAL_PROBE_PHYSICAL_18_4_MISMATCH:{physical18_4}");
+Require(string.Equals(physicalDateTime6, "datetime(6)", StringComparison.OrdinalIgnoreCase),
+    $"DATETIME6_PROBE_PHYSICAL_TYPE_MISMATCH:{physicalDateTime6}");
 
 var decimalConnection = db.Database.GetDbConnection();
+await using (var command = decimalConnection.CreateCommand())
+{
+    command.Transaction = db.Database.CurrentTransaction?.GetDbTransaction();
+    command.CommandText = "SELECT DATE_FORMAT(`Fecha`, '%Y-%m-%d %H:%i:%s.%f') FROM `Compras` WHERE `Id` = @rowId";
+    var parameter = command.CreateParameter();
+    parameter.ParameterName = "@rowId";
+    parameter.Value = compra.Id;
+    command.Parameters.Add(parameter);
+    var timestamp = Convert.ToString(await command.ExecuteScalarAsync(), System.Globalization.CultureInfo.InvariantCulture);
+    Require(timestamp == "2026-10-04 12:34:56.123456", $"DATETIME6_PROBE_SQL_MICROSECONDS_MISMATCH:{timestamp}");
+}
+
 await using (var command = decimalConnection.CreateCommand())
 {
     command.Transaction = db.Database.CurrentTransaction?.GetDbTransaction();
@@ -181,3 +203,4 @@ await db.Database.ExecuteSqlRawAsync("DROP TEMPORARY TABLE SolqarynModernization
 await db.Database.CloseConnectionAsync();
 Console.WriteLine("JSON_PROVIDER_CONTRACT=PASS mappings=3 efRoundTrips=3 sqlExtractions=3 rolledBack=true");
 Console.WriteLine("DECIMAL_PROVIDER_CONTRACT=PASS model18_2=Compras.Total model18_4=CuentasPorPagar.MontoOriginal maxPrecisionScaleRoundTrips=2 rolledBack=true");
+Console.WriteLine("DATETIME6_PROVIDER_CONTRACT=PASS model=Compras.Fecha physical=datetime(6) efRoundTrip=true sqlMicroseconds=123456 rolledBack=true");
