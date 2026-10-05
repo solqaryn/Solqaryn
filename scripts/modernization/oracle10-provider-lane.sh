@@ -63,7 +63,7 @@ snapshot_source = re.sub(
     flags=re.MULTILINE,
 )
 snapshot_source = re.sub(
-    r"^\s*MySqlPropertyBuilderExtensions\.UseMySqlIdentityColumn\(b\.Property<int>\(\"[^\"]+\"\)\);\s*$",
+    r"^\s*MySqlPropertyBuilderExtensions\.UseMySqlIdentityColumn\(b\w*\.Property<int>\(\"[^\"]+\"\)\);\s*$",
     "",
     snapshot_source,
     flags=re.MULTILINE,
