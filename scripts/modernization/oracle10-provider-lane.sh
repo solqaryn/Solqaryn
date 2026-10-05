@@ -330,13 +330,13 @@ db.Productos.Add(stockProduct);
 await db.SaveChangesAsync();
 db.ChangeTracker.Clear();
 
-var productoRepository = new ProductoRepository(db);
-var varianteRepository = new ProductoVarianteRepository(db);
-var inventarioConcurrency = new InventarioConcurrencyService(db, productoRepository, varianteRepository);
+var stockLockProductRepository = new ProductoRepository(db);
+var stockLockVariantRepository = new ProductoVarianteRepository(db);
+var stockConcurrencyService = new InventarioConcurrencyService(db, stockLockProductRepository, stockLockVariantRepository);
 long stockLockWaitMs;
 await using (var lockTx = await db.Database.BeginTransactionAsync())
 {
-    await inventarioConcurrency.BloquearYValidarInventarioAsync(
+    await stockConcurrencyService.BloquearYValidarInventarioAsync(
         [new InventarioDemanda(stockProduct.Id, null, 1)]);
 
     var lockAttemptStarted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
