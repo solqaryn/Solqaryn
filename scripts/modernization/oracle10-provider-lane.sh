@@ -519,7 +519,7 @@ using System.Collections.Concurrent;
 
 internal static class OracleCandidateDatabaseBootstrap
 {
-    private static readonly ConcurrentDictionary<string, Task> Copies = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly ConcurrentDictionary<string, Lazy<Task>> Copies = new(StringComparer.OrdinalIgnoreCase);
 
     public static async Task EnsureCreatedAsync(AppDbContext context)
     {
@@ -534,8 +534,9 @@ internal static class OracleCandidateDatabaseBootstrap
         if (string.Equals(targetDatabase, sourceDatabase, StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException("Oracle candidate integration tests must not mutate the schema template.");
 
-        await Copies.GetOrAdd(targetDatabase, _ => CloneCertifiedSchemaAsync(
-            sourceConnectionString, sourceDatabase, targetConnectionString, targetDatabase));
+        await Copies.GetOrAdd(targetDatabase, _ => new Lazy<Task>(
+            () => CloneCertifiedSchemaAsync(sourceConnectionString, sourceDatabase, targetConnectionString, targetDatabase),
+            LazyThreadSafetyMode.ExecutionAndPublication)).Value;
     }
 
     private static async Task CloneCertifiedSchemaAsync(
