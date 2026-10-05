@@ -12,12 +12,15 @@ Se elevó el máximo a 32 intentos y se incorporó una espera aleatoria acotada 
 
 ## Certificación de los dos providers
 
-- Oracle EF10/net10, lane aislada `37251987015`, SHA `4f40b8ea6`: `ORACLE10_CONCURRENCY_CONTRACT=PASS stockForUpdateWaitMs=352 sequenceReservations=10 uniqueMonotonic=true audits=10`. El lock de `InventarioConcurrencyService` bloqueó una segunda conexión hasta la liberación; diez solicitudes paralelas produjeron exactamente 101–110, contador final 110 y diez auditorías.
-- Pomelo/MySQL 8.4.11, gate `37251986975`, mismo SHA: integración `28/28` pass. Se agregó `SecuenciaDocumentoConcurrencyIntegrationTests` para diez reservas paralelas, unicidad, monotonía, contador final y auditoría.
-- Gate Fase 6 exact-head `37251986975`: todos los jobs success, `P0=0`, `P1=0`, `FASE_6_MYSQL_EF_PROVIDER=PASS`, `PHASE7_EXECUTED=false`. Provider-final run `37251986973` success.
+- Gate Fase 6 exact-head run `37307576959`, SHA `9abf04bc5564d91631c4fb5d6e6b7d4e1bb83c6a`: 5/5 jobs success, `FASE_6_MYSQL_EF_PROVIDER=PASS`, `P0=0`, `P1=0`, `PHASE7_EXECUTED=false`.
+- Oracle EF10/net10: `ORACLE10_CONCURRENCY_CONTRACT=PASS stockForUpdateWaitMs=352 sequenceReservations=10 uniqueMonotonic=true audits=10`. El lock de `InventarioConcurrencyService` bloqueó una segunda conexión hasta liberarse; diez reservas concurrentes produjeron 101–110, contador final 110 y diez auditorías. La suite incluyó las pruebas de concurrencia de documentos/stock y `SecuenciaDocumentoConcurrencyIntegrationTests`.
+- Pomelo/MySQL 8.4.11: la prueba `ReservasConcurrentes_ProducenNumeracionUnicaMonotonicaYAuditoriaAtomica` y el conjunto completo de integración terminaron 28/28 pass.
+- [Fase 6 exact-head](https://github.com/solqaryn/Solqaryn/actions/runs/37307576959); aceptación DEV también success en el mismo HEAD: [run](https://github.com/solqaryn/Solqaryn/actions/runs/37307576988).
 
 ## Deuda separada
 
-El ensayo informativo EF8/Pomelo retargeteado a net10 registró 8 fallos unitarios (2380/2388 pasan) y 3 fallos de integración (25/28 pasan). La nueva prueba de secuencias sí pasó en ese ensayo; las fallas restantes continúan abiertas para los puntos 20/21. Fase 7 no se ejecutó.
+El ensayo informativo EF8/Pomelo retargeteado a net10 registró 8 fallos unitarios (2380/2388 pasan) y 3 fallos de integración (25/28 pasan); incluye `InventarioDocumentConcurrencyTests.CompraConMovimientoPosterior_NoPuedeAnularse`. La nueva prueba concurrente de secuencias sí pasó en los dos providers certificados; las fallas del lane exploratorio permanecen abiertas para diagnóstico en los puntos 20/21. Fase 7 no se ejecutó.
+
+**Punto 18: CERRADO para los providers certificados.** Se verificaron bloqueo de stock, reservas únicas/monotónicas y auditoría atómica bajo carga concurrente; la deuda observada al retargetear EF8/Pomelo a net10 queda separada y pendiente.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
