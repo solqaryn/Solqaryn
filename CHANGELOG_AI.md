@@ -7,7 +7,6 @@
 - Fase 7 no ejecutada ni despliegues a QA/main/PROD.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
-
 ## 2026-10-04 — Cierre del Punto 10: LINQ ejecutado en la lane final Oracle EF10
 
 - La lane Oracle EF10/net10 ahora ejecuta al menos 34 probes sobre Producto, Cliente, ExistenciaVariante, Compra y Venta: búsqueda, filtros, todas las ramas de ordenamiento de producto, paginación, includes, scope, normalización y agregados.
@@ -2861,5 +2860,14 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Run exact-head `37246049107` sobre `32536e867c3ef04021007054762b7d5eeabbe060`: integración MySQL actual 27/27; gate Fase 6 5/5 jobs success, `P0=0`, `P1=0`, `FASE_6_MYSQL_EF_PROVIDER=PASS`, `PHASE7_EXECUTED=false`.
 - El lane informativo de EF8/Pomelo retargeteado a net10 mantiene deuda distinta: 8 fallos unitarios (2380/2388 pasan) y 3 fallos de integración (24/27 pasan). Queda abierta para los puntos 20/21; no se oculta ni se atribuye al contrato temporal.
 - Evidencia: `docs/evidencias/modernizacion/PUNTO_15_DATETIME6_MICROSECONDS_2026-10-04.md`.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+## 2026-10-04 — Cierre del Punto 16: collation y sensibilidad a mayúsculas
+
+- Se amplió el contrato MySQL de Pomelo y Oracle EF10: verifica que la columna de código conserve `utf8mb4_bin` aun cuando la tabla usa `utf8mb4_0900_ai_ci`, inserta ambas variantes `CaseProbe`/`caseprobe` bajo índice único, y exige que cada búsqueda exacta devuelva sólo su variante.
+- Pomelo y Oracle EF10/net10 reportan `COLLATION_CASE_CONTRACT=PASS column=utf8mb4_bin table=utf8mb4_0900_ai_ci distinctCaseVariants=2`; la suite MySQL actual pasa 27/27.
+- Run `37247332277` exact-head sobre `fc44057c93cd3aaf1667aad2d84ca9eb073d3130`: gate Fase 6 5/5 success, `P0=0`, `P1=0`, `FASE_6_MYSQL_EF_PROVIDER=PASS`, `PHASE7_EXECUTED=false`.
+- La búsqueda de migraciones/configuración productiva no encontró overrides de collation binaria por columna; el contrato sensible se prueba explícitamente en el harness de provider. No se alteraron collations ni datos productivos. La deuda separada EF8/Pomelo→net10 permanece en 8 fallos unitarios y 3 de integración para puntos 20/21.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_16_COLLATION_CASE_SENSITIVITY_2026-10-04.md`.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.

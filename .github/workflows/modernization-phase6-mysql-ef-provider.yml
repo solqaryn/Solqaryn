@@ -18,6 +18,7 @@ on:
       - 'docs/evidencias/modernizacion/PUNTO_13_JSON_PROVIDER_CONTRACT_2026-10-04.md'
       - 'docs/evidencias/modernizacion/PUNTO_14_DECIMAL_PRECISION_SCALE_2026-10-04.md'
       - 'docs/evidencias/modernizacion/PUNTO_15_DATETIME6_MICROSECONDS_2026-10-04.md'
+      - 'docs/evidencias/modernizacion/PUNTO_16_COLLATION_CASE_SENSITIVITY_2026-10-04.md'
       - 'CHANGELOG_AI.md'
       - 'ARCHITECTURE_CHANGELOG.md'
   workflow_dispatch:
