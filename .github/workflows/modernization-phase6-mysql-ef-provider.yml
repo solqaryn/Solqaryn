@@ -222,11 +222,16 @@ jobs:
           docker exec "$mysql_container" mysql -uroot -proot phase6_pomelo -e "
             INSERT INTO Phase6ProviderContract(Code,Amount,AtUtc,Payload)
             VALUES ('ExactCase',1234567890.1234,'2026-10-04 12:34:56.123456',JSON_OBJECT('tenant',1,'ok',true));
+            INSERT INTO Phase6ProviderContract(Code,Amount,AtUtc,Payload)
+            VALUES ('exactcase',1234567890.1234,'2026-10-04 12:34:56.123456',JSON_OBJECT('tenant',1,'ok',true));
           "
+          test "$(docker exec "$mysql_container" mysql -uroot -proot phase6_pomelo -Nse "SELECT COLLATION_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='phase6_pomelo' AND TABLE_NAME='Phase6ProviderContract' AND COLUMN_NAME='Code';")" = "utf8mb4_bin"
+          test "$(docker exec "$mysql_container" mysql -uroot -proot phase6_pomelo -Nse "SELECT TABLE_COLLATION FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='phase6_pomelo' AND TABLE_NAME='Phase6ProviderContract';")" = "utf8mb4_0900_ai_ci"
+          test "$(docker exec "$mysql_container" mysql -uroot -proot phase6_pomelo -Nse "SELECT COUNT(*) FROM Phase6ProviderContract WHERE Code='ExactCase';")" = "1"
+          test "$(docker exec "$mysql_container" mysql -uroot -proot phase6_pomelo -Nse "SELECT COUNT(*) FROM Phase6ProviderContract WHERE Code='exactcase';")" = "1"
           test "$(docker exec "$mysql_container" mysql -uroot -proot phase6_pomelo -Nse "SELECT CAST(Amount AS CHAR) FROM Phase6ProviderContract WHERE Code='ExactCase';")" = "1234567890.1234"
           test "$(docker exec "$mysql_container" mysql -uroot -proot phase6_pomelo -Nse "SELECT DATE_FORMAT(AtUtc,'%Y-%m-%d %H:%i:%s.%f') FROM Phase6ProviderContract WHERE Code='ExactCase';")" = "2026-10-04 12:34:56.123456"
           test "$(docker exec "$mysql_container" mysql -uroot -proot phase6_pomelo -Nse "SELECT JSON_UNQUOTE(JSON_EXTRACT(Payload,'$.tenant')) FROM Phase6ProviderContract WHERE Code='ExactCase';")" = "1"
-          test "$(docker exec "$mysql_container" mysql -uroot -proot phase6_pomelo -Nse "SELECT COUNT(*) FROM Phase6ProviderContract WHERE Code='exactcase';")" = "0"
 
           set +e
           duplicate_output="$(docker exec "$mysql_container" mysql -uroot -proot phase6_pomelo -e "INSERT INTO Phase6ProviderContract(Code,Amount,AtUtc,Payload) VALUES ('ExactCase',1.0000,UTC_TIMESTAMP(6),JSON_OBJECT('x',1));" 2>&1)"
@@ -235,6 +240,7 @@ jobs:
           test "$duplicate_rc" -ne 0
           echo "$duplicate_output" | grep -q '1062'
           echo 'POMELO_MYSQL_SEMANTICS=PASS'
+          echo 'POMELO_COLLATION_CASE_CONTRACT=PASS column=utf8mb4_bin table=utf8mb4_0900_ai_ci distinctCaseVariants=2'
 
       - name: Tests de retry y excepción MySqlConnector
         working-directory: backend

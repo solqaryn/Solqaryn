@@ -208,14 +208,21 @@ await db.Database.ExecuteSqlRawAsync("DROP TABLE IF EXISTS Phase6Oracle10Contrac
 await db.Database.ExecuteSqlRawAsync("""
 CREATE TABLE Phase6Oracle10Contract(
   Id INT NOT NULL AUTO_INCREMENT,
-  Code VARCHAR(40) COLLATE utf8mb4_bin NOT NULL,
+  Code VARCHAR(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   Amount DECIMAL(18,4) NOT NULL,
   AtUtc DATETIME(6) NOT NULL,
   Payload JSON NOT NULL,
   PRIMARY KEY(Id),
   UNIQUE KEY IX_TipoClientes_EsPredeterminadoUnico(Code)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 """);
+
+var columnCollation = await db.Database.SqlQueryRaw<string>(
+    "SELECT COLLATION_NAME AS Value FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='Phase6Oracle10Contract' AND COLUMN_NAME='Code'").SingleAsync();
+var tableCollation = await db.Database.SqlQueryRaw<string>(
+    "SELECT TABLE_COLLATION AS Value FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='Phase6Oracle10Contract'").SingleAsync();
+if (columnCollation != "utf8mb4_bin" || tableCollation != "utf8mb4_0900_ai_ci")
+    throw new InvalidOperationException($"ORACLE10_COLLATION_METADATA_MISMATCH column={columnCollation} table={tableCollation}");
 
 await using (var tx = await db.Database.BeginTransactionAsync())
 {
@@ -230,7 +237,13 @@ if (rollbackCount != 0)
     throw new InvalidOperationException("ORACLE10_ROLLBACK_FAIL");
 
 await db.Database.ExecuteSqlRawAsync(
-    "INSERT INTO Phase6Oracle10Contract(Code,Amount,AtUtc,Payload) VALUES('DUP',1,UTC_TIMESTAMP(6),JSON_OBJECT('x',1));");
+    "INSERT INTO Phase6Oracle10Contract(Code,Amount,AtUtc,Payload) VALUES('CaseProbe',1,UTC_TIMESTAMP(6),JSON_OBJECT('x',1)),('caseprobe',1,UTC_TIMESTAMP(6),JSON_OBJECT('x',1)),('DUP',1,UTC_TIMESTAMP(6),JSON_OBJECT('x',1));");
+var upperCaseMatch = await db.Database.SqlQueryRaw<long>(
+    "SELECT COUNT(*) AS Value FROM Phase6Oracle10Contract WHERE Code='CaseProbe'").SingleAsync();
+var lowerCaseMatch = await db.Database.SqlQueryRaw<long>(
+    "SELECT COUNT(*) AS Value FROM Phase6Oracle10Contract WHERE Code='caseprobe'").SingleAsync();
+if (upperCaseMatch != 1 || lowerCaseMatch != 1)
+    throw new InvalidOperationException($"ORACLE10_COLLATION_CASE_SEMANTICS_MISMATCH upper={upperCaseMatch} lower={lowerCaseMatch}");
 
 var uow = new UnitOfWork(db);
 var duplicateAttempts = 0;
@@ -296,6 +309,7 @@ if (attempts < 2)
     throw new InvalidOperationException("ORACLE10_RETRY_FAIL");
 
 Console.WriteLine($"ORACLE10_PROVIDER_LANE_RUNTIME=PASS attempts={attempts} repositoryLinqProbes={repositoryLinqProbes}");
+Console.WriteLine("ORACLE10_COLLATION_CASE_CONTRACT=PASS column=utf8mb4_bin table=utf8mb4_0900_ai_ci distinctCaseVariants=2");
 
 sealed class OracleProbeCurrentUser : ICurrentUserService
 {
