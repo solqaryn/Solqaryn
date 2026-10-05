@@ -1,3 +1,10 @@
+## 2026-10-05 — Punto 27: reconciliar arquitectura con el exact-head vigente
+
+- `ARCHITECTURE.md`, `PROJECT_CONTEXT.md`, `PROJECT_INDEX.md`, `ARCHITECTURE_CHANGELOG.md` y este changelog separan el provider productivo Pomelo/net8/EF8 de la ruta candidata Oracle EF10/net10 aislada.
+- Fase 6 exact-head `37330696772`, HEAD `425f9cab0ed291401c081d7946289875eb11e798`: `success`, `FASE_6_MYSQL_EF_PROVIDER=PASS`, `P0=0`, `P1=0`, `PHASE7_EXECUTED=false`; scope lock `37330696444` también `success`.
+- Se registra el toolchain candidato exacto SDK 10.0.401/runtime 10.0.12 y EF Core/Design/CLI 10.0.12, provider Oracle EF 10.0.9. No se cambió el runtime ni se inició Fase 7.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_27_DOCUMENTACION_ARQUITECTONICA_2026-10-05.md`.
+
 ## 2026-10-05 — Revalidación del Punto 6: bootstrap Oracle desde SQL package
 
 - Probe `37280729749`, HEAD `cf0607908701e5a9e3015dcc463f2a6beb87b2cf`: `success`; SQL bootstrap de base vacía produjo 136 tablas, equivalencia SQL/EF y baseline `true`, adopción sin DDL, `has-pending-model-changes` y rollback a Pomelo con 107 migraciones preservadas.

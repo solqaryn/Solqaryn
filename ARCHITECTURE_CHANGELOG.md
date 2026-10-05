@@ -1,3 +1,9 @@
+## 2026-10-05 — Reconciliación arquitectónica del exact-head vigente
+
+- Los documentos canónicos vuelven a alinearse con el HEAD actual `425f9cab0ed291401c081d7946289875eb11e798`; Fase 6 exact-head `37330696772` terminó `success`, `FASE_6_MYSQL_EF_PROVIDER=PASS`, `P0=0`, `P1=0`, `PHASE7_EXECUTED=false`.
+- El runtime/provider productivo sigue net8.0 + EF8/Pomelo 8.0.2; el candidato aislado queda fijado como SDK 10.0.401/runtime 10.0.12 y EF/Design/CLI 10.0.12 + Oracle Connector/NET EF 10.0.9, usando baseline/adopción separado y sin reproducir las 107 migraciones Pomelo.
+- No hubo retarget productivo ni inicio de Fase 7. Evidencia: `docs/evidencias/modernizacion/PUNTO_27_DOCUMENTACION_ARQUITECTONICA_2026-10-05.md`.
+
 ## 2026-10-05 — Cierre formal de Fase 6 (STOP → PASS)
 
 - Gate exact-head `37268035079` sobre `877af434ee15c8fd3a08f974bf58a62c91c03179`: todos los jobs `success`; `FASE_6_MYSQL_EF_PROVIDER=PASS`, `P0=0`, `P1=0`, `TARGETFRAMEWORK_CHANGE=ALLOWED_AFTER_PHASE6_CLOSE` y `PHASE7_EXECUTED=false`.
