@@ -5,6 +5,9 @@ on:
     branches: [dev]
     paths:
       - '.github/workflows/modernization-ef9-pomelo9-probe.yml'
+      - 'backend/**'
+      - 'tools/vaep/N820C.DbProviderProbe/**'
+      - 'scripts/security/priority3_tenant_isolation_audit.py'
   workflow_dispatch:
 
 permissions:

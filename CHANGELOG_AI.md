@@ -1,3 +1,9 @@
+## 2026-10-05 — Reapertura del Punto 3 por deriva en inputs del probe
+
+- La auditoría comprobó que el probe EF9/Pomelo9 `37216002726` fue exitoso en su HEAD, pero quedó desactualizado: el workflow endureció el tenant audit con `--require-certified` y cambiaron tests de concurrencia/retry utilizados por la matriz.
+- Se amplió su disparador permanente en `dev` para backend, el proyecto probe y el auditor tenant; el run nuevo determinará el resultado. El Punto 3 queda abierto hasta esa certificación.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_3_EF9_POMELO9_SOLO_PUENTE_2026-10-04.md`. No se modifica el stack productivo ni se ejecuta Fase 7.
+
 ## 2026-10-05 — Reconciliación de evidencia de Fase 2 Node/npm
 
 - El informe de Fase 2 decía todavía “en certificación” pese a existir el run exact-head `37130894429` sobre `1b34ec476722bc83cd4362eba6cf4391bb492f70`: tres jobs exitosos, Node 24.21.0, npm 11.19.0, Angular 20.3.33 intacto, E2E canónico, lint, build PROD y audit productivo high+ con cero vulnerabilidades.
