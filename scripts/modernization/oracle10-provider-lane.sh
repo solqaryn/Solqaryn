@@ -97,6 +97,20 @@ cd "$candidate/backend"
 dotnet restore src/API/Solqaryn.API.csproj
 dotnet build src/API/Solqaryn.API.csproj --configuration Release --no-restore
 
+dotnet_ef_tools="$work_root/tools"
+mkdir -p "$dotnet_ef_tools"
+dotnet tool install --tool-path "$dotnet_ef_tools" dotnet-ef --version 10.0.12 >/dev/null
+dotnet_ef="$dotnet_ef_tools/dotnet-ef"
+dotnet_ef_version="$("$dotnet_ef" --version)"
+test "$dotnet_ef_version" = "Entity Framework Core .NET Command-line Tools 10.0.12"
+"$dotnet_ef" dbcontext info \
+    --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+    --startup-project src/API/Solqaryn.API.csproj \
+    --context AppDbContext \
+    --configuration Release \
+    --no-build
+echo "ORACLE10_EF_TOOLCHAIN=PASS runtime=10.0.12 design=10.0.12 cli=10.0.12"
+
 dotnet new console --framework net10.0 --name Oracle10Probe --output "$probe" --force >/dev/null
 dotnet add "$probe/Oracle10Probe.csproj" reference "$candidate/backend/src/Infrastructure/Solqaryn.Infrastructure.csproj"
 dotnet add "$probe/Oracle10Probe.csproj" package MySql.EntityFrameworkCore --version 10.0.9 >/dev/null
