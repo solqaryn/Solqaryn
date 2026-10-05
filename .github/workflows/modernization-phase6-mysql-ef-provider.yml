@@ -220,12 +220,28 @@ jobs:
           "
           test "$(docker exec "$mysql_container" mysql -uroot -proot phase6_pomelo -Nse "SELECT COUNT(*) FROM Phase6ProviderContract WHERE Code='ROLLBACK';")" = "0"
 
+          transaction_isolation="$(docker exec "$mysql_container" mysql -uroot -proot phase6_pomelo -Nse "SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED; SELECT @@transaction_isolation;")"
+          test "$transaction_isolation" = "READ-COMMITTED"
+          docker exec "$mysql_container" mysql -uroot -proot phase6_pomelo -e "
+            START TRANSACTION;
+            INSERT INTO Phase6ProviderContract(Code,Amount,AtUtc,Payload) VALUES ('CommitProbe',1.0000,UTC_TIMESTAMP(6),JSON_OBJECT('x',1));
+            COMMIT;
+            START TRANSACTION;
+            INSERT INTO Phase6ProviderContract(Code,Amount,AtUtc,Payload) VALUES ('RollbackProbe',1.0000,UTC_TIMESTAMP(6),JSON_OBJECT('x',1));
+            ROLLBACK;
+          "
+          test "$(docker exec "$mysql_container" mysql -uroot -proot phase6_pomelo -Nse "SELECT COUNT(*) FROM Phase6ProviderContract WHERE Code='CommitProbe';")" = "1"
+          test "$(docker exec "$mysql_container" mysql -uroot -proot phase6_pomelo -Nse "SELECT COUNT(*) FROM Phase6ProviderContract WHERE Code='RollbackProbe';")" = "0"
+
           docker exec "$mysql_container" mysql -uroot -proot phase6_pomelo -e "
             INSERT INTO Phase6ProviderContract(Code,Amount,AtUtc,Payload)
             VALUES ('ExactCase',1234567890.1234,'2026-10-04 12:34:56.123456',JSON_OBJECT('tenant',1,'ok',true));
             INSERT INTO Phase6ProviderContract(Code,Amount,AtUtc,Payload)
             VALUES ('exactcase',1234567890.1234,'2026-10-04 12:34:56.123456',JSON_OBJECT('tenant',1,'ok',true));
           "
+          error_tx_output="$(docker exec "$mysql_container" mysql --force -uroot -proot phase6_pomelo -e "START TRANSACTION; INSERT INTO Phase6ProviderContract(Code,Amount,AtUtc,Payload) VALUES ('ErrorRollbackProbe',1.0000,UTC_TIMESTAMP(6),JSON_OBJECT('x',1)); INSERT INTO Phase6ProviderContract(Code,Amount,AtUtc,Payload) VALUES ('ExactCase',2.0000,UTC_TIMESTAMP(6),JSON_OBJECT('x',2)); ROLLBACK;" 2>&1)"
+          echo "$error_tx_output" | grep -q '1062'
+          test "$(docker exec "$mysql_container" mysql -uroot -proot phase6_pomelo -Nse "SELECT COUNT(*) FROM Phase6ProviderContract WHERE Code='ErrorRollbackProbe';")" = "0"
           test "$(docker exec "$mysql_container" mysql -uroot -proot phase6_pomelo -Nse "SELECT COLLATION_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='phase6_pomelo' AND TABLE_NAME='Phase6ProviderContract' AND COLUMN_NAME='Code';")" = "utf8mb4_bin"
           test "$(docker exec "$mysql_container" mysql -uroot -proot phase6_pomelo -Nse "SELECT TABLE_COLLATION FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='phase6_pomelo' AND TABLE_NAME='Phase6ProviderContract';")" = "utf8mb4_0900_ai_ci"
           test "$(docker exec "$mysql_container" mysql -uroot -proot phase6_pomelo -Nse "SELECT COUNT(*) FROM Phase6ProviderContract WHERE Code='ExactCase';")" = "1"
@@ -242,6 +258,7 @@ jobs:
           echo "$duplicate_output" | grep -q '1062'
           echo 'POMELO_MYSQL_SEMANTICS=PASS'
           echo 'POMELO_COLLATION_CASE_CONTRACT=PASS column=utf8mb4_bin table=utf8mb4_0900_ai_ci distinctCaseVariants=2'
+          echo 'POMELO_TRANSACTION_CONTRACT=PASS isolation=READ-COMMITTED commit=true rollback=true errorRollback=true'
 
       - name: Tests de retry y excepción MySqlConnector
         working-directory: backend

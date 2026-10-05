@@ -85,6 +85,7 @@ dotnet add "$probe/Oracle10Probe.csproj" package MySql.EntityFrameworkCore --ver
 dotnet add "$probe/Oracle10Probe.csproj" package Microsoft.EntityFrameworkCore.Relational --version 10.0.12 >/dev/null
 
 cat > "$probe/Program.cs" <<'CS'
+using System.Data;
 using Microsoft.EntityFrameworkCore;
 using Solqaryn.Application.Common;
 using Solqaryn.Application.Interfaces;
@@ -224,8 +225,11 @@ var tableCollation = await db.Database.SqlQueryRaw<string>(
 if (columnCollation != "utf8mb4_bin" || tableCollation != "utf8mb4_0900_ai_ci")
     throw new InvalidOperationException($"ORACLE10_COLLATION_METADATA_MISMATCH column={columnCollation} table={tableCollation}");
 
-await using (var tx = await db.Database.BeginTransactionAsync())
+await using (var tx = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted))
 {
+    var isolation = await db.Database.SqlQueryRaw<string>("SELECT @@transaction_isolation AS Value").SingleAsync();
+    if (!string.Equals(isolation, "READ-COMMITTED", StringComparison.Ordinal))
+        throw new InvalidOperationException($"ORACLE10_TRANSACTION_ISOLATION_MISMATCH:{isolation}");
     await db.Database.ExecuteSqlRawAsync(
         "INSERT INTO Phase6Oracle10Contract(Code,Amount,AtUtc,Payload) VALUES('ROLLBACK',1.2345,'2026-10-04 12:34:56.123456',JSON_OBJECT('ok',true));");
     await tx.RollbackAsync();
@@ -235,6 +239,28 @@ var rollbackCount = await db.Database.SqlQueryRaw<long>(
     "SELECT COUNT(*) AS Value FROM Phase6Oracle10Contract WHERE Code='ROLLBACK'").SingleAsync();
 if (rollbackCount != 0)
     throw new InvalidOperationException("ORACLE10_ROLLBACK_FAIL");
+
+await using (var tx = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted))
+{
+    await db.Database.ExecuteSqlRawAsync(
+        "INSERT INTO Phase6Oracle10Contract(Code,Amount,AtUtc,Payload) VALUES('CommitProbe',1,UTC_TIMESTAMP(6),JSON_OBJECT('x',1));");
+    await tx.CommitAsync();
+}
+var commitCount = await db.Database.SqlQueryRaw<long>(
+    "SELECT COUNT(*) AS Value FROM Phase6Oracle10Contract WHERE Code='CommitProbe'").SingleAsync();
+if (commitCount != 1)
+    throw new InvalidOperationException("ORACLE10_COMMIT_FAIL");
+
+await using (var tx = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted))
+{
+    await db.Database.ExecuteSqlRawAsync(
+        "INSERT INTO Phase6Oracle10Contract(Code,Amount,AtUtc,Payload) VALUES('RollbackProbe',1,UTC_TIMESTAMP(6),JSON_OBJECT('x',1));");
+    await tx.RollbackAsync();
+}
+var explicitRollbackCount = await db.Database.SqlQueryRaw<long>(
+    "SELECT COUNT(*) AS Value FROM Phase6Oracle10Contract WHERE Code='RollbackProbe'").SingleAsync();
+if (explicitRollbackCount != 0)
+    throw new InvalidOperationException("ORACLE10_EXPLICIT_ROLLBACK_FAIL");
 
 await db.Database.ExecuteSqlRawAsync(
     "INSERT INTO Phase6Oracle10Contract(Code,Amount,AtUtc,Payload) VALUES('CaseProbe',1,UTC_TIMESTAMP(6),JSON_OBJECT('x',1)),('caseprobe',1,UTC_TIMESTAMP(6),JSON_OBJECT('x',1)),('DUP',1,UTC_TIMESTAMP(6),JSON_OBJECT('x',1));");
@@ -253,6 +279,8 @@ try
     await uow.ExecuteInTransactionAsync(async () =>
     {
         duplicateAttempts++;
+        await db.Database.ExecuteSqlRawAsync(
+            "INSERT INTO Phase6Oracle10Contract(Code,Amount,AtUtc,Payload) VALUES('ErrorRollbackProbe',1,UTC_TIMESTAMP(6),JSON_OBJECT('x',1));");
         await db.Database.ExecuteSqlRawAsync(
             "INSERT INTO Phase6Oracle10Contract(Code,Amount,AtUtc,Payload) VALUES('DUP',2,UTC_TIMESTAMP(6),JSON_OBJECT('x',2));");
     });
@@ -273,6 +301,12 @@ if (translatedDuplicate.Message != "Conflicto de concurrencia: Ya existe otro ti
 if (ErrorNumber(translatedDuplicate) != 1062 ||
     !ExceptionChain(translatedDuplicate).Any(exception => exception.GetType().FullName == "MySql.Data.MySqlClient.MySqlException"))
     throw new InvalidOperationException("ORACLE10_1062_PROVIDER_ERROR_NOT_PRESERVED");
+var errorRollbackCount = await db.Database.SqlQueryRaw<long>(
+    "SELECT COUNT(*) AS Value FROM Phase6Oracle10Contract WHERE Code='ErrorRollbackProbe'").SingleAsync();
+var duplicatePersistedCount = await db.Database.SqlQueryRaw<long>(
+    "SELECT COUNT(*) AS Value FROM Phase6Oracle10Contract WHERE Code='DUP'").SingleAsync();
+if (errorRollbackCount != 0 || duplicatePersistedCount != 1)
+    throw new InvalidOperationException($"ORACLE10_ERROR_ROLLBACK_FAIL partial={errorRollbackCount} duplicate={duplicatePersistedCount}");
 
 await db.Database.ExecuteSqlRawAsync("DROP TABLE IF EXISTS Phase6Oracle10Retry;");
 await db.Database.ExecuteSqlRawAsync("CREATE TABLE Phase6Oracle10Retry(Id INT PRIMARY KEY, Value INT NOT NULL);");
@@ -310,6 +344,7 @@ if (attempts < 2)
 
 Console.WriteLine($"ORACLE10_PROVIDER_LANE_RUNTIME=PASS attempts={attempts} repositoryLinqProbes={repositoryLinqProbes}");
 Console.WriteLine("ORACLE10_COLLATION_CASE_CONTRACT=PASS column=utf8mb4_bin table=utf8mb4_0900_ai_ci distinctCaseVariants=2");
+Console.WriteLine("ORACLE10_TRANSACTION_CONTRACT=PASS isolation=READ-COMMITTED commit=true rollback=true errorRollback=true");
 
 sealed class OracleProbeCurrentUser : ICurrentUserService
 {
