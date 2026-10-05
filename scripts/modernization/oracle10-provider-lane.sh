@@ -466,6 +466,9 @@ migration_only = {
     "N08MigracionesLimpiezaPreflightIntegrationTests.cs",
     "N08PersistenciaLimpiezaIntegrationTests.cs",
     "N110CosteoMigrationIntegrationTests.cs",
+    # N06 verifies MySQL migration-installed CHECK/bridge behavior rather than
+    # provider-agnostic integration behavior; Oracle lane does not replay history.
+    "MovimientoInventarioOrigenTipadoIntegrationTests.cs",
 }
 included = []
 excluded = []
@@ -479,6 +482,10 @@ for path in sorted(test_root.rglob("*.cs")):
         continue
 
     source = source.replace("using MySqlConnector;", "using MySql.Data.MySqlClient;")
+    source = source.replace(
+        "new MySqlConnectionStringBuilder(raw)",
+        'new MySqlConnectionStringBuilder(raw.Replace("SslMode=None", "SslMode=Disabled", StringComparison.OrdinalIgnoreCase))',
+    )
     source = source.replace(".UseMySql(", ".UseMySQL(")
     source, _ = re.subn(
         r",\s*new MySqlServerVersion\s*\(\s*new Version\([^)]*\)\s*\)\s*\)",
@@ -499,7 +506,7 @@ for path in sorted(test_root.rglob("*.cs")):
     path.write_text(source, encoding="utf-8")
     included.append(path.name)
 
-if len(included) + len(excluded) != 17 or len(included) != 14:
+if len(included) + len(excluded) != 17 or len(included) != 13:
     raise SystemExit(
         f"ORACLE10_INTEGRATION_FILESET_MISMATCH included={len(included)} excluded={len(excluded)}"
     )
@@ -569,6 +576,22 @@ internal static class OracleCandidateDatabaseBootstrap
             await using var create = target.CreateCommand();
             create.CommandText = $"CREATE TABLE `{Quote(targetDatabase)}`.`{Quote(table)}` LIKE `{Quote(sourceDatabase)}`.`{Quote(table)}`;";
             await create.ExecuteNonQueryAsync();
+        }
+
+        var checkConstraints = new List<(string Table, string Name, string Clause)>();
+        await using (var listChecks = source.CreateCommand())
+        {
+            listChecks.CommandText = "SELECT tc.TABLE_NAME, cc.CONSTRAINT_NAME, cc.CHECK_CLAUSE FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc JOIN INFORMATION_SCHEMA.CHECK_CONSTRAINTS cc ON cc.CONSTRAINT_SCHEMA=tc.CONSTRAINT_SCHEMA AND cc.CONSTRAINT_NAME=tc.CONSTRAINT_NAME WHERE tc.CONSTRAINT_SCHEMA=@schema AND tc.CONSTRAINT_TYPE='CHECK' ORDER BY tc.TABLE_NAME, cc.CONSTRAINT_NAME;";
+            listChecks.Parameters.AddWithValue("@schema", sourceDatabase);
+            await using var reader = await listChecks.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+                checkConstraints.Add((reader.GetString(0), reader.GetString(1), reader.GetString(2)));
+        }
+        foreach (var (table, name, clause) in checkConstraints)
+        {
+            await using var addCheck = target.CreateCommand();
+            addCheck.CommandText = $"ALTER TABLE `{Quote(targetDatabase)}`.`{Quote(table)}` ADD CONSTRAINT `{Quote(name)}` CHECK ({clause});";
+            await addCheck.ExecuteNonQueryAsync();
         }
 
         var foreignKeys = new Dictionary<(string Table, string Name), (string ReferencedTable, List<(string Column, string ReferencedColumn)> Parts)>();
@@ -654,7 +677,7 @@ for relative in included + [bootstrap.name]:
     ET.SubElement(items, "Compile", Include=relative)
 ET.indent(tree, space="  ")
 tree.write(project, encoding="unicode")
-print(f"ORACLE10_INTEGRATION_FILESET=PASS included={len(included)} migrationSpecificExcluded={len(excluded)}")
+print(f"ORACLE10_INTEGRATION_FILESET=PASS included={len(included)} historySpecificExcluded={len(excluded)}")
 print("ORACLE10_INTEGRATION_INCLUDED=" + ",".join(included))
 print("ORACLE10_INTEGRATION_EXCLUDED=" + ",".join(excluded))
 PY
