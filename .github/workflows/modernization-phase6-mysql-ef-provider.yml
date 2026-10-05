@@ -30,17 +30,6 @@ on:
       - 'PROJECT_INDEX.md'
   pull_request:
     branches: [dev]
-    paths:
-      - 'backend/**'
-      - 'scripts/security/priority3_tenant_isolation_audit.py'
-      - 'scripts/modernization/**'
-      - '.github/workflows/modernization-phase6-mysql-ef-provider.yml'
-      - 'docs/evidencias/modernizacion/**'
-      - 'CHANGELOG_AI.md'
-      - 'ARCHITECTURE_CHANGELOG.md'
-      - 'ARCHITECTURE.md'
-      - 'PROJECT_CONTEXT.md'
-      - 'PROJECT_INDEX.md'
   workflow_dispatch:
 
 permissions:

@@ -5,6 +5,13 @@
 - Fase 6 queda formalmente cerrada y deja de emitir STOP. El runtime sigue net8/EF8/Pomelo; Fase 7 no se inició y sus cambios productivos continúan pendientes de iniciar esa fase.
 - Evidencia: `docs/evidencias/modernizacion/PUNTO_30_FASE6_STOP_A_PASS_2026-10-05.md`.
 
+## 2026-10-05 — Auditoría del Punto 28: PR check sin filtro de paths; enforcement pendiente
+
+- El workflow de Fase 6 ahora dispara en cada pull request hacia `dev`, sin `paths`, para que `Dictamen Fase 6` siempre exista como check requerido candidato.
+- El ruleset activo `22829243` sólo protege borrado y force-push; no exige PR ni status checks. El punto 28 permanece abierto hasta configurar y leer de vuelta enforcement obligatorio en GitHub.
+- La conexión GitHub disponible en esta sesión es de lectura para rulesets; no se cambió ni se afirmó haber cambiado esa configuración.
+- Evidencia actualizada: `docs/evidencias/modernizacion/PUNTO_28_GATE_CI_PERMANENTE_PROVIDER_2026-10-05.md`.
+
 ## 2026-10-05 — Punto 27: documentación arquitectónica reconciliada
 
 - Los cinco documentos requeridos reflejan la decisión definitiva de Fase 6 y separan explícitamente runtime vigente `net8.0`/EF8/Pomelo 8 de la ruta futura certificada Oracle EF10/net10, aún aislada.
@@ -24,12 +31,12 @@
 - Se alinearon sus filtros para que los cambios que disparan Fase 5 (frontend/backend, evidencias de modernización y changelogs) disparen también aceptación DEV; así el E2E exact-head no espera un run que nunca se creó.
 - Este cambio es sólo CI; no ejecuta Fase 7 ni modifica runtime, migraciones o infraestructura.
 
-## 2026-10-05 — Cierre del Punto 28: gate permanente de provider
+## 2026-10-05 — Implementación inicial del workflow del Punto 28 (sin enforcement obligatorio)
 
-- `modernization-phase6-mysql-ef-provider.yml` ahora se dispara automáticamente en push relevante a `dev` y en pull request hacia `dev`; conserva además la opción manual.
-- La validación de rama distingue correctamente push/dispatch en `dev` de PR cuyo branch base es `dev`. En ambos casos conserva scope gate, matriz exacta y autoridad única Pomelo en proyectos productivos, y falla cerrado si la certificación de provider no pasa.
-- Push automático exact-head `37265475905` sobre `a5c93f14d0a3ee29573e7f0dcd23d4addeddd699`: cuatro jobs de certificación y dictamen `success`, Fase 6 `PASS`, `P0=0`, `P1=0`, Fase 7 no ejecutada.
-- Evidencia: `docs/evidencias/modernizacion/PUNTO_28_GATE_CI_PERMANENTE_PROVIDER_2026-10-05.md`. El punto 29 certificará el HEAD de cierre.
+- La implementación original disparaba `modernization-phase6-mysql-ef-provider.yml` en push relevante a `dev` y en PR hacia `dev`, con opción manual.
+- La auditoría posterior detectó que el filtro de paths podía omitir PRs y que el ruleset activo no exigía PR/check. Se quitó el filtro PR; el enforcement obligatorio continúa abierto hasta actualizar y leer de vuelta el ruleset.
+- Push automático histórico `37265475905` sobre `a5c93f14d0a3ee29573e7f0dcd23d4addeddd699`: los jobs de esa ejecución pasaron, pero eso no prueba que GitHub exigiera el check para integrar.
+- Estado actual y evidencia: `docs/evidencias/modernizacion/PUNTO_28_GATE_CI_PERMANENTE_PROVIDER_2026-10-05.md`.
 - Fase 7 no ejecutada.
 
 ## 2026-10-05 — Reconciliación exact-head: Fase 6 PASS (puntos 20–26)
