@@ -1,3 +1,11 @@
+## 2026-10-05 — Cierre del Punto 4: Oracle baseline, paquete SQL y rollback
+
+- Probe exact-head `37279558796`, HEAD `3dbc3d33f1ee79466a7b53e9ce6e323f492e071e`: success.
+- Bootstrap del SQL package en base vacía creó 136 tablas; equivalencia física SQL/EF y baseline `true`; adopción sobre esquema Pomelo sin DDL `PASS`.
+- Rollback Oracle→Pomelo preservó esquema, datos, usuario semilla, 107 migraciones históricas y marcador Oracle; `has-pending-model-changes` pasó tras bootstrap/rollback.
+- Punto 4 queda cerrado. Sólo MySQL efímero; sin cambios productivos ni Fase 7.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_4_ORACLE_BASELINE_ADOPTION_2026-10-04.md`.
+
 ## 2026-10-05 — Reapertura del Punto 4 por ampliación del probe Oracle baseline
 
 - La certificación histórica `37230813349` fue exitosa en su SHA, pero el workflow añadió posteriormente SQL bootstrap en base vacía, comparación física ampliada y prueba de rollback Oracle→Pomelo. El éxito viejo no cubre esos pasos.

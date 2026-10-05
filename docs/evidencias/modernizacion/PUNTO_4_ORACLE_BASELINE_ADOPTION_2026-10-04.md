@@ -6,7 +6,7 @@ Rama: `dev`
 
 ## Dictamen
 
-**Estado: REABIERTO para revalidar el alcance ampliado del probe.** La decisión de arquitectura sigue siendo baseline/adopción; Oracle EF10 no se declara drop-in para las 107 migraciones históricas. No se reejecuta esa historia bajo Oracle ni se reescribe. Una restauración física canónica crea el esquema y una migración Oracle EF10 de baseline lo adopta; en bases existentes la adopción no genera DDL.
+**Estado: PASS — alcance ampliado revalidado exact-head.** La decisión de arquitectura sigue siendo baseline/adopción; Oracle EF10 no se declara drop-in para las 107 migraciones históricas. No se reejecuta esa historia bajo Oracle ni se reescribe. Una restauración física canónica crea el esquema y una migración Oracle EF10 de baseline lo adopta; en bases existentes la adopción no genera DDL.
 
 ## Certificación reproducible
 
@@ -24,12 +24,24 @@ Después del run `37230813349`, el workflow añadió generación/verificación d
 
 Se amplía el disparador de push a `backend/**`, además del workflow y reportes específicos P4–P6. El Punto 4 queda abierto hasta que el workflow actualizado termine success y pruebe fresh bootstrap, adopción sin DDL, equivalencia y rollback en una base MySQL descartable.
 
+### Certificación actualizada
+
+El run exact-head [37279558796](https://github.com/solqaryn/Solqaryn/actions/runs/37279558796), sobre `3dbc3d33f1ee79466a7b53e9ce6e323f492e071e`, terminó `success`. Los logs confirman:
+
+- Paquete SQL Oracle aplicado a base completamente vacía: `ORACLE_EF10_SQL_PACKAGE_FRESH_BOOTSTRAP=PASS tables=136`.
+- Equivalencia integral SQL-package/EF y baseline: `ORACLE_EF10_SCRIPT_BOOTSTRAP_SCHEMA_EQUIVALENT=true`, `ORACLE_BASELINE_SCHEMA_EQUIVALENT=true`, 136 tablas.
+- Migración baseline adoptada sobre esquema Pomelo existente sin DDL: `ORACLE_BASELINE_ADOPTION_NO_DDL=PASS`.
+- `has-pending-model-changes` de Oracle tras bootstrap y de Pomelo tras rollback terminaron correctamente.
+- Rollback Oracle→Pomelo: `ORACLE_TO_POMELO_PROVIDER_ROLLBACK=PASS`; esquema/datos/usuario semilla preservados, historial Pomelo=107 y marcador Oracle retenido.
+
+**Punto 4: CERRADO.** Las pruebas utilizaron MySQL descartable de CI y no tocaron bases persistentes.
+
 ## Límites del cierre
 
 - Las 107 migraciones históricas permanecen como historia Pomelo y no se convierten ni reescriben en este punto.
 - El probe genera baseline y migración en el runner y los retiene como artefactos de CI. Aún no certifica el bootstrap operativo empaquetado para una instalación productiva limpia: eso corresponde al Punto 6.
 - Esta solución no cambia `.csproj` productivos, configuración runtime, datos, QA, `main` ni PROD; Fase 7 sigue sin ejecutarse.
 
-**Punto 4: ABIERTO — pendiente del probe actualizado.** Fase 7 no ejecutada; sin cambios de `.csproj` productivos, QA, `main` ni PROD.
+Fase 7 no ejecutada; sin cambios de `.csproj` productivos, QA, `main` ni PROD.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
