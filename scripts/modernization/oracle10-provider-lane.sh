@@ -54,6 +54,24 @@ ET.SubElement(package_group, "PackageReference", Include="Microsoft.EntityFramew
 
 compile_group = ET.SubElement(proj, "ItemGroup")
 ET.SubElement(compile_group, "Compile", Remove="**/Migrations/**/*.cs")
+snapshot = root / "src/Infrastructure/Migrations/AppDbContextModelSnapshot.cs"
+snapshot_source = snapshot.read_text(encoding="utf-8-sig")
+snapshot_source = re.sub(
+    r"^\s*MySqlModelBuilderExtensions\.AutoIncrementColumns\(modelBuilder\);\s*$",
+    "",
+    snapshot_source,
+    flags=re.MULTILINE,
+)
+snapshot_source = re.sub(
+    r"^\s*MySqlPropertyBuilderExtensions\.UseMySqlIdentityColumn\(b\.Property<int>\(\"[^\"]+\"\)\);\s*$",
+    "",
+    snapshot_source,
+    flags=re.MULTILINE,
+)
+if "MySqlModelBuilderExtensions." in snapshot_source or "MySqlPropertyBuilderExtensions." in snapshot_source:
+    raise SystemExit("ORACLE10_SNAPSHOT_PROVIDER_ANNOTATIONS_UNCLASSIFIED")
+snapshot.write_text(snapshot_source, encoding="utf-8")
+ET.SubElement(compile_group, "Compile", Include="Migrations/AppDbContextModelSnapshot.cs")
 save_xml(infra, tree)
 
 for relative in [
