@@ -459,6 +459,107 @@ dotnet run --project "$probe/Oracle10Probe.csproj" --configuration Release
 ConnectionStrings__DefaultConnection="$ORACLE10_CONNECTION" \
   dotnet run --project "$candidate/backend/scripts/Solqaryn.JsonProbe.csproj" --configuration Release
 
+python3 - "$candidate/backend/tests/Solqaryn.Tests" <<'PY'
+import re
+import sys
+import xml.etree.ElementTree as ET
+from pathlib import Path
+
+test_root = Path(sys.argv[1])
+project = test_root / "Solqaryn.Tests.csproj"
+migration_only = {
+    "N08MigracionesLimpiezaPreflightIntegrationTests.cs",
+    "N08PersistenciaLimpiezaIntegrationTests.cs",
+    "N110CosteoMigrationIntegrationTests.cs",
+}
+included = []
+excluded = []
+
+for path in sorted(test_root.rglob("*.cs")):
+    source = path.read_text(encoding="utf-8-sig")
+    if '[Trait("Category", "Integration")]' not in source:
+        continue
+    if path.name in migration_only:
+        excluded.append(path.name)
+        continue
+
+    source = source.replace("using MySqlConnector;", "using MySql.Data.MySqlClient;")
+    source = source.replace(".UseMySql(", ".UseMySQL(")
+    source, _ = re.subn(
+        r",\s*new MySqlServerVersion\s*\(\s*new Version\([^)]*\)\s*\)\s*\)",
+        ")",
+        source,
+    )
+    if ".UseMySQL(" in source and "using MySql.EntityFrameworkCore.Extensions;" not in source:
+        source = "using MySql.EntityFrameworkCore.Extensions;\n" + source
+    source = re.sub(
+        r"(\b\w+)\.Database\.MigrateAsync\(\)",
+        r"OracleCandidateDatabaseBootstrap.EnsureCreatedAsync(\1)",
+        source,
+    )
+    if "UseMySql(" in source or "MySqlServerVersion" in source or "MySqlConnector" in source:
+        raise SystemExit(f"ORACLE10_INTEGRATION_PROVIDER_REWRITE_INCOMPLETE={path.name}")
+    if ".Database.MigrateAsync(" in source or "IMigrator" in source:
+        raise SystemExit(f"ORACLE10_INTEGRATION_HISTORY_DEPENDENCY_UNCLASSIFIED={path.name}")
+    path.write_text(source, encoding="utf-8")
+    included.append(path.name)
+
+if len(included) + len(excluded) != 17 or len(included) != 14:
+    raise SystemExit(
+        f"ORACLE10_INTEGRATION_FILESET_MISMATCH included={len(included)} excluded={len(excluded)}"
+    )
+
+bootstrap = test_root / "OracleCandidateDatabaseBootstrap.cs"
+bootstrap.write_text(r'''using Microsoft.EntityFrameworkCore;
+using MySql.Data.MySqlClient;
+using Solqaryn.Infrastructure.Persistence;
+
+internal static class OracleCandidateDatabaseBootstrap
+{
+    public static async Task EnsureCreatedAsync(AppDbContext context)
+    {
+        var connectionString = context.Database.GetConnectionString()
+            ?? throw new InvalidOperationException("Oracle candidate test connection string is missing.");
+        var builder = new MySqlConnectionStringBuilder(connectionString);
+        var database = builder.Database;
+        if (string.IsNullOrWhiteSpace(database))
+            throw new InvalidOperationException("Oracle candidate integration database name is missing.");
+
+        builder.Database = string.Empty;
+        await using (var server = new MySqlConnection(builder.ConnectionString))
+        {
+            await server.OpenAsync();
+            await using var command = server.CreateCommand();
+            command.CommandText = $"CREATE DATABASE IF NOT EXISTS `{database.Replace("`", "``")}` CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;";
+            await command.ExecuteNonQueryAsync();
+        }
+
+        await context.Database.EnsureCreatedAsync();
+    }
+}
+''', encoding="utf-8")
+
+tree = ET.parse(project)
+root = tree.getroot()
+props = root.find("PropertyGroup")
+if props is None:
+    props = ET.SubElement(root, "PropertyGroup")
+ET.SubElement(props, "EnableDefaultCompileItems").text = "false"
+items = ET.SubElement(root, "ItemGroup")
+for relative in included + [bootstrap.name]:
+    ET.SubElement(items, "Compile", Include=relative)
+ET.indent(tree, space="  ")
+tree.write(project, encoding="unicode")
+print(f"ORACLE10_INTEGRATION_FILESET=PASS included={len(included)} migrationSpecificExcluded={len(excluded)}")
+print("ORACLE10_INTEGRATION_INCLUDED=" + ",".join(included))
+print("ORACLE10_INTEGRATION_EXCLUDED=" + ",".join(excluded))
+PY
+
+dotnet test "$candidate/backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj" \
+  --configuration Release \
+  --filter "Category=Integration" \
+  --logger "console;verbosity=normal"
+
 cd "$repo_root"
 python3 scripts/security/priority3_tenant_isolation_audit.py --require-certified
 test -z "$(git status --porcelain)"
