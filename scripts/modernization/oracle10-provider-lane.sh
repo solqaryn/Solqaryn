@@ -564,39 +564,50 @@ internal static class OracleCandidateDatabaseBootstrap
         if (tables.Count == 0)
             throw new InvalidOperationException("Certified Pomelo integration schema template has no tables.");
 
-        var pending = new HashSet<string>(tables, StringComparer.OrdinalIgnoreCase);
-        while (pending.Count > 0)
+        foreach (var table in tables)
         {
-            var createdThisPass = new List<string>();
-            MySqlException? lastCreateError = null;
-            foreach (var table in pending)
-            {
-                string ddl;
-                await using (var show = source.CreateCommand())
-                {
-                    show.CommandText = $"SHOW CREATE TABLE `{Quote(sourceDatabase)}`.`{Quote(table)}`;";
-                    await using var reader = await show.ExecuteReaderAsync();
-                    if (!await reader.ReadAsync())
-                        throw new InvalidOperationException($"Missing DDL for template table {table}.");
-                    ddl = reader.GetString(1);
-                }
+            await using var create = target.CreateCommand();
+            create.CommandText = $"CREATE TABLE `{Quote(targetDatabase)}`.`{Quote(table)}` LIKE `{Quote(sourceDatabase)}`.`{Quote(table)}`;";
+            await create.ExecuteNonQueryAsync();
+        }
 
-                try
-                {
-                    await using var create = target.CreateCommand();
-                    create.CommandText = ddl;
-                    await create.ExecuteNonQueryAsync();
-                    createdThisPass.Add(table);
-                }
-                catch (MySqlException exception)
-                {
-                    lastCreateError = exception;
-                }
+        var foreignKeys = new Dictionary<(string Table, string Name), (string ReferencedTable, List<(string Column, string ReferencedColumn)> Parts)>();
+        await using (var listForeignKeys = source.CreateCommand())
+        {
+            listForeignKeys.CommandText = "SELECT TABLE_NAME, CONSTRAINT_NAME, COLUMN_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA=@schema AND REFERENCED_TABLE_NAME IS NOT NULL ORDER BY TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION;";
+            listForeignKeys.Parameters.AddWithValue("@schema", sourceDatabase);
+            await using var reader = await listForeignKeys.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                var key = (reader.GetString(0), reader.GetString(1));
+                if (!foreignKeys.TryGetValue(key, out var definition))
+                    definition = (reader.GetString(3), new List<(string Column, string ReferencedColumn)>());
+                definition.Parts.Add((reader.GetString(2), reader.GetString(4)));
+                foreignKeys[key] = definition;
             }
-            if (createdThisPass.Count == 0)
-                throw new InvalidOperationException("Could not reproduce certified table DDL in the isolated test database.", lastCreateError);
-            foreach (var table in createdThisPass)
-                pending.Remove(table);
+        }
+
+        foreach (var (key, definition) in foreignKeys)
+        {
+            string deleteRule;
+            string updateRule;
+            await using (var rules = source.CreateCommand())
+            {
+                rules.CommandText = "SELECT DELETE_RULE, UPDATE_RULE FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=@schema AND TABLE_NAME=@table AND CONSTRAINT_NAME=@constraint;";
+                rules.Parameters.AddWithValue("@schema", sourceDatabase);
+                rules.Parameters.AddWithValue("@table", key.Table);
+                rules.Parameters.AddWithValue("@constraint", key.Name);
+                await using var reader = await rules.ExecuteReaderAsync();
+                if (!await reader.ReadAsync())
+                    throw new InvalidOperationException($"Missing referential rules for {key.Table}.{key.Name}.");
+                deleteRule = reader.GetString(0);
+                updateRule = reader.GetString(1);
+            }
+            var columns = string.Join(",", definition.Parts.Select(part => $"`{Quote(part.Column)}`"));
+            var referencedColumns = string.Join(",", definition.Parts.Select(part => $"`{Quote(part.ReferencedColumn)}`"));
+            await using var addForeignKey = target.CreateCommand();
+            addForeignKey.CommandText = $"ALTER TABLE `{Quote(targetDatabase)}`.`{Quote(key.Table)}` ADD CONSTRAINT `{Quote(key.Name)}` FOREIGN KEY ({columns}) REFERENCES `{Quote(targetDatabase)}`.`{Quote(definition.ReferencedTable)}` ({referencedColumns}) ON DELETE {deleteRule} ON UPDATE {updateRule};";
+            await addForeignKey.ExecuteNonQueryAsync();
         }
 
         await using (var checks = target.CreateCommand())
