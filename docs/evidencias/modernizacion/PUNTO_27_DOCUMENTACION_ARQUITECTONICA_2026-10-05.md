@@ -25,6 +25,7 @@ Se contrastó la decisión de Fase 6 con el workflow de provider y sus ejecucion
 ## Evidencia técnica
 
 - Gate exact-head Fase 6 [37330696772](https://github.com/solqaryn/Solqaryn/actions/runs/37330696772), HEAD `425f9cab0ed291401c081d7946289875eb11e798`: `success`, dictamen `FASE_6_MYSQL_EF_PROVIDER=PASS`, `P0=0`, `P1=0`, `PHASE7_EXECUTED=false`; scope lock [37330696444](https://github.com/solqaryn/Solqaryn/actions/runs/37330696444) `success` sobre el mismo SHA.
+- Certificación posterior del commit que contiene esta reconciliación, HEAD `d6d44590a96c0e17a195c78baf00315a839c6e66`: Fase 6 [37332208076](https://github.com/solqaryn/Solqaryn/actions/runs/37332208076), Fase 4 [37332207849](https://github.com/solqaryn/Solqaryn/actions/runs/37332207849), Fase 5 [37332207997](https://github.com/solqaryn/Solqaryn/actions/runs/37332207997), aceptación DEV [37332207768](https://github.com/solqaryn/Solqaryn/actions/runs/37332207768), Scope Lock [37332207857](https://github.com/solqaryn/Solqaryn/actions/runs/37332207857) y VAEP [37332207747](https://github.com/solqaryn/Solqaryn/actions/runs/37332207747): todos `success` sobre el mismo SHA.
 
 ## Resultado
 
