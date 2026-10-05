@@ -99,7 +99,16 @@ jobs:
           for name,want in expected.items():
               got=refs.get(name)
               assert got==want, f"{name}: {got} != {want}"
+          provider_names={"Pomelo.EntityFrameworkCore.MySql","MySql.EntityFrameworkCore"}
+          product_providers={}
+          for project in Path("backend/src").rglob("*.csproj"):
+              for reference in ET.parse(project).getroot().findall(".//PackageReference"):
+                  name=reference.attrib.get("Include")
+                  if name in provider_names:
+                      product_providers[name]=reference.attrib.get("Version")
+          assert product_providers=={"Pomelo.EntityFrameworkCore.MySql":"8.0.2"}, product_providers
           print("PHASE6_BASELINE_MATRIX=PASS")
+          print("PHASE6_SINGLE_PROVIDER_AUTHORITY=PASS product=Pomelo.EntityFrameworkCore.MySql/8.0.2")
           PY
           test -z "$(git status --porcelain)"
 
