@@ -589,8 +589,9 @@ internal static class OracleCandidateDatabaseBootstrap
         }
         foreach (var (table, name, clause) in checkConstraints)
         {
+            var escapedClause = clause.Replace("\\", "\\\\", StringComparison.Ordinal);
             await using var addCheck = target.CreateCommand();
-            addCheck.CommandText = $"ALTER TABLE `{Quote(targetDatabase)}`.`{Quote(table)}` ADD CONSTRAINT `{Quote(name)}` CHECK ({clause});";
+            addCheck.CommandText = $"ALTER TABLE `{Quote(targetDatabase)}`.`{Quote(table)}` ADD CONSTRAINT `{Quote(name)}` CHECK ({escapedClause});";
             await addCheck.ExecuteNonQueryAsync();
         }
 
