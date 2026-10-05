@@ -2871,3 +2871,13 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Evidencia: `docs/evidencias/modernizacion/PUNTO_16_COLLATION_CASE_SENSITIVITY_2026-10-04.md`.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
+## 2026-10-04 — Cierre del Punto 17: transacciones, aislamiento y rollback ante error
+
+- Pomelo y Oracle EF10 prueban nivel `READ-COMMITTED`, commit durable, rollback explícito sin fila parcial y rollback del trabajo previo a un duplicate-key 1062.
+- Resultados `POMELO_TRANSACTION_CONTRACT=PASS` y `ORACLE10_TRANSACTION_CONTRACT=PASS`; Pomelo integración MySQL 27/27.
+- Gate exact-head `37249770325` sobre `b5ae33500` y lane Oracle aislada `37249770331`: success; gate Fase 6 `P0=0`, `P1=0`, `PHASE7_EXECUTED=false`.
+- La sonda inicial reveló que `@@transaction_isolation` refleja el default de sesión, no el override por transacción; se corrigió estableciendo el nivel en la sesión persistente antes de comprobarlo. La captura del error de mysql CLI también distingue el exit code esperado de la prueba.
+- El lane EF8/Pomelo retargeteado a net10 conserva 8 fallos unitarios y 3 de integración; permanece en deuda de puntos 20/21. Fase 7 no ejecutada.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_17_TRANSACTION_ISOLATION_ROLLBACK_2026-10-04.md`.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
