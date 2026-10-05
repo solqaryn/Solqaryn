@@ -1,3 +1,9 @@
+## 2026-10-05 — Reconciliación de evidencia de Fase 2 Node/npm
+
+- El informe de Fase 2 decía todavía “en certificación” pese a existir el run exact-head `37130894429` sobre `1b34ec476722bc83cd4362eba6cf4391bb492f70`: tres jobs exitosos, Node 24.21.0, npm 11.19.0, Angular 20.3.33 intacto, E2E canónico, lint, build PROD y audit productivo high+ con cero vulnerabilidades.
+- El dictamen histórico se actualizó a `FASE_2_NODE_NPM=PASS`; se acotó el readback Vercel a configuración `24.x` y no a prueba de patch runtime.
+- Evidencia: `docs/evidencias/modernizacion/FASE_2_NODE_NPM_2026-10-02.md`. Esta reconciliación no cambia versiones ni ejecuta Fase 7.
+
 ## 2026-10-05 — Cierre formal del Punto 30: Fase 6 STOP → PASS
 
 - Gate exact-head `37268035079`, HEAD `877af434ee15c8fd3a08f974bf58a62c91c03179`: `FASE_6_MYSQL_EF_PROVIDER=PASS`, `P0=0`, `P1=0`, `TARGETFRAMEWORK_CHANGE=ALLOWED_AFTER_PHASE6_CLOSE`, `PHASE7_EXECUTED=false`; los cinco jobs terminaron `success`.
