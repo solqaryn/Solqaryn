@@ -2,26 +2,40 @@
 
 Fecha: 2026-10-05 (UTC)  
 Repositorio: `solqaryn/Solqaryn`  
-Rama de integración: `dev`
+Rama protegida: `dev`
 
-## Control permanente en el repositorio
+## Gate versionado
 
-El workflow `.github/workflows/modernization-phase6-mysql-ef-provider.yml` se ejecuta automáticamente para los cambios relevantes que llegan por `push` a `dev`, y para **todo** `pull_request` cuyo destino sea `dev`; el evento PR ya no tiene filtro de paths, por lo que siempre crea el check estable `Dictamen Fase 6`. También conserva `workflow_dispatch` como vía manual, no como única vía.
+El workflow `.github/workflows/modernization-phase6-mysql-ef-provider.yml` corre automáticamente en los pushes a `dev` y en **todo** pull request dirigido a `dev`, sin filtro de paths para el evento PR. Publica el check estable `Dictamen Fase 6`, valida scope y provider productivo, ejecuta los probes MySQL/Oracle y falla cerrado como `STOP` ante cualquier lane o autoridad requerida fallida. `workflow_dispatch` se conserva como ejecución manual auxiliar.
 
-Para ambos eventos automáticos valida el destino/branch `dev`, el scope canónico del repositorio, net8/EF8/Pomelo 8 productivo y exactamente un provider productivo. Después corre el baseline MySQL, las comprobaciones físicas/funcionales y la lane aislada Oracle EF10/net10; el dictamen final falla cerrado como `STOP` si alguna autoridad o lane requerida falla. La lane candidata no modifica los proyectos productivos.
+La lane candidata es efímera: no altera los proyectos productivos ni promueve el TargetFramework.
 
-## Brecha de enforcement detectada
+## Enforcement GitHub — readback verificado
 
-La regla activa de GitHub `SOLQARYN - Protección dev` (ruleset `22829243`) aplica a `refs/heads/dev`, pero actualmente sólo contiene `deletion` y `non_fast_forward`. No exige pull request ni el check `Dictamen Fase 6`. Por ello, el workflow es automático pero GitHub **todavía no lo hace obligatorio para integrar cambios**; no es correcto afirmar que por sí solo impide una regresión.
+El ruleset activo **`SOLQARYN - Protección dev`** (ID `22829243`) aplica únicamente a `refs/heads/dev`. Su readback de GitHub API, posterior al guardado del 2026-10-05, confirma:
 
-Para cerrar el punto, un administrador debe configurar el ruleset de `dev` para exigir PR y el check requerido **`Dictamen Fase 6`**. La integración GitHub disponible en esta sesión permite leer rulesets, pero no editarlos; no se simula ese cambio ni se declara cerrado sin readback posterior.
+- regla `pull_request` activa; aprobaciones mínimas configuradas en `0`;
+- regla `required_status_checks` activa con el contexto exacto **`Dictamen Fase 6`**, origen GitHub Actions (integration ID `15368`);
+- reglas existentes de protección contra eliminación y force-push preservadas;
+- sin bypass actors y sin exigir que la rama esté actualizada antes de integrar.
 
-## Estado
+Los rulesets de `main` y `qa` se leyeron antes/después de esta operación y permanecen sin cambios. No se modificaron despliegues ni datos.
 
-**Punto 28: ABIERTO — enforcement externo pendiente.** La parte versionada ya garantiza que el evento PR a `dev` produzca el check aunque cambien archivos fuera de los paths tradicionales. La protección que obliga a respetar ese check aún debe confirmarse en GitHub.
+## Evidencia y validación
 
-- Ejecución previa del push automático: run `37265475905`, commit `a5c93f14d0a3ee29573e7f0dcd23d4addeddd699`.
-- Ruleset vigente verificado por GitHub API el 2026-10-05: [SOLQARYN - Protección dev](https://github.com/solqaryn/Solqaryn/rules/22829243).
-- Fase 7 permanece sin ejecutar.
+Sobre el HEAD `2f8c465cc0397c2e00a526dc0bc79c1d116587aa`, antes del readback final del ruleset:
+
+- [Fase 6 DEV — run 37334513061](https://github.com/solqaryn/Solqaryn/actions/runs/37334513061): todos los jobs, incluido `Dictamen Fase 6`, `success`.
+- [Aceptación integral DEV — run 37334512724](https://github.com/solqaryn/Solqaryn/actions/runs/37334512724): Playwright integral, SMTP y PDF, `success`.
+- [Scope lock — run 37334512579](https://github.com/solqaryn/Solqaryn/actions/runs/37334512579): `success`.
+- [VAEP — run 37334512834](https://github.com/solqaryn/Solqaryn/actions/runs/37334512834): `success`.
+
+El PR que incorpora este readback a `dev` debe satisfacer el status check ahora requerido antes de poder integrarse; su ejecución se registra al terminar.
+
+## Resultado y límites
+
+**Punto 28: enforcement configurado y leído de vuelta; integración de esta evidencia pendiente del PR/check obligatorio.** El gate automático existe y GitHub ya exige tanto PR como `Dictamen Fase 6` para `dev`.
+
+No se inició Fase 7, no se cambió `main`/PROD y el runtime productivo permanece en net8/EF8/Pomelo.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
