@@ -94,6 +94,12 @@ print("ORACLE10_EPHEMERAL_REWRITE=PASS")
 PY
 
 cd "$candidate/backend"
+sdk_version="$(dotnet --version 2>&1)"
+if [[ "$sdk_version" != "10.0.401" ]]; then
+    echo "ORACLE10_SDK_VERSION_MISMATCH: expected 10.0.401, got $sdk_version" >&2
+    exit 1
+fi
+echo "ORACLE10_SDK=PASS version=$sdk_version"
 dotnet restore src/API/Solqaryn.API.csproj
 dotnet build src/API/Solqaryn.API.csproj --configuration Release --no-restore
 

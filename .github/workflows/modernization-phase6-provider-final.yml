@@ -129,7 +129,7 @@ jobs:
           node-version: '24.21.0'
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: '10.0.401'
       - name: Preparar baseline físico actual
         working-directory: backend
         shell: bash
