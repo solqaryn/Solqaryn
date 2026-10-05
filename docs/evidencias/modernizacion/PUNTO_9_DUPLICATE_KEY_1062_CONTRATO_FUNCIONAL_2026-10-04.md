@@ -21,12 +21,15 @@ Rama: `dev`
 
 - `UnitOfWorkRetryTests` comprueba una tentativa, nombre, mensaje y excepción interna originales, y comprueba que un 1062 de otro índice no se traduce.
 - `scripts/modernization/oracle10-provider-lane.sh` reproduce el duplicate real contra MySQL con Oracle EF Core 10/Connector/NET y falla si cambia el tipo Application, nombre, mensaje, número interno, familia de provider o número de intentos.
-- Lane Oracle EF10 exact-head `37235823229`: `success`.
-- Gate de Fase 6 exact-head `37235823306`, commit `41753c563381280ae07387dc611d839d347ea342`: cinco jobs `success`, incluido Pomelo, Oracle Connector/NET, Oracle EF10/net10, suite aislada net10 y dictamen. `P0=0`, `P1=0`; Fase 7 no ejecutada.
-- [Run del gate de Fase 6](https://github.com/solqaryn/Solqaryn/actions/runs/37235823306) · [Lane Oracle EF10](https://github.com/solqaryn/Solqaryn/actions/runs/37235823229).
+- Fase 6 exact-head vigente: run `37285385270`, HEAD `d6598389bcf99599fe1a0a3b973e7ecb0979b421`; los cuatro jobs de compatibilidad/provider/net10 y el dictamen terminaron `success`. `P0=0`, `P1=0`; Fase 7 no ejecutada. [Run del gate de Fase 6](https://github.com/solqaryn/Solqaryn/actions/runs/37285385270).
+- En ese mismo HEAD, Oracle EF10/net10 pasó 2336/2336 pruebas unitarias y 22/22 de integración. `UnitOfWorkRetryTests` aprobó tanto la traducción esperada como el rechazo de otro índice.
+- El job Oracle Connector/NET registró `duplicateTranslated=true`, `duplicateNumber=1062`, `duplicateException=UniqueConstraintViolationException -> MySql.Data.MySqlClient.MySqlException`; el gate sólo aprueba si también se cumplen el tipo provider y los contratos de retry.
+- El job Pomelo validó los casos 1062 y concluyó la suite de integración completa con 28/28; la verificación de retry/excepción concluyó `PASS`.
 
 ## Alcance
 
 No cambia la política ni el código productivo de traducción; se refuerza la certificación del contrato existente en el provider candidato. No se añade dependencia ni se ejecuta Fase 7 o despliegues a QA, `main` o PROD.
+
+**Punto 9: CERRADO.** 1062 esperado conserva el contrato funcional, no se reintenta y los duplicados de índices distintos no se traducen; verificado en ambos providers.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
