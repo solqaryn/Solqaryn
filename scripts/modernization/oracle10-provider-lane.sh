@@ -107,6 +107,7 @@ if [[ "$dotnet_ef_version" != *"10.0.12"* ]]; then
     echo "ORACLE10_EF_TOOL_VERSION_MISMATCH: expected 10.0.12" >&2
     exit 1
 fi
+export ConnectionStrings__DefaultConnection="${ConnectionStrings__DefaultConnection//SslMode=None/SslMode=Disabled}"
 "$dotnet_ef" dbcontext info \
     --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
     --startup-project src/API/Solqaryn.API.csproj \
