@@ -2839,6 +2839,7 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - El workflow también captura las versiones realmente resueltas de Node, npm, .NET SDK, SO del runner, árbol npm directo, hashes SHA-256 y evidencia de bundle.
 - Toda operación de base real queda limitada a DEV; el restore está fail-closed a un MySQL local descartable y declara `productionTouched=false`.
 - Este changeset sólo crea evidencia/gates de modernización. No cambia Angular, Node, .NET, EF, provider MySQL, datos productivos, QA ni PROD.
+- Acta de auditoría retrospectiva y retención de artefactos: `docs/evidencias/modernizacion/FASE_0_BASELINE_2026-10-02.md`.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
 
