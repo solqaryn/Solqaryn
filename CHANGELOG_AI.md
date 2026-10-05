@@ -1,3 +1,10 @@
+## 2026-10-05 — Cierre del Punto 3: probe EF9/Pomelo9 net8 y net10
+
+- Tras conservar el fallo `37277207917` (límite de 64 caracteres en el lock EF de una base efímera), se añadió el test nuevo a la transformación de nombres temporales del probe.
+- Rerun `37278090999`, HEAD de código `dc063110fca28eb7e715322ab3aff214ab211cc9`: `success`; unitarios 2388/2388 e integración 28/28 en net8 y net10; auditor tenant certificado en ambas lanes; migraciones, `has-pending-model-changes` y comparación de columnas/índices aprobados.
+- Punto 3 queda PASS. EF9/Pomelo9 permanece como puente efímero; el stack productivo no cambia y Fase 7 sigue sin ejecutarse.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_3_EF9_POMELO9_SOLO_PUENTE_2026-10-04.md`.
+
 ## 2026-10-05 — Punto 3: corregir fixture de longitud de base efímera
 
 - El probe exact-head `37277207917` aisló el fallo a un test MySQL de concurrencia agregado recientemente: el nombre temporal más el sufijo del lock EF excedía el límite de 64 caracteres. Net8 unitarios pasaron 2388/2388 e integración 27/28; se conserva esta corrida fallida como evidencia.
