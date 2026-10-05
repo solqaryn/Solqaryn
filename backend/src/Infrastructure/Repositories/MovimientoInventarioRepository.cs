@@ -155,8 +155,11 @@ public class MovimientoInventarioRepository : IMovimientoInventarioRepository
 
     public async Task<IReadOnlyDictionary<int, MovimientoInventarioOrigenPersistido>> GetOrigenesTipadosAsync(IReadOnlyCollection<int> movimientoIds)
     {
-        var ids = movimientoIds.Distinct().OrderBy(x => x).ToArray();
-        if (ids.Length == 0) return new Dictionary<int, MovimientoInventarioOrigenPersistido>();
+        // EF8 parameter extraction under .NET 10 can route array Contains through
+        // ReadOnlySpan, which the expression interpreter cannot evaluate. A List
+        // keeps the captured collection on the portable ICollection path.
+        var ids = movimientoIds.Distinct().OrderBy(x => x).ToList();
+        if (ids.Count == 0) return new Dictionary<int, MovimientoInventarioOrigenPersistido>();
         if (!_context.Database.IsRelational())
         {
             var legacy = await _context.MovimientosInventario.AsNoTracking().Where(m => ids.Contains(m.Id)).Select(m => new { m.Id, m.ReferenciaTipo, m.ReferenciaId, m.TransferenciaInventarioId, m.RecepcionCompraId }).ToListAsync();
@@ -196,8 +199,9 @@ public class MovimientoInventarioRepository : IMovimientoInventarioRepository
 
     public async Task<bool> ExisteMovimientoPosteriorAsync(int ultimoMovimientoOriginalId, IReadOnlyCollection<int> productoIds)
     {
-        var ids = productoIds.Distinct().OrderBy(x => x).ToArray();
-        if (ids.Length == 0) return false;
+        // Keep EF8's captured Contains parameter out of the .NET 10 Span fast path.
+        var ids = productoIds.Distinct().OrderBy(x => x).ToList();
+        if (ids.Count == 0) return false;
         if (!_context.Database.IsRelational()) return await ExisteMovimientoPosteriorLegacyParaProviderNoRelacionalAsync(ultimoMovimientoOriginalId, ids);
         var compraId = await _context.MovimientosInventario.AsNoTracking().Where(m => m.Id == ultimoMovimientoOriginalId && m.CompraId != null && m.Tipo == TipoMovimientoInventario.Entrada).Select(m => m.CompraId).SingleOrDefaultAsync();
         if (!compraId.HasValue) throw new InvalidOperationException("El movimiento limite no corresponde a un movimiento original de compra tipado.");
