@@ -1,6 +1,7 @@
 name: Modernización - Oracle baseline migration probe DEV
 
 on:
+  workflow_call:
   push:
     branches: [dev]
     paths:
@@ -20,7 +21,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: modernization-oracle-baseline-probe-dev
+  group: modernization-oracle-baseline-probe-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
