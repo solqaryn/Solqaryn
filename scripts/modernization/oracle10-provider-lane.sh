@@ -85,11 +85,15 @@ dotnet add "$probe/Oracle10Probe.csproj" package MySql.EntityFrameworkCore --ver
 dotnet add "$probe/Oracle10Probe.csproj" package Microsoft.EntityFrameworkCore.Relational --version 10.0.12 >/dev/null
 
 cat > "$probe/Program.cs" <<'CS'
+using System.Diagnostics;
 using System.Data;
+using System.Threading;
 using Microsoft.EntityFrameworkCore;
 using Solqaryn.Application.Common;
+using Solqaryn.Application.DTOs;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Enums;
+using Solqaryn.Domain.Entities;
 using MySql.EntityFrameworkCore.Extensions;
 using MySql.Data.MySqlClient;
 using Solqaryn.Application.Exceptions;
@@ -310,6 +314,88 @@ var duplicatePersistedCount = await db.Database.SqlQueryRaw<long>(
 if (errorRollbackCount != 0 || duplicatePersistedCount != 1)
     throw new InvalidOperationException($"ORACLE10_ERROR_ROLLBACK_FAIL partial={errorRollbackCount} duplicate={duplicatePersistedCount}");
 
+var stockProduct = new Producto
+{
+    Nombre = "Oracle EF10 concurrency probe",
+    Marca = "CI",
+    Modelo = "Concurrency",
+    Cantidad = 5,
+    Costo = 10m,
+    Precio = 20m,
+    UmbralStockBajo = 1,
+    Activo = true,
+    Eliminado = false
+};
+db.Productos.Add(stockProduct);
+await db.SaveChangesAsync();
+db.ChangeTracker.Clear();
+
+var productoRepository = new ProductoRepository(db);
+var varianteRepository = new ProductoVarianteRepository(db);
+var inventarioConcurrency = new InventarioConcurrencyService(db, productoRepository, varianteRepository);
+long stockLockWaitMs;
+await using (var lockTx = await db.Database.BeginTransactionAsync())
+{
+    await inventarioConcurrency.BloquearYValidarInventarioAsync(
+        [new InventarioDemanda(stockProduct.Id, null, 1)]);
+
+    var lockAttemptStarted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+    var competingStockRead = Task.Run(async () =>
+    {
+        await using var competingDb = new AppDbContext(options);
+        await using var competingTx = await competingDb.Database.BeginTransactionAsync();
+        var competingRepository = new ProductoRepository(competingDb);
+        var competingVariantRepository = new ProductoVarianteRepository(competingDb);
+        var competingStockLockService = new InventarioConcurrencyService(competingDb, competingRepository, competingVariantRepository);
+        lockAttemptStarted.TrySetResult(true);
+        var timer = Stopwatch.StartNew();
+        await competingStockLockService.BloquearYValidarInventarioAsync(
+            [new InventarioDemanda(stockProduct.Id, null, 1)]);
+        timer.Stop();
+        await competingTx.RollbackAsync();
+        return timer.ElapsedMilliseconds;
+    });
+
+    await lockAttemptStarted.Task.WaitAsync(TimeSpan.FromSeconds(10));
+    await Task.Delay(350);
+    if (competingStockRead.IsCompleted)
+        throw new InvalidOperationException("ORACLE10_STOCK_LOCK_DID_NOT_SERIALIZE");
+    await lockTx.CommitAsync();
+    stockLockWaitMs = await competingStockRead.WaitAsync(TimeSpan.FromSeconds(15));
+    if (stockLockWaitMs < 250)
+        throw new InvalidOperationException($"ORACLE10_STOCK_LOCK_WAIT_TOO_SHORT:{stockLockWaitMs}");
+}
+
+var empresaSequence = new Empresa($"Oracle EF10 sequence probe {Guid.NewGuid():N}");
+db.Set<Empresa>().Add(empresaSequence);
+await db.SaveChangesAsync();
+var sequence = new SecuenciaDocumento(empresaSequence.Id, null, "FACTURA", "CI-", 4, 100);
+db.SecuenciasDocumento.Add(sequence);
+await db.SaveChangesAsync();
+var sequenceId = sequence.Id;
+var empresaId = empresaSequence.Id;
+db.ChangeTracker.Clear();
+
+var reservations = await Task.WhenAll(Enumerable.Range(0, 10).Select(async _ =>
+{
+    await using var reservationDb = new AppDbContext(options);
+    var service = new SecuenciaDocumentoService(reservationDb, new OracleProbeUserScope());
+    return await service.ReservarSiguienteAsync(
+        new ReservarSecuenciaDocumentoRequest(empresaId, null, "FACTURA"));
+}));
+var reservedValues = reservations.Select(x => x.Valor).OrderBy(x => x).ToArray();
+var expectedValues = Enumerable.Range(101, 10).Select(x => (long)x).ToArray();
+if (!reservedValues.SequenceEqual(expectedValues) || reservations.Select(x => x.Numero).Distinct().Count() != 10)
+    throw new InvalidOperationException($"ORACLE10_SEQUENCE_CONCURRENCY_MISMATCH:{string.Join(',', reservedValues)}");
+
+var finalSequence = await db.SecuenciasDocumento.AsNoTracking().SingleAsync(x => x.Id == sequenceId);
+var sequenceAuditCount = await db.RegistrosAuditoria.AsNoTracking()
+    .CountAsync(x => x.Entidad == nameof(SecuenciaDocumento) && x.ReferenciaId == sequenceId);
+if (finalSequence.UltimoValor != 110 || sequenceAuditCount != 10)
+    throw new InvalidOperationException($"ORACLE10_SEQUENCE_FINAL_STATE_MISMATCH value={finalSequence.UltimoValor} audits={sequenceAuditCount}");
+db.ChangeTracker.Clear();
+Console.WriteLine($"ORACLE10_CONCURRENCY_CONTRACT=PASS stockForUpdateWaitMs={stockLockWaitMs} sequenceReservations=10 uniqueMonotonic=true audits=10");
+
 await db.Database.ExecuteSqlRawAsync("DROP TABLE IF EXISTS Phase6Oracle10Retry;");
 await db.Database.ExecuteSqlRawAsync("CREATE TABLE Phase6Oracle10Retry(Id INT PRIMARY KEY, Value INT NOT NULL);");
 await db.Database.ExecuteSqlRawAsync("INSERT INTO Phase6Oracle10Retry VALUES(1,0);");
@@ -362,6 +448,9 @@ sealed class OracleProbeUserScope : IUsuarioScopeService
 {
     public Task<UsuarioScopeActual?> ObtenerActualAsync() =>
         Task.FromResult<UsuarioScopeActual?>(new UsuarioScopeActual(1, 1, "Administrador", true));
+
+    public Task<UsuarioTenantScopeActual?> ObtenerActualAsync(int empresaId, CancellationToken cancellationToken = default) =>
+        Task.FromResult<UsuarioTenantScopeActual?>(new UsuarioTenantScopeActual(1, empresaId, 1, "Administrador", true));
 }
 CS
 
