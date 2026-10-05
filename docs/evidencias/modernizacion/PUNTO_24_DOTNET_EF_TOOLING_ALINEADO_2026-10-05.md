@@ -1,32 +1,24 @@
-# Punto 24 — dotnet-ef alineado con la lane candidata
+# Punto 24 — SDK y dotnet-ef alineados con la lane candidata
 
 Fecha: 2026-10-05 (UTC)  
 Repositorio: `solqaryn/Solqaryn`  
-Rama: `dev`  
-HEAD exacto de la comprobación candidata: `8216027ebaac483f830196da048ff1a964d0ed1c`
+Rama: `dev`
 
-## Contrato de versiones
+## Hallazgo y corrección
 
-- Runtime/SDK de la lane: .NET SDK `10.0.401`, runtime `10.0.12`.
-- `Microsoft.EntityFrameworkCore` y `Microsoft.EntityFrameworkCore.Design` de la copia temporal: `10.0.12`.
-- CLI instalada en una ruta efímera aislada: `dotnet-ef 10.0.12`.
-- Provider candidato: `MySql.EntityFrameworkCore 10.0.9`.
+La evidencia anterior demostraba CLI EF `10.0.12`, pero los workflows pedían `10.0.x`, por lo que el SDK podía variar sin cambiar el repositorio. Se fijó SDK `10.0.401` en las cuatro lanes Oracle EF10/baseline relevantes y la lane candidata ahora falla explícitamente si `dotnet --version` no coincide. La documentación oficial confirma que SDK `10.0.401` incluye runtime y ASP.NET Core `10.0.12` ([descargas .NET 10 de Microsoft](https://dotnet.microsoft.com/es-es/download/dotnet/10.0)).
 
-## Evidencia
+El script `scripts/modernization/oracle10-provider-lane.sh` además instala `dotnet-ef` en ruta temporal como `10.0.12`, verifica su versión y ejecuta `dbcontext info` para `AppDbContext` desde el startup API de la copia EF10. Las referencias EF Core y Design se retargetean en esa copia a `10.0.12`; los proyectos productivos permanecen en EF8/Pomelo durante Fase 6.
 
-El script reproducible `scripts/modernization/oracle10-provider-lane.sh` ahora instala el CLI con versión fija, comprueba su salida de versión y ejecuta `dotnet-ef dbcontext info` contra `AppDbContext` de la copia net10/provider Oracle, usando `AppDbContextFactory` y el proyecto de inicio API. El resultado del run `37262901995`, job `111613645132`, en el HEAD indicado reportó:
+Las invocaciones `dotnet-ef 8.0.8` en pasos de baseline son intencionales: aplican la historia heredada Pomelo antes de ejecutar la lane EF10 aislada; no son el CLI del provider candidato.
 
-```text
-Entity Framework Core .NET Command-line Tools
-10.0.12
-Provider name: MySql.EntityFrameworkCore
-ORACLE10_EF_TOOLCHAIN=PASS runtime=10.0.12 design=10.0.12 cli=10.0.12
-```
+## Certificación
 
-La misma corrida terminó además con **2,336/2,336 pruebas unitarias** y **22/22 integraciones portables** aprobadas. El gate compuesto `37262902089` cerró sus dos jobs (stack actual Pomelo y lane candidata Oracle/net10) con `success`.
+- Commit de la corrección: `e48c463be6796ce54ee820db88c1c11317f955d7`.
+- Gate principal exact-head de Fase 6: run `37325231888`, `success`; baseline Oracle independiente: `37325231937`, `success`; gate final: `37325231804`, `success`; scope lock: `37325231976`, `success`.
+- Log de Oracle EF10/net10: `ORACLE10_SDK=PASS version=10.0.401`, `ORACLE10_EF_TOOLCHAIN=PASS runtime=10.0.12 design=10.0.12 cli=10.0.12`, `ORACLE_EF10_NET10_PROVIDER_LANE=PASS`; 2,336 unitarias, 22 integraciones y 34 probes LINQ pasaron.
+- Pomelo actual y la copia temporal net10/EF8-Pomelo pasaron sus gates respectivos; el dictamen Fase 6 terminó `PASS`, `P0=0`, `P1=0`.
 
-El toolchain productivo Pomelo/EF8 permanece intacto durante Fase 6; la igualdad exacta `runtime = Design = CLI = 10.0.12` queda demostrada en la combinación candidata antes de autorizar el retarget productivo. La CLI temporal no se instala globalmente ni cambia archivos del repo.
-
-**Punto 24: CERRADO** para la lane definitiva candidata; CLI y Design resuelven el DbContext correcto bajo el runtime net10. No se modificó el TFM productivo ni se inició Fase 7.
+**Punto 24: CERRADO.** SDK, runtime/design EF y CLI quedaron exactamente fijados y comprobados en el carril candidato. No se retargetearon los proyectos productivos ni se inició Fase 7.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
