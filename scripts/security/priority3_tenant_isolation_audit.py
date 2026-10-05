@@ -47,14 +47,22 @@ def main() -> int:
     factura_share = text("backend/src/Application/Services/FacturaCompartirService.cs")
     factura_entity = text("backend/src/Domain/Entities/Factura.cs")
 
-    background_sources = [
+    hosted_sources = [
         (path, content)
         for path, content in cs_sources("backend/src")
         if ": BackgroundService" in content or "IHostedService" in content
     ]
-    background_ok = (
-        None if not background_sources else
-        all("EmpresaId" in content for _, content in background_sources)
+    outbox_processors = [
+        (path, content)
+        for path, content in cs_sources("backend/src")
+        if "class OutboxRetryProcessor" in content
+    ]
+    background_sources = hosted_sources + outbox_processors
+    background_ok = None if not background_sources else all(
+        "EmpresaId" in content and
+        "ProcesarLoteAsync" in content and
+        "ClaimDisponiblesAsync" in content
+        for _, content in background_sources
     )
 
     checks = {
@@ -105,6 +113,8 @@ def main() -> int:
         result = "NOT_APPLICABLE" if ok is None else "PASS" if ok else "MISSING"
         print(f"TENANT_CHECK {name}={result}")
     print(f"TENANT_BACKGROUND_RUNTIME_COUNT={len(background_sources)}")
+    print(f"TENANT_BACKGROUND_HOSTED_WORKER_COUNT={len(hosted_sources)}")
+    print(f"TENANT_BACKGROUND_OUTBOX_PROCESSOR_COUNT={len(outbox_processors)}")
     if missing:
         print("TENANT_MISSING=" + ",".join(missing))
         print("SECURITY_RULE=Tenant isolation must be proven by live authorization and scoping boundaries")

@@ -81,7 +81,7 @@ jobs:
             --filter "FullyQualifiedName~UnitOfWorkRetryTests|FullyQualifiedName~EnvironmentDatabaseGuardTests"
           dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj \
             --configuration Release --no-build \
-            --filter "FullyQualifiedName~N61FEmpresaSecurityAuditTests|FullyQualifiedName~N62DTenantAwareApplicationApiTests|FullyQualifiedName~N63FSucursalesEmpresaSecurityAuditTests|FullyQualifiedName~N65BTenantIsolationDomainContractsTests|FullyQualifiedName~N65FTenantPermissionIsolationTests|FullyQualifiedName~N67FTenantMutationFailClosedTests|FullyQualifiedName~Priority3FileSecurityTests|FullyQualifiedName~Application.Storage.CloudinaryTenantOwnershipTests|FullyQualifiedName~Application.Storage.StorageTenantContextTests|FullyQualifiedName~ReportesInventarioAuthorizationContractTests" \
+            --filter "FullyQualifiedName~N61FEmpresaSecurityAuditTests|FullyQualifiedName~N62DTenantAwareApplicationApiTests|FullyQualifiedName~N63FSucursalesEmpresaSecurityAuditTests|FullyQualifiedName~N65BTenantIsolationDomainContractsTests|FullyQualifiedName~N65FTenantPermissionIsolationTests|FullyQualifiedName~N67FTenantMutationFailClosedTests|FullyQualifiedName~Priority3FileSecurityTests|FullyQualifiedName~Application.Storage.CloudinaryTenantOwnershipTests|FullyQualifiedName~Application.Storage.StorageTenantContextTests|FullyQualifiedName~ReportesInventarioAuthorizationContractTests|FullyQualifiedName~N72DOutboxRetryProcessorTests|FullyQualifiedName~N72DOutboxRepositoryClaimTests|FullyQualifiedName~N72FOutboxSecurityAuditTests|FullyQualifiedName~N73DOutboxDeadLetterApplicationTests" \
             --logger "console;verbosity=normal"
           dotnet test Solqaryn.sln \
             --configuration Release --no-build \
