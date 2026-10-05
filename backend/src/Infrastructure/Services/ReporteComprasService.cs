@@ -109,8 +109,10 @@ public sealed class ReporteComprasService : IReporteComprasService
             };
         }
 
-        var detalleIds = baseItems.Select(x => x.OrdenCompraDetalleId).ToArray();
-        var ordenIds = baseItems.Select(x => x.OrdenCompraId).Distinct().ToArray();
+        // EF8 under .NET 10 can route captured array Contains through ReadOnlySpan
+        // during parameter extraction; Lists retain the portable ICollection path.
+        var detalleIds = baseItems.Select(x => x.OrdenCompraDetalleId).ToList();
+        var ordenIds = baseItems.Select(x => x.OrdenCompraId).Distinct().ToList();
 
         var facturasQuery = _context.Set<FacturaProveedorDetalle>()
             .AsNoTracking()
