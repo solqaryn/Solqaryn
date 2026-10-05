@@ -8,6 +8,8 @@ on:
       - 'scripts/security/priority3_tenant_isolation_audit.py'
       - 'scripts/modernization/oracle10-provider-lane.sh'
       - '.github/workflows/modernization-phase6-mysql-ef-provider.yml'
+      - '.github/workflows/modernization-phase6-provider-final.yml'
+      - 'docs/evidencias/modernizacion/**'
       - 'docs/evidencias/modernizacion/FASE_6_MYSQL_EF_PROVIDER_2026-10-04.md'
       - 'docs/evidencias/modernizacion/PUNTO_2_POMELO10_NO_BLOQUEANTE_2026-10-04.md'
       - 'docs/evidencias/modernizacion/PUNTO_8_RETRY_TRANSITORIO_PROVIDER_NEUTRAL_2026-10-04.md'
@@ -23,6 +25,22 @@ on:
       - 'docs/evidencias/modernizacion/PUNTO_18_CONCURRENCY_STOCK_SEQUENCE_2026-10-04.md'
       - 'CHANGELOG_AI.md'
       - 'ARCHITECTURE_CHANGELOG.md'
+      - 'ARCHITECTURE.md'
+      - 'PROJECT_CONTEXT.md'
+      - 'PROJECT_INDEX.md'
+  pull_request:
+    branches: [dev]
+    paths:
+      - 'backend/**'
+      - 'scripts/security/priority3_tenant_isolation_audit.py'
+      - 'scripts/modernization/**'
+      - '.github/workflows/modernization-phase6-mysql-ef-provider.yml'
+      - 'docs/evidencias/modernizacion/**'
+      - 'CHANGELOG_AI.md'
+      - 'ARCHITECTURE_CHANGELOG.md'
+      - 'ARCHITECTURE.md'
+      - 'PROJECT_CONTEXT.md'
+      - 'PROJECT_INDEX.md'
   workflow_dispatch:
 
 permissions:
@@ -80,7 +98,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$GITHUB_REF_NAME" = "dev"
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            test "$GITHUB_BASE_REF" = "dev"
+          else
+            test "$GITHUB_REF_NAME" = "dev"
+          fi
           node scripts/verify-project-scope.mjs
           python3 - <<'PY'
           import xml.etree.ElementTree as ET
