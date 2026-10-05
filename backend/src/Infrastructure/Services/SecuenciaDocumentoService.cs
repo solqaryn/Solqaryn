@@ -17,7 +17,7 @@ namespace Solqaryn.Infrastructure.Services;
 /// </summary>
 public sealed class SecuenciaDocumentoService : ISecuenciaDocumentoService
 {
-    private const int MaxIntentosConcurrencia = 8;
+    private const int MaxIntentosConcurrencia = 32;
 
     private readonly AppDbContext _db;
     private readonly IUsuarioScopeService _usuarioScope;
@@ -138,6 +138,13 @@ public sealed class SecuenciaDocumentoService : ISecuenciaDocumentoService
 
             await transaction.RollbackAsync(cancellationToken);
             _db.ChangeTracker.Clear();
+
+            // Desincroniza los compare-and-swap contendientes para que una ráfaga
+            // concurrente no consuma todos los intentos antes de que avance la fila.
+            var esperaMaximaMs = Math.Min(intento * 5, 100);
+            await Task.Delay(
+                TimeSpan.FromMilliseconds(Random.Shared.Next(1, esperaMaximaMs + 1)),
+                cancellationToken);
         }
 
         throw new BusinessRuleException(
