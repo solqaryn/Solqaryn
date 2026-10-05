@@ -225,6 +225,8 @@ var tableCollation = await db.Database.SqlQueryRaw<string>(
 if (columnCollation != "utf8mb4_bin" || tableCollation != "utf8mb4_0900_ai_ci")
     throw new InvalidOperationException($"ORACLE10_COLLATION_METADATA_MISMATCH column={columnCollation} table={tableCollation}");
 
+await db.Database.OpenConnectionAsync();
+await db.Database.ExecuteSqlRawAsync("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;");
 await using (var tx = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted))
 {
     var isolation = await db.Database.SqlQueryRaw<string>("SELECT @@transaction_isolation AS Value").SingleAsync();

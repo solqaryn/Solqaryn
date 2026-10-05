@@ -239,7 +239,11 @@ jobs:
             INSERT INTO Phase6ProviderContract(Code,Amount,AtUtc,Payload)
             VALUES ('exactcase',1234567890.1234,'2026-10-04 12:34:56.123456',JSON_OBJECT('tenant',1,'ok',true));
           "
+          set +e
           error_tx_output="$(docker exec "$mysql_container" mysql --force -uroot -proot phase6_pomelo -e "START TRANSACTION; INSERT INTO Phase6ProviderContract(Code,Amount,AtUtc,Payload) VALUES ('ErrorRollbackProbe',1.0000,UTC_TIMESTAMP(6),JSON_OBJECT('x',1)); INSERT INTO Phase6ProviderContract(Code,Amount,AtUtc,Payload) VALUES ('ExactCase',2.0000,UTC_TIMESTAMP(6),JSON_OBJECT('x',2)); ROLLBACK;" 2>&1)"
+          error_tx_rc=$?
+          set -e
+          test "$error_tx_rc" -ne 0
           echo "$error_tx_output" | grep -q '1062'
           test "$(docker exec "$mysql_container" mysql -uroot -proot phase6_pomelo -Nse "SELECT COUNT(*) FROM Phase6ProviderContract WHERE Code='ErrorRollbackProbe';")" = "0"
           test "$(docker exec "$mysql_container" mysql -uroot -proot phase6_pomelo -Nse "SELECT COLLATION_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='phase6_pomelo' AND TABLE_NAME='Phase6ProviderContract' AND COLUMN_NAME='Code';")" = "utf8mb4_bin"
