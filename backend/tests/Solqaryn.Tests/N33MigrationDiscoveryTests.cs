@@ -1,3 +1,4 @@
+using MySql.EntityFrameworkCore.Extensions;
 using Solqaryn.Infrastructure.Migrations;
 using Solqaryn.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -15,9 +16,7 @@ public sealed class N33MigrationDiscoveryTests
     public void MigracionN33C_EstaRegistradaYEsDescubriblePorEfCore()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySql(
-                "Server=localhost;Database=solqaryn_n33_discovery;User=root;Password=test;",
-                ServerVersion.Parse("8.0.36-mysql"))
+            .UseMySQL("Server=localhost;Database=solqaryn_n33_discovery;User=root;Password=test;")
             .Options;
 
         using var context = new AppDbContext(options);

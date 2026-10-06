@@ -1,3 +1,4 @@
+using MySql.EntityFrameworkCore.Extensions;
 using Solqaryn.Infrastructure.Persistence;
 using Solqaryn.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
@@ -10,9 +11,7 @@ public class SeedFiscalMySqlIntegrationTests
 {
     private static DbContextOptions<AppDbContext> CrearOpciones(string baseDatos) =>
         new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySql(
-                $"Server=localhost;Port=3306;Database={baseDatos};User=root;Password=root;",
-                new MySqlServerVersion(new Version(8, 4, 0)))
+            .UseMySQL($"Server=localhost;Port=3306;Database={baseDatos};User=root;Password=root;")
             .Options;
 
     [Fact]

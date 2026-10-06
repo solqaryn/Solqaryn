@@ -1,3 +1,4 @@
+using MySql.EntityFrameworkCore.Extensions;
 using Solqaryn.Application.Services;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Enums;
@@ -13,9 +14,7 @@ public sealed class ProductoAutocompleteIntegrationTests
 {
     private static DbContextOptions<AppDbContext> CreateOptions(string dbName) =>
         new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySql(
-                $"Server=localhost;Port=3306;Database={dbName};User=root;Password=root;",
-                new MySqlServerVersion(new Version(8, 4, 3)))
+            .UseMySQL($"Server=localhost;Port=3306;Database={dbName};User=root;Password=root;")
             .Options;
 
     [Fact]

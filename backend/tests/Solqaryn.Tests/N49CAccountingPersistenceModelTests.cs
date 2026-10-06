@@ -1,3 +1,4 @@
+using MySql.EntityFrameworkCore.Extensions;
 using System.Linq;
 using Solqaryn.Domain.Entities.Contabilidad;
 using Solqaryn.Infrastructure.Persistence;
@@ -16,7 +17,7 @@ public class N49CAccountingPersistenceModelTests
     public N49CAccountingPersistenceModelTests()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySql("Server=localhost;Database=dummy;", new MySqlServerVersion(new System.Version(8, 0, 31)))
+            .UseMySQL("Server=localhost;Database=dummy;")
             .Options;
 
         var context = new AppDbContext(options);
