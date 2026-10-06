@@ -138,7 +138,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          nohup npm start -- --host 127.0.0.1 --port 4200 > fase2c4-frontend.log 2>&1 &
+          nohup env -u PORT npm start -- --host 127.0.0.1 --port 4200 > fase2c4-frontend.log 2>&1 &
           echo $! > fase2c4-frontend.pid
           for attempt in $(seq 1 60); do
             if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then
