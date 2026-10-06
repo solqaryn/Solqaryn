@@ -52,3 +52,15 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Resultado general: `success`; los cinco jobs (`Pomelo actual`, `Oracle Connector NET`, `net10 aislado`, `Oracle EF10 net10` y `Dictamen Fase 6`) terminaron `success`.
 - La referencia viva `dev` se confirmó en el mismo commit antes de actualizar esta evidencia.
 - Dictamen del punto 1: `PASS`; Fase 7 no se ejecutó y el `TargetFramework` productivo no cambió.
+
+
+## Revalidación exact-head DEV — 2026-10-06
+
+- HEAD de `dev`: `f65f7866c09eecadae292276324f299f5200d9b9`.
+- Gate de Fase 6 [run 37409611958](https://github.com/solqaryn/Solqaryn/actions/runs/37409611958) sobre ese mismo SHA: los seis jobs, incluido `Dictamen Fase 6`, terminaron `success`.
+- El dictamen confirmó `FASE_6_MYSQL_EF_PROVIDER=PASS`, `TARGET_PROVIDER_ROUTE=ORACLE_EF10_WITH_CERTIFIED_BASELINE_ADOPTION`, `P0=0`, `P1=0` y `PHASE7_EXECUTED=false`.
+- La lane Oracle EF10/net10 informó `ORACLE_EF10_NET10_PROVIDER_LANE=PASS`; el probe en el mismo gate exigió que la baseline/adopción terminara `success`.
+- Scope Lock [run 37409611897](https://github.com/solqaryn/Solqaryn/actions/runs/37409611897) y VAEP [run 37409611790](https://github.com/solqaryn/Solqaryn/actions/runs/37409611790) también terminaron `success` sobre el mismo SHA.
+- Este gate fue aislado de los entornos persistentes. No cambió los proyectos productivos ni el TargetFramework; Fase 7 no se ejecutó.
+
+**Revalidación del Punto 1: PASS en `dev` HEAD `f65f7866c09eecadae292276324f299f5200d9b9`.** La ruta técnica queda certificada como Oracle EF10 con baseline/adopción obligatoria; no se afirma compatibilidad drop-in de la historia Pomelo.
