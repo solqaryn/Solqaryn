@@ -13,7 +13,7 @@ public sealed class ProductionDataRepairTenantIntegrationTests
 {
     private static DbContextOptions<AppDbContext> CrearOpciones(string baseDatos) =>
         new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySQL(CrearCadena(baseDatos))
+            .UseMySQL(CrearCadena(baseDatos), mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
             .Options;
 
     private static string CrearCadena(string baseDatos)

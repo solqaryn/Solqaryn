@@ -18,7 +18,7 @@ public sealed class SecuenciaDocumentoConcurrencyIntegrationTests
 
     private static DbContextOptions<AppDbContext> Options(string database) =>
         new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySQL(ConnectionString(database))
+            .UseMySQL(ConnectionString(database), mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
             .Options;
 
     [Fact]

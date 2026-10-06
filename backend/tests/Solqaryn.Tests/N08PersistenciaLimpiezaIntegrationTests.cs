@@ -20,7 +20,7 @@ public sealed class N08PersistenciaLimpiezaIntegrationTests
 
     private static DbContextOptions<AppDbContext> CreateOptions(string dbName) =>
         new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySQL(GetConnectionString(dbName))
+            .UseMySQL(GetConnectionString(dbName), mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
             .Options;
 
     [Fact]

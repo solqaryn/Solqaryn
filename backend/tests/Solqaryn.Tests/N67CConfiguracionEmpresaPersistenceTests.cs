@@ -20,7 +20,7 @@ public sealed class N67CConfiguracionEmpresaPersistenceTests
     public void Migracion_EstaRegistradaYDescubriblePorEfCore()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySQL("Server=localhost;Database=solqaryn_n67c_discovery;User=root;Password=test;")
+            .UseMySQL("Server=localhost;Database=solqaryn_n67c_discovery;User=root;Password=test;", mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
             .Options;
 
         using var context = new AppDbContext(options);
