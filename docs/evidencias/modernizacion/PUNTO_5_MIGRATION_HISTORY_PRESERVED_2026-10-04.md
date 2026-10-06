@@ -38,3 +38,13 @@ Rama: `dev`
 - No cambian proyectos productivos, historial, datos, QA, `main` ni PROD; Fase 7 no se ejecuta.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+
+## Revalidación vigente en dev — 2026-10-06
+
+**Estado: PASS — historial verificado contra el HEAD exacto `5df95059702a7ffd29aacf60ac316fa887ae26e1`.**
+
+- Inventario del árbol GitHub de ese SHA: 107 archivos fuente timestamped de migración en `backend/src/Infrastructure/Migrations/**` y `backend/src/Infrastructure/Persistence/Migrations/**`.
+- La comparación entre el HEAD del inventario previo (`b86bf80b9cd2f3ca223fa3c59b810e123781db7a`) y este HEAD muestra cero cambios en esos árboles y en `Solqaryn.Infrastructure.csproj`; la verificación anterior de 107 IDs únicos sigue aplicando.
+- La sonda de baseline/adopción exact-head [run 37417908892](https://github.com/solqaryn/Solqaryn/actions/runs/37417908892) terminó `success` en el mismo SHA. Aplicó la historia Pomelo, instaló el paquete Oracle en esquema vacío, comprobó equivalencia/adopción sin DDL y revirtió a Pomelo preservando `pomelo_history=107`, esquema/datos y usuario semilla.
+- Fase 6 exact-head [run 37417909151](https://github.com/solqaryn/Solqaryn/actions/runs/37417909151) terminó `success`; no se ejecutó Fase 7 ni se modificó `main`/PROD.
