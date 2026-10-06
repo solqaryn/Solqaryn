@@ -31,3 +31,14 @@ No se añaden dependencias al dominio/aplicación ni al stack productivo; no se 
 **Punto 7: CERRADO.** Evidencia exact-head de Fase 6 y contrato provider-neutral verificado en código y en las lanes MySqlConnector/Oracle.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+
+## Revalidación exact-head posterior — 2026-10-06
+
+- Código revisado en HEAD `168f4a3da8955737bcb4a0852f5fa2e802fbb3bc`: el clasificador sigue limitado a los nombres completos de excepción de MySqlConnector y Oracle Connector/NET, lee únicamente la propiedad pública `Number: int`, recorre excepciones internas y falla cerrado si no puede clasificar. Se encuentra en Infrastructure; el contrato que expone es `MySqlProviderError`, sin propagar el tipo de driver.
+- Certificación integral Fase 6 exact-head: run [37420902319](https://github.com/solqaryn/Solqaryn/actions/runs/37420902319), evento `push`, rama `dev`, HEAD exacto `168f4a3...`, conclusión `success`. Pasaron los cinco jobs, incluido el dictamen final.
+- En MySQL 8.4/Pomelo, `UnitOfWorkRetryTests` pasó 9/9; la semántica de transacciones y MySQL terminó `PASS`, igual que la suite completa de integración.
+- En la prueba real de Oracle Connector/NET del mismo run, el resultado registró `duplicateTranslated=true`, código `1062`, traducción a `UniqueConstraintViolationException`, `retryContractCompatible=true` y `oracle1213RetryCompatible=true`; la lane informó `attempts=2` y `ORACLE_EF10_NET10_PROVIDER_LANE=PASS`.
+- Resultado: el contrato de excepciones y retry continúa verificado para ambos drivers en el HEAD exacto actual. No se cambió código productivo ni se inició Fase 7.
+
+**Revalidación del punto 7: PASS en dev, HEAD `168f4a3...`.**
