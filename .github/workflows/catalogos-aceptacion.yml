@@ -48,9 +48,9 @@ jobs:
     env:
       ASPNETCORE_ENVIRONMENT: Development
       PORT: '5005'
-      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_catalogos_e2e;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_catalogos_e2e;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
       Database__ServerVersion: '8.4.0'
-      Database__ApplyMigrationsOnStartup: 'true'
+      Database__ApplyMigrationsOnStartup: 'false'
       Jwt__Secret: 'Catalogos-E2E-Only-Secret-With-More-Than-32-Characters-2026'
       Jwt__Issuer: 'Solqaryn.API'
       Jwt__Audience: 'Solqaryn.Frontend'
@@ -108,6 +108,24 @@ jobs:
         run: |
           dotnet restore Solqaryn.sln
           dotnet build Solqaryn.sln --configuration Release --no-restore
+
+      - name: Bootstrap Oracle fresh para aceptación
+        working-directory: backend
+        env:
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
+        run: |
+          set -euo pipefail
+          dotnet run \
+            --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj \
+            --configuration Release \
+            --no-build
+          dotnet tool restore
+          dotnet tool run dotnet-ef migrations has-pending-model-changes \
+            --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
+            --context AppDbContext \
+            --configuration Release \
+            --no-build
 
       - name: Iniciar SMTP efímero con captura
         shell: bash
