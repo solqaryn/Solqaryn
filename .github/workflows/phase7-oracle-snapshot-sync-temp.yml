@@ -1,0 +1,101 @@
+name: TEMP - Fase 7 Oracle snapshot sync
+
+on:
+  pull_request:
+    branches: [dev]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: phase7-snapshot-sync-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    if: github.head_ref == 'modernization/phase7-dotnet10-ef10'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.401
+
+      - name: Build design-time model
+        working-directory: backend
+        env:
+          ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=phase7_snapshot_sync;User=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;
+          Jwt__Secret: Phase7-Snapshot-Sync-Only-Value-Not-Used-Outside-CI
+          Jwt__Issuer: Solqaryn.Phase7
+          Jwt__Audience: Solqaryn.Phase7.Frontend
+        run: |
+          set -euo pipefail
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+          dotnet tool restore
+
+          set +e
+          dotnet tool run dotnet-ef migrations has-pending-model-changes             --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj             --startup-project src/API/Solqaryn.API.csproj             --context AppDbContext             --configuration Release             --no-build
+          pending_rc=$?
+          set -e
+
+          if [ "$pending_rc" -eq 0 ]; then
+            echo 'PHASE7_SNAPSHOT_SYNC=ALREADY_CURRENT'
+            exit 0
+          fi
+
+          dotnet tool run dotnet-ef migrations add Phase7SnapshotSync             --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj             --startup-project src/API/Solqaryn.API.csproj             --context AppDbContext             --configuration Release             --no-build             --output-dir Migrations/Phase7SnapshotSync
+
+          generated_designer="$(find src/Infrastructure.Migrations/Migrations/Phase7SnapshotSync -type f -name '*_Phase7SnapshotSync.Designer.cs' -print -quit)"
+          test -n "$generated_designer"
+          test -f src/Infrastructure.Migrations/Migrations/OracleAppDbContextModelSnapshot.cs
+
+          python3 - "$generated_designer" <<'PY'
+          import re
+          import sys
+          from pathlib import Path
+
+          generated = Path(sys.argv[1]).read_text(encoding="utf-8-sig")
+          generated = re.sub(
+              r"namespace\s+Solqaryn\.Infrastructure\.Migrations(?:\.[A-Za-z0-9_.]+)?",
+              "namespace Solqaryn.Infrastructure.Migrations.Oracle",
+              generated,
+              count=1,
+          )
+          generated = re.sub(
+              r'\[Migration\("[^"]+"\)\]',
+              '[Migration("20261006111818_OracleBaseline")]',
+              generated,
+              count=1,
+          )
+          generated = generated.replace(
+              "partial class Phase7SnapshotSync",
+              "partial class OracleBaseline",
+              1,
+          )
+          target = Path("src/Infrastructure.Migrations/Migrations/20261006111818_OracleBaseline.Designer.cs")
+          target.write_text(generated, encoding="utf-8")
+          PY
+
+          rm -rf src/Infrastructure.Migrations/Migrations/Phase7SnapshotSync
+
+          dotnet build src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj             --configuration Release
+
+          dotnet tool run dotnet-ef migrations has-pending-model-changes             --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj             --startup-project src/API/Solqaryn.API.csproj             --context AppDbContext             --configuration Release
+
+          git status --short
+          if git diff --quiet --             src/Infrastructure.Migrations/Migrations/OracleAppDbContextModelSnapshot.cs             src/Infrastructure.Migrations/Migrations/20261006111818_OracleBaseline.Designer.cs; then
+            echo 'PHASE7_SNAPSHOT_SYNC=NO_DIFF'
+            exit 0
+          fi
+
+          git config user.name 'SOLQARYN Phase7 CI'
+          git config user.email 'solqaryn.platform@outlook.com'
+          git add             src/Infrastructure.Migrations/Migrations/OracleAppDbContextModelSnapshot.cs             src/Infrastructure.Migrations/Migrations/20261006111818_OracleBaseline.Designer.cs
+          git commit -m 'fix(phase7): sync Oracle EF10 baseline snapshot'
+          git push origin "HEAD:${GITHUB_HEAD_REF}"

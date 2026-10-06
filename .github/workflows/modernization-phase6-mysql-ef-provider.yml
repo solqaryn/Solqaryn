@@ -120,7 +120,8 @@ jobs:
           test -d backend/src/Infrastructure/Persistence/Migrations
           grep -q 'Compile Remove="Migrations/\*\*/\*.cs"' backend/src/Infrastructure/Solqaryn.Infrastructure.csproj
           grep -q 'Compile Remove="Persistence/Migrations/\*\*/\*.cs"' backend/src/Infrastructure/Solqaryn.Infrastructure.csproj
-          grep -q '20261006111818_OracleBaseline' backend/src/Infrastructure.Migrations/Migrations/20261006111818_OracleBaseline.cs
+          test -f backend/src/Infrastructure.Migrations/Migrations/20261006111818_OracleBaseline.cs
+          grep -q '20261006111818_OracleBaseline' backend/src/Infrastructure.Migrations/Migrations/20261006111818_OracleBaseline.Designer.cs
 
           if [ "$GITHUB_EVENT_NAME" = pull_request ]; then
             git fetch origin "$GITHUB_BASE_REF" --depth=1

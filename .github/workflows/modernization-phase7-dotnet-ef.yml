@@ -52,6 +52,11 @@ jobs:
 
       - name: dotnet-ef 10.0.12
         working-directory: backend
+        env:
+          ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=phase7_design;User=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;
+          Jwt__Secret: Phase7-CI-Only-Secret-Value-Not-Used-Outside-GitHub-Actions
+          Jwt__Issuer: Solqaryn.Phase7
+          Jwt__Audience: Solqaryn.Phase7.Frontend
         run: |
           set -euo pipefail
           dotnet tool restore
