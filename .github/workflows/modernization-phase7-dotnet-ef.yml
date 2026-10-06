@@ -60,7 +60,9 @@ jobs:
         run: |
           set -euo pipefail
           dotnet tool restore
-          test "$(dotnet tool run dotnet-ef --version | awk '{print $NF}')" = "10.0.12"
+          ef_version="$(dotnet tool run dotnet-ef --version)"
+          echo "$ef_version"
+          printf '%s\n' "$ef_version" | grep -Eq '(^|[[:space:]])10\.0\.12($|[[:space:]])'
           dotnet tool run dotnet-ef dbcontext info             --project src/Infrastructure/Solqaryn.Infrastructure.csproj             --startup-project src/API/Solqaryn.API.csproj             --context AppDbContext             --configuration Release             --no-build --verbose
 
       - name: Provider productivo único
