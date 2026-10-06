@@ -1,3 +1,4 @@
+using MySql.EntityFrameworkCore.Extensions;
 using System.IO.Compression;
 using System.Net;
 using System.Text;
