@@ -191,8 +191,8 @@ jobs:
         run: |
           set -euo pipefail
           for attempt in $(seq 1 135); do
-            payload="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/catalogos-aceptacion.yml/runs?branch=dev&event=push&per_page=30")"
-            row="$(jq -c --arg sha "$EXPECTED_SHA" '.workflow_runs[] | select(.head_sha == $sha) | {id,status,conclusion,html_url}' <<<"$payload" | head -n1)"
+            payload="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/catalogos-aceptacion.yml/runs?head_sha=$EXPECTED_SHA&per_page=30")"
+            row="$(jq -c --arg sha "$EXPECTED_SHA" '.workflow_runs[] | select(.head_sha == $sha and (.event == "push" or .event == "pull_request")) | {id,status,conclusion,event,html_url}' <<<"$payload" | head -n1)"
             if [ -n "$row" ]; then
               status="$(jq -r '.status' <<<"$row")"
               conclusion="$(jq -r '.conclusion // ""' <<<"$row")"
