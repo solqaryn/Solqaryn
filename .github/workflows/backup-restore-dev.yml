@@ -86,18 +86,20 @@ jobs:
         run: |
           set -euo pipefail
           dotnet restore Solqaryn.sln
-          dotnet tool install --global dotnet-ef --version 10.0.12
+          dotnet tool restore
           mysql_container="${{ job.services.mysql.id }}"
           docker exec "$mysql_container" mysql -uroot -proot -e "SET GLOBAL sql_require_primary_key=ON;"
           test "$(docker exec "$mysql_container" mysql -uroot -proot -Nse "SELECT @@GLOBAL.sql_require_primary_key;")" = 1
 
       - name: Crear esquema fuente completo
         working-directory: backend
+        env:
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
         run: |
-          dotnet ef database update \
-            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
-            --startup-project src/API/Solqaryn.API.csproj \
-            --context AppDbContext
+          set -euo pipefail
+          dotnet run \
+            --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj \
+            --configuration Release
 
       - name: Sembrar registros y referencias de activos SOLQARYN
         shell: bash
