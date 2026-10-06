@@ -20,6 +20,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Application\Solqaryn.Application.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure\Solqaryn.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure.Migrations.History\Solqaryn.Infrastructure.Migrations.History.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure.Migrations\Solqaryn.Infrastructure.Migrations.csproj" />
     <ProjectReference Include="..\..\src\API\Solqaryn.API.csproj" />
   </ItemGroup>
 </Project>
