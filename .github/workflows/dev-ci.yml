@@ -121,7 +121,8 @@ jobs:
           dotnet restore Solqaryn.sln
           dotnet build Solqaryn.sln --configuration Release --no-restore
           dotnet tool restore
-          test "$(dotnet tool run dotnet-ef --version | awk '{print $NF}')" = "10.0.12"
+          dotnet tool run dotnet-ef --version | tee "$RUNNER_TEMP/dotnet-ef-version.txt"
+          grep -Eq '(^|[[:space:]])10\.0\.12($|[[:space:]])' "$RUNNER_TEMP/dotnet-ef-version.txt"
       - name: Bootstrap Oracle fresh
         env:
           SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
