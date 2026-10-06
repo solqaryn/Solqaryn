@@ -1009,10 +1009,14 @@ jobs:
           echo "ORACLE_EF10_NET10_PROVIDER_LANE=PASS"
 
 
+  oracle-baseline:
+    name: Oracle baseline fresh/adoption exact-head certification
+    uses: ./.github/workflows/modernization-oracle-baseline-probe.yml
+
   verdict:
     name: Dictamen Fase 6
     runs-on: ubuntu-latest
-    needs: [pomelo-baseline, oracle-comparison, net10-probe, oracle10-final-lane]
+    needs: [pomelo-baseline, oracle-comparison, net10-probe, oracle10-final-lane, oracle-baseline]
     if: always()
     steps:
       - name: Exigir provider estable o STOP
@@ -1032,6 +1036,7 @@ jobs:
           ORACLE10: ${{ needs.net10-probe.outputs.oracle10_available }}
           ORACLE10_LANE: ${{ needs.oracle10-final-lane.outputs.stable }}
           ORACLE10_LANE_RESULT: ${{ needs.oracle10-final-lane.result }}
+          ORACLE_BASELINE_RESULT: ${{ needs.oracle-baseline.result }}
         run: |
           set -euo pipefail
           if [ "$POMELO10" = true ]; then
@@ -1055,6 +1060,7 @@ jobs:
             echo "- ORACLE_EF10_NET10_LANE=$ORACLE10_LANE"
             echo "- POMELO10_ROUTE_STATUS=$pomelo10_state"
             echo "- POMELO10_REQUIRED_FOR_TARGET_ROUTE=false"
+            echo "- ORACLE_BASELINE_ADOPTION_EXACT_HEAD=$ORACLE_BASELINE_RESULT"
           } | tee phase6-verdict.txt
 
           if [ "$POMELO_STABLE" = true ] && [ "$ORACLE_JOB_RESULT" = success ] && [ "$NET10_JOB_RESULT" = success ]; then
@@ -1065,9 +1071,10 @@ jobs:
               echo "POMELO_EF10_STABLE_AVAILABLE=$POMELO10"
               echo "ORACLE_EF10_STABLE_AVAILABLE=$ORACLE10"
 
-              if [ "$ORACLE10" = true ] && [ "$ORACLE10_LANE_RESULT" = success ] && [ "$ORACLE10_LANE" = true ]; then
+              if [ "$ORACLE10" = true ] && [ "$ORACLE10_LANE_RESULT" = success ] && [ "$ORACLE10_LANE" = true ] && [ "$ORACLE_BASELINE_RESULT" = success ]; then
                 echo 'FASE_6_MYSQL_EF_PROVIDER=PASS'
                 echo 'TARGET_PROVIDER_SELECTED=ORACLE_MYSQL_EFCORE_10_0_9'
+                echo 'TARGET_PROVIDER_ROUTE=ORACLE_EF10_WITH_CERTIFIED_BASELINE_ADOPTION'
                 echo 'TARGET_EF_SELECTED=10.0.12'
                 echo 'TARGET_NET_SELECTED=net10.0'
                 echo 'TARGETFRAMEWORK_CHANGE=ALLOWED_AFTER_PHASE6_CLOSE'
