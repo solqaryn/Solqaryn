@@ -3,7 +3,7 @@
 - Se ejecutó el retarget del backend a `net10.0`/C# 14 con SDK 10.0.401 y runtime/ASP.NET 10.0.12.
 - EF Core, Design y `dotnet-ef` quedan en 10.0.12; JwtBearer en 10.0.12; provider productivo Oracle `MySql.EntityFrameworkCore` 10.0.9.
 - Se retiraron Pomelo/MySqlConnector de los proyectos productivos; las 107 migraciones Pomelo permanecen como historia auditable fuera del runtime y la cadena activa usa `OracleBaseline`.
-- Bootstrap fresh Oracle certificado: 136 tablas y cero pending model changes. Run causal previo al cierre documental `37518415595`: 2388/2388 unitarios, 27/27 integración, tenancy PASS, NuGet vulnerable=0 y Docker .NET 10 health/readiness PASS. Fase 6 post-Fase7 `37518415596` también PASS con `P0=0` y `P1=0`.
+- Bootstrap fresh Oracle certificado: 136 tablas y cero pending model changes. Exact-head previo al cierre documental `ce66441e5c58435571ea774a424c8c8f21e33225`: Fase 7 run `37520039924` PASS con 2388/2388 unitarios, 27/27 integración, tenancy PASS, NuGet vulnerable=0 y Docker .NET 10 health/readiness PASS. Fase 6 post-Fase7 run `37520039999` también PASS con `P0=0` y `P1=0`. Evidencia persistida en `docs/evidencias/modernizacion/FASE_7_DOTNET10_EF10_2026-10-06.md`.
 - Se añadió gate permanente `.github/workflows/modernization-phase7-dotnet-ef.yml` y se alinearon workflows operativos de backend a SDK 10.0.401 / dotnet-ef 10.0.12; probes históricos explícitos se mantienen aislados para reproducibilidad.
 - No se promovió `main`, QA ni PROD; no se escribieron datos productivos ni secretos.
 
