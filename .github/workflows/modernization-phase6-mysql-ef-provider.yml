@@ -153,7 +153,9 @@ jobs:
             CREATE DATABASE phase6_regression CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
 
           dotnet tool restore
-          test "$(dotnet tool run dotnet-ef --version | awk '{print $NF}')" = "10.0.12"
+          ef_version="$(dotnet tool run dotnet-ef --version)"
+          echo "$ef_version"
+          printf '%s\n' "$ef_version" | grep -Eq '(^|[[:space:]])10\.0\.12($|[[:space:]])'
 
           dotnet run             --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj             --configuration Release             --no-build
 
