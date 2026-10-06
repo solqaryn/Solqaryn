@@ -41,3 +41,17 @@ La equivalencia coteja tablas, engine, collation de tabla y create options; colu
 - No se despliega, no se conecta a entornos reales, no altera proyectos productivos y no ejecuta Fase 7.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+
+## Revalidación exact-head DEV — 2026-10-06
+
+**Estado vigente: PASS** sobre `dev` SHA `27d84f8112a68b62dc473a17083e299bdf215e9e`; probe [run 37419454048](https://github.com/solqaryn/Solqaryn/actions/runs/37419454048) terminó `success` en ese SHA.
+
+- `ORACLE_EF10_SQL_PACKAGE_FRESH_BOOTSTRAP=PASS tables=136` en una base MySQL vacía.
+- `ORACLE_EF10_SCRIPT_BOOTSTRAP_SCHEMA_EQUIVALENT=true` y `ORACLE_BASELINE_SCHEMA_EQUIVALENT=true`.
+- `ORACLE_BASELINE_ADOPTION_NO_DDL=PASS`; `has-pending-model-changes` post-bootstrap completó.
+- Rollback `ORACLE_TO_POMELO_PROVIDER_ROLLBACK=PASS`: esquema/datos sin cambio, usuario semilla preservado, `pomelo_history=107` y marcador Oracle retenido.
+- Artefacto exact-head [oracle-baseline-candidate-37419454048](https://github.com/solqaryn/Solqaryn/actions/runs/37419454048/artifacts/11392766256): 237,110 bytes, digest `sha256:e2db159851f66ee430404358e641d89ea09775f24ea3021d023a653dc767eb2a`, expira `2027-01-04T05:37:26Z`.
+- Gate Fase 6 exact-head [run 37419454153](https://github.com/solqaryn/Solqaryn/actions/runs/37419454153) terminó `success`.
+
+Esta PR sólo documenta evidencia. El workflow regenera el artefacto al cambiar esta acta; su nuevo HEAD volverá a ejecutar el probe antes de confirmar el cierre vigente. Fase 7 sigue sin ejecutarse.
