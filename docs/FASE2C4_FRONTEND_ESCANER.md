@@ -24,7 +24,6 @@
 
 ## Gobernanza
 
-- Rama exclusiva: `Desarrollo`.
-- `main` permanece congelada.
-- PR #2 permanece abierto y en borrador.
-- No se ejecutaron cambios sobre Producción.
+- Rama exclusiva: `dev`.
+- QA, `main` y PROD quedan fuera de alcance y no se modifican.
+- Las validaciones y cualquier integración de esta corrección se limitan a DEV.
