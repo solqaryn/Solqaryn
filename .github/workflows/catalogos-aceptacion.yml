@@ -254,6 +254,55 @@ jobs:
             exit 1
           fi
 
+      - name: Preparar costo de envío base para aceptación E2E
+        shell: bash
+        run: |
+          set -euo pipefail
+          login_payload="$(jq -n --arg username "$SeedAdmin__Username" --arg password "$SeedAdmin__Password" \
+            '{nombreUsuario: $username, password: $password}')"
+          login_response="$(curl --fail --silent --show-error \
+            -H 'Content-Type: application/json' \
+            -d "$login_payload" \
+            http://127.0.0.1:5005/auth/login)"
+          admin_token="$(jq -er '.data.token // .Data.token' <<< "$login_response")"
+
+          status="$(curl --silent --show-error \
+            -o /tmp/solqaryn-costo-envio.json \
+            -w '%{http_code}' \
+            -H "Authorization: Bearer $admin_token" \
+            http://127.0.0.1:5005/costos-envio/predeterminado)"
+
+          case "$status" in
+            200)
+              jq -e '(.data.monto // .Data.monto) == 80 and
+                     (.data.esPredeterminado // .Data.esPredeterminado) == true' \
+                /tmp/solqaryn-costo-envio.json >/dev/null || {
+                  echo 'El fixture E2E requiere el costo predeterminado contractual de L. 80.00.' >&2
+                  exit 1
+                }
+              ;;
+            404)
+              jq -n '{
+                nombre: "Costo E2E predeterminado",
+                descripcion: "Fixture aislado para aceptación automatizada",
+                monto: 80,
+                prioridad: 1,
+                esPredeterminado: true,
+                activo: true
+              }' |
+                curl --fail --silent --show-error \
+                  -H "Authorization: Bearer $admin_token" \
+                  -H 'Content-Type: application/json' \
+                  -d @- \
+                  http://127.0.0.1:5005/costos-envio >/dev/null
+              ;;
+            *)
+              echo "No se pudo consultar el costo de envío predeterminado (HTTP $status)." >&2
+              cat /tmp/solqaryn-costo-envio.json >&2
+              exit 1
+              ;;
+          esac
+
       - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
