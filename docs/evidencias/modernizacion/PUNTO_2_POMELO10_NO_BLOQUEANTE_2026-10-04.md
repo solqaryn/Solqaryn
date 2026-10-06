@@ -50,3 +50,14 @@ El Punto 2 queda certificado sólo si, sobre el HEAD exacto de `dev`:
 - Esta revalidación no cambia paquetes, `.csproj` productivos, TargetFramework ni despliega Fase 7.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+
+## Revalidación exact-head DEV — 2026-10-06
+
+- HEAD de `dev`: `46bb3e41ebb01a81ea5801d18c11472ea5dbdd9a`.
+- Gate de Fase 6 [run 37411140780](https://github.com/solqaryn/Solqaryn/actions/runs/37411140780) terminó `success` sobre ese mismo SHA, con dictamen `FASE_6_MYSQL_EF_PROVIDER=PASS`, `POINT_2_POMELO10_DEPENDENCY=PASS`, `P0=0`, `P1=0` y `PHASE7_EXECUTED=false`.
+- El probe del mismo gate resolvió Pomelo `10.0.0`: `POMELO_EF10_STABLE_AVAILABLE=false`; salida `POMELO10_ROUTE_STATUS=UNAVAILABLE_INFORMATIONAL`; `POMELO10_REQUIRED_FOR_TARGET_ROUTE=false`.
+- El dictamen final normalizó ese resultado a `UNAVAILABLE_NON_BLOCKING` y mantuvo la ruta Oracle EF10 con baseline/adopción certificada.
+- Revisión de fuentes upstream al 2026-10-06: el README y el listado de releases de [Pomelo](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql) siguen mostrando `9.0.0` como release final; NuGet presenta [Pomelo.EntityFrameworkCore.MySql 9.0.0](https://www.nuget.org/packages/Pomelo.EntityFrameworkCore.MySql/). No se seleccionó nightly, preview ni RC.
+
+**Revalidación del Punto 2: PASS en `dev` HEAD `46bb3e41ebb01a81ea5801d18c11472ea5dbdd9a`.** La falta de Pomelo EF10 estable es informativa y no bloquea la ruta objetivo ya certificada.
