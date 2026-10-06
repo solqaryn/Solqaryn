@@ -9,6 +9,14 @@ on:
       - backend/src/API/Program.cs
       - backend/tools/Solqaryn.DatabaseBootstrap/**
       - .github/workflows/migration-recovery-dev.yml
+  pull_request:
+    branches:
+      - dev
+    paths:
+      - backend/src/Infrastructure.Migrations/**
+      - backend/src/API/Program.cs
+      - backend/tools/Solqaryn.DatabaseBootstrap/**
+      - .github/workflows/migration-recovery-dev.yml
   workflow_dispatch:
 
 permissions:
