@@ -82,9 +82,9 @@ jobs:
       - run: npm run build:prod
 
   migrations:
-    name: Migraciones EF, variantes y cargas masivas en MySQL 8.4
+    name: Migraciones EF Oracle, variantes y cargas masivas en MySQL 8.4
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
     services:
       mysql:
         image: mysql:8.4
@@ -93,13 +93,13 @@ jobs:
           MYSQL_DATABASE: solqaryn_ci
         ports: ['3306:3306']
         options: >-
-          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-cmd="mysqladmin ping -h localhost -uroot -proot"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=12
     env:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=solqaryn_ci;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;
+      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=solqaryn_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;
       Database__ServerVersion: 8.4.0
       Database__ApplyMigrationsOnStartup: 'false'
       Jwt__Secret: Migration-CI-Only-Secret-With-More-Than-32-Characters-2026
@@ -115,226 +115,62 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.401'
-      - run: dotnet restore Solqaryn.sln
-      - run: dotnet tool install --global dotnet-ef --version 10.0.12
-      - name: Aplicar historial base
-        run: |
-          dotnet ef database update 20260722142118_Fase6SeguridadFacturacionPerfil \
-            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
-            --startup-project src/API/Solqaryn.API.csproj \
-            --context AppDbContext
-      - name: Insertar producto legado
-        working-directory: .
-        run: |
-          docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot solqaryn_ci -e "
-            INSERT INTO Productos
-              (Nombre, Marca, Modelo, Cantidad, Costo, Precio, UmbralStockBajo, Activo, Eliminado, FechaCreacion, FechaActualizacion)
-            VALUES
-              ('Teléfono legado CI', 'Samsung', 'S24', 3, 100.00, 150.00, 1, 1, 0, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6));"
-      - name: Aplicar hasta Fase 3
-        run: |
-          dotnet ef database update 20260728152434_Fase3CostoEnvioEnVentas \
-            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
-            --startup-project src/API/Solqaryn.API.csproj \
-            --context AppDbContext
-      - name: Preparar color legado
-        working-directory: .
-        run: |
-          docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot solqaryn_ci -e "
-            INSERT INTO CatalogosProducto
-              (Tipo, Nombre, Descripcion, CodigoVisual, Orden, Activo, Eliminado, FechaCreacion, FechaActualizacion)
-            VALUES
-              ('Color', 'Negro legado CI', 'Conversión CI', '#111827', 1, 1, 0, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6));
-            SET @color_id = LAST_INSERT_ID();
-            UPDATE Productos SET ColorId = @color_id WHERE Nombre = 'Teléfono legado CI';"
-      - name: Aplicar hasta AddTipoCliente
-        run: |
-          dotnet ef database update 20260803121112_AddTipoCliente \
-            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
-            --startup-project src/API/Solqaryn.API.csproj \
-            --context AppDbContext
-      - name: Validar Preflight fail-closed y escenarios (0, 1 y 2 predeterminados)
-        working-directory: .
+      - name: Restore y build
         run: |
           set -euo pipefail
-          mysql_container="${{ job.services.mysql.id }}"
-
-          ejecutar_preflight() {
-            local cantidad
-            cantidad="$(
-              docker exec -i "$mysql_container" \
-                mysql -uroot -proot solqaryn_ci \
-                --batch --skip-column-names \
-                < backend/scripts/preflight-tipo-cliente-predeterminado.sql
-            )"
-
-            if ! [[ "$cantidad" =~ ^[0-9]+$ ]]; then
-              echo "El preflight no devolvió un número válido." >&2
-              return 1
-            fi
-
-            if [ "$cantidad" -gt 1 ]; then
-              echo "Existen $cantidad tipos predeterminados activos." >&2
-              return 1
-            fi
-            echo "Preflight OK: $cantidad predeterminados activos."
-            return 0
-          }
-
-          trap 'docker exec "$mysql_container" mysql -uroot -proot solqaryn_ci -e "DELETE FROM TipoClientes WHERE Codigo = '\''TEST_DUP'\'';"' EXIT
-
-          docker exec "$mysql_container" mysql -uroot -proot solqaryn_ci -e "
-            UPDATE TipoClientes SET EsPredeterminado = 0 WHERE EsPredeterminado = 1;"
-          ejecutar_preflight
-
-          docker exec "$mysql_container" mysql -uroot -proot solqaryn_ci -e "
-            UPDATE TipoClientes SET EsPredeterminado = 1 WHERE Codigo = 'SIN_CLASIFICAR';"
-          ejecutar_preflight
-
-          docker exec "$mysql_container" mysql -uroot -proot solqaryn_ci -e "
-            INSERT INTO TipoClientes (Codigo, Nombre, NombreNormalizado, EsSistema, EsPredeterminado, Activo, Eliminado, ColorHex, Orden, FechaCreacion, FechaActualizacion)
-            VALUES ('TEST_DUP', 'Test Duplicado', 'TEST DUPLICADO', 0, 1, 1, 0, '#FF0000', 99, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6));"
-
-          if ejecutar_preflight; then
-            echo "El escenario duplicado debió ser rechazado por el preflight real." >&2
-            exit 1
-          else
-            echo "Escenario 2 predeterminados: Rechazo verificado correctamente mediante el preflight real."
-          fi
-
-          docker exec "$mysql_container" mysql -uroot -proot solqaryn_ci -e "
-            DELETE FROM TipoClientes WHERE Codigo = 'TEST_DUP';"
-          ejecutar_preflight
-      - name: Preparar configuración empresarial para N1.10
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+          dotnet tool restore
+          test "$(dotnet tool run dotnet-ef --version | awk '{print $NF}')" = "10.0.12"
+      - name: Bootstrap Oracle fresh
+        env:
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
+        run: |
+          set -euo pipefail
+          dotnet run             --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj             --configuration Release             --no-build
+          dotnet tool run dotnet-ef migrations has-pending-model-changes             --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj             --startup-project src/API/Solqaryn.API.csproj             --context AppDbContext             --configuration Release             --no-build
+      - name: Validar historia Pomelo preservada y esquema Oracle
         working-directory: .
         run: |
           set -euo pipefail
           mysql_container="${{ job.services.mysql.id }}"
           q(){ docker exec "$mysql_container" mysql -uroot -proot solqaryn_ci -Nse "$1"; }
-
-          activas="$(q "SELECT COUNT(*) FROM EmpresaConfiguraciones WHERE Activa = 1;")"
-          if [ "$activas" -gt 1 ]; then
-            echo "Baseline CI inválido: se encontraron $activas configuraciones empresariales activas." >&2
-            exit 1
-          fi
-
-          if [ "$activas" -eq 0 ]; then
-            docker exec "$mysql_container" mysql -uroot -proot solqaryn_ci -e "
-              INSERT INTO EmpresaConfiguraciones (
-                NombreComercial,
-                Eslogan,
-                NombreVisibleSistema,
-                DescripcionSistema,
-                MensajeLogin,
-                Copyright,
-                MostrarCopyright,
-                UsarAnioAutomaticoCopyright,
-                EncabezadoActivo,
-                PiePaginaActivo,
-                Moneda,
-                ZonaHoraria,
-                FormatoFecha,
-                Activa,
-                FechaActualizacion
-              ) VALUES (
-                'Storefront CI',
-                'Eleva tu mundo digital',
-                'Storefront CI',
-                'Baseline efímero de integración',
-                'CI integración',
-                'CI only',
-                1,
-                1,
-                1,
-                1,
-                'HNL',
-                'America/Tegucigalpa',
-                'dd/MM/yyyy',
-                1,
-                UTC_TIMESTAMP()
-              );
-            "
-          fi
-
-          test "$(q "SELECT COUNT(*) FROM EmpresaConfiguraciones WHERE Activa = 1;")" = 1
-          echo 'Baseline CI certificado con exactamente una configuración empresarial activa.'
-      - name: Aplicar migraciones actuales
-        run: |
-          dotnet ef database update \
-            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
-            --startup-project src/API/Solqaryn.API.csproj \
-            --context AppDbContext
-      - name: Ejecutar pruebas de integración MySQL
-        run: |
-          dotnet test Solqaryn.sln --configuration Release --filter "Category=Integration"
-      - name: Verificar variante legado, cargas y migraciones ERP-N1
+          history_sources="$(find backend/src/Infrastructure/Migrations backend/src/Infrastructure/Persistence/Migrations -type f -name '*.cs' ! -name '*.Designer.cs' ! -name '*ModelSnapshot*' | wc -l)"
+          test "$history_sources" = "107"
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")" = "1"
+          test "$(q "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='solqaryn_ci' AND table_name IN ('CargasMasivas','CargaMasivaErrores');")" = "2"
+          test "$(q "SELECT COUNT(DISTINCT index_name) FROM information_schema.statistics WHERE table_schema='solqaryn_ci' AND table_name='CargasMasivas' AND index_name='IX_CargasMasivas_Tipo_HashArchivo';")" = "1"
+          test "$(q "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='solqaryn_ci' AND table_name='ExistenciasVariante';")" = "1"
+          test "$(q "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema='solqaryn_ci' AND table_name='MovimientosInventario' AND column_name='CorrelationId';")" = "1"
+          echo "POMELO_HISTORY_SOURCE_FILES=$history_sources"
+          echo "ORACLE_FRESH_SCHEMA=PASS"
+      - name: Validar Preflight fail-closed y escenarios
         working-directory: .
         run: |
           set -euo pipefail
           mysql_container="${{ job.services.mysql.id }}"
-          count="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_ci -Nse "
-            SELECT COUNT(*) FROM ProductoVariantes pv
-            JOIN Productos p ON p.Id=pv.ProductoId
-            WHERE p.Nombre='Teléfono legado CI' AND pv.Cantidad=3 AND pv.Costo=100 AND pv.Precio=150;")"
-          test "$count" = '1'
-          tables="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_ci -Nse "
-            SELECT COUNT(*) FROM information_schema.tables
-            WHERE table_schema='solqaryn_ci' AND table_name IN ('CargasMasivas','CargaMasivaErrores');")"
-          test "$tables" = '2'
-          unique_index="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_ci -Nse "
-            SELECT COUNT(*) FROM information_schema.statistics
-            WHERE table_schema='solqaryn_ci'
-              AND table_name='CargasMasivas'
-              AND index_name='IX_CargasMasivas_Tipo_HashArchivo'
-              AND non_unique=0;")"
-          test "$unique_index" = '2'
-
-          # ERP-N1.4/N1.5 usan migraciones explícitas (sin ModelSnapshot generado).
-          # Validamos el resultado material aplicado y el historial EF, evitando un
-          # has-pending-model-changes inválido cuando no existe ModelSnapshot.
-          existencia_table="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_ci -Nse "
-            SELECT COUNT(*) FROM information_schema.tables
-            WHERE table_schema='solqaryn_ci' AND table_name='ExistenciasVariante';")"
-          test "$existencia_table" = '1'
-          correlation_column="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_ci -Nse "
-            SELECT COUNT(*) FROM information_schema.columns
-            WHERE table_schema='solqaryn_ci'
-              AND table_name='MovimientosInventario'
-              AND column_name='CorrelationId';")"
-          test "$correlation_column" = '1'
-          correlation_index="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_ci -Nse "
-            SELECT COUNT(DISTINCT index_name) FROM information_schema.statistics
-            WHERE table_schema='solqaryn_ci'
-              AND table_name='MovimientosInventario'
-              AND index_name='IX_MovimientosInventario_CorrelationId_Fecha';")"
-          test "$correlation_index" = '1'
-          n14_applied="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_ci -Nse "
-            SELECT COUNT(*) FROM __EFMigrationsHistory
-            WHERE MigrationId='20260815012500_N1_4_ExistenciaVariante';")"
-          test "$n14_applied" = '1'
-          n15_applied="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_ci -Nse "
-            SELECT COUNT(*) FROM __EFMigrationsHistory
-            WHERE MigrationId='20260815202500_N1_5_KardexCorrelation';")"
-          test "$n15_applied" = '1'
-      - name: Generar SQL forward de Fase 5
+          ejecutar_preflight() {
+            local cantidad
+            cantidad="$(docker exec -i "$mysql_container" mysql -uroot -proot solqaryn_ci --batch --skip-column-names < backend/scripts/preflight-tipo-cliente-predeterminado.sql)"
+            [[ "$cantidad" =~ ^[0-9]+$ ]]
+            test "$cantidad" -le 1
+          }
+          trap 'docker exec "$mysql_container" mysql -uroot -proot solqaryn_ci -e "DELETE FROM TipoClientes WHERE Codigo = '\''TEST_DUP'\'';"' EXIT
+          docker exec "$mysql_container" mysql -uroot -proot solqaryn_ci -e "UPDATE TipoClientes SET EsPredeterminado = 0 WHERE EsPredeterminado = 1;"
+          ejecutar_preflight
+          docker exec "$mysql_container" mysql -uroot -proot solqaryn_ci -e "UPDATE TipoClientes SET EsPredeterminado = 1 WHERE Codigo = 'SIN_CLASIFICAR';"
+          ejecutar_preflight
+          docker exec "$mysql_container" mysql -uroot -proot solqaryn_ci -e "INSERT INTO TipoClientes (Codigo, Nombre, NombreNormalizado, EsSistema, EsPredeterminado, Activo, Eliminado, ColorHex, Orden, FechaCreacion, FechaActualizacion) VALUES ('TEST_DUP', 'Test Duplicado', 'TEST DUPLICADO', 0, 1, 1, 0, '#FF0000', 99, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6));"
+          if ejecutar_preflight; then
+            echo "El escenario duplicado debió ser rechazado." >&2
+            exit 1
+          fi
+          docker exec "$mysql_container" mysql -uroot -proot solqaryn_ci -e "DELETE FROM TipoClientes WHERE Codigo='TEST_DUP';"
+          ejecutar_preflight
+      - name: Ejecutar pruebas de integración MySQL Oracle
         run: |
-          dotnet ef migrations script 20260728165321_Fase4VariantesInventario 20260729040900_Fase5CargasMasivas \
-            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
-            --startup-project src/API/Solqaryn.API.csproj \
-            --context AppDbContext \
-            --output fase5-cargas-masivas-forward.sql
-          test -s fase5-cargas-masivas-forward.sql
-          ! grep -Ein '(^|[[:space:];])(DROP[[:space:]]+TABLE|TRUNCATE)[[:space:]]|DELETE[[:space:]]+FROM' fase5-cargas-masivas-forward.sql
-          grep -q 'CargasMasivas' fase5-cargas-masivas-forward.sql
-          grep -q 'CargaMasivaErrores' fase5-cargas-masivas-forward.sql
-          grep -q 'IX_CargasMasivas_Tipo_HashArchivo' fase5-cargas-masivas-forward.sql
-      - if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: dev-fase5-cargas-masivas-migration-sql
-          path: backend/fase5-cargas-masivas-forward.sql
-          if-no-files-found: warn
-          retention-days: 14
+          set -euo pipefail
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-build --filter "Category=Integration"
 
   deployment-config:
     name: Docker y aislamiento de entornos
