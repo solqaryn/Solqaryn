@@ -33,3 +33,15 @@ No cambia la política ni el código productivo de traducción; se refuerza la c
 **Punto 9: CERRADO.** 1062 esperado conserva el contrato funcional, no se reintenta y los duplicados de índices distintos no se traducen; verificado en ambos providers.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+
+## Revalidación exact-head posterior — 2026-10-06
+
+- HEAD de `dev`: `92f46a6ccb2875a63af7cc37a385aafa975c50ad`. Certificación Fase 6 post-merge: [run 37423864673](https://github.com/solqaryn/Solqaryn/actions/runs/37423864673), evento push sobre ese SHA, conclusión `success`; cinco lanes de provider/EF y el dictamen final pasaron.
+- Inspección del `UnitOfWork` exact-head: sólo traduce código 1062 cuando el mensaje identifica `IX_TipoClientes_EsPredeterminadoUnico`; fija `ConstraintName=TipoClientePredeterminadoUnico`, mantiene el mensaje contractual y conserva la excepción original como inner exception. El 1062 no está en la lista de retry.
+- En Oracle EF10/net10, `UnitOfWorkRetryTests` aprobó explícitamente `NoReintentaViolacionDeUnicidad1062_YTraduceExcepcion` y `NoTraduceError1062DeOtroIndice`; suite: 2336/2336 unitarios y 22/22 integración.
+- En Pomelo/MySQL 8.4, verificaciones de 1062 y toda la suite de integración pasaron (28/28).
+- Oracle Connector/NET produjo `duplicateTranslated=true`, `duplicateNumber=1062` y cadena de tipos `UniqueConstraintViolationException -> MySql.Data.MySqlClient.MySqlException`; por tanto el contrato no depende del driver.
+- `ExceptionHandlingMiddleware` mantiene HTTP 409 para `UniqueConstraintViolationException` y usa su mensaje contractual como detalle del conflicto.
+
+**Revalidación del punto 9: PASS en dev, HEAD `92f46a6...`.**
