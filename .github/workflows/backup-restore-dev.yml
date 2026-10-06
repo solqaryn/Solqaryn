@@ -12,7 +12,7 @@ on:
       - docs/BACKUP_RESTORE_DESARROLLO_RUNBOOK.md
   pull_request:
     branches:
-      - main
+      - dev
     paths:
       - scripts/backup_dev.sh
       - scripts/restore_dev.sh
@@ -51,7 +51,7 @@ jobs:
     env:
       ASPNETCORE_ENVIRONMENT: Development
       PORT: '5005'
-      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_m11_source;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_m11_source;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
       Database__ServerVersion: '8.4.0'
       Database__ApplyMigrationsOnStartup: 'true'
       Jwt__Secret: 'SOLQARYN-CI-Only-Secret-With-More-Than-32-Characters-2026'
@@ -86,18 +86,20 @@ jobs:
         run: |
           set -euo pipefail
           dotnet restore Solqaryn.sln
-          dotnet tool install --global dotnet-ef --version 10.0.12
+          dotnet tool restore
           mysql_container="${{ job.services.mysql.id }}"
           docker exec "$mysql_container" mysql -uroot -proot -e "SET GLOBAL sql_require_primary_key=ON;"
           test "$(docker exec "$mysql_container" mysql -uroot -proot -Nse "SELECT @@GLOBAL.sql_require_primary_key;")" = 1
 
       - name: Crear esquema fuente completo
         working-directory: backend
+        env:
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
         run: |
-          dotnet ef database update \
-            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
-            --startup-project src/API/Solqaryn.API.csproj \
-            --context AppDbContext
+          set -euo pipefail
+          dotnet run \
+            --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj \
+            --configuration Release
 
       - name: Sembrar registros y referencias de activos SOLQARYN
         shell: bash
@@ -228,7 +230,7 @@ jobs:
         working-directory: backend
         shell: bash
         env:
-          ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_m11_restore;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
+          ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_m11_restore;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
         run: |
           set -euo pipefail
           dotnet build Solqaryn.sln --configuration Release --no-restore

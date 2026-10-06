@@ -304,7 +304,14 @@ if (app.Configuration.GetValue<bool>("Database:ApplyMigrationsOnStartup"))
 {
     await using var scope = app.Services.CreateAsyncScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await db.Database.MigrateAsync();
+    var bootstrapResult = await OracleDatabaseBootstrapper.ApplyAsync(
+        db,
+        OracleDatabaseBootstrapMode.Auto);
+    app.Logger.LogInformation(
+        "OracleDatabaseBootstrap Mode={Mode} ApplicationTables={ApplicationTables} PendingMigrations={PendingMigrations}",
+        bootstrapResult.EffectiveMode,
+        bootstrapResult.ApplicationTables,
+        bootstrapResult.PendingMigrations);
     var repairService = new ProductionDataRepairService(db);
     var repairResult = await repairService.RepairAsync();
     app.Logger.LogInformation(
