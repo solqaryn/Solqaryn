@@ -1,3 +1,14 @@
+## 2026-10-06 — Cierre post-merge Fase 7 en DEV
+
+- Fase 7 quedó integrada en `dev` mediante PR #3552; SHA técnico certificado: `7013a55cd7491c3c79d6808df5db9ba0b8580f40`.
+- Fase 7 exact-head run `37540172636`: PASS; unitarios 2388/2388, integración 27/27, bootstrap fresh 136 tablas, pending-model=0, Docker/health/readiness, tenancy y vulnerabilidades NuGet en verde.
+- Fase 6 post-Fase7 run `37540172761`: PASS; provider productivo Oracle-only, 107 migraciones Pomelo preservadas sin replay, `P0=0`, `P1=0`.
+- Aceptación DEV run `37540172606`: PASS 100/100; Fase 4 `37540172583` y Fase 5 `37540172750`: PASS.
+- Se reconciliaron las evidencias de Fases 6/7 y la documentación canónica para reflejar el runtime real de `dev`.
+- Se corrige N2.3 para usar `SslMode=Disabled` en su MySQL efímero con Oracle Connector/NET.
+- `main`, QA y PROD no se modifican en este cierre.
+- El ruleset de `dev` sigue exigiendo `Dictamen Fase 6`; `Dictamen Fase 7` existe como gate permanente y queda pendiente de incorporación administrativa al ruleset hasta disponer de una mutación de administración con readback.
+
 ## 2026-10-06 — Fase 7: .NET 10 + EF Core 10 + Oracle MySQL
 
 - Se ejecutó el retarget del backend a `net10.0`/C# 14 con SDK 10.0.401 y runtime/ASP.NET 10.0.12.
