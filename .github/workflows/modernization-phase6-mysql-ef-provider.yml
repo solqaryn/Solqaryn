@@ -107,8 +107,13 @@ jobs:
           set -euo pipefail
 
           migration_count="$(
-            grep -RIl --include='*.cs' '\[Migration("'               backend/src/Infrastructure/Migrations               backend/src/Infrastructure/Persistence/Migrations               | grep -v '\.Designer\.cs$'               | grep -v 'ModelSnapshot'               | wc -l
+            find backend/src/Infrastructure/Migrations backend/src/Infrastructure/Persistence/Migrations \
+              -type f -name '*.cs' \
+              ! -name '*.Designer.cs' \
+              ! -name '*ModelSnapshot*' \
+              | wc -l
           )"
+          echo "POMELO_HISTORY_SOURCE_FILES=$migration_count"
           test "$migration_count" -eq 107
 
           test -d backend/src/Infrastructure/Migrations

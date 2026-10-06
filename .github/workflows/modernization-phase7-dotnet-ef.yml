@@ -56,7 +56,7 @@ jobs:
           set -euo pipefail
           dotnet tool restore
           test "$(dotnet tool run dotnet-ef --version | awk '{print $NF}')" = "10.0.12"
-          dotnet tool run dotnet-ef dbcontext info             --project src/Infrastructure/Solqaryn.Infrastructure.csproj             --startup-project src/API/Solqaryn.API.csproj             --context AppDbContext             --configuration Release             --no-build
+          dotnet tool run dotnet-ef dbcontext info             --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj             --startup-project src/API/Solqaryn.API.csproj             --context AppDbContext             --configuration Release             --no-build --verbose
 
       - name: Provider productivo único
         shell: bash
@@ -127,6 +127,9 @@ jobs:
         run: |
           set -euo pipefail
           dotnet run             --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj             --configuration Release             --no-build
+          table_count="$(docker exec "${{ job.services.mysql.id }}" mysql -uroot phase7_fresh -Nse "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='phase7_fresh' AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME <> '__EFMigrationsHistory';")"
+          test "$table_count" -ge 136
+          echo "PHASE7_FRESH_TABLES=$table_count"
 
       - name: EF migrations y pending model
         working-directory: backend
@@ -134,7 +137,17 @@ jobs:
           set -euo pipefail
           dotnet tool restore
           dotnet tool run dotnet-ef migrations list             --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj             --startup-project src/API/Solqaryn.API.csproj             --context AppDbContext             --configuration Release             --no-build
+          set +e
           dotnet tool run dotnet-ef migrations has-pending-model-changes             --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj             --startup-project src/API/Solqaryn.API.csproj             --context AppDbContext             --configuration Release             --no-build
+          pending_rc=$?
+          set -e
+          if [ "$pending_rc" -ne 0 ]; then
+            echo 'PHASE7_PENDING_MODEL_CHANGES=FAIL'
+            dotnet tool run dotnet-ef migrations add Phase7PendingProbe             --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj             --startup-project src/API/Solqaryn.API.csproj             --context AppDbContext             --configuration Release             --no-build             --output-dir Migrations/Phase7PendingProbe
+            find src/Infrastructure.Migrations/Migrations/Phase7PendingProbe -type f -name '*.cs' -print -exec sed -n '1,320p' {} \;
+            exit "$pending_rc"
+          fi
+          echo 'PHASE7_PENDING_MODEL_CHANGES=PASS'
 
       - name: Integration regression Oracle
         working-directory: backend
