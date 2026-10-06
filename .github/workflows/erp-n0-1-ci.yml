@@ -47,12 +47,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '10.0.401'
       - name: Restaurar backend
         working-directory: backend
         run: dotnet restore Solqaryn.sln
       - name: Instalar EF
-        run: dotnet tool install --global dotnet-ef --version 8.0.8
+        run: dotnet tool install --global dotnet-ef --version 10.0.12
       - name: Crear esquema actual
         working-directory: backend
         run: |
