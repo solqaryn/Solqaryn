@@ -11,7 +11,7 @@ Rama: `dev`
 ## Evidencia Pomelo (autoridad actual en net8/EF8)
 
 - El gate de Fase 6 instala `dotnet-ef 8.0.8`, aplica toda la historia Pomelo y ejecuta `dotnet ef migrations has-pending-model-changes`.
-- Exact-head vigente `37298140358`, HEAD `a02a6049bed532ae0d26ffcc49c4ea3151985932`: el job `Pomelo actual - migraciones SQL modelo integración y contratos MySQL` terminó `success`, aplicó la historia completa y `dotnet-ef migrations has-pending-model-changes` informó `No changes have been made to the model since the last migration`.
+- Run de referencia anterior `37298140358`, HEAD `a02a6049bed532ae0d26ffcc49c4ea3151985932`: el job `Pomelo actual - migraciones SQL modelo integración y contratos MySQL` terminó `success`, aplicó la historia completa y `dotnet-ef migrations has-pending-model-changes` informó `No changes have been made to the model since the last migration`.
 - Inventario previamente verificado: 107 archivos e IDs únicos, sin reescritura de la historia.
 
 ## Evidencia Oracle EF10 (ruta objetivo)
@@ -25,6 +25,16 @@ Rama: `dev`
 ## Dictamen exact-head actual
 
 El gate de Fase 6 `37298140358` sobre `a02a6049bed532ae0d26ffcc49c4ea3151985932` terminó con todos los jobs `success`, `FASE_6_MYSQL_EF_PROVIDER=PASS`, `P0=0`, `P1=0`; `PHASE7_EXECUTED=false`. [Dictamen exact-head de Fase 6](https://github.com/solqaryn/Solqaryn/actions/runs/37298140358).
+
+## Revalidación exact-head actual (2026-10-06)
+
+- Rama/HEAD verificado: `dev` / `e1b55865f4a1ee8cf2c755b485202c2cfe020c92`.
+- Run completo del gate Fase 6: [#37427459230](https://github.com/solqaryn/Solqaryn/actions/runs/37427459230), conclusión `success`; los cinco jobs, incluido el dictamen final, terminaron correctamente.
+- Pomelo: `dotnet-ef 8.0.8 migrations has-pending-model-changes` imprimió `No changes have been made to the model since the last migration.`; historia aplicada sin drift con `POMELO_MIGRATIONS=107`. Sus pruebas en este HEAD: 2,336 unitarias y 28 de integración pasaron.
+- Oracle EF10: el job de baseline/adopción produjo `ORACLE_BASELINE_ID=20261006070747_OracleBaseline`; baseline SQL fresco con 136 tablas, esquema equivalente y adopción sin DDL. Las comprobaciones `has-pending-model-changes` antes/después del bootstrap y en adopción devolvieron cero pendientes.
+- El rollback de provider volvió a Pomelo sin alterar esquema ni datos y conservó las 107 entradas históricas; el job de baseline/adopción terminó `success`.
+- La copia efímera net10 compiló sin modificar los proyectos versionados; pasaron 2,388 unitarias y 28 de integración en net10. Este run no cambió el TargetFramework del repositorio ni ejecutó Fase 7.
+- Dictamen registrado por el job final: `FASE_6_MYSQL_EF_PROVIDER=PASS`, `P0=0`, `P1=0`, `PHASE7_EXECUTED=false`.
 
 ## Alcance
 
