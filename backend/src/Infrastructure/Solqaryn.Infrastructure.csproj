@@ -30,6 +30,5 @@
     <Compile Remove="Migrations/**/*.cs" />
     <Compile Remove="Persistence/Migrations/**/*.cs" />
     <Compile Remove="Persistence/AppDbContextFactory.cs" />
-    <Compile Remove="Persistence/OracleAppDbContextFactory.cs" />
   </ItemGroup>
 </Project>
