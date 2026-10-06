@@ -87,7 +87,7 @@ public static class CanonicalMySqlPhysicalContract
                  PermiteCambio, Orden, Metadata, Eliminado, FechaCreacion,
                  FechaActualizacion, CreadoPorNombreUsuario, ActualizadoPorNombreUsuario)
             SELECT 'Efectivo', 'Efectivo', 'Efectivo', 1, 0, 0, 0, 10,
-                   '{"phase7CanonicalSeed":true,"legacyEnum":1}', 0, UTC_TIMESTAMP(6),
+                   JSON_OBJECT('phase7CanonicalSeed', true, 'legacyEnum', 1), 0, UTC_TIMESTAMP(6),
                    UTC_TIMESTAMP(6), 'SOLQARYN-F7', 'SOLQARYN-F7'
              WHERE NOT EXISTS (
                  SELECT 1 FROM MetodosPago
@@ -98,7 +98,7 @@ public static class CanonicalMySqlPhysicalContract
                  PermiteCambio, Orden, Metadata, Eliminado, FechaCreacion,
                  FechaActualizacion, CreadoPorNombreUsuario, ActualizadoPorNombreUsuario)
             SELECT 'Transferencia', 'Transferencia', 'Transferencia', 1, 0, 0, 0, 20,
-                   '{"phase7CanonicalSeed":true,"legacyEnum":2}', 0, UTC_TIMESTAMP(6),
+                   JSON_OBJECT('phase7CanonicalSeed', true, 'legacyEnum', 2), 0, UTC_TIMESTAMP(6),
                    UTC_TIMESTAMP(6), 'SOLQARYN-F7', 'SOLQARYN-F7'
              WHERE NOT EXISTS (
                  SELECT 1 FROM MetodosPago
@@ -109,7 +109,7 @@ public static class CanonicalMySqlPhysicalContract
                  PermiteCambio, Orden, Metadata, Eliminado, FechaCreacion,
                  FechaActualizacion, CreadoPorNombreUsuario, ActualizadoPorNombreUsuario)
             SELECT 'Tarjeta', 'Tarjeta', 'Tarjeta', 1, 0, 0, 0, 30,
-                   '{"phase7CanonicalSeed":true,"legacyEnum":3}', 0, UTC_TIMESTAMP(6),
+                   JSON_OBJECT('phase7CanonicalSeed', true, 'legacyEnum', 3), 0, UTC_TIMESTAMP(6),
                    UTC_TIMESTAMP(6), 'SOLQARYN-F7', 'SOLQARYN-F7'
              WHERE NOT EXISTS (
                  SELECT 1 FROM MetodosPago
@@ -120,7 +120,7 @@ public static class CanonicalMySqlPhysicalContract
                  PermiteCambio, Orden, Metadata, Eliminado, FechaCreacion,
                  FechaActualizacion, CreadoPorNombreUsuario, ActualizadoPorNombreUsuario)
             SELECT 'Otro', 'Otro', 'Otro', 1, 0, 0, 0, 40,
-                   '{"phase7CanonicalSeed":true,"legacyEnum":4}', 0, UTC_TIMESTAMP(6),
+                   JSON_OBJECT('phase7CanonicalSeed', true, 'legacyEnum', 4), 0, UTC_TIMESTAMP(6),
                    UTC_TIMESTAMP(6), 'SOLQARYN-F7', 'SOLQARYN-F7'
              WHERE NOT EXISTS (
                  SELECT 1 FROM MetodosPago
