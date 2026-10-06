@@ -17,7 +17,7 @@ public sealed class N72DOutboxMySqlConcurrencyTests
     {
         var database = $"test_n72d_outbox_{Guid.NewGuid():N}";
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySQL($"Server=localhost;Port=3306;Database={database};User=root;Password=root;")
+            .UseMySQL($"Server=localhost;Port=3306;Database={database};User=root;Password=root;", mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
             .Options;
 
         try

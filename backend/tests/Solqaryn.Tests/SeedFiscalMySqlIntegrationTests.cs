@@ -11,7 +11,7 @@ public class SeedFiscalMySqlIntegrationTests
 {
     private static DbContextOptions<AppDbContext> CrearOpciones(string baseDatos) =>
         new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySQL($"Server=localhost;Port=3306;Database={baseDatos};User=root;Password=root;")
+            .UseMySQL($"Server=localhost;Port=3306;Database={baseDatos};User=root;Password=root;", mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
             .Options;
 
     [Fact]

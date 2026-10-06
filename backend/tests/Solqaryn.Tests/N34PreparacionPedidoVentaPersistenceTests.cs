@@ -47,7 +47,7 @@ public sealed class N34PreparacionPedidoVentaPersistenceTests
     private static AppDbContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySQL("Server=localhost;Database=solqaryn_n34_model;User=root;Password=test;")
+            .UseMySQL("Server=localhost;Database=solqaryn_n34_model;User=root;Password=test;", mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
             .Options;
         return new AppDbContext(options);
     }

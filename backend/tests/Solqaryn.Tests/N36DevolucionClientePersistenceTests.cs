@@ -49,7 +49,7 @@ public sealed class N36DevolucionClientePersistenceTests
     private static AppDbContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySQL("Server=localhost;Database=solqaryn_n36_model;User=root;Password=test;")
+            .UseMySQL("Server=localhost;Database=solqaryn_n36_model;User=root;Password=test;", mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
             .Options;
         return new AppDbContext(options);
     }
