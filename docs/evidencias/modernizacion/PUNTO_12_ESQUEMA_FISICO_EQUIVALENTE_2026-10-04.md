@@ -26,8 +26,16 @@ Cada exportación se ordena de forma determinista y se compara con `diff`; cualq
 - Primera ejecución ampliada `37241337349` falló porque `INFORMATION_SCHEMA.PARTITIONS` no contiene `ENGINE` ni `CREATE_OPTIONS`; se quitaron esos campos.
 - Segunda ejecución `37241647354` llegó al comparator, pero detectó que `CHECK_CONSTRAINTS` no contiene `ENFORCED`; ese atributo sí se compara desde `TABLE_CONSTRAINTS.ENFORCED`, por lo que se quitó la referencia duplicada inválida. No se declaró PASS.
 - El comparator ampliado se volvió a ejecutar en `37280729749`, HEAD `cf0607908701e5a9e3015dcc463f2a6beb87b2cf`: job completo `success`; `ORACLE_EF10_SCRIPT_BOOTSTRAP_SCHEMA_EQUIVALENT=true`; `ORACLE_BASELINE_SCHEMA_EQUIVALENT=true`; `ORACLE_EF10_SQL_PACKAGE_FRESH_BOOTSTRAP=PASS tables=136`; `ORACLE_BASELINE_ADOPTION_NO_DDL=PASS`.
-- El gate integral más reciente `37298140358`, HEAD `a02a6049bed532ae0d26ffcc49c4ea3151985932`, terminó `success` en provider/net10 y dictamen: `P0=0`, `P1=0`, `FASE_6_MYSQL_EF_PROVIDER=PASS`, `PHASE7_EXECUTED=false`.
+- El gate integral anterior `37298140358`, HEAD `a02a6049bed532ae0d26ffcc49c4ea3151985932`, terminó `success` en provider/net10 y dictamen: `P0=0`, `P1=0`, `FASE_6_MYSQL_EF_PROVIDER=PASS`, `PHASE7_EXECUTED=false`.
 - Continuidad comprobada hasta ese HEAD: no hubo cambios en `.github/workflows/modernization-oracle-baseline-probe.yml`, `backend/src/Infrastructure/Persistence`, `backend/src/Infrastructure/Migrations` ni `Solqaryn.Infrastructure.csproj` desde el run comparator `37280729749`. Por tanto, sus entradas de esquema/modelo/historia siguen siendo las mismas; los cambios posteriores relevantes de provider se volvieron a probar en el gate integral.
+
+## Revalidación exact-head actual (2026-10-06)
+
+- Rama y HEAD: `dev` / `b5d4cb4dd64eb1ee943b8819311fa5def2899254`.
+- [Gate Fase 6 exact-head #37429599987](https://github.com/solqaryn/Solqaryn/actions/runs/37429599987) terminó `success`; el job `Oracle baseline fresh/adoption exact-head certification` también terminó `success`.
+- Los logs de ese job registran `ORACLE_EF10_SCRIPT_BOOTSTRAP_SCHEMA_EQUIVALENT=true`, `ORACLE_BASELINE_SCHEMA_EQUIVALENT=true`, `ORACLE_EF10_SQL_PACKAGE_FRESH_BOOTSTRAP=PASS tables=136`, `ORACLE_BASELINE_TABLE_COUNT=136` y `ORACLE_BASELINE_ADOPTION_NO_DDL=PASS`.
+- Inspeccioné el workflow ejecutado en `dev`: las exportaciones comparan tablas, columnas, índices, particiones, constraints/FK/CHECK, vistas, triggers, rutinas/parámetros, eventos y defaults de schema; compara los dumps ordenados con `diff`. El único objeto excluido del esquema de aplicación es `__EFMigrationsHistory`.
+- En este run exacto el esquema SQL del baseline y el bootstrap del script Oracle son equivalentes a la referencia física Pomelo; fresh bootstrap conserva 136 tablas y adopción no ejecuta DDL.
 
 ## Alcance
 
