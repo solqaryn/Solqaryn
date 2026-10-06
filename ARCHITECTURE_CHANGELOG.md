@@ -6,7 +6,7 @@
 - La cadena activa de migraciones usa `Solqaryn.Infrastructure.Migrations` + `OracleBaseline`; el bootstrap fresh materializa el contrato físico canónico, valida 136 tablas y exige `has-pending-model-changes=0`.
 - Docker usa SDK 10.0.401 y ASP.NET 10.0.12; los workflows operativos de backend quedan alineados a .NET 10. Los probes históricos explícitos de Fase 6 conservan sus versiones antiguas sólo para reproducibilidad histórica.
 - Gate Fase 7 valida build, 2388 unitarios, integración Oracle/MySQL, tenancy fail-closed, auditoría de vulnerabilidades NuGet y smoke Docker con `/health` + `/health/ready`.
-- Alcance: rama de modernización hacia `dev`; sin promoción a `main`, QA ni PROD.
+- Alcance: Fase 7 integrada en `dev` mediante PR #3552; sin promoción a `main`, QA ni PROD.
 
 ## 2026-10-05 — Reconciliación arquitectónica del exact-head vigente
 
