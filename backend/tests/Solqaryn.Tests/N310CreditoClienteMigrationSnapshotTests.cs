@@ -1,8 +1,10 @@
+using MySql.EntityFrameworkCore.Extensions;
 using System.Reflection;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Infrastructure.Persistence;
 using Solqaryn.Infrastructure.Persistence.Migrations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
@@ -53,24 +55,16 @@ public sealed class N310CreditoClienteMigrationSnapshotTests
     }
 
     [Fact]
-    public void SnapshotPart28_ConservaContratoCreditoClienteSinDependerDePartesLegacy()
+    public void ModeloOracleVigente_ConservaContratoCreditoCliente()
     {
-        var infrastructureAssembly = typeof(AppDbContext).Assembly;
-        var helperType = infrastructureAssembly.GetType(
-            "Solqaryn.Infrastructure.Migrations.AppDbContextSnapshotN14D",
-            throwOnError: false);
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseMySQL("Server=localhost;Database=phase7_model_only;User=root;SslMode=Disabled;")
+            .Options;
 
-        Assert.NotNull(helperType);
+        using var context = new AppDbContext(options);
+        var model = context.GetService<IDesignTimeModel>().Model;
 
-        var applyPart28 = helperType!.GetMethod(
-            "ApplyPart28",
-            BindingFlags.Static | BindingFlags.NonPublic);
-        Assert.NotNull(applyPart28);
-
-        var modelBuilder = new ModelBuilder(new ConventionSet());
-        applyPart28!.Invoke(null, new object[] { modelBuilder });
-
-        var entity = modelBuilder.Model.FindEntityType(typeof(CreditoCliente));
+        var entity = model.FindEntityType(typeof(CreditoCliente));
         Assert.NotNull(entity);
         Assert.Equal("CreditosCliente", entity!.GetTableName());
         var clienteIndex = entity.GetIndexes()
