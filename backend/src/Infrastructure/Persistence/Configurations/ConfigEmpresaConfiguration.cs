@@ -39,12 +39,12 @@ public sealed class ConfigEmpresaConfiguration : IEntityTypeConfiguration<Config
         builder.Property(x => x.ImpuestosJson)
             .IsRequired()
             .HasColumnType("longtext")
-            .HasDefaultValueSql("(_utf8mb4\'{}\')");
+            .HasDefaultValueSql("('{}')");
 
         builder.Property(x => x.EmisionJson)
             .IsRequired()
             .HasColumnType("longtext")
-            .HasDefaultValueSql("(_utf8mb4\'{}\')");
+            .HasDefaultValueSql("('{}')");
 
         builder.Property(x => x.CorreoRemitente)
             .HasMaxLength(254);

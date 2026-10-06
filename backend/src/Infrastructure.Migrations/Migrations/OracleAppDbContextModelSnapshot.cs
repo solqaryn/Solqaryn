@@ -1882,7 +1882,7 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("longtext")
-                        .HasDefaultValueSql("(_utf8mb4'{}')");
+                        .HasDefaultValueSql("('{}')");
 
                     b.Property<int>("EmpresaId")
                         .HasColumnType("int");
@@ -1897,7 +1897,7 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("longtext")
-                        .HasDefaultValueSql("(_utf8mb4'{}')");
+                        .HasDefaultValueSql("('{}')");
 
                     b.Property<string>("Moneda")
                         .IsRequired()

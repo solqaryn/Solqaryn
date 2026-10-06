@@ -26,7 +26,8 @@ public sealed class N67CConfiguracionEmpresaPersistenceTests
         using var context = new AppDbContext(options);
         var migrationsAssembly = context.GetService<IMigrationsAssembly>();
 
-        Assert.Contains(MigrationId, migrationsAssembly.Migrations.Keys);
+        Assert.Contains("20261006111818_OracleBaseline", migrationsAssembly.Migrations.Keys);
+        Assert.DoesNotContain(MigrationId, migrationsAssembly.Migrations.Keys);
 
         var migrationType = typeof(N67CConfiguracionEmpresaPersistence);
         var migrationAttribute = Assert.Single(
