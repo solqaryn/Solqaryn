@@ -1,3 +1,4 @@
+using MySql.EntityFrameworkCore.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -26,9 +27,7 @@ public class InventarioConcurrencyTests
 
     private static DbContextOptions<AppDbContext> CreateOptions(string dbName) =>
         new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySql(
-                GetConnectionString(dbName),
-                new MySqlServerVersion(new Version(8, 4, 0)))
+            .UseMySQL(GetConnectionString(dbName))
             .Options;
 
     private static Mock<IUsuarioScopeService> CrearScopeAdministrador()

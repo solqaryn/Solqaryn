@@ -1,3 +1,4 @@
+using MySql.EntityFrameworkCore.Extensions;
 using System.Linq;
 using Solqaryn.Domain.Entities.Bancos;
 using Solqaryn.Infrastructure.Persistence;
@@ -13,7 +14,7 @@ public class N43CPersistenceModelTests
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
             // Use a hardcoded server version so it doesn't try to connect
-            .UseMySql("Server=localhost;Database=dummy;Uid=dummy;Pwd=dummy;", new MySqlServerVersion(new System.Version(8, 0, 21)))
+            .UseMySQL("Server=localhost;Database=dummy;Uid=dummy;Pwd=dummy;")
             .Options;
 
         return new AppDbContext(options);

@@ -1,3 +1,4 @@
+using MySql.EntityFrameworkCore.Extensions;
 using System.Reflection;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Infrastructure.Migrations;
@@ -19,9 +20,7 @@ public sealed class N67CConfiguracionEmpresaPersistenceTests
     public void Migracion_EstaRegistradaYDescubriblePorEfCore()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySql(
-                "Server=localhost;Database=solqaryn_n67c_discovery;User=root;Password=test;",
-                ServerVersion.Parse("8.0.36-mysql"))
+            .UseMySQL("Server=localhost;Database=solqaryn_n67c_discovery;User=root;Password=test;")
             .Options;
 
         using var context = new AppDbContext(options);

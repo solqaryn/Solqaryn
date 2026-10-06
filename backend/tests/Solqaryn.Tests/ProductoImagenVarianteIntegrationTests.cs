@@ -1,3 +1,4 @@
+using MySql.EntityFrameworkCore.Extensions;
 using System;
 using System.Threading.Tasks;
 using Solqaryn.Domain.Entities;
@@ -13,9 +14,7 @@ public class ProductoImagenVarianteIntegrationTests
 {
     private static DbContextOptions<AppDbContext> CrearOpciones(string nombreBase) =>
         new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySql(
-                $"Server=localhost;Port=3306;Database={nombreBase};User=root;Password=root;",
-                new MySqlServerVersion(new Version(8, 4, 0)))
+            .UseMySQL($"Server=localhost;Port=3306;Database={nombreBase};User=root;Password=root;")
             .Options;
 
     // Gate final M2: cubre migración MySQL 8.4, unicidad por ámbito de imagen

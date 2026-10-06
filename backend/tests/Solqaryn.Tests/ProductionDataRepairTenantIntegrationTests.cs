@@ -1,3 +1,4 @@
+using MySql.EntityFrameworkCore.Extensions;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Infrastructure.Persistence;
 using Solqaryn.Infrastructure.Services;
@@ -12,9 +13,7 @@ public sealed class ProductionDataRepairTenantIntegrationTests
 {
     private static DbContextOptions<AppDbContext> CrearOpciones(string baseDatos) =>
         new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySql(
-                CrearCadena(baseDatos),
-                new MySqlServerVersion(new Version(8, 4, 0)))
+            .UseMySQL(CrearCadena(baseDatos))
             .Options;
 
     private static string CrearCadena(string baseDatos)

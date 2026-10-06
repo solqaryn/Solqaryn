@@ -1,3 +1,4 @@
+using MySql.EntityFrameworkCore.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,7 +26,7 @@ public class TipoClienteConcurrencyTests
     private DbContextOptions<AppDbContext> CreateOptions(string dbName)
     {
         return new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySql(GetConnectionString(dbName), new MySqlServerVersion(new Version(8, 4, 3)))
+            .UseMySQL(GetConnectionString(dbName))
             .Options;
     }
 

@@ -1,3 +1,4 @@
+using MySql.EntityFrameworkCore.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
@@ -23,7 +24,7 @@ public class CargaMasivaConcurrencyTests
 
     private static DbContextOptions<AppDbContext> CrearOpciones(string nombreBase) =>
         new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySql($"Server=localhost;Port=3306;Database={nombreBase};User=root;Password=root;", new MySqlServerVersion(new Version(8, 4, 0)))
+            .UseMySQL($"Server=localhost;Port=3306;Database={nombreBase};User=root;Password=root;")
             .Options;
 
     private static Mock<ICurrentUserService> CrearUsuarioActual()
