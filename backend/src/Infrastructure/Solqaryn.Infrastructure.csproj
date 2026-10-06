@@ -29,5 +29,6 @@
   <ItemGroup>
     <Compile Remove="Migrations/**/*.cs" />
     <Compile Remove="Persistence/Migrations/**/*.cs" />
+    <Compile Remove="Persistence/AppDbContextFactory.cs" />
   </ItemGroup>
 </Project>
