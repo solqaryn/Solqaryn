@@ -41,3 +41,15 @@ La comparación anterior quedó obsoleta y no se usa para declarar el punto cerr
 El criterio se cumple: el probe EF9/Pomelo9 es temporal; la ruta futura final certificada es EF10 con Oracle Connector/NET. No se convierte EF9/Pomelo9 en dependencia productiva ni se ejecuta Fase 7.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+
+## Revalidación de vigencia — 2026-10-06
+
+**Estado actual: PENDIENTE de sonda exact-head; no se conserva el PASS histórico como certificación del HEAD actual.**
+
+- La última sonda exitosa identificada fue `37278090999`, sobre el código `dc063110fca28eb7e715322ab3aff214ab211cc9`.
+- Después de ese commit cambiaron dos archivos de backend que forman parte de la superficie probada: `backend/src/Infrastructure/Repositories/MovimientoInventarioRepository.cs` y `backend/src/Infrastructure/Services/ReporteComprasService.cs`. Por tanto, el run histórico no prueba esos cambios posteriores.
+- En el HEAD auditado `3ff3ed02084030e7b91e759fedb75ae5ad8144c4`, los proyectos productivos siguen en `net8.0`, EF Core `8.0.2` y Pomelo `8.0.2`; la sonda EF9/Pomelo9 sigue siendo una modificación temporal del runner, no una dependencia productiva.
+- La certificación de Fase 6 de ese HEAD terminó con éxito en [run 37412576773](https://github.com/solqaryn/Solqaryn/actions/runs/37412576773), pero valida la ruta Oracle EF10 y no sustituye la sonda EF9/Pomelo9.
+- El workflow ahora también se dispara cuando se modifica esta acta. Al integrar esta actualización en `dev`, debe ejecutarse la sonda sobre el nuevo HEAD; sólo un resultado exitoso permitirá restaurar el dictamen **CERRADO**.
+- `PHASE7_EXECUTED=false`; no se cambia de fase.
