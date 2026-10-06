@@ -17,5 +17,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Application\Solqaryn.Application.csproj" />
     <ProjectReference Include="..\Infrastructure\Solqaryn.Infrastructure.csproj" />
+    <ProjectReference Include="..\Infrastructure.Migrations\Solqaryn.Infrastructure.Migrations.csproj" />
   </ItemGroup>
 </Project>
