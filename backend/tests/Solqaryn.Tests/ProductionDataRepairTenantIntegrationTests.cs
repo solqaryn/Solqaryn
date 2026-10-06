@@ -3,7 +3,7 @@ using Solqaryn.Domain.Entities;
 using Solqaryn.Infrastructure.Persistence;
 using Solqaryn.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
-using MySqlConnector;
+using MySql.Data.MySqlClient;
 using Xunit;
 
 namespace Solqaryn.Tests;
