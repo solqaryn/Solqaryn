@@ -33,7 +33,7 @@ public static class CanonicalMySqlPhysicalContract
                   AND TRIGGER_NAME IN (
                     'TR_MovimientosInventario_N06_OrigenTipado_BI',
                     'TR_MovimientosInventario_N06_OrigenTipado_BU'
-                  );
+                  )
                 """)
             .SingleAsync(cancellationToken);
 
@@ -48,7 +48,7 @@ public static class CanonicalMySqlPhysicalContract
                 WHERE CONSTRAINT_SCHEMA = DATABASE()
                   AND TABLE_NAME = 'MovimientosInventario'
                   AND CONSTRAINT_TYPE = 'CHECK'
-                  AND CONSTRAINT_NAME = 'CK_MovimientosInventario_OrigenTipado_Exclusivo_N06';
+                  AND CONSTRAINT_NAME = 'CK_MovimientosInventario_OrigenTipado_Exclusivo_N06'
                 """)
             .SingleAsync(cancellationToken);
 
@@ -67,7 +67,7 @@ public static class CanonicalMySqlPhysicalContract
                     CAST('Otro' AS BINARY)
                 )
                   AND Activo = 1
-                  AND Eliminado = 0;
+                  AND Eliminado = 0
                 """)
             .SingleAsync(cancellationToken);
 
@@ -147,7 +147,7 @@ public static class CanonicalMySqlPhysicalContract
                 WHERE CONSTRAINT_SCHEMA = DATABASE()
                   AND TABLE_NAME = 'MovimientosInventario'
                   AND CONSTRAINT_TYPE = 'CHECK'
-                  AND CONSTRAINT_NAME = 'CK_MovimientosInventario_OrigenTipado_Exclusivo_N06';
+                  AND CONSTRAINT_NAME = 'CK_MovimientosInventario_OrigenTipado_Exclusivo_N06'
                 """)
             .SingleAsync(cancellationToken);
 
