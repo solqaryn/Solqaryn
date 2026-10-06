@@ -8,6 +8,7 @@ on:
       - 'backend/**'
       - 'tools/vaep/N820C.DbProviderProbe/**'
       - 'scripts/security/priority3_tenant_isolation_audit.py'
+      - 'docs/evidencias/modernizacion/PUNTO_3_EF9_POMELO9_SOLO_PUENTE_2026-10-04.md'
   workflow_dispatch:
 
 permissions:

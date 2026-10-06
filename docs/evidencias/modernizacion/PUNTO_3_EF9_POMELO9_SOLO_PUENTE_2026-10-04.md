@@ -6,7 +6,7 @@ Rama: `dev`
 
 ## Dictamen
 
-**Estado: PASS — revalidado exact-head.** El candidato EF Core 9 + Pomelo 9 se limita a una sonda transitoria de CI; no es la arquitectura final ni se adoptó en los proyectos productivos. El provider objetivo certificado para el cierre de Fase 6 es Oracle `MySql.EntityFrameworkCore 10.0.9` con EF Core `10.0.12` en una copia aislada `net10.0`.
+**Estado histórico: PASS en el HEAD de la sonda citada; no certifica el HEAD actual. Ver revalidación de vigencia al final.** El candidato EF Core 9 + Pomelo 9 se limita a una sonda transitoria de CI; no es la arquitectura final ni se adoptó en los proyectos productivos. El provider objetivo certificado para el cierre de Fase 6 es Oracle `MySql.EntityFrameworkCore 10.0.9` con EF Core `10.0.12` en una copia aislada `net10.0`.
 
 ## Evidencia del puente
 
@@ -26,7 +26,7 @@ La comparación anterior quedó obsoleta y no se usa para declarar el punto cerr
 - La revalidación exact-head [37277207917](https://github.com/solqaryn/Solqaryn/actions/runs/37277207917), HEAD `248c63b75c74c28738d79c59567d1831c04b56e6`, encontró un defecto del harness, no del provider: net8 unitarios pasaron `2388/2388`, pero integración quedó `27/28`. El test nuevo `SecuenciaDocumentoConcurrencyIntegrationTests` no estaba en la lista que acorta nombres de bases efímeras; MySQL rechazó `__test_sequence_concurrency_<guid>_EFMigrationsLock` por exceder 64 caracteres.
 - Se incorporó ese archivo a la adaptación temporal de nombres del probe. El rerun corregido [37278090999](https://github.com/solqaryn/Solqaryn/actions/runs/37278090999), HEAD de código `dc063110fca28eb7e715322ab3aff214ab211cc9`, terminó `success`: `EF9_SHORT_TEST_DATABASE_NAMES=27`; net8 y net10 reportaron unitarios `2388/2388` e integración `28/28`; `PRIORITY3_MULTITENANT_CERTIFICATION=PASS` con ocho contratos tenant certificados en ambas lanes; migraciones y `has-pending-model-changes` completaron; la comparación de columnas e índices terminó `EF9_POMELO9_NET8_NET10=PASS`.
 
-**Punto 3: CERRADO.** El fallo se resolvió en el harness efímero sin modificar paquetes ni proyectos productivos. EF9/Pomelo9 continúa exclusivamente como puente de certificación, no como ruta final.
+**Dictamen histórico (2026-10-05): CERRADO para el HEAD de la sonda.** El fallo se resolvió en el harness efímero sin modificar paquetes ni proyectos productivos. La vigencia actual queda pendiente según la revalidación fechada al final.
 
 ## No adopción / arquitectura vigente
 
@@ -38,6 +38,18 @@ La comparación anterior quedó obsoleta y no se usa para declarar el punto cerr
 
 ## Criterio de cierre
 
-El criterio se cumple: el probe EF9/Pomelo9 es temporal; la ruta futura final certificada es EF10 con Oracle Connector/NET. No se convierte EF9/Pomelo9 en dependencia productiva ni se ejecuta Fase 7.
+En el HEAD certificado históricamente, el probe EF9/Pomelo9 fue temporal; la ruta elegida fue EF10 con Oracle Connector/NET. La revalidación actual del probe está pendiente según el dictamen fechado al final. EF9/Pomelo9 no se convierte en dependencia productiva y Fase 7 no se ejecuta.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+
+## Revalidación de vigencia — 2026-10-06
+
+**Estado actual: PENDIENTE de sonda exact-head; no se conserva el PASS histórico como certificación del HEAD actual.**
+
+- La última sonda exitosa identificada fue `37278090999`, sobre el código `dc063110fca28eb7e715322ab3aff214ab211cc9`.
+- Después de ese commit cambiaron dos archivos de backend que forman parte de la superficie probada: `backend/src/Infrastructure/Repositories/MovimientoInventarioRepository.cs` y `backend/src/Infrastructure/Services/ReporteComprasService.cs`. Por tanto, el run histórico no prueba esos cambios posteriores.
+- En el HEAD auditado `3ff3ed02084030e7b91e759fedb75ae5ad8144c4`, los proyectos productivos siguen en `net8.0`, EF Core `8.0.2` y Pomelo `8.0.2`; la sonda EF9/Pomelo9 sigue siendo una modificación temporal del runner, no una dependencia productiva.
+- La certificación de Fase 6 de ese HEAD terminó con éxito en [run 37412576773](https://github.com/solqaryn/Solqaryn/actions/runs/37412576773), pero valida la ruta Oracle EF10 y no sustituye la sonda EF9/Pomelo9.
+- El workflow ahora también se dispara cuando se modifica esta acta. Al integrar esta actualización en `dev`, debe ejecutarse la sonda sobre el nuevo HEAD; sólo un resultado exitoso permitirá restaurar el dictamen **CERRADO**.
+- `PHASE7_EXECUTED=false`; no se cambia de fase.
