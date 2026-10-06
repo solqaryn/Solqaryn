@@ -49,7 +49,7 @@ jobs:
     env:
       ASPNETCORE_ENVIRONMENT: Development
       PORT: '5005'
-      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_migration_recovery;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_migration_recovery;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
       Database__ServerVersion: '8.4.0'
       Database__ApplyMigrationsOnStartup: 'true'
       Jwt__Secret: 'Migration-Recovery-CI-Only-Secret-With-More-Than-32-Characters-2026'
