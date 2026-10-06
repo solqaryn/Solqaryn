@@ -162,10 +162,121 @@ jobs:
           set -euo pipefail
           dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj             --configuration Release             --no-build             --filter "Category=Integration"
 
+  security-contract:
+    name: Fase 7 - security tenancy vulnerability gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.401
+
+      - name: Scope lock y tenancy fail-closed
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-project-scope.mjs
+          python3 scripts/security/priority3_tenant_isolation_audit.py --require-certified
+
+      - name: Vulnerabilidades NuGet
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet restore Solqaryn.sln
+          dotnet list Solqaryn.sln package --vulnerable --include-transitive | tee "$RUNNER_TEMP/nuget-vulnerable.txt"
+          if grep -q 'has the following vulnerable packages' "$RUNNER_TEMP/nuget-vulnerable.txt"; then
+            cat "$RUNNER_TEMP/nuget-vulnerable.txt"
+            exit 1
+          fi
+
+  docker-smoke:
+    name: Fase 7 - Docker .NET 10 health readiness
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: phase7_docker
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=phase7_docker;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;
+      Database__ServerVersion: 8.4.0
+      Database__ApplyMigrationsOnStartup: 'false'
+      Jwt__Secret: Phase7-Docker-CI-Only-Secret-Value-With-More-Than-32-Characters
+      Jwt__Issuer: Solqaryn.Phase7
+      Jwt__Audience: Solqaryn.Phase7.Frontend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.401
+
+      - name: Bootstrap base Docker
+        working-directory: backend
+        env:
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
+        run: |
+          set -euo pipefail
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+          dotnet run --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj --configuration Release --no-build
+
+      - name: Build imagen .NET 10
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker build -t solqaryn-phase7:ci .
+          docker inspect solqaryn-phase7:ci >/dev/null
+
+      - name: Arrancar imagen y probar health
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run -d --name solqaryn-phase7-api --network host             -e PORT=8080             -e ASPNETCORE_ENVIRONMENT=Development             -e ConnectionStrings__DefaultConnection="$ConnectionStrings__DefaultConnection"             -e Database__ServerVersion=8.4.0             -e Database__ApplyMigrationsOnStartup=false             -e Jwt__Secret="$Jwt__Secret"             -e Jwt__Issuer="$Jwt__Issuer"             -e Jwt__Audience="$Jwt__Audience"             solqaryn-phase7:ci
+          for i in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:8080/health >/tmp/health.json &&                curl -fsS http://127.0.0.1:8080/health/ready >/tmp/ready.json; then
+              cat /tmp/health.json
+              cat /tmp/ready.json
+              break
+            fi
+            if [ "$i" -eq 40 ]; then
+              docker logs solqaryn-phase7-api
+              exit 1
+            fi
+            sleep 2
+          done
+          docker exec solqaryn-phase7-api dotnet --list-runtimes | tee "$RUNNER_TEMP/docker-runtimes.txt"
+          grep -q '^Microsoft.NETCore.App 10.0.12 ' "$RUNNER_TEMP/docker-runtimes.txt"
+          grep -q '^Microsoft.AspNetCore.App 10.0.12 ' "$RUNNER_TEMP/docker-runtimes.txt"
+
+      - name: Logs y cleanup
+        if: always()
+        shell: bash
+        run: |
+          docker logs solqaryn-phase7-api 2>&1 || true
+          docker rm -f solqaryn-phase7-api >/dev/null 2>&1 || true
+
+
   verdict:
     name: Dictamen Fase 7
     if: always()
-    needs: [canonical-build, mysql-contract]
+    needs: [canonical-build, mysql-contract, security-contract, docker-smoke]
     runs-on: ubuntu-latest
     steps:
       - name: Fail closed
@@ -173,10 +284,14 @@ jobs:
         env:
           BUILD_RESULT: ${{ needs.canonical-build.result }}
           MYSQL_RESULT: ${{ needs.mysql-contract.result }}
+          SECURITY_RESULT: ${{ needs.security-contract.result }}
+          DOCKER_RESULT: ${{ needs.docker-smoke.result }}
         run: |
           set -euo pipefail
           test "$BUILD_RESULT" = success
           test "$MYSQL_RESULT" = success
+          test "$SECURITY_RESULT" = success
+          test "$DOCKER_RESULT" = success
           {
             echo 'FASE_7_DOTNET_EF=PASS'
             echo 'DOTNET_SDK=10.0.401'
@@ -192,5 +307,8 @@ jobs:
             echo 'PRODUCT_PROVIDER_AUTHORITY=ORACLE_ONLY'
             echo 'POMELO_PRODUCT_REFERENCES=0'
             echo 'DUAL_PROVIDER_RUNTIME=false'
+            echo 'TENANCY=PASS'
+            echo 'NUGET_VULNERABILITY_GATE=PASS'
+            echo 'DOCKER_DOTNET10=PASS'
             echo 'PHASE7_EXECUTED=true'
           } | tee phase7-verdict.txt
