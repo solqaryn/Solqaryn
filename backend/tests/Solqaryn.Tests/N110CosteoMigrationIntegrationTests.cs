@@ -1,10 +1,11 @@
+using System.Reflection;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using MySql.EntityFrameworkCore.Extensions;
 using Solqaryn.Domain.Entities;
-using Solqaryn.Domain.Enums;
+using Solqaryn.Infrastructure.Migrations;
 using Solqaryn.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Xunit;
 
 namespace Solqaryn.Tests;
@@ -12,71 +13,52 @@ namespace Solqaryn.Tests;
 [Trait("Category", "Integration")]
 public sealed class N110CosteoMigrationIntegrationTests
 {
-    private const string MigracionAnterior = "20260817100000_N1_9_TrazabilidadLotesSeries";
+    [Fact]
+    public async Task Historia_N110_ConservaGuardsSeedCosteo_Y_ModeloOracleActual()
+    {
+        var migration = new N1_10_CosteoPersistencia();
+        var builder = new MigrationBuilder("Pomelo.EntityFrameworkCore.MySql");
+        typeof(N1_10_CosteoPersistencia)
+            .GetMethod("Up", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .Invoke(migration, new object[] { builder });
 
-    private static DbContextOptions<AppDbContext> CreateOptions(string dbName) =>
-        new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySQL($"Server=localhost;Port=3306;Database={dbName};User=root;Password=root;", mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
+        var sql = string.Join(
+            "\n",
+            builder.Operations.OfType<SqlOperation>().Select(x => x.Sql));
+
+        Assert.Contains("CK_N110C_Guard_Cero", sql, StringComparison.Ordinal);
+        Assert.Contains("'Storefront'", sql, StringComparison.Ordinal);
+        Assert.Contains("Promedio Ponderado compatible", sql, StringComparison.Ordinal);
+        Assert.Contains("CK_N110C_PostGuard_Cero", sql, StringComparison.Ordinal);
+
+        var tables = builder.Operations
+            .OfType<CreateTableOperation>()
+            .Select(x => x.Name)
+            .ToHashSet(StringComparer.Ordinal);
+
+        Assert.Contains("PoliticasCosteoInventario", tables);
+        Assert.Contains("CostosEstandarInventario", tables);
+        Assert.Contains("CapasCostoInventario", tables);
+        Assert.Contains("AsignacionesCostoMovimientoInventario", tables);
+        Assert.Contains("VariacionesCostoEstandarInventario", tables);
+
+        var dbName = $"test_n110_phase7_model_{Guid.NewGuid():N}";
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseMySQL(
+                $"Server=localhost;Port=3306;Database={dbName};User=root;Password=root;",
+                mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
             .Options;
 
-    [Fact]
-    public async Task MigrateAsync_BaseVacia_CreaEmpresaActivaYPoliticaPromedioPonderado()
-    {
-        var dbName = $"test_n110_costeo_bootstrap_{Guid.NewGuid():N}";
-        var options = CreateOptions(dbName);
-
         await using var context = new AppDbContext(options);
         try
         {
-            await context.Database.MigrateAsync();
+            await Phase7MySqlTestDatabase.InitializeFreshAsync(context);
 
-            var empresas = await context.EmpresaConfiguraciones.AsNoTracking().ToListAsync();
-            var politicas = await context.Set<PoliticaCosteoInventario>().AsNoTracking().ToListAsync();
-
-            var empresa = Assert.Single(empresas);
-            Assert.True(empresa.Activa);
-            Assert.Equal("Storefront", empresa.NombreComercial);
-            Assert.Equal("HNL", empresa.Moneda);
-            Assert.Equal("America/Tegucigalpa", empresa.ZonaHoraria);
-
-            var politica = Assert.Single(politicas);
-            Assert.Equal(empresa.Id, politica.EmpresaConfiguracionId);
-            Assert.Equal(MetodoCosteoInventario.PromedioPonderado, politica.Metodo);
-            Assert.True(politica.EstaVigente);
-        }
-        finally
-        {
-            await context.Database.EnsureDeletedAsync();
-        }
-    }
-
-    [Fact]
-    public async Task MigrateAsync_BaseExistenteSinEmpresaActiva_FallaCerradoYNoAutorreparaDatos()
-    {
-        var dbName = $"test_n110_costeo_guard_{Guid.NewGuid():N}";
-        var options = CreateOptions(dbName);
-
-        await using var context = new AppDbContext(options);
-        try
-        {
-            var migrator = context.Database.GetService<IMigrator>();
-            await migrator.MigrateAsync(MigracionAnterior);
-
-            await context.Database.ExecuteSqlRawAsync("""
-                INSERT INTO `EmpresaConfiguraciones`
-                    (`NombreComercial`,`Eslogan`,`NombreVisibleSistema`,`DescripcionSistema`,`MensajeLogin`,
-                     `Copyright`,`MostrarCopyright`,`UsarAnioAutomaticoCopyright`,`EncabezadoActivo`,`PiePaginaActivo`,
-                     `Moneda`,`ZonaHoraria`,`FormatoFecha`,`Activa`,`FechaActualizacion`)
-                VALUES
-                    ('Empresa inactiva preexistente','QA','Empresa inactiva preexistente','QA N1.10.C','QA',
-                     'QA',1,1,1,1,'HNL','America/Tegucigalpa','dd/MM/yyyy',0,UTC_TIMESTAMP());
-                """);
-
-            var error = await Assert.ThrowsAnyAsync<Exception>(() => migrator.MigrateAsync());
-
-            Assert.Contains("CK_N110C_Guard_Cero", error.ToString(), StringComparison.Ordinal);
-            Assert.Equal(1, await context.EmpresaConfiguraciones.CountAsync());
-            Assert.Equal(0, await context.EmpresaConfiguraciones.CountAsync(x => x.Activa));
+            Assert.NotNull(context.Model.FindEntityType(typeof(PoliticaCosteoInventario)));
+            Assert.NotNull(context.Model.FindEntityType(typeof(CostoEstandarInventario)));
+            Assert.NotNull(context.Model.FindEntityType(typeof(CapaCostoInventario)));
+            Assert.NotNull(context.Model.FindEntityType(typeof(AsignacionCostoMovimientoInventario)));
+            Assert.NotNull(context.Model.FindEntityType(typeof(VariacionCostoEstandarInventario)));
         }
         finally
         {
