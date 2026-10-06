@@ -33,3 +33,13 @@ La matriz se enfoca en rutas de consulta de repositorios reales con filtros, pag
 **Punto 10: CERRADO.** Las 34 consultas obligatorias de repositorios reales se ejecutaron sobre Oracle EF10 y pasaron en el HEAD certificado.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+
+## Revalidación exact-head posterior — 2026-10-06
+
+- HEAD de `dev`: `2ebdb196323d6d15c69ef3d7a3a3127edd448737`. Fase 6 post-merge: [run 37425557471](https://github.com/solqaryn/Solqaryn/actions/runs/37425557471), push sobre ese SHA, conclusión `success`; cinco lanes y dictamen finalizaron correctamente.
+- En la lane Oracle EF10/net10, API/backend y pruebas se compilaron como `net10.0`; la suite terminó con 22/22 pruebas de integración.
+- La matriz de repositorios reales terminó con `ORACLE10_PROVIDER_LANE_RUNTIME=PASS attempts=2 repositoryLinqProbes=34`. El conteo superó el mínimo de 34 y cualquier excepción de traducción/ejecución falla la lane.
+- La matriz y su runner se ejecutan desde copia efímera; los `TargetFramework` productivos no se retargetearon. No hubo cambio de provider productivo ni ejecución de Fase 7.
+
+**Revalidación del punto 10: PASS en dev, HEAD `2ebdb19...`.**
