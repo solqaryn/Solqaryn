@@ -61,7 +61,7 @@ jobs:
           set -euo pipefail
           dotnet tool restore
           test "$(dotnet tool run dotnet-ef --version | awk '{print $NF}')" = "10.0.12"
-          dotnet tool run dotnet-ef dbcontext info             --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj             --startup-project src/API/Solqaryn.API.csproj             --context AppDbContext             --configuration Release             --no-build --verbose
+          dotnet tool run dotnet-ef dbcontext info             --project src/Infrastructure/Solqaryn.Infrastructure.csproj             --startup-project src/API/Solqaryn.API.csproj             --context AppDbContext             --configuration Release             --no-build --verbose
 
       - name: Provider productivo único
         shell: bash
