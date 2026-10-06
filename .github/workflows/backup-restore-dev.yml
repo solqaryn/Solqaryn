@@ -12,7 +12,7 @@ on:
       - docs/BACKUP_RESTORE_DESARROLLO_RUNBOOK.md
   pull_request:
     branches:
-      - main
+      - dev
     paths:
       - scripts/backup_dev.sh
       - scripts/restore_dev.sh
