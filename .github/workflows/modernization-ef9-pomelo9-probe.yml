@@ -1,14 +1,6 @@
 name: Modernización - Probe EF9 Pomelo9 DEV
 
 on:
-  push:
-    branches: [dev]
-    paths:
-      - '.github/workflows/modernization-ef9-pomelo9-probe.yml'
-      - 'backend/**'
-      - 'tools/vaep/N820C.DbProviderProbe/**'
-      - 'scripts/security/priority3_tenant_isolation_audit.py'
-      - 'docs/evidencias/modernizacion/PUNTO_3_EF9_POMELO9_SOLO_PUENTE_2026-10-04.md'
   workflow_dispatch:
 
 permissions:

@@ -14,6 +14,19 @@ on:
       - 'global.json'
       - 'Directory.*'
       - '.github/workflows/dev-ci.yml'
+  pull_request:
+    branches: [dev]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'Dockerfile'
+      - 'backend/Dockerfile'
+      - 'docker-compose.yml'
+      - 'docker-compose.*'
+      - 'render.yaml'
+      - 'global.json'
+      - 'Directory.*'
+      - '.github/workflows/dev-ci.yml'
   workflow_dispatch:
 
 permissions:
@@ -121,7 +134,7 @@ jobs:
           dotnet restore Solqaryn.sln
           dotnet build Solqaryn.sln --configuration Release --no-restore
           dotnet tool restore
-          test "$(dotnet tool run dotnet-ef --version | awk '{print $NF}')" = "10.0.12"
+          dotnet tool run dotnet-ef --version | grep -F '10.0.12'
       - name: Bootstrap Oracle fresh
         env:
           SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
@@ -160,12 +173,18 @@ jobs:
           ejecutar_preflight
           docker exec "$mysql_container" mysql -uroot -proot solqaryn_ci -e "UPDATE TipoClientes SET EsPredeterminado = 1 WHERE Codigo = 'SIN_CLASIFICAR';"
           ejecutar_preflight
+
+          # Para probar el fail-closed del preflight necesitamos crear un estado imposible
+          # bajo el índice único canónico. Sólo en esta BD efímera se retira el índice,
+          # se materializa el duplicado, se exige rechazo y luego se restaura la invariante.
+          docker exec "$mysql_container" mysql -uroot -proot solqaryn_ci -e "ALTER TABLE TipoClientes DROP INDEX IX_TipoClientes_EsPredeterminadoUnico;"
           docker exec "$mysql_container" mysql -uroot -proot solqaryn_ci -e "INSERT INTO TipoClientes (Codigo, Nombre, NombreNormalizado, EsSistema, EsPredeterminado, Activo, Eliminado, ColorHex, Orden, FechaCreacion, FechaActualizacion) VALUES ('TEST_DUP', 'Test Duplicado', 'TEST DUPLICADO', 0, 1, 1, 0, '#FF0000', 99, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6));"
           if ejecutar_preflight; then
             echo "El escenario duplicado debió ser rechazado." >&2
             exit 1
           fi
           docker exec "$mysql_container" mysql -uroot -proot solqaryn_ci -e "DELETE FROM TipoClientes WHERE Codigo='TEST_DUP';"
+          docker exec "$mysql_container" mysql -uroot -proot solqaryn_ci -e "CREATE UNIQUE INDEX IX_TipoClientes_EsPredeterminadoUnico ON TipoClientes (EsPredeterminadoUnico);"
           ejecutar_preflight
       - name: Ejecutar pruebas de integración MySQL Oracle
         run: |

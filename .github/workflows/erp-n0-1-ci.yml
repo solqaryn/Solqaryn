@@ -9,6 +9,14 @@ on:
       - 'backend/src/**'
       - 'backend/tests/**'
       - '.github/workflows/erp-n0-1-ci.yml'
+  pull_request:
+    branches: [dev]
+    paths:
+      - 'backend/scripts/preflight-erp-n0-1-producto-variante.sql'
+      - 'backend/scripts/backfill-erp-n0-1-producto-variante.sql'
+      - 'backend/src/**'
+      - 'backend/tests/**'
+      - '.github/workflows/erp-n0-1-ci.yml'
   workflow_dispatch:
 
 permissions:
@@ -37,7 +45,7 @@ jobs:
           --health-retries=12
     env:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=solqaryn_n01_ci;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;
+      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=solqaryn_n01_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;
       Database__ServerVersion: 8.4.0
       Database__ApplyMigrationsOnStartup: 'false'
       Jwt__Secret: ERP-N0-1-CI-Only-Secret-With-More-Than-32-Characters-2026
@@ -48,18 +56,22 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.401'
-      - name: Restaurar backend
-        working-directory: backend
-        run: dotnet restore Solqaryn.sln
-      - name: Instalar EF
-        run: dotnet tool install --global dotnet-ef --version 10.0.12
-      - name: Crear esquema actual
+      - name: Restaurar y compilar backend
         working-directory: backend
         run: |
-          dotnet ef database update \
-            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
-            --startup-project src/API/Solqaryn.API.csproj \
-            --context AppDbContext
+          set -euo pipefail
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+      - name: Crear esquema actual con bootstrap Oracle canónico
+        working-directory: backend
+        env:
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
+        run: |
+          set -euo pipefail
+          dotnet run \
+            --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj \
+            --configuration Release \
+            --no-build
       - name: Sembrar producto legacy sin variante
         run: |
           set -euo pipefail

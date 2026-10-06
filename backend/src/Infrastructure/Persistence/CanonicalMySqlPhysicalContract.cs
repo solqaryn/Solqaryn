@@ -16,6 +16,7 @@ public static class CanonicalMySqlPhysicalContract
         ArgumentNullException.ThrowIfNull(db);
 
         await SeedPaymentMethodsAsync(db, cancellationToken);
+        await SeedTipoClientePredeterminadoAsync(db, cancellationToken);
         await EnsureInventarioOriginBridgeAsync(db, cancellationToken);
     }
 
@@ -74,6 +75,43 @@ public static class CanonicalMySqlPhysicalContract
         if (paymentSeedCount != 4)
             throw new InvalidOperationException(
                 $"Canonical payment-method seed mismatch: count={paymentSeedCount}.");
+
+        var defaultCustomerTypeSeedCount = await db.Database
+            .SqlQueryRaw<long>("""
+                SELECT COUNT(*) AS Value
+                FROM TipoClientes
+                WHERE Codigo = 'SIN_CLASIFICAR'
+                  AND EsSistema = 1
+                  AND EsPredeterminado = 1
+                  AND Activo = 1
+                  AND Eliminado = 0
+                """)
+            .SingleAsync(cancellationToken);
+
+        if (defaultCustomerTypeSeedCount != 1)
+            throw new InvalidOperationException(
+                $"Canonical default customer-type seed mismatch: count={defaultCustomerTypeSeedCount}.");
+    }
+
+    private static async Task SeedTipoClientePredeterminadoAsync(
+        AppDbContext db,
+        CancellationToken cancellationToken)
+    {
+        await db.Database.ExecuteSqlRawAsync(
+            """
+            INSERT INTO TipoClientes
+                (Codigo, EsSistema, Nombre, NombreNormalizado, Descripcion, ColorHex,
+                 Activo, Orden, EsPredeterminado, Eliminado, FechaCreacion, FechaActualizacion)
+            SELECT 'SIN_CLASIFICAR', 1, 'Sin clasificar', 'SIN CLASIFICAR',
+                   'Cliente sin clasificar', '#9E9E9E', 1, 0, 1, 0,
+                   UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM TipoClientes
+                WHERE Codigo = 'SIN_CLASIFICAR'
+            );
+            """,
+            cancellationToken);
     }
 
     private static async Task SeedPaymentMethodsAsync(

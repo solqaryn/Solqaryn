@@ -11,6 +11,16 @@ on:
       - 'docs/DETALLES_PENDIENTES.md'
       - 'ARCHITECTURE_CHANGELOG.md'
       - 'CHANGELOG_AI.md'
+  pull_request:
+    branches: [dev]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/catalogos-aceptacion.yml'
+      - '.github/workflows/modernization-phase5-frontend-tooling.yml'
+      - 'docs/evidencias/modernizacion/FASE_5_TOOLING_FRONTEND_2026-10-04.md'
+      - 'docs/DETALLES_PENDIENTES.md'
+      - 'ARCHITECTURE_CHANGELOG.md'
+      - 'CHANGELOG_AI.md'
   workflow_dispatch:
 
 permissions:
@@ -176,13 +186,13 @@ jobs:
       - name: Esperar aceptación funcional integral DEV
         env:
           GH_TOKEN: ${{ github.token }}
-          EXPECTED_SHA: ${{ github.sha }}
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         shell: bash
         run: |
           set -euo pipefail
           for attempt in $(seq 1 135); do
-            payload="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/catalogos-aceptacion.yml/runs?branch=dev&event=push&per_page=30")"
-            row="$(jq -c --arg sha "$EXPECTED_SHA" '.workflow_runs[] | select(.head_sha == $sha) | {id,status,conclusion,html_url}' <<<"$payload" | head -n1)"
+            payload="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/catalogos-aceptacion.yml/runs?head_sha=$EXPECTED_SHA&per_page=30")"
+            row="$(jq -c --arg sha "$EXPECTED_SHA" '.workflow_runs[] | select(.head_sha == $sha and (.event == "push" or .event == "pull_request")) | {id,status,conclusion,event,html_url}' <<<"$payload" | head -n1)"
             if [ -n "$row" ]; then
               status="$(jq -r '.status' <<<"$row")"
               conclusion="$(jq -r '.conclusion // ""' <<<"$row")"

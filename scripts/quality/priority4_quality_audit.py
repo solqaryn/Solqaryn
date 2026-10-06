@@ -36,7 +36,7 @@ expected_refs = {
     "backend/src/Domain/Solqaryn.Domain.csproj": set(),
     "backend/src/Application/Solqaryn.Application.csproj": {"Solqaryn.Domain.csproj"},
     "backend/src/Infrastructure/Solqaryn.Infrastructure.csproj": {"Solqaryn.Application.csproj"},
-    "backend/src/API/Solqaryn.API.csproj": {"Solqaryn.Application.csproj", "Solqaryn.Infrastructure.csproj"},
+    "backend/src/API/Solqaryn.API.csproj": {"Solqaryn.Application.csproj", "Solqaryn.Infrastructure.csproj", "Solqaryn.Infrastructure.Migrations.csproj"},
 }
 for rel, expected in expected_refs.items():
     text = read(rel)

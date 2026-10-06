@@ -1,12 +1,6 @@
 name: Modernización - Fase 6 Provider Final DEV
 
 on:
-  push:
-    branches: [dev]
-    paths:
-      - 'backend/**'
-      - 'scripts/modernization/oracle10-provider-lane.sh'
-      - '.github/workflows/modernization-phase6-provider-final.yml'
   workflow_dispatch:
 
 permissions:

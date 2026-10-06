@@ -13,6 +13,18 @@ on:
       - '.agents/skills/solqaryn-project-governance/**'
       - 'docs/evidencias/modernizacion/FASE_4_ANGULAR_22_2026-10-03.md'
       - '.github/workflows/catalogos-aceptacion.yml'
+  pull_request:
+    branches: [dev]
+    paths:
+      - 'frontend/**'
+      - 'PROJECT_CONTEXT.md'
+      - 'PROJECT_INDEX.md'
+      - 'ARCHITECTURE.md'
+      - 'ARCHITECTURE_CHANGELOG.md'
+      - 'README.md'
+      - '.agents/skills/solqaryn-project-governance/**'
+      - 'docs/evidencias/modernizacion/FASE_4_ANGULAR_22_2026-10-03.md'
+      - '.github/workflows/catalogos-aceptacion.yml'
   workflow_dispatch:
 
 permissions:
@@ -208,13 +220,13 @@ jobs:
       - name: Esperar aceptación funcional integral DEV
         env:
           GH_TOKEN: ${{ github.token }}
-          EXPECTED_SHA: ${{ github.sha }}
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         shell: bash
         run: |
           set -euo pipefail
           for attempt in $(seq 1 135); do
-            payload="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/catalogos-aceptacion.yml/runs?branch=dev&event=push&per_page=30")"
-            row="$(jq -c --arg sha "$EXPECTED_SHA" '.workflow_runs[] | select(.head_sha == $sha) | {id,status,conclusion,html_url}' <<<"$payload" | head -n1)"
+            payload="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/catalogos-aceptacion.yml/runs?head_sha=$EXPECTED_SHA&per_page=30")"
+            row="$(jq -c --arg sha "$EXPECTED_SHA" '.workflow_runs[] | select(.head_sha == $sha and (.event == "push" or .event == "pull_request")) | {id,status,conclusion,event,html_url}' <<<"$payload" | head -n1)"
             if [ -n "$row" ]; then
               status="$(jq -r '.status' <<<"$row")"
               conclusion="$(jq -r '.conclusion // ""' <<<"$row")"
