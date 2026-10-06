@@ -1,3 +1,4 @@
+using MySql.EntityFrameworkCore.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
@@ -23,7 +24,7 @@ public class CargaMasivaConcurrencyTests
 
     private static DbContextOptions<AppDbContext> CrearOpciones(string nombreBase) =>
         new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySql($"Server=localhost;Port=3306;Database={nombreBase};User=root;Password=root;", new MySqlServerVersion(new Version(8, 4, 0)))
+            .UseMySQL($"Server=localhost;Port=3306;Database={nombreBase};User=root;Password=root;", mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
             .Options;
 
     private static Mock<ICurrentUserService> CrearUsuarioActual()
@@ -43,7 +44,7 @@ public class CargaMasivaConcurrencyTests
     {
         var options = CrearOpciones($"test_carga_snapshot_{Guid.NewGuid():N}");
         await using var context = new AppDbContext(options);
-        await context.Database.MigrateAsync();
+        await Phase7MySqlTestDatabase.InitializeFreshAsync(context);
 
         var marca = new Marca { Nombre = "Marca Test", Activo = true, Eliminado = false, CreadoPorUsuarioId = 1, CreadoPorNombreUsuario = "integration-admin" };
         context.Marcas.Add(marca);

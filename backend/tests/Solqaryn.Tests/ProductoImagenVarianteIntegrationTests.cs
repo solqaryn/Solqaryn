@@ -1,3 +1,4 @@
+using MySql.EntityFrameworkCore.Extensions;
 using System;
 using System.Threading.Tasks;
 using Solqaryn.Domain.Entities;
@@ -13,9 +14,7 @@ public class ProductoImagenVarianteIntegrationTests
 {
     private static DbContextOptions<AppDbContext> CrearOpciones(string nombreBase) =>
         new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySql(
-                $"Server=localhost;Port=3306;Database={nombreBase};User=root;Password=root;",
-                new MySqlServerVersion(new Version(8, 4, 0)))
+            .UseMySQL($"Server=localhost;Port=3306;Database={nombreBase};User=root;Password=root;", mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
             .Options;
 
     // Gate final M2: cubre migración MySQL 8.4, unicidad por ámbito de imagen
@@ -30,7 +29,7 @@ public class ProductoImagenVarianteIntegrationTests
             // Este MigrateAsync es parte del gate: prueba que MySQL 8.4 puede
             // crear e indexar PrincipalAmbitoKey como columna generada VIRTUAL
             // conservando la FK histórica de ProductoImagenes -> Productos.
-            await db.Database.MigrateAsync();
+            await Phase7MySqlTestDatabase.InitializeFreshAsync(db);
 
             var colorNegro = new Color
             {

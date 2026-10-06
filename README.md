@@ -20,9 +20,9 @@ No volver a recorrer todo el repositorio ni releer archivos documentados si no c
 ## Stack
 
 - Frontend: Angular 22.2.1, standalone components, Signals, Angular Material/CDK 22.2.1; Zone.js 0.16.3 permanece activo y no se ha migrado a zoneless.
-- Backend: ASP.NET Core 8 Web API.
+- Backend: ASP.NET Core 10 Web API (`net10.0`, C# 14, SDK 10.0.401, runtime 10.0.12).
 - Capas backend: Domain, Application, Infrastructure, API.
-- Datos: MySQL + EF Core 8/Pomelo.
+- Datos: MySQL + EF Core 10.0.12 + Oracle `MySql.EntityFrameworkCore` 10.0.9.
 - Seguridad: JWT, BCrypt, RBAC relacional.
 - Medios: Cloudinary.
 - PDF: QuestPDF.

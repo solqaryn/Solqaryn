@@ -1,3 +1,4 @@
+using MySql.EntityFrameworkCore.Extensions;
 using System.IO.Compression;
 using System.Net;
 using System.Text;
@@ -39,7 +40,6 @@ builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateProductoValidator>();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection no configurado.");
 if (isRender) EnvironmentDatabaseGuard.ValidateRenderBinding(builder.Environment.EnvironmentName, connectionString);
-var mysqlServerVersion = Version.Parse(builder.Configuration["Database:ServerVersion"] ?? "8.4.3");
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMemoryCache();
 builder.Services.AddResponseCompression(options =>
@@ -60,7 +60,7 @@ builder.Services.AddScoped<IPublicStoreTenantKeyProvider, PublicStoreTenantKeyPr
 builder.Services.AddSingleton<DbQueryTimingInterceptor>();
 builder.Services.AddDbContext<AppDbContext>((serviceProvider, options) =>
     options
-        .UseMySql(connectionString, new MySqlServerVersion(mysqlServerVersion))
+        .UseMySQL(connectionString, mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
         .AddInterceptors(serviceProvider.GetRequiredService<DbQueryTimingInterceptor>()));
 builder.Services.Configure<ObservabilityOptions>(builder.Configuration.GetSection("Observability"));
 builder.Services.AddSingleton<RequestObservability>();

@@ -1,3 +1,4 @@
+using MySql.EntityFrameworkCore.Extensions;
 using Solqaryn.Application.DTOs;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Entities;
@@ -17,7 +18,7 @@ public sealed class SecuenciaDocumentoConcurrencyIntegrationTests
 
     private static DbContextOptions<AppDbContext> Options(string database) =>
         new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySql(ConnectionString(database), new MySqlServerVersion(new Version(8, 4, 0)))
+            .UseMySQL(ConnectionString(database), mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
             .Options;
 
     [Fact]
@@ -32,7 +33,7 @@ public sealed class SecuenciaDocumentoConcurrencyIntegrationTests
         {
             await using (var setup = new AppDbContext(options))
             {
-                await setup.Database.MigrateAsync();
+                await Phase7MySqlTestDatabase.InitializeFreshAsync(setup);
                 var empresa = new Empresa("Empresa concurrencia de secuencias CI");
                 setup.Set<Empresa>().Add(empresa);
                 await setup.SaveChangesAsync();

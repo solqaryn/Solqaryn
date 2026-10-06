@@ -163,9 +163,9 @@ RBAC debe basarse en relaciones persistentes y permisos explícitos, evitando by
 
 ## 6. Datos
 
-Persistencia principal: MySQL mediante EF Core/Pomelo.
+Persistencia principal: MySQL mediante **EF Core 10.0.12** y Oracle **`MySql.EntityFrameworkCore` 10.0.9**.
 
-Estado de la migración de versiones (2026-10-05): Fase 6 está certificada `PASS` en el gate exact-head `37330696772` sobre `dev` HEAD `425f9cab0ed291401c081d7946289875eb11e798`; `P0=0`, `P1=0`, `PHASE7_EXECUTED=false`. El provider productivo certificado sigue siendo Pomelo sobre net8.0 + EF Core 8; el carril candidato futuro es SDK 10.0.401/runtime 10.0.12 + EF Core/Design/CLI 10.0.12 + Oracle `MySql.EntityFrameworkCore` 10.0.9, validado únicamente en copias aisladas con baseline/adopción y sin replay de la historia Pomelo. Esta certificación no ejecuta Fase 7 ni autoriza cambiar proyectos productivos, QA, `main` o PROD.
+Estado de la migración de versiones (2026-10-06): Fase 7 está implementada en la rama de modernización sobre **`net10.0` + C# 14 + SDK 10.0.401 + runtime/ASP.NET 10.0.12 + EF Core/Design/CLI 10.0.12 + `MySql.EntityFrameworkCore` 10.0.9**. El runtime productivo de la rama usa únicamente Oracle Connector/NET EF; Pomelo/MySqlConnector quedan fuera de los proyectos productivos y las 107 migraciones históricas Pomelo se conservan en un assembly de historia no cargado por runtime. El bootstrap de base nueva usa el contrato físico canónico certificado + `OracleBaseline`; no hace replay de la historia Pomelo. Docker build/runtime y GitHub Actions activos están alineados a .NET 10. Este changeset sigue limitado a `dev`/PR de modernización: no autoriza ni ejecuta cambios en `main`, QA o PROD.
 
 Topología operacional vigente en Aiven:
 

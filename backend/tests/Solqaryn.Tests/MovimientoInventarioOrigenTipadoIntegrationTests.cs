@@ -1,3 +1,4 @@
+using MySql.EntityFrameworkCore.Extensions;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Common;
 using Solqaryn.Domain.Entities;
@@ -6,7 +7,7 @@ using Solqaryn.Infrastructure.Persistence;
 using Solqaryn.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Moq;
-using MySqlConnector;
+using MySql.Data.MySqlClient;
 using Xunit;
 
 namespace Solqaryn.Tests;
@@ -19,7 +20,7 @@ public class MovimientoInventarioOrigenTipadoIntegrationTests
 
     private static DbContextOptions<AppDbContext> CreateOptions(string dbName) =>
         new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySql(GetConnectionString(dbName), new MySqlServerVersion(new Version(8, 4, 3)))
+            .UseMySQL(GetConnectionString(dbName), mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
             .Options;
 
     private static MovimientoInventarioRepository CrearRepositorio(AppDbContext context)
@@ -39,7 +40,7 @@ public class MovimientoInventarioOrigenTipadoIntegrationTests
         await using var context = new AppDbContext(options);
         try
         {
-            await context.Database.MigrateAsync();
+            await Phase7MySqlTestDatabase.InitializeFreshAsync(context);
 
             var producto = new Producto
             {
@@ -112,7 +113,7 @@ public class MovimientoInventarioOrigenTipadoIntegrationTests
         await using var context = new AppDbContext(options);
         try
         {
-            await context.Database.MigrateAsync();
+            await Phase7MySqlTestDatabase.InitializeFreshAsync(context);
 
             var producto = new Producto
             {

@@ -1,3 +1,4 @@
+using MySql.EntityFrameworkCore.Extensions;
 using Solqaryn.Infrastructure.Persistence;
 using Solqaryn.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
@@ -10,9 +11,7 @@ public class SeedFiscalMySqlIntegrationTests
 {
     private static DbContextOptions<AppDbContext> CrearOpciones(string baseDatos) =>
         new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySql(
-                $"Server=localhost;Port=3306;Database={baseDatos};User=root;Password=root;",
-                new MySqlServerVersion(new Version(8, 4, 0)))
+            .UseMySQL($"Server=localhost;Port=3306;Database={baseDatos};User=root;Password=root;", mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
             .Options;
 
     [Fact]
@@ -25,7 +24,7 @@ public class SeedFiscalMySqlIntegrationTests
         {
             await using (var inicial = new AppDbContext(opciones))
             {
-                await inicial.Database.MigrateAsync();
+                await Phase7MySqlTestDatabase.InitializeFreshAsync(inicial);
                 await new SeedFiscalService(inicial).SeedDefaultsAsync();
 
                 var isc = await inicial.Impuestos.SingleAsync(x => x.Codigo == "ISC5");
@@ -68,7 +67,7 @@ public class SeedFiscalMySqlIntegrationTests
         {
             await using (var inicial = new AppDbContext(opciones))
             {
-                await inicial.Database.MigrateAsync();
+                await Phase7MySqlTestDatabase.InitializeFreshAsync(inicial);
                 await new SeedFiscalService(inicial).SeedDefaultsAsync();
 
                 var isv = await inicial.Impuestos.SingleAsync(x => x.Codigo == "ISV15");

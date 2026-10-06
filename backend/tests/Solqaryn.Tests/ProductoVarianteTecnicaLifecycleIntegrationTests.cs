@@ -1,3 +1,4 @@
+using MySql.EntityFrameworkCore.Extensions;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Application.Services;
 using Solqaryn.Domain.Entities;
@@ -18,9 +19,7 @@ public sealed class ProductoVarianteTecnicaLifecycleIntegrationTests
 
     private static DbContextOptions<AppDbContext> CreateOptions(string dbName) =>
         new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySql(
-                GetConnectionString(dbName),
-                new MySqlServerVersion(new Version(8, 4, 3)))
+            .UseMySQL(GetConnectionString(dbName), mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
             .Options;
 
     [Fact]
@@ -32,7 +31,7 @@ public sealed class ProductoVarianteTecnicaLifecycleIntegrationTests
 
         await using (var setup = new AppDbContext(options))
         {
-            await setup.Database.MigrateAsync();
+            await Phase7MySqlTestDatabase.InitializeFreshAsync(setup);
             var producto = new Producto
             {
                 Nombre = "Producto simple concurrente",

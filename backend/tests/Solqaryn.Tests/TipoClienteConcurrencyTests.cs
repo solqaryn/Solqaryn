@@ -1,3 +1,4 @@
+using MySql.EntityFrameworkCore.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,7 +26,7 @@ public class TipoClienteConcurrencyTests
     private DbContextOptions<AppDbContext> CreateOptions(string dbName)
     {
         return new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySql(GetConnectionString(dbName), new MySqlServerVersion(new Version(8, 4, 3)))
+            .UseMySQL(GetConnectionString(dbName), mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
             .Options;
     }
 
@@ -38,7 +39,7 @@ public class TipoClienteConcurrencyTests
         // 1. Setup inicial con Migraciones reales
         await using (var setupContext = new AppDbContext(options))
         {
-            await setupContext.Database.MigrateAsync();
+            await Phase7MySqlTestDatabase.InitializeFreshAsync(setupContext);
 
             var tipoA = new TipoCliente
             {

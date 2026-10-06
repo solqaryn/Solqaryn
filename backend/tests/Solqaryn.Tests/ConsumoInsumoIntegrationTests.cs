@@ -1,3 +1,4 @@
+using MySql.EntityFrameworkCore.Extensions;
 using System.Data;
 using Solqaryn.Application.DTOs;
 using Solqaryn.Application.Exceptions;
@@ -22,7 +23,7 @@ public class ConsumoInsumoIntegrationTests
 
     private static DbContextOptions<AppDbContext> CreateOptions(string dbName) =>
         new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySql(GetConnectionString(dbName), new MySqlServerVersion(new Version(8, 4, 3)))
+            .UseMySQL(GetConnectionString(dbName), mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
             .Options;
 
     [Fact]
@@ -35,7 +36,7 @@ public class ConsumoInsumoIntegrationTests
 
         await using (var setup = new AppDbContext(options))
         {
-            await setup.Database.MigrateAsync();
+            await Phase7MySqlTestDatabase.InitializeFreshAsync(setup);
             var producto = new Producto
             {
                 Nombre = "Bolsa administrativa", Marca = "Interno", Modelo = "BOLSA-TEST",

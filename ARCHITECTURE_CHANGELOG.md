@@ -1,3 +1,13 @@
+## 2026-10-06 — Fase 7 .NET 10 / EF Core 10 / Oracle
+
+- Backend retargeteado a `net10.0` y C# 14 con SDK 10.0.401 y runtime/ASP.NET 10.0.12.
+- EF Core/Design/CLI quedan coherentes en 10.0.12; JwtBearer queda en 10.0.12; el provider productivo único es Oracle `MySql.EntityFrameworkCore` 10.0.9.
+- Pomelo/MySqlConnector se retiran del runtime productivo. Las 107 migraciones históricas se conservan en un assembly separado de historia y no se reproducen con Oracle.
+- La cadena activa de migraciones usa `Solqaryn.Infrastructure.Migrations` + `OracleBaseline`; el bootstrap fresh materializa el contrato físico canónico, valida 136 tablas y exige `has-pending-model-changes=0`.
+- Docker usa SDK 10.0.401 y ASP.NET 10.0.12; los workflows operativos de backend quedan alineados a .NET 10. Los probes históricos explícitos de Fase 6 conservan sus versiones antiguas sólo para reproducibilidad histórica.
+- Gate Fase 7 valida build, 2388 unitarios, integración Oracle/MySQL, tenancy fail-closed, auditoría de vulnerabilidades NuGet y smoke Docker con `/health` + `/health/ready`.
+- Alcance: rama de modernización hacia `dev`; sin promoción a `main`, QA ni PROD.
+
 ## 2026-10-05 — Reconciliación arquitectónica del exact-head vigente
 
 - Los documentos canónicos vuelven a alinearse con el HEAD actual `425f9cab0ed291401c081d7946289875eb11e798`; Fase 6 exact-head `37330696772` terminó `success`, `FASE_6_MYSQL_EF_PROVIDER=PASS`, `P0=0`, `P1=0`, `PHASE7_EXECUTED=false`.
