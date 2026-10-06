@@ -14,7 +14,7 @@ public class N43CPersistenceModelTests
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
             // Use a hardcoded server version so it doesn't try to connect
-            .UseMySQL("Server=localhost;Database=dummy;Uid=dummy;Pwd=dummy;")
+            .UseMySQL("Server=localhost;Database=dummy;Uid=dummy;Pwd=dummy;", mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
             .Options;
 
         return new AppDbContext(options);

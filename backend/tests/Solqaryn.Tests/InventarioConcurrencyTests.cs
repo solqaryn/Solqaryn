@@ -27,7 +27,7 @@ public class InventarioConcurrencyTests
 
     private static DbContextOptions<AppDbContext> CreateOptions(string dbName) =>
         new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySQL(GetConnectionString(dbName))
+            .UseMySQL(GetConnectionString(dbName), mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
             .Options;
 
     private static Mock<IUsuarioScopeService> CrearScopeAdministrador()

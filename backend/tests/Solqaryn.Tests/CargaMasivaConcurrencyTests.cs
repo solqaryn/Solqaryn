@@ -24,7 +24,7 @@ public class CargaMasivaConcurrencyTests
 
     private static DbContextOptions<AppDbContext> CrearOpciones(string nombreBase) =>
         new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySQL($"Server=localhost;Port=3306;Database={nombreBase};User=root;Password=root;")
+            .UseMySQL($"Server=localhost;Port=3306;Database={nombreBase};User=root;Password=root;", mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
             .Options;
 
     private static Mock<ICurrentUserService> CrearUsuarioActual()

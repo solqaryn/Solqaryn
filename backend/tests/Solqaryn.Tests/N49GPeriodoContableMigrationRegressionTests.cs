@@ -17,7 +17,7 @@ public class N49GPeriodoContableMigrationRegressionTests
     public N49GPeriodoContableMigrationRegressionTests()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySQL("Server=localhost;Database=dummy;")
+            .UseMySQL("Server=localhost;Database=dummy;", mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
             .Options;
 
         var context = new AppDbContext(options);

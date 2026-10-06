@@ -14,7 +14,7 @@ public sealed class ProductoAutocompleteIntegrationTests
 {
     private static DbContextOptions<AppDbContext> CreateOptions(string dbName) =>
         new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySQL($"Server=localhost;Port=3306;Database={dbName};User=root;Password=root;")
+            .UseMySQL($"Server=localhost;Port=3306;Database={dbName};User=root;Password=root;", mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
             .Options;
 
     [Fact]
