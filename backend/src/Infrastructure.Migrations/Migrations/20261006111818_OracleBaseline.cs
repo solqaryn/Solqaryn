@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Solqaryn.Infrastructure.Migrations.Oracle
 {
-    [Migration("20261006111818_OracleBaseline")]
     public partial class OracleBaseline : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
