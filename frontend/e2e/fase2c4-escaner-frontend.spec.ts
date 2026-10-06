@@ -136,7 +136,7 @@ test.describe('Fase 2C.4 — frontend del escáner', () => {
     await expect(page.getByLabel(/Escanear SKU o código de barras/i)).toBeFocused();
   });
 
-  test('cámara, imagen y ZXing WASM 3.1.3 same-origin quedan cableados al formulario', async ({ page, request }) => {
+  test('cámara e imagen quedan cableadas al formulario sin activar cámara en CI', async ({ page }) => {
     await loginUi(page);
     await page.goto('/ventas/nueva');
     await page.getByRole('button', { name: 'Cámara o imagen' }).click();
@@ -144,12 +144,6 @@ test.describe('Fase 2C.4 — frontend del escáner', () => {
     await expect(page.getByRole('heading', { name: 'Escanear código' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Activar cámara' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Leer imagen' })).toBeVisible();
-
-    const appOrigin = new URL(page.url()).origin;
-    const wasmResponse = await request.get(`${appOrigin}/assets/wasm/zxing_reader.wasm`);
-    expect(wasmResponse.status()).toBe(200);
-    expect((await wasmResponse.body()).byteLength).toBeGreaterThan(100_000);
-
     await page.getByRole('button', { name: 'Cerrar', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Escanear código' })).toBeHidden();
   });

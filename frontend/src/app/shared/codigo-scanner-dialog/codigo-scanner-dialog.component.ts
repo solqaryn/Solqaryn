@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild, signal } from '@angular/core';
+
+import { Component, OnDestroy, signal, ChangeDetectionStrategy } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -7,15 +8,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 const TAMANO_MAXIMO_BYTES = 10 * 1024 * 1024;
 const DIMENSION_MAXIMA = 4096;
 const PIXELES_MAXIMOS = 16_000_000;
-const INTERVALO_ESCANEO_MS = 100;
 const EXTENSIONES_PERMITIDAS = new Set(['jpg', 'jpeg', 'png', 'webp']);
 const MIME_PERMITIDOS = new Set(['image/jpeg', 'image/png', 'image/webp']);
-const FORMATOS_ESCANEO = ['qr_code', 'ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39'] as const;
-
-type ResultadoCodigo = { rawValue: string };
-type DetectorCodigo = {
-  detect(source: HTMLVideoElement | Blob): Promise<ResultadoCodigo[]>;
-};
 
 @Component({
   selector: 'app-codigo-scanner-dialog',
@@ -25,25 +19,20 @@ type DetectorCodigo = {
     MatDialogModule,
     MatIconModule,
     MatProgressSpinnerModule
-  ],
+],
   templateUrl: './codigo-scanner-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './codigo-scanner-dialog.component.scss'
 })
 export class CodigoScannerDialogComponent implements OnDestroy {
-  @ViewChild('videoElement') private videoElement?: ElementRef<HTMLVideoElement>;
-
+  private static secuencia = 0;
+  readonly readerId = `codigo-scanner-reader-${++CodigoScannerDialogComponent.secuencia}`;
   readonly iniciando = signal(false);
   readonly camaraActiva = signal(false);
   readonly procesandoArchivo = signal(false);
   readonly error = signal<string | null>(null);
 
-  private static inicializacionWasm?: Promise<void>;
-
-  private detector?: DetectorCodigo;
-  private stream?: MediaStream;
-  private temporizadorEscaneo?: number;
-  private escaneoEnCurso = false;
+  private lector?: import('html5-qrcode').Html5Qrcode;
   private resultadoEntregado = false;
 
   constructor(private readonly dialogRef: MatDialogRef<CodigoScannerDialogComponent>) {}
@@ -57,35 +46,38 @@ export class CodigoScannerDialogComponent implements OnDestroy {
     this.error.set(null);
     this.iniciando.set(true);
     try {
-      if (!navigator.mediaDevices?.getUserMedia) {
-        throw new Error('El navegador no permite acceso seguro a la cámara.');
-      }
-
-      await this.detenerCamara();
-      const detector = await this.obtenerDetector();
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: 'environment' } },
-        audio: false
+      const modulo = await import('html5-qrcode');
+      await this.liberarLector();
+      this.lector = new modulo.Html5Qrcode(this.readerId, {
+        verbose: false,
+        formatsToSupport: [
+          modulo.Html5QrcodeSupportedFormats.QR_CODE,
+          modulo.Html5QrcodeSupportedFormats.EAN_13,
+          modulo.Html5QrcodeSupportedFormats.EAN_8,
+          modulo.Html5QrcodeSupportedFormats.UPC_A,
+          modulo.Html5QrcodeSupportedFormats.UPC_E,
+          modulo.Html5QrcodeSupportedFormats.CODE_128,
+          modulo.Html5QrcodeSupportedFormats.CODE_39
+        ]
       });
 
-      const video = this.videoElement?.nativeElement;
-      if (!video) {
-        stream.getTracks().forEach((track) => track.stop());
-        throw new Error('No se pudo preparar la vista de cámara.');
-      }
-
-      this.detector = detector;
-      this.stream = stream;
-      video.srcObject = stream;
-      await video.play();
+      await this.lector.start(
+        { facingMode: 'environment' },
+        {
+          fps: 10,
+          qrbox: (ancho, alto) => {
+            const lado = Math.max(160, Math.floor(Math.min(ancho, alto) * 0.72));
+            return { width: lado, height: Math.max(120, Math.floor(lado * 0.62)) };
+          }
+        },
+        (codigo) => void this.entregarResultado(codigo),
+        () => undefined
+      );
       this.camaraActiva.set(true);
-      this.programarEscaneo();
-    } catch (error) {
-      await this.detenerCamara();
+    } catch {
+      await this.liberarLector();
       this.error.set(
-        error instanceof Error && error.message.startsWith('El navegador')
-          ? error.message
-          : 'No se pudo activar la cámara. Verifica el permiso del navegador, usa HTTPS o selecciona una imagen.'
+        'No se pudo activar la cámara. Verifica el permiso del navegador, usa HTTPS o selecciona una imagen.'
       );
     } finally {
       this.iniciando.set(false);
@@ -102,15 +94,24 @@ export class CodigoScannerDialogComponent implements OnDestroy {
     this.procesandoArchivo.set(true);
     try {
       await this.validarArchivo(archivo);
+      const modulo = await import('html5-qrcode');
       await this.detenerCamara();
-      const detector = await this.obtenerDetector();
-      const resultados = await detector.detect(archivo);
-      const codigo = resultados.find((resultado) => resultado.rawValue.trim())?.rawValue;
-      if (!codigo) {
-        throw new Error('No se encontró un código compatible en la imagen seleccionada.');
-      }
+      this.lector = new modulo.Html5Qrcode(this.readerId, {
+        verbose: false,
+        formatsToSupport: [
+          modulo.Html5QrcodeSupportedFormats.QR_CODE,
+          modulo.Html5QrcodeSupportedFormats.EAN_13,
+          modulo.Html5QrcodeSupportedFormats.EAN_8,
+          modulo.Html5QrcodeSupportedFormats.UPC_A,
+          modulo.Html5QrcodeSupportedFormats.UPC_E,
+          modulo.Html5QrcodeSupportedFormats.CODE_128,
+          modulo.Html5QrcodeSupportedFormats.CODE_39
+        ]
+      });
+      const codigo = await this.lector.scanFile(archivo, true);
       await this.entregarResultado(codigo);
     } catch (error) {
+      await this.liberarLector();
       this.error.set(
         error instanceof Error
           ? error.message
@@ -122,99 +123,53 @@ export class CodigoScannerDialogComponent implements OnDestroy {
   }
 
   async cerrar(): Promise<void> {
-    await this.detenerCamara();
+    await this.liberarLector();
     this.dialogRef.close();
   }
 
   ngOnDestroy(): void {
-    void this.detenerCamara();
-  }
-
-  private async obtenerDetector(): Promise<DetectorCodigo> {
-    if (this.detector) return this.detector;
-
-    const modulo = await import('barcode-detector/ponyfill');
-    if (!CodigoScannerDialogComponent.inicializacionWasm) {
-      CodigoScannerDialogComponent.inicializacionWasm = Promise.resolve(
-        modulo.prepareZXingModule({
-          overrides: {
-            locateFile: (path: string, prefix: string) =>
-              path.endsWith('.wasm')
-                ? new URL('assets/wasm/zxing_reader.wasm', document.baseURI).toString()
-                : prefix + path
-          }
-        })
-      ).then(() => undefined);
-    }
-
-    try {
-      await CodigoScannerDialogComponent.inicializacionWasm;
-    } catch (error) {
-      CodigoScannerDialogComponent.inicializacionWasm = undefined;
-      throw error;
-    }
-
-    this.detector = new modulo.BarcodeDetector({ formats: [...FORMATOS_ESCANEO] });
-    return this.detector;
-  }
-
-  private programarEscaneo(): void {
-    const procesar = async (): Promise<void> => {
-      if (!this.camaraActiva() || !this.stream || this.resultadoEntregado) return;
-
-      const video = this.videoElement?.nativeElement;
-      if (video && video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && !this.escaneoEnCurso) {
-        this.escaneoEnCurso = true;
-        try {
-          const detector = await this.obtenerDetector();
-          const resultados = await detector.detect(video);
-          const codigo = resultados.find((resultado) => resultado.rawValue.trim())?.rawValue;
-          if (codigo) {
-            await this.entregarResultado(codigo);
-            return;
-          }
-        } catch {
-          // Un frame sin lectura válida no debe interrumpir el escaneo continuo.
-        } finally {
-          this.escaneoEnCurso = false;
-        }
-      }
-
-      if (this.camaraActiva()) {
-        this.temporizadorEscaneo = window.setTimeout(() => void procesar(), INTERVALO_ESCANEO_MS);
-      }
-    };
-
-    void procesar();
+    void this.liberarLector();
   }
 
   private async entregarResultado(codigo: string): Promise<void> {
     const normalizado = codigo.trim();
     if (!normalizado || this.resultadoEntregado) return;
     this.resultadoEntregado = true;
-    await this.detenerCamara();
+    await this.liberarLector();
     this.dialogRef.close(normalizado);
   }
 
   private async detenerCamara(): Promise<void> {
-    if (this.temporizadorEscaneo !== undefined) {
-      window.clearTimeout(this.temporizadorEscaneo);
-      this.temporizadorEscaneo = undefined;
+    if (!this.lector || !this.camaraActiva()) return;
+    try {
+      await this.lector.stop();
+    } finally {
+      this.camaraActiva.set(false);
+      try {
+        this.lector.clear();
+      } catch {
+        // El contenedor puede haberse liberado al cerrar el diálogo.
+      }
     }
+  }
 
+  private async liberarLector(): Promise<void> {
+    if (!this.lector) {
+      this.camaraActiva.set(false);
+      return;
+    }
+    try {
+      if (this.camaraActiva()) await this.lector.stop();
+    } catch {
+      // El stream ya pudo haberse detenido por el navegador.
+    }
+    try {
+      this.lector.clear();
+    } catch {
+      // El elemento puede haber sido destruido.
+    }
+    this.lector = undefined;
     this.camaraActiva.set(false);
-    this.escaneoEnCurso = false;
-
-    if (this.stream) {
-      this.stream.getTracks().forEach((track) => track.stop());
-      this.stream = undefined;
-    }
-
-    const video = this.videoElement?.nativeElement;
-    if (video) {
-      video.pause();
-      video.srcObject = null;
-    }
   }
 
   private async validarArchivo(archivo: File): Promise<void> {

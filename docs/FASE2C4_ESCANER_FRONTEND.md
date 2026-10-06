@@ -8,7 +8,7 @@
 - Resolución exacta mediante los endpoints certificados en la Fase 2C.3.
 - Consolidación de líneas repetidas por `ProductoId + ProductoVarianteId`.
 - Validación de existencias en ventas; las compras admiten variantes con stock cero.
-- Cámara trasera mediante `barcode-detector` 3.2.2 + `zxing-wasm` 3.1.3, cargados dinámicamente con WASM reader same-origin.
+- Cámara trasera mediante `html5-qrcode` 2.3.8, cargado dinámicamente.
 - Lectura local de imágenes JPG, JPEG, PNG y WEBP sin transferir el archivo al servidor.
 - Límites locales de archivo: 10 MB, 4096 px por lado y 16 megapíxeles.
 - Formatos admitidos: QR, EAN-13, EAN-8, UPC-A, UPC-E, Code 128 y Code 39.
@@ -23,7 +23,7 @@
 - Validación de calidad del frontend.
 - Contrato estático de Fase 2C.4.
 - Compilación Angular de producción.
-- Verificación de carga diferida de `barcode-detector` + `zxing-wasm` mediante chunk independiente.
+- Verificación de carga diferida de `html5-qrcode` mediante chunk independiente.
 
 ## Pruebas físicas pendientes del propietario
 
@@ -41,5 +41,5 @@ Estas comprobaciones requieren hardware real y no se consideran ejecutadas por C
 ## Gobernanza
 
 - Rama exclusiva: `dev`.
-- - `main` no se modifica.
-- QA, `main` y PROD permanecen fuera de alcance.
+- QA, `main` y PROD quedan fuera de alcance y no se modifican.
+- Las validaciones y cualquier integración de esta corrección se limitan a DEV.

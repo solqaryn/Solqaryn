@@ -17,13 +17,13 @@
 - Playwright Test: `1.63.0`.
 - Vitest: `5.0.3`.
 - jsdom: `30.0.1`.
-- Escáner vigente tras hardening posterior: `barcode-detector@3.2.2` + `zxing-wasm@3.1.3`; `html5-qrcode` retirado.
+- html5-qrcode: `2.3.8` (sin cambio).
 
 Se aplica `jsdom@30.0.1` exactamente según el alcance autorizado de Fase 5; no se amplía la fase a releases posteriores sin autorización.
 
-## Resolución posterior de la deuda del escáner
+## Política html5-qrcode
 
-La dependencia `html5-qrcode@2.3.8` fue retirada por completo del runtime y del lockfile. El escáner usa `barcode-detector@3.2.2` sobre `zxing-wasm@3.1.3`, con el binario reader WASM servido desde el mismo origen de SOLQARYN y sin CDN runtime. Se preservan QR, EAN-13, EAN-8, UPC-A, UPC-E, Code 128, Code 39, cámara trasera, imagen local, límites de archivo, privacidad local y liberación de stream. La deuda deja de existir y no permanece como pendiente futuro.
+`html5-qrcode@2.3.8` continúa siendo la última versión publicada y se mantiene sin cambios funcionales. Su antigüedad se registra como deuda técnica no bloqueante para evaluación futura de mantenimiento, alternativas, compatibilidad de navegador/cámara, seguridad y costo de migración.
 
 ## Gates pre-publicación
 
