@@ -1,3 +1,4 @@
+using MySql.EntityFrameworkCore.Extensions;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Common;
 using Solqaryn.Domain.Entities;
@@ -19,7 +20,7 @@ public class MovimientoInventarioOrigenTipadoIntegrationTests
 
     private static DbContextOptions<AppDbContext> CreateOptions(string dbName) =>
         new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySql(GetConnectionString(dbName), new MySqlServerVersion(new Version(8, 4, 3)))
+            .UseMySQL(GetConnectionString(dbName))
             .Options;
 
     private static MovimientoInventarioRepository CrearRepositorio(AppDbContext context)

@@ -1,3 +1,4 @@
+using MySql.EntityFrameworkCore.Extensions;
 using Solqaryn.Application.DTOs;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Entities;
@@ -17,7 +18,7 @@ public sealed class SecuenciaDocumentoConcurrencyIntegrationTests
 
     private static DbContextOptions<AppDbContext> Options(string database) =>
         new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySql(ConnectionString(database), new MySqlServerVersion(new Version(8, 4, 0)))
+            .UseMySQL(ConnectionString(database))
             .Options;
 
     [Fact]

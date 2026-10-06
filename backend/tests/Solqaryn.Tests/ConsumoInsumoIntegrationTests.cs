@@ -1,3 +1,4 @@
+using MySql.EntityFrameworkCore.Extensions;
 using System.Data;
 using Solqaryn.Application.DTOs;
 using Solqaryn.Application.Exceptions;
@@ -22,7 +23,7 @@ public class ConsumoInsumoIntegrationTests
 
     private static DbContextOptions<AppDbContext> CreateOptions(string dbName) =>
         new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySql(GetConnectionString(dbName), new MySqlServerVersion(new Version(8, 4, 3)))
+            .UseMySQL(GetConnectionString(dbName))
             .Options;
 
     [Fact]
