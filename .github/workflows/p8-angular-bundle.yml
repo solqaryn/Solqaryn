@@ -71,7 +71,7 @@ jobs:
         with:
           name: punto-8-angular-bundle
           path: |
-            frontend/dist/solqaryn-frontend/**/stats.json
+            frontend/dist/solqaryn-frontend/**/*stats.json
             frontend/dist/solqaryn-frontend/performance-bundle-baseline.json
             frontend/dist/solqaryn-frontend/angular-stats-summary.json
           if-no-files-found: warn
