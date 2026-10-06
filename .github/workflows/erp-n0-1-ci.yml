@@ -48,18 +48,22 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.401'
-      - name: Restaurar backend
-        working-directory: backend
-        run: dotnet restore Solqaryn.sln
-      - name: Instalar EF
-        run: dotnet tool install --global dotnet-ef --version 10.0.12
-      - name: Crear esquema actual
+      - name: Restaurar y compilar backend
         working-directory: backend
         run: |
-          dotnet ef database update \
-            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
-            --startup-project src/API/Solqaryn.API.csproj \
-            --context AppDbContext
+          set -euo pipefail
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+      - name: Crear esquema actual con bootstrap Oracle canónico
+        working-directory: backend
+        env:
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
+        run: |
+          set -euo pipefail
+          dotnet run \
+            --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj \
+            --configuration Release \
+            --no-build
       - name: Sembrar producto legacy sin variante
         run: |
           set -euo pipefail

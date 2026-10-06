@@ -50,7 +50,7 @@ jobs:
       PORT: '5005'
       ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_catalogos_e2e;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
       Database__ServerVersion: '8.4.0'
-      Database__ApplyMigrationsOnStartup: 'false'
+      Database__ApplyMigrationsOnStartup: 'true'
       Jwt__Secret: 'Catalogos-E2E-Only-Secret-With-More-Than-32-Characters-2026'
       Jwt__Issuer: 'Solqaryn.API'
       Jwt__Audience: 'Solqaryn.Frontend'
