@@ -45,11 +45,12 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 
 ## Revalidación de vigencia — 2026-10-06
 
-**Estado actual: PENDIENTE de sonda exact-head; no se conserva el PASS histórico como certificación del HEAD actual.**
+**Estado actual: PASS — revalidado exact-head.** La sonda finalizó correctamente sobre `dev` SHA `186c6e31754bd10c09218d2eac2102dff06db491` (run [37414509893](https://github.com/solqaryn/Solqaryn/actions/runs/37414509893), evento `push`).
 
-- La última sonda exitosa identificada fue `37278090999`, sobre el código `dc063110fca28eb7e715322ab3aff214ab211cc9`.
+- La sonda anterior `37278090999` sobre `dc063110fca28eb7e715322ab3aff214ab211cc9` era histórica y no se usó para cerrar el estado actual.
 - Después de ese commit cambiaron dos archivos de backend que forman parte de la superficie probada: `backend/src/Infrastructure/Repositories/MovimientoInventarioRepository.cs` y `backend/src/Infrastructure/Services/ReporteComprasService.cs`. Por tanto, el run histórico no prueba esos cambios posteriores.
 - En el HEAD auditado `3ff3ed02084030e7b91e759fedb75ae5ad8144c4`, los proyectos productivos siguen en `net8.0`, EF Core `8.0.2` y Pomelo `8.0.2`; la sonda EF9/Pomelo9 sigue siendo una modificación temporal del runner, no una dependencia productiva.
 - La certificación de Fase 6 de ese HEAD terminó con éxito en [run 37412576773](https://github.com/solqaryn/Solqaryn/actions/runs/37412576773), pero valida la ruta Oracle EF10 y no sustituye la sonda EF9/Pomelo9.
-- El workflow ahora también se dispara cuando se modifica esta acta. Al integrar esta actualización en `dev`, debe ejecutarse la sonda sobre el nuevo HEAD; sólo un resultado exitoso permitirá restaurar el dictamen **CERRADO**.
+- El workflow también se dispara cuando se modifica esta acta. Esta actualización documental provocará un nuevo run al integrarse; el dictamen permanece sujeto a que esa ejecución exact-head del nuevo HEAD termine en éxito.
+- Evidencia del run exact-head: net8 y net10 aprobaron cada uno 2,388/2,388 pruebas unitarias y 28/28 pruebas de integración; `PRIORITY3_MULTITENANT_CERTIFICATION=PASS` en ambas lanes; migraciones y `has-pending-model-changes` pasaron; `EF9_POMELO9_NET8_NET10=PASS` tras comparar columnas e índices.
 - `PHASE7_EXECUTED=false`; no se cambia de fase.
