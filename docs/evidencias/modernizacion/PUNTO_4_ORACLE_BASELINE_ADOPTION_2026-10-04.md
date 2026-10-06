@@ -45,3 +45,18 @@ El run exact-head [37279558796](https://github.com/solqaryn/Solqaryn/actions/run
 Fase 7 no ejecutada; sin cambios de `.csproj` productivos, QA, `main` ni PROD.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+
+## Revalidación exact-head — 2026-10-06
+
+**Estado vigente: PASS** sobre `dev` SHA `30251acc758ae356757e50cf78d40e2041d7e7ea`; gate de Fase 6 [run 37416326275](https://github.com/solqaryn/Solqaryn/actions/runs/37416326275), lane baseline/adoption job [112115630076](https://github.com/solqaryn/Solqaryn/actions/runs/37416326275/job/112115630076), ambos `success`.
+
+Evidencia del log exact-head:
+
+- `ORACLE_EF10_SQL_PACKAGE_FRESH_BOOTSTRAP=PASS tables=136`.
+- `ORACLE_EF10_SCRIPT_BOOTSTRAP_SCHEMA_EQUIVALENT=true` y `ORACLE_BASELINE_SCHEMA_EQUIVALENT=true`.
+- `ORACLE_BASELINE_ADOPTION_NO_DDL=PASS` en esquema Pomelo existente.
+- `ORACLE_TO_POMELO_PROVIDER_ROLLBACK=PASS`; esquema y datos sin cambios, usuario semilla preservado, historial Pomelo=107 y marcador Oracle retenido.
+- Los checks de `has-pending-model-changes` posteriores al bootstrap y rollback pasaron.
+
+El run se ejecutó en MySQL efímero de CI; no tocó Aiven persistente, QA, `main` ni PROD. `PHASE7_EXECUTED=false`.
