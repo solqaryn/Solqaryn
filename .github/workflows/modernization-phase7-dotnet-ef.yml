@@ -1,0 +1,176 @@
+name: Modernización - Fase 7 .NET EF DEV
+
+on:
+  pull_request:
+    branches: [dev]
+  push:
+    branches: [dev]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase7-dotnet-ef-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  canonical-build:
+    name: Fase 7 - build unit EF toolchain
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.401
+
+      - name: Scope lock
+        run: node scripts/verify-project-scope.mjs
+
+      - name: Certificar SDK runtime y TFM
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(cd backend && dotnet --version)" = "10.0.401"
+          cd backend
+          dotnet --list-runtimes | tee "$RUNNER_TEMP/runtimes.txt"
+          grep -q '^Microsoft.NETCore.App 10.0.12 ' "$RUNNER_TEMP/runtimes.txt"
+          grep -q '^Microsoft.AspNetCore.App 10.0.12 ' "$RUNNER_TEMP/runtimes.txt"
+          test "$(grep -R '<TargetFramework>net10.0</TargetFramework>' --include='*.csproj' . | wc -l)" -ge 7
+          ! grep -R '<TargetFramework>net8.0</TargetFramework>' --include='*.csproj' src tests scripts tools
+
+      - name: Restore y build canónico
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+
+      - name: dotnet-ef 10.0.12
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet tool restore
+          test "$(dotnet tool run dotnet-ef --version | awk '{print $NF}')" = "10.0.12"
+          dotnet tool run dotnet-ef dbcontext info             --project src/Infrastructure/Solqaryn.Infrastructure.csproj             --startup-project src/API/Solqaryn.API.csproj             --context AppDbContext             --configuration Release             --no-build
+
+      - name: Provider productivo único
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'MySql.EntityFrameworkCore" Version="10.0.9"' backend/src/Infrastructure/Solqaryn.Infrastructure.csproj
+          ! grep -q 'Pomelo.EntityFrameworkCore.MySql' backend/src/Infrastructure/Solqaryn.Infrastructure.csproj
+          ! grep -q 'MySqlConnector' backend/src/Infrastructure/Solqaryn.Infrastructure.csproj
+          grep -q 'Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.12"' backend/src/API/Solqaryn.API.csproj
+          grep -q 'UseMySQL' backend/src/API/Program.cs
+          ! grep -q 'UseMySql' backend/src/API/Program.cs
+
+      - name: Unit regression
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj             --configuration Release             --no-build             --filter "Category!=Integration"
+
+  mysql-contract:
+    name: Fase 7 - MySQL fresh adoption integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=phase7_fresh;User=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;
+      Database__ServerVersion: 8.4.0
+      Jwt__Secret: Phase7-CI-Only-Secret-Value-Not-Used-Outside-GitHub-Actions
+      Jwt__Issuer: Solqaryn.Phase7
+      Jwt__Audience: Solqaryn.Phase7.Frontend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.401
+
+      - name: Preparar base fresh
+        run: |
+          set -euo pipefail
+          docker exec "${{ job.services.mysql.id }}" mysql -uroot -e "
+            DROP DATABASE IF EXISTS phase7_fresh;
+            CREATE DATABASE phase7_fresh CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
+
+      - name: Build
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+
+      - name: Fresh bootstrap Oracle
+        working-directory: backend
+        env:
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
+        run: |
+          set -euo pipefail
+          dotnet run             --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj             --configuration Release             --no-build
+
+      - name: EF migrations y pending model
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet tool restore
+          dotnet tool run dotnet-ef migrations list             --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj             --startup-project src/API/Solqaryn.API.csproj             --context AppDbContext             --configuration Release             --no-build
+          dotnet tool run dotnet-ef migrations has-pending-model-changes             --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj             --startup-project src/API/Solqaryn.API.csproj             --context AppDbContext             --configuration Release             --no-build
+
+      - name: Integration regression Oracle
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj             --configuration Release             --no-build             --filter "Category=Integration"
+
+  verdict:
+    name: Dictamen Fase 7
+    if: always()
+    needs: [canonical-build, mysql-contract]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail closed
+        shell: bash
+        env:
+          BUILD_RESULT: ${{ needs.canonical-build.result }}
+          MYSQL_RESULT: ${{ needs.mysql-contract.result }}
+        run: |
+          set -euo pipefail
+          test "$BUILD_RESULT" = success
+          test "$MYSQL_RESULT" = success
+          {
+            echo 'FASE_7_DOTNET_EF=PASS'
+            echo 'DOTNET_SDK=10.0.401'
+            echo 'DOTNET_RUNTIME=10.0.12'
+            echo 'ASPNET_RUNTIME=10.0.12'
+            echo 'TARGET_FRAMEWORK=net10.0'
+            echo 'CSHARP=14.0'
+            echo 'EF_RUNTIME=10.0.12'
+            echo 'EF_DESIGN=10.0.12'
+            echo 'EF_CLI=10.0.12'
+            echo 'MYSQL_PROVIDER=MySql.EntityFrameworkCore/10.0.9'
+            echo 'JWT_BEARER=10.0.12'
+            echo 'PRODUCT_PROVIDER_AUTHORITY=ORACLE_ONLY'
+            echo 'POMELO_PRODUCT_REFERENCES=0'
+            echo 'DUAL_PROVIDER_RUNTIME=false'
+            echo 'PHASE7_EXECUTED=true'
+          } | tee phase7-verdict.txt
