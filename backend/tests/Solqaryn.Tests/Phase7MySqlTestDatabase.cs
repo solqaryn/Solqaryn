@@ -49,6 +49,9 @@ internal static class Phase7MySqlTestDatabase
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
             """);
 
+        await CanonicalMySqlPhysicalContract.ApplyFreshBootstrapSupplementsAsync(db);
+        await CanonicalMySqlPhysicalContract.VerifyAsync(db);
+
         await db.Database.MigrateAsync();
 
         if ((await db.Database.GetPendingMigrationsAsync()).Any())
