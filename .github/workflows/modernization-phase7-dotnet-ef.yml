@@ -61,7 +61,7 @@ jobs:
           set -euo pipefail
           dotnet tool restore
           test "$(dotnet tool run dotnet-ef --version | awk '{print $NF}')" = "10.0.12"
-          dotnet tool run dotnet-ef dbcontext info             --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj             --startup-project src/API/Solqaryn.API.csproj             --context AppDbContext             --configuration Release             --no-build --verbose
+          dotnet tool run dotnet-ef dbcontext info             --project src/Infrastructure/Solqaryn.Infrastructure.csproj             --startup-project src/API/Solqaryn.API.csproj             --context AppDbContext             --configuration Release             --no-build --verbose
 
       - name: Provider productivo único
         shell: bash
@@ -88,16 +88,16 @@ jobs:
       mysql:
         image: mysql:8.4
         env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+          MYSQL_ROOT_PASSWORD: root
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping -h localhost -uroot"
+          --health-cmd="mysqladmin ping -h localhost -uroot -proot"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=12
     env:
-      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=phase7_fresh;User=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;
+      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=phase7_fresh;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;
       Database__ServerVersion: 8.4.0
       Jwt__Secret: Phase7-CI-Only-Secret-Value-Not-Used-Outside-GitHub-Actions
       Jwt__Issuer: Solqaryn.Phase7
@@ -114,7 +114,7 @@ jobs:
       - name: Preparar base fresh
         run: |
           set -euo pipefail
-          docker exec "${{ job.services.mysql.id }}" mysql -uroot -e "
+          docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot -e "
             DROP DATABASE IF EXISTS phase7_fresh;
             CREATE DATABASE phase7_fresh CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
 
@@ -132,7 +132,7 @@ jobs:
         run: |
           set -euo pipefail
           dotnet run             --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj             --configuration Release             --no-build
-          table_count="$(docker exec "${{ job.services.mysql.id }}" mysql -uroot phase7_fresh -Nse "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='phase7_fresh' AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME <> '__EFMigrationsHistory';")"
+          table_count="$(docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot phase7_fresh -Nse "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='phase7_fresh' AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME <> '__EFMigrationsHistory';")"
           test "$table_count" -ge 136
           echo "PHASE7_FRESH_TABLES=$table_count"
 
