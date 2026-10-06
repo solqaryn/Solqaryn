@@ -170,7 +170,7 @@ Angular route/component
 - Application: `backend/src/Application/{Services,Interfaces,DTOs,Validators}`.
 - Domain: `backend/src/Domain/{Entities,Enums,Common}`.
 - Infrastructure/DB: `backend/src/Infrastructure/{Repositories,Services,Persistence}` y las dos carpetas de migraciones indicadas arriba.
-- Migración de versiones DB/.NET: el provider productivo sigue net8/EF8/Pomelo 8; Fase 6 fue certificada `PASS` por el gate exact-head `37330696772` sobre `dev` HEAD `425f9cab0ed291401c081d7946289875eb11e798` (`P0=0`, `P1=0`, `PHASE7_EXECUTED=false`). El candidato Oracle net10/EF10 usa SDK 10.0.401, runtime/EF/Design/CLI 10.0.12 y provider 10.0.9 sólo en lanes aisladas con baseline/adopción. Fase 7 no se aplicó al runtime productivo. Evidencias: `docs/evidencias/modernizacion/` y workflows `modernization-*`.
+- Migración de versiones DB/.NET: la rama de modernización ejecuta Fase 7 con `net10.0`, C# 14, SDK 10.0.401, runtime/ASP.NET 10.0.12, EF Core/Design/CLI 10.0.12, JwtBearer 10.0.12 y Oracle `MySql.EntityFrameworkCore` 10.0.9. El runtime usa `backend/src/Infrastructure.Migrations` como assembly de migraciones Oracle; `backend/src/Infrastructure.Migrations.History` conserva las 107 migraciones Pomelo únicamente como historia auditable. Bootstrap fresh: `backend/tools/Solqaryn.DatabaseBootstrap`; gate permanente: `.github/workflows/modernization-phase7-dotnet-ef.yml`. No hay promoción a `main`/QA/PROD.
 - Integraciones: contratos en `Application/Interfaces`, adaptadores concretos en `Infrastructure/Services` y registro DI en `Program.cs` (Cloudinary, QuestPDF, SMTP y exportaciones).
 
 ## Mapa por dominio

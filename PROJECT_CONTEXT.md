@@ -35,10 +35,10 @@ SOLQARYN es una plataforma empresarial multiempresa.
 
 - Frontend: Angular 22.2.1 standalone, Signals y Angular Material/CDK 22.2.1. Toolchain frontend vigente: Node.js 24.21.0 LTS + npm 11.19.0 + TypeScript 6.0.3 + RxJS 7.8.2 + tslib 2.8.1 + Zone.js 0.16.3; `provideZoneChangeDetection` y el polyfill `zone.js` permanecen activos, sin conversión a zoneless. CI usa patches exactos y Vercel se gobierna por `engines.node=24.x`.
 - Identidad técnica de código: namespaces/assemblies/proyectos usan Solqaryn.*; el storefront fuente es tenant-neutral y vive bajo features/storefront.
-- Backend: ASP.NET Core 8 Web API.
+- Backend: ASP.NET Core 10 Web API sobre `net10.0`, C# 14, SDK 10.0.401 y runtime/ASP.NET 10.0.12.
 - Capas: Domain <- Application <- Infrastructure; API compone y expone.
-- Persistencia: MySQL con EF Core 8/Pomelo.
-- Migración de versiones: Fase 6/provider gate `PASS` en exact-head `37330696772` sobre `dev` HEAD `425f9cab0ed291401c081d7946289875eb11e798` (`P0=0`, `P1=0`, `PHASE7_EXECUTED=false`); el provider productivo certificado permanece net8.0 + EF Core 8/Pomelo 8. La ruta candidata para la futura Fase 7 es SDK 10.0.401/runtime 10.0.12 + EF Core/Design/CLI 10.0.12 + `MySql.EntityFrameworkCore` 10.0.9, probada en lanes aisladas con baseline/adopción (no replay de las 107 migraciones Pomelo). Fase 7 aún no se ejecuta.
+- Persistencia: MySQL con EF Core 10.0.12 y Oracle `MySql.EntityFrameworkCore` 10.0.9.
+- Migración de versiones: Fase 7 ya está ejecutada en la rama de modernización. El toolchain canónico es SDK 10.0.401, runtime/ASP.NET 10.0.12, `net10.0`, C# 14, EF Core/Design/CLI 10.0.12, JwtBearer 10.0.12 y provider Oracle `MySql.EntityFrameworkCore` 10.0.9. Los proyectos productivos no referencian Pomelo ni MySqlConnector; las 107 migraciones históricas Pomelo se preservan fuera del runtime para auditoría/rollback histórico, mientras las migraciones activas usan el assembly Oracle y `OracleBaseline`. El bootstrap fresh produce 136 tablas, `pending-model=0`, y CI conserva los contratos 1062/1205/1213, tenancy fail-closed y la integración MySQL. No se ha promovido esta rama a `main`, QA ni PROD.
 - Seguridad: JWT, BCrypt, RBAC relacional, auditoría, CORS explícito, rate limiting y security headers.
 - Integraciones vigentes: Cloudinary, QuestPDF y SMTP; DEV, QA y PROD usan Outlook.com con OAuth2/Modern Auth para `solqaryn.platform@outlook.com`.
 - Facturas PDF: el branding visual se resuelve por empresa/tenant (`EmpresaConfiguracion.LogoUrl`); si no existe logo válido, QuestPDF usa un monograma derivado de `EmpresaNombre`. No existe fallback global `AppSettings__LogoPublicUrl` en Render ni branding fijo de un cliente.
