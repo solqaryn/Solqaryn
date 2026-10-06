@@ -31,3 +31,15 @@ La prueba 1213 valida el tipo/código Oracle mediante una excepción Oracle cons
 **Punto 8: CERRADO.** Retry provider-neutral 1205/1213 y el límite de tres intentos comprobados; no se amplía la lista de errores transitorios.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+
+## Revalidación exact-head posterior — 2026-10-06
+
+- HEAD de `dev`: `8dcdaeb620caef7b625d3d8ca10094df039e7f62`. Certificación Fase 6 post-merge: [run 37422330522](https://github.com/solqaryn/Solqaryn/actions/runs/37422330522), evento push sobre ese SHA, conclusión `success`; pasaron sus cinco lanes y el dictamen.
+- Se inspeccionó `UnitOfWork` en ese mismo SHA: `MaxRetryCount = 3`; sólo 1205/1213 se clasifican como transitorios; el 1062 esperado se traduce aparte a `UniqueConstraintViolationException`; otras excepciones se propagan sin retry.
+- En Pomelo/MySQL 8.4, `UnitOfWorkRetryTests` pasó 9/9 y la suite de integración completa pasó 28/28.
+- En la lane Oracle EF10/net10, los casos del mismo contrato pasaron, incluyendo 1205, tope de tres intentos, 1062 sin retry, error desconocido sin retry y 1213; total de unitarios: 2336/2336. La lane Oracle registró `ORACLE10_PROVIDER_LANE_RUNTIME=PASS attempts=2`.
+- Verificación del harness exact-head: mantiene una transacción bloqueadora real en el MySQL efímero, configura `innodb_lock_wait_timeout=1` en la conexión de la operación y exige al menos dos intentos. Para Oracle Connector/NET, 1213 se inyecta como excepción del driver para probar clasificación/retry; no se presenta como deadlock físico.
+- Política intacta: tres intentos máximo; únicamente 1205/1213 transitorios; 1062 separado; errores ajenos no reintentados. Sin cambios productivos, dependencias ni configuración; no se ejecutó Fase 7 ni se tocó QA/`main`/PROD.
+
+**Revalidación del punto 8: PASS en dev, HEAD `8dcdaeb...`.**
