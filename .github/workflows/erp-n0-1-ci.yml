@@ -9,6 +9,14 @@ on:
       - 'backend/src/**'
       - 'backend/tests/**'
       - '.github/workflows/erp-n0-1-ci.yml'
+  pull_request:
+    branches: [dev]
+    paths:
+      - 'backend/scripts/preflight-erp-n0-1-producto-variante.sql'
+      - 'backend/scripts/backfill-erp-n0-1-producto-variante.sql'
+      - 'backend/src/**'
+      - 'backend/tests/**'
+      - '.github/workflows/erp-n0-1-ci.yml'
   workflow_dispatch:
 
 permissions:

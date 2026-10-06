@@ -7,6 +7,12 @@ on:
       - 'backend/**'
       - 'scripts/security/**'
       - '.github/workflows/priority3-erp-security.yml'
+  pull_request:
+    branches: [dev]
+    paths:
+      - 'backend/**'
+      - 'scripts/security/**'
+      - '.github/workflows/priority3-erp-security.yml'
   workflow_dispatch:
 
 permissions:

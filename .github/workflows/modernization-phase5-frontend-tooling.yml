@@ -11,6 +11,16 @@ on:
       - 'docs/DETALLES_PENDIENTES.md'
       - 'ARCHITECTURE_CHANGELOG.md'
       - 'CHANGELOG_AI.md'
+  pull_request:
+    branches: [dev]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/catalogos-aceptacion.yml'
+      - '.github/workflows/modernization-phase5-frontend-tooling.yml'
+      - 'docs/evidencias/modernizacion/FASE_5_TOOLING_FRONTEND_2026-10-04.md'
+      - 'docs/DETALLES_PENDIENTES.md'
+      - 'ARCHITECTURE_CHANGELOG.md'
+      - 'CHANGELOG_AI.md'
   workflow_dispatch:
 
 permissions:

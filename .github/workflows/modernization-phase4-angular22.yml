@@ -13,6 +13,18 @@ on:
       - '.agents/skills/solqaryn-project-governance/**'
       - 'docs/evidencias/modernizacion/FASE_4_ANGULAR_22_2026-10-03.md'
       - '.github/workflows/catalogos-aceptacion.yml'
+  pull_request:
+    branches: [dev]
+    paths:
+      - 'frontend/**'
+      - 'PROJECT_CONTEXT.md'
+      - 'PROJECT_INDEX.md'
+      - 'ARCHITECTURE.md'
+      - 'ARCHITECTURE_CHANGELOG.md'
+      - 'README.md'
+      - '.agents/skills/solqaryn-project-governance/**'
+      - 'docs/evidencias/modernizacion/FASE_4_ANGULAR_22_2026-10-03.md'
+      - '.github/workflows/catalogos-aceptacion.yml'
   workflow_dispatch:
 
 permissions:
