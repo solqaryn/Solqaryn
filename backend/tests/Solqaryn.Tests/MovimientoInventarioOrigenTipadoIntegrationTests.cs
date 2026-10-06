@@ -7,7 +7,7 @@ using Solqaryn.Infrastructure.Persistence;
 using Solqaryn.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Moq;
-using MySqlConnector;
+using MySql.Data.MySqlClient;
 using Xunit;
 
 namespace Solqaryn.Tests;
