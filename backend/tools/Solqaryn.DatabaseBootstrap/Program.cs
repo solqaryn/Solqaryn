@@ -91,7 +91,10 @@ if (mode == "fresh")
             FOREIGN KEY (`SuscripcionId`) REFERENCES `Suscripciones` (`Id`) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
         """);
-}
+
+
+    await CanonicalMySqlPhysicalContract.ApplyFreshBootstrapSupplementsAsync(db);
+    await CanonicalMySqlPhysicalContract.VerifyAsync(db);}
 else
 {
     if (applicationTablesBefore < 100)
