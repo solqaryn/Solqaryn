@@ -60,7 +60,7 @@ builder.Services.AddScoped<IPublicStoreTenantKeyProvider, PublicStoreTenantKeyPr
 builder.Services.AddSingleton<DbQueryTimingInterceptor>();
 builder.Services.AddDbContext<AppDbContext>((serviceProvider, options) =>
     options
-        .UseMySql(connectionString, new MySqlServerVersion(mysqlServerVersion))
+        .UseMySQL(connectionString, mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
         .AddInterceptors(serviceProvider.GetRequiredService<DbQueryTimingInterceptor>()));
 builder.Services.Configure<ObservabilityOptions>(builder.Configuration.GetSection("Observability"));
 builder.Services.AddSingleton<RequestObservability>();
