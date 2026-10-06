@@ -69,8 +69,6 @@ Pruebas backend. Ejecutar pruebas dirigidas para cambios localizados y suite com
 
 Stack vigente: Angular 22.2.1 + Angular Material/CDK 22.2.1 sobre Node 24.21.0, npm 11.19.0, TypeScript 6.0.3, RxJS 7.8.2, tslib 2.8.1 y Zone.js 0.16.3; la aplicación conserva change detection basada en Zone.js.
 
-Escáner compartido: `src/app/shared/codigo-scanner-dialog` usa `barcode-detector@3.2.2` + `zxing-wasm@3.1.3`; el reader WASM se copia como asset same-origin y el contrato está en `scripts/validate-scanner-2c4.mjs`.
-
 ### `frontend/src/app/core`
 
 Autenticación, guards, interceptores, modelos y utilidades transversales. El baseline browser DEV vive en `core/performance/performance-baseline.service.ts`.

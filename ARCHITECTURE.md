@@ -25,10 +25,6 @@ Responsabilidades:
 - representación de módulos ERP;
 - lazy loading de componentes.
 
-#### Escáner de códigos
-
-El escáner compartido de ventas/compras usa `barcode-detector@3.2.2` como API de detección y `zxing-wasm@3.1.3`/ZXing-C++ como motor. La cámara se gestiona con `MediaDevices.getUserMedia`; imágenes locales se procesan únicamente en el navegador. El reader WASM se copia desde `node_modules/zxing-wasm/dist/reader/zxing_reader.wasm` al build y se sirve same-origin desde `/assets/wasm/`, sin CDN runtime. Formatos: QR, EAN-13/8, UPC-A/E, Code 128 y Code 39. El stream se libera al detener/cerrar/destruir/leer.
-
 ### ASP.NET Core API
 
 Responsabilidades:
