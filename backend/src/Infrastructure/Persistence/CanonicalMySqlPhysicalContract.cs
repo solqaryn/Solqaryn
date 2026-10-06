@@ -16,7 +16,7 @@ public static class CanonicalMySqlPhysicalContract
         ArgumentNullException.ThrowIfNull(db);
 
         await SeedPaymentMethodsAsync(db, cancellationToken);
-        await EnsureInventoryOriginBridgeAsync(db, cancellationToken);
+        await EnsureInventarioOriginBridgeAsync(db, cancellationToken);
     }
 
     public static async Task VerifyAsync(
@@ -39,7 +39,7 @@ public static class CanonicalMySqlPhysicalContract
 
         if (triggerCount != 2)
             throw new InvalidOperationException(
-                $"Canonical MySQL inventory bridge mismatch: triggers={triggerCount}.");
+                $"Canonical MySQL inventario bridge mismatch: triggers={triggerCount}.");
 
         var constraintCount = await db.Database
             .SqlQueryRaw<long>("""
@@ -54,7 +54,7 @@ public static class CanonicalMySqlPhysicalContract
 
         if (constraintCount != 1)
             throw new InvalidOperationException(
-                $"Canonical MySQL inventory origin constraint mismatch: count={constraintCount}.");
+                $"Canonical MySQL inventario origin constraint mismatch: count={constraintCount}.");
 
         var paymentSeedCount = await db.Database
             .SqlQueryRaw<long>("""
@@ -129,7 +129,7 @@ public static class CanonicalMySqlPhysicalContract
             cancellationToken);
     }
 
-    private static async Task EnsureInventoryOriginBridgeAsync(
+    private static async Task EnsureInventarioOriginBridgeAsync(
         AppDbContext db,
         CancellationToken cancellationToken)
     {
