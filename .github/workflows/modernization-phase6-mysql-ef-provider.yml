@@ -34,16 +34,16 @@ jobs:
       mysql:
         image: mysql:8.4
         env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+          MYSQL_ROOT_PASSWORD: root
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping -h localhost -uroot"
+          --health-cmd="mysqladmin ping -h localhost -uroot -proot"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=12
     env:
-      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=phase6_regression;User=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;
+      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=phase6_regression;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;
       Database__ServerVersion: 8.4.0
       Database__ApplyMigrationsOnStartup: 'false'
     steps:
@@ -148,7 +148,7 @@ jobs:
           SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
         run: |
           set -euo pipefail
-          docker exec "${{ job.services.mysql.id }}" mysql -uroot -e "
+          docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot -e "
             DROP DATABASE IF EXISTS phase6_regression;
             CREATE DATABASE phase6_regression CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
 
@@ -164,7 +164,7 @@ jobs:
         run: |
           set -euo pipefail
           mysql_container="${{ job.services.mysql.id }}"
-          q(){ docker exec "$mysql_container" mysql -uroot phase6_regression -Nse "$1"; }
+          q(){ docker exec "$mysql_container" mysql -uroot -proot phase6_regression -Nse "$1"; }
 
           table_count="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='phase6_regression' AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME <> '__EFMigrationsHistory';")"
           json_count="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='phase6_regression' AND DATA_TYPE='json';")"
@@ -180,7 +180,7 @@ jobs:
           test "$datetime6" -gt 0
           test "$marker" -eq 1
 
-          docker exec "$mysql_container" mysql -uroot phase6_regression -e "
+          docker exec "$mysql_container" mysql -uroot -proot phase6_regression -e "
             DROP TABLE IF EXISTS Phase6ProviderContract;
             CREATE TABLE Phase6ProviderContract (
               Id INT NOT NULL AUTO_INCREMENT,
@@ -209,7 +209,7 @@ jobs:
           test "$(q "SELECT JSON_UNQUOTE(JSON_EXTRACT(Payload,'$.tenant')) FROM Phase6ProviderContract WHERE Code='ExactCase';")" = "1"
 
           set +e
-          duplicate_output="$(docker exec "$mysql_container" mysql -uroot phase6_regression -e "INSERT INTO Phase6ProviderContract(Code,Amount,AtUtc,Payload) VALUES ('ExactCase',1.0000,UTC_TIMESTAMP(6),JSON_OBJECT('x',1));" 2>&1)"
+          duplicate_output="$(docker exec "$mysql_container" mysql -uroot -proot phase6_regression -e "INSERT INTO Phase6ProviderContract(Code,Amount,AtUtc,Payload) VALUES ('ExactCase',1.0000,UTC_TIMESTAMP(6),JSON_OBJECT('x',1));" 2>&1)"
           duplicate_rc=$?
           set -e
           test "$duplicate_rc" -ne 0
