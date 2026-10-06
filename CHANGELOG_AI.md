@@ -1,3 +1,13 @@
+## 2026-10-06 — Cierre post-merge Fase 7 y reconciliación N2.3
+
+- HEAD post-merge técnicamente certificado: `7013a55cd7491c3c79d6808df5db9ba0b8580f40`.
+- Fase 7 `37540172636`, Fase 6 `37540172761`, DEV CI `37540172730`, aceptación `37540172606`, Fase 4 `37540172583` y Fase 5 `37540172750`: PASS.
+- Fase 7: 2388/2388 unitarios, 27/27 integración, fresh bootstrap 136 tablas, pending=0, Docker health/readiness PASS, tenancy PASS, NuGet vulnerability gate PASS.
+- Fase 6 post-Fase7: provider productivo Oracle, 107 migraciones Pomelo preservadas, replay Oracle=false, P0=0, P1=0.
+- Se corrige el workflow N2.3 de `SslMode=None` a `SslMode=Disabled`, valor compatible con Oracle Connector/NET, y se habilita su validación en PR hacia `dev`.
+- Se reconcilian las evidencias Fase 6/Fase 7 y autoridades arquitectónicas para reflejar el estado real integrado en `dev`.
+- Sin promoción a `main`, QA o PROD.
+
 ## 2026-10-06 — Fase 7: .NET 10 + EF Core 10 + Oracle MySQL
 
 - Se ejecutó el retarget del backend a `net10.0`/C# 14 con SDK 10.0.401 y runtime/ASP.NET 10.0.12.
@@ -9,9 +19,9 @@
 
 ## 2026-10-05 — Punto 27: reconciliar arquitectura con el exact-head vigente
 
-- `ARCHITECTURE.md`, `PROJECT_CONTEXT.md`, `PROJECT_INDEX.md`, `ARCHITECTURE_CHANGELOG.md` y este changelog separan el provider productivo Pomelo/net8/EF8 de la ruta candidata Oracle EF10/net10 aislada.
+- `ARCHITECTURE.md`, `PROJECT_CONTEXT.md`, `PROJECT_INDEX.md`, `ARCHITECTURE_CHANGELOG.md` y este changelog reflejan Oracle EF10/net10 como runtime productivo de `dev`; Pomelo/net8/EF8 queda como historia pre-Fase7.
 - Fase 6 exact-head `37330696772`, HEAD `425f9cab0ed291401c081d7946289875eb11e798`: `success`, `FASE_6_MYSQL_EF_PROVIDER=PASS`, `P0=0`, `P1=0`, `PHASE7_EXECUTED=false`; scope lock `37330696444` también `success`.
-- Se registra el toolchain candidato exacto SDK 10.0.401/runtime 10.0.12 y EF Core/Design/CLI 10.0.12, provider Oracle EF 10.0.9. No se cambió el runtime ni se inició Fase 7.
+- El toolchain vigente de `dev` es SDK 10.0.401/runtime 10.0.12 y EF Core/Design/CLI 10.0.12 con Oracle EF 10.0.9; Fase 7 está ejecutada.
 - Evidencia: `docs/evidencias/modernizacion/PUNTO_27_DOCUMENTACION_ARQUITECTONICA_2026-10-05.md`.
 
 ## 2026-10-05 — Revalidación del Punto 6: bootstrap Oracle desde SQL package
