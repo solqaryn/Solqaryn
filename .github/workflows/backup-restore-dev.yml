@@ -76,7 +76,7 @@ jobs:
       - name: Configurar .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '10.0.401'
           cache: true
           cache-dependency-path: backend/**/*.csproj
 
@@ -86,7 +86,7 @@ jobs:
         run: |
           set -euo pipefail
           dotnet restore Solqaryn.sln
-          dotnet tool install --global dotnet-ef --version 8.0.8
+          dotnet tool install --global dotnet-ef --version 10.0.12
           mysql_container="${{ job.services.mysql.id }}"
           docker exec "$mysql_container" mysql -uroot -proot -e "SET GLOBAL sql_require_primary_key=ON;"
           test "$(docker exec "$mysql_container" mysql -uroot -proot -Nse "SELECT @@GLOBAL.sql_require_primary_key;")" = 1
