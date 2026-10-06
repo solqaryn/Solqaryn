@@ -26,7 +26,7 @@ public sealed class ProductoEscanerIntegrationTests
 
         await using (var setup = new AppDbContext(options))
         {
-            await setup.Database.MigrateAsync();
+            await Phase7MySqlTestDatabase.InitializeFreshAsync(setup);
 
             var simple = CrearProducto("Producto simple", 6);
             var barras = CrearProducto("Producto con barras", 3);

@@ -44,7 +44,7 @@ public class CargaMasivaConcurrencyTests
     {
         var options = CrearOpciones($"test_carga_snapshot_{Guid.NewGuid():N}");
         await using var context = new AppDbContext(options);
-        await context.Database.MigrateAsync();
+        await Phase7MySqlTestDatabase.InitializeFreshAsync(context);
 
         var marca = new Marca { Nombre = "Marca Test", Activo = true, Eliminado = false, CreadoPorUsuarioId = 1, CreadoPorNombreUsuario = "integration-admin" };
         context.Marcas.Add(marca);

@@ -24,7 +24,7 @@ public class SeedFiscalMySqlIntegrationTests
         {
             await using (var inicial = new AppDbContext(opciones))
             {
-                await inicial.Database.MigrateAsync();
+                await Phase7MySqlTestDatabase.InitializeFreshAsync(inicial);
                 await new SeedFiscalService(inicial).SeedDefaultsAsync();
 
                 var isc = await inicial.Impuestos.SingleAsync(x => x.Codigo == "ISC5");
@@ -67,7 +67,7 @@ public class SeedFiscalMySqlIntegrationTests
         {
             await using (var inicial = new AppDbContext(opciones))
             {
-                await inicial.Database.MigrateAsync();
+                await Phase7MySqlTestDatabase.InitializeFreshAsync(inicial);
                 await new SeedFiscalService(inicial).SeedDefaultsAsync();
 
                 var isv = await inicial.Impuestos.SingleAsync(x => x.Codigo == "ISV15");

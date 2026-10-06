@@ -33,7 +33,7 @@ public sealed class SecuenciaDocumentoConcurrencyIntegrationTests
         {
             await using (var setup = new AppDbContext(options))
             {
-                await setup.Database.MigrateAsync();
+                await Phase7MySqlTestDatabase.InitializeFreshAsync(setup);
                 var empresa = new Empresa("Empresa concurrencia de secuencias CI");
                 setup.Set<Empresa>().Add(empresa);
                 await setup.SaveChangesAsync();

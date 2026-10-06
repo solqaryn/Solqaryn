@@ -25,7 +25,7 @@ public sealed class ProductoAutocompleteIntegrationTests
 
         await using (var setup = new AppDbContext(options))
         {
-            await setup.Database.MigrateAsync();
+            await Phase7MySqlTestDatabase.InitializeFreshAsync(setup);
 
             var marca = new Marca
             {

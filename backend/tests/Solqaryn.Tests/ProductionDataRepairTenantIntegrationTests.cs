@@ -36,7 +36,7 @@ public sealed class ProductionDataRepairTenantIntegrationTests
         try
         {
             await using var db = new AppDbContext(opciones);
-            await db.Database.MigrateAsync();
+            await Phase7MySqlTestDatabase.InitializeFreshAsync(db);
 
             var legacy = await db.EmpresaConfiguraciones
                 .SingleOrDefaultAsync(x => x.Activa);
@@ -160,7 +160,7 @@ public sealed class ProductionDataRepairTenantIntegrationTests
         try
         {
             await using var db = new AppDbContext(opciones);
-            await db.Database.MigrateAsync();
+            await Phase7MySqlTestDatabase.InitializeFreshAsync(db);
 
             var activas = await db.EmpresaConfiguraciones
                 .Where(x => x.Activa)

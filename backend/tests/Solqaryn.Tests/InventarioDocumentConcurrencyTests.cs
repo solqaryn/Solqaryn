@@ -223,7 +223,7 @@ public class InventarioDocumentConcurrencyTests
         {
             await using (var setup = new AppDbContext(options))
             {
-                await setup.Database.MigrateAsync();
+                await Phase7MySqlTestDatabase.InitializeFreshAsync(setup);
                 var producto = CrearProducto("Producto doble confirmación", 2);
                 setup.Productos.Add(producto);
                 await setup.SaveChangesAsync();
@@ -292,7 +292,7 @@ public class InventarioDocumentConcurrencyTests
         {
             await using (var setup = new AppDbContext(options))
             {
-                await setup.Database.MigrateAsync();
+                await Phase7MySqlTestDatabase.InitializeFreshAsync(setup);
                 var producto = CrearProducto("Producto detalles duplicados", 3);
                 setup.Productos.Add(producto);
                 await setup.SaveChangesAsync();
@@ -341,7 +341,7 @@ public class InventarioDocumentConcurrencyTests
         {
             await using (var setup = new AppDbContext(options))
             {
-                await setup.Database.MigrateAsync();
+                await Phase7MySqlTestDatabase.InitializeFreshAsync(setup);
                 var productoA = CrearProducto("Producto A", 5);
                 var productoB = CrearProducto("Producto B", 0);
                 setup.Productos.AddRange(productoA, productoB);
@@ -398,7 +398,7 @@ public class InventarioDocumentConcurrencyTests
         {
             await using (var setup = new AppDbContext(options))
             {
-                await setup.Database.MigrateAsync();
+                await Phase7MySqlTestDatabase.InitializeFreshAsync(setup);
                 var productoA = CrearProducto("Producto orden A", 2);
                 var productoB = CrearProducto("Producto orden B", 2);
                 setup.Productos.AddRange(productoA, productoB);
@@ -459,7 +459,7 @@ public class InventarioDocumentConcurrencyTests
         {
             await using (var setup = new AppDbContext(options))
             {
-                await setup.Database.MigrateAsync();
+                await Phase7MySqlTestDatabase.InitializeFreshAsync(setup);
                 var producto = CrearProducto("Producto doble anulación", 2);
                 setup.Productos.Add(producto);
                 await setup.SaveChangesAsync();
@@ -539,7 +539,7 @@ public class InventarioDocumentConcurrencyTests
         {
             await using (var setup = new AppDbContext(options))
             {
-                await setup.Database.MigrateAsync();
+                await Phase7MySqlTestDatabase.InitializeFreshAsync(setup);
                 var producto = CrearProducto("Producto compra posterior", 5);
                 setup.Productos.Add(producto);
                 await setup.SaveChangesAsync();

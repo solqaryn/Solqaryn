@@ -26,7 +26,7 @@ public sealed class N08MigracionesLimpiezaPreflightIntegrationTests
         await using var context = new AppDbContext(options);
         try
         {
-            await context.Database.MigrateAsync();
+            await Phase7MySqlTestDatabase.InitializeFreshAsync(context);
 
             var scriptPath = BuscarScriptN08();
             var sql = await File.ReadAllTextAsync(scriptPath);

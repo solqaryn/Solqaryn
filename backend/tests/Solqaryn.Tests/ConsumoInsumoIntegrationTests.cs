@@ -36,7 +36,7 @@ public class ConsumoInsumoIntegrationTests
 
         await using (var setup = new AppDbContext(options))
         {
-            await setup.Database.MigrateAsync();
+            await Phase7MySqlTestDatabase.InitializeFreshAsync(setup);
             var producto = new Producto
             {
                 Nombre = "Bolsa administrativa", Marca = "Interno", Modelo = "BOLSA-TEST",

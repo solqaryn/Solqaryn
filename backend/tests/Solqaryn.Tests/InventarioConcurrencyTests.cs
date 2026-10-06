@@ -74,7 +74,7 @@ public class InventarioConcurrencyTests
         {
             await using (var setupContext = new AppDbContext(options))
             {
-                await setupContext.Database.MigrateAsync();
+                await Phase7MySqlTestDatabase.InitializeFreshAsync(setupContext);
 
                 var producto = new Producto
                 {
@@ -273,7 +273,7 @@ public class InventarioConcurrencyTests
         {
             await using (var setupContext = new AppDbContext(options))
             {
-                await setupContext.Database.MigrateAsync();
+                await Phase7MySqlTestDatabase.InitializeFreshAsync(setupContext);
                 var producto = new Producto
                 {
                     Nombre = "Producto Lock CI",

@@ -40,7 +40,7 @@ public class MovimientoInventarioOrigenTipadoIntegrationTests
         await using var context = new AppDbContext(options);
         try
         {
-            await context.Database.MigrateAsync();
+            await Phase7MySqlTestDatabase.InitializeFreshAsync(context);
 
             var producto = new Producto
             {
@@ -113,7 +113,7 @@ public class MovimientoInventarioOrigenTipadoIntegrationTests
         await using var context = new AppDbContext(options);
         try
         {
-            await context.Database.MigrateAsync();
+            await Phase7MySqlTestDatabase.InitializeFreshAsync(context);
 
             var producto = new Producto
             {

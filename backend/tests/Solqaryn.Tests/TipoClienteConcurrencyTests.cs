@@ -39,7 +39,7 @@ public class TipoClienteConcurrencyTests
         // 1. Setup inicial con Migraciones reales
         await using (var setupContext = new AppDbContext(options))
         {
-            await setupContext.Database.MigrateAsync();
+            await Phase7MySqlTestDatabase.InitializeFreshAsync(setupContext);
 
             var tipoA = new TipoCliente
             {

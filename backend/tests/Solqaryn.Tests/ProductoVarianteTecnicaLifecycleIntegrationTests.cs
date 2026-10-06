@@ -31,7 +31,7 @@ public sealed class ProductoVarianteTecnicaLifecycleIntegrationTests
 
         await using (var setup = new AppDbContext(options))
         {
-            await setup.Database.MigrateAsync();
+            await Phase7MySqlTestDatabase.InitializeFreshAsync(setup);
             var producto = new Producto
             {
                 Nombre = "Producto simple concurrente",

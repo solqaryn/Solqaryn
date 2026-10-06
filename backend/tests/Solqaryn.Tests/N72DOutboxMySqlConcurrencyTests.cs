@@ -26,7 +26,7 @@ public sealed class N72DOutboxMySqlConcurrencyTests
             int mensajeId;
             await using (var setup = new AppDbContext(options))
             {
-                await setup.Database.MigrateAsync();
+                await Phase7MySqlTestDatabase.InitializeFreshAsync(setup);
                 var empresa = new Empresa("N7.2.D MySQL Tenant");
                 setup.Add(empresa);
                 await setup.SaveChangesAsync();

@@ -29,7 +29,7 @@ public class ProductoImagenVarianteIntegrationTests
             // Este MigrateAsync es parte del gate: prueba que MySQL 8.4 puede
             // crear e indexar PrincipalAmbitoKey como columna generada VIRTUAL
             // conservando la FK histórica de ProductoImagenes -> Productos.
-            await db.Database.MigrateAsync();
+            await Phase7MySqlTestDatabase.InitializeFreshAsync(db);
 
             var colorNegro = new Color
             {
