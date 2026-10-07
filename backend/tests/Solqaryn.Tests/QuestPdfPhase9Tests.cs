@@ -140,7 +140,7 @@ public sealed class QuestPdfPhase9Tests
         {
             QuestPdfInformationalVersion = typeof(QuestPDF.Settings).Assembly
                 .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "unknown",
-            License = QuestPDF.Settings.License.ToString(),
+            License = Convert.ToString(QuestPDF.Settings.License, CultureInfo.InvariantCulture) ?? "NotConfigured",
             Settings = CapturarSettings(),
             PdfUaConfiguredInProduct = false,
             QrProductivoObservado = false,
