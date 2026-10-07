@@ -10,7 +10,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FluentValidation" Version="12.1.1" />
-    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="BCrypt.Net-Next" Version="4.2.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Domain\Solqaryn.Domain.csproj" />
