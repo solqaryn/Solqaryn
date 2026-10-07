@@ -3,7 +3,7 @@
 - Se registra como evidencia autoritativa el HEAD `7013a55cd7491c3c79d6808df5db9ba0b8580f40`: Fase 7 `37540172636` SUCCESS, Fase 6 `37540172761` SUCCESS, backend CI `37540172730` SUCCESS y aceptación `37540172606` SUCCESS.
 - Fase 7 queda documentada con 2388/2388 unitarios, 27/27 integración, bootstrap fresh de 136 tablas, Docker/health/readiness PASS, tenancy PASS y provider productivo Oracle EF10.
 - La evidencia histórica de Fase 6 se reconcilia con el runtime vigente net10/EF10/Oracle y `PHASE7_EXECUTED=true`, preservando las 107 migraciones Pomelo sin replay Oracle.
-- N2.3 se corrige para Oracle Connector/NET usando `SslMode=Disabled` en CI y se habilita también en PR hacia `dev`, para que el defecto se detecte antes del merge.
+- N2.3 se reconcilia con Fase 7: usa `SslMode=Disabled`, bootstrap fresh mediante `Solqaryn.DatabaseBootstrap`, desactiva replay automático de migraciones en startup y aísla el puerto Angular `4200` del `PORT=5005` de la API; además corre en PR hacia `dev`.
 - El ruleset activo de `dev` sigue exigiendo `Dictamen Fase 6`; la conexión GitHub disponible no expone una mutación administrativa de rulesets para añadir `Dictamen Fase 7`.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
