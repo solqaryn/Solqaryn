@@ -132,6 +132,12 @@ La observabilidad de rendimiento DEV es first-party y no requiere un proveedor p
 - `frontend/scripts/performance-bundle-baseline.mjs` mide bundles raw/gzip/Brotli;
 - la instrumentación está desactivada por defecto fuera de DEV y no modifica autoridad de negocio, RBAC, tenancy ni datos.
 
+### Validación HTTP / FluentValidation
+
+Desde Fase 8, la API usa FluentValidation 12.1.1 con registro DI oficial y un filtro MVC asíncrono propio (`FluentValidationActionFilter`). `FluentValidation.AspNetCore` está retirado. El filtro ejecuta `IValidator<T>` con `RequestAborted` y reutiliza `InvalidModelStateResponseFactory`, preservando el contrato HTTP existente; las excepciones de negocio/servicio continúan bajo `ExceptionHandlingMiddleware`.
+
+La familia IdentityModel queda alineada en 8.23.0 mientras JwtBearer permanece 10.0.12. Swashbuckle.AspNetCore 10.2.3 conserva Swagger/OpenAPI y Bearer. ImageSharp 3.1.12 se mantiene por frontera explícita de licencia: la major 4 exige licencia válida de build para dependencias directas y no se adopta sin autorización.
+
 ## 4. Patrones vigentes
 
 - Dependency Injection.

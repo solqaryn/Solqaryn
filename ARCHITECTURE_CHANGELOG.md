@@ -1,3 +1,11 @@
+## 2026-10-07 — Fase 8 NuGet y validación async
+
+- FluentValidation 12.1.1 reemplaza la integración ASP.NET deprecada por DI oficial + `FluentValidationActionFilter` asíncrono, preservando ModelState y cancellation.
+- Swashbuckle.AspNetCore 10.2.3 mantiene OpenAPI/Bearer y se corrige el contrato `IFormFile` para el generador sin cambiar el binding multipart.
+- IdentityModel se alinea en 8.23.0; BCrypt.Net-Next 4.2.0, CloudinaryDotNet 1.29.3 y ClosedXML 0.105.1 quedan modernizados.
+- ImageSharp permanece 3.1.12 por la nueva exigencia de licencia de build de la major 4; no se introduce un secreto/licencia ni gasto nuevo.
+- Caching y JSON continúan bajo el shared framework .NET 10, sin referencias directas redundantes. Sin cambios de DB, provider, migraciones, main, QA o PROD.
+
 ## 2026-10-06 — Reconciliación post-merge Fase 7 DEV
 
 - Fase 7 integrada mediante PR #3552 y certificada sobre el HEAD post-merge `7013a55cd7491c3c79d6808df5db9ba0b8580f40`.

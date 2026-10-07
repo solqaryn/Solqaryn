@@ -168,6 +168,7 @@ Angular route/component
 - Angular: `frontend/src/app/features`, `core`, `services` y `app.routes.ts`.
 - API: `backend/src/API/Controllers`; composición, middleware y DI en `backend/src/API/Program.cs`.
 - Application: `backend/src/Application/{Services,Interfaces,DTOs,Validators}`.
+- Validación HTTP Fase 8: `backend/src/API/Filters/FluentValidationActionFilter.cs`; gate NuGet permanente: `.github/workflows/modernization-phase8-nuget.yml`.
 - Domain: `backend/src/Domain/{Entities,Enums,Common}`.
 - Infrastructure/DB: `backend/src/Infrastructure/{Repositories,Services,Persistence}` y las dos carpetas de migraciones indicadas arriba.
 - Migración de versiones DB/.NET: `dev` ejecuta Fase 7 con `net10.0`, C# 14, SDK 10.0.401, runtime/ASP.NET 10.0.12, EF Core/Design/CLI 10.0.12, JwtBearer 10.0.12 y Oracle `MySql.EntityFrameworkCore` 10.0.9. El runtime usa `backend/src/Infrastructure.Migrations` como assembly de migraciones Oracle; `backend/src/Infrastructure.Migrations.History` conserva las 107 migraciones Pomelo únicamente como historia auditable. Bootstrap fresh: `backend/tools/Solqaryn.DatabaseBootstrap`; gate permanente: `.github/workflows/modernization-phase7-dotnet-ef.yml`; HEAD post-merge certificado: `7013a55cd7491c3c79d6808df5db9ba0b8580f40`. No hay promoción a `main`/QA/PROD.

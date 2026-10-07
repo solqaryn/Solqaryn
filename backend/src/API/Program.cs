@@ -4,7 +4,6 @@ using System.Net;
 using System.Text;
 using System.Threading.RateLimiting;
 using FluentValidation;
-using FluentValidation.AspNetCore;
 using Solqaryn.API.Configuration;
 using Solqaryn.API.Middleware;
 using Solqaryn.API.Observability;
@@ -25,7 +24,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Microsoft.Net.Http.Headers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,9 +33,12 @@ var isRender = string.Equals(Environment.GetEnvironmentVariable("RENDER"), "true
 RenderEnvironmentContractSnapshot? renderEnvironmentContract = null;
 if (isRender) renderEnvironmentContract = RenderEnvironmentContractGuard.ValidateProcessEnvironment(builder.Environment.EnvironmentName);
 if (!string.IsNullOrWhiteSpace(port)) builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
-builder.Services.AddControllers(options => options.Filters.Add<Solqaryn.API.Filters.MedirRendimientoBusquedaFilter>());
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<Solqaryn.API.Filters.MedirRendimientoBusquedaFilter>();
+    options.Filters.Add<Solqaryn.API.Filters.FluentValidationActionFilter>();
+});
 builder.Services.Configure<FormOptions>(options => options.MultipartBodyLengthLimit = 30 * 1024 * 1024);
-builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateProductoValidator>();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection no configurado.");
 if (isRender) EnvironmentDatabaseGuard.ValidateRenderBinding(builder.Environment.EnvironmentName, connectionString);
@@ -230,7 +232,23 @@ var corsOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<st
 if (corsOrigins.Length == 0 || corsOrigins.Any(string.IsNullOrWhiteSpace)) throw new InvalidOperationException("Cors:AllowedOrigins debe contener al menos un origen válido.");
 builder.Services.AddCors(options => options.AddPolicy("FrontendPolicy", policy => policy.WithOrigins(corsOrigins).AllowAnyHeader().AllowAnyMethod()));
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options => { options.SwaggerDoc("v1", new OpenApiInfo { Title = "Solqaryn API", Version = "v1" }); options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme { Name = "Authorization", Type = SecuritySchemeType.Http, Scheme = "Bearer", BearerFormat = "JWT", In = ParameterLocation.Header, Description = "Ingresa: Bearer {tu token}" }); options.AddSecurityRequirement(new OpenApiSecurityRequirement { { new OpenApiSecurityScheme { Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" } }, Array.Empty<string>() } }); });
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "Solqaryn API", Version = "v1" });
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Ingresa: Bearer {tu token}"
+    });
+    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+    {
+        [new OpenApiSecuritySchemeReference("Bearer", document)] = []
+    });
+});
 var app = builder.Build();
 if (renderEnvironmentContract is not null)
 {

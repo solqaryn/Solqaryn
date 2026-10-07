@@ -143,9 +143,10 @@ public class ComprasController : ControllerBase
     }
 
     [HttpPost("{id:int}/documentos")]
+    [Consumes("multipart/form-data")]
     [RequierePermiso(ModuloSistema.Compras, AccionPermiso.Editar)]
     [RequestSizeLimit(10 * 1024 * 1024)]
-    public async Task<IActionResult> UploadDocumento(int id, [FromForm] IFormFile archivo)
+    public async Task<IActionResult> UploadDocumento(int id, IFormFile archivo)
     {
         var documento = await _documentoService.UploadAsync(id, archivo);
         return Ok(ApiResponse<CompraDocumentoDto>.Ok(documento, "Comprobante adjuntado correctamente."));
