@@ -41,7 +41,7 @@ jobs:
           SOLQARYN_PHASE9_PDF_ARTIFACT_DIR: ${{ runner.temp }}/phase9-baseline
         run: |
           dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj             --configuration Release             --no-build             --filter "FullyQualifiedName~QuestPdfPhase9Tests"             --logger "console;verbosity=normal"
-          cat "${SOLQARYN_PHASE9_PDF_ARTIFACT_DIR}/manifest.json"
+          cat "${SOLQARYN_PHASE9_PDF_ARTIFACT_DIR}/comparison-manifest.json"
       - name: Regresión PDF existente
         working-directory: backend
         run: |
