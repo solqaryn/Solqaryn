@@ -65,6 +65,12 @@ jobs:
         run: |
           set -euo pipefail
           python3 scripts/phase9_compare_pdf_manifests.py             "$RUNNER_TEMP/phase9-baseline/comparison-manifest.json"             "$RUNNER_TEMP/phase9-candidate/comparison-manifest.json"             "$RUNNER_TEMP/phase9-comparison-report.json"
+      - name: Comparar render real before/after
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v pdftoppm
+          python3 scripts/phase9_compare_pdf_renders.py "$RUNNER_TEMP/phase9-baseline" "$RUNNER_TEMP/phase9-candidate" "$RUNNER_TEMP/phase9-render-report.json"
       - name: Pruebas PDF dirigidas
         working-directory: backend
         run: |
@@ -75,6 +81,7 @@ jobs:
           path: |
             ${{ runner.temp }}/phase9-candidate
             ${{ runner.temp }}/phase9-comparison-report.json
+            ${{ runner.temp }}/phase9-render-report.json
           retention-days: 30
 
   integration:
