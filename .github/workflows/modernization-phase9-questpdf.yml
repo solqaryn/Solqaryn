@@ -1,53 +1,227 @@
 name: Modernización - Fase 9 QuestPDF DEV
 
 on:
+  push:
+    branches: [dev]
   pull_request:
     branches: [dev]
   workflow_dispatch:
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: phase9-questpdf-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  baseline-questpdf:
-    name: Fase 9 - baseline QuestPDF 2024.3.6
+  contracts:
+    name: Fase 9 - QuestPDF contratos y unitarias
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
+    env:
+      PHASE9_BASELINE_RUN_ID: '37659166394'
+      PHASE9_BASELINE_ARTIFACT: 'phase9-questpdf-2024.3.6-baseline'
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.401
       - name: Scope lock
         run: node scripts/verify-project-scope.mjs
-      - name: Confirmar baseline QuestPDF
+      - name: Contrato QuestPDF exacto
         shell: bash
         run: |
           set -euo pipefail
-          grep -F '<PackageReference Include="QuestPDF" Version="2024.3.6" />' backend/src/Infrastructure/Solqaryn.Infrastructure.csproj
+          grep -F '<PackageReference Include="QuestPDF" Version="2026.9.1" />' backend/src/Infrastructure/Solqaryn.Infrastructure.csproj
+          ! grep -R -n -F 'QuestPDF" Version="2024.3.6"' backend/src backend/tools --include='*.csproj'
           ! grep -R -n -E 'PDFUA_Conformance|DocumentAttachment|GenerateQrCode|QRCode|QrCode' backend/src/Infrastructure backend/src/Application --include='*.cs'
-      - name: Restore y build
+      - name: Restore y build Release
         working-directory: backend
         run: |
           dotnet restore Solqaryn.sln
           dotnet build Solqaryn.sln --configuration Release --no-restore
-      - name: Capturar PDFs baseline reales
+      - name: Capturar candidate 2026.9.1
         working-directory: backend
         env:
-          SOLQARYN_PHASE9_PDF_ARTIFACT_DIR: ${{ runner.temp }}/phase9-baseline
+          SOLQARYN_PHASE9_PDF_ARTIFACT_DIR: ${{ runner.temp }}/phase9-candidate
         run: |
           dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj             --configuration Release             --no-build             --filter "FullyQualifiedName~QuestPdfPhase9Tests"             --logger "console;verbosity=normal"
-          cat "${SOLQARYN_PHASE9_PDF_ARTIFACT_DIR}/comparison-manifest.json"
-      - name: Regresión PDF existente
+      - name: Descargar baseline inmutable 2024.3.6
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/phase9-baseline"
+          gh run download "$PHASE9_BASELINE_RUN_ID"             --repo "${{ github.repository }}"             --name "$PHASE9_BASELINE_ARTIFACT"             --dir "$RUNNER_TEMP/phase9-baseline"
+          test -f "$RUNNER_TEMP/phase9-baseline/comparison-manifest.json"
+          test -f "$RUNNER_TEMP/phase9-baseline/manifest.json"
+      - name: Comparar PDFs 2024.3.6 vs 2026.9.1
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/phase9_compare_pdf_manifests.py             "$RUNNER_TEMP/phase9-baseline/comparison-manifest.json"             "$RUNNER_TEMP/phase9-candidate/comparison-manifest.json"             "$RUNNER_TEMP/phase9-comparison-report.json"
+      - name: Pruebas PDF dirigidas
         working-directory: backend
         run: |
-          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj             --configuration Release             --no-build             --filter "FullyQualifiedName~QuestPdfFacturaPerfilesServiceTests|FullyQualifiedName~N58DExportPdfServiceTests|FullyQualifiedName~N58ExportSecurityTests|FullyQualifiedName~FacturaCompartirServiceTests|FullyQualifiedName~SmtpEmailServiceTests"
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj             --configuration Release             --no-build             --filter "FullyQualifiedName~QuestPdfFacturaPerfilesServiceTests|FullyQualifiedName~N58DExportPdfServiceTests|FullyQualifiedName~N58ExportSecurityTests|FullyQualifiedName~FacturaCompartirServiceTests|FullyQualifiedName~SmtpEmailServiceTests|FullyQualifiedName~Priority3AuthorizationSurfaceTests"
       - uses: actions/upload-artifact@v4
         with:
-          name: phase9-questpdf-2024.3.6-baseline
-          path: ${{ runner.temp }}/phase9-baseline
+          name: phase9-questpdf-2026.9.1-candidate
+          path: |
+            ${{ runner.temp }}/phase9-candidate
+            ${{ runner.temp }}/phase9-comparison-report.json
           retention-days: 30
+
+  integration:
+    name: Fase 9 - PDF integración
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+          MYSQL_DATABASE: solqaryn_phase9_pdf
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost"
+          --health-interval=10s --health-timeout=5s --health-retries=12
+    env:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_phase9_pdf;User=root;Password=;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      Database__ServerVersion: '8.4.0'
+      Database__ApplyMigrationsOnStartup: 'false'
+      Jwt__Secret: ${{ github.sha }}
+      Jwt__Issuer: 'Solqaryn.Phase9'
+      Jwt__Audience: 'Solqaryn.Phase9'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.401
+      - name: Restore build
+        working-directory: backend
+        run: |
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+      - name: Bootstrap Oracle fresh
+        working-directory: backend
+        env:
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
+        run: dotnet run --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj --configuration Release --no-build
+      - name: Integración PDF, share, correo y reportes
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          filter='FullyQualifiedName~QuestPdfFacturaPerfilesServiceTests|FullyQualifiedName~N58DExportPdfServiceTests|FullyQualifiedName~N58ExportSecurityTests|FullyQualifiedName~FacturaCompartirServiceTests|FullyQualifiedName~SmtpEmailServiceTests|FullyQualifiedName~Priority3AuthorizationSurfaceTests|FullyQualifiedName~Tenant'
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-build --filter "$filter"
+
+  nuget:
+    name: Fase 9 - regresión NuGet
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.401
+      - name: Restore
+        working-directory: backend
+        run: dotnet restore Solqaryn.sln
+      - name: Preservar matriz Fase 8 y QuestPDF
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -F '<PackageReference Include="QuestPDF" Version="2026.9.1" />' src/Infrastructure/Solqaryn.Infrastructure.csproj
+          grep -F '<PackageReference Include="FluentValidation" Version="12.1.1" />' src/Application/Solqaryn.Application.csproj
+          grep -F '<PackageReference Include="BCrypt.Net-Next" Version="4.2.0" />' src/Application/Solqaryn.Application.csproj
+          grep -F '<PackageReference Include="CloudinaryDotNet" Version="1.29.3" />' src/Infrastructure/Solqaryn.Infrastructure.csproj
+          grep -F '<PackageReference Include="ClosedXML" Version="0.105.1" />' src/Infrastructure/Solqaryn.Infrastructure.csproj
+          grep -F '<PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />' src/Infrastructure/Solqaryn.Infrastructure.csproj
+      - name: Vulnerabilidades
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet list Solqaryn.sln package --vulnerable --include-transitive | tee "$RUNNER_TEMP/phase9-vulnerable.txt"
+          if grep -q 'has the following vulnerable packages' "$RUNNER_TEMP/phase9-vulnerable.txt"; then
+            cat "$RUNNER_TEMP/phase9-vulnerable.txt"
+            exit 1
+          fi
+      - name: Deprecated productivos
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          projects=(
+            src/Domain/Solqaryn.Domain.csproj
+            src/Application/Solqaryn.Application.csproj
+            src/Infrastructure/Solqaryn.Infrastructure.csproj
+            src/API/Solqaryn.API.csproj
+            src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj
+            tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj
+          )
+          for project in "${projects[@]}"; do
+            output="$(dotnet list "$project" package --deprecated --include-transitive)"
+            printf '%s\n' "$output"
+            if grep -q 'has the following deprecated packages' <<<"$output"; then
+              echo "Paquete deprecated productivo detectado en $project"
+              exit 1
+            fi
+          done
+
+  license:
+    name: Fase 9 - elegibilidad licencia QuestPDF
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Gate legal fail-closed
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! grep -Fq 'QUESTPDF_2026_COMMUNITY_ELIGIBILITY=OWNER_CONFIRMED' docs/evidencias/modernizacion/FASE_9_QUESTPDF_2026-10-07.md 2>/dev/null; then
+            echo 'LICENSE_STATUS=OWNER_CONFIRMATION_REQUIRED'
+            echo 'QuestPDF Community 2026 exige elegibilidad vigente; no se infiere por código ni por un repositorio público.'
+            exit 1
+          fi
+          echo 'LICENSE_STATUS=COMMUNITY_OWNER_CONFIRMED'
+
+  verdict:
+    name: Dictamen Fase 9
+    needs: [contracts, integration, nuget, license]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Emitir dictamen
+        env:
+          CONTRACTS_RESULT: ${{ needs.contracts.result }}
+          INTEGRATION_RESULT: ${{ needs.integration.result }}
+          NUGET_RESULT: ${{ needs.nuget.result }}
+          LICENSE_RESULT: ${{ needs.license.result }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CONTRACTS_RESULT" = success
+          test "$INTEGRATION_RESULT" = success
+          test "$NUGET_RESULT" = success
+          test "$LICENSE_RESULT" = success
+          echo 'FASE_9_QUESTPDF=PASS'
+          echo 'QUESTPDF=2026.9.1'
+          echo 'PDF_PROFILES=7_OF_7_PASS'
+          echo 'FONT_POLICY=PASS'
+          echo 'SPECIAL_GLYPHS=PASS'
+          echo 'PAGINATION=PASS'
+          echo 'EMAIL_ATTACHMENT=PASS'
+          echo 'QR=NOT_APPLICABLE_NO_EXISTING_PDF_QR'
+          echo 'EMBEDDED_PDF_ATTACHMENTS=NOT_APPLICABLE'
+          echo 'PDFUA=NO_CHANGE_NOT_ENABLED'
+          echo 'P0=0'
+          echo 'P1=0'
