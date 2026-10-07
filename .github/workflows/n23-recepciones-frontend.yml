@@ -135,6 +135,8 @@ jobs:
       - name: Iniciar Angular
         working-directory: frontend
         shell: bash
+        env:
+          PORT: '4200'
         run: |
           set -euo pipefail
           nohup npm start -- --host 127.0.0.1 --port 4200 > n23-frontend.log 2>&1 &
