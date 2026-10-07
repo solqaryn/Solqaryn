@@ -150,6 +150,32 @@ public sealed class QuestPdfPhase9Tests
 
         var json = JsonSerializer.Serialize(envelope, new JsonSerializerOptions { WriteIndented = true });
         await File.WriteAllTextAsync(Path.Combine(destino, "manifest.json"), json, new UTF8Encoding(false));
+        var comparison = new
+        {
+            envelope.QuestPdfInformationalVersion,
+            envelope.License,
+            envelope.Settings,
+            envelope.PdfUaConfiguredInProduct,
+            envelope.QrProductivoObservado,
+            envelope.EmbeddedAttachmentsObservados,
+            Manifests = manifests.Select(x => new
+            {
+                x.Formato,
+                x.Caso,
+                x.Bytes,
+                x.PageCount,
+                x.Paginas,
+                x.TextSha256,
+                x.Fonts,
+                x.StructTreeRootObserved,
+                x.MarkInfoObserved,
+                x.PdfUaMarkerObserved,
+                x.ElapsedMs,
+                x.ManagedBytesDeltaApprox
+            }).ToList()
+        };
+        var comparisonJson = JsonSerializer.Serialize(comparison, new JsonSerializerOptions { WriteIndented = true });
+        await File.WriteAllTextAsync(Path.Combine(destino, "comparison-manifest.json"), comparisonJson, new UTF8Encoding(false));
         Console.WriteLine("PHASE9_MANIFEST_BEGIN");
         Console.WriteLine(json);
         Console.WriteLine("PHASE9_MANIFEST_END");
