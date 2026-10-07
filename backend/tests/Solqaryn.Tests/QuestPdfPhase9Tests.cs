@@ -214,7 +214,7 @@ public sealed class QuestPdfPhase9Tests
             PageCount = document.NumberOfPages,
             Paginas = paginas,
             TextSha256 = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(texto))).ToLowerInvariant(),
-            TextoNormalizado = texto,
+            TextoNormalizado = texto ?? string.Empty,
             Fonts = fonts,
             StructTreeRootObserved = latin1.Contains("/StructTreeRoot", StringComparison.Ordinal),
             MarkInfoObserved = latin1.Contains("/MarkInfo", StringComparison.Ordinal),
@@ -278,11 +278,11 @@ public sealed class QuestPdfPhase9Tests
                 .ToList(),
             DescuentosAplicados =
             [
-                new FacturaDescuentoAplicadoDto { DescuentoId = 1, Nombre = "Promoción Fase 9", Codigo = "F9-25", Monto = 25m }
+                new DescuentoAplicadoDto { DescuentoId = 1, Nombre = "Promoción Fase 9", Codigo = "F9-25", Monto = 25m }
             ],
             ImpuestosAplicados =
             [
-                new FacturaImpuestoAplicadoDto { ImpuestoId = 1, Nombre = "ISV", Tasa = 15m, Monto = lineas * 15m, IncluidoEnPrecio = false }
+                new ImpuestoAplicadoDto { ImpuestoId = 1, Nombre = "ISV", Tasa = 15m, Monto = lineas * 15m, IncluidoEnPrecio = false }
             ]
         };
         return factura;
