@@ -253,3 +253,5 @@ Cuando cambie una capa, módulo, integración, ruta/API, modelo de datos o coman
 4. registrar el changeset normal en `CHANGELOG_AI.md`.
 
 No registrar en el changelog arquitectónico correcciones internas que no cambien este mapa.
+
+Sanitización de imágenes: `backend/src/Infrastructure/Services/ImagenUploadSecurity.cs` usa SkiaSharp 4.152.1 para validar y recodificar JPG/PNG/WebP antes de Cloudinary; conserva límites de tamaño/dimensiones y no confía en MIME/extensión del cliente.
