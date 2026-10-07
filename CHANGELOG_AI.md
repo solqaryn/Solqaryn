@@ -8,6 +8,14 @@
 - El propietario confirmó el 2026-10-07 la elegibilidad declarada para QuestPDF Community 2026 bajo el criterio aplicado por el gate; la integración continúa fail-closed hasta que `Dictamen Fase 9` vuelva a pasar sobre el exact-head.
 - Fase 10 no iniciada.
 
+## 2026-10-07 — Hotfix seguridad: retiro de ImageSharp 3.1.12
+
+- NuGet/GitHub Advisory empezó a reportar vulnerabilidades nuevas sobre SixLabors.ImageSharp 3.1.12, incluyendo severidad high, durante la revalidación de Fase 9.
+- Se retira SixLabors.ImageSharp del runtime productivo y se migra exclusivamente `ImagenUploadSecurity` a SkiaSharp 4.152.1 + `SkiaSharp.NativeAssets.Linux.NoDependencies` 4.152.1.
+- Se preservan JPG/PNG/WebP, firma/MIME/extensión, límites 10 MB/4096 px/16 MP, decode real y re-encode desde píxeles para eliminar metadatos del archivo de entrada.
+- No cambia DB, schema, EF/provider, QuestPDF, Cloudinary, SMTP, auth, RBAC, tenancy, QA, main ni PROD.
+- Fase 7 y Fase 8 siguen exigiendo cero vulnerabilidades conocidas; no se añadió supresión de advisories.
+
 ## 2026-10-07 — Fase 8: modernización NuGet .NET 10
 
 - FluentValidation sube de 11.9.2 a 12.1.1; se elimina FluentValidation.AspNetCore 11.3.0 y la validación MVC se reemplaza por un filtro async propio que resuelve `IValidator<T>` desde DI y preserva ModelState.
