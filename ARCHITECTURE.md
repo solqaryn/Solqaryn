@@ -85,7 +85,7 @@ Cuando una operación modifica inventario/finanzas/documentos relacionados, debe
 
 ### Archivos y documentos
 
-- imágenes/documentos: adaptadores Cloudinary;
+- imágenes/documentos: adaptadores Cloudinary; `ImagenUploadSecurity` valida firma/MIME/extensión, dimensiones y recodifica JPG/PNG/WebP con SkiaSharp 4.152.1 antes del almacenamiento externo;
 - factura PDF: QuestPDF; el logo se toma de la configuración tenant de empresa y, si falta/no es descargable, se deriva un monograma del nombre empresarial; no existe logo global de cliente ni fallback `AppSettings__LogoPublicUrl` en runtime Render;
 - correo: SMTP; PROD autentica Outlook.com mediante OAuth2/Modern Auth y mantiene secretos/tokens fuera del repositorio;
 - enlaces públicos de factura: token seguro, expiración/revocación según implementación vigente.
@@ -136,7 +136,7 @@ La observabilidad de rendimiento DEV es first-party y no requiere un proveedor p
 
 Desde Fase 8, la API usa FluentValidation 12.1.1 con registro DI oficial y un filtro MVC asíncrono propio (`FluentValidationActionFilter`). `FluentValidation.AspNetCore` está retirado. El filtro ejecuta `IValidator<T>` con `RequestAborted` y reutiliza `InvalidModelStateResponseFactory`, preservando el contrato HTTP existente; las excepciones de negocio/servicio continúan bajo `ExceptionHandlingMiddleware`.
 
-La familia IdentityModel queda alineada en 8.23.0 mientras JwtBearer permanece 10.0.12. Swashbuckle.AspNetCore 10.2.3 conserva Swagger/OpenAPI y Bearer. ImageSharp 3.1.12 se mantiene por frontera explícita de licencia: la major 4 exige licencia válida de build para dependencias directas y no se adopta sin autorización.
+La familia IdentityModel queda alineada en 8.23.0 mientras JwtBearer permanece 10.0.12. Swashbuckle.AspNetCore 10.2.3 conserva Swagger/OpenAPI y Bearer. La sanitización de uploads usa SkiaSharp 4.152.1 + native assets Linux; SixLabors.ImageSharp 3.1.12 quedó retirado después de que los scanners NuGet comenzaron a reportar advisories high/moderate sobre esa versión.
 
 ## 4. Patrones vigentes
 
