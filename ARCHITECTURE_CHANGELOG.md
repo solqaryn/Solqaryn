@@ -1,3 +1,10 @@
+## 2026-10-07 — Hotfix de sanitización de imágenes
+
+- SixLabors.ImageSharp 3.1.12 se retira después de que los scanners NuGet comenzaron a reportar advisories high/moderate sobre esa versión.
+- `ImagenUploadSecurity` migra a SkiaSharp 4.152.1 + native assets Linux, preservando JPG/PNG/WebP, firma/MIME/extensión, 10 MB, 4096 px, 16 MP y re-encode desde píxeles.
+- No cambian persistencia, auth/RBAC, tenancy, QuestPDF, Cloudinary ni entornos.
+- Los gates de Fase 7/Fase 8 continúan fail-closed ante vulnerabilidades conocidas.
+
 ## 2026-10-07 — Fase 8 NuGet y validación async
 
 - FluentValidation 12.1.1 reemplaza la integración ASP.NET deprecada por DI oficial + `FluentValidationActionFilter` asíncrono, preservando ModelState y cancellation.
