@@ -1,3 +1,11 @@
+## 2026-10-06 — Reconciliación post-merge Fase 7 DEV
+
+- Fase 7 integrada mediante PR #3552 y certificada sobre el HEAD post-merge `7013a55cd7491c3c79d6808df5db9ba0b8580f40`.
+- Runs post-merge: Fase 7 `37540172636` PASS; Fase 6 `37540172761` PASS; DEV CI `37540172730` PASS; aceptación `37540172606` 100/100; Fase 4 `37540172583` PASS; Fase 5 `37540172750` PASS.
+- Estado canónico: `net10.0`, C# 14, SDK 10.0.401, runtime/ASP.NET 10.0.12, EF Core/Design/CLI 10.0.12, JwtBearer 10.0.12 y Oracle `MySql.EntityFrameworkCore` 10.0.9.
+- Provider productivo único: Oracle. Las 107 migraciones Pomelo permanecen sólo como historia auditable; Oracle no las reproduce.
+- El follow-up de cierre reconcilia N2.3 con el bootstrap Oracle fresh certificado, `SslMode=Disabled` y aislamiento de puertos API/Angular.
+
 ## 2026-10-06 — Fase 7 .NET 10 / EF Core 10 / Oracle
 
 - Backend retargeteado a `net10.0` y C# 14 con SDK 10.0.401 y runtime/ASP.NET 10.0.12.
@@ -6,7 +14,7 @@
 - La cadena activa de migraciones usa `Solqaryn.Infrastructure.Migrations` + `OracleBaseline`; el bootstrap fresh materializa el contrato físico canónico, valida 136 tablas y exige `has-pending-model-changes=0`.
 - Docker usa SDK 10.0.401 y ASP.NET 10.0.12; los workflows operativos de backend quedan alineados a .NET 10. Los probes históricos explícitos de Fase 6 conservan sus versiones antiguas sólo para reproducibilidad histórica.
 - Gate Fase 7 valida build, 2388 unitarios, integración Oracle/MySQL, tenancy fail-closed, auditoría de vulnerabilidades NuGet y smoke Docker con `/health` + `/health/ready`.
-- Alcance: rama de modernización hacia `dev`; sin promoción a `main`, QA ni PROD.
+- Alcance: Fase 7 integrada en `dev`; sin promoción a `main`, QA ni PROD.
 
 ## 2026-10-05 — Reconciliación arquitectónica del exact-head vigente
 
