@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  inventory:
+  baseline:
     name: Fase 8 - inventario NuGet baseline
     runs-on: ubuntu-latest
     timeout-minutes: 25
