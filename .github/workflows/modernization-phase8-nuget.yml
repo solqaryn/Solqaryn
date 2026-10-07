@@ -66,7 +66,7 @@ jobs:
           grep -E 'Microsoft\.IdentityModel\.Protocols[[:space:]]+8\.23\.0' "$RUNNER_TEMP/phase8-tree.txt"
           grep -E 'Microsoft\.IdentityModel\.Protocols\.OpenIdConnect[[:space:]]+8\.23\.0' "$RUNNER_TEMP/phase8-tree.txt"
           ! grep -E 'Microsoft\.IdentityModel\.Protocols(\.OpenIdConnect)?[[:space:]]+8\.19\.2' "$RUNNER_TEMP/phase8-tree.txt"
-          ! grep -R -n -E '\[FromForm\][[:space:]]+IFormFile' src/API/Controllers --include='*.cs'
+          ! grep -R -n -E '\[FromForm\][[:space:]]+((List|IReadOnlyCollection)<)?IFormFile' src/API/Controllers --include='*.cs'
 
       - name: Build Release
         working-directory: backend
@@ -203,6 +203,8 @@ jobs:
           jq -e 'any(.security[]; has("Bearer"))' "$RUNNER_TEMP/swagger.json"
           jq -e '.paths["/cargas-masivas/validar"].post.requestBody.content["multipart/form-data"] != null' "$RUNNER_TEMP/swagger.json"
           jq -e '.paths["/cargas-masivas/validar"].post.requestBody.content["multipart/form-data"].schema.properties.archivo.format == "binary"' "$RUNNER_TEMP/swagger.json"
+          jq -e '.paths["/compras/{id}/documentos"].post.requestBody.content["multipart/form-data"].schema.properties.archivo.format == "binary"' "$RUNNER_TEMP/swagger.json"
+          jq -e '.paths["/productos/{productoId}/variantes/{id}/imagenes"].post.requestBody.content["multipart/form-data"] != null' "$RUNNER_TEMP/swagger.json"
 
   verdict:
     name: Dictamen Fase 8
