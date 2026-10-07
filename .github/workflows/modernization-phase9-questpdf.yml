@@ -1,0 +1,53 @@
+name: Modernización - Fase 9 QuestPDF DEV
+
+on:
+  pull_request:
+    branches: [dev]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase9-questpdf-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  baseline-questpdf:
+    name: Fase 9 - baseline QuestPDF 2024.3.6
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.401
+      - name: Scope lock
+        run: node scripts/verify-project-scope.mjs
+      - name: Confirmar baseline QuestPDF
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -F '<PackageReference Include="QuestPDF" Version="2024.3.6" />' backend/src/Infrastructure/Solqaryn.Infrastructure.csproj
+          ! grep -R -n -E 'PDFUA_Conformance|DocumentAttachment|GenerateQrCode|QRCode|QrCode' backend/src/Infrastructure backend/src/Application --include='*.cs'
+      - name: Restore y build
+        working-directory: backend
+        run: |
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+      - name: Capturar PDFs baseline reales
+        working-directory: backend
+        env:
+          SOLQARYN_PHASE9_PDF_ARTIFACT_DIR: ${{ runner.temp }}/phase9-baseline
+        run: |
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj             --configuration Release             --no-build             --filter "FullyQualifiedName~QuestPdfPhase9Tests"             --logger "console;verbosity=normal"
+          cat "${SOLQARYN_PHASE9_PDF_ARTIFACT_DIR}/manifest.json"
+      - name: Regresión PDF existente
+        working-directory: backend
+        run: |
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj             --configuration Release             --no-build             --filter "FullyQualifiedName~QuestPdfFacturaPerfilesServiceTests|FullyQualifiedName~N58DExportPdfServiceTests|FullyQualifiedName~N58ExportSecurityTests|FullyQualifiedName~FacturaCompartirServiceTests|FullyQualifiedName~SmtpEmailServiceTests"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase9-questpdf-2024.3.6-baseline
+          path: ${{ runner.temp }}/phase9-baseline
+          retention-days: 30
