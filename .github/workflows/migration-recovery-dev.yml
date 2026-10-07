@@ -5,7 +5,20 @@ on:
     branches:
       - dev
     paths:
+      - backend/src/Infrastructure.Migrations/**
       - backend/src/Infrastructure/Migrations/**
+      - backend/src/Infrastructure/Persistence/**
+      - backend/tools/Solqaryn.DatabaseBootstrap/**
+      - backend/src/API/Program.cs
+      - .github/workflows/migration-recovery-dev.yml
+  pull_request:
+    branches:
+      - dev
+    paths:
+      - backend/src/Infrastructure.Migrations/**
+      - backend/src/Infrastructure/Migrations/**
+      - backend/src/Infrastructure/Persistence/**
+      - backend/tools/Solqaryn.DatabaseBootstrap/**
       - backend/src/API/Program.cs
       - .github/workflows/migration-recovery-dev.yml
   workflow_dispatch:
@@ -19,7 +32,7 @@ concurrency:
 
 jobs:
   recovery:
-    name: Reanudar DDL parcial con restricciones Aiven
+    name: Recuperar adopción Oracle baseline con restricciones Aiven
     runs-on: ubuntu-latest
     timeout-minutes: 35
 
@@ -40,7 +53,7 @@ jobs:
     env:
       ASPNETCORE_ENVIRONMENT: Development
       PORT: '5005'
-      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_migration_recovery;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_migration_recovery;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
       Database__ServerVersion: '8.4.0'
       Database__ApplyMigrationsOnStartup: 'true'
       Jwt__Secret: 'Migration-Recovery-CI-Only-Secret-With-More-Than-32-Characters-2026'
@@ -48,18 +61,17 @@ jobs:
       Jwt__Audience: 'Solqaryn.Frontend'
       Jwt__ExpiraMinutos: '120'
       Security__LoginRateLimitPerMinute: '300'
-      SeedAdmin__Username: 'migration_recovery_admin'
-      SeedAdmin__Password: 'Migration.Recovery#2026!'
       Cors__AllowedOrigins__0: 'http://127.0.0.1:4200'
       AppSettings__BackendPublicUrl: 'https://preview.solqaryn.invalid'
-      AppSettings__LogoPublicUrl: 'https://solqaryn-dev.vercel.app/assets/storefront-logo.png'
       Cloudinary__CloudName: 'ci-not-used'
       Cloudinary__ApiKey: 'ci-not-used'
       Cloudinary__ApiSecret: 'ci-not-used'
 
     steps:
-      - name: Checkout DEV
+      - name: Checkout exact head
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Configurar .NET
         uses: actions/setup-dotnet@v4
@@ -68,11 +80,18 @@ jobs:
           cache: true
           cache-dependency-path: backend/**/*.csproj
 
-      - name: Restaurar e instalar EF
+      - name: Scope lock
+        run: node scripts/verify-project-scope.mjs
+
+      - name: Restaurar compilar y fijar EF CLI
         working-directory: backend
+        shell: bash
         run: |
+          set -euo pipefail
           dotnet restore Solqaryn.sln
-          dotnet tool install --global dotnet-ef --version 10.0.12
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+          dotnet tool restore
+          dotnet tool run dotnet-ef --version | grep -F '10.0.12'
 
       - name: Activar restricción de primary key equivalente a Aiven
         shell: bash
@@ -83,131 +102,43 @@ jobs:
           test "$(docker exec "$mysql_container" mysql -uroot -proot -Nse "SELECT @@GLOBAL.sql_require_primary_key;")" = 1
           echo 'sql_require_primary_key=ON certificado para todas las conexiones nuevas.'
 
-      - name: Crear baseline inmediatamente anterior a M1 endurecido
+      - name: Bootstrap fresh Oracle canónico
         working-directory: backend
+        env:
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
+        shell: bash
         run: |
-          dotnet ef database update 20260808164317_M1NormalizarMaestrosProducto \
-            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
-            --startup-project src/API/Solqaryn.API.csproj \
-            --context AppDbContext
+          set -euo pipefail
+          dotnet run             --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj             --configuration Release             --no-build
 
-      - name: Preparar configuración empresarial del baseline efímero
+      - name: Certificar baseline y simular adopción interrumpida
         shell: bash
         run: |
           set -euo pipefail
           mysql_container="${{ job.services.mysql.id }}"
           q(){ docker exec "$mysql_container" mysql -uroot -proot solqaryn_migration_recovery -Nse "$1"; }
 
-          activas="$(q "SELECT COUNT(*) FROM EmpresaConfiguraciones WHERE Activa = 1;")"
-          if [ "$activas" -gt 1 ]; then
-            echo "Baseline inválido: se encontraron $activas configuraciones empresariales activas." >&2
-            exit 1
-          fi
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")" = 1
+          table_count_before="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME <> '__EFMigrationsHistory';")"
+          test "$table_count_before" -ge 136
 
-          if [ "$activas" -eq 0 ]; then
-            docker exec "$mysql_container" mysql -uroot -proot solqaryn_migration_recovery -e "
-              INSERT INTO EmpresaConfiguraciones (
-                NombreComercial,
-                Eslogan,
-                NombreVisibleSistema,
-                DescripcionSistema,
-                MensajeLogin,
-                Copyright,
-                MostrarCopyright,
-                UsarAnioAutomaticoCopyright,
-                EncabezadoActivo,
-                PiePaginaActivo,
-                Moneda,
-                ZonaHoraria,
-                FormatoFecha,
-                Activa,
-                FechaActualizacion
-              ) VALUES (
-                'Storefront CI Recovery',
-                'Eleva tu mundo digital',
-                'Storefront CI Recovery',
-                'Baseline efimero de recuperacion',
-                'CI migration recovery',
-                'CI only',
-                1,
-                1,
-                1,
-                1,
-                'HNL',
-                'America/Tegucigalpa',
-                'dd/MM/yyyy',
-                1,
-                UTC_TIMESTAMP()
-              );
-            "
-          fi
-
-          test "$(q "SELECT COUNT(*) FROM EmpresaConfiguraciones WHERE Activa = 1;")" = 1
-          echo 'Baseline efímero certificado con exactamente una configuración empresarial activa.'
-
-      - name: Simular DDL parcial de un despliegue interrumpido
-        shell: bash
-        run: |
-          set -euo pipefail
-          mysql_container="${{ job.services.mysql.id }}"
-
-          # Reproduce el síntoma observado en Render: M1 no está en historial pero
-          # algunos DDL ya quedaron confirmados por MySQL.
           docker exec "$mysql_container" mysql -uroot -proot solqaryn_migration_recovery -e "
-            ALTER TABLE Proveedores DROP INDEX IX_Proveedores_Nombre;
-            ALTER TABLE Clientes DROP INDEX IX_Clientes_Nombre;
-            ALTER TABLE Proveedores
-              ADD COLUMN DocumentoNormalizado varchar(50)
-              GENERATED ALWAYS AS (NULLIF(LOWER(REPLACE(REPLACE(TRIM(Documento), '-', ''), ' ', '')), '')) STORED;
-            CREATE UNIQUE INDEX UX_Proveedores_Documento_Normalizado
-              ON Proveedores (DocumentoNormalizado);
-            CREATE INDEX IX_ImpuestoProveedores_ProveedorId
-              ON ImpuestoProveedores (ProveedorId);
-            CREATE UNIQUE INDEX UX_ImpuestoProveedores_Impuesto_Proveedor
-              ON ImpuestoProveedores (ImpuestoId, ProveedorId);
-            ALTER TABLE ImpuestoProveedores DROP INDEX IX_ImpuestoProveedores_ImpuestoId;
+            DELETE FROM __EFMigrationsHistory
+            WHERE MigrationId='20261006111818_OracleBaseline';
           "
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")" = 0
+          echo "RECOVERY_TABLES_BEFORE=$table_count_before"
 
-          test "$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_migration_recovery -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20260808165129_M1EndurecerIntegridadRelacional';")" = 0
-          test "$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_migration_recovery -Nse "SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='Proveedores' AND INDEX_NAME='IX_Proveedores_Nombre';")" = 0
-          test "$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_migration_recovery -Nse "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='Proveedores' AND COLUMN_NAME='DocumentoNormalizado';")" = 1
-
-      - name: Compilar backend Release
-        working-directory: backend
-        run: dotnet build Solqaryn.sln --configuration Release --no-restore
-
-      - name: Arrancar API y reanudar migraciones como Render
+      - name: Reanudar OracleBaseline sin replay Pomelo
         working-directory: backend
         shell: bash
         run: |
           set -euo pipefail
-          nohup dotnet run \
-            --project src/API/Solqaryn.API.csproj \
-            --configuration Release \
-            --no-build \
-            --no-launch-profile \
-            > migration-recovery-api.log 2>&1 &
-          echo $! > migration-recovery-api.pid
+          dotnet tool run dotnet-ef database update             --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj             --startup-project src/API/Solqaryn.API.csproj             --context AppDbContext             --configuration Release             --no-build
 
-          for attempt in $(seq 1 75); do
-            if curl --fail --silent http://127.0.0.1:5005/health > /dev/null && \
-               curl --fail --silent http://127.0.0.1:5005/health/ready > /dev/null; then
-              echo 'API recuperó el DDL parcial bajo sql_require_primary_key=ON y quedó saludable.'
-              exit 0
-            fi
-            if ! kill -0 "$(cat migration-recovery-api.pid)" 2>/dev/null; then
-              echo 'La API terminó antes de quedar saludable.' >&2
-              cat migration-recovery-api.log >&2 || true
-              exit 1
-            fi
-            sleep 2
-          done
+          dotnet tool run dotnet-ef migrations has-pending-model-changes             --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj             --startup-project src/API/Solqaryn.API.csproj             --context AppDbContext             --configuration Release             --no-build
 
-          echo 'Timeout esperando health después de recuperación.' >&2
-          cat migration-recovery-api.log >&2 || true
-          exit 1
-
-      - name: Verificar convergencia de esquema, M2 e historial
+      - name: Verificar convergencia sin DDL histórico
         shell: bash
         run: |
           set -euo pipefail
@@ -215,15 +146,37 @@ jobs:
           q(){ docker exec "$mysql_container" mysql -uroot -proot solqaryn_migration_recovery -Nse "$1"; }
 
           test "$(q "SELECT @@GLOBAL.sql_require_primary_key;")" = 1
-          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20260808165128_M1ReconciliarReintentoIntegridadRelacional';")" = 1
-          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20260808165129_M1EndurecerIntegridadRelacional';")" = 1
-          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20260809121915_M2VariantesMultidimensionales';")" = 1
-          test "$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='Proveedores' AND COLUMN_NAME='DocumentoNormalizado';")" = 1
-          test "$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='Proveedores' AND INDEX_NAME='IX_Proveedores_Nombre' AND NON_UNIQUE=1;")" = 1
-          test "$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='Clientes' AND INDEX_NAME='IX_Clientes_Nombre' AND NON_UNIQUE=1;")" = 1
-          test "$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='ImpuestoProveedores' AND INDEX_NAME='UX_ImpuestoProveedores_Impuesto_Proveedor' AND NON_UNIQUE=0;")" = 2
-          test "$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='ImpuestoProveedores' AND INDEX_NAME='IX_ImpuestoProveedores_ImpuestoId';")" = 0
-          test "$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='ProductoVariantes' AND INDEX_NAME='IX_ProductoVariantes_Dimensiones';")" = 5
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")" = 1
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory;")" = 1
+
+          table_count_after="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME <> '__EFMigrationsHistory';")"
+          test "$table_count_after" -ge 136
+          test "$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ('Empresas','Productos','ConfigEmpresas','AutomatizacionConfiguraciones','SuscripcionSaaSIdempotencia');")" = 5
+          echo "RECOVERY_TABLES_AFTER=$table_count_after"
+          echo 'ORACLE_BASELINE_RECOVERY=PASS'
+
+      - name: Arrancar API y validar health
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup dotnet run             --project src/API/Solqaryn.API.csproj             --configuration Release             --no-build             --no-launch-profile             > migration-recovery-api.log 2>&1 &
+          echo $! > migration-recovery-api.pid
+
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:5005/health > /dev/null &&                curl --fail --silent http://127.0.0.1:5005/health/ready > /dev/null; then
+              echo 'API saludable después de recuperar OracleBaseline.'
+              exit 0
+            fi
+            if ! kill -0 "$(cat migration-recovery-api.pid)" 2>/dev/null; then
+              cat migration-recovery-api.log >&2 || true
+              exit 1
+            fi
+            sleep 2
+          done
+
+          cat migration-recovery-api.log >&2 || true
+          exit 1
 
       - name: Verificar segundo arranque idempotente
         working-directory: backend
@@ -233,16 +186,12 @@ jobs:
           kill "$(cat migration-recovery-api.pid)"
           wait "$(cat migration-recovery-api.pid)" 2>/dev/null || true
 
-          nohup dotnet run \
-            --project src/API/Solqaryn.API.csproj \
-            --configuration Release \
-            --no-build \
-            --no-launch-profile \
-            > migration-recovery-second-start.log 2>&1 &
+          nohup dotnet run             --project src/API/Solqaryn.API.csproj             --configuration Release             --no-build             --no-launch-profile             > migration-recovery-second-start.log 2>&1 &
           echo $! > migration-recovery-second.pid
 
           for attempt in $(seq 1 45); do
             if curl --fail --silent http://127.0.0.1:5005/health/ready > /dev/null; then
+              echo 'ORACLE_RECOVERY_SECOND_START=PASS'
               exit 0
             fi
             if ! kill -0 "$(cat migration-recovery-second.pid)" 2>/dev/null; then
@@ -251,6 +200,7 @@ jobs:
             fi
             sleep 2
           done
+
           cat migration-recovery-second-start.log >&2 || true
           exit 1
 

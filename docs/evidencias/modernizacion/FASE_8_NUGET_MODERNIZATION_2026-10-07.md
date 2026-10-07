@@ -3,7 +3,7 @@
 Fecha: 2026-10-07  
 Repositorio: `solqaryn/Solqaryn`  
 Rama objetivo: `dev`  
-PR: #3555  
+PR inicial de trabajo: #3555; PR de integración: #3556; reconciliación post-merge: #3557  
 HEAD inicial congelado: `cb75bae58770662567a0fcf57f04ebdd7786dfdc`  
 Baseline NuGet causal: run `37610431956` — SUCCESS sobre `e1442d39a2271ed411d0cb428c68d93ac47f46ba`.
 
@@ -70,3 +70,13 @@ ImageSharp 4 requiere una licencia Six Labors válida en build para dependencias
 ## Cierre
 
 La autoridad final es `.github/workflows/modernization-phase8-nuget.yml` sobre el HEAD exacto. `Dictamen Fase 8` debe emitir `FASE_8_NUGET_MODERNIZATION=PASS`, las versiones seleccionadas y P0/P1. Fases 6 y 7 son required checks de `dev` y deben permanecer PASS en PR y post-merge.
+
+## Integración y reconciliación post-merge
+
+- PR de integración: #3556.
+- Merge inicial de Fase 8 en `dev`: `b1344393318ed14591e3c3e3f78c47cce9e9fd1b`.
+- En el post-merge, Fase 8 volvió a ejecutar sobre ese HEAD y terminó `SUCCESS`.
+- El run `37650207722` del gate `DEV - recuperación de migración MySQL parcial` falló por una deuda de CI previa: todavía instalaba `dotnet-ef` globalmente y trataba de reproducir migraciones Pomelo históricas que Fase 7 ya retiró de la cadena activa.
+- La reconciliación se realiza en PR #3557 sin reintroducir Pomelo: tool manifest EF 10.0.12, `SslMode=Disabled`, bootstrap fresh Oracle, recuperación del marcador `20261006111818_OracleBaseline`, `has-pending-model-changes=0`, health/readiness e idempotencia de segundo arranque.
+- No se modifican entidades, migraciones activas, schema, datos, QA, `main` ni PROD.
+
