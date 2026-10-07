@@ -143,7 +143,7 @@ jobs:
       mysql:
         image: mysql:8.4
         env:
-          MYSQL_ROOT_PASSWORD: root
+          MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
           MYSQL_DATABASE: solqaryn_phase8_openapi
         ports:
           - 3306:3306
@@ -152,10 +152,10 @@ jobs:
           --health-interval=10s --health-timeout=5s --health-retries=12
     env:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_phase8_openapi;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_phase8_openapi;User=root;Password=;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
       Database__ServerVersion: '8.4.0'
       Database__ApplyMigrationsOnStartup: 'false'
-      Jwt__Secret: 'Phase8-OpenAPI-Only-Secret-With-More-Than-32-Characters-2026'
+      Jwt__Secret: ${{ github.sha }}
       Jwt__Issuer: 'Solqaryn.Phase8'
       Jwt__Audience: 'Solqaryn.Phase8'
       Cors__AllowedOrigins__0: 'http://127.0.0.1:4200'
