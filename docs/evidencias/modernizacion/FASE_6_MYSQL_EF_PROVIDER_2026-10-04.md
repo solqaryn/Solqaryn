@@ -1,70 +1,52 @@
-# Modernización — Fase 6 MySQL / EF Provider Gate — Estado vigente 2026-10-04
+# Modernización — Fase 6 MySQL / EF Provider Gate — Estado vigente
 
-## Actualización formal de cierre — 2026-10-05
+## Estado actual después de Fase 7 — 2026-10-06
 
-El estado anterior de bloqueo queda reemplazado por el dictamen exact-head del gate `37268035079`, sobre `dev` HEAD `877af434ee15c8fd3a08f974bf58a62c91c03179`: **`FASE_6_MYSQL_EF_PROVIDER=PASS`, `P0=0`, `P1=0`, `TARGETFRAMEWORK_CHANGE=ALLOWED_AFTER_PHASE6_CLOSE`, `PHASE7_EXECUTED=false`**. Los cinco jobs del gate terminaron `success`. La aceptación integral DEV (`37268035136`) y el tooling frontend Fase 5 (`37268035072`) también pasaron sobre el mismo HEAD. Fase 6 queda formalmente cerrada; este resultado no inicia Fase 7 ni cambia el runtime productivo.
+Fase 6 permanece certificada después de la migración productiva de DEV a .NET 10/EF Core 10.
 
-Evidencia del cierre formal: `docs/evidencias/modernizacion/PUNTO_30_FASE6_STOP_A_PASS_2026-10-05.md`.
+HEAD post-merge verificado:
 
-## Alcance
+`7013a55cd7491c3c79d6808df5db9ba0b8580f40`
 
-Esta evidencia describe el estado vigente de la modernización del provider MySQL en `dev`. No modifica QA, `main`, PROD, Aiven real, datos productivos ni secretos. Fase 7 continúa sin ejecutarse mientras esta fase sólo certifica la ruta técnica.
+Run Fase 6 post-Fase7:
 
-## Stack vigente
+`37540172761` — SUCCESS.
 
-El runtime productivo permanece en:
+Dictamen:
 
-- `TargetFramework=net8.0`;
-- EF Core 8;
-- `Pomelo.EntityFrameworkCore.MySql 8.0.2`;
-- `MySqlConnector 2.3.7`.
+- `FASE_6_MYSQL_EF_PROVIDER=PASS`
+- `CURRENT_PROVIDER_CERTIFIED=ORACLE_MYSQL_EFCORE_10_0_9`
+- `TARGET_PROVIDER_SELECTED=ORACLE_MYSQL_EFCORE_10_0_9`
+- `POMELO_HISTORY_PRESERVED=107`
+- `POMELO_HISTORY_REPLAYED_BY_ORACLE=false`
+- `PRODUCT_PROVIDER_AUTHORITY=ORACLE_ONLY`
+- `P0=0`
+- `P1=0`
 
-Este stack continúa certificado como baseline actual y el gate permanente vuelve a ejecutar migraciones, modelo, SQL, integración MySQL, contratos 1062/1205/1213 y aislamiento tenant.
+## Stack vigente en DEV
 
-## Ruta objetivo certificada para .NET 10
+- `TargetFramework=net10.0`
+- .NET SDK `10.0.401`
+- .NET Runtime / ASP.NET Core Runtime `10.0.12`
+- C# 14
+- EF Core / Design / CLI `10.0.12`
+- Oracle `MySql.EntityFrameworkCore 10.0.9`
+- JwtBearer `10.0.12`
 
-La ruta objetivo ya certificada es:
+Pomelo/MySqlConnector no forman parte del runtime productivo.
 
-- `net10.0`;
-- `Microsoft.EntityFrameworkCore 10.0.12`;
-- `MySql.EntityFrameworkCore 10.0.9` (Oracle Connector/NET).
+## Historial Pomelo
 
-La lane se ejecuta de forma efímera sobre el backend real y exige build, conexión MySQL, LINQ, modelo, JSON, `decimal(18,2)`, `decimal(18,4)`, `datetime(6)`, transacciones/rollback, duplicate key 1062, retry transitorio y auditoría tenant.
+Las 107 migraciones Pomelo permanecen preservadas como historia auditable. Oracle no las reproduce. La cadena activa usa el assembly Oracle `Solqaryn.Infrastructure.Migrations` y el baseline `20261006111818_OracleBaseline`.
 
-La historia Pomelo no se reescribe. La conversión certificada usa baseline físico MySQL y adopción Oracle sin DDL sobre esquemas históricos.
+## Pomelo 10
 
-## Estado Pomelo 10
+La disponibilidad futura de Pomelo 10 no participa en la ruta productiva seleccionada. Cualquier cambio de provider posterior requiere una certificación separada.
 
-El gate prueba explícitamente `Pomelo.EntityFrameworkCore.MySql 10.0.0` desde NuGet estable. Al 2026-10-04 el paquete estable no es resoluble y el upstream público mantiene 9.0.0 como último release estable.
+## Cierre histórico de Fase 6
 
-Esta ausencia es **informativa y no bloqueante** porque SOLQARYN ya no selecciona Pomelo 10 como ruta objetivo.
+Fase 6 fue cerrada originalmente antes de ejecutar Fase 7, con `TARGETFRAMEWORK_CHANGE=ALLOWED_AFTER_PHASE6_CLOSE`. Ese estado histórico autorizó el inicio de Fase 7 pero ya no describe el runtime vigente.
 
-Reglas permanentes:
+La autoridad actual es el gate post-Fase7 `37540172761`, que demuestra que los contratos de Fase 6 permanecen verdes con Oracle EF10 como provider productivo.
 
-- `POMELO10_REQUIRED_FOR_TARGET_ROUTE=false`;
-- `POMELO10_ROUTE_SELECTED=false`;
-- si Pomelo 10 sigue ausente: `UNAVAILABLE_NON_BLOCKING`;
-- si Pomelo 10 aparece en el futuro: `AVAILABLE_NOT_SELECTED_PENDING_SEPARATE_CERTIFICATION`;
-- una nightly, preview, RC o release futura de Pomelo nunca sustituye automáticamente la ruta Oracle certificada;
-- cualquier cambio de provider futuro requiere su propia certificación exact-head y autorización técnica.
-
-## Dictamen vigente
-
-El certifier permanente `.github/workflows/modernization-phase6-mysql-ef-provider.yml` sólo autoriza la ruta de .NET 10 cuando la lane Oracle EF10 pasa. La disponibilidad de Pomelo 10 no participa en la condición de éxito.
-
-Resultados esperados de cierre:
-
-- `FASE_6_MYSQL_EF_PROVIDER=PASS`;
-- `TARGET_PROVIDER_SELECTED=ORACLE_MYSQL_EFCORE_10_0_9`;
-- `TARGET_EF_SELECTED=10.0.12`;
-- `TARGET_NET_SELECTED=net10.0`;
-- `POINT_2_POMELO10_DEPENDENCY=PASS`;
-- `POMELO10_BLOCKS_MODERNIZATION=false`;
-- `POMELO10_REQUIRED_FOR_TARGET_ROUTE=false`;
-- `PHASE7_EXECUTED=false`.
-
-## Cierre
-
-La inexistencia actual de Pomelo 10 estable deja de ser deuda bloqueante. Pomelo 10 permanece únicamente como alternativa futura potencial y no seleccionada.
-
-MAPA_ARQUITECTURA: SIN_CAMBIO.
+MAPA_ARQUITECTURA: ACTUALIZADO.
