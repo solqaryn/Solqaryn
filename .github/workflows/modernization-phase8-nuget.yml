@@ -1,0 +1,51 @@
+name: Modernización - Fase 8 NuGet DEV
+
+on:
+  pull_request:
+    branches: [dev]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase8-nuget-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  inventory:
+    name: Fase 8 - inventario NuGet baseline
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.401
+      - name: Scope lock
+        run: node scripts/verify-project-scope.mjs
+      - name: Inventario directo y transitivo
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet restore Solqaryn.sln
+          {
+            echo '=== DIRECT ==='
+            dotnet list Solqaryn.sln package
+            echo '=== TRANSITIVE ==='
+            dotnet list Solqaryn.sln package --include-transitive
+            echo '=== VULNERABLE ==='
+            dotnet list Solqaryn.sln package --vulnerable --include-transitive
+            echo '=== DEPRECATED ==='
+            dotnet list Solqaryn.sln package --deprecated --include-transitive
+            echo '=== OUTDATED ==='
+            dotnet list Solqaryn.sln package --outdated --include-transitive
+          } | tee "$RUNNER_TEMP/phase8-nuget-baseline.txt"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase8-nuget-baseline
+          path: ${{ runner.temp }}/phase8-nuget-baseline.txt
+          retention-days: 30
