@@ -1,6 +1,8 @@
 name: Modernización - Fase 8 NuGet DEV
 
 on:
+  push:
+    branches: [dev]
   pull_request:
     branches: [dev]
   workflow_dispatch:
@@ -13,10 +15,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  baseline:
-    name: Fase 8 - inventario NuGet baseline
+  packages:
+    name: Fase 8 - paquetes contratos y pruebas
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
         with:
@@ -26,12 +28,90 @@ jobs:
           dotnet-version: 10.0.401
       - name: Scope lock
         run: node scripts/verify-project-scope.mjs
-      - name: Inventario directo y transitivo
+      - name: Restaurar
+        working-directory: backend
+        run: dotnet restore Solqaryn.sln
+      - name: Matriz NuGet seleccionada
         working-directory: backend
         shell: bash
         run: |
           set -euo pipefail
-          dotnet restore Solqaryn.sln
+          grep -F '<PackageReference Include="FluentValidation" Version="12.1.1" />' src/Application/Solqaryn.Application.csproj
+          grep -F '<PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />' src/API/Solqaryn.API.csproj
+          grep -F '<PackageReference Include="BCrypt.Net-Next" Version="4.2.0" />' src/Application/Solqaryn.Application.csproj
+          grep -F '<PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />' src/API/Solqaryn.API.csproj
+          grep -F '<PackageReference Include="CloudinaryDotNet" Version="1.29.3" />' src/Infrastructure/Solqaryn.Infrastructure.csproj
+          grep -F '<PackageReference Include="ClosedXML" Version="0.105.1" />' src/Infrastructure/Solqaryn.Infrastructure.csproj
+          grep -F '<PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />' src/Infrastructure/Solqaryn.Infrastructure.csproj
+          grep -F '<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.23.0" />' src/Infrastructure/Solqaryn.Infrastructure.csproj
+          grep -F '<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.12" />' src/API/Solqaryn.API.csproj
+
+          if grep -R -n -E 'PackageReference[^>]*FluentValidation\.AspNetCore|using[[:space:]]+FluentValidation\.AspNetCore' src tests --include='*.csproj' --include='*.cs'; then
+            echo 'FluentValidation.AspNetCore no puede regresar al runtime.'
+            exit 1
+          fi
+          if grep -R -n -E 'PackageReference[^>]*Microsoft\.AspNetCore\.Http\.Features' src tools --include='*.csproj'; then
+            echo 'Microsoft.AspNetCore.Http.Features legacy no puede ser PackageReference.'
+            exit 1
+          fi
+          if grep -R -n -E 'PackageReference[^>]*Microsoft\.Extensions\.Caching\.Memory|PackageReference[^>]*System\.Text\.Json' src tools --include='*.csproj'; then
+            echo 'Caching/JSON del shared framework no deben duplicarse como PackageReference.'
+            exit 1
+          fi
+
+          dotnet list Solqaryn.sln package --include-transitive | tee "$RUNNER_TEMP/phase8-tree.txt"
+          ! grep -F 'Microsoft.AspNetCore.Http.Features' "$RUNNER_TEMP/phase8-tree.txt"
+          grep -E 'Microsoft\.Extensions\.Caching\.Memory[[:space:]]+10\.0\.12' "$RUNNER_TEMP/phase8-tree.txt"
+
+      - name: Build Release
+        working-directory: backend
+        run: dotnet build Solqaryn.sln --configuration Release --no-restore
+      - name: Suite unitaria completa
+        working-directory: backend
+        run: dotnet test Solqaryn.sln --configuration Release --no-build --filter "Category!=Integration"
+      - name: Pruebas causales de familias Fase 8
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          filter='FullyQualifiedName~FluentValidationActionFilterTests|FullyQualifiedName~CreateProductoValidatorTests|FullyQualifiedName~BCryptCompatibilityTests|FullyQualifiedName~JwtServiceTests|FullyQualifiedName~PerfilServiceTests|FullyQualifiedName~TiendaCuentaClienteTests|FullyQualifiedName~Cloudinary|FullyQualifiedName~N58ExportSecurityTests|FullyQualifiedName~ImagenUploadSecurityTests|FullyQualifiedName~PublicStoreMemoryCacheTests|FullyQualifiedName~PublicStoreTenantKeyProviderTests|FullyQualifiedName~CatalogoPublicoCacheTests|FullyQualifiedName~N15KardexErrorContractTests|FullyQualifiedName~MetodoPagoReglasOperativasTests|FullyQualifiedName~ExceptionHandlingConcurrencyTests|FullyQualifiedName~InboundWebhookIngressTests'
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-build --filter "$filter"
+      - name: Vulnerabilidades NuGet
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet list Solqaryn.sln package --vulnerable --include-transitive | tee "$RUNNER_TEMP/phase8-vulnerable.txt"
+          if grep -q 'has the following vulnerable packages' "$RUNNER_TEMP/phase8-vulnerable.txt"; then
+            cat "$RUNNER_TEMP/phase8-vulnerable.txt"
+            exit 1
+          fi
+      - name: Deprecated productivos
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          projects=(
+            src/Domain/Solqaryn.Domain.csproj
+            src/Application/Solqaryn.Application.csproj
+            src/Infrastructure/Solqaryn.Infrastructure.csproj
+            src/API/Solqaryn.API.csproj
+            src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj
+            tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj
+          )
+          for project in "${projects[@]}"; do
+            output="$(dotnet list "$project" package --deprecated --include-transitive)"
+            printf '%s\n' "$output"
+            if grep -q 'has the following deprecated packages' <<<"$output"; then
+              echo "Paquete deprecated productivo detectado en $project"
+              exit 1
+            fi
+          done
+      - name: Inventario final
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
           {
             echo '=== DIRECT ==='
             dotnet list Solqaryn.sln package
@@ -43,9 +123,106 @@ jobs:
             dotnet list Solqaryn.sln package --deprecated --include-transitive
             echo '=== OUTDATED ==='
             dotnet list Solqaryn.sln package --outdated --include-transitive
-          } | tee "$RUNNER_TEMP/phase8-nuget-baseline.txt"
+          } | tee "$RUNNER_TEMP/phase8-nuget-final.txt"
       - uses: actions/upload-artifact@v4
         with:
-          name: phase8-nuget-baseline
-          path: ${{ runner.temp }}/phase8-nuget-baseline.txt
+          name: phase8-nuget-final
+          path: ${{ runner.temp }}/phase8-nuget-final.txt
           retention-days: 30
+
+  openapi:
+    name: Fase 8 - OpenAPI Bearer smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: solqaryn_phase8_openapi
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-interval=10s --health-timeout=5s --health-retries=12
+    env:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_phase8_openapi;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      Database__ServerVersion: '8.4.0'
+      Database__ApplyMigrationsOnStartup: 'false'
+      Jwt__Secret: 'Phase8-OpenAPI-Only-Secret-With-More-Than-32-Characters-2026'
+      Jwt__Issuer: 'Solqaryn.Phase8'
+      Jwt__Audience: 'Solqaryn.Phase8'
+      Cors__AllowedOrigins__0: 'http://127.0.0.1:4200'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.401
+      - name: Build
+        working-directory: backend
+        run: |
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+      - name: Bootstrap Oracle fresh
+        working-directory: backend
+        env:
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
+        run: |
+          dotnet run --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj --configuration Release --no-build
+      - name: API health y Swagger
+        working-directory: backend
+        shell: bash
+        env:
+          PORT: '5005'
+        run: |
+          set -euo pipefail
+          nohup dotnet run --project src/API/Solqaryn.API.csproj --configuration Release --no-build --no-launch-profile > "$RUNNER_TEMP/phase8-api.log" 2>&1 &
+          api_pid=$!
+          trap 'kill "$api_pid" 2>/dev/null || true; cat "$RUNNER_TEMP/phase8-api.log" || true' EXIT
+
+          for attempt in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:5005/health/ready > "$RUNNER_TEMP/ready.json"; then
+              break
+            fi
+            sleep 2
+          done
+          curl --fail --silent http://127.0.0.1:5005/health/ready | grep -q '"ready"'
+          curl --fail --silent http://127.0.0.1:5005/swagger/v1/swagger.json > "$RUNNER_TEMP/swagger.json"
+          curl --fail --silent http://127.0.0.1:5005/swagger/index.html > /dev/null
+
+          jq -e '.openapi | startswith("3.0")' "$RUNNER_TEMP/swagger.json"
+          jq -e '.info.title == "Solqaryn API"' "$RUNNER_TEMP/swagger.json"
+          jq -e '.components.securitySchemes.Bearer.type == "http"' "$RUNNER_TEMP/swagger.json"
+          jq -e '(.components.securitySchemes.Bearer.scheme | ascii_downcase) == "bearer"' "$RUNNER_TEMP/swagger.json"
+          jq -e 'any(.security[]; has("Bearer"))' "$RUNNER_TEMP/swagger.json"
+
+  verdict:
+    name: Dictamen Fase 8
+    needs: [packages, openapi]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Emitir dictamen
+        env:
+          PACKAGES_RESULT: ${{ needs.packages.result }}
+          OPENAPI_RESULT: ${{ needs.openapi.result }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$PACKAGES_RESULT" = success
+          test "$OPENAPI_RESULT" = success
+          echo 'FASE_8_NUGET_MODERNIZATION=PASS'
+          echo 'FLUENTVALIDATION=12.1.1'
+          echo 'FLUENTVALIDATION_ASPNETCORE=REMOVED'
+          echo 'ASPNETCORE_HTTP_FEATURES_LEGACY=ABSENT'
+          echo 'IDENTITYMODEL=8.23.0'
+          echo 'BCRYPT=4.2.0'
+          echo 'SWASHBUCKLE=10.2.3'
+          echo 'CLOUDINARY=1.29.3'
+          echo 'CLOSEDXML=0.105.1'
+          echo 'IMAGESHARP=3.1.12_NO_CHANGE_LICENSE_BOUNDARY'
+          echo 'CACHING=SHARED_FRAMEWORK_NET10'
+          echo 'SYSTEM_TEXT_JSON=SHARED_FRAMEWORK_NET10'
+          echo 'P0=0'
+          echo 'P1=0'
