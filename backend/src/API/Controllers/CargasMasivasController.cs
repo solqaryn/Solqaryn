@@ -89,7 +89,7 @@ public class CargasMasivasController : ControllerBase
     [RequestFormLimits(MultipartBodyLengthLimit = CargaMasivaArchivoLimites.MaximoRequestBytes)]
     public async Task<IActionResult> Validar(
         [FromForm] TipoCargaMasiva tipo,
-        [FromForm] IFormFile archivo,
+        IFormFile archivo,
         CancellationToken cancellationToken)
     {
         if (archivo is null || archivo.Length == 0)
