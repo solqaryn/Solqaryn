@@ -1,3 +1,13 @@
+## 2026-10-07 — Fase 9: QuestPDF aislado 2026.9.1
+
+- Changeset exclusivo QuestPDF: `2024.3.6 → 2026.9.1`; sin cambios de EF/provider, schema, DB, Cloudinary, SMTP, main, QA o PROD.
+- Baseline 2024.3.6 preservado como artifact inmutable y comparado contra 22 PDFs candidate reales sobre los mismos fixtures: siete perfiles de factura en corto/largo/Unicode más reporte administrativo.
+- Fuentes Lato preservadas; QuestPDF 2026 queda con `UseSystemFonts=false`, `ThrowOnMissingFontFamilies=true` y `ThrowOnMissingTextGlyphs=true`.
+- Dimensiones/paginación, POS58/POS80, caracteres especiales, reporte PDF, adjunto de correo, concurrencia y regresión NuGet resultaron técnicamente verdes.
+- QR dentro de PDF y attachments embebidos son N/A porque no existen en la superficie productiva; PDF/UA permanece no habilitado y no se declara compliance.
+- El gate de licencia permanece fail-closed: la validación técnica está completa, pero el PR no puede integrarse hasta que el propietario confirme elegibilidad para QuestPDF Community 2026 o una licencia comercial vigente.
+- Fase 10 no iniciada.
+
 ## 2026-10-07 — Fase 8: modernización NuGet .NET 10
 
 - FluentValidation sube de 11.9.2 a 12.1.1; se elimina FluentValidation.AspNetCore 11.3.0 y la validación MVC se reemplaza por un filtro async propio que resuelve `IValidator<T>` desde DI y preserva ModelState.
