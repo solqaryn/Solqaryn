@@ -4,7 +4,6 @@ using System.Net;
 using System.Text;
 using System.Threading.RateLimiting;
 using FluentValidation;
-using FluentValidation.AspNetCore;
 using Solqaryn.API.Configuration;
 using Solqaryn.API.Middleware;
 using Solqaryn.API.Observability;
@@ -34,9 +33,12 @@ var isRender = string.Equals(Environment.GetEnvironmentVariable("RENDER"), "true
 RenderEnvironmentContractSnapshot? renderEnvironmentContract = null;
 if (isRender) renderEnvironmentContract = RenderEnvironmentContractGuard.ValidateProcessEnvironment(builder.Environment.EnvironmentName);
 if (!string.IsNullOrWhiteSpace(port)) builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
-builder.Services.AddControllers(options => options.Filters.Add<Solqaryn.API.Filters.MedirRendimientoBusquedaFilter>());
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<Solqaryn.API.Filters.MedirRendimientoBusquedaFilter>();
+    options.Filters.Add<Solqaryn.API.Filters.FluentValidationActionFilter>();
+});
 builder.Services.Configure<FormOptions>(options => options.MultipartBodyLengthLimit = 30 * 1024 * 1024);
-builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateProductoValidator>();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection no configurado.");
 if (isRender) EnvironmentDatabaseGuard.ValidateRenderBinding(builder.Environment.EnvironmentName, connectionString);
