@@ -9,14 +9,14 @@ HEAD inicial congelado: `fd0f5429e3709b1ba8a5bb9c5d8ba4b6db7141a8`
 ## Estado de cierre
 
 - Estado técnico QuestPDF 2026.9.1: **PASS**.
-- Estado legal/licencia para integración: **BLOCKED_OWNER_CONFIRMATION**.
-- Dictamen vigente mientras falte esa confirmación: `FASE_9_QUESTPDF=STOP`.
+- Estado legal/licencia para integración: **OWNER_CONFIRMED / PENDING_CI_REVALIDATION**.
+- Dictamen técnico previo: PASS; el cierre definitivo queda condicionado únicamente a la revalidación CI exact-head posterior a esta confirmación.
 - Fase 10: **NO iniciada**.
 - `main`, QA y PROD: **NO modificados**.
 
-`QUESTPDF_2026_COMMUNITY_ELIGIBILITY=OWNER_CONFIRMATION_REQUIRED`
+`QUESTPDF_2026_COMMUNITY_ELIGIBILITY=OWNER_CONFIRMED`
 
-La declaración existente `LicenseType.Community` se preserva, pero por sí sola no demuestra elegibilidad bajo los términos vigentes de QuestPDF. El gate permanente de Fase 9 exige confirmación explícita del propietario antes del merge. No se introduce licencia comercial, clave, secreto ni gasto.
+La declaración existente `LicenseType.Community` se preserva. El 2026-10-07 el propietario confirmó expresamente que SOLQARYN no es una empresa cotizada ni una entidad gubernamental/pública y que sus ingresos brutos anuales consolidados son inferiores a USD 1,000,000, o, si aún no completó su primer ejercicio fiscal, que su estimación anualizada de buena fe es inferior a ese monto. Esta evidencia registra esa declaración del propietario; no la sustituye por una inferencia técnica. No se introduce licencia comercial, clave, secreto ni gasto.
 
 ## Baseline real 2024.3.6
 
@@ -311,21 +311,21 @@ Jobs:
 
 El dictamen sólo puede emitir `FASE_9_QUESTPDF=PASS` cuando el gate de licencia también sea SUCCESS.
 
-## Pendiente único de integración
+## Confirmación del propietario
 
-La validación técnica de QuestPDF 2026.9.1 está verde. El único bloqueo deliberado es demostrar que la entidad que usa SOLQARYN está autorizada a seleccionar `LicenseType.Community` bajo los términos vigentes de QuestPDF, o disponer de una licencia comercial válida.
+El 2026-10-07 el propietario emitió la confirmación requerida por el gate de licencia Community. El bloqueo legal deliberado queda resuelto a nivel de declaración del propietario.
 
-Hasta recibir confirmación explícita del propietario:
+Antes del merge todavía es obligatorio:
 
-- no sacar PR #3558 de draft;
-- no mergear a `dev`;
-- no declarar Fase 9 cerrada;
+- reejecutar `Fase 9 - elegibilidad licencia QuestPDF`;
+- obtener `Dictamen Fase 9=SUCCESS`;
+- mantener Fase 6, Fase 7, Fase 8, compilación DEV, aceptación integral y scope lock verdes sobre el exact-head;
 - no iniciar Fase 10.
 
 ## Dictamen vigente
 
 `QUESTPDF_TECHNICAL_VALIDATION=PASS`  
-`QUESTPDF_LICENSE_GATE=OWNER_CONFIRMATION_REQUIRED`  
+`QUESTPDF_LICENSE_GATE=OWNER_CONFIRMED_PENDING_CI`  
 `P0=0`  
 `P1=0`  
-`FASE_9_QUESTPDF=STOP`
+`FASE_9_QUESTPDF=PENDING_EXACT_HEAD_CI`
