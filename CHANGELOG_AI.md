@@ -1,3 +1,14 @@
+## 2026-10-07 — Fase 8: modernización NuGet .NET 10
+
+- FluentValidation sube de 11.9.2 a 12.1.1; se elimina FluentValidation.AspNetCore 11.3.0 y la validación MVC se reemplaza por un filtro async propio que resuelve `IValidator<T>` desde DI y preserva ModelState.
+- BCrypt.Net-Next sube de 4.0.3 a 4.2.0 con compatibilidad de hashes existentes certificada.
+- Swashbuckle.AspNetCore sube de 6.6.2 a 10.2.3; OpenAPI/Bearer y multipart `IFormFile` quedan cubiertos por smoke real.
+- CloudinaryDotNet sube de 1.25.1 a 1.29.3 y ClosedXML de 0.104.2 a 0.105.1.
+- IdentityModel queda alineado en 8.23.0, incluido OpenIdConnect/Protocols; JwtBearer permanece 10.0.12.
+- SixLabors.ImageSharp permanece en 3.1.12: 4.1.2 exige licencia válida en build para dependencia directa y no se introduce una obligación/licencia nueva sin autorización. 3.1.12 permanece bajo el gate de vulnerabilidades.
+- Microsoft.AspNetCore.Http.Features no existe como PackageReference; FormOptions proviene de ASP.NET Core 10. Caching.Memory 10.0.12 y System.Text.Json permanecen en el shared framework/transitivas sin referencias directas redundantes.
+- Gate permanente: `.github/workflows/modernization-phase8-nuget.yml`. Alcance exclusivo dev; sin main, QA, PROD ni Fase 9.
+
 ## 2026-10-06 — Cierre post-merge Fase 7 y reconciliación N2.3
 
 - HEAD post-merge técnicamente certificado: `7013a55cd7491c3c79d6808df5db9ba0b8580f40`.
