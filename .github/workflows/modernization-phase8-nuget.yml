@@ -45,6 +45,7 @@ jobs:
           grep -F '<PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />' src/Infrastructure/Solqaryn.Infrastructure.csproj
           grep -F '<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.23.0" />' src/Infrastructure/Solqaryn.Infrastructure.csproj
           grep -F '<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.12" />' src/API/Solqaryn.API.csproj
+          grep -F '<PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.23.0" />' src/API/Solqaryn.API.csproj
 
           if grep -R -n -E 'PackageReference[^>]*FluentValidation\.AspNetCore|using[[:space:]]+FluentValidation\.AspNetCore' src tests --include='*.csproj' --include='*.cs'; then
             echo 'FluentValidation.AspNetCore no puede regresar al runtime.'
@@ -62,6 +63,10 @@ jobs:
           dotnet list Solqaryn.sln package --include-transitive | tee "$RUNNER_TEMP/phase8-tree.txt"
           ! grep -F 'Microsoft.AspNetCore.Http.Features' "$RUNNER_TEMP/phase8-tree.txt"
           grep -E 'Microsoft\.Extensions\.Caching\.Memory[[:space:]]+10\.0\.12' "$RUNNER_TEMP/phase8-tree.txt"
+          grep -E 'Microsoft\.IdentityModel\.Protocols[[:space:]]+8\.23\.0' "$RUNNER_TEMP/phase8-tree.txt"
+          grep -E 'Microsoft\.IdentityModel\.Protocols\.OpenIdConnect[[:space:]]+8\.23\.0' "$RUNNER_TEMP/phase8-tree.txt"
+          ! grep -E 'Microsoft\.IdentityModel\.Protocols(\.OpenIdConnect)?[[:space:]]+8\.19\.2' "$RUNNER_TEMP/phase8-tree.txt"
+          ! grep -R -n -E '\[FromForm\][[:space:]]+IFormFile' src/API/Controllers --include='*.cs'
 
       - name: Build Release
         working-directory: backend
@@ -74,7 +79,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          filter='FullyQualifiedName~FluentValidationActionFilterTests|FullyQualifiedName~CreateProductoValidatorTests|FullyQualifiedName~BCryptCompatibilityTests|FullyQualifiedName~JwtServiceTests|FullyQualifiedName~PerfilServiceTests|FullyQualifiedName~TiendaCuentaClienteTests|FullyQualifiedName~Cloudinary|FullyQualifiedName~N58ExportSecurityTests|FullyQualifiedName~ImagenUploadSecurityTests|FullyQualifiedName~PublicStoreMemoryCacheTests|FullyQualifiedName~PublicStoreTenantKeyProviderTests|FullyQualifiedName~CatalogoPublicoCacheTests|FullyQualifiedName~N15KardexErrorContractTests|FullyQualifiedName~MetodoPagoReglasOperativasTests|FullyQualifiedName~ExceptionHandlingConcurrencyTests|FullyQualifiedName~InboundWebhookIngressTests'
+          filter='FullyQualifiedName~FluentValidationActionFilterTests|FullyQualifiedName~CreateProductoValidatorTests|FullyQualifiedName~BCryptCompatibilityTests|FullyQualifiedName~JwtServiceTests|FullyQualifiedName~PerfilServiceTests|FullyQualifiedName~TiendaCuentaClienteTests|FullyQualifiedName~Cloudinary|FullyQualifiedName~N58ExportSecurityTests|FullyQualifiedName~ImagenUploadSecurityTests|FullyQualifiedName~PublicStoreMemoryCacheTests|FullyQualifiedName~PublicStoreTenantKeyProviderTests|FullyQualifiedName~CatalogoPublicoCacheTests|FullyQualifiedName~N15KardexErrorContractTests|FullyQualifiedName~MetodoPagoReglasOperativasTests|FullyQualifiedName~ExceptionHandlingConcurrencyTests|FullyQualifiedName~InboundWebhookIngressTests|FullyQualifiedName~CargaMasiva'
           dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-build --filter "$filter"
       - name: Vulnerabilidades NuGet
         working-directory: backend
@@ -196,6 +201,8 @@ jobs:
           jq -e '.components.securitySchemes.Bearer.type == "http"' "$RUNNER_TEMP/swagger.json"
           jq -e '(.components.securitySchemes.Bearer.scheme | ascii_downcase) == "bearer"' "$RUNNER_TEMP/swagger.json"
           jq -e 'any(.security[]; has("Bearer"))' "$RUNNER_TEMP/swagger.json"
+          jq -e '.paths["/cargas-masivas/validar"].post.requestBody.content["multipart/form-data"] != null' "$RUNNER_TEMP/swagger.json"
+          jq -e '.paths["/cargas-masivas/validar"].post.requestBody.content["multipart/form-data"].schema.properties.archivo.format == "binary"' "$RUNNER_TEMP/swagger.json"
 
   verdict:
     name: Dictamen Fase 8
@@ -217,6 +224,7 @@ jobs:
           echo 'FLUENTVALIDATION_ASPNETCORE=REMOVED'
           echo 'ASPNETCORE_HTTP_FEATURES_LEGACY=ABSENT'
           echo 'IDENTITYMODEL=8.23.0'
+          echo 'IDENTITYMODEL_PROTOCOLS=8.23.0'
           echo 'BCRYPT=4.2.0'
           echo 'SWASHBUCKLE=10.2.3'
           echo 'CLOUDINARY=1.29.3'
