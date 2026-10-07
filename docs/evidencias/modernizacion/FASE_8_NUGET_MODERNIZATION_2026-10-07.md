@@ -15,7 +15,7 @@ Baseline NuGet causal: run `37610431956` — SUCCESS sobre `e1442d39a2271ed411d0
 - Swashbuckle.AspNetCore 6.6.2 — outdated.
 - CloudinaryDotNet 1.25.1 — outdated.
 - ClosedXML 0.104.2 — outdated.
-- SixLabors.ImageSharp 3.1.12 — sin vulnerabilidad conocida en las fuentes del gate; existe 4.1.2.
+- SixLabors.ImageSharp 3.1.12 — inicialmente quedó retenido por frontera de licencia. El 2026-10-07 los feeds NuGet/GitHub Advisory comenzaron a reportar nuevas vulnerabilidades high/moderate sobre 3.1.12; el paquete se retira completamente en el hotfix de seguridad #3559.
 - System.IdentityModel.Tokens.Jwt 8.23.0 — ya alineado.
 - Microsoft.IdentityModel.Protocols/OpenIdConnect 8.19.2 — transitivos; se alinean a 8.23.0.
 - Microsoft.AspNetCore.Http.Features 5.0.17 — no existe en el árbol runtime actual; `FormOptions` proviene del shared framework.
@@ -36,7 +36,9 @@ Baseline NuGet causal: run `37610431956` — SUCCESS sobre `e1442d39a2271ed411d0
 | ClosedXML | 0.104.2 | 0.105.1 | UPDATED |
 | System.IdentityModel.Tokens.Jwt | 8.23.0 | 8.23.0 | NO_CHANGE_ALREADY_ALIGNED |
 | IdentityModel Protocols/OpenIdConnect | 8.19.2 transitive | 8.23.0 | UPDATED / ALIGNED |
-| SixLabors.ImageSharp | 3.1.12 | 3.1.12 | NO_CHANGE_LICENSE_BOUNDARY |
+| SixLabors.ImageSharp | 3.1.12 | ausente | REMOVED_SECURITY_ADVISORIES |
+| SkiaSharp | ausente | 4.152.1 | ADDED_SECURITY_REPLACEMENT |
+| SkiaSharp.NativeAssets.Linux.NoDependencies | ausente | 4.152.1 | ADDED_RUNTIME_LINUX |
 | Microsoft.AspNetCore.Http.Features | no PackageReference | no PackageReference | NOT_APPLICABLE / ABSENT |
 | Caching.Memory | 10.0.12 framework/transitive | 10.0.12 framework/transitive | NO_CHANGE_ALREADY_ALIGNED |
 | System.Text.Json | .NET 10 shared framework | .NET 10 shared framework | NO_CHANGE_ALREADY_ALIGNED |
@@ -51,9 +53,9 @@ El gate previo al cierre registró 2,395/2,395 unitarias y 82/82 pruebas causale
 
 La major 10 detectó un contrato no soportado: `[FromForm]` aplicado directamente a `IFormFile` en `CargasMasivasController.Validar`. Se retira únicamente ese atributo redundante; ASP.NET Core conserva binding de `IFormFile` desde `multipart/form-data` por convención. El gate exige generación real de `/swagger/v1/swagger.json`, Swagger UI, Bearer y schema multipart con `archivo` binario.
 
-## ImageSharp
+## Sanitización de imágenes
 
-ImageSharp 4 requiere una licencia Six Labors válida en build para dependencias directas. Fase 8 no introduce secretos, licencias ni obligaciones comerciales sin autorización. Se mantiene 3.1.12 y se certifican las pruebas de seguridad de imágenes existentes; el gate NuGet exige cero vulnerabilidades conocidas.
+El cierre original retuvo ImageSharp 3.1.12 por la frontera de licencia de la major 4. Posteriormente, NuGet empezó a reportar advisories 2026 sobre 3.1.12, incluidos hallazgos high. Para mantener el contrato de cero vulnerabilidades sin introducir una clave/licencia de build adicional, el hotfix #3559 retira SixLabors.ImageSharp y migra `ImagenUploadSecurity` a SkiaSharp 4.152.1 + `SkiaSharp.NativeAssets.Linux.NoDependencies` 4.152.1 (MIT). Se preservan firma binaria, MIME/extensión, límite de 10 MB, 4096 px, 16 MP, decode real, re-encode desde píxeles y soporte JPG/PNG/WebP.
 
 ## Seguridad, datos y arquitectura
 
@@ -80,3 +82,11 @@ La autoridad final es `.github/workflows/modernization-phase8-nuget.yml` sobre e
 - La reconciliación se realiza en PR #3557 sin reintroducir Pomelo: tool manifest EF 10.0.12, `SslMode=Disabled`, bootstrap fresh Oracle, recuperación del marcador `20261006111818_OracleBaseline`, `has-pending-model-changes=0`, health/readiness e idempotencia de segundo arranque.
 - No se modifican entidades, migraciones activas, schema, datos, QA, `main` ni PROD.
 
+
+## Hotfix de seguridad 2026-10-07
+
+- PR: #3559.
+- Causa: advisories nuevos de SixLabors.ImageSharp 3.1.12 comenzaron a hacer fallar los scanners Fase 7/Fase 8 durante la ejecución de Fase 9.
+- Decisión: no suprimir advisories y no aceptar riesgo silenciosamente; retirar ImageSharp del runtime productivo.
+- Sustitución: SkiaSharp 4.152.1 + native assets Linux 4.152.1, conservando el boundary de seguridad de uploads.
+- Fase 8 y Fase 7 deben volver a quedar `SUCCESS` sobre el HEAD exacto antes de continuar el cierre de Fase 9.
