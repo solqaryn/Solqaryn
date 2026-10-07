@@ -42,7 +42,9 @@ jobs:
           grep -F '<PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />' src/API/Solqaryn.API.csproj
           grep -F '<PackageReference Include="CloudinaryDotNet" Version="1.29.3" />' src/Infrastructure/Solqaryn.Infrastructure.csproj
           grep -F '<PackageReference Include="ClosedXML" Version="0.105.1" />' src/Infrastructure/Solqaryn.Infrastructure.csproj
-          grep -F '<PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />' src/Infrastructure/Solqaryn.Infrastructure.csproj
+          grep -F '<PackageReference Include="SkiaSharp" Version="4.152.1" />' src/Infrastructure/Solqaryn.Infrastructure.csproj
+          grep -F '<PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="4.152.1" />' src/Infrastructure/Solqaryn.Infrastructure.csproj
+          ! grep -R -n -E 'PackageReference[^>]*SixLabors\.ImageSharp' src tools --include='*.csproj'
           grep -F '<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.23.0" />' src/Infrastructure/Solqaryn.Infrastructure.csproj
           grep -F '<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.12" />' src/API/Solqaryn.API.csproj
           grep -F '<PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.23.0" />' src/API/Solqaryn.API.csproj
@@ -231,7 +233,8 @@ jobs:
           echo 'SWASHBUCKLE=10.2.3'
           echo 'CLOUDINARY=1.29.3'
           echo 'CLOSEDXML=0.105.1'
-          echo 'IMAGESHARP=3.1.12_NO_CHANGE_LICENSE_BOUNDARY'
+          echo 'IMAGE_SANITIZER=SKIASHARP_4.152.1'
+          echo 'IMAGESHARP=REMOVED_SECURITY_ADVISORIES'
           echo 'CACHING=SHARED_FRAMEWORK_NET10'
           echo 'SYSTEM_TEXT_JSON=SHARED_FRAMEWORK_NET10'
           echo 'P0=0'
