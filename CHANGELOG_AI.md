@@ -1,3 +1,11 @@
+## 2026-10-10 — Fase 11: reparación del gate de backup/restore ante Oracle EF10
+
+- El gate `.github/workflows/backup-restore-dev.yml` deja de crear el esquema con migraciones Pomelo retiradas; adopta `Solqaryn.DatabaseBootstrap` en modo `fresh` y verifica 136 tablas, `OracleBaseline`, EF `pending-model=0`, SDK 10.0.401 y `dotnet-ef 10.0.12`.
+- Las pruebas vuelven a ejecutar en PR contra `dev` y en push DEV cuando cambia el contrato de backup/restore o su schema Oracle. Se preservan cifrado GPG, checksum, retención, integridad de sentinels, restore destructivo **solo local efímero**, arranque de API restaurada y pruebas fail-closed contra PROD/bases no descartables.
+- Se elimina de este fixture la antigua variable de logo global y se impide la aplicación automática de migraciones al arrancar la API recuperada. No se modifica el runtime de producción, provider Oracle, schema persistente ni las scripts de backup reales.
+- Este changeset no autoriza ni ejecuta `dev -> qa` o `qa -> main`. La certificación integral Fase 11 sigue condicionada a CI exact-head, smoke real y los demás requisitos definidos por el propietario; SMTP OAuth2 real no se presume aprobado.
+- Rollback: revertir únicamente el changeset del workflow en `dev`; no se reescribe historial, no se restauran bases persistentes.
+
 ## 2026-10-10 — Fase 10: modernización aislada de testing .NET
 
 - `Microsoft.NET.Test.Sdk 17.10.0 → 18.10.1` y `Moq 4.20.70 → 4.21.0` únicamente en el proyecto de pruebas. EF InMemory/SQLite mantienen las versiones 10.0.12 ya alineadas con EF productivo.

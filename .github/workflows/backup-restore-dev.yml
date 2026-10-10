@@ -5,6 +5,9 @@ on:
     branches:
       - dev
     paths:
+      - backend/tools/Solqaryn.DatabaseBootstrap/**
+      - backend/src/Infrastructure.Migrations/**
+      - backend/src/Infrastructure/Persistence/CanonicalMySqlPhysicalContract.cs
       - scripts/backup_dev.sh
       - scripts/restore_dev.sh
       - .github/workflows/backup-restore-dev.yml
@@ -12,8 +15,11 @@ on:
       - docs/BACKUP_RESTORE_DESARROLLO_RUNBOOK.md
   pull_request:
     branches:
-      - main
+      - dev
     paths:
+      - backend/tools/Solqaryn.DatabaseBootstrap/**
+      - backend/src/Infrastructure.Migrations/**
+      - backend/src/Infrastructure/Persistence/CanonicalMySqlPhysicalContract.cs
       - scripts/backup_dev.sh
       - scripts/restore_dev.sh
       - .github/workflows/backup-restore-dev.yml
@@ -51,9 +57,9 @@ jobs:
     env:
       ASPNETCORE_ENVIRONMENT: Development
       PORT: '5005'
-      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_m11_source;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_m11_source;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
       Database__ServerVersion: '8.4.0'
-      Database__ApplyMigrationsOnStartup: 'true'
+      Database__ApplyMigrationsOnStartup: 'false'
       Jwt__Secret: 'SOLQARYN-CI-Only-Secret-With-More-Than-32-Characters-2026'
       Jwt__Issuer: 'Solqaryn.API'
       Jwt__Audience: 'Solqaryn.Frontend'
@@ -63,7 +69,6 @@ jobs:
       SeedAdmin__Password: 'SOLQARYN.Restore#2026!'
       Cors__AllowedOrigins__0: 'http://127.0.0.1:4200'
       AppSettings__BackendPublicUrl: 'https://preview.solqaryn.invalid'
-      AppSettings__LogoPublicUrl: 'https://solqaryn-dev.vercel.app/assets/storefront-logo.png'
       Cloudinary__CloudName: 'ci-not-used'
       Cloudinary__ApiKey: 'ci-not-used'
       Cloudinary__ApiSecret: 'ci-not-used'
@@ -80,24 +85,35 @@ jobs:
           cache: true
           cache-dependency-path: backend/**/*.csproj
 
-      - name: Restaurar herramientas y preparar MySQL estricto
+      - name: Scope lock, toolchain y MySQL estricto
         working-directory: backend
         shell: bash
         run: |
           set -euo pipefail
+          (cd .. && node scripts/verify-project-scope.mjs)
+          test "$(dotnet --version)" = "10.0.401"
           dotnet restore Solqaryn.sln
-          dotnet tool install --global dotnet-ef --version 10.0.12
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+          dotnet tool restore
+          dotnet tool run dotnet-ef --version | grep -F "10.0.12"
           mysql_container="${{ job.services.mysql.id }}"
           docker exec "$mysql_container" mysql -uroot -proot -e "SET GLOBAL sql_require_primary_key=ON;"
           test "$(docker exec "$mysql_container" mysql -uroot -proot -Nse "SELECT @@GLOBAL.sql_require_primary_key;")" = 1
 
-      - name: Crear esquema fuente completo
+      - name: Crear esquema Oracle EF10 fresh canónico
         working-directory: backend
+        shell: bash
+        env:
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
         run: |
-          dotnet ef database update \
-            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
-            --startup-project src/API/Solqaryn.API.csproj \
-            --context AppDbContext
+          set -euo pipefail
+          dotnet run --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj --configuration Release --no-build | tee "$RUNNER_TEMP/solqaryn-m11-bootstrap.log"
+          grep -F "SOLQARYN_ORACLE_BOOTSTRAP=PASS mode=fresh tables=136 pending=0" "$RUNNER_TEMP/solqaryn-m11-bootstrap.log"
+          dotnet tool run dotnet-ef migrations has-pending-model-changes             --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj             --startup-project src/API/Solqaryn.API.csproj             --context AppDbContext             --configuration Release --no-build
+          export MYSQL_PWD=root
+          test "$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -uroot solqaryn_m11_source -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")" = 1
+          unset MYSQL_PWD
+          echo "PHASE11_ORACLE_EPHEMERAL_SOURCE=PASS"
 
       - name: Sembrar registros y referencias de activos SOLQARYN
         shell: bash
@@ -224,11 +240,22 @@ jobs:
           test "$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -uroot solqaryn_m11_restore -Nse "SELECT COUNT(*) FROM CompraDocumentos WHERE PublicId='dev/backup-drill/factura-sentinel';")" = 1
           unset MYSQL_PWD
 
+      - name: Certificar baseline Oracle restaurado y conteos
+        shell: bash
+        run: |
+          set -euo pipefail
+          export MYSQL_PWD=root
+          q() { mysql --protocol=TCP -h 127.0.0.1 -P 3306 -uroot solqaryn_m11_restore -Nse "$1"; }
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")" = 1
+          test "$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME <> '__EFMigrationsHistory';")" = 136
+          unset MYSQL_PWD
+          echo "PHASE11_ORACLE_RESTORE_CONTRACT=PASS tables=136 baseline=1"
+
       - name: Arrancar API contra restore descartable
         working-directory: backend
         shell: bash
         env:
-          ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_m11_restore;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
+          ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_m11_restore;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
         run: |
           set -euo pipefail
           dotnet build Solqaryn.sln --configuration Release --no-restore
