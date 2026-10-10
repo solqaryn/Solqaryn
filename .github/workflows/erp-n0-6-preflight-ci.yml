@@ -1,4 +1,4 @@
-name: ERP-N0.6 - Preflight referencias polimorficas
+name: ERP-N0.6 - contrato final referencias polimorficas
 
 on:
   push:
@@ -7,21 +7,19 @@ on:
       - 'backend/scripts/preflight-erp-n0-6-origen-movimiento-inventario.sql'
       - 'backend/scripts/validar-erp-n0-6-c2-backfill.sql'
       - 'backend/scripts/postcheck-erp-n0-6-c3-origen-tipado.sql'
-      - 'backend/src/Infrastructure/Migrations/20260812083000_N0_6_OrigenTipadoMovimientoInventario.cs'
-      - 'backend/src/Infrastructure/Migrations/20260812084900_N0_6_C3_IntegridadOrigenTipadoMovimientoInventario.cs'
-      - 'backend/src/Infrastructure/Migrations/AppDbContextModelSnapshot.Part*.cs'
-      - 'backend/src/Infrastructure/Migrations/AppDbContextModelSnapshot.N46C.cs'
+      - 'backend/src/Infrastructure.Migrations/**'
+      - 'backend/src/Infrastructure.Migrations.History/**'
+      - 'backend/tests/Solqaryn.Tests/MovimientoInventarioOrigenTipadoIntegrationTests.cs'
       - '.github/workflows/erp-n0-6-preflight-ci.yml'
   pull_request:
-    branches: [main]
+    branches: [dev]
     paths:
       - 'backend/scripts/preflight-erp-n0-6-origen-movimiento-inventario.sql'
       - 'backend/scripts/validar-erp-n0-6-c2-backfill.sql'
       - 'backend/scripts/postcheck-erp-n0-6-c3-origen-tipado.sql'
-      - 'backend/src/Infrastructure/Migrations/20260812083000_N0_6_OrigenTipadoMovimientoInventario.cs'
-      - 'backend/src/Infrastructure/Migrations/20260812084900_N0_6_C3_IntegridadOrigenTipadoMovimientoInventario.cs'
-      - 'backend/src/Infrastructure/Migrations/AppDbContextModelSnapshot.Part*.cs'
-      - 'backend/src/Infrastructure/Migrations/AppDbContextModelSnapshot.N46C.cs'
+      - 'backend/src/Infrastructure.Migrations/**'
+      - 'backend/src/Infrastructure.Migrations.History/**'
+      - 'backend/tests/Solqaryn.Tests/MovimientoInventarioOrigenTipadoIntegrationTests.cs'
       - '.github/workflows/erp-n0-6-preflight-ci.yml'
   workflow_dispatch:
 
@@ -29,13 +27,14 @@ permissions:
   contents: read
 
 concurrency:
-  group: erp-n0-6-preflight-${{ github.ref }}
+  group: erp-n0-6-final-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  preflight-origen-inventario:
+  origen-inventario-final:
+    name: N0.6 - origen tipado final Oracle EF10
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     services:
       mysql:
         image: mysql:8.4
@@ -44,11 +43,12 @@ jobs:
           MYSQL_DATABASE: solqaryn_n06_ci
         ports: ['3306:3306']
         options: >-
-          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-cmd="mysqladmin ping -h localhost -uroot -proot"
           --health-interval=10s --health-timeout=5s --health-retries=12
+
     env:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=solqaryn_n06_ci;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;
+      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=solqaryn_n06_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;
       Database__ServerVersion: 8.4.0
       Database__ApplyMigrationsOnStartup: 'false'
       Jwt__Secret: ERP-N0-6-CI-Only-Secret-With-More-Than-32-Characters-2026
@@ -57,171 +57,86 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Scope lock SOLQARYN
+        run: node scripts/verify-project-scope.mjs
+
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.401'
-      - name: Restaurar e instalar EF
+
+      - name: Restore build y toolchain
         working-directory: backend
         run: |
+          set -euo pipefail
           dotnet restore Solqaryn.sln
-          dotnet tool install --global dotnet-ef --version 10.0.12
-      - name: Aplicar esquema previo a C2
+          dotnet tool restore
+          dotnet tool run dotnet-ef --version | grep -F '10.0.12'
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+
+      - name: Materializar contrato físico final
         working-directory: backend
+        env:
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
         run: |
-          dotnet ef database update 20260812023600_N0_5_BackfillMetodoPagoHistorico \
-            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
-            --startup-project src/API/Solqaryn.API.csproj \
-            --context AppDbContext
-      - name: Certificar preflight fail-closed C1
+          set -euo pipefail
+          dotnet run \
+            --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj \
+            --configuration Release \
+            --no-build
+
+      - name: Certificar scripts de lectura sobre esquema final
         shell: bash
         run: |
           set -euo pipefail
           c="${{ job.services.mysql.id }}"
-          script='backend/scripts/preflight-erp-n0-6-origen-movimiento-inventario.sql'
-          ejecutar_preflight() {
-            docker exec -i "$c" mysql -uroot -proot solqaryn_n06_ci --batch --skip-column-names < "$script" | tail -n 1
-          }
-          test "$(ejecutar_preflight)" = '0'
-          docker exec "$c" mysql -uroot -proot solqaryn_n06_ci -e "
-            INSERT INTO Productos (Nombre,Marca,Modelo,Cantidad,Costo,Precio,UmbralStockBajo,Activo,Eliminado,FechaCreacion,FechaActualizacion)
-            VALUES ('N06 Producto CI','VAEP','N06',1,1.00,1.00,0,1,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
-            SET @p=(SELECT Id FROM Productos WHERE Nombre='N06 Producto CI' ORDER BY Id LIMIT 1);
-            INSERT INTO MovimientosInventario (ProductoId,Tipo,Causa,Cantidad,StockAnterior,StockNuevo,ReferenciaTipo,ReferenciaId,Fecha)
-            VALUES (@p,'Entrada',0,1,0,1,'OrigenDesconocido',999999,UTC_TIMESTAMP(6));"
-          test "$(ejecutar_preflight)" -gt 0
-          docker exec "$c" mysql -uroot -proot solqaryn_n06_ci -e "DELETE FROM MovimientosInventario WHERE ReferenciaTipo='OrigenDesconocido';"
-          test "$(ejecutar_preflight)" = '0'
-      - name: Sembrar historia representativa legacy
-        shell: bash
-        run: |
-          set -euo pipefail
-          c="${{ job.services.mysql.id }}"
-          docker exec "$c" mysql -uroot -proot solqaryn_n06_ci -e "
-            INSERT INTO Compras (NumeroCompra,Fecha,ProveedorNombre,Estado,EstadoPago,MetodoPago,Subtotal,Descuento,Impuesto,Total,Eliminado,FechaCreacion,FechaActualizacion)
-            VALUES ('N06-COMPRA',UTC_TIMESTAMP(6),'Proveedor N06','Borrador','Pendiente','Efectivo',1,0,0,1,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
-            INSERT INTO Ventas (NumeroVenta,Fecha,ClienteNombre,Estado,EstadoPago,MetodoPago,ImporteBruto,ImporteProductos,Subtotal,Descuento,Impuesto,CostoEnvio,EnvioExonerado,Total,CostoTotal,UtilidadBruta,Eliminado,FechaCreacion,FechaActualizacion)
-            VALUES ('N06-VENTA',UTC_TIMESTAMP(6),'Cliente N06','Borrador','Pendiente','Efectivo',1,1,1,0,0,0,0,1,0,1,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
-            INSERT INTO ConsumosInsumos (NumeroConsumo,FechaConsumo,Estado,AreaDestino,Motivo,Eliminado,FechaCreacion,FechaActualizacion)
-            VALUES ('N06-CONSUMO',UTC_TIMESTAMP(6),'Borrador','QA','Fixture N06',0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
-            SET @p=(SELECT Id FROM Productos WHERE Nombre='N06 Producto CI' ORDER BY Id LIMIT 1);
-            SET @c=(SELECT Id FROM Compras WHERE NumeroCompra='N06-COMPRA');
-            SET @v=(SELECT Id FROM Ventas WHERE NumeroVenta='N06-VENTA');
-            SET @i=(SELECT Id FROM ConsumosInsumos WHERE NumeroConsumo='N06-CONSUMO');
-            INSERT INTO MovimientosInventario (ProductoId,Tipo,Causa,Cantidad,StockAnterior,StockNuevo,ReferenciaTipo,ReferenciaId,Fecha) VALUES
-              (@p,'Entrada',0,1,0,1,'Compra',@c,UTC_TIMESTAMP(6)),
-              (@p,'Salida',0,1,1,0,'CompraAnulada',@c,UTC_TIMESTAMP(6)),
-              (@p,'Salida',0,1,1,0,'Venta',@v,UTC_TIMESTAMP(6)),
-              (@p,'Entrada',0,1,0,1,'VentaAnulada',@v,UTC_TIMESTAMP(6)),
-              (@p,'Salida',0,1,1,0,'ConsumoInsumo',@i,UTC_TIMESTAMP(6));"
           test "$(docker exec -i "$c" mysql -uroot -proot solqaryn_n06_ci --batch --skip-column-names < backend/scripts/preflight-erp-n0-6-origen-movimiento-inventario.sql | tail -n 1)" = '0'
-      - name: Aplicar C2/C3 y validar integridad tipada
-        working-directory: backend
-        shell: bash
-        run: |
-          set -euo pipefail
-          dotnet ef database update \
-            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
-            --startup-project src/API/Solqaryn.API.csproj \
-            --context AppDbContext
-          cd ..
-          c="${{ job.services.mysql.id }}"
           test "$(docker exec -i "$c" mysql -uroot -proot solqaryn_n06_ci --batch --skip-column-names < backend/scripts/validar-erp-n0-6-c2-backfill.sql | tail -n 1)" = '0'
           test "$(docker exec -i "$c" mysql -uroot -proot solqaryn_n06_ci --batch --skip-column-names < backend/scripts/postcheck-erp-n0-6-c3-origen-tipado.sql | tail -n 1)" = '0'
-          docker exec "$c" mysql -uroot -proot solqaryn_n06_ci -e "
-            SELECT ReferenciaTipo,ReferenciaId,CompraId,VentaId,ConsumoInsumoId
-              FROM MovimientosInventario
-             WHERE ReferenciaTipo IN ('Compra','CompraAnulada','Venta','VentaAnulada','ConsumoInsumo')
-             ORDER BY Id;"
-      - name: Certificar puente transitorio legacy a origen tipado
+
+      - name: Certificar integración final del origen tipado
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj \
+            --configuration Release \
+            --no-build \
+            --filter "FullyQualifiedName~MovimientoInventarioOrigenTipadoIntegrationTests"
+
+      - name: Certificar constraints y triggers permanentes
         shell: bash
         run: |
           set -euo pipefail
           c="${{ job.services.mysql.id }}"
-          docker exec "$c" mysql -uroot -proot solqaryn_n06_ci -e "
-            SET @p=(SELECT Id FROM Productos WHERE Nombre='N06 Producto CI' ORDER BY Id LIMIT 1);
-            SET @v=(SELECT Id FROM Ventas WHERE NumeroVenta='N06-VENTA');
-            INSERT INTO MovimientosInventario
-              (ProductoId,Tipo,Causa,Cantidad,StockAnterior,StockNuevo,ReferenciaTipo,ReferenciaId,Fecha)
-            VALUES (@p,'Salida',0,1,1,0,'Venta',@v,UTC_TIMESTAMP(6));"
-          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n06_ci --batch --skip-column-names -e "
-            SELECT COUNT(*) FROM MovimientosInventario
-             WHERE ReferenciaTipo='Venta' AND ReferenciaId=VentaId
-               AND CompraId IS NULL AND ConsumoInsumoId IS NULL;" | tail -n 1)" -ge 2
-          test "$(docker exec -i "$c" mysql -uroot -proot solqaryn_n06_ci --batch --skip-column-names < backend/scripts/postcheck-erp-n0-6-c3-origen-tipado.sql | tail -n 1)" = '0'
-      - name: Probar constraint permanente C3 fail-closed
-        shell: bash
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n06_ci -Nse "
+            SELECT COUNT(*) FROM information_schema.table_constraints
+             WHERE constraint_schema=DATABASE()
+               AND table_name='MovimientosInventario'
+               AND constraint_type='CHECK'
+               AND constraint_name='CK_MovimientosInventario_OrigenTipado_Exclusivo_N06';")" = 1
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n06_ci -Nse "
+            SELECT COUNT(*) FROM information_schema.referential_constraints
+             WHERE constraint_schema=DATABASE()
+               AND constraint_name IN (
+                 'FK_MovimientosInventario_Compras_CompraId_N06',
+                 'FK_MovimientosInventario_Ventas_VentaId_N06',
+                 'FK_MovimientosInventario_ConsumosInsumos_ConsumoInsumoId_N06');")" = 3
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n06_ci -Nse "
+            SELECT COUNT(*) FROM information_schema.triggers
+             WHERE trigger_schema=DATABASE()
+               AND event_object_table='MovimientosInventario'
+               AND trigger_name IN (
+                 'TR_MovimientosInventario_N06_OrigenTipado_BI',
+                 'TR_MovimientosInventario_N06_OrigenTipado_BU');")" = 2
+
+      - name: Verificar modelo Oracle sin drift
+        working-directory: backend
         run: |
           set -euo pipefail
-          c="${{ job.services.mysql.id }}"
-          if docker exec "$c" mysql -uroot -proot solqaryn_n06_ci -e "
-            UPDATE MovimientosInventario
-               SET ReferenciaTipo='OrigenDesconocido'
-             WHERE ReferenciaTipo='Compra'
-             LIMIT 1;"; then
-            echo 'ERROR: C3 permitió un movimiento sin origen tipado válido.' >&2
-            exit 1
-          fi
-          test "$(docker exec -i "$c" mysql -uroot -proot solqaryn_n06_ci --batch --skip-column-names < backend/scripts/postcheck-erp-n0-6-c3-origen-tipado.sql | tail -n 1)" = '0'
-      - name: Verificar snapshot EF sin drift de modelo
-        id: ef_drift
-        continue-on-error: true
-        working-directory: backend
-        run: |
-          dotnet ef migrations has-pending-model-changes \
-            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
-            --startup-project src/API/Solqaryn.API.csproj \
-            --context AppDbContext
-      - name: Capturar migration diff exacto del drift EF
-        if: steps.ef_drift.outcome == 'failure'
-        continue-on-error: true
-        working-directory: backend
-        shell: bash
-        run: |
-          set -uo pipefail
-          rm -rf src/Infrastructure/Migrations/__N41H_DriftProbe .drift-probe
-          mkdir -p .drift-probe
-          set +e
-          dotnet ef migrations add __N41H_DriftProbe \
-            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+          dotnet tool run dotnet-ef migrations has-pending-model-changes \
+            --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj \
             --startup-project src/API/Solqaryn.API.csproj \
             --context AppDbContext \
-            --output-dir Migrations/__N41H_DriftProbe \
-            > .drift-probe/generate.log 2>&1
-          probe_status=$?
-          set -e
-          printf '%s\n' "$probe_status" > .drift-probe/generate-exit-code.txt
-          git diff -- src/Infrastructure/Migrations > .drift-probe/ef-drift.patch || true
-          git status --short > .drift-probe/git-status.txt || true
-          if [ -d src/Infrastructure/Migrations/__N41H_DriftProbe ]; then
-            cp -a src/Infrastructure/Migrations/__N41H_DriftProbe .drift-probe/generated-migration
-          fi
-          exit 0
-      - name: Emitir diagnóstico del drift EF en log
-        if: always() && steps.ef_drift.outcome == 'failure'
-        working-directory: backend
-        shell: bash
-        run: |
-          set -euo pipefail
-          echo '=== N4.1.H EF DRIFT: generator ==='
-          cat .drift-probe/generate.log || true
-          echo '=== N4.1.H EF DRIFT: git status ==='
-          cat .drift-probe/git-status.txt || true
-          echo '=== N4.1.H EF DRIFT: patch ==='
-          sed -n '1,1200p' .drift-probe/ef-drift.patch || true
-          echo '=== N4.1.H EF DRIFT: generated migration ==='
-          find .drift-probe/generated-migration -maxdepth 1 -type f -name '*.cs' -print -exec sh -c 'echo "--- $1"; sed -n "1,800p" "$1"' _ {} \; 2>/dev/null || true
-      - name: Publicar evidencia del drift EF
-        if: always() && steps.ef_drift.outcome == 'failure'
-        continue-on-error: true
-        uses: actions/upload-artifact@v4
-        with:
-          name: n41h-ef-drift-probe
-          path: backend/.drift-probe
-          include-hidden-files: true
-          if-no-files-found: error
-          retention-days: 3
-      - name: Fallar si EF detectó drift
-        if: always() && steps.ef_drift.outcome == 'failure'
-        run: |
-          echo 'EF detectó cambios pendientes; consultar log/artifact n41h-ef-drift-probe.' >&2
-          exit 1
+            --configuration Release \
+            --no-build
+          echo 'ERP_N06_FINAL_CONTRACT=PASS'

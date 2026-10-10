@@ -1,3 +1,11 @@
+## 2026-10-10 — Recovery del CI ERP-N0.6 sobre Oracle EF Core 10
+
+- Se elimina de la validación activa N0.6 el replay de migraciones Pomelo que ya no pertenecen al runtime de `dev`. El workflow verifica la autoridad Oracle EF 10.0.9 / EF Core 10.0.12 con `OracleBaseline` sobre MySQL 8.4 efímero.
+- Toolchain fijado mediante `backend/.config/dotnet-tools.json`, `dotnet tool restore` y comprobación `dotnet-ef 10.0.12`; cadena de conexión CI con `SslMode=Disabled` y `PROJECT_SCOPE_LOCK` verificado.
+- Cobertura fail-closed: bootstrap fresh canónico, scripts de lectura C1/C2/C3, integraciones `MovimientoInventarioOrigenTipadoIntegrationTests`, constraints/FKs/triggers y ausencia de drift EF.
+- Exclusivamente CI en `dev`; no modifica datos persistentes, migraciones, provider de producción, API, RBAC, tenancy, `main`, QA ni PROD.
+- La certificación exige run de PR y post-merge `SUCCESS` en HEAD comprobado; sin ambos no se declara cerrado. Rollback: revertir únicamente el changeset del workflow.
+
 ## 2026-10-07 — Fase 9: QuestPDF aislado 2026.9.1
 
 - Changeset exclusivo QuestPDF: `2024.3.6 → 2026.9.1`; sin cambios de EF/provider, schema, DB, Cloudinary, SMTP, main, QA o PROD.
