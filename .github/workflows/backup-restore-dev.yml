@@ -90,7 +90,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          node ../scripts/verify-project-scope.mjs
+          (cd .. && node scripts/verify-project-scope.mjs)
           test "$(dotnet --version)" = "10.0.401"
           dotnet restore Solqaryn.sln
           dotnet build Solqaryn.sln --configuration Release --no-restore
