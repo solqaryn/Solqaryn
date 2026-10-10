@@ -1,3 +1,13 @@
+## 2026-10-07 — Fase 9: QuestPDF aislado 2026.9.1
+
+- Changeset exclusivo QuestPDF: `2024.3.6 → 2026.9.1`; sin cambios de EF/provider, schema, DB, Cloudinary, SMTP, main, QA o PROD.
+- Baseline 2024.3.6 preservado como artifact inmutable y comparado contra 22 PDFs candidate reales sobre los mismos fixtures: siete perfiles de factura en corto/largo/Unicode más reporte administrativo.
+- Fuentes Lato preservadas; QuestPDF 2026 queda con `UseSystemFonts=false`, `ThrowOnMissingFontFamilies=true` y `ThrowOnMissingTextGlyphs=true`.
+- Dimensiones/paginación, POS58/POS80, caracteres especiales, reporte PDF, adjunto de correo, concurrencia y regresión NuGet resultaron técnicamente verdes.
+- QR dentro de PDF y attachments embebidos son N/A porque no existen en la superficie productiva; PDF/UA permanece no habilitado y no se declara compliance.
+- El propietario confirmó el 2026-10-07 la elegibilidad declarada para QuestPDF Community 2026 bajo el criterio aplicado por el gate; la integración continúa fail-closed hasta que `Dictamen Fase 9` vuelva a pasar sobre el exact-head.
+- Fase 10 no iniciada.
+
 ## 2026-10-07 — Hotfix seguridad: retiro de ImageSharp 3.1.12
 
 - NuGet/GitHub Advisory empezó a reportar vulnerabilidades nuevas sobre SixLabors.ImageSharp 3.1.12, incluyendo severidad high, durante la revalidación de Fase 9.
