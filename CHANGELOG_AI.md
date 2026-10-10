@@ -5,8 +5,8 @@
 - Fuentes Lato preservadas; QuestPDF 2026 queda con `UseSystemFonts=false`, `ThrowOnMissingFontFamilies=true` y `ThrowOnMissingTextGlyphs=true`.
 - Dimensiones/paginación, POS58/POS80, caracteres especiales, reporte PDF, adjunto de correo, concurrencia y regresión NuGet resultaron técnicamente verdes.
 - QR dentro de PDF y attachments embebidos son N/A porque no existen en la superficie productiva; PDF/UA permanece no habilitado y no se declara compliance.
-- El propietario confirmó el 2026-10-07 la elegibilidad declarada para QuestPDF Community 2026 bajo el criterio aplicado por el gate; la integración continúa fail-closed hasta que `Dictamen Fase 9` vuelva a pasar sobre el exact-head.
-- Fase 10 no iniciada.
+- El propietario confirmó la elegibilidad declarada para QuestPDF Community 2026; `Dictamen Fase 9` pasó sobre el HEAD post-merge `03c889be18a1266bed7eed30e8c8c5e46ee74809`, junto con Fases 6/7/8, compilación DEV, aceptación integral y scope lock.
+- Fase 9 queda cerrada y certificada en `dev` con `P0=0`, `P1=0`; Fase 10 no iniciada.
 
 ## 2026-10-07 — Hotfix seguridad: retiro de ImageSharp 3.1.12
 
