@@ -64,6 +64,38 @@ jobs:
           set -euo pipefail
           filter='FullyQualifiedName~TtlValidationTests|FullyQualifiedName~NotificationDedupContractTests|FullyQualifiedName~SecuenciaDocumentoServiceTests|FullyQualifiedName~PublicStoreCacheInvalidationTests|FullyQualifiedName~FinanzasServiceTests'
           dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-build --filter "$filter" --logger "trx;LogFileName=phase10-providers.trx"
+      - name: Bloquear pérdida de descubrimiento o pruebas omitidas
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          from xml.etree import ElementTree as ET
+
+          reports = (
+              ('unit', 'phase10-unit.trx', 2300),
+              ('SQLite-InMemory-Moq', 'phase10-providers.trx', 15),
+          )
+          for label, filename, minimum in reports:
+              path = Path('tests/Solqaryn.Tests/TestResults') / filename
+              if not path.is_file():
+                  raise SystemExit(f'{label}: falta reporte TRX {path}')
+              root = ET.parse(path).getroot()
+              counter = next((n for n in root.iter() if n.tag.endswith('Counters')), None)
+              if counter is None:
+                  raise SystemExit(f'{label}: contadores TRX no disponibles')
+              total = int(counter.get('total', 0))
+              passed = int(counter.get('passed', 0))
+              failed = int(counter.get('failed', 0))
+              skipped = int(counter.get('notExecuted', 0))
+              if total < minimum or passed != total or failed != 0 or skipped != 0:
+                  raise SystemExit(
+                      f'{label}: descubrimiento o resultado invalido: '
+                      f'total={total} passed={passed} failed={failed} skipped={skipped} '
+                      f'minimum={minimum}')
+              print(f'PHASE10_TRX_{label}=PASS total={total} passed={passed}')
+          PY
       - name: Vulnerabilidades NuGet
         working-directory: backend
         shell: bash
