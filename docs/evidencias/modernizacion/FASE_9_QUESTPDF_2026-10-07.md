@@ -8,9 +8,11 @@ HEAD inicial congelado: `fd0f5429e3709b1ba8a5bb9c5d8ba4b6db7141a8`
 
 ## Estado de cierre
 
-- Estado técnico QuestPDF 2026.9.1: **PASS**.
-- Estado legal/licencia para integración: **OWNER_CONFIRMED / PENDING_CI_REVALIDATION**.
-- Dictamen técnico previo: PASS; el cierre definitivo queda condicionado únicamente a la revalidación CI exact-head posterior a esta confirmación.
+- Estado técnico QuestPDF 2026.9.1: **PASS / CERRADO**.
+- Estado legal/licencia: **OWNER_CONFIRMED / CI_PASS**.
+- PR de integración: **#3558**, fusionado a `dev`.
+- HEAD técnico post-merge certificado: `03c889be18a1266bed7eed30e8c8c5e46ee74809`.
+- El hotfix de seguridad independiente #3559 se fusionó antes de Fase 9 y reemplazó ImageSharp vulnerable por SkiaSharp; no forma parte del changeset QuestPDF.
 - Fase 10: **NO iniciada**.
 - `main`, QA y PROD: **NO modificados**.
 
@@ -311,21 +313,52 @@ Jobs:
 
 El dictamen sólo puede emitir `FASE_9_QUESTPDF=PASS` cuando el gate de licencia también sea SUCCESS.
 
+
+## Certificación exact-head post-merge
+
+Sobre `dev` en `03c889be18a1266bed7eed30e8c8c5e46ee74809`:
+
+- Fase 9 QuestPDF — run `38074283751`: **SUCCESS**.
+  - `Fase 9 - elegibilidad licencia QuestPDF`: SUCCESS.
+  - `Fase 9 - PDF integración`: SUCCESS.
+  - `Fase 9 - QuestPDF contratos y unitarias`: SUCCESS.
+  - `Fase 9 - regresión NuGet`: SUCCESS.
+  - `Dictamen Fase 9`: SUCCESS.
+- Fase 8 NuGet — run `38074283783`: **SUCCESS**.
+- Fase 7 .NET/EF — run `38074283775`: **SUCCESS**.
+- Fase 6 MySQL/EF provider — run `38074283718`: **SUCCESS**.
+- DEV compilación y pruebas — run `38074283801`: **SUCCESS**.
+- DEV aceptación funcional integral — run `38074283813`: **SUCCESS**.
+- Project Scope Lock — run `38074283808`: **SUCCESS**.
+- Fase 5 tooling frontend — run `38074283769`: **SUCCESS**.
+
+El job `Dictamen Fase 9` emitió:
+
+- `FASE_9_QUESTPDF=PASS`;
+- `QUESTPDF=2026.9.1`;
+- `PDF_PROFILES=7_OF_7_PASS`;
+- `FONT_POLICY=PASS`;
+- `SPECIAL_GLYPHS=PASS`;
+- `PAGINATION=PASS`;
+- `EMAIL_ATTACHMENT=PASS`;
+- `QR=NOT_APPLICABLE_NO_EXISTING_PDF_QR`;
+- `EMBEDDED_PDF_ATTACHMENTS=NOT_APPLICABLE`;
+- `PDFUA=NO_CHANGE_NOT_ENABLED`;
+- `P0=0`;
+- `P1=0`.
+
+La regresión NuGet de Fase 9 y los gates Fase 7/Fase 8 quedaron verdes después del hotfix #3559; el runtime final ya no contiene SixLabors.ImageSharp 3.1.12 y utiliza SkiaSharp 4.152.1 para sanitización de imágenes. QuestPDF permanece aislado en 2026.9.1.
+
 ## Confirmación del propietario
 
 El 2026-10-07 el propietario emitió la confirmación requerida por el gate de licencia Community. El bloqueo legal deliberado queda resuelto a nivel de declaración del propietario.
 
-Antes del merge todavía es obligatorio:
+Los gates obligatorios fueron reejecutados después del merge y terminaron SUCCESS sobre el mismo HEAD técnico certificado. No se inició Fase 10.
 
-- reejecutar `Fase 9 - elegibilidad licencia QuestPDF`;
-- obtener `Dictamen Fase 9=SUCCESS`;
-- mantener Fase 6, Fase 7, Fase 8, compilación DEV, aceptación integral y scope lock verdes sobre el exact-head;
-- no iniciar Fase 10.
-
-## Dictamen vigente
+## Dictamen final
 
 `QUESTPDF_TECHNICAL_VALIDATION=PASS`  
-`QUESTPDF_LICENSE_GATE=OWNER_CONFIRMED_PENDING_CI`  
+`QUESTPDF_LICENSE_GATE=OWNER_CONFIRMED_CI_PASS`  
 `P0=0`  
 `P1=0`  
-`FASE_9_QUESTPDF=PENDING_EXACT_HEAD_CI`
+`FASE_9_QUESTPDF=PASS`
