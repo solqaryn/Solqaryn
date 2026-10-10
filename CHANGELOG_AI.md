@@ -1,3 +1,11 @@
+## 2026-10-10 — Fase 10: modernización aislada de testing .NET
+
+- `Microsoft.NET.Test.Sdk 17.10.0 → 18.10.1` y `Moq 4.20.70 → 4.21.0` únicamente en el proyecto de pruebas. EF InMemory/SQLite mantienen las versiones 10.0.12 ya alineadas con EF productivo.
+- xUnit permanece en v2 (`xunit 2.8.1` y `xunit.runner.visualstudio 2.8.2`) sin migrarlo a v3. Su eventual evaluación 4.0.1 es un changeset independiente y no forma parte de esta fase.
+- Nuevo gate permanente `.github/workflows/modernization-phase10-testing-net.yml`: scope lock, pinning exacto, build Release, suite de unitarios completa, regresión focalizada EF SQLite/InMemory/Moq, audit NuGet directa/transitiva y dictamen fail-closed; integración Oracle/MySQL y tenancy cubiertos también por gates Fase 6/Fase 7 y DEV en el mismo SHA.
+- Impacto limitado a tooling/test, CI y documentación. No cambia runtime productivo, API, seguridad, schema, migraciones, credenciales ni entornos `main`, QA o PROD.
+- **Cierre condicionado:** exigir PR y push post-merge con gates `SUCCESS` exact-head y P0/P1=0; preservar referencias y recuentos en la conversación GitHub del PR. Contrato de pruebas en `docs/evidencias/modernizacion/FASE_10_TESTING_NET_2026-10-10.md`.
+
 ## 2026-10-10 — Recovery del CI ERP-N0.6 sobre Oracle EF Core 10
 
 - Se elimina de la validación activa N0.6 el replay de migraciones Pomelo que ya no pertenecen al runtime de `dev`. El workflow verifica la autoridad Oracle EF 10.0.9 / EF Core 10.0.12 con `OracleBaseline` sobre MySQL 8.4 efímero.
