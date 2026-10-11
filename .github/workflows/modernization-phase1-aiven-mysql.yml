@@ -65,6 +65,9 @@ jobs:
           test -n "$DB_USER"
           test -n "$DB_PASSWORD"
           test -n "$BACKUP_PASSPHRASE"
+          test "${GITHUB_REF_NAME}" = "dev"
+          test "$DB_HOST" = "solqaryn-mysql-solqaryn.h.aivencloud.com"
+          test "$DB_PORT" = "14402"
           test "$DB_NAME" = "$EXPECTED_DB"
           test "$DB_USER" = "$EXPECTED_DB_USER"
 
@@ -157,7 +160,7 @@ jobs:
           print(json.dumps(result,separators=(",",":")))
           PY
 
-      - name: Resolver decisión fail-closed del servicio Aiven compartido
+      - name: Bloquear deriva respecto de MySQL 8.4.8 aprobado
         id: apply
         shell: bash
         run: |
@@ -175,7 +178,7 @@ jobs:
           echo "No se autoriza ninguna actualización del MySQL Aiven compartido." >&2
           exit 41
 
-      - name: Certificación post-cambio / no-cambio
+      - name: Verificar Aiven antes y después sin modificar el motor
         id: after
         shell: bash
         run: |
@@ -242,18 +245,18 @@ jobs:
             printf '%s\n' "- HEAD: $GITHUB_SHA"
             printf '%s\n' "- Acción: $action"
             printf '%s\n' "- MySQL final: $after"
-            printf '%s\n' "- Target: $TARGET_VERSION"
+            printf '%s\n' "- Versión aprobada: $TARGET_VERSION"
             printf '%s\n' "- Base: $EXPECTED_DB"
             printf '%s\n' '- PROD tocado: false'
             printf '%s\n' '- Backup cifrado pre-cambio: PASS'
             printf '%s\n' '- Identidad DB/usuario: PASS'
             printf '%s\n' '- Conteos críticos preservados: PASS'
-            if [ "$action" = "already_target" ]; then
-              printf '%s\n' '- FASE_1_AIVEN_MYSQL: PASS_TARGET_ALREADY_PRESENT'
-            elif [ "$action" = "not_available_no_change" ]; then
-              printf '%s\n' '- FASE_1_AIVEN_MYSQL: PASS_NO_CHANGE_TARGET_NOT_AVAILABLE'
+            if [ "$action" = "already_target" ] && [ "$after" = "$TARGET_VERSION" ]; then
+              printf '%s\n' '- FASE_1_AIVEN_MYSQL: PASS_APPROVED_8_4_8_NO_CHANGE'
+              printf '%s\n' '- Aiven maintenance-start: NOT_TRIGGERED'
             else
-              printf '%s\n' '- FASE_1_AIVEN_MYSQL: BLOCKED_SHARED_SERVICE_REQUIRES_EXPLICIT_PROD_AUTH_OR_TOPOLOGY_SPLIT'
+              printf '%s\n' '- FASE_1_AIVEN_MYSQL: BLOCKED_VERSION_DRIFT'
+              exit 41
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
