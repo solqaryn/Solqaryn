@@ -1,3 +1,11 @@
+## 2026-10-10 — Fase 11: preflight QA sin cambios de datos ni costes
+
+- DEV origen `b11ce636`: 9/9 workflows SUCCESS. PR de promoción `dev -> qa` #3567 en borrador; QA no promovido ni certificado. Se preserva Aiven MySQL **8.4.8** aprobado y Render Free, sin compras.
+- `.github/workflows/qa-ci.yml`: ejecutar QA backend, frontend, lint, build y npm audit también en PRs hacia QA, antes de integrar 485 commits modernizados sobre la rama divergente.
+- `.github/workflows/qa-schema-recovery.yml`: retirar el recovery automático obsoleto que intentaba migraciones Pomelo sobre QA y reemplazarlo por un preflight Oracle EF10 **100 % solo lectura**, con fail-closed por esquema, baseline, contrato N0.6 o versión/binding MySQL. Sin SQL DDL/DML ni backups expuestos en PR.
+- Evidencia causal y condición de rollback: `docs/evidencias/modernizacion/FASE_11_CERTIFICACION_DEV_Y_PREFLIGHT_QA_2026-10-10.md`.
+- No declarar Fase 11 al 100 % hasta resolver adopción/migraciones y smoke QA exact-head y el requisito SMTP OAuth2 real expresamente solicitado; el aplazamiento previo del transporte en Render Free no equivale a PASS E2E. Sin cambios en QA, `main`, PROD, secretos o servicios.
+
 ## 2026-10-10 — Fase 11: readiness real Render Free y reintento limitado en smoke DEV
 
 - El `DEV - Certificación funcional final` ejecutado tras el PR #3565 en el HEAD `26f358aee5fc6c049547691d0fbdd7ca9ec9a85a` falló en el gate de identidad/categorías/productos con HTTP 502, después de que las rutas HTML habían pasado. Los logs de Render documentaron el arranque posterior del runtime DEV y la conexión a Aiven `solqaryn_dev`.

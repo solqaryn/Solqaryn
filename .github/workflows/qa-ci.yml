@@ -10,6 +10,8 @@ on:
       - 'render.yaml'
       - '.github/workflows/qa-ci.yml'
       - '.github/workflows/promotion-source-guard.yml'
+  pull_request:
+    branches: [qa]
   workflow_dispatch:
 
 permissions:
@@ -76,6 +78,8 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
+      - run: npm audit --audit-level=high
+      - run: npm audit --omit=dev --audit-level=high
       - run: npm run lint
       - run: npm run build:prod
       - run: node scripts/validate-environment-routing.mjs
