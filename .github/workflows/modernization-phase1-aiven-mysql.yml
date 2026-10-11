@@ -214,10 +214,8 @@ jobs:
             "productionTouched":False,
             "secretsExposed":0
           }
-          if action=="already_target" and after!="8.4.8":
-              raise SystemExit("Service claimed target version but final version is not 8.4.8")
-          if action=="not_available_no_change" and after!=before:
-              raise SystemExit("Aiven version changed even though target was not certified available")
+          if action!="already_target" or before!="8.4.8" or after!="8.4.8":
+              raise SystemExit("FAIL-CLOSED: Aiven shared service must remain at approved MySQL 8.4.8")
           open("evidence/phase1-after.json","w").write(json.dumps(d,indent=2)+"\n")
           print(json.dumps(d,separators=(",",":")))
           PY
