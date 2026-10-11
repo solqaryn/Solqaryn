@@ -107,7 +107,7 @@ jobs:
             echo "QA_ORACLE_TABLE_TOPOLOGY=FAIL: tablas/engine/collation no coinciden con DEV certificado." >&2
             exit 1
           }
-          test "$fk_hash" = "79f67fec9b5761f66cf93dbbcab3a7e7cfd769e132019e720e51d031" || {
+          test "$fk_hash" = "79f67fec9b5761f66cf93dbbcab3a7e7cfd769e132019e720e51d0317ef93b3c" || {
             echo "QA_ORACLE_FK_TOPOLOGY=FAIL: constraints FK no coinciden con DEV certificado." >&2
             exit 1
           }
