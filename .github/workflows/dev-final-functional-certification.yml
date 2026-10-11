@@ -30,6 +30,25 @@ jobs:
       - name: Instalar utilidades
         run: sudo apt-get update && sudo apt-get install -y mysql-client jq
 
+      - name: Esperar readiness API DEV y proxy Vercel tras cold start Render Free
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 36); do
+            if curl --fail --silent --connect-timeout 5 --max-time 12 "$BACKEND/health/ready" -o "$RUNNER_TEMP/dev-direct-ready.json" &&
+               jq -e '.status == "ready" and .database == "connected"' "$RUNNER_TEMP/dev-direct-ready.json" >/dev/null &&
+               curl --fail --silent --connect-timeout 5 --max-time 12 "$FRONTEND/api/health/ready" -o "$RUNNER_TEMP/dev-proxy-ready.json" &&
+               jq -e '.status == "ready" and .database == "connected"' "$RUNNER_TEMP/dev-proxy-ready.json" >/dev/null; then
+              echo "DEV_RENDER_FREE_COLD_START_RECOVERED=PASS attempts=$attempt"
+              exit 0
+            fi
+            if [ "$attempt" -eq 36 ]; then
+              echo "DEV_RENDER_FREE_COLD_START=FAIL: API directa y proxy DEV no recuperaron readiness dentro del límite; sin certificación." >&2
+              exit 1
+            fi
+            sleep 5
+          done
+
       - name: Rutas y branding HTTP
         shell: bash
         run: |
@@ -48,9 +67,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          curl -fsS "$FRONTEND/api/empresa-configuracion/publica" -o /tmp/identity.json
-          curl -fsS "$FRONTEND/api/tienda/categorias" -o /tmp/categories.json
-          curl -fsS "$FRONTEND/api/tienda/productos?pagina=1&tamano=100" -o /tmp/products.json
+          curl --retry 5 --retry-all-errors --retry-delay 3 --retry-max-time 150 --connect-timeout 8 --max-time 30 --fail --silent --show-error "$FRONTEND/api/empresa-configuracion/publica" -o /tmp/identity.json
+          curl --retry 5 --retry-all-errors --retry-delay 3 --retry-max-time 150 --connect-timeout 8 --max-time 30 --fail --silent --show-error "$FRONTEND/api/tienda/categorias" -o /tmp/categories.json
+          curl --retry 5 --retry-all-errors --retry-delay 3 --retry-max-time 150 --connect-timeout 8 --max-time 30 --fail --silent --show-error "$FRONTEND/api/tienda/productos?pagina=1&tamano=100" -o /tmp/products.json
 
           jq -e '.success == true and ((.data.nombreComercial | type) == "string") and ((.data.nombreComercial | length) > 0)' /tmp/identity.json >/dev/null
           jq -e '.success == true and (.data | length) >= 1' /tmp/categories.json >/dev/null

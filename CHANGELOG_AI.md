@@ -1,3 +1,10 @@
+## 2026-10-10 — Fase 11: readiness real Render Free y reintento limitado en smoke DEV
+
+- El `DEV - Certificación funcional final` ejecutado tras el PR #3565 en el HEAD `26f358aee5fc6c049547691d0fbdd7ca9ec9a85a` falló en el gate de identidad/categorías/productos con HTTP 502, después de que las rutas HTML habían pasado. Los logs de Render documentaron el arranque posterior del runtime DEV y la conexión a Aiven `solqaryn_dev`.
+- Corrección exclusivamente del workflow DEV: espera fail-closed de readiness HTTP directa Render y por proxy Vercel, comprobando JSON `status=ready` y `database=connected`, durante un número limitado de intentos. Las tres llamadas JSON de identidad/tienda tienen reintentos limitados para errores transitorios. Si el runtime no responde correctamente, sigue siendo fallo certificable, no se ignora el estado 502.
+- Se rearmó el checkpoint de certificación DEV para ejecución automática después de integrar el fix en `dev`. Aiven sigue en MySQL `8.4.8`; no se compra/actualiza ningún servicio; no se cambia producto, API, schema, credenciales, QA, main ni PROD.
+- `FASE_11_INTEGRAL` no puede declararse `CERTIFIED` por este cambio aislado: se exige posterior CI exact-head, smoke real completo, SMTP OAuth2 real y QA según el alcance aprobado. Reversión: `git revert` del commit de corrección del gate en DEV.
+
 ## 2026-10-10 — Fase 11: prearm de smoke real DEV y backup/restore de Aiven a efímero
 
 - Se actualizan únicamente los checkpoints canónicos `.github/checkpoints/dev-final-functional-certification` y `.github/checkpoints/backup-request` para ejecutar tras su promoción controlada a `dev` los workflows existentes de smoke público, Cloudinary/branding, routing Vercel/Render, MySQL, backup cifrado real DEV y restore same-artifact en runner local descartable.
