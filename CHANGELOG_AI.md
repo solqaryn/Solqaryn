@@ -1,3 +1,11 @@
+## 2026-10-10 — Fase 11: prearm de smoke real DEV y backup/restore de Aiven a efímero
+
+- Se actualizan únicamente los checkpoints canónicos `.github/checkpoints/dev-final-functional-certification` y `.github/checkpoints/backup-request` para ejecutar tras su promoción controlada a `dev` los workflows existentes de smoke público, Cloudinary/branding, routing Vercel/Render, MySQL, backup cifrado real DEV y restore same-artifact en runner local descartable.
+- El cierre posterior exige `DEV - Certificación funcional final` y `SOLQARYN - Backup/restore topology exactness` en `SUCCESS` exact-head; el último se activa solo si el mensaje de squash incluye el marker `[SOLQARYN-BACKUP-TOPOLOGY]`. `SOLQARYN - Backup operativo de DEV` no debe ejecutar su job real sin el marker distinto `[SOLQARYN-BACKUP-REAL]`.
+- Aiven permanece en MySQL 8.4.8 aprobado. La lectura real de `solqaryn_dev` puede producir solo un respaldo cifrado efímero; la restauración destructiva se limita a MySQL local del runner. No se actualiza el motor, no se escribe en Aiven ni se toca QA/PROD.
+- Estas pruebas no sustituyen la certificación SMTP OAuth2 real ni autorizan `dev -> qa` / `qa -> main`; si hay fallos de HTTP o de integridad se aplica STOP y recovery del scope en DEV antes de cualquier promoción.
+- Rollback de los checkpoints: revert normal en `dev`; no se revierten datos ni se toca otro entorno.
+
 ## 2026-10-10 — Decisión de Aiven MySQL 8.4.8 para certificación integral
 
 - El propietario ratifica **MySQL Aiven 8.4.8**; 8.4.11 no estaba disponible en Aiven. El servicio compartido `solqaryn-mysql` de DEV/QA/PROD queda **sin actualización, sin mantenimiento iniciado y sin cambios de credenciales/esquemas/datos**.
