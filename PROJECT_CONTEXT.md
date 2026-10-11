@@ -93,6 +93,7 @@ Consultar `ARCHITECTURE.md` para cambios estructurales y `PROJECT_INDEX.md` para
 ### Aiven
 - Proyecto: `solqaryn`.
 - Servicio MySQL: `solqaryn-mysql`.
+- **MySQL Aiven: 8.4.8 aprobada por el propietario el 2026-10-10; congelada sin upgrade ni maintenance-start**. La Fase 1 prueba la versión real vía `SELECT VERSION()` y falla si difiere; DEV/QA/PROD comparten ese servidor, con bases/usuarios segregados. MySQL 8.4 de Docker en CI es efímero e independiente del servicio Aiven.
 - Bases: `solqaryn_dev`, `solqaryn_qa` y `solqaryn_prod`.
 - Usuarios de aplicación separados por entorno: `solqaryn_dev_user`, `solqaryn_qa_user`, `solqaryn_prod_user`.
 

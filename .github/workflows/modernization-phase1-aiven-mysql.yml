@@ -1,4 +1,4 @@
-name: Modernización - Fase 1 Aiven MySQL 8.4.11 shared-service gate
+name: Modernización - Fase 1 Aiven MySQL 8.4.8 aprobado
 # Aiven topology: one MySQL service hosts isolated DEV/QA/PROD databases; this workflow is fail-closed and never starts maintenance.
 
 on:
@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   phase1:
-    name: Verificar MySQL 8.4.11 y bloquear cambios del servicio compartido
+    name: Verificar MySQL 8.4.8 y bloquear cambios del servicio compartido
     runs-on: ubuntu-latest
     timeout-minutes: 60
     environment: DEV
@@ -32,7 +32,7 @@ jobs:
       BACKUP_PASSPHRASE: ${{ secrets.SOLQARYN_DEV_BACKUP_PASSPHRASE }}
       AIVEN_PROJECT: solqaryn
       AIVEN_SERVICE: solqaryn-mysql
-      TARGET_VERSION: 8.4.11
+      TARGET_VERSION: 8.4.8
       EXPECTED_DB: solqaryn_dev
       EXPECTED_DB_USER: solqaryn_dev_user
 
@@ -65,6 +65,9 @@ jobs:
           test -n "$DB_USER"
           test -n "$DB_PASSWORD"
           test -n "$BACKUP_PASSPHRASE"
+          test "${GITHUB_REF_NAME}" = "dev"
+          test "$DB_HOST" = "solqaryn-mysql-solqaryn.h.aivencloud.com"
+          test "$DB_PORT" = "14402"
           test "$DB_NAME" = "$EXPECTED_DB"
           test "$DB_USER" = "$EXPECTED_DB_USER"
 
@@ -102,7 +105,7 @@ jobs:
           open("evidence/phase1-before.json","w").write(json.dumps(d,indent=2)+"\n")
           PY
 
-      - name: Verificar disponibilidad exacta 8.4.11 en Aiven
+      - name: Verificar metadata Aiven sin ejecutar mantenimiento
         id: availability
         shell: bash
         run: |
@@ -157,7 +160,7 @@ jobs:
           print(json.dumps(result,separators=(",",":")))
           PY
 
-      - name: Resolver decisión fail-closed del servicio Aiven compartido
+      - name: Bloquear deriva respecto de MySQL 8.4.8 aprobado
         id: apply
         shell: bash
         run: |
@@ -171,18 +174,11 @@ jobs:
             exit 0
           fi
 
-          if [ "${{ steps.availability.outputs.target_in_maintenance }}" != "true" ]; then
-            echo "action=not_available_no_change" >> "$GITHUB_OUTPUT"
-            echo "Aiven no expone $target como mantenimiento disponible para el servicio compartido. No se modifica la base."
-            exit 0
-          fi
-
-          echo "action=blocked_shared_service_target_available" >> "$GITHUB_OUTPUT"
-          echo "Aiven expone $target, pero solqaryn-mysql hospeda DEV/QA/PROD. Iniciar mantenimiento sería un cambio service-wide con impacto potencial en PROD." >&2
-          echo "Fail-closed: se requiere autorización productiva explícita vigente o separar servicios antes de ejecutar el mantenimiento." >&2
+          echo "FASE_1_AIVEN_MYSQL=BLOCKED_VERSION_DRIFT observed=$before approved=$target" >&2
+          echo "No se autoriza ninguna actualización del MySQL Aiven compartido." >&2
           exit 41
 
-      - name: Certificación post-cambio / no-cambio
+      - name: Verificar Aiven antes y después sin modificar el motor
         id: after
         shell: bash
         run: |
@@ -209,7 +205,7 @@ jobs:
             "action":action,
             "beforeVersion":before,
             "afterVersion":after,
-            "targetVersion":"8.4.11",
+            "targetVersion":"8.4.8",
             "baseTables":int(sys.argv[2]),
             "efMigrations":int(sys.argv[3]),
             "products":int(sys.argv[4]),
@@ -218,10 +214,8 @@ jobs:
             "productionTouched":False,
             "secretsExposed":0
           }
-          if action=="already_target" and after!="8.4.11":
-              raise SystemExit("Service claimed target version but final version is not 8.4.11")
-          if action=="not_available_no_change" and after!=before:
-              raise SystemExit("Aiven version changed even though target was not certified available")
+          if action!="already_target" or before!="8.4.8" or after!="8.4.8":
+              raise SystemExit("FAIL-CLOSED: Aiven shared service must remain at approved MySQL 8.4.8")
           open("evidence/phase1-after.json","w").write(json.dumps(d,indent=2)+"\n")
           print(json.dumps(d,separators=(",",":")))
           PY
@@ -249,18 +243,18 @@ jobs:
             printf '%s\n' "- HEAD: $GITHUB_SHA"
             printf '%s\n' "- Acción: $action"
             printf '%s\n' "- MySQL final: $after"
-            printf '%s\n' "- Target: $TARGET_VERSION"
+            printf '%s\n' "- Versión aprobada: $TARGET_VERSION"
             printf '%s\n' "- Base: $EXPECTED_DB"
             printf '%s\n' '- PROD tocado: false'
             printf '%s\n' '- Backup cifrado pre-cambio: PASS'
             printf '%s\n' '- Identidad DB/usuario: PASS'
             printf '%s\n' '- Conteos críticos preservados: PASS'
-            if [ "$action" = "already_target" ]; then
-              printf '%s\n' '- FASE_1_AIVEN_MYSQL: PASS_TARGET_ALREADY_PRESENT'
-            elif [ "$action" = "not_available_no_change" ]; then
-              printf '%s\n' '- FASE_1_AIVEN_MYSQL: PASS_NO_CHANGE_TARGET_NOT_AVAILABLE'
+            if [ "$action" = "already_target" ] && [ "$after" = "$TARGET_VERSION" ]; then
+              printf '%s\n' '- FASE_1_AIVEN_MYSQL: PASS_APPROVED_8_4_8_NO_CHANGE'
+              printf '%s\n' '- Aiven maintenance-start: NOT_TRIGGERED'
             else
-              printf '%s\n' '- FASE_1_AIVEN_MYSQL: BLOCKED_SHARED_SERVICE_REQUIRES_EXPLICIT_PROD_AUTH_OR_TOPOLOGY_SPLIT'
+              printf '%s\n' '- FASE_1_AIVEN_MYSQL: BLOCKED_VERSION_DRIFT'
+              exit 41
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
