@@ -1,3 +1,10 @@
+## 2026-10-10 — Decisión de Aiven MySQL 8.4.8 para certificación integral
+
+- El propietario ratifica **MySQL Aiven 8.4.8**; 8.4.11 no estaba disponible en Aiven. El servicio compartido `solqaryn-mysql` de DEV/QA/PROD queda **sin actualización, sin mantenimiento iniciado y sin cambios de credenciales/esquemas/datos**.
+- `.github/workflows/modernization-phase1-aiven-mysql.yml` fija el objetivo de inspección a 8.4.8 y aplica fail-closed si `SELECT VERSION()` difiere del pin aprobado; conserva verificación de identidad, metadatos Aiven de solo lectura, backup cifrado y conteos antes/después. Los artefactos históricos que describen la propuesta 8.4.11 no se reescriben.
+- La certificación post-merge debe aportar workflow Fase 1 `SUCCESS` al HEAD exacto de `dev`; no se promueve a QA antes del cierre de todos los gates exigidos para Fase 11 (incluido SMTP OAuth2 real).
+- Rollback: revert normal del changeset documental/de workflow en DEV, nunca `maintenance-start` en el servicio compartido ni actualización automática de MySQL.
+
 ## 2026-10-10 — Fase 11: reparación del gate de backup/restore ante Oracle EF10
 
 - El gate `.github/workflows/backup-restore-dev.yml` deja de crear el esquema con migraciones Pomelo retiradas; adopta `Solqaryn.DatabaseBootstrap` en modo `fresh` y verifica 136 tablas, `OracleBaseline`, EF `pending-model=0`, SDK 10.0.401 y `dotnet-ef 10.0.12`.
