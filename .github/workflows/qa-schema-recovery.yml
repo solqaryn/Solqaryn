@@ -58,9 +58,9 @@ jobs:
           set -euo pipefail
           export MYSQL_PWD="$DB_PASSWORD"
           q() {
-            mysql --protocol=TCP --connect-timeout=12 --ssl-mode=REQUIRED \
+            mysql --protocol=TCP --connect-timeout=12 --ssl-mode=REQUIRED --default-character-set=utf8mb4 \
               -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" \
-              --batch --skip-column-names "$DB_NAME" -e "$1"
+              --batch --raw --skip-column-names "$DB_NAME" -e "$1"
           }
 
           version="$(q 'SELECT VERSION();')"
@@ -96,6 +96,26 @@ jobs:
             echo "QA_ORACLE_BASELINE=PENDING: certificacion QA bloqueada. Aplicar adoption Oracle con backup verificado y autorizacion separada; esta prueba es SOLO LECTURA." >&2
             exit 1
           }
+
+          # Fingerprints del origen DEV real restaurado, run 38107320797 (2026-10-11).
+          # La topologia de QA no puede divergir de la fuente certificada.
+          table_hash="$(q "SELECT CONCAT(TABLE_NAME,'|',ENGINE,'|',COALESCE(TABLE_COLLATION,'')) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' ORDER BY TABLE_NAME;" | sha256sum | awk '{print $1}')"
+          fk_hash="$(q "SELECT CONCAT(TABLE_NAME,'|',CONSTRAINT_NAME,'|',REFERENCED_TABLE_NAME,'|',UNIQUE_CONSTRAINT_NAME) FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() ORDER BY TABLE_NAME,CONSTRAINT_NAME;" | sha256sum | awk '{print $1}')"
+          index_hash="$(q "SELECT CONCAT(TABLE_NAME,'|',INDEX_NAME,'|',SEQ_IN_INDEX,'|',COALESCE(COLUMN_NAME,''),'|',NON_UNIQUE,'|',INDEX_TYPE) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() ORDER BY TABLE_NAME,INDEX_NAME,SEQ_IN_INDEX;" | sha256sum | awk '{print $1}')"
+
+          test "$table_hash" = "36b725a682b43d744509c8fd27a6ae54b6017d1c46e1301ee796f86f760e7489" || {
+            echo "QA_ORACLE_TABLE_TOPOLOGY=FAIL: tablas/engine/collation no coinciden con DEV certificado." >&2
+            exit 1
+          }
+          test "$fk_hash" = "79f67fec9b5761f66cf93dbbcab3a7e7cfd769e132019e720e51d031" || {
+            echo "QA_ORACLE_FK_TOPOLOGY=FAIL: constraints FK no coinciden con DEV certificado." >&2
+            exit 1
+          }
+          test "$index_hash" = "3f91e8d03e2700329472bb3ee678c0f3d680495217d4cb4da48291351b3b90ec" || {
+            echo "QA_ORACLE_INDEX_TOPOLOGY=FAIL: indices no coinciden con DEV certificado." >&2
+            exit 1
+          }
+          echo "QA_ORACLE_TOPOLOGY=PASS tables_fks_indexes_identical_to_dev"
 
           trigger_count="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_SCHEMA=DATABASE() AND TRIGGER_NAME IN ('TR_MovimientosInventario_N06_OrigenTipado_BI','TR_MovimientosInventario_N06_OrigenTipado_BU');")"
           check_count="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME='MovimientosInventario' AND CONSTRAINT_TYPE='CHECK' AND CONSTRAINT_NAME='CK_MovimientosInventario_OrigenTipado_Exclusivo_N06';")"
