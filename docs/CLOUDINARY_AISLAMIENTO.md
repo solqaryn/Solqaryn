@@ -10,8 +10,8 @@ El identificador oficial del entorno de DEV es `solqaryn_dev`.
 
 Cuando `Cloudinary__EnvironmentPrefix=solqaryn_dev`:
 
-- las nuevas imágenes de productos se almacenan bajo `solqaryn_dev/Solqaryn/productos`;
-- los nuevos comprobantes se almacenan bajo `solqaryn_dev/Solqaryn/compras`;
+- las nuevas imágenes de productos se almacenan bajo `solqaryn_dev/solqaryn/productos`;
+- los nuevos comprobantes se almacenan bajo `solqaryn_dev/solqaryn/compras`;
 - las nuevas fotografías de perfil se almacenan bajo `solqaryn_dev/solqaryn/perfiles`;
 - cualquier eliminación cuyo `PublicId` no comience con `solqaryn_dev/` queda bloqueada antes de llamar a Cloudinary.
 
@@ -101,7 +101,7 @@ El redeploy manual `dep-darcsc0jo6nc73fffmtg` terminó `live` y el health poster
 - Health posterior: `/health/ready` HTTP 200.
 - Upload real desde SOLQARYN DEV: PASS.
 - Cloud destino: `riyrzmob`.
-- Prefijo observado en Media Library: `solqaryn_dev/Solqaryn/productos/empresas/1/`.
+- Prefijo observado en Media Library: `solqaryn_dev/solqaryn/productos/empresas/1/`.
 - La API pública de tienda devuelve el asset nuevo desde `res.cloudinary.com/riyrzmob/.../solqaryn_dev/...`.
 
 ### Inventario read-only de referencias legacy
@@ -119,7 +119,7 @@ Interpretación operacional: 13 filas lógicas de assets continúan enlazadas al
 
 Estado del punto: **Cloudinary DEV nuevo funcional; cierre global PENDIENTE de migrar 13 assets legacy y volver a escanear hasta cero referencias.**
 
-## Corrección de descarga de imágenes DEV — 2026-10-12 (candidata a CI)
+## Corrección de descarga de imágenes DEV — 2026-10-12 (integrada)
 
 - Hallazgo real del propietario: `GET /api/productos/7/imagenes/9/descargar` respondió HTTP 400 porque la URL persistida no contiene el directorio canónico de imágenes de productos; el archivo existe bajo el prefijo del ambiente DEV.
 - La corrección propuesta en DEV utiliza `StorageTenantContext` obtenido mediante el permiso `Productos.Exportar` y la membresía activa verificada del usuario; nunca confía en una URL o un EmpresaId enviados como autoridad.
@@ -128,3 +128,13 @@ Estado del punto: **Cloudinary DEV nuevo funcional; cierre global PENDIENTE de m
 - **Sin migración materializada todavía:** no se han modificado referencias en Aiven ni activos Cloudinary. La reconciliación de archivos a la carpeta canónica permanece separada y exige respaldo, comprobación de existencia/hash, migración controlada de URL/PublicId y verificación del resultado antes de retirar cualquier original.
 - Pruebas obligatorias: unitarias de acceso permitido DEV, rechazo de otro tenant/QA/PROD/cuenta/tipo de recurso, bloqueo de borrado; CI del PR y exact-head DEV; smoke autenticado de descarga individual y ZIP sobre el producto afectado. Un build verde no equivale a smoke real ni cierra la deuda de normalización física.
 - No hay compras, ni uso de TinyFish, ni cambios en QA/PROD/MySQL 8.4.8, ni cambio de credenciales.
+
+## Certificación operativa y reconciliación posterior — 2026-10-12
+
+- Pull request [#3569](https://github.com/solqaryn/Solqaryn/pull/3569) fusionado en `dev` SHA `71bcfbeea46dcc0bf35fd49123c6ebb63e577410` después de **15/15** workflows del PR en `SUCCESS`.
+- Vercel DEV `READY` y Render DEV `live` confirmados ambos en ese SHA.
+- El propietario confirmó que la descarga de imágenes de producto funciona en DEV e indicó que la descarga ZIP completa también fue verificada. Se documenta como **aceptación manual del usuario**, no como inspección automatizada del número de entradas del ZIP o hash de contenidos.
+- La compatibilidad con carpetas históricas sólo resuelve la lectura. **NO mueve imágenes ni actualiza los `PublicId`/URL persistidos.** Prohibido eliminar originales o normalizar DB por simple sustitución textual de rutas.
+- El inventario original detectó 13 filas lógicas (2026-09-25), pero su recuento está desactualizado. La nueva auditoría `.github/workflows/cloudinary-dev-legacy-audit.yml` ejecuta análisis **solo lectura** del cloud/carpeta canónica y expone únicamente recuentos por tipo; exige MySQL Aiven 8.4.8, usuario y base de DEV, sin mostrar URLs ni IDs, sin tocar QA/PROD.
+- Para cerrar normalización física futura: evidenciar recuento y archivos disponibles, backup cifrado real de DEV, copia/rehidratación en carpeta canónica desde el origen autorizado, verificar integridad binaria, actualizar URL y PublicId en una transacción/reconciliación idempotente, readback y smoke individual/ZIP; no borrar originales sin otro permiso específico.
+- Coste adicional autorizado: **USD 0**; no TinyFish ni compras. El dominio `solqaryn.com`, SMTP runtime real y VAEP conservan su estado deliberadamente aplazado/pausado, sin reactivación por este cambioset.
