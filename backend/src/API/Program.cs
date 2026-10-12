@@ -44,6 +44,12 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 if (isRender) EnvironmentDatabaseGuard.ValidateRenderBinding(builder.Environment.EnvironmentName, connectionString);
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMemoryCache();
+// Operación única DEV: OFF por defecto; nunca se registra en QA/PROD o sin Render.
+if (isRender && builder.Environment.IsDevelopment() &&
+    builder.Configuration.GetValue<bool>("Cloudinary:NormalizeDevLegacyImagesOnStartup"))
+{
+    builder.Services.AddHostedService<DevCloudinaryLegacyNormalizationHostedService>();
+}
 builder.Services.AddResponseCompression(options =>
 {
     options.EnableForHttps = true;

@@ -28,7 +28,7 @@ permissions:
   actions: read
 
 concurrency:
-  group: modernization-phase5-frontend-tooling-dev
+  group: modernization-phase5-frontend-tooling-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
