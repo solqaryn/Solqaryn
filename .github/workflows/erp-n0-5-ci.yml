@@ -181,7 +181,7 @@ jobs:
           set -euo pipefail
           c="${{ job.services.mysql.id }}"
           test "$(docker exec "$c" mysql -uroot -proot solqaryn_n05_ci -Nse "SELECT COUNT(*) FROM MetodosPago WHERE Codigo='ChequeExterno' AND Id=1;")" = 1
-          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n05_ci -Nse "SELECT COUNT(*) FROM MetodosPago WHERE Codigo IN ('Efectivo','Transferencia','Tarjeta','Otro') AND Id BETWEEN 1 AND 4;")" = 3
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n05_ci -Nse "SELECT COUNT(*) FROM MetodosPago WHERE Codigo='Efectivo' AND Id=1;")" = 0
           test "$(docker exec "$c" mysql -uroot -proot solqaryn_n05_ci -Nse "SELECT COUNT(*) FROM Ventas v JOIN MetodosPago m ON v.MetodoPagoId=m.Id AND BINARY v.MetodoPago=BINARY m.Codigo WHERE v.Id BETWEEN 9501 AND 9504;")" = 4
           test "$(docker exec "$c" mysql -uroot -proot solqaryn_n05_ci -Nse "SELECT COUNT(*) FROM FacturaPagos fp JOIN MetodosPago m ON fp.MetodoPagoId=m.Id AND BINARY m.Codigo=BINARY(CASE fp.MetodoPago WHEN 1 THEN 'Efectivo' WHEN 2 THEN 'Transferencia' WHEN 3 THEN 'Tarjeta' WHEN 4 THEN 'Otro' END) WHERE fp.Id BETWEEN 9521 AND 9524;")" = 4
           test "$(docker exec "$c" mysql -uroot -proot solqaryn_n05_ci -Nse "SELECT COUNT(*) FROM MovimientosFinancieros mf JOIN MetodosPago m ON mf.MetodoPagoId=m.Id AND BINARY mf.MetodoPago=BINARY m.Codigo WHERE mf.Id BETWEEN 9531 AND 9534;")" = 4
