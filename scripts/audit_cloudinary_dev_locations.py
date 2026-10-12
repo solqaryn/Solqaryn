@@ -111,8 +111,8 @@ def main() -> int:
             if (table, column) not in available:
                 raise RuntimeError("Esquema DEV no contiene columnas requeridas para el inventario")
         query = (
-            f"SELECT COALESCE(\`{url_column}\`,''),COALESCE(\`{id_column}\`,'') "
-            f"FROM \`{table}\`;"
+            f"SELECT COALESCE(`{url_column}`,''),COALESCE(`{id_column}`,'') "
+            f"FROM `{table}`;"
         )
         counter = Counter()
         for line in mysql_query(query):
