@@ -1,0 +1,277 @@
+name: PROD - Backup cifrado y restore efimero antes de Oracle EF10
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/prod-oracle-pr-backup-restore.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  checks: read
+  pull-requests: read
+  actions: read
+
+concurrency:
+  group: prod-oracle-backup-restore
+  cancel-in-progress: false
+
+jobs:
+  verify-restore:
+    if: github.ref_name == 'main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    name: PROD fuente Aiven -> respaldo cifrado -> restore MySQL descartable
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: PROD
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: solqaryn-ci-prod-disposable-only
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -psolqaryn-ci-prod-disposable-only --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      DB_HOST: ${{ vars.SOLQARYN_PROD_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_PROD_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_PROD_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_PROD_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_PROD_DB_PASSWORD }}
+      BACKUP_PASSPHRASE: ${{ secrets.SOLQARYN_PROD_BACKUP_PASSPHRASE }}
+    steps:
+      - name: Checkout PROD (identidad)
+        uses: actions/checkout@v4
+
+      - name: Guard PROD solo Aiven 8.4.8 y secretos
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "main"
+          node scripts/verify-project-scope.mjs
+          test "$DB_HOST" = "solqaryn-mysql-solqaryn.h.aivencloud.com"
+          test "$DB_PORT" = "14402"
+          test "$DB_NAME" = "solqaryn_prod"
+          test "$DB_USER" = "solqaryn_prod_user"
+          test -n "$DB_PASSWORD" && test -n "$BACKUP_PASSPHRASE"
+          echo "PROD_BACKUP_SCOPE=PASS"
+
+      - name: Instalar cliente MySQL
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+
+      - name: Backup transaccional de PROD y cifrado AES-256 (sin dump en artefacto)
+        id: backup
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          folder="$RUNNER_TEMP/solqaryn-prod-oracle-backup"
+          mkdir -p "$folder"
+          dump="$folder/prod.sql"
+          enc="$folder/prod.sql.enc"
+          trap 'rm -f "$dump"' EXIT
+          export MYSQL_PWD="$DB_PASSWORD"
+          version="$(mysql --protocol=TCP --ssl-mode=REQUIRED -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --batch --skip-column-names "$DB_NAME" -e 'SELECT VERSION();')"
+          case "$version" in 8.4.8|8.4.8-*) ;; *) echo "PROD_MYSQL_VERSION_INVALID" >&2; exit 1;; esac
+          mysqldump --protocol=TCP --ssl-mode=REQUIRED -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" \
+            --single-transaction --skip-lock-tables --no-tablespaces --set-gtid-purged=OFF \
+            --routines --triggers "$DB_NAME" > "$dump"
+          test -s "$dump"
+          sha256sum "$dump" | cut -d' ' -f1 > "$folder/prod-plaintext.sha256"
+          openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt \
+            -pass env:BACKUP_PASSPHRASE -in "$dump" -out "$enc"
+          test -s "$enc"
+          sha256sum "$enc" > "$folder/prod-encrypted.sha256"
+          rm -f "$dump"
+          trap - EXIT
+          echo "encrypted=$enc" >> "$GITHUB_OUTPUT"
+          echo "PROD_BACKUP_ENCRYPTED=PASS"
+          echo "PROD_DATABASE_WRITES=0"
+
+      - name: Restore real del respaldo cifrado en MySQL local efímero
+        shell: bash
+        env:
+          ENCRYPTED_FILE: ${{ steps.backup.outputs.encrypted }}
+        run: |
+          set -euo pipefail
+          test -s "$ENCRYPTED_FILE"
+          export MYSQL_PWD=solqaryn-ci-prod-disposable-only
+          mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root \
+            -e 'CREATE DATABASE solqaryn_prod_restore_ephemeral CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
+          # El SQL descifrado fluye directamente a mysql local: no hay fichero SQL en disco.
+          openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 \
+            -pass env:BACKUP_PASSPHRASE -in "$ENCRYPTED_FILE" |
+            mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root solqaryn_prod_restore_ephemeral
+          qlocal(){ mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root -Nse "$1" solqaryn_prod_restore_ephemeral; }
+          export MYSQL_PWD="$DB_PASSWORD"
+          qsource(){ mysql --protocol=TCP --ssl-mode=REQUIRED -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -Nse "$1" "$DB_NAME"; }
+          sql="SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' ORDER BY TABLE_NAME;"
+          tables="$(qsource "$sql")"
+          count=0
+          while IFS= read -r tbl; do
+            test -n "$tbl" || continue
+            [[ "$tbl" =~ ^[A-Za-z0-9_]+$ ]] || { echo 'PROD_RESTORE_TABLE_NAME_INVALID' >&2; exit 1; }
+            a="$(qsource "SELECT COUNT(*) FROM \`$tbl\`;")"
+            export MYSQL_PWD=solqaryn-ci-prod-disposable-only
+            b="$(qlocal "SELECT COUNT(*) FROM \`$tbl\`;")"
+            export MYSQL_PWD="$DB_PASSWORD"
+            test "$a" = "$b" || { echo 'PROD_RESTORE_ROWCOUNT_MISMATCH' >&2; exit 1; }
+            count=$((count+1))
+          done <<< "$tables"
+          test "$count" = "137" || { echo 'PROD_RESTORE_TABLECOUNT_DRIFT' >&2; exit 1; }
+          export MYSQL_PWD=solqaryn-ci-prod-disposable-only
+          marker="$(qlocal "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")"
+          history="$(qlocal "SELECT COUNT(*) FROM __EFMigrationsHistory;")"
+          { test "$marker" = "0" && test "$history" = "107"; } || { test "$marker" = "1" && test "$history" = "108"; } || { echo "PROD_RESTORE_EF_HISTORY_DRIFT_STOP" >&2; exit 1; }
+          echo "PROD_BACKUP_RESTORE=PASS tables=$count history=$history rows_exact=YES oracle_marker=$marker"
+          echo "PROD_ORIGINAL_DB_WRITES=0"
+
+
+      - name: Certificar en restore SQL efimero solo marcador Oracle
+        shell: bash
+        run: |
+          set -euo pipefail
+          export MYSQL_PWD=solqaryn-ci-prod-disposable-only
+          qlocal() {
+            mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root --batch --skip-column-names solqaryn_prod_restore_ephemeral -e "$1"
+          }
+          before="$(qlocal "SELECT CONCAT(TABLE_NAME,'|',ENGINE,'|',COALESCE(TABLE_COLLATION,'')) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' ORDER BY TABLE_NAME;" | sha256sum | cut -d' ' -f1)"
+          test "$before" = '36b725a682b43d744509c8fd27a6ae54b6017d1c46e1301ee796f86f760e7489'
+          marker="$(qlocal "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")"
+          history="$(qlocal 'SELECT COUNT(*) FROM __EFMigrationsHistory;')"
+          if [ "$marker" = 0 ] && [ "$history" = 107 ]; then
+            qlocal "INSERT INTO __EFMigrationsHistory (MigrationId,ProductVersion) VALUES ('20261006111818_OracleBaseline','10.0.12');"
+          elif [ "$marker" = 1 ] && [ "$history" = 108 ]; then
+            :
+          else
+            echo 'PROD_ORACLE_CLONE_EF_HISTORY_STOP' >&2
+            exit 1
+          fi
+          test "$(qlocal 'SELECT COUNT(*) FROM __EFMigrationsHistory;')" = 108
+          test "$(qlocal "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline' AND ProductVersion='10.0.12';")" = 1
+          after="$(qlocal "SELECT CONCAT(TABLE_NAME,'|',ENGINE,'|',COALESCE(TABLE_COLLATION,'')) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' ORDER BY TABLE_NAME;" | sha256sum | cut -d' ' -f1)"
+          test "$before" = "$after"
+          echo 'PROD_ORACLE_ADOPTION_DRY_RUN=PASS history=108 fingerprint_unchanged=YES prod_writes=0'
+
+      - name: Guardar exclusivamente backup cifrado y checksums (14 días)
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: prod-oracle-pre-adoption-encrypted-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/solqaryn-prod-oracle-backup/prod.sql.enc
+            ${{ runner.temp }}/solqaryn-prod-oracle-backup/prod-encrypted.sha256
+            ${{ runner.temp }}/solqaryn-prod-oracle-backup/prod-plaintext.sha256
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Adoptar solo metadata Oracle en PROD tras backup y checks QA-main exact-head
+        timeout-minutes: 18
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # The QA commit is resolved via protected corporate GitHub refs at runtime.
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "main"
+          test "$DB_NAME" = "solqaryn_prod" && test "$DB_USER" = "solqaryn_prod_user"
+          test "$DB_HOST" = "solqaryn-mysql-solqaryn.h.aivencloud.com"
+          test "$DB_PORT" = "14402" && test -n "$DB_PASSWORD"
+          node scripts/verify-project-scope.mjs
+          test "$GITHUB_SHA" = "$(gh api "repos/$GITHUB_REPOSITORY/branches/main" --jq '.commit.sha')" || { echo 'PROD_MAIN_HEAD_MOVED_STOP' >&2; exit 1; }
+          PR_HEAD_SHA="$(gh api "repos/$GITHUB_REPOSITORY/branches/qa" --jq '.commit.sha')"
+          test -n "$PR_HEAD_SHA"
+          gh api "repos/$GITHUB_REPOSITORY/pulls?state=open&base=main&per_page=100" > "$RUNNER_TEMP/qa-prod-candidates.json"
+          pr_count="$(jq --arg sha "$PR_HEAD_SHA" '[.[] | select(.draft==false and .head.ref=="qa" and .base.ref=="main" and .head.repo.full_name=="solqaryn/Solqaryn" and .head.sha==$sha)] | length' "$RUNNER_TEMP/qa-prod-candidates.json")"
+          test "$pr_count" = 1 || { echo 'PROD_QA_PR_EXACT_HEAD_NOT_APPROVED_STOP' >&2; exit 1; }
+          pr_number="$(jq -r --arg sha "$PR_HEAD_SHA" '.[] | select(.draft==false and .head.ref=="qa" and .base.ref=="main" and .head.repo.full_name=="solqaryn/Solqaryn" and .head.sha==$sha) | .number' "$RUNNER_TEMP/qa-prod-candidates.json")"
+          # Un solo canal autorizado; NO adoptar si cualquier control falla.
+          required="$RUNNER_TEMP/prod-oracle-required.txt"
+          cat > "$required" <<'CHECKS'
+          rbac-relacional
+          Migración, integridad y runtime en MySQL 8.4
+          metodo-pago-historico
+          autoridad-variante
+          API, RBAC, auditoría, MySQL, Angular y E2E
+          MySQL, backend, Angular y Playwright M12
+          API, jerarquía, RBAC, auditoría, MySQL, Angular y E2E
+          MySQL, backend, Angular y Playwright M9
+          MySQL, Angular, WCAG, teclado y responsive
+          validate
+          CHECKS
+          certified=false
+          for attempt in $(seq 1 40); do
+            gh api "repos/$GITHUB_REPOSITORY/commits/$PR_HEAD_SHA/check-runs?per_page=100" > "$RUNNER_TEMP/prod-qa-checks.json"
+            if ! jq -e '[.check_runs[] | select(.conclusion=="failure" or .conclusion=="timed_out" or .conclusion=="action_required")] | length == 0' "$RUNNER_TEMP/prod-qa-checks.json" >/dev/null; then
+              echo 'PROD_ORACLE_QA_CI_RED_STOP' >&2
+              exit 1
+            fi
+            certified=true
+            while IFS= read -r context; do
+              if ! jq -e --arg name "$context" \
+                  '[.check_runs[] | select(.name==$name and .status=="completed" and .conclusion=="success")] | length >= 1' \
+                  "$RUNNER_TEMP/prod-qa-checks.json" >/dev/null; then
+                certified=false
+                break
+              fi
+            done < "$required"
+            if [ "$certified" = true ]; then break; fi
+            sleep 15
+          done
+          test "$certified" = true || { echo 'PROD_ORACLE_QA_CI_UNVERIFIED_STOP' >&2; exit 1; }
+          test -n "$pr_number"
+          gh api "repos/$GITHUB_REPOSITORY/pulls/$pr_number" > "$RUNNER_TEMP/prod-qa-current-pr.json"
+          jq -e --arg sha "$PR_HEAD_SHA"             '.state=="open" and .draft==false and .head.ref=="qa" and .base.ref=="main" and .head.sha==$sha and .head.repo.full_name=="solqaryn/Solqaryn"'             "$RUNNER_TEMP/prod-qa-current-pr.json" >/dev/null || { echo 'PROD_ORACLE_PR_HEAD_OR_DRAFT_STOP' >&2; exit 1; }
+          test "$PR_HEAD_SHA" = "$(gh api "repos/$GITHUB_REPOSITORY/branches/qa" --jq '.commit.sha')" || { echo 'PROD_QA_HEAD_MOVED_STOP' >&2; exit 1; }
+          rm -f "$RUNNER_TEMP/prod-qa-current-pr.json"
+          echo 'PROD_ORACLE_PR_READY_AND_EXACT_HEAD=PASS'
+          rm -f "$RUNNER_TEMP/prod-qa-checks.json" "$required"
+          echo 'PROD_ORACLE_PRE_ADOPTION_GATES=PASS exact_qa_head=YES'
+
+          # OracleBaseline tiene solo SELECTs en Up(). La prueba MigrateAsync
+          # sobre restore descartable ya ha terminado correctamente.
+          baseline="$RUNNER_TEMP/oracle-baseline-reviewed.cs"
+          gh api "repos/$GITHUB_REPOSITORY/contents/backend/src/Infrastructure.Migrations/Migrations/20261006111818_OracleBaseline.cs?ref=$PR_HEAD_SHA" --jq '.content' | tr -d '\n' | base64 -d > "$baseline"
+          test -s "$baseline"
+          test "$(grep -c 'migrationBuilder.Sql("SELECT 1 FROM ' "$baseline")" = 6
+          test "$(grep -c 'migrationBuilder.Sql(' "$baseline")" = 7
+          grep -q 'migrationBuilder.Sql("SIGNAL SQLSTATE' "$baseline"
+          export MYSQL_PWD="$DB_PASSWORD"
+          q() {
+            mysql --protocol=TCP --ssl-mode=REQUIRED --connect-timeout=12 --default-character-set=utf8mb4 \
+              -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --batch --raw --skip-column-names "$DB_NAME" -e "$1"
+          }
+          test "$(q 'SELECT DATABASE();')" = 'solqaryn_prod'
+          test "$(q "SELECT SUBSTRING_INDEX(CURRENT_USER(),'@',1);")" = 'solqaryn_prod_user'
+          test "$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME<>'__EFMigrationsHistory';")" = 136
+          physical() {
+            q "SELECT CONCAT(TABLE_NAME,'|',ENGINE,'|',COALESCE(TABLE_COLLATION,'')) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' ORDER BY TABLE_NAME;" | sha256sum | cut -d' ' -f1
+          }
+          before="$(physical)"
+          test "$before" = '36b725a682b43d744509c8fd27a6ae54b6017d1c46e1301ee796f86f760e7489' || { echo 'PROD_ORACLE_TABLE_DRIFT_STOP' >&2; exit 1; }
+          fk="$(q "SELECT CONCAT(TABLE_NAME,'|',CONSTRAINT_NAME,'|',REFERENCED_TABLE_NAME,'|',UNIQUE_CONSTRAINT_NAME) FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() ORDER BY TABLE_NAME,CONSTRAINT_NAME;" | sha256sum | cut -d' ' -f1)"
+          test "$fk" = '79f67fec9b5761f66cf93dbbcab3a7e7cfd769e132019e720e51d0317ef93b3c' || { echo 'PROD_ORACLE_FK_DRIFT_STOP' >&2; exit 1; }
+          indexes="$(q "SELECT CONCAT(TABLE_NAME,'|',INDEX_NAME,'|',SEQ_IN_INDEX,'|',COALESCE(COLUMN_NAME,''),'|',NON_UNIQUE,'|',INDEX_TYPE) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() ORDER BY TABLE_NAME,INDEX_NAME,SEQ_IN_INDEX;" | sha256sum | cut -d' ' -f1)"
+          test "$indexes" = '3f91e8d03e2700329472bb3ee678c0f3d680495217d4cb4da48291351b3b90ec' || { echo 'PROD_ORACLE_INDEX_DRIFT_STOP' >&2; exit 1; }
+          marker="$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")"
+          history="$(q 'SELECT COUNT(*) FROM __EFMigrationsHistory;')"
+          if [ "$marker" = 0 ] && [ "$history" = 107 ]; then
+            q "INSERT INTO __EFMigrationsHistory (MigrationId,ProductVersion) VALUES ('20261006111818_OracleBaseline','10.0.12');"
+            echo 'PROD_ORACLE_METADATA_ADOPTION=APPLIED'
+          elif [ "$marker" = 1 ] && [ "$history" = 108 ]; then
+            echo 'PROD_ORACLE_METADATA_ADOPTION=ALREADY_APPLIED'
+          else
+            echo 'PROD_ORACLE_EF_HISTORY_DRIFT_STOP' >&2
+            exit 1
+          fi
+          test "$(q 'SELECT COUNT(*) FROM __EFMigrationsHistory;')" = 108
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline' AND ProductVersion='10.0.12';")" = 1
+          test "$(physical)" = "$before" || { echo 'PROD_ORACLE_POST_SCHEMA_DRIFT_STOP' >&2; exit 1; }
+          echo 'PROD_ORACLE_ADOPTION=PASS marker=1 history=108 ddl_changes=0 business_rows_changed=0 backup_restored=YES'
