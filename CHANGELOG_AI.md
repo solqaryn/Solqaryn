@@ -1,7 +1,8 @@
-## 2026-10-12 - Oracle EF10: reparar pruebas efimeras N1.1, N1.2, M10 y M12
+## 2026-10-12 - Oracle EF10: reparar pruebas efimeras M10 y M12 (N1.1 y N1.2 en PR #3582)
 
-- Los 4 workflows de CI levantaban APIs contra MySQL vacio. La cadena OracleBaseline es solo metadata y no crea las 136 tablas, provocando error de Empresas inexistente.
+- Los workflows M10 y M12 de CI levantaban APIs contra MySQL vacio. La cadena OracleBaseline es solo metadata y no crea las 136 tablas, provocando error de Empresas inexistente.
 - Se añade antes de cada API el bootstrap Oracle EF10 en modo fresh sobre MySQL local de GitHub Actions, con verificacion de 136 tablas y del marcador exacto.
+- N1.1 y N1.2 cuentan con PR #3582 independiente para evitar doble writer sobre el mismo scope.
 - M12 valida ahora OracleBaseline en lugar de una migracion historica Pomelo; se conservan unitarios, Playwright, RBAC, WCAG, y auditoria sin omitir gates.
 - Scope exclusivamente CI temporal. Cero conexiones a Aiven y cero mutaciones DEV, QA o PROD. Sin cambios de dominio ni automatizaciones VAEP.
 - Evidencia de cierre: CI exact-head de los cuatro workflows en PASS antes de promover DEV a QA y QA a PROD.
