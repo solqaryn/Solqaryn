@@ -8,6 +8,8 @@ on:
       - 'scripts/audit_cloudinary_dev_locations.py'
       - 'scripts/tests/test_audit_cloudinary_dev_locations.py'
       - '.github/checkpoints/cloudinary-dev-legacy-audit'
+  pull_request:
+    branches: [dev]
   workflow_dispatch:
 
 permissions:
@@ -18,7 +20,20 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  classification_tests:
+    name: Pruebas de clasificación (sin credenciales)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validar scope
+        run: node scripts/verify-project-scope.mjs
+      - name: Pruebas unitarias de locators
+        run: python3 -m unittest discover -s scripts/tests -p 'test_audit_cloudinary_dev_locations.py' -v
+
   audit:
+    if: github.event_name != 'pull_request'
+    needs: classification_tests
     name: Auditar referencias Cloudinary sin modificar Aiven
     runs-on: ubuntu-latest
     timeout-minutes: 20
