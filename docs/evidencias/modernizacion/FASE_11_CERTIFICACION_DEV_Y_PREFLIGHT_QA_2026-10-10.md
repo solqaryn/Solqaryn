@@ -41,6 +41,15 @@ Render DEV `dep-db5g9j740ujc73cf95r0` `live` sobre el HEAD; Vercel DEV `dpl_D46Z
 
 La configuración Outlook.com/OAuth2, pruebas de configuración, retry, adjuntos PDF y SMTP simulado están implementadas. Sin embargo, `docs/DETALLES_PENDIENTES.md` y `docs/RENDER_ENVIRONMENT_CONTRACT.md` registran que la conexión SMTP saliente/STARTTLS, autenticación y entrega/recepción real desde Render Free **no están certificadas**. Aunque existía una decisión operativa anterior de aplazar ese transporte sin comprar, la solicitud de Fase 11 lo menciona entre sus requisitos: **no etiquetar `SMTP_E2E=PASS` sin una ejecución real**. Un cierre por excepción debe identificarse como tal, no como prueba realizada.
 
+### Excepción operativa ratificada por propietario — 2026-10-12
+
+El propietario ordenó **mantener SMTP OAuth2 con envío/recepción real expresamente aplazado** en `docs/DETALLES_PENDIENTES.md` y no comprar servicios. Por tanto:
+
+- `SMTP_RUNTIME_E2E=NOT_EXECUTED / DEFERRED_BY_OWNER`; **jamás escribir `SMTP_OK` ni `PASS` sin evidencia de entrega y recepción**.
+- Se permite evaluar certificación de los otros controles independientes de la Fase 11 sin fingir SMTP aprobado. Cualquier certificación integral debe identificar el alcance excluido; no cabe un `100%` de requisitos originales sin acreditar SMTP real.
+- La excepción no autoriza QA → PROD, cambios en secrets/OAuth, puertos ni pago de infraestructura, y **no exime el gate Oracle QA, smoke exact-head QA ni smoke PROD autorizado**.
+- DEV actual: PR #3569 integrado `71bcfbee`, Render/Vercel exact-head operativos y descargas de producto/ZIP confirmadas por propietario. PR #3570 auditoría solo lectura `42e60d9` detectó 11 imágenes de producto en carpetas no canónicas; la normalización física permanece separada.
+ 
 ## 4. Corrección en DEV de gates de promoción (scope de este changeset)
 
 1. `.github/workflows/qa-ci.yml`: ejecuta build/tests frontend/backend y npm audit en PRs cuyo destino es `qa`, antes de merge; sin secretos QA en PR.

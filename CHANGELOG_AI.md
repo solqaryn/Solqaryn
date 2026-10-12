@@ -1,3 +1,11 @@
+## 2026-10-12 — Readback exact-head de auditoría Cloudinary DEV y decisiones diferidas
+
+- El run [38298651685](https://github.com/solqaryn/Solqaryn/actions/runs/38298651685) verificó en Aiven MySQL 8.4.8, lectura exclusiva, 11 imágenes de producto en rutas DEV no canónicas, 1 comprobante sin archivo, 2 fotografías de perfil canónicas y 3 usuarios sin fotografía; ningún origen QA/PROD entre los 17 registros examinados. Normalización física NO certificada; originales intactos.
+- Se actualizó el documento Cloudinary con desglose del artefacto sin exponer URLs/PublicId y con plan de migración segura reversible. Se preserva confirmación del propietario de descarga individual y ZIP funcionales.
+- Se formaliza SMTP real como excepción operativa `DEFERRED_BY_OWNER`, **NO PASS**, sin compras; `solqaryn.com` permanece aplazado; las 10 automatizaciones VAEP pausadas no cambian; Render Free no cambia.
+- La revisión de `html5-qrcode@2.3.8` se completó sin reemplazo: última npm, sin vulnerabilidades directas conocidas en Snyk, mantenimiento inactivo; seguimiento condicional y tests npm/Playwright permanentes.
+- Sólo documentación DEV, sin efectos en runtime, rutas, secretos, QA, PROD o DNS. QA Oracle real, promoción exact-head QA y autorización independiente PROD siguen pendientes.
+
 ## 2026-10-12 — Reconciliación del cierre de descargas DEV y auditoría de Cloudinary sin costes
 
 - La corrección de imágenes del PR #3569 se integró en `dev` (`71bcfbee`) tras 15/15 checks `SUCCESS`. Vercel DEV `READY` y Render DEV `live` están en ese commit. El propietario verificó descarga de imágenes y ZIP en su sesión; el readback de binarios y normalización física quedan separados.
