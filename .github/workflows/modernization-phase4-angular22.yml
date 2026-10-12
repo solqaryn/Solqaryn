@@ -32,7 +32,7 @@ permissions:
   actions: read
 
 concurrency:
-  group: modernization-phase4-angular22-dev
+  group: modernization-phase4-angular22-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
