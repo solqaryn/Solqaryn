@@ -30,6 +30,7 @@ on:
       - frontend/e2e/n1-1-sucursales.spec.ts
   pull_request:
     branches:
+      - dev
       - main
     paths:
       - .github/workflows/n1-1-sucursales-ci.yml
