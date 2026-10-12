@@ -106,6 +106,18 @@ jobs:
           dotnet restore Solqaryn.sln
           dotnet build Solqaryn.sln --configuration Release --no-restore
 
+      - name: Preparar esquema Oracle EF10 exacto en MySQL efímero antes de iniciar API
+        working-directory: backend
+        shell: bash
+        env:
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
+        run: |
+          set -euo pipefail
+          dotnet run --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj --configuration Release --no-build             | tee "$RUNNER_TEMP/oracle-fresh-bootstrap.log"
+          grep -F 'SOLQARYN_ORACLE_BOOTSTRAP=PASS mode=fresh tables=136 pending=0' "$RUNNER_TEMP/oracle-fresh-bootstrap.log"
+          test "$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -uroot -proot solqaryn_m10_e2e -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")" = 1
+          echo "E2E_ORACLE_FRESH_BOOTSTRAP=PASS db=solqaryn_m10_e2e"
+
       - name: Iniciar API con MySQL descartable
         working-directory: backend
         shell: bash
