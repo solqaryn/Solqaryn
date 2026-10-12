@@ -1,3 +1,10 @@
+## 2026-10-12 — Operación DEV: activación temporal de normalización Cloudinary 11 imágenes (preparación NO desplegada)
+
+- Cambio únicamente de `backend/src/API/appsettings.Development.json`: `Cloudinary.NormalizeDevLegacyImagesOnStartup=true` para Render Development; ninguna variable/secret Render ni cuenta QA/PROD afectada. PR de activación inicialmente **draft**: NO fusionar hasta evidencia de `DEV_BACKUP_RESTORE=PASS` y `DEV_CLOUDINARY_LOCATOR_RESTORE=PASS` del workflow oficial fusionado en `dev`, más exact-head CI verde, Render DEV `live` al código normalizador y confirmación de 11 imágenes no canónicas.
+- En ejecución el worker valida fuentes originales, tenant, bytes/hash SHA-256 antes de UPDATE CAS por cada referencia; originales preservados y rollback condicional.
+- Cierre requiere lectura Render `CLOUDINARY_DEV_NORMALIZATION=PASS total=11 ... remaining=0`, auditoría Aiven DEV con `remaining_noncanonical_or_invalid=0`, descargas individuales/ZIP y revertir el flag a **false** mediante PR independiente.
+- Este commit prepara activación, no constituye migración ejecutada ni certificación al 100%.
+
 ## 2026-10-12 — Normalizador físico seguro Cloudinary DEV preparado, NO activado
 
 - Se incorpora servicio de normalización de 11 imágenes de producto exclusivamente a Render DEV; límite estricto de host Aiven MySQL 8.4.8, base/usuario DEV, un solo tenant, cloud `riyrzmob`, prefijo `solqaryn_dev`; ninguna operación sobre QA/PROD.
