@@ -1,3 +1,10 @@
+## 2026-10-12 — QA: preflight Oracle EF Core 10 de solo lectura (sin promoción)
+
+- Se sustituye el workflow antiguo de recuperación automática del esquema QA por el preflight Oracle EF10 aprobado en `dev` (archivo `.github/workflows/qa-schema-recovery.yml`).
+- El nuevo gate valida Aiven MySQL 8.4.8, base `solqaryn_qa`, tablas, `20261006111818_OracleBaseline`, hashes topológicos, triggers y CHECK N0.6. **Sólo consultas SELECT**: sin `dotnet ef database update`, sin migraciones, sin DML/DDL y sin autoescrituras de tablas QA.
+- QA conserva su runtime existente; este changeset no promueve cambios de `dev`, ni modifica Render, Vercel, datos, secretos o Cloudinary. Si el preflight falla, detener cualquier despliegue moderno hasta adoptar el esquema mediante procedimiento autorizado con backup comprobado y rollback.
+- Certificación integral pendiente: validación de preflight sobre QA real, promoción exact-head, pruebas y autorización separada antes de PROD. El SMTP real sigue como excepción diferida del propietario; DNS `solqaryn.com` aplazado.
+
 ## 2026-10-02 — Limpieza integral de identidad legacy en DEV
 
 - Se ejecutó un barrido repository-wide sobre todos los archivos versionados de texto y se normalizaron **378 archivos** que aún contenían terminología o identificadores retirados.
