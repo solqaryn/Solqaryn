@@ -6,6 +6,7 @@ using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using System.IO.Compression;
 
 namespace Solqaryn.API.Controllers;
@@ -159,7 +160,8 @@ public class ProductosController : ControllerBase
         if (imagen is null)
             return NotFound(ApiResponse<object>.Fail("La imagen no existe o no pertenece a este producto."));
 
-        var descarga = await _imageStorageService.DownloadAsync(imagen.Url);
+        var tenant = await ResolverTenantDescargaAsync();
+        var descarga = await _imageStorageService.DownloadAsync(tenant, imagen.Url, HttpContext.RequestAborted);
         if (descarga is null)
             return NotFound(ApiResponse<object>.Fail("El archivo de la imagen ya no está disponible."));
 
@@ -188,20 +190,28 @@ public class ProductosController : ControllerBase
         if (producto.Imagenes.Count == 0)
             return NotFound(ApiResponse<object>.Fail("Este producto no tiene imágenes."));
 
+        var tenant = await ResolverTenantDescargaAsync();
         using var memoryStream = new MemoryStream();
         using (var archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, leaveOpen: true))
         {
             var contador = 1;
             foreach (var imagen in producto.Imagenes.OrderBy(i => i.Orden))
             {
-                var descarga = await _imageStorageService.DownloadAsync(imagen.Url);
-                if (descarga is null) continue;
+                var descarga = await _imageStorageService.DownloadAsync(tenant, imagen.Url, HttpContext.RequestAborted);
+                if (descarga is null)
+                    return StatusCode(502, ApiResponse<object>.Fail(
+                        "No se pudo recuperar toda la galería. No se generó un archivo incompleto."));
 
-                var (contenido, contentType) = descarga.Value;
+                await using var contenido = descarga.Value.Contenido;
+                if (contenido.CanSeek && contenido.Length == 0)
+                    return StatusCode(502, ApiResponse<object>.Fail(
+                        "Una imagen de la galería está vacía. No se generó un archivo incompleto."));
+
+                var contentType = descarga.Value.ContentType;
                 var extension = contentType.Contains("png") ? "png" : contentType.Contains("webp") ? "webp" : "jpg";
                 var entry = archive.CreateEntry($"{contador}.{extension}", CompressionLevel.Fastest);
                 await using var entryStream = entry.Open();
-                await contenido.CopyToAsync(entryStream);
+                await contenido.CopyToAsync(entryStream, HttpContext.RequestAborted);
                 contador++;
             }
         }
@@ -222,6 +232,20 @@ public class ProductosController : ControllerBase
             });
 
         return File(memoryStream.ToArray(), "application/zip", nombreZip);
+    }
+
+    private async Task<StorageTenantContext> ResolverTenantDescargaAsync()
+    {
+        // El filtro RequierePermiso ya autorizó Productos.Exportar para esta empresa.
+        // Revalidar la membresía server-side impide construir ownership desde el cliente.
+        var empresaId = TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext);
+        var servicio = HttpContext.RequestServices.GetRequiredService<IUsuarioScopeService>();
+        var scope = await servicio.ObtenerActualAsync(empresaId, HttpContext.RequestAborted);
+        if (scope is null || scope.EmpresaId != empresaId)
+            throw new ForbiddenAccessException(
+                "No existe una membresía activa para descargar imágenes de esta empresa.");
+
+        return StorageTenantContext.Desde(scope);
     }
 
     private async Task SincronizarVariantesAsync(
