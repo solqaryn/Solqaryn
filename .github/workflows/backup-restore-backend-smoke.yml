@@ -119,7 +119,7 @@ jobs:
         env:
           ASPNETCORE_ENVIRONMENT: Development
           ASPNETCORE_URLS: http://127.0.0.1:5088
-          ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=solqaryn_m11_restore_drill;User=root;Password=m11-ci-root-only;SslMode=None
+          ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=solqaryn_m11_restore_drill;User=root;Password=m11-ci-root-only;SslMode=Disabled
           Database__ServerVersion: 8.4.0
           Database__ApplyMigrationsOnStartup: 'false'
           Jwt__Secret: n821d-ci-only-long-random-secret-32chars-minimum
