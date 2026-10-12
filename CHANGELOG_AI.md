@@ -1,3 +1,11 @@
+## 2026-10-12 — Preparación de activación controlada Cloudinary DEV (NO ejecutada)
+
+- El propietario autorizó normalizar las 11 imágenes históricas en DEV. Este PR mantiene en borrador un cambio **exclusivamente** de `backend/src/API/appsettings.Development.json` a `Cloudinary:NormalizeDevLegacyImagesOnStartup=true`.
+- **Precondiciones vinculantes antes del merge:** integrar PR #3575 con CI exact-head verde, aprobar la ejecución real `DEV - Backup cifrado y restore Aiven real para Cloudinary` en rama `dev`, comprobar las 11 referencias y verificar que no hay rotación de secretos ni cambios en configuración PROD/QA.
+- El worker de PR #3576 usa Render DEV, MySQL `solqaryn_dev`, Cloudinary `riyrzmob/solqaryn_dev`, un tenant verificado, SHA-256 antes/después y compensación CAS. Nunca destruye originales.
+- Este commit de PR **no sube/copía imágenes ni actualiza MySQL**. Solo después de merge DEV + despliegue LIVE exact-head se inspecciona `CLOUDINARY_DEV_NORMALIZATION=PASS`, se reaudita a 0 referencias pendientes y se verifican descargas individual/ZIP. Inmediatamente después, se revierte el indicador a `false` en otro PR DEV y se certifica exact-head.
+- Alcance excluido: QA, PROD, dominio `solqaryn.com`, SMTP real, plan Render Free y las automatizaciones VAEP pausadas.
+
 ## 2026-10-12 — Normalizador físico seguro Cloudinary DEV preparado, NO activado
 
 - Se incorpora servicio de normalización de 11 imágenes de producto exclusivamente a Render DEV; límite estricto de host Aiven MySQL 8.4.8, base/usuario DEV, un solo tenant, cloud `riyrzmob`, prefijo `solqaryn_dev`; ninguna operación sobre QA/PROD.
