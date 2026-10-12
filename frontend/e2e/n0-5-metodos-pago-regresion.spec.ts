@@ -180,12 +180,15 @@ test.describe('ERP N0.5 — regresión relacional de métodos de pago', () => {
     await expect(page.getByRole('button', { name: 'Registrar pago' })).toBeEnabled();
 
     await metodoSelect.click();
-    await page.getByRole('option', { name: 'Tarjeta' }).click();
+    // mat-option soporta teclado; evita clicks inestables durante el overlay.
+    await page.getByRole('option', { name: 'Tarjeta' }).press('Enter');
+    await expect(metodoSelect).toContainText('Tarjeta');
     await expect(referenciaField.getByText('Obligatoria para este método.')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Registrar pago' })).toBeDisabled();
 
     await metodoSelect.click();
-    await page.getByRole('option', { name: 'Transferencia bancaria' }).click();
+    await page.getByRole('option', { name: 'Transferencia bancaria' }).press('Enter');
+    await expect(metodoSelect).toContainText('Transferencia bancaria');
     const bancoField = page.locator('mat-form-field').filter({ hasText: 'Banco *' });
     await expect(referenciaField.getByText('Obligatoria para este método.')).toBeVisible();
     await expect(bancoField).toBeVisible();
