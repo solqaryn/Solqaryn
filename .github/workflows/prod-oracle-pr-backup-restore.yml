@@ -222,6 +222,12 @@ jobs:
             sleep 15
           done
           test "$certified" = true || { echo 'PROD_ORACLE_QA_CI_UNVERIFIED_STOP' >&2; exit 1; }
+          pr_number="$(jq -r '.pull_request.number // empty' "$GITHUB_EVENT_PATH")"
+          test -n "$pr_number" || { echo 'PROD_ORACLE_PR_REQUIRED_STOP' >&2; exit 1; }
+          gh api "repos/$GITHUB_REPOSITORY/pulls/$pr_number" > "$RUNNER_TEMP/prod-qa-current-pr.json"
+          jq -e --arg sha "$PR_HEAD_SHA"             '.state=="open" and .draft==false and .head.ref=="qa" and .base.ref=="main" and .head.sha==$sha and .head.repo.full_name=="solqaryn/Solqaryn"'             "$RUNNER_TEMP/prod-qa-current-pr.json" >/dev/null || { echo 'PROD_ORACLE_PR_HEAD_OR_DRAFT_STOP' >&2; exit 1; }
+          rm -f "$RUNNER_TEMP/prod-qa-current-pr.json"
+          echo 'PROD_ORACLE_PR_READY_AND_EXACT_HEAD=PASS'
           rm -f "$RUNNER_TEMP/prod-qa-checks.json" "$required"
           echo 'PROD_ORACLE_PRE_ADOPTION_GATES=PASS exact_qa_head=YES'
 
