@@ -5,10 +5,6 @@ on:
     branches: [dev]
     paths:
       - '.github/workflows/cloudinary-dev-backup-restore.yml'
-  pull_request:
-    branches: [dev]
-    paths:
-      - '.github/workflows/cloudinary-dev-backup-restore.yml'
   workflow_dispatch:
 
 permissions:
@@ -20,7 +16,7 @@ concurrency:
 
 jobs:
   verify-restore:
-    if: github.ref_name == 'dev' || (github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'dev' && github.event.pull_request.head.repo.full_name == 'solqaryn/Solqaryn')
+    if: github.ref_name == 'dev' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     name: DEV fuente Aiven -> respaldo cifrado -> restore MySQL descartable
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -52,11 +48,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
-            test "$GITHUB_BASE_REF" = "dev"
-          else
-            test "$GITHUB_REF_NAME" = "dev"
-          fi
+          test "$GITHUB_REF_NAME" = "dev"
+          test "$GITHUB_EVENT_NAME" = "push" || test "$GITHUB_EVENT_NAME" = "workflow_dispatch"
           node scripts/verify-project-scope.mjs
           test "$DB_HOST" = "solqaryn-mysql-solqaryn.h.aivencloud.com"
           test "$DB_PORT" = "14402"
