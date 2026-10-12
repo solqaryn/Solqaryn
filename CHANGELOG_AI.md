@@ -1,3 +1,12 @@
+## 2026-10-12 — Corrección de descarga de imágenes de productos Cloudinary (DEV, sin compras)
+
+- Incidencia reportada: `GET /api/productos/7/imagenes/9/descargar` devuelve 400 por mismatch entre la carpeta persistida de Cloudinary DEV y el folder canónico actual. Evidencia aportada por el propietario, sin divulgar secretos.
+- `CloudinaryImageStorageService`: mantiene la validación de origen/cuenta/folder; habilita **solo para descarga en DEV** una ruta alternativa de assets ya registrados cuyo patrón conserva `solqaryn_dev/productos/empresas/{tenant}` y versión, restringida al producto y tenant autorizados. Upload/delete, QA y PROD continúan fail-closed y sin aliases de negocio.
+- `ProductosController`: obtiene `StorageTenantContext` desde el permiso tenant-autorizado y revalida la membresía activa; descarga individual y ZIP pasan el contexto al storage. El ZIP falla completo si falta cualquier recurso, sin reporte falso de éxito ni contenido parcial.
+- `producto-detail.component.ts`: mensajes de error por tipo HTTP y extensión JPG/PNG/WebP según el Blob recibido.
+- Pruebas de validación de URL, tenant, ambiente, cuenta y ausencia de permiso de borrado. Certificación requiere CI PR y exact-head DEV, seguido de smoke HTTP autenticado. **No se declara aún reparación live ni migración de activos.**
+- Se conserva MySQL Aiven 8.4.8 aprobado. No se usan TinyFish, compras ni cambios a Render Cloudinary, Aiven persistente, QA, main o PROD. La normalización física posterior se mantiene separada con backup/readback/rollback.
+
 ## 2026-10-10 — Fase 11: preflight QA sin cambios de datos ni costes
 
 - DEV origen `b11ce636`: 9/9 workflows SUCCESS. PR de promoción `dev -> qa` #3567 en borrador; QA no promovido ni certificado. Se preserva Aiven MySQL **8.4.8** aprobado y Render Free, sin compras.
