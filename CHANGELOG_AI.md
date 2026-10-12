@@ -1,3 +1,12 @@
+## 2026-10-12 — Preflight QA → PROD Oracle EF10, revisión CI y Cloudinary DEV
+
+- Corrección de límite GitHub Environment: PROD solo acepta `GITHUB_REF=main`, por lo que los workflows Oracle PROD pasan a **push/workflow_dispatch desde main protegido**, con bootstrap de workflows de certificación previo al merge modernizado, y no reciben secretos en PR. Respaldo cifrado, restore y adopción metadata-only aún no ejecutados.
+- El propietario autorizó promoción controlada y normalización de las 11 imágenes DEV sin reactivar aplazamientos. PR de promoción #3574 creado como borrador fail-closed; no fusionado. Rerun PROD read-only #37038904412 attempt 2: 137 tablas (136 app), historial EF 107, empresas 1, productos 73, usuarios 6; 0 escrituras; QA ya tiene OracleBaseline (108).
+- Nuevos workflows en DEV para preflight PROD Oracle, respaldo Aiven PROD cifrado + restore descartable con dry-run Oracle y adopción metadata-only (107→108) condicionada a 11 checks QA→main SUCCESS, fingerprint idéntico, marcador histórico intacto, readback e idempotencia. Este código NO se ha ejecutado todavía en PROD; fallos detienen antes de cualquier escritura.
+- Se modernizan regresiones ERP N0.5 y variante técnica 2C1 para ejecutar bootstrap EF10 Oracle en MySQL efímero en lugar de migraciones históricas Pomelo; se preservan tests, negativos, FKs, integridad, frontend E2E y gates de deriva.
+- Documentación causal en `docs/evidencias/modernizacion/PROD_PREPROMOCION_ORACLE_Y_CLOUDINARY_DEV_2026-10-12.md`. Cloudinary 11 imágenes: normalización física **aún NO certificada**; no se borran imágenes, ni se exportan secretos Render.
+- Sin cambios en PROD, DNS `solqaryn.com`, SMTP diferido, Render Free, QA automatizaciones VAEP ni compras. El cierre requiere PRs en verde, readbacks y pruebas reales; este changeset no constituye autorización para omitirlos.
+
 ## 2026-10-12 — Normalizador físico seguro Cloudinary DEV preparado, NO activado
 
 - Se incorpora servicio de normalización de 11 imágenes de producto exclusivamente a Render DEV; límite estricto de host Aiven MySQL 8.4.8, base/usuario DEV, un solo tenant, cloud `riyrzmob`, prefijo `solqaryn_dev`; ninguna operación sobre QA/PROD.

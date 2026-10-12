@@ -46,7 +46,7 @@ jobs:
           --health-interval=10s --health-timeout=5s --health-retries=12
     env:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=solqaryn_n04_ci;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;
+      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=solqaryn_n04_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;
       Database__ServerVersion: 8.4.0
       Database__ApplyMigrationsOnStartup: 'false'
       Jwt__Secret: ERP-N0-4-CI-Only-Secret-With-More-Than-32-Characters-2026
@@ -175,7 +175,7 @@ jobs:
             CREATE DATABASE solqaryn_n04_negative CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
           "
 
-          export ConnectionStrings__DefaultConnection='Server=127.0.0.1;Port=3306;Database=solqaryn_n04_negative;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
+          export ConnectionStrings__DefaultConnection='Server=127.0.0.1;Port=3306;Database=solqaryn_n04_negative;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
           dotnet ef database update 20260811032000_N0_3_ConsolidarProductoVariante \
             --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
             --startup-project src/API/Solqaryn.API.csproj \
@@ -210,7 +210,7 @@ jobs:
             CREATE DATABASE solqaryn_n04_down_negative CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
           "
 
-          export ConnectionStrings__DefaultConnection='Server=127.0.0.1;Port=3306;Database=solqaryn_n04_down_negative;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
+          export ConnectionStrings__DefaultConnection='Server=127.0.0.1;Port=3306;Database=solqaryn_n04_down_negative;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
           dotnet ef database update 20260811174745_N0_4_ConsolidarRbacRelacional \
             --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
             --startup-project src/API/Solqaryn.API.csproj \

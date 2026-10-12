@@ -11,7 +11,7 @@ on:
       - backend/tests/Solqaryn.Tests/ProductoVarianteTecnicaModelTests.cs
       - .github/workflows/fase2c1-variante-tecnica.yml
   pull_request:
-    branches: [main]
+    branches: [dev, main]
     paths:
       - backend/src/Domain/Entities/ProductoVariante.cs
       - backend/src/Infrastructure/Persistence/Configurations/ProductoVarianteConfiguration.cs
@@ -37,7 +37,7 @@ jobs:
         options: --health-cmd="mysqladmin ping -h localhost -proot" --health-interval=10s --health-timeout=5s --health-retries=12
     env:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=solqaryn_2c1;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;
+      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=solqaryn_2c1;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;
       Database__ServerVersion: 8.4.0
       Database__ApplyMigrationsOnStartup: 'false'
       Jwt__Secret: Fase-2C1-CI-Only-Secret-With-More-Than-32-Characters
@@ -52,10 +52,17 @@ jobs:
         working-directory: backend
         run: |
           dotnet restore Solqaryn.sln
-          dotnet tool install --global dotnet-ef --version 10.0.12
-      - name: Aplicar historial previo
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+          dotnet tool restore
+          dotnet tool run dotnet-ef --version | grep -F '10.0.12'
+      - name: Materializar esquema Oracle final en MySQL efimero, sin migraciones historicas Pomelo
         working-directory: backend
-        run: dotnet ef database update 20260806015852_AddTipoClientePredeterminadoUnico --project src/Infrastructure/Solqaryn.Infrastructure.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext
+        env:
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
+        run: |
+          set -euo pipefail
+          dotnet run --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj --configuration Release --no-build
+          echo 'VARIANTE_2C1_ORACLE_FRESH=PASS'
       - name: Sembrar escenarios
         run: |
           mysql_container="${{ job.services.mysql.id }}"
@@ -64,8 +71,8 @@ jobs:
             ('Simple activo 2C1','Solqaryn','SIMPLE-A',7,12.34,20.50,2,1,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)),
             ('Simple inactivo 2C1','Solqaryn','SIMPLE-I',0,8.00,15.00,1,0,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)),
             ('Comercial 2C1','Solqaryn','COMERCIAL',4,30.00,45.00,1,1,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
-            INSERT INTO CatalogosProducto (Tipo,Nombre,Descripcion,CodigoVisual,Orden,Activo,Eliminado,FechaCreacion,FechaActualizacion)
-            VALUES ('Color','Azul 2C1','Validación variante comercial','#2563EB',901,1,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
+            INSERT INTO Colores (Nombre,Descripcion,CodigoVisual,Orden,Activo,Eliminado,FechaCreacion,FechaActualizacion)
+            VALUES ('Azul 2C1','Validación variante comercial','#2563EB',901,1,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
             SET @p=(SELECT Id FROM Productos WHERE Nombre='Comercial 2C1'); SET @c=LAST_INSERT_ID();
             INSERT INTO ProductoVariantes (ProductoId,ColorId,Sku,CodigoBarras,Cantidad,UmbralStockBajo,Costo,Precio,Activo,Eliminado,FechaCreacion,FechaActualizacion)
             VALUES (@p,@c,'COMERCIAL-2C1','000000002C1',4,1,30.00,45.00,1,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));"
@@ -81,34 +88,42 @@ jobs:
           test "$(value)" -gt 0
           docker exec "$mysql_container" mysql -uroot -proot solqaryn_2c1 -e "UPDATE Productos SET Cantidad=4 WHERE Nombre='Comercial 2C1';"
           test "$(value)" = 0
-      - name: Aplicar migración
-        working-directory: backend
-        run: dotnet ef database update --project src/Infrastructure/Solqaryn.Infrastructure.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext
-      - name: Verificar backfill y unicidad
+      - name: Validar unicidad y variantes tecnicas en esquema Oracle final
+        shell: bash
         run: |
           set -euo pipefail
-          mysql_container="${{ job.services.mysql.id }}"
-          test "$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_2c1 -Nse "SELECT COUNT(*) FROM ProductoVariantes pv JOIN Productos p ON p.Id=pv.ProductoId WHERE pv.EsTecnica=1 AND pv.Eliminado=0 AND p.Nombre IN ('Simple activo 2C1','Simple inactivo 2C1');")" = 2
-          test "$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_2c1 -Nse "SELECT COUNT(*) FROM ProductoVariantes pv JOIN Productos p ON p.Id=pv.ProductoId WHERE p.Nombre='Simple activo 2C1' AND pv.EsTecnica=1 AND pv.ColorId IS NULL AND pv.Sku=CONCAT('TEC-',LPAD(p.Id,10,'0')) AND pv.Cantidad=7 AND pv.Costo=12.34 AND pv.Precio=20.50 AND pv.UmbralStockBajo=2 AND pv.Activo=1 AND pv.ProductoTecnicoUnico=p.Id;")" = 1
-          test "$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_2c1 -Nse "SELECT COUNT(*) FROM ProductoVariantes pv JOIN Productos p ON p.Id=pv.ProductoId WHERE p.Nombre='Comercial 2C1' AND pv.EsTecnica=1;")" = 0
-          if docker exec "$mysql_container" mysql -uroot -proot solqaryn_2c1 -e "SET @p=(SELECT Id FROM Productos WHERE Nombre='Simple activo 2C1'); INSERT INTO ProductoVariantes (ProductoId,Sku,Cantidad,UmbralStockBajo,Costo,Precio,Activo,Eliminado,FechaCreacion,FechaActualizacion,EsTecnica) VALUES (@p,'TEC-DUP-2C1',0,1,0,0,1,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6),1);"; then exit 1; fi
+          c="${{ job.services.mysql.id }}"
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_2c1 -Nse "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='ProductoVariantes' AND COLUMN_NAME IN ('EsTecnica','ProductoTecnicoUnico');")" = 2
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_2c1 -Nse "SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='ProductoVariantes' AND INDEX_NAME='IX_ProductoVariantes_ProductoTecnicoUnico' AND NON_UNIQUE=0;")" = 1
+          docker exec "$c" mysql -uroot -proot solqaryn_2c1 -e "
+            INSERT INTO ProductoVariantes
+              (ProductoId,Sku,Cantidad,UmbralStockBajo,Costo,Precio,Activo,Eliminado,EsTecnica,FechaCreacion,FechaActualizacion)
+            SELECT p.Id, CONCAT('TEC-', LPAD(p.Id, 10, '0')),p.Cantidad,p.UmbralStockBajo,p.Costo,p.Precio,p.Activo,0,1,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)
+              FROM Productos p WHERE p.Nombre IN ('Simple activo 2C1','Simple inactivo 2C1');"
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_2c1 -Nse "SELECT COUNT(*) FROM ProductoVariantes pv JOIN Productos p ON p.Id=pv.ProductoId WHERE pv.EsTecnica=1 AND pv.Eliminado=0 AND pv.ProductoTecnicoUnico=p.Id AND p.Nombre IN ('Simple activo 2C1','Simple inactivo 2C1');")" = 2
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_2c1 -Nse "SELECT COUNT(*) FROM ProductoVariantes pv JOIN Productos p ON p.Id=pv.ProductoId WHERE pv.EsTecnica=1 AND p.Nombre='Comercial 2C1';")" = 0
+          if docker exec "$c" mysql -uroot -proot solqaryn_2c1 -e "
+              INSERT INTO ProductoVariantes
+                (ProductoId,Sku,Cantidad,UmbralStockBajo,Costo,Precio,Activo,Eliminado,EsTecnica,FechaCreacion,FechaActualizacion)
+              SELECT p.Id,'TEC-DUP-2C1',0,1,0,0,1,0,1,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)
+                FROM Productos p WHERE p.Nombre='Simple activo 2C1';"; then
+            echo 'ORACLE_2C1_UNIQUE_TECHNICAL_VARIANT=FAIL' >&2
+            exit 1
+          fi
+          echo 'ORACLE_2C1_TECHNICAL_UNIQUE_AND_NEGATIVE=PASS'
+
       - name: Compilar y probar
         working-directory: backend
         run: |
           dotnet build Solqaryn.sln --configuration Release --no-restore
           dotnet test Solqaryn.sln --configuration Release --no-build --filter "Category!=Integration"
           dotnet test Solqaryn.sln --configuration Release --filter "Category=Integration"
-          dotnet ef migrations has-pending-model-changes --project src/Infrastructure/Solqaryn.Infrastructure.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext
-      - name: SQL forward
-        working-directory: backend
+          dotnet tool run dotnet-ef migrations has-pending-model-changes --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --configuration Release --no-build
+      - name: Certificar contrato fisico Oracle final, sin fabricar SQL Pomelo
+        shell: bash
         run: |
-          dotnet ef migrations script 20260806015852_AddTipoClientePredeterminadoUnico 20260806163904_AddVarianteTecnicaProductoSimple --project src/Infrastructure/Solqaryn.Infrastructure.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --output fase2c1-variante-tecnica-forward.sql
-          grep -q 'EsTecnica' fase2c1-variante-tecnica-forward.sql
-          grep -q 'ProductoTecnicoUnico' fase2c1-variante-tecnica-forward.sql
-          grep -q 'INSERT INTO ProductoVariantes' fase2c1-variante-tecnica-forward.sql
-      - if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: fase2c1-variante-tecnica-forward-sql
-          path: backend/fase2c1-variante-tecnica-forward.sql
-          if-no-files-found: warn
+          set -euo pipefail
+          c="${{ job.services.mysql.id }}"
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_2c1 -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")" = 1
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_2c1 -Nse "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME<>'__EFMigrationsHistory';")" = 136
+          echo 'ORACLE_2C1_PHYSICAL_SCHEMA=PASS'

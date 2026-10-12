@@ -114,7 +114,7 @@ jobs:
           --health-interval=10s --health-timeout=5s --health-retries=12
     env:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_m13_fresh;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_m13_fresh;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
       Database__ServerVersion: '8.4.0'
       Database__ApplyMigrationsOnStartup: 'false'
       Jwt__Secret: 'M13-CI-Only-Secret-With-More-Than-32-Characters-2026'
@@ -211,7 +211,7 @@ jobs:
       - name: Construir esquema anterior representativo
         working-directory: backend
         env:
-          ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_m13_upgrade;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
+          ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_m13_upgrade;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
         run: |
           dotnet ef database update 20260722142118_Fase6SeguridadFacturacionPerfil \
             --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
@@ -229,7 +229,7 @@ jobs:
       - name: Evolucionar esquema representativo hasta actual
         working-directory: backend
         env:
-          ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_m13_upgrade;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
+          ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_m13_upgrade;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
         run: |
           dotnet ef database update 20260728152434_Fase3CostoEnvioEnVentas \
             --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
@@ -238,7 +238,7 @@ jobs:
       - name: Preparar catálogo legado y completar upgrade
         working-directory: backend
         env:
-          ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_m13_upgrade;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
+          ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_m13_upgrade;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
         shell: bash
         run: |
           mysql_container="${{ job.services.mysql.id }}"
@@ -313,7 +313,7 @@ jobs:
       ASPNETCORE_ENVIRONMENT: Staging
       PORT: '5005'
       AllowedHosts: '127.0.0.1;localhost'
-      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_m13_runtime;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_m13_runtime;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
       Database__ServerVersion: '8.4.0'
       Database__ApplyMigrationsOnStartup: 'true'
       Jwt__Secret: 'M13-E2E-Only-Secret-With-More-Than-32-Characters-2026'
