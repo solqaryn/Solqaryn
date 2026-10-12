@@ -148,3 +148,5 @@ jobs:
 
           echo "QA_ORACLE_SCHEMA_CERT=PASS app_tables=136 baseline=1 triggers=2 check=1 mysql=8.4.8"
           echo "QA_DATABASE_WRITES=0"
+
+          # Readback despues de QA Oracle adoption certificada: run 38303606678.
