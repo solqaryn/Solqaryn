@@ -149,7 +149,6 @@ jobs:
               (Id,Fecha,Tipo,Categoria,Concepto,Monto,Estado,MetodoPago,MetodoPagoId,EsAutomatico,ModuloOrigen)
             VALUES (9599,UTC_TIMESTAMP(6),'Ajuste','Otro','N05 dato inválido',0,'Pagado','Cheque',NULL,0,'Manual');"
           test "$(docker exec "$c" mysql -uroot -proot solqaryn_n05_ci -Nse "SELECT COUNT(*) FROM MovimientosFinancieros WHERE Id=9599 AND MetodoPago NOT IN ('Efectivo','Transferencia','Tarjeta','Otro') AND MetodoPagoId IS NULL;")" = 1
-          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n05_ci -Nse "SELECT COUNT(*) FROM MetodosPago WHERE Codigo IN ('Efectivo','Transferencia','Tarjeta','Otro');")" = 0
           docker exec "$c" mysql -uroot -proot solqaryn_n05_ci -e "DELETE FROM MovimientosFinancieros WHERE Id=9599;"
           echo 'N05_UNKNOWN_LEGACY_PAYMENT_FAIL_CLOSED=PASS'
       - name: Reconciliar relaciones de pago en MySQL EF10 efimero, sin asumir IDs enum
@@ -159,13 +158,18 @@ jobs:
           c="${{ job.services.mysql.id }}"
           docker exec "$c" mysql -uroot -proot solqaryn_n05_ci -e "
             START TRANSACTION;
-            INSERT INTO MetodosPago
-              (Codigo,Nombre,Tipo,Activo,RequiereReferencia,RequiereBanco,PermiteCambio,Orden,Metadata,Eliminado,FechaCreacion,FechaActualizacion)
-            VALUES
-              ('Efectivo','Efectivo','Efectivo',1,0,0,0,10,'{}',0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)),
-              ('Transferencia','Transferencia','Transferencia',1,0,0,0,20,'{}',0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)),
-              ('Tarjeta','Tarjeta','Tarjeta',1,0,0,0,30,'{}',0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)),
-              ('Otro','Otro','Otro',1,0,0,0,40,'{}',0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
+            INSERT INTO MetodosPago (Codigo,Nombre,Tipo,Activo,RequiereReferencia,RequiereBanco,PermiteCambio,Orden,Metadata,Eliminado,FechaCreacion,FechaActualizacion)
+              SELECT 'Efectivo','Efectivo','Efectivo',1,0,0,0,10,'{}',0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)
+              WHERE NOT EXISTS (SELECT 1 FROM MetodosPago WHERE BINARY Codigo=BINARY 'Efectivo');
+            INSERT INTO MetodosPago (Codigo,Nombre,Tipo,Activo,RequiereReferencia,RequiereBanco,PermiteCambio,Orden,Metadata,Eliminado,FechaCreacion,FechaActualizacion)
+              SELECT 'Transferencia','Transferencia','Transferencia',1,0,0,0,20,'{}',0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)
+              WHERE NOT EXISTS (SELECT 1 FROM MetodosPago WHERE BINARY Codigo=BINARY 'Transferencia');
+            INSERT INTO MetodosPago (Codigo,Nombre,Tipo,Activo,RequiereReferencia,RequiereBanco,PermiteCambio,Orden,Metadata,Eliminado,FechaCreacion,FechaActualizacion)
+              SELECT 'Tarjeta','Tarjeta','Tarjeta',1,0,0,0,30,'{}',0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)
+              WHERE NOT EXISTS (SELECT 1 FROM MetodosPago WHERE BINARY Codigo=BINARY 'Tarjeta');
+            INSERT INTO MetodosPago (Codigo,Nombre,Tipo,Activo,RequiereReferencia,RequiereBanco,PermiteCambio,Orden,Metadata,Eliminado,FechaCreacion,FechaActualizacion)
+              SELECT 'Otro','Otro','Otro',1,0,0,0,40,'{}',0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)
+              WHERE NOT EXISTS (SELECT 1 FROM MetodosPago WHERE BINARY Codigo=BINARY 'Otro');
             UPDATE Ventas v JOIN MetodosPago m ON BINARY m.Codigo=BINARY v.MetodoPago
               SET v.MetodoPagoId=m.Id WHERE v.Id BETWEEN 9501 AND 9504;
             UPDATE FacturaPagos fp JOIN MetodosPago m ON BINARY m.Codigo=BINARY
