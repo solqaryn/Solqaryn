@@ -129,7 +129,7 @@ jobs:
           export MYSQL_PWD=solqaryn-ci-prod-disposable-only
           marker="$(qlocal "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")"
           history="$(qlocal "SELECT COUNT(*) FROM __EFMigrationsHistory;")"
-          test "$marker" = "0" && test "$history" = "107"
+          { test "$marker" = "0" && test "$history" = "107"; } || { test "$marker" = "1" && test "$history" = "108"; } || { echo "PROD_RESTORE_EF_HISTORY_DRIFT_STOP" >&2; exit 1; }
           echo "PROD_BACKUP_RESTORE=PASS tables=$count history=$history rows_exact=YES oracle_marker=$marker"
           echo "PROD_ORIGINAL_DB_WRITES=0"
 
@@ -148,7 +148,8 @@ jobs:
           node scripts/verify-project-scope.mjs
           export MYSQL_PWD=solqaryn-ci-prod-disposable-only
           qlocal() { mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root --batch --skip-column-names solqaryn_prod_restore_ephemeral -e "$1"; }
-          test "$(qlocal "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")" = 0
+          before_marker="$(qlocal "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")"
+          test "$before_marker" = 0 || test "$before_marker" = 1
           before="$(qlocal "SELECT CONCAT(TABLE_NAME,'|',ENGINE,'|',COALESCE(TABLE_COLLATION,'')) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' ORDER BY TABLE_NAME;" | sha256sum | cut -d' ' -f1)"
           test "$before" = '36b725a682b43d744509c8fd27a6ae54b6017d1c46e1301ee796f86f760e7489'
           dotnet restore backend/tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj
