@@ -138,3 +138,21 @@ Estado del punto: **Cloudinary DEV nuevo funcional; cierre global PENDIENTE de m
 - El inventario original detectó 13 filas lógicas (2026-09-25), pero su recuento está desactualizado. La nueva auditoría `.github/workflows/cloudinary-dev-legacy-audit.yml` ejecuta análisis **solo lectura** del cloud/carpeta canónica y expone únicamente recuentos por tipo; exige MySQL Aiven 8.4.8, usuario y base de DEV, sin mostrar URLs ni IDs, sin tocar QA/PROD.
 - Para cerrar normalización física futura: evidenciar recuento y archivos disponibles, backup cifrado real de DEV, copia/rehidratación en carpeta canónica desde el origen autorizado, verificar integridad binaria, actualizar URL y PublicId en una transacción/reconciliación idempotente, readback y smoke individual/ZIP; no borrar originales sin otro permiso específico.
 - Coste adicional autorizado: **USD 0**; no TinyFish ni compras. El dominio `solqaryn.com`, SMTP runtime real y VAEP conservan su estado deliberadamente aplazado/pausado, sin reactivación por este cambioset.
+
+## Readback definitivo del inventario actual de locators — 2026-10-12
+
+Fuente: workflow DEV [38298651685](https://github.com/solqaryn/Solqaryn/actions/runs/38298651685), artefacto `cloudinary-dev-locators-38298651685`. Commit auditable `42e60d9b2f3e9408de47ecdbca8ec49984f112f5`; base `solqaryn_dev`; MySQL Aiven **8.4.8**; cloud `riyrzmob`; lectura exclusivamente SQL `SELECT`; cero escrituras, cero exposición de URL/PublicId y cero accesos a QA/PROD.
+
+| Superficie | Filas | Locators canónicos | DEV no canónicos | Externos/cruzados | Sin referencia |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| ProductoImagenes | 11 | 0 | **11** | 0 | 0 |
+| CompraDocumentos | 1 | 0 | 0 | 0 | 1 |
+| Usuarios (fotografía) | 5 | 2 | 0 | 0 | 3 |
+| **Total** | **17** | **2** | **11** | **0** | **4** |
+
+Dictamen: `CLOUDINARY_DEV_LOCATOR_AUDIT=PASS_READ_ONLY`; `CLOUDINARY_DEV_REMAINING_NONCANONICAL_OR_INVALID=11`; `normalization_certified=false`.
+
+- **Descarga funcional:** individual y ZIP confirmadas por el propietario en DEV, tras PR #3569 y despliegues Vercel/Render `71bcfbee`.
+- **Normalización física:** pendiente real, 11 imágenes de productos. No se confunde con que la descarga funcione ni se convierte el inventario histórico del 25 de septiembre en dato actual.
+- Antes de modificar referencias, la operación debe demostrar ownership por empresa, respaldos cifrados con restore verificado, bytes y tipo de imagen íntegros, copia de cada asset con identificador canónico, UPDATE idempotente/atómico de URL y PublicId y readback de las 11 filas. Sin borrado automático ni sustituciones textuales de URLs.
+- Render contiene credenciales de Cloudinary que no deben exportarse a GitHub, documentación o el chat. **No existe en esta ejecución una vía autorizada para ejecutar la copia firmada** sin exponer credenciales o abrir una operación insegura; por ello no se declara que las 11 imágenes fueron migradas. No se usará TinyFish ni se comprarán créditos.
