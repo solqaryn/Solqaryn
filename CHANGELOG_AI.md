@@ -1,3 +1,11 @@
+## 2026-10-12 - Oracle EF10: reparar pruebas efimeras N1.1, N1.2, M10 y M12
+
+- Los 4 workflows de CI levantaban APIs contra MySQL vacio. La cadena OracleBaseline es solo metadata y no crea las 136 tablas, provocando error de Empresas inexistente.
+- Se añade antes de cada API el bootstrap Oracle EF10 en modo fresh sobre MySQL local de GitHub Actions, con verificacion de 136 tablas y del marcador exacto.
+- M12 valida ahora OracleBaseline en lugar de una migracion historica Pomelo; se conservan unitarios, Playwright, RBAC, WCAG, y auditoria sin omitir gates.
+- Scope exclusivamente CI temporal. Cero conexiones a Aiven y cero mutaciones DEV, QA o PROD. Sin cambios de dominio ni automatizaciones VAEP.
+- Evidencia de cierre: CI exact-head de los cuatro workflows en PASS antes de promover DEV a QA y QA a PROD.
+
 ## 2026-10-12 — Preflight QA → PROD Oracle EF10, revisión CI y Cloudinary DEV
 
 - Corrección de límite GitHub Environment: PROD solo acepta `GITHUB_REF=main`, por lo que los workflows Oracle PROD pasan a **push/workflow_dispatch desde main protegido**, con bootstrap de workflows de certificación previo al merge modernizado, y no reciben secretos en PR. Respaldo cifrado, restore y adopción metadata-only aún no ejecutados.
