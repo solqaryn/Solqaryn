@@ -71,8 +71,8 @@ jobs:
             ('Simple activo 2C1','Solqaryn','SIMPLE-A',7,12.34,20.50,2,1,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)),
             ('Simple inactivo 2C1','Solqaryn','SIMPLE-I',0,8.00,15.00,1,0,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)),
             ('Comercial 2C1','Solqaryn','COMERCIAL',4,30.00,45.00,1,1,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
-            INSERT INTO CatalogosProducto (Tipo,Nombre,Descripcion,CodigoVisual,Orden,Activo,Eliminado,FechaCreacion,FechaActualizacion)
-            VALUES ('Color','Azul 2C1','Validación variante comercial','#2563EB',901,1,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
+            INSERT INTO Colores (Nombre,Descripcion,CodigoVisual,Orden,Activo,Eliminado,FechaCreacion,FechaActualizacion)
+            VALUES ('Azul 2C1','Validación variante comercial','#2563EB',901,1,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
             SET @p=(SELECT Id FROM Productos WHERE Nombre='Comercial 2C1'); SET @c=LAST_INSERT_ID();
             INSERT INTO ProductoVariantes (ProductoId,ColorId,Sku,CodigoBarras,Cantidad,UmbralStockBajo,Costo,Precio,Activo,Eliminado,FechaCreacion,FechaActualizacion)
             VALUES (@p,@c,'COMERCIAL-2C1','000000002C1',4,1,30.00,45.00,1,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));"
