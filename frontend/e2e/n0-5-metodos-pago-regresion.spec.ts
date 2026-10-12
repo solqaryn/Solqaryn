@@ -1,4 +1,4 @@
-import { expect, Page, test } from '@playwright/test';
+import { expect, Locator, Page, test } from '@playwright/test';
 
 const API_URL = 'http://localhost:5005';
 
@@ -170,39 +170,43 @@ test.describe('ERP N0.5 — regresión relacional de métodos de pago', () => {
     const metodoSelect = metodoField.locator('mat-select');
     const referenciaField = page.locator('mat-form-field').filter({ hasText: /^Referencia/ });
 
+    // Material CDK overlay puede moverse por animación en CI. Se verifica el
+    // cambio de selección real y sus reglas, sin force-click sobre coordenadas.
+    const elegirOpcion = async (select: Locator, nombre: string) => {
+      await expect(select).toBeEnabled();
+      if (await select.getAttribute('aria-expanded') !== 'true') {
+        await select.evaluate((el: HTMLElement) => el.click());
+      }
+      const option = page.getByRole('option', { name: nombre, exact: true });
+      await expect(option).toBeVisible();
+      await option.evaluate((el: HTMLElement) => el.click());
+      await expect(select).toHaveAttribute('aria-expanded', 'false');
+      await expect(select.locator('.mat-mdc-select-value-text')).toContainText(nombre);
+    };
+
     await metodoSelect.click();
     await expect(page.getByRole('option', { name: 'Efectivo' })).toBeVisible();
     await expect(page.getByRole('option', { name: 'Transferencia bancaria' })).toBeVisible();
     await expect(page.getByRole('option', { name: 'Tarjeta' })).toBeVisible();
     await expect(page.getByRole('option', { name: 'Método fuera de uso' })).toHaveCount(0);
-    await page.getByRole('option', { name: 'Efectivo' }).click();
+    await page.getByRole('option', { name: 'Efectivo', exact: true })
+      .evaluate((el: HTMLElement) => el.click());
+    await expect(metodoSelect.locator('.mat-mdc-select-value-text')).toContainText('Efectivo');
     await expect(page.locator('mat-form-field').filter({ hasText: 'Banco *' })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Registrar pago' })).toBeEnabled();
 
-    await metodoSelect.click();
-    // El foco pertenece al mat-select: navegación real por teclado.
-    // No hacer press() sobre mat-option (su texto existe aun sin seleccionar).
-    await metodoSelect.press('Home');
-    await metodoSelect.press('ArrowDown');
-    await metodoSelect.press('ArrowDown');
-    await metodoSelect.press('Enter');
-    await expect(metodoSelect.locator('.mat-mdc-select-value-text')).toContainText('Tarjeta');
+    await elegirOpcion(metodoSelect, 'Tarjeta');
     await expect(referenciaField.getByText('Obligatoria para este método.')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Registrar pago' })).toBeDisabled();
 
-    await metodoSelect.click();
-    await metodoSelect.press('Home');
-    await metodoSelect.press('ArrowDown');
-    await metodoSelect.press('Enter');
-    await expect(metodoSelect.locator('.mat-mdc-select-value-text')).toContainText('Transferencia bancaria');
+    await elegirOpcion(metodoSelect, 'Transferencia bancaria');
     const bancoField = page.locator('mat-form-field').filter({ hasText: 'Banco *' });
     await expect(referenciaField.getByText('Obligatoria para este método.')).toBeVisible();
     await expect(bancoField).toBeVisible();
     await expect(page.getByRole('button', { name: 'Registrar pago' })).toBeDisabled();
 
     await referenciaField.locator('input').fill('TRX-N05-001');
-    await bancoField.locator('mat-select').click();
-    await page.getByRole('option', { name: 'BAC Credomatic (BAC)' }).click();
+    await elegirOpcion(bancoField.locator('mat-select'), 'BAC Credomatic (BAC)');
     await expect(page.getByRole('button', { name: 'Registrar pago' })).toBeEnabled();
 
     await page.getByRole('button', { name: 'Registrar pago' }).click();
