@@ -1,3 +1,4 @@
+using MySql.EntityFrameworkCore.Extensions;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Infrastructure.Migrations;
 using Solqaryn.Infrastructure.Persistence;
@@ -46,7 +47,7 @@ public sealed class N37NotaCreditoClientePersistenceTests
     private static AppDbContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySql("Server=localhost;Database=solqaryn_n37_model;User=root;Password=test;", ServerVersion.Parse("8.0.36-mysql"))
+            .UseMySQL("Server=localhost;Database=solqaryn_n37_model;User=root;Password=test;", mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
             .Options;
         return new AppDbContext(options);
     }

@@ -38,7 +38,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '10.0.401'
           cache: true
           cache-dependency-path: backend/**/*.csproj
 
@@ -46,7 +46,7 @@ jobs:
         run: dotnet restore Solqaryn.sln
 
       - name: Install EF Core CLI
-        run: dotnet tool install --global dotnet-ef --version 8.0.2
+        run: dotnet tool install --global dotnet-ef --version 10.0.12
 
       - name: Generate additive Phase 6 migration
         shell: bash
@@ -156,7 +156,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24.21.0'
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
@@ -252,7 +252,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '10.0.401'
           cache: true
           cache-dependency-path: backend/**/*.csproj
 
@@ -296,7 +296,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24.21.0'
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 

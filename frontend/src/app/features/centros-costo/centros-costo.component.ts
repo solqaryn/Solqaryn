@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -17,7 +17,7 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
 @Component({
   selector: 'app-centros-costo',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressSpinnerModule, MatSelectModule, MatSlideToggleModule],
+  imports: [ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressSpinnerModule, MatSelectModule, MatSlideToggleModule],
   template: `
     <section class="page-shell">
       <header class="page-header">
@@ -40,7 +40,7 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
           <mat-form-field appearance="outline" class="full"><mat-label>Descripción</mat-label><textarea matInput rows="3" formControlName="descripcion" maxlength="500"></textarea></mat-form-field>
           @if (editandoId()) { <mat-slide-toggle formControlName="activo">Activo</mat-slide-toggle> }
           @if (errorFormulario()) { <p class="error" role="alert">{{ errorFormulario() }}</p> }
-          <div class="actions"><button mat-button type="button" (click)="cancelar()">Cancelar</button><button mat-flat-button color="primary" type="submit" [disabled]="saving()">@if (saving()) { <mat-spinner diameter="20"></mat-spinner> } @else { <mat-icon>save</mat-icon> Guardar }</button></div>
+          <div class="actions"><button mat-button type="button" (click)="cancelar()">Cancelar</button><button mat-flat-button color="primary" type="submit" [disabled]="saving()">@if (saving()) { <mat-spinner diameter="20"></mat-spinner> } @if (!saving()) { <mat-icon>save</mat-icon> }<span>{{ saving() ? 'Guardando…' : 'Guardar' }}</span></button></div>
         </form>
       }
       <div class="card" aria-live="polite">
@@ -59,6 +59,7 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
       </div>
     </section>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`.page-shell{display:grid;gap:20px}.page-header{display:flex;justify-content:space-between;gap:20px;align-items:flex-start}.page-header h1{margin:2px 0 6px;font-size:clamp(1.6rem,2.5vw,2.2rem)}.page-header p{margin:0;color:var(--text-secondary,#64748b)}.eyebrow{text-transform:uppercase;letter-spacing:.09em;font-weight:700;font-size:.75rem;color:var(--primary,#2563eb)!important}.toolbar{display:flex;gap:10px;align-items:center}.toolbar mat-form-field{min-width:min(420px,70vw)}.editor,.card{background:var(--surface,#fff);border:1px solid var(--border,#e2e8f0);border-radius:16px;padding:20px}.editor-title{display:flex;justify-content:space-between;align-items:center}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.full{width:100%}.actions{display:flex;justify-content:flex-end;gap:10px;margin-top:14px}.state{min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--text-secondary,#64748b);text-align:center}.error{color:#b91c1c}.table-scroll{overflow:auto}table{width:100%;border-collapse:collapse;min-width:760px}th,td{text-align:left;padding:13px 10px;border-bottom:1px solid var(--border,#e2e8f0)}th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-secondary,#64748b)}.right{text-align:right;white-space:nowrap}.inactive{opacity:.65}.status{padding:3px 8px;border-radius:999px;background:#fee2e2;color:#991b1b}.status.ok{background:#dcfce7;color:#166534}@media(max-width:760px){.page-header{flex-direction:column}.toolbar{align-items:stretch;flex-direction:column}.toolbar mat-form-field{min-width:100%}.form-grid{grid-template-columns:1fr}}`]
 })
 export class CentrosCostoComponent implements OnInit {

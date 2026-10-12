@@ -1,4 +1,4 @@
-import { CommonModule, DOCUMENT } from '@angular/common';
+import { DOCUMENT } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -40,7 +40,7 @@ const RETORNO_CATALOGO_STORAGE = 'storefront:retorno-catalogo:v1';
 @Component({
   selector: 'app-storefront-productos',
   standalone: true,
-  imports: [CommonModule, StorefrontHeaderComponent, IconoTiendaComponent, IlustracionTiendaComponent],
+  imports: [StorefrontHeaderComponent, IconoTiendaComponent, IlustracionTiendaComponent],
   templateUrl: './storefront-productos.component.html',
   styleUrl: './storefront-productos.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

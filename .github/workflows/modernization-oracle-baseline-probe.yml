@@ -1,0 +1,614 @@
+name: Modernización - Oracle baseline migration probe DEV
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: modernization-oracle-baseline-probe-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  oracle-baseline:
+    name: Oracle baseline fresh + adoption sobre historia Pomelo
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: phase6_pomelo_reference
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      ASPNETCORE_ENVIRONMENT: Development
+      Database__ServerVersion: 8.4.0
+      Database__ApplyMigrationsOnStartup: 'false'
+      Jwt__Secret: Phase6-Oracle-Baseline-CI-Only-Secret-With-More-Than-32-Characters
+      Jwt__Issuer: Solqaryn.Phase6
+      Jwt__Audience: Solqaryn.Phase6.Frontend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.401
+
+      - name: Scope y HEAD
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            test "$GITHUB_BASE_REF" = "dev"
+          else
+            test "$GITHUB_REF_NAME" = "dev"
+          fi
+          node scripts/verify-project-scope.mjs
+          test -z "$(git status --porcelain)"
+
+      - name: Preparar herramientas y bases efímeras
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet tool install --tool-path "$RUNNER_TEMP/dotnet-ef8" dotnet-ef --version 8.0.28
+          docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot -e "
+            DROP DATABASE IF EXISTS phase6_pomelo_reference;
+            CREATE DATABASE phase6_pomelo_reference CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+            DROP DATABASE IF EXISTS phase6_oracle_fresh;
+            CREATE DATABASE phase6_oracle_fresh CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+            DROP DATABASE IF EXISTS phase6_oracle_adopt;
+            CREATE DATABASE phase6_oracle_adopt CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
+
+      - name: Crear dos esquemas de referencia mediante historia Pomelo
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+          for db in phase6_pomelo_reference phase6_oracle_adopt; do
+            export ConnectionStrings__DefaultConnection="Server=127.0.0.1;Port=3306;Database=$db;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;"
+            "$RUNNER_TEMP/dotnet-ef8/dotnet-ef" database update \
+              --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+              --startup-project src/API/Solqaryn.API.csproj \
+              --context AppDbContext \
+              --configuration Release \
+              --no-build
+          done
+
+      - name: Congelar baseline SQL físico canónico y restaurarlo
+        shell: bash
+        run: |
+          set -euo pipefail
+          mysql_container="${{ job.services.mysql.id }}"
+          baseline="$RUNNER_TEMP/solqaryn-mysql-canonical-baseline.sql"
+
+          docker exec "$mysql_container" mysqldump -uroot -proot \
+            --single-transaction \
+            --set-gtid-purged=OFF \
+            --no-tablespaces \
+            --skip-comments \
+            --skip-dump-date \
+            --skip-add-locks \
+            --hex-blob \
+            --routines \
+            --events \
+            --triggers \
+            --default-character-set=utf8mb4 \
+            phase6_pomelo_reference > "$baseline"
+
+          test -s "$baseline"
+          ! grep -Eiq '(password=|apikey|api_key|jwt__|cloudinary__|connectionstrings__)' "$baseline"
+
+          sha256sum "$baseline" | tee "$RUNNER_TEMP/solqaryn-mysql-canonical-baseline.sha256"
+
+          docker exec "$mysql_container" mysql -uroot -proot -e "
+            DROP DATABASE IF EXISTS phase6_oracle_fresh;
+            CREATE DATABASE phase6_oracle_fresh CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
+
+          docker exec -i "$mysql_container" mysql -uroot -proot phase6_oracle_fresh < "$baseline"
+
+          test "$(docker exec "$mysql_container" mysql -uroot -proot -Nse "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='phase6_oracle_fresh';")" -gt 100
+          echo "CANONICAL_PHYSICAL_BASELINE_RESTORE=PASS"
+
+      - name: Generar assembly Oracle baseline efímero desde el modelo vigente
+        shell: bash
+        run: |
+          set -euo pipefail
+          probe="$RUNNER_TEMP/oracle-baseline"
+          candidate="$RUNNER_TEMP/oracle10-backend"
+          cp -a "$GITHUB_WORKSPACE/backend" "$candidate"
+
+          python3 - "$candidate" <<'PY'
+          import sys
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          root = Path(sys.argv[1])
+          retargeted = 0
+          for path in root.rglob("*.csproj"):
+              tree = ET.parse(path)
+              project = tree.getroot()
+              for tfm in project.findall(".//TargetFramework"):
+                  if tfm.text == "net8.0":
+                      tfm.text = "net10.0"
+                      retargeted += 1
+              for reference in project.findall(".//PackageReference"):
+                  if reference.attrib.get("Include") in {
+                      "Microsoft.EntityFrameworkCore",
+                      "Microsoft.EntityFrameworkCore.Design",
+                      "Microsoft.EntityFrameworkCore.InMemory",
+                      "Microsoft.EntityFrameworkCore.Sqlite",
+                  }:
+                      reference.set("Version", "10.0.12")
+              ET.indent(tree, space="  ")
+              tree.write(path, encoding="unicode")
+          if retargeted < 5:
+              raise SystemExit(f"Oracle EF10 backend retarget incomplete: {retargeted}")
+
+          infra = root / "src/Infrastructure/Solqaryn.Infrastructure.csproj"
+          tree = ET.parse(infra)
+          project = tree.getroot()
+          for group in project.findall("ItemGroup"):
+              for reference in list(group.findall("PackageReference")):
+                  if reference.attrib.get("Include") in {
+                      "Pomelo.EntityFrameworkCore.MySql", "MySqlConnector"
+                  }:
+                      group.remove(reference)
+          group = next((g for g in project.findall("ItemGroup") if g.findall("PackageReference")), None)
+          if group is None:
+              group = ET.SubElement(project, "ItemGroup")
+          ET.SubElement(group, "PackageReference", Include="MySql.EntityFrameworkCore", Version="10.0.9")
+          ET.SubElement(group, "PackageReference", Include="Microsoft.EntityFrameworkCore.Relational", Version="10.0.12")
+          compile_group = ET.SubElement(project, "ItemGroup")
+          ET.SubElement(compile_group, "Compile", Remove="**/Migrations/**/*.cs")
+          ET.indent(tree, space="  ")
+          tree.write(infra, encoding="unicode")
+          infra_text = infra.read_text(encoding="utf-8")
+          if "Pomelo.EntityFrameworkCore.MySql" in infra_text or "MySqlConnector" in infra_text:
+              raise SystemExit("Pomelo/MySqlConnector leaked into Oracle EF10 baseline candidate")
+          if 'MySql.EntityFrameworkCore" Version="10.0.9"' not in infra_text:
+              raise SystemExit("Oracle EF10 provider pin missing from candidate")
+
+          for relative in ["src/API/Program.cs", "src/Infrastructure/Persistence/AppDbContextFactory.cs"]:
+              path = root / relative
+              text = path.read_text(encoding="utf-8-sig")
+              text = text.replace(
+                  ".UseMySql(connectionString, new MySqlServerVersion(mysqlServerVersion))",
+                  ".UseMySQL(connectionString)")
+              text = text.replace(
+                  ".UseMySql(connectionString, new MySqlServerVersion(serverVersion))",
+                  ".UseMySQL(connectionString)")
+              if "using MySql.EntityFrameworkCore.Extensions;" not in text:
+                  text = "using MySql.EntityFrameworkCore.Extensions;\n" + text
+              if ".UseMySql(" in text or ".UseMySQL(" not in text:
+                  raise SystemExit(f"Provider registration was not cleanly retargeted: {relative}")
+              path.write_text(text, encoding="utf-8")
+
+          print("ORACLE_EF10_EPHEMERAL_BACKEND=PASS")
+          PY
+
+          dotnet tool install --tool-path "$RUNNER_TEMP/dotnet-ef10" dotnet-ef --version 10.0.12
+          dotnet new console --framework net10.0 --name Phase6OracleMigrations --output "$probe" --force
+          dotnet add "$probe/Phase6OracleMigrations.csproj" reference "$candidate/src/Infrastructure/Solqaryn.Infrastructure.csproj"
+          dotnet add "$probe/Phase6OracleMigrations.csproj" package Microsoft.EntityFrameworkCore.Design --version 10.0.12
+          dotnet add "$probe/Phase6OracleMigrations.csproj" package MySql.EntityFrameworkCore --version 10.0.9
+          dotnet add "$probe/Phase6OracleMigrations.csproj" package Microsoft.EntityFrameworkCore.Relational --version 10.0.12
+
+          cat > "$probe/OracleDesignTimeFactory.cs" <<'CS'
+          using Microsoft.EntityFrameworkCore;
+          using Microsoft.EntityFrameworkCore.Design;
+          using Microsoft.EntityFrameworkCore.Metadata;
+          using MySql.EntityFrameworkCore.Extensions;
+          using Solqaryn.Infrastructure.Persistence;
+
+          namespace Phase6OracleMigrations;
+
+          public sealed class OracleBaselineDbContext : AppDbContext
+          {
+              public OracleBaselineDbContext(DbContextOptions<AppDbContext> options)
+                  : base(options)
+              {
+              }
+
+              protected override void OnModelCreating(ModelBuilder modelBuilder)
+              {
+                  base.OnModelCreating(modelBuilder);
+                  modelBuilder.HasAnnotation(RelationalAnnotationNames.MaxIdentifierLength, 64);
+
+                  static string LimitIdentifier(string name) =>
+                      name.Length <= 64 ? name : name[..64];
+
+                  foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+                  {
+                      foreach (var foreignKey in entityType.GetForeignKeys())
+                      {
+                          var name = foreignKey.GetConstraintName();
+                          if (!string.IsNullOrEmpty(name) && name.Length > 64)
+                              foreignKey.SetConstraintName(LimitIdentifier(name));
+                      }
+
+                      foreach (var index in entityType.GetIndexes())
+                      {
+                          var name = index.GetDatabaseName();
+                          if (!string.IsNullOrEmpty(name) && name.Length > 64)
+                              index.SetDatabaseName(LimitIdentifier(name));
+                      }
+                  }
+              }
+          }
+
+          public sealed class OracleDesignTimeFactory : IDesignTimeDbContextFactory<OracleBaselineDbContext>
+          {
+              public OracleBaselineDbContext CreateDbContext(string[] args)
+              {
+                  var connectionString = Environment.GetEnvironmentVariable("ORACLE_MIGRATION_CONNECTION")
+                      ?? "Server=127.0.0.1;Port=3306;Database=phase6_oracle_design;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;";
+
+                  var assemblyName = typeof(OracleDesignTimeFactory).Assembly.GetName().Name!;
+                  var options = new DbContextOptionsBuilder<AppDbContext>()
+                      .UseMySQL(connectionString, mysql => mysql.MigrationsAssembly(assemblyName))
+                      .Options;
+
+                  return new OracleBaselineDbContext(options);
+              }
+          }
+          CS
+
+          cat > "$probe/Program.cs" <<'CS'
+          Console.WriteLine("Phase6 Oracle migrations design-time host");
+          CS
+
+          export ORACLE_MIGRATION_CONNECTION="Server=127.0.0.1;Port=3306;Database=phase6_oracle_fresh;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+          dotnet restore "$probe/Phase6OracleMigrations.csproj"
+          dotnet build "$probe/Phase6OracleMigrations.csproj" --configuration Release --no-restore
+          "$RUNNER_TEMP/dotnet-ef10/dotnet-ef" migrations add OracleBaseline \
+            --project "$probe/Phase6OracleMigrations.csproj" \
+            --startup-project "$probe/Phase6OracleMigrations.csproj" \
+            --context OracleBaselineDbContext \
+            --output-dir Migrations \
+            --configuration Release
+
+          baseline_file="$(find "$probe/Migrations" -maxdepth 1 -type f -name '[0-9]*_OracleBaseline.cs' | head -n1)"
+          test -n "$baseline_file"
+
+          cat > "$baseline_file" <<'CS'
+          using Microsoft.EntityFrameworkCore.Migrations;
+
+          #nullable disable
+
+          namespace Phase6OracleMigrations.Migrations
+          {
+              public partial class OracleBaseline : Migration
+              {
+                  protected override void Up(MigrationBuilder migrationBuilder)
+                  {
+                      // Fail closed if the canonical physical baseline was not restored first.
+                      migrationBuilder.Sql("SELECT 1 FROM `Empresas` LIMIT 0;");
+                      migrationBuilder.Sql("SELECT 1 FROM `Productos` LIMIT 0;");
+                      migrationBuilder.Sql("SELECT 1 FROM `ConfigEmpresas` LIMIT 0;");
+                      migrationBuilder.Sql("SELECT 1 FROM `__EFMigrationsHistory` LIMIT 0;");
+                  }
+
+                  protected override void Down(MigrationBuilder migrationBuilder)
+                  {
+                      migrationBuilder.Sql("SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Oracle baseline is irreversible; restore the canonical SOLQARYN MySQL baseline instead';");
+                  }
+              }
+          }
+          CS
+
+          baseline_id="$(basename "$baseline_file" .cs)"
+          echo "$baseline_id" > "$RUNNER_TEMP/oracle-baseline-id.txt"
+          echo "ORACLE_BASELINE_ID=$baseline_id"
+          "$RUNNER_TEMP/dotnet-ef10/dotnet-ef" migrations script 0 \
+            --project "$probe/Phase6OracleMigrations.csproj" \
+            --startup-project "$probe/Phase6OracleMigrations.csproj" \
+            --context OracleBaselineDbContext \
+            --configuration Release \
+            --output "$RUNNER_TEMP/oracle-baseline.sql"
+          test -s "$RUNNER_TEMP/oracle-baseline.sql"
+
+      - name: Adoptar Oracle sobre baseline canónico restaurado
+        shell: bash
+        run: |
+          set -euo pipefail
+          probe="$RUNNER_TEMP/oracle-baseline"
+          export ORACLE_MIGRATION_CONNECTION="Server=127.0.0.1;Port=3306;Database=phase6_oracle_fresh;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+          "$RUNNER_TEMP/dotnet-ef10/dotnet-ef" database update \
+            --project "$probe/Phase6OracleMigrations.csproj" \
+            --startup-project "$probe/Phase6OracleMigrations.csproj" \
+            --context OracleBaselineDbContext \
+            --configuration Release
+          "$RUNNER_TEMP/dotnet-ef10/dotnet-ef" migrations has-pending-model-changes \
+            --project "$probe/Phase6OracleMigrations.csproj" \
+            --startup-project "$probe/Phase6OracleMigrations.csproj" \
+            --context OracleBaselineDbContext \
+            --configuration Release
+
+      - name: Instalar paquete SQL en una base completamente vacía
+        shell: bash
+        run: |
+          set -euo pipefail
+          mysql_container="${{ job.services.mysql.id }}"
+          docker exec "$mysql_container" mysql -uroot -proot -e "DROP DATABASE IF EXISTS phase6_oracle_script; CREATE DATABASE phase6_oracle_script CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
+          docker exec -i "$mysql_container" mysql -uroot -proot phase6_oracle_script < "$RUNNER_TEMP/solqaryn-mysql-canonical-baseline.sql"
+          docker exec -i "$mysql_container" mysql -uroot -proot phase6_oracle_script < "$RUNNER_TEMP/oracle-baseline.sql"
+          baseline_id="$(cat "$RUNNER_TEMP/oracle-baseline-id.txt")"
+          applied="$(docker exec "$mysql_container" mysql -uroot -proot -Nse "SELECT COUNT(*) FROM phase6_oracle_script.__EFMigrationsHistory WHERE MigrationId='$baseline_id';")"
+          test "$applied" = 1
+          tables="$(docker exec "$mysql_container" mysql -uroot -proot -Nse "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='phase6_oracle_script' AND TABLE_NAME <> '__EFMigrationsHistory';")"
+          test "$tables" -gt 100
+          export ORACLE_MIGRATION_CONNECTION="Server=127.0.0.1;Port=3306;Database=phase6_oracle_script;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+          "$RUNNER_TEMP/dotnet-ef10/dotnet-ef" migrations has-pending-model-changes \
+            --project "$RUNNER_TEMP/oracle-baseline/Phase6OracleMigrations.csproj" \
+            --startup-project "$RUNNER_TEMP/oracle-baseline/Phase6OracleMigrations.csproj" \
+            --context OracleBaselineDbContext \
+            --configuration Release
+          echo "ORACLE_EF10_SQL_PACKAGE_FRESH_BOOTSTRAP=PASS tables=$tables"
+
+      - name: Capturar y comparar esquema físico Pomelo vs Oracle baseline
+        id: schema
+        shell: bash
+        run: |
+          set -euo pipefail
+          mysql_container="${{ job.services.mysql.id }}"
+          capture() {
+            db="$1"
+            docker exec "$mysql_container" mysql -uroot -proot -Nse "
+              SELECT TABLE_NAME,COALESCE(ENGINE,''),COALESCE(ROW_FORMAT,''),COALESCE(TABLE_COLLATION,''),COALESCE(CREATE_OPTIONS,''),COALESCE(TABLE_COMMENT,'')
+              FROM INFORMATION_SCHEMA.TABLES
+              WHERE TABLE_SCHEMA='$db' AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME <> '__EFMigrationsHistory'
+              ORDER BY TABLE_NAME;" > "$RUNNER_TEMP/$db-tables.tsv"
+            docker exec "$mysql_container" mysql -uroot -proot -Nse "
+              SELECT TABLE_NAME,COLUMN_NAME,COLUMN_TYPE,IS_NULLABLE,COALESCE(COLUMN_DEFAULT,'<NULL>'),EXTRA,COALESCE(CHARACTER_SET_NAME,''),COALESCE(COLLATION_NAME,''),COALESCE(GENERATION_EXPRESSION,''),COALESCE(COLUMN_COMMENT,''),COALESCE(SRS_ID,'')
+              FROM INFORMATION_SCHEMA.COLUMNS
+              WHERE TABLE_SCHEMA='$db' AND TABLE_NAME <> '__EFMigrationsHistory'
+              ORDER BY TABLE_NAME,ORDINAL_POSITION;" > "$RUNNER_TEMP/$db-columns.tsv"
+            docker exec "$mysql_container" mysql -uroot -proot -Nse "
+              SELECT TABLE_NAME,INDEX_NAME,NON_UNIQUE,SEQ_IN_INDEX,COALESCE(COLUMN_NAME,''),COALESCE(SUB_PART,''),COALESCE(COLLATION,''),INDEX_TYPE,COALESCE(INDEX_COMMENT,''),IS_VISIBLE,COALESCE(EXPRESSION,'')
+              FROM INFORMATION_SCHEMA.STATISTICS
+              WHERE TABLE_SCHEMA='$db' AND TABLE_NAME <> '__EFMigrationsHistory'
+              ORDER BY TABLE_NAME,INDEX_NAME,SEQ_IN_INDEX;" > "$RUNNER_TEMP/$db-indexes.tsv"
+            docker exec "$mysql_container" mysql -uroot -proot -Nse "
+              SELECT TABLE_NAME,COALESCE(PARTITION_NAME,''),COALESCE(SUBPARTITION_NAME,''),COALESCE(PARTITION_METHOD,''),COALESCE(SUBPARTITION_METHOD,''),COALESCE(PARTITION_EXPRESSION,''),COALESCE(SUBPARTITION_EXPRESSION,''),COALESCE(PARTITION_DESCRIPTION,''),COALESCE(NODEGROUP,''),COALESCE(TABLESPACE_NAME,''),COALESCE(PARTITION_COMMENT,'')
+              FROM INFORMATION_SCHEMA.PARTITIONS
+              WHERE TABLE_SCHEMA='$db' AND TABLE_NAME <> '__EFMigrationsHistory'
+              ORDER BY TABLE_NAME,PARTITION_ORDINAL_POSITION,SUBPARTITION_ORDINAL_POSITION;" > "$RUNNER_TEMP/$db-partitions.tsv"
+            docker exec "$mysql_container" mysql -uroot -proot -Nse "
+              SELECT TABLE_NAME,CONSTRAINT_NAME,REFERENCED_TABLE_NAME,UNIQUE_CONSTRAINT_NAME,UPDATE_RULE,DELETE_RULE,MATCH_OPTION
+              FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS
+              WHERE CONSTRAINT_SCHEMA='$db'
+              ORDER BY TABLE_NAME,CONSTRAINT_NAME;" > "$RUNNER_TEMP/$db-fks.tsv"
+            docker exec "$mysql_container" mysql -uroot -proot -Nse "
+              SELECT TABLE_NAME,CONSTRAINT_NAME,COLUMN_NAME,ORDINAL_POSITION,REFERENCED_TABLE_NAME,REFERENCED_COLUMN_NAME,POSITION_IN_UNIQUE_CONSTRAINT
+              FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+              WHERE TABLE_SCHEMA='$db' AND REFERENCED_TABLE_NAME IS NOT NULL
+              ORDER BY TABLE_NAME,CONSTRAINT_NAME,ORDINAL_POSITION;" > "$RUNNER_TEMP/$db-fk-columns.tsv"
+            docker exec "$mysql_container" mysql -uroot -proot -Nse "
+              SELECT TABLE_NAME,CONSTRAINT_NAME,CONSTRAINT_TYPE,COALESCE(ENFORCED,'')
+              FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
+              WHERE CONSTRAINT_SCHEMA='$db'
+              ORDER BY TABLE_NAME,CONSTRAINT_NAME,CONSTRAINT_TYPE;" > "$RUNNER_TEMP/$db-constraints.tsv"
+            docker exec "$mysql_container" mysql -uroot -proot -Nse "
+              SELECT tc.TABLE_NAME,tc.CONSTRAINT_NAME,cc.CHECK_CLAUSE
+              FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc
+              JOIN INFORMATION_SCHEMA.CHECK_CONSTRAINTS cc
+                ON cc.CONSTRAINT_SCHEMA=tc.CONSTRAINT_SCHEMA AND cc.CONSTRAINT_NAME=tc.CONSTRAINT_NAME
+              WHERE tc.CONSTRAINT_SCHEMA='$db' AND tc.CONSTRAINT_TYPE='CHECK'
+              ORDER BY tc.TABLE_NAME,tc.CONSTRAINT_NAME;" > "$RUNNER_TEMP/$db-checks.tsv"
+            docker exec "$mysql_container" mysql -uroot -proot -Nse "
+              SELECT TABLE_NAME,VIEW_DEFINITION,CHECK_OPTION,IS_UPDATABLE,SECURITY_TYPE,CHARACTER_SET_CLIENT,COLLATION_CONNECTION
+              FROM INFORMATION_SCHEMA.VIEWS
+              WHERE TABLE_SCHEMA='$db'
+              ORDER BY TABLE_NAME;" > "$RUNNER_TEMP/$db-views.tsv"
+            docker exec "$mysql_container" mysql -uroot -proot -Nse "
+              SELECT TRIGGER_NAME,EVENT_MANIPULATION,EVENT_OBJECT_TABLE,ACTION_ORDER,ACTION_STATEMENT,ACTION_ORIENTATION,ACTION_TIMING,SQL_MODE,CHARACTER_SET_CLIENT,COLLATION_CONNECTION,DATABASE_COLLATION
+              FROM INFORMATION_SCHEMA.TRIGGERS
+              WHERE TRIGGER_SCHEMA='$db'
+              ORDER BY EVENT_OBJECT_TABLE,TRIGGER_NAME;" > "$RUNNER_TEMP/$db-triggers.tsv"
+            docker exec "$mysql_container" mysql -uroot -proot -Nse "
+              SELECT ROUTINE_NAME,ROUTINE_TYPE,DTD_IDENTIFIER,SQL_DATA_ACCESS,IS_DETERMINISTIC,SECURITY_TYPE,COALESCE(ROUTINE_DEFINITION,'')
+              FROM INFORMATION_SCHEMA.ROUTINES
+              WHERE ROUTINE_SCHEMA='$db'
+              ORDER BY ROUTINE_NAME,ROUTINE_TYPE;" > "$RUNNER_TEMP/$db-routines.tsv"
+            docker exec "$mysql_container" mysql -uroot -proot -Nse "
+              SELECT EVENT_NAME,EVENT_TYPE,COALESCE(EVENT_DEFINITION,''),STATUS,ON_COMPLETION,COALESCE(INTERVAL_VALUE,''),COALESCE(INTERVAL_FIELD,''),TIME_ZONE,COALESCE(DATE_FORMAT(EXECUTE_AT,'%Y-%m-%d %H:%i:%s'),'')
+              FROM INFORMATION_SCHEMA.EVENTS
+              WHERE EVENT_SCHEMA='$db'
+              ORDER BY EVENT_NAME;" > "$RUNNER_TEMP/$db-events.tsv"
+            docker exec "$mysql_container" mysql -uroot -proot -Nse "
+              SELECT SPECIFIC_NAME,ROUTINE_TYPE,ORDINAL_POSITION,COALESCE(PARAMETER_MODE,''),COALESCE(PARAMETER_NAME,''),DTD_IDENTIFIER,COALESCE(CHARACTER_SET_NAME,''),COALESCE(COLLATION_NAME,'')
+              FROM INFORMATION_SCHEMA.PARAMETERS
+              WHERE SPECIFIC_SCHEMA='$db'
+              ORDER BY SPECIFIC_NAME,ROUTINE_TYPE,ORDINAL_POSITION;" > "$RUNNER_TEMP/$db-routine-parameters.tsv"
+            docker exec "$mysql_container" mysql -uroot -proot -Nse "
+              SELECT DEFAULT_CHARACTER_SET_NAME,DEFAULT_COLLATION_NAME
+              FROM INFORMATION_SCHEMA.SCHEMATA
+              WHERE SCHEMA_NAME='$db';" > "$RUNNER_TEMP/$db-database-defaults.tsv"
+          }
+          capture phase6_pomelo_reference
+          capture phase6_oracle_fresh
+          capture phase6_oracle_script
+
+          equivalent=true
+          for candidate in phase6_oracle_fresh phase6_oracle_script; do
+            for part in tables columns indexes partitions constraints fks fk-columns checks views triggers routines events routine-parameters database-defaults; do
+              if ! diff -u "$RUNNER_TEMP/phase6_pomelo_reference-$part.tsv" "$RUNNER_TEMP/$candidate-$part.tsv" > "$RUNNER_TEMP/oracle-baseline-$candidate-$part.diff"; then
+                equivalent=false
+              fi
+            done
+          done
+          ref_tables="$(docker exec "$mysql_container" mysql -uroot -proot -Nse "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='phase6_pomelo_reference' AND TABLE_NAME <> '__EFMigrationsHistory';")"
+          fresh_tables="$(docker exec "$mysql_container" mysql -uroot -proot -Nse "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='phase6_oracle_fresh' AND TABLE_NAME <> '__EFMigrationsHistory';")"
+          script_tables="$(docker exec "$mysql_container" mysql -uroot -proot -Nse "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='phase6_oracle_script' AND TABLE_NAME <> '__EFMigrationsHistory';")"
+          test "$ref_tables" = "$fresh_tables"
+          test "$ref_tables" = "$script_tables"
+
+          echo "equivalent=$equivalent" >> "$GITHUB_OUTPUT"
+          echo "ORACLE_EF10_SCRIPT_BOOTSTRAP_SCHEMA_EQUIVALENT=$equivalent"
+          echo "ORACLE_BASELINE_SCHEMA_EQUIVALENT=$equivalent"
+          echo "ORACLE_BASELINE_TABLE_COUNT=$fresh_tables"
+
+      - name: Adoptar baseline sobre esquema Pomelo existente sin DDL
+        id: adopt
+        shell: bash
+        run: |
+          set -euo pipefail
+          before_hash="$(docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot -Nse "
+            SELECT SHA2(GROUP_CONCAT(CONCAT_WS('|',TABLE_NAME,COLUMN_NAME,COLUMN_TYPE,IS_NULLABLE,COALESCE(COLUMN_DEFAULT,'<NULL>'),EXTRA,COALESCE(COLLATION_NAME,'')) ORDER BY TABLE_NAME,ORDINAL_POSITION SEPARATOR '\n'),256)
+            FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_SCHEMA='phase6_oracle_adopt' AND TABLE_NAME <> '__EFMigrationsHistory';")"
+
+          probe="$RUNNER_TEMP/oracle-baseline"
+          export ORACLE_MIGRATION_CONNECTION="Server=127.0.0.1;Port=3306;Database=phase6_oracle_adopt;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+          "$RUNNER_TEMP/dotnet-ef10/dotnet-ef" database update \
+            --project "$probe/Phase6OracleMigrations.csproj" \
+            --startup-project "$probe/Phase6OracleMigrations.csproj" \
+            --context OracleBaselineDbContext \
+            --configuration Release
+          "$RUNNER_TEMP/dotnet-ef10/dotnet-ef" migrations has-pending-model-changes \
+            --project "$probe/Phase6OracleMigrations.csproj" \
+            --startup-project "$probe/Phase6OracleMigrations.csproj" \
+            --context OracleBaselineDbContext \
+            --configuration Release
+
+          after_hash="$(docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot -Nse "
+            SELECT SHA2(GROUP_CONCAT(CONCAT_WS('|',TABLE_NAME,COLUMN_NAME,COLUMN_TYPE,IS_NULLABLE,COALESCE(COLUMN_DEFAULT,'<NULL>'),EXTRA,COALESCE(COLLATION_NAME,'')) ORDER BY TABLE_NAME,ORDINAL_POSITION SEPARATOR '\n'),256)
+            FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_SCHEMA='phase6_oracle_adopt' AND TABLE_NAME <> '__EFMigrationsHistory';")"
+          test -n "$before_hash"
+          test "$before_hash" = "$after_hash"
+          echo "adopted=true" >> "$GITHUB_OUTPUT"
+          echo "ORACLE_BASELINE_ADOPTION_NO_DDL=PASS"
+
+      - name: Volver al provider certificado Pomelo sin alterar esquema ni datos
+        shell: bash
+        working-directory: backend
+        env:
+          DOTNET_CLI_UI_LANGUAGE: en
+        run: |
+          set -euo pipefail
+          mysql_container="${{ job.services.mysql.id }}"
+          database="phase6_oracle_adopt"
+          export ConnectionStrings__DefaultConnection="Server=127.0.0.1;Port=3306;Database=$database;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;"
+          export Database__ServerVersion=8.4.0
+
+          schema_dump() {
+            docker exec "$mysql_container" mysqldump -uroot -proot \
+              --no-data --skip-comments --skip-dump-date --compact \
+              --ignore-table="$database.__EFMigrationsHistory" "$database"
+          }
+          data_dump() {
+            docker exec "$mysql_container" mysqldump -uroot -proot \
+              --no-create-info --skip-comments --skip-dump-date --compact \
+              --skip-extended-insert --order-by-primary \
+              --ignore-table="$database.__EFMigrationsHistory" "$database"
+          }
+          schema_before="$(schema_dump | sha256sum | cut -d' ' -f1)"
+          data_before="$(data_dump | sha256sum | cut -d' ' -f1)"
+          seeded_user_before="$(docker exec "$mysql_container" mysql -uroot -proot -Nse \
+            "SELECT SHA2(CONCAT_WS('|',Id,NombreUsuario,PasswordHash),256) FROM $database.Usuarios WHERE Id=1 AND NombreUsuario='admin';")"
+          test -n "$seeded_user_before"
+          oracle_baseline_id="$(cat "$RUNNER_TEMP/oracle-baseline-id.txt")"
+
+          # Pomelo must reopen the exact database adopted by Oracle and observe its full known history.
+          "$RUNNER_TEMP/dotnet-ef8/dotnet-ef" dbcontext info \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
+            --context AppDbContext \
+            --configuration Release \
+            --no-build | tee "$RUNNER_TEMP/pomelo-provider-rollback-context.txt"
+          grep -F 'Pomelo.EntityFrameworkCore.MySql' "$RUNNER_TEMP/pomelo-provider-rollback-context.txt"
+          "$RUNNER_TEMP/dotnet-ef8/dotnet-ef" database update \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
+            --context AppDbContext \
+            --configuration Release \
+            --no-build | tee "$RUNNER_TEMP/pomelo-provider-rollback.log"
+          grep -F 'No migrations were applied. The database is already up to date.' \
+            "$RUNNER_TEMP/pomelo-provider-rollback.log"
+          "$RUNNER_TEMP/dotnet-ef8/dotnet-ef" migrations has-pending-model-changes \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
+            --context AppDbContext \
+            --configuration Release \
+            --no-build
+          "$RUNNER_TEMP/dotnet-ef8/dotnet-ef" migrations list \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
+            --context AppDbContext \
+            --configuration Release | tee "$RUNNER_TEMP/pomelo-provider-rollback-migrations.txt"
+          grep -F '20260919011500_StorefrontFase12CuentaCliente' \
+            "$RUNNER_TEMP/pomelo-provider-rollback-migrations.txt"
+
+          schema_after="$(schema_dump | sha256sum | cut -d' ' -f1)"
+          data_after="$(data_dump | sha256sum | cut -d' ' -f1)"
+          seeded_user_after="$(docker exec "$mysql_container" mysql -uroot -proot -Nse \
+            "SELECT SHA2(CONCAT_WS('|',Id,NombreUsuario,PasswordHash),256) FROM $database.Usuarios WHERE Id=1 AND NombreUsuario='admin';")"
+          oracle_history_count="$(docker exec "$mysql_container" mysql -uroot -proot -Nse \
+            "SELECT COUNT(*) FROM $database.__EFMigrationsHistory WHERE MigrationId='$oracle_baseline_id';")"
+          pomelo_history_count="$(docker exec "$mysql_container" mysql -uroot -proot -Nse \
+            "SELECT COUNT(*) FROM $database.__EFMigrationsHistory WHERE MigrationId<>'$oracle_baseline_id';")"
+          test "$schema_before" = "$schema_after"
+          test "$data_before" = "$data_after"
+          test "$seeded_user_before" = "$seeded_user_after"
+          test "$oracle_history_count" = 1
+          test "$pomelo_history_count" = 107
+          echo "ORACLE_TO_POMELO_PROVIDER_ROLLBACK=PASS schema_unchanged=true application_data_unchanged=true seeded_user_preserved=true pomelo_history=$pomelo_history_count oracle_baseline_marker_retained=true"
+
+      - name: Generar SQL baseline y dictamen
+        shell: bash
+        env:
+          SCHEMA_EQUIVALENT: ${{ steps.schema.outputs.equivalent }}
+          ADOPTED: ${{ steps.adopt.outputs.adopted }}
+        run: |
+          set -euo pipefail
+          probe="$RUNNER_TEMP/oracle-baseline"
+          export ORACLE_MIGRATION_CONNECTION="Server=127.0.0.1;Port=3306;Database=phase6_oracle_fresh;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+          {
+            echo '## Oracle baseline migration lane'
+            echo ''
+            echo "- Canonical physical SQL restore: PASS"
+            echo "- Oracle EF10 baseline adoption on fresh canonical restore: PASS"
+            echo "- Downloadable SQL package applied to a completely empty database: PASS"
+            echo "- has-pending-model-changes: PASS"
+            echo "- Existing Pomelo schema adoption without physical DDL: $ADOPTED"
+            echo "- Physical equivalence of EF and SQL-package bootstrap (tables/engine/collation, columns, indexes, constraints, FK rules/columns, CHECK, views, triggers, routines, events): $SCHEMA_EQUIVALENT"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          test "$ADOPTED" = true
+          test "$SCHEMA_EQUIVALENT" = true
+
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: oracle-baseline-candidate-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/oracle-baseline/Migrations/**
+            ${{ runner.temp }}/oracle-baseline/Phase6OracleMigrations.csproj
+            ${{ runner.temp }}/oracle-baseline/OracleDesignTimeFactory.cs
+            ${{ runner.temp }}/oracle10-backend/src/Infrastructure/Solqaryn.Infrastructure.csproj
+            ${{ runner.temp }}/oracle-baseline.sql
+            ${{ runner.temp }}/oracle-baseline-id.txt
+            ${{ runner.temp }}/solqaryn-mysql-canonical-baseline.sql
+            ${{ runner.temp }}/solqaryn-mysql-canonical-baseline.sha256
+            ${{ runner.temp }}/phase6_*.tsv
+            ${{ runner.temp }}/oracle-baseline-*.diff
+          if-no-files-found: warn
+          retention-days: 90

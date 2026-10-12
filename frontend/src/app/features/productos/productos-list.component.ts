@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -34,6 +34,7 @@ type EstadoProductoFiltro = 'todos' | 'activos' | 'inactivos' | 'agotados' | 'di
     MatProgressSpinnerModule, MatDialogModule, MatSlideToggleModule, ProductoImagenComponent
   ],
   templateUrl: './productos-list.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './productos-list.component.scss'
 })
 export class ProductosListComponent implements OnInit, OnDestroy {

@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -20,6 +20,7 @@ import { CreditoCliente, CreditoClienteService } from './credito-cliente.service
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, MatProgressSpinnerModule, MatSelectModule],
   templateUrl: './cliente-form.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './cliente-form.component.scss'
 })
 export class ClienteFormComponent implements OnInit {

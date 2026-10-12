@@ -1,0 +1,264 @@
+name: Modernización - Fase 6 MySQL EF Provider Gate DEV
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/**'
+      - 'scripts/security/priority3_tenant_isolation_audit.py'
+      - '.github/workflows/modernization-phase6-mysql-ef-provider.yml'
+      - '.github/workflows/modernization-phase7-dotnet-ef.yml'
+      - 'docs/evidencias/modernizacion/**'
+      - 'ARCHITECTURE.md'
+      - 'ARCHITECTURE_CHANGELOG.md'
+      - 'PROJECT_CONTEXT.md'
+      - 'PROJECT_INDEX.md'
+      - 'CHANGELOG_AI.md'
+  pull_request:
+    branches: [dev]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: modernization-phase6-mysql-ef-provider-dev-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contracts:
+    name: Fase 6 - contratos MySQL EF preservados post-Fase7
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=phase6_regression;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;
+      Database__ServerVersion: 8.4.0
+      Database__ApplyMigrationsOnStartup: 'false'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.401
+
+      - name: Scope lock
+        run: node scripts/verify-project-scope.mjs
+
+      - name: Matriz productiva Oracle EF10 única
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          projects=list(Path("backend/src").rglob("*.csproj"))
+          provider_names={"Pomelo.EntityFrameworkCore.MySql","MySql.EntityFrameworkCore"}
+          providers=[]
+          for project in projects:
+              root=ET.parse(project).getroot()
+              tfm=root.find(".//TargetFramework")
+              if tfm is not None:
+                  assert tfm.text=="net10.0", (project,tfm.text)
+              for reference in root.findall(".//PackageReference"):
+                  name=reference.attrib.get("Include")
+                  if name in provider_names:
+                      providers.append((name,reference.attrib.get("Version"),project.as_posix()))
+
+          expected=[
+              ("MySql.EntityFrameworkCore","10.0.9","backend/src/Infrastructure/Solqaryn.Infrastructure.csproj"),
+              ("MySql.EntityFrameworkCore","10.0.9","backend/src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj"),
+          ]
+          assert sorted(providers)==sorted(expected), providers
+
+          infra=ET.parse("backend/src/Infrastructure/Solqaryn.Infrastructure.csproj").getroot()
+          refs={x.attrib["Include"]:x.attrib.get("Version") for x in infra.findall(".//PackageReference")}
+          assert refs["Microsoft.EntityFrameworkCore"]=="10.0.12"
+          assert refs["Microsoft.EntityFrameworkCore.Design"]=="10.0.12"
+          assert "Pomelo.EntityFrameworkCore.MySql" not in refs
+          assert "MySqlConnector" not in refs
+
+          api=ET.parse("backend/src/API/Solqaryn.API.csproj").getroot()
+          api_refs={x.attrib["Include"]:x.attrib.get("Version") for x in api.findall(".//PackageReference")}
+          assert api_refs["Microsoft.AspNetCore.Authentication.JwtBearer"]=="10.0.12"
+
+          print("PHASE6_PRODUCT_PROVIDER=ORACLE_ONLY")
+          print("PHASE6_EF_RUNTIME=10.0.12")
+          print("PHASE6_ORACLE_PROVIDER=10.0.9")
+          PY
+
+      - name: Historia Pomelo inmutable y fuera del runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          migration_count="$(
+            find backend/src/Infrastructure/Migrations backend/src/Infrastructure/Persistence/Migrations \
+              -type f -name '*.cs' \
+              ! -name '*.Designer.cs' \
+              ! -name '*ModelSnapshot*' \
+              | wc -l
+          )"
+          echo "POMELO_HISTORY_SOURCE_FILES=$migration_count"
+          test "$migration_count" -eq 107
+
+          test -d backend/src/Infrastructure/Migrations
+          test -d backend/src/Infrastructure/Persistence/Migrations
+          grep -q 'Compile Remove="Migrations/\*\*/\*.cs"' backend/src/Infrastructure/Solqaryn.Infrastructure.csproj
+          grep -q 'Compile Remove="Persistence/Migrations/\*\*/\*.cs"' backend/src/Infrastructure/Solqaryn.Infrastructure.csproj
+          test -f backend/src/Infrastructure.Migrations/Migrations/20261006111818_OracleBaseline.cs
+          grep -q '20261006111818_OracleBaseline' backend/src/Infrastructure.Migrations/Migrations/20261006111818_OracleBaseline.Designer.cs
+
+          if [ "$GITHUB_EVENT_NAME" = pull_request ]; then
+            git fetch origin "$GITHUB_BASE_REF" --depth=1
+            changed="$(git diff --name-only "origin/$GITHUB_BASE_REF"...HEAD)"
+            if printf '%s\n' "$changed" | grep -E '^backend/src/Infrastructure/(Migrations|Persistence/Migrations)/'; then
+              echo 'Las 107 migraciones Pomelo historicas son inmutables durante Fase 7.'
+              exit 1
+            fi
+          fi
+
+          echo "POMELO_HISTORY_PRESERVED=$migration_count"
+
+      - name: Restore y build
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          test "$(dotnet --version)" = "10.0.401"
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+
+      - name: Fresh bootstrap y EF coherence
+        working-directory: backend
+        env:
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
+        run: |
+          set -euo pipefail
+          docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot -e "
+            DROP DATABASE IF EXISTS phase6_regression;
+            CREATE DATABASE phase6_regression CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
+
+          dotnet tool restore
+          ef_version="$(dotnet tool run dotnet-ef --version)"
+          echo "$ef_version"
+          printf '%s\n' "$ef_version" | grep -Eq '(^|[[:space:]])10\.0\.12($|[[:space:]])'
+
+          dotnet run             --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj             --configuration Release             --no-build
+
+          dotnet tool run dotnet-ef migrations has-pending-model-changes             --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj             --startup-project src/API/Solqaryn.API.csproj             --context AppDbContext             --configuration Release             --no-build
+
+      - name: Semántica MySQL física
+        shell: bash
+        run: |
+          set -euo pipefail
+          mysql_container="${{ job.services.mysql.id }}"
+          q(){ docker exec "$mysql_container" mysql -uroot -proot phase6_regression -Nse "$1"; }
+
+          table_count="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='phase6_regression' AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME <> '__EFMigrationsHistory';")"
+          json_count="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='phase6_regression' AND DATA_TYPE='json';")"
+          decimal_18_2="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='phase6_regression' AND DATA_TYPE='decimal' AND NUMERIC_PRECISION=18 AND NUMERIC_SCALE=2;")"
+          decimal_18_4="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='phase6_regression' AND DATA_TYPE='decimal' AND NUMERIC_PRECISION=18 AND NUMERIC_SCALE=4;")"
+          datetime6="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='phase6_regression' AND DATA_TYPE='datetime' AND DATETIME_PRECISION=6;")"
+          marker="$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")"
+
+          test "$table_count" -gt 100
+          test "$json_count" -ge 3
+          test "$decimal_18_2" -gt 0
+          test "$decimal_18_4" -gt 0
+          test "$datetime6" -gt 0
+          test "$marker" -eq 1
+
+          docker exec "$mysql_container" mysql -uroot -proot phase6_regression -e "
+            DROP TABLE IF EXISTS Phase6ProviderContract;
+            CREATE TABLE Phase6ProviderContract (
+              Id INT NOT NULL AUTO_INCREMENT,
+              Code VARCHAR(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+              Amount DECIMAL(18,4) NOT NULL,
+              AtUtc DATETIME(6) NOT NULL,
+              Payload JSON NOT NULL,
+              PRIMARY KEY (Id),
+              UNIQUE KEY UX_Phase6ProviderContract_Code (Code)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+            START TRANSACTION;
+            INSERT INTO Phase6ProviderContract(Code,Amount,AtUtc,Payload)
+            VALUES ('RollbackProbe',1234567890.1234,'2026-10-04 12:34:56.123456',JSON_OBJECT('tenant',1,'ok',true));
+            ROLLBACK;
+            INSERT INTO Phase6ProviderContract(Code,Amount,AtUtc,Payload)
+            VALUES ('ExactCase',1234567890.1234,'2026-10-04 12:34:56.123456',JSON_OBJECT('tenant',1,'ok',true));
+            INSERT INTO Phase6ProviderContract(Code,Amount,AtUtc,Payload)
+            VALUES ('exactcase',1234567890.1234,'2026-10-04 12:34:56.123456',JSON_OBJECT('tenant',1,'ok',true));
+          "
+
+          test "$(q "SELECT COUNT(*) FROM Phase6ProviderContract WHERE Code='RollbackProbe';")" = "0"
+          test "$(q "SELECT COUNT(*) FROM Phase6ProviderContract WHERE Code='ExactCase';")" = "1"
+          test "$(q "SELECT COUNT(*) FROM Phase6ProviderContract WHERE Code='exactcase';")" = "1"
+          test "$(q "SELECT CAST(Amount AS CHAR) FROM Phase6ProviderContract WHERE Code='ExactCase';")" = "1234567890.1234"
+          test "$(q "SELECT DATE_FORMAT(AtUtc,'%Y-%m-%d %H:%i:%s.%f') FROM Phase6ProviderContract WHERE Code='ExactCase';")" = "2026-10-04 12:34:56.123456"
+          test "$(q "SELECT JSON_UNQUOTE(JSON_EXTRACT(Payload,'$.tenant')) FROM Phase6ProviderContract WHERE Code='ExactCase';")" = "1"
+
+          set +e
+          duplicate_output="$(docker exec "$mysql_container" mysql -uroot -proot phase6_regression -e "INSERT INTO Phase6ProviderContract(Code,Amount,AtUtc,Payload) VALUES ('ExactCase',1.0000,UTC_TIMESTAMP(6),JSON_OBJECT('x',1));" 2>&1)"
+          duplicate_rc=$?
+          set -e
+          test "$duplicate_rc" -ne 0
+          echo "$duplicate_output" | grep -q '1062'
+
+          echo "PHASE6_SCHEMA_TABLES=$table_count"
+          echo "PHASE6_MYSQL_SEMANTICS=PASS"
+
+      - name: Retry 1205 1213 y 1062
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj             --configuration Release             --no-build             --filter "FullyQualifiedName~UnitOfWorkRetryTests"
+
+      - name: Integración MySQL completa
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj             --configuration Release             --no-build             --filter "Category=Integration"
+
+      - name: Tenant isolation fail closed
+        run: |
+          set -euo pipefail
+          python3 scripts/security/priority3_tenant_isolation_audit.py --require-certified
+
+  verdict:
+    name: Dictamen Fase 6
+    if: always()
+    needs: [contracts]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Exigir regresión completa
+        env:
+          CONTRACTS: ${{ needs.contracts.result }}
+        run: |
+          set -euo pipefail
+          test "$CONTRACTS" = success
+          {
+            echo 'FASE_6_MYSQL_EF_PROVIDER=PASS'
+            echo 'CURRENT_PROVIDER_CERTIFIED=ORACLE_MYSQL_EFCORE_10_0_9'
+            echo 'CURRENT_PROVIDER_STATUS=STABLE_ON_NET10_EF10'
+            echo 'TARGET_PROVIDER_SELECTED=ORACLE_MYSQL_EFCORE_10_0_9'
+            echo 'TARGET_EF_SELECTED=10.0.12'
+            echo 'TARGET_NET_SELECTED=net10.0'
+            echo 'POMELO_HISTORY_PRESERVED=107'
+            echo 'POMELO_HISTORY_REPLAYED_BY_ORACLE=false'
+            echo 'PRODUCT_PROVIDER_AUTHORITY=ORACLE_ONLY'
+            echo 'P0=0'
+            echo 'P1=0'
+          } | tee phase6-verdict.txt

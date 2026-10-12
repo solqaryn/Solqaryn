@@ -3,8 +3,8 @@ using Solqaryn.Application.Exceptions;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Infrastructure.Persistence;
+using Solqaryn.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
-using MySqlConnector;
 
 namespace Solqaryn.Infrastructure.Repositories;
 
@@ -172,7 +172,9 @@ public sealed class SuscripcionesSaaSRepository : ISuscripcionesSaaSRepository
                         $"INSERT INTO `SuscripcionSaaSIdempotencia` (`EmpresaId`, `IdempotencyKey`, `SuscripcionId`, `CreadoUtc`) VALUES ({pendiente.Suscripcion.EmpresaId}, {pendiente.IdempotencyKey}, {pendiente.Suscripcion.Id}, {creadoUtc});",
                         cancellationToken);
                 }
-                catch (MySqlException ex) when (ex.Number == 1062)
+                catch (Exception ex) when (
+                    MySqlProviderErrorClassifier.TryFind(ex, out var error) &&
+                    error.Number == 1062)
                 {
                     throw new IdempotencyConcurrencyException(
                         "Otra solicitud ganó concurrentemente la clave durable de idempotencia del tenant.",

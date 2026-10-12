@@ -1,3 +1,4 @@
+using MySql.EntityFrameworkCore.Extensions;
 using System;
 using System.Linq;
 using Solqaryn.Domain.Entities.Contabilidad;
@@ -16,7 +17,7 @@ public class N49GPeriodoContableMigrationRegressionTests
     public N49GPeriodoContableMigrationRegressionTests()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySql("Server=localhost;Database=dummy;", new MySqlServerVersion(new System.Version(8, 0, 31)))
+            .UseMySQL("Server=localhost;Database=dummy;", mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
             .Options;
 
         var context = new AppDbContext(options);

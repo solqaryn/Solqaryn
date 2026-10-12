@@ -14,6 +14,8 @@ El frontend Angular se organiza por funcionalidades con servicios compartidos y 
 
 ### Frontend Angular
 
+Versión de framework vigente: **Angular 22.2.1** (Core/CLI/Material/CDK 22.2.1), migrada desde Angular 21 mediante `ng update` oficial major-a-major. Node 24.21.0, npm 11.19.0, TypeScript 6.0.3, RxJS 7.8.2, tslib 2.8.1 y Zone.js 0.16.3 completan el toolchain frontend. SOLQARYN conserva `provideZoneChangeDetection` y `zone.js` como polyfill; la migración a zoneless queda fuera de este cambio arquitectónico.
+
 Responsabilidades:
 
 - navegación y UX;
@@ -83,7 +85,7 @@ Cuando una operación modifica inventario/finanzas/documentos relacionados, debe
 
 ### Archivos y documentos
 
-- imágenes/documentos: adaptadores Cloudinary;
+- imágenes/documentos: adaptadores Cloudinary; `ImagenUploadSecurity` valida firma/MIME/extensión, dimensiones y recodifica JPG/PNG/WebP con SkiaSharp 4.152.1 antes del almacenamiento externo;
 - factura PDF: QuestPDF; el logo se toma de la configuración tenant de empresa y, si falta/no es descargable, se deriva un monograma del nombre empresarial; no existe logo global de cliente ni fallback `AppSettings__LogoPublicUrl` en runtime Render;
 - correo: SMTP; PROD autentica Outlook.com mediante OAuth2/Modern Auth y mantiene secretos/tokens fuera del repositorio;
 - enlaces públicos de factura: token seguro, expiración/revocación según implementación vigente.
@@ -130,6 +132,12 @@ La observabilidad de rendimiento DEV es first-party y no requiere un proveedor p
 - `frontend/scripts/performance-bundle-baseline.mjs` mide bundles raw/gzip/Brotli;
 - la instrumentación está desactivada por defecto fuera de DEV y no modifica autoridad de negocio, RBAC, tenancy ni datos.
 
+### Validación HTTP / FluentValidation
+
+Desde Fase 8, la API usa FluentValidation 12.1.1 con registro DI oficial y un filtro MVC asíncrono propio (`FluentValidationActionFilter`). `FluentValidation.AspNetCore` está retirado. El filtro ejecuta `IValidator<T>` con `RequestAborted` y reutiliza `InvalidModelStateResponseFactory`, preservando el contrato HTTP existente; las excepciones de negocio/servicio continúan bajo `ExceptionHandlingMiddleware`.
+
+La familia IdentityModel queda alineada en 8.23.0 mientras JwtBearer permanece 10.0.12. Swashbuckle.AspNetCore 10.2.3 conserva Swagger/OpenAPI y Bearer. La sanitización de uploads usa SkiaSharp 4.152.1 + native assets Linux; SixLabors.ImageSharp 3.1.12 quedó retirado después de que los scanners NuGet comenzaron a reportar advisories high/moderate sobre esa versión.
+
 ## 4. Patrones vigentes
 
 - Dependency Injection.
@@ -161,7 +169,9 @@ RBAC debe basarse en relaciones persistentes y permisos explícitos, evitando by
 
 ## 6. Datos
 
-Persistencia principal: MySQL mediante EF Core/Pomelo.
+Persistencia principal: MySQL mediante **EF Core 10.0.12** y Oracle **`MySql.EntityFrameworkCore` 10.0.9**.
+
+Estado de la migración de versiones (2026-10-06): Fase 7 está integrada y certificada en `dev` sobre **`net10.0` + C# 14 + SDK 10.0.401 + runtime/ASP.NET 10.0.12 + EF Core/Design/CLI 10.0.12 + `MySql.EntityFrameworkCore` 10.0.9**. El runtime productivo de `dev` usa únicamente Oracle Connector/NET EF; Pomelo/MySqlConnector quedan fuera de los proyectos productivos y las 107 migraciones históricas Pomelo se conservan en un assembly de historia no cargado por runtime. El bootstrap de base nueva usa el contrato físico canónico certificado + `OracleBaseline`; no hace replay de la historia Pomelo. Docker build/runtime y GitHub Actions activos están alineados a .NET 10. La certificación post-merge exact-head usa `7013a55cd7491c3c79d6808df5db9ba0b8580f40`; no hubo promoción a `main`, QA o PROD.
 
 Topología operacional vigente en Aiven:
 

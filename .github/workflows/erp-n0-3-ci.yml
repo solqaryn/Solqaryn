@@ -59,7 +59,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
-        with: { dotnet-version: '8.0.x' }
+        with: { dotnet-version: '10.0.401' }
       - name: Guardas runtime N0.3
         run: python3 backend/scripts/check-erp-n0-3-runtime.py
       - name: Restaurar, compilar y probar backend
@@ -69,7 +69,7 @@ jobs:
           dotnet build Solqaryn.sln -c Release --no-restore -warnaserror
           dotnet test Solqaryn.sln -c Release --no-build
       - name: Instalar EF
-        run: dotnet tool install --global dotnet-ef --version 8.0.8
+        run: dotnet tool install --global dotnet-ef --version 10.0.12
       - name: Crear esquema N0.2
         working-directory: backend
         run: |

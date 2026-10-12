@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -154,6 +154,7 @@ import { EvaluacionProveedorService } from '../../../services/evaluacion-proveed
       }
     </section>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     .page{max-width:1280px;margin:0 auto;padding:16px;display:grid;gap:16px}header h1{margin-bottom:4px}header p,.generate p{margin:0;color:var(--color-text-secondary,#666)}
     .filters{display:grid;grid-template-columns:repeat(5,minmax(150px,1fr));gap:12px;align-items:start}.filter-actions{display:flex;gap:8px;align-items:center;grid-column:1/-1}

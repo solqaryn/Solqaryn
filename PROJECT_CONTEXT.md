@@ -33,11 +33,14 @@ Ningún plan, fila, gate, fase o secuencia que no esté incorporado al MAESTRO v
 
 SOLQARYN es una plataforma empresarial multiempresa.
 
-- Frontend: Angular 20 standalone, Signals y Angular Material.
+- Frontend: Angular 22.2.1 standalone, Signals y Angular Material/CDK 22.2.1. Toolchain frontend vigente: Node.js 24.21.0 LTS + npm 11.19.0 + TypeScript 6.0.3 + RxJS 7.8.2 + tslib 2.8.1 + Zone.js 0.16.3; `provideZoneChangeDetection` y el polyfill `zone.js` permanecen activos, sin conversión a zoneless. CI usa patches exactos y Vercel se gobierna por `engines.node=24.x`.
 - Identidad técnica de código: namespaces/assemblies/proyectos usan Solqaryn.*; el storefront fuente es tenant-neutral y vive bajo features/storefront.
-- Backend: ASP.NET Core 8 Web API.
+- Backend: ASP.NET Core 10 Web API sobre `net10.0`, C# 14, SDK 10.0.401 y runtime/ASP.NET 10.0.12.
 - Capas: Domain <- Application <- Infrastructure; API compone y expone.
-- Persistencia: MySQL con EF Core 8/Pomelo.
+- Persistencia: MySQL con EF Core 10.0.12 y Oracle `MySql.EntityFrameworkCore` 10.0.9.
+- Migración de versiones: Fase 7 está integrada y certificada en `dev`. El toolchain canónico es SDK 10.0.401, runtime/ASP.NET 10.0.12, `net10.0`, C# 14, EF Core/Design/CLI 10.0.12, JwtBearer 10.0.12 y provider Oracle `MySql.EntityFrameworkCore` 10.0.9. Los proyectos productivos no referencian Pomelo ni MySqlConnector; las 107 migraciones históricas Pomelo se preservan fuera del runtime para auditoría/rollback histórico, mientras las migraciones activas usan el assembly Oracle y `OracleBaseline`. El bootstrap fresh produce 136 tablas, `pending-model=0`, y CI conserva los contratos 1062/1205/1213, tenancy fail-closed y la integración MySQL. HEAD post-merge certificado: `7013a55cd7491c3c79d6808df5db9ba0b8580f40`. No se ha promovido Fase 7 a `main`, QA ni PROD.
+- Fase 8 NuGet: FluentValidation 12.1.1 + DI oficial con filtro async propio; FluentValidation.AspNetCore retirado; BCrypt.Net-Next 4.2.0; Swashbuckle.AspNetCore 10.2.3; CloudinaryDotNet 1.29.3; ClosedXML 0.105.1; IdentityModel 8.23.0 alineado; SkiaSharp 4.152.1 como sanitizador de imágenes; ImageSharp 3.1.12 retirado por advisories NuGet; caching/JSON siguen resueltos por .NET 10 sin PackageReference redundante.
+- Fase 10 tooling de pruebas .NET 10: `Microsoft.NET.Test.Sdk 18.10.1` y `Moq 4.21.0`; `Microsoft.EntityFrameworkCore.InMemory` y `.Sqlite` conservan `10.0.12` en consonancia con EF Core productivo `10.0.12`; `xunit 2.8.1` y `xunit.runner.visualstudio 2.8.2` permanecen en v2. Gate dedicado `modernization-phase10-testing-net.yml`; la evaluación de xUnit v3 se separa de este cambio. Solo test/CI, no runtime, provider ni esquema productivo.
 - Seguridad: JWT, BCrypt, RBAC relacional, auditoría, CORS explícito, rate limiting y security headers.
 - Integraciones vigentes: Cloudinary, QuestPDF y SMTP; DEV, QA y PROD usan Outlook.com con OAuth2/Modern Auth para `solqaryn.platform@outlook.com`.
 - Facturas PDF: el branding visual se resuelve por empresa/tenant (`EmpresaConfiguracion.LogoUrl`); si no existe logo válido, QuestPDF usa un monograma derivado de `EmpresaNombre`. No existe fallback global `AppSettings__LogoPublicUrl` en Render ni branding fijo de un cliente.
@@ -90,6 +93,7 @@ Consultar `ARCHITECTURE.md` para cambios estructurales y `PROJECT_INDEX.md` para
 ### Aiven
 - Proyecto: `solqaryn`.
 - Servicio MySQL: `solqaryn-mysql`.
+- **MySQL Aiven: 8.4.8 aprobada por el propietario el 2026-10-10; congelada sin upgrade ni maintenance-start**. La Fase 1 prueba la versión real vía `SELECT VERSION()` y falla si difiere; DEV/QA/PROD comparten ese servidor, con bases/usuarios segregados. MySQL 8.4 de Docker en CI es efímero e independiente del servicio Aiven.
 - Bases: `solqaryn_dev`, `solqaryn_qa` y `solqaryn_prod`.
 - Usuarios de aplicación separados por entorno: `solqaryn_dev_user`, `solqaryn_qa_user`, `solqaryn_prod_user`.
 

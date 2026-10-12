@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+
+import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RentabilidadAgrupacion } from '../../../core/models/reporte-rentabilidad.models';
 
@@ -8,7 +8,7 @@ export type { RentabilidadAgrupacion } from '../../../core/models/reporte-rentab
 @Component({
   selector: 'app-rentabilidad-agrupacion',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [ReactiveFormsModule],
   template: `
     <div class="agrupacion-container">
       <label for="agrupacion-select" class="agrupacion-label">Agrupar por</label>
@@ -26,6 +26,7 @@ export type { RentabilidadAgrupacion } from '../../../core/models/reporte-rentab
       </select>
     </div>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     .agrupacion-container { display: flex; flex-direction: column; gap: 0.5rem; }
     .agrupacion-label { font-weight: 500; font-size: 0.875rem; color: #374151; }

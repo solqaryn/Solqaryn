@@ -10,6 +10,8 @@ on:
       - 'render.yaml'
       - '.github/workflows/qa-ci.yml'
       - '.github/workflows/promotion-source-guard.yml'
+  pull_request:
+    branches: [qa]
   workflow_dispatch:
 
 permissions:
@@ -48,7 +50,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '10.0.401'
           cache: true
           cache-dependency-path: backend/**/*.csproj
       - run: dotnet restore Solqaryn.sln
@@ -72,10 +74,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24.21.0'
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
+      - run: npm audit --audit-level=high
+      - run: npm audit --omit=dev --audit-level=high
       - run: npm run lint
       - run: npm run build:prod
       - run: node scripts/validate-environment-routing.mjs

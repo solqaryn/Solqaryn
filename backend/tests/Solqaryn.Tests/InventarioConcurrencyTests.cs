@@ -1,3 +1,4 @@
+using MySql.EntityFrameworkCore.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -26,9 +27,7 @@ public class InventarioConcurrencyTests
 
     private static DbContextOptions<AppDbContext> CreateOptions(string dbName) =>
         new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySql(
-                GetConnectionString(dbName),
-                new MySqlServerVersion(new Version(8, 4, 0)))
+            .UseMySQL(GetConnectionString(dbName), mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
             .Options;
 
     private static Mock<IUsuarioScopeService> CrearScopeAdministrador()
@@ -75,7 +74,7 @@ public class InventarioConcurrencyTests
         {
             await using (var setupContext = new AppDbContext(options))
             {
-                await setupContext.Database.MigrateAsync();
+                await Phase7MySqlTestDatabase.InitializeFreshAsync(setupContext);
 
                 var producto = new Producto
                 {
@@ -274,7 +273,7 @@ public class InventarioConcurrencyTests
         {
             await using (var setupContext = new AppDbContext(options))
             {
-                await setupContext.Database.MigrateAsync();
+                await Phase7MySqlTestDatabase.InitializeFreshAsync(setupContext);
                 var producto = new Producto
                 {
                     Nombre = "Producto Lock CI",

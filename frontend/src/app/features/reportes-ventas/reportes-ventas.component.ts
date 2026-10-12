@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+
+import { Component, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
 import { forkJoin } from 'rxjs';
 import { PagedResult } from '../../core/models/api-response.model';
 import {
@@ -16,12 +16,12 @@ import { ReporteVentasResumenComponent } from './resumen/reporte-ventas-resumen.
   selector: 'app-reportes-ventas',
   standalone: true,
   imports: [
-    CommonModule,
     ReporteVentasFiltrosComponent,
     ReporteVentasResumenComponent,
-    ReporteVentasDetalleComponent,
-  ],
+    ReporteVentasDetalleComponent
+],
   templateUrl: './reportes-ventas.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './reportes-ventas.component.scss',
 })
 export class ReportesVentasComponent implements OnInit {

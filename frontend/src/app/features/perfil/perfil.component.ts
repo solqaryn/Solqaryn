@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -30,6 +30,7 @@ const MAX_FOTO_BYTES = 5 * 1024 * 1024;
     MatButtonModule, MatIconModule, MatProgressSpinnerModule
   ],
   templateUrl: './perfil.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './perfil.component.scss'
 })
 export class PerfilComponent implements OnInit, OnDestroy {

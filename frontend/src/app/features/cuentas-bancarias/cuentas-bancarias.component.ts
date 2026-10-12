@@ -1,6 +1,6 @@
-import { CommonModule } from '@angular/common';
+
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit, effect, inject, signal } from '@angular/core';
+import { Component, OnInit, effect, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -56,7 +56,6 @@ interface RegistrarMatchesDto {
   selector: 'app-cuentas-bancarias',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     ReactiveFormsModule,
     MatFormFieldModule,
@@ -65,8 +64,9 @@ interface RegistrarMatchesDto {
     MatButtonModule,
     MatTableModule,
     MatProgressSpinnerModule
-  ],
+],
   templateUrl: './cuentas-bancarias.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./cuentas-bancarias.component.scss']
 })
 export class CuentasBancariasComponent implements OnInit {
@@ -123,7 +123,7 @@ export class CuentasBancariasComponent implements OnInit {
         this.formulario.reset({ moneda: 'HNL', saldoInicial: 0, bancoId: 0, nombre: '', numeroCuenta: '' });
         this.errorMessage.set(null);
       }
-    }, { allowSignalWrites: true });
+    });
   }
 
   ngOnInit(): void {

@@ -50,8 +50,16 @@ public class N18ReservaInventarioPersistenceModelTests
         Assert.Equal(new[] { "AlmacenId", "UbicacionAlmacenId" }, fkUbicacion.Properties.Select(p => p.Name));
         Assert.Equal(DeleteBehavior.Restrict, fkUbicacion.DeleteBehavior);
 
+        const string fkReservaCanonical = "FK_ReservaInventarioDetalles_ReservasInventario_ReservaInventarioId";
+        var fkReservaExpected = fkReservaCanonical.Length <= 64
+            ? fkReservaCanonical
+            : fkReservaCanonical[..64];
         var fkReserva = detalle.GetForeignKeys().Single(fk =>
-            fk.GetConstraintName() == "FK_ReservaInventarioDetalles_ReservasInventario_ReservaInventarioId");
+            fk.GetConstraintName() == fkReservaExpected);
+        Assert.Equal(
+            new[] { nameof(ReservaInventarioDetalle.ReservaInventarioId) },
+            fkReserva.Properties.Select(p => p.Name));
+        Assert.Equal(typeof(ReservaInventario), fkReserva.PrincipalEntityType.ClrType);
         Assert.Equal(DeleteBehavior.Cascade, fkReserva.DeleteBehavior);
     }
 

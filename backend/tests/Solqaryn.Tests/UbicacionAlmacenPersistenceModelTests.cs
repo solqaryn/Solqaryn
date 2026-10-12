@@ -20,7 +20,7 @@ public class UbicacionAlmacenPersistenceModelTests
 
         Assert.NotNull(entity);
         Assert.Equal("UbicacionesAlmacen", entity!.GetTableName());
-        Assert.NotNull(entity.GetQueryFilter());
+        Assert.NotEmpty(entity.GetDeclaredQueryFilters());
 
         var almacenFk = Assert.Single(entity.GetForeignKeys().Where(fk =>
             fk.Properties.Select(p => p.Name).SequenceEqual(new[] { nameof(UbicacionAlmacen.AlmacenId) })));

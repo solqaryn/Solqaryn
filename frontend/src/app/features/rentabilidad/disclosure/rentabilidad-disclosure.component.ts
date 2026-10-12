@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 
 @Component({
   selector: 'app-rentabilidad-disclosure',
@@ -14,6 +14,7 @@ import { Component, Input } from '@angular/core';
       </p>
     </aside>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     .disclosure-container {
       border-inline-start: 4px solid currentColor;

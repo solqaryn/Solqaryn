@@ -78,6 +78,71 @@ public class CloudinaryTenantOwnershipTests
     }
 
     [Fact]
+    public async Task DownloadAsync_ImagenDevRegistradaEnDirectorioAnterior_PasaValidacionTenantSinRed()
+    {
+        var storage = new CloudinaryImageStorageService(CrearConfiguracionDev());
+        var tenant = CrearScope(usuarioId: 7, empresaId: 31, rolId: 4);
+        using var cancelacion = new CancellationTokenSource();
+        cancelacion.Cancel();
+
+        // La cancelacion ocurre DESPUES del chequeo del locator: ninguna descarga de red.
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            storage.DownloadAsync(
+                tenant,
+                "https://res.cloudinary.com/unit-test/image/upload/v1790367580/solqaryn_dev/origen-anterior/productos/empresas/31/img.jpg",
+                cancelacion.Token));
+    }
+
+    [Theory]
+    [InlineData("https://res.cloudinary.com/unit-test/image/upload/v1790367580/solqaryn_prod/origen-anterior/productos/empresas/31/img.jpg")]
+    [InlineData("https://res.cloudinary.com/unit-test/image/upload/v1790367580/solqaryn_qa/origen-anterior/productos/empresas/31/img.jpg")]
+    [InlineData("https://res.cloudinary.com/unit-test/image/upload/v1790367580/solqaryn_dev/origen-anterior/productos/empresas/32/img.jpg")]
+    [InlineData("https://res.cloudinary.com/otra-cuenta/image/upload/v1790367580/solqaryn_dev/origen-anterior/productos/empresas/31/img.jpg")]
+    [InlineData("http://res.cloudinary.com/unit-test/image/upload/v1790367580/solqaryn_dev/origen-anterior/productos/empresas/31/img.jpg")]
+    [InlineData("https://res.cloudinary.com/unit-test/image/upload/v1790367580/solqaryn_dev/origen-anterior/compras/empresas/31/img.jpg")]
+    [InlineData("https://res.cloudinary.com/unit-test/image/upload/v1790367580/solqaryn_dev/origen-anterior/productos/empresas/31/subcarpeta/img.jpg")]
+    [InlineData("https://res.cloudinary.com/unit-test/image/upload/v1790367580/solqaryn_dev/origen-anterior/productos/empresas/31/img.svg")]
+    [InlineData("https://res.cloudinary.com/unit-test/image/upload/v1790367580/solqaryn_dev/origen-anterior/productos/empresas/31/img.jpg?source=otro")]
+    public async Task DownloadAsync_ImagenDevDeOrigenNoAutorizado_FallaCerrado(string locator)
+    {
+        var storage = new CloudinaryImageStorageService(CrearConfiguracionDev());
+        var tenant = CrearScope(usuarioId: 7, empresaId: 31, rolId: 4);
+        using var cancelacion = new CancellationTokenSource();
+        cancelacion.Cancel();
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            storage.DownloadAsync(tenant, locator, cancelacion.Token));
+    }
+
+    [Fact]
+    public async Task DownloadAsync_CarpetaAnteriorNoAbreOtrosEntornos()
+    {
+        var storage = new CloudinaryImageStorageService(CrearConfiguracionConPrefijo("solqaryn_qa"));
+        var tenant = CrearScope(usuarioId: 7, empresaId: 31, rolId: 4);
+        using var cancelacion = new CancellationTokenSource();
+        cancelacion.Cancel();
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            storage.DownloadAsync(
+                tenant,
+                "https://res.cloudinary.com/unit-test/image/upload/v1790367580/solqaryn_qa/origen-anterior/productos/empresas/31/img.jpg",
+                cancelacion.Token));
+    }
+
+    [Fact]
+    public async Task DeleteAsync_CarpetaAnteriorNoAmpliaPermisosDeBorrado()
+    {
+        var storage = new CloudinaryImageStorageService(CrearConfiguracionDev());
+        var tenant = CrearScope(usuarioId: 7, empresaId: 31, rolId: 4);
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            storage.DeleteAsync(
+                tenant,
+                "solqaryn_dev/origen-anterior/productos/empresas/31/img",
+                CancellationToken.None));
+    }
+
+    [Fact]
     public async Task CompraDeleteAsync_PublicIdDeOtraEmpresa_FallaCerradoAntesDelProveedor()
     {
         var storage = CrearCompraStorage();
@@ -178,12 +243,19 @@ public class CloudinaryTenantOwnershipTests
         new(CrearConfiguracion(), logger: logger);
 
     private static IConfiguration CrearConfiguracion() =>
+        CrearConfiguracionConPrefijo(null);
+
+    private static IConfiguration CrearConfiguracionDev() =>
+        CrearConfiguracionConPrefijo("solqaryn_dev");
+
+    private static IConfiguration CrearConfiguracionConPrefijo(string? prefijo) =>
         new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["Cloudinary:CloudName"] = "unit-test",
                 ["Cloudinary:ApiKey"] = "unit-test-key",
-                ["Cloudinary:ApiSecret"] = "unit-test-secret"
+                ["Cloudinary:ApiSecret"] = "unit-test-secret",
+                ["Cloudinary:EnvironmentPrefix"] = prefijo
             })
             .Build();
 

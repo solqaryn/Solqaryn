@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { ReporteRentabilidadDto } from '../../../../core/models/reporte-rentabilidad.models';
 
 @Component({
@@ -7,6 +7,7 @@ import { ReporteRentabilidadDto } from '../../../../core/models/reporte-rentabil
   standalone: true,
   imports: [CommonModule],
   templateUrl: './rentabilidad-resultados-tabla.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./rentabilidad-resultados-tabla.component.css'],
 })
 export class RentabilidadResultadosTablaComponent {

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
@@ -31,6 +31,7 @@ const MAX_IMAGENES_VARIANTE = 5;
     ProductoImagenComponent
   ],
   templateUrl: './producto-variantes.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './producto-variantes.component.scss'
 })
 export class ProductoVariantesComponent implements OnInit {

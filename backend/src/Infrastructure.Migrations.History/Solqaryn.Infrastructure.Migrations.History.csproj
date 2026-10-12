@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>14.0</LangVersion>
+    <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.12" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Infrastructure\Solqaryn.Infrastructure.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Infrastructure\Migrations\**\*.cs"
+             Exclude="..\Infrastructure\Migrations\**\*.Designer.cs;..\Infrastructure\Migrations\**\*ModelSnapshot*.cs"
+             Link="Migrations\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\Infrastructure\Persistence\Migrations\**\*.cs"
+             Exclude="..\Infrastructure\Persistence\Migrations\**\*.Designer.cs;..\Infrastructure\Persistence\Migrations\**\*ModelSnapshot*.cs"
+             Link="PersistenceMigrations\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>

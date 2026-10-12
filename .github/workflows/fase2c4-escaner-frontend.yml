@@ -18,6 +18,22 @@ on:
       - backend/src/Application/DTOs/ProductoEscanerDto.cs
       - backend/src/Application/Services/ProductoEscanerService.cs
       - backend/src/Infrastructure/Repositories/ProductoVarianteRepository.cs
+  pull_request:
+    branches: [dev]
+    paths:
+      - .github/workflows/fase2c4-escaner-frontend.yml
+      - frontend/src/app/shared/codigo-scanner-*/**
+      - frontend/src/app/features/ventas/venta-form.component.*
+      - frontend/src/app/features/compras/compra-form.component.*
+      - frontend/src/app/services/venta.service.ts
+      - frontend/src/app/services/compra.service.ts
+      - frontend/src/app/core/models/producto.model.ts
+      - frontend/e2e/fase2c4-escaner-frontend.spec.ts
+      - backend/src/API/Controllers/VentasController.cs
+      - backend/src/API/Controllers/ComprasController.cs
+      - backend/src/Application/DTOs/ProductoEscanerDto.cs
+      - backend/src/Application/Services/ProductoEscanerService.cs
+      - backend/src/Infrastructure/Repositories/ProductoVarianteRepository.cs
   workflow_dispatch:
 
 permissions:
@@ -48,7 +64,7 @@ jobs:
     env:
       ASPNETCORE_ENVIRONMENT: Development
       PORT: '5005'
-      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_fase2c4;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_fase2c4;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
       Database__ServerVersion: '8.4.0'
       Database__ApplyMigrationsOnStartup: 'true'
       Jwt__Secret: 'Fase-2C4-CI-Only-Secret-With-More-Than-32-Characters-2026'
@@ -75,7 +91,7 @@ jobs:
       - name: Configurar .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '10.0.401'
           cache: true
           cache-dependency-path: backend/**/*.csproj
 
@@ -84,6 +100,14 @@ jobs:
         run: |
           dotnet restore Solqaryn.sln
           dotnet build Solqaryn.sln --configuration Release --no-restore
+
+      - name: Bootstrap Oracle certificado sobre MySQL descartable
+        working-directory: backend
+        env:
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
+        run: |
+          set -euo pipefail
+          dotnet run --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj --configuration Release --no-build
 
       - name: Iniciar API sobre MySQL descartable
         working-directory: backend
@@ -111,7 +135,7 @@ jobs:
       - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24.21.0'
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
@@ -138,7 +162,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          nohup npm start -- --host 127.0.0.1 --port 4200 > fase2c4-frontend.log 2>&1 &
+          nohup env -u PORT npm start -- --host 127.0.0.1 --port 4200 > fase2c4-frontend.log 2>&1 &
           echo $! > fase2c4-frontend.pid
           for attempt in $(seq 1 60); do
             if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then

@@ -1,3 +1,99 @@
+## 2026-10-07 — Hotfix de sanitización de imágenes
+
+- SixLabors.ImageSharp 3.1.12 se retira después de que los scanners NuGet comenzaron a reportar advisories high/moderate sobre esa versión.
+- `ImagenUploadSecurity` migra a SkiaSharp 4.152.1 + native assets Linux, preservando JPG/PNG/WebP, firma/MIME/extensión, 10 MB, 4096 px, 16 MP y re-encode desde píxeles.
+- No cambian persistencia, auth/RBAC, tenancy, QuestPDF, Cloudinary ni entornos.
+- Los gates de Fase 7/Fase 8 continúan fail-closed ante vulnerabilidades conocidas.
+
+## 2026-10-07 — Fase 8 NuGet y validación async
+
+- FluentValidation 12.1.1 reemplaza la integración ASP.NET deprecada por DI oficial + `FluentValidationActionFilter` asíncrono, preservando ModelState y cancellation.
+- Swashbuckle.AspNetCore 10.2.3 mantiene OpenAPI/Bearer y se corrige el contrato `IFormFile` para el generador sin cambiar el binding multipart.
+- IdentityModel se alinea en 8.23.0; BCrypt.Net-Next 4.2.0, CloudinaryDotNet 1.29.3 y ClosedXML 0.105.1 quedan modernizados.
+- ImageSharp permanece 3.1.12 por la nueva exigencia de licencia de build de la major 4; no se introduce un secreto/licencia ni gasto nuevo.
+- Caching y JSON continúan bajo el shared framework .NET 10, sin referencias directas redundantes. Sin cambios de DB, provider, migraciones, main, QA o PROD.
+
+## 2026-10-06 — Reconciliación post-merge Fase 7 DEV
+
+- Fase 7 integrada mediante PR #3552 y certificada sobre el HEAD post-merge `7013a55cd7491c3c79d6808df5db9ba0b8580f40`.
+- Runs post-merge: Fase 7 `37540172636` PASS; Fase 6 `37540172761` PASS; DEV CI `37540172730` PASS; aceptación `37540172606` 100/100; Fase 4 `37540172583` PASS; Fase 5 `37540172750` PASS.
+- Estado canónico: `net10.0`, C# 14, SDK 10.0.401, runtime/ASP.NET 10.0.12, EF Core/Design/CLI 10.0.12, JwtBearer 10.0.12 y Oracle `MySql.EntityFrameworkCore` 10.0.9.
+- Provider productivo único: Oracle. Las 107 migraciones Pomelo permanecen sólo como historia auditable; Oracle no las reproduce.
+- El follow-up de cierre corrige N2.3 para `SslMode=Disabled` y reconcilia evidencia/documentación vigente.
+
+## 2026-10-06 — Fase 7 .NET 10 / EF Core 10 / Oracle
+
+- Backend retargeteado a `net10.0` y C# 14 con SDK 10.0.401 y runtime/ASP.NET 10.0.12.
+- EF Core/Design/CLI quedan coherentes en 10.0.12; JwtBearer queda en 10.0.12; el provider productivo único es Oracle `MySql.EntityFrameworkCore` 10.0.9.
+- Pomelo/MySqlConnector se retiran del runtime productivo. Las 107 migraciones históricas se conservan en un assembly separado de historia y no se reproducen con Oracle.
+- La cadena activa de migraciones usa `Solqaryn.Infrastructure.Migrations` + `OracleBaseline`; el bootstrap fresh materializa el contrato físico canónico, valida 136 tablas y exige `has-pending-model-changes=0`.
+- Docker usa SDK 10.0.401 y ASP.NET 10.0.12; los workflows operativos de backend quedan alineados a .NET 10. Los probes históricos explícitos de Fase 6 conservan sus versiones antiguas sólo para reproducibilidad histórica.
+- Gate Fase 7 valida build, 2388 unitarios, integración Oracle/MySQL, tenancy fail-closed, auditoría de vulnerabilidades NuGet y smoke Docker con `/health` + `/health/ready`.
+- Alcance: Fase 7 integrada en `dev`; sin promoción a `main`, QA ni PROD.
+
+## 2026-10-05 — Reconciliación arquitectónica del exact-head vigente
+
+- Los documentos canónicos vuelven a alinearse con el HEAD actual `425f9cab0ed291401c081d7946289875eb11e798`; Fase 6 exact-head `37330696772` terminó `success`, `FASE_6_MYSQL_EF_PROVIDER=PASS`, `P0=0`, `P1=0`, `PHASE7_EXECUTED=false`.
+- El runtime/provider productivo sigue net8.0 + EF8/Pomelo 8.0.2; el candidato aislado queda fijado como SDK 10.0.401/runtime 10.0.12 y EF/Design/CLI 10.0.12 + Oracle Connector/NET EF 10.0.9, usando baseline/adopción separado y sin reproducir las 107 migraciones Pomelo.
+- No hubo retarget productivo ni inicio de Fase 7. Evidencia: `docs/evidencias/modernizacion/PUNTO_27_DOCUMENTACION_ARQUITECTONICA_2026-10-05.md`.
+
+## 2026-10-05 — Cierre formal de Fase 6 (STOP → PASS)
+
+- Gate exact-head `37268035079` sobre `877af434ee15c8fd3a08f974bf58a62c91c03179`: todos los jobs `success`; `FASE_6_MYSQL_EF_PROVIDER=PASS`, `P0=0`, `P1=0`, `TARGETFRAMEWORK_CHANGE=ALLOWED_AFTER_PHASE6_CLOSE` y `PHASE7_EXECUTED=false`.
+- Aceptación integral DEV `37268035136`, Fase 5 `37268035072`, Scope Lock `37268035185` y VAEP admission `37268035138` pasaron en el mismo HEAD.
+- Se conserva el runtime net8/EF8/Pomelo hasta que se inicie Fase 7 por decisión separada. El cambio de estado no autoriza ni ejecuta retarget productivo, QA, `main` o PROD.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_30_FASE6_STOP_A_PASS_2026-10-05.md`.
+
+## 2026-10-05 — Punto 27: documentación arquitectónica reconciliada
+
+- `ARCHITECTURE.md`, `PROJECT_CONTEXT.md` y `PROJECT_INDEX.md` identifican el mismo estado: runtime `net8.0`/EF Core 8/Pomelo 8; ruta futura certificada Oracle EF Core 10/net10 aislada; Fase 7 no ejecutada.
+- La referencia vigente de Fase 6 es el run `37268913820` sobre el HEAD `2d84babb2863cbaadf0e201b9ff03ed113ecd476`; las referencias antiguas quedan como historia, no como certificación actual.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_27_DOCUMENTACION_ARQUITECTONICA_2026-10-05.md`.
+
+## 2026-10-05 — Reconciliación del cierre de Fase 6/provider
+
+- El gate compuesto exact-head `37264684835`, sobre `d3a408487...`, certificó Fase 6 `PASS`; el workflow confirmó un único provider productivo Pomelo 8.0.2 y la suite MySQL 8.4 pasó 28/28.
+- La ruta candidata net10.0 + EF Core 10.0.12 + `MySql.EntityFrameworkCore` 10.0.9 pasó en lanes aisladas. La ruta de migración/adopción Oracle no hace replay de las 107 migraciones Pomelo: parte del baseline SQL canónico y conserva un marcador de adopción; el rollback certificado vuelve a Pomelo sin alterar esquema ni datos.
+- El runtime continúa net8.0 + EF Core 8/Pomelo. Fase 7 no se ejecutó; este cierre no cambia `.csproj` productivos ni autoriza despliegues.
+- La entrada del 2026-10-04 que reporta `STOP` es una fotografía histórica previa a la resolución de la discrepancia de concurrencia; no representa el resultado vigente.
+
+## 2026-10-04 — Gate arquitectónico MySQL/EF previo a net10
+
+- El provider autoritativo vigente permanece Pomelo 8.0.2 / MySqlConnector 2.3.7 sobre EF Core 8.0.2 y net8.0; su baseline MySQL queda certificado con migraciones, SQL, semántica relacional, integración y aislamiento tenant.
+- Oracle Connector/NET no es intercambiable sin migración arquitectónica: el historial Pomelo no reconstruye correctamente una base vacía y las excepciones cambian de MySqlConnector.MySqlException a MySql.Data.MySqlClient.MySqlException, rompiendo retry/traducciones existentes.
+- Cambiar sólo TargetFramework a net10 queda prohibido: EF8 reproduce TypeLoadException en LINQ aunque la solución compile.
+- La modernización net10 exige una lane EF/provider soportada y probada como unidad; hasta entonces el gate emite STOP y no altera runtime productivo.
+- No se modifica QA, main, PROD, Aiven real ni ningún .csproj productivo.
+
+## 2026-10-04 — Tooling frontend Fase 5
+
+- Playwright Test pasa de 1.62.1 a 1.63.0.
+- Vitest pasa de 4.1.11 a 5.0.3 sobre el target canónico `@angular/build:unit-test`.
+- jsdom pasa de 29.1.1 a 30.0.1 exactamente según el alcance autorizado.
+- html5-qrcode se conserva exactamente en 2.3.8; su mantenibilidad futura queda como deuda no bloqueante y no se sustituye en esta fase.
+- Se preservan Angular 22.2.1, TypeScript 6.0.3, RxJS 7.8.2, tslib 2.8.1, Zone.js 0.16.3, Node 24.21.0 y npm 11.19.0.
+- Alcance exclusivo dev; QA, main y PROD no se modifican.
+
+## 2026-10-03 — Angular 21 → 22.2.1
+
+- Frontend migrado major-a-major mediante `ng update` oficial: Angular Core/CLI 22.2.1.
+- Angular Material/CDK migrados mediante schematics oficiales a 22.2.1.
+- Matriz fijada exactamente a TypeScript 6.0.3, RxJS 7.8.2, tslib 2.8.1 y Zone.js 0.16.3; Node 24.21.0 y npm 11.19.0 se preservan.
+- Se mantienen `@angular/build:application`, `@angular/build:dev-server` y `@angular/build:unit-test` con Vitest 4.1.11.
+- No se adopta zoneless: `zone.js` permanece en polyfills y `provideZoneChangeDetection({ eventCoalescing: true })` sigue siendo explícito.
+- Los schematics oficiales preservaron semántica existente mediante `ChangeDetectionStrategy.Eager`, `withXhr()` y ajustes de safe-navigation donde Angular 22 lo requirió.
+- Run causal de migración: `37146078214` — SUCCESS; antes del push pasaron reinstalación limpia, 58/58 archivos + 217/217 unit tests, lint/contratos, audit productivo high+ y build configuration production sin deploy.
+- Alcance exclusivo `dev`; QA, `main`, PROD, datos, secretos e infraestructura productiva no fueron modificados.
+
+## 2026-10-03 — Angular 20 → 21
+
+- Frontend migrado major-a-major mediante `ng update` oficial: Angular Core 21.2.25 / CLI 21.2.24.
+- Angular Material/CDK migrados mediante schematics oficiales a 21.2.14.
+- TypeScript queda en 5.9.3; Node 24.21.0 y npm 11.19.0 se preservan.
+- `@angular/build` 21.2.24 + Vitest 4.1.11 soportan el target unit-test; build y dev-server quedan alineados a `@angular/build:application` / `@angular/build:dev-server` para evitar mezcla de familias de builders.
+- La migración automática actualizó plantillas/control-flow y código compatible; no cambia backend, API, datos, RBAC, tenancy ni infraestructura productiva.
+- Run causal de publicación: `37141861945` — SUCCESS antes de push.
+
 ## 2026-10-01 — Branding de factura tenant-owned y retiro del fallback global
 
 - QuestPDF deja de consultar `AppSettings:LogoPublicUrl` como fallback global.

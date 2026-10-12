@@ -116,7 +116,7 @@
                   class="main-image-button"
                   [attr.aria-label]="'Ampliar imagen ' + (imagenActiva() + 1) + ' de ' + imagenes().length + ' de ' + detalle.nombre"
                   (click)="abrirLightbox()">
-                  <img [src]="imagenCloudinary(imagenActual(), 800)" [attr.srcset]="srcsetCloudinary(imagenActual())" sizes="(max-width: 900px) 94vw, 620px" [alt]="detalle.nombre + (modelo?.nombre && modelo?.nombre !== 'Modelo general' ? ', ' + modelo?.nombre : '')" width="800" height="600" decoding="async" fetchpriority="high" (error)="errorImagen(imagenActual())">
+                  <img [src]="imagenCloudinary(imagenActual(), 800)" [attr.srcset]="srcsetCloudinary(imagenActual())" sizes="(max-width: 900px) 94vw, 620px" [alt]="detalle.nombre + (modelo?.nombre && modelo?.nombre !== 'Modelo general' ? ', ' + $safeNavigationMigration(modelo?.nombre) : '')" width="800" height="600" decoding="async" fetchpriority="high" (error)="errorImagen(imagenActual())">
                 </button>
               } @else {
                 <div class="image-fallback" aria-label="Imagen del producto no disponible">

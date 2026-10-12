@@ -1,0 +1,130 @@
+name: Modernizacion - Fase 10 Testing .NET DEV
+
+on:
+  pull_request:
+    branches: [dev]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/modernization-phase10-testing-net.yml'
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/modernization-phase10-testing-net.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase10-testing-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-contract:
+    name: Fase 10 - Test SDK Moq y proveedores EF
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Scope lock y paquetes exactos
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-project-scope.mjs
+          test "$(cd backend && dotnet --version)" = 10.0.401
+          p=backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj
+          grep -Fq 'Include="Microsoft.NET.Test.Sdk" Version="18.10.1"' "$p"
+          grep -Fq 'Include="Moq" Version="4.21.0"' "$p"
+          grep -Fq 'Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.12"' "$p"
+          grep -Fq 'Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.12"' "$p"
+          grep -Fq 'Include="xunit" Version="2.8.1"' "$p"
+          grep -Fq 'Include="xunit.runner.visualstudio" Version="2.8.2"' "$p"
+          ! grep -Eq 'Include="xunit.v3' "$p"
+          grep -Fq 'Include="Microsoft.EntityFrameworkCore" Version="10.0.12"' backend/src/Infrastructure/Solqaryn.Infrastructure.csproj
+          echo 'PHASE10_PACKAGES=PASS'
+      - name: Restore y build net10
+        working-directory: backend
+        run: |
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+      - name: Suite unitaria completa xUnit v2
+        working-directory: backend
+        run: |
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-build --filter "Category!=Integration" --logger "trx;LogFileName=phase10-unit.trx"
+      - name: Proveedores SQLite InMemory y contratos Moq
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          filter='FullyQualifiedName~TtlValidationTests|FullyQualifiedName~NotificationDedupContractTests|FullyQualifiedName~SecuenciaDocumentoServiceTests|FullyQualifiedName~PublicStoreCacheInvalidationTests|FullyQualifiedName~FinanzasServiceTests'
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-build --filter "$filter" --logger "trx;LogFileName=phase10-providers.trx"
+      - name: Bloquear pérdida de descubrimiento o pruebas omitidas
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          from xml.etree import ElementTree as ET
+
+          reports = (
+              ('unit', 'phase10-unit.trx', 2300),
+              ('SQLite-InMemory-Moq', 'phase10-providers.trx', 15),
+          )
+          for label, filename, minimum in reports:
+              path = Path('tests/Solqaryn.Tests/TestResults') / filename
+              if not path.is_file():
+                  raise SystemExit(f'{label}: falta reporte TRX {path}')
+              root = ET.parse(path).getroot()
+              counter = next((n for n in root.iter() if n.tag.endswith('Counters')), None)
+              if counter is None:
+                  raise SystemExit(f'{label}: contadores TRX no disponibles')
+              total = int(counter.get('total', 0))
+              passed = int(counter.get('passed', 0))
+              failed = int(counter.get('failed', 0))
+              skipped = int(counter.get('notExecuted', 0))
+              if total < minimum or passed != total or failed != 0 or skipped != 0:
+                  raise SystemExit(
+                      f'{label}: descubrimiento o resultado invalido: '
+                      f'total={total} passed={passed} failed={failed} skipped={skipped} '
+                      f'minimum={minimum}')
+              print(f'PHASE10_TRX_{label}=PASS total={total} passed={passed}')
+          PY
+      - name: Vulnerabilidades NuGet
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet list Solqaryn.sln package --vulnerable --include-transitive | tee "$RUNNER_TEMP/phase10-vulnerabilities.txt"
+          if grep -q 'has the following vulnerable packages' "$RUNNER_TEMP/phase10-vulnerabilities.txt"; then
+            exit 1
+          fi
+          echo 'PHASE10_NUGET_VULNERABILITIES=0'
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase10-testing-trx
+          path: backend/tests/Solqaryn.Tests/TestResults/phase10-*.trx
+          if-no-files-found: ignore
+          retention-days: 30
+
+  verdict:
+    name: Dictamen Fase 10
+    needs: test-contract
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail closed
+        env:
+          CONTRACT_RESULT: ${{ needs.test-contract.result }}
+        run: |
+          test "$CONTRACT_RESULT" = success
+          echo 'FASE_10_TESTING_NET=PASS'
+          echo 'XUNIT_MAJOR=2'
+          echo 'XUNIT_V3=DEFERRED'

@@ -1,3 +1,517 @@
+## 2026-10-12 — QA Oracle EF10: esquema, backup cifrado y adopción certificada
+
+- QA recibió únicamente los controles operativos de schema y respaldo por excepción de bootstrap, sin desplegar aplicación nueva; el guard de PR de promoción `dev → qa` permanece vigente. PR #3572 cerrado sin merge al detectar el guard.
+- Auditoría QA: 136 tablas de app; 107 migraciones históricas; marcador Oracle inicialmente ausente; fingerprints tablas/FK/índices, triggers (2) y CHECK (1) idénticos a DEV. Evidencia runs 38302451112 y 38302585075.
+- Respaldo QA transaccional AES-256 y restore MySQL efímero `137/137` tablas con conteos exactos: 38302947961. Ensayo oficial Oracle EF10 `adopt` sobre restore PASS, seguido de adopción real de solo metadata (historial EF `107→108`, tablas de negocio `136` sin cambios) y readback PASS: 38303606678. Se retiró el job temporal de adopción.
+- Preflight QA read-only independiente `QA_ORACLE_SCHEMA_CERT=PASS`, `QA_DATABASE_WRITES=0`: run 38304163633. Se versionan los workflows seguros en DEV y el registro auditable: `docs/evidencias/modernizacion/QA_ORACLE_EF10_CERTIFICACION_2026-10-12.md`.
+- Fase 11 **todavía no es 100%**: falta promoción de código por PR #3567, despliegue/smoke QA exact-head y autorización explícita QA→PROD. SMTP real y `solqaryn.com` aplazados; 11 imágenes Cloudinary DEV pendientes de normalización física. MySQL Aiven 8.4.8 y servicios Free sin cambios.
+
+## 2026-10-12 — Readback exact-head de auditoría Cloudinary DEV y decisiones diferidas
+
+- El run [38298651685](https://github.com/solqaryn/Solqaryn/actions/runs/38298651685) verificó en Aiven MySQL 8.4.8, lectura exclusiva, 11 imágenes de producto en rutas DEV no canónicas, 1 comprobante sin archivo, 2 fotografías de perfil canónicas y 3 usuarios sin fotografía; ningún origen QA/PROD entre los 17 registros examinados. Normalización física NO certificada; originales intactos.
+- Se actualizó el documento Cloudinary con desglose del artefacto sin exponer URLs/PublicId y con plan de migración segura reversible. Se preserva confirmación del propietario de descarga individual y ZIP funcionales.
+- Se formaliza SMTP real como excepción operativa `DEFERRED_BY_OWNER`, **NO PASS**, sin compras; `solqaryn.com` permanece aplazado; las 10 automatizaciones VAEP pausadas no cambian; Render Free no cambia.
+- La revisión de `html5-qrcode@2.3.8` se completó sin reemplazo: última npm, sin vulnerabilidades directas conocidas en Snyk, mantenimiento inactivo; seguimiento condicional y tests npm/Playwright permanentes.
+- Sólo documentación DEV, sin efectos en runtime, rutas, secretos, QA, PROD o DNS. QA Oracle real, promoción exact-head QA y autorización independiente PROD siguen pendientes.
+
+## 2026-10-12 — Reconciliación del cierre de descargas DEV y auditoría de Cloudinary sin costes
+
+- La corrección de imágenes del PR #3569 se integró en `dev` (`71bcfbee`) tras 15/15 checks `SUCCESS`. Vercel DEV `READY` y Render DEV `live` están en ese commit. El propietario verificó descarga de imágenes y ZIP en su sesión; el readback de binarios y normalización física quedan separados.
+- Se moderniza exclusivamente el inventario de locators Cloudinary de DEV: clasifica los `PublicId`/URL del cloud `riyrzmob` por superficie contra las carpetas reales del código, protege secretos con GitHub Environment DEV y publica **solo contadores agregados**. No mueve imágenes, no escribe en MySQL ni ejecuta cambios en Cloudinary.
+- Se ejecutan pruebas puras en PR sin secretos y el inventario SQL read-only sólo en push a `dev`. MySQL Aiven 8.4.8 queda congelado y el código QA/PROD continúa sin promoverse.
+- Las decisiones aplazadas se preservan: `solqaryn.com`, SMTP real, Render paid/always-on, VAEP 10 tareas pausadas y evaluación futura de html5-qrcode. No se compra nada ni se usa TinyFish. El cierre de Fase 11 integral sigue pendiente de esquema Oracle de QA, exact-head QA y autorización PROD.
+
+## 2026-10-12 — Corrección de descarga de imágenes de productos Cloudinary (DEV, sin compras)
+
+- Incidencia reportada: `GET /api/productos/7/imagenes/9/descargar` devuelve 400 por mismatch entre la carpeta persistida de Cloudinary DEV y el folder canónico actual. Evidencia aportada por el propietario, sin divulgar secretos.
+- `CloudinaryImageStorageService`: mantiene la validación de origen/cuenta/folder; habilita **solo para descarga en DEV** una ruta alternativa de assets ya registrados cuyo patrón conserva `solqaryn_dev/productos/empresas/{tenant}` y versión, restringida al producto y tenant autorizados. Upload/delete, QA y PROD continúan fail-closed y sin aliases de negocio.
+- `ProductosController`: obtiene `StorageTenantContext` desde el permiso tenant-autorizado y revalida la membresía activa; descarga individual y ZIP pasan el contexto al storage. El ZIP falla completo si falta cualquier recurso, sin reporte falso de éxito ni contenido parcial.
+- `producto-detail.component.ts`: mensajes de error por tipo HTTP y extensión JPG/PNG/WebP según el Blob recibido.
+- Pruebas de validación de URL, tenant, ambiente, cuenta y ausencia de permiso de borrado. Certificación requiere CI PR y exact-head DEV, seguido de smoke HTTP autenticado. **No se declara aún reparación live ni migración de activos.**
+- Se conserva MySQL Aiven 8.4.8 aprobado. No se usan TinyFish, compras ni cambios a Render Cloudinary, Aiven persistente, QA, main o PROD. La normalización física posterior se mantiene separada con backup/readback/rollback.
+
+## 2026-10-10 — Fase 11: preflight QA sin cambios de datos ni costes
+
+- DEV origen `b11ce636`: 9/9 workflows SUCCESS. PR de promoción `dev -> qa` #3567 en borrador; QA no promovido ni certificado. Se preserva Aiven MySQL **8.4.8** aprobado y Render Free, sin compras.
+- `.github/workflows/qa-ci.yml`: ejecutar QA backend, frontend, lint, build y npm audit también en PRs hacia QA, antes de integrar 485 commits modernizados sobre la rama divergente.
+- `.github/workflows/qa-schema-recovery.yml`: retirar el recovery automático obsoleto que intentaba migraciones Pomelo sobre QA y reemplazarlo por un preflight Oracle EF10 **100 % solo lectura**, con fail-closed por esquema, baseline, contrato N0.6 o versión/binding MySQL. Sin SQL DDL/DML ni backups expuestos en PR.
+- Evidencia causal y condición de rollback: `docs/evidencias/modernizacion/FASE_11_CERTIFICACION_DEV_Y_PREFLIGHT_QA_2026-10-10.md`.
+- No declarar Fase 11 al 100 % hasta resolver adopción/migraciones y smoke QA exact-head y el requisito SMTP OAuth2 real expresamente solicitado; el aplazamiento previo del transporte en Render Free no equivale a PASS E2E. Sin cambios en QA, `main`, PROD, secretos o servicios.
+
+## 2026-10-10 — Fase 11: readiness real Render Free y reintento limitado en smoke DEV
+
+- El `DEV - Certificación funcional final` ejecutado tras el PR #3565 en el HEAD `26f358aee5fc6c049547691d0fbdd7ca9ec9a85a` falló en el gate de identidad/categorías/productos con HTTP 502, después de que las rutas HTML habían pasado. Los logs de Render documentaron el arranque posterior del runtime DEV y la conexión a Aiven `solqaryn_dev`.
+- Corrección exclusivamente del workflow DEV: espera fail-closed de readiness HTTP directa Render y por proxy Vercel, comprobando JSON `status=ready` y `database=connected`, durante un número limitado de intentos. Las tres llamadas JSON de identidad/tienda tienen reintentos limitados para errores transitorios. Si el runtime no responde correctamente, sigue siendo fallo certificable, no se ignora el estado 502.
+- Se rearmó el checkpoint de certificación DEV para ejecución automática después de integrar el fix en `dev`. Aiven sigue en MySQL `8.4.8`; no se compra/actualiza ningún servicio; no se cambia producto, API, schema, credenciales, QA, main ni PROD.
+- `FASE_11_INTEGRAL` no puede declararse `CERTIFIED` por este cambio aislado: se exige posterior CI exact-head, smoke real completo, SMTP OAuth2 real y QA según el alcance aprobado. Reversión: `git revert` del commit de corrección del gate en DEV.
+
+## 2026-10-10 — Fase 11: prearm de smoke real DEV y backup/restore de Aiven a efímero
+
+- Se actualizan únicamente los checkpoints canónicos `.github/checkpoints/dev-final-functional-certification` y `.github/checkpoints/backup-request` para ejecutar tras su promoción controlada a `dev` los workflows existentes de smoke público, Cloudinary/branding, routing Vercel/Render, MySQL, backup cifrado real DEV y restore same-artifact en runner local descartable.
+- El cierre posterior exige `DEV - Certificación funcional final` y `SOLQARYN - Backup/restore topology exactness` en `SUCCESS` exact-head; el último se activa solo si el mensaje de squash incluye el marker `[SOLQARYN-BACKUP-TOPOLOGY]`. `SOLQARYN - Backup operativo de DEV` no debe ejecutar su job real sin el marker distinto `[SOLQARYN-BACKUP-REAL]`.
+- Aiven permanece en MySQL 8.4.8 aprobado. La lectura real de `solqaryn_dev` puede producir solo un respaldo cifrado efímero; la restauración destructiva se limita a MySQL local del runner. No se actualiza el motor, no se escribe en Aiven ni se toca QA/PROD.
+- Estas pruebas no sustituyen la certificación SMTP OAuth2 real ni autorizan `dev -> qa` / `qa -> main`; si hay fallos de HTTP o de integridad se aplica STOP y recovery del scope en DEV antes de cualquier promoción.
+- Rollback de los checkpoints: revert normal en `dev`; no se revierten datos ni se toca otro entorno.
+
+## 2026-10-10 — Decisión de Aiven MySQL 8.4.8 para certificación integral
+
+- El propietario ratifica **MySQL Aiven 8.4.8**; 8.4.11 no estaba disponible en Aiven. El servicio compartido `solqaryn-mysql` de DEV/QA/PROD queda **sin actualización, sin mantenimiento iniciado y sin cambios de credenciales/esquemas/datos**.
+- `.github/workflows/modernization-phase1-aiven-mysql.yml` fija el objetivo de inspección a 8.4.8 y aplica fail-closed si `SELECT VERSION()` difiere del pin aprobado; conserva verificación de identidad, metadatos Aiven de solo lectura, backup cifrado y conteos antes/después. Los artefactos históricos que describen la propuesta 8.4.11 no se reescriben.
+- La certificación post-merge debe aportar workflow Fase 1 `SUCCESS` al HEAD exacto de `dev`; no se promueve a QA antes del cierre de todos los gates exigidos para Fase 11 (incluido SMTP OAuth2 real).
+- Rollback: revert normal del changeset documental/de workflow en DEV, nunca `maintenance-start` en el servicio compartido ni actualización automática de MySQL.
+
+## 2026-10-10 — Fase 11: reparación del gate de backup/restore ante Oracle EF10
+
+- El gate `.github/workflows/backup-restore-dev.yml` deja de crear el esquema con migraciones Pomelo retiradas; adopta `Solqaryn.DatabaseBootstrap` en modo `fresh` y verifica 136 tablas, `OracleBaseline`, EF `pending-model=0`, SDK 10.0.401 y `dotnet-ef 10.0.12`.
+- Las pruebas vuelven a ejecutar en PR contra `dev` y en push DEV cuando cambia el contrato de backup/restore o su schema Oracle. Se preservan cifrado GPG, checksum, retención, integridad de sentinels, restore destructivo **solo local efímero**, arranque de API restaurada y pruebas fail-closed contra PROD/bases no descartables.
+- Se elimina de este fixture la antigua variable de logo global y se impide la aplicación automática de migraciones al arrancar la API recuperada. No se modifica el runtime de producción, provider Oracle, schema persistente ni las scripts de backup reales.
+- Este changeset no autoriza ni ejecuta `dev -> qa` o `qa -> main`. La certificación integral Fase 11 sigue condicionada a CI exact-head, smoke real y los demás requisitos definidos por el propietario; SMTP OAuth2 real no se presume aprobado.
+- Rollback: revertir únicamente el changeset del workflow en `dev`; no se reescribe historial, no se restauran bases persistentes.
+
+## 2026-10-10 — Fase 10: modernización aislada de testing .NET
+
+- `Microsoft.NET.Test.Sdk 17.10.0 → 18.10.1` y `Moq 4.20.70 → 4.21.0` únicamente en el proyecto de pruebas. EF InMemory/SQLite mantienen las versiones 10.0.12 ya alineadas con EF productivo.
+- xUnit permanece en v2 (`xunit 2.8.1` y `xunit.runner.visualstudio 2.8.2`) sin migrarlo a v3. Su eventual evaluación 4.0.1 es un changeset independiente y no forma parte de esta fase.
+- Nuevo gate permanente `.github/workflows/modernization-phase10-testing-net.yml`: scope lock, pinning exacto, build Release, suite de unitarios completa, regresión focalizada EF SQLite/InMemory/Moq, audit NuGet directa/transitiva y dictamen fail-closed; integración Oracle/MySQL y tenancy cubiertos también por gates Fase 6/Fase 7 y DEV en el mismo SHA.
+- Impacto limitado a tooling/test, CI y documentación. No cambia runtime productivo, API, seguridad, schema, migraciones, credenciales ni entornos `main`, QA o PROD.
+- **Cierre condicionado:** exigir PR y push post-merge con gates `SUCCESS` exact-head y P0/P1=0; preservar referencias y recuentos en la conversación GitHub del PR. Contrato de pruebas en `docs/evidencias/modernizacion/FASE_10_TESTING_NET_2026-10-10.md`.
+
+## 2026-10-10 — Recovery del CI ERP-N0.6 sobre Oracle EF Core 10
+
+- Se elimina de la validación activa N0.6 el replay de migraciones Pomelo que ya no pertenecen al runtime de `dev`. El workflow verifica la autoridad Oracle EF 10.0.9 / EF Core 10.0.12 con `OracleBaseline` sobre MySQL 8.4 efímero.
+- Toolchain fijado mediante `backend/.config/dotnet-tools.json`, `dotnet tool restore` y comprobación `dotnet-ef 10.0.12`; cadena de conexión CI con `SslMode=Disabled` y `PROJECT_SCOPE_LOCK` verificado.
+- Cobertura fail-closed: bootstrap fresh canónico, scripts de lectura C1/C2/C3, integraciones `MovimientoInventarioOrigenTipadoIntegrationTests`, constraints/FKs/triggers y ausencia de drift EF.
+- Exclusivamente CI en `dev`; no modifica datos persistentes, migraciones, provider de producción, API, RBAC, tenancy, `main`, QA ni PROD.
+- La certificación exige run de PR y post-merge `SUCCESS` en HEAD comprobado; sin ambos no se declara cerrado. Rollback: revertir únicamente el changeset del workflow.
+
+## 2026-10-07 — Fase 9: QuestPDF aislado 2026.9.1
+
+- Changeset exclusivo QuestPDF: `2024.3.6 → 2026.9.1`; sin cambios de EF/provider, schema, DB, Cloudinary, SMTP, main, QA o PROD.
+- Baseline 2024.3.6 preservado como artifact inmutable y comparado contra 22 PDFs candidate reales sobre los mismos fixtures: siete perfiles de factura en corto/largo/Unicode más reporte administrativo.
+- Fuentes Lato preservadas; QuestPDF 2026 queda con `UseSystemFonts=false`, `ThrowOnMissingFontFamilies=true` y `ThrowOnMissingTextGlyphs=true`.
+- Dimensiones/paginación, POS58/POS80, caracteres especiales, reporte PDF, adjunto de correo, concurrencia y regresión NuGet resultaron técnicamente verdes.
+- QR dentro de PDF y attachments embebidos son N/A porque no existen en la superficie productiva; PDF/UA permanece no habilitado y no se declara compliance.
+- El propietario confirmó la elegibilidad declarada para QuestPDF Community 2026; `Dictamen Fase 9` pasó sobre el HEAD post-merge `03c889be18a1266bed7eed30e8c8c5e46ee74809`, junto con Fases 6/7/8, compilación DEV, aceptación integral y scope lock.
+- Fase 9 queda cerrada y certificada en `dev` con `P0=0`, `P1=0`; Fase 10 no iniciada.
+
+## 2026-10-07 — Hotfix seguridad: retiro de ImageSharp 3.1.12
+
+- NuGet/GitHub Advisory empezó a reportar vulnerabilidades nuevas sobre SixLabors.ImageSharp 3.1.12, incluyendo severidad high, durante la revalidación de Fase 9.
+- Se retira SixLabors.ImageSharp del runtime productivo y se migra exclusivamente `ImagenUploadSecurity` a SkiaSharp 4.152.1 + `SkiaSharp.NativeAssets.Linux.NoDependencies` 4.152.1.
+- Se preservan JPG/PNG/WebP, firma/MIME/extensión, límites 10 MB/4096 px/16 MP, decode real y re-encode desde píxeles para eliminar metadatos del archivo de entrada.
+- No cambia DB, schema, EF/provider, QuestPDF, Cloudinary, SMTP, auth, RBAC, tenancy, QA, main ni PROD.
+- Fase 7 y Fase 8 siguen exigiendo cero vulnerabilidades conocidas; no se añadió supresión de advisories.
+
+## 2026-10-07 — Fase 8: modernización NuGet .NET 10
+
+- FluentValidation sube de 11.9.2 a 12.1.1; se elimina FluentValidation.AspNetCore 11.3.0 y la validación MVC se reemplaza por un filtro async propio que resuelve `IValidator<T>` desde DI y preserva ModelState.
+- BCrypt.Net-Next sube de 4.0.3 a 4.2.0 con compatibilidad de hashes existentes certificada.
+- Swashbuckle.AspNetCore sube de 6.6.2 a 10.2.3; OpenAPI/Bearer y multipart `IFormFile` quedan cubiertos por smoke real.
+- CloudinaryDotNet sube de 1.25.1 a 1.29.3 y ClosedXML de 0.104.2 a 0.105.1.
+- IdentityModel queda alineado en 8.23.0, incluido OpenIdConnect/Protocols; JwtBearer permanece 10.0.12.
+- SixLabors.ImageSharp permanece en 3.1.12: 4.1.2 exige licencia válida en build para dependencia directa y no se introduce una obligación/licencia nueva sin autorización. 3.1.12 permanece bajo el gate de vulnerabilidades.
+- Microsoft.AspNetCore.Http.Features no existe como PackageReference; FormOptions proviene de ASP.NET Core 10. Caching.Memory 10.0.12 y System.Text.Json permanecen en el shared framework/transitivas sin referencias directas redundantes.
+- Gate permanente: `.github/workflows/modernization-phase8-nuget.yml`. Alcance exclusivo dev; sin main, QA, PROD ni Fase 9.
+
+## 2026-10-06 — Cierre post-merge Fase 7 y reconciliación N2.3
+
+- HEAD post-merge técnicamente certificado: `7013a55cd7491c3c79d6808df5db9ba0b8580f40`.
+- Fase 7 `37540172636`, Fase 6 `37540172761`, DEV CI `37540172730`, aceptación `37540172606`, Fase 4 `37540172583` y Fase 5 `37540172750`: PASS.
+- Fase 7: 2388/2388 unitarios, 27/27 integración, fresh bootstrap 136 tablas, pending=0, Docker health/readiness PASS, tenancy PASS, NuGet vulnerability gate PASS.
+- Fase 6 post-Fase7: provider productivo Oracle, 107 migraciones Pomelo preservadas, replay Oracle=false, P0=0, P1=0.
+- Se corrige el workflow N2.3 de `SslMode=None` a `SslMode=Disabled`, valor compatible con Oracle Connector/NET, y se habilita su validación en PR hacia `dev`.
+- Se reconcilian las evidencias Fase 6/Fase 7 y autoridades arquitectónicas para reflejar el estado real integrado en `dev`.
+- Sin promoción a `main`, QA o PROD.
+
+## 2026-10-06 — Fase 7: .NET 10 + EF Core 10 + Oracle MySQL
+
+- Se ejecutó el retarget del backend a `net10.0`/C# 14 con SDK 10.0.401 y runtime/ASP.NET 10.0.12.
+- EF Core, Design y `dotnet-ef` quedan en 10.0.12; JwtBearer en 10.0.12; provider productivo Oracle `MySql.EntityFrameworkCore` 10.0.9.
+- Se retiraron Pomelo/MySqlConnector de los proyectos productivos; las 107 migraciones Pomelo permanecen como historia auditable fuera del runtime y la cadena activa usa `OracleBaseline`.
+- Bootstrap fresh Oracle certificado: 136 tablas y cero pending model changes. Exact-head previo al cierre documental `ce66441e5c58435571ea774a424c8c8f21e33225`: Fase 7 run `37520039924` PASS con 2388/2388 unitarios, 27/27 integración, tenancy PASS, NuGet vulnerable=0 y Docker .NET 10 health/readiness PASS. Fase 6 post-Fase7 run `37520039999` también PASS con `P0=0` y `P1=0`. Evidencia persistida en `docs/evidencias/modernizacion/FASE_7_DOTNET10_EF10_2026-10-06.md`.
+- Se añadió gate permanente `.github/workflows/modernization-phase7-dotnet-ef.yml` y se alinearon workflows operativos de backend a SDK 10.0.401 / dotnet-ef 10.0.12; probes históricos explícitos se mantienen aislados para reproducibilidad.
+- No se promovió `main`, QA ni PROD; no se escribieron datos productivos ni secretos.
+
+## 2026-10-05 — Punto 27: reconciliar arquitectura con el exact-head vigente
+
+- `ARCHITECTURE.md`, `PROJECT_CONTEXT.md`, `PROJECT_INDEX.md`, `ARCHITECTURE_CHANGELOG.md` y este changelog reflejan Oracle EF10/net10 como runtime productivo de `dev`; Pomelo/net8/EF8 queda como historia pre-Fase7.
+- Fase 6 exact-head `37330696772`, HEAD `425f9cab0ed291401c081d7946289875eb11e798`: `success`, `FASE_6_MYSQL_EF_PROVIDER=PASS`, `P0=0`, `P1=0`, `PHASE7_EXECUTED=false`; scope lock `37330696444` también `success`.
+- El toolchain vigente de `dev` es SDK 10.0.401/runtime 10.0.12 y EF Core/Design/CLI 10.0.12 con Oracle EF 10.0.9; Fase 7 está ejecutada.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_27_DOCUMENTACION_ARQUITECTONICA_2026-10-05.md`.
+
+## 2026-10-05 — Revalidación del Punto 6: bootstrap Oracle desde SQL package
+
+- Probe `37280729749`, HEAD `cf0607908701e5a9e3015dcc463f2a6beb87b2cf`: `success`; SQL bootstrap de base vacía produjo 136 tablas, equivalencia SQL/EF y baseline `true`, adopción sin DDL, `has-pending-model-changes` y rollback a Pomelo con 107 migraciones preservadas.
+- Artefacto `oracle-baseline-candidate-37280729749`, 237,107 bytes, SHA-256 `309175859be6cc938e2a4edfdc3a162055a79c20fce31cb1828b79ccbde626a8`, expiración 2027-01-03.
+- Punto 6 cerrado. Únicamente CI efímero; sin uso de bases persistentes ni Fase 7.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_6_ORACLE_CLEAN_BOOTSTRAP_2026-10-04.md`.
+
+## 2026-10-05 — Revalidación del Punto 5: historial Pomelo preservado
+
+- Inventario actual: 107 fuentes timestamped, 107 atributos `[Migration]` únicos y cero duplicados; 67/107 contienen tokens de provider MySQL/Pomelo.
+- No hay diferencias de las migraciones ni del `.csproj` de Infrastructure entre el baseline del probe y `b86bf80b9cd2f3ca223fa3c59b810e123781db7a`.
+- Probe Oracle baseline `37280097642` sobre ese HEAD pasó; aplicó la historia y el rollback dejó `pomelo_history=107` con esquema/datos intactos.
+- Punto 5 cerrado; sin reescribir historia, cambiar producción o iniciar Fase 7.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_5_MIGRATION_HISTORY_PRESERVED_2026-10-04.md`.
+
+## 2026-10-05 — Cierre del Punto 4: Oracle baseline, paquete SQL y rollback
+
+- Probe exact-head `37279558796`, HEAD `3dbc3d33f1ee79466a7b53e9ce6e323f492e071e`: success.
+- Bootstrap del SQL package en base vacía creó 136 tablas; equivalencia física SQL/EF y baseline `true`; adopción sobre esquema Pomelo sin DDL `PASS`.
+- Rollback Oracle→Pomelo preservó esquema, datos, usuario semilla, 107 migraciones históricas y marcador Oracle; `has-pending-model-changes` pasó tras bootstrap/rollback.
+- Punto 4 queda cerrado. Sólo MySQL efímero; sin cambios productivos ni Fase 7.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_4_ORACLE_BASELINE_ADOPTION_2026-10-04.md`.
+
+## 2026-10-05 — Reapertura del Punto 4 por ampliación del probe Oracle baseline
+
+- La certificación histórica `37230813349` fue exitosa en su SHA, pero el workflow añadió posteriormente SQL bootstrap en base vacía, comparación física ampliada y prueba de rollback Oracle→Pomelo. El éxito viejo no cubre esos pasos.
+- Se amplió el disparador de push a `backend/**`; se reejecutará el workflow actualizado como parte de la revalidación del Punto 4.
+- El punto queda abierto hasta la nueva corrida. No se toca producción ni se ejecuta Fase 7.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_4_ORACLE_BASELINE_ADOPTION_2026-10-04.md`.
+
+## 2026-10-05 — Cierre del Punto 3: probe EF9/Pomelo9 net8 y net10
+
+- Tras conservar el fallo `37277207917` (límite de 64 caracteres en el lock EF de una base efímera), se añadió el test nuevo a la transformación de nombres temporales del probe.
+- Rerun `37278090999`, HEAD de código `dc063110fca28eb7e715322ab3aff214ab211cc9`: `success`; unitarios 2388/2388 e integración 28/28 en net8 y net10; auditor tenant certificado en ambas lanes; migraciones, `has-pending-model-changes` y comparación de columnas/índices aprobados.
+- Punto 3 queda PASS. EF9/Pomelo9 permanece como puente efímero; el stack productivo no cambia y Fase 7 sigue sin ejecutarse.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_3_EF9_POMELO9_SOLO_PUENTE_2026-10-04.md`.
+
+## 2026-10-05 — Punto 3: corregir fixture de longitud de base efímera
+
+- El probe exact-head `37277207917` aisló el fallo a un test MySQL de concurrencia agregado recientemente: el nombre temporal más el sufijo del lock EF excedía el límite de 64 caracteres. Net8 unitarios pasaron 2388/2388 e integración 27/28; se conserva esta corrida fallida como evidencia.
+- Se añade `SecuenciaDocumentoConcurrencyIntegrationTests.cs` a la lista que acorta identificadores sólo dentro del checkout efímero del probe. Revalidación pendiente del commit correctivo; Punto 3 sigue abierto.
+- No cambia producción, `.csproj`, historial de migraciones ni Fase 7.
+
+## 2026-10-05 — Reapertura del Punto 3 por deriva en inputs del probe
+
+- La auditoría comprobó que el probe EF9/Pomelo9 `37216002726` fue exitoso en su HEAD, pero quedó desactualizado: el workflow endureció el tenant audit con `--require-certified` y cambiaron tests de concurrencia/retry utilizados por la matriz.
+- Se amplió su disparador permanente en `dev` para backend, el proyecto probe y el auditor tenant; el run nuevo determinará el resultado. El Punto 3 queda abierto hasta esa certificación.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_3_EF9_POMELO9_SOLO_PUENTE_2026-10-04.md`. No se modifica el stack productivo ni se ejecuta Fase 7.
+
+## 2026-10-05 — Reconciliación de evidencia de Fase 2 Node/npm
+
+- El informe de Fase 2 decía todavía “en certificación” pese a existir el run exact-head `37130894429` sobre `1b34ec476722bc83cd4362eba6cf4391bb492f70`: tres jobs exitosos, Node 24.21.0, npm 11.19.0, Angular 20.3.33 intacto, E2E canónico, lint, build PROD y audit productivo high+ con cero vulnerabilidades.
+- El dictamen histórico se actualizó a `FASE_2_NODE_NPM=PASS`; se acotó el readback Vercel a configuración `24.x` y no a prueba de patch runtime.
+- Evidencia: `docs/evidencias/modernizacion/FASE_2_NODE_NPM_2026-10-02.md`. Esta reconciliación no cambia versiones ni ejecuta Fase 7.
+
+## 2026-10-05 — Cierre formal del Punto 30: Fase 6 STOP → PASS
+
+- Gate exact-head `37268035079`, HEAD `877af434ee15c8fd3a08f974bf58a62c91c03179`: `FASE_6_MYSQL_EF_PROVIDER=PASS`, `P0=0`, `P1=0`, `TARGETFRAMEWORK_CHANGE=ALLOWED_AFTER_PHASE6_CLOSE`, `PHASE7_EXECUTED=false`; los cinco jobs terminaron `success`.
+- Aceptación funcional integral DEV `37268035136`, Fase 5 tooling/E2E `37268035072`, Scope Lock `37268035185` y VAEP admission guard `37268035138` terminaron `success` sobre el mismo HEAD.
+- Fase 6 queda formalmente cerrada y deja de emitir STOP. El runtime sigue net8/EF8/Pomelo; Fase 7 no se inició y sus cambios productivos continúan pendientes de iniciar esa fase.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_30_FASE6_STOP_A_PASS_2026-10-05.md`.
+
+## 2026-10-05 — Auditoría del Punto 28: PR check sin filtro de paths; enforcement pendiente
+
+- El workflow de Fase 6 ahora dispara en cada pull request hacia `dev`, sin `paths`, para que `Dictamen Fase 6` siempre exista como check requerido candidato.
+- El ruleset activo `22829243` sólo protege borrado y force-push; no exige PR ni status checks. El punto 28 permanece abierto hasta configurar y leer de vuelta enforcement obligatorio en GitHub.
+- La conexión GitHub disponible en esta sesión es de lectura para rulesets; no se cambió ni se afirmó haber cambiado esa configuración.
+- Evidencia actualizada: `docs/evidencias/modernizacion/PUNTO_28_GATE_CI_PERMANENTE_PROVIDER_2026-10-05.md`.
+
+## 2026-10-05 — Punto 27: documentación arquitectónica reconciliada
+
+- Los cinco documentos requeridos reflejan la decisión definitiva de Fase 6 y separan explícitamente runtime vigente `net8.0`/EF8/Pomelo 8 de la ruta futura certificada Oracle EF10/net10, aún aislada.
+- Referencia técnica vigente al momento de esta reconciliación: gate `37268913820`, HEAD `2d84babb2863cbaadf0e201b9ff03ed113ecd476`; Fase 7 continúa sin ejecutar.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_27_DOCUMENTACION_ARQUITECTONICA_2026-10-05.md`.
+
+## 2026-10-05 — Cierre del Punto 29: certificación exact-head integrada
+
+- HEAD `c8cf5e23704c3da6c17b9eab6782bb78d02b281a`: aceptación funcional DEV, Fase 4 Angular 22, Fase 5 frontend y Fase 6 MySQL/EF completaron en success sobre el mismo SHA.
+- Runs Fase 4 `37266823462`, Fase 5 `37266823544`, aceptación `37266823477` y Fase 6 `37266823449`; el dictamen de Fase 6 fue `PASS`, `P0=0`, `P1=0`, `PHASE7_EXECUTED=false`.
+- Scope lock `37266823494` y VAEP admission guard `37266823620` también pasaron en el mismo HEAD.
+- Se mantuvo fail-closed la infraestructura Aiven: no se inició maintenance ni se repitió un backup de datos reales en esta revalidación. Evidencia: `docs/evidencias/modernizacion/PUNTO_29_CERTIFICACION_EXACT_HEAD_2026-10-05.md`.
+
+## 2026-10-05 — Corrección de disparadores para certificación exact-head
+
+- La auditoría del punto 29 detectó que el workflow frontend Fase 5 espera el E2E canónico de aceptación sobre el mismo SHA, pero cambios de documentación disparaban sólo Fase 5 y no `catalogos-aceptacion.yml`.
+- Se alinearon sus filtros para que los cambios que disparan Fase 5 (frontend/backend, evidencias de modernización y changelogs) disparen también aceptación DEV; así el E2E exact-head no espera un run que nunca se creó.
+- Este cambio es sólo CI; no ejecuta Fase 7 ni modifica runtime, migraciones o infraestructura.
+
+## 2026-10-05 — Implementación inicial del workflow del Punto 28 (sin enforcement obligatorio)
+
+- La implementación original disparaba `modernization-phase6-mysql-ef-provider.yml` en push relevante a `dev` y en PR hacia `dev`, con opción manual.
+- La auditoría posterior detectó que el filtro de paths podía omitir PRs y que el ruleset activo no exigía PR/check. Se quitó el filtro PR; el enforcement obligatorio continúa abierto hasta actualizar y leer de vuelta el ruleset.
+- Push automático histórico `37265475905` sobre `a5c93f14d0a3ee29573e7f0dcd23d4addeddd699`: los jobs de esa ejecución pasaron, pero eso no prueba que GitHub exigiera el check para integrar.
+- Estado actual y evidencia: `docs/evidencias/modernizacion/PUNTO_28_GATE_CI_PERMANENTE_PROVIDER_2026-10-05.md`.
+- Fase 7 no ejecutada.
+
+## 2026-10-05 — Reconciliación exact-head: Fase 6 PASS (puntos 20–26)
+
+- El `STOP` consignado inicialmente en el cierre del Punto 20 fue superado por ejecuciones posteriores; no es el estado vigente. El gate más reciente exact-head `37264684835` sobre `d3a408487...` completó con éxito y dictaminó Fase 6 `PASS`.
+- Evidencia del gate: provider productivo único Pomelo 8.0.2; integración MySQL 8.4 28/28; lane Oracle EF10/net10 portable 22/22; unitarios del candidato 2,336/2,336; tooling EF alineado 10.0.12; rollback a Pomelo sin cambio de esquema ni datos.
+- Los 107 archivos de migración histórica Pomelo permanecen intactos; Oracle usa baseline/adopción SQL y no intenta reproducir esa historia. El runtime continúa net8/EF8/Pomelo.
+- La discrepancia de concurrencia anterior (21/22) fue resuelta y reemplazada por la certificación posterior; véanse `PUNTO_20_INTEGRACION_MYSQL_COMPLETA_2026-10-05.md` y los informes de puntos 21–26.
+- Fase 7 sigue sin ejecutar. El resultado certifica la puerta de provider, no migra proyectos productivos ni promueve QA/PROD.
+
+## 2026-10-05 — Cierre del Punto 20: suite completa de integración MySQL
+
+- Exact-head de código `6cb63f4918`: gate Fase 6 ejecutó `Category=Integration` completo contra MySQL 8.4: 28/28, sin fallos ni skips.
+- Lane Oracle EF10/net10 adaptó y pasó 22/22 pruebas portables; cuatro pruebas ligadas al replay/rollback del historial MySQL se clasifican explícitamente como no portables y siguen cubiertas por Pomelo.
+- El DDL de CHECK se conserva desde `SHOW CREATE TABLE` y el bootstrap de esquemas paralelos se serializa por base temporal.
+- Nota histórica: el primer gate compuesto registró 21/22 por una discrepancia de concurrencia. La deuda fue resuelta en la certificación exact-head posterior `37264684835` (commit `d3a408487...`), que pasó el gate completo; por tanto, ese `STOP` ya no es vigente. Fase 7 permanece sin ejecutar.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_20_INTEGRACION_MYSQL_COMPLETA_2026-10-05.md`. Fase 7 no ejecutada.
+
+## 2026-10-04 — Cierre del Punto 19: tenancy fail-closed en provider lanes
+
+- La certificación tenant es obligatoria en CI y distingue el procesador Outbox tenant-bound de los workers hospedados (actualmente: 0).
+- Identidad, scope, autorización, persistencia, reportes, archivos, caché y Outbox: `PASS` en Pomelo y Oracle EF10/net10.
+- Exact-head `b52e063bbd222e7ed9e74ed150a8b457a0b66e27`: pruebas dirigidas 107/107; integración MySQL 28/28; Fase 6 `PASS`, `P0=0`, `P1=0`; Fase 7 no ejecutada.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_19_TENANCY_FAIL_CLOSED_2026-10-04.md`.
+
+## 2026-10-04 — Cierre del Punto 11: migraciones forward y modelo sin drift
+
+- Pomelo aplicó la historia histórica vigente y `dotnet-ef 8.0.8 migrations has-pending-model-changes` pasó en el gate de Fase 6 exact-head `37237921281` (`915c4853d0c2bd695adc79bb5386a3fe64032be8`).
+- Oracle EF10.12 generó y aplicó su baseline/adopción desde el modelo actual; `has-pending-model-changes` pasó antes/después en el run `37232938573` y no se cambió modelo, snapshot ni migraciones desde ese run.
+- Se preservan las 107 migraciones Pomelo; la ruta Oracle no intenta replay incompatible.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_11_MIGRATIONS_PENDING_MODEL_ORACLE_EF10_2026-10-04.md`.
+- Fase 7 no ejecutada ni despliegues a QA/main/PROD.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+## 2026-10-04 — Cierre del Punto 10: LINQ ejecutado en la lane final Oracle EF10
+
+- La lane Oracle EF10/net10 ahora ejecuta al menos 34 probes sobre Producto, Cliente, ExistenciaVariante, Compra y Venta: búsqueda, filtros, todas las ramas de ordenamiento de producto, paginación, includes, scope, normalización y agregados.
+- Exact-head `37237322033` sobre `87cce67c7846e361448c390810366d9126ffb490`: `repositoryLinqProbes=34`, runtime PASS y tenant PASS.
+- Gate Fase 6 `37237322283`: 5/5 jobs success, `P0=0`, `P1=0`; Fase 7 no ejecutada.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_10_LINQ_ORACLE_EF10_2026-10-04.md`.
+- No se cambiaron dependencias ni frameworks productivos.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+## 2026-10-04 — Cierre del Punto 9: duplicate key 1062 mantiene contrato funcional
+
+- Pomelo/MySqlConnector y Oracle EF10/Connector/NET preservan la traducción específica del índice al mismo `UniqueConstraintViolationException`, nombre funcional y mensaje.
+- Las pruebas fijan 1062, excepción Oracle interna, intento único, preservación de excepción y rechazo de traducir otros índices.
+- Gate exact-head `37235823306` en commit `41753c563381280ae07387dc611d839d347ea342`: cinco jobs success, `P0=0`, `P1=0`; Fase 7 no ejecutada. Lane Oracle EF10 `37235823229` success.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_9_DUPLICATE_KEY_1062_CONTRATO_FUNCIONAL_2026-10-04.md`.
+- Sin cambios productivos ni despliegues a QA/main/PROD.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+## 2026-10-04 — Cierre del Punto 8: retry transitorio independiente del provider
+
+- El `UnitOfWork` mantiene retry sólo para MySQL 1205/1213, máximo tres intentos y sin exponer tipos de providers fuera de Infrastructure.
+- La lane Oracle Connector/NET comprobó lock wait 1205 real y retry 1213 para el tipo Oracle `MySqlException`; su resultado ahora es condición obligatoria del contrato provider-neutral.
+- Run exact-head `37234393499` sobre `9a93e43110430123364710d49f91ec741d9e2e84`: cinco jobs de Fase 6 en success, `exception_contract=true`, `P0=0`, `P1=0`; Fase 7 no ejecutada.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_8_RETRY_TRANSITORIO_PROVIDER_NEUTRAL_2026-10-04.md`.
+- Sin cambio de dependencias productivas, sin despliegues a QA/main/PROD.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+## 2026-10-04 — Cierre del Punto 7: errores MySQL aislados del provider
+
+- El clasificador de Infrastructure cubre MySqlConnector y Oracle Connector/NET por el contrato público `Number`; Application/Domain no contienen referencias a tipos de ninguno de los providers.
+- La lane Oracle EF10 exact-head `37232938552` pasó duplicate key 1062 → excepción de Application y retry 1205 vía UnitOfWork; Phase 6 terminó success en sus cinco jobs.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_7_MYSQL_EXCEPTION_CONTRACT_PROVIDER_NEUTRAL_2026-10-04.md`.
+- Sin dependencias productivas nuevas, sin Fase 7 ni despliegue a QA/main/PROD.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+## 2026-10-04 — Cierre del Punto 6: bootstrap Oracle EF10 de base limpia certificado
+
+- Run exact-head `37232587801` sobre `0e4b552ed058b538f9b7bbe38d642a28191e7720`: 21/21 pasos success; paquete SQL aplicado a una base MySQL 8.4 vacía, baseline EF10 registrado y `has-pending-model-changes` verde.
+- El comparator coteja metadatos físicos de tablas, columnas, índices, constraints, FK, CHECK, vistas, triggers, rutinas y eventos frente al esquema Pomelo vigente; adopción de schema existente sin DDL también pasó.
+- Paquete CI `oracle-baseline-candidate-37232587801` (227,854 bytes) disponible 90 días y regenerable desde CI; sin datos de entornos reales ni Fase 7.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_6_ORACLE_CLEAN_BOOTSTRAP_2026-10-04.md`.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+## 2026-10-04 — Cierre del Punto 5: se preservan las 107 migraciones históricas
+
+- Inventario DEV: 107 archivos de migración, 107 IDs únicos, 0 duplicados; 67 fuentes incluyen metadata/anotaciones MySQL/Pomelo.
+- La sonda Oracle EF10 exact-head `37231172751` sobre `0b92db7a7829aaf3353635d52d7e7899e7700e9` aplicó la historia intacta para formar el esquema canónico y pasó baseline/adopción Oracle sin editarla.
+- El gate ahora se activa ante cambios en ambos directorios de migraciones. El bootstrap operativo empaquetado queda para el Punto 6.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_5_MIGRATION_HISTORY_PRESERVED_2026-10-04.md`.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+## 2026-10-04 — Cierre del Punto 4: Oracle EF10 adopta baseline físico sin reescribir historia
+
+- El probe exact-head `37230813349` sobre `4ea2142fb76458d58c0f699e782395e44e3a85c1` terminó success en sus veinte pasos con Oracle EF10.12/Connector/NET 10.0.9.
+- Restauración de baseline canónico, migración/adopción Oracle, equivalencia de columnas/índices/FK/CHECK y adopción sin DDL sobre esquema existente Pomelo pasaron.
+- Oracle no se declara drop-in para las 107 migraciones históricas: se preservan, con una ruta explícita de baseline y adopción. El empaquetado operativo de bootstrap queda para el Punto 6.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_4_ORACLE_BASELINE_ADOPTION_2026-10-04.md`.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+## 2026-10-04 — Cierre del Punto 3: EF9/Pomelo9 queda sólo como puente de CI
+
+- Probe EF9.0.20/Pomelo9.0.0/MySqlConnector 2.6.2 final `37216002726` SUCCESS para net8 y copia net10; dos intentos previos fallidos no se cuentan como aprobación.
+- Los proyectos productivos siguen net8/EF8/Pomelo8; el probe sólo retargetea una copia temporal. No hay cambios posteriores al run en workflow/proyectos que afecten sus inputs.
+- El gate de Fase 6 exact-head `37228972369` pasó y selecciona Oracle EF10, no el puente EF9/Pomelo9. Fase 7 no se ejecutó.
+- Evidencia detallada: `docs/evidencias/modernizacion/PUNTO_3_EF9_POMELO9_SOLO_PUENTE_2026-10-04.md`.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+## 2026-10-04 — Revalidación exact-head del Punto 2 de Fase 6
+
+- El feed oficial de NuGet confirma que Pomelo.EntityFrameworkCore.MySql llega a 9.0.0 estable y no ofrece release estable 10.x.
+- Run exact-head `37228315030` sobre `04b71f798680a64d300084f26135d3d16ebe6030`: cinco jobs exitosos; Oracle EF10 net10 y dictamen final incluidos.
+- Punto 2 confirmado PASS; Pomelo 10 sigue no bloqueante, sin cambios al runtime productivo ni ejecución de Fase 7.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+## 2026-10-04 — Revalidación exact-head del Punto 1 de Fase 6
+
+- Se confirmó que la ruta Oracle EF Core 10.0.12 / MySql.EntityFrameworkCore 10.0.9 pasa en el HEAD vivo `228df9cff10e6c3003e949f47d2cf951768dfdc1` mediante el run `37226132134`; los cinco jobs de la certificación terminaron `success`.
+- Se actualizó la evidencia individual del punto 1, que sólo citaba el HEAD anterior `4069ce1a074145d10e68003c110296a4b39b655a`.
+- Sin cambios al runtime, `.csproj` productivos, QA, `main`, PROD ni datos; Fase 7 permanece sin ejecutar.
+
+## 2026-10-04 — Hardening cierre Punto 2 Pomelo 10 DEV
+
+- El dictamen exact-head de Fase 6 materializa explícitamente `P0=0` y `P1=0` cuando la ruta Oracle EF10 pasa y Pomelo 10 queda clasificado como no bloqueante.
+- Sin cambios funcionales, paquetes productivos, TargetFramework, QA, main ni PROD.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+## 2026-10-04 — Cierre Punto 2: Pomelo 10 deja de ser dependencia bloqueante DEV
+
+- El gate conserva el probe explícito de `Pomelo.EntityFrameworkCore.MySql 10.0.0`, pero su disponibilidad pasa a ser informativa y no participa en la condición de éxito de la ruta .NET 10.
+- Ausencia actual: `UNAVAILABLE_NON_BLOCKING`; una futura release estable se clasifica como alternativa no seleccionada y exige certificación independiente.
+- La ruta objetivo permanece `net10.0 + EF Core 10.0.12 + MySql.EntityFrameworkCore 10.0.9` y debe pasar en el mismo gate exact-head.
+- Se añaden contratos explícitos `POINT_2_POMELO10_DEPENDENCY=PASS`, `POMELO10_BLOCKS_MODERNIZATION=false` y `POMELO10_REQUIRED_FOR_TARGET_ROUTE=false`.
+- Fase 7 no se ejecuta; sin cambios a QA, main, PROD, datos reales ni secretos.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+## 2026-10-04 — Cierre Punto 1: ruta estable de provider para .NET 10 DEV
+
+- Run causal `37222690061` sobre HEAD `4069ce1a074145d10e68003c110296a4b39b655a` cerró el dictamen final en SUCCESS con `P0=0` y `P1=0`.
+- Stack vigente Pomelo/EF8/net8 recertificado; lane objetivo `net10 + EF Core 10.0.12 + MySql.EntityFrameworkCore 10.0.9` certificada en copia efímera del backend real.
+- La ruta preserva el historial Pomelo mediante baseline físico canónico y adopción Oracle sin DDL, con contratos provider-neutral para 1062/1205/1213.
+- `TARGETFRAMEWORK_CHANGE=ALLOWED_AFTER_PHASE6_CLOSE`; Fase 7 no se ejecuta en este cierre y los proyectos productivos continúan en `net8.0`.
+- Alcance exclusivo DEV/CI; sin QA, main, PROD, datos reales ni secretos.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+## 2026-10-04 — Lane Oracle adopta baseline físico canónico MySQL DEV
+
+- La historia Pomelo se congela como SQL físico MySQL generado desde una base descartable creada exclusivamente por las migraciones certificadas.
+- Una base nueva se restaura primero desde ese baseline exacto; Oracle agrega después una migración baseline no-op/fail-closed y conserva el snapshot para migraciones futuras.
+- Una base histórica Pomelo adopta la misma migración Oracle sin DDL físico; se verifica hash antes/después excluyendo únicamente el historial EF.
+- Se preservan tablas, columnas, defaults, generated columns, índices, FK, CHECK, triggers/routines/events y datos sembrados por migraciones, sin reescribir las migraciones históricas.
+- El baseline se escanea contra patrones de secretos y se publica como artifact con SHA-256 para revisión antes de versionarlo.
+- Fase 7 y TargetFramework permanecen bloqueados hasta certificar esta lane exact-head y persistir el baseline canónico.
+
+## 2026-10-04 — Oracle baseline normaliza nombres físicos MySQL DEV
+
+- El contexto efímero Oracle aplica a foreign keys e índices la misma regla física observada en el SQL Pomelo vigente: máximo 64 caracteres con truncación determinista.
+- El probe falla cerrado si la migración baseline contiene cualquier identificador FK/IX/UX/CK/PK superior a 64 caracteres.
+- No se renombran constraints productivos ni se modifica el modelo o historial Pomelo; la adaptación permanece aislada a la lane Oracle de Fase 6.
+
+## 2026-10-04 — Oracle baseline respeta límite MySQL de identificadores DEV
+
+- El contexto efímero Oracle fija `Relational:MaxIdentifierLength=64`, igualando el límite físico de MySQL y evitando FK/índices generados con nombres inválidos.
+- La regla vive sólo en el probe de baseline: no renombra constraints productivos ni modifica el modelo/migraciones Pomelo vigentes.
+- Fase 7 y `TargetFramework` permanecen bloqueados hasta que el baseline Oracle complete equivalencia física y adopción sin DDL.
+
+## 2026-10-04 — Normalización DDL Oracle para defaults longtext DEV
+
+- El probe Oracle detectó que Connector/NET genera `DEFAULT '{}'` para las dos columnas `longtext` JSON-text de `ConfigEmpresas`, sintaxis rechazada por MySQL 8.4.
+- El baseline Oracle efímero normaliza exclusivamente esas dos operaciones a un default SQL parentizado equivalente, sin modificar el modelo canónico ni las migraciones históricas Pomelo.
+- El gate falla cerrado si aparecen más o menos de dos defaults a normalizar, evitando parches silenciosos ante drift futuro.
+
+## 2026-10-04 — Probe de baseline Oracle preservando historia Pomelo DEV
+
+- Se añade un gate aislado para generar una migración baseline Oracle desde el modelo vigente sin editar las migraciones históricas Pomelo.
+- El gate exige bootstrap desde cero, `has-pending-model-changes` verde, equivalencia física de columnas/índices/FK/CHECK y adopción sin DDL sobre un esquema ya creado por Pomelo.
+- La migración Oracle se genera únicamente en `RUNNER_TEMP`; el runtime productivo sigue en net8/EF8/Pomelo y Fase 7 permanece bloqueada.
+- Alcance exclusivo DEV/CI; QA, main, PROD, Aiven real, secretos y datos reales no se modifican.
+
+## 2026-10-04 — Desacoplamiento de errores MySQL para modernización de provider DEV
+
+- `UnitOfWork` deja de depender en compile-time de `MySqlConnector.MySqlException` para clasificar 1205/1213/1062.
+- Se introduce un clasificador fail-closed con allowlist exclusiva de `MySqlConnector.MySqlException` y `MySql.Data.MySqlClient.MySqlException`; excepciones arbitrarias con propiedad `Number` siguen rechazadas.
+- El probe Oracle de Fase 6 exige ahora traducción real de 1062 y retry transitorio real mediante Connector/NET, sin añadir Oracle al runtime productivo.
+- No se cambian paquetes productivos, EF, migraciones, `TargetFramework`, QA, main ni PROD.
+
+## 2026-10-04 — Modernización Fase 6 MySQL/EF Provider Gate DEV
+
+- Pomelo 8.0.2 + EF Core 8.0.2 + MySqlConnector 2.3.7 queda certificado como provider estable del baseline vigente net8.
+- Gate profundo: 107 migraciones, 137 tablas, SQL forward/model snapshot, decimal/fecha/JSON/collation/índices/FK/CHECK, transacciones, 9/9 retry/exception tests, 27/27 integración MySQL y tenant audit PASS.
+- Oracle MySql.EntityFrameworkCore 8.0.28 queda rechazado como drop-in: no reconstruye el historial desde cero y rompe los contratos actuales MySqlConnector de 1062/1205/1213.
+- El probe net10 compila la copia efímera pero EF8 falla en runtime LINQ con TypeLoadException/ReadOnlySpan; Pomelo 10.0.0 estable no está disponible en el probe.
+- Dictamen fail-closed: provider actual Pomelo certificado, pero Fase 6 emite STOP para cambiar TargetFramework hasta disponer de una lane EF/provider net10 estable y certificada.
+- Alcance exclusivo dev; QA, main, PROD, datos, secretos y .csproj productivos no se modifican.
+
+## 2026-10-04 — Hardening exact-head Fase 5 Tooling frontend DEV
+
+- Eliminado warning Angular de Reactive Forms en filtros de reportes de compras: el estado disabled ahora se modela desde FormGroup y no mediante [disabled] sobre formControlName.
+- El E2E canónico ahora prueba explícitamente @playwright/test 1.63.0, playwright-core 1.63.0 y CLI Playwright 1.63.0 antes de instalar Chromium y ejecutar la aceptación integral.
+- Se conserva Vitest 5.0.3, jsdom 30.0.1 y html5-qrcode 2.3.8; no se amplía Fase 5 a releases posteriores de jsdom.
+- Alcance exclusivo dev; QA, main y PROD no se modifican.
+
+## 2026-10-04 — Modernización Fase 5 Tooling frontend DEV
+
+- Playwright Test actualizado 1.62.1 -> 1.63.0.
+- Vitest actualizado 4.1.11 -> 5.0.3.
+- jsdom actualizado 29.1.1 -> 30.0.1 exactamente según el alcance autorizado.
+- html5-qrcode permanece en 2.3.8; se registra evaluación futura de mantenibilidad sin reemplazo actual.
+- Angular 22.2.1 y su matriz asociada se preservan.
+- Cierre condicionado a audit completo/productivo, unit 58/58 + 218/218, lint, build y Playwright canónico 100/100 exact-head.
+- Alcance exclusivo dev; QA, main y PROD no se modifican.
+
+## 2026-10-03 — Hardening quirúrgico Fase 4 Angular 22 DEV
+
+- Eliminadas dependencias directas obsoletas no consumidas: @angular-devkit/build-angular y @angular/platform-browser-dynamic; SOLQARYN permanece sobre @angular/build.
+- Lockfile refrescado sin cambiar la matriz Angular 22.2.1 / TypeScript 6.0.3 / RxJS 7.8.2 / tslib 2.8.1 / Zone.js 0.16.3.
+- Certifier Fase 4 endurecido con npm audit completo high+, además del audit productivo.
+- Corregidos warnings propios Angular 22: RouterLink no usados, allowSignalWrites deprecado, NG8011 de proyección Material y config Vitest ESM.
+- Alcance exclusivo dev; QA, main y PROD no se modifican.
+
+## 2026-10-03 — Modernización Fase 4 Angular 21 → 22.2.1 DEV
+
+- Precondición: Fase 3 Angular 21 exact-head cerró SUCCESS en run `37144981807`, incluido E2E canónico.
+- Run causal `37146078214` ejecutó `ng update` oficial Core/CLI 21→22 y Material/CDK 21→22 sin `--force`.
+- Versiones finales: Angular Core/CLI/Material/CDK/build/compiler-cli 22.2.1, TypeScript 6.0.3, RxJS 7.8.2, tslib 2.8.1, Zone.js 0.16.3 y Vitest 4.1.11.
+- Zone.js permanece deliberadamente activo: polyfill `zone.js` + `provideZoneChangeDetection`; no se realizó conversión a zoneless.
+- Antes de publicar en `dev` pasaron npm ci limpio, 58/58 archivos + 217/217 unit tests, lint/contratos, npm audit productivo high+ y build Angular configuration production sin deploy.
+- Se retiró el migrador una vez consumido y la certificación permanente de Fase 4 exige exact-head + Playwright canónico 100/100.
+- Alcance exclusivo DEV. No se modificaron QA, `main`, PROD, bases productivas, secretos, DNS ni infraestructura productiva.
+- Recovery exact-head: Angular CLI 22 heredó `PORT=5005` del harness API y `ng serve` intentó colisionar con la API; el harness DEV aísla el proceso frontend del `PORT` backend para preservar frontend `4200` + API `5005`, y se recertifica sobre el mismo HEAD.
+
+## 2026-10-03 — Hardening final de certificación Angular 21 DEV
+
+- Corregido el workflow permanente de Fase 2 que seguía exigiendo Angular 20.3.33 después de la migración; ahora valida el baseline vigente Angular 21.2.25 / CLI 21.2.24.
+- Retirados los workflows temporales de diagnóstico y migración 20→21 para evitar reejecuciones stale contra un árbol ya migrado.
+- La evidencia histórica del run causal 37141861945 se preserva; no se toca QA, main/PROD, datos, secretos ni infraestructura productiva.
+- La certificación final permanece exact-head y exige Fase 3 + E2E canónico verdes.
+
+## 2026-10-03 — Modernización Fase 3 Angular 20 → 21 DEV
+
+- Migración publicada por el run causal `37141861945`, que ejecutó `ng update` oficial Core/CLI 20→21 y Material/CDK 20→21 antes de publicar.
+- Versiones resultantes: Angular Core/framework 21.2.25, CLI/build-angular/angular-build 21.2.24, Material/CDK 21.2.14, TypeScript 5.9.3 y Vitest 4.1.11.
+- Se preservan Node 24.21.0, npm 11.19.0, RxJS 7.8.1 y el alcance DEV.
+- Antes del push pasaron versiones exactas, 58/58 archivos y 217/217 unit tests, lint/contratos, audit productivo high+ y build PROD.
+- La certificación final vuelve a ejecutar esos gates y consume el E2E canónico 100/100 sobre el HEAD final.
+- QA, main/PROD, bases, migraciones EF, RBAC, tenancy, secretos, Aiven y Render no se promueven ni modifican.
+
+## 2026-10-02 — Modernización Fase 2 Node 24.21.0 + npm 11.19.0 DEV
+
+- Toolchain frontend migrado a Node.js `24.21.0` LTS y npm `11.19.0` sin modificar Angular `20.3.33`.
+- `frontend/package.json` declara `engines.node=24.x`, `engines.npm=11.19.0` y `packageManager=npm@11.19.0`; `.nvmrc`/`.node-version` fijan el patch local exacto.
+- 36 workflows operativos que usaban Node 20 fueron migrados a `actions/setup-node@v4` con `24.21.0`. El workflow histórico de Fase 0 conserva Node 20 únicamente para reproducir el baseline pre-modernización.
+- Se añadió `frontend/scripts/verify-toolchain.mjs` y el workflow causal `Modernización - Fase 2 Node 24 npm 11 DEV` con npm ci, lint, audit productivo, build PROD y Playwright completo.
+- Vercel DEV se gobierna por `engines.node=24.x`; Vercel sólo permite seleccionar la versión major y resuelve automáticamente el patch 24.x disponible.
+- Alcance exclusivo DEV. QA, main/PROD, datos, secretos y Aiven no se modifican.
+
+## 2026-10-02 — Hardening quirúrgico Fase 0/Fase 1 Aiven compartido
+
+- La revisión de topología confirmó que Aiven usa un único servicio MySQL `solqaryn-mysql` para las bases aisladas DEV/QA/PROD; no existen tres servicios MySQL independientes.
+- Se elimina del gate Fase 1 cualquier ejecución automática de `maintenance-start`: un mantenimiento es service-wide y podría afectar PROD desde un workflow DEV.
+- Si `8.4.11` aparece disponible, el gate falla cerrado con `BLOCKED_SHARED_SERVICE_REQUIRES_EXPLICIT_PROD_AUTH_OR_TOPOLOGY_SPLIT`; si no aparece, certifica no-cambio.
+- Fase 0 se vuelve a disparar en el mismo HEAD que Fase 1 para recuperar certificación exact-head después del hardening.
+- No se modifica QA, `main`, PROD, datos, secretos, grants ni configuración Aiven en este changeset.
+
+## 2026-10-02 — Modernización Fase 1 Aiven/MySQL cerrada sin cambio
+
+- Se añadió el gate `Modernización - Fase 1 Aiven MySQL 8.4.11 DEV` para verificar el servicio canónico `solqaryn-mysql` y aplicar mantenimiento únicamente si Aiven expone exactamente `8.4.11` como disponible.
+- El readback vivo del control-plane expuso únicamente MySQL `8.4.8`; `8.4.11` no apareció en metadata de mantenimiento ni del servicio, por lo que se aplicó fail-closed y no se inició mantenimiento.
+- MySQL DEV permaneció `8.4.8 -> 8.4.8`; se preservaron 137 tablas, 109 migraciones EF, 8 productos y 2 categorías, con `productionTouched=false` y cero secretos expuestos.
+- El backup previo fue corregido para funcionar con el usuario de mínimo privilegio mediante `--skip-lock-tables --no-tablespaces --set-gtid-purged=OFF`, sin ampliar grants, y quedó almacenado cifrado como artifact.
+- Revalidación exact-head posterior al hardening: run `37067448903` sobre `ffe3ac936cbcdaa65e513042b1efa9242805b28a`, `SUCCESS`; mismo HEAD que Fase 0 `37067448864`.
+- Evidencia causal: runs `37066644421`/`37067448903` y `docs/evidencias/modernizacion/FASE_1_AIVEN_MYSQL_2026-10-02.md`.
+- Dictamen: `FASE_1_AIVEN_MYSQL=PASS_NO_CHANGE_TARGET_NOT_AVAILABLE`. QA, `main` y PROD no fueron tocados.
+
 ## 2026-10-02 — Limpieza integral de identidad legacy en DEV
 
 - Se ejecutó un barrido repository-wide sobre todos los archivos versionados de texto y se normalizaron **378 archivos** que aún contenían terminología o identificadores retirados.
@@ -2506,3 +3020,127 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
 
+## 2026-10-02 — Fase 0 de modernización: baseline técnico reproducible
+
+- Se incorpora un baseline de estado actual previo a cualquier migración de versiones, sin modificar runtime funcional ni versiones productivas.
+- El baseline congela dependencias directas, TargetFramework, imágenes Docker, MySQL configurado y el blob vigente de `frontend/package-lock.json` en `docs/evidencias/modernizacion/BASELINE_FASE_0.json`.
+- Se agrega un workflow exact-head que exige scope SOLQARYN, backend Release + tests, Docker, auditoría NuGet, frontend lint/audit/bundle, seguridad/tenancy/secret scan, MySQL 8.4 efímero, Playwright integral, versión MySQL Aiven DEV, backup cifrado real de DEV y restore del mismo artifact en MySQL descartable.
+- El workflow también captura las versiones realmente resueltas de Node, npm, .NET SDK, SO del runner, árbol npm directo, hashes SHA-256 y evidencia de bundle.
+- Toda operación de base real queda limitada a DEV; el restore está fail-closed a un MySQL local descartable y declara `productionTouched=false`.
+- Este changeset sólo crea evidencia/gates de modernización. No cambia Angular, Node, .NET, EF, provider MySQL, datos productivos, QA ni PROD.
+- Acta de auditoría retrospectiva y retención de artefactos: `docs/evidencias/modernizacion/FASE_0_BASELINE_2026-10-02.md`.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+## 2026-10-02 — Recovery Fase 0: aislamiento tenant exacto en Sucursales
+
+- El baseline de modernización detectó un rojo real: el permiso HTTP validaba una Empresa, pero el servicio de Sucursales todavía aceptaba un EmpresaId independiente en query/body y lecturas sin filtro, permitiendo desacoplar el tenant autorizado del recurso consultado.
+- El gate de permisos conserva ahora, sólo después de verificar membresía/rol/grant, el EmpresaId efectivamente autorizado en HttpContext; Sucursales consume exactamente ese valor en búsquedas, lecturas y mutaciones.
+- Buscar/listar sin EmpresaId queda acotado automáticamente al tenant autorizado; un EmpresaId explícito distinto falla cerrado. Lectura/estado/eliminación de una sucursal de otro tenant se comportan como no encontrada y update/create no pueden cruzar tenants.
+- El auditor multi-tenant se corrige para reconocer UsuarioEmpresa como binding canónico, validar el handoff de tenant realmente autorizado, tratar BackgroundService como N/A cuando no existe runtime de background y reconocer la clave de idempotencia de correo acotada por PK global de Factura + usuario + destinatario + clave.
+- Se añadieron/ajustaron regresiones tenant-aware y se fuerza una nueva certificación Fase 0 sobre el HEAD exacto del recovery.
+- Sin cambios de versiones, migraciones, datos productivos, QA ni PROD.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+## 2026-10-02 — Fase 0: cancelar certificaciones stale al avanzar HEAD
+
+- El workflow de baseline pasa a `cancel-in-progress: true` para que una ejecución ya invalidada por un recovery no bloquee la certificación del HEAD vigente.
+- La política mantiene una única certificación exact-head activa y evita consumir runners en candidatos que ya no pueden cerrar la Fase 0.
+- Sin cambios funcionales, versiones, datos, QA ni PROD.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+## 2026-10-02 — Recovery Fase 0: contrato tenant y E2E canónico
+
+- El primer baseline exhaustivo reveló dos clases de rojo: un contrato de Sucursales demasiado acoplado a `EmpresaId` enviado por el cliente y una ejecución Playwright no canónica que mezcló suites históricas/aisladas bajo un único estado compartido.
+- Sucursales mantiene fail-closed el tenant autorizado: si el cliente omite `EmpresaId`, se usa el tenant ya autorizado por el gate HTTP; si lo envía, debe coincidir exactamente o la operación falla. Esto conserva compatibilidad sin volver a confiar en un tenant controlado por el body.
+- Los validators aceptan `EmpresaId` ausente y sólo rechazan valores no positivos cuando se especifica.
+- El baseline E2E se alinea con la suite de aceptación integral vigente, materializa el tenant 1 y una suscripción SaaS descartable, y fija explícitamente `E2E_TENANT_ID`/`PHASE7_EMPRESA_ID`.
+- Se mantiene la evidencia de la corrida fallida como diagnóstico; no se oculta ni se reescribe historia. La nueva corrida debe certificar el HEAD exacto antes de cerrar Fase 0.
+- Sin cambios de versiones, migraciones persistentes, QA ni PROD.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+## 2026-10-02 — Recovery Fase 0: alinear contratos tenant y entorno runtime
+
+- Se corrigen cuatro pruebas N6.2 que aún exigían que el cliente enviara `EmpresaId`, aunque el servicio actual ya resuelve el tenant propietario exclusivamente desde el contexto previamente autorizado del servidor.
+- Las regresiones ahora certifican que omitir `EmpresaId` conserva/persiste exactamente el tenant autorizado y que el cliente no puede sustituirlo por otro tenant.
+- El runtime E2E de Fase 0 vuelve a `Staging`; el seed canónico no depende de `Development` y Swagger debe permanecer deshabilitado durante la certificación fail-closed.
+- Sin cambios de versiones, migraciones, datos productivos, QA ni PROD.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+## 2026-10-02 — Recovery Fase 0: contrato de logs runtime
+
+- El E2E canónico exact-head completó 100/100 pruebas y la validación SMTP produjo evidencia válida, pero el auditor de runtime esperaba sus nombres de log canónicos `fase8-*`.
+- El workflow de baseline ahora copia explícitamente los logs `fase0-*` a esos nombres canónicos antes de ejecutar `fase8_validate_runtime.py`; no se rebaja ningún gate ni se omite la auditoría.
+- Sin cambios funcionales, versiones, datos, QA ni PROD.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+## 2026-10-04 — Cierre del Punto 12: equivalencia física extendida del esquema
+
+- El comparador Oracle baseline coteja contra la referencia Pomelo tablas, columnas, tipos/defaults/charset/collation/generación/comentarios/SRS, índices (incluyendo expresiones, prefijos, visibilidad y comentarios), particiones, constraints/CHECK y FK/acciones, vistas, triggers, rutinas/parámetros, eventos y defaults de charset/collation de base.
+- Los probes `37241337349` y `37241647354` detectaron referencias a campos inexistentes (`PARTITIONS.ENGINE/CREATE_OPTIONS` y `CHECK_CONSTRAINTS.ENFORCED`); se corrigieron. El estado de enforcement queda cubierto por `TABLE_CONSTRAINTS.ENFORCED`.
+- Probe exact-head `37241930023` sobre `d0d79c158aef29ae913833e0611e7eb7cfe8db48`: job success, ambos comparativos `equivalent=true`, bootstrap limpio con 136 tablas y adopción sin DDL success.
+- Gate integral exact-head `37242192452` sobre `15289cf5557afdc0f39a65f665802fc16f8221d8`: 5/5 jobs success, `P0=0`, `P1=0`, dictamen `FASE_6_MYSQL_EF_PROVIDER=PASS`; `PHASE7_EXECUTED=false`.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_12_ESQUEMA_FISICO_EQUIVALENTE_2026-10-04.md`.
+- Sólo metadatos de esquemas efímeros CI; sin cambios a datos/servicios Aiven, QA o PROD; Fase 7 no ejecutada.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+## 2026-10-04 — Cierre del Punto 13: contrato real de las tres columnas JSON
+
+- Se añadió `backend/scripts/Solqaryn.JsonProbe.csproj`, usado con el provider vigente y con la copia Oracle EF10, para validar asignaciones exactas (`MetodosPago.Metadata`, `RegistrosAuditoria.ValoresAnteriores/ValoresNuevos`), tipo JSON, guardado/lectura EF y `JSON_EXTRACT` por columna; todo dentro de transacción revertida.
+- Gate Fase 6 exact-head `37243621617` sobre `cd90b923a5e42ea22f1ad9d249dc5329409bb1b3`: Pomelo `JSON_PROVIDER_CONTRACT=PASS mappings=3 efRoundTrips=3 sqlExtractions=3 rolledBack=true`; `POMELO_JSON_COLUMNS=3`; main gate success. Oracle EF10 standalone `37243621620` y provider-final `37243621639` success; Oracle reportó el mismo contrato PASS.
+- Deuda separada, no atribuida al JSON: el lane informativo EF8/Pomelo bajo net10 registró 8 fallos unitarios y 3 de integración en `37243621617`. Queda explícitamente abierta para auditoría de los puntos 20/21 y no se considera resuelta por el gate JSON.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_13_JSON_PROVIDER_CONTRACT_2026-10-04.md`.
+- No se ejecutó Fase 7 ni se cambiaron migraciones o datos persistentes.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+## 2026-10-04 — Cierre del Punto 14: precisión decimal exacta
+
+- La sonda ahora exige `Compras.Total=decimal(18,2)` y `CuentasPorPagar.MontoOriginal=decimal(18,4)` tanto en el modelo EF como en `INFORMATION_SCHEMA`; persiste/lee una compra con el máximo `18,2` y comprueba ambos valores máximos exactos con parámetros del provider en transacción revertida.
+- Pomelo: gate exact-head `37244974128` sobre `ef3ea812482e4ba7e258ea5dc1cf5d9d56c97db1`; `DECIMAL_PROVIDER_CONTRACT=PASS`, `POMELO_DECIMAL_18_2=54`, `POMELO_DECIMAL_18_4=64`, integración MySQL 27/27 pass. Oracle EF10/net10 `37244974112` PASS; gate provider-final `37244974157` PASS.
+- Gate de Fase 6: 5/5 jobs success, `P0=0`, `P1=0`, `PHASE7_EXECUTED=false`.
+- La deuda ajena de EF8/Pomelo en net10 sigue abierta para puntos 20/21, según `PUNTO_13_JSON_PROVIDER_CONTRACT_2026-10-04.md`.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_14_DECIMAL_PRECISION_SCALE_2026-10-04.md`.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+## 2026-10-04 — Cierre del Punto 15: fechas `datetime(6)` y microsegundos
+
+- La sonda compartida Pomelo/Oracle EF10 exige que `Compra.Fecha` esté mapeada como `datetime(6)` en EF y en el esquema físico; guarda y vuelve a leer `2026-10-04 12:34:56.123456` mediante EF, y confirma los microsegundos con `DATE_FORMAT` dentro de una transacción revertida.
+- Pomelo/MySQL 8.4.11 y Oracle EF10/net10: `DATETIME6_PROVIDER_CONTRACT=PASS model=Compras.Fecha physical=datetime(6) efRoundTrip=true sqlMicroseconds=123456 rolledBack=true`.
+- Run exact-head `37246049107` sobre `32536e867c3ef04021007054762b7d5eeabbe060`: integración MySQL actual 27/27; gate Fase 6 5/5 jobs success, `P0=0`, `P1=0`, `FASE_6_MYSQL_EF_PROVIDER=PASS`, `PHASE7_EXECUTED=false`.
+- El lane informativo de EF8/Pomelo retargeteado a net10 mantiene deuda distinta: 8 fallos unitarios (2380/2388 pasan) y 3 fallos de integración (24/27 pasan). Queda abierta para los puntos 20/21; no se oculta ni se atribuye al contrato temporal.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_15_DATETIME6_MICROSECONDS_2026-10-04.md`.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+## 2026-10-04 — Cierre del Punto 16: collation y sensibilidad a mayúsculas
+
+- Se amplió el contrato MySQL de Pomelo y Oracle EF10: verifica que la columna de código conserve `utf8mb4_bin` aun cuando la tabla usa `utf8mb4_0900_ai_ci`, inserta ambas variantes `CaseProbe`/`caseprobe` bajo índice único, y exige que cada búsqueda exacta devuelva sólo su variante.
+- Pomelo y Oracle EF10/net10 reportan `COLLATION_CASE_CONTRACT=PASS column=utf8mb4_bin table=utf8mb4_0900_ai_ci distinctCaseVariants=2`; la suite MySQL actual pasa 27/27.
+- Run `37247332277` exact-head sobre `fc44057c93cd3aaf1667aad2d84ca9eb073d3130`: gate Fase 6 5/5 success, `P0=0`, `P1=0`, `FASE_6_MYSQL_EF_PROVIDER=PASS`, `PHASE7_EXECUTED=false`.
+- La búsqueda de migraciones/configuración productiva no encontró overrides de collation binaria por columna; el contrato sensible se prueba explícitamente en el harness de provider. No se alteraron collations ni datos productivos. La deuda separada EF8/Pomelo→net10 queda para puntos 20/21: 8 fallos unitarios; integración fluctuó entre 3 y 4 fallos en los runs de código y exact-head documental.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_16_COLLATION_CASE_SENSITIVITY_2026-10-04.md`.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+## 2026-10-04 — Cierre del Punto 17: transacciones, aislamiento y rollback ante error
+
+- Pomelo y Oracle EF10 prueban nivel `READ-COMMITTED`, commit durable, rollback explícito sin fila parcial y rollback del trabajo previo a un duplicate-key 1062.
+- Resultados `POMELO_TRANSACTION_CONTRACT=PASS` y `ORACLE10_TRANSACTION_CONTRACT=PASS`; Pomelo integración MySQL 27/27.
+- Gate exact-head `37249770325` sobre `b5ae33500` y lane Oracle aislada `37249770331`: success; gate Fase 6 `P0=0`, `P1=0`, `PHASE7_EXECUTED=false`.
+- La sonda inicial reveló que `@@transaction_isolation` refleja el default de sesión, no el override por transacción; se corrigió estableciendo el nivel en la sesión persistente antes de comprobarlo. La captura del error de mysql CLI también distingue el exit code esperado de la prueba.
+- El lane EF8/Pomelo retargeteado a net10 conserva 8 fallos unitarios y 3 de integración; permanece en deuda de puntos 20/21. Fase 7 no ejecutada.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_17_TRANSACTION_ISOLATION_ROLLBACK_2026-10-04.md`.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+## 2026-10-04 — Cierre del Punto 18: concurrencia de stock y numeración
+
+- Oracle EF10/net10 verificó serialización del lock de stock `FOR UPDATE` entre conexiones (espera medida 352 ms) y diez reservas documentales simultáneas: números únicos 101–110, contador final 110 y diez auditorías atómicas.
+- Se corrigió el agotamiento de ocho intentos CAS bajo esa ráfaga: 32 intentos máximos con backoff aleatorio acotado (1–100 ms), conservando compare-and-swap, rollback y auditoría dentro de la transacción.
+- Pomelo/MySQL: integración 28/28, incluida la nueva regresión de diez reservas concurrentes; provider-final y gate Fase 6 exact-head `37251986975`/`37251986973` success, `P0=0`, `P1=0`, `PHASE7_EXECUTED=false`.
+- El lane informativo EF8/Pomelo retargeteado a net10 conserva 8 fallos unitarios y 3 de integración (25/28 pasan), pendiente de puntos 20/21. Sin datos persistentes ni despliegues modificados.
+- Evidencia: `docs/evidencias/modernizacion/PUNTO_18_CONCURRENCY_STOCK_SEQUENCE_2026-10-04.md`.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.

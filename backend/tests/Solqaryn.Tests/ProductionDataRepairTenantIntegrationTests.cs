@@ -1,8 +1,9 @@
+using MySql.EntityFrameworkCore.Extensions;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Infrastructure.Persistence;
 using Solqaryn.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
-using MySqlConnector;
+using MySql.Data.MySqlClient;
 using Xunit;
 
 namespace Solqaryn.Tests;
@@ -12,9 +13,7 @@ public sealed class ProductionDataRepairTenantIntegrationTests
 {
     private static DbContextOptions<AppDbContext> CrearOpciones(string baseDatos) =>
         new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySql(
-                CrearCadena(baseDatos),
-                new MySqlServerVersion(new Version(8, 4, 0)))
+            .UseMySQL(CrearCadena(baseDatos), mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
             .Options;
 
     private static string CrearCadena(string baseDatos)
@@ -37,7 +36,7 @@ public sealed class ProductionDataRepairTenantIntegrationTests
         try
         {
             await using var db = new AppDbContext(opciones);
-            await db.Database.MigrateAsync();
+            await Phase7MySqlTestDatabase.InitializeFreshAsync(db);
 
             var legacy = await db.EmpresaConfiguraciones
                 .SingleOrDefaultAsync(x => x.Activa);
@@ -161,7 +160,7 @@ public sealed class ProductionDataRepairTenantIntegrationTests
         try
         {
             await using var db = new AppDbContext(opciones);
-            await db.Database.MigrateAsync();
+            await Phase7MySqlTestDatabase.InitializeFreshAsync(db);
 
             var activas = await db.EmpresaConfiguraciones
                 .Where(x => x.Activa)

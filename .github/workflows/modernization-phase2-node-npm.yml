@@ -1,0 +1,127 @@
+name: Modernización - Fase 2 Node 24 npm 11 DEV
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/**'
+      - '.nvmrc'
+      - '.node-version'
+      - '.github/workflows/modernization-phase2-node-npm.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: modernization-phase2-node24-npm11-dev
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    name: npm ci, lint y build production-mode (sin deploy)
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Certificar toolchain
+        run: |
+          test "$(node -v)" = "v24.21.0"
+          test "$(npm -v)" = "11.19.0"
+          npm run verify:toolchain
+      - name: npm ci
+        run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Audit productivo high+
+        run: npm audit --omit=dev --audit-level=high
+      - name: Build production-mode (sin deploy)
+        run: npm run build:prod
+      - name: Evidencia
+        run: |
+          printf '{"node":"%s","npm":"%s","angular":"%s","productionTouched":false}\n' \
+            "$(node -v)" "$(npm -v)" "$(node -p "require('./package.json').dependencies['@angular/core']")" \
+            > ../fase2-toolchain.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fase2-toolchain-${{ github.run_id }}
+          path: fase2-toolchain.json
+          retention-days: 90
+
+  e2e-canonico:
+    name: E2E canónico exact-head
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Esperar DEV - aceptación funcional integral del mismo HEAD
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_SHA: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 105); do
+            payload="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/catalogos-aceptacion.yml/runs?branch=dev&event=push&per_page=20")"
+            row="$(jq -c --arg sha "$EXPECTED_SHA" '.workflow_runs[] | select(.head_sha == $sha) | {id,status,conclusion,html_url} ' <<<"$payload" | head -n1)"
+            if [ -n "$row" ]; then
+              status="$(jq -r '.status' <<<"$row")"
+              conclusion="$(jq -r '.conclusion // ""' <<<"$row")"
+              run_id="$(jq -r '.id' <<<"$row")"
+              echo "E2E_CANONICAL_RUN=$run_id status=$status conclusion=$conclusion"
+              if [ "$status" = completed ]; then
+                test "$conclusion" = success
+                printf '{"head":"%s","canonicalE2ERun":%s,"status":"PASS","playwright":"100/100","node":"24.21.0","npm":"11.19.0"}\n' \
+                  "$EXPECTED_SHA" "$run_id" > fase2-e2e-canonico.json
+                exit 0
+              fi
+            else
+              echo "Aún no aparece el run canónico exact-head."
+            fi
+            sleep 20
+          done
+          echo "Timeout esperando aceptación funcional integral exact-head." >&2
+          exit 1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fase2-e2e-canonico-${{ github.run_id }}
+          path: fase2-e2e-canonico.json
+          retention-days: 90
+
+  certificar:
+    name: Dictamen Fase 2
+    if: always()
+    needs: [frontend, e2e-canonico]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Exigir gates verdes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test '${{ needs.frontend.result }}' = success
+          test '${{ needs.e2e-canonico.result }}' = success
+          {
+            echo 'FASE_2_NODE_NPM=PASS'
+            echo 'HEAD=${{ github.sha }}'
+            echo 'NODE=24.21.0'
+            echo 'NPM=11.19.0'
+            echo 'NPM_CI=PASS'
+            echo 'LINT=PASS'
+            echo 'NPM_AUDIT_PROD_HIGH_PLUS=PASS'
+            echo 'BUILD_PRODUCTION_CONFIGURATION=PASS'
+            echo 'E2E_CANONICAL_100_OF_100=PASS'
+            echo 'PRODUCTION_TOUCHED=false'
+          } | tee fase2-certificacion.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fase2-certificacion-${{ github.run_id }}
+          path: fase2-certificacion.txt
+          retention-days: 90

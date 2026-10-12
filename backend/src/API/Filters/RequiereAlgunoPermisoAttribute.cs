@@ -32,6 +32,7 @@ public sealed class RequiereAlgunoPermisoAttribute : Attribute, IAsyncActionFilt
         {
             if (await permisoService.TienePermisoAsync(empresaId, _modulo, accion))
             {
+                TenantPermissionContext.MarkAuthorizedEmpresaId(context.HttpContext, empresaId);
                 await next();
                 return;
             }

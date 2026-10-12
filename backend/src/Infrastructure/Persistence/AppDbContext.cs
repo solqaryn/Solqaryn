@@ -4,6 +4,7 @@ using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Entities.Contabilidad;
 using Solqaryn.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace Solqaryn.Infrastructure.Persistence;
 
@@ -386,5 +387,27 @@ public class AppDbContext : DbContext
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.HasAnnotation(RelationalAnnotationNames.MaxIdentifierLength, 64);
+
+        static string LimitIdentifier(string name) =>
+            name.Length <= 64 ? name : name[..64];
+
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            foreach (var foreignKey in entityType.GetForeignKeys())
+            {
+                var name = foreignKey.GetConstraintName();
+                if (!string.IsNullOrEmpty(name) && name.Length > 64)
+                    foreignKey.SetConstraintName(LimitIdentifier(name));
+            }
+
+            foreach (var index in entityType.GetIndexes())
+            {
+                var name = index.GetDatabaseName();
+                if (!string.IsNullOrEmpty(name) && name.Length > 64)
+                    index.SetDatabaseName(LimitIdentifier(name));
+            }
+        }
     }
 }
