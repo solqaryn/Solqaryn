@@ -1,3 +1,10 @@
+## 2026-10-12 — Reconciliación del cierre de descargas DEV y auditoría de Cloudinary sin costes
+
+- La corrección de imágenes del PR #3569 se integró en `dev` (`71bcfbee`) tras 15/15 checks `SUCCESS`. Vercel DEV `READY` y Render DEV `live` están en ese commit. El propietario verificó descarga de imágenes y ZIP en su sesión; el readback de binarios y normalización física quedan separados.
+- Se moderniza exclusivamente el inventario de locators Cloudinary de DEV: clasifica los `PublicId`/URL del cloud `riyrzmob` por superficie contra las carpetas reales del código, protege secretos con GitHub Environment DEV y publica **solo contadores agregados**. No mueve imágenes, no escribe en MySQL ni ejecuta cambios en Cloudinary.
+- Se ejecutan pruebas puras en PR sin secretos y el inventario SQL read-only sólo en push a `dev`. MySQL Aiven 8.4.8 queda congelado y el código QA/PROD continúa sin promoverse.
+- Las decisiones aplazadas se preservan: `solqaryn.com`, SMTP real, Render paid/always-on, VAEP 10 tareas pausadas y evaluación futura de html5-qrcode. No se compra nada ni se usa TinyFish. El cierre de Fase 11 integral sigue pendiente de esquema Oracle de QA, exact-head QA y autorización PROD.
+
 ## 2026-10-12 — Corrección de descarga de imágenes de productos Cloudinary (DEV, sin compras)
 
 - Incidencia reportada: `GET /api/productos/7/imagenes/9/descargar` devuelve 400 por mismatch entre la carpeta persistida de Cloudinary DEV y el folder canónico actual. Evidencia aportada por el propietario, sin divulgar secretos.
