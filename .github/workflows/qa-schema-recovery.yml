@@ -92,6 +92,28 @@ jobs:
           marker="$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")"
           echo "QA_ORACLE_HISTORY_AUDIT=PASS app_tables=$application_tables history_count=$history_count oracle_marker=$marker"
 
+          # DIAGNOSTICO READ-ONLY COMPLETO: no interrumpir antes de leer topologia.
+          # Si falta el marcador, se emiten diagnosticos independientes para
+          # verificar si la adopcion Oracle requiere cambios fisicos o solo metadata.
+          table_diag="$(q "SELECT CONCAT(TABLE_NAME,'|',ENGINE,'|',COALESCE(TABLE_COLLATION,'')) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' ORDER BY TABLE_NAME;" | sha256sum | awk '{print $1}')"
+          fk_diag="$(q "SELECT CONCAT(TABLE_NAME,'|',CONSTRAINT_NAME,'|',REFERENCED_TABLE_NAME,'|',UNIQUE_CONSTRAINT_NAME) FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() ORDER BY TABLE_NAME,CONSTRAINT_NAME;" | sha256sum | awk '{print $1}')"
+          index_diag="$(q "SELECT CONCAT(TABLE_NAME,'|',INDEX_NAME,'|',SEQ_IN_INDEX,'|',COALESCE(COLUMN_NAME,''),'|',NON_UNIQUE,'|',INDEX_TYPE) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() ORDER BY TABLE_NAME,INDEX_NAME,SEQ_IN_INDEX;" | sha256sum | awk '{print $1}')"
+          triggers_diag="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_SCHEMA=DATABASE() AND TRIGGER_NAME IN ('TR_MovimientosInventario_N06_OrigenTipado_BI','TR_MovimientosInventario_N06_OrigenTipado_BU');")"
+          checks_diag="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME='MovimientosInventario' AND CONSTRAINT_TYPE='CHECK' AND CONSTRAINT_NAME='CK_MovimientosInventario_OrigenTipado_Exclusivo_N06';")"
+          diagnose() {
+            if [ "$2" = "$3" ]; then
+              echo "QA_ORACLE_DIAG_$1=PASS"
+            else
+              echo "QA_ORACLE_DIAG_$1=DRIFT"
+            fi
+          }
+          diagnose TABLES "$table_diag" "36b725a682b43d744509c8fd27a6ae54b6017d1c46e1301ee796f86f760e7489"
+          diagnose FKS "$fk_diag" "79f67fec9b5761f66cf93dbbcab3a7e7cfd769e132019e720e51d0317ef93b3c"
+          diagnose INDEXES "$index_diag" "3f91e8d03e2700329472bb3ee678c0f3d680495217d4cb4da48291351b3b90ec"
+          diagnose TRIGGERS "$triggers_diag" "2"
+          diagnose CHECK "$checks_diag" "1"
+          echo "QA_ORACLE_DIAG_DB_WRITES=0"
+
           test "$marker" = "1" || {
             echo "QA_ORACLE_BASELINE=PENDING: certificacion QA bloqueada. Aplicar adoption Oracle con backup verificado y autorizacion separada; esta prueba es SOLO LECTURA." >&2
             exit 1
