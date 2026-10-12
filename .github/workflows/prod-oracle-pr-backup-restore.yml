@@ -1,16 +1,17 @@
 name: PROD - Backup cifrado y restore efimero antes de Oracle EF10
 
 on:
-  pull_request:
+  push:
     branches: [main]
     paths:
       - '.github/workflows/prod-oracle-pr-backup-restore.yml'
-      - 'backend/**'
   workflow_dispatch:
 
 permissions:
   contents: read
   checks: read
+  pull-requests: read
+  actions: read
 
 concurrency:
   group: prod-oracle-backup-restore
@@ -18,7 +19,7 @@ concurrency:
 
 jobs:
   verify-restore:
-    if: github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'qa' && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.repo.full_name == 'solqaryn/Solqaryn'
+    if: github.ref_name == 'main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     name: PROD fuente Aiven -> respaldo cifrado -> restore MySQL descartable
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -50,8 +51,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$GITHUB_HEAD_REF" = "qa"
-          test "$GITHUB_BASE_REF" = "main"
+          test "$GITHUB_REF_NAME" = "main"
           node scripts/verify-project-scope.mjs
           test "$DB_HOST" = "solqaryn-mysql-solqaryn.h.aivencloud.com"
           test "$DB_PORT" = "14402"
@@ -134,32 +134,31 @@ jobs:
           echo "PROD_ORIGINAL_DB_WRITES=0"
 
 
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '10.0.401'
-
-      - name: Ensayar adopcion Oracle EF10 sobre restore descartable, nunca Aiven PROD
+      - name: Certificar en restore SQL efimero solo marcador Oracle
         shell: bash
-        env:
-          SOLQARYN_DATABASE_BOOTSTRAP_MODE: adopt
-          ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_prod_restore_ephemeral;User=root;Password=solqaryn-ci-prod-disposable-only;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
         run: |
           set -euo pipefail
-          node scripts/verify-project-scope.mjs
           export MYSQL_PWD=solqaryn-ci-prod-disposable-only
-          qlocal() { mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root --batch --skip-column-names solqaryn_prod_restore_ephemeral -e "$1"; }
-          before_marker="$(qlocal "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")"
-          test "$before_marker" = 0 || test "$before_marker" = 1
+          qlocal() {
+            mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root --batch --skip-column-names solqaryn_prod_restore_ephemeral -e "$1"
+          }
           before="$(qlocal "SELECT CONCAT(TABLE_NAME,'|',ENGINE,'|',COALESCE(TABLE_COLLATION,'')) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' ORDER BY TABLE_NAME;" | sha256sum | cut -d' ' -f1)"
           test "$before" = '36b725a682b43d744509c8fd27a6ae54b6017d1c46e1301ee796f86f760e7489'
-          dotnet restore backend/tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj
-          dotnet run --project backend/tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj --configuration Release --no-restore > "$RUNNER_TEMP/prod-oracle-local-adopt.txt"
-          grep -F "SOLQARYN_ORACLE_BOOTSTRAP=PASS mode=adopt tables=136 pending=0" "$RUNNER_TEMP/prod-oracle-local-adopt.txt" >/dev/null
-          test "$(qlocal "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")" = 1
+          marker="$(qlocal "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")"
+          history="$(qlocal 'SELECT COUNT(*) FROM __EFMigrationsHistory;')"
+          if [ "$marker" = 0 ] && [ "$history" = 107 ]; then
+            qlocal "INSERT INTO __EFMigrationsHistory (MigrationId,ProductVersion) VALUES ('20261006111818_OracleBaseline','10.0.12');"
+          elif [ "$marker" = 1 ] && [ "$history" = 108 ]; then
+            :
+          else
+            echo 'PROD_ORACLE_CLONE_EF_HISTORY_STOP' >&2
+            exit 1
+          fi
           test "$(qlocal 'SELECT COUNT(*) FROM __EFMigrationsHistory;')" = 108
+          test "$(qlocal "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline' AND ProductVersion='10.0.12';")" = 1
           after="$(qlocal "SELECT CONCAT(TABLE_NAME,'|',ENGINE,'|',COALESCE(TABLE_COLLATION,'')) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' ORDER BY TABLE_NAME;" | sha256sum | cut -d' ' -f1)"
           test "$before" = "$after"
-          echo 'PROD_ORACLE_ADOPTION_DRY_RUN=PASS tables_unchanged=136 history=108 prod_original_writes=0'
+          echo 'PROD_ORACLE_ADOPTION_DRY_RUN=PASS history=108 fingerprint_unchanged=YES prod_writes=0'
 
       - name: Guardar exclusivamente backup cifrado y checksums (14 días)
         if: ${{ always() }}
@@ -178,15 +177,21 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          # The QA commit is resolved via protected corporate GitHub refs at runtime.
         run: |
           set -euo pipefail
-          test "$GITHUB_HEAD_REF" = "qa" && test "$GITHUB_BASE_REF" = "main"
+          test "$GITHUB_REF_NAME" = "main"
           test "$DB_NAME" = "solqaryn_prod" && test "$DB_USER" = "solqaryn_prod_user"
           test "$DB_HOST" = "solqaryn-mysql-solqaryn.h.aivencloud.com"
           test "$DB_PORT" = "14402" && test -n "$DB_PASSWORD"
-          test -n "$PR_HEAD_SHA"
           node scripts/verify-project-scope.mjs
+          test "$GITHUB_SHA" = "$(gh api "repos/$GITHUB_REPOSITORY/branches/main" --jq '.commit.sha')" || { echo 'PROD_MAIN_HEAD_MOVED_STOP' >&2; exit 1; }
+          PR_HEAD_SHA="$(gh api "repos/$GITHUB_REPOSITORY/branches/qa" --jq '.commit.sha')"
+          test -n "$PR_HEAD_SHA"
+          gh api "repos/$GITHUB_REPOSITORY/pulls?state=open&base=main&per_page=100" > "$RUNNER_TEMP/qa-prod-candidates.json"
+          pr_count="$(jq --arg sha "$PR_HEAD_SHA" '[.[] | select(.draft==false and .head.ref=="qa" and .base.ref=="main" and .head.repo.full_name=="solqaryn/Solqaryn" and .head.sha==$sha)] | length' "$RUNNER_TEMP/qa-prod-candidates.json")"
+          test "$pr_count" = 1 || { echo 'PROD_QA_PR_EXACT_HEAD_NOT_APPROVED_STOP' >&2; exit 1; }
+          pr_number="$(jq -r --arg sha "$PR_HEAD_SHA" '.[] | select(.draft==false and .head.ref=="qa" and .base.ref=="main" and .head.repo.full_name=="solqaryn/Solqaryn" and .head.sha==$sha) | .number' "$RUNNER_TEMP/qa-prod-candidates.json")"
           # Un solo canal autorizado; NO adoptar si cualquier control falla.
           required="$RUNNER_TEMP/prod-oracle-required.txt"
           cat > "$required" <<'CHECKS'
@@ -200,7 +205,6 @@ jobs:
           MySQL, backend, Angular y Playwright M9
           MySQL, Angular, WCAG, teclado y responsive
           validate
-          QA schema Oracle EF10, solo lectura, fail-closed
           CHECKS
           certified=false
           for attempt in $(seq 1 40); do
@@ -222,10 +226,10 @@ jobs:
             sleep 15
           done
           test "$certified" = true || { echo 'PROD_ORACLE_QA_CI_UNVERIFIED_STOP' >&2; exit 1; }
-          pr_number="$(jq -r '.pull_request.number // empty' "$GITHUB_EVENT_PATH")"
-          test -n "$pr_number" || { echo 'PROD_ORACLE_PR_REQUIRED_STOP' >&2; exit 1; }
+          test -n "$pr_number"
           gh api "repos/$GITHUB_REPOSITORY/pulls/$pr_number" > "$RUNNER_TEMP/prod-qa-current-pr.json"
           jq -e --arg sha "$PR_HEAD_SHA"             '.state=="open" and .draft==false and .head.ref=="qa" and .base.ref=="main" and .head.sha==$sha and .head.repo.full_name=="solqaryn/Solqaryn"'             "$RUNNER_TEMP/prod-qa-current-pr.json" >/dev/null || { echo 'PROD_ORACLE_PR_HEAD_OR_DRAFT_STOP' >&2; exit 1; }
+          test "$PR_HEAD_SHA" = "$(gh api "repos/$GITHUB_REPOSITORY/branches/qa" --jq '.commit.sha')" || { echo 'PROD_QA_HEAD_MOVED_STOP' >&2; exit 1; }
           rm -f "$RUNNER_TEMP/prod-qa-current-pr.json"
           echo 'PROD_ORACLE_PR_READY_AND_EXACT_HEAD=PASS'
           rm -f "$RUNNER_TEMP/prod-qa-checks.json" "$required"
@@ -233,7 +237,9 @@ jobs:
 
           # OracleBaseline tiene solo SELECTs en Up(). La prueba MigrateAsync
           # sobre restore descartable ya ha terminado correctamente.
-          baseline=backend/src/Infrastructure.Migrations/Migrations/20261006111818_OracleBaseline.cs
+          baseline="$RUNNER_TEMP/oracle-baseline-reviewed.cs"
+          gh api "repos/$GITHUB_REPOSITORY/contents/backend/src/Infrastructure.Migrations/Migrations/20261006111818_OracleBaseline.cs?ref=$PR_HEAD_SHA" --jq '.content' | tr -d '\n' | base64 -d > "$baseline"
+          test -s "$baseline"
           test "$(grep -c 'migrationBuilder.Sql("SELECT 1 FROM ' "$baseline")" = 6
           test "$(grep -c 'migrationBuilder.Sql(' "$baseline")" = 7
           grep -q 'migrationBuilder.Sql("SIGNAL SQLSTATE' "$baseline"

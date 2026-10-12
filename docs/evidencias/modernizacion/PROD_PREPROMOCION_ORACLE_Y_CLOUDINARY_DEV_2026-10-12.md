@@ -29,3 +29,15 @@ El propietario autorizó expresamente en la conversación del 12 de octubre de 2
 5. Cloudinary DEV: 11/11 activos copiados, verificados y actualizados; 0 locators no canónicos tras auditoría y descargas/ZIP verificadas. Ninguna eliminación de originales.
 
 Hasta superar las condiciones relevantes, registrar estados parciales; no declarar modernización o Cloudinary como certificación 100%.
+
+## Corrección del límite de confianza PROD — ejecución exclusiva en main
+
+GitHub documenta que los entornos con reglas de ramas seleccionadas comparan el `GITHUB_REF` real: un PR usa `refs/pull/<n>/merge`, no `main`. El Environment PROD canónico admite exclusivamente `main`. **Ningún workflow que tenga acceso a secretos PROD puede ejecutarse en un `pull_request`.**
+
+Por ello, los workflows `prod-oracle-pr-preflight.yml` y `prod-oracle-pr-backup-restore.yml` (nombres históricos de archivo) se han corregido para `push` / `workflow_dispatch` **solo en `main`**. Su código deberá promoverse por una excepción de bootstrap de infraestructura previamente revisada, con equivalencia exacta de bytes `dev → qa → main`, sin introducir antes la aplicación Oracle EF10 en PROD. Esta excepción conserva los siete commits exclusivos de `main` y está limitada a workflows de certificación, sin cambios de app, variables, DNS o secretos.
+
+En `main`, primero se certifica el fingerprint PROD de solo lectura y un respaldo cifrado real con restore MySQL descartable, verificando recuentos y ensayo SQL metadata-only. El chequeo de QA contra GitHub exige el PR real `qa → main` abierto, no draft, exact-head inalterado y los checks obligatorios verdes; también comprueba mediante lectura del archivo en QA que OracleBaseline tiene seis SELECT de solo lectura antes de permitir la inserción de un marcador. El write-scope PROD está limitado al único INSERT idempotente en `__EFMigrationsHistory` con validación post-fingerprint; ningún SQL empresarial se modifica. **No se ha ejecutado este proceso en PROD todavía**.
+
+El primer `push` de bootstrap main puede detenerse sin mutar datos si el PR QA→main sigue draft. Tras certificar QA, repetir esa certificación de `main` mediante el mismo workflow aprobado es obligatorio antes del merge modernizado. Un workflow exitoso en QA no sustituye el certificado de PROD.
+
+Referencia oficial: https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments

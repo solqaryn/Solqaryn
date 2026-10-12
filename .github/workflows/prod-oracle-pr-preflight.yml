@@ -1,11 +1,11 @@
-name: PROD - Oracle EF10 schema read-only preflight (QA to main)
+name: PROD - Oracle EF10 schema read-only preflight trusted main
 
 on:
-  pull_request:
+  push:
     branches: [main]
     paths:
-      - 'backend/**'
       - '.github/workflows/prod-oracle-pr-preflight.yml'
+      - 'backend/**'
   workflow_dispatch:
 
 permissions:
@@ -17,8 +17,8 @@ concurrency:
 
 jobs:
   audit:
-    name: QA schema Oracle EF10, solo lectura, fail-closed
-    if: github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'qa' && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.repo.full_name == 'solqaryn/Solqaryn'
+    name: PROD schema Oracle EF10, solo lectura, fail-closed
+    if: github.ref_name == 'main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: PROD
@@ -29,15 +29,14 @@ jobs:
       DB_USER: ${{ vars.SOLQARYN_PROD_DB_USER }}
       DB_PASSWORD: ${{ secrets.SOLQARYN_PROD_DB_PASSWORD }}
     steps:
-      - name: Checkout QA y verificar identidad
+      - name: Checkout main y verificar identidad
         uses: actions/checkout@v4
 
       - name: Verificar gobierno y binding QA
         shell: bash
         run: |
           set -euo pipefail
-          test "$GITHUB_HEAD_REF" = "qa"
-          test "$GITHUB_BASE_REF" = "main"
+          test "$GITHUB_REF_NAME" = "main"
           node scripts/verify-project-scope.mjs
           test "$DB_HOST" = "solqaryn-mysql-solqaryn.h.aivencloud.com"
           test "$DB_PORT" = "14402"
@@ -53,7 +52,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y mysql-client
 
-      - name: Auditar esquema QA sin mutaciones ni migrations update
+      - name: Auditar esquema PROD sin mutaciones ni migrations update
         shell: bash
         run: |
           set -euo pipefail
