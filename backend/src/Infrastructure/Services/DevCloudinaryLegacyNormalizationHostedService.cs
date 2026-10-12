@@ -8,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 using Solqaryn.Infrastructure.Persistence;
+using Solqaryn.Domain.Entities;
 
 namespace Solqaryn.Infrastructure.Services;
 
@@ -73,7 +74,7 @@ public sealed class DevCloudinaryLegacyNormalizationHostedService(
 
         await using var scope = scopeFactory.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var companies = await db.Empresas.AsNoTracking().Select(e => e.Id).ToListAsync(token);
+        var companies = await db.Set<Empresa>().AsNoTracking().Select(e => e.Id).ToListAsync(token);
         if (companies.Count != 1 || companies[0] <= 0)
             throw new InvalidOperationException("Tenant ownership is not uniquely provable.");
 
@@ -178,7 +179,7 @@ public sealed class DevCloudinaryLegacyNormalizationHostedService(
     private static async Task<byte[]> ReadSafeImageAsync(
         HttpClient http, string url, string extension, CancellationToken token)
     {
-        using var request = new HttpRequestMessage(HttpMethod.Get, url);
+        using var request = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, url);
         using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token);
         if (response.StatusCode != System.Net.HttpStatusCode.OK ||
             response.Content.Headers.ContentLength > MaxImageBytes)
