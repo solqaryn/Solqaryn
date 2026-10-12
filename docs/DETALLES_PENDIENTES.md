@@ -2,7 +2,7 @@
 
 Este archivo es la fuente canónica de pendientes deliberadamente aplazados o decisiones todavía no ejecutadas por el propietario. No deben bloquear trabajo no dependiente y no deben reinterpretarse como fallos de DEV, QA o PROD.
 
-Última reconciliación: **2026-10-04**.
+Última reconciliación: **2026-10-12**.
 
 ## Estado resumido
 
@@ -10,7 +10,8 @@ Este archivo es la fuente canónica de pendientes deliberadamente aplazados o de
 - Render DEV/QA/PROD: contrato canónico **28/28 PASS**.
 - Aiven: bases y usuarios aislados por entorno.
 - Vercel -> API: binding fail-closed y smoke certificados por entorno.
-- Los seis puntos siguientes son los únicos pendientes vigentes conocidos fuera del trabajo normal del roadmap.
+- Los seis puntos numerados de este archivo representan únicamente trabajo deliberadamente diferido o futuro. No son autorización para comprar, reactivar VAEP ni tocar el dominio.
+- La incidencia de descarga de imágenes individual y ZIP de DEV fue confirmada como resuelta por el propietario tras el PR #3569; la normalización física de locators históricos es trabajo técnico activo distinto del aplazamiento de estas decisiones. Su evidencia reside en `docs/CLOUDINARY_AISLAMIENTO.md`.
 
 ---
 
@@ -126,7 +127,7 @@ Este archivo es la fuente canónica de pendientes deliberadamente aplazados o de
 
 ## Dictamen de pendientes
 
-Con la reconciliación del 2026-10-04, **no existe otro pendiente deliberadamente aplazado conocido fuera de estos seis puntos** en las fuentes canónicas actuales de SOLQARYN.
+Con la reconciliación del 2026-10-12, **no existe otro pendiente deliberadamente aplazado conocido fuera de estos seis puntos** en las fuentes canónicas actuales de SOLQARYN.
 
 Esto no significa que el producto esté terminado: el punto 5 engloba el trabajo futuro normal del Plan Maestro/ERP. Los puntos 1-4 son decisiones operativas o de infraestructura diferidas explícitamente.
 
