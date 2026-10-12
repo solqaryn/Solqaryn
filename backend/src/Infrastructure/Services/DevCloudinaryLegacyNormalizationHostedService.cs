@@ -119,61 +119,92 @@ public sealed class DevCloudinaryLegacyNormalizationHostedService(
             verified.Add((item.Id, item.Url, item.PublicId, item.Extension, bytes, SHA256.HashData(bytes)));
         }
 
-        var changed = 0;
-        foreach (var item in verified)
+        // Memoria de compensacion por fila; preserva originales Cloudinary.
+        var updated = new List<(int Id, string OldUrl, string OldPublicId, string NewUrl, string NewPublicId)>();
+        try
         {
-            token.ThrowIfCancellationRequested();
-            var folder = $"{AllowedPrefix}/solqaryn/productos/empresas/{tenantId}";
-            var shortHash = Convert.ToHexString(item.Hash.AsSpan(0, 10)).ToLowerInvariant();
-            var destinationName = $"normalizada-{item.Id}-{shortHash}";
-            using var source = new MemoryStream(item.Bytes, writable: false);
-            var upload = new ImageUploadParams
+            var changed = 0;
+            foreach (var item in verified)
             {
-                File = new FileDescription($"normalizada-{item.Id}{item.Extension}", source),
-                Folder = folder,
-                PublicId = destinationName,
-                UseFilename = false,
-                UniqueFilename = false,
-                Overwrite = true
-            };
-            var result = await cloudinary.UploadAsync(upload);
-            if (result.Error is not null ||
-                result.SecureUrl is null ||
-                result.PublicId != $"{folder}/{destinationName}")
-                throw new InvalidOperationException("Cloudinary DEV refused a canonical destination.");
+                token.ThrowIfCancellationRequested();
+                var folder = $"{AllowedPrefix}/solqaryn/productos/empresas/{tenantId}";
+                var shortHash = Convert.ToHexString(item.Hash.AsSpan(0, 10)).ToLowerInvariant();
+                var destinationName = $"normalizada-{item.Id}-{shortHash}";
+                using var source = new MemoryStream(item.Bytes, writable: false);
+                var upload = new ImageUploadParams
+                {
+                    File = new FileDescription($"normalizada-{item.Id}{item.Extension}", source),
+                    Folder = folder,
+                    PublicId = destinationName,
+                    UseFilename = false,
+                    UniqueFilename = false,
+                    Overwrite = true
+                };
+                var result = await cloudinary.UploadAsync(upload);
+                if (result.Error is not null ||
+                    result.SecureUrl is null ||
+                    result.PublicId != $"{folder}/{destinationName}")
+                    throw new InvalidOperationException("Cloudinary DEV refused a canonical destination.");
 
-            var nextUrl = result.SecureUrl.ToString();
-            if (!DevCloudinaryLegacyLocator.TryValidate(
-                    nextUrl, result.PublicId, tenantId, out var newExtension, out var canonical) ||
-                !canonical || newExtension != item.Extension)
-                throw new InvalidOperationException("Cloudinary DEV destination locator is not canonical.");
+                var nextUrl = result.SecureUrl.ToString();
+                if (!DevCloudinaryLegacyLocator.TryValidate(
+                        nextUrl, result.PublicId, tenantId, out var newExtension, out var canonical) ||
+                    !canonical || newExtension != item.Extension)
+                    throw new InvalidOperationException("Cloudinary DEV destination locator is not canonical.");
 
-            var copied = await ReadSafeImageAsync(http, nextUrl, item.Extension, token);
-            if (!SHA256.HashData(copied).AsSpan().SequenceEqual(item.Hash))
-                throw new InvalidOperationException("Cloudinary copy differs from original bytes.");
+                var copied = await ReadSafeImageAsync(http, nextUrl, item.Extension, token);
+                if (!SHA256.HashData(copied).AsSpan().SequenceEqual(item.Hash))
+                    throw new InvalidOperationException("Cloudinary copy differs from original bytes.");
 
-            // Single-statement atomic compare-and-swap prevents overwriting any
-            // concurrent replacement. Original media remains untouched.
-            var rows = await db.Database.ExecuteSqlInterpolatedAsync(
-                $"UPDATE ProductoImagenes SET Url={nextUrl}, PublicId={result.PublicId} WHERE Id={item.Id} AND Url={item.Url} AND PublicId={item.PublicId};",
-                token);
-            if (rows != 1)
-                throw new InvalidOperationException("Image row changed during normalization.");
+                // Single-statement atomic compare-and-swap prevents overwriting any
+                // concurrent replacement. Original media remains untouched.
+                var rows = await db.Database.ExecuteSqlInterpolatedAsync(
+                    $"UPDATE ProductoImagenes SET Url={nextUrl}, PublicId={result.PublicId} WHERE Id={item.Id} AND Url={item.Url} AND PublicId={item.PublicId};",
+                    token);
+                if (rows != 1)
+                    throw new InvalidOperationException("Image row changed during normalization.");
 
-            changed++;
-            logger.LogInformation("CLOUDINARY_DEV_NORMALIZATION_PROGRESS completed={Completed}", changed);
+                updated.Add((item.Id, item.Url, item.PublicId, nextUrl, result.PublicId));
+                changed++;
+                logger.LogInformation("CLOUDINARY_DEV_NORMALIZATION_PROGRESS completed={Completed}", changed);
+            }
+
+            var after = await db.ProductoImagenes.AsNoTracking()
+                .Select(i => new { i.Url, i.PublicId })
+                .ToListAsync(token);
+            var unresolved = after.Count(x => !DevCloudinaryLegacyLocator.TryValidate(
+                x.Url, x.PublicId, tenantId, out _, out var canonical) || !canonical);
+
+            if (unresolved != 0 || after.Count != ExpectedHistoricalImages)
+                throw new InvalidOperationException("Cloudinary normalization readback is incomplete.");
+
+            logger.LogInformation("CLOUDINARY_DEV_NORMALIZATION=PASS total=11 newly_normalized={Normalized} remaining=0 originals_deleted=0", changed);
         }
-
-        var after = await db.ProductoImagenes.AsNoTracking()
-            .Select(i => new { i.Url, i.PublicId })
-            .ToListAsync(token);
-        var unresolved = after.Count(x => !DevCloudinaryLegacyLocator.TryValidate(
-            x.Url, x.PublicId, tenantId, out _, out var canonical) || !canonical);
-
-        if (unresolved != 0 || after.Count != ExpectedHistoricalImages)
-            throw new InvalidOperationException("Cloudinary normalization readback is incomplete.");
-
-        logger.LogInformation("CLOUDINARY_DEV_NORMALIZATION=PASS total=11 newly_normalized={Normalized} remaining=0 originals_deleted=0", changed);
+        }
+        catch
+        {
+            // Rollback selectivo: nunca revertir una sustitucion concurrente ajena.
+            // El respaldo cifrado verificado permanece como recuperacion ante caida de proceso.
+            var restored = 0;
+            foreach (var item in updated.AsEnumerable().Reverse())
+            {
+                try
+                {
+                    var rows = await db.Database.ExecuteSqlInterpolatedAsync(
+                        $"UPDATE ProductoImagenes SET Url={item.OldUrl}, PublicId={item.OldPublicId} WHERE Id={item.Id} AND Url={item.NewUrl} AND PublicId={item.NewPublicId};",
+                        CancellationToken.None);
+                    if (rows == 1) restored++;
+                }
+                catch
+                {
+                    // Continuar compensando filas restantes. STOP y auditoria posteriores.
+                }
+            }
+            logger.LogWarning(
+                "CLOUDINARY_DEV_NORMALIZATION_ROLLBACK restored={Restored} attempted={Attempted} originals_deleted=0",
+                restored, updated.Count);
+            throw;
+        }
     }
 
     private static async Task<byte[]> ReadSafeImageAsync(
