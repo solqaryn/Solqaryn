@@ -114,7 +114,20 @@ jobs:
           dotnet build Solqaryn.sln --configuration Release --no-restore -warnaserror
           dotnet test Solqaryn.sln --configuration Release --no-build --filter "Category!=Integration"
 
-      - name: Iniciar API con migraciones MySQL
+      - name: Materializar esquema Oracle EF10 antes del arranque API (MySQL descartable)
+        working-directory: backend
+        env:
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet run --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj --configuration Release --no-build
+          c="${{ job.services.mysql.id }}"
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n11_sucursales -Nse "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME <> '__EFMigrationsHistory';")" = 136
+          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n11_sucursales -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")" = 1
+          echo 'N11_ORACLE_FRESH_SCHEMA=PASS tables=136 baseline=1'
+
+      - name: Iniciar API sobre esquema Oracle EF10 ya materializado
         working-directory: backend
         shell: bash
         run: |
