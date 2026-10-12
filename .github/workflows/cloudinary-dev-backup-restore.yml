@@ -1,0 +1,161 @@
+name: DEV - Backup cifrado y restore Aiven real para Cloudinary
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/cloudinary-dev-backup-restore.yml'
+  pull_request:
+    branches: [dev]
+    paths:
+      - '.github/workflows/cloudinary-dev-backup-restore.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dev-oracle-backup-restore
+  cancel-in-progress: false
+
+jobs:
+  verify-restore:
+    if: github.ref_name == 'dev' || (github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'dev' && github.event.pull_request.head.repo.full_name == 'solqaryn/Solqaryn')
+    name: DEV fuente Aiven -> respaldo cifrado -> restore MySQL descartable
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: DEV
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: solqaryn-ci-dev-disposable-only
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -psolqaryn-ci-dev-disposable-only --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      DB_HOST: ${{ vars.SOLQARYN_DEV_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_DEV_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_DEV_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_DEV_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_DEV_DB_PASSWORD }}
+      BACKUP_PASSPHRASE: ${{ secrets.SOLQARYN_DEV_BACKUP_PASSPHRASE }}
+    steps:
+      - name: Checkout DEV (identidad)
+        uses: actions/checkout@v4
+
+      - name: Guard DEV solo Aiven 8.4.8 y secretos
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            test "$GITHUB_BASE_REF" = "dev"
+          else
+            test "$GITHUB_REF_NAME" = "dev"
+          fi
+          node scripts/verify-project-scope.mjs
+          test "$DB_HOST" = "solqaryn-mysql-solqaryn.h.aivencloud.com"
+          test "$DB_PORT" = "14402"
+          test "$DB_NAME" = "solqaryn_dev"
+          test "$DB_USER" = "solqaryn_dev_user"
+          test -n "$DB_PASSWORD" && test -n "$BACKUP_PASSPHRASE"
+          echo "DEV_BACKUP_SCOPE=PASS"
+
+      - name: Instalar cliente MySQL
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+
+      - name: Backup transaccional de DEV y cifrado AES-256 (sin dump en artefacto)
+        id: backup
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          folder="$RUNNER_TEMP/solqaryn-dev-oracle-backup"
+          mkdir -p "$folder"
+          dump="$folder/dev.sql"
+          enc="$folder/dev.sql.enc"
+          trap 'rm -f "$dump"' EXIT
+          export MYSQL_PWD="$DB_PASSWORD"
+          version="$(mysql --protocol=TCP --ssl-mode=REQUIRED -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --batch --skip-column-names "$DB_NAME" -e 'SELECT VERSION();')"
+          case "$version" in 8.4.8|8.4.8-*) ;; *) echo "DEV_MYSQL_VERSION_INVALID" >&2; exit 1;; esac
+          mysqldump --protocol=TCP --ssl-mode=REQUIRED -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" \
+            --single-transaction --skip-lock-tables --no-tablespaces --set-gtid-purged=OFF \
+            --routines --triggers "$DB_NAME" > "$dump"
+          test -s "$dump"
+          sha256sum "$dump" | cut -d' ' -f1 > "$folder/dev-plaintext.sha256"
+          openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt \
+            -pass env:BACKUP_PASSPHRASE -in "$dump" -out "$enc"
+          test -s "$enc"
+          sha256sum "$enc" > "$folder/dev-encrypted.sha256"
+          rm -f "$dump"
+          trap - EXIT
+          echo "encrypted=$enc" >> "$GITHUB_OUTPUT"
+          echo "DEV_BACKUP_ENCRYPTED=PASS"
+          echo "DEV_DATABASE_WRITES=0"
+
+      - name: Restore real del respaldo cifrado en MySQL local efímero
+        shell: bash
+        env:
+          ENCRYPTED_FILE: ${{ steps.backup.outputs.encrypted }}
+        run: |
+          set -euo pipefail
+          test -s "$ENCRYPTED_FILE"
+          export MYSQL_PWD=solqaryn-ci-dev-disposable-only
+          mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root \
+            -e 'CREATE DATABASE solqaryn_dev_restore_ephemeral CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
+          # El SQL descifrado fluye directamente a mysql local: no hay fichero SQL en disco.
+          openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 \
+            -pass env:BACKUP_PASSPHRASE -in "$ENCRYPTED_FILE" |
+            mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root solqaryn_dev_restore_ephemeral
+          qlocal(){ mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root -Nse "$1" solqaryn_dev_restore_ephemeral; }
+          export MYSQL_PWD="$DB_PASSWORD"
+          qsource(){ mysql --protocol=TCP --ssl-mode=REQUIRED -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -Nse "$1" "$DB_NAME"; }
+          sql="SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' ORDER BY TABLE_NAME;"
+          tables="$(qsource "$sql")"
+          count=0
+          while IFS= read -r tbl; do
+            test -n "$tbl" || continue
+            [[ "$tbl" =~ ^[A-Za-z0-9_]+$ ]] || { echo 'DEV_RESTORE_TABLE_NAME_INVALID' >&2; exit 1; }
+            a="$(qsource "SELECT COUNT(*) FROM \`$tbl\`;")"
+            export MYSQL_PWD=solqaryn-ci-dev-disposable-only
+            b="$(qlocal "SELECT COUNT(*) FROM \`$tbl\`;")"
+            export MYSQL_PWD="$DB_PASSWORD"
+            test "$a" = "$b" || { echo 'DEV_RESTORE_ROWCOUNT_MISMATCH' >&2; exit 1; }
+            count=$((count+1))
+          done <<< "$tables"
+          test "$count" = "137" || { echo 'DEV_RESTORE_TABLECOUNT_DRIFT' >&2; exit 1; }
+          export MYSQL_PWD=solqaryn-ci-dev-disposable-only
+          marker="$(qlocal "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")"
+          history="$(qlocal "SELECT COUNT(*) FROM __EFMigrationsHistory;")"
+          export MYSQL_PWD="$DB_PASSWORD"
+          source_marker="$(qsource "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")"
+          source_history="$(qsource "SELECT COUNT(*) FROM __EFMigrationsHistory;")"
+          test "$marker" = "$source_marker" && test "$history" = "$source_history"
+          source_assets="$(qsource "SELECT CONCAT_WS('|',Id,Url,PublicId) FROM ProductoImagenes ORDER BY Id;" | sha256sum | cut -d' ' -f1)"
+          export MYSQL_PWD=solqaryn-ci-dev-disposable-only
+          restored_assets="$(qlocal "SELECT CONCAT_WS('|',Id,Url,PublicId) FROM ProductoImagenes ORDER BY Id;" | sha256sum | cut -d' ' -f1)"
+          test "$source_assets" = "$restored_assets"
+          echo "DEV_CLOUDINARY_LOCATOR_RESTORE=PASS encrypted_backup=YES refs_integrity=SHA256"
+          echo "DEV_BACKUP_RESTORE=PASS tables=$count history=$history rows_exact=YES oracle_marker=$marker"
+          echo "DEV_ORIGINAL_DB_WRITES=0"
+
+
+      - name: Guardar exclusivamente backup cifrado y checksums (14 días)
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: dev-oracle-pre-adoption-encrypted-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/solqaryn-dev-oracle-backup/dev.sql.enc
+            ${{ runner.temp }}/solqaryn-dev-oracle-backup/dev-encrypted.sha256
+            ${{ runner.temp }}/solqaryn-dev-oracle-backup/dev-plaintext.sha256
+          retention-days: 14
+          if-no-files-found: ignore
+
