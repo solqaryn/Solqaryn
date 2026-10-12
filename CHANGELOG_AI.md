@@ -1,3 +1,9 @@
+## 2026-10-12 — N1.1/N1.2 CI: inicialización Oracle EF10 del esquema MySQL efímero
+
+- Error causal HEAD DEV `d0dce229`: ambos workflows N1.1 y N1.2 compilaron y aprobaron 2425 tests unitarios, pero el inicio de API con `Database__ApplyMigrationsOnStartup=true` intentó aplicar el baseline Oracle a una base VACÍA y falló en `SELECT 1 FROM Empresas` por tabla inexistente. No afecta Aiven ni PROD.
+- Antes de iniciar API en esos workflows se ejecuta `Solqaryn.DatabaseBootstrap` modo `fresh` dentro de MySQL 8.4 descartable. Se exige esquema físico de 136 tablas y marcador `20261006111818_OracleBaseline=1`, con fail-closed. Luego el arranque API conserva migraciones, reparación y seeds de prueba existentes.
+- No se desactivaron tests ni controles RBAC/tenant. No cambian app runtime, credenciales Aiven, Cloudinary, QA/PROD, dominios, ni datos persistentes. Cierre sujeto a CI exact-head y rerun DEV posterior al merge.
+
 ## 2026-10-12 — Preflight QA → PROD Oracle EF10, revisión CI y Cloudinary DEV
 
 - Corrección de límite GitHub Environment: PROD solo acepta `GITHUB_REF=main`, por lo que los workflows Oracle PROD pasan a **push/workflow_dispatch desde main protegido**, con bootstrap de workflows de certificación previo al merge modernizado, y no reciben secretos en PR. Respaldo cifrado, restore y adopción metadata-only aún no ejecutados.
