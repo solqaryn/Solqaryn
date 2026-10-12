@@ -161,6 +161,18 @@ jobs:
           test "$before" = "$after"
           echo 'PROD_ORACLE_ADOPTION_DRY_RUN=PASS tables_unchanged=136 history=108 prod_original_writes=0'
 
+      - name: Guardar exclusivamente backup cifrado y checksums (14 días)
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: prod-oracle-pre-adoption-encrypted-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/solqaryn-prod-oracle-backup/prod.sql.enc
+            ${{ runner.temp }}/solqaryn-prod-oracle-backup/prod-encrypted.sha256
+            ${{ runner.temp }}/solqaryn-prod-oracle-backup/prod-plaintext.sha256
+          retention-days: 14
+          if-no-files-found: ignore
+
       - name: Adoptar solo metadata Oracle en PROD tras backup y checks QA-main exact-head
         timeout-minutes: 18
         shell: bash
@@ -251,16 +263,3 @@ jobs:
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline' AND ProductVersion='10.0.12';")" = 1
           test "$(physical)" = "$before" || { echo 'PROD_ORACLE_POST_SCHEMA_DRIFT_STOP' >&2; exit 1; }
           echo 'PROD_ORACLE_ADOPTION=PASS marker=1 history=108 ddl_changes=0 business_rows_changed=0 backup_restored=YES'
-
-      - name: Guardar exclusivamente backup cifrado y checksums (14 días)
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: prod-oracle-pre-adoption-encrypted-${{ github.run_id }}
-          path: |
-            ${{ runner.temp }}/solqaryn-prod-oracle-backup/prod.sql.enc
-            ${{ runner.temp }}/solqaryn-prod-oracle-backup/prod-encrypted.sha256
-            ${{ runner.temp }}/solqaryn-prod-oracle-backup/prod-plaintext.sha256
-          retention-days: 14
-          if-no-files-found: ignore
-
