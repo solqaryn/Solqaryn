@@ -1,3 +1,11 @@
+## 2026-10-12 — QA Oracle EF10: esquema, backup cifrado y adopción certificada
+
+- QA recibió únicamente los controles operativos de schema y respaldo por excepción de bootstrap, sin desplegar aplicación nueva; el guard de PR de promoción `dev → qa` permanece vigente. PR #3572 cerrado sin merge al detectar el guard.
+- Auditoría QA: 136 tablas de app; 107 migraciones históricas; marcador Oracle inicialmente ausente; fingerprints tablas/FK/índices, triggers (2) y CHECK (1) idénticos a DEV. Evidencia runs 38302451112 y 38302585075.
+- Respaldo QA transaccional AES-256 y restore MySQL efímero `137/137` tablas con conteos exactos: 38302947961. Ensayo oficial Oracle EF10 `adopt` sobre restore PASS, seguido de adopción real de solo metadata (historial EF `107→108`, tablas de negocio `136` sin cambios) y readback PASS: 38303606678. Se retiró el job temporal de adopción.
+- Preflight QA read-only independiente `QA_ORACLE_SCHEMA_CERT=PASS`, `QA_DATABASE_WRITES=0`: run 38304163633. Se versionan los workflows seguros en DEV y el registro auditable: `docs/evidencias/modernizacion/QA_ORACLE_EF10_CERTIFICACION_2026-10-12.md`.
+- Fase 11 **todavía no es 100%**: falta promoción de código por PR #3567, despliegue/smoke QA exact-head y autorización explícita QA→PROD. SMTP real y `solqaryn.com` aplazados; 11 imágenes Cloudinary DEV pendientes de normalización física. MySQL Aiven 8.4.8 y servicios Free sin cambios.
+
 ## 2026-10-12 — Readback exact-head de auditoría Cloudinary DEV y decisiones diferidas
 
 - El run [38298651685](https://github.com/solqaryn/Solqaryn/actions/runs/38298651685) verificó en Aiven MySQL 8.4.8, lectura exclusiva, 11 imágenes de producto en rutas DEV no canónicas, 1 comprobante sin archivo, 2 fotografías de perfil canónicas y 3 usuarios sin fotografía; ningún origen QA/PROD entre los 17 registros examinados. Normalización física NO certificada; originales intactos.
