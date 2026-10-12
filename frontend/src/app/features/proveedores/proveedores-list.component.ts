@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -17,6 +17,7 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
   standalone: true,
   imports: [CommonModule, RouterLink, MatIconModule, MatButtonModule, MatProgressSpinnerModule, MatSlideToggleModule, FormsModule],
   templateUrl: './proveedores-list.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './proveedores-list.component.scss'
 })
 export class ProveedoresListComponent implements OnInit {

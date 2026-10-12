@@ -10,8 +10,8 @@ El identificador oficial del entorno de DEV es `solqaryn_dev`.
 
 Cuando `Cloudinary__EnvironmentPrefix=solqaryn_dev`:
 
-- las nuevas imágenes de productos se almacenan bajo `solqaryn_dev/Solqaryn/productos`;
-- los nuevos comprobantes se almacenan bajo `solqaryn_dev/Solqaryn/compras`;
+- las nuevas imágenes de productos se almacenan bajo `solqaryn_dev/solqaryn/productos`;
+- los nuevos comprobantes se almacenan bajo `solqaryn_dev/solqaryn/compras`;
 - las nuevas fotografías de perfil se almacenan bajo `solqaryn_dev/solqaryn/perfiles`;
 - cualquier eliminación cuyo `PublicId` no comience con `solqaryn_dev/` queda bloqueada antes de llamar a Cloudinary.
 
@@ -101,7 +101,7 @@ El redeploy manual `dep-darcsc0jo6nc73fffmtg` terminó `live` y el health poster
 - Health posterior: `/health/ready` HTTP 200.
 - Upload real desde SOLQARYN DEV: PASS.
 - Cloud destino: `riyrzmob`.
-- Prefijo observado en Media Library: `solqaryn_dev/Solqaryn/productos/empresas/1/`.
+- Prefijo observado en Media Library: `solqaryn_dev/solqaryn/productos/empresas/1/`.
 - La API pública de tienda devuelve el asset nuevo desde `res.cloudinary.com/riyrzmob/.../solqaryn_dev/...`.
 
 ### Inventario read-only de referencias legacy
@@ -118,3 +118,41 @@ GitHub Actions run `36182095589` / artifact `cloudinary-dev-legacy-inventario-36
 Interpretación operacional: 13 filas lógicas de assets continúan enlazadas al Cloudinary legacy. El escaneo fue solo lectura, sobre `solqaryn_dev`, y no tocó Producción.
 
 Estado del punto: **Cloudinary DEV nuevo funcional; cierre global PENDIENTE de migrar 13 assets legacy y volver a escanear hasta cero referencias.**
+
+## Corrección de descarga de imágenes DEV — 2026-10-12 (integrada)
+
+- Hallazgo real del propietario: `GET /api/productos/7/imagenes/9/descargar` respondió HTTP 400 porque la URL persistida no contiene el directorio canónico de imágenes de productos; el archivo existe bajo el prefijo del ambiente DEV.
+- La corrección propuesta en DEV utiliza `StorageTenantContext` obtenido mediante el permiso `Productos.Exportar` y la membresía activa verificada del usuario; nunca confía en una URL o un EmpresaId enviados como autoridad.
+- Las nuevas cargas y las eliminaciones conservan el folder canónico exacto y la política fail-closed. Para descargas ya persistidas en DEV, la infraestructura puede aceptar exclusivamente el patrón verificado `{cloud}/image/upload/v{versión}/solqaryn_dev/{origen}/productos/empresas/{tenant}/{archivo JPG|PNG|WebP}`, siempre con cloud/cuenta corporativos, tenant actual y sin rutas ambiguas ni parámetros. Esta compatibilidad no permite copiar, mover, borrar o subir activos en carpetas no canónicas, ni es habilitada en QA/PROD.
+- El ZIP no se genera incompleto cuando una imagen no puede recuperarse; los streams se liberan y el frontend distingue errores HTTP sin divulgar detalles internos de infraestructura.
+- **Sin migración materializada todavía:** no se han modificado referencias en Aiven ni activos Cloudinary. La reconciliación de archivos a la carpeta canónica permanece separada y exige respaldo, comprobación de existencia/hash, migración controlada de URL/PublicId y verificación del resultado antes de retirar cualquier original.
+- Pruebas obligatorias: unitarias de acceso permitido DEV, rechazo de otro tenant/QA/PROD/cuenta/tipo de recurso, bloqueo de borrado; CI del PR y exact-head DEV; smoke autenticado de descarga individual y ZIP sobre el producto afectado. Un build verde no equivale a smoke real ni cierra la deuda de normalización física.
+- No hay compras, ni uso de TinyFish, ni cambios en QA/PROD/MySQL 8.4.8, ni cambio de credenciales.
+
+## Certificación operativa y reconciliación posterior — 2026-10-12
+
+- Pull request [#3569](https://github.com/solqaryn/Solqaryn/pull/3569) fusionado en `dev` SHA `71bcfbeea46dcc0bf35fd49123c6ebb63e577410` después de **15/15** workflows del PR en `SUCCESS`.
+- Vercel DEV `READY` y Render DEV `live` confirmados ambos en ese SHA.
+- El propietario confirmó que la descarga de imágenes de producto funciona en DEV e indicó que la descarga ZIP completa también fue verificada. Se documenta como **aceptación manual del usuario**, no como inspección automatizada del número de entradas del ZIP o hash de contenidos.
+- La compatibilidad con carpetas históricas sólo resuelve la lectura. **NO mueve imágenes ni actualiza los `PublicId`/URL persistidos.** Prohibido eliminar originales o normalizar DB por simple sustitución textual de rutas.
+- El inventario original detectó 13 filas lógicas (2026-09-25), pero su recuento está desactualizado. La nueva auditoría `.github/workflows/cloudinary-dev-legacy-audit.yml` ejecuta análisis **solo lectura** del cloud/carpeta canónica y expone únicamente recuentos por tipo; exige MySQL Aiven 8.4.8, usuario y base de DEV, sin mostrar URLs ni IDs, sin tocar QA/PROD.
+- Para cerrar normalización física futura: evidenciar recuento y archivos disponibles, backup cifrado real de DEV, copia/rehidratación en carpeta canónica desde el origen autorizado, verificar integridad binaria, actualizar URL y PublicId en una transacción/reconciliación idempotente, readback y smoke individual/ZIP; no borrar originales sin otro permiso específico.
+- Coste adicional autorizado: **USD 0**; no TinyFish ni compras. El dominio `solqaryn.com`, SMTP runtime real y VAEP conservan su estado deliberadamente aplazado/pausado, sin reactivación por este cambioset.
+
+## Readback definitivo del inventario actual de locators — 2026-10-12
+
+Fuente: workflow DEV [38298651685](https://github.com/solqaryn/Solqaryn/actions/runs/38298651685), artefacto `cloudinary-dev-locators-38298651685`. Commit auditable `42e60d9b2f3e9408de47ecdbca8ec49984f112f5`; base `solqaryn_dev`; MySQL Aiven **8.4.8**; cloud `riyrzmob`; lectura exclusivamente SQL `SELECT`; cero escrituras, cero exposición de URL/PublicId y cero accesos a QA/PROD.
+
+| Superficie | Filas | Locators canónicos | DEV no canónicos | Externos/cruzados | Sin referencia |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| ProductoImagenes | 11 | 0 | **11** | 0 | 0 |
+| CompraDocumentos | 1 | 0 | 0 | 0 | 1 |
+| Usuarios (fotografía) | 5 | 2 | 0 | 0 | 3 |
+| **Total** | **17** | **2** | **11** | **0** | **4** |
+
+Dictamen: `CLOUDINARY_DEV_LOCATOR_AUDIT=PASS_READ_ONLY`; `CLOUDINARY_DEV_REMAINING_NONCANONICAL_OR_INVALID=11`; `normalization_certified=false`.
+
+- **Descarga funcional:** individual y ZIP confirmadas por el propietario en DEV, tras PR #3569 y despliegues Vercel/Render `71bcfbee`.
+- **Normalización física:** pendiente real, 11 imágenes de productos. No se confunde con que la descarga funcione ni se convierte el inventario histórico del 25 de septiembre en dato actual.
+- Antes de modificar referencias, la operación debe demostrar ownership por empresa, respaldos cifrados con restore verificado, bytes y tipo de imagen íntegros, copia de cada asset con identificador canónico, UPDATE idempotente/atómico de URL y PublicId y readback de las 11 filas. Sin borrado automático ni sustituciones textuales de URLs.
+- Render contiene credenciales de Cloudinary que no deben exportarse a GitHub, documentación o el chat. **No existe en esta ejecución una vía autorizada para ejecutar la copia firmada** sin exponer credenciales o abrir una operación insegura; por ello no se declara que las 11 imágenes fueron migradas. No se usará TinyFish ni se comprarán créditos.

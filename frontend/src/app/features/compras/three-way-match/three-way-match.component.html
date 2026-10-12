@@ -6,78 +6,82 @@
     <h2>Conciliación Three-way Match</h2>
   </div>
 
-  <div *ngIf="loading" class="loading-container">
-    <mat-spinner diameter="40"></mat-spinner>
-    <p>Cargando resultado de conciliación...</p>
-  </div>
+  @if (loading) {
+    <div class="loading-container">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Cargando resultado de conciliación...</p>
+    </div>
+  }
 
-  <div *ngIf="error" class="error-container">
-    <mat-card class="error-card">
-      <mat-card-content>
-        <mat-icon color="warn">error</mat-icon>
-        <p>{{ error }}</p>
-        <button mat-stroked-button color="primary" (click)="loadMatchResult()">Reintentar</button>
-      </mat-card-content>
-    </mat-card>
-  </div>
+  @if (error) {
+    <div class="error-container">
+      <mat-card class="error-card">
+        <mat-card-content>
+          <mat-icon color="warn">error</mat-icon>
+          <p>{{ error }}</p>
+          <button mat-stroked-button color="primary" (click)="loadMatchResult()">Reintentar</button>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  }
 
-  <div *ngIf="!loading && !error && result" class="content-container">
-    <mat-card class="status-card">
-      <mat-card-header>
-        <mat-card-title>Orden de Compra #{{ result.ordenCompraId }}</mat-card-title>
-        <mat-card-subtitle>
-          Estado de Conciliación:
-          <mat-chip class="status-chip {{ getStatusClass(result.estado) }}">
-            {{ getStatusLabel(result.estado) }}
-          </mat-chip>
-        </mat-card-subtitle>
-      </mat-card-header>
-
-      <mat-card-content>
-        <div *ngIf="result.estado === ThreeWayMatchStatus.Pendiente" class="info-message">
-          <mat-icon color="accent">info</mat-icon>
-          <p>La conciliación está pendiente. Se requieren recepciones y facturas relacionadas para completar el proceso.</p>
-        </div>
-
-        <div *ngIf="result.estado === ThreeWayMatchStatus.Aprobado" class="success-message">
-          <mat-icon color="primary">check_circle</mat-icon>
-          <p>La orden de compra coincide correctamente con las recepciones y facturas. No hay discrepancias.</p>
-        </div>
-
-        <div *ngIf="result.estado === ThreeWayMatchStatus.Discrepancia && result.discrepancias?.length" class="discrepancies-section">
-          <h3>Discrepancias Encontradas</h3>
-
-          <table mat-table [dataSource]="result.discrepancias" class="mat-elevation-z2">
-            <ng-container matColumnDef="tipo">
-              <th mat-header-cell *matHeaderCellDef> Tipo </th>
-              <td mat-cell *matCellDef="let element"> {{ getDiscrepancyTypeLabel(element.tipo) }} </td>
-            </ng-container>
-
-            <ng-container matColumnDef="esperado">
-              <th mat-header-cell *matHeaderCellDef> Esperado (Ordenado) </th>
-              <td mat-cell *matCellDef="let element">{{ element.esperadoTexto || element.esperadoOrdenado }}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="recibidoFacturado">
-              <th mat-header-cell *matHeaderCellDef> Recibido / Facturado </th>
-              <td mat-cell *matCellDef="let element">
-                <div class="values-comparison">
-                  <span class="label">Recibido:</span> {{ element.valorRecepcion }}<br>
-                  <span class="label">Facturado:</span> {{ element.valorFacturadoTexto || element.valorFacturado }}
-                </div>
-              </td>
-            </ng-container>
-
-            <ng-container matColumnDef="mensaje">
-              <th mat-header-cell *matHeaderCellDef> Mensaje </th>
-              <td mat-cell *matCellDef="let element" class="warn-text"> {{ element.mensaje }} </td>
-            </ng-container>
-
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-          </table>
-        </div>
-      </mat-card-content>
-    </mat-card>
-  </div>
+  @if (!loading && !error && result) {
+    <div class="content-container">
+      <mat-card class="status-card">
+        <mat-card-header>
+          <mat-card-title>Orden de Compra #{{ result.ordenCompraId }}</mat-card-title>
+          <mat-card-subtitle>
+            Estado de Conciliación:
+            <mat-chip class="status-chip {{ getStatusClass(result.estado) }}">
+              {{ getStatusLabel(result.estado) }}
+            </mat-chip>
+          </mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          @if (result.estado === ThreeWayMatchStatus.Pendiente) {
+            <div class="info-message">
+              <mat-icon color="accent">info</mat-icon>
+              <p>La conciliación está pendiente. Se requieren recepciones y facturas relacionadas para completar el proceso.</p>
+            </div>
+          }
+          @if (result.estado === ThreeWayMatchStatus.Aprobado) {
+            <div class="success-message">
+              <mat-icon color="primary">check_circle</mat-icon>
+              <p>La orden de compra coincide correctamente con las recepciones y facturas. No hay discrepancias.</p>
+            </div>
+          }
+          @if (result.estado === ThreeWayMatchStatus.Discrepancia && result.discrepancias?.length) {
+            <div class="discrepancies-section">
+              <h3>Discrepancias Encontradas</h3>
+              <table mat-table [dataSource]="result.discrepancias" class="mat-elevation-z2">
+                <ng-container matColumnDef="tipo">
+                  <th mat-header-cell *matHeaderCellDef> Tipo </th>
+                  <td mat-cell *matCellDef="let element"> {{ getDiscrepancyTypeLabel(element.tipo) }} </td>
+                </ng-container>
+                <ng-container matColumnDef="esperado">
+                  <th mat-header-cell *matHeaderCellDef> Esperado (Ordenado) </th>
+                  <td mat-cell *matCellDef="let element">{{ element.esperadoTexto || element.esperadoOrdenado }}</td>
+                </ng-container>
+                <ng-container matColumnDef="recibidoFacturado">
+                  <th mat-header-cell *matHeaderCellDef> Recibido / Facturado </th>
+                  <td mat-cell *matCellDef="let element">
+                    <div class="values-comparison">
+                      <span class="label">Recibido:</span> {{ element.valorRecepcion }}<br>
+                      <span class="label">Facturado:</span> {{ element.valorFacturadoTexto || element.valorFacturado }}
+                    </div>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="mensaje">
+                  <th mat-header-cell *matHeaderCellDef> Mensaje </th>
+                  <td mat-cell *matCellDef="let element" class="warn-text"> {{ element.mensaje }} </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+              </table>
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+    </div>
+  }
 </div>

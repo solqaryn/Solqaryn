@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit, effect, inject, signal } from '@angular/core';
+import { Component, OnInit, effect, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -172,6 +172,7 @@ const MODULOS_SAAS: ReadonlyArray<Pick<ModuloSaaSUx, 'clave' | 'nombre' | 'descr
       }
     </section>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     .saas-card{margin-top:1.25rem;padding:1.25rem}.header-row,.limits-header,.modules-header,.filter,.state,.empty,.onboarding-form,.readonly{display:flex;align-items:center;gap:.75rem}.header-row,.limits-header,.modules-header{justify-content:space-between;flex-wrap:wrap}h2,h3,p{margin-top:0}.hint{margin:.25rem 0;opacity:.75}.state{min-height:120px;justify-content:center;text-align:center}.state.compact{min-height:80px}.state.error{color:var(--color-error,#b3261e);flex-wrap:wrap}.warning{color:#8a4b00}.subscription{display:grid;grid-template-columns:minmax(180px,.8fr) minmax(280px,1.2fr);gap:1.25rem;margin:1rem 0;padding:1rem;border:1px solid rgba(0,0,0,.12);border-radius:10px}.eyebrow{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;opacity:.7}.plan-code{font-family:monospace;margin:0}.subscription dl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.75rem;margin:0}.subscription dl div{padding:.65rem;background:rgba(0,0,0,.035);border-radius:8px}.subscription dt{font-size:.75rem;opacity:.7}.subscription dd{margin:.25rem 0 0;font-weight:600}.modules-header,.limits-header{margin-top:1.25rem}.modules-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.75rem}.module-tile{padding:.9rem;border:1px solid rgba(0,0,0,.14);border-radius:10px;display:grid;gap:.7rem}.module-tile.disabled{background:rgba(0,0,0,.035);opacity:.78}.module-title{display:flex;align-items:flex-start;gap:.6rem}.module-title p{margin:.2rem 0 0;font-size:.85rem;opacity:.75}.module-tile small{line-height:1.35}.filter{flex-wrap:wrap}.filter mat-form-field{width:min(240px,100%)}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:420px}th,td{padding:.75rem;border-bottom:1px solid rgba(0,0,0,.12);text-align:left}.empty{justify-content:center;padding:1.25rem;text-align:left}.empty>mat-icon{font-size:2rem;width:2rem;height:2rem}.onboarding-form{align-items:flex-start;flex-wrap:wrap;justify-content:center}.onboarding-form mat-form-field{width:min(280px,100%)}.onboarding-form button{min-height:56px}.readonly{width:fit-content;margin:1rem auto;padding:.75rem 1rem;border:1px solid rgba(0,0,0,.12);border-radius:8px}@media(max-width:760px){.subscription{grid-template-columns:1fr}.subscription dl{grid-template-columns:1fr}.header-row>button,.filter,.filter mat-form-field,.filter button,.onboarding-form,.onboarding-form mat-form-field,.onboarding-form button{width:100%}.limits-header{align-items:stretch}}
   `]

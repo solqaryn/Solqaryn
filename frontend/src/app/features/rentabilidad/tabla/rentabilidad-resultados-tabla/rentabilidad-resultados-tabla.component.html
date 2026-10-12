@@ -1,38 +1,48 @@
 <div class="table-container" role="region" aria-label="Tabla de resultados de rentabilidad" tabindex="0">
-  <div *ngIf="isLoading" class="loading-state" role="status" aria-busy="true">
-    <p>Cargando resultados...</p>
-  </div>
+  @if (isLoading) {
+    <div class="loading-state" role="status" aria-busy="true">
+      <p>Cargando resultados...</p>
+    </div>
+  }
 
-  <div *ngIf="error" class="error-state" role="alert">
-    <p>{{ error }}</p>
-  </div>
+  @if (error) {
+    <div class="error-state" role="alert">
+      <p>{{ error }}</p>
+    </div>
+  }
 
-  <div *ngIf="!isLoading && !error && (!resultados || resultados.length === 0)" class="empty-state">
-    <p>No hay resultados de rentabilidad para mostrar.</p>
-  </div>
+  @if (!isLoading && !error && (!resultados || resultados.length === 0)) {
+    <div class="empty-state">
+      <p>No hay resultados de rentabilidad para mostrar.</p>
+    </div>
+  }
 
-  <table *ngIf="!isLoading && !error && resultados && resultados.length > 0" class="rentabilidad-table">
-    <thead>
-      <tr>
-        <th scope="col">Agrupación</th>
-        <th scope="col">Nombre</th>
-        <th scope="col" class="numeric">Venta</th>
-        <th scope="col" class="numeric">Costo</th>
-        <th scope="col" class="numeric">Utilidad Bruta</th>
-        <th scope="col" class="text-center">Incluye Dcto. Encabezado</th>
-        <th scope="col">Semántica</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let resultado of resultados">
-        <td>{{ resultado.agrupacion }}</td>
-        <td>{{ resultado.nombre }}</td>
-        <td class="numeric">{{ resultado.venta | currency }}</td>
-        <td class="numeric">{{ resultado.costo | currency }}</td>
-        <td class="numeric">{{ resultado.utilidadBruta | currency }}</td>
-        <td class="text-center">{{ resultado.incluyeDescuentoEncabezadoEnUtilidad ? 'Sí' : 'No' }}</td>
-        <td>{{ resultado.semantica }}</td>
-      </tr>
-    </tbody>
-  </table>
+  @if (!isLoading && !error && resultados && resultados.length > 0) {
+    <table class="rentabilidad-table">
+      <thead>
+        <tr>
+          <th scope="col">Agrupación</th>
+          <th scope="col">Nombre</th>
+          <th scope="col" class="numeric">Venta</th>
+          <th scope="col" class="numeric">Costo</th>
+          <th scope="col" class="numeric">Utilidad Bruta</th>
+          <th scope="col" class="text-center">Incluye Dcto. Encabezado</th>
+          <th scope="col">Semántica</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (resultado of resultados; track resultado) {
+          <tr>
+            <td>{{ resultado.agrupacion }}</td>
+            <td>{{ resultado.nombre }}</td>
+            <td class="numeric">{{ resultado.venta | currency }}</td>
+            <td class="numeric">{{ resultado.costo | currency }}</td>
+            <td class="numeric">{{ resultado.utilidadBruta | currency }}</td>
+            <td class="text-center">{{ resultado.incluyeDescuentoEncabezadoEnUtilidad ? 'Sí' : 'No' }}</td>
+            <td>{{ resultado.semantica }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
 </div>

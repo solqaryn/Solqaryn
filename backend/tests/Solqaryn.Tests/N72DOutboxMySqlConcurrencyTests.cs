@@ -1,3 +1,4 @@
+using MySql.EntityFrameworkCore.Extensions;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Infrastructure.Persistence;
 using Solqaryn.Infrastructure.Repositories;
@@ -16,9 +17,7 @@ public sealed class N72DOutboxMySqlConcurrencyTests
     {
         var database = $"test_n72d_outbox_{Guid.NewGuid():N}";
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySql(
-                $"Server=localhost;Port=3306;Database={database};User=root;Password=root;",
-                new MySqlServerVersion(new Version(8, 4, 0)))
+            .UseMySQL($"Server=localhost;Port=3306;Database={database};User=root;Password=root;", mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
             .Options;
 
         try
@@ -27,7 +26,7 @@ public sealed class N72DOutboxMySqlConcurrencyTests
             int mensajeId;
             await using (var setup = new AppDbContext(options))
             {
-                await setup.Database.MigrateAsync();
+                await Phase7MySqlTestDatabase.InitializeFreshAsync(setup);
                 var empresa = new Empresa("N7.2.D MySQL Tenant");
                 setup.Add(empresa);
                 await setup.SaveChangesAsync();

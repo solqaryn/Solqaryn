@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -93,6 +93,7 @@ import { RecepcionCompraService } from '../../services/recepcion-compra.service'
       }
     </section>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     .page-shell{display:grid;gap:1.25rem;max-width:1500px;margin:0 auto}.page-header{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem}.eyebrow{margin:0 0 .25rem;text-transform:uppercase;letter-spacing:.08em;font-size:.75rem;font-weight:700;opacity:.7}h1{margin:.1rem 0}.filters{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr)) auto;gap:.75rem;align-items:start}.filter-actions{display:flex;gap:.5rem;align-items:center;padding-top:.25rem}.state-panel{min-height:120px;display:flex;align-items:center;justify-content:center;gap:.75rem;border:1px solid rgba(127,127,127,.18);border-radius:14px}.error{color:var(--mat-sys-error,#b3261e)}.table-wrap{overflow:auto;border:1px solid rgba(127,127,127,.18);border-radius:12px}table{width:100%;border-collapse:collapse;min-width:1100px}th,td{padding:.72rem .75rem;text-align:left;border-bottom:1px solid rgba(127,127,127,.15)}th{font-size:.78rem;text-transform:uppercase;letter-spacing:.04em}.numeric{text-align:right}.status{font-weight:700}@media(max-width:1050px){.filters{grid-template-columns:repeat(2,minmax(160px,1fr))}.filter-actions{grid-column:1/-1}}@media(max-width:680px){.page-header{flex-direction:column}.filters{grid-template-columns:1fr}}
   `]

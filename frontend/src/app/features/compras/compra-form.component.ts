@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, inject, signal } from '@angular/core';
+import { Component, OnInit, ViewChild, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, AbstractControl, FormBuilder, FormArray, FormControl, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -31,6 +31,7 @@ import { CodigoScannerInputComponent } from '../../shared/codigo-scanner-input/c
     MatProgressSpinnerModule, ProductoImagenComponent, CodigoScannerInputComponent
   ],
   templateUrl: './compra-form.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './compra-form.component.scss'
 })
 export class CompraFormComponent implements OnInit {

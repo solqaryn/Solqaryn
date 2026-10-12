@@ -22,7 +22,7 @@ public class N411CCentroCostoPersistenceConfigurationTests
 
         Assert.NotNull(entity);
         Assert.Equal("CentrosCosto", entity!.GetTableName());
-        Assert.NotNull(entity.GetQueryFilter());
+        Assert.NotEmpty(entity.GetDeclaredQueryFilters());
     }
 
     [Fact]

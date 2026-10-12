@@ -40,7 +40,6 @@ Estas comprobaciones requieren hardware real y no se consideran ejecutadas por C
 
 ## Gobernanza
 
-- Rama exclusiva: `Desarrollo`.
-- PR oficial: #2, `Desarrollo -> main`, abierto y en borrador.
-- `main` no se modifica.
-- Producción permanece congelada y no se utiliza para estas validaciones.
+- Rama exclusiva: `dev`.
+- QA, `main` y PROD quedan fuera de alcance y no se modifican.
+- Las validaciones y cualquier integración de esta corrección se limitan a DEV.

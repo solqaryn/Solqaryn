@@ -2,7 +2,7 @@
 
 Este archivo es la fuente canónica de pendientes deliberadamente aplazados o decisiones todavía no ejecutadas por el propietario. No deben bloquear trabajo no dependiente y no deben reinterpretarse como fallos de DEV, QA o PROD.
 
-Última reconciliación: **2026-10-02**.
+Última reconciliación: **2026-10-12**.
 
 ## Estado resumido
 
@@ -10,7 +10,8 @@ Este archivo es la fuente canónica de pendientes deliberadamente aplazados o de
 - Render DEV/QA/PROD: contrato canónico **28/28 PASS**.
 - Aiven: bases y usuarios aislados por entorno.
 - Vercel -> API: binding fail-closed y smoke certificados por entorno.
-- Los cinco puntos siguientes son los únicos pendientes vigentes conocidos fuera del trabajo normal del roadmap.
+- Los seis puntos numerados de este archivo representan únicamente trabajo deliberadamente diferido o futuro. No son autorización para comprar, reactivar VAEP ni tocar el dominio.
+- La incidencia de descarga de imágenes individual y ZIP de DEV fue confirmada como resuelta por el propietario tras el PR #3569; la normalización física de locators históricos es trabajo técnico activo distinto del aplazamiento de estas decisiones. Su evidencia reside en `docs/CLOUDINARY_AISLAMIENTO.md`.
 
 ---
 
@@ -124,12 +125,36 @@ Este archivo es la fuente canónica de pendientes deliberadamente aplazados o de
 
 ---
 
+## Estado de las imágenes históricas (trabajo activo, no aplazamiento)
+
+Auditoría exact-head DEV del 2026-10-12: 11 de 11 imágenes de producto almacenadas bajo folders no canónicos de DEV, sin referencias cruzadas en las superficies revisadas. Descargas individuales y ZIP funcionales según el propietario. La normalización física sigue pendiente de canal de escritura Cloudinary seguro + reconciliación con backup/rollback; detalle en `docs/CLOUDINARY_AISLAMIENTO.md`. Este punto no autoriza borrar activos ni tocar QA/PROD.
+
 ## Dictamen de pendientes
 
-Con la reconciliación del 2026-10-02, **no existe otro pendiente deliberadamente aplazado conocido fuera de estos cinco puntos** en las fuentes canónicas actuales de SOLQARYN.
+Con la reconciliación del 2026-10-12, **no existe otro pendiente deliberadamente aplazado conocido fuera de estos seis puntos** en las fuentes canónicas actuales de SOLQARYN.
 
 Esto no significa que el producto esté terminado: el punto 5 engloba el trabajo futuro normal del Plan Maestro/ERP. Los puntos 1-4 son decisiones operativas o de infraestructura diferidas explícitamente.
 
 ## Regla de uso
 
 Agregar aquí únicamente pendientes deliberadamente pospuestos, decisiones diferidas o trabajo futuro expresamente reconocido por el propietario. Cada punto debe indicar estado, motivo, condición de reanudación y si bloquea o no trabajo independiente.
+
+## 6. Evaluación futura de html5-qrcode
+
+**Estado:** EVALUACIÓN TÉCNICA ACTUAL COMPLETADA 2026-10-12 / SEGUIMIENTO CONDICIONAL NO BLOQUEANTE
+
+**Versión vigente:** `html5-qrcode@2.3.8`, última publicación estable disponible al ejecutar Fase 5.
+
+**Decisión vigente:** mantener la librería sin cambios porque Fase 5 certifica compatibilidad funcional completa y no existe una actualización publicada que aplicar.
+
+**Motivo de seguimiento:** la ausencia prolongada de nuevas releases justifica evaluar mantenimiento upstream, compatibilidad futura de navegador/cámara, postura de seguridad, alternativas activamente mantenidas y costo/riesgo de migración.
+
+**Evidencia de revisión 2026-10-12:** npm continúa publicando `html5-qrcode@2.3.8` como etiqueta `latest` (https://www.npmjs.com/package/html5-qrcode). La ficha Snyk indica ausencia de vulnerabilidades **directas conocidas** en 2.3.8, pero mantenimiento inactivo (https://security.snyk.io/package/npm/html5-qrcode). La auditoría npm de todo el frontend continúa sometida a los gates permanentes de GitHub, incluidas dependencias transitivas; ausencia de aviso directo no equivale a garantía de seguridad futura.
+
+**Decisión de revisión:** mantener `2.3.8` por compatibilidad y falta de actualización estable. La evaluación solicitada queda realizada; sólo se reabre bajo los disparadores especificados a continuación. No se ejecuta reemplazo sin pruebas de cámara, QR/barra, accesibilidad y móviles.
+
+**Acción actual:** ninguna sustitución ni rediseño del escáner.
+
+**Se retoma cuando:** exista una incompatibilidad real, una vulnerabilidad relevante, un cambio de APIs web/cámara o una alternativa claramente superior que justifique migración controlada.
+
+**Al retomar, validar:** contratos de escaneo, permisos de cámara, dispositivos móviles, códigos QR/barra soportados, accesibilidad, rendimiento, privacidad, bundle y Playwright E2E.

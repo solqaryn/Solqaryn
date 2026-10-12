@@ -28,10 +28,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Node 20
+      - name: Node 24.21.0
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24.21.0'
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
@@ -71,7 +71,7 @@ jobs:
         with:
           name: punto-8-angular-bundle
           path: |
-            frontend/dist/solqaryn-frontend/**/stats.json
+            frontend/dist/solqaryn-frontend/**/*stats.json
             frontend/dist/solqaryn-frontend/performance-bundle-baseline.json
             frontend/dist/solqaryn-frontend/angular-stats-summary.json
           if-no-files-found: warn

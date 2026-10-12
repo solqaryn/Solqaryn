@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import {
   ChangeDetectionStrategy,
   Component,
@@ -20,7 +20,7 @@ import { IconoTiendaComponent } from './storefront.visual';
 @Component({
   selector: 'app-storefront-header',
   standalone: true,
-  imports: [CommonModule, RouterLink, IconoTiendaComponent],
+  imports: [RouterLink, IconoTiendaComponent],
   templateUrl: './storefront-header.component.html',
   styleUrl: './storefront-header.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

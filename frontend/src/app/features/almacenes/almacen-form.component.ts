@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -24,7 +24,6 @@ interface SucursalAlmacenOpcion {
   selector: 'app-almacen-form',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     RouterLink,
     MatButtonModule,
@@ -33,8 +32,9 @@ interface SucursalAlmacenOpcion {
     MatInputModule,
     MatProgressSpinnerModule,
     MatSelectModule
-  ],
+],
   templateUrl: './almacen-form.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './almacen-form.component.scss'
 })
 export class AlmacenFormComponent implements OnInit {

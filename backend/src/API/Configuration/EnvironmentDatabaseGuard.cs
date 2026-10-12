@@ -1,4 +1,4 @@
-using MySqlConnector;
+using System.Data.Common;
 
 namespace Solqaryn.API.Configuration;
 
@@ -7,7 +7,7 @@ public static class EnvironmentDatabaseGuard
     private sealed record ExpectedBinding(string Database, string User);
 
     private const string ExpectedServer = "solqaryn-mysql-solqaryn.h.aivencloud.com";
-    private const uint ExpectedPort = 14402;
+    private const int ExpectedPort = 14402;
 
     public static void ValidateRenderBinding(string? environmentName, string connectionString)
     {
@@ -20,10 +20,10 @@ public static class EnvironmentDatabaseGuard
                 "Aislamiento de entorno: ASPNETCORE_ENVIRONMENT de Render debe ser Development, Staging o Production.")
         };
 
-        MySqlConnectionStringBuilder parsed;
+        DbConnectionStringBuilder parsed;
         try
         {
-            parsed = new MySqlConnectionStringBuilder(connectionString);
+            parsed = new DbConnectionStringBuilder { ConnectionString = connectionString };
         }
         catch (Exception ex)
         {
@@ -32,31 +32,50 @@ public static class EnvironmentDatabaseGuard
                 ex);
         }
 
-        if (!string.Equals(parsed.Server?.Trim(), ExpectedServer, StringComparison.OrdinalIgnoreCase))
+        static string? Read(DbConnectionStringBuilder builder, params string[] keys)
+        {
+            foreach (var key in keys)
+            {
+                if (builder.TryGetValue(key, out var value) && value is not null)
+                    return Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture)?.Trim();
+            }
+
+            return null;
+        }
+
+        var server = Read(parsed, "Server", "Host", "Data Source");
+        var portText = Read(parsed, "Port");
+        var database = Read(parsed, "Database", "Initial Catalog");
+        var user = Read(parsed, "User ID", "UserID", "User", "Username", "Uid");
+        var sslMode = Read(parsed, "SslMode", "Ssl Mode");
+        if (!int.TryParse(portText, out var port))
+            port = 3306;
+
+        if (!string.Equals(server, ExpectedServer, StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidOperationException(
                 "Aislamiento de entorno: el host MySQL no coincide con el servicio Aiven corporativo canónico.");
         }
 
-        if (parsed.Port != ExpectedPort)
+        if (port != ExpectedPort)
         {
             throw new InvalidOperationException(
                 "Aislamiento de entorno: el puerto MySQL no coincide con el endpoint Aiven corporativo canónico.");
         }
 
-        if (parsed.SslMode != MySqlSslMode.Required)
+        if (!string.Equals(sslMode, "Required", StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidOperationException(
                 "Aislamiento de entorno: la conexión MySQL de Render debe exigir SslMode=Required.");
         }
 
-        if (!string.Equals(parsed.Database, expected.Database, StringComparison.Ordinal))
+        if (!string.Equals(database, expected.Database, StringComparison.Ordinal))
         {
             throw new InvalidOperationException(
                 $"Aislamiento de entorno: la base configurada no coincide con {environmentName}. Se esperaba '{expected.Database}'.");
         }
 
-        if (!string.Equals(parsed.UserID, expected.User, StringComparison.Ordinal))
+        if (!string.Equals(user, expected.User, StringComparison.Ordinal))
         {
             throw new InvalidOperationException(
                 $"Aislamiento de entorno: el usuario MySQL no coincide con {environmentName}. Se esperaba '{expected.User}'.");

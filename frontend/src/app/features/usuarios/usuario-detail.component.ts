@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -12,6 +12,7 @@ import { UsuarioDetalle } from '../../core/models/usuario.model';
   standalone: true,
   imports: [CommonModule, RouterLink, MatIconModule, MatButtonModule, MatProgressSpinnerModule],
   templateUrl: './usuario-detail.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './usuario-detail.component.scss'
 })
 export class UsuarioDetailComponent implements OnInit {

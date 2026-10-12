@@ -81,7 +81,7 @@ public class ProductoVariantesController : ControllerBase
     [HttpPost("{id:int}/imagenes")]
     [Consumes("multipart/form-data")]
     [RequierePermiso(ModuloSistema.Productos, AccionPermiso.Editar)]
-    public async Task<IActionResult> AgregarImagenes(int productoId, int id, [FromForm] List<IFormFile> archivos)
+    public async Task<IActionResult> AgregarImagenes(int productoId, int id, List<IFormFile> archivos)
     {
         var imagenes = await _imagenService.AddAsync(productoId, id, archivos);
         return Ok(ApiResponse<IReadOnlyList<ProductoImagenDto>>.Ok(imagenes, "Imágenes de la variante actualizadas correctamente."));

@@ -1,5 +1,5 @@
-import { Component, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
+
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -15,7 +15,6 @@ import { TipoCliente } from '../../core/models/tipo-cliente.model';
   selector: 'app-tipo-cliente-form',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     RouterLink,
     MatFormFieldModule,
@@ -24,8 +23,9 @@ import { TipoCliente } from '../../core/models/tipo-cliente.model';
     MatIconModule,
     MatProgressSpinnerModule,
     MatSlideToggleModule
-  ],
+],
   templateUrl: './tipo-cliente-form.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './tipo-cliente-form.component.scss'
 })
 export class TipoClienteFormComponent implements OnInit {

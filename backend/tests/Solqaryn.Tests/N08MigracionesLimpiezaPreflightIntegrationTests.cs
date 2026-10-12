@@ -1,3 +1,4 @@
+using MySql.EntityFrameworkCore.Extensions;
 using Solqaryn.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using MySqlConnector;
@@ -13,7 +14,7 @@ public sealed class N08MigracionesLimpiezaPreflightIntegrationTests
 
     private static DbContextOptions<AppDbContext> CreateOptions(string dbName) =>
         new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySql(GetConnectionString(dbName), new MySqlServerVersion(new Version(8, 4, 3)))
+            .UseMySQL(GetConnectionString(dbName), mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
             .Options;
 
     [Fact]
@@ -25,7 +26,7 @@ public sealed class N08MigracionesLimpiezaPreflightIntegrationTests
         await using var context = new AppDbContext(options);
         try
         {
-            await context.Database.MigrateAsync();
+            await Phase7MySqlTestDatabase.InitializeFreshAsync(context);
 
             var scriptPath = BuscarScriptN08();
             var sql = await File.ReadAllTextAsync(scriptPath);

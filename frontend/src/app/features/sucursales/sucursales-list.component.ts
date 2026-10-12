@@ -1,6 +1,6 @@
-import { CommonModule } from '@angular/common';
+
 import { HttpClient } from '@angular/common/http';
-import { Component, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -32,7 +32,6 @@ interface EmpresaOpcion {
   selector: 'app-sucursales-list',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     RouterLink,
     MatButtonModule,
@@ -43,8 +42,9 @@ interface EmpresaOpcion {
     MatProgressSpinnerModule,
     MatSelectModule,
     MatSlideToggleModule
-  ],
+],
   templateUrl: './sucursales-list.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './sucursales-list.component.scss'
 })
 export class SucursalesListComponent implements OnInit, OnDestroy {

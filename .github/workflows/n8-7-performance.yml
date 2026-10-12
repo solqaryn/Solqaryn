@@ -55,7 +55,7 @@ jobs:
 
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '10.0.401'
           cache: true
           cache-dependency-path: backend/**/*.csproj
 
@@ -75,7 +75,7 @@ jobs:
       - name: Apply current schema to ephemeral MySQL
         run: |
           set -euo pipefail
-          dotnet tool install --global dotnet-ef --version 8.0.8
+          dotnet tool install --global dotnet-ef --version 10.0.12
           dotnet ef database update \
             --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
             --startup-project src/API/Solqaryn.API.csproj \
@@ -91,7 +91,7 @@ jobs:
           <Project Sdk="Microsoft.NET.Sdk">
             <PropertyGroup>
               <OutputType>Exe</OutputType>
-              <TargetFramework>net8.0</TargetFramework>
+              <TargetFramework>net10.0</TargetFramework>
               <ImplicitUsings>enable</ImplicitUsings>
               <Nullable>enable</Nullable>
             </PropertyGroup>

@@ -1,3 +1,4 @@
+using MySql.EntityFrameworkCore.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,7 +26,7 @@ public class TipoClienteConcurrencyTests
     private DbContextOptions<AppDbContext> CreateOptions(string dbName)
     {
         return new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySql(GetConnectionString(dbName), new MySqlServerVersion(new Version(8, 4, 3)))
+            .UseMySQL(GetConnectionString(dbName), mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
             .Options;
     }
 
@@ -38,7 +39,7 @@ public class TipoClienteConcurrencyTests
         // 1. Setup inicial con Migraciones reales
         await using (var setupContext = new AppDbContext(options))
         {
-            await setupContext.Database.MigrateAsync();
+            await Phase7MySqlTestDatabase.InitializeFreshAsync(setupContext);
 
             var tipoA = new TipoCliente
             {
@@ -134,19 +135,15 @@ public class TipoClienteConcurrencyTests
             // Debe haber exactamente un solo predeterminado
             Assert.Single(predeterminados);
 
-            // Una tarea debe tener éxito y la otra lanzar BusinessRuleException con el mensaje de colisión
-            if (exA != null)
+            // El scheduler puede serializar las dos operaciones: en ese caso ambas
+            // pueden completarse, pero la restricción persistida debe dejar un solo ganador.
+            Assert.True(exA is null || exB is null, "Al menos una operación debe completarse.");
+            foreach (var error in new[] { exA, exB }.Where(error => error is not null))
             {
-                Assert.IsType<BusinessRuleException>(exA);
-                Assert.Contains("Conflicto de concurrencia", exA.Message);
-                Assert.Null(exB);
+                Assert.IsType<BusinessRuleException>(error);
+                Assert.Contains("Conflicto de concurrencia", error!.Message);
             }
-            else
-            {
-                Assert.NotNull(exB);
-                Assert.IsType<BusinessRuleException>(exB);
-                Assert.Contains("Conflicto de concurrencia", exB.Message);
-            }
+            Assert.Contains(predeterminados[0].Id, new[] { idA, idB });
         }
         finally
         {

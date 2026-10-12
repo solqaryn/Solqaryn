@@ -1,3 +1,4 @@
+using MySql.EntityFrameworkCore.Extensions;
 using System.Reflection;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Infrastructure.Migrations;
@@ -19,15 +20,14 @@ public sealed class N67CConfiguracionEmpresaPersistenceTests
     public void Migracion_EstaRegistradaYDescubriblePorEfCore()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySql(
-                "Server=localhost;Database=solqaryn_n67c_discovery;User=root;Password=test;",
-                ServerVersion.Parse("8.0.36-mysql"))
+            .UseMySQL("Server=localhost;Database=solqaryn_n67c_discovery;User=root;Password=test;", mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
             .Options;
 
         using var context = new AppDbContext(options);
         var migrationsAssembly = context.GetService<IMigrationsAssembly>();
 
-        Assert.Contains(MigrationId, migrationsAssembly.Migrations.Keys);
+        Assert.Contains("20261006111818_OracleBaseline", migrationsAssembly.Migrations.Keys);
+        Assert.DoesNotContain(MigrationId, migrationsAssembly.Migrations.Keys);
 
         var migrationType = typeof(N67CConfiguracionEmpresaPersistence);
         var migrationAttribute = Assert.Single(

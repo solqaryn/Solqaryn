@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -19,7 +19,6 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
   selector: 'app-catalogo-producto-list',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     MatButtonModule,
     MatFormFieldModule,
@@ -28,8 +27,9 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
     MatProgressSpinnerModule,
     MatSelectModule,
     MatSlideToggleModule
-  ],
+],
   templateUrl: './catalogo-producto-list.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './catalogo-producto-list.component.scss'
 })
 export class CatalogoProductoListComponent implements OnInit {

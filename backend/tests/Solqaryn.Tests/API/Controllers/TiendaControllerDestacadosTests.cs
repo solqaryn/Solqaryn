@@ -3,6 +3,9 @@ using Solqaryn.Application.Common;
 using Solqaryn.Application.DTOs;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using MySql.EntityFrameworkCore.Extensions;
 using Microsoft.EntityFrameworkCore.Metadata;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
@@ -100,17 +103,15 @@ public sealed class TiendaControllerDestacadosTests
     }
 
     [Fact]
-    public void SnapshotEf_ConstruyeProductoConEsDestacadoSinModeloPendiente()
+    public void ModeloOracleEf_ConstruyeProductoConEsDestacado()
     {
-        var snapshotType = typeof(AppDbContext).Assembly.GetType(
-            "Solqaryn.Infrastructure.Migrations.AppDbContextModelSnapshot",
-            throwOnError: true)!;
-        var snapshot = Activator.CreateInstance(snapshotType, nonPublic: true)!;
-        var modelProperty = snapshotType.GetProperty(
-            "Model",
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)!;
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseMySQL("Server=localhost;Database=phase7_model_only;User=root;SslMode=Disabled;")
+            .Options;
 
-        var model = Assert.IsAssignableFrom<IModel>(modelProperty.GetValue(snapshot));
+        using var context = new AppDbContext(options);
+        var model = context.GetService<IDesignTimeModel>().Model;
+
         var producto = model.FindEntityType("Solqaryn.Domain.Entities.Producto");
         Assert.NotNull(producto);
         Assert.NotNull(producto!.FindProperty("EsDestacado"));

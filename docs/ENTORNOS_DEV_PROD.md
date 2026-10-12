@@ -37,6 +37,7 @@ El contrato de variables vive en `docs/RENDER_ENVIRONMENT_CONTRACT.md` y exige p
 
 - Proyecto: `solqaryn`.
 - Servicio MySQL: `solqaryn-mysql`.
+- **Versión del motor aprobada: MySQL 8.4.8 (Aiven)**. Se conserva el único servicio compartido DEV/QA/PROD sin mantenimiento ni upgrade autorizado; el gate de Fase 1 exige 8.4.8 y falla ante deriva. La imagen MySQL efímera usada por CI no constituye actualización del servicio Aiven.
 - Base DEV: `solqaryn_dev`.
 - Base QA: `solqaryn_qa`.
 - Base PROD: `solqaryn_prod`.

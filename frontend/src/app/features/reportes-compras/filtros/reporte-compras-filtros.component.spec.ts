@@ -21,6 +21,21 @@ describe('ReporteComprasFiltrosComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('sincroniza disabled y carga con el estado del FormGroup', () => {
+    fixture.componentRef.setInput('disabled', true);
+    fixture.detectChanges();
+    expect(component.form.disabled).toBe(true);
+
+    fixture.componentRef.setInput('disabled', false);
+    fixture.componentRef.setInput('cargandoSelectores', true);
+    fixture.detectChanges();
+    expect(component.form.disabled).toBe(true);
+
+    fixture.componentRef.setInput('cargandoSelectores', false);
+    fixture.detectChanges();
+    expect(component.form.enabled).toBe(true);
+  });
+
   it('rejects reversed date ranges', () => {
     component.form.patchValue({ desdeUtc: '2024-12-31', hastaUtc: '2024-01-01' });
     expect(component.rangoInvalido).toBe(true);

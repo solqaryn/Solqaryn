@@ -2,7 +2,6 @@ using Solqaryn.Application.Interfaces;
 using Solqaryn.Application.Exceptions;
 using Solqaryn.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
-using MySqlConnector;
 using System;
 using System.Threading.Tasks;
 
@@ -68,7 +67,8 @@ public class UnitOfWork : IUnitOfWork
     {
         for (Exception? current = exception; current is not null; current = current.InnerException)
         {
-            if (current is MySqlException mysqlException && (mysqlException.Number == 1205 || mysqlException.Number == 1213))
+            if (MySqlProviderErrorClassifier.TryClassify(current, out var error) &&
+                (error.Number == 1205 || error.Number == 1213))
             {
                 return true;
             }
@@ -80,9 +80,9 @@ public class UnitOfWork : IUnitOfWork
     {
         for (Exception? current = exception; current is not null; current = current.InnerException)
         {
-            if (current is MySqlException mysqlException &&
-                mysqlException.Number == 1062 &&
-                mysqlException.Message.Contains("IX_TipoClientes_EsPredeterminadoUnico", StringComparison.Ordinal))
+            if (MySqlProviderErrorClassifier.TryClassify(current, out var error) &&
+                error.Number == 1062 &&
+                error.Message.Contains("IX_TipoClientes_EsPredeterminadoUnico", StringComparison.Ordinal))
             {
                 return new UniqueConstraintViolationException(
                     "TipoClientePredeterminadoUnico",

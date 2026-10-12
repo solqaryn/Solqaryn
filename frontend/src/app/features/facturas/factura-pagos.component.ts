@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
@@ -39,6 +39,7 @@ import {
     MatSelectModule
   ],
   templateUrl: './factura-pagos.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './factura-pagos.component.scss'
 })
 export class FacturaPagosComponent implements OnInit {

@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { DatePipe, DecimalPipe } from '@angular/common';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { PermisosRuntimeService } from '../../../core/auth/permisos-runtime.service';
@@ -13,7 +13,7 @@ const PANEL_STYLES = `
 @Component({
   selector: 'app-notas-credito-cliente-home',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink],
   template: `
     <section class="page">
       <div class="hero">
@@ -38,6 +38,7 @@ const PANEL_STYLES = `
       </div>
     </section>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [PANEL_STYLES]
 })
 export class NotasCreditoClienteHomeComponent {
@@ -52,7 +53,7 @@ export class NotasCreditoClienteHomeComponent {
 @Component({
   selector: 'app-nota-credito-cliente-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [DatePipe, DecimalPipe, RouterLink],
   template: `
     <section class="page">
       <div class="hero">
@@ -76,6 +77,7 @@ export class NotasCreditoClienteHomeComponent {
       }
     </section>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [PANEL_STYLES]
 })
 export class NotaCreditoClienteDetailComponent implements OnInit {
@@ -96,7 +98,7 @@ export class NotaCreditoClienteDetailComponent implements OnInit {
 @Component({
   selector: 'app-nota-credito-cliente-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink],
   template: `
     <section class="page">
       <div class="hero">
@@ -130,6 +132,7 @@ export class NotaCreditoClienteDetailComponent implements OnInit {
       </form>
     </section>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [PANEL_STYLES]
 })
 export class NotaCreditoClienteFormComponent {

@@ -9,7 +9,9 @@
     <label>
       Estado financiero
       <select formControlName="tipo">
-        <option *ngFor="let item of tipos" [ngValue]="item[0]">{{ item[1] }}</option>
+        @for (item of tipos; track item) {
+          <option [ngValue]="item[0]">{{ item[1] }}</option>
+        }
       </select>
     </label>
 
@@ -19,51 +21,67 @@
       <label><input type="radio" formControlName="modo" value="rango" (change)="cambiarModo()"> Rango de fechas</label>
     </fieldset>
 
-    <label *ngIf="form.controls.modo.value === 'periodo'">
-      ID de período contable
-      <input type="number" min="1" formControlName="periodoContableId" inputmode="numeric">
-    </label>
+    @if (form.controls.modo.value === 'periodo') {
+      <label>
+        ID de período contable
+        <input type="number" min="1" formControlName="periodoContableId" inputmode="numeric">
+      </label>
+    }
 
-    <div class="date-grid" *ngIf="form.controls.modo.value === 'rango'">
-      <label>Desde <input type="date" formControlName="fechaDesde"></label>
-      <label>Hasta <input type="date" formControlName="fechaHasta"></label>
-    </div>
+    @if (form.controls.modo.value === 'rango') {
+      <div class="date-grid">
+        <label>Desde <input type="date" formControlName="fechaDesde"></label>
+        <label>Hasta <input type="date" formControlName="fechaHasta"></label>
+      </div>
+    }
 
     <button type="submit" [disabled]="loading">
       {{ loading ? 'Generando…' : 'Generar estado financiero' }}
     </button>
   </form>
 
-  <p class="status error" role="alert" *ngIf="error">{{ error }}</p>
-  <p class="status" aria-live="polite" *ngIf="loading">Consultando información financiera…</p>
+  @if (error) {
+    <p class="status error" role="alert">{{ error }}</p>
+  }
+  @if (loading) {
+    <p class="status" aria-live="polite">Consultando información financiera…</p>
+  }
 
-  <article class="result" *ngIf="resultado as r">
-    <header class="result-heading">
-      <div>
-        <p class="eyebrow">Resultado</p>
-        <h2>{{ r.nombre }}</h2>
-      </div>
-      <span>{{ r.fechaInicio | date:'mediumDate' }} — {{ r.fechaFin | date:'mediumDate' }}</span>
-    </header>
-
-    <div class="table-wrap" *ngIf="r.lineas.length; else emptyState">
-      <table>
-        <caption class="sr-only">Detalle de {{ r.nombre }}</caption>
-        <thead><tr><th scope="col">Código</th><th scope="col">Cuenta</th><th scope="col" class="amount">Saldo</th></tr></thead>
-        <tbody>
-          <tr *ngFor="let linea of r.lineas; trackBy: trackLinea" [class.root]="linea.esRaiz">
-            <td>{{ linea.cuentaCodigo || '—' }}</td>
-            <td>{{ linea.cuentaNombre || 'Sin nombre' }}</td>
-            <td class="amount">{{ linea.saldo | number:'1.2-2' }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <ng-template #emptyState><p class="empty">No hay movimientos para los filtros seleccionados.</p></ng-template>
-
-    <dl class="totals" *ngIf="r.totales.length">
-      <div *ngFor="let total of r.totales"><dt>{{ total.etiqueta }}</dt><dd>{{ total.valor | number:'1.2-2' }}</dd></div>
-    </dl>
-  </article>
+  @if (resultado; as r) {
+    <article class="result">
+      <header class="result-heading">
+        <div>
+          <p class="eyebrow">Resultado</p>
+          <h2>{{ r.nombre }}</h2>
+        </div>
+        <span>{{ r.fechaInicio | date:'mediumDate' }} — {{ r.fechaFin | date:'mediumDate' }}</span>
+      </header>
+      @if (r.lineas.length) {
+        <div class="table-wrap">
+          <table>
+            <caption class="sr-only">Detalle de {{ r.nombre }}</caption>
+            <thead><tr><th scope="col">Código</th><th scope="col">Cuenta</th><th scope="col" class="amount">Saldo</th></tr></thead>
+            <tbody>
+              @for (linea of r.lineas; track trackLinea($index, linea)) {
+                <tr [class.root]="linea.esRaiz">
+                  <td>{{ linea.cuentaCodigo || '—' }}</td>
+                  <td>{{ linea.cuentaNombre || 'Sin nombre' }}</td>
+                  <td class="amount">{{ linea.saldo | number:'1.2-2' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="empty">No hay movimientos para los filtros seleccionados.</p>
+      }
+      @if (r.totales.length) {
+        <dl class="totals">
+          @for (total of r.totales; track total) {
+            <div><dt>{{ total.etiqueta }}</dt><dd>{{ total.valor | number:'1.2-2' }}</dd></div>
+          }
+        </dl>
+      }
+    </article>
+  }
 </section>

@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, signal } from '@angular/core';
+
+import { Component, OnDestroy, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -25,7 +25,6 @@ type EstadoAlmacenFiltro = 'todos' | 'activos' | 'inactivos';
   selector: 'app-almacenes-list',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     RouterLink,
     MatButtonModule,
@@ -36,8 +35,9 @@ type EstadoAlmacenFiltro = 'todos' | 'activos' | 'inactivos';
     MatProgressSpinnerModule,
     MatSelectModule,
     MatSlideToggleModule
-  ],
+],
   templateUrl: './almacenes-list.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './almacenes-list.component.scss'
 })
 export class AlmacenesListComponent implements OnInit, OnDestroy {

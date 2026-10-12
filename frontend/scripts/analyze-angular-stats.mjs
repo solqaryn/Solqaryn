@@ -5,7 +5,12 @@ const cwd = process.cwd();
 const distRoot = resolve(cwd, 'dist/solqaryn-frontend');
 const browserRoot = existsSync(join(distRoot, 'browser')) ? join(distRoot, 'browser') : distRoot;
 const indexPath = join(browserRoot, 'index.html');
-const statsPath = [join(distRoot, 'stats.json'), join(browserRoot, 'stats.json')]
+const statsPath = [
+  join(distRoot, 'stats.json'),
+  join(distRoot, 'browser-stats.json'),
+  join(browserRoot, 'stats.json'),
+  join(browserRoot, 'browser-stats.json')
+]
   .find(candidate => existsSync(candidate));
 
 if (!existsSync(indexPath)) {
@@ -13,7 +18,7 @@ if (!existsSync(indexPath)) {
   process.exit(1);
 }
 if (!statsPath) {
-  console.error('[angular-stats] No se encontro stats.json. Ejecuta ng build --stats-json.');
+  console.error('[angular-stats] No se encontro stats.json ni browser-stats.json. Ejecuta ng build --stats-json.');
   process.exit(1);
 }
 

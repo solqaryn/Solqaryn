@@ -4,78 +4,106 @@
     <a routerLink="/clientes" mat-button><mat-icon>arrow_back</mat-icon> Volver</a>
   </div>
 
-  <div class="form-container" *ngIf="!saving() else loadingTemplate">
-    <form [formGroup]="form" (ngSubmit)="submit()">
-      <mat-form-field appearance="outline"><mat-label>Nombre *</mat-label><input matInput formControlName="nombre" required><mat-error>El nombre es obligatorio</mat-error></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Teléfono</mat-label><input matInput formControlName="telefono"></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Identidad/RTN</mat-label><input matInput formControlName="identidadORTN"></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Correo</mat-label><input matInput formControlName="correo" type="email"></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Dirección</mat-label><input matInput formControlName="direccion"></mat-form-field>
-      <mat-form-field appearance="outline">
-        <mat-label>Clasificación de Cliente</mat-label>
-        <mat-select formControlName="tipoClienteId">
-          <mat-option [value]="null">Sin clasificar (Por defecto)</mat-option>
-          <mat-option *ngFor="let tipo of tiposClientes()" [value]="tipo.id"><span class="tipo-color" [style.background-color]="tipo.colorHex"></span>{{ tipo.nombre }}</mat-option>
-        </mat-select>
-      </mat-form-field>
-      <div class="error-message" *ngIf="errorMessage()">{{ errorMessage() }}</div>
-      <div class="actions">
-        <button type="submit" mat-raised-button color="primary" [disabled]="form.invalid">{{ isEdit() ? 'Actualizar' : 'Crear' }}</button>
-        <a routerLink="/clientes" mat-button>Cancelar</a>
-      </div>
-    </form>
-  </div>
-
-  <section class="form-container" *ngIf="isEdit()" aria-labelledby="credito-cliente-title">
-    <div class="header">
-      <div>
-        <h2 id="credito-cliente-title">Crédito del cliente</h2>
-        <p>Política, bloqueo automático y excepción autorizada según el contrato vigente.</p>
-      </div>
-      <button mat-stroked-button type="button" (click)="cargarCredito()" [disabled]="creditoLoading()"><mat-icon>refresh</mat-icon> Actualizar</button>
-    </div>
-
-    <div class="loading-container" *ngIf="creditoLoading()"><mat-spinner diameter="36"></mat-spinner></div>
-
-    <ng-container *ngIf="!creditoLoading()">
-      <div *ngIf="!credito()" class="error-message">No existe una política de crédito registrada para este cliente.</div>
-
-      <form [formGroup]="creditoForm" (ngSubmit)="guardarCredito()">
-        <mat-form-field appearance="outline"><mat-label>Moneda *</mat-label><input matInput formControlName="moneda" maxlength="3"></mat-form-field>
-        <mat-form-field appearance="outline"><mat-label>Límite de crédito *</mat-label><input matInput type="number" min="0" formControlName="limiteCredito"></mat-form-field>
-        <mat-form-field appearance="outline"><mat-label>Días de crédito *</mat-label><input matInput type="number" min="0" formControlName="diasCredito"></mat-form-field>
-        <mat-form-field appearance="outline"><mat-label>Umbral alerta (%)</mat-label><input matInput type="number" min="0" max="100" formControlName="umbralAlertaPorcentaje"></mat-form-field>
+  @if (!saving()) {
+    <div class="form-container">
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <mat-form-field appearance="outline"><mat-label>Nombre *</mat-label><input matInput formControlName="nombre" required><mat-error>El nombre es obligatorio</mat-error></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>Teléfono</mat-label><input matInput formControlName="telefono"></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>Identidad/RTN</mat-label><input matInput formControlName="identidadORTN"></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>Correo</mat-label><input matInput formControlName="correo" type="email"></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>Dirección</mat-label><input matInput formControlName="direccion"></mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Clasificación de Cliente</mat-label>
+          <mat-select formControlName="tipoClienteId">
+            <mat-option [value]="null">Sin clasificar (Por defecto)</mat-option>
+            @for (tipo of tiposClientes(); track tipo) {
+              <mat-option [value]="tipo.id"><span class="tipo-color" [style.background-color]="tipo.colorHex"></span>{{ tipo.nombre }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        @if (errorMessage()) {
+          <div class="error-message">{{ errorMessage() }}</div>
+        }
         <div class="actions">
-          <button mat-raised-button color="primary" type="submit" [disabled]="creditoForm.invalid || creditoSaving() || (!credito() && !puedeCrearCredito()) || (credito() && !puedeEditarCredito())">
-            {{ credito() ? 'Guardar política' : 'Crear política' }}
-          </button>
+          <button type="submit" mat-raised-button color="primary" [disabled]="form.invalid">{{ isEdit() ? 'Actualizar' : 'Crear' }}</button>
+          <a routerLink="/clientes" mat-button>Cancelar</a>
         </div>
       </form>
+    </div>
+  } @else {
+    <div class="loading-container"><mat-spinner></mat-spinner><p>Guardando...</p></div>
+  }
 
-      <div *ngIf="credito()" class="credit-status">
-        <h3>Bloqueo automático</h3>
-        <p *ngIf="credito()!.bloqueadoAutomaticamente"><strong>Activo.</strong> {{ credito()!.motivoBloqueo || 'Sin motivo informado.' }}</p>
-        <p *ngIf="!credito()!.bloqueadoAutomaticamente">Sin bloqueo automático activo.</p>
-        <form *ngIf="puedeEditarCredito() && !credito()!.bloqueadoAutomaticamente" [formGroup]="bloqueoForm" (ngSubmit)="aplicarBloqueo()">
-          <mat-form-field appearance="outline"><mat-label>Motivo</mat-label><input matInput formControlName="motivo"></mat-form-field>
-          <button mat-stroked-button type="submit" [disabled]="bloqueoForm.invalid">Aplicar bloqueo</button>
-        </form>
-        <button *ngIf="puedeEditarCredito() && credito()!.bloqueadoAutomaticamente" mat-stroked-button type="button" (click)="liberarBloqueo()">Liberar bloqueo</button>
+  @if (isEdit()) {
+    <section class="form-container" aria-labelledby="credito-cliente-title">
+      <div class="header">
+        <div>
+          <h2 id="credito-cliente-title">Crédito del cliente</h2>
+          <p>Política, bloqueo automático y excepción autorizada según el contrato vigente.</p>
+        </div>
+        <button mat-stroked-button type="button" (click)="cargarCredito()" [disabled]="creditoLoading()"><mat-icon>refresh</mat-icon> Actualizar</button>
       </div>
-
-      <div *ngIf="credito()" class="credit-status">
-        <h3>Excepción autorizada</h3>
-        <p *ngIf="credito()!.montoExcepcion != null"><strong>{{ credito()!.montoExcepcion | number:'1.2-2' }}</strong> · vigente hasta {{ credito()!.excepcionVigenteHastaUtc | date:'medium' }}</p>
-        <p *ngIf="credito()!.montoExcepcion == null">Sin excepción vigente registrada.</p>
-        <form *ngIf="puedeEditarCredito() && credito()!.montoExcepcion == null" [formGroup]="excepcionForm" (ngSubmit)="autorizarExcepcion()">
-          <mat-form-field appearance="outline"><mat-label>Monto</mat-label><input matInput type="number" min="0.01" formControlName="monto"></mat-form-field>
-          <mat-form-field appearance="outline"><mat-label>Vigente hasta</mat-label><input matInput type="datetime-local" formControlName="vigenteHastaLocal"></mat-form-field>
-          <button mat-stroked-button type="submit" [disabled]="excepcionForm.invalid">Autorizar excepción</button>
+      @if (creditoLoading()) {
+        <div class="loading-container"><mat-spinner diameter="36"></mat-spinner></div>
+      }
+      @if (!creditoLoading()) {
+        @if (!credito()) {
+          <div class="error-message">No existe una política de crédito registrada para este cliente.</div>
+        }
+        <form [formGroup]="creditoForm" (ngSubmit)="guardarCredito()">
+          <mat-form-field appearance="outline"><mat-label>Moneda *</mat-label><input matInput formControlName="moneda" maxlength="3"></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Límite de crédito *</mat-label><input matInput type="number" min="0" formControlName="limiteCredito"></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Días de crédito *</mat-label><input matInput type="number" min="0" formControlName="diasCredito"></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Umbral alerta (%)</mat-label><input matInput type="number" min="0" max="100" formControlName="umbralAlertaPorcentaje"></mat-form-field>
+          <div class="actions">
+            <button mat-raised-button color="primary" type="submit" [disabled]="creditoForm.invalid || creditoSaving() || (!credito() && !puedeCrearCredito()) || (credito() && !puedeEditarCredito())">
+              {{ credito() ? 'Guardar política' : 'Crear política' }}
+            </button>
+          </div>
         </form>
-        <button *ngIf="puedeEditarCredito() && credito()!.montoExcepcion != null" mat-stroked-button type="button" (click)="revocarExcepcion()">Revocar excepción</button>
-      </div>
-    </ng-container>
-  </section>
+        @if (credito()) {
+          <div class="credit-status">
+            <h3>Bloqueo automático</h3>
+            @if (credito()!.bloqueadoAutomaticamente) {
+              <p><strong>Activo.</strong> {{ credito()!.motivoBloqueo || 'Sin motivo informado.' }}</p>
+            }
+            @if (!credito()!.bloqueadoAutomaticamente) {
+              <p>Sin bloqueo automático activo.</p>
+            }
+            @if (puedeEditarCredito() && !credito()!.bloqueadoAutomaticamente) {
+              <form [formGroup]="bloqueoForm" (ngSubmit)="aplicarBloqueo()">
+                <mat-form-field appearance="outline"><mat-label>Motivo</mat-label><input matInput formControlName="motivo"></mat-form-field>
+                <button mat-stroked-button type="submit" [disabled]="bloqueoForm.invalid">Aplicar bloqueo</button>
+              </form>
+            }
+            @if (puedeEditarCredito() && credito()!.bloqueadoAutomaticamente) {
+              <button mat-stroked-button type="button" (click)="liberarBloqueo()">Liberar bloqueo</button>
+            }
+          </div>
+        }
+        @if (credito()) {
+          <div class="credit-status">
+            <h3>Excepción autorizada</h3>
+            @if (credito()!.montoExcepcion != null) {
+              <p><strong>{{ credito()!.montoExcepcion | number:'1.2-2' }}</strong> · vigente hasta {{ credito()!.excepcionVigenteHastaUtc | date:'medium' }}</p>
+            }
+            @if (credito()!.montoExcepcion == null) {
+              <p>Sin excepción vigente registrada.</p>
+            }
+            @if (puedeEditarCredito() && credito()!.montoExcepcion == null) {
+              <form [formGroup]="excepcionForm" (ngSubmit)="autorizarExcepcion()">
+                <mat-form-field appearance="outline"><mat-label>Monto</mat-label><input matInput type="number" min="0.01" formControlName="monto"></mat-form-field>
+                <mat-form-field appearance="outline"><mat-label>Vigente hasta</mat-label><input matInput type="datetime-local" formControlName="vigenteHastaLocal"></mat-form-field>
+                <button mat-stroked-button type="submit" [disabled]="excepcionForm.invalid">Autorizar excepción</button>
+              </form>
+            }
+            @if (puedeEditarCredito() && credito()!.montoExcepcion != null) {
+              <button mat-stroked-button type="button" (click)="revocarExcepcion()">Revocar excepción</button>
+            }
+          </div>
+        }
+      }
+    </section>
+  }
 
-  <ng-template #loadingTemplate><div class="loading-container"><mat-spinner></mat-spinner><p>Guardando...</p></div></ng-template>
 </div>

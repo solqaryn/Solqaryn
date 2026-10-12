@@ -1,5 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -13,10 +13,16 @@ import { RolService } from '../../services/rol.service';
   selector: 'app-rol-form',
   standalone: true,
   imports: [
-    CommonModule, ReactiveFormsModule, RouterLink,
-    MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, MatCheckboxModule
-  ],
+    ReactiveFormsModule,
+    RouterLink,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
+    MatCheckboxModule
+],
   templateUrl: './rol-form.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './rol-form.component.scss'
 })
 export class RolFormComponent implements OnInit {

@@ -313,7 +313,8 @@ public class CloudinaryImageStorageService : IImageStorageService
         }
 
         var marker = $"/{tenantFolder}/";
-        if (!uri.AbsolutePath.Contains(marker, StringComparison.Ordinal))
+        if (!uri.AbsolutePath.Contains(marker, StringComparison.Ordinal) &&
+            !(operation == "download" && EsImagenDeProductoDevRegistrada(tenant, uri)))
         {
             Denegar(
                 tenant,
@@ -321,6 +322,43 @@ public class CloudinaryImageStorageService : IImageStorageService
                 "TENANT_LOCATOR_MISMATCH",
                 "El recurso solicitado no pertenece al contexto tenant verificado.");
         }
+    }
+
+    // Los assets ya registrados de DEV pueden tener un segmento de aplicacion distinto
+    // al actual. El acceso permanece limitado al cloud, ambiente, modulo y tenant,
+    // y exclusivamente a DESCARGAS con ownership previamente comprobado en base de datos.
+    // Upload y delete siguen exigiendo el directorio canonico exacto.
+    private bool EsImagenDeProductoDevRegistrada(StorageTenantContext tenant, Uri uri)
+    {
+        if (!string.Equals(_environmentPrefix, "solqaryn_dev", StringComparison.Ordinal) ||
+            !string.IsNullOrEmpty(uri.Query) ||
+            !string.IsNullOrEmpty(uri.Fragment) ||
+            uri.AbsolutePath.Contains('%') ||
+            uri.AbsolutePath.Contains('\\'))
+            return false;
+
+        var segmentos = uri.AbsolutePath
+            .Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        // /{cloud}/image/upload/v{version}/solqaryn_dev/{origen}/productos/empresas/{empresa}/{archivo}
+        // Solo se admite esta forma exacta; nunca un prefijo de otra empresa/entorno.
+        if (segmentos.Length != 10 ||
+            segmentos[3].Length < 2 ||
+            segmentos[3][0] != 'v' ||
+            !segmentos[3].AsSpan(1).ToString().All(c => c >= '0' && c <= '9') ||
+            !string.Equals(segmentos[4], _environmentPrefix, StringComparison.Ordinal) ||
+            string.IsNullOrWhiteSpace(segmentos[5]) ||
+            segmentos[5] is "." or ".." ||
+            !string.Equals(segmentos[6], "productos", StringComparison.Ordinal) ||
+            !string.Equals(segmentos[7], "empresas", StringComparison.Ordinal) ||
+            !string.Equals(segmentos[8], tenant.EmpresaId.ToString(System.Globalization.CultureInfo.InvariantCulture), StringComparison.Ordinal))
+            return false;
+
+        var archivo = segmentos[9];
+        return archivo.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
+               archivo.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) ||
+               archivo.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
+               archivo.EndsWith(".webp", StringComparison.OrdinalIgnoreCase);
     }
 
     private void RegistrarPermitido(

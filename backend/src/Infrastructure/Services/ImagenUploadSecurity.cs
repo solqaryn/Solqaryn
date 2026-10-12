@@ -1,10 +1,6 @@
 using Solqaryn.Application.Exceptions;
 using Microsoft.AspNetCore.Http;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats;
-using SixLabors.ImageSharp.Formats.Jpeg;
-using SixLabors.ImageSharp.Formats.Png;
-using SixLabors.ImageSharp.Formats.Webp;
+using SkiaSharp;
 
 namespace Solqaryn.Infrastructure.Services;
 
@@ -66,43 +62,43 @@ public static class ImagenUploadSecurity
         var formato = DetectarFormato(cabecera);
         ValidarDeclaracion(archivo.ContentType, extension, formato);
 
-        try
-        {
-            original.Position = 0;
-            var informacion = await Image.IdentifyAsync(original, cancellationToken);
-            ValidarDimensiones(informacion.Width, informacion.Height);
+        cancellationToken.ThrowIfCancellationRequested();
+        original.Position = 0;
 
-            original.Position = 0;
-            using var imagen = await Image.LoadAsync(original, cancellationToken);
-            ValidarDimensiones(imagen.Width, imagen.Height);
-
-            // El contenido se vuelve a codificar desde píxeles decodificados. Se
-            // eliminan perfiles que pueden contener geolocalización, dispositivo,
-            // autor u otros metadatos sensibles antes de persistirlo externamente.
-            imagen.Metadata.ExifProfile = null;
-            imagen.Metadata.IccProfile = null;
-            imagen.Metadata.IptcProfile = null;
-            imagen.Metadata.XmpProfile = null;
-            imagen.Metadata.CicpProfile = null;
-
-            var salida = new MemoryStream();
-            var (encoder, contentType, extensionSalida) = CrearEncoder(formato);
-            await imagen.SaveAsync(salida, encoder, cancellationToken);
-            salida.Position = 0;
-
-            return new ImagenSanitizada(
-                salida,
-                $"imagen-{Guid.NewGuid():N}{extensionSalida}",
-                contentType);
-        }
-        catch (BusinessRuleException)
-        {
-            throw;
-        }
-        catch (Exception ex) when (ex is UnknownImageFormatException or InvalidImageContentException or NotSupportedException)
-        {
+        using var codec = SKCodec.Create(original);
+        if (codec is null)
             throw new BusinessRuleException("La imagen está dañada, incompleta o utiliza un formato no permitido.");
-        }
+
+        var formatoCodec = MapearFormato(codec.EncodedFormat);
+        if (formatoCodec != formato)
+            throw new BusinessRuleException("La extensión, el tipo MIME y el contenido real de la imagen no coinciden.");
+
+        ValidarDimensiones(codec.Info.Width, codec.Info.Height);
+
+        original.Position = 0;
+        using var bitmap = SKBitmap.Decode(original);
+        if (bitmap is null)
+            throw new BusinessRuleException("La imagen está dañada, incompleta o utiliza un formato no permitido.");
+
+        ValidarDimensiones(bitmap.Width, bitmap.Height);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        // Re-encode desde píxeles decodificados: no se conservan EXIF/ICC/IPTC/XMP
+        // del archivo de entrada antes de persistirlo externamente.
+        using var imagen = SKImage.FromBitmap(bitmap);
+        var (formatoSalida, calidad, contentType, extensionSalida) = CrearEncoder(formato);
+        using var data = imagen.Encode(formatoSalida, calidad);
+        if (data is null || data.Size <= 0)
+            throw new BusinessRuleException("No fue posible sanitizar la imagen.");
+
+        var salida = new MemoryStream(capacity: checked((int)data.Size));
+        data.SaveTo(salida);
+        salida.Position = 0;
+
+        return new ImagenSanitizada(
+            salida,
+            $"imagen-{Guid.NewGuid():N}{extensionSalida}",
+            contentType);
     }
 
     public static void ValidarDimensiones(int ancho, int alto)
@@ -155,12 +151,21 @@ public static class ImagenUploadSecurity
             throw new BusinessRuleException("La extensión, el tipo MIME y el contenido real de la imagen no coinciden.");
     }
 
-    private static (IImageEncoder Encoder, string ContentType, string Extension) CrearEncoder(FormatoSeguro formato) =>
+    private static FormatoSeguro MapearFormato(SKEncodedImageFormat formato) =>
         formato switch
         {
-            FormatoSeguro.Jpeg => (new JpegEncoder { Quality = 90 }, "image/jpeg", ".jpg"),
-            FormatoSeguro.Png => (new PngEncoder(), "image/png", ".png"),
-            FormatoSeguro.Webp => (new WebpEncoder { Quality = 90 }, "image/webp", ".webp"),
+            SKEncodedImageFormat.Jpeg => FormatoSeguro.Jpeg,
+            SKEncodedImageFormat.Png => FormatoSeguro.Png,
+            SKEncodedImageFormat.Webp => FormatoSeguro.Webp,
+            _ => throw new BusinessRuleException("La imagen utiliza un formato no permitido.")
+        };
+
+    private static (SKEncodedImageFormat Formato, int Calidad, string ContentType, string Extension) CrearEncoder(FormatoSeguro formato) =>
+        formato switch
+        {
+            FormatoSeguro.Jpeg => (SKEncodedImageFormat.Jpeg, 90, "image/jpeg", ".jpg"),
+            FormatoSeguro.Png => (SKEncodedImageFormat.Png, 100, "image/png", ".png"),
+            FormatoSeguro.Webp => (SKEncodedImageFormat.Webp, 90, "image/webp", ".webp"),
             _ => throw new InvalidOperationException("Formato de imagen no soportado.")
         };
 }

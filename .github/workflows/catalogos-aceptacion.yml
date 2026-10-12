@@ -1,4 +1,5 @@
 name: DEV - aceptación funcional integral
+# Fase 5: final exact-head Playwright 1.63.0 + suite unitaria 218 tests
 
 on:
   push:
@@ -6,14 +7,29 @@ on:
       - dev
     paths:
       - .github/workflows/catalogos-aceptacion.yml
-      - frontend/e2e/**
-      - frontend/scripts/**
-      - frontend/package.json
-      - frontend/src/**
-      - backend/src/**
-      - backend/tests/**
+      - .github/workflows/modernization-phase5-frontend-tooling.yml
+      - frontend/**
+      - backend/**
       - scripts/fase7_*
       - scripts/fase8_*
+      - docs/evidencias/modernizacion/**
+      - docs/DETALLES_PENDIENTES.md
+      - ARCHITECTURE_CHANGELOG.md
+      - CHANGELOG_AI.md
+  pull_request:
+    branches:
+      - dev
+    paths:
+      - .github/workflows/catalogos-aceptacion.yml
+      - .github/workflows/modernization-phase5-frontend-tooling.yml
+      - frontend/**
+      - backend/**
+      - scripts/fase7_*
+      - scripts/fase8_*
+      - docs/evidencias/modernizacion/**
+      - docs/DETALLES_PENDIENTES.md
+      - ARCHITECTURE_CHANGELOG.md
+      - CHANGELOG_AI.md
   workflow_dispatch:
 
 permissions:
@@ -46,7 +62,7 @@ jobs:
     env:
       ASPNETCORE_ENVIRONMENT: Development
       PORT: '5005'
-      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_catalogos_e2e;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_catalogos_e2e;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
       Database__ServerVersion: '8.4.0'
       Database__ApplyMigrationsOnStartup: 'true'
       Jwt__Secret: 'Catalogos-E2E-Only-Secret-With-More-Than-32-Characters-2026'
@@ -97,7 +113,7 @@ jobs:
       - name: Configurar .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '10.0.401'
           cache: true
           cache-dependency-path: backend/**/*.csproj
 
@@ -106,6 +122,24 @@ jobs:
         run: |
           dotnet restore Solqaryn.sln
           dotnet build Solqaryn.sln --configuration Release --no-restore
+
+      - name: Bootstrap Oracle fresh para aceptación
+        working-directory: backend
+        env:
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
+        run: |
+          set -euo pipefail
+          dotnet run \
+            --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj \
+            --configuration Release \
+            --no-build
+          dotnet tool restore
+          dotnet tool run dotnet-ef migrations has-pending-model-changes \
+            --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
+            --context AppDbContext \
+            --configuration Release \
+            --no-build
 
       - name: Iniciar SMTP efímero con captura
         shell: bash
@@ -220,10 +254,59 @@ jobs:
             exit 1
           fi
 
+      - name: Preparar costo de envío base para aceptación E2E
+        shell: bash
+        run: |
+          set -euo pipefail
+          login_payload="$(jq -n --arg username "$SeedAdmin__Username" --arg password "$SeedAdmin__Password" \
+            '{nombreUsuario: $username, password: $password}')"
+          login_response="$(curl --fail --silent --show-error \
+            -H 'Content-Type: application/json' \
+            -d "$login_payload" \
+            http://127.0.0.1:5005/auth/login)"
+          admin_token="$(jq -er '.data.token // .Data.token' <<< "$login_response")"
+
+          status="$(curl --silent --show-error \
+            -o /tmp/solqaryn-costo-envio.json \
+            -w '%{http_code}' \
+            -H "Authorization: Bearer $admin_token" \
+            http://127.0.0.1:5005/costos-envio/predeterminado)"
+
+          case "$status" in
+            200)
+              jq -e '(.data.monto // .Data.monto) == 80 and
+                     (.data.esPredeterminado // .Data.esPredeterminado) == true' \
+                /tmp/solqaryn-costo-envio.json >/dev/null || {
+                  echo 'El fixture E2E requiere el costo predeterminado contractual de L. 80.00.' >&2
+                  exit 1
+                }
+              ;;
+            404)
+              jq -n '{
+                nombre: "Costo E2E predeterminado",
+                descripcion: "Fixture aislado para aceptación automatizada",
+                monto: 80,
+                prioridad: 1,
+                esPredeterminado: true,
+                activo: true
+              }' |
+                curl --fail --silent --show-error \
+                  -H "Authorization: Bearer $admin_token" \
+                  -H 'Content-Type: application/json' \
+                  -d @- \
+                  http://127.0.0.1:5005/costos-envio >/dev/null
+              ;;
+            *)
+              echo "No se pudo consultar el costo de envío predeterminado (HTTP $status)." >&2
+              cat /tmp/solqaryn-costo-envio.json >&2
+              exit 1
+              ;;
+          esac
+
       - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24.21.0'
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
@@ -235,8 +318,14 @@ jobs:
 
       - name: Instalar frontend y Chromium
         working-directory: frontend
+        shell: bash
         run: |
+          set -euo pipefail
           npm ci
+          test "$(node -p "require('./node_modules/@playwright/test/package.json').version")" = "1.63.0"
+          test "$(node -p "require('./node_modules/playwright-core/package.json').version")" = "1.63.0"
+          test "$(npx playwright --version)" = "Version 1.63.0"
+          echo 'PLAYWRIGHT_E2E_RUNTIME=1.63.0'
           npx playwright install --with-deps chromium
 
       - name: Validar tipado y calidad estática
@@ -248,7 +337,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          nohup npm start -- --host 127.0.0.1 --port 4200 > catalogos-frontend.log 2>&1 &
+          nohup env -u PORT npm start -- --host 127.0.0.1 --port 4200 > catalogos-frontend.log 2>&1 &
           echo $! > catalogos-frontend.pid
 
       - name: Esperar Angular
