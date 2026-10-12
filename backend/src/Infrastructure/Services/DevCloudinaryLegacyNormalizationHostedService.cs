@@ -83,7 +83,7 @@ public sealed class DevCloudinaryLegacyNormalizationHostedService(
             .Select(i => new { i.Id, i.Url, i.PublicId })
             .ToListAsync(token);
         if (images.Count != ExpectedHistoricalImages)
-            throw new InvalidOperationException("Historical image inventory changed; review authorization again.");
+            throw new InvalidOperationException("Historical image set changed; review authorization again.");
 
         var pending = new List<(int Id, string Url, string PublicId, string Extension)>();
         foreach (var item in images)
