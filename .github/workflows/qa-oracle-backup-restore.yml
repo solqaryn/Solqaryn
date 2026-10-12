@@ -126,44 +126,10 @@ jobs:
           export MYSQL_PWD=solqaryn-ci-qa-disposable-only
           marker="$(qlocal "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")"
           history="$(qlocal "SELECT COUNT(*) FROM __EFMigrationsHistory;")"
-          test "$marker" = "0" && test "$history" = "107"
+          test "$marker" = "1" && test "$history" = "108"
           echo "QA_BACKUP_RESTORE=PASS tables=$count history=$history rows_exact=YES oracle_marker=$marker"
           echo "QA_ORIGINAL_DB_WRITES=0"
 
-
-      - name: Checkout migrador certificado de DEV, pin exacto
-        uses: actions/checkout@v4
-        with:
-          ref: 74c8c51b6981a246c75964573e4d4856ac8c80fe
-
-      - name: Instalar SDK .NET 10 de DEV
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '10.0.401'
-
-      - name: Ensayar Oracle EF10 adopt SOLO en copia MySQL descartable
-        shell: bash
-        env:
-          SOLQARYN_DATABASE_BOOTSTRAP_MODE: adopt
-          ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_qa_restore_ephemeral;User=root;Password=solqaryn-ci-qa-disposable-only;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
-        run: |
-          set -euo pipefail
-          test "$GITHUB_REF_NAME" = "qa"
-          node scripts/verify-project-scope.mjs
-          export MYSQL_PWD=solqaryn-ci-qa-disposable-only
-          qlocal(){ mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root --batch --skip-column-names solqaryn_qa_restore_ephemeral -e "$1"; }
-          test "$(qlocal "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")" = 0
-          test "$(qlocal 'SELECT COUNT(*) FROM __EFMigrationsHistory;')" = 107
-          before="$(qlocal "SELECT CONCAT(TABLE_NAME,'|',ENGINE,'|',COALESCE(TABLE_COLLATION,'')) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' ORDER BY TABLE_NAME;" | sha256sum | cut -d' ' -f1)"
-          test "$before" = "36b725a682b43d744509c8fd27a6ae54b6017d1c46e1301ee796f86f760e7489"
-          dotnet restore backend/tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj
-          dotnet run --project backend/tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj --configuration Release --no-restore > "$RUNNER_TEMP/qa-oracle-local-adopt.txt"
-          grep -F "SOLQARYN_ORACLE_BOOTSTRAP=PASS mode=adopt tables=136 pending=0" "$RUNNER_TEMP/qa-oracle-local-adopt.txt" >/dev/null
-          test "$(qlocal "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")" = 1
-          test "$(qlocal 'SELECT COUNT(*) FROM __EFMigrationsHistory;')" = 108
-          after="$(qlocal "SELECT CONCAT(TABLE_NAME,'|',ENGINE,'|',COALESCE(TABLE_COLLATION,'')) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' ORDER BY TABLE_NAME;" | sha256sum | cut -d' ' -f1)"
-          test "$before" = "$after"
-          echo "QA_ORACLE_RESTORE_ADOPTION_DRY_RUN=PASS tables_unchanged=136 history=108 qa_original_writes=0"
 
       - name: Guardar exclusivamente backup cifrado y checksums (14 días)
         if: ${{ always() }}
@@ -177,80 +143,3 @@ jobs:
           retention-days: 14
           if-no-files-found: ignore
 
-  adopt-marker-once:
-    name: QA Oracle baseline adoption controlada, metadata EF únicamente
-    needs: verify-restore
-    if: ${{ github.event_name == 'push' && contains(github.event.head_commit.message, '[SOLQARYN-QA-ORACLE-ADOPT-ONCE]') }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-    environment: QA
-    env:
-      DB_HOST: ${{ vars.SOLQARYN_QA_DB_HOST }}
-      DB_PORT: ${{ vars.SOLQARYN_QA_DB_PORT }}
-      DB_NAME: ${{ vars.SOLQARYN_QA_DB_NAME }}
-      DB_USER: ${{ vars.SOLQARYN_QA_DB_USER }}
-      DB_PASSWORD: ${{ secrets.SOLQARYN_QA_DB_PASSWORD }}
-      SOLQARYN_DATABASE_BOOTSTRAP_MODE: adopt
-      ConnectionStrings__DefaultConnection: 'Server=${{ vars.SOLQARYN_QA_DB_HOST }};Port=${{ vars.SOLQARYN_QA_DB_PORT }};Database=${{ vars.SOLQARYN_QA_DB_NAME }};User=${{ vars.SOLQARYN_QA_DB_USER }};Password=${{ secrets.SOLQARYN_QA_DB_PASSWORD }};SslMode=Required;AllowPublicKeyRetrieval=True;'
-    steps:
-      - name: Checkout migrador certificado exact-head DEV
-        uses: actions/checkout@v4
-        with:
-          ref: 74c8c51b6981a246c75964573e4d4856ac8c80fe
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '10.0.401'
-      - name: Instalar cliente MySQL
-        run: |
-          set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install -y mysql-client
-      - name: Verificar precondiciones Oracle QA sin escrituras
-        shell: bash
-        run: |
-          set -euo pipefail
-          node scripts/verify-project-scope.mjs
-          test "$GITHUB_REF_NAME" = "qa"
-          test "$DB_HOST" = "solqaryn-mysql-solqaryn.h.aivencloud.com"
-          test "$DB_PORT" = "14402" && test "$DB_NAME" = "solqaryn_qa" && test "$DB_USER" = "solqaryn_qa_user"
-          test -n "$DB_PASSWORD"
-          export MYSQL_PWD="$DB_PASSWORD"
-          q(){ mysql --protocol=TCP --ssl-mode=REQUIRED -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --batch --skip-column-names "$DB_NAME" -e "$1"; }
-          version="$(q 'SELECT VERSION();')"
-          case "$version" in 8.4.8|8.4.8-*) ;; *) echo 'QA_ADOPTION_VERSION_STOP' >&2; exit 1;; esac
-          test "$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME <> '__EFMigrationsHistory';")" = 136
-          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")" = 0
-          test "$(q 'SELECT COUNT(*) FROM __EFMigrationsHistory;')" = 107
-          table_hash="$(q "SELECT CONCAT(TABLE_NAME,'|',ENGINE,'|',COALESCE(TABLE_COLLATION,'')) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' ORDER BY TABLE_NAME;" | sha256sum | cut -d' ' -f1)"
-          fk_hash="$(q "SELECT CONCAT(TABLE_NAME,'|',CONSTRAINT_NAME,'|',REFERENCED_TABLE_NAME,'|',UNIQUE_CONSTRAINT_NAME) FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() ORDER BY TABLE_NAME,CONSTRAINT_NAME;" | sha256sum | cut -d' ' -f1)"
-          index_hash="$(q "SELECT CONCAT(TABLE_NAME,'|',INDEX_NAME,'|',SEQ_IN_INDEX,'|',COALESCE(COLUMN_NAME,''),'|',NON_UNIQUE,'|',INDEX_TYPE) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() ORDER BY TABLE_NAME,INDEX_NAME,SEQ_IN_INDEX;" | sha256sum | cut -d' ' -f1)"
-          test "$table_hash" = "36b725a682b43d744509c8fd27a6ae54b6017d1c46e1301ee796f86f760e7489"
-          test "$fk_hash" = "79f67fec9b5761f66cf93dbbcab3a7e7cfd769e132019e720e51d0317ef93b3c"
-          test "$index_hash" = "3f91e8d03e2700329472bb3ee678c0f3d680495217d4cb4da48291351b3b90ec"
-          test "$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_SCHEMA=DATABASE() AND TRIGGER_NAME IN ('TR_MovimientosInventario_N06_OrigenTipado_BI','TR_MovimientosInventario_N06_OrigenTipado_BU');")" = 2
-          test "$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME='MovimientosInventario' AND CONSTRAINT_TYPE='CHECK' AND CONSTRAINT_NAME='CK_MovimientosInventario_OrigenTipado_Exclusivo_N06';")" = 1
-          echo "QA_ORACLE_ADOPTION_PREFLIGHT=PASS physical_topology_equal=YES baseline_missing=YES backup_and_local_drill=PASS"
-      - name: Aplicar SOLO baseline Oracle mediante migrador EF10 certificado
-        shell: bash
-        run: |
-          set -euo pipefail
-          dotnet restore backend/tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj
-          dotnet run --project backend/tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj --configuration Release --no-restore > "$RUNNER_TEMP/qa-oracle-real-adopt.txt"
-          grep -F "SOLQARYN_ORACLE_BOOTSTRAP=PASS mode=adopt tables=136 pending=0" "$RUNNER_TEMP/qa-oracle-real-adopt.txt" >/dev/null
-          echo "QA_ORACLE_EF10_ADOPTION=PASS metadata_only=YES"
-      - name: Readback exacto de schema e historia QA
-        shell: bash
-        run: |
-          set -euo pipefail
-          export MYSQL_PWD="$DB_PASSWORD"
-          q(){ mysql --protocol=TCP --ssl-mode=REQUIRED -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --batch --skip-column-names "$DB_NAME" -e "$1"; }
-          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")" = 1
-          test "$(q 'SELECT COUNT(*) FROM __EFMigrationsHistory;')" = 108
-          test "$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME <> '__EFMigrationsHistory';")" = 136
-          table_hash="$(q "SELECT CONCAT(TABLE_NAME,'|',ENGINE,'|',COALESCE(TABLE_COLLATION,'')) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' ORDER BY TABLE_NAME;" | sha256sum | cut -d' ' -f1)"
-          fk_hash="$(q "SELECT CONCAT(TABLE_NAME,'|',CONSTRAINT_NAME,'|',REFERENCED_TABLE_NAME,'|',UNIQUE_CONSTRAINT_NAME) FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() ORDER BY TABLE_NAME,CONSTRAINT_NAME;" | sha256sum | cut -d' ' -f1)"
-          index_hash="$(q "SELECT CONCAT(TABLE_NAME,'|',INDEX_NAME,'|',SEQ_IN_INDEX,'|',COALESCE(COLUMN_NAME,''),'|',NON_UNIQUE,'|',INDEX_TYPE) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() ORDER BY TABLE_NAME,INDEX_NAME,SEQ_IN_INDEX;" | sha256sum | cut -d' ' -f1)"
-          test "$table_hash" = "36b725a682b43d744509c8fd27a6ae54b6017d1c46e1301ee796f86f760e7489"
-          test "$fk_hash" = "79f67fec9b5761f66cf93dbbcab3a7e7cfd769e132019e720e51d0317ef93b3c"
-          test "$index_hash" = "3f91e8d03e2700329472bb3ee678c0f3d680495217d4cb4da48291351b3b90ec"
-          echo "QA_ORACLE_BASELINE_CERT=PASS applied=1 history=108 topology_unchanged=YES"
