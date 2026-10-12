@@ -1,3 +1,10 @@
+## 2026-10-12 — Activación transitoria de normalización Cloudinary DEV, sujeta a gate de respaldo
+
+- Propietario autorizó la normalización de 11 imágenes históricas en `solqaryn_dev`. Este changeset es únicamente la preparación del indicador `Cloudinary:NormalizeDevLegacyImagesOnStartup=true` para Render Development; no corre fuera de Render DEV.
+- Merge PROHIBIDO hasta ejecutar y comprobar la restauración real del respaldo cifrado del run `DEV - Backup cifrado y restore Aiven real para Cloudinary` en `dev`, completar CI exact-head y confirmar deploy backend inactivo anterior.
+- Después del merge, exigir log `CLOUDINARY_DEV_NORMALIZATION=PASS`, auditoría read-only de 0 referencias no canónicas, salud del backend, lecturas individuales y ZIP. Si falla alguna imagen, conserva originales y aplica rollback compensatorio CAS; no declarar el punto cerrado.
+- Inmediatamente tras certificar, desactivar de nuevo el indicador en DEV y recertificar HEAD. Sin cambios QA/PROD, dominio `solqaryn.com`, credenciales, SMTP, Render Free ni automatizaciones VAEP.
+
 ## 2026-10-12 — Preflight QA → PROD Oracle EF10, revisión CI y Cloudinary DEV
 
 - Corrección de límite GitHub Environment: PROD solo acepta `GITHUB_REF=main`, por lo que los workflows Oracle PROD pasan a **push/workflow_dispatch desde main protegido**, con bootstrap de workflows de certificación previo al merge modernizado, y no reciben secretos en PR. Respaldo cifrado, restore y adopción metadata-only aún no ejecutados.
