@@ -130,6 +130,17 @@ export class ProductoDetailComponent implements OnInit {
     }
   }
 
+  private mensajeErrorDescarga(estado: number, masiva: boolean): string {
+    if (estado === 401) return 'Tu sesión ha expirado. Inicia sesión nuevamente.';
+    if (estado === 403) return 'No tienes permiso para exportar imágenes de esta empresa.';
+    if (estado === 400) return 'No se pudo validar la ubicación de una imagen de este producto.';
+    if (estado === 404) return 'Una imagen solicitada ya no está disponible.';
+    if (estado === 502 || estado === 503 || estado === 504) {
+      return 'El servidor de imágenes no está disponible temporalmente. Intenta nuevamente.';
+    }
+    return masiva ? 'No se pudo descargar la galería completa.' : 'No se pudo descargar la imagen.';
+  }
+
   descargarImagen(imagen: ProductoImagen): void {
     const producto = this.producto();
     if (!producto) return;
@@ -138,11 +149,12 @@ export class ProductoDetailComponent implements OnInit {
     this.productoService.descargarImagen(producto.id, imagen.id).subscribe({
       next: (blob) => {
         this.descargando.set(null);
-        this.guardarBlob(blob, `${producto.nombre}-${imagen.orden + 1}.jpg`);
+        const extension = blob.type.includes('png') ? 'png' : blob.type.includes('webp') ? 'webp' : 'jpg';
+        this.guardarBlob(blob, `${producto.nombre}-${imagen.orden + 1}.${extension}`);
       },
-      error: () => {
+      error: (err) => {
         this.descargando.set(null);
-        this.snackBar.open('No se pudo descargar la imagen. El archivo podría ya no estar disponible.', 'Cerrar', { duration: 5000 });
+        this.snackBar.open(this.mensajeErrorDescarga(err?.status, false), 'Cerrar', { duration: 5000 });
       }
     });
   }
@@ -157,9 +169,9 @@ export class ProductoDetailComponent implements OnInit {
         this.descargando.set(null);
         this.guardarBlob(blob, `${producto.nombre}-imagenes.zip`);
       },
-      error: () => {
+      error: (err) => {
         this.descargando.set(null);
-        this.snackBar.open('No se pudieron descargar las imágenes.', 'Cerrar', { duration: 5000 });
+        this.snackBar.open(this.mensajeErrorDescarga(err?.status, true), 'Cerrar', { duration: 5000 });
       }
     });
   }
