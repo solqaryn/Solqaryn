@@ -125,6 +125,10 @@ Este archivo es la fuente canónica de pendientes deliberadamente aplazados o de
 
 ---
 
+## Estado de las imágenes históricas (trabajo activo, no aplazamiento)
+
+Auditoría exact-head DEV del 2026-10-12: 11 de 11 imágenes de producto almacenadas bajo folders no canónicos de DEV, sin referencias cruzadas en las superficies revisadas. Descargas individuales y ZIP funcionales según el propietario. La normalización física sigue pendiente de canal de escritura Cloudinary seguro + reconciliación con backup/rollback; detalle en `docs/CLOUDINARY_AISLAMIENTO.md`. Este punto no autoriza borrar activos ni tocar QA/PROD.
+
 ## Dictamen de pendientes
 
 Con la reconciliación del 2026-10-12, **no existe otro pendiente deliberadamente aplazado conocido fuera de estos seis puntos** en las fuentes canónicas actuales de SOLQARYN.
@@ -137,13 +141,17 @@ Agregar aquí únicamente pendientes deliberadamente pospuestos, decisiones dife
 
 ## 6. Evaluación futura de html5-qrcode
 
-**Estado:** DEUDA TÉCNICA NO BLOQUEANTE / SIN REEMPLAZO ACTUAL
+**Estado:** EVALUACIÓN TÉCNICA ACTUAL COMPLETADA 2026-10-12 / SEGUIMIENTO CONDICIONAL NO BLOQUEANTE
 
 **Versión vigente:** `html5-qrcode@2.3.8`, última publicación estable disponible al ejecutar Fase 5.
 
 **Decisión vigente:** mantener la librería sin cambios porque Fase 5 certifica compatibilidad funcional completa y no existe una actualización publicada que aplicar.
 
 **Motivo de seguimiento:** la ausencia prolongada de nuevas releases justifica evaluar mantenimiento upstream, compatibilidad futura de navegador/cámara, postura de seguridad, alternativas activamente mantenidas y costo/riesgo de migración.
+
+**Evidencia de revisión 2026-10-12:** npm continúa publicando `html5-qrcode@2.3.8` como etiqueta `latest` (https://www.npmjs.com/package/html5-qrcode). La ficha Snyk indica ausencia de vulnerabilidades **directas conocidas** en 2.3.8, pero mantenimiento inactivo (https://security.snyk.io/package/npm/html5-qrcode). La auditoría npm de todo el frontend continúa sometida a los gates permanentes de GitHub, incluidas dependencias transitivas; ausencia de aviso directo no equivale a garantía de seguridad futura.
+
+**Decisión de revisión:** mantener `2.3.8` por compatibilidad y falta de actualización estable. La evaluación solicitada queda realizada; sólo se reabre bajo los disparadores especificados a continuación. No se ejecuta reemplazo sin pruebas de cámara, QR/barra, accesibilidad y móviles.
 
 **Acción actual:** ninguna sustitución ni rediseño del escáner.
 
