@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: read
+  checks: read
 
 concurrency:
   group: prod-oracle-backup-restore
@@ -158,6 +159,97 @@ jobs:
           after="$(qlocal "SELECT CONCAT(TABLE_NAME,'|',ENGINE,'|',COALESCE(TABLE_COLLATION,'')) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' ORDER BY TABLE_NAME;" | sha256sum | cut -d' ' -f1)"
           test "$before" = "$after"
           echo 'PROD_ORACLE_ADOPTION_DRY_RUN=PASS tables_unchanged=136 history=108 prod_original_writes=0'
+
+      - name: Adoptar solo metadata Oracle en PROD tras backup y checks QA-main exact-head
+        timeout-minutes: 18
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_HEAD_REF" = "qa" && test "$GITHUB_BASE_REF" = "main"
+          test "$DB_NAME" = "solqaryn_prod" && test "$DB_USER" = "solqaryn_prod_user"
+          test "$DB_HOST" = "solqaryn-mysql-solqaryn.h.aivencloud.com"
+          test "$DB_PORT" = "14402" && test -n "$DB_PASSWORD"
+          test -n "$PR_HEAD_SHA"
+          node scripts/verify-project-scope.mjs
+          # Un solo canal autorizado; NO adoptar si cualquier control falla.
+          required="$RUNNER_TEMP/prod-oracle-required.txt"
+          cat > "$required" <<'CHECKS'
+          rbac-relacional
+          Migración, integridad y runtime en MySQL 8.4
+          metodo-pago-historico
+          autoridad-variante
+          API, RBAC, auditoría, MySQL, Angular y E2E
+          MySQL, backend, Angular y Playwright M12
+          API, jerarquía, RBAC, auditoría, MySQL, Angular y E2E
+          MySQL, backend, Angular y Playwright M9
+          MySQL, Angular, WCAG, teclado y responsive
+          validate
+          QA schema Oracle EF10, solo lectura, fail-closed
+          CHECKS
+          certified=false
+          for attempt in $(seq 1 40); do
+            gh api "repos/$GITHUB_REPOSITORY/commits/$PR_HEAD_SHA/check-runs?per_page=100" > "$RUNNER_TEMP/prod-qa-checks.json"
+            if ! jq -e '[.check_runs[] | select(.conclusion=="failure" or .conclusion=="timed_out" or .conclusion=="action_required")] | length == 0' "$RUNNER_TEMP/prod-qa-checks.json" >/dev/null; then
+              echo 'PROD_ORACLE_QA_CI_RED_STOP' >&2
+              exit 1
+            fi
+            certified=true
+            while IFS= read -r context; do
+              if ! jq -e --arg name "$context" \
+                  '[.check_runs[] | select(.name==$name and .status=="completed" and .conclusion=="success")] | length >= 1' \
+                  "$RUNNER_TEMP/prod-qa-checks.json" >/dev/null; then
+                certified=false
+                break
+              fi
+            done < "$required"
+            if [ "$certified" = true ]; then break; fi
+            sleep 15
+          done
+          test "$certified" = true || { echo 'PROD_ORACLE_QA_CI_UNVERIFIED_STOP' >&2; exit 1; }
+          rm -f "$RUNNER_TEMP/prod-qa-checks.json" "$required"
+          echo 'PROD_ORACLE_PRE_ADOPTION_GATES=PASS exact_qa_head=YES'
+
+          # OracleBaseline tiene solo SELECTs en Up(). La prueba MigrateAsync
+          # sobre restore descartable ya ha terminado correctamente.
+          baseline=backend/src/Infrastructure.Migrations/Migrations/20261006111818_OracleBaseline.cs
+          test "$(grep -c 'migrationBuilder.Sql("SELECT 1 FROM ' "$baseline")" = 6
+          test "$(grep -c 'migrationBuilder.Sql(' "$baseline")" = 7
+          grep -q 'migrationBuilder.Sql("SIGNAL SQLSTATE' "$baseline"
+          export MYSQL_PWD="$DB_PASSWORD"
+          q() {
+            mysql --protocol=TCP --ssl-mode=REQUIRED --connect-timeout=12 --default-character-set=utf8mb4 \
+              -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --batch --raw --skip-column-names "$DB_NAME" -e "$1"
+          }
+          test "$(q 'SELECT DATABASE();')" = 'solqaryn_prod'
+          test "$(q "SELECT SUBSTRING_INDEX(CURRENT_USER(),'@',1);")" = 'solqaryn_prod_user'
+          test "$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME<>'__EFMigrationsHistory';")" = 136
+          physical() {
+            q "SELECT CONCAT(TABLE_NAME,'|',ENGINE,'|',COALESCE(TABLE_COLLATION,'')) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' ORDER BY TABLE_NAME;" | sha256sum | cut -d' ' -f1
+          }
+          before="$(physical)"
+          test "$before" = '36b725a682b43d744509c8fd27a6ae54b6017d1c46e1301ee796f86f760e7489' || { echo 'PROD_ORACLE_TABLE_DRIFT_STOP' >&2; exit 1; }
+          fk="$(q "SELECT CONCAT(TABLE_NAME,'|',CONSTRAINT_NAME,'|',REFERENCED_TABLE_NAME,'|',UNIQUE_CONSTRAINT_NAME) FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() ORDER BY TABLE_NAME,CONSTRAINT_NAME;" | sha256sum | cut -d' ' -f1)"
+          test "$fk" = '79f67fec9b5761f66cf93dbbcab3a7e7cfd769e132019e720e51d0317ef93b3c' || { echo 'PROD_ORACLE_FK_DRIFT_STOP' >&2; exit 1; }
+          indexes="$(q "SELECT CONCAT(TABLE_NAME,'|',INDEX_NAME,'|',SEQ_IN_INDEX,'|',COALESCE(COLUMN_NAME,''),'|',NON_UNIQUE,'|',INDEX_TYPE) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() ORDER BY TABLE_NAME,INDEX_NAME,SEQ_IN_INDEX;" | sha256sum | cut -d' ' -f1)"
+          test "$indexes" = '3f91e8d03e2700329472bb3ee678c0f3d680495217d4cb4da48291351b3b90ec' || { echo 'PROD_ORACLE_INDEX_DRIFT_STOP' >&2; exit 1; }
+          marker="$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")"
+          history="$(q 'SELECT COUNT(*) FROM __EFMigrationsHistory;')"
+          if [ "$marker" = 0 ] && [ "$history" = 107 ]; then
+            q "INSERT INTO __EFMigrationsHistory (MigrationId,ProductVersion) VALUES ('20261006111818_OracleBaseline','10.0.12');"
+            echo 'PROD_ORACLE_METADATA_ADOPTION=APPLIED'
+          elif [ "$marker" = 1 ] && [ "$history" = 108 ]; then
+            echo 'PROD_ORACLE_METADATA_ADOPTION=ALREADY_APPLIED'
+          else
+            echo 'PROD_ORACLE_EF_HISTORY_DRIFT_STOP' >&2
+            exit 1
+          fi
+          test "$(q 'SELECT COUNT(*) FROM __EFMigrationsHistory;')" = 108
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline' AND ProductVersion='10.0.12';")" = 1
+          test "$(physical)" = "$before" || { echo 'PROD_ORACLE_POST_SCHEMA_DRIFT_STOP' >&2; exit 1; }
+          echo 'PROD_ORACLE_ADOPTION=PASS marker=1 history=108 ddl_changes=0 business_rows_changed=0 backup_restored=YES'
 
       - name: Guardar exclusivamente backup cifrado y checksums (14 días)
         if: ${{ always() }}
