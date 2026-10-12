@@ -180,7 +180,6 @@ public sealed class DevCloudinaryLegacyNormalizationHostedService(
 
             logger.LogInformation("CLOUDINARY_DEV_NORMALIZATION=PASS total=11 newly_normalized={Normalized} remaining=0 originals_deleted=0", changed);
         }
-        }
         catch
         {
             // Rollback selectivo: nunca revertir una sustitucion concurrente ajena.
