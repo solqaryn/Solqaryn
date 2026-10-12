@@ -1,3 +1,10 @@
+## 2026-10-12 — Worker transitorio de normalización Cloudinary DEV, opt-in
+
+- Nueva integración de un `BackgroundService` exclusivamente en Render Development y bajo flag de configuración, inicialmente deshabilitado. Añade verificación de cuenta Cloudinary/empresa y locators, hash SHA-256 sobre bytes descargados y copiados, modificación condicional de URL/PublicId y preservación de originales; sin endpoint nuevo ni cambios a modelos, API, esquema, QA o PROD.
+- Impacto: API DI, Infrastructure Cloudinary/MySQL DEV, gate tenant de workers, pruebas de rutas/firma y observabilidad del progreso. Consumidores de imágenes conservan sus contratos y rutas.
+- Reversibilidad: fuentes originales conservadas, backup cifrado Aiven DEV y restore efímero previo obligatorios, auditoría read-only post-ejecución; flag false hasta certificar. El PR preparatorio no constituye una copia ejecutada de los 11 assets.
+- Evidencia causal requerida: CI exact-head, backup/restore DEV, métricas del worker y reauditoría 0/11 antes de declarar cierre.
+
 ## 2026-10-07 — Hotfix de sanitización de imágenes
 
 - SixLabors.ImageSharp 3.1.12 se retira después de que los scanners NuGet comenzaron a reportar advisories high/moderate sobre esa versión.

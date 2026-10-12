@@ -6,6 +6,13 @@
 - Documentación causal en `docs/evidencias/modernizacion/PROD_PREPROMOCION_ORACLE_Y_CLOUDINARY_DEV_2026-10-12.md`. Cloudinary 11 imágenes: normalización física **aún NO certificada**; no se borran imágenes, ni se exportan secretos Render.
 - Sin cambios en PROD, DNS `solqaryn.com`, SMTP diferido, Render Free, QA automatizaciones VAEP ni compras. El cierre requiere PRs en verde, readbacks y pruebas reales; este changeset no constituye autorización para omitirlos.
 
+## 2026-10-12 — Normalizador físico seguro Cloudinary DEV preparado, NO activado
+
+- Se incorpora servicio de normalización de 11 imágenes de producto exclusivamente a Render DEV; límite estricto de host Aiven MySQL 8.4.8, base/usuario DEV, un solo tenant, cloud `riyrzmob`, prefijo `solqaryn_dev`; ninguna operación sobre QA/PROD.
+- Validación total de source PublicId/URL, directorio exacto y firma JPEG/PNG/WebP, descarga de los 11 archivos antes de escribir, copia firmada usando credenciales almacenadas solamente en Render DEV, hash SHA-256 binario antes/después, URL destino canónica, UPDATE atómico compare-and-swap y ningún DELETE sobre originales.
+- Registro opt-in `Cloudinary:NormalizeDevLegacyImagesOnStartup` inicialmente **false** en `appsettings.Development.json`. No se ejecuta ningún upload ni update con esta preparación.
+- El paso posterior requiere backup Aiven DEV cifrado con restore verificado, CI exact-head, activación DEV deliberada y auditoría posterior con 0 rutas no canónicas, readback y descargas individual+ZIP. No interpretar esta preparación como certificación funcional.
+
 ## 2026-10-12 — QA Oracle EF10: esquema, backup cifrado y adopción certificada
 
 - QA recibió únicamente los controles operativos de schema y respaldo por excepción de bootstrap, sin desplegar aplicación nueva; el guard de PR de promoción `dev → qa` permanece vigente. PR #3572 cerrado sin merge al detectar el guard.

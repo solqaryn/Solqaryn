@@ -174,3 +174,8 @@ Contrato operativo y superficie administrativa:
 - Queda prohibido usar cuentas personales, repositorios retirados, ramas legacy o infraestructura legacy como fallback.
 
 La implementación existente puede ser reutilizada, extendida, refactorizada o reemplazada cuando el objetivo vigente lo requiera, siempre preservando seguridad, RBAC, tenancy, integridad de datos, trazabilidad, revisión, rollback y las autorizaciones explícitas requeridas para `main`/PROD.
+
+
+## Cloudinary DEV: operación transitoria aún inactiva (2026-10-12)
+
+El registro condicional `DevCloudinaryLegacyNormalizationHostedService` (Infrastructure, compuesto en API) prepara la migración exclusiva de referencias históricas de `ProductoImagenes`. `Cloudinary:NormalizeDevLegacyImagesOnStartup=false` es el estado versionado seguro. La copia física sigue pendiente de respaldo Aiven DEV cifrado y restore comprobado, activación controlada y auditoría posterior; no sustituye la descarga individual ni ZIP ya funcionales. Cloudinary QA/PROD, credenciales y dominio quedan fuera del alcance.

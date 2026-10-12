@@ -255,3 +255,13 @@ Cuando cambie una capa, módulo, integración, ruta/API, modelo de datos o coman
 No registrar en el changelog arquitectónico correcciones internas que no cambien este mapa.
 
 Sanitización de imágenes: `backend/src/Infrastructure/Services/ImagenUploadSecurity.cs` usa SkiaSharp 4.152.1 para validar y recodificar JPG/PNG/WebP antes de Cloudinary; conserva límites de tamaño/dimensiones y no confía en MIME/extensión del cliente.
+
+
+## Operación de normalización Cloudinary DEV
+
+- `backend/src/Infrastructure/Services/DevCloudinaryLegacyNormalizationHostedService.cs`: worker opcional de migración idempotente de imágenes DEV, validación tenant y hash binario, desactivado por defecto.
+- `backend/src/API/Program.cs` y `backend/src/API/appsettings.Development.json`: DI restringido a Render Development y flag `Cloudinary:NormalizeDevLegacyImagesOnStartup=false`.
+- `backend/tests/Solqaryn.Tests/DevCloudinaryLegacyLocatorTests.cs`: casos positivos y negativos de Cloudinary, tenant, origen, y firmas de imagen.
+- `.github/workflows/cloudinary-dev-backup-restore.yml` (PR #3575): respaldo real cifrado y restore efímero requerido antes de activar el worker.
+- `scripts/audit_cloudinary_dev_locations.py`: lectura SQL posterior; exige cero referencias incorrectas para certificación.
+- `docs/CLOUDINARY_AISLAMIENTO.md`: contrato de operación, detención, integridad y rollback.
