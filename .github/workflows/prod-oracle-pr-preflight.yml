@@ -1,0 +1,157 @@
+name: PROD - Oracle EF10 schema read-only preflight (QA to main)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/prod-oracle-pr-preflight.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qa-oracle-schema-preflight-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    name: QA schema Oracle EF10, solo lectura, fail-closed
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'qa' && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.repo.full_name == 'solqaryn/Solqaryn'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: PROD
+    env:
+      DB_HOST: ${{ vars.SOLQARYN_PROD_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_PROD_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_PROD_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_PROD_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_PROD_DB_PASSWORD }}
+    steps:
+      - name: Checkout QA y verificar identidad
+        uses: actions/checkout@v4
+
+      - name: Verificar gobierno y binding QA
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_HEAD_REF" = "qa"
+          test "$GITHUB_BASE_REF" = "main"
+          node scripts/verify-project-scope.mjs
+          test "$DB_HOST" = "solqaryn-mysql-solqaryn.h.aivencloud.com"
+          test "$DB_PORT" = "14402"
+          test "$DB_NAME" = "solqaryn_prod"
+          test "$DB_USER" = "solqaryn_prod_user"
+          test -n "$DB_PASSWORD"
+          echo "PROD_ORACLE_SCOPE_AND_BINDING=PASS"
+
+      - name: Instalar solo cliente MySQL
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+
+      - name: Auditar esquema QA sin mutaciones ni migrations update
+        shell: bash
+        run: |
+          set -euo pipefail
+          export MYSQL_PWD="$DB_PASSWORD"
+          q() {
+            mysql --protocol=TCP --connect-timeout=12 --ssl-mode=REQUIRED --default-character-set=utf8mb4 \
+              -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" \
+              --batch --raw --skip-column-names "$DB_NAME" -e "$1"
+          }
+
+          version="$(q 'SELECT VERSION();')"
+          case "$version" in
+            8.4.8|8.4.8-*) ;;
+            *) echo "QA_MYSQL_PATCH_MISMATCH: se exige Aiven MySQL 8.4.8 aprobado; no se actualiza automaticamente." >&2; exit 1 ;;
+          esac
+          echo "PROD_AIVEN_MYSQL_VERSION=8.4.8"
+
+          application_tables="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME <> '__EFMigrationsHistory';")"
+          test "$application_tables" = "136" || {
+            echo "PROD_ORACLE_SCHEMA_DRIFT: cantidad de tablas distinta de las 136 certificadas en DEV." >&2
+            exit 1
+          }
+
+          history_table="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='__EFMigrationsHistory';")"
+          test "$history_table" = "1" || {
+            echo "PROD_ORACLE_SCHEMA_DRIFT: falta historial EF; prohibida la promocion." >&2
+            exit 1
+          }
+
+          required_tables="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ('Empresas','Productos','ConfigEmpresas','AutomatizacionConfiguraciones','SuscripcionSaaSIdempotencia');")"
+          test "$required_tables" = "5" || {
+            echo "PROD_ORACLE_SCHEMA_DRIFT: faltan tablas requeridas por OracleBaseline." >&2
+            exit 1
+          }
+
+          history_count="$(q 'SELECT COUNT(*) FROM __EFMigrationsHistory;')"
+          marker="$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")"
+          echo "PROD_ORACLE_HISTORY_AUDIT=PASS app_tables=$application_tables history_count=$history_count oracle_marker=$marker"
+
+          # DIAGNOSTICO READ-ONLY COMPLETO: no interrumpir antes de leer topologia.
+          # Si falta el marcador, se emiten diagnosticos independientes para
+          # verificar si la adopcion Oracle requiere cambios fisicos o solo metadata.
+          table_diag="$(q "SELECT CONCAT(TABLE_NAME,'|',ENGINE,'|',COALESCE(TABLE_COLLATION,'')) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' ORDER BY TABLE_NAME;" | sha256sum | awk '{print $1}')"
+          fk_diag="$(q "SELECT CONCAT(TABLE_NAME,'|',CONSTRAINT_NAME,'|',REFERENCED_TABLE_NAME,'|',UNIQUE_CONSTRAINT_NAME) FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() ORDER BY TABLE_NAME,CONSTRAINT_NAME;" | sha256sum | awk '{print $1}')"
+          index_diag="$(q "SELECT CONCAT(TABLE_NAME,'|',INDEX_NAME,'|',SEQ_IN_INDEX,'|',COALESCE(COLUMN_NAME,''),'|',NON_UNIQUE,'|',INDEX_TYPE) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() ORDER BY TABLE_NAME,INDEX_NAME,SEQ_IN_INDEX;" | sha256sum | awk '{print $1}')"
+          triggers_diag="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_SCHEMA=DATABASE() AND TRIGGER_NAME IN ('TR_MovimientosInventario_N06_OrigenTipado_BI','TR_MovimientosInventario_N06_OrigenTipado_BU');")"
+          checks_diag="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME='MovimientosInventario' AND CONSTRAINT_TYPE='CHECK' AND CONSTRAINT_NAME='CK_MovimientosInventario_OrigenTipado_Exclusivo_N06';")"
+          diagnose() {
+            if [ "$2" = "$3" ]; then
+              echo "PROD_ORACLE_DIAG_$1=PASS"
+            else
+              echo "PROD_ORACLE_DIAG_$1=DRIFT"
+            fi
+          }
+          diagnose TABLES "$table_diag" "36b725a682b43d744509c8fd27a6ae54b6017d1c46e1301ee796f86f760e7489"
+          diagnose FKS "$fk_diag" "79f67fec9b5761f66cf93dbbcab3a7e7cfd769e132019e720e51d0317ef93b3c"
+          diagnose INDEXES "$index_diag" "3f91e8d03e2700329472bb3ee678c0f3d680495217d4cb4da48291351b3b90ec"
+          diagnose TRIGGERS "$triggers_diag" "2"
+          diagnose CHECK "$checks_diag" "1"
+          echo "PROD_ORACLE_DIAG_DB_WRITES=0"
+
+          if [ "$marker" = "0" ] && [ "$history_count" = "107" ]; then
+            echo 'PROD_ORACLE_BASELINE=REQUIRES_ADOPCION_METADATA_CONTROLADA'
+          elif [ "$marker" = "1" ] && [ "$history_count" = "108" ]; then
+            echo 'PROD_ORACLE_BASELINE=ADOPTADO'
+          else
+            echo 'PROD_ORACLE_EF_HISTORY_DRIFT_STOP' >&2
+            exit 1
+          fi
+
+          # Fingerprints del origen DEV real restaurado, run 38107320797 (2026-10-11).
+          # La topologia de QA no puede divergir de la fuente certificada.
+          table_hash="$(q "SELECT CONCAT(TABLE_NAME,'|',ENGINE,'|',COALESCE(TABLE_COLLATION,'')) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' ORDER BY TABLE_NAME;" | sha256sum | awk '{print $1}')"
+          fk_hash="$(q "SELECT CONCAT(TABLE_NAME,'|',CONSTRAINT_NAME,'|',REFERENCED_TABLE_NAME,'|',UNIQUE_CONSTRAINT_NAME) FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() ORDER BY TABLE_NAME,CONSTRAINT_NAME;" | sha256sum | awk '{print $1}')"
+          index_hash="$(q "SELECT CONCAT(TABLE_NAME,'|',INDEX_NAME,'|',SEQ_IN_INDEX,'|',COALESCE(COLUMN_NAME,''),'|',NON_UNIQUE,'|',INDEX_TYPE) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() ORDER BY TABLE_NAME,INDEX_NAME,SEQ_IN_INDEX;" | sha256sum | awk '{print $1}')"
+
+          test "$table_hash" = "36b725a682b43d744509c8fd27a6ae54b6017d1c46e1301ee796f86f760e7489" || {
+            echo "PROD_ORACLE_TABLE_TOPOLOGY=FAIL: tablas/engine/collation no coinciden con DEV certificado." >&2
+            exit 1
+          }
+          test "$fk_hash" = "79f67fec9b5761f66cf93dbbcab3a7e7cfd769e132019e720e51d0317ef93b3c" || {
+            echo "PROD_ORACLE_FK_TOPOLOGY=FAIL: constraints FK no coinciden con DEV certificado." >&2
+            exit 1
+          }
+          test "$index_hash" = "3f91e8d03e2700329472bb3ee678c0f3d680495217d4cb4da48291351b3b90ec" || {
+            echo "PROD_ORACLE_INDEX_TOPOLOGY=FAIL: indices no coinciden con DEV certificado." >&2
+            exit 1
+          }
+          echo "PROD_ORACLE_TOPOLOGY=PASS tables_fks_indexes_identical_to_dev"
+
+          trigger_count="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_SCHEMA=DATABASE() AND TRIGGER_NAME IN ('TR_MovimientosInventario_N06_OrigenTipado_BI','TR_MovimientosInventario_N06_OrigenTipado_BU');")"
+          check_count="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME='MovimientosInventario' AND CONSTRAINT_TYPE='CHECK' AND CONSTRAINT_NAME='CK_MovimientosInventario_OrigenTipado_Exclusivo_N06';")"
+          test "$trigger_count" = "2" && test "$check_count" = "1" || {
+            echo "PROD_ORACLE_PHYSICAL_CONTRACT=FAIL: triggers o CHECK faltantes; no promover backend." >&2
+            exit 1
+          }
+
+          echo "PROD_ORACLE_PRECHECK=PASS app_tables=136 oracle_marker=$marker history=$history_count triggers=2 check=1 mysql=8.4.8"
+          echo "PROD_DATABASE_WRITES=0"
+
+          # Readback despues de QA Oracle adoption certificada: run 38303606678.
