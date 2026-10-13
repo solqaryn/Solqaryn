@@ -1,3 +1,10 @@
+## 2026-10-13 — Evidencia primaria para ownership legacy (solo lectura, sin backfill)\n\n- La auditoría temporal añade tres fuentes de atribución verificables: `RegistrosAuditoria` con empresa explícita y referencia exacta, `DocumentosFiscalesEmision` enlazados a facturas y coincidencia de RTN legal del snapshot de factura con empresa. Agrega solo recuentos y conflictos sin mostrar filas/IDs ni escribir datos.\n- Mantener los 19 registros en `EmpresaId=NULL` hasta mapa individual confirmado; ninguna fuente aislada se transforma automáticamente en atribución.\n\n## 2026-10-13 — Evidencia temporal de atribución comercial (DEV read-only)
+
+- Agregado workflow `.github/workflows/dev-tenant-commercial-temporal-provenance.yml` con controles de identidad estrictos `solqaryn/Solqaryn`/`dev`/`solqaryn_dev`/MySQL 8.4.8. Cuenta por tabla comercial fechas de membresía anteriores/posteriores a las 19 filas legacy, marcas temporales contradictorias y cobertura agregada del owner en `RegistrosAuditoria`; nunca imprime identificadores, filas o PII.
+- Criterios e interpretación en `docs/tenancy/ATRIBUCION_HISTORICA_TEMPORAL_DEV.md`. Una membresía única actual, o con fecha compatible, **no basta** para otorgar propiedad histórica; NO ejecutar backfill sin prueba primaria individual.
+- Mantener cuarentena, no habilitar una segunda empresa, no modificar Aiven, QA ni PROD. Requiere CI y readback causal de su ejecución en DEV.
+
+
 ## 2026-10-13 — Recovery E2E causal para fusion segura de PR #3596
 
 - Causa comprobada en workflow catalogos-aceptacion #38425047076: seis pruebas E2E fallaron con HTTP 400 al crear compras/ventas, porque `VincularClienteAsync` y `VincularProveedorAsync` creaban automáticamente `Cliente`/`Proveedor` con `EmpresaId=NULL` y asociaban a `Venta`/`Compra` con owner explícito. Los guards de integridad rechazaban correctamente esa referencia sin dueño.
