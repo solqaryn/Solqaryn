@@ -12986,6 +12986,50 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         .HasConstraintName("FK_Ventas_Empresas_EmpresaId");
                 });
 
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Factura", b =>
+                {
+                    b.HasIndex("EmpresaId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Facturas_Empresa_Id");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.FacturaDetalle", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "FacturaId")
+                        .HasDatabaseName("IX_FacturaDetalles_Empresa_Factura");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_FacturaDetalles_Empresas_EmpresaId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.FacturaPago", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "FacturaId")
+                        .HasDatabaseName("IX_FacturaPagos_Empresa_Factura");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_FacturaPagos_Empresas_EmpresaId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.CompraDocumento", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "CompraId")
+                        .HasDatabaseName("IX_CompraDocumentos_Empresa_Compra");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_CompraDocumentos_Empresas_EmpresaId");
+                });
+
 #pragma warning restore 612, 618
         }
     }

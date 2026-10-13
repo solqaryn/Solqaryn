@@ -174,6 +174,11 @@ if (mode == "fresh")
         INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
         VALUES ('20261013181500_CommercialTenantScopedRootIndexes', '10.0.12');
         """);
+    // EnsureCreated ya construyo columnas e indices; tres FKs se aplicaron en supplements.
+    await db.Database.ExecuteSqlRawAsync("""
+        INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+        VALUES ('20261013190000_CommercialTenantInvoiceDocuments', '10.0.12');
+        """);
     await db.Database.CloseConnectionAsync();
 }
 else
@@ -212,5 +217,6 @@ if (pending.Length != 0)
     throw new InvalidOperationException($"Pending Oracle migrations remain: {string.Join(",", pending)}.");
 
 await CommercialTenantPhysicalConstraints.VerifyAsync(db);
+await CommercialTenantInvoicePhysicalConstraints.VerifyAsync(db);
 
 Console.WriteLine($"SOLQARYN_ORACLE_BOOTSTRAP=PASS mode={mode} tables={afterAdoption} pending=0");

@@ -1,3 +1,9 @@
+## 2026-10-13 — Candidato adicional P0 #3: factura y adjuntos de compra por empresa
+
+- `FacturaDetalles`, `FacturaPagos` y `CompraDocumentos` incorporan `EmpresaId`, indices por empresa, tres FKs compuestas documentadas/validadas en MySQL y guard de escrituras RBAC. `Facturas` incorpora indice unico `(EmpresaId, Id)`.
+- Migracion Oracle expand-only, snapshot, bootstrap fresh/adopt, simulacion legacy, pruebas A/B y verificacion fisica de FKs; no modifica ni atribuye los fixtures historicos.
+- No levantar cuarentena ni habilitar nueva empresa hasta completar todo el modelo y los read paths; QA/PROD no tocados.
+
 # ARCHITECTURE — Solqaryn
 
 ### Actualización P0 #3 — PR #3599 (13 octubre 2026; candidato, NO fusionado)

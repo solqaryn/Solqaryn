@@ -1,3 +1,14 @@
+## 2026-10-13 — CI exact-head: adopción de migración de documentos en integración MySQL
+
+- El bootstrap de pruebas Phase7 ahora adopta explícitamente `CommercialTenantInvoiceDocuments` tras `EnsureCreated`, igual que el bootstrap canónico; no cambia datos ni esquema de Aiven DEV.
+- Corrige la prueba ERP-N0.6 que fallaba al detectar una migración Oracle pendiente (proveniente del PR #3600).
+
+## 2026-10-13 — Candidato adicional P0 #3: factura y adjuntos de compra por empresa
+
+- `FacturaDetalles`, `FacturaPagos` y `CompraDocumentos` incorporan `EmpresaId`, indices por empresa, tres FKs compuestas documentadas/validadas en MySQL y guard de escrituras RBAC. `Facturas` incorpora indice unico `(EmpresaId, Id)`.
+- Migracion Oracle expand-only, snapshot, bootstrap fresh/adopt, simulacion legacy, pruebas A/B y verificacion fisica de FKs; no modifica ni atribuye los fixtures historicos.
+- No levantar cuarentena ni habilitar nueva empresa hasta completar todo el modelo y los read paths; QA/PROD no tocados.
+
 ## 2026-10-13 — PR #3599 (candidato): claves por empresa y dependientes principales
 
 - Se agregan índices tenant y unicidades por empresa en cinco raíces, EmpresaId nullable a 5 descendientes (variante, foto, detalles de compra/venta, factura), guard de derivación y 12 FKs MySQL compuestas.
