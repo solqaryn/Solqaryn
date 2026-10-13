@@ -59,7 +59,7 @@ public static class CommercialTenantPhysicalConstraints
                 )
               GROUP BY CONSTRAINT_NAME
               HAVING COUNT(*) = 2
-            ) AS verified;
+            ) AS verified
             """;
         var count = await db.Database.SqlQueryRaw<long>(sql)
             .SingleAsync(cancellationToken);
