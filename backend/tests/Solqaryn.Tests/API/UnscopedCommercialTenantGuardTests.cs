@@ -24,8 +24,8 @@ public sealed class UnscopedCommercialTenantGuardTests
     public async Task DosEmpresas_NoPuedenRecibirDatosComerciales(string path)
     {
         await using var db = NuevoContexto();
-        db.Empresas.Add(new Empresa("Empresa A"));
-        db.Empresas.Add(new Empresa("Empresa B"));
+        db.Set<Empresa>().Add(new Empresa("Empresa A"));
+        db.Set<Empresa>().Add(new Empresa("Empresa B"));
         await db.SaveChangesAsync();
         var (status, payload, ejecutada) = await ProcesarAsync(db, "GET", path);
         Assert.Equal(StatusCodes.Status503ServiceUnavailable, status);
@@ -39,10 +39,10 @@ public sealed class UnscopedCommercialTenantGuardTests
     public async Task EmpresaInactiva_ConservaBloqueo_PorSusDatosHistoricos()
     {
         await using var db = NuevoContexto();
-        db.Empresas.Add(new Empresa("A"));
+        db.Set<Empresa>().Add(new Empresa("A"));
         var inactiva = new Empresa("B");
         inactiva.Desactivar();
-        db.Empresas.Add(inactiva);
+        db.Set<Empresa>().Add(inactiva);
         await db.SaveChangesAsync();
 
         var (status, _, ejecutada) = await ProcesarAsync(db, "POST", "/ventas");
@@ -69,7 +69,7 @@ public sealed class UnscopedCommercialTenantGuardTests
     public async Task UnaEmpresa_NoCambiaLaAutorizacionExistente(string path)
     {
         await using var db = NuevoContexto();
-        db.Empresas.Add(new Empresa("Unica"));
+        db.Set<Empresa>().Add(new Empresa("Unica"));
         await db.SaveChangesAsync();
 
         var (status, _, ejecutada) = await ProcesarAsync(db, "GET", path);
@@ -85,7 +85,7 @@ public sealed class UnscopedCommercialTenantGuardTests
     {
         await using var db = NuevoContexto();
         for (var i = 0; i < empresas; i++)
-            db.Empresas.Add(new Empresa("Empresa " + i));
+            db.Set<Empresa>().Add(new Empresa("Empresa " + i));
         await db.SaveChangesAsync();
 
         var (status, _, ejecutada) = await ProcesarAsync(db, "POST", "/empresas");
@@ -103,8 +103,8 @@ public sealed class UnscopedCommercialTenantGuardTests
     public async Task SeguridadYHealth_ContinuanAccesibles_SinDatosComerciales(string metodo, string path)
     {
         await using var db = NuevoContexto();
-        db.Empresas.Add(new Empresa("A"));
-        db.Empresas.Add(new Empresa("B"));
+        db.Set<Empresa>().Add(new Empresa("A"));
+        db.Set<Empresa>().Add(new Empresa("B"));
         await db.SaveChangesAsync();
 
         var (status, _, ejecutada) = await ProcesarAsync(db, metodo, path);
@@ -116,8 +116,8 @@ public sealed class UnscopedCommercialTenantGuardTests
     public async Task NoSePermiteUsarPrefijosDeAutenticacionParaSaltarElBloqueo()
     {
         await using var db = NuevoContexto();
-        db.Empresas.Add(new Empresa("A"));
-        db.Empresas.Add(new Empresa("B"));
+        db.Set<Empresa>().Add(new Empresa("A"));
+        db.Set<Empresa>().Add(new Empresa("B"));
         await db.SaveChangesAsync();
 
         foreach (var (metodo, path) in new[]
