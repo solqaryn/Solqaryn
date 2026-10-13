@@ -262,3 +262,5 @@ La cuarentena de API y el bloqueo de alta de segunda empresa **permanecen**. Est
 ## 2026-10-13 — Contención adicional de referencias comerciales cruzadas
 
 `CommercialCrossTenantWriteGuard` valida antes de `AppDbContext.SaveChangesAsync` nuevas referencias Venta-Cliente, Compra-Proveedor, VentaDetalle-Producto y CompraDetalle-Producto cuando ambas partes tienen `EmpresaId` explícito. Rechaza mezclas empresariales; conserva NULL legacy sin atribución. No sustituye aislamiento por fila en consultas ni permite retirar la cuarentena P0.
+
+La misma protección rechaza cambios de `EmpresaId` sobre las cinco raíces comerciales ya persistidas, incluida una atribución de `NULL` legacy mediante servicios ordinarios. La atribución histórica exige un procedimiento excepcional de datos respaldado y auditado, nunca actualización normal de entidad.
