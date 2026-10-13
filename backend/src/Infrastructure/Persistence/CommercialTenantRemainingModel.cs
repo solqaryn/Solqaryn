@@ -80,7 +80,6 @@ public static class CommercialTenantRemainingModel
             var b = Get("Solqaryn.Domain.Entities.Cajas.Caja");
             b.Property<int?>("EmpresaId");
             b.HasIndex("EmpresaId", "Id").IsUnique().HasDatabaseName("UX_Cajas_Empresa_Id");
-            b.HasIndex(new[] { "EmpresaId", "SesionActivaId" }).HasDatabaseName("IX_Cajas_EmpresaId_SesionActivaId");
             b.HasIndex(new[] { "EmpresaId", "SesionActivaId" }).IsUnique().HasDatabaseName("UX_Cajas_Empresa_SesionActivaId");
             b.HasOne(typeof(Empresa), navigationName: null).WithMany()
                 .HasForeignKey("EmpresaId").OnDelete(DeleteBehavior.Restrict)

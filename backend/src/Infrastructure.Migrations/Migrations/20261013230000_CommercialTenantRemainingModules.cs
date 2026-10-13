@@ -70,7 +70,6 @@ public partial class CommercialTenantRemainingModules : Migration
         m.CreateIndex("IX_CajaMovimientos_EmpresaId_CajaSesionId", "CajaMovimientos", new[] { "EmpresaId", "CajaSesionId" });
         m.CreateIndex("IX_CajaMovimientos_EmpresaId_UsuarioId", "CajaMovimientos", new[] { "EmpresaId", "UsuarioId" });
         m.CreateIndex("UX_Cajas_Empresa_Id", "Cajas", new[] { "EmpresaId", "Id" }, unique: true);
-        m.CreateIndex("IX_Cajas_EmpresaId_SesionActivaId", "Cajas", new[] { "EmpresaId", "SesionActivaId" });
         m.CreateIndex("UX_Cajas_Empresa_SesionActivaId", "Cajas", new[] { "EmpresaId", "SesionActivaId" }, unique: true);
         m.CreateIndex("UX_CajaSesiones_Empresa_Id", "CajaSesiones", new[] { "EmpresaId", "Id" }, unique: true);
         m.CreateIndex("IX_CajaSesiones_EmpresaId_CajaId", "CajaSesiones", new[] { "EmpresaId", "CajaId" });

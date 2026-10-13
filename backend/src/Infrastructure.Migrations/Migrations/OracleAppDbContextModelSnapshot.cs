@@ -13928,7 +13928,6 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                 {
                     b.Property<int?>("EmpresaId").HasColumnType("int");
                     b.HasIndex("EmpresaId", "Id").IsUnique().HasDatabaseName("UX_Cajas_Empresa_Id");
-                    b.HasIndex("EmpresaId", "SesionActivaId").HasDatabaseName("IX_Cajas_EmpresaId_SesionActivaId");
                     b.HasIndex("EmpresaId", "SesionActivaId").IsUnique().HasDatabaseName("UX_Cajas_Empresa_SesionActivaId");
                     b.HasOne("Solqaryn.Domain.Entities.Empresa", null).WithMany()
                         .HasForeignKey("EmpresaId").OnDelete(DeleteBehavior.Restrict)
