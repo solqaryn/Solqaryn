@@ -14494,6 +14494,482 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         .HasDatabaseName("UX_UbicacionesAlmacen_Empresa_AlmacenId_CodigoActivoUnico");
                 });
 
+
+            // 83 relaciones empresariales independientes: soporte de FKs físicas MySQL.
+            modelBuilder.Entity("Solqaryn.Domain.Entities.UbicacionAlmacen", b =>
+                {
+                    b.HasIndex("EmpresaId", "AlmacenId", "Id").IsUnique()
+                        .HasDatabaseName("UX_UbicacionesAlmacen_EmpresaId_AlmacenId_Id");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Sucursal", b =>
+                {
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_Sucursales_EmpresaId_Id");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ConteoInventario", b =>
+                {
+                    b.HasIndex("EmpresaId", "Id", "AlmacenId").IsUnique()
+                        .HasDatabaseName("UX_ConteosInventario_EmpresaId_Id_AlmacenId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.AjusteInventarioDetalle", b =>
+                {
+                    b.HasIndex("EmpresaId", "AjusteInventarioId")
+                        .HasDatabaseName("IX_AjusteInventarioDetalles_EmpresaId_AjusteInventarioId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.AjusteInventarioDetalle", b =>
+                {
+                    b.HasIndex("EmpresaId", "AlmacenId")
+                        .HasDatabaseName("IX_AjusteInventarioDetalles_EmpresaId_AlmacenId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.AjusteInventarioDetalle", b =>
+                {
+                    b.HasIndex("EmpresaId", "AlmacenId", "UbicacionAlmacenId")
+                        .HasDatabaseName("IX_AjusteInventarioDetalles_EmpresaId_AlmacenId_Ubicaci_7edecb64");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Almacen", b =>
+                {
+                    b.HasIndex("EmpresaId", "SucursalId")
+                        .HasDatabaseName("IX_Almacenes_EmpresaId_SucursalId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Contabilidad.AsientoDetalle", b =>
+                {
+                    b.HasIndex("EmpresaId", "AsientoContableId")
+                        .HasDatabaseName("IX_AsientoDetalles_EmpresaId_AsientoContableId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Contabilidad.AsientoDetalle", b =>
+                {
+                    b.HasIndex("EmpresaId", "CuentaContableId")
+                        .HasDatabaseName("IX_AsientoDetalles_EmpresaId_CuentaContableId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Cajas.CajaMovimiento", b =>
+                {
+                    b.HasIndex("EmpresaId", "CajaSesionId")
+                        .HasDatabaseName("IX_CajaMovimientos_EmpresaId_CajaSesionId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Cajas.CajaSesion", b =>
+                {
+                    b.HasIndex("EmpresaId", "CajaId")
+                        .HasDatabaseName("IX_CajaSesiones_EmpresaId_CajaId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.CapaCostoInventario", b =>
+                {
+                    b.HasIndex("EmpresaId", "AlmacenId")
+                        .HasDatabaseName("IX_CapasCostoInventario_EmpresaId_AlmacenId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.CapaCostoInventario", b =>
+                {
+                    b.HasIndex("EmpresaId", "AlmacenId", "UbicacionAlmacenId")
+                        .HasDatabaseName("IX_CapasCostoInventario_EmpresaId_AlmacenId_UbicacionAlmacenId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.CargaMasivaError", b =>
+                {
+                    b.HasIndex("EmpresaId", "CargaMasivaId")
+                        .HasDatabaseName("IX_CargaMasivaErrores_EmpresaId_CargaMasivaId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Contabilidad.CentroCosto", b =>
+                {
+                    b.HasIndex("EmpresaId", "SucursalId")
+                        .HasDatabaseName("IX_CentrosCosto_EmpresaId_SucursalId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Cliente", b =>
+                {
+                    b.HasIndex("EmpresaId", "TipoClienteId")
+                        .HasDatabaseName("IX_Clientes_EmpresaId_TipoClienteId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.CompraDetalle", b =>
+                {
+                    b.HasIndex("EmpresaId", "AlmacenId")
+                        .HasDatabaseName("IX_CompraDetalles_EmpresaId_AlmacenId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.CompraDetalle", b =>
+                {
+                    b.HasIndex("EmpresaId", "AlmacenId", "UbicacionAlmacenId")
+                        .HasDatabaseName("IX_CompraDetalles_EmpresaId_AlmacenId_UbicacionAlmacenId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.CompraImpuesto", b =>
+                {
+                    b.HasIndex("EmpresaId", "ImpuestoId")
+                        .HasDatabaseName("IX_CompraImpuestos_EmpresaId_ImpuestoId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Bancos.ConciliacionBancaria", b =>
+                {
+                    b.HasIndex("EmpresaId", "CuentaBancariaId")
+                        .HasDatabaseName("IX_ConciliacionesBancarias_EmpresaId_CuentaBancariaId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Contabilidad.ConfiguracionContable", b =>
+                {
+                    b.HasIndex("EmpresaId", "CuentaDebeId")
+                        .HasDatabaseName("IX_ConfiguracionesContables_EmpresaId_CuentaDebeId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Contabilidad.ConfiguracionContable", b =>
+                {
+                    b.HasIndex("EmpresaId", "CuentaHaberId")
+                        .HasDatabaseName("IX_ConfiguracionesContables_EmpresaId_CuentaHaberId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ConsumoInsumoDetalle", b =>
+                {
+                    b.HasIndex("EmpresaId", "AlmacenId")
+                        .HasDatabaseName("IX_ConsumoInsumoDetalles_EmpresaId_AlmacenId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ConsumoInsumoDetalle", b =>
+                {
+                    b.HasIndex("EmpresaId", "ConsumoInsumoId")
+                        .HasDatabaseName("IX_ConsumoInsumoDetalles_EmpresaId_ConsumoInsumoId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ConsumoInsumoDetalle", b =>
+                {
+                    b.HasIndex("EmpresaId", "AlmacenId", "UbicacionAlmacenId")
+                        .HasDatabaseName("IX_ConsumoInsumoDetalles_EmpresaId_AlmacenId_UbicacionAlmacenId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ConteoInventarioDetalle", b =>
+                {
+                    b.HasIndex("EmpresaId", "AjusteInventarioId")
+                        .HasDatabaseName("IX_ConteoInventarioDetalles_EmpresaId_AjusteInventarioId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ConteoInventarioDetalle", b =>
+                {
+                    b.HasIndex("EmpresaId", "AlmacenId")
+                        .HasDatabaseName("IX_ConteoInventarioDetalles_EmpresaId_AlmacenId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ConteoInventarioDetalle", b =>
+                {
+                    b.HasIndex("EmpresaId", "ConteoInventarioId", "AlmacenId")
+                        .HasDatabaseName("IX_ConteoInventarioDetalles_EmpresaId_ConteoInventarioI_d5c0a907");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ConteoInventarioDetalle", b =>
+                {
+                    b.HasIndex("EmpresaId", "AlmacenId", "UbicacionAlmacenId")
+                        .HasDatabaseName("IX_ConteoInventarioDetalles_EmpresaId_AlmacenId_Ubicaci_8bcaedc4");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ConteoInventario", b =>
+                {
+                    b.HasIndex("EmpresaId", "AlmacenId")
+                        .HasDatabaseName("IX_ConteosInventario_EmpresaId_AlmacenId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ConteoInventario", b =>
+                {
+                    b.HasIndex("EmpresaId", "CategoriaId")
+                        .HasDatabaseName("IX_ConteosInventario_EmpresaId_CategoriaId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ConteoInventario", b =>
+                {
+                    b.HasIndex("EmpresaId", "AlmacenId", "UbicacionAlmacenId")
+                        .HasDatabaseName("IX_ConteosInventario_EmpresaId_AlmacenId_UbicacionAlmacenId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.CuentaContable", b =>
+                {
+                    b.HasIndex("EmpresaId", "CuentaPadreId")
+                        .HasDatabaseName("IX_CuentasContables_EmpresaId_CuentaPadreId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.DescuentoCategoria", b =>
+                {
+                    b.HasIndex("EmpresaId", "CategoriaId")
+                        .HasDatabaseName("IX_DescuentoCategorias_EmpresaId_CategoriaId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.DescuentoCliente", b =>
+                {
+                    b.HasIndex("EmpresaId", "DescuentoId")
+                        .HasDatabaseName("IX_DescuentoClientes_EmpresaId_DescuentoId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.DescuentoProducto", b =>
+                {
+                    b.HasIndex("EmpresaId", "DescuentoId")
+                        .HasDatabaseName("IX_DescuentoProductos_EmpresaId_DescuentoId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.DevolucionProveedorDetalle", b =>
+                {
+                    b.HasIndex("EmpresaId", "AlmacenId")
+                        .HasDatabaseName("IX_DevolucionProveedorDetalles_EmpresaId_AlmacenId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.DevolucionProveedorDetalle", b =>
+                {
+                    b.HasIndex("EmpresaId", "UbicacionAlmacenId")
+                        .HasDatabaseName("IX_DevolucionProveedorDetalles_EmpresaId_UbicacionAlmacenId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ExistenciaVariante", b =>
+                {
+                    b.HasIndex("EmpresaId", "AlmacenId")
+                        .HasDatabaseName("IX_ExistenciasVariante_EmpresaId_AlmacenId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ExistenciaVariante", b =>
+                {
+                    b.HasIndex("EmpresaId", "AlmacenId", "UbicacionAlmacenId")
+                        .HasDatabaseName("IX_ExistenciasVariante_EmpresaId_AlmacenId_UbicacionAlmacenId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.HistorialAplicacionImpuesto", b =>
+                {
+                    b.HasIndex("EmpresaId", "ImpuestoId")
+                        .HasDatabaseName("IX_HistorialAplicacionImpuestos_EmpresaId_ImpuestoId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.HistorialUsoDescuento", b =>
+                {
+                    b.HasIndex("EmpresaId", "DescuentoId")
+                        .HasDatabaseName("IX_HistorialUsoDescuentos_EmpresaId_DescuentoId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ImpuestoCategoria", b =>
+                {
+                    b.HasIndex("EmpresaId", "CategoriaId")
+                        .HasDatabaseName("IX_ImpuestoCategorias_EmpresaId_CategoriaId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ImpuestoCliente", b =>
+                {
+                    b.HasIndex("EmpresaId", "ImpuestoId")
+                        .HasDatabaseName("IX_ImpuestoClientes_EmpresaId_ImpuestoId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ImpuestoProducto", b =>
+                {
+                    b.HasIndex("EmpresaId", "ImpuestoId")
+                        .HasDatabaseName("IX_ImpuestoProductos_EmpresaId_ImpuestoId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ImpuestoProveedor", b =>
+                {
+                    b.HasIndex("EmpresaId", "ImpuestoId")
+                        .HasDatabaseName("IX_ImpuestoProveedores_EmpresaId_ImpuestoId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Bancos.MatchConciliacion", b =>
+                {
+                    b.HasIndex("EmpresaId", "MovimientoEstadoCuentaId")
+                        .HasDatabaseName("IX_MatchesConciliacion_EmpresaId_MovimientoEstadoCuentaId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Modelo", b =>
+                {
+                    b.HasIndex("EmpresaId", "MarcaId")
+                        .HasDatabaseName("IX_Modelos_EmpresaId_MarcaId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.MovimientoInventario", b =>
+                {
+                    b.HasIndex("EmpresaId", "AjusteInventarioId")
+                        .HasDatabaseName("IX_MovimientosInventario_EmpresaId_AjusteInventarioId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.MovimientoInventario", b =>
+                {
+                    b.HasIndex("EmpresaId", "AlmacenId")
+                        .HasDatabaseName("IX_MovimientosInventario_EmpresaId_AlmacenId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.MovimientoInventario", b =>
+                {
+                    b.HasIndex("EmpresaId", "ConsumoInsumoId")
+                        .HasDatabaseName("IX_MovimientosInventario_EmpresaId_ConsumoInsumoId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.MovimientoInventario", b =>
+                {
+                    b.HasIndex("EmpresaId", "TransferenciaInventarioId")
+                        .HasDatabaseName("IX_MovimientosInventario_EmpresaId_TransferenciaInventarioId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.MovimientoInventario", b =>
+                {
+                    b.HasIndex("EmpresaId", "AlmacenId", "UbicacionAlmacenId")
+                        .HasDatabaseName("IX_MovimientosInventario_EmpresaId_AlmacenId_UbicacionAlmacenId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.PoliticaCosteoInventario", b =>
+                {
+                    b.HasIndex("EmpresaId", "EmpresaConfiguracionId")
+                        .HasDatabaseName("IX_PoliticasCosteoInventario_EmpresaId_EmpresaConfiguracionId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.PreparacionPedidoVentaDetalle", b =>
+                {
+                    b.HasIndex("EmpresaId", "AlmacenId")
+                        .HasDatabaseName("IX_PreparacionPedidoVentaDetalles_EmpresaId_AlmacenId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.PreparacionPedidoVentaDetalle", b =>
+                {
+                    b.HasIndex("EmpresaId", "AlmacenId", "UbicacionAlmacenId")
+                        .HasDatabaseName("IX_PreparacionPedidoVentaDetalles_EmpresaId_AlmacenId_U_ab46262c");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Producto", b =>
+                {
+                    b.HasIndex("EmpresaId", "CategoriaId")
+                        .HasDatabaseName("IX_Productos_EmpresaId_CategoriaId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Producto", b =>
+                {
+                    b.HasIndex("EmpresaId", "ColorId")
+                        .HasDatabaseName("IX_Productos_EmpresaId_ColorId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Producto", b =>
+                {
+                    b.HasIndex("EmpresaId", "MarcaId")
+                        .HasDatabaseName("IX_Productos_EmpresaId_MarcaId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Producto", b =>
+                {
+                    b.HasIndex("EmpresaId", "ModeloId")
+                        .HasDatabaseName("IX_Productos_EmpresaId_ModeloId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Producto", b =>
+                {
+                    b.HasIndex("EmpresaId", "TallaId")
+                        .HasDatabaseName("IX_Productos_EmpresaId_TallaId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ProductoVariante", b =>
+                {
+                    b.HasIndex("EmpresaId", "ColorId")
+                        .HasDatabaseName("IX_ProductoVariantes_EmpresaId_ColorId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ProductoVariante", b =>
+                {
+                    b.HasIndex("EmpresaId", "MarcaId")
+                        .HasDatabaseName("IX_ProductoVariantes_EmpresaId_MarcaId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ProductoVariante", b =>
+                {
+                    b.HasIndex("EmpresaId", "ModeloId")
+                        .HasDatabaseName("IX_ProductoVariantes_EmpresaId_ModeloId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ProductoVariante", b =>
+                {
+                    b.HasIndex("EmpresaId", "TallaId")
+                        .HasDatabaseName("IX_ProductoVariantes_EmpresaId_TallaId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.RecepcionCompraDetalle", b =>
+                {
+                    b.HasIndex("EmpresaId", "AlmacenId")
+                        .HasDatabaseName("IX_RecepcionCompraDetalles_EmpresaId_AlmacenId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.RecepcionCompraDetalle", b =>
+                {
+                    b.HasIndex("EmpresaId", "AlmacenId", "UbicacionAlmacenId")
+                        .HasDatabaseName("IX_RecepcionCompraDetalles_EmpresaId_AlmacenId_Ubicacio_8a10442f");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ReservaInventarioDetalle", b =>
+                {
+                    b.HasIndex("EmpresaId", "AlmacenId")
+                        .HasDatabaseName("IX_ReservaInventarioDetalles_EmpresaId_AlmacenId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ReservaInventarioDetalle", b =>
+                {
+                    b.HasIndex("EmpresaId", "AlmacenId", "UbicacionAlmacenId")
+                        .HasDatabaseName("IX_ReservaInventarioDetalles_EmpresaId_AlmacenId_Ubicac_b786f94a");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.TransferenciaInventarioDetalle", b =>
+                {
+                    b.HasIndex("EmpresaId", "TransferenciaInventarioId")
+                        .HasDatabaseName("IX_TransferenciaInventarioDetalles_EmpresaId_Transferen_8b22a8d8");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.TransferenciaInventarioDetalle", b =>
+                {
+                    b.HasIndex("EmpresaId", "UbicacionDestinoId")
+                        .HasDatabaseName("IX_TransferenciaInventarioDetalles_EmpresaId_UbicacionDestinoId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.TransferenciaInventarioDetalle", b =>
+                {
+                    b.HasIndex("EmpresaId", "UbicacionOrigenId")
+                        .HasDatabaseName("IX_TransferenciaInventarioDetalles_EmpresaId_UbicacionOrigenId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.TransferenciaInventario", b =>
+                {
+                    b.HasIndex("EmpresaId", "AlmacenDestinoId")
+                        .HasDatabaseName("IX_TransferenciasInventario_EmpresaId_AlmacenDestinoId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.TransferenciaInventario", b =>
+                {
+                    b.HasIndex("EmpresaId", "AlmacenOrigenId")
+                        .HasDatabaseName("IX_TransferenciasInventario_EmpresaId_AlmacenOrigenId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.UbicacionAlmacen", b =>
+                {
+                    b.HasIndex("EmpresaId", "AlmacenId", "UbicacionPadreId")
+                        .HasDatabaseName("IX_UbicacionesAlmacen_EmpresaId_AlmacenId_UbicacionPadreId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.VentaDescuento", b =>
+                {
+                    b.HasIndex("EmpresaId", "DescuentoId")
+                        .HasDatabaseName("IX_VentaDescuentos_EmpresaId_DescuentoId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.VentaDetalle", b =>
+                {
+                    b.HasIndex("EmpresaId", "AlmacenId")
+                        .HasDatabaseName("IX_VentaDetalles_EmpresaId_AlmacenId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.VentaDetalle", b =>
+                {
+                    b.HasIndex("EmpresaId", "AlmacenId", "UbicacionAlmacenId")
+                        .HasDatabaseName("IX_VentaDetalles_EmpresaId_AlmacenId_UbicacionAlmacenId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.VentaImpuesto", b =>
+                {
+                    b.HasIndex("EmpresaId", "ImpuestoId")
+                        .HasDatabaseName("IX_VentaImpuestos_EmpresaId_ImpuestoId");
+                });
+
 #pragma warning restore 612, 618
         }
     }
