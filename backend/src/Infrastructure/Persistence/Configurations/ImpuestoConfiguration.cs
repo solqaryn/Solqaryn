@@ -98,6 +98,11 @@ public class VentaImpuestoConfiguration : IEntityTypeConfiguration<VentaImpuesto
     public void Configure(EntityTypeBuilder<VentaImpuesto> builder)
     {
         builder.ToTable("VentaImpuestos");
+        builder.HasIndex(x => new { x.EmpresaId, x.VentaId })
+            .HasDatabaseName("IX_VentaImpuestos_Empresa_VentaId");
+        builder.HasOne<Empresa>().WithMany().HasForeignKey(x => x.EmpresaId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("FK_VentaImpuestos_Empresas_EmpresaId");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.ImpuestoNombreSnapshot).IsRequired().HasMaxLength(150);
         builder.Property(x => x.ImpuestoCodigoSnapshot).IsRequired().HasMaxLength(50);
@@ -114,6 +119,11 @@ public class CompraImpuestoConfiguration : IEntityTypeConfiguration<CompraImpues
     public void Configure(EntityTypeBuilder<CompraImpuesto> builder)
     {
         builder.ToTable("CompraImpuestos");
+        builder.HasIndex(x => new { x.EmpresaId, x.CompraId })
+            .HasDatabaseName("IX_CompraImpuestos_Empresa_CompraId");
+        builder.HasOne<Empresa>().WithMany().HasForeignKey(x => x.EmpresaId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("FK_CompraImpuestos_Empresas_EmpresaId");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.ImpuestoNombreSnapshot).IsRequired().HasMaxLength(150);
         builder.Property(x => x.ImpuestoCodigoSnapshot).IsRequired().HasMaxLength(50);
