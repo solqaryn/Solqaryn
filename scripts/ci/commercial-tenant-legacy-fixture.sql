@@ -247,6 +247,23 @@ CREATE UNIQUE INDEX `IX_TipoClientes_NombreNormalizado` ON `TipoClientes` (`Nomb
 ALTER TABLE `TransferenciasInventario` DROP INDEX `UX_TransferenciasInventario_Numero`;
 CREATE UNIQUE INDEX `UX_TransferenciasInventario_Numero` ON `TransferenciasInventario` (`Numero`);
 
+ALTER TABLE `AjusteInventarioDetalles` DROP INDEX `IX_AjusteInventarioDetalles_EmpresaId_AlmacenId_Ubicaci_7edecb64`;
+ALTER TABLE `CapasCostoInventario` DROP INDEX `IX_CapasCostoInventario_EmpresaId_AlmacenId_UbicacionAlmacenId`;
+ALTER TABLE `CompraDetalles` DROP INDEX `IX_CompraDetalles_EmpresaId_AlmacenId_UbicacionAlmacenId`;
+ALTER TABLE `ConsumoInsumoDetalles` DROP INDEX `IX_ConsumoInsumoDetalles_EmpresaId_AlmacenId_UbicacionAlmacenId`;
+ALTER TABLE `ConteoInventarioDetalles` DROP INDEX `IX_ConteoInventarioDetalles_EmpresaId_AlmacenId_Ubicaci_8bcaedc4`;
+ALTER TABLE `ConteoInventarioDetalles` DROP INDEX `IX_ConteoInventarioDetalles_EmpresaId_ConteoInventarioI_d5c0a907`;
+ALTER TABLE `DocumentosFiscalesEmision` DROP INDEX `IX_DocumentosFiscalesEmision_EmpresaId_FacturaId`;
+ALTER TABLE `DocumentosFiscalesEmision` DROP INDEX `IX_DocumentosFiscalesEmision_EmpresaId_SucursalId`;
+ALTER TABLE `ExistenciasVariante` DROP INDEX `IX_ExistenciasVariante_EmpresaId_AlmacenId_UbicacionAlmacenId`;
+ALTER TABLE `MovimientosInventario` DROP INDEX `IX_MovimientosInventario_EmpresaId_AlmacenId_UbicacionAlmacenId`;
+ALTER TABLE `PagosOnline` DROP INDEX `IX_PagosOnline_EmpresaId_FacturaId`;
+ALTER TABLE `PreparacionPedidoVentaDetalles` DROP INDEX `IX_PreparacionPedidoVentaDetalles_EmpresaId_AlmacenId_U_ab46262c`;
+ALTER TABLE `RecepcionCompraDetalles` DROP INDEX `IX_RecepcionCompraDetalles_EmpresaId_AlmacenId_Ubicacio_8a10442f`;
+ALTER TABLE `ReservaInventarioDetalles` DROP INDEX `IX_ReservaInventarioDetalles_EmpresaId_AlmacenId_Ubicac_b786f94a`;
+ALTER TABLE `SecuenciasDocumento` DROP INDEX `IX_SecuenciasDocumento_EmpresaId_SucursalId`;
+ALTER TABLE `UsuarioEmpresas` DROP INDEX `IX_UsuarioEmpresas_EmpresaId_RolId`;
+ALTER TABLE `VentaDetalles` DROP INDEX `IX_VentaDetalles_EmpresaId_AlmacenId_UbicacionAlmacenId`;
 -- Recrear un esquema verdaderamente anterior a AMBAS migraciones P0.
 -- Un nuevo EnsureCreated contiene índices y 12 FKs compuestas; retirarlas
 -- primero permite simular el legado sin silenciar las restricciones.

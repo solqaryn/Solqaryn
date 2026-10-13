@@ -685,5 +685,22 @@ public static class CommercialTenantRemainingModel
                 .HasForeignKey("EmpresaId").OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("FK_RolPermisos_Empresas_EmpresaId");
         }
+        Get("Solqaryn.Domain.Entities.AjusteInventarioDetalle").HasIndex(new[] { "EmpresaId", "AlmacenId", "UbicacionAlmacenId" }).HasDatabaseName("IX_AjusteInventarioDetalles_EmpresaId_AlmacenId_Ubicaci_7edecb64");
+        Get("Solqaryn.Domain.Entities.CapaCostoInventario").HasIndex(new[] { "EmpresaId", "AlmacenId", "UbicacionAlmacenId" }).HasDatabaseName("IX_CapasCostoInventario_EmpresaId_AlmacenId_UbicacionAlmacenId");
+        Get("Solqaryn.Domain.Entities.CompraDetalle").HasIndex(new[] { "EmpresaId", "AlmacenId", "UbicacionAlmacenId" }).HasDatabaseName("IX_CompraDetalles_EmpresaId_AlmacenId_UbicacionAlmacenId");
+        Get("Solqaryn.Domain.Entities.ConsumoInsumoDetalle").HasIndex(new[] { "EmpresaId", "AlmacenId", "UbicacionAlmacenId" }).HasDatabaseName("IX_ConsumoInsumoDetalles_EmpresaId_AlmacenId_UbicacionAlmacenId");
+        Get("Solqaryn.Domain.Entities.ConteoInventarioDetalle").HasIndex(new[] { "EmpresaId", "AlmacenId", "UbicacionAlmacenId" }).HasDatabaseName("IX_ConteoInventarioDetalles_EmpresaId_AlmacenId_Ubicaci_8bcaedc4");
+        Get("Solqaryn.Domain.Entities.ConteoInventarioDetalle").HasIndex(new[] { "EmpresaId", "ConteoInventarioId", "AlmacenId" }).HasDatabaseName("IX_ConteoInventarioDetalles_EmpresaId_ConteoInventarioI_d5c0a907");
+        Get("Solqaryn.Domain.Entities.DocumentoFiscalEmision").HasIndex(new[] { "EmpresaId", "FacturaId" }).HasDatabaseName("IX_DocumentosFiscalesEmision_EmpresaId_FacturaId");
+        Get("Solqaryn.Domain.Entities.DocumentoFiscalEmision").HasIndex(new[] { "EmpresaId", "SucursalId" }).HasDatabaseName("IX_DocumentosFiscalesEmision_EmpresaId_SucursalId");
+        Get("Solqaryn.Domain.Entities.ExistenciaVariante").HasIndex(new[] { "EmpresaId", "AlmacenId", "UbicacionAlmacenId" }).HasDatabaseName("IX_ExistenciasVariante_EmpresaId_AlmacenId_UbicacionAlmacenId");
+        Get("Solqaryn.Domain.Entities.MovimientoInventario").HasIndex(new[] { "EmpresaId", "AlmacenId", "UbicacionAlmacenId" }).HasDatabaseName("IX_MovimientosInventario_EmpresaId_AlmacenId_UbicacionAlmacenId");
+        Get("Solqaryn.Domain.Entities.PagoOnline").HasIndex(new[] { "EmpresaId", "FacturaId" }).HasDatabaseName("IX_PagosOnline_EmpresaId_FacturaId");
+        Get("Solqaryn.Domain.Entities.PreparacionPedidoVentaDetalle").HasIndex(new[] { "EmpresaId", "AlmacenId", "UbicacionAlmacenId" }).HasDatabaseName("IX_PreparacionPedidoVentaDetalles_EmpresaId_AlmacenId_U_ab46262c");
+        Get("Solqaryn.Domain.Entities.RecepcionCompraDetalle").HasIndex(new[] { "EmpresaId", "AlmacenId", "UbicacionAlmacenId" }).HasDatabaseName("IX_RecepcionCompraDetalles_EmpresaId_AlmacenId_Ubicacio_8a10442f");
+        Get("Solqaryn.Domain.Entities.ReservaInventarioDetalle").HasIndex(new[] { "EmpresaId", "AlmacenId", "UbicacionAlmacenId" }).HasDatabaseName("IX_ReservaInventarioDetalles_EmpresaId_AlmacenId_Ubicac_b786f94a");
+        Get("Solqaryn.Domain.Entities.SecuenciaDocumento").HasIndex(new[] { "EmpresaId", "SucursalId" }).HasDatabaseName("IX_SecuenciasDocumento_EmpresaId_SucursalId");
+        Get("Solqaryn.Domain.Entities.UsuarioEmpresa").HasIndex(new[] { "EmpresaId", "RolId" }).HasDatabaseName("IX_UsuarioEmpresas_EmpresaId_RolId");
+        Get("Solqaryn.Domain.Entities.VentaDetalle").HasIndex(new[] { "EmpresaId", "AlmacenId", "UbicacionAlmacenId" }).HasDatabaseName("IX_VentaDetalles_EmpresaId_AlmacenId_UbicacionAlmacenId");
     }
 }

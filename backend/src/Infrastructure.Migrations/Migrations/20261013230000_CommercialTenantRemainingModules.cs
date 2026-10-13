@@ -330,6 +330,23 @@ public partial class CommercialTenantRemainingModules : Migration
         m.CreateIndex("IX_RolPermisos_Empresa_RolId", "RolPermisos", new[] { "EmpresaId", "RolId" });
         m.CreateIndex("UX_RolPermisos_Empresa_Rol_Permiso", "RolPermisos", new[] { "EmpresaId", "RolId", "PermisoId" }, unique: true);
         m.AddForeignKey("FK_RolPermisos_Empresas_EmpresaId", "RolPermisos", "EmpresaId", "Empresas", principalColumn: "Id", onDelete: ReferentialAction.Restrict);
+        m.CreateIndex("IX_AjusteInventarioDetalles_EmpresaId_AlmacenId_Ubicaci_7edecb64", "AjusteInventarioDetalles", new[] { "EmpresaId", "AlmacenId", "UbicacionAlmacenId" });
+        m.CreateIndex("IX_CapasCostoInventario_EmpresaId_AlmacenId_UbicacionAlmacenId", "CapasCostoInventario", new[] { "EmpresaId", "AlmacenId", "UbicacionAlmacenId" });
+        m.CreateIndex("IX_CompraDetalles_EmpresaId_AlmacenId_UbicacionAlmacenId", "CompraDetalles", new[] { "EmpresaId", "AlmacenId", "UbicacionAlmacenId" });
+        m.CreateIndex("IX_ConsumoInsumoDetalles_EmpresaId_AlmacenId_UbicacionAlmacenId", "ConsumoInsumoDetalles", new[] { "EmpresaId", "AlmacenId", "UbicacionAlmacenId" });
+        m.CreateIndex("IX_ConteoInventarioDetalles_EmpresaId_AlmacenId_Ubicaci_8bcaedc4", "ConteoInventarioDetalles", new[] { "EmpresaId", "AlmacenId", "UbicacionAlmacenId" });
+        m.CreateIndex("IX_ConteoInventarioDetalles_EmpresaId_ConteoInventarioI_d5c0a907", "ConteoInventarioDetalles", new[] { "EmpresaId", "ConteoInventarioId", "AlmacenId" });
+        m.CreateIndex("IX_DocumentosFiscalesEmision_EmpresaId_FacturaId", "DocumentosFiscalesEmision", new[] { "EmpresaId", "FacturaId" });
+        m.CreateIndex("IX_DocumentosFiscalesEmision_EmpresaId_SucursalId", "DocumentosFiscalesEmision", new[] { "EmpresaId", "SucursalId" });
+        m.CreateIndex("IX_ExistenciasVariante_EmpresaId_AlmacenId_UbicacionAlmacenId", "ExistenciasVariante", new[] { "EmpresaId", "AlmacenId", "UbicacionAlmacenId" });
+        m.CreateIndex("IX_MovimientosInventario_EmpresaId_AlmacenId_UbicacionAlmacenId", "MovimientosInventario", new[] { "EmpresaId", "AlmacenId", "UbicacionAlmacenId" });
+        m.CreateIndex("IX_PagosOnline_EmpresaId_FacturaId", "PagosOnline", new[] { "EmpresaId", "FacturaId" });
+        m.CreateIndex("IX_PreparacionPedidoVentaDetalles_EmpresaId_AlmacenId_U_ab46262c", "PreparacionPedidoVentaDetalles", new[] { "EmpresaId", "AlmacenId", "UbicacionAlmacenId" });
+        m.CreateIndex("IX_RecepcionCompraDetalles_EmpresaId_AlmacenId_Ubicacio_8a10442f", "RecepcionCompraDetalles", new[] { "EmpresaId", "AlmacenId", "UbicacionAlmacenId" });
+        m.CreateIndex("IX_ReservaInventarioDetalles_EmpresaId_AlmacenId_Ubicac_b786f94a", "ReservaInventarioDetalles", new[] { "EmpresaId", "AlmacenId", "UbicacionAlmacenId" });
+        m.CreateIndex("IX_SecuenciasDocumento_EmpresaId_SucursalId", "SecuenciasDocumento", new[] { "EmpresaId", "SucursalId" });
+        m.CreateIndex("IX_UsuarioEmpresas_EmpresaId_RolId", "UsuarioEmpresas", new[] { "EmpresaId", "RolId" });
+        m.CreateIndex("IX_VentaDetalles_EmpresaId_AlmacenId_UbicacionAlmacenId", "VentaDetalles", new[] { "EmpresaId", "AlmacenId", "UbicacionAlmacenId" });
     }
 
     protected override void Down(MigrationBuilder m) =>
