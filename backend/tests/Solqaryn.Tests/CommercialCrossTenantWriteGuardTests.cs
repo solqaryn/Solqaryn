@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Solqaryn.Application.Security;
 using Solqaryn.Application.Exceptions;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Infrastructure.Persistence;
@@ -12,6 +14,81 @@ public sealed class CommercialCrossTenantWriteGuardTests
         new(new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase("commercial-cross-owner-" + Guid.NewGuid().ToString("N"))
             .Options);
+
+    [Fact]
+    public async Task Tenant_A_no_puede_modificar_producto_persistido_de_B()
+    {
+        var http = new DefaultHttpContext();
+        var accessor = new HttpContextAccessor { HttpContext = http };
+        await using var db = new AppDbContext(
+            new DbContextOptionsBuilder<AppDbContext>()
+                .UseInMemoryDatabase("verified-owner-" + Guid.NewGuid().ToString("N"))
+                .Options,
+            tenantHttpContextAccessor: accessor);
+        var a = new Empresa("Empresa A");
+        var b = new Empresa("Empresa B");
+        db.Set<Empresa>().AddRange(a, b);
+        await db.SaveChangesAsync();
+
+        var productoB = new Producto { Nombre = "Producto B", EmpresaId = b.Id };
+        db.Productos.Add(productoB);
+        await db.SaveChangesAsync();
+
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = a.Id;
+        http.Request.Headers["X-Empresa-Id"] = b.Id.ToString();
+        productoB.Nombre = "Intento de cambio desde A";
+        await Assert.ThrowsAsync<ForbiddenAccessException>(() => db.SaveChangesAsync());
+
+        var persistido = await db.Productos.AsNoTracking().SingleAsync(p => p.Id == productoB.Id);
+        Assert.Equal("Producto B", persistido.Nombre);
+    }
+
+    [Fact]
+    public async Task Tenant_A_no_puede_crear_producto_propiedad_de_B()
+    {
+        var http = new DefaultHttpContext();
+        var accessor = new HttpContextAccessor { HttpContext = http };
+        await using var db = new AppDbContext(
+            new DbContextOptionsBuilder<AppDbContext>()
+                .UseInMemoryDatabase("verified-owner-" + Guid.NewGuid().ToString("N"))
+                .Options,
+            tenantHttpContextAccessor: accessor);
+        var a = new Empresa("Empresa A");
+        var b = new Empresa("Empresa B");
+        db.Set<Empresa>().AddRange(a, b);
+        await db.SaveChangesAsync();
+
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = a.Id;
+        db.Productos.Add(new Producto { Nombre = "Inyectado", EmpresaId = b.Id });
+        await Assert.ThrowsAsync<ForbiddenAccessException>(() => db.SaveChangesAsync());
+        Assert.Empty(await db.Productos.AsNoTracking().ToListAsync());
+    }
+
+    [Fact]
+    public async Task Tenant_A_puede_modificar_su_producto_con_marca_verificada()
+    {
+        var http = new DefaultHttpContext();
+        var accessor = new HttpContextAccessor { HttpContext = http };
+        await using var db = new AppDbContext(
+            new DbContextOptionsBuilder<AppDbContext>()
+                .UseInMemoryDatabase("verified-owner-" + Guid.NewGuid().ToString("N"))
+                .Options,
+            tenantHttpContextAccessor: accessor);
+        var a = new Empresa("Empresa A");
+        db.Set<Empresa>().Add(a);
+        await db.SaveChangesAsync();
+        var productoA = new Producto { Nombre = "Producto A", EmpresaId = a.Id };
+        db.Productos.Add(productoA);
+        await db.SaveChangesAsync();
+
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = a.Id;
+        productoA.Nombre = "Producto A editado";
+        await db.SaveChangesAsync();
+
+        var persistido = await db.Productos.AsNoTracking().SingleAsync();
+        Assert.Equal(a.Id, persistido.EmpresaId);
+        Assert.Equal("Producto A editado", persistido.Nombre);
+    }
 
     [Fact]
     public async Task Venta_nueva_acepta_producto_del_mismo_tenant_en_un_solo_save()
