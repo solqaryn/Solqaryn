@@ -533,6 +533,8 @@ public class CompraService : ICompraService
             {
                 proveedor = new Proveedor
                 {
+                    // Mismo owner verificado que la compra; nunca desde DTO/header.
+                    EmpresaId = compra.EmpresaId,
                     Nombre = dto.ProveedorNombre.Trim(),
                     Telefono = dto.ProveedorTelefono,
                     Documento = dto.ProveedorDocumento,

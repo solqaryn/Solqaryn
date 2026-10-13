@@ -10,6 +10,10 @@ Solqaryn usa una arquitectura backend por capas, cercana a Clean Architecture pr
 
 El frontend Angular se organiza por funcionalidades con servicios compartidos y controles transversales en `core`.
 
+### Contención adicional de escrituras comerciales (candidato PR #3596)
+
+El `AppDbContext` recibe opcionalmente `IHttpContextAccessor` por DI y recupera exclusivamente la marca de empresa validada tras RBAC en `RequierePermiso`. Antes de `SaveChangesAsync`, `CommercialCrossTenantWriteGuard` rechaza operaciones `Added/Modified/Deleted` sobre raíces comerciales con dueño positivo ajeno al tenant verificado, incluso si `EmpresaId` permanece intacto. Para referencias nuevas del mismo `SaveChangesAsync`, el dueño proviene de entidades EF `Added`; las referencias ya persistidas se contrastan contra MySQL. No constituye autorización de lecturas, uso público, jobs ni backfill; el P0 permanece en cuarentena hasta certificación integral.
+
 ## 2. Componentes principales
 
 ### Frontend Angular
@@ -262,3 +266,11 @@ La cuarentena de API y el bloqueo de alta de segunda empresa **permanecen**. Est
 ## 2026-10-13 — Owner verificado para nuevas altas (candidato dependiente)
 
 Las altas administrativas de Producto, Cliente, Proveedor, Compra y Venta propagan `EmpresaId` solo desde el identificador firmado por el filtro `RequierePermiso` en `HttpContext.Items`. La cabecera `X-Empresa-Id` no es fuente de autoridad. Los flujos sin contexto RBAC conservan NULL durante la etapa expand; esto NO certifica aislamiento de filas, relaciones, tienda pública, jobs ni datos históricos. La cuarentena P0 permanece.
+
+## 2026-10-13 — Contención adicional de referencias comerciales cruzadas
+
+`CommercialCrossTenantWriteGuard` valida antes de `AppDbContext.SaveChangesAsync` nuevas referencias Venta-Cliente, Compra-Proveedor, VentaDetalle-Producto y CompraDetalle-Producto cuando ambas partes tienen `EmpresaId` explícito. Rechaza mezclas empresariales; conserva NULL legacy sin atribución. No sustituye aislamiento por fila en consultas ni permite retirar la cuarentena P0.
+
+La misma protección rechaza cambios de `EmpresaId` sobre las cinco raíces comerciales ya persistidas, incluida una atribución de `NULL` legacy mediante servicios ordinarios. La atribución histórica exige un procedimiento excepcional de datos respaldado y auditado, nunca actualización normal de entidad.
+
+Las entradas nuevas de `RegistroAuditoria` se marcan con `EmpresaId` solamente cuando el filtro RBAC ha validado el contexto tenant de la solicitud. Un header HTTP no marca auditorías; registros históricos permanecen sin atribuir.

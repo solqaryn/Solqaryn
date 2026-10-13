@@ -124,7 +124,9 @@ jobs:
           grep -q '20261006111818_OracleBaseline' backend/src/Infrastructure.Migrations/Migrations/20261006111818_OracleBaseline.Designer.cs
 
           if [ "$GITHUB_EVENT_NAME" = pull_request ]; then
-            git fetch origin "$GITHUB_BASE_REF" --depth=1
+            # Checkout anterior ya tiene fetch-depth: 0. No convertirlo a shallow.
+            git fetch origin "$GITHUB_BASE_REF"
+            git merge-base "origin/$GITHUB_BASE_REF" HEAD >/dev/null
             changed="$(git diff --name-only "origin/$GITHUB_BASE_REF"...HEAD)"
             if printf '%s\n' "$changed" | grep -E '^backend/src/Infrastructure/(Migrations|Persistence/Migrations)/'; then
               echo 'Las 107 migraciones Pomelo historicas son inmutables durante Fase 7.'

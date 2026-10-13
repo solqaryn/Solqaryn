@@ -1,5 +1,7 @@
 using Solqaryn.Application.Exceptions;
 using Solqaryn.Application.Interfaces;
+using Solqaryn.Application.Security;
+using Microsoft.AspNetCore.Http;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Entities.Contabilidad;
 using Solqaryn.Domain.Enums;
@@ -11,12 +13,15 @@ namespace Solqaryn.Infrastructure.Persistence;
 public class AppDbContext : DbContext
 {
     private readonly IPublicStoreCache? _publicStoreCache;
+    private readonly IHttpContextAccessor? _tenantHttpContextAccessor;
 
     public AppDbContext(
         DbContextOptions<AppDbContext> options,
-        IPublicStoreCache? publicStoreCache = null) : base(options)
+        IPublicStoreCache? publicStoreCache = null,
+        IHttpContextAccessor? tenantHttpContextAccessor = null) : base(options)
     {
         _publicStoreCache = publicStoreCache;
+        _tenantHttpContextAccessor = tenantHttpContextAccessor;
     }
 
     public DbSet<Producto> Productos => Set<Producto>();
@@ -105,13 +110,44 @@ public class AppDbContext : DbContext
     public DbSet<DashboardKpiConfiguracion> DashboardKpiConfiguraciones => Set<DashboardKpiConfiguracion>();
     public DbSet<MensajeOutbox> MensajesOutbox => Set<MensajeOutbox>();
 
-    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    // No permitir que la vía síncrona eluda los guards asíncronos de aislamiento,
+    // ni siquiera mediante SaveChanges(bool). El backend productivo usa MySQL.
+    public override int SaveChanges() => SaveChanges(acceptAllChangesOnSuccess: true);
+
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        var cambiaComercial = ChangeTracker.Entries()
+            .Any(e => e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted &&
+                      (e.Entity is Producto or Cliente or Proveedor or Compra or Venta or
+                          CompraDetalle or VentaDetalle or ProductoVariante or
+                          ExistenciaVariante or MovimientoInventario or Factura));
+
+        if (ChangeTracker.HasChanges() && (Database.IsRelational() || cambiaComercial))
+            throw new NotSupportedException(
+                "Las escrituras comerciales requieren SaveChangesAsync para ejecutar las validaciones de seguridad.");
+
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    // El overload bool también debe pasar por el mismo pipeline de seguridad.
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        => SaveChangesAsync(acceptAllChangesOnSuccess: true, cancellationToken);
+
+    public override async Task<int> SaveChangesAsync(
+        bool acceptAllChangesOnSuccess,
+        CancellationToken cancellationToken = default)
     {
         var cacheSegments = DetectarInvalidacionesStorefront();
 
+        // Solo el contexto RBAC verificado por backend autoriza escribir filas con dueño.
+        // La ausencia de marca nunca habilita multiempresa; continúa el P0 de cuarentena.
+        var empresaAutorizada = VerifiedCommercialTenant.Resolve(
+            _tenantHttpContextAccessor?.HttpContext);
+        await CommercialCrossTenantWriteGuard.ValidateAsync(
+            this, cancellationToken, empresaAutorizada);
         await ValidarAislamientoComercialVentasAsync(cancellationToken);
         await PrepararValorizacionComprasAsync(cancellationToken);
-        var guardados = await base.SaveChangesAsync(cancellationToken);
+        var guardados = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
 
         if (guardados > 0 && cacheSegments.Count > 0)
             _publicStoreCache?.InvalidateAll(cacheSegments.ToArray());
