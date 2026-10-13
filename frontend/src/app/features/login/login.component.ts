@@ -12,6 +12,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service';
 import { SessionActivityService } from '../../core/auth/session-activity.service';
 import { TenantContextService } from '../../core/auth/tenant-context.service';
+import { ApiAvailabilityService } from '../../core/auth/api-availability.service';
 import { TenantSelectorComponent } from '../../core/auth/tenant-selector.component';
 import { EmpresaIdentidadService } from '../../services/empresa-identidad.service';
 
@@ -35,6 +36,7 @@ export class LoginComponent {
   private readonly fb = inject(FormBuilder);
   readonly authService = inject(AuthService);
   readonly tenantContext = inject(TenantContextService);
+  readonly disponibilidad = inject(ApiAvailabilityService);
   private readonly permisosRuntime = inject(PermisosRuntimeService);
   private readonly sessionActivity = inject(SessionActivityService);
   readonly identidad = inject(EmpresaIdentidadService);
@@ -121,6 +123,10 @@ export class LoginComponent {
   }
 
   private obtenerMensajeLogin(err: HttpErrorResponse): string {
+    if ([0, 502, 503, 504].includes(err.status)) {
+      return 'El servidor está temporalmente no disponible. Intentamos reconectar, pero aún no responde. Espera un momento y vuelve a intentarlo.';
+    }
+
     const mensajeBackend = typeof err.error?.message === 'string'
       ? err.error.message.trim()
       : '';
