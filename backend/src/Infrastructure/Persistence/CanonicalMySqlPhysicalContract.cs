@@ -23,6 +23,7 @@ public static class CanonicalMySqlPhysicalContract
         await CommercialTenantSalesPhysicalConstraints.ApplyFreshAsync(db, cancellationToken);
         await CommercialTenantTaxDiscountPhysicalConstraints.ApplyFreshAsync(db, cancellationToken);
         await CommercialTenantOwnershipGraphPhysicalConstraints.ApplyFreshAsync(db, cancellationToken);
+        await CommercialTenantRemainingPhysicalConstraints.ApplyFreshAsync(db, cancellationToken);
     }
 
     public static async Task VerifyAsync(
@@ -36,6 +37,7 @@ public static class CanonicalMySqlPhysicalContract
         await CommercialTenantSalesPhysicalConstraints.VerifyAsync(db, cancellationToken);
         await CommercialTenantTaxDiscountPhysicalConstraints.VerifyAsync(db, cancellationToken);
         await CommercialTenantOwnershipGraphPhysicalConstraints.VerifyAsync(db, cancellationToken);
+        await CommercialTenantRemainingPhysicalConstraints.VerifyAsync(db, cancellationToken);
 
         var triggerCount = await db.Database
             .SqlQueryRaw<long>("""
