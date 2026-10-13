@@ -200,7 +200,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          nohup npm start -- --host 127.0.0.1 --port 4200 > n11-sucursales-frontend.log 2>&1 &
+          # PORT=5005 está reservado para API; Angular debe usar su --port 420x.
+          # Evitar la precedencia de PORT en @angular/build dev-server.
+          nohup env -u PORT npm start -- --host 127.0.0.1 --port 4200 > n11-sucursales-frontend.log 2>&1 &
           echo $! > n11-sucursales-frontend.pid
           for attempt in $(seq 1 60); do
             if curl --fail --silent http://127.0.0.1:4200/login > /dev/null; then
