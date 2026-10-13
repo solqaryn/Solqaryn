@@ -212,6 +212,12 @@ jobs:
              SET `EmpresaId`=1
            WHERE `Codigo`='SIN_CLASIFICAR' AND `EmpresaId` IS NULL;
 
+          -- Impuestos seed globales del fixture deben ser de Empresa E2E
+          -- antes de insertar VentaImpuestos vinculados. Solo MySQL efimero.
+          UPDATE `Impuestos`
+             SET `EmpresaId`=1
+           WHERE `EmpresaId` IS NULL;
+
           INSERT INTO `UsuarioEmpresas` (`UsuarioId`,`EmpresaId`,`RolId`,`Activa`,`FechaCreacion`,`FechaActualizacion`)
           SELECT u.`Id`,1,u.`RolId`,TRUE,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)
           FROM `Usuarios` u
