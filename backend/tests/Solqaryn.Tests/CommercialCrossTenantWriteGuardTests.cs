@@ -95,4 +95,36 @@ public sealed class CommercialCrossTenantWriteGuardTests
         await db.SaveChangesAsync();
         Assert.Null((await db.Proveedores.SingleAsync()).EmpresaId);
     }
+
+    [Fact]
+    public async Task Empresa_propietaria_asignada_no_puede_trasladarse_a_otra()
+    {
+        await using var db = NewContext();
+        var empresaA = new Empresa("Empresa A");
+        var empresaB = new Empresa("Empresa B");
+        db.Set<Empresa>().AddRange(empresaA, empresaB);
+        await db.SaveChangesAsync();
+
+        var producto = new Producto { Nombre = "Producto A", EmpresaId = empresaA.Id };
+        db.Productos.Add(producto);
+        await db.SaveChangesAsync();
+
+        producto.EmpresaId = empresaB.Id;
+        await Assert.ThrowsAsync<BusinessRuleException>(() => db.SaveChangesAsync());
+    }
+
+    [Fact]
+    public async Task Dato_legacy_no_puede_recibir_owner_por_escritura_ordinaria()
+    {
+        await using var db = NewContext();
+        var empresa = new Empresa("Empresa A");
+        db.Set<Empresa>().Add(empresa);
+        await db.SaveChangesAsync();
+        var proveedor = new Proveedor { Nombre = "Legacy", EmpresaId = null };
+        db.Proveedores.Add(proveedor);
+        await db.SaveChangesAsync();
+
+        proveedor.EmpresaId = empresa.Id;
+        await Assert.ThrowsAsync<BusinessRuleException>(() => db.SaveChangesAsync());
+    }
 }
