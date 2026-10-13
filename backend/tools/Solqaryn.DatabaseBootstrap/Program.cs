@@ -112,7 +112,21 @@ var beforeAdoption = await ScalarLongAsync(
     """);
 
 await db.Database.CloseConnectionAsync();
-await db.Database.MigrateAsync();
+if (mode == "fresh")
+{
+    // EnsureCreated ya generó las columnas/FK del modelo actual.
+    // Adoptar OracleBaseline sin aplicar el DDL de expand duplicado.
+    await db.Database.MigrateAsync("20261006111818_OracleBaseline");
+    await db.Database.ExecuteSqlRawAsync("""
+        INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+        VALUES ('20261013121500_CommercialTenantRootExpand', '10.0.12');
+        """);
+}
+else
+{
+    // En esquemas persistentes, aplicar el expand EF después de backup verificado.
+    await db.Database.MigrateAsync();
+}
 await db.Database.OpenConnectionAsync();
 
 var afterAdoption = await ScalarLongAsync(

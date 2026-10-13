@@ -9,6 +9,14 @@ public class ProveedorConfiguration : IEntityTypeConfiguration<Proveedor>
     public void Configure(EntityTypeBuilder<Proveedor> builder)
     {
         builder.ToTable("Proveedores");
+        // FK restrictiva para nuevas asignaciones; NULL legacy sin atribuir.
+        builder.HasIndex(x => x.EmpresaId).HasDatabaseName("IX_Proveedores_EmpresaId");
+        builder.HasOne<Empresa>()
+            .WithMany()
+            .HasForeignKey(x => x.EmpresaId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("FK_Proveedores_Empresas_EmpresaId");
+
         builder.Property(p => p.Nombre).IsRequired().HasMaxLength(200);
         builder.HasIndex(p => p.Nombre).HasDatabaseName("IX_Proveedores_Nombre");
         builder.Property(p => p.Telefono).HasMaxLength(30);

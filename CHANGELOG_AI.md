@@ -5,6 +5,22 @@
 - **No convierte membresía ACTUAL en evidencia histórica ni ejecuta backfill**, DML, DDL o restore. Exige cinco columnas `EmpresaId` antes de operar; condicionada al expand comercial certificado.
 - No modifica QA, PROD, servicios ni datos persistentes. El P0 sigue abierto.
 
+## 2026-10-13 — Prueba de expansión real desde esquema legacy MySQL (PR #3591)
+
+- Nuevo gate desechable `tenant-commercial-root-expand-ephemeral.yml`: revierte las cinco columnas solo en MySQL CI efímero, siembra una fila legacy y aplica EF migration real; verifica cinco FK/índices, legado nulo sin pérdida, idempotencia y pending-model=0.
+- Runbook P0 actualizado al estado desplegado de contención y el candidato expand; se preservan backup/restore DEV #38399423450, no se realiza backfill ni se habilita nueva empresa.
+
+## 2026-10-13 — Recovery de CI tras expand de EmpresaId
+
+- Detectado en PR #3591: tests MySQL efímeros llaman EnsureCreated seguido de Migrate, lo cual intenta volver a añadir columnas EmpresaId. El bootstrap test ahora registra la migración expand como aplicada tras adoptar OracleBaseline, igual que el bootstrap oficial.
+- El gate de recuperación Oracle actualiza su expectativa de historia EF a dos migraciones; comprueba explícitamente ambas y no pierde invariantes de respaldo/tenancy.
+- No se cambia ni migra Aiven; PR continúa draft, cuarentena activa.
+
+## 2026-10-13 — Preparación de esquema comercial para aislamiento tenant (candidato)
+
+- Expand sin backfill: `EmpresaId?` en cinco raíces comerciales, índices y FK restrictivas; migración Oracle `20261013121500_CommercialTenantRootExpand`, snapshot y DatabaseBootstrap actualizados para fresh/adopt.
+- Pruebas de modelo: FK restrictiva, índice y legacy nulo. El guard preventivo permanece. Requiere CI exact-head; backup+restore DEV y atribución histórica antes de aplicar DDL. No significa P0 LISTO.
+
 ## 2026-10-12 — Recuperación de CI N1.1/N1.2 tras Oracle EF10 y contención tenant
 
 - Evidencia causal exact-head `1985bf1b`: los dos workflows N1.1/N1.2 fallaban **antes de iniciar la API** por intentar ejecutar `OracleBaseline` sobre MySQL sin tablas (`Empresas doesn't exist`). Se reemplazó esa ruta incorrecta por bootstrap Oracle fresh oficial `Solqaryn.DatabaseBootstrap` antes del inicio normal de la API. Se conserva `Database__ApplyMigrationsOnStartup=true` tras el bootstrap, para ejecutar los seeds canónicos SeedPermiso/SeedAdmin/SeedFiscal sin volver a crear el esquema.

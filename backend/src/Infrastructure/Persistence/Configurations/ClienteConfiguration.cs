@@ -9,6 +9,14 @@ public class ClienteConfiguration : IEntityTypeConfiguration<Cliente>
     public void Configure(EntityTypeBuilder<Cliente> builder)
     {
         builder.ToTable("Clientes");
+        // FK restrictiva para nuevas asignaciones; NULL legacy sin atribuir.
+        builder.HasIndex(x => x.EmpresaId).HasDatabaseName("IX_Clientes_EmpresaId");
+        builder.HasOne<Empresa>()
+            .WithMany()
+            .HasForeignKey(x => x.EmpresaId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("FK_Clientes_Empresas_EmpresaId");
+
         builder.Property(c => c.Nombre).IsRequired().HasMaxLength(200);
         builder.HasIndex(c => c.Nombre).HasDatabaseName("IX_Clientes_Nombre");
         builder.Property(c => c.Telefono).HasMaxLength(30);

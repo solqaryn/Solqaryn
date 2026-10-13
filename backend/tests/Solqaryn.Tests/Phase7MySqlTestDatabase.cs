@@ -52,7 +52,13 @@ internal static class Phase7MySqlTestDatabase
         await CanonicalMySqlPhysicalContract.ApplyFreshBootstrapSupplementsAsync(db);
         await CanonicalMySqlPhysicalContract.VerifyAsync(db);
 
-        await db.Database.MigrateAsync();
+        // EnsureCreated materializa todas las columnas actuales. Adoptar solo la
+        // migración histórica y marcar expand para NO duplicar columnas ni FKs.
+        await db.Database.MigrateAsync("20261006111818_OracleBaseline");
+        await db.Database.ExecuteSqlRawAsync("""
+            INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+            VALUES ('20261013121500_CommercialTenantRootExpand', '10.0.12');
+            """);
 
         if ((await db.Database.GetPendingMigrationsAsync()).Any())
             throw new InvalidOperationException("Phase 7 test bootstrap left pending Oracle migrations.");
