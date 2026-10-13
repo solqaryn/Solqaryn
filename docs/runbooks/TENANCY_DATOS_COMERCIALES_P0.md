@@ -14,6 +14,10 @@
 
 El guard comercial también diferencia un registro ya persistido de un padre o referencia que EF está insertando en el mismo `SaveChangesAsync`. Solo acepta un owner del ChangeTracker cuando esa entidad está `Added`; para referencias ya persistidas consulta el owner de la base de datos sin confiar en navegaciones. Esto permite compras, ventas y clientes nuevos de la misma empresa sin relajar el rechazo A/B y conserva en cuarentena las filas legacy `EmpresaId=NULL`. Cobertura inicial de cinco pruebas dirigidas; requiere CI exact-head.
 
+## Comprobación post-RBAC para escrituras con dueño explícito (candidato PR #3596)
+
+En solicitudes donde `RequierePermiso` estableció la marca segura de empresa, `AppDbContext` transmite ese tenant al guard de escritura: no es lícito crear, modificar o eliminar `Producto`, `Cliente`, `Proveedor`, `Compra` o `Venta` de un propietario explícito diferente, aunque no se modifique el valor `EmpresaId`. La cabecera `X-Empresa-Id` no concede esta autoridad. Los datos históricos sin owner conocido mantienen cuarentena; una petición sin marca verificada no se considera habilitada para multiempresa. Esta defensa no cubre todas las consultas, el catálogo público, los demás descendientes ni las rutas de SQL directo.
+
 ## Contención adicional candidata en PR #3596 (aún no equivale a multiempresa)
 
 La validación previa a guardar ahora alcanza ambos overloads async de EF y bloquea las rutas síncronas con mutación comercial o escritura relacional; consulta el owner persistido para impedir `Update` desconectado con `EmpresaId` suplantado, contrasta FKs guardados (no navegaciones cambiantes), rechaza enlaces de owner conocido hacia filas históricas sin dueño y verifica que la variante del detalle pertenezca al producto. Hay pruebas de regresión nuevas; verificar CI exact-head antes de integrar. `ExecuteUpdate`, SQL directo, filtros de todas las lecturas, derivados, tienda anónima, procedencia histórica y migración permanecen como P0. No quitar el middleware preventivo.

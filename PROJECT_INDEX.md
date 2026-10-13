@@ -37,6 +37,8 @@ No leer todos los documentos administrativos en cada tarea. Consultarlos solo cu
 
 ## Backend
 
+- **Candidato PR #3596:** `backend/src/Infrastructure/Persistence/AppDbContext.cs` y `CommercialCrossTenantWriteGuard.cs` exigen que las escrituras sobre datos comerciales con owner explícito concuerden con la marca RBAC de la empresa de la sesión; `backend/tests/Solqaryn.Tests/CommercialCrossTenantWriteGuardTests.cs` cubre A/B, grafos recién creados y bypasses. Sin merge aún; seguir `docs/runbooks/TENANCY_DATOS_COMERCIALES_P0.md`.
+
 - Bitácora de nuevos eventos comerciales: `backend/src/Application/Services/AuditoriaService.cs`, `VerifiedCommercialTenant.Resolve(http)` y tests `AuditoriaTenantOwnershipTests.cs`. No permite leer auditorías ajenas ni atribuir historial.
 
 - Inventario verificable del grafo comercial EF (`132` entidades y `66` descendientes relacionados): `docs/tenancy/INVENTARIO_GRAFO_COMERCIAL_P0_DEV.md`. Clasificación preliminar; no significa aislamiento certificado.

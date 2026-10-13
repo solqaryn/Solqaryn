@@ -31,6 +31,8 @@ Ningún plan, fila, gate, fase o secuencia que no esté incorporado al MAESTRO v
 
 ## 3. Arquitectura vigente
 
+- **Candidato comercial PR #3596 (no integrado en `dev` hasta merge):** `AppDbContext` obtiene `VerifiedCommercialTenant` desde `IHttpContextAccessor` cuando existe marca post-RBAC y bloquea escrituras comerciales a owners explícitos distintos; asegura nuevos grafos de venta/compra en la misma transacción. No aísla lecturas ni datos históricos `EmpresaId=NULL`; no retirar cuarentena.
+
 - Bitácora nueva tenant-aware: `AuditoriaService` firma `RegistroAuditoria.EmpresaId` sólo desde marca autorizada de RBAC. Las filas históricas y jobs sin contexto siguen sin atribución; no equivale a filtro empresarial de auditoría.
 
 

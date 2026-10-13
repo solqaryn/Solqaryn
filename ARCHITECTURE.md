@@ -10,6 +10,10 @@ Solqaryn usa una arquitectura backend por capas, cercana a Clean Architecture pr
 
 El frontend Angular se organiza por funcionalidades con servicios compartidos y controles transversales en `core`.
 
+### Contención adicional de escrituras comerciales (candidato PR #3596)
+
+El `AppDbContext` recibe opcionalmente `IHttpContextAccessor` por DI y recupera exclusivamente la marca de empresa validada tras RBAC en `RequierePermiso`. Antes de `SaveChangesAsync`, `CommercialCrossTenantWriteGuard` rechaza operaciones `Added/Modified/Deleted` sobre raíces comerciales con dueño positivo ajeno al tenant verificado, incluso si `EmpresaId` permanece intacto. Para referencias nuevas del mismo `SaveChangesAsync`, el dueño proviene de entidades EF `Added`; las referencias ya persistidas se contrastan contra MySQL. No constituye autorización de lecturas, uso público, jobs ni backfill; el P0 permanece en cuarentena hasta certificación integral.
+
 ## 2. Componentes principales
 
 ### Frontend Angular

@@ -1,3 +1,8 @@
+## 2026-10-13 — Rechazo de mutación comercial desde tenant verificado distinto (PR #3596)
+
+- El contexto EF resuelve `VerifiedCommercialTenant` mediante `IHttpContextAccessor` opcional inyectado, sin fiarse del header; un owner comercial positivo distinto de la empresa autorizada bloquea `Added/Modified/Deleted` de cinco raíces aun sin cambios en `EmpresaId`.
+- Tres nuevas pruebas comprueban rechazo de modificación/alta B desde sesión A, ignorar header fraudulento y permitir editar A desde A. El guard sólo aplica esa comprobación cuando existe marca RBAC; flows sin marca, lecturas y registros legacy siguen pendientes. Ejecutar CI exact-head; no retira la cuarentena ni modifica QA/PROD.
+
 ## 2026-10-13 — Reparacion de validacion multiempresa en grafos de compra/venta nuevos (PR #3596)
 
 - El guard ahora reconoce cabeceras, clientes, proveedores, productos y variantes rastreados por EF como `Added` en la misma unidad de trabajo; cuando el registro ya existe, sigue verificando el owner persistido y no confia en navegaciones manipulables.
