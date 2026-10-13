@@ -1,3 +1,9 @@
+## 2026-10-13 — Candidato tributación/descuentos por EmpresaId
+
+- `VentaImpuestos`, `CompraImpuestos`, `VentaDescuentos`, `HistorialUsoDescuentos`: propiedad empresarial nullable para legacy, índices owner-padre, 5 FKs compuestas con Ventas/Compras/Clientes y validaciones de nuevas escrituras.
+- Migración Oracle EF10 aditiva, bootstrap MySQL fresh/legacy, pruebas A/B; no altera datos, QA ni PROD. Quedan catálogos/configuraciones y otros descendientes por aislar.
+- Mantener cuarentena multiempresa y las protecciones de lecturas/escrituras existentes.
+
 ## 2026-10-13 — Candidato adicional P0 #3: factura y adjuntos de compra por empresa
 
 - `FacturaDetalles`, `FacturaPagos` y `CompraDocumentos` incorporan `EmpresaId`, indices por empresa, tres FKs compuestas documentadas/validadas en MySQL y guard de escrituras RBAC. `Facturas` incorpora indice unico `(EmpresaId, Id)`.
