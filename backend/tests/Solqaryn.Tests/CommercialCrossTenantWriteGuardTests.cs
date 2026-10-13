@@ -16,6 +16,43 @@ public sealed class CommercialCrossTenantWriteGuardTests
             .Options);
 
     [Fact]
+    public async Task Producto_nuevo_verificado_hereda_owner_y_su_ajuste_de_inventario_no_cruza_empresas()
+    {
+        var http = new DefaultHttpContext();
+        await using var db = new AppDbContext(
+            new DbContextOptionsBuilder<AppDbContext>()
+                .UseInMemoryDatabase("tenant-bulk-import-" + Guid.NewGuid().ToString("N"))
+                .Options,
+            tenantHttpContextAccessor: new HttpContextAccessor { HttpContext = http });
+        var a = new Empresa("Empresa A");
+        db.Set<Empresa>().Add(a);
+        await db.SaveChangesAsync();
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = a.Id;
+
+        var producto = new Producto { Nombre = "Carga masiva A" };
+        db.Productos.Add(producto);
+        await db.SaveChangesAsync();
+        Assert.Equal(a.Id, producto.EmpresaId);
+
+        var variante = new ProductoVariante { ProductoId = producto.Id };
+        db.ProductoVariantes.Add(variante);
+        await db.SaveChangesAsync();
+        Assert.Equal(a.Id, variante.EmpresaId);
+
+        var movimiento = new MovimientoInventario
+        {
+            ProductoId = producto.Id,
+            ProductoVarianteId = variante.Id,
+            Cantidad = 7,
+            StockAnterior = 0,
+            StockNuevo = 7
+        };
+        db.MovimientosInventario.Add(movimiento);
+        await db.SaveChangesAsync();
+        Assert.Equal(a.Id, db.Entry(movimiento).Property<int?>("EmpresaId").CurrentValue);
+    }
+
+    [Fact]
     public async Task Tenant_A_no_puede_modificar_producto_persistido_de_B()
     {
         var http = new DefaultHttpContext();
