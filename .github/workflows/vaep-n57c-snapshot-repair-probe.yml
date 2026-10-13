@@ -1,6 +1,15 @@
 name: VAEP N5.7.C effective EF snapshot exact-head gate
 
 on:
+  pull_request:
+    branches:
+      - dev
+    paths:
+      - .github/workflows/vaep-n57c-snapshot-repair-probe.yml
+      - backend/src/Infrastructure.Migrations/Migrations/OracleAppDbContextModelSnapshot.cs
+      - backend/src/Infrastructure/Persistence/AppDbContext.cs
+      - backend/src/Infrastructure/Persistence/Configurations/DashboardKpiConfiguracionConfiguration.cs
+      - backend/src/Domain/Entities/DashboardKpiConfiguracion.cs
   push:
     branches:
       - dev
