@@ -1,3 +1,8 @@
+## 2026-10-13 — Preparación de esquema comercial para aislamiento tenant (candidato)
+
+- Expand sin backfill: `EmpresaId?` en cinco raíces comerciales, índices y FK restrictivas; migración Oracle `20261013121500_CommercialTenantRootExpand`, snapshot y DatabaseBootstrap actualizados para fresh/adopt.
+- Pruebas de modelo: FK restrictiva, índice y legacy nulo. El guard preventivo permanece. Requiere CI exact-head; backup+restore DEV y atribución histórica antes de aplicar DDL. No significa P0 LISTO.
+
 ## 2026-10-12 — Recuperación de CI N1.1/N1.2 tras Oracle EF10 y contención tenant
 
 - Evidencia causal exact-head `1985bf1b`: los dos workflows N1.1/N1.2 fallaban **antes de iniciar la API** por intentar ejecutar `OracleBaseline` sobre MySQL sin tablas (`Empresas doesn't exist`). Se reemplazó esa ruta incorrecta por bootstrap Oracle fresh oficial `Solqaryn.DatabaseBootstrap` antes del inicio normal de la API. Se conserva `Database__ApplyMigrationsOnStartup=true` tras el bootstrap, para ejecutar los seeds canónicos SeedPermiso/SeedAdmin/SeedFiscal sin volver a crear el esquema.

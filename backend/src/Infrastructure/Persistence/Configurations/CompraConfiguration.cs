@@ -9,6 +9,14 @@ public class CompraConfiguration : IEntityTypeConfiguration<Compra>
     public void Configure(EntityTypeBuilder<Compra> builder)
     {
         builder.ToTable("Compras");
+        // FK restrictiva para nuevas asignaciones; NULL legacy sin atribuir.
+        builder.HasIndex(x => x.EmpresaId).HasDatabaseName("IX_Compras_EmpresaId");
+        builder.HasOne<Empresa>()
+            .WithMany()
+            .HasForeignKey(x => x.EmpresaId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("FK_Compras_Empresas_EmpresaId");
+
         builder.Property(c => c.NumeroCompra).IsRequired().HasMaxLength(20);
         builder.HasIndex(c => c.NumeroCompra).IsUnique();
         builder.Property(c => c.ProveedorNombre).IsRequired().HasMaxLength(200);

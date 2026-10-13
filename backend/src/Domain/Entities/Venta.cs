@@ -5,6 +5,10 @@ namespace Solqaryn.Domain.Entities;
 
 public class Venta : ConfirmableEntity
 {
+    // Expand: propiedad nullable para registros históricos aún no atribuidos.
+    // No usar como autoridad de acceso hasta certificar ownership completo.
+    public int? EmpresaId { get; set; }
+
     public string NumeroVenta { get; set; } = string.Empty;
     public DateTime Fecha { get; set; } = DateTime.UtcNow;
 
