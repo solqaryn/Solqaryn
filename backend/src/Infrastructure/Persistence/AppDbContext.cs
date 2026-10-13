@@ -1,5 +1,7 @@
 using Solqaryn.Application.Exceptions;
 using Solqaryn.Application.Interfaces;
+using Solqaryn.Application.Security;
+using Microsoft.AspNetCore.Http;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Entities.Contabilidad;
 using Solqaryn.Domain.Enums;
@@ -11,12 +13,15 @@ namespace Solqaryn.Infrastructure.Persistence;
 public class AppDbContext : DbContext
 {
     private readonly IPublicStoreCache? _publicStoreCache;
+    private readonly IHttpContextAccessor? _tenantHttpContextAccessor;
 
     public AppDbContext(
         DbContextOptions<AppDbContext> options,
-        IPublicStoreCache? publicStoreCache = null) : base(options)
+        IPublicStoreCache? publicStoreCache = null,
+        IHttpContextAccessor? tenantHttpContextAccessor = null) : base(options)
     {
         _publicStoreCache = publicStoreCache;
+        _tenantHttpContextAccessor = tenantHttpContextAccessor;
     }
 
     public DbSet<Producto> Productos => Set<Producto>();
@@ -134,7 +139,12 @@ public class AppDbContext : DbContext
     {
         var cacheSegments = DetectarInvalidacionesStorefront();
 
-        await CommercialCrossTenantWriteGuard.ValidateAsync(this, cancellationToken);
+        // Solo el contexto RBAC verificado por backend autoriza escribir filas con dueño.
+        // La ausencia de marca nunca habilita multiempresa; continúa el P0 de cuarentena.
+        var empresaAutorizada = VerifiedCommercialTenant.Resolve(
+            _tenantHttpContextAccessor?.HttpContext);
+        await CommercialCrossTenantWriteGuard.ValidateAsync(
+            this, cancellationToken, empresaAutorizada);
         await ValidarAislamientoComercialVentasAsync(cancellationToken);
         await PrepararValorizacionComprasAsync(cancellationToken);
         var guardados = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
