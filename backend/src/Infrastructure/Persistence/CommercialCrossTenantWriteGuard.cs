@@ -123,6 +123,12 @@ public static class CommercialCrossTenantWriteGuard
                      .Where(e => e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted &&
                          (e.Entity is Producto or Cliente or Proveedor or Compra or Venta)))
         {
+            // Sólo las filas NUEVAS heredan el tenant desde la marca RBAC
+            // verificada. Nunca adjudicar registros históricos con NULL.
+            if (entry.State == EntityState.Added &&
+                entry.Property("EmpresaId").CurrentValue is null)
+                entry.Property("EmpresaId").CurrentValue = empresaAutorizada;
+
             if (entry.Property("EmpresaId").CurrentValue is int empresaId &&
                 empresaId > 0 && empresaId != empresaAutorizada)
             {
