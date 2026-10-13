@@ -1,0 +1,123 @@
+name: DEV - Evidencia temporal de pertenencia comercial
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/dev-tenant-commercial-temporal-provenance.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: solqaryn-dev-tenant-temporal-readonly
+  cancel-in-progress: false
+jobs:
+  historical-provenance:
+    name: Aiven DEV - pertenencia temporal agregada y solo lectura
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: DEV
+    env:
+      DB_HOST: ${{ vars.SOLQARYN_DEV_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_DEV_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_DEV_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_DEV_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_DEV_DB_PASSWORD }}
+    steps:
+      - name: Preflight del origen y entorno canónicos
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = 'solqaryn/Solqaryn'
+          test "$GITHUB_REF" = 'refs/heads/dev'
+          test "$DB_HOST" = 'solqaryn-mysql-solqaryn.h.aivencloud.com'
+          test "$DB_PORT" = '14402'
+          test "$DB_NAME" = 'solqaryn_dev'
+          test "$DB_USER" = 'solqaryn_dev_user'
+          test -n "$DB_PASSWORD"
+      - name: Instalar cliente MySQL
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq >/dev/null
+          sudo apt-get install -y -qq mysql-client >/dev/null
+      - name: Diagnóstico sin PII ni escritura
+        shell: bash
+        run: |
+          set -euo pipefail
+          export MYSQL_PWD="$DB_PASSWORD"
+          q() {
+            mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" \
+              --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e "$1"
+          }
+          test "$(q 'SELECT DATABASE();')" = 'solqaryn_dev'
+          test "$(q "SELECT SUBSTRING_INDEX(CURRENT_USER(),'@',1);")" = 'solqaryn_dev_user'
+          version="$(q 'SELECT VERSION();')"
+          case "$version" in 8.4.8*) ;; *) echo 'STOP: versión MySQL DEV no aprobada' >&2; exit 1 ;; esac
+          test "$(q "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name IN ('Productos','Clientes','Proveedores','Compras','Ventas') AND column_name='EmpresaId';")" = 5
+          test "$(q "SELECT COUNT(*) FROM Empresas;")" = 1
+          echo 'TEMPORAL_TENANT_READONLY_PREFLIGHT=PASS project=SOLQARYN branch=dev database=solqaryn_dev'
+          mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" \
+            --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names <<'SQL'
+          SET TRANSACTION READ ONLY;
+          START TRANSACTION WITH CONSISTENT SNAPSHOT, READ ONLY;
+          WITH raices AS (
+              SELECT 'Productos' AS Tabla, EmpresaId, CreadoPorUsuarioId, FechaCreacion, FechaActualizacion FROM Productos
+              UNION ALL SELECT 'Clientes', EmpresaId, CreadoPorUsuarioId, FechaCreacion, FechaActualizacion FROM Clientes
+              UNION ALL SELECT 'Proveedores', EmpresaId, CreadoPorUsuarioId, FechaCreacion, FechaActualizacion FROM Proveedores
+              UNION ALL SELECT 'Compras', EmpresaId, CreadoPorUsuarioId, FechaCreacion, FechaActualizacion FROM Compras
+              UNION ALL SELECT 'Ventas', EmpresaId, CreadoPorUsuarioId, FechaCreacion, FechaActualizacion FROM Ventas
+          ), evidencia AS (
+              SELECT r.*,
+                (
+                  SELECT COUNT(DISTINCT m.EmpresaId)
+                  FROM UsuarioEmpresas m
+                  JOIN Empresas e ON e.Id = m.EmpresaId
+                  WHERE m.UsuarioId = r.CreadoPorUsuarioId
+                    AND m.FechaCreacion <= r.FechaCreacion
+                    AND e.FechaCreacion <= r.FechaCreacion
+                ) AS MembresiasDocumentadasAntes,
+                (
+                  SELECT COUNT(DISTINCT m.EmpresaId)
+                  FROM UsuarioEmpresas m
+                  WHERE m.UsuarioId = r.CreadoPorUsuarioId
+                ) AS MembresiasRegistradas,
+                (
+                  SELECT COUNT(*)
+                  FROM UsuarioEmpresas m
+                  WHERE m.UsuarioId = r.CreadoPorUsuarioId
+                    AND m.FechaCreacion > r.FechaCreacion
+                ) AS MembresiasCreadasDespues,
+                (
+                  SELECT COUNT(*)
+                  FROM UsuarioEmpresas m
+                  WHERE m.UsuarioId = r.CreadoPorUsuarioId
+                    AND m.FechaActualizacion > r.FechaCreacion
+                ) AS MembresiasModificadasDespues,
+                (
+                  SELECT COUNT(*)
+                  FROM Empresas e
+                  WHERE e.FechaCreacion > r.FechaCreacion
+                ) AS EmpresasRegistradasDespues
+              FROM raices r
+          )
+          SELECT CONCAT('TABLA=',Tabla,
+            ';TOTAL=',COUNT(*),
+            ';SIN_OWNER=',COALESCE(SUM(EmpresaId IS NULL),0),
+            ';SIN_AUTOR=',COALESCE(SUM(CreadoPorUsuarioId IS NULL),0),
+            ';SIN_MEMBRESIA_PREEXISTENTE=',COALESCE(SUM(MembresiasDocumentadasAntes = 0),0),
+            ';MULTIPLE_PREEXISTENTE=',COALESCE(SUM(MembresiasDocumentadasAntes > 1),0),
+            ';MEMBRESIA_CREADA_DESPUES=',COALESCE(SUM(MembresiasCreadasDespues > 0),0),
+            ';MEMBRESIA_MODIFICADA_DESPUES=',COALESCE(SUM(MembresiasModificadasDespues > 0),0),
+            ';EMPRESA_CREADA_DESPUES=',COALESCE(SUM(EmpresasRegistradasDespues > 0),0),
+            ';FECHAS_INCOHERENTES=',COALESCE(SUM(FechaActualizacion < FechaCreacion),0))
+          FROM evidencia
+          GROUP BY Tabla ORDER BY Tabla;
+          SELECT CONCAT('AUDITORIA_EMPRESAID=',
+            COALESCE(SUM(EmpresaId IS NOT NULL),0),
+            ';AUDITORIA_TOTAL=',COUNT(*))
+          FROM RegistrosAuditoria;
+          COMMIT;
+          SQL
+          unset MYSQL_PWD
+          echo 'TEMPORAL_TENANT_READONLY=PASS sin_backfill=YES sin_ids_ni_pii=YES'
