@@ -2,6 +2,9 @@ namespace Solqaryn.Domain.Entities;
 
 public class FacturaDetalle
 {
+    // Propiedad tenant para nuevas escrituras; NULL legacy en cuarentena.
+    public int? EmpresaId { get; set; }
+
     public int Id { get; set; }
     public int FacturaId { get; set; }
     public Factura? Factura { get; set; }

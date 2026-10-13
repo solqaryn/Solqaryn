@@ -120,7 +120,8 @@ public class AppDbContext : DbContext
             .Any(e => e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted &&
                       (e.Entity is Producto or Cliente or Proveedor or Compra or Venta or
                           CompraDetalle or VentaDetalle or ProductoVariante or
-                          ExistenciaVariante or MovimientoInventario or Factura));
+                          ExistenciaVariante or MovimientoInventario or Factura or
+                          FacturaDetalle or FacturaPago or CompraDocumento));
 
         if (ChangeTracker.HasChanges() && (Database.IsRelational() || cambiaComercial))
             throw new NotSupportedException(
@@ -146,6 +147,8 @@ public class AppDbContext : DbContext
         await CommercialCrossTenantWriteGuard.ValidateAsync(
             this, cancellationToken, empresaAutorizada);
         await CommercialTenantDerivedWriteGuard.ValidateAsync(
+            this, empresaAutorizada, cancellationToken);
+        await CommercialTenantInvoiceWriteGuard.ValidateAsync(
             this, empresaAutorizada, cancellationToken);
         await ValidarAislamientoComercialVentasAsync(cancellationToken);
         await PrepararValorizacionComprasAsync(cancellationToken);

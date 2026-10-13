@@ -9,6 +9,11 @@ public class FacturaPagoConfiguration : IEntityTypeConfiguration<FacturaPago>
     public void Configure(EntityTypeBuilder<FacturaPago> builder)
     {
         builder.ToTable("FacturaPagos");
+        builder.HasIndex(x => new { x.EmpresaId, x.FacturaId })
+            .HasDatabaseName("IX_FacturaPagos_Empresa_Factura");
+        builder.HasOne<Empresa>().WithMany().HasForeignKey(x => x.EmpresaId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("FK_FacturaPagos_Empresas_EmpresaId");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Monto).HasPrecision(18, 2).IsRequired();
         builder.Property(x => x.MontoRecibido).HasPrecision(18, 2).IsRequired();

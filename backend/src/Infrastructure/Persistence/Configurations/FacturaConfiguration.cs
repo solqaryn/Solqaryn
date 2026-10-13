@@ -9,6 +9,8 @@ public class FacturaConfiguration : IEntityTypeConfiguration<Factura>
     public void Configure(EntityTypeBuilder<Factura> builder)
     {
         builder.ToTable("Facturas");
+        builder.HasIndex(x => new { x.EmpresaId, x.Id }).IsUnique()
+            .HasDatabaseName("UX_Facturas_Empresa_Id");
         builder.HasIndex(x => new { x.EmpresaId, x.VentaId })
             .HasDatabaseName("IX_Facturas_Empresa_Referencia");
         builder.HasOne<Empresa>().WithMany().HasForeignKey(x => x.EmpresaId)
