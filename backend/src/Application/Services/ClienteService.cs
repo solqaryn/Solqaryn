@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Http;
 using Solqaryn.Application.DTOs;
 using Solqaryn.Application.Exceptions;
 using Solqaryn.Application.Interfaces;
+using Solqaryn.Application.Security;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Enums;
 
@@ -12,6 +14,7 @@ public class ClienteService : IClienteService
     private readonly ITipoClienteRepository _tipoClienteRepository;
     private readonly ICurrentUserService _currentUser;
     private readonly IAuditoriaService _auditoria;
+    private readonly IHttpContextAccessor? _tenantHttpContextAccessor;
     private readonly ITipoClientePredeterminadoResolver _predeterminadoResolver;
 
     public ClienteService(
@@ -19,12 +22,13 @@ public class ClienteService : IClienteService
         ITipoClienteRepository tipoClienteRepository,
         ICurrentUserService currentUser,
         IAuditoriaService auditoria,
-        ITipoClientePredeterminadoResolver predeterminadoResolver)
+        ITipoClientePredeterminadoResolver predeterminadoResolver, IHttpContextAccessor? tenantHttpContextAccessor = null)
     {
         _repository = repository;
         _tipoClienteRepository = tipoClienteRepository;
         _currentUser = currentUser;
         _auditoria = auditoria;
+        _tenantHttpContextAccessor = tenantHttpContextAccessor;
         _predeterminadoResolver = predeterminadoResolver;
     }
 
@@ -77,6 +81,7 @@ public class ClienteService : IClienteService
 
         var cliente = new Cliente
         {
+            EmpresaId = VerifiedCommercialTenant.Resolve(_tenantHttpContextAccessor?.HttpContext),
             Nombre = nombre,
             Telefono = Limpiar(dto.Telefono),
             IdentidadORTN = identidad,

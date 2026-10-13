@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Http;
 using Solqaryn.Application.DTOs;
 using Solqaryn.Application.Exceptions;
 using Solqaryn.Application.Interfaces;
+using Solqaryn.Application.Security;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Enums;
 
@@ -11,12 +13,14 @@ public class ProveedorService : IProveedorService
     private readonly IProveedorRepository _repository;
     private readonly ICurrentUserService _currentUser;
     private readonly IAuditoriaService _auditoria;
+    private readonly IHttpContextAccessor? _tenantHttpContextAccessor;
 
-    public ProveedorService(IProveedorRepository repository, ICurrentUserService currentUser, IAuditoriaService auditoria)
+    public ProveedorService(IProveedorRepository repository, ICurrentUserService currentUser, IAuditoriaService auditoria, IHttpContextAccessor? tenantHttpContextAccessor = null)
     {
         _repository = repository;
         _currentUser = currentUser;
         _auditoria = auditoria;
+        _tenantHttpContextAccessor = tenantHttpContextAccessor;
     }
 
     public async Task<List<ProveedorDto>> GetAllAsync()
@@ -55,6 +59,7 @@ public class ProveedorService : IProveedorService
 
         var proveedor = new Proveedor
         {
+            EmpresaId = VerifiedCommercialTenant.Resolve(_tenantHttpContextAccessor?.HttpContext),
             Nombre = nombre,
             Telefono = Limpiar(dto.Telefono),
             Documento = documento,

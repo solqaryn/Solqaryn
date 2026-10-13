@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Http;
 using Solqaryn.Application.Common;
 using Solqaryn.Application.DTOs;
 using Solqaryn.Application.Exceptions;
 using Solqaryn.Application.Interfaces;
+using Solqaryn.Application.Security;
 using Solqaryn.Domain.Common;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Enums;
@@ -23,6 +25,7 @@ public class CompraService : ICompraService
     private readonly ICurrentUserService _currentUser;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAuditoriaService _auditoria;
+    private readonly IHttpContextAccessor? _tenantHttpContextAccessor;
 
     public CompraService(
         ICompraRepository compraRepository,
@@ -36,7 +39,7 @@ public class CompraService : ICompraService
         ICurrentUserService currentUser,
         IUnitOfWork unitOfWork,
         IAuditoriaService auditoria,
-        IKardexMovimientoWriter? kardexMovimientoWriter = null)
+        IKardexMovimientoWriter? kardexMovimientoWriter = null, IHttpContextAccessor? tenantHttpContextAccessor = null)
     {
         _compraRepository = compraRepository;
         _proveedorRepository = proveedorRepository;
@@ -50,6 +53,7 @@ public class CompraService : ICompraService
         _currentUser = currentUser;
         _unitOfWork = unitOfWork;
         _auditoria = auditoria;
+        _tenantHttpContextAccessor = tenantHttpContextAccessor;
     }
 
     public async Task<CompraDto?> GetByIdAsync(int id)
@@ -75,6 +79,7 @@ public class CompraService : ICompraService
         var metodoPago = await ResolverMetodoPagoAsync(dto.MetodoPago);
         var compra = new Compra
         {
+            EmpresaId = VerifiedCommercialTenant.Resolve(_tenantHttpContextAccessor?.HttpContext),
             NumeroCompra = await GenerarNumeroAsync(),
             ProveedorNombre = dto.ProveedorNombre,
             ProveedorTelefono = dto.ProveedorTelefono,

@@ -1,3 +1,9 @@
+## 2026-10-13 — Propagación preliminar de owner comercial RBAC (candidato dependiente)
+
+- `VerifiedCommercialTenant` obtiene la empresa únicamente del marcador de autorización verificado del filtro `RequierePermiso`. Las nuevas altas de Producto, Cliente, Proveedor, Compra y Venta asignan `EmpresaId` cuando existe dicho marcador.
+- Cabecera/payload no autorizan propietario. Los flujos sin contexto verificado mantienen `NULL`, sin backfill ni falsa certificación multiempresa. La cuarentena de API permanece y faltan filtros por fila, subgrafos, jobs y catálogo público.
+- Pruebas dirigidas de header malicioso/ausencia de contexto; requiere RootExpand #3591 y CI exact-head. Sin datos Aiven ni QA/PROD modificados.
+
 ## 2026-10-13 — Diagnóstico read-only de procedencia de datos comerciales
 
 - Workflow `.github/workflows/dev-tenant-commercial-provenance-readonly.yml`: ejecutable sólo en GitHub Environment DEV desde `dev`, con lectura TLS de Aiven y conteos agregados por cinco raíces.
