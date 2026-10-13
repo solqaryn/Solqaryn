@@ -14,6 +14,109 @@ public sealed class CommercialCrossTenantWriteGuardTests
             .Options);
 
     [Fact]
+    public async Task Venta_nueva_acepta_producto_del_mismo_tenant_en_un_solo_save()
+    {
+        await using var db = NewContext();
+        var empresaA = new Empresa("Empresa A");
+        db.Set<Empresa>().Add(empresaA);
+        await db.SaveChangesAsync();
+        var productoA = new Producto { Nombre = "Producto A", EmpresaId = empresaA.Id };
+        db.Productos.Add(productoA);
+        await db.SaveChangesAsync();
+
+        var ventaA = new Venta { NumeroVenta = "NUEVA-A-01", EmpresaId = empresaA.Id };
+        ventaA.Detalles.Add(new VentaDetalle { ProductoId = productoA.Id, Cantidad = 1 });
+        db.Ventas.Add(ventaA);
+
+        await db.SaveChangesAsync();
+        Assert.Equal(empresaA.Id, (await db.Ventas.SingleAsync()).EmpresaId);
+        Assert.Equal(productoA.Id, (await db.VentaDetalles.SingleAsync()).ProductoId);
+    }
+
+    [Fact]
+    public async Task Compra_nueva_acepta_producto_del_mismo_tenant_en_un_solo_save()
+    {
+        await using var db = NewContext();
+        var empresaA = new Empresa("Empresa A");
+        db.Set<Empresa>().Add(empresaA);
+        await db.SaveChangesAsync();
+        var productoA = new Producto { Nombre = "Producto A", EmpresaId = empresaA.Id };
+        db.Productos.Add(productoA);
+        await db.SaveChangesAsync();
+
+        var compraA = new Compra { NumeroCompra = "NUEVA-A-01", EmpresaId = empresaA.Id };
+        compraA.Detalles.Add(new CompraDetalle { ProductoId = productoA.Id, Cantidad = 1 });
+        db.Compras.Add(compraA);
+
+        await db.SaveChangesAsync();
+        Assert.Equal(empresaA.Id, (await db.Compras.SingleAsync()).EmpresaId);
+        Assert.Equal(productoA.Id, (await db.CompraDetalles.SingleAsync()).ProductoId);
+    }
+
+    [Fact]
+    public async Task Venta_nueva_rechaza_producto_ajeno_en_el_mismo_save()
+    {
+        await using var db = NewContext();
+        var empresaA = new Empresa("Empresa A");
+        var empresaB = new Empresa("Empresa B");
+        db.Set<Empresa>().AddRange(empresaA, empresaB);
+        await db.SaveChangesAsync();
+        var productoB = new Producto { Nombre = "Producto B", EmpresaId = empresaB.Id };
+        db.Productos.Add(productoB);
+        await db.SaveChangesAsync();
+
+        var ventaA = new Venta { NumeroVenta = "NUEVA-A-B", EmpresaId = empresaA.Id };
+        ventaA.Detalles.Add(new VentaDetalle { ProductoId = productoB.Id, Cantidad = 1 });
+        db.Ventas.Add(ventaA);
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() => db.SaveChangesAsync());
+        Assert.Empty(await db.Ventas.AsNoTracking().ToListAsync());
+    }
+
+    [Fact]
+    public async Task Cliente_nuevo_y_venta_nueva_del_mismo_tenant_son_validos()
+    {
+        await using var db = NewContext();
+        var empresaA = new Empresa("Empresa A");
+        db.Set<Empresa>().Add(empresaA);
+        await db.SaveChangesAsync();
+
+        var clienteA = new Cliente { Nombre = "Cliente A", EmpresaId = empresaA.Id };
+        var ventaA = new Venta
+        {
+            NumeroVenta = "CLIENTE-A-NUEVO",
+            EmpresaId = empresaA.Id,
+            Cliente = clienteA
+        };
+        db.Ventas.Add(ventaA);
+
+        await db.SaveChangesAsync();
+        Assert.Equal(empresaA.Id, (await db.Clientes.SingleAsync()).EmpresaId);
+        Assert.Equal(clienteA.Id, (await db.Ventas.SingleAsync()).ClienteId);
+    }
+
+    [Fact]
+    public async Task Cliente_nuevo_y_venta_ajena_en_el_mismo_save_son_rechazados()
+    {
+        await using var db = NewContext();
+        var empresaA = new Empresa("Empresa A");
+        var empresaB = new Empresa("Empresa B");
+        db.Set<Empresa>().AddRange(empresaA, empresaB);
+        await db.SaveChangesAsync();
+
+        var ventaA = new Venta
+        {
+            NumeroVenta = "CLIENTE-B-RECHAZADO",
+            EmpresaId = empresaA.Id,
+            Cliente = new Cliente { Nombre = "Cliente B", EmpresaId = empresaB.Id }
+        };
+        db.Ventas.Add(ventaA);
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() => db.SaveChangesAsync());
+        Assert.Empty(await db.Ventas.AsNoTracking().ToListAsync());
+    }
+
+    [Fact]
     public void Guardar_sincrono_bloquea_entidad_comercial()
     {
         using var db = NewContext();
