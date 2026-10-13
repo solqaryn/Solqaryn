@@ -66,13 +66,23 @@
           </div>
         }
 
+        @if (loading() && disponibilidad.estado() !== 'inactivo') {
+          <p class="connection-status" role="status" aria-live="polite">
+            @if (disponibilidad.estado() === 'reintentando') {
+              Estamos recuperando la conexión con el servidor. Puede tardar unos momentos; no se volverá a enviar tu contraseña.
+            } @else {
+              Comprobando la disponibilidad del servidor antes de iniciar sesión…
+            }
+          </p>
+        }
+
         <button mat-flat-button color="primary" class="submit-button" type="submit" [disabled]="form.invalid || loading()">
           @if (loading()) {
             <mat-spinner diameter="20"></mat-spinner>
           } @else {
             <mat-icon>login</mat-icon>
           }
-          <span>{{ loading() ? 'Validando acceso...' : 'Ingresar al sistema' }}</span>
+          <span>{{ loading() ? (disponibilidad.estado() === 'inactivo' ? 'Validando acceso...' : 'Conectando con el servidor...') : 'Ingresar al sistema' }}</span>
         </button>
 
         @if (identidad.mostrarCopyright()) {
