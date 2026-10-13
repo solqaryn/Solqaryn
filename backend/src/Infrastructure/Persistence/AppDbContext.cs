@@ -73,6 +73,8 @@ public class AppDbContext : DbContext
     public DbSet<Permiso> Permisos => Set<Permiso>();
     public DbSet<Cotizacion> Cotizaciones => Set<Cotizacion>();
     public DbSet<CotizacionDetalle> CotizacionDetalles => Set<CotizacionDetalle>();
+    public DbSet<PedidoVenta> PedidosVenta => Set<PedidoVenta>();
+    public DbSet<PedidoVentaDetalle> PedidoVentaDetalles => Set<PedidoVentaDetalle>();
     public DbSet<Solqaryn.Domain.Entities.Bancos.CuentaBancaria> CuentasBancarias => Set<Solqaryn.Domain.Entities.Bancos.CuentaBancaria>();
     public DbSet<PreparacionPedidoVenta> PreparacionesPedidoVenta => Set<PreparacionPedidoVenta>();
     public DbSet<PreparacionPedidoVentaDetalle> PreparacionPedidoVentaDetalles => Set<PreparacionPedidoVentaDetalle>();
