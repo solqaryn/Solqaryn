@@ -1,6 +1,15 @@
 name: VAEP N5.7.C effective EF snapshot exact-head gate
 
 on:
+  pull_request:
+    branches:
+      - dev
+    paths:
+      - .github/workflows/vaep-n57c-snapshot-repair-probe.yml
+      - backend/src/Infrastructure.Migrations/Migrations/OracleAppDbContextModelSnapshot.cs
+      - backend/src/Infrastructure/Persistence/AppDbContext.cs
+      - backend/src/Infrastructure/Persistence/Configurations/DashboardKpiConfiguracionConfiguration.cs
+      - backend/src/Domain/Entities/DashboardKpiConfiguracion.cs
   push:
     branches:
       - dev
@@ -10,6 +19,7 @@ on:
       - backend/src/Infrastructure/Migrations/AppDbContextModelSnapshot.N57C.cs
       - backend/src/Infrastructure/Migrations/20260910113300_N5_7_C_DashboardKpiConfiguraciones.cs
       - backend/src/Infrastructure/Persistence/AppDbContext.cs
+      - backend/src/Infrastructure.Migrations/Migrations/OracleAppDbContextModelSnapshot.cs
       - backend/src/Infrastructure/Persistence/Configurations/DashboardKpiConfiguracionConfiguration.cs
       - backend/src/Domain/Entities/DashboardKpiConfiguracion.cs
 
@@ -35,7 +45,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup .NET 8
+      - name: Setup .NET 10
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.401'
@@ -45,8 +55,10 @@ jobs:
       - name: Restore
         run: dotnet restore Solqaryn.sln
 
-      - name: Install EF Core CLI
-        run: dotnet tool install --global dotnet-ef --version 10.0.12
+      - name: Restaurar EF Core CLI canónico fijado en manifest
+        run: |
+          dotnet tool restore
+          dotnet tool run dotnet-ef --version | grep -F '10.0.12'
 
       - name: Build exact head
         run: dotnet build Solqaryn.sln --configuration Release --no-restore
@@ -55,12 +67,16 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          dotnet ef migrations has-pending-model-changes \
-            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+          dotnet tool run dotnet-ef migrations has-pending-model-changes \
+            --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj \
             --startup-project src/API/Solqaryn.API.csproj \
-            --context AppDbContext 2>&1 | tee vaep-n57c-exact-head-model-gate.log
-          grep -q 'DashboardKpiConfiguracion' src/Infrastructure/Migrations/AppDbContextModelSnapshot.N57C.cs
-          grep -q 'ApplyN57CModel(modelBuilder);' src/Infrastructure/Migrations/AppDbContextModelSnapshot.N43C.cs
+            --context AppDbContext --configuration Release --no-build \
+            2>&1 | tee vaep-n57c-exact-head-model-gate.log
+          snapshot=src/Infrastructure.Migrations/Migrations/OracleAppDbContextModelSnapshot.cs
+          grep -q 'DashboardKpiConfiguracion' "$snapshot"
+          grep -q 'UX_DashboardKpiConfiguraciones_Rol_MetricKey' "$snapshot"
+          grep -q 'UX_DashboardKpiConfiguraciones_Usuario_MetricKey' "$snapshot"
+          grep -q 'CK_DashboardKpiConfiguraciones_Owner' "$snapshot"
 
       - name: Upload exact-head evidence
         if: always()
