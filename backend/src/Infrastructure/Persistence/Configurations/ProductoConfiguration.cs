@@ -12,6 +12,10 @@ public class ProductoConfiguration : IEntityTypeConfiguration<Producto>
         builder.ToTable("Productos");
         // FK restrictiva para nuevas asignaciones; NULL legacy sin atribuir.
         builder.HasIndex(x => x.EmpresaId).HasDatabaseName("IX_Productos_EmpresaId");
+        // Índice compuesto de titularidad, futuro soporte para FKs empresariales.
+        builder.HasIndex(x => new { x.EmpresaId, x.Id })
+            .IsUnique()
+            .HasDatabaseName("UX_Productos_Empresa_Id");
         builder.HasOne<Empresa>()
             .WithMany()
             .HasForeignKey(x => x.EmpresaId)

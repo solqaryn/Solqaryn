@@ -1419,9 +1419,13 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.HasIndex("EmpresaId")
                         .HasDatabaseName("IX_Clientes_EmpresaId");
 
-                    b.HasIndex("IdentidadORTNNormalizada")
+                    b.HasIndex("EmpresaId", "Id")
                         .IsUnique()
-                        .HasDatabaseName("UX_Clientes_IdentidadORTN_Normalizada");
+                        .HasDatabaseName("UX_Clientes_Empresa_Id");
+
+                    b.HasIndex("EmpresaId", "IdentidadORTNNormalizada")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Clientes_Empresa_IdentidadORTN");
 
                     b.HasIndex("Nombre")
                         .HasDatabaseName("IX_Clientes_Nombre");
@@ -1632,13 +1636,18 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.HasIndex("EmpresaId")
                         .HasDatabaseName("IX_Compras_EmpresaId");
 
+                    b.HasIndex("EmpresaId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Compras_Empresa_Id");
+
                     b.HasIndex("Eliminado");
 
                     b.HasIndex("MetodoPagoId")
                         .HasDatabaseName("IX_Compras_MetodoPagoId");
 
-                    b.HasIndex("NumeroCompra")
-                        .IsUnique();
+                    b.HasIndex("EmpresaId", "NumeroCompra")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Compras_Empresa_NumeroCompra");
 
                     b.HasIndex("ProveedorId");
 
@@ -7493,6 +7502,10 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.HasIndex("EmpresaId")
                         .HasDatabaseName("IX_Productos_EmpresaId");
 
+                    b.HasIndex("EmpresaId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Productos_Empresa_Id");
+
                     b.HasIndex("CategoriaId");
 
                     b.HasIndex("ColorId")
@@ -7793,9 +7806,13 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.HasIndex("EmpresaId")
                         .HasDatabaseName("IX_Proveedores_EmpresaId");
 
-                    b.HasIndex("DocumentoNormalizado")
+                    b.HasIndex("EmpresaId", "Id")
                         .IsUnique()
-                        .HasDatabaseName("UX_Proveedores_Documento_Normalizado");
+                        .HasDatabaseName("UX_Proveedores_Empresa_Id");
+
+                    b.HasIndex("EmpresaId", "DocumentoNormalizado")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Proveedores_Empresa_Documento");
 
                     b.HasIndex("Nombre")
                         .HasDatabaseName("IX_Proveedores_Nombre");
@@ -10128,6 +10145,10 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.HasIndex("EmpresaId")
                         .HasDatabaseName("IX_Ventas_EmpresaId");
 
+                    b.HasIndex("EmpresaId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Ventas_Empresa_Id");
+
                     b.HasIndex("ClienteId");
 
                     b.HasIndex("CreadoPorUsuarioId")
@@ -10141,8 +10162,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.HasIndex("MetodoPagoId")
                         .HasDatabaseName("IX_Ventas_MetodoPagoId");
 
-                    b.HasIndex("NumeroVenta")
-                        .IsUnique();
+                    b.HasIndex("EmpresaId", "NumeroVenta")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Ventas_Empresa_NumeroVenta");
 
                     b.ToTable("Ventas", (string)null);
                 });

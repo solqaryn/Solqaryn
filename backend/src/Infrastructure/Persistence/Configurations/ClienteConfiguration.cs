@@ -11,6 +11,10 @@ public class ClienteConfiguration : IEntityTypeConfiguration<Cliente>
         builder.ToTable("Clientes");
         // FK restrictiva para nuevas asignaciones; NULL legacy sin atribuir.
         builder.HasIndex(x => x.EmpresaId).HasDatabaseName("IX_Clientes_EmpresaId");
+        // Índice compuesto de titularidad, futuro soporte para FKs empresariales.
+        builder.HasIndex(x => new { x.EmpresaId, x.Id })
+            .IsUnique()
+            .HasDatabaseName("UX_Clientes_Empresa_Id");
         builder.HasOne<Empresa>()
             .WithMany()
             .HasForeignKey(x => x.EmpresaId)
@@ -24,9 +28,9 @@ public class ClienteConfiguration : IEntityTypeConfiguration<Cliente>
         builder.Property(c => c.IdentidadORTNNormalizada)
             .HasMaxLength(50)
             .HasComputedColumnSql("NULLIF(LOWER(REPLACE(REPLACE(TRIM(IdentidadORTN), '-', ''), ' ', '')), '')", stored: true);
-        builder.HasIndex(c => c.IdentidadORTNNormalizada)
+        builder.HasIndex(c => new { c.EmpresaId, c.IdentidadORTNNormalizada })
             .IsUnique()
-            .HasDatabaseName("UX_Clientes_IdentidadORTN_Normalizada");
+            .HasDatabaseName("UX_Clientes_Empresa_IdentidadORTN");
         builder.Property(c => c.Correo).HasMaxLength(150);
         builder.Property(c => c.Direccion).HasMaxLength(300);
 
