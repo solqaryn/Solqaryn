@@ -6707,6 +6707,8 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
 
             modelBuilder.Entity("Solqaryn.Domain.Entities.PedidoVenta", b =>
                 {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
