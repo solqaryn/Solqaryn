@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  inventory:
+  tenant-audit:
     name: Conteos anonimos Empresas y tablas comerciales - DEV
     runs-on: ubuntu-latest
     timeout-minutes: 15
