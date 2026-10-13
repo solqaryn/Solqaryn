@@ -1,3 +1,9 @@
+## 2026-10-13 — Cierre de bypasses de persistencia comercial (PR #3596, candidato)
+
+- `AppDbContext` bloquea persistencias sincronas comerciales y escrituras sincronas relacionales; `SaveChangesAsync(bool, CancellationToken)` ejecuta el mismo guard que el overload por defecto. Los reportes InMemory no comerciales mantienen compatibilidad de test.
+- `CommercialCrossTenantWriteGuard` comprueba el dueño real persistido frente a `Update` desconectado y `DELETE`; cuando existe FK persistido no confía en una navegación mutable, y rechaza enlaces mixtos con propietario explícito y legacy sin atribución, además de detalles con variante de otro producto.
+- Cinco tests añadidos para esos bypasses. Falta CI exact-head y REVIEW_FIRST antes de integrar en `dev`. No se retira la cuarentena y no se considera aislada la totalidad de relaciones, SQL crudo, `ExecuteUpdate`, exportaciones, catálogo anónimo o jobs.
+
 ## 2026-10-13 — Auditoría de nuevos eventos empresariales con origen RBAC verificado
 
 - `AuditoriaService` persiste `RegistroAuditoria.EmpresaId` desde la marca HTTP de autorización empresarial posterior a permisos; no desde `X-Empresa-Id` del cliente. Los procesos sin contexto verificado mantienen NULL sin inventar empresas.
