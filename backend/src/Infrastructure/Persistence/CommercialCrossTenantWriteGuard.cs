@@ -14,18 +14,20 @@ public static class CommercialCrossTenantWriteGuard
     public static async Task ValidateAsync(AppDbContext db, CancellationToken cancellationToken)
     {
         // Sin permisos de reasignación implícita, incluso de NULL legacy a un id.
-        CheckOwnerNotReassigned(db);
+        await CheckOwnerNotReassignedAsync(db, cancellationToken);
 
         foreach (var entry in db.ChangeTracker.Entries<Venta>()
                      .Where(e => e.State is EntityState.Added or EntityState.Modified))
         {
             var venta = entry.Entity;
-            if (venta.EmpresaId is not > 0 || venta.ClienteId is not > 0)
+            if (venta.ClienteId is not > 0 && venta.Cliente is null)
                 continue;
-            var owner = venta.Cliente?.EmpresaId
-                ?? await db.Clientes.IgnoreQueryFilters().AsNoTracking()
+            // Nunca confiar en la navegación cuando existe un FK persistido.
+            var owner = venta.ClienteId is > 0
+                ? await db.Clientes.IgnoreQueryFilters().AsNoTracking()
                     .Where(c => c.Id == venta.ClienteId.Value)
-                    .Select(c => c.EmpresaId).SingleOrDefaultAsync(cancellationToken);
+                    .Select(c => c.EmpresaId).SingleOrDefaultAsync(cancellationToken)
+                : venta.Cliente?.EmpresaId;
             Check(venta.EmpresaId, owner);
         }
 
@@ -33,12 +35,13 @@ public static class CommercialCrossTenantWriteGuard
                      .Where(e => e.State is EntityState.Added or EntityState.Modified))
         {
             var compra = entry.Entity;
-            if (compra.EmpresaId is not > 0 || compra.ProveedorId is not > 0)
+            if (compra.ProveedorId is not > 0 && compra.Proveedor is null)
                 continue;
-            var owner = compra.Proveedor?.EmpresaId
-                ?? await db.Proveedores.IgnoreQueryFilters().AsNoTracking()
+            var owner = compra.ProveedorId is > 0
+                ? await db.Proveedores.IgnoreQueryFilters().AsNoTracking()
                     .Where(p => p.Id == compra.ProveedorId.Value)
-                    .Select(p => p.EmpresaId).SingleOrDefaultAsync(cancellationToken);
+                    .Select(p => p.EmpresaId).SingleOrDefaultAsync(cancellationToken)
+                : compra.Proveedor?.EmpresaId;
             Check(compra.EmpresaId, owner);
         }
 
@@ -46,58 +49,101 @@ public static class CommercialCrossTenantWriteGuard
                      .Where(e => e.State is EntityState.Added or EntityState.Modified))
         {
             var detalle = entry.Entity;
-            var ownerVenta = detalle.Venta?.EmpresaId;
-            if (ownerVenta is null && detalle.VentaId > 0)
-                ownerVenta = await db.Ventas.IgnoreQueryFilters().AsNoTracking()
+            var ownerVenta = detalle.VentaId > 0
+                ? await db.Ventas.IgnoreQueryFilters().AsNoTracking()
                     .Where(v => v.Id == detalle.VentaId).Select(v => v.EmpresaId)
-                    .SingleOrDefaultAsync(cancellationToken);
-            if (ownerVenta is not > 0) continue;
-            var ownerProducto = detalle.Producto?.EmpresaId;
-            if (ownerProducto is null && detalle.ProductoId > 0)
-                ownerProducto = await db.Productos.IgnoreQueryFilters().AsNoTracking()
+                    .SingleOrDefaultAsync(cancellationToken)
+                : detalle.Venta?.EmpresaId;
+            var ownerProducto = detalle.ProductoId > 0
+                ? await db.Productos.IgnoreQueryFilters().AsNoTracking()
                     .Where(p => p.Id == detalle.ProductoId).Select(p => p.EmpresaId)
-                    .SingleOrDefaultAsync(cancellationToken);
+                    .SingleOrDefaultAsync(cancellationToken)
+                : detalle.Producto?.EmpresaId;
             Check(ownerVenta, ownerProducto);
+            await CheckProductoVarianteAsync(db, detalle.ProductoId,
+                detalle.ProductoVarianteId, cancellationToken);
         }
 
         foreach (var entry in db.ChangeTracker.Entries<CompraDetalle>()
                      .Where(e => e.State is EntityState.Added or EntityState.Modified))
         {
             var detalle = entry.Entity;
-            var ownerCompra = detalle.Compra?.EmpresaId;
-            if (ownerCompra is null && detalle.CompraId > 0)
-                ownerCompra = await db.Compras.IgnoreQueryFilters().AsNoTracking()
+            var ownerCompra = detalle.CompraId > 0
+                ? await db.Compras.IgnoreQueryFilters().AsNoTracking()
                     .Where(c => c.Id == detalle.CompraId).Select(c => c.EmpresaId)
-                    .SingleOrDefaultAsync(cancellationToken);
-            if (ownerCompra is not > 0) continue;
-            var ownerProducto = detalle.Producto?.EmpresaId;
-            if (ownerProducto is null && detalle.ProductoId > 0)
-                ownerProducto = await db.Productos.IgnoreQueryFilters().AsNoTracking()
+                    .SingleOrDefaultAsync(cancellationToken)
+                : detalle.Compra?.EmpresaId;
+            var ownerProducto = detalle.ProductoId > 0
+                ? await db.Productos.IgnoreQueryFilters().AsNoTracking()
                     .Where(p => p.Id == detalle.ProductoId).Select(p => p.EmpresaId)
-                    .SingleOrDefaultAsync(cancellationToken);
+                    .SingleOrDefaultAsync(cancellationToken)
+                : detalle.Producto?.EmpresaId;
             Check(ownerCompra, ownerProducto);
+            await CheckProductoVarianteAsync(db, detalle.ProductoId,
+                detalle.ProductoVarianteId, cancellationToken);
         }
     }
 
-    private static void CheckOwnerNotReassigned(AppDbContext db)
+    private static async Task CheckOwnerNotReassignedAsync(
+        AppDbContext db, CancellationToken cancellationToken)
     {
+        // OriginalValue no demuestra ownership al hacer Update(entidadDesconectada):
+        // en ese caso puede inicializarse con el valor manipulado por el llamador.
+        // Contrastar con la base incluso en DELETE.
         foreach (var entry in db.ChangeTracker.Entries()
-                     .Where(e => e.State == EntityState.Modified &&
-                        (e.Entity is Producto || e.Entity is Cliente ||
-                         e.Entity is Proveedor || e.Entity is Compra ||
-                         e.Entity is Venta)))
+                     .Where(e => e.State is EntityState.Modified or EntityState.Deleted &&
+                        (e.Entity is Producto or Cliente or Proveedor or Compra or Venta)))
         {
             var empresa = entry.Property("EmpresaId");
             if (!Equals(empresa.OriginalValue, empresa.CurrentValue))
                 throw new BusinessRuleException(
                     "La empresa propietaria de un registro comercial no puede modificarse mediante escrituras ordinarias.");
+
+            int? persistida = entry.Entity switch
+            {
+                Producto producto => await db.Productos.IgnoreQueryFilters().AsNoTracking()
+                    .Where(x => x.Id == producto.Id).Select(x => x.EmpresaId)
+                    .SingleOrDefaultAsync(cancellationToken),
+                Cliente cliente => await db.Clientes.IgnoreQueryFilters().AsNoTracking()
+                    .Where(x => x.Id == cliente.Id).Select(x => x.EmpresaId)
+                    .SingleOrDefaultAsync(cancellationToken),
+                Proveedor proveedor => await db.Proveedores.IgnoreQueryFilters().AsNoTracking()
+                    .Where(x => x.Id == proveedor.Id).Select(x => x.EmpresaId)
+                    .SingleOrDefaultAsync(cancellationToken),
+                Compra compra => await db.Compras.IgnoreQueryFilters().AsNoTracking()
+                    .Where(x => x.Id == compra.Id).Select(x => x.EmpresaId)
+                    .SingleOrDefaultAsync(cancellationToken),
+                Venta venta => await db.Ventas.IgnoreQueryFilters().AsNoTracking()
+                    .Where(x => x.Id == venta.Id).Select(x => x.EmpresaId)
+                    .SingleOrDefaultAsync(cancellationToken),
+                _ => null
+            };
+            if (!Equals(persistida, empresa.CurrentValue))
+                throw new BusinessRuleException(
+                    "La propiedad empresarial persistida no coincide con la operación comercial.");
         }
+    }
+
+    private static async Task CheckProductoVarianteAsync(
+        AppDbContext db, int productoId, int? varianteId, CancellationToken cancellationToken)
+    {
+        if (productoId <= 0 || varianteId is not > 0)
+            return;
+
+        var productoVariante = await db.ProductoVariantes.IgnoreQueryFilters()
+            .AsNoTracking().Where(v => v.Id == varianteId.Value)
+            .Select(v => (int?)v.ProductoId)
+            .SingleOrDefaultAsync(cancellationToken);
+        if (productoVariante != productoId)
+            throw new BusinessRuleException("La variante comercial no pertenece al producto del detalle.");
     }
 
     private static void Check(int? empresaOrigen, int? empresaReferencia)
     {
-        if (empresaOrigen is > 0 && empresaReferencia is > 0 &&
-            empresaOrigen != empresaReferencia)
-            throw new BusinessRuleException("La referencia comercial pertenece a otra empresa.");
+        // Referenciar filas con dueño explícito y filas sin atribuir también
+        // es inseguro; no asignar automáticamente esas filas legacy.
+        if (empresaOrigen != empresaReferencia &&
+            (empresaOrigen is > 0 || empresaReferencia is > 0))
+            throw new BusinessRuleException("La referencia comercial pertenece a otra empresa o no tiene dueño verificado.");
     }
 }
