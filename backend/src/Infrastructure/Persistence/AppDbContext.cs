@@ -121,7 +121,8 @@ public class AppDbContext : DbContext
                       (e.Entity is Producto or Cliente or Proveedor or Compra or Venta or
                           CompraDetalle or VentaDetalle or ProductoVariante or
                           ExistenciaVariante or MovimientoInventario or Factura or
-                          FacturaDetalle or FacturaPago or CompraDocumento));
+                          FacturaDetalle or FacturaPago or CompraDocumento or Cotizacion or
+                          CotizacionDetalle or PedidoVenta or PedidoVentaDetalle));
 
         if (ChangeTracker.HasChanges() && (Database.IsRelational() || cambiaComercial))
             throw new NotSupportedException(
@@ -149,6 +150,8 @@ public class AppDbContext : DbContext
         await CommercialTenantDerivedWriteGuard.ValidateAsync(
             this, empresaAutorizada, cancellationToken);
         await CommercialTenantInvoiceWriteGuard.ValidateAsync(
+            this, empresaAutorizada, cancellationToken);
+        await CommercialTenantSalesDocumentGuard.ValidateAsync(
             this, empresaAutorizada, cancellationToken);
         await ValidarAislamientoComercialVentasAsync(cancellationToken);
         await PrepararValorizacionComprasAsync(cancellationToken);

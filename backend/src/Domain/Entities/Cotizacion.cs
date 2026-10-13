@@ -5,6 +5,8 @@ namespace Solqaryn.Domain.Entities;
 
 public class Cotizacion : AuditableEntity
 {
+    public int? EmpresaId { get; set; } // Ownership nuevo; NULL legacy en cuarentena.
+
     public EstadoCotizacion Estado { get; private set; } = EstadoCotizacion.Borrador;
 
     public int ClienteId { get; set; }

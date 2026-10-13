@@ -21,14 +21,14 @@ public sealed class N32PedidoVentaPersistenceModelTests
         Assert.Contains(entity.GetIndexes(), index =>
             index.IsUnique &&
             index.Properties.Select(property => property.Name)
-                .SequenceEqual(new[] { nameof(PedidoVenta.CotizacionId) }) &&
-            index.GetDatabaseName() == "UX_PedidosVenta_CotizacionId");
+                .SequenceEqual(new[] { nameof(PedidoVenta.EmpresaId), nameof(PedidoVenta.CotizacionId) }) &&
+            index.GetDatabaseName() == "UX_PedidosVenta_Empresa_CotizacionId");
 
         Assert.Contains(entity.GetIndexes(), index =>
             index.IsUnique &&
             index.Properties.Select(property => property.Name)
-                .SequenceEqual(new[] { nameof(PedidoVenta.IdempotencyKey) }) &&
-            index.GetDatabaseName() == "UX_PedidosVenta_IdempotencyKey");
+                .SequenceEqual(new[] { nameof(PedidoVenta.EmpresaId), nameof(PedidoVenta.IdempotencyKey) }) &&
+            index.GetDatabaseName() == "UX_PedidosVenta_Empresa_IdempotencyKey");
 
         Assert.Equal(128, entity.FindProperty(nameof(PedidoVenta.IdempotencyKey))!.GetMaxLength());
         Assert.Equal(64, entity.FindProperty(nameof(PedidoVenta.IdempotencyFingerprint))!.GetMaxLength());
