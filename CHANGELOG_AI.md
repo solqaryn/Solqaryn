@@ -1,3 +1,9 @@
+## 2026-10-13 — Defensa previa a SaveChanges de enlaces comerciales entre empresas (candidato)
+
+- Se añade `CommercialCrossTenantWriteGuard` para rechazar vínculos con EmpresaId explícitos cruzados: Venta-Cliente, Compra-Proveedor, VentaDetalle-Producto y CompraDetalle-Producto. No imprime nombres ajenos ni atribuye datos históricos NULL.
+- Pruebas A/B dirigidas y de legado. Es contención parcial: continúan pendientes validaciones de raíz/descendientes, ownership histórico, filtros de lectura, tienda pública, jobs y pruebas completas. Queda activa la cuarentena P0.
+- Sin DDL, escritura en Aiven ni cambios QA/PROD. CI causal pendiente antes de merge.
+
 ## 2026-10-13 — Prueba de expansión real desde esquema legacy MySQL (PR #3591)
 
 - Nuevo gate desechable `tenant-commercial-root-expand-ephemeral.yml`: revierte las cinco columnas solo en MySQL CI efímero, siembra una fila legacy y aplica EF migration real; verifica cinco FK/índices, legado nulo sin pérdida, idempotencia y pending-model=0.
