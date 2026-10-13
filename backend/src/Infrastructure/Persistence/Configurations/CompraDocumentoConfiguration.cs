@@ -9,6 +9,11 @@ public class CompraDocumentoConfiguration : IEntityTypeConfiguration<CompraDocum
     public void Configure(EntityTypeBuilder<CompraDocumento> builder)
     {
         builder.ToTable("CompraDocumentos");
+        builder.HasIndex(x => new { x.EmpresaId, x.CompraId })
+            .HasDatabaseName("IX_CompraDocumentos_Empresa_Compra");
+        builder.HasOne<Empresa>().WithMany().HasForeignKey(x => x.EmpresaId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("FK_CompraDocumentos_Empresas_EmpresaId");
         builder.HasKey(d => d.Id);
 
         builder.Property(d => d.NombreOriginal).IsRequired().HasMaxLength(255);

@@ -5,6 +5,9 @@ namespace Solqaryn.Domain.Entities;
 /// de la factura de venta generada por Solqaryn.
 public class CompraDocumento
 {
+    // Propiedad tenant para nuevas escrituras; NULL legacy en cuarentena.
+    public int? EmpresaId { get; set; }
+
     public int Id { get; set; }
     public int CompraId { get; set; }
     public Compra? Compra { get; set; }

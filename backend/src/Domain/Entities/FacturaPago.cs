@@ -5,6 +5,9 @@ namespace Solqaryn.Domain.Entities;
 
 public class FacturaPago : AuditableEntity
 {
+    // Propiedad tenant para nuevas escrituras; NULL legacy en cuarentena.
+    public int? EmpresaId { get; set; }
+
     public int FacturaId { get; set; }
     public Factura? Factura { get; set; }
 

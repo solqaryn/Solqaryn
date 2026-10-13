@@ -19,6 +19,7 @@ public static class CanonicalMySqlPhysicalContract
         await SeedTipoClientePredeterminadoAsync(db, cancellationToken);
         await EnsureInventarioOriginBridgeAsync(db, cancellationToken);
         await CommercialTenantPhysicalConstraints.ApplyFreshAsync(db, cancellationToken);
+        await CommercialTenantInvoicePhysicalConstraints.ApplyFreshAsync(db, cancellationToken);
     }
 
     public static async Task VerifyAsync(
@@ -28,6 +29,7 @@ public static class CanonicalMySqlPhysicalContract
         ArgumentNullException.ThrowIfNull(db);
 
         await CommercialTenantPhysicalConstraints.VerifyAsync(db, cancellationToken);
+        await CommercialTenantInvoicePhysicalConstraints.VerifyAsync(db, cancellationToken);
 
         var triggerCount = await db.Database
             .SqlQueryRaw<long>("""
