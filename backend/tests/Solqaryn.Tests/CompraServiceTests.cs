@@ -239,6 +239,54 @@ public class CompraServiceTests
     }
 
     [Fact]
+    public async Task CreateAsync_ProveedorAutomatico_HeredaTenantRBAC_NoHeader()
+    {
+        var http = new Microsoft.AspNetCore.Http.DefaultHttpContext();
+        http.Items[Solqaryn.Application.Security.VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = 17;
+        http.Request.Headers["X-Empresa-Id"] = "99";
+        var accessor = new Microsoft.AspNetCore.Http.HttpContextAccessor { HttpContext = http };
+        var producto = ProductoDePrueba();
+        producto.Variantes.Add(new ProductoVariante
+        {
+            Id = 8, ProductoId = producto.Id, Sku = "TEC-PROVEEDOR", Cantidad = 10,
+            Costo = 5, Precio = 10, EsTecnica = true, Activo = true
+        });
+        _productoRepoMock.Setup(r => r.GetByIdAsync(producto.Id)).ReturnsAsync(producto);
+        _compraRepoMock.Setup(r => r.ContarTodasAsync()).ReturnsAsync(0);
+        _calculoMock.Setup(c => c.CalcularCompraAsync(
+                It.IsAny<List<DetalleCalculoInput>>(), It.IsAny<int?>()))
+            .ReturnsAsync(new ResultadoCalculoDto { Subtotal = 10, Total = 10 });
+        Proveedor? proveedorCreado = null;
+        Compra? compraCreada = null;
+        _proveedorRepoMock.Setup(r => r.AddAsync(It.IsAny<Proveedor>()))
+            .Callback<Proveedor>(p => proveedorCreado = p).Returns(Task.CompletedTask);
+        _compraRepoMock.Setup(r => r.AddAsync(It.IsAny<Compra>()))
+            .Callback<Compra>(c => compraCreada = c).Returns(Task.CompletedTask);
+        var servicio = new CompraService(
+            _compraRepoMock.Object, _proveedorRepoMock.Object, _productoRepoMock.Object,
+            _varianteRepoMock.Object, _inventarioConcurrencyMock.Object, _movInvRepoMock.Object,
+            _movFinRepoMock.Object, _calculoMock.Object, _currentUserMock.Object,
+            new FakeUnitOfWork(), _auditoriaMock.Object,
+            tenantHttpContextAccessor: accessor);
+
+        await servicio.CreateAsync(new CreateCompraDto
+        {
+            ProveedorNombre = "Proveedor de la empresa 17",
+            Detalles = new List<CompraDetalleInputDto>
+            {
+                new() { ProductoId = producto.Id, Cantidad = 1, CostoUnitario = 10 }
+            }
+        });
+
+        Assert.NotNull(proveedorCreado);
+        Assert.NotNull(compraCreada);
+        Assert.Equal(17, compraCreada!.EmpresaId);
+        Assert.Equal(17, proveedorCreado!.EmpresaId);
+        Assert.Same(proveedorCreado, compraCreada.Proveedor);
+        Assert.NotEqual(99, proveedorCreado.EmpresaId);
+    }
+
+    [Fact]
     public async Task CreateAsync_Recalcula_Totales_Con_Motor_De_Calculo()
     {
         var producto = ProductoDePrueba();

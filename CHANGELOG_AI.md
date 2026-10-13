@@ -1,3 +1,9 @@
+## 2026-10-13 — Recovery E2E causal para fusion segura de PR #3596
+
+- Causa comprobada en workflow catalogos-aceptacion #38425047076: seis pruebas E2E fallaron con HTTP 400 al crear compras/ventas, porque `VincularClienteAsync` y `VincularProveedorAsync` creaban automáticamente `Cliente`/`Proveedor` con `EmpresaId=NULL` y asociaban a `Venta`/`Compra` con owner explícito. Los guards de integridad rechazaban correctamente esa referencia sin dueño.
+- Corrección: nuevos clientes/proveedores creados por una venta/compra heredan el `EmpresaId` del documento ya resuelto desde marca RBAC server-side. No leen `X-Empresa-Id` ni atribuyen registros históricos; los existentes con owner desconocido siguen en cuarentena.
+- Se agregan tests VentaService/CompraService con marca RBAC válida y header falso verificando owner idéntico para cabecera y persona creada. El PR NO habilita segundo tenant ni certifica lecturas; revisión y CI exact-head obligatorios.
+
 ## 2026-10-13 — Rechazo de mutación comercial desde tenant verificado distinto (PR #3596)
 
 - El contexto EF resuelve `VerifiedCommercialTenant` mediante `IHttpContextAccessor` opcional inyectado, sin fiarse del header; un owner comercial positivo distinto de la empresa autorizada bloquea `Added/Modified/Deleted` de cinco raíces aun sin cambios en `EmpresaId`.

@@ -101,6 +101,61 @@ public class VentaServiceTests
     }
 
     [Fact]
+    public async Task CreateAsync_ClienteAutomatico_HeredaTenantRBAC_NoHeader()
+    {
+        var http = new Microsoft.AspNetCore.Http.DefaultHttpContext();
+        http.Items[Solqaryn.Application.Security.VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = 17;
+        http.Request.Headers["X-Empresa-Id"] = "99";
+        var accessor = new Microsoft.AspNetCore.Http.HttpContextAccessor { HttpContext = http };
+        var producto = ProductoDePrueba();
+        producto.Variantes.Add(new ProductoVariante
+        {
+            Id = 8, ProductoId = producto.Id, Sku = "TEC-CLIENTE", Cantidad = 10,
+            Costo = 5, Precio = 10, EsTecnica = true, Activo = true
+        });
+        _productoRepoMock.Setup(r => r.GetByIdAsync(producto.Id)).ReturnsAsync(producto);
+        _ventaRepoMock.Setup(r => r.GetMetodoPagoPorCodigoONombreAsync("Efectivo"))
+            .ReturnsAsync(new Solqaryn.Domain.Entities.Catalogos.MetodoPago
+            {
+                Id = 1, Codigo = "Efectivo", Nombre = "Efectivo", Activo = true
+            });
+        _calculoMock.Setup(c => c.CalcularVentaAsync(
+                It.IsAny<List<DetalleCalculoInput>>(), It.IsAny<int?>(), It.IsAny<int?>(),
+                It.IsAny<string?>(), It.IsAny<int?>(), It.IsAny<bool>(), It.IsAny<string?>()))
+            .ReturnsAsync(new ResultadoCalculoDto { Subtotal = 10, Total = 10 });
+        Cliente? clienteCreado = null;
+        Venta? ventaCreada = null;
+        _clienteRepoMock.Setup(r => r.AddAsync(It.IsAny<Cliente>()))
+            .Callback<Cliente>(c => clienteCreado = c).Returns(Task.CompletedTask);
+        _ventaRepoMock.Setup(r => r.AddAsync(It.IsAny<Venta>()))
+            .Callback<Venta>(v => ventaCreada = v).Returns(Task.CompletedTask);
+        var servicio = new VentaService(
+            _ventaRepoMock.Object, _clienteRepoMock.Object, _productoRepoMock.Object,
+            _varianteRepoMock.Object, _inventarioConcurrencyMock.Object, _facturaRepoMock.Object,
+            _movInvRepoMock.Object, _movFinRepoMock.Object, _empresaMock.Object,
+            _calculoMock.Object, _currentUserMock.Object, new FakeUnitOfWork(),
+            _auditoriaMock.Object, _predeterminadoResolverMock.Object,
+            tenantHttpContextAccessor: accessor);
+
+        await servicio.CreateAsync(new CreateVentaDto
+        {
+            ClienteNombre = "Cliente de la empresa 17",
+            ClienteCorreo = "cliente17@example.invalid",
+            Detalles = new List<VentaDetalleInputDto>
+            {
+                new() { ProductoId = producto.Id, Cantidad = 1, PrecioUnitario = 10 }
+            }
+        });
+
+        Assert.NotNull(clienteCreado);
+        Assert.NotNull(ventaCreada);
+        Assert.Equal(17, ventaCreada!.EmpresaId);
+        Assert.Equal(17, clienteCreado!.EmpresaId);
+        Assert.Same(clienteCreado, ventaCreada.Cliente);
+        Assert.NotEqual(99, clienteCreado.EmpresaId);
+    }
+
+    [Fact]
     public async Task ConfirmarAsync_Reduce_Stock_Y_Guarda_Vendedor()
     {
         var producto = ProductoDePrueba(cantidad: 10);
