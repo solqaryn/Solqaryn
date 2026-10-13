@@ -1,3 +1,8 @@
+## 2026-10-13 — Inventario técnico tenant y actualización de estado P0
+
+- Snapshot EF Oracle revisado: 132 entidades distintas; 20 incluyen `EmpresaId`, 66 entidades adicionales alcanzables desde raíces comerciales. Se registra tabla auditable de mapeo, profundidad FK y owner en `docs/tenancy/INVENTARIO_GRAFO_COMERCIAL_P0_DEV.md` para clasificación (sin inferir ownership automático).
+- `TASKS.md`, `PROJECT_CONTEXT.md` y `PROJECT_INDEX.md` corregidos para reflejar 5 columnas reales en Aiven DEV y 19 filas históricas sin propietario; cuarentena sin retirar.
+
 ## 2026-10-13 — Bloqueo preventivo de reasignación comercial
 
 - `CommercialCrossTenantWriteGuard` prohíbe mutar `EmpresaId` de raíces persistidas (`Producto`, `Cliente`, `Proveedor`, `Compra`, `Venta`) desde SaveChanges ordinario, incluida asignación de NULL histórico. El futuro backfill deberá ser segregado, probado y auditado.
