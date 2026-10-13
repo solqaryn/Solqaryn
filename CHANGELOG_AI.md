@@ -1,3 +1,10 @@
+## 2026-10-12 — Recuperación de CI N1.1/N1.2 tras Oracle EF10 y contención tenant
+
+- Evidencia causal exact-head `1985bf1b`: los dos workflows N1.1/N1.2 fallaban **antes de iniciar la API** por intentar ejecutar `OracleBaseline` sobre MySQL sin tablas (`Empresas doesn't exist`). Se reemplazó esa ruta incorrecta por bootstrap Oracle fresh oficial `Solqaryn.DatabaseBootstrap` antes del inicio normal de la API. Se conserva `Database__ApplyMigrationsOnStartup=true` tras el bootstrap, para ejecutar los seeds canónicos SeedPermiso/SeedAdmin/SeedFiscal sin volver a crear el esquema.
+- El test E2E ya no intenta registrar una segunda empresa mientras los registros comerciales carecen de propiedad empresarial certificada. Los dos workflows crean **solo dentro de MySQL desechable** una empresa CI con membresía SeedAdmin verificable; el navegador realiza acciones de sucursales y almacenes bajo ese tenant.
+- Se amplía el trigger `pull_request` a `dev` para certificar el mismo cambio antes del merge, sin tocar datos de Aiven, Render, Vercel, QA ni PROD. Pendiente validación exact-head GitHub Actions.
+- CI E2E N1.1/N1.2 segunda ronda: Oracle bootstrap, semillas y frontend lint/build aprobaron; Angular dev-server falló por heredar `PORT=5005` del backend pese a `--port 4200/4201`. Corrección: `nohup env -u PORT npm start` solo en el paso de Angular, manteniendo PORT 5005 de la API. Reejecución causal requerida antes del merge.
+
 ## 2026-10-12 — P0 aislamiento de datos comerciales: cuarentena fail-closed (candidato DEV)
 
 - Diagnóstico del HEAD: entidades Producto/Cliente/Proveedor/Compra/Venta sin owner EmpresaId; repositorios GET/listas sin filtro empresarial. UsuarioEmpresa y permisos verifican membresía, no ownership de filas, por lo cual una empresa nueva no puede considerarse aislada.
