@@ -2,6 +2,26 @@
 
 **Estado 2026-10-13: contención operativa desplegada en Render DEV. Candidato expand introduce `EmpresaId?` e índices/FK en cinco raíces, con migración Oracle; los registros históricos continúan sin atribución y NO existe aislamiento multiempresa certificado.**
 
+## 2026-10-13 — Evidencia de ejecución real (DEV, lectura y control sin atribución)
+
+- **Esquema aplicado y verificado sobre Aiven DEV:** [run #38406239720](https://github.com/solqaryn/Solqaryn/actions/runs/38406239720). Preflight `already_expanded`; cinco columnas `EmpresaId?`, cinco FKs e índices y marca Oracle EF presentes. El paso DDL se omitió por idempotencia; no se duplicó la migración.
+- **Registros preservados:** 8 productos, 2 clientes, 2 proveedores, 3 compras y 4 ventas; **19/19 mantienen `EmpresaId=NULL`**.
+- **Procedencia limitada:** [run #38409321128](https://github.com/solqaryn/Solqaryn/actions/runs/38409321128) verificó que cada registro cuenta con autor y que no hay autores sin membresía activa o con múltiples membresías activas **actuales**. Los 14 enlaces comerciales revisados tienen owner incompleto. Esto **no demuestra** propiedad empresarial histórica.
+- **Modelo relacional:** inventario de 132 entidades EF, 20 con `EmpresaId` y 66 entidades adicionales alcanzables desde las raíces comerciales en `docs/tenancy/INVENTARIO_GRAFO_COMERCIAL_P0_DEV.md`. No equivale a auditoría de todas las tablas físicas, endpoints, tareas o integraciones.
+- **Candidatos de código pendientes:** #3594 propaga owner verificado en nuevas altas administrativas; #3596 rechaza enlaces empresariales cruzados y cambios ordinarios de owner. No activar multiempresa ni cerrar el P0 sin integración, pruebas A/B y saneamiento de procedencia.
+
+## Corrección de grafos comerciales nuevos en una misma unidad de trabajo
+
+El guard comercial también diferencia un registro ya persistido de un padre o referencia que EF está insertando en el mismo `SaveChangesAsync`. Solo acepta un owner del ChangeTracker cuando esa entidad está `Added`; para referencias ya persistidas consulta el owner de la base de datos sin confiar en navegaciones. Esto permite compras, ventas y clientes nuevos de la misma empresa sin relajar el rechazo A/B y conserva en cuarentena las filas legacy `EmpresaId=NULL`. Cobertura inicial de cinco pruebas dirigidas; requiere CI exact-head.
+
+## Comprobación post-RBAC para escrituras con dueño explícito (candidato PR #3596)
+
+En solicitudes donde `RequierePermiso` estableció la marca segura de empresa, `AppDbContext` transmite ese tenant al guard de escritura: no es lícito crear, modificar o eliminar `Producto`, `Cliente`, `Proveedor`, `Compra` o `Venta` de un propietario explícito diferente, aunque no se modifique el valor `EmpresaId`. La cabecera `X-Empresa-Id` no concede esta autoridad. Los datos históricos sin owner conocido mantienen cuarentena; una petición sin marca verificada no se considera habilitada para multiempresa. Esta defensa no cubre todas las consultas, el catálogo público, los demás descendientes ni las rutas de SQL directo.
+
+## Contención adicional candidata en PR #3596 (aún no equivale a multiempresa)
+
+La validación previa a guardar ahora alcanza ambos overloads async de EF y bloquea las rutas síncronas con mutación comercial o escritura relacional; consulta el owner persistido para impedir `Update` desconectado con `EmpresaId` suplantado, contrasta FKs guardados (no navegaciones cambiantes), rechaza enlaces de owner conocido hacia filas históricas sin dueño y verifica que la variante del detalle pertenezca al producto. Hay pruebas de regresión nuevas; verificar CI exact-head antes de integrar. `ExecuteUpdate`, SQL directo, filtros de todas las lecturas, derivados, tienda anónima, procedencia histórica y migración permanecen como P0. No quitar el middleware preventivo.
+
 ## Diagnóstico exacto en el HEAD de DEV
 
 - En el baseline anterior, `Producto`, `Cliente`, `Proveedor`, `Compra` y `Venta` carecían de `EmpresaId`; el candidato introduce propiedad nullable, índice y FK, pero **no añade aún filtros SQL ni ownership atribuido**. Sus consultas por ID/listas aún requieren aislamiento empresarial explícito.
@@ -15,6 +35,10 @@
 - La migración `20261013121500_CommercialTenantRootExpand` añade las cinco columnas nullable, índices y claves foráneas restrictivas. No atribuye filas históricas ni levanta la cuarentena.
 - La prueba `.github/workflows/tenant-commercial-root-expand-ephemeral.yml` debe restaurar el caso de esquema legacy en MySQL descartable, ejecutar la migración y demostrar cinco columnas/FK/índices, conservación de filas y reinvocación idempotente.
 - Respaldo previo real DEV con restore same-artifact comprobado: Actions [#38399423450](https://github.com/solqaryn/Solqaryn/actions/runs/38399423450). No significa backfill ni certificación multiempresa.
+
+## Auditoría tenant-aware de nuevas operaciones (candidato)
+
+La nueva versión de `AuditoriaService` marca eventos futuros con la empresa comprobada por RBAC; no atribuye las auditorías existentes ni prueba su titularidad. Las consultas de auditoría siguen necesitando filtros de empresa antes de permitir 2+ tenants.
 
 ## Contención de emergencia — sin atribución de datos
 

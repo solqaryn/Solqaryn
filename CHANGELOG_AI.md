@@ -4,6 +4,57 @@
 - Criterios e interpretación en `docs/tenancy/ATRIBUCION_HISTORICA_TEMPORAL_DEV.md`. Una membresía única actual, o con fecha compatible, **no basta** para otorgar propiedad histórica; NO ejecutar backfill sin prueba primaria individual.
 - Mantener cuarentena, no habilitar una segunda empresa, no modificar Aiven, QA ni PROD. Requiere CI y readback causal de su ejecución en DEV.
 
+
+## 2026-10-13 — Recovery E2E causal para fusion segura de PR #3596
+
+- Causa comprobada en workflow catalogos-aceptacion #38425047076: seis pruebas E2E fallaron con HTTP 400 al crear compras/ventas, porque `VincularClienteAsync` y `VincularProveedorAsync` creaban automáticamente `Cliente`/`Proveedor` con `EmpresaId=NULL` y asociaban a `Venta`/`Compra` con owner explícito. Los guards de integridad rechazaban correctamente esa referencia sin dueño.
+- Corrección: nuevos clientes/proveedores creados por una venta/compra heredan el `EmpresaId` del documento ya resuelto desde marca RBAC server-side. No leen `X-Empresa-Id` ni atribuyen registros históricos; los existentes con owner desconocido siguen en cuarentena.
+- Se agregan tests VentaService/CompraService con marca RBAC válida y header falso verificando owner idéntico para cabecera y persona creada. El PR NO habilita segundo tenant ni certifica lecturas; revisión y CI exact-head obligatorios.
+
+## 2026-10-13 — Rechazo de mutación comercial desde tenant verificado distinto (PR #3596)
+
+- El contexto EF resuelve `VerifiedCommercialTenant` mediante `IHttpContextAccessor` opcional inyectado, sin fiarse del header; un owner comercial positivo distinto de la empresa autorizada bloquea `Added/Modified/Deleted` de cinco raíces aun sin cambios en `EmpresaId`.
+- Tres nuevas pruebas comprueban rechazo de modificación/alta B desde sesión A, ignorar header fraudulento y permitir editar A desde A. El guard sólo aplica esa comprobación cuando existe marca RBAC; flows sin marca, lecturas y registros legacy siguen pendientes. Ejecutar CI exact-head; no retira la cuarentena ni modifica QA/PROD.
+
+## 2026-10-13 — Reparacion de validacion multiempresa en grafos de compra/venta nuevos (PR #3596)
+
+- El guard ahora reconoce cabeceras, clientes, proveedores, productos y variantes rastreados por EF como `Added` en la misma unidad de trabajo; cuando el registro ya existe, sigue verificando el owner persistido y no confia en navegaciones manipulables.
+- Cinco pruebas A/B nuevas comprueban compras y ventas correctas que se guardan juntas, referencias de otras empresas rechazadas y alta conjunta de cliente+venta. No se asigna owner a datos historicos.
+- El aislamiento multiempresa total sigue pendiente: filtros de lecturas, tienda anonima, jobs, grafo dependiente, procedencia de 19 registros historicos y pruebas reales A/B de todo el ERP. Este PR no autoriza retirar la cuarentena ni promocionar QA/PROD.
+
+## 2026-10-13 — Cierre de bypasses de persistencia comercial (PR #3596, candidato)
+
+- `AppDbContext` bloquea persistencias sincronas comerciales y escrituras sincronas relacionales; `SaveChangesAsync(bool, CancellationToken)` ejecuta el mismo guard que el overload por defecto. Los reportes InMemory no comerciales mantienen compatibilidad de test.
+- `CommercialCrossTenantWriteGuard` comprueba el dueño real persistido frente a `Update` desconectado y `DELETE`; cuando existe FK persistido no confía en una navegación mutable, y rechaza enlaces mixtos con propietario explícito y legacy sin atribución, además de detalles con variante de otro producto.
+- En el retry fiscal con `ExecuteUpdateAsync`, el predicado ahora exige `DocumentoFiscalEmision.EmpresaId` persistido además de `Id` y versión; el caso de outbox ya tenía scope por empresa.
+- Cinco tests añadidos para esos bypasses. Falta CI exact-head y REVIEW_FIRST antes de integrar en `dev`. No se retira la cuarentena y no se considera aislada la totalidad de relaciones, SQL crudo, `ExecuteUpdate`, exportaciones, catálogo anónimo o jobs.
+
+## 2026-10-13 — Auditoría de nuevos eventos empresariales con origen RBAC verificado
+
+- `AuditoriaService` persiste `RegistroAuditoria.EmpresaId` desde la marca HTTP de autorización empresarial posterior a permisos; no desde `X-Empresa-Id` del cliente. Los procesos sin contexto verificado mantienen NULL sin inventar empresas.
+- Pruebas de marca autorizada, cabecera fraudulenta y operación no HTTP. No backfill ni relajación de cuarentena; falta controlar lecturas por tenant, exportaciones e integridad extendida.
+
+## 2026-10-13 — Inventario técnico tenant y actualización de estado P0
+
+- Snapshot EF Oracle revisado: 132 entidades distintas; 20 incluyen `EmpresaId`, 66 entidades adicionales alcanzables desde raíces comerciales. Se registra tabla auditable de mapeo, profundidad FK y owner en `docs/tenancy/INVENTARIO_GRAFO_COMERCIAL_P0_DEV.md` para clasificación (sin inferir ownership automático).
+- `TASKS.md`, `PROJECT_CONTEXT.md` y `PROJECT_INDEX.md` corregidos para reflejar 5 columnas reales en Aiven DEV y 19 filas históricas sin propietario; cuarentena sin retirar.
+
+## 2026-10-13 — Bloqueo preventivo de reasignación comercial
+
+- `CommercialCrossTenantWriteGuard` prohíbe mutar `EmpresaId` de raíces persistidas (`Producto`, `Cliente`, `Proveedor`, `Compra`, `Venta`) desde SaveChanges ordinario, incluida asignación de NULL histórico. El futuro backfill deberá ser segregado, probado y auditado.
+- Pruebas verifican owner A->B y NULL->A rechazados. Sin datos DEV, QA o PROD modificados; P0 continúa abierto.
+
+## 2026-10-13 — Recovery CI causal F6 sobre PR de validación comercial
+
+- El gate F6 falló con `fatal: origin/dev...HEAD: no merge base` aunque checkout estaba configurado con `fetch-depth: 0`. La segunda llamada `git fetch --depth=1` cortaba la ascendencia necesaria para el triple-dot; se elimina `--depth=1` y se exige merge-base verificable antes del diff. La protección contra cambios en las 107 migraciones históricas sigue intacta.
+- Corregido en la misma rama del gate comercial; requiere reejecución CI causal, no es bypass ni exención.
+
+## 2026-10-13 — Defensa previa a SaveChanges de enlaces comerciales entre empresas (candidato)
+
+- Se añade `CommercialCrossTenantWriteGuard` para rechazar vínculos con EmpresaId explícitos cruzados: Venta-Cliente, Compra-Proveedor, VentaDetalle-Producto y CompraDetalle-Producto. No imprime nombres ajenos ni atribuye datos históricos NULL.
+- Pruebas A/B dirigidas y de legado. Es contención parcial: continúan pendientes validaciones de raíz/descendientes, ownership histórico, filtros de lectura, tienda pública, jobs y pruebas completas. Queda activa la cuarentena P0.
+- Sin DDL, escritura en Aiven ni cambios QA/PROD. CI causal pendiente antes de merge.
+
 ## 2026-10-13 — Propagación preliminar de owner comercial RBAC (candidato dependiente)
 
 - `VerifiedCommercialTenant` obtiene la empresa únicamente del marcador de autorización verificado del filtro `RequierePermiso`. Las nuevas altas de Producto, Cliente, Proveedor, Compra y Venta asignan `EmpresaId` cuando existe dicho marcador.

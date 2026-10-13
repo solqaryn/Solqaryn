@@ -176,6 +176,7 @@ public sealed class DocumentoFiscalEmisionService
         var actualizadas = await _db.Set<DocumentoFiscalEmision>()
             .Where(x =>
                 x.Id == existente.Id &&
+                x.EmpresaId == existente.EmpresaId &&
                 x.Estado == EstadoResultadoFiscal.Pendiente &&
                 x.UltimaActualizacionUtc == versionObservada)
             .ExecuteUpdateAsync(

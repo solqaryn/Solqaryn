@@ -104,3 +104,42 @@ jobs:
           COMMIT;
           SQL
           unset MYSQL_PWD
+
+
+      - name: Diagnostico temporal conservador sin PII y sin backfill
+        shell: bash
+        run: |
+          set -euo pipefail
+          export MYSQL_PWD="$DB_PASSWORD"
+          mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names <<'SQL'
+          SET SESSION TRANSACTION READ ONLY;
+          START TRANSACTION READ ONLY;
+          -- Membresia documental preexistente no equivale a propiedad demostrada.
+          WITH raices AS (
+              SELECT 'Productos' AS Tabla, CreadoPorUsuarioId, FechaCreacion FROM Productos
+              UNION ALL SELECT 'Clientes', CreadoPorUsuarioId, FechaCreacion FROM Clientes
+              UNION ALL SELECT 'Proveedores', CreadoPorUsuarioId, FechaCreacion FROM Proveedores
+              UNION ALL SELECT 'Compras', CreadoPorUsuarioId, FechaCreacion FROM Compras
+              UNION ALL SELECT 'Ventas', CreadoPorUsuarioId, FechaCreacion FROM Ventas
+          ), temporal AS (
+              SELECT r.Tabla, r.CreadoPorUsuarioId,
+                  (SELECT COUNT(DISTINCT ue.EmpresaId)
+                   FROM UsuarioEmpresas ue JOIN Empresas e ON e.Id=ue.EmpresaId
+                   WHERE ue.UsuarioId=r.CreadoPorUsuarioId
+                     AND ue.FechaCreacion<=r.FechaCreacion
+                     AND e.FechaCreacion<=r.FechaCreacion) AS MembresiasEnFecha,
+                  (SELECT COUNT(*) FROM Empresas e WHERE e.FechaCreacion<=r.FechaCreacion)
+                      AS EmpresasEnFecha
+              FROM raices r
+          )
+          SELECT CONCAT('TEMPORAL_TABLA=',Tabla,
+              ';TOTAL=',COUNT(*),
+              ';SIN_AUTOR=',COALESCE(SUM(CreadoPorUsuarioId IS NULL),0),
+              ';SIN_EMPRESA_PREEXISTENTE=',COALESCE(SUM(EmpresasEnFecha=0),0),
+              ';SIN_MEMBRESIA_PREEXISTENTE=',COALESCE(SUM(MembresiasEnFecha=0),0),
+              ';MULTIPLES_CANDIDATOS_PREVIOS=',COALESCE(SUM(MembresiasEnFecha>1),0),
+              ';UN_CANDIDATO_NO_PRUEBA_OWNER=',COALESCE(SUM(MembresiasEnFecha=1),0))
+          FROM temporal GROUP BY Tabla ORDER BY Tabla;
+          COMMIT;
+          SQL
+          unset MYSQL_PWD

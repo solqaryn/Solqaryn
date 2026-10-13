@@ -505,6 +505,8 @@ public class VentaService : IVentaService
 
                 cliente = new Cliente
                 {
+                    // Mismo owner verificado que la venta; nunca desde DTO/header.
+                    EmpresaId = venta.EmpresaId,
                     Nombre = dto.ClienteNombre.Trim(),
                     Telefono = dto.ClienteTelefono,
                     IdentidadORTN = dto.ClienteIdentidadORTN,

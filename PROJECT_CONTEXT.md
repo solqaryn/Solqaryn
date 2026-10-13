@@ -31,6 +31,17 @@ Ningún plan, fila, gate, fase o secuencia que no esté incorporado al MAESTRO v
 
 ## 3. Arquitectura vigente
 
+- **Candidato comercial PR #3596 (no integrado en `dev` hasta merge):** `AppDbContext` obtiene `VerifiedCommercialTenant` desde `IHttpContextAccessor` cuando existe marca post-RBAC y bloquea escrituras comerciales a owners explícitos distintos; asegura nuevos grafos de venta/compra en la misma transacción. No aísla lecturas ni datos históricos `EmpresaId=NULL`; no retirar cuarentena.
+
+- Bitácora nueva tenant-aware: `AuditoriaService` firma `RegistroAuditoria.EmpresaId` sólo desde marca autorizada de RBAC. Las filas históricas y jobs sin contexto siguen sin atribución; no equivale a filtro empresarial de auditoría.
+
+
+- Análisis P0 del snapshot Oracle EF10: 132 entidades mapeadas, 20 con `EmpresaId` y 66 entidades adicionales conectadas directa/indirectamente con cinco raíces comerciales. Inventario en `docs/tenancy/INVENTARIO_GRAFO_COMERCIAL_P0_DEV.md`. No clasificar las restantes como globales por omisión ni retirar la cuarentena.
+
+
+- Validación parcial de escritura `CommercialCrossTenantWriteGuard`: si una venta/compra/detalle y su referencia ya tienen owners positivos diferentes, SaveChanges rechaza la asociación. Los NULL históricos permanecen sin atribuir y no se considera aislamiento por fila completo.
+
+
 SOLQARYN es una plataforma empresarial multiempresa.
 
 - Frontend: Angular 22.2.1 standalone, Signals y Angular Material/CDK 22.2.1. Toolchain frontend vigente: Node.js 24.21.0 LTS + npm 11.19.0 + TypeScript 6.0.3 + RxJS 7.8.2 + tslib 2.8.1 + Zone.js 0.16.3; `provideZoneChangeDetection` y el polyfill `zone.js` permanecen activos, sin conversión a zoneless. CI usa patches exactos y Vercel se gobierna por `engines.node=24.x`.

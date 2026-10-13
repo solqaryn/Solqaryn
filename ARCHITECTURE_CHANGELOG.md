@@ -1,3 +1,16 @@
+## 2026-10-13 — Candidato: autorización tenant de escrituras EF y grafos nuevos (#3596)
+
+- `AppDbContext` conecta la marca server-side de RBAC con `CommercialCrossTenantWriteGuard`; los cambios a entidades comerciales con propietario ajeno se rechazan aun cuando el `EmpresaId` no cambia. Los grafos nuevos válidos se evalúan a través de entidades `Added` sin saltarse la revisión de propietarios persistidos.
+- Seguridad parcial exclusivamente en rama PR: las lecturas, `EmpresaId=NULL` históricos, procesos fuera de HTTP, SQL directo y tienda pública siguen sin aislamiento final. DEV no está certificado para operar simultáneamente dos empresas.
+
+## 2026-10-13 — Trazabilidad de auditoría con owner verificado (candidato)
+
+- `AuditoriaService` registra `RegistroAuditoria.EmpresaId` cuando existe marca tenant autorizada por RBAC, sin confiar en headers. Auditoría no HTTP y legacy conserva NULL. No es aislamiento de lecturas ni backfill.
+
+## 2026-10-13 — Validación de referencias comerciales explícitamente cruzadas (candidato DEV)
+
+- Gate anterior a SaveChanges que rechaza vínculos con propietarios empresariales diferentes en Ventas/Clientes, Compras/Proveedores y detalles/Productos. No modifica el modelo, esquema, datos históricos ni QA/PROD; contención P0 se conserva.
+
 ## 2026-10-13 — Identificador de empresa autorizado en nuevas altas comerciales (candidato)
 
 - Cinco servicios comerciales consumen el owner de la marca server-side posterior al filtro RBAC, no de header/payload. Datos legacy y flujos anónimos siguen pendientes; contención P0 activa.

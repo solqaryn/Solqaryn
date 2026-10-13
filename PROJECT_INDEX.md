@@ -37,6 +37,14 @@ No leer todos los documentos administrativos en cada tarea. Consultarlos solo cu
 
 ## Backend
 
+- **Candidato PR #3596:** `backend/src/Infrastructure/Persistence/AppDbContext.cs` y `CommercialCrossTenantWriteGuard.cs` exigen que las escrituras sobre datos comerciales con owner explícito concuerden con la marca RBAC de la empresa de la sesión; `backend/tests/Solqaryn.Tests/CommercialCrossTenantWriteGuardTests.cs` cubre A/B, grafos recién creados y bypasses. Sin merge aún; seguir `docs/runbooks/TENANCY_DATOS_COMERCIALES_P0.md`.
+
+- Bitácora de nuevos eventos comerciales: `backend/src/Application/Services/AuditoriaService.cs`, `VerifiedCommercialTenant.Resolve(http)` y tests `AuditoriaTenantOwnershipTests.cs`. No permite leer auditorías ajenas ni atribuir historial.
+
+- Inventario verificable del grafo comercial EF (`132` entidades y `66` descendientes relacionados): `docs/tenancy/INVENTARIO_GRAFO_COMERCIAL_P0_DEV.md`. Clasificación preliminar; no significa aislamiento certificado.
+
+- Gate de integridad de referencias empresariales explícitas: `backend/src/Infrastructure/Persistence/CommercialCrossTenantWriteGuard.cs`, llamado por `AppDbContext.SaveChangesAsync` con pruebas en `CommercialCrossTenantWriteGuardTests.cs`. No reemplaza los filtros de consulta ni la cuarentena P0.
+
 - Propagación preliminar de propiedad comercial a nuevas altas: `Application/Security/VerifiedCommercialTenant.cs` (marca server-side RBAC), consumido por cinco servicios. No equivale a aislamiento completo.
 
 - Candidato expand comercial: `backend/src/Infrastructure.Migrations/Migrations/20261013121500_CommercialTenantRootExpand.cs` y `backend/tests/Solqaryn.Tests/CommercialTenantRootOwnershipModelTests.cs`. La cuarentena de seguridad sigue siendo obligatoria hasta el aislamiento por fila.

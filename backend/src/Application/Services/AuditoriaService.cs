@@ -2,6 +2,7 @@ using System.Text.Json;
 using Solqaryn.Application.Common;
 using Solqaryn.Application.DTOs;
 using Solqaryn.Application.Interfaces;
+using Solqaryn.Application.Security;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Enums;
 using Microsoft.AspNetCore.Http;
@@ -57,6 +58,8 @@ public class AuditoriaService : IAuditoriaService
         {
             UsuarioId = _currentUser.UsuarioId,
             NombreUsuario = _currentUser.NombreUsuario ?? "Sistema",
+            // Solo el contexto autorizado por RBAC, nunca X-Empresa-Id bruto.
+            EmpresaId = VerifiedCommercialTenant.Resolve(http),
             Modulo = modulo,
             Accion = accion,
             Entidad = entidad,
