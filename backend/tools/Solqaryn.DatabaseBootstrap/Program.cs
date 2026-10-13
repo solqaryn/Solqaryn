@@ -183,6 +183,10 @@ if (mode == "fresh")
         INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
         VALUES ('20261013210000_CommercialTenantTaxDiscountExpand', '10.0.12');
         """);
+    await db.Database.ExecuteSqlRawAsync("""
+        INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+        VALUES ('20261013220000_CommercialTenantOwnershipGraphExpand', '10.0.12');
+        """);
     await db.Database.CloseConnectionAsync();
 }
 else
