@@ -67,6 +67,13 @@ internal static class Phase7MySqlTestDatabase
             VALUES ('20261013181500_CommercialTenantScopedRootIndexes', '10.0.12');
             """);
 
+        // El esquema de EnsureCreated ya incluye las tres relaciones compuestas
+        // adicionales de documentos comerciales verificadas por el contrato físico.
+        await db.Database.ExecuteSqlRawAsync("""
+            INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+            VALUES ('20261013190000_CommercialTenantInvoiceDocuments', '10.0.12');
+            """);
+
         if ((await db.Database.GetPendingMigrationsAsync()).Any())
             throw new InvalidOperationException("Phase 7 test bootstrap left pending Oracle migrations.");
     }
