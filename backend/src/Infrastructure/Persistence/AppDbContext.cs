@@ -443,6 +443,7 @@ public class AppDbContext : DbContext
         modelBuilder.HasAnnotation(RelationalAnnotationNames.MaxIdentifierLength, 64);
         CommercialTenantOwnershipGraphModel.Apply(modelBuilder);
         CommercialTenantRemainingModel.Apply(modelBuilder);
+        CommercialTenantNaturalKeysModel.Apply(modelBuilder);
 
         static string LimitIdentifier(string name) =>
             name.Length <= 64 ? name : name[..64];
