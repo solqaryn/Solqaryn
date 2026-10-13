@@ -24,3 +24,4 @@
 5. Conservar `UnscopedCommercialTenantGuardMiddleware` y bloqueo de segunda empresa hasta cierre de P0, sin modificar QA/PROD.
 
 **Prohibiciones del workflow:** no DML, DDL, restore, backfill, visualización de filas, publicación de PII ni modificación de secretos. La ejecución exitosa significa únicamente que el diagnóstico terminó.
+\n## Fuentes de propiedad empresarial directas (verificación de solo lectura)\n\nEl diagnóstico contrasta además evidencia directa de `RegistrosAuditoria` por `Entidad + ReferenciaId + EmpresaId` y `Resultado=Exito`, emisión fiscal (`Facturas -> DocumentosFiscalesEmision.EmpresaId`) y RTN legal del snapshot de factura frente a la identidad de `Empresas`. Solo imprime recuentos por fuente, conflictos y registros sin evidencia, nunca IDs/PII. El RTN exacto y una auditoría con empresa deben reconciliarse con el mismo registro y su fecha antes de autorizar cualquier UPDATE. Ninguna coincidencia aislada autoriza asignación automática.\n

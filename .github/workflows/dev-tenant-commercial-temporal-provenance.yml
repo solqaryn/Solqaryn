@@ -121,3 +121,67 @@ jobs:
           SQL
           unset MYSQL_PWD
           echo 'TEMPORAL_TENANT_READONLY=PASS sin_backfill=YES sin_ids_ni_pii=YES'
+
+      - name: Contrastar fuentes empresariales directas sin exponer registros
+        shell: bash
+        run: |
+          set -euo pipefail
+          export MYSQL_PWD="$DB_PASSWORD"
+          mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" \
+            --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names <<'SQL'
+          SET SESSION TRANSACTION READ ONLY;
+          START TRANSACTION READ ONLY;
+          -- Auditoria explícita: una coincidencia por usuario o membresia no es prueba.
+          -- La clave exacta es Entidad + ReferenciaId + EmpresaId no nulo.
+          WITH raices AS (
+              SELECT 'Producto' AS Tipo, Id FROM Productos WHERE EmpresaId IS NULL
+              UNION ALL SELECT 'Cliente', Id FROM Clientes WHERE EmpresaId IS NULL
+              UNION ALL SELECT 'Proveedor', Id FROM Proveedores WHERE EmpresaId IS NULL
+              UNION ALL SELECT 'Compra', Id FROM Compras WHERE EmpresaId IS NULL
+              UNION ALL SELECT 'Venta', Id FROM Ventas WHERE EmpresaId IS NULL
+          ), pruebas AS (
+              SELECT r.Tipo, r.Id, COUNT(DISTINCT a.EmpresaId) AS EmpresasAuditoria
+              FROM raices r
+              LEFT JOIN RegistrosAuditoria a ON a.Entidad=r.Tipo
+                  AND a.ReferenciaId=r.Id AND a.EmpresaId>0 AND a.Resultado='Exito'
+              GROUP BY r.Tipo,r.Id
+          )
+          SELECT CONCAT('FUENTE_AUDITORIA_TABLA=',Tipo,';TOTAL=',COUNT(*),
+              ';EMPRESA_UNICA=',COALESCE(SUM(EmpresasAuditoria=1),0),
+              ';CONFLICTO=',COALESCE(SUM(EmpresasAuditoria>1),0),
+              ';SIN_PRUEBA=',COALESCE(SUM(EmpresasAuditoria=0),0))
+          FROM pruebas GROUP BY Tipo ORDER BY Tipo;
+
+          -- Evidencia empresarial asociada a factura real mediante relacion FK.
+          WITH fiscal AS (
+              SELECT v.Id AS VentaId, COUNT(DISTINCT d.EmpresaId) AS EmpresasFiscales
+              FROM Ventas v JOIN Facturas f ON f.VentaId=v.Id
+              JOIN DocumentosFiscalesEmision d ON d.FacturaId=f.Id
+              WHERE v.EmpresaId IS NULL GROUP BY v.Id
+          )
+          SELECT CONCAT('FUENTE_FISCAL_VENTAS;CON_DOCUMENTO=',COUNT(*),
+              ';EMPRESA_UNICA=',COALESCE(SUM(EmpresasFiscales=1),0),
+              ';CONFLICTO=',COALESCE(SUM(EmpresasFiscales>1),0))
+          FROM fiscal;
+
+          -- RTN legal de la factura vs RTN de Empresas. Requiere RTN no vacío
+          -- y coincidencia estricta, nunca solo nombre/telefono/dominio.
+          WITH legal AS (
+              SELECT v.Id AS VentaId, COUNT(DISTINCT e.Id) AS EmpresasRtn
+              FROM Ventas v
+              JOIN Facturas f ON f.VentaId=v.Id
+              JOIN Empresas e ON e.Rtn IS NOT NULL
+                AND LENGTH(TRIM(e.Rtn))>=8
+                AND UPPER(REPLACE(REPLACE(TRIM(f.EmpresaRTN),'-',''),' ','')) =
+                    UPPER(REPLACE(REPLACE(TRIM(e.Rtn),'-',''),' ',''))
+              WHERE v.EmpresaId IS NULL AND f.EmpresaRTN IS NOT NULL
+              GROUP BY v.Id
+          )
+          SELECT CONCAT('FUENTE_RTN_FACTURAS_VENTAS;CON_COINCIDENCIA=',COUNT(*),
+              ';EMPRESA_UNICA=',COALESCE(SUM(EmpresasRtn=1),0),
+              ';CONFLICTO=',COALESCE(SUM(EmpresasRtn>1),0))
+          FROM legal;
+          COMMIT;
+          SQL
+          unset MYSQL_PWD
+          echo 'FUENTES_DE_OWNER_DEV_READONLY=PASS write_count=0 pii=0'
