@@ -84,6 +84,10 @@ public static class CommercialTenantOwnershipGraphWriteGuard
                 throw new BusinessRuleException("No se puede reasignar el dueño empresarial de un registro.");
             if (authorized is > 0 && company.CurrentValue is int owner && owner != authorized)
                 throw new ForbiddenAccessException("Registro comercial de una empresa no autorizada.");
+            // OriginalValue no basta para Update/Remove de entidades desconectadas.
+            // La comparación autoritativa en MySQL evita falsificar un tenant.
+            if (entry.State is EntityState.Modified or EntityState.Deleted && db.Database.IsRelational())
+                await VerifyPersistedOwnerAsync(db, entry, ct);
         }
 
         // Una nueva jerarquía completa puede añadirse en un mismo SaveChanges.
@@ -137,6 +141,31 @@ public static class CommercialTenantOwnershipGraphWriteGuard
                         "Relación comercial entre empresas distintas o sin dueño comprobado.");
             }
         }
+    }
+
+    private static async Task VerifyPersistedOwnerAsync(
+        AppDbContext db, EntityEntry entry, CancellationToken ct)
+    {
+        var table = entry.Metadata.GetTableName()
+            ?? throw new BusinessRuleException("Entidad comercial sin tabla verificada.");
+        var property = entry.Metadata.FindProperty("EmpresaId")
+            ?? throw new BusinessRuleException("Entidad comercial sin propiedad empresarial.");
+        var key = entry.Metadata.FindPrimaryKey();
+        if (key is null || key.Properties.Count != 1 || key.Properties[0].Name != "Id")
+            throw new BusinessRuleException("Clave comercial no certificada para verificar tenant.");
+        var id = entry.Property("Id").CurrentValue;
+        if (id is null)
+            throw new BusinessRuleException("Identidad comercial ausente.");
+        static string Quote(string name) => "`" + name.Replace("`", "``", StringComparison.Ordinal) + "`";
+        var ownerColumn = property.GetColumnName(StoreObjectIdentifier.Table(table, entry.Metadata.GetSchema()))
+            ?? "EmpresaId";
+        var idColumn = key.Properties[0].GetColumnName(
+            StoreObjectIdentifier.Table(table, entry.Metadata.GetSchema())) ?? "Id";
+        var sql = $"SELECT {Quote(ownerColumn)} AS `Value` FROM {Quote(table)} WHERE {Quote(idColumn)} = {{0}} LIMIT 1";
+        var saved = await db.Database.SqlQueryRaw<int?>(sql, id).SingleOrDefaultAsync(ct);
+        if (!Equals(saved, entry.Property("EmpresaId").CurrentValue))
+            throw new BusinessRuleException(
+                "La propiedad empresarial almacenada difiere de la operación solicitada.");
     }
 
     private static IEnumerable<IForeignKey> TenantEdges(EntityEntry entry) =>
