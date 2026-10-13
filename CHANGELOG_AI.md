@@ -1,4 +1,7 @@
-## 2026-10-13 — Candidato tributación/descuentos por EmpresaId
+## 2026-10-13 — Candidato cotizaciones/pedidos de venta tenant-aislados
+
+- EmpresaId nullable, modelo e integridad MySQL con 9 FKs compuestas en Cotizaciones/CotizacionDetalles/PedidosVenta/PedidoVentaDetalles, índices únicos por empresa, validación de referencias A/B y pruebas.
+- No backfill de 19 registros descartables; conserva cuarentena, falta cierre integral sobre 66 descendi## 2026-10-13 — Candidato tributación/descuentos por EmpresaId
 
 - `VentaImpuestos`, `CompraImpuestos`, `VentaDescuentos`, `HistorialUsoDescuentos`: propiedad empresarial nullable para legacy, índices owner-padre, 5 FKs compuestas con Ventas/Compras/Clientes y validaciones de nuevas escrituras.
 - Migración Oracle EF10 aditiva, bootstrap MySQL fresh/legacy, pruebas A/B; no altera datos, QA ni PROD. Quedan catálogos/configuraciones y otros descendientes por aislar.

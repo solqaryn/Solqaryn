@@ -76,6 +76,11 @@ internal static class Phase7MySqlTestDatabase
 
         await db.Database.ExecuteSqlRawAsync("""
             INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+            VALUES ('20261013193000_CommercialTenantSalesDocuments', '10.0.12');
+            """);
+
+        await db.Database.ExecuteSqlRawAsync("""
+            INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
             VALUES ('20261013210000_CommercialTenantTaxDiscountExpand', '10.0.12');
             """);
 

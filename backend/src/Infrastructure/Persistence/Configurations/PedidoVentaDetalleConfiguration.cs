@@ -14,6 +14,16 @@ public sealed class PedidoVentaDetalleConfiguration : IEntityTypeConfiguration<P
             table.HasCheckConstraint("CK_PedidoVentaDetalles_PrecioUnitario_NoNegativo", "`PrecioUnitario` >= 0");
         });
 
+        builder.HasOne<Empresa>().WithMany().HasForeignKey(x => x.EmpresaId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("FK_PedidoVentaDetalles_Empresas_EmpresaId");
+        builder.HasIndex(x => new { x.EmpresaId, x.PedidoVentaId })
+            .HasDatabaseName("IX_PedidoVentaDetalles_Empresa_PedidoVentaId");
+        builder.HasIndex(x => new { x.EmpresaId, x.ProductoId })
+            .HasDatabaseName("IX_PedidoVentaDetalles_Empresa_ProductoId");
+        builder.HasIndex(x => new { x.EmpresaId, x.ProductoVarianteId })
+            .HasDatabaseName("IX_PedidoVentaDetalles_Empresa_ProductoVarianteId");
+
         builder.Property(d => d.Cantidad).HasPrecision(18, 4);
         builder.Property(d => d.PrecioUnitario).HasPrecision(18, 4);
         builder.Property(d => d.ProductoSkuSnapshot).HasMaxLength(80);
