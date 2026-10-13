@@ -264,4 +264,4 @@ Sanitización de imágenes: `backend/src/Infrastructure/Services/ImagenUploadSec
 - `backend/tests/Solqaryn.Tests/DevCloudinaryLegacyLocatorTests.cs`: casos positivos y negativos de Cloudinary, tenant, origen, y firmas de imagen.
 - `.github/workflows/cloudinary-dev-backup-restore.yml` (PR #3575): respaldo real cifrado y restore efímero requerido antes de activar el worker.
 - `scripts/audit_cloudinary_dev_locations.py`: lectura SQL posterior; exige cero referencias incorrectas para certificación.
-- `docs/CLOUDINARY_AISLAMIENTO.md`: contrato de operación, detención, integridad y rollback.
+- `docs/CLOUDINARY_AISLAMIENTO.md`: contrato de operación, integridad/rollback y cierre DEV 11/11 real; auditoría `remaining=0`, flag `false` y aceptación manual individual/ZIP posterior.
