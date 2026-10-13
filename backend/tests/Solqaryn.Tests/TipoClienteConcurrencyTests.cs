@@ -190,7 +190,7 @@ public class TipoClienteConcurrencyTests
             await db.SaveChangesAsync();
 
             Assert.Equal(2, await db.TipoClientes.AsNoTracking()
-                .CountAsync(t => t.EsPredeterminado));
+                .CountAsync(t => t.EsPredeterminado && t.Codigo == "GENERAL"));
         }
         finally
         {
