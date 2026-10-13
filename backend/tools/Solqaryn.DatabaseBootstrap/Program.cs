@@ -207,4 +207,6 @@ var pending = (await db.Database.GetPendingMigrationsAsync()).ToArray();
 if (pending.Length != 0)
     throw new InvalidOperationException($"Pending Oracle migrations remain: {string.Join(",", pending)}.");
 
+await CommercialTenantPhysicalConstraints.VerifyAsync(db);
+
 Console.WriteLine($"SOLQARYN_ORACLE_BOOTSTRAP=PASS mode={mode} tables={afterAdoption} pending=0");

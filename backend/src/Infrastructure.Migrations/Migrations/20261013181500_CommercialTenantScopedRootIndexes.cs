@@ -94,6 +94,18 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
             migrationBuilder.CreateIndex("IX_VentaDetalles_Empresa_Variante", "VentaDetalles", new[] { "EmpresaId", "ProductoVarianteId" });
             migrationBuilder.CreateIndex("IX_CompraDetalles_Empresa_Producto", "CompraDetalles", new[] { "EmpresaId", "ProductoId" });
             migrationBuilder.CreateIndex("IX_CompraDetalles_Empresa_Variante", "CompraDetalles", new[] { "EmpresaId", "ProductoVarianteId" });
+            migrationBuilder.Sql("""ALTER TABLE `Ventas` ADD CONSTRAINT `FK_Ventas_Cliente_Tenant` FOREIGN KEY (`EmpresaId`, `ClienteId`) REFERENCES `Clientes` (`EmpresaId`, `Id`) ON DELETE RESTRICT;""");
+            migrationBuilder.Sql("""ALTER TABLE `Compras` ADD CONSTRAINT `FK_Compras_Proveedor_Tenant` FOREIGN KEY (`EmpresaId`, `ProveedorId`) REFERENCES `Proveedores` (`EmpresaId`, `Id`) ON DELETE RESTRICT;""");
+            migrationBuilder.Sql("""ALTER TABLE `ProductoVariantes` ADD CONSTRAINT `FK_ProductoVariantes_Producto_Tenant` FOREIGN KEY (`EmpresaId`, `ProductoId`) REFERENCES `Productos` (`EmpresaId`, `Id`) ON DELETE RESTRICT;""");
+            migrationBuilder.Sql("""ALTER TABLE `ProductoImagenes` ADD CONSTRAINT `FK_ProductoImagenes_Producto_Tenant` FOREIGN KEY (`EmpresaId`, `ProductoId`) REFERENCES `Productos` (`EmpresaId`, `Id`) ON DELETE CASCADE;""");
+            migrationBuilder.Sql("""ALTER TABLE `ProductoImagenes` ADD CONSTRAINT `FK_ProductoImagenes_Variante_Tenant` FOREIGN KEY (`EmpresaId`, `ProductoVarianteId`) REFERENCES `ProductoVariantes` (`EmpresaId`, `Id`) ON DELETE RESTRICT;""");
+            migrationBuilder.Sql("""ALTER TABLE `VentaDetalles` ADD CONSTRAINT `FK_VentaDetalles_Venta_Tenant` FOREIGN KEY (`EmpresaId`, `VentaId`) REFERENCES `Ventas` (`EmpresaId`, `Id`) ON DELETE CASCADE;""");
+            migrationBuilder.Sql("""ALTER TABLE `VentaDetalles` ADD CONSTRAINT `FK_VentaDetalles_Producto_Tenant` FOREIGN KEY (`EmpresaId`, `ProductoId`) REFERENCES `Productos` (`EmpresaId`, `Id`) ON DELETE RESTRICT;""");
+            migrationBuilder.Sql("""ALTER TABLE `VentaDetalles` ADD CONSTRAINT `FK_VentaDetalles_Variante_Tenant` FOREIGN KEY (`EmpresaId`, `ProductoVarianteId`) REFERENCES `ProductoVariantes` (`EmpresaId`, `Id`) ON DELETE RESTRICT;""");
+            migrationBuilder.Sql("""ALTER TABLE `CompraDetalles` ADD CONSTRAINT `FK_CompraDetalles_Compra_Tenant` FOREIGN KEY (`EmpresaId`, `CompraId`) REFERENCES `Compras` (`EmpresaId`, `Id`) ON DELETE CASCADE;""");
+            migrationBuilder.Sql("""ALTER TABLE `CompraDetalles` ADD CONSTRAINT `FK_CompraDetalles_Producto_Tenant` FOREIGN KEY (`EmpresaId`, `ProductoId`) REFERENCES `Productos` (`EmpresaId`, `Id`) ON DELETE RESTRICT;""");
+            migrationBuilder.Sql("""ALTER TABLE `CompraDetalles` ADD CONSTRAINT `FK_CompraDetalles_Variante_Tenant` FOREIGN KEY (`EmpresaId`, `ProductoVarianteId`) REFERENCES `ProductoVariantes` (`EmpresaId`, `Id`) ON DELETE RESTRICT;""");
+            migrationBuilder.Sql("""ALTER TABLE `Facturas` ADD CONSTRAINT `FK_Facturas_Venta_Tenant` FOREIGN KEY (`EmpresaId`, `VentaId`) REFERENCES `Ventas` (`EmpresaId`, `Id`) ON DELETE RESTRICT;""");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
