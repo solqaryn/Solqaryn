@@ -11,6 +11,12 @@ public class CompraConfiguration : IEntityTypeConfiguration<Compra>
         builder.ToTable("Compras");
         // FK restrictiva para nuevas asignaciones; NULL legacy sin atribuir.
         builder.HasIndex(x => x.EmpresaId).HasDatabaseName("IX_Compras_EmpresaId");
+        // Índice compuesto de titularidad, futuro soporte para FKs empresariales.
+        builder.HasIndex(x => new { x.EmpresaId, x.Id })
+            .IsUnique()
+            .HasDatabaseName("UX_Compras_Empresa_Id");
+        builder.HasIndex(x => new { x.EmpresaId, x.ProveedorId })
+            .HasDatabaseName("IX_Compras_Empresa_Proveedor");
         builder.HasOne<Empresa>()
             .WithMany()
             .HasForeignKey(x => x.EmpresaId)
@@ -18,7 +24,9 @@ public class CompraConfiguration : IEntityTypeConfiguration<Compra>
             .HasConstraintName("FK_Compras_Empresas_EmpresaId");
 
         builder.Property(c => c.NumeroCompra).IsRequired().HasMaxLength(20);
-        builder.HasIndex(c => c.NumeroCompra).IsUnique();
+        builder.HasIndex(c => new { c.EmpresaId, c.NumeroCompra })
+            .IsUnique()
+            .HasDatabaseName("UX_Compras_Empresa_NumeroCompra");
         builder.Property(c => c.ProveedorNombre).IsRequired().HasMaxLength(200);
         builder.Property(c => c.ProveedorTelefono).HasMaxLength(30);
         builder.Property(c => c.ProveedorDocumento).HasMaxLength(50);

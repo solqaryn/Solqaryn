@@ -59,6 +59,13 @@ internal static class Phase7MySqlTestDatabase
             INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
             VALUES ('20261013121500_CommercialTenantRootExpand', '10.0.12');
             """);
+        // EnsureCreated incluye el modelo de índices empresariales actual, y
+        // ApplyFreshBootstrapSupplementsAsync ya impuso/verificó sus 12 FKs.
+        // Adoptar únicamente esta migración exacta, nunca un set abierto.
+        await db.Database.ExecuteSqlRawAsync("""
+            INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+            VALUES ('20261013181500_CommercialTenantScopedRootIndexes', '10.0.12');
+            """);
 
         if ((await db.Database.GetPendingMigrationsAsync()).Any())
             throw new InvalidOperationException("Phase 7 test bootstrap left pending Oracle migrations.");

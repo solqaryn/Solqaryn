@@ -9,6 +9,14 @@ public class ProductoVarianteConfiguration : IEntityTypeConfiguration<ProductoVa
     public void Configure(EntityTypeBuilder<ProductoVariante> builder)
     {
         builder.ToTable("ProductoVariantes");
+        builder.HasIndex(x => new { x.EmpresaId, x.ProductoId })
+            .HasDatabaseName("IX_ProductoVariantes_Empresa_Referencia");
+        builder.HasIndex(x => new { x.EmpresaId, x.Id }).IsUnique()
+            .HasDatabaseName("UX_ProductoVariantes_Empresa_Id");
+        builder.HasOne<Empresa>().WithMany().HasForeignKey(x => x.EmpresaId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("FK_ProductoVariantes_Empresas_EmpresaId");
+
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Sku).HasMaxLength(80);
         builder.Property(x => x.CodigoBarras).HasMaxLength(120);
@@ -41,8 +49,10 @@ public class ProductoVarianteConfiguration : IEntityTypeConfiguration<ProductoVa
         builder.HasIndex("IdentidadActivaUnica")
             .IsUnique()
             .HasDatabaseName("UX_ProductoVariantes_IdentidadActiva");
-        builder.HasIndex(x => x.Sku).IsUnique();
-        builder.HasIndex(x => x.CodigoBarras).IsUnique();
+        builder.HasIndex(x => new { x.EmpresaId, x.Sku }).IsUnique()
+            .HasDatabaseName("UX_ProductoVariantes_Empresa_Sku");
+        builder.HasIndex(x => new { x.EmpresaId, x.CodigoBarras }).IsUnique()
+            .HasDatabaseName("UX_ProductoVariantes_Empresa_CodigoBarras");
         builder.HasIndex("ProductoTecnicoUnico")
             .IsUnique()
             .HasDatabaseName("IX_ProductoVariantes_ProductoTecnicoUnico");

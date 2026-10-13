@@ -1,3 +1,8 @@
+## 2026-10-13 — PR #3599 (candidato): claves por empresa y dependientes principales
+
+- Se agregan índices tenant y unicidades por empresa en cinco raíces, EmpresaId nullable a 5 descendientes (variante, foto, detalles de compra/venta, factura), guard de derivación y 12 FKs MySQL compuestas.
+- Snapshot/migración Oracle EF10 y CI quedan sujetos a certificación exact-head; NO está autorizado levantar la cuarentena de la segunda empresa. Quedan otras dependencias del grafo comercial y filtros de lectura por resolver; no se alteran datos ni entornos QA/PROD.
+
 ## 2026-10-13 — Declaración de fixtures DEV descartables, sin backfill
 
 - El propietario confirmó que 19 registros de Producto, Cliente, Proveedor, Compra y Venta son solo pruebas y no deben atribuirse a empresas históricas. Se retira esa obligación, sin alterar Aiven.

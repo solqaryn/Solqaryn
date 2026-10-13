@@ -145,6 +145,8 @@ public class AppDbContext : DbContext
             _tenantHttpContextAccessor?.HttpContext);
         await CommercialCrossTenantWriteGuard.ValidateAsync(
             this, cancellationToken, empresaAutorizada);
+        await CommercialTenantDerivedWriteGuard.ValidateAsync(
+            this, empresaAutorizada, cancellationToken);
         await ValidarAislamientoComercialVentasAsync(cancellationToken);
         await PrepararValorizacionComprasAsync(cancellationToken);
         var guardados = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
