@@ -37,6 +37,8 @@ No leer todos los documentos administrativos en cada tarea. Consultarlos solo cu
 
 ## Backend
 
+- Gate de integridad de referencias empresariales explícitas: `backend/src/Infrastructure/Persistence/CommercialCrossTenantWriteGuard.cs`, llamado por `AppDbContext.SaveChangesAsync` con pruebas en `CommercialCrossTenantWriteGuardTests.cs`. No reemplaza los filtros de consulta ni la cuarentena P0.
+
 - Candidato expand comercial: `backend/src/Infrastructure.Migrations/Migrations/20261013121500_CommercialTenantRootExpand.cs` y `backend/tests/Solqaryn.Tests/CommercialTenantRootOwnershipModelTests.cs`. La cuarentena de seguridad sigue siendo obligatoria hasta el aislamiento por fila.
 
 `backend/Solqaryn.sln` — solución .NET.
