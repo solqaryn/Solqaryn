@@ -1,3 +1,9 @@
+## 2026-10-13 — Evidencia temporal de atribución comercial (DEV read-only)
+
+- Agregado workflow `.github/workflows/dev-tenant-commercial-temporal-provenance.yml` con controles de identidad estrictos `solqaryn/Solqaryn`/`dev`/`solqaryn_dev`/MySQL 8.4.8. Cuenta por tabla comercial fechas de membresía anteriores/posteriores a las 19 filas legacy, marcas temporales contradictorias y cobertura agregada del owner en `RegistrosAuditoria`; nunca imprime identificadores, filas o PII.
+- Criterios e interpretación en `docs/tenancy/ATRIBUCION_HISTORICA_TEMPORAL_DEV.md`. Una membresía única actual, o con fecha compatible, **no basta** para otorgar propiedad histórica; NO ejecutar backfill sin prueba primaria individual.
+- Mantener cuarentena, no habilitar una segunda empresa, no modificar Aiven, QA ni PROD. Requiere CI y readback causal de su ejecución en DEV.
+
 ## 2026-10-13 — Propagación preliminar de owner comercial RBAC (candidato dependiente)
 
 - `VerifiedCommercialTenant` obtiene la empresa únicamente del marcador de autorización verificado del filtro `RequierePermiso`. Las nuevas altas de Producto, Cliente, Proveedor, Compra y Venta asignan `EmpresaId` cuando existe dicho marcador.
