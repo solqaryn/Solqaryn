@@ -2,6 +2,14 @@
 
 **Proyecto y entorno:** `solqaryn/Solqaryn`, exclusivamente `dev` / Aiven `solqaryn_dev`. **Estado:** diagnóstico no destructivo; **no** es autorización de backfill.
 
+## Dictamen posterior del propietario — pruebas descartables (2026-10-13)
+
+Se confirmó que estas 19 filas de Aiven DEV son únicamente datos de prueba y se eliminarán eventualmente. NO se realizará backfill histórico ni búsqueda adicional de titularidad. Esto no acredita eliminación de datos ni aislamiento futuro; conservar temporalmente la cuarentena.
+
+La auditoría real Actions #38433028496 probó que 15 registros anteceden a la empresa actual, 420 entradas de auditoría no tienen EmpresaId y ninguna de las fuentes directas examinadas acredita dueño individual. Es evidencia histórica, no un bloqueo para migrar datos que el propietario declaró descartables.
+
+Antes de limpieza futura: preservar cuentas de usuario, autenticación, roles, permisos y membresías; hacer backup cifrado fresco y restore ensayado en descartable; purgar de forma referencial segura solo fixtures DEV. Ver docs/tenancy/LIMPIEZA_DATOS_PRUEBA_DEV.md.
+
 ## Hechos validados antes de la auditoría temporal
 
 - El esquema tiene cinco columnas `EmpresaId?` con sus cinco FK e índices: evidencia `TENANT_REAL_SCHEMA_EXPAND=PASS`, [GitHub Actions #38406239720](https://github.com/solqaryn/Solqaryn/actions/runs/38406239720).

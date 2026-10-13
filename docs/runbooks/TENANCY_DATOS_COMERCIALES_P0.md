@@ -2,6 +2,14 @@
 
 **Estado 2026-10-13: contención operativa desplegada en Render DEV. Candidato expand introduce `EmpresaId?` e índices/FK en cinco raíces, con migración Oracle; los registros históricos continúan sin atribución y NO existe aislamiento multiempresa certificado.**
 
+## Decisión del propietario — datos de prueba DEV, sin backfill (2026-10-13)
+
+Los 19 registros sin EmpresaId (8 productos, 2 clientes, 2 proveedores, 3 compras y 4 ventas) son pruebas descartables. No se atribuirán a ninguna empresa ni es necesario reconstruir su dueño histórico. La auditoría permanece como evidencia, no como requisito para avanzar.
+
+El borrado comercial NO se ha ejecutado: la limpieza futura solo en DEV deberá proteger usuarios, contraseñas/hashes, roles, permisos, membresías UsuarioEmpresa y configuración necesaria para login; inventariar 132 entidades/66 descendientes, hacer backup cifrado fresco, restaurar en MySQL descartable, ensayar purga referencial transaccional y verificar resultados. Véase docs/tenancy/LIMPIEZA_DATOS_PRUEBA_DEV.md. No eliminar Cloudinary ni otro activo por este acuerdo.
+
+Lo obligatorio para habilitar empresas FUTURAS es aislamiento A/B de todas las lecturas, escrituras, relaciones, facturas, inventarios, archivos, trabajos y la tienda pública. La cuarentena para 2+ empresas sigue activa y QA/PROD no se modifican.
+
 ## 2026-10-13 — Evidencia de ejecución real (DEV, lectura y control sin atribución)
 
 - **Esquema aplicado y verificado sobre Aiven DEV:** [run #38406239720](https://github.com/solqaryn/Solqaryn/actions/runs/38406239720). Preflight `already_expanded`; cinco columnas `EmpresaId?`, cinco FKs e índices y marca Oracle EF presentes. El paso DDL se omitió por idempotencia; no se duplicó la migración.
@@ -56,7 +64,7 @@ La nueva versión de `AuditoriaService` marca eventos futuros con la empresa com
 
 - Inventariar **todas** las tablas tenant-owned (maestros, catálogos, variantes, inventario, almacenes, cotizaciones, pedidos, compras, ventas, facturación, pagos, contabilidad, logística, imágenes, exportaciones, búsquedas, caché y jobs) y sus relaciones y referencias externas; distinguir explícitamente datos globales de datos de empresa.
 - Añadir ownership `EmpresaId` durable y `NOT NULL` para datos nuevos, con FK hacia `Empresas`, índices y unicidades compuestas por empresa; en descendientes con ownership derivado, imponer FK/consistencia de pertenencia transaccional al ancestro.
-- Auditar registros legacy y elaborar un **mapa de atribución con evidencia** desde información de negocio fiable, no por usuario, primer tenant, `MIN(EmpresaId)`, encabezado HTTP ni una coincidencia arbitraria. Los datos ambiguos quedan en cuarentena, nunca visibles a cualquier empresa.
+- Para los 19 registros de prueba de DEV, no hacer backfill histórico: ejecutar solo la limpieza de fixtures comerciales cuando su alcance y dependencias estén inventariados y protegidos, con backup/restore comprobado y usuarios intactos. Los futuros datos reales deben tener owner server-side obligatorio desde su creación; ningún registro sin tenant puede exponerse a otra empresa.
 - Proteger lecturas (listas, detalles, agregados, reportes, búsquedas y exports), escrituras (POST/PUT/PATCH/DELETE), asociaciones por ID, borrado lógico, `ExecuteUpdate`, `FromSql`, `IgnoreQueryFilters`, streaming, archivos, jobs, webhooks, caché y el storefront **también sin JWT**. El tenant válido procede del servidor a partir de membresía activa y binding público de dominio/storefront verificable; nunca de un `EmpresaId` suministrado libremente.
 - Guardar y restaurar backup DEV **antes** de migrar o reparar filas; ensayar migración Oracle EF Core 10/MySQL 8.4.8 en base efímera, validar `has-pending-model-changes=0`, FKs y conteo de huérfanos/filas sin dueño. No introducir un nuevo provider ni actualizar Aiven.
 - Ejecutar pruebas multiempresa **A/B** reales: mismas claves SKU/RTN/folios permitidas por empresa; todos los CRUD; referencias ajenas vía URL, filtros, DTOs, cargas masivas y acceso directo; usuario con acceso a dos empresas que cambia de tenant; RBAC; exportación de PDF/Excel/ZIP; facturas y datos financieros; consulta anónima por dominios; jobs y caché. Rechazo 403/404 sin filtración de existencia.

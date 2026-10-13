@@ -257,6 +257,12 @@ Es una mitigación de UX y observabilidad, no un keep-alive ni un SLA always-on 
 
 El backend registra de forma condicional `DevCloudinaryLegacyNormalizationHostedService` únicamente bajo Render Development y `Cloudinary:NormalizeDevLegacyImagesOnStartup=true`. En la configuración versionada DEV el indicador es `false`; no afecta QA ni PROD. La operación pertenece a Infrastructure y usa el `AppDbContext` ya compuesto por API, sin endpoint ni DTO público nuevos. Revalida cloud, prefijo y tenant desde MySQL DEV, descarga y valida bytes de las 11 imágenes históricas, copia a rutas canónicas con Cloudinary DEV, compara SHA-256 y actualiza `ProductoImagenes` con compare-and-swap; conserva originales. Si alguna garantía falla, se detiene y el respaldo cifrado con restore probado permite recuperación. La ejecución única fue certificada en DEV (respaldo/restore previo, 11 copias SHA-256 verificadas, auditoría independiente `remaining=0`, descargas individual/ZIP aceptadas manualmente por el propietario). El flag está nuevamente en `false` y el runtime Render DEV `live` en `f6f79b9d`. El worker sigue disponible pero inerte; no se traslada ningún secreto ni se autoriza escritura a QA/PROD. Evidencia: `docs/CLOUDINARY_AISLAMIENTO.md`.
 
+## 2026-10-13 — Datos comerciales de DEV descartables, sin backfill
+
+El propietario confirmó que los 19 registros actuales sin EmpresaId son PRUEBAS descartables y no exigen migrar ownership histórico. No se han borrado ni reasignado. La posterior limpieza DEV preservará usuarios, credenciales, roles, permisos, membresías y configuración indispensable, previa restauración ensayada; detalles en docs/tenancy/LIMPIEZA_DATOS_PRUEBA_DEV.md.
+
+La arquitectura de aislamiento futuro NO cambia: cada dato generado en una empresa requiere ownership server-side verificable, filtros en consultas y escrituras, FK y archivos consistentes, además de tienda pública, caché y jobs separados. La cuarentena para 2+ empresas permanece hasta certificación A/B real.
+
 ## 2026-10-13 — Expand de ownership comercial (sin cierre de aislamiento)
 
 Las cinco raíces `Producto`, `Cliente`, `Proveedor`, `Compra` y `Venta` incorporan `EmpresaId?` nullable como transición expand. El modelo añade FK restrictiva e índice por raíz. La migración Oracle `20261013121500_CommercialTenantRootExpand` conserva las filas previas sin atribución; la base efímera fresh reconoce el esquema generado por `EnsureCreated` sin duplicar DDL.
