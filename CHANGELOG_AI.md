@@ -2,6 +2,7 @@
 
 - `AppDbContext` bloquea persistencias sincronas comerciales y escrituras sincronas relacionales; `SaveChangesAsync(bool, CancellationToken)` ejecuta el mismo guard que el overload por defecto. Los reportes InMemory no comerciales mantienen compatibilidad de test.
 - `CommercialCrossTenantWriteGuard` comprueba el dueño real persistido frente a `Update` desconectado y `DELETE`; cuando existe FK persistido no confía en una navegación mutable, y rechaza enlaces mixtos con propietario explícito y legacy sin atribución, además de detalles con variante de otro producto.
+- En el retry fiscal con `ExecuteUpdateAsync`, el predicado ahora exige `DocumentoFiscalEmision.EmpresaId` persistido además de `Id` y versión; el caso de outbox ya tenía scope por empresa.
 - Cinco tests añadidos para esos bypasses. Falta CI exact-head y REVIEW_FIRST antes de integrar en `dev`. No se retira la cuarentena y no se considera aislada la totalidad de relaciones, SQL crudo, `ExecuteUpdate`, exportaciones, catálogo anónimo o jobs.
 
 ## 2026-10-13 — Auditoría de nuevos eventos empresariales con origen RBAC verificado
