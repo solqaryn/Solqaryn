@@ -2,13 +2,14 @@ const https = require('node:https');
 const { resolveEnvironmentBinding } = require('../server/environment-binding');
 
 const HOP_BY_HOP_HEADERS = new Set(['connection','keep-alive','proxy-authenticate','proxy-authorization','te','trailer','transfer-encoding','upgrade']);
+const UPSTREAM_TIMEOUT_MS = 30000;
 
-function fail(res, statusCode, message) {
+function fail(res, statusCode, message, code) {
   if (res.headersSent) { res.destroy(); return; }
   res.statusCode = statusCode;
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
   res.setHeader('Cache-Control', 'private, no-store, max-age=0');
-  res.end(JSON.stringify({ success: false, message }));
+  res.end(JSON.stringify({ success: false, message, ...(code ? { code } : {}) }));
 }
 
 function normalizePath(raw) {
@@ -45,6 +46,18 @@ function responseHeaders(upstreamRes, res, environment) {
   res.setHeader('x-solqaryn-environment', environment);
 }
 
+function upstreamUnavailable(req, res, environment, error) {
+  const reason = typeof error?.code === 'string' && /^[A-Z0-9_]{2,30}$/.test(error.code)
+    ? error.code
+    : 'UNKNOWN';
+  // Solo metadatos no sensibles: nunca registrar URL/query, cabeceras, JWT ni body.
+  console.warn('SOLQARYN_UPSTREAM_UNAVAILABLE env=' + environment + ' method=' + req.method + ' reason=' + reason);
+  if (res.headersSent) { res.destroy(); return; }
+  res.setHeader('Retry-After', '3');
+  res.setHeader('x-solqaryn-environment', environment);
+  fail(res, 503, 'El servidor no está disponible temporalmente. Intenta nuevamente en unos momentos.', 'API_UPSTREAM_UNAVAILABLE');
+}
+
 module.exports = function handler(req, res) {
   let binding;
   try { binding = resolveEnvironmentBinding(); }
@@ -67,7 +80,11 @@ module.exports = function handler(req, res) {
     responseHeaders(upstreamRes, res, binding.environment);
     upstreamRes.pipe(res);
   });
-  upstreamReq.setTimeout(30000, () => upstreamReq.destroy(new Error('API upstream timeout')));
-  upstreamReq.on('error', () => fail(res, 502, 'API upstream no disponible.'));
+  upstreamReq.setTimeout(UPSTREAM_TIMEOUT_MS, () => {
+    const error = new Error('upstream socket timeout');
+    error.code = 'ETIMEDOUT';
+    upstreamReq.destroy(error);
+  });
+  upstreamReq.on('error', error => upstreamUnavailable(req, res, binding.environment, error));
   if (bodyBuffer) upstreamReq.end(bodyBuffer); else req.pipe(upstreamReq);
 };
