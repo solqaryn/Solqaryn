@@ -1,3 +1,8 @@
+## 2026-10-13 — Bloqueo preventivo de reasignación comercial
+
+- `CommercialCrossTenantWriteGuard` prohíbe mutar `EmpresaId` de raíces persistidas (`Producto`, `Cliente`, `Proveedor`, `Compra`, `Venta`) desde SaveChanges ordinario, incluida asignación de NULL histórico. El futuro backfill deberá ser segregado, probado y auditado.
+- Pruebas verifican owner A->B y NULL->A rechazados. Sin datos DEV, QA o PROD modificados; P0 continúa abierto.
+
 ## 2026-10-13 — Recovery CI causal F6 sobre PR de validación comercial
 
 - El gate F6 falló con `fatal: origin/dev...HEAD: no merge base` aunque checkout estaba configurado con `fetch-depth: 0`. La segunda llamada `git fetch --depth=1` cortaba la ascendencia necesaria para el triple-dot; se elimina `--depth=1` y se exige merge-base verificable antes del diff. La protección contra cambios en las 107 migraciones históricas sigue intacta.
