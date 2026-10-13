@@ -81,6 +81,7 @@ Consultar `ARCHITECTURE.md` para cambios estructurales y `PROJECT_INDEX.md` para
 - Proyecto `prj_1Anhx5mWyXEBX89lWC24Py6JXe7A` resuelve exclusivamente DEV -> `solqaryn-api-dev-fxx8.onrender.com`; `prj_n5STx5F6VboqXd1oLUMR8AvZZtml` resuelve exclusivamente QA -> `solqaryn-api-qa.onrender.com`; `prj_si3ORH7lBhM4aSAYfYvXsbJT2lHA` resuelve exclusivamente PROD -> `solqaryn-api-prod.onrender.com`.
 - `SOLQARYN_ENV`, `API_UPSTREAM`, `PUBLIC_ORIGIN` y `SEO_INDEXING_ENABLED` son controles opcionales de coherencia: si existen, deben coincidir con el proyecto canónico o el runtime falla cerrado.
 - `frontend/api/backend-proxy.js` es la frontera server-side de `/api/*`; alias, previews y custom domains no cambian el upstream.
+- Mitigación de arranques Render Free (candidato DEV 2026-10-12): el proxy clasifica únicamente errores de socket como `503 API_UPSTREAM_UNAVAILABLE` con `Retry-After`, sin datos sensibles en los logs. El login comprueba `GET /health/ready` por `HttpBackend` sin credenciales ni JWT (máximo 3 GET transitorios); solo después hace un único POST login. No hay keep-alive, cambios a QA/PROD ni garantía de always-on; requiere despliegue exact-head para validación real. Ver `docs/runbooks/API_UPSTREAM_DISPONIBILIDAD_DEV.md`.
 - Un `VERCEL_PROJECT_ID` desconocido jamás obtiene fallback DEV/PROD.
 
 ### Vercel
