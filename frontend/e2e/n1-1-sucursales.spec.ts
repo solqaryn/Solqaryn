@@ -32,34 +32,17 @@ async function loginApi(request: APIRequestContext): Promise<string> {
 }
 
 async function prepararTenantAdmin(request: APIRequestContext): Promise<number> {
-  const crearEmpresa = await request.post(`${API_URL}/empresas`, {
-    headers: authHeaders(adminToken),
-    data: { nombre: `Empresa E2E Sucursales ${suffix}` }
-  });
-  expect(crearEmpresa.status(), await crearEmpresa.text()).toBe(201);
-  const empresa = await dataOf(crearEmpresa);
-  expect(empresa?.id).toBeGreaterThan(0);
-
-  const listarUsuarios = await request.get(`${API_URL}/usuarios`, {
+  // El tenant inicial existe exclusivamente en MySQL efímero del workflow CI.
+  // Crear una segunda empresa antes del aislamiento comercial es una vulnerabilidad,
+  // no un requisito de los E2E de sucursales/almacenes.
+  const tenantId = 1;
+  const response = await request.get(`${API_URL}/tenant-context/${tenantId}`, {
     headers: authHeaders(adminToken)
   });
-  expect(listarUsuarios.status(), await listarUsuarios.text()).toBe(200);
-  const usuarios = await dataOf(listarUsuarios);
-  const admin = usuarios.find((usuario: any) => usuario.nombreUsuario === ADMIN_USERNAME);
-  expect(admin?.id).toBeGreaterThan(0);
-  expect(admin?.rolId).toBeGreaterThan(0);
-
-  const asignar = await request.post(`${API_URL}/usuarios/${admin.id}/empresas`, {
-    headers: authHeaders(adminToken),
-    data: { empresaId: empresa.id, rolId: admin.rolId }
-  });
-  expect(asignar.status(), await asignar.text()).toBe(200);
-  const membresia = await dataOf(asignar);
-  expect(membresia?.empresaId).toBe(empresa.id);
-  expect(membresia?.usuarioId).toBe(admin.id);
-  expect(membresia?.activa).toBe(true);
-
-  return empresa.id;
+  expect(response.status(), await response.text()).toBe(200);
+  const contexto = await dataOf(response);
+  expect(contexto?.empresaId).toBe(tenantId);
+  return tenantId;
 }
 
 async function completarSeleccionTenant(page: Page): Promise<void> {
