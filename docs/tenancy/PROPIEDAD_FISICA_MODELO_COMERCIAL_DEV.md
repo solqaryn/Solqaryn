@@ -1,3 +1,9 @@
+## 2026-10-13 — Ajuste de compatibilidad tenant: roles plantilla y fixture E2E
+
+- Los grants de roles empresariales plantilla (Rol.EmpresaId nulo, Ambito Empresa) conservan propietario nulo y no reciben EmpresaId arbitrario. Los grants de roles empresariales personalizados mantienen validación A/B; los roles de plataforma no se modifican bajo una marca tenant.
+- El fixture MySQL descartable E2E asigna el tipo inicial SIN_CLASIFICAR al único tenant de prueba antes de insertar clientes; no se atribuyen datos históricos reales ni se relajan FKs de clientes/tipos.
+- Pruebas dirigidas para roles plantilla, roles ajenos y autoridad de plataforma. QA y PROD sin cambios.
+
 # SOLQARYN — Propiedad física del modelo comercial
 
 La expansión del esquema asigna `EmpresaId` (nullable sólo para registros históricos descartables) a los objetos de negocio. Todo registro futuro asociado con una empresa debe tener propiedad asignada desde contexto verificado en backend, nunca desde cabecera o DTO del cliente.

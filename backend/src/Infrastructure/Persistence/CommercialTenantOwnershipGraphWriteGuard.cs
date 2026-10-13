@@ -116,6 +116,20 @@ public static class CommercialTenantOwnershipGraphWriteGuard
         if (entries.Length == 0)
             return;
 
+        // RolPermiso de roles plantilla (EmpresaId NULL + ámbito Empresa) es una
+        // matriz compartida del sistema. No asignar a una empresa arbitraria:
+        // las FKs compuestas siguen aplicando sin excepciones a roles con dueño.
+        // Rol de Plataforma nunca se modifica desde una sesión empresarial.
+        var sharedGrants = new HashSet<object>();
+        foreach (var entry in entries)
+        {
+            if (await IsSharedRoleTemplateGrantAsync(db, entry, authorized, ct))
+                sharedGrants.Add(entry.Entity);
+        }
+        entries = entries.Where(e => !sharedGrants.Contains(e.Entity)).ToArray();
+        if (entries.Length == 0)
+            return;
+
         foreach (var entry in entries)
         {
             var company = entry.Property("EmpresaId");
@@ -183,6 +197,40 @@ public static class CommercialTenantOwnershipGraphWriteGuard
                         "Relación comercial entre empresas distintas o sin dueño comprobado.");
             }
         }
+    }
+
+    private static async Task<bool> IsSharedRoleTemplateGrantAsync(
+        AppDbContext db, EntityEntry entry, int? authorized, CancellationToken ct)
+    {
+        if (entry.Entity is not Solqaryn.Domain.Entities.RolPermiso grant)
+            return false;
+
+        var role = grant.RolEntidad
+            ?? db.Roles.Local.FirstOrDefault(r => r.Id == grant.RolId)
+            ?? await db.Roles.IgnoreQueryFilters().AsNoTracking()
+                .SingleOrDefaultAsync(r => r.Id == grant.RolId, ct);
+
+        if (role is null)
+            throw new BusinessRuleException("El rol del permiso no existe.");
+        if (role.EmpresaId is > 0)
+            return false; // Rol empresarial personalizado: guard completo A/B.
+
+        if (role.Ambito == Solqaryn.Domain.Enums.AmbitoAutorizacion.Plataforma &&
+            authorized is > 0)
+            throw new ForbiddenAccessException(
+                "La matriz de un rol de plataforma no se modifica desde una empresa.");
+
+        var owner = entry.Property("EmpresaId");
+        if (owner.CurrentValue is not null ||
+            (entry.State is EntityState.Modified or EntityState.Deleted &&
+             owner.OriginalValue is not null))
+            throw new BusinessRuleException(
+                "Los permisos de un rol plantilla no pueden atribuirse a una empresa arbitraria.");
+
+        if (entry.State is EntityState.Modified or EntityState.Deleted &&
+            db.Database.IsRelational())
+            await VerifyPersistedOwnerAsync(db, entry, ct);
+        return true;
     }
 
     private static async Task VerifyPersistedOwnerAsync(

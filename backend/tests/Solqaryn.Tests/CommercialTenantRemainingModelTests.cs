@@ -161,6 +161,81 @@ public sealed class CommercialTenantRemainingModelTests
     }
 
     [Fact]
+    public async Task Plantilla_de_rol_empresarial_con_owner_null_mantiene_matriz_compartida()
+    {
+        var http = new DefaultHttpContext();
+        await using var db = NewDb(http);
+        var empresa = new Empresa("Empresa A");
+        db.Set<Empresa>().Add(empresa);
+        var plantilla = new Rol
+        {
+            Nombre = "Plantilla E2E",
+            NombreNormalizado = "PLANTILLA_E2E",
+            Ambito = Solqaryn.Domain.Enums.AmbitoAutorizacion.Empresa
+        };
+        var permiso = new Permiso { Codigo = "PRODUCTOS.LEER", Nombre = "Leer productos" };
+        db.Roles.Add(plantilla);
+        db.Permisos.Add(permiso);
+        await db.SaveChangesAsync();
+
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = empresa.Id;
+        var grant = new RolPermiso { RolId = plantilla.Id, PermisoId = permiso.Id };
+        db.RolPermisos.Add(grant);
+        await db.SaveChangesAsync();
+        Assert.Null(db.Entry(grant).Property<int?>("EmpresaId").CurrentValue);
+    }
+
+    [Fact]
+    public async Task Rol_con_owner_B_no_puede_crear_grant_desde_empresa_A()
+    {
+        var http = new DefaultHttpContext();
+        await using var db = NewDb(http);
+        var a = new Empresa("Empresa A");
+        var b = new Empresa("Empresa B");
+        db.Set<Empresa>().AddRange(a, b);
+        await db.SaveChangesAsync();
+
+        var roleB = new Rol
+        {
+            Nombre = "Rol B",
+            NombreNormalizado = "ROL_B",
+            EmpresaId = b.Id,
+            Ambito = Solqaryn.Domain.Enums.AmbitoAutorizacion.Empresa
+        };
+        var permiso = new Permiso { Codigo = "CLIENTES.LEER", Nombre = "Leer clientes" };
+        db.Roles.Add(roleB);
+        db.Permisos.Add(permiso);
+        await db.SaveChangesAsync();
+
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = a.Id;
+        db.RolPermisos.Add(new RolPermiso { RolId = roleB.Id, PermisoId = permiso.Id });
+        await Assert.ThrowsAnyAsync<Exception>(() => db.SaveChangesAsync());
+    }
+
+    [Fact]
+    public async Task Rol_plataforma_no_se_modifica_con_marca_empresarial()
+    {
+        var http = new DefaultHttpContext();
+        await using var db = NewDb(http);
+        var a = new Empresa("Empresa A");
+        db.Set<Empresa>().Add(a);
+        var plataforma = new Rol
+        {
+            Nombre = "Plataforma",
+            NombreNormalizado = "PLATAFORMA",
+            Ambito = Solqaryn.Domain.Enums.AmbitoAutorizacion.Plataforma
+        };
+        var permiso = new Permiso { Codigo = "PLATAFORMA.LEER", Nombre = "Plataforma" };
+        db.Roles.Add(plataforma);
+        db.Permisos.Add(permiso);
+        await db.SaveChangesAsync();
+
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = a.Id;
+        db.RolPermisos.Add(new RolPermiso { RolId = plataforma.Id, PermisoId = permiso.Id });
+        await Assert.ThrowsAsync<ForbiddenAccessException>(() => db.SaveChangesAsync());
+    }
+
+    [Fact]
     public void RolPermiso_tiene_propiedad_empresarial_y_rol_combinado()
     {
         using var db = NewDb();
