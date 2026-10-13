@@ -14086,7 +14086,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.Property<int?>("EmpresaId").HasColumnType("int");
                     b.HasIndex("EmpresaId", "Id").IsUnique().HasDatabaseName("UX_DashboardKpiConfiguraciones_Empresa_Id");
                     b.HasIndex("EmpresaId", "RolId").HasDatabaseName("IX_DashboardKpiConfiguraciones_EmpresaId_RolId");
+                    b.HasIndex("RolId").HasDatabaseName("IX_DashboardKpiConfiguraciones_RolId_TenantFkSupport");
                     b.HasIndex("EmpresaId", "UsuarioId").HasDatabaseName("IX_DashboardKpiConfiguraciones_EmpresaId_UsuarioId");
+                    b.HasIndex("UsuarioId").HasDatabaseName("IX_DashboardKpiConfiguraciones_UsuarioId_TenantFkSupport");
                     b.HasIndex("EmpresaId", "RolId", "MetricKey").IsUnique().HasDatabaseName("UX_DashboardKpiConfiguraciones_Empresa_RolId_MetricKey");
                     b.HasIndex("RolId", "MetricKey").IsUnique(false);
                     b.HasIndex("EmpresaId", "UsuarioId", "MetricKey").IsUnique().HasDatabaseName("UX_DashboardKpiConfiguraciones_Empresa_UsuarioId_MetricKey");

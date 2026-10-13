@@ -204,8 +204,12 @@ public partial class CommercialTenantRemainingModules : Migration
         m.CreateIndex("UX_CuentasBancarias_BancoId_NumeroCuenta", "CuentasBancarias", new[] { "BancoId", "NumeroCuenta" });
         m.DropIndex("UX_CuentasContables_Codigo", "CuentasContables");
         m.CreateIndex("UX_CuentasContables_Codigo", "CuentasContables", new[] { "Codigo" });
+        // No retirar el índice que soporta FK RolId hasta instalar sustituto.
+        m.CreateIndex("IX_DashboardKpiConfiguraciones_RolId_TenantFkSupport", "DashboardKpiConfiguraciones", "RolId");
         m.DropIndex("UX_DashboardKpiConfiguraciones_Rol_MetricKey", "DashboardKpiConfiguraciones");
         m.CreateIndex("UX_DashboardKpiConfiguraciones_Rol_MetricKey", "DashboardKpiConfiguraciones", new[] { "RolId", "MetricKey" });
+        // No retirar el índice que soporta FK UsuarioId hasta instalar sustituto.
+        m.CreateIndex("IX_DashboardKpiConfiguraciones_UsuarioId_TenantFkSupport", "DashboardKpiConfiguraciones", "UsuarioId");
         m.DropIndex("UX_DashboardKpiConfiguraciones_Usuario_MetricKey", "DashboardKpiConfiguraciones");
         m.CreateIndex("UX_DashboardKpiConfiguraciones_Usuario_MetricKey", "DashboardKpiConfiguraciones", new[] { "UsuarioId", "MetricKey" });
         m.DropIndex("IX_Descuentos_CodigoPromocionalNormalizado", "Descuentos");

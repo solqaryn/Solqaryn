@@ -238,7 +238,9 @@ public static class CommercialTenantRemainingModel
             b.Property<int?>("EmpresaId");
             b.HasIndex("EmpresaId", "Id").IsUnique().HasDatabaseName("UX_DashboardKpiConfiguraciones_Empresa_Id");
             b.HasIndex(new[] { "EmpresaId", "RolId" }).HasDatabaseName("IX_DashboardKpiConfiguraciones_EmpresaId_RolId");
+            b.HasIndex(new[] { "RolId" }).HasDatabaseName("IX_DashboardKpiConfiguraciones_RolId_TenantFkSupport");
             b.HasIndex(new[] { "EmpresaId", "UsuarioId" }).HasDatabaseName("IX_DashboardKpiConfiguraciones_EmpresaId_UsuarioId");
+            b.HasIndex(new[] { "UsuarioId" }).HasDatabaseName("IX_DashboardKpiConfiguraciones_UsuarioId_TenantFkSupport");
             b.HasIndex(new[] { "EmpresaId", "RolId", "MetricKey" }).IsUnique().HasDatabaseName("UX_DashboardKpiConfiguraciones_Empresa_RolId_MetricKey");
             b.HasIndex(new[] { "RolId", "MetricKey" }).IsUnique(false);
             b.HasIndex(new[] { "EmpresaId", "UsuarioId", "MetricKey" }).IsUnique().HasDatabaseName("UX_DashboardKpiConfiguraciones_Empresa_UsuarioId_MetricKey");
