@@ -39,6 +39,8 @@ public sealed class PedidoVentaConfiguration : IEntityTypeConfiguration<PedidoVe
         builder.Property(p => p.IdempotencyKey).HasMaxLength(128);
         builder.Property(p => p.IdempotencyFingerprint).HasMaxLength(64).IsFixedLength();
 
+        builder.HasIndex(p => p.CotizacionId)
+            .HasDatabaseName("IX_PedidosVenta_CotizacionId");
         builder.HasIndex(p => new { p.EmpresaId, p.CotizacionId })
             .IsUnique()
             .HasDatabaseName("UX_PedidosVenta_Empresa_CotizacionId");
