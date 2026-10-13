@@ -5,6 +5,11 @@
 - **No convierte membresía ACTUAL en evidencia histórica ni ejecuta backfill**, DML, DDL o restore. Exige cinco columnas `EmpresaId` antes de operar; condicionada al expand comercial certificado.
 - No modifica QA, PROD, servicios ni datos persistentes. El P0 sigue abierto.
 
+## 2026-10-13 — Candidato de aplicación segura del expand comercial a Aiven DEV
+
+- Workflow `.github/workflows/dev-tenant-commercial-root-live.yml`: ejecución exclusiva push `dev`, con verificación de backup real/restore same-artifact #38399423450, identidad canónica MySQL 8.4.8, preflight fail-closed de esquema/FKs y migración EF Oracle `20261013121500_CommercialTenantRootExpand` solo si el esquema está enteramente legacy. Verifica post-DDL y conteos; no atribuye filas legacy, no modifica QA/PROD, mantiene middleware de cuarentena y bloqueo de segunda empresa.
+- Este workflow NO es certificación final: faltan validación de procedencia, protección de grafo y storefront, controles en escrituras y pruebas A/B. No declarar P0 LISTO por resultado del expand.
+
 ## 2026-10-13 — Prueba de expansión real desde esquema legacy MySQL (PR #3591)
 
 - Nuevo gate desechable `tenant-commercial-root-expand-ephemeral.yml`: revierte las cinco columnas solo en MySQL CI efímero, siembra una fila legacy y aplica EF migration real; verifica cinco FK/índices, legado nulo sin pérdida, idempotencia y pending-model=0.
