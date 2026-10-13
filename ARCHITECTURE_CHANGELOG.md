@@ -1,3 +1,7 @@
+## 2026-10-13 — Validación de referencias comerciales explícitamente cruzadas (candidato DEV)
+
+- Gate anterior a SaveChanges que rechaza vínculos con propietarios empresariales diferentes en Ventas/Clientes, Compras/Proveedores y detalles/Productos. No modifica el modelo, esquema, datos históricos ni QA/PROD; contención P0 se conserva.
+
 ## 2026-10-13 — Expand comercial tenant (candidato dev)
 
 - Propiedad opcional `EmpresaId` y FK/índice restrictivos en cinco raíces; Oracle `20261013121500_CommercialTenantRootExpand` y bootstrap fresh/adopt compatibles. Histórico sin asignar, guard P0 preservado. Sin certificación multiempresa ni cambios a QA/PROD.
