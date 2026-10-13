@@ -10,6 +10,10 @@
 - **Modelo relacional:** inventario de 132 entidades EF, 20 con `EmpresaId` y 66 entidades adicionales alcanzables desde las raíces comerciales en `docs/tenancy/INVENTARIO_GRAFO_COMERCIAL_P0_DEV.md`. No equivale a auditoría de todas las tablas físicas, endpoints, tareas o integraciones.
 - **Candidatos de código pendientes:** #3594 propaga owner verificado en nuevas altas administrativas; #3596 rechaza enlaces empresariales cruzados y cambios ordinarios de owner. No activar multiempresa ni cerrar el P0 sin integración, pruebas A/B y saneamiento de procedencia.
 
+## Corrección de grafos comerciales nuevos en una misma unidad de trabajo
+
+El guard comercial también diferencia un registro ya persistido de un padre o referencia que EF está insertando en el mismo `SaveChangesAsync`. Solo acepta un owner del ChangeTracker cuando esa entidad está `Added`; para referencias ya persistidas consulta el owner de la base de datos sin confiar en navegaciones. Esto permite compras, ventas y clientes nuevos de la misma empresa sin relajar el rechazo A/B y conserva en cuarentena las filas legacy `EmpresaId=NULL`. Cobertura inicial de cinco pruebas dirigidas; requiere CI exact-head.
+
 ## Contención adicional candidata en PR #3596 (aún no equivale a multiempresa)
 
 La validación previa a guardar ahora alcanza ambos overloads async de EF y bloquea las rutas síncronas con mutación comercial o escritura relacional; consulta el owner persistido para impedir `Update` desconectado con `EmpresaId` suplantado, contrasta FKs guardados (no navegaciones cambiantes), rechaza enlaces de owner conocido hacia filas históricas sin dueño y verifica que la variante del detalle pertenezca al producto. Hay pruebas de regresión nuevas; verificar CI exact-head antes de integrar. `ExecuteUpdate`, SQL directo, filtros de todas las lecturas, derivados, tienda anónima, procedencia histórica y migración permanecen como P0. No quitar el middleware preventivo.
