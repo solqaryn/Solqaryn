@@ -13,6 +13,8 @@ public partial class CommercialTenantSalesDocuments : Migration
     protected override void Up(MigrationBuilder m)
     {
         // Unicidad lógica de idempotencia por empresa, no a nivel plataforma.
+        // El FK legacy hacia Cotizaciones necesita un indice cuyo primer campo sea CotizacionId.
+        m.CreateIndex("IX_PedidosVenta_CotizacionId", "PedidosVenta", "CotizacionId");
         m.DropIndex("UX_PedidosVenta_CotizacionId", "PedidosVenta");
         m.DropIndex("UX_PedidosVenta_IdempotencyKey", "PedidosVenta");
 
