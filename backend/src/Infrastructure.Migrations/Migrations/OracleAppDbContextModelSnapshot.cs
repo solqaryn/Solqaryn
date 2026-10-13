@@ -14362,6 +14362,114 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
             modelBuilder.Entity("Solqaryn.Domain.Entities.WebhookEntrante", b => b.HasIndex("EmpresaId", "Id").IsUnique().HasDatabaseName("UX_WebhooksEntrantes_Empresa_Id"));
 
 
+            modelBuilder.Entity("Solqaryn.Domain.Entities.AjusteInventarioDetalle", b => b.HasIndex("EmpresaId", "AjusteInventarioId").HasDatabaseName("IX_AjusteInventarioDetalles_EmpresaId_AjusteInventarioId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.AjusteInventarioDetalle", b => b.HasIndex("EmpresaId", "AlmacenId").HasDatabaseName("IX_AjusteInventarioDetalles_EmpresaId_AlmacenId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.AjusteInventarioDetalle", b => b.HasIndex("EmpresaId", "UbicacionAlmacenId").HasDatabaseName("IX_AjusteInventarioDetalles_EmpresaId_UbicacionAlmacenId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.CapaCostoInventario", b => b.HasIndex("EmpresaId", "AlmacenId").HasDatabaseName("IX_CapasCostoInventario_EmpresaId_AlmacenId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.CapaCostoInventario", b => b.HasIndex("EmpresaId", "UbicacionAlmacenId").HasDatabaseName("IX_CapasCostoInventario_EmpresaId_UbicacionAlmacenId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Cliente", b => b.HasIndex("EmpresaId", "TipoClienteId").HasDatabaseName("IX_Clientes_EmpresaId_TipoClienteId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.CompraDetalle", b => b.HasIndex("EmpresaId", "AlmacenId").HasDatabaseName("IX_CompraDetalles_EmpresaId_AlmacenId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.CompraDetalle", b => b.HasIndex("EmpresaId", "UbicacionAlmacenId").HasDatabaseName("IX_CompraDetalles_EmpresaId_UbicacionAlmacenId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.CompraImpuesto", b => b.HasIndex("EmpresaId", "ImpuestoId").HasDatabaseName("IX_CompraImpuestos_EmpresaId_ImpuestoId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ConsumoInsumoDetalle", b => b.HasIndex("EmpresaId", "AlmacenId").HasDatabaseName("IX_ConsumoInsumoDetalles_EmpresaId_AlmacenId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ConsumoInsumoDetalle", b => b.HasIndex("EmpresaId", "ConsumoInsumoId").HasDatabaseName("IX_ConsumoInsumoDetalles_EmpresaId_ConsumoInsumoId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ConsumoInsumoDetalle", b => b.HasIndex("EmpresaId", "UbicacionAlmacenId").HasDatabaseName("IX_ConsumoInsumoDetalles_EmpresaId_UbicacionAlmacenId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ConteoInventarioDetalle", b => b.HasIndex("EmpresaId", "AjusteInventarioId").HasDatabaseName("IX_ConteoInventarioDetalles_EmpresaId_AjusteInventarioId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ConteoInventarioDetalle", b => b.HasIndex("EmpresaId", "AlmacenId").HasDatabaseName("IX_ConteoInventarioDetalles_EmpresaId_AlmacenId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ConteoInventarioDetalle", b => b.HasIndex("EmpresaId", "ConteoInventarioId").HasDatabaseName("IX_ConteoInventarioDetalles_EmpresaId_ConteoInventarioId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ConteoInventarioDetalle", b => b.HasIndex("EmpresaId", "UbicacionAlmacenId").HasDatabaseName("IX_ConteoInventarioDetalles_EmpresaId_UbicacionAlmacenId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.DescuentoCliente", b => b.HasIndex("EmpresaId", "DescuentoId").HasDatabaseName("IX_DescuentoClientes_EmpresaId_DescuentoId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.DescuentoProducto", b => b.HasIndex("EmpresaId", "DescuentoId").HasDatabaseName("IX_DescuentoProductos_EmpresaId_DescuentoId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.DevolucionProveedorDetalle", b => b.HasIndex("EmpresaId", "AlmacenId").HasDatabaseName("IX_DevolucionProveedorDetalles_EmpresaId_AlmacenId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.DevolucionProveedorDetalle", b => b.HasIndex("EmpresaId", "UbicacionAlmacenId").HasDatabaseName("IX_DevolucionProveedorDetalles_EmpresaId_UbicacionAlmacenId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ExistenciaVariante", b => b.HasIndex("EmpresaId", "AlmacenId").HasDatabaseName("IX_ExistenciasVariante_EmpresaId_AlmacenId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ExistenciaVariante", b => b.HasIndex("EmpresaId", "UbicacionAlmacenId").HasDatabaseName("IX_ExistenciasVariante_EmpresaId_UbicacionAlmacenId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.HistorialUsoDescuento", b => b.HasIndex("EmpresaId", "DescuentoId").HasDatabaseName("IX_HistorialUsoDescuentos_EmpresaId_DescuentoId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ImpuestoCliente", b => b.HasIndex("EmpresaId", "ImpuestoId").HasDatabaseName("IX_ImpuestoClientes_EmpresaId_ImpuestoId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ImpuestoProducto", b => b.HasIndex("EmpresaId", "ImpuestoId").HasDatabaseName("IX_ImpuestoProductos_EmpresaId_ImpuestoId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ImpuestoProveedor", b => b.HasIndex("EmpresaId", "ImpuestoId").HasDatabaseName("IX_ImpuestoProveedores_EmpresaId_ImpuestoId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Bancos.MatchConciliacion", b => b.HasIndex("EmpresaId", "MovimientoEstadoCuentaId").HasDatabaseName("IX_MatchesConciliacion_EmpresaId_MovimientoEstadoCuentaId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.MovimientoInventario", b => b.HasIndex("EmpresaId", "AjusteInventarioId").HasDatabaseName("IX_MovimientosInventario_EmpresaId_AjusteInventarioId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.MovimientoInventario", b => b.HasIndex("EmpresaId", "AlmacenId").HasDatabaseName("IX_MovimientosInventario_EmpresaId_AlmacenId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.MovimientoInventario", b => b.HasIndex("EmpresaId", "ConsumoInsumoId").HasDatabaseName("IX_MovimientosInventario_EmpresaId_ConsumoInsumoId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.MovimientoInventario", b => b.HasIndex("EmpresaId", "TransferenciaInventarioId").HasDatabaseName("IX_MovimientosInventario_EmpresaId_TransferenciaInventarioId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.MovimientoInventario", b => b.HasIndex("EmpresaId", "UbicacionAlmacenId").HasDatabaseName("IX_MovimientosInventario_EmpresaId_UbicacionAlmacenId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.PreparacionPedidoVentaDetalle", b => b.HasIndex("EmpresaId", "AlmacenId").HasDatabaseName("IX_PreparacionPedidoVentaDetalles_EmpresaId_AlmacenId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.PreparacionPedidoVentaDetalle", b => b.HasIndex("EmpresaId", "UbicacionAlmacenId").HasDatabaseName("IX_PreparacionPedidoVentaDetalles_EmpresaId_UbicacionAlmacenId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Producto", b => b.HasIndex("EmpresaId", "CategoriaId").HasDatabaseName("IX_Productos_EmpresaId_CategoriaId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Producto", b => b.HasIndex("EmpresaId", "ColorId").HasDatabaseName("IX_Productos_EmpresaId_ColorId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Producto", b => b.HasIndex("EmpresaId", "MarcaId").HasDatabaseName("IX_Productos_EmpresaId_MarcaId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Producto", b => b.HasIndex("EmpresaId", "ModeloId").HasDatabaseName("IX_Productos_EmpresaId_ModeloId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Producto", b => b.HasIndex("EmpresaId", "TallaId").HasDatabaseName("IX_Productos_EmpresaId_TallaId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ProductoVariante", b => b.HasIndex("EmpresaId", "ColorId").HasDatabaseName("IX_ProductoVariantes_EmpresaId_ColorId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ProductoVariante", b => b.HasIndex("EmpresaId", "MarcaId").HasDatabaseName("IX_ProductoVariantes_EmpresaId_MarcaId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ProductoVariante", b => b.HasIndex("EmpresaId", "ModeloId").HasDatabaseName("IX_ProductoVariantes_EmpresaId_ModeloId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ProductoVariante", b => b.HasIndex("EmpresaId", "TallaId").HasDatabaseName("IX_ProductoVariantes_EmpresaId_TallaId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.RecepcionCompraDetalle", b => b.HasIndex("EmpresaId", "AlmacenId").HasDatabaseName("IX_RecepcionCompraDetalles_EmpresaId_AlmacenId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.RecepcionCompraDetalle", b => b.HasIndex("EmpresaId", "UbicacionAlmacenId").HasDatabaseName("IX_RecepcionCompraDetalles_EmpresaId_UbicacionAlmacenId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ReservaInventarioDetalle", b => b.HasIndex("EmpresaId", "AlmacenId").HasDatabaseName("IX_ReservaInventarioDetalles_EmpresaId_AlmacenId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ReservaInventarioDetalle", b => b.HasIndex("EmpresaId", "UbicacionAlmacenId").HasDatabaseName("IX_ReservaInventarioDetalles_EmpresaId_UbicacionAlmacenId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.TransferenciaInventarioDetalle", b => b.HasIndex("EmpresaId", "TransferenciaInventarioId").HasDatabaseName("IX_TransferenciaInventarioDetalles_EmpresaId_Transferen_8b22a8d8"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.TransferenciaInventarioDetalle", b => b.HasIndex("EmpresaId", "UbicacionDestinoId").HasDatabaseName("IX_TransferenciaInventarioDetalles_EmpresaId_UbicacionDestinoId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.TransferenciaInventarioDetalle", b => b.HasIndex("EmpresaId", "UbicacionOrigenId").HasDatabaseName("IX_TransferenciaInventarioDetalles_EmpresaId_UbicacionOrigenId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.VentaDescuento", b => b.HasIndex("EmpresaId", "DescuentoId").HasDatabaseName("IX_VentaDescuentos_EmpresaId_DescuentoId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.VentaDetalle", b => b.HasIndex("EmpresaId", "AlmacenId").HasDatabaseName("IX_VentaDetalles_EmpresaId_AlmacenId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.VentaDetalle", b => b.HasIndex("EmpresaId", "UbicacionAlmacenId").HasDatabaseName("IX_VentaDetalles_EmpresaId_UbicacionAlmacenId"));
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.VentaImpuesto", b => b.HasIndex("EmpresaId", "ImpuestoId").HasDatabaseName("IX_VentaImpuestos_EmpresaId_ImpuestoId"));
+
 #pragma warning restore 612, 618
         }
     }
