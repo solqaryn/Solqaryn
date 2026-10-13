@@ -1,3 +1,9 @@
+## 2026-10-13 — Corregir unicidad natural residual de 13 índices para P0 #3
+
+- Se sustituyen 13 unicidades globales remanentes por índices compuestos (EmpresaId, clave natural): pedidos, devoluciones, recepciones, reservas, series, solicitudes, sucursales, cuenta de cliente de tienda y roles empresariales.
+- Las plantillas y roles de plataforma con EmpresaId NULL conservan unicidad mediante columna calculada independiente. Las claves por padre (ID globalmente único) y tokens/hash públicos conservan identidad propia sin crear colisiones de URL ni romper integridad.
+- Migración Oracle forward-only, snapshot, bootstrap MySQL fresh/adopt, fixture legacy y pruebas exact-head. No atribuye 19 filas descartables ni abre segunda empresa. Sólo DEV.
+
 ## 2026-10-13 — Ajuste de compatibilidad tenant: roles plantilla y fixture E2E
 
 - Los grants de roles empresariales plantilla (Rol.EmpresaId nulo, Ambito Empresa) conservan propietario nulo y no reciben EmpresaId arbitrario. Los grants de roles empresariales personalizados mantienen validación A/B; los roles de plataforma no se modifican bajo una marca tenant.

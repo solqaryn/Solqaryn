@@ -99,6 +99,10 @@ internal static class Phase7MySqlTestDatabase
             INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
             VALUES ('20261013231000_CommercialTenantRemainingScopedFks', '10.0.12');
             """);
+        await db.Database.ExecuteSqlRawAsync("""
+            INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+            VALUES ('20261013234000_CommercialTenantNaturalKeys', '10.0.12');
+            """);
 
         if ((await db.Database.GetPendingMigrationsAsync()).Any())
             throw new InvalidOperationException("Phase 7 test bootstrap left pending Oracle migrations.");

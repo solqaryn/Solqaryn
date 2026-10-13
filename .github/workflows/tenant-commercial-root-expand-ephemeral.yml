@@ -114,7 +114,7 @@ jobs:
           test "$(q "SELECT COUNT(*) FROM information_schema.referential_constraints WHERE constraint_schema=database() AND constraint_name IN ('FK_Productos_Empresas_EmpresaId','FK_Clientes_Empresas_EmpresaId','FK_Proveedores_Empresas_EmpresaId','FK_Compras_Empresas_EmpresaId','FK_Ventas_Empresas_EmpresaId');")" = 5
           test "$(q "SELECT COUNT(*) FROM Proveedores WHERE Nombre='SOLQARYN-CI-LEGACY-PRESERVED' AND EmpresaId IS NULL;")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013121500_CommercialTenantRootExpand';")" = 1
-          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory;")" = 10
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory;")" = 11
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013181500_CommercialTenantScopedRootIndexes';")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013190000_CommercialTenantInvoiceDocuments';")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013193000_CommercialTenantSalesDocuments';")" = 1
@@ -123,6 +123,7 @@ jobs:
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013221500_CommercialTenantOwnershipGraphScopedFks';")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013230000_CommercialTenantRemainingModules';")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013231000_CommercialTenantRemainingScopedFks';")" = 1
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013234000_CommercialTenantNaturalKeys';")" = 1
           dotnet tool run dotnet-ef database update --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --configuration Release --no-build
           test "$(q "SELECT COUNT(*) FROM Proveedores WHERE Nombre='SOLQARYN-CI-LEGACY-PRESERVED' AND EmpresaId IS NULL;")" = 1
           echo "TENANT_ROOT_EXPAND=PASS fk=5 indexes=5 null_legacy=YES data_loss=NO idempotent=YES source=A_DISPOSABLE_MYSQL"

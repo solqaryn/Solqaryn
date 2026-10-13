@@ -1,4 +1,47 @@
 -- Simulación de reversión de las dos expansiones finales SOLO sobre MySQL efímera.
+-- Revertir también el contrato de claves naturales del HEAD para simular legacy MySQL
+-- EXCLUSIVAMENTE en base efímera. Nunca ejecutar contra Aiven ni otros ambientes.
+ALTER TABLE `Roles` DROP INDEX `UX_Roles_NombreNormalizadoGlobalUnico`;
+ALTER TABLE `Roles` DROP COLUMN `NombreNormalizadoGlobalUnico`;
+ALTER TABLE `DevolucionesCliente` DROP INDEX `UX_DevolucionesCliente_Empresa_IdempotencyKey`;
+ALTER TABLE `DevolucionesCliente` DROP INDEX `UX_DevolucionesCliente_IdempotencyKey`;
+CREATE UNIQUE INDEX `UX_DevolucionesCliente_IdempotencyKey` ON `DevolucionesCliente` (`IdempotencyKey`);
+ALTER TABLE `DevolucionesProveedor` DROP INDEX `UX_DevolucionesProveedor_Empresa_IdempotencyKey`;
+ALTER TABLE `DevolucionesProveedor` DROP INDEX `UX_DevolucionesProveedor_IdempotencyKey`;
+CREATE UNIQUE INDEX `UX_DevolucionesProveedor_IdempotencyKey` ON `DevolucionesProveedor` (`IdempotencyKey`);
+ALTER TABLE `DevolucionesProveedor` DROP INDEX `UX_DevolucionesProveedor_Empresa_NumeroDevolucion`;
+ALTER TABLE `DevolucionesProveedor` DROP INDEX `UX_DevolucionesProveedor_NumeroDevolucion`;
+CREATE UNIQUE INDEX `UX_DevolucionesProveedor_NumeroDevolucion` ON `DevolucionesProveedor` (`NumeroDevolucion`);
+ALTER TABLE `OrdenesCompra` DROP INDEX `UX_OrdenesCompra_Empresa_IdempotencyKey`;
+ALTER TABLE `OrdenesCompra` DROP INDEX `UX_OrdenesCompra_IdempotencyKey`;
+CREATE UNIQUE INDEX `UX_OrdenesCompra_IdempotencyKey` ON `OrdenesCompra` (`IdempotencyKey`);
+ALTER TABLE `OrdenesCompra` DROP INDEX `UX_OrdenesCompra_Empresa_NumeroOrden`;
+ALTER TABLE `OrdenesCompra` DROP INDEX `UX_OrdenesCompra_NumeroOrden`;
+CREATE UNIQUE INDEX `UX_OrdenesCompra_NumeroOrden` ON `OrdenesCompra` (`NumeroOrden`);
+ALTER TABLE `RecepcionesCompra` DROP INDEX `UX_RecepcionesCompra_Empresa_IdempotencyKey`;
+ALTER TABLE `RecepcionesCompra` DROP INDEX `UX_RecepcionesCompra_IdempotencyKey`;
+CREATE UNIQUE INDEX `UX_RecepcionesCompra_IdempotencyKey` ON `RecepcionesCompra` (`IdempotencyKey`);
+ALTER TABLE `RecepcionesCompra` DROP INDEX `UX_RecepcionesCompra_Empresa_NumeroRecepcion`;
+ALTER TABLE `RecepcionesCompra` DROP INDEX `UX_RecepcionesCompra_NumeroRecepcion`;
+CREATE UNIQUE INDEX `UX_RecepcionesCompra_NumeroRecepcion` ON `RecepcionesCompra` (`NumeroRecepcion`);
+ALTER TABLE `ReservasInventario` DROP INDEX `UX_ReservasInventario_Empresa_Numero`;
+ALTER TABLE `ReservasInventario` DROP INDEX `UX_ReservasInventario_Numero`;
+CREATE UNIQUE INDEX `UX_ReservasInventario_Numero` ON `ReservasInventario` (`Numero`);
+ALTER TABLE `SeriesInventario` DROP INDEX `UX_SeriesInventario_Empresa_NumeroSerie`;
+ALTER TABLE `SeriesInventario` DROP INDEX `UX_SeriesInventario_NumeroSerie`;
+CREATE UNIQUE INDEX `UX_SeriesInventario_NumeroSerie` ON `SeriesInventario` (`NumeroSerie`);
+ALTER TABLE `SolicitudesCompra` DROP INDEX `UX_SolicitudesCompra_Empresa_NumeroSolicitud`;
+ALTER TABLE `SolicitudesCompra` DROP INDEX `UX_SolicitudesCompra_NumeroSolicitud`;
+CREATE UNIQUE INDEX `UX_SolicitudesCompra_NumeroSolicitud` ON `SolicitudesCompra` (`NumeroSolicitud`);
+ALTER TABLE `Sucursales` DROP INDEX `UX_Sucursales_Empresa_CodigoActivoUnico`;
+ALTER TABLE `Sucursales` DROP INDEX `UX_Sucursales_Codigo_Activo`;
+CREATE UNIQUE INDEX `UX_Sucursales_Codigo_Activo` ON `Sucursales` (`CodigoActivoUnico`);
+ALTER TABLE `TiendaCuentasCliente` DROP INDEX `UX_TiendaCuentasCliente_Empresa_CorreoNormalizado`;
+ALTER TABLE `TiendaCuentasCliente` DROP INDEX `UX_TiendaCuentasCliente_Correo`;
+CREATE UNIQUE INDEX `UX_TiendaCuentasCliente_Correo` ON `TiendaCuentasCliente` (`CorreoNormalizado`);
+ALTER TABLE `Roles` DROP INDEX `UX_Roles_Empresa_NombreNormalizado`;
+ALTER TABLE `Roles` DROP INDEX `IX_Roles_NombreNormalizado`;
+CREATE UNIQUE INDEX `IX_Roles_NombreNormalizado` ON `Roles` (`NombreNormalizado`);
 ALTER TABLE `RolPermisos` DROP FOREIGN KEY `FK_RolPermisos_RolId_TenantFinal`;
 ALTER TABLE `RolPermisos` DROP FOREIGN KEY `FK_RolPermisos_Empresas_EmpresaId`, DROP INDEX `UX_RolPermisos_Empresa_Id`, DROP INDEX `IX_RolPermisos_Empresa_RolId`, DROP INDEX `UX_RolPermisos_Empresa_Rol_Permiso`, DROP COLUMN `EmpresaId`;
 ALTER TABLE `AjusteInventarioDetalles` DROP FOREIGN KEY `FK_AjusteInventarioDetalles_AjusteInventarioId_TenantFinal`;
@@ -457,6 +500,6 @@ CREATE UNIQUE INDEX `UX_Clientes_IdentidadORTN_Normalizada` ON `Clientes` (`Iden
 CREATE UNIQUE INDEX `UX_Proveedores_Documento_Normalizado` ON `Proveedores` (`DocumentoNormalizado`);
 CREATE UNIQUE INDEX `IX_Compras_NumeroCompra` ON `Compras` (`NumeroCompra`);
 CREATE UNIQUE INDEX `IX_Ventas_NumeroVenta` ON `Ventas` (`NumeroVenta`);
-DELETE FROM `__EFMigrationsHistory` WHERE `MigrationId` IN ('20261013121500_CommercialTenantRootExpand', '20261013181500_CommercialTenantScopedRootIndexes', '20261013190000_CommercialTenantInvoiceDocuments', '20261013193000_CommercialTenantSalesDocuments', '20261013210000_CommercialTenantTaxDiscountExpand', '20261013220000_CommercialTenantOwnershipGraphExpand', '20261013221500_CommercialTenantOwnershipGraphScopedFks', '20261013230000_CommercialTenantRemainingModules', '20261013231000_CommercialTenantRemainingScopedFks');
+DELETE FROM `__EFMigrationsHistory` WHERE `MigrationId` IN ('20261013121500_CommercialTenantRootExpand', '20261013181500_CommercialTenantScopedRootIndexes', '20261013190000_CommercialTenantInvoiceDocuments', '20261013193000_CommercialTenantSalesDocuments', '20261013210000_CommercialTenantTaxDiscountExpand', '20261013220000_CommercialTenantOwnershipGraphExpand', '20261013221500_CommercialTenantOwnershipGraphScopedFks', '20261013230000_CommercialTenantRemainingModules', '20261013231000_CommercialTenantRemainingScopedFks', '20261013234000_CommercialTenantNaturalKeys');
 INSERT INTO `Proveedores` (`Nombre`, `Activo`, `FechaCreacion`, `FechaActualizacion`)
   VALUES ('SOLQARYN-CI-LEGACY-PRESERVED', 1, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6));
