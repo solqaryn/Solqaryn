@@ -6,7 +6,7 @@ using Solqaryn.Application.Exceptions;
 namespace Solqaryn.Infrastructure.Persistence;
 
 /// <summary>
-/// Guard uniforme para los 46 descendientes comerciales. Deriva EmpresaId de padres
+/// Guard uniforme para 87 entidades comerciales verificables. Deriva EmpresaId de padres
 /// EF con ownership conocido, impide modificaciones de owner y cruces A/B antes
 /// de SaveChanges. No modifica filas legacy ni abre la cuarentena multiempresa.
 /// </summary>
@@ -61,6 +61,47 @@ public static class CommercialTenantOwnershipGraphWriteGuard
             "Solqaryn.Domain.Entities.TiendaSesionCliente",
             "Solqaryn.Domain.Entities.TransferenciaInventarioDetalle",
             "Solqaryn.Domain.Entities.VariacionCostoEstandarInventario",
+            "Solqaryn.Domain.Entities.AjusteInventario",
+            "Solqaryn.Domain.Entities.Almacen",
+            "Solqaryn.Domain.Entities.Bancos.ConciliacionBancaria",
+            "Solqaryn.Domain.Entities.Bancos.CuentaBancaria",
+            "Solqaryn.Domain.Entities.Bancos.MovimientoEstadoCuenta",
+            "Solqaryn.Domain.Entities.Cajas.Caja",
+            "Solqaryn.Domain.Entities.Cajas.CajaMovimiento",
+            "Solqaryn.Domain.Entities.Cajas.CajaSesion",
+            "Solqaryn.Domain.Entities.CargaMasiva",
+            "Solqaryn.Domain.Entities.CargaMasivaError",
+            "Solqaryn.Domain.Entities.Categoria",
+            "Solqaryn.Domain.Entities.Color",
+            "Solqaryn.Domain.Entities.ConsumoInsumo",
+            "Solqaryn.Domain.Entities.Contabilidad.AsientoContable",
+            "Solqaryn.Domain.Entities.Contabilidad.AsientoDetalle",
+            "Solqaryn.Domain.Entities.Contabilidad.CentroCosto",
+            "Solqaryn.Domain.Entities.Contabilidad.ConfiguracionContable",
+            "Solqaryn.Domain.Entities.Contabilidad.PeriodoContable",
+            "Solqaryn.Domain.Entities.ConteoInventario",
+            "Solqaryn.Domain.Entities.CostoEnvio",
+            "Solqaryn.Domain.Entities.CuentaContable",
+            "Solqaryn.Domain.Entities.DashboardKpiConfiguracion",
+            "Solqaryn.Domain.Entities.Descuento",
+            "Solqaryn.Domain.Entities.DescuentoCategoria",
+            "Solqaryn.Domain.Entities.DescuentoRol",
+            "Solqaryn.Domain.Entities.EmpresaConfiguracion",
+            "Solqaryn.Domain.Entities.EnlacePublicoFactura",
+            "Solqaryn.Domain.Entities.HistorialAplicacionImpuesto",
+            "Solqaryn.Domain.Entities.HistorialEnvioFactura",
+            "Solqaryn.Domain.Entities.Impuesto",
+            "Solqaryn.Domain.Entities.ImpuestoCategoria",
+            "Solqaryn.Domain.Entities.ImpuestoOperacion",
+            "Solqaryn.Domain.Entities.Marca",
+            "Solqaryn.Domain.Entities.Modelo",
+            "Solqaryn.Domain.Entities.PoliticaCosteoInventario",
+            "Solqaryn.Domain.Entities.RevisionFinanciera",
+            "Solqaryn.Domain.Entities.Talla",
+            "Solqaryn.Domain.Entities.TemaVisual",
+            "Solqaryn.Domain.Entities.TipoCliente",
+            "Solqaryn.Domain.Entities.TransferenciaInventario",
+            "Solqaryn.Domain.Entities.UbicacionAlmacen",
         };
 
     public static bool Applies(string entityName) => OwnedGraphTypes.Contains(entityName);
