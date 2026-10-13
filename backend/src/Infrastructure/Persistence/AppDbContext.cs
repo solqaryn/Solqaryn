@@ -109,6 +109,7 @@ public class AppDbContext : DbContext
     {
         var cacheSegments = DetectarInvalidacionesStorefront();
 
+        await CommercialCrossTenantWriteGuard.ValidateAsync(this, cancellationToken);
         await ValidarAislamientoComercialVentasAsync(cancellationToken);
         await PrepararValorizacionComprasAsync(cancellationToken);
         var guardados = await base.SaveChangesAsync(cancellationToken);
