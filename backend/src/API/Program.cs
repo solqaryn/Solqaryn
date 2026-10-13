@@ -321,6 +321,9 @@ if (maintenanceEnabled)
     });
 }
 app.UseAuthentication(); app.UseAuthorization();
+// P0: no servir datos comerciales multiempresa sin ownership por fila.
+// Este middleware bloquea nuevas empresas y la mezcla de datos legacy de 2+ tenants.
+app.UseMiddleware<UnscopedCommercialTenantGuardMiddleware>();
 app.MapGet("/health", () => Results.Ok(new { status = "ok", service = "Solqaryn API" })).ExcludeFromDescription();
 app.MapGet("/health/ready", async (AppDbContext db, CancellationToken cancellationToken) => { var databaseReady = false; try { databaseReady = await db.Database.CanConnectAsync(cancellationToken); } catch { databaseReady = false; } return databaseReady ? Results.Ok(new { status = "ready", database = "connected" }) : Results.Json(new { status = "not_ready", database = "unavailable" }, statusCode: StatusCodes.Status503ServiceUnavailable); }).ExcludeFromDescription();
 app.MapControllers();
