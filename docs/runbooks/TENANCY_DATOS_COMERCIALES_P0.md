@@ -2,6 +2,14 @@
 
 **Estado 2026-10-13: contención operativa desplegada en Render DEV. Candidato expand introduce `EmpresaId?` e índices/FK en cinco raíces, con migración Oracle; los registros históricos continúan sin atribución y NO existe aislamiento multiempresa certificado.**
 
+## 2026-10-13 — Evidencia de ejecución real (DEV, lectura y control sin atribución)
+
+- **Esquema aplicado y verificado sobre Aiven DEV:** [run #38406239720](https://github.com/solqaryn/Solqaryn/actions/runs/38406239720). Preflight `already_expanded`; cinco columnas `EmpresaId?`, cinco FKs e índices y marca Oracle EF presentes. El paso DDL se omitió por idempotencia; no se duplicó la migración.
+- **Registros preservados:** 8 productos, 2 clientes, 2 proveedores, 3 compras y 4 ventas; **19/19 mantienen `EmpresaId=NULL`**.
+- **Procedencia limitada:** [run #38409321128](https://github.com/solqaryn/Solqaryn/actions/runs/38409321128) verificó que cada registro cuenta con autor y que no hay autores sin membresía activa o con múltiples membresías activas **actuales**. Los 14 enlaces comerciales revisados tienen owner incompleto. Esto **no demuestra** propiedad empresarial histórica.
+- **Modelo relacional:** inventario de 132 entidades EF, 20 con `EmpresaId` y 66 entidades adicionales alcanzables desde las raíces comerciales en `docs/tenancy/INVENTARIO_GRAFO_COMERCIAL_P0_DEV.md`. No equivale a auditoría de todas las tablas físicas, endpoints, tareas o integraciones.
+- **Candidatos de código pendientes:** #3594 propaga owner verificado en nuevas altas administrativas; #3596 rechaza enlaces empresariales cruzados y cambios ordinarios de owner. No activar multiempresa ni cerrar el P0 sin integración, pruebas A/B y saneamiento de procedencia.
+
 ## Diagnóstico exacto en el HEAD de DEV
 
 - En el baseline anterior, `Producto`, `Cliente`, `Proveedor`, `Compra` y `Venta` carecían de `EmpresaId`; el candidato introduce propiedad nullable, índice y FK, pero **no añade aún filtros SQL ni ownership atribuido**. Sus consultas por ID/listas aún requieren aislamiento empresarial explícito.
