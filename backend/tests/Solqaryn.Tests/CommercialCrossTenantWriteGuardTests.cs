@@ -14,6 +14,97 @@ public sealed class CommercialCrossTenantWriteGuardTests
             .Options);
 
     [Fact]
+    public void Guardar_sincrono_bloquea_entidad_comercial()
+    {
+        using var db = NewContext();
+        db.Productos.Add(new Producto { Nombre = "Prohibido" });
+        Assert.Throws<NotSupportedException>(() => db.SaveChanges());
+        Assert.Throws<NotSupportedException>(() => db.SaveChanges(acceptAllChangesOnSuccess: false));
+    }
+
+    [Fact]
+    public async Task Overload_async_bool_no_elude_la_validacion_empresarial()
+    {
+        await using var db = NewContext();
+        var a = new Empresa("Empresa A");
+        var b = new Empresa("Empresa B");
+        db.Set<Empresa>().AddRange(a, b);
+        await db.SaveChangesAsync();
+        var cliente = new Cliente { Nombre = "Cliente B", EmpresaId = b.Id };
+        db.Clientes.Add(cliente);
+        await db.SaveChangesAsync();
+        db.Ventas.Add(new Venta { NumeroVenta = "ASYNC-BOOL-1", EmpresaId = a.Id, ClienteId = cliente.Id });
+        await Assert.ThrowsAsync<BusinessRuleException>(
+            () => db.SaveChangesAsync(acceptAllChangesOnSuccess: false, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task Update_desconectado_rechaza_reescritura_de_empresa()
+    {
+        await using var db = NewContext();
+        var a = new Empresa("Empresa A");
+        var b = new Empresa("Empresa B");
+        db.Set<Empresa>().AddRange(a, b);
+        await db.SaveChangesAsync();
+
+        var producto = new Producto { Nombre = "Producto original", EmpresaId = a.Id };
+        db.Productos.Add(producto);
+        await db.SaveChangesAsync();
+        db.Entry(producto).State = EntityState.Detached;
+
+        // OriginalValue y CurrentValue se inicializan ambos con el owner falso.
+        db.Productos.Update(new Producto
+        {
+            Id = producto.Id, Nombre = "Producto desconectado", EmpresaId = b.Id
+        });
+        await Assert.ThrowsAsync<BusinessRuleException>(() => db.SaveChangesAsync());
+        var real = await db.Productos.AsNoTracking().SingleAsync(p => p.Id == producto.Id);
+        Assert.Equal(a.Id, real.EmpresaId);
+    }
+
+    [Fact]
+    public async Task Venta_de_duenio_conocido_no_acepta_cliente_legacy_ambiguo()
+    {
+        await using var db = NewContext();
+        var a = new Empresa("Empresa A");
+        db.Set<Empresa>().Add(a);
+        await db.SaveChangesAsync();
+        var cliente = new Cliente { Nombre = "Sin attribution", EmpresaId = null };
+        db.Clientes.Add(cliente);
+        await db.SaveChangesAsync();
+
+        db.Ventas.Add(new Venta { NumeroVenta = "LEGACY-001", EmpresaId = a.Id, ClienteId = cliente.Id });
+        await Assert.ThrowsAsync<BusinessRuleException>(() => db.SaveChangesAsync());
+        Assert.Null(cliente.EmpresaId);
+    }
+
+    [Fact]
+    public async Task VentaDetalle_rechaza_variante_de_otro_producto_incluso_en_misma_empresa()
+    {
+        await using var db = NewContext();
+        var empresa = new Empresa("Empresa A");
+        db.Set<Empresa>().Add(empresa);
+        await db.SaveChangesAsync();
+        var productoA = new Producto { Nombre = "Producto A", EmpresaId = empresa.Id };
+        var productoB = new Producto { Nombre = "Producto B", EmpresaId = empresa.Id };
+        var venta = new Venta { NumeroVenta = "VAR-001", EmpresaId = empresa.Id };
+        db.Productos.AddRange(productoA, productoB);
+        db.Ventas.Add(venta);
+        await db.SaveChangesAsync();
+
+        var varianteB = new ProductoVariante { ProductoId = productoB.Id };
+        db.ProductoVariantes.Add(varianteB);
+        await db.SaveChangesAsync();
+
+        db.VentaDetalles.Add(new VentaDetalle
+        {
+            VentaId = venta.Id, ProductoId = productoA.Id,
+            ProductoVarianteId = varianteB.Id, Cantidad = 1
+        });
+        await Assert.ThrowsAsync<BusinessRuleException>(() => db.SaveChangesAsync());
+    }
+
+    [Fact]
     public async Task Venta_rechaza_cliente_explicito_de_otra_empresa()
     {
         await using var db = NewContext();
