@@ -14,6 +14,10 @@ public class VentaDetalleConfiguration : IEntityTypeConfiguration<VentaDetalle>
                 "`UbicacionAlmacenId` IS NULL OR `AlmacenId` IS NOT NULL"));
         builder.HasIndex(x => new { x.EmpresaId, x.VentaId })
             .HasDatabaseName("IX_VentaDetalles_Empresa_Referencia");
+        builder.HasIndex(x => new { x.EmpresaId, x.ProductoVarianteId })
+            .HasDatabaseName("IX_VentaDetalles_Empresa_Variante");
+        builder.HasIndex(x => new { x.EmpresaId, x.ProductoId })
+            .HasDatabaseName("IX_VentaDetalles_Empresa_Producto");
         builder.HasOne<Empresa>().WithMany().HasForeignKey(x => x.EmpresaId)
             .OnDelete(DeleteBehavior.Restrict)
             .HasConstraintName("FK_VentaDetalles_Empresas_EmpresaId");

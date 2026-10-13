@@ -11,6 +11,8 @@ public class ProductoVarianteConfiguration : IEntityTypeConfiguration<ProductoVa
         builder.ToTable("ProductoVariantes");
         builder.HasIndex(x => new { x.EmpresaId, x.ProductoId })
             .HasDatabaseName("IX_ProductoVariantes_Empresa_Referencia");
+        builder.HasIndex(x => new { x.EmpresaId, x.Id }).IsUnique()
+            .HasDatabaseName("UX_ProductoVariantes_Empresa_Id");
         builder.HasOne<Empresa>().WithMany().HasForeignKey(x => x.EmpresaId)
             .OnDelete(DeleteBehavior.Restrict)
             .HasConstraintName("FK_ProductoVariantes_Empresas_EmpresaId");

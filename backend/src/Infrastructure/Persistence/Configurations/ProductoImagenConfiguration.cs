@@ -11,6 +11,8 @@ public class ProductoImagenConfiguration : IEntityTypeConfiguration<ProductoImag
         builder.ToTable("ProductoImagenes");
         builder.HasIndex(x => new { x.EmpresaId, x.ProductoId })
             .HasDatabaseName("IX_ProductoImagenes_Empresa_Referencia");
+        builder.HasIndex(x => new { x.EmpresaId, x.ProductoVarianteId })
+            .HasDatabaseName("IX_ProductoImagenes_Empresa_Variante");
         builder.HasOne<Empresa>().WithMany().HasForeignKey(x => x.EmpresaId)
             .OnDelete(DeleteBehavior.Restrict)
             .HasConstraintName("FK_ProductoImagenes_Empresas_EmpresaId");

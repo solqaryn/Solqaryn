@@ -15,6 +15,8 @@ public class VentaConfiguration : IEntityTypeConfiguration<Venta>
         builder.HasIndex(x => new { x.EmpresaId, x.Id })
             .IsUnique()
             .HasDatabaseName("UX_Ventas_Empresa_Id");
+        builder.HasIndex(x => new { x.EmpresaId, x.ClienteId })
+            .HasDatabaseName("IX_Ventas_Empresa_Cliente");
         builder.HasOne<Empresa>()
             .WithMany()
             .HasForeignKey(x => x.EmpresaId)

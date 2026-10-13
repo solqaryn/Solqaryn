@@ -15,6 +15,8 @@ public class CompraConfiguration : IEntityTypeConfiguration<Compra>
         builder.HasIndex(x => new { x.EmpresaId, x.Id })
             .IsUnique()
             .HasDatabaseName("UX_Compras_Empresa_Id");
+        builder.HasIndex(x => new { x.EmpresaId, x.ProveedorId })
+            .HasDatabaseName("IX_Compras_Empresa_Proveedor");
         builder.HasOne<Empresa>()
             .WithMany()
             .HasForeignKey(x => x.EmpresaId)
