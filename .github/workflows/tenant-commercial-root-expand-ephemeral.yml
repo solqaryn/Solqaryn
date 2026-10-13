@@ -90,6 +90,96 @@ jobs:
           -- Recrear un esquema verdaderamente anterior a AMBAS migraciones P0.
           -- Un nuevo EnsureCreated contiene índices y 12 FKs compuestas; retirarlas
           -- primero permite simular el legado sin silenciar las restricciones.
+          ALTER TABLE `AjusteInventarioDetalles` DROP FOREIGN KEY `FK_AjusteInventarioDetalles_ProductoId_OwnerTenant`;
+          ALTER TABLE `AjusteInventarioDetalles` DROP FOREIGN KEY `FK_AjusteInventarioDetalles_ProductoVarianteId_OwnerTenant`;
+          ALTER TABLE `AplicacionesCuentaPorPagar` DROP FOREIGN KEY `FK_AplicacionesCuentaPorPagar_CuentaPorPagarId_OwnerTenant`;
+          ALTER TABLE `AsignacionesCostoMovimientoInventario` DROP FOREIGN KEY `FK_AsignacionesCostoMovimientoInventario_CapaCostoInven_e2f96293`;
+          ALTER TABLE `AsignacionesCostoMovimientoInventario` DROP FOREIGN KEY `FK_AsignacionesCostoMovimientoInventario_MovimientoInve_03ce099d`;
+          ALTER TABLE `AsignacionesCostoMovimientoInventario` DROP FOREIGN KEY `FK_AsignacionesCostoMovimientoInventario_ProductoVarian_e772d567`;
+          ALTER TABLE `CapasCostoInventario` DROP FOREIGN KEY `FK_CapasCostoInventario_CapaCostoOrigenId_OwnerTenant`;
+          ALTER TABLE `CapasCostoInventario` DROP FOREIGN KEY `FK_CapasCostoInventario_MovimientoInventarioOrigenId_OwnerTenant`;
+          ALTER TABLE `CapasCostoInventario` DROP FOREIGN KEY `FK_CapasCostoInventario_ProductoVarianteId_OwnerTenant`;
+          ALTER TABLE `ConsumoInsumoDetalles` DROP FOREIGN KEY `FK_ConsumoInsumoDetalles_ProductoId_OwnerTenant`;
+          ALTER TABLE `ConsumoInsumoDetalles` DROP FOREIGN KEY `FK_ConsumoInsumoDetalles_ProductoVarianteId_OwnerTenant`;
+          ALTER TABLE `ConteoInventarioDetalles` DROP FOREIGN KEY `FK_ConteoInventarioDetalles_ProductoVarianteId_OwnerTenant`;
+          ALTER TABLE `CostosEstandarInventario` DROP FOREIGN KEY `FK_CostosEstandarInventario_ProductoVarianteId_OwnerTenant`;
+          ALTER TABLE `CreditosCliente` DROP FOREIGN KEY `FK_CreditosCliente_ClienteId_OwnerTenant`;
+          ALTER TABLE `CuentasPorPagar` DROP FOREIGN KEY `FK_CuentasPorPagar_FacturaProveedorId_OwnerTenant`;
+          ALTER TABLE `CuentasPorPagar` DROP FOREIGN KEY `FK_CuentasPorPagar_ProveedorId_OwnerTenant`;
+          ALTER TABLE `DescuentoClientes` DROP FOREIGN KEY `FK_DescuentoClientes_ClienteId_OwnerTenant`;
+          ALTER TABLE `DescuentoProductos` DROP FOREIGN KEY `FK_DescuentoProductos_ProductoId_OwnerTenant`;
+          ALTER TABLE `DevolucionClienteDetalles` DROP FOREIGN KEY `FK_DevolucionClienteDetalles_DevolucionClienteId_OwnerTenant`;
+          ALTER TABLE `DevolucionClienteDetalles` DROP FOREIGN KEY `FK_DevolucionClienteDetalles_VentaDetalleId_OwnerTenant`;
+          ALTER TABLE `DevolucionesCliente` DROP FOREIGN KEY `FK_DevolucionesCliente_FacturaId_OwnerTenant`;
+          ALTER TABLE `DevolucionesCliente` DROP FOREIGN KEY `FK_DevolucionesCliente_VentaId_OwnerTenant`;
+          ALTER TABLE `DevolucionesProveedor` DROP FOREIGN KEY `FK_DevolucionesProveedor_FacturaProveedorId_OwnerTenant`;
+          ALTER TABLE `DevolucionesProveedor` DROP FOREIGN KEY `FK_DevolucionesProveedor_OrdenCompraId_OwnerTenant`;
+          ALTER TABLE `DevolucionesProveedor` DROP FOREIGN KEY `FK_DevolucionesProveedor_ProveedorId_OwnerTenant`;
+          ALTER TABLE `DevolucionesProveedor` DROP FOREIGN KEY `FK_DevolucionesProveedor_RecepcionCompraId_OwnerTenant`;
+          ALTER TABLE `DevolucionProveedorDetalles` DROP FOREIGN KEY `FK_DevolucionProveedorDetalles_DevolucionProveedorId_OwnerTenant`;
+          ALTER TABLE `DevolucionProveedorDetalles` DROP FOREIGN KEY `FK_DevolucionProveedorDetalles_OrdenCompraDetalleId_OwnerTenant`;
+          ALTER TABLE `DevolucionProveedorDetalles` DROP FOREIGN KEY `FK_DevolucionProveedorDetalles_ProductoId_OwnerTenant`;
+          ALTER TABLE `DevolucionProveedorDetalles` DROP FOREIGN KEY `FK_DevolucionProveedorDetalles_ProductoVarianteId_OwnerTenant`;
+          ALTER TABLE `DevolucionProveedorDetalles` DROP FOREIGN KEY `FK_DevolucionProveedorDetalles_RecepcionCompraDetalleId_f4bc8428`;
+          ALTER TABLE `EvaluacionesProveedor` DROP FOREIGN KEY `FK_EvaluacionesProveedor_OrdenCompraId_OwnerTenant`;
+          ALTER TABLE `EvaluacionesProveedor` DROP FOREIGN KEY `FK_EvaluacionesProveedor_ProveedorId_OwnerTenant`;
+          ALTER TABLE `EvaluacionesProveedor` DROP FOREIGN KEY `FK_EvaluacionesProveedor_RecepcionCompraId_OwnerTenant`;
+          ALTER TABLE `ExistenciasVariante` DROP FOREIGN KEY `FK_ExistenciasVariante_ProductoVarianteId_OwnerTenant`;
+          ALTER TABLE `FacturaProveedorDetalles` DROP FOREIGN KEY `FK_FacturaProveedorDetalles_FacturaProveedorId_OwnerTenant`;
+          ALTER TABLE `FacturaProveedorDetalles` DROP FOREIGN KEY `FK_FacturaProveedorDetalles_OrdenCompraDetalleId_OwnerTenant`;
+          ALTER TABLE `FacturaProveedorDetalles` DROP FOREIGN KEY `FK_FacturaProveedorDetalles_ProductoId_OwnerTenant`;
+          ALTER TABLE `FacturaProveedorDetalles` DROP FOREIGN KEY `FK_FacturaProveedorDetalles_ProductoVarianteId_OwnerTenant`;
+          ALTER TABLE `FacturasProveedor` DROP FOREIGN KEY `FK_FacturasProveedor_OrdenCompraId_OwnerTenant`;
+          ALTER TABLE `FacturasProveedor` DROP FOREIGN KEY `FK_FacturasProveedor_ProveedorId_OwnerTenant`;
+          ALTER TABLE `ImpuestoClientes` DROP FOREIGN KEY `FK_ImpuestoClientes_ClienteId_OwnerTenant`;
+          ALTER TABLE `ImpuestoProductos` DROP FOREIGN KEY `FK_ImpuestoProductos_ProductoId_OwnerTenant`;
+          ALTER TABLE `ImpuestoProveedores` DROP FOREIGN KEY `FK_ImpuestoProveedores_ProveedorId_OwnerTenant`;
+          ALTER TABLE `LotesInventario` DROP FOREIGN KEY `FK_LotesInventario_ProductoVarianteId_OwnerTenant`;
+          ALTER TABLE `MatchesConciliacion` DROP FOREIGN KEY `FK_MatchesConciliacion_MovimientoFinancieroId_OwnerTenant`;
+          ALTER TABLE `MovimientosFinancieros` DROP FOREIGN KEY `FK_MovimientosFinancieros_CompraId_OwnerTenant`;
+          ALTER TABLE `MovimientosFinancieros` DROP FOREIGN KEY `FK_MovimientosFinancieros_FacturaId_OwnerTenant`;
+          ALTER TABLE `MovimientosFinancieros` DROP FOREIGN KEY `FK_MovimientosFinancieros_VentaId_OwnerTenant`;
+          ALTER TABLE `MovimientosInventario` DROP FOREIGN KEY `FK_MovimientosInventario_CompraId_OwnerTenant`;
+          ALTER TABLE `MovimientosInventario` DROP FOREIGN KEY `FK_MovimientosInventario_ProductoId_OwnerTenant`;
+          ALTER TABLE `MovimientosInventario` DROP FOREIGN KEY `FK_MovimientosInventario_ProductoVarianteId_OwnerTenant`;
+          ALTER TABLE `MovimientosInventario` DROP FOREIGN KEY `FK_MovimientosInventario_RecepcionCompraId_OwnerTenant`;
+          ALTER TABLE `MovimientosInventario` DROP FOREIGN KEY `FK_MovimientosInventario_VentaId_OwnerTenant`;
+          ALTER TABLE `NotasCreditoCliente` DROP FOREIGN KEY `FK_NotasCreditoCliente_FacturaId_OwnerTenant`;
+          ALTER TABLE `NotasCreditoProveedor` DROP FOREIGN KEY `FK_NotasCreditoProveedor_DevolucionProveedorId_OwnerTenant`;
+          ALTER TABLE `NotasCreditoProveedor` DROP FOREIGN KEY `FK_NotasCreditoProveedor_FacturaProveedorId_OwnerTenant`;
+          ALTER TABLE `NotasCreditoProveedor` DROP FOREIGN KEY `FK_NotasCreditoProveedor_ProveedorId_OwnerTenant`;
+          ALTER TABLE `OrdenCompraDetalles` DROP FOREIGN KEY `FK_OrdenCompraDetalles_OrdenCompraId_OwnerTenant`;
+          ALTER TABLE `OrdenCompraDetalles` DROP FOREIGN KEY `FK_OrdenCompraDetalles_ProductoId_OwnerTenant`;
+          ALTER TABLE `OrdenCompraDetalles` DROP FOREIGN KEY `FK_OrdenCompraDetalles_ProductoVarianteId_OwnerTenant`;
+          ALTER TABLE `OrdenesCompra` DROP FOREIGN KEY `FK_OrdenesCompra_ProveedorId_OwnerTenant`;
+          ALTER TABLE `OrdenesCompra` DROP FOREIGN KEY `FK_OrdenesCompra_SolicitudCompraId_OwnerTenant`;
+          ALTER TABLE `PreparacionesPedidoVenta` DROP FOREIGN KEY `FK_PreparacionesPedidoVenta_ReservaInventarioId_OwnerTenant`;
+          ALTER TABLE `PreparacionPedidoVentaDetalles` DROP FOREIGN KEY `FK_PreparacionPedidoVentaDetalles_PreparacionPedidoVent_4bfc7d77`;
+          ALTER TABLE `PreparacionPedidoVentaDetalles` DROP FOREIGN KEY `FK_PreparacionPedidoVentaDetalles_ProductoVarianteId_OwnerTenant`;
+          ALTER TABLE `RecepcionCompraDetalles` DROP FOREIGN KEY `FK_RecepcionCompraDetalles_OrdenCompraDetalleId_OwnerTenant`;
+          ALTER TABLE `RecepcionCompraDetalles` DROP FOREIGN KEY `FK_RecepcionCompraDetalles_ProductoId_OwnerTenant`;
+          ALTER TABLE `RecepcionCompraDetalles` DROP FOREIGN KEY `FK_RecepcionCompraDetalles_ProductoVarianteId_OwnerTenant`;
+          ALTER TABLE `RecepcionCompraDetalles` DROP FOREIGN KEY `FK_RecepcionCompraDetalles_RecepcionCompraId_OwnerTenant`;
+          ALTER TABLE `RecepcionesCompra` DROP FOREIGN KEY `FK_RecepcionesCompra_OrdenCompraId_OwnerTenant`;
+          ALTER TABLE `ReservaInventarioDetalles` DROP FOREIGN KEY `FK_ReservaInventarioDetalles_ProductoVarianteId_OwnerTenant`;
+          ALTER TABLE `ReservaInventarioDetalles` DROP FOREIGN KEY `FK_ReservaInventarioDetalles_ReservaInventarioId_OwnerTenant`;
+          ALTER TABLE `ReservasInventario` DROP FOREIGN KEY `FK_ReservasInventario_VentaId_OwnerTenant`;
+          ALTER TABLE `SeriesInventario` DROP FOREIGN KEY `FK_SeriesInventario_LoteInventarioId_OwnerTenant`;
+          ALTER TABLE `SeriesInventario` DROP FOREIGN KEY `FK_SeriesInventario_ProductoVarianteId_OwnerTenant`;
+          ALTER TABLE `SolicitudCompraDetalles` DROP FOREIGN KEY `FK_SolicitudCompraDetalles_ProductoId_OwnerTenant`;
+          ALTER TABLE `SolicitudCompraDetalles` DROP FOREIGN KEY `FK_SolicitudCompraDetalles_ProductoVarianteId_OwnerTenant`;
+          ALTER TABLE `SolicitudCompraDetalles` DROP FOREIGN KEY `FK_SolicitudCompraDetalles_SolicitudCompraId_OwnerTenant`;
+          ALTER TABLE `SolicitudesCompra` DROP FOREIGN KEY `FK_SolicitudesCompra_ProveedorId_OwnerTenant`;
+          ALTER TABLE `ThreeWayMatchResultados` DROP FOREIGN KEY `FK_ThreeWayMatchResultados_OrdenCompraId_OwnerTenant`;
+          ALTER TABLE `TiendaCuentasCliente` DROP FOREIGN KEY `FK_TiendaCuentasCliente_ClienteId_OwnerTenant`;
+          ALTER TABLE `TiendaDireccionesCliente` DROP FOREIGN KEY `FK_TiendaDireccionesCliente_CuentaClienteId_OwnerTenant`;
+          ALTER TABLE `TiendaFavoritosCliente` DROP FOREIGN KEY `FK_TiendaFavoritosCliente_CuentaClienteId_OwnerTenant`;
+          ALTER TABLE `TiendaFavoritosCliente` DROP FOREIGN KEY `FK_TiendaFavoritosCliente_ProductoId_OwnerTenant`;
+          ALTER TABLE `TiendaSesionesCliente` DROP FOREIGN KEY `FK_TiendaSesionesCliente_CuentaClienteId_OwnerTenant`;
+          ALTER TABLE `TransferenciaInventarioDetalles` DROP FOREIGN KEY `FK_TransferenciaInventarioDetalles_ProductoVarianteId_O_848861f3`;
+          ALTER TABLE `VariacionesCostoEstandarInventario` DROP FOREIGN KEY `FK_VariacionesCostoEstandarInventario_CostoEstandarInve_2a38227b`;
+          ALTER TABLE `VariacionesCostoEstandarInventario` DROP FOREIGN KEY `FK_VariacionesCostoEstandarInventario_MovimientoInventa_00882044`;
+          ALTER TABLE `VariacionesCostoEstandarInventario` DROP FOREIGN KEY `FK_VariacionesCostoEstandarInventario_ProductoVarianteI_2c37da12`;
           ALTER TABLE `VentaImpuestos` DROP FOREIGN KEY `FK_VentaImpuestos_Venta_Tenant`;
           ALTER TABLE `CompraImpuestos` DROP FOREIGN KEY `FK_CompraImpuestos_Compra_Tenant`;
           ALTER TABLE `VentaDescuentos` DROP FOREIGN KEY `FK_VentaDescuentos_Venta_Tenant`;
@@ -192,7 +282,7 @@ jobs:
           CREATE UNIQUE INDEX `UX_Proveedores_Documento_Normalizado` ON `Proveedores` (`DocumentoNormalizado`);
           CREATE UNIQUE INDEX `IX_Compras_NumeroCompra` ON `Compras` (`NumeroCompra`);
           CREATE UNIQUE INDEX `IX_Ventas_NumeroVenta` ON `Ventas` (`NumeroVenta`);
-          DELETE FROM `__EFMigrationsHistory` WHERE `MigrationId` IN ('20261013121500_CommercialTenantRootExpand', '20261013181500_CommercialTenantScopedRootIndexes', '20261013190000_CommercialTenantInvoiceDocuments', '20261013210000_CommercialTenantTaxDiscountExpand', '20261013220000_CommercialTenantOwnershipGraphExpand');
+          DELETE FROM `__EFMigrationsHistory` WHERE `MigrationId` IN ('20261013121500_CommercialTenantRootExpand', '20261013181500_CommercialTenantScopedRootIndexes', '20261013190000_CommercialTenantInvoiceDocuments', '20261013210000_CommercialTenantTaxDiscountExpand', '20261013220000_CommercialTenantOwnershipGraphExpand', '20261013221500_CommercialTenantOwnershipGraphScopedFks');
           INSERT INTO `Proveedores` (`Nombre`, `Activo`, `FechaCreacion`, `FechaActualizacion`)
             VALUES ('SOLQARYN-CI-LEGACY-PRESERVED', 1, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6));
           SQL
@@ -217,11 +307,12 @@ jobs:
           test "$(q "SELECT COUNT(*) FROM information_schema.referential_constraints WHERE constraint_schema=database() AND constraint_name IN ('FK_Productos_Empresas_EmpresaId','FK_Clientes_Empresas_EmpresaId','FK_Proveedores_Empresas_EmpresaId','FK_Compras_Empresas_EmpresaId','FK_Ventas_Empresas_EmpresaId');")" = 5
           test "$(q "SELECT COUNT(*) FROM Proveedores WHERE Nombre='SOLQARYN-CI-LEGACY-PRESERVED' AND EmpresaId IS NULL;")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013121500_CommercialTenantRootExpand';")" = 1
-          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory;")" = 6
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory;")" = 7
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013181500_CommercialTenantScopedRootIndexes';")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013190000_CommercialTenantInvoiceDocuments';")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013210000_CommercialTenantTaxDiscountExpand';")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013220000_CommercialTenantOwnershipGraphExpand';")" = 1
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013221500_CommercialTenantOwnershipGraphScopedFks';")" = 1
           dotnet tool run dotnet-ef database update --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --configuration Release --no-build
           test "$(q "SELECT COUNT(*) FROM Proveedores WHERE Nombre='SOLQARYN-CI-LEGACY-PRESERVED' AND EmpresaId IS NULL;")" = 1
           echo "TENANT_ROOT_EXPAND=PASS fk=5 indexes=5 null_legacy=YES data_loss=NO idempotent=YES source=A_DISPOSABLE_MYSQL"
