@@ -1,3 +1,8 @@
+## 2026-10-13 — Recovery CI causal F6 sobre PR de validación comercial
+
+- El gate F6 falló con `fatal: origin/dev...HEAD: no merge base` aunque checkout estaba configurado con `fetch-depth: 0`. La segunda llamada `git fetch --depth=1` cortaba la ascendencia necesaria para el triple-dot; se elimina `--depth=1` y se exige merge-base verificable antes del diff. La protección contra cambios en las 107 migraciones históricas sigue intacta.
+- Corregido en la misma rama del gate comercial; requiere reejecución CI causal, no es bypass ni exención.
+
 ## 2026-10-13 — Defensa previa a SaveChanges de enlaces comerciales entre empresas (candidato)
 
 - Se añade `CommercialCrossTenantWriteGuard` para rechazar vínculos con EmpresaId explícitos cruzados: Venta-Cliente, Compra-Proveedor, VentaDetalle-Producto y CompraDetalle-Producto. No imprime nombres ajenos ni atribuye datos históricos NULL.
