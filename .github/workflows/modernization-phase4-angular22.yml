@@ -132,11 +132,11 @@ jobs:
           if [ "$status" -ne 0 ] && [ "$status" -ne 124 ]; then
             exit "$status"
           fi
-          grep -Eq 'Test Files[[:space:]]+58 passed.*\(58\)' /tmp/angular22-unit.clean.log
-          grep -Eq 'Tests[[:space:]]+218 passed.*\(218\)' /tmp/angular22-unit.clean.log
+          grep -Eq 'Test Files[[:space:]]+59 passed.*\(59\)' /tmp/angular22-unit.clean.log
+          grep -Eq 'Tests[[:space:]]+222 passed.*\(222\)' /tmp/angular22-unit.clean.log
           ! grep -Eq '([0-9]+ failed|FAIL )' /tmp/angular22-unit.clean.log
           ! grep -Eq 'NG8011|NG8113|allowSignalWrites|configLoader' /tmp/angular22-unit.clean.log
-          echo "ANGULAR22_UNIT_TESTS=PASS files=58/58 tests=218/218 processStatus=$status"
+          echo "ANGULAR22_UNIT_TESTS=PASS files=59/59 tests=222/222 processStatus=$status"
 
       - name: Lint y contratos
         run: npm run lint

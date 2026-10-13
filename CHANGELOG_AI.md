@@ -1,3 +1,10 @@
+## 2026-10-12 — Mitigación de API upstream durante login DEV
+
+- Los tres backends siguen en Render Free; QA /health/ready tardó 24.488s y respondió 503; PROD demoró 28.626s y respondió 200; Vercel cortaba sockets a los 30s y devolvía 502 genérico.
+- El login consulta readiness pública sin JWT ni credenciales y reintenta sólo ese GET ante indisponibilidad transitoria; el POST de autenticación se envía una única vez.
+- El proxy devuelve 503 con Retry-After para fallos de conexión y emite diagnóstico acotado sin PII o secretos. Pruebas Vitest y validaciones Node incorporadas en DEV.
+- Sin cambio de planes, variables, bases, QA, PROD o DNS. La certificación de runtime depende de PR verde y publicación exact-head en Vercel DEV. Runbook: docs/runbooks/API_UPSTREAM_DISPONIBILIDAD_DEV.md.
+
 ## 2026-10-12 — Cloudinary DEV: cierre certificado de 11 imágenes y descarga individual/ZIP (solo documentación)
 
 - Backup cifrado y restore DEV: [run 38319634960](https://github.com/solqaryn/Solqaryn/actions/runs/38319634960) PASS; ejecución real del worker en [PR #3584](https://github.com/solqaryn/Solqaryn/pull/3584), Render DEV `dep-db6msu2d0e5s73attck0`: 11/11, SHA-256 origen/destino, `remaining=0`, originales eliminados=0.

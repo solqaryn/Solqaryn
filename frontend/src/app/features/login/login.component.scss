@@ -159,6 +159,19 @@
   }
 }
 
+
+.connection-status {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 25%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--color-primary) 7%, var(--color-surface));
+  color: var(--color-text-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+
 .submit-button {
   width: 100%;
   min-height: 48px;

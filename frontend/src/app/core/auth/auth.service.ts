@@ -1,9 +1,10 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, switchMap, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
 import { LoginRequest, LoginResponse } from '../models/auth.model';
+import { ApiAvailabilityService } from './api-availability.service';
 
 const TOKEN_KEY = 'solqaryn_token';
 const USER_KEY = 'solqaryn_user';
@@ -31,10 +32,12 @@ export class AuthService {
   readonly esAdministrador = computed(() => this._rol() === 'Administrador');
   readonly expiraEn = computed(() => this._expiraEn());
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private readonly apiAvailability: ApiAvailabilityService) {}
 
   login(request: LoginRequest): Observable<ApiResponse<LoginResponse>> {
-    return this.http.post<ApiResponse<LoginResponse>>(`${this.apiUrl}/login`, request).pipe(
+    // La sonda GET puede reintentarse ante un cold start; el POST de login se emite una sola vez.
+    return this.apiAvailability.esperarAntesDeAutenticar().pipe(
+      switchMap(() => this.http.post<ApiResponse<LoginResponse>>(`${this.apiUrl}/login`, request)),
       tap((res) => {
         if (res.success) this.aplicarSesion(res.data);
       })

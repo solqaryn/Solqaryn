@@ -1,3 +1,11 @@
+## 2026-10-12 — Readiness bajo demanda antes de login DEV
+
+- Se mantiene el proxy Vercel project-bound y el arranque de ASP.NET Core sin tocar la arquitectura de datos.
+- Angular comprueba GET /health/ready por HttpBackend (sin credenciales/JWT), con reintentos acotados sólo del GET; el POST login no se reintenta.
+- El proxy informa HTTP 503 + Retry-After cuando falla su conexión, con logs de diagnóstico sin información privada. Se agregan pruebas de proxy y login.
+- No se modifica infraestructura ni planes de los tres entornos. DEV necesita CI y despliegue exact-head para certificar, QA/PROD permanecen aplazados.
+- Runbook: docs/runbooks/API_UPSTREAM_DISPONIBILIDAD_DEV.md.
+
 ## 2026-10-12 — Worker transitorio de normalización Cloudinary DEV, opt-in
 
 - Nueva integración de un `BackgroundService` exclusivamente en Render Development y bajo flag de configuración, inicialmente deshabilitado. Añade verificación de cuenta Cloudinary/empresa y locators, hash SHA-256 sobre bytes descargados y copiados, modificación condicional de URL/PublicId y preservación de originales; sin endpoint nuevo ni cambios a modelos, API, esquema, QA o PROD.
