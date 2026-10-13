@@ -90,6 +90,11 @@ jobs:
           -- Recrear un esquema verdaderamente anterior a AMBAS migraciones P0.
           -- Un nuevo EnsureCreated contiene índices y 12 FKs compuestas; retirarlas
           -- primero permite simular el legado sin silenciar las restricciones.
+          ALTER TABLE `VentaImpuestos` DROP FOREIGN KEY `FK_VentaImpuestos_Venta_Tenant`;
+          ALTER TABLE `CompraImpuestos` DROP FOREIGN KEY `FK_CompraImpuestos_Compra_Tenant`;
+          ALTER TABLE `VentaDescuentos` DROP FOREIGN KEY `FK_VentaDescuentos_Venta_Tenant`;
+          ALTER TABLE `HistorialUsoDescuentos` DROP FOREIGN KEY `FK_HistorialUsoDescuentos_Venta_Tenant`;
+          ALTER TABLE `HistorialUsoDescuentos` DROP FOREIGN KEY `FK_HistorialUsoDescuentos_Cliente_Tenant`;
           ALTER TABLE `Cotizaciones` DROP FOREIGN KEY `FK_Cotizaciones_Cliente_Tenant`;
           ALTER TABLE `PedidosVenta` DROP FOREIGN KEY `FK_PedidosVenta_Cliente_Tenant`;
           ALTER TABLE `PedidosVenta` DROP FOREIGN KEY `FK_PedidosVenta_Cotizacion_Tenant`;
@@ -114,6 +119,10 @@ jobs:
           ALTER TABLE `CompraDetalles` DROP FOREIGN KEY `FK_CompraDetalles_Producto_Tenant`;
           ALTER TABLE `CompraDetalles` DROP FOREIGN KEY `FK_CompraDetalles_Variante_Tenant`;
           ALTER TABLE `Facturas` DROP FOREIGN KEY `FK_Facturas_Venta_Tenant`;
+          ALTER TABLE `VentaImpuestos` DROP FOREIGN KEY `FK_VentaImpuestos_Empresas_EmpresaId`, DROP INDEX `IX_VentaImpuestos_Empresa_VentaId`, DROP COLUMN `EmpresaId`;
+          ALTER TABLE `CompraImpuestos` DROP FOREIGN KEY `FK_CompraImpuestos_Empresas_EmpresaId`, DROP INDEX `IX_CompraImpuestos_Empresa_CompraId`, DROP COLUMN `EmpresaId`;
+          ALTER TABLE `VentaDescuentos` DROP FOREIGN KEY `FK_VentaDescuentos_Empresas_EmpresaId`, DROP INDEX `IX_VentaDescuentos_Empresa_VentaId`, DROP COLUMN `EmpresaId`;
+          ALTER TABLE `HistorialUsoDescuentos` DROP FOREIGN KEY `FK_HistorialUsoDescuentos_Empresas_EmpresaId`, DROP INDEX `IX_HistorialUsoDescuentos_Empresa_VentaId`, DROP INDEX `IX_HistorialUsoDescuentos_Empresa_ClienteId`, DROP COLUMN `EmpresaId`;
           ALTER TABLE `CotizacionDetalles` DROP FOREIGN KEY `FK_CotizacionDetalles_Empresas_EmpresaId`, DROP INDEX `IX_CotizacionDetalles_Empresa_CotizacionId`, DROP INDEX `IX_CotizacionDetalles_Empresa_ProductoId`, DROP INDEX `IX_CotizacionDetalles_Empresa_ProductoVarianteId`, DROP COLUMN `EmpresaId`;
           ALTER TABLE `PedidoVentaDetalles` DROP FOREIGN KEY `FK_PedidoVentaDetalles_Empresas_EmpresaId`, DROP INDEX `IX_PedidoVentaDetalles_Empresa_PedidoVentaId`, DROP INDEX `IX_PedidoVentaDetalles_Empresa_ProductoId`, DROP INDEX `IX_PedidoVentaDetalles_Empresa_ProductoVarianteId`, DROP COLUMN `EmpresaId`;
           CREATE UNIQUE INDEX `UX_PedidosVenta_CotizacionId` ON `PedidosVenta` (`CotizacionId`);
@@ -140,7 +149,7 @@ jobs:
           CREATE UNIQUE INDEX `UX_Proveedores_Documento_Normalizado` ON `Proveedores` (`DocumentoNormalizado`);
           CREATE UNIQUE INDEX `IX_Compras_NumeroCompra` ON `Compras` (`NumeroCompra`);
           CREATE UNIQUE INDEX `IX_Ventas_NumeroVenta` ON `Ventas` (`NumeroVenta`);
-          DELETE FROM `__EFMigrationsHistory` WHERE `MigrationId` IN ('20261013121500_CommercialTenantRootExpand', '20261013181500_CommercialTenantScopedRootIndexes', '20261013190000_CommercialTenantInvoiceDocuments', '20261013193000_CommercialTenantSalesDocuments');
+          DELETE FROM `__EFMigrationsHistory` WHERE `MigrationId` IN ('20261013121500_CommercialTenantRootExpand', '20261013181500_CommercialTenantScopedRootIndexes', '20261013190000_CommercialTenantInvoiceDocuments', '20261013193000_CommercialTenantSalesDocuments', '20261013210000_CommercialTenantTaxDiscountExpand');
           INSERT INTO `Proveedores` (`Nombre`, `Activo`, `FechaCreacion`, `FechaActualizacion`)
             VALUES ('SOLQARYN-CI-LEGACY-PRESERVED', 1, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6));
           SQL
@@ -165,10 +174,11 @@ jobs:
           test "$(q "SELECT COUNT(*) FROM information_schema.referential_constraints WHERE constraint_schema=database() AND constraint_name IN ('FK_Productos_Empresas_EmpresaId','FK_Clientes_Empresas_EmpresaId','FK_Proveedores_Empresas_EmpresaId','FK_Compras_Empresas_EmpresaId','FK_Ventas_Empresas_EmpresaId');")" = 5
           test "$(q "SELECT COUNT(*) FROM Proveedores WHERE Nombre='SOLQARYN-CI-LEGACY-PRESERVED' AND EmpresaId IS NULL;")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013121500_CommercialTenantRootExpand';")" = 1
-          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory;")" = 5
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory;")" = 6
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013181500_CommercialTenantScopedRootIndexes';")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013190000_CommercialTenantInvoiceDocuments';")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013193000_CommercialTenantSalesDocuments';")" = 1
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013210000_CommercialTenantTaxDiscountExpand';")" = 1
           dotnet tool run dotnet-ef database update --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --configuration Release --no-build
           test "$(q "SELECT COUNT(*) FROM Proveedores WHERE Nombre='SOLQARYN-CI-LEGACY-PRESERVED' AND EmpresaId IS NULL;")" = 1
           echo "TENANT_ROOT_EXPAND=PASS fk=5 indexes=5 null_legacy=YES data_loss=NO idempotent=YES source=A_DISPOSABLE_MYSQL"
