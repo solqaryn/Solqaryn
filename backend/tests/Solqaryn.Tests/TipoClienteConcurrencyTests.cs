@@ -63,7 +63,16 @@ public class TipoClienteConcurrencyTests
                 EsSistema = false
             };
 
+            // Unicidad nueva: cada empresa tiene su propio tipo predeterminado.
+            // Ambos participantes deben pertenecer a la misma empresa para que
+            // el índice (EmpresaId, EsPredeterminadoUnico) controle la carrera.
+            var empresaPrueba = new Empresa("Empresa concurrencia");
+            setupContext.Set<Empresa>().Add(empresaPrueba);
+            await setupContext.SaveChangesAsync();
+
             setupContext.TipoClientes.AddRange(tipoA, tipoB);
+            setupContext.Entry(tipoA).Property<int?>("EmpresaId").CurrentValue = empresaPrueba.Id;
+            setupContext.Entry(tipoB).Property<int?>("EmpresaId").CurrentValue = empresaPrueba.Id;
             await setupContext.SaveChangesAsync();
         }
 
@@ -151,4 +160,42 @@ public class TipoClienteConcurrencyTests
             await verifyContext.Database.EnsureDeletedAsync();
         }
     }
+    [Fact]
+    public async Task Predeterminado_puede_existir_en_dos_empresas_diferentes()
+    {
+        var dbName = $"test_company_defaults_{Guid.NewGuid():N}";
+        await using var db = new AppDbContext(CreateOptions(dbName));
+        try
+        {
+            await Phase7MySqlTestDatabase.InitializeFreshAsync(db);
+            var empresaA = new Empresa("Empresa A");
+            var empresaB = new Empresa("Empresa B");
+            db.Set<Empresa>().AddRange(empresaA, empresaB);
+            await db.SaveChangesAsync();
+
+            var tipoA = new TipoCliente
+            {
+                Codigo = "GENERAL", Nombre = "General", NombreNormalizado = "GENERAL",
+                ColorHex = "#111111", Activo = true, EsPredeterminado = true
+            };
+            var tipoB = new TipoCliente
+            {
+                Codigo = "GENERAL", Nombre = "General", NombreNormalizado = "GENERAL",
+                ColorHex = "#222222", Activo = true, EsPredeterminado = true
+            };
+
+            db.TipoClientes.AddRange(tipoA, tipoB);
+            db.Entry(tipoA).Property<int?>("EmpresaId").CurrentValue = empresaA.Id;
+            db.Entry(tipoB).Property<int?>("EmpresaId").CurrentValue = empresaB.Id;
+            await db.SaveChangesAsync();
+
+            Assert.Equal(2, await db.TipoClientes.AsNoTracking()
+                .CountAsync(t => t.EsPredeterminado));
+        }
+        finally
+        {
+            await db.Database.EnsureDeletedAsync();
+        }
+    }
+
 }

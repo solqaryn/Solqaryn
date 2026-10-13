@@ -1,3 +1,9 @@
+## 2026-10-13 — Gate post-merge #3605: concurrencia del tipo predeterminado por empresa
+
+- El test real MySQL de concurrencia asigna explícitamente ambas filas a una única empresa de prueba mediante EmpresaId shadow; conserva el control atómico de un único tipo predeterminado por empresa.
+- Se agrega prueba real con dos empresas que comparten código GENERAL y tienen un predeterminado independiente sin colisiones.
+- No reatribuye registros históricos ni relaja índices, RBAC o claves foráneas. Cambio exclusivamente de fixture de integración en DEV; QA y PROD intactos.
+
 ## 2026-10-13 — Ajuste de compatibilidad tenant: roles plantilla y fixture E2E
 
 - Los grants de roles empresariales plantilla (Rol.EmpresaId nulo, Ambito Empresa) conservan propietario nulo y no reciben EmpresaId arbitrario. Los grants de roles empresariales personalizados mantienen validación A/B; los roles de plataforma no se modifican bajo una marca tenant.
