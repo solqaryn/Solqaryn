@@ -73,6 +73,8 @@ public class AppDbContext : DbContext
     public DbSet<Permiso> Permisos => Set<Permiso>();
     public DbSet<Cotizacion> Cotizaciones => Set<Cotizacion>();
     public DbSet<CotizacionDetalle> CotizacionDetalles => Set<CotizacionDetalle>();
+    public DbSet<PedidoVenta> PedidosVenta => Set<PedidoVenta>();
+    public DbSet<PedidoVentaDetalle> PedidoVentaDetalles => Set<PedidoVentaDetalle>();
     public DbSet<Solqaryn.Domain.Entities.Bancos.CuentaBancaria> CuentasBancarias => Set<Solqaryn.Domain.Entities.Bancos.CuentaBancaria>();
     public DbSet<PreparacionPedidoVenta> PreparacionesPedidoVenta => Set<PreparacionPedidoVenta>();
     public DbSet<PreparacionPedidoVentaDetalle> PreparacionPedidoVentaDetalles => Set<PreparacionPedidoVentaDetalle>();
@@ -121,7 +123,8 @@ public class AppDbContext : DbContext
                       (e.Entity is Producto or Cliente or Proveedor or Compra or Venta or
                           CompraDetalle or VentaDetalle or ProductoVariante or
                           ExistenciaVariante or MovimientoInventario or Factura or
-                          FacturaDetalle or FacturaPago or CompraDocumento));
+                          FacturaDetalle or FacturaPago or CompraDocumento or Cotizacion or
+                          CotizacionDetalle or PedidoVenta or PedidoVentaDetalle));
 
         if (ChangeTracker.HasChanges() && (Database.IsRelational() || cambiaComercial))
             throw new NotSupportedException(
@@ -149,6 +152,8 @@ public class AppDbContext : DbContext
         await CommercialTenantDerivedWriteGuard.ValidateAsync(
             this, empresaAutorizada, cancellationToken);
         await CommercialTenantInvoiceWriteGuard.ValidateAsync(
+            this, empresaAutorizada, cancellationToken);
+        await CommercialTenantSalesDocumentGuard.ValidateAsync(
             this, empresaAutorizada, cancellationToken);
         await ValidarAislamientoComercialVentasAsync(cancellationToken);
         await PrepararValorizacionComprasAsync(cancellationToken);

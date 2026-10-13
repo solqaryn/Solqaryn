@@ -14,6 +14,16 @@ public class CotizacionDetalleConfiguration : IEntityTypeConfiguration<Cotizacio
             table.HasCheckConstraint("CK_CotizacionDetalles_PrecioUnitario_NoNegativo", "`PrecioUnitario` >= 0");
         });
 
+        builder.HasOne<Empresa>().WithMany().HasForeignKey(x => x.EmpresaId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("FK_CotizacionDetalles_Empresas_EmpresaId");
+        builder.HasIndex(x => new { x.EmpresaId, x.CotizacionId })
+            .HasDatabaseName("IX_CotizacionDetalles_Empresa_CotizacionId");
+        builder.HasIndex(x => new { x.EmpresaId, x.ProductoId })
+            .HasDatabaseName("IX_CotizacionDetalles_Empresa_ProductoId");
+        builder.HasIndex(x => new { x.EmpresaId, x.ProductoVarianteId })
+            .HasDatabaseName("IX_CotizacionDetalles_Empresa_ProductoVarianteId");
+
         builder.Property(d => d.Cantidad).HasPrecision(18, 4);
         builder.Property(d => d.PrecioUnitario).HasPrecision(18, 4);
         builder.Property(d => d.ProductoSkuSnapshot).HasMaxLength(80);
