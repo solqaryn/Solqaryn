@@ -13030,6 +13030,57 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         .HasConstraintName("FK_CompraDocumentos_Empresas_EmpresaId");
                 });
 
+            // Aislamiento comercial fiscal: columnas nullable para legacy.
+            modelBuilder.Entity("Solqaryn.Domain.Entities.VentaImpuesto", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "VentaId")
+                        .HasDatabaseName("IX_VentaImpuestos_Empresa_VentaId");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_VentaImpuestos_Empresas_EmpresaId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.CompraImpuesto", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "CompraId")
+                        .HasDatabaseName("IX_CompraImpuestos_Empresa_CompraId");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_CompraImpuestos_Empresas_EmpresaId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.VentaDescuento", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "VentaId")
+                        .HasDatabaseName("IX_VentaDescuentos_Empresa_VentaId");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_VentaDescuentos_Empresas_EmpresaId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.HistorialUsoDescuento", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "VentaId")
+                        .HasDatabaseName("IX_HistorialUsoDescuentos_Empresa_VentaId");
+                    b.HasIndex("EmpresaId", "ClienteId")
+                        .HasDatabaseName("IX_HistorialUsoDescuentos_Empresa_ClienteId");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_HistorialUsoDescuentos_Empresas_EmpresaId");
+                });
+
 #pragma warning restore 612, 618
         }
     }

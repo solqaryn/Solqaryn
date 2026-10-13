@@ -74,6 +74,11 @@ internal static class Phase7MySqlTestDatabase
             VALUES ('20261013190000_CommercialTenantInvoiceDocuments', '10.0.12');
             """);
 
+        await db.Database.ExecuteSqlRawAsync("""
+            INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+            VALUES ('20261013210000_CommercialTenantTaxDiscountExpand', '10.0.12');
+            """);
+
         if ((await db.Database.GetPendingMigrationsAsync()).Any())
             throw new InvalidOperationException("Phase 7 test bootstrap left pending Oracle migrations.");
     }
