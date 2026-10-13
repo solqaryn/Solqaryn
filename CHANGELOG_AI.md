@@ -1,3 +1,8 @@
+## 2026-10-13 — Repair CI VAEP N5.7.C exact-head tras expansión tenant comercial
+
+- Gate ya no invoca global `dotnet ef` sin restaurar la herramienta local. Usa el manifest `dotnet tool restore` y provider/migration project Oracle EF10 canónico, alineado con otros gates que pasaron 20/20 en PR #3603.
+- Valida índice por rol, índice por usuario y check constraint del dashboard KPI en el snapshot realmente utilizado. No crea/modifica tareas VAEP, datos ni QA/PROD.
+
 ## 2026-10-13 — Candidato cotizaciones/pedidos de venta tenant-aislados
 
 - EmpresaId nullable, modelo e integridad MySQL con 9 FKs compuestas en Cotizaciones/CotizacionDetalles/PedidosVenta/PedidoVentaDetalles, índices únicos por empresa, validación de referencias A/B y pruebas.
