@@ -1,3 +1,10 @@
+## 2026-10-13 — Diagnóstico read-only de procedencia de datos comerciales
+
+- Workflow `.github/workflows/dev-tenant-commercial-provenance-readonly.yml`: ejecutable sólo en GitHub Environment DEV desde `dev`, con lectura TLS de Aiven y conteos agregados por cinco raíces.
+- Distingue filas sin owner, sin autor y membresía empresarial actual inexistente/múltiple. Audita enlaces Compra-Proveedor, Venta-Cliente y detalles-Producto, sin imprimir IDs, PII, filas ni secretos.
+- **No convierte membresía ACTUAL en evidencia histórica ni ejecuta backfill**, DML, DDL o restore. Exige cinco columnas `EmpresaId` antes de operar; condicionada al expand comercial certificado.
+- No modifica QA, PROD, servicios ni datos persistentes. El P0 sigue abierto.
+
 ## 2026-10-12 — Recuperación de CI N1.1/N1.2 tras Oracle EF10 y contención tenant
 
 - Evidencia causal exact-head `1985bf1b`: los dos workflows N1.1/N1.2 fallaban **antes de iniciar la API** por intentar ejecutar `OracleBaseline` sobre MySQL sin tablas (`Empresas doesn't exist`). Se reemplazó esa ruta incorrecta por bootstrap Oracle fresh oficial `Solqaryn.DatabaseBootstrap` antes del inicio normal de la API. Se conserva `Database__ApplyMigrationsOnStartup=true` tras el bootstrap, para ejecutar los seeds canónicos SeedPermiso/SeedAdmin/SeedFiscal sin volver a crear el esquema.
