@@ -55,14 +55,17 @@ async function auditoriaDe(
 }
 
 async function crearEmpresa(request: APIRequestContext): Promise<number> {
-  const response = await request.post(`${API_URL}/empresas`, {
-    headers: authHeaders(adminToken),
-    data: { nombre: `Empresa E2E Almacenes ${suffix}` }
+  // El tenant inicial existe exclusivamente en MySQL efímero del workflow CI.
+  // Crear una segunda empresa antes del aislamiento comercial es una vulnerabilidad,
+  // no un requisito de los E2E de sucursales/almacenes.
+  const tenantId = 1;
+  const response = await request.get(`${API_URL}/tenant-context/${tenantId}`, {
+    headers: authHeaders(adminToken)
   });
-  expect(response.status(), await response.text()).toBe(201);
-  const empresa = await dataOf(response);
-  expect(empresa?.id).toBeGreaterThan(0);
-  return empresa.id;
+  expect(response.status(), await response.text()).toBe(200);
+  const contexto = await dataOf(response);
+  expect(contexto?.empresaId).toBe(tenantId);
+  return tenantId;
 }
 
 async function crearSucursal(request: APIRequestContext): Promise<number> {
