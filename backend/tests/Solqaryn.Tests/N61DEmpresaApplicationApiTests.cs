@@ -62,6 +62,32 @@ public sealed class N61DEmpresaApplicationApiTests
         _repository.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
+    [Fact]
+    public async Task NuevaEmpresa_SeBloqueaMientrasLosMaestrosComercialesNoTienenEmpresaId()
+    {
+        _repository.Setup(x => x.ListAsync(It.IsAny<bool?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Empresa> { new("Empresa histórica") });
+
+        var error = await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            _service.CreateAsync(new CreateEmpresaDto { Nombre = "Empresa nueva" }));
+
+        Assert.Contains("aislamiento", error.Message, StringComparison.OrdinalIgnoreCase);
+        _repository.Verify(x => x.AddAsync(It.IsAny<Empresa>(), It.IsAny<CancellationToken>()), Times.Never);
+        _repository.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task FalloDelInventarioDeEmpresas_BloqueaAltaSinPersistencia()
+    {
+        _repository.Setup(x => x.ListAsync(It.IsAny<bool?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((List<Empresa>)null!);
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            _service.CreateAsync(new CreateEmpresaDto { Nombre = "Empresa nueva" }));
+
+        _repository.Verify(x => x.AddAsync(It.IsAny<Empresa>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
