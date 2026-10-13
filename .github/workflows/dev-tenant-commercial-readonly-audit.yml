@@ -1,0 +1,63 @@
+name: DEV - Tenant commercial readiness read-only
+
+on:
+  push:
+    branches: [diagnostic/dev-tenant-readonly-inventory-20261012]
+    paths:
+      - .github/workflows/dev-tenant-commercial-readonly-audit.yml
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    name: Conteos anonimos Empresas y tablas comerciales - DEV
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: DEV
+    env:
+      DB_HOST: ${{ vars.SOLQARYN_DEV_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_DEV_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_DEV_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_DEV_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_DEV_DB_PASSWORD }}
+    steps:
+      - name: Verificar identidad canónica antes de consultar
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = "solqaryn/Solqaryn"
+          test "$GITHUB_REF_NAME" = "diagnostic/dev-tenant-readonly-inventory-20261012"
+          test "$DB_HOST" = "solqaryn-mysql-solqaryn.h.aivencloud.com"
+          test "$DB_PORT" = "14402"
+          test "$DB_NAME" = "solqaryn_dev"
+          test "$DB_USER" = "solqaryn_dev_user"
+          test -n "$DB_PASSWORD"
+      - name: Instalar cliente MySQL
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq >/dev/null
+          sudo apt-get install -y -qq mysql-client >/dev/null
+      - name: Auditoría estricta de conteos sin PII ni modificaciones
+        shell: bash
+        run: |
+          set -euo pipefail
+          export MYSQL_PWD="$DB_PASSWORD"
+          mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names <<'SQL'
+          SET SESSION TRANSACTION READ ONLY;
+          START TRANSACTION READ ONLY;
+          SELECT CONCAT('DB_IDENTITY=',DATABASE(),';USER=',SUBSTRING_INDEX(CURRENT_USER(),'@',1));
+          SELECT CONCAT('EMPRESAS_TOTAL=',COUNT(*),';EMPRESAS_ACTIVAS=',SUM(CASE WHEN Activa=1 THEN 1 ELSE 0 END)) FROM Empresas;
+          SELECT CONCAT('REGISTROS_PRODUCTOS=',COUNT(*)) FROM Productos;
+          SELECT CONCAT('REGISTROS_CLIENTES=',COUNT(*)) FROM Clientes;
+          SELECT CONCAT('REGISTROS_PROVEEDORES=',COUNT(*)) FROM Proveedores;
+          SELECT CONCAT('REGISTROS_COMPRAS=',COUNT(*)) FROM Compras;
+          SELECT CONCAT('REGISTROS_VENTAS=',COUNT(*)) FROM Ventas;
+          SELECT CONCAT('TABLAS_RAIZ_CON_EMPRESA_ID=',COUNT(*)) FROM information_schema.columns
+            WHERE table_schema=DATABASE()
+              AND table_name IN ('Productos','Clientes','Proveedores','Compras','Ventas')
+              AND column_name='EmpresaId';
+          COMMIT;
+          SQL
+          unset MYSQL_PWD
