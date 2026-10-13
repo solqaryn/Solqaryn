@@ -30,6 +30,7 @@ No leer todos los documentos administrativos en cada tarea. Consultarlos solo cu
 - `render.yaml`: configuración versionada relacionada con Render; tratar con cautela por separación de entornos.
 - `docs/ENTORNOS_DEV_PROD.md`: fuente canónica para GitHub Environments y topología Aiven DEV/QA/PROD (`DEV`, `QA`, `PROD`, `solqaryn-mysql`, bases/usuarios aislados).
 - `docs/RENDER_ENVIRONMENT_CONTRACT.md`: contrato exacto de 28 claves Render y diferencias permitidas entre DEV/QA/PROD.
+- `docs/runbooks/TENANCY_DATOS_COMERCIALES_P0.md`: aislamiento comercial incompleto, contención temporal de endpoints y criterios reales de migración/rollback/seguridad multiempresa.
 - `docs/runbooks/API_UPSTREAM_DISPONIBILIDAD_DEV.md`: diagnóstico de cold start, HTTP 503 y runbook de smoke del login, sin keep-alive y con QA/PROD fuera de scope.
 - `docs/GITHUB_ENVIRONMENT_CONTRACT.md`: contrato de cardinalidad, ramas, variables/secrets y aislamiento Aiven para los tres GitHub Environments.
 - `docs/DEV_CIERRE_TECNICO_PROMOCION.md`: evidencia del cierre DEV, rollback y precondiciones fail-closed para una futura promoción autorizada `dev -> main/PROD`; no es roadmap ni autorización productiva.
