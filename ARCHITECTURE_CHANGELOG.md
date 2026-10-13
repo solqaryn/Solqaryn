@@ -1,3 +1,7 @@
+## 2026-10-13 — Expand comercial tenant (candidato dev)
+
+- Propiedad opcional `EmpresaId` y FK/índice restrictivos en cinco raíces; Oracle `20261013121500_CommercialTenantRootExpand` y bootstrap fresh/adopt compatibles. Histórico sin asignar, guard P0 preservado. Sin certificación multiempresa ni cambios a QA/PROD.
+
 ## 2026-10-12 — Contención P0 de tenancy comercial sin atribución arbitraria (candidato DEV)
 
 - Se confirmó que Producto, Cliente, Proveedor, Compra y Venta todavía no tienen EmpresaId; el control RBAC/UsuarioEmpresa no garantiza propiedad de datos. Catálogos, variantes, inventario, facturas y documentos derivados deben migrarse de forma coherente.

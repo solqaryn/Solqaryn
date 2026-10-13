@@ -1,14 +1,20 @@
 # SOLQARYN — P0: aislamiento empresarial de datos comerciales
 
-**Estado 2026-10-12: CONTENCIÓN IMPLEMENTADA EN CANDIDATO DEV; AISLAMIENTO MULTIEMPRESA FUNCIONAL TODAVÍA NO CERTIFICADO.**
+**Estado 2026-10-13: contención operativa desplegada en Render DEV. Candidato expand introduce `EmpresaId?` e índices/FK en cinco raíces, con migración Oracle; los registros históricos continúan sin atribución y NO existe aislamiento multiempresa certificado.**
 
 ## Diagnóstico exacto en el HEAD de DEV
 
-- `Producto`, `Cliente`, `Proveedor`, `Compra` y `Venta` carecen de `EmpresaId` persistente. Sus repositorios consultan por ID y listan registros sin aplicar un filtro de propietario por empresa.
+- En el baseline anterior, `Producto`, `Cliente`, `Proveedor`, `Compra` y `Venta` carecían de `EmpresaId`; el candidato introduce propiedad nullable, índice y FK, pero **no añade aún filtros SQL ni ownership atribuido**. Sus consultas por ID/listas aún requieren aislamiento empresarial explícito.
 - Las categorías, tipos de cliente, marcas/modelos, variantes, existencias, facturas, pedidos, pagos, descuentos, movimientos y documentos derivados pueden consumir referencias de esas entidades. Proteger sólo controladores o `X-Empresa-Id` no aísla el grafo.
 - `UsuarioEmpresa`, `IUsuarioScopeService` y `RequierePermiso` validan membresía/rol en el backend, pero **no demuestran ownership de cada fila consultada**.
 - El catálogo público `/tienda` es anónimo y actualmente carece de una partición de datos comercialmente independiente por tenant. La clave de caché no constituye un filtro SQL.
 - No se afirma que haya ocurrido una divulgación histórica de datos; el defecto comprobado es que la separación por empresa no está garantizada.
+
+## Expansión no destructiva de esquema (candidato)
+
+- La migración `20261013121500_CommercialTenantRootExpand` añade las cinco columnas nullable, índices y claves foráneas restrictivas. No atribuye filas históricas ni levanta la cuarentena.
+- La prueba `.github/workflows/tenant-commercial-root-expand-ephemeral.yml` debe restaurar el caso de esquema legacy en MySQL descartable, ejecutar la migración y demostrar cinco columnas/FK/índices, conservación de filas y reinvocación idempotente.
+- Respaldo previo real DEV con restore same-artifact comprobado: Actions [#38399423450](https://github.com/solqaryn/Solqaryn/actions/runs/38399423450). No significa backfill ni certificación multiempresa.
 
 ## Contención de emergencia — sin atribución de datos
 
