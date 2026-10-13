@@ -10,6 +10,7 @@ on:
       - 'backend/tools/Solqaryn.DatabaseBootstrap/**'
       - '.github/workflows/tenant-commercial-root-expand-ephemeral.yml'
       - 'scripts/ci/commercial-tenant-legacy-fixture.sql'
+      - 'scripts/ci/cleanup-orphan-tenant-fk-indexes.sh'
   push:
     branches: [dev]
     paths:
@@ -18,6 +19,7 @@ on:
       - 'backend/src/Infrastructure.Migrations/**'
       - '.github/workflows/tenant-commercial-root-expand-ephemeral.yml'
       - 'scripts/ci/commercial-tenant-legacy-fixture.sql'
+      - 'scripts/ci/cleanup-orphan-tenant-fk-indexes.sh'
 
 permissions:
   contents: read
@@ -90,49 +92,7 @@ jobs:
           mysql_container="${{ job.services.mysql.id }}"
           # SQL en fixture aislada: preserva la simulación legacy exacta.
           docker exec -i "$mysql_container" mysql -uroot -proot solqaryn_tenant_expand < scripts/ci/commercial-tenant-legacy-fixture.sql
-          # Índices que crea implícitamente MySQL al añadir FKs empresa.
-          # DROP FOREIGN KEY no elimina dichos índices: limpiar solo los de las FKs tenant retiradas.
-          awk '/^ALTER TABLE .* DROP FOREIGN KEY / {t=$3; n=$7; gsub(/[`;]/,"",t); gsub(/[`;]/,"",n); print t "\t" n;}' \
-            scripts/ci/commercial-tenant-legacy-fixture.sql |
-          while IFS=
-          test "$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_tenant_expand -Nse "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=database() AND table_name IN ('Productos','Clientes','Proveedores','Compras','Ventas') AND column_name='EmpresaId';")" = 0
-          echo "TENANT_LEGACY_SCHEMA=PASS owner_columns=0 data_preserved=YES"
-      - name: Aplicar migración EF Oracle real sobre legacy efímera
-        shell: bash
-        working-directory: backend
-        run: |
-          set -euo pipefail
-          dotnet tool run dotnet-ef database update --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --configuration Release --no-build
-          dotnet tool run dotnet-ef migrations has-pending-model-changes --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --configuration Release --no-build
-      - name: Verificar DDL FK índice NULL histórico e idempotencia
-        shell: bash
-        working-directory: backend
-        run: |
-          set -euo pipefail
-          mysql_container="${{ job.services.mysql.id }}"
-          q(){ docker exec "$mysql_container" mysql -uroot -proot solqaryn_tenant_expand -Nse "$1"; }
-          test "$(q "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=database() AND table_name IN ('Productos','Clientes','Proveedores','Compras','Ventas') AND column_name='EmpresaId' AND IS_NULLABLE='YES';")" = 5
-          test "$(q "SELECT COUNT(DISTINCT table_name) FROM information_schema.statistics WHERE table_schema=database() AND index_name IN ('IX_Productos_EmpresaId','IX_Clientes_EmpresaId','IX_Proveedores_EmpresaId','IX_Compras_EmpresaId','IX_Ventas_EmpresaId');")" = 5
-          test "$(q "SELECT COUNT(*) FROM information_schema.referential_constraints WHERE constraint_schema=database() AND constraint_name IN ('FK_Productos_Empresas_EmpresaId','FK_Clientes_Empresas_EmpresaId','FK_Proveedores_Empresas_EmpresaId','FK_Compras_Empresas_EmpresaId','FK_Ventas_Empresas_EmpresaId');")" = 5
-          test "$(q "SELECT COUNT(*) FROM Proveedores WHERE Nombre='SOLQARYN-CI-LEGACY-PRESERVED' AND EmpresaId IS NULL;")" = 1
-          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013121500_CommercialTenantRootExpand';")" = 1
-          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory;")" = 8
-          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013181500_CommercialTenantScopedRootIndexes';")" = 1
-          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013190000_CommercialTenantInvoiceDocuments';")" = 1
-          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013193000_CommercialTenantSalesDocuments';")" = 1
-          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013210000_CommercialTenantTaxDiscountExpand';")" = 1
-          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013220000_CommercialTenantOwnershipGraphExpand';")" = 1
-          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013221500_CommercialTenantOwnershipGraphScopedFks';")" = 1
-          dotnet tool run dotnet-ef database update --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --configuration Release --no-build
-          test "$(q "SELECT COUNT(*) FROM Proveedores WHERE Nombre='SOLQARYN-CI-LEGACY-PRESERVED' AND EmpresaId IS NULL;")" = 1
-          echo "TENANT_ROOT_EXPAND=PASS fk=5 indexes=5 null_legacy=YES data_loss=NO idempotent=YES source=A_DISPOSABLE_MYSQL"
-\t' read -r tabla indice; do
-            [ -n "$tabla" ] && [ -n "$indice" ] || continue
-            presentes="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_tenant_expand -Nse "SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='$tabla' AND INDEX_NAME='$indice';")"
-            if [ "$presentes" -gt 0 ]; then
-              docker exec "$mysql_container" mysql -uroot -proot solqaryn_tenant_expand -e "ALTER TABLE \`$tabla\` DROP INDEX \`$indice\`;"
-            fi
-          done
+          bash scripts/ci/cleanup-orphan-tenant-fk-indexes.sh "$mysql_container"
           test "$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_tenant_expand -Nse "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=database() AND table_name IN ('Productos','Clientes','Proveedores','Compras','Ventas') AND column_name='EmpresaId';")" = 0
           echo "TENANT_LEGACY_SCHEMA=PASS owner_columns=0 data_preserved=YES"
       - name: Aplicar migración EF Oracle real sobre legacy efímera
