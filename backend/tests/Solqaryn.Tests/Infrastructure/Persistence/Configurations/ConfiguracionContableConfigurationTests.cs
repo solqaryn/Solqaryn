@@ -52,8 +52,12 @@ public class ConfiguracionContableConfigurationTests
         var entity = context.Model.FindEntityType(typeof(ConfiguracionContable));
         Assert.NotNull(entity);
 
-        var eventoIndex = entity!.GetIndexes().Single(i => i.Properties.Single().Name == nameof(ConfiguracionContable.Evento));
-        Assert.True(eventoIndex.IsUnique);
+        var eventoIndex = entity!.GetIndexes().Single(i =>
+            i.Properties.Count == 1 && i.Properties[0].Name == nameof(ConfiguracionContable.Evento));
+        Assert.False(eventoIndex.IsUnique);
+        Assert.Contains(entity.GetIndexes(), ix => ix.IsUnique &&
+            ix.Properties.Select(p => p.Name).SequenceEqual(
+                new[] { "EmpresaId", nameof(ConfiguracionContable.Evento) }));
 
         Assert.All(entity.GetForeignKeys(), fk => Assert.Equal(DeleteBehavior.Restrict, fk.DeleteBehavior));
     }

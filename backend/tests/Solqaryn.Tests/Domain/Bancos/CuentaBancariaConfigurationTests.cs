@@ -74,7 +74,12 @@ public sealed class CuentaBancariaConfigurationTests
         var uniqueIndex = entity.GetIndexes()
             .SingleOrDefault(i => i.Properties.Select(p => p.Name).SequenceEqual(new[] { nameof(CuentaBancaria.BancoId), nameof(CuentaBancaria.NumeroCuenta) }));
         Assert.NotNull(uniqueIndex);
-        Assert.True(uniqueIndex.IsUnique);
+        Assert.False(uniqueIndex.IsUnique);
+        Assert.Contains(entity.GetIndexes(), index => index.IsUnique &&
+            index.Properties.Select(p => p.Name).SequenceEqual(new[]
+            {
+                "EmpresaId", nameof(CuentaBancaria.BancoId), nameof(CuentaBancaria.NumeroCuenta)
+            }));
 
         var estadoIndex = entity.GetIndexes()
             .SingleOrDefault(i => i.Properties.Select(p => p.Name).SequenceEqual(new[] { nameof(CuentaBancaria.Estado) }));

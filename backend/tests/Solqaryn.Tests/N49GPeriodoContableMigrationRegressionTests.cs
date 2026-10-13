@@ -42,7 +42,10 @@ public class N49GPeriodoContableMigrationRegressionTests
         Assert.True(entityType.FindProperty("Estado")?.IsColumnNullable() == false);
 
         var indexes = entityType.GetIndexes();
-        Assert.Contains(indexes, i => i.GetDatabaseName() == "UX_PeriodosContables_Rango" && i.IsUnique);
+        Assert.Contains(indexes, i => i.GetDatabaseName() == "UX_PeriodosContables_Rango" && !i.IsUnique);
+        Assert.Contains(indexes, i => i.IsUnique &&
+            i.Properties.Select(p => p.Name).SequenceEqual(
+                new[] { "EmpresaId", "FechaInicio", "FechaFin" }));
         Assert.Contains(indexes, i => i.GetDatabaseName() == "IX_PeriodosContables_Estado_Rango" && !i.IsUnique);
     }
 
@@ -55,7 +58,9 @@ public class N49GPeriodoContableMigrationRegressionTests
         Assert.Equal("ConfiguracionesContables", entityType.GetTableName());
 
         var indexes = entityType.GetIndexes();
-        Assert.Contains(indexes, i => i.GetDatabaseName() == "UX_ConfiguracionesContables_Evento" && i.IsUnique);
+        Assert.Contains(indexes, i => i.GetDatabaseName() == "UX_ConfiguracionesContables_Evento" && !i.IsUnique);
+        Assert.Contains(indexes, i => i.IsUnique &&
+            i.Properties.Select(p => p.Name).SequenceEqual(new[] { "EmpresaId", "Evento" }));
 
         var fkDebe = entityType.GetForeignKeys().FirstOrDefault(fk => fk.Properties.Any(p => p.Name == "CuentaDebeId"));
         Assert.NotNull(fkDebe);

@@ -48,8 +48,14 @@ public sealed class TenantAwareDataModelPersistenceTests
 
         Assert.NotNull(almacen);
         Assert.NotNull(ubicacion);
-        Assert.Null(almacen!.FindProperty("EmpresaId"));
-        Assert.Null(ubicacion!.FindProperty("EmpresaId"));
+        Assert.True(almacen!.FindProperty("EmpresaId")!.IsNullable);
+        Assert.True(ubicacion!.FindProperty("EmpresaId")!.IsNullable);
+        Assert.Contains(almacen.GetForeignKeys(), fk =>
+            fk.PrincipalEntityType.ClrType == typeof(Empresa) &&
+            fk.Properties.Single().Name == "EmpresaId" &&
+            fk.DeleteBehavior == DeleteBehavior.Restrict);
+        Assert.Contains(ubicacion.GetIndexes(), ix => ix.IsUnique &&
+            ix.Properties.Select(p => p.Name).SequenceEqual(new[] { "EmpresaId", "Id" }));
     }
 
     [Fact]
