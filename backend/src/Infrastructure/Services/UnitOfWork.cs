@@ -82,7 +82,8 @@ public class UnitOfWork : IUnitOfWork
         {
             if (MySqlProviderErrorClassifier.TryClassify(current, out var error) &&
                 error.Number == 1062 &&
-                error.Message.Contains("IX_TipoClientes_EsPredeterminadoUnico", StringComparison.Ordinal))
+                (error.Message.Contains("IX_TipoClientes_EsPredeterminadoUnico", StringComparison.Ordinal) ||
+                 error.Message.Contains("UX_TipoClientes_Empresa_EsPredeterminadoUnico", StringComparison.Ordinal)))
             {
                 return new UniqueConstraintViolationException(
                     "TipoClientePredeterminadoUnico",

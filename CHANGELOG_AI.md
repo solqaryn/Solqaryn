@@ -1,3 +1,15 @@
+## 2026-10-13 — CI P0 #3: traducir 1062 del nuevo índice empresarial TipoCliente
+
+- El nuevo índice único (EmpresaId, EsPredeterminadoUnico) emite MySQL 1062 con nombre UX_TipoClientes_Empresa_EsPredeterminadoUnico. UnitOfWork ahora traduce tanto el índice histórico como el nuevo a BusinessRuleException, sin convertir errores 1062 ajenos.
+- Se extiende prueba del traductor y la prueba real MySQL de empresas distintas filtra por el código creado GENERAL, sin confundir el tipo global predeterminado del fixture.
+- No hay cambios de esquema, migraciones, datos históricos, autorización o entornos QA/PROD.
+
+## 2026-10-13 — Gate post-merge #3605: concurrencia del tipo predeterminado por empresa
+
+- El test real MySQL de concurrencia asigna explícitamente ambas filas a una única empresa de prueba mediante EmpresaId shadow; conserva el control atómico de un único tipo predeterminado por empresa.
+- Se agrega prueba real con dos empresas que comparten código GENERAL y tienen un predeterminado independiente sin colisiones.
+- No reatribuye registros históricos ni relaja índices, RBAC o claves foráneas. Cambio exclusivamente de fixture de integración en DEV; QA y PROD intactos.
+
 ## 2026-10-13 — Ajuste de compatibilidad tenant: roles plantilla y fixture E2E
 
 - Los grants de roles empresariales plantilla (Rol.EmpresaId nulo, Ambito Empresa) conservan propietario nulo y no reciben EmpresaId arbitrario. Los grants de roles empresariales personalizados mantienen validación A/B; los roles de plataforma no se modifican bajo una marca tenant.
