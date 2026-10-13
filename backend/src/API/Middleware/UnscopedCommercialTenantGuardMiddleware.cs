@@ -1,4 +1,5 @@
 using Solqaryn.Infrastructure.Persistence;
+using Solqaryn.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Solqaryn.API.Middleware;
@@ -37,7 +38,7 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
 
         // Se cuentan también empresas desactivadas: podrían tener datos históricos.
         // Sin caché: altas/cambios de empresas se detectan en la siguiente petición.
-        var empresas = await db.Empresas
+        var empresas = await db.Set<Empresa>()
             .IgnoreQueryFilters()
             .AsNoTracking()
             .OrderBy(empresa => empresa.Id)
