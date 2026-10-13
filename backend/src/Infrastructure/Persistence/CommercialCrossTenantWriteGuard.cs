@@ -60,8 +60,10 @@ public static class CommercialCrossTenantWriteGuard
                     .SingleOrDefaultAsync(cancellationToken)
                 : detalle.Producto?.EmpresaId;
             Check(ownerVenta, ownerProducto);
-            await CheckProductoVarianteAsync(db, detalle.ProductoId,
-                detalle.ProductoVarianteId, cancellationToken);
+            // Los grafos históricos sin owner siguen en cuarentena.
+            if (ownerVenta is > 0 || ownerProducto is > 0)
+                await CheckProductoVarianteAsync(db, detalle.ProductoId,
+                    detalle.ProductoVarianteId, cancellationToken);
         }
 
         foreach (var entry in db.ChangeTracker.Entries<CompraDetalle>()
@@ -79,8 +81,9 @@ public static class CommercialCrossTenantWriteGuard
                     .SingleOrDefaultAsync(cancellationToken)
                 : detalle.Producto?.EmpresaId;
             Check(ownerCompra, ownerProducto);
-            await CheckProductoVarianteAsync(db, detalle.ProductoId,
-                detalle.ProductoVarianteId, cancellationToken);
+            if (ownerCompra is > 0 || ownerProducto is > 0)
+                await CheckProductoVarianteAsync(db, detalle.ProductoId,
+                    detalle.ProductoVarianteId, cancellationToken);
         }
     }
 
