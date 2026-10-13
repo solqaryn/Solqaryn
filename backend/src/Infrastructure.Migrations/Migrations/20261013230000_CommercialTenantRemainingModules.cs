@@ -255,8 +255,12 @@ public partial class CommercialTenantRemainingModules : Migration
         m.AddForeignKey("FK_Descuentos_Empresas_EmpresaId", "Descuentos", "EmpresaId", "Empresas", principalColumn: "Id", onDelete: ReferentialAction.Restrict);
         m.AddForeignKey("FK_EmpresaConfiguraciones_Empresas_EmpresaId", "EmpresaConfiguraciones", "EmpresaId", "Empresas", principalColumn: "Id", onDelete: ReferentialAction.Restrict);
         m.AddForeignKey("FK_EnlacesPublicosFactura_Empresas_EmpresaId", "EnlacesPublicosFactura", "EmpresaId", "Empresas", principalColumn: "Id", onDelete: ReferentialAction.Restrict);
+        m.CreateIndex("IX_EnlacesPublicosFactura_Empresa_Factura", "EnlacesPublicosFactura", new[] { "EmpresaId", "FacturaId" });
+        m.AddForeignKey("FK_EnlacesPublicosFactura_Facturas_FacturaId", "EnlacesPublicosFactura", "FacturaId", "Facturas", principalColumn: "Id", onDelete: ReferentialAction.Restrict);
         m.AddForeignKey("FK_HistorialAplicacionImpuestos_Empresas_EmpresaId", "HistorialAplicacionImpuestos", "EmpresaId", "Empresas", principalColumn: "Id", onDelete: ReferentialAction.Restrict);
         m.AddForeignKey("FK_HistorialEnviosFactura_Empresas_EmpresaId", "HistorialEnviosFactura", "EmpresaId", "Empresas", principalColumn: "Id", onDelete: ReferentialAction.Restrict);
+        m.CreateIndex("IX_HistorialEnviosFactura_Empresa_Factura", "HistorialEnviosFactura", new[] { "EmpresaId", "FacturaId" });
+        m.AddForeignKey("FK_HistorialEnviosFactura_Facturas_FacturaId", "HistorialEnviosFactura", "FacturaId", "Facturas", principalColumn: "Id", onDelete: ReferentialAction.Restrict);
         m.AddForeignKey("FK_ImpuestoCategorias_Empresas_EmpresaId", "ImpuestoCategorias", "EmpresaId", "Empresas", principalColumn: "Id", onDelete: ReferentialAction.Restrict);
         m.AddForeignKey("FK_ImpuestoOperaciones_Empresas_EmpresaId", "ImpuestoOperaciones", "EmpresaId", "Empresas", principalColumn: "Id", onDelete: ReferentialAction.Restrict);
         m.AddForeignKey("FK_Impuestos_Empresas_EmpresaId", "Impuestos", "EmpresaId", "Empresas", principalColumn: "Id", onDelete: ReferentialAction.Restrict);

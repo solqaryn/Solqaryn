@@ -302,6 +302,10 @@ public static class CommercialTenantRemainingModel
             b.HasOne(typeof(Empresa), navigationName: null).WithMany()
                 .HasForeignKey("EmpresaId").OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("FK_EnlacesPublicosFactura_Empresas_EmpresaId");
+            b.HasIndex(new[] { "EmpresaId", "FacturaId" }).HasDatabaseName("IX_EnlacesPublicosFactura_Empresa_Factura");
+            b.HasOne(typeof(Factura), navigationName: null).WithMany()
+                .HasForeignKey("FacturaId").OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_EnlacesPublicosFactura_Facturas_FacturaId");
         }
 
         {
@@ -321,6 +325,10 @@ public static class CommercialTenantRemainingModel
             b.HasOne(typeof(Empresa), navigationName: null).WithMany()
                 .HasForeignKey("EmpresaId").OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("FK_HistorialEnviosFactura_Empresas_EmpresaId");
+            b.HasIndex(new[] { "EmpresaId", "FacturaId" }).HasDatabaseName("IX_HistorialEnviosFactura_Empresa_Factura");
+            b.HasOne(typeof(Factura), navigationName: null).WithMany()
+                .HasForeignKey("FacturaId").OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_HistorialEnviosFactura_Facturas_FacturaId");
         }
 
         {

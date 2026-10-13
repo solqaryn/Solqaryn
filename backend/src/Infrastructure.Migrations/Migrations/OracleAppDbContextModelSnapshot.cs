@@ -14498,6 +14498,22 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
             modelBuilder.Entity("Solqaryn.Domain.Entities.UsuarioEmpresa", b => b.HasIndex("EmpresaId", "RolId").HasDatabaseName("IX_UsuarioEmpresas_EmpresaId_RolId"));
             modelBuilder.Entity("Solqaryn.Domain.Entities.VentaDetalle", b => b.HasIndex("EmpresaId", "AlmacenId", "UbicacionAlmacenId").HasDatabaseName("IX_VentaDetalles_EmpresaId_AlmacenId_UbicacionAlmacenId"));
 
+            modelBuilder.Entity("Solqaryn.Domain.Entities.EnlacePublicoFactura", b =>
+                {
+                    b.HasIndex("EmpresaId", "FacturaId").HasDatabaseName("IX_EnlacesPublicosFactura_Empresa_Factura");
+                    b.HasOne("Solqaryn.Domain.Entities.Factura", null).WithMany()
+                        .HasForeignKey("FacturaId").OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_EnlacesPublicosFactura_Facturas_FacturaId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.HistorialEnvioFactura", b =>
+                {
+                    b.HasIndex("EmpresaId", "FacturaId").HasDatabaseName("IX_HistorialEnviosFactura_Empresa_Factura");
+                    b.HasOne("Solqaryn.Domain.Entities.Factura", null).WithMany()
+                        .HasForeignKey("FacturaId").OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_HistorialEnviosFactura_Facturas_FacturaId");
+                });
+
 #pragma warning restore 612, 618
         }
     }

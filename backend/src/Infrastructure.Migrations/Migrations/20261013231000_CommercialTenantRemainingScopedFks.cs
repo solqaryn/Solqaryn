@@ -98,6 +98,8 @@ public partial class CommercialTenantRemainingScopedFks : Migration
         m.Sql("""ALTER TABLE `VentaDetalles` ADD CONSTRAINT `FK_VentaDetalles_UbicacionAlmacenId_TenantFinal` FOREIGN KEY (`EmpresaId`, `UbicacionAlmacenId`) REFERENCES `UbicacionesAlmacen` (`EmpresaId`, `Id`) ON DELETE RESTRICT;""");
         m.Sql("""ALTER TABLE `VentaImpuestos` ADD CONSTRAINT `FK_VentaImpuestos_ImpuestoId_TenantFinal` FOREIGN KEY (`EmpresaId`, `ImpuestoId`) REFERENCES `Impuestos` (`EmpresaId`, `Id`) ON DELETE RESTRICT;""");
         m.Sql("""ALTER TABLE `RolPermisos` ADD CONSTRAINT `FK_RolPermisos_RolId_TenantFinal` FOREIGN KEY (`EmpresaId`, `RolId`) REFERENCES `Roles` (`EmpresaId`, `Id`) ON DELETE RESTRICT;""");
+        m.Sql("""ALTER TABLE `EnlacesPublicosFactura` ADD CONSTRAINT `FK_EnlacesPublicosFactura_Factura_TenantFinal` FOREIGN KEY (`EmpresaId`, `FacturaId`) REFERENCES `Facturas` (`EmpresaId`, `Id`) ON DELETE RESTRICT;""");
+        m.Sql("""ALTER TABLE `HistorialEnviosFactura` ADD CONSTRAINT `FK_HistorialEnviosFactura_Factura_TenantFinal` FOREIGN KEY (`EmpresaId`, `FacturaId`) REFERENCES `Facturas` (`EmpresaId`, `Id`) ON DELETE RESTRICT;""");
     }
 
     protected override void Down(MigrationBuilder m) =>

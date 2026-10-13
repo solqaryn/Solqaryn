@@ -96,6 +96,8 @@ public static class CommercialTenantRemainingPhysicalConstraints
         """ALTER TABLE `VentaDetalles` ADD CONSTRAINT `FK_VentaDetalles_UbicacionAlmacenId_TenantFinal` FOREIGN KEY (`EmpresaId`, `UbicacionAlmacenId`) REFERENCES `UbicacionesAlmacen` (`EmpresaId`, `Id`) ON DELETE RESTRICT;""",
         """ALTER TABLE `VentaImpuestos` ADD CONSTRAINT `FK_VentaImpuestos_ImpuestoId_TenantFinal` FOREIGN KEY (`EmpresaId`, `ImpuestoId`) REFERENCES `Impuestos` (`EmpresaId`, `Id`) ON DELETE RESTRICT;""",
         """ALTER TABLE `RolPermisos` ADD CONSTRAINT `FK_RolPermisos_RolId_TenantFinal` FOREIGN KEY (`EmpresaId`, `RolId`) REFERENCES `Roles` (`EmpresaId`, `Id`) ON DELETE RESTRICT;""",
+        """ALTER TABLE `EnlacesPublicosFactura` ADD CONSTRAINT `FK_EnlacesPublicosFactura_Factura_TenantFinal` FOREIGN KEY (`EmpresaId`, `FacturaId`) REFERENCES `Facturas` (`EmpresaId`, `Id`) ON DELETE RESTRICT;""",
+        """ALTER TABLE `HistorialEnviosFactura` ADD CONSTRAINT `FK_HistorialEnviosFactura_Factura_TenantFinal` FOREIGN KEY (`EmpresaId`, `FacturaId`) REFERENCES `Facturas` (`EmpresaId`, `Id`) ON DELETE RESTRICT;""",
     };
     public static async Task ApplyFreshAsync(AppDbContext db, CancellationToken ct = default)
     {
@@ -194,14 +196,16 @@ public static class CommercialTenantRemainingPhysicalConstraints
                     'FK_VentaDetalles_AlmacenId_TenantFinal',
                     'FK_VentaDetalles_UbicacionAlmacenId_TenantFinal',
                     'FK_VentaImpuestos_ImpuestoId_TenantFinal',
-                    'FK_RolPermisos_RolId_TenantFinal'
+                    'FK_RolPermisos_RolId_TenantFinal',
+                    'FK_HistorialEnviosFactura_Factura_TenantFinal',
+                    'FK_EnlacesPublicosFactura_Factura_TenantFinal'
                   )
                 GROUP BY CONSTRAINT_NAME HAVING COUNT(*) = 2
             ) AS constraints_scoped
             """;
         var count = await db.Database.SqlQueryRaw<long>(sql).SingleAsync(ct);
-        if (count != 86)
+        if (count != 88)
             throw new InvalidOperationException(
-                $"FK empresariales de módulos adicionales incompletas: {count}/86");
+                $"FK empresariales de módulos adicionales incompletas: {count}/88");
     }
 }
