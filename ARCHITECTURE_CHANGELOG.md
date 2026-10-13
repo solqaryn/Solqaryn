@@ -1,3 +1,7 @@
+## 2026-10-13 — Trazabilidad de auditoría con owner verificado (candidato)
+
+- `AuditoriaService` registra `RegistroAuditoria.EmpresaId` cuando existe marca tenant autorizada por RBAC, sin confiar en headers. Auditoría no HTTP y legacy conserva NULL. No es aislamiento de lecturas ni backfill.
+
 ## 2026-10-13 — Validación de referencias comerciales explícitamente cruzadas (candidato DEV)
 
 - Gate anterior a SaveChanges que rechaza vínculos con propietarios empresariales diferentes en Ventas/Clientes, Compras/Proveedores y detalles/Productos. No modifica el modelo, esquema, datos históricos ni QA/PROD; contención P0 se conserva.

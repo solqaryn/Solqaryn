@@ -268,3 +268,5 @@ Las altas administrativas de Producto, Cliente, Proveedor, Compra y Venta propag
 `CommercialCrossTenantWriteGuard` valida antes de `AppDbContext.SaveChangesAsync` nuevas referencias Venta-Cliente, Compra-Proveedor, VentaDetalle-Producto y CompraDetalle-Producto cuando ambas partes tienen `EmpresaId` explícito. Rechaza mezclas empresariales; conserva NULL legacy sin atribución. No sustituye aislamiento por fila en consultas ni permite retirar la cuarentena P0.
 
 La misma protección rechaza cambios de `EmpresaId` sobre las cinco raíces comerciales ya persistidas, incluida una atribución de `NULL` legacy mediante servicios ordinarios. La atribución histórica exige un procedimiento excepcional de datos respaldado y auditado, nunca actualización normal de entidad.
+
+Las entradas nuevas de `RegistroAuditoria` se marcan con `EmpresaId` solamente cuando el filtro RBAC ha validado el contexto tenant de la solicitud. Un header HTTP no marca auditorías; registros históricos permanecen sin atribuir.

@@ -24,6 +24,10 @@
 - La prueba `.github/workflows/tenant-commercial-root-expand-ephemeral.yml` debe restaurar el caso de esquema legacy en MySQL descartable, ejecutar la migración y demostrar cinco columnas/FK/índices, conservación de filas y reinvocación idempotente.
 - Respaldo previo real DEV con restore same-artifact comprobado: Actions [#38399423450](https://github.com/solqaryn/Solqaryn/actions/runs/38399423450). No significa backfill ni certificación multiempresa.
 
+## Auditoría tenant-aware de nuevas operaciones (candidato)
+
+La nueva versión de `AuditoriaService` marca eventos futuros con la empresa comprobada por RBAC; no atribuye las auditorías existentes ni prueba su titularidad. Las consultas de auditoría siguen necesitando filtros de empresa antes de permitir 2+ tenants.
+
 ## Contención de emergencia — sin atribución de datos
 
 `UnscopedCommercialTenantGuardMiddleware` se ejecuta en la API **antes de los controladores** y revisa, sin caché, hasta dos registros de `Empresas`, incluso empresas inactivas:

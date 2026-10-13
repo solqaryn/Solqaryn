@@ -31,6 +31,9 @@ Ningún plan, fila, gate, fase o secuencia que no esté incorporado al MAESTRO v
 
 ## 3. Arquitectura vigente
 
+- Bitácora nueva tenant-aware: `AuditoriaService` firma `RegistroAuditoria.EmpresaId` sólo desde marca autorizada de RBAC. Las filas históricas y jobs sin contexto siguen sin atribución; no equivale a filtro empresarial de auditoría.
+
+
 - Análisis P0 del snapshot Oracle EF10: 132 entidades mapeadas, 20 con `EmpresaId` y 66 entidades adicionales conectadas directa/indirectamente con cinco raíces comerciales. Inventario en `docs/tenancy/INVENTARIO_GRAFO_COMERCIAL_P0_DEV.md`. No clasificar las restantes como globales por omisión ni retirar la cuarentena.
 
 

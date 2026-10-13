@@ -1,3 +1,8 @@
+## 2026-10-13 — Auditoría de nuevos eventos empresariales con origen RBAC verificado
+
+- `AuditoriaService` persiste `RegistroAuditoria.EmpresaId` desde la marca HTTP de autorización empresarial posterior a permisos; no desde `X-Empresa-Id` del cliente. Los procesos sin contexto verificado mantienen NULL sin inventar empresas.
+- Pruebas de marca autorizada, cabecera fraudulenta y operación no HTTP. No backfill ni relajación de cuarentena; falta controlar lecturas por tenant, exportaciones e integridad extendida.
+
 ## 2026-10-13 — Inventario técnico tenant y actualización de estado P0
 
 - Snapshot EF Oracle revisado: 132 entidades distintas; 20 incluyen `EmpresaId`, 66 entidades adicionales alcanzables desde raíces comerciales. Se registra tabla auditable de mapeo, profundidad FK y owner en `docs/tenancy/INVENTARIO_GRAFO_COMERCIAL_P0_DEV.md` para clasificación (sin inferir ownership automático).
