@@ -1,3 +1,10 @@
+## 2026-10-13 — P0 #3: expansión de recursos empresariales independientes (candidato)
+
+- 41 recursos comerciales adicionales de catálogo, almacén, caja, contabilidad, finanzas y cargas reciben `EmpresaId` nullable para preservar pruebas legacy; nuevos registros firmados sólo mediante tenant RBAC verificado.
+- 33 unicidades antes globales se convierten en índices únicos por `EmpresaId` conservando índices no únicos de soporte de FKs, y el token de enlace público retiene unicidad global por seguridad. Se agregan 83 FKs compuestas de A/B, 76 índices hijos y 3 únicos de padres.
+- Quedan 123/132 entidades EF con `EmpresaId`; las nueve excepciones restantes son plataforma, identidad, autorización y catálogos estáticos globales. Mantener la cuarentena de segunda empresa, sin QA/PROD ni atribución de datos históricos.
+- Este commit no equivale a certificación; exige MySQL efímero exact-head, pruebas y merge en `dev`.
+
 # SOLQARYN — Inventario técnico de dependencias para aislamiento comercial P0
 
 ### Actualización P0 #3 — PR #3599 (13 octubre 2026; candidato, NO fusionado)

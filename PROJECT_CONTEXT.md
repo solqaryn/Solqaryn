@@ -1,3 +1,10 @@
+## 2026-10-13 — P0 #3: expansión de recursos empresariales independientes (candidato)
+
+- 41 recursos comerciales adicionales de catálogo, almacén, caja, contabilidad, finanzas y cargas reciben `EmpresaId` nullable para preservar pruebas legacy; nuevos registros firmados sólo mediante tenant RBAC verificado.
+- 33 unicidades antes globales se convierten en índices únicos por `EmpresaId` conservando índices no únicos de soporte de FKs, y el token de enlace público retiene unicidad global por seguridad. Se agregan 83 FKs compuestas de A/B, 76 índices hijos y 3 únicos de padres.
+- Quedan 123/132 entidades EF con `EmpresaId`; las nueve excepciones restantes son plataforma, identidad, autorización y catálogos estáticos globales. Mantener la cuarentena de segunda empresa, sin QA/PROD ni atribución de datos históricos.
+- Este commit no equivale a certificación; exige MySQL efímero exact-head, pruebas y merge en `dev`.
+
 ## 2026-10-13 — Candidato P0: esquema tenant para cotizaciones y pedidos
 
 - EmpresaId nullable y FKs empresariales en Cotizaciones, CotizacionDetalles, PedidosVenta y PedidoVentaDetalles; 9 FKs compuestas vinculadas a Clientes, Productos, Variantes y documentos.
