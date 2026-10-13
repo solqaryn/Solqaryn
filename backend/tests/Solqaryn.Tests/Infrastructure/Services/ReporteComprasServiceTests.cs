@@ -13,7 +13,7 @@ public sealed class ReporteComprasServiceTests
     [Fact]
     public async Task Variacion_precio_positiva_usa_precio_facturado_snapshot_en_misma_moneda()
     {
-        await using var db = CrearEscenario(10m, 12m, "HNL", "HNL", DateTime.UtcNow.Date, DateTime.UtcNow.Date);
+        await using var db = await CrearEscenarioAsync(10m, 12m, "HNL", "HNL", DateTime.UtcNow.Date, DateTime.UtcNow.Date);
         var item = Assert.Single((await new ReporteComprasService(db).ObtenerDetallePaginadoAsync(new())).Items);
 
         Assert.Equal(10m, item.PrecioUnitarioOrdenado);
@@ -25,7 +25,7 @@ public sealed class ReporteComprasServiceTests
     [Fact]
     public async Task Variacion_precio_negativa_conserva_signo_y_no_calcula_porcentaje()
     {
-        await using var db = CrearEscenario(10m, 8m, "HNL", "HNL", DateTime.UtcNow.Date, DateTime.UtcNow.Date);
+        await using var db = await CrearEscenarioAsync(10m, 8m, "HNL", "HNL", DateTime.UtcNow.Date, DateTime.UtcNow.Date);
         var item = Assert.Single((await new ReporteComprasService(db).ObtenerDetallePaginadoAsync(new())).Items);
 
         Assert.Equal(8m, item.PrecioUnitarioFacturado);
@@ -35,7 +35,7 @@ public sealed class ReporteComprasServiceTests
     [Fact]
     public async Task Moneda_incompatible_expone_precio_factual_pero_variacion_es_null_sin_fx()
     {
-        await using var db = CrearEscenario(10m, 12m, "HNL", "USD", DateTime.UtcNow.Date, DateTime.UtcNow.Date);
+        await using var db = await CrearEscenarioAsync(10m, 12m, "HNL", "USD", DateTime.UtcNow.Date, DateTime.UtcNow.Date);
         var item = Assert.Single((await new ReporteComprasService(db).ObtenerDetallePaginadoAsync(new())).Items);
 
         Assert.Equal(12m, item.PrecioUnitarioFacturado);
@@ -46,7 +46,7 @@ public sealed class ReporteComprasServiceTests
     [Fact]
     public async Task Recepcion_parcial_y_devolucion_confirmada_se_reportan_desde_hechos_persistidos()
     {
-        await using var db = CrearEscenario(10m, 10m, "HNL", "HNL", DateTime.UtcNow.Date, DateTime.UtcNow.Date);
+        await using var db = await CrearEscenarioAsync(10m, 10m, "HNL", "HNL", DateTime.UtcNow.Date, DateTime.UtcNow.Date);
         var item = Assert.Single((await new ReporteComprasService(db).ObtenerDetallePaginadoAsync(new())).Items);
 
         Assert.Equal(8m, item.CantidadRecibida);
@@ -60,7 +60,7 @@ public sealed class ReporteComprasServiceTests
     [Fact]
     public async Task Devolucion_anulada_no_contamina_total_efectivo_por_defecto_y_es_consultable_explicitamente()
     {
-        await using var db = CrearEscenario(10m, 10m, "HNL", "HNL", DateTime.UtcNow.Date, DateTime.UtcNow.Date, incluirDevolucionAnulada: true);
+        await using var db = await CrearEscenarioAsync(10m, 10m, "HNL", "HNL", DateTime.UtcNow.Date, DateTime.UtcNow.Date, incluirDevolucionAnulada: true);
         var service = new ReporteComprasService(db);
 
         var efectivo = Assert.Single((await service.ObtenerDetallePaginadoAsync(new())).Items);
@@ -81,7 +81,7 @@ public sealed class ReporteComprasServiceTests
     {
         var fechaEsperada = new DateTime(2026, 9, 10, 12, 0, 0, DateTimeKind.Utc);
         var fechaRecepcion = fechaEsperada.AddDays(offsetDias);
-        await using var db = CrearEscenario(10m, 10m, "HNL", "HNL", fechaEsperada, fechaRecepcion);
+        await using var db = await CrearEscenarioAsync(10m, 10m, "HNL", "HNL", fechaEsperada, fechaRecepcion);
 
         var item = Assert.Single((await new ReporteComprasService(db).ObtenerDetallePaginadoAsync(new())).Items);
         Assert.Equal(fechaEsperada, item.FechaEsperadaEvaluadaUtc);
@@ -113,7 +113,7 @@ public sealed class ReporteComprasServiceTests
         return new AppDbContext(options);
     }
 
-    private static AppDbContext CrearEscenario(
+    private static async Task<AppDbContext> CrearEscenarioAsync(
         decimal precioOrdenado,
         decimal precioFacturado,
         string monedaOrden,
@@ -212,7 +212,7 @@ public sealed class ReporteComprasServiceTests
         db.Add(devolucion);
         if (incluirDevolucionAnulada)
             db.Add(CrearDevolucion(60, linea, lineaRecepcion, orden, factura, 3m, fechaRecepcion, anular: true));
-        db.SaveChanges();
+        await db.SaveChangesAsync();
         return db;
     }
 
