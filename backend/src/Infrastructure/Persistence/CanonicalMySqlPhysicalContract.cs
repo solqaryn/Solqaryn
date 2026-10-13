@@ -20,6 +20,7 @@ public static class CanonicalMySqlPhysicalContract
         await EnsureInventarioOriginBridgeAsync(db, cancellationToken);
         await CommercialTenantPhysicalConstraints.ApplyFreshAsync(db, cancellationToken);
         await CommercialTenantInvoicePhysicalConstraints.ApplyFreshAsync(db, cancellationToken);
+        await CommercialTenantSalesPhysicalConstraints.ApplyFreshAsync(db, cancellationToken);
         await CommercialTenantTaxDiscountPhysicalConstraints.ApplyFreshAsync(db, cancellationToken);
         await CommercialTenantOwnershipGraphPhysicalConstraints.ApplyFreshAsync(db, cancellationToken);
     }
@@ -32,6 +33,7 @@ public static class CanonicalMySqlPhysicalContract
 
         await CommercialTenantPhysicalConstraints.VerifyAsync(db, cancellationToken);
         await CommercialTenantInvoicePhysicalConstraints.VerifyAsync(db, cancellationToken);
+        await CommercialTenantSalesPhysicalConstraints.VerifyAsync(db, cancellationToken);
         await CommercialTenantTaxDiscountPhysicalConstraints.VerifyAsync(db, cancellationToken);
         await CommercialTenantOwnershipGraphPhysicalConstraints.VerifyAsync(db, cancellationToken);
 

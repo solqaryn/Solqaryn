@@ -22,6 +22,16 @@ public sealed class PedidoVentaConfiguration : IEntityTypeConfiguration<PedidoVe
                 "(`IdempotencyFingerprint` IS NULL OR (CHAR_LENGTH(`IdempotencyFingerprint`) = 64 AND `IdempotencyFingerprint` REGEXP '^[0-9a-f]{64}$'))");
         });
 
+        builder.HasOne<Empresa>().WithMany().HasForeignKey(x => x.EmpresaId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("FK_PedidosVenta_Empresas_EmpresaId");
+        builder.HasIndex(x => new { x.EmpresaId, x.Id }).IsUnique()
+            .HasDatabaseName("UX_PedidosVenta_Empresa_Id");
+        builder.HasIndex(x => new { x.EmpresaId, x.ClienteId })
+            .HasDatabaseName("IX_PedidosVenta_Empresa_ClienteId");
+        builder.HasIndex(x => new { x.EmpresaId, x.CotizacionId })
+            .HasDatabaseName("IX_PedidosVenta_Empresa_CotizacionId");
+
         builder.Property(p => p.Estado).HasConversion<int>().IsRequired();
         builder.Property(p => p.ClienteNombreSnapshot).IsRequired().HasMaxLength(200);
         builder.Property(p => p.ClienteDocumentoSnapshot).HasMaxLength(50);
@@ -30,11 +40,13 @@ public sealed class PedidoVentaConfiguration : IEntityTypeConfiguration<PedidoVe
         builder.Property(p => p.IdempotencyFingerprint).HasMaxLength(64).IsFixedLength();
 
         builder.HasIndex(p => p.CotizacionId)
+            .HasDatabaseName("IX_PedidosVenta_CotizacionId");
+        builder.HasIndex(p => new { p.EmpresaId, p.CotizacionId })
             .IsUnique()
-            .HasDatabaseName("UX_PedidosVenta_CotizacionId");
-        builder.HasIndex(p => p.IdempotencyKey)
+            .HasDatabaseName("UX_PedidosVenta_Empresa_CotizacionId");
+        builder.HasIndex(p => new { p.EmpresaId, p.IdempotencyKey })
             .IsUnique()
-            .HasDatabaseName("UX_PedidosVenta_IdempotencyKey");
+            .HasDatabaseName("UX_PedidosVenta_Empresa_IdempotencyKey");
         builder.HasIndex(p => new { p.ClienteId, p.Estado })
             .HasDatabaseName("IX_PedidosVenta_Cliente_Estado");
 

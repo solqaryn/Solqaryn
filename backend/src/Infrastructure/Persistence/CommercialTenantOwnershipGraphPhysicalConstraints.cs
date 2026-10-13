@@ -101,6 +101,8 @@ public static class CommercialTenantOwnershipGraphPhysicalConstraints
         """ALTER TABLE `VariacionesCostoEstandarInventario` ADD CONSTRAINT `FK_VariacionesCostoEstandarInventario_CostoEstandarInve_2a38227b` FOREIGN KEY (`EmpresaId`, `CostoEstandarInventarioId`) REFERENCES `CostosEstandarInventario` (`EmpresaId`, `Id`) ON DELETE RESTRICT;""",
         """ALTER TABLE `VariacionesCostoEstandarInventario` ADD CONSTRAINT `FK_VariacionesCostoEstandarInventario_MovimientoInventa_00882044` FOREIGN KEY (`EmpresaId`, `MovimientoInventarioId`) REFERENCES `MovimientosInventario` (`EmpresaId`, `Id`) ON DELETE RESTRICT;""",
         """ALTER TABLE `VariacionesCostoEstandarInventario` ADD CONSTRAINT `FK_VariacionesCostoEstandarInventario_ProductoVarianteI_2c37da12` FOREIGN KEY (`EmpresaId`, `ProductoVarianteId`) REFERENCES `ProductoVariantes` (`EmpresaId`, `Id`) ON DELETE RESTRICT;""",
+        """ALTER TABLE `PreparacionesPedidoVenta` ADD CONSTRAINT `FK_PreparacionesPedidoVenta_PedidoVentaId_OwnerTenant` FOREIGN KEY (`EmpresaId`, `PedidoVentaId`) REFERENCES `PedidosVenta` (`EmpresaId`, `Id`) ON DELETE RESTRICT;""",
+        """ALTER TABLE `ReservasInventario` ADD CONSTRAINT `FK_ReservasInventario_PedidoVentaId_OwnerTenant` FOREIGN KEY (`EmpresaId`, `PedidoVentaId`) REFERENCES `PedidosVenta` (`EmpresaId`, `Id`) ON DELETE RESTRICT;""",
     };
 
     public static async Task ApplyFreshAsync(AppDbContext db, CancellationToken ct = default)
@@ -205,13 +207,15 @@ public static class CommercialTenantOwnershipGraphPhysicalConstraints
                     'FK_TransferenciaInventarioDetalles_ProductoVarianteId_O_848861f3',
                     'FK_VariacionesCostoEstandarInventario_CostoEstandarInve_2a38227b',
                     'FK_VariacionesCostoEstandarInventario_MovimientoInventa_00882044',
-                    'FK_VariacionesCostoEstandarInventario_ProductoVarianteI_2c37da12'
+                    'FK_VariacionesCostoEstandarInventario_ProductoVarianteI_2c37da12',
+                    'FK_PreparacionesPedidoVenta_PedidoVentaId_OwnerTenant',
+                    'FK_ReservasInventario_PedidoVentaId_OwnerTenant'
                 )
                 GROUP BY CONSTRAINT_NAME HAVING COUNT(*) = 2
             ) AS scoped_fks
             """;
         var actual = await db.Database.SqlQueryRaw<long>(query).SingleAsync(ct);
-        if (actual != 90)
-            throw new InvalidOperationException($"FKs comerciales por empresa incompletas: {actual}/90.");
+        if (actual != 92)
+            throw new InvalidOperationException($"FKs comerciales por empresa incompletas: {actual}/92.");
     }
 }

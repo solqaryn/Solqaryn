@@ -10,6 +10,8 @@ namespace Solqaryn.Domain.Entities;
 /// </summary>
 public class PedidoVenta : ConfirmableEntity
 {
+    public int? EmpresaId { get; set; } // Ownership nuevo; NULL legacy en cuarentena.
+
     private readonly List<PedidoVentaDetalle> _detalles = new();
 
     public int? CotizacionId { get; private set; }
@@ -194,6 +196,8 @@ public class PedidoVenta : ConfirmableEntity
 
 public class PedidoVentaDetalle : AuditableEntity
 {
+    public int? EmpresaId { get; set; } // Ownership nuevo; NULL legacy en cuarentena.
+
     public int PedidoVentaId { get; private set; }
     public PedidoVenta PedidoVenta { get; private set; } = null!;
 

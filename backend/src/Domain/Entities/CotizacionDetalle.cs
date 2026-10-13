@@ -4,6 +4,8 @@ namespace Solqaryn.Domain.Entities;
 
 public class CotizacionDetalle : AuditableEntity
 {
+    public int? EmpresaId { get; set; } // Ownership nuevo; NULL legacy en cuarentena.
+
     public int CotizacionId { get; set; }
     public Cotizacion Cotizacion { get; set; } = null!;
 

@@ -102,6 +102,8 @@ public partial class CommercialTenantOwnershipGraphScopedFks : Migration
         migrationBuilder.Sql("""ALTER TABLE `VariacionesCostoEstandarInventario` ADD CONSTRAINT `FK_VariacionesCostoEstandarInventario_CostoEstandarInve_2a38227b` FOREIGN KEY (`EmpresaId`, `CostoEstandarInventarioId`) REFERENCES `CostosEstandarInventario` (`EmpresaId`, `Id`) ON DELETE RESTRICT;""");
         migrationBuilder.Sql("""ALTER TABLE `VariacionesCostoEstandarInventario` ADD CONSTRAINT `FK_VariacionesCostoEstandarInventario_MovimientoInventa_00882044` FOREIGN KEY (`EmpresaId`, `MovimientoInventarioId`) REFERENCES `MovimientosInventario` (`EmpresaId`, `Id`) ON DELETE RESTRICT;""");
         migrationBuilder.Sql("""ALTER TABLE `VariacionesCostoEstandarInventario` ADD CONSTRAINT `FK_VariacionesCostoEstandarInventario_ProductoVarianteI_2c37da12` FOREIGN KEY (`EmpresaId`, `ProductoVarianteId`) REFERENCES `ProductoVariantes` (`EmpresaId`, `Id`) ON DELETE RESTRICT;""");
+        migrationBuilder.Sql("""ALTER TABLE `PreparacionesPedidoVenta` ADD CONSTRAINT `FK_PreparacionesPedidoVenta_PedidoVentaId_OwnerTenant` FOREIGN KEY (`EmpresaId`, `PedidoVentaId`) REFERENCES `PedidosVenta` (`EmpresaId`, `Id`) ON DELETE RESTRICT;""");
+        migrationBuilder.Sql("""ALTER TABLE `ReservasInventario` ADD CONSTRAINT `FK_ReservasInventario_PedidoVentaId_OwnerTenant` FOREIGN KEY (`EmpresaId`, `PedidoVentaId`) REFERENCES `PedidosVenta` (`EmpresaId`, `Id`) ON DELETE RESTRICT;""");
     }
 
     protected override void Down(MigrationBuilder migrationBuilder) =>

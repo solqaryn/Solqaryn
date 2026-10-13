@@ -73,6 +73,8 @@ public class AppDbContext : DbContext
     public DbSet<Permiso> Permisos => Set<Permiso>();
     public DbSet<Cotizacion> Cotizaciones => Set<Cotizacion>();
     public DbSet<CotizacionDetalle> CotizacionDetalles => Set<CotizacionDetalle>();
+    public DbSet<PedidoVenta> PedidosVenta => Set<PedidoVenta>();
+    public DbSet<PedidoVentaDetalle> PedidoVentaDetalles => Set<PedidoVentaDetalle>();
     public DbSet<Solqaryn.Domain.Entities.Bancos.CuentaBancaria> CuentasBancarias => Set<Solqaryn.Domain.Entities.Bancos.CuentaBancaria>();
     public DbSet<PreparacionPedidoVenta> PreparacionesPedidoVenta => Set<PreparacionPedidoVenta>();
     public DbSet<PreparacionPedidoVentaDetalle> PreparacionPedidoVentaDetalles => Set<PreparacionPedidoVentaDetalle>();
@@ -122,7 +124,8 @@ public class AppDbContext : DbContext
                           CompraDetalle or VentaDetalle or ProductoVariante or
                           ExistenciaVariante or MovimientoInventario or Factura or
                           FacturaDetalle or FacturaPago or CompraDocumento or
-                          VentaImpuesto or CompraImpuesto or VentaDescuento or HistorialUsoDescuento) ||
+                          VentaImpuesto or CompraImpuesto or VentaDescuento or HistorialUsoDescuento or
+                           Cotizacion or CotizacionDetalle or PedidoVenta or PedidoVentaDetalle) ||
                        CommercialTenantOwnershipGraphWriteGuard.Applies(e.Metadata.Name));
 
         if (ChangeTracker.HasChanges() && (Database.IsRelational() || cambiaComercial))
@@ -151,6 +154,8 @@ public class AppDbContext : DbContext
         await CommercialTenantDerivedWriteGuard.ValidateAsync(
             this, empresaAutorizada, cancellationToken);
         await CommercialTenantInvoiceWriteGuard.ValidateAsync(
+            this, empresaAutorizada, cancellationToken);
+        await CommercialTenantSalesDocumentGuard.ValidateAsync(
             this, empresaAutorizada, cancellationToken);
         await CommercialTenantTaxDiscountWriteGuard.ValidateAsync(
             this, empresaAutorizada, cancellationToken);
