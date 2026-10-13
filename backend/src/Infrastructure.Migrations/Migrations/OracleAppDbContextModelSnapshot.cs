@@ -6783,13 +6783,13 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CotizacionId")
+                    b.HasIndex("EmpresaId", "CotizacionId")
                         .IsUnique()
-                        .HasDatabaseName("UX_PedidosVenta_CotizacionId");
+                        .HasDatabaseName("UX_PedidosVenta_Empresa_CotizacionId");
 
-                    b.HasIndex("IdempotencyKey")
+                    b.HasIndex("EmpresaId", "IdempotencyKey")
                         .IsUnique()
-                        .HasDatabaseName("UX_PedidosVenta_IdempotencyKey");
+                        .HasDatabaseName("UX_PedidosVenta_Empresa_IdempotencyKey");
 
                     b.HasIndex("ClienteId", "Estado")
                         .HasDatabaseName("IX_PedidosVenta_Cliente_Estado");
@@ -13028,6 +13028,68 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         .HasForeignKey("EmpresaId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("FK_CompraDocumentos_Empresas_EmpresaId");
+                });
+
+
+            // Modelo Oracle de propiedad empresarial de cotizaciones y pedidos (expand nullable).
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Cotizacion", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_Cotizaciones_Empresa_Id");
+                    b.HasIndex("EmpresaId", "ClienteId")
+                        .HasDatabaseName("IX_Cotizaciones_Empresa_ClienteId");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_Cotizaciones_Empresas_EmpresaId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.CotizacionDetalle", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "CotizacionId")
+                        .HasDatabaseName("IX_CotizacionDetalles_Empresa_CotizacionId");
+                    b.HasIndex("EmpresaId", "ProductoId")
+                        .HasDatabaseName("IX_CotizacionDetalles_Empresa_ProductoId");
+                    b.HasIndex("EmpresaId", "ProductoVarianteId")
+                        .HasDatabaseName("IX_CotizacionDetalles_Empresa_ProductoVarianteId");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_CotizacionDetalles_Empresas_EmpresaId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.PedidoVenta", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_PedidosVenta_Empresa_Id");
+                    b.HasIndex("EmpresaId", "ClienteId")
+                        .HasDatabaseName("IX_PedidosVenta_Empresa_ClienteId");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_PedidosVenta_Empresas_EmpresaId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.PedidoVentaDetalle", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "PedidoVentaId")
+                        .HasDatabaseName("IX_PedidoVentaDetalles_Empresa_PedidoVentaId");
+                    b.HasIndex("EmpresaId", "ProductoId")
+                        .HasDatabaseName("IX_PedidoVentaDetalles_Empresa_ProductoId");
+                    b.HasIndex("EmpresaId", "ProductoVarianteId")
+                        .HasDatabaseName("IX_PedidoVentaDetalles_Empresa_ProductoVarianteId");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_PedidoVentaDetalles_Empresas_EmpresaId");
                 });
 
 #pragma warning restore 612, 618
