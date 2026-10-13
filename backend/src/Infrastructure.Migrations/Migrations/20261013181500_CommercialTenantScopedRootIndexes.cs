@@ -66,25 +66,25 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                 columns: new[] { "EmpresaId", "Id" }, unique: true);
             migrationBuilder.AddColumn<int>("EmpresaId", "ProductoVariantes", "int", nullable: true);
             migrationBuilder.CreateIndex("IX_ProductoVariantes_Empresa_Referencia", "ProductoVariantes", new[] { "EmpresaId", "ProductoId" });
-            migrationBuilder.AddForeignKey("FK_ProductoVariantes_Empresas_EmpresaId", "ProductoVariantes", "EmpresaId", "Empresas", "Id", onDelete: ReferentialAction.Restrict);
+            migrationBuilder.AddForeignKey(name: "FK_ProductoVariantes_Empresas_EmpresaId", table: "ProductoVariantes", column: "EmpresaId", principalTable: "Empresas", principalColumn: "Id", onDelete: ReferentialAction.Restrict);
             migrationBuilder.CreateIndex("UX_ProductoVariantes_Empresa_Sku", "ProductoVariantes", new[] { "EmpresaId", "Sku" }, unique: true);
             migrationBuilder.CreateIndex("UX_ProductoVariantes_Empresa_CodigoBarras", "ProductoVariantes", new[] { "EmpresaId", "CodigoBarras" }, unique: true);
 
             migrationBuilder.AddColumn<int>("EmpresaId", "ProductoImagenes", "int", nullable: true);
             migrationBuilder.CreateIndex("IX_ProductoImagenes_Empresa_Referencia", "ProductoImagenes", new[] { "EmpresaId", "ProductoId" });
-            migrationBuilder.AddForeignKey("FK_ProductoImagenes_Empresas_EmpresaId", "ProductoImagenes", "EmpresaId", "Empresas", "Id", onDelete: ReferentialAction.Restrict);
+            migrationBuilder.AddForeignKey(name: "FK_ProductoImagenes_Empresas_EmpresaId", table: "ProductoImagenes", column: "EmpresaId", principalTable: "Empresas", principalColumn: "Id", onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddColumn<int>("EmpresaId", "VentaDetalles", "int", nullable: true);
             migrationBuilder.CreateIndex("IX_VentaDetalles_Empresa_Referencia", "VentaDetalles", new[] { "EmpresaId", "VentaId" });
-            migrationBuilder.AddForeignKey("FK_VentaDetalles_Empresas_EmpresaId", "VentaDetalles", "EmpresaId", "Empresas", "Id", onDelete: ReferentialAction.Restrict);
+            migrationBuilder.AddForeignKey(name: "FK_VentaDetalles_Empresas_EmpresaId", table: "VentaDetalles", column: "EmpresaId", principalTable: "Empresas", principalColumn: "Id", onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddColumn<int>("EmpresaId", "CompraDetalles", "int", nullable: true);
             migrationBuilder.CreateIndex("IX_CompraDetalles_Empresa_Referencia", "CompraDetalles", new[] { "EmpresaId", "CompraId" });
-            migrationBuilder.AddForeignKey("FK_CompraDetalles_Empresas_EmpresaId", "CompraDetalles", "EmpresaId", "Empresas", "Id", onDelete: ReferentialAction.Restrict);
+            migrationBuilder.AddForeignKey(name: "FK_CompraDetalles_Empresas_EmpresaId", table: "CompraDetalles", column: "EmpresaId", principalTable: "Empresas", principalColumn: "Id", onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddColumn<int>("EmpresaId", "Facturas", "int", nullable: true);
             migrationBuilder.CreateIndex("IX_Facturas_Empresa_Referencia", "Facturas", new[] { "EmpresaId", "VentaId" });
-            migrationBuilder.AddForeignKey("FK_Facturas_Empresas_EmpresaId", "Facturas", "EmpresaId", "Empresas", "Id", onDelete: ReferentialAction.Restrict);
+            migrationBuilder.AddForeignKey(name: "FK_Facturas_Empresas_EmpresaId", table: "Facturas", column: "EmpresaId", principalTable: "Empresas", principalColumn: "Id", onDelete: ReferentialAction.Restrict);
             migrationBuilder.CreateIndex("UX_Facturas_Empresa_NumeroFactura", "Facturas", new[] { "EmpresaId", "NumeroFactura" }, unique: true);
             migrationBuilder.CreateIndex("IX_Ventas_Empresa_Cliente", "Ventas", new[] { "EmpresaId", "ClienteId" });
             migrationBuilder.CreateIndex("IX_Compras_Empresa_Proveedor", "Compras", new[] { "EmpresaId", "ProveedorId" });
