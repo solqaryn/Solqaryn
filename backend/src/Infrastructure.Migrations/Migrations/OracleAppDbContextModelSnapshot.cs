@@ -14470,6 +14470,18 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
 
             modelBuilder.Entity("Solqaryn.Domain.Entities.VentaImpuesto", b => b.HasIndex("EmpresaId", "ImpuestoId").HasDatabaseName("IX_VentaImpuestos_EmpresaId_ImpuestoId"));
 
+            modelBuilder.Entity("Solqaryn.Domain.Entities.RolPermiso", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique().HasDatabaseName("UX_RolPermisos_Empresa_Id");
+                    b.HasIndex("EmpresaId", "RolId").HasDatabaseName("IX_RolPermisos_Empresa_RolId");
+                    b.HasIndex("EmpresaId", "RolId", "PermisoId").IsUnique()
+                        .HasDatabaseName("UX_RolPermisos_Empresa_Rol_Permiso");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null).WithMany()
+                        .HasForeignKey("EmpresaId").OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_RolPermisos_Empresas_EmpresaId");
+                });
+
 #pragma warning restore 612, 618
         }
     }

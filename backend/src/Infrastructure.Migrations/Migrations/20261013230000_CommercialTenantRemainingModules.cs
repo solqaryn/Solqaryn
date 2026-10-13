@@ -13,6 +13,7 @@ public partial class CommercialTenantRemainingModules : Migration
     protected override void Up(MigrationBuilder m)
     {
         // Expand aditivo: tablas históricas quedan en NULL y nunca se atribuyen.
+        m.AddColumn<int>("EmpresaId", "RolPermisos", type: "int", nullable: true);
         m.AddColumn<int>("EmpresaId", "AjustesInventario", type: "int", nullable: true);
         m.AddColumn<int>("EmpresaId", "Almacenes", type: "int", nullable: true);
         m.AddColumn<int>("EmpresaId", "AsientoDetalles", type: "int", nullable: true);
@@ -325,6 +326,10 @@ public partial class CommercialTenantRemainingModules : Migration
         m.CreateIndex("IX_VentaDetalles_EmpresaId_AlmacenId", "VentaDetalles", new[] { "EmpresaId", "AlmacenId" });
         m.CreateIndex("IX_VentaDetalles_EmpresaId_UbicacionAlmacenId", "VentaDetalles", new[] { "EmpresaId", "UbicacionAlmacenId" });
         m.CreateIndex("IX_VentaImpuestos_EmpresaId_ImpuestoId", "VentaImpuestos", new[] { "EmpresaId", "ImpuestoId" });
+        m.CreateIndex("UX_RolPermisos_Empresa_Id", "RolPermisos", new[] { "EmpresaId", "Id" }, unique: true);
+        m.CreateIndex("IX_RolPermisos_Empresa_RolId", "RolPermisos", new[] { "EmpresaId", "RolId" });
+        m.CreateIndex("UX_RolPermisos_Empresa_Rol_Permiso", "RolPermisos", new[] { "EmpresaId", "RolId", "PermisoId" }, unique: true);
+        m.AddForeignKey("FK_RolPermisos_Empresas_EmpresaId", "RolPermisos", "EmpresaId", "Empresas", principalColumn: "Id", onDelete: ReferentialAction.Restrict);
     }
 
     protected override void Down(MigrationBuilder m) =>

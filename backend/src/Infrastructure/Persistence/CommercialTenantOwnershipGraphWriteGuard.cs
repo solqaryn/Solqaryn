@@ -102,6 +102,7 @@ public static class CommercialTenantOwnershipGraphWriteGuard
             "Solqaryn.Domain.Entities.TipoCliente",
             "Solqaryn.Domain.Entities.TransferenciaInventario",
             "Solqaryn.Domain.Entities.UbicacionAlmacen",
+            "Solqaryn.Domain.Entities.RolPermiso",
         };
 
     public static bool Applies(string entityName) => OwnedGraphTypes.Contains(entityName);

@@ -120,13 +120,13 @@ public class AppDbContext : DbContext
     {
         var cambiaComercial = ChangeTracker.Entries()
             .Any(e => e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted &&
-                      (e.Entity is Producto or Cliente or Proveedor or Compra or Venta or
+                      ((e.Entity is Producto or Cliente or Proveedor or Compra or Venta or
                           CompraDetalle or VentaDetalle or ProductoVariante or
                           ExistenciaVariante or MovimientoInventario or Factura or
                           FacturaDetalle or FacturaPago or CompraDocumento or
                           VentaImpuesto or CompraImpuesto or VentaDescuento or HistorialUsoDescuento or
                            Cotizacion or CotizacionDetalle or PedidoVenta or PedidoVentaDetalle) ||
-                       CommercialTenantOwnershipGraphWriteGuard.Applies(e.Metadata.Name));
+                       CommercialTenantOwnershipGraphWriteGuard.Applies(e.Metadata.Name)));
 
         if (ChangeTracker.HasChanges() && (Database.IsRelational() || cambiaComercial))
             throw new NotSupportedException(

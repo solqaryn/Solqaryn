@@ -1,4 +1,6 @@
 -- Simulación de reversión de las dos expansiones finales SOLO sobre MySQL efímera.
+ALTER TABLE `RolPermisos` DROP FOREIGN KEY `FK_RolPermisos_RolId_TenantFinal`;
+ALTER TABLE `RolPermisos` DROP FOREIGN KEY `FK_RolPermisos_Empresas_EmpresaId`, DROP INDEX `UX_RolPermisos_Empresa_Id`, DROP INDEX `IX_RolPermisos_Empresa_RolId`, DROP INDEX `UX_RolPermisos_Empresa_Rol_Permiso`, DROP COLUMN `EmpresaId`;
 ALTER TABLE `AjusteInventarioDetalles` DROP FOREIGN KEY `FK_AjusteInventarioDetalles_AjusteInventarioId_TenantFinal`;
 ALTER TABLE `AjusteInventarioDetalles` DROP FOREIGN KEY `FK_AjusteInventarioDetalles_AlmacenId_TenantFinal`;
 ALTER TABLE `AjusteInventarioDetalles` DROP FOREIGN KEY `FK_AjusteInventarioDetalles_UbicacionAlmacenId_TenantFinal`;

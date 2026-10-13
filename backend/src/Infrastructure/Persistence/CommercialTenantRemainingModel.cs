@@ -674,5 +674,16 @@ public static class CommercialTenantRemainingModel
 
         Get("Solqaryn.Domain.Entities.VentaImpuesto").HasIndex(new[] { "EmpresaId", "ImpuestoId" })
             .HasDatabaseName("IX_VentaImpuestos_EmpresaId_ImpuestoId");
+        {
+            var b = Get("Solqaryn.Domain.Entities.RolPermiso");
+            b.Property<int?>("EmpresaId");
+            b.HasIndex("EmpresaId", "Id").IsUnique().HasDatabaseName("UX_RolPermisos_Empresa_Id");
+            b.HasIndex(new[] { "EmpresaId", "RolId" }).HasDatabaseName("IX_RolPermisos_Empresa_RolId");
+            b.HasIndex(new[] { "EmpresaId", "RolId", "PermisoId" }).IsUnique()
+                .HasDatabaseName("UX_RolPermisos_Empresa_Rol_Permiso");
+            b.HasOne(typeof(Empresa), navigationName: null).WithMany()
+                .HasForeignKey("EmpresaId").OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_RolPermisos_Empresas_EmpresaId");
+        }
     }
 }

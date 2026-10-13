@@ -95,6 +95,7 @@ public static class CommercialTenantRemainingPhysicalConstraints
         """ALTER TABLE `VentaDetalles` ADD CONSTRAINT `FK_VentaDetalles_AlmacenId_TenantFinal` FOREIGN KEY (`EmpresaId`, `AlmacenId`) REFERENCES `Almacenes` (`EmpresaId`, `Id`) ON DELETE RESTRICT;""",
         """ALTER TABLE `VentaDetalles` ADD CONSTRAINT `FK_VentaDetalles_UbicacionAlmacenId_TenantFinal` FOREIGN KEY (`EmpresaId`, `UbicacionAlmacenId`) REFERENCES `UbicacionesAlmacen` (`EmpresaId`, `Id`) ON DELETE RESTRICT;""",
         """ALTER TABLE `VentaImpuestos` ADD CONSTRAINT `FK_VentaImpuestos_ImpuestoId_TenantFinal` FOREIGN KEY (`EmpresaId`, `ImpuestoId`) REFERENCES `Impuestos` (`EmpresaId`, `Id`) ON DELETE RESTRICT;""",
+        """ALTER TABLE `RolPermisos` ADD CONSTRAINT `FK_RolPermisos_RolId_TenantFinal` FOREIGN KEY (`EmpresaId`, `RolId`) REFERENCES `Roles` (`EmpresaId`, `Id`) ON DELETE RESTRICT;""",
     };
     public static async Task ApplyFreshAsync(AppDbContext db, CancellationToken ct = default)
     {
@@ -192,14 +193,15 @@ public static class CommercialTenantRemainingPhysicalConstraints
                     'FK_VentaDescuentos_DescuentoId_TenantFinal',
                     'FK_VentaDetalles_AlmacenId_TenantFinal',
                     'FK_VentaDetalles_UbicacionAlmacenId_TenantFinal',
-                    'FK_VentaImpuestos_ImpuestoId_TenantFinal'
+                    'FK_VentaImpuestos_ImpuestoId_TenantFinal',
+                    'FK_RolPermisos_RolId_TenantFinal'
                   )
                 GROUP BY CONSTRAINT_NAME HAVING COUNT(*) = 2
             ) AS constraints_scoped
             """;
         var count = await db.Database.SqlQueryRaw<long>(sql).SingleAsync(ct);
-        if (count != 85)
+        if (count != 86)
             throw new InvalidOperationException(
-                $"FK empresariales de módulos adicionales incompletas: {count}/85");
+                $"FK empresariales de módulos adicionales incompletas: {count}/86");
     }
 }
