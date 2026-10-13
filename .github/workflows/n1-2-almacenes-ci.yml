@@ -124,10 +124,10 @@ jobs:
         run: |
           set -euo pipefail
           dotnet run --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj --configuration Release --no-build
-          export MYSQL_PWD=root
-          test "$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root solqaryn_n12_almacenes -Nse "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='solqaryn_n12_almacenes' AND table_name='Empresas';")" = "1"
-          test "$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root solqaryn_n12_almacenes -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")" = "1"
-          unset MYSQL_PWD
+          mysql_container="${{ job.services.mysql.id }}"
+          q(){ docker exec "$mysql_container" mysql -uroot -proot solqaryn_n12_almacenes -Nse "$1"; }
+          test "$(q "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='solqaryn_n12_almacenes' AND table_name='Empresas';")" = "1"
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")" = "1"
 
       - name: Iniciar API contra esquema Oracle previamente creado
         working-directory: backend
@@ -156,8 +156,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          export MYSQL_PWD=root
-          mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root solqaryn_n12_almacenes <<'SQL'
+          mysql_container="${{ job.services.mysql.id }}"
+          docker exec -i "$mysql_container" mysql -uroot -proot solqaryn_n12_almacenes <<'SQL'
           INSERT INTO Empresas (Id, Nombre, Activa, FechaCreacion, FechaActualizacion)
           VALUES (1, 'Empresa de prueba N1', 1, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6));
           INSERT INTO UsuarioEmpresas (UsuarioId, EmpresaId, RolId, Activa, FechaCreacion, FechaActualizacion)
@@ -169,9 +169,9 @@ jobs:
               WHERE ue.UsuarioId = u.Id AND ue.EmpresaId = 1
             );
           SQL
-          test "$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root solqaryn_n12_almacenes -Nse "SELECT COUNT(*) FROM Empresas;")" = "1"
-          test "$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root solqaryn_n12_almacenes -Nse "SELECT COUNT(*) FROM UsuarioEmpresas WHERE EmpresaId=1 AND Activa=1;")" = "1"
-          unset MYSQL_PWD
+          q(){ docker exec "$mysql_container" mysql -uroot -proot solqaryn_n12_almacenes -Nse "$1"; }
+          test "$(q "SELECT COUNT(*) FROM Empresas;")" = "1"
+          test "$(q "SELECT COUNT(*) FROM UsuarioEmpresas WHERE EmpresaId=1 AND Activa=1;")" = "1"
 
       - name: Configurar Node.js
         uses: actions/setup-node@v4
