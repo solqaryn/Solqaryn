@@ -1,8 +1,12 @@
 # TASKS — SOLQARYN
 
-### Actualización P0 #3 — PR #3599 (13 octubre 2026; candidato, NO fusionado)
+### Punto #3 — Modelo comercial completo: EmpresaId, relaciones, índices y unicidad por empresa
 
-Se añadieron unicidades comerciales por EmpresaId e índices compuestos de cinco raíces. Variantes, imágenes, detalles de compra y venta y facturas reciben EmpresaId nullable derivado/validado, además de doce claves foráneas compuestas en MySQL. Se incorporó migración Oracle EF10 y contratos físicos de bootstrap. Esto es un tramo de la solución, NO su certificación: quedan entidades comerciales descendientes por clasificar/proteger, filtros de lectura y validación MySQL exact-head. No levantar cuarentena de segunda empresa, no tocar QA ni PROD y no reasignar los 19 registros descartables.
+**Estado: CERRADO en DEV tras la fusión y los gates del PR #3607.** Los PR #3599, #3600, #3601, #3602, #3603, #3605 y #3606 ya están integrados; el PR #3607 cierra 13 claves naturales aún únicas globalmente, con prueba MySQL y preservación de la unicidad de roles técnicos compartidos.
+
+Contrato verificable: **132 entidades EF**, **124 con propiedad empresarial e índice único (EmpresaId, Id)** y **8 catálogos/plataforma deliberadamente compartidos**. Relaciones de negocio con FKs empresariales compuestas; unicidades naturales por empresa o por padre único verificado. Tokens públicos y hashes de sesión mantienen unicidad global para evitar colisiones técnicas. Migración forward-only sin backfill de los 19 fixtures descartables.
+
+**Límite de este cierre:** el aislamiento empresarial integral de lecturas, servicios, jobs, tienda pública, caché y archivos es una obligación independiente; la cuarentena multiempresa no se retira aquí. No habilitar otra empresa ni promocionar QA/PROD por este cierre estructural.
 
 
 > Superficie operativa de **estado actual**. Este archivo no conserva rollups históricos de fases, parents, gates ni planes retirados. El historial anterior permanece auditable en Git.

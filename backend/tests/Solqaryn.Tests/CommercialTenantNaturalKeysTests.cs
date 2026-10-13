@@ -43,6 +43,49 @@ public sealed class CommercialTenantNaturalKeysTests
     }
 
     [Fact]
+    public void No_hay_unicidades_naturales_globales_salvo_identidades_de_padre_y_tokens_tecnicos()
+    {
+        using var db = MemoryDb();
+        var excepcionesTecnicas = new HashSet<string>(StringComparer.Ordinal)
+        {
+            "EnlacesPublicosFactura.Token",
+            "MensajesOutbox.EventoId",
+            "TiendaSesionesCliente.TokenHash",
+            "Roles.NombreNormalizadoGlobalUnico",
+            "ProductoImagenes.PrincipalAmbitoKey",
+            "ProductoVariantes.IdentidadActivaUnica",
+            "ProductoVariantes.ProductoTecnicoUnico"
+        };
+
+        foreach (var entity in db.Model.GetEntityTypes()
+                     .Where(e => e.FindProperty("EmpresaId") is not null))
+        {
+            foreach (var index in entity.GetIndexes()
+                         .Where(ix => ix.IsUnique && ix.Properties.All(p => p.Name != "EmpresaId")))
+            {
+                var columns = index.Properties.Select(p => p.Name).ToArray();
+                // Un ID padre corresponde a una única fila globalmente identificada;
+                // por FK empresarial compuesta no puede cruzar otra empresa.
+                if (columns.Length > 0 && columns[0].EndsWith("Id", StringComparison.Ordinal))
+                    continue;
+                var key = entity.GetTableName() + "." + columns[0];
+                Assert.True(excepcionesTecnicas.Contains(key),
+                    $"Unicidad global comercial no justificada: {key}");
+
+                if (key.StartsWith("ProductoImagenes.", StringComparison.Ordinal) ||
+                    key.StartsWith("ProductoVariantes.", StringComparison.Ordinal))
+                {
+                    var generated = index.Properties[0].GetComputedColumnSql();
+                    Assert.Contains("ProductoId", generated);
+                }
+                if (key == "Roles.NombreNormalizadoGlobalUnico")
+                    Assert.Contains("EmpresaId IS NULL",
+                        index.Properties[0].GetComputedColumnSql());
+            }
+        }
+    }
+
+    [Fact]
     public void Roles_globales_conservan_restriccion_independiente()
     {
         using var db = MemoryDb();

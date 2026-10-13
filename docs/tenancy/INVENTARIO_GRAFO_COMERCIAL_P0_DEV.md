@@ -1,8 +1,13 @@
 # SOLQARYN — Inventario técnico de dependencias para aislamiento comercial P0
 
-### Actualización P0 #3 — PR #3599 (13 octubre 2026; candidato, NO fusionado)
+### Estado estructural actual (corte DEV posterior a PR #3607)
 
-Se añadieron unicidades comerciales por EmpresaId e índices compuestos de cinco raíces. Variantes, imágenes, detalles de compra y venta y facturas reciben EmpresaId nullable derivado/validado, además de doce claves foráneas compuestas en MySQL. Se incorporó migración Oracle EF10 y contratos físicos de bootstrap. Esto es un tramo de la solución, NO su certificación: quedan entidades comerciales descendientes por clasificar/proteger, filtros de lectura y validación MySQL exact-head. No levantar cuarentena de segunda empresa, no tocar QA ni PROD y no reasignar los 19 registros descartables.
+El inventario histórico siguiente se conserva para auditoría, no como fotografía vigente.
+El modelo EF actual contiene 132 entidades: 124 tienen EmpresaId e índice único (EmpresaId,Id), y las otras 8 son plataforma/catálogos compartidos por diseño. Los PR #3599–#3606 completaron columnas y relaciones; PR #3607 completa las últimas 13 unicidades naturales empresariales y certifica sus índices en MySQL 8.4. No hay atribución automática de fixtures históricos ni habilitación de nueva empresa.
+
+La habilitación de dos empresas simultáneas y el aislamiento de consultas, jobs y tienda pública permanecen restringidos por la cuarentena. Ese es un alcance separado del cierre estructural de este punto.
+
+### Inventario histórico de partida (no autoridad actual)
 
 
 **Fecha:** 2026-10-13. **Fuente:** modelo Oracle EF Core 10 de `dev`, SHA `ba2ccbd01939326cbdcef5817e5e0089cca25b59`, archivo `backend/src/Infrastructure.Migrations/Migrations/OracleAppDbContextModelSnapshot.cs`. **Estado:** diagnóstico de código, no certificación multiempresa ni clasificación definitiva de propiedad.
