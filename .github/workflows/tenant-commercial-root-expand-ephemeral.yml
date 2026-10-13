@@ -116,10 +116,10 @@ jobs:
           ALTER TABLE `Facturas` DROP FOREIGN KEY `FK_Facturas_Venta_Tenant`;
           ALTER TABLE `CotizacionDetalles` DROP FOREIGN KEY `FK_CotizacionDetalles_Empresas_EmpresaId`, DROP INDEX `IX_CotizacionDetalles_Empresa_CotizacionId`, DROP INDEX `IX_CotizacionDetalles_Empresa_ProductoId`, DROP INDEX `IX_CotizacionDetalles_Empresa_ProductoVarianteId`, DROP COLUMN `EmpresaId`;
           ALTER TABLE `PedidoVentaDetalles` DROP FOREIGN KEY `FK_PedidoVentaDetalles_Empresas_EmpresaId`, DROP INDEX `IX_PedidoVentaDetalles_Empresa_PedidoVentaId`, DROP INDEX `IX_PedidoVentaDetalles_Empresa_ProductoId`, DROP INDEX `IX_PedidoVentaDetalles_Empresa_ProductoVarianteId`, DROP COLUMN `EmpresaId`;
-          ALTER TABLE `PedidosVenta` DROP FOREIGN KEY `FK_PedidosVenta_Empresas_EmpresaId`, DROP INDEX `UX_PedidosVenta_Empresa_Id`, DROP INDEX `IX_PedidosVenta_Empresa_ClienteId`, DROP INDEX `UX_PedidosVenta_Empresa_CotizacionId`, DROP INDEX `UX_PedidosVenta_Empresa_IdempotencyKey`, DROP INDEX `IX_PedidosVenta_CotizacionId`, DROP COLUMN `EmpresaId`;
-          ALTER TABLE `Cotizaciones` DROP FOREIGN KEY `FK_Cotizaciones_Empresas_EmpresaId`, DROP INDEX `UX_Cotizaciones_Empresa_Id`, DROP INDEX `IX_Cotizaciones_Empresa_ClienteId`, DROP COLUMN `EmpresaId`;
           CREATE UNIQUE INDEX `UX_PedidosVenta_CotizacionId` ON `PedidosVenta` (`CotizacionId`);
           CREATE UNIQUE INDEX `UX_PedidosVenta_IdempotencyKey` ON `PedidosVenta` (`IdempotencyKey`);
+          ALTER TABLE `PedidosVenta` DROP FOREIGN KEY `FK_PedidosVenta_Empresas_EmpresaId`, DROP INDEX `UX_PedidosVenta_Empresa_Id`, DROP INDEX `IX_PedidosVenta_Empresa_ClienteId`, DROP INDEX `UX_PedidosVenta_Empresa_CotizacionId`, DROP INDEX `UX_PedidosVenta_Empresa_IdempotencyKey`, DROP INDEX `IX_PedidosVenta_CotizacionId`, DROP COLUMN `EmpresaId`;
+          ALTER TABLE `Cotizaciones` DROP FOREIGN KEY `FK_Cotizaciones_Empresas_EmpresaId`, DROP INDEX `UX_Cotizaciones_Empresa_Id`, DROP INDEX `IX_Cotizaciones_Empresa_ClienteId`, DROP COLUMN `EmpresaId`;
           ALTER TABLE `FacturaDetalles` DROP FOREIGN KEY `FK_FacturaDetalles_Empresas_EmpresaId`, DROP INDEX `IX_FacturaDetalles_Empresa_Factura`, DROP COLUMN `EmpresaId`;
           ALTER TABLE `FacturaPagos` DROP FOREIGN KEY `FK_FacturaPagos_Empresas_EmpresaId`, DROP INDEX `IX_FacturaPagos_Empresa_Factura`, DROP COLUMN `EmpresaId`;
           ALTER TABLE `CompraDocumentos` DROP FOREIGN KEY `FK_CompraDocumentos_Empresas_EmpresaId`, DROP INDEX `IX_CompraDocumentos_Empresa_Compra`, DROP COLUMN `EmpresaId`;
