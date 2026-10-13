@@ -82,9 +82,17 @@ public sealed class N28CuentaPorPagarPersistenceModelTests
         Assert.True(indice.IsUnique);
         Assert.Equal("UX_AplicacionesCuentaPorPagar_Cuenta_IdempotencyKey", indice.GetDatabaseName());
 
-        var fk = entity.GetForeignKeys().Single();
+        var fk = entity.GetForeignKeys().Single(foreignKey =>
+            foreignKey.PrincipalEntityType.ClrType == typeof(CuentaPorPagar) &&
+            foreignKey.Properties.Select(property => property.Name)
+                .SequenceEqual(new[] { nameof(AplicacionCuentaPorPagar.CuentaPorPagarId) }));
         Assert.Equal(DeleteBehavior.Cascade, fk.DeleteBehavior);
         Assert.Equal(typeof(CuentaPorPagar), fk.PrincipalEntityType.ClrType);
+
+        // El nuevo FK de EmpresaId es RESTRICT y no modifica el cascade contable.
+        var tenantFk = entity.GetForeignKeys().Single(foreignKey =>
+            foreignKey.PrincipalEntityType.ClrType == typeof(Empresa));
+        Assert.Equal(DeleteBehavior.Restrict, tenantFk.DeleteBehavior);
     }
 
     [Fact]

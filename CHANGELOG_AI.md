@@ -1,7 +1,13 @@
 ## 2026-10-13 — Candidato cotizaciones/pedidos de venta tenant-aislados
 
 - EmpresaId nullable, modelo e integridad MySQL con 9 FKs compuestas en Cotizaciones/CotizacionDetalles/PedidosVenta/PedidoVentaDetalles, índices únicos por empresa, validación de referencias A/B y pruebas.
-- No backfill de 19 registros descartables; conserva cuarentena, falta cierre integral sobre 66 descendi## 2026-10-13 — Candidato tributación/descuentos por EmpresaId
+- No backfill de 19 registros descartables; conserva cuarentena, falta cierre integral sobre 66 descendi## 2026-10-13 — Candidato de expansión integral del grafo comercial P0 #3
+
+- Derivadas 46 entidades comerciales EF adicionales con EmpresaId nullable desde las cinco raíces, sin reconstruir/atribuir registros históricos descartables.
+- Incorporados índices por empresa de identidad y relaciones, 46 FKs a Empresas y 12 índices únicos adicionales en padres existentes; migración Oracle EF Core 10 y pruebas dirigidas.
+- La expansión de esquema es estructural, no certifica todavía FKs compuestas de todas las referencias, lecturas/servicios/jobs ni autorización de segunda empresa. Mantener cuarentena, QA/PROD intactos.
+
+## 2026-10-13 — Candidato tributación/descuentos por EmpresaId
 
 - `VentaImpuestos`, `CompraImpuestos`, `VentaDescuentos`, `HistorialUsoDescuentos`: propiedad empresarial nullable para legacy, índices owner-padre, 5 FKs compuestas con Ventas/Compras/Clientes y validaciones de nuevas escrituras.
 - Migración Oracle EF10 aditiva, bootstrap MySQL fresh/legacy, pruebas A/B; no altera datos, QA ni PROD. Quedan catálogos/configuraciones y otros descendientes por aislar.

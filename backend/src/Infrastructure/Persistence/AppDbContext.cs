@@ -125,7 +125,8 @@ public class AppDbContext : DbContext
                           ExistenciaVariante or MovimientoInventario or Factura or
                           FacturaDetalle or FacturaPago or CompraDocumento or
                           VentaImpuesto or CompraImpuesto or VentaDescuento or HistorialUsoDescuento or
-                          Cotizacion or CotizacionDetalle or PedidoVenta or PedidoVentaDetalle));
+                           Cotizacion or CotizacionDetalle or PedidoVenta or PedidoVentaDetalle) ||
+                       CommercialTenantOwnershipGraphWriteGuard.Applies(e.Metadata.Name));
 
         if (ChangeTracker.HasChanges() && (Database.IsRelational() || cambiaComercial))
             throw new NotSupportedException(
@@ -157,6 +158,8 @@ public class AppDbContext : DbContext
         await CommercialTenantSalesDocumentGuard.ValidateAsync(
             this, empresaAutorizada, cancellationToken);
         await CommercialTenantTaxDiscountWriteGuard.ValidateAsync(
+            this, empresaAutorizada, cancellationToken);
+        await CommercialTenantOwnershipGraphWriteGuard.ValidateAsync(
             this, empresaAutorizada, cancellationToken);
         await ValidarAislamientoComercialVentasAsync(cancellationToken);
         await PrepararValorizacionComprasAsync(cancellationToken);
@@ -438,6 +441,7 @@ public class AppDbContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.HasAnnotation(RelationalAnnotationNames.MaxIdentifierLength, 64);
+        CommercialTenantOwnershipGraphModel.Apply(modelBuilder);
 
         static string LimitIdentifier(string name) =>
             name.Length <= 64 ? name : name[..64];

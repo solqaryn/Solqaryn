@@ -9,6 +9,8 @@ on:
       - 'backend/src/Infrastructure.Migrations/**'
       - 'backend/tools/Solqaryn.DatabaseBootstrap/**'
       - '.github/workflows/tenant-commercial-root-expand-ephemeral.yml'
+      - 'scripts/ci/commercial-tenant-legacy-fixture.sql'
+      - 'scripts/ci/cleanup-orphan-tenant-fk-indexes.sh'
   push:
     branches: [dev]
     paths:
@@ -16,6 +18,8 @@ on:
       - 'backend/src/Infrastructure/Persistence/**'
       - 'backend/src/Infrastructure.Migrations/**'
       - '.github/workflows/tenant-commercial-root-expand-ephemeral.yml'
+      - 'scripts/ci/commercial-tenant-legacy-fixture.sql'
+      - 'scripts/ci/cleanup-orphan-tenant-fk-indexes.sh'
 
 permissions:
   contents: read
@@ -86,73 +90,9 @@ jobs:
         run: |
           set -euo pipefail
           mysql_container="${{ job.services.mysql.id }}"
-          docker exec -i "$mysql_container" mysql -uroot -proot solqaryn_tenant_expand <<'SQL'
-          -- Recrear un esquema verdaderamente anterior a AMBAS migraciones P0.
-          -- Un nuevo EnsureCreated contiene índices y 12 FKs compuestas; retirarlas
-          -- primero permite simular el legado sin silenciar las restricciones.
-          ALTER TABLE `VentaImpuestos` DROP FOREIGN KEY `FK_VentaImpuestos_Venta_Tenant`;
-          ALTER TABLE `CompraImpuestos` DROP FOREIGN KEY `FK_CompraImpuestos_Compra_Tenant`;
-          ALTER TABLE `VentaDescuentos` DROP FOREIGN KEY `FK_VentaDescuentos_Venta_Tenant`;
-          ALTER TABLE `HistorialUsoDescuentos` DROP FOREIGN KEY `FK_HistorialUsoDescuentos_Venta_Tenant`;
-          ALTER TABLE `HistorialUsoDescuentos` DROP FOREIGN KEY `FK_HistorialUsoDescuentos_Cliente_Tenant`;
-          ALTER TABLE `Cotizaciones` DROP FOREIGN KEY `FK_Cotizaciones_Cliente_Tenant`;
-          ALTER TABLE `PedidosVenta` DROP FOREIGN KEY `FK_PedidosVenta_Cliente_Tenant`;
-          ALTER TABLE `PedidosVenta` DROP FOREIGN KEY `FK_PedidosVenta_Cotizacion_Tenant`;
-          ALTER TABLE `CotizacionDetalles` DROP FOREIGN KEY `FK_CotizacionDetalles_Cotizacion_Tenant`;
-          ALTER TABLE `CotizacionDetalles` DROP FOREIGN KEY `FK_CotizacionDetalles_Producto_Tenant`;
-          ALTER TABLE `CotizacionDetalles` DROP FOREIGN KEY `FK_CotizacionDetalles_Variante_Tenant`;
-          ALTER TABLE `PedidoVentaDetalles` DROP FOREIGN KEY `FK_PedidoVentaDetalles_Pedido_Tenant`;
-          ALTER TABLE `PedidoVentaDetalles` DROP FOREIGN KEY `FK_PedidoVentaDetalles_Producto_Tenant`;
-          ALTER TABLE `PedidoVentaDetalles` DROP FOREIGN KEY `FK_PedidoVentaDetalles_Variante_Tenant`;
-          ALTER TABLE `FacturaDetalles` DROP FOREIGN KEY `FK_FacturaDetalles_Factura_Tenant`;
-          ALTER TABLE `FacturaPagos` DROP FOREIGN KEY `FK_FacturaPagos_Factura_Tenant`;
-          ALTER TABLE `CompraDocumentos` DROP FOREIGN KEY `FK_CompraDocumentos_Compra_Tenant`;
-          ALTER TABLE `Ventas` DROP FOREIGN KEY `FK_Ventas_Cliente_Tenant`;
-          ALTER TABLE `Compras` DROP FOREIGN KEY `FK_Compras_Proveedor_Tenant`;
-          ALTER TABLE `ProductoVariantes` DROP FOREIGN KEY `FK_ProductoVariantes_Producto_Tenant`;
-          ALTER TABLE `ProductoImagenes` DROP FOREIGN KEY `FK_ProductoImagenes_Producto_Tenant`;
-          ALTER TABLE `ProductoImagenes` DROP FOREIGN KEY `FK_ProductoImagenes_Variante_Tenant`;
-          ALTER TABLE `VentaDetalles` DROP FOREIGN KEY `FK_VentaDetalles_Venta_Tenant`;
-          ALTER TABLE `VentaDetalles` DROP FOREIGN KEY `FK_VentaDetalles_Producto_Tenant`;
-          ALTER TABLE `VentaDetalles` DROP FOREIGN KEY `FK_VentaDetalles_Variante_Tenant`;
-          ALTER TABLE `CompraDetalles` DROP FOREIGN KEY `FK_CompraDetalles_Compra_Tenant`;
-          ALTER TABLE `CompraDetalles` DROP FOREIGN KEY `FK_CompraDetalles_Producto_Tenant`;
-          ALTER TABLE `CompraDetalles` DROP FOREIGN KEY `FK_CompraDetalles_Variante_Tenant`;
-          ALTER TABLE `Facturas` DROP FOREIGN KEY `FK_Facturas_Venta_Tenant`;
-          ALTER TABLE `VentaImpuestos` DROP FOREIGN KEY `FK_VentaImpuestos_Empresas_EmpresaId`, DROP INDEX `IX_VentaImpuestos_Empresa_VentaId`, DROP COLUMN `EmpresaId`;
-          ALTER TABLE `CompraImpuestos` DROP FOREIGN KEY `FK_CompraImpuestos_Empresas_EmpresaId`, DROP INDEX `IX_CompraImpuestos_Empresa_CompraId`, DROP COLUMN `EmpresaId`;
-          ALTER TABLE `VentaDescuentos` DROP FOREIGN KEY `FK_VentaDescuentos_Empresas_EmpresaId`, DROP INDEX `IX_VentaDescuentos_Empresa_VentaId`, DROP COLUMN `EmpresaId`;
-          ALTER TABLE `HistorialUsoDescuentos` DROP FOREIGN KEY `FK_HistorialUsoDescuentos_Empresas_EmpresaId`, DROP INDEX `IX_HistorialUsoDescuentos_Empresa_VentaId`, DROP INDEX `IX_HistorialUsoDescuentos_Empresa_ClienteId`, DROP COLUMN `EmpresaId`;
-          ALTER TABLE `CotizacionDetalles` DROP FOREIGN KEY `FK_CotizacionDetalles_Empresas_EmpresaId`, DROP INDEX `IX_CotizacionDetalles_Empresa_CotizacionId`, DROP INDEX `IX_CotizacionDetalles_Empresa_ProductoId`, DROP INDEX `IX_CotizacionDetalles_Empresa_ProductoVarianteId`, DROP COLUMN `EmpresaId`;
-          ALTER TABLE `PedidoVentaDetalles` DROP FOREIGN KEY `FK_PedidoVentaDetalles_Empresas_EmpresaId`, DROP INDEX `IX_PedidoVentaDetalles_Empresa_PedidoVentaId`, DROP INDEX `IX_PedidoVentaDetalles_Empresa_ProductoId`, DROP INDEX `IX_PedidoVentaDetalles_Empresa_ProductoVarianteId`, DROP COLUMN `EmpresaId`;
-          CREATE UNIQUE INDEX `UX_PedidosVenta_CotizacionId` ON `PedidosVenta` (`CotizacionId`);
-          CREATE UNIQUE INDEX `UX_PedidosVenta_IdempotencyKey` ON `PedidosVenta` (`IdempotencyKey`);
-          ALTER TABLE `PedidosVenta` DROP FOREIGN KEY `FK_PedidosVenta_Empresas_EmpresaId`, DROP INDEX `UX_PedidosVenta_Empresa_Id`, DROP INDEX `IX_PedidosVenta_Empresa_ClienteId`, DROP INDEX `UX_PedidosVenta_Empresa_CotizacionId`, DROP INDEX `UX_PedidosVenta_Empresa_IdempotencyKey`, DROP INDEX `IX_PedidosVenta_CotizacionId`, DROP COLUMN `EmpresaId`;
-          ALTER TABLE `Cotizaciones` DROP FOREIGN KEY `FK_Cotizaciones_Empresas_EmpresaId`, DROP INDEX `UX_Cotizaciones_Empresa_Id`, DROP INDEX `IX_Cotizaciones_Empresa_ClienteId`, DROP COLUMN `EmpresaId`;
-          ALTER TABLE `FacturaDetalles` DROP FOREIGN KEY `FK_FacturaDetalles_Empresas_EmpresaId`, DROP INDEX `IX_FacturaDetalles_Empresa_Factura`, DROP COLUMN `EmpresaId`;
-          ALTER TABLE `FacturaPagos` DROP FOREIGN KEY `FK_FacturaPagos_Empresas_EmpresaId`, DROP INDEX `IX_FacturaPagos_Empresa_Factura`, DROP COLUMN `EmpresaId`;
-          ALTER TABLE `CompraDocumentos` DROP FOREIGN KEY `FK_CompraDocumentos_Empresas_EmpresaId`, DROP INDEX `IX_CompraDocumentos_Empresa_Compra`, DROP COLUMN `EmpresaId`;
-          ALTER TABLE `ProductoVariantes` DROP FOREIGN KEY `FK_ProductoVariantes_Empresas_EmpresaId`, DROP INDEX `IX_ProductoVariantes_Empresa_Referencia`, DROP INDEX `UX_ProductoVariantes_Empresa_Id`, DROP INDEX `UX_ProductoVariantes_Empresa_Sku`, DROP INDEX `UX_ProductoVariantes_Empresa_CodigoBarras`, DROP COLUMN `EmpresaId`;
-          ALTER TABLE `ProductoImagenes` DROP FOREIGN KEY `FK_ProductoImagenes_Empresas_EmpresaId`, DROP INDEX `IX_ProductoImagenes_Empresa_Referencia`, DROP INDEX `IX_ProductoImagenes_Empresa_Variante`, DROP COLUMN `EmpresaId`;
-          ALTER TABLE `VentaDetalles` DROP FOREIGN KEY `FK_VentaDetalles_Empresas_EmpresaId`, DROP INDEX `IX_VentaDetalles_Empresa_Referencia`, DROP INDEX `IX_VentaDetalles_Empresa_Producto`, DROP INDEX `IX_VentaDetalles_Empresa_Variante`, DROP COLUMN `EmpresaId`;
-          ALTER TABLE `CompraDetalles` DROP FOREIGN KEY `FK_CompraDetalles_Empresas_EmpresaId`, DROP INDEX `IX_CompraDetalles_Empresa_Referencia`, DROP INDEX `IX_CompraDetalles_Empresa_Producto`, DROP INDEX `IX_CompraDetalles_Empresa_Variante`, DROP COLUMN `EmpresaId`;
-          ALTER TABLE `Facturas` DROP FOREIGN KEY `FK_Facturas_Empresas_EmpresaId`, DROP INDEX `IX_Facturas_Empresa_Referencia`, DROP INDEX `UX_Facturas_Empresa_NumeroFactura`, DROP INDEX `UX_Facturas_Empresa_Id`, DROP COLUMN `EmpresaId`;
-          ALTER TABLE `Productos` DROP FOREIGN KEY `FK_Productos_Empresas_EmpresaId`, DROP INDEX `IX_Productos_EmpresaId`, DROP INDEX `UX_Productos_Empresa_Id`, DROP COLUMN `EmpresaId`;
-          ALTER TABLE `Clientes` DROP FOREIGN KEY `FK_Clientes_Empresas_EmpresaId`, DROP INDEX `IX_Clientes_EmpresaId`, DROP INDEX `UX_Clientes_Empresa_Id`, DROP INDEX `UX_Clientes_Empresa_IdentidadORTN`, DROP COLUMN `EmpresaId`;
-          ALTER TABLE `Proveedores` DROP FOREIGN KEY `FK_Proveedores_Empresas_EmpresaId`, DROP INDEX `IX_Proveedores_EmpresaId`, DROP INDEX `UX_Proveedores_Empresa_Id`, DROP INDEX `UX_Proveedores_Empresa_Documento`, DROP COLUMN `EmpresaId`;
-          ALTER TABLE `Compras` DROP FOREIGN KEY `FK_Compras_Empresas_EmpresaId`, DROP INDEX `IX_Compras_EmpresaId`, DROP INDEX `UX_Compras_Empresa_Id`, DROP INDEX `IX_Compras_Empresa_Proveedor`, DROP INDEX `UX_Compras_Empresa_NumeroCompra`, DROP COLUMN `EmpresaId`;
-          ALTER TABLE `Ventas` DROP FOREIGN KEY `FK_Ventas_Empresas_EmpresaId`, DROP INDEX `IX_Ventas_EmpresaId`, DROP INDEX `UX_Ventas_Empresa_Id`, DROP INDEX `IX_Ventas_Empresa_Cliente`, DROP INDEX `UX_Ventas_Empresa_NumeroVenta`, DROP COLUMN `EmpresaId`;
-          CREATE UNIQUE INDEX `IX_ProductoVariantes_Sku` ON `ProductoVariantes` (`Sku`);
-          CREATE UNIQUE INDEX `IX_ProductoVariantes_CodigoBarras` ON `ProductoVariantes` (`CodigoBarras`);
-          CREATE UNIQUE INDEX `IX_Facturas_NumeroFactura` ON `Facturas` (`NumeroFactura`);
-          CREATE UNIQUE INDEX `UX_Clientes_IdentidadORTN_Normalizada` ON `Clientes` (`IdentidadORTNNormalizada`);
-          CREATE UNIQUE INDEX `UX_Proveedores_Documento_Normalizado` ON `Proveedores` (`DocumentoNormalizado`);
-          CREATE UNIQUE INDEX `IX_Compras_NumeroCompra` ON `Compras` (`NumeroCompra`);
-          CREATE UNIQUE INDEX `IX_Ventas_NumeroVenta` ON `Ventas` (`NumeroVenta`);
-          DELETE FROM `__EFMigrationsHistory` WHERE `MigrationId` IN ('20261013121500_CommercialTenantRootExpand', '20261013181500_CommercialTenantScopedRootIndexes', '20261013190000_CommercialTenantInvoiceDocuments', '20261013193000_CommercialTenantSalesDocuments', '20261013210000_CommercialTenantTaxDiscountExpand');
-          INSERT INTO `Proveedores` (`Nombre`, `Activo`, `FechaCreacion`, `FechaActualizacion`)
-            VALUES ('SOLQARYN-CI-LEGACY-PRESERVED', 1, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6));
-          SQL
+          # SQL en fixture aislada: preserva la simulación legacy exacta.
+          docker exec -i "$mysql_container" mysql -uroot -proot solqaryn_tenant_expand < scripts/ci/commercial-tenant-legacy-fixture.sql
+          bash scripts/ci/cleanup-orphan-tenant-fk-indexes.sh "$mysql_container"
           test "$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_tenant_expand -Nse "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=database() AND table_name IN ('Productos','Clientes','Proveedores','Compras','Ventas') AND column_name='EmpresaId';")" = 0
           echo "TENANT_LEGACY_SCHEMA=PASS owner_columns=0 data_preserved=YES"
       - name: Aplicar migración EF Oracle real sobre legacy efímera
@@ -174,11 +114,13 @@ jobs:
           test "$(q "SELECT COUNT(*) FROM information_schema.referential_constraints WHERE constraint_schema=database() AND constraint_name IN ('FK_Productos_Empresas_EmpresaId','FK_Clientes_Empresas_EmpresaId','FK_Proveedores_Empresas_EmpresaId','FK_Compras_Empresas_EmpresaId','FK_Ventas_Empresas_EmpresaId');")" = 5
           test "$(q "SELECT COUNT(*) FROM Proveedores WHERE Nombre='SOLQARYN-CI-LEGACY-PRESERVED' AND EmpresaId IS NULL;")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013121500_CommercialTenantRootExpand';")" = 1
-          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory;")" = 6
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory;")" = 8
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013181500_CommercialTenantScopedRootIndexes';")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013190000_CommercialTenantInvoiceDocuments';")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013193000_CommercialTenantSalesDocuments';")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013210000_CommercialTenantTaxDiscountExpand';")" = 1
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013220000_CommercialTenantOwnershipGraphExpand';")" = 1
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013221500_CommercialTenantOwnershipGraphScopedFks';")" = 1
           dotnet tool run dotnet-ef database update --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --configuration Release --no-build
           test "$(q "SELECT COUNT(*) FROM Proveedores WHERE Nombre='SOLQARYN-CI-LEGACY-PRESERVED' AND EmpresaId IS NULL;")" = 1
           echo "TENANT_ROOT_EXPAND=PASS fk=5 indexes=5 null_legacy=YES data_loss=NO idempotent=YES source=A_DISPOSABLE_MYSQL"
