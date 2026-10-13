@@ -1,0 +1,123 @@
+name: DEV - Expansión tenant comercial MySQL efímera
+
+on:
+  pull_request:
+    branches: [dev]
+    paths:
+      - 'backend/src/Domain/Entities/**'
+      - 'backend/src/Infrastructure/Persistence/**'
+      - 'backend/src/Infrastructure.Migrations/**'
+      - 'backend/tools/Solqaryn.DatabaseBootstrap/**'
+      - '.github/workflows/tenant-commercial-root-expand-ephemeral.yml'
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/src/Domain/Entities/**'
+      - 'backend/src/Infrastructure/Persistence/**'
+      - 'backend/src/Infrastructure.Migrations/**'
+      - '.github/workflows/tenant-commercial-root-expand-ephemeral.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  upgrade-ephemeral:
+    name: MySQL 8.4 legado -> EmpresaId nullable sin perder filas
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: solqaryn_tenant_expand
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_tenant_expand;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      Database__ServerVersion: '8.4.0'
+      Database__ApplyMigrationsOnStartup: 'false'
+      Jwt__Secret: 'Tenant-Root-Expand-CI-Only-Secret-At-Least-32-Characters-2026'
+      Jwt__Issuer: 'Solqaryn.API'
+      Jwt__Audience: 'Solqaryn.Frontend'
+      AppSettings__BackendPublicUrl: 'https://ci.solqaryn.invalid'
+      Cloudinary__CloudName: 'ci-not-used'
+      Cloudinary__ApiKey: 'ci-not-used'
+      Cloudinary__ApiSecret: 'ci-not-used'
+    steps:
+      - name: Checkout exact-head sin datos ni secretos reales
+        uses: actions/checkout@v4
+      - name: SDK .NET 10 fijado
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Compilar y verificar alcance
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-project-scope.mjs
+          cd backend
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+          dotnet tool restore
+          dotnet tool run dotnet-ef --version | grep -F '10.0.12'
+      - name: Fresh canónico y restricciones Aiven
+        shell: bash
+        working-directory: backend
+        env:
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = "solqaryn/Solqaryn"
+          test "$ASPNETCORE_ENVIRONMENT" = "Development"
+          test -n "$ConnectionStrings__DefaultConnection"
+          mysql_container="${{ job.services.mysql.id }}"
+          docker exec "$mysql_container" mysql -uroot -proot -e 'SET GLOBAL sql_require_primary_key=ON;'
+          dotnet run --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj --configuration Release --no-build
+          test "$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_tenant_expand -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013121500_CommercialTenantRootExpand';")" = 1
+      - name: Simular estrictamente estado legacy sin owner y sembrar registro
+        shell: bash
+        run: |
+          set -euo pipefail
+          mysql_container="${{ job.services.mysql.id }}"
+          docker exec -i "$mysql_container" mysql -uroot -proot solqaryn_tenant_expand <<'SQL'
+          ALTER TABLE `Productos` DROP FOREIGN KEY `FK_Productos_Empresas_EmpresaId`, DROP INDEX `IX_Productos_EmpresaId`, DROP COLUMN `EmpresaId`;
+          ALTER TABLE `Clientes` DROP FOREIGN KEY `FK_Clientes_Empresas_EmpresaId`, DROP INDEX `IX_Clientes_EmpresaId`, DROP COLUMN `EmpresaId`;
+          ALTER TABLE `Proveedores` DROP FOREIGN KEY `FK_Proveedores_Empresas_EmpresaId`, DROP INDEX `IX_Proveedores_EmpresaId`, DROP COLUMN `EmpresaId`;
+          ALTER TABLE `Compras` DROP FOREIGN KEY `FK_Compras_Empresas_EmpresaId`, DROP INDEX `IX_Compras_EmpresaId`, DROP COLUMN `EmpresaId`;
+          ALTER TABLE `Ventas` DROP FOREIGN KEY `FK_Ventas_Empresas_EmpresaId`, DROP INDEX `IX_Ventas_EmpresaId`, DROP COLUMN `EmpresaId`;
+          DELETE FROM `__EFMigrationsHistory` WHERE `MigrationId`='20261013121500_CommercialTenantRootExpand';
+          INSERT INTO `Proveedores` (`Nombre`, `Activo`, `FechaCreacion`, `FechaActualizacion`)
+            VALUES ('SOLQARYN-CI-LEGACY-PRESERVED', 1, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6));
+          SQL
+          test "$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_tenant_expand -Nse "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=database() AND table_name IN ('Productos','Clientes','Proveedores','Compras','Ventas') AND column_name='EmpresaId';")" = 0
+          echo "TENANT_LEGACY_SCHEMA=PASS owner_columns=0 data_preserved=YES"
+      - name: Aplicar migración EF Oracle real sobre legacy efímera
+        shell: bash
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet tool run dotnet-ef database update --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --configuration Release --no-build
+          dotnet tool run dotnet-ef migrations has-pending-model-changes --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --configuration Release --no-build
+      - name: Verificar DDL FK índice NULL histórico e idempotencia
+        shell: bash
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          mysql_container="${{ job.services.mysql.id }}"
+          q(){ docker exec "$mysql_container" mysql -uroot -proot solqaryn_tenant_expand -Nse "$1"; }
+          test "$(q "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=database() AND table_name IN ('Productos','Clientes','Proveedores','Compras','Ventas') AND column_name='EmpresaId' AND IS_NULLABLE='YES';")" = 5
+          test "$(q "SELECT COUNT(DISTINCT table_name) FROM information_schema.statistics WHERE table_schema=database() AND index_name IN ('IX_Productos_EmpresaId','IX_Clientes_EmpresaId','IX_Proveedores_EmpresaId','IX_Compras_EmpresaId','IX_Ventas_EmpresaId');")" = 5
+          test "$(q "SELECT COUNT(*) FROM information_schema.referential_constraints WHERE constraint_schema=database() AND constraint_name IN ('FK_Productos_Empresas_EmpresaId','FK_Clientes_Empresas_EmpresaId','FK_Proveedores_Empresas_EmpresaId','FK_Compras_Empresas_EmpresaId','FK_Ventas_Empresas_EmpresaId');")" = 5
+          test "$(q "SELECT COUNT(*) FROM Proveedores WHERE Nombre='SOLQARYN-CI-LEGACY-PRESERVED' AND EmpresaId IS NULL;")" = 1
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013121500_CommercialTenantRootExpand';")" = 1
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory;")" = 2
+          dotnet tool run dotnet-ef database update --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --configuration Release --no-build
+          test "$(q "SELECT COUNT(*) FROM Proveedores WHERE Nombre='SOLQARYN-CI-LEGACY-PRESERVED' AND EmpresaId IS NULL;")" = 1
+          echo "TENANT_ROOT_EXPAND=PASS fk=5 indexes=5 null_legacy=YES data_loss=NO idempotent=YES source=A_DISPOSABLE_MYSQL"

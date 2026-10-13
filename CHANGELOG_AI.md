@@ -1,3 +1,8 @@
+## 2026-10-13 — Prueba de expansión real desde esquema legacy MySQL (PR #3591)
+
+- Nuevo gate desechable `tenant-commercial-root-expand-ephemeral.yml`: revierte las cinco columnas solo en MySQL CI efímero, siembra una fila legacy y aplica EF migration real; verifica cinco FK/índices, legado nulo sin pérdida, idempotencia y pending-model=0.
+- Runbook P0 actualizado al estado desplegado de contención y el candidato expand; se preservan backup/restore DEV #38399423450, no se realiza backfill ni se habilita nueva empresa.
+
 ## 2026-10-13 — Recovery de CI tras expand de EmpresaId
 
 - Detectado en PR #3591: tests MySQL efímeros llaman EnsureCreated seguido de Migrate, lo cual intenta volver a añadir columnas EmpresaId. El bootstrap test ahora registra la migración expand como aplicada tras adoptar OracleBaseline, igual que el bootstrap oficial.
