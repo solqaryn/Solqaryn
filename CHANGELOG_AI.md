@@ -1,3 +1,8 @@
+## 2026-10-13 — Candidato cotizaciones/pedidos de venta tenant-aislados
+
+- EmpresaId nullable, modelo e integridad MySQL con 9 FKs compuestas en Cotizaciones/CotizacionDetalles/PedidosVenta/PedidoVentaDetalles, índices únicos por empresa, validación de referencias A/B y pruebas.
+- No backfill de 19 registros descartables; conserva cuarentena, falta cierre integral sobre 66 descendientes.
+
 ## 2026-10-13 — CI exact-head: adopción de migración de documentos en integración MySQL
 
 - El bootstrap de pruebas Phase7 ahora adopta explícitamente `CommercialTenantInvoiceDocuments` tras `EnsureCreated`, igual que el bootstrap canónico; no cambia datos ni esquema de Aiven DEV.
