@@ -23,11 +23,16 @@ public static class CommercialCrossTenantWriteGuard
             if (venta.ClienteId is not > 0 && venta.Cliente is null)
                 continue;
             // Nunca confiar en la navegación cuando existe un FK persistido.
-            var owner = venta.ClienteId is > 0
-                ? await db.Clientes.IgnoreQueryFilters().AsNoTracking()
-                    .Where(c => c.Id == venta.ClienteId.Value)
-                    .Select(c => c.EmpresaId).SingleOrDefaultAsync(cancellationToken)
-                : venta.Cliente?.EmpresaId;
+            // Una entidad nueva enlazada en el mismo SaveChanges aún no existe
+            // en MySQL. Solo puede confiarse en ella si EF la rastrea como Added.
+            var owner = venta.Cliente is not null &&
+                        db.Entry(venta.Cliente).State == EntityState.Added
+                ? venta.Cliente.EmpresaId
+                : venta.ClienteId is > 0
+                    ? await db.Clientes.IgnoreQueryFilters().AsNoTracking()
+                        .Where(c => c.Id == venta.ClienteId.Value)
+                        .Select(c => c.EmpresaId).SingleOrDefaultAsync(cancellationToken)
+                    : venta.Cliente?.EmpresaId;
             Check(venta.EmpresaId, owner);
         }
 
@@ -37,11 +42,14 @@ public static class CommercialCrossTenantWriteGuard
             var compra = entry.Entity;
             if (compra.ProveedorId is not > 0 && compra.Proveedor is null)
                 continue;
-            var owner = compra.ProveedorId is > 0
-                ? await db.Proveedores.IgnoreQueryFilters().AsNoTracking()
-                    .Where(p => p.Id == compra.ProveedorId.Value)
-                    .Select(p => p.EmpresaId).SingleOrDefaultAsync(cancellationToken)
-                : compra.Proveedor?.EmpresaId;
+            var owner = compra.Proveedor is not null &&
+                        db.Entry(compra.Proveedor).State == EntityState.Added
+                ? compra.Proveedor.EmpresaId
+                : compra.ProveedorId is > 0
+                    ? await db.Proveedores.IgnoreQueryFilters().AsNoTracking()
+                        .Where(p => p.Id == compra.ProveedorId.Value)
+                        .Select(p => p.EmpresaId).SingleOrDefaultAsync(cancellationToken)
+                    : compra.Proveedor?.EmpresaId;
             Check(compra.EmpresaId, owner);
         }
 
@@ -49,41 +57,55 @@ public static class CommercialCrossTenantWriteGuard
                      .Where(e => e.State is EntityState.Added or EntityState.Modified))
         {
             var detalle = entry.Entity;
-            var ownerVenta = detalle.VentaId > 0
-                ? await db.Ventas.IgnoreQueryFilters().AsNoTracking()
-                    .Where(v => v.Id == detalle.VentaId).Select(v => v.EmpresaId)
-                    .SingleOrDefaultAsync(cancellationToken)
-                : detalle.Venta?.EmpresaId;
-            var ownerProducto = detalle.ProductoId > 0
-                ? await db.Productos.IgnoreQueryFilters().AsNoTracking()
-                    .Where(p => p.Id == detalle.ProductoId).Select(p => p.EmpresaId)
-                    .SingleOrDefaultAsync(cancellationToken)
-                : detalle.Producto?.EmpresaId;
+            var ownerVenta = detalle.Venta is not null &&
+                             db.Entry(detalle.Venta).State == EntityState.Added
+                ? detalle.Venta.EmpresaId
+                : detalle.VentaId > 0
+                    ? await db.Ventas.IgnoreQueryFilters().AsNoTracking()
+                        .Where(v => v.Id == detalle.VentaId).Select(v => v.EmpresaId)
+                        .SingleOrDefaultAsync(cancellationToken)
+                    : detalle.Venta?.EmpresaId;
+            var ownerProducto = detalle.Producto is not null &&
+                                db.Entry(detalle.Producto).State == EntityState.Added
+                ? detalle.Producto.EmpresaId
+                : detalle.ProductoId > 0
+                    ? await db.Productos.IgnoreQueryFilters().AsNoTracking()
+                        .Where(p => p.Id == detalle.ProductoId).Select(p => p.EmpresaId)
+                        .SingleOrDefaultAsync(cancellationToken)
+                    : detalle.Producto?.EmpresaId;
             Check(ownerVenta, ownerProducto);
             // Los grafos históricos sin owner siguen en cuarentena.
             if (ownerVenta is > 0 || ownerProducto is > 0)
                 await CheckProductoVarianteAsync(db, detalle.ProductoId,
-                    detalle.ProductoVarianteId, cancellationToken);
+                    detalle.ProductoVarianteId, detalle.ProductoVariante,
+                    detalle.Producto, cancellationToken);
         }
 
         foreach (var entry in db.ChangeTracker.Entries<CompraDetalle>()
                      .Where(e => e.State is EntityState.Added or EntityState.Modified))
         {
             var detalle = entry.Entity;
-            var ownerCompra = detalle.CompraId > 0
-                ? await db.Compras.IgnoreQueryFilters().AsNoTracking()
-                    .Where(c => c.Id == detalle.CompraId).Select(c => c.EmpresaId)
-                    .SingleOrDefaultAsync(cancellationToken)
-                : detalle.Compra?.EmpresaId;
-            var ownerProducto = detalle.ProductoId > 0
-                ? await db.Productos.IgnoreQueryFilters().AsNoTracking()
-                    .Where(p => p.Id == detalle.ProductoId).Select(p => p.EmpresaId)
-                    .SingleOrDefaultAsync(cancellationToken)
-                : detalle.Producto?.EmpresaId;
+            var ownerCompra = detalle.Compra is not null &&
+                              db.Entry(detalle.Compra).State == EntityState.Added
+                ? detalle.Compra.EmpresaId
+                : detalle.CompraId > 0
+                    ? await db.Compras.IgnoreQueryFilters().AsNoTracking()
+                        .Where(c => c.Id == detalle.CompraId).Select(c => c.EmpresaId)
+                        .SingleOrDefaultAsync(cancellationToken)
+                    : detalle.Compra?.EmpresaId;
+            var ownerProducto = detalle.Producto is not null &&
+                                db.Entry(detalle.Producto).State == EntityState.Added
+                ? detalle.Producto.EmpresaId
+                : detalle.ProductoId > 0
+                    ? await db.Productos.IgnoreQueryFilters().AsNoTracking()
+                        .Where(p => p.Id == detalle.ProductoId).Select(p => p.EmpresaId)
+                        .SingleOrDefaultAsync(cancellationToken)
+                    : detalle.Producto?.EmpresaId;
             Check(ownerCompra, ownerProducto);
             if (ownerCompra is > 0 || ownerProducto is > 0)
                 await CheckProductoVarianteAsync(db, detalle.ProductoId,
-                    detalle.ProductoVarianteId, cancellationToken);
+                    detalle.ProductoVarianteId, detalle.ProductoVariante,
+                    detalle.Producto, cancellationToken);
         }
     }
 
@@ -128,8 +150,21 @@ public static class CommercialCrossTenantWriteGuard
     }
 
     private static async Task CheckProductoVarianteAsync(
-        AppDbContext db, int productoId, int? varianteId, CancellationToken cancellationToken)
+        AppDbContext db, int productoId, int? varianteId,
+        ProductoVariante? variante, Producto? producto,
+        CancellationToken cancellationToken)
     {
+        if (variante is not null && db.Entry(variante).State == EntityState.Added)
+        {
+            if ((productoId > 0 && variante.ProductoId > 0 &&
+                 variante.ProductoId != productoId) ||
+                (producto is not null && variante.Producto is not null &&
+                 !ReferenceEquals(producto, variante.Producto)))
+                throw new BusinessRuleException(
+                    "La variante comercial no pertenece al producto del detalle.");
+            return;
+        }
+
         if (productoId <= 0 || varianteId is not > 0)
             return;
 
