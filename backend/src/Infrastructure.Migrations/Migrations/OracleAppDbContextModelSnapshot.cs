@@ -6783,6 +6783,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CotizacionId")
+                        .HasDatabaseName("IX_PedidosVenta_CotizacionId");
+
                     b.HasIndex("EmpresaId", "CotizacionId")
                         .IsUnique()
                         .HasDatabaseName("UX_PedidosVenta_Empresa_CotizacionId");
