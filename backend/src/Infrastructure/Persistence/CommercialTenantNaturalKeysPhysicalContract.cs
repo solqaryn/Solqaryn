@@ -36,7 +36,7 @@ public static class CommercialTenantNaturalKeysPhysicalContract
             HAVING MIN(s.NON_UNIQUE) = 0
                AND MAX(s.NON_UNIQUE) = 0
                AND GROUP_CONCAT(s.COLUMN_NAME ORDER BY s.SEQ_IN_INDEX SEPARATOR ',') = e.Columnas
-        ) AS validos
+            ) AS validos
             """).SingleAsync(ct);
         if (scoped != 13)
             throw new InvalidOperationException(
@@ -68,7 +68,7 @@ public static class CommercialTenantNaturalKeysPhysicalContract
             HAVING MIN(s.NON_UNIQUE) = 1
                AND MAX(s.NON_UNIQUE) = 1
                AND GROUP_CONCAT(s.COLUMN_NAME ORDER BY s.SEQ_IN_INDEX SEPARATOR ',') = e.Columnas
-        ) AS validos
+            ) AS validos
             """).SingleAsync(ct);
         if (legacyNonUnique != 13)
             throw new InvalidOperationException(
