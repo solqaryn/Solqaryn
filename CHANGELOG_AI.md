@@ -1,3 +1,11 @@
+## 2026-10-12 — Cloudinary DEV: cierre certificado de 11 imágenes y descarga individual/ZIP (solo documentación)
+
+- Backup cifrado y restore DEV: [run 38319634960](https://github.com/solqaryn/Solqaryn/actions/runs/38319634960) PASS; ejecución real del worker en [PR #3584](https://github.com/solqaryn/Solqaryn/pull/3584), Render DEV `dep-db6msu2d0e5s73attck0`: 11/11, SHA-256 origen/destino, `remaining=0`, originales eliminados=0.
+- Auditoría independiente read-only [run 38323224517](https://github.com/solqaryn/Solqaryn/actions/runs/38323224517) PASS, 0 referencias incorrectas en MySQL DEV. [PR #3585](https://github.com/solqaryn/Solqaryn/pull/3585) dejó `NormalizeDevLegacyImagesOnStartup=false`; Render DEV `dep-db6n26gu01pc73feos4g` LIVE en `f6f79b9d`, `/health` 200, 39/39 checks del HEAD PASS.
+- El propietario confirmó expresamente el 2026-10-12 que **probó la descarga individual autenticada y el ZIP completo autenticado después de la normalización**, ambos funcionando correctamente; esto se acredita como **aceptación funcional manual** y no se atribuye falsamente a un E2E/ZIP automatizado.
+- Documentación vigente reconciliada en `docs/CLOUDINARY_AISLAMIENTO.md`, `docs/DETALLES_PENDIENTES.md`, `PROJECT_CONTEXT.md`, `ARCHITECTURE.md` y `PROJECT_INDEX.md`; se preserva evidencia histórica pero no se mantiene la deuda Cloudinary como pendiente vivo. Este changeset no altera código, BD, Cloudinary, secretos, proveedores ni QA/PROD.
+- La promoción `DEV → QA → PROD` permanece **APLAZADA por decisión del propietario**, PR #3583 y #3574 sin fusionar; DNS `solqaryn.com`, SMTP y VAEP sin cambios.
+
 ## 2026-10-12 — Preflight QA → PROD Oracle EF10, revisión CI y Cloudinary DEV
 
 - Corrección de límite GitHub Environment: PROD solo acepta `GITHUB_REF=main`, por lo que los workflows Oracle PROD pasan a **push/workflow_dispatch desde main protegido**, con bootstrap de workflows de certificación previo al merge modernizado, y no reciben secretos en PR. Respaldo cifrado, restore y adopción metadata-only aún no ejecutados.
