@@ -25,7 +25,10 @@ public class N17ConteoInventarioPersistenceModelTests
 
         var numero = Assert.Single(conteo.GetIndexes().Where(i =>
             i.Properties.Select(p => p.Name).SequenceEqual(new[] { nameof(ConteoInventario.Numero) })));
-        Assert.True(numero.IsUnique);
+        Assert.False(numero.IsUnique);
+        Assert.Contains(conteo.GetIndexes(), index => index.IsUnique &&
+            index.Properties.Select(p => p.Name)
+                .SequenceEqual(new[] { "EmpresaId", nameof(ConteoInventario.Numero) }));
 
         var scopeConteo = Assert.Single(conteo.GetKeys().Where(k =>
             k.Properties.Select(p => p.Name).SequenceEqual(new[]

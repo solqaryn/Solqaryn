@@ -205,6 +205,19 @@ jobs:
             `Activa`=TRUE,
             `FechaActualizacion`=UTC_TIMESTAMP(6);
 
+          -- El catálogo de sistema se materializa sólo para el tenant efímero E2E.
+          -- No se atribuyen datos legacy de DEV/QA/PROD. La FK compuesta
+          -- Clientes(EmpresaId, TipoClienteId) exige la misma empresa.
+          UPDATE `TipoClientes`
+             SET `EmpresaId`=1
+           WHERE `Codigo`='SIN_CLASIFICAR' AND `EmpresaId` IS NULL;
+
+          -- Impuestos seed globales del fixture deben ser de Empresa E2E
+          -- antes de insertar VentaImpuestos vinculados. Solo MySQL efimero.
+          UPDATE `Impuestos`
+             SET `EmpresaId`=1
+           WHERE `EmpresaId` IS NULL;
+
           INSERT INTO `UsuarioEmpresas` (`UsuarioId`,`EmpresaId`,`RolId`,`Activa`,`FechaCreacion`,`FechaActualizacion`)
           SELECT u.`Id`,1,u.`RolId`,TRUE,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)
           FROM `Usuarios` u

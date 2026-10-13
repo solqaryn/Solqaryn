@@ -61,6 +61,48 @@ public static class CommercialTenantOwnershipGraphWriteGuard
             "Solqaryn.Domain.Entities.TiendaSesionCliente",
             "Solqaryn.Domain.Entities.TransferenciaInventarioDetalle",
             "Solqaryn.Domain.Entities.VariacionCostoEstandarInventario",
+            "Solqaryn.Domain.Entities.AjusteInventario",
+            "Solqaryn.Domain.Entities.Almacen",
+            "Solqaryn.Domain.Entities.Contabilidad.AsientoDetalle",
+            "Solqaryn.Domain.Entities.Contabilidad.AsientoContable",
+            "Solqaryn.Domain.Entities.Cajas.CajaMovimiento",
+            "Solqaryn.Domain.Entities.Cajas.Caja",
+            "Solqaryn.Domain.Entities.Cajas.CajaSesion",
+            "Solqaryn.Domain.Entities.CargaMasivaError",
+            "Solqaryn.Domain.Entities.CargaMasiva",
+            "Solqaryn.Domain.Entities.Categoria",
+            "Solqaryn.Domain.Entities.Contabilidad.CentroCosto",
+            "Solqaryn.Domain.Entities.Color",
+            "Solqaryn.Domain.Entities.Bancos.ConciliacionBancaria",
+            "Solqaryn.Domain.Entities.Contabilidad.ConfiguracionContable",
+            "Solqaryn.Domain.Entities.ConsumoInsumo",
+            "Solqaryn.Domain.Entities.ConteoInventario",
+            "Solqaryn.Domain.Entities.CostoEnvio",
+            "Solqaryn.Domain.Entities.Bancos.CuentaBancaria",
+            "Solqaryn.Domain.Entities.CuentaContable",
+            "Solqaryn.Domain.Entities.DashboardKpiConfiguracion",
+            "Solqaryn.Domain.Entities.DescuentoCategoria",
+            "Solqaryn.Domain.Entities.DescuentoRol",
+            "Solqaryn.Domain.Entities.Descuento",
+            "Solqaryn.Domain.Entities.EmpresaConfiguracion",
+            "Solqaryn.Domain.Entities.EnlacePublicoFactura",
+            "Solqaryn.Domain.Entities.HistorialAplicacionImpuesto",
+            "Solqaryn.Domain.Entities.HistorialEnvioFactura",
+            "Solqaryn.Domain.Entities.ImpuestoCategoria",
+            "Solqaryn.Domain.Entities.ImpuestoOperacion",
+            "Solqaryn.Domain.Entities.Impuesto",
+            "Solqaryn.Domain.Entities.Marca",
+            "Solqaryn.Domain.Entities.Modelo",
+            "Solqaryn.Domain.Entities.Bancos.MovimientoEstadoCuenta",
+            "Solqaryn.Domain.Entities.Contabilidad.PeriodoContable",
+            "Solqaryn.Domain.Entities.PoliticaCosteoInventario",
+            "Solqaryn.Domain.Entities.RevisionFinanciera",
+            "Solqaryn.Domain.Entities.Talla",
+            "Solqaryn.Domain.Entities.TemaVisual",
+            "Solqaryn.Domain.Entities.TipoCliente",
+            "Solqaryn.Domain.Entities.TransferenciaInventario",
+            "Solqaryn.Domain.Entities.UbicacionAlmacen",
+            "Solqaryn.Domain.Entities.RolPermiso",
         };
 
     public static bool Applies(string entityName) => OwnedGraphTypes.Contains(entityName);
@@ -71,6 +113,20 @@ public static class CommercialTenantOwnershipGraphWriteGuard
             .Where(e => Applies(e.Metadata.Name) &&
                         e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted)
             .ToArray();
+        if (entries.Length == 0)
+            return;
+
+        // RolPermiso de roles plantilla (EmpresaId NULL + ámbito Empresa) es una
+        // matriz compartida del sistema. No asignar a una empresa arbitraria:
+        // las FKs compuestas siguen aplicando sin excepciones a roles con dueño.
+        // Rol de Plataforma nunca se modifica desde una sesión empresarial.
+        var sharedGrants = new HashSet<object>();
+        foreach (var entry in entries)
+        {
+            if (await IsSharedRoleTemplateGrantAsync(db, entry, authorized, ct))
+                sharedGrants.Add(entry.Entity);
+        }
+        entries = entries.Where(e => !sharedGrants.Contains(e.Entity)).ToArray();
         if (entries.Length == 0)
             return;
 
@@ -141,6 +197,40 @@ public static class CommercialTenantOwnershipGraphWriteGuard
                         "Relación comercial entre empresas distintas o sin dueño comprobado.");
             }
         }
+    }
+
+    private static async Task<bool> IsSharedRoleTemplateGrantAsync(
+        AppDbContext db, EntityEntry entry, int? authorized, CancellationToken ct)
+    {
+        if (entry.Entity is not Solqaryn.Domain.Entities.RolPermiso grant)
+            return false;
+
+        var role = grant.RolEntidad
+            ?? db.Roles.Local.FirstOrDefault(r => r.Id == grant.RolId)
+            ?? await db.Roles.IgnoreQueryFilters().AsNoTracking()
+                .SingleOrDefaultAsync(r => r.Id == grant.RolId, ct);
+
+        if (role is null)
+            throw new BusinessRuleException("El rol del permiso no existe.");
+        if (role.EmpresaId is > 0)
+            return false; // Rol empresarial personalizado: guard completo A/B.
+
+        if (role.Ambito == Solqaryn.Domain.Enums.AmbitoAutorizacion.Plataforma &&
+            authorized is > 0)
+            throw new ForbiddenAccessException(
+                "La matriz de un rol de plataforma no se modifica desde una empresa.");
+
+        var owner = entry.Property("EmpresaId");
+        if (owner.CurrentValue is not null ||
+            (entry.State is EntityState.Modified or EntityState.Deleted &&
+             owner.OriginalValue is not null))
+            throw new BusinessRuleException(
+                "Los permisos de un rol plantilla no pueden atribuirse a una empresa arbitraria.");
+
+        if (entry.State is EntityState.Modified or EntityState.Deleted &&
+            db.Database.IsRelational())
+            await VerifyPersistedOwnerAsync(db, entry, ct);
+        return true;
     }
 
     private static async Task VerifyPersistedOwnerAsync(

@@ -196,6 +196,14 @@ if (mode == "fresh")
         INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
         VALUES ('20261013221500_CommercialTenantOwnershipGraphScopedFks', '10.0.12');
         """);
+    await db.Database.ExecuteSqlRawAsync("""
+        INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+        VALUES ('20261013230000_CommercialTenantRemainingModules', '10.0.12');
+        """);
+    await db.Database.ExecuteSqlRawAsync("""
+        INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+        VALUES ('20261013231000_CommercialTenantRemainingScopedFks', '10.0.12');
+        """);
     await db.Database.CloseConnectionAsync();
 }
 else
@@ -238,5 +246,6 @@ await CommercialTenantInvoicePhysicalConstraints.VerifyAsync(db);
 await CommercialTenantSalesPhysicalConstraints.VerifyAsync(db);
 await CommercialTenantTaxDiscountPhysicalConstraints.VerifyAsync(db);
 await CommercialTenantOwnershipGraphPhysicalConstraints.VerifyAsync(db);
+await CommercialTenantRemainingPhysicalConstraints.VerifyAsync(db);
 
 Console.WriteLine($"SOLQARYN_ORACLE_BOOTSTRAP=PASS mode={mode} tables={afterAdoption} pending=0");
