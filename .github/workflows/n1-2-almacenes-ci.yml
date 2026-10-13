@@ -31,6 +31,7 @@ on:
       - frontend/e2e/n1-2-almacenes.spec.ts
   pull_request:
     branches:
+      - dev
       - main
     paths:
       - .github/workflows/n1-2-almacenes-ci.yml
@@ -77,7 +78,7 @@ jobs:
       PORT: '5005'
       ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_n12_almacenes;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
       Database__ServerVersion: '8.4.0'
-      Database__ApplyMigrationsOnStartup: 'true'
+      Database__ApplyMigrationsOnStartup: 'false'
       Jwt__Secret: 'N12-Almacenes-E2E-Only-Secret-With-More-Than-32-Characters-2026'
       Jwt__Issuer: 'Solqaryn.API'
       Jwt__Audience: 'Solqaryn.Frontend'
@@ -115,7 +116,20 @@ jobs:
           dotnet build Solqaryn.sln --configuration Release --no-restore -warnaserror
           dotnet test Solqaryn.sln --configuration Release --no-build --filter "Category!=Integration"
 
-      - name: Iniciar API con migraciones MySQL
+      - name: Crear esquema Oracle EF10 canónico en MySQL efímero
+        working-directory: backend
+        env:
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet run --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj --configuration Release --no-build
+          export MYSQL_PWD=root
+          test "$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root solqaryn_n12_almacenes -Nse "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='solqaryn_n12_almacenes' AND table_name='Empresas';")" = "1"
+          test "$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root solqaryn_n12_almacenes -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")" = "1"
+          unset MYSQL_PWD
+
+      - name: Iniciar API contra esquema Oracle previamente creado
         working-directory: backend
         shell: bash
         run: |
@@ -137,6 +151,27 @@ jobs:
           done
           cat n12-almacenes-api.log >&2 || true
           exit 1
+
+      - name: Preparar empresa unica y membresia admin para E2E efimero
+        shell: bash
+        run: |
+          set -euo pipefail
+          export MYSQL_PWD=root
+          mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root solqaryn_n12_almacenes <<'SQL'
+          INSERT INTO Empresas (Id, Nombre, Activa, FechaCreacion, FechaActualizacion)
+          VALUES (1, 'Empresa de prueba N1', 1, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6));
+          INSERT INTO UsuarioEmpresas (UsuarioId, EmpresaId, RolId, Activa, FechaCreacion, FechaActualizacion)
+          SELECT u.Id, 1, u.RolId, 1, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)
+          FROM Usuarios u
+          WHERE u.NombreUsuario = 'e2e_admin' AND u.Activo = 1
+            AND NOT EXISTS (
+              SELECT 1 FROM UsuarioEmpresas ue
+              WHERE ue.UsuarioId = u.Id AND ue.EmpresaId = 1
+            );
+          SQL
+          test "$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root solqaryn_n12_almacenes -Nse "SELECT COUNT(*) FROM Empresas;")" = "1"
+          test "$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root solqaryn_n12_almacenes -Nse "SELECT COUNT(*) FROM UsuarioEmpresas WHERE EmpresaId=1 AND Activa=1;")" = "1"
+          unset MYSQL_PWD
 
       - name: Configurar Node.js
         uses: actions/setup-node@v4
