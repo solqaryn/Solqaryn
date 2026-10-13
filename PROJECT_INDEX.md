@@ -37,6 +37,8 @@ No leer todos los documentos administrativos en cada tarea. Consultarlos solo cu
 
 ## Backend
 
+- Propagación preliminar de propiedad comercial a nuevas altas: `Application/Security/VerifiedCommercialTenant.cs` (marca server-side RBAC), consumido por cinco servicios. No equivale a aislamiento completo.
+
 - Candidato expand comercial: `backend/src/Infrastructure.Migrations/Migrations/20261013121500_CommercialTenantRootExpand.cs` y `backend/tests/Solqaryn.Tests/CommercialTenantRootOwnershipModelTests.cs`. La cuarentena de seguridad sigue siendo obligatoria hasta el aislamiento por fila.
 
 `backend/Solqaryn.sln` — solución .NET.

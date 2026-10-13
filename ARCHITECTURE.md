@@ -258,3 +258,7 @@ El backend registra de forma condicional `DevCloudinaryLegacyNormalizationHosted
 Las cinco raíces `Producto`, `Cliente`, `Proveedor`, `Compra` y `Venta` incorporan `EmpresaId?` nullable como transición expand. El modelo añade FK restrictiva e índice por raíz. La migración Oracle `20261013121500_CommercialTenantRootExpand` conserva las filas previas sin atribución; la base efímera fresh reconoce el esquema generado por `EnsureCreated` sin duplicar DDL.
 
 La cuarentena de API y el bloqueo de alta de segunda empresa **permanecen**. Este cambio no garantiza multiempresa: pendientes prueba de procedencia legacy, filtros por empresa en todo el grafo y storefront, unicidades por tenant, respaldo/restauración y pruebas A/B reales.
+
+## 2026-10-13 — Owner verificado para nuevas altas (candidato dependiente)
+
+Las altas administrativas de Producto, Cliente, Proveedor, Compra y Venta propagan `EmpresaId` solo desde el identificador firmado por el filtro `RequierePermiso` en `HttpContext.Items`. La cabecera `X-Empresa-Id` no es fuente de autoridad. Los flujos sin contexto RBAC conservan NULL durante la etapa expand; esto NO certifica aislamiento de filas, relaciones, tienda pública, jobs ni datos históricos. La cuarentena P0 permanece.
