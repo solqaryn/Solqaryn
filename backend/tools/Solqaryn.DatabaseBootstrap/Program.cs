@@ -121,6 +121,56 @@ if (mode == "fresh")
         INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
         VALUES ('20261013121500_CommercialTenantRootExpand', '10.0.12');
         """);
+    // EnsureCreated ya construyó el modelo exacto del HEAD. No aplicar DDL
+    // de migraciones incrementales sobre sus propias columnas o índices.
+    // Esta adopción se autoriza solo tras cotejar el contrato físico preciso;
+    // jamás etiquetar automáticamente todas las migraciones que aparezcan.
+    var indicesEmpresa = await ScalarLongAsync(db, """
+        SELECT COUNT(*) FROM (
+          SELECT e.Tabla, e.Indice
+          FROM (
+            SELECT 'Productos' AS Tabla, 'UX_Productos_Empresa_Id' AS Indice, 'EmpresaId,Id' AS Columnas
+            UNION ALL SELECT 'Clientes', 'UX_Clientes_Empresa_Id', 'EmpresaId,Id'
+            UNION ALL SELECT 'Proveedores', 'UX_Proveedores_Empresa_Id', 'EmpresaId,Id'
+            UNION ALL SELECT 'Compras', 'UX_Compras_Empresa_Id', 'EmpresaId,Id'
+            UNION ALL SELECT 'Ventas', 'UX_Ventas_Empresa_Id', 'EmpresaId,Id'
+            UNION ALL SELECT 'Clientes', 'UX_Clientes_Empresa_IdentidadORTN', 'EmpresaId,IdentidadORTNNormalizada'
+            UNION ALL SELECT 'Proveedores', 'UX_Proveedores_Empresa_Documento', 'EmpresaId,DocumentoNormalizado'
+            UNION ALL SELECT 'Compras', 'UX_Compras_Empresa_NumeroCompra', 'EmpresaId,NumeroCompra'
+            UNION ALL SELECT 'Ventas', 'UX_Ventas_Empresa_NumeroVenta', 'EmpresaId,NumeroVenta'
+          ) e
+          JOIN INFORMATION_SCHEMA.STATISTICS s
+            ON s.TABLE_SCHEMA = DATABASE()
+           AND s.TABLE_NAME = e.Tabla
+           AND s.INDEX_NAME = e.Indice
+          GROUP BY e.Tabla, e.Indice, e.Columnas
+          HAVING MIN(s.NON_UNIQUE) = 0
+             AND GROUP_CONCAT(s.COLUMN_NAME ORDER BY s.SEQ_IN_INDEX SEPARATOR ',') = e.Columnas
+        ) verificados;
+        """);
+    if (indicesEmpresa != 9)
+        throw new InvalidOperationException(
+            $"Fresh bootstrap has an incomplete tenant-scoped index contract: {indicesEmpresa}/9.");
+
+    var indicesGlobales = await ScalarLongAsync(db, """
+        SELECT COUNT(DISTINCT CONCAT(TABLE_NAME, '/', INDEX_NAME))
+        FROM INFORMATION_SCHEMA.STATISTICS
+        WHERE TABLE_SCHEMA = DATABASE()
+          AND (
+             (TABLE_NAME = 'Clientes' AND INDEX_NAME = 'UX_Clientes_IdentidadORTN_Normalizada')
+          OR (TABLE_NAME = 'Proveedores' AND INDEX_NAME = 'UX_Proveedores_Documento_Normalizado')
+          OR (TABLE_NAME = 'Compras' AND INDEX_NAME = 'IX_Compras_NumeroCompra')
+          OR (TABLE_NAME = 'Ventas' AND INDEX_NAME = 'IX_Ventas_NumeroVenta')
+          );
+        """);
+    if (indicesGlobales != 0)
+        throw new InvalidOperationException(
+            $"Fresh bootstrap retains {indicesGlobales} global commercial uniqueness constraints.");
+
+    await db.Database.ExecuteSqlRawAsync("""
+        INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+        VALUES ('20261013181500_CommercialTenantScopedRootIndexes', '10.0.12');
+        """);
 }
 else
 {
