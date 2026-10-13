@@ -5,6 +5,9 @@ namespace Solqaryn.Domain.Entities;
 
 public class ProductoVariante : AuditableEntity
 {
+    // Ownership materializado para datos nuevos; NULL histórico queda en cuarentena.
+    public int? EmpresaId { get; set; }
+
     public int ProductoId { get; set; }
     public Producto Producto { get; set; } = null!;
     public int? MarcaId { get; set; }

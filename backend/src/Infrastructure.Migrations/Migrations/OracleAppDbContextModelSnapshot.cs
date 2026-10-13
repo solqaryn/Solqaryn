@@ -1660,6 +1660,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    b.Property<int?>("EmpresaId")
+                        .HasColumnType("int");
+
                     b.Property<int?>("AlmacenId")
                         .HasColumnType("int");
 
@@ -1736,6 +1739,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId", "CompraId")
+                        .HasDatabaseName("IX_CompraDetalles_Empresa_Referencia");
 
                     b.HasIndex("CompraId");
 
@@ -4687,6 +4693,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    b.Property<int?>("EmpresaId")
+                        .HasColumnType("int");
+
                     b.Property<string>("AnuladaPorNombreUsuario")
                         .HasColumnType("longtext");
 
@@ -4850,8 +4859,12 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
 
                     b.HasKey("Id");
 
-                    b.HasIndex("NumeroFactura")
-                        .IsUnique();
+                    b.HasIndex("EmpresaId", "VentaId")
+                        .HasDatabaseName("IX_Facturas_Empresa_Referencia");
+
+                    b.HasIndex("EmpresaId", "NumeroFactura")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Facturas_Empresa_NumeroFactura");
 
                     b.HasIndex("VentaId")
                         .IsUnique();
@@ -7547,6 +7560,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    b.Property<int?>("EmpresaId")
+                        .HasColumnType("int");
+
                     b.Property<string>("CreadoPorNombreUsuario")
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
@@ -7587,6 +7603,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
 
                     b.HasKey("Id");
 
+                    b.HasIndex("EmpresaId", "ProductoId")
+                        .HasDatabaseName("IX_ProductoImagenes_Empresa_Referencia");
+
                     b.HasIndex("PrincipalAmbitoKey")
                         .IsUnique()
                         .HasDatabaseName("UX_ProductoImagenes_Principal_Ambito");
@@ -7606,6 +7625,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int?>("EmpresaId")
                         .HasColumnType("int");
 
                     b.Property<bool>("Activo")
@@ -7711,8 +7733,12 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CodigoBarras")
-                        .IsUnique();
+                    b.HasIndex("EmpresaId", "ProductoId")
+                        .HasDatabaseName("IX_ProductoVariantes_Empresa_Referencia");
+
+                    b.HasIndex("EmpresaId", "CodigoBarras")
+                        .IsUnique()
+                        .HasDatabaseName("UX_ProductoVariantes_Empresa_CodigoBarras");
 
                     b.HasIndex("ColorId");
 
@@ -7728,8 +7754,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         .IsUnique()
                         .HasDatabaseName("IX_ProductoVariantes_ProductoTecnicoUnico");
 
-                    b.HasIndex("Sku")
-                        .IsUnique();
+                    b.HasIndex("EmpresaId", "Sku")
+                        .IsUnique()
+                        .HasDatabaseName("UX_ProductoVariantes_Empresa_Sku");
 
                     b.HasIndex("TallaId");
 
@@ -10217,6 +10244,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    b.Property<int?>("EmpresaId")
+                        .HasColumnType("int");
+
                     b.Property<int?>("AlmacenId")
                         .HasColumnType("int");
 
@@ -10275,6 +10305,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId", "VentaId")
+                        .HasDatabaseName("IX_VentaDetalles_Empresa_Referencia");
 
                     b.HasIndex("ProductoId")
                         .HasDatabaseName("IX_VentaDetalles_ProductoId");
@@ -10686,6 +10719,12 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
 
             modelBuilder.Entity("Solqaryn.Domain.Entities.CompraDetalle", b =>
                 {
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_CompraDetalles_Empresas_EmpresaId");
+
                     b.HasOne("Solqaryn.Domain.Entities.Almacen", "Almacen")
                         .WithMany()
                         .HasForeignKey("AlmacenId")
@@ -11314,6 +11353,12 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
 
             modelBuilder.Entity("Solqaryn.Domain.Entities.Factura", b =>
                 {
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_Facturas_Empresas_EmpresaId");
+
                     b.HasOne("Solqaryn.Domain.Entities.Venta", "Venta")
                         .WithOne("Factura")
                         .HasForeignKey("Solqaryn.Domain.Entities.Factura", "VentaId")
@@ -11947,6 +11992,12 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
 
             modelBuilder.Entity("Solqaryn.Domain.Entities.ProductoImagen", b =>
                 {
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_ProductoImagenes_Empresas_EmpresaId");
+
                     b.HasOne("Solqaryn.Domain.Entities.Producto", "Producto")
                         .WithMany("Imagenes")
                         .HasForeignKey("ProductoId")
@@ -11965,6 +12016,12 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
 
             modelBuilder.Entity("Solqaryn.Domain.Entities.ProductoVariante", b =>
                 {
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_ProductoVariantes_Empresas_EmpresaId");
+
                     b.HasOne("Solqaryn.Domain.Entities.Color", "Color")
                         .WithMany()
                         .HasForeignKey("ColorId")
@@ -12568,6 +12625,12 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
 
             modelBuilder.Entity("Solqaryn.Domain.Entities.VentaDetalle", b =>
                 {
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_VentaDetalles_Empresas_EmpresaId");
+
                     b.HasOne("Solqaryn.Domain.Entities.Almacen", "Almacen")
                         .WithMany()
                         .HasForeignKey("AlmacenId")

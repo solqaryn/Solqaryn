@@ -9,6 +9,12 @@ public class ProductoImagenConfiguration : IEntityTypeConfiguration<ProductoImag
     public void Configure(EntityTypeBuilder<ProductoImagen> builder)
     {
         builder.ToTable("ProductoImagenes");
+        builder.HasIndex(x => new { x.EmpresaId, x.ProductoId })
+            .HasDatabaseName("IX_ProductoImagenes_Empresa_Referencia");
+        builder.HasOne<Empresa>().WithMany().HasForeignKey(x => x.EmpresaId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("FK_ProductoImagenes_Empresas_EmpresaId");
+
         builder.HasKey(i => i.Id);
         builder.Property(i => i.Url).IsRequired().HasMaxLength(1000);
         builder.Property(i => i.PublicId).IsRequired().HasMaxLength(500);

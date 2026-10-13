@@ -12,6 +12,11 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // Desactivar unicidades globales antes de introducir claves por tenant.
+            migrationBuilder.DropIndex("IX_ProductoVariantes_Sku", "ProductoVariantes");
+            migrationBuilder.DropIndex("IX_ProductoVariantes_CodigoBarras", "ProductoVariantes");
+            migrationBuilder.DropIndex("IX_Facturas_NumeroFactura", "Facturas");
+
             // No atribuir ningún fixture legacy: MySQL permite NULL en prefijos
             // de UNIQUE compuestos. Las operaciones nuevas deben tener owner RBAC.
             migrationBuilder.DropIndex(
@@ -59,6 +64,28 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
             migrationBuilder.CreateIndex(
                 name: "UX_Ventas_Empresa_Id", table: "Ventas",
                 columns: new[] { "EmpresaId", "Id" }, unique: true);
+            migrationBuilder.AddColumn<int>("EmpresaId", "ProductoVariantes", "int", nullable: true);
+            migrationBuilder.CreateIndex("IX_ProductoVariantes_Empresa_Referencia", "ProductoVariantes", new[] { "EmpresaId", "ProductoId" });
+            migrationBuilder.AddForeignKey("FK_ProductoVariantes_Empresas_EmpresaId", "ProductoVariantes", "EmpresaId", "Empresas", "Id", onDelete: ReferentialAction.Restrict);
+            migrationBuilder.CreateIndex("UX_ProductoVariantes_Empresa_Sku", "ProductoVariantes", new[] { "EmpresaId", "Sku" }, unique: true);
+            migrationBuilder.CreateIndex("UX_ProductoVariantes_Empresa_CodigoBarras", "ProductoVariantes", new[] { "EmpresaId", "CodigoBarras" }, unique: true);
+
+            migrationBuilder.AddColumn<int>("EmpresaId", "ProductoImagenes", "int", nullable: true);
+            migrationBuilder.CreateIndex("IX_ProductoImagenes_Empresa_Referencia", "ProductoImagenes", new[] { "EmpresaId", "ProductoId" });
+            migrationBuilder.AddForeignKey("FK_ProductoImagenes_Empresas_EmpresaId", "ProductoImagenes", "EmpresaId", "Empresas", "Id", onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddColumn<int>("EmpresaId", "VentaDetalles", "int", nullable: true);
+            migrationBuilder.CreateIndex("IX_VentaDetalles_Empresa_Referencia", "VentaDetalles", new[] { "EmpresaId", "VentaId" });
+            migrationBuilder.AddForeignKey("FK_VentaDetalles_Empresas_EmpresaId", "VentaDetalles", "EmpresaId", "Empresas", "Id", onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddColumn<int>("EmpresaId", "CompraDetalles", "int", nullable: true);
+            migrationBuilder.CreateIndex("IX_CompraDetalles_Empresa_Referencia", "CompraDetalles", new[] { "EmpresaId", "CompraId" });
+            migrationBuilder.AddForeignKey("FK_CompraDetalles_Empresas_EmpresaId", "CompraDetalles", "EmpresaId", "Empresas", "Id", onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddColumn<int>("EmpresaId", "Facturas", "int", nullable: true);
+            migrationBuilder.CreateIndex("IX_Facturas_Empresa_Referencia", "Facturas", new[] { "EmpresaId", "VentaId" });
+            migrationBuilder.AddForeignKey("FK_Facturas_Empresas_EmpresaId", "Facturas", "EmpresaId", "Empresas", "Id", onDelete: ReferentialAction.Restrict);
+            migrationBuilder.CreateIndex("UX_Facturas_Empresa_NumeroFactura", "Facturas", new[] { "EmpresaId", "NumeroFactura" }, unique: true);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

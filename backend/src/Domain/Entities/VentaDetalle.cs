@@ -2,6 +2,9 @@ namespace Solqaryn.Domain.Entities;
 
 public class VentaDetalle
 {
+    // Ownership materializado para datos nuevos; NULL histórico queda en cuarentena.
+    public int? EmpresaId { get; set; }
+
     public int Id { get; set; }
     public int VentaId { get; set; }
     public Venta? Venta { get; set; }
