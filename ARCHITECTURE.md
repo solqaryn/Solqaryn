@@ -1,5 +1,10 @@
 # ARCHITECTURE — Solqaryn
 
+### Actualización P0 #3 — PR #3599 (13 octubre 2026; candidato, NO fusionado)
+
+Se añadieron unicidades comerciales por EmpresaId e índices compuestos de cinco raíces. Variantes, imágenes, detalles de compra y venta y facturas reciben EmpresaId nullable derivado/validado, además de doce claves foráneas compuestas en MySQL. Se incorporó migración Oracle EF10 y contratos físicos de bootstrap. Esto es un tramo de la solución, NO su certificación: quedan entidades comerciales descendientes por clasificar/proteger, filtros de lectura y validación MySQL exact-head. No levantar cuarentena de segunda empresa, no tocar QA ni PROD y no reasignar los 19 registros descartables.
+
+
 ## 1. Estilo arquitectónico
 
 Solqaryn usa una arquitectura backend por capas, cercana a Clean Architecture pragmática:
@@ -256,6 +261,12 @@ Es una mitigación de UX y observabilidad, no un keep-alive ni un SLA always-on 
 ### Normalización transitoria Cloudinary DEV (11/11 ejecutadas; flag desactivado)
 
 El backend registra de forma condicional `DevCloudinaryLegacyNormalizationHostedService` únicamente bajo Render Development y `Cloudinary:NormalizeDevLegacyImagesOnStartup=true`. En la configuración versionada DEV el indicador es `false`; no afecta QA ni PROD. La operación pertenece a Infrastructure y usa el `AppDbContext` ya compuesto por API, sin endpoint ni DTO público nuevos. Revalida cloud, prefijo y tenant desde MySQL DEV, descarga y valida bytes de las 11 imágenes históricas, copia a rutas canónicas con Cloudinary DEV, compara SHA-256 y actualiza `ProductoImagenes` con compare-and-swap; conserva originales. Si alguna garantía falla, se detiene y el respaldo cifrado con restore probado permite recuperación. La ejecución única fue certificada en DEV (respaldo/restore previo, 11 copias SHA-256 verificadas, auditoría independiente `remaining=0`, descargas individual/ZIP aceptadas manualmente por el propietario). El flag está nuevamente en `false` y el runtime Render DEV `live` en `f6f79b9d`. El worker sigue disponible pero inerte; no se traslada ningún secreto ni se autoriza escritura a QA/PROD. Evidencia: `docs/CLOUDINARY_AISLAMIENTO.md`.
+
+## 2026-10-13 — Datos comerciales de DEV descartables, sin backfill
+
+El propietario confirmó que los 19 registros actuales sin EmpresaId son PRUEBAS descartables y no exigen migrar ownership histórico. No se han borrado ni reasignado. La posterior limpieza DEV preservará usuarios, credenciales, roles, permisos, membresías y configuración indispensable, previa restauración ensayada; detalles en docs/tenancy/LIMPIEZA_DATOS_PRUEBA_DEV.md.
+
+La arquitectura de aislamiento futuro NO cambia: cada dato generado en una empresa requiere ownership server-side verificable, filtros en consultas y escrituras, FK y archivos consistentes, además de tienda pública, caché y jobs separados. La cuarentena para 2+ empresas permanece hasta certificación A/B real.
 
 ## 2026-10-13 — Expand de ownership comercial (sin cierre de aislamiento)
 

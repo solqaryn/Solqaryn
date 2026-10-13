@@ -1,5 +1,10 @@
 # PROJECT_CONTEXT — SOLQARYN
 
+### Actualización P0 #3 — PR #3599 (13 octubre 2026; candidato, NO fusionado)
+
+Se añadieron unicidades comerciales por EmpresaId e índices compuestos de cinco raíces. Variantes, imágenes, detalles de compra y venta y facturas reciben EmpresaId nullable derivado/validado, además de doce claves foráneas compuestas en MySQL. Se incorporó migración Oracle EF10 y contratos físicos de bootstrap. Esto es un tramo de la solución, NO su certificación: quedan entidades comerciales descendientes por clasificar/proteger, filtros de lectura y validación MySQL exact-head. No levantar cuarentena de segunda empresa, no tocar QA ni PROD y no reasignar los 19 registros descartables.
+
+
 > Contexto técnico canónico de estado actual. Este archivo describe únicamente la realidad vigente necesaria para trabajar sobre SOLQARYN.
 
 ## 1. Identidad y repositorio
@@ -31,7 +36,7 @@ Ningún plan, fila, gate, fase o secuencia que no esté incorporado al MAESTRO v
 
 ## 3. Arquitectura vigente
 
-- **Candidato comercial PR #3596 (no integrado en `dev` hasta merge):** `AppDbContext` obtiene `VerifiedCommercialTenant` desde `IHttpContextAccessor` cuando existe marca post-RBAC y bloquea escrituras comerciales a owners explícitos distintos; asegura nuevos grafos de venta/compra en la misma transacción. No aísla lecturas ni datos históricos `EmpresaId=NULL`; no retirar cuarentena.
+- **Protección comercial PR #3596 integrada en dev (d851ae19):** `AppDbContext` obtiene `VerifiedCommercialTenant` desde `IHttpContextAccessor` cuando existe marca post-RBAC y bloquea escrituras comerciales a owners explícitos distintos; asegura nuevos grafos de venta/compra en la misma transacción. No aísla lecturas ni datos históricos `EmpresaId=NULL`; no retirar cuarentena.
 
 - Bitácora nueva tenant-aware: `AuditoriaService` firma `RegistroAuditoria.EmpresaId` sólo desde marca autorizada de RBAC. Las filas históricas y jobs sin contexto siguen sin atribución; no equivale a filtro empresarial de auditoría.
 
@@ -62,7 +67,7 @@ SOLQARYN es una plataforma empresarial multiempresa.
 - Cache storefront: Angular comparte identidad en vuelo y categorías entre rutas; backend usa `IMemoryCache` tenant-aware con invalidación generacional. TTL vigentes: identidad/tema/categorías 5 min, destacados 30 s y listados 15 s. Detalle/contexto/checkout no se cachean. Si Render/API pasa a múltiples instancias simultáneas, esta implementación local debe sustituirse por una cache distribuida con invalidación compartida antes de asumir coherencia cross-instance.
 - Cache HTTP storefront: ASP.NET comprime JSON/text con Brotli/Gzip y usa `no-store` por defecto. Sólo GET públicos allowlisted emiten `Cache-Control` público + ETag/304: identidad/categorías con TTL moderado y SWR, bootstrap corto por contener destacados, productos con TTL corto/must-revalidate. Vercel marca bundles Angular hashados como immutable por un año; el proxy server-side preserva `Cache-Control`/ETag/Vary emitidos por el backend. Sesión, contexto, checkout y administración nunca son cache público.
 - La autorización del backend es la autoridad; la UI nunca sustituye controles de seguridad.
-- **Riesgo P0 vigente de tenancy comercial:** las cinco raíces comerciales incorporan en el candidato expand `EmpresaId?` nullable, sin atribución histórica ni filtros de acceso completos; el candidato dependiente atribuye altas administrativas cuando existe marca de permiso RBAC; RBAC/UsuarioEmpresa no equivale a ownership de filas. El candidato DEV incorpora cuarentena de rutas API cuando existen 0 o 2+ empresas (incluidas inactivas) y bloquea nuevas altas, sin reatribuir registros. No constituye certificación multiempresa; ver `docs/runbooks/TENANCY_DATOS_COMERCIALES_P0.md`.
+- **P0 de tenancy comercial vigente:** Aiven DEV tiene EmpresaId nullable en cinco raíces y protecciones parciales #3596; #3597 completó auditoría de procedencia. Los 19 registros históricos son PRUEBAS descartables por decisión del propietario (2026-10-13): no se hará backfill ni búsqueda adicional de dueño histórico. La futura limpieza preservará usuarios, credenciales, roles, permisos, membresías y relaciones imprescindibles de autenticación; no se ha ejecutado. El P0 real consiste en filtrar y proteger todos los DATOS FUTUROS de cada empresa en SQL, APIs, relaciones, storefront público, archivos, inventarios, finanzas, jobs y caché con pruebas A/B. Hasta ese certificado continúan cuarentena y bloqueo de alta de segunda empresa.
 - Tenancy, integridad transaccional y trazabilidad deben preservarse en cambios de negocio.
 
 Consultar `ARCHITECTURE.md` para cambios estructurales y `PROJECT_INDEX.md` para navegación dirigida.

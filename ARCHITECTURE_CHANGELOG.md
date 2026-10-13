@@ -1,3 +1,14 @@
+## 2026-10-13 — PR #3599 (candidato): claves por empresa y dependientes principales
+
+- Se agregan índices tenant y unicidades por empresa en cinco raíces, EmpresaId nullable a 5 descendientes (variante, foto, detalles de compra/venta, factura), guard de derivación y 12 FKs MySQL compuestas.
+- Snapshot/migración Oracle EF10 y CI quedan sujetos a certificación exact-head; NO está autorizado levantar la cuarentena de la segunda empresa. Quedan otras dependencias del grafo comercial y filtros de lectura por resolver; no se alteran datos ni entornos QA/PROD.
+
+## 2026-10-13 — Decisión de no atribuir fixtures comerciales DEV
+
+- Los 19 registros comerciales sin EmpresaId son pruebas descartables por decisión del propietario; se retira el backfill histórico del alcance obligatorio.
+- Cualquier limpieza futura exige inventario referencial, backup/restore y preservación de identidades y permisos. No se ejecutan cambios de BD con este commit.
+- La cuarentena se mantiene; sigue pendiente partición de datos FUTUROS en SQL, API, docs, storefront público, trabajos y caché, y prueba A/B antes de dos empresas.
+
 ## 2026-10-13 — Candidato: autorización tenant de escrituras EF y grafos nuevos (#3596)
 
 - `AppDbContext` conecta la marca server-side de RBAC con `CommercialCrossTenantWriteGuard`; los cambios a entidades comerciales con propietario ajeno se rechazan aun cuando el `EmpresaId` no cambia. Los grafos nuevos válidos se evalúan a través de entidades `Added` sin saltarse la revisión de propietarios persistidos.
