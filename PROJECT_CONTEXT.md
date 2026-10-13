@@ -31,6 +31,9 @@ Ningún plan, fila, gate, fase o secuencia que no esté incorporado al MAESTRO v
 
 ## 3. Arquitectura vigente
 
+- Análisis P0 del snapshot Oracle EF10: 132 entidades mapeadas, 20 con `EmpresaId` y 66 entidades adicionales conectadas directa/indirectamente con cinco raíces comerciales. Inventario en `docs/tenancy/INVENTARIO_GRAFO_COMERCIAL_P0_DEV.md`. No clasificar las restantes como globales por omisión ni retirar la cuarentena.
+
+
 - Validación parcial de escritura `CommercialCrossTenantWriteGuard`: si una venta/compra/detalle y su referencia ya tienen owners positivos diferentes, SaveChanges rechaza la asociación. Los NULL históricos permanecen sin atribuir y no se considera aislamiento por fila completo.
 
 
