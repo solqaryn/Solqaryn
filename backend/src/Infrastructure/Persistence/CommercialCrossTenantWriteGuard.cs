@@ -11,8 +11,13 @@ namespace Solqaryn.Infrastructure.Persistence;
 /// </summary>
 public static class CommercialCrossTenantWriteGuard
 {
-    public static async Task ValidateAsync(AppDbContext db, CancellationToken cancellationToken)
+    public static async Task ValidateAsync(
+        AppDbContext db, CancellationToken cancellationToken,
+        int? empresaAutorizada = null)
     {
+        if (empresaAutorizada is > 0)
+            CheckAuthorizedTenantWrites(db, empresaAutorizada.Value);
+
         // Sin permisos de reasignación implícita, incluso de NULL legacy a un id.
         await CheckOwnerNotReassignedAsync(db, cancellationToken);
 
@@ -107,6 +112,26 @@ public static class CommercialCrossTenantWriteGuard
                     detalle.ProductoVarianteId, detalle.ProductoVariante,
                     detalle.Producto, cancellationToken);
         }
+    }
+
+    private static void CheckAuthorizedTenantWrites(AppDbContext db, int empresaAutorizada)
+    {
+        // La marca se emite solo despues de validar membresia/permiso en RBAC.
+        // No aceptar que un recurso de B sea cambiado desde una sesion de A,
+        // aunque EmpresaId no sea modificado por el request.
+        foreach (var entry in db.ChangeTracker.Entries()
+                     .Where(e => e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted &&
+                         (e.Entity is Producto or Cliente or Proveedor or Compra or Venta)))
+        {
+            if (entry.Property("EmpresaId").CurrentValue is int empresaId &&
+                empresaId > 0 && empresaId != empresaAutorizada)
+            {
+                throw new ForbiddenAccessException(
+                    "La operacion comercial no pertenece a la empresa autorizada.");
+            }
+        }
+        // Los registros legacy NULL no se adjudican aqui: la cuarentena P0
+        // sigue bloqueando la operacion cuando existen varias empresas.
     }
 
     private static async Task CheckOwnerNotReassignedAsync(
