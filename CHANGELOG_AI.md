@@ -1,3 +1,9 @@
+## 2026-10-13 — Reparacion de validacion multiempresa en grafos de compra/venta nuevos (PR #3596)
+
+- El guard ahora reconoce cabeceras, clientes, proveedores, productos y variantes rastreados por EF como `Added` en la misma unidad de trabajo; cuando el registro ya existe, sigue verificando el owner persistido y no confia en navegaciones manipulables.
+- Cinco pruebas A/B nuevas comprueban compras y ventas correctas que se guardan juntas, referencias de otras empresas rechazadas y alta conjunta de cliente+venta. No se asigna owner a datos historicos.
+- El aislamiento multiempresa total sigue pendiente: filtros de lecturas, tienda anonima, jobs, grafo dependiente, procedencia de 19 registros historicos y pruebas reales A/B de todo el ERP. Este PR no autoriza retirar la cuarentena ni promocionar QA/PROD.
+
 ## 2026-10-13 — Cierre de bypasses de persistencia comercial (PR #3596, candidato)
 
 - `AppDbContext` bloquea persistencias sincronas comerciales y escrituras sincronas relacionales; `SaveChangesAsync(bool, CancellationToken)` ejecuta el mismo guard que el overload por defecto. Los reportes InMemory no comerciales mantienen compatibilidad de test.
