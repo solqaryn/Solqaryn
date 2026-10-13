@@ -1,3 +1,9 @@
+## 2026-10-13 — Recovery de CI tras expand de EmpresaId
+
+- Detectado en PR #3591: tests MySQL efímeros llaman EnsureCreated seguido de Migrate, lo cual intenta volver a añadir columnas EmpresaId. El bootstrap test ahora registra la migración expand como aplicada tras adoptar OracleBaseline, igual que el bootstrap oficial.
+- El gate de recuperación Oracle actualiza su expectativa de historia EF a dos migraciones; comprueba explícitamente ambas y no pierde invariantes de respaldo/tenancy.
+- No se cambia ni migra Aiven; PR continúa draft, cuarentena activa.
+
 ## 2026-10-13 — Preparación de esquema comercial para aislamiento tenant (candidato)
 
 - Expand sin backfill: `EmpresaId?` en cinco raíces comerciales, índices y FK restrictivas; migración Oracle `20261013121500_CommercialTenantRootExpand`, snapshot y DatabaseBootstrap actualizados para fresh/adopt.
