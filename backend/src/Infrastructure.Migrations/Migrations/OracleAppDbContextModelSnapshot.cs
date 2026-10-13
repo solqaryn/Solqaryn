@@ -1633,6 +1633,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
 
                     b.HasKey("Id");
 
+                    b.HasIndex("EmpresaId", "ProveedorId")
+                        .HasDatabaseName("IX_Compras_Empresa_Proveedor");
+
                     b.HasIndex("EmpresaId")
                         .HasDatabaseName("IX_Compras_EmpresaId");
 
@@ -1739,6 +1742,12 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId", "ProductoVarianteId")
+                        .HasDatabaseName("IX_CompraDetalles_Empresa_Variante");
+
+                    b.HasIndex("EmpresaId", "ProductoId")
+                        .HasDatabaseName("IX_CompraDetalles_Empresa_Producto");
 
                     b.HasIndex("EmpresaId", "CompraId")
                         .HasDatabaseName("IX_CompraDetalles_Empresa_Referencia");
@@ -7603,6 +7612,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
 
                     b.HasKey("Id");
 
+                    b.HasIndex("EmpresaId", "ProductoVarianteId")
+                        .HasDatabaseName("IX_ProductoImagenes_Empresa_Variante");
+
                     b.HasIndex("EmpresaId", "ProductoId")
                         .HasDatabaseName("IX_ProductoImagenes_Empresa_Referencia");
 
@@ -7732,6 +7744,10 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_ProductoVariantes_Empresa_Id");
 
                     b.HasIndex("EmpresaId", "ProductoId")
                         .HasDatabaseName("IX_ProductoVariantes_Empresa_Referencia");
@@ -10169,6 +10185,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
 
                     b.HasKey("Id");
 
+                    b.HasIndex("EmpresaId", "ClienteId")
+                        .HasDatabaseName("IX_Ventas_Empresa_Cliente");
+
                     b.HasIndex("EmpresaId")
                         .HasDatabaseName("IX_Ventas_EmpresaId");
 
@@ -10305,6 +10324,12 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId", "ProductoVarianteId")
+                        .HasDatabaseName("IX_VentaDetalles_Empresa_Variante");
+
+                    b.HasIndex("EmpresaId", "ProductoId")
+                        .HasDatabaseName("IX_VentaDetalles_Empresa_Producto");
 
                     b.HasIndex("EmpresaId", "VentaId")
                         .HasDatabaseName("IX_VentaDetalles_Empresa_Referencia");

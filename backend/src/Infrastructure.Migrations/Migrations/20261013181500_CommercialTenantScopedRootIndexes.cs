@@ -86,6 +86,14 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
             migrationBuilder.CreateIndex("IX_Facturas_Empresa_Referencia", "Facturas", new[] { "EmpresaId", "VentaId" });
             migrationBuilder.AddForeignKey("FK_Facturas_Empresas_EmpresaId", "Facturas", "EmpresaId", "Empresas", "Id", onDelete: ReferentialAction.Restrict);
             migrationBuilder.CreateIndex("UX_Facturas_Empresa_NumeroFactura", "Facturas", new[] { "EmpresaId", "NumeroFactura" }, unique: true);
+            migrationBuilder.CreateIndex("IX_Ventas_Empresa_Cliente", "Ventas", new[] { "EmpresaId", "ClienteId" });
+            migrationBuilder.CreateIndex("IX_Compras_Empresa_Proveedor", "Compras", new[] { "EmpresaId", "ProveedorId" });
+            migrationBuilder.CreateIndex("UX_ProductoVariantes_Empresa_Id", "ProductoVariantes", new[] { "EmpresaId", "Id" }, unique: true);
+            migrationBuilder.CreateIndex("IX_ProductoImagenes_Empresa_Variante", "ProductoImagenes", new[] { "EmpresaId", "ProductoVarianteId" });
+            migrationBuilder.CreateIndex("IX_VentaDetalles_Empresa_Producto", "VentaDetalles", new[] { "EmpresaId", "ProductoId" });
+            migrationBuilder.CreateIndex("IX_VentaDetalles_Empresa_Variante", "VentaDetalles", new[] { "EmpresaId", "ProductoVarianteId" });
+            migrationBuilder.CreateIndex("IX_CompraDetalles_Empresa_Producto", "CompraDetalles", new[] { "EmpresaId", "ProductoId" });
+            migrationBuilder.CreateIndex("IX_CompraDetalles_Empresa_Variante", "CompraDetalles", new[] { "EmpresaId", "ProductoVarianteId" });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
