@@ -1,0 +1,159 @@
+name: DEV - Aplicar expand de ownership comercial en Aiven con preflight
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - .github/workflows/dev-tenant-commercial-root-live.yml
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: solqaryn-dev-commercial-root-live
+  cancel-in-progress: false
+
+jobs:
+  expand:
+    name: Aiven DEV - expand comercial con backup verificado
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    environment: DEV
+    env:
+      DB_HOST: ${{ vars.SOLQARYN_DEV_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_DEV_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_DEV_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_DEV_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_DEV_DB_PASSWORD }}
+      ASPNETCORE_ENVIRONMENT: Development
+      Database__ApplyMigrationsOnStartup: 'false'
+      Database__ServerVersion: '8.4.8'
+    steps:
+      - name: Identidad y comprobacion de backup real same-artifact
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = 'solqaryn/Solqaryn'
+          test "$GITHUB_REF_NAME" = 'dev'
+          test "$DB_HOST" = 'solqaryn-mysql-solqaryn.h.aivencloud.com'
+          test "$DB_PORT" = '14402'
+          test "$DB_NAME" = 'solqaryn_dev'
+          test "$DB_USER" = 'solqaryn_dev_user'
+          test -n "$DB_PASSWORD"
+          test -n "$GH_TOKEN"
+          api() {
+            curl -fsSL -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' "$1"
+          }
+          backup="$(api "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/runs/38399423450")"
+          test "$(jq -r '.head_branch' <<< "$backup")" = 'dev'
+          test "$(jq -r '.head_sha' <<< "$backup")" = '4f5f3aebc99c2ec20710b918745692c558554fad'
+          test "$(jq -r '.conclusion' <<< "$backup")" = 'success'
+          jobs="$(api "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/runs/38399423450/jobs?per_page=50")"
+          jq -e '[.jobs[] | select(.name == "Backup cifrado de DEV real + restore/drill same-artifact" and .conclusion == "success")] | length == 1' <<< "$jobs" >/dev/null
+          artifacts="$(api "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/runs/38399423450/artifacts?per_page=30")"
+          jq -e '[.artifacts[] | select(.name == "solqaryn-backup-dev-38399423450" and .expired == false)] | length == 1' <<< "$artifacts" >/dev/null
+          latest="$(api "https://api.github.com/repos/$GITHUB_REPOSITORY/branches/dev" | jq -r '.commit.sha')"
+          test "$latest" = "$GITHUB_SHA"
+          echo 'TENANT_REAL_BACKUP_PREFLIGHT=PASS backup_and_same_artifact_restore=true project=SOLQARYN env=DEV'
+
+      - name: Checkout DEV exact-head y configurar .NET
+        uses: actions/checkout@v4
+      - name: SDK .NET 10.0.401
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Cliente MySQL TLS
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq >/dev/null
+          sudo apt-get install -y -qq mysql-client >/dev/null
+
+      - name: Verificar origen real, esquema, baseline y conteos
+        id: preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-project-scope.mjs
+          export MYSQL_PWD="$DB_PASSWORD"
+          q() {
+            mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e "$1"
+          }
+          test "$(q 'SELECT DATABASE();')" = 'solqaryn_dev'
+          test "$(q "SELECT SUBSTRING_INDEX(CURRENT_USER(),'@',1);")" = 'solqaryn_dev_user'
+          version="$(q 'SELECT VERSION();')"
+          case "$version" in 8.4.8*) ;; *) echo "STOP MySQL version not approved" >&2; exit 1 ;; esac
+          test "$(q 'SELECT COUNT(*) FROM Empresas;')" = 1
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")" = 1
+          columns="$(q "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name IN ('Productos','Clientes','Proveedores','Compras','Ventas') AND column_name='EmpresaId';")"
+          indexes="$(q "SELECT COUNT(DISTINCT table_name) FROM information_schema.statistics WHERE table_schema=DATABASE() AND index_name IN ('IX_Productos_EmpresaId','IX_Clientes_EmpresaId','IX_Proveedores_EmpresaId','IX_Compras_EmpresaId','IX_Ventas_EmpresaId');")"
+          fks="$(q "SELECT COUNT(*) FROM information_schema.referential_constraints WHERE constraint_schema=DATABASE() AND constraint_name IN ('FK_Productos_Empresas_EmpresaId','FK_Clientes_Empresas_EmpresaId','FK_Proveedores_Empresas_EmpresaId','FK_Compras_Empresas_EmpresaId','FK_Ventas_Empresas_EmpresaId');")"
+          marker="$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013121500_CommercialTenantRootExpand';")"
+          if [ "$columns" = 0 ] && [ "$indexes" = 0 ] && [ "$fks" = 0 ] && [ "$marker" = 0 ]; then
+            state=legacy
+          elif [ "$columns" = 5 ] && [ "$indexes" = 5 ] && [ "$fks" = 5 ] && [ "$marker" = 1 ]; then
+            state=already_expanded
+          else
+            echo "STOP inconsistent or partial tenant schema: columns=$columns indexes=$indexes fks=$fks marker=$marker" >&2
+            exit 1
+          fi
+          printf 'state=%s\n' "$state" >> "$GITHUB_OUTPUT"
+          printf 'counts_before=%s\n' "$(q "SELECT CONCAT((SELECT COUNT(*) FROM Productos),':',(SELECT COUNT(*) FROM Clientes),':',(SELECT COUNT(*) FROM Proveedores),':',(SELECT COUNT(*) FROM Compras),':',(SELECT COUNT(*) FROM Ventas));")" >> "$GITHUB_OUTPUT"
+          echo "TENANT_SCHEMA_PREFLIGHT=PASS state=$state columns=$columns fk=$fks indexes=$indexes marker=$marker"
+          unset MYSQL_PWD
+
+      - name: Aplicar EF Oracle expand exclusivamente a Aiven DEV
+        if: steps.preflight.outputs.state == 'legacy'
+        working-directory: backend
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # No publicar la cadena sensible en logs ni step-summary.
+          export ConnectionStrings__DefaultConnection="$(python3 - <<'PY'
+          import os
+          pw = os.environ['DB_PASSWORD'].replace('"', '""')
+          print('Server='+os.environ['DB_HOST']+';Port='+os.environ['DB_PORT']+';Database='+os.environ['DB_NAME']+';User='+os.environ['DB_USER']+';Password="'+pw+'";SslMode=Required;AllowPublicKeyRetrieval=False;')
+          PY
+          )"
+          latest="$(curl -fsSL -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' "https://api.github.com/repos/$GITHUB_REPOSITORY/branches/dev" | jq -r '.commit.sha')"
+          test "$latest" = "$GITHUB_SHA"
+          dotnet restore Solqaryn.sln --verbosity quiet
+          dotnet build Solqaryn.sln --configuration Release --no-restore --verbosity quiet
+          dotnet tool restore
+          dotnet tool run dotnet-ef migrations has-pending-model-changes \
+            --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
+            --context AppDbContext --configuration Release --no-build
+          dotnet tool run dotnet-ef database update 20261013121500_CommercialTenantRootExpand \
+            --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
+            --context AppDbContext --configuration Release --no-build
+          unset ConnectionStrings__DefaultConnection
+          echo 'TENANT_REAL_EF_EXPAND=APPLIED (no historical backfill performed)'
+
+      - name: Certificar cinco columnas FKs indices, historico y ausencia de perdidas
+        shell: bash
+        run: |
+          set -euo pipefail
+          export MYSQL_PWD="$DB_PASSWORD"
+          q() {
+            mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e "$1"
+          }
+          test "$(q "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name IN ('Productos','Clientes','Proveedores','Compras','Ventas') AND column_name='EmpresaId' AND is_nullable='YES';")" = 5
+          test "$(q "SELECT COUNT(DISTINCT table_name) FROM information_schema.statistics WHERE table_schema=DATABASE() AND index_name IN ('IX_Productos_EmpresaId','IX_Clientes_EmpresaId','IX_Proveedores_EmpresaId','IX_Compras_EmpresaId','IX_Ventas_EmpresaId');")" = 5
+          test "$(q "SELECT COUNT(*) FROM information_schema.referential_constraints WHERE constraint_schema=DATABASE() AND constraint_name IN ('FK_Productos_Empresas_EmpresaId','FK_Clientes_Empresas_EmpresaId','FK_Proveedores_Empresas_EmpresaId','FK_Compras_Empresas_EmpresaId','FK_Ventas_Empresas_EmpresaId');")" = 5
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013121500_CommercialTenantRootExpand';")" = 1
+          counts_after="$(q "SELECT CONCAT((SELECT COUNT(*) FROM Productos),':',(SELECT COUNT(*) FROM Clientes),':',(SELECT COUNT(*) FROM Proveedores),':',(SELECT COUNT(*) FROM Compras),':',(SELECT COUNT(*) FROM Ventas));")"
+          if [ "$counts_after" != '${{ steps.preflight.outputs.counts_before }}' ]; then
+            echo "STOP row totals changed between preflight and verification; audit required. No rollback performed." >&2
+            exit 1
+          fi
+          null_count="$(q "SELECT (SELECT COUNT(*) FROM Productos WHERE EmpresaId IS NULL)+(SELECT COUNT(*) FROM Clientes WHERE EmpresaId IS NULL)+(SELECT COUNT(*) FROM Proveedores WHERE EmpresaId IS NULL)+(SELECT COUNT(*) FROM Compras WHERE EmpresaId IS NULL)+(SELECT COUNT(*) FROM Ventas WHERE EmpresaId IS NULL);")"
+          echo "TENANT_REAL_SCHEMA_EXPAND=PASS columns=5 fks=5 indexes=5 historical_null=$null_count counts=$counts_after"
+          unset MYSQL_PWD
