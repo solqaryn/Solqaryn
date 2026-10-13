@@ -30,14 +30,15 @@ No leer todos los documentos administrativos en cada tarea. Consultarlos solo cu
 - `render.yaml`: configuración versionada relacionada con Render; tratar con cautela por separación de entornos.
 - `docs/ENTORNOS_DEV_PROD.md`: fuente canónica para GitHub Environments y topología Aiven DEV/QA/PROD (`DEV`, `QA`, `PROD`, `solqaryn-mysql`, bases/usuarios aislados).
 - `docs/RENDER_ENVIRONMENT_CONTRACT.md`: contrato exacto de 28 claves Render y diferencias permitidas entre DEV/QA/PROD.
-- `docs/runbooks/TENANCY_DATOS_COMERCIALES_P0.md`: aislamiento comercial incompleto, contención temporal de endpoints y criterios reales de migración/rollback/seguridad multiempresa.
+- `docs/runbooks/TENANCY_DATOS_COMERCIALES_P0.md`: aislamiento comercial incompleto y requisitos de partición futura (los 19 fixtures DEV no requieren backfill).
+- `docs/tenancy/LIMPIEZA_DATOS_PRUEBA_DEV.md`: decisión de descarte sin tocar usuarios, y controles para posterior limpieza segura de datos de prueba DEV.
 - `docs/runbooks/API_UPSTREAM_DISPONIBILIDAD_DEV.md`: diagnóstico de cold start, HTTP 503 y runbook de smoke del login, sin keep-alive y con QA/PROD fuera de scope.
 - `docs/GITHUB_ENVIRONMENT_CONTRACT.md`: contrato de cardinalidad, ramas, variables/secrets y aislamiento Aiven para los tres GitHub Environments.
 - `docs/DEV_CIERRE_TECNICO_PROMOCION.md`: evidencia del cierre DEV, rollback y precondiciones fail-closed para una futura promoción autorizada `dev -> main/PROD`; no es roadmap ni autorización productiva.
 
 ## Backend
 
-- **Candidato PR #3596:** `backend/src/Infrastructure/Persistence/AppDbContext.cs` y `CommercialCrossTenantWriteGuard.cs` exigen que las escrituras sobre datos comerciales con owner explícito concuerden con la marca RBAC de la empresa de la sesión; `backend/tests/Solqaryn.Tests/CommercialCrossTenantWriteGuardTests.cs` cubre A/B, grafos recién creados y bypasses. Sin merge aún; seguir `docs/runbooks/TENANCY_DATOS_COMERCIALES_P0.md`.
+- **Integrado en dev PR #3596:** `backend/src/Infrastructure/Persistence/AppDbContext.cs` y `CommercialCrossTenantWriteGuard.cs` exigen que las escrituras sobre datos comerciales con owner explícito concuerden con la marca RBAC de la empresa de la sesión; `backend/tests/Solqaryn.Tests/CommercialCrossTenantWriteGuardTests.cs` cubre A/B, grafos recién creados y bypasses. Aislamiento parcial de escrituras; seguir `docs/runbooks/TENANCY_DATOS_COMERCIALES_P0.md`.
 
 - Bitácora de nuevos eventos comerciales: `backend/src/Application/Services/AuditoriaService.cs`, `VerifiedCommercialTenant.Resolve(http)` y tests `AuditoriaTenantOwnershipTests.cs`. No permite leer auditorías ajenas ni atribuir historial.
 

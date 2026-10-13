@@ -1,3 +1,9 @@
+## 2026-10-13 — Declaración de fixtures DEV descartables, sin backfill
+
+- El propietario confirmó que 19 registros de Producto, Cliente, Proveedor, Compra y Venta son solo pruebas y no deben atribuirse a empresas históricas. Se retira esa obligación, sin alterar Aiven.
+- Preparada estrategia de limpieza posterior limitada a DEV, con usuarios/identidad preservados, backup cifrado y restauración comprobada. NO se ha ejecutado limpieza, borrado de Cloudinary ni DML.
+- P0 de aislamiento futuro A/B permanece abierto hasta proteger SQL, APIs, inventarios, documentos, archivos, jobs y tienda pública; cuarentena de segunda empresa intacta. QA/PROD no se tocan.
+
 ## 2026-10-13 — Evidencia primaria para ownership legacy (solo lectura, sin backfill)\n\n- La auditoría temporal añade tres fuentes de atribución verificables: `RegistrosAuditoria` con empresa explícita y referencia exacta, `DocumentosFiscalesEmision` enlazados a facturas y coincidencia de RTN legal del snapshot de factura con empresa. Agrega solo recuentos y conflictos sin mostrar filas/IDs ni escribir datos.\n- Mantener los 19 registros en `EmpresaId=NULL` hasta mapa individual confirmado; ninguna fuente aislada se transforma automáticamente en atribución.\n\n## 2026-10-13 — Evidencia temporal de atribución comercial (DEV read-only)
 
 - Agregado workflow `.github/workflows/dev-tenant-commercial-temporal-provenance.yml` con controles de identidad estrictos `solqaryn/Solqaryn`/`dev`/`solqaryn_dev`/MySQL 8.4.8. Cuenta por tabla comercial fechas de membresía anteriores/posteriores a las 19 filas legacy, marcas temporales contradictorias y cobertura agregada del owner en `RegistrosAuditoria`; nunca imprime identificadores, filas o PII.
