@@ -30,7 +30,7 @@ public sealed class CommercialTenantOwnershipGraphWriteGuardTests
         var row = new DescuentoCliente { ClienteId = client.Id, DescuentoId = 1 };
         db.Set<DescuentoCliente>().Add(row);
         await db.SaveChangesAsync();
-        Assert.Equal(a.Id, row.EmpresaId);
+        Assert.Equal(a.Id, db.Entry(row).Property<int?>("EmpresaId").CurrentValue);
     }
 
     [Fact]
@@ -45,10 +45,9 @@ public sealed class CommercialTenantOwnershipGraphWriteGuardTests
         db.Clientes.Add(client);
         await db.SaveChangesAsync();
 
-        db.Set<DescuentoCliente>().Add(new DescuentoCliente
-        {
-            ClienteId = client.Id, DescuentoId = 1, EmpresaId = a.Id
-        });
+        var row = new DescuentoCliente { ClienteId = client.Id, DescuentoId = 1 };
+        db.Set<DescuentoCliente>().Add(row);
+        db.Entry(row).Property<int?>("EmpresaId").CurrentValue = a.Id;
         await Assert.ThrowsAsync<BusinessRuleException>(() => db.SaveChangesAsync());
     }
 
@@ -84,7 +83,7 @@ public sealed class CommercialTenantOwnershipGraphWriteGuardTests
         var row = new DescuentoCliente { ClienteId=client.Id, DescuentoId=1 };
         db.Set<DescuentoCliente>().Add(row);
         await db.SaveChangesAsync();
-        row.EmpresaId = b.Id;
+        db.Entry(row).Property<int?>("EmpresaId").CurrentValue = b.Id;
         await Assert.ThrowsAsync<BusinessRuleException>(()=>db.SaveChangesAsync());
     }
 
