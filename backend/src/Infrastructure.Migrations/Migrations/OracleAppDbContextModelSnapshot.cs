@@ -13866,6 +13866,634 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         .HasConstraintName("FK_PedidoVentaDetalles_Empresas_EmpresaId");
                 });
 
+
+            // Recursos independientes empresariales: índices por empresa y catálogos por tenant.
+            modelBuilder.Entity("Solqaryn.Domain.Entities.AjusteInventario", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_AjustesInventario_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_AjustesInventario_Empresas_EmpresaId");
+                    b.HasIndex("NumeroAjuste").IsUnique(false)
+                        .HasDatabaseName("IX_AjustesInventario_NumeroAjuste_ForeignKeySupport");
+                    b.HasIndex("EmpresaId", "NumeroAjuste").IsUnique()
+                        .HasDatabaseName("UX_AjustesInventario_Empresa_NumeroAjuste");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Almacen", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_Almacenes_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_Almacenes_Empresas_EmpresaId");
+                    b.HasIndex("CodigoActivoUnico").IsUnique(false)
+                        .HasDatabaseName("IX_Almacenes_CodigoActivoUnico_ForeignKeySupport");
+                    b.HasIndex("EmpresaId", "CodigoActivoUnico").IsUnique()
+                        .HasDatabaseName("UX_Almacenes_Empresa_CodigoActivoUnico");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Contabilidad.AsientoDetalle", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_AsientoDetalles_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_AsientoDetalles_Empresas_EmpresaId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Contabilidad.AsientoContable", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_AsientosContables_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_AsientosContables_Empresas_EmpresaId");
+                    b.HasIndex("Numero").IsUnique(false)
+                        .HasDatabaseName("IX_AsientosContables_Numero_ForeignKeySupport");
+                    b.HasIndex("EmpresaId", "Numero").IsUnique()
+                        .HasDatabaseName("UX_AsientosContables_Empresa_Numero");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Cajas.CajaMovimiento", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_CajaMovimientos_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_CajaMovimientos_Empresas_EmpresaId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Cajas.Caja", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_Cajas_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_Cajas_Empresas_EmpresaId");
+                    b.HasIndex("SesionActivaId").IsUnique(false)
+                        .HasDatabaseName("IX_Cajas_SesionActivaId_ForeignKeySupport");
+                    b.HasIndex("EmpresaId", "SesionActivaId").IsUnique()
+                        .HasDatabaseName("UX_Cajas_Empresa_SesionActivaId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Cajas.CajaSesion", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_CajaSesiones_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_CajaSesiones_Empresas_EmpresaId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.CargaMasivaError", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_CargaMasivaErrores_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_CargaMasivaErrores_Empresas_EmpresaId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.CargaMasiva", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_CargasMasivas_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_CargasMasivas_Empresas_EmpresaId");
+                    b.HasIndex("Tipo", "HashArchivo").IsUnique(false)
+                        .HasDatabaseName("IX_CargasMasivas_Tipo_HashArchivo_ForeignKeySupport");
+                    b.HasIndex("EmpresaId", "Tipo", "HashArchivo").IsUnique()
+                        .HasDatabaseName("UX_CargasMasivas_Empresa_Tipo_HashArchivo");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Categoria", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_Categorias_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_Categorias_Empresas_EmpresaId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Contabilidad.CentroCosto", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_CentrosCosto_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_CentrosCosto_Empresas_EmpresaId");
+                    b.HasIndex("CodigoActivoUnico").IsUnique(false)
+                        .HasDatabaseName("IX_CentrosCosto_CodigoActivoUnico_ForeignKeySupport");
+                    b.HasIndex("EmpresaId", "CodigoActivoUnico").IsUnique()
+                        .HasDatabaseName("UX_CentrosCosto_Empresa_CodigoActivoUnico");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Color", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_Colores_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_Colores_Empresas_EmpresaId");
+                    b.HasIndex("NombreActivoUnico").IsUnique(false)
+                        .HasDatabaseName("IX_Colores_NombreActivoUnico_ForeignKeySupport");
+                    b.HasIndex("EmpresaId", "NombreActivoUnico").IsUnique()
+                        .HasDatabaseName("UX_Colores_Empresa_NombreActivoUnico");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Bancos.ConciliacionBancaria", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_ConciliacionesBancarias_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_ConciliacionesBancarias_Empresas_EmpresaId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Contabilidad.ConfiguracionContable", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_ConfiguracionesContables_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_ConfiguracionesContables_Empresas_EmpresaId");
+                    b.HasIndex("Evento").IsUnique(false)
+                        .HasDatabaseName("IX_ConfiguracionesContables_Evento_ForeignKeySupport");
+                    b.HasIndex("EmpresaId", "Evento").IsUnique()
+                        .HasDatabaseName("UX_ConfiguracionesContables_Empresa_Evento");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ConsumoInsumo", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_ConsumosInsumos_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_ConsumosInsumos_Empresas_EmpresaId");
+                    b.HasIndex("NumeroConsumo").IsUnique(false)
+                        .HasDatabaseName("IX_ConsumosInsumos_NumeroConsumo_ForeignKeySupport");
+                    b.HasIndex("EmpresaId", "NumeroConsumo").IsUnique()
+                        .HasDatabaseName("UX_ConsumosInsumos_Empresa_NumeroConsumo");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ConteoInventario", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_ConteosInventario_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_ConteosInventario_Empresas_EmpresaId");
+                    b.HasIndex("Numero").IsUnique(false)
+                        .HasDatabaseName("IX_ConteosInventario_Numero_ForeignKeySupport");
+                    b.HasIndex("EmpresaId", "Numero").IsUnique()
+                        .HasDatabaseName("UX_ConteosInventario_Empresa_Numero");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.CostoEnvio", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_CostosEnvio_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_CostosEnvio_Empresas_EmpresaId");
+                    b.HasIndex("PredeterminadoActivoUnico").IsUnique(false)
+                        .HasDatabaseName("IX_CostosEnvio_PredeterminadoActivoUnico_ForeignKeySupport");
+                    b.HasIndex("EmpresaId", "PredeterminadoActivoUnico").IsUnique()
+                        .HasDatabaseName("UX_CostosEnvio_Empresa_PredeterminadoActivoUnico");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Bancos.CuentaBancaria", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_CuentasBancarias_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_CuentasBancarias_Empresas_EmpresaId");
+                    b.HasIndex("BancoId", "NumeroCuenta").IsUnique(false)
+                        .HasDatabaseName("IX_CuentasBancarias_BancoId_NumeroCuenta_ForeignKeySupport");
+                    b.HasIndex("EmpresaId", "BancoId", "NumeroCuenta").IsUnique()
+                        .HasDatabaseName("UX_CuentasBancarias_Empresa_BancoId_NumeroCuenta");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.CuentaContable", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_CuentasContables_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_CuentasContables_Empresas_EmpresaId");
+                    b.HasIndex("Codigo").IsUnique(false)
+                        .HasDatabaseName("IX_CuentasContables_Codigo_ForeignKeySupport");
+                    b.HasIndex("EmpresaId", "Codigo").IsUnique()
+                        .HasDatabaseName("UX_CuentasContables_Empresa_Codigo");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.DashboardKpiConfiguracion", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_DashboardKpiConfiguraciones_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_DashboardKpiConfiguraciones_Empresas_EmpresaId");
+                    b.HasIndex("RolId", "MetricKey").IsUnique(false)
+                        .HasDatabaseName("IX_DashboardKpiConfiguraciones_RolId_MetricKey_ForeignKeySupport");
+                    b.HasIndex("EmpresaId", "RolId", "MetricKey").IsUnique()
+                        .HasDatabaseName("UX_DashboardKpiConfiguraciones_Empresa_RolId_MetricKey");
+                    b.HasIndex("UsuarioId", "MetricKey").IsUnique(false)
+                        .HasDatabaseName("IX_DashboardKpiConfiguraciones_UsuarioId_MetricKey_Fore_52c90cbb");
+                    b.HasIndex("EmpresaId", "UsuarioId", "MetricKey").IsUnique()
+                        .HasDatabaseName("UX_DashboardKpiConfiguraciones_Empresa_UsuarioId_MetricKey");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.DescuentoCategoria", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_DescuentoCategorias_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_DescuentoCategorias_Empresas_EmpresaId");
+                    b.HasIndex("DescuentoId", "CategoriaId").IsUnique(false)
+                        .HasDatabaseName("IX_DescuentoCategorias_DescuentoId_CategoriaId_ForeignKeySupport");
+                    b.HasIndex("EmpresaId", "DescuentoId", "CategoriaId").IsUnique()
+                        .HasDatabaseName("UX_DescuentoCategorias_Empresa_DescuentoId_CategoriaId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.DescuentoRol", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_DescuentoRoles_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_DescuentoRoles_Empresas_EmpresaId");
+                    b.HasIndex("DescuentoId", "RolId").IsUnique(false)
+                        .HasDatabaseName("IX_DescuentoRoles_DescuentoId_RolId_ForeignKeySupport");
+                    b.HasIndex("EmpresaId", "DescuentoId", "RolId").IsUnique()
+                        .HasDatabaseName("UX_DescuentoRoles_Empresa_DescuentoId_RolId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Descuento", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_Descuentos_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_Descuentos_Empresas_EmpresaId");
+                    b.HasIndex("CodigoPromocionalNormalizado").IsUnique(false)
+                        .HasDatabaseName("IX_Descuentos_CodigoPromocionalNormalizado_ForeignKeySupport");
+                    b.HasIndex("EmpresaId", "CodigoPromocionalNormalizado").IsUnique()
+                        .HasDatabaseName("UX_Descuentos_Empresa_CodigoPromocionalNormalizado");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.EmpresaConfiguracion", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_EmpresaConfiguraciones_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_EmpresaConfiguraciones_Empresas_EmpresaId");
+                    b.HasIndex("ActivaUnica").IsUnique(false)
+                        .HasDatabaseName("IX_EmpresaConfiguraciones_ActivaUnica_ForeignKeySupport");
+                    b.HasIndex("EmpresaId", "ActivaUnica").IsUnique()
+                        .HasDatabaseName("UX_EmpresaConfiguraciones_Empresa_ActivaUnica");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.EnlacePublicoFactura", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_EnlacesPublicosFactura_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_EnlacesPublicosFactura_Empresas_EmpresaId");
+                    b.HasIndex("EmpresaId", "Token").IsUnique()
+                        .HasDatabaseName("UX_EnlacesPublicosFactura_Empresa_Token");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.HistorialAplicacionImpuesto", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_HistorialAplicacionImpuestos_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_HistorialAplicacionImpuestos_Empresas_EmpresaId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.HistorialEnvioFactura", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_HistorialEnviosFactura_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_HistorialEnviosFactura_Empresas_EmpresaId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ImpuestoCategoria", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_ImpuestoCategorias_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_ImpuestoCategorias_Empresas_EmpresaId");
+                    b.HasIndex("ImpuestoId", "CategoriaId").IsUnique(false)
+                        .HasDatabaseName("IX_ImpuestoCategorias_ImpuestoId_CategoriaId_ForeignKeySupport");
+                    b.HasIndex("EmpresaId", "ImpuestoId", "CategoriaId").IsUnique()
+                        .HasDatabaseName("UX_ImpuestoCategorias_Empresa_ImpuestoId_CategoriaId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ImpuestoOperacion", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_ImpuestoOperaciones_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_ImpuestoOperaciones_Empresas_EmpresaId");
+                    b.HasIndex("ImpuestoId", "Operacion").IsUnique(false)
+                        .HasDatabaseName("IX_ImpuestoOperaciones_ImpuestoId_Operacion_ForeignKeySupport");
+                    b.HasIndex("EmpresaId", "ImpuestoId", "Operacion").IsUnique()
+                        .HasDatabaseName("UX_ImpuestoOperaciones_Empresa_ImpuestoId_Operacion");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Impuesto", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_Impuestos_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_Impuestos_Empresas_EmpresaId");
+                    b.HasIndex("Codigo").IsUnique(false)
+                        .HasDatabaseName("IX_Impuestos_Codigo_ForeignKeySupport");
+                    b.HasIndex("EmpresaId", "Codigo").IsUnique()
+                        .HasDatabaseName("UX_Impuestos_Empresa_Codigo");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Marca", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_Marcas_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_Marcas_Empresas_EmpresaId");
+                    b.HasIndex("NombreActivoUnico").IsUnique(false)
+                        .HasDatabaseName("IX_Marcas_NombreActivoUnico_ForeignKeySupport");
+                    b.HasIndex("EmpresaId", "NombreActivoUnico").IsUnique()
+                        .HasDatabaseName("UX_Marcas_Empresa_NombreActivoUnico");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Modelo", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_Modelos_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_Modelos_Empresas_EmpresaId");
+                    b.HasIndex("NombreMarcaActivoUnico").IsUnique(false)
+                        .HasDatabaseName("IX_Modelos_NombreMarcaActivoUnico_ForeignKeySupport");
+                    b.HasIndex("EmpresaId", "NombreMarcaActivoUnico").IsUnique()
+                        .HasDatabaseName("UX_Modelos_Empresa_NombreMarcaActivoUnico");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Bancos.MovimientoEstadoCuenta", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_MovimientosEstadoCuenta_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_MovimientosEstadoCuenta_Empresas_EmpresaId");
+                    b.HasIndex("ConciliacionBancariaId", "IdempotencyKey").IsUnique(false)
+                        .HasDatabaseName("IX_MovimientosEstadoCuenta_ConciliacionBancariaId_Idemp_1aaeebd7");
+                    b.HasIndex("EmpresaId", "ConciliacionBancariaId", "IdempotencyKey").IsUnique()
+                        .HasDatabaseName("UX_MovimientosEstadoCuenta_Empresa_ConciliacionBancaria_ef44b7da");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Contabilidad.PeriodoContable", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_PeriodosContables_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_PeriodosContables_Empresas_EmpresaId");
+                    b.HasIndex("FechaInicio", "FechaFin").IsUnique(false)
+                        .HasDatabaseName("IX_PeriodosContables_FechaInicio_FechaFin_ForeignKeySupport");
+                    b.HasIndex("EmpresaId", "FechaInicio", "FechaFin").IsUnique()
+                        .HasDatabaseName("UX_PeriodosContables_Empresa_FechaInicio_FechaFin");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.PoliticaCosteoInventario", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_PoliticasCosteoInventario_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_PoliticasCosteoInventario_Empresas_EmpresaId");
+                    b.HasIndex("EmpresaConfiguracionVigenteId").IsUnique(false)
+                        .HasDatabaseName("IX_PoliticasCosteoInventario_EmpresaConfiguracionVigent_62e166e6");
+                    b.HasIndex("EmpresaId", "EmpresaConfiguracionVigenteId").IsUnique()
+                        .HasDatabaseName("UX_PoliticasCosteoInventario_Empresa_EmpresaConfiguraci_fb4aa187");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.RevisionFinanciera", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_RevisionesFinancieras_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_RevisionesFinancieras_Empresas_EmpresaId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Talla", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_Tallas_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_Tallas_Empresas_EmpresaId");
+                    b.HasIndex("NombreActivoUnico").IsUnique(false)
+                        .HasDatabaseName("IX_Tallas_NombreActivoUnico_ForeignKeySupport");
+                    b.HasIndex("EmpresaId", "NombreActivoUnico").IsUnique()
+                        .HasDatabaseName("UX_Tallas_Empresa_NombreActivoUnico");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.TemaVisual", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_TemaVisual_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_TemaVisual_Empresas_EmpresaId");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.TipoCliente", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_TipoClientes_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_TipoClientes_Empresas_EmpresaId");
+                    b.HasIndex("Codigo").IsUnique(false)
+                        .HasDatabaseName("IX_TipoClientes_Codigo_ForeignKeySupport");
+                    b.HasIndex("EmpresaId", "Codigo").IsUnique()
+                        .HasDatabaseName("UX_TipoClientes_Empresa_Codigo");
+                    b.HasIndex("EsPredeterminadoUnico").IsUnique(false)
+                        .HasDatabaseName("IX_TipoClientes_EsPredeterminadoUnico_ForeignKeySupport");
+                    b.HasIndex("EmpresaId", "EsPredeterminadoUnico").IsUnique()
+                        .HasDatabaseName("UX_TipoClientes_Empresa_EsPredeterminadoUnico");
+                    b.HasIndex("NombreNormalizado").IsUnique(false)
+                        .HasDatabaseName("IX_TipoClientes_NombreNormalizado_ForeignKeySupport");
+                    b.HasIndex("EmpresaId", "NombreNormalizado").IsUnique()
+                        .HasDatabaseName("UX_TipoClientes_Empresa_NombreNormalizado");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.TransferenciaInventario", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_TransferenciasInventario_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_TransferenciasInventario_Empresas_EmpresaId");
+                    b.HasIndex("Numero").IsUnique(false)
+                        .HasDatabaseName("IX_TransferenciasInventario_Numero_ForeignKeySupport");
+                    b.HasIndex("EmpresaId", "Numero").IsUnique()
+                        .HasDatabaseName("UX_TransferenciasInventario_Empresa_Numero");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.UbicacionAlmacen", b =>
+                {
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "Id").IsUnique()
+                        .HasDatabaseName("UX_UbicacionesAlmacen_Empresa_Id");
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_UbicacionesAlmacen_Empresas_EmpresaId");
+                    b.HasIndex("AlmacenId", "CodigoActivoUnico").IsUnique(false)
+                        .HasDatabaseName("IX_UbicacionesAlmacen_AlmacenId_CodigoActivoUnico_Forei_44d4a87d");
+                    b.HasIndex("EmpresaId", "AlmacenId", "CodigoActivoUnico").IsUnique()
+                        .HasDatabaseName("UX_UbicacionesAlmacen_Empresa_AlmacenId_CodigoActivoUnico");
+                });
+
 #pragma warning restore 612, 618
         }
     }
