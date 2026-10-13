@@ -13,6 +13,9 @@ public static class CommercialCrossTenantWriteGuard
 {
     public static async Task ValidateAsync(AppDbContext db, CancellationToken cancellationToken)
     {
+        // Sin permisos de reasignación implícita, incluso de NULL legacy a un id.
+        CheckOwnerNotReassigned(db);
+
         foreach (var entry in db.ChangeTracker.Entries<Venta>()
                      .Where(e => e.State is EntityState.Added or EntityState.Modified))
         {
@@ -73,6 +76,21 @@ public static class CommercialCrossTenantWriteGuard
                     .Where(p => p.Id == detalle.ProductoId).Select(p => p.EmpresaId)
                     .SingleOrDefaultAsync(cancellationToken);
             Check(ownerCompra, ownerProducto);
+        }
+    }
+
+    private static void CheckOwnerNotReassigned(AppDbContext db)
+    {
+        foreach (var entry in db.ChangeTracker.Entries()
+                     .Where(e => e.State == EntityState.Modified &&
+                        (e.Entity is Producto || e.Entity is Cliente ||
+                         e.Entity is Proveedor || e.Entity is Compra ||
+                         e.Entity is Venta)))
+        {
+            var empresa = entry.Property("EmpresaId");
+            if (!Equals(empresa.OriginalValue, empresa.CurrentValue))
+                throw new BusinessRuleException(
+                    "La empresa propietaria de un registro comercial no puede modificarse mediante escrituras ordinarias.");
         }
     }
 
