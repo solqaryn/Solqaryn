@@ -11,6 +11,8 @@ public sealed class OrdenCompraRepository : IOrdenCompraRepository
 {
     private const string IdempotencyConstraint = "UX_OrdenesCompra_IdempotencyKey";
     private const string NumeroConstraint = "UX_OrdenesCompra_NumeroOrden";
+    private const string ScopedIdempotencyConstraint = "UX_OrdenesCompra_Empresa_IdempotencyKey";
+    private const string ScopedNumeroConstraint = "UX_OrdenesCompra_Empresa_NumeroOrden";
     private readonly AppDbContext _context;
 
     public OrdenCompraRepository(AppDbContext context)
@@ -118,14 +120,14 @@ public sealed class OrdenCompraRepository : IOrdenCompraRepository
         {
             await _context.SaveChangesAsync();
         }
-        catch (DbUpdateException ex) when (ContieneConstraint(ex, IdempotencyConstraint))
+        catch (DbUpdateException ex) when ((ContieneConstraint(ex, IdempotencyConstraint) || ContieneConstraint(ex, ScopedIdempotencyConstraint)))
         {
             throw new UniqueConstraintViolationException(
                 IdempotencyConstraint,
                 "La clave de idempotencia ya fue utilizada por otra solicitud concurrente.",
                 ex);
         }
-        catch (DbUpdateException ex) when (ContieneConstraint(ex, NumeroConstraint))
+        catch (DbUpdateException ex) when ((ContieneConstraint(ex, NumeroConstraint) || ContieneConstraint(ex, ScopedNumeroConstraint)))
         {
             throw new UniqueConstraintViolationException(
                 NumeroConstraint,
