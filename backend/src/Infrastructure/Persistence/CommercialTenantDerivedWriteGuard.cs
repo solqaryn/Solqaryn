@@ -143,7 +143,7 @@ public static class CommercialTenantDerivedWriteGuard
 
         if (entry.State is EntityState.Modified or EntityState.Deleted)
         {
-            if (entry.Property("EmpresaId").OriginalValue is int? previous && previous != current)
+            if (!Equals(entry.Property("EmpresaId").OriginalValue, current))
                 throw new BusinessRuleException(
                     "No es posible reasignar la empresa propietaria de un dependiente comercial.");
 
