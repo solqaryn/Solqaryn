@@ -251,5 +251,6 @@ await CommercialTenantSalesPhysicalConstraints.VerifyAsync(db);
 await CommercialTenantTaxDiscountPhysicalConstraints.VerifyAsync(db);
 await CommercialTenantOwnershipGraphPhysicalConstraints.VerifyAsync(db);
 await CommercialTenantRemainingPhysicalConstraints.VerifyAsync(db);
+await CommercialTenantNaturalKeysPhysicalContract.VerifyAsync(db);
 
 Console.WriteLine($"SOLQARYN_ORACLE_BOOTSTRAP=PASS mode={mode} tables={afterAdoption} pending=0");
