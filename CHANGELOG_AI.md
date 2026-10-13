@@ -1,3 +1,10 @@
+## 2026-10-13 — Diagnóstico read-only de procedencia de datos comerciales
+
+- Workflow `.github/workflows/dev-tenant-commercial-provenance-readonly.yml`: ejecutable sólo en GitHub Environment DEV desde `dev`, con lectura TLS de Aiven y conteos agregados por cinco raíces.
+- Distingue filas sin owner, sin autor y membresía empresarial actual inexistente/múltiple. Audita enlaces Compra-Proveedor, Venta-Cliente y detalles-Producto, sin imprimir IDs, PII, filas ni secretos.
+- **No convierte membresía ACTUAL en evidencia histórica ni ejecuta backfill**, DML, DDL o restore. Exige cinco columnas `EmpresaId` antes de operar; condicionada al expand comercial certificado.
+- No modifica QA, PROD, servicios ni datos persistentes. El P0 sigue abierto.
+
 ## 2026-10-13 — Candidato de aplicación segura del expand comercial a Aiven DEV
 
 - Workflow `.github/workflows/dev-tenant-commercial-root-live.yml`: ejecución exclusiva push `dev`, con verificación de backup real/restore same-artifact #38399423450, identidad canónica MySQL 8.4.8, preflight fail-closed de esquema/FKs y migración EF Oracle `20261013121500_CommercialTenantRootExpand` solo si el esquema está enteramente legacy. Verifica post-DDL y conteos; no atribuye filas legacy, no modifica QA/PROD, mantiene middleware de cuarentena y bloqueo de segunda empresa.
