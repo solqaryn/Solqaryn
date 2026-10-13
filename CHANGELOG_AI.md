@@ -1,3 +1,11 @@
+## 2026-10-12 — P0 aislamiento de datos comerciales: cuarentena fail-closed (candidato DEV)
+
+- Diagnóstico del HEAD: entidades Producto/Cliente/Proveedor/Compra/Venta sin owner EmpresaId; repositorios GET/listas sin filtro empresarial. UsuarioEmpresa y permisos verifican membresía, no ownership de filas, por lo cual una empresa nueva no puede considerarse aislada.
+- Candidato DEV añade UnscopedCommercialTenantGuardMiddleware: exige exactamente una Empresa registrada incluso contando inactivas para exponer cualquier dato API; mantiene auth, tenant-context, health y CORS. Estado 0/2+ devuelve 503 sin datos ni ejecución de controlador; POST /empresas y EmpresaService.CreateAsync no permiten incorporar una segunda empresa con modelo legacy.
+- Pruebas de rutas de maestros, operaciones y tienda pública, dos empresas, empresa inactiva, ausencia de empresas, excepciones de ruta, auth/health; test del servicio que impide nuevas empresas y falla cerrado ante repositorio inválido.
+- Esto es únicamente contención de exposición y puede bloquear funcionalidad si hay más de una empresa ya registrada. **El P0 permanece ABIERTO** hasta asignar ownership físico por fila, reconciliar datos legacy sin asignación arbitraria y certificar dos empresas reales de manera simultánea. Ver docs/runbooks/TENANCY_DATOS_COMERCIALES_P0.md.
+- QA, PROD, main, dominio, bases, secretos y planes no modificados. Despliegue exact-head DEV y smoke requeridos antes de afirmar que el guard está activo.
+
 ## 2026-10-12 — Mitigación de API upstream durante login DEV
 
 - Los tres backends siguen en Render Free; QA /health/ready tardó 24.488s y respondió 503; PROD demoró 28.626s y respondió 200; Vercel cortaba sockets a los 30s y devolvía 502 genérico.

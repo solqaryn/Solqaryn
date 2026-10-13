@@ -23,6 +23,8 @@ public sealed class N61FEmpresaSecurityAuditTests
 
     public N61FEmpresaSecurityAuditTests()
     {
+        _repository.Setup(x => x.ListAsync(It.IsAny<bool?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Empresa>());
         _currentUser.SetupGet(x => x.UsuarioId).Returns(41);
         _currentUser.SetupGet(x => x.NombreUsuario).Returns("vaep-n61f");
         _auditoria

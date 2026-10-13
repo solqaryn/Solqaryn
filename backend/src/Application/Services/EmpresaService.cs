@@ -39,7 +39,18 @@ public sealed class EmpresaService : IEmpresaService
     public async Task<EmpresaDto> CreateAsync(CreateEmpresaDto dto, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(dto);
-        var empresa = new Empresa(NormalizarNombre(dto.Nombre))
+        var nombre = NormalizarNombre(dto.Nombre);
+
+        // P0: la base comercial legacy no tiene EmpresaId en productos, clientes,
+        // proveedores, compras y ventas. Prohibir nueva empresa desde CUALQUIER
+        // consumidor del servicio (no sólo /empresas) hasta migración certificada.
+        var existentes = await _repository.ListAsync(cancellationToken: cancellationToken)
+            ?? throw new BusinessRuleException("No se pudo validar el aislamiento previo al alta empresarial.");
+        if (existentes.Count != 0)
+            throw new BusinessRuleException(
+                "No se pueden registrar nuevas empresas hasta certificar el aislamiento de los datos comerciales.");
+
+        var empresa = new Empresa(nombre)
         {
             CreadoPorUsuarioId = _currentUser.UsuarioId,
             CreadoPorNombreUsuario = _currentUser.NombreUsuario

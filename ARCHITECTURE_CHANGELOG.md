@@ -1,3 +1,10 @@
+## 2026-10-12 — Contención P0 de tenancy comercial sin atribución arbitraria (candidato DEV)
+
+- Se confirmó que Producto, Cliente, Proveedor, Compra y Venta todavía no tienen EmpresaId; el control RBAC/UsuarioEmpresa no garantiza propiedad de datos. Catálogos, variantes, inventario, facturas y documentos derivados deben migrarse de forma coherente.
+- Guard obligatorio en pipeline API antes de controladores: en presencia de 0 o 2+ Empresas (incluidas inactivas) bloquea todas las rutas de datos con respuesta 503 sin exponer registros; permite únicamente autenticación, verificación tenant, health y CORS. Con una Empresa deja las rutas existentes sujetas a RBAC.
+- Alta de una segunda empresa bloqueada también en EmpresaService, no sólo en POST /empresas. Sin nuevos secretos, provider, variable, esquema, DB, plan ni cambios a QA/PROD.
+- Es una cuarentena transitoria: **no habilita multiempresa funcional y no es una certificación final**. Runbook obligatorio: docs/runbooks/TENANCY_DATOS_COMERCIALES_P0.md.
+
 ## 2026-10-12 — Readiness bajo demanda antes de login DEV
 
 - Se mantiene el proxy Vercel project-bound y el arranque de ASP.NET Core sin tocar la arquitectura de datos.

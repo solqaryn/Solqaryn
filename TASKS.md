@@ -24,6 +24,7 @@ CONTEXT_MODE=CURRENT_STATE_ONLY
 - Las diez automatizaciones VAEP permanecen pausadas hasta autorización explícita del propietario.
 - No existe una cola, parent, gate o fase histórica con autoridad ejecutable desde este archivo.
 - El trabajo futuro se selecciona únicamente desde el Plan Maestro vigente + estado vivo + dependencias técnicas reales.
+- **P0 abierto — segregación de datos comerciales multiempresa:** `Producto`, `Cliente`, `Proveedor`, `Compra` y `Venta` sin EmpresaId. El candidato DEV establece una cuarentena de datos ante múltiples empresas, no el soporte multiempresa funcional. Necesita migración tenant-aware, asignación comprobada de legacy, guardias por fila, pruebas de dos empresas, backup/restore y certificación exact-head; ver `docs/runbooks/TENANCY_DATOS_COMERCIALES_P0.md`.
 
 ## Regla de mantenimiento
 
