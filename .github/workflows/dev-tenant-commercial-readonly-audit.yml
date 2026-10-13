@@ -2,7 +2,7 @@ name: DEV - Tenant commercial readiness read-only
 
 on:
   push:
-    branches: [diagnostic/dev-tenant-readonly-inventory-20261012]
+    branches: [dev]
     paths:
       - .github/workflows/dev-tenant-commercial-readonly-audit.yml
 
@@ -27,7 +27,7 @@ jobs:
         run: |
           set -euo pipefail
           test "$GITHUB_REPOSITORY" = "solqaryn/Solqaryn"
-          test "$GITHUB_REF_NAME" = "diagnostic/dev-tenant-readonly-inventory-20261012"
+          test "$GITHUB_REF_NAME" = "dev"
           test "$DB_HOST" = "solqaryn-mysql-solqaryn.h.aivencloud.com"
           test "$DB_PORT" = "14402"
           test "$DB_NAME" = "solqaryn_dev"
