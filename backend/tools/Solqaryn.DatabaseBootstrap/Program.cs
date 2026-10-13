@@ -125,6 +125,9 @@ if (mode == "fresh")
     // de migraciones incrementales sobre sus propias columnas o índices.
     // Esta adopción se autoriza solo tras cotejar el contrato físico preciso;
     // jamás etiquetar automáticamente todas las migraciones que aparezcan.
+    // MigrateAsync/ExecuteSqlRawAsync pueden cerrar la conexión implícita del provider.
+    // ScalarLongAsync crea un comando ADO directo y exige conexión abierta.
+    await db.Database.OpenConnectionAsync();
     var indicesEmpresa = await ScalarLongAsync(db, """
         SELECT COUNT(*) FROM (
           SELECT e.Tabla, e.Indice
@@ -171,6 +174,7 @@ if (mode == "fresh")
         INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
         VALUES ('20261013181500_CommercialTenantScopedRootIndexes', '10.0.12');
         """);
+    await db.Database.CloseConnectionAsync();
 }
 else
 {
