@@ -17,6 +17,8 @@ public sealed class N61DEmpresaApplicationApiTests
 
     public N61DEmpresaApplicationApiTests()
     {
+        _repository.Setup(x => x.ListAsync(It.IsAny<bool?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Empresa>());
         _currentUser.SetupGet(x => x.UsuarioId).Returns(17);
         _currentUser.SetupGet(x => x.NombreUsuario).Returns("vaep-n61d");
         _auditoria
