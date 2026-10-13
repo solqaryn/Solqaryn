@@ -259,6 +259,10 @@ Las cinco raíces `Producto`, `Cliente`, `Proveedor`, `Compra` y `Venta` incorpo
 
 La cuarentena de API y el bloqueo de alta de segunda empresa **permanecen**. Este cambio no garantiza multiempresa: pendientes prueba de procedencia legacy, filtros por empresa en todo el grafo y storefront, unicidades por tenant, respaldo/restauración y pruebas A/B reales.
 
+## 2026-10-13 — Owner verificado para nuevas altas (candidato dependiente)
+
+Las altas administrativas de Producto, Cliente, Proveedor, Compra y Venta propagan `EmpresaId` solo desde el identificador firmado por el filtro `RequierePermiso` en `HttpContext.Items`. La cabecera `X-Empresa-Id` no es fuente de autoridad. Los flujos sin contexto RBAC conservan NULL durante la etapa expand; esto NO certifica aislamiento de filas, relaciones, tienda pública, jobs ni datos históricos. La cuarentena P0 permanece.
+
 ## 2026-10-13 — Contención adicional de referencias comerciales cruzadas
 
 `CommercialCrossTenantWriteGuard` valida antes de `AppDbContext.SaveChangesAsync` nuevas referencias Venta-Cliente, Compra-Proveedor, VentaDetalle-Producto y CompraDetalle-Producto cuando ambas partes tienen `EmpresaId` explícito. Rechaza mezclas empresariales; conserva NULL legacy sin atribución. No sustituye aislamiento por fila en consultas ni permite retirar la cuarentena P0.

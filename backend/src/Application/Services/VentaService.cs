@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Http;
 using Solqaryn.Application.Common;
 using Solqaryn.Application.DTOs;
 using Solqaryn.Application.Exceptions;
 using Solqaryn.Application.Interfaces;
+using Solqaryn.Application.Security;
 using Solqaryn.Domain.Common;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Enums;
@@ -24,6 +26,7 @@ public class VentaService : IVentaService
     private readonly ICurrentUserService _currentUser;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAuditoriaService _auditoria;
+    private readonly IHttpContextAccessor? _tenantHttpContextAccessor;
     private readonly ITipoClientePredeterminadoResolver _predeterminadoResolver;
 
     public VentaService(
@@ -41,7 +44,7 @@ public class VentaService : IVentaService
         IUnitOfWork unitOfWork,
         IAuditoriaService auditoria,
         ITipoClientePredeterminadoResolver predeterminadoResolver,
-        IKardexMovimientoWriter? kardexMovimientoWriter = null)
+        IKardexMovimientoWriter? kardexMovimientoWriter = null, IHttpContextAccessor? tenantHttpContextAccessor = null)
     {
         _ventaRepository = ventaRepository;
         _clienteRepository = clienteRepository;
@@ -57,6 +60,7 @@ public class VentaService : IVentaService
         _currentUser = currentUser;
         _unitOfWork = unitOfWork;
         _auditoria = auditoria;
+        _tenantHttpContextAccessor = tenantHttpContextAccessor;
         _predeterminadoResolver = predeterminadoResolver;
     }
 
@@ -83,6 +87,7 @@ public class VentaService : IVentaService
         var metodoPagoCatalogo = await ResolverMetodoPagoAsync(dto.MetodoPago);
         var venta = new Venta
         {
+            EmpresaId = VerifiedCommercialTenant.Resolve(_tenantHttpContextAccessor?.HttpContext),
             NumeroVenta = CrearNumeroTemporal("VEN"),
             ClienteNombre = string.IsNullOrWhiteSpace(dto.ClienteNombre) ? "Cliente final" : dto.ClienteNombre,
             ClienteTelefono = dto.ClienteTelefono,

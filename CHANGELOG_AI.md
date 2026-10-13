@@ -19,6 +19,24 @@
 - Pruebas A/B dirigidas y de legado. Es contención parcial: continúan pendientes validaciones de raíz/descendientes, ownership histórico, filtros de lectura, tienda pública, jobs y pruebas completas. Queda activa la cuarentena P0.
 - Sin DDL, escritura en Aiven ni cambios QA/PROD. CI causal pendiente antes de merge.
 
+## 2026-10-13 — Propagación preliminar de owner comercial RBAC (candidato dependiente)
+
+- `VerifiedCommercialTenant` obtiene la empresa únicamente del marcador de autorización verificado del filtro `RequierePermiso`. Las nuevas altas de Producto, Cliente, Proveedor, Compra y Venta asignan `EmpresaId` cuando existe dicho marcador.
+- Cabecera/payload no autorizan propietario. Los flujos sin contexto verificado mantienen `NULL`, sin backfill ni falsa certificación multiempresa. La cuarentena de API permanece y faltan filtros por fila, subgrafos, jobs y catálogo público.
+- Pruebas dirigidas de header malicioso/ausencia de contexto; requiere RootExpand #3591 y CI exact-head. Sin datos Aiven ni QA/PROD modificados.
+
+## 2026-10-13 — Diagnóstico read-only de procedencia de datos comerciales
+
+- Workflow `.github/workflows/dev-tenant-commercial-provenance-readonly.yml`: ejecutable sólo en GitHub Environment DEV desde `dev`, con lectura TLS de Aiven y conteos agregados por cinco raíces.
+- Distingue filas sin owner, sin autor y membresía empresarial actual inexistente/múltiple. Audita enlaces Compra-Proveedor, Venta-Cliente y detalles-Producto, sin imprimir IDs, PII, filas ni secretos.
+- **No convierte membresía ACTUAL en evidencia histórica ni ejecuta backfill**, DML, DDL o restore. Exige cinco columnas `EmpresaId` antes de operar; condicionada al expand comercial certificado.
+- No modifica QA, PROD, servicios ni datos persistentes. El P0 sigue abierto.
+
+## 2026-10-13 — Candidato de aplicación segura del expand comercial a Aiven DEV
+
+- Workflow `.github/workflows/dev-tenant-commercial-root-live.yml`: ejecución exclusiva push `dev`, con verificación de backup real/restore same-artifact #38399423450, identidad canónica MySQL 8.4.8, preflight fail-closed de esquema/FKs y migración EF Oracle `20261013121500_CommercialTenantRootExpand` solo si el esquema está enteramente legacy. Verifica post-DDL y conteos; no atribuye filas legacy, no modifica QA/PROD, mantiene middleware de cuarentena y bloqueo de segunda empresa.
+- Este workflow NO es certificación final: faltan validación de procedencia, protección de grafo y storefront, controles en escrituras y pruebas A/B. No declarar P0 LISTO por resultado del expand.
+
 ## 2026-10-13 — Prueba de expansión real desde esquema legacy MySQL (PR #3591)
 
 - Nuevo gate desechable `tenant-commercial-root-expand-ephemeral.yml`: revierte las cinco columnas solo en MySQL CI efímero, siembra una fila legacy y aplica EF migration real; verifica cinco FK/índices, legado nulo sin pérdida, idempotencia y pending-model=0.

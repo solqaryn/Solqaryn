@@ -2,6 +2,10 @@
 
 - Gate anterior a SaveChanges que rechaza vínculos con propietarios empresariales diferentes en Ventas/Clientes, Compras/Proveedores y detalles/Productos. No modifica el modelo, esquema, datos históricos ni QA/PROD; contención P0 se conserva.
 
+## 2026-10-13 — Identificador de empresa autorizado en nuevas altas comerciales (candidato)
+
+- Cinco servicios comerciales consumen el owner de la marca server-side posterior al filtro RBAC, no de header/payload. Datos legacy y flujos anónimos siguen pendientes; contención P0 activa.
+
 ## 2026-10-13 — Expand comercial tenant (candidato dev)
 
 - Propiedad opcional `EmpresaId` y FK/índice restrictivos en cinco raíces; Oracle `20261013121500_CommercialTenantRootExpand` y bootstrap fresh/adopt compatibles. Histórico sin asignar, guard P0 preservado. Sin certificación multiempresa ni cambios a QA/PROD.
