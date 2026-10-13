@@ -122,7 +122,8 @@ public class AppDbContext : DbContext
                           CompraDetalle or VentaDetalle or ProductoVariante or
                           ExistenciaVariante or MovimientoInventario or Factura or
                           FacturaDetalle or FacturaPago or CompraDocumento or
-                          VentaImpuesto or CompraImpuesto or VentaDescuento or HistorialUsoDescuento));
+                          VentaImpuesto or CompraImpuesto or VentaDescuento or HistorialUsoDescuento) ||
+                       CommercialTenantOwnershipGraphWriteGuard.Applies(e.Metadata.Name));
 
         if (ChangeTracker.HasChanges() && (Database.IsRelational() || cambiaComercial))
             throw new NotSupportedException(
@@ -152,6 +153,8 @@ public class AppDbContext : DbContext
         await CommercialTenantInvoiceWriteGuard.ValidateAsync(
             this, empresaAutorizada, cancellationToken);
         await CommercialTenantTaxDiscountWriteGuard.ValidateAsync(
+            this, empresaAutorizada, cancellationToken);
+        await CommercialTenantOwnershipGraphWriteGuard.ValidateAsync(
             this, empresaAutorizada, cancellationToken);
         await ValidarAislamientoComercialVentasAsync(cancellationToken);
         await PrepararValorizacionComprasAsync(cancellationToken);
