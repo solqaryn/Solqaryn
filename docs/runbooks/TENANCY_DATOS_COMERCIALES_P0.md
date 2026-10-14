@@ -1,3 +1,8 @@
+## 2026-10-13 — Punto #4: alcance de los filtros EF añadidos (candidato)
+
+- La primera defensa de lectura genérica utiliza `VerifiedCommercialTenant` solo después de una marca de autorización RBAC de la petición. Los filtros de borrado lógico no se reemplazan; objetos con `EmpresaId=NULL` no se incluyen en una consulta comercial con marca explícita.
+- **No levantar cuarentena ni declarar LISTO** por este cambio aislado: los flujos sin marca (incluidas lecturas públicas y trabajos), `IgnoreQueryFilters`, SQL directo, recursos Cloudinary, documentos, reportes y caché requieren prueba y contención específicas. Registrar resultados reales de CI antes de fusionar.
+
 # SOLQARYN — P0: aislamiento empresarial de datos comerciales
 
 ### Actualización P0 #3 — PR #3599 (13 octubre 2026; candidato, NO fusionado)
