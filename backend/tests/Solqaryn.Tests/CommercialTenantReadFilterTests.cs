@@ -185,7 +185,13 @@ public sealed class CommercialTenantReadFilterTests
             NombreNormalizado = "PLANTILLA",
             EsSistema = true
         };
-        db.Roles.Add(plantilla);
+        var plataforma = new Rol
+        {
+            Nombre = "ADMIN PLATAFORMA",
+            NombreNormalizado = "ADMIN_PLATAFORMA",
+            Ambito = Solqaryn.Domain.Enums.AmbitoAutorizacion.Plataforma
+        };
+        db.Roles.AddRange(plantilla, plataforma);
         await db.SaveChangesAsync();
 
         http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = b.Id;
@@ -202,5 +208,6 @@ public sealed class CommercialTenantReadFilterTests
         var visibles = await db.Roles.AsNoTracking().ToListAsync();
         Assert.Contains(visibles, role => role.Id == plantilla.Id);
         Assert.DoesNotContain(visibles, role => role.Id == soloB.Id);
+        Assert.DoesNotContain(visibles, role => role.Id == plataforma.Id);
     }
 }
