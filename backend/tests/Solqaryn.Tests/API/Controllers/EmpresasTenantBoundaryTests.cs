@@ -39,6 +39,38 @@ public sealed class EmpresasTenantBoundaryTests
         service.VerifyAll();
     }
 
+    [Theory]
+    [InlineData(true, 1)]
+    [InlineData(false, 0)]
+    public async Task FiltroDeEstadoSoloOperaSobreEmpresaAutorizada(bool activa, int esperado)
+    {
+        var service = new Mock<IEmpresaService>(MockBehavior.Strict);
+        service.Setup(x => x.GetByIdAsync(11, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new EmpresaDto { Id = 11, Nombre = "Empresa A", Activa = true });
+        var sut = Controller(service, 11);
+
+        var result = Assert.IsType<OkObjectResult>(
+            await sut.List(activa, CancellationToken.None));
+        var data = Assert.IsType<ApiResponse<List<EmpresaDto>>>(result.Value).Data!;
+        Assert.Equal(esperado, data.Count);
+        Assert.All(data, empresa => Assert.Equal(11, empresa.Id));
+        service.Verify(x => x.GetByIdAsync(11, It.IsAny<CancellationToken>()), Times.Once);
+        service.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task EmpresaSinContextoRBAC_RechazaListadoAntesDeConsultarAlServicio()
+    {
+        var service = new Mock<IEmpresaService>(MockBehavior.Strict);
+        var sut = new EmpresasController(service.Object)
+        {
+            ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+        };
+        await Assert.ThrowsAsync<ForbiddenAccessException>(
+            () => sut.List(null, CancellationToken.None));
+        service.VerifyNoOtherCalls();
+    }
+
     [Fact]
     public async Task EndpointsConEmpresaIdDeB_NoAccedenAServicioDesdeA()
     {
