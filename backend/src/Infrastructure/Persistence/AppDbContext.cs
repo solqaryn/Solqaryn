@@ -29,7 +29,8 @@ public class AppDbContext : DbContext
     // el gate HTTP P0 de segunda empresa sigue siendo obligatorio.
     public int? AuthorizedReadEmpresaId =>
         VerifiedCommercialTenant.Resolve(_tenantHttpContextAccessor?.HttpContext)
-        ?? VerifiedPublicStoreTenant.Resolve(_tenantHttpContextAccessor?.HttpContext);
+        ?? VerifiedPublicStoreTenant.Resolve(_tenantHttpContextAccessor?.HttpContext)
+        ?? VerifiedPublicInvoiceTenant.Resolve(_tenantHttpContextAccessor?.HttpContext);
 
     public DbSet<Producto> Productos => Set<Producto>();
     public DbSet<ProductoVariante> ProductoVariantes => Set<ProductoVariante>();
