@@ -11,6 +11,9 @@ public interface IUsuarioRepository
     // Alta inicial: solo el creador puede localizar una identidad que
     // aun no pertenece a ninguna empresa. Nunca usar en listados.
     Task<Usuario?> GetPendientePrimeraMembresiaAsync(int id, int creadorId);
+    // Autoriza administrar un usuario con membresia INACTIVA exclusivamente
+    // si existe una membresia en la empresa validada por RBAC del request.
+    Task<Usuario?> GetByIdConMembresiaDeEmpresaAutorizadaAsync(int id);
     Task<List<Usuario>> GetAllAsync();
     Task<PagedResult<Usuario>> GetPagedAsync(PagedRequest request);
     Task<int> ContarAdministradoresActivosAsync(int? excluirUsuarioId = null);
