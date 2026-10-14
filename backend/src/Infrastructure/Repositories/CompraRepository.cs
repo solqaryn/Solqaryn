@@ -66,7 +66,11 @@ public class CompraRepository : ICompraRepository
         if (_context.Database.CurrentTransaction is null)
             throw new InvalidOperationException("GetByIdForUpdateAsync requiere una transacción activa.");
 
-        var alcance = await _usuarioScope.ObtenerActualAsync();
+        // El lock SQL no depende de los filtros EF ni de roles globales legacy.
+        var empresaId = _context.AuthorizedCommercialEmpresaId;
+        if (empresaId is not > 0)
+            return null;
+        var alcance = await _usuarioScope.ObtenerActualAsync(empresaId.Value);
         if (alcance is null)
             return null;
 
@@ -74,14 +78,14 @@ public class CompraRepository : ICompraRepository
         if (alcance.EsAdministrador)
         {
             cabecera = await _context.Compras
-                .FromSqlInterpolated($"SELECT c.* FROM Compras c WHERE c.Id = {id} AND c.Eliminado = 0 FOR UPDATE")
+                .FromSqlInterpolated($"SELECT c.* FROM Compras c WHERE c.Id = {id} AND c.EmpresaId = {empresaId.Value} AND c.Eliminado = 0 FOR UPDATE")
                 .AsTracking()
                 .FirstOrDefaultAsync();
         }
         else
         {
             cabecera = await _context.Compras
-                .FromSqlInterpolated($"SELECT c.* FROM Compras c WHERE c.Id = {id} AND c.Eliminado = 0 AND c.CreadoPorUsuarioId = {alcance.UsuarioId} FOR UPDATE")
+                .FromSqlInterpolated($"SELECT c.* FROM Compras c WHERE c.Id = {id} AND c.EmpresaId = {empresaId.Value} AND c.Eliminado = 0 AND c.CreadoPorUsuarioId = {alcance.UsuarioId} FOR UPDATE")
                 .AsTracking()
                 .FirstOrDefaultAsync();
         }
@@ -191,11 +195,15 @@ public class CompraRepository : ICompraRepository
 
     public async Task<int> ContarTodasAsync()
     {
-        // Incluye borrados lógicos, nunca registros de otra empresa cuando
-        // existe una marca post-RBAC. IgnoreQueryFilters omite ambos filtros.
-        var tenant = _context.AuthorizedReadEmpresaId;
+        // IgnoreQueryFilters incluye registros borrados pero jamás permite
+        // conteos globales, ni con ausencia de RBAC ni con capacidad pública.
+        var empresaId = _context.AuthorizedCommercialEmpresaId;
+        if (empresaId is not > 0 ||
+            await _usuarioScope.ObtenerActualAsync(empresaId.Value) is null)
+            return 0;
+
         return await _context.Compras.IgnoreQueryFilters()
-            .Where(c => tenant == null || c.EmpresaId == tenant)
+            .Where(c => c.EmpresaId == empresaId.Value)
             .CountAsync();
     }
 
