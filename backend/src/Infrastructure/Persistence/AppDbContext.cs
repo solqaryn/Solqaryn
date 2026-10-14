@@ -24,6 +24,12 @@ public class AppDbContext : DbContext
         _tenantHttpContextAccessor = tenantHttpContextAccessor;
     }
 
+    // Resuelto sólo desde la marca de permiso RBAC establecida por el backend.
+    // Mientras las rutas públicas/jobs no tengan un binding tenant certificado,
+    // el gate HTTP P0 de segunda empresa sigue siendo obligatorio.
+    public int? AuthorizedReadEmpresaId =>
+        VerifiedCommercialTenant.Resolve(_tenantHttpContextAccessor?.HttpContext);
+
     public DbSet<Producto> Productos => Set<Producto>();
     public DbSet<ProductoVariante> ProductoVariantes => Set<ProductoVariante>();
     public DbSet<ProductoImagen> ProductoImagenes => Set<ProductoImagen>();
@@ -443,6 +449,9 @@ public class AppDbContext : DbContext
         modelBuilder.HasAnnotation(RelationalAnnotationNames.MaxIdentifierLength, 64);
         CommercialTenantOwnershipGraphModel.Apply(modelBuilder);
         CommercialTenantRemainingModel.Apply(modelBuilder);
+        // Se aplica al FINAL, después de todas las configuraciones, para
+        // preservar borrado lógico y abarcar también propiedades shadow.
+        CommercialTenantReadFilterModel.Apply(modelBuilder, this);
 
         static string LimitIdentifier(string name) =>
             name.Length <= 64 ? name : name[..64];
