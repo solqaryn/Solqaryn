@@ -29,6 +29,26 @@ public sealed class UsuarioScopeService : IUsuarioScopeService
         if (!_currentUser.EstaAutenticado || !_currentUser.UsuarioId.HasValue)
             return null;
 
+        // La autorización sin EmpresaId sólo pertenece al modelo monoempresa.
+        // Si la acción ya pasó el filtro RBAC, el rol efectivo siempre procede
+        // de UsuarioEmpresa, nunca de Usuario.RolId heredado.
+        var empresaId = _context.AuthorizedCommercialEmpresaId;
+        if (empresaId is > 0)
+        {
+            var scope = await ObtenerActualAsync(empresaId.Value);
+            return scope is null || scope.EmpresaId != empresaId.Value
+                ? null
+                : new UsuarioScopeActual(
+                    scope.UsuarioId, scope.RolId, scope.RolNombre, scope.EsAdministrador);
+        }
+
+        // Background services y llamadas sin HTTP no tienen marca: con 2+
+        // empresas (activas o inactivas) no se puede inferir un propietario.
+        var empresas = await _context.Set<Empresa>()
+            .IgnoreQueryFilters().AsNoTracking().Take(2).CountAsync();
+        if (empresas > 1)
+            return null;
+
         var usuarioId = _currentUser.UsuarioId.Value;
         return await _context.Usuarios
             .AsNoTracking()

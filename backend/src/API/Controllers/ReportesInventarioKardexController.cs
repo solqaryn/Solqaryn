@@ -38,7 +38,10 @@ public sealed class ReportesInventarioKardexController : ControllerBase
         if (error is not null)
             return BadRequest(ApiResponse<object>.Fail("Consulta de Kardex inválida.", new() { error }));
 
-        if (!await ReporteInventarioScopeGuard.CanUseExplicitPhysicalScopeAsync(filtro, _usuarioScope))
+        // La marca existe solo después de pasar RequierePermisoAttribute.
+        if (ReporteInventarioScopeGuard.HasExplicitPhysicalScope(filtro) &&
+            !await ReporteInventarioScopeGuard.CanUseExplicitPhysicalScopeAsync(
+                filtro, _usuarioScope, TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext)))
             return Forbid();
 
         if (filtro.SucursalId.HasValue)

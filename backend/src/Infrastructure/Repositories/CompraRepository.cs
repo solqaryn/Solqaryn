@@ -66,24 +66,55 @@ public class CompraRepository : ICompraRepository
         if (_context.Database.CurrentTransaction is null)
             throw new InvalidOperationException("GetByIdForUpdateAsync requiere una transacción activa.");
 
-        var alcance = await _usuarioScope.ObtenerActualAsync();
-        if (alcance is null)
-            return null;
+        // Con 2+ empresas la membresía RBAC y el predicado SQL owner son obligatorios.
+        // En monoempresa se conserva el lock legacy para datos históricos NULL.
+        var empresaId = _context.AuthorizedCommercialEmpresaId;
+        UsuarioTenantScopeActual? scopeTenant = null;
+        UsuarioScopeActual? legacyScope = null;
+        if (empresaId is > 0)
+        {
+            scopeTenant = await _usuarioScope.ObtenerActualAsync(empresaId.Value);
+            if (scopeTenant is null || scopeTenant.EmpresaId != empresaId.Value)
+                return null;
+        }
+        else
+        {
+            // Incluye empresas inactivas; cuando hay dos o más no existe fallback.
+            var empresas = await _context.Set<Empresa>().IgnoreQueryFilters()
+                .AsNoTracking().Take(2).CountAsync();
+            if (empresas > 1)
+                return null;
+            legacyScope = await _usuarioScope.ObtenerActualAsync();
+            if (legacyScope is null)
+                return null;
+        }
 
+        var administrador = scopeTenant?.EsAdministrador ?? legacyScope!.EsAdministrador;
+        var usuarioId = scopeTenant?.UsuarioId ?? legacyScope!.UsuarioId;
         Compra? cabecera;
-        if (alcance.EsAdministrador)
+        if (empresaId is > 0 && administrador)
+        {
+            cabecera = await _context.Compras
+                .FromSqlInterpolated($"SELECT c.* FROM Compras c WHERE c.Id = {id} AND c.EmpresaId = {empresaId.Value} AND c.Eliminado = 0 FOR UPDATE")
+                .AsTracking().FirstOrDefaultAsync();
+        }
+        else if (empresaId is > 0)
+        {
+            cabecera = await _context.Compras
+                .FromSqlInterpolated($"SELECT c.* FROM Compras c WHERE c.Id = {id} AND c.EmpresaId = {empresaId.Value} AND c.Eliminado = 0 AND c.CreadoPorUsuarioId = {usuarioId} FOR UPDATE")
+                .AsTracking().FirstOrDefaultAsync();
+        }
+        else if (administrador)
         {
             cabecera = await _context.Compras
                 .FromSqlInterpolated($"SELECT c.* FROM Compras c WHERE c.Id = {id} AND c.Eliminado = 0 FOR UPDATE")
-                .AsTracking()
-                .FirstOrDefaultAsync();
+                .AsTracking().FirstOrDefaultAsync();
         }
         else
         {
             cabecera = await _context.Compras
-                .FromSqlInterpolated($"SELECT c.* FROM Compras c WHERE c.Id = {id} AND c.Eliminado = 0 AND c.CreadoPorUsuarioId = {alcance.UsuarioId} FOR UPDATE")
-                .AsTracking()
-                .FirstOrDefaultAsync();
+                .FromSqlInterpolated($"SELECT c.* FROM Compras c WHERE c.Id = {id} AND c.Eliminado = 0 AND c.CreadoPorUsuarioId = {usuarioId} FOR UPDATE")
+                .AsTracking().FirstOrDefaultAsync();
         }
 
         if (cabecera is null)
@@ -191,11 +222,23 @@ public class CompraRepository : ICompraRepository
 
     public async Task<int> ContarTodasAsync()
     {
-        // Incluye borrados lógicos, nunca registros de otra empresa cuando
-        // existe una marca post-RBAC. IgnoreQueryFilters omite ambos filtros.
-        var tenant = _context.AuthorizedReadEmpresaId;
+        // Un conteo sin filtros EF exige scope privado para 2+ empresas;
+        // las instalaciones monoempresa conservan la numeración histórica.
+        var empresaId = _context.AuthorizedCommercialEmpresaId;
+        if (empresaId is not > 0)
+        {
+            var empresas = await _context.Set<Empresa>().IgnoreQueryFilters()
+                .AsNoTracking().Take(2).CountAsync();
+            return empresas > 1 ? 0
+                : await _context.Compras.IgnoreQueryFilters().CountAsync();
+        }
+
+        var scope = await _usuarioScope.ObtenerActualAsync(empresaId.Value);
+        if (scope is null || scope.EmpresaId != empresaId.Value)
+            return 0;
+
         return await _context.Compras.IgnoreQueryFilters()
-            .Where(c => tenant == null || c.EmpresaId == tenant)
+            .Where(c => c.EmpresaId == empresaId.Value)
             .CountAsync();
     }
 
