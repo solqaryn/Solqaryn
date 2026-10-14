@@ -102,8 +102,16 @@ public sealed class CommercialTenantNaturalKeysTests
     public async Task MySql_permite_mismo_nombre_de_rol_en_empresas_distintas_y_rechaza_duplicado_local()
     {
         var name = "test_tenant_business_keys_" + Guid.NewGuid().ToString("N");
+        // CI usa MySQL con credenciales efímeras distintas según workflow;
+        // construir el mismo destino temporal preservando auth/SSL del runner.
+        var configured = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+            ?? "Server=localhost;Port=3306;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;";
+        var connection = new MySql.Data.MySqlClient.MySqlConnectionStringBuilder(configured)
+        {
+            Database = name
+        };
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySQL($"Server=localhost;Port=3306;Database={name};User=root;Password=root;",
+            .UseMySQL(connection.ConnectionString,
                 sql => sql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
             .Options;
         await using var db = new AppDbContext(options);
