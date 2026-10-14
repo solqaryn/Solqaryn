@@ -32,6 +32,10 @@ public class AppDbContext : DbContext
         ?? VerifiedPublicStoreTenant.Resolve(_tenantHttpContextAccessor?.HttpContext)
         ?? VerifiedPublicInvoiceTenant.Resolve(_tenantHttpContextAccessor?.HttpContext);
 
+    // Una capability pública de tienda o factura NO concede RBAC administrativo.
+    public int? AuthorizedCommercialEmpresaId =>
+        VerifiedCommercialTenant.Resolve(_tenantHttpContextAccessor?.HttpContext);
+
     public DbSet<Producto> Productos => Set<Producto>();
     public DbSet<ProductoVariante> ProductoVariantes => Set<ProductoVariante>();
     public DbSet<ProductoImagen> ProductoImagenes => Set<ProductoImagen>();
