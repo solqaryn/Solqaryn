@@ -137,8 +137,8 @@ public sealed class UbicacionAlmacenRepository : IUbicacionAlmacenRepository
             if (!visitados.Add(cursor.Value))
                 return true;
 
-            var nodo = await Ubicaciones
-                .IgnoreQueryFilters()
+            var nodo = await TenantQueryBypassGuard.RespectCurrentTenant(
+                    Ubicaciones.IgnoreQueryFilters(), _context)
                 .AsNoTracking()
                 .Where(u => u.Id == cursor.Value && u.AlmacenId == almacenId)
                 .Select(u => new { u.UbicacionPadreId })
