@@ -63,7 +63,7 @@ public sealed class UsuarioPrimeraMembresiaServiceTests
         roles.Setup(x => x.GetByIdAsync(3)).ReturnsAsync(new Rol { Id = 3,
             Nombre = "Rol de pruebas", NombreNormalizado = "ROL_PRUEBAS", Activo = true });
         empresas.Setup(x => x.GetByIdAsync(11, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Empresa("Empresa A") { Id = 11, Activa = true });
+            .ReturnsAsync(new Empresa("Empresa A") { Id = 11 });
         actor.SetupGet(x => x.UsuarioId).Returns(10);
         var sut = new UsuarioService(users.Object, roles.Object, empresas.Object,
             auditoria.Object, actor.Object);
