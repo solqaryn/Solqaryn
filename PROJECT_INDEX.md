@@ -440,3 +440,9 @@ Sanitización de imágenes: `backend/src/Infrastructure/Services/ImagenUploadSec
 - Se comprueba además que `IUsuarioScopeService.ObtenerActualAsync(empresaId)` devuelva exactamente `scope.EmpresaId == empresaId`; contextos inconsistentes fallan cerrados. La selección y verificación de membresía existente se conserva para solicitudes monoempresa sin marca, mientras permanece la cuarentena 503 para 2+.
 - Nuevas pruebas: RBAC A+header B con membresías múltiples (rechazo antes de consultar B), scope B devuelto para header A (rechazo), y marca/membresía A legítimas (permitido). Sin cambios de DDL, backups, Cloudinary real, QA/PROD o dominios.
 - **No constituye certificado integral P4**: exige CI exact-head MySQL/seguridad, A/B downloads y readback de despliegue DEV.
+
+## 2026-10-14 — P4: las secuencias fiscales no aceptan selector de empresa diferente al RBAC
+
+- `SecuenciaDocumentoService.ValidarScopeAsync` exige coincidencia del `EmpresaId` del request con `AuthorizedCommercialEmpresaId` si la acción ya fue autorizada, antes de reservar o consultar números. Un usuario perteneciente a empresas A y B no puede utilizar la autorización A para reservar una secuencia fiscal B.
+- Con 2+ empresas sin marca RBAC privada falla cerrado también ante invocaciones no HTTP; el contrato histórico de instalaciones con 0–1 empresa permanece. Comprueba igualmente que la membresía devuelta por el servicio coincide con la empresa solicitada.
+- Tests A/B: autorización A con solicitud B y membresía B vigente rechazada sin invocar la membresía B; sin marca RBAC con dos empresas rechazada; no se reserva ni se incrementa numeración de B. Se conserva compare-and-swap MySQL y evidencia de transacciones anterior. No hay DDL, backfill ni cambios QA/PROD, cuarentena 503 sigue activa.

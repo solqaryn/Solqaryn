@@ -1,6 +1,8 @@
 using Solqaryn.Application.DTOs;
 using Solqaryn.Application.Exceptions;
 using Solqaryn.Application.Interfaces;
+using Solqaryn.Application.Security;
+using Microsoft.AspNetCore.Http;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Infrastructure.Persistence;
 using Solqaryn.Infrastructure.Services;
@@ -122,4 +124,34 @@ public sealed class SecuenciaDocumentoServiceTests
         Assert.Contains($"\"empresaId\":{empresa.Id}", auditoria.ValoresNuevos ?? string.Empty, StringComparison.Ordinal);
         Assert.Contains("\"valorSiguiente\":42", auditoria.ValoresNuevos ?? string.Empty, StringComparison.Ordinal);
     }
+    [Fact]
+    public async Task DosEmpresas_RbacA_NoPermiteReservaDeSecuenciaB_AunqueUsuarioPertenezcaAB()
+    {
+        var http = new DefaultHttpContext();
+        var accessor = new HttpContextAccessor { HttpContext = http };
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase("p4-secuencias-ab-" + Guid.NewGuid().ToString("N")).Options;
+        await using var db = new AppDbContext(options, tenantHttpContextAccessor: accessor);
+        var a = new Empresa("SECUENCIA A");
+        var b = new Empresa("SECUENCIA B");
+        db.Set<Empresa>().AddRange(a, b);
+        await db.SaveChangesAsync();
+
+        var scope = new Mock<IUsuarioScopeService>(MockBehavior.Strict);
+        scope.Setup(x => x.ObtenerActualAsync(b.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new UsuarioTenantScopeActual(7, b.Id, 1, "Admin B", true));
+        var service = new SecuenciaDocumentoService(db, scope.Object);
+
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = a.Id;
+        await Assert.ThrowsAsync<ForbiddenAccessException>(() =>
+            service.ReservarSiguienteAsync(new ReservarSecuenciaDocumentoRequest(b.Id, null, "FACTURA")));
+        scope.VerifyNoOtherCalls();
+
+        http.Items.Remove(VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey);
+        await Assert.ThrowsAsync<ForbiddenAccessException>(() =>
+            service.ReservarSiguienteAsync(new ReservarSecuenciaDocumentoRequest(b.Id, null, "FACTURA")));
+        scope.VerifyNoOtherCalls();
+        Assert.Empty(db.RegistrosAuditoria);
+    }
+
 }
