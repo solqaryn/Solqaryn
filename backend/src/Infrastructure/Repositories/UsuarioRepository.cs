@@ -49,22 +49,6 @@ public class UsuarioRepository : IUsuarioRepository
                     .Any(m => m.UsuarioId == u.Id));
     }
 
-    public async Task<Usuario?> GetByIdConMembresiaDeEmpresaAutorizadaAsync(int id)
-    {
-        var empresaId = _context.AuthorizedReadEmpresaId;
-        if (id <= 0 || empresaId is not > 0)
-            return null;
-
-        // La ausencia de una membresía activa NO puede ocultar la cuenta al
-        // administrador de la propia empresa cuando intenta reactivarla.
-        // IgnoreQueryFilters se limita por membresía exacta, también inactiva.
-        return await _context.Usuarios.IgnoreQueryFilters()
-            .Include(u => u.RolEntidad)
-            .SingleOrDefaultAsync(u => u.Id == id && !u.Eliminado &&
-                _context.UsuarioEmpresas.IgnoreQueryFilters()
-                    .Any(m => m.UsuarioId == u.Id && m.EmpresaId == empresaId.Value));
-    }
-
     public async Task<List<Usuario>> GetAllAsync() =>
         await _context.Usuarios
             .Include(u => u.RolEntidad)
