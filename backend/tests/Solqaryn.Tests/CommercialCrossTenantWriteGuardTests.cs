@@ -76,7 +76,11 @@ public sealed class CommercialCrossTenantWriteGuardTests
         productoB.Nombre = "Intento de cambio desde A";
         await Assert.ThrowsAsync<ForbiddenAccessException>(() => db.SaveChangesAsync());
 
-        var persistido = await db.Productos.AsNoTracking().SingleAsync(p => p.Id == productoB.Id);
+        // La capa de lecturas también oculta B a una sesión de A.
+        Assert.False(await db.Productos.AsNoTracking().AnyAsync(p => p.Id == productoB.Id));
+        // La inspección forense del test puede eludir filtros, nunca el endpoint público.
+        var persistido = await db.Productos.IgnoreQueryFilters().AsNoTracking()
+            .SingleAsync(p => p.Id == productoB.Id);
         Assert.Equal("Producto B", persistido.Nombre);
     }
 

@@ -189,8 +189,15 @@ public class CompraRepository : ICompraRepository
             .ToListAsync();
     }
 
-    public async Task<int> ContarTodasAsync() =>
-        await _context.Compras.IgnoreQueryFilters().CountAsync();
+    public async Task<int> ContarTodasAsync()
+    {
+        // Incluye borrados lógicos, nunca registros de otra empresa cuando
+        // existe una marca post-RBAC. IgnoreQueryFilters omite ambos filtros.
+        var tenant = _context.AuthorizedReadEmpresaId;
+        return await _context.Compras.IgnoreQueryFilters()
+            .Where(c => tenant == null || c.EmpresaId == tenant)
+            .CountAsync();
+    }
 
     public async Task AddAsync(Compra compra) =>
         await _context.Compras.AddAsync(compra);

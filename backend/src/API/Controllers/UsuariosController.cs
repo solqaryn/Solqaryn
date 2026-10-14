@@ -58,7 +58,9 @@ public class UsuariosController : ControllerBase
     [RequierePermiso(ModuloSistema.Usuarios, AccionPermiso.Crear)]
     public async Task<IActionResult> Create([FromBody] CreateUsuarioDto dto)
     {
-        await _permisoService.VerificarPermisoAsync(ModuloSistema.Usuarios, AccionPermiso.AsignarRol);
+        await _permisoService.VerificarPermisoAsync(
+                TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext),
+                ModuloSistema.Usuarios, AccionPermiso.AsignarRol);
 
         try
         {
@@ -85,10 +87,14 @@ public class UsuariosController : ControllerBase
               !string.Equals(actual.Rol, dto.Rol, StringComparison.OrdinalIgnoreCase);
 
         if (cambiaRol)
-            await _permisoService.VerificarPermisoAsync(ModuloSistema.Usuarios, AccionPermiso.AsignarRol);
+            await _permisoService.VerificarPermisoAsync(
+                TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext),
+                ModuloSistema.Usuarios, AccionPermiso.AsignarRol);
 
         if (!string.IsNullOrWhiteSpace(dto.NuevaPassword))
-            await _permisoService.VerificarPermisoAsync(ModuloSistema.Usuarios, AccionPermiso.RestablecerContrasena);
+            await _permisoService.VerificarPermisoAsync(
+                TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext),
+                ModuloSistema.Usuarios, AccionPermiso.RestablecerContrasena);
 
         var actualizado = await _usuarioService.UpdateAsync(id, dto);
         if (actualizado is null)
@@ -103,8 +109,7 @@ public class UsuariosController : ControllerBase
         if (!dto.Activo && _currentUser.UsuarioId == id)
             return BadRequest(ApiResponse<object>.Fail("No puedes desactivar tu propia cuenta."));
 
-        await _permisoService.VerificarPermisoAsync(
-            ModuloSistema.Usuarios,
+        await AutorizarEmpresaYPermisoAsync(
             dto.Activo ? AccionPermiso.Activar : AccionPermiso.Desactivar);
 
         var actualizado = await _usuarioService.UpdateEstadoAsync(id, dto.Activo);
@@ -118,7 +123,7 @@ public class UsuariosController : ControllerBase
     [HttpPut("{id:int}/bloquear")]
     public async Task<IActionResult> Bloquear(int id, [FromBody] BloquearUsuarioDto dto)
     {
-        await _permisoService.VerificarPermisoAsync(ModuloSistema.Usuarios, AccionPermiso.Desactivar);
+        await AutorizarEmpresaYPermisoAsync(AccionPermiso.Desactivar);
         var actualizado = await _usuarioService.BloquearAsync(id, dto.Motivo);
         return Ok(ApiResponse<UsuarioDto>.Ok(actualizado, "Usuario bloqueado correctamente."));
     }
@@ -126,7 +131,7 @@ public class UsuariosController : ControllerBase
     [HttpPut("{id:int}/desbloquear")]
     public async Task<IActionResult> Desbloquear(int id)
     {
-        await _permisoService.VerificarPermisoAsync(ModuloSistema.Usuarios, AccionPermiso.Activar);
+        await AutorizarEmpresaYPermisoAsync(AccionPermiso.Activar);
         var actualizado = await _usuarioService.DesbloquearAsync(id);
         return Ok(ApiResponse<UsuarioDto>.Ok(actualizado, "Usuario desbloqueado correctamente."));
     }
@@ -143,14 +148,17 @@ public class UsuariosController : ControllerBase
     [RequierePermiso(ModuloSistema.Usuarios, AccionPermiso.Ver)]
     public async Task<IActionResult> GetEmpresas(int id)
     {
+        var empresaId = TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext);
         var membresias = await _usuarioService.GetEmpresasAsync(id);
-        return Ok(ApiResponse<List<UsuarioEmpresaDto>>.Ok(membresias));
+        return Ok(ApiResponse<List<UsuarioEmpresaDto>>.Ok(
+            membresias.Where(x => x.EmpresaId == empresaId).ToList()));
     }
 
     [HttpPost("{id:int}/empresas")]
     [RequierePermiso(ModuloSistema.Usuarios, AccionPermiso.AsignarRol)]
     public async Task<IActionResult> AsignarEmpresa(int id, [FromBody] AsignarUsuarioEmpresaDto dto)
     {
+        ExigirEmpresaAutorizada(dto.EmpresaId);
         var membresia = await _usuarioService.AsignarEmpresaAsync(id, dto);
         return Ok(ApiResponse<UsuarioEmpresaDto>.Ok(membresia, "Empresa asignada al usuario correctamente."));
     }
@@ -162,6 +170,7 @@ public class UsuariosController : ControllerBase
         int empresaId,
         [FromBody] CambiarRolUsuarioEmpresaDto dto)
     {
+        ExigirEmpresaAutorizada(empresaId);
         var membresia = await _usuarioService.CambiarRolEmpresaAsync(id, empresaId, dto.RolId);
         return Ok(ApiResponse<UsuarioEmpresaDto>.Ok(membresia, "Rol empresarial actualizado correctamente."));
     }
@@ -172,13 +181,31 @@ public class UsuariosController : ControllerBase
         int empresaId,
         [FromBody] UpdateUsuarioEmpresaEstadoDto dto)
     {
-        await _permisoService.VerificarPermisoAsync(
-            ModuloSistema.Usuarios,
+        var autorizada = await AutorizarEmpresaYPermisoAsync(
             dto.Activa ? AccionPermiso.Activar : AccionPermiso.Desactivar);
+        if (empresaId != autorizada)
+            throw new Solqaryn.Application.Exceptions.ForbiddenAccessException(
+                "La membresia solicitada no pertenece a la empresa autorizada.");
 
         var membresia = await _usuarioService.CambiarEstadoEmpresaAsync(id, empresaId, dto.Activa);
         return Ok(ApiResponse<UsuarioEmpresaDto>.Ok(
             membresia,
             dto.Activa ? "Membresía empresarial activada correctamente." : "Membresía empresarial desactivada correctamente."));
     }
+    private void ExigirEmpresaAutorizada(int empresaId)
+    {
+        if (empresaId != TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext))
+            throw new Solqaryn.Application.Exceptions.ForbiddenAccessException(
+                "La empresa solicitada no coincide con el contexto autorizado.");
+    }
+
+    private async Task<int> AutorizarEmpresaYPermisoAsync(AccionPermiso accion)
+    {
+        var empresaId = await TenantPermissionContext.RequireEmpresaIdAsync(
+            HttpContext, HttpContext.RequestAborted);
+        await _permisoService.VerificarPermisoAsync(empresaId, ModuloSistema.Usuarios, accion);
+        TenantPermissionContext.MarkAuthorizedEmpresaId(HttpContext, empresaId);
+        return empresaId;
+    }
+
 }

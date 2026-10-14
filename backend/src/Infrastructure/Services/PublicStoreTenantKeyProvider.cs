@@ -40,34 +40,20 @@ public sealed class PublicStoreTenantKeyProvider : IPublicStoreTenantKeyProvider
             empresas);
     }
 
-    internal static string ResolveTenantKey(
+    public static string ResolveTenantKey(
         int? configuracionId,
         string? nombreComercial,
         string? nombreVisibleSistema,
         IReadOnlyCollection<Solqaryn.Domain.Entities.Empresa> empresas)
     {
-        var nombres = new[] { nombreComercial, nombreVisibleSistema }
-            .Where(nombre => !string.IsNullOrWhiteSpace(nombre))
-            .Select(nombre => nombre!.Trim())
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
+        // Sin vinculación dominio->empresa certificada, elegir por nombre
+        // comercial o por configuración compartida es inseguro con 2+ tenants.
+        // La única identidad anónima verificable hoy es UNA empresa activa,
+        // protegida además por la cuarentena HTTP (incluye inactivas).
+        if (empresas.Count != 1 || empresas.Single().Id <= 0)
+            throw new InvalidOperationException(
+                "La tienda pública requiere una vinculación empresarial única y verificable.");
 
-        var coincidencias = empresas
-            .Where(empresa => nombres.Any(nombre =>
-                string.Equals(nombre, empresa.Nombre?.Trim(), StringComparison.OrdinalIgnoreCase)))
-            .Select(empresa => empresa.Id)
-            .Distinct()
-            .ToArray();
-
-        if (coincidencias.Length == 1)
-            return $"empresa:{coincidencias[0]}";
-
-        if (empresas.Count == 1)
-            return $"empresa:{empresas.Single().Id}";
-
-        if (configuracionId is > 0)
-            return $"public-config:{configuracionId.Value}";
-
-        return "public-config:unconfigured";
+        return $"empresa:{empresas.Single().Id}";
     }
 }

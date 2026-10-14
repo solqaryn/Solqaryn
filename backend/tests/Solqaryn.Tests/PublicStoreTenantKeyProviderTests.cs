@@ -24,7 +24,6 @@ public sealed class PublicStoreTenantKeyProviderTests
         empresas.Setup(x => x.ListAsync(true, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<Empresa>
             {
-                new("Otra empresa") { Id = 11 },
                 new("Storefront") { Id = 42 }
             });
 
@@ -72,10 +71,29 @@ public sealed class PublicStoreTenantKeyProviderTests
         var cache = new PublicStoreMemoryCache(memory);
         var sut = new PublicStoreTenantKeyProvider(cache, configuracion.Object, empresas.Object);
 
-        var tenantKey = await sut.GetTenantKeyAsync();
-
-        Assert.Equal("public-config:9", tenantKey);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.GetTenantKeyAsync());
         configuracion.VerifyAll();
         empresas.VerifyAll();
     }
+    [Fact]
+    public void SinVinculacionHost_NoSeleccionaEmpresaPorCoincidenciaDeNombre()
+    {
+        var empresas = new List<Empresa>
+        {
+            new("Empresa A") { Id = 1 },
+            new("Storefront") { Id = 42 }
+        };
+        Assert.Throws<InvalidOperationException>(() =>
+            PublicStoreTenantKeyProvider.ResolveTenantKey(
+                9, "Storefront", "Storefront", empresas));
+    }
+
+    [Fact]
+    public void SinEmpresas_NoEmiteClavePublicaAmbigua()
+    {
+        Assert.Throws<InvalidOperationException>(() =>
+            PublicStoreTenantKeyProvider.ResolveTenantKey(
+                9, "Storefront", "Storefront", Array.Empty<Empresa>()));
+    }
+
 }

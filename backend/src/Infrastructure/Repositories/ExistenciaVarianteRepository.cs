@@ -76,6 +76,10 @@ public sealed class ExistenciaVarianteRepository : IExistenciaVarianteRepository
                        OR ev.UbicacionAlmacenId = {ubicacionAlmacenId})
                 FOR UPDATE")
             .IgnoreQueryFilters()
+            // La reversión necesita omitir soft-delete, NO el tenant RBAC.
+            // El guard de escritura verifica de nuevo el owner persistido.
+            .Where(e => _context.AuthorizedReadEmpresaId == null ||
+                        EF.Property<int?>(e, "EmpresaId") == _context.AuthorizedReadEmpresaId)
             .Include(e => e.ProductoVariante).ThenInclude(v => v.Producto)
             .Include(e => e.ProductoVariante).ThenInclude(v => v.Marca)
             .Include(e => e.ProductoVariante).ThenInclude(v => v.Modelo)
