@@ -1,4 +1,6 @@
 using Solqaryn.Application.DTOs;
+using Solqaryn.Application.Security;
+using Microsoft.AspNetCore.Http;
 using Solqaryn.Infrastructure.Persistence;
 using Solqaryn.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +17,11 @@ public sealed class N58DExportPdfServiceTests
             .UseInMemoryDatabase($"n58d-pdf-{Guid.NewGuid():N}")
             .Options;
 
-        await using var db = new AppDbContext(options);
+        // La exportación legítima debe ejecutarse con el scope empresarial RBAC.
+        var http = new DefaultHttpContext();
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = 31;
+        await using var db = new AppDbContext(
+            options, tenantHttpContextAccessor: new HttpContextAccessor { HttpContext = http });
         var service = new ReporteAdministrativoService(db);
 
         var archivo = await service.ExportarAsync(
