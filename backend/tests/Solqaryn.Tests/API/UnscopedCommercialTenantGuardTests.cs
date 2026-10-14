@@ -63,6 +63,59 @@ public sealed class UnscopedCommercialTenantGuardTests
         Assert.Equal("TENANT_DATA_ISOLATION_REQUIRED", payload.GetProperty("code").GetString());
     }
 
+    [Theory]
+    [InlineData("GET", "/facturas/publico/abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG/pdf")]
+    [InlineData("GET", "/FACTURAS/PUBLICO/abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG/PDF")]
+    public async Task DosEmpresas_PermitenSoloRutaPdfPublicaConTokenDeFormatoValido(
+        string metodo, string ruta)
+    {
+        await using var db = NuevoContexto();
+        db.Set<Empresa>().AddRange(new Empresa("Empresa A"), new Empresa("Empresa B"));
+        await db.SaveChangesAsync();
+
+        // Atravesar el middleware NO valida el token ni habilita los datos:
+        // FacturaCompartirRepository exige hash, vigencia y EmpresaId real.
+        var next = false;
+        var middleware = new UnscopedCommercialTenantGuardMiddleware(ctx =>
+        {
+            next = true;
+            Assert.Null(VerifiedPublicInvoiceTenant.Resolve(ctx));
+            ctx.Response.StatusCode = StatusCodes.Status204NoContent;
+            return Task.CompletedTask;
+        });
+        var http = new DefaultHttpContext();
+        http.Request.Method = metodo;
+        http.Request.Path = ruta;
+        http.Request.Headers["X-Empresa-Id"] = "999";
+        http.Response.Body = new MemoryStream();
+
+        await middleware.InvokeAsync(http, db);
+        Assert.True(next);
+        Assert.Equal(StatusCodes.Status204NoContent, http.Response.StatusCode);
+        Assert.Null(VerifiedPublicInvoiceTenant.Resolve(http));
+    }
+
+    [Theory]
+    [InlineData("POST", "/facturas/publico/abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG/pdf")]
+    [InlineData("GET", "/facturas/publico/corto/pdf")]
+    [InlineData("GET", "/facturas/publico/abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG/pdf/extra")]
+    [InlineData("GET", "/facturas/publico/abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG/editar")]
+    [InlineData("GET", "/facturas/publico/abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG%2F/pdf")]
+    [InlineData("GET", "/facturas/15/pdf")]
+    [InlineData("GET", "/facturas/publico/pdf")]
+    public async Task DosEmpresas_NoPermitenRutasParecidasNiOperacionesNoPublicas(
+        string metodo, string ruta)
+    {
+        await using var db = NuevoContexto();
+        db.Set<Empresa>().AddRange(new Empresa("Empresa A"), new Empresa("Empresa B"));
+        await db.SaveChangesAsync();
+        var (status, payload, next) = await ProcesarAsync(db, metodo, ruta);
+        Assert.False(next);
+        Assert.Equal(StatusCodes.Status503ServiceUnavailable, status);
+        Assert.Equal("TENANT_DATA_ISOLATION_REQUIRED",
+            payload.GetProperty("code").GetString());
+    }
+
     [Fact]
     public async Task EmpresaInactiva_ConservaBloqueo_PorSusDatosHistoricos()
     {

@@ -110,6 +110,12 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         if (HttpMethods.IsOptions(request.Method))
             return true;
 
+        // La ruta de token solo permite atravesar el middleware. El servicio
+        // valida hash, vigencia, owner y FacturaId antes de entregar el PDF.
+        if (HttpMethods.IsGet(request.Method) &&
+            EsRutaFacturaPublicaConToken(request.Path))
+            return true;
+
         var path = request.Path;
         if (HttpMethods.IsGet(request.Method) &&
             (EsRutaExacta(path, "/health") || EsRutaExacta(path, "/health/ready")))
@@ -126,6 +132,20 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
             return true;
 
         return false;
+    }
+
+    private static bool EsRutaFacturaPublicaConToken(PathString path)
+    {
+        var segmentos = path.Value?.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        if (segmentos is not { Length: 4 } ||
+            !string.Equals(segmentos[0], "facturas", StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(segmentos[1], "publico", StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(segmentos[3], "pdf", StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        var token = segmentos[2];
+        return token.Length is >= 32 and <= 160 &&
+               token.All(c => char.IsAsciiLetterOrDigit(c) || c is '-' or '_');
     }
 
     private static bool EsRutaExacta(PathString path, string expected) =>

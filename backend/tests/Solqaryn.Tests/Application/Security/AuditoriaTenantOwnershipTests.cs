@@ -62,6 +62,69 @@ public sealed class AuditoriaTenantOwnershipTests
     }
 
     [Fact]
+    public async Task FacturaPublica_UsaEmpresaDelTokenVerificado_NoHeader()
+    {
+        var http = new DefaultHttpContext();
+        http.Request.Method = HttpMethods.Get;
+        http.Request.Path = "/facturas/publico/abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG/pdf";
+        http.Request.Headers["X-Empresa-Id"] = "999";
+        http.Items[VerifiedPublicInvoiceTenant.AuthorizedEmpresaIdItemKey] = 7;
+        var (service, records) = Create(http);
+
+        await service.RegistrarEstrictoAsync(
+            ModuloSistema.Facturacion, AccionPermiso.Exportar, "PDF público A");
+
+        Assert.Equal(7, Assert.Single(records).EmpresaId);
+    }
+
+    [Fact]
+    public async Task TiendaPublica_UsaEmpresaVerificadaPorHost_NoHeader()
+    {
+        var http = new DefaultHttpContext();
+        http.Request.Path = "/tienda/checkout/validar";
+        http.Request.Headers["X-Empresa-Id"] = "999";
+        http.Items[VerifiedPublicStoreTenant.AuthorizedEmpresaIdItemKey] = 8;
+        var (service, records) = Create(http);
+
+        await service.RegistrarEstrictoAsync(
+            ModuloSistema.Ventas, AccionPermiso.Crear, "Checkout tienda B");
+
+        Assert.Equal(8, Assert.Single(records).EmpresaId);
+    }
+
+    [Fact]
+    public async Task RbacAdministrativoTienePrecedenciaSobreMarcasPublicas()
+    {
+        var http = new DefaultHttpContext();
+        http.Request.Path = "/tienda/cuenta";
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = 9;
+        http.Items[VerifiedPublicStoreTenant.AuthorizedEmpresaIdItemKey] = 8;
+        http.Items[VerifiedPublicInvoiceTenant.AuthorizedEmpresaIdItemKey] = 7;
+        var (service, records) = Create(http);
+
+        await service.RegistrarEstrictoAsync(
+            ModuloSistema.Auditoria, AccionPermiso.Ver, "Prioridad RBAC");
+
+        Assert.Equal(9, Assert.Single(records).EmpresaId);
+    }
+
+    [Fact]
+    public async Task MarcasPublicasFueraDeSuRutaNoAtribuyenEmpresa()
+    {
+        var http = new DefaultHttpContext();
+        http.Request.Path = "/reportes/ventas";
+        http.Request.Headers["X-Empresa-Id"] = "999";
+        http.Items[VerifiedPublicStoreTenant.AuthorizedEmpresaIdItemKey] = 8;
+        http.Items[VerifiedPublicInvoiceTenant.AuthorizedEmpresaIdItemKey] = 7;
+        var (service, records) = Create(http);
+
+        await service.RegistrarEstrictoAsync(
+            ModuloSistema.Auditoria, AccionPermiso.Ver, "Marca pública fuera de ruta");
+
+        Assert.Null(Assert.Single(records).EmpresaId);
+    }
+
+    [Fact]
     public async Task Operacion_no_HTTP_no_infiere_propietario()
     {
         var (service, records) = Create(null);
