@@ -42,6 +42,7 @@ public sealed class ReporteAdministrativoService : IReporteAdministrativoService
         ReporteAdministrativoFiltroDto filtro,
         CancellationToken cancellationToken = default)
     {
+        ExigirTenantVerificado();
         var (desde, hasta) = NormalizarPeriodo(filtro);
         var usuarios = await ObtenerUsuariosAccesoAsync(cancellationToken);
         var roles = await ObtenerRolesPermisosAsync(cancellationToken);
@@ -77,6 +78,7 @@ public sealed class ReporteAdministrativoService : IReporteAdministrativoService
     public async Task<List<UsuarioAccesoReporteDto>> ObtenerUsuariosAccesoAsync(
         CancellationToken cancellationToken = default)
     {
+        ExigirTenantVerificado();
         var permisosActivos = await _db.RolPermisos
             .AsNoTracking()
             .Where(x => x.Permiso.Activo && !x.Permiso.Eliminado)
@@ -129,6 +131,7 @@ public sealed class ReporteAdministrativoService : IReporteAdministrativoService
     public async Task<List<RolPermisosReporteDto>> ObtenerRolesPermisosAsync(
         CancellationToken cancellationToken = default)
     {
+        ExigirTenantVerificado();
         var totalPosible = await _db.Permisos
             .AsNoTracking()
             .CountAsync(x => x.Activo && !x.Eliminado, cancellationToken);
@@ -188,6 +191,7 @@ public sealed class ReporteAdministrativoService : IReporteAdministrativoService
         ReporteAdministrativoFiltroDto filtro,
         CancellationToken cancellationToken = default)
     {
+        ExigirTenantVerificado();
         var (desde, hasta) = NormalizarPeriodo(filtro);
         var eventos = await _db.RegistrosAuditoria
             .AsNoTracking()
@@ -234,6 +238,7 @@ public sealed class ReporteAdministrativoService : IReporteAdministrativoService
         ReporteAdministrativoFiltroDto filtro,
         CancellationToken cancellationToken = default)
     {
+        ExigirTenantVerificado();
         var tipoNormalizado = tipo.Trim().ToLowerInvariant();
         var formatoNormalizado = formato.Trim().ToLowerInvariant();
         if (formatoNormalizado is not ("csv" or "xlsx" or "pdf"))
@@ -312,6 +317,14 @@ public sealed class ReporteAdministrativoService : IReporteAdministrativoService
             _ => throw new BusinessRuleException("El formato de exportación debe ser csv, xlsx o pdf.")
         };
     }
+
+    // P4: el servicio también puede invocarse fuera del middleware HTTP.
+    // No generar reportes ni archivos si no existe tenant RBAC verificado.
+    private int ExigirTenantVerificado() =>
+        _db.AuthorizedReadEmpresaId is > 0 empresaId
+            ? empresaId
+            : throw new ForbiddenAccessException(
+                "El reporte administrativo requiere una empresa autorizada.");
 
     private static (DateTime Desde, DateTime Hasta) NormalizarPeriodo(ReporteAdministrativoFiltroDto filtro)
     {
