@@ -257,6 +257,37 @@ public sealed class ReportesVentasContractTests
         Assert.Equal(0m, (await service.ObtenerResumenAsync(new ReporteVentasFiltroDto())).Total);
     }
 
+    [Fact]
+    public async Task CapabilityPublica_SinMarcaRbac_NoAutorizaReportePrivadoDeVentas()
+    {
+        var http = new DefaultHttpContext();
+        var accessor = new Mock<IHttpContextAccessor>();
+        accessor.SetupGet(x => x.HttpContext).Returns(http);
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase("p4-sales-public-denied-" + Guid.NewGuid().ToString("N"))
+            .Options;
+        await using var db = new AppDbContext(options, tenantHttpContextAccessor: accessor.Object);
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = 1;
+        db.Ventas.Add(Confirmada("PRIVATE-SALE", 7, 100m));
+        await db.SaveChangesAsync();
+
+        var scope = new Mock<IUsuarioScopeService>();
+        scope.Setup(x => x.ObtenerActualAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new UsuarioTenantScopeActual(7, 1, 1, "A", EsAdministrador: true));
+        var service = new ReporteVentasService(db, scope.Object);
+        http.Items.Remove(VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey);
+
+        http.Request.Path = "/tienda/productos";
+        http.Items[VerifiedPublicStoreTenant.AuthorizedEmpresaIdItemKey] = 1;
+        Assert.Equal(0m, (await service.ObtenerResumenAsync(new ReporteVentasFiltroDto())).Total);
+        http.Items.Remove(VerifiedPublicStoreTenant.AuthorizedEmpresaIdItemKey);
+
+        http.Request.Path = "/facturas/publico/token/pdf";
+        http.Items[VerifiedPublicInvoiceTenant.AuthorizedEmpresaIdItemKey] = 1;
+        Assert.Equal(0m, (await service.ObtenerResumenAsync(new ReporteVentasFiltroDto())).Total);
+        scope.Verify(x => x.ObtenerActualAsync(1, It.IsAny<CancellationToken>()), Times.Never);
+    }
+
     private static Mock<IAuditoriaService> CreateAuditoriaStrictMock()
     {
         var auditoria = new Mock<IAuditoriaService>(MockBehavior.Strict);
