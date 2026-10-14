@@ -40,7 +40,7 @@ public sealed class PublicStoreTenantKeyProvider : IPublicStoreTenantKeyProvider
             empresas);
     }
 
-    internal static string ResolveTenantKey(
+    public static string ResolveTenantKey(
         int? configuracionId,
         string? nombreComercial,
         string? nombreVisibleSistema,
