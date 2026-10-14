@@ -42,6 +42,7 @@ public sealed class ReporteAdministrativoService : IReporteAdministrativoService
         ReporteAdministrativoFiltroDto filtro,
         CancellationToken cancellationToken = default)
     {
+        ExigirTenantVerificado();
         var (desde, hasta) = NormalizarPeriodo(filtro);
         var usuarios = await ObtenerUsuariosAccesoAsync(cancellationToken);
         var roles = await ObtenerRolesPermisosAsync(cancellationToken);
@@ -77,9 +78,12 @@ public sealed class ReporteAdministrativoService : IReporteAdministrativoService
     public async Task<List<UsuarioAccesoReporteDto>> ObtenerUsuariosAccesoAsync(
         CancellationToken cancellationToken = default)
     {
+        var empresaId = ExigirTenantVerificado();
         var permisosActivos = await _db.RolPermisos
             .AsNoTracking()
-            .Where(x => x.Permiso.Activo && !x.Permiso.Eliminado)
+            .Where(x => x.Permiso.Activo && !x.Permiso.Eliminado &&
+                (x.RolEntidad.EmpresaId == empresaId ||
+                 (x.RolEntidad.EmpresaId == null && x.RolEntidad.Ambito == AmbitoAutorizacion.Empresa)))
             .Select(x => new { x.RolId, x.Permiso.Modulo, x.Permiso.Accion })
             .ToListAsync(cancellationToken);
 
@@ -94,32 +98,45 @@ public sealed class ReporteAdministrativoService : IReporteAdministrativoService
                         .Select(x => new { x.Modulo, x.Accion }).Distinct().Count()
                 });
 
-        var usuarios = await _db.Usuarios
-            .AsNoTracking()
-            .Include(x => x.RolEntidad)
-            .OrderBy(x => x.NombreUsuario)
+        // Rol efectivo de UsuarioEmpresa, nunca Usuario.RolId global/legado.
+        var membresias = await _db.UsuarioEmpresas.AsNoTracking()
+            .Where(m => m.EmpresaId == empresaId)
+            .Select(m => new { m.UsuarioId, m.RolId, m.Activa })
+            .ToListAsync(cancellationToken);
+        var membresiasPorUsuario = membresias.ToDictionary(m => m.UsuarioId);
+        var rolesPorId = await _db.Roles.AsNoTracking()
+            .Where(r => r.EmpresaId == empresaId ||
+                (r.EmpresaId == null && r.Ambito == AmbitoAutorizacion.Empresa))
+            .ToDictionaryAsync(r => r.Id, cancellationToken);
+        var usuarios = await _db.Usuarios.AsNoTracking()
+            .Where(u => _db.UsuarioEmpresas.Any(m =>
+                m.UsuarioId == u.Id && m.EmpresaId == empresaId))
+            .OrderBy(u => u.NombreUsuario)
             .ToListAsync(cancellationToken);
 
         return usuarios.Select(usuario =>
         {
-            var rol = usuario.RolEntidad;
-            permisosPorRol.TryGetValue(usuario.RolId, out var conteo);
+            var membresia = membresiasPorUsuario[usuario.Id];
+            rolesPorId.TryGetValue(membresia.RolId, out var rol);
+            permisosPorRol.TryGetValue(membresia.RolId, out var conteo);
 
             return new UsuarioAccesoReporteDto
             {
                 UsuarioId = usuario.Id,
                 NombreUsuario = usuario.NombreUsuario,
                 NombreCompleto = usuario.NombreCompleto,
-                RolId = usuario.RolId,
+                RolId = membresia.RolId,
                 Rol = rol?.Nombre ?? "Sin rol",
                 EsAdministrador = rol?.EsAdministrador == true,
-                RolActivo = rol is { Activo: true, Eliminado: false },
+                RolActivo = membresia.Activa && rol is { Activo: true, Eliminado: false },
                 Activo = usuario.Activo,
                 Bloqueado = usuario.Bloqueado,
                 Eliminado = usuario.Eliminado,
                 PermisosEfectivos = conteo?.Total ?? 0,
                 PermisosSensibles = conteo?.Sensibles ?? 0,
-                EstadoAcceso = EstadoAcceso(usuario.Activo, usuario.Bloqueado, usuario.Eliminado, rol),
+                EstadoAcceso = membresia.Activa
+                    ? EstadoAcceso(usuario.Activo, usuario.Bloqueado, usuario.Eliminado, rol)
+                    : "Membresía inactiva",
                 FechaCreacion = usuario.FechaCreacion,
                 FechaActualizacion = usuario.FechaActualizacion
             };
@@ -129,25 +146,30 @@ public sealed class ReporteAdministrativoService : IReporteAdministrativoService
     public async Task<List<RolPermisosReporteDto>> ObtenerRolesPermisosAsync(
         CancellationToken cancellationToken = default)
     {
+        var empresaId = ExigirTenantVerificado();
         var totalPosible = await _db.Permisos
             .AsNoTracking()
             .CountAsync(x => x.Activo && !x.Eliminado, cancellationToken);
 
-        var roles = await _db.Roles
-            .AsNoTracking()
-            .OrderBy(x => x.Nombre)
+        var roles = await _db.Roles.AsNoTracking()
+            .Where(r => r.EmpresaId == empresaId ||
+                (r.EmpresaId == null && r.Ambito == AmbitoAutorizacion.Empresa))
+            .OrderBy(r => r.Nombre)
             .ToListAsync(cancellationToken);
 
         var permisos = await _db.RolPermisos
             .AsNoTracking()
             .Include(x => x.Permiso)
-            .Where(x => x.Permiso.Activo && !x.Permiso.Eliminado)
+            .Where(x => x.Permiso.Activo && !x.Permiso.Eliminado &&
+                (x.RolEntidad.EmpresaId == empresaId ||
+                 (x.RolEntidad.EmpresaId == null && x.RolEntidad.Ambito == AmbitoAutorizacion.Empresa)))
             .ToListAsync(cancellationToken);
 
-        var usuariosPorRol = await _db.Usuarios
-            .AsNoTracking()
-            .Where(x => !x.Eliminado)
-            .GroupBy(x => x.RolId)
+        // Asignaciones de membresía activas en ESTA empresa.
+        var usuariosPorRol = await _db.UsuarioEmpresas.AsNoTracking()
+            .Where(m => m.EmpresaId == empresaId && m.Activa &&
+                _db.Usuarios.Any(u => u.Id == m.UsuarioId && !u.Eliminado))
+            .GroupBy(m => m.RolId)
             .Select(g => new { RolId = g.Key, Total = g.Count() })
             .ToDictionaryAsync(x => x.RolId, x => x.Total, cancellationToken);
 
@@ -188,10 +210,11 @@ public sealed class ReporteAdministrativoService : IReporteAdministrativoService
         ReporteAdministrativoFiltroDto filtro,
         CancellationToken cancellationToken = default)
     {
+        var empresaId = ExigirTenantVerificado();
         var (desde, hasta) = NormalizarPeriodo(filtro);
         var eventos = await _db.RegistrosAuditoria
             .AsNoTracking()
-            .Where(x => x.Fecha >= desde && x.Fecha <= hasta)
+            .Where(x => x.EmpresaId == empresaId && x.Fecha >= desde && x.Fecha <= hasta)
             .Select(x => new { x.Modulo, x.Accion, x.Resultado, x.UsuarioId })
             .ToListAsync(cancellationToken);
 
@@ -238,6 +261,7 @@ public sealed class ReporteAdministrativoService : IReporteAdministrativoService
         var formatoNormalizado = formato.Trim().ToLowerInvariant();
         if (formatoNormalizado is not ("csv" or "xlsx" or "pdf"))
             throw new BusinessRuleException("El formato de exportación debe ser csv, xlsx o pdf.");
+        var empresaId = ExigirTenantVerificado();
 
         string[] encabezados;
         List<string[]> filas;
@@ -283,7 +307,7 @@ public sealed class ReporteAdministrativoService : IReporteAdministrativoService
             {
                 var (desde, hasta) = NormalizarPeriodo(filtro);
                 var datos = await _db.RegistrosAuditoria.AsNoTracking()
-                    .Where(x => x.Fecha >= desde && x.Fecha <= hasta)
+                    .Where(x => x.EmpresaId == empresaId && x.Fecha >= desde && x.Fecha <= hasta)
                     .OrderByDescending(x => x.Fecha)
                     .Take(50_000)
                     .ToListAsync(cancellationToken);
@@ -311,6 +335,17 @@ public sealed class ReporteAdministrativoService : IReporteAdministrativoService
             "pdf" => CrearPdf(encabezados, filas, nombre),
             _ => throw new BusinessRuleException("El formato de exportación debe ser csv, xlsx o pdf.")
         };
+    }
+
+    // P4: el servicio también puede invocarse fuera del middleware HTTP.
+    // No generar reportes ni archivos si no existe tenant RBAC verificado.
+    private int ExigirTenantVerificado()
+    {
+        var empresaId = _db.AuthorizedCommercialEmpresaId;
+        if (empresaId is not > 0)
+            throw new ForbiddenAccessException(
+                "El reporte administrativo requiere una empresa autorizada.");
+        return empresaId.Value;
     }
 
     private static (DateTime Desde, DateTime Hasta) NormalizarPeriodo(ReporteAdministrativoFiltroDto filtro)
