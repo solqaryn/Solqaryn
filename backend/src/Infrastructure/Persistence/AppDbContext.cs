@@ -28,7 +28,8 @@ public class AppDbContext : DbContext
     // Mientras las rutas públicas/jobs no tengan un binding tenant certificado,
     // el gate HTTP P0 de segunda empresa sigue siendo obligatorio.
     public int? AuthorizedReadEmpresaId =>
-        VerifiedCommercialTenant.Resolve(_tenantHttpContextAccessor?.HttpContext);
+        VerifiedCommercialTenant.Resolve(_tenantHttpContextAccessor?.HttpContext)
+        ?? VerifiedPublicStoreTenant.Resolve(_tenantHttpContextAccessor?.HttpContext);
 
     public DbSet<Producto> Productos => Set<Producto>();
     public DbSet<ProductoVariante> ProductoVariantes => Set<ProductoVariante>();
@@ -154,7 +155,8 @@ public class AppDbContext : DbContext
         // Solo el contexto RBAC verificado por backend autoriza escribir filas con dueño.
         // La ausencia de marca nunca habilita multiempresa; continúa el P0 de cuarentena.
         var empresaAutorizada = VerifiedCommercialTenant.Resolve(
-            _tenantHttpContextAccessor?.HttpContext);
+            _tenantHttpContextAccessor?.HttpContext)
+            ?? VerifiedPublicStoreTenant.Resolve(_tenantHttpContextAccessor?.HttpContext);
         await CommercialCrossTenantWriteGuard.ValidateAsync(
             this, cancellationToken, empresaAutorizada);
         await CommercialTenantDerivedWriteGuard.ValidateAsync(
