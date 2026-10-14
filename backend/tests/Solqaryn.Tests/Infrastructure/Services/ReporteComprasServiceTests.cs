@@ -193,6 +193,18 @@ public sealed class ReporteComprasServiceTests
         http.Items.Remove(VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey);
         await Assert.ThrowsAsync<ForbiddenAccessException>(() =>
             reportes.ObtenerDetallePaginadoAsync(new ReporteComprasFiltroDto()));
+
+        // Un enlace publico con empresa valida no es permiso RBAC de Compras.
+        http.Request.Path = "/tienda/productos";
+        http.Items[VerifiedPublicStoreTenant.AuthorizedEmpresaIdItemKey] = 2;
+        await Assert.ThrowsAsync<ForbiddenAccessException>(() =>
+            reportes.ObtenerDetallePaginadoAsync(new ReporteComprasFiltroDto()));
+        http.Items.Remove(VerifiedPublicStoreTenant.AuthorizedEmpresaIdItemKey);
+        http.Request.Path = "/facturas/publico/token/pdf";
+        http.Items[VerifiedPublicInvoiceTenant.AuthorizedEmpresaIdItemKey] = 2;
+        await Assert.ThrowsAsync<ForbiddenAccessException>(() =>
+            reportes.ObtenerDetallePaginadoAsync(new ReporteComprasFiltroDto()));
+        scope.Verify(x => x.ObtenerActualAsync(2, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     private static async Task<AppDbContext> CrearEscenarioAsync(
