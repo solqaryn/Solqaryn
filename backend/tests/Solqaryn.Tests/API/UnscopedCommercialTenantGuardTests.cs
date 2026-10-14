@@ -1,3 +1,8 @@
+using Microsoft.Extensions.DependencyInjection;
+using Solqaryn.Domain.Enums;
+using Solqaryn.Application.Interfaces;
+using Moq;
+using System.Security.Claims;
 using System.Text.Json;
 using Solqaryn.API.Middleware;
 using Solqaryn.Infrastructure.Services;
@@ -366,6 +371,99 @@ public sealed class UnscopedCommercialTenantGuardTests
         Assert.Equal(503, http.Response.StatusCode);
         Assert.False(llamada);
         Assert.Null(VerifiedPublicStoreTenant.Resolve(http));
+    }
+
+    [Fact]
+    public async Task PilotoLecturaPrivada_AB_Exige_RBAC_Y_Oculta_Datos_Ajenos_Sin_Abrir_Mutaciones()
+    {
+        var accessor = new HttpContextAccessor();
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase("p4-read-pilot-" + Guid.NewGuid().ToString("N"))
+            .Options;
+        await using var db = new AppDbContext(options, tenantHttpContextAccessor: accessor);
+        var empresaA = new Empresa("Empresa A");
+        var empresaB = new Empresa("Empresa B");
+        db.Set<Empresa>().AddRange(empresaA, empresaB);
+        await db.SaveChangesAsync();
+
+        var categoriaA = new Categoria { Nombre = "A reservado" };
+        var categoriaB = new Categoria { Nombre = "B reservado" };
+        db.Categorias.AddRange(categoriaA, categoriaB);
+        db.Entry(categoriaA).Property<int?>("EmpresaId").CurrentValue = empresaA.Id;
+        db.Entry(categoriaB).Property<int?>("EmpresaId").CurrentValue = empresaB.Id;
+        await db.SaveChangesAsync();
+
+        var configuracion = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["MultiEmpresa:PrivateReadPilotEnabled"] = "true"
+            }).Build();
+
+        var permisos = new Mock<IPermisoService>(MockBehavior.Strict);
+        permisos.Setup(x => x.TienePermisoAsync(
+                empresaA.Id, ModuloSistema.Productos, AccionPermiso.Ver))
+            .ReturnsAsync(true);
+        permisos.Setup(x => x.TienePermisoAsync(
+                empresaB.Id, ModuloSistema.Productos, AccionPermiso.Ver))
+            .ReturnsAsync(false);
+        using var services = new ServiceCollection()
+            .AddSingleton<IConfiguration>(configuracion)
+            .AddSingleton<IPermisoService>(permisos.Object)
+            .BuildServiceProvider();
+
+        var llamadas = 0;
+        var gate = new UnscopedCommercialTenantGuardMiddleware(async http =>
+        {
+            llamadas++;
+            Assert.Equal(empresaA.Id, VerifiedCommercialTenant.Resolve(http));
+            var categorias = await db.Categorias.AsNoTracking().ToListAsync();
+            Assert.Single(categorias);
+            Assert.Equal(categoriaA.Id, categorias[0].Id);
+            http.Response.StatusCode = StatusCodes.Status204NoContent;
+        });
+
+        async Task<(int Status, int? Tenant)> SolicitudAsync(
+            string metodo, string path, int idEmpresa, bool authenticated = true)
+        {
+            var http = new DefaultHttpContext { RequestServices = services };
+            http.Request.Method = metodo;
+            http.Request.Path = path;
+            http.Request.Headers["X-Empresa-Id"] = idEmpresa.ToString();
+            http.Response.Body = new MemoryStream();
+            http.User = authenticated
+                ? new ClaimsPrincipal(new ClaimsIdentity(
+                    new[] { new Claim(ClaimTypes.NameIdentifier, "user-A") }, "Test"))
+                : new ClaimsPrincipal(new ClaimsIdentity());
+            accessor.HttpContext = http;
+            await gate.InvokeAsync(http, db);
+            return (http.Response.StatusCode, VerifiedCommercialTenant.Resolve(http));
+        }
+
+        var a = await SolicitudAsync("GET", "/productos", empresaA.Id);
+        Assert.Equal(204, a.Status);
+        Assert.Equal(empresaA.Id, a.Tenant);
+
+        var b = await SolicitudAsync("GET", "/productos", empresaB.Id);
+        Assert.Equal(503, b.Status);
+        Assert.Null(b.Tenant);
+
+        var anonimo = await SolicitudAsync("GET", "/productos", empresaA.Id, false);
+        Assert.Equal(503, anonimo.Status);
+        Assert.Null(anonimo.Tenant);
+
+        var escritura = await SolicitudAsync("POST", "/productos", empresaA.Id);
+        Assert.Equal(503, escritura.Status);
+        Assert.Null(escritura.Tenant);
+
+        var detalle = await SolicitudAsync("GET", "/productos/1", empresaA.Id);
+        Assert.Equal(503, detalle.Status);
+        Assert.Null(detalle.Tenant);
+
+        Assert.Equal(1, llamadas);
+        permisos.Verify(x => x.TienePermisoAsync(
+            empresaA.Id, ModuloSistema.Productos, AccionPermiso.Ver), Times.Once());
+        permisos.Verify(x => x.TienePermisoAsync(
+            empresaB.Id, ModuloSistema.Productos, AccionPermiso.Ver), Times.Once());
     }
 
     private static AppDbContext NuevoContexto()
