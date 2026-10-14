@@ -87,17 +87,24 @@ public sealed class PublicStoreAccountEmailTenantIntegrationTests
             {
                 Assert.Equal(cuentaA, (await dbA.TiendaCuentasCliente.AsNoTracking().SingleAsync()).Id);
 
-                var clienteA = await dbA.Clientes.AsNoTracking().FirstAsync();
+                var tipoA = await dbA.TipoClientes.AsNoTracking().FirstAsync();
+                var segundoClienteA = new Cliente
+                {
+                    Nombre = "Otro cliente A", TipoClienteId = tipoA.Id
+                };
+                dbA.Clientes.Add(segundoClienteA);
+                await dbA.SaveChangesAsync();
+
                 var repetida = new TiendaCuentaCliente
                 {
-                    ClienteId = clienteA.Id,
+                    ClienteId = segundoClienteA.Id,
                     Nombre = "Duplicada A",
                     Correo = "persona@example.test",
                     CorreoNormalizado = "PERSONA@EXAMPLE.TEST",
                     PasswordHash = "prueba"
                 };
-                // La misma persona/cliente ya tiene cuenta: también debe
-                // fallar por índice. No confundirlo con unicidad entre empresas.
+                // La segunda cuenta tiene ClienteId distinto: sólo puede
+                // fallar por correo duplicado dentro del mismo tenant A.
                 dbA.TiendaCuentasCliente.Add(repetida);
                 await Assert.ThrowsAsync<DbUpdateException>(() => dbA.SaveChangesAsync());
             }
