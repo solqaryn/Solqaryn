@@ -22,7 +22,6 @@ public sealed class TrazabilidadInventarioRepository : ITrazabilidadInventarioRe
 
     public async Task<(IReadOnlyList<LoteInventario> Items, int Total)> GetLotesPagedAsync(LoteInventarioQueryDto filtro)
     {
-        var tenant = await CommercialTenantSqlLockScope.RequireAsync(_context);
         ArgumentNullException.ThrowIfNull(filtro);
         IQueryable<LoteInventario> query = Lotes.AsNoTracking();
 
@@ -61,18 +60,19 @@ public sealed class TrazabilidadInventarioRepository : ITrazabilidadInventarioRe
         return (items, total);
     }
 
-    public Task<LoteInventario?> GetLoteByIdAsync(int id, bool tracking = false)
+    public async Task<LoteInventario?> GetLoteByIdAsync(int id, bool tracking = false)
     {
         if (_context.Database.CurrentTransaction is not null)
         {
-            return Lotes
+            var tenant = await CommercialTenantSqlLockScope.RequireAsync(_context);
+            return await Lotes
                 .FromSqlInterpolated($"SELECT li.* FROM LotesInventario li WHERE li.Id = {id} AND ({tenant} IS NULL OR li.EmpresaId = {tenant}) FOR UPDATE")
                 .AsTracking()
                 .FirstOrDefaultAsync();
         }
 
         var query = tracking ? Lotes.AsTracking() : Lotes.AsNoTracking();
-        return query.FirstOrDefaultAsync(x => x.Id == id);
+        return await query.FirstOrDefaultAsync(x => x.Id == id);
     }
 
     public Task<LoteInventario?> GetLoteByCodigoAsync(int productoVarianteId, string codigo, bool tracking = false)
@@ -99,7 +99,6 @@ public sealed class TrazabilidadInventarioRepository : ITrazabilidadInventarioRe
 
     public async Task<(IReadOnlyList<SerieInventario> Items, int Total)> GetSeriesPagedAsync(SerieInventarioQueryDto filtro)
     {
-        var tenant = await CommercialTenantSqlLockScope.RequireAsync(_context);
         ArgumentNullException.ThrowIfNull(filtro);
         IQueryable<SerieInventario> query = Series.AsNoTracking();
 
@@ -127,18 +126,19 @@ public sealed class TrazabilidadInventarioRepository : ITrazabilidadInventarioRe
         return (items, total);
     }
 
-    public Task<SerieInventario?> GetSerieByIdAsync(int id, bool tracking = false)
+    public async Task<SerieInventario?> GetSerieByIdAsync(int id, bool tracking = false)
     {
         if (_context.Database.CurrentTransaction is not null)
         {
-            return Series
+            var tenant = await CommercialTenantSqlLockScope.RequireAsync(_context);
+            return await Series
                 .FromSqlInterpolated($"SELECT si.* FROM SeriesInventario si WHERE si.Id = {id} AND ({tenant} IS NULL OR si.EmpresaId = {tenant}) FOR UPDATE")
                 .AsTracking()
                 .FirstOrDefaultAsync();
         }
 
         var query = tracking ? Series.AsTracking() : Series.AsNoTracking();
-        return query.Include(x => x.LoteInventario).FirstOrDefaultAsync(x => x.Id == id);
+        return await query.Include(x => x.LoteInventario).FirstOrDefaultAsync(x => x.Id == id);
     }
 
     public Task<SerieInventario?> GetSerieByNumeroAsync(string numeroSerie, bool tracking = false)
