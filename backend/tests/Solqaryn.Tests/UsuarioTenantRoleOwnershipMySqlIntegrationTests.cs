@@ -108,7 +108,10 @@ public sealed class UsuarioTenantRoleOwnershipMySqlIntegrationTests
             Assert.Equal(template.Id, (await scope.ObtenerActualAsync(a.Id))?.RolId);
             Assert.Equal(roleB.Id, (await scope.ObtenerActualAsync(b.Id))?.RolId);
 
-            roleB.Activo = false;
+            // El setup hizo ChangeTracker.Clear; volver a cargar el rol
+            // para que la desactivación se persista y la aserción sea causal.
+            var rolBGuardado = await db.Roles.SingleAsync(r => r.Id == roleB.Id);
+            rolBGuardado.Activo = false;
             await db.SaveChangesAsync();
             Assert.Null(await scope.ObtenerActualAsync(b.Id));
         }
