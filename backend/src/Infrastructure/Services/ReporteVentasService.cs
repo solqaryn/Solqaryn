@@ -124,7 +124,7 @@ public sealed class ReporteVentasService : IReporteVentasService
     private async Task<UsuarioTenantScopeActual?> ObtenerAlcanceVerificadoAsync(
         CancellationToken cancellationToken)
     {
-        var empresaId = _context.AuthorizedReadEmpresaId;
+        var empresaId = _context.AuthorizedCommercialEmpresaId;
         if (empresaId is not > 0)
             return null;
         return await _usuarioScope.ObtenerActualAsync(empresaId.Value, cancellationToken);
