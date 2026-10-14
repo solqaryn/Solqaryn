@@ -24,11 +24,12 @@ public sealed class CreditoClienteRepository : ICreditoClienteRepository
 
     public async Task<CreditoCliente?> GetByIdForUpdateAsync(int id)
     {
+        var tenant = await CommercialTenantSqlLockScope.RequireAsync(_context);
         if (_context.Database.CurrentTransaction is null)
             throw new InvalidOperationException("GetByIdForUpdateAsync requiere una transacción activa.");
 
         return await Creditos
-            .FromSqlInterpolated($"SELECT c.* FROM CreditosCliente c WHERE c.Id = {id} FOR UPDATE")
+            .FromSqlInterpolated($"SELECT c.* FROM CreditosCliente c WHERE c.Id = {id} AND ({tenant} IS NULL OR c.EmpresaId = {tenant}) FOR UPDATE")
             .AsTracking()
             .FirstOrDefaultAsync();
     }

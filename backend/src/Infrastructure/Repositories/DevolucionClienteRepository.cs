@@ -42,6 +42,7 @@ public sealed class DevolucionClienteRepository : IDevolucionClienteRepository
 
     public async Task<DevolucionCliente?> GetByIdForUpdateAsync(int id)
     {
+        var tenant = await CommercialTenantSqlLockScope.RequireAsync(_context);
         if (_context.Database.CurrentTransaction is null)
             throw new InvalidOperationException("GetByIdForUpdateAsync requiere una transacción activa.");
 
@@ -53,13 +54,13 @@ public sealed class DevolucionClienteRepository : IDevolucionClienteRepository
         if (alcance.EsAdministrador)
         {
             devolucion = await Devoluciones
-                .FromSqlInterpolated($"SELECT d.* FROM DevolucionesCliente d WHERE d.Id = {id} FOR UPDATE")
+                .FromSqlInterpolated($"SELECT d.* FROM DevolucionesCliente d WHERE d.Id = {id} AND ({tenant} IS NULL OR d.EmpresaId = {tenant}) FOR UPDATE")
                 .AsTracking().FirstOrDefaultAsync();
         }
         else
         {
             devolucion = await Devoluciones
-                .FromSqlInterpolated($"SELECT d.* FROM DevolucionesCliente d INNER JOIN Ventas v ON v.Id = d.VentaId WHERE d.Id = {id} AND v.CreadoPorUsuarioId = {alcance.UsuarioId} FOR UPDATE")
+                .FromSqlInterpolated($"SELECT d.* FROM DevolucionesCliente d INNER JOIN Ventas v ON v.Id = d.VentaId WHERE d.Id = {id} AND v.CreadoPorUsuarioId = {alcance.UsuarioId} AND ({tenant} IS NULL OR d.EmpresaId = {tenant}) FOR UPDATE")
                 .AsTracking().FirstOrDefaultAsync();
         }
 
@@ -80,6 +81,7 @@ public sealed class DevolucionClienteRepository : IDevolucionClienteRepository
 
     public async Task<DevolucionCliente?> GetByIdempotencyKeyForUpdateAsync(string key)
     {
+        var tenant = await CommercialTenantSqlLockScope.RequireAsync(_context);
         if (_context.Database.CurrentTransaction is null)
             throw new InvalidOperationException("GetByIdempotencyKeyForUpdateAsync requiere una transacción activa.");
 
@@ -91,13 +93,13 @@ public sealed class DevolucionClienteRepository : IDevolucionClienteRepository
         if (alcance.EsAdministrador)
         {
             devolucion = await Devoluciones
-                .FromSqlInterpolated($"SELECT d.* FROM DevolucionesCliente d WHERE d.IdempotencyKey = {key} FOR UPDATE")
+                .FromSqlInterpolated($"SELECT d.* FROM DevolucionesCliente d WHERE d.IdempotencyKey = {key} AND ({tenant} IS NULL OR d.EmpresaId = {tenant}) FOR UPDATE")
                 .AsTracking().FirstOrDefaultAsync();
         }
         else
         {
             devolucion = await Devoluciones
-                .FromSqlInterpolated($"SELECT d.* FROM DevolucionesCliente d INNER JOIN Ventas v ON v.Id = d.VentaId WHERE d.IdempotencyKey = {key} AND v.CreadoPorUsuarioId = {alcance.UsuarioId} FOR UPDATE")
+                .FromSqlInterpolated($"SELECT d.* FROM DevolucionesCliente d INNER JOIN Ventas v ON v.Id = d.VentaId WHERE d.IdempotencyKey = {key} AND v.CreadoPorUsuarioId = {alcance.UsuarioId} AND ({tenant} IS NULL OR d.EmpresaId = {tenant}) FOR UPDATE")
                 .AsTracking().FirstOrDefaultAsync();
         }
         if (devolucion is not null)

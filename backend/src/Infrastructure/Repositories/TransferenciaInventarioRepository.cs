@@ -94,11 +94,12 @@ public sealed class TransferenciaInventarioRepository : ITransferenciaInventario
 
     public async Task<TransferenciaInventario?> GetByIdForUpdateAsync(int id)
     {
+        var tenant = await CommercialTenantSqlLockScope.RequireAsync(_context);
         if (_context.Database.CurrentTransaction is null)
             throw new InvalidOperationException("GetByIdForUpdateAsync requiere una transacción activa.");
 
         var transferencia = await Transferencias
-            .FromSqlInterpolated($"SELECT t.* FROM TransferenciasInventario t WHERE t.Id = {id} FOR UPDATE")
+            .FromSqlInterpolated($"SELECT t.* FROM TransferenciasInventario t WHERE t.Id = {id} AND ({tenant} IS NULL OR t.EmpresaId = {tenant}) FOR UPDATE")
             .AsTracking()
             .FirstOrDefaultAsync();
 

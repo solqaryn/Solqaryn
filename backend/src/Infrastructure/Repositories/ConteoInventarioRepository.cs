@@ -66,11 +66,12 @@ public sealed class ConteoInventarioRepository : IConteoInventarioRepository
 
     public async Task<ConteoInventario?> GetByIdForUpdateAsync(int id)
     {
+        var tenant = await CommercialTenantSqlLockScope.RequireAsync(_context);
         if (_context.Database.CurrentTransaction is null)
             throw new InvalidOperationException("GetByIdForUpdateAsync requiere una transacción activa.");
 
         var conteo = await Conteos
-            .FromSqlInterpolated($"SELECT c.* FROM ConteosInventario c WHERE c.Id = {id} FOR UPDATE")
+            .FromSqlInterpolated($"SELECT c.* FROM ConteosInventario c WHERE c.Id = {id} AND ({tenant} IS NULL OR c.EmpresaId = {tenant}) FOR UPDATE")
             .AsTracking()
             .FirstOrDefaultAsync();
         if (conteo is null) return null;

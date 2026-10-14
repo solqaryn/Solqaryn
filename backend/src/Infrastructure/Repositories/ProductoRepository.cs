@@ -28,10 +28,11 @@ public class ProductoRepository : IProductoRepository
 
     public async Task<Producto?> GetByIdForUpdateAsync(int id)
     {
+        var tenant = await CommercialTenantSqlLockScope.RequireAsync(_context);
         if (_context.Database.CurrentTransaction is null)
             throw new InvalidOperationException("GetByIdForUpdateAsync requiere una transacción activa.");
         return await _context.Productos
-            .FromSqlInterpolated($"SELECT p.* FROM Productos p WHERE p.Id = {id} AND p.Eliminado = 0 FOR UPDATE")
+            .FromSqlInterpolated($"SELECT p.* FROM Productos p WHERE p.Id = {id} AND p.Eliminado = 0 AND ({tenant} IS NULL OR p.EmpresaId = {tenant}) FOR UPDATE")
             .AsTracking().FirstOrDefaultAsync();
     }
 
