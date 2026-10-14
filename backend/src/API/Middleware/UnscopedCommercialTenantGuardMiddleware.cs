@@ -7,10 +7,11 @@ using Microsoft.EntityFrameworkCore;
 namespace Solqaryn.API.Middleware;
 
 /// <summary>
-/// Contención P0 temporal: los maestros y documentos comerciales heredados todavía
-/// carecen de EmpresaId. No exponer NINGÚN endpoint de datos si hay más de un
-/// registro Empresa, aunque la otra empresa esté inactiva.
-/// Se retirará únicamente tras migración y certificación de ownership por fila.
+/// Contención P0: las rutas comerciales privadas siguen en cuarentena con
+/// 2+ empresas, incluso si una está inactiva. La única excepción delimitada
+/// es /tienda/* con Host exacto previamente aprobado por configuración del
+/// servidor y empresa activa comprobada de nuevo contra la base real.
+/// No se habilitan exportaciones, archivos ni tareas internas por este cambio.
 /// </summary>
 public sealed class UnscopedCommercialTenantGuardMiddleware
 {
