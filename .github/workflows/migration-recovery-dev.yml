@@ -158,7 +158,18 @@ jobs:
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013221500_CommercialTenantOwnershipGraphScopedFks';")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013230000_CommercialTenantRemainingModules';")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013231000_CommercialTenantRemainingScopedFks';")" = 1
-          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory;")" = 10
+          # La migración P4 del correo ya está adoptada tras validar el índice
+          # compuesto en MySQL; no equivale a retocar migraciones del punto 3.
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261014112000_PublicStoreAccountEmailPerEmpresa';")" = 1
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory;")" = 11
+          test "$(q "SELECT COUNT(*) FROM (
+            SELECT INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS
+             WHERE TABLE_SCHEMA=DATABASE()
+               AND TABLE_NAME='TiendaCuentasCliente'
+               AND INDEX_NAME='UX_TiendaCuentasCliente_Correo'
+             GROUP BY INDEX_NAME
+            HAVING MIN(NON_UNIQUE)=0 AND GROUP_CONCAT(COLUMN_NAME ORDER BY SEQ_IN_INDEX SEPARATOR ',')='EmpresaId,CorreoNormalizado'
+          ) scoped_email;")" = 1
 
           table_count_after="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME <> '__EFMigrationsHistory';")"
           test "$table_count_after" -ge 136
