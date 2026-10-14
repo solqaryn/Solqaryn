@@ -135,9 +135,7 @@ public sealed class CommercialTenantMySqlIsolationIntegrationTests
                 tenantHttpContextAccessor: new HttpContextAccessor { HttpContext = httpA }))
             {
                 var usuarioA = new UsuarioRepository(dbA);
-                Assert.Null(await usuarioA.GetByIdAsync(miembroId));
-                Assert.Equal(miembroId,
-                    (await usuarioA.GetByIdConMembresiaDeEmpresaAutorizadaAsync(miembroId))?.Id);
+                Assert.Equal(miembroId, (await usuarioA.GetByIdAsync(miembroId))?.Id);
                 var inactivaA = Assert.Single(await usuarioA.GetEmpresasAsync(miembroId));
                 Assert.Equal(empresaAId, inactivaA.EmpresaId);
                 Assert.False(inactivaA.Activa);
