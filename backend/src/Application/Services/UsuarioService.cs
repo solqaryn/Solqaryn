@@ -379,7 +379,8 @@ public class UsuarioService : IUsuarioService
         if (usuario is null && permitirAltaInicial && _currentUser.UsuarioId is > 0)
             usuario = await _repository.GetPendientePrimeraMembresiaAsync(
                 usuarioId, _currentUser.UsuarioId.Value);
-        usuario ??= throw new BusinessRuleException("El usuario no existe.");
+        if (usuario is null)
+            throw new BusinessRuleException("El usuario no existe.");
 
         if (exigirActivo && (!usuario.Activo || usuario.Bloqueado))
             throw new BusinessRuleException("No se puede administrar una membresía activa para un usuario inactivo o bloqueado.");
