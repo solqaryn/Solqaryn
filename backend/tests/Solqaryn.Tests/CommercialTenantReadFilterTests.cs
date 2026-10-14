@@ -32,18 +32,18 @@ public sealed class CommercialTenantReadFilterTests
 
         Assert.Equal(124, owners.Count);
         Assert.All(owners, entity =>
-            Assert.NotNull(entity.GetQueryFilter()));
+            Assert.NotEmpty(entity.GetDeclaredQueryFilters()));
 
-        Assert.Null(db.Model.FindEntityType(typeof(Empresa))!.GetQueryFilter());
-        Assert.Null(db.Model.FindEntityType(typeof(Permiso))!.GetQueryFilter());
+        Assert.Empty(db.Model.FindEntityType(typeof(Empresa))!.GetDeclaredQueryFilters());
+        Assert.Empty(db.Model.FindEntityType(typeof(Permiso))!.GetDeclaredQueryFilters());
     }
 
     [Fact]
     public void Filtro_tenant_preserva_el_borrado_logico_en_productos_y_categorias()
     {
         using var db = CreateDb();
-        var producto = db.Model.FindEntityType(typeof(Producto))!.GetQueryFilter()!;
-        var categoria = db.Model.FindEntityType(typeof(Categoria))!.GetQueryFilter()!;
+        var producto = db.Model.FindEntityType(typeof(Producto))!.GetDeclaredQueryFilters().Single().Expression;
+        var categoria = db.Model.FindEntityType(typeof(Categoria))!.GetDeclaredQueryFilters().Single().Expression;
 
         Assert.Contains("Eliminado", producto.ToString(), StringComparison.Ordinal);
         Assert.Contains("Eliminada", categoria.ToString(), StringComparison.Ordinal);
