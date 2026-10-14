@@ -101,18 +101,27 @@ public class UsuarioRepository : IUsuarioRepository
     public async Task AddAsync(Usuario usuario) => await _context.Usuarios.AddAsync(usuario);
     public void Update(Usuario usuario) => _context.Usuarios.Update(usuario);
 
-    public async Task<List<UsuarioEmpresa>> GetEmpresasAsync(int usuarioId) =>
-        await _context.UsuarioEmpresas
-            .Where(x => x.UsuarioId == usuarioId && x.Activa)
+    public async Task<List<UsuarioEmpresa>> GetEmpresasAsync(int usuarioId)
+    {
+        var empresaId = _context.AuthorizedReadEmpresaId;
+        var tenantAutorizado = empresaId.HasValue && empresaId.Value > 0;
+        // En administración tenant, incluir membresías inactivas para permitir
+        // reactivación, pero nunca divulgar las de otra empresa.
+        // La condición se evalúa fuera de Expression<Func<...>> para EF Core.
+        return await _context.UsuarioEmpresas
+            .Where(x => x.UsuarioId == usuarioId &&
+                        (tenantAutorizado ? x.EmpresaId == empresaId : x.Activa))
             .OrderBy(x => x.EmpresaId)
             .ToListAsync();
+    }
 
     public async Task<UsuarioEmpresa?> GetEmpresaAsync(int usuarioId, int empresaId) =>
         await _context.UsuarioEmpresas
             .FirstOrDefaultAsync(x =>
                 x.UsuarioId == usuarioId &&
                 x.EmpresaId == empresaId &&
-                x.Activa);
+                (_context.AuthorizedReadEmpresaId == null ||
+                 _context.AuthorizedReadEmpresaId == empresaId));
 
     public async Task AddEmpresaAsync(UsuarioEmpresa usuarioEmpresa) =>
         await _context.UsuarioEmpresas.AddAsync(usuarioEmpresa);

@@ -273,7 +273,11 @@ public class UsuarioService : IUsuarioService
 
     public async Task<List<UsuarioEmpresaDto>> GetEmpresasAsync(int usuarioId)
     {
-        await ObtenerUsuarioValidoParaMembresiaAsync(usuarioId, exigirActivo: false);
+        // Consulta de onboarding previa a la primera membresía: el creador
+        // autenticado puede ver la lista VACÍA de su usuario pendiente.
+        // No desbloquear identidades con membresías de otra empresa.
+        await ObtenerUsuarioValidoParaMembresiaAsync(
+            usuarioId, exigirActivo: false, permitirAltaInicial: true);
         return (await _repository.GetEmpresasAsync(usuarioId)).Select(ToEmpresaDto).ToList();
     }
 

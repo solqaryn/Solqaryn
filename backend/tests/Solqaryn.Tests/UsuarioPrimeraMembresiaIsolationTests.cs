@@ -56,4 +56,62 @@ public sealed class UsuarioPrimeraMembresiaIsolationTests
         Assert.Null(await repository.GetByIdAsync(pendiente.Id));
         Assert.Null(await repository.GetPendientePrimeraMembresiaAsync(pendiente.Id, creadorId));
     }
+    [Fact]
+    public async Task MembresiaInactiva_SoloSePuedeAdministrarDesdeSuEmpresa_NoDesdeB()
+    {
+        var http = new DefaultHttpContext();
+        await using var db = new AppDbContext(
+            new DbContextOptionsBuilder<AppDbContext>()
+                .UseInMemoryDatabase("membresia-inactiva-" + Guid.NewGuid().ToString("N"))
+                .Options,
+            tenantHttpContextAccessor: new HttpContextAccessor { HttpContext = http });
+        var empresaA = new Empresa("Empresa A inactiva");
+        var empresaB = new Empresa("Empresa B activa");
+        var rol = new Rol { Nombre = "Vendedor", NombreNormalizado = "VENDEDOR" };
+        db.Set<Empresa>().AddRange(empresaA, empresaB);
+        db.Roles.Add(rol);
+        await db.SaveChangesAsync();
+
+        var usuario = new Usuario
+        {
+            NombreUsuario = "miembro-inactivo",
+            NombreCompleto = "Miembro inactivo",
+            PasswordHash = "prueba-no-credencial",
+            RolId = rol.Id
+        };
+        var ajeno = new Usuario
+        {
+            NombreUsuario = "solo-en-b",
+            NombreCompleto = "Solo B",
+            PasswordHash = "prueba-no-credencial",
+            RolId = rol.Id
+        };
+        db.Usuarios.AddRange(usuario, ajeno);
+        await db.SaveChangesAsync();
+        var inactiva = new UsuarioEmpresa(usuario.Id, empresaA.Id, rol.Id);
+        inactiva.Desactivar();
+        db.UsuarioEmpresas.AddRange(
+            inactiva,
+            new UsuarioEmpresa(usuario.Id, empresaB.Id, rol.Id),
+            new UsuarioEmpresa(ajeno.Id, empresaB.Id, rol.Id));
+        await db.SaveChangesAsync();
+
+        var repository = new UsuarioRepository(db);
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = empresaA.Id;
+        // Una membresia inactiva A ya da visibilidad administrativa en A;
+        // la identidad que solo pertenece a B sigue totalmente oculta.
+        Assert.Equal(usuario.Id, (await repository.GetByIdAsync(usuario.Id))?.Id);
+        Assert.Null(await repository.GetByIdAsync(ajeno.Id));
+        var visibles = await repository.GetEmpresasAsync(usuario.Id);
+        Assert.Single(visibles);
+        Assert.False(visibles[0].Activa);
+        Assert.Equal(empresaA.Id, visibles[0].EmpresaId);
+        Assert.Null(await repository.GetEmpresaAsync(usuario.Id, empresaB.Id));
+
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = empresaB.Id;
+        Assert.Equal(usuario.Id, (await repository.GetByIdAsync(usuario.Id))?.Id);
+        Assert.Equal(empresaB.Id, (await repository.GetEmpresasAsync(usuario.Id)).Single().EmpresaId);
+        Assert.Null(await repository.GetEmpresaAsync(usuario.Id, empresaA.Id));
+    }
+
 }
