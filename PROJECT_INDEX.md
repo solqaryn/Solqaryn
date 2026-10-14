@@ -421,3 +421,15 @@ Sanitización de imágenes: `backend/src/Infrastructure/Services/ImagenUploadSec
 - `.github/workflows/cloudinary-dev-backup-restore.yml` (PR #3575): respaldo real cifrado y restore efímero requerido antes de activar el worker.
 - `scripts/audit_cloudinary_dev_locations.py`: lectura SQL posterior; exige cero referencias incorrectas para certificación.
 - `docs/CLOUDINARY_AISLAMIENTO.md`: contrato de operación, integridad/rollback y cierre DEV 11/11 real; auditoría `remaining=0`, flag `false` y aceptación manual individual/ZIP posterior.
+
+## 2026-10-14 — P4 ventas: reportes con membresía de empresa verificada (PR #3615 candidato)
+
+- `ReporteVentasService` deja de utilizar `UsuarioScopeActual` global; resuelve `UsuarioTenantScopeActual` comprobando membresía de empresa desde el contexto server-side y añade `Venta.EmpresaId` explícito al conjunto de filas consultables.
+- Sin tenant verificado, los resúmenes/detalles retornan cero filas; `VendedorId` suministrado por el cliente no expande el alcance. Pruebas A/B simultáneas y fixtures con sucursales de un mismo propietario.
+- Sólo DEV; sin migraciones ni backfill, sin retirar cuarentena de segundas empresas, sin QA/PROD. Candidato sujeto a REVIEW_FIRST, CI exact-head y pruebas MySQL A/B.
+
+## 2026-10-14 — P4 compras: reportes con ownership de documentos A/B (PR #3616 candidato)
+
+- `ReporteComprasService` exige una empresa seleccionada por servidor y membresía vigente mediante `IUsuarioScopeService.ObtenerActualAsync(empresaId)`; en ausencia, rechaza incluso invocaciones fuera de middleware HTTP.
+- El detalle de orden y sus anexos de facturas, recepciones, devoluciones y evaluaciones preservan `EmpresaId` explícito (EF.Property en propiedad shadow) en consultas y joins.
+- La aceptación unitaria usa owner empresa A y B, demuestra separación y rechaza solicitudes sin scope. Sin DDL/backfill ni escritura a datos reales. Cuarentena general de 2+ permanece; sujeto a exact-head MySQL, CI y REVIEW_FIRST.
