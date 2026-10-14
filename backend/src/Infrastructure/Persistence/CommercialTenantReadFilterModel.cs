@@ -67,6 +67,21 @@ public static class CommercialTenantReadFilterModel
         }
     }
 
+    /// <summary>
+    /// Usuarios son identidades compartidas y NO tienen EmpresaId. En rutas de
+    /// administración con tenant RBAC se exponen solo las identidades con
+    /// membresía en esa empresa; login y renovación sin marca conservan el
+    /// lookup global necesario para autenticar sin cambiar el contrato JWT.
+    /// </summary>
+    public static void ApplySharedIdentityMembershipFilter(ModelBuilder modelBuilder, AppDbContext db)
+    {
+        modelBuilder.Entity<Usuario>().HasQueryFilter(user =>
+            db.AuthorizedReadEmpresaId == null ||
+            db.UsuarioEmpresas.Any(member =>
+                member.UsuarioId == user.Id &&
+                member.EmpresaId == db.AuthorizedReadEmpresaId));
+    }
+
     private sealed class ReplaceParameterVisitor : ExpressionVisitor
     {
         private readonly ParameterExpression _original;
