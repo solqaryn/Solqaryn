@@ -84,11 +84,12 @@ public class AjusteInventarioRepository : IAjusteInventarioRepository
 
     public async Task<AjusteInventario?> GetByIdForUpdateAsync(int id)
     {
+        var tenant = await CommercialTenantSqlLockScope.RequireAsync(_context);
         if (_context.Database.CurrentTransaction is null)
             throw new InvalidOperationException("GetByIdForUpdateAsync requiere una transacción activa.");
 
         var ajuste = await _context.AjustesInventario
-            .FromSqlInterpolated($"SELECT a.* FROM AjustesInventario a WHERE a.Id = {id} FOR UPDATE")
+            .FromSqlInterpolated($"SELECT a.* FROM AjustesInventario a WHERE a.Id = {id} AND ({tenant} IS NULL OR a.EmpresaId = {tenant}) FOR UPDATE")
             .AsTracking()
             .FirstOrDefaultAsync();
 

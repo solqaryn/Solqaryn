@@ -71,11 +71,12 @@ public sealed class DevolucionProveedorRepository : IDevolucionProveedorReposito
 
     public async Task<DevolucionProveedor?> GetByIdForUpdateAsync(int id)
     {
+        var tenant = await CommercialTenantSqlLockScope.RequireAsync(_context);
         if (_context.Database.CurrentTransaction is null)
             throw new InvalidOperationException("GetByIdForUpdateAsync requiere una transacción activa.");
 
         var devolucion = await _context.Set<DevolucionProveedor>()
-            .FromSqlInterpolated($"SELECT d.* FROM DevolucionesProveedor d WHERE d.Id = {id} FOR UPDATE")
+            .FromSqlInterpolated($"SELECT d.* FROM DevolucionesProveedor d WHERE d.Id = {id} AND ({tenant} IS NULL OR d.EmpresaId = {tenant}) FOR UPDATE")
             .AsTracking()
             .FirstOrDefaultAsync();
 

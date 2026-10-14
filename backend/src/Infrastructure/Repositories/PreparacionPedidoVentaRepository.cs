@@ -30,9 +30,10 @@ public sealed class PreparacionPedidoVentaRepository : IPreparacionPedidoVentaRe
 
     public async Task<PreparacionPedidoVenta?> GetByIdForUpdateAsync(int id)
     {
+        var tenant = await CommercialTenantSqlLockScope.RequireAsync(_context);
         ExigirTransaccion();
         var entity = await Preparaciones
-            .FromSqlInterpolated($"SELECT p.* FROM PreparacionesPedidoVenta p WHERE p.Id = {id} FOR UPDATE")
+            .FromSqlInterpolated($"SELECT p.* FROM PreparacionesPedidoVenta p WHERE p.Id = {id} AND ({tenant} IS NULL OR p.EmpresaId = {tenant}) FOR UPDATE")
             .AsTracking()
             .FirstOrDefaultAsync();
         if (entity is not null)
@@ -42,9 +43,10 @@ public sealed class PreparacionPedidoVentaRepository : IPreparacionPedidoVentaRe
 
     public async Task<PreparacionPedidoVenta?> GetByPedidoVentaIdForUpdateAsync(int pedidoVentaId)
     {
+        var tenant = await CommercialTenantSqlLockScope.RequireAsync(_context);
         ExigirTransaccion();
         var entity = await Preparaciones
-            .FromSqlInterpolated($"SELECT p.* FROM PreparacionesPedidoVenta p WHERE p.PedidoVentaId = {pedidoVentaId} FOR UPDATE")
+            .FromSqlInterpolated($"SELECT p.* FROM PreparacionesPedidoVenta p WHERE p.PedidoVentaId = {pedidoVentaId} AND ({tenant} IS NULL OR p.EmpresaId = {tenant}) FOR UPDATE")
             .AsTracking()
             .FirstOrDefaultAsync();
         if (entity is not null)

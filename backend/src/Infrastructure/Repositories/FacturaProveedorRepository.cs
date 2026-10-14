@@ -86,11 +86,12 @@ public sealed class FacturaProveedorRepository : IFacturaProveedorRepository
 
     public async Task<FacturaProveedor?> GetByIdForUpdateAsync(int id)
     {
+        var tenant = await CommercialTenantSqlLockScope.RequireAsync(_context);
         if (_context.Database.CurrentTransaction is null)
             throw new InvalidOperationException("GetByIdForUpdateAsync requiere una transacción activa.");
 
         var factura = await _context.Set<FacturaProveedor>()
-            .FromSqlInterpolated($"SELECT f.* FROM FacturasProveedor f WHERE f.Id = {id} FOR UPDATE")
+            .FromSqlInterpolated($"SELECT f.* FROM FacturasProveedor f WHERE f.Id = {id} AND ({tenant} IS NULL OR f.EmpresaId = {tenant}) FOR UPDATE")
             .AsTracking()
             .FirstOrDefaultAsync();
         if (factura is not null)
