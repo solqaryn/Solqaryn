@@ -41,6 +41,7 @@ public sealed class ConfiguredPublicStoreHostTenantResolver : IPublicStoreHostTe
                 "PublicStore multiempresa cannot be enabled without approved host bindings.");
 
         _byHost = map;
+        IsEnabled = true;
     }
 
     public int? ResolveEmpresaId(HostString requestHost)
