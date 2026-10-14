@@ -66,28 +66,55 @@ public class CompraRepository : ICompraRepository
         if (_context.Database.CurrentTransaction is null)
             throw new InvalidOperationException("GetByIdForUpdateAsync requiere una transacción activa.");
 
-        // El lock SQL no depende de los filtros EF ni de roles globales legacy.
+        // Con 2+ empresas la membresía RBAC y el predicado SQL owner son obligatorios.
+        // En monoempresa se conserva el lock legacy para datos históricos NULL.
         var empresaId = _context.AuthorizedCommercialEmpresaId;
-        if (empresaId is not > 0)
-            return null;
-        var alcance = await _usuarioScope.ObtenerActualAsync(empresaId.Value);
-        if (alcance is null)
-            return null;
+        UsuarioTenantScopeActual? scopeTenant = null;
+        UsuarioScopeActual? legacyScope = null;
+        if (empresaId is > 0)
+        {
+            scopeTenant = await _usuarioScope.ObtenerActualAsync(empresaId.Value);
+            if (scopeTenant is null || scopeTenant.EmpresaId != empresaId.Value)
+                return null;
+        }
+        else
+        {
+            // Incluye empresas inactivas; cuando hay dos o más no existe fallback.
+            var empresas = await _context.Set<Empresa>().IgnoreQueryFilters()
+                .AsNoTracking().Take(2).CountAsync();
+            if (empresas > 1)
+                return null;
+            legacyScope = await _usuarioScope.ObtenerActualAsync();
+            if (legacyScope is null)
+                return null;
+        }
 
+        var administrador = scopeTenant?.EsAdministrador ?? legacyScope!.EsAdministrador;
+        var usuarioId = scopeTenant?.UsuarioId ?? legacyScope!.UsuarioId;
         Compra? cabecera;
-        if (alcance.EsAdministrador)
+        if (empresaId is > 0 && administrador)
         {
             cabecera = await _context.Compras
                 .FromSqlInterpolated($"SELECT c.* FROM Compras c WHERE c.Id = {id} AND c.EmpresaId = {empresaId.Value} AND c.Eliminado = 0 FOR UPDATE")
-                .AsTracking()
-                .FirstOrDefaultAsync();
+                .AsTracking().FirstOrDefaultAsync();
+        }
+        else if (empresaId is > 0)
+        {
+            cabecera = await _context.Compras
+                .FromSqlInterpolated($"SELECT c.* FROM Compras c WHERE c.Id = {id} AND c.EmpresaId = {empresaId.Value} AND c.Eliminado = 0 AND c.CreadoPorUsuarioId = {usuarioId} FOR UPDATE")
+                .AsTracking().FirstOrDefaultAsync();
+        }
+        else if (administrador)
+        {
+            cabecera = await _context.Compras
+                .FromSqlInterpolated($"SELECT c.* FROM Compras c WHERE c.Id = {id} AND c.Eliminado = 0 FOR UPDATE")
+                .AsTracking().FirstOrDefaultAsync();
         }
         else
         {
             cabecera = await _context.Compras
-                .FromSqlInterpolated($"SELECT c.* FROM Compras c WHERE c.Id = {id} AND c.EmpresaId = {empresaId.Value} AND c.Eliminado = 0 AND c.CreadoPorUsuarioId = {alcance.UsuarioId} FOR UPDATE")
-                .AsTracking()
-                .FirstOrDefaultAsync();
+                .FromSqlInterpolated($"SELECT c.* FROM Compras c WHERE c.Id = {id} AND c.Eliminado = 0 AND c.CreadoPorUsuarioId = {usuarioId} FOR UPDATE")
+                .AsTracking().FirstOrDefaultAsync();
         }
 
         if (cabecera is null)
