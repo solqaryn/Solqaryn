@@ -1,4 +1,5 @@
 using Solqaryn.Infrastructure.Persistence;
+using Solqaryn.Application.Security;
 using Solqaryn.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -42,7 +43,7 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
             .IgnoreQueryFilters()
             .AsNoTracking()
             .OrderBy(empresa => empresa.Id)
-            .Select(empresa => empresa.Id)
+            .Select(empresa => new { empresa.Id, empresa.Activa })
             .Take(2)
             .ToArrayAsync(httpContext.RequestAborted);
 
@@ -50,6 +51,22 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         {
             await RechazarAsync(httpContext);
             return;
+        }
+
+        // Única fuente de autoridad para la tienda pública mientras el
+        // producto opera con una sola Empresa. Nunca confiar en un header.
+        // Una Empresa inactiva no puede recibir cuentas/checkout públicos.
+        if (httpContext.Request.Path.StartsWithSegments(
+                "/tienda", StringComparison.OrdinalIgnoreCase))
+        {
+            if (!empresas[0].Activa)
+            {
+                await RechazarAsync(httpContext);
+                return;
+            }
+
+            httpContext.Items[VerifiedPublicStoreTenant.AuthorizedEmpresaIdItemKey] =
+                empresas[0].Id;
         }
 
         await _next(httpContext);
