@@ -108,7 +108,7 @@ public sealed class UsuarioTenantRoleOwnershipMySqlIntegrationTests
             Assert.Equal(template.Id, (await scope.ObtenerActualAsync(a.Id))?.RolId);
             Assert.Equal(roleB.Id, (await scope.ObtenerActualAsync(b.Id))?.RolId);
 
-            roleB.Desactivar();
+            roleB.Activo = false;
             await db.SaveChangesAsync();
             Assert.Null(await scope.ObtenerActualAsync(b.Id));
         }
