@@ -7,6 +7,8 @@ using Solqaryn.Application.Security;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Infrastructure.Persistence;
 using Solqaryn.Infrastructure.Repositories;
+using Solqaryn.Application.Interfaces;
+using Moq;
 using Xunit;
 
 namespace Solqaryn.Tests;
@@ -33,6 +35,7 @@ public sealed class CommercialTenantMySqlIsolationIntegrationTests
         try
         {
             int empresaAId, empresaBId, productoAId, productoBId, categoriaAId, categoriaBId, miembroId;
+            int compraAId, compraBId, ventaAId, ventaBId;
             await using (var setup = new AppDbContext(options))
             {
                 await Phase7MySqlTestDatabase.InitializeFreshAsync(setup);
@@ -98,6 +101,16 @@ public sealed class CommercialTenantMySqlIsolationIntegrationTests
                 await dbA.SaveChangesAsync();
                 productoAId = producto.Id;
                 Assert.Equal(empresaAId, producto.EmpresaId);
+
+                var ventaA = new Venta { NumeroVenta = "LOCK-VENTA", CreadoPorUsuarioId = miembroId };
+                var compraA = new Compra { NumeroCompra = "LOCK-COMPRA", CreadoPorUsuarioId = miembroId };
+                dbA.Ventas.Add(ventaA);
+                dbA.Compras.Add(compraA);
+                await dbA.SaveChangesAsync();
+                ventaAId = ventaA.Id;
+                compraAId = compraA.Id;
+                Assert.Equal(empresaAId, ventaA.EmpresaId);
+                Assert.Equal(empresaAId, compraA.EmpresaId);
             }
 
             await using (var dbB = new AppDbContext(options,
@@ -117,6 +130,15 @@ public sealed class CommercialTenantMySqlIsolationIntegrationTests
                 await dbB.SaveChangesAsync();
                 productoBId = producto.Id;
                 Assert.Equal(empresaBId, producto.EmpresaId);
+
+                // Mismo número es legal en empresas distintas; el dueño no se infiere del número.
+                var ventaB = new Venta { NumeroVenta = "LOCK-VENTA", CreadoPorUsuarioId = miembroId };
+                var compraB = new Compra { NumeroCompra = "LOCK-COMPRA", CreadoPorUsuarioId = miembroId };
+                dbB.Ventas.Add(ventaB);
+                dbB.Compras.Add(compraB);
+                await dbB.SaveChangesAsync();
+                ventaBId = ventaB.Id;
+                compraBId = compraB.Id;
 
                 var usuarioB = new UsuarioRepository(dbB);
                 Assert.Equal(miembroId, (await usuarioB.GetByIdAsync(miembroId))?.Id);
@@ -184,6 +206,65 @@ public sealed class CommercialTenantMySqlIsolationIntegrationTests
                     Assert.Contains("EmpresaId", sql, StringComparison.OrdinalIgnoreCase);
                     Assert.Contains("WHERE", sql, StringComparison.OrdinalIgnoreCase);
                 }
+            }
+
+
+            // Lectura SQL FOR UPDATE no compone autorizaciones de roles legacy:
+            // el predicado EmpresaId debe estar dentro del lock de base real.
+            var scope = new Mock<IUsuarioScopeService>();
+            scope.Setup(x => x.ObtenerActualAsync(
+                    empresaAId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new UsuarioTenantScopeActual(
+                    miembroId, empresaAId, 1, "Administrador A", true));
+            scope.Setup(x => x.ObtenerActualAsync(
+                    empresaBId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new UsuarioTenantScopeActual(
+                    miembroId, empresaBId, 1, "Administrador B", true));
+            var currentUser = new Mock<ICurrentUserService>().Object;
+
+            await using (var dbA = new AppDbContext(options,
+                tenantHttpContextAccessor: new HttpContextAccessor { HttpContext = httpA }))
+            {
+                var compras = new CompraRepository(dbA, currentUser, scope.Object);
+                var ventas = new VentaRepository(dbA, currentUser, scope.Object);
+                Assert.Equal(1, await compras.ContarTodasAsync());
+
+                await using var transaction = await dbA.Database.BeginTransactionAsync();
+                Assert.Null(await compras.GetByIdForUpdateAsync(compraBId));
+                Assert.Null(await ventas.GetByIdForUpdateAsync(ventaBId));
+                Assert.Equal(compraAId, (await compras.GetByIdForUpdateAsync(compraAId))?.Id);
+                Assert.Equal(ventaAId, (await ventas.GetByIdForUpdateAsync(ventaAId))?.Id);
+                await transaction.RollbackAsync();
+            }
+            await using (var dbB = new AppDbContext(options,
+                tenantHttpContextAccessor: new HttpContextAccessor { HttpContext = httpB }))
+            {
+                var compras = new CompraRepository(dbB, currentUser, scope.Object);
+                var ventas = new VentaRepository(dbB, currentUser, scope.Object);
+                Assert.Equal(1, await compras.ContarTodasAsync());
+
+                await using var transaction = await dbB.Database.BeginTransactionAsync();
+                Assert.Null(await compras.GetByIdForUpdateAsync(compraAId));
+                Assert.Null(await ventas.GetByIdForUpdateAsync(ventaAId));
+                Assert.Equal(compraBId, (await compras.GetByIdForUpdateAsync(compraBId))?.Id);
+                Assert.Equal(ventaBId, (await ventas.GetByIdForUpdateAsync(ventaBId))?.Id);
+                await transaction.RollbackAsync();
+            }
+            // Un admin GLOBAL legacy sin marca RBAC, o una tienda pública, no
+            // puede forzar locks ni obtener conteos, incluso con membresía mockeada.
+            var publicHttp = new DefaultHttpContext();
+            publicHttp.Request.Path = "/tienda/productos";
+            publicHttp.Items[VerifiedPublicStoreTenant.AuthorizedEmpresaIdItemKey] = empresaBId;
+            await using (var dbPublic = new AppDbContext(options,
+                tenantHttpContextAccessor: new HttpContextAccessor { HttpContext = publicHttp }))
+            {
+                var compras = new CompraRepository(dbPublic, currentUser, scope.Object);
+                var ventas = new VentaRepository(dbPublic, currentUser, scope.Object);
+                Assert.Equal(0, await compras.ContarTodasAsync());
+                await using var transaction = await dbPublic.Database.BeginTransactionAsync();
+                Assert.Null(await compras.GetByIdForUpdateAsync(compraBId));
+                Assert.Null(await ventas.GetByIdForUpdateAsync(ventaBId));
+                await transaction.RollbackAsync();
             }
 
             await using (var comprobacion = new AppDbContext(options))
