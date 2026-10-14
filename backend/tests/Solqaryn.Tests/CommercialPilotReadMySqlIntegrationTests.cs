@@ -28,6 +28,13 @@ public sealed class CommercialPilotReadMySqlIntegrationTests
     {
         var root = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
             ?? throw new InvalidOperationException("MySQL efímero requerido para la aceptación A/B.");
+        // Defensa contra una configuración equivocada: esta prueba destruye
+        // su base efímera y NO debe poder apuntar a Aiven ni a otro host remoto.
+        var origen = new MySqlConnectionStringBuilder(root);
+        if (!string.Equals(origen.Server, "127.0.0.1", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(origen.Server, "localhost", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException(
+                "Prueba A/B rechazada: MySQL debe ser local y descartable, nunca Aiven.");
         var connection = new MySqlConnectionStringBuilder(root)
         {
             Database = "p4_pilot_http_" + Guid.NewGuid().ToString("N")
