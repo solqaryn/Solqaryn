@@ -1,3 +1,9 @@
+## 2026-10-14 — P4: 12 claves naturales empresariales restantes (candidato DEV)
+
+- Reconciliación del antiguo PR #3607 con el HEAD DEV posterior a #3633, sin repetir la migración `20261014112000_PublicStoreAccountEmailPerEmpresa`. Las 12 restricciones naturales de devoluciones, compras, recepciones, reservas, series, solicitudes, sucursales y roles cambian de unicidad global a `(EmpresaId, clave)`. Las cuentas de tienda **ya** conservan su índice `UX_TiendaCuentasCliente_Correo` compuesto por `(EmpresaId, CorreoNormalizado)`.
+- Nueva migración Oracle `20261014130000_CommercialTenantNaturalKeysPostStorefront`: expand-first (crear índice compuesto antes de retirar unicidad global); preserva datos históricos y una columna generada única para roles plantilla con `EmpresaId IS NULL`. No hace backfill, no cambia dominios ni altera QA/PROD. El rollback de índices globales queda prohibido sin respaldo.
+- Validaciones de modelo, DDL físico MySQL, fixture legacy descartable y fresh bootstrap comprueban 12 claves + el índice de tienda ya certificado. Esta rama es **candidata**: requiere REVIEW_FIRST, CI exact-head, pruebas MySQL reales y merge antes de declarar integración. No retira la cuarentena HTTP `503` ni certifica operaciones A/B completas.
+
 ## 2026-10-14 — P4: onboarding transaccional de empresas desde autoridad de plataforma (candidato DEV)
 
 - Nuevo `POST /plataforma/empresas/alta-controlada` con JWT, **dos flags independientes apagados por defecto** (`MultiEmpresa:CommercialIsolationCertified` y `MultiEmpresa:PlatformOnboardingEnabled`), y comprobación en MySQL de `UsuarioRolPlataforma` activo unido a Usuario vigente y Rol vigente con `Ambito=Plataforma`, `EsAdministrador=true`, `EmpresaId=NULL`. Un administrador empresarial jamás sustituye esa autoridad ni se crea/simula un administrador global en seed.

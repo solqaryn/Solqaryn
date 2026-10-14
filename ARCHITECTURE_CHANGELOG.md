@@ -1,3 +1,9 @@
+## 2026-10-14 — P4: natural keys empresariales reconciliadas sin migración duplicada (candidato)
+
+- Origen recuperado: PR #3607 sin fusionar. Sus 13 claves incluían indebidamente la cuenta de tienda, cuya unicidad `(EmpresaId, CorreoNormalizado)` ya fue integrada en la migración `20261014112000_PublicStoreAccountEmailPerEmpresa`. Esta reconciliación incorpora **12 claves restantes** sin alterar el índice vigente de tienda.
+- Migración Oracle incremental `20261014130000_CommercialTenantNaturalKeysPostStorefront`, índices compuestos por `EmpresaId`, columnas generadas para plantillas de roles sin dueño, detección de errores únicos tenant-aware y contratos físicos/verificación MySQL efímera. Ningún dato histórico se asigna ni elimina y no se activa el onboarding ni los endpoints comerciales de dos empresas.
+- Scope DEV y CI. Estado candidato hasta revisión, gates exact-head y MySQL real efímero; cuarentena `503` intacta, QA/PROD no se modifican.
+
 ## 2026-10-14 — P4: onboarding transaccional de empresas desde autoridad de plataforma (candidato DEV)
 
 - Nuevo `POST /plataforma/empresas/alta-controlada` con JWT, **dos flags independientes apagados por defecto** (`MultiEmpresa:CommercialIsolationCertified` y `MultiEmpresa:PlatformOnboardingEnabled`), y comprobación en MySQL de `UsuarioRolPlataforma` activo unido a Usuario vigente y Rol vigente con `Ambito=Plataforma`, `EsAdministrador=true`, `EmpresaId=NULL`. Un administrador empresarial jamás sustituye esa autoridad ni se crea/simula un administrador global en seed.

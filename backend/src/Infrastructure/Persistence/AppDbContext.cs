@@ -456,6 +456,7 @@ public class AppDbContext : DbContext
         modelBuilder.HasAnnotation(RelationalAnnotationNames.MaxIdentifierLength, 64);
         CommercialTenantOwnershipGraphModel.Apply(modelBuilder);
         CommercialTenantRemainingModel.Apply(modelBuilder);
+        CommercialTenantNaturalKeysModel.Apply(modelBuilder);
         // Se aplica al FINAL, después de todas las configuraciones, para
         // preservar borrado lógico y abarcar también propiedades shadow.
         CommercialTenantReadFilterModel.Apply(modelBuilder, this);

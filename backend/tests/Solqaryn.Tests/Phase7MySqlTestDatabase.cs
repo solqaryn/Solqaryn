@@ -122,6 +122,13 @@ internal static class Phase7MySqlTestDatabase
             INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
             VALUES ('20261014112000_PublicStoreAccountEmailPerEmpresa', '10.0.12');
             """);
+        // Adoptar solo tras comprobar físicamente el contrato de 12 índices
+        // comerciales nuevos y la unicidad de tienda ya vigente.
+        await CommercialTenantNaturalKeysPhysicalContract.VerifyAsync(db);
+        await db.Database.ExecuteSqlRawAsync("""
+            INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+            VALUES ('20261014130000_CommercialTenantNaturalKeysPostStorefront', '10.0.12');
+            """);
         await db.Database.CloseConnectionAsync();
 
         if ((await db.Database.GetPendingMigrationsAsync()).Any())

@@ -46,9 +46,14 @@ public sealed class N63CSucursalesEmpresaPersistenceTests
 
         var uniqueIndex = Assert.Single(sucursal.GetIndexes(), index =>
             index.GetDatabaseName() == "UX_Sucursales_Codigo_Activo");
-        Assert.True(uniqueIndex.IsUnique);
+        Assert.False(uniqueIndex.IsUnique);
         Assert.Single(uniqueIndex.Properties);
         Assert.Equal("CodigoActivoUnico", uniqueIndex.Properties[0].Name);
+        var scoped = Assert.Single(sucursal.GetIndexes(), index =>
+            index.GetDatabaseName() == "UX_Sucursales_Empresa_CodigoActivoUnico");
+        Assert.True(scoped.IsUnique);
+        Assert.Equal(new[] { "EmpresaId", "CodigoActivoUnico" },
+            scoped.Properties.Select(p => p.Name));
     }
 
     [Fact]

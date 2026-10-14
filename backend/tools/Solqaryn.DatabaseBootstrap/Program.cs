@@ -229,6 +229,13 @@ if (mode == "fresh")
         INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
         VALUES ('20261014112000_PublicStoreAccountEmailPerEmpresa', '10.0.12');
         """);
+    // Adoptar solo tras comprobar físicamente el contrato de 12 índices
+    // comerciales nuevos y la unicidad de tienda ya vigente.
+    await CommercialTenantNaturalKeysPhysicalContract.VerifyAsync(db);
+    await db.Database.ExecuteSqlRawAsync("""
+        INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+        VALUES ('20261014130000_CommercialTenantNaturalKeysPostStorefront', '10.0.12');
+        """);
     await db.Database.CloseConnectionAsync();
 }
 else
@@ -272,5 +279,6 @@ await CommercialTenantSalesPhysicalConstraints.VerifyAsync(db);
 await CommercialTenantTaxDiscountPhysicalConstraints.VerifyAsync(db);
 await CommercialTenantOwnershipGraphPhysicalConstraints.VerifyAsync(db);
 await CommercialTenantRemainingPhysicalConstraints.VerifyAsync(db);
+await CommercialTenantNaturalKeysPhysicalContract.VerifyAsync(db);
 
 Console.WriteLine($"SOLQARYN_ORACLE_BOOTSTRAP=PASS mode={mode} tables={afterAdoption} pending=0");

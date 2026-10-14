@@ -12,6 +12,8 @@ public sealed class DevolucionProveedorRepository : IDevolucionProveedorReposito
 {
     private const string IdempotencyConstraint = "UX_DevolucionesProveedor_IdempotencyKey";
     private const string NumeroConstraint = "UX_DevolucionesProveedor_NumeroDevolucion";
+    private const string ScopedIdempotencyConstraint = "UX_DevolucionesProveedor_Empresa_IdempotencyKey";
+    private const string ScopedNumeroConstraint = "UX_DevolucionesProveedor_Empresa_NumeroDevolucion";
     private readonly AppDbContext _context;
 
     public DevolucionProveedorRepository(AppDbContext context)
@@ -140,14 +142,14 @@ public sealed class DevolucionProveedorRepository : IDevolucionProveedorReposito
         {
             await _context.SaveChangesAsync();
         }
-        catch (DbUpdateException ex) when (ContieneConstraint(ex, IdempotencyConstraint))
+        catch (DbUpdateException ex) when ((ContieneConstraint(ex, IdempotencyConstraint) || ContieneConstraint(ex, ScopedIdempotencyConstraint)))
         {
             throw new UniqueConstraintViolationException(
                 IdempotencyConstraint,
                 "La clave de idempotencia ya fue utilizada por otra devolución concurrente.",
                 ex);
         }
-        catch (DbUpdateException ex) when (ContieneConstraint(ex, NumeroConstraint))
+        catch (DbUpdateException ex) when ((ContieneConstraint(ex, NumeroConstraint) || ContieneConstraint(ex, ScopedNumeroConstraint)))
         {
             throw new UniqueConstraintViolationException(
                 NumeroConstraint,
