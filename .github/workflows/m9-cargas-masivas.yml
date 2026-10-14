@@ -202,9 +202,13 @@ jobs:
           npm run build:prod
           npx playwright install --with-deps chromium
 
+      # PORT=5005 del job corresponde a la API. Angular lee PORT incluso
+      # si npm start recibe --port 4200: evitar colision sin cambiar la API.
       - name: Iniciar Angular
         working-directory: frontend
         shell: bash
+        env:
+          PORT: '4200'
         run: |
           set -euo pipefail
           nohup npm start -- --host 127.0.0.1 --port 4200 > m9-frontend.log 2>&1 &
