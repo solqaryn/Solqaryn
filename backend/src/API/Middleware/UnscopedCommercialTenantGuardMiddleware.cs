@@ -36,6 +36,25 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
             return;
         }
 
+        // Alta de plataforma: excepción de ruta estricta, NO autoridad.
+        // JWT y rol PLATAFORMA se vuelven a verificar en el controlador contra MySQL.
+        // Dos flags independientes deben estar activados expresamente; ninguna
+        // otra ruta se desbloquea ni se retira la cuarentena comercial.
+        if (HttpMethods.IsPost(httpContext.Request.Method) &&
+            EsRutaExacta(httpContext.Request.Path, "/plataforma/empresas/alta-controlada"))
+        {
+            var config = httpContext.RequestServices.GetService<IConfiguration>();
+            if (config?.GetValue<bool>("MultiEmpresa:CommercialIsolationCertified") == true &&
+                config.GetValue<bool>("MultiEmpresa:PlatformOnboardingEnabled") &&
+                httpContext.User.Identity?.IsAuthenticated == true)
+            {
+                await _next(httpContext);
+                return;
+            }
+            await RechazarAsync(httpContext);
+            return;
+        }
+
         // Impide crear una segunda empresa mientras el catálogo comercial permanezca
         // sin tenant owner. Es bloqueo por seguridad, no un éxito de onboarding.
         if (HttpMethods.IsPost(httpContext.Request.Method) &&
