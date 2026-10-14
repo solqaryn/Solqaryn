@@ -117,10 +117,12 @@ public sealed class ReporteComprasServiceTests
             .Options;
         var http = new DefaultHttpContext();
         http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = 1;
-        return new AppDbContext(options, tenantHttpContextAccessor: new HttpContextAccessor
-        {
-            HttpContext = http
-        });
+        // IHttpContextAccessor real utiliza AsyncLocal; un fixture creado dentro
+        // de una tarea async hija pierde el valor al regresar a la prueba.
+        // Mantener el HttpContext verificado en un accesor determinista del fixture.
+        var accessor = new Mock<IHttpContextAccessor>();
+        accessor.SetupGet(x => x.HttpContext).Returns(http);
+        return new AppDbContext(options, tenantHttpContextAccessor: accessor.Object);
     }
 
     private static ReporteComprasService CrearServicio(AppDbContext db)
@@ -138,8 +140,10 @@ public sealed class ReporteComprasServiceTests
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase("p4-compras-ab-" + Guid.NewGuid().ToString("N"))
             .Options;
+        var accessor = new Mock<IHttpContextAccessor>();
+        accessor.SetupGet(x => x.HttpContext).Returns(http);
         await using var db = new AppDbContext(
-            options, tenantHttpContextAccessor: new HttpContextAccessor { HttpContext = http });
+            options, tenantHttpContextAccessor: accessor.Object);
 
         http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = 1;
         var ordenA = new OrdenCompra
