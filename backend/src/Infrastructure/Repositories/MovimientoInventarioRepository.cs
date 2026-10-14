@@ -58,6 +58,25 @@ public class MovimientoInventarioRepository : IMovimientoInventarioRepository
         return AplicarAlcance(query, legacy);
     }
 
+    // Los consumidores internos del Kardex reciben la misma barrera de lectura,
+    // incluso al consultar orígenes por IDs o validar movimientos posteriores.
+    private async Task<IQueryable<MovimientoInventario>> BaseTenantAsync()
+    {
+        var empresaId = _context.AuthorizedCommercialEmpresaId;
+        var query = _context.MovimientosInventario.AsNoTracking();
+        if (empresaId is > 0)
+        {
+            var alcance = await _usuarioScope.ObtenerActualAsync(empresaId.Value);
+            return alcance is null || alcance.EmpresaId != empresaId.Value
+                ? query.Where(_ => false)
+                : query.Where(m => EF.Property<int?>(m, "EmpresaId") == empresaId.Value);
+        }
+
+        var empresas = await _context.Set<Empresa>()
+            .IgnoreQueryFilters().AsNoTracking().Take(2).CountAsync();
+        return empresas > 1 ? query.Where(_ => false) : query;
+    }
+
     private IQueryable<MovimientoInventario> ConIncludes() => _context.MovimientosInventario
         .Include(m => m.Producto).ThenInclude(p => p!.Imagenes)
         .Include(m => m.ProductoVariante).ThenInclude(v => v!.Color)
@@ -187,6 +206,7 @@ public class MovimientoInventarioRepository : IMovimientoInventarioRepository
 
     public async Task<IReadOnlyDictionary<int, MovimientoInventarioOrigenPersistido>> GetOrigenesTipadosAsync(IReadOnlyCollection<int> movimientoIds)
     {
+        var baseTenant = await BaseTenantAsync();
         // EF8 parameter extraction under .NET 10 can route array Contains through
         // ReadOnlySpan, which the expression interpreter cannot evaluate. A List
         // keeps the captured collection on the portable ICollection path.
@@ -194,14 +214,14 @@ public class MovimientoInventarioRepository : IMovimientoInventarioRepository
         if (ids.Count == 0) return new Dictionary<int, MovimientoInventarioOrigenPersistido>();
         if (!_context.Database.IsRelational())
         {
-            var legacy = await _context.MovimientosInventario.AsNoTracking().Where(m => ids.Contains(m.Id)).Select(m => new { m.Id, m.ReferenciaTipo, m.ReferenciaId, m.TransferenciaInventarioId, m.RecepcionCompraId }).ToListAsync();
+            var legacy = await baseTenant.Where(m => ids.Contains(m.Id)).Select(m => new { m.Id, m.ReferenciaTipo, m.ReferenciaId, m.TransferenciaInventarioId, m.RecepcionCompraId }).ToListAsync();
             return legacy.ToDictionary(m => m.Id, m => m.RecepcionCompraId.HasValue
                 ? new MovimientoInventarioOrigenPersistido(m.Id, null, null, null, null, null, m.RecepcionCompraId)
                 : m.TransferenciaInventarioId.HasValue
                     ? new MovimientoInventarioOrigenPersistido(m.Id, null, null, null, null, m.TransferenciaInventarioId)
                     : CrearOrigenCompatibilidadNoRelacional(m.Id, m.ReferenciaTipo, m.ReferenciaId));
         }
-        var movimientos = await _context.MovimientosInventario.AsNoTracking().Where(m => ids.Contains(m.Id)).Select(m => new { m.Id, m.CompraId, m.VentaId, m.ConsumoInsumoId, m.AjusteInventarioId, m.TransferenciaInventarioId, m.RecepcionCompraId }).ToListAsync();
+        var movimientos = await baseTenant.Where(m => ids.Contains(m.Id)).Select(m => new { m.Id, m.CompraId, m.VentaId, m.ConsumoInsumoId, m.AjusteInventarioId, m.TransferenciaInventarioId, m.RecepcionCompraId }).ToListAsync();
         var resultado = new Dictionary<int, MovimientoInventarioOrigenPersistido>(movimientos.Count);
         foreach (var movimiento in movimientos)
         {
@@ -225,34 +245,37 @@ public class MovimientoInventarioRepository : IMovimientoInventarioRepository
 
     public async Task<int?> GetUltimoMovimientoOriginalCompraIdAsync(int compraId)
     {
-        if (!_context.Database.IsRelational()) return await _context.MovimientosInventario.AsNoTracking().Where(m => m.ReferenciaTipo == "Compra" && m.ReferenciaId == compraId && m.Tipo == TipoMovimientoInventario.Entrada).MaxAsync(m => (int?)m.Id);
-        return await _context.MovimientosInventario.AsNoTracking().Where(m => m.CompraId == compraId && m.Tipo == TipoMovimientoInventario.Entrada).MaxAsync(m => (int?)m.Id);
+        var baseTenant = await BaseTenantAsync();
+        if (!_context.Database.IsRelational()) return await baseTenant.Where(m => m.ReferenciaTipo == "Compra" && m.ReferenciaId == compraId && m.Tipo == TipoMovimientoInventario.Entrada).MaxAsync(m => (int?)m.Id);
+        return await baseTenant.Where(m => m.CompraId == compraId && m.Tipo == TipoMovimientoInventario.Entrada).MaxAsync(m => (int?)m.Id);
     }
 
     public async Task<bool> ExisteMovimientoPosteriorAsync(int ultimoMovimientoOriginalId, IReadOnlyCollection<int> productoIds)
     {
+        var baseTenant = await BaseTenantAsync();
         // Keep EF8's captured Contains parameter out of the .NET 10 Span fast path.
         var ids = productoIds.Distinct().OrderBy(x => x).ToList();
         if (ids.Count == 0) return false;
         if (!_context.Database.IsRelational()) return await ExisteMovimientoPosteriorLegacyParaProviderNoRelacionalAsync(ultimoMovimientoOriginalId, ids);
-        var compraId = await _context.MovimientosInventario.AsNoTracking().Where(m => m.Id == ultimoMovimientoOriginalId && m.CompraId != null && m.Tipo == TipoMovimientoInventario.Entrada).Select(m => m.CompraId).SingleOrDefaultAsync();
+        var compraId = await baseTenant.Where(m => m.Id == ultimoMovimientoOriginalId && m.CompraId != null && m.Tipo == TipoMovimientoInventario.Entrada).Select(m => m.CompraId).SingleOrDefaultAsync();
         if (!compraId.HasValue) throw new InvalidOperationException("El movimiento limite no corresponde a un movimiento original de compra tipado.");
-        var clavesOriginales = await _context.MovimientosInventario.AsNoTracking().Where(m => m.CompraId == compraId.Value && m.Tipo == TipoMovimientoInventario.Entrada && ids.Contains(m.ProductoId)).Select(m => new { m.ProductoId, m.ProductoVarianteId }).Distinct().OrderBy(x => x.ProductoId).ThenBy(x => x.ProductoVarianteId).ToListAsync();
+        var clavesOriginales = await baseTenant.Where(m => m.CompraId == compraId.Value && m.Tipo == TipoMovimientoInventario.Entrada && ids.Contains(m.ProductoId)).Select(m => new { m.ProductoId, m.ProductoVarianteId }).Distinct().OrderBy(x => x.ProductoId).ThenBy(x => x.ProductoVarianteId).ToListAsync();
         foreach (var clave in clavesOriginales)
-            if (await _context.MovimientosInventario.AsNoTracking().AnyAsync(m => m.Id > ultimoMovimientoOriginalId && m.ProductoId == clave.ProductoId && m.ProductoVarianteId == clave.ProductoVarianteId)) return true;
+            if (await baseTenant.AnyAsync(m => m.Id > ultimoMovimientoOriginalId && m.ProductoId == clave.ProductoId && m.ProductoVarianteId == clave.ProductoVarianteId)) return true;
         return false;
     }
 
     public async Task<bool> ExisteMovimientoPosteriorRecepcionAsync(int recepcionCompraId)
     {
+        var baseTenant = await BaseTenantAsync();
         if (recepcionCompraId <= 0) return false;
-        var origenes = await _context.MovimientosInventario.AsNoTracking()
+        var origenes = await baseTenant
             .Where(m => m.RecepcionCompraId == recepcionCompraId && m.Tipo == TipoMovimientoInventario.Entrada)
             .Select(m => new { m.Id, m.ProductoVarianteId, m.AlmacenId, m.UbicacionAlmacenId })
             .ToListAsync();
         foreach (var origen in origenes)
         {
-            if (await _context.MovimientosInventario.AsNoTracking().AnyAsync(m =>
+            if (await baseTenant.AnyAsync(m =>
                 m.Id > origen.Id &&
                 m.ProductoVarianteId == origen.ProductoVarianteId &&
                 m.AlmacenId == origen.AlmacenId &&
@@ -265,11 +288,12 @@ public class MovimientoInventarioRepository : IMovimientoInventarioRepository
 
     private async Task<bool> ExisteMovimientoPosteriorLegacyParaProviderNoRelacionalAsync(int ultimoMovimientoOriginalId, IReadOnlyCollection<int> productoIds)
     {
-        var movimientoTope = await _context.MovimientosInventario.AsNoTracking().Where(m => m.Id == ultimoMovimientoOriginalId && m.ReferenciaTipo == "Compra" && m.Tipo == TipoMovimientoInventario.Entrada).Select(m => new { m.ReferenciaId }).SingleOrDefaultAsync();
+        var baseTenant = await BaseTenantAsync();
+        var movimientoTope = await baseTenant.Where(m => m.Id == ultimoMovimientoOriginalId && m.ReferenciaTipo == "Compra" && m.Tipo == TipoMovimientoInventario.Entrada).Select(m => new { m.ReferenciaId }).SingleOrDefaultAsync();
         if (movimientoTope is null) throw new InvalidOperationException("El movimiento limite no corresponde a un movimiento original de compra.");
-        var clavesOriginales = await _context.MovimientosInventario.AsNoTracking().Where(m => m.ReferenciaTipo == "Compra" && m.ReferenciaId == movimientoTope.ReferenciaId && productoIds.Contains(m.ProductoId)).Select(m => new { m.ProductoId, m.ProductoVarianteId }).Distinct().OrderBy(x => x.ProductoId).ThenBy(x => x.ProductoVarianteId).ToListAsync();
+        var clavesOriginales = await baseTenant.Where(m => m.ReferenciaTipo == "Compra" && m.ReferenciaId == movimientoTope.ReferenciaId && productoIds.Contains(m.ProductoId)).Select(m => new { m.ProductoId, m.ProductoVarianteId }).Distinct().OrderBy(x => x.ProductoId).ThenBy(x => x.ProductoVarianteId).ToListAsync();
         foreach (var clave in clavesOriginales)
-            if (await _context.MovimientosInventario.AsNoTracking().AnyAsync(m => m.Id > ultimoMovimientoOriginalId && m.ProductoId == clave.ProductoId && m.ProductoVarianteId == clave.ProductoVarianteId)) return true;
+            if (await baseTenant.AnyAsync(m => m.Id > ultimoMovimientoOriginalId && m.ProductoId == clave.ProductoId && m.ProductoVarianteId == clave.ProductoVarianteId)) return true;
         return false;
     }
 }
