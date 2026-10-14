@@ -24,14 +24,19 @@ public sealed class EmpresasController : ControllerBase
     [RequierePermiso(ModuloSistema.Configuracion, AccionPermiso.Ver)]
     public async Task<IActionResult> List([FromQuery] bool? activa, CancellationToken cancellationToken)
     {
+        var empresaAutorizada = TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext);
         var empresas = await _service.ListAsync(activa, cancellationToken);
-        return Ok(ApiResponse<List<EmpresaDto>>.Ok(empresas));
+        // RBAC Configuracion:Ver del tenant no es permiso de plataforma
+        // para enumerar identidades y RTN de otras empresas.
+        return Ok(ApiResponse<List<EmpresaDto>>.Ok(
+            empresas.Where(e => e.Id == empresaAutorizada).ToList()));
     }
 
     [HttpGet("{id:int}")]
     [RequierePermiso(ModuloSistema.Configuracion, AccionPermiso.Ver)]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
     {
+        ExigirEmpresaAutorizada(id);
         var empresa = await _service.GetByIdAsync(id, cancellationToken);
         if (empresa is null)
             return NotFound(ApiResponse<object>.Fail("Empresa no encontrada."));
@@ -51,6 +56,7 @@ public sealed class EmpresasController : ControllerBase
     [RequierePermiso(ModuloSistema.Configuracion, AccionPermiso.Editar)]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateEmpresaDto dto, CancellationToken cancellationToken)
     {
+        ExigirEmpresaAutorizada(id);
         var empresa = await _service.UpdateAsync(id, dto, cancellationToken);
         if (empresa is null)
             return NotFound(ApiResponse<object>.Fail("Empresa no encontrada."));
@@ -68,10 +74,18 @@ public sealed class EmpresasController : ControllerBase
 
     private async Task<IActionResult> CambiarEstado(int id, bool activa, CancellationToken cancellationToken)
     {
+        ExigirEmpresaAutorizada(id);
         var empresa = await _service.CambiarEstadoAsync(id, activa, cancellationToken);
         if (empresa is null)
             return NotFound(ApiResponse<object>.Fail("Empresa no encontrada."));
 
         return Ok(ApiResponse<EmpresaDto>.Ok(empresa, activa ? "Empresa activada correctamente." : "Empresa desactivada correctamente."));
     }
+    private void ExigirEmpresaAutorizada(int empresaId)
+    {
+        if (empresaId != TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext))
+            throw new Solqaryn.Application.Exceptions.ForbiddenAccessException(
+                "La empresa solicitada no pertenece al contexto tenant autorizado.");
+    }
+
 }
