@@ -1,3 +1,8 @@
+## 2026-10-13 — Punto #4 (candidato): filtros de lectura empresarial EF
+
+- Se incorpora `CommercialTenantReadFilterModel` al final de `AppDbContext.OnModelCreating` para combinar, no sustituir, los filtros existentes de borrado lógico con `EmpresaId` cuando la petición trae una marca RBAC verificada. La identidad del tenant proviene de `VerifiedCommercialTenant`, nunca de un valor directo de cliente. Incluye tipos con propiedad shadow y excepciones de visibilidad para roles/grants de plantilla con `EmpresaId=NULL`.
+- Sin marca RBAC, esta defensa adicional no particiona lecturas: debe mantenerse la cuarentena HTTP de 2+ empresas. Tienda pública, acceso por token a factura, jobs, SQL directo, `IgnoreQueryFilters`, caché y archivos requieren resolución y certificación separadas antes de habilitar múltiples empresas. No se altera esquema ni QA/PROD.
+
 ## 2026-10-13 — Ajuste de compatibilidad tenant: roles plantilla y fixture E2E
 
 - Los grants de roles empresariales plantilla (Rol.EmpresaId nulo, Ambito Empresa) conservan propietario nulo y no reciben EmpresaId arbitrario. Los grants de roles empresariales personalizados mantienen validación A/B; los roles de plataforma no se modifican bajo una marca tenant.
