@@ -116,6 +116,15 @@ public sealed class OutboxRetryProcessor
             _options.BatchSize,
             cancellationToken);
 
+        // Defensa de salida: incluso si un repositorio/worker devuelve por
+        // error un claim de B al procesar A, nunca enviar efectos externos ni
+        // confirmar/reprogramar filas con una autoridad tenant distinta.
+        // Se verifica TODO el lote antes del primer dispatch para evitar
+        // entregas parciales cuando el último elemento pertenece a B.
+        if (mensajes.Any(mensaje => mensaje is null || mensaje.EmpresaId != empresaId))
+            throw new InvalidOperationException(
+                "El lote outbox contiene mensajes fuera de la empresa autorizada.");
+
         var entregados = 0;
         var reprogramados = 0;
         var deadLetter = 0;
