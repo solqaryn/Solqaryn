@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Solqaryn.API.Filters;
+using Solqaryn.Application.Exceptions;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Enums;
@@ -140,6 +141,13 @@ public sealed class WhatsAppController : ControllerBase
                 title: "Empresa inválida.",
                 detail: "EmpresaId debe ser positivo.");
         }
+
+        // El permiso Configuracion:Editar se concedió para la empresa
+        // marcada por RBAC, nunca para cualquier segunda membresía del usuario.
+        // Rechazar antes de consultar configuraciones o proveedores externos.
+        if (request.EmpresaId != TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext))
+            throw new ForbiddenAccessException(
+                "La empresa WhatsApp solicitada no coincide con el tenant autorizado.");
 
         var scope = await _usuarioScope.ObtenerActualAsync(request.EmpresaId, cancellationToken);
         if (scope is null)
