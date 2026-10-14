@@ -44,13 +44,29 @@ public static class CommercialTenantReadFilterModel
 
             Expression scopePredicate = Expression.OrElse(scopeAbsent, ownedByTenant);
 
-            // Los roles empresariales de sistema y sus grants no tienen owner.
-            // Mantener su visibilidad, sin abrir roles/grants de empresas ajenas.
-            if (entity.ClrType == typeof(Rol) || entity.ClrType == typeof(RolPermiso))
+            // Solo plantillas RBAC de ámbito EMPRESA pueden compartirse sin
+            // owner. Un rol de PLATAFORMA (y sus grants) jamás es plantilla
+            // visible por la empresa, aunque EmpresaId sea NULL.
+            if (entity.ClrType == typeof(Rol))
             {
-                scopePredicate = Expression.OrElse(
-                    scopePredicate,
-                    Expression.Equal(ownerValue, Expression.Constant(null, typeof(int?))));
+                var ambit = Expression.Property(record, nameof(Rol.Ambito));
+                scopePredicate = Expression.OrElse(scopePredicate, Expression.AndAlso(
+                    Expression.Equal(ownerValue, Expression.Constant(null, typeof(int?))),
+                    Expression.Equal(ambit,
+                        Expression.Constant(Solqaryn.Domain.Enums.AmbitoAutorizacion.Empresa))));
+            }
+            else if (entity.ClrType == typeof(RolPermiso))
+            {
+                var role = Expression.Property(record, nameof(RolPermiso.RolEntidad));
+                var ambit = Expression.Property(role, nameof(Rol.Ambito));
+                var roleOwner = Expression.Property(role, nameof(Rol.EmpresaId));
+                scopePredicate = Expression.OrElse(scopePredicate, Expression.AndAlso(
+                    Expression.Equal(ownerValue, Expression.Constant(null, typeof(int?))),
+                    Expression.AndAlso(
+                        Expression.Equal(roleOwner,
+                            Expression.Constant(null, typeof(int?))),
+                        Expression.Equal(ambit,
+                            Expression.Constant(Solqaryn.Domain.Enums.AmbitoAutorizacion.Empresa)))));
             }
 
             var existing = entity.GetQueryFilter();
