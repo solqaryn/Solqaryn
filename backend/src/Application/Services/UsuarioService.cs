@@ -69,6 +69,15 @@ public class UsuarioService : IUsuarioService
         return rol;
     }
 
+    private static void ValidarRolDeEmpresa(Rol rol, int empresaId)
+    {
+        if (empresaId <= 0 ||
+            rol.Ambito != AmbitoAutorizacion.Empresa ||
+            (rol.EmpresaId.HasValue && rol.EmpresaId.Value != empresaId))
+            throw new BusinessRuleException(
+                "El rol empresarial no pertenece a la empresa seleccionada o es un rol de plataforma.");
+    }
+
     public async Task<UsuarioDto> CreateAsync(CreateUsuarioDto dto)
     {
         var nombreUsuario = NormalizarNombreUsuario(dto.NombreUsuario);
@@ -287,6 +296,7 @@ public class UsuarioService : IUsuarioService
             usuarioId, exigirActivo: true, permitirAltaInicial: true);
         var empresa = await ObtenerEmpresaActivaAsync(dto.EmpresaId);
         var rol = await ResolverRolDinamicoAsync(dto.RolId);
+        ValidarRolDeEmpresa(rol, empresa.Id);
 
         if (await _repository.GetEmpresaAsync(usuarioId, empresa.Id) is not null)
             throw new BusinessRuleException("El usuario ya tiene una membresía registrada para la empresa seleccionada.");
@@ -315,6 +325,7 @@ public class UsuarioService : IUsuarioService
         var usuario = await ObtenerUsuarioValidoParaMembresiaAsync(usuarioId, exigirActivo: true);
         await ObtenerEmpresaActivaAsync(empresaId);
         var rol = await ResolverRolDinamicoAsync(rolId);
+        ValidarRolDeEmpresa(rol, empresaId);
         var membresia = await ObtenerMembresiaAsync(usuarioId, empresaId);
         var rolAnterior = membresia.RolId;
 
@@ -345,7 +356,8 @@ public class UsuarioService : IUsuarioService
         var membresia = await ObtenerMembresiaAsync(usuarioId, empresaId);
         if (activa)
         {
-            await ResolverRolDinamicoAsync(membresia.RolId);
+            var rolVigente = await ResolverRolDinamicoAsync(membresia.RolId);
+            ValidarRolDeEmpresa(rolVigente, empresaId);
             membresia.Activar();
         }
         else
