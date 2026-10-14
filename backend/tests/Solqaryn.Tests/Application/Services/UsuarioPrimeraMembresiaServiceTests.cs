@@ -56,8 +56,8 @@ public sealed class UsuarioPrimeraMembresiaServiceTests
             NombreCompleto = "Usuario reactivable", Activo = true };
         var miembroInactivo = new UsuarioEmpresa(41, 11, 3);
         miembroInactivo.Desactivar();
-        users.Setup(x => x.GetByIdAsync(41)).ReturnsAsync((Usuario?)null);
-        users.Setup(x => x.GetByIdConMembresiaDeEmpresaAutorizadaAsync(41)).ReturnsAsync(usuario);
+        users.Setup(x => x.GetByIdAsync(41)).ReturnsAsync(usuario);
+        users.Setup(x => x.UpdateEmpresa(miembroInactivo));
         users.Setup(x => x.GetEmpresaAsync(41, 11)).ReturnsAsync(miembroInactivo);
         users.Setup(x => x.SaveChangesAsync()).ReturnsAsync(true);
         roles.Setup(x => x.GetByIdAsync(3)).ReturnsAsync(new Rol { Id = 3,
