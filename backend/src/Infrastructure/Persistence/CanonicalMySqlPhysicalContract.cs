@@ -38,6 +38,7 @@ public static class CanonicalMySqlPhysicalContract
         await CommercialTenantTaxDiscountPhysicalConstraints.VerifyAsync(db, cancellationToken);
         await CommercialTenantOwnershipGraphPhysicalConstraints.VerifyAsync(db, cancellationToken);
         await CommercialTenantRemainingPhysicalConstraints.VerifyAsync(db, cancellationToken);
+        await CommercialTenantNaturalKeysPhysicalContract.VerifyAsync(db, cancellationToken);
 
         var triggerCount = await db.Database
             .SqlQueryRaw<long>("""
