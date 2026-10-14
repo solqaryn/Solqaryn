@@ -114,7 +114,10 @@ jobs:
           test "$(q "SELECT COUNT(*) FROM information_schema.referential_constraints WHERE constraint_schema=database() AND constraint_name IN ('FK_Productos_Empresas_EmpresaId','FK_Clientes_Empresas_EmpresaId','FK_Proveedores_Empresas_EmpresaId','FK_Compras_Empresas_EmpresaId','FK_Ventas_Empresas_EmpresaId');")" = 5
           test "$(q "SELECT COUNT(*) FROM Proveedores WHERE Nombre='SOLQARYN-CI-LEGACY-PRESERVED' AND EmpresaId IS NULL;")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013121500_CommercialTenantRootExpand';")" = 1
-          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory;")" = 10
+          # Incluye migración P4 de cuentas públicas por empresa, sin atribuir
+          # ni perder registros históricos de prueba de los módulos P3.
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory;")" = 11
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261014112000_PublicStoreAccountEmailPerEmpresa';")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013181500_CommercialTenantScopedRootIndexes';")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013190000_CommercialTenantInvoiceDocuments';")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013193000_CommercialTenantSalesDocuments';")" = 1

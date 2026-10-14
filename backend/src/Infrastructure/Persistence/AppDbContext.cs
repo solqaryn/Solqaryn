@@ -271,8 +271,8 @@ public class AppDbContext : DbContext
         if (idsPorConsultar.Count == 0)
             return;
 
-        var insumoPersistido = await Productos
-            .IgnoreQueryFilters()
+        var insumoPersistido = await TenantQueryBypassGuard.RespectCurrentTenant(
+                Productos.IgnoreQueryFilters(), this)
             .AsNoTracking()
             .Where(p => idsPorConsultar.Contains(p.Id) &&
                         p.TipoInventario == TipoInventario.InsumoAdministrativo)
