@@ -26,8 +26,9 @@ public sealed class PoliticaCosteoInventarioRepository : IPoliticaCosteoInventar
             // La columna computada forma parte del índice UNIQUE de la política vigente.
             // Bloquear esa clave serializa cambios concurrentes y evita que la API dependa
             // de una colisión de índice como mecanismo normal de concurrencia.
+            var tenant = await CommercialTenantSqlLockScope.RequireAsync(_context);
             var bloqueadas = await Politicas
-                .FromSqlInterpolated($"SELECT * FROM `PoliticasCosteoInventario` WHERE `EmpresaConfiguracionVigenteId` = {empresaConfiguracionId} FOR UPDATE")
+                .FromSqlInterpolated($"SELECT pc.* FROM `PoliticasCosteoInventario` pc WHERE pc.`EmpresaConfiguracionVigenteId` = {empresaConfiguracionId} AND ({tenant} IS NULL OR pc.`EmpresaId` = {tenant}) FOR UPDATE")
                 .AsTracking()
                 .ToListAsync();
             return bloqueadas.SingleOrDefault();

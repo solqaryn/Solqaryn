@@ -68,11 +68,12 @@ public sealed class CuentaPorPagarRepository : ICuentaPorPagarRepository
 
     public async Task<CuentaPorPagar?> GetByIdForUpdateAsync(int id)
     {
+        var tenant = await CommercialTenantSqlLockScope.RequireAsync(_context);
         if (_context.Database.CurrentTransaction is null)
             throw new InvalidOperationException("GetByIdForUpdateAsync requiere una transacción activa.");
 
         var entity = await _context.Set<CuentaPorPagar>()
-            .FromSqlInterpolated($"SELECT c.* FROM CuentasPorPagar c WHERE c.Id = {id} FOR UPDATE")
+            .FromSqlInterpolated($"SELECT c.* FROM CuentasPorPagar c WHERE c.Id = {id} AND ({tenant} IS NULL OR c.EmpresaId = {tenant}) FOR UPDATE")
             .AsTracking()
             .FirstOrDefaultAsync();
 

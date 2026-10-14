@@ -9,6 +9,8 @@ using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
+using Solqaryn.Application.Security;
 using Moq;
 using Xunit;
 
@@ -33,7 +35,15 @@ public sealed class ReportesInventarioKardexControllerTests
             _movimientosMock.Object,
             _almacenesMock.Object,
             _usuarioScopeMock.Object,
-            _auditoriaMock.Object);
+            _auditoriaMock.Object)
+        {
+            ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext()
+            }
+        };
+        // Simula la marca producida por RequierePermiso antes de la acción.
+        _controller.HttpContext.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = 1;
     }
 
     [Fact]
@@ -57,8 +67,8 @@ public sealed class ReportesInventarioKardexControllerTests
     public async Task Get_ExplicitPhysicalScopeWithoutAdmin_ReturnsForbid()
     {
         var filtro = new ReporteInventarioKardexFiltroDto { AlmacenId = 1 };
-        _usuarioScopeMock.Setup(s => s.ObtenerActualAsync())
-            .ReturnsAsync(new UsuarioScopeActual(1, 1, "User", false));
+        _usuarioScopeMock.Setup(s => s.ObtenerActualAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new UsuarioTenantScopeActual(1, 1, 1, "User", false));
 
         var result = await _controller.Get(filtro);
 
@@ -69,8 +79,8 @@ public sealed class ReportesInventarioKardexControllerTests
     public async Task Get_SucursalFilterWithoutAlmacenId_ReturnsBadRequest()
     {
         var filtro = new ReporteInventarioKardexFiltroDto { SucursalId = 1 };
-        _usuarioScopeMock.Setup(s => s.ObtenerActualAsync())
-            .ReturnsAsync(new UsuarioScopeActual(1, 1, "Admin", true));
+        _usuarioScopeMock.Setup(s => s.ObtenerActualAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new UsuarioTenantScopeActual(1, 1, 1, "Admin", true));
 
         var result = await _controller.Get(filtro);
 
@@ -84,8 +94,8 @@ public sealed class ReportesInventarioKardexControllerTests
     public async Task Get_AlmacenNotFoundOrMismatchSucursal_ReturnsForbid()
     {
         var filtro = new ReporteInventarioKardexFiltroDto { SucursalId = 1, AlmacenId = 2 };
-        _usuarioScopeMock.Setup(s => s.ObtenerActualAsync())
-            .ReturnsAsync(new UsuarioScopeActual(1, 1, "Admin", true));
+        _usuarioScopeMock.Setup(s => s.ObtenerActualAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new UsuarioTenantScopeActual(1, 1, 1, "Admin", true));
 
         _almacenesMock.Setup(a => a.GetByIdAsync(2)).ReturnsAsync((Almacen)null!);
 
@@ -102,8 +112,8 @@ public sealed class ReportesInventarioKardexControllerTests
     public async Task Get_ValidQuery_ReturnsOkAndAudits()
     {
         var filtro = new ReporteInventarioKardexFiltroDto { Page = 1, PageSize = 10 };
-        _usuarioScopeMock.Setup(s => s.ObtenerActualAsync())
-            .ReturnsAsync(new UsuarioScopeActual(1, 1, "Admin", true));
+        _usuarioScopeMock.Setup(s => s.ObtenerActualAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new UsuarioTenantScopeActual(1, 1, 1, "Admin", true));
 
         var pagedResult = new PagedResult<MovimientoInventarioDto> { Items = new List<MovimientoInventarioDto>(), TotalCount = 0, Page = 1, PageSize = 10 };
         _movimientosMock.Setup(m => m.GetPagedAsync(It.IsAny<MovimientoInventarioQueryDto>()))

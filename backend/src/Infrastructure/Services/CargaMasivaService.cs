@@ -26,6 +26,7 @@ public sealed class CargaMasivaService : ICargaMasivaService
     private readonly AppDbContext _db;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ICurrentUserService _currentUser;
+    private readonly IUsuarioScopeService? _usuarioScope;
     private readonly IAuditoriaService _auditoria;
     private readonly ILogger<CargaMasivaService> _logger;
     private readonly ITipoClientePredeterminadoResolver _predeterminadoResolver;
@@ -36,14 +37,37 @@ public sealed class CargaMasivaService : ICargaMasivaService
         ICurrentUserService currentUser,
         IAuditoriaService auditoria,
         ILogger<CargaMasivaService> logger,
-        ITipoClientePredeterminadoResolver predeterminadoResolver)
+        ITipoClientePredeterminadoResolver predeterminadoResolver,
+        IUsuarioScopeService? usuarioScope = null)
     {
         _db = db;
         _unitOfWork = unitOfWork;
         _currentUser = currentUser;
+        _usuarioScope = usuarioScope;
         _auditoria = auditoria;
         _logger = logger;
         _predeterminadoResolver = predeterminadoResolver;
+    }
+
+    private async Task<(int? EmpresaId, int UsuarioId, bool EsAdministrador)> AutorizarCargaActualAsync(
+        CancellationToken cancellationToken = default)
+    {
+        var empresaId = await CommercialTenantSqlLockScope.RequireAsync(_db, cancellationToken);
+        if (empresaId is > 0)
+        {
+            var scope = _usuarioScope is null
+                ? null
+                : await _usuarioScope.ObtenerActualAsync(empresaId.Value, cancellationToken);
+            if (scope is null || scope.EmpresaId != empresaId.Value)
+                throw new ForbiddenAccessException(
+                    "La carga masiva requiere una membresía empresarial activa.");
+
+            return (empresaId.Value, scope.UsuarioId, scope.EsAdministrador);
+        }
+
+        if (_currentUser.UsuarioId is not > 0)
+            throw new ForbiddenAccessException("La carga masiva requiere un usuario autenticado.");
+        return (null, _currentUser.UsuarioId.Value, _currentUser.EsAdministrador);
     }
 
     public CargaMasivaConfiguracionDto ObtenerConfiguracion() => new()
@@ -208,9 +232,12 @@ public sealed class CargaMasivaService : ICargaMasivaService
 
     public async Task<PagedResult<CargaMasivaDto>> GetPagedAsync(PagedRequest request)
     {
-        var query = _db.CargasMasivas.AsNoTracking().AsQueryable();
-        if (!_currentUser.EsAdministrador && _currentUser.UsuarioId.HasValue)
-            query = query.Where(x => x.CreadoPorUsuarioId == _currentUser.UsuarioId.Value);
+        var scope = await AutorizarCargaActualAsync();
+        var query = _db.CargasMasivas.AsNoTracking()
+            .Where(x => scope.EmpresaId == null ||
+                EF.Property<int?>(x, "EmpresaId") == scope.EmpresaId);
+        if (!scope.EsAdministrador)
+            query = query.Where(x => x.CreadoPorUsuarioId == scope.UsuarioId);
 
         if (!string.IsNullOrWhiteSpace(request.Search))
         {
@@ -245,12 +272,15 @@ public sealed class CargaMasivaService : ICargaMasivaService
 
     public async Task<CargaMasivaDetalleDto?> GetByIdAsync(int id)
     {
+        var scope = await AutorizarCargaActualAsync();
         var carga = await _db.CargasMasivas
             .AsNoTracking()
             .Include(x => x.Errores)
-            .FirstOrDefaultAsync(x => x.Id == id);
+            .FirstOrDefaultAsync(x => x.Id == id &&
+                (scope.EmpresaId == null ||
+                    EF.Property<int?>(x, "EmpresaId") == scope.EmpresaId));
         if (carga is null) return null;
-        if (!_currentUser.EsAdministrador && _currentUser.UsuarioId.HasValue && carga.CreadoPorUsuarioId != _currentUser.UsuarioId.Value)
+        if (!scope.EsAdministrador && carga.CreadoPorUsuarioId != scope.UsuarioId)
             throw new ForbiddenAccessException("No tienes acceso a esta carga masiva.");
 
         var filas = DeserializarFilas(carga.DatosNormalizadosJson);
@@ -285,21 +315,20 @@ public sealed class CargaMasivaService : ICargaMasivaService
                 confirmadaAhora = false;
                 yaEstabaConfirmada = false;
 
-                if (!_currentUser.EsAdministrador && !_currentUser.UsuarioId.HasValue)
-                    throw new ForbiddenAccessException("No tienes acceso a esta carga masiva.");
+                var scope = await AutorizarCargaActualAsync(cancellationToken);
 
-                if (_currentUser.EsAdministrador)
+                if (scope.EsAdministrador)
                 {
                     carga = await _db.CargasMasivas
-                        .FromSqlInterpolated($"SELECT c.* FROM CargasMasivas c WHERE c.Id = {id} FOR UPDATE")
+                        .FromSqlInterpolated($"SELECT c.* FROM CargasMasivas c WHERE c.Id = {id} AND ({scope.EmpresaId} IS NULL OR c.EmpresaId = {scope.EmpresaId}) FOR UPDATE")
                         .AsTracking()
                         .SingleOrDefaultAsync(cancellationToken);
                 }
                 else
                 {
-                    var usuarioId = _currentUser.UsuarioId!.Value;
+                    var usuarioId = scope.UsuarioId;
                     carga = await _db.CargasMasivas
-                        .FromSqlInterpolated($"SELECT c.* FROM CargasMasivas c WHERE c.Id = {id} AND c.CreadoPorUsuarioId = {usuarioId} FOR UPDATE")
+                        .FromSqlInterpolated($"SELECT c.* FROM CargasMasivas c WHERE c.Id = {id} AND c.CreadoPorUsuarioId = {usuarioId} AND ({scope.EmpresaId} IS NULL OR c.EmpresaId = {scope.EmpresaId}) FOR UPDATE")
                         .AsTracking()
                         .SingleOrDefaultAsync(cancellationToken);
                 }
@@ -1015,13 +1044,14 @@ public sealed class CargaMasivaService : ICargaMasivaService
         if (filas.Any(x => !x.ProductoIdSnapshot.HasValue))
             throw new BusinessRuleException("La carga no contiene snapshots completos. Valida el archivo nuevamente.");
 
+        var tenant = await CommercialTenantSqlLockScope.RequireAsync(_db, ct);
         var productoIds = filas.Select(x => x.ProductoIdSnapshot!.Value).Distinct().OrderBy(x => x).ToArray();
         var varianteIds = filas.Where(x => x.ProductoVarianteIdSnapshot.HasValue).Select(x => x.ProductoVarianteIdSnapshot!.Value).Distinct().OrderBy(x => x).ToArray();
         var productos = new Dictionary<int, Producto>();
         foreach (var productoId in productoIds)
         {
             var producto = await _db.Productos
-                .FromSqlInterpolated($"SELECT p.* FROM Productos p WHERE p.Id = {productoId} AND p.Eliminado = 0 FOR UPDATE")
+                .FromSqlInterpolated($"SELECT p.* FROM Productos p WHERE p.Id = {productoId} AND p.Eliminado = 0 AND ({tenant} IS NULL OR p.EmpresaId = {tenant}) FOR UPDATE")
                 .AsTracking().SingleOrDefaultAsync(ct)
                 ?? throw new BusinessRuleException($"El producto ID '{productoId}' ya no existe. Revalida el archivo.");
             productos.Add(producto.Id, producto);
@@ -1031,7 +1061,7 @@ public sealed class CargaMasivaService : ICargaMasivaService
         foreach (var varianteId in varianteIds)
         {
             var variante = await _db.ProductoVariantes
-                .FromSqlInterpolated($"SELECT v.* FROM ProductoVariantes v WHERE v.Id = {varianteId} AND v.Eliminado = 0 FOR UPDATE")
+                .FromSqlInterpolated($"SELECT v.* FROM ProductoVariantes v WHERE v.Id = {varianteId} AND v.Eliminado = 0 AND ({tenant} IS NULL OR v.EmpresaId = {tenant}) FOR UPDATE")
                 .AsTracking().SingleOrDefaultAsync(ct)
                 ?? throw new BusinessRuleException($"La variante ID '{varianteId}' ya no existe. Revalida el archivo.");
             variantes.Add(variante.Id, variante);
@@ -1043,7 +1073,7 @@ public sealed class CargaMasivaService : ICargaMasivaService
         foreach (var productoId in productoIds)
         {
             var tecnica = await _db.ProductoVariantes
-                .FromSqlInterpolated($"SELECT v.* FROM ProductoVariantes v WHERE v.ProductoId = {productoId} AND v.EsTecnica = 1 AND v.Eliminado = 0 FOR UPDATE")
+                .FromSqlInterpolated($"SELECT v.* FROM ProductoVariantes v WHERE v.ProductoId = {productoId} AND v.EsTecnica = 1 AND v.Eliminado = 0 AND ({tenant} IS NULL OR v.EmpresaId = {tenant}) FOR UPDATE")
                 .AsTracking().SingleOrDefaultAsync(ct);
             if (tecnica is not null)
                 tecnicas.Add(productoId, tecnica);

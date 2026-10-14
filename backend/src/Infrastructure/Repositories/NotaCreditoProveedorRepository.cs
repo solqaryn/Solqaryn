@@ -87,11 +87,12 @@ public sealed class NotaCreditoProveedorRepository : INotaCreditoProveedorReposi
 
     public async Task<NotaCreditoProveedor?> GetByIdForUpdateAsync(int id)
     {
+        var tenant = await CommercialTenantSqlLockScope.RequireAsync(_context);
         if (_context.Database.CurrentTransaction is null)
             throw new InvalidOperationException("GetByIdForUpdateAsync requiere una transacción activa.");
 
         return await _context.Set<NotaCreditoProveedor>()
-            .FromSqlInterpolated($"SELECT nc.* FROM NotasCreditoProveedor nc WHERE nc.Id = {id} FOR UPDATE")
+            .FromSqlInterpolated($"SELECT nc.* FROM NotasCreditoProveedor nc WHERE nc.Id = {id} AND ({tenant} IS NULL OR nc.EmpresaId = {tenant}) FOR UPDATE")
             .AsTracking()
             .FirstOrDefaultAsync();
     }
@@ -114,12 +115,13 @@ public sealed class NotaCreditoProveedorRepository : INotaCreditoProveedorReposi
         int facturaProveedorId,
         int? excluirNotaCreditoId = null)
     {
+        var tenant = await CommercialTenantSqlLockScope.RequireAsync(_context);
         if (_context.Database.CurrentTransaction is null)
             throw new InvalidOperationException(
                 "GetCreditoRegistradoAcumuladoPorFacturaAsync requiere una transacción activa para serializar el crédito por factura.");
 
         var factura = await _context.Set<FacturaProveedor>()
-            .FromSqlInterpolated($"SELECT f.* FROM FacturasProveedor f WHERE f.Id = {facturaProveedorId} FOR UPDATE")
+            .FromSqlInterpolated($"SELECT f.* FROM FacturasProveedor f WHERE f.Id = {facturaProveedorId} AND ({tenant} IS NULL OR f.EmpresaId = {tenant}) FOR UPDATE")
             .AsTracking()
             .FirstOrDefaultAsync()
             ?? throw new ResourceNotFoundException("La factura de proveedor asociada ya no existe.");
@@ -138,7 +140,7 @@ public sealed class NotaCreditoProveedorRepository : INotaCreditoProveedorReposi
             if (nota?.DevolucionProveedorId is int devolucionId)
             {
                 var devolucion = await _context.Set<DevolucionProveedor>()
-                    .FromSqlInterpolated($"SELECT d.* FROM DevolucionesProveedor d WHERE d.Id = {devolucionId} FOR UPDATE")
+                    .FromSqlInterpolated($"SELECT d.* FROM DevolucionesProveedor d WHERE d.Id = {devolucionId} AND ({tenant} IS NULL OR d.EmpresaId = {tenant}) FOR UPDATE")
                     .AsTracking()
                     .FirstOrDefaultAsync()
                     ?? throw new BusinessRuleException("La devolución de proveedor vinculada ya no existe.");

@@ -32,6 +32,7 @@ public sealed class ExistenciaVarianteRepository : IExistenciaVarianteRepository
             if (_context.Database.CurrentTransaction is null)
                 throw new InvalidOperationException("El bloqueo de ExistenciaVariante requiere una transacción activa.");
 
+            var tenant = await CommercialTenantSqlLockScope.RequireAsync(_context);
             return await Existencias
                 .FromSqlInterpolated($@"
                     SELECT ev.*
@@ -40,7 +41,9 @@ public sealed class ExistenciaVarianteRepository : IExistenciaVarianteRepository
                       AND ev.AlmacenId = {almacenId}
                       AND (({ubicacionAlmacenId} IS NULL AND ev.UbicacionAlmacenId IS NULL)
                            OR ev.UbicacionAlmacenId = {ubicacionAlmacenId})
-                    FOR UPDATE")
+                      AND ({tenant} IS NULL OR ev.EmpresaId = {tenant})
+                      AND ({tenant} IS NULL OR ev.EmpresaId = {tenant})
+                FOR UPDATE")
                 .Include(e => e.ProductoVariante).ThenInclude(v => v.Producto)
                 .Include(e => e.ProductoVariante).ThenInclude(v => v.Marca)
                 .Include(e => e.ProductoVariante).ThenInclude(v => v.Modelo)
@@ -66,6 +69,7 @@ public sealed class ExistenciaVarianteRepository : IExistenciaVarianteRepository
         if (_context.Database.CurrentTransaction is null)
             throw new InvalidOperationException("El bloqueo de reversión de ExistenciaVariante requiere una transacción activa.");
 
+        var tenant = await CommercialTenantSqlLockScope.RequireAsync(_context);
         return await Existencias
             .FromSqlInterpolated($@"
                 SELECT ev.*
