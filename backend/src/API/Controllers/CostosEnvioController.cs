@@ -94,7 +94,8 @@ public class CostosEnvioController : ControllerBase
     [RequierePermiso(ModuloSistema.Facturacion, AccionPermiso.Ver)]
     public async Task<IActionResult> Historial(int id, [FromQuery] int page = 1, [FromQuery] int pageSize = 50)
     {
-        if (!await _db.CostosEnvio.IgnoreQueryFilters().AnyAsync(x => x.Id == id))
+        if (!await TenantQueryBypassGuard.RespectCurrentTenant(
+                _db.CostosEnvio.IgnoreQueryFilters(), _db).AnyAsync(x => x.Id == id))
             return NotFound(ApiResponse<object>.Fail("Costo de envío no encontrado."));
 
         var resultado = await _auditoria.GetFilteredAsync(new AuditoriaFiltroDto
