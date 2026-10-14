@@ -455,6 +455,7 @@ public class AppDbContext : DbContext
         // Se aplica al FINAL, después de todas las configuraciones, para
         // preservar borrado lógico y abarcar también propiedades shadow.
         CommercialTenantReadFilterModel.Apply(modelBuilder, this);
+        CommercialTenantReadFilterModel.ApplySharedIdentityMembershipFilter(modelBuilder, this);
 
         static string LimitIdentifier(string name) =>
             name.Length <= 64 ? name : name[..64];
