@@ -5,6 +5,7 @@ using Solqaryn.Application.DTOs;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
@@ -69,11 +70,14 @@ public class UsuariosEmpresaAuthorizationContractTests
             .ReturnsAsync((UsuarioEmpresaDto)null!);
 
         var controller = new UsuariosController(usuarioService.Object, permisoService.Object, currentUser.Object);
+        var http = new DefaultHttpContext();
+        http.Request.Headers["X-Empresa-Id"] = "11";
+        controller.ControllerContext = new ControllerContext { HttpContext = http };
 
         await controller.CambiarEstadoEmpresa(7, 11, new UpdateUsuarioEmpresaEstadoDto { Activa = true });
 
         permisoService.Verify(
-            service => service.VerificarPermisoAsync(ModuloSistema.Usuarios, AccionPermiso.Activar),
+            service => service.VerificarPermisoAsync(11, ModuloSistema.Usuarios, AccionPermiso.Activar),
             Times.Once);
         usuarioService.Verify(service => service.CambiarEstadoEmpresaAsync(7, 11, true), Times.Once);
     }
@@ -89,11 +93,14 @@ public class UsuariosEmpresaAuthorizationContractTests
             .ReturnsAsync((UsuarioEmpresaDto)null!);
 
         var controller = new UsuariosController(usuarioService.Object, permisoService.Object, currentUser.Object);
+        var http = new DefaultHttpContext();
+        http.Request.Headers["X-Empresa-Id"] = "11";
+        controller.ControllerContext = new ControllerContext { HttpContext = http };
 
         await controller.CambiarEstadoEmpresa(7, 11, new UpdateUsuarioEmpresaEstadoDto { Activa = false });
 
         permisoService.Verify(
-            service => service.VerificarPermisoAsync(ModuloSistema.Usuarios, AccionPermiso.Desactivar),
+            service => service.VerificarPermisoAsync(11, ModuloSistema.Usuarios, AccionPermiso.Desactivar),
             Times.Once);
         usuarioService.Verify(service => service.CambiarEstadoEmpresaAsync(7, 11, false), Times.Once);
     }
