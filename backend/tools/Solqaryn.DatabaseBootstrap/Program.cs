@@ -204,6 +204,10 @@ if (mode == "fresh")
         INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
         VALUES ('20261013231000_CommercialTenantRemainingScopedFks', '10.0.12');
         """);
+    await db.Database.ExecuteSqlRawAsync("""
+        INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+        VALUES ('20261013234000_CommercialTenantNaturalKeys', '10.0.12');
+        """);
 
     // EnsureCreated ya creó el índice compuesto del modelo actual.
     // Registrar la migración P4 únicamente DESPUÉS de verificar en MySQL
@@ -272,5 +276,6 @@ await CommercialTenantSalesPhysicalConstraints.VerifyAsync(db);
 await CommercialTenantTaxDiscountPhysicalConstraints.VerifyAsync(db);
 await CommercialTenantOwnershipGraphPhysicalConstraints.VerifyAsync(db);
 await CommercialTenantRemainingPhysicalConstraints.VerifyAsync(db);
+await CommercialTenantNaturalKeysPhysicalContract.VerifyAsync(db);
 
 Console.WriteLine($"SOLQARYN_ORACLE_BOOTSTRAP=PASS mode={mode} tables={afterAdoption} pending=0");
