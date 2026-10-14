@@ -1,4 +1,5 @@
 using Solqaryn.Application.Common;
+using Solqaryn.Application.Security;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Infrastructure.Persistence;
@@ -25,12 +26,29 @@ public class FacturaCompartirRepository : IFacturaCompartirRepository
         var enlace = await _context.EnlacesPublicosFactura
             .FirstOrDefaultAsync(e => e.Token == tokenHash);
 
-        // La marca vive exclusivamente durante esta solicitud. El servicio aún
-        // valida expiración, revocación y límite de accesos antes de solicitar el
-        // PDF; nunca se almacena el token completo.
-        if (enlace is not null && _httpContextAccessor?.HttpContext is { } httpContext)
-            httpContext.Items[PublicInvoiceAccessContext.FacturaIdKey] = enlace.FacturaId;
+        if (enlace is null || enlace.FechaExpiracion <= DateTime.UtcNow)
+            return null;
 
+        // El token enlaza a una única empresa en MySQL por FK compuesta (P3).
+        // Enlaces legacy sin propietario nunca autorizan un PDF multiempresa.
+        var empresaToken = _context.Entry(enlace)
+            .Property<int?>("EmpresaId").CurrentValue;
+        if (empresaToken is not > 0)
+            return null;
+
+        if (_httpContextAccessor?.HttpContext is not { } httpContext)
+            return null;
+
+        // No permitir superponer el token de B a una autorización RBAC de A.
+        var empresaRbac = VerifiedCommercialTenant.Resolve(httpContext);
+        if (empresaRbac is > 0 && empresaRbac != empresaToken)
+            return null;
+
+        // Un vínculo probado por hash concede lectura SOLO de la factura
+        // correlacionada, jamás permisos de administración.
+        httpContext.Items[VerifiedPublicInvoiceTenant.AuthorizedEmpresaIdItemKey] =
+            empresaToken.Value;
+        httpContext.Items[PublicInvoiceAccessContext.FacturaIdKey] = enlace.FacturaId;
         return enlace;
     }
 
