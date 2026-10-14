@@ -25,6 +25,39 @@ public class MovimientoInventarioRepository : IMovimientoInventarioRepository
         return alcance.EsAdministrador ? query : query.Where(m => m.CreadoPorUsuarioId == alcance.UsuarioId);
     }
 
+    // El alcance legacy solo se conserva para instalaciones con 0-1 empresa.
+    // Con dos empresas, una invocación sin marca RBAC privada falla cerrada.
+    // Cuando hay marca, el rol se toma de UsuarioEmpresa y se exige owner del movimiento.
+    private async Task<IQueryable<MovimientoInventario>> AplicarAlcanceSeguroAsync(
+        IQueryable<MovimientoInventario> query)
+    {
+        var empresaId = _context.AuthorizedCommercialEmpresaId;
+        if (empresaId is > 0)
+        {
+            var alcance = await _usuarioScope.ObtenerActualAsync(empresaId.Value);
+            if (alcance is null || alcance.EmpresaId != empresaId.Value)
+                return query.Where(_ => false);
+
+            var propias = query.Where(m =>
+                EF.Property<int?>(m, "EmpresaId") == empresaId.Value);
+            return alcance.EsAdministrador
+                ? propias
+                : propias.Where(m => m.CreadoPorUsuarioId == alcance.UsuarioId);
+        }
+
+        // Una empresa suspendida también cuenta: puede contener datos históricos.
+        var empresas = await _context.Set<Empresa>()
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .Take(2)
+            .CountAsync();
+        if (empresas > 1)
+            return query.Where(_ => false);
+
+        var legacy = await _usuarioScope.ObtenerActualAsync();
+        return AplicarAlcance(query, legacy);
+    }
+
     private IQueryable<MovimientoInventario> ConIncludes() => _context.MovimientosInventario
         .Include(m => m.Producto).ThenInclude(p => p!.Imagenes)
         .Include(m => m.ProductoVariante).ThenInclude(v => v!.Color)
@@ -82,14 +115,14 @@ public class MovimientoInventarioRepository : IMovimientoInventarioRepository
 
     public async Task<List<MovimientoInventario>> GetByProductoAsync(int productoId)
     {
-        var alcance = await _usuarioScope.ObtenerActualAsync();
-        return await AplicarAlcance(ConIncludes(), alcance).Where(m => m.ProductoId == productoId).OrderByDescending(m => m.Fecha).ToListAsync();
+        var query = await AplicarAlcanceSeguroAsync(ConIncludes());
+        return await query.Where(m => m.ProductoId == productoId)
+            .OrderByDescending(m => m.Fecha).ToListAsync();
     }
 
     public async Task<List<MovimientoInventario>> GetFilteredAsync(int? productoId, string? tipo, DateTime? desde, DateTime? hasta)
     {
-        var alcance = await _usuarioScope.ObtenerActualAsync();
-        var query = AplicarAlcance(ConIncludes(), alcance);
+        var query = await AplicarAlcanceSeguroAsync(ConIncludes());
         if (productoId.HasValue) query = query.Where(m => m.ProductoId == productoId.Value);
         if (!string.IsNullOrWhiteSpace(tipo))
         {
@@ -104,8 +137,7 @@ public class MovimientoInventarioRepository : IMovimientoInventarioRepository
     public async Task<(List<MovimientoInventario> Items, int TotalCount)> GetPagedAsync(MovimientoInventarioQueryDto filter)
     {
         ArgumentNullException.ThrowIfNull(filter);
-        var alcance = await _usuarioScope.ObtenerActualAsync();
-        var query = AplicarAlcance(ConIncludes(), alcance);
+        var query = await AplicarAlcanceSeguroAsync(ConIncludes());
         if (filter.ProductoId.HasValue) query = query.Where(m => m.ProductoId == filter.ProductoId.Value);
         if (filter.ProductoVarianteId.HasValue) query = query.Where(m => m.ProductoVarianteId == filter.ProductoVarianteId.Value);
         if (filter.AlmacenId.HasValue) query = query.Where(m => m.AlmacenId == filter.AlmacenId.Value);
