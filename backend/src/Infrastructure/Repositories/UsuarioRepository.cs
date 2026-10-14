@@ -49,6 +49,22 @@ public class UsuarioRepository : IUsuarioRepository
                     .Any(m => m.UsuarioId == u.Id));
     }
 
+    public async Task<Usuario?> GetByIdConMembresiaDeEmpresaAutorizadaAsync(int id)
+    {
+        var empresaId = _context.AuthorizedReadEmpresaId;
+        if (id <= 0 || empresaId is not > 0)
+            return null;
+
+        // La ausencia de una membresía activa NO puede ocultar la cuenta al
+        // administrador de la propia empresa cuando intenta reactivarla.
+        // IgnoreQueryFilters se limita por membresía exacta, también inactiva.
+        return await _context.Usuarios.IgnoreQueryFilters()
+            .Include(u => u.RolEntidad)
+            .SingleOrDefaultAsync(u => u.Id == id && !u.Eliminado &&
+                _context.UsuarioEmpresas.IgnoreQueryFilters()
+                    .Any(m => m.UsuarioId == u.Id && m.EmpresaId == empresaId.Value));
+    }
+
     public async Task<List<Usuario>> GetAllAsync() =>
         await _context.Usuarios
             .Include(u => u.RolEntidad)
@@ -101,18 +117,25 @@ public class UsuarioRepository : IUsuarioRepository
     public async Task AddAsync(Usuario usuario) => await _context.Usuarios.AddAsync(usuario);
     public void Update(Usuario usuario) => _context.Usuarios.Update(usuario);
 
-    public async Task<List<UsuarioEmpresa>> GetEmpresasAsync(int usuarioId) =>
-        await _context.UsuarioEmpresas
-            .Where(x => x.UsuarioId == usuarioId && x.Activa)
+    public async Task<List<UsuarioEmpresa>> GetEmpresasAsync(int usuarioId)
+    {
+        var empresaId = _context.AuthorizedReadEmpresaId;
+        // En administración tenant, incluir membresías inactivas para permitir
+        // reactivación, pero nunca divulgar las de otra empresa.
+        return await _context.UsuarioEmpresas
+            .Where(x => x.UsuarioId == usuarioId &&
+                        (empresaId is > 0 ? x.EmpresaId == empresaId : x.Activa))
             .OrderBy(x => x.EmpresaId)
             .ToListAsync();
+    }
 
     public async Task<UsuarioEmpresa?> GetEmpresaAsync(int usuarioId, int empresaId) =>
         await _context.UsuarioEmpresas
             .FirstOrDefaultAsync(x =>
                 x.UsuarioId == usuarioId &&
                 x.EmpresaId == empresaId &&
-                x.Activa);
+                (_context.AuthorizedReadEmpresaId == null ||
+                 _context.AuthorizedReadEmpresaId == empresaId));
 
     public async Task AddEmpresaAsync(UsuarioEmpresa usuarioEmpresa) =>
         await _context.UsuarioEmpresas.AddAsync(usuarioEmpresa);
