@@ -1,3 +1,8 @@
+## 2026-10-13 — Punto #4: defensa de lectura comercial por empresa (candidato)
+
+- `CommercialTenantReadFilterModel`: combina filtros SQL EF por `EmpresaId` para todas las entidades propiedad de empresa cuando existe marca RBAC verificada; preserva borrado lógico. Pruebas A/B de categorías, legacy y roles de plantilla.
+- Pendientes que impiden declarar `LISTO`: resolver tenant público, cache/export/SQL/jobs, revisión de bypass `IgnoreQueryFilters`, pruebas A/B por módulo, CI y verificación exact-head. La cuarentena para 2+ empresas no se retira. QA/PROD sin tocar.
+
 ## 2026-10-13 — CI P0 #3: traducir 1062 del nuevo índice empresarial TipoCliente
 
 - El nuevo índice único (EmpresaId, EsPredeterminadoUnico) emite MySQL 1062 con nombre UX_TipoClientes_Empresa_EsPredeterminadoUnico. UnitOfWork ahora traduce tanto el índice histórico como el nuevo a BusinessRuleException, sin convertir errores 1062 ajenos.
