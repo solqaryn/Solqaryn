@@ -99,6 +99,10 @@ internal static class Phase7MySqlTestDatabase
             INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
             VALUES ('20261013231000_CommercialTenantRemainingScopedFks', '10.0.12');
             """);
+        await db.Database.ExecuteSqlRawAsync("""
+            INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+            VALUES ('20261013234000_CommercialTenantNaturalKeys', '10.0.12');
+            """);
 
         // Adoptar la migración P4 solo si EnsureCreated materializó el índice
         // exacto en la base efímera, nunca basándose únicamente en el nombre.
