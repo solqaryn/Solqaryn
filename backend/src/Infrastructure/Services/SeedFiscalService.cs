@@ -18,6 +18,17 @@ public class SeedFiscalService
 
     public async Task SeedDefaultsAsync()
     {
+        // El seed inicial es legacy/monoempresa y no tiene contexto RBAC
+        // de una Empresa. Con A y B operando, un arranque no debe consultar
+        // impuestos globales ni escribir configuraciones fiscales sin owner.
+        // Los defaults por empresa se crean sólo mediante onboarding tenant.
+        var empresas = await _context.Set<Empresa>()
+            .AsNoTracking()
+            .Take(2)
+            .CountAsync();
+        if (empresas > 1)
+            return;
+
         await CrearImpuestoSiNoExisteAsync(
             codigo: "ISV15",
             nombre: "ISV 15%",
