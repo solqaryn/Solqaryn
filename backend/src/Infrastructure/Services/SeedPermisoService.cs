@@ -40,7 +40,12 @@ public class SeedPermisoService
 
     private async Task<(Rol Administrador, Rol Vendedor, bool VendedorCreado)> SeedRolesSistemaAsync()
     {
-        var existentes = await _context.Roles.IgnoreQueryFilters().ToListAsync();
+        // Los roles propios de A/B y los de ámbito Plataforma jamás son
+        // plantillas que el proceso de startup pueda reactivar o elevar.
+        var existentes = await _context.Roles.IgnoreQueryFilters()
+            .Where(r => r.EmpresaId == null &&
+                        r.Ambito == Solqaryn.Domain.Enums.AmbitoAutorizacion.Empresa)
+            .ToListAsync();
 
         var administrador = existentes.FirstOrDefault(r =>
             r.NombreNormalizado == AdministradorNormalizado ||
@@ -101,7 +106,9 @@ public class SeedPermisoService
     {
         var administradores = await _context.Roles
             .IgnoreQueryFilters()
-            .Where(r => r.EsAdministrador && r.Activo && !r.Eliminado)
+            .Where(r => r.EmpresaId == null &&
+                        r.Ambito == Solqaryn.Domain.Enums.AmbitoAutorizacion.Empresa &&
+                        r.EsAdministrador && r.Activo && !r.Eliminado)
             .ToListAsync();
         if (administradores.Count == 0) return;
 

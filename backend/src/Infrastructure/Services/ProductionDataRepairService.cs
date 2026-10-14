@@ -22,6 +22,21 @@ public class ProductionDataRepairService
 
     public async Task<ProductionDataRepairResult> RepairAsync()
     {
+        // Este servicio solo repara instalaciones legacy de UNA empresa.
+        // Antes existía un UPDATE global de Usuarios que se ejecutaba al
+        // arrancar incluso con A y B presentes. Se deniega cualquier escritura
+        // antes de evaluar/normalizar datos cuando coexisten 2+ empresas.
+        var empresasTotales = await _context.Set<Empresa>()
+            .AsNoTracking()
+            .CountAsync();
+        if (empresasTotales > 1)
+        {
+            var configuraciones = await _context.EmpresaConfiguraciones
+                .AsNoTracking().CountAsync(x => x.Activa);
+            return new ProductionDataRepairResult(
+                empresasTotales, configuraciones, null, 0);
+        }
+
         await _context.Database.ExecuteSqlRawAsync("""
             UPDATE `Usuarios`
             SET `Eliminado` = FALSE
@@ -29,10 +44,6 @@ public class ProductionDataRepairService
               AND `FechaEliminacion` IS NULL
               AND `EliminadoPorUsuarioId` IS NULL;
             """);
-
-        var empresasTotales = await _context.Set<Empresa>()
-            .AsNoTracking()
-            .CountAsync();
 
         var configuracionesActivas = await _context.EmpresaConfiguraciones
             .AsNoTracking()
