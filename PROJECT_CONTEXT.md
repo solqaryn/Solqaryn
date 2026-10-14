@@ -326,3 +326,9 @@ La implementación existente puede ser reutilizada, extendida, refactorizada o r
 ## Cloudinary DEV: normalización física y descargas LISTO (2026-10-12)
 
 `DevCloudinaryLegacyNormalizationHostedService` (Infrastructure, compuesto en API) completó la normalización de **11/11 imágenes** de `ProductoImagenes` a locators DEV canónicos con comparación SHA-256 y actualización condicional (`originals_deleted=0`). Respaldo/restauración verificados: [run 38319634960](https://github.com/solqaryn/Solqaryn/actions/runs/38319634960). Auditoría MySQL read-only: [run 38323224517](https://github.com/solqaryn/Solqaryn/actions/runs/38323224517) PASS con `remaining=0`. El flag `Cloudinary:NormalizeDevLegacyImagesOnStartup=false` volvió a estar versionado y está LIVE en Render DEV SHA `f6f79b9d`. El propietario verificó descargas individual y ZIP autenticadas tras la normalización, **aceptación manual PASS** (no CI ZIP automatizado). Evidencia: `docs/CLOUDINARY_AISLAMIENTO.md`. QA/PROD y dominio fuera de alcance; promoción DEV → QA → PROD aplazada.
+
+## 2026-10-14 — P4 compras: reportes con ownership de documentos A/B (PR #3616 candidato)
+
+- `ReporteComprasService` exige una empresa seleccionada por servidor y membresía vigente mediante `IUsuarioScopeService.ObtenerActualAsync(empresaId)`; en ausencia, rechaza incluso invocaciones fuera de middleware HTTP.
+- El detalle de orden y sus anexos de facturas, recepciones, devoluciones y evaluaciones preservan `EmpresaId` explícito (EF.Property en propiedad shadow) en consultas y joins.
+- La aceptación unitaria usa owner empresa A y B, demuestra separación y rechaza solicitudes sin scope. Sin DDL/backfill ni escritura a datos reales. Cuarentena general de 2+ permanece; sujeto a exact-head MySQL, CI y REVIEW_FIRST.
