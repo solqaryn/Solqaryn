@@ -14514,6 +14514,109 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         .HasConstraintName("FK_HistorialEnviosFactura_Facturas_FacturaId");
                 });
 
+
+            // Modelo final de unicidades comerciales por empresa (NULL técnico preservado).
+            modelBuilder.Entity("Solqaryn.Domain.Entities.DevolucionCliente", b =>
+                {
+                    b.HasIndex("EmpresaId", "IdempotencyKey").IsUnique()
+                        .HasDatabaseName("UX_DevolucionesCliente_Empresa_IdempotencyKey");
+                    b.HasIndex("IdempotencyKey").IsUnique(false);
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.DevolucionProveedor", b =>
+                {
+                    b.HasIndex("EmpresaId", "IdempotencyKey").IsUnique()
+                        .HasDatabaseName("UX_DevolucionesProveedor_Empresa_IdempotencyKey");
+                    b.HasIndex("IdempotencyKey").IsUnique(false);
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.DevolucionProveedor", b =>
+                {
+                    b.HasIndex("EmpresaId", "NumeroDevolucion").IsUnique()
+                        .HasDatabaseName("UX_DevolucionesProveedor_Empresa_NumeroDevolucion");
+                    b.HasIndex("NumeroDevolucion").IsUnique(false);
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.OrdenCompra", b =>
+                {
+                    b.HasIndex("EmpresaId", "IdempotencyKey").IsUnique()
+                        .HasDatabaseName("UX_OrdenesCompra_Empresa_IdempotencyKey");
+                    b.HasIndex("IdempotencyKey").IsUnique(false);
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.OrdenCompra", b =>
+                {
+                    b.HasIndex("EmpresaId", "NumeroOrden").IsUnique()
+                        .HasDatabaseName("UX_OrdenesCompra_Empresa_NumeroOrden");
+                    b.HasIndex("NumeroOrden").IsUnique(false);
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.RecepcionCompra", b =>
+                {
+                    b.HasIndex("EmpresaId", "IdempotencyKey").IsUnique()
+                        .HasDatabaseName("UX_RecepcionesCompra_Empresa_IdempotencyKey");
+                    b.HasIndex("IdempotencyKey").IsUnique(false);
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.RecepcionCompra", b =>
+                {
+                    b.HasIndex("EmpresaId", "NumeroRecepcion").IsUnique()
+                        .HasDatabaseName("UX_RecepcionesCompra_Empresa_NumeroRecepcion");
+                    b.HasIndex("NumeroRecepcion").IsUnique(false);
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ReservaInventario", b =>
+                {
+                    b.HasIndex("EmpresaId", "Numero").IsUnique()
+                        .HasDatabaseName("UX_ReservasInventario_Empresa_Numero");
+                    b.HasIndex("Numero").IsUnique(false);
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.SerieInventario", b =>
+                {
+                    b.HasIndex("EmpresaId", "NumeroSerie").IsUnique()
+                        .HasDatabaseName("UX_SeriesInventario_Empresa_NumeroSerie");
+                    b.HasIndex("NumeroSerie").IsUnique(false);
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.SolicitudCompra", b =>
+                {
+                    b.HasIndex("EmpresaId", "NumeroSolicitud").IsUnique()
+                        .HasDatabaseName("UX_SolicitudesCompra_Empresa_NumeroSolicitud");
+                    b.HasIndex("NumeroSolicitud").IsUnique(false);
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Sucursal", b =>
+                {
+                    b.HasIndex("EmpresaId", "CodigoActivoUnico").IsUnique()
+                        .HasDatabaseName("UX_Sucursales_Empresa_CodigoActivoUnico");
+                    b.HasIndex("CodigoActivoUnico").IsUnique(false);
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.TiendaCuentaCliente", b =>
+                {
+                    b.HasIndex("EmpresaId", "CorreoNormalizado").IsUnique()
+                        .HasDatabaseName("UX_TiendaCuentasCliente_Empresa_CorreoNormalizado");
+                    b.HasIndex("CorreoNormalizado").IsUnique(false);
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Rol", b =>
+                {
+                    b.HasIndex("EmpresaId", "NombreNormalizado").IsUnique()
+                        .HasDatabaseName("UX_Roles_Empresa_NombreNormalizado");
+                    b.HasIndex("NombreNormalizado").IsUnique(false);
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Rol", b =>
+                {
+                    b.Property<string>("NombreNormalizadoGlobalUnico")
+                        .ValueGeneratedOnAddOrUpdate().HasMaxLength(80)
+                        .HasColumnType("varchar(80)")
+                        .HasComputedColumnSql("IF(EmpresaId IS NULL, NombreNormalizado, NULL)", true);
+                    b.HasIndex("NombreNormalizadoGlobalUnico").IsUnique()
+                        .HasDatabaseName("UX_Roles_NombreNormalizadoGlobalUnico");
+                });
+
 #pragma warning restore 612, 618
         }
     }
