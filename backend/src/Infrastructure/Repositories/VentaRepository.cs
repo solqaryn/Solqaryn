@@ -70,7 +70,11 @@ public class VentaRepository : IVentaRepository
         if (_context.Database.CurrentTransaction is null)
             throw new InvalidOperationException("GetByIdForUpdateAsync requiere una transacción activa.");
 
-        var alcance = await _usuarioScope.ObtenerActualAsync();
+        // El lock SQL no depende de los filtros EF ni de roles globales legacy.
+        var empresaId = _context.AuthorizedCommercialEmpresaId;
+        if (empresaId is not > 0)
+            return null;
+        var alcance = await _usuarioScope.ObtenerActualAsync(empresaId.Value);
         if (alcance is null)
             return null;
 
@@ -78,14 +82,14 @@ public class VentaRepository : IVentaRepository
         if (alcance.EsAdministrador)
         {
             cabecera = await _context.Ventas
-                .FromSqlInterpolated($"SELECT v.* FROM Ventas v WHERE v.Id = {id} AND v.Eliminado = 0 FOR UPDATE")
+                .FromSqlInterpolated($"SELECT v.* FROM Ventas v WHERE v.Id = {id} AND v.EmpresaId = {empresaId.Value} AND v.Eliminado = 0 FOR UPDATE")
                 .AsTracking()
                 .FirstOrDefaultAsync();
         }
         else
         {
             cabecera = await _context.Ventas
-                .FromSqlInterpolated($"SELECT v.* FROM Ventas v WHERE v.Id = {id} AND v.Eliminado = 0 AND v.CreadoPorUsuarioId = {alcance.UsuarioId} FOR UPDATE")
+                .FromSqlInterpolated($"SELECT v.* FROM Ventas v WHERE v.Id = {id} AND v.EmpresaId = {empresaId.Value} AND v.Eliminado = 0 AND v.CreadoPorUsuarioId = {alcance.UsuarioId} FOR UPDATE")
                 .AsTracking()
                 .FirstOrDefaultAsync();
         }
