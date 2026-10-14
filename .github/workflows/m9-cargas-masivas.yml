@@ -20,6 +20,7 @@ on:
       - frontend/e2e/fase5-cargas-masivas.spec.ts
   pull_request:
     branches:
+      - dev
       - main
     paths:
       - .github/workflows/m9-cargas-masivas.yml
@@ -173,7 +174,26 @@ jobs:
               FROM `UsuarioEmpresas` ue
               WHERE ue.`UsuarioId`=u.`Id` AND ue.`EmpresaId`=1
             );
+          -- Plantilla XLSX Clientes trae "Sin clasificar". El seed global
+          -- con EmpresaId=NULL no es visible bajo el filtro RBAC del tenant.
+          -- Preparar sólo el default de la empresa 1 en esta DB descartable.
+          INSERT INTO `TipoClientes`
+            (`EmpresaId`,`Codigo`,`EsSistema`,`Nombre`,`NombreNormalizado`,`Descripcion`,
+             `ColorHex`,`Activo`,`Orden`,`EsPredeterminado`,`Eliminado`,
+             `FechaCreacion`,`FechaActualizacion`)
+          SELECT 1,'SIN_CLASIFICAR',TRUE,'Sin clasificar','SIN CLASIFICAR',
+                 'Cliente sin clasificar','#9E9E9E',TRUE,0,TRUE,FALSE,
+                 UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)
+          WHERE NOT EXISTS
+            (SELECT 1 FROM `TipoClientes`
+             WHERE `EmpresaId`=1 AND `Codigo`='SIN_CLASIFICAR');
           SQL
+
+          tipo_default_count="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_m9_e2e -Nse "SELECT COUNT(*) FROM TipoClientes WHERE EmpresaId=1 AND Codigo='SIN_CLASIFICAR' AND EsPredeterminado=TRUE AND Activo=TRUE AND Eliminado=FALSE;")"
+          if [[ "$tipo_default_count" != '1' ]]; then
+            echo "El tipo de cliente predeterminado E2E no pertenece a empresa 1: count=$tipo_default_count" >&2
+            exit 1
+          fi
 
           membership_count="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_m9_e2e -Nse "SELECT COUNT(*) FROM UsuarioEmpresas ue INNER JOIN Usuarios u ON u.Id=ue.UsuarioId INNER JOIN Empresas e ON e.Id=ue.EmpresaId WHERE u.NombreUsuario='e2e_admin' AND e.Id=1 AND e.Activa=TRUE AND ue.Activa=TRUE;")"
           if [[ "$membership_count" != '1' ]]; then
