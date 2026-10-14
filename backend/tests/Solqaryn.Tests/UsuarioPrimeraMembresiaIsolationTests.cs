@@ -98,10 +98,10 @@ public sealed class UsuarioPrimeraMembresiaIsolationTests
 
         var repository = new UsuarioRepository(db);
         http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = empresaA.Id;
-        Assert.Null(await repository.GetByIdAsync(usuario.Id));
-        var reactivable = await repository.GetByIdConMembresiaDeEmpresaAutorizadaAsync(usuario.Id);
-        Assert.Equal(usuario.Id, reactivable?.Id);
-        Assert.Null(await repository.GetByIdConMembresiaDeEmpresaAutorizadaAsync(ajeno.Id));
+        // Una membresia inactiva A ya da visibilidad administrativa en A;
+        // la identidad que solo pertenece a B sigue totalmente oculta.
+        Assert.Equal(usuario.Id, (await repository.GetByIdAsync(usuario.Id))?.Id);
+        Assert.Null(await repository.GetByIdAsync(ajeno.Id));
         var visibles = await repository.GetEmpresasAsync(usuario.Id);
         Assert.Single(visibles);
         Assert.False(visibles[0].Activa);
