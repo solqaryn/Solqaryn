@@ -44,12 +44,12 @@ public sealed class PublicInvoiceTokenTenantMySqlIntegrationTests
             await using (var setup = new AppDbContext(options))
             {
                 await Phase7MySqlTestDatabase.InitializeFreshAsync(setup);
-                var a = new Empresa("PDF público A");
-                var b = new Empresa("PDF público B");
-                setup.Set<Empresa>().AddRange(a, b);
+                var empresaInicialA = new Empresa("PDF público A");
+                var empresaInicialB = new Empresa("PDF público B");
+                setup.Set<Empresa>().AddRange(empresaInicialA, empresaInicialB);
                 await setup.SaveChangesAsync();
-                empresaAId = a.Id;
-                empresaBId = b.Id;
+                empresaAId = empresaInicialA.Id;
+                empresaBId = empresaInicialB.Id;
             }
 
             async Task<int> CrearFacturaPublicaAsync(int owner, string token)
