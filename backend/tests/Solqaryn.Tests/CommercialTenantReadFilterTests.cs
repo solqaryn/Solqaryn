@@ -42,8 +42,8 @@ public sealed class CommercialTenantReadFilterTests
     public void Filtro_tenant_preserva_el_borrado_logico_en_productos_y_categorias()
     {
         using var db = CreateDb();
-        var producto = db.Model.FindEntityType(typeof(Producto))!.GetDeclaredQueryFilters().Single().Expression;
-        var categoria = db.Model.FindEntityType(typeof(Categoria))!.GetDeclaredQueryFilters().Single().Expression;
+        var producto = db.Model.FindEntityType(typeof(Producto))!.GetDeclaredQueryFilters().Single().Expression!;
+        var categoria = db.Model.FindEntityType(typeof(Categoria))!.GetDeclaredQueryFilters().Single().Expression!;
 
         Assert.Contains("Eliminado", producto.ToString(), StringComparison.Ordinal);
         Assert.Contains("Eliminada", categoria.ToString(), StringComparison.Ordinal);
