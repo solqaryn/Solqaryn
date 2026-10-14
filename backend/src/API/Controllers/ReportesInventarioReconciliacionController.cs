@@ -43,7 +43,8 @@ public sealed class ReportesInventarioReconciliacionController : ControllerBase
             return BadRequest(ApiResponse<object>.Fail("Consulta de reconciliación inválida.", new() { error }));
 
         var empresaId = await TenantPermissionContext.RequireEmpresaIdAsync(HttpContext, cancellationToken);
-        if (!await ReporteInventarioScopeGuard.CanUseExplicitPhysicalScopeAsync(filtro, _usuarioScope))
+        if (!await ReporteInventarioScopeGuard.CanUseExplicitPhysicalScopeAsync(
+                filtro, _usuarioScope, empresaId, cancellationToken))
             return Forbid();
 
         var resultado = await _reportes.ObtenerReporteReconciliacionAsync(empresaId, filtro, cancellationToken);
