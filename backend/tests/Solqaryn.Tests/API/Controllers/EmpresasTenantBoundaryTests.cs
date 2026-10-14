@@ -27,12 +27,8 @@ public sealed class EmpresasTenantBoundaryTests
     public async Task ListarEmpresas_ConPermisoTenantA_NoEnumeraIdentidadDeB()
     {
         var service = new Mock<IEmpresaService>(MockBehavior.Strict);
-        service.Setup(x => x.ListAsync(null, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<EmpresaDto>
-            {
-                new() { Id = 11, Nombre = "Solo A" },
-                new() { Id = 22, Nombre = "Confidencial B" }
-            });
+        service.Setup(x => x.GetByIdAsync(11, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new EmpresaDto { Id = 11, Nombre = "Solo A", Activa = true });
         var sut = Controller(service, 11);
         var result = Assert.IsType<OkObjectResult>(
             await sut.List(null, CancellationToken.None));
