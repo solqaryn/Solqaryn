@@ -13,6 +13,7 @@ namespace Solqaryn.Infrastructure.Services;
 public sealed class ConfiguredPublicStoreHostTenantResolver : IPublicStoreHostTenantResolver
 {
     private readonly IReadOnlyDictionary<string, int> _byHost;
+    public bool IsEnabled { get; }
 
     public ConfiguredPublicStoreHostTenantResolver(IConfiguration configuration)
     {
