@@ -21,11 +21,29 @@ public static class CommercialTenantSqlLockScope
         if (empresaId is > 0)
             return empresaId.Value;
 
-        var total = await context.Set<Empresa>()
-            .IgnoreQueryFilters()
-            .AsNoTracking()
-            .Take(2)
-            .CountAsync(cancellationToken);
+        // Un SELECT ordinario aquí establece el read view REPEATABLE READ
+        // ANTES del FOR UPDATE del documento. Con dos confirmaciones simultáneas,
+        // el segundo hilo podría ver un snapshot anterior al primer commit
+        // y crear dos variantes técnicas del mismo producto. En MySQL usar
+        // current/locking read FOR SHARE, compatible con lectores concurrentes,
+        // sin establecer ese snapshot obsoleto.
+        int total;
+        if (context.Database.ProviderName?.Contains("MySql", StringComparison.OrdinalIgnoreCase) == true)
+        {
+            var ids = await context.Database
+                .SqlQueryRaw<int>("SELECT e.Id AS Value FROM Empresas e ORDER BY e.Id LIMIT 2 FOR SHARE")
+                .ToArrayAsync(cancellationToken);
+            total = ids.Length;
+        }
+        else
+        {
+            // InMemory y otros proveedores sólo se utilizan en tests del gate.
+            total = await context.Set<Empresa>()
+                .IgnoreQueryFilters()
+                .AsNoTracking()
+                .Take(2)
+                .CountAsync(cancellationToken);
+        }
 
         if (total > 1)
             throw new ForbiddenAccessException(
