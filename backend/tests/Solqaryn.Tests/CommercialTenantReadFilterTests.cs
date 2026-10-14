@@ -92,6 +92,36 @@ public sealed class CommercialTenantReadFilterTests
     }
 
     [Fact]
+    public void EnlacePublicoDeFactura_NoAbreTenantEnRutasAjenaAlPDF()
+    {
+        var http = new DefaultHttpContext();
+        http.Request.Path = "/facturas/publico/abc/pdf";
+        http.Items[VerifiedPublicInvoiceTenant.AuthorizedEmpresaIdItemKey] = 7;
+
+        using var db = CreateDb(http);
+        Assert.Equal(7, db.AuthorizedReadEmpresaId);
+
+        http.Request.Path = "/facturas/17/pdf";
+        Assert.Null(VerifiedPublicInvoiceTenant.Resolve(http));
+        Assert.Null(db.AuthorizedReadEmpresaId);
+
+        http.Request.Path = "/facturas/publico-malicioso/abc/pdf";
+        Assert.Null(VerifiedPublicInvoiceTenant.Resolve(http));
+    }
+
+    [Fact]
+    public void RbacPrevaleceSobreMarcasPublicasEnCasoDeInconsistencia()
+    {
+        var http = new DefaultHttpContext();
+        http.Request.Path = "/facturas/publico/abc/pdf";
+        http.Items[VerifiedPublicInvoiceTenant.AuthorizedEmpresaIdItemKey] = 7;
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = 9;
+
+        using var db = CreateDb(http);
+        Assert.Equal(9, db.AuthorizedReadEmpresaId);
+    }
+
+    [Fact]
     public async Task Plantillas_RBAC_siguen_visibles_sin_mostrar_roles_de_B_en_A()
     {
         var http = new DefaultHttpContext();
