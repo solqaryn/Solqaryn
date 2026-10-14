@@ -9,5 +9,6 @@ namespace Solqaryn.Application.Interfaces;
 /// </summary>
 public interface IPublicStoreHostTenantResolver
 {
+    bool IsEnabled { get; }
     int? ResolveEmpresaId(HostString requestHost);
 }
