@@ -1,4 +1,7 @@
 using Solqaryn.Application.Interfaces;
+using Solqaryn.Application.Exceptions;
+using Solqaryn.Application.Security;
+using Microsoft.AspNetCore.Http;
 
 namespace Solqaryn.Infrastructure.Services;
 
@@ -9,25 +12,49 @@ public sealed class PublicStoreTenantKeyProvider : IPublicStoreTenantKeyProvider
     private readonly IPublicStoreCache _cache;
     private readonly IEmpresaConfiguracionRepository _empresaConfiguracionRepository;
     private readonly IEmpresaRepository _empresaRepository;
+    private readonly IHttpContextAccessor? _httpContextAccessor;
 
     public PublicStoreTenantKeyProvider(
         IPublicStoreCache cache,
         IEmpresaConfiguracionRepository empresaConfiguracionRepository,
-        IEmpresaRepository empresaRepository)
+        IEmpresaRepository empresaRepository,
+        IHttpContextAccessor? httpContextAccessor = null)
     {
         _cache = cache;
         _empresaConfiguracionRepository = empresaConfiguracionRepository;
         _empresaRepository = empresaRepository;
+        _httpContextAccessor = httpContextAccessor;
     }
 
-    public Task<string> GetTenantKeyAsync(CancellationToken cancellationToken = default) =>
-        _cache.GetOrCreateAsync(
+    public Task<string> GetTenantKeyAsync(CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var http = _httpContextAccessor?.HttpContext;
+
+        if (http?.Request.Path.StartsWithSegments(
+                "/tienda", StringComparison.OrdinalIgnoreCase) == true)
+        {
+            // Cada request público debe poseer una vinculación tenant
+            // server-side ya validada por middleware. Sin marca: denegar,
+            // nunca reutilizar una caché global de la tienda anterior.
+            var empresaId = VerifiedPublicStoreTenant.Resolve(http);
+            if (empresaId is not > 0)
+                throw new ForbiddenAccessException(
+                    "La tienda pública requiere una empresa vinculada y verificada.");
+
+            return Task.FromResult($"empresa:{empresaId.Value}");
+        }
+
+        // Compatibilidad de rutinas legacy sin solicitud pública: solamente
+        // se resuelve si el repositorio certifica UNA empresa activa.
+        return _cache.GetOrCreateAsync(
             "tenant-resolution",
             PublicStoreCacheSegments.Identity,
             "active-public-tenant:v1",
             ResolverTtl,
             ResolveAsync,
             cancellationToken);
+    }
 
     private async Task<string> ResolveAsync(CancellationToken cancellationToken)
     {
