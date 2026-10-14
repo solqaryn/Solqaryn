@@ -1,3 +1,7 @@
+## 2026-10-13 — Punto #4 (candidato): filtros de lectura EF por tenant
+
+- Agrega filtros EF dinámicos `EmpresaId` solo cuando existe marca tenant RBAC verificada y preserva filtros existentes. Incluye prueba A/B, legacy sin owner y roles plantilla. La cuarentena de segunda empresa continúa por ausencia de resolución pública y cobertura no EF; no hay DDL ni cambios QA/PROD. Candidato sujeto a CI exact-head y revisión.
+
 ## 2026-10-13 — Ajuste de compatibilidad tenant: roles plantilla y fixture E2E
 
 - Los grants de roles empresariales plantilla (Rol.EmpresaId nulo, Ambito Empresa) conservan propietario nulo y no reciben EmpresaId arbitrario. Los grants de roles empresariales personalizados mantienen validación A/B; los roles de plataforma no se modifican bajo una marca tenant.
