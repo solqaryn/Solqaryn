@@ -279,7 +279,8 @@ public class UsuarioService : IUsuarioService
 
     public async Task<UsuarioEmpresaDto> AsignarEmpresaAsync(int usuarioId, AsignarUsuarioEmpresaDto dto)
     {
-        var usuario = await ObtenerUsuarioValidoParaMembresiaAsync(usuarioId, exigirActivo: true);
+        var usuario = await ObtenerUsuarioValidoParaMembresiaAsync(
+            usuarioId, exigirActivo: true, permitirAltaInicial: true);
         var empresa = await ObtenerEmpresaActivaAsync(dto.EmpresaId);
         var rol = await ResolverRolDinamicoAsync(dto.RolId);
 
