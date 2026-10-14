@@ -113,6 +113,17 @@ jobs:
             --filter "FullyQualifiedName~M9CargaMasivaProfesionalTests|FullyQualifiedName~CargaMasivaConcurrencyTests" \
             --logger "trx;LogFileName=m9-tests.trx"
 
+      # OracleBaseline adopta un esquema físico ya existente: nunca aplicar
+      # migraciones sobre MySQL vacío. Usar el bootstrap canónico y descartable.
+      - name: Crear baseline Oracle en MySQL efímero
+        working-directory: backend
+        env:
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
+        run: |
+          set -euo pipefail
+          dotnet run --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj \
+            --configuration Release --no-build --no-launch-profile
+
       - name: Iniciar API con MySQL descartable
         working-directory: backend
         shell: bash
