@@ -35,8 +35,14 @@ public sealed class N23RecepcionCompraPersistenceModelTests
         var indiceIdempotencia = entity.GetIndexes().Single(i =>
             i.Properties.Select(p => p.Name).SequenceEqual(new[] { nameof(RecepcionCompra.IdempotencyKey) }));
 
-        Assert.True(indiceNumero.IsUnique);
-        Assert.True(indiceIdempotencia.IsUnique);
+        Assert.False(indiceNumero.IsUnique);
+        Assert.False(indiceIdempotencia.IsUnique);
+        Assert.Contains(entity.GetIndexes(), i => i.IsUnique &&
+            i.Properties.Select(p => p.Name).SequenceEqual(
+                new[] { "EmpresaId", nameof(RecepcionCompra.NumeroRecepcion) }));
+        Assert.Contains(entity.GetIndexes(), i => i.IsUnique &&
+            i.Properties.Select(p => p.Name).SequenceEqual(
+                new[] { "EmpresaId", nameof(RecepcionCompra.IdempotencyKey) }));
 
         var fkOrden = entity.GetForeignKeys().Single(fk =>
             fk.Properties.Select(p => p.Name).SequenceEqual(new[] { nameof(RecepcionCompra.OrdenCompraId) }));
