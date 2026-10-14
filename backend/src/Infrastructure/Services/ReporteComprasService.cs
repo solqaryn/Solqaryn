@@ -32,7 +32,7 @@ public sealed class ReporteComprasService : IReporteComprasService
         Validar(filtro);
 
         // No permitir que consumidores sin membresía validada lean toda la base.
-        var empresaId = _context.AuthorizedReadEmpresaId;
+        var empresaId = _context.AuthorizedCommercialEmpresaId;
         if (empresaId is not > 0 ||
             await _usuarioScope.ObtenerActualAsync(empresaId.Value, cancellationToken) is null)
             throw new ForbiddenAccessException(
