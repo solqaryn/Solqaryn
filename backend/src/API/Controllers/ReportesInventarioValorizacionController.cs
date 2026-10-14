@@ -31,7 +31,9 @@ public sealed class ReportesInventarioValorizacionController : ControllerBase
     [RequierePermiso(ModuloSistema.Inventario, AccionPermiso.Ver)]
     public async Task<IActionResult> GetResumen()
     {
-        if (!await _permisos.TienePermisoAsync(ModuloSistema.Finanzas, AccionPermiso.Ver))
+        if (!await _permisos.TienePermisoAsync(
+                TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext),
+                ModuloSistema.Finanzas, AccionPermiso.Ver))
         {
             await _auditoria.RegistrarAsync(
                 ModuloSistema.Inventario,
