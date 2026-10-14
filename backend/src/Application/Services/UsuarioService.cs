@@ -277,8 +277,7 @@ public class UsuarioService : IUsuarioService
         // autenticado puede ver la lista VACÍA de su usuario pendiente.
         // No desbloquear identidades con membresías de otra empresa.
         await ObtenerUsuarioValidoParaMembresiaAsync(
-            usuarioId, exigirActivo: false, permitirAltaInicial: true,
-            permitirMembresiaInactiva: true);
+            usuarioId, exigirActivo: false, permitirAltaInicial: true);
         return (await _repository.GetEmpresasAsync(usuarioId)).Select(ToEmpresaDto).ToList();
     }
 
@@ -339,8 +338,7 @@ public class UsuarioService : IUsuarioService
 
     public async Task<UsuarioEmpresaDto> CambiarEstadoEmpresaAsync(int usuarioId, int empresaId, bool activa)
     {
-        var usuario = await ObtenerUsuarioValidoParaMembresiaAsync(
-            usuarioId, exigirActivo: activa, permitirMembresiaInactiva: true);
+        var usuario = await ObtenerUsuarioValidoParaMembresiaAsync(usuarioId, exigirActivo: activa);
         if (activa)
             await ObtenerEmpresaActivaAsync(empresaId);
 
@@ -372,8 +370,7 @@ public class UsuarioService : IUsuarioService
     }
 
     private async Task<Usuario> ObtenerUsuarioValidoParaMembresiaAsync(
-        int usuarioId, bool exigirActivo, bool permitirAltaInicial = false,
-        bool permitirMembresiaInactiva = false)
+        int usuarioId, bool exigirActivo, bool permitirAltaInicial = false)
     {
         if (usuarioId <= 0)
             throw new BusinessRuleException("El usuario seleccionado no es válido.");
@@ -383,8 +380,6 @@ public class UsuarioService : IUsuarioService
         // terminar el alta de una identidad todavia sin membresia y creada
         // por el actor autenticado que supero el gate Usuarios:AsignarRol.
         var usuario = await _repository.GetByIdAsync(usuarioId);
-        if (usuario is null && permitirMembresiaInactiva)
-            usuario = await _repository.GetByIdConMembresiaDeEmpresaAutorizadaAsync(usuarioId);
         if (usuario is null && permitirAltaInicial && _currentUser.UsuarioId is > 0)
             usuario = await _repository.GetPendientePrimeraMembresiaAsync(
                 usuarioId, _currentUser.UsuarioId.Value);
