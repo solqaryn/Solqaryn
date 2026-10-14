@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Solqaryn.API.Middleware;
+using Solqaryn.Application.Security;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Http;
@@ -158,6 +159,58 @@ public sealed class UnscopedCommercialTenantGuardTests
             Assert.Equal(503, status);
             Assert.False(ejecutada);
         }
+    }
+
+    [Fact]
+    public async Task TiendaPublica_UsaTenantUnicoReal_NoCabeceraNiPrefijoFalso()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Method = "GET";
+        context.Request.Path = "/tienda/categorias";
+        context.Request.Headers["X-Empresa-Id"] = "99999";
+        var accessor = new HttpContextAccessor { HttpContext = context };
+        await using var db = new AppDbContext(
+            new DbContextOptionsBuilder<AppDbContext>()
+                .UseInMemoryDatabase("tenant-public-read-" + Guid.NewGuid().ToString("N"))
+                .Options,
+            tenantHttpContextAccessor: accessor);
+        var empresa = new Empresa("Empresa única");
+        db.Set<Empresa>().Add(empresa);
+        await db.SaveChangesAsync();
+        var cat = new Categoria { Nombre = "Catálogo propietario" };
+        db.Categorias.Add(cat);
+        db.Entry(cat).Property<int?>("EmpresaId").CurrentValue = empresa.Id;
+        await db.SaveChangesAsync();
+
+        var llamado = false;
+        var middleware = new UnscopedCommercialTenantGuardMiddleware(async ctx =>
+        {
+            llamado = true;
+            Assert.Equal(empresa.Id, VerifiedPublicStoreTenant.Resolve(ctx));
+            Assert.Equal(empresa.Id, db.AuthorizedReadEmpresaId);
+            Assert.Equal(cat.Id, (await db.Categorias.AsNoTracking().SingleAsync()).Id);
+        });
+        await middleware.InvokeAsync(context, db);
+        Assert.True(llamado);
+
+        // Ni una cabecera ni una ruta con prefijo engañoso conceden autoridad.
+        context.Request.Path = "/tienda-maliciosa/categorias";
+        Assert.Null(VerifiedPublicStoreTenant.Resolve(context));
+        context.Request.Path = "/productos";
+        Assert.Null(VerifiedPublicStoreTenant.Resolve(context));
+    }
+
+    [Fact]
+    public async Task EmpresaInactiva_NoPuedePublicarTiendaNiCrearCuentas()
+    {
+        await using var db = NuevoContexto();
+        var empresa = new Empresa("Suspendida");
+        empresa.Desactivar();
+        db.Set<Empresa>().Add(empresa);
+        await db.SaveChangesAsync();
+        var (status, _, ejecutada) = await ProcesarAsync(db, "POST", "/tienda/cuenta/registrar");
+        Assert.Equal(StatusCodes.Status503ServiceUnavailable, status);
+        Assert.False(ejecutada);
     }
 
     private static AppDbContext NuevoContexto()
