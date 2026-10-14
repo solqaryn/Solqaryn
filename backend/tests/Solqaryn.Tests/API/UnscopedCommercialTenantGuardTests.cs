@@ -35,6 +35,31 @@ public sealed class UnscopedCommercialTenantGuardTests
         Assert.DoesNotContain("Empresa B", payload.ToString(), StringComparison.Ordinal);
     }
 
+    [Theory]
+    [InlineData("GET", "/tienda/cuenta")]
+    [InlineData("POST", "/tienda/cuenta/registrar")]
+    [InlineData("POST", "/tienda/cuenta/login")]
+    [InlineData("GET", "/tienda/cuenta/pedidos")]
+    [InlineData("GET", "/tienda/productos/contexto")]
+    [InlineData("POST", "/tienda/checkout/validar")]
+    [InlineData("GET", "/facturas/publico/token-seguro-simulado/pdf")]
+    [InlineData("GET", "/productos/12/imagenes/4/descargar")]
+    [InlineData("GET", "/facturas/4/pdf")]
+    [InlineData("GET", "/reportes/compras")]
+    [InlineData("GET", "/reportes/inventario")]
+    [InlineData("GET", "/auditoria")]
+    [InlineData("POST", "/inventario/ajustes")]
+    public async Task DosEmpresas_Bloquean_RecursosPublicosYPrivados_SinJWT(string metodo, string path)
+    {
+        await using var db = NuevoContexto();
+        db.Set<Empresa>().AddRange(new Empresa("Empresa A"), new Empresa("Empresa B"));
+        await db.SaveChangesAsync();
+        var (status, payload, ejecutada) = await ProcesarAsync(db, metodo, path);
+        Assert.Equal(StatusCodes.Status503ServiceUnavailable, status);
+        Assert.False(ejecutada);
+        Assert.Equal("TENANT_DATA_ISOLATION_REQUIRED", payload.GetProperty("code").GetString());
+    }
+
     [Fact]
     public async Task EmpresaInactiva_ConservaBloqueo_PorSusDatosHistoricos()
     {
