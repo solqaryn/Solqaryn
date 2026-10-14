@@ -121,8 +121,7 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         // Nada se desbloquea accidentalmente al desplegar; requiere opt-in
         // explícito y un principal previamente autenticado por ASP.NET Core.
         var services = http.RequestServices;
-        if (services?.GetService<IConfiguration>()?
-                .GetValue<bool>("MultiEmpresa:PrivateReadPilotEnabled") != true ||
+        if (services?.GetService<IConfiguration>()?.GetValue<bool>("MultiEmpresa:PrivateReadPilotEnabled") != true ||
             !HttpMethods.IsGet(http.Request.Method) ||
             http.User.Identity?.IsAuthenticated != true)
             return false;
