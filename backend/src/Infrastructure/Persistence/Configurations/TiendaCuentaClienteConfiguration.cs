@@ -13,7 +13,12 @@ public sealed class TiendaCuentaClienteConfiguration : IEntityTypeConfiguration<
         builder.Property(x => x.Correo).IsRequired().HasMaxLength(160);
         builder.Property(x => x.CorreoNormalizado).IsRequired().HasMaxLength(160);
         builder.Property(x => x.PasswordHash).IsRequired().HasMaxLength(100);
-        builder.HasIndex(x => x.CorreoNormalizado).IsUnique().HasDatabaseName("UX_TiendaCuentasCliente_Correo");
+        // El mismo correo puede registrarse de forma independiente en tiendas
+        // de empresas distintas. No volver a imponer exclusividad global.
+        builder.Property<int?>("EmpresaId");
+        builder.HasIndex(new[] { "EmpresaId", nameof(TiendaCuentaCliente.CorreoNormalizado) })
+            .IsUnique()
+            .HasDatabaseName("UX_TiendaCuentasCliente_Correo");
         builder.HasIndex(x => x.ClienteId).IsUnique().HasDatabaseName("UX_TiendaCuentasCliente_Cliente");
         builder.HasOne(x => x.Cliente).WithMany().HasForeignKey(x => x.ClienteId).OnDelete(DeleteBehavior.Restrict);
     }

@@ -9241,10 +9241,6 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         .IsUnique()
                         .HasDatabaseName("UX_TiendaCuentasCliente_Cliente");
 
-                    b.HasIndex("CorreoNormalizado")
-                        .IsUnique()
-                        .HasDatabaseName("UX_TiendaCuentasCliente_Correo");
-
                     b.ToTable("TiendaCuentasCliente", (string)null);
                 });
 
@@ -13657,6 +13653,8 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
             modelBuilder.Entity("Solqaryn.Domain.Entities.TiendaCuentaCliente", b =>
                 {
                     b.Property<int?>("EmpresaId").HasColumnType("int");
+                    b.HasIndex("EmpresaId", "CorreoNormalizado").IsUnique()
+                        .HasDatabaseName("UX_TiendaCuentasCliente_Correo");
                     b.HasIndex("EmpresaId", "Id").IsUnique()
                         .HasDatabaseName("UX_TiendaCuentasCliente_Empresa_Id");
                     b.HasIndex("EmpresaId", "ClienteId")
