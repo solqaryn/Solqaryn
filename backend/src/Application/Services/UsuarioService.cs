@@ -365,13 +365,21 @@ public class UsuarioService : IUsuarioService
         return ToEmpresaDto(membresia);
     }
 
-    private async Task<Usuario> ObtenerUsuarioValidoParaMembresiaAsync(int usuarioId, bool exigirActivo)
+    private async Task<Usuario> ObtenerUsuarioValidoParaMembresiaAsync(
+        int usuarioId, bool exigirActivo, bool permitirAltaInicial = false)
     {
         if (usuarioId <= 0)
             throw new BusinessRuleException("El usuario seleccionado no es válido.");
 
-        var usuario = await _repository.GetByIdAsync(usuarioId)
-            ?? throw new BusinessRuleException("El usuario no existe.");
+        // Usuario es identidad compartida. No se debe quitar el filtro global
+        // para administrar cuentas de otras empresas; la unica excepcion es
+        // terminar el alta de una identidad todavia sin membresia y creada
+        // por el actor autenticado que supero el gate Usuarios:AsignarRol.
+        var usuario = await _repository.GetByIdAsync(usuarioId);
+        if (usuario is null && permitirAltaInicial && _currentUser.UsuarioId is > 0)
+            usuario = await _repository.GetPendientePrimeraMembresiaAsync(
+                usuarioId, _currentUser.UsuarioId.Value);
+        usuario ??= throw new BusinessRuleException("El usuario no existe.");
 
         if (exigirActivo && (!usuario.Activo || usuario.Bloqueado))
             throw new BusinessRuleException("No se puede administrar una membresía activa para un usuario inactivo o bloqueado.");
