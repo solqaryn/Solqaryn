@@ -1,4 +1,5 @@
 using Solqaryn.Application.Exceptions;
+using Solqaryn.Application.Security;
 using Solqaryn.Domain.Security;
 using Microsoft.AspNetCore.Http;
 
@@ -151,8 +152,18 @@ public static class StorageTenantContextResolver
                 "La operación de almacenamiento requiere un EmpresaId de contexto válido.");
         }
 
+        // Si RequierePermiso ya autorizó una empresa, una segunda membresía
+        // válida no permite reutilizar el endpoint ni el almacenamiento de otra.
+        // X-Empresa-Id selecciona; VerifiedCommercialTenant es la autoridad.
+        var empresaRbac = VerifiedCommercialTenant.Resolve(httpContext);
+        if (empresaRbac is > 0 && empresaRbac.Value != empresaId)
+        {
+            throw new ForbiddenAccessException(
+                "La empresa solicitada no coincide con la autorización de la operación.");
+        }
+
         var scope = await usuarioScopeService.ObtenerActualAsync(empresaId, cancellationToken);
-        if (scope is null)
+        if (scope is null || scope.EmpresaId != empresaId)
         {
             throw new ForbiddenAccessException(
                 "El usuario autenticado no tiene una membresía activa en la empresa solicitada.");

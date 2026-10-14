@@ -392,3 +392,16 @@ La implementación existente puede ser reutilizada, extendida, refactorizada o r
 - En el HEAD consolidado de PR #3623, el gate `CommercialTenantSqlLockScope.RequireAsync` hacía `SELECT COUNT` de empresas antes del lock `FOR UPDATE`. Bajo REPEATABLE READ, ese SELECT consistente abre el read view y puede permitir que dos transacciones concurrentes intenten insertar la misma variante técnica. El test de integración `ProductoVarianteTecnicaLifecycleIntegrationTests.AsegurarTecnica_Concurrente_CreaExactamenteUnaVariante` detectó duplicado en `IX_ProductoVariantes_ProductoTecnicoUnico`.
 - Corrección limitada: en provider MySQL, el gate de 0–1/2+ empresas utiliza `SELECT e.Id AS Value FROM Empresas e ORDER BY e.Id LIMIT 2 FOR SHARE` (current read compartida) y evita crear snapshot MVCC antes de bloquear el documento; InMemory conserva el conteo para tests de contrato.
 - Sin alterar DDL, integridad, propietarios, aislamiento A/B, credenciales ni QA/PROD; no se retira cuarentena P0. Cierre condicionado al nuevo CI exact-head, incluida la regresión de concurrencia MySQL. No equivale a certificación P4 integral.
+
+## 2026-10-14 — P4 archivos: scope Cloudinary no acepta header de otra empresa (candidato DEV)
+
+- El resolutor común `StorageTenantContextResolver` ahora exige que `X-Empresa-Id` coincida con `VerifiedCommercialTenant` cuando la acción ya tiene empresa verificada por RBAC. Una segunda membresía legítima B nunca puede reutilizar una autorización HTTP concedida bajo A para subir, leer o eliminar archivos B.
+- Se comprueba además que `IUsuarioScopeService.ObtenerActualAsync(empresaId)` devuelva exactamente `scope.EmpresaId == empresaId`; contextos inconsistentes fallan cerrados. La selección y verificación de membresía existente se conserva para solicitudes monoempresa sin marca, mientras permanece la cuarentena 503 para 2+.
+- Nuevas pruebas: RBAC A+header B con membresías múltiples (rechazo antes de consultar B), scope B devuelto para header A (rechazo), y marca/membresía A legítimas (permitido). Sin cambios de DDL, backups, Cloudinary real, QA/PROD o dominios.
+- **No constituye certificado integral P4**: exige CI exact-head MySQL/seguridad, A/B downloads y readback de despliegue DEV.
+
+## 2026-10-14 — P4: las secuencias fiscales no aceptan selector de empresa diferente al RBAC
+
+- `SecuenciaDocumentoService.ValidarScopeAsync` exige coincidencia del `EmpresaId` del request con `AuthorizedCommercialEmpresaId` si la acción ya fue autorizada, antes de reservar o consultar números. Un usuario perteneciente a empresas A y B no puede utilizar la autorización A para reservar una secuencia fiscal B.
+- Con 2+ empresas sin marca RBAC privada falla cerrado también ante invocaciones no HTTP; el contrato histórico de instalaciones con 0–1 empresa permanece. Comprueba igualmente que la membresía devuelta por el servicio coincide con la empresa solicitada.
+- Tests A/B: autorización A con solicitud B y membresía B vigente rechazada sin invocar la membresía B; sin marca RBAC con dos empresas rechazada; no se reserva ni se incrementa numeración de B. Se conserva compare-and-swap MySQL y evidencia de transacciones anterior. No hay DDL, backfill ni cambios QA/PROD, cuarentena 503 sigue activa.

@@ -3,6 +3,7 @@ using System.Text.Json;
 using Solqaryn.Application.DTOs;
 using Solqaryn.Application.Exceptions;
 using Solqaryn.Application.Interfaces;
+using Solqaryn.Application.Security;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Enums;
 using Solqaryn.Infrastructure.Persistence;
@@ -161,8 +162,25 @@ public sealed class SecuenciaDocumentoService : ISecuenciaDocumentoService
         if (sucursalId.HasValue && sucursalId.Value <= 0)
             throw new BusinessRuleException("La sucursal debe ser positiva cuando se informa.");
 
+        var rbacEmpresaId = _db.AuthorizedCommercialEmpresaId;
+        if (rbacEmpresaId is > 0 && rbacEmpresaId.Value != empresaId)
+            throw new ForbiddenAccessException(
+                "La empresa de la secuencia no coincide con el contexto RBAC de la operación.");
+
+        // Las llamadas internas sin HTTP no pueden usar una membresía
+        // legítima de B como sustituto del permiso concedido en la acción A.
+        if (rbacEmpresaId is not > 0)
+        {
+            var cantidadEmpresas = await _db.Set<Empresa>()
+                .IgnoreQueryFilters().AsNoTracking().Take(2)
+                .CountAsync(cancellationToken);
+            if (cantidadEmpresas > 1)
+                throw new ForbiddenAccessException(
+                    "La secuencia requiere una empresa autorizada cuando existen varias empresas.");
+        }
+
         var tenant = await _usuarioScope.ObtenerActualAsync(empresaId, cancellationToken);
-        if (tenant is null)
+        if (tenant is null || tenant.EmpresaId != empresaId)
             throw new BusinessRuleException("El usuario no tiene acceso activo a la empresa solicitada.");
 
         if (sucursalId.HasValue)
