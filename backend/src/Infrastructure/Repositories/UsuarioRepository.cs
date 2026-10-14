@@ -30,6 +30,25 @@ public class UsuarioRepository : IUsuarioRepository
             .Include(u => u.RolEntidad)
             .FirstOrDefaultAsync(u => u.Id == id && !u.Eliminado);
 
+    public async Task<Usuario?> GetPendientePrimeraMembresiaAsync(int id, int creadorId)
+    {
+        if (id <= 0 || creadorId <= 0)
+            return null;
+
+        // Excepcion exclusiva para completar el alta del creador: el filtro
+        // general impide enumerar identidades sin membresia desde el tenant.
+        // Nunca abrir un usuario perteneciente a A/B ni creado por otra persona.
+        return await _context.Usuarios
+            .IgnoreQueryFilters()
+            .Include(u => u.RolEntidad)
+            .FirstOrDefaultAsync(u =>
+                u.Id == id &&
+                u.CreadoPorUsuarioId == creadorId &&
+                !u.Eliminado &&
+                !_context.UsuarioEmpresas.IgnoreQueryFilters()
+                    .Any(m => m.UsuarioId == u.Id));
+    }
+
     public async Task<List<Usuario>> GetAllAsync() =>
         await _context.Usuarios
             .Include(u => u.RolEntidad)
