@@ -666,7 +666,9 @@ public sealed class CargaMasivaService : ICargaMasivaService
         var modelos = await _db.Modelos.AsNoTracking().Where(x => x.Activo && !x.Eliminado).ToListAsync(ct);
         var colores = await _db.Colores.AsNoTracking().Where(x => x.Activo && !x.Eliminado).ToListAsync(ct);
         var tallas = await _db.Tallas.AsNoTracking().Where(x => x.Activo && !x.Eliminado).ToListAsync(ct);
-        var variantes = await _db.ProductoVariantes.IgnoreQueryFilters().AsNoTracking().Where(x => !x.Eliminado).ToListAsync(ct);
+        var variantes = await TenantQueryBypassGuard.RespectCurrentTenant(
+            _db.ProductoVariantes.IgnoreQueryFilters(), _db)
+            .AsNoTracking().Where(x => !x.Eliminado).ToListAsync(ct);
         var combinacionesArchivo = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var skusArchivo = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var codigosArchivo = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -856,7 +858,8 @@ public sealed class CargaMasivaService : ICargaMasivaService
 
     private async Task<(int Creados, int Actualizados)> AplicarColoresAsync(List<CargaMasivaFilaDto> filas, CancellationToken ct)
     {
-        var normalizados = await _db.Colores.IgnoreQueryFilters().ToListAsync(ct);
+        var normalizados = await TenantQueryBypassGuard.RespectCurrentTenant(
+            _db.Colores.IgnoreQueryFilters(), _db).ToListAsync(ct);
         var creados = 0;
         var actualizados = 0;
 
@@ -1107,7 +1110,9 @@ public sealed class CargaMasivaService : ICargaMasivaService
                     tecnicas.Remove(producto.Id);
                 }
 
-                var conflicto = await _db.ProductoVariantes.IgnoreQueryFilters().AsNoTracking().AnyAsync(x =>
+                var conflicto = await TenantQueryBypassGuard.RespectCurrentTenant(
+                    _db.ProductoVariantes.IgnoreQueryFilters(), _db)
+                    .AsNoTracking().AnyAsync(x =>
                     !x.Eliminado && !x.EsTecnica &&
                     (x.Sku == sku ||
                      (codigoBarras != null && x.CodigoBarras == codigoBarras) ||
