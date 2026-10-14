@@ -69,7 +69,7 @@ public static class CommercialTenantReadFilterModel
                             Expression.Constant(Solqaryn.Domain.Enums.AmbitoAutorizacion.Empresa)))));
             }
 
-            var existing = entity.GetQueryFilter();
+            var existing = entity.GetDeclaredQueryFilters().SingleOrDefault()?.Expression;
             if (existing is not null)
             {
                 var softDeletePredicate =
