@@ -3,6 +3,8 @@ using Solqaryn.Domain.Enums;
 using Solqaryn.Infrastructure.Persistence;
 using Solqaryn.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
+using Solqaryn.Application.Security;
 using Xunit;
 
 namespace Solqaryn.Tests;
@@ -147,4 +149,61 @@ public class SeedPermisoServiceTests
         Assert.NotEmpty(antes);
         Assert.Equal(antes, despues);
     }
+    [Fact]
+    public async Task StartupMultiEmpresa_NoRehabilitaRolPropioNiConcedeGrantsAOtraEmpresa()
+    {
+        var http = new DefaultHttpContext();
+        await using var db = new AppDbContext(
+            new DbContextOptionsBuilder<AppDbContext>()
+                .UseInMemoryDatabase("p4-seed-rol-" + Guid.NewGuid().ToString("N"))
+                .Options,
+            tenantHttpContextAccessor: new HttpContextAccessor { HttpContext = http });
+        var empresaA = new Empresa("Seed A");
+        var empresaB = new Empresa("Seed B");
+        db.Set<Empresa>().AddRange(empresaA, empresaB);
+        await db.SaveChangesAsync();
+
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = empresaB.Id;
+        var rolB = new Rol
+        {
+            Nombre = "Administrador",
+            NombreNormalizado = "ADMINISTRADOR",
+            EmpresaId = empresaB.Id,
+            EsAdministrador = false,
+            EsSistema = false,
+            Activo = false,
+            Eliminado = true
+        };
+        var otroAdminB = new Rol
+        {
+            Nombre = "Jefe exclusivo B",
+            NombreNormalizado = "JEFE_EXCLUSIVO_B",
+            EmpresaId = empresaB.Id,
+            EsAdministrador = true,
+            Activo = true
+        };
+        db.Roles.AddRange(rolB, otroAdminB);
+        await db.SaveChangesAsync();
+
+        // El seed del arranque se ejecuta SIN HttpContext ni tenant.
+        http.Items.Remove(VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey);
+        await new SeedPermisoService(db).SeedDefaultsAsync();
+
+        Assert.False(rolB.Activo);
+        Assert.True(rolB.Eliminado);
+        Assert.False(rolB.EsAdministrador);
+        Assert.False(rolB.EsSistema);
+        Assert.Equal(0, await db.RolPermisos.IgnoreQueryFilters()
+            .CountAsync(x => x.RolId == otroAdminB.Id));
+
+        var plantillaAdmin = await db.Roles.IgnoreQueryFilters()
+            .SingleAsync(r => r.NombreNormalizado == "ADMINISTRADOR" &&
+                              r.EmpresaId == null &&
+                              r.Ambito == AmbitoAutorizacion.Empresa);
+        Assert.True(plantillaAdmin.EsSistema);
+        Assert.True(plantillaAdmin.EsAdministrador);
+        Assert.True(await db.RolPermisos.IgnoreQueryFilters()
+            .AnyAsync(x => x.RolId == plantillaAdmin.Id));
+    }
+
 }
