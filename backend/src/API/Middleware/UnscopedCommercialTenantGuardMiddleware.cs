@@ -1,3 +1,8 @@
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+using Solqaryn.Domain.Enums;
+using Solqaryn.Application.Exceptions;
+using Solqaryn.API.Filters;
 using Solqaryn.Infrastructure.Persistence;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Application.Security;
@@ -98,11 +103,74 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         // desbloquean al habilitar hosts públicos: conservan cuarentena P0.
         if (empresas.Length != 1)
         {
+            // Opt-in apagado por defecto: piloto sólo de lecturas de maestros
+            // con membresía+RBAC verificadas antes de entrar a MVC/EF.
+            // No habilita CRUD, archivos, exportaciones, jobs ni onboarding A/B.
+            if (empresas.Length == 2 && await AutorizarLecturaPilotoAsync(httpContext, db))
+                return;
+
             await RechazarAsync(httpContext);
             return;
         }
 
         await _next(httpContext);
+    }
+
+    private async Task<bool> AutorizarLecturaPilotoAsync(HttpContext http, AppDbContext db)
+    {
+        // Nada se desbloquea accidentalmente al desplegar; requiere opt-in
+        // explícito y un principal previamente autenticado por ASP.NET Core.
+        var services = http.RequestServices;
+        if (services?.GetService<IConfiguration>()?
+                .GetValue<bool>("MultiEmpresa:PrivateReadPilotEnabled") != true ||
+            !HttpMethods.IsGet(http.Request.Method) ||
+            http.User.Identity?.IsAuthenticated != true)
+            return false;
+
+        // Lista exacta: jamás aceptar un prefijo, subruta, descarga o mutación.
+        ModuloSistema modulo;
+        if (EsRutaExacta(http.Request.Path, "/productos"))
+            modulo = ModuloSistema.Productos;
+        else if (EsRutaExacta(http.Request.Path, "/clientes"))
+            modulo = ModuloSistema.Clientes;
+        else if (EsRutaExacta(http.Request.Path, "/proveedores"))
+            modulo = ModuloSistema.Proveedores;
+        else
+            return false;
+
+        var permisos = services.GetService<IPermisoService>();
+        if (permisos is null)
+            return false;
+
+        int empresaId;
+        try
+        {
+            // X-Empresa-Id sólo selecciona; jamás autoriza por sí solo.
+            empresaId = await TenantPermissionContext.RequireEmpresaIdAsync(
+                http, http.RequestAborted);
+        }
+        catch (ForbiddenAccessException)
+        {
+            return false;
+        }
+
+        // La verificación real consulta membresía activa + permisos del usuario.
+        if (!await permisos.TienePermisoAsync(empresaId, modulo, AccionPermiso.Ver))
+            return false;
+
+        // Empresa desactivada, inexistente o ID falsificado: nunca publicar.
+        var activa = await db.Set<Empresa>()
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .AnyAsync(e => e.Id == empresaId && e.Activa, http.RequestAborted);
+        if (!activa)
+            return false;
+
+        // Requiere el filtro RequierePermiso original nuevamente en MVC.
+        // El DbContext filtra registros por esta marca verificada por solicitud.
+        TenantPermissionContext.MarkAuthorizedEmpresaId(http, empresaId);
+        await _next(http);
+        return true;
     }
 
     private static bool EsRutaDeSeguridadPermitida(HttpRequest request)
