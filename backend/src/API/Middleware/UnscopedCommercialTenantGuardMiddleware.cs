@@ -78,9 +78,11 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                 return;
             }
 
-            // Compatibilidad monoempresa sin activación del registro de hosts.
-            // Al detectar 2+ empresas NUNCA seleccionar la primera o el nombre.
-            if (empresas.Length != 1 || !empresas[0].Activa)
+            // Con allowlist habilitada, hosts desconocidos fallan cerrados
+            // incluso si sólo hay una empresa. Sin allowlist, preservar modo
+            // legacy monoempresa exclusivamente.
+            if (publicHostResolver?.IsEnabled == true ||
+                empresas.Length != 1 || !empresas[0].Activa)
             {
                 await RechazarAsync(httpContext);
                 return;
