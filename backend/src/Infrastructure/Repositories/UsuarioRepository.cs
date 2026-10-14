@@ -120,11 +120,13 @@ public class UsuarioRepository : IUsuarioRepository
     public async Task<List<UsuarioEmpresa>> GetEmpresasAsync(int usuarioId)
     {
         var empresaId = _context.AuthorizedReadEmpresaId;
+        var tenantAutorizado = empresaId.HasValue && empresaId.Value > 0;
         // En administración tenant, incluir membresías inactivas para permitir
         // reactivación, pero nunca divulgar las de otra empresa.
+        // La condición se evalúa fuera de Expression<Func<...>> para EF Core.
         return await _context.UsuarioEmpresas
             .Where(x => x.UsuarioId == usuarioId &&
-                        (empresaId is > 0 ? x.EmpresaId == empresaId : x.Activa))
+                        (tenantAutorizado ? x.EmpresaId == empresaId : x.Activa))
             .OrderBy(x => x.EmpresaId)
             .ToListAsync();
     }
