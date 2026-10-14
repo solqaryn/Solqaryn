@@ -89,6 +89,21 @@ public sealed class CommercialTenantReadFilterTests
         http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = a.Id;
         Assert.Equal(categoriaA.Id,
             (await db.Categorias.AsNoTracking().SingleAsync()).Id);
+
+        // El opt-out necesario para consultar registros eliminados no puede
+        // reabrir B ni filas historicas NULL desde A.
+        var bypassA = await TenantQueryBypassGuard.RespectCurrentTenant(
+                db.Categorias.IgnoreQueryFilters(), db)
+            .AsNoTracking().ToListAsync();
+        Assert.Single(bypassA);
+        Assert.Equal(categoriaA.Id, bypassA[0].Id);
+
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = b.Id;
+        var bypassB = await TenantQueryBypassGuard.RespectCurrentTenant(
+                db.Categorias.IgnoreQueryFilters(), db)
+            .AsNoTracking().ToListAsync();
+        Assert.Single(bypassB);
+        Assert.Equal(categoriaB.Id, bypassB[0].Id);
     }
 
     [Fact]
