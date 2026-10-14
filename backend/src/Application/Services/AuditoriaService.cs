@@ -58,8 +58,11 @@ public class AuditoriaService : IAuditoriaService
         {
             UsuarioId = _currentUser.UsuarioId,
             NombreUsuario = _currentUser.NombreUsuario ?? "Sistema",
-            // Solo el contexto autorizado por RBAC, nunca X-Empresa-Id bruto.
-            EmpresaId = VerifiedCommercialTenant.Resolve(http),
+            // La empresa auditada proviene solo de marcas server-side:
+            // RBAC > enlace PDF público > tienda pública. Nunca de headers.
+            EmpresaId = VerifiedCommercialTenant.Resolve(http)
+                ?? VerifiedPublicInvoiceTenant.Resolve(http)
+                ?? VerifiedPublicStoreTenant.Resolve(http),
             Modulo = modulo,
             Accion = accion,
             Entidad = entidad,
