@@ -65,6 +65,8 @@ builder.Services.Configure<BrotliCompressionProviderOptions>(options => options.
 builder.Services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
 builder.Services.AddSingleton<IPublicStoreCache, PublicStoreMemoryCache>();
 builder.Services.AddScoped<IPublicStoreTenantKeyProvider, PublicStoreTenantKeyProvider>();
+// Registro de hosts de tiendas: configuración servidor, nunca headers arbitrarios.
+builder.Services.AddSingleton<IPublicStoreHostTenantResolver, ConfiguredPublicStoreHostTenantResolver>();
 builder.Services.AddSingleton<DbQueryTimingInterceptor>();
 builder.Services.AddDbContext<AppDbContext>((serviceProvider, options) =>
     options
