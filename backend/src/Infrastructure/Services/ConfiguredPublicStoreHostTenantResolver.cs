@@ -57,7 +57,7 @@ public sealed class ConfiguredPublicStoreHostTenantResolver : IPublicStoreHostTe
     {
         if (string.IsNullOrWhiteSpace(value)) return null;
         var host = value.Trim().ToLowerInvariant();
-        if (host.Length is < 4 or > 253 || !host.Contains('.', StringComparison.Ordinal) ||
+        if (host.Length is < 4 or > 253 || !host.Contains('.') ||
             IPAddress.TryParse(host, out _))
             return null;
 
