@@ -222,11 +222,19 @@ public class CompraRepository : ICompraRepository
 
     public async Task<int> ContarTodasAsync()
     {
-        // IgnoreQueryFilters incluye registros borrados pero jamás permite
-        // conteos globales, ni con ausencia de RBAC ni con capacidad pública.
+        // Un conteo sin filtros EF exige scope privado para 2+ empresas;
+        // las instalaciones monoempresa conservan la numeración histórica.
         var empresaId = _context.AuthorizedCommercialEmpresaId;
-        if (empresaId is not > 0 ||
-            await _usuarioScope.ObtenerActualAsync(empresaId.Value) is null)
+        if (empresaId is not > 0)
+        {
+            var empresas = await _context.Set<Empresa>().IgnoreQueryFilters()
+                .AsNoTracking().Take(2).CountAsync();
+            return empresas > 1 ? 0
+                : await _context.Compras.IgnoreQueryFilters().CountAsync();
+        }
+
+        var scope = await _usuarioScope.ObtenerActualAsync(empresaId.Value);
+        if (scope is null || scope.EmpresaId != empresaId.Value)
             return 0;
 
         return await _context.Compras.IgnoreQueryFilters()
