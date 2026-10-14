@@ -98,8 +98,8 @@ public class ProductoVarianteRepository : IProductoVarianteRepository
 
     public Task<ProductoVariante?> GetTecnicaByProductoIdAsync(int productoId, bool incluirEliminada = false)
     {
-        var query = Query()
-            .IgnoreQueryFilters()
+        var query = TenantQueryBypassGuard.RespectCurrentTenant(
+            Query().IgnoreQueryFilters(), _context)
             .Where(v => v.ProductoId == productoId && v.EsTecnica);
         if (!incluirEliminada)
             query = query.Where(v => !v.Eliminado);
