@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using MySql.Data.MySqlClient;
 using MySql.EntityFrameworkCore.Extensions;
 using Solqaryn.Application.Security;
@@ -112,6 +114,30 @@ public sealed class PublicStoreAccountEmailTenantIntegrationTests
             await using (var forensic = new AppDbContext(options))
                 Assert.Equal(2, await forensic.TiendaCuentasCliente.IgnoreQueryFilters()
                     .CountAsync(x => x.CorreoNormalizado == "PERSONA@EXAMPLE.TEST"));
+
+            // MySQL no asegura atomicidad al hacer DROP/CREATE INDEX: comprobar
+            // que el rollback se niega SIN quitar primero la unicidad tenant.
+            await using (var rollback = new AppDbContext(options))
+            {
+                var migrator = rollback.Database.GetService<IMigrator>();
+                await Assert.ThrowsAnyAsync<Exception>(() =>
+                    migrator.MigrateAsync("20261013231000_CommercialTenantRemainingScopedFks"));
+            }
+
+            await using (var connectionCheck = new MySqlConnection(connection))
+            {
+                await connectionCheck.OpenAsync();
+                await using var indexCheck = connectionCheck.CreateCommand();
+                indexCheck.CommandText = """
+                    SELECT COUNT(*)
+                      FROM INFORMATION_SCHEMA.STATISTICS
+                     WHERE TABLE_SCHEMA = DATABASE()
+                       AND TABLE_NAME = 'TiendaCuentasCliente'
+                       AND INDEX_NAME = 'UX_TiendaCuentasCliente_Correo'
+                       AND COLUMN_NAME IN ('EmpresaId', 'CorreoNormalizado')
+                    """;
+                Assert.Equal(2, Convert.ToInt32(await indexCheck.ExecuteScalarAsync()));
+            }
         }
         finally
         {
