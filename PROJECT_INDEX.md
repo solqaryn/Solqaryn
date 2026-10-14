@@ -422,6 +422,12 @@ Sanitización de imágenes: `backend/src/Infrastructure/Services/ImagenUploadSec
 - `scripts/audit_cloudinary_dev_locations.py`: lectura SQL posterior; exige cero referencias incorrectas para certificación.
 - `docs/CLOUDINARY_AISLAMIENTO.md`: contrato de operación, integridad/rollback y cierre DEV 11/11 real; auditoría `remaining=0`, flag `false` y aceptación manual individual/ZIP posterior.
 
+## 2026-10-14 — P4 ventas: reportes con membresía de empresa verificada (PR #3615 candidato)
+
+- `ReporteVentasService` deja de utilizar `UsuarioScopeActual` global; resuelve `UsuarioTenantScopeActual` comprobando membresía de empresa desde el contexto server-side y añade `Venta.EmpresaId` explícito al conjunto de filas consultables.
+- Sin tenant verificado, los resúmenes/detalles retornan cero filas; `VendedorId` suministrado por el cliente no expande el alcance. Pruebas A/B simultáneas y fixtures con sucursales de un mismo propietario.
+- Sólo DEV; sin migraciones ni backfill, sin retirar cuarentena de segundas empresas, sin QA/PROD. Candidato sujeto a REVIEW_FIRST, CI exact-head y pruebas MySQL A/B.
+
 ## 2026-10-14 — P4 compras: reportes con ownership de documentos A/B (PR #3616 candidato)
 
 - `ReporteComprasService` exige una empresa seleccionada por servidor y membresía vigente mediante `IUsuarioScopeService.ObtenerActualAsync(empresaId)`; en ausencia, rechaza incluso invocaciones fuera de middleware HTTP.

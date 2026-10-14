@@ -334,6 +334,12 @@ La implementación existente puede ser reutilizada, extendida, refactorizada o r
 
 `DevCloudinaryLegacyNormalizationHostedService` (Infrastructure, compuesto en API) completó la normalización de **11/11 imágenes** de `ProductoImagenes` a locators DEV canónicos con comparación SHA-256 y actualización condicional (`originals_deleted=0`). Respaldo/restauración verificados: [run 38319634960](https://github.com/solqaryn/Solqaryn/actions/runs/38319634960). Auditoría MySQL read-only: [run 38323224517](https://github.com/solqaryn/Solqaryn/actions/runs/38323224517) PASS con `remaining=0`. El flag `Cloudinary:NormalizeDevLegacyImagesOnStartup=false` volvió a estar versionado y está LIVE en Render DEV SHA `f6f79b9d`. El propietario verificó descargas individual y ZIP autenticadas tras la normalización, **aceptación manual PASS** (no CI ZIP automatizado). Evidencia: `docs/CLOUDINARY_AISLAMIENTO.md`. QA/PROD y dominio fuera de alcance; promoción DEV → QA → PROD aplazada.
 
+## 2026-10-14 — P4 ventas: reportes con membresía de empresa verificada (PR #3615 candidato)
+
+- `ReporteVentasService` deja de utilizar `UsuarioScopeActual` global; resuelve `UsuarioTenantScopeActual` comprobando membresía de empresa desde el contexto server-side y añade `Venta.EmpresaId` explícito al conjunto de filas consultables.
+- Sin tenant verificado, los resúmenes/detalles retornan cero filas; `VendedorId` suministrado por el cliente no expande el alcance. Pruebas A/B simultáneas y fixtures con sucursales de un mismo propietario.
+- Sólo DEV; sin migraciones ni backfill, sin retirar cuarentena de segundas empresas, sin QA/PROD. Candidato sujeto a REVIEW_FIRST, CI exact-head y pruebas MySQL A/B.
+
 ## 2026-10-14 — P4 compras: reportes con ownership de documentos A/B (PR #3616 candidato)
 
 - `ReporteComprasService` exige una empresa seleccionada por servidor y membresía vigente mediante `IUsuarioScopeService.ObtenerActualAsync(empresaId)`; en ausencia, rechaza incluso invocaciones fuera de middleware HTTP.
