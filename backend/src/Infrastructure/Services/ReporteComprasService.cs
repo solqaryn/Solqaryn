@@ -1,5 +1,6 @@
 using Solqaryn.Application.Common;
 using Solqaryn.Application.DTOs;
+using Solqaryn.Application.Exceptions;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Enums;
@@ -16,8 +17,13 @@ namespace Solqaryn.Infrastructure.Services;
 public sealed class ReporteComprasService : IReporteComprasService
 {
     private readonly AppDbContext _context;
+    private readonly IUsuarioScopeService _usuarioScope;
 
-    public ReporteComprasService(AppDbContext context) => _context = context;
+    public ReporteComprasService(AppDbContext context, IUsuarioScopeService usuarioScope)
+    {
+        _context = context;
+        _usuarioScope = usuarioScope;
+    }
 
     public async Task<PagedResult<ReporteComprasDetalleDto>> ObtenerDetallePaginadoAsync(
         ReporteComprasFiltroDto filtro,
@@ -25,7 +31,16 @@ public sealed class ReporteComprasService : IReporteComprasService
     {
         Validar(filtro);
 
-        var query = _context.Set<OrdenCompraDetalle>().AsNoTracking();
+        // No permitir que consumidores sin membresía validada lean toda la base.
+        var empresaId = _context.AuthorizedReadEmpresaId;
+        if (empresaId is not > 0 ||
+            await _usuarioScope.ObtenerActualAsync(empresaId.Value, cancellationToken) is null)
+            throw new ForbiddenAccessException(
+                "El reporte de compras requiere una empresa autorizada.");
+
+        var query = _context.Set<OrdenCompraDetalle>().AsNoTracking()
+            .Where(x => EF.Property<int?>(x, "EmpresaId") == empresaId &&
+                EF.Property<int?>(x.OrdenCompra, "EmpresaId") == empresaId);
 
         if (filtro.DesdeUtc.HasValue)
             query = query.Where(x => x.OrdenCompra.FechaCreacion >= filtro.DesdeUtc.Value);
@@ -44,7 +59,9 @@ public sealed class ReporteComprasService : IReporteComprasService
         {
             var lineasFactura = _context.Set<FacturaProveedorDetalle>()
                 .AsNoTracking()
-                .Where(x => x.FacturaProveedor.Estado == filtro.EstadoFactura.Value)
+                .Where(x => EF.Property<int?>(x, "EmpresaId") == empresaId &&
+                    EF.Property<int?>(x.FacturaProveedor, "EmpresaId") == empresaId &&
+                    x.FacturaProveedor.Estado == filtro.EstadoFactura.Value)
                 .Select(x => x.OrdenCompraDetalleId);
             query = query.Where(x => lineasFactura.Contains(x.Id));
         }
@@ -53,7 +70,9 @@ public sealed class ReporteComprasService : IReporteComprasService
         {
             var lineasRecepcion = _context.Set<RecepcionCompraDetalle>()
                 .AsNoTracking()
-                .Where(x => x.RecepcionCompra.Estado == filtro.EstadoRecepcion.Value)
+                .Where(x => EF.Property<int?>(x, "EmpresaId") == empresaId &&
+                    EF.Property<int?>(x.RecepcionCompra, "EmpresaId") == empresaId &&
+                    x.RecepcionCompra.Estado == filtro.EstadoRecepcion.Value)
                 .Select(x => x.OrdenCompraDetalleId);
             query = query.Where(x => lineasRecepcion.Contains(x.Id));
         }
@@ -64,7 +83,9 @@ public sealed class ReporteComprasService : IReporteComprasService
                 from detalle in _context.Set<DevolucionProveedorDetalle>().AsNoTracking()
                 join documento in _context.Set<DevolucionProveedor>().AsNoTracking()
                     on detalle.DevolucionProveedorId equals documento.Id
-                where documento.Estado == filtro.EstadoDevolucion.Value
+                where EF.Property<int?>(detalle, "EmpresaId") == empresaId &&
+                      EF.Property<int?>(documento, "EmpresaId") == empresaId &&
+                      documento.Estado == filtro.EstadoDevolucion.Value
                 select detalle.OrdenCompraDetalleId;
             query = query.Where(x => lineasDevolucion.Contains(x.Id));
         }
@@ -116,9 +137,12 @@ public sealed class ReporteComprasService : IReporteComprasService
 
         var facturasQuery = _context.Set<FacturaProveedorDetalle>()
             .AsNoTracking()
-            .Where(x => detalleIds.Contains(x.OrdenCompraDetalleId));
+            .Where(x => detalleIds.Contains(x.OrdenCompraDetalleId) &&
+                EF.Property<int?>(x, "EmpresaId") == empresaId);
         facturasQuery = filtro.EstadoFactura.HasValue
-            ? facturasQuery.Where(x => x.FacturaProveedor.Estado == filtro.EstadoFactura.Value)
+            ? facturasQuery.Where(x => EF.Property<int?>(x, "EmpresaId") == empresaId &&
+                    EF.Property<int?>(x.FacturaProveedor, "EmpresaId") == empresaId &&
+                    x.FacturaProveedor.Estado == filtro.EstadoFactura.Value)
             : facturasQuery.Where(x => x.FacturaProveedor.Estado == EstadoFacturaProveedor.Registrada);
 
         var facturas = await facturasQuery
@@ -134,9 +158,12 @@ public sealed class ReporteComprasService : IReporteComprasService
 
         var recepcionesQuery = _context.Set<RecepcionCompraDetalle>()
             .AsNoTracking()
-            .Where(x => detalleIds.Contains(x.OrdenCompraDetalleId));
+            .Where(x => detalleIds.Contains(x.OrdenCompraDetalleId) &&
+                EF.Property<int?>(x, "EmpresaId") == empresaId);
         recepcionesQuery = filtro.EstadoRecepcion.HasValue
-            ? recepcionesQuery.Where(x => x.RecepcionCompra.Estado == filtro.EstadoRecepcion.Value)
+            ? recepcionesQuery.Where(x => EF.Property<int?>(x, "EmpresaId") == empresaId &&
+                    EF.Property<int?>(x.RecepcionCompra, "EmpresaId") == empresaId &&
+                    x.RecepcionCompra.Estado == filtro.EstadoRecepcion.Value)
             : recepcionesQuery.Where(x => x.RecepcionCompra.Estado == EstadoRecepcionCompra.Recibida);
 
         var recepciones = await recepcionesQuery
@@ -156,7 +183,9 @@ public sealed class ReporteComprasService : IReporteComprasService
             from detalle in _context.Set<DevolucionProveedorDetalle>().AsNoTracking()
             join documento in _context.Set<DevolucionProveedor>().AsNoTracking()
                 on detalle.DevolucionProveedorId equals documento.Id
-            where detalleIds.Contains(detalle.OrdenCompraDetalleId)
+            where detalleIds.Contains(detalle.OrdenCompraDetalleId) &&
+                  EF.Property<int?>(detalle, "EmpresaId") == empresaId &&
+                  EF.Property<int?>(documento, "EmpresaId") == empresaId
             select new { detalle, documento };
 
         devolucionesBase = filtro.EstadoDevolucion.HasValue
@@ -174,7 +203,8 @@ public sealed class ReporteComprasService : IReporteComprasService
 
         var evaluaciones = await _context.Set<EvaluacionProveedor>()
             .AsNoTracking()
-            .Where(x => ordenIds.Contains(x.OrdenCompraId))
+            .Where(x => ordenIds.Contains(x.OrdenCompraId) &&
+                EF.Property<int?>(x, "EmpresaId") == empresaId)
             .OrderByDescending(x => x.FechaRecepcionUtc)
             .ThenByDescending(x => x.Id)
             .Select(x => new EvaluacionLinea
