@@ -70,6 +70,7 @@ public class EmpresaConfiguracionController : ControllerBase
     [RequierePermiso(ModuloSistema.Configuracion, AccionPermiso.Ver)]
     public async Task<IActionResult> GetTenant(int empresaId, CancellationToken cancellationToken)
     {
+        ExigirEmpresaAutorizada(empresaId);
         var config = await _service.GetTenantAsync(empresaId, cancellationToken);
         return Ok(ApiResponse<ConfigEmpresaTenantDto>.Ok(config));
     }
@@ -82,6 +83,7 @@ public class EmpresaConfiguracionController : ControllerBase
         [FromBody] UpdateConfigEmpresaTenantDto dto,
         CancellationToken cancellationToken)
     {
+        ExigirEmpresaAutorizada(empresaId);
         var actualizada = await _service.UpdateTenantAsync(empresaId, dto, cancellationToken);
         return Ok(ApiResponse<ConfigEmpresaTenantDto>.Ok(actualizada, "Configuración tenant actualizada."));
     }
@@ -95,6 +97,7 @@ public class EmpresaConfiguracionController : ControllerBase
         IFormFile logo,
         CancellationToken cancellationToken)
     {
+        ExigirEmpresaAutorizada(empresaId);
         var actualizada = await _service.UpdateTenantLogoAsync(empresaId, logo, cancellationToken);
         return Ok(ApiResponse<ConfigEmpresaTenantDto>.Ok(actualizada, "Logo tenant actualizado."));
     }
@@ -104,6 +107,7 @@ public class EmpresaConfiguracionController : ControllerBase
     [RequierePermiso(ModuloSistema.Configuracion, AccionPermiso.Editar)]
     public async Task<IActionResult> RestaurarTenantLogo(int empresaId, CancellationToken cancellationToken)
     {
+        ExigirEmpresaAutorizada(empresaId);
         var actualizada = await _service.RestaurarTenantLogoAsync(empresaId, cancellationToken);
         return Ok(ApiResponse<ConfigEmpresaTenantDto>.Ok(actualizada, "Logo tenant restaurado."));
     }
@@ -117,6 +121,7 @@ public class EmpresaConfiguracionController : ControllerBase
         [FromBody] UpdatePlantillaCorreoEmpresaDto dto,
         CancellationToken cancellationToken)
     {
+        ExigirEmpresaAutorizada(empresaId);
         var actualizada = await _service.UpsertPlantillaTenantAsync(
             empresaId,
             tipoPlantilla,
@@ -134,6 +139,7 @@ public class EmpresaConfiguracionController : ControllerBase
         [FromQuery] long version,
         CancellationToken cancellationToken)
     {
+        ExigirEmpresaAutorizada(empresaId);
         var actualizada = await _service.DesactivarPlantillaTenantAsync(
             empresaId,
             tipoPlantilla,
@@ -141,4 +147,14 @@ public class EmpresaConfiguracionController : ControllerBase
             cancellationToken);
         return Ok(ApiResponse<ConfigEmpresaTenantDto>.Ok(actualizada, "Plantilla tenant desactivada."));
     }
+    // La membresía en B no equivale a Configuracion:Editar en B.
+    // Exigir el mismo tenant de la autorización post-RBAC ANTES de
+    // invocar servicios que pueden subir/borrar logos en Cloudinary.
+    private void ExigirEmpresaAutorizada(int empresaId)
+    {
+        if (empresaId != TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext))
+            throw new Solqaryn.Application.Exceptions.ForbiddenAccessException(
+                "La empresa de la ruta no coincide con el tenant autorizado.");
+    }
+
 }
