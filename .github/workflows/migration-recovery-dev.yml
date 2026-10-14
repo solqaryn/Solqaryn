@@ -161,7 +161,8 @@ jobs:
           # La migración P4 del correo ya está adoptada tras validar el índice
           # compuesto en MySQL; no equivale a retocar migraciones del punto 3.
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261014112000_PublicStoreAccountEmailPerEmpresa';")" = 1
-          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory;")" = 11
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261014130000_CommercialTenantNaturalKeysPostStorefront';")" = 1
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory;")" = 12
           test "$(q "SELECT COUNT(*) FROM (
             SELECT INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS
              WHERE TABLE_SCHEMA=DATABASE()
