@@ -1,3 +1,8 @@
+## 2026-10-13 — Candidato DEV: lecturas empresariales por marca RBAC (punto #4)
+
+- Se registra un filtro EF generalizado que combina el owner `EmpresaId` con los filtros previos cuando `VerifiedCommercialTenant` está presente. No hay atribución de registros históricos y los roles/permiso de plantilla siguen compartidos por diseño.
+- Esto constituye contención adicional, no la certificación integral de #4: rutas sin marca, tienda anónima, inventarios/jobs/SQL directo, exports, archivos y filtros omitidos aún requieren auditoría A/B. La cuarentena de segunda empresa permanece hasta cierre integral; QA/PROD intocados.
+
 ## 2026-10-13 — Ajuste de compatibilidad tenant: roles plantilla y fixture E2E
 
 - Los grants de roles empresariales plantilla (Rol.EmpresaId nulo, Ambito Empresa) conservan propietario nulo y no reciben EmpresaId arbitrario. Los grants de roles empresariales personalizados mantienen validación A/B; los roles de plataforma no se modifican bajo una marca tenant.
