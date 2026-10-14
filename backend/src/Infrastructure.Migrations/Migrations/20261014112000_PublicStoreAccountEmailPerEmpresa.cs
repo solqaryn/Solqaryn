@@ -19,29 +19,42 @@ public partial class PublicStoreAccountEmailPerEmpresa : Migration
     {
         // La misma identidad comercial externa puede comprar en A y B,
         // sin vincular sesiones ni historiales de ambas tiendas.
+        // Expand-first: nunca dejar la tabla sin una unicidad válida si
+        // MySQL interrumpe/auto-confirma alguna instrucción de DDL.
+        migrationBuilder.CreateIndex(
+            name: "UX_TiendaCuentasCliente_Empresa_Correo_Prepare",
+            table: "TiendaCuentasCliente",
+            columns: new[] { "EmpresaId", "CorreoNormalizado" },
+            unique: true);
+
         migrationBuilder.DropIndex(
             name: "UX_TiendaCuentasCliente_Correo",
             table: "TiendaCuentasCliente");
 
-        migrationBuilder.CreateIndex(
-            name: "UX_TiendaCuentasCliente_Correo",
+        migrationBuilder.RenameIndex(
+            name: "UX_TiendaCuentasCliente_Empresa_Correo_Prepare",
             table: "TiendaCuentasCliente",
-            columns: new[] { "EmpresaId", "CorreoNormalizado" },
-            unique: true);
+            newName: "UX_TiendaCuentasCliente_Correo");
     }
 
     protected override void Down(MigrationBuilder migrationBuilder)
     {
-        // MySQL falla seguro al recrear la unicidad global si ya existen
-        // correos repetidos entre empresas. Nunca borrar cuentas automáticamente.
+        // Contract-first: si hay correos iguales de A/B, falla el primer
+        // CREATE UNIQUE y conserva INTACTO el índice empresarial actual.
+        // MySQL DDL autocommit; nunca DROP antes del preflight físico.
+        migrationBuilder.CreateIndex(
+            name: "UX_TiendaCuentasCliente_Correo_Global_Prepare",
+            table: "TiendaCuentasCliente",
+            column: "CorreoNormalizado",
+            unique: true);
+
         migrationBuilder.DropIndex(
             name: "UX_TiendaCuentasCliente_Correo",
             table: "TiendaCuentasCliente");
 
-        migrationBuilder.CreateIndex(
-            name: "UX_TiendaCuentasCliente_Correo",
+        migrationBuilder.RenameIndex(
+            name: "UX_TiendaCuentasCliente_Correo_Global_Prepare",
             table: "TiendaCuentasCliente",
-            column: "CorreoNormalizado",
-            unique: true);
+            newName: "UX_TiendaCuentasCliente_Correo");
     }
 }
