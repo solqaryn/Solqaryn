@@ -220,14 +220,48 @@ public sealed class ReportesInventarioAuthorizationContractTests
     }
 
     [Fact]
-    public async Task ScopeGuard_FiltroFisicoExplicito_Admin_Permitido()
+    public async Task ScopeGuard_FiltroFisicoExplicito_AdminTenantVerificado_Permitido()
     {
         var filtro = new ReporteInventarioReconciliacionFiltroDto { SucursalId = 2 };
+        var scope = new Mock<IUsuarioScopeService>();
+        scope.Setup(x => x.ObtenerActualAsync(31, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new UsuarioTenantScopeActual(1, 31, 1, "Administrador", true));
+
         var permitido = await ReporteInventarioScopeGuard.CanUseExplicitPhysicalScopeAsync(
-            filtro,
-            new FakeScopeService(new UsuarioScopeActual(1, 1, "Administrador", true)));
+            filtro, scope.Object, 31);
 
         Assert.True(permitido);
+        scope.Verify(x => x.ObtenerActualAsync(31, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ScopeGuard_RolAdminGlobal_NoConcedeScopeFisicoEmpresarial()
+    {
+        var filtro = new ReporteInventarioReconciliacionFiltroDto { AlmacenId = 7 };
+        var scope = new Mock<IUsuarioScopeService>();
+        scope.Setup(x => x.ObtenerActualAsync())
+            .ReturnsAsync(new UsuarioScopeActual(1, 1, "Administrador legacy", true));
+
+        Assert.False(await ReporteInventarioScopeGuard.CanUseExplicitPhysicalScopeAsync(
+            filtro, scope.Object));
+        Assert.False(await ReporteInventarioScopeGuard.CanUseExplicitPhysicalScopeAsync(
+            filtro, scope.Object, 31));
+    }
+
+    [Fact]
+    public async Task ScopeGuard_MembresiaA_NoAutorizaAlmacenDeEmpresaB()
+    {
+        var filtro = new ReporteInventarioStockHealthFiltroDto { AlmacenId = 7 };
+        var scope = new Mock<IUsuarioScopeService>();
+        // Una implementación maliciosa/devuelta por error no puede prestar A a B.
+        scope.Setup(x => x.ObtenerActualAsync(2, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new UsuarioTenantScopeActual(1, 1, 1, "Administrador A", true));
+
+        Assert.False(await ReporteInventarioScopeGuard.CanUseExplicitPhysicalScopeAsync(
+            filtro, scope.Object, 2));
+        Assert.False(await ReporteInventarioScopeGuard.CanUseExplicitPhysicalScopeAsync(
+            filtro, scope.Object, 0));
+        scope.Verify(x => x.ObtenerActualAsync(2, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
