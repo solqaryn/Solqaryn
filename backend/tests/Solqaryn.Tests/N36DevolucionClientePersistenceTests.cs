@@ -20,7 +20,10 @@ public sealed class N36DevolucionClientePersistenceTests
 
         Assert.NotNull(cabecera);
         Assert.NotNull(detalle);
-        Assert.Contains(cabecera!.GetIndexes(), x => x.IsUnique && x.GetDatabaseName() == "UX_DevolucionesCliente_IdempotencyKey");
+        Assert.Contains(cabecera!.GetIndexes(), x => !x.IsUnique && x.GetDatabaseName() == "UX_DevolucionesCliente_IdempotencyKey");
+        Assert.Contains(cabecera.GetIndexes(), x => x.IsUnique &&
+            x.GetDatabaseName() == "UX_DevolucionesCliente_Empresa_IdempotencyKey" &&
+            x.Properties.Select(p => p.Name).SequenceEqual(new[] { "EmpresaId", "IdempotencyKey" }));
         Assert.Contains(cabecera.GetForeignKeys(), x => x.PrincipalEntityType.ClrType == typeof(Venta) && x.DeleteBehavior == DeleteBehavior.Restrict);
         Assert.Contains(cabecera.GetForeignKeys(), x => x.PrincipalEntityType.ClrType == typeof(Factura) && x.DeleteBehavior == DeleteBehavior.Restrict);
         Assert.Contains(detalle!.GetIndexes(), x => x.IsUnique && x.GetDatabaseName() == "UX_DevolucionClienteDetalles_LineaVenta");

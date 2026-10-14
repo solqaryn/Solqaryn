@@ -32,7 +32,12 @@ public class N18ReservaInventarioPersistenceModelTests
 
         var numeroUnico = reserva.GetIndexes().Single(i =>
             i.GetDatabaseName() == "UX_ReservasInventario_Numero");
-        Assert.True(numeroUnico.IsUnique);
+        Assert.False(numeroUnico.IsUnique);
+        var scoped = reserva.GetIndexes().Single(i =>
+            i.GetDatabaseName() == "UX_ReservasInventario_Empresa_Numero");
+        Assert.True(scoped.IsUnique);
+        Assert.Equal(new[] { "EmpresaId", "Numero" },
+            scoped.Properties.Select(p => p.Name));
 
         var claveFisica = detalle.GetIndexes().Single(i =>
             i.GetDatabaseName() == "UX_ReservaDetalles_ClaveFisica");
