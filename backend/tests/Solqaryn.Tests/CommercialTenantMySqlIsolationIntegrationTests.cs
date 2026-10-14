@@ -32,7 +32,7 @@ public sealed class CommercialTenantMySqlIsolationIntegrationTests
 
         try
         {
-            int empresaAId, empresaBId, productoAId, productoBId, categoriaAId, categoriaBId;
+            int empresaAId, empresaBId, productoAId, productoBId, categoriaAId, categoriaBId, miembroId;
             await using (var setup = new AppDbContext(options))
             {
                 await Phase7MySqlTestDatabase.InitializeFreshAsync(setup);
@@ -44,6 +44,36 @@ public sealed class CommercialTenantMySqlIsolationIntegrationTests
                 empresaBId = empresaB.Id;
                 setup.Categorias.Add(new Categoria { Nombre = "LEGACY SIN OWNER" });
                 await setup.SaveChangesAsync();
+            }
+
+            // La identidad puede tener una membresía inactiva en A y otra
+            // activa en B. Un administrador de A debe poder reactivar solo A.
+            await using (var global = new AppDbContext(options))
+            {
+                var rol = new Rol
+                {
+                    Nombre = "P4 Vendedor A B",
+                    NombreNormalizado = "P4_VENDEDOR_AB",
+                    Activo = true
+                };
+                global.Roles.Add(rol);
+                await global.SaveChangesAsync();
+                var usuario = new Usuario
+                {
+                    NombreUsuario = "p4-miembro-ab",
+                    NombreCompleto = "P4 Miembro A B",
+                    PasswordHash = "hash-efimero",
+                    RolId = rol.Id,
+                    Activo = true
+                };
+                global.Usuarios.Add(usuario);
+                await global.SaveChangesAsync();
+                miembroId = usuario.Id;
+                var membresiaInactiva = new UsuarioEmpresa(miembroId, empresaAId, rol.Id);
+                membresiaInactiva.Desactivar();
+                global.UsuarioEmpresas.AddRange(
+                    membresiaInactiva, new UsuarioEmpresa(miembroId, empresaBId, rol.Id));
+                await global.SaveChangesAsync();
             }
 
             var httpA = new DefaultHttpContext();
@@ -88,6 +118,13 @@ public sealed class CommercialTenantMySqlIsolationIntegrationTests
                 productoBId = producto.Id;
                 Assert.Equal(empresaBId, producto.EmpresaId);
 
+                var usuarioB = new UsuarioRepository(dbB);
+                Assert.Equal(miembroId, (await usuarioB.GetByIdAsync(miembroId))?.Id);
+                var activaB = Assert.Single(await usuarioB.GetEmpresasAsync(miembroId));
+                Assert.Equal(empresaBId, activaB.EmpresaId);
+                Assert.True(activaB.Activa);
+                Assert.Null(await usuarioB.GetEmpresaAsync(miembroId, empresaAId));
+
                 var vistaB = await dbB.Productos.AsNoTracking().Include(p => p.Categoria).ToListAsync();
                 Assert.Single(vistaB);
                 Assert.Equal(productoBId, vistaB[0].Id);
@@ -97,6 +134,15 @@ public sealed class CommercialTenantMySqlIsolationIntegrationTests
             await using (var dbA = new AppDbContext(options,
                 tenantHttpContextAccessor: new HttpContextAccessor { HttpContext = httpA }))
             {
+                var usuarioA = new UsuarioRepository(dbA);
+                Assert.Null(await usuarioA.GetByIdAsync(miembroId));
+                Assert.Equal(miembroId,
+                    (await usuarioA.GetByIdConMembresiaDeEmpresaAutorizadaAsync(miembroId))?.Id);
+                var inactivaA = Assert.Single(await usuarioA.GetEmpresasAsync(miembroId));
+                Assert.Equal(empresaAId, inactivaA.EmpresaId);
+                Assert.False(inactivaA.Activa);
+                Assert.Null(await usuarioA.GetEmpresaAsync(miembroId, empresaBId));
+
                 var vistaA = await dbA.Productos.AsNoTracking().Include(p => p.Categoria).ToListAsync();
                 Assert.Single(vistaA);
                 Assert.Equal(productoAId, vistaA[0].Id);
