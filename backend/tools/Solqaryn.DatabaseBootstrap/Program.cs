@@ -204,6 +204,31 @@ if (mode == "fresh")
         INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
         VALUES ('20261013231000_CommercialTenantRemainingScopedFks', '10.0.12');
         """);
+
+    // EnsureCreated ya creó el índice compuesto del modelo actual.
+    // Registrar la migración P4 únicamente DESPUÉS de verificar en MySQL
+    // el nombre, orden de columnas y unicidad, nunca por presencia en Git.
+    await db.Database.OpenConnectionAsync();
+    var indiceCorreoTienda = await ScalarLongAsync(db, """
+        SELECT COUNT(*) FROM (
+          SELECT INDEX_NAME
+            FROM INFORMATION_SCHEMA.STATISTICS
+           WHERE TABLE_SCHEMA = DATABASE()
+             AND TABLE_NAME = 'TiendaCuentasCliente'
+             AND INDEX_NAME = 'UX_TiendaCuentasCliente_Correo'
+           GROUP BY INDEX_NAME
+          HAVING MIN(NON_UNIQUE) = 0
+             AND GROUP_CONCAT(COLUMN_NAME ORDER BY SEQ_IN_INDEX SEPARATOR ',')
+                 = 'EmpresaId,CorreoNormalizado'
+        ) indice;
+        """);
+    if (indiceCorreoTienda != 1)
+        throw new InvalidOperationException(
+            "Fresh bootstrap refused to adopt P4 account email migration without its exact tenant-scoped unique index.");
+    await db.Database.ExecuteSqlRawAsync("""
+        INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+        VALUES ('20261014112000_PublicStoreAccountEmailPerEmpresa', '10.0.12');
+        """);
     await db.Database.CloseConnectionAsync();
 }
 else
