@@ -18,7 +18,6 @@ public static class ReporteInventarioScopeGuard
 
     // La sobrecarga histórica NO es autoridad para seleccionar un almacén:
     // UsuarioScopeActual proviene del rol global legado, no de UsuarioEmpresa.
-    [Obsolete("Para reportes empresariales usar EmpresaId verificado y scope tenant-aware.")]
     public static Task<bool> CanUseExplicitPhysicalScopeAsync(
         ReporteInventarioFiltroBaseDto filtro,
         IUsuarioScopeService usuarioScope) =>
