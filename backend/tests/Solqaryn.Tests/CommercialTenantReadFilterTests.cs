@@ -92,6 +92,54 @@ public sealed class CommercialTenantReadFilterTests
     }
 
     [Fact]
+    public async Task UsuariosCompartidos_SeListanSoloConMembresiaEnEmpresaActual()
+    {
+        var http = new DefaultHttpContext();
+        await using var db = CreateDb(http);
+        var a = new Empresa("Usuarios A");
+        var b = new Empresa("Usuarios B");
+        var rol = new Rol { Nombre = "PLANTILLA", NombreNormalizado = "PLANTILLA" };
+        db.Set<Empresa>().AddRange(a, b);
+        db.Roles.Add(rol);
+        await db.SaveChangesAsync();
+
+        var usuarioA = new Usuario
+        {
+            NombreUsuario = "solo-usuario-a",
+            NombreCompleto = "Usuario A",
+            PasswordHash = "prueba",
+            RolId = rol.Id
+        };
+        var usuarioB = new Usuario
+        {
+            NombreUsuario = "solo-usuario-b",
+            NombreCompleto = "Usuario B",
+            PasswordHash = "prueba",
+            RolId = rol.Id
+        };
+        db.Usuarios.AddRange(usuarioA, usuarioB);
+        await db.SaveChangesAsync();
+        db.UsuarioEmpresas.AddRange(
+            new UsuarioEmpresa(usuarioA.Id, a.Id, rol.Id),
+            new UsuarioEmpresa(usuarioB.Id, b.Id, rol.Id));
+        await db.SaveChangesAsync();
+
+        // Autenticación global: el usuario puede iniciar sesión antes de
+        // escoger la membresía; no hay acceso administrativo sin marca RBAC.
+        Assert.Equal(2, await db.Usuarios.AsNoTracking().CountAsync());
+
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = a.Id;
+        var visiblesA = await db.Usuarios.AsNoTracking().ToListAsync();
+        Assert.Single(visiblesA);
+        Assert.Equal(usuarioA.Id, visiblesA[0].Id);
+
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = b.Id;
+        var visiblesB = await db.Usuarios.AsNoTracking().ToListAsync();
+        Assert.Single(visiblesB);
+        Assert.Equal(usuarioB.Id, visiblesB[0].Id);
+    }
+
+    [Fact]
     public void EnlacePublicoDeFactura_NoAbreTenantEnRutasAjenaAlPDF()
     {
         var http = new DefaultHttpContext();
