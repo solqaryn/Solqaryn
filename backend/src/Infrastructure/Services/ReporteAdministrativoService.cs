@@ -320,11 +320,14 @@ public sealed class ReporteAdministrativoService : IReporteAdministrativoService
 
     // P4: el servicio también puede invocarse fuera del middleware HTTP.
     // No generar reportes ni archivos si no existe tenant RBAC verificado.
-    private int ExigirTenantVerificado() =>
-        _db.AuthorizedReadEmpresaId is > 0 empresaId
-            ? empresaId
-            : throw new ForbiddenAccessException(
+    private int ExigirTenantVerificado()
+    {
+        var empresaId = _db.AuthorizedReadEmpresaId;
+        if (empresaId is not > 0)
+            throw new ForbiddenAccessException(
                 "El reporte administrativo requiere una empresa autorizada.");
+        return empresaId.Value;
+    }
 
     private static (DateTime Desde, DateTime Hasta) NormalizarPeriodo(ReporteAdministrativoFiltroDto filtro)
     {
