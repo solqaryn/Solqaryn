@@ -1,5 +1,7 @@
 using System.Text.Json;
 using Solqaryn.API.Middleware;
+using Solqaryn.Infrastructure.Services;
+using Microsoft.Extensions.Configuration;
 using Solqaryn.Application.Security;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Infrastructure.Persistence;
@@ -264,6 +266,106 @@ public sealed class UnscopedCommercialTenantGuardTests
         var (status, _, ejecutada) = await ProcesarAsync(db, "POST", "/tienda/cuenta/registrar");
         Assert.Equal(StatusCodes.Status503ServiceUnavailable, status);
         Assert.False(ejecutada);
+    }
+
+    [Fact]
+    public async Task HostsAprobadosA_B_AislanCategoriasPublicas_SinHabilitarRutasPrivadas()
+    {
+        var accessor = new HttpContextAccessor();
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase("host-multi-tenant-" + Guid.NewGuid().ToString("N"))
+            .Options;
+        await using var db = new AppDbContext(options, tenantHttpContextAccessor: accessor);
+        var a = new Empresa("Tienda A");
+        var b = new Empresa("Tienda B");
+        db.Set<Empresa>().AddRange(a, b);
+        await db.SaveChangesAsync();
+        var categoriaA = new Categoria { Nombre = "Privada A" };
+        var categoriaB = new Categoria { Nombre = "Privada B" };
+        db.Categorias.AddRange(categoriaA, categoriaB);
+        db.Entry(categoriaA).Property<int?>("EmpresaId").CurrentValue = a.Id;
+        db.Entry(categoriaB).Property<int?>("EmpresaId").CurrentValue = b.Id;
+        await db.SaveChangesAsync();
+
+        var config = new ConfigurationBuilder().AddInMemoryCollection(
+            new Dictionary<string, string?>
+            {
+                ["PublicStore:EnableMultiEmpresaBinding"] = "true",
+                ["PublicStore:HostBindings:0:Host"] = "tienda-a.example.test",
+                ["PublicStore:HostBindings:0:EmpresaId"] = a.Id.ToString(),
+                ["PublicStore:HostBindings:1:Host"] = "tienda-b.example.test",
+                ["PublicStore:HostBindings:1:EmpresaId"] = b.Id.ToString()
+            }).Build();
+        var resolver = new ConfiguredPublicStoreHostTenantResolver(config);
+        var visibilidad = new List<(int EmpresaId, int CategoriaId)>();
+        var middleware = new UnscopedCommercialTenantGuardMiddleware(async http =>
+        {
+            var empresa = VerifiedPublicStoreTenant.Resolve(http);
+            Assert.True(empresa is > 0);
+            var categorias = await db.Categorias.AsNoTracking().ToListAsync();
+            Assert.Single(categorias);
+            visibilidad.Add((empresa!.Value, categorias[0].Id));
+            http.Response.StatusCode = StatusCodes.Status204NoContent;
+        });
+
+        async Task<int> SolicitarAsync(string host, string ruta)
+        {
+            var http = new DefaultHttpContext();
+            http.Request.Path = ruta;
+            http.Request.Method = "GET";
+            http.Request.Host = new HostString(host);
+            http.Request.Headers["X-Empresa-Id"] = "99999";
+            http.Request.Headers["X-Forwarded-Host"] = "tienda-b.example.test";
+            http.Response.Body = new MemoryStream();
+            accessor.HttpContext = http;
+            await middleware.InvokeAsync(http, db, resolver);
+            return http.Response.StatusCode;
+        }
+
+        Assert.Equal(204, await SolicitarAsync("tienda-a.example.test", "/tienda/categorias"));
+        Assert.Equal(204, await SolicitarAsync("tienda-b.example.test", "/tienda/categorias"));
+        Assert.Equal(503, await SolicitarAsync("no-validada.example.test", "/tienda/categorias"));
+        Assert.Equal(503, await SolicitarAsync("tienda-a.example.test", "/productos"));
+        Assert.Equal(new[]
+        {
+            (a.Id, categoriaA.Id), (b.Id, categoriaB.Id)
+        }, visibilidad.ToArray());
+    }
+
+    [Fact]
+    public async Task DominioDeTiendaSuspendida_SiempreSeRechaza()
+    {
+        await using var db = NuevoContexto();
+        var a = new Empresa("Activa");
+        var b = new Empresa("Suspendida");
+        b.Desactivar();
+        db.Set<Empresa>().AddRange(a, b);
+        await db.SaveChangesAsync();
+
+        var config = new ConfigurationBuilder().AddInMemoryCollection(
+            new Dictionary<string, string?>
+            {
+                ["PublicStore:EnableMultiEmpresaBinding"] = "true",
+                ["PublicStore:HostBindings:0:Host"] = "suspendida.example.test",
+                ["PublicStore:HostBindings:0:EmpresaId"] = b.Id.ToString()
+            }).Build();
+        var resolver = new ConfiguredPublicStoreHostTenantResolver(config);
+        var llamada = false;
+        var middleware = new UnscopedCommercialTenantGuardMiddleware(_ =>
+        {
+            llamada = true;
+            return Task.CompletedTask;
+        });
+        var http = new DefaultHttpContext();
+        http.Request.Path = "/tienda/cuenta/login";
+        http.Request.Method = "POST";
+        http.Request.Host = new HostString("suspendida.example.test");
+        http.Response.Body = new MemoryStream();
+        await middleware.InvokeAsync(http, db, resolver);
+
+        Assert.Equal(503, http.Response.StatusCode);
+        Assert.False(llamada);
+        Assert.Null(VerifiedPublicStoreTenant.Resolve(http));
     }
 
     private static AppDbContext NuevoContexto()

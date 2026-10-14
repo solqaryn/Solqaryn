@@ -1,4 +1,5 @@
 using Solqaryn.Infrastructure.Persistence;
+using Solqaryn.Application.Interfaces;
 using Solqaryn.Application.Security;
 using Solqaryn.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -6,10 +7,11 @@ using Microsoft.EntityFrameworkCore;
 namespace Solqaryn.API.Middleware;
 
 /// <summary>
-/// Contención P0 temporal: los maestros y documentos comerciales heredados todavía
-/// carecen de EmpresaId. No exponer NINGÚN endpoint de datos si hay más de un
-/// registro Empresa, aunque la otra empresa esté inactiva.
-/// Se retirará únicamente tras migración y certificación de ownership por fila.
+/// Contención P0: las rutas comerciales privadas siguen en cuarentena con
+/// 2+ empresas, incluso si una está inactiva. La única excepción delimitada
+/// es /tienda/* con Host exacto previamente aprobado por configuración del
+/// servidor y empresa activa comprobada de nuevo contra la base real.
+/// No se habilitan exportaciones, archivos ni tareas internas por este cambio.
 /// </summary>
 public sealed class UnscopedCommercialTenantGuardMiddleware
 {
@@ -20,7 +22,8 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         _next = next;
     }
 
-    public async Task InvokeAsync(HttpContext httpContext, AppDbContext db)
+    public async Task InvokeAsync(HttpContext httpContext, AppDbContext db,
+        IPublicStoreHostTenantResolver? publicHostResolver = null)
     {
         if (EsRutaDeSeguridadPermitida(httpContext.Request))
         {
@@ -47,26 +50,56 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
             .Take(2)
             .ToArrayAsync(httpContext.RequestAborted);
 
-        if (empresas.Length != 1)
+        var rutaTienda = httpContext.Request.Path.StartsWithSegments(
+            "/tienda", StringComparison.OrdinalIgnoreCase);
+        if (rutaTienda)
         {
-            await RechazarAsync(httpContext);
-            return;
-        }
+            // Un mapping de Host solo tiene autoridad si procede del registro
+            // explícito server-side. Ni X-Forwarded-Host ni X-Empresa-Id
+            // pueden proporcionar el EmpresaId de una tienda.
+            var empresaPublica = publicHostResolver?.ResolveEmpresaId(httpContext.Request.Host);
+            if (empresaPublica is > 0)
+            {
+                // Comprueba el propietario en MySQL y el estado vigente EN CADA
+                // solicitud: una tienda suspendida no recibe checkout ni sesión.
+                var autorizada = await db.Set<Empresa>()
+                    .IgnoreQueryFilters()
+                    .AsNoTracking()
+                    .AnyAsync(e => e.Id == empresaPublica.Value && e.Activa,
+                        httpContext.RequestAborted);
+                if (!autorizada)
+                {
+                    await RechazarAsync(httpContext);
+                    return;
+                }
 
-        // Única fuente de autoridad para la tienda pública mientras el
-        // producto opera con una sola Empresa. Nunca confiar en un header.
-        // Una Empresa inactiva no puede recibir cuentas/checkout públicos.
-        if (httpContext.Request.Path.StartsWithSegments(
-                "/tienda", StringComparison.OrdinalIgnoreCase))
-        {
-            if (!empresas[0].Activa)
+                httpContext.Items[VerifiedPublicStoreTenant.AuthorizedEmpresaIdItemKey] =
+                    empresaPublica.Value;
+                await _next(httpContext);
+                return;
+            }
+
+            // Con allowlist habilitada, hosts desconocidos fallan cerrados
+            // incluso si sólo hay una empresa. Sin allowlist, preservar modo
+            // legacy monoempresa exclusivamente.
+            if (publicHostResolver?.IsEnabled == true ||
+                empresas.Length != 1 || !empresas[0].Activa)
             {
                 await RechazarAsync(httpContext);
                 return;
             }
-
             httpContext.Items[VerifiedPublicStoreTenant.AuthorizedEmpresaIdItemKey] =
                 empresas[0].Id;
+            await _next(httpContext);
+            return;
+        }
+
+        // La autorización administrativa, exports, descargas y jobs NO se
+        // desbloquean al habilitar hosts públicos: conservan cuarentena P0.
+        if (empresas.Length != 1)
+        {
+            await RechazarAsync(httpContext);
+            return;
         }
 
         await _next(httpContext);
@@ -77,10 +110,8 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         if (HttpMethods.IsOptions(request.Method))
             return true;
 
-        // Única ruta documental pública permitida en cuarentena 2+: el
-        // token no concede autoridad aquí. El controller/repositorio validan
-        // su hash, vigencia, propietario y FacturaId antes del PDF.
-        // Nunca ampliar a /facturas/ o a rutas administrativas.
+        // La ruta de token solo permite atravesar el middleware. El servicio
+        // valida hash, vigencia, owner y FacturaId antes de entregar el PDF.
         if (HttpMethods.IsGet(request.Method) &&
             EsRutaFacturaPublicaConToken(request.Path))
             return true;
