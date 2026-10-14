@@ -1,3 +1,8 @@
+## 2026-10-13 — Punto #4: filtros EF tenant-aware (candidato)
+
+- Código: `backend/src/Infrastructure/Persistence/CommercialTenantReadFilterModel.cs`, activado por `AppDbContext.OnModelCreating`; prueba: `backend/tests/Solqaryn.Tests/CommercialTenantReadFilterTests.cs`.
+- Alcance: lecturas EF con marca verificada post-RBAC, manteniendo borrado lógico y roles plantilla; los flujos anónimos/no EF siguen en cuarentena 2+ empresas y NO están certificados. No confundir esta protección con cierre P0 completo.
+
 ## 2026-10-13 — Ajuste de compatibilidad tenant: roles plantilla y fixture E2E
 
 - Los grants de roles empresariales plantilla (Rol.EmpresaId nulo, Ambito Empresa) conservan propietario nulo y no reciben EmpresaId arbitrario. Los grants de roles empresariales personalizados mantienen validación A/B; los roles de plataforma no se modifican bajo una marca tenant.
