@@ -3437,3 +3437,9 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Evidencia: `docs/evidencias/modernizacion/PUNTO_18_CONCURRENCY_STOCK_SEQUENCE_2026-10-04.md`.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+## 2026-10-14 — P4 ventas: reportes con membresía de empresa verificada (PR #3615 candidato)
+
+- `ReporteVentasService` deja de utilizar `UsuarioScopeActual` global; resuelve `UsuarioTenantScopeActual` comprobando membresía de empresa desde el contexto server-side y añade `Venta.EmpresaId` explícito al conjunto de filas consultables.
+- Sin tenant verificado, los resúmenes/detalles retornan cero filas; `VendedorId` suministrado por el cliente no expande el alcance. Pruebas A/B simultáneas y fixtures con sucursales de un mismo propietario.
+- Sólo DEV; sin migraciones ni backfill, sin retirar cuarentena de segundas empresas, sin QA/PROD. Candidato sujeto a REVIEW_FIRST, CI exact-head y pruebas MySQL A/B.
