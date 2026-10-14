@@ -218,6 +218,16 @@ jobs:
              SET `EmpresaId`=1
            WHERE `EmpresaId` IS NULL;
 
+          -- Un impuesto sólo aplica si sus operaciones comparten ownership.
+          -- El nuevo filtro tenant de ImpuestoOperaciones protege esta tabla
+          -- también, no basta con atribuir el maestro Impuestos.
+          UPDATE `ImpuestoOperaciones`
+             SET `EmpresaId`=1
+           WHERE `EmpresaId` IS NULL
+             AND `ImpuestoId` IN (
+               SELECT `Id` FROM `Impuestos` WHERE `EmpresaId`=1
+             );
+
           INSERT INTO `UsuarioEmpresas` (`UsuarioId`,`EmpresaId`,`RolId`,`Activa`,`FechaCreacion`,`FechaActualizacion`)
           SELECT u.`Id`,1,u.`RolId`,TRUE,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)
           FROM `Usuarios` u
