@@ -384,7 +384,7 @@ public class VentaService : IVentaService
         {
             var venta = await _ventaRepository.GetByIdForUpdateAsync(id);
             if (venta is null)
-                throw new KeyNotFoundException($"Venta ID '{id}' no encontrada.");
+                throw new ResourceNotFoundException("Venta no encontrada.");
 
             if (venta.Estado != EstadoDocumento.Confirmada)
                 throw new BusinessRuleException("Solo se pueden anular ventas confirmadas.");

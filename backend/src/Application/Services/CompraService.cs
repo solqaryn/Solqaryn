@@ -332,7 +332,7 @@ public class CompraService : ICompraService
         {
             var compra = await _compraRepository.GetByIdForUpdateAsync(id);
             if (compra is null)
-                throw new KeyNotFoundException($"Compra ID '{id}' no encontrada.");
+                throw new ResourceNotFoundException("Compra no encontrada.");
 
             if (compra.Estado != EstadoDocumento.Confirmada)
                 throw new BusinessRuleException("Solo se pueden anular compras confirmadas.");

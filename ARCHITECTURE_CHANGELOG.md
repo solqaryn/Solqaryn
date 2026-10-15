@@ -1,3 +1,9 @@
+### P4 2026-10-15 — Corrección causal de anulación cruzada
+
+- El gate HTTP/MySQL A/B detectó `HTTP 500` al intentar anular una venta B desde el JWT A: `VentaService.AnularAsync` arrojaba `KeyNotFoundException` al no encontrar la venta bajo la autorización actual, y `ExceptionHandlingMiddleware` lo capturaba como error interno. `CompraService.AnularAsync` tenía la misma falla.
+- Ambos métodos emiten ahora `ResourceNotFoundException` genérica, que el middleware existente devuelve como 404 sin revelar IDs ni existencia de recursos ajenos. No se toca el filtro de datos, permisos, stock, operaciones financieras ni la transacción. El test MySQL real exige rechazo 404/4xx (jamás 500 ni 2xx) y reconcilia inventario después de anulaciones propias.
+- Sin cambios DB, credenciales, Render, QA o PROD; revisión exact-head y regresión requeridas antes de fusionar.
+
 ## 2026-10-15 — P4: pagos y anulaciones comerciales A/B por JWT/RBAC (candidato DEV)
 
 - Nueva cuarentena selectiva `MultiEmpresa:PrivateFinancialPilotEnabled=false` por defecto en `UnscopedCommercialTenantGuardMiddleware`. Solo HTTP POST de `/facturas/{id:positivo}/pagos` (`Facturacion.Aplicar`), `/facturas/{id:positivo}/pagos/{pagoId:positivo}/anular` (`Facturacion.Anular`), `/ventas/{id:positivo}/anular` (`Ventas.Anular`) y `/compras/{id:positivo}/anular` (`Compras.Anular`). Ningún otro método, subruta, pago, actualización o envío público se habilita.
