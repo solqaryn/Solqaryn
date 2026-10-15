@@ -632,3 +632,49 @@ for (const [jwt, company, purchase, foreignPurchase, ownProduct, foreignProduct,
 console.log('P4 FILES CI PASS: JWT A/B archivos de compras, lectura ajena denegada y actualización segura de producto propio.');
 console.log('No certifica todavía alta/descarga física de contenido Cloudinary con dos empresas ni jobs.');
 
+for (const [jwt, company, client, supplier, typeId, label] of [
+  [jwtA, aId, clientAId, providerAId, typeAId, 'A'],
+  [jwtB, bId, clientBId, providerBId, typeBId, 'B']
+]) {
+  const clientName = 'Cliente editado ' + label;
+  const supplierName = 'Proveedor editado ' + label;
+  expectStatus(await call('PUT', '/clientes/' + client, jwt, company,
+    { nombre: clientName, tipoClienteId: typeId }), 200, 'editar cliente ' + label);
+  expectStatus(await call('PUT', '/proveedores/' + supplier, jwt, company,
+    { nombre: supplierName, documento: doc }), 200, 'editar proveedor ' + label);
+  const ownClient = await call('GET', '/clientes/' + client, jwt, company);
+  const ownSupplier = await call('GET', '/proveedores/' + supplier, jwt, company);
+  expectStatus(ownClient, 200, 'leer cliente editado ' + label);
+  expectStatus(ownSupplier, 200, 'leer proveedor editado ' + label);
+  assert.equal(unwrap(ownClient.payload).nombre, clientName);
+  assert.equal(unwrap(ownSupplier.payload).nombre, supplierName);
+}
+for (const [jwt, company, otherClient, otherSupplier, label] of [
+  [jwtA, aId, clientBId, providerBId, 'A'],
+  [jwtB, bId, clientAId, providerAId, 'B']
+]) {
+  for (const [path, payload] of [
+    ['/clientes/' + otherClient, { nombre: 'Intento rechazado' }],
+    ['/proveedores/' + otherSupplier, { nombre: 'Intento rechazado' }]
+  ]) {
+    const rejected = await call('PUT', path, jwt, company, payload);
+    assert([400, 403, 404, 503].includes(rejected.status),
+      'Edición fuera de empresa aceptada ' + label + ' ' + path);
+  }
+}
+for (const [jwt, company, client, supplier, label] of [
+  [jwtA, aId, clientAId, providerAId, 'A'],
+  [jwtB, bId, clientBId, providerBId, 'B']
+]) {
+  const savedClient = await call('GET', '/clientes/' + client, jwt, company);
+  const savedSupplier = await call('GET', '/proveedores/' + supplier, jwt, company);
+  expectStatus(savedClient, 200, 'cliente post acceso cruzado ' + label);
+  expectStatus(savedSupplier, 200, 'proveedor post acceso cruzado ' + label);
+  assert.equal(unwrap(savedClient.payload).nombre, 'Cliente editado ' + label,
+    'Edición ajena modificó cliente ' + label);
+  assert.equal(unwrap(savedSupplier.payload).nombre, 'Proveedor editado ' + label,
+    'Edición ajena modificó proveedor ' + label);
+}
+console.log('P4 MASTER EDIT PASS: clientes y proveedores A/B con PUT, MySQL/JWT y rechazo cruzado.');
+
+

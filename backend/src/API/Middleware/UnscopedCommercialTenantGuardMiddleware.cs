@@ -147,6 +147,9 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                       config.GetValue<bool>("MultiEmpresa:PrivateReadPilotEnabled");
         var alta = HttpMethods.IsPost(http.Request.Method) &&
                    config.GetValue<bool>("MultiEmpresa:PrivateWritePilotEnabled");
+        // Edición de maestros: opt-in separado, nunca habilita otros PUT.
+        var editarMaestros = HttpMethods.IsPut(http.Request.Method) &&
+                           config.GetValue<bool>("MultiEmpresa:PrivateMasterEditPilotEnabled");
         // No activa mutaciones de inventario ni confirmaciones fiscales.
         // El piloto adicional sólo admite altas de producto SIN archivos
         // y borradores de venta/compra; nunca altera el modo por defecto.
@@ -177,7 +180,7 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         // tenants ni permite exportaciones sin el RBAC específico.
         var adminReport = HttpMethods.IsGet(http.Request.Method) &&
                           config.GetValue<bool>("MultiEmpresa:PrivateAdminReportPilotEnabled");
-        if (!lectura && !alta && !borrador && !confirmar &&
+        if (!lectura && !alta && !editarMaestros && !borrador && !confirmar &&
             !pdf && !reportes && !inventario && !media && !adminReport &&
             !finanzas && !archivos)
             return false;
@@ -185,6 +188,7 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         ModuloSistema modulo;
         AccionPermiso accion;
         var esBorrador = false;
+        var esEdicionMaestros = false;
         var esConfirmacion = false;
         var esPdf = false;
         var esMedia = false;
@@ -259,6 +263,16 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
             modulo = ModuloSistema.Clientes;
         else if (alta && EsRutaExacta(http.Request.Path, "/proveedores"))
             modulo = ModuloSistema.Proveedores;
+        else if (editarMaestros && EsRutaDetallePositiva(http.Request.Path, "/clientes"))
+        {
+            modulo = ModuloSistema.Clientes;
+            esEdicionMaestros = true;
+        }
+        else if (editarMaestros && EsRutaDetallePositiva(http.Request.Path, "/proveedores"))
+        {
+            modulo = ModuloSistema.Proveedores;
+            esEdicionMaestros = true;
+        }
         else if (borrador && EsRutaExacta(http.Request.Path, "/productos"))
         {
             modulo = ModuloSistema.Productos;
@@ -341,7 +355,8 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
             return false;
 
         accion = accionArchivos ?? accionFinanciera ??
-            (esPdf || esMedia || esAdminExport ? AccionPermiso.Exportar
+            (esEdicionMaestros ? AccionPermiso.Editar
+            : esPdf || esMedia || esAdminExport ? AccionPermiso.Exportar
             : lectura || reportes || inventario || adminReport ? AccionPermiso.Ver
             : esConfirmacion ? AccionPermiso.Confirmar : AccionPermiso.Crear);
         var permisos = services.GetService<IPermisoService>();
@@ -400,6 +415,17 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         {
             // Todas las mutaciones contables requieren JSON sin archivos,
             // excepto confirmaciones que permanecen en otro piloto.
+            const int maxJsonBytes = 32 * 1024;
+            var length = http.Request.ContentLength;
+            if (length is null || length <= 0 || length > maxJsonBytes ||
+                http.Request.ContentType?.StartsWith(
+                    "application/json", StringComparison.OrdinalIgnoreCase) != true)
+                return false;
+        }
+
+        if (esEdicionMaestros)
+        {
+            // Solo JSON pequeño: ID propio, RBAC Editar y filtro EF físico.
             const int maxJsonBytes = 32 * 1024;
             var length = http.Request.ContentLength;
             if (length is null || length <= 0 || length > maxJsonBytes ||
