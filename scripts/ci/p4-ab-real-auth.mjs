@@ -2,6 +2,7 @@
 // P4: aceptación HTTP/JWT REAL A/B contra MySQL local descartable.
 // No usa Render, Aiven ni credenciales de un entorno persistente.
 import assert from 'node:assert/strict';
+import { request as nodeHttpRequest } from 'node:http';
 
 const api = process.env.P4_API_URL ?? 'http://127.0.0.1:5005';
 if (!/^http:\/\/127\.0\.0\.1:\d+$/.test(api))
@@ -13,12 +14,37 @@ const bId = Number(process.env.P4_COMPANY_B_ID ?? '2');
 assert(aId > 0 && bId > 0 && aId !== bId);
 const unwrap = x => x?.data ?? x?.Data ?? x;
 
+// Node fetch/undici sobrescribe el Host explícito con 127.0.0.1. Para
+// certificar los bindings públicos A/B enviar el Host exacto con http.request;
+// el socket sigue conectado ÚNICAMENTE a la API local efímera.
+function localRequestWithHost(method, path, headers, payload) {
+  return new Promise((resolve, reject) => {
+    const request = nodeHttpRequest(api + path,
+      { method, headers, timeout: 15000 }, response => {
+        const chunks = [];
+        response.on('data', chunk => chunks.push(chunk));
+        response.on('error', reject);
+        response.on('end', () => {
+          const body = Buffer.concat(chunks).toString('utf8');
+          let parsed;
+          try { parsed = JSON.parse(body); } catch { parsed = body; }
+          resolve({ status: response.statusCode, payload: parsed, body });
+        });
+      });
+    request.on('timeout', () => request.destroy(new Error('HTTP local timeout')));
+    request.on('error', reject);
+    if (payload !== undefined) request.write(JSON.stringify(payload));
+    request.end();
+  });
+}
+
 async function call(method, path, token = '', company = null, payload, host = '') {
   const headers = {};
   if (token) headers.authorization = 'Bearer ' + token;
   if (company !== null) headers['X-Empresa-Id'] = String(company);
   if (host) headers.host = host;
   if (payload !== undefined) headers['content-type'] = 'application/json';
+  if (host) return localRequestWithHost(method, path, headers, payload);
   const response = await fetch(api + path, {
     method, headers,
     body: payload === undefined ? undefined : JSON.stringify(payload),
