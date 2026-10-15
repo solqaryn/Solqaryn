@@ -2,7 +2,7 @@
 
 ## Objetivo y alcance
 
-Verificar la cuenta exacta `Javier` en MySQL Aiven DEV, su rol heredado y su autoridad global real. **Esta microfase no asigna permisos, no cambia contraseñas, no reactiva VARISTOREHN y no crea empresas.** SOLQARYN es la plataforma, no un tenant empresarial.
+Verificar la cuenta exacta `Javier` en MySQL Aiven DEV, su rol heredado y su autoridad global real. **Esta microfase no asigna permisos, no cambia contraseñas, no reactiva la empresa histórica inactiva y no crea empresas.** SOLQARYN es la plataforma, no un tenant empresarial.
 
 Repositorio: `solqaryn/Solqaryn`. Rama y Environment GitHub permitidos: `dev` y `DEV`. Prohibidos QA, PROD y `main`.
 
