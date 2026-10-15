@@ -13,6 +13,11 @@ on:
       - backend/src/API/Controllers/VentasController.cs
       - backend/src/API/Controllers/ComprasController.cs
       - backend/src/API/Controllers/FacturasController.cs
+      - backend/src/API/Controllers/PlataformaSesionController.cs
+      - backend/src/API/Controllers/PlataformaEmpresasController.cs
+      - backend/src/Infrastructure/Services/PlataformaScopeService.cs
+      - backend/src/Application/Interfaces/IPlataformaScopeService.cs
+      - scripts/ci/p4-platform-sesion-real-jwt.mjs
   push:
     branches: [dev]
     paths:
@@ -168,6 +173,92 @@ jobs:
         run: |
           set -euo pipefail
           node scripts/ci/p4-ab-real-auth.mjs
+
+      - name: Materializar autoridad global y usuario sin empresa en MySQL efimero
+        shell: bash
+        run: |
+          set -euo pipefail
+          mysql_container="$(docker ps --filter 'ancestor=mysql:8.4' --format '{{.ID}}' | head -n 1)"
+          test -n "$mysql_container"
+          docker exec -i "$mysql_container" mysql -uroot -proot solqaryn_p4_http_ab_ci <<'SQL'
+          INSERT INTO Roles
+            (Nombre, NombreNormalizado, Descripcion, EsSistema, EsAdministrador,
+             Ambito, EmpresaId, Activo, Eliminado, FechaCreacion)
+          VALUES ('Administrador global efimero', 'P4_PLAT_HTTP_CI',
+                  'Solo autoridad global de la suite P4', 1, 1, 2, NULL, 1, 0, UTC_TIMESTAMP(6));
+          INSERT INTO Usuarios
+            (NombreUsuario, NombreCompleto, PasswordHash, RolId, Activo, Bloqueado, Eliminado, FechaCreacion)
+          SELECT 'p4_platform_only_ci', 'Usuario plataforma efimero',
+                 a.PasswordHash, a.RolId, 1, 0, 0, UTC_TIMESTAMP(6)
+          FROM Usuarios a WHERE a.NombreUsuario = 'p4_admin_a';
+          INSERT INTO UsuarioRolesPlataforma
+            (UsuarioId, RolId, Activa, FechaCreacion, FechaActualizacion)
+          SELECT u.Id, r.Id, 1, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)
+          FROM Usuarios u CROSS JOIN Roles r
+          WHERE u.NombreUsuario = 'p4_platform_only_ci'
+            AND r.NombreNormalizado = 'P4_PLAT_HTTP_CI';
+          SQL
+          count="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_p4_http_ab_ci -Nse "
+            SELECT COUNT(*) FROM UsuarioRolesPlataforma a JOIN Usuarios u ON u.Id=a.UsuarioId
+            JOIN Roles r ON r.Id=a.RolId
+            WHERE u.NombreUsuario='p4_platform_only_ci' AND a.Activa=1
+              AND r.Ambito=2 AND r.EsAdministrador=1 AND r.EmpresaId IS NULL;")"
+          test "$count" = "1"
+
+      - name: Certificar HTTP JWT global activo contra MySQL real
+        env:
+          P4_PLATFORM_TEST_PHASE: active
+        run: |
+          set -euo pipefail
+          node scripts/ci/p4-platform-sesion-real-jwt.mjs
+
+      - name: Revocacion inmediata de membresia global JWT
+        shell: bash
+        env:
+          P4_PLATFORM_TEST_PHASE: revoked
+        run: |
+          set -euo pipefail
+          mysql_container="$(docker ps --filter 'ancestor=mysql:8.4' --format '{{.ID}}' | head -n 1)"
+          docker exec "$mysql_container" mysql -uroot -proot solqaryn_p4_http_ab_ci -e "
+            UPDATE UsuarioRolesPlataforma SET Activa=0, FechaActualizacion=UTC_TIMESTAMP(6)
+             WHERE UsuarioId=(SELECT Id FROM Usuarios WHERE NombreUsuario='p4_platform_only_ci');"
+          node scripts/ci/p4-platform-sesion-real-jwt.mjs
+
+      - name: Restaurar membresia y desactivar empresas sin alterar global JWT
+        shell: bash
+        env:
+          P4_PLATFORM_TEST_PHASE: inactive
+        run: |
+          set -euo pipefail
+          mysql_container="$(docker ps --filter 'ancestor=mysql:8.4' --format '{{.ID}}' | head -n 1)"
+          docker exec "$mysql_container" mysql -uroot -proot solqaryn_p4_http_ab_ci -e "
+            UPDATE UsuarioRolesPlataforma SET Activa=1, FechaActualizacion=UTC_TIMESTAMP(6)
+             WHERE UsuarioId=(SELECT Id FROM Usuarios WHERE NombreUsuario='p4_platform_only_ci');
+            UPDATE Empresas SET Activa=0, FechaActualizacion=UTC_TIMESTAMP(6) WHERE Id IN (1,2);"
+          node scripts/ci/p4-platform-sesion-real-jwt.mjs
+
+      - name: Desactivar rol global y comprobar auditoria con EmpresaId nulo
+        shell: bash
+        env:
+          P4_PLATFORM_TEST_PHASE: role-revoked
+        run: |
+          set -euo pipefail
+          mysql_container="$(docker ps --filter 'ancestor=mysql:8.4' --format '{{.ID}}' | head -n 1)"
+          docker exec "$mysql_container" mysql -uroot -proot solqaryn_p4_http_ab_ci -e "
+            UPDATE Roles SET Activo=0, FechaActualizacion=UTC_TIMESTAMP(6)
+             WHERE NombreNormalizado='P4_PLAT_HTTP_CI';"
+          node scripts/ci/p4-platform-sesion-real-jwt.mjs
+          allowed="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_p4_http_ab_ci -Nse "
+            SELECT COUNT(*) FROM RegistrosAuditoria
+             WHERE Entidad='SesionPlataforma' AND EmpresaId IS NULL
+               AND Resultado='Exito' AND AmbitoAutoridad=2 AND OrigenAutorizacion=2;")"
+          denied="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_p4_http_ab_ci -Nse "
+            SELECT COUNT(*) FROM RegistrosAuditoria
+             WHERE Entidad='SesionPlataforma' AND EmpresaId IS NULL
+               AND Resultado='Rechazado' AND AmbitoAutoridad IS NULL;")"
+          test "$allowed" -ge 2
+          test "$denied" -ge 2
+          echo "P4 PLATFORM AUDIT PASS allowed=$allowed denied=$denied; tenant leaks=0"
 
       - name: Guardar evidencia y errores de API
         if: always()
