@@ -22,15 +22,18 @@ public sealed class PlataformaEmpresasController : ControllerBase
     private readonly AppDbContext _db;
     private readonly ICurrentUserService _currentUser;
     private readonly IConfiguration _configuration;
+    private readonly IPlataformaScopeService _plataforma;
 
     public PlataformaEmpresasController(
         AppDbContext db,
         ICurrentUserService currentUser,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IPlataformaScopeService plataforma)
     {
         _db = db;
         _currentUser = currentUser;
         _configuration = configuration;
+        _plataforma = plataforma;
     }
 
     [HttpPost("alta-controlada")]
@@ -52,20 +55,9 @@ public sealed class PlataformaEmpresasController : ControllerBase
             return Forbid();
 
         var actorId = _currentUser.UsuarioId.Value;
-        var actor = await (
-            from asignacion in _db.Set<UsuarioRolPlataforma>().IgnoreQueryFilters()
-            join usuario in _db.Usuarios.IgnoreQueryFilters()
-                on asignacion.UsuarioId equals usuario.Id
-            join rol in _db.Roles.IgnoreQueryFilters()
-                on asignacion.RolId equals rol.Id
-            where asignacion.UsuarioId == actorId &&
-                  asignacion.Activa &&
-                  usuario.Activo && !usuario.Bloqueado && !usuario.Eliminado &&
-                  rol.Activo && !rol.Eliminado && rol.EsAdministrador &&
-                  rol.EmpresaId == null &&
-                  rol.Ambito == AmbitoAutorizacion.Plataforma
-            select new { usuario.Id, usuario.NombreUsuario }
-        ).AsNoTracking().FirstOrDefaultAsync(cancellationToken);
+        // Una sola autoridad global certificada en MySQL; esta misma fuente
+        // se comparte con GET /plataforma/sesion.
+        var actor = await _plataforma.ObtenerActualAsync(cancellationToken);
 
         // No aceptar rol global del JWT ni membresía UsuarioEmpresa como sustituto.
         if (actor is null)
