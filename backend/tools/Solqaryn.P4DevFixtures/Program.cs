@@ -139,11 +139,11 @@ if (mode == "provision")
     });
     await Execute(db, tx,
         """
-        INSERT INTO RegistroAuditoria
+        INSERT INTO RegistrosAuditoria
           (Fecha, NombreUsuario, EmpresaId, Modulo, Accion, Entidad,
            ReferenciaId, Descripcion, ValoresNuevos, CorrelationId, Resultado)
         VALUES
-          (UTC_TIMESTAMP(6), 'p4-cert-ops-cli', NULL, 13, 2, 'Empresa',
+          (UTC_TIMESTAMP(6), 'p4-cert-ops-cli', NULL, 'Configuracion', 'Crear', 'Empresa',
            @id, 'Aprovisionamiento temporal P4 DEV por operación aprobada',
            @payload, @runId, 'Exito');
         """, ("@id", bId), ("@payload", audit), ("@runId", runId));
@@ -220,9 +220,6 @@ foreach (var table in new[] { "Clientes", "Proveedores", "TipoClientes" })
     await Execute(db, tx,
         $"DELETE FROM `{table}` WHERE EmpresaId=@e AND Nombre LIKE @tag;",
         ("@e", bIdToRemove), ("@tag", tag));
-    await Execute(db, tx,
-        $"DELETE FROM `{table}` WHERE EmpresaId=@e AND Nombre LIKE @tag;",
-        ("@e", aId), ("@tag", tag));
 }
 foreach (var table in tables)
     if (Number(await Scalar(db, tx,
@@ -240,11 +237,11 @@ if (await Execute(db, tx,
     throw new InvalidOperationException("STOP: alguna entidad del fixture no se pudo revertir.");
 await Execute(db, tx,
     """
-    INSERT INTO RegistroAuditoria
+    INSERT INTO RegistrosAuditoria
       (Fecha, NombreUsuario, EmpresaId, Modulo, Accion, Entidad,
        ReferenciaId, Descripcion, CorrelationId, Resultado)
     VALUES
-      (UTC_TIMESTAMP(6), 'p4-cert-ops-cli', NULL, 13, 10, 'Empresa',
+      (UTC_TIMESTAMP(6), 'p4-cert-ops-cli', NULL, 'Configuracion', 'EliminarLogico', 'Empresa',
        @id, 'Retiro exacto del fixture temporal P4 DEV',
        @runId, 'Exito');
     """, ("@id", bIdToRemove), ("@runId", runId));
@@ -310,6 +307,6 @@ static async Task<bool> HasMasterGrants(
         SELECT COUNT(DISTINCT CONCAT(p.Modulo, ':', p.Accion))
         FROM RolPermisos rp JOIN Permisos p ON p.Id=rp.PermisoId
         WHERE rp.RolId=@role AND p.Activo=1 AND p.Eliminado=0
-          AND p.Modulo IN (9, 10) AND p.Accion IN (1, 2, 3);
+          AND p.Modulo IN ('Proveedores','Clientes') AND p.Accion IN ('Ver','Crear','Editar');
         """, ("@role", rolId))) == 6;
 }
