@@ -12,6 +12,7 @@ using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Enums;
 using Solqaryn.Infrastructure.Persistence;
+using Solqaryn.Infrastructure.Services;
 using Xunit;
 
 namespace Solqaryn.Tests.API.Controllers;
@@ -251,11 +252,13 @@ public sealed class PlataformaEmpresasOnboardingSecurityTests
         var current = new Mock<ICurrentUserService>();
         current.SetupGet(x => x.EstaAutenticado).Returns(currentUserValid);
         current.SetupGet(x => x.UsuarioId).Returns(actor.Id);
+        current.SetupGet(x => x.NombreUsuario).Returns(actor.NombreUsuario);
         var http = new DefaultHttpContext();
         http.User = new ClaimsPrincipal(new ClaimsIdentity(
             new[] { new Claim(ClaimTypes.NameIdentifier, actor.Id.ToString()) },
             "TestJwt"));
-        var controller = new PlataformaEmpresasController(db, current.Object, config)
+        var controller = new PlataformaEmpresasController(db, current.Object, config,
+            new PlataformaScopeService(db, current.Object))
         {
             ControllerContext = new ControllerContext { HttpContext = http }
         };
