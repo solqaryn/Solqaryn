@@ -160,8 +160,11 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                        config.GetValue<bool>("MultiEmpresa:PrivateReportPilotEnabled");
         var inventario = HttpMethods.IsGet(http.Request.Method) &&
                          config.GetValue<bool>("MultiEmpresa:PrivateInventarioReadPilotEnabled");
+        // Exportación binaria de imágenes, nunca subidas ni escritura Cloudinary.
+        var media = HttpMethods.IsGet(http.Request.Method) &&
+                    config.GetValue<bool>("MultiEmpresa:PrivateMediaExportPilotEnabled");
         if (!lectura && !alta && !borrador && !confirmar &&
-            !pdf && !reportes && !inventario)
+            !pdf && !reportes && !inventario && !media)
             return false;
 
         ModuloSistema modulo;
@@ -169,6 +172,7 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         var esBorrador = false;
         var esConfirmacion = false;
         var esPdf = false;
+        var esMedia = false;
         if (lectura && (EsRutaExacta(http.Request.Path, "/productos") ||
                         EsRutaDetallePositiva(http.Request.Path, "/productos")))
             modulo = ModuloSistema.Productos;
@@ -200,6 +204,13 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         {
             modulo = ModuloSistema.Facturacion;
             esPdf = true;
+        }
+        else if (media &&
+                (EsRutaAccionPositiva(http.Request.Path, "/productos", "imagenes/descargar-todas") ||
+                 EsRutaDescargaImagenPositiva(http.Request.Path)))
+        {
+            modulo = ModuloSistema.Productos;
+            esMedia = true;
         }
         else if (reportes && (EsRutaExacta(http.Request.Path, "/ventas/reportes/resumen") ||
                              EsRutaExacta(http.Request.Path, "/ventas/reportes/detalle")))
@@ -246,7 +257,7 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         else
             return false;
 
-        accion = esPdf ? AccionPermiso.Exportar
+        accion = esPdf || esMedia ? AccionPermiso.Exportar
             : lectura || reportes || inventario ? AccionPermiso.Ver
             : esConfirmacion ? AccionPermiso.Confirmar : AccionPermiso.Crear;
         var permisos = services.GetService<IPermisoService>();
@@ -361,6 +372,26 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
     // Sólo /maestro/{id:int} con un segmento numérico positivo, sin subrutas.
     // Solo `/{id:int positivo}/{accion}`; prohibidas subrutas, slash final,
     // prefijos parecidos, números con signos o percent-encoding ambiguo.
+    // La imagen individual lleva DOS IDs positivos; nunca autorizar por
+    // StartsWith("/productos") ni aceptar otros sufijos (SSRF/export accidental).
+    private static bool EsRutaDescargaImagenPositiva(PathString path)
+    {
+        var segmentos = path.Value?.Split('/', StringSplitOptions.None);
+        if (segmentos is not { Length: 6 } ||
+            segmentos[0].Length != 0 ||
+            !segmentos[1].Equals("productos", StringComparison.OrdinalIgnoreCase) ||
+            !segmentos[3].Equals("imagenes", StringComparison.OrdinalIgnoreCase) ||
+            !segmentos[5].Equals("descargar", StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        static bool Positivo(string valor) =>
+            valor.Length > 0 &&
+            valor.All(x => x is >= '0' and <= '9') &&
+            int.TryParse(valor, out var n) && n > 0;
+
+        return Positivo(segmentos[2]) && Positivo(segmentos[4]);
+    }
+
     private static bool EsRutaAccionPositiva(PathString path, string prefijo, string accion)
     {
         var ruta = path.Value;

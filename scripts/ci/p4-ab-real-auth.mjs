@@ -150,7 +150,7 @@ for (const [method, path] of [
   ['POST', '/ventas/1/anular'], ['POST', '/compras/1/anular'],
   ['POST', '/facturas/1/pagos'], ['GET', '/facturas/1/historial-envios'],
   ['GET', '/compras/1/documentos'],
-  ['GET', '/productos/1/imagenes/descargar-todas']
+  ['GET', '/productos/1/imagenes/descargar-todas/otro']
 ]) {
   expectStatus(await call(method, path, jwtA, aId), 503,
     'cuarentena ' + method + ' ' + path);
@@ -324,6 +324,31 @@ for (const [token, company, sale] of [
     'No debe permitir doble confirmación de la misma venta, HTTP=' + duplicate.status);
 }
 
+// Descarga de imágenes y ZIP: sin credenciales de Cloudinary en MySQL
+// efímero, el controlador debe NO exponer producto de la empresa ajena y
+// devolver 404 por galería vacía del dueño. Los bytes reales se probarán
+// independientemente en DEV con assets controlados, nunca contra PROD.
+for (const [token, empresa, propio, ajeno] of [
+  [jwtA, aId, productAId, productBId],
+  [jwtB, bId, productBId, productAId]
+]) {
+  expectStatus(await call('GET', '/productos/' + propio +
+    '/imagenes/descargar-todas', token, empresa),
+    404, 'ZIP propio sin imágenes registradas');
+  expectStatus(await call('GET', '/productos/' + propio +
+    '/imagenes/1/descargar', token, empresa),
+    404, 'imagen propia no registrada');
+  expectStatus(await call('GET', '/productos/' + ajeno +
+    '/imagenes/descargar-todas', token, empresa),
+    404, 'ZIP producto ajeno invisible');
+  expectStatus(await call('GET', '/productos/' + ajeno +
+    '/imagenes/1/descargar', token, empresa),
+    404, 'imagen producto ajeno invisible');
+}
+await deny('GET', '/productos/' + productBId +
+  '/imagenes/descargar-todas', jwtA, bId, 'spoof ZIP A→B');
+console.log('P4 ZIP/media gate A/B PASS: JWT, owner y ausencia de imágenes no cruzan empresa.');
+
 // Integraciones privadas GET (sólo CI): PDF real, reportes, Kardex y existencias.
 async function getPdf(token, empresaId, invoiceId) {
   const r = await fetch(api + '/facturas/' + invoiceId + '/pdf?formato=a4', {
@@ -389,4 +414,4 @@ for (const path of [
 console.log('P4 READ CI real PASS: QuestPDF A/B, reporte ventas por ID, compras tenant, Kardex y existencias.');
 
 console.log('P4 HTTP/MySQL real A/B PASS: clientes, productos, compras confirmadas, inventario, ventas confirmadas y facturas con identidad empresarial correcta.');
-console.log('No certifica pagos, anulaciones, Cloudinary, PDF/Excel/ZIP, reportes ni jobs.');
+console.log('No certifica pagos, anulaciones, Cloudinary real, Excel/ZIP con bytes ni procesos automáticos.');
