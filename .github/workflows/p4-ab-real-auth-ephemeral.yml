@@ -61,6 +61,7 @@ jobs:
       P4_COMPANY_B_ID: '2'
       MultiEmpresa__PrivateReadPilotEnabled: 'true'
       MultiEmpresa__PrivateWritePilotEnabled: 'true'
+      MultiEmpresa__PrivateDraftPilotEnabled: 'true'
       PublicStore__EnableMultiEmpresaBinding: 'true'
       PublicStore__HostBindings__0__Host: 'store-a.p4.test'
       PublicStore__HostBindings__0__EmpresaId: '1'

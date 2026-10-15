@@ -147,7 +147,12 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                       config.GetValue<bool>("MultiEmpresa:PrivateReadPilotEnabled");
         var alta = HttpMethods.IsPost(http.Request.Method) &&
                    config.GetValue<bool>("MultiEmpresa:PrivateWritePilotEnabled");
-        if (!lectura && !alta)
+        // No activa mutaciones de inventario ni confirmaciones fiscales.
+        // El piloto adicional sólo admite altas de producto SIN archivos
+        // y borradores de venta/compra; nunca altera el modo por defecto.
+        var borrador = HttpMethods.IsPost(http.Request.Method) &&
+                       config.GetValue<bool>("MultiEmpresa:PrivateDraftPilotEnabled");
+        if (!lectura && !alta && !borrador)
             return false;
 
         ModuloSistema modulo;
@@ -185,10 +190,16 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
             modulo = ModuloSistema.Clientes;
         else if (alta && EsRutaExacta(http.Request.Path, "/proveedores"))
             modulo = ModuloSistema.Proveedores;
+        else if (borrador && EsRutaExacta(http.Request.Path, "/productos"))
+            modulo = ModuloSistema.Productos;
+        else if (borrador && EsRutaExacta(http.Request.Path, "/ventas"))
+            modulo = ModuloSistema.Ventas;
+        else if (borrador && EsRutaExacta(http.Request.Path, "/compras"))
+            modulo = ModuloSistema.Compras;
         else
             return false;
 
-        accion = alta ? AccionPermiso.Crear : AccionPermiso.Ver;
+        accion = lectura ? AccionPermiso.Ver : AccionPermiso.Crear;
         var permisos = services.GetService<IPermisoService>();
         if (permisos is null)
             return false;
@@ -215,6 +226,37 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
             .AnyAsync(e => e.Id == empresaId && e.Activa, http.RequestAborted);
         if (!activa)
             return false;
+
+        if (borrador)
+        {
+            // Solo formularios pequeños y sin IFormFile. Cloudinary se
+            // habilitará separadamente tras pruebas físicas de A/B.
+            const int maxPayloadBytes = 256 * 1024;
+            var length = http.Request.ContentLength;
+            if (length is null || length <= 0 || length > maxPayloadBytes)
+                return false;
+
+            if (EsRutaExacta(http.Request.Path, "/productos"))
+            {
+                if (!http.Request.HasFormContentType)
+                    return false;
+                try
+                {
+                    var form = await http.Request.ReadFormAsync(http.RequestAborted);
+                    if (form.Files.Count != 0)
+                        return false;
+                }
+                catch (InvalidDataException)
+                {
+                    return false;
+                }
+            }
+            else if (http.Request.ContentType?.StartsWith(
+                         "application/json", StringComparison.OrdinalIgnoreCase) != true)
+            {
+                return false;
+            }
+        }
 
         // Requiere una SEGUNDA autorización en el filtro MVC RequierePermiso.
         // La misma marca controla owner de la nueva fila en los servicios
