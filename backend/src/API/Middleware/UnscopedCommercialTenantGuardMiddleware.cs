@@ -163,8 +163,12 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         // Exportación binaria de imágenes, nunca subidas ni escritura Cloudinary.
         var media = HttpMethods.IsGet(http.Request.Method) &&
                     config.GetValue<bool>("MultiEmpresa:PrivateMediaExportPilotEnabled");
+        // Reportes administrativos aislados: no expone listas de otros
+        // tenants ni permite exportaciones sin el RBAC específico.
+        var adminReport = HttpMethods.IsGet(http.Request.Method) &&
+                          config.GetValue<bool>("MultiEmpresa:PrivateAdminReportPilotEnabled");
         if (!lectura && !alta && !borrador && !confirmar &&
-            !pdf && !reportes && !inventario && !media)
+            !pdf && !reportes && !inventario && !media && !adminReport)
             return false;
 
         ModuloSistema modulo;
@@ -173,6 +177,7 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         var esConfirmacion = false;
         var esPdf = false;
         var esMedia = false;
+        var esAdminExport = false;
         if (lectura && (EsRutaExacta(http.Request.Path, "/productos") ||
                         EsRutaDetallePositiva(http.Request.Path, "/productos")))
             modulo = ModuloSistema.Productos;
@@ -217,6 +222,16 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
             modulo = ModuloSistema.Ventas;
         else if (reportes && EsRutaExacta(http.Request.Path, "/compras/reportes/detalle"))
             modulo = ModuloSistema.Compras;
+        else if (adminReport && EsRutaExportacionAdministrativa(http.Request.Path))
+        {
+            modulo = ModuloSistema.ReportesAdministrativos;
+            esAdminExport = true;
+        }
+        else if (adminReport && (EsRutaExacta(http.Request.Path, "/reportes-administrativos/resumen") ||
+                                 EsRutaExacta(http.Request.Path, "/reportes-administrativos/usuarios-accesos") ||
+                                 EsRutaExacta(http.Request.Path, "/reportes-administrativos/roles-permisos") ||
+                                 EsRutaExacta(http.Request.Path, "/reportes-administrativos/auditoria-resumen")))
+            modulo = ModuloSistema.ReportesAdministrativos;
         else if (inventario && (EsRutaExacta(http.Request.Path, "/existencias-variante") ||
                                  EsRutaDetallePositiva(http.Request.Path, "/existencias-variante")))
             modulo = ModuloSistema.Inventario;
@@ -257,8 +272,8 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         else
             return false;
 
-        accion = esPdf || esMedia ? AccionPermiso.Exportar
-            : lectura || reportes || inventario ? AccionPermiso.Ver
+        accion = esPdf || esMedia || esAdminExport ? AccionPermiso.Exportar
+            : lectura || reportes || inventario || adminReport ? AccionPermiso.Ver
             : esConfirmacion ? AccionPermiso.Confirmar : AccionPermiso.Crear;
         var permisos = services.GetService<IPermisoService>();
         if (permisos is null)
@@ -374,6 +389,21 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
     // prefijos parecidos, números con signos o percent-encoding ambiguo.
     // La imagen individual lleva DOS IDs positivos; nunca autorizar por
     // StartsWith("/productos") ni aceptar otros sufijos (SSRF/export accidental).
+    private static bool EsRutaExportacionAdministrativa(PathString path)
+    {
+        // Whitelist de los únicos tipos admitidos por el generador existente.
+        // Nunca admitir un segmento arbitrario ni sufijos o subrutas.
+        var valor = path.Value;
+        return valor is not null && new[]
+        {
+            "/reportes-administrativos/exportar/usuarios",
+            "/reportes-administrativos/exportar/usuarios-accesos",
+            "/reportes-administrativos/exportar/roles",
+            "/reportes-administrativos/exportar/roles-permisos",
+            "/reportes-administrativos/exportar/auditoria"
+        }.Any(permitida => string.Equals(valor, permitida, StringComparison.OrdinalIgnoreCase));
+    }
+
     private static bool EsRutaDescargaImagenPositiva(PathString path)
     {
         var segmentos = path.Value?.Split('/', StringSplitOptions.None);

@@ -413,5 +413,61 @@ for (const path of [
 }
 console.log('P4 READ CI real PASS: QuestPDF A/B, reporte ventas por ID, compras tenant, Kardex y existencias.');
 
+// Cierre de exportaciones administrativas existentes, sin un motor Excel nuevo.
+// El servicio usa EmpresaId RBAC para toda fila antes de serializar CSV/XLSX/PDF.
+for (const [jwt, ownId, ownUser, forbiddenUser] of [
+  [jwtA, aId, 'p4_admin_a', 'p4_admin_b'],
+  [jwtB, bId, 'p4_admin_b', 'p4_admin_a']
+]) {
+  const members = await call('GET',
+    '/reportes-administrativos/usuarios-accesos', jwt, ownId);
+  expectStatus(members, 200, 'usuarios y accesos administrativos por empresa');
+  const ownRows = unwrap(members.payload);
+  assert(Array.isArray(ownRows), 'La lista administrativa no tiene formato esperado');
+  assert(ownRows.some(x => x.nombreUsuario === ownUser),
+    'El usuario propio no aparece en su empresa');
+  assert(!ownRows.some(x => x.nombreUsuario === forbiddenUser),
+    'Reporte administrativo expuso la membresía de otra empresa');
+
+  const roles = await call('GET', '/reportes-administrativos/roles-permisos', jwt, ownId);
+  expectStatus(roles, 200, 'roles y permisos por empresa');
+  const audit = await call('GET', '/reportes-administrativos/auditoria-resumen', jwt, ownId);
+  expectStatus(audit, 200, 'auditoría por empresa');
+
+  for (const [report, format, expectedMime, magic] of [
+    ['usuarios-accesos', 'xlsx',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'PK'],
+    ['roles-permisos', 'csv', 'text/csv', ''],
+    ['auditoria', 'pdf', 'application/pdf', '%PDF-']
+  ]) {
+    const response = await fetch(api +
+        '/reportes-administrativos/exportar/' + report + '?formato=' + format, {
+      headers: {
+        authorization: 'Bearer ' + jwt,
+        'X-Empresa-Id': String(ownId)
+      },
+      signal: AbortSignal.timeout(30000)
+    });
+    assert.equal(response.status, 200,
+      'Exportación propia ' + report + '/' + format + ': HTTP=' + response.status);
+    assert((response.headers.get('content-type') ?? '').includes(expectedMime),
+      'MIME inválido en ' + report + '/' + format);
+    const bytes = Buffer.from(await response.arrayBuffer());
+    assert(bytes.length > 40 && (magic === '' ||
+      bytes.subarray(0, magic.length).toString('ascii') === magic),
+      'Firma inválida en exportación ' + report + '/' + format);
+  }
+}
+await deny('GET', '/reportes-administrativos/usuarios-accesos',
+  jwtA, bId, 'reporte administrativo A→B');
+await deny('GET', '/reportes-administrativos/exportar/usuarios-accesos?formato=xlsx',
+  jwtB, aId, 'XLSX administrativo B→A');
+await deny('GET', '/reportes-administrativos/exportar/usuarios-accesos?formato=xlsx',
+  '', aId, 'exportación administrativa sin JWT');
+expectStatus(await call('POST',
+  '/reportes-administrativos/exportar/usuarios-accesos?formato=xlsx', jwtA, aId),
+  503, 'POST de exportación no autorizada');
+console.log('P4 CI JWT/MySQL A/B: reporte administrativo propio, roles y auditoría, XLSX/CSV/PDF válidos y accesos cruzados rechazados.');
+
 console.log('P4 HTTP/MySQL real A/B PASS: clientes, productos, compras confirmadas, inventario, ventas confirmadas y facturas con identidad empresarial correcta.');
 console.log('No certifica pagos, anulaciones, Cloudinary real, Excel/ZIP con bytes ni procesos automáticos.');
