@@ -470,4 +470,88 @@ expectStatus(await call('POST',
 console.log('P4 CI JWT/MySQL A/B: reporte administrativo propio, roles y auditoría, XLSX/CSV/PDF válidos y accesos cruzados rechazados.');
 
 console.log('P4 HTTP/MySQL real A/B PASS: clientes, productos, compras confirmadas, inventario, ventas confirmadas y facturas con identidad empresarial correcta.');
-console.log('No certifica pagos, anulaciones, Cloudinary real, ZIP con bytes de ambos tenants ni procesos automáticos.');
+// Finanzas A/B: dos pagos en paralelo, anulación de pago y reversión de
+// venta/compra sobre MySQL real efímero, nunca sobre datos de DEV persistente.
+const invoicePairs = [
+  [jwtA, aId, invoiceAId, invoiceBId, saleAId, 'A', productAId, initialStockA],
+  [jwtB, bId, invoiceBId, invoiceAId, saleBId, 'B', productBId, initialStockB]
+];
+const paid = await Promise.all(invoicePairs.map(async ([jwt, company, invoice, , , label]) => {
+  const result = await call('POST', '/facturas/' + invoice + '/pagos',
+    jwt, company, {
+      monto: 5.00,
+      metodoPago: 'Efectivo',
+      observaciones: 'Pago efímero tenant ' + label
+    });
+  expectStatus(result, 200, 'aplicar pago factura propia ' + label);
+  const dto = unwrap(result.payload);
+  assert.equal(Number(dto.totalPagado), 5.00, 'Importe pagado del tenant ' + label);
+  const pagoId = Number(dto.pagos?.find(x => !x.anulado)?.id);
+  assert(pagoId > 0, 'Pago confirmado no devolvió ID ' + label);
+  return pagoId;
+}));
+await Promise.all(invoicePairs.map(async ([jwt, company, invoice, foreign, , label], i) => {
+  const cross = await call('POST', '/facturas/' + foreign + '/pagos', jwt, company,
+    { monto: 2.00, metodoPago: 'Efectivo' });
+  assert([400, 403, 404, 503].includes(cross.status),
+    'Usuario ' + label + ' pagó la factura de otra empresa, HTTP=' + cross.status);
+
+  const crossCancel = await call('POST',
+    '/facturas/' + foreign + '/pagos/' + paid[1 - i] + '/anular',
+    jwt, company, { motivo: 'Prueba de rechazo cruzado' });
+  assert([400, 403, 404, 503].includes(crossCancel.status),
+    'Usuario ' + label + ' anuló el pago de la otra empresa, HTTP=' + crossCancel.status);
+}));
+await Promise.all(invoicePairs.map(async ([jwt, company, invoice, , , label], i) => {
+  const undone = await call('POST',
+    '/facturas/' + invoice + '/pagos/' + paid[i] + '/anular',
+    jwt, company, { motivo: 'Reversión de pago efímera ' + label });
+  expectStatus(undone, 200, 'anular pago propio ' + label);
+  assert.equal(Number(unwrap(undone.payload)?.totalPagado), 0,
+    'Anulación de pago no reversó saldo ' + label);
+}));
+await Promise.all(invoicePairs.map(async ([jwt, company, , foreign, saleId, label, product, stock]) => {
+  const wrong = await call('POST',
+    '/ventas/' + (label === 'A' ? saleBId : saleAId) + '/anular',
+    jwt, company, { motivoAnulacion: 'Rechazo cruzado' });
+  assert([400, 403, 404, 503].includes(wrong.status),
+    'Anulación cruzada de venta no fue bloqueada: HTTP=' + wrong.status);
+  const result = await call('POST', '/ventas/' + saleId + '/anular', jwt, company,
+    { motivoAnulacion: 'Anulación venta de aceptación ' + label });
+  expectStatus(result, 200, 'anular venta ' + label);
+  const restored = await qty(jwt, company, product);
+  assert.equal(restored, stock + 2, 'Anulación venta debe restaurar stock ' + label);
+}));
+
+// Compra anulable independiente para no violar el bloqueo de movimientos de
+// stock posteriores que protege la compra usada para la venta anterior.
+for (const [jwt, company, label, supplier] of [
+  [jwtA, aId, 'A', providerAId],
+  [jwtB, bId, 'B', providerBId]
+]) {
+  const product = await productDraft(jwt, company, 'Producto anulación compra ' + label);
+  expectStatus(product, 201, 'producto de compra anulable ' + label);
+  const productId = idOf(product, 'producto anulación ' + label);
+  const variantId = Number(unwrap(product.payload)?.variantes?.[0]?.id);
+  assert(variantId > 0, 'Falta variante técnica para anulaciones');
+  const stockBefore = await qty(jwt, company, productId);
+  const draft = await call('POST', '/compras', jwt, company, {
+    proveedorId: supplier, proveedorNombre: 'Proveedor privado ' + label,
+    detalles: [{ productoId: productId, productoVarianteId: variantId,
+      cantidad: 1, costoUnitario: 10.00 }]
+  });
+  expectStatus(draft, 201, 'compra anulable ' + label);
+  const purchaseId = idOf(draft, 'compra anulable ' + label);
+  expectStatus(await call('POST', '/compras/' + purchaseId + '/confirmar', jwt, company),
+    200, 'confirmar compra de prueba para anulación ' + label);
+  assert.equal(await qty(jwt, company, productId), stockBefore + 1,
+    'Confirmar compra no agregó inventario ' + label);
+  expectStatus(await call('POST', '/compras/' + purchaseId + '/anular', jwt, company,
+      { motivoAnulacion: 'Reversión compra efímera ' + label }),
+    200, 'anular compra ' + label);
+  assert.equal(await qty(jwt, company, productId), stockBefore,
+    'Anular compra no revirtió su inventario ' + label);
+}
+
+console.log('P4 FINANZAS A/B PASS: pagos en paralelo, reversión contable, anulación ventas/compras y stock propios; rechazos cruzados.');
+console.log('No certifica Cloudinary real, ZIP con bytes de ambos tenants ni procesos automáticos.');

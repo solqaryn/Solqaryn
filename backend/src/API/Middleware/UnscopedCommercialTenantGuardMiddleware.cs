@@ -154,6 +154,9 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                        config.GetValue<bool>("MultiEmpresa:PrivateDraftPilotEnabled");
         var confirmar = HttpMethods.IsPost(http.Request.Method) &&
                         config.GetValue<bool>("MultiEmpresa:PrivateConfirmPilotEnabled");
+        // Pago y anulación requieren autoridad específica y body JSON acotado.
+        var finanzas = HttpMethods.IsPost(http.Request.Method) &&
+                       config.GetValue<bool>("MultiEmpresa:PrivateFinancialPilotEnabled");
         var pdf = HttpMethods.IsGet(http.Request.Method) &&
                   config.GetValue<bool>("MultiEmpresa:PrivatePdfPilotEnabled");
         var reportes = HttpMethods.IsGet(http.Request.Method) &&
@@ -168,7 +171,7 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         var adminReport = HttpMethods.IsGet(http.Request.Method) &&
                           config.GetValue<bool>("MultiEmpresa:PrivateAdminReportPilotEnabled");
         if (!lectura && !alta && !borrador && !confirmar &&
-            !pdf && !reportes && !inventario && !media && !adminReport)
+            !pdf && !reportes && !inventario && !media && !adminReport && !finanzas)
             return false;
 
         ModuloSistema modulo;
@@ -178,6 +181,7 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         var esPdf = false;
         var esMedia = false;
         var esAdminExport = false;
+        var accionFinanciera = (AccionPermiso?)null;
         if (lectura && (EsRutaExacta(http.Request.Path, "/productos") ||
                         EsRutaDetallePositiva(http.Request.Path, "/productos")))
             modulo = ModuloSistema.Productos;
@@ -269,12 +273,33 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
             modulo = ModuloSistema.Compras;
             esConfirmacion = true;
         }
+        else if (finanzas && EsRutaAccionPositiva(http.Request.Path, "/ventas", "anular"))
+        {
+            modulo = ModuloSistema.Ventas;
+            accionFinanciera = AccionPermiso.Anular;
+        }
+        else if (finanzas && EsRutaAccionPositiva(http.Request.Path, "/compras", "anular"))
+        {
+            modulo = ModuloSistema.Compras;
+            accionFinanciera = AccionPermiso.Anular;
+        }
+        else if (finanzas && EsRutaAccionPositiva(http.Request.Path, "/facturas", "pagos"))
+        {
+            modulo = ModuloSistema.Facturacion;
+            accionFinanciera = AccionPermiso.Aplicar;
+        }
+        else if (finanzas && EsRutaAnularPagoPositiva(http.Request.Path))
+        {
+            modulo = ModuloSistema.Facturacion;
+            accionFinanciera = AccionPermiso.Anular;
+        }
         else
             return false;
 
-        accion = esPdf || esMedia || esAdminExport ? AccionPermiso.Exportar
+        accion = accionFinanciera ??
+            (esPdf || esMedia || esAdminExport ? AccionPermiso.Exportar
             : lectura || reportes || inventario || adminReport ? AccionPermiso.Ver
-            : esConfirmacion ? AccionPermiso.Confirmar : AccionPermiso.Crear;
+            : esConfirmacion ? AccionPermiso.Confirmar : AccionPermiso.Crear);
         var permisos = services.GetService<IPermisoService>();
         if (permisos is null)
             return false;
@@ -301,6 +326,18 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
             .AnyAsync(e => e.Id == empresaId && e.Activa, http.RequestAborted);
         if (!activa)
             return false;
+
+        if (accionFinanciera.HasValue)
+        {
+            // Todas las mutaciones contables requieren JSON sin archivos,
+            // excepto confirmaciones que permanecen en otro piloto.
+            const int maxJsonBytes = 32 * 1024;
+            var length = http.Request.ContentLength;
+            if (length is null || length <= 0 || length > maxJsonBytes ||
+                http.Request.ContentType?.StartsWith(
+                    "application/json", StringComparison.OrdinalIgnoreCase) != true)
+                return false;
+        }
 
         if (esBorrador)
         {
@@ -437,6 +474,27 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                segmento.All(caracter => caracter >= '0' && caracter <= '9') &&
                int.TryParse(segmento, out var id) && id > 0;
     }
+
+    private static bool EsRutaAnularPagoPositiva(PathString path)
+    {
+        // /facturas/{id positivo}/pagos/{pagoId positivo}/anular: nunca
+        // aceptar IDs parciales, rutas alias o sufijos.
+        var ruta = path.Value;
+        if (ruta is null) return false;
+        var partes = ruta.Split('/', StringSplitOptions.None);
+        return partes.Length == 6 &&
+               partes[0].Length == 0 &&
+               string.Equals(partes[1], "facturas", StringComparison.OrdinalIgnoreCase) &&
+               NumeroPositivoASCII(partes[2]) &&
+               string.Equals(partes[3], "pagos", StringComparison.OrdinalIgnoreCase) &&
+               NumeroPositivoASCII(partes[4]) &&
+               string.Equals(partes[5], "anular", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool NumeroPositivoASCII(string segmento) =>
+        segmento.Length > 0 &&
+        segmento.All(caracter => caracter >= '0' && caracter <= '9') &&
+        int.TryParse(segmento, out var id) && id > 0;
 
     private static bool EsRutaDetallePositiva(PathString path, string prefijo)
     {
