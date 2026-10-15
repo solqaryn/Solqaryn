@@ -59,7 +59,7 @@ JOIN Roles r ON r.Id = m.RolId
 WHERE BINARY u.NombreUsuario = BINARY 'Javier'
   AND m.Activa = 1 AND e.Activa = 1
   AND r.Ambito = 1 AND r.Activo = 1 AND r.Eliminado = 0;
-SELECT CONCAT('COMPANIES_ACTIVE=', SUM(CASE WHEN Activa = 1 THEN 1 ELSE 0 END),
+SELECT CONCAT('COMPANIES_ACTIVE=', COALESCE(SUM(CASE WHEN Activa = 1 THEN 1 ELSE 0 END), 0),
               ';COMPANIES_TOTAL=', COUNT(*))
 FROM Empresas;
 
