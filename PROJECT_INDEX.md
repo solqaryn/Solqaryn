@@ -1,3 +1,8 @@
+### Protección adicional P4 de factura/PDF: identidad visual del owner (2026-10-15)
+
+- `FacturaService.ToDtoAsync` antes adjuntaba `EmpresaConfiguracion` singleton global a cualquier factura, incluyendo logo y textos legales de otra empresa. Para `Factura.EmpresaId>0` ahora consulta exclusivamente `IEmpresaRepository.GetByIdAsync(empresaId persistido)` y utiliza sólo el logo del tenant; eslogan/textos fiscales no definidos por tenant permanecen NULL, nunca se rellenan desde singleton. La ruta de PDF público conserva acceso por capability ya verificado en el repositorio de facturas, sin exigir un JWT extra al receptor. Sin owner explícito se conserva presentación legacy únicamente si el repositorio permitió ese documento.
+- `FacturaTenantVisualIdentityTests` verifica con mocks estrictos que factura B obtiene logo de B, no se invoca `GetActivaAsync()` global, y textos globales no aparecen en DTO. Sin cambios a Schema, migraciones, tokens ni storage real; REVIEW_FIRST y CI exact-head requeridos.
+
 ## 2026-10-15 — P4: confirmaciones Compra/Venta A/B y factura con identidad tenant (candidato DEV)
 
 - **Hallazgo P1 prevenido:** `VentaService.ConfirmarAsync` usaba `EmpresaConfiguracionService.GetActivaEntidadAsync()` global para nombre, RTN, teléfono, correo y dirección de la factura. Bajo una membresía A/B verificada, eso podía imprimir identidad de otra empresa. Ahora resuelve exclusivamente `IEmpresaConfiguracionService.GetTenantAsync(EmpresaId autorizado)`, comprueba la misma empresa de la venta persistida y asigna `Factura.EmpresaId` desde esa venta. Para datos tenant no configurados deja NULL (nunca mezcla valores globales). Sin marca multiempresa conserva contrato singleton legacy exclusivamente.
