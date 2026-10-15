@@ -67,6 +67,7 @@ jobs:
       MultiEmpresa__PrivateMediaExportPilotEnabled: 'true'
       MultiEmpresa__PrivateReportPilotEnabled: 'true'
       MultiEmpresa__PrivateAdminReportPilotEnabled: 'true'
+      MultiEmpresa__PrivateFinancialPilotEnabled: 'true'
       MultiEmpresa__PrivateInventarioReadPilotEnabled: 'true'
       PublicStore__EnableMultiEmpresaBinding: 'true'
       PublicStore__HostBindings__0__Host: 'store-a.p4.test'
