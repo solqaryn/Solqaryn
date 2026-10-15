@@ -64,6 +64,7 @@ jobs:
       MultiEmpresa__PrivateDraftPilotEnabled: 'true'
       MultiEmpresa__PrivateConfirmPilotEnabled: 'true'
       MultiEmpresa__PrivatePdfPilotEnabled: 'true'
+      MultiEmpresa__PrivateMediaExportPilotEnabled: 'true'
       MultiEmpresa__PrivateReportPilotEnabled: 'true'
       MultiEmpresa__PrivateInventarioReadPilotEnabled: 'true'
       PublicStore__EnableMultiEmpresaBinding: 'true'
