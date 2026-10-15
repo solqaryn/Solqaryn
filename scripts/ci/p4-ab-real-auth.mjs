@@ -147,8 +147,9 @@ for (const path of ['/ventas', '/compras', '/facturas']) {
   await deny('GET', path, jwtA, bId, 'spoof lectura ' + path);
 }
 for (const [method, path] of [
-  ['POST', '/ventas'], ['POST', '/compras'], ['POST', '/facturas/1/pagos'],
-  ['GET', '/facturas/1/pdf'], ['GET', '/compras/1/documentos'],
+  ['POST', '/ventas/1/confirmar'], ['POST', '/compras/1/confirmar'],
+  ['POST', '/facturas/1/pagos'], ['GET', '/facturas/1/pdf'],
+  ['GET', '/compras/1/documentos'],
   ['GET', '/productos/1/imagenes/descargar-todas']
 ]) {
   expectStatus(await call(method, path, jwtA, aId), 503,
@@ -162,5 +163,91 @@ expectStatus(await call('GET', '/tienda/categorias', '', null, undefined,
 expectStatus(await call('GET', '/tienda/categorias', '', null, undefined,
   'unknown.p4.test'), 503, 'Host público no aprobado');
 
-console.log('P4 HTTP JWT A/B PASS: memberships, RBAC, types, clients, suppliers, documentary GETs and stores.');
-console.log('No certifica mutaciones de ventas/compras, inventarios, archivos, pagos ni jobs.');
+// Etapa de borradores: permiso Crear real, dos empresas y referencias físicas propias.
+// No se confunde con confirmar, afectar stock, generar factura o subir archivos.
+async function productDraft(token, company, name) {
+  const form = new FormData();
+  form.set('Nombre', name);
+  form.set('Cantidad', '10');
+  form.set('Costo', '10.00');
+  form.set('Precio', '25.00');
+  form.set('UmbralStockBajo', '2');
+  const response = await fetch(api + '/productos', {
+    method: 'POST',
+    headers: { authorization: 'Bearer ' + token, 'X-Empresa-Id': String(company) },
+    body: form,
+    signal: AbortSignal.timeout(20000)
+  });
+  const body = await response.text();
+  let parsed;
+  try { parsed = JSON.parse(body); } catch { parsed = body; }
+  return { status: response.status, payload: parsed, body };
+}
+const productA = await productDraft(jwtA, aId, 'Producto privado A');
+const productB = await productDraft(jwtB, bId, 'Producto privado B');
+expectStatus(productA, 201, 'crear producto A');
+expectStatus(productB, 201, 'crear producto B');
+const productAId = idOf(productA, 'producto A');
+const productBId = idOf(productB, 'producto B');
+expectStatus(await call('GET', '/productos/' + productAId, jwtA, aId), 200, 'producto A');
+expectStatus(await call('GET', '/productos/' + productBId, jwtB, bId), 200, 'producto B');
+expectStatus(await call('GET', '/productos/' + productBId, jwtA, aId), 404, 'producto B invisible A');
+const variantA = Number(unwrap(productA.payload)?.variantes?.[0]?.id);
+const variantB = Number(unwrap(productB.payload)?.variantes?.[0]?.id);
+assert(variantA > 0 && variantB > 0, 'Las variantes técnicas deben estar asociadas a sus productos.');
+
+const purchaseA = await call('POST', '/compras', jwtA, aId, {
+  proveedorId: providerAId, proveedorNombre: 'Proveedor privado A',
+  detalles: [{ productoId: productAId, productoVarianteId: variantA,
+    cantidad: 2, costoUnitario: 10.00 }]
+});
+const purchaseB = await call('POST', '/compras', jwtB, bId, {
+  proveedorId: providerBId, proveedorNombre: 'Proveedor privado B',
+  detalles: [{ productoId: productBId, productoVarianteId: variantB,
+    cantidad: 2, costoUnitario: 10.00 }]
+});
+expectStatus(purchaseA, 201, 'borrador compra A');
+expectStatus(purchaseB, 201, 'borrador compra B');
+const purchaseAId = idOf(purchaseA, 'compra A');
+const purchaseBId = idOf(purchaseB, 'compra B');
+expectStatus(await call('GET', '/compras/' + purchaseAId, jwtA, aId), 200, 'compra A');
+expectStatus(await call('GET', '/compras/' + purchaseBId, jwtB, bId), 200, 'compra B');
+expectStatus(await call('GET', '/compras/' + purchaseBId, jwtA, aId), 404, 'compra B invisible A');
+
+const saleA = await call('POST', '/ventas', jwtA, aId, {
+  clienteId: clientAId, clienteNombre: 'Cliente privado A',
+  envioExonerado: true, motivoExoneracionEnvio: 'Retiro directo del cliente A en CI',
+  detalles: [{ productoId: productAId, productoVarianteId: variantA,
+    cantidad: 1, precioUnitario: 25.00 }]
+});
+const saleB = await call('POST', '/ventas', jwtB, bId, {
+  clienteId: clientBId, clienteNombre: 'Cliente privado B',
+  envioExonerado: true, motivoExoneracionEnvio: 'Retiro directo del cliente B en CI',
+  detalles: [{ productoId: productBId, productoVarianteId: variantB,
+    cantidad: 1, precioUnitario: 25.00 }]
+});
+expectStatus(saleA, 201, 'borrador venta A');
+expectStatus(saleB, 201, 'borrador venta B');
+const saleAId = idOf(saleA, 'venta A');
+const saleBId = idOf(saleB, 'venta B');
+expectStatus(await call('GET', '/ventas/' + saleAId, jwtA, aId), 200, 'venta A');
+expectStatus(await call('GET', '/ventas/' + saleBId, jwtB, bId), 200, 'venta B');
+expectStatus(await call('GET', '/ventas/' + saleBId, jwtA, aId), 404, 'venta B invisible A');
+
+// Un usuario B no puede apropiarse de la referencia cliente/proveedor/producto A.
+for (const [path, payload] of [
+  ['/ventas', { clienteId: clientBId, clienteNombre: 'Cliente B',
+    envioExonerado: true, motivoExoneracionEnvio: 'Retiro directo del cliente en CI',
+    detalles: [{ productoId: productAId, productoVarianteId: variantA,
+      cantidad: 1, precioUnitario: 25.00 }] }],
+  ['/compras', { proveedorId: providerBId, proveedorNombre: 'Proveedor B',
+    detalles: [{ productoId: productAId, productoVarianteId: variantA,
+      cantidad: 1, costoUnitario: 10.00 }] }]
+]) {
+  const denied = await call('POST', path, jwtB, bId, payload);
+  assert([400, 403, 404, 409, 503].includes(denied.status),
+    path + ': documento B incorporó producto ajeno A, HTTP=' + denied.status);
+}
+
+console.log('P4 HTTP JWT A/B PASS: membresías, CRUD maestros, productos sin archivos y borradores Compra/Venta de A/B.');
+console.log('Aún no certifica confirmaciones, pagos, inventario, Cloudinary, PDF/Excel/ZIP, reportes ni jobs.');
