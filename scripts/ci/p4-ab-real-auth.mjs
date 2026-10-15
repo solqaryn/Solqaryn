@@ -148,7 +148,7 @@ for (const path of ['/ventas', '/compras', '/facturas']) {
 }
 for (const [method, path] of [
   ['POST', '/ventas/1/anular'], ['POST', '/compras/1/anular'],
-  ['POST', '/facturas/1/pagos'], ['GET', '/facturas/1/pdf'],
+  ['POST', '/facturas/1/pagos'], ['GET', '/facturas/1/historial-envios'],
   ['GET', '/compras/1/documentos'],
   ['GET', '/productos/1/imagenes/descargar-todas']
 ]) {
@@ -323,6 +323,70 @@ for (const [token, company, sale] of [
   assert([400, 409].includes(duplicate.status),
     'No debe permitir doble confirmación de la misma venta, HTTP=' + duplicate.status);
 }
+
+// Integraciones privadas GET (sólo CI): PDF real, reportes, Kardex y existencias.
+async function getPdf(token, empresaId, invoiceId) {
+  const r = await fetch(api + '/facturas/' + invoiceId + '/pdf?formato=a4', {
+    headers: {
+      authorization: 'Bearer ' + token,
+      'X-Empresa-Id': String(empresaId)
+    },
+    signal: AbortSignal.timeout(30000)
+  });
+  if (r.status !== 200)
+    throw new Error('PDF propio HTTP=' + r.status + ' body=' + (await r.text()).slice(0,450));
+  assert((r.headers.get('content-type') ?? '').includes('application/pdf'),
+    'PDF no declara MIME application/pdf');
+  const bytes = Buffer.from(await r.arrayBuffer());
+  assert(bytes.length > 900 && bytes.subarray(0, 5).toString('ascii') === '%PDF-',
+    'QuestPDF no devolvió bytes PDF íntegros');
+}
+await getPdf(jwtA, aId, invoiceAId);
+await getPdf(jwtB, bId, invoiceBId);
+expectStatus(await call('GET', '/facturas/' + invoiceBId + '/pdf?formato=a4', jwtA, aId),
+  404, 'PDF de B invisible para A');
+expectStatus(await call('GET', '/facturas/' + invoiceAId + '/pdf?formato=a4', jwtB, bId),
+  404, 'PDF de A invisible para B');
+
+for (const [jwt, company, ownSale, foreignSale, product] of [
+  [jwtA, aId, saleAId, saleBId, productAId],
+  [jwtB, bId, saleBId, saleAId, productBId]
+]) {
+  const summary = await call('GET', '/ventas/reportes/resumen', jwt, company);
+  expectStatus(summary, 200, 'resumen ventas');
+  assert(Number(unwrap(summary.payload)?.total) > 0,
+    'El resumen de la empresa debe contener su venta confirmada');
+  const report = await call('GET', '/ventas/reportes/detalle?page=1&pageSize=100', jwt, company);
+  expectStatus(report, 200, 'detalle ventas');
+  const rows = unwrap(report.payload)?.items;
+  assert(Array.isArray(rows), 'Reporte ventas no contiene items');
+  assert(rows.some(x => Number(x.ventaId) === ownSale), 'Venta propia ausente del reporte');
+  assert(!rows.some(x => Number(x.ventaId) === foreignSale), 'Reporte mostró venta de otra empresa');
+
+  // La fuente de detalle de compras es OrdenCompra (no Compra). La consulta
+  // debe ser autorizada y vacía para este fixture sin órdenes, sin inventar una.
+  const supplierReport = await call('GET', '/compras/reportes/detalle?page=1&pageSize=50',
+    jwt, company);
+  expectStatus(supplierReport, 200, 'reporte compras');
+
+  const moves = await call('GET', '/inventario/movimientos?productoId=' + product, jwt, company);
+  expectStatus(moves, 200, 'Kardex de producto propio');
+  const values = unwrap(moves.payload);
+  assert(Array.isArray(values) && values.length >= 2, 'Kardex debe tener entrada y salida propias');
+  assert(values.every(x => Number(x.productoId) === product),
+    'Kardex cruzó producto de otra empresa');
+  const stocks = await call('GET', '/existencias-variante', jwt, company);
+  expectStatus(stocks, 200, 'inventario de variantes propio');
+}
+for (const path of [
+  '/ventas/reportes/detalle?page=1&pageSize=30',
+  '/compras/reportes/detalle?page=1&pageSize=30',
+  '/inventario/movimientos',
+  '/existencias-variante'
+]) {
+  await deny('GET', path, jwtA, bId, 'cabecera falsa en integración ' + path);
+}
+console.log('P4 READ CI real PASS: QuestPDF A/B, reporte ventas por ID, compras tenant, Kardex y existencias.');
 
 console.log('P4 HTTP/MySQL real A/B PASS: clientes, productos, compras confirmadas, inventario, ventas confirmadas y facturas con identidad empresarial correcta.');
 console.log('No certifica pagos, anulaciones, Cloudinary, PDF/Excel/ZIP, reportes ni jobs.');

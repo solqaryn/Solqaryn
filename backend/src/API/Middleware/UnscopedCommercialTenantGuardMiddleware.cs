@@ -154,13 +154,21 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                        config.GetValue<bool>("MultiEmpresa:PrivateDraftPilotEnabled");
         var confirmar = HttpMethods.IsPost(http.Request.Method) &&
                         config.GetValue<bool>("MultiEmpresa:PrivateConfirmPilotEnabled");
-        if (!lectura && !alta && !borrador && !confirmar)
+        var pdf = HttpMethods.IsGet(http.Request.Method) &&
+                  config.GetValue<bool>("MultiEmpresa:PrivatePdfPilotEnabled");
+        var reportes = HttpMethods.IsGet(http.Request.Method) &&
+                       config.GetValue<bool>("MultiEmpresa:PrivateReportPilotEnabled");
+        var inventario = HttpMethods.IsGet(http.Request.Method) &&
+                         config.GetValue<bool>("MultiEmpresa:PrivateInventarioReadPilotEnabled");
+        if (!lectura && !alta && !borrador && !confirmar &&
+            !pdf && !reportes && !inventario)
             return false;
 
         ModuloSistema modulo;
         AccionPermiso accion;
         var esBorrador = false;
         var esConfirmacion = false;
+        var esPdf = false;
         if (lectura && (EsRutaExacta(http.Request.Path, "/productos") ||
                         EsRutaDetallePositiva(http.Request.Path, "/productos")))
             modulo = ModuloSistema.Productos;
@@ -188,6 +196,22 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                              EsRutaDetallePositiva(http.Request.Path, "/facturas") ||
                              EsRutaDetallePositiva(http.Request.Path, "/facturas/venta")))
             modulo = ModuloSistema.Facturacion;
+        else if (pdf && EsRutaAccionPositiva(http.Request.Path, "/facturas", "pdf"))
+        {
+            modulo = ModuloSistema.Facturacion;
+            esPdf = true;
+        }
+        else if (reportes && (EsRutaExacta(http.Request.Path, "/ventas/reportes/resumen") ||
+                             EsRutaExacta(http.Request.Path, "/ventas/reportes/detalle")))
+            modulo = ModuloSistema.Ventas;
+        else if (reportes && EsRutaExacta(http.Request.Path, "/compras/reportes/detalle"))
+            modulo = ModuloSistema.Compras;
+        else if (inventario && (EsRutaExacta(http.Request.Path, "/existencias-variante") ||
+                                 EsRutaDetallePositiva(http.Request.Path, "/existencias-variante")))
+            modulo = ModuloSistema.Inventario;
+        else if (inventario && (EsRutaExacta(http.Request.Path, "/inventario/movimientos") ||
+                                 EsRutaExacta(http.Request.Path, "/inventario/movimientos/paged")))
+            modulo = ModuloSistema.MovimientosInventario;
         else if (alta && EsRutaExacta(http.Request.Path, "/tipo-clientes"))
             modulo = ModuloSistema.TiposClientes;
         else if (alta && EsRutaExacta(http.Request.Path, "/clientes"))
@@ -222,7 +246,8 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         else
             return false;
 
-        accion = lectura ? AccionPermiso.Ver
+        accion = esPdf ? AccionPermiso.Exportar
+            : lectura || reportes || inventario ? AccionPermiso.Ver
             : esConfirmacion ? AccionPermiso.Confirmar : AccionPermiso.Crear;
         var permisos = services.GetService<IPermisoService>();
         if (permisos is null)
