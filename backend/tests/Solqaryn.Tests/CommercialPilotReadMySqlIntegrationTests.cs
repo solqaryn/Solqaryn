@@ -111,6 +111,11 @@ public sealed class CommercialPilotReadMySqlIntegrationTests
                     .Returns((int solicitado, ModuloSistema _, AccionPermiso __) =>
                         Task.FromResult((usuario == "user-a" && solicitado == empresaAId) ||
                                         (usuario == "user-b" && solicitado == empresaBId)));
+                // GET /ventas entra al piloto documental, pero este usuario
+                // de producto carece de Ventas.Ver: denegar expresamente.
+                permisos.Setup(x => x.TienePermisoAsync(
+                        It.IsAny<int>(), ModuloSistema.Ventas, AccionPermiso.Ver))
+                    .ReturnsAsync(false);
 
                 using var services = new ServiceCollection()
                     .AddSingleton<IConfiguration>(config)
