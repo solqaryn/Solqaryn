@@ -470,4 +470,4 @@ expectStatus(await call('POST',
 console.log('P4 CI JWT/MySQL A/B: reporte administrativo propio, roles y auditoría, XLSX/CSV/PDF válidos y accesos cruzados rechazados.');
 
 console.log('P4 HTTP/MySQL real A/B PASS: clientes, productos, compras confirmadas, inventario, ventas confirmadas y facturas con identidad empresarial correcta.');
-console.log('No certifica pagos, anulaciones, Cloudinary real, Excel/ZIP con bytes ni procesos automáticos.');
+console.log('No certifica pagos, anulaciones, Cloudinary real, ZIP con bytes de ambos tenants ni procesos automáticos.');
