@@ -662,10 +662,19 @@ for (const [jwt, company, otherClient, otherSupplier, label] of [
       'Edición fuera de empresa aceptada ' + label + ' ' + path);
   }
 }
-expectStatus(await call('GET', '/clientes/' + clientAId, jwtA, aId),
-  200, 'cliente A después de accesos ajenos');
-expectStatus(await call('GET', '/clientes/' + clientBId, jwtB, bId),
-  200, 'cliente B después de accesos ajenos');
+for (const [jwt, company, client, supplier, label] of [
+  [jwtA, aId, clientAId, providerAId, 'A'],
+  [jwtB, bId, clientBId, providerBId, 'B']
+]) {
+  const savedClient = await call('GET', '/clientes/' + client, jwt, company);
+  const savedSupplier = await call('GET', '/proveedores/' + supplier, jwt, company);
+  expectStatus(savedClient, 200, 'cliente post acceso cruzado ' + label);
+  expectStatus(savedSupplier, 200, 'proveedor post acceso cruzado ' + label);
+  assert.equal(unwrap(savedClient.payload).nombre, 'Cliente editado ' + label,
+    'Edición ajena modificó cliente ' + label);
+  assert.equal(unwrap(savedSupplier.payload).nombre, 'Proveedor editado ' + label,
+    'Edición ajena modificó proveedor ' + label);
+}
 console.log('P4 MASTER EDIT PASS: clientes y proveedores A/B con PUT, MySQL/JWT y rechazo cruzado.');
 
 
