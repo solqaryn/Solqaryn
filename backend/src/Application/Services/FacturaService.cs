@@ -13,6 +13,7 @@ public class FacturaService : IFacturaService
     private readonly IFacturaRepository _repository;
     private readonly IEmpresaConfiguracionService _empresaConfiguracionService;
     private readonly IMovimientoFinancieroRepository? _movimientoFinancieroRepository;
+    private readonly IEmpresaRepository? _empresaRepository;
 
     public FacturaService(IFacturaRepository repository, IEmpresaConfiguracionService empresaConfiguracionService)
         : this(repository, empresaConfiguracionService, null)
@@ -22,11 +23,13 @@ public class FacturaService : IFacturaService
     public FacturaService(
         IFacturaRepository repository,
         IEmpresaConfiguracionService empresaConfiguracionService,
-        IMovimientoFinancieroRepository? movimientoFinancieroRepository)
+        IMovimientoFinancieroRepository? movimientoFinancieroRepository,
+        IEmpresaRepository? empresaRepository = null)
     {
         _repository = repository;
         _empresaConfiguracionService = empresaConfiguracionService;
         _movimientoFinancieroRepository = movimientoFinancieroRepository;
+        _empresaRepository = empresaRepository;
     }
 
     public async Task<FacturaDto?> GetByIdAsync(int id)
@@ -281,8 +284,25 @@ public class FacturaService : IFacturaService
 
     private async Task<FacturaDto> ToDtoAsync(Factura f)
     {
-        var empresa = await _empresaConfiguracionService.GetActivaAsync();
         var dto = ToDto(f);
+        if (f.EmpresaId is > 0)
+        {
+            // Facturas tenant: identidad, logo y textos NUNCA se extraen
+            // del singleton legacy global. El logo público se lee sólo
+            // desde la raíz propietaria persistida. Esto también cubre PDFs
+            // de enlaces públicos autorizados, sin exigir JWT al receptor.
+            if (_empresaRepository is not null)
+            {
+                var propietaria = await _empresaRepository.GetByIdAsync(f.EmpresaId.Value);
+                dto.EmpresaLogoUrl = propietaria?.LogoUrl;
+            }
+            return dto;
+        }
+
+        // Únicamente documentos históricos monoempresa sin owner pueden
+        // conservar la presentación legacy. El repositorio mantiene NULL
+        // en cuarentena cuando existen dos empresas o hay contexto RBAC.
+        var empresa = await _empresaConfiguracionService.GetActivaAsync();
         dto.EmpresaLogoUrl = empresa?.LogoUrl;
         dto.EmpresaEslogan = empresa?.Eslogan;
         dto.EmpresaTextoFactura = empresa?.TextoFactura;

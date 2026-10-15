@@ -182,13 +182,30 @@ public class VentaService : IVentaService
 
     public async Task<VentaDto?> ConfirmarAsync(int id)
     {
-        var empresa = await _empresaConfiguracionService.GetActivaEntidadAsync();
+        // Bajo RBAC multiempresa, jamás leer datos fiscales del singleton
+        // EmpresaConfiguracion: pertenecen a la instalación legacy global.
+        // Obtener solo identidad legal de la empresa seleccionada server-side.
+        var empresaAutorizadaId = VerifiedCommercialTenant.Resolve(
+            _tenantHttpContextAccessor?.HttpContext);
+        var empresaTenant = empresaAutorizadaId is > 0
+            ? await _empresaConfiguracionService.GetTenantAsync(empresaAutorizadaId.Value)
+            : null;
+        var empresaLegacy = empresaAutorizadaId is > 0
+            ? null
+            : await _empresaConfiguracionService.GetActivaEntidadAsync();
+
+        if (empresaAutorizadaId is > 0 &&
+            (empresaTenant is null || empresaTenant.EmpresaId != empresaAutorizadaId.Value))
+            throw new ForbiddenAccessException("No se pudo verificar la identidad fiscal de la empresa.");
 
         await _unitOfWork.ExecuteInTransactionAsync(async () =>
         {
             var venta = await _ventaRepository.GetByIdForUpdateAsync(id);
             if (venta is null)
                 throw new KeyNotFoundException($"Venta ID '{id}' no encontrada.");
+
+            if (empresaAutorizadaId is > 0 && venta.EmpresaId != empresaAutorizadaId.Value)
+                throw new ForbiddenAccessException("La venta no pertenece a la empresa autorizada.");
 
             if (venta.Estado != EstadoDocumento.Borrador)
                 throw new BusinessRuleException("Solo se pueden confirmar ventas en estado Borrador.");
@@ -281,14 +298,21 @@ public class VentaService : IVentaService
 
             var factura = new Factura
             {
+                EmpresaId = venta.EmpresaId,
                 VentaId = venta.Id,
                 NumeroFactura = CrearNumeroTemporal("FAC"),
                 Estado = EstadoFactura.Emitida,
-                EmpresaNombre = empresa.NombreComercial,
-                EmpresaRTN = empresa.RTN,
-                EmpresaTelefono = empresa.Telefono,
-                EmpresaCorreo = empresa.Correo,
-                EmpresaDireccion = empresa.Direccion,
+                // Nunca completar valores tenant ausentes desde la empresa
+                // global: las celdas no configuradas permanecen vacías.
+                EmpresaNombre = empresaTenant is not null
+                    ? empresaTenant.Nombre : empresaLegacy!.NombreComercial,
+                EmpresaRTN = empresaTenant is not null
+                    ? empresaTenant.Rtn : empresaLegacy?.RTN,
+                EmpresaTelefono = empresaTenant is null ? empresaLegacy?.Telefono : null,
+                EmpresaCorreo = empresaTenant is not null
+                    ? empresaTenant.CorreoRemitente : empresaLegacy?.Correo,
+                EmpresaDireccion = empresaTenant is not null
+                    ? empresaTenant.Direccion : empresaLegacy?.Direccion,
                 ClienteNombre = venta.ClienteNombre,
                 ClienteTelefono = venta.ClienteTelefono,
                 ClienteIdentidadORTN = venta.ClienteIdentidadORTN,

@@ -152,11 +152,15 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         // y borradores de venta/compra; nunca altera el modo por defecto.
         var borrador = HttpMethods.IsPost(http.Request.Method) &&
                        config.GetValue<bool>("MultiEmpresa:PrivateDraftPilotEnabled");
-        if (!lectura && !alta && !borrador)
+        var confirmar = HttpMethods.IsPost(http.Request.Method) &&
+                        config.GetValue<bool>("MultiEmpresa:PrivateConfirmPilotEnabled");
+        if (!lectura && !alta && !borrador && !confirmar)
             return false;
 
         ModuloSistema modulo;
         AccionPermiso accion;
+        var esBorrador = false;
+        var esConfirmacion = false;
         if (lectura && (EsRutaExacta(http.Request.Path, "/productos") ||
                         EsRutaDetallePositiva(http.Request.Path, "/productos")))
             modulo = ModuloSistema.Productos;
@@ -191,15 +195,35 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         else if (alta && EsRutaExacta(http.Request.Path, "/proveedores"))
             modulo = ModuloSistema.Proveedores;
         else if (borrador && EsRutaExacta(http.Request.Path, "/productos"))
+        {
             modulo = ModuloSistema.Productos;
+            esBorrador = true;
+        }
         else if (borrador && EsRutaExacta(http.Request.Path, "/ventas"))
+        {
             modulo = ModuloSistema.Ventas;
+            esBorrador = true;
+        }
         else if (borrador && EsRutaExacta(http.Request.Path, "/compras"))
+        {
             modulo = ModuloSistema.Compras;
+            esBorrador = true;
+        }
+        else if (confirmar && EsRutaAccionPositiva(http.Request.Path, "/ventas", "confirmar"))
+        {
+            modulo = ModuloSistema.Ventas;
+            esConfirmacion = true;
+        }
+        else if (confirmar && EsRutaAccionPositiva(http.Request.Path, "/compras", "confirmar"))
+        {
+            modulo = ModuloSistema.Compras;
+            esConfirmacion = true;
+        }
         else
             return false;
 
-        accion = lectura ? AccionPermiso.Ver : AccionPermiso.Crear;
+        accion = lectura ? AccionPermiso.Ver
+            : esConfirmacion ? AccionPermiso.Confirmar : AccionPermiso.Crear;
         var permisos = services.GetService<IPermisoService>();
         if (permisos is null)
             return false;
@@ -227,7 +251,7 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         if (!activa)
             return false;
 
-        if (borrador)
+        if (esBorrador)
         {
             // Solo formularios pequeños y sin IFormFile. Cloudinary se
             // habilitará separadamente tras pruebas físicas de A/B.
@@ -310,6 +334,24 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
     }
 
     // Sólo /maestro/{id:int} con un segmento numérico positivo, sin subrutas.
+    // Solo `/{id:int positivo}/{accion}`; prohibidas subrutas, slash final,
+    // prefijos parecidos, números con signos o percent-encoding ambiguo.
+    private static bool EsRutaAccionPositiva(PathString path, string prefijo, string accion)
+    {
+        var ruta = path.Value;
+        var comienzo = prefijo + "/";
+        var fin = "/" + accion;
+        if (ruta is null ||
+            !ruta.StartsWith(comienzo, StringComparison.OrdinalIgnoreCase) ||
+            !ruta.EndsWith(fin, StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        var segmento = ruta[comienzo.Length..^fin.Length];
+        return segmento.Length > 0 &&
+               segmento.All(caracter => caracter >= '0' && caracter <= '9') &&
+               int.TryParse(segmento, out var id) && id > 0;
+    }
+
     private static bool EsRutaDetallePositiva(PathString path, string prefijo)
     {
         var ruta = path.Value;
