@@ -554,4 +554,77 @@ for (const [jwt, company, label, supplier] of [
 }
 
 console.log('P4 FINANZAS A/B PASS: pagos en paralelo, reversión contable, anulación ventas/compras y stock propios; rechazos cruzados.');
-console.log('No certifica Cloudinary real, ZIP con bytes de ambos tenants ni procesos automáticos.');
+// Rutas de archivos de compras A/B y modificación de producto bajo JWT real.
+// Se evita probar el proveedor Cloudinary con credenciales CI ficticias:
+// no se presenta como certificación externa.
+for (const [jwt, company, purchase, foreignPurchase, ownProduct, foreignProduct, label] of [
+  [jwtA, aId, purchaseAId, purchaseBId, productAId, productBId, 'A'],
+  [jwtB, bId, purchaseBId, purchaseAId, productBId, productAId, 'B']
+]) {
+  const own = await call('GET', '/compras/' + purchase + '/documentos', jwt, company);
+  expectStatus(own, 200, 'documentos compra propia ' + label);
+  assert(Array.isArray(unwrap(own.payload)), 'Listado adjuntos no es lista ' + label);
+  const foreign = await call('GET', '/compras/' + foreignPurchase + '/documentos',
+    jwt, company);
+  assert([400, 403, 404, 503].includes(foreign.status),
+    'Documentos compra ajena HTTP=' + foreign.status);
+  expectStatus(await call('GET',
+      '/compras/' + purchase + '/documentos/999999/descargar', jwt, company),
+    404, 'documento inexistente ' + label);
+
+  const original = await call('GET', '/productos/' + ownProduct, jwt, company);
+  expectStatus(original, 200, 'leer producto antes de editar ' + label);
+  const previous = unwrap(original.payload);
+  // El endpoint original sincroniza además la variante técnica desde el
+  // formulario: rellenar cantidad/costo/precio actuales evita cambios de
+  // stock inadvertidos durante una prueba de edición de nombre.
+  const form = new FormData();
+  form.set('Nombre', 'Producto editado ' + label);
+  for (const [key, value] of [
+    ['Cantidad', previous.cantidad],
+    ['Costo', previous.costo],
+    ['Precio', previous.precio],
+    ['UmbralStockBajo', previous.umbralStockBajo]
+  ]) {
+    assert(Number.isFinite(Number(value)), 'Campo requerido ausente: ' + key);
+    form.set(key, String(value));
+  }
+  if (previous.descripcion) form.set('Descripcion', previous.descripcion);
+  if (previous.categoriaId) form.set('CategoriaId', String(previous.categoriaId));
+  if (previous.esDestacado !== undefined)
+    form.set('EsDestacado', String(previous.esDestacado));
+  const changed = await fetch(api + '/productos/' + ownProduct, {
+    method: 'PUT',
+    headers: {
+      authorization: 'Bearer ' + jwt,
+      'X-Empresa-Id': String(company)
+    },
+    body: form,
+    signal: AbortSignal.timeout(20000)
+  });
+  assert.equal(changed.status, 200,
+    'Editar producto propio ' + label + ': HTTP=' + changed.status +
+    ' body=' + (await changed.text()).slice(0, 350));
+  const read = await call('GET', '/productos/' + ownProduct, jwt, company);
+  expectStatus(read, 200, 'releer producto editado ' + label);
+  assert.equal(unwrap(read.payload)?.nombre, 'Producto editado ' + label);
+  assert.equal(Number(unwrap(read.payload)?.cantidad), Number(previous.cantidad),
+    'Editar nombre no puede cambiar stock comercial ' + label);
+
+  const crossForm = new FormData();
+  crossForm.set('Nombre', 'Intención de invasión empresarial');
+  const cross = await fetch(api + '/productos/' + foreignProduct, {
+    method: 'PUT',
+    headers: {
+      authorization: 'Bearer ' + jwt,
+      'X-Empresa-Id': String(company)
+    },
+    body: crossForm,
+    signal: AbortSignal.timeout(20000)
+  });
+  assert([400, 403, 404, 503].includes(cross.status),
+    'Edición de producto ajeno ' + label + ' fue aceptada: HTTP=' + cross.status);
+}
+console.log('P4 FILES CI PASS: JWT A/B archivos de compras, lectura ajena denegada y actualización segura de producto propio.');
+console.log('No certifica todavía alta/descarga física de contenido Cloudinary con dos empresas ni jobs.');
+
