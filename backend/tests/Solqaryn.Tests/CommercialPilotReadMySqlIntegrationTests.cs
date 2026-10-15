@@ -125,8 +125,12 @@ public sealed class CommercialPilotReadMySqlIntegrationTests
                 var middleware = new UnscopedCommercialTenantGuardMiddleware(async request =>
                 {
                     called = true;
-                    visible = await db.Productos.AsNoTracking()
-                        .OrderBy(p => p.Id).Select(p => p.Id).ToArrayAsync();
+                    IQueryable<Producto> consulta = db.Productos.AsNoTracking();
+                    var segmentos = ruta.Split('/', StringSplitOptions.RemoveEmptyEntries);
+                    if (segmentos.Length == 2 && int.TryParse(segmentos[1], out var detalleId))
+                        consulta = consulta.Where(p => p.Id == detalleId);
+                    visible = await consulta.OrderBy(p => p.Id)
+                        .Select(p => p.Id).ToArrayAsync();
                     request.Response.StatusCode = StatusCodes.Status200OK;
                 });
 
@@ -153,11 +157,27 @@ public sealed class CommercialPilotReadMySqlIntegrationTests
             Assert.Null(spoof.Marca);
             Assert.Empty(spoof.Visibles);
 
+            var detallePropio = await SolicitarAsync(
+                "GET", $"/productos/{productoAId}", empresaAId, "user-a");
+            Assert.Equal(200, detallePropio.Status);
+            Assert.Equal(new[] { productoAId }, detallePropio.Visibles);
+
+            var detalleAjeno = await SolicitarAsync(
+                "GET", $"/productos/{productoBId}", empresaAId, "user-a");
+            Assert.Equal(200, detalleAjeno.Status);
+            Assert.Empty(detalleAjeno.Visibles);
+
+            var detalleB = await SolicitarAsync(
+                "GET", $"/productos/{productoBId}", empresaBId, "user-b");
+            Assert.Equal(200, detalleB.Status);
+            Assert.Equal(new[] { productoBId }, detalleB.Visibles);
+
             foreach (var denied in new[]
             {
                 await SolicitarAsync("GET", "/productos", empresaAId, "user-a", false),
                 await SolicitarAsync("POST", "/productos", empresaAId, "user-a"),
-                await SolicitarAsync("GET", "/productos/1", empresaAId, "user-a"),
+                await SolicitarAsync("GET", "/productos/1/imagenes", empresaAId, "user-a"),
+                await SolicitarAsync("GET", "/productos/-1", empresaAId, "user-a"),
                 await SolicitarAsync("GET", "/ventas", empresaAId, "user-a"),
                 await SolicitarAsync("GET", "/productos", empresaAId, "")
             })

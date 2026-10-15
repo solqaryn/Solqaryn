@@ -401,11 +401,9 @@ public sealed class UnscopedCommercialTenantGuardTests
 
         var permisos = new Mock<IPermisoService>(MockBehavior.Strict);
         permisos.Setup(x => x.TienePermisoAsync(
-                empresaA.Id, ModuloSistema.Productos, AccionPermiso.Ver))
-            .ReturnsAsync(true);
-        permisos.Setup(x => x.TienePermisoAsync(
-                empresaB.Id, ModuloSistema.Productos, AccionPermiso.Ver))
-            .ReturnsAsync(false);
+                It.IsAny<int>(), It.IsAny<ModuloSistema>(), AccionPermiso.Ver))
+            .Returns((int empresaId, ModuloSistema _, AccionPermiso __) =>
+                Task.FromResult(empresaId == empresaA.Id));
         using var services = new ServiceCollection()
             .AddSingleton<IConfiguration>(configuracion)
             .AddSingleton<IPermisoService>(permisos.Object)
@@ -455,13 +453,35 @@ public sealed class UnscopedCommercialTenantGuardTests
         Assert.Equal(503, escritura.Status);
         Assert.Null(escritura.Tenant);
 
-        var detalle = await SolicitudAsync("GET", "/productos/1", empresaA.Id);
-        Assert.Equal(503, detalle.Status);
-        Assert.Null(detalle.Tenant);
+        foreach (var ruta in new[]
+        {
+            "/productos/1", "/clientes/1", "/clientes/activos", "/clientes/buscar",
+            "/proveedores/1", "/proveedores/activos", "/proveedores/buscar"
+        })
+        {
+            var detalle = await SolicitudAsync("GET", ruta, empresaA.Id);
+            Assert.Equal(204, detalle.Status);
+            Assert.Equal(empresaA.Id, detalle.Tenant);
+            var ajena = await SolicitudAsync("GET", ruta, empresaB.Id);
+            Assert.Equal(503, ajena.Status);
+            Assert.Null(ajena.Tenant);
+        }
 
-        Assert.Equal(1, llamadas);
+        foreach (var ruta in new[]
+        {
+            "/productos/1/imagenes", "/clientes/1/ventas", "/proveedores/1/compras",
+            "/clientes/-1", "/productos/0", "/proveedores/2147483648",
+            "/clientes/buscar/todos"
+        })
+        {
+            var cerrada = await SolicitudAsync("GET", ruta, empresaA.Id);
+            Assert.Equal(503, cerrada.Status);
+            Assert.Null(cerrada.Tenant);
+        }
+
+        Assert.Equal(8, llamadas);
         permisos.Verify(x => x.TienePermisoAsync(
-            empresaA.Id, ModuloSistema.Productos, AccionPermiso.Ver), Times.Once());
+            empresaA.Id, ModuloSistema.Productos, AccionPermiso.Ver), Times.Exactly(2));
         permisos.Verify(x => x.TienePermisoAsync(
             empresaB.Id, ModuloSistema.Productos, AccionPermiso.Ver), Times.Once());
     }

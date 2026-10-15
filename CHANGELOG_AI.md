@@ -1,3 +1,10 @@
+## 2026-10-14 — P4 detalle y búsquedas de maestros privados A/B (DEV, candidato)
+
+- El piloto `MultiEmpresa:PrivateReadPilotEnabled` cubre además de las listas el detalle positivo `/{id:int}` de productos/clientes/proveedores y las consultas exactas `/clientes/activos`, `/clientes/buscar`, `/proveedores/activos`, `/proveedores/buscar`. Cada acción sigue protegida por `[Authorize]` y `[RequierePermiso(..., Ver)]` originales.
+- `EsRutaDetallePositiva` admite un solo segmento numérico ASCII positivo y no habilita subrutas de imágenes, archivos, exportaciones, compras, ventas, identificadores inválidos o prefijos engañosos. Se exige permiso efectivo server-side y Empresa activa antes de marcar `VerifiedCommercialTenant`; los filtros EF ocultan datos B a A.
+- Pruebas de middleware InMemory: permisos A positivos/B negativos, siete nuevas rutas aceptadas bajo flag, rutas parecidas y malformadas bloqueadas; prueba MySQL efímera amplía el piloto con detalle de producto propio y detalle ajeno invisible. Con flag off permanece 503. JWT/RBAC de pruebas es simulado; falta certificación con usuarios reales, frontend y módulos restantes.
+- Dependencia de PR #3637 para el piloto POST. Sin migraciones, backfill, cambios a Aiven, Render, QA o PROD. REVIEW_FIRST, CI causal MySQL/seguridad y P0/P1=0 antes de fusionar. No certifica P4 integral. Rollback: flag off y revert de este changeset.
+
 ## 2026-10-14 — P4 piloto opt-in de altas A/B de clientes y proveedores (DEV, candidato)
 
 - `UnscopedCommercialTenantGuardMiddleware` conserva la cuarentena P0 con 2+ empresas, pero separa el piloto de lecturas vigente del nuevo `MultiEmpresa:PrivateWritePilotEnabled=false` por defecto. Solo `POST /clientes` y `POST /proveedores` pueden atravesarla con JWT, selección empresarial resuelta en servidor, permiso relacional exacto `Crear` y Empresa activa revalidada en MySQL.
