@@ -1,3 +1,10 @@
+## 2026-10-14 — P4: cierre de privilegios cruzados por roles empresariales (DEV, candidato)
+
+- En `UsuarioScopeService.ContextosTenantValidos`, la membresía solo se considera válida con un rol `Ambito=Empresa` que sea plantilla global (`Rol.EmpresaId=null`) o pertenezca exactamente a la misma empresa de `UsuarioEmpresa.EmpresaId`. Un rol de Plataforma o un rol personalizado de B nunca confiere autorización en A aunque la membresía referencie un `RolId` existente.
+- En `UsuarioService`, los caminos de alta, cambio y reactivación de membresía validan la misma relación rol/empresa antes de persistir o registrar permisos. `ProductionDataRepairService` deja de atribuir roles de Plataforma o de otra empresa a la reparación monoempresa legacy.
+- Pruebas dirigidas: `UsuarioTenantRoleOwnershipTests` sobre EF InMemory + mocks y `UsuarioTenantRoleOwnershipMySqlIntegrationTests` con MySQL efímero de host local verificado, A/B y roles distintos. Se comprueban intentos cruzados y de Plataforma rechazados, roles plantilla permitidos, desactivación de rol y prohibición de persistir membresías inválidas.
+- No DDL/backfill, no datos Aiven, no secretos ni cambios QA/PROD, ni autorización para levantar `503` o activar los flags multiempresa. Estado candidato hasta REVIEW_FIRST, P0/P1=0 y CI exact-head. Rollback por revert sin reversión de datos.
+
 ## 2026-10-14 — P4: natural keys empresariales reconciliadas sin migración duplicada (candidato)
 
 - Origen recuperado: PR #3607 sin fusionar. Sus 13 claves incluían indebidamente la cuenta de tienda, cuya unicidad `(EmpresaId, CorreoNormalizado)` ya fue integrada en la migración `20261014112000_PublicStoreAccountEmailPerEmpresa`. Esta reconciliación incorpora **12 claves restantes** sin alterar el índice vigente de tienda.

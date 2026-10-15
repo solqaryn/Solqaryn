@@ -1,4 +1,5 @@
 using Solqaryn.Domain.Entities;
+using Solqaryn.Domain.Enums;
 using Solqaryn.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -130,6 +131,11 @@ public class ProductionDataRepairService
                 u.RolId > 0 &&
                 u.RolEntidad.Activo &&
                 !u.RolEntidad.Eliminado &&
+                // La reparación monoempresa no puede materializar membresías
+                // con roles de plataforma o pertenecientes a otra empresa.
+                u.RolEntidad.Ambito == AmbitoAutorizacion.Empresa &&
+                (!u.RolEntidad.EmpresaId.HasValue ||
+                 u.RolEntidad.EmpresaId.Value == empresaUnica.Id) &&
                 !_context.UsuarioEmpresas.Any(m => m.UsuarioId == u.Id))
             .Select(u => new
             {
