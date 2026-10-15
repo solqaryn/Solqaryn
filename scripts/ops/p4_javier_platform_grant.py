@@ -88,6 +88,7 @@ def connect():
         cur.execute("SHOW SESSION STATUS LIKE 'Ssl_cipher'")
         ssl_row = cur.fetchone()
         require(bool(ssl_row and ssl_row.get("Value")), "STOP: unencrypted DB connection")
+    c.rollback()  # Finish implicit metadata SELECT transaction before explicit START.
     return c
 
 
@@ -195,8 +196,10 @@ def initial_state(c, lock=False):
 def write_audit(c, role_id: int, grant_id: int, username: str, action: str):
     correlation = "P4JAVIER" + os.environ["GITHUB_RUN_ID"]
     msg = "Autorizacion explicita del propietario SOLQARYN; bootstrap global DEV"
-    for key, item_id, verb in [("Rol", role_id, "Crear"),
-                               ("UsuarioRolPlataforma", grant_id, "AsignarRol")]:
+    role_action = "Crear" if action == "APPLY" else "Desactivar"
+    grant_action = "AsignarRol" if action == "APPLY" else "Desactivar"
+    for key, item_id, verb in [("Rol", role_id, role_action),
+                               ("UsuarioRolPlataforma", grant_id, grant_action)]:
         payload = json.dumps({
             "stage": action, "roleId": role_id, "assignmentId": grant_id,
             "principal": username, "ownerAuthorization": "2026-10-15",
@@ -223,6 +226,7 @@ def initial_apply():
                     (LOCK_KEY,))["acquired"] == 1,
                 "STOP: concurrent platform grant operation")
         locked = True
+        c.rollback()  # GET_LOCK survives rollback; reset implicit SELECT transaction.
         execute(c, "SET TRANSACTION ISOLATION LEVEL SERIALIZABLE")
         c.begin()
         u = initial_state(c, lock=True)
@@ -328,6 +332,7 @@ def rollback():
                     (LOCK_KEY,))["acquired"] == 1,
                 "STOP: concurrent platform grant operation")
         locked = True
+        c.rollback()  # GET_LOCK survives rollback; reset implicit SELECT transaction.
         execute(c, "SET TRANSACTION ISOLATION LEVEL SERIALIZABLE")
         c.begin()
         u = principal(c, lock=True)
