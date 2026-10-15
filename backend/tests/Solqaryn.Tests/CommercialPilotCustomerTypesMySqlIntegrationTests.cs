@@ -186,14 +186,19 @@ public sealed class CommercialPilotCustomerTypesMySqlIntegrationTests
 
             await using (var verify = new AppDbContext(options))
             {
+                // La inicialización MySQL conserva tipos del sistema. Este piloto
+                // certifica SOLO los dos tipos empresariales creados aquí.
+                var createdIds = new[] { typeA.NuevoId!.Value, typeB.NuevoId!.Value };
                 var types = await verify.TipoClientes.IgnoreQueryFilters()
-                    .AsNoTracking().OrderBy(t => t.Id)
+                    .AsNoTracking()
+                    .Where(t => createdIds.Contains(t.Id))
+                    .OrderBy(t => t.Id)
                     .Select(t => new { t.Id, Owner = EF.Property<int?>(t, "EmpresaId") })
                     .ToArrayAsync();
+                Assert.Equal(createdIds.OrderBy(x => x), types.Select(t => t.Id));
                 Assert.Equal(2, types.Length);
-                Assert.Equal(aId, types[0].Owner);
-                Assert.Equal(bId, types[1].Owner);
-                Assert.All(types, t => Assert.True(t.Id > 0));
+                Assert.Equal(aId, types.Single(t => t.Id == typeA.NuevoId.Value).Owner);
+                Assert.Equal(bId, types.Single(t => t.Id == typeB.NuevoId.Value).Owner);
 
                 var clients = await verify.Clientes.IgnoreQueryFilters()
                     .AsNoTracking().OrderBy(c => c.Id).ToArrayAsync();
