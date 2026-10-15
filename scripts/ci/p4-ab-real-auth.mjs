@@ -148,7 +148,7 @@ for (const path of ['/ventas', '/compras', '/facturas']) {
 }
 for (const [method, path] of [
   ['POST', '/ventas/1/anular'], ['POST', '/compras/1/anular'],
-  ['POST', '/facturas/1/pagos'], ['GET', '/facturas/1/pdf'],
+  ['POST', '/facturas/1/pagos'], ['GET', '/facturas/1/historial-envios'],
   ['GET', '/compras/1/documentos'],
   ['GET', '/productos/1/imagenes/descargar-todas']
 ]) {
