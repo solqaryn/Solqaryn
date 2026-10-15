@@ -1,3 +1,10 @@
+## 2026-10-14 — P4: aceptación HTTP/JWT A/B con MySQL local efímero (candidato DEV)
+
+- Se incorpora `scripts/ci/p4-ab-real-auth.mjs` y workflow dedicado `.github/workflows/p4-ab-real-auth-ephemeral.yml`, sin modificar rutas, dominios, RBAC ni infraestructura real. El workflow arranca API .NET 10 y MySQL 8.4 local, bootstrap Oracle canónico, dos empresas/usuarios efímeros y roles/membresías con hash BCrypt real creado por SeedAdmin (no JWT mock).
+- La suite exige dos logins HTTP reales, verificación de membresía propia y rechazo cruzado, altas autorizadas de tipos de cliente, clientes y proveedores en A/B, unicidad natural por empresa, GET y detalle aislados, GET ventas/compras/facturas y bloqueos explícitos 503 para ventas/compras/pagos, PDF, documentos y ZIP no habilitados.
+- Se comprueban también dos hosts públicos exactos aprobados y rechazo de host desconocido; el secreto JWT, contraseña y credenciales MySQL son exclusivamente literales del contenedor efímero CI, jamás Aiven/DEV Render/QA/PROD. Test HTTP en `127.0.0.1:5005` y SQL solo en contenedor mysql:8.4; se falla cerrado si no se puede autenticar o resolver owner.
+- **Esta certificación es parcial**, sobre los caminos acotados y su HEAD; no se declara P4 integral hasta CI exact-head aprobado y flujos completos de ventas, compras, inventario, facturas/PDF/Excel/ZIP, Cloudinary, reportes y workers. No se activan flags en Render ni se crea segunda empresa real. REVIEW_FIRST, P0/P1=0 y CI causal obligatorios.
+
 ## 2026-10-14 — P4 lectura documental privada de ventas, compras y facturas A/B (candidato DEV)
 
 - Nueva lista blanca acotada detrás de `MultiEmpresa:PrivateReadPilotEnabled=false` (apagada por defecto): `GET /ventas` y `/ventas/{id:int}` (Ventas.Ver), `GET /compras` y `/compras/{id:int}` (Compras.Ver), `GET /facturas`, `/facturas/{id:int}` y `/facturas/venta/{ventaId:int}` (Facturacion.Ver). Sólo IDs positivos ASCII, sin aceptar prefijos ni subrutas.
