@@ -1,0 +1,205 @@
+name: DEV - P4 Owner Approved Javier Platform Authority
+
+on:
+  pull_request:
+    branches: [dev]
+    paths:
+      - .github/workflows/p4-javier-authorized-platform-grant.yml
+      - scripts/ops/p4_javier_platform_grant.py
+      - docs/runbooks/P4_IDENTIDAD_PLATAFORMA_JAVIER_DEV.md
+  push:
+    branches: [dev]
+    paths:
+      - .github/workflows/p4-javier-authorized-platform-grant.yml
+  workflow_dispatch:
+    inputs:
+      confirm_rollback:
+        description: "Explicitly authorize deactivation only of the P4-created Javier role and assignment"
+        type: choice
+        required: true
+        options: [NOT_AUTHORIZED, REVOKE_ONLY_P4_JAVIER]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: solqaryn-dev-p4-javier-platform-authority
+  cancel-in-progress: false
+
+jobs:
+  validate-source:
+    name: Validar changeset DEV sin modificar la DB
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Project scope y sintaxis
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = "solqaryn/Solqaryn"
+          node scripts/verify-project-scope.mjs
+          python3 -m py_compile scripts/ops/p4_javier_platform_grant.py
+          bash -n scripts/backup_dev.sh scripts/restore_dev.sh
+
+  authorized-operation:
+    name: Respaldo restaurado -> transaccion grant o rollback SOLO DEV
+    needs: validate-source
+    if: >-
+      ${{
+        (github.event_name == 'push' && github.ref_name == 'dev' &&
+         contains(github.event.head_commit.message, '[P4-JAVIER-OWNER-APPROVED]')) ||
+        (github.event_name == 'workflow_dispatch' && github.ref_name == 'dev' &&
+         inputs.confirm_rollback == 'REVOKE_ONLY_P4_JAVIER')
+      }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: DEV
+    services:
+      mysql-restore-disposable:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: solqaryn-p4-ci-disposable-only
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -psolqaryn-p4-ci-disposable-only --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      DB_HOST: ${{ vars.SOLQARYN_DEV_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_DEV_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_DEV_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_DEV_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_DEV_DB_PASSWORD }}
+      BACKUP_PASSPHRASE: ${{ secrets.SOLQARYN_DEV_BACKUP_PASSPHRASE }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scope lock y dependencias de solo DEV
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = "solqaryn/Solqaryn"
+          test "$GITHUB_REF_NAME" = "dev"
+          test "$DB_HOST" = "solqaryn-mysql-solqaryn.h.aivencloud.com"
+          test "$DB_PORT" = "14402"
+          test "$DB_NAME" = "solqaryn_dev"
+          test "$DB_USER" = "solqaryn_dev_user"
+          test -n "$DB_PASSWORD" && test -n "$BACKUP_PASSPHRASE"
+          node scripts/verify-project-scope.mjs
+          sudo apt-get update -qq >/dev/null
+          sudo apt-get install -y -qq mysql-client >/dev/null
+          python3 -m pip install --disable-pip-version-check --no-input --quiet PyMySQL==1.1.1
+          echo "P4_DEV_SCOPE=PASS;PROD_TOUCHED=NO"
+
+      - name: Elegir modo permitido
+        id: mode
+        shell: bash
+        env:
+          REQUESTED_ROLLBACK: ${{ inputs.confirm_rollback }}
+        run: |
+          set -euo pipefail
+          if test "$GITHUB_EVENT_NAME" = "push"; then
+            echo "action=apply" >> "$GITHUB_OUTPUT"
+          else
+            test "$GITHUB_EVENT_NAME" = "workflow_dispatch"
+            test "$REQUESTED_ROLLBACK" = "REVOKE_ONLY_P4_JAVIER"
+            echo "action=rollback" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Revalidar Javier sin escribir
+        shell: bash
+        run: |
+          set -euo pipefail
+          if test "${{ steps.mode.outputs.action }}" = "apply"; then
+            python3 scripts/ops/p4_javier_platform_grant.py preflight
+          else
+            python3 scripts/ops/p4_javier_platform_grant.py verify
+          fi
+
+      - name: Crear BACKUP cifrado AES-256 de DEV
+        id: backup
+        shell: bash
+        env:
+          SOLQARYN_ENVIRONMENT: dev
+          DB_SSL_MODE: REQUIRED
+          OUTPUT_DIR: ${{ runner.temp }}/solqaryn-p4-javier-backups
+          RETENTION_DAYS: '14'
+          BACKUP_LABEL: dev
+        run: |
+          set -euo pipefail
+          umask 077
+          bash scripts/backup_dev.sh | tee "$RUNNER_TEMP/p4-javier-backup.log"
+          backup="$(sed -n 's/^SOLQARYN_BACKUP_FILE=//p' "$RUNNER_TEMP/p4-javier-backup.log")"
+          checksum="$(sed -n 's/^SOLQARYN_BACKUP_SHA256=//p' "$RUNNER_TEMP/p4-javier-backup.log")"
+          metadata="$(sed -n 's/^SOLQARYN_BACKUP_METADATA=//p' "$RUNNER_TEMP/p4-javier-backup.log")"
+          test -s "$backup" && test -s "$checksum" && test -s "$metadata"
+          grep -q '"environment": "dev"' "$metadata"
+          grep -q '"encrypted": true' "$metadata"
+          grep -q '"productionInScope": false' "$metadata"
+          echo "file=$backup" >> "$GITHUB_OUTPUT"
+          echo "checksum=$checksum" >> "$GITHUB_OUTPUT"
+          echo "dir=$(dirname "$backup")" >> "$GITHUB_OUTPUT"
+          echo "P4_BACKUP_REAL_ENCRYPTED=PASS"
+
+      - name: Restaurar el mismo backup en MySQL descartable y comprobar integridad
+        id: restore
+        shell: bash
+        env:
+          RESTORE_ENVIRONMENT: ci
+          TARGET_DB_HOST: 127.0.0.1
+          TARGET_DB_PORT: '3306'
+          TARGET_DB_NAME: solqaryn_p4_restore_drill
+          TARGET_DB_USER: root
+          TARGET_DB_PASSWORD: solqaryn-p4-ci-disposable-only
+          TARGET_DB_SSL_MODE: DISABLED
+          BACKUP_FILE: ${{ steps.backup.outputs.file }}
+          BACKUP_CHECKSUM_FILE: ${{ steps.backup.outputs.checksum }}
+          ALLOW_DESTRUCTIVE_RESTORE: YES_SOLQARYN_DISPOSABLE_RESTORE
+          RESTORE_FILES_DIR: ${{ runner.temp }}/solqaryn-p4-disposable-files
+          RESTORE_REPORT_PATH: ${{ runner.temp }}/solqaryn-p4-restore-report.json
+        run: |
+          set -euo pipefail
+          bash scripts/restore_dev.sh | tee "$RUNNER_TEMP/p4-javier-restore.log"
+          test -s "$RESTORE_REPORT_PATH"
+          grep -q '"checksumsVerified": true' "$RESTORE_REPORT_PATH"
+          grep -q '"allTableRowCountsVerified": true' "$RESTORE_REPORT_PATH"
+          grep -q '"productionTouched": false' "$RESTORE_REPORT_PATH"
+          grep -q '"status": "SUCCESS"' "$RESTORE_REPORT_PATH"
+          echo "status=VERIFIED" >> "$GITHUB_OUTPUT"
+          echo "P4_RESTORE_SAME_ARTIFACT=PASS"
+
+      - name: Aplicar asignacion o rollback con auditoria en la misma transaccion
+        id: mutation
+        shell: bash
+        env:
+          P4_OWNER_APPROVAL: P4_JAVIER_OWNER_APPROVED_20261015
+          P4_BACKUP_RESTORED: ${{ steps.restore.outputs.status }}
+          P4_ROLLBACK_APPROVAL: ${{ inputs.confirm_rollback }}
+        run: |
+          set -euo pipefail
+          test "$P4_BACKUP_RESTORED" = "VERIFIED"
+          python3 scripts/ops/p4_javier_platform_grant.py "${{ steps.mode.outputs.action }}" \
+            | tee "$RUNNER_TEMP/p4-javier-authority-result.txt"
+
+      - name: Readback exacto desde conexion nueva a Aiven DEV
+        if: steps.mode.outputs.action == 'apply'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/ops/p4_javier_platform_grant.py verify \
+            | tee -a "$RUNNER_TEMP/p4-javier-authority-result.txt"
+
+      - name: Conservar artefacto cifrado, checksums y evidencia sin secretos
+        if: always() && steps.backup.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: p4-javier-dev-owner-grant-backup-${{ github.run_id }}
+          path: |
+            ${{ steps.backup.outputs.dir }}/*.gpg
+            ${{ steps.backup.outputs.dir }}/*.gpg.sha256
+            ${{ steps.backup.outputs.dir }}/*.meta.json
+            ${{ runner.temp }}/solqaryn-p4-restore-report.json
+            ${{ runner.temp }}/p4-javier-authority-result.txt
+          if-no-files-found: error
+          retention-days: 14
