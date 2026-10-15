@@ -483,7 +483,7 @@ public sealed class UnscopedCommercialTenantGuardTests
         permisos.Verify(x => x.TienePermisoAsync(
             empresaA.Id, ModuloSistema.Productos, AccionPermiso.Ver), Times.Exactly(2));
         permisos.Verify(x => x.TienePermisoAsync(
-            empresaB.Id, ModuloSistema.Productos, AccionPermiso.Ver), Times.Once());
+            empresaB.Id, ModuloSistema.Productos, AccionPermiso.Ver), Times.Exactly(2));
     }
 
     private static AppDbContext NuevoContexto()
