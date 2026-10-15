@@ -12,11 +12,11 @@ using Microsoft.EntityFrameworkCore;
 namespace Solqaryn.API.Middleware;
 
 /// <summary>
-/// Contención P0: las rutas comerciales privadas siguen en cuarentena con
-/// 2+ empresas, incluso si una está inactiva. La única excepción delimitada
-/// es /tienda/* con Host exacto previamente aprobado por configuración del
-/// servidor y empresa activa comprobada de nuevo contra la base real.
-/// No se habilitan exportaciones, archivos ni tareas internas por este cambio.
+/// Contención P0: con 2+ empresas la API privada permanece en cuarentena.
+/// Excepciones mínimas: tienda pública ligada a Host autorizado, lecturas de
+/// maestros y altas de clientes/proveedores con opt-in independiente y RBAC
+/// comprobado en servidor. No habilita ventas, compras, facturación, inventario,
+/// medios, exportaciones, jobs ni rutas administrativas generales.
 /// </summary>
 public sealed class UnscopedCommercialTenantGuardMiddleware
 {
@@ -122,10 +122,9 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         // desbloquean al habilitar hosts públicos: conservan cuarentena P0.
         if (empresas.Length != 1)
         {
-            // Opt-in apagado por defecto: piloto sólo de lecturas de maestros
-            // con membresía+RBAC verificadas antes de entrar a MVC/EF.
-            // No habilita CRUD, archivos, exportaciones, jobs ni onboarding A/B.
-            if (empresas.Length == 2 && await AutorizarLecturaPilotoAsync(httpContext, db))
+            // Pilotos independientes, apagados por defecto. Solo rutas exactas
+            // y acción RBAC correspondiente; ninguna bandera habilita CRUD general.
+            if (empresas.Length == 2 && await AutorizarOperacionPilotoAsync(httpContext, db))
                 return;
 
             await RechazarAsync(httpContext);
@@ -135,27 +134,38 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         await _next(httpContext);
     }
 
-    private async Task<bool> AutorizarLecturaPilotoAsync(HttpContext http, AppDbContext db)
+    private async Task<bool> AutorizarOperacionPilotoAsync(HttpContext http, AppDbContext db)
     {
-        // Nada se desbloquea accidentalmente al desplegar; requiere opt-in
-        // explícito y un principal previamente autenticado por ASP.NET Core.
+        // Selección de ruta/método ANTES de emitir una marca empresarial.
+        // Las dos banderas se controlan por separado y siguen false por defecto.
         var services = http.RequestServices;
-        if (services?.GetService<IConfiguration>()?.GetValue<bool>("MultiEmpresa:PrivateReadPilotEnabled") != true ||
-            !HttpMethods.IsGet(http.Request.Method) ||
-            http.User.Identity?.IsAuthenticated != true)
+        var config = services?.GetService<IConfiguration>();
+        if (http.User.Identity?.IsAuthenticated != true || config is null)
             return false;
 
-        // Lista exacta: jamás aceptar un prefijo, subruta, descarga o mutación.
+        var lectura = HttpMethods.IsGet(http.Request.Method) &&
+                      config.GetValue<bool>("MultiEmpresa:PrivateReadPilotEnabled");
+        var alta = HttpMethods.IsPost(http.Request.Method) &&
+                   config.GetValue<bool>("MultiEmpresa:PrivateWritePilotEnabled");
+        if (!lectura && !alta)
+            return false;
+
         ModuloSistema modulo;
-        if (EsRutaExacta(http.Request.Path, "/productos"))
+        AccionPermiso accion;
+        if (lectura && EsRutaExacta(http.Request.Path, "/productos"))
             modulo = ModuloSistema.Productos;
-        else if (EsRutaExacta(http.Request.Path, "/clientes"))
+        else if (lectura && EsRutaExacta(http.Request.Path, "/clientes"))
             modulo = ModuloSistema.Clientes;
-        else if (EsRutaExacta(http.Request.Path, "/proveedores"))
+        else if (lectura && EsRutaExacta(http.Request.Path, "/proveedores"))
+            modulo = ModuloSistema.Proveedores;
+        else if (alta && EsRutaExacta(http.Request.Path, "/clientes"))
+            modulo = ModuloSistema.Clientes;
+        else if (alta && EsRutaExacta(http.Request.Path, "/proveedores"))
             modulo = ModuloSistema.Proveedores;
         else
             return false;
 
+        accion = alta ? AccionPermiso.Crear : AccionPermiso.Ver;
         var permisos = services.GetService<IPermisoService>();
         if (permisos is null)
             return false;
@@ -163,7 +173,8 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         int empresaId;
         try
         {
-            // X-Empresa-Id sólo selecciona; jamás autoriza por sí solo.
+            // La cabecera selecciona, pero la membresía y el permiso se
+            // verifican server-side: nunca autoriza por sí sola.
             empresaId = await TenantPermissionContext.RequireEmpresaIdAsync(
                 http, http.RequestAborted);
         }
@@ -172,11 +183,9 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
             return false;
         }
 
-        // La verificación real consulta membresía activa + permisos del usuario.
-        if (!await permisos.TienePermisoAsync(empresaId, modulo, AccionPermiso.Ver))
+        if (!await permisos.TienePermisoAsync(empresaId, modulo, accion))
             return false;
 
-        // Empresa desactivada, inexistente o ID falsificado: nunca publicar.
         var activa = await db.Set<Empresa>()
             .IgnoreQueryFilters()
             .AsNoTracking()
@@ -184,8 +193,9 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         if (!activa)
             return false;
 
-        // Requiere el filtro RequierePermiso original nuevamente en MVC.
-        // El DbContext filtra registros por esta marca verificada por solicitud.
+        // Requiere una SEGUNDA autorización en el filtro MVC RequierePermiso.
+        // La misma marca controla owner de la nueva fila en los servicios
+        // comerciales, filtros de lectura EF y auditoría por tenant.
         TenantPermissionContext.MarkAuthorizedEmpresaId(http, empresaId);
         await _next(http);
         return true;
