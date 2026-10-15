@@ -41,7 +41,7 @@ public sealed class CommercialReadIntegrationsPilotGuardTests
                 {
                     ["MultiEmpresa:PrivatePdfPilotEnabled"] = flags.ToString(),
                     ["MultiEmpresa:PrivateReportPilotEnabled"] = flags.ToString(),
-                    ["MultiEmpresa:PrivateInventoryReadPilotEnabled"] = flags.ToString(),
+                    ["MultiEmpresa:PrivateInventarioReadPilotEnabled"] = flags.ToString(),
                     ["MultiEmpresa:PrivateReadPilotEnabled"] = "false",
                     ["MultiEmpresa:PrivateDraftPilotEnabled"] = "false",
                     ["MultiEmpresa:PrivateConfirmPilotEnabled"] = "false",

@@ -65,7 +65,7 @@ jobs:
       MultiEmpresa__PrivateConfirmPilotEnabled: 'true'
       MultiEmpresa__PrivatePdfPilotEnabled: 'true'
       MultiEmpresa__PrivateReportPilotEnabled: 'true'
-      MultiEmpresa__PrivateInventoryReadPilotEnabled: 'true'
+      MultiEmpresa__PrivateInventarioReadPilotEnabled: 'true'
       PublicStore__EnableMultiEmpresaBinding: 'true'
       PublicStore__HostBindings__0__Host: 'store-a.p4.test'
       PublicStore__HostBindings__0__EmpresaId: '1'

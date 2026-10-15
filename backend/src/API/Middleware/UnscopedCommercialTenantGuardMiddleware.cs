@@ -159,7 +159,7 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         var reportes = HttpMethods.IsGet(http.Request.Method) &&
                        config.GetValue<bool>("MultiEmpresa:PrivateReportPilotEnabled");
         var inventario = HttpMethods.IsGet(http.Request.Method) &&
-                         config.GetValue<bool>("MultiEmpresa:PrivateInventoryReadPilotEnabled");
+                         config.GetValue<bool>("MultiEmpresa:PrivateInventarioReadPilotEnabled");
         if (!lectura && !alta && !borrador && !confirmar &&
             !pdf && !reportes && !inventario)
             return false;
