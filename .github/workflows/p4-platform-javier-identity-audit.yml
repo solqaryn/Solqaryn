@@ -1,0 +1,82 @@
+name: DEV - P4 Javier platform identity read-only
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - .github/workflows/p4-platform-javier-identity-audit.yml
+      - scripts/ops/p4-platform-javier-identity-readonly.sql
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect-identity:
+    name: Identidad Javier en MySQL DEV (solo lectura)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: DEV
+    env:
+      DB_HOST: ${{ vars.SOLQARYN_DEV_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_DEV_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_DEV_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_DEV_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_DEV_DB_PASSWORD }}
+    steps:
+      - name: Validar alcance exacto SOLQARYN DEV
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = "solqaryn/Solqaryn"
+          test "$GITHUB_REF_NAME" = "dev"
+          test "$DB_HOST" = "solqaryn-mysql-solqaryn.h.aivencloud.com"
+          test "$DB_PORT" = "14402"
+          test "$DB_NAME" = "solqaryn_dev"
+          test "$DB_USER" = "solqaryn_dev_user"
+          test -n "$DB_PASSWORD"
+          echo "SCOPE=SOLQARYN_DEV_ONLY;DDL=NONE;DML=NONE"
+
+      - name: Checkout del código auditado
+        uses: actions/checkout@v4
+
+      - name: Instalar cliente MySQL
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq >/dev/null
+          sudo apt-get install -y -qq mysql-client >/dev/null
+
+      - name: Consultar exclusivamente identidad y autoridad existentes
+        shell: bash
+        run: |
+          set -euo pipefail
+          export MYSQL_PWD="$DB_PASSWORD"
+          trap 'unset MYSQL_PWD' EXIT
+          result="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" \
+            --ssl-mode=REQUIRED --connect-timeout=12 "$DB_NAME" --batch --skip-column-names \
+            < scripts/ops/p4-platform-javier-identity-readonly.sql)"
+          # El script imprime únicamente estados, rol legacy y conteos de autoridad.
+          # No se leen hashes, contraseñas, JWT, emails ni IDs internos de usuario.
+          printf '%s\n' "$result"
+          exact="$(printf '%s\n' "$result" | sed -n 's/^EXACT_LOGIN_COUNT=//p')"
+          state="$(printf '%s\n' "$result" | sed -n 's/^ACCOUNT_STATUS=//p')"
+          active="$(printf '%s\n' "$result" | sed -n 's/^ACTIVE_PLATFORM_ADMIN_ASSIGNMENTS=//p')"
+          test -n "$exact" && test -n "$state" && test -n "$active"
+          {
+            echo "### Microfase 1 — Identidad SOLQARYN (solo lectura)"
+            echo ""
+            echo "- Rama: dev"
+            echo "- Base: Aiven DEV / esquema solqaryn_dev"
+            echo "- Usuario evaluado: \`Javier\`"
+            echo "- Coincidencias exactas: $exact"
+            echo "- Estado de cuenta: $state"
+            echo "- Asignaciones válidas de administrador de plataforma: $active"
+            if test "$exact" = "1" && test "$state" = "ACTIVE" && test "$active" = "1"; then
+              echo "- Dictamen: \`PLATFORM_IDENTITY_PRESENT\`"
+            else
+              echo "- Dictamen: \`STOP_NO_AUTOMATIC_PRIVILEGE\`"
+              echo "- Requiere revisión de rol/identidad y autorización específica antes de cualquier concesión."
+            fi
+            echo "- Escrituras a MySQL: cero; ningún cambio de permisos, contraseña ni empresa."
+          } >> "$GITHUB_STEP_SUMMARY"

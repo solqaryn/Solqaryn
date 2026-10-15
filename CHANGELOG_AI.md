@@ -1,3 +1,9 @@
+## 2026-10-15 — DEV P4: auditoría de identidad de plataforma (Javier), solo lectura
+
+- Se añade workflow GitHub Environment DEV `p4-platform-javier-identity-audit.yml`, consulta segura `scripts/ops/p4-platform-javier-identity-readonly.sql` y runbook `docs/runbooks/P4_IDENTIDAD_PLATAFORMA_JAVIER_DEV.md`.
+- Valida usuario exacto, rol legacy, membresías empresariales, asignación real `UsuarioRolesPlataforma`, actividad y ámbito global con `START TRANSACTION READ ONLY`, TLS, sin impresión de secretos/IDs.
+- No modifica MySQL, Render, banderas, la empresa histórica inactiva, credenciales ni permisos. Si falta rol de plataforma: STOP explícito y asignación posterior manual autorizada/auditada. Permanece pendiente comprobar evidencia en base DEV y microfases posteriores para acceso web.
+
 ## 2026-10-15 — P4: edición de clientes/proveedores A/B con RBAC (candidato DEV)
 
 - `MultiEmpresa:PrivateMasterEditPilotEnabled=false` preserva la cuarentena de las demás rutas y habilita, solo con opt-in, `PUT /clientes/{id:positivo}` y `PUT /proveedores/{id:positivo}` para dos empresas. Exige JWT, empresa/membresía activa verificada desde servidor, `Clientes.Editar` o `Proveedores.Editar`, segundo filtro MVC y repositorios EF con propietario de empresa.
