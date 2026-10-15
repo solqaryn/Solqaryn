@@ -249,5 +249,80 @@ for (const [path, payload] of [
     path + ': documento B incorporó producto ajeno A, HTTP=' + denied.status);
 }
 
-console.log('P4 HTTP JWT A/B PASS: membresías, CRUD maestros, productos sin archivos y borradores Compra/Venta de A/B.');
-console.log('Aún no certifica confirmaciones, pagos, inventario, Cloudinary, PDF/Excel/ZIP, reportes ni jobs.');
+// Confirmaciones físicas con MySQL real, locks y JWT RBAC de las dos empresas.
+// Primero ataques cruzados: ningún documento de B cambia desde A.
+for (const [path, label] of [
+  ['/compras/' + purchaseBId + '/confirmar', 'confirmación compra B desde A'],
+  ['/ventas/' + saleBId + '/confirmar', 'confirmación venta B desde A']
+]) {
+  const denied = await call('POST', path, jwtA, aId);
+  assert([400, 403, 404, 409, 503].includes(denied.status),
+    label + ' indebidamente permitió acceso, HTTP=' + denied.status);
+}
+const bBefore = unwrap((await call('GET', '/ventas/' + saleBId, jwtB, bId)).payload);
+assert.equal(String(bBefore.estado).toLowerCase(), 'borrador',
+  'El intento A sobre la venta B no debe confirmar B.');
+
+const qty = (token, company, productId) =>
+  call('GET', '/productos/' + productId, token, company).then(response => {
+    expectStatus(response, 200, 'consultar stock propio');
+    const amount = Number(unwrap(response.payload)?.cantidad);
+    assert(Number.isFinite(amount), 'Producto sin cantidad');
+    return amount;
+  });
+const initialStockA = await qty(jwtA, aId, productAId);
+const initialStockB = await qty(jwtB, bId, productBId);
+
+for (const [token, company, purchase, label] of [
+  [jwtA, aId, purchaseAId, 'A'], [jwtB, bId, purchaseBId, 'B']
+]) {
+  expectStatus(await call('POST', '/compras/' + purchase + '/confirmar', token, company),
+    200, 'confirmar compra ' + label);
+}
+assert.equal(await qty(jwtA, aId, productAId), initialStockA + 2,
+  'Compra de A debe incrementar sólo inventario A');
+assert.equal(await qty(jwtB, bId, productBId), initialStockB + 2,
+  'Compra de B debe incrementar sólo inventario B');
+
+for (const [token, company, sale, label] of [
+  [jwtA, aId, saleAId, 'A'], [jwtB, bId, saleBId, 'B']
+]) {
+  expectStatus(await call('POST', '/ventas/' + sale + '/confirmar', token, company),
+    200, 'confirmar venta ' + label);
+}
+assert.equal(await qty(jwtA, aId, productAId), initialStockA + 1,
+  'Venta A sólo descuenta inventario propio');
+assert.equal(await qty(jwtB, bId, productBId), initialStockB + 1,
+  'Venta B sólo descuenta inventario propio');
+
+async function invoiceForSale(saleId, token, company, expectedName) {
+  const sale = await call('GET', '/ventas/' + saleId, token, company);
+  expectStatus(sale, 200, 'venta confirmada ' + expectedName);
+  const value = unwrap(sale.payload);
+  assert.equal(String(value.estado).toLowerCase(), 'confirmada');
+  const facturaId = Number(value.facturaId);
+  assert(facturaId > 0, expectedName + ': venta confirmada sin factura');
+  const doc = await call('GET', '/facturas/' + facturaId, token, company);
+  expectStatus(doc, 200, 'factura privada ' + expectedName);
+  const data = unwrap(doc.payload);
+  assert.equal(data.empresaNombre, expectedName,
+    'Factura contiene identidad de empresa incorrecta o global.');
+  return facturaId;
+}
+const invoiceAId = await invoiceForSale(saleAId, jwtA, aId, 'Empresa A JWT');
+const invoiceBId = await invoiceForSale(saleBId, jwtB, bId, 'Empresa B JWT');
+expectStatus(await call('GET', '/facturas/' + invoiceBId, jwtA, aId),
+  404, 'Factura B invisible para A');
+expectStatus(await call('GET', '/facturas/' + invoiceAId, jwtB, bId),
+  404, 'Factura A invisible para B');
+
+for (const [token, company, sale] of [
+  [jwtA, aId, saleAId], [jwtB, bId, saleBId]
+]) {
+  const duplicate = await call('POST', '/ventas/' + sale + '/confirmar', token, company);
+  assert([400, 409].includes(duplicate.status),
+    'No debe permitir doble confirmación de la misma venta, HTTP=' + duplicate.status);
+}
+
+console.log('P4 HTTP/MySQL real A/B PASS: clientes, productos, compras confirmadas, inventario, ventas confirmadas y facturas con identidad empresarial correcta.');
+console.log('No certifica pagos, anulaciones, Cloudinary, PDF/Excel/ZIP, reportes ni jobs.');
