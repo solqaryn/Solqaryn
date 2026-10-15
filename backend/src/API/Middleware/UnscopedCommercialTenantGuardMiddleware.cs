@@ -169,6 +169,16 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                              EsRutaExacta(http.Request.Path, "/tipo-clientes/activos") ||
                              EsRutaDetallePositiva(http.Request.Path, "/tipo-clientes")))
             modulo = ModuloSistema.TiposClientes;
+        else if (lectura && (EsRutaExacta(http.Request.Path, "/ventas") ||
+                             EsRutaDetallePositiva(http.Request.Path, "/ventas")))
+            modulo = ModuloSistema.Ventas;
+        else if (lectura && (EsRutaExacta(http.Request.Path, "/compras") ||
+                             EsRutaDetallePositiva(http.Request.Path, "/compras")))
+            modulo = ModuloSistema.Compras;
+        else if (lectura && (EsRutaExacta(http.Request.Path, "/facturas") ||
+                             EsRutaDetallePositiva(http.Request.Path, "/facturas") ||
+                             EsRutaDetallePositiva(http.Request.Path, "/facturas/venta")))
+            modulo = ModuloSistema.Facturacion;
         else if (alta && EsRutaExacta(http.Request.Path, "/tipo-clientes"))
             modulo = ModuloSistema.TiposClientes;
         else if (alta && EsRutaExacta(http.Request.Path, "/clientes"))
