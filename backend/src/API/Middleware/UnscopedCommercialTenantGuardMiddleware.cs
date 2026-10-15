@@ -152,11 +152,18 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
 
         ModuloSistema modulo;
         AccionPermiso accion;
-        if (lectura && EsRutaExacta(http.Request.Path, "/productos"))
+        if (lectura && (EsRutaExacta(http.Request.Path, "/productos") ||
+                        EsRutaDetallePositiva(http.Request.Path, "/productos")))
             modulo = ModuloSistema.Productos;
-        else if (lectura && EsRutaExacta(http.Request.Path, "/clientes"))
+        else if (lectura && (EsRutaExacta(http.Request.Path, "/clientes") ||
+                             EsRutaExacta(http.Request.Path, "/clientes/activos") ||
+                             EsRutaExacta(http.Request.Path, "/clientes/buscar") ||
+                             EsRutaDetallePositiva(http.Request.Path, "/clientes")))
             modulo = ModuloSistema.Clientes;
-        else if (lectura && EsRutaExacta(http.Request.Path, "/proveedores"))
+        else if (lectura && (EsRutaExacta(http.Request.Path, "/proveedores") ||
+                             EsRutaExacta(http.Request.Path, "/proveedores/activos") ||
+                             EsRutaExacta(http.Request.Path, "/proveedores/buscar") ||
+                             EsRutaDetallePositiva(http.Request.Path, "/proveedores")))
             modulo = ModuloSistema.Proveedores;
         else if (alta && EsRutaExacta(http.Request.Path, "/clientes"))
             modulo = ModuloSistema.Clientes;
@@ -242,6 +249,19 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         var token = segmentos[2];
         return token.Length is >= 32 and <= 160 &&
                token.All(c => char.IsAsciiLetterOrDigit(c) || c is '-' or '_');
+    }
+
+    // Sólo /maestro/{id:int} con un segmento numérico positivo, sin subrutas.
+    private static bool EsRutaDetallePositiva(PathString path, string prefijo)
+    {
+        var ruta = path.Value;
+        if (ruta is null || !ruta.StartsWith(prefijo + "/", StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        var segmento = ruta[(prefijo.Length + 1)..];
+        return segmento.Length > 0 &&
+               segmento.All(caracter => caracter >= '0' && caracter <= '9') &&
+               int.TryParse(segmento, out var id) && id > 0;
     }
 
     private static bool EsRutaExacta(PathString path, string expected) =>
