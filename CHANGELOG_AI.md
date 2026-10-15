@@ -1,3 +1,8 @@
+## 2026-10-15 — DEV P4: corrección de lectura de capitalización de usuario plataforma
+
+- La auditoría causal Aiven DEV #38784448668 halló una única cuenta coincidente sin distinguir mayúsculas, pero ninguna coincidencia exacta para `Javier`.
+- Se corrige el diagnóstico para usar la coincidencia única sin alterar el usuario almacenado ni conceder privilegios. El dictamen continúa fail-closed y exige una sola cuenta activa y una asignación válida a rol global, siempre con cero escrituras a MySQL.
+
 ## 2026-10-15 — DEV P4: auditoría de identidad de plataforma (Javier), solo lectura
 
 - Se añade workflow GitHub Environment DEV `p4-platform-javier-identity-audit.yml`, consulta segura `scripts/ops/p4-platform-javier-identity-readonly.sql` y runbook `docs/runbooks/P4_IDENTIDAD_PLATAFORMA_JAVIER_DEV.md`.
