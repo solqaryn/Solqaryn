@@ -147,7 +147,7 @@ for (const path of ['/ventas', '/compras', '/facturas']) {
   await deny('GET', path, jwtA, bId, 'spoof lectura ' + path);
 }
 for (const [method, path] of [
-  ['POST', '/ventas/1/confirmar'], ['POST', '/compras/1/confirmar'],
+  ['POST', '/ventas/1/anular'], ['POST', '/compras/1/anular'],
   ['POST', '/facturas/1/pagos'], ['GET', '/facturas/1/pdf'],
   ['GET', '/compras/1/documentos'],
   ['GET', '/productos/1/imagenes/descargar-todas']
