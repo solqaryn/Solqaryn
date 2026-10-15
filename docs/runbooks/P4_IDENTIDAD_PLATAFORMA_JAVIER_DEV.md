@@ -11,7 +11,7 @@ Repositorio: `solqaryn/Solqaryn`. Rama y Environment GitHub permitidos: `dev` y 
 La auditoría `.github/workflows/p4-platform-javier-identity-audit.yml` se ejecuta en la primera fusión del workflow a `dev`, y permite revalidación posterior mediante `workflow_dispatch` desde `dev`. Consulta con `START TRANSACTION READ ONLY` y TLS requerido la base `solqaryn_dev` utilizando los secretos **ya existentes en GitHub Environment DEV**; jamás copia secretos Render ni registra datos sensibles.
 
 La evidencia consta de:
-- `EXACT_LOGIN_COUNT`: exactamente 1 es obligatorio, comparación sensible a mayúsculas.
+- `EXACT_LOGIN_COUNT`: diagnóstico de capitalización. La identidad autoritativa exige `CASE_INSENSITIVE_LOGIN_COUNT=1`, se muestra en `STORED_LOGIN` y se valida su estado real.
 - `CASE_INSENSITIVE_LOGIN_COUNT`: detectar si el login real usa capitalización distinta.
 - `ACCOUNT_STATUS`: `ACTIVE` requiere `Usuarios.Activo`, `!Bloqueado`, `!Eliminado`.
 - `LEGACY_ROLE`: sólo diagnóstico; `Usuarios.RolId` NO concede autoridad de plataforma.
