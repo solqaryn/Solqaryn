@@ -537,7 +537,7 @@ for (const [jwt, company, label, supplier] of [
   const stockBefore = await qty(jwt, company, productId);
   const draft = await call('POST', '/compras', jwt, company, {
     proveedorId: supplier, proveedorNombre: 'Proveedor privado ' + label,
-    detalles: [{ productoId, productoVarianteId: variantId,
+    detalles: [{ productoId: productId, productoVarianteId: variantId,
       cantidad: 1, costoUnitario: 10.00 }]
   });
   expectStatus(draft, 201, 'compra anulable ' + label);
