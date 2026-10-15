@@ -12,7 +12,7 @@ La auditoría `.github/workflows/p4-platform-javier-identity-audit.yml` se ejecu
 
 La evidencia consta de:
 - `EXACT_LOGIN_COUNT`: diagnóstico de capitalización. La identidad autoritativa exige `CASE_INSENSITIVE_LOGIN_COUNT=1`, se muestra en `STORED_LOGIN` y se valida su estado real.
-- `CASE_INSENSITIVE_LOGIN_COUNT`: detectar si el login real usa capitalización distinta.
+- `CASE_INSENSITIVE_LOGIN_COUNT`: exige una sola cuenta coincidente sin distinguir mayúsculas, bloqueando identidades ambiguas.
 - `ACCOUNT_STATUS`: `ACTIVE` requiere `Usuarios.Activo`, `!Bloqueado`, `!Eliminado`.
 - `LEGACY_ROLE`: sólo diagnóstico; `Usuarios.RolId` NO concede autoridad de plataforma.
 - `ACTIVE_PLATFORM_ADMIN_ASSIGNMENTS`: válida únicamente con `UsuarioRolesPlataforma.Activa`, usuario activo y rol de ámbito `Plataforma` (`Roles.Ambito=2`), `EmpresaId=NULL`, rol activo/no eliminado y `EsAdministrador=1`.
