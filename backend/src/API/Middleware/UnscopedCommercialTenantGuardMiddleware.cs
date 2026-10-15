@@ -14,8 +14,8 @@ namespace Solqaryn.API.Middleware;
 /// <summary>
 /// Contención P0: con 2+ empresas la API privada permanece en cuarentena.
 /// Excepciones mínimas: tienda pública ligada a Host autorizado, lecturas de
-/// maestros y altas de clientes/proveedores con opt-in independiente y RBAC
-/// comprobado en servidor. No habilita ventas, compras, facturación, inventario,
+/// maestros, tipos de cliente y altas de clientes/proveedores/tipos con
+/// opt-in independiente y RBAC. No habilita ventas, compras, facturación, inventario,
 /// medios, exportaciones, jobs ni rutas administrativas generales.
 /// </summary>
 public sealed class UnscopedCommercialTenantGuardMiddleware
@@ -165,6 +165,12 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                              EsRutaExacta(http.Request.Path, "/proveedores/buscar") ||
                              EsRutaDetallePositiva(http.Request.Path, "/proveedores")))
             modulo = ModuloSistema.Proveedores;
+        else if (lectura && (EsRutaExacta(http.Request.Path, "/tipo-clientes") ||
+                             EsRutaExacta(http.Request.Path, "/tipo-clientes/activos") ||
+                             EsRutaDetallePositiva(http.Request.Path, "/tipo-clientes")))
+            modulo = ModuloSistema.TiposClientes;
+        else if (alta && EsRutaExacta(http.Request.Path, "/tipo-clientes"))
+            modulo = ModuloSistema.TiposClientes;
         else if (alta && EsRutaExacta(http.Request.Path, "/clientes"))
             modulo = ModuloSistema.Clientes;
         else if (alta && EsRutaExacta(http.Request.Path, "/proveedores"))
