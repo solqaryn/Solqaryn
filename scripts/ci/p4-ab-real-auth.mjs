@@ -149,12 +149,16 @@ for (const path of ['/ventas', '/compras', '/facturas']) {
 for (const [method, path] of [
   ['POST', '/ventas/1/anular'], ['POST', '/compras/1/anular'],
   ['POST', '/facturas/1/pagos'], ['GET', '/facturas/1/historial-envios'],
-  ['GET', '/compras/1/documentos'],
   ['GET', '/productos/1/imagenes/descargar-todas/otro']
 ]) {
   expectStatus(await call(method, path, jwtA, aId), 503,
     'cuarentena ' + method + ' ' + path);
 }
+// El listado de documentos de compra ya está en la whitelist del piloto.
+// Un ID inexistente o ajeno debe ser rechazado SIN exigir 503 global.
+const missingDocs = await call('GET', '/compras/2147483647/documentos', jwtA, aId);
+assert([400, 403, 404, 503].includes(missingDocs.status),
+  'Documentos de compra inexistente se expusieron: HTTP=' + missingDocs.status);
 
 expectStatus(await call('GET', '/tienda/categorias', '', null, undefined,
   'store-a.p4.test'), 200, 'tienda Host A');
