@@ -1,3 +1,10 @@
+## 2026-10-15 — DEV: bootstrap de autoridad global Javier aprobado por propietario
+
+- Identidad verificada en Aiven DEV: `javier` activa, rol empresarial legado, sin asignación de plataforma ni rol global administrativo. Empresa existente inactiva; conservarla sin cambios.
+- Operación acotada: PR owner-approved añade script transaccional para crear únicamente rol `SOLQARYN_ADMIN_PLATAFORMA` (Ambito=Plataforma, EmpresaId=NULL, EsAdministrador=true) y una `UsuarioRolesPlataforma` para `javier`. Dos registros críticos `RegistrosAuditoria` en el mismo commit MySQL. No introduce permisos comerciales ni altera JWT, contraseña, Usuario.RolId, UsuarioEmpresas o Empresas.
+- Se exige backup real cifrado AES-256 previo + SHA-256 + restore completo del mismo artifact en MySQL 8.4 descartable, antes de cualquier mutación; la ausencia de cualquiera de esas evidencias bloquea la asignación. Se incluye rollback por desactivación exacta con aprobación específica, sin borrar evidencia.
+- Activación una sola vez desde push protegido a `dev` con marcador `[P4-JAVIER-OWNER-APPROVED]`, nunca en PR/QA/PROD. Revalidación del alcance, identidad y privilegios en MySQL y readback de conexión nueva. La navegación frontend independiente sigue en microfases posteriores.
+
 ## 2026-10-15 — DEV P4: corrección de lectura de capitalización de usuario plataforma
 
 - La auditoría causal Aiven DEV #38784448668 halló una única cuenta coincidente sin distinguir mayúsculas, pero ninguna coincidencia exacta para `Javier`.
