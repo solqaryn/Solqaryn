@@ -62,17 +62,20 @@ jobs:
           exact="$(printf '%s\n' "$result" | sed -n 's/^EXACT_LOGIN_COUNT=//p')"
           state="$(printf '%s\n' "$result" | sed -n 's/^ACCOUNT_STATUS=//p')"
           active="$(printf '%s\n' "$result" | sed -n 's/^ACTIVE_PLATFORM_ADMIN_ASSIGNMENTS=//p')"
-          test -n "$exact" && test -n "$state" && test -n "$active"
+          casefold="$(printf '%s\n' "$result" | sed -n 's/^CASE_INSENSITIVE_LOGIN_COUNT=//p')"
+          stored="$(printf '%s\n' "$result" | sed -n 's/^STORED_LOGIN=//p')"
+          test -n "$exact" && test -n "$state" && test -n "$active" && test -n "$casefold" && test -n "$stored"
           {
             echo "### Microfase 1 — Identidad SOLQARYN (solo lectura)"
             echo ""
             echo "- Rama: dev"
             echo "- Base: Aiven DEV / esquema solqaryn_dev"
             echo "- Usuario evaluado: \`Javier\`"
-            echo "- Coincidencias exactas: $exact"
+            echo "- Coincidencias exactas: $exact; coincidencias sin distinguir mayúsculas: $casefold"
+            echo "- Nombre de usuario persistido: $stored"
             echo "- Estado de cuenta: $state"
             echo "- Asignaciones válidas de administrador de plataforma: $active"
-            if test "$exact" = "1" && test "$state" = "ACTIVE" && test "$active" = "1"; then
+            if test "$casefold" = "1" && test "$stored" != "NONE" && test "$state" = "ACTIVE" && test "$active" = "1"; then
               echo "- Dictamen: \`PLATFORM_IDENTITY_PRESENT\`"
             else
               echo "- Dictamen: \`STOP_NO_AUTOMATIC_PRIVILEGE\`"
