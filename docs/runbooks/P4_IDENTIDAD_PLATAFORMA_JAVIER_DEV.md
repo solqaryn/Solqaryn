@@ -40,17 +40,17 @@ La evidencia consta de:
 
 `PLATFORM_IDENTITY_PRESENT` sólo cuando hay exactamente un usuario activo y exactamente **una** asignación global administrativa válida. En cualquier otro estado: `STOP_NO_AUTOMATIC_PRIVILEGE`, con evidencia y sin mutación. Esto no equivale todavía a poder entrar al frontend: esa validación corresponde a las microfases 2–4.
 
-## Preparación de una eventual asignación, NO ejecutable automáticamente
+## Condiciones previas de asignación, ahora autorizadas (no saltables)
 
-Si falta `UsuarioRolesPlataforma`, **no** modificar `SeedAdmin`, `Usuarios.RolId`, `UsuarioEmpresas`, `Roles` o `Empresas` para forzar un acceso. El hecho de ser administrador empresarial o poseer JWT no equivale a autoridad global.
+Si falta `UsuarioRolesPlataforma`, no modificar `SeedAdmin`, `Usuarios.RolId`, `UsuarioEmpresas` ni `Empresas`. La presente autorización sí permite crear un nuevo rol global específico de SOLQARYN y su membresía, únicamente tras backup real restaurado en CI y validación transaccional. El JWT o el rol empresarial heredado no justifican autoridad global.
 
-Una eventual asignación requiere, **en un acto posterior y autorizado por el propietario**:
+La asignación autorizada requiere y verifica:
 1. Constancia de identidad/autenticación de la cuenta exacta `Javier`, y cuenta vigente, no bloqueada ni eliminada.
-2. Un rol preexistente de plataforma (`Ambito=2`, `EmpresaId=NULL`, `EsAdministrador=1`, activo y no eliminado), validado en MySQL. Si no existe un rol único correcto, STOP y revisar el catálogo, sin crearlo por defecto.
+2. Ausencia de rol global administrativo activo y de cualquier colisión con `SOLQARYN_ADMIN_PLATAFORMA`. Crear exactamente un rol nuevo de plataforma (`Ambito=2`, `EmpresaId=NULL`, `EsAdministrador=1`, `EsSistema=1`, activo) y no importar permisos empresariales.
 3. Inspección de todas las asignaciones `UsuarioRolesPlataforma` existentes, incluidas inactivas y de otros roles. Si hay ambigüedad o asignación duplicada, STOP.
 4. Backup DEV verificado y aprobación de cambio de privilegios con motivo, operador, alcance, SHA y readback.
-5. Únicamente tras esas condiciones, inserción **transaccional y parametrizada** de `UsuarioRolesPlataforma(UsuarioId,RolId,Activa)` y entrada de `RegistrosAuditoria` que registre actor autorizado, ámbito plataforma, acción, motivo y referencia, **sin credenciales, hash ni JWT**. No hay SQL de inserción automática en este changeset.
-6. Validación posterior con la misma auditoría, además de un test negativo con usuario empresarial. Si la asignación de plataforma no queda íntegra, rollback de la transacción; para revertir luego, desactivar exclusivamente la asignación nueva tras revisión de dependencias y auditoría.
+5. Únicamente tras esas condiciones, ejecutar el script transaccional parametrizado que crea el rol y `UsuarioRolesPlataforma` e inserta dos entradas en `RegistrosAuditoria` con actor externo propietario, ámbito de cambio, acción, motivo y SHA. No registra contraseñas, hash ni JWT.
+6. Readback posterior contra MySQL desde conexión nueva, sin ninguna empresa activada y sin permisos de negocios otorgados. Si no se puede completar el commit, rollback de la transacción. Para revertir después, desactivar exclusivamente la asignación y el rol nuevos, con auditoría y comprobación de ownership. El test HTTP negativo de usuario empresarial corresponde a la microfase backend.
 
 No relajar el guard multiempresa, no tocar `CommercialIsolationCertified`, y no conceder acceso libre a datos privados comerciales por tener rol de plataforma.
 
@@ -60,4 +60,4 @@ No relajar el guard multiempresa, no tocar `CommercialIsolationCertified`, y no 
 
 ## Condición de cierre
 
-Microfase 1 `LISTO` requiere resultados reales MySQL, coincidencia única y decisión explícita: autoridad ya existente **o** ausencia diagnosticada con asignación preparada para revisión. Nunca declarar el acceso global habilitado en frontend hasta microfases posteriores. 
+Microfase 1 `LISTO` requiere: identidad única activa; backup cifrado y su restauración equivalente PASS; creación y membresía global verificadas contra Aiven DEV; bitácora de asignación; CI de código, SHA y rollback documentado; cero cambios de empresa, contraseña o rol heredado. Nunca declarar acceso web habilitado antes de las microfases posteriores. 
