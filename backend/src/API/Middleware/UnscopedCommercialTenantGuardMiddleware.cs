@@ -36,6 +36,16 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
             return;
         }
 
+        // Sesión de plataforma: GET exacto, sin EmpresaId ni opt-in comercial.
+        // La autenticación JWT y el rol global vigente se verifican en MVC/MySQL.
+        // No habilitar ninguna otra ruta /plataforma, ni otros métodos.
+        if (HttpMethods.IsGet(httpContext.Request.Method) &&
+            EsRutaExacta(httpContext.Request.Path, "/plataforma/sesion"))
+        {
+            await _next(httpContext);
+            return;
+        }
+
         // Alta de plataforma: excepción de ruta estricta, NO autoridad.
         // JWT y rol PLATAFORMA se vuelven a verificar en el controlador contra MySQL.
         // Dos flags independientes deben estar activados expresamente; ninguna

@@ -13,6 +13,7 @@ using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Enums;
 using Solqaryn.Infrastructure.Persistence;
+using Solqaryn.Infrastructure.Services;
 using Xunit;
 
 namespace Solqaryn.Tests.API.Controllers;
@@ -151,6 +152,7 @@ public sealed class PlataformaEmpresasMySqlTransactionIntegrationTests
     {
         var current = new Mock<ICurrentUserService>();
         current.SetupGet(x => x.UsuarioId).Returns(actorId);
+        current.SetupGet(x => x.NombreUsuario).Returns("p4-platform-transact");
         current.SetupGet(x => x.EstaAutenticado).Returns(true);
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(
             new Dictionary<string, string?>
@@ -161,7 +163,8 @@ public sealed class PlataformaEmpresasMySqlTransactionIntegrationTests
         var context = new DefaultHttpContext();
         context.User = new ClaimsPrincipal(new ClaimsIdentity(
             new[] { new Claim(ClaimTypes.NameIdentifier, actorId.ToString()) }, "TestJwt"));
-        return new PlataformaEmpresasController(db, current.Object, configuration)
+        return new PlataformaEmpresasController(db, current.Object, configuration,
+            new PlataformaScopeService(db, current.Object))
         {
             ControllerContext = new ControllerContext { HttpContext = context }
         };
