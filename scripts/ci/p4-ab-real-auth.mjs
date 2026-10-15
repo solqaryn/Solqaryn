@@ -216,11 +216,13 @@ expectStatus(await call('GET', '/compras/' + purchaseBId, jwtA, aId), 404, 'comp
 
 const saleA = await call('POST', '/ventas', jwtA, aId, {
   clienteId: clientAId, clienteNombre: 'Cliente privado A',
+  envioExonerado: true, motivoExoneracionEnvio: 'Retiro directo del cliente A en CI',
   detalles: [{ productoId: productAId, productoVarianteId: variantA,
     cantidad: 1, precioUnitario: 25.00 }]
 });
 const saleB = await call('POST', '/ventas', jwtB, bId, {
   clienteId: clientBId, clienteNombre: 'Cliente privado B',
+  envioExonerado: true, motivoExoneracionEnvio: 'Retiro directo del cliente B en CI',
   detalles: [{ productoId: productBId, productoVarianteId: variantB,
     cantidad: 1, precioUnitario: 25.00 }]
 });
@@ -235,6 +237,7 @@ expectStatus(await call('GET', '/ventas/' + saleBId, jwtA, aId), 404, 'venta B i
 // Un usuario B no puede apropiarse de la referencia cliente/proveedor/producto A.
 for (const [path, payload] of [
   ['/ventas', { clienteId: clientBId, clienteNombre: 'Cliente B',
+    envioExonerado: true, motivoExoneracionEnvio: 'Retiro directo del cliente en CI',
     detalles: [{ productoId: productAId, productoVarianteId: variantA,
       cantidad: 1, precioUnitario: 25.00 }] }],
   ['/compras', { proveedorId: providerBId, proveedorNombre: 'Proveedor B',
