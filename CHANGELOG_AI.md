@@ -1,3 +1,9 @@
+## 2026-10-15 — DEV Microfase 2: gate -warnaserror de middleware tenant
+
+- Causa verificada en post-merge del PR #3653, jobs N1.1 #38810742066 y N1.2 #38810742039: advertencia CS8604 por `IServiceProvider` potencialmente null al resolver `IPermisoService` en `UnscopedCommercialTenantGuardMiddleware.AutorizarOperacionPilotoAsync`.
+- Corrección mínima fail-closed: comprobar explícitamente `http.RequestServices` antes de resolver configuración y permisos. Si no hay DI, rechazar el piloto. No se tocan JWT, permisos efectivos, empresas, base de datos, rutas, QA ni PROD.
+- Verificación exigida: compilaciones estrictas `-warnaserror` N1.1/N1.2 y regresión P4 HTTP/JWT MySQL A/B exact-head. Rollback por revert de PR independiente; mantiene #3653.
+
 ## 2026-10-15 — Microfase 2: autoridad de plataforma independiente de EmpresaId (DEV)
 
 - GET `/plataforma/sesion` exige JWT firmado y vigente (`[Authorize]`), y obtiene autoridad GLOBAL a través de `IPlataformaScopeService` / `PlataformaScopeService` consultando en cada solicitud MySQL: `Usuarios` activo/desbloqueado/no eliminado, `UsuarioRolesPlataforma.Activa`, `Roles` activo/no eliminado/`Ambito=Plataforma`/`EsAdministrador`/`EmpresaId=NULL`. Nunca concede privilegios por claims `esAdministrador`, `rolId`, `Usuario.RolId`, `UsuarioEmpresa` o cabeceras `X-Empresa-Id`. Si existen múltiples grants activos o identidad JWT obsoleta: 403. La cuenta `javier` creada en la microfase 1 podrá consultar su propio ámbito global aun con todas las empresas inactivas.

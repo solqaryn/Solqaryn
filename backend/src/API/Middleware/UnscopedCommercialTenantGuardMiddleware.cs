@@ -149,8 +149,12 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         // Selección de ruta/método ANTES de emitir una marca empresarial.
         // Las dos banderas se controlan por separado y siguen false por defecto.
         var services = http.RequestServices;
-        var config = services?.GetService<IConfiguration>();
-        if (http.User.Identity?.IsAuthenticated != true || config is null)
+        // Sin DI válida no se autoriza ningún piloto empresarial. El guard
+        // explícito evita CS8604 bajo -warnaserror y permanece fail-closed.
+        if (http.User.Identity?.IsAuthenticated != true || services is null)
+            return false;
+        var config = services.GetService<IConfiguration>();
+        if (config is null)
             return false;
 
         var lectura = HttpMethods.IsGet(http.Request.Method) &&
