@@ -1,6 +1,6 @@
 -- SOLQARYN / Microfase 1: inspección de identidad, sin cambios a MySQL.
 -- Ejecutar SOLO con la conexión GitHub Environment DEV.
--- La identidad autorizada para evaluar es el login EXACTO 'Javier'.
+-- La identidad autorizada se busca sin distinguir mayúsculas, con conteo de unicidad antes de cualquier dictamen.
 -- Nunca usar Usuario.RolId (legacy) como autorización de plataforma.
 SET SESSION TRANSACTION READ ONLY;
 START TRANSACTION READ ONLY;
