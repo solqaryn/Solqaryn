@@ -1,3 +1,10 @@
+## 2026-10-16 — M10 CI: bootstrap EF10 para accesibilidad y navegación
+
+- PR #3659 de navegación autenticada ya integrado; la CI post-merge M10 fallaba antes de Playwright con `Table solqaryn_m10_e2e.Empresas doesn't exist` al aplicar OracleBaseline contra MySQL efímero vacío.
+- La corrección usa el bootstrap canónico de base **fresh** y valida explícitamente 137 tablas, 0 migraciones pendientes y los marcadores de OracleBaseline y PublicStoreBindings antes de iniciar la API.
+- Mantiene el seeding de autenticación original del job, las pruebas Angular/Playwright/WCAG/Kardex y los controles del servidor. No modifica autenticación, empresas, datos DEV, Aiven, QA ni PROD.
+- Criterio de cierre: M10 exact-head completo en PASS, CI de integración DEV, Vercel DEV exact-head y smoke de navegación. Error causal en job efímero, no se reproduce en el backend DEV desplegado.
+
 ## 2026-10-16 — Candidato DEV: recuperar navegación autenticada global/empresa sin relajar RBAC
 
 - Incidente operativo observado en DEV: login y consulta de `tenant-context/1` y permisos devolvían HTTP 200 en Render, pero Angular mantenía la pantalla de selección y revalidaba por duplicado. Cambio localizado en frontend; no altera tablas, flags comerciales ni datos empresariales.
