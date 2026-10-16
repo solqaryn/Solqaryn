@@ -20,19 +20,19 @@ const sign = (at, method, route, host, key) =>
 // Same hostname, different store keys -> different signed contexts.
 const a = buildPublicStoreProxyContext(fake('solqaryn-dev.vercel.app', 'GET',
   { 'x-solqaryn-store-key': 'otra', 'x-forwarded-host': 'evil.example.test' }),
-  'tiendas/comercio-a/tienda/bootstrap', environment, binding, now);
+  'tiendas/comercio-a/tienda/binding', environment, binding, now);
 const b = buildPublicStoreProxyContext(fake('solqaryn-dev.vercel.app'),
-  'tiendas/comercio-b/tienda/bootstrap', environment, binding, now);
-assert.equal(a.path, '/tienda/bootstrap');
-assert.equal(b.path, '/tienda/bootstrap');
+  'tiendas/comercio-b/tienda/binding', environment, binding, now);
+assert.equal(a.path, '/tienda/binding');
+assert.equal(b.path, '/tienda/binding');
 assert.equal(a.headers['x-solqaryn-store-key'], 'comercio-a');
 assert.equal(b.headers['x-solqaryn-store-key'], 'comercio-b');
 assert.equal(a.headers['x-solqaryn-store-origin'], 'solqaryn-dev.vercel.app');
 assert.equal(a.headers['x-solqaryn-store-proof'],
-  sign(String(now), 'GET', '/tienda/bootstrap', 'solqaryn-dev.vercel.app', 'comercio-a'));
+  sign(String(now), 'GET', '/tienda/binding', 'solqaryn-dev.vercel.app', 'comercio-a'));
 assert.notEqual(a.headers['x-solqaryn-store-proof'], b.headers['x-solqaryn-store-proof']);
 assert.equal(buildPublicStoreProxyContext(fake('evil.example.test'),
-  'tiendas/comercio-a/tienda/bootstrap', environment, binding, now).status, 403);
+  'tiendas/comercio-a/tienda/binding', environment, binding, now).status, 403);
 assert.equal(buildPublicStoreProxyContext(fake('solqaryn-dev.vercel.app'),
   'tiendas/../tienda/bootstrap', environment, binding, now).status, 400);
 assert.equal(buildPublicStoreProxyContext(fake('solqaryn-dev.vercel.app'),
@@ -40,7 +40,28 @@ assert.equal(buildPublicStoreProxyContext(fake('solqaryn-dev.vercel.app'),
 assert.equal(buildPublicStoreProxyContext(fake('solqaryn-dev.vercel.app'),
   'tiendas/comercio-a/secret-admin', environment, binding, now).status, 400);
 assert.equal(buildPublicStoreProxyContext(fake('solqaryn-dev.vercel.app'),
-  'tiendas/comercio-a/tienda/bootstrap', {}, binding, now).status, 503);
+  'tiendas/comercio-a/tienda/binding', {}, binding, now).status, 503);
+
+// La ruta con StoreKey NO puede abrir comercio o checkout antes de las fases 2/3.
+for (const route of [
+  'tiendas/comercio-a/tienda/bootstrap',
+  'tiendas/comercio-a/tienda/categorias',
+  'tiendas/comercio-a/tienda/carrito',
+  'tiendas/comercio-a/tienda/checkout',
+  'tiendas/comercio-a/tienda/cuenta'
+]) {
+  const result = buildPublicStoreProxyContext(
+    fake('solqaryn-dev.vercel.app'), route, environment, binding, now);
+  assert.equal(result.status, 503, route + ' must stay closed');
+  assert.equal(result.headers, undefined, 'Never sign an uncertified route');
+}
+assert.equal(buildPublicStoreProxyContext(
+  fake('solqaryn-dev.vercel.app', 'POST'),
+  'tiendas/comercio-a/tienda/binding', environment, binding, now).status, 503);
+assert.equal(buildPublicStoreProxyContext(
+  fake('solqaryn-dev.vercel.app', 'GET'),
+  'tiendas/comercio-a/tienda/binding', environment, binding, now).headers['x-solqaryn-store-key'],
+  'comercio-a');
 
 // Compatibilidad legacy hasta activar prueba obligatoria: /api/tienda permanece intacto.
 const legacy = buildPublicStoreProxyContext(fake('solqaryn-dev.vercel.app'),
@@ -79,7 +100,7 @@ vm.runInNewContext(source, {
   console: { warn: () => {} }
 });
 const req = {
-  query: { path: 'tiendas/comercio-a/tienda/bootstrap', page: '1' },
+  query: { path: 'tiendas/comercio-a/tienda/binding', page: '1' },
   headers: {
     host: 'solqaryn-dev.vercel.app',
     'x-solqaryn-store-origin': 'evil.example.test',
@@ -95,7 +116,7 @@ const req = {
 };
 const response = { headersSent: false, setHeader() {}, end() {}, statusCode: 200 };
 module.exports(req, response);
-assert.equal(captured.url.pathname, '/tienda/bootstrap');
+assert.equal(captured.url.pathname, '/tienda/binding');
 assert.equal(captured.url.searchParams.get('page'), '1');
 assert.equal(captured.method, 'GET');
 assert.equal(captured.headers['x-solqaryn-store-origin'], 'solqaryn-dev.vercel.app');
