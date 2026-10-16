@@ -124,6 +124,28 @@ export class PlataformaGestionMvpService {
       .pipe(map(r => this.verificar(r)));
   }
 
+  crearBorradorEmpresa(nombre: string) {
+    return this.http.post<{ empresaId: number; activa: boolean }>(
+      environment.apiUrl + '/plataforma/empresas/borrador', { nombre })
+      .pipe(map(r => {
+        if (!Number.isSafeInteger(r?.empresaId) || r.empresaId <= 0 || r.activa !== false)
+          throw new Error('No se confirmó el borrador empresarial.');
+        return r;
+      }));
+  }
+
+  tiendas(empresaId: number): Observable<Array<{id: number; host: string; storeKey: string; activa: boolean}>> {
+    return this.http.get<ApiResponse<Array<{id: number; host: string; storeKey: string; activa: boolean}>>>(
+      this.root + '/empresas/' + empresaId + '/tiendas'
+    ).pipe(map(r => this.verificar(r)));
+  }
+
+  vincularTienda(empresaId: number, storeKey: string, host: string, activa: boolean) {
+    return this.http.put<ApiResponse<{id: number; empresaId: number; host: string; storeKey: string; activa: boolean}>>(
+      this.root + '/empresas/' + empresaId + '/tiendas/' + encodeURIComponent(storeKey),
+      { host, activa }).pipe(map(r => this.verificar(r)));
+  }
+
   altaControlada(nombre: string, administradorUsuarioId: number) {
     // Esta operación solo existe con los dos controles backend certificados.
     // La UI nunca modifica esas flags ni sustituye la verificación del servidor.

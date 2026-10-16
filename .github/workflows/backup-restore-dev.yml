@@ -108,7 +108,7 @@ jobs:
         run: |
           set -euo pipefail
           dotnet run --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj --configuration Release --no-build | tee "$RUNNER_TEMP/solqaryn-m11-bootstrap.log"
-          grep -F "SOLQARYN_ORACLE_BOOTSTRAP=PASS mode=fresh tables=136 pending=0" "$RUNNER_TEMP/solqaryn-m11-bootstrap.log"
+          grep -F "SOLQARYN_ORACLE_BOOTSTRAP=PASS mode=fresh tables=137 pending=0" "$RUNNER_TEMP/solqaryn-m11-bootstrap.log"
           dotnet tool run dotnet-ef migrations has-pending-model-changes             --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj             --startup-project src/API/Solqaryn.API.csproj             --context AppDbContext             --configuration Release --no-build
           export MYSQL_PWD=root
           test "$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -uroot solqaryn_m11_source -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")" = 1
@@ -247,9 +247,10 @@ jobs:
           export MYSQL_PWD=root
           q() { mysql --protocol=TCP -h 127.0.0.1 -P 3306 -uroot solqaryn_m11_restore -Nse "$1"; }
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")" = 1
-          test "$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME <> '__EFMigrationsHistory';")" = 136
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261016095000_PublicStoreBindingsPersistence';")" = 1
+          test "$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME <> '__EFMigrationsHistory';")" = 137
           unset MYSQL_PWD
-          echo "PHASE11_ORACLE_RESTORE_CONTRACT=PASS tables=136 baseline=1"
+          echo "PHASE11_ORACLE_RESTORE_CONTRACT=PASS tables=137 baseline=1"
 
       - name: Arrancar API contra restore descartable
         working-directory: backend

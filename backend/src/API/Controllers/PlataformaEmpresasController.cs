@@ -111,6 +111,93 @@ public sealed class PlataformaEmpresasController : ControllerBase
         }, "Directorio global de empresas consultado."));
     }
 
+    /// <summary>
+    /// Aprovisionamiento de identidad sin habilitar actividad comercial.
+    /// Permite que la plataforma prepare A/B sin convertir un borrador
+    /// en empresa activa ni alterar el tenant publicado existente.
+    /// </summary>
+    [HttpPost("borrador")]
+    public async Task<IActionResult> CrearBorrador(
+        [FromBody] BorradorEmpresaPlataformaRequest dto, CancellationToken ct)
+    {
+        Response.Headers.CacheControl = "private, no-store, max-age=0";
+        if (User.Identity?.IsAuthenticated != true ||
+            !_currentUser.EstaAutenticado || _currentUser.UsuarioId is not > 0)
+            return Forbid();
+        var actor = await _plataforma.ObtenerActualAsync(ct);
+        if (actor is null) return Forbid();
+        var nombre = dto?.Nombre?.Trim() ?? "";
+        if (nombre.Length is < 2 or > 200)
+            return BadRequest(ApiResponse<object>.Fail("Nombre empresarial inválido."));
+        if (await _db.Set<Empresa>().IgnoreQueryFilters()
+            .AnyAsync(e => e.Nombre == nombre, ct))
+            return Conflict(ApiResponse<object>.Fail("La empresa ya existe."));
+
+        await using var tx = _db.Database.IsRelational()
+            ? await _db.Database.BeginTransactionAsync(ct) : null;
+        // Antes de la segunda empresa, fijar en la misma transacción el
+        // propietario de /tienda legacy. No inferirlo de la empresa activa
+        // después del alta, ni permitir cambiarlo al suspender/activar.
+        var legacyHost = _configuration["PublicStore:LegacyUpstreamHost"];
+        if (string.IsNullOrWhiteSpace(legacyHost) ||
+            legacyHost != legacyHost.Trim().ToLowerInvariant() ||
+            !legacyHost.Contains('.') || legacyHost.Contains(':') ||
+            legacyHost.Contains('/') || legacyHost.Contains('\\'))
+            return StatusCode(503,
+                ApiResponse<object>.Fail("Host upstream legacy sin configurar."));
+        var currentOwners = await _db.Set<Empresa>().IgnoreQueryFilters()
+            .AsNoTracking().Select(x => new { x.Id, x.Activa })
+            .Take(2).ToArrayAsync(ct);
+        if (currentOwners.Length == 1 && currentOwners[0].Activa)
+        {
+            var mapped = await _db.PublicStoreBindings.IgnoreQueryFilters()
+                .SingleOrDefaultAsync(x => x.Host == legacyHost && x.StoreKey == "", ct);
+            if (mapped is not null && mapped.EmpresaId != currentOwners[0].Id)
+                return Conflict(ApiResponse<object>.Fail("Propietario legacy incompatible."));
+            if (mapped is null)
+                _db.PublicStoreBindings.Add(new PublicStoreBinding
+                {
+                    EmpresaId = currentOwners[0].Id, Host = legacyHost,
+                    StoreKey = "", Activa = true
+                });
+        }
+        else if (currentOwners.Length >= 2 &&
+            !await _db.PublicStoreBindings.IgnoreQueryFilters().AnyAsync(
+                x => x.Host == legacyHost && x.StoreKey == "" && x.Activa, ct))
+        {
+            return StatusCode(503,
+                ApiResponse<object>.Fail("Falta vinculación segura de la tienda existente."));
+        }
+
+        var empresa = new Empresa(nombre)
+        {
+            CreadoPorUsuarioId = actor.UsuarioId,
+            CreadoPorNombreUsuario = actor.NombreUsuario
+        };
+        empresa.Desactivar();
+        _db.Set<Empresa>().Add(empresa);
+        await _db.SaveChangesAsync(ct);
+        _db.Set<RegistroAuditoria>().Add(new RegistroAuditoria
+        {
+            UsuarioId = actor.UsuarioId,
+            NombreUsuario = actor.NombreUsuario,
+            EmpresaId = empresa.Id,
+            AmbitoAutoridad = AmbitoAutorizacion.Plataforma,
+            OrigenAutorizacion = OrigenAutorizacion.RolPlataforma,
+            Modulo = ModuloSistema.Configuracion,
+            Accion = AccionPermiso.Crear,
+            Entidad = nameof(Empresa),
+            ReferenciaId = empresa.Id,
+            Descripcion = "Empresa creada como borrador inactivo, sin operación comercial.",
+            CorrelationId = HttpContext.TraceIdentifier,
+            Resultado = "Exito"
+        });
+        await _db.SaveChangesAsync(ct);
+        if (tx is not null) await tx.CommitAsync(ct);
+        return Created("/plataforma/empresas/" + empresa.Id,
+            new { empresaId = empresa.Id, activa = false, operacionComercialHabilitada = false });
+    }
+
     [HttpPost("alta-controlada")]
     public async Task<IActionResult> AltaControlada(
         [FromBody] AltaEmpresaPlataformaRequest dto,
@@ -248,4 +335,9 @@ public sealed class AltaEmpresaPlataformaRequest
 {
     public string Nombre { get; set; } = string.Empty;
     public int AdministradorUsuarioId { get; set; }
+}
+
+public sealed class BorradorEmpresaPlataformaRequest
+{
+    public string Nombre { get; set; } = string.Empty;
 }

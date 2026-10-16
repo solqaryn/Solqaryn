@@ -186,6 +186,32 @@ public sealed class PublicStoreHostMySqlIsolationIntegrationTests
             Assert.Equal(503, await SignedRequestAsync("tienda-b"));
             Assert.Equal(204, await SignedRequestAsync("tienda-a"));
             Assert.Equal(new[] { idA, idB, idA }, vinculadas.ToArray());
+
+            // Mismo contrato de persistencia que DEV: migración aplicada,
+            // clave única host+storeKey y lectura por propietario en MySQL.
+            await using (var registryDb = new AppDbContext(options))
+            {
+                registryDb.PublicStoreBindings.AddRange(
+                    new PublicStoreBinding {
+                        Host = "solqaryn-dev.vercel.app", StoreKey = "comercio-a",
+                        EmpresaId = idA, Activa = true
+                    },
+                    new PublicStoreBinding {
+                        Host = "solqaryn-dev.vercel.app", StoreKey = "comercio-b",
+                        EmpresaId = idB, Activa = true
+                    });
+                await registryDb.SaveChangesAsync();
+                // Certificador de plataforma: lectura física, no la consulta
+                // tenant-aware que debe seguir negada sin contexto comercial.
+                var readback = await registryDb.PublicStoreBindings.IgnoreQueryFilters().AsNoTracking()
+                    .OrderBy(x => x.StoreKey)
+                    .Select(x => new { x.StoreKey, x.EmpresaId })
+                    .ToArrayAsync();
+                Assert.Equal(new[] { "comercio-a", "comercio-b" },
+                    readback.Select(x => x.StoreKey).ToArray());
+                Assert.Equal(new[] { idA, idB },
+                    readback.Select(x => x.EmpresaId).ToArray());
+            }
         }
         finally
         {

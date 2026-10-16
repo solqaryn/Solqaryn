@@ -88,6 +88,21 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
             return;
         }
 
+        // Alta de borrador SIN operación comercial: JWT más autoridad global
+        // verificada en el controlador. El tenant nace suspendido y no se
+        // convierte automáticamente en una tienda pública.
+        if (HttpMethods.IsPost(httpContext.Request.Method) &&
+            EsRutaExacta(httpContext.Request.Path, "/plataforma/empresas/borrador"))
+        {
+            if (httpContext.User.Identity?.IsAuthenticated == true)
+            {
+                await _next(httpContext);
+                return;
+            }
+            await RechazarAsync(httpContext);
+            return;
+        }
+
         // Impide crear una segunda empresa mientras el catálogo comercial permanezca
         // sin tenant owner. Es bloqueo por seguridad, no un éxito de onboarding.
         if (HttpMethods.IsPost(httpContext.Request.Method) &&
@@ -149,6 +164,18 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                     return;
                 }
                 empresaPublica = publicHostResolver.ResolveEmpresaId(verifiedHost, verifiedStoreKey);
+                // Para nuevas tiendas, el registro indexado de MySQL reemplaza
+                // la lista manual de variables por empresa, pero sólo con
+                // opt-in explícito y proof HMAC previamente verificado.
+                if (verifiedStoreKey is not null &&
+                    configPublica.GetValue<bool>("PublicStore:EnableDatabaseBindings"))
+                {
+                    empresaPublica = await db.PublicStoreBindings.IgnoreQueryFilters().AsNoTracking()
+                        .Where(x => x.Activa && x.Host == verifiedHost.Host &&
+                                    x.StoreKey == verifiedStoreKey)
+                        .Select(x => (int?)x.EmpresaId)
+                        .SingleOrDefaultAsync(httpContext.RequestAborted);
+                }
                 // Mientras se certifica la identidad/caché por tienda, no permitir
                 // almacenar el mismo path interno /tienda en un CDN compartido.
                 httpContext.Response.OnStarting(() =>
@@ -170,8 +197,21 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                     // por X-Forwarded-Host, cookie o X-Empresa-Id. La prueba
                     // firmada sigue siendo obligatoria para /tiendas/{clave}.
                     var legacyHost = configPublica["PublicStore:LegacyUpstreamHost"];
-                    var legacyId = configPublica.GetValue<int>("PublicStore:LegacyRootEmpresaId");
-                    if (legacyId <= 0 || string.IsNullOrWhiteSpace(legacyHost) ||
+                    // La empresa legacy está fijada en MySQL antes de crear
+                    // otros tenants; no requiere ID manual por nuevo cliente.
+                    var persistedLegacyId = string.IsNullOrWhiteSpace(legacyHost) ? null :
+                        await db.PublicStoreBindings.IgnoreQueryFilters().AsNoTracking()
+                            .Where(x => x.Host == legacyHost && x.StoreKey == "" && x.Activa)
+                            .Select(x => (int?)x.EmpresaId)
+                            .SingleOrDefaultAsync(httpContext.RequestAborted);
+                    var configuredLegacyId = configPublica.GetValue<int>("PublicStore:LegacyRootEmpresaId");
+                    // Compatibilidad con instalaciones que ya tienen owner
+                    // explícito en variables, sin elegir dinámicamente un ID.
+                    int? explicitLegacyOwnerId = persistedLegacyId ??
+                        (configuredLegacyId > 0 ? configuredLegacyId : null);
+                    if (explicitLegacyOwnerId is not > 0 ||
+                        (persistedLegacyId.HasValue && configuredLegacyId > 0 && configuredLegacyId != persistedLegacyId) ||
+                        string.IsNullOrWhiteSpace(legacyHost) ||
                         !string.Equals(httpContext.Request.Host.Host, legacyHost,
                             StringComparison.OrdinalIgnoreCase) ||
                         httpContext.Request.Host.Port is not null)
@@ -179,7 +219,7 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                         await RechazarAsync(httpContext);
                         return;
                     }
-                    empresaPublica = legacyId;
+                    empresaPublica = explicitLegacyOwnerId;
                     httpContext.Response.OnStarting(() =>
                     {
                         httpContext.Response.Headers.CacheControl = "private, no-store, max-age=0";
@@ -214,17 +254,38 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                 return;
             }
 
-            // Con allowlist habilitada, hosts desconocidos fallan cerrados
-            // incluso si sólo hay una empresa. Sin allowlist, preservar modo
-            // legacy monoempresa exclusivamente.
-            if (publicHostResolver?.IsEnabled == true ||
-                empresas.Length != 1 || !empresas[0].Activa)
+            // Antes de existir una segunda empresa se conserva la tienda
+            // monoempresa original. Con 2+ empresas no es seguro elegir una
+            // por orden/estado: exigir propietario LEGACY fijado por plataforma
+            // antes del primer borrador, jamás reasignarlo automáticamente.
+            if (publicHostResolver?.IsEnabled == true)
+            {
+                await RechazarAsync(httpContext);
+                return;
+            }
+            int? legacyId;
+            if (empresas.Length == 1)
+            {
+                legacyId = empresas[0].Activa ? empresas[0].Id : null;
+            }
+            else
+            {
+                legacyId = await db.PublicStoreBindings.IgnoreQueryFilters().AsNoTracking()
+                    .Where(x => x.Host == httpContext.Request.Host.Host &&
+                                x.StoreKey == "" && x.Activa)
+                    .Select(x => (int?)x.EmpresaId)
+                    .SingleOrDefaultAsync(httpContext.RequestAborted);
+            }
+            if (legacyId is not > 0 ||
+                !await db.Set<Empresa>().IgnoreQueryFilters().AsNoTracking()
+                    .AnyAsync(e => e.Id == legacyId && e.Activa,
+                        httpContext.RequestAborted))
             {
                 await RechazarAsync(httpContext);
                 return;
             }
             httpContext.Items[VerifiedPublicStoreTenant.AuthorizedEmpresaIdItemKey] =
-                empresas[0].Id;
+                legacyId.Value;
             await _next(httpContext);
             return;
         }
@@ -614,6 +675,8 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         {
             if (s.Length == 6)
             {
+                if (Igual(s[5], "tiendas") && HttpMethods.IsGet(request.Method))
+                    return true;
                 if (Igual(s[5], "membresias") &&
                     (HttpMethods.IsGet(request.Method) || HttpMethods.IsPost(request.Method)))
                     return true;
@@ -621,6 +684,12 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                     (Igual(s[5], "nombre") || Igual(s[5], "estado")))
                     return true;
             }
+            if (s.Length == 7 && HttpMethods.IsPut(request.Method) &&
+                Igual(s[5], "tiendas") && s[6].Length >= 2 && s[6].Length <= 48 &&
+                s[6][0] is >= 'a' and <= 'z' &&
+                s[6][^1] is >= 'a' and <= 'z' or >= '0' and <= '9' &&
+                s[6].All(ch => ch is >= 'a' and <= 'z' or >= '0' and <= '9' or '-'))
+                return true;
             if (s.Length == 8 && HttpMethods.IsPut(request.Method) &&
                 Igual(s[5], "membresias") && IdPositivo(s[6]) &&
                 (Igual(s[7], "rol") || Igual(s[7], "estado")))

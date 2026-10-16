@@ -1,3 +1,14 @@
+## 2026-10-16 — Candidato PR #3658: alta empresarial preparatoria y registro persistente de tiendas (VALIDANDO)
+
+- Alcance **DEV únicamente**, resultado subordinado a SQ-032/SQ-035/SQ-036/SQ-038/SQ-041/SQ-048 del Plan Maestro vigente. No activar la comercialización privada ni promover QA/PROD.
+- Se introduce `PublicStoreBindings` con FK a `Empresas`, índice único exacto `Host+StoreKey` e índice por empresa/estado. La gestión por autoridad global verificable crea asociaciones desde la consola sin modificar variables por cliente.
+- `POST /plataforma/empresas/borrador` crea empresas **inactivas** con auditoría y transacción, sin activar tiendas ni operaciones privadas; el alta comercial certificada existente conserva sus dos feature gates.
+- La creación del primer borrador fija atómicamente `Host upstream legacy + StoreKey vacío → EmpresaId` del único tenant vigente; no se reelige dueño si cambia cuál empresa está activa. Con 2+ empresas, el storefront legacy exige esta asignación persistente exacta y que su propietaria continúe activa.
+- Resolver público firmado HMAC consulta DB únicamente con `PublicStore:EnableMultiEmpresaBinding=true` y `PublicStore:EnableDatabaseBindings=true`. Por defecto OFF. Se mantiene validación activa de Empresa por solicitud y se rechazan rutas comerciales de tiendas secundarias.
+- La consola puede preparar borradores y guardar/publicar asociaciones, siempre bajo el control global MySQL de la API; las claves HMAC permanecen sólo en infraestructura DEV. La capacidad de catálogo/checkout A/B continúa pendiente de sus propias microfases.
+- Verificación obligatoria: migración exact-head, pruebas de JWT/RBAC/aislamiento A/B/legacy fijo, CI/revisión P0/P1=0, despliegue y smoke DEV; no declarar LISTO con pruebas sólo efímeras.
+- Reversión operativa: mantener desactivadas las banderas públicas e impedir reactivación insegura; revert del PR sólo tras comprobar dependencia de la nueva tabla. No borrar registros reales con `Down` automático.
+
 ## 2026-10-16 — Tiendas públicas por empresa: Microfase 1/6 (MVP comercial, VALIDANDO)
 
 - **Solo DEV**. Vinculación pública **Host + StoreKey -> EmpresaId** desde allowlist backend `PublicStore:HostBindings`, comprobación `Empresa.Activa` en MySQL en cada petición y prueba criptográfica HMAC del proxy Vercel; `X-Forwarded-Host`, `X-Empresa-Id`, `Origin` y cabeceras `X-Solqaryn-Store-*` del cliente no confieren autoridad.

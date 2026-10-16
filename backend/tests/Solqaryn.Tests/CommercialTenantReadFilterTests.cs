@@ -30,12 +30,14 @@ public sealed class CommercialTenantReadFilterTests
                              entity.FindProperty("EmpresaId") is not null)
             .ToList();
 
-        Assert.Equal(124, owners.Count);
+        Assert.Equal(125, owners.Count);
         Assert.All(owners, entity =>
             Assert.NotEmpty(entity.GetDeclaredQueryFilters()));
 
         Assert.Empty(db.Model.FindEntityType(typeof(Empresa))!.GetDeclaredQueryFilters());
         Assert.Empty(db.Model.FindEntityType(typeof(Permiso))!.GetDeclaredQueryFilters());
+        // La lectura global exige IgnoreQueryFilters después de autoridad validada.
+        Assert.NotEmpty(db.Model.FindEntityType(typeof(PublicStoreBinding))!.GetDeclaredQueryFilters());
     }
 
     [Fact]
