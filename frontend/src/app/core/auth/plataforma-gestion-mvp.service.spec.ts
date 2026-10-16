@@ -36,6 +36,19 @@ describe('Microfase 4 — cliente global de gestión MVP', () => {
     expect(failed).toBe(true);
   });
 
+  it('identidad sin membresía se identifica como pendiente, no como sesión activa', () => {
+    let pendiente = false;
+    api.buscarUsuario('nuevo').subscribe(d => { pendiente = d?.pendienteAsignacion === true; });
+    const req = http.expectOne(r => r.url === root + '/usuarios/buscar');
+    expect(req.request.method).toBe('GET');
+    expect(req.request.params.get('nombreUsuario')).toBe('nuevo');
+    req.flush({ success: true, data: {
+      id: 7, nombreUsuario: 'nuevo', nombreCompleto: 'Nuevo usuario',
+      activo: false, bloqueado: false, pendienteAsignacion: true
+    } });
+    expect(pendiente).toBe(true);
+  });
+
   it('las altas de cuentas jamás envían EmpresaId como autorización', () => {
     let complete = false;
     api.crearUsuario('comercial', 'Operador Tienda', 'ClaveSegura!42')
