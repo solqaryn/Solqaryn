@@ -88,6 +88,21 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
             return;
         }
 
+        // Alta de borrador SIN operación comercial: JWT más autoridad global
+        // verificada en el controlador. El tenant nace suspendido y no se
+        // convierte automáticamente en una tienda pública.
+        if (HttpMethods.IsPost(httpContext.Request.Method) &&
+            EsRutaExacta(httpContext.Request.Path, "/plataforma/empresas/borrador"))
+        {
+            if (httpContext.User.Identity?.IsAuthenticated == true)
+            {
+                await _next(httpContext);
+                return;
+            }
+            await RechazarAsync(httpContext);
+            return;
+        }
+
         // Impide crear una segunda empresa mientras el catálogo comercial permanezca
         // sin tenant owner. Es bloqueo por seguridad, no un éxito de onboarding.
         if (HttpMethods.IsPost(httpContext.Request.Method) &&
@@ -226,17 +241,26 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                 return;
             }
 
-            // Con allowlist habilitada, hosts desconocidos fallan cerrados
-            // incluso si sólo hay una empresa. Sin allowlist, preservar modo
-            // legacy monoempresa exclusivamente.
-            if (publicHostResolver?.IsEnabled == true ||
-                empresas.Length != 1 || !empresas[0].Activa)
+            // Compatibilidad segura cuando se crean borradores INACTIVOS:
+            // exactamente una empresa activa conserva /tienda. Nunca elegir
+            // la primera empresa arbitrariamente ni permitir fallback si dos
+            // empresas están activas. Las rutas privadas siguen en cuarentena.
+            if (publicHostResolver?.IsEnabled == true)
+            {
+                await RechazarAsync(httpContext);
+                return;
+            }
+            var unicasActivas = await db.Set<Empresa>()
+                .IgnoreQueryFilters().AsNoTracking()
+                .Where(e => e.Activa).OrderBy(e => e.Id)
+                .Select(e => e.Id).Take(2).ToArrayAsync(httpContext.RequestAborted);
+            if (unicasActivas.Length != 1)
             {
                 await RechazarAsync(httpContext);
                 return;
             }
             httpContext.Items[VerifiedPublicStoreTenant.AuthorizedEmpresaIdItemKey] =
-                empresas[0].Id;
+                unicasActivas[0];
             await _next(httpContext);
             return;
         }
