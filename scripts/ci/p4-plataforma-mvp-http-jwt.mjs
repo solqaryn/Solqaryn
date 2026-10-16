@@ -77,10 +77,17 @@ if (phase === 'active') {
   expectStatus(create, 201, 'Crear identidad sin membresía');
   const newId = create.value?.data?.id;
   assert(Number.isInteger(newId) && newId > 0, 'Falta ID nueva identidad');
+  const loginPrematuro = await request('POST', '/auth/login', '', {
+    nombreUsuario: userName, password
+  });
+  assert([400, 401, 403, 503].includes(loginPrematuro.status),
+    'La cuenta sin membresía nunca debe iniciar sesión: HTTP=' + loginPrematuro.status);
   const search = await request('GET', url + '/usuarios/buscar?nombreUsuario=' + userName,
     platform);
   expectStatus(search, 200, 'Buscar cuenta global');
   assert.equal(search.value?.data?.id, newId);
+  assert.equal(search.value?.data?.activo, false);
+  assert.equal(search.value?.data?.pendienteAsignacion, true);
   mustDeny(await request('GET', url + '/usuarios/buscar?nombreUsuario=' + userName,
     bToken), 'Admin empresarial no busca identidad global');
   mustDeny(await request('POST', url + '/usuarios', aToken, {
@@ -91,6 +98,10 @@ if (phase === 'active') {
   const attach = await request('POST', url + '/empresas/' + companyA + '/membresias',
     platform, { usuarioId: newId, rolId: base.id }, companyB);
   expectStatus(attach, 200, 'Asignar exclusivamente a A');
+  const afterAttach = await request('GET', url + '/usuarios/buscar?nombreUsuario=' + userName, platform);
+  expectStatus(afterAttach, 200, 'Cuenta activa únicamente tras primera membresía');
+  assert.equal(afterAttach.value?.data?.activo, true);
+  assert.equal(afterAttach.value?.data?.pendienteAsignacion, false);
   mustDeny(await request('POST', url + '/empresas/' + companyB + '/membresias',
     aToken, { usuarioId: newId, rolId: admin.id }), 'Admin A no concede B');
   const newToken = await login(userName);
