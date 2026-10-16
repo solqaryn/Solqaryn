@@ -145,6 +145,31 @@ public sealed class PlataformaEmpresasOnboardingSecurityTests
     }
 
     [Fact]
+    public async Task AltaAtomicaActivaSoloIdentidadPendienteCreadaPorOperadorGlobal()
+    {
+        var fixture = await PrepararAsync(true, true, true);
+        await using var db = fixture.Db;
+        var usuario = await db.Usuarios.SingleAsync(u => u.Id == fixture.AdministradorId);
+        usuario.Activo = false;
+        usuario.CreadoPorUsuarioId = fixture.ActorId;
+        await db.SaveChangesAsync();
+
+        var respuesta = await fixture.Controller.AltaControlada(new()
+        {
+            Nombre = "Empresa nueva mínima",
+            AdministradorUsuarioId = fixture.AdministradorId
+        }, CancellationToken.None);
+
+        Assert.IsType<CreatedResult>(respuesta);
+        Assert.True(usuario.Activo);
+        var empresa = Assert.Single(await db.Set<Empresa>().ToListAsync());
+        var membresia = Assert.Single(await db.Set<UsuarioEmpresa>().ToListAsync());
+        Assert.Equal(empresa.Id, membresia.EmpresaId);
+        Assert.Equal(fixture.AdministradorId, membresia.UsuarioId);
+        Assert.Single(await db.Set<RegistroAuditoria>().ToListAsync());
+    }
+
+    [Fact]
     public async Task MiddlewareSoloDejaPasarRutaDePlataformaExactaConDobleGateYJwt()
     {
         var fixture = await PrepararAsync(true, true, true);
