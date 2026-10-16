@@ -111,6 +111,59 @@ public sealed class PlataformaEmpresasController : ControllerBase
         }, "Directorio global de empresas consultado."));
     }
 
+    /// <summary>
+    /// Aprovisionamiento de identidad sin habilitar actividad comercial.
+    /// Permite que la plataforma prepare A/B sin convertir un borrador
+    /// en empresa activa ni alterar el tenant publicado existente.
+    /// </summary>
+    [HttpPost("borrador")]
+    public async Task<IActionResult> CrearBorrador(
+        [FromBody] BorradorEmpresaPlataformaRequest dto, CancellationToken ct)
+    {
+        Response.Headers.CacheControl = "private, no-store, max-age=0";
+        if (User.Identity?.IsAuthenticated != true ||
+            !_currentUser.EstaAutenticado || _currentUser.UsuarioId is not > 0)
+            return Forbid();
+        var actor = await _plataforma.ObtenerActualAsync(ct);
+        if (actor is null) return Forbid();
+        var nombre = dto?.Nombre?.Trim() ?? "";
+        if (nombre.Length is < 2 or > 200)
+            return BadRequest(ApiResponse<object>.Fail("Nombre empresarial inválido."));
+        if (await _db.Set<Empresa>().IgnoreQueryFilters()
+            .AnyAsync(e => e.Nombre == nombre, ct))
+            return Conflict(ApiResponse<object>.Fail("La empresa ya existe."));
+
+        await using var tx = _db.Database.IsRelational()
+            ? await _db.Database.BeginTransactionAsync(ct) : null;
+        var empresa = new Empresa(nombre)
+        {
+            CreadoPorUsuarioId = actor.UsuarioId,
+            CreadoPorNombreUsuario = actor.NombreUsuario
+        };
+        empresa.Desactivar();
+        _db.Set<Empresa>().Add(empresa);
+        await _db.SaveChangesAsync(ct);
+        _db.Set<RegistroAuditoria>().Add(new RegistroAuditoria
+        {
+            UsuarioId = actor.UsuarioId,
+            NombreUsuario = actor.NombreUsuario,
+            EmpresaId = empresa.Id,
+            AmbitoAutoridad = AmbitoAutorizacion.Plataforma,
+            OrigenAutorizacion = OrigenAutorizacion.RolPlataforma,
+            Modulo = ModuloSistema.Configuracion,
+            Accion = AccionPermiso.Crear,
+            Entidad = nameof(Empresa),
+            ReferenciaId = empresa.Id,
+            Descripcion = "Empresa creada como borrador inactivo, sin operación comercial.",
+            CorrelationId = HttpContext.TraceIdentifier,
+            Resultado = "Exito"
+        });
+        await _db.SaveChangesAsync(ct);
+        if (tx is not null) await tx.CommitAsync(ct);
+        return Created("/plataforma/empresas/" + empresa.Id,
+            new { empresaId = empresa.Id, activa = false, operacionComercialHabilitada = false });
+    }
+
     [HttpPost("alta-controlada")]
     public async Task<IActionResult> AltaControlada(
         [FromBody] AltaEmpresaPlataformaRequest dto,
@@ -248,4 +301,9 @@ public sealed class AltaEmpresaPlataformaRequest
 {
     public string Nombre { get; set; } = string.Empty;
     public int AdministradorUsuarioId { get; set; }
+}
+
+public sealed class BorradorEmpresaPlataformaRequest
+{
+    public string Nombre { get; set; } = string.Empty;
 }
