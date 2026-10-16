@@ -118,6 +118,16 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
             var configPublica = httpContext.RequestServices?.GetService<IConfiguration>();
             int? empresaPublica;
             var tieneProof = PublicStoreProxyProof.HasProofHeaders(httpContext.Request);
+            // /tienda/binding es un endpoint nuevo de certificación por firma,
+            // no parte de la tienda monoempresa legacy. Nunca debe exponer la
+            // identidad empresarial usando el fallback sin prueba, ni siquiera
+            // antes de activar las banderas multitienda.
+            if (!tieneProof &&
+                EsRutaExacta(httpContext.Request.Path, "/tienda/binding"))
+            {
+                await RechazarAsync(httpContext);
+                return;
+            }
             if (tieneProof)
             {
                 if (publicHostResolver?.IsEnabled != true || configPublica is null ||
