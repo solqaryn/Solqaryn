@@ -98,6 +98,11 @@ public sealed class PersistentPublicStoreBindingTests
         b.Desactivar();
         db.Set<Empresa>().AddRange(a, b);
         await db.SaveChangesAsync();
+        db.PublicStoreBindings.Add(new PublicStoreBinding {
+            EmpresaId = a.Id, Host = "solqaryn-api-dev-fxx8.onrender.com",
+            StoreKey = "", Activa = true
+        });
+        await db.SaveChangesAsync();
         var resolver = new ConfiguredPublicStoreHostTenantResolver(new ConfigurationBuilder().Build());
         var middleware = new UnscopedCommercialTenantGuardMiddleware(ctx => {
             Assert.Equal(a.Id, VerifiedPublicStoreTenant.Resolve(ctx));
@@ -107,6 +112,7 @@ public sealed class PersistentPublicStoreBindingTests
         var ctx = new DefaultHttpContext();
         ctx.Request.Method = "GET";
         ctx.Request.Path = "/tienda/bootstrap";
+        ctx.Request.Host = new HostString("solqaryn-api-dev-fxx8.onrender.com");
         ctx.Response.Body = new MemoryStream();
         await middleware.InvokeAsync(ctx, db, resolver);
         Assert.Equal(204, ctx.Response.StatusCode);
@@ -117,16 +123,17 @@ public sealed class PersistentPublicStoreBindingTests
         var second = new DefaultHttpContext();
         second.Request.Method = "GET";
         second.Request.Path = "/tienda/bootstrap";
+        second.Request.Host = new HostString("solqaryn-api-dev-fxx8.onrender.com");
         second.Response.Body = new MemoryStream();
-        // A revoked owner must not be selected by its old ordering.
+        // Legacy is bound permanently to A: never silently promote B.
         var called = false;
         var routed = new UnscopedCommercialTenantGuardMiddleware(x => {
             called = true;
-            Assert.Equal(b.Id, VerifiedPublicStoreTenant.Resolve(x));
             x.Response.StatusCode = 204;
             return Task.CompletedTask;
         });
         await routed.InvokeAsync(second, db, resolver);
-        Assert.True(called);
+        Assert.False(called);
+        Assert.Equal(503, second.Response.StatusCode);
     }
 }
