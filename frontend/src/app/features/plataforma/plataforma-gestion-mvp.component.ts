@@ -1,8 +1,11 @@
 import { ChangeDetectionStrategy, Component, inject, input, output, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { finalize, forkJoin } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { DirectorioPlataforma } from '../../core/auth/plataforma-empresas.service';
+import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.service';
 import {
   MembresiaEmpresaMvp, PlataformaGestionMvpService, RolEmpresaMvp,
   UsuarioIdentidadMvp
@@ -236,6 +239,8 @@ import {
 })
 export class PlataformaGestionMvpComponent {
   private readonly api = inject(PlataformaGestionMvpService);
+  private readonly plataforma = inject(PlataformaSesionService);
+  private readonly router = inject(Router);
 
   readonly directorio = input<DirectorioPlataforma | null>(null);
   readonly actualizarDirectorio = output<void>();
@@ -256,7 +261,6 @@ export class PlataformaGestionMvpComponent {
   readonly nombreCompletoNuevo = signal('');
   readonly claveNueva = signal('');
   readonly empresaNueva = signal('');
-  readonly adminId = signal(0);
   readonly confirmarEstado = signal<boolean | null>(null);
   readonly confirmarMembresia = signal<number | null>(null);
 
@@ -265,7 +269,17 @@ export class PlataformaGestionMvpComponent {
     this.exito.set(null);
   }
 
-  private fallar(accion: string): void {
+  private fallar(accion: string, motivo?: unknown): void {
+    // Backend es la única fuente de autoridad. Una revocación invalida
+    // toda visualización previa de identidades, aunque siga abierto el panel.
+    if (motivo instanceof HttpErrorResponse && (motivo.status === 401 || motivo.status === 403)) {
+      this.roles.set([]);
+      this.miembros.set([]);
+      this.buscado.set(null);
+      this.plataforma.limpiar();
+      void this.router.navigate(['/login'], { queryParams: { plataforma: 'denegado' } });
+      return;
+    }
     this.error.set(accion + ' no se completó o dejó de estar autorizado. Verifica la sesión y los datos.');
   }
 
@@ -301,7 +315,7 @@ export class PlataformaGestionMvpComponent {
           this.cambiosRoles.set({});
           this.rolAsignacion.set(data.roles[0]?.id ?? 0);
         },
-        error: () => this.fallar('La consulta de roles y membresías')
+        error: err => this.fallar('La consulta de roles y membresías', err)
       });
   }
 
@@ -320,13 +334,11 @@ export class PlataformaGestionMvpComponent {
         .subscribe({
           next: cuenta => {
             this.buscado.set(cuenta);
-            this.adminId.set(cuenta?.id ?? 0);
             this.exito.set(cuenta ? 'Cuenta localizada.' : 'No existe esa cuenta.');
           },
-          error: () => {
+          error: err => {
             this.buscado.set(null);
-            this.adminId.set(0);
-            this.fallar('La búsqueda');
+            this.fallar('La búsqueda', err);
           }
         })
     );
@@ -349,12 +361,11 @@ export class PlataformaGestionMvpComponent {
             this.busqueda.set(data.nombreUsuario);
             this.usuarioNuevo.set('');
             this.nombreCompletoNuevo.set('');
-            this.adminId.set(data.id);
             this.buscado.set({ id: data.id, nombreUsuario: data.nombreUsuario,
               nombreCompleto: completo, activo: false, bloqueado: false, pendienteAsignacion: true });
             this.exito.set('Cuenta creada INACTIVA. Se activará dentro de la primera asignación empresarial auditada.');
           },
-          error: () => this.fallar('El alta de cuenta')
+          error: err => this.fallar('El alta de cuenta', err)
         })
     );
   }
@@ -378,7 +389,7 @@ export class PlataformaGestionMvpComponent {
             this.exito.set('Empresa creada con administrador inicial. ID: ' + data.empresaId);
             this.actualizarDirectorio.emit();
           },
-          error: () => this.fallar('El alta empresarial')
+          error: err => this.fallar('El alta empresarial', err)
         })
     );
   }
@@ -397,7 +408,7 @@ export class PlataformaGestionMvpComponent {
             this.buscado.set({ ...cuenta, activo: true, pendienteAsignacion: false });
             this.cargarEmpresa();
           },
-          error: () => this.fallar('La asignación')
+          error: err => this.fallar('La asignación', err)
         })
     );
   }
@@ -421,7 +432,7 @@ export class PlataformaGestionMvpComponent {
             this.exito.set('Rol empresarial actualizado.');
             this.cargarEmpresa();
           },
-          error: () => this.fallar('El cambio de rol')
+          error: err => this.fallar('El cambio de rol', err)
         })
     );
   }
@@ -446,9 +457,9 @@ export class PlataformaGestionMvpComponent {
             this.confirmarMembresia.set(null);
             this.cargarEmpresa();
           },
-          error: () => {
+          error: err => {
             this.confirmarMembresia.set(null);
-            this.fallar('El cambio de membresía');
+            this.fallar('El cambio de membresía', err);
           }
         })
     );
@@ -465,7 +476,7 @@ export class PlataformaGestionMvpComponent {
             this.exito.set('Nombre empresarial actualizado.');
             this.actualizarDirectorio.emit();
           },
-          error: () => this.fallar('La edición empresarial')
+          error: err => this.fallar('La edición empresarial', err)
         })
     );
   }
@@ -487,9 +498,9 @@ export class PlataformaGestionMvpComponent {
             this.exito.set('Estado de empresa actualizado.');
             this.actualizarDirectorio.emit();
           },
-          error: () => {
+          error: err => {
             this.confirmarEstado.set(null);
-            this.fallar('El cambio de estado');
+            this.fallar('El cambio de estado', err);
           }
         })
     );
