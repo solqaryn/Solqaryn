@@ -111,10 +111,45 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
             "/tienda", StringComparison.OrdinalIgnoreCase);
         if (rutaTienda)
         {
-            // Un mapping de Host solo tiene autoridad si procede del registro
-            // explícito server-side. Ni X-Forwarded-Host ni X-Empresa-Id
-            // pueden proporcionar el EmpresaId de una tienda.
-            var empresaPublica = publicHostResolver?.ResolveEmpresaId(httpContext.Request.Host);
+            // Un proxy Vercel autorizado prueba el origen público y, si
+            // procede, la clave de /tiendas/{storeKey}. Solo esa prueba puede
+            // aportar el Host original: Request.Host en Render es el host de la API.
+            // No aceptar X-Forwarded-Host, X-Empresa-Id ni rutas inventadas.
+            var configPublica = httpContext.RequestServices?.GetService<IConfiguration>();
+            int? empresaPublica;
+            var tieneProof = PublicStoreProxyProof.HasProofHeaders(httpContext.Request);
+            if (tieneProof)
+            {
+                if (publicHostResolver?.IsEnabled != true || configPublica is null ||
+                    !PublicStoreProxyProof.TryReadVerified(httpContext.Request, configPublica,
+                        out var verifiedHost, out var verifiedStoreKey))
+                {
+                    await RechazarAsync(httpContext);
+                    return;
+                }
+                empresaPublica = publicHostResolver.ResolveEmpresaId(verifiedHost, verifiedStoreKey);
+                // Mientras se certifica la identidad/caché por tienda, no permitir
+                // almacenar el mismo path interno /tienda en un CDN compartido.
+                httpContext.Response.OnStarting(() =>
+                {
+                    httpContext.Response.Headers.CacheControl = "private, no-store, max-age=0";
+                    httpContext.Response.Headers.Remove("ETag");
+                    return Task.CompletedTask;
+                });
+            }
+            else
+            {
+                // Opt-in de seguridad para múltiples tiendas. Con prueba obligatoria
+                // no existe fallback a Host Render ni al modo una sola empresa.
+                if (publicHostResolver?.IsEnabled == true &&
+                    configPublica?.GetValue<bool>("PublicStore:RequireVerifiedProxyProof") == true)
+                {
+                    await RechazarAsync(httpContext);
+                    return;
+                }
+                // Compatibilidad anterior sin cambio hasta activar el binding.
+                empresaPublica = publicHostResolver?.ResolveEmpresaId(httpContext.Request.Host);
+            }
             if (empresaPublica is > 0)
             {
                 // Comprueba el propietario en MySQL y el estado vigente EN CADA
