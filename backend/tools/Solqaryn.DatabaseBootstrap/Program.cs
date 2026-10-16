@@ -19,7 +19,7 @@ await db.Database.OpenConnectionAsync();
 
 // Fail closed: no marcar una migración como adoptada si el ensamblado
 // canónico EF10 ni siquiera la contiene (no aceptar historia falsa).
-var known = (await db.Database.GetMigrationsAsync()).ToArray();
+var known = db.Database.GetMigrations().ToArray();
 if (!known.Contains("20261016095000_PublicStoreBindingsPersistence", StringComparer.Ordinal))
     throw new InvalidOperationException("La migración persistente de tiendas no está registrada en EF Oracle.");
 
