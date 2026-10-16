@@ -194,6 +194,10 @@ export class AppComponent implements OnDestroy {
 
   logout(): void {
     this.cerrarSidebar();
+    // Evitar que una empresa solicitada por la cuenta anterior provoque
+    // revalidaciones automáticas al entrar con otra identidad.
+    this.tenantContext.limpiar();
+    this.permisosRuntime.limpiar();
     this.sessionActivity.cerrarManual();
   }
 
