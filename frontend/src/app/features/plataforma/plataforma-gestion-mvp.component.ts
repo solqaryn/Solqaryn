@@ -101,8 +101,9 @@ import {
             </div>
             <div class="field">
               <label for="admin-empresa">ID de cuenta administradora verificada</label>
-              <input id="admin-empresa" type="number" min="1" [value]="adminId()"
-                (input)="adminId.set(+$any($event.target).value)" />
+              <input id="admin-empresa" type="number" [value]="buscado()?.id ?? 0" readonly
+                aria-describedby="admin-empresa-aviso" />
+              <small id="admin-empresa-aviso">La cuenta se selecciona mediante la búsqueda exacta anterior; no se admite un ID arbitrario.</small>
             </div>
           </div>
           <button mat-flat-button type="button" (click)="crearEmpresa()"
@@ -360,8 +361,11 @@ export class PlataformaGestionMvpComponent {
 
   crearEmpresa(): void {
     const nombre = this.empresaNueva().trim();
-    const id = this.adminId();
-    if (this.ocupado() || this.directorio()?.puedeCrear !== true) return;
+    const id = this.buscado()?.id ?? 0;
+    if (this.ocupado() || this.directorio()?.puedeCrear !== true ||
+        this.buscado()?.bloqueado === true ||
+        (this.buscado()?.activo !== true && this.buscado()?.pendienteAsignacion !== true))
+      return;
     if (nombre.length < 2 || id <= 0) {
       this.error.set('Indica un nombre válido y un administrador existente.');
       return;
