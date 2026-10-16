@@ -70,7 +70,7 @@ function buildPublicStoreProxyContext(req, canonicalPath, environment = process.
   const at = String(nowSeconds);
   const canonical = ['v1', at, method, route.path, host, key].join('\n');
   const proof = createHmac('sha256', secret).update(canonical, 'utf8').digest('hex');
-  return { path: route.path, headers: {
+  return { path: route.path, scoped: route.scoped, headers: {
     [STORE_CONTEXT_HEADERS.origin]: host,
     [STORE_CONTEXT_HEADERS.key]: key,
     [STORE_CONTEXT_HEADERS.at]: at,
