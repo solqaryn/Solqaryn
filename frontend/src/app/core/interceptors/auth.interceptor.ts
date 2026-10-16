@@ -32,7 +32,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   // El control-plane de SOLQARYN (y el propio login) jamás debe arrastrar
   // la selección de la última empresa. El JWT identifica a la persona;
   // la autoridad global se comprueba desde MySQL en el endpoint protegido.
-  const apiBase = environment.apiUrl.replace(/\\/+$/, '');
+  const apiBase = environment.apiUrl.endsWith('/') ? environment.apiUrl.slice(0, -1) : environment.apiUrl;
   const identidadGlobal = req.url.startsWith(`${apiBase}/plataforma/`) ||
     req.url.startsWith(`${apiBase}/auth/`);
   if (token && tenantSolicitado && !identidadGlobal) {
