@@ -12,14 +12,14 @@ namespace Solqaryn.Infrastructure.Services;
 /// </summary>
 public sealed class ConfiguredPublicStoreHostTenantResolver : IPublicStoreHostTenantResolver
 {
-    private readonly IReadOnlyDictionary<string, int> _byHost;
+    private readonly IReadOnlyDictionary<string, int> _byOriginAndKey;
     public bool IsEnabled { get; }
 
     public ConfiguredPublicStoreHostTenantResolver(IConfiguration configuration)
     {
         if (!configuration.GetValue<bool>("PublicStore:EnableMultiEmpresaBinding"))
         {
-            _byHost = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            _byOriginAndKey = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             return;
         }
 
@@ -31,7 +31,13 @@ public sealed class ConfiguredPublicStoreHostTenantResolver : IPublicStoreHostTe
                 throw new InvalidOperationException(
                     "PublicStore:HostBindings contains an invalid host or EmpresaId.");
 
-            if (!map.TryAdd(host, empresaId))
+            // Varias tiendas comparten Host, nunca la pareja Host + StoreKey.
+            // La entrada sin StoreKey representa exclusivamente /tienda legacy.
+            var configuredKey = entry["StoreKey"];
+            var storeKey = configuredKey is null ? string.Empty : NormalizeStoreKey(configuredKey);
+            if (storeKey is null)
+                throw new InvalidOperationException("PublicStore:HostBindings contains an invalid StoreKey.");
+            if (!map.TryAdd(ComposeKey(host, storeKey), empresaId))
                 throw new InvalidOperationException(
                     "PublicStore:HostBindings contains a duplicate public host.");
         }
@@ -40,17 +46,36 @@ public sealed class ConfiguredPublicStoreHostTenantResolver : IPublicStoreHostTe
             throw new InvalidOperationException(
                 "PublicStore multiempresa cannot be enabled without approved host bindings.");
 
-        _byHost = map;
+        _byOriginAndKey = map;
         IsEnabled = true;
     }
 
-    public int? ResolveEmpresaId(HostString requestHost)
+    public int? ResolveEmpresaId(HostString requestHost) =>
+        ResolveEmpresaId(requestHost, null);
+
+    public int? ResolveEmpresaId(HostString requestHost, string? storeKey)
     {
-        // Usar únicamente Request.Host.Host; ningún X-Forwarded-Host, path,
-        // cabecera de empresa, nombre comercial o subdominio parecido es válido.
-        var normalized = NormalizeExactHostname(requestHost.Host);
-        return normalized is not null && _byHost.TryGetValue(normalized, out var empresaId)
+        // Los valores recibidos deben ser verificados por el middleware.
+        // El resolvedor SOLO consulta la allowlist de servidor.
+        var normalizedHost = NormalizeExactHostname(requestHost.Host);
+        var normalizedKey = storeKey is null ? string.Empty : NormalizeStoreKey(storeKey);
+        return normalizedHost is not null && normalizedKey is not null &&
+               _byOriginAndKey.TryGetValue(ComposeKey(normalizedHost, normalizedKey), out var empresaId)
             ? empresaId : null;
+    }
+
+    private static string ComposeKey(string host, string storeKey) => host + "\n" + storeKey;
+
+    private static string? NormalizeStoreKey(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value) || value.Length > 48 ||
+            value != value.Trim() || value != value.ToLowerInvariant())
+            return null;
+        if (!(value[0] is >= 'a' and <= 'z') ||
+            !(value[^1] is >= 'a' and <= 'z' or >= '0' and <= '9') ||
+            value.Any(c => !(c is >= 'a' and <= 'z' or >= '0' and <= '9' or '-')))
+            return null;
+        return value;
     }
 
     private static string? NormalizeExactHostname(string? value)
