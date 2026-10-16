@@ -53,7 +53,7 @@ public sealed class PlataformaEmpresasController : ControllerBase
             return Forbid();
         var actor = await _plataforma.ObtenerActualAsync(cancellationToken);
         if (actor is null) return Forbid();
-        if (pagina < 1 || tamano is < 1 or > 50)
+        if (pagina is < 1 or > 100000 || tamano is < 1 or > 50)
             return BadRequest(ApiResponse<object>.Fail("Paginación fuera de límites."));
 
         var empresas = _db.Set<Empresa>().IgnoreQueryFilters().AsNoTracking();
@@ -64,12 +64,17 @@ public sealed class PlataformaEmpresasController : ControllerBase
             .ToArrayAsync(cancellationToken);
 
         var ids = rows.Select(e => e.Id).ToArray();
-        var membresias = await _db.Set<UsuarioEmpresa>().IgnoreQueryFilters()
-            .AsNoTracking()
-            .Where(m => ids.Contains(m.EmpresaId) && m.Activa)
-            .GroupBy(m => m.EmpresaId)
-            .Select(g => new { EmpresaId = g.Key, Total = g.Count() })
-            .ToArrayAsync(cancellationToken);
+        // El recuento nunca incluye membresías suspendidas ni cuentas
+        // bloqueadas/inactivas; no consulta ni publica datos comerciales.
+        var membresias = await (
+            from m in _db.Set<UsuarioEmpresa>().IgnoreQueryFilters().AsNoTracking()
+            join usuario in _db.Usuarios.IgnoreQueryFilters().AsNoTracking()
+                on m.UsuarioId equals usuario.Id
+            where ids.Contains(m.EmpresaId) && m.Activa &&
+                  usuario.Activo && !usuario.Bloqueado && !usuario.Eliminado
+            group m by m.EmpresaId into g
+            select new { EmpresaId = g.Key, Total = g.Count() }
+        ).ToArrayAsync(cancellationToken);
         var totals = membresias.ToDictionary(x => x.EmpresaId, x => x.Total);
 
         // Registrar únicamente ids/counts; no volcar PII o contenido de otros tenants.
