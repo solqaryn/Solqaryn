@@ -1,3 +1,9 @@
+## 2026-10-16 — Certificación real de tiendas DEV desacoplada del gate de despliegue
+
+- El workflow `dev-public-store-live-readback.yml` solo se ejecuta mediante `workflow_dispatch` después de que Render y Vercel publiquen el SHA correcto: evitar bloqueo circular con `Render autoDeployTrigger=checksPass` cuando el ledger MySQL todavía no existe.
+- El smoke calienta `/health/ready` antes de probar la tienda legacy, usa 45 s de espera por ruta y falla cerrado si no existen dos vinculaciones A/B activas, una suspendida o la migración anti-replay. La falta de fixture nunca se reporta como certificación.
+- No cambia lógica backend ni frontend ni datos de Aiven. CI exact-head del PR #3661 ya aprobada en 23/23 workflows. El readback de Aiven previo al rollout confirmó cero registros y queda como evidencia de que aún hace falta aprovisionamiento seguro.
+
 ## 2026-10-16 — Microfase 1 DEV: anti-replay de firma HMAC v2 (candidato)
 
 - El proxy genera un nonce aleatorio de 128 bits por solicitud; HMAC v2 firma nonce, timestamp, metodo, ruta, Host y StoreKey. Se rechazan v1, cabeceras duplicadas, nonces invalidos y expirados.
