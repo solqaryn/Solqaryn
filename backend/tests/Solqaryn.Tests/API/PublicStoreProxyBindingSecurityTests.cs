@@ -110,6 +110,13 @@ public sealed class PublicStoreProxyBindingSecurityTests
         Assert.Equal(503, await RequestAsync("comercio-a", skew: -120));
         Assert.Equal(503, await RequestAsync("comercio-a", skew: 120));
         Assert.Equal(503, await RequestAsync("comercio-a", method: "POST", signedMethod: "GET"));
+        // Incluso con firma correcta, esta microfase no autoriza catálogo,
+        // checkout, cuenta ni escrituras de tiendas secundarias.
+        Assert.Equal(503, await RequestAsync("comercio-a", path: "/tienda/categorias"));
+        Assert.Equal(503, await RequestAsync("comercio-a", path: "/tienda/carrito"));
+        Assert.Equal(503, await RequestAsync("comercio-a", path: "/tienda/checkout"));
+        Assert.Equal(503, await RequestAsync("comercio-b", path: "/tienda/cuenta"));
+        Assert.Equal(503, await RequestAsync("comercio-a", method: "POST", path: "/tienda/binding"));
         Assert.Equal(3, selected.Count);
 
         b.Desactivar();
