@@ -67,6 +67,60 @@ public sealed class ConfiguredPublicStoreHostTenantResolverTests
     }
 
     [Fact]
+    public void MismoHostDosTiendasConStoreKeySoloResuelveIdentidadExacta()
+    {
+        var resolver = new ConfiguredPublicStoreHostTenantResolver(Config(
+            ("PublicStore:EnableMultiEmpresaBinding", "true"),
+            ("PublicStore:HostBindings:0:Host", "solqaryn-dev.vercel.app"),
+            ("PublicStore:HostBindings:0:StoreKey", "comercio-a"),
+            ("PublicStore:HostBindings:0:EmpresaId", "11"),
+            ("PublicStore:HostBindings:1:Host", "solqaryn-dev.vercel.app"),
+            ("PublicStore:HostBindings:1:StoreKey", "comercio-b"),
+            ("PublicStore:HostBindings:1:EmpresaId", "22"),
+            ("PublicStore:HostBindings:2:Host", "solqaryn-dev.vercel.app"),
+            ("PublicStore:HostBindings:2:EmpresaId", "11")));
+        var host = new HostString("solqaryn-dev.vercel.app");
+        Assert.Equal(11, resolver.ResolveEmpresaId(host));
+        Assert.Equal(11, resolver.ResolveEmpresaId(host, "comercio-a"));
+        Assert.Equal(22, resolver.ResolveEmpresaId(host, "comercio-b"));
+        Assert.Null(resolver.ResolveEmpresaId(host, "comercio-c"));
+        Assert.Null(resolver.ResolveEmpresaId(new HostString("evil.example.test"), "comercio-a"));
+        Assert.Null(resolver.ResolveEmpresaId(host, "COMERCIO-A"));
+        Assert.Null(resolver.ResolveEmpresaId(host, "../comercio-b"));
+    }
+
+    [Theory]
+    [InlineData("comercio_a")]
+    [InlineData("comercio/b")]
+    [InlineData("../comercio")]
+    [InlineData("COMERCIO-B")]
+    [InlineData("%2f")]
+    [InlineData(" tienda ")]
+    public void StoreKeyInseguroFallaAntesDeServirPublico(string storeKey)
+    {
+        Assert.Throws<InvalidOperationException>(() =>
+            new ConfiguredPublicStoreHostTenantResolver(Config(
+                ("PublicStore:EnableMultiEmpresaBinding", "true"),
+                ("PublicStore:HostBindings:0:Host", "solqaryn-dev.vercel.app"),
+                ("PublicStore:HostBindings:0:StoreKey", storeKey),
+                ("PublicStore:HostBindings:0:EmpresaId", "11"))));
+    }
+
+    [Fact]
+    public void ClaveDeTiendaDuplicadaEnMismoHostFallaCerrada()
+    {
+        Assert.Throws<InvalidOperationException>(() =>
+            new ConfiguredPublicStoreHostTenantResolver(Config(
+                ("PublicStore:EnableMultiEmpresaBinding", "true"),
+                ("PublicStore:HostBindings:0:Host", "solqaryn-dev.vercel.app"),
+                ("PublicStore:HostBindings:0:StoreKey", "comercio-a"),
+                ("PublicStore:HostBindings:0:EmpresaId", "11"),
+                ("PublicStore:HostBindings:1:Host", "solqaryn-dev.vercel.app"),
+                ("PublicStore:HostBindings:1:StoreKey", "comercio-a"),
+                ("PublicStore:HostBindings:1:EmpresaId", "22"))));
+    }
+
+    [Fact]
     public void PublicacionSinVinculaciones_FallaCerrada()
     {
         Assert.Throws<InvalidOperationException>(() =>
