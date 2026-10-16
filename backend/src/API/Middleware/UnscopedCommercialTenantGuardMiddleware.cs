@@ -148,12 +148,7 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
             {
                 if (publicHostResolver?.IsEnabled != true || configPublica is null ||
                     !PublicStoreProxyProof.TryReadVerified(httpContext.Request, configPublica,
-                        out var verifiedHost, out var verifiedStoreKey) ||
-                    // Atomic MySQL signature consumption protects all API replicas.
-                    replayStore is null ||
-                    !await replayStore.TryConsumeAsync(
-                        httpContext.Request.Headers[PublicStoreProxyProof.ProofHeader].ToString(),
-                        httpContext.RequestAborted))
+                        out var verifiedHost, out var verifiedStoreKey))
                 {
                     await RechazarAsync(httpContext);
                     return;
@@ -249,6 +244,17 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                     .AnyAsync(e => e.Id == empresaPublica.Value && e.Activa,
                         httpContext.RequestAborted);
                 if (!autorizada)
+                {
+                    await RechazarAsync(httpContext);
+                    return;
+                }
+
+                // Consume only proofs for an already-approved, active company:
+                // unknown URLs cannot populate the replay ledger through the proxy.
+                if (tieneProof && (replayStore is null ||
+                    !await replayStore.TryConsumeAsync(
+                        httpContext.Request.Headers[PublicStoreProxyProof.ProofHeader].ToString(),
+                        httpContext.RequestAborted)))
                 {
                     await RechazarAsync(httpContext);
                     return;

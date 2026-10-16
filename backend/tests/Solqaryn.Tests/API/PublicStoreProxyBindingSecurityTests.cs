@@ -121,6 +121,7 @@ public sealed class PublicStoreProxyBindingSecurityTests
         Assert.Equal(503, await RequestAsync("comercio-b", path: "/tienda/cuenta"));
         Assert.Equal(503, await RequestAsync("comercio-a", method: "POST", path: "/tienda/binding"));
         Assert.Equal(3, selected.Count);
+        Assert.Equal(3, replay.ConsumedCount); // invalid hosts and routes never write to ledger
 
         b.Desactivar();
         await db.SaveChangesAsync();

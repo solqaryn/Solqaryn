@@ -7,6 +7,7 @@ namespace Solqaryn.Tests.API;
 internal sealed class TestPublicStoreProofReplayStore : IPublicStoreProofReplayStore
 {
     private readonly ConcurrentDictionary<string, byte> _used = new(StringComparer.Ordinal);
+    public int ConsumedCount => _used.Count;
     public Task<bool> TryConsumeAsync(string proofHex, CancellationToken cancellationToken) =>
         Task.FromResult(_used.TryAdd(proofHex, 0));
 }
