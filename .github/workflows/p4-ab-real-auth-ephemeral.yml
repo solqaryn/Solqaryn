@@ -18,6 +18,8 @@ on:
       - backend/src/Infrastructure/Services/PlataformaScopeService.cs
       - backend/src/Application/Interfaces/IPlataformaScopeService.cs
       - scripts/ci/p4-platform-sesion-real-jwt.mjs
+      - scripts/ci/p4-plataforma-mvp-http-jwt.mjs
+      - backend/src/API/Controllers/PlataformaGestionMvpController.cs
   push:
     branches: [dev]
     paths:
@@ -212,6 +214,13 @@ jobs:
           set -euo pipefail
           node scripts/ci/p4-platform-sesion-real-jwt.mjs
 
+      - name: Certificar MVP plataforma con JWT y MySQL real A/B
+        env:
+          P4_MVP_TEST_PHASE: active
+        run: |
+          set -euo pipefail
+          node scripts/ci/p4-plataforma-mvp-http-jwt.mjs
+
       - name: Revocacion inmediata de membresia global JWT
         shell: bash
         env:
@@ -223,6 +232,13 @@ jobs:
             UPDATE UsuarioRolesPlataforma SET Activa=0, FechaActualizacion=UTC_TIMESTAMP(6)
              WHERE UsuarioId=(SELECT Id FROM Usuarios WHERE NombreUsuario='p4_platform_only_ci');"
           node scripts/ci/p4-platform-sesion-real-jwt.mjs
+
+      - name: Certificar revocacion del control plane MVP
+        env:
+          P4_MVP_TEST_PHASE: revoked
+        run: |
+          set -euo pipefail
+          node scripts/ci/p4-plataforma-mvp-http-jwt.mjs
 
       - name: Restaurar membresia y desactivar empresas sin alterar global JWT
         shell: bash
@@ -236,6 +252,13 @@ jobs:
              WHERE UsuarioId=(SELECT Id FROM Usuarios WHERE NombreUsuario='p4_platform_only_ci');
             UPDATE Empresas SET Activa=0, FechaActualizacion=UTC_TIMESTAMP(6) WHERE Id IN (1,2);"
           node scripts/ci/p4-platform-sesion-real-jwt.mjs
+
+      - name: Certificar plataforma con empresas A y B inactivas
+        env:
+          P4_MVP_TEST_PHASE: inactive
+        run: |
+          set -euo pipefail
+          node scripts/ci/p4-plataforma-mvp-http-jwt.mjs
 
       - name: Desactivar rol global y comprobar auditoria con EmpresaId nulo
         shell: bash
