@@ -199,14 +199,18 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                     var legacyHost = configPublica["PublicStore:LegacyUpstreamHost"];
                     // La empresa legacy está fijada en MySQL antes de crear
                     // otros tenants; no requiere ID manual por nuevo cliente.
-                    var legacyId = string.IsNullOrWhiteSpace(legacyHost) ? null :
+                    var persistedLegacyId = string.IsNullOrWhiteSpace(legacyHost) ? null :
                         await db.PublicStoreBindings.AsNoTracking()
                             .Where(x => x.Host == legacyHost && x.StoreKey == "" && x.Activa)
                             .Select(x => (int?)x.EmpresaId)
                             .SingleOrDefaultAsync(httpContext.RequestAborted);
                     var configuredLegacyId = configPublica.GetValue<int>("PublicStore:LegacyRootEmpresaId");
+                    // Compatibilidad con instalaciones que ya tienen owner
+                    // explícito en variables, sin elegir dinámicamente un ID.
+                    int? legacyId = persistedLegacyId ??
+                        (configuredLegacyId > 0 ? configuredLegacyId : null);
                     if (legacyId is not > 0 ||
-                        (configuredLegacyId > 0 && configuredLegacyId != legacyId) ||
+                        (persistedLegacyId.HasValue && configuredLegacyId > 0 && configuredLegacyId != persistedLegacyId) ||
                         string.IsNullOrWhiteSpace(legacyHost) ||
                         !string.Equals(httpContext.Request.Host.Host, legacyHost,
                             StringComparison.OrdinalIgnoreCase) ||
