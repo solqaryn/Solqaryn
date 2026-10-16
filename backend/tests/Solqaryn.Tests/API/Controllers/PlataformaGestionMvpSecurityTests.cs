@@ -227,12 +227,22 @@ public sealed class PlataformaGestionMvpSecurityTests
             Assert.NotNull(result.Value);
             var nuevo = await t.Db.Usuarios.SingleAsync(u => u.NombreUsuario == "nuevo-empleado");
             Assert.Equal(t.RolEmpresa.Id, nuevo.RolId);
+            Assert.False(nuevo.Activo); // Login bloqueado hasta primera membresía.
             Assert.True(BCrypt.Net.BCrypt.Verify("ClaveSegura!42", nuevo.PasswordHash));
             Assert.Empty(await t.Db.Set<UsuarioRolPlataforma>()
                 .Where(x => x.UsuarioId == nuevo.Id).ToListAsync());
             Assert.Empty(await t.Db.Set<UsuarioEmpresa>()
                 .Where(x => x.UsuarioId == nuevo.Id).ToListAsync());
             Assert.Single(await t.Db.Set<RegistroAuditoria>().ToListAsync());
+
+            Assert.IsType<OkObjectResult>(await t.Controller.Asignar(
+                t.EmpresaA.Id,
+                new() { UsuarioId = nuevo.Id, RolId = t.RolEmpresa.Id },
+                CancellationToken.None));
+            Assert.True(nuevo.Activo);
+            Assert.Single(await t.Db.Set<UsuarioEmpresa>()
+                .Where(m => m.UsuarioId == nuevo.Id && m.EmpresaId == t.EmpresaA.Id)
+                .ToListAsync());
         }
     }
 
