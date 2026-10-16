@@ -46,6 +46,15 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
             return;
         }
 
+        // Catálogo de plataforma: solo GET exacto. MVC vuelve a exigir JWT y
+        // autoridad global desde MySQL; no concede privilegios tenant.
+        if (HttpMethods.IsGet(httpContext.Request.Method) &&
+            EsRutaExacta(httpContext.Request.Path, "/plataforma/empresas"))
+        {
+            await _next(httpContext);
+            return;
+        }
+
         // Alta de plataforma: excepción de ruta estricta, NO autoridad.
         // JWT y rol PLATAFORMA se vuelven a verificar en el controlador contra MySQL.
         // Dos flags independientes deben estar activados expresamente; ninguna
