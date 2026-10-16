@@ -27,7 +27,7 @@ function exactPublicHostname(raw) {
   return host;
 }
 
-function buildPublicStoreProxyContext(req, canonicalPath, environment = process.env, nowSeconds = Math.floor(Date.now() / 1000)) {
+function buildPublicStoreProxyContext(req, canonicalPath, environment = process.env, binding = null, nowSeconds = Math.floor(Date.now() / 1000)) {
   const route = parsePublicStorePath(canonicalPath);
   if (!route) return { error: 'INVALID_STORE_PATH', status: 400 };
   if (!route.path.startsWith('/tienda/') && route.path !== '/tienda') return { path: route.path, headers: {} };
@@ -42,6 +42,18 @@ function buildPublicStoreProxyContext(req, canonicalPath, environment = process.
   // Sólo el Host de la solicitud HTTPS terminada por Vercel; nunca forwarded-host.
   const host = exactPublicHostname(req.headers?.host);
   if (!host) return { error: 'INVALID_PUBLIC_HOST', status: 400 };
+
+  // Los aliases públicos adicionales deben autorizarse en la infraestructura
+  // del proyecto Vercel (y por separado en HostBindings del backend).
+  // Un Host enviado por un cliente no puede seleccionar un negocio arbitrario.
+  const canonicalHost = binding?.publicOrigin
+    ? exactPublicHostname(new URL(binding.publicOrigin).hostname)
+    : null;
+  const aliases = String(environment.SOLQARYN_PUBLIC_STORE_ALLOWED_HOSTS || '')
+    .split(',').filter(Boolean).map(value => exactPublicHostname(value));
+  if (!canonicalHost || aliases.some(alias => !alias) ||
+      (host !== canonicalHost && !aliases.includes(host)))
+    return { error: 'UNRECOGNIZED_STORE_HOST', status: 403 };
 
   const method = String(req.method || '').toUpperCase();
   if (!/^(GET|HEAD|POST|PUT|PATCH|DELETE|OPTIONS)$/.test(method))
