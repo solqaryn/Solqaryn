@@ -53,7 +53,9 @@ public sealed class CommercialTenantNaturalKeysTests
             "Roles.NombreNormalizadoGlobalUnico",
             "ProductoImagenes.PrincipalAmbitoKey",
             "ProductoVariantes.IdentidadActivaUnica",
-            "ProductoVariantes.ProductoTecnicoUnico"
+            "ProductoVariantes.ProductoTecnicoUnico",
+            // Identidad técnica global de URL, no clave natural comercial tenant.
+            "PublicStoreBindings.Host"
         };
 
         foreach (var entity in db.Model.GetEntityTypes()
@@ -77,6 +79,8 @@ public sealed class CommercialTenantNaturalKeysTests
                     var generated = index.Properties[0].GetComputedColumnSql();
                     Assert.Contains("ProductoId", generated);
                 }
+                if (key == "PublicStoreBindings.Host")
+                    Assert.Equal(new[] { "Host", "StoreKey" }, columns);
                 if (key == "Roles.NombreNormalizadoGlobalUnico")
                     Assert.Contains("EmpresaId IS NULL",
                         index.Properties[0].GetComputedColumnSql());
