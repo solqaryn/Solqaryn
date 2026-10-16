@@ -7,11 +7,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.service';
 import { DirectorioPlataforma, PlataformaEmpresasService } from '../../core/auth/plataforma-empresas.service';
+import { PlataformaGestionMvpComponent } from './plataforma-gestion-mvp.component';
 
 @Component({
   selector: 'app-plataforma',
   standalone: true,
-  imports: [RouterLink, MatButtonModule, MatCardModule, MatIconModule, MatProgressSpinnerModule],
+  imports: [RouterLink, MatButtonModule, MatCardModule, MatIconModule, MatProgressSpinnerModule, PlataformaGestionMvpComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="plataforma" aria-labelledby="plataforma-title">
@@ -114,6 +115,7 @@ import { DirectorioPlataforma, PlataformaEmpresasService } from '../../core/auth
             }
           </mat-card-content>
         </mat-card>
+        <app-plataforma-gestion-mvp [directorio]="directorio()" (actualizarDirectorio)="cargarEmpresas()"></app-plataforma-gestion-mvp>
       } @else {
         <mat-card class="denied">
           <mat-card-content>
