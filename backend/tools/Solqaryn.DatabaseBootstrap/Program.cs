@@ -111,6 +111,12 @@ var beforeAdoption = await ScalarLongAsync(
       AND TABLE_NAME <> '__EFMigrationsHistory';
     """);
 
+var publicStoreTableBeforeAdoption = await ScalarLongAsync(db, """
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'PublicStoreBindings'
+      AND TABLE_TYPE = 'BASE TABLE';
+    """);
+
 await db.Database.CloseConnectionAsync();
 if (mode == "fresh")
 {
@@ -236,6 +242,27 @@ if (mode == "fresh")
         INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
         VALUES ('20261014130000_CommercialTenantNaturalKeysPostStorefront', '10.0.12');
         """);
+
+    // La nueva tabla proviene de EnsureCreated: sólo adoptar al verificar
+    // el índice físico exacto y la FK contra Empresas.
+    var storeUnique = await ScalarLongAsync(db, """
+        SELECT COUNT(*) FROM (
+            SELECT INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'PublicStoreBindings'
+              AND INDEX_NAME = 'UX_PublicStoreBindings_Host_Key'
+              AND NON_UNIQUE = 0
+            GROUP BY INDEX_NAME
+            HAVING GROUP_CONCAT(COLUMN_NAME ORDER BY SEQ_IN_INDEX SEPARATOR ',') = 'Host,StoreKey'
+        ) v;
+        """);
+    if (storeUnique != 1)
+        throw new InvalidOperationException(
+            "Fresh bootstrap refused store-binding migration: unique host/key contract missing.");
+    await db.Database.ExecuteSqlRawAsync("""
+        INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+        VALUES ('20261016095000_PublicStoreBindingsPersistence', '10.0.12');
+        """);
     await db.Database.CloseConnectionAsync();
 }
 else
@@ -255,8 +282,11 @@ var afterAdoption = await ScalarLongAsync(
       AND TABLE_NAME <> '__EFMigrationsHistory';
     """);
 
-if (afterAdoption != beforeAdoption)
-    throw new InvalidOperationException($"Oracle baseline adoption changed physical table count: before={beforeAdoption}, after={afterAdoption}.");
+// Persisted legacy schemas gain exactly one new table through an EF migration;
+// fresh EnsureCreated has already included it and only adopts history.
+var expectedAfterAdoption = beforeAdoption + (publicStoreTableBeforeAdoption == 0 ? 1 : 0);
+if (afterAdoption != expectedAfterAdoption)
+    throw new InvalidOperationException($"Oracle bootstrap changed unexpected table count: before={beforeAdoption}, after={afterAdoption}, expected={expectedAfterAdoption}.");
 
 var marker = await ScalarLongAsync(
     db,
