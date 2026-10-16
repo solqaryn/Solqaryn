@@ -34,7 +34,7 @@ public sealed class PlataformaDirectorioGlobalSecurityTests
     }
 
     [Fact]
-    public async Task PlataformaConVariStoreInactivaLeeDirectorioSinActivarTenants()
+    public async Task PlataformaConempresaInactivaInactivaLeeDirectorioSinActivarTenants()
     {
         var (db, controller, empresa, actorId) = await FixtureAsync(global: true);
         await using (db)
@@ -84,10 +84,10 @@ public sealed class PlataformaDirectorioGlobalSecurityTests
     {
         await using var db = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase("p4-directory-middleware-" + Guid.NewGuid().ToString("N")).Options);
-        var varistore = new Empresa("Empresa A inactiva");
+        var empresaInactiva = new Empresa("Empresa A inactiva");
         var empresaB = new Empresa("Empresa B");
-        varistore.Desactivar();
-        db.Set<Empresa>().AddRange(varistore, empresaB);
+        empresaInactiva.Desactivar();
+        db.Set<Empresa>().AddRange(empresaInactiva, empresaB);
         await db.SaveChangesAsync();
         var calls = 0;
         var guard = new UnscopedCommercialTenantGuardMiddleware(ctx =>
@@ -136,9 +136,9 @@ public sealed class PlataformaDirectorioGlobalSecurityTests
         await db.SaveChangesAsync();
         if (global)
             db.Set<UsuarioRolPlataforma>().Add(new UsuarioRolPlataforma(user.Id, platform.Id));
-        var varistore = new Empresa("Empresa A inactiva");
-        varistore.Desactivar();
-        db.Set<Empresa>().Add(varistore);
+        var empresaInactiva = new Empresa("Empresa A inactiva");
+        empresaInactiva.Desactivar();
+        db.Set<Empresa>().Add(empresaInactiva);
         await db.SaveChangesAsync();
         var current = new Mock<ICurrentUserService>();
         current.SetupGet(x => x.EstaAutenticado).Returns(true);
@@ -157,6 +157,6 @@ public sealed class PlataformaDirectorioGlobalSecurityTests
         {
             ControllerContext = new ControllerContext { HttpContext = http }
         };
-        return (db, controller, varistore, user.Id);
+        return (db, controller, empresaInactiva, user.Id);
     }
 }
