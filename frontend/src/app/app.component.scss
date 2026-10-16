@@ -218,7 +218,7 @@
 }
 
 .context-shortcut {
-  min-height: 40px;
+  min-height: var(--target-min);
   display: inline-flex;
   align-items: center;
   justify-content: center;
