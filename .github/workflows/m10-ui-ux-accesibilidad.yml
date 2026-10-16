@@ -20,6 +20,7 @@ on:
       - frontend/e2e/n1-5-kardex.spec.ts
   pull_request:
     branches:
+      - dev
       - main
     paths:
       - .github/workflows/m10-ui-ux-accesibilidad.yml
@@ -106,6 +107,31 @@ jobs:
           dotnet restore Solqaryn.sln
           dotnet build Solqaryn.sln --configuration Release --no-restore
 
+      # OracleBaseline sobre una base vacía sólo comprueba metadatos;
+      # materializar el esquema completo (137 tablas) en MySQL descartable
+      # con el bootstrap EF10 canónico ANTES del seeding de la API.
+      - name: Inicializar esquema EF10 Oracle en MySQL descartable
+        working-directory: backend
+        shell: bash
+        env:
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
+          MYSQL_PWD: root
+        run: |
+          set -euo pipefail
+          dotnet run \
+            --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj \
+            --configuration Release --no-build \
+            | tee "$RUNNER_TEMP/m10-oracle-fresh-bootstrap.log"
+          grep -Fx 'SOLQARYN_ORACLE_BOOTSTRAP=PASS mode=fresh tables=137 pending=0' \
+            "$RUNNER_TEMP/m10-oracle-fresh-bootstrap.log"
+          test "$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -uroot \
+            solqaryn_m10_e2e --batch --skip-column-names \
+            -e "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")" = 1
+          test "$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -uroot \
+            solqaryn_m10_e2e --batch --skip-column-names \
+            -e "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261016095000_PublicStoreBindingsPersistence';")" = 1
+          echo "M10_MYSQL_EF10_FRESH_BOOTSTRAP=PASS"
+
       - name: Iniciar API con MySQL descartable
         working-directory: backend
         shell: bash
@@ -173,6 +199,8 @@ jobs:
       - name: Iniciar Angular
         working-directory: frontend
         shell: bash
+        env:
+          PORT: '4200'
         run: |
           set -euo pipefail
           nohup npm start -- --host 127.0.0.1 --port 4200 > m10-frontend.log 2>&1 &
