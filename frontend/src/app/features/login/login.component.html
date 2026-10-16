@@ -16,6 +16,15 @@
     @if (authService.isAuthenticated() && !tenantContext.tieneContextoVerificado()) {
       <div class="card login-card" aria-label="Selección de empresa">
         <app-tenant-selector (confirmado)="tenantConfirmado()"></app-tenant-selector>
+        <div class="plataforma-entry">
+          <p>¿Administras la plataforma SOLQARYN?</p>
+          <button mat-stroked-button type="button" (click)="entrarPlataforma()">
+            <mat-icon>admin_panel_settings</mat-icon> Acceder a la consola global
+          </button>
+          @if (errorPlataforma()) {
+            <p class="plataforma-error" role="alert">{{ errorPlataforma() }}</p>
+          }
+        </div>
       </div>
     } @else {
       <form class="card login-card" [formGroup]="form" (ngSubmit)="submit()" aria-labelledby="login-title" novalidate>

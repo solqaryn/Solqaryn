@@ -2,7 +2,7 @@ import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/cor
 
 import { HttpErrorResponse } from '@angular/common/http';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -41,10 +41,16 @@ export class LoginComponent {
   private readonly sessionActivity = inject(SessionActivityService);
   readonly identidad = inject(EmpresaIdentidadService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   readonly loading = signal(false);
   readonly errorMessage = signal<string | null>(null);
   readonly hidePassword = signal(true);
+  readonly errorPlataforma = signal<string | null>(this.route.snapshot.queryParamMap.get('plataforma') === 'denegado'
+    ? 'Tu sesión no posee autoridad global de SOLQARYN. Accede únicamente a una empresa autorizada.'
+    : this.route.snapshot.queryParamMap.get('plataforma') === 'no-disponible'
+      ? 'No se pudo verificar la autoridad global con el servidor. Intenta nuevamente.'
+      : null);
 
   readonly form = this.fb.group({
     nombreUsuario: ['', [Validators.required, Validators.maxLength(50)]],
@@ -115,6 +121,11 @@ export class LoginComponent {
         this.errorMessage.set(this.obtenerMensajeLogin(err));
       }
     });
+  }
+
+  entrarPlataforma(): void {
+    if (!this.authService.isAuthenticated()) return;
+    this.router.navigateByUrl('/plataforma');
   }
 
   tenantConfirmado(): void {

@@ -117,10 +117,16 @@ jobs:
             exit "$status"
           fi
           sed -E 's/\x1B\[[0-9;]*[mK]//g' /tmp/phase5-unit.log > /tmp/phase5-unit.clean.log
-          grep -Eq 'Test Files[[:space:]]+59 passed.*\(59\)' /tmp/phase5-unit.clean.log
-          grep -Eq 'Tests[[:space:]]+222 passed.*\(222\)' /tmp/phase5-unit.clean.log
+          # Totales dinámicos con baseline mínimo; no permitir pérdidas de cobertura
+          # ni saltar suites fallidas cuando se agregan nuevos archivos de tests.
+          read -r files_passed files_total < <(sed -nE 's/.*Test Files[[:space:]]+([0-9]+) passed[[:space:]]+\(([0-9]+)\).*/\1 \2/p' /tmp/phase5-unit.clean.log | tail -1)
+          read -r tests_passed tests_total < <(sed -nE 's/.*Tests[[:space:]]+([0-9]+) passed[[:space:]]+\(([0-9]+)\).*/\1 \2/p' /tmp/phase5-unit.clean.log | tail -1)
+          test "$files_passed" -ge 59
+          test "$tests_passed" -ge 222
+          test "$files_passed" -eq "$files_total"
+          test "$tests_passed" -eq "$tests_total"
           ! grep -Eq '([0-9]+ failed|FAIL |Unhandled Error|Unhandled Rejection)' /tmp/phase5-unit.clean.log
-          echo 'PHASE5_UNIT=PASS files=59/59 tests=222/222'
+          echo "PHASE5_UNIT=PASS files=$files_passed/$files_total tests=$tests_passed/$tests_total processStatus=$status"
 
       - name: Lint y contratos
         run: npm run lint

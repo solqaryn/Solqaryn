@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { plataformaGuard } from './core/guards/plataforma.guard';
 import { permisoGuard } from './core/guards/permiso.guard';
 import { AJUSTES_INVENTARIO_ROUTES } from './features/inventario/ajustes.routes';
 import { FACTURAS_PROVEEDOR_ROUTES } from './features/compras/facturas-proveedor/facturas-proveedor.routes';
@@ -18,6 +19,7 @@ export const routes: Routes = [
   { path: 'tienda/pedido/:id', loadComponent: () => import('./features/storefront/storefront-pedido.component').then(m => m.StorefrontPedidoComponent) },
   { path: 'tienda', loadComponent: () => import('./features/storefront/storefront.component').then(m => m.StorefrontComponent) },
   { path: 'login', loadComponent: () => import('./features/login/login.component').then(m => m.LoginComponent) },
+  { path: 'plataforma', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/plataforma.component').then(m => m.PlataformaComponent) },
   { path: 'dashboard', canActivate: [authGuard, permisoGuard], data: { modulo: 'Dashboard', accion: 'Ver' }, loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent) },
   { path: 'productos', canActivate: [authGuard, permisoGuard], data: { modulo: 'Productos', accion: 'Ver' }, loadComponent: () => import('./features/productos/productos-list.component').then(m => m.ProductosListComponent) },
   { path: 'productos/nuevo', canActivate: [authGuard, permisoGuard], data: { modulo: 'Productos', accion: 'Crear' }, loadComponent: () => import('./features/productos/producto-form.component').then(m => m.ProductoFormComponent) },
