@@ -143,13 +143,22 @@ public sealed class PlataformaEmpresasController : ControllerBase
             dto!.AdministradorUsuarioId <= 0)
             return BadRequest(ApiResponse<object>.Fail("Nombre o usuario administrador inválido."));
 
-        var administradorActivo = await _db.Usuarios.IgnoreQueryFilters()
-            .AsNoTracking()
-            .AnyAsync(u => u.Id == dto.AdministradorUsuarioId &&
-                           u.Activo && !u.Bloqueado && !u.Eliminado,
+        // Se admite la identidad PENDIENTE creada por el mismo operador global
+        // solo si nunca recibió membresías ni grants globales. Permanece inactiva
+        // hasta el commit atómico de empresa+membresía+auditoría.
+        var administrador = await _db.Usuarios.IgnoreQueryFilters()
+            .SingleOrDefaultAsync(u => u.Id == dto.AdministradorUsuarioId,
                 cancellationToken);
-        if (!administradorActivo)
+        if (administrador is null || administrador.Bloqueado || administrador.Eliminado)
             return BadRequest(ApiResponse<object>.Fail("El administrador solicitado no está habilitado."));
+        var pendiente = !administrador.Activo &&
+            administrador.CreadoPorUsuarioId == actorId &&
+            !await _db.Set<UsuarioEmpresa>().IgnoreQueryFilters().AsNoTracking()
+                .AnyAsync(m => m.UsuarioId == administrador.Id, cancellationToken) &&
+            !await _db.Set<UsuarioRolPlataforma>().IgnoreQueryFilters().AsNoTracking()
+                .AnyAsync(g => g.UsuarioId == administrador.Id, cancellationToken);
+        if (!administrador.Activo && !pendiente)
+            return BadRequest(ApiResponse<object>.Fail("La cuenta del administrador está suspendida."));
 
         // Sólo un rol ADMIN de plantilla empresarial. Un rol de Plataforma
         // nunca se asigna como rol de una membresía UsuarioEmpresa.
@@ -175,6 +184,13 @@ public sealed class PlataformaEmpresasController : ControllerBase
         await using var transaction = _db.Database.IsRelational()
             ? await _db.Database.BeginTransactionAsync(cancellationToken)
             : null;
+
+        if (pendiente)
+        {
+            administrador.Activo = true;
+            administrador.ActualizadoPorUsuarioId = actorId;
+            administrador.FechaActualizacion = DateTime.UtcNow;
+        }
 
         var empresa = new Empresa(nombre)
         {
