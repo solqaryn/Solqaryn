@@ -68,7 +68,7 @@ public sealed class ConfiguredPublicStoreHostTenantResolver : IPublicStoreHostTe
 
     private static string? NormalizeStoreKey(string? value)
     {
-        if (string.IsNullOrWhiteSpace(value) || value.Length > 48 ||
+        if (string.IsNullOrWhiteSpace(value) || value.Length is < 2 or > 48 ||
             value != value.Trim() || value != value.ToLowerInvariant())
             return null;
         if (!(value[0] is >= 'a' and <= 'z') ||
