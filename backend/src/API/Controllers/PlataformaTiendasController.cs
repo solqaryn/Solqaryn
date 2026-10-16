@@ -50,7 +50,7 @@ public sealed class PlataformaTiendasController : ControllerBase
         var exists = await _db.Set<Empresa>().IgnoreQueryFilters()
             .AnyAsync(x => x.Id == empresaId, ct);
         if (!exists) return NotFound(ApiResponse<object>.Fail("Empresa inexistente."));
-        var bindings = await _db.PublicStoreBindings.AsNoTracking()
+        var bindings = await _db.PublicStoreBindings.IgnoreQueryFilters().AsNoTracking()
             .Where(x => x.EmpresaId == empresaId).OrderBy(x => x.Id)
             .Select(x => new { x.Id, x.Host, x.StoreKey, x.Activa })
             .Take(100).ToArrayAsync(ct);
@@ -78,7 +78,7 @@ public sealed class PlataformaTiendasController : ControllerBase
         // Registrar y auditar en una única transacción, con unicidad real MySQL.
         await using var tx = _db.Database.IsRelational()
             ? await _db.Database.BeginTransactionAsync(ct) : null;
-        var existing = await _db.PublicStoreBindings
+        var existing = await _db.PublicStoreBindings.IgnoreQueryFilters()
             .SingleOrDefaultAsync(x => x.Host == host && x.StoreKey == storeKey, ct);
         if (existing is not null && existing.EmpresaId != empresaId)
             return Conflict(ApiResponse<object>.Fail("La URL pertenece a otra empresa."));
