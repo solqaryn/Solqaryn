@@ -1,6 +1,7 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { AuthService } from '../auth/auth.service';
 import { SessionActivityService } from '../auth/session-activity.service';
 
