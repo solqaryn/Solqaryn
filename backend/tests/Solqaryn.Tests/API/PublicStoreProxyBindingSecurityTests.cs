@@ -148,6 +148,16 @@ public sealed class PublicStoreProxyBindingSecurityTests
         ctx.Response.Body = new MemoryStream();
         await middleware.InvokeAsync(ctx, db, resolver);
         Assert.Equal(204, ctx.Response.StatusCode);
+
+        // La ruta nueva /tienda/binding JAMAS utiliza la compatibilidad
+        // monoempresa para entregar EmpresaId a hosts sin proof firmado.
+        var noProof = new DefaultHttpContext();
+        noProof.Request.Method = "GET";
+        noProof.Request.Path = "/tienda/binding";
+        noProof.Request.Host = new HostString("host-no-autorizado.example.test");
+        noProof.Response.Body = new MemoryStream();
+        await middleware.InvokeAsync(noProof, db, resolver);
+        Assert.Equal(503, noProof.Response.StatusCode);
     }
 
     [Fact]
