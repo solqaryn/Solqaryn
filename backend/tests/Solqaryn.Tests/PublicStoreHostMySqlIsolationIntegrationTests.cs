@@ -201,7 +201,9 @@ public sealed class PublicStoreHostMySqlIsolationIntegrationTests
                         EmpresaId = idB, Activa = true
                     });
                 await registryDb.SaveChangesAsync();
-                var readback = await registryDb.PublicStoreBindings.AsNoTracking()
+                // Certificador de plataforma: lectura física, no la consulta
+                // tenant-aware que debe seguir negada sin contexto comercial.
+                var readback = await registryDb.PublicStoreBindings.IgnoreQueryFilters().AsNoTracking()
                     .OrderBy(x => x.StoreKey)
                     .Select(x => new { x.StoreKey, x.EmpresaId })
                     .ToArrayAsync();
