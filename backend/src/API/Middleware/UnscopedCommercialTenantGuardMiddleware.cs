@@ -170,7 +170,7 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                 if (verifiedStoreKey is not null &&
                     configPublica.GetValue<bool>("PublicStore:EnableDatabaseBindings"))
                 {
-                    empresaPublica = await db.PublicStoreBindings.AsNoTracking()
+                    empresaPublica = await db.PublicStoreBindings.IgnoreQueryFilters().AsNoTracking()
                         .Where(x => x.Activa && x.Host == verifiedHost.Host &&
                                     x.StoreKey == verifiedStoreKey)
                         .Select(x => (int?)x.EmpresaId)
@@ -200,7 +200,7 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                     // La empresa legacy está fijada en MySQL antes de crear
                     // otros tenants; no requiere ID manual por nuevo cliente.
                     var persistedLegacyId = string.IsNullOrWhiteSpace(legacyHost) ? null :
-                        await db.PublicStoreBindings.AsNoTracking()
+                        await db.PublicStoreBindings.IgnoreQueryFilters().AsNoTracking()
                             .Where(x => x.Host == legacyHost && x.StoreKey == "" && x.Activa)
                             .Select(x => (int?)x.EmpresaId)
                             .SingleOrDefaultAsync(httpContext.RequestAborted);
@@ -270,7 +270,7 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
             }
             else
             {
-                legacyId = await db.PublicStoreBindings.AsNoTracking()
+                legacyId = await db.PublicStoreBindings.IgnoreQueryFilters().AsNoTracking()
                     .Where(x => x.Host == httpContext.Request.Host.Host &&
                                 x.StoreKey == "" && x.Activa)
                     .Select(x => (int?)x.EmpresaId)
