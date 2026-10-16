@@ -20,6 +20,7 @@ on:
       - frontend/e2e/n1-5-kardex.spec.ts
   pull_request:
     branches:
+      - dev
       - main
     paths:
       - .github/workflows/m10-ui-ux-accesibilidad.yml
