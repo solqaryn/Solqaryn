@@ -135,6 +135,40 @@ public sealed class PlataformaEmpresasController : ControllerBase
 
         await using var tx = _db.Database.IsRelational()
             ? await _db.Database.BeginTransactionAsync(ct) : null;
+        // Antes de la segunda empresa, fijar en la misma transacción el
+        // propietario de /tienda legacy. No inferirlo de la empresa activa
+        // después del alta, ni permitir cambiarlo al suspender/activar.
+        var legacyHost = _configuration["PublicStore:LegacyUpstreamHost"];
+        if (string.IsNullOrWhiteSpace(legacyHost) ||
+            legacyHost != legacyHost.Trim().ToLowerInvariant() ||
+            !legacyHost.Contains('.') || legacyHost.Contains(':') ||
+            legacyHost.Contains('/') || legacyHost.Contains('\\'))
+            return StatusCode(503,
+                ApiResponse<object>.Fail("Host upstream legacy sin configurar."));
+        var currentOwners = await _db.Set<Empresa>().IgnoreQueryFilters()
+            .AsNoTracking().Select(x => new { x.Id, x.Activa })
+            .Take(2).ToArrayAsync(ct);
+        if (currentOwners.Length == 1 && currentOwners[0].Activa)
+        {
+            var mapped = await _db.PublicStoreBindings
+                .SingleOrDefaultAsync(x => x.Host == legacyHost && x.StoreKey == "", ct);
+            if (mapped is not null && mapped.EmpresaId != currentOwners[0].Id)
+                return Conflict(ApiResponse<object>.Fail("Propietario legacy incompatible."));
+            if (mapped is null)
+                _db.PublicStoreBindings.Add(new PublicStoreBinding
+                {
+                    EmpresaId = currentOwners[0].Id, Host = legacyHost,
+                    StoreKey = "", Activa = true
+                });
+        }
+        else if (currentOwners.Length >= 2 &&
+            !await _db.PublicStoreBindings.AnyAsync(
+                x => x.Host == legacyHost && x.StoreKey == "" && x.Activa, ct))
+        {
+            return StatusCode(503,
+                ApiResponse<object>.Fail("Falta vinculación segura de la tienda existente."));
+        }
+
         var empresa = new Empresa(nombre)
         {
             CreadoPorUsuarioId = actor.UsuarioId,
