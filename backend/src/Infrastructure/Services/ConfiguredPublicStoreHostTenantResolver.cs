@@ -42,7 +42,7 @@ public sealed class ConfiguredPublicStoreHostTenantResolver : IPublicStoreHostTe
                     "PublicStore:HostBindings contains a duplicate public host.");
         }
 
-        if (map.Count == 0)
+        if (map.Count == 0 && !configuration.GetValue<bool>("PublicStore:EnableDatabaseBindings"))
             throw new InvalidOperationException(
                 "PublicStore multiempresa cannot be enabled without approved host bindings.");
 
