@@ -106,7 +106,7 @@ import {
             </div>
           </div>
           <button mat-flat-button type="button" (click)="crearEmpresa()"
-            [disabled]="ocupado() || directorio()?.puedeCrear !== true">
+            [disabled]="ocupado() || directorio()?.puedeCrear !== true || buscado()?.activo !== true || buscado()?.bloqueado === true">
             Crear empresa con administrador
           </button>
           @if (directorio()?.puedeCrear !== true) {
@@ -184,8 +184,14 @@ import {
                           <div class="table-actions">
                             <button mat-stroked-button type="button" [disabled]="ocupado() || rolEditado(m) === m.rolId"
                               (click)="guardarRol(m)">Guardar rol</button>
-                            <button mat-stroked-button type="button" [disabled]="ocupado()"
-                              (click)="cambiarEstadoMembresia(m)">{{ m.activa ? 'Retirar acceso' : 'Reactivar acceso' }}</button>
+                            @if (confirmarMembresia() === m.usuarioId) {
+                              <span class="warning">¿Retirar acceso a esta empresa?</span>
+                              <button mat-flat-button type="button" [disabled]="ocupado()" (click)="cambiarEstadoMembresia(m)">Confirmar retiro</button>
+                              <button mat-button type="button" (click)="confirmarMembresia.set(null)">Cancelar</button>
+                            } @else {
+                              <button mat-stroked-button type="button" [disabled]="ocupado()"
+                                (click)="pedirCambioMembresia(m)">{{ m.activa ? 'Retirar acceso' : 'Reactivar acceso' }}</button>
+                            }
                           </div>
                         </td>
                       </tr>
@@ -251,6 +257,7 @@ export class PlataformaGestionMvpComponent {
   readonly empresaNueva = signal('');
   readonly adminId = signal(0);
   readonly confirmarEstado = signal<boolean | null>(null);
+  readonly confirmarMembresia = signal<number | null>(null);
 
   private limpiarMensajes(): void {
     this.error.set(null);
@@ -272,6 +279,7 @@ export class PlataformaGestionMvpComponent {
     this.cambiosRoles.set({});
     this.rolAsignacion.set(0);
     this.confirmarEstado.set(null);
+    this.confirmarMembresia.set(null);
     this.limpiarMensajes();
     if (empresa) this.cargarEmpresa();
   }
@@ -371,10 +379,6 @@ export class PlataformaGestionMvpComponent {
     );
   }
 
-  buscarRoles(): void {
-    this.cargarEmpresa();
-  }
-
   asignarBuscado(): void {
     const e = this.empresaId();
     const cuenta = this.buscado();
@@ -417,6 +421,14 @@ export class PlataformaGestionMvpComponent {
     );
   }
 
+  pedirCambioMembresia(m: MembresiaEmpresaMvp): void {
+    if (m.activa) {
+      this.confirmarMembresia.set(m.usuarioId);
+      return;
+    }
+    this.cambiarEstadoMembresia(m);
+  }
+
   cambiarEstadoMembresia(m: MembresiaEmpresaMvp): void {
     const id = this.empresaId();
     if (!id) return;
@@ -426,9 +438,13 @@ export class PlataformaGestionMvpComponent {
         .subscribe({
           next: () => {
             this.exito.set('Estado de membresía actualizado.');
+            this.confirmarMembresia.set(null);
             this.cargarEmpresa();
           },
-          error: () => this.fallar('El cambio de membresía')
+          error: () => {
+            this.confirmarMembresia.set(null);
+            this.fallar('El cambio de membresía');
+          }
         })
     );
   }
