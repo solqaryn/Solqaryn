@@ -207,9 +207,9 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                     var configuredLegacyId = configPublica.GetValue<int>("PublicStore:LegacyRootEmpresaId");
                     // Compatibilidad con instalaciones que ya tienen owner
                     // explícito en variables, sin elegir dinámicamente un ID.
-                    int? legacyId = persistedLegacyId ??
+                    int? explicitLegacyOwnerId = persistedLegacyId ??
                         (configuredLegacyId > 0 ? configuredLegacyId : null);
-                    if (legacyId is not > 0 ||
+                    if (explicitLegacyOwnerId is not > 0 ||
                         (persistedLegacyId.HasValue && configuredLegacyId > 0 && configuredLegacyId != persistedLegacyId) ||
                         string.IsNullOrWhiteSpace(legacyHost) ||
                         !string.Equals(httpContext.Request.Host.Host, legacyHost,
@@ -219,7 +219,7 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                         await RechazarAsync(httpContext);
                         return;
                     }
-                    empresaPublica = legacyId;
+                    empresaPublica = explicitLegacyOwnerId;
                     httpContext.Response.OnStarting(() =>
                     {
                         httpContext.Response.Headers.CacheControl = "private, no-store, max-age=0";
