@@ -35,6 +35,10 @@ function requestHeaders(req, environment, bodyBuffer, trustedPublicContext) {
     // El único proof válido lo genera este proxy server-side.
     if (lower === 'host' || lower === 'content-length' || lower === 'x-forwarded-host' ||
         lower === 'x-original-host' || lower.startsWith('x-solqaryn-store-') ||
+        // La comprobación pública de una tienda nunca necesita credenciales,
+        // cookies ni selector ERP; no reenviar secretos de otras empresas.
+        (trustedPublicContext?.scoped && ['x-empresa-id', 'authorization', 'cookie',
+          'x-storefront-session'].includes(lower)) ||
         HOP_BY_HOP_HEADERS.has(lower) || value === undefined) continue;
     headers[name] = value;
   }
