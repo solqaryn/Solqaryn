@@ -197,8 +197,17 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                     // por X-Forwarded-Host, cookie o X-Empresa-Id. La prueba
                     // firmada sigue siendo obligatoria para /tiendas/{clave}.
                     var legacyHost = configPublica["PublicStore:LegacyUpstreamHost"];
-                    var legacyId = configPublica.GetValue<int>("PublicStore:LegacyRootEmpresaId");
-                    if (legacyId <= 0 || string.IsNullOrWhiteSpace(legacyHost) ||
+                    // La empresa legacy está fijada en MySQL antes de crear
+                    // otros tenants; no requiere ID manual por nuevo cliente.
+                    var legacyId = string.IsNullOrWhiteSpace(legacyHost) ? null :
+                        await db.PublicStoreBindings.AsNoTracking()
+                            .Where(x => x.Host == legacyHost && x.StoreKey == "" && x.Activa)
+                            .Select(x => (int?)x.EmpresaId)
+                            .SingleOrDefaultAsync(httpContext.RequestAborted);
+                    var configuredLegacyId = configPublica.GetValue<int>("PublicStore:LegacyRootEmpresaId");
+                    if (legacyId is not > 0 ||
+                        (configuredLegacyId > 0 && configuredLegacyId != legacyId) ||
+                        string.IsNullOrWhiteSpace(legacyHost) ||
                         !string.Equals(httpContext.Request.Host.Host, legacyHost,
                             StringComparison.OrdinalIgnoreCase) ||
                         httpContext.Request.Host.Port is not null)
