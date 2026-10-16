@@ -17,6 +17,12 @@ var options = new DbContextOptionsBuilder<AppDbContext>()
 await using var db = new AppDbContext(options);
 await db.Database.OpenConnectionAsync();
 
+// Fail closed: no marcar una migración como adoptada si el ensamblado
+// canónico EF10 ni siquiera la contiene (no aceptar historia falsa).
+var known = (await db.Database.GetMigrationsAsync()).ToArray();
+if (!known.Contains("20261016095000_PublicStoreBindingsPersistence", StringComparer.Ordinal))
+    throw new InvalidOperationException("La migración persistente de tiendas no está registrada en EF Oracle.");
+
 static async Task<long> ScalarLongAsync(AppDbContext db, string sql)
 {
     await using var command = db.Database.GetDbConnection().CreateCommand();
