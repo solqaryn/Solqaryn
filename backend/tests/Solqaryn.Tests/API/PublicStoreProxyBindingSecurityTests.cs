@@ -144,6 +144,54 @@ public sealed class PublicStoreProxyBindingSecurityTests
     }
 
     [Fact]
+    public async Task LegacyRootPorEmpresaExplicitaSigueDisponibleDuranteElRollout()
+    {
+        await using var db = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase("signed-store-compat-" + Guid.NewGuid().ToString("N")).Options);
+        var a = new Empresa("Empresa histórica A");
+        var b = new Empresa("Empresa nueva B");
+        db.Set<Empresa>().AddRange(a, b);
+        await db.SaveChangesAsync();
+        var cfg = new ConfigurationBuilder().AddInMemoryCollection(
+            new Dictionary<string, string?> {
+                ["PublicStore:EnableMultiEmpresaBinding"] = "true",
+                ["PublicStore:RequireVerifiedProxyProof"] = "true",
+                ["PublicStore:ProxySigningKey"] = Secret,
+                ["PublicStore:LegacyUpstreamHost"] = "solqaryn-api-dev-fxx8.onrender.com",
+                ["PublicStore:LegacyRootEmpresaId"] = a.Id.ToString(),
+                ["PublicStore:HostBindings:0:Host"] = "solqaryn-dev.vercel.app",
+                ["PublicStore:HostBindings:0:StoreKey"] = "comercio-a",
+                ["PublicStore:HostBindings:0:EmpresaId"] = a.Id.ToString(),
+                ["PublicStore:HostBindings:1:Host"] = "solqaryn-dev.vercel.app",
+                ["PublicStore:HostBindings:1:StoreKey"] = "comercio-b",
+                ["PublicStore:HostBindings:1:EmpresaId"] = b.Id.ToString()
+            }).Build();
+        var services = new ServiceCollection().AddSingleton<IConfiguration>(cfg).BuildServiceProvider();
+        var middleware = new UnscopedCommercialTenantGuardMiddleware(ctx => {
+            Assert.Equal(a.Id, VerifiedPublicStoreTenant.Resolve(ctx));
+            ctx.Response.StatusCode = 204;
+            return Task.CompletedTask;
+        });
+        async Task<int> GetAsync(string host)
+        {
+            var ctx = new DefaultHttpContext { RequestServices = services };
+            ctx.Request.Host = new HostString(host);
+            ctx.Request.Path = "/tienda/bootstrap";
+            ctx.Request.Method = "GET";
+            ctx.Request.Headers["X-Forwarded-Host"] = "solqaryn-dev.vercel.app";
+            ctx.Request.Headers["X-Empresa-Id"] = b.Id.ToString();
+            ctx.Response.Body = new MemoryStream();
+            await middleware.InvokeAsync(ctx, db, new ConfiguredPublicStoreHostTenantResolver(cfg));
+            return ctx.Response.StatusCode;
+        }
+        Assert.Equal(204, await GetAsync("solqaryn-api-dev-fxx8.onrender.com"));
+        Assert.Equal(503, await GetAsync("evil.example.test"));
+        a.Desactivar();
+        await db.SaveChangesAsync();
+        Assert.Equal(503, await GetAsync("solqaryn-api-dev-fxx8.onrender.com"));
+    }
+
+    [Fact]
     public void ProofNoPermiteCabecerasDuplicadasNiAusentes()
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(
