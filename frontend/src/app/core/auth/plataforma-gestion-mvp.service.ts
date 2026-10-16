@@ -17,6 +17,7 @@ export interface UsuarioIdentidadMvp {
   nombreCompleto: string;
   activo: boolean;
   bloqueado: boolean;
+  pendienteAsignacion: boolean;
 }
 
 export interface MembresiaEmpresaMvp {
@@ -65,7 +66,8 @@ export class PlataformaGestionMvpService {
         if (!Number.isSafeInteger(r.data?.id) || r.data.id <= 0 ||
             typeof r.data?.nombreUsuario !== 'string' ||
             typeof r.data?.activo !== 'boolean' ||
-            typeof r.data?.bloqueado !== 'boolean')
+            typeof r.data?.bloqueado !== 'boolean' ||
+            typeof r.data?.pendienteAsignacion !== 'boolean')
           throw new Error('Identidad inválida.');
         return r.data;
     }));
