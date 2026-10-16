@@ -142,7 +142,7 @@ public sealed class PublicStoreHostMySqlIsolationIntegrationTests
                 if (sign)
                 {
                     var at = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                    var canonical = $"v1\\n{at}\\nGET\\n/tienda/categorias\\n{origin}\\n{key}";
+                    var canonical = $"v1\n{at}\nGET\n/tienda/categorias\n{origin}\n{key}";
                     var proof = Convert.ToHexString(HMACSHA256.HashData(
                         Encoding.UTF8.GetBytes(proxySecret), Encoding.UTF8.GetBytes(canonical)))
                         .ToLowerInvariant();
