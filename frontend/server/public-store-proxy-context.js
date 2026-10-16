@@ -32,6 +32,13 @@ function buildPublicStoreProxyContext(req, canonicalPath, environment = process.
   if (!route) return { error: 'INVALID_STORE_PATH', status: 400 };
   if (!route.path.startsWith('/tienda/') && route.path !== '/tienda') return { path: route.path, headers: {} };
 
+  // Microfase 1: una tienda nueva solo puede comprobar su identidad.
+  // No firmar todavía catálogo, cuenta, carrito o checkout de otra tienda;
+  // esas rutas requieren certificaciones independientes en fases 2 y 3.
+  if (route.scoped && (route.path !== '/tienda/binding' ||
+      !['GET', 'HEAD'].includes(String(req.method || '').toUpperCase())))
+    return { error: 'STORE_ROUTE_NOT_YET_CERTIFIED', status: 503 };
+
   const requireRootProof = environment.SOLQARYN_PUBLIC_STORE_PROOF_ENABLED === 'true';
   if (!route.scoped && !requireRootProof) return { path: route.path, headers: {} };
 
