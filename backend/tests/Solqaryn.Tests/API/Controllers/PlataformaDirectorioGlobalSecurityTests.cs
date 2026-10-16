@@ -18,7 +18,7 @@ using Xunit;
 namespace Solqaryn.Tests.API.Controllers;
 
 /// <summary>
-/// Microfase 4: directorio global seguro con VariStoreHN inactiva.
+/// Microfase 4: directorio global seguro con Empresa A inactiva inactiva.
 /// No habilita onboarding, CRUD, información comercial ni roles empresariales.
 /// </summary>
 public sealed class PlataformaDirectorioGlobalSecurityTests
@@ -42,7 +42,7 @@ public sealed class PlataformaDirectorioGlobalSecurityTests
             var respuesta = Assert.IsType<OkObjectResult>(
                 await controller.Listar(1, 25, CancellationToken.None));
             var payload = System.Text.Json.JsonSerializer.Serialize(respuesta.Value);
-            Assert.Contains("VariStoreHN", payload);
+            Assert.Contains("Empresa A inactiva", payload);
             Assert.Contains("\"activa\":false", payload);
             Assert.Contains("\"puedeCrear\":false", payload);
             Assert.False(empresa.Activa);
@@ -84,7 +84,7 @@ public sealed class PlataformaDirectorioGlobalSecurityTests
     {
         await using var db = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase("p4-directory-middleware-" + Guid.NewGuid().ToString("N")).Options);
-        var varistore = new Empresa("VariStoreHN");
+        var varistore = new Empresa("Empresa A inactiva");
         var empresaB = new Empresa("Empresa B");
         varistore.Desactivar();
         db.Set<Empresa>().AddRange(varistore, empresaB);
@@ -136,7 +136,7 @@ public sealed class PlataformaDirectorioGlobalSecurityTests
         await db.SaveChangesAsync();
         if (global)
             db.Set<UsuarioRolPlataforma>().Add(new UsuarioRolPlataforma(user.Id, platform.Id));
-        var varistore = new Empresa("VariStoreHN");
+        var varistore = new Empresa("Empresa A inactiva");
         varistore.Desactivar();
         db.Set<Empresa>().Add(varistore);
         await db.SaveChangesAsync();
