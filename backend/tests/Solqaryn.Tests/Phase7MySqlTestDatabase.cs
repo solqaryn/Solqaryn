@@ -129,6 +129,28 @@ internal static class Phase7MySqlTestDatabase
             INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
             VALUES ('20261014130000_CommercialTenantNaturalKeysPostStorefront', '10.0.12');
             """);
+        // EnsureCreated ya materializó PublicStoreBindings. Registrar sólo
+        // tras comprobar el índice UNIQUE exacto de identidad pública A/B.
+        await db.Database.OpenConnectionAsync();
+        await using (var check = db.Database.GetDbConnection().CreateCommand())
+        {
+            check.CommandText = """
+                SELECT GROUP_CONCAT(COLUMN_NAME ORDER BY SEQ_IN_INDEX SEPARATOR ',')
+                FROM INFORMATION_SCHEMA.STATISTICS
+                WHERE TABLE_SCHEMA = DATABASE()
+                  AND TABLE_NAME = 'PublicStoreBindings'
+                  AND INDEX_NAME = 'UX_PublicStoreBindings_Host_Key'
+                  AND NON_UNIQUE = 0
+                """;
+            var columns = Convert.ToString(await check.ExecuteScalarAsync());
+            if (columns != "Host,StoreKey")
+                throw new InvalidOperationException(
+                    "Phase 7 fresh bootstrap: public store unique host/key index is missing.");
+        }
+        await db.Database.ExecuteSqlRawAsync("""
+            INSERT INTO __EFMigrationsHistory (MigrationId, ProductVersion)
+            VALUES ('20261016095000_PublicStoreBindingsPersistence', '10.0.12');
+            """);
         await db.Database.CloseConnectionAsync();
 
         if ((await db.Database.GetPendingMigrationsAsync()).Any())
