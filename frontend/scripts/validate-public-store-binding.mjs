@@ -109,7 +109,9 @@ const req = {
     'x-solqaryn-store-at': '123',
     'x-forwarded-host': 'evil.example.test',
     'x-empresa-id': '999',
-    authorization: 'Bearer public-test-placeholder'
+    authorization: 'Bearer public-test-placeholder',
+    cookie: 'shared-session=must-not-leak',
+    'x-storefront-session': 'foreign-store-token'
   },
   method: 'GET',
   pipe() {}
@@ -123,7 +125,10 @@ assert.equal(captured.headers['x-solqaryn-store-origin'], 'solqaryn-dev.vercel.a
 assert.equal(captured.headers['x-solqaryn-store-key'], 'comercio-a');
 assert.equal(captured.headers['x-forwarded-host'], undefined);
 assert.equal(captured.headers['x-solqaryn-environment'], 'DEV');
-assert.equal(captured.headers['x-empresa-id'], '999', 'Header no concede autoridad; backend lo ignora en rutas públicas.');
+assert.equal(captured.headers['x-empresa-id'], undefined, 'Cabecera tenant ERP hostil nunca llega a binding.');
+assert.equal(captured.headers.authorization, undefined, 'No reenviar JWT al binding anónimo.');
+assert.equal(captured.headers.cookie, undefined, 'No reenviar cookies de otro negocio.');
+assert.equal(captured.headers['x-storefront-session'], undefined, 'No reenviar sesiones de tienda ajenas.');
 assert.notEqual(captured.headers['x-solqaryn-store-proof'], 'fake');
 assert.equal(captured.headers['x-solqaryn-store-proof'].length, 64);
 
