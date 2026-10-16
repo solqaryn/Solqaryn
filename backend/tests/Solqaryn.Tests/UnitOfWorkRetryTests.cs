@@ -139,14 +139,16 @@ public class UnitOfWorkRetryTests
         Assert.Equal(3, attempts);
     }
 
-    [Fact]
-    public async Task ExecuteInTransactionAsync_NoReintentaViolacionDeUnicidad1062_YTraduceExcepcion()
+    [Theory]
+    [InlineData("IX_TipoClientes_EsPredeterminadoUnico")]
+    [InlineData("UX_TipoClientes_Empresa_EsPredeterminadoUnico")]
+    public async Task ExecuteInTransactionAsync_NoReintentaViolacionDeUnicidad1062_YTraduceExcepcion(string indice)
     {
         await using var context = CreateInMemoryContext();
         var uow = new UnitOfWork(context);
 
         int attempts = 0;
-        var mysqlEx = CreateRealMySqlException(1062, "Duplicate entry for key IX_TipoClientes_EsPredeterminadoUnico");
+        var mysqlEx = CreateRealMySqlException(1062, $"Duplicate entry for key {indice}");
         var dbEx = new DbUpdateException("DbUpdateException", mysqlEx);
 
         var thrown = await Assert.ThrowsAsync<UniqueConstraintViolationException>(() =>

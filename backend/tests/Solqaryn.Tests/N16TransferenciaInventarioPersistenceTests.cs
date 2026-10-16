@@ -39,7 +39,10 @@ public class N16TransferenciaInventarioPersistenceTests
         var numeroIndex = Assert.Single(transferencia.GetIndexes()
             .Where(i => i.Properties.Select(p => p.Name)
                 .SequenceEqual(new[] { nameof(TransferenciaInventario.Numero) })));
-        Assert.True(numeroIndex.IsUnique);
+        Assert.False(numeroIndex.IsUnique);
+        Assert.Contains(transferencia.GetIndexes(), index => index.IsUnique &&
+            index.Properties.Select(p => p.Name).SequenceEqual(
+                new[] { "EmpresaId", nameof(TransferenciaInventario.Numero) }));
         Assert.Equal("UX_TransferenciasInventario_Numero", numeroIndex.GetDatabaseName());
 
         var checksCabecera = transferencia.GetCheckConstraints().Select(c => c.Name).ToHashSet();

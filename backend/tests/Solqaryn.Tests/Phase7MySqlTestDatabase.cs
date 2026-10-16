@@ -52,8 +52,109 @@ internal static class Phase7MySqlTestDatabase
         await CanonicalMySqlPhysicalContract.ApplyFreshBootstrapSupplementsAsync(db);
         await CanonicalMySqlPhysicalContract.VerifyAsync(db);
 
-        await db.Database.MigrateAsync();
+        // EnsureCreated materializa todas las columnas actuales. Adoptar solo la
+        // migración histórica y marcar expand para NO duplicar columnas ni FKs.
+        await db.Database.MigrateAsync("20261006111818_OracleBaseline");
+        await db.Database.ExecuteSqlRawAsync("""
+            INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+            VALUES ('20261013121500_CommercialTenantRootExpand', '10.0.12');
+            """);
+        // EnsureCreated incluye el modelo de índices empresariales actual, y
+        // ApplyFreshBootstrapSupplementsAsync ya impuso/verificó sus 12 FKs.
+        // Adoptar únicamente esta migración exacta, nunca un set abierto.
+        await db.Database.ExecuteSqlRawAsync("""
+            INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+            VALUES ('20261013181500_CommercialTenantScopedRootIndexes', '10.0.12');
+            """);
 
+        // El esquema de EnsureCreated ya incluye las tres relaciones compuestas
+        // adicionales de documentos comerciales verificadas por el contrato físico.
+        await db.Database.ExecuteSqlRawAsync("""
+            INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+            VALUES ('20261013190000_CommercialTenantInvoiceDocuments', '10.0.12');
+            """);
+
+        await db.Database.ExecuteSqlRawAsync("""
+            INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+            VALUES ('20261013193000_CommercialTenantSalesDocuments', '10.0.12');
+            """);
+
+        await db.Database.ExecuteSqlRawAsync("""
+            INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+            VALUES ('20261013210000_CommercialTenantTaxDiscountExpand', '10.0.12');
+            """);
+        await db.Database.ExecuteSqlRawAsync("""
+            INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+            VALUES ('20261013220000_CommercialTenantOwnershipGraphExpand', '10.0.12');
+            """);
+        await db.Database.ExecuteSqlRawAsync("""
+            INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+            VALUES ('20261013221500_CommercialTenantOwnershipGraphScopedFks', '10.0.12');
+            """);
+        await db.Database.ExecuteSqlRawAsync("""
+            INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+            VALUES ('20261013230000_CommercialTenantRemainingModules', '10.0.12');
+            """);
+        await db.Database.ExecuteSqlRawAsync("""
+            INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+            VALUES ('20261013231000_CommercialTenantRemainingScopedFks', '10.0.12');
+            """);
+
+        // Adoptar la migración P4 solo si EnsureCreated materializó el índice
+        // exacto en la base efímera, nunca basándose únicamente en el nombre.
+        await db.Database.OpenConnectionAsync();
+        await using (var check = db.Database.GetDbConnection().CreateCommand())
+        {
+            check.CommandText = """
+                SELECT GROUP_CONCAT(COLUMN_NAME ORDER BY SEQ_IN_INDEX SEPARATOR ',')
+                  FROM INFORMATION_SCHEMA.STATISTICS
+                 WHERE TABLE_SCHEMA = DATABASE()
+                   AND TABLE_NAME = 'TiendaCuentasCliente'
+                   AND INDEX_NAME = 'UX_TiendaCuentasCliente_Correo'
+                   AND NON_UNIQUE = 0
+                """;
+            var columns = Convert.ToString(await check.ExecuteScalarAsync());
+            if (columns != "EmpresaId,CorreoNormalizado")
+                throw new InvalidOperationException(
+                    "Phase 7 test bootstrap: P4 email uniqueness index is not physically tenant-scoped.");
+        }
+        await db.Database.ExecuteSqlRawAsync("""
+            INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+            VALUES ('20261014112000_PublicStoreAccountEmailPerEmpresa', '10.0.12');
+            """);
+        // Adoptar solo tras comprobar físicamente el contrato de 12 índices
+        // comerciales nuevos y la unicidad de tienda ya vigente.
+        await CommercialTenantNaturalKeysPhysicalContract.VerifyAsync(db);
+        await db.Database.ExecuteSqlRawAsync("""
+            INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+            VALUES ('20261014130000_CommercialTenantNaturalKeysPostStorefront', '10.0.12');
+            """);
+        // EnsureCreated ya materializó PublicStoreBindings. Registrar sólo
+        // tras comprobar el índice UNIQUE exacto de identidad pública A/B.
+        await db.Database.OpenConnectionAsync();
+        await using (var check = db.Database.GetDbConnection().CreateCommand())
+        {
+            check.CommandText = """
+                SELECT GROUP_CONCAT(COLUMN_NAME ORDER BY SEQ_IN_INDEX SEPARATOR ',')
+                FROM INFORMATION_SCHEMA.STATISTICS
+                WHERE TABLE_SCHEMA = DATABASE()
+                  AND TABLE_NAME = 'PublicStoreBindings'
+                  AND INDEX_NAME = 'UX_PublicStoreBindings_Host_Key'
+                  AND NON_UNIQUE = 0
+                """;
+            var columns = Convert.ToString(await check.ExecuteScalarAsync());
+            if (columns != "Host,StoreKey")
+                throw new InvalidOperationException(
+                    "Phase 7 fresh bootstrap: public store unique host/key index is missing.");
+        }
+        await db.Database.ExecuteSqlRawAsync("""
+            INSERT INTO __EFMigrationsHistory (MigrationId, ProductVersion)
+            VALUES ('20261016095000_PublicStoreBindingsPersistence', '10.0.12');
+            """);
+        await db.Database.CloseConnectionAsync();
+
+        // Apply only the new ledger migration absent from EnsureCreated.
+        await db.Database.MigrateAsync();
         if ((await db.Database.GetPendingMigrationsAsync()).Any())
             throw new InvalidOperationException("Phase 7 test bootstrap left pending Oracle migrations.");
     }

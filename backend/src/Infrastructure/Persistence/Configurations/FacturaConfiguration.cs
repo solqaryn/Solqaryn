@@ -9,8 +9,17 @@ public class FacturaConfiguration : IEntityTypeConfiguration<Factura>
     public void Configure(EntityTypeBuilder<Factura> builder)
     {
         builder.ToTable("Facturas");
+        builder.HasIndex(x => new { x.EmpresaId, x.Id }).IsUnique()
+            .HasDatabaseName("UX_Facturas_Empresa_Id");
+        builder.HasIndex(x => new { x.EmpresaId, x.VentaId })
+            .HasDatabaseName("IX_Facturas_Empresa_Referencia");
+        builder.HasOne<Empresa>().WithMany().HasForeignKey(x => x.EmpresaId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("FK_Facturas_Empresas_EmpresaId");
+
         builder.Property(f => f.NumeroFactura).IsRequired().HasMaxLength(20);
-        builder.HasIndex(f => f.NumeroFactura).IsUnique();
+        builder.HasIndex(f => new { f.EmpresaId, f.NumeroFactura }).IsUnique()
+            .HasDatabaseName("UX_Facturas_Empresa_NumeroFactura");
         builder.Property(f => f.Estado).HasConversion<string>().HasMaxLength(20);
         builder.Property(f => f.EmpresaNombre).IsRequired().HasMaxLength(200);
         builder.Property(f => f.ClienteNombre).IsRequired().HasMaxLength(200);

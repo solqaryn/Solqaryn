@@ -40,7 +40,8 @@ public sealed class ReportesInventarioStockHealthController : ControllerBase
             return BadRequest(ApiResponse<object>.Fail("Consulta de stock-health inválida.", new() { error }));
 
         var empresaId = await TenantPermissionContext.RequireEmpresaIdAsync(HttpContext, cancellationToken);
-        if (!await ReporteInventarioScopeGuard.CanUseExplicitPhysicalScopeAsync(filtro, _usuarioScope))
+        if (!await ReporteInventarioScopeGuard.CanUseExplicitPhysicalScopeAsync(
+                filtro, _usuarioScope, empresaId, cancellationToken))
             return Forbid();
 
         var resultado = await _reportes.ObtenerStockHealthAsync(empresaId, filtro, cancellationToken);

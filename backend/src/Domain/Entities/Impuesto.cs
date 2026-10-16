@@ -64,6 +64,7 @@ public class HistorialAplicacionImpuesto
 
 public class VentaImpuesto
 {
+    public int? EmpresaId { get; set; } // NULL histórico; operaciones nuevas restringidas.
     public int Id { get; set; }
     public int VentaId { get; set; }
     public int ImpuestoId { get; set; }
@@ -77,6 +78,7 @@ public class VentaImpuesto
 
 public class CompraImpuesto
 {
+    public int? EmpresaId { get; set; } // NULL histórico; operaciones nuevas restringidas.
     public int Id { get; set; }
     public int CompraId { get; set; }
     public int ImpuestoId { get; set; }

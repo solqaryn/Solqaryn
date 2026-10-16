@@ -28,11 +28,12 @@ public sealed class CotizacionRepository : ICotizacionRepository
 
     public async Task<Cotizacion?> GetByIdForUpdateAsync(int id)
     {
+        var tenant = await CommercialTenantSqlLockScope.RequireAsync(_context);
         if (_context.Database.CurrentTransaction is null)
             throw new InvalidOperationException("GetByIdForUpdateAsync requiere una transacción activa.");
 
         var cotizacion = await Cotizaciones
-            .FromSqlInterpolated($"SELECT c.* FROM Cotizaciones c WHERE c.Id = {id} FOR UPDATE")
+            .FromSqlInterpolated($"SELECT c.* FROM Cotizaciones c WHERE c.Id = {id} AND ({tenant} IS NULL OR c.EmpresaId = {tenant}) FOR UPDATE")
             .AsTracking()
             .FirstOrDefaultAsync();
 

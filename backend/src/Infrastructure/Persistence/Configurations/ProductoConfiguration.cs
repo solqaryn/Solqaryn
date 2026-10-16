@@ -10,6 +10,18 @@ public class ProductoConfiguration : IEntityTypeConfiguration<Producto>
     public void Configure(EntityTypeBuilder<Producto> builder)
     {
         builder.ToTable("Productos");
+        // FK restrictiva para nuevas asignaciones; NULL legacy sin atribuir.
+        builder.HasIndex(x => x.EmpresaId).HasDatabaseName("IX_Productos_EmpresaId");
+        // Índice compuesto de titularidad, futuro soporte para FKs empresariales.
+        builder.HasIndex(x => new { x.EmpresaId, x.Id })
+            .IsUnique()
+            .HasDatabaseName("UX_Productos_Empresa_Id");
+        builder.HasOne<Empresa>()
+            .WithMany()
+            .HasForeignKey(x => x.EmpresaId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("FK_Productos_Empresas_EmpresaId");
+
 
         builder.Property(p => p.Nombre).IsRequired().HasMaxLength(150);
         builder.Property(p => p.Marca).IsRequired().HasMaxLength(100);

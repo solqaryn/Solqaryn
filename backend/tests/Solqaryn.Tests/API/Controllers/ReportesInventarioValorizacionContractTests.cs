@@ -3,6 +3,8 @@ using Solqaryn.Application.DTOs;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
+using Solqaryn.Application.Security;
 using Moq;
 using Xunit;
 
@@ -15,7 +17,7 @@ public sealed class ReportesInventarioValorizacionContractTests
     {
         var finanzas = new Mock<IFinanzasService>(MockBehavior.Strict);
         var permisos = new Mock<IPermisoService>();
-        permisos.Setup(x => x.TienePermisoAsync(ModuloSistema.Finanzas, AccionPermiso.Ver))
+        permisos.Setup(x => x.TienePermisoAsync(77, ModuloSistema.Finanzas, AccionPermiso.Ver))
             .ReturnsAsync(false);
         var auditoria = new Mock<IAuditoriaService>();
         auditoria.Setup(x => x.RegistrarAsync(
@@ -35,6 +37,10 @@ public sealed class ReportesInventarioValorizacionContractTests
             finanzas.Object,
             permisos.Object,
             auditoria.Object);
+
+        var http = new DefaultHttpContext();
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = 77;
+        controller.ControllerContext = new ControllerContext { HttpContext = http };
 
         var result = await controller.GetResumen();
 
@@ -58,7 +64,7 @@ public sealed class ReportesInventarioValorizacionContractTests
         var finanzas = new Mock<IFinanzasService>(MockBehavior.Strict);
         finanzas.Setup(x => x.GetResumenAsync()).ReturnsAsync(esperado);
         var permisos = new Mock<IPermisoService>(MockBehavior.Strict);
-        permisos.Setup(x => x.TienePermisoAsync(ModuloSistema.Finanzas, AccionPermiso.Ver))
+        permisos.Setup(x => x.TienePermisoAsync(77, ModuloSistema.Finanzas, AccionPermiso.Ver))
             .ReturnsAsync(true);
         var auditoria = new Mock<IAuditoriaService>(MockBehavior.Strict);
         auditoria.Setup(x => x.RegistrarAsync(
@@ -78,6 +84,10 @@ public sealed class ReportesInventarioValorizacionContractTests
             finanzas.Object,
             permisos.Object,
             auditoria.Object);
+
+        var http = new DefaultHttpContext();
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = 77;
+        controller.ControllerContext = new ControllerContext { HttpContext = http };
 
         var result = await controller.GetResumen();
 

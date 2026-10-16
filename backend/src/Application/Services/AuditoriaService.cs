@@ -2,6 +2,7 @@ using System.Text.Json;
 using Solqaryn.Application.Common;
 using Solqaryn.Application.DTOs;
 using Solqaryn.Application.Interfaces;
+using Solqaryn.Application.Security;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Enums;
 using Microsoft.AspNetCore.Http;
@@ -57,6 +58,11 @@ public class AuditoriaService : IAuditoriaService
         {
             UsuarioId = _currentUser.UsuarioId,
             NombreUsuario = _currentUser.NombreUsuario ?? "Sistema",
+            // La empresa auditada proviene solo de marcas server-side:
+            // RBAC > enlace PDF público > tienda pública. Nunca de headers.
+            EmpresaId = VerifiedCommercialTenant.Resolve(http)
+                ?? VerifiedPublicInvoiceTenant.Resolve(http)
+                ?? VerifiedPublicStoreTenant.Resolve(http),
             Modulo = modulo,
             Accion = accion,
             Entidad = entidad,

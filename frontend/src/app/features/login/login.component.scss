@@ -159,6 +159,30 @@
   }
 }
 
+
+.plataforma-entry {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid color-mix(in srgb, var(--color-text-muted) 22%, transparent);
+  text-align: center;
+
+  p { margin: 0 0 10px; color: var(--color-text-muted); font-size: .875rem; }
+  button { width: 100%; min-height: 44px; }
+  .plataforma-error { margin-top: 12px; color: var(--color-danger, #b3261e); }
+}
+
+.connection-status {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 25%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--color-primary) 7%, var(--color-surface));
+  color: var(--color-text-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+
 .submit-button {
   width: 100%;
   min-height: 48px;

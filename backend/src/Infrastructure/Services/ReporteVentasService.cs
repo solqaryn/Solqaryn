@@ -29,7 +29,7 @@ public sealed class ReporteVentasService : IReporteVentasService
         CancellationToken cancellationToken = default)
     {
         Validar(filtro);
-        var alcance = await _usuarioScope.ObtenerActualAsync();
+        var alcance = await ObtenerAlcanceVerificadoAsync(cancellationToken);
         var ventas = ConstruirVentasFiltradas(filtro, alcance);
 
         return await ventas
@@ -53,7 +53,7 @@ public sealed class ReporteVentasService : IReporteVentasService
         CancellationToken cancellationToken = default)
     {
         Validar(filtro);
-        var alcance = await _usuarioScope.ObtenerActualAsync();
+        var alcance = await ObtenerAlcanceVerificadoAsync(cancellationToken);
         var ventaIds = ConstruirVentasFiltradas(filtro, alcance).Select(v => v.Id);
 
         var detalles = AplicarDimensionesDetalle(
@@ -119,9 +119,20 @@ public sealed class ReporteVentasService : IReporteVentasService
         };
     }
 
+    // El usuario debe tener una membresía activa en el tenant seleccionado.
+    // Una llamada interna sin scope verificable devuelve cero filas, no toda la base.
+    private async Task<UsuarioTenantScopeActual?> ObtenerAlcanceVerificadoAsync(
+        CancellationToken cancellationToken)
+    {
+        var empresaId = _context.AuthorizedCommercialEmpresaId;
+        if (empresaId is not > 0)
+            return null;
+        return await _usuarioScope.ObtenerActualAsync(empresaId.Value, cancellationToken);
+    }
+
     private IQueryable<Venta> ConstruirVentasFiltradas(
         ReporteVentasFiltroDto filtro,
-        UsuarioScopeActual? alcance)
+        UsuarioTenantScopeActual? alcance)
     {
         var query = _context.Ventas
             .AsNoTracking()
@@ -130,6 +141,9 @@ public sealed class ReporteVentasService : IReporteVentasService
         // Fail closed when the authenticated database-backed scope cannot be resolved.
         if (alcance is null)
             return query.Where(_ => false);
+
+        // Defense in depth: nunca confiar sólo en filtros EF o el VendedorId del cliente.
+        query = query.Where(v => v.EmpresaId == alcance.EmpresaId);
 
         // A non-admin can never expand row scope with VendedorId supplied by HTTP.
         query = alcance.EsAdministrador

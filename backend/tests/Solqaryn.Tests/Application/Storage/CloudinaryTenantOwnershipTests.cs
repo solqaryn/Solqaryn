@@ -1,5 +1,6 @@
 using Solqaryn.Application.Exceptions;
 using Solqaryn.Application.Interfaces;
+using Solqaryn.Application.Security;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Security;
 using Solqaryn.Infrastructure.Services;
@@ -231,6 +232,53 @@ public class CloudinaryTenantOwnershipTests
 
         Assert.Equal(31, tenant.EmpresaId);
         Assert.Equal(7, tenant.UsuarioId);
+        Assert.Equal("empresas/31", tenant.TenantPrefix);
+    }
+
+    [Fact]
+    public async Task ResolverStorageTenant_DosMembresias_ProhibeCambiarHeaderFueraDelRbac()
+    {
+        var http = new DefaultHttpContext();
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = 31;
+        http.Request.Headers[StorageTenantContextResolver.EmpresaHeader] = "32";
+        var accessor = new HttpContextAccessor { HttpContext = http };
+        var scope = new Mock<IUsuarioScopeService>(MockBehavior.Strict);
+        // Aunque este usuario también sea administrador de B, la acción
+        // fue autorizada bajo A. No se consulta siquiera la membresía B.
+        await Assert.ThrowsAsync<ForbiddenAccessException>(() =>
+            StorageTenantContextResolver.ResolverRequeridoAsync(
+                accessor, scope.Object, CancellationToken.None));
+        scope.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ResolverStorageTenant_ScopeConEmpresaInconsistente_Rechazado()
+    {
+        var http = new DefaultHttpContext();
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = 31;
+        http.Request.Headers[StorageTenantContextResolver.EmpresaHeader] = "31";
+        var scope = new Mock<IUsuarioScopeService>();
+        scope.Setup(x => x.ObtenerActualAsync(31, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new UsuarioTenantScopeActual(7, 32, 1, "Administrador B", true));
+
+        await Assert.ThrowsAsync<ForbiddenAccessException>(() =>
+            StorageTenantContextResolver.ResolverRequeridoAsync(
+                new HttpContextAccessor { HttpContext = http }, scope.Object));
+    }
+
+    [Fact]
+    public async Task ResolverStorageTenant_RbacCoincideConMembresia_PermiteDescargaPropia()
+    {
+        var http = new DefaultHttpContext();
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = 31;
+        http.Request.Headers[StorageTenantContextResolver.EmpresaHeader] = "31";
+        var scope = new Mock<IUsuarioScopeService>();
+        scope.Setup(x => x.ObtenerActualAsync(31, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new UsuarioTenantScopeActual(7, 31, 1, "Operador A", false));
+
+        var tenant = await StorageTenantContextResolver.ResolverRequeridoAsync(
+            new HttpContextAccessor { HttpContext = http }, scope.Object);
+        Assert.Equal(31, tenant.EmpresaId);
         Assert.Equal("empresas/31", tenant.TenantPrefix);
     }
 

@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Http;
+using Solqaryn.Application.Security;
 using Solqaryn.Application.DTOs;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Application.Services;
@@ -63,4 +65,24 @@ public class ProveedorServiceTests
         Assert.False(proveedor.Activo);
         _repoMock.Verify(r => r.Remove(It.IsAny<Proveedor>()), Times.Never);
     }
+    [Fact]
+    public async Task CreateAsync_Usa_Tenant_Verificado_Y_No_Header()
+    {
+        var http = new DefaultHttpContext();
+        http.Request.Headers["X-Empresa-Id"] = "999";
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = 7;
+
+        var service = new ProveedorService(
+            _repoMock.Object, _currentUserMock.Object, _auditoriaMock.Object,
+            new HttpContextAccessor { HttpContext = http });
+
+        _repoMock.Setup(r => r.AddAsync(It.IsAny<Proveedor>())).Returns(Task.CompletedTask);
+        _repoMock.Setup(r => r.SaveChangesAsync()).ReturnsAsync(true);
+
+        await service.CreateAsync(new CreateProveedorDto { Nombre = "Proveedor del tenant" });
+
+        _repoMock.Verify(r => r.AddAsync(It.Is<Proveedor>(p => p.EmpresaId == 7)), Times.Once);
+        _repoMock.Verify(r => r.AddAsync(It.Is<Proveedor>(p => p.EmpresaId == 999)), Times.Never);
+    }
+
 }

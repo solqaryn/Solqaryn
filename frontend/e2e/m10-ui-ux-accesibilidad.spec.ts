@@ -132,6 +132,11 @@ test.describe('M10 — UI/UX empresarial y accesibilidad', () => {
   test('la navegación por teclado usa skip-link, foco visible y targets táctiles mínimos', async ({ page }) => {
     await login(page);
     await page.goto('/dashboard');
+    await expect(page).toHaveURL(/\/dashboard(?:$|[?#])/);
+    // La aplicación traslada el foco al <main> después de NavigationEnd;
+    // esperar a que termine evita que el autofocus gane una carrera al
+    // centinela de teclado sin relajar la verificación de foco ni WCAG.
+    await expect(page.locator('#main-content')).toBeFocused();
 
     const skip = page.getByRole('link', { name: 'Saltar al contenido principal' });
 

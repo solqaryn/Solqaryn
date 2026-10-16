@@ -29,9 +29,10 @@ public sealed class CajaRepository : ICajaRepository
 
     public async Task<Caja?> GetCajaByIdForUpdateAsync(int id)
     {
+        var tenant = await CommercialTenantSqlLockScope.RequireAsync(_context);
         RequireTransaction();
         return await Cajas
-            .FromSqlInterpolated($"SELECT c.* FROM Cajas c WHERE c.Id = {id} FOR UPDATE")
+            .FromSqlInterpolated($"SELECT c.* FROM Cajas c WHERE c.Id = {id} AND ({tenant} IS NULL OR c.EmpresaId = {tenant}) FOR UPDATE")
             .AsTracking()
             .FirstOrDefaultAsync();
     }
@@ -46,9 +47,10 @@ public sealed class CajaRepository : ICajaRepository
 
     public async Task<CajaSesion?> GetSesionByIdForUpdateAsync(int id)
     {
+        var tenant = await CommercialTenantSqlLockScope.RequireAsync(_context);
         RequireTransaction();
         var sesion = await Sesiones
-            .FromSqlInterpolated($"SELECT s.* FROM CajaSesiones s WHERE s.Id = {id} FOR UPDATE")
+            .FromSqlInterpolated($"SELECT s.* FROM CajaSesiones s WHERE s.Id = {id} AND ({tenant} IS NULL OR s.EmpresaId = {tenant}) FOR UPDATE")
             .AsTracking()
             .FirstOrDefaultAsync();
 

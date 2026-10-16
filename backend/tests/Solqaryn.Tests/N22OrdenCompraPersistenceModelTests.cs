@@ -39,7 +39,10 @@ public sealed class N22OrdenCompraPersistenceModelTests
         var indiceNumero = entity.GetIndexes()
             .Single(i => i.Properties.Select(p => p.Name)
                 .SequenceEqual(new[] { nameof(OrdenCompra.NumeroOrden) }));
-        Assert.True(indiceNumero.IsUnique);
+        Assert.False(indiceNumero.IsUnique);
+        Assert.Contains(entity.GetIndexes(), i => i.IsUnique &&
+            i.Properties.Select(p => p.Name).SequenceEqual(
+                new[] { "EmpresaId", nameof(OrdenCompra.NumeroOrden) }));
 
         var fkProveedor = entity.GetForeignKeys()
             .Single(fk => fk.Properties.Select(p => p.Name)

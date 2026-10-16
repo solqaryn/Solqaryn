@@ -1,5 +1,7 @@
 using Solqaryn.Application.Exceptions;
 using Solqaryn.Application.Interfaces;
+using Solqaryn.Application.Security;
+using Microsoft.AspNetCore.Http;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Entities.Contabilidad;
 using Solqaryn.Domain.Enums;
@@ -11,13 +13,28 @@ namespace Solqaryn.Infrastructure.Persistence;
 public class AppDbContext : DbContext
 {
     private readonly IPublicStoreCache? _publicStoreCache;
+    private readonly IHttpContextAccessor? _tenantHttpContextAccessor;
 
     public AppDbContext(
         DbContextOptions<AppDbContext> options,
-        IPublicStoreCache? publicStoreCache = null) : base(options)
+        IPublicStoreCache? publicStoreCache = null,
+        IHttpContextAccessor? tenantHttpContextAccessor = null) : base(options)
     {
         _publicStoreCache = publicStoreCache;
+        _tenantHttpContextAccessor = tenantHttpContextAccessor;
     }
+
+    // Resuelto sólo desde la marca de permiso RBAC establecida por el backend.
+    // Mientras las rutas públicas/jobs no tengan un binding tenant certificado,
+    // el gate HTTP P0 de segunda empresa sigue siendo obligatorio.
+    public int? AuthorizedReadEmpresaId =>
+        VerifiedCommercialTenant.Resolve(_tenantHttpContextAccessor?.HttpContext)
+        ?? VerifiedPublicStoreTenant.Resolve(_tenantHttpContextAccessor?.HttpContext)
+        ?? VerifiedPublicInvoiceTenant.Resolve(_tenantHttpContextAccessor?.HttpContext);
+
+    // Una capability pública de tienda o factura NO concede RBAC administrativo.
+    public int? AuthorizedCommercialEmpresaId =>
+        VerifiedCommercialTenant.Resolve(_tenantHttpContextAccessor?.HttpContext);
 
     public DbSet<Producto> Productos => Set<Producto>();
     public DbSet<ProductoVariante> ProductoVariantes => Set<ProductoVariante>();
@@ -37,6 +54,7 @@ public class AppDbContext : DbContext
     public DbSet<TipoCliente> TipoClientes => Set<TipoCliente>();
     public DbSet<Usuario> Usuarios => Set<Usuario>();
     public DbSet<UsuarioEmpresa> UsuarioEmpresas => Set<UsuarioEmpresa>();
+    public DbSet<PublicStoreBinding> PublicStoreBindings => Set<PublicStoreBinding>();
     public DbSet<UsuarioRolPlataforma> UsuarioRolesPlataforma => Set<UsuarioRolPlataforma>();
     public DbSet<SecuenciaDocumento> SecuenciasDocumento => Set<SecuenciaDocumento>();
     public DbSet<RolPermiso> RolPermisos => Set<RolPermiso>();
@@ -68,6 +86,8 @@ public class AppDbContext : DbContext
     public DbSet<Permiso> Permisos => Set<Permiso>();
     public DbSet<Cotizacion> Cotizaciones => Set<Cotizacion>();
     public DbSet<CotizacionDetalle> CotizacionDetalles => Set<CotizacionDetalle>();
+    public DbSet<PedidoVenta> PedidosVenta => Set<PedidoVenta>();
+    public DbSet<PedidoVentaDetalle> PedidoVentaDetalles => Set<PedidoVentaDetalle>();
     public DbSet<Solqaryn.Domain.Entities.Bancos.CuentaBancaria> CuentasBancarias => Set<Solqaryn.Domain.Entities.Bancos.CuentaBancaria>();
     public DbSet<PreparacionPedidoVenta> PreparacionesPedidoVenta => Set<PreparacionPedidoVenta>();
     public DbSet<PreparacionPedidoVentaDetalle> PreparacionPedidoVentaDetalles => Set<PreparacionPedidoVentaDetalle>();
@@ -105,13 +125,59 @@ public class AppDbContext : DbContext
     public DbSet<DashboardKpiConfiguracion> DashboardKpiConfiguraciones => Set<DashboardKpiConfiguracion>();
     public DbSet<MensajeOutbox> MensajesOutbox => Set<MensajeOutbox>();
 
-    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    // No permitir que la vía síncrona eluda los guards asíncronos de aislamiento,
+    // ni siquiera mediante SaveChanges(bool). El backend productivo usa MySQL.
+    public override int SaveChanges() => SaveChanges(acceptAllChangesOnSuccess: true);
+
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        var cambiaComercial = ChangeTracker.Entries()
+            .Any(e => e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted &&
+                      ((e.Entity is Producto or Cliente or Proveedor or Compra or Venta or
+                          CompraDetalle or VentaDetalle or ProductoVariante or
+                          ExistenciaVariante or MovimientoInventario or Factura or
+                          FacturaDetalle or FacturaPago or CompraDocumento or
+                          VentaImpuesto or CompraImpuesto or VentaDescuento or HistorialUsoDescuento or
+                           Cotizacion or CotizacionDetalle or PedidoVenta or PedidoVentaDetalle) ||
+                       CommercialTenantOwnershipGraphWriteGuard.Applies(e.Metadata.Name)));
+
+        if (ChangeTracker.HasChanges() && (Database.IsRelational() || cambiaComercial))
+            throw new NotSupportedException(
+                "Las escrituras comerciales requieren SaveChangesAsync para ejecutar las validaciones de seguridad.");
+
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    // El overload bool también debe pasar por el mismo pipeline de seguridad.
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        => SaveChangesAsync(acceptAllChangesOnSuccess: true, cancellationToken);
+
+    public override async Task<int> SaveChangesAsync(
+        bool acceptAllChangesOnSuccess,
+        CancellationToken cancellationToken = default)
     {
         var cacheSegments = DetectarInvalidacionesStorefront();
 
+        // Solo el contexto RBAC verificado por backend autoriza escribir filas con dueño.
+        // La ausencia de marca nunca habilita multiempresa; continúa el P0 de cuarentena.
+        var empresaAutorizada = VerifiedCommercialTenant.Resolve(
+            _tenantHttpContextAccessor?.HttpContext)
+            ?? VerifiedPublicStoreTenant.Resolve(_tenantHttpContextAccessor?.HttpContext);
+        await CommercialCrossTenantWriteGuard.ValidateAsync(
+            this, cancellationToken, empresaAutorizada);
+        await CommercialTenantDerivedWriteGuard.ValidateAsync(
+            this, empresaAutorizada, cancellationToken);
+        await CommercialTenantInvoiceWriteGuard.ValidateAsync(
+            this, empresaAutorizada, cancellationToken);
+        await CommercialTenantSalesDocumentGuard.ValidateAsync(
+            this, empresaAutorizada, cancellationToken);
+        await CommercialTenantTaxDiscountWriteGuard.ValidateAsync(
+            this, empresaAutorizada, cancellationToken);
+        await CommercialTenantOwnershipGraphWriteGuard.ValidateAsync(
+            this, empresaAutorizada, cancellationToken);
         await ValidarAislamientoComercialVentasAsync(cancellationToken);
         await PrepararValorizacionComprasAsync(cancellationToken);
-        var guardados = await base.SaveChangesAsync(cancellationToken);
+        var guardados = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
 
         if (guardados > 0 && cacheSegments.Count > 0)
             _publicStoreCache?.InvalidateAll(cacheSegments.ToArray());
@@ -210,8 +276,8 @@ public class AppDbContext : DbContext
         if (idsPorConsultar.Count == 0)
             return;
 
-        var insumoPersistido = await Productos
-            .IgnoreQueryFilters()
+        var insumoPersistido = await TenantQueryBypassGuard.RespectCurrentTenant(
+                Productos.IgnoreQueryFilters(), this)
             .AsNoTracking()
             .Where(p => idsPorConsultar.Contains(p.Id) &&
                         p.TipoInventario == TipoInventario.InsumoAdministrativo)
@@ -388,7 +454,25 @@ public class AppDbContext : DbContext
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         base.OnModelCreating(modelBuilder);
 
+        // El modelo SQLite de pruebas no soporta collation MySQL; sólo
+        // MySQL impone comparación binaria en Host+StoreKey. SQL de migración
+        // preserva la misma collation en bases ya aprovisionadas.
+        if (Database.ProviderName?.Contains("MySql", StringComparison.OrdinalIgnoreCase) == true)
+        {
+            modelBuilder.Entity<PublicStoreBinding>().Property(x => x.Host)
+                .UseCollation("utf8mb4_bin");
+            modelBuilder.Entity<PublicStoreBinding>().Property(x => x.StoreKey)
+                .UseCollation("utf8mb4_bin");
+        }
+
         modelBuilder.HasAnnotation(RelationalAnnotationNames.MaxIdentifierLength, 64);
+        CommercialTenantOwnershipGraphModel.Apply(modelBuilder);
+        CommercialTenantRemainingModel.Apply(modelBuilder);
+        CommercialTenantNaturalKeysModel.Apply(modelBuilder);
+        // Se aplica al FINAL, después de todas las configuraciones, para
+        // preservar borrado lógico y abarcar también propiedades shadow.
+        CommercialTenantReadFilterModel.Apply(modelBuilder, this);
+        CommercialTenantReadFilterModel.ApplySharedIdentityMembershipFilter(modelBuilder, this);
 
         static string LimitIdentifier(string name) =>
             name.Length <= 64 ? name : name[..64];

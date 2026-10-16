@@ -110,6 +110,8 @@ public sealed class N61GTenantEmpresaRegressionTests
     public async Task Save_Failure_DoesNot_Emit_False_Audit_Success()
     {
         var repoMock = new Mock<IEmpresaRepository>();
+        repoMock.Setup(x => x.ListAsync(It.IsAny<bool?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Empresa>());
         repoMock
             .Setup(x => x.AddAsync(It.IsAny<Empresa>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);

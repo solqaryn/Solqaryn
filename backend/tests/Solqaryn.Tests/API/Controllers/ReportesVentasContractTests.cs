@@ -8,6 +8,7 @@ using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Enums;
 using Solqaryn.Infrastructure.Persistence;
 using Solqaryn.Infrastructure.Services;
+using Solqaryn.Application.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -117,8 +118,8 @@ public sealed class ReportesVentasContractTests
         await context.SaveChangesAsync();
 
         var scope = new Mock<IUsuarioScopeService>();
-        scope.Setup(s => s.ObtenerActualAsync())
-            .ReturnsAsync(new UsuarioScopeActual(7, 2, "Operador", EsAdministrador: false));
+        scope.Setup(s => s.ObtenerActualAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new UsuarioTenantScopeActual(7, 1, 2, "Operador", EsAdministrador: false));
         var service = new ReporteVentasService(context, scope.Object);
 
         var result = await service.ObtenerResumenAsync(new ReporteVentasFiltroDto { VendedorId = 99 });
@@ -135,7 +136,8 @@ public sealed class ReportesVentasContractTests
         var empresa1 = new Empresa("Empresa 1") { Id = 1 };
         var empresa2 = new Empresa("Empresa 2") { Id = 2 };
         var sucursal1 = new Sucursal { Id = 1, EmpresaId = empresa1.Id, Codigo = "S-1", Nombre = "Sucursal 1" };
-        var sucursal2 = new Sucursal { Id = 2, EmpresaId = empresa2.Id, Codigo = "S-2", Nombre = "Sucursal 2" };
+        // Son dos sucursales de la misma empresa: la dimensión física no puede cruzar tenants.
+        var sucursal2 = new Sucursal { Id = 2, EmpresaId = empresa1.Id, Codigo = "S-2", Nombre = "Sucursal 2" };
         var almacen1 = new Almacen
         {
             Id = 11,
@@ -198,8 +200,8 @@ public sealed class ReportesVentasContractTests
         await context.SaveChangesAsync();
 
         var scope = new Mock<IUsuarioScopeService>();
-        scope.Setup(s => s.ObtenerActualAsync())
-            .ReturnsAsync(new UsuarioScopeActual(1, 1, "Administrador", EsAdministrador: true));
+        scope.Setup(s => s.ObtenerActualAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new UsuarioTenantScopeActual(1, 1, 1, "Administrador", EsAdministrador: true));
         var service = new ReporteVentasService(context, scope.Object);
 
         var result = await service.ObtenerDetallePaginadoAsync(new ReporteVentasFiltroDto
@@ -218,6 +220,72 @@ public sealed class ReportesVentasContractTests
         Assert.Null(item.ProductoColor);
         Assert.Null(item.ProductoTalla);
         Assert.Null(item.ProductoSku);
+    }
+
+    [Fact]
+    public async Task A_B_ResumenRechazaVentasDeOtraEmpresaSinScopeYPreservaSeleccion()
+    {
+        var http = new DefaultHttpContext();
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase("p4-sales-ab-" + Guid.NewGuid().ToString("N"))
+            .Options;
+        await using var db = new AppDbContext(
+            options, tenantHttpContextAccessor: new HttpContextAccessor { HttpContext = http });
+
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = 1;
+        var ventaA = Confirmada("SALE-A", 7, 100m);
+        db.Ventas.Add(ventaA);
+        await db.SaveChangesAsync();
+
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = 2;
+        var ventaB = Confirmada("SALE-B", 99, 900m);
+        db.Ventas.Add(ventaB);
+        await db.SaveChangesAsync();
+
+        var scope = new Mock<IUsuarioScopeService>();
+        scope.Setup(s => s.ObtenerActualAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new UsuarioTenantScopeActual(7, 1, 1, "A", EsAdministrador: true));
+        scope.Setup(s => s.ObtenerActualAsync(2, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new UsuarioTenantScopeActual(99, 2, 1, "B", EsAdministrador: true));
+        var service = new ReporteVentasService(db, scope.Object);
+
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = 1;
+        Assert.Equal(100m, (await service.ObtenerResumenAsync(new ReporteVentasFiltroDto())).Total);
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = 2;
+        Assert.Equal(900m, (await service.ObtenerResumenAsync(new ReporteVentasFiltroDto())).Total);
+        http.Items.Remove(VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey);
+        Assert.Equal(0m, (await service.ObtenerResumenAsync(new ReporteVentasFiltroDto())).Total);
+    }
+
+    [Fact]
+    public async Task CapabilityPublica_SinMarcaRbac_NoAutorizaReportePrivadoDeVentas()
+    {
+        var http = new DefaultHttpContext();
+        var accessor = new Mock<IHttpContextAccessor>();
+        accessor.SetupGet(x => x.HttpContext).Returns(http);
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase("p4-sales-public-denied-" + Guid.NewGuid().ToString("N"))
+            .Options;
+        await using var db = new AppDbContext(options, tenantHttpContextAccessor: accessor.Object);
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = 1;
+        db.Ventas.Add(Confirmada("PRIVATE-SALE", 7, 100m));
+        await db.SaveChangesAsync();
+
+        var scope = new Mock<IUsuarioScopeService>();
+        scope.Setup(x => x.ObtenerActualAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new UsuarioTenantScopeActual(7, 1, 1, "A", EsAdministrador: true));
+        var service = new ReporteVentasService(db, scope.Object);
+        http.Items.Remove(VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey);
+
+        http.Request.Path = "/tienda/productos";
+        http.Items[VerifiedPublicStoreTenant.AuthorizedEmpresaIdItemKey] = 1;
+        Assert.Equal(0m, (await service.ObtenerResumenAsync(new ReporteVentasFiltroDto())).Total);
+        http.Items.Remove(VerifiedPublicStoreTenant.AuthorizedEmpresaIdItemKey);
+
+        http.Request.Path = "/facturas/publico/token/pdf";
+        http.Items[VerifiedPublicInvoiceTenant.AuthorizedEmpresaIdItemKey] = 1;
+        Assert.Equal(0m, (await service.ObtenerResumenAsync(new ReporteVentasFiltroDto())).Total);
+        scope.Verify(x => x.ObtenerActualAsync(1, It.IsAny<CancellationToken>()), Times.Never);
     }
 
     private static Mock<IAuditoriaService> CreateAuditoriaStrictMock()
@@ -263,7 +331,12 @@ public sealed class ReportesVentasContractTests
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString("N"))
             .Options;
-        return new AppDbContext(options);
+        var http = new DefaultHttpContext();
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = 1;
+        return new AppDbContext(options, tenantHttpContextAccessor: new HttpContextAccessor
+        {
+            HttpContext = http
+        });
     }
 
     private static Venta Confirmada(string numero, int usuarioId, decimal total) => new()

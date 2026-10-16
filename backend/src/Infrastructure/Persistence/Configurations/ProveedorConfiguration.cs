@@ -9,6 +9,18 @@ public class ProveedorConfiguration : IEntityTypeConfiguration<Proveedor>
     public void Configure(EntityTypeBuilder<Proveedor> builder)
     {
         builder.ToTable("Proveedores");
+        // FK restrictiva para nuevas asignaciones; NULL legacy sin atribuir.
+        builder.HasIndex(x => x.EmpresaId).HasDatabaseName("IX_Proveedores_EmpresaId");
+        // Índice compuesto de titularidad, futuro soporte para FKs empresariales.
+        builder.HasIndex(x => new { x.EmpresaId, x.Id })
+            .IsUnique()
+            .HasDatabaseName("UX_Proveedores_Empresa_Id");
+        builder.HasOne<Empresa>()
+            .WithMany()
+            .HasForeignKey(x => x.EmpresaId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("FK_Proveedores_Empresas_EmpresaId");
+
         builder.Property(p => p.Nombre).IsRequired().HasMaxLength(200);
         builder.HasIndex(p => p.Nombre).HasDatabaseName("IX_Proveedores_Nombre");
         builder.Property(p => p.Telefono).HasMaxLength(30);
@@ -16,9 +28,9 @@ public class ProveedorConfiguration : IEntityTypeConfiguration<Proveedor>
         builder.Property(p => p.DocumentoNormalizado)
             .HasMaxLength(50)
             .HasComputedColumnSql("NULLIF(LOWER(REPLACE(REPLACE(TRIM(Documento), '-', ''), ' ', '')), '')", stored: true);
-        builder.HasIndex(p => p.DocumentoNormalizado)
+        builder.HasIndex(p => new { p.EmpresaId, p.DocumentoNormalizado })
             .IsUnique()
-            .HasDatabaseName("UX_Proveedores_Documento_Normalizado");
+            .HasDatabaseName("UX_Proveedores_Empresa_Documento");
         builder.Property(p => p.Correo).HasMaxLength(150);
         builder.Property(p => p.Direccion).HasMaxLength(300);
 

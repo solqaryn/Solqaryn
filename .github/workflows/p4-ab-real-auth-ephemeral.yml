@@ -1,0 +1,293 @@
+name: P4 - HTTP JWT RBAC A/B real MySQL ephemeral DEV
+
+on:
+  pull_request:
+    branches: [dev]
+    paths:
+      - .github/workflows/p4-ab-real-auth-ephemeral.yml
+      - scripts/ci/p4-ab-real-auth.mjs
+      - backend/src/API/Middleware/UnscopedCommercialTenantGuardMiddleware.cs
+      - backend/src/API/Controllers/ClientesController.cs
+      - backend/src/API/Controllers/ProveedoresController.cs
+      - backend/src/API/Controllers/TipoClientesController.cs
+      - backend/src/API/Controllers/VentasController.cs
+      - backend/src/API/Controllers/ComprasController.cs
+      - backend/src/API/Controllers/FacturasController.cs
+      - backend/src/API/Controllers/PlataformaSesionController.cs
+      - backend/src/API/Controllers/PlataformaEmpresasController.cs
+      - backend/src/Infrastructure/Services/PlataformaScopeService.cs
+      - backend/src/Application/Interfaces/IPlataformaScopeService.cs
+      - scripts/ci/p4-platform-sesion-real-jwt.mjs
+      - scripts/ci/p4-plataforma-mvp-http-jwt.mjs
+      - backend/src/API/Controllers/PlataformaGestionMvpController.cs
+  push:
+    branches: [dev]
+    paths:
+      - .github/workflows/p4-ab-real-auth-ephemeral.yml
+      - scripts/ci/p4-ab-real-auth.mjs
+      - backend/src/API/Middleware/UnscopedCommercialTenantGuardMiddleware.cs
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  p4-ab-real-jwt:
+    name: Dos usuarios JWT, RBAC, MySQL 8.4 y HTTP A/B real
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: solqaryn_p4_http_ab_ci
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      ASPNETCORE_ENVIRONMENT: Development
+      PORT: '5005'
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_p4_http_ab_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      Database__ServerVersion: '8.4.0'
+      Database__ApplyMigrationsOnStartup: 'true'
+      Jwt__Secret: 'P4-HTTP-CI-ONLY-Secret-With-More-Than-32-Characters-2026'
+      Jwt__Issuer: 'Solqaryn.API'
+      Jwt__Audience: 'Solqaryn.Frontend'
+      Jwt__ExpiraMinutos: '120'
+      Security__LoginRateLimitPerMinute: '300'
+      SeedAdmin__Username: 'p4_admin_a'
+      SeedAdmin__Password: 'P4.Admin#2026!'
+      P4_TEST_PASSWORD: 'P4.Admin#2026!'
+      P4_API_URL: 'http://127.0.0.1:5005'
+      P4_COMPANY_A_ID: '1'
+      P4_COMPANY_B_ID: '2'
+      MultiEmpresa__PrivateReadPilotEnabled: 'true'
+      MultiEmpresa__PrivateWritePilotEnabled: 'true'
+      MultiEmpresa__PrivateMasterEditPilotEnabled: 'true'
+      MultiEmpresa__PrivateDraftPilotEnabled: 'true'
+      MultiEmpresa__PrivateConfirmPilotEnabled: 'true'
+      MultiEmpresa__PrivatePdfPilotEnabled: 'true'
+      MultiEmpresa__PrivateMediaExportPilotEnabled: 'true'
+      MultiEmpresa__PrivateReportPilotEnabled: 'true'
+      MultiEmpresa__PrivateAdminReportPilotEnabled: 'true'
+      MultiEmpresa__PrivateFinancialPilotEnabled: 'true'
+      MultiEmpresa__PrivateCommercialFilesPilotEnabled: 'true'
+      MultiEmpresa__PrivateInventarioReadPilotEnabled: 'true'
+      PublicStore__EnableMultiEmpresaBinding: 'true'
+      PublicStore__HostBindings__0__Host: 'store-a.p4.test'
+      PublicStore__HostBindings__0__EmpresaId: '1'
+      PublicStore__HostBindings__1__Host: 'store-b.p4.test'
+      PublicStore__HostBindings__1__EmpresaId: '2'
+      AppSettings__BackendPublicUrl: 'https://preview.solqaryn.invalid'
+      AppSettings__LogoPublicUrl: 'https://solqaryn-dev.vercel.app/assets/storefront-logo.png'
+      Cloudinary__CloudName: 'p4-ci-unused'
+      Cloudinary__ApiKey: 'p4-ci-unused'
+      Cloudinary__ApiSecret: 'p4-ci-unused'
+    steps:
+      - name: Checkout exact-head
+        uses: actions/checkout@v4
+
+      - name: Preparar SDK .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+          cache: true
+          cache-dependency-path: backend/**/*.csproj
+
+      - name: Restaurar y compilar API
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+
+      - name: Preparar OracleBaseline descartable
+        working-directory: backend
+        env:
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
+        run: |
+          set -euo pipefail
+          dotnet run --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj --configuration Release --no-build --no-launch-profile
+
+      - name: Levantar API localhost y esperar readiness
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          nohup dotnet run --project src/API/Solqaryn.API.csproj --configuration Release --no-build --no-launch-profile > p4-api.log 2>&1 &
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:5005/health > /dev/null && \
+               curl --fail --silent http://127.0.0.1:5005/health/ready > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          cat p4-api.log >&2 || true
+          exit 1
+
+      - name: Materializar dos empresas y dos usuarios reales en MySQL efimero
+        shell: bash
+        run: |
+          set -euo pipefail
+          mysql_container="$(docker ps --filter 'ancestor=mysql:8.4' --format '{{.ID}}' | head -n 1)"
+          test -n "$mysql_container"
+          docker exec -i "$mysql_container" mysql -uroot -proot solqaryn_p4_http_ab_ci <<'SQL'
+          INSERT INTO Empresas (Id, Nombre, Activa, FechaCreacion, FechaActualizacion)
+          VALUES (1, 'Empresa A JWT', TRUE, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6))
+          ON DUPLICATE KEY UPDATE Activa=TRUE, FechaActualizacion=UTC_TIMESTAMP(6);
+          INSERT INTO Empresas (Id, Nombre, Activa, FechaCreacion, FechaActualizacion)
+          VALUES (2, 'Empresa B JWT', TRUE, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6))
+          ON DUPLICATE KEY UPDATE Activa=TRUE, FechaActualizacion=UTC_TIMESTAMP(6);
+          INSERT INTO Usuarios
+            (NombreUsuario, NombreCompleto, PasswordHash, RolId, Activo, Bloqueado, Eliminado, FechaCreacion)
+          SELECT 'p4_admin_b', 'Administrador B efimero',
+                 a.PasswordHash, a.RolId, TRUE, FALSE, FALSE, UTC_TIMESTAMP(6)
+          FROM Usuarios a
+          WHERE a.NombreUsuario='p4_admin_a'
+            AND NOT EXISTS (SELECT 1 FROM Usuarios WHERE NombreUsuario='p4_admin_b');
+
+          INSERT INTO UsuarioEmpresas
+            (UsuarioId, EmpresaId, RolId, Activa, FechaCreacion, FechaActualizacion)
+          SELECT a.Id, 1, a.RolId, TRUE, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)
+          FROM Usuarios a WHERE a.NombreUsuario='p4_admin_a'
+            AND NOT EXISTS (SELECT 1 FROM UsuarioEmpresas m WHERE m.UsuarioId=a.Id AND m.EmpresaId=1);
+          INSERT INTO UsuarioEmpresas
+            (UsuarioId, EmpresaId, RolId, Activa, FechaCreacion, FechaActualizacion)
+          SELECT b.Id, 2, b.RolId, TRUE, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)
+          FROM Usuarios b WHERE b.NombreUsuario='p4_admin_b'
+            AND NOT EXISTS (SELECT 1 FROM UsuarioEmpresas m WHERE m.UsuarioId=b.Id AND m.EmpresaId=2);
+          SQL
+          companies="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_p4_http_ab_ci -Nse "SELECT COUNT(*) FROM Empresas WHERE Id IN (1,2) AND Activa=TRUE;")"
+          members="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_p4_http_ab_ci -Nse "SELECT COUNT(*) FROM UsuarioEmpresas m JOIN Usuarios u ON u.Id=m.UsuarioId JOIN Roles r ON r.Id=m.RolId WHERE (u.NombreUsuario='p4_admin_a' AND m.EmpresaId=1 OR u.NombreUsuario='p4_admin_b' AND m.EmpresaId=2) AND m.Activa=TRUE AND u.Activo=TRUE AND r.EsAdministrador=TRUE;")"
+          test "$companies" = '2'
+          test "$members" = '2'
+
+      - name: Preparar Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+
+      - name: Ejecutar aceptación HTTP JWT REAL A/B
+        run: |
+          set -euo pipefail
+          node scripts/ci/p4-ab-real-auth.mjs
+
+      - name: Materializar autoridad global y usuario sin empresa en MySQL efimero
+        shell: bash
+        run: |
+          set -euo pipefail
+          mysql_container="$(docker ps --filter 'ancestor=mysql:8.4' --format '{{.ID}}' | head -n 1)"
+          test -n "$mysql_container"
+          docker exec -i "$mysql_container" mysql -uroot -proot solqaryn_p4_http_ab_ci <<'SQL'
+          INSERT INTO Roles
+            (Nombre, NombreNormalizado, Descripcion, EsSistema, EsAdministrador,
+             Ambito, EmpresaId, Activo, Eliminado, FechaCreacion)
+          VALUES ('Administrador global efimero', 'P4_PLAT_HTTP_CI',
+                  'Solo autoridad global de la suite P4', 1, 1, 2, NULL, 1, 0, UTC_TIMESTAMP(6));
+          INSERT INTO Usuarios
+            (NombreUsuario, NombreCompleto, PasswordHash, RolId, Activo, Bloqueado, Eliminado, FechaCreacion)
+          SELECT 'p4_platform_only_ci', 'Usuario plataforma efimero',
+                 a.PasswordHash, a.RolId, 1, 0, 0, UTC_TIMESTAMP(6)
+          FROM Usuarios a WHERE a.NombreUsuario = 'p4_admin_a';
+          INSERT INTO UsuarioRolesPlataforma
+            (UsuarioId, RolId, Activa, FechaCreacion, FechaActualizacion)
+          SELECT u.Id, r.Id, 1, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)
+          FROM Usuarios u CROSS JOIN Roles r
+          WHERE u.NombreUsuario = 'p4_platform_only_ci'
+            AND r.NombreNormalizado = 'P4_PLAT_HTTP_CI';
+          SQL
+          count="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_p4_http_ab_ci -Nse "
+            SELECT COUNT(*) FROM UsuarioRolesPlataforma a JOIN Usuarios u ON u.Id=a.UsuarioId
+            JOIN Roles r ON r.Id=a.RolId
+            WHERE u.NombreUsuario='p4_platform_only_ci' AND a.Activa=1
+              AND r.Ambito=2 AND r.EsAdministrador=1 AND r.EmpresaId IS NULL;")"
+          test "$count" = "1"
+
+      - name: Certificar HTTP JWT global activo contra MySQL real
+        env:
+          P4_PLATFORM_TEST_PHASE: active
+        run: |
+          set -euo pipefail
+          node scripts/ci/p4-platform-sesion-real-jwt.mjs
+
+      - name: Certificar MVP plataforma con JWT y MySQL real A/B
+        env:
+          P4_MVP_TEST_PHASE: active
+        run: |
+          set -euo pipefail
+          node scripts/ci/p4-plataforma-mvp-http-jwt.mjs
+
+      - name: Revocacion inmediata de membresia global JWT
+        shell: bash
+        env:
+          P4_PLATFORM_TEST_PHASE: revoked
+        run: |
+          set -euo pipefail
+          mysql_container="$(docker ps --filter 'ancestor=mysql:8.4' --format '{{.ID}}' | head -n 1)"
+          docker exec "$mysql_container" mysql -uroot -proot solqaryn_p4_http_ab_ci -e "
+            UPDATE UsuarioRolesPlataforma SET Activa=0, FechaActualizacion=UTC_TIMESTAMP(6)
+             WHERE UsuarioId=(SELECT Id FROM Usuarios WHERE NombreUsuario='p4_platform_only_ci');"
+          node scripts/ci/p4-platform-sesion-real-jwt.mjs
+
+      - name: Certificar revocacion del control plane MVP
+        env:
+          P4_MVP_TEST_PHASE: revoked
+        run: |
+          set -euo pipefail
+          node scripts/ci/p4-plataforma-mvp-http-jwt.mjs
+
+      - name: Restaurar membresia y desactivar empresas sin alterar global JWT
+        shell: bash
+        env:
+          P4_PLATFORM_TEST_PHASE: inactive
+        run: |
+          set -euo pipefail
+          mysql_container="$(docker ps --filter 'ancestor=mysql:8.4' --format '{{.ID}}' | head -n 1)"
+          docker exec "$mysql_container" mysql -uroot -proot solqaryn_p4_http_ab_ci -e "
+            UPDATE UsuarioRolesPlataforma SET Activa=1, FechaActualizacion=UTC_TIMESTAMP(6)
+             WHERE UsuarioId=(SELECT Id FROM Usuarios WHERE NombreUsuario='p4_platform_only_ci');
+            UPDATE Empresas SET Activa=0, FechaActualizacion=UTC_TIMESTAMP(6) WHERE Id IN (1,2);"
+          node scripts/ci/p4-platform-sesion-real-jwt.mjs
+
+      - name: Certificar plataforma con empresas A y B inactivas
+        env:
+          P4_MVP_TEST_PHASE: inactive
+        run: |
+          set -euo pipefail
+          node scripts/ci/p4-plataforma-mvp-http-jwt.mjs
+
+      - name: Desactivar rol global y comprobar auditoria con EmpresaId nulo
+        shell: bash
+        env:
+          P4_PLATFORM_TEST_PHASE: role-revoked
+        run: |
+          set -euo pipefail
+          mysql_container="$(docker ps --filter 'ancestor=mysql:8.4' --format '{{.ID}}' | head -n 1)"
+          docker exec "$mysql_container" mysql -uroot -proot solqaryn_p4_http_ab_ci -e "
+            UPDATE Roles SET Activo=0, FechaActualizacion=UTC_TIMESTAMP(6)
+             WHERE NombreNormalizado='P4_PLAT_HTTP_CI';"
+          node scripts/ci/p4-platform-sesion-real-jwt.mjs
+          allowed="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_p4_http_ab_ci -Nse "
+            SELECT COUNT(*) FROM RegistrosAuditoria
+             WHERE Entidad='SesionPlataforma' AND EmpresaId IS NULL
+               AND Resultado='Exito' AND AmbitoAutoridad=2 AND OrigenAutorizacion=2;")"
+          denied="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_p4_http_ab_ci -Nse "
+            SELECT COUNT(*) FROM RegistrosAuditoria
+             WHERE Entidad='SesionPlataforma' AND EmpresaId IS NULL
+               AND Resultado='Rechazado' AND AmbitoAutoridad IS NULL;")"
+          test "$allowed" -ge 2
+          test "$denied" -ge 2
+          echo "P4 PLATFORM AUDIT PASS allowed=$allowed denied=$denied; tenant leaks=0"
+
+      - name: Guardar evidencia y errores de API
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p4-http-real-jwt-ab
+          path: backend/p4-api.log
+          if-no-files-found: warn
+          retention-days: 14

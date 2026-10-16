@@ -12,6 +12,16 @@ public class CompraDetalleConfiguration : IEntityTypeConfiguration<CompraDetalle
             table.HasCheckConstraint(
                 "CK_CompraDetalles_Ubicacion_RequiereAlmacen",
                 "`UbicacionAlmacenId` IS NULL OR `AlmacenId` IS NOT NULL"));
+        builder.HasIndex(x => new { x.EmpresaId, x.CompraId })
+            .HasDatabaseName("IX_CompraDetalles_Empresa_Referencia");
+        builder.HasIndex(x => new { x.EmpresaId, x.ProductoVarianteId })
+            .HasDatabaseName("IX_CompraDetalles_Empresa_Variante");
+        builder.HasIndex(x => new { x.EmpresaId, x.ProductoId })
+            .HasDatabaseName("IX_CompraDetalles_Empresa_Producto");
+        builder.HasOne<Empresa>().WithMany().HasForeignKey(x => x.EmpresaId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("FK_CompraDetalles_Empresas_EmpresaId");
+
         builder.Property(d => d.CostoUnitario).HasColumnType("decimal(18,2)");
         builder.Property(d => d.Subtotal).HasColumnType("decimal(18,2)");
         builder.Property(d => d.CostoProductoAnteriorSnapshot).HasColumnType("decimal(18,2)");

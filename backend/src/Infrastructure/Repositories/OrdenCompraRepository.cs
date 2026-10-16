@@ -11,6 +11,8 @@ public sealed class OrdenCompraRepository : IOrdenCompraRepository
 {
     private const string IdempotencyConstraint = "UX_OrdenesCompra_IdempotencyKey";
     private const string NumeroConstraint = "UX_OrdenesCompra_NumeroOrden";
+    private const string ScopedIdempotencyConstraint = "UX_OrdenesCompra_Empresa_IdempotencyKey";
+    private const string ScopedNumeroConstraint = "UX_OrdenesCompra_Empresa_NumeroOrden";
     private readonly AppDbContext _context;
 
     public OrdenCompraRepository(AppDbContext context)
@@ -84,11 +86,12 @@ public sealed class OrdenCompraRepository : IOrdenCompraRepository
 
     public async Task<OrdenCompra?> GetByIdForUpdateAsync(int id)
     {
+        var tenant = await CommercialTenantSqlLockScope.RequireAsync(_context);
         if (_context.Database.CurrentTransaction is null)
             throw new InvalidOperationException("GetByIdForUpdateAsync requiere una transacción activa.");
 
         var orden = await _context.Set<OrdenCompra>()
-            .FromSqlInterpolated($"SELECT o.* FROM OrdenesCompra o WHERE o.Id = {id} FOR UPDATE")
+            .FromSqlInterpolated($"SELECT o.* FROM OrdenesCompra o WHERE o.Id = {id} AND ({tenant} IS NULL OR o.EmpresaId = {tenant}) FOR UPDATE")
             .AsTracking()
             .FirstOrDefaultAsync();
         if (orden is not null)
@@ -118,14 +121,14 @@ public sealed class OrdenCompraRepository : IOrdenCompraRepository
         {
             await _context.SaveChangesAsync();
         }
-        catch (DbUpdateException ex) when (ContieneConstraint(ex, IdempotencyConstraint))
+        catch (DbUpdateException ex) when ((ContieneConstraint(ex, IdempotencyConstraint) || ContieneConstraint(ex, ScopedIdempotencyConstraint)))
         {
             throw new UniqueConstraintViolationException(
                 IdempotencyConstraint,
                 "La clave de idempotencia ya fue utilizada por otra solicitud concurrente.",
                 ex);
         }
-        catch (DbUpdateException ex) when (ContieneConstraint(ex, NumeroConstraint))
+        catch (DbUpdateException ex) when ((ContieneConstraint(ex, NumeroConstraint) || ContieneConstraint(ex, ScopedNumeroConstraint)))
         {
             throw new UniqueConstraintViolationException(
                 NumeroConstraint,

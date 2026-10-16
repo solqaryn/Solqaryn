@@ -58,11 +58,39 @@ def main() -> int:
         if "class OutboxRetryProcessor" in content
     ]
     background_sources = hosted_sources + outbox_processors
+    # Outbox and one-time DEV media normalization have DIFFERENT authority models.
+    # Require explicit fail-closed, tenant-bound, byte-verified invariants for the
+    # media worker. Unknown worker classes must still meet the outbox contract or
+    # fail closed; adding a worker must never silently become NOT_APPLICABLE.
+    def background_tenant_scoped(path, content):
+        if path.name == "DevCloudinaryLegacyNormalizationHostedService.cs":
+            mandatory = (
+                "hostEnvironment.IsDevelopment()",
+                'GetEnvironmentVariable("RENDER")',
+                'GetValue<bool>("Cloudinary:NormalizeDevLegacyImagesOnStartup")',
+                'private const string AllowedPrefix = "solqaryn_dev"',
+                'connection.Database != "solqaryn_dev"',
+                'connection.UserID != "solqaryn_dev_user"',
+                'connection.SslMode.ToString()',
+                "db.Set<Empresa>()",
+                "companies.Count != 1",
+                "DevCloudinaryLegacyLocator.TryValidate",
+                "SHA256.HashData(copied)",
+                "ExecuteSqlInterpolatedAsync",
+                "WHERE Id={item.Id} AND Url={item.Url} AND PublicId={item.PublicId}",
+                "originals_deleted=0",
+            )
+            forbidden = ("DestroyAsync(", "DeleteAsync(", "solqaryn_prod", "solqaryn_qa")
+            return all(token in content for token in mandatory) and not any(
+                token in content for token in forbidden
+            )
+        return all(token in content for token in (
+            "EmpresaId", "ProcesarLoteAsync", "ClaimDisponiblesAsync"
+        ))
+
     background_ok = None if not background_sources else all(
-        "EmpresaId" in content and
-        "ProcesarLoteAsync" in content and
-        "ClaimDisponiblesAsync" in content
-        for _, content in background_sources
+        background_tenant_scoped(path, content)
+        for path, content in background_sources
     )
 
     checks = {

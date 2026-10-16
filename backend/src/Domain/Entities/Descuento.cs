@@ -84,6 +84,7 @@ public class DescuentoRol
 /// (sección 11: "conservar el valor histórico aplicado").
 public class HistorialUsoDescuento
 {
+    public int? EmpresaId { get; set; } // NULL histórico; operaciones nuevas restringidas.
     public int Id { get; set; }
     public int DescuentoId { get; set; }
     public Descuento? Descuento { get; set; }
@@ -102,6 +103,7 @@ public class HistorialUsoDescuento
 /// detalle/factura de esa venta puntual.
 public class VentaDescuento
 {
+    public int? EmpresaId { get; set; } // NULL histórico; operaciones nuevas restringidas.
     public int Id { get; set; }
     public int VentaId { get; set; }
     public int DescuentoId { get; set; }

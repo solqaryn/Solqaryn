@@ -15,6 +15,9 @@ public sealed class Priority3AuthorizationSurfaceTests
         "Solqaryn.API.Controllers.EmpresaConfiguracionController.GetPublica",
         "Solqaryn.API.Controllers.FacturasController.DescargarPdfPublico",
         "Solqaryn.API.Controllers.TemaVisualController.Get",
+        // Binding anónimo de solo lectura: middleware exige prueba HMAC, Host+StoreKey
+        // configurados y empresa activa. No incluye endpoints comerciales.
+        "Solqaryn.API.Controllers.TiendaBindingController.Consultar",
         "Solqaryn.Api.Controllers.InboundWebhooksController.ReceiveAsync",
         "Solqaryn.API.Controllers.WhatsAppController.Webhook",
         "Solqaryn.API.Controllers.WhatsAppController.GetPublicoAsync"

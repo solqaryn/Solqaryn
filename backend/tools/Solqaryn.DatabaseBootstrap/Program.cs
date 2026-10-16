@@ -17,6 +17,13 @@ var options = new DbContextOptionsBuilder<AppDbContext>()
 await using var db = new AppDbContext(options);
 await db.Database.OpenConnectionAsync();
 
+// Fail closed: no marcar una migración como adoptada si el ensamblado
+// canónico EF10 ni siquiera la contiene (no aceptar historia falsa).
+var known = db.Database.GetMigrations().ToArray();
+if (!known.Contains("20261016095000_PublicStoreBindingsPersistence", StringComparer.Ordinal) ||
+    !known.Contains("20261016200000_PublicStoreProofReplayGuard", StringComparer.Ordinal))
+    throw new InvalidOperationException("La migración persistente de tiendas no está registrada en EF Oracle.");
+
 static async Task<long> ScalarLongAsync(AppDbContext db, string sql)
 {
     await using var command = db.Database.GetDbConnection().CreateCommand();
@@ -111,7 +118,166 @@ var beforeAdoption = await ScalarLongAsync(
       AND TABLE_NAME <> '__EFMigrationsHistory';
     """);
 
+var publicStoreTableBeforeAdoption = await ScalarLongAsync(db, """
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'PublicStoreBindings'
+      AND TABLE_TYPE = 'BASE TABLE';
+    """);
+var replayTableBeforeAdoption = await ScalarLongAsync(db, """
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'PublicStoreProofReplays'
+      AND TABLE_TYPE = 'BASE TABLE';
+    """);
+
 await db.Database.CloseConnectionAsync();
+if (mode == "fresh")
+{
+    // EnsureCreated ya generó las columnas/FK del modelo actual.
+    // Adoptar OracleBaseline sin aplicar el DDL de expand duplicado.
+    await db.Database.MigrateAsync("20261006111818_OracleBaseline");
+    await db.Database.ExecuteSqlRawAsync("""
+        INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+        VALUES ('20261013121500_CommercialTenantRootExpand', '10.0.12');
+        """);
+    // EnsureCreated ya construyó el modelo exacto del HEAD. No aplicar DDL
+    // de migraciones incrementales sobre sus propias columnas o índices.
+    // Esta adopción se autoriza solo tras cotejar el contrato físico preciso;
+    // jamás etiquetar automáticamente todas las migraciones que aparezcan.
+    // MigrateAsync/ExecuteSqlRawAsync pueden cerrar la conexión implícita del provider.
+    // ScalarLongAsync crea un comando ADO directo y exige conexión abierta.
+    await db.Database.OpenConnectionAsync();
+    var indicesEmpresa = await ScalarLongAsync(db, """
+        SELECT COUNT(*) FROM (
+          SELECT e.Tabla, e.Indice
+          FROM (
+            SELECT 'Productos' AS Tabla, 'UX_Productos_Empresa_Id' AS Indice, 'EmpresaId,Id' AS Columnas
+            UNION ALL SELECT 'Clientes', 'UX_Clientes_Empresa_Id', 'EmpresaId,Id'
+            UNION ALL SELECT 'Proveedores', 'UX_Proveedores_Empresa_Id', 'EmpresaId,Id'
+            UNION ALL SELECT 'Compras', 'UX_Compras_Empresa_Id', 'EmpresaId,Id'
+            UNION ALL SELECT 'Ventas', 'UX_Ventas_Empresa_Id', 'EmpresaId,Id'
+            UNION ALL SELECT 'Clientes', 'UX_Clientes_Empresa_IdentidadORTN', 'EmpresaId,IdentidadORTNNormalizada'
+            UNION ALL SELECT 'Proveedores', 'UX_Proveedores_Empresa_Documento', 'EmpresaId,DocumentoNormalizado'
+            UNION ALL SELECT 'Compras', 'UX_Compras_Empresa_NumeroCompra', 'EmpresaId,NumeroCompra'
+            UNION ALL SELECT 'Ventas', 'UX_Ventas_Empresa_NumeroVenta', 'EmpresaId,NumeroVenta'
+          ) e
+          JOIN INFORMATION_SCHEMA.STATISTICS s
+            ON s.TABLE_SCHEMA = DATABASE()
+           AND s.TABLE_NAME = e.Tabla
+           AND s.INDEX_NAME = e.Indice
+          GROUP BY e.Tabla, e.Indice, e.Columnas
+          HAVING MIN(s.NON_UNIQUE) = 0
+             AND GROUP_CONCAT(s.COLUMN_NAME ORDER BY s.SEQ_IN_INDEX SEPARATOR ',') = e.Columnas
+        ) verificados;
+        """);
+    if (indicesEmpresa != 9)
+        throw new InvalidOperationException(
+            $"Fresh bootstrap has an incomplete tenant-scoped index contract: {indicesEmpresa}/9.");
+
+    var indicesGlobales = await ScalarLongAsync(db, """
+        SELECT COUNT(DISTINCT CONCAT(TABLE_NAME, '/', INDEX_NAME))
+        FROM INFORMATION_SCHEMA.STATISTICS
+        WHERE TABLE_SCHEMA = DATABASE()
+          AND (
+             (TABLE_NAME = 'Clientes' AND INDEX_NAME = 'UX_Clientes_IdentidadORTN_Normalizada')
+          OR (TABLE_NAME = 'Proveedores' AND INDEX_NAME = 'UX_Proveedores_Documento_Normalizado')
+          OR (TABLE_NAME = 'Compras' AND INDEX_NAME = 'IX_Compras_NumeroCompra')
+          OR (TABLE_NAME = 'Ventas' AND INDEX_NAME = 'IX_Ventas_NumeroVenta')
+          );
+        """);
+    if (indicesGlobales != 0)
+        throw new InvalidOperationException(
+            $"Fresh bootstrap retains {indicesGlobales} global commercial uniqueness constraints.");
+
+    await db.Database.ExecuteSqlRawAsync("""
+        INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+        VALUES ('20261013181500_CommercialTenantScopedRootIndexes', '10.0.12');
+        """);
+    // EnsureCreated ya construyo columnas e indices; tres FKs se aplicaron en supplements.
+    await db.Database.ExecuteSqlRawAsync("""
+        INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+        VALUES ('20261013190000_CommercialTenantInvoiceDocuments', '10.0.12');
+        """);
+    await db.Database.ExecuteSqlRawAsync("""
+        INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+        VALUES ('20261013193000_CommercialTenantSalesDocuments', '10.0.12');
+        """);
+
+    await db.Database.ExecuteSqlRawAsync("""
+        INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+        VALUES ('20261013210000_CommercialTenantTaxDiscountExpand', '10.0.12');
+        """);
+    await db.Database.ExecuteSqlRawAsync("""
+        INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+        VALUES ('20261013220000_CommercialTenantOwnershipGraphExpand', '10.0.12');
+        """);
+    await db.Database.ExecuteSqlRawAsync("""
+        INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+        VALUES ('20261013221500_CommercialTenantOwnershipGraphScopedFks', '10.0.12');
+        """);
+    await db.Database.ExecuteSqlRawAsync("""
+        INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+        VALUES ('20261013230000_CommercialTenantRemainingModules', '10.0.12');
+        """);
+    await db.Database.ExecuteSqlRawAsync("""
+        INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+        VALUES ('20261013231000_CommercialTenantRemainingScopedFks', '10.0.12');
+        """);
+
+    // EnsureCreated ya creó el índice compuesto del modelo actual.
+    // Registrar la migración P4 únicamente DESPUÉS de verificar en MySQL
+    // el nombre, orden de columnas y unicidad, nunca por presencia en Git.
+    await db.Database.OpenConnectionAsync();
+    var indiceCorreoTienda = await ScalarLongAsync(db, """
+        SELECT COUNT(*) FROM (
+          SELECT INDEX_NAME
+            FROM INFORMATION_SCHEMA.STATISTICS
+           WHERE TABLE_SCHEMA = DATABASE()
+             AND TABLE_NAME = 'TiendaCuentasCliente'
+             AND INDEX_NAME = 'UX_TiendaCuentasCliente_Correo'
+           GROUP BY INDEX_NAME
+          HAVING MIN(NON_UNIQUE) = 0
+             AND GROUP_CONCAT(COLUMN_NAME ORDER BY SEQ_IN_INDEX SEPARATOR ',')
+                 = 'EmpresaId,CorreoNormalizado'
+        ) indice;
+        """);
+    if (indiceCorreoTienda != 1)
+        throw new InvalidOperationException(
+            "Fresh bootstrap refused to adopt P4 account email migration without its exact tenant-scoped unique index.");
+    await db.Database.ExecuteSqlRawAsync("""
+        INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+        VALUES ('20261014112000_PublicStoreAccountEmailPerEmpresa', '10.0.12');
+        """);
+    // Adoptar solo tras comprobar físicamente el contrato de 12 índices
+    // comerciales nuevos y la unicidad de tienda ya vigente.
+    await CommercialTenantNaturalKeysPhysicalContract.VerifyAsync(db);
+    await db.Database.ExecuteSqlRawAsync("""
+        INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+        VALUES ('20261014130000_CommercialTenantNaturalKeysPostStorefront', '10.0.12');
+        """);
+
+    // La nueva tabla proviene de EnsureCreated: sólo adoptar al verificar
+    // el índice físico exacto y la FK contra Empresas.
+    var storeUnique = await ScalarLongAsync(db, """
+        SELECT COUNT(*) FROM (
+            SELECT INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'PublicStoreBindings'
+              AND INDEX_NAME = 'UX_PublicStoreBindings_Host_Key'
+              AND NON_UNIQUE = 0
+            GROUP BY INDEX_NAME
+            HAVING GROUP_CONCAT(COLUMN_NAME ORDER BY SEQ_IN_INDEX SEPARATOR ',') = 'Host,StoreKey'
+        ) v;
+        """);
+    if (storeUnique != 1)
+        throw new InvalidOperationException(
+            "Fresh bootstrap refused store-binding migration: unique host/key contract missing.");
+    await db.Database.ExecuteSqlRawAsync("""
+        INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+        VALUES ('20261016095000_PublicStoreBindingsPersistence', '10.0.12');
+        """);
+    await db.Database.CloseConnectionAsync();
+}
+// Both fresh and persistent schemas now apply the one new ledger migration.
 await db.Database.MigrateAsync();
 await db.Database.OpenConnectionAsync();
 
@@ -125,8 +291,12 @@ var afterAdoption = await ScalarLongAsync(
       AND TABLE_NAME <> '__EFMigrationsHistory';
     """);
 
-if (afterAdoption != beforeAdoption)
-    throw new InvalidOperationException($"Oracle baseline adoption changed physical table count: before={beforeAdoption}, after={afterAdoption}.");
+// Persisted legacy schemas gain exactly one new table through an EF migration;
+// fresh EnsureCreated has already included it and only adopts history.
+var expectedAfterAdoption = beforeAdoption + (publicStoreTableBeforeAdoption == 0 ? 1 : 0)
+    + (replayTableBeforeAdoption == 0 ? 1 : 0);
+if (afterAdoption != expectedAfterAdoption)
+    throw new InvalidOperationException($"Oracle bootstrap changed unexpected table count: before={beforeAdoption}, after={afterAdoption}, expected={expectedAfterAdoption}.");
 
 var marker = await ScalarLongAsync(
     db,
@@ -142,5 +312,13 @@ if (marker != 1)
 var pending = (await db.Database.GetPendingMigrationsAsync()).ToArray();
 if (pending.Length != 0)
     throw new InvalidOperationException($"Pending Oracle migrations remain: {string.Join(",", pending)}.");
+
+await CommercialTenantPhysicalConstraints.VerifyAsync(db);
+await CommercialTenantInvoicePhysicalConstraints.VerifyAsync(db);
+await CommercialTenantSalesPhysicalConstraints.VerifyAsync(db);
+await CommercialTenantTaxDiscountPhysicalConstraints.VerifyAsync(db);
+await CommercialTenantOwnershipGraphPhysicalConstraints.VerifyAsync(db);
+await CommercialTenantRemainingPhysicalConstraints.VerifyAsync(db);
+await CommercialTenantNaturalKeysPhysicalContract.VerifyAsync(db);
 
 Console.WriteLine($"SOLQARYN_ORACLE_BOOTSTRAP=PASS mode={mode} tables={afterAdoption} pending=0");

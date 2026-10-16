@@ -28,9 +28,10 @@ public sealed class PedidoVentaRepository : IPedidoVentaRepository
 
     public async Task<PedidoVenta?> GetByIdForUpdateAsync(int id)
     {
+        var tenant = await CommercialTenantSqlLockScope.RequireAsync(_context);
         RequerirTransaccion();
         var pedido = await Pedidos
-            .FromSqlInterpolated($"SELECT p.* FROM PedidosVenta p WHERE p.Id = {id} FOR UPDATE")
+            .FromSqlInterpolated($"SELECT p.* FROM PedidosVenta p WHERE p.Id = {id} AND ({tenant} IS NULL OR p.EmpresaId = {tenant}) FOR UPDATE")
             .AsTracking()
             .FirstOrDefaultAsync();
 
@@ -42,9 +43,10 @@ public sealed class PedidoVentaRepository : IPedidoVentaRepository
 
     public async Task<PedidoVenta?> GetByCotizacionIdForUpdateAsync(int cotizacionId)
     {
+        var tenant = await CommercialTenantSqlLockScope.RequireAsync(_context);
         RequerirTransaccion();
         var pedido = await Pedidos
-            .FromSqlInterpolated($"SELECT p.* FROM PedidosVenta p WHERE p.CotizacionId = {cotizacionId} FOR UPDATE")
+            .FromSqlInterpolated($"SELECT p.* FROM PedidosVenta p WHERE p.CotizacionId = {cotizacionId} AND ({tenant} IS NULL OR p.EmpresaId = {tenant}) FOR UPDATE")
             .AsTracking()
             .FirstOrDefaultAsync();
 
@@ -56,9 +58,10 @@ public sealed class PedidoVentaRepository : IPedidoVentaRepository
 
     public async Task<PedidoVenta?> GetByIdempotencyKeyForUpdateAsync(string idempotencyKey)
     {
+        var tenant = await CommercialTenantSqlLockScope.RequireAsync(_context);
         RequerirTransaccion();
         var pedido = await Pedidos
-            .FromSqlInterpolated($"SELECT p.* FROM PedidosVenta p WHERE p.IdempotencyKey = {idempotencyKey} FOR UPDATE")
+            .FromSqlInterpolated($"SELECT p.* FROM PedidosVenta p WHERE p.IdempotencyKey = {idempotencyKey} AND ({tenant} IS NULL OR p.EmpresaId = {tenant}) FOR UPDATE")
             .AsTracking()
             .FirstOrDefaultAsync();
 

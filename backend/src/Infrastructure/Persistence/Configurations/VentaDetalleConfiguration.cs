@@ -12,6 +12,16 @@ public class VentaDetalleConfiguration : IEntityTypeConfiguration<VentaDetalle>
             table.HasCheckConstraint(
                 "CK_VentaDetalles_Ubicacion_RequiereAlmacen",
                 "`UbicacionAlmacenId` IS NULL OR `AlmacenId` IS NOT NULL"));
+        builder.HasIndex(x => new { x.EmpresaId, x.VentaId })
+            .HasDatabaseName("IX_VentaDetalles_Empresa_Referencia");
+        builder.HasIndex(x => new { x.EmpresaId, x.ProductoVarianteId })
+            .HasDatabaseName("IX_VentaDetalles_Empresa_Variante");
+        builder.HasIndex(x => new { x.EmpresaId, x.ProductoId })
+            .HasDatabaseName("IX_VentaDetalles_Empresa_Producto");
+        builder.HasOne<Empresa>().WithMany().HasForeignKey(x => x.EmpresaId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("FK_VentaDetalles_Empresas_EmpresaId");
+
         builder.Property(d => d.PrecioUnitario).HasColumnType("decimal(18,2)");
         builder.Property(d => d.CostoUnitarioSnapshot).HasColumnType("decimal(18,2)");
         builder.Property(d => d.Subtotal).HasColumnType("decimal(18,2)");

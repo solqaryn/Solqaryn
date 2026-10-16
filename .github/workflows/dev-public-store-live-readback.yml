@@ -1,0 +1,170 @@
+name: DEV - Certificar binding público multiempresa (read-only)
+# This is a post-deployment certification, never a pre-deploy CI gate.
+# A push gate would deadlock Render autoDeployTrigger=checksPass before the
+# replay ledger migration could be applied to live Aiven DEV.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify-public-store-dev:
+    name: Readback Aiven y smoke HTTP DEV, sin escrituras
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: DEV
+    env:
+      DB_HOST: ${{ vars.SOLQARYN_DEV_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_DEV_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_DEV_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_DEV_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_DEV_DB_PASSWORD }}
+    steps:
+      - name: Verificar alcance corporativo DEV
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = "solqaryn/Solqaryn"
+          test "$GITHUB_REF_NAME" = "dev"
+          test "$DB_HOST" = "solqaryn-mysql-solqaryn.h.aivencloud.com"
+          test "$DB_PORT" = "14402"
+          test "$DB_NAME" = "solqaryn_dev"
+          test "$DB_USER" = "solqaryn_dev_user"
+          test -n "$DB_PASSWORD"
+          echo "PUBLIC_STORE_DEV_SCOPE=PASS; DDL=NONE; DML=NONE"
+
+      - name: Instalar cliente MySQL
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq >/dev/null
+          sudo apt-get install -y -qq mysql-client >/dev/null
+
+      - name: Readback y smoke público sin cambiar estados
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import os
+          import re
+          import subprocess
+          import sys
+          from urllib.request import Request, urlopen
+          from urllib.error import HTTPError, URLError
+
+          public_origin = "https://solqaryn-dev.vercel.app"
+          api_origin = "https://solqaryn-api-dev-fxx8.onrender.com"
+          arg = ["mysql", "--protocol=TCP", "-h", os.environ["DB_HOST"],
+                 "-P", os.environ["DB_PORT"], "-u", os.environ["DB_USER"],
+                 "--ssl-mode=REQUIRED", os.environ["DB_NAME"],
+                 "--batch", "--skip-column-names", "--raw"]
+          sql_env = dict(os.environ)
+          sql_env["MYSQL_PWD"] = sql_env.pop("DB_PASSWORD")
+          report = []
+          def out(message):
+              report.append(message)
+              print(message)
+          def sql(query):
+              return subprocess.run(arg + ["-e", query], env=sql_env, text=True,
+                                    capture_output=True, check=True, timeout=35).stdout.strip()
+          def http(base, path, hostile=False):
+              url = base + path
+              headers = {"User-Agent":"SOLQARYN-DEV-Readback/1.0",
+                         "Cache-Control":"no-store"}
+              if hostile:
+                  headers.update({"X-Forwarded-Host":"evil.example.test",
+                                  "X-Empresa-Id":"9999",
+                                  "X-Solqaryn-Store-Proof":"forged"})
+              try:
+                  with urlopen(Request(url, headers=headers), timeout=45) as r:
+                      return r.status, r.read(65536).decode("utf-8", "replace")
+              except HTTPError as e:
+                  return e.code, e.read(16384).decode("utf-8", "replace")
+              except (URLError, TimeoutError) as e:
+                  raise RuntimeError("DEV HTTP endpoint unavailable") from e
+
+          # No SELECT *. No tenants, passwords or proof material are logged.
+          migrations = int(sql("SELECT COUNT(*) FROM __EFMigrationsHistory "
+                               "WHERE MigrationId='20261016200000_PublicStoreProofReplayGuard'"))
+          ledger = int(sql("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES "
+                           "WHERE TABLE_SCHEMA=DATABASE() "
+                           "AND TABLE_NAME='PublicStoreProofReplays'"))
+          count_bindings = int(sql("SELECT COUNT(*) FROM PublicStoreBindings"))
+          out(f"MYSQL_READBACK=OBSERVED migrations={migrations} ledger={ledger} bindings={count_bindings}")
+          raw = sql("SELECT b.Host,b.StoreKey,b.EmpresaId,e.Activa "
+                    "FROM PublicStoreBindings b JOIN Empresas e ON e.Id=b.EmpresaId "
+                    "WHERE b.Activa=1 AND b.StoreKey<>'' "
+                    "ORDER BY b.EmpresaId,b.StoreKey LIMIT 100")
+          entries = []
+          for line in raw.splitlines():
+              cols = line.split('\t')
+              if len(cols) == 4:
+                  host, key, company, active = cols
+                  if host == "solqaryn-dev.vercel.app" and re.fullmatch(r'[a-z][a-z0-9-]{0,46}[a-z0-9]', key):
+                      entries.append((key, int(company), active == "1"))
+          active = {}
+          suspended = []
+          for key, company, enabled in entries:
+              if enabled:
+                  active.setdefault(company, key)
+              else:
+                  suspended.append(key)
+          out(f"ACTIVE_DEV_COMPANIES_WITH_STORE={len(active)}")
+          out(f"SUSPENDED_COMPANIES_WITH_ACTIVE_BINDING={len(suspended)}")
+
+          checks = [
+              (api_origin, "/health/ready", 200, False, "render_health"),
+              (public_origin, "/api/tienda/bootstrap", 200, False, "legacy"),
+              (public_origin, "/api/tiendas/cert-unknown-m1/tienda/binding", 503, True, "unknown_host_key"),
+              (public_origin, "/api/tiendas/cert-unknown-m1/tienda/checkout", 503, False, "closed_checkout"),
+              (api_origin, "/tienda/binding", 503, True, "unsigned_direct_backend")
+          ]
+          failures = []
+          for host, path, expected, hostile, name in checks:
+              try:
+                  code, _ = http(host, path, hostile)
+                  out(f"HTTP_{name.upper()}={code}")
+                  if code != expected:
+                      failures.append(name)
+              except Exception:
+                  failures.append(name)
+                  out(f"HTTP_{name.upper()}=UNAVAILABLE")
+          validated = 0
+          for company, key in list(active.items())[:2]:
+              try:
+                  code, body = http(public_origin, "/api/tiendas/" + key + "/tienda/binding")
+                  result = json.loads(body) if code == 200 else {}
+                  data = result.get("data") or {}
+                  if code == 200 and result.get("success") is True and (
+                      data.get("empresaId") == company and data.get("verificada") is True):
+                      validated += 1
+                  else:
+                      failures.append("positive_binding")
+              except Exception:
+                  failures.append("positive_binding")
+          out(f"POSITIVE_AB_BINDINGS_VERIFIED={validated}")
+          if suspended:
+              code, _ = http(public_origin, "/api/tiendas/" + suspended[0] + "/tienda/binding")
+              out(f"HTTP_SUSPENDED={code}")
+              if code != 503:
+                  failures.append("suspended_binding")
+          else:
+              out("HTTP_SUSPENDED=NOT_TESTED_NO_SUSPENDED_FIXTURE")
+
+          if not migrations or not ledger or len(active) < 2 or validated < 2 or not suspended:
+              out("MICROFASE1_LIVE_CERT=BLOCKED_ON_UNPROVISIONED_OR_UNTESTED_FIXTURE")
+          elif not failures:
+              out("MICROFASE1_LIVE_CERT=PASS")
+          if failures:
+              out("MICROFASE1_SECURITY_SMOKE=FAIL")
+          else:
+              out("MICROFASE1_SECURITY_SMOKE=PASS_ON_EXECUTED_CASES")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as f:
+              f.write("## DEV Microfase 1 — readback de solo lectura\n\n")
+              for line in report:
+                  f.write("- " + line + "\n")
+          if failures or not migrations or not ledger or len(active) < 2 or validated < 2 or not suspended:
+              sys.exit(1)
+          PY

@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Http;
 using Solqaryn.Application.Common;
 using Solqaryn.Application.DTOs;
 using Solqaryn.Application.Exceptions;
 using Solqaryn.Application.Interfaces;
+using Solqaryn.Application.Security;
 using Solqaryn.Domain.Common;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Enums;
@@ -24,6 +26,7 @@ public class VentaService : IVentaService
     private readonly ICurrentUserService _currentUser;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAuditoriaService _auditoria;
+    private readonly IHttpContextAccessor? _tenantHttpContextAccessor;
     private readonly ITipoClientePredeterminadoResolver _predeterminadoResolver;
 
     public VentaService(
@@ -41,7 +44,7 @@ public class VentaService : IVentaService
         IUnitOfWork unitOfWork,
         IAuditoriaService auditoria,
         ITipoClientePredeterminadoResolver predeterminadoResolver,
-        IKardexMovimientoWriter? kardexMovimientoWriter = null)
+        IKardexMovimientoWriter? kardexMovimientoWriter = null, IHttpContextAccessor? tenantHttpContextAccessor = null)
     {
         _ventaRepository = ventaRepository;
         _clienteRepository = clienteRepository;
@@ -57,6 +60,7 @@ public class VentaService : IVentaService
         _currentUser = currentUser;
         _unitOfWork = unitOfWork;
         _auditoria = auditoria;
+        _tenantHttpContextAccessor = tenantHttpContextAccessor;
         _predeterminadoResolver = predeterminadoResolver;
     }
 
@@ -83,6 +87,7 @@ public class VentaService : IVentaService
         var metodoPagoCatalogo = await ResolverMetodoPagoAsync(dto.MetodoPago);
         var venta = new Venta
         {
+            EmpresaId = VerifiedCommercialTenant.Resolve(_tenantHttpContextAccessor?.HttpContext),
             NumeroVenta = CrearNumeroTemporal("VEN"),
             ClienteNombre = string.IsNullOrWhiteSpace(dto.ClienteNombre) ? "Cliente final" : dto.ClienteNombre,
             ClienteTelefono = dto.ClienteTelefono,
@@ -177,13 +182,30 @@ public class VentaService : IVentaService
 
     public async Task<VentaDto?> ConfirmarAsync(int id)
     {
-        var empresa = await _empresaConfiguracionService.GetActivaEntidadAsync();
+        // Bajo RBAC multiempresa, jamás leer datos fiscales del singleton
+        // EmpresaConfiguracion: pertenecen a la instalación legacy global.
+        // Obtener solo identidad legal de la empresa seleccionada server-side.
+        var empresaAutorizadaId = VerifiedCommercialTenant.Resolve(
+            _tenantHttpContextAccessor?.HttpContext);
+        var empresaTenant = empresaAutorizadaId is > 0
+            ? await _empresaConfiguracionService.GetTenantAsync(empresaAutorizadaId.Value)
+            : null;
+        var empresaLegacy = empresaAutorizadaId is > 0
+            ? null
+            : await _empresaConfiguracionService.GetActivaEntidadAsync();
+
+        if (empresaAutorizadaId is > 0 &&
+            (empresaTenant is null || empresaTenant.EmpresaId != empresaAutorizadaId.Value))
+            throw new ForbiddenAccessException("No se pudo verificar la identidad fiscal de la empresa.");
 
         await _unitOfWork.ExecuteInTransactionAsync(async () =>
         {
             var venta = await _ventaRepository.GetByIdForUpdateAsync(id);
             if (venta is null)
                 throw new KeyNotFoundException($"Venta ID '{id}' no encontrada.");
+
+            if (empresaAutorizadaId is > 0 && venta.EmpresaId != empresaAutorizadaId.Value)
+                throw new ForbiddenAccessException("La venta no pertenece a la empresa autorizada.");
 
             if (venta.Estado != EstadoDocumento.Borrador)
                 throw new BusinessRuleException("Solo se pueden confirmar ventas en estado Borrador.");
@@ -276,14 +298,21 @@ public class VentaService : IVentaService
 
             var factura = new Factura
             {
+                EmpresaId = venta.EmpresaId,
                 VentaId = venta.Id,
                 NumeroFactura = CrearNumeroTemporal("FAC"),
                 Estado = EstadoFactura.Emitida,
-                EmpresaNombre = empresa.NombreComercial,
-                EmpresaRTN = empresa.RTN,
-                EmpresaTelefono = empresa.Telefono,
-                EmpresaCorreo = empresa.Correo,
-                EmpresaDireccion = empresa.Direccion,
+                // Nunca completar valores tenant ausentes desde la empresa
+                // global: las celdas no configuradas permanecen vacías.
+                EmpresaNombre = empresaTenant is not null
+                    ? empresaTenant.Nombre : empresaLegacy!.NombreComercial,
+                EmpresaRTN = empresaTenant is not null
+                    ? empresaTenant.Rtn : empresaLegacy?.RTN,
+                EmpresaTelefono = empresaTenant is null ? empresaLegacy?.Telefono : null,
+                EmpresaCorreo = empresaTenant is not null
+                    ? empresaTenant.CorreoRemitente : empresaLegacy?.Correo,
+                EmpresaDireccion = empresaTenant is not null
+                    ? empresaTenant.Direccion : empresaLegacy?.Direccion,
                 ClienteNombre = venta.ClienteNombre,
                 ClienteTelefono = venta.ClienteTelefono,
                 ClienteIdentidadORTN = venta.ClienteIdentidadORTN,
@@ -355,7 +384,7 @@ public class VentaService : IVentaService
         {
             var venta = await _ventaRepository.GetByIdForUpdateAsync(id);
             if (venta is null)
-                throw new KeyNotFoundException($"Venta ID '{id}' no encontrada.");
+                throw new ResourceNotFoundException("Venta no encontrada.");
 
             if (venta.Estado != EstadoDocumento.Confirmada)
                 throw new BusinessRuleException("Solo se pueden anular ventas confirmadas.");
@@ -500,6 +529,8 @@ public class VentaService : IVentaService
 
                 cliente = new Cliente
                 {
+                    // Mismo owner verificado que la venta; nunca desde DTO/header.
+                    EmpresaId = venta.EmpresaId,
                     Nombre = dto.ClienteNombre.Trim(),
                     Telefono = dto.ClienteTelefono,
                     IdentidadORTN = dto.ClienteIdentidadORTN,

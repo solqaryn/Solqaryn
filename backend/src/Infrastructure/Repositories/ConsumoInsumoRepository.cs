@@ -30,11 +30,12 @@ public class ConsumoInsumoRepository : IConsumoInsumoRepository
 
     public async Task<ConsumoInsumo?> GetByIdForUpdateAsync(int id)
     {
+        var tenant = await CommercialTenantSqlLockScope.RequireAsync(_context);
         if (_context.Database.CurrentTransaction is null)
             throw new InvalidOperationException("GetByIdForUpdateAsync requiere una transacción activa.");
 
         var consumo = await _context.ConsumosInsumos
-            .FromSqlInterpolated($"SELECT c.* FROM ConsumosInsumos c WHERE c.Id = {id} AND c.Eliminado = 0 FOR UPDATE")
+            .FromSqlInterpolated($"SELECT c.* FROM ConsumosInsumos c WHERE c.Id = {id} AND c.Eliminado = 0 AND ({tenant} IS NULL OR c.EmpresaId = {tenant}) FOR UPDATE")
             .AsTracking()
             .FirstOrDefaultAsync();
 

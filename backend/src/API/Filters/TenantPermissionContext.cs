@@ -8,7 +8,7 @@ namespace Solqaryn.API.Filters;
 internal static class TenantPermissionContext
 {
     internal const string EmpresaHeader = "X-Empresa-Id";
-    internal const string AuthorizedEmpresaIdItemKey = "SOLQARYN_AUTHORIZED_EMPRESA_ID";
+    internal const string AuthorizedEmpresaIdItemKey = Solqaryn.Application.Security.VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey;
 
     internal static async Task<int> RequireEmpresaIdAsync(
         HttpContext httpContext,

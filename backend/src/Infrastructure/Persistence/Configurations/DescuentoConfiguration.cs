@@ -76,8 +76,15 @@ public class HistorialUsoDescuentoConfiguration : IEntityTypeConfiguration<Histo
     public void Configure(EntityTypeBuilder<HistorialUsoDescuento> builder)
     {
         builder.ToTable("HistorialUsoDescuentos");
+        builder.HasIndex(x => new { x.EmpresaId, x.VentaId })
+            .HasDatabaseName("IX_HistorialUsoDescuentos_Empresa_VentaId");
+        builder.HasOne<Empresa>().WithMany().HasForeignKey(x => x.EmpresaId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("FK_HistorialUsoDescuentos_Empresas_EmpresaId");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.MontoAplicado).HasPrecision(18, 4);
+        builder.HasIndex(x => new { x.EmpresaId, x.ClienteId })
+            .HasDatabaseName("IX_HistorialUsoDescuentos_Empresa_ClienteId");
         builder.HasIndex(x => new { x.VentaId, x.Fecha });
         builder.HasOne<Venta>().WithMany().HasForeignKey(x => x.VentaId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<Cliente>().WithMany().HasForeignKey(x => x.ClienteId).OnDelete(DeleteBehavior.Restrict);
@@ -89,6 +96,11 @@ public class VentaDescuentoConfiguration : IEntityTypeConfiguration<VentaDescuen
     public void Configure(EntityTypeBuilder<VentaDescuento> builder)
     {
         builder.ToTable("VentaDescuentos");
+        builder.HasIndex(x => new { x.EmpresaId, x.VentaId })
+            .HasDatabaseName("IX_VentaDescuentos_Empresa_VentaId");
+        builder.HasOne<Empresa>().WithMany().HasForeignKey(x => x.EmpresaId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("FK_VentaDescuentos_Empresas_EmpresaId");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.DescuentoNombreSnapshot).IsRequired().HasMaxLength(150);
         builder.Property(x => x.DescuentoCodigoSnapshot).IsRequired().HasMaxLength(50);

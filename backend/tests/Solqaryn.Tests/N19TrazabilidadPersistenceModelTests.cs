@@ -52,8 +52,13 @@ public class N19TrazabilidadPersistenceModelTests
 
         var serieUnica = serie.GetIndexes().Single(i =>
             i.GetDatabaseName() == "UX_SeriesInventario_NumeroSerie");
-        Assert.True(serieUnica.IsUnique);
+        Assert.False(serieUnica.IsUnique);
         Assert.Equal(new[] { "NumeroSerie" }, serieUnica.Properties.Select(p => p.Name));
+        var empresaSerie = serie.GetIndexes().Single(i =>
+            i.GetDatabaseName() == "UX_SeriesInventario_Empresa_NumeroSerie");
+        Assert.True(empresaSerie.IsUnique);
+        Assert.Equal(new[] { "EmpresaId", "NumeroSerie" },
+            empresaSerie.Properties.Select(p => p.Name));
 
         var indiceSerieLote = serie.GetIndexes().Single(i =>
             i.GetDatabaseName() == "IX_SeriesInventario_Variante_LoteInventarioId");

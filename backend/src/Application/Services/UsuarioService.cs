@@ -69,6 +69,15 @@ public class UsuarioService : IUsuarioService
         return rol;
     }
 
+    private static void ValidarRolDeEmpresa(Rol rol, int empresaId)
+    {
+        if (empresaId <= 0 ||
+            rol.Ambito != AmbitoAutorizacion.Empresa ||
+            (rol.EmpresaId.HasValue && rol.EmpresaId.Value != empresaId))
+            throw new BusinessRuleException(
+                "El rol empresarial no pertenece a la empresa seleccionada o es un rol de plataforma.");
+    }
+
     public async Task<UsuarioDto> CreateAsync(CreateUsuarioDto dto)
     {
         var nombreUsuario = NormalizarNombreUsuario(dto.NombreUsuario);
@@ -273,15 +282,21 @@ public class UsuarioService : IUsuarioService
 
     public async Task<List<UsuarioEmpresaDto>> GetEmpresasAsync(int usuarioId)
     {
-        await ObtenerUsuarioValidoParaMembresiaAsync(usuarioId, exigirActivo: false);
+        // Consulta de onboarding previa a la primera membresía: el creador
+        // autenticado puede ver la lista VACÍA de su usuario pendiente.
+        // No desbloquear identidades con membresías de otra empresa.
+        await ObtenerUsuarioValidoParaMembresiaAsync(
+            usuarioId, exigirActivo: false, permitirAltaInicial: true);
         return (await _repository.GetEmpresasAsync(usuarioId)).Select(ToEmpresaDto).ToList();
     }
 
     public async Task<UsuarioEmpresaDto> AsignarEmpresaAsync(int usuarioId, AsignarUsuarioEmpresaDto dto)
     {
-        var usuario = await ObtenerUsuarioValidoParaMembresiaAsync(usuarioId, exigirActivo: true);
+        var usuario = await ObtenerUsuarioValidoParaMembresiaAsync(
+            usuarioId, exigirActivo: true, permitirAltaInicial: true);
         var empresa = await ObtenerEmpresaActivaAsync(dto.EmpresaId);
         var rol = await ResolverRolDinamicoAsync(dto.RolId);
+        ValidarRolDeEmpresa(rol, empresa.Id);
 
         if (await _repository.GetEmpresaAsync(usuarioId, empresa.Id) is not null)
             throw new BusinessRuleException("El usuario ya tiene una membresía registrada para la empresa seleccionada.");
@@ -310,6 +325,7 @@ public class UsuarioService : IUsuarioService
         var usuario = await ObtenerUsuarioValidoParaMembresiaAsync(usuarioId, exigirActivo: true);
         await ObtenerEmpresaActivaAsync(empresaId);
         var rol = await ResolverRolDinamicoAsync(rolId);
+        ValidarRolDeEmpresa(rol, empresaId);
         var membresia = await ObtenerMembresiaAsync(usuarioId, empresaId);
         var rolAnterior = membresia.RolId;
 
@@ -340,7 +356,8 @@ public class UsuarioService : IUsuarioService
         var membresia = await ObtenerMembresiaAsync(usuarioId, empresaId);
         if (activa)
         {
-            await ResolverRolDinamicoAsync(membresia.RolId);
+            var rolVigente = await ResolverRolDinamicoAsync(membresia.RolId);
+            ValidarRolDeEmpresa(rolVigente, empresaId);
             membresia.Activar();
         }
         else
@@ -364,13 +381,22 @@ public class UsuarioService : IUsuarioService
         return ToEmpresaDto(membresia);
     }
 
-    private async Task<Usuario> ObtenerUsuarioValidoParaMembresiaAsync(int usuarioId, bool exigirActivo)
+    private async Task<Usuario> ObtenerUsuarioValidoParaMembresiaAsync(
+        int usuarioId, bool exigirActivo, bool permitirAltaInicial = false)
     {
         if (usuarioId <= 0)
             throw new BusinessRuleException("El usuario seleccionado no es válido.");
 
-        var usuario = await _repository.GetByIdAsync(usuarioId)
-            ?? throw new BusinessRuleException("El usuario no existe.");
+        // Usuario es identidad compartida. No se debe quitar el filtro global
+        // para administrar cuentas de otras empresas; la unica excepcion es
+        // terminar el alta de una identidad todavia sin membresia y creada
+        // por el actor autenticado que supero el gate Usuarios:AsignarRol.
+        var usuario = await _repository.GetByIdAsync(usuarioId);
+        if (usuario is null && permitirAltaInicial && _currentUser.UsuarioId is > 0)
+            usuario = await _repository.GetPendientePrimeraMembresiaAsync(
+                usuarioId, _currentUser.UsuarioId.Value);
+        if (usuario is null)
+            throw new BusinessRuleException("El usuario no existe.");
 
         if (exigirActivo && (!usuario.Activo || usuario.Bloqueado))
             throw new BusinessRuleException("No se puede administrar una membresía activa para un usuario inactivo o bloqueado.");

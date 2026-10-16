@@ -82,6 +82,34 @@ public sealed class N72DOutboxRetryProcessorTests
     }
 
     [Fact]
+    public async Task Lote_Con_Mensaje_De_Otra_Empresa_No_Despacha_Ni_Confirma_Nada()
+    {
+        var mensajeA = CrearClaimed();
+        var mensajeB = MensajeOutbox.Crear(
+            8,
+            "inventario.no-debe-despacharse",
+            "{\"empresa\":\"B\"}",
+            "idem-tenant-b",
+            creadoEnUtc: AhoraUtc.AddMinutes(-1));
+        mensajeB.MarcarProcesando(AhoraUtc);
+
+        // A primero y B después: validar el lote completo evita incluso
+        // el efecto externo de A cuando se detecta un claim contaminado.
+        var repo = new FakeRepository(mensajeA, mensajeB);
+        var dispatcher = new CountingDispatcher();
+        var processor = new OutboxRetryProcessor(
+            repo, new OutboxRetryProcessorOptions(), () => 0.5);
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            processor.ProcesarLoteAsync(7, AhoraUtc, dispatcher));
+
+        Assert.Contains("fuera de la empresa", error.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(0, dispatcher.Calls);
+        Assert.Equal(new[] { "recover", "claim" }, repo.Calls);
+        Assert.Null(repo.LastSafeError);
+    }
+
+    [Fact]
     public void Configuracion_Invalida_Falla_Cerrado()
     {
         var repo = new FakeRepository();
@@ -127,6 +155,17 @@ public sealed class N72DOutboxRetryProcessorTests
     {
         public Task DispatchAsync(MensajeOutbox mensaje, CancellationToken cancellationToken = default) =>
             Task.CompletedTask;
+    }
+
+    private sealed class CountingDispatcher : IOutboxEffectDispatcher
+    {
+        public int Calls { get; private set; }
+
+        public Task DispatchAsync(MensajeOutbox mensaje, CancellationToken cancellationToken = default)
+        {
+            Calls++;
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class ThrowingDispatcher : IOutboxEffectDispatcher

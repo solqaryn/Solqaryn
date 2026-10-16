@@ -18,6 +18,12 @@ public static class CanonicalMySqlPhysicalContract
         await SeedPaymentMethodsAsync(db, cancellationToken);
         await SeedTipoClientePredeterminadoAsync(db, cancellationToken);
         await EnsureInventarioOriginBridgeAsync(db, cancellationToken);
+        await CommercialTenantPhysicalConstraints.ApplyFreshAsync(db, cancellationToken);
+        await CommercialTenantInvoicePhysicalConstraints.ApplyFreshAsync(db, cancellationToken);
+        await CommercialTenantSalesPhysicalConstraints.ApplyFreshAsync(db, cancellationToken);
+        await CommercialTenantTaxDiscountPhysicalConstraints.ApplyFreshAsync(db, cancellationToken);
+        await CommercialTenantOwnershipGraphPhysicalConstraints.ApplyFreshAsync(db, cancellationToken);
+        await CommercialTenantRemainingPhysicalConstraints.ApplyFreshAsync(db, cancellationToken);
     }
 
     public static async Task VerifyAsync(
@@ -25,6 +31,14 @@ public static class CanonicalMySqlPhysicalContract
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(db);
+
+        await CommercialTenantPhysicalConstraints.VerifyAsync(db, cancellationToken);
+        await CommercialTenantInvoicePhysicalConstraints.VerifyAsync(db, cancellationToken);
+        await CommercialTenantSalesPhysicalConstraints.VerifyAsync(db, cancellationToken);
+        await CommercialTenantTaxDiscountPhysicalConstraints.VerifyAsync(db, cancellationToken);
+        await CommercialTenantOwnershipGraphPhysicalConstraints.VerifyAsync(db, cancellationToken);
+        await CommercialTenantRemainingPhysicalConstraints.VerifyAsync(db, cancellationToken);
+        await CommercialTenantNaturalKeysPhysicalContract.VerifyAsync(db, cancellationToken);
 
         var triggerCount = await db.Database
             .SqlQueryRaw<long>("""

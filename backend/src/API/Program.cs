@@ -44,6 +44,12 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 if (isRender) EnvironmentDatabaseGuard.ValidateRenderBinding(builder.Environment.EnvironmentName, connectionString);
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMemoryCache();
+// Operación única DEV: OFF por defecto; nunca se registra en QA/PROD o sin Render.
+if (isRender && builder.Environment.IsDevelopment() &&
+    builder.Configuration.GetValue<bool>("Cloudinary:NormalizeDevLegacyImagesOnStartup"))
+{
+    builder.Services.AddHostedService<DevCloudinaryLegacyNormalizationHostedService>();
+}
 builder.Services.AddResponseCompression(options =>
 {
     options.EnableForHttps = true;
@@ -59,6 +65,10 @@ builder.Services.Configure<BrotliCompressionProviderOptions>(options => options.
 builder.Services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
 builder.Services.AddSingleton<IPublicStoreCache, PublicStoreMemoryCache>();
 builder.Services.AddScoped<IPublicStoreTenantKeyProvider, PublicStoreTenantKeyProvider>();
+// Registro de hosts de tiendas: configuración servidor, nunca headers arbitrarios.
+builder.Services.AddSingleton<IPublicStoreHostTenantResolver, ConfiguredPublicStoreHostTenantResolver>();
+// A shared MySQL unique key (not instance memory) prevents HMAC replay.
+builder.Services.AddScoped<IPublicStoreProofReplayStore, MySqlPublicStoreProofReplayStore>();
 builder.Services.AddSingleton<DbQueryTimingInterceptor>();
 builder.Services.AddDbContext<AppDbContext>((serviceProvider, options) =>
     options
@@ -68,6 +78,7 @@ builder.Services.Configure<ObservabilityOptions>(builder.Configuration.GetSectio
 builder.Services.AddSingleton<RequestObservability>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IUsuarioScopeService, UsuarioScopeService>();
+builder.Services.AddScoped<IPlataformaScopeService, PlataformaScopeService>();
 builder.Services.AddScoped<IMensajeOutboxRepository, MensajeOutboxRepository>();
 builder.Services.AddScoped<IMensajeOutboxService, MensajeOutboxService>();
 builder.Services.AddScoped<IEmpresaRepository, EmpresaRepository>();
@@ -315,6 +326,9 @@ if (maintenanceEnabled)
     });
 }
 app.UseAuthentication(); app.UseAuthorization();
+// P0: no servir datos comerciales multiempresa sin ownership por fila.
+// Este middleware bloquea nuevas empresas y la mezcla de datos legacy de 2+ tenants.
+app.UseMiddleware<UnscopedCommercialTenantGuardMiddleware>();
 app.MapGet("/health", () => Results.Ok(new { status = "ok", service = "Solqaryn API" })).ExcludeFromDescription();
 app.MapGet("/health/ready", async (AppDbContext db, CancellationToken cancellationToken) => { var databaseReady = false; try { databaseReady = await db.Database.CanConnectAsync(cancellationToken); } catch { databaseReady = false; } return databaseReady ? Results.Ok(new { status = "ready", database = "connected" }) : Results.Json(new { status = "not_ready", database = "unavailable" }, statusCode: StatusCodes.Status503ServiceUnavailable); }).ExcludeFromDescription();
 app.MapControllers();

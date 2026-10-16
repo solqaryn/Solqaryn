@@ -32,7 +32,7 @@ permissions:
   actions: read
 
 concurrency:
-  group: modernization-phase4-angular22-dev
+  group: modernization-phase4-angular22-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -132,11 +132,17 @@ jobs:
           if [ "$status" -ne 0 ] && [ "$status" -ne 124 ]; then
             exit "$status"
           fi
-          grep -Eq 'Test Files[[:space:]]+58 passed.*\(58\)' /tmp/angular22-unit.clean.log
-          grep -Eq 'Tests[[:space:]]+218 passed.*\(218\)' /tmp/angular22-unit.clean.log
+          # Totales dinámicos con baseline mínimo; no permitir pérdidas de cobertura
+          # ni saltar suites fallidas cuando se agregan nuevos archivos de tests.
+          read -r files_passed files_total < <(sed -nE 's/.*Test Files[[:space:]]+([0-9]+) passed[[:space:]]+\(([0-9]+)\).*/\1 \2/p' /tmp/angular22-unit.clean.log | tail -1)
+          read -r tests_passed tests_total < <(sed -nE 's/.*Tests[[:space:]]+([0-9]+) passed[[:space:]]+\(([0-9]+)\).*/\1 \2/p' /tmp/angular22-unit.clean.log | tail -1)
+          test "$files_passed" -ge 59
+          test "$tests_passed" -ge 222
+          test "$files_passed" -eq "$files_total"
+          test "$tests_passed" -eq "$tests_total"
           ! grep -Eq '([0-9]+ failed|FAIL )' /tmp/angular22-unit.clean.log
           ! grep -Eq 'NG8011|NG8113|allowSignalWrites|configLoader' /tmp/angular22-unit.clean.log
-          echo "ANGULAR22_UNIT_TESTS=PASS files=58/58 tests=218/218 processStatus=$status"
+          echo "ANGULAR22_UNIT_TESTS=PASS files=$files_passed/$files_total tests=$tests_passed/$tests_total processStatus=$status"
 
       - name: Lint y contratos
         run: npm run lint

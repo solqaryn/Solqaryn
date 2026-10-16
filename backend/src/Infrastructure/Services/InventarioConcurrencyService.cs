@@ -127,12 +127,14 @@ public class InventarioConcurrencyService : IInventarioConcurrencyService
 
     private async Task<List<Producto>> BloquearProductosIncluyendoEliminadosAsync(IEnumerable<int> ids)
     {
+        var tenant = await CommercialTenantSqlLockScope.RequireAsync(_context);
         var resultado = new List<Producto>();
         foreach (var id in ids.Distinct().OrderBy(x => x))
         {
-            var producto = await _context.Productos
-                .FromSqlInterpolated($"SELECT p.* FROM Productos p WHERE p.Id = {id} FOR UPDATE")
-                .IgnoreQueryFilters()
+            var producto = await TenantQueryBypassGuard.RespectCurrentTenant(
+                    _context.Productos.FromSqlInterpolated(
+                        $"SELECT p.* FROM Productos p WHERE p.Id = {id} AND ({tenant} IS NULL OR p.EmpresaId = {tenant}) FOR UPDATE")
+                        .IgnoreQueryFilters(), _context)
                 .AsTracking()
                 .FirstOrDefaultAsync();
             if (producto is not null)
@@ -143,12 +145,14 @@ public class InventarioConcurrencyService : IInventarioConcurrencyService
 
     private async Task<List<ProductoVariante>> BloquearVariantesIncluyendoEliminadasAsync(IEnumerable<int> ids)
     {
+        var tenant = await CommercialTenantSqlLockScope.RequireAsync(_context);
         var resultado = new List<ProductoVariante>();
         foreach (var id in ids.Distinct().OrderBy(x => x))
         {
-            var variante = await _context.ProductoVariantes
-                .FromSqlInterpolated($"SELECT pv.* FROM ProductoVariantes pv WHERE pv.Id = {id} FOR UPDATE")
-                .IgnoreQueryFilters()
+            var variante = await TenantQueryBypassGuard.RespectCurrentTenant(
+                    _context.ProductoVariantes.FromSqlInterpolated(
+                        $"SELECT pv.* FROM ProductoVariantes pv WHERE pv.Id = {id} AND ({tenant} IS NULL OR pv.EmpresaId = {tenant}) FOR UPDATE")
+                        .IgnoreQueryFilters(), _context)
                 .AsTracking()
                 .FirstOrDefaultAsync();
             if (variante is not null)

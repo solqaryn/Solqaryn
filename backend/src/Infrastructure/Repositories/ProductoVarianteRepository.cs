@@ -28,11 +28,12 @@ public class ProductoVarianteRepository : IProductoVarianteRepository
 
     public async Task<ProductoVariante?> GetByIdForUpdateAsync(int id)
     {
+        var tenant = await CommercialTenantSqlLockScope.RequireAsync(_context);
         if (_context.Database.CurrentTransaction is null)
             throw new InvalidOperationException("GetByIdForUpdateAsync requiere una transacción activa.");
 
         return await _context.ProductoVariantes
-            .FromSqlInterpolated($"SELECT pv.* FROM ProductoVariantes pv WHERE pv.Id = {id} AND pv.Eliminado = 0 FOR UPDATE")
+            .FromSqlInterpolated($"SELECT pv.* FROM ProductoVariantes pv WHERE pv.Id = {id} AND pv.Eliminado = 0 AND ({tenant} IS NULL OR pv.EmpresaId = {tenant}) FOR UPDATE")
             .AsTracking()
             .FirstOrDefaultAsync();
     }
@@ -98,8 +99,8 @@ public class ProductoVarianteRepository : IProductoVarianteRepository
 
     public Task<ProductoVariante?> GetTecnicaByProductoIdAsync(int productoId, bool incluirEliminada = false)
     {
-        var query = Query()
-            .IgnoreQueryFilters()
+        var query = TenantQueryBypassGuard.RespectCurrentTenant(
+            Query().IgnoreQueryFilters(), _context)
             .Where(v => v.ProductoId == productoId && v.EsTecnica);
         if (!incluirEliminada)
             query = query.Where(v => !v.Eliminado);

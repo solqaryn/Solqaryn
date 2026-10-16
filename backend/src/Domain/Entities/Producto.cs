@@ -5,6 +5,10 @@ namespace Solqaryn.Domain.Entities;
 
 public class Producto : AuditableEntity
 {
+    // Expand: propiedad nullable para registros históricos aún no atribuidos.
+    // No usar como autoridad de acceso hasta certificar ownership completo.
+    public int? EmpresaId { get; set; }
+
     public string Nombre { get; set; } = string.Empty;
 
     // Campos de compatibilidad y snapshot histórico. La fuente administrable

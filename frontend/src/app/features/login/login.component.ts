@@ -2,7 +2,7 @@ import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/cor
 
 import { HttpErrorResponse } from '@angular/common/http';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -12,6 +12,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service';
 import { SessionActivityService } from '../../core/auth/session-activity.service';
 import { TenantContextService } from '../../core/auth/tenant-context.service';
+import { ApiAvailabilityService } from '../../core/auth/api-availability.service';
 import { TenantSelectorComponent } from '../../core/auth/tenant-selector.component';
 import { EmpresaIdentidadService } from '../../services/empresa-identidad.service';
 
@@ -35,14 +36,21 @@ export class LoginComponent {
   private readonly fb = inject(FormBuilder);
   readonly authService = inject(AuthService);
   readonly tenantContext = inject(TenantContextService);
+  readonly disponibilidad = inject(ApiAvailabilityService);
   private readonly permisosRuntime = inject(PermisosRuntimeService);
   private readonly sessionActivity = inject(SessionActivityService);
   readonly identidad = inject(EmpresaIdentidadService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   readonly loading = signal(false);
   readonly errorMessage = signal<string | null>(null);
   readonly hidePassword = signal(true);
+  readonly errorPlataforma = signal<string | null>(this.route.snapshot.queryParamMap.get('plataforma') === 'denegado'
+    ? 'Tu sesión no posee autoridad global de SOLQARYN. Accede únicamente a una empresa autorizada.'
+    : this.route.snapshot.queryParamMap.get('plataforma') === 'no-disponible'
+      ? 'No se pudo verificar la autoridad global con el servidor. Intenta nuevamente.'
+      : null);
 
   readonly form = this.fb.group({
     nombreUsuario: ['', [Validators.required, Validators.maxLength(50)]],
@@ -115,12 +123,21 @@ export class LoginComponent {
     });
   }
 
+  entrarPlataforma(): void {
+    if (!this.authService.isAuthenticated()) return;
+    this.router.navigateByUrl('/plataforma');
+  }
+
   tenantConfirmado(): void {
     if (!this.tenantContext.tieneContextoVerificado()) return;
     this.redirigirSegunPermisos();
   }
 
   private obtenerMensajeLogin(err: HttpErrorResponse): string {
+    if ([0, 502, 503, 504].includes(err.status)) {
+      return 'El servidor está temporalmente no disponible. Intentamos reconectar, pero aún no responde. Espera un momento y vuelve a intentarlo.';
+    }
+
     const mensajeBackend = typeof err.error?.message === 'string'
       ? err.error.message.trim()
       : '';

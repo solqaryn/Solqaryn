@@ -2,6 +2,7 @@ using Solqaryn.Application.Common;
 using Solqaryn.Application.DTOs;
 using Solqaryn.Application.Exceptions;
 using Solqaryn.Application.Interfaces;
+using Solqaryn.Application.Security;
 using Solqaryn.Application.Mappings;
 using Solqaryn.Application.Validators;
 using Solqaryn.Domain.Entities;
@@ -73,6 +74,7 @@ public class ProductoService : IProductoService
 
         var producto = new Producto
         {
+            EmpresaId = VerifiedCommercialTenant.Resolve(_httpContextAccessor?.HttpContext),
             Nombre = dto.Nombre.Trim(),
             Descripcion = string.IsNullOrWhiteSpace(dto.Descripcion) ? null : dto.Descripcion.Trim(),
             TipoInventario = dto.TipoInventario,

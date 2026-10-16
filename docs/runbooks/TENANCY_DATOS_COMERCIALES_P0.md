@@ -1,0 +1,177 @@
+## 2026-10-14 — P4: defensa de propietario en lotes Outbox (DEV candidato)
+
+- `OutboxRetryProcessor.ProcesarLoteAsync` comprueba que **todos** los mensajes reclamados tienen `MensajeOutbox.EmpresaId` exactamente igual al `empresaId` del procesamiento antes de ejecutar el primer `IOutboxEffectDispatcher`. Ante lote mixto A/B lanza error fail-closed sin despachar, confirmar ni reprogramar filas.
+- Test negativo `N72DOutboxRetryProcessorTests.Lote_Con_Mensaje_De_Otra_Empresa_No_Despacha_Ni_Confirma_Nada`; preserva las pruebas existentes de retry/stale/dead-letter y contratos de repositorio que ya utilizan `EmpresaId`.
+- Incremento independiente de los PR #3608–#3611 y del trabajo de startup #3612: sin DDL, sin backfill, sin cambios QA/PROD, sin habilitar segundas empresas. Requiere CI exact-head, review y merge para considerarlo integrado. **No certifica por sí solo el punto #4 completo.**
+
+## 2026-10-14 — P4: seed de roles no modifica roles específicos de A/B (candidato DEV)
+
+- `SeedPermisoService` sólo encuentra/repara plantillas compartidas con `EmpresaId=NULL` y `Ambito=Empresa`. Durante startup nunca reactiva el rol `ADMINISTRADOR` propio de B, ni concede automáticamente todos los permisos a un rol administrador personalizado, ni modifica un rol de Plataforma.
+- Prueba `SeedPermisoServiceTests.StartupMultiEmpresa_NoRehabilitaRolPropioNiConcedeGrantsAOtraEmpresa`: crea roles de B desactivados y administrador B personalizado; valida que seed global no los altere y que sólo la plantilla recibe grants.
+- Candidato aún sujeto a CI exact-head, revisión P0/P1 y MySQL efímero antes de fusionarse; sin retirar la cuarentena HTTP ni habilitar empresas adicionales.
+
+## 2026-10-14 — P4: tareas legacy de arranque bajo 2+ empresas (candidato DEV)
+
+- `ProductionDataRepairService.RepairAsync`: cuenta empresas **antes** del UPDATE SQL global de `Usuarios`. Con 2+ empresas (activas o inactivas) devuelve resultado sin ejecutar normalización ni atribuir membresías; conserva reparación monoempresa/legacy. Corrige un write fuera de tenant que no cubría middleware HTTP.
+- `SeedFiscalService.SeedDefaultsAsync`: no crea impuestos ni operaciones fiscales globales sin `EmpresaId` cuando existen 2+ empresas. La inicialización fiscal de nuevas empresas requiere onboarding explícito verificado; esta protección no la implementa ni permite activar empresas todavía.
+- `StartupLegacyJobsMultiEmpresaIsolationIntegrationTests`: prueba MySQL descartable con dos empresas A/B, B inactiva y un usuario histórico marcado eliminado, certifica que ningún seed global lo reactivó y que no se insertaron impuestos sin dueño.
+- DEV exclusivamente. Ninguna migración ni dato histórico real modificado; QA/PROD y dominios aplazados intocados.
+- **Incremento de contención, NO certificación P4 integral.** La cuarentena HTTP con 2+ empresas sigue vigente; aún hay que certificar jobs tenant-aware, reportes/exportaciones y habilitación segura end-to-end sin bypass. Requiere CI exact-head y REVIEW_FIRST.
+
+## 2026-10-13 — P4: auditoría pública atribuida a empresa verificada (DEV candidato)
+
+- `AuditoriaService.RegistrarCoreAsync` conserva precedencia `VerifiedCommercialTenant` → `VerifiedPublicInvoiceTenant` → `VerifiedPublicStoreTenant` al asignar `RegistroAuditoria.EmpresaId`. Enlaces PDF y checkout no usan el `X-Empresa-Id` bruto ni requieren inventar una identidad RBAC.
+- `AuditoriaTenantOwnershipTests` cubre factura pública, tienda, prioridad RBAC y marcas fuera de ruta. La consulta posterior de auditoría se mantiene filtrada por propiedad empresarial EF.
+- Aplica al PR #3611; pendiente CI exact-head y REVIEW_FIRST. Sin cambios QA/PROD; cuarentena general de 2+ no se elimina.
+
+## 2026-10-13 — P4: acceso exclusivo a PDF público mediante capability empresarial (candidato DEV)
+
+- `UnscopedCommercialTenantGuardMiddleware` permite atravesar la cuarentena con dos empresas únicamente a `GET /facturas/publico/{token}/pdf` cuando la ruta coincide exactamente y el token tiene formato URL-safe (32-160 caracteres). El middleware NO verifica ni confiere la capability: `FacturaCompartirRepository` comprueba hash, vigencia, límite, EmpresaId persistido y FK empresarial antes de marcar el contexto HTTP; `FacturaRepository` solo lee el FacturaId autorizado y EF filtra por empresa.
+- Ni `X-Empresa-Id` ni el host constituyen autoridad; POST, prefijos engañosos, tokens cortos, rutas adicionales, facturas privadas, exportaciones y demás operaciones comerciales permanecen bloqueadas con 2+ empresas.
+- Pruebas negativas y positivas en `UnscopedCommercialTenantGuardTests`: la ruta solo atraviesa el middleware pero no emite `VerifiedPublicInvoiceTenant` sin validar el token en el servicio.
+- **No se declara certificación P4 integral:** falta CI exact-head, REVIEW_FIRST y cobertura de operaciones privadas/jobs multiempresa. Sin cambios de dominios, datos históricos, QA ni PROD.
+
+## 2026-10-13 — P4: resolver Host exacto para múltiples tiendas (candidato DEV)
+
+- `ConfiguredPublicStoreHostTenantResolver` implementa `IPublicStoreHostTenantResolver` a partir de `PublicStore:HostBindings:{N}:Host` y `EmpresaId`, con opt-in `PublicStore:EnableMultiEmpresaBinding=true` que permanece **apagado por defecto**. Hosts deben ser ASCII exactos y distintos, sin wildcard, IP, URL ni doble asignación; cualquier configuración ambigua falla cerrada.
+- `UnscopedCommercialTenantGuardMiddleware` permite `/tienda/*` con 2+ empresas SOLO cuando `Request.Host` coincide con allowlist server-side y la Empresa persiste activa; las cabeceras `X-Empresa-Id` y `X-Forwarded-Host` no autorizan tenant. Emite `VerifiedPublicStoreTenant` por solicitud y `PublicStoreTenantKeyProvider` produce caché `empresa:{id}` independiente. Hosts no registrados/suspendidos se rechazan. `/productos`, `/facturas`, `/reportes` y demás rutas privadas continúan en cuarentena con 2+.
+- Pruebas EF/InMemory y MySQL descartable A/B: host A solo ve A y host B solo ve B; host malicioso se rechaza; ninguna ruta privada se desbloquea. DNS/certificado real y operación pública multinavegador aún pendientes; sin activar flag en DEV/QA/PROD ni mover dominio `solqaryn.com`.
+- Este incremento NO representa el cierre general de P4: persisten tareas de workers sin HTTP, exportación, PDFs públicos, Cloudinary, permisos y E2E públicos completos. La habilitación productiva requiere certificación integral y autorización posterior.
+
+## 2026-10-13 — P4 DEV: cache pública con tenant vinculado (candidato)
+
+- `PublicStoreTenantKeyProvider` utiliza `VerifiedPublicStoreTenant` emitido server-side para solicitudes `/tienda/*`; claves canónicas `empresa:{EmpresaId}` y rechazo estricto de rutas públicas sin vinculación. No acepta como autoridad cabecera, DTO, query ni nombre comercial.
+- Se mantiene la resolución legacy cacheada solo para llamadas sin ruta pública y únicamente si existe UNA empresa activa; jamás usa el resultado legacy para sustituir la marca faltante de un request público.
+- Pruebas: dos solicitudes A/B producen identidades y entradas de caché separadas; una ruta pública con `X-Empresa-Id` arbitrario sin marca validada falla cerrada. Integración MySQL, CDN/Cloudinary y host->empresa siguen requiriendo certificación independiente.
+- **No habilitar 2+ empresas ni retirar el middleware de cuarentena en este cambio.** Rama y pruebas DEV; no modificar QA ni PROD.
+
+## 2026-10-13 — P4: identidad empresarial y cuenta de tienda por tenant (candidato DEV)
+
+- `EmpresasController` usa `TenantPermissionContext` y no enumera Empresas B al pedir la lista bajo RBAC de A; una búsqueda puntual por la empresa autorizada sustituye la carga global. Lectura por ID y edición/activación/desactivación exigen id de empresa igual al autorizado.
+- Las validaciones de venta en `AppDbContext` aplican `TenantQueryBypassGuard` al consultar incluso Productos eliminados y evitan mensajes de error con nombres de otra empresa.
+- Cuenta pública `TiendaCuentaCliente`: índice único de correo normalizado ahora `(EmpresaId, CorreoNormalizado)`. Migración `20261014112000_PublicStoreAccountEmailPerEmpresa` crea índice compuesto ANTES de borrar el global; rollback intenta restaurar primero índice global auxiliar y falla cerrado si existen correos repetidos A/B. Snapshot Oracle EF actualizado. Prueba de integración MySQL A/B incluye rollback negativo.
+- **Falta certificación exact-head, REVIEW_FIRST y respuesta segura a procesos sin contexto HTTP, tiendas por host/slug y autorización de plataforma para crear nuevas empresas.** Mantener cuarentena de 2+ empresas; sin QA/PROD ni backfill de datos históricos.
+
+## 2026-10-13 — P4: correo de cuenta de tienda único por Empresa (candidato DEV)
+
+- Nuevo delta de tienda pública sobre el candidato de lectura P4: `TiendaCuentaClienteConfiguration` cambia la unicidad del correo normalizado de GLOBAL a `(EmpresaId, CorreoNormalizado)`. La migración aditiva `20261014112000_PublicStoreAccountEmailPerEmpresa` reemplaza únicamente el índice comercial `UX_TiendaCuentasCliente_Correo`; no repite migraciones P3 ni reescribe datos/contraseñas/sesiones históricas.
+- Pruebas MySQL efímeras: mismas credenciales/email sintético en empresas A y B con cuentas/clientes independientes, sin lectura cruzada; mismo email en dos clientes de A debe ser rechazado. `EmpresaId=NULL` histórico continúa en cuarentena, sin atribución forzada.
+- **No se habilita la tienda con 2+ empresas por esta mejora aislada:** faltan host/slug público verificable, resolución/caché/identidad por empresa, jobs y certificación end-to-end A/B. Mantener bloqueo P0, no tocar QA/PROD y no declarar cierre integral hasta CI verde exact-head + REVIEW_FIRST.
+
+## 2026-10-13 — P4 seguridad de usuarios, membresías y regresión fiscal (candidato DEV)
+
+- Corregida la regresión E2E: tras crear un `Usuario` sin membresías, su creador puede consultar una lista vacía y asignarlo a la empresa RBAC vigente; otros actores y usuarios pertenecientes exclusivamente a B continúan inaccesibles desde A.
+- Reactivación: el filtro de `Usuario` ya considera una membresía de la empresa incluso si está inactiva; `UsuarioRepository.GetEmpresasAsync` lista esa membresía solo en el tenant autorizado y `GetEmpresaAsync` puede localizarla para reactivación sin abrir membresías ajenas. Pruebas de servicio, EF y MySQL A/B.
+- Se corrigió el fixture **exclusivamente efímero** de la aceptación `catalogos-aceptacion`: los impuestos fiscales de prueba y sus filas `ImpuestoOperaciones` reciben `EmpresaId` coherente; sin backfill ni atribución real de datos legacy.
+- Seguridad previa: `TenantQueryBypassGuard`, permisos de Finanzas por tenant y endpoints `UsuariosController` mantienen filtros de propietario. Los cambios no alteran migraciones P3 ni permiten crear una segunda empresa; la cuarentena 503 sigue vigente hasta cobertura de tienda/archivos/jobs.
+- **Validación:** CI exact-head, Playwright, integración MySQL y revisión P0/P1 son requisitos pendientes hasta resultado comprobado; prohibido promocionar QA/PROD o marcar P4 completo solo por compilación.
+
+## 2026-10-13 — P4 DEV: revisión de bypass y recuperación segura de onboarding
+
+- En el PR #3608, `UsuarioRepository.GetPendientePrimeraMembresiaAsync` permite finalizar SOLO la primera membresía de una identidad sin empresas creada por el mismo actor; no abre listados de usuarios ajenos. Los endpoints `UsuariosController` comprueban que empresa del body/ruta coincide con la marca RBAC verificada, censuran otras membresías y sustituyen autorizaciones legacy por permisos tenant-aware.
+- `ReportesInventarioValorizacionController` comprueba `Finanzas:Ver` en la empresa autorizada antes de revelar costos.
+- `TenantQueryBypassGuard` vuelve a imponer owner sobre consultas de maestros, variantes, ubicación, comprobación de tipos de cliente, cargas masivas, auditoría de costo de envío y bloqueos de inventario que utilizan `IgnoreQueryFilters`. Conserva el caso monoempresa antiguo sin marca y la cuarentena HTTP 2+; no es una vía de excepción para habilitar multiempresa.
+- Nuevas pruebas cubren creación inicial por actor, bloqueo de modificaciones de membresías A→B, censura de lista de empresas y filtro A/B aun con `IgnoreQueryFilters`.
+- **Candidato en rama; NO es certificación integral ni autorización de nueva empresa:** quedan revisión de workers/no HTTP y consultas SQL que ignoran EF, binding público multiempresa, cobertura integral A/B con MySQL real, CI exact-head y cierre REVIEW_FIRST/P0-P1. QA/PROD sin cambios.
+
+## 2026-10-13 — P4 identidad compartida (candidato con CI pendiente)
+
+- La entidad global `Usuario` carece de `EmpresaId` por diseño; su filtro de lectura administrativa por `UsuarioEmpresa` restringe listados y consultas de identidad a miembros de la empresa post-RBAC. Sin marca, login/renovación aún pueden buscar identidades globalmente sin revelar listados HTTP comerciales.
+- Prueba: `CommercialTenantReadFilterTests.UsuariosCompartidos_SeListanSoloConMembresiaEnEmpresaActual`. Debe aprobar exact-head junto al resto de la matriz. No habilitar segundo tenant ni declarar cierre completo solo por esta protección.
+
+## 2026-10-13 — P4 DEV: ampliación del candidato (sin cierre total)
+
+- Lecturas EF: filtro por `EmpresaId` en entidades empresariales, conservando soft-delete y roles plantilla. Las rutas con `IgnoreQueryFilters` en conteos y reversión de existencias reintroducen explícitamente el owner.
+- Tienda anónima: bajo la cuarentena de una sola empresa activa, `UnscopedCommercialTenantGuardMiddleware` fija una marca de empresa server-side restringida a `/tienda`. Los filtros y las altas de cuenta consumen esa marca, nunca `X-Empresa-Id` del cliente. Si no existe empresa pública única, `PublicStoreTenantKeyProvider` falla cerrado; no infiere por nombres o `public-config`.
+- PDF público: un token hasheado solo puede establecer el scope de lectura si el enlace persistido no ha expirado, tiene `EmpresaId>0` y no contradice RBAC. Enlaces de prueba sin dueño no reciben autorización; la lectura de factura posterior se filtra por tenant.
+- Evidencia requerida antes de fusionar: revisión y CI exact-head del PR #3608, pruebas por módulo y MySQL real. **No se ha eliminado la cuarentena de 2+ empresas y NO se declara el punto #4 cerrado**. Faltan tareas/jobs, SQL directo, todas las variantes de archivo/export y dominio->empresa pública para convivencia simultánea. QA y PROD intactos.
+
+## 2026-10-13 — Punto #4: alcance de los filtros EF añadidos (candidato)
+
+- La primera defensa de lectura genérica utiliza `VerifiedCommercialTenant` solo después de una marca de autorización RBAC de la petición. Los filtros de borrado lógico no se reemplazan; objetos con `EmpresaId=NULL` no se incluyen en una consulta comercial con marca explícita.
+- **No levantar cuarentena ni declarar LISTO** por este cambio aislado: los flujos sin marca (incluidas lecturas públicas y trabajos), `IgnoreQueryFilters`, SQL directo, recursos Cloudinary, documentos, reportes y caché requieren prueba y contención específicas. Registrar resultados reales de CI antes de fusionar.
+
+# SOLQARYN — P0: aislamiento empresarial de datos comerciales
+
+### Actualización P0 #3 — PR #3599 (13 octubre 2026; candidato, NO fusionado)
+
+Se añadieron unicidades comerciales por EmpresaId e índices compuestos de cinco raíces. Variantes, imágenes, detalles de compra y venta y facturas reciben EmpresaId nullable derivado/validado, además de doce claves foráneas compuestas en MySQL. Se incorporó migración Oracle EF10 y contratos físicos de bootstrap. Esto es un tramo de la solución, NO su certificación: quedan entidades comerciales descendientes por clasificar/proteger, filtros de lectura y validación MySQL exact-head. No levantar cuarentena de segunda empresa, no tocar QA ni PROD y no reasignar los 19 registros descartables.
+
+
+**Estado 2026-10-13: contención operativa desplegada en Render DEV. Candidato expand introduce `EmpresaId?` e índices/FK en cinco raíces, con migración Oracle; los registros históricos continúan sin atribución y NO existe aislamiento multiempresa certificado.**
+
+## Decisión del propietario — datos de prueba DEV, sin backfill (2026-10-13)
+
+Los 19 registros sin EmpresaId (8 productos, 2 clientes, 2 proveedores, 3 compras y 4 ventas) son pruebas descartables. No se atribuirán a ninguna empresa ni es necesario reconstruir su dueño histórico. La auditoría permanece como evidencia, no como requisito para avanzar.
+
+El borrado comercial NO se ha ejecutado: la limpieza futura solo en DEV deberá proteger usuarios, contraseñas/hashes, roles, permisos, membresías UsuarioEmpresa y configuración necesaria para login; inventariar 132 entidades/66 descendientes, hacer backup cifrado fresco, restaurar en MySQL descartable, ensayar purga referencial transaccional y verificar resultados. Véase docs/tenancy/LIMPIEZA_DATOS_PRUEBA_DEV.md. No eliminar Cloudinary ni otro activo por este acuerdo.
+
+Lo obligatorio para habilitar empresas FUTURAS es aislamiento A/B de todas las lecturas, escrituras, relaciones, facturas, inventarios, archivos, trabajos y la tienda pública. La cuarentena para 2+ empresas sigue activa y QA/PROD no se modifican.
+
+## 2026-10-13 — Evidencia de ejecución real (DEV, lectura y control sin atribución)
+
+- **Esquema aplicado y verificado sobre Aiven DEV:** [run #38406239720](https://github.com/solqaryn/Solqaryn/actions/runs/38406239720). Preflight `already_expanded`; cinco columnas `EmpresaId?`, cinco FKs e índices y marca Oracle EF presentes. El paso DDL se omitió por idempotencia; no se duplicó la migración.
+- **Registros preservados:** 8 productos, 2 clientes, 2 proveedores, 3 compras y 4 ventas; **19/19 mantienen `EmpresaId=NULL`**.
+- **Procedencia limitada:** [run #38409321128](https://github.com/solqaryn/Solqaryn/actions/runs/38409321128) verificó que cada registro cuenta con autor y que no hay autores sin membresía activa o con múltiples membresías activas **actuales**. Los 14 enlaces comerciales revisados tienen owner incompleto. Esto **no demuestra** propiedad empresarial histórica.
+- **Modelo relacional:** inventario de 132 entidades EF, 20 con `EmpresaId` y 66 entidades adicionales alcanzables desde las raíces comerciales en `docs/tenancy/INVENTARIO_GRAFO_COMERCIAL_P0_DEV.md`. No equivale a auditoría de todas las tablas físicas, endpoints, tareas o integraciones.
+- **Candidatos de código pendientes:** #3594 propaga owner verificado en nuevas altas administrativas; #3596 rechaza enlaces empresariales cruzados y cambios ordinarios de owner. No activar multiempresa ni cerrar el P0 sin integración, pruebas A/B y saneamiento de procedencia.
+
+## Corrección de grafos comerciales nuevos en una misma unidad de trabajo
+
+El guard comercial también diferencia un registro ya persistido de un padre o referencia que EF está insertando en el mismo `SaveChangesAsync`. Solo acepta un owner del ChangeTracker cuando esa entidad está `Added`; para referencias ya persistidas consulta el owner de la base de datos sin confiar en navegaciones. Esto permite compras, ventas y clientes nuevos de la misma empresa sin relajar el rechazo A/B y conserva en cuarentena las filas legacy `EmpresaId=NULL`. Cobertura inicial de cinco pruebas dirigidas; requiere CI exact-head.
+
+## Comprobación post-RBAC para escrituras con dueño explícito (candidato PR #3596)
+
+En solicitudes donde `RequierePermiso` estableció la marca segura de empresa, `AppDbContext` transmite ese tenant al guard de escritura: no es lícito crear, modificar o eliminar `Producto`, `Cliente`, `Proveedor`, `Compra` o `Venta` de un propietario explícito diferente, aunque no se modifique el valor `EmpresaId`. La cabecera `X-Empresa-Id` no concede esta autoridad. Los datos históricos sin owner conocido mantienen cuarentena; una petición sin marca verificada no se considera habilitada para multiempresa. Esta defensa no cubre todas las consultas, el catálogo público, los demás descendientes ni las rutas de SQL directo.
+
+## Contención adicional candidata en PR #3596 (aún no equivale a multiempresa)
+
+La validación previa a guardar ahora alcanza ambos overloads async de EF y bloquea las rutas síncronas con mutación comercial o escritura relacional; consulta el owner persistido para impedir `Update` desconectado con `EmpresaId` suplantado, contrasta FKs guardados (no navegaciones cambiantes), rechaza enlaces de owner conocido hacia filas históricas sin dueño y verifica que la variante del detalle pertenezca al producto. Hay pruebas de regresión nuevas; verificar CI exact-head antes de integrar. `ExecuteUpdate`, SQL directo, filtros de todas las lecturas, derivados, tienda anónima, procedencia histórica y migración permanecen como P0. No quitar el middleware preventivo.
+
+## Diagnóstico exacto en el HEAD de DEV
+
+- En el baseline anterior, `Producto`, `Cliente`, `Proveedor`, `Compra` y `Venta` carecían de `EmpresaId`; el candidato introduce propiedad nullable, índice y FK, pero **no añade aún filtros SQL ni ownership atribuido**. Sus consultas por ID/listas aún requieren aislamiento empresarial explícito.
+- Las categorías, tipos de cliente, marcas/modelos, variantes, existencias, facturas, pedidos, pagos, descuentos, movimientos y documentos derivados pueden consumir referencias de esas entidades. Proteger sólo controladores o `X-Empresa-Id` no aísla el grafo.
+- `UsuarioEmpresa`, `IUsuarioScopeService` y `RequierePermiso` validan membresía/rol en el backend, pero **no demuestran ownership de cada fila consultada**.
+- El catálogo público `/tienda` es anónimo y actualmente carece de una partición de datos comercialmente independiente por tenant. La clave de caché no constituye un filtro SQL.
+- No se afirma que haya ocurrido una divulgación histórica de datos; el defecto comprobado es que la separación por empresa no está garantizada.
+
+## Expansión no destructiva de esquema (candidato)
+
+- La migración `20261013121500_CommercialTenantRootExpand` añade las cinco columnas nullable, índices y claves foráneas restrictivas. No atribuye filas históricas ni levanta la cuarentena.
+- La prueba `.github/workflows/tenant-commercial-root-expand-ephemeral.yml` debe restaurar el caso de esquema legacy en MySQL descartable, ejecutar la migración y demostrar cinco columnas/FK/índices, conservación de filas y reinvocación idempotente.
+- Respaldo previo real DEV con restore same-artifact comprobado: Actions [#38399423450](https://github.com/solqaryn/Solqaryn/actions/runs/38399423450). No significa backfill ni certificación multiempresa.
+
+## Auditoría tenant-aware de nuevas operaciones (candidato)
+
+La nueva versión de `AuditoriaService` marca eventos futuros con la empresa comprobada por RBAC; no atribuye las auditorías existentes ni prueba su titularidad. Las consultas de auditoría siguen necesitando filtros de empresa antes de permitir 2+ tenants.
+
+## Contención de emergencia — sin atribución de datos
+
+`UnscopedCommercialTenantGuardMiddleware` se ejecuta en la API **antes de los controladores** y revisa, sin caché, hasta dos registros de `Empresas`, incluso empresas inactivas:
+
+1. **Una empresa existente**: conserva la operación habitual (con JWT, RBAC y filtros preexistentes). No modifica datos comerciales ni inventa una asociación tenant.
+2. **Cero o dos o más empresas**: bloquea todos los endpoints de datos de la API, incluidos públicos, con HTTP 503 y `TENANT_DATA_ISOLATION_REQUIRED`, sin ejecutar los controladores ni retornar datos de negocio.
+3. **Nuevas empresas**: `POST /empresas` queda bloqueado. También `EmpresaService.CreateAsync` rechaza una segunda empresa desde otros consumidores del servicio; por tanto, no basta con cambiar una ruta HTTP para eludir el bloqueo.
+4. Solo permanecen disponibles: `GET /health`, `GET /health/ready`, `POST /auth/login`, `POST /auth/renovar`, `GET /tenant-context/:id` (con su autenticación y verificación existentes), y `OPTIONS` para negociación CORS. Ninguna excepción habilita lectura de productos o documentos.
+5. Ante error al consultar `Empresas`, el request falla antes de los controladores. El gate no registra ni devuelve registros, JWT, credenciales ni atributos de empresas.
+
+**Consecuencia de seguridad deliberada:** si DEV ya tiene más de una empresa registrada, las funciones comerciales quedarán temporalmente inaccesibles al desplegar. Es **una cuarentena P0**, no una implementación terminada de multiempresa ni una solución aceptable como producto final. No fusionar con QA/PROD mientras siga esta deuda.
+
+## Trabajo imprescindible para levantar la cuarentena y declarar cerrado el P0
+
+- Inventariar **todas** las tablas tenant-owned (maestros, catálogos, variantes, inventario, almacenes, cotizaciones, pedidos, compras, ventas, facturación, pagos, contabilidad, logística, imágenes, exportaciones, búsquedas, caché y jobs) y sus relaciones y referencias externas; distinguir explícitamente datos globales de datos de empresa.
+- Añadir ownership `EmpresaId` durable y `NOT NULL` para datos nuevos, con FK hacia `Empresas`, índices y unicidades compuestas por empresa; en descendientes con ownership derivado, imponer FK/consistencia de pertenencia transaccional al ancestro.
+- Para los 19 registros de prueba de DEV, no hacer backfill histórico: ejecutar solo la limpieza de fixtures comerciales cuando su alcance y dependencias estén inventariados y protegidos, con backup/restore comprobado y usuarios intactos. Los futuros datos reales deben tener owner server-side obligatorio desde su creación; ningún registro sin tenant puede exponerse a otra empresa.
+- Proteger lecturas (listas, detalles, agregados, reportes, búsquedas y exports), escrituras (POST/PUT/PATCH/DELETE), asociaciones por ID, borrado lógico, `ExecuteUpdate`, `FromSql`, `IgnoreQueryFilters`, streaming, archivos, jobs, webhooks, caché y el storefront **también sin JWT**. El tenant válido procede del servidor a partir de membresía activa y binding público de dominio/storefront verificable; nunca de un `EmpresaId` suministrado libremente.
+- Guardar y restaurar backup DEV **antes** de migrar o reparar filas; ensayar migración Oracle EF Core 10/MySQL 8.4.8 en base efímera, validar `has-pending-model-changes=0`, FKs y conteo de huérfanos/filas sin dueño. No introducir un nuevo provider ni actualizar Aiven.
+- Ejecutar pruebas multiempresa **A/B** reales: mismas claves SKU/RTN/folios permitidas por empresa; todos los CRUD; referencias ajenas vía URL, filtros, DTOs, cargas masivas y acceso directo; usuario con acceso a dos empresas que cambia de tenant; RBAC; exportación de PDF/Excel/ZIP; facturas y datos financieros; consulta anónima por dominios; jobs y caché. Rechazo 403/404 sin filtración de existencia.
+- Certificar exact-head DEV (backend, integración MySQL, migraciones, frontend, Playwright, auditoría, scope gate y recuperación de backup). **Solo entonces** retirar la cuarentena y considerar DEV listo. La promoción QA → PROD requiere decisión separada y permanece aplazada.
+
+## Criterio de cierre inequívoco
+
+**NO CERRADO** hasta que dos empresas simultáneas puedan usar productos, clientes, proveedores y operaciones independientes sobre una misma base, sin mezcla, sin bloqueos de cuarentena, y existan evidencia de migración, ownership, pruebas de seguridad y despliegue DEV real. CI verde de esta contención no equivale a certificación multiempresa.
+
+### Alcance y reversibilidad
+
+Cambio exclusivo en código `dev`, sin alterar esquema, migraciones, filas de Aiven, secretos, Cloudinary, Render, Vercel, QA ni PROD. Reversión por revert del PR en `dev` tras analizar la seguridad: **no** retirar el guard de producción si los datos no tienen ownership certificado.

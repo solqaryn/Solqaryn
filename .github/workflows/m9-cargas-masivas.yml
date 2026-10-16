@@ -20,6 +20,7 @@ on:
       - frontend/e2e/fase5-cargas-masivas.spec.ts
   pull_request:
     branches:
+      - dev
       - main
     paths:
       - .github/workflows/m9-cargas-masivas.yml
@@ -64,7 +65,7 @@ jobs:
     env:
       ASPNETCORE_ENVIRONMENT: Development
       PORT: '5005'
-      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_m9_e2e;User=root;Password=root;SslMode=None;AllowPublicKeyRetrieval=True;'
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_m9_e2e;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
       Database__ServerVersion: '8.4.0'
       Database__ApplyMigrationsOnStartup: 'true'
       Jwt__Secret: 'M9-E2E-Only-Secret-With-More-Than-32-Characters-2026'
@@ -112,6 +113,17 @@ jobs:
             --no-build \
             --filter "FullyQualifiedName~M9CargaMasivaProfesionalTests|FullyQualifiedName~CargaMasivaConcurrencyTests" \
             --logger "trx;LogFileName=m9-tests.trx"
+
+      # OracleBaseline adopta un esquema físico ya existente: nunca aplicar
+      # migraciones sobre MySQL vacío. Usar el bootstrap canónico y descartable.
+      - name: Crear baseline Oracle en MySQL efímero
+        working-directory: backend
+        env:
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
+        run: |
+          set -euo pipefail
+          dotnet run --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj \
+            --configuration Release --no-build --no-launch-profile
 
       - name: Iniciar API con MySQL descartable
         working-directory: backend
@@ -162,7 +174,26 @@ jobs:
               FROM `UsuarioEmpresas` ue
               WHERE ue.`UsuarioId`=u.`Id` AND ue.`EmpresaId`=1
             );
+          -- Plantilla XLSX Clientes trae "Sin clasificar". El seed global
+          -- con EmpresaId=NULL no es visible bajo el filtro RBAC del tenant.
+          -- Preparar sólo el default de la empresa 1 en esta DB descartable.
+          INSERT INTO `TipoClientes`
+            (`EmpresaId`,`Codigo`,`EsSistema`,`Nombre`,`NombreNormalizado`,`Descripcion`,
+             `ColorHex`,`Activo`,`Orden`,`EsPredeterminado`,`Eliminado`,
+             `FechaCreacion`,`FechaActualizacion`)
+          SELECT 1,'SIN_CLASIFICAR',TRUE,'Sin clasificar','SIN CLASIFICAR',
+                 'Cliente sin clasificar','#9E9E9E',TRUE,0,TRUE,FALSE,
+                 UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)
+          WHERE NOT EXISTS
+            (SELECT 1 FROM `TipoClientes`
+             WHERE `EmpresaId`=1 AND `Codigo`='SIN_CLASIFICAR');
           SQL
+
+          tipo_default_count="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_m9_e2e -Nse "SELECT COUNT(*) FROM TipoClientes WHERE EmpresaId=1 AND Codigo='SIN_CLASIFICAR' AND EsPredeterminado=TRUE AND Activo=TRUE AND Eliminado=FALSE;")"
+          if [[ "$tipo_default_count" != '1' ]]; then
+            echo "El tipo de cliente predeterminado E2E no pertenece a empresa 1: count=$tipo_default_count" >&2
+            exit 1
+          fi
 
           membership_count="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_m9_e2e -Nse "SELECT COUNT(*) FROM UsuarioEmpresas ue INNER JOIN Usuarios u ON u.Id=ue.UsuarioId INNER JOIN Empresas e ON e.Id=ue.EmpresaId WHERE u.NombreUsuario='e2e_admin' AND e.Id=1 AND e.Activa=TRUE AND ue.Activa=TRUE;")"
           if [[ "$membership_count" != '1' ]]; then
@@ -191,9 +222,13 @@ jobs:
           npm run build:prod
           npx playwright install --with-deps chromium
 
+      # PORT=5005 del job corresponde a la API. Angular lee PORT incluso
+      # si npm start recibe --port 4200: evitar colision sin cambiar la API.
       - name: Iniciar Angular
         working-directory: frontend
         shell: bash
+        env:
+          PORT: '4200'
         run: |
           set -euo pipefail
           nohup npm start -- --host 127.0.0.1 --port 4200 > m9-frontend.log 2>&1 &

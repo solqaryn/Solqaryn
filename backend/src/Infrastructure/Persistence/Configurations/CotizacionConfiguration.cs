@@ -16,6 +16,14 @@ public class CotizacionConfiguration : IEntityTypeConfiguration<Cotizacion>
                 $"`Estado` IN ({(int)EstadoCotizacion.Borrador}, {(int)EstadoCotizacion.Enviada}, {(int)EstadoCotizacion.Aceptada}, {(int)EstadoCotizacion.Rechazada}, {(int)EstadoCotizacion.Convertida})");
         });
 
+        builder.HasOne<Empresa>().WithMany().HasForeignKey(x => x.EmpresaId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("FK_Cotizaciones_Empresas_EmpresaId");
+        builder.HasIndex(x => new { x.EmpresaId, x.Id }).IsUnique()
+            .HasDatabaseName("UX_Cotizaciones_Empresa_Id");
+        builder.HasIndex(x => new { x.EmpresaId, x.ClienteId })
+            .HasDatabaseName("IX_Cotizaciones_Empresa_ClienteId");
+
         builder.Property(c => c.Estado).HasConversion<int>().IsRequired();
         builder.Property(c => c.ClienteNombreSnapshot).IsRequired().HasMaxLength(200);
         builder.Property(c => c.ClienteDocumentoSnapshot).HasMaxLength(50);

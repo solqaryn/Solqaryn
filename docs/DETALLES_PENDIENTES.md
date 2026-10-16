@@ -6,12 +6,12 @@ Este archivo es la fuente canónica de pendientes deliberadamente aplazados o de
 
 ## Estado resumido
 
-- DEV, QA y PROD están funcionalmente reconciliados y certificados sobre la infraestructura corporativa vigente.
+- DEV, QA y PROD tienen infraestructura corporativa configurada; la **promoción del HEAD modernizado DEV → QA → PROD sigue aplazada**. La certificación base no equivale a certificación exact-head de la promoción.
 - Render DEV/QA/PROD: contrato canónico **28/28 PASS**.
 - Aiven: bases y usuarios aislados por entorno.
 - Vercel -> API: binding fail-closed y smoke certificados por entorno.
 - Los seis puntos numerados de este archivo representan únicamente trabajo deliberadamente diferido o futuro. No son autorización para comprar, reactivar VAEP ni tocar el dominio.
-- La incidencia de descarga de imágenes individual y ZIP de DEV fue confirmada como resuelta por el propietario tras el PR #3569; la normalización física de locators históricos es trabajo técnico activo distinto del aplazamiento de estas decisiones. Su evidencia reside en `docs/CLOUDINARY_AISLAMIENTO.md`.
+- **Cloudinary DEV LISTO (2026-10-12):** 11/11 imágenes normalizadas, auditoría read-only con 0 referencias no canónicas/incorrectas, worker desactivado y aceptación manual del propietario de descargas individual/ZIP realizadas después de la operación. Evidencia en `docs/CLOUDINARY_AISLAMIENTO.md`.
 
 ---
 
@@ -125,13 +125,17 @@ Este archivo es la fuente canónica de pendientes deliberadamente aplazados o de
 
 ---
 
-## Estado de las imágenes históricas (trabajo activo, no aplazamiento)
+## Imágenes históricas Cloudinary DEV — LISTO (no pendiente)
 
-Auditoría exact-head DEV del 2026-10-12: 11 de 11 imágenes de producto almacenadas bajo folders no canónicos de DEV, sin referencias cruzadas en las superficies revisadas. Descargas individuales y ZIP funcionales según el propietario. La normalización física sigue pendiente de canal de escritura Cloudinary seguro + reconciliación con backup/rollback; detalle en `docs/CLOUDINARY_AISLAMIENTO.md`. Este punto no autoriza borrar activos ni tocar QA/PROD.
+El inventario previo encontró 11 imágenes de producto no canónicas. La normalización de 11/11 con validación de hashes y 0 originales eliminados fue ejecutada en Render DEV; MySQL confirmó `remaining=0` mediante auditoría independiente. El normalizador está `false` y Render DEV LIVE. El propietario confirmó la descarga individual y ZIP autenticados después de la normalización: **aceptación manual PASS**. Ver evidencias en `docs/CLOUDINARY_AISLAMIENTO.md`. No afecta QA/PROD.
+
+## Promoción modernizada DEV → QA → PROD — APLAZADA por instrucción del propietario
+
+La promoción permanece sin ejecutar: PR #3583 (`dev → qa`) y PR #3574 (`qa → main`) siguen en borrador. El propietario solicitó dejar esta actividad para después. No fusionar, desplegar ni certificar QA/PROD como parte del cierre Cloudinary; retomar con revisión y gates propios cuando vuelva a autorizarse.
 
 ## Dictamen de pendientes
 
-Con la reconciliación del 2026-10-12, **no existe otro pendiente deliberadamente aplazado conocido fuera de estos seis puntos** en las fuentes canónicas actuales de SOLQARYN.
+Los seis puntos numerados de este archivo y la promoción modernizada diferida mantienen su tratamiento. **La normalización y prueba individual/ZIP de las 11 imágenes Cloudinary DEV ya no son pendientes.**
 
 Esto no significa que el producto esté terminado: el punto 5 engloba el trabajo futuro normal del Plan Maestro/ERP. Los puntos 1-4 son decisiones operativas o de infraestructura diferidas explícitamente.
 

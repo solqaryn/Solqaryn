@@ -54,6 +54,16 @@ import { PerformanceBaselineService } from './core/performance/performance-basel
               }
             </span>
             <div class="user">
+              <a class="context-shortcut" routerLink="/plataforma" aria-label="Abrir consola global de SOLQARYN"
+                title="La consola global exige autoridad de plataforma verificada">
+                <span class="material-icons" aria-hidden="true">admin_panel_settings</span>
+                <span class="context-shortcut-text">Consola global</span>
+              </a>
+              <button class="context-shortcut" type="button" (click)="cambiarEmpresa()"
+                aria-label="Cambiar de empresa sin cerrar sesión" title="Cambiar empresa">
+                <span class="material-icons" aria-hidden="true">domain</span>
+                <span class="context-shortcut-text">Cambiar empresa</span>
+              </button>
               <div class="user-copy">
                 <span class="user-name">{{ auth.nombreCompleto() }}</span>
                 <span class="user-role">{{ auth.rol() }}</span>
@@ -172,8 +182,22 @@ export class AppComponent implements OnDestroy {
     if (window.innerWidth > 900 && this.sidebarAbierto) this.cerrarSidebar();
   }
 
+  cambiarEmpresa(): void {
+    // La solicitud local no concede autoridad. Para cambiar de contexto debe
+    // volver a validarse la nueva membresía en el servidor, sin cerrar JWT.
+    this.cerrarSidebar();
+    this.tenantContext.limpiar();
+    this.permisosRuntime.limpiar();
+    this.identidad.usarPlataforma();
+    void this.router.navigateByUrl('/login');
+  }
+
   logout(): void {
     this.cerrarSidebar();
+    // Evitar que una empresa solicitada por la cuenta anterior provoque
+    // revalidaciones automáticas al entrar con otra identidad.
+    this.tenantContext.limpiar();
+    this.permisosRuntime.limpiar();
     this.sessionActivity.cerrarManual();
   }
 

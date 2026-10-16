@@ -32,10 +32,13 @@ public class N49CAccountingPersistenceModelTests
 
         Assert.Equal("ConfiguracionesContables", entityType.GetTableName());
 
-        var index = entityType.GetIndexes().SingleOrDefault(i => i.Properties.Any(p => p.Name == "Evento"));
+        var index = entityType.GetIndexes().SingleOrDefault(i =>
+            i.Properties.Count == 1 && i.Properties[0].Name == "Evento");
         Assert.NotNull(index);
-        Assert.True(index.IsUnique);
+        Assert.False(index!.IsUnique);
         Assert.Equal("UX_ConfiguracionesContables_Evento", index.GetDatabaseName());
+        Assert.Contains(entityType.GetIndexes(), ix => ix.IsUnique &&
+            ix.Properties.Select(p => p.Name).SequenceEqual(new[] { "EmpresaId", "Evento" }));
 
         var activoProp = entityType.FindProperty("Activo");
         Assert.NotNull(activoProp);
@@ -58,9 +61,12 @@ public class N49CAccountingPersistenceModelTests
 
         Assert.Equal("PeriodosContables", entityType.GetTableName());
 
-        var uniqueIndex = entityType.GetIndexes().SingleOrDefault(i => i.IsUnique && i.Properties.Count == 2 && i.Properties.Any(p => p.Name == "FechaInicio") && i.Properties.Any(p => p.Name == "FechaFin"));
+        var uniqueIndex = entityType.GetIndexes().SingleOrDefault(i => i.IsUnique &&
+            i.Properties.Select(p => p.Name).SequenceEqual(
+                new[] { "EmpresaId", "FechaInicio", "FechaFin" }));
         Assert.NotNull(uniqueIndex);
-        Assert.Equal("UX_PeriodosContables_Rango", uniqueIndex.GetDatabaseName());
+        Assert.Contains(entityType.GetIndexes(), ix =>
+            ix.GetDatabaseName() == "UX_PeriodosContables_Rango" && !ix.IsUnique);
 
         var checks = entityType.GetCheckConstraints();
         Assert.Contains(checks, c => c.Name == "CK_PeriodosContables_Rango" && c.Sql == "`FechaFin` >= `FechaInicio`");
