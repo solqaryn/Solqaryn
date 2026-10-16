@@ -1,3 +1,12 @@
+## 2026-10-15 — Microfase 4 (primer changeset en validación): directorio global protegido en DEV
+
+- Dentro de SQ-030 / SQ-041 / SQ-050 / SQ-095: primera capacidad adicional al acceso global de solo lectura. `GET /plataforma/empresas` lista como máximo 50 identidades empresariales paginadas (Id, Nombre, Activa, recuento de membresías activas), incluidas empresas inactivas como VariStoreHN, **sin** consultar ventas, facturas, inventario ni archivos comerciales.
+- El middleware admite exclusivamente GET de ruta exacta; JWT y `IPlataformaScopeService.ObtenerActualAsync` validan rol global vigente desde MySQL en cada solicitud. Ningún administrador empresarial puede inferir autoridad por `EmpresaId`, claims, pertenencia o encabezados. Auditoría crítica con `EmpresaId=NULL` y `Cache-Control: private, no-store`; fallo cerrado ante pérdida de permiso o error de auditoría.
+- Angular `/plataforma` consulta el directorio y presenta empresas activas/inactivas; el contrato de respuesta rechaza payloads ambiguos o incorrectos. Se conserva la entrada global sin empresa activa y no se reutiliza `/empresas` del ERP.
+- Creación/edición, plan, módulos, invitaciones, membresías, asignación de roles y permisos y lifecycle completo **NO forman parte de este changeset inicial**. Las rutas de escritura no se abren y las flags `MultiEmpresa:CommercialIsolationCertified` / `MultiEmpresa:PlatformOnboardingEnabled` siguen OFF. Estado de la Microfase 4 general: `EN DESARROLLO`, NO `LISTO`.
+- Pruebas dirigidas: superadministrador con VariStoreHN inactiva, rechazo de administrador empresarial, paginación acotada, auditoría de plataforma, rutas vecinas y comerciales A/B cerradas, contrato Angular válido/inválido y 403. Se requieren CI exact-head, revisión y certificación global antes del merge.
+- Superficies: API/middleware + Angular/servicio + unitarios y documentación. Sin migración DDL, modificación de datos Aiven, permisos globales nuevos, secrets o despliegues QA/PROD. Rollback: revert del changeset, Microfase 3 preservada.
+
 ## 2026-10-15 — Microfase 3: puerta global de plataforma en frontend (candidato DEV)
 
 - La ruta Angular `/plataforma` utiliza `plataformaGuard` independiente de `authGuard` empresarial. Exige autenticación JWT vigente y **consulta nueva en cada navegación** de `GET /plataforma/sesion`; no acepta `EmpresaId`, roles JWT legacy, permisos empresariales ni cache client-side como concesión de autoridad.
