@@ -144,11 +144,33 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                 if (publicHostResolver?.IsEnabled == true &&
                     configPublica?.GetValue<bool>("PublicStore:RequireVerifiedProxyProof") == true)
                 {
-                    await RechazarAsync(httpContext);
-                    return;
+                    // Ventana de migración sin interrupción: sólo /tienda legacy,
+                    // empresa explícita y host upstream exacto, jamás el tenant
+                    // por X-Forwarded-Host, cookie o X-Empresa-Id. La prueba
+                    // firmada sigue siendo obligatoria para /tiendas/{clave}.
+                    var legacyHost = configPublica["PublicStore:LegacyUpstreamHost"];
+                    var legacyId = configPublica.GetValue<int>("PublicStore:LegacyRootEmpresaId");
+                    if (legacyId <= 0 || string.IsNullOrWhiteSpace(legacyHost) ||
+                        !string.Equals(httpContext.Request.Host.Host, legacyHost,
+                            StringComparison.OrdinalIgnoreCase) ||
+                        httpContext.Request.Host.Port is not null)
+                    {
+                        await RechazarAsync(httpContext);
+                        return;
+                    }
+                    empresaPublica = legacyId;
+                    httpContext.Response.OnStarting(() =>
+                    {
+                        httpContext.Response.Headers.CacheControl = "private, no-store, max-age=0";
+                        httpContext.Response.Headers.Remove("ETag");
+                        return Task.CompletedTask;
+                    });
                 }
-                // Compatibilidad anterior sin cambio hasta activar el binding.
-                empresaPublica = publicHostResolver?.ResolveEmpresaId(httpContext.Request.Host);
+                else
+                {
+                    // Compatibilidad original intacta mientras no haya opt-in.
+                    empresaPublica = publicHostResolver?.ResolveEmpresaId(httpContext.Request.Host);
+                }
             }
             if (empresaPublica is > 0)
             {
