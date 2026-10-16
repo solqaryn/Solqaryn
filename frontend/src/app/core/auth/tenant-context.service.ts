@@ -1,6 +1,6 @@
 import { Injectable, computed, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, catchError, tap, throwError } from 'rxjs';
+import { Observable, catchError, finalize, shareReplay, tap, throwError, timeout } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
 
@@ -28,6 +28,15 @@ export class TenantContextService {
 
   private readonly _empresaSolicitadaId = signal<number | null>(this.leerEmpresaSolicitada());
   private readonly _contextoVerificado = signal<TenantContextoVerificado | null>(null);
+  // La UI/login y los guards pueden verificar el mismo tenant simultáneamente.
+  // Compartir esa petición evita que una segunda selección borre un contexto
+  // que el servidor acaba de confirmar y provoque un bucle hacia /login.
+  private seleccionEnCurso: {
+    empresaId: number;
+    version: number;
+    solicitud: Observable<ApiResponse<TenantContextoVerificado>>;
+  } | null = null;
+  private versionSeleccion = 0;
 
   readonly empresaSolicitadaId = computed(() => this._empresaSolicitadaId());
   readonly contextoVerificado = computed(() => this._contextoVerificado());
@@ -43,34 +52,55 @@ export class TenantContextService {
       return throwError(() => new Error('El identificador de empresa no es válido.'));
     }
 
-    // Registrar la intención de selección no concede autoridad. El contexto
-    // verificado permanece vacío hasta recibir una respuesta server-side válida.
+    // Una única validación HTTP por selección: un segundo guard o el
+    // selector no puede invalidar la primera al intentar la misma empresa.
+    if (this.seleccionEnCurso?.empresaId === empresaId) {
+      return this.seleccionEnCurso.solicitud;
+    }
+
+    const version = ++this.versionSeleccion;
     this._empresaSolicitadaId.set(empresaId);
     this._contextoVerificado.set(null);
     localStorage.setItem(EMPRESA_SOLICITADA_KEY, String(empresaId));
 
-    return this.http
+    const solicitud = this.http
       .get<ApiResponse<TenantContextoVerificado>>(`${this.apiUrl}/${empresaId}`)
       .pipe(
+        // La recuperación nunca debe dejar «Verificando…» permanentemente.
+        // Timeout de UX, no una concesión de autoridad ni un reintento POST.
+        timeout({ first: 15_000 }),
         tap((respuesta) => {
-          const contexto = respuesta.success ? respuesta.data : null;
+          // Una respuesta de una empresa anterior no puede seleccionar ni
+          // limpiar el tenant actual mientras se cambia de contexto.
+          if (version !== this.versionSeleccion || this._empresaSolicitadaId() !== empresaId) {
+            throw new Error('La selección empresarial fue sustituida.');
+          }
+          const contexto = respuesta?.success === true ? respuesta.data : null;
           if (!this.esContextoCoincidente(contexto, empresaId)) {
-            this.limpiar();
             throw new Error('El servidor no confirmó un contexto tenant válido.');
           }
-
           this._contextoVerificado.set(contexto);
         }),
         catchError((error) => {
-          // 401/403, respuestas inválidas y fallos de transporte revocan cualquier
-          // selección/contexto local para evitar reutilización cross-tenant.
-          this.limpiar();
+          if (version === this.versionSeleccion) this.limpiar();
           return throwError(() => error);
-        })
+        }),
+        finalize(() => {
+          if (this.seleccionEnCurso?.version === version) {
+            this.seleccionEnCurso = null;
+          }
+        }),
+        shareReplay({ bufferSize: 1, refCount: true })
       );
+
+    this.seleccionEnCurso = { empresaId, version, solicitud };
+    return solicitud;
   }
 
   limpiar(): void {
+    // Invalida también respuestas HTTP que lleguen después de cerrar/salir.
+    this.versionSeleccion++;
+    this.seleccionEnCurso = null;
     this._empresaSolicitadaId.set(null);
     this._contextoVerificado.set(null);
     localStorage.removeItem(EMPRESA_SOLICITADA_KEY);
