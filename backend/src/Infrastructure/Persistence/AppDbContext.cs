@@ -454,6 +454,17 @@ public class AppDbContext : DbContext
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         base.OnModelCreating(modelBuilder);
 
+        // El modelo SQLite de pruebas no soporta collation MySQL; sólo
+        // MySQL impone comparación binaria en Host+StoreKey. SQL de migración
+        // preserva la misma collation en bases ya aprovisionadas.
+        if (Database.ProviderName?.Contains("MySql", StringComparison.OrdinalIgnoreCase) == true)
+        {
+            modelBuilder.Entity<PublicStoreBinding>().Property(x => x.Host)
+                .UseCollation("utf8mb4_bin");
+            modelBuilder.Entity<PublicStoreBinding>().Property(x => x.StoreKey)
+                .UseCollation("utf8mb4_bin");
+        }
+
         modelBuilder.HasAnnotation(RelationalAnnotationNames.MaxIdentifierLength, 64);
         CommercialTenantOwnershipGraphModel.Apply(modelBuilder);
         CommercialTenantRemainingModel.Apply(modelBuilder);
