@@ -1,5 +1,6 @@
 const https = require('node:https');
 const { resolveEnvironmentBinding } = require('../server/environment-binding');
+const { buildPublicStoreProxyContext } = require('../server/public-store-proxy-context');
 
 const HOP_BY_HOP_HEADERS = new Set(['connection','keep-alive','proxy-authenticate','proxy-authorization','te','trailer','transfer-encoding','upgrade']);
 const UPSTREAM_TIMEOUT_MS = 30000;
@@ -26,14 +27,23 @@ function requestBodyBuffer(req) {
   return Buffer.from(JSON.stringify(req.body));
 }
 
-function requestHeaders(req, environment, bodyBuffer) {
+function requestHeaders(req, environment, bodyBuffer, trustedPublicContext) {
   const headers = {};
   for (const [name, value] of Object.entries(req.headers || {})) {
     const lower = name.toLowerCase();
-    if (lower === 'host' || lower === 'content-length' || HOP_BY_HOP_HEADERS.has(lower) || value === undefined) continue;
+    // Ninguna cabecera pública proporcionada por el cliente se reenvía.
+    // El único proof válido lo genera este proxy server-side.
+    if (lower === 'host' || lower === 'content-length' || lower === 'x-forwarded-host' ||
+        lower === 'x-original-host' || lower.startsWith('x-solqaryn-store-') ||
+        // La comprobación pública de una tienda nunca necesita credenciales,
+        // cookies ni selector ERP; no reenviar secretos de otras empresas.
+        (trustedPublicContext?.scoped && ['x-empresa-id', 'authorization', 'cookie',
+          'x-storefront-session'].includes(lower)) ||
+        HOP_BY_HOP_HEADERS.has(lower) || value === undefined) continue;
     headers[name] = value;
   }
   headers['x-solqaryn-environment'] = environment;
+  Object.assign(headers, trustedPublicContext?.headers || {});
   if (bodyBuffer) headers['content-length'] = String(bodyBuffer.length);
   return headers;
 }
@@ -66,7 +76,13 @@ module.exports = function handler(req, res) {
   const path = normalizePath(req.query?.path);
   if (!path || path === 'backend-proxy') { fail(res, 400, 'Ruta API inválida.'); return; }
 
-  const target = new URL(`/${path}`, `${binding.apiUpstream}/`);
+  const trustedStore = buildPublicStoreProxyContext(req, path, process.env, binding);
+  if (trustedStore.error) {
+    fail(res, trustedStore.status, 'Vinculación de tienda pública no disponible.', trustedStore.error);
+    return;
+  }
+
+  const target = new URL(trustedStore.path, `${binding.apiUpstream}/`);
   for (const [key, raw] of Object.entries(req.query || {})) {
     if (key === 'path') continue;
     for (const value of (Array.isArray(raw) ? raw : [raw])) {
@@ -75,7 +91,7 @@ module.exports = function handler(req, res) {
   }
 
   const bodyBuffer = requestBodyBuffer(req);
-  const upstreamReq = https.request(target, { method: req.method, headers: requestHeaders(req, binding.environment, bodyBuffer) }, upstreamRes => {
+  const upstreamReq = https.request(target, { method: req.method, headers: requestHeaders(req, binding.environment, bodyBuffer, trustedStore) }, upstreamRes => {
     res.statusCode = upstreamRes.statusCode || 502;
     responseHeaders(upstreamRes, res, binding.environment);
     upstreamRes.pipe(res);

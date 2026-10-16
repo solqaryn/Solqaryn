@@ -68,7 +68,10 @@ ok("responses arrive out of order" in empresa_spec and "Respuesta Obsoleta" in e
 # order data remain server-protected by the separate X-Storefront-Session boundary.
 # modulo+accion are mandatory. The small balanced-brace extractor handles
 # multiline route objects without trying to execute Angular source.
-public_paths = {"", "login", "tienda", "tienda/productos", "tienda/ofertas", "tienda/producto/:slug", "tienda/categorias", "tienda/categoria/:slug", "tienda/carrito", "tienda/checkout", "tienda/cuenta", "tienda/pedido/:id"}
+# La puerta /tiendas/:storeKey es pública por diseño; nunca renderiza datos
+# privados, y exige prueba servidor HMAC + allowlist + estado vigente de MySQL.
+# El backend sigue siendo la autoridad, no un authGuard ERP.
+public_paths = {"", "login", "tiendas/:storeKey", "tienda", "tienda/productos", "tienda/ofertas", "tienda/producto/:slug", "tienda/categorias", "tienda/categoria/:slug", "tienda/carrito", "tienda/checkout", "tienda/cuenta", "tienda/pedido/:id"}
 route_files = [ROOT / "frontend/src/app/app.routes.ts"] + sorted((ROOT / "frontend/src/app").rglob("*.routes.ts"))
 route_findings: list[str] = []
 

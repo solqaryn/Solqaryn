@@ -8,6 +8,9 @@ import { PEDIDOS_VENTA_ROUTES } from './features/pedidos-venta/pedidos-venta.rou
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
+  // Entrada segura multiempresa. El storefront completo queda cerrado hasta
+  // certificar identidad, carrito, cuenta y checkout por tienda (microfases 2/3).
+  { path: 'tiendas/:storeKey', loadComponent: () => import('./features/storefront/tienda-vinculacion.component').then(m => m.TiendaVinculacionComponent) },
   { path: 'tienda/productos', data: { preloadAfterRender: true }, loadComponent: () => import('./features/storefront/storefront-productos.component').then(m => m.StorefrontProductosComponent) },
   { path: 'tienda/ofertas', data: { soloOfertas: true }, loadComponent: () => import('./features/storefront/storefront-productos.component').then(m => m.StorefrontProductosComponent) },
   { path: 'tienda/producto/:slug', data: { preloadAfterRender: true }, loadComponent: () => import('./features/storefront/storefront-producto.component').then(m => m.StorefrontProductoComponent) },

@@ -28,9 +28,12 @@ function harness({ validBinding = true, body = { nombreUsuario: 'privado', passw
   };
   const module = { exports: {} };
   vm.runInNewContext(proxySource, {
-    module, Buffer, URL,
+    module, Buffer, URL, process: { env: {} },
     require(name) {
       if (name === 'node:https') return fakeHttps;
+      if (name === '../server/public-store-proxy-context') {
+        return { buildPublicStoreProxyContext: (_req, path) => ({ path: '/' + path, headers: {} }) };
+      }
       if (name === '../server/environment-binding') {
         return {
           resolveEnvironmentBinding: () => {

@@ -111,10 +111,88 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
             "/tienda", StringComparison.OrdinalIgnoreCase);
         if (rutaTienda)
         {
-            // Un mapping de Host solo tiene autoridad si procede del registro
-            // explícito server-side. Ni X-Forwarded-Host ni X-Empresa-Id
-            // pueden proporcionar el EmpresaId de una tienda.
-            var empresaPublica = publicHostResolver?.ResolveEmpresaId(httpContext.Request.Host);
+            // Un proxy Vercel autorizado prueba el origen público y, si
+            // procede, la clave de /tiendas/{storeKey}. Solo esa prueba puede
+            // aportar el Host original: Request.Host en Render es el host de la API.
+            // No aceptar X-Forwarded-Host, X-Empresa-Id ni rutas inventadas.
+            var configPublica = httpContext.RequestServices?.GetService<IConfiguration>();
+            int? empresaPublica;
+            var tieneProof = PublicStoreProxyProof.HasProofHeaders(httpContext.Request);
+            // /tienda/binding es un endpoint nuevo de certificación por firma,
+            // no parte de la tienda monoempresa legacy. Nunca debe exponer la
+            // identidad empresarial usando el fallback sin prueba, ni siquiera
+            // antes de activar las banderas multitienda.
+            if (!tieneProof &&
+                EsRutaExacta(httpContext.Request.Path, "/tienda/binding"))
+            {
+                await RechazarAsync(httpContext);
+                return;
+            }
+            if (tieneProof)
+            {
+                if (publicHostResolver?.IsEnabled != true || configPublica is null ||
+                    !PublicStoreProxyProof.TryReadVerified(httpContext.Request, configPublica,
+                        out var verifiedHost, out var verifiedStoreKey))
+                {
+                    await RechazarAsync(httpContext);
+                    return;
+                }
+                // Defensa adicional a Render: aunque alguien consiguiera una
+                // prueba HMAC válida no puede utilizar rutas comerciales para
+                // una tienda secundaria durante esta microfase read-only.
+                if (verifiedStoreKey is not null &&
+                    (!(HttpMethods.IsGet(httpContext.Request.Method) ||
+                       HttpMethods.IsHead(httpContext.Request.Method)) ||
+                     !EsRutaExacta(httpContext.Request.Path, "/tienda/binding")))
+                {
+                    await RechazarAsync(httpContext);
+                    return;
+                }
+                empresaPublica = publicHostResolver.ResolveEmpresaId(verifiedHost, verifiedStoreKey);
+                // Mientras se certifica la identidad/caché por tienda, no permitir
+                // almacenar el mismo path interno /tienda en un CDN compartido.
+                httpContext.Response.OnStarting(() =>
+                {
+                    httpContext.Response.Headers.CacheControl = "private, no-store, max-age=0";
+                    httpContext.Response.Headers.Remove("ETag");
+                    return Task.CompletedTask;
+                });
+            }
+            else
+            {
+                // Opt-in de seguridad para múltiples tiendas. Con prueba obligatoria
+                // no existe fallback a Host Render ni al modo una sola empresa.
+                if (publicHostResolver?.IsEnabled == true &&
+                    configPublica?.GetValue<bool>("PublicStore:RequireVerifiedProxyProof") == true)
+                {
+                    // Ventana de migración sin interrupción: sólo /tienda legacy,
+                    // empresa explícita y host upstream exacto, jamás el tenant
+                    // por X-Forwarded-Host, cookie o X-Empresa-Id. La prueba
+                    // firmada sigue siendo obligatoria para /tiendas/{clave}.
+                    var legacyHost = configPublica["PublicStore:LegacyUpstreamHost"];
+                    var legacyId = configPublica.GetValue<int>("PublicStore:LegacyRootEmpresaId");
+                    if (legacyId <= 0 || string.IsNullOrWhiteSpace(legacyHost) ||
+                        !string.Equals(httpContext.Request.Host.Host, legacyHost,
+                            StringComparison.OrdinalIgnoreCase) ||
+                        httpContext.Request.Host.Port is not null)
+                    {
+                        await RechazarAsync(httpContext);
+                        return;
+                    }
+                    empresaPublica = legacyId;
+                    httpContext.Response.OnStarting(() =>
+                    {
+                        httpContext.Response.Headers.CacheControl = "private, no-store, max-age=0";
+                        httpContext.Response.Headers.Remove("ETag");
+                        return Task.CompletedTask;
+                    });
+                }
+                else
+                {
+                    // Compatibilidad original intacta mientras no haya opt-in.
+                    empresaPublica = publicHostResolver?.ResolveEmpresaId(httpContext.Request.Host);
+                }
+            }
             if (empresaPublica is > 0)
             {
                 // Comprueba el propietario en MySQL y el estado vigente EN CADA

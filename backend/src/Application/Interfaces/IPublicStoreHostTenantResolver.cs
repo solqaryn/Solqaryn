@@ -11,4 +11,8 @@ public interface IPublicStoreHostTenantResolver
 {
     bool IsEnabled { get; }
     int? ResolveEmpresaId(HostString requestHost);
+    // En un origen compartido, la ruta pública /tiendas/{storeKey} identifica
+    // una entrada aprobada adicional. Nunca aceptar storeKey desde una cabecera
+    // sin comprobación criptográfica previa en el middleware.
+    int? ResolveEmpresaId(HostString requestHost, string? storeKey);
 }
