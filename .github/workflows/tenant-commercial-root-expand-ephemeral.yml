@@ -116,7 +116,7 @@ jobs:
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013121500_CommercialTenantRootExpand';")" = 1
           # Incluye migración P4 de cuentas públicas por empresa, sin atribuir
           # ni perder registros históricos de prueba de los módulos P3.
-          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory;")" = 12
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory;")" = 13
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261014112000_PublicStoreAccountEmailPerEmpresa';")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013181500_CommercialTenantScopedRootIndexes';")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013190000_CommercialTenantInvoiceDocuments';")" = 1
@@ -127,6 +127,10 @@ jobs:
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013230000_CommercialTenantRemainingModules';")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013231000_CommercialTenantRemainingScopedFks';")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261014130000_CommercialTenantNaturalKeysPostStorefront';")" = 1
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261016095000_PublicStoreBindingsPersistence';")" = 1
+          # Nueva tabla tenant-safe: UUID no es autoridad; host/clave global deben ser únicos.
+          test "$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='PublicStoreBindings';")" = 1
+          test "$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='PublicStoreBindings' AND INDEX_NAME='UX_PublicStoreBindings_Host_Key' AND SEQ_IN_INDEX=1 AND COLUMN_NAME='Host' AND NON_UNIQUE=0;")" = 1
           test "$(q "SELECT COUNT(DISTINCT CONCAT(TABLE_NAME, '/', INDEX_NAME)) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND NON_UNIQUE=0 AND SEQ_IN_INDEX=1 AND COLUMN_NAME='EmpresaId' AND INDEX_NAME IN ('UX_DevolucionesCliente_Empresa_IdempotencyKey','UX_DevolucionesProveedor_Empresa_IdempotencyKey','UX_DevolucionesProveedor_Empresa_NumeroDevolucion','UX_OrdenesCompra_Empresa_IdempotencyKey','UX_OrdenesCompra_Empresa_NumeroOrden','UX_RecepcionesCompra_Empresa_IdempotencyKey','UX_RecepcionesCompra_Empresa_NumeroRecepcion','UX_ReservasInventario_Empresa_Numero','UX_SeriesInventario_Empresa_NumeroSerie','UX_SolicitudesCompra_Empresa_NumeroSolicitud','UX_Sucursales_Empresa_CodigoActivoUnico','UX_Roles_Empresa_NombreNormalizado');")" = 12
           test "$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND NON_UNIQUE=0 AND INDEX_NAME IN ('UX_DevolucionesCliente_IdempotencyKey','UX_DevolucionesProveedor_IdempotencyKey','UX_DevolucionesProveedor_NumeroDevolucion','UX_OrdenesCompra_IdempotencyKey','UX_OrdenesCompra_NumeroOrden','UX_RecepcionesCompra_IdempotencyKey','UX_RecepcionesCompra_NumeroRecepcion','UX_ReservasInventario_Numero','UX_SeriesInventario_NumeroSerie','UX_SolicitudesCompra_NumeroSolicitud','UX_Sucursales_Codigo_Activo','IX_Roles_NombreNormalizado');")" = 0
           test "$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='Roles' AND INDEX_NAME='UX_Roles_NombreNormalizadoGlobalUnico' AND NON_UNIQUE=0;")" = 1
