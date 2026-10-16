@@ -127,6 +127,17 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                     await RechazarAsync(httpContext);
                     return;
                 }
+                // Defensa adicional a Render: aunque alguien consiguiera una
+                // prueba HMAC válida no puede utilizar rutas comerciales para
+                // una tienda secundaria durante esta microfase read-only.
+                if (verifiedStoreKey is not null &&
+                    (!(HttpMethods.IsGet(httpContext.Request.Method) ||
+                       HttpMethods.IsHead(httpContext.Request.Method)) ||
+                     !EsRutaExacta(httpContext.Request.Path, "/tienda/binding")))
+                {
+                    await RechazarAsync(httpContext);
+                    return;
+                }
                 empresaPublica = publicHostResolver.ResolveEmpresaId(verifiedHost, verifiedStoreKey);
                 // Mientras se certifica la identidad/caché por tienda, no permitir
                 // almacenar el mismo path interno /tienda en un CDN compartido.
