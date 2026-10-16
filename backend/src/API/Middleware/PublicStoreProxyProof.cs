@@ -63,8 +63,19 @@ public static class PublicStoreProxyProof
         var canonical = $"v1\n{at}\n{request.Method.ToUpperInvariant()}\n{request.Path.Value}\n{host}\n{key}";
         var expected = HMACSHA256.HashData(
             Encoding.UTF8.GetBytes(secret), Encoding.UTF8.GetBytes(canonical));
-        Span<byte> provided = stackalloc byte[32];
-        if (!Convert.TryFromHexString(proof, provided, out var written) || written != 32 ||
+        // Convert.TryFromHexString no existe en el TFM de API.
+        // El formato hex ya se validó; FromHexString mantiene la comparación
+        // criptográfica en tiempo fijo y falla cerrada ante formato inválido.
+        byte[] provided;
+        try
+        {
+            provided = Convert.FromHexString(proof);
+        }
+        catch (FormatException)
+        {
+            return false;
+        }
+        if (provided.Length != expected.Length ||
             !CryptographicOperations.FixedTimeEquals(provided, expected))
             return false;
 
