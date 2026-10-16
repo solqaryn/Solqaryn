@@ -28,7 +28,16 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   // fallan cerrado si la membresía/rol no corresponde al usuario autenticado.
   const headers: Record<string, string> = {};
   if (token) headers['Authorization'] = `Bearer ${token}`;
-  if (token && tenantSolicitado) headers[TENANT_HEADER] = tenantSolicitado;
+
+  // El control-plane de SOLQARYN (y el propio login) jamás debe arrastrar
+  // la selección de la última empresa. El JWT identifica a la persona;
+  // la autoridad global se comprueba desde MySQL en el endpoint protegido.
+  const apiBase = environment.apiUrl.replace(/\\/+$/, '');
+  const identidadGlobal = req.url.startsWith(`${apiBase}/plataforma/`) ||
+    req.url.startsWith(`${apiBase}/auth/`);
+  if (token && tenantSolicitado && !identidadGlobal) {
+    headers[TENANT_HEADER] = tenantSolicitado;
+  }
 
   const authReq = Object.keys(headers).length > 0
     ? req.clone({ setHeaders: headers })
