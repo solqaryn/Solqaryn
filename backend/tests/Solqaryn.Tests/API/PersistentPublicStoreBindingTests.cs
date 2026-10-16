@@ -42,6 +42,7 @@ public sealed class PersistentPublicStoreBindingTests
         var resolver = new ConfiguredPublicStoreHostTenantResolver(config);
         var services = new ServiceCollection().AddSingleton<IConfiguration>(config).BuildServiceProvider();
         var selected = new List<int>();
+        var replay = new TestPublicStoreProofReplayStore();
         var middleware = new UnscopedCommercialTenantGuardMiddleware(ctx => {
             var tenant = VerifiedPublicStoreTenant.Resolve(ctx);
             Assert.True(tenant is > 0);
@@ -61,17 +62,19 @@ public sealed class PersistentPublicStoreBindingTests
             if (signed)
             {
                 var at = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                var canonical = $"v1\n{at}\nGET\n{path}\n{host}\n{key}";
+                var nonce = Guid.NewGuid().ToString("N");
+                var canonical = $"v2\n{at}\nGET\n{path}\n{host}\n{key}\n{nonce}";
                 ctx.Request.Headers[PublicStoreProxyProof.OriginHeader] = host;
                 ctx.Request.Headers[PublicStoreProxyProof.KeyHeader] = key;
                 ctx.Request.Headers[PublicStoreProxyProof.AtHeader] = at.ToString();
+                ctx.Request.Headers[PublicStoreProxyProof.NonceHeader] = nonce;
                 ctx.Request.Headers[PublicStoreProxyProof.ProofHeader] =
                     Convert.ToHexString(HMACSHA256.HashData(
                         Encoding.UTF8.GetBytes(Secret), Encoding.UTF8.GetBytes(canonical)))
                         .ToLowerInvariant();
             }
             ctx.Response.Body = new MemoryStream();
-            await middleware.InvokeAsync(ctx, db, resolver);
+            await middleware.InvokeAsync(ctx, db, resolver, replay);
             return ctx.Response.StatusCode;
         }
 

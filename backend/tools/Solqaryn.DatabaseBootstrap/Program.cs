@@ -20,7 +20,8 @@ await db.Database.OpenConnectionAsync();
 // Fail closed: no marcar una migración como adoptada si el ensamblado
 // canónico EF10 ni siquiera la contiene (no aceptar historia falsa).
 var known = db.Database.GetMigrations().ToArray();
-if (!known.Contains("20261016095000_PublicStoreBindingsPersistence", StringComparer.Ordinal))
+if (!known.Contains("20261016095000_PublicStoreBindingsPersistence", StringComparer.Ordinal) ||
+    !known.Contains("20261016200000_PublicStoreProofReplayGuard", StringComparer.Ordinal))
     throw new InvalidOperationException("La migración persistente de tiendas no está registrada en EF Oracle.");
 
 static async Task<long> ScalarLongAsync(AppDbContext db, string sql)
@@ -120,6 +121,11 @@ var beforeAdoption = await ScalarLongAsync(
 var publicStoreTableBeforeAdoption = await ScalarLongAsync(db, """
     SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'PublicStoreBindings'
+      AND TABLE_TYPE = 'BASE TABLE';
+    """);
+var replayTableBeforeAdoption = await ScalarLongAsync(db, """
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'PublicStoreProofReplays'
       AND TABLE_TYPE = 'BASE TABLE';
     """);
 
@@ -271,11 +277,8 @@ if (mode == "fresh")
         """);
     await db.Database.CloseConnectionAsync();
 }
-else
-{
-    // En esquemas persistentes, aplicar el expand EF después de backup verificado.
-    await db.Database.MigrateAsync();
-}
+// Both fresh and persistent schemas now apply the one new ledger migration.
+await db.Database.MigrateAsync();
 await db.Database.OpenConnectionAsync();
 
 var afterAdoption = await ScalarLongAsync(
@@ -290,7 +293,8 @@ var afterAdoption = await ScalarLongAsync(
 
 // Persisted legacy schemas gain exactly one new table through an EF migration;
 // fresh EnsureCreated has already included it and only adopts history.
-var expectedAfterAdoption = beforeAdoption + (publicStoreTableBeforeAdoption == 0 ? 1 : 0);
+var expectedAfterAdoption = beforeAdoption + (publicStoreTableBeforeAdoption == 0 ? 1 : 0)
+    + (replayTableBeforeAdoption == 0 ? 1 : 0);
 if (afterAdoption != expectedAfterAdoption)
     throw new InvalidOperationException($"Oracle bootstrap changed unexpected table count: before={beforeAdoption}, after={afterAdoption}, expected={expectedAfterAdoption}.");
 

@@ -28,7 +28,8 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
     }
 
     public async Task InvokeAsync(HttpContext httpContext, AppDbContext db,
-        IPublicStoreHostTenantResolver? publicHostResolver = null)
+        IPublicStoreHostTenantResolver? publicHostResolver = null,
+        IPublicStoreProofReplayStore? replayStore = null)
     {
         if (EsRutaDeSeguridadPermitida(httpContext.Request))
         {
@@ -147,7 +148,12 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
             {
                 if (publicHostResolver?.IsEnabled != true || configPublica is null ||
                     !PublicStoreProxyProof.TryReadVerified(httpContext.Request, configPublica,
-                        out var verifiedHost, out var verifiedStoreKey))
+                        out var verifiedHost, out var verifiedStoreKey) ||
+                    // Atomic MySQL signature consumption protects all API replicas.
+                    replayStore is null ||
+                    !await replayStore.TryConsumeAsync(
+                        httpContext.Request.Headers[PublicStoreProxyProof.ProofHeader].ToString(),
+                        httpContext.RequestAborted))
                 {
                     await RechazarAsync(httpContext);
                     return;

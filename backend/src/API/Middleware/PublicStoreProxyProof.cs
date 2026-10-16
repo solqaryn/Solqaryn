@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 namespace Solqaryn.API.Middleware;
 
 /// <summary>
-/// Attestation v1 del proxy del proyecto Vercel autorizado.
+/// Attestation v2 del proxy del proyecto Vercel autorizado.
 /// Jamás usa X-Forwarded-Host, X-Empresa-Id, Origin o Referer como autoridad.
 /// No concede permisos privados: sólo identifica la tienda pública para que
 /// el resolver la contraste con la allowlist y MySQL compruebe su vigencia.
@@ -17,6 +17,7 @@ public static class PublicStoreProxyProof
     public const string OriginHeader = "X-Solqaryn-Store-Origin";
     public const string KeyHeader = "X-Solqaryn-Store-Key";
     public const string AtHeader = "X-Solqaryn-Store-At";
+    public const string NonceHeader = "X-Solqaryn-Store-Nonce";
     public const string ProofHeader = "X-Solqaryn-Store-Proof";
     private const long MaxClockSkewSeconds = 60;
 
@@ -24,6 +25,7 @@ public static class PublicStoreProxyProof
         request.Headers.ContainsKey(OriginHeader) ||
         request.Headers.ContainsKey(KeyHeader) ||
         request.Headers.ContainsKey(AtHeader) ||
+        request.Headers.ContainsKey(NonceHeader) ||
         request.Headers.ContainsKey(ProofHeader);
 
     public static bool TryReadVerified(HttpRequest request, IConfiguration config,
@@ -38,6 +40,7 @@ public static class PublicStoreProxyProof
         if (!Single(request, OriginHeader, out var host) ||
             !Single(request, KeyHeader, out var key) ||
             !Single(request, AtHeader, out var at) ||
+            !Single(request, NonceHeader, out var nonce) ||
             !Single(request, ProofHeader, out var proof))
             return false;
 
@@ -45,7 +48,9 @@ public static class PublicStoreProxyProof
         if (string.IsNullOrEmpty(secret) || Encoding.UTF8.GetByteCount(secret) < 32 ||
             host.Length is < 4 or > 253 || host != host.ToLowerInvariant() ||
             host.Contains(':') || host.Contains('/') || host.Contains('\\') ||
-            !host.Contains('.') || proof.Length != 64 ||
+            !host.Contains('.') || nonce.Length != 32 ||
+            nonce.Any(c => !(c is >= '0' and <= '9' or >= 'a' and <= 'f')) ||
+            proof.Length != 64 ||
             proof.Any(c => !(c is >= '0' and <= '9' or >= 'a' and <= 'f')) ||
             !long.TryParse(at, NumberStyles.None, CultureInfo.InvariantCulture, out var timestamp))
             return false;
@@ -60,7 +65,7 @@ public static class PublicStoreProxyProof
             key.Any(c => !(c is >= 'a' and <= 'z' or >= '0' and <= '9' or '-'))))
             return false;
 
-        var canonical = $"v1\n{at}\n{request.Method.ToUpperInvariant()}\n{request.Path.Value}\n{host}\n{key}";
+        var canonical = $"v2\n{at}\n{request.Method.ToUpperInvariant()}\n{request.Path.Value}\n{host}\n{key}\n{nonce}";
         var expected = HMACSHA256.HashData(
             Encoding.UTF8.GetBytes(secret), Encoding.UTF8.GetBytes(canonical));
         // Convert.TryFromHexString no existe en el TFM de API.

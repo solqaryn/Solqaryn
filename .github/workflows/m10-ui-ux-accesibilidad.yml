@@ -108,7 +108,7 @@ jobs:
           dotnet build Solqaryn.sln --configuration Release --no-restore
 
       # OracleBaseline sobre una base vacía sólo comprueba metadatos;
-      # materializar el esquema completo (137 tablas) en MySQL descartable
+      # materializar el modelo EF (137 tablas) y el ledger anti-replay (1) en MySQL descartable
       # con el bootstrap EF10 canónico ANTES del seeding de la API.
       - name: Inicializar esquema EF10 Oracle en MySQL descartable
         working-directory: backend
@@ -122,7 +122,7 @@ jobs:
             --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj \
             --configuration Release --no-build \
             | tee "$RUNNER_TEMP/m10-oracle-fresh-bootstrap.log"
-          grep -Fx 'SOLQARYN_ORACLE_BOOTSTRAP=PASS mode=fresh tables=137 pending=0' \
+          grep -Fx 'SOLQARYN_ORACLE_BOOTSTRAP=PASS mode=fresh tables=138 pending=0' \
             "$RUNNER_TEMP/m10-oracle-fresh-bootstrap.log"
           test "$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -uroot \
             solqaryn_m10_e2e --batch --skip-column-names \
@@ -130,6 +130,9 @@ jobs:
           test "$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -uroot \
             solqaryn_m10_e2e --batch --skip-column-names \
             -e "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261016095000_PublicStoreBindingsPersistence';")" = 1
+          test "$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -uroot \
+            solqaryn_m10_e2e --batch --skip-column-names \
+            -e "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261016200000_PublicStoreProofReplayGuard';")" = 1
           echo "M10_MYSQL_EF10_FRESH_BOOTSTRAP=PASS"
 
       - name: Iniciar API con MySQL descartable

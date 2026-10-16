@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging.Abstractions;
 using MySql.Data.MySqlClient;
 using MySql.EntityFrameworkCore.Extensions;
 using Solqaryn.API.Middleware;
@@ -138,6 +139,9 @@ public sealed class PublicStoreHostMySqlIsolationIntegrationTests
             var provider = new ServiceCollection()
                 .AddSingleton<IConfiguration>(signedConfig).BuildServiceProvider();
             var signedResolver = new ConfiguredPublicStoreHostTenantResolver(signedConfig);
+            var replay = new MySqlPublicStoreProofReplayStore(
+                dbPublico, NullLogger<MySqlPublicStoreProofReplayStore>.Instance);
+            string? firstAcceptedProof = null;
 
             async Task<int> SignedRequestAsync(string key, string origin = "solqaryn-dev.vercel.app",
                 bool sign = true, string path = "/tienda/binding")
@@ -152,21 +156,40 @@ public sealed class PublicStoreHostMySqlIsolationIntegrationTests
                 if (sign)
                 {
                     var at = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                    var canonical = $"v1\n{at}\nGET\n{path}\n{origin}\n{key}";
+                    var nonce = Guid.NewGuid().ToString("N");
+                    var canonical = $"v2\n{at}\nGET\n{path}\n{origin}\n{key}\n{nonce}";
                     var proof = Convert.ToHexString(HMACSHA256.HashData(
                         Encoding.UTF8.GetBytes(proxySecret), Encoding.UTF8.GetBytes(canonical)))
                         .ToLowerInvariant();
                     http.Request.Headers[PublicStoreProxyProof.OriginHeader] = origin;
                     http.Request.Headers[PublicStoreProxyProof.KeyHeader] = key;
                     http.Request.Headers[PublicStoreProxyProof.AtHeader] = at.ToString();
+                    http.Request.Headers[PublicStoreProxyProof.NonceHeader] = nonce;
                     http.Request.Headers[PublicStoreProxyProof.ProofHeader] = proof;
+                    firstAcceptedProof ??= proof;
                 }
                 accessor.HttpContext = http;
-                await middleware.InvokeAsync(http, dbPublico, signedResolver);
+                await middleware.InvokeAsync(http, dbPublico, signedResolver, replay);
                 return http.Response.StatusCode;
             }
 
             Assert.Equal(204, await SignedRequestAsync("tienda-a"));
+            await using (var independentDb = new AppDbContext(options))
+            {
+                var independentReplica = new MySqlPublicStoreProofReplayStore(
+                    independentDb, NullLogger<MySqlPublicStoreProofReplayStore>.Instance);
+                Assert.False(await independentReplica.TryConsumeAsync(firstAcceptedProof!, CancellationToken.None));
+            }
+            // Shared database: exactly one competing write succeeds.
+            var contestedProof = Convert.ToHexString(RandomNumberGenerator.GetBytes(32)).ToLowerInvariant();
+            var parallel = await Task.WhenAll(Enumerable.Range(0, 8).Select(async _ =>
+            {
+                await using var connectionDb = new AppDbContext(options);
+                var instance = new MySqlPublicStoreProofReplayStore(
+                    connectionDb, NullLogger<MySqlPublicStoreProofReplayStore>.Instance);
+                return await instance.TryConsumeAsync(contestedProof, CancellationToken.None);
+            }));
+            Assert.Single(parallel.Where(accepted => accepted));
             Assert.Equal(204, await SignedRequestAsync("tienda-b"));
             Assert.Equal(503, await SignedRequestAsync("tienda-a", sign: false));
             Assert.Equal(503, await SignedRequestAsync("tienda-falsa"));
