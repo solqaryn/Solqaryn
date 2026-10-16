@@ -1,4 +1,7 @@
 using Microsoft.AspNetCore.Http;
+using System.Security.Cryptography;
+using System.Text;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using MySql.Data.MySqlClient;
@@ -105,6 +108,71 @@ public sealed class PublicStoreHostMySqlIsolationIntegrationTests
             Assert.Equal(503, await SolicitarAsync("unbound.shop.example.test", "/tienda/categorias"));
             Assert.Equal(503, await SolicitarAsync("a.shop.example.test", "/reportes/ventas"));
             Assert.Equal(new[] { (idA, categoriaA), (idB, categoriaB) }, leidas.ToArray());
+
+            // Misma API/host Render; selección de tienda A/B exclusivamente
+            // por prueba HMAC que trae Host público y StoreKey allowlisted.
+            const string proxySecret = "TEST_ONLY_SIGNED_PUBLIC_STORE_BINDING_MYSQL_2026";
+            var signedConfig = new ConfigurationBuilder().AddInMemoryCollection(
+                new Dictionary<string, string?>
+                {
+                    ["PublicStore:EnableMultiEmpresaBinding"] = "true",
+                    ["PublicStore:RequireVerifiedProxyProof"] = "true",
+                    ["PublicStore:ProxySigningKey"] = proxySecret,
+                    ["PublicStore:HostBindings:0:Host"] = "solqaryn-dev.vercel.app",
+                    ["PublicStore:HostBindings:0:StoreKey"] = "tienda-a",
+                    ["PublicStore:HostBindings:0:EmpresaId"] = idA.ToString(),
+                    ["PublicStore:HostBindings:1:Host"] = "solqaryn-dev.vercel.app",
+                    ["PublicStore:HostBindings:1:StoreKey"] = "tienda-b",
+                    ["PublicStore:HostBindings:1:EmpresaId"] = idB.ToString()
+                }).Build();
+            var provider = new ServiceCollection()
+                .AddSingleton<IConfiguration>(signedConfig).BuildServiceProvider();
+            var signedResolver = new ConfiguredPublicStoreHostTenantResolver(signedConfig);
+
+            async Task<int> SignedRequestAsync(string key, string origin = "solqaryn-dev.vercel.app",
+                bool sign = true)
+            {
+                var http = new DefaultHttpContext { RequestServices = provider };
+                http.Request.Method = "GET";
+                http.Request.Path = "/tienda/categorias";
+                http.Request.Host = new HostString("solqaryn-api-dev-fxx8.onrender.com");
+                http.Response.Body = new MemoryStream();
+                http.Request.Headers["X-Empresa-Id"] = idB.ToString();
+                http.Request.Headers["X-Forwarded-Host"] = "evil.example.test";
+                if (sign)
+                {
+                    var at = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                    var canonical = $"v1\\n{at}\\nGET\\n/tienda/categorias\\n{origin}\\n{key}";
+                    var proof = Convert.ToHexString(HMACSHA256.HashData(
+                        Encoding.UTF8.GetBytes(proxySecret), Encoding.UTF8.GetBytes(canonical)))
+                        .ToLowerInvariant();
+                    http.Request.Headers[PublicStoreProxyProof.OriginHeader] = origin;
+                    http.Request.Headers[PublicStoreProxyProof.KeyHeader] = key;
+                    http.Request.Headers[PublicStoreProxyProof.AtHeader] = at.ToString();
+                    http.Request.Headers[PublicStoreProxyProof.ProofHeader] = proof;
+                }
+                accessor.HttpContext = http;
+                await middleware.InvokeAsync(http, dbPublico, signedResolver);
+                return http.Response.StatusCode;
+            }
+
+            Assert.Equal(204, await SignedRequestAsync("tienda-a"));
+            Assert.Equal(204, await SignedRequestAsync("tienda-b"));
+            Assert.Equal(503, await SignedRequestAsync("tienda-a", sign: false));
+            Assert.Equal(503, await SignedRequestAsync("tienda-falsa"));
+            Assert.Equal(503, await SignedRequestAsync("tienda-a", origin: "evil.example.test"));
+            Assert.Equal(new[] {
+                (idA, categoriaA), (idB, categoriaB),
+                (idA, categoriaA), (idB, categoriaB) }, leidas.ToArray());
+
+            await using (var suspension = new AppDbContext(options))
+            {
+                var company = await suspension.Set<Empresa>().SingleAsync(e => e.Id == idB);
+                company.Desactivar();
+                await suspension.SaveChangesAsync();
+            }
+            Assert.Equal(503, await SignedRequestAsync("tienda-b"));
+            Assert.Equal(204, await SignedRequestAsync("tienda-a"));
         }
         finally
         {
