@@ -1,6 +1,14 @@
-## 2026-10-15 — Microfase 4 (primer changeset en validación): directorio global protegido en DEV
+## 2026-10-15 — Microfase 4 MVP comercial inicial (no ejecutar Plan Maestro)
 
-- Dentro de SQ-030 / SQ-041 / SQ-050 / SQ-095: primera capacidad adicional al acceso global de solo lectura. `GET /plataforma/empresas` lista como máximo 50 identidades empresariales paginadas (Id, Nombre, Activa, recuento de membresías activas), incluidas empresas inactivas como VariStoreHN, **sin** consultar ventas, facturas, inventario ni archivos comerciales.
+- Alcance autorizado: una versión pequeña, comercial y segura. No se está implementando el Plan Maestro final; sus códigos y arquitectura objetivo son contexto futuro.
+- Microfase 4 MVP: administración global básica de empresas, usuarios administradores y membresías/roles empresariales; autorización JWT server-side, MySQL, auditoría y aislamiento A/B, incluida VariStoreHN inactiva; DEV exclusivamente.
+- Fuera del MVP: planes, billing, módulos/entitlements avanzados, dominios, storage/data placement, lifecycle SaaS completo y automatizaciones finales.
+- Este primer incremento solo aporta directorio global paginado de lectura; faltan operaciones básicas de alta y administración. No declarar LISTO hasta completar y certificar el alcance MVP.
+- Mantener desactivadas las flags de onboarding y certificación comercial hasta autorización y prueba adecuada. No tocar QA/PROD. Rollback mediante revert de cambios de esta rama.
+
+## 2026-10-15 — Directorio global protegido como primer incremento MVP
+
+- Solo para la versión comercial inicial: primera capacidad adicional al acceso global de solo lectura. `GET /plataforma/empresas` lista como máximo 50 identidades empresariales paginadas (Id, Nombre, Activa, recuento de membresías activas), incluidas empresas inactivas como VariStoreHN, **sin** consultar ventas, facturas, inventario ni archivos comerciales.
 - El middleware admite exclusivamente GET de ruta exacta; JWT y `IPlataformaScopeService.ObtenerActualAsync` validan rol global vigente desde MySQL en cada solicitud. Ningún administrador empresarial puede inferir autoridad por `EmpresaId`, claims, pertenencia o encabezados. Auditoría crítica con `EmpresaId=NULL` y `Cache-Control: private, no-store`; fallo cerrado ante pérdida de permiso o error de auditoría.
 - Angular `/plataforma` consulta el directorio y presenta empresas activas/inactivas; el contrato de respuesta rechaza payloads ambiguos o incorrectos. Se conserva la entrada global sin empresa activa y no se reutiliza `/empresas` del ERP.
 - Creación/edición, plan, módulos, invitaciones, membresías, asignación de roles y permisos y lifecycle completo **NO forman parte de este changeset inicial**. Las rutas de escritura no se abren y las flags `MultiEmpresa:CommercialIsolationCertified` / `MultiEmpresa:PlatformOnboardingEnabled` siguen OFF. Estado de la Microfase 4 general: `EN DESARROLLO`, NO `LISTO`.
