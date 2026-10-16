@@ -170,6 +170,33 @@ public sealed class PlataformaEmpresasOnboardingSecurityTests
     }
 
     [Fact]
+    public async Task BorradorSinActivacionComercialFijaOwnerOriginalYSeAudita()
+    {
+        var fixture = await PrepararAsync(false, false, true);
+        await using var db = fixture.Db;
+        var original = new Empresa("Empresa original");
+        db.Set<Empresa>().Add(original);
+        await db.SaveChangesAsync();
+
+        var created = await fixture.Controller.CrearBorrador(
+            new BorradorEmpresaPlataformaRequest { Nombre = "Nuevo comercio" },
+            CancellationToken.None);
+        Assert.IsType<CreatedResult>(created);
+        var companies = await db.Set<Empresa>().IgnoreQueryFilters()
+            .OrderBy(x => x.Id).ToListAsync();
+        Assert.Equal(2, companies.Count);
+        Assert.True(companies[0].Activa);
+        Assert.False(companies[1].Activa);
+        Assert.Equal("Nuevo comercio", companies[1].Nombre);
+        var pinned = Assert.Single(await db.PublicStoreBindings.ToListAsync());
+        Assert.Equal("solqaryn-api-dev-fxx8.onrender.com", pinned.Host);
+        Assert.Equal(string.Empty, pinned.StoreKey);
+        Assert.Equal(original.Id, pinned.EmpresaId);
+        Assert.True(pinned.Activa);
+        Assert.Single(await db.Set<RegistroAuditoria>().ToListAsync());
+    }
+
+    [Fact]
     public async Task MiddlewareSoloDejaPasarRutaDePlataformaExactaConDobleGateYJwt()
     {
         var fixture = await PrepararAsync(true, true, true);
@@ -272,7 +299,8 @@ public sealed class PlataformaEmpresasOnboardingSecurityTests
             new Dictionary<string, string?>
             {
                 ["MultiEmpresa:PlatformOnboardingEnabled"] = onboarding.ToString(),
-                ["MultiEmpresa:CommercialIsolationCertified"] = aislamiento.ToString()
+                ["MultiEmpresa:CommercialIsolationCertified"] = aislamiento.ToString(),
+                ["PublicStore:LegacyUpstreamHost"] = "solqaryn-api-dev-fxx8.onrender.com"
             }).Build();
         var current = new Mock<ICurrentUserService>();
         current.SetupGet(x => x.EstaAutenticado).Returns(currentUserValid);
