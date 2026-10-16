@@ -69,7 +69,7 @@ public sealed class PublicStoreProxyBindingSecurityTests
         async Task<int> RequestAsync(string routeKey, string? signedKey = null,
             string signedHost = publicHost, bool includeProof = true,
             bool spoofedHeaders = false, long skew = 0, string method = "GET",
-            string path = "/tienda/binding")
+            string? signedMethod = null, string path = "/tienda/binding")
         {
             var http = new DefaultHttpContext { RequestServices = provider };
             http.Request.Method = method;
@@ -84,7 +84,7 @@ public sealed class PublicStoreProxyBindingSecurityTests
                 http.Request.Headers[PublicStoreProxyProof.KeyHeader] = routeKey;
                 http.Request.Headers[PublicStoreProxyProof.AtHeader] = at.ToString();
                 http.Request.Headers[PublicStoreProxyProof.ProofHeader] =
-                    Firmar(at, method, path, signedHost, key);
+                    Firmar(at, signedMethod ?? method, path, signedHost, key);
             }
             if (spoofedHeaders)
             {
@@ -109,7 +109,7 @@ public sealed class PublicStoreProxyBindingSecurityTests
         Assert.Equal(503, await RequestAsync("comercio-a", signedHost: "evil.example.test"));
         Assert.Equal(503, await RequestAsync("comercio-a", skew: -120));
         Assert.Equal(503, await RequestAsync("comercio-a", skew: 120));
-        Assert.Equal(503, await RequestAsync("comercio-a", method: "POST"));
+        Assert.Equal(503, await RequestAsync("comercio-a", method: "POST", signedMethod: "GET"));
         Assert.Equal(3, selected.Count);
 
         b.Desactivar();
