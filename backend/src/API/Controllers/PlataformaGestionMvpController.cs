@@ -132,12 +132,23 @@ public sealed class PlataformaGestionMvpController : ControllerBase
             .Where(u => u.NombreUsuario == nombre && !u.Eliminado)
             .Select(u => new { id = u.Id, nombreUsuario = u.NombreUsuario,
                 nombreCompleto = u.NombreCompleto, activo = u.Activo,
-                bloqueado = u.Bloqueado })
+                bloqueado = u.Bloqueado, creadoPor = u.CreadoPorUsuarioId })
             .FirstOrDefaultAsync(cancellationToken);
+        var pendiente = usuario is not null &&
+            !usuario.activo && !usuario.bloqueado &&
+            usuario.creadoPor == actor.UsuarioId &&
+            !await _db.Set<UsuarioEmpresa>().IgnoreQueryFilters()
+                .AnyAsync(m => m.UsuarioId == usuario.id, cancellationToken) &&
+            !await _db.Set<UsuarioRolPlataforma>().IgnoreQueryFilters()
+                .AnyAsync(g => g.UsuarioId == usuario.id, cancellationToken);
         Registrar(actor, nameof(Usuario), usuario?.id, null,
             AccionPermiso.ConsultarHistorial, "Búsqueda exacta de identidad empresarial.");
         await _db.SaveChangesAsync(cancellationToken);
-        return Ok(ApiResponse<object>.Ok(usuario));
+        object? resultado = usuario is null ? null : new {
+            usuario.id, usuario.nombreUsuario, usuario.nombreCompleto,
+            usuario.activo, usuario.bloqueado, pendienteAsignacion = pendiente
+        };
+        return Ok(ApiResponse<object?>.Ok(resultado));
     }
 
     [HttpGet("empresas/{empresaId:int}/membresias")]
@@ -202,12 +213,15 @@ public sealed class PlataformaGestionMvpController : ControllerBase
             NombreUsuario = nombre, NombreCompleto = completo,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(password, workFactor: 12),
             RolId = rolBase,
-            Activo = true, CreadoPorUsuarioId = actor.UsuarioId
+            // Una cuenta sin tenant NO puede iniciar sesión, aunque el JWT legacy
+            // use un rol empresarial. Se activa solo dentro de la primera
+            // asignación transaccional a una empresa autorizada.
+            Activo = false, CreadoPorUsuarioId = actor.UsuarioId
         };
         _db.Usuarios.Add(nuevo);
         await _db.SaveChangesAsync(cancellationToken);
         Registrar(actor, nameof(Usuario), nuevo.Id, null,
-            AccionPermiso.Crear, "Creación de identidad sin privilegios globales ni empresa asignada.");
+            AccionPermiso.Crear, "Identidad temporalmente inactiva hasta asignación empresarial verificada.");
         await _db.SaveChangesAsync(cancellationToken);
         if (tx is not null) await tx.CommitAsync(cancellationToken);
         return Created("/plataforma/gestion/usuarios/" + nuevo.Id,
@@ -227,10 +241,21 @@ public sealed class PlataformaGestionMvpController : ControllerBase
             return NotFound(ApiResponse<object>.Fail("Empresa no encontrada."));
         var rol = await RolEmpresarialAsync(dto.RolId, empresaId, cancellationToken);
         if (rol is null) return BadRequest(ApiResponse<object>.Fail("Rol fuera del ámbito de esta empresa."));
-        var usuario = await _db.Usuarios.IgnoreQueryFilters().AsNoTracking()
+        // La cuenta creada por plataforma permanece INACTIVA hasta la primera
+        // membresía. No reactivar otras cuentas suspendidas ni cuentas globales.
+        var usuario = await _db.Usuarios.IgnoreQueryFilters()
             .SingleOrDefaultAsync(u => u.Id == dto.UsuarioId &&
-                u.Activo && !u.Bloqueado && !u.Eliminado, cancellationToken);
-        if (usuario is null) return BadRequest(ApiResponse<object>.Fail("Usuario inactivo o inexistente."));
+                !u.Bloqueado && !u.Eliminado, cancellationToken);
+        if (usuario is null)
+            return BadRequest(ApiResponse<object>.Fail("Usuario bloqueado o inexistente."));
+        var tieneMembresias = await _db.Set<UsuarioEmpresa>().IgnoreQueryFilters().AsNoTracking()
+            .AnyAsync(m => m.UsuarioId == usuario.Id, cancellationToken);
+        var tieneGrantGlobal = await _db.Set<UsuarioRolPlataforma>().IgnoreQueryFilters()
+            .AsNoTracking().AnyAsync(g => g.UsuarioId == usuario.Id, cancellationToken);
+        var pendiente = !usuario.Activo && !tieneMembresias && !tieneGrantGlobal &&
+                        usuario.CreadoPorUsuarioId == actor.UsuarioId;
+        if (!usuario.Activo && !pendiente)
+            return BadRequest(ApiResponse<object>.Fail("La cuenta está suspendida y no puede asignarse."));
         if (await _db.Set<UsuarioEmpresa>().IgnoreQueryFilters().AsNoTracking()
                 .AnyAsync(m => m.EmpresaId == empresaId && m.UsuarioId == dto.UsuarioId,
                     cancellationToken))
@@ -239,6 +264,12 @@ public sealed class PlataformaGestionMvpController : ControllerBase
         await using var tx = _db.Database.IsRelational()
             ? await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken)
             : null;
+        if (pendiente)
+        {
+            usuario.Activo = true;
+            usuario.ActualizadoPorUsuarioId = actor.UsuarioId;
+            usuario.FechaActualizacion = DateTime.UtcNow;
+        }
         _db.Set<UsuarioEmpresa>().Add(new UsuarioEmpresa(usuario.Id, empresaId, rol.Id) {
             CreadoPorUsuarioId = actor.UsuarioId, CreadoPorNombreUsuario = actor.NombreUsuario
         });
