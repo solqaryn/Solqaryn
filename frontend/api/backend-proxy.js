@@ -72,7 +72,7 @@ module.exports = function handler(req, res) {
   const path = normalizePath(req.query?.path);
   if (!path || path === 'backend-proxy') { fail(res, 400, 'Ruta API inválida.'); return; }
 
-  const trustedStore = buildPublicStoreProxyContext(req, path);
+  const trustedStore = buildPublicStoreProxyContext(req, path, process.env, binding);
   if (trustedStore.error) {
     fail(res, trustedStore.status, 'Vinculación de tienda pública no disponible.', trustedStore.error);
     return;
