@@ -19,6 +19,56 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                 .HasAnnotation("ProductVersion", "10.0.12")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
+            modelBuilder.Entity("Solqaryn.Domain.Entities.PublicStoreBinding", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("EmpresaId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Host")
+                        .IsRequired()
+                        .HasMaxLength(253)
+                        .UseCollation("utf8mb4_bin")
+                        .HasColumnType("varchar(253)");
+
+                    b.Property<string>("StoreKey")
+                        .IsRequired()
+                        .HasMaxLength(48)
+                        .UseCollation("utf8mb4_bin")
+                        .HasColumnType("varchar(48)");
+
+                    b.Property<bool>("Activa")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false);
+
+                    b.Property<DateTime>("FechaCreacionUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("FechaActualizacionUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId", "Activa")
+                        .HasDatabaseName("IX_PublicStoreBindings_Empresa_Activa");
+
+                    b.HasIndex("Host", "StoreKey")
+                        .IsUnique()
+                        .HasDatabaseName("UX_PublicStoreBindings_Host_Key");
+
+                    b.ToTable("PublicStoreBindings", (string)null);
+
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Solqaryn.Domain.Entities.AjusteInventario", b =>
                 {
                     b.Property<int>("Id")
