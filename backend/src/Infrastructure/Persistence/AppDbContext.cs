@@ -54,6 +54,7 @@ public class AppDbContext : DbContext
     public DbSet<TipoCliente> TipoClientes => Set<TipoCliente>();
     public DbSet<Usuario> Usuarios => Set<Usuario>();
     public DbSet<UsuarioEmpresa> UsuarioEmpresas => Set<UsuarioEmpresa>();
+    public DbSet<PublicStoreBinding> PublicStoreBindings => Set<PublicStoreBinding>();
     public DbSet<UsuarioRolPlataforma> UsuarioRolesPlataforma => Set<UsuarioRolPlataforma>();
     public DbSet<SecuenciaDocumento> SecuenciasDocumento => Set<SecuenciaDocumento>();
     public DbSet<RolPermiso> RolPermisos => Set<RolPermiso>();
