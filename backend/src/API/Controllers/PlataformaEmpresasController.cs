@@ -36,6 +36,81 @@ public sealed class PlataformaEmpresasController : ControllerBase
         _plataforma = plataforma;
     }
 
+    /// <summary>
+    /// Catálogo global mínimo; NO lee datos comerciales ni confiere contexto tenant.
+    /// Los datos de empresas inactivas son visibles sólo con rol global vigente.
+    /// </summary>
+    [HttpGet]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    public async Task<IActionResult> Listar(
+        [FromQuery] int pagina = 1,
+        [FromQuery] int tamano = 25,
+        CancellationToken cancellationToken = default)
+    {
+        Response.Headers.CacheControl = "private, no-store, max-age=0";
+        if (User.Identity?.IsAuthenticated != true ||
+            !_currentUser.EstaAutenticado || _currentUser.UsuarioId is not > 0)
+            return Forbid();
+        var actor = await _plataforma.ObtenerActualAsync(cancellationToken);
+        if (actor is null) return Forbid();
+        if (pagina is < 1 or > 100000 || tamano is < 1 or > 50)
+            return BadRequest(ApiResponse<object>.Fail("Paginación fuera de límites."));
+
+        var empresas = _db.Set<Empresa>().IgnoreQueryFilters().AsNoTracking();
+        var total = await empresas.CountAsync(cancellationToken);
+        var rows = await empresas.OrderBy(e => e.Id)
+            .Skip((pagina - 1) * tamano).Take(tamano)
+            .Select(e => new { e.Id, e.Nombre, e.Activa })
+            .ToArrayAsync(cancellationToken);
+
+        var ids = rows.Select(e => e.Id).ToArray();
+        // El recuento nunca incluye membresías suspendidas ni cuentas
+        // bloqueadas/inactivas; no consulta ni publica datos comerciales.
+        var membresias = await (
+            from m in _db.Set<UsuarioEmpresa>().IgnoreQueryFilters().AsNoTracking()
+            join usuario in _db.Usuarios.IgnoreQueryFilters().AsNoTracking()
+                on m.UsuarioId equals usuario.Id
+            where ids.Contains(m.EmpresaId) && m.Activa &&
+                  usuario.Activo && !usuario.Bloqueado && !usuario.Eliminado
+            group m by m.EmpresaId into g
+            select new { EmpresaId = g.Key, Total = g.Count() }
+        ).ToArrayAsync(cancellationToken);
+        var totals = membresias.ToDictionary(x => x.EmpresaId, x => x.Total);
+
+        // Registrar únicamente ids/counts; no volcar PII o contenido de otros tenants.
+        _db.Set<RegistroAuditoria>().Add(new RegistroAuditoria
+        {
+            UsuarioId = actor.UsuarioId,
+            NombreUsuario = actor.NombreUsuario,
+            EmpresaId = null,
+            AmbitoAutoridad = AmbitoAutorizacion.Plataforma,
+            OrigenAutorizacion = OrigenAutorizacion.RolPlataforma,
+            Modulo = ModuloSistema.Configuracion,
+            Accion = AccionPermiso.ConsultarHistorial,
+            Entidad = nameof(Empresa),
+            Descripcion = "Consulta global paginada del directorio de empresas.",
+            CorrelationId = HttpContext.TraceIdentifier,
+            Resultado = "Exito"
+        });
+        await _db.SaveChangesAsync(cancellationToken);
+
+        return Ok(ApiResponse<object>.Ok(new
+        {
+            items = rows.Select(e => new
+            {
+                id = e.Id,
+                nombre = e.Nombre,
+                activa = e.Activa,
+                usuariosActivos = totals.GetValueOrDefault(e.Id)
+            }),
+            pagina,
+            tamano,
+            total,
+            puedeCrear = _configuration.GetValue<bool>("MultiEmpresa:CommercialIsolationCertified") &&
+                         _configuration.GetValue<bool>("MultiEmpresa:PlatformOnboardingEnabled")
+        }, "Directorio global de empresas consultado."));
+    }
+
     [HttpPost("alta-controlada")]
     public async Task<IActionResult> AltaControlada(
         [FromBody] AltaEmpresaPlataformaRequest dto,
@@ -68,13 +143,22 @@ public sealed class PlataformaEmpresasController : ControllerBase
             dto!.AdministradorUsuarioId <= 0)
             return BadRequest(ApiResponse<object>.Fail("Nombre o usuario administrador inválido."));
 
-        var administradorActivo = await _db.Usuarios.IgnoreQueryFilters()
-            .AsNoTracking()
-            .AnyAsync(u => u.Id == dto.AdministradorUsuarioId &&
-                           u.Activo && !u.Bloqueado && !u.Eliminado,
+        // Se admite la identidad PENDIENTE creada por el mismo operador global
+        // solo si nunca recibió membresías ni grants globales. Permanece inactiva
+        // hasta el commit atómico de empresa+membresía+auditoría.
+        var administrador = await _db.Usuarios.IgnoreQueryFilters()
+            .SingleOrDefaultAsync(u => u.Id == dto.AdministradorUsuarioId,
                 cancellationToken);
-        if (!administradorActivo)
+        if (administrador is null || administrador.Bloqueado || administrador.Eliminado)
             return BadRequest(ApiResponse<object>.Fail("El administrador solicitado no está habilitado."));
+        var pendiente = !administrador.Activo &&
+            administrador.CreadoPorUsuarioId == actorId &&
+            !await _db.Set<UsuarioEmpresa>().IgnoreQueryFilters().AsNoTracking()
+                .AnyAsync(m => m.UsuarioId == administrador.Id, cancellationToken) &&
+            !await _db.Set<UsuarioRolPlataforma>().IgnoreQueryFilters().AsNoTracking()
+                .AnyAsync(g => g.UsuarioId == administrador.Id, cancellationToken);
+        if (!administrador.Activo && !pendiente)
+            return BadRequest(ApiResponse<object>.Fail("La cuenta del administrador está suspendida."));
 
         // Sólo un rol ADMIN de plantilla empresarial. Un rol de Plataforma
         // nunca se asigna como rol de una membresía UsuarioEmpresa.
@@ -100,6 +184,13 @@ public sealed class PlataformaEmpresasController : ControllerBase
         await using var transaction = _db.Database.IsRelational()
             ? await _db.Database.BeginTransactionAsync(cancellationToken)
             : null;
+
+        if (pendiente)
+        {
+            administrador.Activo = true;
+            administrador.ActualizadoPorUsuarioId = actorId;
+            administrador.FechaActualizacion = DateTime.UtcNow;
+        }
 
         var empresa = new Empresa(nombre)
         {
