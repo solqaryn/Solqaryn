@@ -113,7 +113,22 @@ for path in route_files:
         route_path = path_match.group(1)
         if route_path in public_paths or route_path == "**" or route_path == "":
             continue
-        guarded = "authGuard" in block or "permisoGuard" in block
+        # El control plane no requiere EmpresaId y por ello NO puede utilizar
+        # authGuard del ERP. Excepción única con pruebas de autoridad server-side.
+        plataforma_guard = read("frontend/src/app/core/guards/plataforma.guard.ts")
+        plataforma_service = read("frontend/src/app/core/auth/plataforma-sesion.service.ts")
+        control_plane_guardado = (
+            path == ROOT / "frontend/src/app/app.routes.ts"
+            and route_path == "plataforma"
+            and re.search(r"canActivate\s*:\s*\[\s*plataformaGuard\s*\]", block) is not None
+            and "if (!auth.isAuthenticated())" in plataforma_guard
+            and "return plataforma.obtener().pipe(" in plataforma_guard
+            and "return this.http.get<ApiResponse<PlataformaSesion>>(this.url)" in plataforma_service
+            and "dato?.ambito !== 'Plataforma'" in plataforma_service
+            and "dato?.esAdministrador !== true" in plataforma_service
+            and "catchError(" in plataforma_guard
+        )
+        guarded = "authGuard" in block or "permisoGuard" in block or control_plane_guardado
         if not guarded:
             route_findings.append(f"UNGUARDED:{path.relative_to(ROOT)}:{route_path}")
         if "permisoGuard" in block and not (re.search(r"modulo\s*:", block) and re.search(r"accion\s*:", block)):
