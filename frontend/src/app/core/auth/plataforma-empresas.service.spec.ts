@@ -15,7 +15,7 @@ describe('Microfase 4 — directorio global de empresas', () => {
   });
   afterEach(() => http.verify());
 
-  it('admite VARISTOREHN inactiva como metadato sin permisos de operación', () => {
+  it('admite EMPRESA_A_INACTIVA inactiva como metadato sin permisos de operación', () => {
     let activa: boolean | undefined;
     let habilitada: boolean | undefined;
     servicio.listar().subscribe(d => {
@@ -27,7 +27,7 @@ describe('Microfase 4 — directorio global de empresas', () => {
     expect(request.request.params.get('pagina')).toBe('1');
     expect(request.request.params.get('tamano')).toBe('25');
     request.flush({ success: true, data: {
-      items: [{ id: 1, nombre: 'VariStoreHN', activa: false, usuariosActivos: 0 }],
+      items: [{ id: 1, nombre: 'Empresa A inactiva', activa: false, usuariosActivos: 0 }],
       pagina: 1, tamano: 25, total: 1, puedeCrear: false
     } });
     expect(activa).toBe(false);
