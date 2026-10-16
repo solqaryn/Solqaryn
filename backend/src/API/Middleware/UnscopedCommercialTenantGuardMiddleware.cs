@@ -55,6 +55,20 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
             return;
         }
 
+        // Gestión de identidad estricta de plataforma. Nunca se libera el
+        // resto de la API comercial; MVC exige JWT y grant global vigente.
+        // Los verbos y los segmentos numéricos son una allowlist exacta.
+        if (EsRutaGestionBasicaPlataforma(httpContext.Request))
+        {
+            if (httpContext.User.Identity?.IsAuthenticated == true)
+            {
+                await _next(httpContext);
+                return;
+            }
+            await RechazarAsync(httpContext);
+            return;
+        }
+
         // Alta de plataforma: excepción de ruta estricta, NO autoridad.
         // JWT y rol PLATAFORMA se vuelven a verificar en el controlador contra MySQL.
         // Dos flags independientes deben estar activados expresamente; ninguna
@@ -494,6 +508,47 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         TenantPermissionContext.MarkAuthorizedEmpresaId(http, empresaId);
         await _next(http);
         return true;
+    }
+
+    private static bool EsRutaGestionBasicaPlataforma(HttpRequest request)
+    {
+        var s = request.Path.Value?.Split('/', StringSplitOptions.None);
+        if (s is null || s.Length < 4 || s[0] != "" ||
+            !s[1].Equals("plataforma", StringComparison.OrdinalIgnoreCase) ||
+            !s[2].Equals("gestion", StringComparison.OrdinalIgnoreCase))
+            return false;
+        static bool Igual(string a, string b) =>
+            a.Equals(b, StringComparison.OrdinalIgnoreCase);
+        static bool IdPositivo(string v) =>
+            v.Length > 0 && v.All(c => c is >= '0' and <= '9') &&
+            int.TryParse(v, out var id) && id > 0;
+
+        if (s.Length == 4)
+        {
+            if (HttpMethods.IsGet(request.Method) && Igual(s[3], "roles")) return true;
+            if (HttpMethods.IsPost(request.Method) && Igual(s[3], "usuarios")) return true;
+        }
+        if (s.Length == 5 && HttpMethods.IsGet(request.Method) &&
+            Igual(s[3], "usuarios") && Igual(s[4], "buscar"))
+            return true;
+
+        if (s.Length >= 6 && Igual(s[3], "empresas") && IdPositivo(s[4]))
+        {
+            if (s.Length == 6)
+            {
+                if (Igual(s[5], "membresias") &&
+                    (HttpMethods.IsGet(request.Method) || HttpMethods.IsPost(request.Method)))
+                    return true;
+                if (HttpMethods.IsPut(request.Method) &&
+                    (Igual(s[5], "nombre") || Igual(s[5], "estado")))
+                    return true;
+            }
+            if (s.Length == 8 && HttpMethods.IsPut(request.Method) &&
+                Igual(s[5], "membresias") && IdPositivo(s[6]) &&
+                (Igual(s[7], "rol") || Igual(s[7], "estado")))
+                return true;
+        }
+        return false;
     }
 
     private static bool EsRutaDeSeguridadPermitida(HttpRequest request)
