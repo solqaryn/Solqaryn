@@ -241,26 +241,38 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                 return;
             }
 
-            // Compatibilidad segura cuando se crean borradores INACTIVOS:
-            // exactamente una empresa activa conserva /tienda. Nunca elegir
-            // la primera empresa arbitrariamente ni permitir fallback si dos
-            // empresas están activas. Las rutas privadas siguen en cuarentena.
+            // Antes de existir una segunda empresa se conserva la tienda
+            // monoempresa original. Con 2+ empresas no es seguro elegir una
+            // por orden/estado: exigir propietario LEGACY fijado por plataforma
+            // antes del primer borrador, jamás reasignarlo automáticamente.
             if (publicHostResolver?.IsEnabled == true)
             {
                 await RechazarAsync(httpContext);
                 return;
             }
-            var unicasActivas = await db.Set<Empresa>()
-                .IgnoreQueryFilters().AsNoTracking()
-                .Where(e => e.Activa).OrderBy(e => e.Id)
-                .Select(e => e.Id).Take(2).ToArrayAsync(httpContext.RequestAborted);
-            if (unicasActivas.Length != 1)
+            int? legacyId;
+            if (empresas.Length == 1)
+            {
+                legacyId = empresas[0].Activa ? empresas[0].Id : null;
+            }
+            else
+            {
+                legacyId = await db.PublicStoreBindings.AsNoTracking()
+                    .Where(x => x.Host == httpContext.Request.Host.Host &&
+                                x.StoreKey == "" && x.Activa)
+                    .Select(x => (int?)x.EmpresaId)
+                    .SingleOrDefaultAsync(httpContext.RequestAborted);
+            }
+            if (legacyId is not > 0 ||
+                !await db.Set<Empresa>().IgnoreQueryFilters().AsNoTracking()
+                    .AnyAsync(e => e.Id == legacyId && e.Activa,
+                        httpContext.RequestAborted))
             {
                 await RechazarAsync(httpContext);
                 return;
             }
             httpContext.Items[VerifiedPublicStoreTenant.AuthorizedEmpresaIdItemKey] =
-                unicasActivas[0];
+                legacyId.Value;
             await _next(httpContext);
             return;
         }
