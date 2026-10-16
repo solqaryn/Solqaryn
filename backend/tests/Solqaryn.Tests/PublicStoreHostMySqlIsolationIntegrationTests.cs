@@ -79,13 +79,23 @@ public sealed class PublicStoreHostMySqlIsolationIntegrationTests
             await using var dbPublico = new AppDbContext(options,
                 tenantHttpContextAccessor: accessor);
             var leidas = new List<(int TenantId, int CategoriaId)>();
+            var vinculadas = new List<int>();
             var middleware = new UnscopedCommercialTenantGuardMiddleware(async context =>
             {
                 var tenant = VerifiedPublicStoreTenant.Resolve(context);
                 Assert.True(tenant is > 0);
-                var categorias = await dbPublico.Categorias.AsNoTracking().ToListAsync();
-                var una = Assert.Single(categorias);
-                leidas.Add((tenant!.Value, una.Id));
+                if (context.Request.Path == "/tienda/binding")
+                {
+                    // La nueva URL sólo verifica propietario, sin consultar
+                    // datos comerciales del tenant todavía.
+                    vinculadas.Add(tenant!.Value);
+                }
+                else
+                {
+                    var categorias = await dbPublico.Categorias.AsNoTracking().ToListAsync();
+                    var una = Assert.Single(categorias);
+                    leidas.Add((tenant!.Value, una.Id));
+                }
                 context.Response.StatusCode = StatusCodes.Status204NoContent;
             });
 
@@ -130,11 +140,11 @@ public sealed class PublicStoreHostMySqlIsolationIntegrationTests
             var signedResolver = new ConfiguredPublicStoreHostTenantResolver(signedConfig);
 
             async Task<int> SignedRequestAsync(string key, string origin = "solqaryn-dev.vercel.app",
-                bool sign = true)
+                bool sign = true, string path = "/tienda/binding")
             {
                 var http = new DefaultHttpContext { RequestServices = provider };
                 http.Request.Method = "GET";
-                http.Request.Path = "/tienda/categorias";
+                http.Request.Path = path;
                 http.Request.Host = new HostString("solqaryn-api-dev-fxx8.onrender.com");
                 http.Response.Body = new MemoryStream();
                 http.Request.Headers["X-Empresa-Id"] = idB.ToString();
@@ -142,7 +152,7 @@ public sealed class PublicStoreHostMySqlIsolationIntegrationTests
                 if (sign)
                 {
                     var at = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                    var canonical = $"v1\n{at}\nGET\n/tienda/categorias\n{origin}\n{key}";
+                    var canonical = $"v1\n{at}\nGET\n{path}\n{origin}\n{key}";
                     var proof = Convert.ToHexString(HMACSHA256.HashData(
                         Encoding.UTF8.GetBytes(proxySecret), Encoding.UTF8.GetBytes(canonical)))
                         .ToLowerInvariant();
@@ -161,9 +171,11 @@ public sealed class PublicStoreHostMySqlIsolationIntegrationTests
             Assert.Equal(503, await SignedRequestAsync("tienda-a", sign: false));
             Assert.Equal(503, await SignedRequestAsync("tienda-falsa"));
             Assert.Equal(503, await SignedRequestAsync("tienda-a", origin: "evil.example.test"));
+            Assert.Equal(503, await SignedRequestAsync("tienda-a", path: "/tienda/categorias"));
+            Assert.Equal(503, await SignedRequestAsync("tienda-b", path: "/tienda/checkout"));
             Assert.Equal(new[] {
-                (idA, categoriaA), (idB, categoriaB),
                 (idA, categoriaA), (idB, categoriaB) }, leidas.ToArray());
+            Assert.Equal(new[] { idA, idB }, vinculadas.ToArray());
 
             await using (var suspension = new AppDbContext(options))
             {
@@ -173,6 +185,7 @@ public sealed class PublicStoreHostMySqlIsolationIntegrationTests
             }
             Assert.Equal(503, await SignedRequestAsync("tienda-b"));
             Assert.Equal(204, await SignedRequestAsync("tienda-a"));
+            Assert.Equal(new[] { idA, idB, idA }, vinculadas.ToArray());
         }
         finally
         {
