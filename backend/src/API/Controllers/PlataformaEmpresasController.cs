@@ -150,7 +150,7 @@ public sealed class PlataformaEmpresasController : ControllerBase
             .Take(2).ToArrayAsync(ct);
         if (currentOwners.Length == 1 && currentOwners[0].Activa)
         {
-            var mapped = await _db.PublicStoreBindings
+            var mapped = await _db.PublicStoreBindings.IgnoreQueryFilters()
                 .SingleOrDefaultAsync(x => x.Host == legacyHost && x.StoreKey == "", ct);
             if (mapped is not null && mapped.EmpresaId != currentOwners[0].Id)
                 return Conflict(ApiResponse<object>.Fail("Propietario legacy incompatible."));
@@ -162,7 +162,7 @@ public sealed class PlataformaEmpresasController : ControllerBase
                 });
         }
         else if (currentOwners.Length >= 2 &&
-            !await _db.PublicStoreBindings.AnyAsync(
+            !await _db.PublicStoreBindings.IgnoreQueryFilters().AnyAsync(
                 x => x.Host == legacyHost && x.StoreKey == "" && x.Activa, ct))
         {
             return StatusCode(503,
