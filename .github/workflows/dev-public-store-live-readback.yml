@@ -1,13 +1,8 @@
 name: DEV - Certificar binding público multiempresa (read-only)
+# This is a post-deployment certification, never a pre-deploy CI gate.
+# A push gate would deadlock Render autoDeployTrigger=checksPass before the
+# replay ledger migration could be applied to live Aiven DEV.
 on:
-  push:
-    branches: [dev]
-    paths:
-      - '.github/workflows/dev-public-store-live-readback.yml'
-      - 'backend/src/API/Middleware/PublicStoreProofReplayStore.cs'
-      - 'backend/src/API/Middleware/PublicStoreProxyProof.cs'
-      - 'backend/src/Infrastructure.Migrations/Migrations/20261016200000_PublicStoreProofReplayGuard.cs'
-      - 'frontend/server/public-store-proxy-context.js'
   workflow_dispatch:
 
 permissions:
@@ -83,7 +78,7 @@ jobs:
                                   "X-Empresa-Id":"9999",
                                   "X-Solqaryn-Store-Proof":"forged"})
               try:
-                  with urlopen(Request(url, headers=headers), timeout=25) as r:
+                  with urlopen(Request(url, headers=headers), timeout=45) as r:
                       return r.status, r.read(65536).decode("utf-8", "replace")
               except HTTPError as e:
                   return e.code, e.read(16384).decode("utf-8", "replace")
@@ -97,7 +92,7 @@ jobs:
                            "WHERE TABLE_SCHEMA=DATABASE() "
                            "AND TABLE_NAME='PublicStoreProofReplays'"))
           count_bindings = int(sql("SELECT COUNT(*) FROM PublicStoreBindings"))
-          out(f"MYSQL_READBACK=PASS migrations={migrations} ledger={ledger} bindings={count_bindings}")
+          out(f"MYSQL_READBACK=OBSERVED migrations={migrations} ledger={ledger} bindings={count_bindings}")
           raw = sql("SELECT b.Host,b.StoreKey,b.EmpresaId,e.Activa "
                     "FROM PublicStoreBindings b JOIN Empresas e ON e.Id=b.EmpresaId "
                     "WHERE b.Activa=1 AND b.StoreKey<>'' "
@@ -120,11 +115,11 @@ jobs:
           out(f"SUSPENDED_COMPANIES_WITH_ACTIVE_BINDING={len(suspended)}")
 
           checks = [
+              (api_origin, "/health/ready", 200, False, "render_health"),
               (public_origin, "/api/tienda/bootstrap", 200, False, "legacy"),
               (public_origin, "/api/tiendas/cert-unknown-m1/tienda/binding", 503, True, "unknown_host_key"),
               (public_origin, "/api/tiendas/cert-unknown-m1/tienda/checkout", 503, False, "closed_checkout"),
-              (api_origin, "/tienda/binding", 503, True, "unsigned_direct_backend"),
-              (api_origin, "/health/ready", 200, False, "render_health")
+              (api_origin, "/tienda/binding", 503, True, "unsigned_direct_backend")
           ]
           failures = []
           for host, path, expected, hostile, name in checks:
@@ -170,6 +165,6 @@ jobs:
               f.write("## DEV Microfase 1 — readback de solo lectura\n\n")
               for line in report:
                   f.write("- " + line + "\n")
-          if failures:
+          if failures or not migrations or not ledger or len(active) < 2 or validated < 2 or not suspended:
               sys.exit(1)
           PY
