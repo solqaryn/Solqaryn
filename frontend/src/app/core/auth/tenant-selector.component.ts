@@ -1,7 +1,8 @@
 
-import { Component, EventEmitter, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
+import { Component, DestroyRef, EventEmitter, OnInit, Output, ChangeDetectionStrategy, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { finalize } from 'rxjs';
+import { TimeoutError, finalize } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TenantContextService } from './tenant-context.service';
 
 @Component({
@@ -65,6 +66,7 @@ import { TenantContextService } from './tenant-context.service';
   `]
 })
 export class TenantSelectorComponent implements OnInit {
+  private readonly destroyRef = inject(DestroyRef);
   @Output() readonly confirmado = new EventEmitter<void>();
 
   empresaId: number | null;
@@ -96,11 +98,20 @@ export class TenantSelectorComponent implements OnInit {
     this.error = '';
     this.cargando = true;
     this.tenant.seleccionarEmpresa(Number(this.empresaId))
-      .pipe(finalize(() => { this.cargando = false; }))
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => { this.cargando = false; })
+      )
       .subscribe({
         next: () => this.confirmado.emit(),
-        error: () => {
-          this.error = 'No fue posible validar el acceso a esta empresa. Verifica tu membresía e inténtalo nuevamente.';
+        error: (err: unknown) => {
+          const status = typeof err === 'object' && err !== null && 'status' in err
+            ? Number(err.status) : null;
+          this.error = err instanceof TimeoutError
+            ? 'El servidor tardó demasiado en confirmar tu membresía. Inténtalo nuevamente o entra a la consola global.'
+            : status === 403
+              ? 'Esta cuenta no tiene membresía empresarial activa para el ID indicado. Selecciona otra empresa o entra a la consola global.'
+              : 'No fue posible validar el acceso a esta empresa. Verifica tu membresía e inténtalo nuevamente.';
         }
       });
   }
