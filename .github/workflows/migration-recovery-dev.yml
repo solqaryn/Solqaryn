@@ -163,8 +163,9 @@ jobs:
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261014112000_PublicStoreAccountEmailPerEmpresa';")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261014130000_CommercialTenantNaturalKeysPostStorefront';")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261016095000_PublicStoreBindingsPersistence';")" = 1
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261016200000_PublicStoreProofReplayGuard';")" = 1
           test "$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='PublicStoreBindings';")" = 1
-          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory;")" = 13
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory;")" = 14
           test "$(q "SELECT COUNT(*) FROM (
             SELECT INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS
              WHERE TABLE_SCHEMA=DATABASE()

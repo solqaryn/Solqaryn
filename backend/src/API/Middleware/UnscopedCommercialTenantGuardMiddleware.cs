@@ -28,7 +28,8 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
     }
 
     public async Task InvokeAsync(HttpContext httpContext, AppDbContext db,
-        IPublicStoreHostTenantResolver? publicHostResolver = null)
+        IPublicStoreHostTenantResolver? publicHostResolver = null,
+        IPublicStoreProofReplayStore? replayStore = null)
     {
         if (EsRutaDeSeguridadPermitida(httpContext.Request))
         {
@@ -243,6 +244,17 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                     .AnyAsync(e => e.Id == empresaPublica.Value && e.Activa,
                         httpContext.RequestAborted);
                 if (!autorizada)
+                {
+                    await RechazarAsync(httpContext);
+                    return;
+                }
+
+                // Consume only proofs for an already-approved, active company:
+                // unknown URLs cannot populate the replay ledger through the proxy.
+                if (tieneProof && (replayStore is null ||
+                    !await replayStore.TryConsumeAsync(
+                        httpContext.Request.Headers[PublicStoreProxyProof.ProofHeader].ToString(),
+                        httpContext.RequestAborted)))
                 {
                     await RechazarAsync(httpContext);
                     return;

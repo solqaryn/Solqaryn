@@ -1,9 +1,10 @@
-const { createHmac } = require('node:crypto');
+const { createHmac, randomBytes } = require('node:crypto');
 
 const STORE_CONTEXT_HEADERS = Object.freeze({
   origin: 'x-solqaryn-store-origin',
   key: 'x-solqaryn-store-key',
   at: 'x-solqaryn-store-at',
+  nonce: 'x-solqaryn-store-nonce',
   proof: 'x-solqaryn-store-proof'
 });
 
@@ -68,12 +69,15 @@ function buildPublicStoreProxyContext(req, canonicalPath, environment = process.
 
   const key = route.storeKey ?? '-';
   const at = String(nowSeconds);
-  const canonical = ['v1', at, method, route.path, host, key].join('\n');
+  // Every signed request gets a fresh cryptographically random nonce.
+  const nonce = randomBytes(16).toString('hex');
+  const canonical = ['v2', at, method, route.path, host, key, nonce].join('\n');
   const proof = createHmac('sha256', secret).update(canonical, 'utf8').digest('hex');
   return { path: route.path, scoped: route.scoped, headers: {
     [STORE_CONTEXT_HEADERS.origin]: host,
     [STORE_CONTEXT_HEADERS.key]: key,
     [STORE_CONTEXT_HEADERS.at]: at,
+    [STORE_CONTEXT_HEADERS.nonce]: nonce,
     [STORE_CONTEXT_HEADERS.proof]: proof
   }};
 }

@@ -116,7 +116,7 @@ jobs:
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013121500_CommercialTenantRootExpand';")" = 1
           # Incluye migración P4 de cuentas públicas por empresa, sin atribuir
           # ni perder registros históricos de prueba de los módulos P3.
-          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory;")" = 13
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory;")" = 14
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261014112000_PublicStoreAccountEmailPerEmpresa';")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013181500_CommercialTenantScopedRootIndexes';")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013190000_CommercialTenantInvoiceDocuments';")" = 1
@@ -128,6 +128,7 @@ jobs:
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013231000_CommercialTenantRemainingScopedFks';")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261014130000_CommercialTenantNaturalKeysPostStorefront';")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261016095000_PublicStoreBindingsPersistence';")" = 1
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261016200000_PublicStoreProofReplayGuard';")" = 1
           # Nueva tabla tenant-safe: UUID no es autoridad; host/clave global deben ser únicos.
           test "$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='PublicStoreBindings';")" = 1
           test "$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='PublicStoreBindings' AND INDEX_NAME='UX_PublicStoreBindings_Host_Key' AND SEQ_IN_INDEX=1 AND COLUMN_NAME='Host' AND NON_UNIQUE=0;")" = 1

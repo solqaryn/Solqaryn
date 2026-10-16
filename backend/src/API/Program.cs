@@ -67,6 +67,8 @@ builder.Services.AddSingleton<IPublicStoreCache, PublicStoreMemoryCache>();
 builder.Services.AddScoped<IPublicStoreTenantKeyProvider, PublicStoreTenantKeyProvider>();
 // Registro de hosts de tiendas: configuración servidor, nunca headers arbitrarios.
 builder.Services.AddSingleton<IPublicStoreHostTenantResolver, ConfiguredPublicStoreHostTenantResolver>();
+// A shared MySQL unique key (not instance memory) prevents HMAC replay.
+builder.Services.AddScoped<IPublicStoreProofReplayStore, MySqlPublicStoreProofReplayStore>();
 builder.Services.AddSingleton<DbQueryTimingInterceptor>();
 builder.Services.AddDbContext<AppDbContext>((serviceProvider, options) =>
     options

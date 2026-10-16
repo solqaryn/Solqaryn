@@ -153,6 +153,8 @@ internal static class Phase7MySqlTestDatabase
             """);
         await db.Database.CloseConnectionAsync();
 
+        // Apply only the new ledger migration absent from EnsureCreated.
+        await db.Database.MigrateAsync();
         if ((await db.Database.GetPendingMigrationsAsync()).Any())
             throw new InvalidOperationException("Phase 7 test bootstrap left pending Oracle migrations.");
     }

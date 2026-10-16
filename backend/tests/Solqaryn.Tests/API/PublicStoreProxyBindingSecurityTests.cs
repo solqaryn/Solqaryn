@@ -22,9 +22,9 @@ public sealed class PublicStoreProxyBindingSecurityTests
 {
     private const string Secret = "TEST_ONLY_STORE_PROOF_SECRET_32_BYTES_MINIMUM_2026";
 
-    private static string Firmar(long at, string method, string ruta, string host, string key)
+    private static string Firmar(long at, string method, string ruta, string host, string key, string nonce)
     {
-        var canonical = $"v1\n{at}\n{method}\n{ruta}\n{host}\n{key}";
+        var canonical = $"v2\n{at}\n{method}\n{ruta}\n{host}\n{key}\n{nonce}";
         return Convert.ToHexString(HMACSHA256.HashData(
             Encoding.UTF8.GetBytes(Secret), Encoding.UTF8.GetBytes(canonical))).ToLowerInvariant();
     }
@@ -58,6 +58,7 @@ public sealed class PublicStoreProxyBindingSecurityTests
         var provider = new ServiceCollection().AddSingleton<IConfiguration>(config)
             .BuildServiceProvider();
         var selected = new List<int>();
+        var replay = new TestPublicStoreProofReplayStore();
         var middleware = new UnscopedCommercialTenantGuardMiddleware(http => {
             var tenant = VerifiedPublicStoreTenant.Resolve(http);
             Assert.NotNull(tenant);
@@ -80,11 +81,13 @@ public sealed class PublicStoreProxyBindingSecurityTests
             {
                 var at = DateTimeOffset.UtcNow.ToUnixTimeSeconds() + skew;
                 var key = signedKey ?? routeKey;
+                var nonce = Guid.NewGuid().ToString("N");
+                http.Request.Headers[PublicStoreProxyProof.NonceHeader] = nonce;
                 http.Request.Headers[PublicStoreProxyProof.OriginHeader] = signedHost;
                 http.Request.Headers[PublicStoreProxyProof.KeyHeader] = routeKey;
                 http.Request.Headers[PublicStoreProxyProof.AtHeader] = at.ToString();
                 http.Request.Headers[PublicStoreProxyProof.ProofHeader] =
-                    Firmar(at, signedMethod ?? method, path, signedHost, key);
+                    Firmar(at, signedMethod ?? method, path, signedHost, key, nonce);
             }
             if (spoofedHeaders)
             {
@@ -93,7 +96,7 @@ public sealed class PublicStoreProxyBindingSecurityTests
                 http.Request.Headers["Origin"] = "https://evil.example.test";
             }
 
-            await middleware.InvokeAsync(http, db, resolver);
+            await middleware.InvokeAsync(http, db, resolver, replay);
             return http.Response.StatusCode;
         }
 
@@ -118,6 +121,7 @@ public sealed class PublicStoreProxyBindingSecurityTests
         Assert.Equal(503, await RequestAsync("comercio-b", path: "/tienda/cuenta"));
         Assert.Equal(503, await RequestAsync("comercio-a", method: "POST", path: "/tienda/binding"));
         Assert.Equal(3, selected.Count);
+        Assert.Equal(3, replay.ConsumedCount); // invalid hosts and routes never write to ledger
 
         b.Desactivar();
         await db.SaveChangesAsync();
@@ -209,6 +213,18 @@ public sealed class PublicStoreProxyBindingSecurityTests
     }
 
     [Fact]
+    public async Task ReplayConcurrente_ConsumeUnaSolaFirmaEnRegistroCompartido()
+    {
+        var replay = new TestPublicStoreProofReplayStore();
+        var proof = Firmar(DateTimeOffset.UtcNow.ToUnixTimeSeconds(), "GET",
+            "/tienda/binding", "solqaryn-dev.vercel.app", "comercio-a", Guid.NewGuid().ToString("N"));
+        var results = await Task.WhenAll(Enumerable.Range(0, 24).Select(_ =>
+            replay.TryConsumeAsync(proof, CancellationToken.None)));
+        Assert.Single(results.Where(accepted => accepted));
+        Assert.False(await replay.TryConsumeAsync(proof, CancellationToken.None));
+    }
+
+    [Fact]
     public void ProofNoPermiteCabecerasDuplicadasNiAusentes()
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(
@@ -220,8 +236,10 @@ public sealed class PublicStoreProxyBindingSecurityTests
         ctx.Request.Headers[PublicStoreProxyProof.OriginHeader] = "solqaryn-dev.vercel.app";
         ctx.Request.Headers[PublicStoreProxyProof.KeyHeader] = "comercio-a";
         ctx.Request.Headers[PublicStoreProxyProof.AtHeader] = at.ToString();
+        var nonce = Guid.NewGuid().ToString("N");
+        ctx.Request.Headers[PublicStoreProxyProof.NonceHeader] = nonce;
         ctx.Request.Headers[PublicStoreProxyProof.ProofHeader] =
-            Firmar(at, "GET", "/tienda/binding", "solqaryn-dev.vercel.app", "comercio-a");
+            Firmar(at, "GET", "/tienda/binding", "solqaryn-dev.vercel.app", "comercio-a", nonce);
         Assert.True(PublicStoreProxyProof.TryReadVerified(ctx.Request, config, out _, out var key));
         Assert.Equal("comercio-a", key);
         ctx.Request.Headers[PublicStoreProxyProof.KeyHeader] =

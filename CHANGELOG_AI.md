@@ -1,3 +1,11 @@
+## 2026-10-16 — Microfase 1 DEV: anti-replay de firma HMAC v2 (candidato)
+
+- El proxy genera un nonce aleatorio de 128 bits por solicitud; HMAC v2 firma nonce, timestamp, metodo, ruta, Host y StoreKey. Se rechazan v1, cabeceras duplicadas, nonces invalidos y expirados.
+- Render consume atomica y una sola vez la firma validada SOLO tras comprobar que la empresa existe y esta activa, evitando escribir por URLs desconocidas; utiliza INSERT en PublicStoreProofReplays con PRIMARY KEY BINARY(32) compartida entre instancias MySQL; rechazo seguro si se repite, si falla la DB o si falta su migracion. Purgado acotado tras 180 segundos.
+- Roll-forward con migracion 20261016200000_PublicStoreProofReplayGuard; no toca datos comerciales ni modifica la tienda legacy con flag OFF. No activa nuevas tiendas, QA ni PROD.
+- Pruebas Node y .NET + MySQL efimero concurrente; confirmar CI exact-head antes del merge. Certificacion HMAC real y host/empresa DEV depende de readback independiente, no asumir LISTO solo por CI.
+- Rollback funcional: mantener flags multitienda OFF, sin borrar empresas o bindings. La tabla anti-replay solo guarda hashes temporales.
+
 ## 2026-10-16 — M10 CI: bootstrap EF10 para accesibilidad y navegación
 
 - PR #3659 de navegación autenticada ya integrado; la CI post-merge M10 fallaba antes de Playwright con `Table solqaryn_m10_e2e.Empresas doesn't exist` al aplicar OracleBaseline contra MySQL efímero vacío.

@@ -14,8 +14,8 @@ const environment = { SOLQARYN_PUBLIC_STORE_SIGNING_KEY: secret, SOLQARYN_PUBLIC
 const binding = { environment: 'DEV', publicOrigin: 'https://solqaryn-dev.vercel.app', apiUpstream: 'https://solqaryn-api-dev-fxx8.onrender.com' };
 const now = 1792130000;
 const fake = (host, method='GET', headers={}) => ({ method, headers: { host, ...headers } });
-const sign = (at, method, route, host, key) =>
-  createHmac('sha256', secret).update(['v1', at, method, route, host, key].join('\n')).digest('hex');
+const sign = (at, method, route, host, key, nonce) =>
+  createHmac('sha256', secret).update(['v2', at, method, route, host, key, nonce].join('\n')).digest('hex');
 
 // Same hostname, different store keys -> different signed contexts.
 const a = buildPublicStoreProxyContext(fake('solqaryn-dev.vercel.app', 'GET',
@@ -28,9 +28,14 @@ assert.equal(b.path, '/tienda/binding');
 assert.equal(a.headers['x-solqaryn-store-key'], 'comercio-a');
 assert.equal(b.headers['x-solqaryn-store-key'], 'comercio-b');
 assert.equal(a.headers['x-solqaryn-store-origin'], 'solqaryn-dev.vercel.app');
+assert.match(a.headers['x-solqaryn-store-nonce'], /^[a-f0-9]{32}$/);
+assert.notEqual(a.headers['x-solqaryn-store-nonce'], b.headers['x-solqaryn-store-nonce']);
 assert.equal(a.headers['x-solqaryn-store-proof'],
-  sign(String(now), 'GET', '/tienda/binding', 'solqaryn-dev.vercel.app', 'comercio-a'));
+  sign(String(now), 'GET', '/tienda/binding', 'solqaryn-dev.vercel.app', 'comercio-a', a.headers['x-solqaryn-store-nonce']));
 assert.notEqual(a.headers['x-solqaryn-store-proof'], b.headers['x-solqaryn-store-proof']);
+const anotherA = buildPublicStoreProxyContext(fake('solqaryn-dev.vercel.app'),
+  'tiendas/comercio-a/tienda/binding', environment, binding, now);
+assert.notEqual(anotherA.headers['x-solqaryn-store-proof'], a.headers['x-solqaryn-store-proof']);
 assert.equal(buildPublicStoreProxyContext(fake('evil.example.test'),
   'tiendas/comercio-a/tienda/binding', environment, binding, now).status, 403);
 assert.equal(buildPublicStoreProxyContext(fake('solqaryn-dev.vercel.app'),
@@ -74,7 +79,7 @@ const legacySigned = buildPublicStoreProxyContext(fake('solqaryn-dev.vercel.app'
   'tienda/bootstrap', environment, binding, now);
 assert.equal(legacySigned.headers['x-solqaryn-store-key'], '-');
 assert.equal(legacySigned.headers['x-solqaryn-store-proof'],
-  sign(String(now), 'GET', '/tienda/bootstrap', 'solqaryn-dev.vercel.app', '-'));
+  sign(String(now), 'GET', '/tienda/bootstrap', 'solqaryn-dev.vercel.app', '-', legacySigned.headers['x-solqaryn-store-nonce']));
 
 // Proxy integrado: los headers falsificados nunca alcanzan Render.
 const source = readFileSync(path.join(root, 'api/backend-proxy.js'), 'utf8');
@@ -107,6 +112,7 @@ const req = {
     'x-solqaryn-store-proof': 'fake',
     'x-solqaryn-store-key': 'comercio-b',
     'x-solqaryn-store-at': '123',
+    'x-solqaryn-store-nonce': '00000000000000000000000000000000',
     'x-forwarded-host': 'evil.example.test',
     'x-empresa-id': '999',
     authorization: 'Bearer public-test-placeholder',
@@ -123,6 +129,7 @@ assert.equal(captured.url.searchParams.get('page'), '1');
 assert.equal(captured.method, 'GET');
 assert.equal(captured.headers['x-solqaryn-store-origin'], 'solqaryn-dev.vercel.app');
 assert.equal(captured.headers['x-solqaryn-store-key'], 'comercio-a');
+assert.match(captured.headers['x-solqaryn-store-nonce'], /^[a-f0-9]{32}$/);
 assert.equal(captured.headers['x-forwarded-host'], undefined);
 assert.equal(captured.headers['x-solqaryn-environment'], 'DEV');
 assert.equal(captured.headers['x-empresa-id'], undefined, 'Cabecera tenant ERP hostil nunca llega a binding.');
