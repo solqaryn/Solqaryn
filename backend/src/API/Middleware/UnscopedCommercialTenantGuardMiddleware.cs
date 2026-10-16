@@ -149,6 +149,18 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                     return;
                 }
                 empresaPublica = publicHostResolver.ResolveEmpresaId(verifiedHost, verifiedStoreKey);
+                // Para nuevas tiendas, el registro indexado de MySQL reemplaza
+                // la lista manual de variables por empresa, pero sólo con
+                // opt-in explícito y proof HMAC previamente verificado.
+                if (verifiedStoreKey is not null &&
+                    configPublica.GetValue<bool>("PublicStore:EnableDatabaseBindings"))
+                {
+                    empresaPublica = await db.PublicStoreBindings.AsNoTracking()
+                        .Where(x => x.Activa && x.Host == verifiedHost.Host &&
+                                    x.StoreKey == verifiedStoreKey)
+                        .Select(x => (int?)x.EmpresaId)
+                        .SingleOrDefaultAsync(httpContext.RequestAborted);
+                }
                 // Mientras se certifica la identidad/caché por tienda, no permitir
                 // almacenar el mismo path interno /tienda en un CDN compartido.
                 httpContext.Response.OnStarting(() =>
@@ -614,6 +626,8 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         {
             if (s.Length == 6)
             {
+                if (Igual(s[5], "tiendas") && HttpMethods.IsGet(request.Method))
+                    return true;
                 if (Igual(s[5], "membresias") &&
                     (HttpMethods.IsGet(request.Method) || HttpMethods.IsPost(request.Method)))
                     return true;
@@ -621,6 +635,12 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                     (Igual(s[5], "nombre") || Igual(s[5], "estado")))
                     return true;
             }
+            if (s.Length == 7 && HttpMethods.IsPut(request.Method) &&
+                Igual(s[5], "tiendas") && s[6].Length >= 2 && s[6].Length <= 48 &&
+                s[6][0] is >= 'a' and <= 'z' &&
+                s[6][^1] is >= 'a' and <= 'z' or >= '0' and <= '9' &&
+                s[6].All(ch => ch is >= 'a' and <= 'z' or >= '0' and <= '9' or '-'))
+                return true;
             if (s.Length == 8 && HttpMethods.IsPut(request.Method) &&
                 Igual(s[5], "membresias") && IdPositivo(s[6]) &&
                 (Igual(s[7], "rol") || Igual(s[7], "estado")))
