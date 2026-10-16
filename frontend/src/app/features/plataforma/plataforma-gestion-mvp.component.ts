@@ -113,12 +113,41 @@ import {
             [disabled]="ocupado() || directorio()?.puedeCrear !== true || (buscado()?.activo !== true && buscado()?.pendienteAsignacion !== true) || buscado()?.bloqueado === true">
             Crear empresa con administrador
           </button>
+          <button mat-stroked-button type="button" (click)="crearBorrador()"
+            [disabled]="ocupado() || empresaNueva().trim().length < 2">
+            Guardar empresa como borrador inactivo
+          </button>
           @if (directorio()?.puedeCrear !== true) {
-            <p class="warning" role="status">Alta temporalmente deshabilitada por la protección multiempresa del backend.</p>
+            <p class="warning" role="status">La creación comercial activa sigue protegida. Puedes preparar empresas inactivas y asignarles administradores sin publicar tiendas.</p>
           }
         </section>
 
         @if (empresaId() > 0) {
+          <section class="subsection" aria-labelledby="public-store-registry-title">
+            <h3 id="public-store-registry-title">Vinculación pública de la tienda</h3>
+            <p>El registro se guarda en MySQL. Una empresa suspendida no puede publicar tiendas.
+              Esta operación no habilita catálogo, carrito ni checkout secundarios.</p>
+            <div class="field">
+              <label for="public-store-key">Clave pública única (2–48 caracteres)</label>
+              <input id="public-store-key" maxlength="48" autocomplete="off"
+                [value]="nuevaStoreKey()" (input)="nuevaStoreKey.set($any($event.target).value)" />
+              <small>Host público actual: {{ hostPublico() }}</small>
+            </div>
+            <button mat-stroked-button type="button" [disabled]="ocupado()"
+              (click)="registrarTienda(false)">Guardar vinculación inactiva</button>
+            @if (empresaActiva()) {
+              <button mat-flat-button type="button" [disabled]="ocupado()"
+                (click)="registrarTienda(true)">Publicar identidad de tienda</button>
+            }
+            @if (tiendasRegistradas().length) {
+              <ul>
+                @for (tienda of tiendasRegistradas(); track tienda.id) {
+                  <li>{{ tienda.host }}/tiendas/{{ tienda.storeKey }} — {{ tienda.activa ? 'Vinculada' : 'Inactiva' }}</li>
+                }
+              </ul>
+            }
+          </section>
+
           <section class="subsection" aria-labelledby="identidad-empresa">
             <h3 id="identidad-empresa">Identidad y estado de la empresa seleccionada</h3>
             <div class="inline-input">
@@ -261,6 +290,10 @@ export class PlataformaGestionMvpComponent {
   readonly nombreCompletoNuevo = signal('');
   readonly claveNueva = signal('');
   readonly empresaNueva = signal('');
+  readonly nuevaStoreKey = signal('');
+  readonly tiendasRegistradas = signal<Array<{id: number; host: string; storeKey: string; activa: boolean}>>([]);
+  readonly hostPublico = signal(typeof window !== 'undefined' ? window.location.hostname : '');
+
   readonly confirmarEstado = signal<boolean | null>(null);
   readonly confirmarMembresia = signal<number | null>(null);
 
@@ -296,7 +329,15 @@ export class PlataformaGestionMvpComponent {
     this.confirmarEstado.set(null);
     this.confirmarMembresia.set(null);
     this.limpiarMensajes();
-    if (empresa) this.cargarEmpresa();
+    this.tiendasRegistradas.set([]);
+    this.nuevaStoreKey.set('');
+    if (empresa) {
+      this.cargarEmpresa();
+      this.api.tiendas(empresa.id).subscribe({
+        next: data => { if (this.empresaId() === empresa.id) this.tiendasRegistradas.set(data); },
+        error: err => this.fallar('La consulta de tiendas', err)
+      });
+    }
   }
 
   private cargarEmpresa(): void {
@@ -366,6 +407,49 @@ export class PlataformaGestionMvpComponent {
             this.exito.set('Cuenta creada INACTIVA. Se activará dentro de la primera asignación empresarial auditada.');
           },
           error: err => this.fallar('El alta de cuenta', err)
+        })
+    );
+  }
+
+  crearBorrador(): void {
+    const nombre = this.empresaNueva().trim();
+    if (this.ocupado() || nombre.length < 2 || nombre.length > 200) return;
+    this.ejecutar('Crear borrador', () =>
+      this.api.crearBorradorEmpresa(nombre)
+        .pipe(finalize(() => this.ocupado.set(false)))
+        .subscribe({
+          next: data => {
+            this.empresaNueva.set('');
+            this.exito.set('Borrador empresarial inactivo creado. ID: ' + data.empresaId +
+              '. Asigna un administrador antes de solicitar su activación.');
+            this.actualizarDirectorio.emit();
+          },
+          error: err => this.fallar('La creación del borrador empresarial', err)
+        })
+    );
+  }
+
+  registrarTienda(activa: boolean): void {
+    const id = this.empresaId();
+    const storeKey = this.nuevaStoreKey().trim();
+    const host = this.hostPublico();
+    if (this.ocupado() || id <= 0 || !/^[a-z][a-z0-9-]{0,46}[a-z0-9]$/.test(storeKey) ||
+        !host.includes('.') || (activa && !this.empresaActiva())) {
+      this.error.set('Selecciona empresa y clave pública válida.');
+      return;
+    }
+    this.ejecutar('Registrar tienda', () =>
+      this.api.vincularTienda(id, storeKey, host, activa)
+        .pipe(finalize(() => this.ocupado.set(false)))
+        .subscribe({
+          next: () => {
+            this.exito.set(activa ? 'Identidad pública vinculada.' : 'Vinculación guardada inactiva.');
+            this.api.tiendas(id).subscribe({
+              next: data => { if (this.empresaId() === id) this.tiendasRegistradas.set(data); },
+              error: err => this.fallar('La consulta de tiendas', err)
+            });
+          },
+          error: err => this.fallar('La vinculación de tienda', err)
         })
     );
   }
