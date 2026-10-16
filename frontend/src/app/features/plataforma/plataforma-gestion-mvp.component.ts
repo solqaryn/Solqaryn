@@ -58,10 +58,10 @@ import {
         @if (buscado(); as cuenta) {
           <div class="identity">
             <strong>{{ cuenta.nombreUsuario }}</strong> · {{ cuenta.nombreCompleto }}
-            @if (!cuenta.activo || cuenta.bloqueado) {
+            @if ((!cuenta.activo && !cuenta.pendienteAsignacion) || cuenta.bloqueado) {
               <span class="warning">Cuenta inactiva o bloqueada — no se puede asignar.</span>
             } @else {
-              <span class="success-text">Cuenta disponible para asignación por empresa.</span>
+              <span class="success-text">{{ cuenta.pendienteAsignacion ? 'Cuenta pendiente: se activará únicamente al asignarse a una empresa.' : 'Cuenta disponible para asignación.' }}</span>
             }
           </div>
         }
@@ -106,7 +106,7 @@ import {
             </div>
           </div>
           <button mat-flat-button type="button" (click)="crearEmpresa()"
-            [disabled]="ocupado() || directorio()?.puedeCrear !== true || buscado()?.activo !== true || buscado()?.bloqueado === true">
+            [disabled]="ocupado() || directorio()?.puedeCrear !== true || (buscado()?.activo !== true && buscado()?.pendienteAsignacion !== true) || buscado()?.bloqueado === true">
             Crear empresa con administrador
           </button>
           @if (directorio()?.puedeCrear !== true) {
@@ -154,7 +154,7 @@ import {
                   }
                 </select>
               </div>
-              <button mat-flat-button type="button" [disabled]="ocupado() || !buscado()?.activo || buscado()?.bloqueado || rolAsignacion() <= 0"
+              <button mat-flat-button type="button" [disabled]="ocupado() || (buscado()?.activo !== true && buscado()?.pendienteAsignacion !== true) || buscado()?.bloqueado === true || rolAsignacion() <= 0"
                 (click)="asignarBuscado()">Asignar cuenta seleccionada</button>
             </div>
 
@@ -350,8 +350,8 @@ export class PlataformaGestionMvpComponent {
             this.nombreCompletoNuevo.set('');
             this.adminId.set(data.id);
             this.buscado.set({ id: data.id, nombreUsuario: data.nombreUsuario,
-              nombreCompleto: completo, activo: true, bloqueado: false });
-            this.exito.set('Cuenta creada. Asígnala a una empresa antes de usarla.');
+              nombreCompleto: completo, activo: false, bloqueado: false, pendienteAsignacion: true });
+            this.exito.set('Cuenta creada INACTIVA. Se activará dentro de la primera asignación empresarial auditada.');
           },
           error: () => this.fallar('El alta de cuenta')
         })
@@ -383,13 +383,14 @@ export class PlataformaGestionMvpComponent {
     const e = this.empresaId();
     const cuenta = this.buscado();
     const rol = this.rolAsignacion();
-    if (!e || !cuenta || !cuenta.activo || cuenta.bloqueado || rol <= 0 ||
+    if (!e || !cuenta || (!cuenta.activo && !cuenta.pendienteAsignacion) || cuenta.bloqueado || rol <= 0 ||
         !this.roles().some(r => r.id === rol)) return;
     this.ejecutar('Asignar membresía', () =>
       this.api.asignar(e, cuenta.id, rol).pipe(finalize(() => this.ocupado.set(false)))
         .subscribe({
           next: () => {
             this.exito.set('Membresía empresarial registrada.');
+            this.buscado.set({ ...cuenta, activo: true, pendienteAsignacion: false });
             this.cargarEmpresa();
           },
           error: () => this.fallar('La asignación')
