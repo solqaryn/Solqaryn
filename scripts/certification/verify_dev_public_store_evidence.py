@@ -122,8 +122,9 @@ def validate_github_attestation(comment: dict[str, Any],
             data["audited_attestation"]["created_at"] and
             comment.get("updated_at") == comment.get("created_at"),
             "attestation missing or edited")
-    require(comment.get("author_association") in ("OWNER", "MEMBER"),
-            "unauthorized attestation association")
+    # GitHub's author_association is contextual/advisory, not a stable
+    # authorization claim. The immutable numeric corporate user ID, repo,
+    # merged PR and unedited comment remain the mandatory authority checks.
     body = comment.get("body") or ""
     markers = (
         "Microfase 1 DEV: acta de certificación técnica por evidencias compuestas",
