@@ -270,4 +270,31 @@ public sealed class CommercialTenantReadFilterTests
         Assert.Equal(1, await db.RolPermisos.CountAsync());
     }
 
+
+    [Fact]
+    public async Task TenantNoPuedeInsertarGrantsEnPlantillaCompartida()
+    {
+        var http = new DefaultHttpContext();
+        await using var db = CreateDb(http);
+        var empresa = new Empresa("Empresa A");
+        var plantilla = new Rol
+        {
+            Nombre = "Plantilla RBAC", NombreNormalizado = "PLANTILLA_RBAC",
+            Ambito = AmbitoAutorizacion.Empresa, EsSistema = true
+        };
+        var permiso = new Permiso
+        {
+            Codigo = "PRODUCTOS.VER.TPL", Nombre = "Ver productos",
+            Modulo = ModuloSistema.Productos, Accion = AccionPermiso.Ver
+        };
+        db.Set<Empresa>().Add(empresa);
+        db.Roles.Add(plantilla);
+        db.Permisos.Add(permiso);
+        await db.SaveChangesAsync();
+
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = empresa.Id;
+        db.RolPermisos.Add(new RolPermiso { RolId = plantilla.Id, PermisoId = permiso.Id });
+        await Assert.ThrowsAsync<ForbiddenAccessException>(() => db.SaveChangesAsync());
+    }
+
 }

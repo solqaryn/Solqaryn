@@ -227,6 +227,11 @@ public static class CommercialTenantOwnershipGraphWriteGuard
             throw new ForbiddenAccessException(
                 "La matriz de un rol de plataforma no se modifica desde una empresa.");
 
+        if (role.Ambito == Solqaryn.Domain.Enums.AmbitoAutorizacion.Empresa &&
+            role.EsSistema && authorized is > 0)
+            throw new ForbiddenAccessException(
+                "La plantilla empresarial compartida es de solo lectura desde un tenant.");
+
         var owner = entry.Property("EmpresaId");
         if (owner.CurrentValue is not null ||
             (entry.State is EntityState.Modified or EntityState.Deleted &&
