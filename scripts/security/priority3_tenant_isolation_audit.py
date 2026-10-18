@@ -84,6 +84,33 @@ def main() -> int:
             return all(token in content for token in mandatory) and not any(
                 token in content for token in forbidden
             )
+        if path.name == "DevPublicStoreReplayCertificationHostedService.cs":
+            # One-shot identity-only DEV verifier: fail closed and never create
+            # a new API endpoint or write business data. This is NOT an outbox.
+            mandatory = (
+                "hostEnvironment.IsDevelopment()",
+                'GetEnvironmentVariable("RENDER")',
+                'GetValue<bool>(Flag)',
+                'GetValue<bool>("PublicStore:EnableMultiEmpresaBinding")',
+                'GetValue<bool>("PublicStore:EnableDatabaseBindings")',
+                'GetValue<bool>("PublicStore:RequireVerifiedProxyProof")',
+                'connection.Database != "solqaryn_dev"',
+                'connection.UserID != "solqaryn_dev_user"',
+                "connection.SslMode.ToString()",
+                "db.PublicStoreBindings.IgnoreQueryFilters()",
+                "db.Set<Empresa>()",
+                "HMACSHA256.HashData(",
+                "ledgerAfterFirst != 1",
+                "ledgerAfterReplay != 1",
+                "repeated != HttpStatusCode.ServiceUnavailable",
+                "UseProxy = false",
+                "PUBLIC_STORE_HMAC_REPLAY_LIVE=PASS",
+            )
+            forbidden = ("/tienda/checkout", "ExecuteSql", "DeleteAsync(",
+                         "solqaryn_prod", "solqaryn_qa", "HttpListener")
+            return all(token in content for token in mandatory) and not any(
+                token in content for token in forbidden
+            )
         return all(token in content for token in (
             "EmpresaId", "ProcesarLoteAsync", "ClaimDisponiblesAsync"
         ))
