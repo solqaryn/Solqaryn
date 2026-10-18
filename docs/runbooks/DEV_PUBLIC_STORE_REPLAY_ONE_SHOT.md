@@ -75,3 +75,12 @@ NO aplica a QA, PROD, main ni solqaryn.com.
 - La falla de finalización no debe atribuirse sin evidencia a MySQL, Kestrel o conectividad. NO se certifica el escenario completo 200/503/200 con estos logs.
 - Ajuste del worker candidato: encabezado Connection: close para cada GET loopback, timeout acotado en readback MySQL y trazas de fase FIRST_PASS, REPLAY_PASS, FRESH_PASS, sin secreto/nonce/firma en logs. Mantener LIVE=PASS condicionado a los tres HTTP y ambos digests persistidos correctamente.
 - Un nuevo ensayo se ejecutará solo tras CI exact-head y fusión/revisión formal en dev, sin alterar contratos, host público, QA/PROD ni empresas. Desactivar siempre el flag al terminar, incluso si aparece BLOCKED.
+
+## 2026-10-18 — Revalidación posterior al PR #3665
+
+- El PR #3665 se fusionó en DEV bajo `f6748b7d6be4bca478d50b1f3955fe529c383713`; su tree exacto aprobó 14/14 CI y el commit merge aprobó 20/20 workflows posteriores.
+- Render, deploy `dep-dba5hq7btjjs73dsgfgg`: `FIRST_PASS=200 ledger=PASS` y `REPLAY_PASS=503 ledger=PASS` (05:31:56–57 UTC). El tercer GET con firma nueva llegó a insertar digest en MySQL, pero el servidor no registró fin de la solicitud ni `FRESH_PASS`. Una repetición posterior inició una firma nueva y tampoco entregó resultado completo; por tanto `HMAC_REPLAY_LIVE=PASS` **sigue pendiente**.
+- Nuevo control causal candidato: esperar 45 s después de `/health/ready` antes del ensayo para evitar la ventana de handoff de Render; emplear un cliente HTTP aislado por petición, cierre explícito, timeout ligado al token, y hasta 3 intentos *únicamente* de transporte para la firma nueva, cada intento con nonce distinto.
+- Nunca se reintenta silenciosamente una respuesta 503, identidad equivocada, ledger incorrecto ni fallo de seguridad; cualquier excepción definitiva es `BLOCKED`. Ningún secreto/firma se registra. Solo un `FRESH_PASS` tras una respuesta 200 y digest único permite `LIVE=PASS`.
+- El flag `PublicStore__ReplayLiveCertificationOnStartup=false` ya se desplegó sobre Render DEV y el smoke A=200, B=200, legacy=200 y host desconocido=503 se confirmó a las 06:25–26 UTC.
+- Este PR de robustecimiento NO certifica por sí mismo: requiere REVIEW_FIRST, CI exact-head, merge solo a dev, prueba real en Render, desactivar flag de nuevo y smoke post-rollback.

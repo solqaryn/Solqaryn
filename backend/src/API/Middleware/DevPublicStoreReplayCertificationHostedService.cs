@@ -113,28 +113,56 @@ public sealed class DevPublicStoreReplayCertificationHostedService(
         };
         var loopback = new Uri($"http://127.0.0.1:{port}");
         await WaitForLocalApiAsync(client, loopback, token);
+        // A new Render instance can be reachable before deploy hand-off finishes.
+        // Keep this one-shot DEV probe out of the initialization/health window.
+        await Task.Delay(TimeSpan.FromSeconds(45), token);
 
         // The same exact v2 signature, timestamp and nonce MUST be sent twice.
         var firstProof = Sign(secret);
-        var first = await CallBindingAsync(client, loopback, firstProof, companyId.Value, token);
+        var first = await CallBindingAsync(loopback, firstProof, companyId.Value, token);
         var ledgerAfterFirst = await CountDigestAsync(db, firstProof.Proof, token);
         if (first != HttpStatusCode.OK || ledgerAfterFirst != 1)
             throw new InvalidOperationException("First signed request was not accepted and persisted.");
         logger.LogInformation("PUBLIC_STORE_HMAC_REPLAY_STAGE=FIRST_PASS env=DEV http=200 ledger=PASS");
 
-        var repeated = await CallBindingAsync(client, loopback, firstProof, companyId.Value, token);
+        var repeated = await CallBindingAsync(loopback, firstProof, companyId.Value, token);
         var ledgerAfterReplay = await CountDigestAsync(db, firstProof.Proof, token);
         if (repeated != HttpStatusCode.ServiceUnavailable || ledgerAfterReplay != 1)
             throw new InvalidOperationException("Repeated proof was not blocked by shared ledger.");
         logger.LogInformation("PUBLIC_STORE_HMAC_REPLAY_STAGE=REPLAY_PASS env=DEV http=503 ledger=PASS");
 
         // Fresh nonce and proof must still work for the SAME legitimate tenant.
-        var freshProof = Sign(secret);
-        var fresh = await CallBindingAsync(client, loopback, freshProof, companyId.Value, token);
-        var freshLedger = await CountDigestAsync(db, freshProof.Proof, token);
-        if (fresh != HttpStatusCode.OK || freshLedger != 1 ||
-            string.Equals(freshProof.Proof, firstProof.Proof, StringComparison.Ordinal))
-            throw new InvalidOperationException("Fresh signed request failed after replay rejection.");
+        // Retry only transient transport failures, always with a NEW nonce/proof.
+        // A security rejection or an unexpected ledger state is never retryable.
+        var freshVerified = false;
+        for (var attempt = 1; attempt <= 3; attempt++)
+        {
+            token.ThrowIfCancellationRequested();
+            var freshProof = Sign(secret);
+            logger.LogInformation("PUBLIC_STORE_HMAC_REPLAY_STAGE=FRESH_ATTEMPT env=DEV attempt={Attempt}", attempt);
+            try
+            {
+                var fresh = await CallBindingAsync(loopback, freshProof, companyId.Value, token);
+                var freshLedger = await CountDigestAsync(db, freshProof.Proof, token);
+                if (fresh != HttpStatusCode.OK || freshLedger != 1 ||
+                    string.Equals(freshProof.Proof, firstProof.Proof, StringComparison.Ordinal))
+                    throw new InvalidOperationException("Fresh signed request failed after replay rejection.");
+
+                freshVerified = true;
+                break;
+            }
+            catch (OperationCanceledException) when (!token.IsCancellationRequested && attempt < 3)
+            {
+                logger.LogWarning("PUBLIC_STORE_HMAC_REPLAY_STAGE=FRESH_TRANSPORT_RETRY env=DEV attempt={Attempt}", attempt);
+            }
+            catch (HttpRequestException) when (attempt < 3)
+            {
+                logger.LogWarning("PUBLIC_STORE_HMAC_REPLAY_STAGE=FRESH_TRANSPORT_RETRY env=DEV attempt={Attempt}", attempt);
+            }
+        }
+
+        if (!freshVerified)
+            throw new InvalidOperationException("Fresh signed request did not finish with valid readback.");
         logger.LogInformation("PUBLIC_STORE_HMAC_REPLAY_STAGE=FRESH_PASS env=DEV http=200 ledger=PASS");
 
         var commit = Environment.GetEnvironmentVariable("RENDER_GIT_COMMIT") ?? "unknown";
@@ -190,9 +218,20 @@ public sealed class DevPublicStoreReplayCertificationHostedService(
         return new SignedProof(at, nonce, Convert.ToHexString(digest).ToLowerInvariant());
     }
 
-    private static async Task<HttpStatusCode> CallBindingAsync(HttpClient client,
+    private static async Task<HttpStatusCode> CallBindingAsync(
         Uri loopback, SignedProof proof, int expectedCompany, CancellationToken token)
     {
+        // Each proof gets its own transport; a hung response never contaminates
+        // the next proof or shares a stale socket during Render startup.
+        using var handler = new HttpClientHandler
+        {
+            AllowAutoRedirect = false,
+            UseCookies = false,
+            UseProxy = false
+        };
+        using var client = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(16) };
+        using var requestTimeout = CancellationTokenSource.CreateLinkedTokenSource(token);
+        requestTimeout.CancelAfter(TimeSpan.FromSeconds(14));
         using var request = new HttpRequestMessage(HttpMethod.Get,
             new Uri(loopback, BindingPath));
         // Use the allowed DEV API Host over a loopback TCP connection.
@@ -204,8 +243,9 @@ public sealed class DevPublicStoreReplayCertificationHostedService(
         request.Headers.TryAddWithoutValidation(PublicStoreProxyProof.NonceHeader, proof.Nonce);
         request.Headers.TryAddWithoutValidation(PublicStoreProxyProof.ProofHeader, proof.Proof);
 
-        using var response = await client.SendAsync(request, token);
-        var payload = await response.Content.ReadAsStringAsync(token);
+        using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead,
+            requestTimeout.Token);
+        var payload = await response.Content.ReadAsStringAsync(requestTimeout.Token);
         using var document = JsonDocument.Parse(payload);
         var root = document.RootElement;
         if (response.StatusCode == HttpStatusCode.OK)
