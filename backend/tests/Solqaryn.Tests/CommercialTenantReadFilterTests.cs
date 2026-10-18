@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Solqaryn.Application.Security;
+using Solqaryn.Application.Exceptions;
+using Solqaryn.Domain.Enums;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Infrastructure.Persistence;
 using Xunit;
@@ -208,7 +210,13 @@ public sealed class CommercialTenantReadFilterTests
             NombreNormalizado = "ADMIN_PLATAFORMA",
             Ambito = Solqaryn.Domain.Enums.AmbitoAutorizacion.Plataforma
         };
-        db.Roles.AddRange(plantilla, plataforma);
+        var sinDueno = new Rol
+        {
+            Nombre = "LEGACY SIN OWNER",
+            NombreNormalizado = "LEGACY_SIN_OWNER",
+            EsSistema = false
+        };
+        db.Roles.AddRange(plantilla, plataforma, sinDueno);
         await db.SaveChangesAsync();
 
         http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = b.Id;
@@ -224,7 +232,69 @@ public sealed class CommercialTenantReadFilterTests
         http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = a.Id;
         var visibles = await db.Roles.AsNoTracking().ToListAsync();
         Assert.Contains(visibles, role => role.Id == plantilla.Id);
+        Assert.DoesNotContain(visibles, role => role.Id == sinDueno.Id);
         Assert.DoesNotContain(visibles, role => role.Id == soloB.Id);
         Assert.DoesNotContain(visibles, role => role.Id == plataforma.Id);
     }
+
+    [Fact]
+    public async Task RolSinOwnerNoEsPlantilla_NiPorInsertDirectoDeRolPermiso()
+    {
+        await using var db = CreateDb();
+        var huerfano = new Rol
+        {
+            Nombre = "Rol legacy", NombreNormalizado = "ROL_LEGACY_GRANT",
+            Ambito = AmbitoAutorizacion.Empresa, EsSistema = false
+        };
+        var plantilla = new Rol
+        {
+            Nombre = "Plantilla sistema", NombreNormalizado = "PLANTILLA_SISTEMA_GRANT",
+            Ambito = AmbitoAutorizacion.Empresa, EsSistema = true
+        };
+        var permiso = new Permiso
+        {
+            Codigo = "PRODUCTOS.VER", Nombre = "Ver productos",
+            Modulo = ModuloSistema.Productos, Accion = AccionPermiso.Ver
+        };
+        db.Roles.AddRange(huerfano, plantilla);
+        db.Permisos.Add(permiso);
+        await db.SaveChangesAsync();
+
+        var grantMalicioso = new RolPermiso { RolId = huerfano.Id, PermisoId = permiso.Id };
+        db.RolPermisos.Add(grantMalicioso);
+        await Assert.ThrowsAsync<BusinessRuleException>(() => db.SaveChangesAsync());
+        db.Entry(grantMalicioso).State = EntityState.Detached;
+
+        db.RolPermisos.Add(new RolPermiso { RolId = plantilla.Id, PermisoId = permiso.Id });
+        await db.SaveChangesAsync();
+        Assert.Equal(1, await db.RolPermisos.CountAsync());
+    }
+
+
+    [Fact]
+    public async Task TenantNoPuedeInsertarGrantsEnPlantillaCompartida()
+    {
+        var http = new DefaultHttpContext();
+        await using var db = CreateDb(http);
+        var empresa = new Empresa("Empresa A");
+        var plantilla = new Rol
+        {
+            Nombre = "Plantilla RBAC", NombreNormalizado = "PLANTILLA_RBAC",
+            Ambito = AmbitoAutorizacion.Empresa, EsSistema = true
+        };
+        var permiso = new Permiso
+        {
+            Codigo = "PRODUCTOS.VER.TPL", Nombre = "Ver productos",
+            Modulo = ModuloSistema.Productos, Accion = AccionPermiso.Ver
+        };
+        db.Set<Empresa>().Add(empresa);
+        db.Roles.Add(plantilla);
+        db.Permisos.Add(permiso);
+        await db.SaveChangesAsync();
+
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = empresa.Id;
+        db.RolPermisos.Add(new RolPermiso { RolId = plantilla.Id, PermisoId = permiso.Id });
+        await Assert.ThrowsAsync<ForbiddenAccessException>(() => db.SaveChangesAsync());
+    }
+
 }

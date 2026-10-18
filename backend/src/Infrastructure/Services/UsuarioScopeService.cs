@@ -123,7 +123,8 @@ public sealed class UsuarioScopeService : IUsuarioScopeService
                   // Nunca aceptar un rol de Plataforma como membresía Empresa,
                   // ni aplicar el rol personalizado de la empresa B sobre A.
                   rol.Ambito == AmbitoAutorizacion.Empresa &&
-                  (!rol.EmpresaId.HasValue || rol.EmpresaId.Value == empresa.Id) &&
+                  (rol.EmpresaId == empresa.Id ||
+                   (rol.EmpresaId == null && rol.EsSistema)) &&
                   (!empresaId.HasValue || membresia.EmpresaId == empresaId.Value)
             select new UsuarioTenantScopeActual(
                 usuario.Id,

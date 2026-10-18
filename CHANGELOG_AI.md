@@ -1,3 +1,12 @@
+## 2026-10-18 — DEV Microfase roles empresariales: ownership estricto (candidato)
+
+- El control RBAC asigna `EmpresaId` desde el contexto empresarial validado por el backend a cada rol personalizado creado o duplicado; el cliente nunca controla ese propietario.
+- Solo se aceptan por membresía roles personalizados del mismo tenant o plantillas `Ambito=Empresa, EsSistema=true, EmpresaId=NULL`. `RolService`, `UsuarioService`, `UsuarioScopeService`, filtros EF y permisos rechazan roles de B/plataforma y legacy ambiguos desde A.
+- Las plantillas compartidas quedan de solo lectura para cambios de rol y matriz de permisos desde la administración de tenant; rol personalizado sin owner no puede modificarse ni conceder grants.
+- Migración Oracle `20261018200000_TenantRoleOwnershipDeterministicBackfill`: atribuye roles anteriores solo cuando toda la instalación tiene UNA empresa (incluidas suspendidas); con A/B no infiere dueño ni desde membresías potencialmente manipuladas. No elimina filas. Los ambiguos conservan `EmpresaId=NULL` y no confieren RBAC.
+- Pruebas unitarias, EF y MySQL efímero (incluidos replay de rol cruzado/plantilla/orfandad). La migración se valida sobre commit y MySQL temporal; no ejecutar en QA/PROD ni alterar banderas multiempresa.
+- Rollback seguro: revertir cambios de aplicación solo con cuarentena de roles y operación A/B vigente; no deshacer ownership desde migración sin backup verificado. PENDIENTE REVIEW_FIRST, CI exact-head, readback DEV y P0/P1=0 antes de LISTO.
+
 ## 2026-10-18 — DEV: causa precisa del primer bloqueo post-merge de acta
 
 - La prueba de procedencia online en PR #3668 diagnosticó `CHECK=GITHUB_ATTESTATION_CONSISTENCY REASON=unauthorized attestation association`. La etiqueta contextual `author_association` devuelta a `GITHUB_TOKEN` difiere de la observada en el conector GitHub y no es prueba de identidad estable.

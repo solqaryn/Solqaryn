@@ -68,7 +68,7 @@ public sealed class UsuarioTenantRoleOwnershipMySqlIntegrationTests
                 Nombre = "P4 PLANTILLA",
                 NombreNormalizado = "P4_PLANTILLA",
                 Ambito = AmbitoAutorizacion.Empresa,
-                EmpresaId = null, Activo = true
+                EmpresaId = null, EsSistema = true, Activo = true
             };
             db.Roles.AddRange(roleB, rolePlatform, template);
             await db.SaveChangesAsync();
@@ -100,6 +100,18 @@ public sealed class UsuarioTenantRoleOwnershipMySqlIntegrationTests
             var membershipA = await db.UsuarioEmpresas.SingleAsync(m =>
                 m.UsuarioId == user.Id && m.EmpresaId == a.Id);
             membershipA.CambiarRol(rolePlatform.Id);
+            await db.SaveChangesAsync();
+            Assert.Null(await scope.ObtenerActualAsync(a.Id));
+
+            var orphan = new Rol {
+                Nombre = "P4 ROL LEGACY SIN OWNER",
+                NombreNormalizado = "P4_ROL_LEGACY_SIN_OWNER",
+                Ambito = AmbitoAutorizacion.Empresa,
+                EsSistema = false, EmpresaId = null, Activo = true
+            };
+            db.Roles.Add(orphan);
+            await db.SaveChangesAsync();
+            membershipA.CambiarRol(orphan.Id);
             await db.SaveChangesAsync();
             Assert.Null(await scope.ObtenerActualAsync(a.Id));
 

@@ -23,6 +23,21 @@ public class RolService : IRolService
     private static string Normalizar(string nombre) =>
         nombre.Trim().ToLower(CultureInfo.InvariantCulture);
 
+    private static void ExigirEmpresaAutorizada(int empresaId)
+    {
+        if (empresaId <= 0)
+            throw new ForbiddenAccessException("Se requiere una empresa autorizada para administrar roles.");
+    }
+
+    private static void ExigirRolMutable(Rol rol)
+    {
+        // Plantillas compartidas y roles sin dueño son inmutables desde tenant.
+        if (rol.EsSistema || rol.Ambito != AmbitoAutorizacion.Empresa ||
+            rol.EmpresaId is not > 0)
+            throw new BusinessRuleException(
+                "Solo se pueden modificar roles personalizados con empresa propietaria.");
+    }
+
     public async Task<List<RolDto>> GetAllAsync(bool incluirEliminados = false)
     {
         var roles = await _repository.GetAllAsync(incluirEliminados);
@@ -44,6 +59,7 @@ public class RolService : IRolService
         Nombre = rol.Nombre,
         Descripcion = rol.Descripcion,
         EsSistema = rol.EsSistema,
+        EmpresaId = rol.EmpresaId,
         EsAdministrador = rol.EsAdministrador,
         Activo = rol.Activo,
         CantidadUsuarios = await _repository.ContarUsuariosAsync(rol.Id),
@@ -52,8 +68,9 @@ public class RolService : IRolService
         FechaActualizacion = rol.FechaActualizacion
     };
 
-    public async Task<RolDto> CreateAsync(CrearRolDto dto)
+    public async Task<RolDto> CreateAsync(CrearRolDto dto, int empresaIdAutorizada)
     {
+        ExigirEmpresaAutorizada(empresaIdAutorizada);
         var nombre = dto.Nombre.Trim();
         if (string.IsNullOrWhiteSpace(nombre))
             throw new BusinessRuleException("El nombre del rol es obligatorio.");
@@ -69,6 +86,8 @@ public class RolService : IRolService
             Descripcion = dto.Descripcion,
             EsAdministrador = dto.EsAdministrador,
             EsSistema = false,
+            Ambito = AmbitoAutorizacion.Empresa,
+            EmpresaId = empresaIdAutorizada,
             Activo = true,
             CreadoPorUsuarioId = _currentUser.UsuarioId
         };
@@ -86,6 +105,7 @@ public class RolService : IRolService
     {
         var rol = await _repository.GetByIdAsync(id)
             ?? throw new BusinessRuleException("El rol no existe.");
+        ExigirRolMutable(rol);
 
         var nombre = dto.Nombre.Trim();
         if (string.IsNullOrWhiteSpace(nombre))
@@ -94,9 +114,6 @@ public class RolService : IRolService
         var normalizado = Normalizar(nombre);
         if (await _repository.ExisteNombreAsync(normalizado, id))
             throw new BusinessRuleException($"Ya existe un rol con el nombre '{nombre}'.");
-
-        if (rol.EsSistema && normalizado != rol.NombreNormalizado)
-            throw new BusinessRuleException("No se puede renombrar un rol de sistema.");
 
         var anterior = new { rol.Nombre, rol.Descripcion };
 
@@ -121,6 +138,7 @@ public class RolService : IRolService
         var rol = await _repository.GetByIdAsync(id)
             ?? throw new BusinessRuleException("El rol no existe.");
 
+        ExigirRolMutable(rol);
         rol.Activo = true;
         rol.FechaActualizacion = DateTime.UtcNow;
         rol.ActualizadoPorUsuarioId = _currentUser.UsuarioId;
@@ -146,6 +164,7 @@ public class RolService : IRolService
                     "No se puede desactivar el último rol administrador con usuarios activos.");
         }
 
+        ExigirRolMutable(rol);
         rol.Activo = false;
         rol.FechaActualizacion = DateTime.UtcNow;
         rol.ActualizadoPorUsuarioId = _currentUser.UsuarioId;
@@ -163,8 +182,7 @@ public class RolService : IRolService
         var rol = await _repository.GetByIdAsync(id)
             ?? throw new BusinessRuleException("El rol no existe.");
 
-        if (rol.EsSistema)
-            throw new BusinessRuleException("No se puede eliminar un rol de sistema.");
+        ExigirRolMutable(rol);
 
         var usuarios = await _repository.ContarUsuariosAsync(rol.Id);
         if (usuarios > 0)
@@ -193,8 +211,7 @@ public class RolService : IRolService
         var rol = await _repository.GetByIdAsync(id)
             ?? throw new BusinessRuleException("El rol no existe.");
 
-        if (rol.EsSistema)
-            throw new BusinessRuleException("No se puede eliminar permanentemente un rol de sistema.");
+        ExigirRolMutable(rol);
 
         var usuarios = await _repository.ContarUsuariosAsync(rol.Id);
         if (usuarios > 0)
@@ -226,10 +243,13 @@ public class RolService : IRolService
             $"Eliminó permanentemente el rol '{nombre}'.", id);
     }
 
-    public async Task<RolDto> DuplicarAsync(int id, string nuevoNombre)
+    public async Task<RolDto> DuplicarAsync(int id, string nuevoNombre, int empresaIdAutorizada)
     {
+        ExigirEmpresaAutorizada(empresaIdAutorizada);
         var original = await _repository.GetByIdAsync(id)
             ?? throw new BusinessRuleException("El rol no existe.");
+        if (!original.EsAsignableAEmpresa(empresaIdAutorizada))
+            throw new BusinessRuleException("No se puede duplicar un rol de otra empresa, de plataforma o sin dueño.");
 
         var nombre = nuevoNombre.Trim();
         var normalizado = Normalizar(nombre);
@@ -243,6 +263,8 @@ public class RolService : IRolService
             Descripcion = original.Descripcion,
             EsAdministrador = original.EsAdministrador,
             EsSistema = false,
+            Ambito = AmbitoAutorizacion.Empresa,
+            EmpresaId = empresaIdAutorizada,
             Activo = true,
             CreadoPorUsuarioId = _currentUser.UsuarioId
         };

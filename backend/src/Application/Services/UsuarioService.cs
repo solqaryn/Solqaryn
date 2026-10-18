@@ -71,9 +71,7 @@ public class UsuarioService : IUsuarioService
 
     private static void ValidarRolDeEmpresa(Rol rol, int empresaId)
     {
-        if (empresaId <= 0 ||
-            rol.Ambito != AmbitoAutorizacion.Empresa ||
-            (rol.EmpresaId.HasValue && rol.EmpresaId.Value != empresaId))
+        if (!rol.EsAsignableAEmpresa(empresaId))
             throw new BusinessRuleException(
                 "El rol empresarial no pertenece a la empresa seleccionada o es un rol de plataforma.");
     }

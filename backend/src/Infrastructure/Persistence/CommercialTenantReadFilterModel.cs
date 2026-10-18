@@ -44,29 +44,34 @@ public static class CommercialTenantReadFilterModel
 
             Expression scopePredicate = Expression.OrElse(scopeAbsent, ownedByTenant);
 
-            // Solo plantillas RBAC de ámbito EMPRESA pueden compartirse sin
-            // owner. Un rol de PLATAFORMA (y sus grants) jamás es plantilla
-            // visible por la empresa, aunque EmpresaId sea NULL.
+            // Solo las plantillas de SISTEMA del ámbito EMPRESA pueden
+            // compartirse sin dueño. Ni PLATAFORMA ni roles legacy sin owner
+            // son visibles desde el tenant, aunque EmpresaId sea NULL.
             if (entity.ClrType == typeof(Rol))
             {
                 var ambit = Expression.Property(record, nameof(Rol.Ambito));
                 scopePredicate = Expression.OrElse(scopePredicate, Expression.AndAlso(
                     Expression.Equal(ownerValue, Expression.Constant(null, typeof(int?))),
-                    Expression.Equal(ambit,
-                        Expression.Constant(Solqaryn.Domain.Enums.AmbitoAutorizacion.Empresa))));
+                    Expression.AndAlso(
+                        Expression.Property(record, nameof(Rol.EsSistema)),
+                        Expression.Equal(ambit,
+                            Expression.Constant(Solqaryn.Domain.Enums.AmbitoAutorizacion.Empresa)))));
             }
             else if (entity.ClrType == typeof(RolPermiso))
             {
                 var role = Expression.Property(record, nameof(RolPermiso.RolEntidad));
                 var ambit = Expression.Property(role, nameof(Rol.Ambito));
                 var roleOwner = Expression.Property(role, nameof(Rol.EmpresaId));
+                var isSystemTemplate = Expression.Property(role, nameof(Rol.EsSistema));
                 scopePredicate = Expression.OrElse(scopePredicate, Expression.AndAlso(
                     Expression.Equal(ownerValue, Expression.Constant(null, typeof(int?))),
                     Expression.AndAlso(
                         Expression.Equal(roleOwner,
                             Expression.Constant(null, typeof(int?))),
-                        Expression.Equal(ambit,
-                            Expression.Constant(Solqaryn.Domain.Enums.AmbitoAutorizacion.Empresa)))));
+                        Expression.AndAlso(
+                            isSystemTemplate,
+                            Expression.Equal(ambit,
+                                Expression.Constant(Solqaryn.Domain.Enums.AmbitoAutorizacion.Empresa))))));
             }
 
             var existing = entity.GetDeclaredQueryFilters().SingleOrDefault()?.Expression;

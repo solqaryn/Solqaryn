@@ -21,7 +21,7 @@ public sealed class UsuarioPrimeraMembresiaIsolationTests
             tenantHttpContextAccessor: new HttpContextAccessor { HttpContext = http });
         var empresaA = new Empresa("Empresa A");
         var empresaB = new Empresa("Empresa B");
-        var rol = new Rol { Nombre = "Vendedor", NombreNormalizado = "VENDEDOR" };
+        var rol = new Rol { Nombre = "Vendedor", NombreNormalizado = "VENDEDOR", EsSistema = true };
         db.Set<Empresa>().AddRange(empresaA, empresaB);
         db.Roles.Add(rol);
         await db.SaveChangesAsync();
@@ -67,7 +67,7 @@ public sealed class UsuarioPrimeraMembresiaIsolationTests
             tenantHttpContextAccessor: new HttpContextAccessor { HttpContext = http });
         var empresaA = new Empresa("Empresa A inactiva");
         var empresaB = new Empresa("Empresa B activa");
-        var rol = new Rol { Nombre = "Vendedor", NombreNormalizado = "VENDEDOR" };
+        var rol = new Rol { Nombre = "Vendedor", NombreNormalizado = "VENDEDOR", EsSistema = true };
         db.Set<Empresa>().AddRange(empresaA, empresaB);
         db.Roles.Add(rol);
         await db.SaveChangesAsync();

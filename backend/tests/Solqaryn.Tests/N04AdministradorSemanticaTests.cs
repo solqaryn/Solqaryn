@@ -49,6 +49,7 @@ public class N04AdministradorSemanticaTests
             Id = rolId,
             Nombre = "Administrador",
             NombreNormalizado = "ADMINISTRADOR",
+            EmpresaId = 11,
             EsAdministrador = true,
             Activo = true
         });
@@ -93,6 +94,7 @@ public class N04AdministradorSemanticaTests
             Id = rolId,
             Nombre = "Operador",
             NombreNormalizado = "OPERADOR",
+            EmpresaId = 11,
             EsAdministrador = false,
             Activo = true
         });
