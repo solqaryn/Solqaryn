@@ -104,6 +104,9 @@ def main() -> int:
                 "ledgerAfterReplay != 1",
                 "repeated != HttpStatusCode.ServiceUnavailable",
                 "UseProxy = false",
+                'private const string RenderApiHost = "solqaryn-api-dev-fxx8.onrender.com"',
+                "health.Headers.Host = RenderApiHost",
+                "request.Headers.Host = RenderApiHost",
                 "PUBLIC_STORE_HMAC_REPLAY_LIVE=PASS",
             )
             forbidden = ("/tienda/checkout", "ExecuteSql", "DeleteAsync(",
