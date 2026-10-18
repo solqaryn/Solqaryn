@@ -25,6 +25,7 @@ public sealed class DevPublicStoreReplayCertificationHostedService(
 {
     private const string AllowedDbHost = "solqaryn-mysql-solqaryn.h.aivencloud.com";
     private const string PublicHost = "solqaryn-dev.vercel.app";
+    private const string RenderApiHost = "solqaryn-api-dev-fxx8.onrender.com";
     private const string StoreKey = "tienda-a";
     private const string BindingPath = "/tienda/binding";
     private const string Flag = "PublicStore:ReplayLiveCertificationOnStartup";
@@ -148,8 +149,12 @@ public sealed class DevPublicStoreReplayCertificationHostedService(
             token.ThrowIfCancellationRequested();
             try
             {
-                using var response = await client.GetAsync(
-                    new Uri(loopback, "/health/ready"), token);
+                using var health = new HttpRequestMessage(HttpMethod.Get,
+                    new Uri(loopback, "/health/ready"));
+                // Kestrel allows only its pinned DEV Render Host. Connect to loopback
+                // but preserve HostFilteringMiddleware without widening AllowedHosts.
+                health.Headers.Host = RenderApiHost;
+                using var response = await client.SendAsync(health, token);
                 if (response.StatusCode == HttpStatusCode.OK)
                     return;
             }
@@ -185,6 +190,8 @@ public sealed class DevPublicStoreReplayCertificationHostedService(
     {
         using var request = new HttpRequestMessage(HttpMethod.Get,
             new Uri(loopback, BindingPath));
+        // Use the allowed DEV API Host over a loopback TCP connection.
+        request.Headers.Host = RenderApiHost;
         request.Headers.TryAddWithoutValidation(PublicStoreProxyProof.OriginHeader, PublicHost);
         request.Headers.TryAddWithoutValidation(PublicStoreProxyProof.KeyHeader, StoreKey);
         request.Headers.TryAddWithoutValidation(PublicStoreProxyProof.AtHeader, proof.At);
