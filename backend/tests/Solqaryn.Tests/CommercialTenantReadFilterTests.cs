@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Solqaryn.Application.Security;
+using Solqaryn.Application.Exceptions;
+using Solqaryn.Domain.Enums;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Infrastructure.Persistence;
 using Xunit;
@@ -234,4 +236,38 @@ public sealed class CommercialTenantReadFilterTests
         Assert.DoesNotContain(visibles, role => role.Id == soloB.Id);
         Assert.DoesNotContain(visibles, role => role.Id == plataforma.Id);
     }
+
+    [Fact]
+    public async Task RolSinOwnerNoEsPlantilla_NiPorInsertDirectoDeRolPermiso()
+    {
+        await using var db = CreateDb();
+        var huerfano = new Rol
+        {
+            Nombre = "Rol legacy", NombreNormalizado = "ROL_LEGACY_GRANT",
+            Ambito = AmbitoAutorizacion.Empresa, EsSistema = false
+        };
+        var plantilla = new Rol
+        {
+            Nombre = "Plantilla sistema", NombreNormalizado = "PLANTILLA_SISTEMA_GRANT",
+            Ambito = AmbitoAutorizacion.Empresa, EsSistema = true
+        };
+        var permiso = new Permiso
+        {
+            Codigo = "PRODUCTOS.VER", Nombre = "Ver productos",
+            Modulo = ModuloSistema.Productos, Accion = AccionPermiso.Ver
+        };
+        db.Roles.AddRange(huerfano, plantilla);
+        db.Permisos.Add(permiso);
+        await db.SaveChangesAsync();
+
+        var grantMalicioso = new RolPermiso { RolId = huerfano.Id, PermisoId = permiso.Id };
+        db.RolPermisos.Add(grantMalicioso);
+        await Assert.ThrowsAsync<BusinessRuleException>(() => db.SaveChangesAsync());
+        db.Entry(grantMalicioso).State = EntityState.Detached;
+
+        db.RolPermisos.Add(new RolPermiso { RolId = plantilla.Id, PermisoId = permiso.Id });
+        await db.SaveChangesAsync();
+        Assert.Equal(1, await db.RolPermisos.CountAsync());
+    }
+
 }

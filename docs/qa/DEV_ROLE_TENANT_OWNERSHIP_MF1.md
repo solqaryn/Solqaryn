@@ -11,6 +11,7 @@ Esta acta es evidencia técnica del cambio candidato, NO una declaración `LISTO
 - Un rol de `Ambito=Plataforma`, rol privado de B, plantilla no sistema con dueño nulo, rol inactivo o eliminado es inválido para A.
 - El filtro EF no materializa roles personalizados sin dueño como plantillas de empresa, ni sus permisos relacionados.
 - Un tenant no puede editar plantillas de sistema compartidas: ni metadata de rol, ni activación/desactivación, ni matriz de grants.
+- El guard de escritura EF rechaza incluso INSERT directo de RolPermiso hacia un rol empresarial sin dueño y EsSistema=false; solo admite grants de plantillas válidas.
 
 ## Backfill histórico: criterios fail-closed
 

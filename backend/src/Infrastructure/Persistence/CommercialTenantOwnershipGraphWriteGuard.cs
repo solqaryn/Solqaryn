@@ -215,6 +215,13 @@ public static class CommercialTenantOwnershipGraphWriteGuard
         if (role.EmpresaId is > 0)
             return false; // Rol empresarial personalizado: guard completo A/B.
 
+        // Un rol legacy sin propietario NO es plantilla: un grant insertado
+        // directamente en EF tampoco puede legitimarlo como autoridad global.
+        if (role.Ambito == Solqaryn.Domain.Enums.AmbitoAutorizacion.Empresa &&
+            !role.EsSistema)
+            throw new BusinessRuleException(
+                "Un rol empresarial sin dueño y sin condición de sistema no puede recibir grants.");
+
         if (role.Ambito == Solqaryn.Domain.Enums.AmbitoAutorizacion.Plataforma &&
             authorized is > 0)
             throw new ForbiddenAccessException(
