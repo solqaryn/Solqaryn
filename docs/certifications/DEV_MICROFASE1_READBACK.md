@@ -54,7 +54,7 @@ En los PR que modifican el certificador, el workflow ejecuta ahora la comprobaci
 Al ejecutarse sobre `dev`, primero verifica:
 
 - repositorio, rama y Aiven DEV aprobados; secretos fuera de logs;
-- origen corporativo en GitHub del acta de evidencia, comentario no
+- origen corporativo en GitHub del acta de evidencia (ID numerico del autor, no la etiqueta contextual de afiliacion), comentario no
   modificado, PR fusionado en `dev`, SHA/IDs/logs HMAC;
 - que el commit atestiguado es ancestro del HEAD y que los archivos
   de firma/proxy/middleware/ledger-replay/binding son identicos byte a byte;
