@@ -171,6 +171,7 @@ public sealed class CommercialTenantRemainingModelTests
         {
             Nombre = "Plantilla E2E",
             NombreNormalizado = "PLANTILLA_E2E",
+            EsSistema = true,
             Ambito = Solqaryn.Domain.Enums.AmbitoAutorizacion.Empresa
         };
         var permiso = new Permiso { Codigo = "PRODUCTOS.LEER", Nombre = "Leer productos" };
@@ -178,11 +179,17 @@ public sealed class CommercialTenantRemainingModelTests
         db.Permisos.Add(permiso);
         await db.SaveChangesAsync();
 
-        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = empresa.Id;
+        // La plantilla solo recibe grants desde bootstrap sin autoridad tenant.
         var grant = new RolPermiso { RolId = plantilla.Id, PermisoId = permiso.Id };
         db.RolPermisos.Add(grant);
         await db.SaveChangesAsync();
         Assert.Null(db.Entry(grant).Property<int?>("EmpresaId").CurrentValue);
+
+        // Su matriz queda compartida para lectura, no mutable por empresa A.
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = empresa.Id;
+        var grantNoAutorizado = new RolPermiso { RolId = plantilla.Id, PermisoId = permiso.Id };
+        db.RolPermisos.Add(grantNoAutorizado);
+        await Assert.ThrowsAsync<ForbiddenAccessException>(() => db.SaveChangesAsync());
     }
 
     [Fact]
