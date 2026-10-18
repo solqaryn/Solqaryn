@@ -618,7 +618,23 @@ Las entradas nuevas de `RegistroAuditoria` se marcan con `EmpresaId` solamente c
 - Corrección limitada: en provider MySQL, el gate de 0–1/2+ empresas utiliza `SELECT e.Id AS Value FROM Empresas e ORDER BY e.Id LIMIT 2 FOR SHARE` (current read compartida) y evita crear snapshot MVCC antes de bloquear el documento; InMemory conserva el conteo para tests de contrato.
 - Sin alterar DDL, integridad, propietarios, aislamiento A/B, credenciales ni QA/PROD; no se retira cuarentena P0. Cierre condicionado al nuevo CI exact-head, incluida la regresión de concurrencia MySQL. No equivale a certificación P4 integral.
 
+### Certificacion de identidad publica multiempresa DEV — evidencia compuesta y worker retirado
 
-### Instrumentacion temporal para certificar HMAC v2 live en DEV (no activada)
+El middleware HMAC v2, el proxy que firma las solicitudes y la proteccion persistente
+de replay en MySQL siguen siendo los controles de seguridad actuales. La ejecucion
+de Render DEV que verifico 200/503/200 esta registrada en el acta corporativa
+del PR #3666 sobre SHA `49195f34d6c00e0c0b7684465619af0a96afeba5`.
+La suspension/reactivacion de empresas A/B se conserva como evidencia auditada
+de estados autorizados sucesivos; no se fuerza una suspension por cada readback.
 
-Un worker interno `DevPublicStoreReplayCertificationHostedService` se registra exclusivamente en Render Development con `PublicStore:ReplayLiveCertificationOnStartup=true` (false por defecto). Comprueba conexion corporativa a Aiven DEV, vinculo activo Host+StoreKey y Empresa activa. Envia por loopback tres GET de identidad a Kestrel: firma valida, firma identica reutilizada y nueva firma, y verifica la insercion unica en `PublicStoreProofReplays`. No agrega rutas/DTO, no opera datos comerciales, no traslada el secreto a CI ni habilita tiendas secundarias comerciales. Logs sin firmas ni secretos y rollback por flag false. Esta instrumentacion es candidata; no sustituye la evidencia autenticada de ejecucion real en Render ni supone certificacion hasta REVIEW_FIRST/CI/HEAD. Ver `docs/runbooks/DEV_PUBLIC_STORE_REPLAY_ONE_SHOT.md`.
+El certificador vigente `.github/workflows/dev-public-store-live-readback.yml`
+valida la integridad del acta GitHub, su autoria y los archivos exactos del
+middleware/signer/binding con equivalencia de commits, y posteriormente ejecuta
+readback MySQL/HTTP DEV en vivo. Las pruebas historicas se identifican como
+`PASS_ATTESTED` y no como ejecutadas de nuevo. Si cambia el codigo de seguridad
+o falla un control HTTP/MySQL, la certificacion falla cerrada.
+
+La instrumentacion de una sola ejecucion HMAC ya fue retirada del backend DEV;
+no hay endpoint, hosted service ni flag activo de arranque. No hay cambio de
+contrato comercial, DTO, esquema MySQL, QA ni PROD. Contrato operativo:
+`docs/certifications/DEV_MICROFASE1_READBACK.md`.
