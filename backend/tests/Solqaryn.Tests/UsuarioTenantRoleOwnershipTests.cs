@@ -40,7 +40,8 @@ public sealed class UsuarioTenantRoleOwnershipTests
         var plantilla = new Rol
         {
             Nombre = "ROL PLANTILLA", NombreNormalizado = "ROL_PLANTILLA",
-            EmpresaId = null, Ambito = AmbitoAutorizacion.Empresa, Activo = true
+            EmpresaId = null, Ambito = AmbitoAutorizacion.Empresa,
+            EsSistema = true, Activo = true
         };
         db.Roles.AddRange(roleB, platform, plantilla);
         await db.SaveChangesAsync();
@@ -72,6 +73,17 @@ public sealed class UsuarioTenantRoleOwnershipTests
         await db.SaveChangesAsync();
         Assert.Null(await scope.ObtenerActualAsync(a.Id));
 
+        // Un rol personalizado legacy sin owner jamás adquiere autoridad A.
+        var huerfano = new Rol {
+            Nombre = "SIN OWNER", NombreNormalizado = "SIN_OWNER",
+            Ambito = AmbitoAutorizacion.Empresa, EsSistema = false, Activo = true
+        };
+        db.Roles.Add(huerfano);
+        await db.SaveChangesAsync();
+        almacenada.CambiarRol(huerfano.Id);
+        await db.SaveChangesAsync();
+        Assert.Null(await scope.ObtenerActualAsync(a.Id));
+
         almacenada.CambiarRol(plantilla.Id);
         await db.SaveChangesAsync();
         Assert.Equal(plantilla.Id, (await scope.ObtenerActualAsync(a.Id))?.RolId);
@@ -81,6 +93,7 @@ public sealed class UsuarioTenantRoleOwnershipTests
     [Theory]
     [InlineData(22, AmbitoAutorizacion.Empresa)]
     [InlineData(null, AmbitoAutorizacion.Plataforma)]
+    [InlineData(null, AmbitoAutorizacion.Empresa)]
     public async Task UsuarioService_NoAsigna_Roles_Ajenos_En_Membresias(
         int? roleOwner, AmbitoAutorizacion scope)
     {
@@ -127,7 +140,8 @@ public sealed class UsuarioTenantRoleOwnershipTests
         {
             Id = 4, Nombre = "Plantilla Empresa",
             NombreNormalizado = "PLANTILLA_EMPRESA",
-            EmpresaId = null, Ambito = AmbitoAutorizacion.Empresa, Activo = true
+            EmpresaId = null, Ambito = AmbitoAutorizacion.Empresa,
+            EsSistema = true, Activo = true
         };
         var (sut, usuarios) = ConstruirServicio(rol);
         usuarios.Setup(x => x.GetEmpresaAsync(30, 11))
