@@ -107,6 +107,13 @@ def main() -> int:
                 'private const string RenderApiHost = "solqaryn-api-dev-fxx8.onrender.com"',
                 "health.Headers.Host = RenderApiHost",
                 "request.Headers.Host = RenderApiHost",
+                "health.Headers.ConnectionClose = true",
+                "request.Headers.ConnectionClose = true",
+                "timeout.CancelAfter(TimeSpan.FromSeconds(12))",
+                "cmd.CommandTimeout = 10",
+                "PUBLIC_STORE_HMAC_REPLAY_STAGE=FIRST_PASS",
+                "PUBLIC_STORE_HMAC_REPLAY_STAGE=REPLAY_PASS",
+                "PUBLIC_STORE_HMAC_REPLAY_STAGE=FRESH_PASS",
                 "PUBLIC_STORE_HMAC_REPLAY_LIVE=PASS",
             )
             forbidden = ("/tienda/checkout", "ExecuteSql", "DeleteAsync(",

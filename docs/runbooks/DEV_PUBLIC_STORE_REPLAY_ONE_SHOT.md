@@ -66,3 +66,12 @@ NO aplica a QA, PROD, main ni solqaryn.com.
   verde un certificado incompleto.
 - No ejecutar en QA/PROD aunque se agregase el flag por error:
   Environment, Render y Aiven DEV deben pasar comprobacion exacta.
+
+## Evidencia y diagnóstico 2026-10-18 (antes del ajuste de conexión)
+
+- Merge PR #3664 a dev: db9b4f0702df176f7c9e44470907a63ba1435881. CI del PR: 17/17 PASS; Render y Vercel DEV publicaron el SHA.
+- Deploy Render DEV dep-dba50lgm7kps73fgi0vg (flag true): GET loopback /tienda/binding primera respuesta HTTP 200 a las 04:55:22 UTC; segundo uso del mismo proof HTTP 503 a las 04:55:23 UTC. MySQL documentó rechazo por digest duplicado; el worker avanzó a un tercer GET, pero no apareció respuesta final ni marca LIVE=PASS. Las dos lecturas del digest previas al tercer GET se habian ejecutado bajo condiciones estrictas del worker.
+- Deploy de apagado dep-dba53odg1s2s73aqfvc0 quedó LIVE a las 04:59:49 UTC. Segundo y único reintento antes del cambio: primera respuesta 200 a las 05:03:17 UTC, segundo GET iniciado sin respuesta final. **No hubo marca LIVE=PASS**. El flag se volvió a apagar; deploy dep-dba56gvbtjjs73dr5tog LIVE a las 05:05:39 UTC.
+- La falla de finalización no debe atribuirse sin evidencia a MySQL, Kestrel o conectividad. NO se certifica el escenario completo 200/503/200 con estos logs.
+- Ajuste del worker candidato: encabezado Connection: close para cada GET loopback, timeout acotado en readback MySQL y trazas de fase FIRST_PASS, REPLAY_PASS, FRESH_PASS, sin secreto/nonce/firma en logs. Mantener LIVE=PASS condicionado a los tres HTTP y ambos digests persistidos correctamente.
+- Un nuevo ensayo se ejecutará solo tras CI exact-head y fusión/revisión formal en dev, sin alterar contratos, host público, QA/PROD ni empresas. Desactivar siempre el flag al terminar, incluso si aparece BLOCKED.

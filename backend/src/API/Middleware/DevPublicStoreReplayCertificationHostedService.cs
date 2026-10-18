@@ -42,6 +42,7 @@ public sealed class DevPublicStoreReplayCertificationHostedService(
         catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
         {
             // Deployment stopped; absence of a PASS is never a certification.
+            logger.LogWarning("PUBLIC_STORE_HMAC_REPLAY_LIVE=BLOCKED reason=Shutdown");
         }
         catch (Exception exception)
         {
@@ -108,7 +109,7 @@ public sealed class DevPublicStoreReplayCertificationHostedService(
         };
         using var client = new HttpClient(handler)
         {
-            Timeout = TimeSpan.FromSeconds(8)
+            Timeout = TimeSpan.FromSeconds(20)
         };
         var loopback = new Uri($"http://127.0.0.1:{port}");
         await WaitForLocalApiAsync(client, loopback, token);
@@ -119,11 +120,13 @@ public sealed class DevPublicStoreReplayCertificationHostedService(
         var ledgerAfterFirst = await CountDigestAsync(db, firstProof.Proof, token);
         if (first != HttpStatusCode.OK || ledgerAfterFirst != 1)
             throw new InvalidOperationException("First signed request was not accepted and persisted.");
+        logger.LogInformation("PUBLIC_STORE_HMAC_REPLAY_STAGE=FIRST_PASS env=DEV http=200 ledger=PASS");
 
         var repeated = await CallBindingAsync(client, loopback, firstProof, companyId.Value, token);
         var ledgerAfterReplay = await CountDigestAsync(db, firstProof.Proof, token);
         if (repeated != HttpStatusCode.ServiceUnavailable || ledgerAfterReplay != 1)
             throw new InvalidOperationException("Repeated proof was not blocked by shared ledger.");
+        logger.LogInformation("PUBLIC_STORE_HMAC_REPLAY_STAGE=REPLAY_PASS env=DEV http=503 ledger=PASS");
 
         // Fresh nonce and proof must still work for the SAME legitimate tenant.
         var freshProof = Sign(secret);
@@ -132,6 +135,7 @@ public sealed class DevPublicStoreReplayCertificationHostedService(
         if (fresh != HttpStatusCode.OK || freshLedger != 1 ||
             string.Equals(freshProof.Proof, firstProof.Proof, StringComparison.Ordinal))
             throw new InvalidOperationException("Fresh signed request failed after replay rejection.");
+        logger.LogInformation("PUBLIC_STORE_HMAC_REPLAY_STAGE=FRESH_PASS env=DEV http=200 ledger=PASS");
 
         var commit = Environment.GetEnvironmentVariable("RENDER_GIT_COMMIT") ?? "unknown";
         if (commit.Length != 40 || commit.Any(c => !(c is >= '0' and <= '9' or >= 'a' and <= 'f')))
@@ -154,6 +158,7 @@ public sealed class DevPublicStoreReplayCertificationHostedService(
                 // Kestrel allows only its pinned DEV Render Host. Connect to loopback
                 // but preserve HostFilteringMiddleware without widening AllowedHosts.
                 health.Headers.Host = RenderApiHost;
+                health.Headers.ConnectionClose = true;
                 using var response = await client.SendAsync(health, token);
                 if (response.StatusCode == HttpStatusCode.OK)
                     return;
@@ -192,6 +197,7 @@ public sealed class DevPublicStoreReplayCertificationHostedService(
             new Uri(loopback, BindingPath));
         // Use the allowed DEV API Host over a loopback TCP connection.
         request.Headers.Host = RenderApiHost;
+        request.Headers.ConnectionClose = true;
         request.Headers.TryAddWithoutValidation(PublicStoreProxyProof.OriginHeader, PublicHost);
         request.Headers.TryAddWithoutValidation(PublicStoreProxyProof.KeyHeader, StoreKey);
         request.Headers.TryAddWithoutValidation(PublicStoreProxyProof.AtHeader, proof.At);
@@ -222,17 +228,20 @@ public sealed class DevPublicStoreReplayCertificationHostedService(
     {
         // The ADO.NET parameter never goes to the logs. Exact digest lookup
         // proves the ledger accepted it only once, independent of other requests.
-        await db.Database.OpenConnectionAsync(token);
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(token);
+        timeout.CancelAfter(TimeSpan.FromSeconds(12));
+        await db.Database.OpenConnectionAsync(timeout.Token);
         try
         {
             using var cmd = db.Database.GetDbConnection().CreateCommand();
             cmd.CommandText =
                 "SELECT COUNT(*) FROM PublicStoreProofReplays WHERE ProofDigest=UNHEX(@digest)";
+            cmd.CommandTimeout = 10;
             var parameter = cmd.CreateParameter();
             parameter.ParameterName = "@digest";
             parameter.Value = proofHex;
             cmd.Parameters.Add(parameter);
-            return Convert.ToInt32(await cmd.ExecuteScalarAsync(token),
+            return Convert.ToInt32(await cmd.ExecuteScalarAsync(timeout.Token),
                 CultureInfo.InvariantCulture);
         }
         finally
