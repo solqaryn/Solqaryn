@@ -624,3 +624,8 @@ Cada entrada debe indicar fecha, cambio observable, documentos/rutas afectados y
 - En el HEAD consolidado de PR #3623, el gate `CommercialTenantSqlLockScope.RequireAsync` hacía `SELECT COUNT` de empresas antes del lock `FOR UPDATE`. Bajo REPEATABLE READ, ese SELECT consistente abre el read view y puede permitir que dos transacciones concurrentes intenten insertar la misma variante técnica. El test de integración `ProductoVarianteTecnicaLifecycleIntegrationTests.AsegurarTecnica_Concurrente_CreaExactamenteUnaVariante` detectó duplicado en `IX_ProductoVariantes_ProductoTecnicoUnico`.
 - Corrección limitada: en provider MySQL, el gate de 0–1/2+ empresas utiliza `SELECT e.Id AS Value FROM Empresas e ORDER BY e.Id LIMIT 2 FOR SHARE` (current read compartida) y evita crear snapshot MVCC antes de bloquear el documento; InMemory conserva el conteo para tests de contrato.
 - Sin alterar DDL, integridad, propietarios, aislamiento A/B, credenciales ni QA/PROD; no se retira cuarentena P0. Cierre condicionado al nuevo CI exact-head, incluida la regresión de concurrencia MySQL. No equivale a certificación P4 integral.
+
+
+## 2026-10-18 — DEV replay attestation temporal, opt-in (candidato)
+
+Se incorpora un trabajador DEV restringido a Render Development y Aiven `solqaryn_dev`, apagado por defecto. Reusa el HMAC existente solo en memoria para una prueba GET de identidad por loopback (aceptacion/replay/reintento fresco) y confirma el digest en la tabla anti-replay. No altera contrato HTTP, schema empresarial, migraciones, RBAC ni rutas comerciales. Auditoria estatica y unitarios de registro obligatorio. Se retira tras certificacion; ver runbook. NO declarar LISTO sin ejecucion LIVE y controles exact-head.
