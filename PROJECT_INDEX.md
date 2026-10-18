@@ -683,11 +683,11 @@ Sanitización de imágenes: `backend/src/Infrastructure/Services/ImagenUploadSec
 - Con 2+ empresas sin marca RBAC privada falla cerrado también ante invocaciones no HTTP; el contrato histórico de instalaciones con 0–1 empresa permanece. Comprueba igualmente que la membresía devuelta por el servicio coincide con la empresa solicitada.
 - Tests A/B: autorización A con solicitud B y membresía B vigente rechazada sin invocar la membresía B; sin marca RBAC con dos empresas rechazada; no se reserva ni se incrementa numeración de B. Se conserva compare-and-swap MySQL y evidencia de transacciones anterior. No hay DDL, backfill ni cambios QA/PROD, cuarentena 503 sigue activa.
 
+## 2026-10-18 — Microfase 1 DEV: readback vigente con evidencias compuestas
 
-## 2026-10-18 — Microfase 1: test interno anti-replay DEV (candidato)
-
-- `backend/src/API/Middleware/DevPublicStoreReplayCertificationHostedService.cs`: worker sin endpoints, solo Render Development, secreto en memoria, loopback GET y ledger MySQL.
-- `PublicStore:ReplayLiveCertificationOnStartup=false` de forma predeterminada; un PASS real requiere habilitacion consciente, deploy de DEV y logs autenticados; no cambiar QA/PROD.
-- `backend/tests/Solqaryn.Tests/API/DevPublicStoreReplayCertificationRegistrationTests.cs`: evita registro no autorizado o por flag ausente.
-- `scripts/security/priority3_tenant_isolation_audit.py`: valida invariantes exactas del nuevo worker, sin relajar controles de otros BackgroundServices.
-- `docs/runbooks/DEV_PUBLIC_STORE_REPLAY_ONE_SHOT.md`: procedimiento de certificacion/rollback/desactivacion. Estado PENDIENTE hasta evidencia LIVE.
+- `.github/workflows/dev-public-store-live-readback.yml`: readback MySQL/HTTP vivo, sin escrituras, integracion de evidencia revisada de suspension e HMAC.
+- `docs/certifications/dev-public-store-microfase1.json`: fuentes y logs autenticados de intentos 5/6 y Render SHA `49195f34...`.
+- `scripts/certification/verify_dev_public_store_evidence.py`: valida autoria del certificado, contenido, PR fusionado, anclaje SHA y hash/identidad del codigo sensible.
+- `scripts/certification/test_verify_dev_public_store_evidence.py`: pruebas fail-closed ante fraude, edicion, falta de firma fresca o cambio del guard.
+- `docs/certifications/DEV_MICROFASE1_READBACK.md`: uso, alcance, significado de `PASS_ATTESTED` y protocolo de recertificacion si cambia el guard.
+- Trabajador efimero de pruebas HMAC y runbook de activacion **retirados**; flag de Render DEV inerte en false. Sin migraciones ni QA/PROD.
