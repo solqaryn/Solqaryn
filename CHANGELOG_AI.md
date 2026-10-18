@@ -1,3 +1,10 @@
+## 2026-10-18 — DEV Microfase 1: prueba real HMAC replay preparada (PENDIENTE de ejecucion)
+
+- Candidato PR exclusivo de dev: `DevPublicStoreReplayCertificationHostedService` genera un proof HMAC v2 dentro de Render DEV con el secreto en memoria, llama GET /tienda/binding por loopback, repite EXACTAMENTE la misma firma y prueba una firma nueva. Contrasta la persistencia del digest con Aiven MySQL DEV; no crea endpoints, roles, tiendas ni migraciones.
+- Registro restringido a Render Development y flag nuevo `PublicStore:ReplayLiveCertificationOnStartup` apagado por defecto. Defensa adicional de host, puerto, DB, usuario, TLS, bindings y estado de empresa. Salidas de log PASS/BLOCKED sin revelar materiales sensibles.
+- Prueba unitaria de opt-in, regla de auditoria para worker no-outbox y runbook de activacion/desactivacion. No cambiar Vercel, secretos, QA, PROD ni dominios.
+- El anti-replay LIVE y el cierre integral NO estan certificados hasta CI exact-head, despliegue DEV, invocacion real y readback de logs autenticados; tras prueba se debe desactivar flag y retirar worker temporal por PR.
+
 ## 2026-10-17 — DEV Microfase 1: readback y smoke con readiness verificable (candidato)
 
 - Corregido el certificador manual de solo lectura: espera hasta 6 intentos de /health/ready antes de los smokes, identifica la degradacion del upstream por codigo y evita falsos PASS por HTTP 503 generico.
