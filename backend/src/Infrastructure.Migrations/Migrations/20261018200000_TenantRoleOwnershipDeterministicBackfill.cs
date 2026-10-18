@@ -31,6 +31,21 @@ public sealed class TenantRoleOwnershipDeterministicBackfill : Migration
               AND unico.NumeroEmpresas = 1 AND colision.Id IS NULL;
             """);
 
+        // Tras atribuir la raíz, conservar los grants históricos del rol:
+        // RolPermisos.EmpresaId es shadow y debe recibir el mismo dueño.
+        // La FK compuesta (EmpresaId, RolId) asegura consistencia física.
+        migrationBuilder.Sql("""
+            UPDATE RolPermisos AS rp
+            INNER JOIN Roles AS r ON rp.RolId = r.Id
+            CROSS JOIN (
+                SELECT COUNT(*) AS NumeroEmpresas FROM Empresas
+            ) AS unico
+            SET rp.EmpresaId = r.EmpresaId
+            WHERE unico.NumeroEmpresas = 1
+              AND r.Ambito = 1 AND r.EsSistema = 0
+              AND r.EmpresaId IS NOT NULL AND rp.EmpresaId IS NULL;
+            """);
+
         // Con dos o más empresas, los roles legacy huérfanos permanecen NULL,
         // no se convierten en plantillas y no confieren autoridad.
         // Requieren atribución verificada explícita, nunca inferencia.

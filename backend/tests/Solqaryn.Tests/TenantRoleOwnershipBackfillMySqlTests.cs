@@ -142,14 +142,28 @@ public sealed class TenantRoleOwnershipBackfillMySqlTests
                 EmpresaId = null, EsSistema = false, Ambito = AmbitoAutorizacion.Empresa
             };
             db.Roles.Add(rol);
+            var permiso = new Permiso
+            {
+                Codigo = "ROL.OWNER.RECOVERY", Nombre = "Rol owner recovery",
+                Modulo = ModuloSistema.Roles, Accion = AccionPermiso.Ver
+            };
+            db.Permisos.Add(permiso);
             await db.SaveChangesAsync();
+            // Simula exclusivamente una fila legacy antes de los nuevos guards.
+            // INSERT raw en DB efímera, nunca en DEV/Aiven.
+            await db.Database.ExecuteSqlInterpolatedAsync(
+                $"INSERT INTO RolPermisos (RolId, PermisoId, EmpresaId) VALUES ({rol.Id}, {permiso.Id}, NULL)");
             db.ChangeTracker.Clear();
 
             await db.Database.MigrateAsync();
             db.ChangeTracker.Clear();
+            var grantOwner = await db.RolPermisos.IgnoreQueryFilters()
+                .AsNoTracking().Where(x => x.RolId == rol.Id)
+                .Select(x => EF.Property<int?>(x, "EmpresaId")).SingleAsync();
             var persistido = await db.Roles.IgnoreQueryFilters().AsNoTracking()
                 .SingleAsync(x => x.Id == rol.Id);
             Assert.Equal(empresa.Id, persistido.EmpresaId);
+            Assert.Equal(empresa.Id, grantOwner);
             Assert.True(persistido.EsAsignableAEmpresa(empresa.Id));
         }
         finally

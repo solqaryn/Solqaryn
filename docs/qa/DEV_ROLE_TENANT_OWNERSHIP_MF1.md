@@ -17,7 +17,7 @@ Esta acta es evidencia técnica del cambio candidato, NO una declaración `LISTO
 
 Migración `20261018200000_TenantRoleOwnershipDeterministicBackfill`. Opera únicamente sobre filas `Roles.Ambito=1, EsSistema=0, EmpresaId IS NULL`. Solo atribuye si existe exactamente UNA fila de empresa en todo el catálogo (incluidas inactivas), sin colisión de nombre. Con A/B deja todos los roles personalizados sin propietario en cuarentena: una membresía incluso única puede haber sido manipulada. Nunca usa UsuarioEmpresa, JWT, la empresa activa ni Usuario.RolId para inferir dueño.
 
-Cuando exista ambigüedad, el rol permanece sin dueño, inaccesible por RBAC empresarial. No se elimina, no se eleva a plantilla ni se inventa owner. Una reparación futura de esa fila exige identidad empresarial verificada y autorización explícita.
+Cuando existe una única empresa, los grants históricos RolPermisos de los roles atribuidos reciben el mismo EmpresaId para conservar permisos efectivos sin violar la FK compuesta. Cuando exista ambigüedad, el rol y sus grants permanecen sin dueño, inaccesibles por RBAC empresarial. No se elimina, no se eleva a plantilla ni se inventa owner. Una reparación futura de esa fila exige identidad empresarial verificada y autorización explícita.
 
 Readback agregado seguro, de solo lectura, tras desplegar la migración DEV:
 
