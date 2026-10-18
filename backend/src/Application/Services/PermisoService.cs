@@ -59,6 +59,13 @@ public class PermisoService : IPermisoService
         if (!rol.Activo)
             throw new BusinessRuleException("No se pueden asignar permisos a un rol inactivo.");
 
+        // La plantilla empresarial es de solo lectura desde el tenant.
+        // Los roles antiguos sin owner tampoco pueden recibir grants.
+        if (rol.EsSistema || rol.Ambito != AmbitoAutorizacion.Empresa ||
+            rol.EmpresaId is not > 0)
+            throw new BusinessRuleException(
+                "Solo pueden modificarse permisos de roles personalizados con empresa propietaria.");
+
         var catalogoActivo = (await _permisoRepository.GetAllAsync())
             .Where(p => p.Activo && !p.Eliminado)
             .ToList();
