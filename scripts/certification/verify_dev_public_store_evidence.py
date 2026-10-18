@@ -26,6 +26,7 @@ AUTHOR_ID = 318818775
 SECURITY_PATHS = (
     "backend/src/API/Middleware/UnscopedCommercialTenantGuardMiddleware.cs",
     "backend/src/API/Middleware/PublicStoreProxyProof.cs",
+    "backend/src/API/Middleware/PublicStoreProofReplayStore.cs",
     "backend/src/API/Controllers/TiendaBindingController.cs",
     "frontend/server/public-store-proxy-context.js",
 )
