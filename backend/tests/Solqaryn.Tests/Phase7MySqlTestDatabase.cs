@@ -5,7 +5,8 @@ namespace Solqaryn.Tests;
 
 internal static class Phase7MySqlTestDatabase
 {
-    public static async Task InitializeFreshAsync(AppDbContext db)
+    public static async Task InitializeFreshAsync(
+        AppDbContext db, bool applyPendingOracleMigrations = true)
     {
         await db.Database.EnsureCreatedAsync();
 
@@ -153,9 +154,13 @@ internal static class Phase7MySqlTestDatabase
             """);
         await db.Database.CloseConnectionAsync();
 
-        // Apply only the new ledger migration absent from EnsureCreated.
-        await db.Database.MigrateAsync();
-        if ((await db.Database.GetPendingMigrationsAsync()).Any())
-            throw new InvalidOperationException("Phase 7 test bootstrap left pending Oracle migrations.");
+        // Normalmente aplicar las migraciones aún pendientes. La prueba de
+        // backfill puede preparar primero roles históricos en una DB efímera.
+        if (applyPendingOracleMigrations)
+        {
+            await db.Database.MigrateAsync();
+            if ((await db.Database.GetPendingMigrationsAsync()).Any())
+                throw new InvalidOperationException("Phase 7 test bootstrap left pending Oracle migrations.");
+        }
     }
 }
