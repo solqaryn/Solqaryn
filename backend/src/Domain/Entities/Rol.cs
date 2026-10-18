@@ -37,6 +37,15 @@ public class Rol
     public int? ActualizadoPorUsuarioId { get; set; }
     public int? EliminadoPorUsuarioId { get; set; }
 
+    /// <summary>
+    /// Solo los roles empresariales propios y las plantillas de sistema
+    /// sin propietario son asignables. Un legacy sin dueño no es plantilla.
+    /// </summary>
+    public bool EsAsignableAEmpresa(int empresaId) =>
+        empresaId > 0 && Activo && !Eliminado &&
+        Ambito == Solqaryn.Domain.Enums.AmbitoAutorizacion.Empresa &&
+        (EmpresaId == empresaId || (EmpresaId is null && EsSistema));
+
     public ICollection<Usuario> Usuarios { get; set; } = new List<Usuario>();
     public ICollection<RolPermiso> Permisos { get; set; } = new List<RolPermiso>();
 }

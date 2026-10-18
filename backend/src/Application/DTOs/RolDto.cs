@@ -6,6 +6,7 @@ public class RolDto
     public string Nombre { get; set; } = string.Empty;
     public string? Descripcion { get; set; }
     public bool EsSistema { get; set; }
+    public int? EmpresaId { get; set; }
     public bool EsAdministrador { get; set; }
     public bool Activo { get; set; }
     public int CantidadUsuarios { get; set; }

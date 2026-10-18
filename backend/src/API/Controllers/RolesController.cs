@@ -43,7 +43,8 @@ public class RolesController : ControllerBase
     [RequierePermiso(ModuloSistema.Roles, AccionPermiso.Crear)]
     public async Task<IActionResult> Create([FromBody] CrearRolDto dto)
     {
-        var creado = await _rolService.CreateAsync(dto);
+        var creado = await _rolService.CreateAsync(
+            dto, TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext));
         return CreatedAtAction(nameof(GetById), new { id = creado.Id },
             ApiResponse<RolDto>.Ok(creado, "Rol creado correctamente."));
     }
@@ -92,7 +93,8 @@ public class RolesController : ControllerBase
     [RequierePermiso(ModuloSistema.Roles, AccionPermiso.Duplicar)]
     public async Task<IActionResult> Duplicar(int id, [FromBody] DuplicarRolRequest request)
     {
-        var copia = await _rolService.DuplicarAsync(id, request.NuevoNombre);
+        var copia = await _rolService.DuplicarAsync(
+            id, request.NuevoNombre, TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext));
         return CreatedAtAction(nameof(GetById), new { id = copia.Id },
             ApiResponse<RolDto>.Ok(copia, "Rol duplicado correctamente."));
     }
