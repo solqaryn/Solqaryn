@@ -31,11 +31,20 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Tests fail-closed de actas y compatibilidad HMAC
         shell: bash
         run: |
           set -euo pipefail
           python3 -m unittest discover -s scripts/certification -p 'test_*.py' -v
+      - name: Verificar procedencia GitHub real antes de fusionar
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 scripts/certification/verify_dev_public_store_evidence.py --provenance-only
 
   certify-public-store-dev:
     if: github.event_name != 'pull_request'

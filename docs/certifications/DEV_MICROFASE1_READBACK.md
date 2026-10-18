@@ -49,10 +49,12 @@ certificador/evidencia, mediante un evento push limitado a esos archivos.
 No se engancha a cada cambio backend: evitar bloqueo de despliegue de
 migraciones por `Render checksPass`.
 
-Al ejecutarse, primero verifica:
+En los PR que modifican el certificador, el workflow ejecuta ahora la comprobacion de procedencia GitHub **online** (sin secretos de base de datos ni conexiones Aiven), además de los tests fail-closed. Una falla se localiza por etapa, sin imprimir tokens, firma HMAC ni errores de CLI sin filtrar.
+
+Al ejecutarse sobre `dev`, primero verifica:
 
 - repositorio, rama y Aiven DEV aprobados; secretos fuera de logs;
-- origen corporativo en GitHub del acta de evidencia, comentario no
+- origen corporativo en GitHub del acta de evidencia (ID numerico del autor, no la etiqueta contextual de afiliacion), comentario no
   modificado, PR fusionado en `dev`, SHA/IDs/logs HMAC;
 - que el commit atestiguado es ancestro del HEAD y que los archivos
   de firma/proxy/middleware/ledger-replay/binding son identicos byte a byte;

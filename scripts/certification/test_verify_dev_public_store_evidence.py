@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import os
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -82,6 +83,12 @@ class DevPublicStoreEvidenceTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             cert.validate_github_attestation(comment, pull, self.good)
 
+    def test_contextual_association_is_not_an_authority_claim(self):
+        comment, pull = self.comment_and_pr()
+        # GitHub's association badge can vary by API actor; account ID cannot.
+        comment["author_association"] = "NONE"
+        cert.validate_github_attestation(comment, pull, self.good)
+
     def test_wrong_github_author_fails_closed(self):
         comment, pull = self.comment_and_pr()
         comment["user"]["id"] += 1
@@ -126,6 +133,41 @@ class DevPublicStoreEvidenceTests(unittest.TestCase):
         d["repository"] = "another-org/project"
         with self.assertRaises(ValueError):
             cert.validate_manifest(d)
+
+    def test_pr_provenance_only_requires_dev_base(self):
+        with patch.dict(os.environ, {
+            "GITHUB_REPOSITORY": cert.REPO,
+            "GITHUB_REF_NAME": "3668/merge",
+            "GITHUB_EVENT_NAME": "pull_request",
+            "GITHUB_BASE_REF": "main",
+            "GITHUB_SHA": cert.ATTESTED_SHA,
+        }, clear=True):
+            self.assertEqual(cert.main(["--provenance-only"]), 1)
+
+    def test_pr_provenance_only_checks_live_origin_without_env_write(self):
+        comment, pull = self.comment_and_pr()
+        def fetch(resource):
+            return pull if resource.endswith("/pulls/3666") else comment
+        with patch.dict(os.environ, {
+            "GITHUB_REPOSITORY": cert.REPO,
+            "GITHUB_REF_NAME": "3668/merge",
+            "GITHUB_EVENT_NAME": "pull_request",
+            "GITHUB_BASE_REF": "dev",
+            "GITHUB_SHA": cert.ATTESTED_SHA,
+        }, clear=True), patch.object(cert, "verify_commit_continuity") as code, \
+             patch.object(cert, "fetch_github_json", side_effect=fetch) as api:
+            self.assertEqual(cert.main(["--provenance-only"]), 0)
+            code.assert_called_once_with(cert.ATTESTED_SHA)
+            self.assertEqual(api.call_count, 2)
+
+    def test_no_pr_provenance_flag_on_real_dev_readback(self):
+        with patch.dict(os.environ, {
+            "GITHUB_REPOSITORY": cert.REPO,
+            "GITHUB_REF_NAME": "dev",
+            "GITHUB_EVENT_NAME": "push",
+            "GITHUB_SHA": cert.ATTESTED_SHA,
+        }, clear=True):
+            self.assertEqual(cert.main(["--provenance-only"]), 1)
 
 
 if __name__ == "__main__":
