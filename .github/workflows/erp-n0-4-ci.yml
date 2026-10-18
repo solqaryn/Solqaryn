@@ -105,7 +105,8 @@ jobs:
           SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
         run: |
           set -euo pipefail
-          node ../scripts/verify-project-scope.mjs
+          # El gate usa process.cwd() como raíz del repositorio.
+          (cd .. && node scripts/verify-project-scope.mjs)
           test "$GITHUB_REPOSITORY" = "solqaryn/Solqaryn"
           test "$ASPNETCORE_ENVIRONMENT" = "Development"
           # El bootstrap rechaza DB existentes, valida FK/indices y pending=0.
