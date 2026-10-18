@@ -55,7 +55,7 @@ Al ejecutarse, primero verifica:
 - origen corporativo en GitHub del acta de evidencia, comentario no
   modificado, PR fusionado en `dev`, SHA/IDs/logs HMAC;
 - que el commit atestiguado es ancestro del HEAD y que los archivos
-  de firma/proxy/middleware/binding son identicos byte a byte;
+  de firma/proxy/middleware/ledger-replay/binding son identicos byte a byte;
 - tests unitarios de condiciones que deben fallar cerradas.
 
 Despues lee **en vivo** el esquema/indice MySQL y rutas HTTP. No crea,
