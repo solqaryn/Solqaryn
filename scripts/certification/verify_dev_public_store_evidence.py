@@ -9,6 +9,7 @@ Historical failed workflow attempts must remain visible, not rewritten as PASS.
 """
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import subprocess
@@ -157,7 +158,10 @@ def run_checked(args: list[str], *, timeout: int = 25) -> str:
                             check=False, timeout=timeout)
     if result.returncode != 0:
         # Never echo process stderr: it could accidentally contain credentials.
-        raise ValueError("verification subprocess returned failure")
+        safe_kind = args[0] if args[0] in ("git", "gh") else "tool"
+        safe_op = args[1] if len(args) > 1 and args[1] in (
+            "rev-parse", "merge-base", "diff", "api") else "unknown"
+        raise ValueError(f"subprocess_{safe_kind}_{safe_op}_failed")
     return result.stdout.strip()
 
 
@@ -185,20 +189,40 @@ def fetch_github_json(resource: str) -> dict[str, Any]:
     return doc
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--provenance-only", action="store_true")
+    args = parser.parse_args(argv)
+    phase = "SCOPE"
     try:
         require(os.getenv("GITHUB_REPOSITORY") == REPO,
                 "repository scope mismatch")
-        require(os.getenv("GITHUB_REF_NAME") == "dev",
-                "only dispatch/push on dev can certify")
+        if args.provenance_only:
+            require(os.getenv("GITHUB_EVENT_NAME") == "pull_request" and
+                    os.getenv("GITHUB_BASE_REF") == "dev",
+                    "PR provenance check restricted to DEV")
+        else:
+            require(os.getenv("GITHUB_REF_NAME") == "dev" and
+                    os.getenv("GITHUB_EVENT_NAME") in ("push", "workflow_dispatch"),
+                    "only dispatch/push on dev can certify")
         current = os.environ["GITHUB_SHA"]
+        phase = "MANIFEST"
         data = json.loads(MANIFEST.read_text(encoding="utf-8"))
         validate_manifest(data)
+        phase = "GIT_SECURITY_CONTINUITY"
         verify_commit_continuity(current)
+        phase = "GITHUB_COMMENT_API"
         issue_comment = fetch_github_json(
             f"repos/{REPO}/issues/comments/{COMMENT_ID}")
+        phase = "GITHUB_PR_API"
         pull = fetch_github_json(f"repos/{REPO}/pulls/3666")
+        phase = "GITHUB_ATTESTATION_CONSISTENCY"
         validate_github_attestation(issue_comment, pull, data)
+        if args.provenance_only:
+            print("MICROFASE1_PR_PROVENANCE=PASS_VALIDATED")
+            print("MICROFASE1_SECURITY_CODE_EQUIVALENCE=PASS")
+            return 0
+        phase = "WORKFLOW_ENV"
         envfile = os.getenv("GITHUB_ENV")
         require(bool(envfile), "workflow environment not available")
         with open(envfile, "a", encoding="utf-8") as f:
@@ -212,7 +236,11 @@ def main() -> int:
     except (KeyError, ValueError, OSError, subprocess.TimeoutExpired,
             json.JSONDecodeError) as exc:
         print("MICROFASE1_EVIDENCE=BLOCKED", file=sys.stderr)
-        print("Reason=" + type(exc).__name__, file=sys.stderr)
+        print("CHECK=" + phase, file=sys.stderr)
+        print("REASON_TYPE=" + type(exc).__name__, file=sys.stderr)
+        # Controlled error labels only; no subprocess stderr, token or proof.
+        if isinstance(exc, ValueError):
+            print("REASON=" + str(exc)[:100], file=sys.stderr)
         return 1
 
 
