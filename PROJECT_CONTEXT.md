@@ -594,3 +594,8 @@ La implementación existente puede ser reutilizada, extendida, refactorizada o r
 - `SecuenciaDocumentoService.ValidarScopeAsync` exige coincidencia del `EmpresaId` del request con `AuthorizedCommercialEmpresaId` si la acción ya fue autorizada, antes de reservar o consultar números. Un usuario perteneciente a empresas A y B no puede utilizar la autorización A para reservar una secuencia fiscal B.
 - Con 2+ empresas sin marca RBAC privada falla cerrado también ante invocaciones no HTTP; el contrato histórico de instalaciones con 0–1 empresa permanece. Comprueba igualmente que la membresía devuelta por el servicio coincide con la empresa solicitada.
 - Tests A/B: autorización A con solicitud B y membresía B vigente rechazada sin invocar la membresía B; sin marca RBAC con dos empresas rechazada; no se reserva ni se incrementa numeración de B. Se conserva compare-and-swap MySQL y evidencia de transacciones anterior. No hay DDL, backfill ni cambios QA/PROD, cuarentena 503 sigue activa.
+
+
+## 2026-10-18 — DEV Microfase 1: cerrando evidencia anti-replay HMAC
+
+A/B activas y verificadas en host canónico, prueba de suspensión/reactivación y legacy 200 se constataron por smokes y readback existentes; estos resultados no se deben repetir ni confundir con certificado integral. Se prepara un ensayo interno de firma v2 con reuso idéntico y MySQL DEV en la instancia Render, bajo flag explícito desactivado por defecto. CI, deploy y evidencia LIVE siguen pendientes; el workflow read-only permanece bloqueado por este criterio hasta readback autenticado. Runbook: `docs/runbooks/DEV_PUBLIC_STORE_REPLAY_ONE_SHOT.md`.
