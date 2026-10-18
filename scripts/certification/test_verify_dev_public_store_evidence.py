@@ -83,6 +83,12 @@ class DevPublicStoreEvidenceTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             cert.validate_github_attestation(comment, pull, self.good)
 
+    def test_contextual_association_is_not_an_authority_claim(self):
+        comment, pull = self.comment_and_pr()
+        # GitHub's association badge can vary by API actor; account ID cannot.
+        comment["author_association"] = "NONE"
+        cert.validate_github_attestation(comment, pull, self.good)
+
     def test_wrong_github_author_fails_closed(self):
         comment, pull = self.comment_and_pr()
         comment["user"]["id"] += 1
