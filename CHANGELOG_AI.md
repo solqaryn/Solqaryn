@@ -1,3 +1,9 @@
+## 2026-10-18 — DEV Microfase 1: resiliencia del verificador interno de anti-replay (candidato)
+
+- Tras el PR #3664 (17/17 PASS), Render DEV devolvió 200 y 503 ante un replay firmado real, y el ledger registró el rechazo; el tercer GET no finalizó. Un reintento volvió a quedar incompleto. Por tanto **NO** existe un PASS total de HMAC LIVE.
+- Cambio temporal exclusivo del verificador DEV: no reutilizar conexión HTTP de loopback, timeout explícito de lectura Aiven y estados parciales seguros en logs para ubicar cualquier bloqueo, sin imprimir secretos ni bajar la validación criptográfica.
+- Ampliado scanner Priority 3 para exigir estos límites. Flag de prueba apagado en Render DEV después de ambos ensayos. Certificación integral PENDIENTE de CI exact-head y prueba LIVE verificable sobre nuevo PR.
+
 ## 2026-10-18 — DEV Microfase 1: prueba real HMAC replay preparada (PENDIENTE de ejecucion)
 
 - Candidato PR exclusivo de dev: `DevPublicStoreReplayCertificationHostedService` genera un proof HMAC v2 dentro de Render DEV con el secreto en memoria, llama GET /tienda/binding por loopback, repite EXACTAMENTE la misma firma y prueba una firma nueva. Contrasta la persistencia del digest con Aiven MySQL DEV; no crea endpoints, roles, tiendas ni migraciones.
