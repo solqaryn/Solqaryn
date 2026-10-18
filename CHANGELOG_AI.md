@@ -1,3 +1,9 @@
+## 2026-10-18 — DEV: estabilización acotada del verificador temporal HMAC (candidato)
+
+- Diagnóstico LIVE de Render tras #3665: primera HMAC válida 200 y misma firma repetida 503 con ledger PASS; el tercer intento insertó digest nuevo en MySQL pero no finalizó la respuesta HTTP. El ensayo no marcó `PASS`.
+- Ajuste aislado del ejecutor DEV: espera de 45 s tras readiness, transporte HttpClient separado por petición, timeouts ligados a CancellationToken y máximo 3 reintentos de fallos de transporte para firma nueva con nonce diferente. Fallos de autorización/tenant/ledger no son reintentables. Las reglas criptográficas y los datos comerciales NO cambian.
+- Scanner Priority 3 amplía las precondiciones fail-closed. Mantener flag OFF por defecto; certificación pendiente de CI exact-head, ejecución real 200/503/200, archivado de evidencia y apagado.
+
 ## 2026-10-18 — DEV Microfase 1: resiliencia del verificador interno de anti-replay (candidato)
 
 - Tras el PR #3664 (17/17 PASS), Render DEV devolvió 200 y 503 ante un replay firmado real, y el ledger registró el rechazo; el tercer GET no finalizó. Un reintento volvió a quedar incompleto. Por tanto **NO** existe un PASS total de HMAC LIVE.
