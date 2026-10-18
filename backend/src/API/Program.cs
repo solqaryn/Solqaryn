@@ -50,12 +50,6 @@ if (isRender && builder.Environment.IsDevelopment() &&
 {
     builder.Services.AddHostedService<DevCloudinaryLegacyNormalizationHostedService>();
 }
-// DEV-only, opt-in, internal loopback proof-replay check. It never creates a route.
-if (DevPublicStoreReplayCertificationHostedService.CanRegister(
-    isRender, builder.Environment.IsDevelopment(), builder.Configuration))
-{
-    builder.Services.AddHostedService<DevPublicStoreReplayCertificationHostedService>();
-}
 builder.Services.AddResponseCompression(options =>
 {
     options.EnableForHttps = true;
