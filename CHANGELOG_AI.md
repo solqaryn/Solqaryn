@@ -1,3 +1,10 @@
+## 2026-10-18 — DEV Microfase 1: cierre de deuda del workflow read-only y retiro de prueba temporal
+
+- Se sustituye el bloqueo permanente del readback (necesitaba simultaneamente B suspendida y A/B activas, y asumía HMAC no probado) por un comprobador de atestacion real que verifica el comentario corporativo no editado del PR #3666, fuente Render 200/503/200 con ledger PASS, y evidencia GH run 39084418982 intentos 5/6.
+- CI/DEV: workflow con tests fail-closed en PR, certificacion manual y validacion limitada a cambios del propio verificador/evidencia en push a dev; el resto de pushes no se convierte en pre-deploy smoke. Solo se emite `MICROFASE1_LIVE_CERT=PASS_ATTESTED` cuando las pruebas MySQL y HTTP actuales aprueban, la identidad en GH es valida y el codigo criptografico sigue identico al certificado.
+- Se eliminan worker efimero de HMAC, registro en Program, prueba de activacion, config por defecto, excepcion del scanner y runbook de activacion. Evidencias inmutables de GitHub/Render se conservan para auditoria; los fallos historicos no se reescriben ni se borran. Sin suspender empresas, sin cambios de secreto, migraciones, QA, PROD ni dominios.
+- Evidencia y gobernanza operativa: `docs/certifications/dev-public-store-microfase1.json` y `docs/certifications/DEV_MICROFASE1_READBACK.md`.
+
 ## 2026-10-18 — DEV: estabilización acotada del verificador temporal HMAC (candidato)
 
 - Diagnóstico LIVE de Render tras #3665: primera HMAC válida 200 y misma firma repetida 503 con ledger PASS; el tercer intento insertó digest nuevo en MySQL pero no finalizó la respuesta HTTP. El ensayo no marcó `PASS`.
