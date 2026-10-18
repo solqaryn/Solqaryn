@@ -115,9 +115,6 @@ public class RolService : IRolService
         if (await _repository.ExisteNombreAsync(normalizado, id))
             throw new BusinessRuleException($"Ya existe un rol con el nombre '{nombre}'.");
 
-        if (rol.EsSistema && normalizado != rol.NombreNormalizado)
-            throw new BusinessRuleException("No se puede renombrar un rol de sistema.");
-
         var anterior = new { rol.Nombre, rol.Descripcion };
 
         rol.Nombre = nombre;
