@@ -1,3 +1,10 @@
+## 2026-10-17 — DEV Microfase 1: readback y smoke con readiness verificable (candidato)
+
+- Corregido el certificador manual de solo lectura: espera hasta 6 intentos de /health/ready antes de los smokes, identifica la degradacion del upstream por codigo y evita falsos PASS por HTTP 503 generico.
+- Readback agrega SELECT VERSION, columnas/PK/indice de PublicStoreProofReplays e indice unico Host+StoreKey; sin divulgar secretos ni datos empresariales.
+- No declara HMAC replay live ni aislamiento A/B como certificado sin dos asociaciones reales y una prueba legitima de la misma firma. No toca API, Angular, empresas, credenciales, Vercel, Render, QA o PROD.
+- Evidencia causal previa: run #39080310275, migracion y ledger = 1, vinculaciones = 0, timeout previo a readiness de Render. CI exact-head y nuevos smokes deben aprobar antes de fusionar.
+
 ## 2026-10-16 — Certificación real de tiendas DEV desacoplada del gate de despliegue
 
 - El workflow `dev-public-store-live-readback.yml` solo se ejecuta mediante `workflow_dispatch` después de que Render y Vercel publiquen el SHA correcto: evitar bloqueo circular con `Render autoDeployTrigger=checksPass` cuando el ledger MySQL todavía no existe.

@@ -49,6 +49,7 @@ jobs:
           import json
           import os
           import re
+          import time
           import subprocess
           import sys
           from urllib.request import Request, urlopen
@@ -63,6 +64,8 @@ jobs:
           sql_env = dict(os.environ)
           sql_env["MYSQL_PWD"] = sql_env.pop("DB_PASSWORD")
           report = []
+          security_failures = []
+          blockers = []
           def out(message):
               report.append(message)
               print(message)
@@ -92,6 +95,41 @@ jobs:
                            "WHERE TABLE_SCHEMA=DATABASE() "
                            "AND TABLE_NAME='PublicStoreProofReplays'"))
           count_bindings = int(sql("SELECT COUNT(*) FROM PublicStoreBindings"))
+          version = sql("SELECT VERSION()")
+          out(f"MYSQL_VERSION={version}")
+          if version.split("-")[0] != "8.4.8":
+              blockers.append("mysql_version_requires_review")
+              out("MYSQL_APPROVED_VERSION=MISMATCH")
+          else:
+              out("MYSQL_APPROVED_VERSION=PASS")
+          replay_columns = set(sql(
+              "SELECT CONCAT(COLUMN_NAME, ':', COLUMN_TYPE, ':', IS_NULLABLE) "
+              "FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() "
+              "AND TABLE_NAME='PublicStoreProofReplays'").splitlines())
+          replay_indexes = set(sql(
+              "SELECT CONCAT(INDEX_NAME, ':', NON_UNIQUE, ':', SEQ_IN_INDEX, ':', COLUMN_NAME) "
+              "FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() "
+              "AND TABLE_NAME='PublicStoreProofReplays'").splitlines())
+          expected_columns = {"ProofDigest:binary(32):NO", "ExpiresUtc:datetime(6):NO"}
+          expected_indexes = {"PRIMARY:0:1:ProofDigest",
+                              "IX_PublicStoreProofReplays_ExpiresUtc:1:1:ExpiresUtc"}
+          replay_structure = (migrations == 1 and ledger == 1
+                              and replay_columns == expected_columns
+                              and expected_indexes.issubset(replay_indexes))
+          out(f"MYSQL_REPLAY_SCHEMA={'PASS' if replay_structure else 'FAIL'}")
+          if not replay_structure:
+              security_failures.append("replay_schema")
+          binding_indexes = set(sql(
+              "SELECT CONCAT(INDEX_NAME, ':', NON_UNIQUE, ':', SEQ_IN_INDEX, ':', COLUMN_NAME) "
+              "FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() "
+              "AND TABLE_NAME='PublicStoreBindings'").splitlines())
+          binding_unique = {
+              "UX_PublicStoreBindings_Host_Key:0:1:Host",
+              "UX_PublicStoreBindings_Host_Key:0:2:StoreKey"
+          }.issubset(binding_indexes)
+          out(f"MYSQL_BINDING_UNIQUE_INDEX={'PASS' if binding_unique else 'FAIL'}")
+          if not binding_unique:
+              security_failures.append("binding_unique_index")
           out(f"MYSQL_READBACK=OBSERVED migrations={migrations} ledger={ledger} bindings={count_bindings}")
           raw = sql("SELECT b.Host,b.StoreKey,b.EmpresaId,e.Activa "
                     "FROM PublicStoreBindings b JOIN Empresas e ON e.Id=b.EmpresaId "
@@ -115,56 +153,122 @@ jobs:
           out(f"SUSPENDED_COMPANIES_WITH_ACTIVE_BINDING={len(suspended)}")
 
           checks = [
-              (api_origin, "/health/ready", 200, False, "render_health"),
-              (public_origin, "/api/tienda/bootstrap", 200, False, "legacy"),
-              (public_origin, "/api/tiendas/cert-unknown-m1/tienda/binding", 503, True, "unknown_host_key"),
-              (public_origin, "/api/tiendas/cert-unknown-m1/tienda/checkout", 503, False, "closed_checkout"),
-              (api_origin, "/tienda/binding", 503, True, "unsigned_direct_backend")
+              (public_origin, "/api/tienda/bootstrap", 200, None, False, "legacy"),
+              (public_origin, "/api/tiendas/cert-unknown-m1/tienda/binding",
+               503, "TENANT_DATA_ISOLATION_REQUIRED", True, "unknown_host_key"),
+              (public_origin, "/api/tiendas/cert-unknown-m1/tienda/checkout",
+               503, "STORE_ROUTE_NOT_YET_CERTIFIED", False, "closed_checkout"),
+              (api_origin, "/tienda/binding",
+               503, "TENANT_DATA_ISOLATION_REQUIRED", True, "unsigned_direct_backend")
           ]
-          failures = []
-          for host, path, expected, hostile, name in checks:
+          def response_json(body):
               try:
-                  code, _ = http(host, path, hostile)
-                  out(f"HTTP_{name.upper()}={code}")
-                  if code != expected:
-                      failures.append(name)
-              except Exception:
-                  failures.append(name)
+                  value = json.loads(body)
+                  return value if isinstance(value, dict) else {}
+              except (ValueError, TypeError):
+                  return {}
+          
+          # Render FREE may be waking while the first request exceeds Vercel's 30s
+          # upstream timeout. Readiness is a separate bounded prerequisite, not proof
+          # of store security. Do not retry business-changing requests.
+          render_ready = False
+          for attempt in range(1, 7):
+              try:
+                  status, body = http(api_origin, "/health/ready")
+                  data = response_json(body)
+                  if status == 200 and data.get("status") == "ready" and data.get("database") == "connected":
+                      render_ready = True
+                      break
+              except RuntimeError:
+                  pass
+              if attempt != 6:
+                  time.sleep(12)
+          out(f"HTTP_RENDER_HEALTH={'200' if render_ready else 'UNAVAILABLE'}")
+          if not render_ready:
+              blockers.append("render_readiness")
+          for host, path, expected, expected_code, hostile, name in checks:
+              if not render_ready:
+                  out(f"HTTP_{name.upper()}=BLOCKED_UPSTREAM")
+                  continue
+              try:
+                  code, body = http(host, path, hostile)
+                  payload = response_json(body)
+                  code_name = payload.get("code", "NONE")
+                  out(f"HTTP_{name.upper()}={code} CODE={code_name}")
+                  if code_name == "API_UPSTREAM_UNAVAILABLE":
+                      blockers.append("upstream_" + name)
+                      continue
+                  if name == "legacy":
+                      if code == 200 and payload.get("success") is True and isinstance(payload.get("data"), dict):
+                          continue
+                      if code == 503 and code_name == "TENANT_DATA_ISOLATION_REQUIRED":
+                          blockers.append("legacy_owner_or_binding")
+                      else:
+                          security_failures.append("legacy_contract")
+                  elif code != expected or code_name != expected_code:
+                      security_failures.append("unexpected_denial_" + name)
+              except RuntimeError:
+                  blockers.append("network_" + name)
                   out(f"HTTP_{name.upper()}=UNAVAILABLE")
+          
           validated = 0
+          if len(active) < 2:
+              blockers.append("two_authorized_companies_required")
           for company, key in list(active.items())[:2]:
+              if not render_ready:
+                  blockers.append("binding_upstream")
+                  break
               try:
                   code, body = http(public_origin, "/api/tiendas/" + key + "/tienda/binding")
-                  result = json.loads(body) if code == 200 else {}
-                  data = result.get("data") or {}
-                  if code == 200 and result.get("success") is True and (
-                      data.get("empresaId") == company and data.get("verificada") is True):
+                  data = response_json(body)
+                  binding_data = data.get("data") or {}
+                  if code == 200 and data.get("success") is True and (
+                      binding_data.get("empresaId") == company and binding_data.get("verificada") is True
+                  ):
                       validated += 1
+                  elif data.get("code") == "API_UPSTREAM_UNAVAILABLE":
+                      blockers.append("binding_upstream")
                   else:
-                      failures.append("positive_binding")
-              except Exception:
-                  failures.append("positive_binding")
+                      security_failures.append("positive_binding")
+              except RuntimeError:
+                  blockers.append("network_positive_binding")
           out(f"POSITIVE_AB_BINDINGS_VERIFIED={validated}")
-          if suspended:
-              code, _ = http(public_origin, "/api/tiendas/" + suspended[0] + "/tienda/binding")
-              out(f"HTTP_SUSPENDED={code}")
-              if code != 503:
-                  failures.append("suspended_binding")
+          
+          if suspended and render_ready:
+              try:
+                  status, body = http(public_origin, "/api/tiendas/" + suspended[0] + "/tienda/binding")
+                  data = response_json(body)
+                  out(f"HTTP_SUSPENDED={status} CODE={data.get('code', 'NONE')}")
+                  if data.get("code") == "API_UPSTREAM_UNAVAILABLE":
+                      blockers.append("suspended_upstream")
+                  elif status != 503 or data.get("code") != "TENANT_DATA_ISOLATION_REQUIRED":
+                      security_failures.append("suspended_binding")
+              except RuntimeError:
+                  blockers.append("network_suspended")
+                  out("HTTP_SUSPENDED=UNAVAILABLE")
           else:
-              out("HTTP_SUSPENDED=NOT_TESTED_NO_SUSPENDED_FIXTURE")
-
-          if not migrations or not ledger or len(active) < 2 or validated < 2 or not suspended:
-              out("MICROFASE1_LIVE_CERT=BLOCKED_ON_UNPROVISIONED_OR_UNTESTED_FIXTURE")
-          elif not failures:
-              out("MICROFASE1_LIVE_CERT=PASS")
-          if failures:
+              blockers.append("suspended_fixture_or_upstream")
+              out("HTTP_SUSPENDED=NOT_TESTED_NO_AUTHORIZED_FIXTURE_OR_UPSTREAM")
+          # Vercel intentionally regenerates and hides HMAC nonces; a public client
+          # cannot replay an identical Vercel->Render proof. Do not label replay PASS
+          # without a separate, authorized same-proof test in DEV.
+          out("HMAC_REPLAY_LIVE=NOT_RUN_REQUIRES_AUTHORIZED_TEST")
+          blockers.append("hmac_replay_live_evidence")
+          if security_failures:
               out("MICROFASE1_SECURITY_SMOKE=FAIL")
           else:
               out("MICROFASE1_SECURITY_SMOKE=PASS_ON_EXECUTED_CASES")
-          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as f:
-              f.write("## DEV Microfase 1 — readback de solo lectura\n\n")
+          if security_failures:
+              out("MICROFASE1_LIVE_CERT=FAIL")
+          elif blockers:
+              out("MICROFASE1_LIVE_CERT=BLOCKED")
+          else:
+              out("MICROFASE1_LIVE_CERT=PASS")
+          out(f"BLOCKER_COUNT={len(set(blockers))} SECURITY_FAILURE_COUNT={len(set(security_failures))}")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as output:
+              output.write("## DEV Microfase 1 — readback de solo lectura\n\n")
               for line in report:
-                  f.write("- " + line + "\n")
-          if failures or not migrations or not ledger or len(active) < 2 or validated < 2 or not suspended:
+                  output.write("- " + line + "\n")
+          if blockers or security_failures:
               sys.exit(1)
           PY
