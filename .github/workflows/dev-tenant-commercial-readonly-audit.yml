@@ -61,3 +61,62 @@ jobs:
           COMMIT;
           SQL
           unset MYSQL_PWD
+
+      - name: N0.4 - readback roles empresariales en Aiven DEV (solo lectura)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = "solqaryn/Solqaryn"
+          test "$GITHUB_REF" = "refs/heads/dev"
+          test "$DB_HOST" = "solqaryn-mysql-solqaryn.h.aivencloud.com"
+          test "$DB_PORT" = "14402"
+          test "$DB_NAME" = "solqaryn_dev"
+          test "$DB_USER" = "solqaryn_dev_user"
+          test -n "$DB_PASSWORD"
+          export MYSQL_PWD="$DB_PASSWORD"
+          readback="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names <<'SQL'
+          SET SESSION TRANSACTION READ ONLY;
+          START TRANSACTION READ ONLY;
+          SELECT CONCAT('N04_DB=', DATABASE());
+          SELECT CONCAT('N04_MYSQL_USER=', SUBSTRING_INDEX(CURRENT_USER(),'@',1));
+          SELECT CONCAT('N04_MYSQL_VERSION=', VERSION());
+          SELECT CONCAT('N04_COMPANIES=', COUNT(*)) FROM Empresas;
+          SELECT CONCAT('N04_MIGRATION_MARKER=', COUNT(*)) FROM __EFMigrationsHistory
+            WHERE MigrationId='20261018200000_TenantRoleOwnershipDeterministicBackfill';
+          SELECT CONCAT('N04_ACTIVE_CUSTOM_ORPHANS=', COUNT(*)) FROM Roles
+            WHERE Ambito=1 AND EsSistema=0 AND EmpresaId IS NULL AND Activo=1 AND Eliminado=0;
+          SELECT CONCAT('N04_ALL_CUSTOM_ORPHANS=', COUNT(*)) FROM Roles
+            WHERE Ambito=1 AND EsSistema=0 AND EmpresaId IS NULL;
+          SELECT CONCAT('N04_GRANT_OWNER_CONFLICTS=', COUNT(*))
+            FROM RolPermisos rp INNER JOIN Roles r ON r.Id=rp.RolId
+            WHERE rp.EmpresaId IS NOT NULL AND r.EmpresaId IS NOT NULL
+              AND rp.EmpresaId<>r.EmpresaId;
+          SELECT CONCAT('N04_PLATFORM_OWNER_CONFLICTS=', COUNT(*))
+            FROM Roles WHERE Ambito=2 AND EmpresaId IS NOT NULL;
+          SELECT CONCAT('N04_MEMBERSHIP_CUSTOM_OWNER_CONFLICTS=', COUNT(*))
+            FROM UsuarioEmpresas ue INNER JOIN Roles r ON r.Id=ue.RolId
+            WHERE r.Ambito=1 AND r.EsSistema=0 AND r.EmpresaId IS NOT NULL
+              AND ue.EmpresaId<>r.EmpresaId;
+          COMMIT;
+          SQL
+          )"
+          unset MYSQL_PWD
+          printf '%s\n' "$readback"
+          metric() { printf '%s\n' "$readback" | awk -F= -v key="$1" '$1==key {print $2}'; }
+          test "$(metric N04_DB)" = "solqaryn_dev"
+          test "$(metric N04_MYSQL_USER)" = "solqaryn_dev_user"
+          case "$(metric N04_MYSQL_VERSION)" in 8.4.8*) ;; *) echo "N04_VERSION=BLOCKED" >&2; exit 1;; esac
+          test "$(metric N04_COMPANIES)" -ge 2
+          test "$(metric N04_MIGRATION_MARKER)" = 1
+          test "$(metric N04_GRANT_OWNER_CONFLICTS)" = 0
+          test "$(metric N04_PLATFORM_OWNER_CONFLICTS)" = 0
+          test "$(metric N04_MEMBERSHIP_CUSTOM_OWNER_CONFLICTS)" = 0
+          echo "N04_AIVEN_READBACK=PASS_READ_ONLY"
+          {
+            echo "## N0.4 - MySQL Aiven DEV (solo lectura)"
+            echo "Commit: \`$GITHUB_SHA\`"
+            printf '%s\n' "$readback" | sed 's/^/- /'
+            echo "- Dictamen estructural: PASS_READ_ONLY"
+            echo "- Usuarios, roles, grants y empresas: ninguna escritura"
+            echo "- JWT A/B en runtime real: requiere prueba HTTP autenticada independiente"
+          } >> "$GITHUB_STEP_SUMMARY"
