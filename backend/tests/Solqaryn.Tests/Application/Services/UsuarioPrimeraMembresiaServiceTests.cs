@@ -61,7 +61,7 @@ public sealed class UsuarioPrimeraMembresiaServiceTests
         users.Setup(x => x.GetEmpresaAsync(41, 11)).ReturnsAsync(miembroInactivo);
         users.Setup(x => x.SaveChangesAsync()).ReturnsAsync(true);
         roles.Setup(x => x.GetByIdAsync(3)).ReturnsAsync(new Rol { Id = 3,
-            Nombre = "Rol de pruebas", NombreNormalizado = "ROL_PRUEBAS", Activo = true });
+            Nombre = "Rol de pruebas", NombreNormalizado = "ROL_PRUEBAS", EsSistema = true, Activo = true });
         empresas.Setup(x => x.GetByIdAsync(11, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Empresa("Empresa A") { Id = 11 });
         actor.SetupGet(x => x.UsuarioId).Returns(10);
