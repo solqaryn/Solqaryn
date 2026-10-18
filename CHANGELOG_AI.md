@@ -1,3 +1,9 @@
+## 2026-10-18 — DEV: corrección mínima CI N0.4 (candidato)
+
+- Recuperación causal de N0.4: el manifiesto EF ya funciona (2926/2926 PASS), pero el gate histórico apuntaba a migraciones Pomelo N0.3/N0.4 excluidas del ensamblado Oracle actual. Se reemplaza exclusivamente su ejercicio obsoleto por snapshot/migraciones Oracle EF10, bootstrap MySQL 8.4 efímero, comprobación física de RBAC y rechazo real de grants sin FKs; unitarios N0.4, owner A/B y backfill se ejecutan dirigidos. Ninguna migración legacy se reinstala, ni se alteran datos DEV.
+- `.github/workflows/erp-n0-4-ci.yml`: usa `dotnet tool restore` desde `backend/.config/dotnet-tools.json` y comprueba `dotnet ef --version` antes de la migración temporal de CI. El fallo anterior se debía a que la instalación global no restauraba la herramienta local.
+- Activa el mismo control en PR hacia `dev` para validar antes de integrar. Sin cambios de producción, base DEV, modelos RBAC, roles, permisos ni migraciones. Pendiente CI causal y fusión controlada.
+
 ## 2026-10-18 — DEV Microfase roles empresariales: ownership estricto (candidato)
 
 - El control RBAC asigna `EmpresaId` desde el contexto empresarial validado por el backend a cada rol personalizado creado o duplicado; el cliente nunca controla ese propietario.
