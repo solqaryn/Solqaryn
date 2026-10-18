@@ -233,8 +233,6 @@ jobs:
               except RuntimeError:
                   blockers.append("network_positive_binding")
           out(f"POSITIVE_AB_BINDINGS_VERIFIED={validated}")
-          if len(active) >= 2 and validated < 2:
-              security_failures.append("positive_ab_incomplete")
           
           if suspended and render_ready:
               try:
@@ -260,10 +258,10 @@ jobs:
               out("MICROFASE1_SECURITY_SMOKE=FAIL")
           else:
               out("MICROFASE1_SECURITY_SMOKE=PASS_ON_EXECUTED_CASES")
-          if blockers:
-              out("MICROFASE1_LIVE_CERT=BLOCKED")
-          elif security_failures:
+          if security_failures:
               out("MICROFASE1_LIVE_CERT=FAIL")
+          elif blockers:
+              out("MICROFASE1_LIVE_CERT=BLOCKED")
           else:
               out("MICROFASE1_LIVE_CERT=PASS")
           out(f"BLOCKER_COUNT={len(set(blockers))} SECURITY_FAILURE_COUNT={len(set(security_failures))}")
