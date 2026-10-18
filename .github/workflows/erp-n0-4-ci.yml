@@ -12,7 +12,7 @@ on:
       - 'backend/scripts/*erp-n0-4*'
       - '.github/workflows/erp-n0-4-ci.yml'
   pull_request:
-    branches: [main]
+    branches: [dev, main]
     paths:
       - 'backend/src/**/*RbacN04*.cs'
       - 'backend/src/Infrastructure/Migrations/20260811174745_N0_4_ConsolidarRbacRelacional*.cs'
@@ -67,8 +67,11 @@ jobs:
           dotnet build Solqaryn.sln -c Release --no-restore -warnaserror
           dotnet test Solqaryn.sln -c Release --no-build
 
-      - name: Instalar EF
-        run: dotnet tool install --global dotnet-ef --version 10.0.12
+      - name: Restaurar EF desde el manifiesto local
+        working-directory: backend
+        run: |
+          dotnet tool restore
+          dotnet ef --version
 
       - name: Crear esquema pre-N0.4
         working-directory: backend
