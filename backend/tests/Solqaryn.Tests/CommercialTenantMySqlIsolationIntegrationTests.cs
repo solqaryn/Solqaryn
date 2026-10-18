@@ -57,6 +57,8 @@ public sealed class CommercialTenantMySqlIsolationIntegrationTests
                 {
                     Nombre = "P4 Vendedor A B",
                     NombreNormalizado = "P4_VENDEDOR_AB",
+                    // Compartido A/B solamente como plantilla empresarial de sistema.
+                    EsSistema = true,
                     Activo = true
                 };
                 global.Roles.Add(rol);
