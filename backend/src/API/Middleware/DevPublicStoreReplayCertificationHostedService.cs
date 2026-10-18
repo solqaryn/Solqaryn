@@ -246,7 +246,7 @@ public sealed class DevPublicStoreReplayCertificationHostedService(
         }
         finally
         {
-            await db.Database.CloseConnectionAsync(timeout.Token);
+            await db.Database.CloseConnectionAsync();
         }
     }
 }
