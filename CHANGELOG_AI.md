@@ -1,3 +1,9 @@
+## 2026-10-18 — DEV: causa precisa del primer bloqueo post-merge de acta
+
+- La prueba de procedencia online en PR #3668 diagnosticó `CHECK=GITHUB_ATTESTATION_CONSISTENCY REASON=unauthorized attestation association`. La etiqueta contextual `author_association` devuelta a `GITHUB_TOKEN` difiere de la observada en el conector GitHub y no es prueba de identidad estable.
+- Se elimina exclusivamente ese falso gate: la autorización permanece fijada al ID numerico corporativo `318818775`, login, comentario original inmutable, repositorio SOLQARYN, PR #3666 fusionado al SHA certificado y marcadores completos HMAC y MySQL. Se agrega prueba de asociación contextual variable y prueba existente de rechazo de ID ajeno.
+- El validador de PR debe demostrar la lectura online correcta antes de fusionar. No se repite HMAC ni se alteran empresas, MySQL, secretos, QA/PROD o middleware.
+
 ## 2026-10-18 — Microfase 1 DEV: diagnostico fail-closed y control de procedencia en PR
 
 - El PR #3667 quedó fusionado tras 18/18 CI en `65a25a7d...`; el primer readback post-merge devolvió `MICROFASE1_EVIDENCE=BLOCKED Reason=ValueError` en el paso de acta, **antes** de MySQL/HTTP. No atribuirlo a HMAC ni inventar PASS.
