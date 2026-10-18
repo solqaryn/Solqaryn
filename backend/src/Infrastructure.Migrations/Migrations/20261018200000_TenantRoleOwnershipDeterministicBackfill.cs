@@ -11,29 +11,11 @@ public sealed class TenantRoleOwnershipDeterministicBackfill : Migration
 {
     protected override void Up(MigrationBuilder migrationBuilder)
     {
-        // Históricos creados antes de exigir EmpresaId. Sólo una membresía
-        // perteneciente a exactamente UN tenant permite identificar dueño.
-        // No reutilizar Usuario.RolId legacy ni la empresa activa como fuente.
-        // Una colisión de nombre por empresa mantiene el rol en cuarentena.
-        migrationBuilder.Sql("""
-            UPDATE Roles AS r
-            INNER JOIN (
-                SELECT RolId, MIN(EmpresaId) AS EmpresaId
-                FROM UsuarioEmpresas
-                GROUP BY RolId
-                HAVING COUNT(DISTINCT EmpresaId) = 1
-            ) AS m ON m.RolId = r.Id
-            LEFT JOIN Roles AS colision
-                ON colision.EmpresaId = m.EmpresaId
-               AND colision.NombreNormalizado = r.NombreNormalizado
-               AND colision.Id <> r.Id
-            SET r.EmpresaId = m.EmpresaId
-            WHERE r.Ambito = 1 AND r.EsSistema = 0 AND r.EmpresaId IS NULL
-              AND colision.Id IS NULL;
-            """);
-
-        // Sólo la instalación estrictamente monoempresa permite atribuir
-        // roles sin ninguna membresía. Con A/B jamás adivinar propietario.
+        // NUNCA usar UsuarioEmpresa para atribuir roles históricos.
+        // Una membresía cruzada/manipulada no demuestra propiedad.
+        // Sólo una instalación estrictamente monoempresa puede atribuir
+        // roles personalizados sin dueño; se cuentan empresas inactivas.
+        // Conflictos de nombre se mantienen sin propietario (fail-closed).
         migrationBuilder.Sql("""
             UPDATE Roles AS r
             CROSS JOIN (
@@ -49,11 +31,12 @@ public sealed class TenantRoleOwnershipDeterministicBackfill : Migration
               AND unico.NumeroEmpresas = 1 AND colision.Id IS NULL;
             """);
 
-        // Ambiguos (varias empresas, sin membresías o colisión) quedan NULL,
-        // nunca se hacen plantillas. El guard RBAC/EF los rechaza.
+        // Con dos o más empresas, los roles legacy huérfanos permanecen NULL,
+        // no se convierten en plantillas y no confieren autoridad.
+        // Requieren atribución verificada explícita, nunca inferencia.
     }
 
     protected override void Down(MigrationBuilder migrationBuilder) =>
         throw new NotSupportedException(
-            "No se puede desatribuir de forma segura la propiedad de roles sin un respaldo verificado.");
+            "No desatribuir roles históricos sin respaldo y readback verificados.");
 }

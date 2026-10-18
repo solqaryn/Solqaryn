@@ -15,7 +15,7 @@ namespace Solqaryn.Tests;
 public sealed class TenantRoleOwnershipBackfillMySqlTests
 {
     [Fact]
-    public async Task SoloRolConUnicoTenantObtieneOwnerYAmbiguoPermaneceSinPermisos()
+    public async Task DosEmpresasNingunaMembresiaDemuestraOwner_AunqueSoloExistaUna()
     {
         var configured = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
             ?? throw new InvalidOperationException("Se requiere una instancia MySQL efímera.");
@@ -94,8 +94,8 @@ public sealed class TenantRoleOwnershipBackfillMySqlTests
             var shared = await db.Roles.IgnoreQueryFilters()
                 .AsNoTracking().SingleAsync(x => x.Id == plantilla.Id);
 
-            Assert.Equal(a.Id, owned.EmpresaId);
-            Assert.True(owned.EsAsignableAEmpresa(a.Id));
+            Assert.Null(owned.EmpresaId);
+            Assert.False(owned.EsAsignableAEmpresa(a.Id));
             Assert.False(owned.EsAsignableAEmpresa(b.Id));
             Assert.Null(ambiguous.EmpresaId);
             Assert.False(ambiguous.EsAsignableAEmpresa(a.Id));
@@ -105,6 +105,52 @@ public sealed class TenantRoleOwnershipBackfillMySqlTests
             Assert.Null(shared.EmpresaId);
             Assert.True(shared.EsAsignableAEmpresa(a.Id));
             Assert.True(shared.EsAsignableAEmpresa(b.Id));
+        }
+        finally
+        {
+            await using var cleanup = new AppDbContext(options);
+            await cleanup.Database.EnsureDeletedAsync();
+        }
+    }
+
+    [Fact]
+    public async Task UnaSolaEmpresaPuedeAtribuirUnRolPersonalizadoSinDueno()
+    {
+        var raw = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+            ?? throw new InvalidOperationException("Se requiere una instancia MySQL efímera.");
+        var connection = new MySqlConnectionStringBuilder(raw);
+        if (!string.Equals(connection.Server, "localhost", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(connection.Server, "127.0.0.1", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("Rechazado MySQL remoto para backfill.");
+        connection.Database = "role_owner_single_" + Guid.NewGuid().ToString("N");
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseMySQL(connection.ConnectionString, x =>
+                x.MigrationsAssembly("Solqaryn.Infrastructure.Migrations")).Options;
+
+        try
+        {
+            await using var db = new AppDbContext(options);
+            await Phase7MySqlTestDatabase.InitializeFreshAsync(
+                db, applyPendingOracleMigrations: false);
+            var empresa = new Empresa("Empresa única");
+            db.Set<Empresa>().Add(empresa);
+            await db.SaveChangesAsync();
+
+            var rol = new Rol
+            {
+                Nombre = "Rol anterior", NombreNormalizado = "ROL_ANTERIOR",
+                EmpresaId = null, EsSistema = false, Ambito = AmbitoAutorizacion.Empresa
+            };
+            db.Roles.Add(rol);
+            await db.SaveChangesAsync();
+            db.ChangeTracker.Clear();
+
+            await db.Database.MigrateAsync();
+            db.ChangeTracker.Clear();
+            var persistido = await db.Roles.IgnoreQueryFilters().AsNoTracking()
+                .SingleAsync(x => x.Id == rol.Id);
+            Assert.Equal(empresa.Id, persistido.EmpresaId);
+            Assert.True(persistido.EsAsignableAEmpresa(empresa.Id));
         }
         finally
         {

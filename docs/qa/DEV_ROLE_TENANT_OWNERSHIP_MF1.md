@@ -14,7 +14,7 @@ Esta acta es evidencia técnica del cambio candidato, NO una declaración `LISTO
 
 ## Backfill histórico: criterios fail-closed
 
-Migración `20261018200000_TenantRoleOwnershipDeterministicBackfill`. Opera únicamente sobre filas `Roles.Ambito=1, EsSistema=0, EmpresaId IS NULL`. Primera prioridad: membresías con exactamente una empresa distinta por RolId. Fallback únicamente si existe UNA sola fila de empresa en todo el catálogo (incluidas inactivas). Excluye colisiones de nombre. Nunca usa JWT, la empresa activa ni el rol legacy de Usuario para inferir dueño.
+Migración `20261018200000_TenantRoleOwnershipDeterministicBackfill`. Opera únicamente sobre filas `Roles.Ambito=1, EsSistema=0, EmpresaId IS NULL`. Solo atribuye si existe exactamente UNA fila de empresa en todo el catálogo (incluidas inactivas), sin colisión de nombre. Con A/B deja todos los roles personalizados sin propietario en cuarentena: una membresía incluso única puede haber sido manipulada. Nunca usa UsuarioEmpresa, JWT, la empresa activa ni Usuario.RolId para inferir dueño.
 
 Cuando exista ambigüedad, el rol permanece sin dueño, inaccesible por RBAC empresarial. No se elimina, no se eleva a plantilla ni se inventa owner. Una reparación futura de esa fila exige identidad empresarial verificada y autorización explícita.
 
