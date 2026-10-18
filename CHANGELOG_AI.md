@@ -1,3 +1,9 @@
+## 2026-10-18 — Microfase 1 DEV: diagnostico fail-closed y control de procedencia en PR
+
+- El PR #3667 quedó fusionado tras 18/18 CI en `65a25a7d...`; el primer readback post-merge devolvió `MICROFASE1_EVIDENCE=BLOCKED Reason=ValueError` en el paso de acta, **antes** de MySQL/HTTP. No atribuirlo a HMAC ni inventar PASS.
+- El verificador pasa a categorizar por etapa el error, sin revelar stderr ni tokens, y ahora permite `--provenance-only` exclusivamente en PR con base `dev`. Esa etapa lee online la misma acta GitHub revisada y la equivalencia byte a byte de guardas, sin credenciales Aiven ni escribir `GITHUB_ENV`; falla antes de fusionar si el origen no es válido.
+- Se agregan tres tests de aislamiento del modo PR, y se actualiza runbook vigente. El modo de lectura en DEV mantiene todos los gates existentes; no relaja autenticación, firmas, aislamiento ni estados de empresas. El cierre sigue pendiente de un workflow post-merge `PASS_ATTESTED` real.
+
 ## 2026-10-18 — DEV Microfase 1: cierre de deuda del workflow read-only y retiro de prueba temporal
 
 - Se sustituye el bloqueo permanente del readback (necesitaba simultaneamente B suspendida y A/B activas, y asumía HMAC no probado) por un comprobador de atestacion real que verifica el comentario corporativo no editado del PR #3666, fuente Render 200/503/200 con ledger PASS, y evidencia GH run 39084418982 intentos 5/6.
