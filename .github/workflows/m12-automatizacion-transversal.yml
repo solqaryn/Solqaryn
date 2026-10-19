@@ -94,6 +94,14 @@ jobs:
           dotnet restore Solqaryn.sln
           dotnet build Solqaryn.sln --configuration Release --no-restore
           dotnet test Solqaryn.sln --configuration Release --no-build --filter "FullyQualifiedName~M12AutomatizacionTransversalTests" --logger "trx;LogFileName=m12-tests.trx"
+      - name: Preparar OracleBaseline descartable antes de migrar M12
+        working-directory: backend
+        env:
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
+        run: |
+          set -euo pipefail
+          dotnet run --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj --configuration Release --no-build --no-launch-profile
+
       - name: Iniciar API y migrar MySQL real
         working-directory: backend
         shell: bash
