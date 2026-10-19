@@ -1,5 +1,5 @@
 import { Injectable, computed, signal } from '@angular/core';
-import { Observable, catchError, finalize, map, of, shareReplay, tap } from 'rxjs';
+import { Observable, catchError, finalize, map, of, shareReplay, switchMap, tap } from 'rxjs';
 import { EmpresaConfiguracion } from '../../core/models/empresa-configuracion.model';
 import { EmpresaConfiguracionService } from '../../services/empresa-configuracion.service';
 import { TiendaBootstrapPublico } from './storefront.models';
@@ -92,10 +92,10 @@ export class StorefrontIdentidadService {
 
   private cargarLegacy() {
     return this.empresaService.getPublicaTienda().pipe(
-      map((res) => {
+      switchMap((res) => {
         if (res?.success !== true || !res.data?.nombreComercial)
           throw new Error('Identidad pública no verificada.');
-        return {
+        const config = {
           ...STORE_DEFAULT_CONFIG,
           ...res.data,
           telefono: res.data.telefono ?? undefined,
@@ -105,6 +105,20 @@ export class StorefrontIdentidadService {
           encabezadoTexto: res.data.encabezadoTexto ?? undefined,
           piePaginaTexto: res.data.piePaginaTexto ?? undefined
         };
+        // Sólo después de una identidad pública firmada y verificada se
+        // conserva la consulta opcional de WhatsApp legacy; con 2+ tenants el
+        // middleware sigue rechazando la ruta global y esta carga degrada
+        // a la identidad del propietario, nunca a otro negocio.
+        if (config.whatsApp?.trim()) return of(config);
+        return this.empresaService.getWhatsAppPublico().pipe(
+          map(contacto => ({
+            ...config,
+            whatsApp: contacto.disponible && contacto.numeroTelefonoE164
+              ? contacto.numeroTelefonoE164
+              : undefined
+          })),
+          catchError(() => of(config))
+        );
       }),
       tap((config) => {
         this._bootstrap.set(null);
