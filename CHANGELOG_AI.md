@@ -1,5 +1,9 @@
 ## 2026-10-19 — Actualización de autoridad comercial VAEP (PR en revisión)
 
+- Actualización de la skill local y su referencia de arquitectura a Angular 22.2.1, ASP.NET Core 10, EF Core 10.0.12, proveedor Oracle MySQL 10.0.9 verificados en los csproj. Evita que nuevos ejecutores hereden ASP.NET 8/Pomelo de una descripción de gobierno anterior.
+- Reparada la clave booleana CURRENT_COMMERCIAL_ONLY en el parser bash y sus nombres técnicos de policy; sujeto a CI exact-head.
+
+
 - Decisión aprobada por propietario: fuente ejecutable exclusiva `SOLQARYN PLAN COMERCIAL INICIAL UNIFICADO`, Drive `1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j`. Descompuesto en 1123 microtareas comprobables a partir de 492 fichas; hoja `1gcVyCoyhLU0jFMwRtf0s5_x8FSnfBs38ojml1QF7Xwk` actualizada con `PLAN_COMERCIAL` y `_COMERCIAL_SOURCE`.
 - Se sustituyen referencias operativas contradictorias en AGENTS, contrato VAEP, PROJECT_CONTEXT, TASKS e índice sin alterar historial de cambios ni evidencias de PR/CI anteriores. Archivos históricos únicamente como backup y sin autoridad operativa.
 - La hoja conserva protección y cotas visibles; cinco primarias preparadas pero PAUSADAS. Cinco supervisoras administradas por otro usuario siguen inaccesibles; admisión `NO_GO` hasta readback 10/10, merge y CI exact-head.
