@@ -95,7 +95,7 @@ import {
 
         <section class="subsection" aria-labelledby="alta-empresa">
           <h3 id="alta-empresa">Registrar una nueva empresa</h3>
-          <p>Requiere una cuenta activa como primer administrador y los dos controles de certificación activados en el servidor.</p>
+          <p>Puedes elegir un administrador ya registrado o crear su cuenta y empresa en una única transacción. Ambas opciones requieren autoridad global y los dos controles de certificación del servidor.</p>
           <div class="form-grid">
             <div class="field">
               <label for="empresa-nueva">Nombre de empresa</label>
@@ -103,15 +103,50 @@ import {
                 (input)="empresaNueva.set($any($event.target).value)" />
             </div>
             <div class="field">
+              <label for="modo-alta-empresa">Administrador inicial</label>
+              <select id="modo-alta-empresa" [value]="modoAlta()"
+                (change)="modoAlta.set($any($event.target).value === 'nuevo' ? 'nuevo' : 'existente')">
+                <option value="existente">Usar cuenta existente verificada</option>
+                <option value="nuevo">Crear nueva cuenta junto con la empresa</option>
+              </select>
+            </div>
+          </div>
+          @if (modoAlta() === 'existente') {
+            <div class="field">
               <label for="admin-empresa">ID de cuenta administradora verificada</label>
               <input id="admin-empresa" type="number" [value]="buscado()?.id ?? 0" readonly
                 aria-describedby="admin-empresa-aviso" />
-              <small id="admin-empresa-aviso">La cuenta se selecciona mediante la búsqueda exacta anterior; no se admite un ID arbitrario.</small>
+              <small id="admin-empresa-aviso">Selecciona la cuenta por búsqueda exacta; no se admite un ID arbitrario.</small>
             </div>
-          </div>
+          } @else {
+            <div class="form-grid" role="group" aria-label="Datos del administrador nuevo">
+              <div class="field">
+                <label for="admin-empresa-usuario">Usuario nuevo (3–50 caracteres)</label>
+                <input id="admin-empresa-usuario" type="text" maxlength="50" autocomplete="off"
+                  [value]="adminEmpresaUsuarioNuevo()"
+                  (input)="adminEmpresaUsuarioNuevo.set($any($event.target).value)" />
+              </div>
+              <div class="field">
+                <label for="admin-empresa-nombre">Nombre completo</label>
+                <input id="admin-empresa-nombre" type="text" maxlength="150" autocomplete="name"
+                  [value]="adminEmpresaNombreNuevo()"
+                  (input)="adminEmpresaNombreNuevo.set($any($event.target).value)" />
+              </div>
+              <div class="field">
+                <label for="admin-empresa-clave">Contraseña inicial (10–128, mayúscula, minúscula, número y símbolo)</label>
+                <input id="admin-empresa-clave" type="password" minlength="10" maxlength="128"
+                  autocomplete="new-password" [value]="adminEmpresaClaveNueva()"
+                  (input)="adminEmpresaClaveNueva.set($any($event.target).value)" />
+              </div>
+            </div>
+            <p class="secondary">La cuenta se creará únicamente si toda la operación se confirma en MySQL. No recibirá permisos globales.</p>
+          }
           <button mat-flat-button type="button" (click)="crearEmpresa()"
-            [disabled]="ocupado() || directorio()?.puedeCrear !== true || (buscado()?.activo !== true && buscado()?.pendienteAsignacion !== true) || buscado()?.bloqueado === true">
-            Crear empresa con administrador
+            [disabled]="ocupado() || directorio()?.puedeCrear !== true ||
+              (modoAlta() === 'existente' && ((buscado()?.activo !== true && buscado()?.pendienteAsignacion !== true) || buscado()?.bloqueado === true)) ||
+              (modoAlta() === 'nuevo' && (adminEmpresaUsuarioNuevo().trim().length < 3 ||
+                adminEmpresaNombreNuevo().trim().length < 3 || adminEmpresaClaveNueva().length < 10))">
+            {{ modoAlta() === 'nuevo' ? 'Crear empresa y administrador en un solo paso' : 'Crear empresa con administrador existente' }}
           </button>
           <button mat-stroked-button type="button" (click)="crearBorrador()"
             [disabled]="ocupado() || empresaNueva().trim().length < 2">
@@ -290,6 +325,10 @@ export class PlataformaGestionMvpComponent {
   readonly nombreCompletoNuevo = signal('');
   readonly claveNueva = signal('');
   readonly empresaNueva = signal('');
+  readonly modoAlta = signal<'existente' | 'nuevo'>('existente');
+  readonly adminEmpresaUsuarioNuevo = signal('');
+  readonly adminEmpresaNombreNuevo = signal('');
+  readonly adminEmpresaClaveNueva = signal('');
   readonly nuevaStoreKey = signal('');
   readonly tiendasRegistradas = signal<Array<{id: number; host: string; storeKey: string; activa: boolean}>>([]);
   readonly hostPublico = signal(typeof window !== 'undefined' ? window.location.hostname : '');
@@ -456,25 +495,61 @@ export class PlataformaGestionMvpComponent {
 
   crearEmpresa(): void {
     const nombre = this.empresaNueva().trim();
-    const id = this.buscado()?.id ?? 0;
-    if (this.ocupado() || this.directorio()?.puedeCrear !== true ||
-        this.buscado()?.bloqueado === true ||
-        (this.buscado()?.activo !== true && this.buscado()?.pendienteAsignacion !== true))
-      return;
-    if (nombre.length < 2 || id <= 0) {
-      this.error.set('Indica un nombre válido y un administrador existente.');
+    const crearNuevo = this.modoAlta() === 'nuevo';
+    const cuenta = this.buscado();
+    if (this.ocupado() || this.directorio()?.puedeCrear !== true) return;
+    if (nombre.length < 2 || nombre.length > 200) {
+      this.error.set('Indica un nombre válido para la empresa.');
       return;
     }
-    this.ejecutar('Crear empresa', () =>
-      this.api.altaControlada(nombre, id).pipe(finalize(() => this.ocupado.set(false)))
-        .subscribe({
-          next: data => {
-            this.empresaNueva.set('');
-            this.exito.set('Empresa creada con administrador inicial. ID: ' + data.empresaId);
-            this.actualizarDirectorio.emit();
-          },
-          error: err => this.fallar('El alta empresarial', err)
+    if (!crearNuevo && (!cuenta || cuenta.bloqueado ||
+        (!cuenta.activo && !cuenta.pendienteAsignacion))) {
+      this.error.set('Selecciona un administrador existente verificado.');
+      return;
+    }
+
+    const usuarioNuevo = this.adminEmpresaUsuarioNuevo().trim();
+    const completoNuevo = this.adminEmpresaNombreNuevo().trim();
+    const clave = this.adminEmpresaClaveNueva();
+    if (crearNuevo && (!/^[a-zA-Z0-9._-]{3,50}$/.test(usuarioNuevo) ||
+        completoNuevo.length < 3 || completoNuevo.length > 150 ||
+        clave.length < 10 || clave.length > 128 ||
+        !/[A-Z]/.test(clave) || !/[a-z]/.test(clave) ||
+        !/[0-9]/.test(clave) || !/[^a-zA-Z0-9]/.test(clave))) {
+      this.error.set('Completa una identidad nueva válida y contraseña fuerte.');
+      return;
+    }
+
+    const solicitud = crearNuevo
+      ? this.api.altaControladaConAdministradorNuevo(nombre, {
+          nombreUsuario: usuarioNuevo, nombreCompleto: completoNuevo, password: clave
         })
+      : this.api.altaControlada(nombre, cuenta!.id);
+    this.ejecutar('Crear empresa', () =>
+      solicitud.pipe(finalize(() => {
+        if (crearNuevo) this.adminEmpresaClaveNueva.set('');
+        this.ocupado.set(false);
+      })).subscribe({
+        next: data => {
+          this.empresaNueva.set('');
+          if (crearNuevo) {
+            this.adminEmpresaUsuarioNuevo.set('');
+            this.adminEmpresaNombreNuevo.set('');
+            this.busqueda.set(usuarioNuevo);
+            this.buscado.set({
+              id: data.administradorUsuarioId,
+              nombreUsuario: usuarioNuevo,
+              nombreCompleto: completoNuevo,
+              activo: true, bloqueado: false, pendienteAsignacion: false
+            });
+          }
+          this.exito.set(crearNuevo
+            ? 'Empresa y administrador nuevo creados de forma atómica. ID: ' + data.empresaId
+            : 'Empresa creada con administrador existente. ID: ' + data.empresaId);
+          this.actualizarDirectorio.emit();
+        },
+        error: err => this.fallar('El alta empresarial', err)
+      })
     );
   }
 

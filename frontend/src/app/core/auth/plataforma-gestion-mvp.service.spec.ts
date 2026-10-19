@@ -88,6 +88,43 @@ describe('Microfase 4 — cliente global de gestión MVP', () => {
     expect(failed).toBe(true);
   });
 
+  it('alta atómica envía credenciales solo en la petición única, sin selector empresarial', () => {
+    let resultado = false;
+    api.altaControladaConAdministradorNuevo('Nueva empresa', {
+      nombreUsuario: 'nuevo.admin', nombreCompleto: 'Administrador Nuevo',
+      password: 'ClaveSegura!42'
+    }).subscribe(() => { resultado = true; });
+    const req = http.expectOne(environment.apiUrl + '/plataforma/empresas/alta-controlada');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.headers.has('X-Empresa-Id')).toBe(false);
+    expect(req.request.body).toEqual({
+      nombre: 'Nueva empresa',
+      administradorNuevo: {
+        nombreUsuario: 'nuevo.admin', nombreCompleto: 'Administrador Nuevo',
+        password: 'ClaveSegura!42'
+      }
+    });
+    req.flush({ empresaId: 91, administradorUsuarioId: 92, operacionComercialHabilitada: false });
+    expect(resultado).toBe(true);
+  });
+
+  it('alta atómica no convierte una confirmación incompleta ni un 403 en éxito', () => {
+    let errores = 0;
+    const cuenta = {
+      nombreUsuario: 'nuevo.admin', nombreCompleto: 'Administrador Nuevo',
+      password: 'ClaveSegura!42'
+    };
+    api.altaControladaConAdministradorNuevo('Empresa nueva', cuenta)
+      .subscribe({ error: () => { errores++; } });
+    http.expectOne(environment.apiUrl + '/plataforma/empresas/alta-controlada')
+      .flush({ empresaId: 21, administradorUsuarioId: 0, operacionComercialHabilitada: false });
+    api.altaControladaConAdministradorNuevo('Empresa nueva', cuenta)
+      .subscribe({ error: () => { errores++; } });
+    http.expectOne(environment.apiUrl + '/plataforma/empresas/alta-controlada')
+      .flush({}, { status: 403, statusText: 'Forbidden' });
+    expect(errores).toBe(2);
+  });
+
   it('rechaza membresías inválidas o amplias', () => {
     let failed = false;
     api.miembros(22).subscribe({ error: () => { failed = true; } });

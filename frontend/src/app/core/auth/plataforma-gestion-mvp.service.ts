@@ -147,8 +147,7 @@ export class PlataformaGestionMvpService {
   }
 
   altaControlada(nombre: string, administradorUsuarioId: number) {
-    // Esta operación solo existe con los dos controles backend certificados.
-    // La UI nunca modifica esas flags ni sustituye la verificación del servidor.
+    // Modalidad anterior: cuenta previamente registrada, sin cambios.
     return this.http.post<{ empresaId: number; administradorUsuarioId: number }>(
       environment.apiUrl + '/plataforma/empresas/alta-controlada',
       { nombre, administradorUsuarioId }).pipe(map(r => {
@@ -157,5 +156,25 @@ export class PlataformaGestionMvpService {
           throw new Error('El alta no fue confirmada.');
         return r;
     }));
+  }
+
+  altaControladaConAdministradorNuevo(nombre: string, administradorNuevo: {
+    nombreUsuario: string; nombreCompleto: string; password: string;
+  }) {
+    // Un solo POST: el servidor inserta usuario, empresa, configuración,
+    // rol empresarial, membresía y auditoría en la misma transacción.
+    // Nunca enviamos un tenant ID como cabecera ni privilegios de plataforma.
+    return this.http.post<{
+      empresaId: number; administradorUsuarioId: number;
+      operacionComercialHabilitada: boolean;
+    }>(environment.apiUrl + '/plataforma/empresas/alta-controlada',
+      { nombre, administradorNuevo }).pipe(map(r => {
+        if (!Number.isSafeInteger(r?.empresaId) || r.empresaId <= 0 ||
+            !Number.isSafeInteger(r.administradorUsuarioId) ||
+            r.administradorUsuarioId <= 0 ||
+            r.operacionComercialHabilitada !== false)
+          throw new Error('El alta atómica no fue confirmada.');
+        return r;
+      }));
   }
 }
