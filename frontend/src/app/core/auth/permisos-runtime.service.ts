@@ -32,6 +32,9 @@ export class PermisosRuntimeService {
   private readonly _permisos = signal<Set<string>>(new Set());
   private readonly _esAdministrador = signal(false);
   private readonly _cargado = signal(false);
+  private readonly _operacionRestringida = signal(true);
+  private readonly _capacidades = signal<Set<string>>(new Set());
+  private readonly _rutasHabilitadas = signal<Set<string>>(new Set());
 
   readonly esAdministrador = this._esAdministrador.asReadonly();
   readonly cargado = this._cargado.asReadonly();
@@ -56,14 +59,30 @@ export class PermisosRuntimeService {
           return false;
         }
 
-        this._permisos.set(new Set(res.data.permisos));
-        this._esAdministrador.set(res.data.esAdministrador);
+        // La API es la única fuente de capacidades; respuestas antiguas, parciales
+        // o de otra empresa no autorizan ningún módulo.
+        const data = res?.success === true ? res.data : null;
+        if (!data ||
+            typeof data.operacionMultiEmpresaRestringida !== 'boolean' ||
+            !Array.isArray(data.permisos) ||
+            !Array.isArray(data.capacidadesHabilitadas) ||
+            !Array.isArray(data.rutasHabilitadas)) {
+          throw new Error('La API no confirmó permisos y capacidades empresariales.');
+        }
+        this._permisos.set(new Set(data.permisos));
+        this._esAdministrador.set(data.esAdministrador === true);
+        this._operacionRestringida.set(data.operacionMultiEmpresaRestringida);
+        this._capacidades.set(new Set(data.capacidadesHabilitadas));
+        this._rutasHabilitadas.set(new Set(data.rutasHabilitadas));
         this._cargado.set(true);
         return true;
       }),
       catchError(() => {
         this._permisos.set(new Set());
         this._esAdministrador.set(false);
+        this._operacionRestringida.set(true);
+        this._capacidades.set(new Set());
+        this._rutasHabilitadas.set(new Set());
         this._cargado.set(true);
         return of(false);
       })
@@ -73,20 +92,34 @@ export class PermisosRuntimeService {
   limpiar(): void {
     this._permisos.set(new Set());
     this._esAdministrador.set(false);
+    this._operacionRestringida.set(true);
+    this._capacidades.set(new Set());
+    this._rutasHabilitadas.set(new Set());
     this._cargado.set(false);
   }
 
   puede(modulo: string, accion: string): boolean {
-    if (!this.tenantContext.tieneContextoVerificado()) return false;
-    if (this._esAdministrador()) return true;
-    return this._permisos().has(`${modulo}:${accion}`);
+    if (!this._cargado() || !this.tenantContext.tieneContextoVerificado()) return false;
+    const clave = `${modulo}:${accion}`;
+    // Administrador también requiere grants explícitos y capacidad operativa.
+    return this._permisos().has(clave) &&
+      (!this._operacionRestringida() || this._capacidades().has(clave));
+  }
+
+  rutaHabilitada(ruta: string | undefined | null): boolean {
+    if (!this._cargado() || !this.tenantContext.tieneContextoVerificado()) return false;
+    if (!this._operacionRestringida()) return true;
+    return !!ruta && this._rutasHabilitadas().has(ruta.replace(/^\\//, ''));
   }
 
   rutaInicialPermitida(): string | null {
     if (!this.tenantContext.tieneContextoVerificado()) return null;
-    if (this._esAdministrador()) return '/dashboard';
+    if (this.puede('Dashboard', 'Ver') && this.rutaHabilitada('dashboard'))
+      return '/dashboard';
     return RUTAS_PROTEGIDAS.find(item =>
-      !('soloAdministrador' in item) && this.puede(item.modulo, item.accion)
-    )?.ruta ?? null;
+      !('soloAdministrador' in item) &&
+      this.puede(item.modulo, item.accion) &&
+      this.rutaHabilitada(item.ruta.substring(1))
+    )?.ruta ?? '/perfil';
   }
 }
