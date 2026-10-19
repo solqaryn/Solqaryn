@@ -95,7 +95,16 @@ public sealed class N72DOutboxRetryProcessorTests
 
         // A primero y B después: validar el lote completo evita incluso
         // el efecto externo de A cuando se detecta un claim contaminado.
-        var repo = new FakeRepository(mensajeA, mensajeB);
+        var mensajeC = MensajeOutbox.Crear(
+            9,
+            "inventario.no-debe-despacharse",
+            "{\"empresa\":\"C\"}",
+            "idem-tenant-c",
+            creadoEnUtc: AhoraUtc.AddMinutes(-1));
+        mensajeC.MarcarProcesando(AhoraUtc);
+
+        // Con tres tenants, ninguno del lote contaminado puede despacharse.
+        var repo = new FakeRepository(mensajeA, mensajeB, mensajeC);
         var dispatcher = new CountingDispatcher();
         var processor = new OutboxRetryProcessor(
             repo, new OutboxRetryProcessorOptions(), () => 0.5);
