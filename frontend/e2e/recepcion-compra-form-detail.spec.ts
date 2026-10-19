@@ -7,7 +7,7 @@ async function loginConPermisos(page: Page, permisos: string[]): Promise<void> {
   await page.route('**/permisos/mis-permisos/empresa/*', async route => route.fulfill({
     status: 200,
     contentType: 'application/json',
-    body: JSON.stringify({ success: true, message: '', data: { permisos, esAdministrador: false } })
+    body: JSON.stringify({ success: true, message: '', data: { permisos, esAdministrador: false, operacionMultiEmpresaRestringida: false, capacidadesHabilitadas: [], rutasHabilitadas: [] } })
   }));
   await page.goto('/login');
   await page.locator('input[formcontrolname="nombreUsuario"]').fill(ADMIN_USERNAME);
