@@ -109,7 +109,7 @@ export class PermisosRuntimeService {
   rutaHabilitada(ruta: string | undefined | null): boolean {
     if (!this._cargado() || !this.tenantContext.tieneContextoVerificado()) return false;
     if (!this._operacionRestringida()) return true;
-    return !!ruta && this._rutasHabilitadas().has(ruta.replace(/^\\//, ''));
+    return !!ruta && this._rutasHabilitadas().has(ruta.startsWith('/') ? ruta.slice(1) : ruta);
   }
 
   rutaInicialPermitida(): string | null {
