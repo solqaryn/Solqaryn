@@ -18,6 +18,9 @@ public sealed class Priority3AuthorizationSurfaceTests
         // Binding anónimo de solo lectura: middleware exige prueba HMAC, Host+StoreKey
         // configurados y empresa activa. No incluye endpoints comerciales.
         "Solqaryn.API.Controllers.TiendaBindingController.Consultar",
+        // La identidad pública exige el mismo proof HMAC+replay y empresa activa.
+        // No concede acceso a rutas comerciales ni usa la configuración legacy.
+        "Solqaryn.API.Controllers.TiendaConfiguracionPublicaController.Consultar",
         "Solqaryn.Api.Controllers.InboundWebhooksController.ReceiveAsync",
         "Solqaryn.API.Controllers.WhatsAppController.Webhook",
         "Solqaryn.API.Controllers.WhatsAppController.GetPublicoAsync"

@@ -37,8 +37,8 @@ function requestHeaders(req, environment, bodyBuffer, trustedPublicContext) {
         lower === 'x-original-host' || lower.startsWith('x-solqaryn-store-') ||
         // La comprobación pública de una tienda nunca necesita credenciales,
         // cookies ni selector ERP; no reenviar secretos de otras empresas.
-        (trustedPublicContext?.scoped && ['x-empresa-id', 'authorization', 'cookie',
-          'x-storefront-session'].includes(lower)) ||
+        ((trustedPublicContext?.scoped || trustedPublicContext?.identityOnly) &&
+          ['x-empresa-id', 'authorization', 'cookie', 'x-storefront-session'].includes(lower)) ||
         HOP_BY_HOP_HEADERS.has(lower) || value === undefined) continue;
     headers[name] = value;
   }

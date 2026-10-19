@@ -33,6 +33,26 @@ assert.notEqual(a.headers['x-solqaryn-store-nonce'], b.headers['x-solqaryn-store
 assert.equal(a.headers['x-solqaryn-store-proof'],
   sign(String(now), 'GET', '/tienda/binding', 'solqaryn-dev.vercel.app', 'comercio-a', a.headers['x-solqaryn-store-nonce']));
 assert.notEqual(a.headers['x-solqaryn-store-proof'], b.headers['x-solqaryn-store-proof']);
+// La identidad pública es la única lectura adicional certificada por tienda.
+const identityA = buildPublicStoreProxyContext(fake('solqaryn-dev.vercel.app'),
+  'tiendas/comercio-a/tienda/configuracion', environment, binding, now);
+const identityB = buildPublicStoreProxyContext(fake('solqaryn-dev.vercel.app'),
+  'tiendas/comercio-b/tienda/configuracion', environment, binding, now);
+assert.equal(identityA.path, '/tienda/configuracion');
+assert.equal(identityB.path, '/tienda/configuracion');
+assert.equal(identityA.identityOnly, true);
+assert.equal(identityA.headers['x-solqaryn-store-key'], 'comercio-a');
+assert.equal(identityB.headers['x-solqaryn-store-key'], 'comercio-b');
+assert.notEqual(identityA.headers['x-solqaryn-store-proof'],
+  identityB.headers['x-solqaryn-store-proof']);
+assert.equal(buildPublicStoreProxyContext(fake('solqaryn-dev.vercel.app', 'POST'),
+  'tiendas/comercio-a/tienda/configuracion', environment, binding, now).status, 503);
+const rootIdentity = buildPublicStoreProxyContext(fake('solqaryn-dev.vercel.app'),
+  'tienda/configuracion', environment, binding, now);
+assert.equal(rootIdentity.identityOnly, true);
+assert.equal(rootIdentity.headers['x-solqaryn-store-key'], '-');
+assert.equal(buildPublicStoreProxyContext(fake('solqaryn-dev.vercel.app'),
+  'tienda/configuracion', {}, binding, now).status, 503);
 const anotherA = buildPublicStoreProxyContext(fake('solqaryn-dev.vercel.app'),
   'tiendas/comercio-a/tienda/binding', environment, binding, now);
 assert.notEqual(anotherA.headers['x-solqaryn-store-proof'], a.headers['x-solqaryn-store-proof']);

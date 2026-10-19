@@ -120,12 +120,17 @@ const previousBindingEnv = {
   SOLQARYN_ENV: process.env.SOLQARYN_ENV,
   API_UPSTREAM: process.env.API_UPSTREAM,
   PUBLIC_ORIGIN: process.env.PUBLIC_ORIGIN,
-  SEO_INDEXING_ENABLED: process.env.SEO_INDEXING_ENABLED
+  SEO_INDEXING_ENABLED: process.env.SEO_INDEXING_ENABLED,
+  SOLQARYN_PUBLIC_STORE_SIGNING_KEY: process.env.SOLQARYN_PUBLIC_STORE_SIGNING_KEY,
+  SOLQARYN_PUBLIC_STORE_PROOF_ENABLED: process.env.SOLQARYN_PUBLIC_STORE_PROOF_ENABLED
 };
 process.env.SOLQARYN_ENV = 'PROD';
 process.env.API_UPSTREAM = 'https://solqaryn-api-prod.onrender.com';
 process.env.PUBLIC_ORIGIN = 'https://solqaryn-prod.vercel.app';
 process.env.SEO_INDEXING_ENABLED = 'true';
+process.env.SOLQARYN_PUBLIC_STORE_SIGNING_KEY =
+  'TEST_ONLY_PUBLIC_IDENTITY_SEO_HMAC_SECRET_2026';
+process.env.SOLQARYN_PUBLIC_STORE_PROOF_ENABLED = 'true';
 
 const seoHandler = require('../api/seo.js');
 const robotsHandler = require('../api/robots.js');
@@ -145,13 +150,19 @@ function responseMock() {
 const originalFetch = globalThis.fetch;
 let forceSitemapFailure = false;
 let forceMissingCommercial = false;
-globalThis.fetch = async input => {
+globalThis.fetch = async (input, options = {}) => {
   const url = String(input);
   if (forceSitemapFailure && url.includes('/tienda/')) {
     return new Response('{}', { status: 503, headers: { 'content-type': 'application/json' } });
   }
   let payload;
   if (url.includes('/empresa-configuracion/publica')) {
+    throw new Error('SEO no puede consultar la ruta pública global sin empresa.');
+  }
+  if (url.includes('/tienda/configuracion')) {
+    expect(typeof options.headers?.['x-solqaryn-store-proof'] === 'string' &&
+      /^[a-f0-9]{64}$/.test(options.headers['x-solqaryn-store-proof']),
+      'El metadata SEO requiere firma HMAC v2 generada por el servidor.');
     payload = forceMissingCommercial
       ? { success: true, data: { nombreComercial: '', nombreVisibleSistema: 'Sistema Interno', eslogan: 'Compra en línea', logoUrl: '/assets/storefront-logo.png', moneda: 'USD' } }
       : { success: true, data: { nombreComercial: 'Storefront', nombreVisibleSistema: 'Sistema Interno', eslogan: 'Compra en línea', logoUrl: '/assets/storefront-logo.png', moneda: 'USD' } };
@@ -186,7 +197,7 @@ globalThis.fetch = async input => {
 };
 
 try {
-  const prodReq = { headers: { host: 'solqaryn-prod.vercel.app' }, query: { kind: 'product', slug: 'producto-seo-11' } };
+  const prodReq = { method: 'GET', headers: { host: 'solqaryn-prod.vercel.app' }, query: { kind: 'product', slug: 'producto-seo-11' } };
   const seoRes = responseMock();
   await seoHandler(prodReq, seoRes);
   expect(seoRes.statusCode === 200, 'HTML SEO de producto debe responder 200.');
@@ -200,14 +211,17 @@ try {
   forceMissingCommercial = true;
   const noCommercialRes = responseMock();
   await seoHandler(prodReq, noCommercialRes);
-  expect(noCommercialRes.body.includes('Producto SEO 11 | Tienda'), 'Sin nombre comercial, el SEO debe degradar a una identidad neutra y nunca al shell SOLQARYN ni al nombre interno.');
+  expect(noCommercialRes.statusCode === 503 && noCommercialRes.header('x-robots-tag').startsWith('noindex'),
+    'Sin identidad comercial verificada, el SEO debe fallar cerrado con 503 y noindex.');
   expect(!noCommercialRes.body.includes('Sistema Interno'), 'El nombre interno no debe filtrarse al HTML SEO.');
   forceMissingCommercial = false;
 
   const customHostRes = responseMock();
   await seoHandler({ headers: { host: 'staging.example.com' }, query: { kind: 'product', slug: 'producto-seo-11' } }, customHostRes);
   expect(customHostRes.header('x-robots-tag').startsWith('noindex'), 'Un dominio custom no autorizado debe permanecer noindex.');
-  expect(customHostRes.body.includes('https://solqaryn-prod.vercel.app/tienda/producto/producto-seo-11'), 'Un host no autorizado nunca debe convertirse en canonical productivo.');
+  expect(customHostRes.statusCode === 503 &&
+    !customHostRes.body.includes('rel="canonical"'),
+    'Un host no autorizado nunca debe publicar canonical ni contenido empresarial.');
 
   const robotsProd = responseMock();
   await robotsHandler({ headers: { host: 'solqaryn-prod.vercel.app' }, query: {} }, robotsProd);

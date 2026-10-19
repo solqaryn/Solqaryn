@@ -26,7 +26,7 @@ const modeloClaveReal = JSON.stringify([5010, 'Modelo auditoría', 'Marca real']
 const modeloClaveDemo = JSON.stringify([101, '8 GB / 256 GB', 'Demo']);
 
 async function prepararEmpresa(page: Page, whatsApp: string | null = empresaBase.whatsApp): Promise<void> {
-  await page.route('http://localhost:5005/empresa-configuracion/publica', async route => {
+  await page.route(/^http:\/\/localhost:5005\/(?:empresa-configuracion\/publica|tienda\/configuracion)$/, async route => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',

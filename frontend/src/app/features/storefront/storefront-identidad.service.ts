@@ -91,11 +91,25 @@ export class StorefrontIdentidadService {
   }
 
   private cargarLegacy() {
-    return this.empresaService.getPublica().pipe(
+    return this.empresaService.getPublicaTienda().pipe(
       switchMap((res) => {
-        const config = { ...STORE_DEFAULT_CONFIG, ...res.data };
+        if (res?.success !== true || !res.data?.nombreComercial)
+          throw new Error('Identidad pública no verificada.');
+        const config = {
+          ...STORE_DEFAULT_CONFIG,
+          ...res.data,
+          telefono: res.data.telefono ?? undefined,
+          correo: res.data.correo ?? undefined,
+          whatsApp: res.data.whatsApp ?? undefined,
+          logoUrl: res.data.logoUrl ?? undefined,
+          encabezadoTexto: res.data.encabezadoTexto ?? undefined,
+          piePaginaTexto: res.data.piePaginaTexto ?? undefined
+        };
+        // Sólo después de una identidad pública firmada y verificada se
+        // conserva la consulta opcional de WhatsApp legacy; con 2+ tenants el
+        // middleware sigue rechazando la ruta global y esta carga degrada
+        // a la identidad del propietario, nunca a otro negocio.
         if (config.whatsApp?.trim()) return of(config);
-
         return this.empresaService.getWhatsAppPublico().pipe(
           map(contacto => ({
             ...config,

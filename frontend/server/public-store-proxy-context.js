@@ -33,15 +33,21 @@ function buildPublicStoreProxyContext(req, canonicalPath, environment = process.
   if (!route) return { error: 'INVALID_STORE_PATH', status: 400 };
   if (!route.path.startsWith('/tienda/') && route.path !== '/tienda') return { path: route.path, headers: {} };
 
-  // Microfase 1: una tienda nueva solo puede comprobar su identidad.
-  // No firmar todavía catálogo, cuenta, carrito o checkout de otra tienda;
-  // esas rutas requieren certificaciones independientes en fases 2 y 3.
-  if (route.scoped && (route.path !== '/tienda/binding' ||
-      !['GET', 'HEAD'].includes(String(req.method || '').toUpperCase())))
-    return { error: 'STORE_ROUTE_NOT_YET_CERTIFIED', status: 503 };
+  // Sólo identidad pública sin datos comerciales, además del binding previo.
+  // No firmar catálogo, cuentas, carrito ni checkout de tiendas secundarias.
+  const identityOnly = route.path === '/tienda/configuracion';
+  const method = String(req.method || '').toUpperCase();
+  if (route.scoped && !(
+    (route.path === '/tienda/binding' && ['GET', 'HEAD'].includes(method)) ||
+    (identityOnly && method === 'GET')
+  )) return { error: 'STORE_ROUTE_NOT_YET_CERTIFIED', status: 503 };
+  if (identityOnly && method !== 'GET')
+    return { error: 'STORE_IDENTITY_READ_ONLY', status: 503 };
 
   const requireRootProof = environment.SOLQARYN_PUBLIC_STORE_PROOF_ENABLED === 'true';
-  if (!route.scoped && !requireRootProof) return { path: route.path, headers: {} };
+  // La nueva identidad nunca usa el fallback legacy sin prueba, ni con un tenant.
+  if (!route.scoped && !requireRootProof && !identityOnly)
+    return { path: route.path, headers: {} };
 
   const secret = environment.SOLQARYN_PUBLIC_STORE_SIGNING_KEY;
   if (typeof secret !== 'string' || Buffer.byteLength(secret, 'utf8') < 32)
@@ -63,7 +69,6 @@ function buildPublicStoreProxyContext(req, canonicalPath, environment = process.
       (host !== canonicalHost && !aliases.includes(host)))
     return { error: 'UNRECOGNIZED_STORE_HOST', status: 403 };
 
-  const method = String(req.method || '').toUpperCase();
   if (!/^(GET|HEAD|POST|PUT|PATCH|DELETE|OPTIONS)$/.test(method))
     return { error: 'INVALID_PUBLIC_METHOD', status: 400 };
 
@@ -73,7 +78,7 @@ function buildPublicStoreProxyContext(req, canonicalPath, environment = process.
   const nonce = randomBytes(16).toString('hex');
   const canonical = ['v2', at, method, route.path, host, key, nonce].join('\n');
   const proof = createHmac('sha256', secret).update(canonical, 'utf8').digest('hex');
-  return { path: route.path, scoped: route.scoped, headers: {
+  return { path: route.path, scoped: route.scoped, identityOnly, headers: {
     [STORE_CONTEXT_HEADERS.origin]: host,
     [STORE_CONTEXT_HEADERS.key]: key,
     [STORE_CONTEXT_HEADERS.at]: at,

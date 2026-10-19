@@ -48,7 +48,7 @@ const normal = producto(904, 'Mouse Normal', 500, 10, { estado: 'Disponible' });
 const catalogo = [activo, vencido, agotado, normal];
 
 async function preparar(page: Page): Promise<void> {
-  await page.route('http://localhost:5005/empresa-configuracion/publica', route => route.fulfill({
+  await page.route(/^http:\/\/localhost:5005\/(?:empresa-configuracion\/publica|tienda\/configuracion)$/, route => route.fulfill({
     status: 200, contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' },
     body: JSON.stringify({ success: true, data: empresa })
   }));

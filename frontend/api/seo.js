@@ -182,6 +182,11 @@ module.exports = async function handler(req, res) {
 
   try {
     const brand = await loadBrand(req);
+    // No publicar metadatos/SEO de una empresa cuando el contexto no se verificó.
+    if (!brand.verified) {
+      sendNoIndex(res, 503, 'Identidad pública temporalmente no disponible.');
+      return;
+    }
     let page;
     if (kind === 'product') page = await productPage(req, slug, brand);
     else if (kind === 'category') page = await categoryPage(req, slug, brand);
