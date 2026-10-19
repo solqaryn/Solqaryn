@@ -96,6 +96,7 @@ public sealed class PublicStoreTenantIdentitySecurityTests
             ctx.Response.StatusCode = 204;
             return Task.CompletedTask;
         });
+        var issuedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         async Task<int> Call(string key, string path = "/tienda/configuracion",
             bool signed = true, string signedHost = host, string? nonce = null,
             string method = "GET", string? signingKey = null)
@@ -109,7 +110,7 @@ public sealed class PublicStoreTenantIdentitySecurityTests
             ctx.Response.Body = new MemoryStream();
             if (signed)
             {
-                var at = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                var at = issuedAt;
                 var token = nonce ?? Guid.NewGuid().ToString("N");
                 var message = $"v2\n{at}\n{method}\n{path}\n{signedHost}\n{signingKey ?? key}\n{token}";
                 var proof = Convert.ToHexString(HMACSHA256.HashData(
