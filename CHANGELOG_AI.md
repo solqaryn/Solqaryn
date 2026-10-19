@@ -1,3 +1,9 @@
+## 2026-10-19 — DEV: reparar CI post-merge M12 (MySQL efímero)
+
+- El post-merge de #3675 dejó M12 - Automatización transversal rojo: falta la tabla Empresas al aplicar 20261006111818_OracleBaseline sobre una base efímera vacía. Backend M12 compiló y pasó sus unitarios.
+- El workflow inicializa MySQL mediante Solqaryn.DatabaseBootstrap en modo fresh antes de arrancar la API. Reutiliza el contrato aprobado del workflow HTTP JWT A/B/C, rechaza bases previamente pobladas y valida la estructura física. Prepara una empresa y membresía administrativa exclusivamente en el MySQL efímero para el E2E monoempresa; comprueba la fila física M12 y el marcador OracleBaseline activo en lugar de la migración legacy excluida.
+- Sin cambios en aplicación, migraciones, configuración Render/Vercel, Aiven, flags, QA ni PROD. Se requiere CI exact-head, merge protegido y revalidación post-merge.
+
 ## 2026-10-18 — DEV Microfase 3: pruebas de aislamiento con 3 empresas (certificación incremental)
 
 - Amplía **las pruebas existentes** de pilotos de lectura/escritura comercial y SQL físico MySQL descartable para operar A/B mientras existe una tercera empresa activa; añade solicitudes negativas de A contra la tercera empresa. Incluye rutas de documentos, archivos, imágenes y exportaciones en el mismo escenario de tres empresas. El test Outbox rechaza un lote contaminado por mensajes de B y C antes de emitir efectos externos.
