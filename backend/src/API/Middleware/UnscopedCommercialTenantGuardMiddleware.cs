@@ -165,12 +165,12 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
             var configPublica = httpContext.RequestServices?.GetService<IConfiguration>();
             int? empresaPublica;
             var tieneProof = PublicStoreProxyProof.HasProofHeaders(httpContext.Request);
-            // /tienda/binding es un endpoint nuevo de certificación por firma,
-            // no parte de la tienda monoempresa legacy. Nunca debe exponer la
-            // identidad empresarial usando el fallback sin prueba, ni siquiera
-            // antes de activar las banderas multitienda.
-            if (!tieneProof &&
-                EsRutaExacta(httpContext.Request.Path, "/tienda/binding"))
+            // Identidad pública y binding sólo se habilitan con prueba HMAC.
+            // Nunca heredan el fallback monoempresa ni confían en cabeceras del cliente.
+            var rutaIdentidad = EsRutaExacta(httpContext.Request.Path, "/tienda/configuracion");
+            if ((!tieneProof && (rutaIdentidad ||
+                EsRutaExacta(httpContext.Request.Path, "/tienda/binding"))) ||
+                (rutaIdentidad && !HttpMethods.IsGet(httpContext.Request.Method)))
             {
                 await RechazarAsync(httpContext);
                 return;
@@ -190,7 +190,8 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                 if (verifiedStoreKey is not null &&
                     (!(HttpMethods.IsGet(httpContext.Request.Method) ||
                        HttpMethods.IsHead(httpContext.Request.Method)) ||
-                     !EsRutaExacta(httpContext.Request.Path, "/tienda/binding")))
+                     !(EsRutaExacta(httpContext.Request.Path, "/tienda/binding") ||
+                       (HttpMethods.IsGet(httpContext.Request.Method) && rutaIdentidad))))
                 {
                     await RechazarAsync(httpContext);
                     return;

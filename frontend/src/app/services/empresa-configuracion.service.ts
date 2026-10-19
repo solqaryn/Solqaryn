@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { ApiResponse } from '../core/models/api-response.model';
 import { ActualizarEmpresaConfiguracionValue, EmpresaConfiguracion } from '../core/models/empresa-configuracion.model';
+import type { TiendaIdentidadPublica } from '../features/storefront/storefront.models';
 
 export interface WhatsAppPublico {
   numeroTelefonoE164: string | null;
@@ -66,6 +67,19 @@ export class EmpresaConfiguracionService {
 
   getPublica(): Observable<ApiResponse<EmpresaConfiguracion>> {
     return this.http.get<ApiResponse<EmpresaConfiguracion>>(`${this.apiUrl}/publica`);
+  }
+
+  /** Identidad pública exclusivamente por vinculación Host+StoreKey verificada en Render. */
+  getPublicaTienda(storeKey?: string): Observable<ApiResponse<TiendaIdentidadPublica>> {
+    const key = storeKey === undefined ? '' : storeKey.trim();
+    if (storeKey !== undefined && !/^[a-z][a-z0-9-]{0,46}[a-z0-9]$/.test(key))
+      throw new Error('Clave de tienda no válida.');
+    const path = storeKey === undefined
+      ? `${this.apiUrl.replace(/\/empresa-configuracion$/, '')}/tienda/configuracion`
+      : `${this.apiUrl.replace(/\/empresa-configuracion$/, '')}/tiendas/${encodeURIComponent(key)}/tienda/configuracion`;
+    return this.http.get<ApiResponse<TiendaIdentidadPublica>>(path, {
+      headers: { 'Cache-Control': 'no-store' }
+    });
   }
 
   getWhatsAppPublico(): Observable<WhatsAppPublico> {

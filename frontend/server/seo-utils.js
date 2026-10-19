@@ -1,4 +1,5 @@
 const { resolveEnvironmentBinding } = require('./environment-binding');
+const { buildPublicStoreProxyContext } = require('./public-store-proxy-context');
 
 function hostFromRequest(req) {
   return String(req.headers['x-forwarded-host'] || req.headers.host || '').split(':')[0].toLowerCase();
@@ -12,12 +13,12 @@ function isIndexableHost(req) {
 function publicOrigin(_req) { return currentBinding().publicOrigin; }
 function apiBase(_req) { return currentBinding().apiUpstream; }
 
-async function fetchJson(url, timeoutMs = 6000) {
+async function fetchJson(url, timeoutMs = 6000, trustedHeaders = {}) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await fetch(url, {
-      headers: { accept: 'application/json', 'user-agent': 'SOLQARYN-SEO/1.0' },
+      headers: { accept: 'application/json', 'user-agent': 'SOLQARYN-SEO/1.0', ...trustedHeaders },
       signal: controller.signal
     });
     if (!response.ok) {
@@ -33,11 +34,20 @@ async function fetchJson(url, timeoutMs = 6000) {
 
 async function loadBrand(req) {
   try {
-    const payload = await fetchJson(`${apiBase(req)}/empresa-configuracion/publica`, 3500);
+    const proof = buildPublicStoreProxyContext(
+      req, 'tienda/configuracion', process.env, currentBinding());
+    // No consultar la configuración global desde SEO; sin HMAC verificado,
+    // fallar con identidad neutra y sin capacidad de indexación.
+    if (proof.error || !proof.headers?.['x-solqaryn-store-proof'])
+      throw new Error('PUBLIC_STORE_CONTEXT_REQUIRED');
+    const payload = await fetchJson(
+      `${apiBase(req)}/tienda/configuracion`, 3500, proof.headers);
     const data = payload && payload.success ? payload.data : null;
     const rawName = String(data?.nombreComercial || '').trim();
+    if (!rawName) throw new Error('STORE_PUBLIC_IDENTITY_MISSING');
     const name = rawName && !/administrativ[oa]/i.test(rawName) ? rawName : 'Tienda';
     return {
+      verified: true,
       name,
       slogan: String(data?.eslogan || '').trim(),
       logo: absoluteUrl(String(data?.logoUrl || ''), publicOrigin(req)),
@@ -47,6 +57,7 @@ async function loadBrand(req) {
     };
   } catch {
     return {
+      verified: false,
       name: 'Tienda',
       slogan: '',
       logo: '',

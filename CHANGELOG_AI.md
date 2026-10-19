@@ -1,3 +1,9 @@
+## 2026-10-19 — Lectura pública de identidad por empresa, ruta firmada (candidato)
+
+- Se añade `GET /tienda/configuracion`, proyección pública de `Empresa` y `ConfigEmpresa` sobre empresa verificada mediante HMAC v2/Host+StoreKey/MySQL y antirreplay; la ruta global no se abre. No hay transacciones comerciales, migraciones ni cambios de autorización privados.
+- El proxy Vercel firma únicamente esta lectura adicional y no reenvía sesiones/JWT/cabeceras de cliente. Angular muestra exclusivamente identidad validada; SEO no utiliza la configuración global sin contexto y evita indexar una identidad no verificada.
+- Requiere REVIEW_FIRST, pruebas A/B falsas y suspendidas, CI exact-head y readback DEV para LISTO. QA/PROD permanecen intactos. Rollback: revert del commit, restaurando cuarentena anterior.
+
 ## 2026-10-19 — MF3 A/B/C: recuperación focalizada del transporte HTTPS del certificador
 
 - Evidencia real `dev` run [39271231714](https://github.com/solqaryn/Solqaryn/actions/runs/39271231714): 3 membresías A/B/C distintas verificadas por SQL `READ ONLY` (PASS), 3 inicios JWT exitosos en intento 1 (PASS). `GET /tenant-context/1` registrado en Render HTTP 200 en ~65 ms, pero Node `fetch` agotó tiempo leyendo la respuesta. Reintento de **solo job fallido** confirmó anomalía de transporte: Render recibió y completó login A pero no recibió login B antes del timeout. **No evidencia de acceso cruzado** y ningún cambio comercial.

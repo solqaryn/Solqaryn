@@ -3,6 +3,9 @@ import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../core/models/api-response.model';
+import type { TiendaIdentidadPublica } from './storefront.models';
+import { EmpresaConfiguracionService } from '../../services/empresa-configuracion.service';
+import { switchMap, throwError } from 'rxjs';
 
 /**
  * Puerta pública de Microfase 1. No carga el storefront legacy hasta que
@@ -17,12 +20,12 @@ import { ApiResponse } from '../../core/models/api-response.model';
   template: `
     <main class="store-entry" aria-labelledby="store-title">
       <section class="store-card">
-        <div class="brand">SOLQARYN</div>
-        <h1 id="store-title">Tienda independiente</h1>
+        <div class="brand">{{ identidad()?.nombreComercial || 'Tienda' }}</div>
+        <h1 id="store-title">{{ identidad()?.nombreComercial || 'Tienda independiente' }}</h1>
         @if (estado() === 'verificando') {
           <p role="status">Verificando la identidad y disponibilidad de la tienda…</p>
         } @else if (estado() === 'verificada') {
-          <p role="status">La dirección está vinculada a su empresa de forma segura.</p>
+          <p role="status">Identidad de empresa verificada en el servidor.</p>
           <p>Los productos, pedidos y cuentas se habilitarán cuando termine la certificación de aislamiento de tienda.</p>
         } @else {
           <p role="alert">La tienda solicitada no está disponible o no está autorizada.</p>
@@ -42,6 +45,8 @@ import { ApiResponse } from '../../core/models/api-response.model';
 export class TiendaVinculacionComponent {
   private readonly http = inject(HttpClient);
   private readonly route = inject(ActivatedRoute);
+  private readonly configuracion = inject(EmpresaConfiguracionService);
+  readonly identidad = signal<TiendaIdentidadPublica | null>(null);
   readonly estado = signal<'verificando' | 'verificada' | 'rechazada'>('verificando');
 
   constructor() {
@@ -54,15 +59,30 @@ export class TiendaVinculacionComponent {
     this.http.get<ApiResponse<{ empresaId: number; verificada: boolean }>>(
       `${environment.apiUrl}/tiendas/${encodeURIComponent(key)}/tienda/binding`,
       { headers: { 'Cache-Control': 'no-store' } }
-    ).subscribe({
-      next: respuesta => {
+    ).pipe(
+      switchMap(respuesta => {
         const ok = respuesta?.success === true &&
           respuesta.data?.verificada === true &&
           Number.isSafeInteger(respuesta.data?.empresaId) &&
           (respuesta.data?.empresaId ?? 0) > 0;
+        return ok ? this.configuracion.getPublicaTienda(key)
+          : throwError(() => new Error('Vinculación pública no autorizada.'));
+      })
+    ).subscribe({
+      next: respuesta => {
+        const identidad = respuesta?.data;
+        const ok = respuesta?.success === true &&
+          typeof identidad?.nombreComercial === 'string' &&
+          identidad.nombreComercial.trim().length > 0 &&
+          typeof identidad.moneda === 'string' &&
+          /^[A-Z]{3}$/.test(identidad.moneda);
+        this.identidad.set(ok ? identidad! : null);
         this.estado.set(ok ? 'verificada' : 'rechazada');
       },
-      error: () => this.estado.set('rechazada')
+      error: () => {
+        this.identidad.set(null);
+        this.estado.set('rechazada');
+      }
     });
   }
 }

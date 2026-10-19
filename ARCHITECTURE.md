@@ -1,3 +1,11 @@
+## 2026-10-19 — Configuración pública tenant-safe por vinculación HMAC (candidato DEV)
+
+- Nueva lectura estricta `GET /tienda/configuracion` para devolver exclusivamente nombre, logo y moneda de `Empresa` / `ConfigEmpresa` que corresponden al `EmpresaId` fijado por `VerifiedPublicStoreTenant`. No se lee la configuración singleton `EmpresaConfiguracion` de otra empresa ni secretos administrativos.
+- `Host + StoreKey` provienen únicamente del proxy Vercel HMAC v2; Render valida método, ruta, timestamp, firma, host allowlisted, registro MySQL y empresa activa, y consume replay. `/empresa-configuracion/publica` permanece en cuarentena cuando no hay contexto inequívoco.
+- Sólo se agrega la ruta de identidad al conjunto exacto de lecturas permitidas para tiendas secundarias; productos, checkout, cuentas, operaciones privadas y jobs conservan bloqueo. El proxy elimina cabeceras, JWT y cookies del cliente.
+- La puerta Angular `/tiendas/:storeKey` muestra únicamente la identidad autorizada y nunca cae en otra empresa. El storefront legacy consulta identidad firmada si falla su bootstrap; SEO sólo obtiene metadata tras prueba HMAC (si falla, `noindex` y 503). No se alteran datos, tablas, banderas ni QA/PROD.
+- Gate de cierre: revisión independiente, pruebas de falsificación/replay/suspensión A/B, regresiones, CI exact-head, readback real DEV y P0/P1=0. Rollback: revert de este PR, conservando la vinculación HMAC original.
+
 ## 2026-10-18 — DEV Microfase roles empresariales: ownership estricto (candidato)
 
 - El control RBAC asigna `EmpresaId` desde el contexto empresarial validado por el backend a cada rol personalizado creado o duplicado; el cliente nunca controla ese propietario.
