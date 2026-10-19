@@ -32,6 +32,7 @@ export class PermisosRuntimeService {
   private readonly _permisos = signal<Set<string>>(new Set());
   private readonly _esAdministrador = signal(false);
   private readonly _cargado = signal(false);
+  private readonly _empresaPermisosId = signal<number | null>(null);
   private readonly _operacionRestringida = signal(true);
   private readonly _capacidades = signal<Set<string>>(new Set());
   private readonly _rutasHabilitadas = signal<Set<string>>(new Set());
@@ -69,6 +70,7 @@ export class PermisosRuntimeService {
             !Array.isArray(data.rutasHabilitadas)) {
           throw new Error('La API no confirmó permisos y capacidades empresariales.');
         }
+        this._empresaPermisosId.set(empresaId);
         this._permisos.set(new Set(data.permisos));
         this._esAdministrador.set(data.esAdministrador === true);
         this._operacionRestringida.set(data.operacionMultiEmpresaRestringida);
@@ -78,6 +80,7 @@ export class PermisosRuntimeService {
         return true;
       }),
       catchError(() => {
+        this._empresaPermisosId.set(null);
         this._permisos.set(new Set());
         this._esAdministrador.set(false);
         this._operacionRestringida.set(true);
@@ -90,6 +93,7 @@ export class PermisosRuntimeService {
   }
 
   limpiar(): void {
+    this._empresaPermisosId.set(null);
     this._permisos.set(new Set());
     this._esAdministrador.set(false);
     this._operacionRestringida.set(true);
@@ -99,7 +103,8 @@ export class PermisosRuntimeService {
   }
 
   puede(modulo: string, accion: string): boolean {
-    if (!this._cargado() || !this.tenantContext.tieneContextoVerificado()) return false;
+    if (!this._cargado() || !this.tenantContext.tieneContextoVerificado() ||
+        this._empresaPermisosId() !== this.tenantContext.empresaIdVerificada()) return false;
     const clave = `${modulo}:${accion}`;
     // Administrador también requiere grants explícitos y capacidad operativa.
     return this._permisos().has(clave) &&
@@ -107,7 +112,8 @@ export class PermisosRuntimeService {
   }
 
   rutaHabilitada(ruta: string | undefined | null): boolean {
-    if (!this._cargado() || !this.tenantContext.tieneContextoVerificado()) return false;
+    if (!this._cargado() || !this.tenantContext.tieneContextoVerificado() ||
+        this._empresaPermisosId() !== this.tenantContext.empresaIdVerificada()) return false;
     if (!this._operacionRestringida()) return true;
     return !!ruta && this._rutasHabilitadas().has(ruta.startsWith('/') ? ruta.slice(1) : ruta);
   }
