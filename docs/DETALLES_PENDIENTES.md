@@ -109,17 +109,17 @@ Este archivo es la fuente canónica de pendientes deliberadamente aplazados o de
 
 ---
 
-## 5. Plan Maestro / ERP
+## 5. Plan Comercial Inicial / Maestro futuro
 
-**Estado:** ROADMAP ACTIVO / TRABAJO FUTURO NORMAL DE PRODUCTO
+**Estado:** PLAN COMERCIAL INICIAL ACTIVO COMO FUENTE; MAESTRO FUTURO DIFERIDO
 
-**Naturaleza:** este punto no es deuda de DEV/QA/PROD ni una falla de infraestructura. El único Plan Maestro vigente continúa definiendo el trabajo funcional, técnico y arquitectónico futuro de SOLQARYN.
+**Naturaleza:** este punto no es deuda de DEV/QA/PROD ni una falla de infraestructura. El Plan Comercial Inicial aprobado define el alcance ejecutable previo al Maestro futuro.
 
-**Autoridad:** Google Doc `PLAN MAESTRO SOLQARYN`, ID `1YdQlNJ312HuziyKb9E-GEt55dcgSmuFGgfsHxyzPUaw`.
+**Autoridad comercial actual:** Drive ID `1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j`; Maestro `1YdQlNJ312HuziyKb9E-GEt55dcgSmuFGgfsHxyzPUaw` pospuesto.
 
-**Decisión vigente:** continuar el roadmap únicamente desde el Plan Maestro actual, el estado vivo y las dependencias técnicas reales. Históricos, planes retirados, fases viejas o receipts previos no gobiernan trabajo nuevo.
+**Decisión vigente:** continuar la ejecución únicamente desde el Plan Comercial Inicial actual, el estado vivo y las dependencias técnicas reales. Históricos, planes retirados, fases viejas o receipts previos no gobiernan trabajo nuevo.
 
-**Acción actual:** ninguna fuera del trabajo que el propietario autorice/active desde el Plan Maestro.
+**Acción actual:** ninguna fuera del trabajo que el propietario autorice/active desde el Plan Comercial Inicial.
 
 **Se retoma/continúa cuando:** se reactive la ejecución funcional/VAEP o el propietario solicite el siguiente alcance del roadmap.
 
