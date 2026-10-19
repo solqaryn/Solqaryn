@@ -3,9 +3,9 @@
 ## Stack vigente
 
 - Frontend: Angular 22.2.1, standalone components, Signals, Angular Material/CDK 22.2.1, lazy routes, auth/permission guards; Zone.js 0.16.3 y `provideZoneChangeDetection` permanecen activos.
-- Backend: ASP.NET Core 8 Web API.
+- Backend: ASP.NET Core 10 Web API (net10.0 declarado en API).
 - Capas: Domain <- Application <- Infrastructure; API como composition root y superficie HTTP.
-- Persistencia: MySQL, EF Core 8, Pomelo, migraciones versionadas.
+- Persistencia: MySQL, EF Core 10.0.12, proveedor Oracle MySql.EntityFrameworkCore 10.0.9 declarado en Infrastructure; migraciones versionadas. La selección real de proveedor por ambiente se verifica en configuración y CI, nunca mediante suposiciones.
 - Seguridad: JWT Bearer, BCrypt, RBAC relacional, auditoria, CORS por lista explicita, rate limiting, security headers.
 - Integraciones: Cloudinary para medios/documentos, QuestPDF para PDF, SMTP para correo.
 - Browser/E2E: Playwright/Chromium.
