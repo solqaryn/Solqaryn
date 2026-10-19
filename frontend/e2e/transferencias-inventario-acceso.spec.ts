@@ -13,7 +13,10 @@ async function loginConPermisoSoloDashboard(page: Page): Promise<void> {
         message: 'Permisos cargados',
         data: {
           permisos: ['Dashboard:Ver'],
-          esAdministrador: false
+          esAdministrador: false,
+          operacionMultiEmpresaRestringida: false,
+          capacidadesHabilitadas: [],
+          rutasHabilitadas: []
         }
       })
     });
