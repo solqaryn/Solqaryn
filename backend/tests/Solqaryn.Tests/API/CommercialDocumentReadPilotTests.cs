@@ -32,7 +32,7 @@ public sealed class CommercialDocumentReadPilotTests
 
         var companyA = new Empresa("Comercial A");
         var companyB = new Empresa("Comercial B");
-        db.Set<Empresa>().AddRange(companyA, companyB);
+        db.Set<Empresa>().AddRange(companyA, companyB, new Empresa("Tercer tenant existente"));
         await db.SaveChangesAsync();
 
         async Task<(int VentaId, int CompraId, int FacturaId)> SeedAsync(int empresaId, string suffix)

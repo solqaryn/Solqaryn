@@ -28,7 +28,7 @@ public sealed class CommercialMediaExportPilotGuardTests
         await using var db = new AppDbContext(options);
         var a = new Empresa("Media A");
         var b = new Empresa("Media B");
-        db.Set<Empresa>().AddRange(a, b);
+        db.Set<Empresa>().AddRange(a, b, new Empresa("Tercer tenant existente"));
         await db.SaveChangesAsync();
 
         async Task<(int Http, bool Next, int? Owner)> Call(

@@ -41,7 +41,7 @@ public sealed class CommercialTenantMySqlIsolationIntegrationTests
                 await Phase7MySqlTestDatabase.InitializeFreshAsync(setup);
                 var empresaA = new Empresa("TENANT TEST A");
                 var empresaB = new Empresa("TENANT TEST B");
-                setup.Set<Empresa>().AddRange(empresaA, empresaB);
+                setup.Set<Empresa>().AddRange(empresaA, empresaB, new Empresa("Tercer tenant existente"));
                 await setup.SaveChangesAsync();
                 empresaAId = empresaA.Id;
                 empresaBId = empresaB.Id;

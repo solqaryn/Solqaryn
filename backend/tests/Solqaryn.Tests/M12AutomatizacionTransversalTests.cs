@@ -1,4 +1,11 @@
 using Solqaryn.API.Controllers;
+using Solqaryn.Application.Exceptions;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Entities;
+using Solqaryn.Infrastructure.Persistence;
+using Solqaryn.Infrastructure.Services;
+using Microsoft.EntityFrameworkCore;
+using Moq;
 using Solqaryn.Application.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Xunit;
@@ -60,5 +67,54 @@ public class M12AutomatizacionTransversalTests
     {
         var modulos = new[] { "Productos", "Compras", "Ventas", "Inventario", "Clientes", "Facturación", "Finanzas", "Cargas", "Configuración" };
         Assert.Equal(9, modulos.Distinct(StringComparer.OrdinalIgnoreCase).Count());
+    }
+
+    [Fact]
+    public async Task TresEmpresas_AutomatizacionLegacy_DeniegaLecturasYEscriturasSinHttp()
+    {
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase("m12-three-tenants-" + Guid.NewGuid().ToString("N"))
+            .Options;
+        await using var db = new AppDbContext(options);
+        db.Set<Empresa>().AddRange(
+            new Empresa("Automatizaciones A"), new Empresa("Automatizaciones B"),
+            new Empresa("Automatizaciones C"));
+        await db.SaveChangesAsync();
+
+        var service = new AutomatizacionService(db, Mock.Of<ICurrentUserService>());
+        await Assert.ThrowsAsync<ForbiddenAccessException>(() => service.GetConfiguracionAsync());
+        await Assert.ThrowsAsync<ForbiddenAccessException>(() =>
+            service.UpdateConfiguracionAsync(new ActualizarAutomatizacionConfiguracionRequest()));
+        await Assert.ThrowsAsync<ForbiddenAccessException>(() => service.GetSugerenciasAsync());
+        await Assert.ThrowsAsync<ForbiddenAccessException>(() =>
+            service.AutocompletarAsync("clientes", "abc"));
+        await Assert.ThrowsAsync<ForbiddenAccessException>(() =>
+            service.PrevisualizarAccionMasivaAsync(new AccionMasivaPreviewRequest
+            {
+                Accion = "revisar-clientes-contacto",
+                Ids = new List<int> { 1 }
+            }));
+    }
+
+    [Fact]
+    public async Task UnaEmpresa_PreviewM12Legacy_PermaneceDisponibleSinMutacion()
+    {
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase("m12-single-tenant-" + Guid.NewGuid().ToString("N"))
+            .Options;
+        await using var db = new AppDbContext(options);
+        db.Set<Empresa>().Add(new Empresa("Automatizaciones legacy"));
+        await db.SaveChangesAsync();
+
+        var service = new AutomatizacionService(db, Mock.Of<ICurrentUserService>());
+        var preview = await service.PrevisualizarAccionMasivaAsync(
+            new AccionMasivaPreviewRequest
+            {
+                Accion = "revisar-clientes-contacto",
+                Ids = new List<int> { 1 }
+            });
+        Assert.True(preview.SoloVistaPrevia);
+        Assert.True(preview.RequiereConfirmacion);
+        Assert.Empty(preview.IdsAplicables);
     }
 }

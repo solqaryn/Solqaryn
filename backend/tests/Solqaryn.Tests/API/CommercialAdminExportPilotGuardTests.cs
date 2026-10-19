@@ -28,7 +28,7 @@ public sealed class CommercialAdminExportPilotGuardTests
         await using var db = new AppDbContext(options);
         var empresaA = new Empresa("Administración A");
         var empresaB = new Empresa("Administración B");
-        db.Set<Empresa>().AddRange(empresaA, empresaB);
+        db.Set<Empresa>().AddRange(empresaA, empresaB, new Empresa("Tercer tenant existente"));
         await db.SaveChangesAsync();
 
         var exportRoutes = new[]

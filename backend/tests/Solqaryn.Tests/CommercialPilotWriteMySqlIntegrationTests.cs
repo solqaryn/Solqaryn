@@ -45,16 +45,18 @@ public sealed class CommercialPilotWriteMySqlIntegrationTests
 
         try
         {
-            int empresaAId, empresaBId;
+            int empresaAId, empresaBId, empresaCId;
             await using (var setup = new AppDbContext(options))
             {
                 await Phase7MySqlTestDatabase.InitializeFreshAsync(setup);
                 var a = new Empresa("Piloto escritura A");
                 var b = new Empresa("Piloto escritura B");
-                setup.Set<Empresa>().AddRange(a, b);
+                var c = new Empresa("Piloto existente C");
+                setup.Set<Empresa>().AddRange(a, b, c);
                 await setup.SaveChangesAsync();
                 empresaAId = a.Id;
                 empresaBId = b.Id;
+                empresaCId = c.Id;
             }
 
             async Task<(int Status, int? Marca, int? NuevoId)> SolicitarAsync(
@@ -140,6 +142,7 @@ public sealed class CommercialPilotWriteMySqlIntegrationTests
             foreach (var denied in new[]
             {
                 await SolicitarAsync("POST", "/proveedores", empresaBId, "user-a", "Spoof"),
+                await SolicitarAsync("POST", "/proveedores", empresaCId, "user-a", "Spoof C"),
                 await SolicitarAsync("POST", "/proveedores", empresaAId, "", "SinJWT"),
                 await SolicitarAsync("POST", "/proveedores", empresaAId, "user-a", "FlagOff", false),
                 await SolicitarAsync("POST", "/proveedores/1", empresaAId, "user-a", "Subruta"),

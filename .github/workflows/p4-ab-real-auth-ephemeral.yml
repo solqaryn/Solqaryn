@@ -66,6 +66,7 @@ jobs:
       P4_API_URL: 'http://127.0.0.1:5005'
       P4_COMPANY_A_ID: '1'
       P4_COMPANY_B_ID: '2'
+      P4_COMPANY_C_ID: '3'
       MultiEmpresa__PrivateReadPilotEnabled: 'true'
       MultiEmpresa__PrivateWritePilotEnabled: 'true'
       MultiEmpresa__PrivateMasterEditPilotEnabled: 'true'
@@ -129,7 +130,7 @@ jobs:
           cat p4-api.log >&2 || true
           exit 1
 
-      - name: Materializar dos empresas y dos usuarios reales en MySQL efimero
+      - name: Materializar tres empresas y dos usuarios JWT reales en MySQL efimero
         shell: bash
         run: |
           set -euo pipefail
@@ -141,6 +142,9 @@ jobs:
           ON DUPLICATE KEY UPDATE Activa=TRUE, FechaActualizacion=UTC_TIMESTAMP(6);
           INSERT INTO Empresas (Id, Nombre, Activa, FechaCreacion, FechaActualizacion)
           VALUES (2, 'Empresa B JWT', TRUE, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6))
+          ON DUPLICATE KEY UPDATE Activa=TRUE, FechaActualizacion=UTC_TIMESTAMP(6);
+          INSERT INTO Empresas (Id, Nombre, Activa, FechaCreacion, FechaActualizacion)
+          VALUES (3, 'Empresa C JWT - sin membresias A/B', TRUE, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6))
           ON DUPLICATE KEY UPDATE Activa=TRUE, FechaActualizacion=UTC_TIMESTAMP(6);
           INSERT INTO Usuarios
             (NombreUsuario, NombreCompleto, PasswordHash, RolId, Activo, Bloqueado, Eliminado, FechaCreacion)
@@ -161,9 +165,9 @@ jobs:
           FROM Usuarios b WHERE b.NombreUsuario='p4_admin_b'
             AND NOT EXISTS (SELECT 1 FROM UsuarioEmpresas m WHERE m.UsuarioId=b.Id AND m.EmpresaId=2);
           SQL
-          companies="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_p4_http_ab_ci -Nse "SELECT COUNT(*) FROM Empresas WHERE Id IN (1,2) AND Activa=TRUE;")"
+          companies="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_p4_http_ab_ci -Nse "SELECT COUNT(*) FROM Empresas WHERE Id IN (1,2,3) AND Activa=TRUE;")"
           members="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_p4_http_ab_ci -Nse "SELECT COUNT(*) FROM UsuarioEmpresas m JOIN Usuarios u ON u.Id=m.UsuarioId JOIN Roles r ON r.Id=m.RolId WHERE (u.NombreUsuario='p4_admin_a' AND m.EmpresaId=1 OR u.NombreUsuario='p4_admin_b' AND m.EmpresaId=2) AND m.Activa=TRUE AND u.Activo=TRUE AND r.EsAdministrador=TRUE;")"
-          test "$companies" = '2'
+          test "$companies" = '3'
           test "$members" = '2'
 
       - name: Preparar Node 24
