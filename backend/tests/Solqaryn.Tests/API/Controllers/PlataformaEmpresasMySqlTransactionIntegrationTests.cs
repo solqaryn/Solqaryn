@@ -41,6 +41,10 @@ public sealed class PlataformaEmpresasMySqlTransactionIntegrationTests
             .UseMySQL(cs, mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
             .AddInterceptors(new SimulatedConfigFailure())
             .Options;
+        var optFailMembership = new DbContextOptionsBuilder<AppDbContext>()
+            .UseMySQL(cs, mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
+            .AddInterceptors(new SimulatedMembershipFailure())
+            .Options;
 
         try
         {
@@ -63,7 +67,14 @@ public sealed class PlataformaEmpresasMySqlTransactionIntegrationTests
                     Ambito = AmbitoAutorizacion.Empresa,
                     EsSistema = true, EsAdministrador = true, Activo = true
                 };
-                setup.Roles.AddRange(platformRole, enterpriseRole);
+                var baseRole = new Rol
+                {
+                    Nombre = "P4 Empresa Rol Base",
+                    NombreNormalizado = "P4_EMP_BASE",
+                    Ambito = AmbitoAutorizacion.Empresa,
+                    EsSistema = true, EsAdministrador = false, Activo = true
+                };
+                setup.Roles.AddRange(platformRole, enterpriseRole, baseRole);
                 await setup.SaveChangesAsync();
 
                 var actor = new Usuario
@@ -191,6 +202,121 @@ public sealed class PlataformaEmpresasMySqlTransactionIntegrationTests
                     .SingleAsync(x => x.Id == pendienteId);
                 Assert.False(pendiente.Activo);
             }
+
+            // Nuevo modo: usuario + contraseña BCrypt + empresa + config +
+            // membresía admin + auditoría, bajo un ÚNICO commit MySQL real.
+            const string passwordNuevo = "ClaveSegura!2026";
+            await using (var successNew = new AppDbContext(opt))
+            {
+                var response = await Controller(successNew, actorId).AltaControlada(new()
+                {
+                    Nombre = "Empresa con alta nueva",
+                    AdministradorNuevo = new()
+                    {
+                        NombreUsuario = "p4-usuario-atomico",
+                        NombreCompleto = "Admin Empresarial Atómico",
+                        Password = passwordNuevo
+                    }
+                }, CancellationToken.None);
+                Assert.IsType<CreatedResult>(response);
+            }
+
+            await using (var verified = new AppDbContext(opt))
+            {
+                var usuario = await verified.Usuarios.IgnoreQueryFilters()
+                    .SingleAsync(u => u.NombreUsuario == "p4-usuario-atomico");
+                Assert.True(usuario.Activo);
+                Assert.True(BCrypt.Net.BCrypt.Verify(passwordNuevo, usuario.PasswordHash));
+                Assert.StartsWith("$2", usuario.PasswordHash);
+                Assert.NotEqual(passwordNuevo, usuario.PasswordHash);
+                var roleBase = await verified.Roles.IgnoreQueryFilters()
+                    .SingleAsync(r => r.Id == usuario.RolId);
+                Assert.False(roleBase.EsAdministrador);
+                Assert.Equal(AmbitoAutorizacion.Empresa, roleBase.Ambito);
+                Assert.False(await verified.Set<UsuarioRolPlataforma>()
+                    .IgnoreQueryFilters().AnyAsync(x => x.UsuarioId == usuario.Id));
+
+                var empresaNueva = await verified.Set<Empresa>()
+                    .IgnoreQueryFilters().SingleAsync(x => x.Nombre == "Empresa con alta nueva");
+                var config = await verified.Set<ConfigEmpresa>().IgnoreQueryFilters()
+                    .SingleAsync(x => x.EmpresaId == empresaNueva.Id);
+                Assert.Equal("HNL", config.Moneda);
+                var m = await verified.Set<UsuarioEmpresa>().IgnoreQueryFilters()
+                    .SingleAsync(x => x.UsuarioId == usuario.Id);
+                Assert.Equal(empresaNueva.Id, m.EmpresaId);
+                var adminRole = await verified.Roles.IgnoreQueryFilters()
+                    .SingleAsync(r => r.Id == m.RolId);
+                Assert.True(adminRole.EsAdministrador);
+                Assert.Equal(AmbitoAutorizacion.Empresa, adminRole.Ambito);
+                var audit = await verified.Set<RegistroAuditoria>().IgnoreQueryFilters()
+                    .SingleAsync(a => a.Entidad == "Empresa" && a.EmpresaId == empresaNueva.Id);
+                Assert.Equal(actorId, audit.UsuarioId);
+                Assert.Contains("\"UsuarioCreadoEnAlta\":true", audit.ValoresNuevos ?? "");
+                Assert.DoesNotContain(passwordNuevo, audit.ValoresNuevos ?? "");
+                Assert.DoesNotContain(usuario.PasswordHash, audit.ValoresNuevos ?? "");
+            }
+
+            // Los tres fallos ocurren DESPUÉS de insertar usuario y empresa.
+            // No deben sobrevivir ni contraseñas ni asignaciones parciales.
+            await using (var failed = new AppDbContext(optFailConfig))
+            {
+                await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                    Controller(failed, actorId).AltaControlada(new()
+                    {
+                        Nombre = "Empresa rollback config nueva",
+                        AdministradorNuevo = new() {
+                            NombreUsuario = "p4-rollback-config",
+                            NombreCompleto = "Administrador Config Fallida",
+                            Password = passwordNuevo
+                        }
+                    }, CancellationToken.None));
+            }
+            await using (var failed = new AppDbContext(optFailMembership))
+            {
+                await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                    Controller(failed, actorId).AltaControlada(new()
+                    {
+                        Nombre = "Empresa rollback membresia nueva",
+                        AdministradorNuevo = new() {
+                            NombreUsuario = "p4-rollback-miembro",
+                            NombreCompleto = "Administrador Miembro Fallido",
+                            Password = passwordNuevo
+                        }
+                    }, CancellationToken.None));
+            }
+            await using (var failed = new AppDbContext(optFail))
+            {
+                await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                    Controller(failed, actorId).AltaControlada(new()
+                    {
+                        Nombre = "Empresa rollback auditoria nueva",
+                        AdministradorNuevo = new() {
+                            NombreUsuario = "p4-rollback-audit",
+                            NombreCompleto = "Administrador Auditoria Fallida",
+                            Password = passwordNuevo
+                        }
+                    }, CancellationToken.None));
+            }
+            await using (var verified = new AppDbContext(opt))
+            {
+                foreach (var nombreNoPersistido in new[] {
+                    "p4-rollback-config", "p4-rollback-miembro", "p4-rollback-audit"
+                })
+                    Assert.False(await verified.Usuarios.IgnoreQueryFilters()
+                        .AnyAsync(x => x.NombreUsuario == nombreNoPersistido));
+                foreach (var empresaNoPersistida in new[] {
+                    "Empresa rollback config nueva", "Empresa rollback membresia nueva",
+                    "Empresa rollback auditoria nueva"
+                })
+                    Assert.False(await verified.Set<Empresa>().IgnoreQueryFilters()
+                        .AnyAsync(x => x.Nombre == empresaNoPersistida));
+                Assert.Equal(3, await verified.Set<Empresa>().IgnoreQueryFilters().CountAsync());
+                Assert.Equal(4, await verified.Usuarios.IgnoreQueryFilters().CountAsync());
+                Assert.Equal(2, await verified.Set<ConfigEmpresa>().IgnoreQueryFilters().CountAsync());
+                Assert.Equal(2, await verified.Set<UsuarioEmpresa>().IgnoreQueryFilters().CountAsync());
+                Assert.Equal(2, await verified.Set<RegistroAuditoria>().IgnoreQueryFilters()
+                    .CountAsync(x => x.Entidad == "Empresa"));
+            }
         }
         finally
         {
@@ -231,6 +357,20 @@ public sealed class PlataformaEmpresasMySqlTransactionIntegrationTests
             if (eventData.Context?.ChangeTracker.Entries<ConfigEmpresa>()
                     .Any(x => x.State == EntityState.Added) == true)
                 throw new InvalidOperationException("Alta: falla simulada en ConfigEmpresa.");
+            return new ValueTask<InterceptionResult<int>>(result);
+        }
+    }
+
+    private sealed class SimulatedMembershipFailure : SaveChangesInterceptor
+    {
+        public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
+            DbContextEventData eventData,
+            InterceptionResult<int> result,
+            CancellationToken cancellationToken = default)
+        {
+            if (eventData.Context?.ChangeTracker.Entries<UsuarioEmpresa>()
+                    .Any(x => x.State == EntityState.Added) == true)
+                throw new InvalidOperationException("Alta: falla simulada en membresía.");
             return new ValueTask<InterceptionResult<int>>(result);
         }
     }

@@ -180,6 +180,132 @@ public sealed class PlataformaEmpresasOnboardingSecurityTests
     }
 
     [Fact]
+    public async Task NuevoAdministradorSeCreaConBCryptRolBaseYUnaMembresiaDeEmpresa()
+    {
+        var fixture = await PrepararAsync(true, true, true);
+        await using var db = fixture.Db;
+        const string password = "ClaveSegura!42";
+        var result = await fixture.Controller.AltaControlada(new()
+        {
+            Nombre = "Empresa con admin nuevo",
+            AdministradorNuevo = new()
+            {
+                NombreUsuario = "empresa.nuevo",
+                NombreCompleto = "Administrador Empresa Nuevo",
+                Password = password
+            }
+        }, CancellationToken.None);
+        var created = Assert.IsType<CreatedResult>(result);
+        var nuevoId = (int)created.Value!.GetType().GetProperty("administradorUsuarioId")!
+            .GetValue(created.Value)!;
+        var usuario = await db.Usuarios.IgnoreQueryFilters().SingleAsync(u => u.Id == nuevoId);
+        Assert.Equal("empresa.nuevo", usuario.NombreUsuario);
+        Assert.True(usuario.Activo);
+        Assert.StartsWith("$2", usuario.PasswordHash);
+        Assert.True(BCrypt.Net.BCrypt.Verify(password, usuario.PasswordHash));
+        Assert.NotEqual(password, usuario.PasswordHash);
+        Assert.Equal(fixture.ActorId, usuario.CreadoPorUsuarioId);
+
+        var rolBase = await db.Roles.IgnoreQueryFilters().SingleAsync(r => r.Id == usuario.RolId);
+        Assert.Equal(AmbitoAutorizacion.Empresa, rolBase.Ambito);
+        Assert.False(rolBase.EsAdministrador);
+        Assert.Empty(await db.Set<UsuarioRolPlataforma>().IgnoreQueryFilters()
+            .Where(x => x.UsuarioId == nuevoId).ToArrayAsync());
+
+        var empresa = Assert.Single(await db.Set<Empresa>().IgnoreQueryFilters().ToListAsync());
+        var configuracion = Assert.Single(await db.Set<ConfigEmpresa>().IgnoreQueryFilters().ToListAsync());
+        Assert.Equal(empresa.Id, configuracion.EmpresaId);
+        var miembro = Assert.Single(await db.Set<UsuarioEmpresa>().IgnoreQueryFilters().ToListAsync());
+        Assert.Equal(empresa.Id, miembro.EmpresaId);
+        Assert.Equal(nuevoId, miembro.UsuarioId);
+        var rolAdmin = await db.Roles.IgnoreQueryFilters().SingleAsync(r => r.Id == miembro.RolId);
+        Assert.Equal(AmbitoAutorizacion.Empresa, rolAdmin.Ambito);
+        Assert.True(rolAdmin.EsAdministrador);
+        Assert.True(rolAdmin.EsSistema);
+        Assert.Null(rolAdmin.EmpresaId);
+        var audit = Assert.Single(await db.Set<RegistroAuditoria>().IgnoreQueryFilters().ToListAsync());
+        Assert.Equal(fixture.ActorId, audit.UsuarioId);
+        Assert.Contains("\"UsuarioCreadoEnAlta\":true", audit.ValoresNuevos ?? "");
+        Assert.DoesNotContain(password, audit.ValoresNuevos ?? "");
+        Assert.DoesNotContain(usuario.PasswordHash, audit.ValoresNuevos ?? "");
+    }
+
+    [Fact]
+    public async Task NuevoAdminRechazaClaveDebilDuplicadoYModalidadesMezcladas()
+    {
+        var fixture = await PrepararAsync(true, true, true);
+        await using var db = fixture.Db;
+        var weak = await fixture.Controller.AltaControlada(new()
+        {
+            Nombre = "Nueva empresa",
+            AdministradorNuevo = new()
+            {
+                NombreUsuario = "cuenta.nueva",
+                NombreCompleto = "Administrador Cuenta",
+                Password = "clave-debil"
+            }
+        }, CancellationToken.None);
+        Assert.IsType<BadRequestObjectResult>(weak);
+
+        var duplicate = await fixture.Controller.AltaControlada(new()
+        {
+            Nombre = "Nueva empresa",
+            AdministradorNuevo = new()
+            {
+                NombreUsuario = "empresa-admin-test",
+                NombreCompleto = "Administrador Cuenta",
+                Password = "ClaveSegura!42"
+            }
+        }, CancellationToken.None);
+        Assert.IsType<ConflictObjectResult>(duplicate);
+
+        var ambiguous = await fixture.Controller.AltaControlada(new()
+        {
+            Nombre = "Nueva empresa",
+            AdministradorUsuarioId = fixture.AdministradorId,
+            AdministradorNuevo = new()
+            {
+                NombreUsuario = "cuenta.nueva",
+                NombreCompleto = "Administrador Cuenta",
+                Password = "ClaveSegura!42"
+            }
+        }, CancellationToken.None);
+        Assert.IsType<BadRequestObjectResult>(ambiguous);
+        Assert.Empty(await db.Set<Empresa>().ToListAsync());
+        Assert.Empty(await db.Set<ConfigEmpresa>().ToListAsync());
+        Assert.Empty(await db.Set<UsuarioEmpresa>().ToListAsync());
+        Assert.Empty(await db.Set<RegistroAuditoria>().ToListAsync());
+        Assert.Equal(2, await db.Usuarios.CountAsync());
+    }
+
+    [Fact]
+    public async Task NuevoAdminNoSorteaDobleGateNiAutoridadGlobal()
+    {
+        var fixture = await PrepararAsync(false, true, true);
+        await using var db = fixture.Db;
+        var dto = new AltaEmpresaPlataformaRequest
+        {
+            Nombre = "Nueva empresa",
+            AdministradorNuevo = new()
+            {
+                NombreUsuario = "cuenta.nueva",
+                NombreCompleto = "Administrador Cuenta",
+                Password = "ClaveSegura!42"
+            }
+        };
+        Assert.Equal(503, Assert.IsType<ObjectResult>(
+            await fixture.Controller.AltaControlada(dto, CancellationToken.None)).StatusCode);
+        Assert.Equal(2, await db.Usuarios.CountAsync());
+
+        var withoutPlatform = await PrepararAsync(true, true, false);
+        await using var dbNoPlatform = withoutPlatform.Db;
+        Assert.IsType<ForbidResult>(
+            await withoutPlatform.Controller.AltaControlada(dto, CancellationToken.None));
+        Assert.Equal(2, await dbNoPlatform.Usuarios.CountAsync());
+        Assert.Empty(await dbNoPlatform.Set<Empresa>().ToListAsync());
+    }
+
+    [Fact]
     public async Task BorradorSinActivacionComercialFijaOwnerOriginalYSeAudita()
     {
         var fixture = await PrepararAsync(false, false, true);
@@ -282,7 +408,14 @@ public sealed class PlataformaEmpresasOnboardingSecurityTests
             Ambito = AmbitoAutorizacion.Empresa,
             EsAdministrador = true, EsSistema = true, Activo = true
         };
-        db.Roles.AddRange(rolePlatform, roleEmpresa);
+        var roleBaseEmpresa = new Rol
+        {
+            Nombre = "USUARIO_BASE_EMPRESA_TEST",
+            NombreNormalizado = "USUARIO_BASE_EMPRESA_TEST",
+            Ambito = AmbitoAutorizacion.Empresa,
+            EsAdministrador = false, EsSistema = true, Activo = true
+        };
+        db.Roles.AddRange(rolePlatform, roleEmpresa, roleBaseEmpresa);
         await db.SaveChangesAsync();
         var actor = new Usuario
         {
