@@ -31,7 +31,7 @@ public sealed class CommercialFilesPilotGuardTests
         await using var db = new AppDbContext(options);
         var a = new Empresa("Archivos A");
         var b = new Empresa("Archivos B");
-        db.Set<Empresa>().AddRange(a, b);
+        db.Set<Empresa>().AddRange(a, b, new Empresa("Tercer tenant existente"));
         await db.SaveChangesAsync();
 
         async Task<(int Code, bool Next, int? Owner)> RequestAsync(
