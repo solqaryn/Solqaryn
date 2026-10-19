@@ -200,7 +200,7 @@ public sealed class UnscopedCommercialTenantGuardTests
             ("PUT", "/perfil/foto"),
             ("DELETE", "/perfil/foto"),
             ("PUT", "/perfil/password"),
-            ("GET", "/permisos/mis-permisos/empresa/2")
+            ("POST", "/permisos/mis-permisos/empresa/2")
         })
         {
             var (bloqueado, payload, next) = await ProcesarAsync(
@@ -209,6 +209,38 @@ public sealed class UnscopedCommercialTenantGuardTests
             Assert.Equal(StatusCodes.Status503ServiceUnavailable, bloqueado);
             Assert.Equal("TENANT_DATA_ISOLATION_REQUIRED",
                 payload.GetProperty("code").GetString());
+        }
+    }
+
+    [Fact]
+    public async Task TresEmpresas_SoloAbrenConsultaPermisosExactaConJwt()
+    {
+        await using var db = NuevoContexto();
+        db.Set<Empresa>().AddRange(new Empresa("A"), new Empresa("B"), new Empresa("C"));
+        await db.SaveChangesAsync();
+
+        var autorizado = await ProcesarAsync(db, "GET", "/permisos/mis-permisos/empresa/2",
+            autenticado: true);
+        Assert.True(autorizado.Next);
+        Assert.Equal(StatusCodes.Status204NoContent, autorizado.Status);
+
+        foreach (var (metodo, ruta, autenticado) in new[]
+        {
+            ("GET", "/permisos/mis-permisos/empresa/2", false),
+            ("POST", "/permisos/mis-permisos/empresa/2", true),
+            ("GET", "/permisos/mis-permisos", true),
+            ("GET", "/permisos/mis-permisos/empresa/0", true),
+            ("GET", "/permisos/mis-permisos/empresa/-1", true),
+            ("GET", "/permisos/mis-permisos/empresa/abc", true),
+            ("GET", "/permisos/mis-permisos/empresa/2/", true),
+            ("GET", "/permisos/mis-permisos/empresa/2/extra", true),
+            ("GET", "/permisos/matriz/2", true),
+            ("PUT", "/permisos/matriz/2", true)
+        })
+        {
+            var bloqueado = await ProcesarAsync(db, metodo, ruta, autenticado);
+            Assert.False(bloqueado.Next);
+            Assert.Equal(StatusCodes.Status503ServiceUnavailable, bloqueado.Status);
         }
     }
 
