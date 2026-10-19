@@ -1,3 +1,10 @@
+## 2026-10-19 — Actualización de autoridad comercial VAEP (PR en revisión)
+
+- Decisión aprobada por propietario: fuente ejecutable exclusiva `SOLQARYN PLAN COMERCIAL INICIAL UNIFICADO`, Drive `1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j`. Descompuesto en 1123 microtareas comprobables a partir de 492 fichas; hoja `1gcVyCoyhLU0jFMwRtf0s5_x8FSnfBs38ojml1QF7Xwk` actualizada con `PLAN_COMERCIAL` y `_COMERCIAL_SOURCE`.
+- Se sustituyen referencias operativas contradictorias en AGENTS, contrato VAEP, PROJECT_CONTEXT, TASKS e índice sin alterar historial de cambios ni evidencias de PR/CI anteriores. Archivos históricos únicamente como backup y sin autoridad operativa.
+- La hoja conserva protección y cotas visibles; cinco primarias preparadas pero PAUSADAS. Cinco supervisoras administradas por otro usuario siguen inaccesibles; admisión `NO_GO` hasta readback 10/10, merge y CI exact-head.
+- No se modifican APIs, UI, DB, MySQL, Render, Vercel, QA, PROD ni infraestructura. No declarar LISTO de migración mientras falten supervisores/CI.
+
 ## 2026-10-19 — VAEP: transición gobernada a Plan Comercial Inicial (candidato)
 
 - Aprobación explícita del propietario: durante la etapa de lanzamiento SOLQARYN ejecuta únicamente `SOLQARYN PLAN COMERCIAL INICIAL UNIFICADO` (Drive ID `1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j`). El Plan Maestro anterior queda intacto, archivado conceptualmente y reservado para la fase futura; no se ejecutan SQ antiguos.
