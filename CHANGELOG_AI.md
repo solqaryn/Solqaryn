@@ -1,3 +1,9 @@
+## 2026-10-18 — DEV: alta empresarial transaccional con ConfigEmpresa (candidato)
+
+- `POST /plataforma/empresas/alta-controlada`: incorpora la configuración operativa `ConfigEmpresa` con valores tenant HNL/America/Tegucigalpa y trazabilidad del operador global, dentro de la **misma transacción MySQL** que empresa, activación de identidad pendiente, membresía inicial y auditoría. La auditoría referencia la configuración creada.
+- La configuración y membresía se persisten **sin commit** antes de emitir la auditoría; si falla configuración o auditoría, el rollback revierte todos los registros del alta y mantiene inactiva la identidad pendiente. El contrato existente admite una identidad administradora ya provisionada, no crea una cuenta nueva ni modifica contraseñas.
+- Pruebas unitarias de alcance/autoridad y de `ConfigEmpresa`; integración MySQL aislada con éxito y dos fallos inyectados. Sin DDL, cambios de roles/permisos, banderas de onboarding, QA, PROD, Plan Maestro ni habilitación comercial. Pendiente CI exact-head y certificación post-merge DEV.
+
 ## 2026-10-18 — SQ-052 DEV: perfil propio multiempresa y rol empresarial verificado (candidato)
 
 - La cuarentena multiempresa permite únicamente `GET /perfil` exacto con JWT autenticado. El servicio conserva la resolución exclusiva por `UsuarioId` del claim y rechaza cuentas inexistentes, inactivas, bloqueadas o eliminadas; no acepta `UsuarioId` ni `EmpresaId` del cliente.
