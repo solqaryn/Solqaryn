@@ -12,7 +12,7 @@ on:
       - 'docs/VAEP_HANDOFF_CURRENT.md'
       - 'AGENTS.md'
   pull_request:
-    branches: [main]
+    branches: [dev, main]
   workflow_dispatch:
 
 permissions:
@@ -43,6 +43,10 @@ jobs:
           bash .github/scripts/vaep-policy-parser.sh --validate docs/VAEP_AUTHORITY.md
           bash .github/scripts/vaep-checkpoint.sh --self-test
           grep -Fq 'EXECUTION_MODEL=TASKS_ONLY' docs/VAEP_AUTHORITY.md
+          grep -Fq 'EXECUTION_PLAN_DRIVE_FILE_ID=1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j' docs/VAEP_AUTHORITY.md
+          grep -Fq 'CURRENT_COMMERCIAL_ONLY=TRUE' docs/VAEP_AUTHORITY.md
+          ! grep -Fq 'CURRENT_MASTER_ONLY=' docs/VAEP_AUTHORITY.md
+          bash .github/scripts/vaep-policy-parser.sh --get CURRENT_COMMERCIAL_ONLY | grep -Fxq 'TRUE'
           grep -Fq 'DIRECT_EXECUTION_DEFAULT=TRUE' docs/VAEP_AUTHORITY.md
           grep -Fq 'TASK_SCOPE_LEASE_SINGLE_WRITER=TRUE' docs/VAEP_AUTHORITY.md
           grep -Fq 'RECOVERY_MUST_RESOLVE_SAME_RUN=TRUE' docs/VAEP_AUTHORITY.md

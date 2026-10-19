@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-readonly MASTER_FILE="docs/VAEP_AUTHORITY.md"
+readonly POLICY_FILE="docs/VAEP_AUTHORITY.md"
 readonly PARSER=".github/scripts/vaep-policy-parser.sh"
 readonly ADMISSION="vaep/control/dispatch-admission.json"
 readonly BRANCH="dev"
@@ -13,10 +13,10 @@ normalize_checkpoint(){ case "${1:-}" in :00|:12|:24|:36|:48) printf '%s\n' "$1"
 admission_is_open(){ jq -e 'type=="object" and .newDispatchAdmission=="OPEN" and .allowExistingActiveSessions==true' >/dev/null 2>&1; }
 
 validate_contract(){
-  [[ -f "$MASTER_FILE" && -f "$PARSER" && -f "$ADMISSION" ]] || fail missing_runtime_file
-  bash "$PARSER" --validate "$MASTER_FILE" >/dev/null
-  [[ "$(bash "$PARSER" --get EXECUTION_MODEL "$MASTER_FILE")" == TASKS_ONLY ]] || fail execution_model
-  [[ "$(bash "$PARSER" --get GLOBAL_DISPATCH_ADMISSION "$MASTER_FILE")" == OPEN_ONLY ]] || fail admission_policy
+  [[ -f "$POLICY_FILE" && -f "$PARSER" && -f "$ADMISSION" ]] || fail missing_runtime_file
+  bash "$PARSER" --validate "$POLICY_FILE" >/dev/null
+  [[ "$(bash "$PARSER" --get EXECUTION_MODEL "$POLICY_FILE")" == TASKS_ONLY ]] || fail execution_model
+  [[ "$(bash "$PARSER" --get GLOBAL_DISPATCH_ADMISSION "$POLICY_FILE")" == OPEN_ONLY ]] || fail admission_policy
   admission_is_open < "$ADMISSION" || fail admission_not_open
 }
 
@@ -27,7 +27,7 @@ run_self_test(){
   [[ "$(normalize_checkpoint ':00')" == ':00' ]]
   [[ "$(normalize_checkpoint '48 * * * *')" == ':48' ]]
   if normalize_checkpoint ':15' >/dev/null 2>&1; then fail historical_checkpoint_accepted; fi
-  ! grep -Eqi 'jules|J[1-6]|worker lane|autorefill' "$0"
+  [[ "$(bash "$PARSER" --get CURRENT_COMMERCIAL_ONLY "$POLICY_FILE")" == TRUE ]] || fail commercial_plan_authority
   echo 'VAEP_CHECKPOINT_SELF_TEST=PASS model=TASKS_ONLY'
 }
 

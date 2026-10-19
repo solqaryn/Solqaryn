@@ -1,3 +1,7 @@
+## 2026-10-19 — DECISIÓN DEL PROPIETARIO: VERSIÓN COMERCIAL INICIAL PRIMERO
+
+La única fuente **ejecutable en esta etapa** es [SOLQARYN PLAN COMERCIAL INICIAL UNIFICADO](https://drive.google.com/file/d/1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j/view), ID `1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j`. Su descomposición operativa de 492 fichas a 1123 microtareas está en el [control VAEP comercial](https://docs.google.com/spreadsheets/d/1gcVyCoyhLU0jFMwRtf0s5_x8FSnfBs38ojml1QF7Xwk/edit), pestaña `PLAN_COMERCIAL`. El antiguo Plan Maestro (ID `1YdQlNJ312HuziyKb9E-GEt55dcgSmuFGgfsHxyzPUaw`) se conserva como **visión futura no ejecutable**, sin borrar su historia. Esta decisión expresa del propietario reemplaza referencias antiguas de autoridad. Toda automatización debe comprobar que sus pares, su prompt, el contrato y la cola coinciden antes de activarse; mientras falte ese readback debe permanecer inactiva. No afecta controles de seguridad, CI, aislamiento A/B, backups ni prohibición de promover PROD sin autorización nueva.
+
 ## 2026-10-19 — Corrección 2: alta empresarial con administrador nuevo (candidato DEV)
 
 - **Alcance:** sólo `POST /plataforma/empresas/alta-controlada`. Se añade la modalidad opcional `AdministradorNuevo { NombreUsuario, NombreCompleto, Password }`, mutuamente excluyente con `AdministradorUsuarioId` existente, manteniendo compatibilidad total con este último. UI global ofrece ambas opciones.
@@ -512,37 +516,19 @@ Consultar `ARCHITECTURE.md` para cambios estructurales y `PROJECT_INDEX.md` para
 - Revalidar HEAD antes de publicar.
 - Cambios en `main`, PROD o infraestructura productiva requieren autorización explícita vigente.
 
-## 8. Plan maestro vigente
+## 8. Ejecución comercial inicial vigente (autoridad única)
 
-Existe **un solo Plan Maestro vivo** para roadmap y arquitectura objetivo:
+A partir de la decisión explícita del propietario del **19 de octubre de 2026**, únicamente el archivo **SOLQARYN PLAN COMERCIAL INICIAL UNIFICADO**, Drive ID `1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j`, autoriza tareas de desarrollo de la versión comercial. La hoja única **SOLQARYN - PLAN COMERCIAL INICIAL - AUTOMATIZACIONES**, ID `1gcVyCoyhLU0jFMwRtf0s5_x8FSnfBs38ojml1QF7Xwk`, es superficie ejecutiva derivada de 492 fichas documentales y 1123 microtareas (`P0-001.A` ... `P9-013.B`).
 
-- Google Doc nativo: `PLAN MAESTRO SOLQARYN`.
-- ID: `1YdQlNJ312HuziyKb9E-GEt55dcgSmuFGgfsHxyzPUaw`.
-- No existen V1/V2/V3/V5 ni roadmaps paralelos con autoridad ejecutable.
-- Cualquier cambio aprobado de alcance, arquitectura objetivo, programa u objetivo SQ modifica ese mismo documento.
-- `Notas SOLQARYN_DEV.docx` (ID `1WlqyRz09P7jARAg948Plg2UDKbKLSndT`) es exclusivamente una bandeja de observaciones; no es ejecutable hasta que el propietario apruebe su incorporación al Plan Maestro.
+- Tareas visibles: `PLAN_COMERCIAL` y `COLA`, con `_COMERCIAL_SOURCE` y `_RUNTIME_SOURCE` ocultas como fuentes; `_AUTOMATION_SOURCE` y `_EVENTS_SOURCE` conservan estado y trazabilidad.
+- Paneles vigentes: `DASHBOARD`, `CONFIG`, `BITACORA`, `LEYENDA`, `TAREAS_PROGRAMADAS`, `TAREAS_DE_SUPERVISION`, `AUTOMATIZACIONES` y `CONTROL_TOWER`.
+- Las 1123 tareas están inicialmente `PENDIENTE`. La cuenta principal de Javier tiene cinco primarias configuradas pero en pausa; las cinco supervisoras de Alex **no han sido sincronizadas ni verificadas** (sin permiso de edición cruzada) y siguen bloqueando la activación. Estado de admisión: `NO_GO` hasta integración de PR, controles de CI, sincronización 10/10 y autorización efectiva de ejecución.
+- El esquema Google Sheets recorta filas/columnas visibles; protegidas para evitar mutaciones manuales. El propietario aún puede administrar su propia hoja (limitación de Google Sheets, no prometer bloqueo absoluto a propietario).
+- Las unidades ejecutables sólo provienen del plan comercial y de estado técnico fresco de `dev`. Documentos de visión futura y pruebas/planes históricos son **NO EJECUTABLES**, archivados para conservación y sin dependencia ni fallback.
+- El control de cambios exige microtarea mínima, dependency-valid, lease exclusivo, verificación de MySQL/RBAC/tenancy cuando afecte, REVIEW_FIRST independiente, CI exact-head, P0/P1=0, evidencia y rollback. Toda promoción a QA/main/PROD, secretos, DNS o datos productivos requiere autorización explícita nueva.
+- Canon de ejecución: `AGENTS.md`, `docs/PROJECT_SCOPE_LOCK.md`, `docs/VAEP_AUTHORITY.md`, HEAD vivo de `dev`, contrato VAEP Drive `1frrmekon0pBTrLcXk0yUZSJa4uISjEzrwrni3ja5y38` y sólo después plan/hoja comercial.
 
-Contrato operativo y superficie administrativa:
-
-- `docs/VAEP_AUTHORITY.md` es el contrato operativo de VAEP; no crea roadmap.
-- Google Doc operativo auxiliar `SOLQARYN - AUTORIDAD OPERATIVA VAEP`: ID `1frrmekon0pBTrLcXk0yUZSJa4uISjEzrwrni3ja5y38`.
-- Google Sheet `SOLQARYN - PLAN MAESTRO DE AUTOMATIZACIONES`: ID `1gcVyCoyhLU0jFMwRtf0s5_x8FSnfBs38ojml1QF7Xwk`.
-- El Sheet fue rebasado al Plan Maestro actual: `SQ-000..SQ-353`; COLA, PLAN_MAESTRO y BITACORA históricos fueron retirados de la superficie viva.
-- `PLAN_MAESTRO`, `COLA`, `BITACORA`, `DASHBOARD`, `CONFIG`, `LEYENDA`, `TAREAS_PROGRAMADAS`, `CONTROL_TOWER`, `AUTOMATIZACIONES` y `TAREAS_DE_SUPERVISION` son superficies administrativas derivadas.
-- Fuentes técnicas ocultas: `_MASTER_SOURCE`, `_RUNTIME_SOURCE`, `_AUTOMATION_SOURCE`, `_EVENTS_SOURCE`.
-- CURRENT_STATE_ONLY: planes, fases, filas, parents, queues, gates y receipts históricos no condicionan ejecución nueva.
-- Estados únicos: `PENDIENTE`, `EN_PROGRESO`, `VALIDANDO`, `LISTO`, `BLOQUEADO`, `CANCELADO`.
-- Las diez automatizaciones canónicas usan slots `:00,:05,:12,:17,:24,:29,:36,:41,:48,:53` y permanecen **PAUSADAS (0/10 habilitadas)** hasta autorización explícita del propietario.
-- Responsabilidad operativa: Javier Mejía controla las cinco Primary `:00/:12/:24/:36/:48`; Alex Morales controla las cinco Supervisor `:05/:17/:29/:41/:53`.
-- IDs Primary/Javier: `:00=6aa15346f5408191bdd9043fd26ff7aa`, `:12=6aa1534deee481918280def1343adcfa`, `:24=6abd70e42cb4819190b3b28916dc9dbb`, `:36=6aa1535a51508191a610e6cdb90a2a4d`, `:48=6aa1535f8cd48191b73e10f17843372a`.
-- IDs Supervisor/Alex: `:05=6abd62255ae88191a2dba6e1b00d3b4d`, `:17=6abd6235e100819195785fc76a44a8e0`, `:29=6abd6241c3e48191a8856ed7b0f42c5c`, `:41=6abd624e5e108191bef6bb879559328c`, `:53=6abd625b397c8191a49904227946a20f`.
-- Las cinco Supervisor antiguas que existían en la cuenta de Javier quedaron retiradas e inactivas; no deben reactivarse.
-- Las automatizaciones escriben estado únicamente en fuentes técnicas autorizadas y ejecutan readback; las vistas visibles no son superficies de escritura de runtime.
-- Los backups de Drive conservan historia únicamente como respaldo; no poseen autoridad operativa.
-- Queda prohibido usar cuentas personales, repositorios retirados, ramas legacy o infraestructura legacy como fallback.
-
-La implementación existente puede ser reutilizada, extendida, refactorizada o reemplazada cuando el objetivo vigente lo requiera, siempre preservando seguridad, RBAC, tenancy, integridad de datos, trazabilidad, revisión, rollback y las autorizaciones explícitas requeridas para `main`/PROD.
-
+No usar índices SQ o gates de otros planes para seleccionar nuevos trabajos; los registros Git y CHANGELOG se preservan como evidencia histórica inmutable, no como authority de la cola actual.
 
 ## Cloudinary DEV: normalización física y descargas LISTO (2026-10-12)
 

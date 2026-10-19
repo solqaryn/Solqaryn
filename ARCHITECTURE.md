@@ -1,3 +1,7 @@
+# Arquitectura técnica vigente — SOLQARYN
+
+**Alcance de ejecución actual:** SOLQARYN PLAN COMERCIAL INICIAL UNIFICADO (Drive `1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j`), desglosado en 1123 tareas bajo el control VAEP comercial. Este cambio de autoridad operativa **no altera el stack ni la arquitectura probada**, ni revive documentos históricos como dependencias. Los bloques fechados a continuación son registros técnicos históricos, no instrucciones de ejecución. Revisar siempre HEAD de `dev` antes de trabajar.
+
 ## 2026-10-19 — Corrección 2: alta empresarial con administrador nuevo (candidato DEV)
 
 - **Alcance:** sólo `POST /plataforma/empresas/alta-controlada`. Se añade la modalidad opcional `AdministradorNuevo { NombreUsuario, NombreCompleto, Password }`, mutuamente excluyente con `AdministradorUsuarioId` existente, manteniendo compatibilidad total con este último. UI global ofrece ambas opciones.

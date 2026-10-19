@@ -34,7 +34,7 @@ Leer en el orden necesario:
 7. `docs/REGISTRO_REFERENCIAS_SKILLS_SOLQARYN.md` cuando una tarea requiera guia externa;
 8. documentos especificos del scope y evidencia causal.
 
-Toda decision operativa se basa en el estado vivo y en las autoridades vigentes. Fuentes no citadas por el MAESTRO actual no introducen dependencias, prioridades ni gates.
+Toda decision operativa se basa en el estado vivo y en las autoridades vigentes. Fuentes no citadas por el Plan Comercial Inicial Unificado (única autoridad ejecutable actual) no introducen dependencias, prioridades ni gates. Los documentos del futuro Plan Maestro están fuera de la cola y no pueden imponer tareas.
 
 ## 3. Gate de entrada para cualquier agente o chat
 
@@ -59,9 +59,9 @@ La arquitectura vigente se resume en `references/architecture.md`.
 Reglas no negociables:
 
 - Frontend Angular 22.2.1 standalone con Signals y Angular Material/CDK 22.2.1; Zone.js 0.16.3 permanece activo y la conversión a zoneless requiere un cambio arquitectónico separado.
-- Backend ASP.NET Core 8 Web API.
+- Backend ASP.NET Core 10 Web API (TargetFramework net10.0 verificado en código).
 - Capas backend: Domain <- Application <- Infrastructure; API compone y expone.
-- Persistencia MySQL con EF Core 8/Pomelo.
+- Persistencia MySQL con EF Core 10.0.12 y MySql.EntityFrameworkCore 10.0.9 (proveedor Oracle actualmente declarado en Infrastructure); no inferir provider alterno desde documentación histórica.
 - Seguridad con JWT, BCrypt, RBAC relacional, auditoria, CORS explicito, rate limiting y headers de seguridad.
 - Integraciones vigentes: Cloudinary, QuestPDF y SMTP.
 - E2E/browser: Playwright/Chromium.

@@ -1,3 +1,23 @@
+## 2026-10-19 — Actualización de autoridad comercial VAEP (PR en revisión)
+
+- CI VAEP de la rama de revisión ahora valida el parser y contrato en PR hacia dev además de main; guard programado preserva solo ejecución de comprobaciones y usa nombres actuales de política, sin reactivar ninguna automatización. Se comprobará exact-head antes de integrar.
+
+- Actualización de la skill local y su referencia de arquitectura a Angular 22.2.1, ASP.NET Core 10, EF Core 10.0.12, proveedor Oracle MySQL 10.0.9 verificados en los csproj. Evita que nuevos ejecutores hereden ASP.NET 8/Pomelo de una descripción de gobierno anterior.
+- Reparada la clave booleana CURRENT_COMMERCIAL_ONLY en el parser bash y sus nombres técnicos de policy; sujeto a CI exact-head.
+
+
+- Decisión aprobada por propietario: fuente ejecutable exclusiva `SOLQARYN PLAN COMERCIAL INICIAL UNIFICADO`, Drive `1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j`. Descompuesto en 1123 microtareas comprobables a partir de 492 fichas; hoja `1gcVyCoyhLU0jFMwRtf0s5_x8FSnfBs38ojml1QF7Xwk` actualizada con `PLAN_COMERCIAL` y `_COMERCIAL_SOURCE`.
+- Se sustituyen referencias operativas contradictorias en AGENTS, contrato VAEP, PROJECT_CONTEXT, TASKS e índice sin alterar historial de cambios ni evidencias de PR/CI anteriores. Archivos históricos únicamente como backup y sin autoridad operativa.
+- La hoja conserva protección y cotas visibles; cinco primarias preparadas pero PAUSADAS. Cinco supervisoras administradas por otro usuario siguen inaccesibles; admisión `NO_GO` hasta readback 10/10, merge y CI exact-head.
+- No se modifican APIs, UI, DB, MySQL, Render, Vercel, QA, PROD ni infraestructura. No declarar LISTO de migración mientras falten supervisores/CI.
+
+## 2026-10-19 — VAEP: transición gobernada a Plan Comercial Inicial (candidato)
+
+- Aprobación explícita del propietario: durante la etapa de lanzamiento SOLQARYN ejecuta únicamente `SOLQARYN PLAN COMERCIAL INICIAL UNIFICADO` (Drive ID `1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j`). El Plan Maestro anterior queda intacto, archivado conceptualmente y reservado para la fase futura; no se ejecutan SQ antiguos.
+- La hoja operativa de Drive (ID `1gcVyCoyhLU0jFMwRtf0s5_x8FSnfBs38ojml1QF7Xwk`) contiene 1123 microtareas derivadas de 492 fichas, dependencias y control de gobierno, con 0 ejecutores habilitados mientras dure la migración. Existe copia previa íntegra con ID `15tNzNkd4LTetvm_0l4l2gQRu2EJEBGpED0b9Mdg7XNo`.
+- Actualizada la autoridad declarativa de AGENTS, contrato VAEP, parser de CI y su comprobación de calidad; documentación operativa prioriza plan comercial, seguridad RBAC/tenancy, lease single-writer y REVIEW_FIRST. La modificación no abre operaciones comerciales, ni toca Aiven, Render, Vercel o producción.
+- Activación explícitamente **BLOQUEADA** hasta CI exact-head del cambio, readback de Sheets y sincronización de las 10 automatizaciones (5 primarias y 5 supervisoras con accesos independientes). No se afirma certificación ni cierre funcional del plan.
+
 ## 2026-10-19 — Corrección 2, alta completamente atómica con administrador nuevo (candidato)
 
 - Ampliado el onboarding global sin reemplazar el flujo preexistente. Una única operación crea Usuario BCrypt, Empresa, ConfigEmpresa, membresía ADMIN Empresa y auditoría bajo un commit MySQL, con rollback de todos ante cualquier fallo. No se conceden roles de Plataforma a usuarios nuevos.
