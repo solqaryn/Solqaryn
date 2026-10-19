@@ -225,7 +225,8 @@ public sealed class PlataformaEmpresasOnboardingSecurityTests
         Assert.Null(rolAdmin.EmpresaId);
         var audit = Assert.Single(await db.Set<RegistroAuditoria>().IgnoreQueryFilters().ToListAsync());
         Assert.Equal(fixture.ActorId, audit.UsuarioId);
-        Assert.Contains("\"UsuarioCreadoEnAlta\":true", audit.ValoresNuevos ?? "");
+        Assert.True(System.Text.Json.JsonDocument.Parse(audit.ValoresNuevos ?? "{}")
+            .RootElement.GetProperty("UsuarioCreadoEnAlta").GetBoolean());
         Assert.DoesNotContain(password, audit.ValoresNuevos ?? "");
         Assert.DoesNotContain(usuario.PasswordHash, audit.ValoresNuevos ?? "");
     }

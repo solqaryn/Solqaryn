@@ -251,7 +251,8 @@ public sealed class PlataformaEmpresasMySqlTransactionIntegrationTests
                 var audit = await verified.Set<RegistroAuditoria>().IgnoreQueryFilters()
                     .SingleAsync(a => a.Entidad == "Empresa" && a.EmpresaId == empresaNueva.Id);
                 Assert.Equal(actorId, audit.UsuarioId);
-                Assert.Contains("\"UsuarioCreadoEnAlta\":true", audit.ValoresNuevos ?? "");
+                Assert.True(System.Text.Json.JsonDocument.Parse(audit.ValoresNuevos ?? "{}")
+            .RootElement.GetProperty("UsuarioCreadoEnAlta").GetBoolean());
                 Assert.DoesNotContain(passwordNuevo, audit.ValoresNuevos ?? "");
                 Assert.DoesNotContain(usuario.PasswordHash, audit.ValoresNuevos ?? "");
             }
