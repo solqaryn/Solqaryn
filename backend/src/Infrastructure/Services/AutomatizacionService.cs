@@ -22,6 +22,7 @@ public sealed class AutomatizacionService : IAutomatizacionService
 
     public async Task<AutomatizacionConfiguracionDto> GetConfiguracionAsync(CancellationToken cancellationToken = default)
     {
+        await ExigirConfiguracionLegacyMonoempresaAsync(cancellationToken);
         var connection = _db.Database.GetDbConnection();
         if (connection.State != ConnectionState.Open)
             await connection.OpenAsync(cancellationToken);
@@ -58,6 +59,7 @@ public sealed class AutomatizacionService : IAutomatizacionService
         ActualizarAutomatizacionConfiguracionRequest request,
         CancellationToken cancellationToken = default)
     {
+        await ExigirConfiguracionLegacyMonoempresaAsync(cancellationToken);
         ValidarConfiguracion(request);
         var connection = _db.Database.GetDbConnection();
         if (connection.State != ConnectionState.Open)
@@ -179,6 +181,7 @@ public sealed class AutomatizacionService : IAutomatizacionService
 
     public async Task<AccionMasivaPreviewDto> PrevisualizarAccionMasivaAsync(AccionMasivaPreviewRequest request, CancellationToken cancellationToken = default)
     {
+        await ExigirConfiguracionLegacyMonoempresaAsync(cancellationToken);
         var ids = request.Ids.Where(x => x > 0).Distinct().Take(500).ToList();
         if (ids.Count == 0) throw new BusinessRuleException("Selecciona al menos un registro válido.");
         var accion = request.Accion.Trim().ToLowerInvariant();
@@ -220,6 +223,20 @@ public sealed class AutomatizacionService : IAutomatizacionService
             IdsAplicables = aplicables,
             Advertencias = advertencias
         };
+    }
+
+    private async Task ExigirConfiguracionLegacyMonoempresaAsync(CancellationToken cancellationToken)
+    {
+        // M12 usa una fila global (AutomatizacionConfiguraciones.Id=1), sin
+        // EmpresaId. No consultar ni editarla, ni calcular agregados/jobs sobre
+        // datos privados, cuando existan varios tenants (incluidos inactivos).
+        // La cuarentena HTTP no protege llamadas internas sin solicitud web.
+        var total = await _db.Set<Solqaryn.Domain.Entities.Empresa>()
+            .IgnoreQueryFilters().AsNoTracking()
+            .Take(2).CountAsync(cancellationToken);
+        if (total > 1)
+            throw new ForbiddenAccessException(
+                "La automatización legacy global está en cuarentena multiempresa.");
     }
 
     private static void ValidarConfiguracion(ActualizarAutomatizacionConfiguracionRequest x)
