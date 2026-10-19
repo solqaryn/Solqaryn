@@ -177,12 +177,26 @@ Las vistas derivadas se calculan desde estado fuente vivo. No usar snapshots man
 
 El Google Sheet operativo canónico es `SOLQARYN - PLAN COMERCIAL INICIAL - AUTOMATIZACIONES` (ID `1gcVyCoyhLU0jFMwRtf0s5_x8FSnfBs38ojml1QF7Xwk`). Las pestañas visibles son vistas derivadas por fórmulas, incluida `PLAN_COMERCIAL` con 1123 microtareas; quedan protegidas contra edición operativa directa. Las escrituras de runtime pertenecen únicamente a las fuentes técnicas ocultas `_COMERCIAL_SOURCE`, `_RUNTIME_SOURCE`, `_AUTOMATION_SOURCE` y `_EVENTS_SOURCE`. Las pestañas `COLA`, `PLAN_COMERCIAL` y `BITACORA` son vistas protegidas; ninguna vista reutiliza filas históricas.
 
-## 9. Gate de admisión comercial
+## 9. Supervisión por cuenta independiente: alineación obligatoria
+
+Las cinco supervisoras existentes en la cuenta operativa asignada a **Alex Morales** son `NO_GO` hasta una actualización efectivamente ejecutada por su propietario, sin duplicar tareas ni alterar los IDs. La instrucción común de cada una es: *releer skill SOLQARYN, AGENTS.md y VAEP_AUTHORITY.md en HEAD vivo de dev; usar únicamente Plan Comercial Inicial y cola PLAN_COMERCIAL; inspeccionar la entrega de la Primary de su pareja; validar REVIEW_FIRST, RBAC y tenancy aplicables, CI exact-head, pruebas negativas, P0/P1=0, evidencias y rollback; no declarar LISTO sin readback; nunca autoactivar ni tocar QA/main/PROD*. Se distribuyen así:
+
+| Horario | Supervisor real | Primary asignada | Dominio |
+| --- | --- | --- | --- |
+| :05 | 6abd62255ae88191a2dba6e1b00d3b4d | :00 | 01_SEGURIDAD |
+| :17 | 6abd6235e100819195785fc76a44a8e0 | :12 | 02_COMERCIO |
+| :29 | 6abd6241c3e48191a8856ed7b0f42c5c | :24 | 03_UX |
+| :41 | 6abd624e5e108191bef6bb879559328c | :36 | 04_RUTAS |
+| :53 | 6abd625b397c8191a49904227946a20f | :48 | 05_QA_OPERACION |
+
+La cuenta propietaria de estas cinco tareas debe ejecutar la actualización y una relectura de cada ID que demuestre nombre/prompt comercial, par, estado `is_enabled=false` y horario intacto. Únicamente entonces actualizar `_AUTOMATION_SOURCE` con evidencia real, jamás a mano o por suposición. No sustituir por cinco tareas nuevas de la cuenta primaria; eso invalidaría la verificación independiente y bloquearía el cierre.
+
+## 10. Gate de admisión comercial
 
 Cualquier ejecutor debe comprobar **en el HEAD fusionado de dev** `EXECUTION_PLAN_DRIVE_FILE_ID=1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j`, 1123 IDs coincidentes y únicos en hoja fuente/runtime, cero duplicados, dependencias vigentes, y que las diez tareas reales (cinco primarias y cinco supervisoras) existen, están alineadas y tienen lectura independiente. Las supervisoras nunca pueden ser suplantadas por una tarea duplicada de la primaria. **Sin readback 10/10 y owner autorizado la admisión es NO_GO**, incluso si todas las fórmulas dicen LISTO.
 
 Nunca reactivar por iniciativa de un agente. Un cambio en el Word canónico requiere revisión del diff y recarga atomizada de la cola con respaldo previo. Si falta cualquier prerrequisito, ninguna tarea toma lease, ejecuta código ni escribe estado.
 
-## 10. Cierre
+## 11. Cierre
 
 Una tarea sólo queda cerrada cuando el estado vivo demuestra que el objetivo vigente fue cumplido. La existencia de evidencia previa no sustituye validación actual.
