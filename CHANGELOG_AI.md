@@ -1,6 +1,6 @@
 ## 2026-10-18 — DEV Microfase 3: pruebas de aislamiento con 3 empresas (certificación incremental)
 
-- Amplía **las pruebas existentes**, sin cambios en producción, de pilotos de lectura/escritura comercial y SQL físico MySQL descartable para operar A/B mientras existe una tercera empresa activa; añade solicitudes negativas de A contra la tercera empresa. Incluye rutas de documentos, archivos, imágenes y exportaciones en el mismo escenario de tres empresas.
+- Amplía **las pruebas existentes**, sin cambios en producción, de pilotos de lectura/escritura comercial y SQL físico MySQL descartable para operar A/B mientras existe una tercera empresa activa; añade solicitudes negativas de A contra la tercera empresa. Incluye rutas de documentos, archivos, imágenes y exportaciones en el mismo escenario de tres empresas. El test Outbox rechaza un lote contaminado por mensajes de B y C antes de emitir efectos externos.
 - El objetivo es detectar regresiones cuando DEV ya contiene tres empresas; el middleware permanece con cuarentena 503 para rutas sin evidencia o bandera, y las autorizaciones JWT/RBAC y el propietario de los datos no cambian.
 - **No certifica por sí solo** toda la operación multiempresa real, el frontend ni proveedores externos Cloudinary/jobs; el alcance integral requiere pruebas de extremo a extremo, revisión de cobertura adicional y CI exact-head del PR.
 - Sin cambios MySQL persistentes, flags, secretos, membresías, Plan Maestro, QA ni PROD.
