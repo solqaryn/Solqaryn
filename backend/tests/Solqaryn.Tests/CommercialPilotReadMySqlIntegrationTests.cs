@@ -46,16 +46,18 @@ public sealed class CommercialPilotReadMySqlIntegrationTests
 
         try
         {
-            int empresaAId, empresaBId, productoAId, productoBId;
+            int empresaAId, empresaBId, empresaCId, productoAId, productoBId;
             await using (var setup = new AppDbContext(options))
             {
                 await Phase7MySqlTestDatabase.InitializeFreshAsync(setup);
                 var a = new Empresa("Piloto real A");
                 var b = new Empresa("Piloto real B");
-                setup.Set<Empresa>().AddRange(a, b, new Empresa("Piloto C"));
+                var c = new Empresa("Piloto C");
+                setup.Set<Empresa>().AddRange(a, b, c);
                 await setup.SaveChangesAsync();
                 empresaAId = a.Id;
                 empresaBId = b.Id;
+                empresaCId = c.Id;
             }
 
             async Task<int> CrearProductoAsync(int empresaId, string nombre)
@@ -156,6 +158,11 @@ public sealed class CommercialPilotReadMySqlIntegrationTests
             Assert.Equal(200, bRead.Status);
             Assert.Equal(empresaBId, bRead.Marca);
             Assert.Equal(new[] { productoBId }, bRead.Visibles);
+
+            var thirdTenantSpoof = await SolicitarAsync("GET", "/productos", empresaCId, "user-a");
+            Assert.Equal(503, thirdTenantSpoof.Status);
+            Assert.Null(thirdTenantSpoof.Marca);
+            Assert.Empty(thirdTenantSpoof.Visibles);
 
             var spoof = await SolicitarAsync("GET", "/productos", empresaBId, "user-a");
             Assert.Equal(503, spoof.Status);
