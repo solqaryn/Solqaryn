@@ -22,18 +22,18 @@ jobs:
       REPO: ${{ github.repository }}
       BRANCH: dev
       ADMISSION_PATH: vaep/control/dispatch-admission.json
-      MASTER_PATH: docs/VAEP_AUTHORITY.md
+      POLICY_PATH: docs/VAEP_AUTHORITY.md
     steps:
       - name: Verify canonical authority
         shell: bash
         run: |
           set -euo pipefail
-          master="$(gh api "repos/$REPO/contents/$MASTER_PATH?ref=$BRANCH" --jq '.content' | tr -d '\n' | base64 -d)"
-          grep -q '^GLOBAL_DISPATCH_ADMISSION=OPEN_ONLY$' <<<"$master"
-          grep -q '^GLOBAL_FROZEN_PROHIBITED=TRUE$' <<<"$master"
-          grep -q '^CAUSAL_HOLD_SCOPE=TASK_OR_EXECUTION_ONLY$' <<<"$master"
-          ! grep -q 'Solo se permiten dos estados' <<<"$master"
-          echo 'VAEP_MASTER_OPEN_ONLY=PASS'
+          policy="$(gh api "repos/$REPO/contents/$POLICY_PATH?ref=$BRANCH" --jq '.content' | tr -d '\n' | base64 -d)"
+          grep -q '^GLOBAL_DISPATCH_ADMISSION=OPEN_ONLY$' <<<"$policy"
+          grep -q '^GLOBAL_FROZEN_PROHIBITED=TRUE$' <<<"$policy"
+          grep -q '^CAUSAL_HOLD_SCOPE=TASK_OR_EXECUTION_ONLY$' <<<"$policy"
+          ! grep -q 'Solo se permiten dos estados' <<<"$policy"
+          echo 'VAEP_POLICY_OPEN_ONLY=PASS'
 
       - name: Repair any non-OPEN global admission state
         shell: bash
