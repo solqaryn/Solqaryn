@@ -197,7 +197,7 @@ globalThis.fetch = async (input, options = {}) => {
 };
 
 try {
-  const prodReq = { headers: { host: 'solqaryn-prod.vercel.app' }, query: { kind: 'product', slug: 'producto-seo-11' } };
+  const prodReq = { method: 'GET', headers: { host: 'solqaryn-prod.vercel.app' }, query: { kind: 'product', slug: 'producto-seo-11' } };
   const seoRes = responseMock();
   await seoHandler(prodReq, seoRes);
   expect(seoRes.statusCode === 200, 'HTML SEO de producto debe responder 200.');
