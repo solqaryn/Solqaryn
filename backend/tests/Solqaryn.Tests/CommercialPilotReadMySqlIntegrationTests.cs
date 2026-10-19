@@ -52,7 +52,7 @@ public sealed class CommercialPilotReadMySqlIntegrationTests
                 await Phase7MySqlTestDatabase.InitializeFreshAsync(setup);
                 var a = new Empresa("Piloto real A");
                 var b = new Empresa("Piloto real B");
-                setup.Set<Empresa>().AddRange(a, b);
+                setup.Set<Empresa>().AddRange(a, b, new Empresa("Piloto C"));
                 await setup.SaveChangesAsync();
                 empresaAId = a.Id;
                 empresaBId = b.Id;
