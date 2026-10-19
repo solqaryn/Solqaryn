@@ -12,7 +12,7 @@ AUTOMATION_AUTHORITY=VAEP_CONTRACT
 VAEP_CONTRACT_FILE=docs/VAEP_AUTHORITY.md
 EXECUTION_PLAN=SOLQARYN_PLAN_COMERCIAL_INICIAL_UNIFICADO
 EXECUTION_PLAN_DRIVE_FILE_ID=1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j
-FUTURE_MASTER_GOOGLE_DOC_ID=1YdQlNJ312HuziyKb9E-GEt55dcgSmuFGgfsHxyzPUaw
+FUTURE_PLAN_EXECUTABLE=FALSE
 EXECUTION_MODEL=TASKS_ONLY
 CONTEXT_MODE=CURRENT_STATE_ONLY
 ```
@@ -21,15 +21,15 @@ Antes de analizar, editar, ejecutar o publicar trabajo VAEP, leer `docs/VAEP_AUT
 
 ## 2026-10-19 — DECISIÓN DEL PROPIETARIO: VERSIÓN COMERCIAL INICIAL PRIMERO
 
-La única fuente **ejecutable en esta etapa** es [SOLQARYN PLAN COMERCIAL INICIAL UNIFICADO](https://drive.google.com/file/d/1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j/view), ID `1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j`. Su descomposición operativa de 492 fichas a 1123 microtareas está en el [control VAEP comercial](https://docs.google.com/spreadsheets/d/1gcVyCoyhLU0jFMwRtf0s5_x8FSnfBs38ojml1QF7Xwk/edit), pestaña `PLAN_COMERCIAL`. El antiguo Plan Maestro (ID `1YdQlNJ312HuziyKb9E-GEt55dcgSmuFGgfsHxyzPUaw`) se conserva como **visión futura no ejecutable**, sin borrar su historia. Esta decisión expresa del propietario reemplaza referencias antiguas de autoridad. Toda automatización debe comprobar que sus pares, su prompt, el contrato y la cola coinciden antes de activarse; mientras falte ese readback debe permanecer inactiva. No afecta controles de seguridad, CI, aislamiento A/B, backups ni prohibición de promover PROD sin autorización nueva.
+La única fuente **ejecutable en esta etapa** es [SOLQARYN PLAN COMERCIAL INICIAL UNIFICADO](https://drive.google.com/file/d/1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j/view), ID `1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j`. Su descomposición operativa de 492 fichas a 1123 microtareas está en el [control VAEP comercial](https://docs.google.com/spreadsheets/d/1gcVyCoyhLU0jFMwRtf0s5_x8FSnfBs38ojml1QF7Xwk/edit), pestaña `PLAN_COMERCIAL`. La visión arquitectónica futura permanece archivada como **no ejecutable**, sin borrar su historia. Esta decisión expresa del propietario reemplaza referencias antiguas de autoridad. Toda automatización debe comprobar que sus pares, su prompt, el contrato y la cola coinciden antes de activarse; mientras falte ese readback debe permanecer inactiva. No afecta controles de seguridad, CI, aislamiento A/B, backups ni prohibición de promover PROD sin autorización nueva.
 
 ## Autoridad única
 
-- Durante la versión comercial inicial, sólo `SOLQARYN PLAN COMERCIAL INICIAL UNIFICADO` (Drive ID `1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j`) autoriza trabajo ejecutable. El Maestro anterior (`1YdQlNJ312HuziyKb9E-GEt55dcgSmuFGgfsHxyzPUaw`) queda pospuesto a visión futura y NO alimenta la cola.
-- `docs/VAEP_AUTHORITY.md` es el contrato operativo de ejecución de VAEP; no crea un segundo roadmap ni una versión paralela del Plan Maestro.
+- Durante la versión comercial inicial, sólo `SOLQARYN PLAN COMERCIAL INICIAL UNIFICADO` (Drive ID `1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j`) autoriza trabajo ejecutable. La visión futura NO alimenta la cola.
+- `docs/VAEP_AUTHORITY.md` es el contrato operativo de ejecución de VAEP; no crea un segundo roadmap ni una versión paralela del Plan Comercial Inicial.
 - El trabajo se decide exclusivamente desde el Plan Comercial Inicial vigente, el estado vivo, las dependencias verificadas y los gates de seguridad existentes.
 - Planes, fases, filas, protocolos, handoffs, prompts, issues, receipts o decisiones históricas no imponen restricciones, dependencias ni orden de ejecución.
-- `Notas SOLQARYN_DEV.docx` está archivado y no autoriza tareas; sólo una incorporación explícita aprobada al Plan Comercial Inicial permitiría reutilizar una observación.
+- Los archivos históricos de notas, planes y colas están archivados, no conceden autoridad y nunca pueden inyectar tareas sin aprobación explícita del propietario.
 - Git, CHANGELOG, BITACORA, Issues, artifacts y receipts son evidencia; no son autoridad de planificación.
 - Si una superficie operativa contradice al Plan Comercial Inicial vigente o al contrato operativo, debe corregirse o neutralizarse; Maestro futuro nunca opera como fallback.
 
