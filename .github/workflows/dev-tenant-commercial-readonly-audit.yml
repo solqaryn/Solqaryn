@@ -120,3 +120,72 @@ jobs:
             echo "- Usuarios, roles, grants y empresas: ninguna escritura"
             echo "- JWT A/B en runtime real: requiere prueba HTTP autenticada independiente"
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Diagnosticar autorizacion empresa 6 - Administrador Prueba B (solo lectura)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = "solqaryn/Solqaryn"
+          test "$GITHUB_REF" = "refs/heads/dev"
+          test "$DB_HOST" = "solqaryn-mysql-solqaryn.h.aivencloud.com"
+          test "$DB_PORT" = "14402"
+          test "$DB_NAME" = "solqaryn_dev"
+          test "$DB_USER" = "solqaryn_dev_user"
+          test -n "$DB_PASSWORD"
+          export MYSQL_PWD="$DB_PASSWORD"
+          diagnostic="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names <<'SQL'
+          SET SESSION TRANSACTION READ ONLY;
+          START TRANSACTION READ ONLY;
+          SELECT CONCAT('B_ACCOUNT_MATCHES=',COUNT(*)) FROM Usuarios
+            WHERE NombreCompleto='Administrador Prueba B';
+          SELECT CONCAT('B_ACCOUNT_ELIGIBLE=',COUNT(*)) FROM Usuarios
+            WHERE NombreCompleto='Administrador Prueba B' AND Activo=1 AND Bloqueado=0 AND Eliminado=0;
+          SELECT CONCAT('B_COMPANY6_PRESENT=',COUNT(*)) FROM Empresas WHERE Id=6;
+          SELECT CONCAT('B_COMPANY6_ACTIVE=',COUNT(*)) FROM Empresas WHERE Id=6 AND Activa=1;
+          SELECT CONCAT('B_MEMBERSHIPS_TOTAL=',COUNT(*))
+            FROM UsuarioEmpresas m JOIN Usuarios u ON u.Id=m.UsuarioId
+            WHERE u.NombreCompleto='Administrador Prueba B';
+          SELECT CONCAT('B_MEMBERSHIP_COMPANY_IDS=',COALESCE(GROUP_CONCAT(DISTINCT m.EmpresaId ORDER BY m.EmpresaId SEPARATOR ','),'NONE'))
+            FROM UsuarioEmpresas m JOIN Usuarios u ON u.Id=m.UsuarioId
+            WHERE u.NombreCompleto='Administrador Prueba B';
+          SELECT CONCAT('B_COMPANY6_MEMBERSHIPS=',COUNT(*))
+            FROM UsuarioEmpresas m JOIN Usuarios u ON u.Id=m.UsuarioId
+            WHERE u.NombreCompleto='Administrador Prueba B' AND m.EmpresaId=6;
+          SELECT CONCAT('B_COMPANY6_ACTIVE_MEMBERSHIPS=',COUNT(*))
+            FROM UsuarioEmpresas m JOIN Usuarios u ON u.Id=m.UsuarioId
+            WHERE u.NombreCompleto='Administrador Prueba B' AND m.EmpresaId=6 AND m.Activa=1;
+          SELECT CONCAT('B_COMPANY6_VALID_ROLE=',COUNT(*))
+            FROM UsuarioEmpresas m JOIN Usuarios u ON u.Id=m.UsuarioId
+            JOIN Roles r ON r.Id=m.RolId
+            WHERE u.NombreCompleto='Administrador Prueba B' AND m.EmpresaId=6
+              AND r.Activo=1 AND r.Eliminado=0 AND r.Ambito=1
+              AND (r.EmpresaId=6 OR (r.EmpresaId IS NULL AND r.EsSistema=1));
+          SELECT CONCAT('B_COMPANY6_VALID_AUTH_CONTEXTS=',COUNT(*))
+            FROM UsuarioEmpresas m JOIN Usuarios u ON u.Id=m.UsuarioId
+            JOIN Empresas e ON e.Id=m.EmpresaId
+            JOIN Roles r ON r.Id=m.RolId
+            WHERE u.NombreCompleto='Administrador Prueba B' AND m.EmpresaId=6
+              AND u.Activo=1 AND u.Bloqueado=0 AND u.Eliminado=0
+              AND m.Activa=1 AND e.Activa=1
+              AND r.Activo=1 AND r.Eliminado=0 AND r.Ambito=1
+              AND (r.EmpresaId=e.Id OR (r.EmpresaId IS NULL AND r.EsSistema=1));
+          SELECT CONCAT('B_VALID_AUTH_COMPANY_IDS=',COALESCE(GROUP_CONCAT(DISTINCT e.Id ORDER BY e.Id SEPARATOR ','),'NONE'))
+            FROM UsuarioEmpresas m JOIN Usuarios u ON u.Id=m.UsuarioId
+            JOIN Empresas e ON e.Id=m.EmpresaId
+            JOIN Roles r ON r.Id=m.RolId
+            WHERE u.NombreCompleto='Administrador Prueba B'
+              AND u.Activo=1 AND u.Bloqueado=0 AND u.Eliminado=0
+              AND m.Activa=1 AND e.Activa=1
+              AND r.Activo=1 AND r.Eliminado=0 AND r.Ambito=1
+              AND (r.EmpresaId=e.Id OR (r.EmpresaId IS NULL AND r.EsSistema=1));
+          COMMIT;
+          SQL
+          )"
+          unset MYSQL_PWD
+          printf '%s\n' "$diagnostic"
+          {
+            echo "## Diagnostico DEV — ingreso cuenta prueba B / empresa 6"
+            echo "Lectura de datos agregados sin PII y sin DML."
+            printf '%s\n' "$diagnostic" | sed 's/^/- /'
+            echo "Resultado informativo: no asigna ni activa membresias automaticamente."
+          } >> "$GITHUB_STEP_SUMMARY"
