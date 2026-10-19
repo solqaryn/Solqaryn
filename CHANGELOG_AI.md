@@ -1,5 +1,7 @@
 ## 2026-10-19 — Actualización de autoridad comercial VAEP (PR en revisión)
 
+- CI VAEP de la rama de revisión ahora valida el parser y contrato en PR hacia dev además de main; guard programado preserva solo ejecución de comprobaciones y usa nombres actuales de política, sin reactivar ninguna automatización. Se comprobará exact-head antes de integrar.
+
 - Actualización de la skill local y su referencia de arquitectura a Angular 22.2.1, ASP.NET Core 10, EF Core 10.0.12, proveedor Oracle MySQL 10.0.9 verificados en los csproj. Evita que nuevos ejecutores hereden ASP.NET 8/Pomelo de una descripción de gobierno anterior.
 - Reparada la clave booleana CURRENT_COMMERCIAL_ONLY en el parser bash y sus nombres técnicos de policy; sujeto a CI exact-head.
 
