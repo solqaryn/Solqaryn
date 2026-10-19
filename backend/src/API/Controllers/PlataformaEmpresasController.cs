@@ -232,7 +232,7 @@ public sealed class PlataformaEmpresasController : ControllerBase
 
         // Se admite la identidad PENDIENTE creada por el mismo operador global
         // solo si nunca recibió membresías ni grants globales. Permanece inactiva
-        // hasta el commit atómico de empresa+membresía+auditoría.
+        // hasta el commit atómico de empresa+configuración+membresía+auditoría.
         var administrador = await _db.Usuarios.IgnoreQueryFilters()
             .SingleOrDefaultAsync(u => u.Id == dto.AdministradorUsuarioId,
                 cancellationToken);
@@ -266,8 +266,9 @@ public sealed class PlataformaEmpresasController : ControllerBase
                 .AsNoTracking().AnyAsync(e => e.Nombre == nombre, cancellationToken))
             return Conflict(ApiResponse<object>.Fail("Ya existe una empresa con el mismo nombre."));
 
-        // En producción se exige transacción de MySQL: empresa, membresía
-        // y bitácora crítica comparten el mismo commit o se revierten todos.
+        // En MySQL, la activación de la identidad pendiente, la empresa, su
+        // ConfigEmpresa, la membresía y la auditoría comparten un único commit.
+        // Ningún SaveChanges intermedio confirma parcialmente el alta.
         await using var transaction = _db.Database.IsRelational()
             ? await _db.Database.BeginTransactionAsync(cancellationToken)
             : null;
@@ -287,6 +288,16 @@ public sealed class PlataformaEmpresasController : ControllerBase
         _db.Set<Empresa>().Add(empresa);
         await _db.SaveChangesAsync(cancellationToken);
 
+        // Configuración tenant mínima, sin secretos ni permisos comerciales.
+        // Se persiste antes de la auditoría para que un fallo en esta última
+        // pruebe el rollback de datos ya escritos (pero no confirmados).
+        var configEmpresa = new ConfigEmpresa(empresa.Id)
+        {
+            CreadoPorUsuarioId = actorId,
+            CreadoPorNombreUsuario = actor.NombreUsuario
+        };
+        _db.Set<ConfigEmpresa>().Add(configEmpresa);
+
         var membresia = new UsuarioEmpresa(
             dto.AdministradorUsuarioId, empresa.Id, rolEmpresaId)
         {
@@ -294,6 +305,7 @@ public sealed class PlataformaEmpresasController : ControllerBase
             CreadoPorNombreUsuario = actor.NombreUsuario
         };
         _db.Set<UsuarioEmpresa>().Add(membresia);
+        await _db.SaveChangesAsync(cancellationToken);
 
         _db.Set<RegistroAuditoria>().Add(new RegistroAuditoria
         {
@@ -306,12 +318,13 @@ public sealed class PlataformaEmpresasController : ControllerBase
             Accion = AccionPermiso.Crear,
             Entidad = nameof(Empresa),
             ReferenciaId = empresa.Id,
-            Descripcion = "Alta controlada de empresa y membresía inicial de administrador.",
+            Descripcion = "Alta controlada de empresa, configuración y membresía inicial de administrador.",
             ValoresNuevos = System.Text.Json.JsonSerializer.Serialize(new
             {
                 EmpresaId = empresa.Id,
                 AdministradorUsuarioId = dto.AdministradorUsuarioId,
-                RolEmpresaId = rolEmpresaId
+                RolEmpresaId = rolEmpresaId,
+                ConfigEmpresaId = configEmpresa.Id
             }),
             CorrelationId = HttpContext.TraceIdentifier,
             Resultado = "Exito"
