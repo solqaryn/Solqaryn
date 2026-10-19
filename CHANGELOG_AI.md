@@ -1,3 +1,10 @@
+## 2026-10-19 — MF3 A/B/C: recuperación focalizada del transporte HTTPS del certificador
+
+- Evidencia real `dev` run [39271231714](https://github.com/solqaryn/Solqaryn/actions/runs/39271231714): 3 membresías A/B/C distintas verificadas por SQL `READ ONLY` (PASS), 3 inicios JWT exitosos en intento 1 (PASS). `GET /tenant-context/1` registrado en Render HTTP 200 en ~65 ms, pero Node `fetch` agotó tiempo leyendo la respuesta. Reintento de **solo job fallido** confirmó anomalía de transporte: Render recibió y completó login A pero no recibió login B antes del timeout. **No evidencia de acceso cruzado** y ningún cambio comercial.
+- Sustituido únicamente el transporte interno de `scripts/ci/mf3-abc-live-readonly.mjs` por `node:https` TLS con socket nuevo por solicitud (`agent:false` / `Connection: close`), timeout finito y hasta tres intentos **solo ante errores de transporte**; respuestas HTTP de autorización y bloqueos no se reintentan ni reinterpretan. Limita JSON a 256 KiB; cualquier redirección, fuga o respuesta indebida mantiene FAIL.
+- Telemetría de paso con etiquetas A/B/C y acción, sin imprimir JWT, contraseñas, identidades, cuerpos, errores de red que pudieran contener URLs/tokens ni PII. Ninguna escritura comercial; únicamente auditoría ordinaria de login (incluidos reintentos de transporte posibles). Mantener gates de tres usuarios, tres empresas, GET propios y cruces, grants y capacidades; no editar backend/Angular/DB/QA/PROD.
+- Validación necesaria: CI exact-head en PR; merge protegido; GitHub Actions push-dev ejecuta nueva certificación real; cerrar solo con `MF3_DEV_ABC_REAL_JWT=PASS` y evidencia sanitizada.
+
 ## 2026-10-19 — Certificación en DEV real de tres usuarios A/B/C (candidato)
 
 - Nueva suite opt-in de **solo lectura comercial** en `scripts/ci/mf3-abc-membership-readonly.sh` y `scripts/ci/mf3-abc-live-readonly.mjs`. Utiliza los seis environment secrets del entorno GitHub `DEV` declarados por el propietario; nunca registra contraseñas, JWT, nombres, registros comerciales ni respuestas HTTP completas.
