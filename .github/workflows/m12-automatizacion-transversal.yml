@@ -111,7 +111,8 @@ jobs:
           for attempt in $(seq 1 60); do
             if curl --fail --silent http://127.0.0.1:5005/health/ready > /dev/null; then
               mysql -h127.0.0.1 -uroot -proot solqaryn_m12_e2e -e "SELECT * FROM AutomatizacionConfiguraciones WHERE Id=1;"
-              mysql -h127.0.0.1 -uroot -proot solqaryn_m12_e2e -e "SELECT MigrationId FROM __EFMigrationsHistory WHERE MigrationId='20260810174200_M12AutomatizacionTransversal';" | grep -q M12AutomatizacionTransversal
+              test "$(mysql -h127.0.0.1 -uroot -proot solqaryn_m12_e2e -Nse 'SELECT COUNT(*) FROM AutomatizacionConfiguraciones WHERE Id=1;')" = '1'
+                            mysql -h127.0.0.1 -uroot -proot solqaryn_m12_e2e -Nse "SELECT MigrationId FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';" | grep -qx '20261006111818_OracleBaseline'
               exit 0
             fi
             sleep 2
