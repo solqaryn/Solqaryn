@@ -115,7 +115,7 @@ Este archivo es la fuente canónica de pendientes deliberadamente aplazados o de
 
 **Naturaleza:** este punto no es deuda de DEV/QA/PROD ni una falla de infraestructura. El Plan Comercial Inicial aprobado define el alcance ejecutable previo al Maestro futuro.
 
-**Autoridad comercial actual:** Drive ID `1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j`; Maestro `1YdQlNJ312HuziyKb9E-GEt55dcgSmuFGgfsHxyzPUaw` pospuesto.
+**Autoridad comercial actual:** Drive ID `1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j`; visión futura pospuesta y fuera de la cola.
 
 **Decisión vigente:** continuar la ejecución únicamente desde el Plan Comercial Inicial actual, el estado vivo y las dependencias técnicas reales. Históricos, planes retirados, fases viejas o receipts previos no gobiernan trabajo nuevo.
 
