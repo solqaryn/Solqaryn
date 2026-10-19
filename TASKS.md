@@ -17,19 +17,13 @@ CONTEXT_MODE=CURRENT_STATE_ONLY
 
 ## Autoridad vigente
 
-- Autoridad operativa del lanzamiento: **SOLQARYN PLAN COMERCIAL INICIAL UNIFICADO**, Drive ID `1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j` y control VAEP con 1123 microtareas. El Maestro anterior queda como visión futura no ejecutable.
-- Ejecución VAEP: `docs/VAEP_AUTHORITY.md`.
-- Identidad/estado técnico: `PROJECT_CONTEXT.md` y HEAD vivo de `dev`.
-- Pendientes deliberadamente aplazados: `docs/DETALLES_PENDIENTES.md`.
-
-## Estado operativo
-
-- DEV, QA y PROD están reconciliados sobre la infraestructura corporativa vigente.
-- Los rollups históricos numerados y las secuencias de planes anteriores fueron retirados de esta superficie viva.
-- Las diez automatizaciones VAEP permanecen pausadas hasta autorización explícita del propietario.
-- No existe una cola, parent, gate o fase histórica con autoridad ejecutable desde este archivo.
-- El trabajo futuro se selecciona únicamente desde el Plan Comercial Inicial vigente + estado vivo + dependencias técnicas reales.
-- **P0 multiempresa abierto:** #3596 y #3597 integrados en dev. Los 19 registros comerciales sin EmpresaId son datos de prueba DEV descartables conforme al propietario (2026-10-13). Su atribución histórica/backfill ya NO es requisito. Limpieza de datos comerciales aún sin ejecutar: preservar usuarios, credenciales, roles, permisos, membresías y configuración imprescindible; exigir inventario de dependencias, backup cifrado y restore ensayado. El verdadero P0 pendiente es aislar por EmpresaId todas las operaciones futuras (lecturas SQL, escrituras, FKs, inventarios, documentos, finanzas, medios, tienda pública, jobs y caché), con pruebas A/B MySQL reales. Cuarentena y bloqueo de segunda empresa continúan. Ver docs/tenancy/LIMPIEZA_DATOS_PRUEBA_DEV.md.
+- Fuente de ejecución única: **SOLQARYN PLAN COMERCIAL INICIAL UNIFICADO** (Drive `1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j`), 492 fichas V3.
+- Cola de 1123 microtareas trazables: [Google Sheets operativo](https://docs.google.com/spreadsheets/d/1gcVyCoyhLU0jFMwRtf0s5_x8FSnfBs38ojml1QF7Xwk/edit), pestaña `PLAN_COMERCIAL`; fuentes `_COMERCIAL_SOURCE`, `_RUNTIME_SOURCE`, `_AUTOMATION_SOURCE`, `_EVENTS_SOURCE`.
+- Proceso VAEP y seguridad: `docs/VAEP_AUTHORITY.md`, `docs/PROJECT_SCOPE_LOCK.md` y `AGENTS.md`; HEAD vivo de `dev`.
+- Estado de admisión verificado: **NO_GO**, 0/10 ejecutores habilitados. Cinco primarias preparadas y pausadas; cinco supervisoras de cuenta externa pendiente de actualización con permisos propios. Ninguna primaria actúa sin verificación independiente de su pareja.
+- Las 1123 tareas están cargadas como PENDIENTE; `LISTO` exige evidencia exact-head, tests positivos y negativos, relectura de dependencias, CI, REVIEW_FIRST, tenancy, P0/P1=0 y readback. No asumir funciones ya certificadas como pendientes repetibles.
+- El Plan Maestro de horizonte futuro y las notas/colas/objetivos anteriores NO son ejecutables en esta etapa; los respaldos y pruebas históricas permanecen exclusivamente en archivo controlado.
+- No ejecutar en QA, `main` o PROD ni modificar datos/secretos/dominios productivos sin autorización nueva y expresa. No alterar funcionamiento comercial sólo por migrar el control-plane.
 
 ## Regla de mantenimiento
 
