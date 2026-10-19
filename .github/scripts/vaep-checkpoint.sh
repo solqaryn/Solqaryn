@@ -27,7 +27,7 @@ run_self_test(){
   [[ "$(normalize_checkpoint ':00')" == ':00' ]]
   [[ "$(normalize_checkpoint '48 * * * *')" == ':48' ]]
   if normalize_checkpoint ':15' >/dev/null 2>&1; then fail historical_checkpoint_accepted; fi
-  ! grep -Eqi 'jules|J[1-6]|worker lane|autorefill' "$0"
+  [[ "$(bash "$PARSER" --get CURRENT_COMMERCIAL_ONLY "$POLICY_FILE")" == TRUE ]] || fail commercial_plan_authority
   echo 'VAEP_CHECKPOINT_SELF_TEST=PASS model=TASKS_ONLY'
 }
 
