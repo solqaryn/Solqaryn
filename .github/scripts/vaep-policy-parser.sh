@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-readonly DEFAULT_MASTER_FILE="docs/VAEP_AUTHORITY.md"
+readonly DEFAULT_POLICY_FILE="docs/VAEP_AUTHORITY.md"
 readonly ALLOWED_KEYS=(
   EXECUTION_MODEL DIRECT_EXECUTION_DEFAULT PRIMARY_DIRECT_BUILD_CLOSE
   SUPERVISOR_VERIFY_RECOVER_SECONDARY_BUILD TASK_SCOPE_LEASE_REQUIRED
@@ -38,7 +38,7 @@ is_string_key(){
 }
 
 parse_policy_block(){
-  local target_file="${1:-$DEFAULT_MASTER_FILE}"
+  local target_file="${1:-$DEFAULT_POLICY_FILE}"
   [[ -f "$target_file" ]] || fail "file does not exist: $target_file"
   local begin_count=0 end_count=0 in_block=0 raw_line line key val candidate allowed required_key canonical_stream=""
   declare -g -A POLICY_MAP=()
@@ -80,20 +80,20 @@ parse_policy_block(){
     canonical_stream+="${required_key}=${POLICY_MAP[$required_key]}"$'\n'
   done
   AUTOMATION_POLICY_HASH="$(printf '%s' "$canonical_stream" | sha256sum | awk '{print $1}')"
-  MASTER_COMMIT_SHA="$(git rev-parse HEAD 2>/dev/null || printf UNKNOWN)"
+  POLICY_COMMIT_SHA="$(git rev-parse HEAD 2>/dev/null || printf UNKNOWN)"
 }
 
-run_self_test(){ parse_policy_block "$DEFAULT_MASTER_FILE"; [[ ${#AUTOMATION_POLICY_HASH} -eq 64 ]] || fail hash; printf 'VAEP_POLICY_SELF_TEST=PASS\n'; }
+run_self_test(){ parse_policy_block "$DEFAULT_POLICY_FILE"; [[ ${#AUTOMATION_POLICY_HASH} -eq 64 ]] || fail hash; printf 'VAEP_POLICY_SELF_TEST=PASS\n'; }
 
 main(){
   local cmd="${1:---validate}"; shift || true
   case "$cmd" in
     --self-test) run_self_test;;
-    --validate) local file="${1:-$DEFAULT_MASTER_FILE}"; parse_policy_block "$file"; printf 'VAEP_POLICY_VALIDATION=PASS file=%s hash=%s\n' "$file" "$AUTOMATION_POLICY_HASH";;
-    --get) local key="${1:?key required}" file="${2:-$DEFAULT_MASTER_FILE}"; parse_policy_block "$file"; [[ -n "${POLICY_MAP[$key]+_}" ]] || fail "unknown key requested: $key"; printf '%s\n' "${POLICY_MAP[$key]}";;
-    --hash) local file="${1:-$DEFAULT_MASTER_FILE}"; parse_policy_block "$file"; printf '%s\n' "$AUTOMATION_POLICY_HASH";;
-    --env) local file="${1:-$DEFAULT_MASTER_FILE}" key; parse_policy_block "$file"; for key in "${ALLOWED_KEYS[@]}"; do printf '%s=%s\n' "$key" "${POLICY_MAP[$key]}"; done;;
-    --json) local file="${1:-$DEFAULT_MASTER_FILE}" key val first=1; parse_policy_block "$file"; printf '{\n'; for key in "${ALLOWED_KEYS[@]}"; do [[ "$first" -eq 1 ]] || printf ',\n'; first=0; val="${POLICY_MAP[$key]}"; if is_boolean_key "$key"; then [[ "$val" == TRUE ]] && val=true || val=false; printf '  "%s": %s' "$key" "$val"; elif is_string_key "$key"; then printf '  "%s": "%s"' "$key" "$val"; else printf '  "%s": %d' "$key" "$val"; fi; done; printf '\n}\n';;
+    --validate) local file="${1:-$DEFAULT_POLICY_FILE}"; parse_policy_block "$file"; printf 'VAEP_POLICY_VALIDATION=PASS file=%s hash=%s\n' "$file" "$AUTOMATION_POLICY_HASH";;
+    --get) local key="${1:?key required}" file="${2:-$DEFAULT_POLICY_FILE}"; parse_policy_block "$file"; [[ -n "${POLICY_MAP[$key]+_}" ]] || fail "unknown key requested: $key"; printf '%s\n' "${POLICY_MAP[$key]}";;
+    --hash) local file="${1:-$DEFAULT_POLICY_FILE}"; parse_policy_block "$file"; printf '%s\n' "$AUTOMATION_POLICY_HASH";;
+    --env) local file="${1:-$DEFAULT_POLICY_FILE}" key; parse_policy_block "$file"; for key in "${ALLOWED_KEYS[@]}"; do printf '%s=%s\n' "$key" "${POLICY_MAP[$key]}"; done;;
+    --json) local file="${1:-$DEFAULT_POLICY_FILE}" key val first=1; parse_policy_block "$file"; printf '{\n'; for key in "${ALLOWED_KEYS[@]}"; do [[ "$first" -eq 1 ]] || printf ',\n'; first=0; val="${POLICY_MAP[$key]}"; if is_boolean_key "$key"; then [[ "$val" == TRUE ]] && val=true || val=false; printf '  "%s": %s' "$key" "$val"; elif is_string_key "$key"; then printf '  "%s": "%s"' "$key" "$val"; else printf '  "%s": %d' "$key" "$val"; fi; done; printf '\n}\n';;
     *) fail "unknown command: $cmd";;
   esac
 }
