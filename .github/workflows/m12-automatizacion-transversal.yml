@@ -118,6 +118,23 @@ jobs:
           done
           cat m12-api.log >&2 || true
           exit 1
+      - name: Preparar empresa y administrador de prueba para M12
+        shell: bash
+        run: |
+          set -euo pipefail
+          mysql -h127.0.0.1 -uroot -proot solqaryn_m12_e2e <<'SQL'
+          INSERT INTO Empresas (Id, Nombre, Activa, FechaCreacion, FechaActualizacion)
+          VALUES (1, 'Empresa M12 CI', TRUE, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6))
+          ON DUPLICATE KEY UPDATE Activa=TRUE, FechaActualizacion=UTC_TIMESTAMP(6);
+          INSERT INTO UsuarioEmpresas (UsuarioId, EmpresaId, RolId, Activa, FechaCreacion, FechaActualizacion)
+          SELECT u.Id, 1, u.RolId, TRUE, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)
+          FROM Usuarios u
+          WHERE u.NombreUsuario='e2e_admin'
+            AND NOT EXISTS (SELECT 1 FROM UsuarioEmpresas m WHERE m.UsuarioId=u.Id AND m.EmpresaId=1);
+          SQL
+          valid="$(mysql -h127.0.0.1 -uroot -proot solqaryn_m12_e2e -Nse "SELECT COUNT(*) FROM UsuarioEmpresas m JOIN Usuarios u ON u.Id=m.UsuarioId JOIN Roles r ON r.Id=m.RolId WHERE u.NombreUsuario='e2e_admin' AND m.EmpresaId=1 AND m.Activa=TRUE AND u.Activo=TRUE AND r.EsAdministrador=TRUE;")"
+          test "$valid" = '1'
+
       - uses: actions/setup-node@v4
         with:
           node-version: '24.21.0'
