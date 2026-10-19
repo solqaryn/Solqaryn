@@ -10,7 +10,9 @@ import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service
     @if (permisosRuntime.puede('Dashboard', 'Ver')) {
       <section class="nav-group" aria-labelledby="nav-inicio">
         <h2 id="nav-inicio" class="nav-group__title">Inicio</h2>
-        <a routerLink="/dashboard" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">dashboard</span> Dashboard</a>
+        @if (permisosRuntime.rutaHabilitada('dashboard')) {
+          <a routerLink="/dashboard" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">dashboard</span> Dashboard</a>
+        }
       </section>
     }
 
@@ -18,31 +20,49 @@ import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service
       <section class="nav-group" aria-labelledby="nav-catalogo">
         <h2 id="nav-catalogo" class="nav-group__title">Catálogo</h2>
         @if (permisosRuntime.puede('Productos', 'Ver')) {
-          <a routerLink="/productos" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">widgets</span> Productos</a>
+          @if (permisosRuntime.rutaHabilitada('productos')) {
+            <a routerLink="/productos" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">widgets</span> Productos</a>
+          }
         }
         @if (permisosRuntime.puede('Categorias', 'Ver')) {
-          <a routerLink="/categorias" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">category</span> Categorías</a>
+          @if (permisosRuntime.rutaHabilitada('categorias')) {
+            <a routerLink="/categorias" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">category</span> Categorías</a>
+          }
         }
         @if (permisosRuntime.puede('Colores', 'Ver')) {
-          <a routerLink="/colores" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">palette</span> Colores</a>
+          @if (permisosRuntime.rutaHabilitada('colores')) {
+            <a routerLink="/colores" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">palette</span> Colores</a>
+          }
         }
         @if (permisosRuntime.puede('Tallas', 'Ver')) {
-          <a routerLink="/tallas" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">straighten</span> Tallas</a>
+          @if (permisosRuntime.rutaHabilitada('tallas')) {
+            <a routerLink="/tallas" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">straighten</span> Tallas</a>
+          }
         }
         @if (permisosRuntime.puede('Marcas', 'Ver')) {
-          <a routerLink="/marcas" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">branding_watermark</span> Marcas</a>
+          @if (permisosRuntime.rutaHabilitada('marcas')) {
+            <a routerLink="/marcas" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">branding_watermark</span> Marcas</a>
+          }
         }
         @if (permisosRuntime.puede('Modelos', 'Ver')) {
-          <a routerLink="/modelos" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">devices</span> Modelos</a>
+          @if (permisosRuntime.rutaHabilitada('modelos')) {
+            <a routerLink="/modelos" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">devices</span> Modelos</a>
+          }
         }
         @if (permisosRuntime.puede('MetodosPago', 'Ver')) {
-          <a routerLink="/metodos-pago" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">payments</span> Métodos de pago</a>
+          @if (permisosRuntime.rutaHabilitada('metodos-pago')) {
+            <a routerLink="/metodos-pago" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">payments</span> Métodos de pago</a>
+          }
         }
         @if (permisosRuntime.puede('Descuentos', 'Ver')) {
-          <a routerLink="/descuentos" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">sell</span> Descuentos</a>
+          @if (permisosRuntime.rutaHabilitada('descuentos')) {
+            <a routerLink="/descuentos" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">sell</span> Descuentos</a>
+          }
         }
         @if (permisosRuntime.puede('Impuestos', 'Ver')) {
-          <a routerLink="/impuestos" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">request_quote</span> Impuestos</a>
+          @if (permisosRuntime.rutaHabilitada('impuestos')) {
+            <a routerLink="/impuestos" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">request_quote</span> Impuestos</a>
+          }
         }
       </section>
     }
@@ -51,22 +71,34 @@ import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service
       <section class="nav-group" aria-labelledby="nav-operacion">
         <h2 id="nav-operacion" class="nav-group__title">Operación</h2>
         @if (permisosRuntime.puede('Sucursales', 'Ver')) {
-          <a routerLink="/sucursales" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">storefront</span> Sucursales</a>
+          @if (permisosRuntime.rutaHabilitada('sucursales')) {
+            <a routerLink="/sucursales" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">storefront</span> Sucursales</a>
+          }
         }
         @if (permisosRuntime.puede('Almacenes', 'Ver')) {
-          <a routerLink="/almacenes" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">warehouse</span> Almacenes</a>
+          @if (permisosRuntime.rutaHabilitada('almacenes')) {
+            <a routerLink="/almacenes" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">warehouse</span> Almacenes</a>
+          }
         }
         @if (permisosRuntime.puede('UbicacionesAlmacen', 'Ver')) {
-          <a routerLink="/ubicaciones-almacen" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">account_tree</span> Ubicaciones</a>
+          @if (permisosRuntime.rutaHabilitada('ubicaciones-almacen')) {
+            <a routerLink="/ubicaciones-almacen" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">account_tree</span> Ubicaciones</a>
+          }
         }
         @if (permisosRuntime.puede('Proveedores', 'Ver')) {
-          <a routerLink="/proveedores" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">local_shipping</span> Proveedores</a>
+          @if (permisosRuntime.rutaHabilitada('proveedores')) {
+            <a routerLink="/proveedores" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">local_shipping</span> Proveedores</a>
+          }
         }
         @if (permisosRuntime.puede('Clientes', 'Ver')) {
-          <a routerLink="/clientes" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">groups</span> Clientes</a>
+          @if (permisosRuntime.rutaHabilitada('clientes')) {
+            <a routerLink="/clientes" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">groups</span> Clientes</a>
+          }
         }
         @if (permisosRuntime.puede('CargasMasivas', 'Ver')) {
-          <a routerLink="/cargas-masivas" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">upload_file</span> Cargas masivas</a>
+          @if (permisosRuntime.rutaHabilitada('cargas-masivas')) {
+            <a routerLink="/cargas-masivas" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">upload_file</span> Cargas masivas</a>
+          }
         }
       </section>
     }
@@ -74,19 +106,33 @@ import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service
     @if (permisosRuntime.puede('Compras', 'Ver')) {
       <section class="nav-group" aria-labelledby="nav-compras">
         <h2 id="nav-compras" class="nav-group__title">Compras</h2>
-        <a routerLink="/solicitudes-compra" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">request_quote</span> Solicitudes</a>
-        <a routerLink="/ordenes-compra" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">receipt_long</span> Órdenes</a>
-        <a routerLink="/recepciones-compra" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">warehouse</span> Recepciones</a>
-        <a routerLink="/devoluciones-proveedor" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">assignment_return</span> Devoluciones</a>
-        <a routerLink="/compras" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">shopping_cart</span> Compras</a>
+        @if (permisosRuntime.rutaHabilitada('solicitudes-compra')) {
+          <a routerLink="/solicitudes-compra" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">request_quote</span> Solicitudes</a>
+        }
+        @if (permisosRuntime.rutaHabilitada('ordenes-compra')) {
+          <a routerLink="/ordenes-compra" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">receipt_long</span> Órdenes</a>
+        }
+        @if (permisosRuntime.rutaHabilitada('recepciones-compra')) {
+          <a routerLink="/recepciones-compra" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">warehouse</span> Recepciones</a>
+        }
+        @if (permisosRuntime.rutaHabilitada('devoluciones-proveedor')) {
+          <a routerLink="/devoluciones-proveedor" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">assignment_return</span> Devoluciones</a>
+        }
+        @if (permisosRuntime.rutaHabilitada('compras')) {
+          <a routerLink="/compras" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">shopping_cart</span> Compras</a>
+        }
       </section>
     }
 
     @if (permisosRuntime.puede('Ventas', 'Ver')) {
       <section class="nav-group" aria-labelledby="nav-ventas">
         <h2 id="nav-ventas" class="nav-group__title">Ventas</h2>
-        <a routerLink="/ventas" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">point_of_sale</span> Ventas</a>
-        <a routerLink="/pedidos-venta" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">shopping_bag</span> Pedidos</a>
+        @if (permisosRuntime.rutaHabilitada('ventas')) {
+          <a routerLink="/ventas" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">point_of_sale</span> Ventas</a>
+        }
+        @if (permisosRuntime.rutaHabilitada('pedidos-venta')) {
+          <a routerLink="/pedidos-venta" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">shopping_bag</span> Pedidos</a>
+        }
       </section>
     }
 
@@ -94,14 +140,26 @@ import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service
       <section class="nav-group" aria-labelledby="nav-inventario">
         <h2 id="nav-inventario" class="nav-group__title">Inventario</h2>
         @if (permisosRuntime.puede('MovimientosInventario', 'Ver')) {
-          <a routerLink="/inventario/movimientos" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">sync_alt</span> Movimientos</a>
-          <a routerLink="/inventario/transferencias" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">swap_horiz</span> Transferencias</a>
-          <a routerLink="/inventario/conteos" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">fact_check</span> Conteos físicos</a>
-          <a routerLink="/inventario/reservas" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">event_available</span> Reservas</a>
-          <a routerLink="/inventario/costeo" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">calculate</span> Costeo</a>
+          @if (permisosRuntime.rutaHabilitada('inventario/movimientos')) {
+            <a routerLink="/inventario/movimientos" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">sync_alt</span> Movimientos</a>
+          }
+          @if (permisosRuntime.rutaHabilitada('inventario/transferencias')) {
+            <a routerLink="/inventario/transferencias" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">swap_horiz</span> Transferencias</a>
+          }
+          @if (permisosRuntime.rutaHabilitada('inventario/conteos')) {
+            <a routerLink="/inventario/conteos" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">fact_check</span> Conteos físicos</a>
+          }
+          @if (permisosRuntime.rutaHabilitada('inventario/reservas')) {
+            <a routerLink="/inventario/reservas" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">event_available</span> Reservas</a>
+          }
+          @if (permisosRuntime.rutaHabilitada('inventario/costeo')) {
+            <a routerLink="/inventario/costeo" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">calculate</span> Costeo</a>
+          }
         }
         @if (permisosRuntime.puede('Inventario', 'Ver')) {
-          <a routerLink="/inventario/ajustes" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">tune</span> Ajustes</a>
+          @if (permisosRuntime.rutaHabilitada('inventario/ajustes')) {
+            <a routerLink="/inventario/ajustes" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">tune</span> Ajustes</a>
+          }
         }
       </section>
     }
@@ -110,12 +168,20 @@ import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service
       <section class="nav-group" aria-labelledby="nav-finanzas">
         <h2 id="nav-finanzas" class="nav-group__title">Finanzas</h2>
         @if (permisosRuntime.puede('Finanzas', 'Ver')) {
-          <a routerLink="/finanzas" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">account_balance_wallet</span> Finanzas</a>
-          <a routerLink="/plan-cuentas" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">account_tree</span> Plan de cuentas</a>
-          <a routerLink="/estados-financieros" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">assessment</span> Estados financieros</a>
+          @if (permisosRuntime.rutaHabilitada('finanzas')) {
+            <a routerLink="/finanzas" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">account_balance_wallet</span> Finanzas</a>
+          }
+          @if (permisosRuntime.rutaHabilitada('plan-cuentas')) {
+            <a routerLink="/plan-cuentas" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">account_tree</span> Plan de cuentas</a>
+          }
+          @if (permisosRuntime.rutaHabilitada('estados-financieros')) {
+            <a routerLink="/estados-financieros" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">assessment</span> Estados financieros</a>
+          }
         }
         @if (permisosRuntime.esAdministrador() && permisosRuntime.puede('ReportesAdministrativos', 'Ver')) {
-          <a routerLink="/centro-reportes" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">analytics</span> Centro de reportes</a>
+          @if (permisosRuntime.rutaHabilitada('centro-reportes')) {
+            <a routerLink="/centro-reportes" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">analytics</span> Centro de reportes</a>
+          }
         }
       </section>
     }
@@ -124,20 +190,32 @@ import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service
       <section class="nav-group" aria-labelledby="nav-administracion">
         <h2 id="nav-administracion" class="nav-group__title">Administración</h2>
         @if (permisosRuntime.puede('Usuarios', 'Ver')) {
-          <a routerLink="/usuarios" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">manage_accounts</span> Usuarios</a>
+          @if (permisosRuntime.rutaHabilitada('usuarios')) {
+            <a routerLink="/usuarios" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">manage_accounts</span> Usuarios</a>
+          }
         }
         @if (permisosRuntime.puede('Roles', 'Ver')) {
-          <a routerLink="/roles" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">admin_panel_settings</span> Roles</a>
+          @if (permisosRuntime.rutaHabilitada('roles')) {
+            <a routerLink="/roles" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">admin_panel_settings</span> Roles</a>
+          }
         }
         @if (permisosRuntime.puede('Permisos', 'Administrar')) {
-          <a routerLink="/permisos" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">lock_outline</span> Permisos</a>
+          @if (permisosRuntime.rutaHabilitada('permisos')) {
+            <a routerLink="/permisos" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">lock_outline</span> Permisos</a>
+          }
         }
         @if (permisosRuntime.esAdministrador() && permisosRuntime.puede('Auditoria', 'Ver')) {
-          <a routerLink="/auditoria" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">manage_search</span> Auditoría</a>
+          @if (permisosRuntime.rutaHabilitada('auditoria')) {
+            <a routerLink="/auditoria" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">manage_search</span> Auditoría</a>
+          }
         }
         @if (permisosRuntime.puede('Configuracion', 'Ver')) {
-          <a routerLink="/configuracion" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">settings</span> Configuración</a>
-          <a routerLink="/periodos-contables" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">calendar_month</span> Periodos contables</a>
+          @if (permisosRuntime.rutaHabilitada('configuracion')) {
+            <a routerLink="/configuracion" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">settings</span> Configuración</a>
+          }
+          @if (permisosRuntime.rutaHabilitada('periodos-contables')) {
+            <a routerLink="/periodos-contables" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">calendar_month</span> Periodos contables</a>
+          }
         }
       </section>
     }
