@@ -51,7 +51,7 @@ public sealed class CommercialPilotWriteMySqlIntegrationTests
                 await Phase7MySqlTestDatabase.InitializeFreshAsync(setup);
                 var a = new Empresa("Piloto escritura A");
                 var b = new Empresa("Piloto escritura B");
-                setup.Set<Empresa>().AddRange(a, b);
+                setup.Set<Empresa>().AddRange(a, b, new Empresa("Piloto existente C"));
                 await setup.SaveChangesAsync();
                 empresaAId = a.Id;
                 empresaBId = b.Id;
