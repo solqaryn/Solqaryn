@@ -1,8 +1,9 @@
 ## 2026-10-18 — DEV Microfase 3: pruebas de aislamiento con 3 empresas (certificación incremental)
 
-- Amplía **las pruebas existentes**, sin cambios en producción, de pilotos de lectura/escritura comercial y SQL físico MySQL descartable para operar A/B mientras existe una tercera empresa activa; añade solicitudes negativas de A contra la tercera empresa. Incluye rutas de documentos, archivos, imágenes y exportaciones en el mismo escenario de tres empresas. El test Outbox rechaza un lote contaminado por mensajes de B y C antes de emitir efectos externos.
+- Amplía **las pruebas existentes** de pilotos de lectura/escritura comercial y SQL físico MySQL descartable para operar A/B mientras existe una tercera empresa activa; añade solicitudes negativas de A contra la tercera empresa. Incluye rutas de documentos, archivos, imágenes y exportaciones en el mismo escenario de tres empresas. El test Outbox rechaza un lote contaminado por mensajes de B y C antes de emitir efectos externos.
 - El objetivo es detectar regresiones cuando DEV ya contiene tres empresas; el middleware permanece con cuarentena 503 para rutas sin evidencia o bandera, y las autorizaciones JWT/RBAC y el propietario de los datos no cambian.
 - **No certifica por sí solo** toda la operación multiempresa real, el frontend ni proveedores externos Cloudinary/jobs; el alcance integral requiere pruebas de extremo a extremo, revisión de cobertura adicional y CI exact-head del PR.
+- Protección adicional en `AutomatizacionService` del ERP: como la tabla M12 legacy usa una fila global `AutomatizacionConfiguraciones.Id=1` sin `EmpresaId`, se deniegan configuración, sugerencias, autocompletado y vistas previas de acciones masivas con 2+ empresas, incluso desde llamadores internos sin HTTP. Con 0–1 empresas se conserva la compatibilidad legacy; ninguna tarea externa se activa. Pruebas negativas A/B/C y preview monoempresa.
 - Sin cambios MySQL persistentes, flags, secretos, membresías, Plan Maestro, QA ni PROD.
 
 ## 2026-10-18 — DEV: alta empresarial transaccional con ConfigEmpresa (candidato)
