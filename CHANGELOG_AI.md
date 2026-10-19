@@ -1,3 +1,8 @@
+## 2026-10-19 — DEV: recuperar arranque Angular M12 en CI efímera
+
+- Post-merge #3676: bootstrap OracleBaseline, API, membresía sintética, compilación Angular y navegador PASS; `Iniciar Angular` FAIL porque el job exporta `PORT=5005` para ASP.NET, heredado por `ng serve`, que ignora el `--port 4200` y colisiona con la API.
+- Se fija `PORT: '4200'` exclusivamente en el paso `Iniciar Angular` de GitHub Actions. La API continúa en 5005; no se cambian aplicaciones, datos, migraciones, Render, Vercel, QA, PROD, secrets ni banderas. Exigir resultado M12 post-merge antes de declarar LISTO.
+
 ## 2026-10-19 — DEV: reparar CI post-merge M12 (MySQL efímero)
 
 - El post-merge de #3675 dejó M12 - Automatización transversal rojo: falta la tabla Empresas al aplicar 20261006111818_OracleBaseline sobre una base efímera vacía. Backend M12 compiló y pasó sus unitarios.
