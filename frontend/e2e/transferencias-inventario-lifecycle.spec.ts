@@ -77,7 +77,10 @@ test.describe('Transferencias de inventario - lifecycle UI', () => {
             'MovimientosInventario:Confirmar',
             'MovimientosInventario:Anular'
           ],
-          esAdministrador: false
+          esAdministrador: false,
+          operacionMultiEmpresaRestringida: false,
+          capacidadesHabilitadas: [],
+          rutasHabilitadas: []
         }
       })
     }));
