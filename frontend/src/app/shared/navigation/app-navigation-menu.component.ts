@@ -178,8 +178,8 @@ import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service
             <a routerLink="/estados-financieros" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">assessment</span> Estados financieros</a>
           }
         }
-        @if (permisosRuntime.esAdministrador() && permisosRuntime.puede('ReportesAdministrativos', 'Ver')) {
-          @if (permisosRuntime.rutaHabilitada('centro-reportes')) {
+        @if (permisosRuntime.rutaHabilitada('centro-reportes')) {
+          @if (permisosRuntime.esAdministrador() && permisosRuntime.puede('ReportesAdministrativos', 'Ver')) {
             <a routerLink="/centro-reportes" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">analytics</span> Centro de reportes</a>
           }
         }
