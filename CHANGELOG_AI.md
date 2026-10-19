@@ -1,3 +1,9 @@
+## 2026-10-19 — Corrección 2, alta completamente atómica con administrador nuevo (candidato)
+
+- Ampliado el onboarding global sin reemplazar el flujo preexistente. Una única operación crea Usuario BCrypt, Empresa, ConfigEmpresa, membresía ADMIN Empresa y auditoría bajo un commit MySQL, con rollback de todos ante cualquier fallo. No se conceden roles de Plataforma a usuarios nuevos.
+- Angular permite elegir cuenta existente o cuenta nueva; contraseña sólo en el POST, limpieza del campo tras concluir, y confirmación por IDs de respuesta. Doble gate y cuarentena sin cambios.
+- Nuevos controles unitarios/API + integración MySQL con fallos inyectados en configuración, membresía y auditoría. Pendientes REVIEW_FIRST, CI exact-head, despliegue y readback DEV para `LISTO`. Sin cambios de QA/PROD.
+
 ## 2026-10-19 — Lectura pública de identidad por empresa, ruta firmada (candidato)
 
 - Se añade `GET /tienda/configuracion`, proyección pública de `Empresa` y `ConfigEmpresa` sobre empresa verificada mediante HMAC v2/Host+StoreKey/MySQL y antirreplay; la ruta global no se abre. No hay transacciones comerciales, migraciones ni cambios de autorización privados.
