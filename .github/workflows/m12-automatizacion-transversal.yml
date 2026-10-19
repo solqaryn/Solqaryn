@@ -158,6 +158,8 @@ jobs:
       - name: Iniciar Angular
         working-directory: frontend
         shell: bash
+        env:
+          PORT: '4200'
         run: |
           nohup npm start -- --host 127.0.0.1 --port 4200 > m12-frontend.log 2>&1 &
           for attempt in $(seq 1 60); do curl --fail --silent http://127.0.0.1:4200/login > /dev/null && exit 0; sleep 2; done
