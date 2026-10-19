@@ -125,6 +125,32 @@ describe('TenantContextService', () => {
     expect(localStorage.getItem('solqaryn_empresa_solicitada_id')).toBe('2');
   });
 
+  it('rol del tenant se muestra solo mientras el backend confirmó la empresa activa', () => {
+    const service = TestBed.inject(TenantContextService);
+    expect(service.rolVerificado()).toBeNull();
+
+    service.seleccionarEmpresa(2).subscribe();
+    const requestA = httpMock.expectOne(`${environment.apiUrl}/tenant-context/2`);
+    requestA.flush({
+      success: true,
+      data: { usuarioId: 11, empresaId: 2, rolId: 4, rolNombre: 'Administrador', esAdministrador: true }
+    });
+    expect(service.rolVerificado()).toBe('Administrador');
+
+    service.seleccionarEmpresa(3).subscribe();
+    expect(service.rolVerificado()).toBeNull();
+    const requestB = httpMock.expectOne(`${environment.apiUrl}/tenant-context/3`);
+    requestB.flush({
+      success: true,
+      data: { usuarioId: 11, empresaId: 3, rolId: 8, rolNombre: 'Operador', esAdministrador: false }
+    });
+    expect(service.rolVerificado()).toBe('Operador');
+
+    service.limpiar();
+    expect(service.rolVerificado()).toBeNull();
+    expect(service.empresaIdVerificada()).toBeNull();
+  });
+
   it('cerrar el contexto revoca una respuesta pendiente incluso si devuelve HTTP 200', () => {
     const service = TestBed.inject(TenantContextService);
     let denegada = false;
