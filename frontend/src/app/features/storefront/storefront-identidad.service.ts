@@ -95,7 +95,16 @@ export class StorefrontIdentidadService {
       map((res) => {
         if (res?.success !== true || !res.data?.nombreComercial)
           throw new Error('Identidad pública no verificada.');
-        return { ...STORE_DEFAULT_CONFIG, ...res.data };
+        return {
+          ...STORE_DEFAULT_CONFIG,
+          ...res.data,
+          telefono: res.data.telefono ?? undefined,
+          correo: res.data.correo ?? undefined,
+          whatsApp: res.data.whatsApp ?? undefined,
+          logoUrl: res.data.logoUrl ?? undefined,
+          encabezadoTexto: res.data.encabezadoTexto ?? undefined,
+          piePaginaTexto: res.data.piePaginaTexto ?? undefined
+        };
       }),
       tap((config) => {
         this._bootstrap.set(null);
