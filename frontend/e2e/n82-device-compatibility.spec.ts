@@ -29,7 +29,7 @@ const perfiles = [
 ] as const;
 
 async function prepararEmpresa(page: Page): Promise<void> {
-  await page.route('http://localhost:5005/empresa-configuracion/publica', async route => {
+  await page.route(/^http:\/\/localhost:5005\/(?:empresa-configuracion\/publica|tienda\/configuracion)$/, async route => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
