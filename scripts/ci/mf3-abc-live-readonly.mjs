@@ -147,6 +147,7 @@ async function verifyCrossedContexts(users) {
 async function verifyCommercial(users) {
   let pilotReads = 0, quarantineReads = 0, deniedCrossed = 0;
   for (const current of users) {
+    let positiveForUser = 0;
     const grants = new Set(firstOf(current.permissions, 'permisos', 'Permisos'));
     const caps = new Set(firstOf(current.permissions,
       'capacidadesHabilitadas', 'CapacidadesHabilitadas'));
@@ -159,6 +160,7 @@ async function verifyCommercial(users) {
           'certified_read_' + current.label + '_' + item.modulo +
           '_http_' + own.status);
         pilotReads++;
+        positiveForUser++;
       } else {
         // Un piloto no otorgado por rol y capacidad no puede quedar abierto.
         requireThat(denied.has(own.status),
@@ -175,13 +177,13 @@ async function verifyCommercial(users) {
         deniedCrossed++;
       }
     }
+    requireThat(positiveForUser > 0,
+      'no_positive_commercial_pilot_' + current.label);
   }
   console.log('MF3_CROSS_COMMERCIAL_DENIALS=PASS count=' + deniedCrossed);
   console.log('MF3_OWN_CERTIFIED_READS=PASS count=' + pilotReads);
   console.log('MF3_UNCERTIFIED_READS_DENIED=PASS count=' + quarantineReads);
-  // Sin al menos una lectura comercial positiva por cuenta no se puede
-  // certificar operación comercial legítima; no declarar LISTO ficticio.
-  requireThat(pilotReads >= users.length, 'no_positive_commercial_pilot_per_user');
+  // Cada identidad probó al menos una lectura comercial legítima, no solo el grupo.
 }
 async function main() {
   if (process.argv.includes('--self-test')) {
