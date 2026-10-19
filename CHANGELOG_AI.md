@@ -1,3 +1,10 @@
+## 2026-10-19 — VAEP: transición gobernada a Plan Comercial Inicial (candidato)
+
+- Aprobación explícita del propietario: durante la etapa de lanzamiento SOLQARYN ejecuta únicamente `SOLQARYN PLAN COMERCIAL INICIAL UNIFICADO` (Drive ID `1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j`). El Plan Maestro anterior queda intacto, archivado conceptualmente y reservado para la fase futura; no se ejecutan SQ antiguos.
+- La hoja operativa de Drive (ID `1gcVyCoyhLU0jFMwRtf0s5_x8FSnfBs38ojml1QF7Xwk`) contiene 1123 microtareas derivadas de 492 fichas, dependencias y control de gobierno, con 0 ejecutores habilitados mientras dure la migración. Existe copia previa íntegra con ID `15tNzNkd4LTetvm_0l4l2gQRu2EJEBGpED0b9Mdg7XNo`.
+- Actualizada la autoridad declarativa de AGENTS, contrato VAEP, parser de CI y su comprobación de calidad; documentación operativa prioriza plan comercial, seguridad RBAC/tenancy, lease single-writer y REVIEW_FIRST. La modificación no abre operaciones comerciales, ni toca Aiven, Render, Vercel o producción.
+- Activación explícitamente **BLOQUEADA** hasta CI exact-head del cambio, readback de Sheets y sincronización de las 10 automatizaciones (5 primarias y 5 supervisoras con accesos independientes). No se afirma certificación ni cierre funcional del plan.
+
 ## 2026-10-19 — Corrección 2, alta completamente atómica con administrador nuevo (candidato)
 
 - Ampliado el onboarding global sin reemplazar el flujo preexistente. Una única operación crea Usuario BCrypt, Empresa, ConfigEmpresa, membresía ADMIN Empresa y auditoría bajo un commit MySQL, con rollback de todos ante cualquier fallo. No se conceden roles de Plataforma a usuarios nuevos.
