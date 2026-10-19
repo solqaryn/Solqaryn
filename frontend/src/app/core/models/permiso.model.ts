@@ -9,6 +9,9 @@ export interface MisPermisos {
   rol: string;
   esAdministrador: boolean;
   permisos: string[]; // formato "Modulo:Accion"
+  operacionMultiEmpresaRestringida: boolean;
+  capacidadesHabilitadas: string[]; // proyección UI del backend, no autoridad
+  rutasHabilitadas: string[]; // patrones exactos de Angular certificados
 }
 
 export interface PermisoCatalogo {
