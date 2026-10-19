@@ -22,7 +22,7 @@
       <div class="identidad-resumen">
         <h2 id="perfil-identidad-titulo">{{ p.nombreCompleto }}</h2>
         <p class="usuario-resumen">&#64;{{ p.nombreUsuario }}</p>
-        <span class="rol-badge">{{ p.rol }}</span>
+        <span class="rol-badge">{{ tenantContext.rolVerificado() || 'Contexto empresarial no verificado' }}</span>
       </div>
 
       <div class="foto-divider" aria-hidden="true"></div>
@@ -77,7 +77,7 @@
             <mat-icon aria-hidden="true">admin_panel_settings</mat-icon>
             <div>
               <span class="meta-label">Rol asignado</span>
-              <strong>{{ p.rol }}</strong>
+              <strong>{{ tenantContext.rolVerificado() || 'Contexto empresarial no verificado' }}</strong>
             </div>
           </div>
           <div class="meta-item">
