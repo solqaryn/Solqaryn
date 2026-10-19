@@ -1,3 +1,11 @@
+## 2026-10-19 — DEV Microfase 3: permisos explícitos y capacidades comerciales (candidato)
+
+- Recupera únicamente GET exacto JWT `/permisos/mis-permisos/empresa/{id>0}` en la cuarentena multiempresa. MVC vuelve a resolver la membresía de esa empresa en MySQL; rechaza empresas suspendidas y no expone matrices, escrituras ni APIs comerciales generales.
+- Proyecta `operacionMultiEmpresaRestringida`, `capacidadesHabilitadas` y `rutasHabilitadas` desde el número vigente de empresas y los flags de pilotos del backend, en forma conservadora. La respuesta UI no concede autorización real: siguen intactos guard empresarial, RBAC, ownership físico, flags y rutas exactas en la API.
+- Angular exige a la vez grant explícito, capacidad y ruta certificada; elimina el bypass universal del rol Administrador. Nunca reutiliza grants al cambiar de EmpresaId; respuestas anteriores, incompletas y errores fallan cerrados y dirigen al perfil propio, que es una ruta JWT verificada.
+- La navegación oculta accesos no certificados incluso en submódulos que comparten permiso. No se modifican migraciones, datos, secretos, jobs, Aiven, banderas de despliegue, QA ni PROD. REVIEW_FIRST: riesgo P0 de conceder un módulo entero por el rol o por un piloto puntual mitigado con listas estrictas.
+- Pruebas nuevas: cuarentena con tres empresas y rutas/verbos rechazados, proyección unitaria de flags, autoridad de membresía y empresa activa, y regresiones de navegación Angular. CI exact-head, merge protegido, Render/Vercel DEV y pruebas con tres identidades independientes aún deben completarse antes de declarar LISTO.
+
 ## 2026-10-19 — DEV: recuperar arranque Angular M12 en CI efímera
 
 - Post-merge #3676: bootstrap OracleBaseline, API, membresía sintética, compilación Angular y navegador PASS; `Iniciar Angular` FAIL porque el job exporta `PORT=5005` para ASP.NET, heredado por `ng serve`, que ignora el `--port 4200` y colisiona con la API.

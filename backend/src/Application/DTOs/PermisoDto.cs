@@ -18,4 +18,8 @@ public class MisPermisosDto
     public string Rol { get; set; } = string.Empty;
     public bool EsAdministrador { get; set; }
     public List<string> Permisos { get; set; } = new(); // formato "Modulo:Accion"
+    // Proyección UI conservadora; jamás reemplaza RBAC ni autorización de ruta backend.
+    public bool OperacionMultiEmpresaRestringida { get; set; }
+    public List<string> CapacidadesHabilitadas { get; set; } = new();
+    public List<string> RutasHabilitadas { get; set; } = new();
 }

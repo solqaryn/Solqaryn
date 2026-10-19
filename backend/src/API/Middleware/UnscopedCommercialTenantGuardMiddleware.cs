@@ -37,6 +37,20 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
             return;
         }
 
+        // Excepción mínima de descubrimiento: GET /permisos/mis-permisos/empresa/{id>0}.
+        // No cambia RBAC: MVC exige JWT y PermisoService relee la membresía real
+        // del tenant solicitado. Bloquea subrutas, otros verbos y anónimos.
+        if (EsRutaPermisosEmpresaConsulta(httpContext.Request))
+        {
+            if (httpContext.User.Identity?.IsAuthenticated == true)
+            {
+                await _next(httpContext);
+                return;
+            }
+            await RechazarAsync(httpContext);
+            return;
+        }
+
         // Autogestión de perfil: únicamente GET exacto y con JWT ya autenticado.
         // El controlador no recibe UsuarioId ni EmpresaId; PerfilService relee la
         // cuenta propia por claim y exige que siga activa, no bloqueada y no eliminada.
@@ -725,6 +739,21 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                 return true;
         }
         return false;
+    }
+
+    private static bool EsRutaPermisosEmpresaConsulta(HttpRequest request)
+    {
+        if (!HttpMethods.IsGet(request.Method))
+            return false;
+        var partes = request.Path.Value?.Split('/', StringSplitOptions.None);
+        if (partes is not { Length: 5 } || partes[0] != "" ||
+            !partes[1].Equals("permisos", StringComparison.OrdinalIgnoreCase) ||
+            !partes[2].Equals("mis-permisos", StringComparison.OrdinalIgnoreCase) ||
+            !partes[3].Equals("empresa", StringComparison.OrdinalIgnoreCase))
+            return false;
+        return partes[4].Length > 0 &&
+               partes[4].All(c => c is >= '0' and <= '9') &&
+               int.TryParse(partes[4], out var id) && id > 0;
     }
 
     private static bool EsRutaDeSeguridadPermitida(HttpRequest request)

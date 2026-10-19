@@ -1,4 +1,8 @@
 using Solqaryn.API.Filters;
+using Solqaryn.API.Security;
+using Solqaryn.Domain.Entities;
+using Solqaryn.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 using Solqaryn.Application.Common;
 using Solqaryn.Application.DTOs;
 using Solqaryn.Application.Interfaces;
@@ -15,11 +19,16 @@ public class PermisosController : ControllerBase
 {
     private readonly IPermisoService _service;
     private readonly IPermisoCatalogoService _catalogoService;
+    private readonly AppDbContext _db;
+    private readonly IConfiguration _configuration;
 
-    public PermisosController(IPermisoService service, IPermisoCatalogoService catalogoService)
+    public PermisosController(IPermisoService service, IPermisoCatalogoService catalogoService,
+        AppDbContext db, IConfiguration configuration)
     {
         _service = service;
         _catalogoService = catalogoService;
+        _db = db;
+        _configuration = configuration;
     }
 
     [HttpGet("matriz/{rolId:int}")]
@@ -50,10 +59,19 @@ public class PermisosController : ControllerBase
     {
         if (empresaId <= 0) return BadRequest(ApiResponse<object>.Fail("Empresa inválida."));
 
+        // No retornar permisos ni capacidades de otra empresa, ni de una suspendida.
+        // El servicio resuelve la membresía vigente desde JWT y MySQL.
         var permisos = await _service.GetMisPermisosAsync(empresaId);
         if (string.IsNullOrWhiteSpace(permisos.Rol))
             return Forbid();
+        if (!await _db.Set<Empresa>().IgnoreQueryFilters().AsNoTracking()
+                .AnyAsync(e => e.Id == empresaId && e.Activa, HttpContext.RequestAborted))
+            return Forbid();
 
+        var cantidad = await _db.Set<Empresa>().IgnoreQueryFilters().AsNoTracking()
+            .Take(2).CountAsync(HttpContext.RequestAborted);
+        CommercialTenantUiCapabilities.Apply(permisos, _configuration, cantidad != 1);
+        Response.Headers.CacheControl = "private, no-store, max-age=0";
         return Ok(ApiResponse<MisPermisosDto>.Ok(permisos));
     }
 

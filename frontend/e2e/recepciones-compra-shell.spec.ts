@@ -11,7 +11,7 @@ async function loginConPermisos(page: Page, permisos: string[]): Promise<void> {
       body: JSON.stringify({
         success: true,
         message: 'Permisos cargados',
-        data: { permisos, esAdministrador: false }
+        data: { permisos, esAdministrador: false, operacionMultiEmpresaRestringida: false, capacidadesHabilitadas: [], rutasHabilitadas: [] }
       })
     });
   });

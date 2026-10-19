@@ -12,12 +12,21 @@ export const permisoGuard: CanActivateFn = (route) => {
   const modulo = route.data?.['modulo'] as string | undefined;
   const accion = route.data?.['accion'] as string | undefined;
 
+  // Los hijos de un contenedor no heredan capacidades de una ruta raíz
+  // homónima: centro-reportes/ventas NO es la pantalla privada /ventas.
+  const rutaCompleta = route.pathFromRoot
+    .map(segmento => segmento.routeConfig?.path)
+    .filter((segmento): segmento is string => !!segmento)
+    .join('/');
+
   if (!modulo || !accion) return true;
 
   const resolverPermiso = () => permisosRuntime.cargar().pipe(
-    map((ok) => ok && permisosRuntime.puede(modulo, accion)
-      ? true
-      : router.createUrlTree([permisosRuntime.rutaInicialPermitida() ?? '/login']))
+    map((ok) => ok &&
+      permisosRuntime.puede(modulo, accion) &&
+      permisosRuntime.rutaHabilitada(rutaCompleta)
+        ? true
+        : router.createUrlTree([permisosRuntime.rutaInicialPermitida() ?? '/login']))
   );
 
   // authGuard y permisoGuard pertenecen a la misma navegación protegida. Tras una

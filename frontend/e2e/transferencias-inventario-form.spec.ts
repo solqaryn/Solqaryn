@@ -18,7 +18,10 @@ test.describe('Transferencias de inventario - formulario', () => {
         message: 'Permisos cargados',
         data: {
           permisos: ['MovimientosInventario:Ver', 'MovimientosInventario:Crear'],
-          esAdministrador: false
+          esAdministrador: false,
+          operacionMultiEmpresaRestringida: false,
+          capacidadesHabilitadas: [],
+          rutasHabilitadas: []
         }
       })
     }));
