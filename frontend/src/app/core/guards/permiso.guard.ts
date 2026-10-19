@@ -15,9 +15,11 @@ export const permisoGuard: CanActivateFn = (route) => {
   if (!modulo || !accion) return true;
 
   const resolverPermiso = () => permisosRuntime.cargar().pipe(
-    map((ok) => ok && permisosRuntime.puede(modulo, accion)
-      ? true
-      : router.createUrlTree([permisosRuntime.rutaInicialPermitida() ?? '/login']))
+    map((ok) => ok &&
+      permisosRuntime.puede(modulo, accion) &&
+      permisosRuntime.rutaHabilitada(route.routeConfig?.path)
+        ? true
+        : router.createUrlTree([permisosRuntime.rutaInicialPermitida() ?? '/login']))
   );
 
   // authGuard y permisoGuard pertenecen a la misma navegación protegida. Tras una
