@@ -196,10 +196,10 @@ if not external_telemetry:
 # 35 - current planning authority must be canonical and current-state only.
 agents = read("AGENTS.md")
 vaep = read("docs/VAEP_AUTHORITY.md")
-master_id = "1YdQlNJ312HuziyKb9E-GEt55dcgSmuFGgfsHxyzPUaw"
-ok(master_id in agents and master_id in vaep,
-   "CURRENT_PLAN_MAESTRO_AUTHORITY_PINNED")
-ok("CURRENT_MASTER_ONLY=TRUE" in vaep and "PREVIOUS_PLAN_DEPENDENCY=PROHIBITED" in vaep,
+commercial_plan_id = "1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j"
+ok(commercial_plan_id in agents and commercial_plan_id in vaep,
+   "CURRENT_COMMERCIAL_PLAN_AUTHORITY_PINNED")
+ok("CURRENT_COMMERCIAL_ONLY=TRUE" in vaep and "PREVIOUS_PLAN_DEPENDENCY=PROHIBITED" in vaep,
    "RETIRED_PLAN_DEPENDENCIES_BLOCKED")
 ok("CONTEXT_MODE=CURRENT_STATE_ONLY" in agents and "CONTEXT_MODE=CURRENT_STATE_ONLY" in vaep,
    "CURRENT_STATE_ONLY_PLANNING")
