@@ -1,3 +1,11 @@
+## 2026-10-19 — Certificación en DEV real de tres usuarios A/B/C (candidato)
+
+- Nueva suite opt-in de **solo lectura comercial** en `scripts/ci/mf3-abc-membership-readonly.sh` y `scripts/ci/mf3-abc-live-readonly.mjs`. Utiliza los seis environment secrets del entorno GitHub `DEV` declarados por el propietario; nunca registra contraseñas, JWT, nombres, registros comerciales ni respuestas HTTP completas.
+- Preflight físico sobre Aiven `solqaryn_dev` con `START TRANSACTION READ ONLY`: valida exactamente una membresía empresarial vigente por usuario, tres `UsuarioId` diferentes y tres `EmpresaId` diferentes; aborta ante administrador global sin membresía exclusiva, ambigüedad o empresa inactiva. No crea datos de prueba nuevos.
+- Solo `push` protegido a `dev` o `workflow_dispatch` en `dev` consumen secretos; `pull_request` valida sintaxis y contratos **sin secretos**. `contents:read`, `environment:DEV`, chequeo de origen HTTPS fijo contra Render DEV y `verify-project-scope`.
+- Autentica JWT reales A/B/C, valida empresa propia y `GET /permisos/mis-permisos/empresa/{id}`, exige 403 para cruces y denegación anónima. Contrasta lectura comercial positiva con grants y capacidades; el resto conserva 401/403/404/503; nunca ejecuta escrituras comerciales. Login genera exclusivamente la auditoría habitual de autenticación.
+- Mantiene íntegros los PR #3678/#3679 y la CI 38/38 previa. No modifica flags, datos, esquema, Render/Vercel, QA/PROD ni producción. El dictamen de esta suite debe basarse en ejecución de GitHub Actions + lectura exact-head DEV, nunca en su mera publicación.
+
 ## 2026-10-19 — DEV Microfase 3: permisos explícitos y capacidades comerciales (candidato)
 
 - Recupera únicamente GET exacto JWT `/permisos/mis-permisos/empresa/{id>0}` en la cuarentena multiempresa. MVC vuelve a resolver la membresía de esa empresa en MySQL; rechaza empresas suspendidas y no expone matrices, escrituras ni APIs comerciales generales.
