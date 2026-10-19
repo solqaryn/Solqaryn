@@ -1,6 +1,6 @@
 # VAEP — CONTRATO OPERATIVO ÚNICO
 
-Este archivo gobierna exclusivamente cómo ejecuta VAEP. No es un segundo Plan Maestro ni un roadmap paralelo. El único Plan Maestro de roadmap y arquitectura objetivo es el Google Doc `PLAN MAESTRO SOLQARYN`.
+Este archivo gobierna exclusivamente cómo ejecuta VAEP. No es un segundo Plan Maestro ni un roadmap paralelo. La única autoridad ejecutable en la versión comercial inicial es el archivo `SOLQARYN PLAN COMERCIAL INICIAL UNIFICADO` (Drive ID `1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j`). El Maestro antiguo queda como visión futura NO EJECUTABLE.
 
 ```text
 PROJECT_ID=SOLQARYN
@@ -9,8 +9,9 @@ REPOSITORY=solqaryn/Solqaryn
 BRANCH=dev
 AUTOMATION_AUTHORITY=VAEP_CONTRACT
 VAEP_CONTRACT_FILE=docs/VAEP_AUTHORITY.md
-ROADMAP_MASTER_GOOGLE_DOC_ID=1YdQlNJ312HuziyKb9E-GEt55dcgSmuFGgfsHxyzPUaw
-ROADMAP_MASTER_TITLE=PLAN_MAESTRO_SOLQARYN
+EXECUTION_PLAN_DRIVE_FILE_ID=1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j
+FUTURE_MASTER_GOOGLE_DOC_ID=1YdQlNJ312HuziyKb9E-GEt55dcgSmuFGgfsHxyzPUaw
+EXECUTION_PLAN_TITLE=SOLQARYN_PLAN_COMERCIAL_INICIAL_UNIFICADO
 NOTES_EXECUTABLE=FALSE
 CONTEXT_MODE=CURRENT_STATE_ONLY
 CERTIFIED_DONE_STATE=LISTO
@@ -53,7 +54,7 @@ FIRST_DETECTOR_OWNS_RECOVERY=TRUE
 NO_REJECT_QUEUE=TRUE
 RECOVERY_MUST_RESOLVE_SAME_RUN=TRUE
 RECOVERY_UNBLOCK_DEPENDENTS_SAME_RUN=TRUE
-CURRENT_MASTER_ONLY=TRUE
+CURRENT_COMMERCIAL_ONLY=TRUE
 PREVIOUS_PLAN_DEPENDENCY=PROHIBITED
 PREVIOUS_PHASE_GATE=PROHIBITED
 PREVIOUS_QUEUE_ANCHOR=PROHIBITED
@@ -62,13 +63,13 @@ END_AUTOMATION_POLICY
 
 ## 1. Fuente única y precedencia
 
-1. El único Plan Maestro de roadmap y arquitectura objetivo es `PLAN MAESTRO SOLQARYN` (Google Doc ID `1YdQlNJ312HuziyKb9E-GEt55dcgSmuFGgfsHxyzPUaw`).
-2. `docs/VAEP_AUTHORITY.md` es el contrato operativo de las diez automatizaciones y no puede inventar objetivos, fases o prioridades fuera de ese Plan Maestro.
-3. GitHub manda para código y evidencia técnica; el estado operativo fresco manda para ejecución; el Plan Maestro manda para roadmap; este contrato manda para coordinación y controles de ejecución.
-4. `Notas SOLQARYN_DEV.docx` es sólo una bandeja de observaciones y no es ejecutable hasta incorporación aprobada al Plan Maestro.
+1. La única autoridad ejecutable de la etapa inicial es `SOLQARYN PLAN COMERCIAL INICIAL UNIFICADO` (Drive ID `1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j`); el Maestro anterior es sólo referencia futura.
+2. `docs/VAEP_AUTHORITY.md` es el contrato operativo de las diez automatizaciones y no puede inventar objetivos, fases o prioridades fuera del Plan Comercial Inicial aprobado y sus 1123 microtareas autorizadas.
+3. GitHub manda para código y evidencia técnica; el estado operativo fresco manda para ejecución; el Plan Comercial Inicial manda para trabajo de lanzamiento; este contrato manda para coordinación y controles de ejecución.
+4. `Notas SOLQARYN_DEV.docx` es sólo una bandeja de observaciones y no es ejecutable hasta incorporación aprobada al Plan Comercial Inicial.
 5. Ninguna fase, secuencia, fila, gate, excepción, protocolo o decisión histórica puede condicionar la ejecución actual.
 6. El historial Git no se reescribe, pero tampoco se usa como autoridad operativa.
-7. Ante contradicción, se corrige la superficie stale para quedar alineada al Plan Maestro único + este contrato operativo.
+7. Ante contradicción, se corrige la superficie stale para quedar alineada al Plan Comercial Inicial único + este contrato operativo.
 
 ## 2. Modelo de ejecución: TASKS_ONLY
 
@@ -87,7 +88,7 @@ Reglas:
 - Las tareas equivalentes antiguas en la cuenta de Javier están RETIRADAS e inactivas; no son canónicas ni deben reactivarse.
 - Un slot no termina en reporte o espera si existe acción material segura.
 - Un checkpoint es un disparador, no una frontera de ownership.
-- Tras `LISTO`, promover el siguiente trabajo dependency-valid del plan maestro vigente.
+- Tras `LISTO`, promover el siguiente trabajo dependency-valid del plan comercial inicial vigente.
 - `LISTO` es el único estado de cierre certificado.
 
 ## 3. Regla CURRENT-STATE ONLY
@@ -97,12 +98,12 @@ Todo agente o automatización debe decidir desde el estado vivo actual:
 - HEAD de `dev`;
 - arquitectura y contratos vigentes;
 - estado actual de datos, RBAC, tenancy, CI e infraestructura autorizada;
-- plan maestro vigente;
+- Plan Comercial Inicial vigente (Drive ID 1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j);
 - dependencias técnicas realmente existentes.
 
 No se reintroducen automáticamente tareas, prioridades, bloqueos, secuencias ni criterios provenientes de planes no vigentes.
 
-El plan maestro puede reemplazar, refactorizar o retirar implementaciones existentes cuando sea necesario para alcanzar el objetivo actual, siempre preservando seguridad, integridad de datos, trazabilidad y controles de autorización.
+El Plan Comercial Inicial puede reemplazar, refactorizar o retirar implementaciones existentes dentro del alcance aprobado cuando sea necesario para alcanzar la versión inicial, siempre preservando seguridad, integridad de datos, trazabilidad y controles de autorización.
 
 ## 4. Ownership y lease
 
@@ -164,7 +165,7 @@ Regla: `DEFECT_RECOVERY_FIRST + FIRST_DETECTOR_OWNS_RECOVERY + NO_REJECT_QUEUE`.
 - Revalidar HEAD antes de publicar y preservar trabajo concurrente.
 - CI causal debe corresponder al functional head o a equivalencia demostrada.
 - No degradar RBAC, tenancy, auditoría, protección de secretos, integridad transaccional ni seguridad para acelerar ejecución.
-- Un rediseño agresivo del plan maestro puede cambiar producto y arquitectura, pero debe hacerlo mediante cambios controlados, verificables y recuperables.
+- Un cambio controlado del Plan Comercial Inicial puede cambiar producto y arquitectura dentro del alcance aprobado, pero debe hacerlo mediante cambios controlados, verificables y recuperables.
 
 ## 8. Estados visibles
 
@@ -174,7 +175,7 @@ Las superficies operativas deben usar exclusivamente:
 
 Las vistas derivadas se calculan desde estado fuente vivo. No usar snapshots manuales como autoridad de ejecución.
 
-El Google Sheet operativo canónico es `SOLQARYN - PLAN MAESTRO DE AUTOMATIZACIONES` (ID `1gcVyCoyhLU0jFMwRtf0s5_x8FSnfBs38ojml1QF7Xwk`). Las pestañas visibles son vistas derivadas por fórmulas. Las escrituras de runtime pertenecen únicamente a las fuentes técnicas ocultas `_MASTER_SOURCE`, `_RUNTIME_SOURCE`, `_AUTOMATION_SOURCE` y `_EVENTS_SOURCE`. COLA, PLAN_MAESTRO y BITACORA no conservan autoridad histórica.
+El Google Sheet operativo canónico es `SOLQARYN - PLAN COMERCIAL INICIAL - AUTOMATIZACIONES` (ID `1gcVyCoyhLU0jFMwRtf0s5_x8FSnfBs38ojml1QF7Xwk`). Las pestañas visibles son vistas derivadas por fórmulas, incluida `PLAN_COMERCIAL` con 1123 microtareas; quedan protegidas contra edición operativa directa. Las escrituras de runtime pertenecen únicamente a las fuentes técnicas ocultas `_MASTER_SOURCE`, `_RUNTIME_SOURCE`, `_AUTOMATION_SOURCE` y `_EVENTS_SOURCE`. COLA, PLAN_MAESTRO y BITACORA no conservan autoridad histórica.
 
 ## 9. Cierre
 
