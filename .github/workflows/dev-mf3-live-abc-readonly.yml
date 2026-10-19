@@ -1,0 +1,120 @@
+name: DEV MF3 - A/B/C JWT real sin escrituras comerciales
+
+on:
+  pull_request:
+    branches: [dev]
+    paths:
+      - .github/workflows/dev-mf3-live-abc-readonly.yml
+      - scripts/ci/mf3-abc-membership-readonly.sh
+      - scripts/ci/mf3-abc-live-readonly.mjs
+  push:
+    branches: [dev]
+    paths:
+      - .github/workflows/dev-mf3-live-abc-readonly.yml
+      - scripts/ci/mf3-abc-membership-readonly.sh
+      - scripts/ci/mf3-abc-live-readonly.mjs
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: solqaryn-dev-mf3-live-abc-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  contract:
+    name: Contrato de certificación (sin secretos)
+    if: github.repository == 'solqaryn/Solqaryn'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Gate identidad de proyecto
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = 'solqaryn/Solqaryn'
+          node scripts/verify-project-scope.mjs
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validar shell y contrato JWT sin datos
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n scripts/ci/mf3-abc-membership-readonly.sh
+          node --check scripts/ci/mf3-abc-live-readonly.mjs
+          node scripts/ci/mf3-abc-live-readonly.mjs --self-test
+
+  real-abc:
+    name: DEV real — membresía, JWT y aislamiento A/B/C
+    needs: [contract]
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/dev' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    environment: DEV
+    timeout-minutes: 20
+    env:
+      API_ORIGIN: https://solqaryn-api-dev-fxx8.onrender.com
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Identidad exacta de DEV
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = 'solqaryn/Solqaryn'
+          test "$GITHUB_REF" = 'refs/heads/dev'
+          test "$GITHUB_SHA" = "$(git rev-parse HEAD)"
+          test "$API_ORIGIN" = 'https://solqaryn-api-dev-fxx8.onrender.com'
+          node scripts/verify-project-scope.mjs
+      - name: Instalar cliente MySQL para consulta inmutable
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq > /dev/null
+          sudo apt-get install -qq -y mysql-client > /dev/null
+      - name: Confirmar empresa propia de cada cuenta en MySQL DEV (solo SELECT)
+        shell: bash
+        env:
+          DB_HOST: ${{ vars.SOLQARYN_DEV_DB_HOST }}
+          DB_PORT: ${{ vars.SOLQARYN_DEV_DB_PORT }}
+          DB_NAME: ${{ vars.SOLQARYN_DEV_DB_NAME }}
+          DB_USER: ${{ vars.SOLQARYN_DEV_DB_USER }}
+          DB_PASSWORD: ${{ secrets.SOLQARYN_DEV_DB_PASSWORD }}
+          SOLQARYN_DEV_A_USERNAME: ${{ secrets.SOLQARYN_DEV_A_USERNAME }}
+          SOLQARYN_DEV_B_USERNAME: ${{ secrets.SOLQARYN_DEV_B_USERNAME }}
+          SOLQARYN_DEV_C_USERNAME: ${{ secrets.SOLQARYN_DEV_C_USERNAME }}
+        run: bash scripts/ci/mf3-abc-membership-readonly.sh
+      - name: Prueba HTTP JWT propia y cruzada A/B/C contra Render DEV (solo GET comerciales)
+        shell: bash
+        env:
+          SOLQARYN_DEV_A_USERNAME: ${{ secrets.SOLQARYN_DEV_A_USERNAME }}
+          SOLQARYN_DEV_A_PASSWORD: ${{ secrets.SOLQARYN_DEV_A_PASSWORD }}
+          SOLQARYN_DEV_B_USERNAME: ${{ secrets.SOLQARYN_DEV_B_USERNAME }}
+          SOLQARYN_DEV_B_PASSWORD: ${{ secrets.SOLQARYN_DEV_B_PASSWORD }}
+          SOLQARYN_DEV_C_USERNAME: ${{ secrets.SOLQARYN_DEV_C_USERNAME }}
+          SOLQARYN_DEV_C_PASSWORD: ${{ secrets.SOLQARYN_DEV_C_PASSWORD }}
+        run: |
+          set -euo pipefail
+          node scripts/ci/mf3-abc-live-readonly.mjs
+      - name: Certificado sin PII ni tokens
+        if: success()
+        shell: bash
+        run: |
+          {
+            echo '## MF3 — DEV real A/B/C'
+            echo '- Tres identidades activas independientes / tres empresas activas: PASS'
+            echo '- JWT reales y contexto empresarial propio: PASS'
+            echo '- Rechazo cruzado y respuesta de permisos empresarial: PASS'
+            echo '- Lecturas comerciales certificadas sólo por grants + flags: PASS'
+            echo '- Operaciones de escritura comercial: NO ejecutadas'
+            echo '- Secretos y tokens: no volcados a artefactos ni summaries'
+            echo "- Commit DEV probado: \`$GITHUB_SHA\`"
+          } >> "$GITHUB_STEP_SUMMARY"
