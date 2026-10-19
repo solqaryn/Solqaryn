@@ -3,6 +3,7 @@
 // sobre el backend actual. No imprime credenciales, tokens, cuerpos ni PII.
 // La única escritura esperada es la auditoría normal del POST /auth/login.
 import assert from 'node:assert/strict';
+import { request as httpsRequest } from 'node:https';
 
 const API = 'https://solqaryn-api-dev-fxx8.onrender.com';
 const labels = ['A', 'B', 'C'];
@@ -33,30 +34,81 @@ function headerOf(token, company) {
   if (company !== undefined) h['X-Empresa-Id'] = String(company);
   return h;
 }
+let phase = 'START';
+const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+function exchange(url, method, headers, payload, parse) {
+  return new Promise((resolve, reject) => {
+    // Sin pooling ni reutilización de sockets entre tres JWT diferentes.
+    const req = httpsRequest(url, {
+      method, headers, agent: false, signal: AbortSignal.timeout(45000)
+    }, response => {
+      const status = response.statusCode ?? 0;
+      const responseHeaders = {
+        get: name => response.headers[String(name).toLowerCase()] ?? null
+      };
+      if (status >= 300 && status < 400) {
+        response.destroy();
+        reject(new Error('MF3_BLOCKED=redirect_rejected'));
+        return;
+      }
+      if (!parse) {
+        // Solo verificar el código HTTP; nunca conservar registros comerciales.
+        response.destroy();
+        resolve({ status, headers: responseHeaders });
+        return;
+      }
+      const chunks = [];
+      let size = 0;
+      response.on('data', chunk => {
+        size += chunk.length;
+        if (size > 262144) {
+          req.destroy(new Error('MF3_BLOCKED=unexpected_payload_size'));
+          return;
+        }
+        chunks.push(chunk);
+      });
+      response.once('error', reject);
+      response.once('end', () => {
+        let data;
+        try { data = JSON.parse(Buffer.concat(chunks).toString('utf8')); }
+        catch { data = null; }
+        resolve({ status, data, headers: responseHeaders });
+      });
+    });
+    req.once('error', reject);
+    if (payload !== undefined) req.write(payload);
+    req.end();
+  });
+}
 async function http(path, token, company, body, parse = false) {
   const url = new URL(path, API);
   requireThat(url.origin === API && url.protocol === 'https:', 'wrong_origin');
-  const isLogin = body !== undefined;
-  const headers = headerOf(token, company);
-  if (isLogin) headers['content-type'] = 'application/json';
-  const response = await fetch(url, {
-    method: isLogin ? 'POST' : 'GET', headers,
-    body: isLogin ? JSON.stringify(body) : undefined,
-    redirect: 'manual',
-    signal: AbortSignal.timeout(20000)
-  });
-  requireThat(response.status < 300 || response.status >= 400,
-    'redirect_rejected');
-  let data;
-  if (parse) {
-    // Los cuerpos completos nunca salen del proceso ni de Actions.
-    const text = await response.text();
-    requireThat(text.length <= 262144, 'unexpected_payload_size');
-    try { data = JSON.parse(text); } catch { data = null; }
-  } else {
-    await response.body?.cancel();
+  const method = body === undefined ? 'GET' : 'POST';
+  const headers = {
+    ...headerOf(token, company),
+    connection: 'close',
+    'accept-encoding': 'identity'
+  };
+  const payload = body === undefined ? undefined : JSON.stringify(body);
+  if (payload !== undefined) {
+    headers['content-type'] = 'application/json';
+    headers['content-length'] = String(Buffer.byteLength(payload));
   }
-  return { status: response.status, data, headers: response.headers };
+  // Repetir SOLO fallos de transporte (no reintentar respuestas 401/403/503).
+  // Un login reenviado puede registrar auditoría adicional, nunca datos comerciales.
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      return await exchange(url, method, headers, payload, parse);
+    } catch (error) {
+      if (typeof error?.message === 'string' &&
+          /^MF3_BLOCKED=[A-Za-z0-9_]+$/.test(error.message)) throw error;
+      if (attempt === 3) throw new Error('MF3_BLOCKED=transport_' + phase);
+      console.log('MF3_NETWORK_RETRY_' + phase + '=' + attempt);
+      await pause(500 * attempt);
+    }
+  }
+  throw new Error('MF3_BLOCKED=transport_' + phase);
 }
 async function readiness() {
   for (let attempt = 0; attempt < 35; attempt++) {
@@ -83,6 +135,7 @@ function getIdentities() {
   return users;
 }
 async function authenticate(user) {
+  phase = 'LOGIN_' + user.label;
   const res = await http('/auth/login', '', undefined, {
     nombreUsuario: user.name, password: user.password
   }, true);
@@ -99,12 +152,14 @@ async function authenticate(user) {
   console.log('MF3_LOGIN_' + user.label + '=PASS');
 }
 async function validateOwnedIdentity(user) {
+  phase = 'OWN_CONTEXT_' + user.label;
   const ctx = await http('/tenant-context/' + user.id, user.token, undefined,
     undefined, true);
   requireThat(ctx.status === 200,
     'own_context_' + user.label + '_http_' + ctx.status);
   const scopedCompanyId = Number(firstOf(dataOf(ctx.data), 'empresaId', 'EmpresaId'));
   requireThat(scopedCompanyId === user.id, 'scope_id_mismatch_' + user.label);
+  phase = 'OWN_PERMISSIONS_' + user.label;
   const perms = await http('/permisos/mis-permisos/empresa/' + user.id,
     user.token, undefined, undefined, true);
   requireThat(perms.status === 200,
@@ -131,6 +186,7 @@ async function verifyCrossedContexts(users) {
       // Dos rutas de seguridad conocidas y autorizadas para la empresa propia;
       // el 403 debe surgir de membresía MySQL, no de cuarentena global 503.
       for (const route of ['/tenant-context/', '/permisos/mis-permisos/empresa/']) {
+        phase = 'CROSS_SCOPE_' + current.label + '_TO_' + foreign.label;
         const res = await http(route + foreign.id, current.token, current.id);
         requireThat(res.status === 403,
           'cross_scope_' + current.label + '_to_' + foreign.label +
@@ -140,6 +196,7 @@ async function verifyCrossedContexts(users) {
     }
   }
   // Incluso una ruta sin JWT nunca debe devolver información de permisos.
+  phase = 'ANONYMOUS_PERMISSIONS';
   const anonymous = await http('/permisos/mis-permisos/empresa/' + users[0].id);
   requireThat(denied.has(anonymous.status), 'anonymous_permission_leak');
   console.log('MF3_CROSS_TENANT_DENIALS=PASS count=' + checks);
@@ -154,6 +211,7 @@ async function verifyCommercial(users) {
     for (const item of commercial) {
       const key = item.modulo + ':Ver';
       const expectedOwnRead = grants.has(key) && caps.has(key);
+      phase = 'OWN_COMMERCIAL_' + current.label + '_' + item.modulo;
       const own = await http(item.path, current.token, current.id);
       if (expectedOwnRead) {
         requireThat(own.status === 200,
@@ -170,6 +228,7 @@ async function verifyCommercial(users) {
       }
       for (const foreign of users) {
         if (current === foreign) continue;
+        phase = 'CROSS_COMMERCIAL_' + current.label + '_TO_' + foreign.label;
         const crossed = await http(item.path, current.token, foreign.id);
         requireThat(denied.has(crossed.status),
           'crossed_commercial_' + current.label + '_to_' + foreign.label +
@@ -212,7 +271,7 @@ main().catch(error => {
   // Mensajes genéricos y códigos técnicos; jamás salida de response/stack/tokens.
   const key = typeof error?.message === 'string' &&
     /^MF3_BLOCKED=[A-Za-z0-9_]+$/.test(error.message)
-      ? error.message : 'MF3_BLOCKED=unexpected_failure';
+      ? error.message : 'MF3_BLOCKED=unexpected_' + phase;
   console.error(key);
   process.exitCode = 1;
 });
