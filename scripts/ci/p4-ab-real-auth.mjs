@@ -11,7 +11,9 @@ const password = process.env.P4_TEST_PASSWORD;
 if (!password) throw new Error('P4_TEST_PASSWORD obligatorio para CI efímero.');
 const aId = Number(process.env.P4_COMPANY_A_ID ?? '1');
 const bId = Number(process.env.P4_COMPANY_B_ID ?? '2');
-assert(aId > 0 && bId > 0 && aId !== bId);
+const cId = Number(process.env.P4_COMPANY_C_ID ?? '3');
+assert([aId, bId, cId].every(x => Number.isInteger(x) && x > 0) &&
+  new Set([aId, bId, cId]).size === 3);
 const unwrap = x => x?.data ?? x?.Data ?? x;
 
 // Node fetch/undici sobrescribe el Host explícito con 127.0.0.1. Para
@@ -95,7 +97,11 @@ expectStatus(await call('GET', '/tenant-context/' + aId, jwtA), 200, 'membresía
 expectStatus(await call('GET', '/tenant-context/' + bId, jwtB), 200, 'membresía B');
 await deny('GET', '/tenant-context/' + bId, jwtA, null, 'membresía A→B');
 await deny('GET', '/tenant-context/' + aId, jwtB, null, 'membresía B→A');
+await deny('GET', '/tenant-context/' + cId, jwtA, null, 'membresía A→C');
+await deny('GET', '/tenant-context/' + cId, jwtB, null, 'membresía B→C');
 await deny('GET', '/productos', jwtA, bId, 'spoof cabecera A→B');
+await deny('GET', '/productos', jwtA, cId, 'spoof cabecera A→C');
+await deny('GET', '/productos', jwtB, cId, 'spoof cabecera B→C');
 
 const typeBody = { nombre: 'General P4 A/B', colorHex: '#2A4C68',
   activo: true, esPredeterminado: true };
@@ -145,6 +151,8 @@ for (const path of ['/ventas', '/compras', '/facturas']) {
   expectStatus(await call('GET', path, jwtA, aId), 200, path + ' A');
   expectStatus(await call('GET', path, jwtB, bId), 200, path + ' B');
   await deny('GET', path, jwtA, bId, 'spoof lectura ' + path);
+  await deny('GET', path, jwtA, cId, 'spoof lectura A→C ' + path);
+  await deny('GET', path, jwtB, cId, 'spoof lectura B→C ' + path);
 }
 for (const [method, path] of [
   ['POST', '/ventas/1/anular'], ['POST', '/compras/1/anular'],
@@ -166,6 +174,8 @@ expectStatus(await call('GET', '/tienda/categorias', '', null, undefined,
   'store-b.p4.test'), 200, 'tienda Host B');
 expectStatus(await call('GET', '/tienda/categorias', '', null, undefined,
   'unknown.p4.test'), 503, 'Host público no aprobado');
+expectStatus(await call('GET', '/tienda/categorias', '', null, undefined,
+  'store-c.p4.test'), 503, 'Tercera tienda sin binding aprobada permanece cerrada');
 
 // Etapa de borradores: permiso Crear real, dos empresas y referencias físicas propias.
 // No se confunde con confirmar, afectar stock, generar factura o subir archivos.
