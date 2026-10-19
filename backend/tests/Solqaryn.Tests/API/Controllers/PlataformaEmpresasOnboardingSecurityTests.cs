@@ -43,6 +43,7 @@ public sealed class PlataformaEmpresasOnboardingSecurityTests
         Assert.Equal(503, Assert.IsType<ObjectResult>(result).StatusCode);
         Assert.Empty(await db.Set<Empresa>().ToListAsync());
         Assert.Empty(await db.Set<UsuarioEmpresa>().ToListAsync());
+        Assert.Empty(await db.Set<ConfigEmpresa>().ToListAsync());
         Assert.Empty(await db.Set<RegistroAuditoria>().ToListAsync());
     }
 
@@ -103,6 +104,12 @@ public sealed class PlataformaEmpresasOnboardingSecurityTests
         Assert.True(member.Activa);
         Assert.Equal(nueva.Id, member.EmpresaId);
         Assert.Equal(fixture.AdministradorId, member.UsuarioId);
+        var config = Assert.Single(await db.Set<ConfigEmpresa>().ToListAsync());
+        Assert.Equal(nueva.Id, config.EmpresaId);
+        Assert.Equal(fixture.ActorId, config.CreadoPorUsuarioId);
+        Assert.Equal("HNL", config.Moneda);
+        Assert.Equal("America/Tegucigalpa", config.ZonaHoraria);
+        Assert.Equal(1L, config.Version);
         var role = await db.Roles.SingleAsync(x => x.Id == member.RolId);
         Assert.Equal(AmbitoAutorizacion.Empresa, role.Ambito);
         Assert.True(role.EsAdministrador);
@@ -114,6 +121,7 @@ public sealed class PlataformaEmpresasOnboardingSecurityTests
         Assert.Equal(OrigenAutorizacion.RolPlataforma, audit.OrigenAutorizacion);
         Assert.Equal(fixture.ActorId, audit.UsuarioId);
         Assert.Equal(AccionPermiso.Crear, audit.Accion);
+        Assert.Contains("\"ConfigEmpresaId\"", audit.ValoresNuevos ?? "");
     }
 
     [Fact]
@@ -166,6 +174,8 @@ public sealed class PlataformaEmpresasOnboardingSecurityTests
         var membresia = Assert.Single(await db.Set<UsuarioEmpresa>().ToListAsync());
         Assert.Equal(empresa.Id, membresia.EmpresaId);
         Assert.Equal(fixture.AdministradorId, membresia.UsuarioId);
+        Assert.Equal(empresa.Id,
+            Assert.Single(await db.Set<ConfigEmpresa>().ToListAsync()).EmpresaId);
         Assert.Single(await db.Set<RegistroAuditoria>().ToListAsync());
     }
 
