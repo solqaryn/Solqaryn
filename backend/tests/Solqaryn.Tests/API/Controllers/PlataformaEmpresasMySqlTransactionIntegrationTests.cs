@@ -37,10 +37,14 @@ public sealed class PlataformaEmpresasMySqlTransactionIntegrationTests
             .UseMySQL(cs, mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
             .AddInterceptors(new SimulatedAuditFailure())
             .Options;
+        var optFailConfig = new DbContextOptionsBuilder<AppDbContext>()
+            .UseMySQL(cs, mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
+            .AddInterceptors(new SimulatedConfigFailure())
+            .Options;
 
         try
         {
-            int actorId, adminId, tenantAId;
+            int actorId, adminId, pendienteId, tenantAId;
             await using (var setup = new AppDbContext(opt))
             {
                 await Phase7MySqlTestDatabase.InitializeFreshAsync(setup);
@@ -78,6 +82,19 @@ public sealed class PlataformaEmpresasMySqlTransactionIntegrationTests
                 };
                 setup.Usuarios.AddRange(actor, admin);
                 await setup.SaveChangesAsync();
+                // Esta cuenta permanece inactiva hasta el commit del alta.
+                // Ambas fallas posteriores deben restaurarla a inactiva.
+                var pendiente = new Usuario
+                {
+                    NombreUsuario = "p4-tenant-pendiente-transact",
+                    NombreCompleto = "Admin Pendiente",
+                    PasswordHash = "hash-efimero",
+                    RolId = enterpriseRole.Id,
+                    Activo = false,
+                    CreadoPorUsuarioId = actor.Id
+                };
+                setup.Usuarios.Add(pendiente);
+                await setup.SaveChangesAsync();
                 setup.Set<UsuarioRolPlataforma>().Add(
                     new UsuarioRolPlataforma(actor.Id, platformRole.Id));
                 var tenantA = new Empresa("Empresa A");
@@ -85,10 +102,11 @@ public sealed class PlataformaEmpresasMySqlTransactionIntegrationTests
                 await setup.SaveChangesAsync();
                 actorId = actor.Id;
                 adminId = admin.Id;
+                pendienteId = pendiente.Id;
                 tenantAId = tenantA.Id;
             }
 
-            // En B se hace commit de la empresa, la membresía y la auditoría.
+            // En B se hace un único commit de empresa, ConfigEmpresa, membresía y auditoría.
             await using (var successDb = new AppDbContext(opt))
             {
                 var controller = Controller(successDb, actorId);
@@ -111,14 +129,26 @@ public sealed class PlataformaEmpresasMySqlTransactionIntegrationTests
                     .IgnoreQueryFilters().ToListAsync());
                 Assert.Equal(b.Id, membership.EmpresaId);
                 Assert.Equal(adminId, membership.UsuarioId);
+                var config = Assert.Single(await verify.Set<ConfigEmpresa>()
+                    .IgnoreQueryFilters().ToListAsync());
+                Assert.Equal(b.Id, config.EmpresaId);
+                Assert.Equal(actorId, config.CreadoPorUsuarioId);
+                Assert.Equal("p4-platform-transact", config.CreadoPorNombreUsuario);
+                Assert.Equal("HNL", config.Moneda);
+                Assert.Equal("America/Tegucigalpa", config.ZonaHoraria);
+                Assert.Equal("{}", config.ImpuestosJson);
+                Assert.Equal("{}", config.EmisionJson);
+                Assert.Equal(1L, config.Version);
+                Assert.False(config.CorreoConfigurado);
                 var audit = Assert.Single(await verify.Set<RegistroAuditoria>()
                     .IgnoreQueryFilters().Where(x => x.Entidad == "Empresa").ToListAsync());
                 Assert.Equal(b.Id, audit.EmpresaId);
                 Assert.Equal(OrigenAutorizacion.RolPlataforma, audit.OrigenAutorizacion);
+                Assert.Contains("\"ConfigEmpresaId\"", audit.ValoresNuevos ?? "");
             }
 
-            // Simular error en la segunda escritura, cuando ya existe el ID
-            // de la empresa, y exigir rollback también de la primera inserción.
+            // Fallar la auditoría después de persistir empresa, ConfigEmpresa
+            // y membresía dentro de la transacción, antes de su único commit.
             await using (var failedDb = new AppDbContext(optFail))
             {
                 var controller = Controller(failedDb, actorId);
@@ -126,7 +156,20 @@ public sealed class PlataformaEmpresasMySqlTransactionIntegrationTests
                     controller.AltaControlada(new()
                     {
                         Nombre = "Empresa C - debe revertirse",
-                        AdministradorUsuarioId = adminId
+                        AdministradorUsuarioId = pendienteId
+                    }, CancellationToken.None));
+            }
+
+            // Fallar la inserción de ConfigEmpresa después de la primera
+            // escritura de Empresa y activación temporal del administrador.
+            await using (var failedConfigDb = new AppDbContext(optFailConfig))
+            {
+                var controller = Controller(failedConfigDb, actorId);
+                await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                    controller.AltaControlada(new()
+                    {
+                        Nombre = "Empresa D - config fallida",
+                        AdministradorUsuarioId = pendienteId
                     }, CancellationToken.None));
             }
 
@@ -134,11 +177,19 @@ public sealed class PlataformaEmpresasMySqlTransactionIntegrationTests
             {
                 Assert.False(await verify.Set<Empresa>().IgnoreQueryFilters()
                     .AnyAsync(x => x.Nombre == "Empresa C - debe revertirse"));
+                Assert.False(await verify.Set<Empresa>().IgnoreQueryFilters()
+                    .AnyAsync(x => x.Nombre == "Empresa D - config fallida"));
                 Assert.Equal(2, await verify.Set<Empresa>().IgnoreQueryFilters().CountAsync());
+                Assert.Single(await verify.Set<ConfigEmpresa>()
+                    .IgnoreQueryFilters().ToListAsync());
                 Assert.Single(await verify.Set<UsuarioEmpresa>()
                     .IgnoreQueryFilters().ToListAsync());
                 Assert.Single(await verify.Set<RegistroAuditoria>()
                     .IgnoreQueryFilters().Where(x => x.Entidad == "Empresa").ToListAsync());
+                // No queda administrador activado sin empresa tras un rollback.
+                var pendiente = await verify.Usuarios.IgnoreQueryFilters()
+                    .SingleAsync(x => x.Id == pendienteId);
+                Assert.False(pendiente.Activo);
             }
         }
         finally
@@ -168,6 +219,20 @@ public sealed class PlataformaEmpresasMySqlTransactionIntegrationTests
         {
             ControllerContext = new ControllerContext { HttpContext = context }
         };
+    }
+
+    private sealed class SimulatedConfigFailure : SaveChangesInterceptor
+    {
+        public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
+            DbContextEventData eventData,
+            InterceptionResult<int> result,
+            CancellationToken cancellationToken = default)
+        {
+            if (eventData.Context?.ChangeTracker.Entries<ConfigEmpresa>()
+                    .Any(x => x.State == EntityState.Added) == true)
+                throw new InvalidOperationException("Alta: falla simulada en ConfigEmpresa.");
+            return new ValueTask<InterceptionResult<int>>(result);
+        }
     }
 
     private sealed class SimulatedAuditFailure : SaveChangesInterceptor
