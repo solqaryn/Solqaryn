@@ -40,6 +40,7 @@ describe('MF3 - permisos vs capacidades empresariales', () => {
     expect(runtime.rutaHabilitada('productos')).toBe(true);
     expect(runtime.rutaHabilitada('productos/:id')).toBe(true);
     expect(runtime.rutaHabilitada('ordenes-compra')).toBe(false);
+    expect(runtime.rutaHabilitada('centro-reportes/ventas')).toBe(false);
     expect(runtime.rutaInicialPermitida()).toBe('/productos');
   });
 
