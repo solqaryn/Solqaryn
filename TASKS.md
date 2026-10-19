@@ -17,7 +17,7 @@ CONTEXT_MODE=CURRENT_STATE_ONLY
 
 ## Autoridad vigente
 
-- Roadmap y arquitectura objetivo: único Google Doc **PLAN MAESTRO SOLQARYN**, ID `1YdQlNJ312HuziyKb9E-GEt55dcgSmuFGgfsHxyzPUaw`.
+- Autoridad operativa del lanzamiento: **SOLQARYN PLAN COMERCIAL INICIAL UNIFICADO**, Drive ID `1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j` y control VAEP con 1123 microtareas. El Maestro anterior queda como visión futura no ejecutable.
 - Ejecución VAEP: `docs/VAEP_AUTHORITY.md`.
 - Identidad/estado técnico: `PROJECT_CONTEXT.md` y HEAD vivo de `dev`.
 - Pendientes deliberadamente aplazados: `docs/DETALLES_PENDIENTES.md`.
@@ -28,7 +28,7 @@ CONTEXT_MODE=CURRENT_STATE_ONLY
 - Los rollups históricos numerados y las secuencias de planes anteriores fueron retirados de esta superficie viva.
 - Las diez automatizaciones VAEP permanecen pausadas hasta autorización explícita del propietario.
 - No existe una cola, parent, gate o fase histórica con autoridad ejecutable desde este archivo.
-- El trabajo futuro se selecciona únicamente desde el Plan Maestro vigente + estado vivo + dependencias técnicas reales.
+- El trabajo futuro se selecciona únicamente desde el Plan Comercial Inicial vigente + estado vivo + dependencias técnicas reales.
 - **P0 multiempresa abierto:** #3596 y #3597 integrados en dev. Los 19 registros comerciales sin EmpresaId son datos de prueba DEV descartables conforme al propietario (2026-10-13). Su atribución histórica/backfill ya NO es requisito. Limpieza de datos comerciales aún sin ejecutar: preservar usuarios, credenciales, roles, permisos, membresías y configuración imprescindible; exigir inventario de dependencias, backup cifrado y restore ensayado. El verdadero P0 pendiente es aislar por EmpresaId todas las operaciones futuras (lecturas SQL, escrituras, FKs, inventarios, documentos, finanzas, medios, tienda pública, jobs y caché), con pruebas A/B MySQL reales. Cuarentena y bloqueo de segunda empresa continúan. Ver docs/tenancy/LIMPIEZA_DATOS_PRUEBA_DEV.md.
 
 ## Regla de mantenimiento
