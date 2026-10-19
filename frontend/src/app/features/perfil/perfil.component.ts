@@ -10,6 +10,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { PerfilService } from '../../services/perfil.service';
 import { Perfil } from '../../core/models/perfil.model';
 import { AuthService } from '../../core/auth/auth.service';
+import { TenantContextService } from '../../core/auth/tenant-context.service';
 
 function passwordsIguales(control: AbstractControl): ValidationErrors | null {
   const nueva = control.get('passwordNueva')?.value;
@@ -66,6 +67,7 @@ export class PerfilComponent implements OnInit, OnDestroy {
   constructor(
     private readonly perfilService: PerfilService,
     private readonly auth: AuthService,
+    public readonly tenantContext: TenantContextService,
     private readonly snackBar: MatSnackBar
   ) {}
 

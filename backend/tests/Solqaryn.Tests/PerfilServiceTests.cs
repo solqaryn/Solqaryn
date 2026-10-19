@@ -43,6 +43,32 @@ public class PerfilServiceTests
     }
 
     [Fact]
+    public async Task GetPerfilAsync_Rechaza_Jwt_Sin_Usuario_Identificable()
+    {
+        _currentUser.Setup(c => c.UsuarioId).Returns((int?)null);
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() => _service.GetPerfilAsync());
+
+        _usuarioRepository.Verify(r => r.GetByIdAsync(It.IsAny<int>()), Times.Never);
+    }
+
+    [Theory]
+    [InlineData(false, false, false)]
+    [InlineData(true, true, false)]
+    [InlineData(true, false, true)]
+    public async Task GetPerfilAsync_Rechaza_Cuenta_No_Vigente(
+        bool activo, bool bloqueado, bool eliminado)
+    {
+        var usuario = CrearUsuario();
+        usuario.Activo = activo;
+        usuario.Bloqueado = bloqueado;
+        usuario.Eliminado = eliminado;
+        _usuarioRepository.Setup(r => r.GetByIdAsync(25)).ReturnsAsync(usuario);
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() => _service.GetPerfilAsync());
+    }
+
+    [Fact]
     public async Task ActualizarPerfilAsync_Rechaza_Nombre_De_Usuario_Duplicado()
     {
         var usuarioActual = CrearUsuario();

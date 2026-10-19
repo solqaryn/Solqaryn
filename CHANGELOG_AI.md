@@ -1,3 +1,10 @@
+## 2026-10-18 — SQ-052 DEV: perfil propio multiempresa y rol empresarial verificado (candidato)
+
+- La cuarentena multiempresa permite únicamente `GET /perfil` exacto con JWT autenticado. El servicio conserva la resolución exclusiva por `UsuarioId` del claim y rechaza cuentas inexistentes, inactivas, bloqueadas o eliminadas; no acepta `UsuarioId` ni `EmpresaId` del cliente.
+- Permanecen bloqueados `PUT/POST/DELETE /perfil*`, rutas vecinas y `GET /permisos/mis-permisos/empresa/{id}`; no se habilitan módulos comerciales ni banderas.
+- La cabecera deja de mostrar el rol legacy del login y usa solamente `rolNombre` del contexto empresarial confirmado por `GET /tenant-context/{empresaId}`; si no existe contexto verificado, muestra un estado no autoritativo.
+- Pruebas fail-closed: JWT ausente, cuenta no vigente, subrutas/métodos vecinos, permisos en cuarentena y selección tenant divergente ya cubierta por TenantContextService. Pendiente CI exact-head, fusión a `dev` y readback DEV; sin cambios de datos, roles, usuarios, permisos, QA, PROD o `main`.
+
 ## 2026-10-18 — DEV: corrección mínima CI N0.4 (candidato)
 
 - Recuperación causal de N0.4: el manifiesto EF ya funciona (2926/2926 PASS), pero el gate histórico apuntaba a migraciones Pomelo N0.3/N0.4 excluidas del ensamblado Oracle actual. Se reemplaza exclusivamente su ejercicio obsoleto por snapshot/migraciones Oracle EF10, bootstrap MySQL 8.4 efímero, comprobación física de RBAC y rechazo real de grants sin FKs; unitarios N0.4, owner A/B y backfill se ejecutan dirigidos. Ninguna migración legacy se reinstala, ni se alteran datos DEV.

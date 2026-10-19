@@ -179,6 +179,54 @@ public sealed class UnscopedCommercialTenantGuardTests
         Assert.False(ejecutada);
     }
 
+    [Fact]
+    public async Task DosEmpresas_Permiten_Solo_GetPerfilPropio_Autenticado()
+    {
+        await using var db = NuevoContexto();
+        db.Set<Empresa>().AddRange(new Empresa("A"), new Empresa("B"));
+        await db.SaveChangesAsync();
+
+        var (status, _, ejecutada) = await ProcesarAsync(
+            db, "GET", "/perfil", autenticado: true);
+        Assert.True(ejecutada);
+        Assert.Equal(StatusCodes.Status204NoContent, status);
+
+        foreach (var (metodo, path) in new[]
+        {
+            ("GET", "/perfil/25"),
+            ("GET", "/perfil/"),
+            ("POST", "/perfil"),
+            ("PUT", "/perfil"),
+            ("PUT", "/perfil/foto"),
+            ("DELETE", "/perfil/foto"),
+            ("PUT", "/perfil/password"),
+            ("GET", "/permisos/mis-permisos/empresa/2")
+        })
+        {
+            var (bloqueado, payload, next) = await ProcesarAsync(
+                db, metodo, path, autenticado: true);
+            Assert.False(next);
+            Assert.Equal(StatusCodes.Status503ServiceUnavailable, bloqueado);
+            Assert.Equal("TENANT_DATA_ISOLATION_REQUIRED",
+                payload.GetProperty("code").GetString());
+        }
+    }
+
+    [Fact]
+    public async Task DosEmpresas_Bloquean_GetPerfil_SinJwt()
+    {
+        await using var db = NuevoContexto();
+        db.Set<Empresa>().AddRange(new Empresa("A"), new Empresa("B"));
+        await db.SaveChangesAsync();
+
+        var (status, payload, ejecutada) = await ProcesarAsync(db, "GET", "/perfil");
+
+        Assert.False(ejecutada);
+        Assert.Equal(StatusCodes.Status503ServiceUnavailable, status);
+        Assert.Equal("TENANT_DATA_ISOLATION_REQUIRED",
+            payload.GetProperty("code").GetString());
+    }
+
     [Theory]
     [InlineData("POST", "/auth/login")]
     [InlineData("POST", "/auth/renovar")]
@@ -495,7 +543,7 @@ public sealed class UnscopedCommercialTenantGuardTests
     }
 
     private static async Task<(int Status, JsonElement Payload, bool Next)> ProcesarAsync(
-        AppDbContext db, string metodo, string path)
+        AppDbContext db, string metodo, string path, bool autenticado = false)
     {
         var ejecutada = false;
         var middleware = new UnscopedCommercialTenantGuardMiddleware(context =>
@@ -509,6 +557,12 @@ public sealed class UnscopedCommercialTenantGuardTests
         contexto.Request.Path = path;
         contexto.Request.Method = metodo;
         contexto.Response.Body = new MemoryStream();
+        if (autenticado)
+        {
+            contexto.User = new ClaimsPrincipal(new ClaimsIdentity(
+                new[] { new Claim(ClaimTypes.NameIdentifier, "25") },
+                authenticationType: "Bearer"));
+        }
 
         await middleware.InvokeAsync(contexto, db);
         contexto.Response.Body.Position = 0;

@@ -66,7 +66,7 @@ import { PerformanceBaselineService } from './core/performance/performance-basel
               </button>
               <div class="user-copy">
                 <span class="user-name">{{ auth.nombreCompleto() }}</span>
-                <span class="user-role">{{ auth.rol() }}</span>
+                <span class="user-role">{{ tenantContext.rolVerificado() || 'Contexto empresarial no verificado' }}</span>
               </div>
               <button type="button" class="profile-button shell-icon-button" routerLink="/perfil" aria-label="Abrir mi perfil" title="Mi perfil">
                 @if (auth.fotoPerfilUrl(); as foto) {
@@ -111,7 +111,7 @@ export class AppComponent implements OnDestroy {
     public permisosRuntime: PermisosRuntimeService,
     public identidad: EmpresaIdentidadService,
     private sessionActivity: SessionActivityService,
-    private tenantContext: TenantContextService,
+    public tenantContext: TenantContextService,
     private router: Router,
     private themeApplier: ThemeApplierService,
     private seo: StorefrontSeoService,

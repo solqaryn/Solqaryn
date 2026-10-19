@@ -37,6 +37,23 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
             return;
         }
 
+        // Autogestión de perfil: únicamente GET exacto y con JWT ya autenticado.
+        // El controlador no recibe UsuarioId ni EmpresaId; PerfilService relee la
+        // cuenta propia por claim y exige que siga activa, no bloqueada y no eliminada.
+        // Ningún verbo vecino, subruta de perfil o endpoint /permisos se habilita aquí.
+        if (HttpMethods.IsGet(httpContext.Request.Method) &&
+            EsRutaExacta(httpContext.Request.Path, "/perfil"))
+        {
+            if (httpContext.User.Identity?.IsAuthenticated == true)
+            {
+                await _next(httpContext);
+                return;
+            }
+
+            await RechazarAsync(httpContext);
+            return;
+        }
+
         // Sesión de plataforma: GET exacto, sin EmpresaId ni opt-in comercial.
         // La autenticación JWT y el rol global vigente se verifican en MVC/MySQL.
         // No habilitar ninguna otra ruta /plataforma, ni otros métodos.
