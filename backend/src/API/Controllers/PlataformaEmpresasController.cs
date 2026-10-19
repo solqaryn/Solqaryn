@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Solqaryn.Application.Common;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Entities;
@@ -19,6 +20,8 @@ namespace Solqaryn.API.Controllers;
 [Route("plataforma/empresas")]
 public sealed class PlataformaEmpresasController : ControllerBase
 {
+    private static readonly Regex NombreUsuarioValido = new(
+        "^[a-zA-Z0-9._-]{3,50}$", RegexOptions.CultureInvariant | RegexOptions.Compiled);
     private readonly AppDbContext _db;
     private readonly ICurrentUserService _currentUser;
     private readonly IConfiguration _configuration;
@@ -226,26 +229,54 @@ public sealed class PlataformaEmpresasController : ControllerBase
             return Forbid();
 
         var nombre = dto?.Nombre?.Trim() ?? string.Empty;
-        if (nombre.Length == 0 || nombre.Length > 200 ||
-            dto!.AdministradorUsuarioId <= 0)
-            return BadRequest(ApiResponse<object>.Fail("Nombre o usuario administrador inválido."));
+        var nuevo = dto?.AdministradorNuevo;
+        // EXACTAMENTE una modalidad: el ID existente o una nueva credencial.
+        // Nunca se interpreta la existencia de dos fuentes como autorización.
+        if (dto is null || nombre.Length == 0 || nombre.Length > 200 ||
+            (nuevo is null ? dto.AdministradorUsuarioId <= 0 :
+                dto.AdministradorUsuarioId != 0))
+            return BadRequest(ApiResponse<object>.Fail("Nombre o modalidad de administrador inválidos."));
 
-        // Se admite la identidad PENDIENTE creada por el mismo operador global
-        // solo si nunca recibió membresías ni grants globales. Permanece inactiva
-        // hasta el commit atómico de empresa+configuración+membresía+auditoría.
-        var administrador = await _db.Usuarios.IgnoreQueryFilters()
-            .SingleOrDefaultAsync(u => u.Id == dto.AdministradorUsuarioId,
-                cancellationToken);
-        if (administrador is null || administrador.Bloqueado || administrador.Eliminado)
-            return BadRequest(ApiResponse<object>.Fail("El administrador solicitado no está habilitado."));
-        var pendiente = !administrador.Activo &&
-            administrador.CreadoPorUsuarioId == actorId &&
-            !await _db.Set<UsuarioEmpresa>().IgnoreQueryFilters().AsNoTracking()
-                .AnyAsync(m => m.UsuarioId == administrador.Id, cancellationToken) &&
-            !await _db.Set<UsuarioRolPlataforma>().IgnoreQueryFilters().AsNoTracking()
-                .AnyAsync(g => g.UsuarioId == administrador.Id, cancellationToken);
-        if (!administrador.Activo && !pendiente)
-            return BadRequest(ApiResponse<object>.Fail("La cuenta del administrador está suspendida."));
+        string? usuarioNuevo = null;
+        string? nombreCompletoNuevo = null;
+        if (nuevo is not null)
+        {
+            usuarioNuevo = nuevo.NombreUsuario?.Trim() ?? string.Empty;
+            nombreCompletoNuevo = nuevo.NombreCompleto?.Trim() ?? string.Empty;
+            var password = nuevo.Password ?? string.Empty;
+            // Mantener el contrato de creación de cuentas de /plataforma/gestion/usuarios.
+            if (!NombreUsuarioValido.IsMatch(usuarioNuevo) ||
+                nombreCompletoNuevo.Length is < 3 or > 150 ||
+                password.Length is < 10 or > 128 ||
+                !password.Any(char.IsUpper) || !password.Any(char.IsLower) ||
+                !password.Any(char.IsDigit) ||
+                !password.Any(c => !char.IsLetterOrDigit(c)))
+                return BadRequest(ApiResponse<object>.Fail("Usuario, nombre o contraseña inválidos."));
+            if (await _db.Usuarios.IgnoreQueryFilters().AsNoTracking()
+                .AnyAsync(u => u.NombreUsuario == usuarioNuevo, cancellationToken))
+                return Conflict(ApiResponse<object>.Fail("El nombre de usuario ya existe."));
+        }
+
+        Usuario? administrador = null;
+        var pendiente = false;
+        if (nuevo is null)
+        {
+            // Compatibilidad: la identidad previamente registrada sigue disponible
+            // y una cuenta suspendida no se convierte en admin por este alta.
+            administrador = await _db.Usuarios.IgnoreQueryFilters()
+                .SingleOrDefaultAsync(u => u.Id == dto.AdministradorUsuarioId,
+                    cancellationToken);
+            if (administrador is null || administrador.Bloqueado || administrador.Eliminado)
+                return BadRequest(ApiResponse<object>.Fail("El administrador solicitado no está habilitado."));
+            pendiente = !administrador.Activo &&
+                administrador.CreadoPorUsuarioId == actorId &&
+                !await _db.Set<UsuarioEmpresa>().IgnoreQueryFilters().AsNoTracking()
+                    .AnyAsync(m => m.UsuarioId == administrador.Id, cancellationToken) &&
+                !await _db.Set<UsuarioRolPlataforma>().IgnoreQueryFilters().AsNoTracking()
+                    .AnyAsync(g => g.UsuarioId == administrador.Id, cancellationToken);
+            if (!administrador.Activo && !pendiente)
+                return BadRequest(ApiResponse<object>.Fail("La cuenta del administrador está suspendida."));
+        }
 
         // Sólo un rol ADMIN de plantilla empresarial. Un rol de Plataforma
         // nunca se asigna como rol de una membresía UsuarioEmpresa.
@@ -262,23 +293,58 @@ public sealed class PlataformaEmpresasController : ControllerBase
             return StatusCode(StatusCodes.Status503ServiceUnavailable,
                 ApiResponse<object>.Fail("No existe una plantilla de administrador empresarial activa."));
 
+        // Usuario.RolId conserva el rol base NO administrador para los consumidores
+        // legacy; únicamente UsuarioEmpresa.RolId concede autoridad dentro de
+        // la empresa creada. No escribir UsuarioRolPlataforma.
+        var rolBaseId = 0;
+        if (nuevo is not null)
+        {
+            rolBaseId = await _db.Roles.IgnoreQueryFilters().AsNoTracking()
+                .Where(rol => rol.Ambito == AmbitoAutorizacion.Empresa &&
+                              rol.EmpresaId == null && rol.EsSistema &&
+                              !rol.EsAdministrador && rol.Activo && !rol.Eliminado)
+                .OrderBy(rol => rol.Id).Select(rol => rol.Id)
+                .FirstOrDefaultAsync(cancellationToken);
+            if (rolBaseId <= 0)
+                return StatusCode(StatusCodes.Status503ServiceUnavailable,
+                    ApiResponse<object>.Fail("No existe rol empresarial base no administrador."));
+        }
+
         if (await _db.Set<Empresa>().IgnoreQueryFilters()
                 .AsNoTracking().AnyAsync(e => e.Nombre == nombre, cancellationToken))
             return Conflict(ApiResponse<object>.Fail("Ya existe una empresa con el mismo nombre."));
 
-        // En MySQL, la activación de la identidad pendiente, la empresa, su
-        // ConfigEmpresa, la membresía y la auditoría comparten un único commit.
-        // Ningún SaveChanges intermedio confirma parcialmente el alta.
+        // El coste BCrypt se calcula antes de abrir la transacción, sin writes;
+        // la creación del Usuario y toda su persistencia sí comparten el commit.
+        var hashNuevo = nuevo is null ? null :
+            BCrypt.Net.BCrypt.HashPassword(nuevo.Password, workFactor: 12);
         await using var transaction = _db.Database.IsRelational()
             ? await _db.Database.BeginTransactionAsync(cancellationToken)
             : null;
 
-        if (pendiente)
+        if (nuevo is not null)
+        {
+            administrador = new Usuario
+            {
+                NombreUsuario = usuarioNuevo!,
+                NombreCompleto = nombreCompletoNuevo!,
+                PasswordHash = hashNuevo!,
+                RolId = rolBaseId,
+                Activo = true,
+                CreadoPorUsuarioId = actorId
+            };
+            _db.Usuarios.Add(administrador);
+            // La identidad adquiere ID dentro de la misma transacción MySQL.
+            // Si fallan ConfigEmpresa, membresía o auditoría, también se revierte.
+            await _db.SaveChangesAsync(cancellationToken);
+        }
+        else if (pendiente && administrador is not null)
         {
             administrador.Activo = true;
             administrador.ActualizadoPorUsuarioId = actorId;
             administrador.FechaActualizacion = DateTime.UtcNow;
         }
+        var administradorId = administrador!.Id;
 
         var empresa = new Empresa(nombre)
         {
@@ -299,7 +365,7 @@ public sealed class PlataformaEmpresasController : ControllerBase
         _db.Set<ConfigEmpresa>().Add(configEmpresa);
 
         var membresia = new UsuarioEmpresa(
-            dto.AdministradorUsuarioId, empresa.Id, rolEmpresaId)
+            administradorId, empresa.Id, rolEmpresaId)
         {
             CreadoPorUsuarioId = actorId,
             CreadoPorNombreUsuario = actor.NombreUsuario
@@ -318,13 +384,17 @@ public sealed class PlataformaEmpresasController : ControllerBase
             Accion = AccionPermiso.Crear,
             Entidad = nameof(Empresa),
             ReferenciaId = empresa.Id,
-            Descripcion = "Alta controlada de empresa, configuración y membresía inicial de administrador.",
+            Descripcion = nuevo is null
+                ? "Alta controlada de empresa, configuración y membresía inicial de administrador."
+                : "Alta atómica de usuario nuevo, empresa, configuración y membresía de administrador.",
+            // Auditoría intencionalmente SIN password, hash ni otros secretos.
             ValoresNuevos = System.Text.Json.JsonSerializer.Serialize(new
             {
                 EmpresaId = empresa.Id,
-                AdministradorUsuarioId = dto.AdministradorUsuarioId,
+                AdministradorUsuarioId = administradorId,
                 RolEmpresaId = rolEmpresaId,
-                ConfigEmpresaId = configEmpresa.Id
+                ConfigEmpresaId = configEmpresa.Id,
+                UsuarioCreadoEnAlta = nuevo is not null
             }),
             CorrelationId = HttpContext.TraceIdentifier,
             Resultado = "Exito"
@@ -336,7 +406,7 @@ public sealed class PlataformaEmpresasController : ControllerBase
         return Created($"/plataforma/empresas/{empresa.Id}", new
         {
             empresaId = empresa.Id,
-            administradorUsuarioId = dto.AdministradorUsuarioId,
+            administradorUsuarioId = administradorId,
             // El alta no implica que las operaciones comerciales estén
             // certificadas ni habilitadas; el middleware permanece vigente.
             operacionComercialHabilitada = false
@@ -347,7 +417,16 @@ public sealed class PlataformaEmpresasController : ControllerBase
 public sealed class AltaEmpresaPlataformaRequest
 {
     public string Nombre { get; set; } = string.Empty;
+    // Modalidad legacy intacta, mutuamente excluyente con AdministradorNuevo.
     public int AdministradorUsuarioId { get; set; }
+    public AdministradorNuevoEmpresaRequest? AdministradorNuevo { get; set; }
+}
+
+public sealed class AdministradorNuevoEmpresaRequest
+{
+    public string NombreUsuario { get; set; } = string.Empty;
+    public string NombreCompleto { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
 }
 
 public sealed class BorradorEmpresaPlataformaRequest

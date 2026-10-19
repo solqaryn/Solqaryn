@@ -1,3 +1,11 @@
+## 2026-10-19 — Corrección 2: alta empresarial con administrador nuevo (candidato DEV)
+
+- **Alcance:** sólo `POST /plataforma/empresas/alta-controlada`. Se añade la modalidad opcional `AdministradorNuevo { NombreUsuario, NombreCompleto, Password }`, mutuamente excluyente con `AdministradorUsuarioId` existente, manteniendo compatibilidad total con este último. UI global ofrece ambas opciones.
+- **Persistencia:** usuario nuevo con BCrypt coste 12 y rol empresarial base NO administrador, empresa, `ConfigEmpresa`, `UsuarioEmpresa` con plantilla ADMIN Empresa y `RegistroAuditoria` de plataforma comparten una transacción/commit MySQL. No se insertan grants `UsuarioRolPlataforma`; ni respuesta ni auditoría incluyen contraseñas o hashes.
+- **Invariantes:** requiere JWT y `PlataformaScopeService` live MySQL, más `MultiEmpresa:CommercialIsolationCertified` y `MultiEmpresa:PlatformOnboardingEnabled`; ambos OFF por defecto. Rol de sistema empresa activo/no borrado; denegación de credenciales débiles o usuario duplicado; no actividad comercial extra ni tienda publicada.
+- **Pruebas y readback pendientes de certificación:** cuentas previas sin regresión, nueva cuenta protegida, rol empresarial sin autoridad global, dos flags, conflicto y duplicidad, inyección de fallas ConfigEmpresa/membresía/auditoría y rollback íntegro de Usuario/Empresa/ConfigEmpresa/membresía/auditoría en MySQL real; CI exact-head y readback DEV sin escrituras productivas. No se modifican QA/PROD, migraciones, esquema, banderas ni secretos.
+- **Rollback:** revert del PR; no revertir ni borrar cuentas/empresas legítimas existentes. Estado `LISTO` exclusivamente con REVIEW_FIRST, CI, P0/P1=0 y evidencia causal de DEV.
+
 ## 2026-10-19 — Configuración pública tenant-safe por vinculación HMAC (candidato DEV)
 
 - Nueva lectura estricta `GET /tienda/configuracion` para devolver exclusivamente nombre, logo y moneda de `Empresa` / `ConfigEmpresa` que corresponden al `EmpresaId` fijado por `VerifiedPublicStoreTenant`. No se lee la configuración singleton `EmpresaConfiguracion` de otra empresa ni secretos administrativos.
