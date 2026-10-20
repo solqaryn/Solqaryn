@@ -350,11 +350,15 @@ def verify_release_response(claim, response, fresh_row):
 
 
 def _author_from_release_lease(lease):
-    for part in (lease or "").split("|"):
-        if part.startswith("OWNER="):
-            author = part.split("=", 1)[1]
-            if _OWNER.fullmatch(author):
-                return author
+    # A rejected independent REVIEW_FIRST writes OWNER=reviewer and preserves
+    # ORIGINAL_AUTHOR=implementer; never mistake reviewer for original author.
+    parts = (lease or "").split("|")
+    originals = [p.split("=", 1)[1] for p in parts
+                 if p.startswith("ORIGINAL_AUTHOR=")]
+    owners = [p.split("=", 1)[1] for p in parts if p.startswith("OWNER=")]
+    authors = originals if originals else owners
+    if len(authors) == 1 and _OWNER.fullmatch(authors[0]):
+        return authors[0]
     raise UnsafeSnapshot("AUTHOR_CANNOT_BE_RESOLVED_FROM_HANDOFF")
 
 
