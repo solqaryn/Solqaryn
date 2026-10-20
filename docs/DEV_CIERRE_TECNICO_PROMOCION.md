@@ -131,16 +131,16 @@ La certificación post-promoción debe incluir como mínimo: liveness/readiness,
 - DNS permanece fuera de esta fase;
 - si un cutover futuro es autorizado, debe tener TTL/readback/TLS/CORS/smoke y ruta de reversión independiente.
 
-## 8. Plan Maestro y SQ-350 / SQ-351
+## 8. Referencias históricas SQ-350 / SQ-351
 
-En esta FASE 4 **no se modifica el Plan Maestro**.
+Este registro de FASE 4 es histórico y **no modifica ni condiciona el Plan Comercial Inicial Unificado vigente**.
 
-Se reserva para la futura revisión mayor, con aprobación del propietario:
+Las siguientes referencias se conservan únicamente para trazabilidad de aquella revisión, sin reservar trabajo ni crear autorización:
 
 - incorporar la regla reforzada de aislamiento DEV/PROD;
 - revisar/incorporar los refuerzos correspondientes a `SQ-350` y `SQ-351`.
 
-Esta reserva es sólo una nota técnica de handoff. No crea una fila, gate, prioridad, dependencia ni autorización ejecutable fuera del único Plan Maestro vigente.
+Esta nota histórica no crea una fila, gate, prioridad, dependencia, pendiente ni autorización ejecutable. La única autoridad de ejecución actual es el Plan Comercial Inicial Unificado y su cola canónica.
 
 ## 9. Coste
 
