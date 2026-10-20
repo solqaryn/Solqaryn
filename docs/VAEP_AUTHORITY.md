@@ -88,6 +88,8 @@ Reglas:
 - IDs canónicos Supervisor (Alex): `:05=6abd62255ae88191a2dba6e1b00d3b4d`, `:17=6abd6235e100819195785fc76a44a8e0`, `:29=6abd6241c3e48191a8856ed7b0f42c5c`, `:41=6abd624e5e108191bef6bb879559328c`, `:53=6abd625b397c8191a49904227946a20f`.
 - Las tareas equivalentes antiguas en la cuenta de Javier están RETIRADAS e inactivas; no son canónicas ni deben reactivarse.
 - Un slot no termina en reporte o espera si existe acción material segura.
+- **Pool global de trabajo, autorizado el 2026-10-19:** las diez automatizaciones canónicas, tanto Primary como Supervisor, pueden reclamar, implementar, corregir, recuperar o revisar **cualquier microtarea elegible de cualquiera de las cinco lanes**. Ni el horario ni el dominio asociado a una pareja restringen el despachador. Despacho = cola global + dependencias actuales satisfechas + permiso + un solo lease exclusivo por scope. Una Primary prioriza construir/cerrar y una Supervisor prioriza revisión/recuperación, pero ambas pueden ejecutar trabajo material no reservado; **ninguna puede aprobar su propia entrega**. La revisión REVIEW_FIRST corresponde a una automatización distinta de la autora, no necesariamente a la pareja de horario.
+- Si solo hay una microtarea elegible, no asignarla simultáneamente a diez escritores: los ejecutores libres revisan entregas independientes o preparan evidencia read-only útil, sin inventar progreso, saltar dependencias ni falsificar el estado de la cola.
 - Un checkpoint es un disparador, no una frontera de ownership.
 - Tras `LISTO`, promover el siguiente trabajo dependency-valid del plan comercial inicial vigente.
 - `LISTO` es el único estado de cierre certificado.
@@ -210,6 +212,31 @@ El Google Sheet operativo canónico es `SOLQARYN - PLAN COMERCIAL INICIAL - AUTO
 
 ## 10. Gate de frescura y routing de Skills por microtarea
 
+### Evaluación universal del catálogo de Skills antes de cada microtarea (10/10 ejecutores)
+
+**Regla obligatoria para las cinco Primary y las cinco Supervisor, sin filtros por lane:** al seleccionar cualquier microtarea global elegible, y **antes de adquirir lease o modificar producto**, el ejecutor invoca `solqaryn-project-governance`, verifica su frescura contra HEAD vivo de `dev`, consulta el inventario vigente de `docs/REGISTRO_REFERENCIAS_SKILLS_SOLQARYN.md` y `references/skill-routing.md` y evalúa la **aplicabilidad de las doce referencias SKREF-01..SKREF-12** frente a los requisitos y riesgos concretos de esa microtarea. La evaluación del catálogo es 12/12; la lectura profunda, instalación y ejecución de las doce **NO** es obligatoria ni está autorizada por defecto.
+
+La matriz de selección se calcula para **cada tarea**, no para el número del minuto, la Primary/Supervisor, la pareja ni el lane:
+
+| Referencia evaluada | Pregunta concreta de aplicabilidad |
+| --- | --- |
+| SKREF-01 Agent Skills Specification | ¿Se crea, estructura o valida una Skill local? |
+| SKREF-02 Skill Creator integrado | ¿Se crea, edita, valida o empaqueta la Skill local con la herramienta oficial? |
+| SKREF-03 Impeccable | ¿Hay interfaces administrativas, dashboard, formularios, tablas, ajustes, onboarding o mejora visual? |
+| SKREF-04 Motion Skills | ¿La tarea requiere movimiento, animaciones o microinteracciones? |
+| SKREF-05 Taste Skill | ¿Hay home, landing, tienda pública, CMS visual o marketing? |
+| SKREF-06 Humanizer | ¿La tarea requiere texto UX, documentación, PR o redacción de informes? |
+| SKREF-07 Napkin | ¿Se documentan aprendizajes repetibles o runbooks sin crear autoridad paralela? |
+| SKREF-08 Token Optimizer | ¿Existe contexto largo/duplicado que requiera reducción sin perder evidencia crítica? |
+| SKREF-09 Caveman | ¿Se necesita síntesis efímera de bajo riesgo, nunca de seguridad ni prueba persistente? |
+| SKREF-10 Angular Developer | ¿Modifica Angular 22.2.1, Signals, rutas, componentes, formularios, pruebas o accesibilidad? |
+| SKREF-11 Security Threat Model | ¿Requiere modelado explícito de amenazas/límites de confianza JWT, RBAC, HMAC o multiempresa? |
+| SKREF-12 .NET Performance | ¿Existe síntoma/medición que justifique diagnóstico de rendimiento .NET 10, LINQ, async, memoria o I/O? |
+
+Registrar, en la evidencia normal de la **misma microtarea** y con `TASK_ID`/`RUN_ID`, una matriz compacta `SKILL_EVAL=12/12` con los doce resultados `APLICA`/`NO_APLICA` y justificación cuando aplique, más `SKILL_SELECTED` (puede ser vacío), origen, SHA pin, ruta oficial y motivo de cada referencia utilizada. **Evaluar todas no significa usar todas**. Abrir y aplicar sólo las necesarias y autorizadas desde su origen original y pin exacto, después de comprobar allowlist, integridad y compatibilidad. Si falta una fuente imprescindible, registrar un bloqueo causal para esa microtarea, sin suplantarla, inventar evidencias ni congelar tareas independientes. Si ninguna referencia externa corresponde, proceder sólo con la Skill local; no fabricar un requisito artificial.
+
+Quien haga `REVIEW_FIRST` debe evaluar también las doce referencias **según la revisión concreta**, y ser un ejecutor distinto de quien implementó. Ninguna referencia externa reemplaza el contrato VAEP, el único plan, la revisión independiente, permisos, lease, CI exact-head o las restricciones de DEV. Este protocolo no agrega automatizaciones, microtareas, dependencias de negocio ni instalaciones de herramientas.
+
 Todas las primarias y supervisoras **deben invocar primero** la Skill local de SOLQARYN; después leer el fichero canónico `.agents/skills/solqaryn-project-governance/SKILL.md` y `references/architecture.md` en HEAD vivo de `dev`. Contrastar con la versión instalada por ChatGPT y los paquetes del código actual. El check `node scripts/verify-solqaryn-skills.mjs --self-test` debe constar SUCCESS en CI exact-head o ejecutarse en checkout válido. Contradicción, origen no disponible o Skill no sincronizada => `SKILL_VERSION_MISMATCH/NO_GO`, sin reclamar lease ni escribir producto o runtime.
 
 Solo si un task necesita ayuda de una referencia externa, leer `docs/REGISTRO_REFERENCIAS_SKILLS_SOLQARYN.md` y validar origen original+pin+ruta bajo la allowlist. Reglas condicionales por lane de cada microtarea real: Seguridad -> governance, SKREF-11 sólo para modelado de amenazas explícito; Comercio -> SKREF-10 si edita Angular, Impeccable/Taste si afecta UI, SKREF-11 para riesgo de nuevas fronteras de confianza, SKREF-12 si se mide una lentitud .NET; UX -> SKREF-10 Angular, Impeccable/Taste/Motion/Humanizer según componente; Rutas -> governance y pruebas, SKREF-11 para amenazas HMAC/RBAC, SKREF-10 para Angular Router; QA -> pruebas/runbooks, SKREF-12 para rendimiento .NET cuando aplique. Cada Primary/Supervisor clasifica tarea, selecciona 0..N fuentes, verifica origen/pin/ruta y registra uso antes de actuar. No consultar las doce automáticamente, instalar copias, lanzar scripts ajenos ni añadir microtareas o ejecutores. No ejecutar scripts de terceros ni cambiar pins sin aprobación.
@@ -218,7 +245,7 @@ Solo si un task necesita ayuda de una referencia externa, leer `docs/REGISTRO_RE
 
 ## 11. Supervisión por cuenta independiente: alineación obligatoria
 
-Las cinco supervisoras existentes en la cuenta operativa asignada a **Alex Morales** son `NO_GO` hasta una actualización efectivamente ejecutada por su propietario, sin duplicar tareas ni alterar los IDs. La instrucción común de cada una es: *releer skill SOLQARYN, AGENTS.md y VAEP_AUTHORITY.md en HEAD vivo de dev; usar únicamente Plan Comercial Inicial y cola PLAN_COMERCIAL; inspeccionar la entrega de la Primary de su pareja; validar REVIEW_FIRST, RBAC y tenancy aplicables, CI exact-head, pruebas negativas, P0/P1=0, evidencias y rollback; no declarar LISTO sin readback; nunca autoactivar ni tocar QA/main/PROD*. Se distribuyen así:
+Las cinco Supervisor existentes pertenecen a la cuenta operativa de **Alex Morales**, tienen IDs y horarios canónicos que no se reemplazan ni duplican. Su función preferente es revisión independiente, recuperación y construcción secundaria, **sin reserva de dominios, tareas ni parejas**. Pueden ejecutar cualquier microtarea global realmente elegible que no tenga otro propietario con lease fresco. Las parejas indicadas a continuación son **referencias de coordinación y horarios, nunca filtros de despacho ni autorizaciones para auto-revisar trabajo**. En cada ejecución aplicar Skill vigente, VAEP, el Plan Comercial Inicial y evidencia de CI/seguridad según la microtarea; conservar REVIEW_FIRST por una automatización distinta de la autora. Sin compra ni cambios QA/main/PROD. Coordinación de referencia:
 
 | Horario | Supervisor real | Primary asignada | Dominio |
 | --- | --- | --- | --- |
@@ -228,7 +255,7 @@ Las cinco supervisoras existentes en la cuenta operativa asignada a **Alex Moral
 | :41 | 6abd624e5e108191bef6bb879559328c | :36 | 04_RUTAS |
 | :53 | 6abd625b397c8191a49904227946a20f | :48 | 05_QA_OPERACION |
 
-La cuenta propietaria de estas cinco tareas debe ejecutar la actualización y una relectura de cada ID que demuestre nombre/prompt comercial, par, estado `is_enabled=false` y horario intacto. Únicamente entonces actualizar `_AUTOMATION_SOURCE` con evidencia real, jamás a mano o por suposición. No sustituir por cinco tareas nuevas de la cuenta primaria; eso invalidaría la verificación independiente y bloquearía el cierre.
+Solo la cuenta propietaria de Alex puede actualizar y certificar directamente los prompts, estados reales (`is_enabled` tal como los reporte ChatGPT) y horarios de sus cinco Supervisor; las autorizaciones de activación ya otorgadas no exigen devolverlas a `false`. La reconciliación `_AUTOMATION_SOURCE` requiere evidencia auténtica de readback por cuenta, nunca inferencia desde una fórmula `=TRUE` o `CONFIG.ACTIVO`. No crear cinco tareas sustitutas en la cuenta de Javier ni suplantar su revisión independiente. Las cinco Primary de Javier pueden adoptar inmediatamente el despacho global desde su cuenta, sin alterar IDs/horarios. Si una cuenta no es accesible, declarar esa porción pendiente de readback, no fingir 10/10 trabajando.
 
 ## 12. Gate de admisión comercial
 
