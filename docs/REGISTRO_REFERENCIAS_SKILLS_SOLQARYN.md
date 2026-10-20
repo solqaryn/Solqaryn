@@ -51,9 +51,9 @@ Queda prohibido consultar una copia, fork, mirror, cache documental o reutilizac
 | 7 | Napkin | `blader/napkin` | `27fa60a895de4383b26a539136bc983155cb979c` | `SKILL.md` | Curacion de lecciones recurrentes y conocimiento operativo; nunca autoridad paralela. |
 | 8 | Token Optimizer | `alexgreensh/token-optimizer` | `37a9546b9fecba2c4e9a02ef4e90855d449bf08f` | `skills/token-optimizer/SKILL.md` | Progressive disclosure, reduccion de contexto duplicado y eficiencia sin retirar controles criticos. |
 | 9 | Caveman | `JuliusBrussee/caveman` | `15581d14007fd01fb3f132016741962f34936ca2` | `skills/caveman/SKILL.md`, `skills/caveman-compress/SKILL.md` | Compresion/resumen interno de bajo riesgo; nunca contratos, seguridad, migraciones, rollback, QA o evidencia persistente. |
-| 10 | Angular Developer (Google/Angular, MIT) | `angular/angular` | `6808966993bf2b2d455d9b6245e960a59a01b9a9` | `skills/dev-skills/angular-developer/SKILL.md` | Angular 22.2.1, Signals, formularios, routing, componentes, accesibilidad y pruebas, sólo si afecta Angular. |
-| 11 | Security Threat Model (OpenAI, Apache-2.0) | `openai/skills` | `49f948faa9258a0c61caceaf225e179651397431` | `skills/.curated/security-threat-model/SKILL.md` | Modelado de amenazas sobre límites de confianza, JWT/RBAC/HMAC y exposición A/B cuando corresponda. |
-| 12 | .NET Performance (.NET Foundation, MIT) | `dotnet/skills` | `9386ed7c1148a7bef970aa0502371c982effa01c` | `plugins/dotnet-diag/skills/analyzing-dotnet-performance/SKILL.md` | Diagnóstico de performance .NET 10 (LINQ, async, memoria, I/O) con evidencia de hot paths. |
+| 10 | SKREF-10 Angular Developer (Google/Angular, MIT) | `angular/angular` | `6808966993bf2b2d455d9b6245e960a59a01b9a9` | `skills/dev-skills/angular-developer/SKILL.md` | Angular 22.2.1, Signals, formularios, routing, componentes, accesibilidad y pruebas, sólo si afecta Angular. |
+| 11 | SKREF-11 Security Threat Model (OpenAI, Apache-2.0) | `openai/skills` | `49f948faa9258a0c61caceaf225e179651397431` | `skills/.curated/security-threat-model/SKILL.md` | Modelado de amenazas sobre límites de confianza, JWT/RBAC/HMAC y exposición A/B cuando corresponda. |
+| 12 | SKREF-12 .NET Performance (.NET Foundation, MIT) | `dotnet/skills` | `9386ed7c1148a7bef970aa0502371c982effa01c` | `plugins/dotnet-diag/skills/analyzing-dotnet-performance/SKILL.md` | Diagnóstico de performance .NET 10 (LINQ, async, memoria, I/O) con evidencia de hot paths. |
 
 ## Routing obligatorio
 
