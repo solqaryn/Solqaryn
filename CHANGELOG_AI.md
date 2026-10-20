@@ -6,6 +6,13 @@
 - Primer resultado post-corrección: Primary :00 obtuvo `LEASE_ACQUIRED` de `P0-002.B`, registró entrega a `VALIDANDO`, liberó el scope y empezó `P0-003.A` en el mismo run. Requiere revisión independiente y readback de cierre: NO declarar LISTO anticipado.
 - Alcance: `docs/VAEP_AUTHORITY.md`, `AGENTS.md` y CHANGELOG_AI. Sin 11a automatización, planes viejos, cambios de producto, compras o cambios QA/main/PROD.
 
+## 2026-10-20 — VAEP: reparación del CAS, separación entre claim y trabajo material
+
+- Añadido escritor de solicitudes `scripts/vaep/cas_lease_writer.py`: claim único mediante DeveloperMetadata de ID fijo + estado runtime + evento atómicos, comprobación de respuesta y readback, liberación únicamente con propietario y token coincidentes; sin auto-LISTO.
+- `test_cas_lease_writer.py`: 17 pruebas con diez adquisiciones distintas, salto de orden, colisión, vigencia, falsos ACTIVE_REAL y bloqueo de release ajeno, conectadas a VAEP CI.
+- Contrato antiautoapagado: fallos de permisos GitHub/Google o lease afectan únicamente su scope; ninguna automatización debe desactivarse ni pausar el control global. Se conserva la distinción entre software de construcción/validación y ejecución viva: integrar este PR no asegura diez Task runs ni un servicio persistente.
+- No altera filas comerciales, QA/main/PROD, datos, secretos, infraestructura ni crea más automatizaciones.
+
 ## 2026-10-20 — VAEP: despacho global estricto, anticambios de orden y ocupación útil
 
 - El usuario confirma que 10/10 actores deben tomar trabajo de cualquier área; prohibido saltar una tarea de menor ORDEN si está PENDIENTE, sus dependencias están LISTO y no tiene owner/lease. Permitir paralelismo sobre otras tareas elegibles únicamente tras reservar la anterior mediante writer atómico y readback, o cuando la anterior está bloqueada por dependencia real.
