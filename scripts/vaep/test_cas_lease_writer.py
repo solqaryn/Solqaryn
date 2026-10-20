@@ -180,3 +180,146 @@ class LeaseWriterTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+# Independent reviewer path, including CAS ownership and LISTO acceptance.
+from cas_lease_writer import (
+    build_review_claim, verify_review_claim_response,
+    build_review_completion, verify_review_completion_response,
+)
+
+REVIEWER = "6abd6235e100819195785fc76a44a8e0"
+
+
+def review_fixture(n=2, author=OWNER, task_index=1):
+    c, r = fixture(n)
+    target = r[task_index]
+    target[1] = "VALIDANDO"
+    target[3] = f"RELEASED|OWNER={author}|TOKEN=old|HEAD={HEAD}"
+    target[4] = HEAD
+    target[5] = "https://github.com/solqaryn/Solqaryn/pull/3691"
+    return c, r
+
+
+def review_claim(*, c=None, r=None, reviewer=REVIEWER, task_id="P001"):
+    if c is None or r is None:
+        c,r = review_fixture()
+    return build_review_claim(
+        c, r, task_id=task_id, reviewer=reviewer, run_id="REVIEW_RUN_1",
+        head=HEAD, now=NOW, runtime_sheet_id=2017583524,
+        events_sheet_id=958655496, expected_count=len(c)-1,
+    )
+
+
+def review_row(lease):
+    return ["P001", "VALIDANDO", lease.owner,
+            "ACTIVE_REVIEW|OWNER="+lease.owner+
+            "|TOKEN="+lease.token+"|RUN_ID="+lease.run_id+
+            "|HEAD="+lease.head]
+
+
+class IndependentReviewLeaseTests(unittest.TestCase):
+    def test_independent_review_claim_is_atomic_and_not_listo(self):
+        k = review_claim()
+        self.assertEqual(k.metadata_id, METADATA_BASE+1)
+        self.assertEqual(len(k.requests), 4)
+        self.assertEqual(list(k.requests[0]), ["createDeveloperMetadata"])
+        self.assertEqual(k.metadata_value.split("|")[-1], OWNER)
+        self.assertEqual(k.requests[1]["updateCells"]["rows"][0]["values"][0]["userEnteredValue"]["stringValue"], "VALIDANDO")
+        event = k.requests[3]["appendCells"]["rows"][0]["values"]
+        self.assertEqual(event[3]["userEnteredValue"]["stringValue"], "REVIEW_LEASE_ACQUIRED")
+        self.assertNotIn("LISTO", event[8]["userEnteredValue"]["stringValue"])
+
+    def test_review_must_have_original_handoff_with_evidence(self):
+        c,r=review_fixture()
+        r[1][5]=""
+        with self.assertRaisesRegex(UnsafeSnapshot,"REVIEW_MISSING_ORIGINAL_EVIDENCE"):
+            review_claim(c=c,r=r)
+        c,r=review_fixture()
+        r[1][3]="ACTIVE|OWNER="+OWNER
+        with self.assertRaisesRegex(UnsafeSnapshot,"REVIEW_MISSING_RELEASED_HANDOFF"):
+            review_claim(c=c,r=r)
+
+    def test_review_rejects_original_author_even_if_validating(self):
+        with self.assertRaisesRegex(UnsafeSnapshot, "SELF_REVIEW_FORBIDDEN"):
+            review_claim(reviewer=OWNER)
+
+    def test_review_cannot_skip_lower_order_pending(self):
+        c,r=review_fixture(n=2,task_index=2)
+        with self.assertRaisesRegex(UnsafeSnapshot, "OUT_OF_ORDER_REVIEW_CLAIM"):
+            review_claim(c=c,r=r,task_id="P002")
+
+    def test_review_cannot_skip_other_lower_review(self):
+        c,r=review_fixture(n=2)
+        r[2]=r[1].copy()
+        r[2][0]="P002"
+        with self.assertRaisesRegex(UnsafeSnapshot, "OUT_OF_ORDER_REVIEW_CLAIM"):
+            review_claim(c=c,r=r,task_id="P002")
+
+    def test_review_readback_checks_token_and_metadata_exactly(self):
+        k = review_claim()
+        good = {"replies":[{"createDeveloperMetadata":{"developerMetadata":confirmed_meta(k)}}]}
+        self.assertTrue(verify_review_claim_response(k, good, review_row(k)))
+        with self.assertRaisesRegex(UnsafeSnapshot,"REVIEW_LEASE_MISMATCH"):
+            verify_review_claim_response(k,good,["P001","VALIDANDO",k.owner,"ACTIVE_REVIEW|TOKEN=wrong"])
+        with self.assertRaisesRegex(UnsafeSnapshot,"NO_REVIEW_CAS_CONFIRMATION"):
+            verify_review_claim_response(k,{},review_row(k))
+
+    def test_listo_requires_positive_causal_proofs(self):
+        k=review_claim()
+        opts=dict(
+            current_runtime_row=review_row(k), captured_metadata=confirmed_meta(k),
+            now=NOW+timedelta(minutes=2), final_state="LISTO",
+            review_evidence="https://github.com/solqaryn/Solqaryn/pull/3691",
+            ci_evidence="https://github.com/solqaryn/Solqaryn/actions/runs/123",
+            review_details="Checked exact-head with independent diff and negative tests",
+            p0=0, p1=0,
+            runtime_sheet_id=2017583524,events_sheet_id=958655496,
+        )
+        self.assertEqual(build_review_completion(k,**opts)[1]["updateCells"]["rows"][0]["values"][0]["userEnteredValue"]["stringValue"],"LISTO")
+        with self.assertRaisesRegex(UnsafeSnapshot,"REVIEW_P0_P1_NOT_ZERO"):
+            build_review_completion(k,**{**opts,"p0":1})
+        with self.assertRaisesRegex(UnsafeSnapshot,"REVIEW_CI_PROOF_REQUIRED"):
+            build_review_completion(k,**{**opts,"ci_evidence":"not verified"})
+        with self.assertRaisesRegex(UnsafeSnapshot,"REVIEW_PROOF_REQUIRED"):
+            build_review_completion(k,**{**opts,"review_evidence":""})
+        with self.assertRaisesRegex(UnsafeSnapshot,"REVIEW_LEASE_MISMATCH"):
+            build_review_completion(k,**{**opts,"current_runtime_row":["P001","VALIDANDO","someoneelse","ACTIVE"]})
+
+    def test_release_preserves_original_author_and_original_evidence(self):
+        k=review_claim()
+        rel=build_review_completion(
+            k,current_runtime_row=review_row(k),captured_metadata=confirmed_meta(k),
+            now=NOW+timedelta(minutes=2),final_state="LISTO",
+            review_evidence="https://github.com/solqaryn/Solqaryn/pull/3691",
+            ci_evidence="https://github.com/solqaryn/Solqaryn/actions/runs/123",
+            review_details="Verified",p0=0,p1=0,
+            runtime_sheet_id=2017583524,events_sheet_id=958655496,
+        )
+        self.assertEqual(list(rel[0]),["deleteDeveloperMetadata"])
+        row=rel[1]["updateCells"]["rows"][0]["values"]
+        self.assertIn("ORIGINAL_AUTHOR="+OWNER,row[2]["userEnteredValue"]["stringValue"])
+        self.assertEqual(rel[1]["updateCells"]["range"]["endColumnIndex"],4)
+        self.assertEqual(rel[-1]["appendCells"]["rows"][0]["values"][3]["userEnteredValue"]["stringValue"],"REVIEW_FIRST_ACCEPTED_LISTO")
+
+    def test_failed_review_releases_validando_not_fakes_listo(self):
+        k=review_claim()
+        rel=build_review_completion(
+            k,current_runtime_row=review_row(k),captured_metadata=confirmed_meta(k),
+            now=NOW+timedelta(minutes=2),final_state="VALIDANDO",
+            review_evidence="https://github.com/solqaryn/Solqaryn/pull/3691",
+            ci_evidence="",review_details="Negative test failed; author must fix",
+            p0=1,p1=0,runtime_sheet_id=2017583524,events_sheet_id=958655496,
+        )
+        self.assertEqual(rel[1]["updateCells"]["rows"][0]["values"][0]["userEnteredValue"]["stringValue"],"VALIDANDO")
+        self.assertEqual(rel[-1]["appendCells"]["rows"][0]["values"][3]["userEnteredValue"]["stringValue"],"REVIEW_FIRST_NOT_APPROVED")
+
+    def test_review_finish_requires_exact_single_lock_removed_and_readback(self):
+        k=review_claim()
+        ok={"replies":[{"deleteDeveloperMetadata":{"deletedDeveloperMetadata":[confirmed_meta(k)]}}]}
+        row=["P001","LISTO","","RELEASED|ORIGINAL_AUTHOR="+OWNER+"|TOKEN="+k.token]
+        self.assertTrue(verify_review_completion_response(k,ok,row,"LISTO"))
+        with self.assertRaisesRegex(UnsafeSnapshot,"REVIEW_RELEASE_WRONG_LOCK"):
+            verify_review_completion_response(k,{"replies":[{"deleteDeveloperMetadata":{"deletedDeveloperMetadata":[]}}]},row,"LISTO")
+        with self.assertRaisesRegex(UnsafeSnapshot,"REVIEW_COMPLETION_READBACK_MISMATCH"):
+            verify_review_completion_response(k,ok,["P001","VALIDANDO","other","ACTIVE"],"LISTO")
