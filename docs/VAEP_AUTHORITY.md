@@ -94,6 +94,16 @@ Reglas:
 - Tras `LISTO`, promover el siguiente trabajo dependency-valid del plan comercial inicial vigente.
 - `LISTO` es el único estado de cierre certificado.
 
+### Regla de despacho verificable: menor ORDEN elegible, cero ocio voluntario
+
+Esta regla se aplica por igual a las cinco Primary y a las cinco Supervisor. Las 1.123 filas de `_COMERCIAL_SOURCE` (columna `ORDEN`) y `_RUNTIME_SOURCE` (ID, ESTADO, DEPENDENCIAS_ACTUALES, OWNER_AUTOMATION_ID y LEASE_STATUS) son la única base para seleccionar trabajo: **jamás** elegir una tarea de ORDEN superior cuando existe una de ORDEN inferior con estado `PENDIENTE`, todas sus dependencias actuales `LISTO`, sin dueño y sin lease vigente. El valor `NEXT_TASK_ID`, los handoffs de eventos o las especialidades de lane no son autoridad suficiente para saltar el orden. Registrar en cada claim la elección por `ORDEN` y la razón de exclusión de candidatas anteriores.
+
+Si una tarea anterior aún depende de otra, o está legitimamente reservada mediante lease fresco y propietario identificado, **no está disponible** y el siguiente ejecutor toma el menor ORDEN realmente elegible y libre. Con 32 tareas libres y diez ejecutores disponibles, cada uno debe intentar una tarea distinta, seleccionando la siguiente después del readback de los claims previos; nunca diez writers del mismo ID. Prohibido esperar el cierre de una tarea ajena mientras quede trabajo independiente disponible. Recalcular toda la cola al concluir `LISTO`, al liberar lease o tras detectar colisión.
+
+El selector canónico comprobable es `scripts/vaep/commercial_dispatch.py`: usa un snapshot **fresco y completo** de las dos fuentes, verifica 1.123 IDs/orden/estados/dependencias, distingue trabajos libres de reservados y aplica `GLOBAL_ASCENDING_ORDER_ELIGIBLE_ONLY`. El contrato incluye pruebas negativas en `scripts/vaep/test_commercial_dispatch.py` en la CI de VAEP. El selector **no escribe ni adquiere leases**. Su resultado no es autorización para mutar: el escritor de runtime debe garantizar exclusión atómica, releer HEAD y fuentes antes de reclamar, verificar mediante readback el lease de diez minutos y volver a seleccionar si hay colisión. Un `batchUpdate` sin guard de concurrencia **no** es un compare-and-swap. Nunca fingir un claim, actividad o certificación.
+
+`MAX_VOLUNTARY_IDLE=0` significa **no cerrar un disparo por ocio cuando existe trabajo libre y seguro**, y ejecutar o entregar trabajo material donde los permisos lo permitan. Si no queda trabajo implementable, revisar entregas `VALIDANDO` de un autor distinto o preparar evidencia read-only para desbloquear sin suplantar claims. Solo se espera cuando no hay tarea independiente ni revisión utilizable. La activación y los horarios de las tareas de ChatGPT **no** son un proceso residente 24/7 ni una garantía de continuidad entre disparos; el control operativo debe medir por separado disparo, claim, actividad material, revisión y `LISTO`. Cualquier garantía de ejecución ininterrumpida requiere una infraestructura de ejecución persistente autorizada y verificable, no sólo cambiar prompts o flags del Sheet.
+
 ## 3. Regla CURRENT-STATE ONLY
 
 Todo agente o automatización debe decidir desde el estado vivo actual:
