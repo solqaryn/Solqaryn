@@ -1,3 +1,10 @@
+## 2026-10-20 — Foco inicial en ocho microtareas retenidas
+
+- Prioridad de cierre: P0-002.B, P0-003.A, P0-004.A, P0-005.A, P0-006.A, P0-007.A, P0-009.A y P0-010.A antes de nuevas reclamaciones, siempre que exista accion segura.
+- Dos VALIDANDO estan libres; seis conservan owners con lease vencido y requieren prueba de fin, fencing CAS y readback, no borrado manual.
+- WIP=1 por automatizacion y un solo writer por scope. Cuando ninguno de los ocho sea recuperable con seguridad se admite avanzar al menor PENDIENTE libre, reconsultando las ocho despues de cada cierre.
+- No se modifica runtime ni se reclama nueva tarea hasta acreditar GO 10/10 con Alex y pruebas reales de permisos.
+
 ## 2026-10-20 — Corrección expresa: ciclo de vida y triaje antes de seleccionar pendientes
 
 - El propietario corrigió la ambigüedad de la implementación anterior: la progresión canónica es PENDIENTE → EN_PROGRESO → VALIDANDO → LISTO. El orden de los estados no constituye una prioridad invertida de asignación.
