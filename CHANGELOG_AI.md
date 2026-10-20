@@ -1,3 +1,11 @@
+## 2026-10-20 — Corrección expresa: ciclo de vida y triaje antes de seleccionar pendientes
+
+- El propietario corrigió la ambigüedad de la implementación anterior: la progresión canónica es PENDIENTE → EN_PROGRESO → VALIDANDO → LISTO. El orden de los estados no constituye una prioridad invertida de asignación.
+- Antes de cualquier nueva asignación, cada Primary/Supervisor comprueba responsables y candados de VALIDANDO y EN_PROGRESO, identifica revisiones independientes libres y trabajo propio en curso, y exige evidencia externa del final de una ejecución para recuperar leases ajenos. Un TTL no prueba actividad ni abandono.
+- Si esos trabajos no se pueden completar con seguridad, continuity_dispatch.py ahora retorna BUILD directamente sobre el PENDIENTE de menor ORDEN con dependencias LISTO, y reporta los posibles trabajos huérfanos sin detener el ciclo en ASSESS_STALE_RECOVERY.
+- Se mantiene WIP=1, CAS/fencing, REVIEW_FIRST ajeno y readback de LISTO. Se evita que una revisión rechazada cambie el autor original al revisor previo, cerrando un caso de autoaprobación por pérdida de procedencia. Pruebas negativas añadidas.
+- No se reescriben filas históricas, propietarios, estados comerciales, ni se crean automatizaciones. La certificación de código y CI no demuestra por sí sola que Alex esté verificado o que los diez ejecutores trabajen en vivo.
+
 ## 2026-10-20 — Prioridad operativa VALIDANDO > EN_PROGRESO > PENDIENTE y corrección CAS executor location
 
 - Decisión explícita del propietario: para las diez ejecutoras, priorizar entregas VALIDANDO listas para REVIEW_FIRST independiente, terminar/reconciliar EN_PROGRESO con WIP=1 y fencing, y recién después reclamar PENDIENTE; dentro de cada estado se preserva el menor ORDEN elegible y el plan comercial único. Si un lease ajeno no tiene prueba terminal y fencing, no está disponible ni bloquea otros scopes seguros.
