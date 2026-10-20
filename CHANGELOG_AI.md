@@ -1,3 +1,8 @@
+## 2026-10-19 — VAEP: despacho global sin lanes exclusivas
+
+- Las diez automatizaciones existentes (cinco Primary y cinco Supervisor) pueden tomar cualquier microtarea elegible del Plan Comercial Inicial, sin exclusividad de lane, horario ni pareja; dependencias reales, lease único y REVIEW_FIRST por un ejecutor diferente permanecen obligatorios.
+- Se corrige la documentación de sincronización de Supervisor que exigía incorrectamente `is_enabled=false` después de la activación; estado real solo por readback de la cuenta propietaria, nunca por `=TRUE` en Sheets. Sin cambios de microtareas, horarios, IDs, QA/main/PROD, permisos ni recursos pagos. Las tareas de Alex requieren alineación independiente de sus prompts desde su propia cuenta.
+
 ## 2026-10-19 — Referencias originales adicionales por microtarea (Angular, seguridad y .NET)
 - Autorizados SKREF-10 `angular/angular` (SHA `6808966993bf2b2d455d9b6245e960a59a01b9a9`, MIT), SKREF-11 `openai/skills` (SHA `49f948faa9258a0c61caceaf225e179651397431`, Apache-2.0) y SKREF-12 `dotnet/skills` (SHA `9386ed7c1148a7bef970aa0502371c982effa01c`, MIT); fuentes originales y rutas verificadas en esos commits.
 - Una sola Skill local, 12 referencias (11 GitHub fijadas + Skill Creator integrada); selección condicional por microtarea de las cinco Primary y las cinco Supervisor. Playwright CLI no incorporada, Playwright actual se conserva; ninguna automatización ni microtarea creada.
