@@ -6,7 +6,7 @@ PROJECT_ID=SOLQARYN
 REPOSITORY=solqaryn/Solqaryn
 LOCAL_SKILL_COUNT=1
 LOCAL_SKILL=.agents/skills/solqaryn-project-governance/SKILL.md
-EXTERNAL_SKILL_SOURCES=9
+EXTERNAL_SKILL_SOURCES=12
 EXTERNAL_SOURCE_POLICY=PINNED_ORIGIN_ONLY
 ```
 
@@ -14,7 +14,7 @@ EXTERNAL_SOURCE_POLICY=PINNED_ORIGIN_ONLY
 
 SOLQARYN mantiene una sola skill local: `solqaryn-project-governance`.
 
-Las nueve entradas siguientes NO se copian, instalan ni presentan como skills propias de SOLQARYN. Son referencias externas autorizadas. Cuando una tarea requiera una de ellas, el agente debe consultar directamente la fuente original indicada, fijada al pin revisado, leer su skill/especificacion original y adaptar sus principios a la arquitectura y restricciones de SOLQARYN.
+Las doce entradas siguientes NO se copian, instalan ni presentan como skills propias de SOLQARYN. Son referencias externas autorizadas. Cuando una tarea requiera una de ellas, el agente debe consultar directamente la fuente original indicada, fijada al pin revisado, leer su skill/especificacion original y adaptar sus principios a la arquitectura y restricciones de SOLQARYN.
 
 Queda prohibido consultar una copia, fork, mirror, cache documental o reutilizacion alojada dentro de otro proyecto como sustituto del origen autorizado.
 
@@ -33,9 +33,9 @@ Queda prohibido consultar una copia, fork, mirror, cache documental o reutilizac
 ## Contrato de frescura para automatizaciones
 
 1. Invocar primero `solqaryn-project-governance`, y contrastar sus instrucciones cargadas con el `SKILL.md` original de SOLQARYN en el HEAD **real de dev**. La copia instalada en ChatGPT puede quedarse rezagada tras un merge.
-2. Ejecutar `node scripts/verify-solqaryn-skills.mjs --self-test` sobre checkout actual o confirmar el check CI exact-head correspondiente. Si el stack, la autoridad comercial o los ocho pins GitHub divergen, **NO_GO**.
+2. Ejecutar `node scripts/verify-solqaryn-skills.mjs --self-test` sobre checkout actual o confirmar el check CI exact-head correspondiente. Si el stack, la autoridad comercial o los once pins GitHub divergen, **NO_GO**.
 3. Verificar la fuente `SOLQARYN PLAN COMERCIAL INICIAL UNIFICADO` (Drive `1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j`), `AGENTS.md`, `docs/VAEP_AUTHORITY.md` y estado de la cola antes de reclamar lease. No se permite utilizar el Plan Maestro futuro como fallback.
-4. Sólo consultar las referencias externas necesarias para la tarea; mantener exactamente los ocho pins GitHub y SKREF-02 integrado. El acceso a los orígenes no equivale a instalación de una Skill.
+4. Sólo consultar las referencias externas necesarias para la tarea; mantener exactamente los once pins GitHub y SKREF-02 integrado. El acceso a los orígenes no equivale a instalación de una Skill.
 5. Para reanudar una primaria: aprobar primero la sincronización real de su Skill, pruebas, par supervisor autorizado y gate de diez ejecutores. Con la discrepancia de Skill, no iniciar trabajo ni certificar.
 
 ## Inventario autorizado
@@ -51,6 +51,9 @@ Queda prohibido consultar una copia, fork, mirror, cache documental o reutilizac
 | 7 | Napkin | `blader/napkin` | `27fa60a895de4383b26a539136bc983155cb979c` | `SKILL.md` | Curacion de lecciones recurrentes y conocimiento operativo; nunca autoridad paralela. |
 | 8 | Token Optimizer | `alexgreensh/token-optimizer` | `37a9546b9fecba2c4e9a02ef4e90855d449bf08f` | `skills/token-optimizer/SKILL.md` | Progressive disclosure, reduccion de contexto duplicado y eficiencia sin retirar controles criticos. |
 | 9 | Caveman | `JuliusBrussee/caveman` | `15581d14007fd01fb3f132016741962f34936ca2` | `skills/caveman/SKILL.md`, `skills/caveman-compress/SKILL.md` | Compresion/resumen interno de bajo riesgo; nunca contratos, seguridad, migraciones, rollback, QA o evidencia persistente. |
+| 10 | Angular Developer (Google/Angular, MIT) | `angular/angular` | `6808966993bf2b2d455d9b6245e960a59a01b9a9` | `skills/dev-skills/angular-developer/SKILL.md` | Angular 22.2.1, Signals, formularios, routing, componentes, accesibilidad y pruebas, sólo si afecta Angular. |
+| 11 | Security Threat Model (OpenAI, Apache-2.0) | `openai/skills` | `49f948faa9258a0c61caceaf225e179651397431` | `skills/.curated/security-threat-model/SKILL.md` | Modelado de amenazas sobre límites de confianza, JWT/RBAC/HMAC y exposición A/B cuando corresponda. |
+| 12 | .NET Performance (.NET Foundation, MIT) | `dotnet/skills` | `9386ed7c1148a7bef970aa0502371c982effa01c` | `plugins/dotnet-diag/skills/analyzing-dotnet-performance/SKILL.md` | Diagnóstico de performance .NET 10 (LINQ, async, memoria, I/O) con evidencia de hot paths. |
 
 ## Routing obligatorio
 
@@ -63,6 +66,11 @@ Queda prohibido consultar una copia, fork, mirror, cache documental o reutilizac
 - Lecciones/runbooks recurrentes: referencia 7.
 - Sesiones extensas/contexto duplicado: referencia 8.
 - Resumen efimero de bajo riesgo: referencia 9, solo dentro de sus limites.
+- Angular 22 y sus pruebas: referencia 10 cuando la microtarea afecte frontend Angular.
+- Modelado de amenazas explícito: referencia 11, con evidencia del código y scope.
+- Diagnóstico/rendimiento .NET respaldado por síntomas o mediciones: referencia 12.
+
+Antes de cada microtarea, cada Primary/Supervisor usa primero Governance, clasifica componente y riesgo, selecciona sólo 0..N referencias necesarias, verifica el pin/ruta del origen original y anota qué usó. No consultar las doce por defecto. No crear tareas, automatizaciones ni informes extra. Playwright CLI no se incorpora: conservar Playwright actual.
 
 ## Restricciones de adaptacion
 
@@ -81,7 +89,7 @@ No pueden:
 
 ## Actualizacion de pins
 
-Los pins se mantienen fijos hasta revision expresa del propietario. Una actualizacion exige:
+Los pins se mantienen fijos hasta revision expresa del propietario. Los tres orígenes nuevos, sus SKILL.md y licencias fueron verificados en sus SHA originales: Angular MIT, OpenAI Apache-2.0 y dotnet MIT. La autorización es exclusivamente para lectura de metodologías; no autoriza instalar dependencias, ejecutar scripts externos, copiar agentes ni cambiar infraestructura. Una actualizacion exige:
 
 1. comparar el pin actual y el candidato;
 2. revisar cambios de comportamiento, licencia, scripts y supply chain;
