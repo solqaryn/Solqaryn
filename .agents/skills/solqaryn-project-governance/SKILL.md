@@ -36,6 +36,14 @@ Leer en el orden necesario:
 
 Toda decision operativa se basa en el estado vivo y en las autoridades vigentes. Fuentes no citadas por el Plan Comercial Inicial Unificado (única autoridad ejecutable actual) no introducen dependencias, prioridades ni gates. Los documentos del futuro Plan Maestro están fuera de la cola y no pueden imponer tareas.
 
+### Comprobación de frescura obligatoria (VAEP y automatizaciones)
+
+- La Skill incluida por ChatGPT o por otra interfaz **puede quedar desactualizada** aunque `dev` tenga código nuevo. Tras invocarla, consultar siempre **esta misma Skill canónica en el HEAD actual** de `solqaryn/Solqaryn` y `references/architecture.md`, usando el repositorio original y la rama `dev`.
+- El único plan ejecutable es `SOLQARYN PLAN COMERCIAL INICIAL UNIFICADO`, Drive ID `1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j`. Confirmar además `AGENTS.md`, `docs/PROJECT_SCOPE_LOCK.md` y `docs/VAEP_AUTHORITY.md` vigentes; los planes archivados nunca son fallback.
+- Ejecutar `node scripts/verify-solqaryn-skills.mjs --self-test` cuando haya checkout del HEAD; sin checkout, comprobar en GitHub que el check `SOLQARYN Project Scope Lock` aprobó **ese SHA exacto** e inspeccionar sus evidencias de versión. Verificar versiones contra `frontend/package.json`, `backend/src/API/Solqaryn.API.csproj` y `backend/src/Infrastructure/Solqaryn.Infrastructure.csproj`.
+- Si la Skill cargada contradice la del repositorio o no es posible acreditar la comprobación, **NO_GO para escrituras, leases, certificaciones y activación**. Informar `SKILL_VERSION_MISMATCH` y pedir sincronización de la Skill instalada; nunca asumir que GitHub actualiza automáticamente la copia instalada en ChatGPT.
+- Aplicar las referencias externas sólo cuando la microtarea las requiera, según el registro y su pin exacto. Ninguna automatización puede instalar, copiar o ejecutar scripts de repositorios externos sin aprobación. Mantener `dev` y seguridad fail-closed.
+
 ## 3. Gate de entrada para cualquier agente o chat
 
 Antes de analizar o escribir:
