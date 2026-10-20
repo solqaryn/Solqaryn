@@ -34,8 +34,8 @@ PAIRS = {
     EXECUTORS[7]: EXECUTORS[6],
     EXECUTORS[9]: EXECUTORS[8],
 }
-_DATE_EXPIRES = re.compile(r"(?:^|\\|)EXPIRES=([^|]+)")
-_DATE_AUTHOR = re.compile(r"(?:^|\\|)(?:ORIGINAL_AUTHOR|OWNER)=([0-9a-f]{32})(?:\\||$)")
+_DATE_EXPIRES = re.compile(r"(?:^|\|)EXPIRES=([^|]+)")
+_DATE_AUTHOR = re.compile(r"(?:^|\|)(?:ORIGINAL_AUTHOR|OWNER)=([0-9a-f]{32})(?:\||$)")
 
 
 def _expiration(lease):
@@ -53,7 +53,7 @@ def _author(lease):
     # Preserve the implementation author even if a previous REVIEW_FIRST
     # rejected the delivery and released its review lease.
     value = str(lease)
-    provenance = re.search(r"(?:^|\\|)ORIGINAL_AUTHOR=([0-9a-f]{32})(?:\\||$)", value)
+    provenance = re.search(r"(?:^|\|)ORIGINAL_AUTHOR=([0-9a-f]{32})(?:\||$)", value)
     if provenance:
         return provenance.group(1)
     owner = _DATE_AUTHOR.search(value)
