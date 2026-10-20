@@ -16,7 +16,7 @@ from datetime import datetime, timedelta, timezone
 import re
 import secrets
 
-from commercial_dispatch import UnsafeSnapshot, dispatch, verify_claim_choice, snapshot
+from commercial_dispatch import UnsafeSnapshot, dispatch, verify_claim_choice, snapshot, eligible_independent_reviews
 
 
 METADATA_BASE = 1_600_000_000
@@ -155,6 +155,11 @@ def build_claim(
     if not isinstance(runtime_sheet_id, int) or not isinstance(events_sheet_id, int):
         raise UnsafeSnapshot("INVALID_SHEET_ID")
     _check_executor_wip(runtime_rows, owner, exempt_task_id=task_id)
+    # Prefer independent VALIDANDO review over any new PENDIENTE claim.
+    ready_reviews = eligible_independent_reviews(
+        commercial_rows, runtime_rows, expected_count, reviewer=owner)
+    if ready_reviews:
+        raise UnsafeSnapshot("VALIDANDO_PRIORITY_BEFORE_PENDING:" + ready_reviews[0]["id"])
     result = dispatch(commercial_rows, runtime_rows, expected_count, candidate_owner=owner)
     verify_claim_choice(result, task_id)
     chosen = result["selected"]
@@ -200,6 +205,7 @@ def build_claim(
                 "metadataKey": EXECUTOR_METADATA_KEY,
                 "metadataValue": exec_meta_val,
                 "visibility": "DOCUMENT",
+                "location": {"spreadsheet": True},
             }
         }
     }
@@ -418,19 +424,11 @@ def build_review_claim(
         raise UnsafeSnapshot("REVIEW_MISSING_RELEASED_HANDOFF")
     if not all(tasks[d]["state"] == "LISTO" for d in item["dependencies"]):
         raise UnsafeSnapshot("REVIEW_DEPENDENCIES_NOT_SATISFIED")
-    other_reviews = sorted(
-        (t for t in tasks.values()
-         if t["state"] == "VALIDANDO"
-         and not t["owner"]
-         and t["lease"].startswith("RELEASED|")
-         and all(tasks[d]["state"] == "LISTO" for d in t["dependencies"])),
-        key=lambda t: t["order"],
-    )
+    other_reviews = eligible_independent_reviews(
+        commercial_rows, runtime_rows, expected_count, reviewer=reviewer)
     if not other_reviews or other_reviews[0]["id"] != task_id:
         raise UnsafeSnapshot("OUT_OF_ORDER_REVIEW_CLAIM")
-    pending = dispatch(commercial_rows, runtime_rows, expected_count)["selected"]
-    if pending and pending["order"] < item["order"]:
-        raise UnsafeSnapshot("OUT_OF_ORDER_REVIEW_CLAIM")
+    # VALIDANDO precedes PENDIENTE; do not skip an earlier eligible review.
     acquired = _stamp(now)
     expires = _stamp(now + timedelta(minutes=TTL_MINUTES))
     token = secrets.token_hex(16)
@@ -454,7 +452,7 @@ def build_review_claim(
     exec_meta_val = f"{reviewer}|{task_id}|{token}|{acquired}|{expires}"
     meta_exec = {"createDeveloperMetadata": {"developerMetadata": {
         "metadataId": exec_meta_id, "metadataKey": EXECUTOR_METADATA_KEY, "metadataValue": exec_meta_val,
-        "visibility": "DOCUMENT",
+        "visibility": "DOCUMENT", "location": {"spreadsheet": True},
     }}}
     req_list = [
         meta_task,
@@ -946,6 +944,7 @@ def build_takeover_claim(
                 "metadataKey": EXECUTOR_METADATA_KEY,
                 "metadataValue": new_exec_val,
                 "visibility": "DOCUMENT",
+                "location": {"spreadsheet": True},
             }
         }
     })
