@@ -26,9 +26,17 @@ Queda prohibido consultar una copia, fork, mirror, cache documental o reutilizac
 4. Leer primero el `SKILL.md` o especificacion indicada.
 5. Leer unicamente las referencias/scripts que esa fuente original requiera para la tarea concreta.
 6. No ejecutar instaladores, scripts, binarios ni dependencias externas por defecto. Cualquier ejecucion o incorporacion de dependencia exige revision de licencia, supply chain, impacto y autorizacion aplicable.
-7. Extraer principios y workflow pertinentes; no copiar defaults tecnologicos que contradigan Angular 22.2.1, ASP.NET Core 8, MySQL/EF Core, seguridad o gobierno de SOLQARYN.
+7. Extraer principios y workflow pertinentes; no copiar defaults tecnologicos que contradigan Angular 22.2.1, ASP.NET Core 10, EF Core 10.0.12 y MySql.EntityFrameworkCore 10.0.9, seguridad o gobierno de SOLQARYN.
 8. Si la fuente original no puede verificarse en el pin exacto, aplicar fail-closed y no sustituirla por otra copia.
 9. La fuente externa nunca puede anular `AGENTS.md`, `docs/VAEP_AUTHORITY.md`, `ARCHITECTURE.md`, `PROJECT_CONTEXT.md` ni `docs/PROJECT_SCOPE_LOCK.md`.
+
+## Contrato de frescura para automatizaciones
+
+1. Invocar primero `solqaryn-project-governance`, y contrastar sus instrucciones cargadas con el `SKILL.md` original de SOLQARYN en el HEAD **real de dev**. La copia instalada en ChatGPT puede quedarse rezagada tras un merge.
+2. Ejecutar `node scripts/verify-solqaryn-skills.mjs --self-test` sobre checkout actual o confirmar el check CI exact-head correspondiente. Si el stack, la autoridad comercial o los ocho pins GitHub divergen, **NO_GO**.
+3. Verificar la fuente `SOLQARYN PLAN COMERCIAL INICIAL UNIFICADO` (Drive `1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j`), `AGENTS.md`, `docs/VAEP_AUTHORITY.md` y estado de la cola antes de reclamar lease. No se permite utilizar el Plan Maestro futuro como fallback.
+4. Sólo consultar las referencias externas necesarias para la tarea; mantener exactamente los ocho pins GitHub y SKREF-02 integrado. El acceso a los orígenes no equivale a instalación de una Skill.
+5. Para reanudar una primaria: aprobar primero la sincronización real de su Skill, pruebas, par supervisor autorizado y gate de diez ejecutores. Con la discrepancia de Skill, no iniciar trabajo ni certificar.
 
 ## Inventario autorizado
 
