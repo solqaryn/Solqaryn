@@ -1,3 +1,9 @@
+## 2026-10-20 — VAEP: despacho global estricto, anticambios de orden y ocupación útil
+
+- El usuario confirma que 10/10 actores deben tomar trabajo de cualquier área; prohibido saltar una tarea de menor ORDEN si está PENDIENTE, sus dependencias están LISTO y no tiene owner/lease. Permitir paralelismo sobre otras tareas elegibles únicamente tras reservar la anterior mediante writer atómico y readback, o cuando la anterior está bloqueada por dependencia real.
+- Añadido `scripts/vaep/commercial_dispatch.py`: selector determinista de lectura, valida 1123 IDs y dependencias, orden, estados, claims y rechaza saltos; no inventa lease ni reemplaza un writer transaccional. 14 pruebas para 32 candidatos, 10 selecciones diferentes, ciclos, leaks de propietario, dependencias adelantadas y fallos de integridad integradas a CI VAEP.
+- Este cambio endurece contrato, agente y comprobación CI en `dev`, no ejecuta tareas de producto ni garantiza un proceso 24/7: un programador horario no acredita `ACTIVE_REAL`. Sin tocar QA, main, PROD, 1123 microtareas, credenciales, servicios ni compras.
+
 ## 2026-10-19 — VAEP: evaluación exhaustiva de 12 referencias antes de cada tarea
 
 - Autorización del propietario: los 10 ejecutores son un pool global sin lanes exclusivos; cualquiera puede tomar cualquier microtarea del Plan Comercial Inicial que esté realmente elegible y libre de lease. REVISION_FIRST siempre por actor independiente.

@@ -1,0 +1,112 @@
+"""Tests for global, non-idling, dependency-safe and non-skipping VAEP dispatch."""
+import unittest
+from commercial_dispatch import UnsafeSnapshot, dispatch, verify_claim_choice
+
+
+COMMERCIAL_HEADER = ['ID','PROGRAMA_PRIORIDAD','MICROTAREA','CRITERIO_EXIGIDO','ORDEN','PLAN_COMERCIAL_DOC_ID','VERSION_FUENTE','UNIDAD_ORIGEN_LANE']
+RUNTIME_HEADER = ['ID','ESTADO','OWNER_AUTOMATION_ID','LEASE_STATUS','HEAD','EVIDENCIA','BLOQUEO','NEXT_ACTION','UPDATED_AT','DEPENDENCIAS_ACTUALES','DEPENDENCIAS_OK','PRIORIDAD_ACTUAL','P0','P1','ROLLBACK','RESULTADO','NOTA_RUNTIME','RESERVED']
+
+
+def tables(*items):
+    commercial, runtime = [COMMERCIAL_HEADER], [RUNTIME_HEADER]
+    for order, ident, state, deps, owner, lease in items:
+        commercial.append([ident, '', ident, '', str(order), '', '', 'NO_LANE_RESTRICTIONS'])
+        runtime.append([ident, state, owner, lease, '', '', '', '', '', deps, '', '', '', '', '', '', '', ''])
+    return commercial, runtime
+
+
+def pick(*items):
+    return dispatch(*tables(*items), expected_count=len(items))
+
+
+class CommercialDispatchTests(unittest.TestCase):
+    def test_bootstrap_forward_dependency_is_valid(self):
+        result = pick(
+            (1, 'P0-001.A', 'PENDIENTE', 'P0-012.B', '', ''),
+            (2, 'P0-001.B', 'PENDIENTE', 'P0-001.A | P0-012.B', '', ''),
+            (23, 'P0-012.A', 'PENDIENTE', '', '', ''),
+            (24, 'P0-012.B', 'PENDIENTE', 'P0-012.A', '', ''),
+        )
+        self.assertEqual(result['selected']['id'], 'P0-012.A')
+        self.assertEqual(len(result['dependency_wait']), 3)
+
+    def test_32_eligible_workers_take_ten_distinct_lowest_orders(self):
+        items = [(i, f'T-{i:03d}', 'PENDIENTE', '', '', '') for i in range(1, 33)]
+        claimed = []
+        for slot in range(10):
+            result = pick(*items)
+            winner = result['selected']
+            self.assertEqual(winner['order'], slot + 1)
+            self.assertEqual(len(result['available']), 32-slot)
+            self.assertTrue(verify_claim_choice(result, winner['id']))
+            claimed.append(winner['id'])
+            items[slot] = (slot + 1, winner['id'], 'EN_PROGRESO', '', f'worker-{slot}', 'ACTIVE')
+        self.assertEqual(len(set(claimed)), 10)
+
+    def test_lowest_order_overrides_priority_label_and_lane(self):
+        result = pick(
+            (30, 'HIGH_PRIORITY', 'PENDIENTE', '', '', ''),
+            (3, 'LOW_PRIORITY', 'PENDIENTE', '', '', ''),
+        )
+        self.assertEqual(result['selected']['id'], 'LOW_PRIORITY')
+        with self.assertRaisesRegex(UnsafeSnapshot, 'OUT_OF_ORDER_CLAIM'):
+            verify_claim_choice(result, 'HIGH_PRIORITY')
+
+    def test_busy_first_work_goes_to_next_free_not_idle(self):
+        result = pick((1,'A','PENDIENTE','','other','ACTIVE'), (2,'B','PENDIENTE','','',''))
+        self.assertEqual(result['selected']['id'], 'B')
+        self.assertFalse(result['idle_permitted'])
+
+    def test_lease_unknown_is_never_claimable(self):
+        result = pick((1,'A','PENDIENTE','','','UNKNOWN'), (2,'B','PENDIENTE','','',''))
+        self.assertEqual(result['selected']['id'], 'B')
+
+    def test_review_is_useful_even_if_no_build_ready(self):
+        result = pick((1,'A','VALIDANDO','','','RELEASED'), (2,'B','PENDIENTE','A','',''))
+        self.assertIsNone(result['selected'])
+        self.assertEqual(result['independent_review'], ['A'])
+        self.assertFalse(result['idle_permitted'])
+
+    def test_blocked_chain_allows_other_independent_work(self):
+        result = pick((1,'A','PENDIENTE','B','',''), (2,'B','VALIDANDO','','',''), (3,'C','PENDIENTE','','',''))
+        self.assertEqual(result['selected']['id'], 'C')
+
+    def test_no_tasks_ready_permits_wait(self):
+        result = pick((1,'A','PENDIENTE','B','',''), (2,'B','BLOQUEADO','','',''))
+        self.assertTrue(result['idle_permitted'])
+
+    def test_long_dependency_chain_no_recursion_limit(self):
+        items = [(i, f'T-{i:04d}', 'PENDIENTE', f'T-{i-1:04d}' if i > 1 else '', '', '') for i in range(1, 1124)]
+        result = pick(*items)
+        self.assertEqual(result['selected']['id'], 'T-0001')
+        self.assertEqual(len(result['dependency_wait']), 1122)
+
+    def test_unknown_dependency_fails_closed(self):
+        with self.assertRaisesRegex(UnsafeSnapshot, 'UNKNOWN_DEPENDENCY'):
+            pick((1,'A','PENDIENTE','MISSING','',''))
+
+    def test_cycle_fails_closed(self):
+        with self.assertRaisesRegex(UnsafeSnapshot, 'CYCLIC_DEPENDENCY'):
+            pick((1,'A','PENDIENTE','B','',''), (2,'B','PENDIENTE','A','',''))
+
+    def test_mismatch_and_duplicate_fails_closed(self):
+        commercial, runtime = tables((1,'A','PENDIENTE','','',''), (2,'B','PENDIENTE','','',''))
+        runtime[2][0] = 'C'
+        with self.assertRaisesRegex(UnsafeSnapshot, 'ID_MISMATCH'):
+            dispatch(commercial, runtime, expected_count=2)
+        commercial, runtime = tables((1,'A','PENDIENTE','','',''), (1,'B','PENDIENTE','','',''))
+        with self.assertRaisesRegex(UnsafeSnapshot, 'DUPLICATE_ORDER'):
+            dispatch(commercial, runtime, expected_count=2)
+
+    def test_invalid_status_fails_closed(self):
+        with self.assertRaisesRegex(UnsafeSnapshot, 'INVALID_STATE'):
+            pick((1,'A','HACER','','',''))
+
+    def test_mismatched_count_fails_closed(self):
+        commercial, runtime = tables((1,'A','PENDIENTE','','',''))
+        with self.assertRaisesRegex(UnsafeSnapshot, 'PLAN_RUNTIME_COUNT_MISMATCH'):
+            dispatch(commercial, runtime)
+
+
+if __name__ == '__main__':
+    unittest.main()
