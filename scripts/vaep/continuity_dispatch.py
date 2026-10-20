@@ -16,15 +16,15 @@ import re
 from commercial_dispatch import UnsafeSnapshot, dispatch, snapshot
 
 EXECUTORS = (
-    "6aa15346f5408191bdd9043fd26ff7aa",  # Primary :00
+    "6ad7bbf79c488191bf893e6c08ea9b5f",  # Primary :00
     "6abd62255ae88191a2dba6e1b00d3b4d",  # Supervisor :05
-    "6aa1534deee481918280def1343adcfa",  # Primary :12
+    "6ad7bc0d48748191aa1dd0ce2f18d22a",  # Primary :12
     "6abd6235e100819195785fc76a44a8e0",  # Supervisor :17
-    "6abd70e42cb4819190b3b28916dc9dbb",  # Primary :24
+    "6ad7bc1cc7b8819190665e5ed78610d4",  # Primary :24
     "6abd6241c3e48191a8856ed7b0f42c5c",  # Supervisor :29
-    "6aa1535a51508191a610e6cdb90a2a4d",  # Primary :36
+    "6ad7bc3001b88191add05d9b4d5a4130",  # Primary :36
     "6abd624e5e108191bef6bb879559328c",  # Supervisor :41
-    "6aa1535f8cd48191b73e10f17843372a",  # Primary :48
+    "6ad7bc3ebea08191a16dc7c9f1f3303b",  # Primary :48
     "6abd625b397c8191a49904227946a20f",  # Supervisor :53
 )
 PAIRS = {
