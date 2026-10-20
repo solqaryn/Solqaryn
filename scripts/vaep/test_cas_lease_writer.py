@@ -4,7 +4,12 @@ from datetime import datetime, timedelta, timezone
 
 from cas_lease_writer import (
     METADATA_BASE, METADATA_KEY, TTL_MINUTES, UnsafeSnapshot,
+    EXECUTOR_METADATA_BASE, EXECUTOR_METADATA_KEY,
     build_claim, build_release, verify_claim_response, verify_release_response,
+    build_review_claim, verify_review_claim_response,
+    build_review_completion, verify_review_completion_response,
+    build_stale_lease_recovery, verify_stale_lease_recovery_response,
+    build_takeover_claim, verify_takeover_claim_response,
 )
 
 COMMERCIAL = ["ID","PROGRAMA_PRIORIDAD","MICROTAREA","CRITERIO_EXIGIDO","ORDEN","PLAN_COMERCIAL_DOC_ID","VERSION_FUENTE","UNIDAD_ORIGEN_LANE"]
@@ -24,13 +29,14 @@ def fixture(n=2):
     return comm, run
 
 
-def claim(*, n=2, commercial=None, runtime=None, chosen="P001", now=NOW, head=HEAD, run_id="RUN_123"):
+def claim(*, n=2, commercial=None, runtime=None, chosen="P001", now=NOW, head=HEAD, run_id="RUN_123", owner=OWNER, enforce_executor_metadata=False):
     c, r = fixture(n)
     return build_claim(
         commercial or c, runtime or r,
-        task_id=chosen, owner=OWNER, run_id=run_id, head=head, now=now,
+        task_id=chosen, owner=owner, run_id=run_id, head=head, now=now,
         runtime_sheet_id=2017583524, events_sheet_id=958655496,
         expected_count=len((commercial or c))-1,
+        enforce_executor_metadata=enforce_executor_metadata,
     )
 
 
@@ -168,26 +174,20 @@ class LeaseWriterTests(unittest.TestCase):
             verify_release_response(k,{"replies":[{"deleteDeveloperMetadata":{"deletedDeveloperMetadata":[]}}]},row)
 
     def test_parallel_ten_have_distinct_fixed_metadata_ids(self):
-        c,r=fixture(32)
-        issued=[]
-        for i in range(1,11):
-            k=claim(commercial=c,runtime=r,chosen=f"P{i:03d}")
+        c, r = fixture(32)
+        issued = []
+        for i in range(1, 11):
+            owner_i = f"6aa15346f5408191bdd9043fd26ff7{i:02x}"
+            k = claim(commercial=c, runtime=r, chosen=f"P{i:03d}", owner=owner_i)
             issued.append(k.metadata_id)
-            r[i][1]="EN_PROGRESO";r[i][2]=k.owner;r[i][3]="ACTIVE|TOKEN="+k.token
-        self.assertEqual(issued,[METADATA_BASE+i for i in range(1,11)])
-        self.assertEqual(len(set(issued)),10)
-
-
-if __name__ == "__main__":
-    unittest.main()
+            r[i][1] = "EN_PROGRESO"
+            r[i][2] = k.owner
+            r[i][3] = "ACTIVE|TOKEN=" + k.token
+        self.assertEqual(issued, [METADATA_BASE + i for i in range(1, 11)])
+        self.assertEqual(len(set(issued)), 10)
 
 
 # Independent reviewer path, including CAS ownership and LISTO acceptance.
-from cas_lease_writer import (
-    build_review_claim, verify_review_claim_response,
-    build_review_completion, verify_review_completion_response,
-)
-
 REVIEWER = "6abd6235e100819195785fc76a44a8e0"
 
 
@@ -323,3 +323,148 @@ class IndependentReviewLeaseTests(unittest.TestCase):
             verify_review_completion_response(k,{"replies":[{"deleteDeveloperMetadata":{"deletedDeveloperMetadata":[]}}]},row,"LISTO")
         with self.assertRaisesRegex(UnsafeSnapshot,"REVIEW_COMPLETION_READBACK_MISMATCH"):
             verify_review_completion_response(k,ok,["P001","VALIDANDO","other","ACTIVE"],"LISTO")
+
+
+class StaleLeaseRecoveryAndTakeoverTests(unittest.TestCase):
+    def test_double_owner_wip_rejected(self):
+        c, r = fixture(2)
+        r[1][1] = "EN_PROGRESO"
+        r[1][2] = OWNER
+        r[1][3] = f"ACTIVE|OWNER={OWNER}|TOKEN=tok1|RUN_ID=run1|EXPIRES=2026-10-20T15:00:00Z|HEAD={HEAD}"
+        with self.assertRaisesRegex(UnsafeSnapshot, "EXECUTOR_WIP_LIMIT_EXCEEDED"):
+            claim(commercial=c, runtime=r, chosen="P002", owner=OWNER)
+
+    def test_unexpired_lease_recovery_rejected(self):
+        c, r = fixture(2)
+        r[1][1] = "EN_PROGRESO"
+        r[1][2] = OWNER
+        expires = (NOW + timedelta(minutes=5)).isoformat().replace("+00:00", "Z")
+        r[1][3] = f"ACTIVE|OWNER={OWNER}|TOKEN=tok1|RUN_ID=run1|START=2026-10-20T14:25:00Z|EXPIRES={expires}|HEAD={HEAD}"
+        with self.assertRaisesRegex(UnsafeSnapshot, "LEASE_NOT_EXPIRED"):
+            build_stale_lease_recovery(
+                c, r, task_id="P001", recovered_by=REVIEWER, run_id="REC_RUN_1",
+                head=HEAD, now=NOW, reason="TEST_RECOVERY",
+                runtime_sheet_id=2017583524, events_sheet_id=958655496,
+            )
+
+    def test_expired_lease_fenced_recovery(self):
+        c, r = fixture(2)
+        r[1][1] = "EN_PROGRESO"
+        r[1][2] = OWNER
+        expired = (NOW - timedelta(minutes=5)).isoformat().replace("+00:00", "Z")
+        r[1][3] = f"ACTIVE|OWNER={OWNER}|TOKEN=tok1|RUN_ID=run1|START=2026-10-20T14:15:00Z|EXPIRES={expired}|HEAD={HEAD}"
+        rec = build_stale_lease_recovery(
+            c, r, task_id="P001", recovered_by=REVIEWER, run_id="REC_RUN_1",
+            head=HEAD, now=NOW, reason="CRASHED_AGENT_TTL_EXPIRED",
+            runtime_sheet_id=2017583524, events_sheet_id=958655496,
+        )
+        self.assertEqual(rec.task_id, "P001")
+        self.assertEqual(rec.stale_owner, OWNER)
+        self.assertEqual(rec.stale_token, "tok1")
+        self.assertEqual(rec.target_state, "PENDIENTE")
+        # 1 delete task metadata, 1 delete executor metadata, 3 updateCells, 1 appendCells = 6
+        self.assertEqual(len(rec.requests), 6)
+        self.assertEqual(list(rec.requests[0]), ["deleteDeveloperMetadata"])
+        self.assertEqual(list(rec.requests[1]), ["deleteDeveloperMetadata"])
+        # Verify readback passes
+        readback_row = [
+            "P001", "PENDIENTE", "",
+            f"RECOVERED|STALE_OWNER={OWNER}|STALE_TOKEN=tok1|FENCING_TOKEN={rec.fencing_token}|RECOVERED_BY={REVIEWER}|RECOVERED_AT={rec.requests[2]['updateCells']['rows'][0]['values'][2]['userEnteredValue']['stringValue'].split('RECOVERED_AT=')[1].split('|')[0]}|HEAD={HEAD}",
+        ]
+        api_rep = {"replies": [{"deleteDeveloperMetadata": {"deletedDeveloperMetadata": [{"metadataId": rec.metadata_id}]}}]}
+        self.assertTrue(verify_stale_lease_recovery_response(rec, api_rep, readback_row))
+
+    def test_crashed_owner_locked_out_by_fencing(self):
+        # Initial claim
+        c, r = fixture(2)
+        k = claim(commercial=c, runtime=r, chosen="P001", owner=OWNER, now=NOW)
+        r[1][1] = "EN_PROGRESO"
+        r[1][2] = k.owner
+        r[1][3] = f"ACTIVE|OWNER={k.owner}|TOKEN={k.token}|RUN_ID={k.run_id}|START={k.acquired_at}|EXPIRES={k.expires_at}|HEAD={k.head}"
+
+        # Stale recovery by supervisor at T + 15 min
+        later = NOW + timedelta(minutes=15)
+        rec = build_stale_lease_recovery(
+            c, r, task_id="P001", recovered_by=REVIEWER, run_id="REC_RUN_2",
+            head=HEAD, now=later, reason="RUNNER_TIMEOUT",
+            runtime_sheet_id=2017583524, events_sheet_id=958655496,
+        )
+        # Runtime row updated after recovery
+        fenced_row = [
+            "P001", "PENDIENTE", "",
+            f"RECOVERED|STALE_OWNER={k.owner}|STALE_TOKEN={k.token}|FENCING_TOKEN={rec.fencing_token}|RECOVERED_BY={REVIEWER}|HEAD={HEAD}",
+        ]
+        # Late release attempt by original crashed owner must fail
+        with self.assertRaisesRegex(UnsafeSnapshot, "RELEASE_OWNER_TOKEN_MISMATCH"):
+            build_release(
+                k, current_runtime_row=fenced_row,
+                captured_metadata=confirmed_meta(k), now=later,
+                final_state="VALIDANDO", evidence="https://github.com/solqaryn/Solqaryn/pull/3691",
+                result="LATE_ATTEMPT", details="Late attempt after crash",
+                runtime_sheet_id=2017583524, events_sheet_id=958655496,
+            )
+
+    def test_idempotent_recovery_cannot_recover_completed_task(self):
+        c, r = fixture(2)
+        r[1][1] = "LISTO"
+        r[1][2] = ""
+        r[1][3] = "RELEASED|OWNER=old"
+        with self.assertRaisesRegex(UnsafeSnapshot, "CANNOT_RECOVER_COMPLETED_TASK"):
+            build_stale_lease_recovery(
+                c, r, task_id="P001", recovered_by=REVIEWER, run_id="REC_RUN_3",
+                head=HEAD, now=NOW, reason="TEST_RECOVERY",
+                runtime_sheet_id=2017583524, events_sheet_id=958655496,
+            )
+
+    def test_takeover_claim_success_and_readback(self):
+        c, r = fixture(2)
+        r[1][1] = "EN_PROGRESO"
+        r[1][2] = OWNER
+        expired = (NOW - timedelta(minutes=5)).isoformat().replace("+00:00", "Z")
+        r[1][3] = f"ACTIVE|OWNER={OWNER}|TOKEN=tok_old|RUN_ID=run_old|START=2026-10-20T14:15:00Z|EXPIRES={expired}|HEAD={HEAD}"
+        tk = build_takeover_claim(
+            c, r, task_id="P001", new_owner=REVIEWER, run_id="TAKEOVER_1",
+            head=HEAD, now=NOW, reason="PRIMARY_STALLED",
+            runtime_sheet_id=2017583524, events_sheet_id=958655496,
+        )
+        self.assertEqual(tk.task_id, "P001")
+        self.assertEqual(tk.owner, REVIEWER)
+        # Response simulation
+        api_rep = {
+            "replies": [
+                {"deleteDeveloperMetadata": {"deletedDeveloperMetadata": [{"metadataId": tk.metadata_id}]}},
+                {"createDeveloperMetadata": {"developerMetadata": confirmed_meta(tk)}},
+            ]
+        }
+        tk_runtime = [tk.task_id, "EN_PROGRESO", tk.owner, f"ACTIVE|OWNER={tk.owner}|TOKEN={tk.token}|RUN_ID={tk.run_id}|HEAD={tk.head}"]
+        self.assertTrue(verify_takeover_claim_response(tk, api_rep, tk_runtime))
+
+    def test_takeover_claim_rejects_wip_exceeded(self):
+        c, r = fixture(2)
+        r[1][1] = "EN_PROGRESO"
+        r[1][2] = OWNER
+        expired = (NOW - timedelta(minutes=5)).isoformat().replace("+00:00", "Z")
+        r[1][3] = f"ACTIVE|OWNER={OWNER}|TOKEN=tok_old|EXPIRES={expired}"
+        # Make REVIEWER already own P002
+        r[2][1] = "EN_PROGRESO"
+        r[2][2] = REVIEWER
+        r[2][3] = f"ACTIVE|OWNER={REVIEWER}|TOKEN=tok_rev"
+        with self.assertRaisesRegex(UnsafeSnapshot, "EXECUTOR_WIP_LIMIT_EXCEEDED"):
+            build_takeover_claim(
+                c, r, task_id="P001", new_owner=REVIEWER, run_id="TAKEOVER_2",
+                head=HEAD, now=NOW, reason="TAKEOVER_ATTEMPT",
+                runtime_sheet_id=2017583524, events_sheet_id=958655496,
+            )
+
+    def test_dual_exclusivity_creates_two_metadata_locks(self):
+        k = claim(enforce_executor_metadata=True)
+        self.assertEqual(len(k.requests), 5)
+        # req 0: task metadata
+        self.assertEqual(k.requests[0]["createDeveloperMetadata"]["developerMetadata"]["metadataKey"], METADATA_KEY)
+        # req 1: executor metadata
+        self.assertEqual(k.requests[1]["createDeveloperMetadata"]["developerMetadata"]["metadataKey"], EXECUTOR_METADATA_KEY)
+        self.assertEqual(k.executor_metadata_id, EXECUTOR_METADATA_BASE + (int(OWNER, 16) % 100_000_000))
+
+
+if __name__ == "__main__":
+    unittest.main()

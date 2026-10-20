@@ -1,6 +1,6 @@
 """Tests for global, non-idling, dependency-safe and non-skipping VAEP dispatch."""
 import unittest
-from commercial_dispatch import UnsafeSnapshot, dispatch, verify_claim_choice
+from commercial_dispatch import UnsafeSnapshot, dispatch, verify_claim_choice, audit_wip_violations
 
 
 COMMERCIAL_HEADER = ['ID','PROGRAMA_PRIORIDAD','MICROTAREA','CRITERIO_EXIGIDO','ORDEN','PLAN_COMERCIAL_DOC_ID','VERSION_FUENTE','UNIDAD_ORIGEN_LANE']
@@ -106,6 +106,42 @@ class CommercialDispatchTests(unittest.TestCase):
         commercial, runtime = tables((1,'A','PENDIENTE','','',''))
         with self.assertRaisesRegex(UnsafeSnapshot, 'PLAN_RUNTIME_COUNT_MISMATCH'):
             dispatch(commercial, runtime)
+
+    def test_audit_wip_violations_detects_multiple_assignments(self):
+        _, runtime = tables(
+            (1, 'A', 'EN_PROGRESO', '', 'sup17', 'ACTIVE'),
+            (2, 'B', 'VALIDANDO', '', 'sup17', 'ACTIVE_REVIEW'),
+            (3, 'C', 'EN_PROGRESO', '', 'sup41', 'ACTIVE'),
+            (4, 'D', 'PENDIENTE', '', '', ''),
+        )
+        violations = audit_wip_violations(runtime)
+        self.assertIn('sup17', violations)
+        self.assertEqual(violations['sup17'], ['A', 'B'])
+        self.assertNotIn('sup41', violations)
+
+    def test_candidate_owner_with_active_task_blocked_from_new_claim(self):
+        result = dispatch(
+            *tables(
+                (1, 'A', 'EN_PROGRESO', '', 'worker1', 'ACTIVE'),
+                (2, 'B', 'PENDIENTE', '', '', ''),
+            ),
+            expected_count=2,
+            candidate_owner='worker1',
+        )
+        self.assertIsNone(result['selected'])
+        self.assertIn('CANDIDATE_OWNER_WIP_LIMIT_EXCEEDED:A', result['candidate_status'])
+
+    def test_candidate_owner_without_active_task_is_eligible(self):
+        result = dispatch(
+            *tables(
+                (1, 'A', 'EN_PROGRESO', '', 'worker1', 'ACTIVE'),
+                (2, 'B', 'PENDIENTE', '', '', ''),
+            ),
+            expected_count=2,
+            candidate_owner='worker2',
+        )
+        self.assertEqual(result['selected']['id'], 'B')
+        self.assertEqual(result['candidate_status'], 'ELIGIBLE')
 
 
 if __name__ == '__main__':

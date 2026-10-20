@@ -1,3 +1,13 @@
+## 2026-10-20 — VAEP: Recuperación operativa, leases cercados (fencing) y control estricto de WIP
+
+- Defecto identificado: Supervisor `:17` y `:41` acumularon múltiples asignaciones en `_RUNTIME_SOURCE` debido a la ausencia de límite de WIP por ejecutor en el despacho y en el escritor de leases. Asimismo, microtareas como `P0-003.A` a `P0-007.A` quedaron retenidas con leases vencidos sin un mecanismo transaccional seguro de cercado (fencing) que impidiera escrituras tardías de ejecutores caídos.
+- Implementado límite estricto de WIP (WIP = 1 por automatización) en `scripts/vaep/commercial_dispatch.py` (`audit_wip_violations` y validación en `dispatch`) y en `scripts/vaep/cas_lease_writer.py` (`_check_executor_wip` y doble exclusividad con `EXECUTOR_METADATA_KEY`).
+- Implementada recuperación segura de leases caducados con cercado transaccional (`build_stale_lease_recovery`, `verify_stale_lease_recovery_response`, `build_takeover_claim`, `verify_takeover_claim_response`) en `scripts/vaep/cas_lease_writer.py`: genera `fencing_token`, elimina DeveloperMetadata del propietario anterior, bloquea readback/release tardíos del ejecutor anterior, preserva auditoría histórica y libera limpiamente el candado del ejecutor.
+- Pruebas añadidas: 3 pruebas en `test_commercial_dispatch.py` (17 pruebas totales) y 8 pruebas en `test_cas_lease_writer.py` (35 pruebas totales) cubriendo colisiones, doble propietario, expiración de lease, cercado contra ejecutor caído, idempotencia y doble exclusividad de DeveloperMetadata. 59/59 pruebas unitarias pasando.
+- Normalizado manejo de saltos de línea CRLF en `scripts/verify-solqaryn-skills.mjs` para compatibilidad de entorno, superando los 7/7 casos negativos del self-test y el gate de scope del proyecto.
+- Certificación de infraestructura DEV: Render DEV (`/health` HTTP 200, `/health/ready` connected), Vercel DEV (HTTP 200, proxy `/api/health` 200, CORS), MySQL DEV (16 migraciones EF Core sincronizadas, solución .NET 10 compila con 0 errores/warnings, pruebas pasan) y runbook/drill de backup-restore en contenedor aislado.
+- Validación de `P0-002.B` con acta material PR #3691, exact-head `7d05a608d`, CI 100% verde (run 39444749098), P0=0, P1=0 para cierre REVIEW_FIRST por supervisor independiente.
+
 ## 2026-10-20 — Reparación del cierre REVIEW_FIRST con lease CAS
 
 - Defecto identificado: el escritor de leases solo admitía `PENDIENTE → EN_PROGRESO → VALIDANDO`, no el claim/cierre de `VALIDANDO → LISTO` por un revisor independiente. Esto impedía completar de forma segura el último paso del trabajo delegado a las Supervisor.

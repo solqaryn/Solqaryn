@@ -112,14 +112,46 @@ def snapshot(commercial_rows, runtime_rows, expected_count=1123):
     return tasks
 
 
-def dispatch(commercial_rows, runtime_rows, expected_count=1123):
+def audit_wip_violations(runtime_rows):
+    """Detect and return any automation owner holding multiple active assignments.
+
+    Returns a dict mapping owner -> list of task_ids with active ownership.
+    An assignment is active if state in ('EN_PROGRESO', 'VALIDANDO') and owner is set
+    and lease is not RELEASED.
+    """
+    rows = runtime_rows[1:] if runtime_rows and runtime_rows[0] and runtime_rows[0][0] == 'ID' else runtime_rows
+    active_by_owner = {}
+    for r in rows:
+        if not isinstance(r, list) or len(r) < 3:
+            continue
+        task_id = str(r[0]).strip()
+        state = str(r[1]).strip() if len(r) > 1 else ''
+        owner = str(r[2]).strip() if len(r) > 2 else ''
+        lease = str(r[3]).strip() if len(r) > 3 else ''
+        if owner and state in ('EN_PROGRESO', 'VALIDANDO') and not lease.startswith('RELEASED'):
+            active_by_owner.setdefault(owner, []).append(task_id)
+    return {owner: tasks for owner, tasks in active_by_owner.items() if len(tasks) > 1}
+
+
+def dispatch(commercial_rows, runtime_rows, expected_count=1123, candidate_owner=None):
     """Pick lowest-order free eligible work globally (all ten actors).
 
     Claimed task means owner or non-RELEASED lease; even a stale lease needs
     separately verified takeover. No side effects or lease fabrication.
+    If candidate_owner is provided, enforces that this executor does not already hold
+    an active assignment (WIP limit = 1).
     """
     tasks = snapshot(commercial_rows, runtime_rows, expected_count)
+    wip_violations = audit_wip_violations(runtime_rows)
     available, held, dep_wait, review = [], [], [], []
+    candidate_active_task = None
+    if candidate_owner:
+        candidate_owner = str(candidate_owner).strip()
+        for t in tasks.values():
+            if t['owner'] == candidate_owner and t['state'] in ('EN_PROGRESO', 'VALIDANDO') and not t['lease'].startswith('RELEASED'):
+                candidate_active_task = t['id']
+                break
+
     for t in sorted(tasks.values(), key=lambda x: x['order']):
         if t['state'] == 'VALIDANDO':
             review.append(t['id'])
@@ -133,14 +165,25 @@ def dispatch(commercial_rows, runtime_rows, expected_count=1123):
             held.append({'id': t['id'], 'order': t['order'], 'reason': 'OWNER_OR_UNVERIFIED_LEASE'})
             continue
         available.append({'id': t['id'], 'order': t['order']})
+
+    if candidate_owner and candidate_active_task:
+        selected = None
+        candidate_status = f'CANDIDATE_OWNER_WIP_LIMIT_EXCEEDED:{candidate_active_task}'
+    else:
+        selected = available[0] if available else None
+        candidate_status = 'ELIGIBLE' if candidate_owner else None
+
     return {
         'policy': 'GLOBAL_ASCENDING_ORDER_ELIGIBLE_ONLY',
-        'selected': available[0] if available else None,
+        'selected': selected,
         'available': available,
         'held': held,
         'dependency_wait': dep_wait,
         'independent_review': review,
         'idle_permitted': not available and not review,
+        'candidate_owner': candidate_owner,
+        'candidate_status': candidate_status,
+        'wip_violations': wip_violations,
         'note': 'Read-only decision. Writer MUST atomically claim and revalidate; never infer activity from this result.',
     }
 
