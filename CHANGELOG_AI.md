@@ -1,3 +1,10 @@
+## 2026-10-20 — Prioridad operativa VALIDANDO > EN_PROGRESO > PENDIENTE y corrección CAS executor location
+
+- Decisión explícita del propietario: para las diez ejecutoras, priorizar entregas VALIDANDO listas para REVIEW_FIRST independiente, terminar/reconciliar EN_PROGRESO con WIP=1 y fencing, y recién después reclamar PENDIENTE; dentro de cada estado se preserva el menor ORDEN elegible y el plan comercial único. Si un lease ajeno no tiene prueba terminal y fencing, no está disponible ni bloquea otros scopes seguros.
+- El selector comercial identifica revisiones admisibles para un revisor distinto del autor; el selector de continuidad elige REVIEW sobre BUILD; el escritor CAS rechaza reclamaciones nuevas PENDIENTE cuando ese actor puede revisar una entrega VALIDANDO segura. Nunca autovalidar, omitir dependencias ni falsear LISTO.
+- Reparado CAS_EXECUTOR_LOCATION_REQUIRED: las tres rutas de creación del candado DeveloperMetadata del ejecutor (claim inicial, claim REVIEW_FIRST y takeover) añaden la ubicación Spreadsheet requerida por Google Sheets. Añadidas pruebas negativas para localización, prioridad de estado y no interferencia.
+- No se alteran datos comerciales ni se liberan leases heredados sin readback terminal y fencing; cinco Supervisor de Alex siguen pendientes de readback independiente. No se declara rendimiento 10/10 ni escritura GitHub real por cada Task desde esta modificación. CI exact-head y evidencia del conector real siguen obligatorias.
+
 ## 2026-10-20 — Migración autorizada de cinco Primary a ChatGPT Chat
 
 - El propietario confirmó eliminación de las cinco Primary anteriores y autorizó las cinco sustitutas ChatGPT Chat en los mismos slots :00/:12/:24/:36/:48. Codex/Work no son canales de ejecución permitidos para estas tareas.
