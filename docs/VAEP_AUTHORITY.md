@@ -32,6 +32,10 @@ LEASE_FRESH_REQUIRES_LIVE_MATERIAL_PROGRESS=TRUE
 ENDED_INVOCATION_RELEASES_LEASE_IMMEDIATELY=TRUE
 DIRECT_NEXT_SAFE_PREARM_REQUIRED=TRUE
 MAX_VOLUNTARY_IDLE=0
+GLOBAL_DISPATCH_POOL=TEN_WORKERS_ANY_ELIGIBLE_TASK
+LANE_BINDING=ADVISORY_ONLY
+PAIR_BINDING=ADVISORY_ONLY
+REVIEW_INDEPENDENCE=REVIEWER_DISTINCT_FROM_AUTHOR
 GLOBAL_DISPATCH_ADMISSION=OPEN_ONLY
 GLOBAL_FROZEN_PROHIBITED=TRUE
 CAUSAL_HOLD_SCOPE=TASK_OR_EXECUTION_ONLY
@@ -88,6 +92,8 @@ Reglas:
 - IDs canónicos Supervisor (Alex): `:05=6abd62255ae88191a2dba6e1b00d3b4d`, `:17=6abd6235e100819195785fc76a44a8e0`, `:29=6abd6241c3e48191a8856ed7b0f42c5c`, `:41=6abd624e5e108191bef6bb879559328c`, `:53=6abd625b397c8191a49904227946a20f`.
 - Las tareas equivalentes antiguas en la cuenta de Javier están RETIRADAS e inactivas; no son canónicas ni deben reactivarse.
 - Un slot no termina en reporte o espera si existe acción material segura.
+- **Pool global de trabajo, autorizado el 2026-10-19:** las diez automatizaciones canónicas, tanto Primary como Supervisor, pueden reclamar, implementar, corregir, recuperar o revisar **cualquier microtarea elegible de cualquiera de las cinco lanes**. Ni el horario ni el dominio asociado a una pareja restringen el despachador. Despacho = cola global + dependencias actuales satisfechas + permiso + un solo lease exclusivo por scope. Una Primary prioriza construir/cerrar y una Supervisor prioriza revisión/recuperación, pero ambas pueden ejecutar trabajo material no reservado; **ninguna puede aprobar su propia entrega**. La revisión REVIEW_FIRST corresponde a una automatización distinta de la autora, no necesariamente a la pareja de horario.
+- Si solo hay una microtarea elegible, no asignarla simultáneamente a diez escritores: los ejecutores libres revisan entregas independientes o preparan evidencia read-only útil, sin inventar progreso, saltar dependencias ni falsificar el estado de la cola.
 - Un checkpoint es un disparador, no una frontera de ownership.
 - Tras `LISTO`, promover el siguiente trabajo dependency-valid del plan comercial inicial vigente.
 - `LISTO` es el único estado de cierre certificado.
@@ -218,7 +224,7 @@ Solo si un task necesita ayuda de una referencia externa, leer `docs/REGISTRO_RE
 
 ## 11. Supervisión por cuenta independiente: alineación obligatoria
 
-Las cinco supervisoras existentes en la cuenta operativa asignada a **Alex Morales** son `NO_GO` hasta una actualización efectivamente ejecutada por su propietario, sin duplicar tareas ni alterar los IDs. La instrucción común de cada una es: *releer skill SOLQARYN, AGENTS.md y VAEP_AUTHORITY.md en HEAD vivo de dev; usar únicamente Plan Comercial Inicial y cola PLAN_COMERCIAL; inspeccionar la entrega de la Primary de su pareja; validar REVIEW_FIRST, RBAC y tenancy aplicables, CI exact-head, pruebas negativas, P0/P1=0, evidencias y rollback; no declarar LISTO sin readback; nunca autoactivar ni tocar QA/main/PROD*. Se distribuyen así:
+Las cinco Supervisor existentes pertenecen a la cuenta operativa de **Alex Morales**, tienen IDs y horarios canónicos que no se reemplazan ni duplican. Su función preferente es revisión independiente, recuperación y construcción secundaria, **sin reserva de dominios, tareas ni parejas**. Pueden ejecutar cualquier microtarea global realmente elegible que no tenga otro propietario con lease fresco. Las parejas indicadas a continuación son **referencias de coordinación y horarios, nunca filtros de despacho ni autorizaciones para auto-revisar trabajo**. En cada ejecución aplicar Skill vigente, VAEP, el Plan Comercial Inicial y evidencia de CI/seguridad según la microtarea; conservar REVIEW_FIRST por una automatización distinta de la autora. Sin compra ni cambios QA/main/PROD. Coordinación de referencia:
 
 | Horario | Supervisor real | Primary asignada | Dominio |
 | --- | --- | --- | --- |
@@ -228,7 +234,7 @@ Las cinco supervisoras existentes en la cuenta operativa asignada a **Alex Moral
 | :41 | 6abd624e5e108191bef6bb879559328c | :36 | 04_RUTAS |
 | :53 | 6abd625b397c8191a49904227946a20f | :48 | 05_QA_OPERACION |
 
-La cuenta propietaria de estas cinco tareas debe ejecutar la actualización y una relectura de cada ID que demuestre nombre/prompt comercial, par, estado `is_enabled=false` y horario intacto. Únicamente entonces actualizar `_AUTOMATION_SOURCE` con evidencia real, jamás a mano o por suposición. No sustituir por cinco tareas nuevas de la cuenta primaria; eso invalidaría la verificación independiente y bloquearía el cierre.
+Solo la cuenta propietaria de Alex puede actualizar y certificar directamente los prompts, estados reales (`is_enabled` tal como los reporte ChatGPT) y horarios de sus cinco Supervisor; las autorizaciones de activación ya otorgadas no exigen devolverlas a `false`. La reconciliación `_AUTOMATION_SOURCE` requiere evidencia auténtica de readback por cuenta, nunca inferencia desde una fórmula `=TRUE` o `CONFIG.ACTIVO`. No crear cinco tareas sustitutas en la cuenta de Javier ni suplantar su revisión independiente. Las cinco Primary de Javier pueden adoptar inmediatamente el despacho global desde su cuenta, sin alterar IDs/horarios. Si una cuenta no es accesible, declarar esa porción pendiente de readback, no fingir 10/10 trabajando.
 
 ## 12. Gate de admisión comercial
 
