@@ -274,7 +274,7 @@ jobs:
 
 
   verdict:
-    name: Dictamen Fase 7
+    name: SOLQARYN DEV - Seguridad runtime .NET 10
     if: always()
     needs: [canonical-build, mysql-contract, security-contract, docker-smoke]
     runs-on: ubuntu-latest
@@ -312,3 +312,17 @@ jobs:
             echo 'DOCKER_DOTNET10=PASS'
             echo 'PHASE7_EXECUTED=true'
           } | tee phase7-verdict.txt
+
+  required-check-compatibility:
+    name: Dictamen Fase 7
+    if: always()
+    needs: [verdict]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Puente temporal sin saltar pruebas actuales
+        shell: bash
+        env:
+          CURRENT_VERDICT_RESULT: ${{ needs.verdict.result }}
+        run: |
+          set -euo pipefail
+          test "$CURRENT_VERDICT_RESULT" = success
