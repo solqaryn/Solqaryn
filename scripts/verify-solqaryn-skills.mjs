@@ -81,7 +81,7 @@ const tests=[
 [{...x,dirs:[...x.dirs,"rogue-skill"]},"local Skill count"],
 [{...x,registry:x.registry.replace("6808966993bf2b2d455d9b6245e960a59a01b9a9","PIN_REMOVED")},"registry pin"],
 [{...x,allowlist:x.allowlist.replace("49f948faa9258a0c61caceaf225e179651397431","PIN_REMOVED")},"allowlist pin"],
-[{...x,routing:x.routing.replace("SKREF-12","REFERENCE_REMOVED")},"skill routing id"]
+[{...x,routing:x.routing.replaceAll("SKREF-12","REFERENCE_REMOVED")},"skill routing id"]
 ];
 for(const [broken,needle] of tests){if(!validate(broken).some(x=>x.includes(needle)))throw Error("Negative test not rejected: "+needle);}
 console.log(`Skill freshness negative self-tests PASS (${tests.length})`);
