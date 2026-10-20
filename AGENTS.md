@@ -64,6 +64,13 @@ Una supervisora que encuentra la primaria trabajando correctamente ejecuta QA/re
 - ChatGPT/VAEP: controller, developer directo, QA, REVIEW_FIRST, integración, CI, certificación, rollup y failover.
 - Otros agentes: sólo dentro del scope y permisos vigentes de SOLQARYN.
 
+## Trabajo comercial sin herencia de fases y escalamiento al propietario
+
+- La **única planificación ejecutable** sigue siendo SOLQARYN PLAN COMERCIAL INICIAL UNIFICADO, con las 1123 microtareas de su cola actual. Una fase histórica, N*, SQ*, PR antiguo, ticket cerrado o nombre viejo de workflow **no otorga prioridad, dependencia, veto ni autorización para reactivar trabajo**. Las pruebas de regresión MySQL, seguridad y CI pueden conservar nombres históricos, pero su significado se limita a comprobar el código presente cuando resultan causales; nunca importan la secuencia de aquel plan.
+- El propietario autoriza el trabajo técnico autónomo **dentro del ámbito del Plan Comercial Inicial y DEV**, con reparaciones y sustituciones necesarias, siempre sujeto a control de alcance, protección de datos, permisos existentes, lease único y supervisión independiente. **Se prohíben compras, suscripciones, upgrades, cargos, pagos y contrataciones**, incluso cuando parezcan necesarios para resolver una tarea. Las operaciones sobre `main`, QA/PROD, bases productivas, certificados, DNS o secretos requieren la autorización específica prevista en las reglas vigentes; una aprobación genérica no la sustituye.
+- Defecto técnico con solución autorizada: la automatización debe intentar una corrección causal **acotada** y revisable, no devolver al usuario trabajo rutinario ni repetir indefinidamente las mismas comprobaciones. Bloqueo por acceso ausente, decisión humana indispensable, ausencia de credenciales autorizadas, recurso que exige pago o cambio fuera del alcance: **detener sólo esa microtarea**, anotar un evento `OWNER_ACTION_REQUIRED` con identificador/fingerprint estable, causa y acción concreta, avisar al propietario mediante el canal de notificaciones de automatizaciones y continuar únicamente con otra tarea **independiente** y elegible. No volver a anunciar el mismo fingerprint mientras no cambie materialmente el bloqueo.
+- El monitor de avisos, si se configura, es un **observador de solo lectura** y no constituye una undécima automatización ejecutora VAEP; no reclama lease ni declara `LISTO`. Los cinco Primary y los cinco Supervisor siguen siendo los diez únicos ejecutores del control-plane. Queda prohibido activar tareas incompletas o suplantar una supervisora desde otra cuenta.
+
 ## Ejecución y recovery
 
 Regla obligatoria: `DEFECT_RECOVERY_FIRST + FIRST_DETECTOR_OWNS_RECOVERY + NO_REJECT_QUEUE`.
