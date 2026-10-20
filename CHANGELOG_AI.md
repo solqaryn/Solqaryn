@@ -1,3 +1,11 @@
+## 2026-10-20 — VAEP: capacidades universales y recuperación ejecutora de supervisoras
+
+- Se restituye el contrato de continuidad útil del respaldo VAEP sin reutilizar sus tareas, cuentas ni infraestructura antigua. Cinco Primary y cinco Supervisor pueden hacer build/review/recovery bajo la misma elegibilidad global del Plan Comercial Inicial; supervisión :05/:17/:29/:41/:53 comprueba :00/:12/:24/:36/:48, sin reservar dominios.
+- Nuevo `scripts/vaep/continuity_dispatch.py` (solo lectura): RESUME de scope propio con lease fresco, recuperación segura requerida ante vencimiento, WIP duplicado bloqueado por actor, REVIEW independiente con evidencia o BUILD de menor ORDEN libre. Al supervisar un ejecutor ocupado, toma otra tarea libre: no espera por ociosidad. Ningún takeover sin fencing ni autoaprobación; sin usar CURRENT_PARENT histórico.
+- `scripts/vaep/test_continuity_dispatch.py` cubre igualdad 10/10, cinco parejas de fallover, WIP=1, revisión ajena, dependencias y leases vencidos. Integrado al workflow VAEP.
+- Es un selector/read-only CLI, no un runtime persistente. No se crean tareas nuevas ni se cierran microtareas. La corrección de CAS del PR #3696 sigue separada, pendiente de revisión de seguridad, y el acceso real de escritura de ChatGPT debe acreditarse por ejecución.
+- Sin tocar QA, main, PROD, datos históricos de SOLQARYN o permisos productivos.
+
 ## 2026-10-20 — Reparación del cierre REVIEW_FIRST con lease CAS
 
 - Defecto identificado: el escritor de leases solo admitía `PENDIENTE → EN_PROGRESO → VALIDANDO`, no el claim/cierre de `VALIDANDO → LISTO` por un revisor independiente. Esto impedía completar de forma segura el último paso del trabajo delegado a las Supervisor.
