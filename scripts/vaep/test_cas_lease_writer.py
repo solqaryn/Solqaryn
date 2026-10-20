@@ -803,5 +803,77 @@ class ConcurrencyAndFaultToleranceTests(unittest.TestCase):
         self.assertEqual(k3.owner, runner3)
 
 
+
+class ExactReleaseDoubleLockRegressionTests(unittest.TestCase):
+    def test_release_requires_executor_capture(self):
+        k = claim()
+        with self.assertRaisesRegex(UnsafeSnapshot, "RELEASE_EXECUTOR_METADATA_REQUIRED"):
+            build_release(
+                k, current_runtime_row=claimed_runtime(k),
+                captured_metadata=confirmed_meta(k), now=NOW + timedelta(minutes=2),
+                final_state="VALIDANDO",
+                evidence="https://github.com/solqaryn/Solqaryn/pull/3691",
+                result="REVIEW_FIRST_PENDING", details="Material handed off",
+                runtime_sheet_id=2017583524, events_sheet_id=958655496,
+            )
+
+    def test_release_rejects_exact_id_with_other_task_value(self):
+        k = claim()
+        ok = {
+            "replies": [
+                {"deleteDeveloperMetadata": {"deletedDeveloperMetadata": [
+                    {**confirmed_meta(k), "metadataValue": "OTHER-TOKEN"}
+                ]}},
+                {"deleteDeveloperMetadata": {"deletedDeveloperMetadata": [confirmed_exec_meta(k)]}},
+            ]
+        }
+        with self.assertRaisesRegex(UnsafeSnapshot, "RELEASE_DID_NOT_DELETE_EXACT_TASK_LOCK"):
+            verify_release_response(
+                k, ok, [k.task_id, "VALIDANDO", "", "RELEASED|TOKEN=" + k.token]
+            )
+
+    def test_release_rejects_exact_executor_id_but_other_value(self):
+        k = claim()
+        ok = {
+            "replies": [
+                {"deleteDeveloperMetadata": {"deletedDeveloperMetadata": [confirmed_meta(k)]}},
+                {"deleteDeveloperMetadata": {"deletedDeveloperMetadata": [
+                    {**confirmed_exec_meta(k), "metadataValue": "OTHER-TOKEN"}
+                ]}},
+            ]
+        }
+        with self.assertRaisesRegex(UnsafeSnapshot, "RELEASE_DID_NOT_DELETE_EXACT_EXECUTOR_LOCK"):
+            verify_release_response(
+                k, ok, [k.task_id, "VALIDANDO", "", "RELEASED|TOKEN=" + k.token]
+            )
+
+    def test_review_requires_executor_capture(self):
+        k = review_claim()
+        with self.assertRaisesRegex(UnsafeSnapshot, "REVIEW_RELEASE_EXECUTOR_METADATA_REQUIRED"):
+            build_review_completion(
+                k, current_runtime_row=review_row(k),
+                captured_metadata=confirmed_meta(k),
+                now=NOW + timedelta(minutes=2), final_state="LISTO",
+                review_evidence="https://github.com/solqaryn/Solqaryn/pull/3691",
+                ci_evidence="https://github.com/solqaryn/Solqaryn/actions/runs/123",
+                review_details="Reviewed independently", p0=0, p1=0,
+                runtime_sheet_id=2017583524, events_sheet_id=958655496,
+            )
+
+    def test_review_readback_rejects_reused_id_with_other_value(self):
+        k = review_claim()
+        resp = {
+            "replies": [
+                {"deleteDeveloperMetadata": {"deletedDeveloperMetadata": [confirmed_meta(k)]}},
+                {"deleteDeveloperMetadata": {"deletedDeveloperMetadata": [
+                    {**confirmed_exec_meta(k), "metadataValue": "RENEWED-BY-OTHER"}
+                ]}},
+            ]
+        }
+        row = [k.task_id, "LISTO", "", "RELEASED|TOKEN=" + k.token]
+        with self.assertRaisesRegex(UnsafeSnapshot, "REVIEW_RELEASE_WRONG_EXECUTOR_LOCK"):
+            verify_review_completion_response(k, resp, row, "LISTO")
+
+
 if __name__ == "__main__":
     unittest.main()
