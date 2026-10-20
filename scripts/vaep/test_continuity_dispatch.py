@@ -113,6 +113,16 @@ class UniversalContinuityTests(unittest.TestCase):
         result = run(a, b, third)
         self.assertEqual(result["action"], "RECONCILE_DUPLICATE_WIP")
 
+    def test_validando_later_order_precedes_earlier_pending(self):
+        pending = (1, "TASK-1", "PENDIENTE", "", "", "", "")
+        validating = (2, "TASK-2", "VALIDANDO", "", "",
+                      "RELEASED|OWNER=" + EXECUTORS[0] + "|TOKEN=prior",
+                      "https://github.com/solqaryn/Solqaryn/pull/3691")
+        chosen = run(pending, validating, actor=EXECUTORS[1])
+        self.assertEqual(chosen["action"], "REVIEW")
+        self.assertEqual(chosen["selected"]["id"], "TASK-2")
+        self.assertIn("VALIDANDO_FIRST", chosen["reason"])
+
     def test_review_of_earlier_order_before_later_build(self):
         validating = (1, "TASK-1", "VALIDANDO", "", "",
                       "RELEASED|OWNER=" + EXECUTORS[0] + "|TOKEN=prior",
