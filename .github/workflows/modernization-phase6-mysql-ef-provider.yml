@@ -240,7 +240,7 @@ jobs:
           python3 scripts/security/priority3_tenant_isolation_audit.py --require-certified
 
   verdict:
-    name: Dictamen Fase 6
+    name: SOLQARYN DEV - Integridad MySQL comercial
     if: always()
     needs: [contracts]
     runs-on: ubuntu-latest
@@ -264,3 +264,17 @@ jobs:
             echo 'P0=0'
             echo 'P1=0'
           } | tee phase6-verdict.txt
+
+  required-check-compatibility:
+    name: Dictamen Fase 6
+    if: always()
+    needs: [verdict]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Puente temporal sin saltar pruebas actuales
+        shell: bash
+        env:
+          CURRENT_VERDICT_RESULT: ${{ needs.verdict.result }}
+        run: |
+          set -euo pipefail
+          test "$CURRENT_VERDICT_RESULT" = success
