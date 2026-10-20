@@ -46,7 +46,7 @@ La única fuente **ejecutable en esta etapa** es [SOLQARYN PLAN COMERCIAL INICIA
 
 ## 2026-10-16 — Candidato PR #3658: alta empresarial preparatoria y registro persistente de tiendas (VALIDANDO)
 
-- Alcance **DEV únicamente**, resultado subordinado a SQ-032/SQ-035/SQ-036/SQ-038/SQ-041/SQ-048 del Plan Maestro vigente. No activar la comercialización privada ni promover QA/PROD.
+- Alcance **DEV únicamente** del registro histórico del PR #3658. Las referencias `SQ-032`, `SQ-035`, `SQ-036`, `SQ-038`, `SQ-041` y `SQ-048` se conservan exclusivamente como trazabilidad técnica: no son autoridad, dependencia, orden ni bloqueo de la cola comercial vigente. No activar la comercialización privada ni promover QA/PROD.
 - Se introduce `PublicStoreBindings` con FK a `Empresas`, índice único exacto `Host+StoreKey` e índice por empresa/estado. La gestión por autoridad global verificable crea asociaciones desde la consola sin modificar variables por cliente.
 - `POST /plataforma/empresas/borrador` crea empresas **inactivas** con auditoría y transacción, sin activar tiendas ni operaciones privadas; el alta comercial certificada existente conserva sus dos feature gates.
 - La creación del primer borrador fija atómicamente `Host upstream legacy + StoreKey vacío → EmpresaId` del único tenant vigente; no se reelige dueño si cambia cuál empresa está activa. Con 2+ empresas, el storefront legacy exige esta asignación persistente exacta y que su propietaria continúe activa.
@@ -83,7 +83,7 @@ La única fuente **ejecutable en esta etapa** es [SOLQARYN PLAN COMERCIAL INICIA
 - El login mantiene intacto el selector tenant/RBAC para el ERP y agrega acceso explícito a la consola solo tras autenticar. El superadministrador sin membresía empresarial ya no necesita forzar un tenant para acceder a su plano de control. No se reutiliza el panel de `/empresas`, que pertenece al ERP.
 - El panel declara el alta de empresas como **no habilitada operativamente**. Las dos banderas existentes `MultiEmpresa:CommercialIsolationCertified` y `MultiEmpresa:PlatformOnboardingEnabled` permanecen OFF; no hay escrituras en Aiven, creación de tenants, migraciones, nuevas APIs o cambios a Render/Vercel/QA/PROD.
 - Pruebas Vitest HTTP frontend: grant global válido, rechazo administrador empresarial, contrato 200 ambiguo y revocación inmediata 403; persiste la suite backend JWT/MySQL de Microfase 2. Requiere revisión independiente, compilación y CI exact-head, smoke real DEV autenticado y P0/P1=0 antes de fusionar o declarar `LISTO`.
-- Rollback: cerrar la ruta /plataforma con revert de este PR, preservando Microfases 1/2 y los flags backend OFF. Scope maestro: SQ-030 / SQ-050 (solo acceso y primera superficie del control plane; el aprovisionamiento completo SQ-041/SQ-095 sigue pendiente).
+- Rollback: cerrar la ruta /plataforma con revert de este PR, preservando Microfases 1/2 y los flags backend OFF. Registro histórico: `SQ-030`, `SQ-050`, `SQ-041` y `SQ-095` se conservan sólo para trazabilidad del changeset; no crean scope, prioridad, dependencia ni pendiente ejecutable.
 
 ## 2026-10-15 — Microfase 2: autoridad de plataforma independiente de EmpresaId (DEV)
 
