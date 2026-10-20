@@ -161,7 +161,7 @@ def dispatch(commercial_rows, runtime_rows, expected_count=1123, candidate_owner
         if missing:
             dep_wait.append({'id': t['id'], 'order': t['order'], 'missing': missing})
             continue
-        if t['owner'] or (t['lease'] and not t['lease'].startswith('RELEASED')):
+        if t['owner'] or (t['lease'] and not t['lease'].startswith(('RELEASED', 'RECOVERED'))):
             held.append({'id': t['id'], 'order': t['order'], 'reason': 'OWNER_OR_UNVERIFIED_LEASE'})
             continue
         available.append({'id': t['id'], 'order': t['order']})
@@ -189,7 +189,10 @@ def dispatch(commercial_rows, runtime_rows, expected_count=1123, candidate_owner
 
 
 def verify_claim_choice(result, chosen_id):
-    """Fail if a worker plans to skip a lower-order, unclaimed eligible task."""
+    """Fail if a worker plans to skip a lower-order, unclaimed eligible task or has WIP limit exceeded."""
+    candidate_status = str(result.get('candidate_status') or '')
+    if candidate_status.startswith('CANDIDATE_OWNER_WIP_LIMIT_EXCEEDED'):
+        raise UnsafeSnapshot(candidate_status)
     winner = result['selected']
     if winner is None:
         raise UnsafeSnapshot('NO_ELIGIBLE_TASK_FOR_CLAIM')
