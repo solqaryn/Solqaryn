@@ -1,3 +1,11 @@
+## 2026-10-20 — VAEP: recuperación del apagado en cascada y primer claim atómico de Google Sheets
+
+- Causa comprobada: la Primary :36 registró `OWNER_ACTION_REQUIRED` por `LEASE_CAS_WRITER_MISSING` y quedó falsamente `PAUSADA_BLOQUEO_CAS`; la Primary :48 también dejó su registro deshabilitado. El conteo bajó a 9/10 y el gate a PAUSADO, aunque había 32 microtareas elegibles. Se recuperaron sin crear automatizaciones.
+- Actualizadas las cinco Primary con prohibición de auto-desactivar Tasks o flags globales ante bloqueos de un scope; lease requerido para cualquier escritura material, but nunca confundir NO_GO de una tarea con revocación global.
+- Prueba aislada real en el Google Sheet: `createDeveloperMetadata` con `metadataId` explícito aceptó el primer ID, rechazó el intento duplicado con HTTP 400 y posteriormente se limpió el objeto temporal. Se documenta el protocolo candidato de createDeveloperMetadata+updateCells+appendCells en un batch atómico, con cautela de fencing/stale takeover pendiente de pruebas completas; ninguna fila comercial se modificó durante la prueba.
+- Primer resultado post-corrección: Primary :00 obtuvo `LEASE_ACQUIRED` de `P0-002.B`, registró entrega a `VALIDANDO`, liberó el scope y empezó `P0-003.A` en el mismo run. Requiere revisión independiente y readback de cierre: NO declarar LISTO anticipado.
+- Alcance: `docs/VAEP_AUTHORITY.md`, `AGENTS.md` y CHANGELOG_AI. Sin 11a automatización, planes viejos, cambios de producto, compras o cambios QA/main/PROD.
+
 ## 2026-10-20 — VAEP: despacho global estricto, anticambios de orden y ocupación útil
 
 - El usuario confirma que 10/10 actores deben tomar trabajo de cualquier área; prohibido saltar una tarea de menor ORDEN si está PENDIENTE, sus dependencias están LISTO y no tiene owner/lease. Permitir paralelismo sobre otras tareas elegibles únicamente tras reservar la anterior mediante writer atómico y readback, o cuando la anterior está bloqueada por dependencia real.
