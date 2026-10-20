@@ -33,7 +33,7 @@ No se permiten otras copias locales de skills externas bajo `.agents/skills/`.
 
 ## 3. Referencias externas de skills autorizadas
 
-Existen nueve referencias externas autorizadas por el propietario. Su inventario, origen, pin y ruta oficial viven en:
+Existen doce referencias externas autorizadas por el propietario. Su inventario, origen, pin y ruta oficial viven en:
 
 `docs/REGISTRO_REFERENCIAS_SKILLS_SOLQARYN.md`
 
@@ -62,7 +62,7 @@ Sin autorizacion adicional pueden utilizarse:
 
 1. archivos versionados en `solqaryn/Solqaryn`;
 2. la unica skill local de SOLQARYN;
-3. las nueve referencias externas ACTIVE en la allowlist, solo dentro de su alcance;
+3. las doce referencias externas ACTIVE en la allowlist, solo dentro de su alcance;
 4. informacion entregada por el propietario y declarada expresamente como parte de SOLQARYN;
 5. recursos conectados identificados inequívocamente como recursos de SOLQARYN.
 
@@ -96,7 +96,7 @@ El gate debe fallar si:
 
 ## 8. Excepciones adicionales
 
-Fuera de las nueve referencias ACTIVE, cualquier fuente externa permanece en `DENY` salvo autorizacion explicita del propietario y actualizacion versionada de la allowlist cuando deba ser persistente.
+Fuera de las doce referencias ACTIVE, cualquier fuente externa permanece en `DENY` salvo autorizacion explicita del propietario y actualizacion versionada de la allowlist cuando deba ser persistente.
 
 ## 9. Precedencia final
 
