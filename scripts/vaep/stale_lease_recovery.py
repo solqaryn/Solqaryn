@@ -99,7 +99,12 @@ def build_stale_recovery(*, runtime_row, metadata, order, row_index,
     if state == "VALIDANDO" and len(fields) != 7:
         raise UnsafeSnapshot("REVIEW_AUTHOR_NOT_PRESERVED")
     timestamp = now.isoformat(timespec="milliseconds").replace("+00:00","Z")
-    released = (f"RELEASED_STALE|OWNER={owner}|TOKEN={token}|"
+    # A recovered review must preserve the original implementer identity.
+    # Otherwise a later review can mistake the prior reviewer for the author.
+    original_author = fields[6] if state == "VALIDANDO" else owner
+    if not _OWNER.fullmatch(original_author):
+        raise UnsafeSnapshot("INVALID_ORIGINAL_AUTHOR")
+    released = (f"RELEASED_STALE|OWNER={owner}|ORIGINAL_AUTHOR={original_author}|TOKEN={token}|"
                 f"RELEASED_AT={timestamp}|HEAD={head}|REASON=INVOCATION_ENDED")
     # Recovery does not certify anything. VALIDANDO preserves original evidence
     # and author. EN_PROGRESO returns to PENDIENTE for safe future claim.
