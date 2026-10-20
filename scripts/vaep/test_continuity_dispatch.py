@@ -52,6 +52,15 @@ STALE = (
 
 
 class UniversalContinuityTests(unittest.TestCase):
+    def test_retired_primary_ids_are_not_executors(self):
+        retired = ["6aa15346f5408191bdd9043fd26ff7aa","6aa1534deee481918280def1343adcfa","6abd70e42cb4819190b3b28916dc9dbb","6aa1535a51508191a610e6cdb90a2a4d","6aa1535f8cd48191b73e10f17843372a"]
+        self.assertTrue(set(retired).isdisjoint(EXECUTORS))
+        c, r = tables(AVAILABLE)
+        for old_id in retired:
+            with self.subTest(old_id=old_id):
+                with self.assertRaisesRegex(UnsafeSnapshot, "UNKNOWN_EXECUTOR"):
+                    decide(c, r, actor_id=old_id, now=NOW, expected_count=1)
+
 
     def test_all_ten_identical_eligibility_for_build(self):
         self.assertEqual(len(EXECUTORS), 10)
