@@ -15,17 +15,24 @@ Las demas entradas se consultan como referencias externas originales segun `docs
 | SKREF-07 Napkin | Runbooks/lecciones recurrentes | Leer skill original en origen/pin; no crear autoridad paralela |
 | SKREF-08 Token Optimizer | Contexto extenso, progressive disclosure, duplicacion | Leer skill original en origen/pin; no eliminar controles |
 | SKREF-09 Caveman | Resumen interno efimero de bajo riesgo | Leer las rutas registradas en origen/pin; no usar para evidencia critica |
+| SKREF-10 Angular Developer | Cambios de Angular 22, componentes, Signals, formularios, Angular Router, accesibilidad o pruebas | Consultar sólo su SKILL.md original de angular/angular en pin; no migrar framework ni crear apps |
+| SKREF-11 Security Threat Model | Amenazas o límites de confianza explícitos A/B, JWT, RBAC, HMAC o sesiones | Consultar sólo su SKILL.md original de openai/skills en pin; analizar evidencia específica del repositorio |
+| SKREF-12 .NET Performance | Cuellos de botella demostrados, profiling, problemas LINQ, async, memoria o I/O .NET 10 | Consultar sólo su SKILL.md original de dotnet/skills en pin; no optimizar sin medición |
 
 ## Uso por lane del Plan Comercial Inicial
 
 | Lane VAEP | Skill local | Referencias externas condicionales |
 | --- | --- | --- |
-| 01_SEGURIDAD | Governance antes de toda operación | SKREF-01/02 sólo al actualizar Skills; otras sólo si el cambio afecta su superficie |
-| 02_COMERCIO | Governance y aislamiento de empresa | SKREF-03 para formularios/tables administrativos; SKREF-05 cuando afecta presentación pública |
-| 03_UX | Governance, frontend/backend y accesibilidad | SKREF-03 UX institucional, SKREF-04 si hay animación, SKREF-05 para tienda/landing, SKREF-06 para textos |
-| 04_RUTAS | Governance, HMAC, RBAC y rutas verificadas | No hay referencia externa obligatoria; utilizar sólo una pertinente a UX/routing que esté autorizada |
-| 05_QA_OPERACION | Governance y evidencias exact-head | SKREF-01/02 al validar Skills; SKREF-07/08 para runbooks/contexto; SKREF-09 sólo compresión efímera no crítica |
+| 01_SEGURIDAD | Governance, autenticación y tenancy | SKREF-11 si se requiere modelado de amenazas/límites de confianza; SKREF-01/02 sólo al modificar Skills |
+| 02_COMERCIO | Governance y aislamiento de empresa | SKREF-10 para Angular, SKREF-03 para UX administrativa, SKREF-05 para tienda, SKREF-11 ante amenaza explícita, SKREF-12 para performance .NET demostrada |
+| 03_UX | Governance, frontend y accesibilidad | SKREF-10 para Angular; SKREF-03 UI, SKREF-04 movimiento, SKREF-05 tienda, SKREF-06 textos, sólo según componente |
+| 04_RUTAS | Governance, HMAC, RBAC y rutas verificadas | SKREF-11 para modelado de abuso/tenancy, SKREF-10 para Angular Router, SKREF-12 para rutas .NET con perf medido |
+| 05_QA_OPERACION | Governance, pruebas y evidencias exact-head | SKREF-12 sólo si la tarea aborda rendimiento .NET; SKREF-07/08 runbooks, SKREF-09 resumen efímero, SKREF-01/02 para validar Skills |
 
 El ejecutor debe usar **primero la Skill local del repositorio en el HEAD de dev**, confirmar que la copia instalada coincide y pasar `scripts/verify-solqaryn-skills.mjs` o el check de CI exact-head. Si hay discrepancia, `NO_GO`. No es válido alegar que una referencia fue aplicada por existir en el registro: registrar qué referencia, pin/ruta y por qué fue necesaria.
+
+Cada Primary y Supervisor debe ejecutar este routing para cada microtarea existente del Plan Comercial Inicial: consultar primero la Skill local canónica y comprobar frescura, clasificar el alcance de la microtarea, seleccionar 0..N referencias, validar fuente original + pin + ruta registrada, registrar cuáles aplicó y ejecutar las pruebas causales. Si ninguna aplica, basta Governance; si el origen fijado falla, no usar forks o mirrors ni simular su consulta. Bloquear sólo el scope que la necesita.
+
+No se instalan Skills externas como copias locales, no se ejecutan herramientas externas ni se importan agentes, dependencias, migraciones o defaults de otros repositorios. No se crean microtareas, automatizaciones ni informes no requeridos.
 
 Cuando apliquen varias referencias, usar primero governance, luego referencias de superficie y por ultimo referencias de redaccion/contexto.

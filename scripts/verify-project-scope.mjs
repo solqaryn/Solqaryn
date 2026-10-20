@@ -61,6 +61,9 @@ const expectedExternalSources = [
   ['blader/napkin', '27fa60a895de4383b26a539136bc983155cb979c'],
   ['alexgreensh/token-optimizer', '37a9546b9fecba2c4e9a02ef4e90855d449bf08f'],
   ['JuliusBrussee/caveman', '15581d14007fd01fb3f132016741962f34936ca2'],
+  ['angular/angular', '6808966993bf2b2d455d9b6245e960a59a01b9a9'],
+  ['openai/skills', '49f948faa9258a0c61caceaf225e179651397431'],
+  ['dotnet/skills', '9386ed7c1148a7bef970aa0502371c982effa01c'],
 ];
 
 const errors = [];
@@ -138,7 +141,7 @@ if (existsSync(join(root, registryPath))) {
   const registry = read(registryPath);
   if (!registry.includes('Skill Creator') || !registry.includes('ChatGPT / OpenAI, integrado en el entorno')) errors.push('registry missing official Skill Creator reference');
   if (!registry.includes('LOCAL_SKILL_COUNT=1')) errors.push('registry must declare LOCAL_SKILL_COUNT=1');
-  if (!registry.includes('EXTERNAL_SKILL_SOURCES=9')) errors.push('registry must declare EXTERNAL_SKILL_SOURCES=9');
+  if (!registry.includes('EXTERNAL_SKILL_SOURCES=12')) errors.push('registry must declare EXTERNAL_SKILL_SOURCES=12');
   for (const [source, pin] of expectedExternalSources) {
     if (!registry.includes(source)) errors.push(`registry missing authorized source: ${source}`);
     if (!registry.includes(pin)) errors.push(`registry missing authorized pin/resolution for: ${source}`);
@@ -148,8 +151,8 @@ if (existsSync(join(root, registryPath))) {
 if (existsSync(join(root, allowlistPath))) {
   const allowlist = read(allowlistPath);
   if (!allowlist.includes('Skill Creator oficial de ChatGPT / OpenAI') || !allowlist.includes('Integrado en el entorno')) errors.push('allowlist missing official Skill Creator reference');
-  if (!allowlist.includes('AUTHORIZED_ORIGINAL_SKILL_SOURCES=9')) {
-    errors.push('allowlist must declare nine authorized original skill sources');
+  if (!allowlist.includes('AUTHORIZED_ORIGINAL_SKILL_SOURCES=12')) {
+    errors.push('allowlist must declare twelve authorized original skill sources');
   }
   for (const [source, pin] of expectedExternalSources) {
     if (!allowlist.includes(source)) errors.push(`allowlist missing authorized source: ${source}`);
@@ -334,4 +337,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log('SOLQARYN PROJECT SCOPE GATE OK: canonical SOLQARYN identity + one local skill + nine pinned original references');
+console.log('SOLQARYN PROJECT SCOPE GATE OK: canonical SOLQARYN identity + one local skill + twelve original references (eleven pinned plus Skill Creator)');

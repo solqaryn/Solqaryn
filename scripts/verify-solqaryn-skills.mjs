@@ -14,7 +14,10 @@ const sources=[
 ["blader/humanizer","9862685f575c65a8247f90369951df1b3416e3d6"],
 ["blader/napkin","27fa60a895de4383b26a539136bc983155cb979c"],
 ["alexgreensh/token-optimizer","37a9546b9fecba2c4e9a02ef4e90855d449bf08f"],
-["JuliusBrussee/caveman","15581d14007fd01fb3f132016741962f34936ca2"]
+["JuliusBrussee/caveman","15581d14007fd01fb3f132016741962f34936ca2"],
+["angular/angular","6808966993bf2b2d455d9b6245e960a59a01b9a9"],
+["openai/skills","49f948faa9258a0c61caceaf225e179651397431"],
+["dotnet/skills","9386ed7c1148a7bef970aa0502371c982effa01c"]
 ];
 const snapshot=()=>{
 return {skill:read(`${skRoot}/SKILL.md`),architecture:read(`${skRoot}/references/architecture.md`),
@@ -55,7 +58,13 @@ if(x.dirs.length!==1||x.dirs[0]!=="solqaryn-project-governance")bad.push("local 
 for(const [src,pin] of sources){expect(x.registry,src,"registry origin");expect(x.registry,pin,"registry pin");expect(x.allowlist,src,"allowlist origin");expect(x.allowlist,pin,"allowlist pin");}
 for(const [n,body] of [["Skill",x.skill],["AGENTS",x.agents],["VAEP",x.vaep]])expect(body,planId,n);
 expect(x.skill,"Plan Comercial Inicial Unificado","Skill authority");
-expect(x.registry,"EXTERNAL_SKILL_SOURCES=9","registry count");
+expect(x.registry,"EXTERNAL_SKILL_SOURCES=12","registry count");
+expect(x.allowlist,"AUTHORIZED_ORIGINAL_SKILL_SOURCES=12","allowlist count");
+for(const ref of ["SKREF-10","SKREF-11","SKREF-12"]){
+ expect(x.registry,ref,"registry routing id");
+ expect(x.allowlist,ref,"allowlist routing id");
+ expect(x.routing,ref,"skill routing id");
+}
 expect(x.routing,"docs/REGISTRO_REFERENCIAS_SKILLS_SOLQARYN.md","routing");
 expect(x.vaep,"CURRENT_COMMERCIAL_ONLY=TRUE","VAEP mode");
 expect(x.agents,"PROJECT_SKILL=.agents/skills/solqaryn-project-governance/SKILL.md","AGENTS path");
@@ -66,14 +75,17 @@ const x=snapshot();
 let failures=validate(x);if(failures.length)throw Error(failures.join("\n"));
 if(process.argv.includes("--self-test")){
 const tests=[
-[{...x,skill:x.skill.replace("Angular 22.2.1","Angular 20")},"skill Angular"],
+[{...x,skill:x.skill.replaceAll("Angular 22.2.1","Angular 20")},"skill Angular"],
 [{...x,registry:x.registry.replace("ASP.NET Core 10","ASP.NET Core 8")},"registry .NET"],
 [{...x,skill:x.skill.replace(planId,"INVALID_PLAN")},"Skill"],
-[{...x,dirs:[...x.dirs,"rogue-skill"]},"local Skill count"]
+[{...x,dirs:[...x.dirs,"rogue-skill"]},"local Skill count"],
+[{...x,registry:x.registry.replace("6808966993bf2b2d455d9b6245e960a59a01b9a9","PIN_REMOVED")},"registry pin"],
+[{...x,allowlist:x.allowlist.replace("49f948faa9258a0c61caceaf225e179651397431","PIN_REMOVED")},"allowlist pin"],
+[{...x,routing:x.routing.replaceAll("SKREF-12","REFERENCE_REMOVED")},"skill routing id"]
 ];
 for(const [broken,needle] of tests){if(!validate(broken).some(x=>x.includes(needle)))throw Error("Negative test not rejected: "+needle);}
 console.log(`Skill freshness negative self-tests PASS (${tests.length})`);
 }
-console.log("Skill freshness PASS: live code versions, commercial plan, one local Skill, 8 pinned sources");
+console.log("Skill freshness PASS: live code versions, commercial plan, one local Skill, 11 pinned GitHub sources plus Skill Creator");
 }catch(e){console.error("SOLQARYN SKILL FRESHNESS NO_GO:",e.message);process.exitCode=1;}
 })();

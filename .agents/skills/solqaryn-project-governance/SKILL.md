@@ -111,7 +111,11 @@ Consultar `references/skill-routing.md` y `docs/REGISTRO_REFERENCIAS_SKILLS_SOLQ
 Reglas:
 
 - esta skill local siempre va primero;
-- las otras nueve entradas son referencias externas, no skills locales;
+- las otras doce entradas son referencias externas, no skills locales;
+- cada Primary/Supervisor, antes de ejecutar su microtarea, identifica componente, riesgos y validaciones, y sólo consulta las referencias autorizadas que corresponden a esa tarea (ninguna, una o varias); no se aplican las doce indiscriminadamente;
+- SKREF-10 Angular Developer: Angular 22.2.1, Signals, formularios, routing, accesibilidad y pruebas cuando la tarea modifica frontend; sin crear una app nueva ni cambiar dependencias;
+- SKREF-11 Security Threat Model: sólo ante una tarea que requiera modelar amenazas, abuso o límites de confianza multiempresa/JWT/RBAC/HMAC; no imponer nuevos informes ni pausas a tareas no relacionadas;
+- SKREF-12 .NET Performance: tareas concretas de profiling o performance .NET 10, LINQ, async, memoria o I/O; optimizar únicamente con evidencia y regresiones;
 - cada referencia debe leerse desde el propietario/origen registrado y pin fijado;
 - solo se aplican los principios compatibles con SOLQARYN;
 - no instalar ni ejecutar herramientas externas por defecto;
@@ -141,7 +145,7 @@ El cierre debe demostrar, segun aplique:
 - no reintroducir fases, filas, gates, prioridades o secuencias de planes no vigentes;
 - no tratar evidencia previa como autoridad operativa;
 
-- no crear copias locales de las nueve referencias externas;
+- no crear copias locales de las doce referencias externas;
 - no consultar mirrors, forks o copias dentro de otros proyectos como sustituto del origen registrado;
 - no cambiar pins sin autorizacion expresa;
 - no importar gobierno, arquitectura o decisiones externas;
