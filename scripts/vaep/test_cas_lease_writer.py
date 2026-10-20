@@ -99,6 +99,7 @@ class LeaseWriterTests(unittest.TestCase):
         exec_item = k.requests[1]["createDeveloperMetadata"]["developerMetadata"]
         self.assertEqual(exec_item["metadataId"], k.executor_metadata_id)
         self.assertEqual(exec_item["metadataKey"], EXECUTOR_METADATA_KEY)
+        self.assertEqual(exec_item["location"], {"spreadsheet": True})
 
     def test_claim_event_is_not_false_active_real(self):
         k = claim()
@@ -288,6 +289,10 @@ class IndependentReviewLeaseTests(unittest.TestCase):
         event = k.requests[4]["appendCells"]["rows"][0]["values"]
         self.assertEqual(event[3]["userEnteredValue"]["stringValue"], "REVIEW_LEASE_ACQUIRED")
         self.assertNotIn("LISTO", event[8]["userEnteredValue"]["stringValue"])
+        self.assertEqual(
+            k.requests[1]["createDeveloperMetadata"]["developerMetadata"]["location"],
+            {"spreadsheet": True},
+        )
 
     def test_review_must_have_original_handoff_with_evidence(self):
         c, r = review_fixture()
@@ -303,10 +308,18 @@ class IndependentReviewLeaseTests(unittest.TestCase):
         with self.assertRaisesRegex(UnsafeSnapshot, "SELF_REVIEW_FORBIDDEN"):
             review_claim(reviewer=OWNER)
 
-    def test_review_cannot_skip_lower_order_pending(self):
+    def test_validando_review_precedes_lower_order_pending(self):
         c, r = review_fixture(n=2, task_index=2)
-        with self.assertRaisesRegex(UnsafeSnapshot, "OUT_OF_ORDER_REVIEW_CLAIM"):
-            review_claim(c=c, r=r, task_id="P002")
+        accepted = review_claim(c=c, r=r, task_id="P002")
+        self.assertEqual(accepted.task_id, "P002")
+
+    def test_pending_claim_blocked_for_actor_with_independent_review(self):
+        c, r = review_fixture(n=2, task_index=2)
+        with self.assertRaisesRegex(UnsafeSnapshot, "VALIDANDO_PRIORITY_BEFORE_PENDING:P002"):
+            claim(commercial=c, runtime=r, chosen="P001", owner=REVIEWER)
+        # The original author cannot review their own delivery.
+        other = claim(commercial=c, runtime=r, chosen="P001", owner=OWNER)
+        self.assertEqual(other.task_id, "P001")
 
     def test_review_cannot_skip_other_lower_review(self):
         c, r = review_fixture(n=2)
@@ -532,6 +545,14 @@ class StaleLeaseRecoveryAndTakeoverTests(unittest.TestCase):
         )
         self.assertEqual(tk.task_id, "P001")
         self.assertEqual(tk.owner, REVIEWER)
+        executor_creates = [
+            request["createDeveloperMetadata"]["developerMetadata"]
+            for request in tk.requests
+            if "createDeveloperMetadata" in request
+            and request["createDeveloperMetadata"]["developerMetadata"]["metadataKey"] == EXECUTOR_METADATA_KEY
+        ]
+        self.assertEqual(len(executor_creates), 1)
+        self.assertEqual(executor_creates[0]["location"], {"spreadsheet": True})
         api_rep = {
             "replies": [
                 {"deleteDeveloperMetadata": {"deletedDeveloperMetadata": [{"metadataId": tk.metadata_id, "metadataValue": stale_meta_val}]}},
