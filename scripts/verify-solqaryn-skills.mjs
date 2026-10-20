@@ -75,7 +75,7 @@ const x=snapshot();
 let failures=validate(x);if(failures.length)throw Error(failures.join("\n"));
 if(process.argv.includes("--self-test")){
 const tests=[
-[{...x,skill:x.skill.replace("Angular 22.2.1","Angular 20")},"skill Angular"],
+[{...x,skill:x.skill.replaceAll("Angular 22.2.1","Angular 20")},"skill Angular"],
 [{...x,registry:x.registry.replace("ASP.NET Core 10","ASP.NET Core 8")},"registry .NET"],
 [{...x,skill:x.skill.replace(planId,"INVALID_PLAN")},"Skill"],
 [{...x,dirs:[...x.dirs,"rogue-skill"]},"local Skill count"],
