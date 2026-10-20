@@ -9,6 +9,7 @@ selection immediately before the claim. A plain Sheets update is not a CAS.
 
 import argparse
 import json
+import re
 from pathlib import Path
 
 ALLOWED_STATES = frozenset({
@@ -110,6 +111,36 @@ def snapshot(commercial_rows, runtime_rows, expected_count=1123):
         }
     _validate_dag(tasks)
     return tasks
+
+
+def eligible_independent_reviews(commercial_rows, runtime_rows, expected_count=1123, reviewer=None):
+    """Find reviewable VALIDANDO scopes in order, never stealing leases.
+
+    This is admission *selection*, not REVIEW_FIRST certification. The writer
+    still verifies the original author, ownership metadata, CI and readback.
+    A reviewer may not select their own delivered work.
+    """
+    tasks = snapshot(commercial_rows, runtime_rows, expected_count)
+    rows = {row[0]: row for row in runtime_rows[1:]}
+    chosen = []
+    for item in sorted(tasks.values(), key=lambda task: task['order']):
+        if item['state'] != 'VALIDANDO' or item['owner']:
+            continue
+        if not item['lease'].startswith('RELEASED|'):
+            continue
+        if any(tasks[dependency]['state'] != 'LISTO' for dependency in item['dependencies']):
+            continue
+        author_parts = [part.split('=', 1)[1] for part in item['lease'].split('|')[1:]
+                        if part.startswith('OWNER=')]
+        if len(author_parts) != 1 or not re.fullmatch(r'[0-9a-f]{32}', author_parts[0]):
+            continue
+        if reviewer is not None and reviewer == author_parts[0]:
+            continue
+        evidence = _value(rows[item['id']], 5)
+        if not isinstance(evidence, str) or not evidence.startswith('https://'):
+            continue
+        chosen.append({'id': item['id'], 'order': item['order'], 'author': author_parts[0]})
+    return chosen
 
 
 def audit_wip_violations(runtime_rows):

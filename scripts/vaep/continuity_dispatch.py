@@ -13,7 +13,7 @@ repository write access before attempting any material change.
 from datetime import datetime, timezone
 import re
 
-from commercial_dispatch import UnsafeSnapshot, dispatch, snapshot
+from commercial_dispatch import UnsafeSnapshot, dispatch, snapshot, eligible_independent_reviews
 
 EXECUTORS = (
     "6ad7bbf79c488191bf893e6c08ea9b5f",  # Primary :00
@@ -64,10 +64,11 @@ def decide(commercial_rows, runtime_rows, *, actor_id, now,
            supervised_actor_id=None, expected_count=1123):
     """Return one deterministic *next action* for a given existing executor.
 
-    Priority among *free and eligible* actions is global ascending ORDER.
-    An owned scope must be completed, handed off, or safely recovered BEFORE
-    acquiring another: WIP=1 applies to both Primary and Supervisor.
-    Expired leases are NOT automatically stolen or released.
+    Priority: REVIEW a free VALIDANDO first, CONTINUE/RECOVER own WIP,
+    then BUILD the next eligible PENDIENTE. Existing owned work takes
+    precedence for the same actor (WIP=1). Expired foreign leases are
+    not eligible without terminal-run proof, fenced CAS and readback.
+    Within each status choose the lowest ORDEN. Never auto-approve.
     """
     if actor_id not in EXECUTORS:
         raise UnsafeSnapshot("UNKNOWN_EXECUTOR")
@@ -110,13 +111,14 @@ def decide(commercial_rows, runtime_rows, *, actor_id, now,
             else:
                 supervision = "FRESH_OWNERSHIP_NOT_MATERIAL_PROOF"
 
-    def result(action, selected=None, reason=None, available=0, reviews=0):
+    def result(action, selected=None, reason=None, available=0, reviews=0, fallback=None):
         return {
             "action": action, "actor_id": actor_id,
             "supervised_actor_id": supervised_actor_id,
             "supervision": supervision, "selected": selected,
             "reason": reason, "eligible_builds": available,
             "eligible_reviews": reviews,
+            "fallback_after_unsafe_recovery": fallback,
             "same_capabilities_for_all_ten": True,
             "needs_atomic_lease_before_write": True,
             "is_resident_process": False,
@@ -141,45 +143,55 @@ def decide(commercial_rows, runtime_rows, *, actor_id, now,
     # Another actor's scope is not stealable, even if its TTL has passed.
     # However, that is not a reason to sit idle while other work is free.
     read_only = dispatch(commercial_rows, runtime_rows, expected_count)
-    candidates = [
-        (t["order"], "BUILD", {"id": t["id"], "order": t["order"]})
-        for t in (tasks[a["id"]] for a in read_only["available"])
-    ]
-    excluded_reviews = []
-    for t in tasks.values():
-        if t["state"] != "VALIDANDO" or t["owner"] or not t["lease"].startswith("RELEASED|"):
-            continue
-        if any(tasks[d]["state"] != "LISTO" for d in t["dependencies"]):
-            continue
-        author = _author(t["lease"])
-        proof = raw[t["id"]][5] if len(raw[t["id"]]) > 5 else ""
-        if author is None or not isinstance(proof, str) or not proof.startswith("https://"):
-            excluded_reviews.append(t["id"] + ":MISSING_AUTHOR_OR_EVIDENCE")
-            continue
-        if actor_id == author:
-            excluded_reviews.append(t["id"] + ":SELF_REVIEW_FORBIDDEN")
-            continue
-        candidates.append((t["order"], "REVIEW", {"id": t["id"], "order": t["order"]}))
-    candidates.sort(key=lambda item: item[0])
-    if candidates:
-        chosen = candidates[0]
-        return result(chosen[1], chosen[2],
-                      reason="GLOBAL_ASCENDING_ORDER_FREE_ELIGIBLE",
-                      available=len(read_only["available"]),
-                      reviews=len([x for x in candidates if x[1] == "REVIEW"]))
-
+    # Reviewable VALIDANDO outranks even a lower-ORDEN PENDIENTE.
+    # Eligibility already excludes own work, missing evidence, foreign leases
+    # and unsatisfied dependencies. No attempt to reassign a live owner.
+    reviews = eligible_independent_reviews(
+        commercial_rows, runtime_rows, expected_count, reviewer=actor_id)
+    if reviews:
+        return result("REVIEW", {"id": reviews[0]["id"], "order": reviews[0]["order"]},
+                      reason="VALIDANDO_FIRST_INDEPENDENT_REVIEW_LOWEST_ORDER",
+                      available=len(read_only["available"]), reviews=len(reviews))
+    # Assess older work before taking a new PENDIENTE. Missing/expired TTL
+    # alone grants no takeover rights. The same run MUST take the free BUILD
+    # fallback when it cannot prove termination and perform fenced CAS.
     stale = sorted(
         (t for t in tasks.values() if t["owner"]
          and t["state"] in ("EN_PROGRESO", "VALIDANDO")
          and (_expiration(t["lease"]) is None or _expiration(t["lease"]) <= now)),
-        key=lambda t: t["order"],
+        key=lambda t: (0 if t["state"] == "VALIDANDO" else 1, t["order"]),
     )
+    fallback = None
+    if read_only["available"]:
+        build = read_only["available"][0]
+        fallback = {"action": "BUILD", "selected": {"id": build["id"],
+                      "order": build["order"]}}
     if stale:
+        target = stale[0]
+        if fallback is not None:
+            return result(
+                "ASSESS_STALE_RECOVERY",
+                selected={"id": target["id"], "order": target["order"],
+                          "state": target["state"]},
+                reason="TRY_TERMINAL_PROOF_AND_FENCED_CAS;IF_NOT_PROVEN_EXECUTE_BUILD_FALLBACK_SAME_RUN",
+                available=len(read_only["available"]), fallback=fallback,
+            )
         return result(
             "SAFE_RECOVERY_REQUIRED",
-            selected={"id": stale[0]["id"], "order": stale[0]["order"]},
+            selected={"id": target["id"], "order": target["order"],
+                      "state": target["state"]},
             reason="NEVER_STEAL_WITHOUT_TERMINATION_PROOF_AND_FENCING",
         )
+    if fallback is not None:
+        return result("BUILD", fallback["selected"],
+                      reason="NO_ELIGIBLE_VALIDANDO_OR_RECOVERABLE_WIP_BUILD_LOWEST_ORDER",
+                      available=len(read_only["available"]))
+
+    excluded_reviews = []
+    for t in tasks.values():
+        if t["state"] != "VALIDANDO" or t["owner"] or not t["lease"].startswith("RELEASED|"):
+            continue
+        excluded_reviews.append(t["id"] + ":NO_ELIGIBLE_INDEPENDENT_REVIEW")
     if excluded_reviews:
         return result("BLOCKED_REVIEW_PROVENANCE",
                       reason=";".join(excluded_reviews[:5]))

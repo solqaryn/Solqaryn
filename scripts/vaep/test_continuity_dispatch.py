@@ -90,8 +90,10 @@ class UniversalContinuityTests(unittest.TestCase):
     def test_supervisor_does_not_steal_stale_primary_claim(self):
         claimed = (1, "TASK-1", "EN_PROGRESO", "", EXECUTORS[0], STALE, "")
         result = run(claimed, SECOND, actor=EXECUTORS[1], supervised=EXECUTORS[0])
-        self.assertEqual(result["action"], "BUILD")
-        self.assertEqual(result["selected"]["id"], "TASK-2")
+        self.assertEqual(result["action"], "ASSESS_STALE_RECOVERY")
+        self.assertEqual(result["selected"]["id"], "TASK-1")
+        self.assertEqual(result["fallback_after_unsafe_recovery"]["action"], "BUILD")
+        self.assertEqual(result["fallback_after_unsafe_recovery"]["selected"]["id"], "TASK-2")
         self.assertEqual(result["supervision"], "STALE_OR_UNVERIFIED_OWNERSHIP")
 
     def test_actor_resumes_own_fresh_work_instead_of_claiming_another(self):
@@ -112,6 +114,16 @@ class UniversalContinuityTests(unittest.TestCase):
         third = (3, "TASK-3", "PENDIENTE", "", "", "", "")
         result = run(a, b, third)
         self.assertEqual(result["action"], "RECONCILE_DUPLICATE_WIP")
+
+    def test_validando_later_order_precedes_earlier_pending(self):
+        pending = (1, "TASK-1", "PENDIENTE", "", "", "", "")
+        validating = (2, "TASK-2", "VALIDANDO", "", "",
+                      "RELEASED|OWNER=" + EXECUTORS[0] + "|TOKEN=prior",
+                      "https://github.com/solqaryn/Solqaryn/pull/3691")
+        chosen = run(pending, validating, actor=EXECUTORS[1])
+        self.assertEqual(chosen["action"], "REVIEW")
+        self.assertEqual(chosen["selected"]["id"], "TASK-2")
+        self.assertIn("VALIDANDO_FIRST", chosen["reason"])
 
     def test_review_of_earlier_order_before_later_build(self):
         validating = (1, "TASK-1", "VALIDANDO", "", "",
@@ -147,8 +159,19 @@ class UniversalContinuityTests(unittest.TestCase):
         blocker = (2, "TASK-2", "VALIDANDO", "", EXECUTORS[0], STALE, "")
         independent = (3, "TASK-3", "PENDIENTE", "", "", "", "")
         result = run(dep, blocker, independent, actor=EXECUTORS[1])
-        self.assertEqual(result["action"], "BUILD")
-        self.assertEqual(result["selected"]["id"], "TASK-3")
+        self.assertEqual(result["action"], "ASSESS_STALE_RECOVERY")
+        self.assertEqual(result["selected"]["id"], "TASK-2")
+        self.assertEqual(result["fallback_after_unsafe_recovery"]["selected"]["id"], "TASK-3")
+
+    def test_stale_validando_assessed_before_lower_order_en_progreso(self):
+        older_progress = (1, "TASK-1", "EN_PROGRESO", "", EXECUTORS[0], STALE, "")
+        later_validation = (2, "TASK-2", "VALIDANDO", "", EXECUTORS[2], STALE, "")
+        pending = (3, "TASK-3", "PENDIENTE", "", "", "", "")
+        result = run(older_progress, later_validation, pending, actor=EXECUTORS[1])
+        self.assertEqual(result["action"], "ASSESS_STALE_RECOVERY")
+        self.assertEqual(result["selected"]["id"], "TASK-2")
+        self.assertEqual(result["selected"]["state"], "VALIDANDO")
+        self.assertEqual(result["fallback_after_unsafe_recovery"]["selected"]["id"], "TASK-3")
 
     def test_only_stale_owner_requires_recovery_not_idle(self):
         stale = (1, "TASK-1", "EN_PROGRESO", "", EXECUTORS[0], STALE, "")
