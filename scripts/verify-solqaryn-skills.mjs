@@ -3,7 +3,7 @@ import { join } from 'node:path';
 
 (function buildValidator(){
 const root=process.cwd();
-const read=(p)=>readFileSync(join(root,p),"utf8");
+const read=(p)=>readFileSync(join(root,p),"utf8").replace(/\r\n/g, "\n");
 const skRoot=".agents/skills/solqaryn-project-governance";
 const planId="1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j";
 const sources=[
