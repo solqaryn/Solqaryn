@@ -145,6 +145,61 @@ class UniversalContinuityTests(unittest.TestCase):
                          ["PENDIENTE", "EN_PROGRESO", "VALIDANDO", "LISTO"])
         self.assertEqual(response["next_hierarchical_pending"]["id"], "TASK-1")
 
+    def test_eight_startup_scopes_review_and_safe_recovery_before_pending(self):
+        # Historical owners are NOT cleared merely because a lease expired.
+        retired_primary = "6aa15346f5408191bdd9043fd26ff7aa"
+        retired_author = "6aa1535f8cd48191b73e10f17843372a"
+        def stale(owner):
+            return (f"ACTIVE|OWNER={owner}|TOKEN=previous|"
+                    "START=2026-10-20T16:40:00Z|"
+                    "EXPIRES=2026-10-20T16:50:00Z|HEAD=" + HEAD)
+        def delivered():
+            return "RELEASED|OWNER=" + retired_author + "|TOKEN=handed_off"
+        proof = "https://github.com/solqaryn/Solqaryn/pull/3691"
+        items = [
+            (4, "P0-002.B", "VALIDANDO", "", EXECUTORS[3], stale(EXECUTORS[3]), proof),
+            (5, "P0-003.A", "EN_PROGRESO", "", retired_primary, stale(retired_primary), ""),
+            (7, "P0-004.A", "EN_PROGRESO", "", EXECUTORS[1], stale(EXECUTORS[1]), ""),
+            (9, "P0-005.A", "EN_PROGRESO", "", EXECUTORS[7], stale(EXECUTORS[7]), ""),
+            (11, "P0-006.A", "EN_PROGRESO", "", EXECUTORS[3], stale(EXECUTORS[3]), ""),
+            (13, "P0-007.A", "EN_PROGRESO", "", EXECUTORS[7], stale(EXECUTORS[7]), ""),
+            (17, "P0-009.A", "VALIDANDO", "", "", delivered(), proof),
+            (19, "P0-010.A", "VALIDANDO", "", "", delivered(), proof),
+            (21, "P0-011.A", "PENDIENTE", "", "", "", ""),
+        ]
+        actual = run(*items, actor=EXECUTORS[4])
+        self.assertEqual(actual["action"], "REVIEW")
+        self.assertEqual(actual["selected"]["id"], "P0-009.A")
+        self.assertEqual(len(actual["inspected_inflight"]["VALIDANDO"]), 3)
+        self.assertEqual(len(actual["inspected_inflight"]["EN_PROGRESO"]), 5)
+        self.assertEqual(actual["inspected_inflight"]["EN_PROGRESO"][0]
+                         ["owner_automation_id"], retired_primary)
+        self.assertFalse(actual["inspected_inflight"]["EN_PROGRESO"][0]
+                         ["live_run_confirmed"])
+
+        # Hypothetical certified closure of the two independent handoffs.
+        closed = [
+            (order, ident, "LISTO", dep, "", "RELEASED", evidence)
+            if ident in {"P0-009.A", "P0-010.A"}
+            else (order, ident, state, dep, owner, lease, evidence)
+            for order, ident, state, dep, owner, lease, evidence in items
+        ]
+        fallback = run(*closed, actor=EXECUTORS[4])
+        self.assertEqual(fallback["action"], "BUILD")
+        self.assertEqual(fallback["selected"]["id"], "P0-011.A")
+        self.assertEqual(fallback["recovery_candidate_needing_verified_terminal_run"]
+                         ["id"], "P0-002.B")
+        # Only after a real fenced recovery may old WIP become free.
+        recovered = [
+            (order, ident, "PENDIENTE", dep, "", "RECOVERED|FENCING_TOKEN=proof", evidence)
+            if ident == "P0-003.A"
+            else (order, ident, state, dep, owner, lease, evidence)
+            for order, ident, state, dep, owner, lease, evidence in closed
+        ]
+        reclaimed = run(*recovered, actor=EXECUTORS[4])
+        self.assertEqual(reclaimed["action"], "BUILD")
+        self.assertEqual(reclaimed["selected"]["id"], "P0-003.A")
+
     def test_pending_hierarchy_skips_blocked_dependencies(self):
         blocked = (1, "TASK-1", "PENDIENTE", "TASK-3", "", "", "")
         available = (2, "TASK-2", "PENDIENTE", "", "", "", "")
