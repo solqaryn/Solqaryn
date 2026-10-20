@@ -19,7 +19,7 @@ from cas_lease_writer import (
 
 COMMERCIAL = ["ID","PROGRAMA_PRIORIDAD","MICROTAREA","CRITERIO_EXIGIDO","ORDEN","PLAN_COMERCIAL_DOC_ID","VERSION_FUENTE","UNIDAD_ORIGEN_LANE"]
 RUNTIME = ["ID","ESTADO","OWNER_AUTOMATION_ID","LEASE_STATUS","HEAD","EVIDENCIA","BLOQUEO","NEXT_ACTION","UPDATED_AT","DEPENDENCIAS_ACTUALES","DEPENDENCIAS_OK","PRIORIDAD_ACTUAL","P0","P1","ROLLBACK","RESULTADO","NOTA_RUNTIME","RESERVED"]
-OWNER = "6aa15346f5408191bdd9043fd26ff7aa"
+OWNER = "6ad7bbf79c488191bf893e6c08ea9b5f"
 HEAD = "ba4edfffcb2473c42d731335cf25dc33121a72ad"
 NOW = datetime(2026, 10, 20, 14, 30, tzinfo=timezone.utc)
 REVIEWER = "6abd6235e100819195785fc76a44a8e0"
@@ -70,6 +70,17 @@ def claim_replies(k):
 
 
 class LeaseWriterTests(unittest.TestCase):
+    def test_migrated_primary_ids_reject_retired_claims(self):
+        retired = ["6aa15346f5408191bdd9043fd26ff7aa","6aa1534deee481918280def1343adcfa","6abd70e42cb4819190b3b28916dc9dbb","6aa1535a51508191a610e6cdb90a2a4d","6aa1535f8cd48191b73e10f17843372a"]
+        expected = set(["6ad7bbf79c488191bf893e6c08ea9b5f","6ad7bc0d48748191aa1dd0ce2f18d22a","6ad7bc1cc7b8819190665e5ed78610d4","6ad7bc3001b88191add05d9b4d5a4130","6ad7bc3ebea08191a16dc7c9f1f3303b"])
+        self.assertEqual(CANONICAL_PRIMARY_IDS, expected)
+        self.assertEqual(len(CANONICAL_AUTOMATION_IDS), 10)
+        self.assertTrue(set(retired).isdisjoint(CANONICAL_AUTOMATION_IDS))
+        for old_id in retired:
+            with self.subTest(old_id=old_id):
+                with self.assertRaisesRegex(UnsafeSnapshot, "UNKNOWN_CANONICAL_EXECUTOR"):
+                    claim(owner=old_id)
+
     def test_claim_is_atomic_single_batch_with_five_requests(self):
         k = claim()
         self.assertEqual(k.metadata_id, METADATA_BASE + 1)
@@ -797,7 +808,7 @@ class ConcurrencyAndFaultToleranceTests(unittest.TestCase):
         r[1][2] = ""
         r[1][3] = f"RECOVERED|STALE_OWNER={OWNER}|STALE_TOKEN=tok1234567890123456|FENCING_TOKEN={rec.fencing_token}|RECOVERED_BY={REVIEWER}|HEAD={HEAD}"
         # A new runner (or any canonical runner) can now claim P001 cleanly
-        runner3 = "6aa1534deee481918280def1343adcfa"
+        runner3 = "6ad7bc0d48748191aa1dd0ce2f18d22a"
         k3 = claim(commercial=c, runtime=r, chosen="P001", owner=runner3)
         self.assertEqual(k3.task_id, "P001")
         self.assertEqual(k3.owner, runner3)
