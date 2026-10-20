@@ -1,3 +1,10 @@
+## 2026-10-20 — Migración autorizada de cinco Primary a ChatGPT Chat
+
+- El propietario confirmó eliminación de las cinco Primary anteriores y autorizó las cinco sustitutas ChatGPT Chat en los mismos slots :00/:12/:24/:36/:48. Codex/Work no son canales de ejecución permitidos para estas tareas.
+- Actualizados los cinco IDs Primary en la autoridad operativa y en los ejecutores/candados del código de DEV; los IDs de las cinco Supervisor de Alex no cambian. Los registros históricos con IDs retirados permanecen intactos para auditoría y para recuperación con fencing.
+- Los constructores de claim, revisión, recuperación y takeover rechazan ejecutores que no pertenezcan al conjunto de diez IDs canónicos; tests negativos comprueban que los cinco anteriores no pueden reclamar nuevos scopes.
+- Las nuevas Task quedan sujetas al preflight 10/10, CI exact-head, sincronización recíproca de _AUTOMATION_SOURCE y permisos de escritura; no se certifica aquí ningún cierre LISTO ni una ejecución sin consumo de cuota hasta obtener evidencia externa.
+
 ## 2026-10-20 — VAEP: Recuperación operativa, leases cercados (fencing) y control estricto de WIP
 
 - Defecto identificado: Supervisor `:17` y `:41` acumularon múltiples asignaciones en `_RUNTIME_SOURCE` debido a la ausencia de límite de WIP por ejecutor en el despacho y en el escritor de leases. Asimismo, microtareas como `P0-003.A` a `P0-007.A` quedaron retenidas con leases vencidos sin un mecanismo transaccional seguro de cercado (fencing) que impidiera escrituras tardías de ejecutores caídos.

@@ -30,11 +30,11 @@ _OWNER = re.compile(r"^[0-9a-f]{32}$")
 _EVENTS_COUNT = 12
 
 CANONICAL_PRIMARY_IDS = frozenset({
-    "6aa15346f5408191bdd9043fd26ff7aa",  # :00
-    "6aa1534deee481918280def1343adcfa",  # :12
-    "6abd70e42cb4819190b3b28916dc9dbb",  # :24
-    "6aa1535a51508191a610e6cdb90a2a4d",  # :36
-    "6aa1535f8cd48191b73e10f17843372a",  # :48
+    "6ad7bbf79c488191bf893e6c08ea9b5f",  # :00
+    "6ad7bc0d48748191aa1dd0ce2f18d22a",  # :12
+    "6ad7bc1cc7b8819190665e5ed78610d4",  # :24
+    "6ad7bc3001b88191add05d9b4d5a4130",  # :36
+    "6ad7bc3ebea08191a16dc7c9f1f3303b",  # :48
 })
 CANONICAL_SUPERVISOR_IDS = frozenset({
     "6abd62255ae88191a2dba6e1b00d3b4d",  # :05
@@ -146,6 +146,8 @@ def build_claim(
     """Reject skips and build an indivisible dual-lock (task + executor) claim."""
     if not isinstance(owner, str) or not _OWNER.fullmatch(owner):
         raise UnsafeSnapshot("INVALID_OWNER")
+    if owner not in CANONICAL_AUTOMATION_IDS:
+        raise UnsafeSnapshot("UNKNOWN_CANONICAL_EXECUTOR")
     if not _SHA.fullmatch(head or ""):
         raise UnsafeSnapshot("INVALID_HEAD")
     _clean(run_id, "RUN_ID")
@@ -390,6 +392,8 @@ def build_review_claim(
     """Reserve VALIDANDO work for an independent reviewer with dual locks."""
     if not isinstance(reviewer, str) or not _OWNER.fullmatch(reviewer):
         raise UnsafeSnapshot("INVALID_REVIEWER")
+    if reviewer not in CANONICAL_AUTOMATION_IDS:
+        raise UnsafeSnapshot("UNKNOWN_CANONICAL_EXECUTOR")
     if not _SHA.fullmatch(head or ""):
         raise UnsafeSnapshot("INVALID_HEAD")
     _clean(run_id, "RUN_ID")
@@ -615,6 +619,8 @@ def build_stale_lease_recovery(
     """
     if not isinstance(recovered_by, str) or not _OWNER.fullmatch(recovered_by):
         raise UnsafeSnapshot("INVALID_RECOVERER")
+    if recovered_by not in CANONICAL_AUTOMATION_IDS:
+        raise UnsafeSnapshot("UNKNOWN_CANONICAL_EXECUTOR")
     if not _SHA.fullmatch(head or ""):
         raise UnsafeSnapshot("INVALID_HEAD")
     _clean(run_id, "RUN_ID")
@@ -800,6 +806,8 @@ def build_takeover_claim(
     """
     if not isinstance(new_owner, str) or not _OWNER.fullmatch(new_owner):
         raise UnsafeSnapshot("INVALID_OWNER")
+    if new_owner not in CANONICAL_AUTOMATION_IDS:
+        raise UnsafeSnapshot("UNKNOWN_CANONICAL_EXECUTOR")
     if not _SHA.fullmatch(head or ""):
         raise UnsafeSnapshot("INVALID_HEAD")
     _clean(run_id, "RUN_ID")

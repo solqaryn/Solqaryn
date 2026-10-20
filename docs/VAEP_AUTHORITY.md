@@ -84,9 +84,9 @@ Reglas:
 
 - Cinco slots primarios: `:00/:12/:24/:36/:48`, responsabilidad operativa de Javier Mejía.
 - Cinco slots supervisores: `:05/:17/:29/:41/:53`, responsabilidad operativa de Alex Morales.
-- IDs canónicos Primary (Javier): `:00=6aa15346f5408191bdd9043fd26ff7aa`, `:12=6aa1534deee481918280def1343adcfa`, `:24=6abd70e42cb4819190b3b28916dc9dbb`, `:36=6aa1535a51508191a610e6cdb90a2a4d`, `:48=6aa1535f8cd48191b73e10f17843372a`.
+- IDs canónicos Primary (Javier): `:00=6ad7bbf79c488191bf893e6c08ea9b5f`, `:12=6ad7bc0d48748191aa1dd0ce2f18d22a`, `:24=6ad7bc1cc7b8819190665e5ed78610d4`, `:36=6ad7bc3001b88191add05d9b4d5a4130`, `:48=6ad7bc3ebea08191a16dc7c9f1f3303b`.
 - IDs canónicos Supervisor (Alex): `:05=6abd62255ae88191a2dba6e1b00d3b4d`, `:17=6abd6235e100819195785fc76a44a8e0`, `:29=6abd6241c3e48191a8856ed7b0f42c5c`, `:41=6abd624e5e108191bef6bb879559328c`, `:53=6abd625b397c8191a49904227946a20f`.
-- Las tareas equivalentes antiguas en la cuenta de Javier están RETIRADAS e inactivas; no son canónicas ni deben reactivarse.
+- Migración autorizada por propietario el 2026-10-20: las cinco Primary antiguas fueron eliminadas de ChatGPT Tasks. Los IDs originales son históricos y sus recibos/leases previos no se reescriben; las nuevas Primary se programaron desde ChatGPT Chat en los mismos cinco slots. Las Supervisor de Alex mantienen sus cinco IDs. La ejecución de producto exige sincronización 10/10 real, CI exact-head y readback de candados; hasta entonces solo preparación READ-ONLY segura.
 - Un slot no termina en reporte o espera si existe acción material segura.
 - **Pool global de trabajo, autorizado el 2026-10-19:** las diez automatizaciones canónicas, tanto Primary como Supervisor, pueden reclamar, implementar, corregir, recuperar o revisar **cualquier microtarea elegible de cualquiera de las cinco lanes**. Ni el horario ni el dominio asociado a una pareja restringen el despachador. Despacho = cola global + dependencias actuales satisfechas + permiso + un solo lease exclusivo por scope. Una Primary prioriza construir/cerrar y una Supervisor prioriza revisión/recuperación, pero ambas pueden ejecutar trabajo material no reservado; **ninguna puede aprobar su propia entrega**. La revisión REVIEW_FIRST corresponde a una automatización distinta de la autora, no necesariamente a la pareja de horario.
 - Si solo hay una microtarea elegible, no asignarla simultáneamente a diez escritores: los ejecutores libres revisan entregas independientes o preparan evidencia read-only útil, sin inventar progreso, saltar dependencias ni falsificar el estado de la cola.
@@ -96,7 +96,7 @@ Reglas:
 
 ### Continuidad material universal: cinco Primary y cinco Supervisor con idéntica capacidad
 
-**Decisión de propietario, vigente:** las diez automatizaciones existentes son diez ejecutores **equivalentes** para implementar, corregir, revisar entregas de **otro autor**, recuperar de forma segura o certificar cualquier microtarea libre y elegible del Plan Comercial Inicial vigente. Las palabras Primary y Supervisor solo identifican la **responsabilidad adicional de comprobación**: no son permisos distintos ni limitan el área/alcance. Se preservan los IDs, horarios y autorizaciones duales.
+**Decisión de propietario, vigente:** las diez automatizaciones existentes son diez ejecutores **equivalentes** para implementar, corregir, revisar entregas de **otro autor**, recuperar de forma segura o certificar cualquier microtarea libre y elegible del Plan Comercial Inicial vigente. Las palabras Primary y Supervisor solo identifican la **responsabilidad adicional de comprobación**: no son permisos distintos ni limitan el área/alcance. Se preservan los horarios y autorizaciones duales; los cinco IDs Primary se sustituyeron por autorización del propietario el 2026-10-20, sin alterar los cinco IDs Supervisor.
 
 **Regla de recuperación equivalente al comportamiento útil del respaldo LEGACY (sin reactivar su plan):**
 
@@ -321,7 +321,7 @@ Las cinco Supervisor existentes pertenecen a la cuenta operativa de **Alex Moral
 | :41 | 6abd624e5e108191bef6bb879559328c | :36 | 04_RUTAS |
 | :53 | 6abd625b397c8191a49904227946a20f | :48 | 05_QA_OPERACION |
 
-Solo la cuenta propietaria de Alex puede actualizar y certificar directamente los prompts, estados reales (`is_enabled` tal como los reporte ChatGPT) y horarios de sus cinco Supervisor; las autorizaciones de activación ya otorgadas no exigen devolverlas a `false`. La reconciliación `_AUTOMATION_SOURCE` requiere evidencia auténtica de readback por cuenta, nunca inferencia desde una fórmula `=TRUE` o `CONFIG.ACTIVO`. No crear cinco tareas sustitutas en la cuenta de Javier ni suplantar su revisión independiente. Las cinco Primary de Javier pueden adoptar inmediatamente el despacho global desde su cuenta, sin alterar IDs/horarios. Si una cuenta no es accesible, declarar esa porción pendiente de readback, no fingir 10/10 trabajando.
+Solo la cuenta propietaria de Alex puede actualizar y certificar directamente los prompts, estados reales (`is_enabled` tal como los reporte ChatGPT) y horarios de sus cinco Supervisor; las autorizaciones de activación ya otorgadas no exigen devolverlas a `false`. La reconciliación `_AUTOMATION_SOURCE` requiere evidencia auténtica de readback por cuenta, nunca inferencia desde una fórmula `=TRUE` o `CONFIG.ACTIVO`. Excepción autorizada y ya realizada el 2026-10-20: las cinco Primary de Javier se sustituyeron mediante ChatGPT Chat y las cinco anteriores fueron eliminadas. Conservar slots y revisar directamente los cinco IDs nuevos; no crear más tareas. Hasta readback auténtico y reconciliación recíproca de cinco parejas en GitHub y Sheets, queda prohibido tomar leases, escribir producto o declarar LISTO. Si una cuenta no es accesible, declarar esa porción pendiente de readback, no fingir 10/10 trabajando.
 
 ## 12. Gate de admisión comercial
 
