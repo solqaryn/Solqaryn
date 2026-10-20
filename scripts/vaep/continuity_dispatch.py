@@ -111,13 +111,14 @@ def decide(commercial_rows, runtime_rows, *, actor_id, now,
             else:
                 supervision = "FRESH_OWNERSHIP_NOT_MATERIAL_PROOF"
 
-    def result(action, selected=None, reason=None, available=0, reviews=0):
+    def result(action, selected=None, reason=None, available=0, reviews=0, fallback=None):
         return {
             "action": action, "actor_id": actor_id,
             "supervised_actor_id": supervised_actor_id,
             "supervision": supervision, "selected": selected,
             "reason": reason, "eligible_builds": available,
             "eligible_reviews": reviews,
+            "fallback_after_unsafe_recovery": fallback,
             "same_capabilities_for_all_ten": True,
             "needs_atomic_lease_before_write": True,
             "is_resident_process": False,
@@ -151,30 +152,46 @@ def decide(commercial_rows, runtime_rows, *, actor_id, now,
         return result("REVIEW", {"id": reviews[0]["id"], "order": reviews[0]["order"]},
                       reason="VALIDANDO_FIRST_INDEPENDENT_REVIEW_LOWEST_ORDER",
                       available=len(read_only["available"]), reviews=len(reviews))
+    # Assess older work before taking a new PENDIENTE. Missing/expired TTL
+    # alone grants no takeover rights. The same run MUST take the free BUILD
+    # fallback when it cannot prove termination and perform fenced CAS.
+    stale = sorted(
+        (t for t in tasks.values() if t["owner"]
+         and t["state"] in ("EN_PROGRESO", "VALIDANDO")
+         and (_expiration(t["lease"]) is None or _expiration(t["lease"]) <= now)),
+        key=lambda t: (0 if t["state"] == "VALIDANDO" else 1, t["order"]),
+    )
+    fallback = None
     if read_only["available"]:
         build = read_only["available"][0]
-        return result("BUILD", {"id": build["id"], "order": build["order"]},
-                      reason="NO_ELIGIBLE_VALIDANDO_OR_OWN_WIP_BUILD_LOWEST_ORDER",
-                      available=len(read_only["available"]), reviews=0)
+        fallback = {"action": "BUILD", "selected": {"id": build["id"],
+                      "order": build["order"]}}
+    if stale:
+        target = stale[0]
+        if fallback is not None:
+            return result(
+                "ASSESS_STALE_RECOVERY",
+                selected={"id": target["id"], "order": target["order"],
+                          "state": target["state"]},
+                reason="TRY_TERMINAL_PROOF_AND_FENCED_CAS;IF_NOT_PROVEN_EXECUTE_BUILD_FALLBACK_SAME_RUN",
+                available=len(read_only["available"]), fallback=fallback,
+            )
+        return result(
+            "SAFE_RECOVERY_REQUIRED",
+            selected={"id": target["id"], "order": target["order"],
+                      "state": target["state"]},
+            reason="NEVER_STEAL_WITHOUT_TERMINATION_PROOF_AND_FENCING",
+        )
+    if fallback is not None:
+        return result("BUILD", fallback["selected"],
+                      reason="NO_ELIGIBLE_VALIDANDO_OR_RECOVERABLE_WIP_BUILD_LOWEST_ORDER",
+                      available=len(read_only["available"]))
 
     excluded_reviews = []
     for t in tasks.values():
         if t["state"] != "VALIDANDO" or t["owner"] or not t["lease"].startswith("RELEASED|"):
             continue
         excluded_reviews.append(t["id"] + ":NO_ELIGIBLE_INDEPENDENT_REVIEW")
-
-    stale = sorted(
-        (t for t in tasks.values() if t["owner"]
-         and t["state"] in ("EN_PROGRESO", "VALIDANDO")
-         and (_expiration(t["lease"]) is None or _expiration(t["lease"]) <= now)),
-        key=lambda t: t["order"],
-    )
-    if stale:
-        return result(
-            "SAFE_RECOVERY_REQUIRED",
-            selected={"id": stale[0]["id"], "order": stale[0]["order"]},
-            reason="NEVER_STEAL_WITHOUT_TERMINATION_PROOF_AND_FENCING",
-        )
     if excluded_reviews:
         return result("BLOCKED_REVIEW_PROVENANCE",
                       reason=";".join(excluded_reviews[:5]))
