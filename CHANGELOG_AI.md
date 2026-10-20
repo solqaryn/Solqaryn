@@ -1,3 +1,10 @@
+## 2026-10-20 — Reparación del cierre REVIEW_FIRST con lease CAS
+
+- Defecto identificado: el escritor de leases solo admitía `PENDIENTE → EN_PROGRESO → VALIDANDO`, no el claim/cierre de `VALIDANDO → LISTO` por un revisor independiente. Esto impedía completar de forma segura el último paso del trabajo delegado a las Supervisor.
+- Añadidos `build_review_claim`, `verify_review_claim_response`, `build_review_completion` y `verify_review_completion_response` al escritor existente. Garantizan un único metadataId por ORDEN, readback de token, autor anterior distinto del revisor, prueba de revisión+CI y P0/P1=0 antes de `LISTO`; revisión fallida permanece `VALIDANDO`.
+- Diez pruebas unitarias negativas y positivas añadidas a la suite existente. Se mantiene prohibida la recuperación automática de leases vencidos ajenos, la autoaprobación y el autoapagado de tareas. Sin nuevas automatizaciones, planes, cambios de QA/main/PROD ni estados comerciales inventados.
+- Límites: el escritor es constructor/verificador de solicitudes, no un servicio residente; los problemas de permisos dentro de las Tasks deben medirse por separado.
+
 ## 2026-10-20 — VAEP: recuperación del apagado en cascada y primer claim atómico de Google Sheets
 
 - Causa comprobada: la Primary :36 registró `OWNER_ACTION_REQUIRED` por `LEASE_CAS_WRITER_MISSING` y quedó falsamente `PAUSADA_BLOQUEO_CAS`; la Primary :48 también dejó su registro deshabilitado. El conteo bajó a 9/10 y el gate a PAUSADO, aunque había 32 microtareas elegibles. Se recuperaron sin crear automatizaciones.
