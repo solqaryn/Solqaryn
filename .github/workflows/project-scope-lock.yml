@@ -20,5 +20,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Verify SOLQARYN project scope
         run: node scripts/verify-project-scope.mjs
+      - name: Validate SOLQARYN skill freshness and fail-closed negatives
+        run: node scripts/verify-solqaryn-skills.mjs --self-test
       - name: Reject artificial Render keep-alive
         run: node scripts/validate-render-free-policy.mjs
