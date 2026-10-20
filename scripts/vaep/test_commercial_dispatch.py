@@ -1,6 +1,6 @@
 """Tests for global, non-idling, dependency-safe and non-skipping VAEP dispatch."""
 import unittest
-from commercial_dispatch import UnsafeSnapshot, dispatch, verify_claim_choice, audit_wip_violations
+from commercial_dispatch import UnsafeSnapshot, dispatch, verify_claim_choice, audit_wip_violations, eligible_independent_reviews
 
 
 COMMERCIAL_HEADER = ['ID','PROGRAMA_PRIORIDAD','MICROTAREA','CRITERIO_EXIGIDO','ORDEN','PLAN_COMERCIAL_DOC_ID','VERSION_FUENTE','UNIDAD_ORIGEN_LANE']
@@ -20,6 +20,23 @@ def pick(*items):
 
 
 class CommercialDispatchTests(unittest.TestCase):
+    def test_reviewable_validando_comes_before_pending(self):
+        from commercial_dispatch import eligible_independent_reviews
+        author = "6ad7bbf79c488191bf893e6c08ea9b5f"
+        reviewer = "6ad7bc0d48748191aa1dd0ce2f18d22a"
+        comm, runtime = tables(
+            (1, "PENDING", "PENDIENTE", "", "", ""),
+            (2, "REVIEW", "VALIDANDO", "", "", "RELEASED|OWNER=" + author),
+        )
+        runtime[2][5] = "https://github.com/solqaryn/Solqaryn/pull/3691"
+        first = eligible_independent_reviews(comm, runtime, expected_count=2, reviewer=reviewer)
+        self.assertEqual(first[0]["id"], "REVIEW")
+        self.assertEqual(eligible_independent_reviews(
+            comm, runtime, expected_count=2, reviewer=author), [])
+        runtime[2][2] = author
+        self.assertEqual(eligible_independent_reviews(
+            comm, runtime, expected_count=2, reviewer=reviewer), [])
+
     def test_bootstrap_forward_dependency_is_valid(self):
         result = pick(
             (1, 'P0-001.A', 'PENDIENTE', 'P0-012.B', '', ''),
