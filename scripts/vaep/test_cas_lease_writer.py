@@ -304,6 +304,18 @@ class IndependentReviewLeaseTests(unittest.TestCase):
         with self.assertRaisesRegex(UnsafeSnapshot, "REVIEW_MISSING_RELEASED_HANDOFF"):
             review_claim(c=c, r=r)
 
+    def test_rejected_review_does_not_change_implementation_author(self):
+        c, r = review_fixture()
+        r[1][3] = (
+            f"RELEASED|OWNER={REVIEWER}|ORIGINAL_AUTHOR={OWNER}|TOKEN=prior")
+        # The original author must never become an independent reviewer
+        # just because the previous reviewer released a failed review.
+        with self.assertRaisesRegex(UnsafeSnapshot, "SELF_REVIEW_FORBIDDEN"):
+            review_claim(c=c, r=r, reviewer=OWNER)
+        other = sorted(CANONICAL_AUTOMATION_IDS - {OWNER, REVIEWER})[0]
+        new_claim = review_claim(c=c, r=r, reviewer=other)
+        self.assertEqual(new_claim.metadata_value.split("|")[-1], OWNER)
+
     def test_review_rejects_original_author_even_if_validating(self):
         with self.assertRaisesRegex(UnsafeSnapshot, "SELF_REVIEW_FORBIDDEN"):
             review_claim(reviewer=OWNER)
