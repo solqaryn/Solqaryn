@@ -185,3 +185,32 @@ def decide(commercial_rows, runtime_rows, *, actor_id, now,
                       reason=";".join(excluded_reviews[:5]))
     return result("WAIT_DEPENDENCIES",
                   reason="NO_FREE_ELIGIBLE_BUILD_OR_INDEPENDENT_REVIEW")
+
+def main():
+    """CLI consumes an authenticated fresh Sheet export; never claims a lease."""
+    import argparse
+    import json
+    from pathlib import Path
+
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--snapshot", required=True, type=Path)
+    parser.add_argument("--actor", required=True, choices=EXECUTORS)
+    parser.add_argument("--supervises", choices=EXECUTORS)
+    parser.add_argument("--expected-count", type=int, default=1123)
+    args = parser.parse_args()
+    try:
+        data = json.loads(args.snapshot.read_text(encoding="utf-8"))
+        action = decide(
+            data["commercial_rows"], data["runtime_rows"],
+            actor_id=args.actor, supervised_actor_id=args.supervises,
+            now=datetime.now(timezone.utc), expected_count=args.expected_count,
+        )
+    except (OSError, KeyError, ValueError, TypeError) as exc:
+        print(json.dumps({"status": "NO_GO_SCOPE_ONLY", "error": str(exc)}))
+        return 2
+    print(json.dumps({"status": "READ_ONLY_CONTINUITY_DECISION", **action}, indent=2))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
