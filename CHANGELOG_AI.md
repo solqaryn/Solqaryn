@@ -1,3 +1,10 @@
+## 2026-10-19 — Contrato VAEP: autonomía comercial, historial no vinculante y notificaciones
+
+- El propietario ratifica el Plan Comercial Inicial (492 fichas, 1123 microtareas) como única autoridad ejecutable; ninguna fase histórica ni nombre antiguo de workflow reintroduce dependencias. CI de seguridad causal, normas de protección y pruebas necesarias permanecen exigibles.
+- Autorización general para trabajo autónomo DEV sin compras ni recursos pagos; acciones sobre producción y ámbitos privilegiados mantienen sus requisitos explícitos.
+- Protocolo de bloqueos: cero ciclos repetitivos, hasta dos hipótesis técnicas distintas cuando corresponda, un solo evento `OWNER_ACTION_REQUIRED` por fingerprint, aviso concreto deduplicado y reanudación con evidencia. El observador de alertas no cuenta entre los diez ejecutores VAEP.
+- Cinco primarias continúan pausadas; cinco supervisoras serán alineadas por su cuenta responsable. Ningún servicio productivo, base ni despliegue modificado.
+
 ## 2026-10-19 — Skills: sincronización de versiones y gate de automatizaciones comerciales
 
 - Comprobación sobre HEAD dev: Angular 22.2.1, ASP.NET Core 10, EF Core 10.0.12 y MySql.EntityFrameworkCore 10.0.9. Corregida la única referencia de stack obsoleto en el registro de Skills.
