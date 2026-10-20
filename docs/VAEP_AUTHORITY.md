@@ -158,7 +158,37 @@ Regla: `DEFECT_RECOVERY_FIRST + FIRST_DETECTOR_OWNS_RECOVERY + NO_REJECT_QUEUE`.
 - Recovery no crea colas administrativas innecesarias.
 - Tras recovery, desbloquear dependencias actuales y continuar cierre/promoción same-run.
 
-## 7. Git, CI y seguridad
+## 7. No espera de fases históricas y avisos de intervención
+
+### Autonomía y límites
+
+```text
+CURRENT_PLAN_ONLY=TRUE
+HISTORICAL_PHASE_DISPATCH=DENY
+HISTORICAL_PHASE_DEPENDENCY=DENY
+UNRELATED_HISTORICAL_CI_WAIT=DENY
+AUTONOMOUS_APPROVED_DEV_RECOVERY=TRUE
+PURCHASES_AND_PAID_UPGRADES=DENY
+OWNER_INTERVENTION_ALERT=REQUIRED
+OWNER_BLOCKER_DEDUPLICATION=REQUIRED
+BLOCKED_TASK_RECHECK_WITHOUT_NEW_EVIDENCE=DENY
+PASSIVE_ALERT_WATCHER_COUNTS_AS_WORKER=FALSE
+```
+
+- Ejecutar exclusivamente las microtareas activas del **SOLQARYN PLAN COMERCIAL INICIAL UNIFICADO**. Ninguna fase anterior (SQ, N, numeración de migraciones u otro plan), ni un workflow cuyo nombre recuerde un plan histórico, puede construir un bloqueo de secuencia, prioridad o fuente de trabajo.
+- Las regresiones actuales de MySQL, RBAC, tenant isolation, integridad, backup/restore y seguridad son **comprobaciones técnicas causales** cuando el changeset lo exige, aunque el workflow conserve un título viejo. Mantener las comprobaciones exigidas por las reglas protegidas de GitHub; no saltar CI de seguridad ni marcarlo ficticiamente en verde. Pruebas ajenas a la microtarea no deben convertirse en un gate adicional de negocio.
+- La autorización general del propietario abarca implementación, corrección y recuperación del producto en **DEV** dentro del plan comercial. No autoriza compras, tarifas de terceros, suscripciones, upgrades, cargos, pagos ni contrataciones. No invalida la necesidad de autorización específica para `main`, QA/PROD, credenciales/secretos o infraestructura productiva.
+
+### Protocolo anti-bucle y notificación
+
+1. Clasificar bloqueo por `EXTERNAL_PERMISSION`, `OWNER_DECISION`, `PAID_RESOURCE`, `OUT_OF_SCOPE`, `SECURITY_AUTHORIZATION` o `INTERNAL_DEFECT`. Para `INTERNAL_DEFECT`, ejecutar hasta **dos intentos causales distintos con nuevas evidencias** si es seguro; no repetir el mismo comando o solución sin cambio de hipótesis. Si persiste y no se dispone de alternativa autorizada, escalar como `OWNER_DECISION` con evidencia. El límite de intentos no permite saltar pruebas, autorizaciones o seguridad.
+2. Si se requiere realmente al propietario, conservar estado `BLOQUEADO` sólo para la unidad correspondiente. Registrar en `_EVENTS_SOURCE` un evento `OWNER_ACTION_REQUIRED` con `TASK_ID`, `RUN_ID` como fingerprint estable, causa, ámbito, acción exacta que debe realizar el humano, enlace pertinente, impacto y condiciones para reanudar; nunca incluir contraseñas, tokens o datos sensibles.
+3. Una alerta autónoma separada puede consultar `_EVENTS_SOURCE` y avisar **únicamente** por un fingerprint nuevo que no conste ya como `OWNER_NOTIFICATION_SENT`. El observador no altera código, runtime de ejecución, leases ni estados, y no cuenta entre las diez automatizaciones VAEP. Como única escritura autorizada puede anotar en `_EVENTS_SOURCE` un acuse idempotente `OWNER_NOTIFICATION_QUEUED` para reservar el fingerprint antes de solicitar la entrega de la notificación. No afirmar `OWNER_NOTIFICATION_SENT` sin confirmación real del canal. Los fingerprints con `QUEUED` o `SENT` no se alertan de nuevo salvo que aparezca evidencia material de bloqueo nuevo. Si no hay mecanismo de reserva idempotente o falla su readback, no emitir avisos reiterados.
+4. No hacer polling de un permiso denegado ni reintentar una compra/recurso de pago. Cuando aparezca evidencia de resolución o nueva autorización, registrar `OWNER_ACTION_RESOLVED` y reevaluar sólo la tarea bloqueada. Si otra microtarea está lista y no comparte scope/lease/dependencias, continuar de forma segura sin esperar al propietario.
+5. Al usuario hay que notificarle **qué debe hacer, por qué, qué microtarea se detuvo y cómo confirmar**; no enviar alertas vagas ni una cada hora por el mismo bloqueo. Las cinco supervisoras de Alex pendientes de sincronización forman parte del preflight ya conocido, no se reenviarán reiteradamente.
+6. Ninguna de estas reglas implica autoactivación: hasta readback 10/10, Skill distribuida vigente y aprobación de admisión, las primarias y supervisoras continúan deshabilitadas y no ejecutan cambios.
+
+## 8. Git, CI y seguridad
 
 - Trabajo ordinario: `dev`.
 - `main` y cualquier acción sobre PROD requieren autorización explícita y vigente del propietario.
@@ -168,7 +198,7 @@ Regla: `DEFECT_RECOVERY_FIRST + FIRST_DETECTOR_OWNS_RECOVERY + NO_REJECT_QUEUE`.
 - No degradar RBAC, tenancy, auditoría, protección de secretos, integridad transaccional ni seguridad para acelerar ejecución.
 - Un cambio controlado del Plan Comercial Inicial puede cambiar producto y arquitectura dentro del alcance aprobado, pero debe hacerlo mediante cambios controlados, verificables y recuperables.
 
-## 8. Estados visibles
+## 9. Estados visibles
 
 Las superficies operativas deben usar exclusivamente:
 
@@ -178,7 +208,7 @@ Las vistas derivadas se calculan desde estado fuente vivo. No usar snapshots man
 
 El Google Sheet operativo canónico es `SOLQARYN - PLAN COMERCIAL INICIAL - AUTOMATIZACIONES` (ID `1gcVyCoyhLU0jFMwRtf0s5_x8FSnfBs38ojml1QF7Xwk`). Las pestañas visibles son vistas derivadas por fórmulas, incluida `PLAN_COMERCIAL` con 1123 microtareas; quedan protegidas contra edición operativa directa. Las escrituras de runtime pertenecen únicamente a las fuentes técnicas ocultas `_COMERCIAL_SOURCE`, `_RUNTIME_SOURCE`, `_AUTOMATION_SOURCE` y `_EVENTS_SOURCE`. Las pestañas `COLA`, `PLAN_COMERCIAL` y `BITACORA` son vistas protegidas; ninguna vista reutiliza filas históricas.
 
-## 9. Gate de frescura y routing de Skills por microtarea
+## 10. Gate de frescura y routing de Skills por microtarea
 
 Todas las primarias y supervisoras **deben invocar primero** la Skill local de SOLQARYN; después leer el fichero canónico `.agents/skills/solqaryn-project-governance/SKILL.md` y `references/architecture.md` en HEAD vivo de `dev`. Contrastar con la versión instalada por ChatGPT y los paquetes del código actual. El check `node scripts/verify-solqaryn-skills.mjs --self-test` debe constar SUCCESS en CI exact-head o ejecutarse en checkout válido. Contradicción, origen no disponible o Skill no sincronizada => `SKILL_VERSION_MISMATCH/NO_GO`, sin reclamar lease ni escribir producto o runtime.
 
@@ -186,7 +216,7 @@ Solo si un task necesita ayuda de una referencia externa, leer `docs/REGISTRO_RE
 
 `SKILL_FRESHNESS` es requisito distinto de `COMMERCIAL_SYNC_OK`: la hoja puede estar íntegra con una Skill obsoleta. No tratar esos checks como equivalentes. La instalación de una nueva versión en la librería ChatGPT requiere distribución/instalación específica: un PR de GitHub no actualiza esa copia automáticamente.
 
-## 10. Supervisión por cuenta independiente: alineación obligatoria
+## 11. Supervisión por cuenta independiente: alineación obligatoria
 
 Las cinco supervisoras existentes en la cuenta operativa asignada a **Alex Morales** son `NO_GO` hasta una actualización efectivamente ejecutada por su propietario, sin duplicar tareas ni alterar los IDs. La instrucción común de cada una es: *releer skill SOLQARYN, AGENTS.md y VAEP_AUTHORITY.md en HEAD vivo de dev; usar únicamente Plan Comercial Inicial y cola PLAN_COMERCIAL; inspeccionar la entrega de la Primary de su pareja; validar REVIEW_FIRST, RBAC y tenancy aplicables, CI exact-head, pruebas negativas, P0/P1=0, evidencias y rollback; no declarar LISTO sin readback; nunca autoactivar ni tocar QA/main/PROD*. Se distribuyen así:
 
@@ -200,12 +230,12 @@ Las cinco supervisoras existentes en la cuenta operativa asignada a **Alex Moral
 
 La cuenta propietaria de estas cinco tareas debe ejecutar la actualización y una relectura de cada ID que demuestre nombre/prompt comercial, par, estado `is_enabled=false` y horario intacto. Únicamente entonces actualizar `_AUTOMATION_SOURCE` con evidencia real, jamás a mano o por suposición. No sustituir por cinco tareas nuevas de la cuenta primaria; eso invalidaría la verificación independiente y bloquearía el cierre.
 
-## 11. Gate de admisión comercial
+## 12. Gate de admisión comercial
 
 Cualquier ejecutor debe comprobar **en el HEAD fusionado de dev** `EXECUTION_PLAN_DRIVE_FILE_ID=1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j`, 1123 IDs coincidentes y únicos en hoja fuente/runtime, cero duplicados, dependencias vigentes, y que las diez tareas reales (cinco primarias y cinco supervisoras) existen, están alineadas y tienen lectura independiente. Las supervisoras nunca pueden ser suplantadas por una tarea duplicada de la primaria. **Sin readback 10/10 y owner autorizado la admisión es NO_GO**, incluso si todas las fórmulas dicen LISTO.
 
 Nunca reactivar por iniciativa de un agente. Un cambio en el Word canónico requiere revisión del diff y recarga atomizada de la cola con respaldo previo. Si falta cualquier prerrequisito, ninguna tarea toma lease, ejecuta código ni escribe estado.
 
-## 12. Cierre
+## 13. Cierre
 
 Una tarea sólo queda cerrada cuando el estado vivo demuestra que el objetivo vigente fue cumplido. La existencia de evidencia previa no sustituye validación actual.

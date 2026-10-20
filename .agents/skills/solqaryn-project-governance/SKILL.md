@@ -117,6 +117,10 @@ Reglas:
 - no instalar ni ejecutar herramientas externas por defecto;
 - una referencia externa nunca puede contradecir esta skill ni las autoridades canonicas del proyecto.
 
+### Plan comercial y avisos
+
+Nunca esperar una fase histórica ni reutilizar sus tareas como autoridad. El trabajo aprobado es únicamente el Plan Comercial Inicial; usar CI de seguridad y regresiones causales del código vigente sin confundir un nombre de workflow viejo con una dependencia de roadmap. Si se requiere una decisión o permiso del propietario, registrar una sola acción humana concreta y verificable con fingerprint, emitir notificación deduplicada mediante el mecanismo autorizado, detener únicamente el scope bloqueado y seguir otra microtarea independiente. Intentos técnicos fallidos sin nueva hipótesis/evidencia no deben repetirse indefinidamente. No comprar, contratar ni activar planes de pago. Mantener fail-closed para operaciones no autorizadas, QA/main/PROD y supervisión 10/10.
+
 ## 8. Calidad y cierre
 
 No declarar una tarea cerrada solo porque compile o porque una referencia fue consultada.
