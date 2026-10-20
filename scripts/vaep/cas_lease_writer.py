@@ -265,11 +265,12 @@ def build_release(
             or captured_metadata.get("metadataKey") != METADATA_KEY
             or captured_metadata.get("metadataValue") != claim.metadata_value):
         raise UnsafeSnapshot("RELEASE_METADATA_MISMATCH")
-    if captured_executor_metadata:
-        if (captured_executor_metadata.get("metadataId") != claim.executor_metadata_id
-                or captured_executor_metadata.get("metadataKey") != EXECUTOR_METADATA_KEY
-                or captured_executor_metadata.get("metadataValue") != claim.executor_metadata_value):
-            raise UnsafeSnapshot("RELEASE_EXECUTOR_METADATA_MISMATCH")
+    if not isinstance(captured_executor_metadata, dict):
+        raise UnsafeSnapshot("RELEASE_EXECUTOR_METADATA_REQUIRED")
+    if (captured_executor_metadata.get("metadataId") != claim.executor_metadata_id
+            or captured_executor_metadata.get("metadataKey") != EXECUTOR_METADATA_KEY
+            or captured_executor_metadata.get("metadataValue") != claim.executor_metadata_value):
+        raise UnsafeSnapshot("RELEASE_EXECUTOR_METADATA_MISMATCH")
     _clean(result, "RESULT")
     _clean(details, "DETAILS", 1600)
     if not isinstance(evidence, str) or len(evidence) > 1200:
@@ -325,9 +326,11 @@ def verify_release_response(claim, response, fresh_row):
         matches_exec = response["replies"][1]["deleteDeveloperMetadata"]["deletedDeveloperMetadata"]
     except (KeyError, IndexError, TypeError) as exc:
         raise UnsafeSnapshot("RELEASE_DELETE_UNCONFIRMED") from exc
-    if len(matches_task) != 1 or matches_task[0].get("metadataId") != claim.metadata_id:
+    if (len(matches_task) != 1 or matches_task[0].get("metadataId") != claim.metadata_id
+            or matches_task[0].get("metadataValue") != claim.metadata_value):
         raise UnsafeSnapshot("RELEASE_DID_NOT_DELETE_EXACT_TASK_LOCK")
-    if len(matches_exec) != 1 or matches_exec[0].get("metadataId") != claim.executor_metadata_id:
+    if (len(matches_exec) != 1 or matches_exec[0].get("metadataId") != claim.executor_metadata_id
+            or matches_exec[0].get("metadataValue") != claim.executor_metadata_value):
         raise UnsafeSnapshot("RELEASE_DID_NOT_DELETE_EXACT_EXECUTOR_LOCK")
     if (fresh_row[0] != claim.task_id
             or fresh_row[1] not in ALLOWED_RELEASE
@@ -505,11 +508,12 @@ def build_review_completion(
             raise UnsafeSnapshot("REVIEW_CI_PROOF_REQUIRED")
     if not isinstance(runtime_sheet_id, int) or not isinstance(events_sheet_id, int):
         raise UnsafeSnapshot("INVALID_SHEET_ID")
-    if captured_executor_metadata:
-        if (captured_executor_metadata.get("metadataId") != claim.executor_metadata_id
-                or captured_executor_metadata.get("metadataKey") != EXECUTOR_METADATA_KEY
-                or captured_executor_metadata.get("metadataValue") != claim.executor_metadata_value):
-            raise UnsafeSnapshot("REVIEW_RELEASE_EXECUTOR_METADATA_MISMATCH")
+    if not isinstance(captured_executor_metadata, dict):
+        raise UnsafeSnapshot("REVIEW_RELEASE_EXECUTOR_METADATA_REQUIRED")
+    if (captured_executor_metadata.get("metadataId") != claim.executor_metadata_id
+            or captured_executor_metadata.get("metadataKey") != EXECUTOR_METADATA_KEY
+            or captured_executor_metadata.get("metadataValue") != claim.executor_metadata_value):
+        raise UnsafeSnapshot("REVIEW_RELEASE_EXECUTOR_METADATA_MISMATCH")
     stamp = _stamp(now)
     lease = (
         f"RELEASED|OWNER={claim.owner}|ORIGINAL_AUTHOR={author}|TOKEN={claim.token}|"
@@ -560,9 +564,11 @@ def verify_review_completion_response(claim, api_response, fresh_runtime_row,
         removed_exec = api_response["replies"][1]["deleteDeveloperMetadata"]["deletedDeveloperMetadata"]
     except (KeyError, IndexError, TypeError) as exc:
         raise UnsafeSnapshot("REVIEW_RELEASE_UNCONFIRMED") from exc
-    if len(removed_task) != 1 or removed_task[0].get("metadataId") != claim.metadata_id:
+    if (len(removed_task) != 1 or removed_task[0].get("metadataId") != claim.metadata_id
+            or removed_task[0].get("metadataValue") != claim.metadata_value):
         raise UnsafeSnapshot("REVIEW_RELEASE_WRONG_TASK_LOCK")
-    if len(removed_exec) != 1 or removed_exec[0].get("metadataId") != claim.executor_metadata_id:
+    if (len(removed_exec) != 1 or removed_exec[0].get("metadataId") != claim.executor_metadata_id
+            or removed_exec[0].get("metadataValue") != claim.executor_metadata_value):
         raise UnsafeSnapshot("REVIEW_RELEASE_WRONG_EXECUTOR_LOCK")
     if (fresh_runtime_row[0] != claim.task_id
             or fresh_runtime_row[1] != expected_final_state
