@@ -145,7 +145,7 @@ def eligible_independent_reviews(commercial_rows, runtime_rows, expected_count=1
         evidence = _value(rows[item['id']], 5)
         if not isinstance(evidence, str) or not evidence.startswith('https://'):
             continue
-        chosen.append({'id': item['id'], 'order': item['order'], 'author': author_parts[0]})
+        chosen.append({'id': item['id'], 'order': item['order'], 'author': authors[0]})
     return chosen
 
 
