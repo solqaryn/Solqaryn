@@ -1,3 +1,9 @@
+## 2026-10-19 — VAEP: evaluación exhaustiva de 12 referencias antes de cada tarea
+
+- Autorización del propietario: los 10 ejecutores son un pool global sin lanes exclusivos; cualquiera puede tomar cualquier microtarea del Plan Comercial Inicial que esté realmente elegible y libre de lease. REVISION_FIRST siempre por actor independiente.
+- Antes de asumir cada microtarea, los diez deben consultar el registro vigente, **evaluar las 12 referencias SKREF-01..SKREF-12** por aplicabilidad, registrar matriz compacta y elegir únicamente el subconjunto pertinente, verificando origen+pin+ruta. La Skill local de gobierno es obligatoria en primer lugar; las 12 referencias NO se instalan ni se leen en profundidad indiscriminadamente.
+- Alcance: contrato y AGENTS en el PR #3689, más actualización separada de prompts por propietario de cuenta. Sin cambios en 1123 IDs, CI, permisos, QA/main/PROD, pagos ni automatizaciones nuevas. No declarar ejecución comercial sin lease y evidencia material.
+
 ## 2026-10-19 — VAEP: despacho global sin lanes exclusivas
 
 - Las diez automatizaciones existentes (cinco Primary y cinco Supervisor) pueden tomar cualquier microtarea elegible del Plan Comercial Inicial, sin exclusividad de lane, horario ni pareja; dependencias reales, lease único y REVIEW_FIRST por un ejecutor diferente permanecen obligatorios.
