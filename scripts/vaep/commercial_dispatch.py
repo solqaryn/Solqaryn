@@ -130,16 +130,22 @@ def eligible_independent_reviews(commercial_rows, runtime_rows, expected_count=1
             continue
         if any(tasks[dependency]['state'] != 'LISTO' for dependency in item['dependencies']):
             continue
-        author_parts = [part.split('=', 1)[1] for part in item['lease'].split('|')[1:]
-                        if part.startswith('OWNER=')]
-        if len(author_parts) != 1 or not re.fullmatch(r'[0-9a-f]{32}', author_parts[0]):
+        # If a review was rejected, OWNER is the previous reviewer, not
+        # the implementation author. ORIGINAL_AUTHOR survives every handoff.
+        pieces = item['lease'].split('|')[1:]
+        originals = [part.split('=', 1)[1] for part in pieces
+                     if part.startswith('ORIGINAL_AUTHOR=')]
+        owners = [part.split('=', 1)[1] for part in pieces
+                  if part.startswith('OWNER=')]
+        authors = originals if originals else owners
+        if len(authors) != 1 or not re.fullmatch(r'[0-9a-f]{32}', authors[0]):
             continue
-        if reviewer is not None and reviewer == author_parts[0]:
+        if reviewer is not None and reviewer == authors[0]:
             continue
         evidence = _value(rows[item['id']], 5)
         if not isinstance(evidence, str) or not evidence.startswith('https://'):
             continue
-        chosen.append({'id': item['id'], 'order': item['order'], 'author': author_parts[0]})
+        chosen.append({'id': item['id'], 'order': item['order'], 'author': authors[0]})
     return chosen
 
 

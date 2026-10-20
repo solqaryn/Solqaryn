@@ -37,6 +37,27 @@ class CommercialDispatchTests(unittest.TestCase):
         self.assertEqual(eligible_independent_reviews(
             comm, runtime, expected_count=2, reviewer=reviewer), [])
 
+    def test_rejected_review_keeps_original_author_not_last_reviewer(self):
+        origin = "6ad7bbf79c488191bf893e6c08ea9b5f"
+        last_reviewer = "6ad7bc0d48748191aa1dd0ce2f18d22a"
+        third_party = "6ad7bc1cc7b8819190665e5ed78610d4"
+        commercial, runtime = tables((
+            1, "REVIEW", "VALIDANDO", "", "",
+            f"RELEASED|OWNER={last_reviewer}|ORIGINAL_AUTHOR={origin}|TOKEN=prev",
+        ))
+        runtime[1][5] = "https://github.com/solqaryn/Solqaryn/pull/3691"
+        self.assertEqual(eligible_independent_reviews(
+            commercial, runtime, expected_count=1, reviewer=origin), [])
+        ready = eligible_independent_reviews(
+            commercial, runtime, expected_count=1, reviewer=third_party)
+        self.assertEqual(ready[0]["author"], origin)
+        self.assertEqual(ready[0]["id"], "REVIEW")
+
+    def test_missing_provenance_cannot_be_accepted_for_review(self):
+        c, r = tables((1, "REVIEW", "VALIDANDO", "", "", "RELEASED|TOKEN=only"))
+        r[1][5] = "https://github.com/solqaryn/Solqaryn/pull/3691"
+        self.assertEqual(eligible_independent_reviews(c, r, expected_count=1), [])
+
     def test_bootstrap_forward_dependency_is_valid(self):
         result = pick(
             (1, 'P0-001.A', 'PENDIENTE', 'P0-012.B', '', ''),
