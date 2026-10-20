@@ -6,12 +6,12 @@ PROJECT_ID=SOLQARYN
 REPOSITORY=solqaryn/Solqaryn
 PROJECT_SCOPE_LOCK=STRICT
 DEFAULT=DENY
-AUTHORIZED_ORIGINAL_SKILL_SOURCES=9
+AUTHORIZED_ORIGINAL_SKILL_SOURCES=12
 ```
 
 ## Regla
 
-Toda fuente externa queda denegada por defecto excepto las nueve referencias de skills autorizadas por el propietario y registradas en `docs/REGISTRO_REFERENCIAS_SKILLS_SOLQARYN.md`.
+Toda fuente externa queda denegada por defecto excepto las doce referencias de skills autorizadas por el propietario y registradas en `docs/REGISTRO_REFERENCIAS_SKILLS_SOLQARYN.md`.
 
 Estas excepciones permiten **consulta de instrucciones en origen**. No autorizan por sí mismas instalar dependencias, ejecutar scripts externos, copiar binarios, cambiar arquitectura, acceder a datos/secretos ni realizar acciones productivas.
 
@@ -28,6 +28,9 @@ Estas excepciones permiten **consulta de instrucciones en origen**. No autorizan
 | SKREF-07 | `blader/napkin` | `27fa60a895de4383b26a539136bc983155cb979c` | Consultar skill original de runbook/memoria operativa. |
 | SKREF-08 | `alexgreensh/token-optimizer` | `37a9546b9fecba2c4e9a02ef4e90855d449bf08f` | Consultar skill original de eficiencia de contexto. |
 | SKREF-09 | `JuliusBrussee/caveman` | `15581d14007fd01fb3f132016741962f34936ca2` | Consultar skills originales de compresion de contexto. |
+| SKREF-10 | `angular/angular` | `6808966993bf2b2d455d9b6245e960a59a01b9a9` | Angular Developer original: consultar para tareas Angular 22, Signals, router y accesibilidad. |
+| SKREF-11 | `openai/skills` | `49f948faa9258a0c61caceaf225e179651397431` | Security Threat Model original: amenazas A/B, JWT/RBAC/HMAC o límites de confianza cuando sea necesario. |
+| SKREF-12 | `dotnet/skills` | `9386ed7c1148a7bef970aa0502371c982effa01c` | .NET Performance original: diagnóstico y optimización .NET con mediciones. |
 
 ## Condiciones de uso
 
@@ -39,4 +42,4 @@ Estas excepciones permiten **consulta de instrucciones en origen**. No autorizan
 6. Cualquier cambio de pin exige autorizacion del propietario y actualizacion conjunta del registro.
 7. La autoridad final siempre permanece en la skill local y documentacion canonica de SOLQARYN.
 
-Cualquier otra fuente externa permanece en `DENY`.
+Cualquier otra fuente externa permanece en `DENY`, incluida Playwright CLI. La autorización es únicamente para lectura de las instrucciones originales por microtarea; no instala herramientas, scripts, ejecutores, dependencias ni suscripciones.
