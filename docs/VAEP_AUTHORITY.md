@@ -212,6 +212,31 @@ El Google Sheet operativo canónico es `SOLQARYN - PLAN COMERCIAL INICIAL - AUTO
 
 ## 10. Gate de frescura y routing de Skills por microtarea
 
+### Evaluación universal del catálogo de Skills antes de cada microtarea (10/10 ejecutores)
+
+**Regla obligatoria para las cinco Primary y las cinco Supervisor, sin filtros por lane:** al seleccionar cualquier microtarea global elegible, y **antes de adquirir lease o modificar producto**, el ejecutor invoca `solqaryn-project-governance`, verifica su frescura contra HEAD vivo de `dev`, consulta el inventario vigente de `docs/REGISTRO_REFERENCIAS_SKILLS_SOLQARYN.md` y `references/skill-routing.md` y evalúa la **aplicabilidad de las doce referencias SKREF-01..SKREF-12** frente a los requisitos y riesgos concretos de esa microtarea. La evaluación del catálogo es 12/12; la lectura profunda, instalación y ejecución de las doce **NO** es obligatoria ni está autorizada por defecto.
+
+La matriz de selección se calcula para **cada tarea**, no para el número del minuto, la Primary/Supervisor, la pareja ni el lane:
+
+| Referencia evaluada | Pregunta concreta de aplicabilidad |
+| --- | --- |
+| SKREF-01 Agent Skills Specification | ¿Se crea, estructura o valida una Skill local? |
+| SKREF-02 Skill Creator integrado | ¿Se crea, edita, valida o empaqueta la Skill local con la herramienta oficial? |
+| SKREF-03 Impeccable | ¿Hay interfaces administrativas, dashboard, formularios, tablas, ajustes, onboarding o mejora visual? |
+| SKREF-04 Motion Skills | ¿La tarea requiere movimiento, animaciones o microinteracciones? |
+| SKREF-05 Taste Skill | ¿Hay home, landing, tienda pública, CMS visual o marketing? |
+| SKREF-06 Humanizer | ¿La tarea requiere texto UX, documentación, PR o redacción de informes? |
+| SKREF-07 Napkin | ¿Se documentan aprendizajes repetibles o runbooks sin crear autoridad paralela? |
+| SKREF-08 Token Optimizer | ¿Existe contexto largo/duplicado que requiera reducción sin perder evidencia crítica? |
+| SKREF-09 Caveman | ¿Se necesita síntesis efímera de bajo riesgo, nunca de seguridad ni prueba persistente? |
+| SKREF-10 Angular Developer | ¿Modifica Angular 22.2.1, Signals, rutas, componentes, formularios, pruebas o accesibilidad? |
+| SKREF-11 Security Threat Model | ¿Requiere modelado explícito de amenazas/límites de confianza JWT, RBAC, HMAC o multiempresa? |
+| SKREF-12 .NET Performance | ¿Existe síntoma/medición que justifique diagnóstico de rendimiento .NET 10, LINQ, async, memoria o I/O? |
+
+Registrar, en la evidencia normal de la **misma microtarea** y con `TASK_ID`/`RUN_ID`, una matriz compacta `SKILL_EVAL=12/12` con los doce resultados `APLICA`/`NO_APLICA` y justificación cuando aplique, más `SKILL_SELECTED` (puede ser vacío), origen, SHA pin, ruta oficial y motivo de cada referencia utilizada. **Evaluar todas no significa usar todas**. Abrir y aplicar sólo las necesarias y autorizadas desde su origen original y pin exacto, después de comprobar allowlist, integridad y compatibilidad. Si falta una fuente imprescindible, registrar un bloqueo causal para esa microtarea, sin suplantarla, inventar evidencias ni congelar tareas independientes. Si ninguna referencia externa corresponde, proceder sólo con la Skill local; no fabricar un requisito artificial.
+
+Quien haga `REVIEW_FIRST` debe evaluar también las doce referencias **según la revisión concreta**, y ser un ejecutor distinto de quien implementó. Ninguna referencia externa reemplaza el contrato VAEP, el único plan, la revisión independiente, permisos, lease, CI exact-head o las restricciones de DEV. Este protocolo no agrega automatizaciones, microtareas, dependencias de negocio ni instalaciones de herramientas.
+
 Todas las primarias y supervisoras **deben invocar primero** la Skill local de SOLQARYN; después leer el fichero canónico `.agents/skills/solqaryn-project-governance/SKILL.md` y `references/architecture.md` en HEAD vivo de `dev`. Contrastar con la versión instalada por ChatGPT y los paquetes del código actual. El check `node scripts/verify-solqaryn-skills.mjs --self-test` debe constar SUCCESS en CI exact-head o ejecutarse en checkout válido. Contradicción, origen no disponible o Skill no sincronizada => `SKILL_VERSION_MISMATCH/NO_GO`, sin reclamar lease ni escribir producto o runtime.
 
 Solo si un task necesita ayuda de una referencia externa, leer `docs/REGISTRO_REFERENCIAS_SKILLS_SOLQARYN.md` y validar origen original+pin+ruta bajo la allowlist. Reglas condicionales por lane de cada microtarea real: Seguridad -> governance, SKREF-11 sólo para modelado de amenazas explícito; Comercio -> SKREF-10 si edita Angular, Impeccable/Taste si afecta UI, SKREF-11 para riesgo de nuevas fronteras de confianza, SKREF-12 si se mide una lentitud .NET; UX -> SKREF-10 Angular, Impeccable/Taste/Motion/Humanizer según componente; Rutas -> governance y pruebas, SKREF-11 para amenazas HMAC/RBAC, SKREF-10 para Angular Router; QA -> pruebas/runbooks, SKREF-12 para rendimiento .NET cuando aplique. Cada Primary/Supervisor clasifica tarea, selecciona 0..N fuentes, verifica origen/pin/ruta y registra uso antes de actuar. No consultar las doce automáticamente, instalar copias, lanzar scripts ajenos ni añadir microtareas o ejecutores. No ejecutar scripts de terceros ni cambiar pins sin aprobación.
