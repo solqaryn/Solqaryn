@@ -1,3 +1,8 @@
+## 2026-10-19 — Referencias originales adicionales por microtarea (Angular, seguridad y .NET)
+- Autorizados SKREF-10 `angular/angular` (SHA `6808966993bf2b2d455d9b6245e960a59a01b9a9`, MIT), SKREF-11 `openai/skills` (SHA `49f948faa9258a0c61caceaf225e179651397431`, Apache-2.0) y SKREF-12 `dotnet/skills` (SHA `9386ed7c1148a7bef970aa0502371c982effa01c`, MIT); fuentes originales y rutas verificadas en esos commits.
+- Una sola Skill local, 12 referencias (11 GitHub fijadas + Skill Creator integrada); selección condicional por microtarea de las cinco Primary y las cinco Supervisor. Playwright CLI no incorporada, Playwright actual se conserva; ninguna automatización ni microtarea creada.
+- Registro, allowlist, scope, AGENTS, VAEP, Skill y validadores de pins/routing actualizados. Sin cambios de producción, bases, código aplicativo, infraestructura, compras, permisos o datos.
+
 ## 2026-10-19 — Contrato VAEP: autonomía comercial, historial no vinculante y notificaciones
 
 - El propietario ratifica el Plan Comercial Inicial (492 fichas, 1123 microtareas) como única autoridad ejecutable; ninguna fase histórica ni nombre antiguo de workflow reintroduce dependencias. CI de seguridad causal, normas de protección y pruebas necesarias permanecen exigibles.
