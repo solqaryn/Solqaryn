@@ -94,6 +94,21 @@ Reglas:
 - Tras `LISTO`, promover el siguiente trabajo dependency-valid del plan comercial inicial vigente.
 - `LISTO` es el único estado de cierre certificado.
 
+### Continuidad material universal: cinco Primary y cinco Supervisor con idéntica capacidad
+
+**Decisión de propietario, vigente:** las diez automatizaciones existentes son diez ejecutores **equivalentes** para implementar, corregir, revisar entregas de **otro autor**, recuperar de forma segura o certificar cualquier microtarea libre y elegible del Plan Comercial Inicial vigente. Las palabras Primary y Supervisor solo identifican la **responsabilidad adicional de comprobación**: no son permisos distintos ni limitan el área/alcance. Se preservan los IDs, horarios y autorizaciones duales.
+
+**Regla de recuperación equivalente al comportamiento útil del respaldo LEGACY (sin reactivar su plan):**
+
+- `:05` comprueba `:00`; `:17` comprueba `:12`; `:29` comprueba `:24`; `:41` comprueba `:36`; `:53` comprueba `:48`. Este emparejamiento es para **detectar fallos de continuidad**, no para reservar trabajos por área o asignar una sola pareja.
+- Si la Primary no registró ejecución/material con evidencia causal, la Supervisor **no se detiene en un informe**: inicia trabajo real sobre la tarea elegible de menor orden libre, siempre sujeto a admisión y herramientas autorizadas. La ausencia de lease no demuestra por sí sola que no se disparó; contrastar `last_run_time` real cuando sea accesible.
+- Si otra automatización trabaja con lease propio **fresco**, no competir ni esperar innecesariamente: escoger otra microtarea independiente elegible de menor `ORDEN`. Si la tarea anterior está huérfana o vencida, solicitar/realizar **solo una recuperación transaccional realmente cercada y verificada**; jamás sobrescribir su propietario mediante una celda simple.
+- Si el propio ejecutor posee una tarea vigente, **reanudar la ejecución material antes de reclamar otra**. Si posee dos o más scopes, activar reconciliación WIP=1 de ese actor, **sin detener el programa ni a los otros nueve**. Después de entregar/cerrar/liberar, volver al DAG global durante el mismo run.
+- Una microtarea `VALIDANDO` puede ser tomada por cualquier ejecutor distinto del autor original con evidencia, candado y revisión comprobados; no autoaprobación. No declarar `LISTO` sin DoD, CI/revisión y readback.
+- Un impedimento local de permisos, CI o lease no autoriza `is_enabled=false` ni `CONFIG.RUNTIME_MODE=PAUSADO`; registrar causa una sola vez, continuar la siguiente tarea segura y no falsificar trabajo.
+
+**Selector probado (solo lectura):** `scripts/vaep/continuity_dispatch.py` aplica estas reglas con los diez IDs canónicos, verifica pares solo a efectos de supervisión, distingue build/review/continuación/reconciliación y nunca hace un takeover automático. La CI ejecuta `test_continuity_dispatch.py`. Este selector NO es un escritor transaccional, NO puede disparar otras Tasks ni reemplaza su acceso GitHub/Google Drive; no presentar su presencia como prueba de ocupación 24/7 o de cierres horarios.
+
 ### Regla de despacho verificable: menor ORDEN elegible, cero ocio voluntario
 
 Esta regla se aplica por igual a las cinco Primary y a las cinco Supervisor. Las 1.123 filas de `_COMERCIAL_SOURCE` (columna `ORDEN`) y `_RUNTIME_SOURCE` (ID, ESTADO, DEPENDENCIAS_ACTUALES, OWNER_AUTOMATION_ID y LEASE_STATUS) son la única base para seleccionar trabajo: **jamás** elegir una tarea de ORDEN superior cuando existe una de ORDEN inferior con estado `PENDIENTE`, todas sus dependencias actuales `LISTO`, sin dueño y sin lease vigente. El valor `NEXT_TASK_ID`, los handoffs de eventos o las especialidades de lane no son autoridad suficiente para saltar el orden. Registrar en cada claim la elección por `ORDEN` y la razón de exclusión de candidatas anteriores.

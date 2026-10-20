@@ -1,12 +1,20 @@
 ## 2026-10-20 — VAEP: Recuperación operativa, leases cercados (fencing) y control estricto de WIP
 
 - Defecto identificado: Supervisor `:17` y `:41` acumularon múltiples asignaciones en `_RUNTIME_SOURCE` debido a la ausencia de límite de WIP por ejecutor en el despacho y en el escritor de leases. Asimismo, microtareas como `P0-003.A` a `P0-007.A` quedaron retenidas con leases vencidos sin un mecanismo transaccional seguro de cercado (fencing) que impidiera escrituras tardías de ejecutores caídos.
-- Implementado límite estricto de WIP (WIP = 1 por automatización) en `scripts/vaep/commercial_dispatch.py` (`audit_wip_violations` y validación en `dispatch`) y en `scripts/vaep/cas_lease_writer.py` (`_check_executor_wip` y doble exclusividad con `EXECUTOR_METADATA_KEY`).
-- Implementada recuperación segura de leases caducados con cercado transaccional (`build_stale_lease_recovery`, `verify_stale_lease_recovery_response`, `build_takeover_claim`, `verify_takeover_claim_response`) en `scripts/vaep/cas_lease_writer.py`: genera `fencing_token`, elimina DeveloperMetadata del propietario anterior, bloquea readback/release tardíos del ejecutor anterior, preserva auditoría histórica y libera limpiamente el candado del ejecutor.
-- Pruebas añadidas: 3 pruebas en `test_commercial_dispatch.py` (17 pruebas totales) y 8 pruebas en `test_cas_lease_writer.py` (35 pruebas totales) cubriendo colisiones, doble propietario, expiración de lease, cercado contra ejecutor caído, idempotencia y doble exclusividad de DeveloperMetadata. 59/59 pruebas unitarias pasando.
+- Implementado límite estricto de WIP (WIP = 1 por automatización) en `scripts/vaep/commercial_dispatch.py` (`audit_wip_violations` y validación en `dispatch`) y en `scripts/vaep/cas_lease_writer.py` (`_check_executor_wip` y doble exclusividad obligatoria con `EXECUTOR_METADATA_KEY`).
+- Implementada recuperación segura de leases caducados con cercado transaccional (`build_stale_lease_recovery`, `verify_stale_lease_recovery_response`, `build_takeover_claim`, `verify_takeover_claim_response`) en `scripts/vaep/cas_lease_writer.py`: genera `fencing_token`, elimina DeveloperMetadata del propietario anterior con verificación exacta de `metadataValue`, bloquea readback/release tardíos del ejecutor anterior, preserva auditoría histórica y libera limpiamente ambos candados.
+- Pruebas de concurrencia y tolerancia a fallos: suite completa de pruebas unitarias y de concurrencia cubriendo colisiones, doble propietario, expiración de lease, cercado contra ejecutor caído, idempotencia y doble exclusividad obligatoria de DeveloperMetadata.
 - Normalizado manejo de saltos de línea CRLF en `scripts/verify-solqaryn-skills.mjs` para compatibilidad de entorno, superando los 7/7 casos negativos del self-test y el gate de scope del proyecto.
 - Certificación de infraestructura DEV: Render DEV (`/health` HTTP 200, `/health/ready` connected), Vercel DEV (HTTP 200, proxy `/api/health` 200, CORS), MySQL DEV (16 migraciones EF Core sincronizadas, solución .NET 10 compila con 0 errores/warnings, pruebas pasan) y runbook/drill de backup-restore en contenedor aislado.
 - Validación de `P0-002.B` con acta material PR #3691, exact-head `7d05a608d`, CI 100% verde (run 39444749098), P0=0, P1=0 para cierre REVIEW_FIRST por supervisor independiente.
+
+## 2026-10-20 — VAEP: capacidades universales y recuperación ejecutora de supervisoras
+
+- Se restituye el contrato de continuidad útil del respaldo VAEP sin reutilizar sus tareas, cuentas ni infraestructura antigua. Cinco Primary y cinco Supervisor pueden hacer build/review/recovery bajo la misma elegibilidad global del Plan Comercial Inicial; supervisión :05/:17/:29/:41/:53 comprueba :00/:12/:24/:36/:48, sin reservar dominios.
+- Nuevo `scripts/vaep/continuity_dispatch.py` (solo lectura): RESUME de scope propio con lease fresco, recuperación segura requerida ante vencimiento, WIP duplicado bloqueado por actor, REVIEW independiente con evidencia o BUILD de menor ORDEN libre. Al supervisar un ejecutor ocupado, toma otra tarea libre: no espera por ociosidad. Ningún takeover sin fencing ni autoaprobación; sin usar CURRENT_PARENT histórico.
+- `scripts/vaep/test_continuity_dispatch.py` cubre igualdad 10/10, cinco parejas de fallover, WIP=1, revisión ajena, dependencias y leases vencidos. Integrado al workflow VAEP.
+- Es un selector/read-only CLI, no un runtime persistente. No se crean tareas nuevas ni se cierran microtareas. La corrección de CAS del PR #3696 sigue separada, pendiente de revisión de seguridad, y el acceso real de escritura de ChatGPT debe acreditarse por ejecución.
+- Sin tocar QA, main, PROD, datos históricos de SOLQARYN o permisos productivos.
 
 ## 2026-10-20 — Reparación del cierre REVIEW_FIRST con lease CAS
 
