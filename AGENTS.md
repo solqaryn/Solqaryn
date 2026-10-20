@@ -14,10 +14,15 @@ EXECUTION_PLAN=SOLQARYN_PLAN_COMERCIAL_INICIAL_UNIFICADO
 EXECUTION_PLAN_DRIVE_FILE_ID=1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j
 FUTURE_PLAN_EXECUTABLE=FALSE
 EXECUTION_MODEL=TASKS_ONLY
+SKILL_FRESHNESS_POLICY=FAIL_CLOSED
 CONTEXT_MODE=CURRENT_STATE_ONLY
 ```
 
 Antes de analizar, editar, ejecutar o publicar trabajo VAEP, leer `docs/VAEP_AUTHORITY.md`, `docs/PROJECT_SCOPE_LOCK.md` y el HEAD vivo de `dev`.
+
+## Gate de Skill vigente y uso por automatización
+
+Cada VAEP Primary/Supervisor aplica primero `.agents/skills/solqaryn-project-governance/SKILL.md` en el HEAD actual de `dev`. No basta que ChatGPT cargue una versión instalada: comparar con la canónica y confirmar `node scripts/verify-solqaryn-skills.mjs --self-test` o el check exact-head en CI. Discrepancia de versión o de fuente externa => `SKILL_VERSION_MISMATCH` y `NO_GO`. Las referencias externas sólo se consultan cuando corresponda al lane y desde el origen + pin del registro. No copiar ni instalar referencias como skills locales; no activar las automatizaciones hasta verificación independiente 10/10.
 
 ## 2026-10-19 — DECISIÓN DEL PROPIETARIO: VERSIÓN COMERCIAL INICIAL PRIMERO
 

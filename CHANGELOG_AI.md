@@ -1,3 +1,11 @@
+## 2026-10-19 — Skills: sincronización de versiones y gate de automatizaciones comerciales
+
+- Comprobación sobre HEAD dev: Angular 22.2.1, ASP.NET Core 10, EF Core 10.0.12 y MySql.EntityFrameworkCore 10.0.9. Corregida la única referencia de stack obsoleto en el registro de Skills.
+- `solqaryn-project-governance` como Skill local única, nueve referencias externas autorizadas y ocho fuentes GitHub disponibles en sus pins originales (sin instalar copias).
+- Nuevo validador `scripts/verify-solqaryn-skills.mjs --self-test` para detectar divergencias en stack, fuente comercial, pins y número de skills, con casos negativos. Incorporado a CI de scope.
+- Prompt de cada Primary actualizado para invocar Skill primero, comparar Skill instalada y canónica de HEAD, usar referencias pertinentes por lane, no autoactivar y no violar revisión independiente. Las Supervisoras de Alex quedan fuera de este cambio; NO_GO hasta readback y actualización de su cuenta.
+- Sin cambios al producto, base de datos, dominios, secretos ni PROD. Fusión protegida y readback son pasos de certificación; CI no demuestra actualización automática de la Skill instalada por ChatGPT.
+
 ## 2026-10-19 — Actualización de autoridad comercial VAEP (PR en revisión)
 
 - CI VAEP de la rama de revisión ahora valida el parser y contrato en PR hacia dev además de main; guard programado preserva solo ejecución de comprobaciones y usa nombres actuales de política, sin reactivar ninguna automatización. Se comprobará exact-head antes de integrar.

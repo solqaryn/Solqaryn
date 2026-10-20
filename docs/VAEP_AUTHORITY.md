@@ -55,6 +55,7 @@ NO_REJECT_QUEUE=TRUE
 RECOVERY_MUST_RESOLVE_SAME_RUN=TRUE
 RECOVERY_UNBLOCK_DEPENDENTS_SAME_RUN=TRUE
 CURRENT_COMMERCIAL_ONLY=TRUE
+SKILL_FRESHNESS_POLICY=FAIL_CLOSED
 PREVIOUS_PLAN_DEPENDENCY=PROHIBITED
 PREVIOUS_PHASE_GATE=PROHIBITED
 PREVIOUS_QUEUE_ANCHOR=PROHIBITED
@@ -177,7 +178,15 @@ Las vistas derivadas se calculan desde estado fuente vivo. No usar snapshots man
 
 El Google Sheet operativo canónico es `SOLQARYN - PLAN COMERCIAL INICIAL - AUTOMATIZACIONES` (ID `1gcVyCoyhLU0jFMwRtf0s5_x8FSnfBs38ojml1QF7Xwk`). Las pestañas visibles son vistas derivadas por fórmulas, incluida `PLAN_COMERCIAL` con 1123 microtareas; quedan protegidas contra edición operativa directa. Las escrituras de runtime pertenecen únicamente a las fuentes técnicas ocultas `_COMERCIAL_SOURCE`, `_RUNTIME_SOURCE`, `_AUTOMATION_SOURCE` y `_EVENTS_SOURCE`. Las pestañas `COLA`, `PLAN_COMERCIAL` y `BITACORA` son vistas protegidas; ninguna vista reutiliza filas históricas.
 
-## 9. Supervisión por cuenta independiente: alineación obligatoria
+## 9. Gate de frescura y routing de Skills por microtarea
+
+Todas las primarias y supervisoras **deben invocar primero** la Skill local de SOLQARYN; después leer el fichero canónico `.agents/skills/solqaryn-project-governance/SKILL.md` y `references/architecture.md` en HEAD vivo de `dev`. Contrastar con la versión instalada por ChatGPT y los paquetes del código actual. El check `node scripts/verify-solqaryn-skills.mjs --self-test` debe constar SUCCESS en CI exact-head o ejecutarse en checkout válido. Contradicción, origen no disponible o Skill no sincronizada => `SKILL_VERSION_MISMATCH/NO_GO`, sin reclamar lease ni escribir producto o runtime.
+
+Solo si un task necesita ayuda de una referencia externa, leer `docs/REGISTRO_REFERENCIAS_SKILLS_SOLQARYN.md` y validar origen original+pin+ruta bajo la allowlist. Reglas por lane: Seguridad -> gobernanza; Comercio -> Impeccable o Taste sólo si afecta UI; UX -> Impeccable/Taste/Motion/Humanizer según componente; Rutas -> governance y tests de seguridad; QA -> herramientas de validación, contexto y runbooks sin convertir resúmenes en evidencia. No ejecutar scripts de terceros ni cambiar pins sin aprobación.
+
+`SKILL_FRESHNESS` es requisito distinto de `COMMERCIAL_SYNC_OK`: la hoja puede estar íntegra con una Skill obsoleta. No tratar esos checks como equivalentes. La instalación de una nueva versión en la librería ChatGPT requiere distribución/instalación específica: un PR de GitHub no actualiza esa copia automáticamente.
+
+## 10. Supervisión por cuenta independiente: alineación obligatoria
 
 Las cinco supervisoras existentes en la cuenta operativa asignada a **Alex Morales** son `NO_GO` hasta una actualización efectivamente ejecutada por su propietario, sin duplicar tareas ni alterar los IDs. La instrucción común de cada una es: *releer skill SOLQARYN, AGENTS.md y VAEP_AUTHORITY.md en HEAD vivo de dev; usar únicamente Plan Comercial Inicial y cola PLAN_COMERCIAL; inspeccionar la entrega de la Primary de su pareja; validar REVIEW_FIRST, RBAC y tenancy aplicables, CI exact-head, pruebas negativas, P0/P1=0, evidencias y rollback; no declarar LISTO sin readback; nunca autoactivar ni tocar QA/main/PROD*. Se distribuyen así:
 
@@ -191,12 +200,12 @@ Las cinco supervisoras existentes en la cuenta operativa asignada a **Alex Moral
 
 La cuenta propietaria de estas cinco tareas debe ejecutar la actualización y una relectura de cada ID que demuestre nombre/prompt comercial, par, estado `is_enabled=false` y horario intacto. Únicamente entonces actualizar `_AUTOMATION_SOURCE` con evidencia real, jamás a mano o por suposición. No sustituir por cinco tareas nuevas de la cuenta primaria; eso invalidaría la verificación independiente y bloquearía el cierre.
 
-## 10. Gate de admisión comercial
+## 11. Gate de admisión comercial
 
 Cualquier ejecutor debe comprobar **en el HEAD fusionado de dev** `EXECUTION_PLAN_DRIVE_FILE_ID=1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j`, 1123 IDs coincidentes y únicos en hoja fuente/runtime, cero duplicados, dependencias vigentes, y que las diez tareas reales (cinco primarias y cinco supervisoras) existen, están alineadas y tienen lectura independiente. Las supervisoras nunca pueden ser suplantadas por una tarea duplicada de la primaria. **Sin readback 10/10 y owner autorizado la admisión es NO_GO**, incluso si todas las fórmulas dicen LISTO.
 
 Nunca reactivar por iniciativa de un agente. Un cambio en el Word canónico requiere revisión del diff y recarga atomizada de la cola con respaldo previo. Si falta cualquier prerrequisito, ninguna tarea toma lease, ejecuta código ni escribe estado.
 
-## 11. Cierre
+## 12. Cierre
 
 Una tarea sólo queda cerrada cuando el estado vivo demuestra que el objetivo vigente fue cumplido. La existencia de evidencia previa no sustituye validación actual.
