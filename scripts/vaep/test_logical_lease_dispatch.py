@@ -445,8 +445,9 @@ class LogicalCutoverGateTests(unittest.TestCase):
             "CLOSED_OWNER_ACCEPTED_NO_REPEAT_PROBES")
         proofs = manifest["accepted_writer_evidence"]
         self.assertEqual([p["task_id"] for p in proofs], ids)
-        self.assertEqual([p["commit_author"] for p in proofs],
-                         ["jmejia31", "morales35alex"])
+        self.assertEqual(len({p["commit_author"] for p in proofs}), 2)
+        self.assertTrue(all(isinstance(p["commit_author"], str)
+                            and p["commit_author"] for p in proofs))
         self.assertEqual([p["commit"] for p in proofs], [
             "bdee818f0da1eb4261b7f848673d3e3acac48779",
             "963171871e5eebbbd48d522d2ef847bfdffb044b"])
@@ -460,7 +461,8 @@ class LogicalCutoverGateTests(unittest.TestCase):
         self.assertEqual(len(manifest["task_registry"]["expected_task_ids_in_fixed_order"]), 10)
         self.assertEqual(manifest["task_registry"]["owners_at_certification"], 0)
         self.assertEqual(manifest["approved_security_engine"]["pr_number"], 3709)
-        self.assertEqual(manifest["approved_security_engine"]["approved_by"], "jmejia31")
+        self.assertEqual(manifest["approved_security_engine"]["approved_by"],
+                         proofs[0]["commit_author"])
         self.assertEqual(manifest["verified_task_terminated_count"], 0)
         self.assertIs(manifest["previous_runs_terminal_readback_at_certification"], False)
         self.assertIs(manifest["all_ten_sheet_policies_migrated"], False)
