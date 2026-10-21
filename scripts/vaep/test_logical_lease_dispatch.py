@@ -124,3 +124,73 @@ class LogicalLeaseTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+
+class LogicalLifecycleTests(unittest.TestCase):
+    def test_review_first_handoff_and_independent_listo(self):
+        from logical_lease_dispatch import (
+            select_action, select_review, build_review_claim, build_review_completion,
+        )
+        c, r = rows()
+        author, reviewer = CANONICAL_EXECUTORS[:2]
+        pool = [author, reviewer]
+        r[1][1] = "VALIDANDO"
+        r[1][3] = f"RELEASED|ORIGINAL_AUTHOR={author}|TOKEN=oldtoken"
+        r[1][5] = "https://github.com/solqaryn/Solqaryn/pull/3701"
+        review_choice = select_review(c, r, actor_id=reviewer, writer_ids=pool,
+                                      epoch=EPOCH, expected_count=20)
+        self.assertEqual(review_choice["action"], "REVIEW")
+        self.assertEqual(review_choice["selected"], "T-0001")
+        self.assertEqual(select_action(c, r, actor_id=reviewer, writer_ids=pool,
+                                       epoch=EPOCH, expected_count=20)["action"], "REVIEW")
+        self.assertNotEqual(select_review(c, r, actor_id=author, writer_ids=pool,
+                                          epoch=EPOCH, expected_count=20)["action"], "REVIEW")
+        claim = build_review_claim(c, r, task_id="T-0001", actor_id=reviewer,
+                                   writer_ids=pool, epoch=EPOCH,
+                                   run_id="SUP05-20261021T080500Z", head=HEAD,
+                                   now=datetime.now(timezone.utc),
+                                   runtime_sheet_id=3, events_sheet_id=4,
+                                   previous_run_terminal_proven=True,
+                                   expected_count=20)
+        self.assertEqual(claim.author, author)
+        self.assertEqual(len(claim.requests), 3)
+        r[1][2] = reviewer
+        r[1][3] = claim.lease
+        with self.assertRaisesRegex(UnsafeSnapshot, "GATES_MISSING"):
+            build_review_completion(claim, r, now=datetime.now(timezone.utc),
+                                    review_evidence_url="https://github.com/solqaryn/Solqaryn/pull/3701",
+                                    exact_head_checks_passed=True, p0=1, p1=0,
+                                    runtime_sheet_id=3, events_sheet_id=4)
+        released, reqs = build_review_completion(
+            claim, r, now=datetime.now(timezone.utc),
+            review_evidence_url="https://github.com/solqaryn/Solqaryn/pull/3701",
+            exact_head_checks_passed=True, p0=0, p1=0,
+            runtime_sheet_id=3, events_sheet_id=4)
+        self.assertIn(f"ORIGINAL_AUTHOR={author}", released)
+        self.assertEqual(len(reqs), 3)
+        self.assertEqual(reqs[0]["updateCells"]["rows"][0]["values"][0]["userEnteredValue"]["stringValue"], "LISTO")
+
+    def test_build_owner_can_only_handoff_not_listo(self):
+        from logical_lease_dispatch import build_handoff
+        c, r = rows()
+        author = CANONICAL_EXECUTORS[0]
+        claim = build_logical_claim(c, r, task_id="T-0001", actor_id=author,
+                                    writer_ids=[author], epoch=EPOCH,
+                                    run_id="TASK00-20261021T080000Z", head=HEAD,
+                                    now=datetime.now(timezone.utc),
+                                    runtime_sheet_id=3, events_sheet_id=4,
+                                    previous_run_terminal_proven=True,
+                                    expected_count=20)
+        r[1][1] = "EN_PROGRESO"
+        r[1][2] = author
+        r[1][3] = claim.lease
+        with self.assertRaisesRegex(UnsafeSnapshot, "EVIDENCE_REQUIRED"):
+            build_handoff(claim, r, evidence_url="missing", now=datetime.now(timezone.utc),
+                          runtime_sheet_id=3, events_sheet_id=4)
+        lease, requests = build_handoff(
+            claim, r, evidence_url="https://github.com/solqaryn/Solqaryn/pull/3701",
+            now=datetime.now(timezone.utc), runtime_sheet_id=3, events_sheet_id=4)
+        self.assertEqual(len(requests), 4)
+        self.assertIn(f"ORIGINAL_AUTHOR={author}", lease)
+        self.assertEqual(requests[0]["updateCells"]["rows"][0]["values"][0]["userEnteredValue"]["stringValue"], "VALIDANDO")
