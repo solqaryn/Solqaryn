@@ -684,6 +684,112 @@ def verify_own_stale_recovery_response(claim, recovered, api_response,
 
 
 
+
+
+def evaluate_pre_go_manifest(manifest, *, dev_base_sha, sheet_writer_policies,
+                             sheet_runtime_mode, unowned_task_count,
+                             owner_acceptance_confirmed, security_review_approved,
+                             exact_head_checks_passed):
+    """Certify immutable PRE-GO evidence, NOT a commercial execution permit.
+
+    Caller must obtain each live observation from GitHub/Sheets independently.
+    No Task-origin write, terminal-run status or CAS proof is synthesized.
+    """
+    if (not isinstance(manifest, dict)
+            or manifest.get("mode") != "PRE_GO_READ_ONLY_CERTIFIED"
+            or manifest.get("activation_permission") != "OWNER_APPROVED_PRE_GO_ONLY"
+            or manifest.get("schema_version") != 1
+            or manifest.get("platform") != "SOLQARYN"
+            or manifest.get("branch") != "dev"
+            or manifest.get("runtime_model") != "TASKS_ONLY"
+            or manifest.get("plan_task_count") != 1123
+            or manifest.get("plan_drive_file_id") != "1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j"
+            or manifest.get("safety_check_bypass_allowed") is not False):
+        raise UnsafeSnapshot("LOGICAL_PREGO_SCOPE_OR_MODE_MISMATCH")
+    if (manifest.get("routing_epoch_state") != "FROZEN_PRE_GO"
+            or manifest.get("base_dev_sha") != dev_base_sha
+            or not isinstance(dev_base_sha, str)
+            or not SHA_RE.fullmatch(dev_base_sha)):
+        raise UnsafeSnapshot("LOGICAL_PREGO_BASE_OR_EPOCH_MISMATCH")
+    writers = ["6ad7bbf79c488191bf893e6c08ea9b5f",
+               "6abd6241c3e48191a8856ed7b0f42c5c"]
+    if (manifest.get("verified_writer_task_ids") != writers
+            or tuple(freeze_pool(writers, manifest.get("routing_epoch"))) != tuple(writers)):
+        raise UnsafeSnapshot("LOGICAL_PREGO_WRITER_POOL_MISMATCH")
+    evidence = manifest.get("writer_evidence")
+    if not isinstance(evidence, list) or len(evidence) != 2:
+        raise UnsafeSnapshot("LOGICAL_PREGO_EVIDENCE_MISSING")
+    expected = (
+        (writers[0], "jmejia31", "bdee818f0da1eb4261b7f848673d3e3acac48779"),
+        (writers[1], "morales35alex", "963171871e5eebbbd48d522d2ef847bfdffb044b"),
+    )
+    for proof, (task_id, author, commit) in zip(evidence, expected):
+        if (not isinstance(proof, dict)
+                or proof.get("task_id") != task_id
+                or proof.get("github_author") != author
+                or proof.get("github_commit_sha") != commit
+                or proof.get("fingerprint") != "VAEP_TASK_GH_WRITE:" + task_id
+                or proof.get("purpose") != "ADMIN_DIAGNOSTIC_NO_LEASE"
+                or proof.get("evidence_scope") != "OWNER_ACCEPTED_GITHUB_WRITE_ADMIN_ONLY"
+                or not str(proof.get("task_run_origin", "")).startswith(
+                    ("NOT_INDEPENDENTLY_", "OWNER_SUBMITTED_"))):
+            raise UnsafeSnapshot("LOGICAL_PREGO_PROOF_CONTENT_MISMATCH")
+    accept = manifest.get("writer_evidence_acceptance", {})
+    if (not isinstance(accept, dict)
+            or accept.get("event") != "OWNER_ACCEPTS_2_EXISTING_GITHUB_DIAGNOSTICS_GATE_CLOSED"
+            or accept.get("event_row") != 94
+            or accept.get("result") != "CLOSED_OWNER_ACCEPTED_NO_REPEAT_PROBES"
+            or accept.get("repeat_write_probes_required") is not False
+            or owner_acceptance_confirmed is not True):
+        raise UnsafeSnapshot("LOGICAL_PREGO_OWNER_ACCEPTANCE_MISSING")
+    review = manifest.get("independent_security_review", {})
+    if (not isinstance(review, dict)
+            or review.get("pull_request") != 3709
+            or review.get("reviewer") != "jmejia31"
+            or review.get("state") != "APPROVED"
+            or security_review_approved is not True
+            or exact_head_checks_passed is not True):
+        raise UnsafeSnapshot("LOGICAL_PREGO_SECURITY_OR_CI_MISSING")
+    source = manifest.get("readback_snapshot", {})
+    legacy_policy = ("AUTOMATION_ONLY|RUNTIME_ACTIVO_OWNER_EXCEPTION|"
+                     "PER_SCOPE_EFFECTIVE_WRITE|DUAL_CAS_WIP1_REVIEW_FIRST")
+    if (not isinstance(source, dict)
+            or source.get("base_dev_sha") != dev_base_sha
+            or source.get("automation_count") != 10
+            or source.get("automation_enabled_registered") != 10
+            or source.get("commercial_task_count") != 1123
+            or source.get("owners") != 0
+            or source.get("in_progress") != 0
+            or source.get("validating") != 0
+            or source.get("sheet_runtime_mode") != "PAUSADO"
+            or source.get("pre_cutover_write_policy") != legacy_policy
+            or manifest.get("verified_task_terminated_count") != 0
+            or sheet_runtime_mode != "PAUSADO"
+            or unowned_task_count != 1123
+            or not isinstance(sheet_writer_policies, (tuple, list))
+            or len(sheet_writer_policies) != 10
+            or any(policy != legacy_policy for policy in sheet_writer_policies)):
+        raise UnsafeSnapshot("LOGICAL_PREGO_SHEET_HOLD_OR_TERMINALITY_MISMATCH")
+    terms = manifest.get("cutover_conditions", {})
+    contract = manifest.get("protocol_contract", {})
+    if (not isinstance(terms, dict)
+            or terms.get("require_all_ten_write_policies")
+                != "LOGICAL_SINGLE_OWNER_TASK_WRITE_VERIFIED"
+            or terms.get("may_run_commercial_claims_during_pre_go") is not False
+            or terms.get("no_mixed_protocol") is not True
+            or not isinstance(contract, dict)
+            or contract.get("legacy_dual_cas_reintroduced") is not False
+            or contract.get("guard") !=
+               "ADD_NAMED_RANGE_WITH_SAME_ATOMIC_SPREADSHEETS_BATCHUPDATE"
+            or contract.get("review_first_distinct_author") is not True
+            or contract.get("tool_safety_bypass") is not False):
+        raise UnsafeSnapshot("LOGICAL_PREGO_CONTRACT_UNSAFE")
+    return {"stage": "PRE_GO_READ_ONLY_CERTIFIED",
+            "writer_ids": tuple(writers), "epoch": manifest["routing_epoch"],
+            "dev_base_sha": dev_base_sha, "commercial_admission": "NO_GO",
+            "owner_accepted_admin_evidence_count": 2}
+
+
 def evaluate_live_cutover_manifest(manifest, *, dev_sha, sheet_writer_policies,
                                    proven_task_writers, prior_runs_terminal):
     """Gate for a FUTURE migration, never a replacement for external auth.
