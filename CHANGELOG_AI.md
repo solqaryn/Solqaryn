@@ -1,3 +1,9 @@
+## 2026-10-20 — Corrección de autoridad activa VAEP 10/10
+
+- Se corrige el contrato de admisión de las diez Tasks existentes según autorización explícita del propietario en CONFIG.F18: RUNTIME_MODE=ACTIVO, AUTOMATION_ACTIVATION=HABILITADA_CON_AUDITORIA y readback 10/10 real. El marcador TASK_WRITE_VERIFIED=10/10 no bloquea globalmente el trabajo seguro; cada escritura sigue requiriendo permiso real, CAS dual task+executor, fencing, WIP=1, CI exact-head y revisión ajena.
+- Se elimina lenguaje histórico que decía que los ejecutores seguían deshabilitados o que las cinco Supervisor no estaban sincronizadas. No se cambia ninguna identidad, horario, estado de producto, lease, secreto, QA/main/PROD ni conjunto de 1123 microtareas.
+- Se alinea _AUTOMATION_SOURCE.WRITE_POLICY 10/10 a la excepción del propietario con readback en Google Sheets (evento VAEP_RUNTIME_WRITE_POLICY_FIX_20261020_10_OF_10). La implementación efectiva desde cada Task sigue siendo una prueba separada.
+
 ## 2026-10-20 — Foco inicial en ocho microtareas retenidas
 
 - Prioridad de cierre: P0-002.B, P0-003.A, P0-004.A, P0-005.A, P0-006.A, P0-007.A, P0-009.A y P0-010.A antes de nuevas reclamaciones, siempre que exista accion segura.
