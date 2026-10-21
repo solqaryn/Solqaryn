@@ -398,3 +398,55 @@ class LogicalRecoveryTests(unittest.TestCase):
             build_handoff(updated, r, evidence_url="https://github.com/solqaryn/Solqaryn/pull/3701",
                           now=now + timedelta(minutes=14),
                           runtime_sheet_id=3, events_sheet_id=4)
+
+
+
+class LogicalCutoverGateTests(unittest.TestCase):
+    def test_repository_manifest_is_inactive(self):
+        import json
+        from pathlib import Path
+        from logical_lease_dispatch import evaluate_live_cutover_manifest
+        path = Path(__file__).resolve().parents[2] / "vaep/control/logical-lease-candidate.json"
+        with path.open(encoding="utf-8") as source:
+            manifest = json.load(source)
+        self.assertEqual(manifest["mode"], "PROPOSAL_ONLY")
+        self.assertEqual(manifest["verified_writer_task_ids"], [])
+        self.assertFalse(manifest["safety_check_bypass_allowed"])
+        with self.assertRaisesRegex(UnsafeSnapshot, "LOGICAL_CUTOVER_NOT_ACTIVATED"):
+            evaluate_live_cutover_manifest(
+                manifest, dev_sha=HEAD,
+                sheet_writer_policies=["LOGICAL_SINGLE_OWNER_TASK_WRITE_VERIFIED"] * 10,
+                proven_task_writers=CANONICAL_EXECUTORS[:2],
+                prior_runs_terminal=True)
+
+    def test_hypothetical_cutover_cannot_mix_protocols_or_skip_task_proofs(self):
+        from logical_lease_dispatch import evaluate_live_cutover_manifest
+        writers = list(CANONICAL_EXECUTORS[:2])
+        policy = "LOGICAL_SINGLE_OWNER_TASK_WRITE_VERIFIED"
+        manifest = {
+            "schema_version": 1, "platform": "SOLQARYN",
+            "runtime_model": "TASKS_ONLY", "branch": "dev",
+            "plan_task_count": 1123,
+            "plan_drive_file_id": "1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j",
+            "safety_check_bypass_allowed": False,
+            "activation_permission": "OWNER_APPROVED_REVIEWED",
+            "base_dev_sha": HEAD, "routing_epoch": EPOCH,
+            "write_policy_required": policy, "mode": "ACTIVE_CERTIFIED",
+            "verified_writer_task_ids": writers}
+        args = {
+            "dev_sha": HEAD, "sheet_writer_policies": [policy] * 10,
+            "proven_task_writers": writers, "prior_runs_terminal": True}
+        decision = evaluate_live_cutover_manifest(manifest, **args)
+        self.assertEqual(decision["writer_ids"], tuple(writers))
+        with self.assertRaisesRegex(UnsafeSnapshot, "LOGICAL_MIXED_PROTOCOL_FORBIDDEN"):
+            evaluate_live_cutover_manifest(
+                manifest, **{**args, "sheet_writer_policies": ["DUAL_CAS"] * 10})
+        with self.assertRaisesRegex(UnsafeSnapshot, "LOGICAL_TASK_OR_INDEPENDENT_REVIEW_PROOFS_MISSING"):
+            evaluate_live_cutover_manifest(
+                manifest, **{**args, "proven_task_writers": writers[:1]})
+        with self.assertRaisesRegex(UnsafeSnapshot, "LOGICAL_CUTOVER_AUTHORIZATION_OR_TERMINAL_PROOF_MISSING"):
+            evaluate_live_cutover_manifest(
+                manifest, **{**args, "prior_runs_terminal": False})
+        with self.assertRaisesRegex(UnsafeSnapshot, "LOGICAL_MANIFEST_SCOPE_LOCK_MISMATCH"):
+            evaluate_live_cutover_manifest(
+                {**manifest, "safety_check_bypass_allowed": True}, **args)
