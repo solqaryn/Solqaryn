@@ -1,3 +1,11 @@
+## 2026-10-21 — Manifiesto VAEP PRE-GO certificado por propietario (NO ACTIVO)
+
+- Se incorporan al manifiesto `vaep/control/logical-lease-candidate.json` los dos diagnósticos GitHub ya aceptados: Primary :00 (`bdee818f0da1eb4261b7f848673d3e3acac48779`, `jmejia31`) y Supervisor :29 (`963171871e5eebbbd48d522d2ef847bfdffb044b`, `morales35alex`). Los fingerprints coinciden con sus archivos; aceptación registrada en `_EVENTS_SOURCE` fila 94. No se repitieron escrituras ni se crearon Tasks.
+- Se congela `routing_epoch=VAEP_LOGICAL_20261021_PILOT` y la cohorte inicial `[Primary :00, Supervisor :29]` bajo `mode=PRE_GO_CONTRACT_CERTIFIED`, `activation_permission=OWNER_APPROVED_PRE_GO_CONTRACT_ONLY` y `commercial_writes_allowed=false`.
+- Evidencia de seguridad del motor: PR #3709 fusionado, aprobado por `jmejia31`, pruebas reales de concurrencia/fencing en Sheet aislado. El contrato de escritura requerido para un futuro cutover es `LOGICAL_SINGLE_OWNER_TASK_WRITE_VERIFIED`, no DeveloperMetadata dual.
+- Test de regresión exige las dos pruebas aceptadas, la identidad, epoch, 10 Tasks registradas, seguridad y todos los flags de bloqueo pre-GO; verifica que intentar promover solo `mode` o mezclar CAS y lógico siga fallando cerrado.
+- Sin activar protocolo, sin cambiar las diez `WRITE_POLICY`, `CONFIG.RUNTIME_MODE=PAUSADO`, horarios, 1123 microtareas ni permisos de proveedores; el manifiesto sólo prepara la siguiente migración 10/10 con readback exact-head y runs terminales genuinos. Nota de auditoría: `docs/diagnostics/vaep-logical-pre-go-manifest-certification-20261021.md`.
+
 ## 2026-10-21 — VAEP lease logico: barrera atomica por transicion (candidato NO ACTIVADO)
 
 - Hallazgo causal: `logical_lease_dispatch.py` usaba `updateCells` incondicional. Dos ejecuciones con snapshot anterior compartido podian sobrescribir OWNER/TOKEN; el readback individual no era exclusividad ni fencing en el momento del write.
