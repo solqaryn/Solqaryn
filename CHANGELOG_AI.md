@@ -1,3 +1,11 @@
+## 2026-10-21 — VAEP manifiesto lógico: evidencia del propietario y epoch congelado (PRE-GO)
+
+- Se aceptan SIN nuevos commits las dos pruebas GitHub administrativas del propietario, `Primary :00` (Task `6ad7bbf79c488191bf893e6c08ea9b5f`, commit `bdee818f0da1eb4261b7f848673d3e3acac48779`, `jmejia31`) y `Supervisor :29` (Task `6abd6241c3e48191a8856ed7b0f42c5c`, commit `963171871e5eebbbd48d522d2ef847bfdffb044b`, `morales35alex`). Fuente de aceptación: `_EVENTS_SOURCE` fila 94, evento `OWNER_ACCEPTS_2_EXISTING_GITHUB_DIAGNOSTICS_GATE_CLOSED`.
+- Manifiesto `vaep/control/logical-lease-candidate.json` pasa a `mode=PRE_GO_READ_ONLY_CERTIFIED` y `activation_permission=OWNER_APPROVED_PRE_GO_ONLY`: asigna solo la cohorte de 2 identidades aceptadas, conserva en orden `:00`, `:29`, congela `routing_epoch=VAEP_LOGICAL_20261021_PILOT` y anota evidencia, limitaciones y contrato de escritura lógica con `addNamedRange` atomico. **No** concede permisos CAS comerciales ni modifica horarios, dueños, `WRITE_POLICY` o runtime.
+- Nueva validación `evaluate_pre_go_manifest` y pruebas negativas para denegar evidencias falsificadas, epoch incoherente, menos de 2 escritores, runtimes `ACTIVO`, politicas mixtas, aprobación de seguridad ausente o terminalidad inventada. `evaluate_live_cutover_manifest` continúa bloqueando la etapa pre-GO hasta la migración 10/10.
+- Evidencia de seguridad previa: PR #3709 fusionado, review de `jmejia31` `APPROVED`, pruebas en Google Sheets aislado y `30/30` check-runs en base `e3decb9f7d54b5ee977500f35b55d9c5928c7f7b`. El HEAD de una fusión futura exige nueva verificación.
+- Se preservan las diez Tasks habilitadas, las 1.123 microtareas intactas y `CONFIG.RUNTIME_MODE=PAUSADO`. Los runs anteriores no se marcan terminales sin readback propio; este requisito es per-run en la futura ejecución material, no una solicitud de nuevos probes administrativos. No activar dos protocolos simultáneamente ni eludir `TOOL_SAFETY_BLOCK`.
+
 ## 2026-10-21 — VAEP lease logico: barrera atomica por transicion (candidato NO ACTIVADO)
 
 - Hallazgo causal: `logical_lease_dispatch.py` usaba `updateCells` incondicional. Dos ejecuciones con snapshot anterior compartido podian sobrescribir OWNER/TOKEN; el readback individual no era exclusividad ni fencing en el momento del write.
