@@ -22,6 +22,14 @@ def rows(count=20):
     return commercial, runtime
 
 
+def _ack(requests):
+    """Simulated provider receipt containing the unique guard object."""
+    assert requests and "addNamedRange" in requests[0]
+    guard = requests[0]["addNamedRange"]["namedRange"]
+    return {"replies": [{"addNamedRange": {"namedRange": guard}}] +
+            [{} for _ in requests[1:]]}
+
+
 class LogicalLeaseTests(unittest.TestCase):
     def test_ten_writers_are_disjoint_for_all_scopes(self):
         c, r = rows(30)
@@ -110,14 +118,14 @@ class LogicalLeaseTests(unittest.TestCase):
             now=datetime(2026, 10, 21, 14, tzinfo=timezone.utc),
             runtime_sheet_id=2017583524, events_sheet_id=958655496,
             previous_run_terminal_proven=True, expected_count=20)
-        self.assertEqual(len(task.requests), 3)
+        self.assertEqual(len(task.requests), 4)
         self.assertFalse(any("createDeveloperMetadata" in req for req in task.requests))
-        self.assertEqual(task.requests[2]["appendCells"]["sheetId"], 958655496)
+        self.assertEqual(task.requests[3]["appendCells"]["sheetId"], 958655496)
         self.assertTrue(verify_logical_claim(
-            task, {"replies": [{}, {}, {}]},
+            task, _ack(task.requests),
             ["T-0001", "EN_PROGRESO", CANONICAL_EXECUTORS[0], task.lease]))
         with self.assertRaisesRegex(UnsafeSnapshot, "MISMATCH"):
-            verify_logical_claim(task, {"replies": [{}, {}, {}]},
+            verify_logical_claim(task, _ack(task.requests),
                                  ["T-0001", "EN_PROGRESO", CANONICAL_EXECUTORS[1], task.lease])
 
     def test_never_claim_without_previous_run_terminal_or_correct_writer(self):
@@ -167,7 +175,7 @@ class LogicalLifecycleTests(unittest.TestCase):
                                    previous_run_terminal_proven=True,
                                    expected_count=20)
         self.assertEqual(claim.author, author)
-        self.assertEqual(len(claim.requests), 3)
+        self.assertEqual(len(claim.requests), 4)
         r[1][2] = reviewer
         r[1][3] = claim.lease
         with self.assertRaisesRegex(UnsafeSnapshot, "GATES_MISSING"):
@@ -181,8 +189,8 @@ class LogicalLifecycleTests(unittest.TestCase):
             exact_head_checks_passed=True, p0=0, p1=0,
             runtime_sheet_id=3, events_sheet_id=4)
         self.assertIn(f"ORIGINAL_AUTHOR={author}", released)
-        self.assertEqual(len(reqs), 3)
-        self.assertEqual(reqs[0]["updateCells"]["rows"][0]["values"][0]["userEnteredValue"]["stringValue"], "LISTO")
+        self.assertEqual(len(reqs), 4)
+        self.assertEqual(reqs[1]["updateCells"]["rows"][0]["values"][0]["userEnteredValue"]["stringValue"], "LISTO")
 
     def test_build_owner_can_only_handoff_not_listo(self):
         from logical_lease_dispatch import build_handoff
@@ -204,9 +212,9 @@ class LogicalLifecycleTests(unittest.TestCase):
         lease, requests = build_handoff(
             claim, r, evidence_url="https://github.com/solqaryn/Solqaryn/pull/3701",
             now=datetime.now(timezone.utc), runtime_sheet_id=3, events_sheet_id=4)
-        self.assertEqual(len(requests), 4)
+        self.assertEqual(len(requests), 5)
         self.assertIn(f"ORIGINAL_AUTHOR={author}", lease)
-        self.assertEqual(requests[0]["updateCells"]["rows"][0]["values"][0]["userEnteredValue"]["stringValue"], "VALIDANDO")
+        self.assertEqual(requests[1]["updateCells"]["rows"][0]["values"][0]["userEnteredValue"]["stringValue"], "VALIDANDO")
 
 
 
@@ -292,7 +300,7 @@ class LogicalSafetyRegressionTests(unittest.TestCase):
         lease, reqs = build_handoff(claim, r, evidence_url=delivery, now=now,
                                      runtime_sheet_id=3, events_sheet_id=4)
         r[1][1], r[1][2], r[1][3], r[1][5] = "VALIDANDO", "", lease, delivery
-        self.assertTrue(verify_handoff_response(claim, lease, {"replies": [{}, {}, {}, {}]}, r[1], delivery))
+        self.assertTrue(verify_handoff_response(claim, lease, _ack(reqs), r[1], delivery))
         with self.assertRaisesRegex(UnsafeSnapshot, "REPLY_COUNT"):
             verify_handoff_response(claim, lease, {"replies": [{}, {}]}, r[1], delivery)
         rev = build_review_claim(c, r, task_id="T-0001", actor_id=reviewer,
@@ -301,17 +309,17 @@ class LogicalSafetyRegressionTests(unittest.TestCase):
                                  now=now, runtime_sheet_id=3, events_sheet_id=4,
                                  previous_run_terminal_proven=True, expected_count=20)
         r[1][2], r[1][3] = reviewer, rev.lease
-        self.assertTrue(verify_review_claim_response(rev, {"replies": [{}, {}, {}]}, r[1]))
+        self.assertTrue(verify_review_claim_response(rev, _ack(rev.requests), r[1]))
         new_lease, final_requests = build_review_completion(
             rev, r, now=now, review_evidence_url=delivery,
             exact_head_checks_passed=True, p0=0, p1=0,
             runtime_sheet_id=3, events_sheet_id=4)
         r[1][1], r[1][2], r[1][3] = "LISTO", "", new_lease
         self.assertTrue(verify_review_completion_response(
-            rev, new_lease, {"replies": [{}, {}, {}]}, r[1]))
+            rev, new_lease, _ack(final_requests), r[1]))
         r[1][3] = "RELEASED|WRONG_TOKEN"
         with self.assertRaisesRegex(UnsafeSnapshot, "LOGICAL_LISTO_READBACK_MISMATCH"):
-            verify_review_completion_response(rev, new_lease, {"replies": [{}, {}, {}]}, r[1])
+            verify_review_completion_response(rev, new_lease, _ack(final_requests), r[1])
 
 
 
@@ -337,11 +345,11 @@ class LogicalRecoveryTests(unittest.TestCase):
             review, r, now=now, review_evidence_url=r[1][5],
             reason="Tests de seguridad pendientes", runtime_sheet_id=3,
             events_sheet_id=4)
-        self.assertEqual(len(reqs), 4)
+        self.assertEqual(len(reqs), 5)
         self.assertIn("REVIEW_REJECTED=1", rejected)
         r[1][2], r[1][3] = "", rejected
         self.assertTrue(verify_review_rejection_response(
-            review, rejected, {"replies": [{}, {}, {}, {}]}, r[1]))
+            review, rejected, _ack(reqs), r[1]))
         self.assertNotEqual(select_review(
             c, r, actor_id=b, writer_ids=[a, b],
             epoch=EPOCH, expected_count=20)["action"], "REVIEW")
@@ -360,7 +368,7 @@ class LogicalRecoveryTests(unittest.TestCase):
             head=HEAD, now=now, runtime_sheet_id=3, events_sheet_id=4,
             previous_run_terminal_proven=True, expected_count=20)
         self.assertEqual(rework.task_id, "T-0001")
-        self.assertEqual(len(rework.requests), 3)
+        self.assertEqual(len(rework.requests), 4)
 
     def test_heartbeat_and_fenced_own_stale_recovery(self):
         from datetime import timedelta
@@ -388,7 +396,7 @@ class LogicalRecoveryTests(unittest.TestCase):
         self.assertNotEqual(updated.lease, claim.lease)
         r[1][3] = updated.lease
         self.assertTrue(verify_heartbeat_response(
-            updated, {"replies": [{}, {}, {}]}, r[1]))
+            updated, _ack(updated.requests), r[1]))
         with self.assertRaisesRegex(UnsafeSnapshot, "TERMINAL_RUN_PROOF_REQUIRED"):
             build_own_stale_recovery(
                 updated, r, now=now + timedelta(minutes=14),
@@ -402,11 +410,11 @@ class LogicalRecoveryTests(unittest.TestCase):
             updated, r, now=now + timedelta(minutes=14),
             previous_run_terminal_proven=True,
             runtime_sheet_id=3, events_sheet_id=4)
-        self.assertEqual(len(reqs), 3)
+        self.assertEqual(len(reqs), 4)
         self.assertIn("FENCING_TOKEN=", recovered)
         r[1][1], r[1][2], r[1][3] = "PENDIENTE", "", recovered
         self.assertTrue(verify_own_stale_recovery_response(
-            updated, recovered, {"replies": [{}, {}, {}]}, r[1]))
+            updated, recovered, _ack(reqs), r[1]))
         with self.assertRaisesRegex(UnsafeSnapshot, "LOGICAL_HANDOFF_OWNERSHIP_MISMATCH"):
             build_handoff(updated, r, evidence_url="https://github.com/solqaryn/Solqaryn/pull/3701",
                           now=now + timedelta(minutes=14),
@@ -538,3 +546,92 @@ class LogicalHistoricProvenanceTests(unittest.TestCase):
             reviewer_for_original_author(1, pool, EPOCH, "fake")
         with self.assertRaisesRegex(UnsafeSnapshot, "INDEPENDENT_REVIEWER_NOT_AVAILABLE"):
             reviewer_for_original_author(1, pool[:1], EPOCH, pool[1])
+
+
+
+class LogicalAtomicFenceAdversarialTests(unittest.TestCase):
+    """Offline contention model. Live provider review remains separate."""
+
+    @staticmethod
+    def _guard_id(requests):
+        guard = requests[0].get("addNamedRange", {}).get("namedRange", {})
+        return guard.get("namedRangeId")
+
+    def _claim(self, c, r, *, now, run_id):
+        return build_logical_claim(
+            c, r, task_id="T-0001", actor_id=CANONICAL_EXECUTORS[0],
+            writer_ids=CANONICAL_EXECUTORS[:2], epoch=EPOCH,
+            run_id=run_id, head=HEAD, now=now,
+            runtime_sheet_id=3, events_sheet_id=4,
+            previous_run_terminal_proven=True, expected_count=20)
+
+    def test_simultaneous_same_predecessor_has_one_guard_winner(self):
+        import threading
+        from concurrent.futures import ThreadPoolExecutor
+        c, r = rows()
+        instant = datetime(2026, 10, 21, 15, tzinfo=timezone.utc)
+        a = self._claim(c, r, now=instant, run_id="TASK00-RUN-0001")
+        b = self._claim(c, r, now=instant, run_id="TASK00-RUN-0002")
+        self.assertNotEqual(a.token, b.token)
+        self.assertEqual(self._guard_id(a.requests), self._guard_id(b.requests))
+        self.assertFalse(any("createDeveloperMetadata" in v for v in a.requests))
+        committed = set()
+        critical_section = threading.Lock()
+
+        def provider_unique_insert(batch):
+            with critical_section:
+                marker = self._guard_id(batch)
+                if marker in committed:
+                    return False
+                committed.add(marker)
+                return True
+
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            outcomes = list(pool.map(provider_unique_insert, (a.requests, b.requests)))
+        self.assertEqual(outcomes.count(True), 1)
+        self.assertEqual(outcomes.count(False), 1)
+        self.assertEqual(len(committed), 1)
+
+    def test_recovery_fences_delayed_old_handoff(self):
+        from datetime import timedelta
+        from logical_lease_dispatch import build_handoff, build_own_stale_recovery
+        c, r = rows()
+        instant = datetime(2026, 10, 21, 15, tzinfo=timezone.utc)
+        claim = self._claim(c, r, now=instant, run_id="TASK00-RUN-0003")
+        r[1][1], r[1][2], r[1][3], r[1][4] = (
+            "EN_PROGRESO", claim.actor_id, claim.lease, HEAD)
+        handoff, old_batch = build_handoff(
+            claim, r, now=instant + timedelta(minutes=1),
+            evidence_url="https://github.com/solqaryn/Solqaryn/pull/3701",
+            runtime_sheet_id=3, events_sheet_id=4)
+        fence, recovery_batch = build_own_stale_recovery(
+            claim, r, now=instant + timedelta(minutes=11),
+            previous_run_terminal_proven=True,
+            runtime_sheet_id=3, events_sheet_id=4)
+        self.assertEqual(self._guard_id(old_batch), self._guard_id(recovery_batch))
+        self.assertIn("FENCING_TOKEN", fence)
+        self.assertNotEqual(handoff, fence)
+        seen = {self._guard_id(recovery_batch)}
+        self.assertIn(self._guard_id(old_batch), seen)
+
+    def test_missing_or_spoofed_guard_receipt_is_not_a_confirmation(self):
+        c, r = rows()
+        claim = self._claim(
+            c, r, now=datetime(2026, 10, 21, 15, tzinfo=timezone.utc),
+            run_id="TASK00-RUN-0004")
+        current = ["T-0001", "EN_PROGRESO", claim.actor_id, claim.lease]
+        with self.assertRaisesRegex(UnsafeSnapshot, "ATOMIC_FENCE_NOT_CONFIRMED"):
+            verify_logical_claim(claim, {"replies": [{}] * 4}, current)
+        fake = _ack(claim.requests)
+        fake["replies"][0]["addNamedRange"]["namedRange"] = {"namedRangeId": "wrong"}
+        with self.assertRaisesRegex(UnsafeSnapshot, "ATOMIC_FENCE_NOT_CONFIRMED"):
+            verify_logical_claim(claim, fake, current)
+
+    def test_fence_generation_is_stable_and_transition_specific(self):
+        from logical_lease_dispatch import _fence_id
+        self.assertEqual(_fence_id("T-0001", ""),
+                         _fence_id("T-0001", ""))
+        self.assertNotEqual(_fence_id("T-0001", "ACTIVE|TOKEN=alpha"),
+                            _fence_id("T-0001", "ACTIVE|TOKEN=beta"))
+        self.assertNotEqual(_fence_id("T-0001", ""),
+                            _fence_id("T-0002", ""))

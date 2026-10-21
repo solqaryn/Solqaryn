@@ -7,6 +7,7 @@ prior-run termination, sheet readback, and authorized mode before writing.
 """
 from dataclasses import dataclass, replace
 from datetime import datetime, timedelta, timezone
+import hashlib
 import re
 import secrets
 
@@ -125,6 +126,50 @@ def _write_range(sheet_id, row, col, values):
         "fields": "userEnteredValue"}}
 
 
+
+def _fence_id(task_id, expected_lease):
+    """One immutable guard per predecessor state. Never recycle IDs.
+
+    A competing or stale invocation targeting the same predecessor creates
+    the same namedRangeId; Sheets must accept at most one such batch.
+    Changing epochs never authorizes deletion of an older guard.
+    """
+    if not isinstance(task_id, str) or not task_id:
+        raise UnsafeSnapshot("LOGICAL_FENCE_TASK_ID_REQUIRED")
+    if not isinstance(expected_lease, str):
+        raise UnsafeSnapshot("LOGICAL_FENCE_PREDECESSOR_REQUIRED")
+    raw = "VAEP_FENCE_V1" + chr(0) + task_id + chr(0) + expected_lease
+    return "VAEP_FENCE_" + hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _fence_transition(task_id, expected_lease, runtime_sheet_id, row):
+    """Atomic unique-object barrier; NO DeveloperMetadata dual CAS.
+
+    This request MUST be the first operation in the SAME Sheets batch as
+    all updates and audit events. A reused ID makes the whole batch fail.
+    Do not delete guards while old invocations can exist.
+    """
+    fence = _fence_id(task_id, expected_lease)
+    return {"addNamedRange": {"namedRange": {
+        "namedRangeId": fence, "name": fence,
+        "range": {
+            "sheetId": runtime_sheet_id,
+            "startRowIndex": row, "endRowIndex": row + 1,
+            "startColumnIndex": 3, "endColumnIndex": 4,
+        },
+    }}}
+
+
+def _request_fence_id(requests):
+    if not isinstance(requests, (tuple, list)) or not requests:
+        raise UnsafeSnapshot("LOGICAL_ATOMIC_FENCE_MISSING")
+    marker = requests[0].get("addNamedRange", {}).get("namedRange", {})
+    fence = marker.get("namedRangeId")
+    if not isinstance(fence, str) or not re.fullmatch(r"VAEP_FENCE_[a-f0-9]{64}", fence):
+        raise UnsafeSnapshot("LOGICAL_ATOMIC_FENCE_MISSING")
+    return fence
+
+
 @dataclass(frozen=True)
 class LogicalClaim:
     task_id: str
@@ -140,10 +185,10 @@ def build_logical_claim(commercial_rows, runtime_rows, *, task_id, actor_id,
                         writer_ids, epoch, run_id, head, now, runtime_sheet_id,
                         events_sheet_id, previous_run_terminal_proven=False,
                         expected_count=1123):
-    """Prepare 3 simple Sheets requests, WITHOUT DeveloperMetadata CAS.
+    """Prepare four requests: one atomic one-use guard and three updates.
 
-    This is NOT a live claim. Caller must run one authorized batch, then
-    verify the response and exact owner/run/token in fresh _RUNTIME_SOURCE.
+    This is NOT a live claim. Caller must issue the *whole* guarded batch
+    and verify provider receipt plus owner/run/token readback. No dual CAS.
     """
     if not previous_run_terminal_proven:
         raise UnsafeSnapshot("PRIOR_SCHEDULED_RUN_TERMINAL_PROOF_REQUIRED")
@@ -175,6 +220,7 @@ def build_logical_claim(commercial_rows, runtime_rows, *, task_id, actor_id,
              "LEASE_RESERVED_MATERIAL_PENDING", "LOGICAL_OWNER_WIP1_NO_CAS",
              run_id, token]
     requests = (
+        _fence_transition(task_id, runtime_rows[row][3], runtime_sheet_id, row),
         _write_range(runtime_sheet_id, row, 1, ["EN_PROGRESO", actor_id, lease, head]),
         _write_range(runtime_sheet_id, row, 8, [stamp]),
         {"appendCells": {"sheetId": events_sheet_id,
@@ -190,8 +236,7 @@ def verify_logical_claim(claim, api_response, runtime_row):
     Runtime must recheck epoch, liveness and actual GitHub permissions before
     edits. Readback alone cannot prove absence of a concurrent same-actor run.
     """
-    if not isinstance(api_response, dict) or len(api_response.get("replies", [])) != 3:
-        raise UnsafeSnapshot("LOGICAL_SHEETS_BATCH_NOT_CONFIRMED")
+    _verify_batch(api_response, 4, _request_fence_id(claim.requests))
     if (len(runtime_row) < 4 or runtime_row[0] != claim.task_id
             or runtime_row[1] != "EN_PROGRESO"
             or runtime_row[2] != claim.actor_id
@@ -276,6 +321,7 @@ def build_handoff(claim, runtime_rows, *, evidence_url, now,
              "EN_PROGRESO", "VALIDANDO", claim.head, evidence_url,
              "REVIEW_FIRST_PENDING", "ORIGINAL_AUTHOR_PRESERVED", claim.run_id, claim.token]
     return lease, (
+        _fence_transition(claim.task_id, claim.lease, runtime_sheet_id, row),
         _write_range(runtime_sheet_id, row, 1, ["VALIDANDO", "", lease, claim.head]),
         _write_range(runtime_sheet_id, row, 5, [evidence_url]),
         _write_range(runtime_sheet_id, row, 8, [stamp]),
@@ -333,6 +379,7 @@ def build_review_claim(commercial_rows, runtime_rows, *, task_id, actor_id,
              "VALIDANDO", "VALIDANDO", head, "",
              "REVIEW_MATERIAL_PENDING", "INDEPENDENT_REVIEWER_LEASE", run_id, token]
     requests = (
+        _fence_transition(task_id, runtime_rows[row][3], runtime_sheet_id, row),
         _write_range(runtime_sheet_id, row, 2, [actor_id, lease, head]),
         _write_range(runtime_sheet_id, row, 8, [stamp]),
         _event_request(events_sheet_id, event),
@@ -365,6 +412,7 @@ def build_review_completion(review, runtime_rows, *, now, review_evidence_url,
              "INDEPENDENT_REVIEW_APPROVED", "P0=0;P1=0;CI_EXACT_HEAD=PASS",
              review.run_id, review.token]
     return released, (
+        _fence_transition(review.task_id, review.lease, runtime_sheet_id, row),
         _write_range(runtime_sheet_id, row, 1, ["LISTO", "", released, review.head]),
         _write_range(runtime_sheet_id, row, 8, [stamp]),
         _event_request(events_sheet_id, event),
@@ -391,18 +439,21 @@ def _require_live_lease(lease, now):
     return instant
 
 
-def _verify_batch(api_response, count):
+def _verify_batch(api_response, count, fence_id):
     if not isinstance(api_response, dict) or not isinstance(api_response.get("replies"), list):
         raise UnsafeSnapshot("LOGICAL_BATCH_NOT_CONFIRMED")
     if len(api_response["replies"]) != count:
         raise UnsafeSnapshot("LOGICAL_BATCH_REPLY_COUNT_MISMATCH")
+    receipt = api_response["replies"][0].get("addNamedRange", {}).get("namedRange", {})
+    if receipt.get("namedRangeId") != fence_id:
+        raise UnsafeSnapshot("LOGICAL_ATOMIC_FENCE_NOT_CONFIRMED")
     return True
 
 
 def verify_handoff_response(claim, released_lease, api_response, runtime_row,
                             evidence_url):
     """Require both batch success and live handoff readback before review."""
-    _verify_batch(api_response, 4)
+    _verify_batch(api_response, 5, _fence_id(claim.task_id, claim.lease))
     if (len(runtime_row) < 6 or runtime_row[0] != claim.task_id
             or runtime_row[1] != "VALIDANDO" or runtime_row[2] != ""
             or runtime_row[3] != released_lease or runtime_row[4] != claim.head
@@ -413,7 +464,7 @@ def verify_handoff_response(claim, released_lease, api_response, runtime_row,
 
 def verify_review_claim_response(review, api_response, runtime_row):
     """Review must be acquired by different actor, with matching token."""
-    _verify_batch(api_response, 3)
+    _verify_batch(api_response, 4, _request_fence_id(review.requests))
     if (len(runtime_row) < 6 or runtime_row[0] != review.task_id
             or runtime_row[1] != "VALIDANDO" or runtime_row[2] != review.reviewer
             or runtime_row[3] != review.lease or runtime_row[4] != review.head
@@ -425,7 +476,7 @@ def verify_review_claim_response(review, api_response, runtime_row):
 def verify_review_completion_response(review, released_lease, api_response,
                                       runtime_row):
     """A true LISTO needs independent review and readback, not a report."""
-    _verify_batch(api_response, 3)
+    _verify_batch(api_response, 4, _fence_id(review.task_id, review.lease))
     if (len(runtime_row) < 5 or runtime_row[0] != review.task_id
             or runtime_row[1] != "LISTO" or runtime_row[2] != ""
             or runtime_row[3] != released_lease or runtime_row[4] != review.head
@@ -490,6 +541,7 @@ def build_review_rejection(review, runtime_rows, *, now, review_evidence_url,
              review.head, review_evidence_url, "REWORK_REQUIRED",
              reason, review.run_id, review.token]
     return released, (
+        _fence_transition(review.task_id, review.lease, runtime_sheet_id, row),
         _write_range(runtime_sheet_id, row, 2, ["", released, review.head]),
         _write_range(runtime_sheet_id, row, 7, [f"REWORK_ORIGINAL_AUTHOR={review.author}"]),
         _write_range(runtime_sheet_id, row, 8, [stamp]),
@@ -523,6 +575,7 @@ def build_rework_claim(commercial_rows, runtime_rows, *, task_id, actor_id,
              "VALIDANDO", "EN_PROGRESO", head, "",
              "REWORK_MATERIAL_PENDING", "ORIGINAL_AUTHOR_RESUMED", run_id, token]
     reqs = (
+        _fence_transition(task_id, runtime_rows[row][3], runtime_sheet_id, row),
         _write_range(runtime_sheet_id, row, 1, ["EN_PROGRESO", actor_id, lease, head]),
         _write_range(runtime_sheet_id, row, 8, [stamp]),
         _event_request(events_sheet_id, event),
@@ -532,7 +585,7 @@ def build_rework_claim(commercial_rows, runtime_rows, *, task_id, actor_id,
 
 def verify_review_rejection_response(review, released_lease, api_response,
                                      runtime_row):
-    _verify_batch(api_response, 4)
+    _verify_batch(api_response, 5, _fence_id(review.task_id, review.lease))
     if (len(runtime_row) < 5 or runtime_row[0] != review.task_id
             or runtime_row[1] != "VALIDANDO" or runtime_row[2] != ""
             or runtime_row[3] != released_lease or runtime_row[4] != review.head):
@@ -570,6 +623,7 @@ def build_heartbeat(claim, runtime_rows, *, now, run_still_active_proven=False,
              "EN_PROGRESO", "EN_PROGRESO", claim.head, "",
              "RUN_MATERIAL_STILL_ACTIVE", "NO_OWNER_CHANGE", claim.run_id, claim.token]
     reqs = (
+        _fence_transition(claim.task_id, claim.lease, runtime_sheet_id, row),
         _write_range(runtime_sheet_id, row, 3, [new_lease]),
         _write_range(runtime_sheet_id, row, 8, [stamp]),
         _event_request(events_sheet_id, event),
@@ -578,7 +632,7 @@ def build_heartbeat(claim, runtime_rows, *, now, run_still_active_proven=False,
 
 
 def verify_heartbeat_response(claim, api_response, runtime_row):
-    _verify_batch(api_response, 3)
+    _verify_batch(api_response, 4, _request_fence_id(claim.requests))
     if (len(runtime_row) < 5 or runtime_row[0] != claim.task_id
             or runtime_row[1] != "EN_PROGRESO"
             or runtime_row[2] != claim.actor_id
@@ -610,6 +664,7 @@ def build_own_stale_recovery(claim, runtime_rows, *, now,
              claim.head, "", "STALE_TERMINAL_PROVEN_FENCED",
              "SAME_DESIGNATED_OWNER_RECLAIMABLE", claim.run_id, fence]
     reqs = (
+        _fence_transition(claim.task_id, claim.lease, runtime_sheet_id, row),
         _write_range(runtime_sheet_id, row, 1, ["PENDIENTE", "", recovered, claim.head]),
         _write_range(runtime_sheet_id, row, 8, [stamp]),
         _event_request(events_sheet_id, event),
@@ -619,7 +674,7 @@ def build_own_stale_recovery(claim, runtime_rows, *, now,
 
 def verify_own_stale_recovery_response(claim, recovered, api_response,
                                        runtime_row):
-    _verify_batch(api_response, 3)
+    _verify_batch(api_response, 4, _fence_id(claim.task_id, claim.lease))
     if (len(runtime_row) < 5 or runtime_row[0] != claim.task_id
             or runtime_row[1] != "PENDIENTE" or runtime_row[2] != ""
             or runtime_row[3] != recovered or runtime_row[4] != claim.head
