@@ -1,3 +1,10 @@
+## 2026-10-21 — VAEP lease logico: barrera atomica por transicion (candidato NO ACTIVADO)
+
+- Hallazgo causal: `logical_lease_dispatch.py` usaba `updateCells` incondicional. Dos ejecuciones con snapshot anterior compartido podian sobrescribir OWNER/TOKEN; el readback individual no era exclusividad ni fencing en el momento del write.
+- Remedio en candidato: `addNamedRange` unico y permanente derivado del lease previo, dentro del MISMO `batchUpdate` de cada claim, handoff, revision, rechazo/rework, heartbeat y recovery. Verificar respuesta del marcador junto al readback; batches sin guard se rechazan. No se restaura `DeveloperMetadata` CAS dual.
+- Pruebas nuevas: dos claims simultaneos desde mismo predecesor, guard unico, escritura tardia tras recovery, respuesta del proveedor sin guard o falsificada, invariancia por tarea y transicion. Las pruebas modelan unicidad de API; no certifican una carrera del proveedor en vivo.
+- Se mantiene `PROPOSAL_ONLY`; sin GO, sin cambios a las 1123 microtareas ni 10 Tasks, sin leer/escribir PROD, QA, main o Google Sheets comercial. Pendiente validacion aislada con proveedor, revision de seguridad independiente, CI exact-head y cutover coordinado antes de ACTIVAR.
+
 ## 2026-10-21 — Vercel DEV: compatibilidad acotada Node 24 / npm 11
 
 - Causa reproducida: Vercel DEV resuelve Node `24.22.1` y npm `11.19.1` con configuracion declarativa Node `24.x`, pero el `preinstall` rechazaba cualquier desviacion de `24.21.0` / `11.19.0` por comparacion exacta.
