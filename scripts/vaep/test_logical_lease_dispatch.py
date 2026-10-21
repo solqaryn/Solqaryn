@@ -433,7 +433,7 @@ class LogicalCutoverGateTests(unittest.TestCase):
         ids = [CANONICAL_EXECUTORS[0], CANONICAL_EXECUTORS[5]]
         self.assertEqual(manifest["mode"], "PRE_GO_CONTRACT_CERTIFIED")
         self.assertEqual(manifest["verified_writer_task_ids"], ids)
-        self.assertEqual(manifest["routing_epoch"], EPOCH)
+        self.assertEqual(manifest["routing_epoch"], "VAEP_LOGICAL_20261021_PILOT")
         self.assertIs(manifest["routing_epoch_frozen"], True)
         self.assertEqual(freeze_pool(ids, manifest["routing_epoch"]), tuple(ids))
         self.assertEqual(manifest["owner_acceptance"]["sheet_row"], 94)
