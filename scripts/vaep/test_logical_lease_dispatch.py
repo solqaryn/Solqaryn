@@ -463,3 +463,78 @@ class LogicalCutoverGateTests(unittest.TestCase):
         with self.assertRaisesRegex(UnsafeSnapshot, "LOGICAL_MANIFEST_SCOPE_LOCK_MISMATCH"):
             evaluate_live_cutover_manifest(
                 {**manifest, "safety_check_bypass_allowed": True}, **args)
+
+
+
+class LogicalHistoricProvenanceTests(unittest.TestCase):
+    def test_historical_author_equal_default_reviewer_is_rerouted(self):
+        from logical_lease_dispatch import (
+            reviewer_for_original_author, reviewer_for_order, select_review,
+            build_review_claim,
+        )
+        c, r = rows()
+        pool = list(CANONICAL_EXECUTORS[:3])
+        original = reviewer_for_order(1, pool, EPOCH)
+        self.assertEqual(original, pool[1])
+        candidate = reviewer_for_original_author(1, pool, EPOCH, original)
+        self.assertEqual(candidate, pool[2])
+        self.assertNotEqual(candidate, original)
+        r[1][1] = "VALIDANDO"
+        r[1][3] = f"RELEASED|ORIGINAL_AUTHOR={original}|TOKEN=old"
+        r[1][5] = "https://github.com/solqaryn/Solqaryn/pull/3705"
+        decision = select_review(
+            c, r, actor_id=candidate, writer_ids=pool,
+            epoch=EPOCH, expected_count=20)
+        self.assertEqual(decision["selected"], "T-0001")
+        self.assertEqual(decision["original_author"], original)
+        self.assertNotEqual(
+            select_review(c, r, actor_id=original, writer_ids=pool,
+                          epoch=EPOCH, expected_count=20)["action"], "REVIEW")
+        claim = build_review_claim(
+            c, r, task_id="T-0001", actor_id=candidate,
+            writer_ids=pool, epoch=EPOCH,
+            run_id="TASK24-20261021T110000Z", head=HEAD,
+            now=datetime.now(timezone.utc),
+            runtime_sheet_id=3, events_sheet_id=4,
+            previous_run_terminal_proven=True, expected_count=20)
+        self.assertEqual(claim.reviewer, candidate)
+        self.assertEqual(claim.author, original)
+
+    def test_rejected_delivery_goes_to_original_author_after_epoch_reroute(self):
+        from logical_lease_dispatch import select_rework, select_action, build_rework_claim
+        c, r = rows()
+        pool = list(CANONICAL_EXECUTORS[:3])
+        original = pool[2]
+        self.assertNotEqual(original, pool[0])
+        r[1][1] = "VALIDANDO"
+        r[1][3] = (f"RELEASED|ORIGINAL_AUTHOR={original}|REVIEW_REJECTED=1|"
+                   "REVIEWER=prior|TOKEN=old")
+        r[1][5] = "https://github.com/solqaryn/Solqaryn/pull/3705"
+        candidate = select_rework(c, r, actor_id=original,
+                                  writer_ids=pool, epoch=EPOCH,
+                                  expected_count=20)
+        self.assertEqual((candidate["action"], candidate["selected"]),
+                         ("REWORK", "T-0001"))
+        self.assertEqual(select_action(c, r, actor_id=original,
+                                       writer_ids=pool, epoch=EPOCH,
+                                       expected_count=20)["action"], "REWORK")
+        for other in pool[:2]:
+            self.assertNotEqual(
+                select_rework(c, r, actor_id=other, writer_ids=pool,
+                              epoch=EPOCH, expected_count=20)["action"], "REWORK")
+        claim = build_rework_claim(
+            c, r, task_id="T-0001", actor_id=original,
+            writer_ids=pool, epoch=EPOCH,
+            run_id="TASK24-20261021T110000Z", head=HEAD,
+            now=datetime.now(timezone.utc), runtime_sheet_id=3,
+            events_sheet_id=4, previous_run_terminal_proven=True,
+            expected_count=20)
+        self.assertEqual(claim.actor_id, original)
+
+    def test_historic_author_malformed_or_single_writer_refused(self):
+        from logical_lease_dispatch import reviewer_for_original_author
+        pool = CANONICAL_EXECUTORS[:3]
+        with self.assertRaisesRegex(UnsafeSnapshot, "INVALID_ORIGINAL_AUTHOR"):
+            reviewer_for_original_author(1, pool, EPOCH, "fake")
+        with self.assertRaisesRegex(UnsafeSnapshot, "INDEPENDENT_REVIEWER_NOT_AVAILABLE"):
+            reviewer_for_original_author(1, pool[:1], EPOCH, pool[1])
