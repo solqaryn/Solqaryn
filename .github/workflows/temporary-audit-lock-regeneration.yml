@@ -1,0 +1,40 @@
+name: Temporary lockfile regeneration for npm audit patch
+on:
+  push:
+    branches:
+      - fix/npm-audit-angular22-20261020
+    paths:
+      - frontend/package.json
+      - .github/workflows/temporary-audit-lock-regeneration.yml
+permissions:
+  contents: write
+jobs:
+  regenerate-lock:
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/fix/npm-audit-angular22-20261020'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Regenerate lockfile without executing package scripts
+        working-directory: frontend
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+      - name: Verify reproducible install
+        working-directory: frontend
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Security audit
+        working-directory: frontend
+        run: npm audit --audit-level=high
+      - name: Commit lockfile to this isolated branch
+        if: success()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add frontend/package-lock.json
+          git diff --cached --quiet || (git commit -m 'fix(lockfile): resolve patched Angular CLI transitives' && git push origin HEAD:fix/npm-audit-angular22-20261020)
