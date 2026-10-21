@@ -59,6 +59,26 @@ def reviewer_for_order(order, writer_ids, epoch):
     return pool[(((order - 1) // 2) + 1) % len(pool)]
 
 
+def reviewer_for_original_author(order, writer_ids, epoch, original_author):
+    """Route exactly one independent reviewer, including historic handoffs.
+
+    A handoff may have an author other than the writer assigned in the current
+    frozen epoch. Skip that author instead of leaving VALIDANDO stranded.
+    The routing is deterministic and uses only the frozen writer cohort.
+    """
+    pool = freeze_pool(writer_ids, epoch)
+    if not isinstance(original_author, str) or not ID_RE.fullmatch(original_author):
+        raise UnsafeSnapshot("INVALID_ORIGINAL_AUTHOR")
+    if len(pool) < 2:
+        raise UnsafeSnapshot("INDEPENDENT_REVIEWER_NOT_AVAILABLE")
+    start = (((order - 1) // 2) + 1) % len(pool)
+    for offset in range(len(pool)):
+        candidate = pool[(start + offset) % len(pool)]
+        if candidate != original_author:
+            return candidate
+    raise UnsafeSnapshot("INDEPENDENT_REVIEWER_NOT_AVAILABLE")
+
+
 def select(commercial_rows, runtime_rows, *, actor_id, writer_ids, epoch,
            expected_count=1123):
     """Select only scopes owned by this actor's frozen deterministic lane.
@@ -207,7 +227,7 @@ def select_review(commercial_rows, runtime_rows, *, actor_id, writer_ids, epoch,
             continue
         if len(rt[t["id"]]) < 6 or not str(rt[t["id"]][5]).startswith("https://"):
             continue
-        if reviewer_for_order(t["order"], pool, epoch) == actor_id:
+        if reviewer_for_original_author(t["order"], pool, epoch, author) == actor_id:
             return {"action": "REVIEW", "selected": t["id"],
                     "order": t["order"], "original_author": author}
     return {"action": "NO_INDEPENDENT_REVIEW_FOR_THIS_ACTOR", "selected": None}
@@ -436,7 +456,10 @@ def select_rework(commercial_rows, runtime_rows, *, actor_id, writer_ids, epoch,
             continue
         if not all(tasks[d]["state"] == "LISTO" for d in task["dependencies"]):
             continue
-        if writer_for_order(task["order"], pool, epoch) == actor_id:
+        # The delivery is already tied to its original author. The current
+        # bucket may have changed after a reviewed epoch migration; that does
+        # not grant another actor authority to rework it.
+        if actor_id in pool:
             return {"action": "REWORK", "selected": task["id"],
                     "order": task["order"]}
     return {"action": "NO_AUTHORIZED_REWORK", "selected": None}
