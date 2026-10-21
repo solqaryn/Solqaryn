@@ -134,8 +134,8 @@ def build_logical_claim(commercial_rows, runtime_rows, *, task_id, actor_id,
         raise UnsafeSnapshot("INVALID_ACTOR")
     if not isinstance(runtime_sheet_id, int) or not isinstance(events_sheet_id, int):
         raise UnsafeSnapshot("INVALID_SHEET_ID")
-    decision = select(commercial_rows, runtime_rows, actor_id=actor_id,
-                      writer_ids=writer_ids, epoch=epoch, expected_count=expected_count)
+    decision = select_action(commercial_rows, runtime_rows, actor_id=actor_id,
+                             writer_ids=writer_ids, epoch=epoch, expected_count=expected_count)
     if decision.get("action") != "BUILD" or decision.get("selected") != task_id:
         raise UnsafeSnapshot("LOGICAL_CLAIM_NOT_ADMISSIBLE")
     row = next((i for i, r in enumerate(runtime_rows) if i and r[0] == task_id), None)
@@ -241,6 +241,7 @@ def build_handoff(claim, runtime_rows, *, evidence_url, now,
     if not isinstance(evidence_url, str) or not evidence_url.startswith("https://"):
         raise UnsafeSnapshot("MATERIAL_EVIDENCE_REQUIRED")
     stamp = _stamp(now)
+    _require_live_lease(claim.lease, now)
     lease = (f"RELEASED|ORIGINAL_AUTHOR={claim.actor_id}|TOKEN={claim.token}|"
              f"RUN_ID={claim.run_id}|AT={stamp}|HEAD={claim.head}")
     event = [stamp, claim.actor_id, claim.task_id, "LOGICAL_BUILD_HANDOFF",
@@ -297,8 +298,9 @@ def build_review_claim(commercial_rows, runtime_rows, *, task_id, actor_id,
     row = next((i for i, r in enumerate(runtime_rows) if i and r[0] == task_id), None)
     stamp = _stamp(now)
     token = secrets.token_hex(16)
+    expiry = _stamp(now + timedelta(minutes=10))
     lease = (f"ACTIVE|REVIEWER={actor_id}|ORIGINAL_AUTHOR={choice['original_author']}|"
-             f"TOKEN={token}|RUN_ID={run_id}|HEAD={head}|ROUTING_EPOCH={epoch}")
+             f"TOKEN={token}|RUN_ID={run_id}|HEAD={head}|EXPIRES={expiry}|ROUTING_EPOCH={epoch}")
     event = [stamp, actor_id, task_id, "LOGICAL_REVIEW_ACQUIRED",
              "VALIDANDO", "VALIDANDO", head, "",
              "REVIEW_MATERIAL_PENDING", "INDEPENDENT_REVIEWER_LEASE", run_id, token]
@@ -327,6 +329,7 @@ def build_review_completion(review, runtime_rows, *, now, review_evidence_url,
             or not str(review_evidence_url).startswith("https://")):
         raise UnsafeSnapshot("REVIEW_FIRST_EVIDENCE_OR_GATES_MISSING")
     stamp = _stamp(now)
+    _require_live_lease(review.lease, now)
     released = (f"RELEASED|ORIGINAL_AUTHOR={review.author}|REVIEWER={review.reviewer}|"
                 f"TOKEN={review.token}|RUN_ID={review.run_id}|AT={stamp}|HEAD={review.head}")
     event = [stamp, review.reviewer, review.task_id, "LOGICAL_REVIEW_FIRST_LISTO",
@@ -338,3 +341,66 @@ def build_review_completion(review, runtime_rows, *, now, review_evidence_url,
         _write_range(runtime_sheet_id, row, 8, [stamp]),
         _event_request(events_sheet_id, event),
     )
+
+
+
+def _require_live_lease(lease, now):
+    """No late writes: caller must still verify exact token/readback and run."""
+    instant = _stamp(now)
+    pairs = {}
+    for part in str(lease).split("|"):
+        if "=" in part:
+            key, value = part.split("=", 1)
+            pairs[key] = value
+    if not pairs.get("EXPIRES") or not pairs.get("TOKEN"):
+        raise UnsafeSnapshot("LOGICAL_LEASE_EXPIRY_OR_TOKEN_MISSING")
+    try:
+        expires = datetime.fromisoformat(pairs["EXPIRES"].replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise UnsafeSnapshot("LOGICAL_LEASE_EXPIRY_INVALID") from exc
+    if now.astimezone(timezone.utc) >= expires:
+        raise UnsafeSnapshot("LOGICAL_LEASE_EXPIRED")
+    return instant
+
+
+def _verify_batch(api_response, count):
+    if not isinstance(api_response, dict) or not isinstance(api_response.get("replies"), list):
+        raise UnsafeSnapshot("LOGICAL_BATCH_NOT_CONFIRMED")
+    if len(api_response["replies"]) != count:
+        raise UnsafeSnapshot("LOGICAL_BATCH_REPLY_COUNT_MISMATCH")
+    return True
+
+
+def verify_handoff_response(claim, released_lease, api_response, runtime_row,
+                            evidence_url):
+    """Require both batch success and live handoff readback before review."""
+    _verify_batch(api_response, 4)
+    if (len(runtime_row) < 6 or runtime_row[0] != claim.task_id
+            or runtime_row[1] != "VALIDANDO" or runtime_row[2] != ""
+            or runtime_row[3] != released_lease or runtime_row[4] != claim.head
+            or runtime_row[5] != evidence_url):
+        raise UnsafeSnapshot("LOGICAL_HANDOFF_READBACK_MISMATCH")
+    return True
+
+
+def verify_review_claim_response(review, api_response, runtime_row):
+    """Review must be acquired by different actor, with matching token."""
+    _verify_batch(api_response, 3)
+    if (len(runtime_row) < 6 or runtime_row[0] != review.task_id
+            or runtime_row[1] != "VALIDANDO" or runtime_row[2] != review.reviewer
+            or runtime_row[3] != review.lease or runtime_row[4] != review.head
+            or review.reviewer == review.author):
+        raise UnsafeSnapshot("LOGICAL_REVIEW_CLAIM_READBACK_MISMATCH")
+    return True
+
+
+def verify_review_completion_response(review, released_lease, api_response,
+                                      runtime_row):
+    """A true LISTO needs independent review and readback, not a report."""
+    _verify_batch(api_response, 3)
+    if (len(runtime_row) < 5 or runtime_row[0] != review.task_id
+            or runtime_row[1] != "LISTO" or runtime_row[2] != ""
+            or runtime_row[3] != released_lease or runtime_row[4] != review.head
+            or review.reviewer == review.author):
+        raise UnsafeSnapshot("LOGICAL_LISTO_READBACK_MISMATCH")
+    return True
