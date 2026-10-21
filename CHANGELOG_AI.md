@@ -1,3 +1,11 @@
+## 2026-10-21 — Vercel DEV: compatibilidad acotada Node 24 / npm 11
+
+- Causa reproducida: Vercel DEV resuelve Node `24.22.1` y npm `11.19.1` con configuracion declarativa Node `24.x`, pero el `preinstall` rechazaba cualquier desviacion de `24.21.0` / `11.19.0` por comparacion exacta.
+- La validacion de CI/local conserva `24.21.0` y `11.19.0` exactos; SOLO en builds identificados por `VERCEL=1` se acepta Node `24.x` desde la menor `24.21` y parches npm de la serie `11.19.x`. Se rechazan downgrade, cambio de mayor Node o cambio de menor/mayor npm.
+- Se mantienen sin cambios `.nvmrc`, `.node-version`, `frontend/package-lock.json`, `engines` y `packageManager` declarativos. La comprobacion sigue fallando ante desalineacion de esos campos.
+- Cinco pruebas de contrato nuevas se ejecutan en el lint existente de GitHub. El guard registra `TOOLCHAIN_MODE` para distinguir compatibilidad de Vercel frente a certificacion exacta de CI.
+- Scope solo de codigo DEV/frontend y verificacion; sin activacion ni publicacion manual de Vercel, sin tocar QA/main/PROD, datos, credenciales, CAS, Task scheduling ni modificaciones comerciales. Certificacion final exige CI exact-head y readback de despliegue Vercel DEV READY.
+
 ## 2026-10-21 — Correccion de revision historica del candidato logico
 
 - Se impide que el revisor predeterminado coincida con `ORIGINAL_AUTHOR` tras una variacion de epoch o entrega historica: el selector elige una identidad independiente determinista.
