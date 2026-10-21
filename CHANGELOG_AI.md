@@ -2,8 +2,8 @@
 
 - Se verifico que el contrato historico interno usaba lease logico de owner/scope/token/heartbeat/TTL/readback, no DeveloperMetadata dual. Esa evidencia es tecnica, sin revivir el plan historico.
 - Se incorpora `scripts/vaep/logical_lease_dispatch.py`: seleccion determinista por ORDEN y cohortes GitHub Task-write acreditadas con epoch congelado, WIP=1 y constructor de tres requests de Sheets sin CAS. Solo genera decisiones y batches; no tiene credenciales ni activa el runtime.
-- Se incorporan diez pruebas de exclusividad 10 escritores, actor unico, no auto-review, deps, owner ajeno, WIP, epoch, ausencia de CAS y readback. La CI VAEP las ejecutara en PR.
-- El piloto NO modifica diez Tasks/horarios, `_AUTOMATION_SOURCE`, `CONFIG`, propietarios, leases actuales ni estados de 1123 tareas. El CAS actual sigue siendo el unico protocolo de escritura hasta un cutover adicional verificado (handoff/review/recovery/fencing, permisos por Task y revision ajena). No se hacen reintentos de llamadas bloqueadas por seguridad de plataforma.
+- Se ampliaron las pruebas deterministas para diez escritores, WIP=1, dependencias, rechazo y rework al autor original, vencimiento/renovacion del lease, fencing de run propio finalizado, readback de handoff/REVIEW_FIRST y manifiesto de activacion. La CI VAEP y Project Scope Lock aprueban el codigo candidato sobre los commits revisados; ello no equivale a certificacion material desde Scheduled Tasks.
+- El manifiesto `vaep/control/logical-lease-candidate.json` permanece PROPOSAL_ONLY con cohortes vacias: el gate exige permiso de propietario, HEAD exacto, 10 politicas sincronizadas, >=2 escritores con evidencia Task-origin y runs terminales comprobados. El piloto NO modifica Tasks/horarios, `_AUTOMATION_SOURCE`, `CONFIG`, propietarios, leases actuales ni estados de 1123 tareas. El CAS actual sigue siendo el unico protocolo de escritura hasta un cutover adicional seguro; no se hacen reintentos de operaciones bloqueadas por seguridad de la plataforma.
 
 ## 2026-10-20 — Corrección de autoridad activa VAEP 10/10
 
