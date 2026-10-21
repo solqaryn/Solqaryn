@@ -600,3 +600,46 @@ def verify_own_stale_recovery_response(claim, recovered, api_response,
             or f"STALE_TOKEN={claim.token}" not in recovered):
         raise UnsafeSnapshot("STALE_RECOVERY_READBACK_MISMATCH")
     return True
+
+
+
+def evaluate_live_cutover_manifest(manifest, *, dev_sha, sheet_writer_policies,
+                                   proven_task_writers, prior_runs_terminal):
+    """Gate for a FUTURE migration, never a replacement for external auth.
+
+    All inputs must originate from live readbacks in their own systems.
+    Runtime callers must not synthesize proof from the manifest or this result.
+    The bundled manifest is PROPOSAL_ONLY and must always return NO_GO.
+    """
+    if not isinstance(manifest, dict) or manifest.get("mode") != "ACTIVE_CERTIFIED":
+        raise UnsafeSnapshot("LOGICAL_CUTOVER_NOT_ACTIVATED")
+    if (manifest.get("schema_version") != 1
+            or manifest.get("platform") != "SOLQARYN"
+            or manifest.get("runtime_model") != "TASKS_ONLY"
+            or manifest.get("branch") != "dev"
+            or manifest.get("plan_task_count") != 1123
+            or manifest.get("plan_drive_file_id") != "1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j"
+            or manifest.get("safety_check_bypass_allowed") is not False):
+        raise UnsafeSnapshot("LOGICAL_MANIFEST_SCOPE_LOCK_MISMATCH")
+    if (manifest.get("activation_permission") != "OWNER_APPROVED_REVIEWED"
+            or prior_runs_terminal is not True):
+        raise UnsafeSnapshot("LOGICAL_CUTOVER_AUTHORIZATION_OR_TERMINAL_PROOF_MISSING")
+    if not isinstance(dev_sha, str) or not SHA_RE.fullmatch(dev_sha):
+        raise UnsafeSnapshot("LIVE_DEV_SHA_REQUIRED")
+    if manifest.get("base_dev_sha") != dev_sha:
+        raise UnsafeSnapshot("LOGICAL_CUTOVER_DEV_SHA_MISMATCH")
+    expected = manifest.get("write_policy_required")
+    if (expected != "LOGICAL_SINGLE_OWNER_TASK_WRITE_VERIFIED"
+            or not isinstance(sheet_writer_policies, (list, tuple))
+            or len(sheet_writer_policies) != 10
+            or any(value != expected for value in sheet_writer_policies)):
+        raise UnsafeSnapshot("LOGICAL_MIXED_PROTOCOL_FORBIDDEN")
+    listed = manifest.get("verified_writer_task_ids")
+    if (not isinstance(listed, list)
+            or len(listed) < 2
+            or not isinstance(proven_task_writers, (list, tuple))
+            or tuple(listed) != tuple(proven_task_writers)):
+        raise UnsafeSnapshot("LOGICAL_TASK_OR_INDEPENDENT_REVIEW_PROOFS_MISSING")
+    pool = freeze_pool(listed, manifest.get("routing_epoch"))
+    return {"mode": "ACTIVE_CERTIFIED", "epoch": manifest["routing_epoch"],
+            "writer_ids": pool, "head": dev_sha, "proofs_must_be_fresh": True}
