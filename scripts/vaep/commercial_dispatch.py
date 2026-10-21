@@ -18,8 +18,14 @@ ALLOWED_STATES = frozenset({
 COMMERCIAL_HEADERS = ('ID', 'PROGRAMA_PRIORIDAD', 'MICROTAREA', 'CRITERIO_EXIGIDO', 'ORDEN')
 RUNTIME_HEADERS = ('ID', 'ESTADO', 'OWNER_AUTOMATION_ID', 'LEASE_STATUS')
 OWNER_SUSPENSION = re.compile(
-    r'^(?:PENDIENTE SIN OWNER;\s*)?SUSPENDIDO HASTA NUEVA ORDEN DEL PROPIETARIO
+    r'^(?:PENDIENTE SIN OWNER;\s*)?SUSPENDIDO HASTA NUEVA ORDEN DEL PROPIETARIO$',
+    re.IGNORECASE,
+)
 
+
+def _owner_suspended(next_action):
+    # Only the owner's explicit suspension (not unrelated notes) excludes admission.
+    return bool(OWNER_SUSPENSION.fullmatch(' '.join(str(next_action or '').split())))
 
 class UnsafeSnapshot(ValueError):
     """An incomplete or contradictory snapshot cannot authorize dispatch."""
