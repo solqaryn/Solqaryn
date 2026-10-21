@@ -46,14 +46,17 @@ def writer_for_order(order, writer_ids, epoch):
     pool = freeze_pool(writer_ids, epoch)
     if not isinstance(order, int) or isinstance(order, bool) or order <= 0:
         raise UnsafeSnapshot("INVALID_LOGICAL_ORDER")
-    return pool[(order - 1) % len(pool)]
+    # Stable two-order buckets avoid starvation when current plan's eligible
+    # scopes are overwhelmingly odd-numbered (A/B ordered work pairs).
+    # This uses the permanent ORDER, never a live available-list position.
+    return pool[((order - 1) // 2) % len(pool)]
 
 
 def reviewer_for_order(order, writer_ids, epoch):
     pool = freeze_pool(writer_ids, epoch)
     if len(pool) < 2:
         raise UnsafeSnapshot("INDEPENDENT_REVIEWER_NOT_AVAILABLE")
-    return pool[order % len(pool)]
+    return pool[(((order - 1) // 2) + 1) % len(pool)]
 
 
 def select(commercial_rows, runtime_rows, *, actor_id, writer_ids, epoch,
