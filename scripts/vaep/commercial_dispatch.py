@@ -17,7 +17,15 @@ ALLOWED_STATES = frozenset({
 })
 COMMERCIAL_HEADERS = ('ID', 'PROGRAMA_PRIORIDAD', 'MICROTAREA', 'CRITERIO_EXIGIDO', 'ORDEN')
 RUNTIME_HEADERS = ('ID', 'ESTADO', 'OWNER_AUTOMATION_ID', 'LEASE_STATUS')
+OWNER_SUSPENSION = re.compile(
+    r'^(?:PENDIENTE SIN OWNER;\s*)?SUSPENDIDO HASTA NUEVA ORDEN DEL PROPIETARIO$',
+    re.IGNORECASE,
+)
 
+
+def _owner_suspended(next_action):
+    # Only the owner's explicit suspension (not unrelated notes) excludes admission.
+    return bool(OWNER_SUSPENSION.fullmatch(' '.join(str(next_action or '').split())))
 
 class UnsafeSnapshot(ValueError):
     """An incomplete or contradictory snapshot cannot authorize dispatch."""
@@ -108,6 +116,7 @@ def snapshot(commercial_rows, runtime_rows, expected_count=1123):
             'owner': str(_value(run, 2)).strip(),
             'lease': str(_value(run, 3)).strip(),
             'dependencies': _dependencies(_value(run, 9), task_id),
+            'owner_suspended': _owner_suspended(_value(run, 7)),
         }
     _validate_dag(tasks)
     return tasks
@@ -180,7 +189,7 @@ def dispatch(commercial_rows, runtime_rows, expected_count=1123, candidate_owner
     """
     tasks = snapshot(commercial_rows, runtime_rows, expected_count)
     wip_violations = audit_wip_violations(runtime_rows)
-    available, held, dep_wait, review = [], [], [], []
+    available, held, dep_wait, review, suspended = [], [], [], [], []
     candidate_active_task = None
     if candidate_owner:
         candidate_owner = str(candidate_owner).strip()
@@ -193,6 +202,10 @@ def dispatch(commercial_rows, runtime_rows, expected_count=1123, candidate_owner
         if t['state'] == 'VALIDANDO':
             review.append(t['id'])
         if t['state'] != 'PENDIENTE':
+            continue
+        if t['owner_suspended']:
+            suspended.append({'id': t['id'], 'order': t['order'],
+                              'reason': 'OWNER_SUSPENDED_UNTIL_NEW_ORDER'})
             continue
         missing = [d for d in t['dependencies'] if tasks[d]['state'] != 'LISTO']
         if missing:
@@ -216,6 +229,7 @@ def dispatch(commercial_rows, runtime_rows, expected_count=1123, candidate_owner
         'available': available,
         'held': held,
         'dependency_wait': dep_wait,
+        'owner_suspended': suspended,
         'independent_review': review,
         'idle_permitted': not available and not review,
         'candidate_owner': candidate_owner,
