@@ -182,5 +182,75 @@ class CommercialDispatchTests(unittest.TestCase):
         self.assertEqual(result['candidate_status'], 'ELIGIBLE')
 
 
+    def test_owner_suspension_skips_only_explicitly_suspended_pendings(self):
+        c, r = tables(
+            (4, "P0-002.B", "PENDIENTE", "", "", "RECOVERED|FENCING_TOKEN=prior"),
+            (21, "P0-011.A", "PENDIENTE", "P0-012.B", "", ""),
+            (24, "P0-012.B", "LISTO", "", "", ""),
+        )
+        r[1][7] = "PENDIENTE SIN OWNER; SUSPENDIDO HASTA NUEVA ORDEN DEL PROPIETARIO"
+        result = dispatch(c, r, expected_count=3)
+        self.assertEqual(result["selected"]["id"], "P0-011.A")
+        self.assertEqual(result["owner_suspended"][0]["id"], "P0-002.B")
+        self.assertTrue(verify_claim_choice(result, "P0-011.A"))
+        with self.assertRaisesRegex(UnsafeSnapshot, "OUT_OF_ORDER_CLAIM"):
+            verify_claim_choice(result, "P0-002.B")
+
+    def test_plain_pending_and_unrelated_next_action_remain_eligible(self):
+        c, r = tables(
+            (1, "A", "PENDIENTE", "", "", ""),
+            (2, "B", "PENDIENTE", "", "", ""),
+        )
+        r[1][7] = "VALIDAR CONDICIONES, LOCK, OWNER Y HEAD ANTES DE TRABAJAR"
+        r[2][7] = "SUSPENDIDO POR PRUEBA; revisar (no orden del propietario)"
+        decision = dispatch(c, r, expected_count=2)
+        self.assertEqual(decision["selected"]["id"], "A")
+        self.assertEqual(decision["owner_suspended"], [])
+
+    def test_owner_suspension_case_whitespace_and_lift_by_action(self):
+        c, r = tables((1, "A", "PENDIENTE", "", "", ""),
+                      (2, "B", "PENDIENTE", "", "", ""))
+        r[1][7] = " pendiente sin owner;   suspendido hasta nueva orden del propietario "
+        self.assertEqual(dispatch(c, r, expected_count=2)["selected"]["id"], "B")
+        r[1][7] = "VALIDAR CONDICIONES, LOCK, OWNER Y HEAD ANTES DE TRABAJAR"
+        self.assertEqual(dispatch(c, r, expected_count=2)["selected"]["id"], "A")
+
+    def test_all_suspended_does_not_authorize_idle_claim(self):
+        c, r = tables((1, "A", "PENDIENTE", "", "", ""))
+        r[1][7] = "SUSPENDIDO HASTA NUEVA ORDEN DEL PROPIETARIO"
+        result = dispatch(c, r, expected_count=1)
+        self.assertIsNone(result["selected"])
+        self.assertTrue(result["idle_permitted"])
+        with self.assertRaisesRegex(UnsafeSnapshot, "NO_ELIGIBLE_TASK_FOR_CLAIM"):
+            verify_claim_choice(result, "A")
+
+    def test_suspension_cannot_bypass_dependencies_or_wip(self):
+        c, r = tables(
+            (1, "SUSPENDED", "PENDIENTE", "", "", ""),
+            (2, "WAITING", "PENDIENTE", "DEPENDENCY", "", ""),
+            (3, "DEPENDENCY", "PENDIENTE", "", "", ""),
+            (4, "OWNED", "EN_PROGRESO", "", "worker-one", "ACTIVE"),
+        )
+        r[1][7] = "SUSPENDIDO HASTA NUEVA ORDEN DEL PROPIETARIO"
+        result = dispatch(c, r, expected_count=4, candidate_owner="worker-one")
+        self.assertIsNone(result["selected"])
+        self.assertIn("CANDIDATE_OWNER_WIP_LIMIT_EXCEEDED", result["candidate_status"])
+        self.assertEqual(result["dependency_wait"][0]["id"], "WAITING")
+        self.assertEqual(result["owner_suspended"][0]["id"], "SUSPENDED")
+
+    def test_suspension_does_not_allow_self_review(self):
+        c, r = tables((1, "A", "PENDIENTE", "", "", ""),
+                      (2, "B", "VALIDANDO", "", "",
+                       "RELEASED|ORIGINAL_AUTHOR=6ad7bbf79c488191bf893e6c08ea9b5f"))
+        r[1][7] = "SUSPENDIDO HASTA NUEVA ORDEN DEL PROPIETARIO"
+        r[2][5] = "https://github.com/solqaryn/Solqaryn/pull/3706"
+        self.assertEqual(
+            eligible_independent_reviews(c, r, expected_count=2,
+                reviewer="6ad7bbf79c488191bf893e6c08ea9b5f"), [])
+        self.assertEqual(
+            eligible_independent_reviews(c, r, expected_count=2,
+                reviewer="6abd62255ae88191a2dba6e1b00d3b4d")[0]["id"], "B")
+
+
 if __name__ == '__main__':
     unittest.main()
