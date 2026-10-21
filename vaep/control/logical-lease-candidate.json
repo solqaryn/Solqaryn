@@ -4,15 +4,101 @@
   "plan_drive_file_id": "1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j",
   "plan_task_count": 1123,
   "branch": "dev",
-  "base_dev_sha": "0e4b025733c063eb062f9ec50ace7cd971f18e2d",
+  "base_dev_sha": "e3decb9f7d54b5ee977500f35b55d9c5928c7f7b",
   "runtime_model": "TASKS_ONLY",
-  "mode": "PROPOSAL_ONLY",
+  "mode": "PRE_GO_READ_ONLY_CERTIFIED",
   "routing_epoch": "VAEP_LOGICAL_20261021_PILOT",
-  "verified_writer_task_ids": [],
+  "verified_writer_task_ids": [
+    "6ad7bbf79c488191bf893e6c08ea9b5f",
+    "6abd6241c3e48191a8856ed7b0f42c5c"
+  ],
   "write_policy_required": "LOGICAL_SINGLE_OWNER_TASK_WRITE_VERIFIED",
   "verified_task_terminated_count": 0,
   "independent_reviewer_required": true,
   "safety_check_bypass_allowed": false,
-  "activation_permission": "NOT_GRANTED",
-  "notes": "Read-only candidate. Do not activate or change current CAS, Sheets ownership, Task prompts/schedules or main/PROD."
+  "activation_permission": "OWNER_APPROVED_PRE_GO_ONLY",
+  "notes": "Pre-GO evidence and epoch certified as immutable preparation only; this is NOT ACTIVE_CERTIFIED. Owner accepted two administrative GitHub commits without repeat probes. Runtime remains PAUSADO; ten policies remain legacy CAS until coordinated cutover. External terminal run status and actual per-Task permission must be proven at point of material execution. Do not bypass OpenAI safety checks.",
+  "routing_epoch_state": "FROZEN_PRE_GO",
+  "writer_evidence": [
+    {
+      "task_id": "6ad7bbf79c488191bf893e6c08ea9b5f",
+      "slot": "PRIMARY_00",
+      "github_author": "jmejia31",
+      "github_commit_sha": "bdee818f0da1eb4261b7f848673d3e3acac48779",
+      "fingerprint": "VAEP_TASK_GH_WRITE:6ad7bbf79c488191bf893e6c08ea9b5f",
+      "diagnostic_path": "docs/diagnostics/vaep-task-github-write-6ad7bbf79c488191bf893e6c08ea9b5f.md",
+      "diagnostic_ref": "test/chatgpt-write-verification-20261020",
+      "purpose": "ADMIN_DIAGNOSTIC_NO_LEASE",
+      "evidence_scope": "OWNER_ACCEPTED_GITHUB_WRITE_ADMIN_ONLY",
+      "task_run_origin": "NOT_INDEPENDENTLY_ATTESTED"
+    },
+    {
+      "task_id": "6abd6241c3e48191a8856ed7b0f42c5c",
+      "slot": "SUPERVISOR_29",
+      "github_author": "morales35alex",
+      "github_commit_sha": "963171871e5eebbbd48d522d2ef847bfdffb044b",
+      "fingerprint": "VAEP_TASK_GH_WRITE:6abd6241c3e48191a8856ed7b0f42c5c",
+      "diagnostic_path": "docs/diagnostics/vaep-task-github-write-6abd6241c3e48191a8856ed7b0f42c5c.md",
+      "diagnostic_ref": "test/chatgpt-write-verification-20261020",
+      "purpose": "ADMIN_DIAGNOSTIC_NO_LEASE",
+      "evidence_scope": "OWNER_ACCEPTED_GITHUB_WRITE_ADMIN_ONLY",
+      "task_run_origin": "OWNER_SUBMITTED_TASK_REPORT_NOT_DIRECT_PREVIOUS_RUN_READBACK"
+    }
+  ],
+  "writer_evidence_acceptance": {
+    "authority": "OWNER_EXPLICIT_ACCEPTANCE_20261021",
+    "source_spreadsheet_id": "1gcVyCoyhLU0jFMwRtf0s5_x8FSnfBs38ojml1QF7Xwk",
+    "source_sheet": "_EVENTS_SOURCE",
+    "event_row": 94,
+    "event": "OWNER_ACCEPTS_2_EXISTING_GITHUB_DIAGNOSTICS_GATE_CLOSED",
+    "result": "CLOSED_OWNER_ACCEPTED_NO_REPEAT_PROBES",
+    "repeat_write_probes_required": false,
+    "limits": "This is accepted diagnostic GitHub write evidence, not a commercial CAS/lease, direct ChatGPT Previous runs attestation or proof of terminal execution."
+  },
+  "readback_snapshot": {
+    "base_dev_sha": "e3decb9f7d54b5ee977500f35b55d9c5928c7f7b",
+    "ci_status": "30_SUCCESS_0_FAILURE",
+    "scope_lock": "SUCCESS",
+    "automation_count": 10,
+    "automation_enabled_registered": 10,
+    "commercial_task_count": 1123,
+    "owners": 0,
+    "in_progress": 0,
+    "validating": 0,
+    "sheet_runtime_mode": "PAUSADO",
+    "pre_cutover_write_policy": "AUTOMATION_ONLY|RUNTIME_ACTIVO_OWNER_EXCEPTION|PER_SCOPE_EFFECTIVE_WRITE|DUAL_CAS_WIP1_REVIEW_FIRST"
+  },
+  "protocol_contract": {
+    "lease_model": "LOGICAL_SINGLE_OWNER_WITH_ATOMIC_NAMED_RANGE_FENCE",
+    "legacy_dual_cas_reintroduced": false,
+    "guard": "ADD_NAMED_RANGE_WITH_SAME_ATOMIC_SPREADSHEETS_BATCHUPDATE",
+    "max_wip_per_writer": 1,
+    "route": "((ORDEN-1)//2) % 2",
+    "epoch_writer_order_immutable": true,
+    "review_first_distinct_author": true,
+    "github_write_authority": "EFFECTIVE_PER_TASK_PER_OPERATION",
+    "tool_safety_bypass": false,
+    "prior_run_terminality": "REQUIRE_AUTHENTIC_READBACK_AT_MATERIAL_CLAIM_AND_EPOCH_CHANGE",
+    "ten_tasks_preserved": true,
+    "rollback": "FAIL_CLOSED_NEVER_MIX_CAS_AND_LOGICAL_PROTOCOLS"
+  },
+  "independent_security_review": {
+    "pull_request": 3709,
+    "reviewer": "jmejia31",
+    "state": "APPROVED",
+    "submitted_at": "2026-10-21T21:58:12Z",
+    "merged_into_dev_commit": "e3decb9f7d54b5ee977500f35b55d9c5928c7f7b",
+    "provider_concurrency_diagnostic": "docs/diagnostics/vaep-logical-fence-provider-20261021.md"
+  },
+  "cutover_conditions": {
+    "require_all_ten_write_policies": "LOGICAL_SINGLE_OWNER_TASK_WRITE_VERIFIED",
+    "require_ten_prompts_readback": true,
+    "require_prior_runs_terminal_proof_at_execution": true,
+    "require_live_dev_sha_and_exact_head_ci": true,
+    "require_final_owner_go": true,
+    "runtime_target": "ACTIVO",
+    "runtime_current": "PAUSADO",
+    "no_mixed_protocol": true,
+    "may_run_commercial_claims_during_pre_go": false
+  }
 }
