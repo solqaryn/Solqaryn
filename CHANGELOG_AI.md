@@ -1,3 +1,9 @@
+## 2026-10-20 — npm audit transitivas Angular 22
+
+- Corregidas dependencias transitivas vulnerables de Angular CLI/Build 22.2.1 mediante overrides exactos: `@modelcontextprotocol/server` 2.3.1 (antes 2.0.0) y `vite` 8.3.4 (antes 8.3.0). Angular permanece en 22.2.1.
+- Regenerado `frontend/package-lock.json` con `npm install --package-lock-only --ignore-scripts`; instalación reproducible y `npm audit --audit-level=high` comprobados mediante CI aislada de rama. La herramienta temporal de generación fue retirada del PR; no se usó `npm audit fix --force`.
+- Alcance estrictamente DEV/frontend, sin modificar código de aplicación, bases de datos, leases, automatizaciones, QA/main/PROD ni secretos. Integración condicionada a la CI de PR y controles protegidos.
+
 ## 2026-10-20 — Corrección de autoridad activa VAEP 10/10
 
 - Se corrige el contrato de admisión de las diez Tasks existentes según autorización explícita del propietario en CONFIG.F18: RUNTIME_MODE=ACTIVO, AUTOMATION_ACTIVATION=HABILITADA_CON_AUDITORIA y readback 10/10 real. El marcador TASK_WRITE_VERIFIED=10/10 no bloquea globalmente el trabajo seguro; cada escritura sigue requiriendo permiso real, CAS dual task+executor, fencing, WIP=1, CI exact-head y revisión ajena.
