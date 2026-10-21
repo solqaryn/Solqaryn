@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "platform": "SOLQARYN",
+  "plan_drive_file_id": "1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j",
+  "plan_task_count": 1123,
+  "branch": "dev",
+  "base_dev_sha": "0e4b025733c063eb062f9ec50ace7cd971f18e2d",
+  "runtime_model": "TASKS_ONLY",
+  "mode": "PROPOSAL_ONLY",
+  "routing_epoch": "VAEP_LOGICAL_20261021_PILOT",
+  "verified_writer_task_ids": [],
+  "write_policy_required": "LOGICAL_SINGLE_OWNER_TASK_WRITE_VERIFIED",
+  "verified_task_terminated_count": 0,
+  "independent_reviewer_required": true,
+  "safety_check_bypass_allowed": false,
+  "activation_permission": "NOT_GRANTED",
+  "notes": "Read-only candidate. Do not activate or change current CAS, Sheets ownership, Task prompts/schedules or main/PROD."
+}
