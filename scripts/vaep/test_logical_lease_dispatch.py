@@ -423,22 +423,73 @@ class LogicalRecoveryTests(unittest.TestCase):
 
 
 class LogicalCutoverGateTests(unittest.TestCase):
-    def test_repository_manifest_is_inactive(self):
+    def test_repository_manifest_is_certified_pre_go_but_not_active(self):
         import json
         from pathlib import Path
-        from logical_lease_dispatch import evaluate_live_cutover_manifest
+        from logical_lease_dispatch import evaluate_live_cutover_manifest, freeze_pool
         path = Path(__file__).resolve().parents[2] / "vaep/control/logical-lease-candidate.json"
         with path.open(encoding="utf-8") as source:
             manifest = json.load(source)
-        self.assertEqual(manifest["mode"], "PROPOSAL_ONLY")
-        self.assertEqual(manifest["verified_writer_task_ids"], [])
-        self.assertFalse(manifest["safety_check_bypass_allowed"])
+        ids = [CANONICAL_EXECUTORS[0], CANONICAL_EXECUTORS[5]]
+        self.assertEqual(manifest["mode"], "PRE_GO_CONTRACT_CERTIFIED")
+        self.assertEqual(manifest["verified_writer_task_ids"], ids)
+        self.assertEqual(manifest["routing_epoch"], "VAEP_LOGICAL_20261021_PILOT")
+        self.assertIs(manifest["routing_epoch_frozen"], True)
+        self.assertEqual(freeze_pool(ids, manifest["routing_epoch"]), tuple(ids))
+        self.assertEqual(manifest["owner_acceptance"]["sheet_row"], 94)
+        self.assertEqual(
+            manifest["owner_acceptance"]["event"],
+            "OWNER_ACCEPTS_2_EXISTING_GITHUB_DIAGNOSTICS_GATE_CLOSED")
+        self.assertEqual(
+            manifest["owner_acceptance"]["status"],
+            "CLOSED_OWNER_ACCEPTED_NO_REPEAT_PROBES")
+        proofs = manifest["accepted_writer_evidence"]
+        self.assertEqual([p["task_id"] for p in proofs], ids)
+        self.assertEqual(len({p["commit_author"] for p in proofs}), 2)
+        self.assertTrue(all(isinstance(p["commit_author"], str)
+                            and p["commit_author"] for p in proofs))
+        self.assertEqual([p["commit"] for p in proofs], [
+            "bdee818f0da1eb4261b7f848673d3e3acac48779",
+            "963171871e5eebbbd48d522d2ef847bfdffb044b"])
+        for evidence in proofs:
+            self.assertEqual(evidence["fingerprint"],
+                             f"VAEP_TASK_GH_WRITE:{evidence['task_id']}")
+            self.assertEqual(evidence["owner_acceptance"], "ACCEPTED")
+            self.assertEqual(evidence["evidence_type"],
+                             "ADMIN_GITHUB_WRITE_NO_COMMERCIAL_LEASE")
+        self.assertEqual(manifest["task_registry"]["enabled_count_sheet_readback"], 10)
+        self.assertEqual(len(manifest["task_registry"]["expected_task_ids_in_fixed_order"]), 10)
+        self.assertEqual(manifest["task_registry"]["owners_at_certification"], 0)
+        self.assertEqual(manifest["approved_security_engine"]["pr_number"], 3709)
+        self.assertEqual(manifest["approved_security_engine"]["approved_by"],
+                         proofs[0]["commit_author"])
+        self.assertEqual(manifest["verified_task_terminated_count"], 0)
+        self.assertIs(manifest["previous_runs_terminal_readback_at_certification"], False)
+        self.assertIs(manifest["all_ten_sheet_policies_migrated"], False)
+        self.assertIs(manifest["commercial_writes_allowed"], False)
+        self.assertIs(manifest["safety_check_bypass_allowed"], False)
+        self.assertEqual(manifest["runtime_mode_at_certification"], "PAUSADO")
+        self.assertEqual(manifest["activation_permission"],
+                         "OWNER_APPROVED_PRE_GO_CONTRACT_ONLY")
+        args = {
+            "dev_sha": manifest["base_dev_sha"],
+            "sheet_writer_policies": ["LOGICAL_SINGLE_OWNER_TASK_WRITE_VERIFIED"] * 10,
+            "proven_task_writers": ids,
+            "prior_runs_terminal": True}
         with self.assertRaisesRegex(UnsafeSnapshot, "LOGICAL_CUTOVER_NOT_ACTIVATED"):
+            evaluate_live_cutover_manifest(manifest, **args)
+        # Flipping mode alone MUST NOT bypass the owner's staged authorization.
+        with self.assertRaisesRegex(
+                UnsafeSnapshot, "LOGICAL_CUTOVER_AUTHORIZATION_OR_TERMINAL_PROOF_MISSING"):
             evaluate_live_cutover_manifest(
-                manifest, dev_sha=HEAD,
-                sheet_writer_policies=["LOGICAL_SINGLE_OWNER_TASK_WRITE_VERIFIED"] * 10,
-                proven_task_writers=CANONICAL_EXECUTORS[:2],
-                prior_runs_terminal=True)
+                {**manifest, "mode": "ACTIVE_CERTIFIED"}, **args)
+        # Even full approval fields do not authorize a mixed CAS/logical registry.
+        with self.assertRaisesRegex(UnsafeSnapshot, "LOGICAL_MIXED_PROTOCOL_FORBIDDEN"):
+            evaluate_live_cutover_manifest({
+                **manifest, "mode": "ACTIVE_CERTIFIED",
+                "activation_permission": "OWNER_APPROVED_REVIEWED",
+            }, **{**args, "sheet_writer_policies": [
+                manifest["sheet_policy_at_certification"]] * 10})
 
     def test_hypothetical_cutover_cannot_mix_protocols_or_skip_task_proofs(self):
         from logical_lease_dispatch import evaluate_live_cutover_manifest

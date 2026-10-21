@@ -690,7 +690,9 @@ def evaluate_live_cutover_manifest(manifest, *, dev_sha, sheet_writer_policies,
 
     All inputs must originate from live readbacks in their own systems.
     Runtime callers must not synthesize proof from the manifest or this result.
-    The bundled manifest is PROPOSAL_ONLY and must always return NO_GO.
+    The bundled manifest is PRE_GO_CONTRACT_CERTIFIED; it must always
+    return NO_GO until final live GO checks pass. Owner-accepted administrative
+    GitHub proofs alone never authorize commercial writes.
     """
     if not isinstance(manifest, dict) or manifest.get("mode") != "ACTIVE_CERTIFIED":
         raise UnsafeSnapshot("LOGICAL_CUTOVER_NOT_ACTIVATED")

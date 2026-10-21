@@ -4,15 +4,114 @@
   "plan_drive_file_id": "1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j",
   "plan_task_count": 1123,
   "branch": "dev",
-  "base_dev_sha": "0e4b025733c063eb062f9ec50ace7cd971f18e2d",
+  "base_dev_sha": "e3decb9f7d54b5ee977500f35b55d9c5928c7f7b",
   "runtime_model": "TASKS_ONLY",
-  "mode": "PROPOSAL_ONLY",
+  "mode": "PRE_GO_CONTRACT_CERTIFIED",
   "routing_epoch": "VAEP_LOGICAL_20261021_PILOT",
-  "verified_writer_task_ids": [],
+  "routing_epoch_frozen": true,
+  "verified_writer_task_ids": [
+    "6ad7bbf79c488191bf893e6c08ea9b5f",
+    "6abd6241c3e48191a8856ed7b0f42c5c"
+  ],
+  "accepted_writer_proof_scope": "OWNER_ACCEPTED_GITHUB_ADMIN_DIAGNOSTICS_ONLY",
+  "accepted_writer_evidence": [
+    {
+      "task_id": "6ad7bbf79c488191bf893e6c08ea9b5f",
+      "slot": ":00",
+      "account": "Javier",
+      "commit": "bdee818f0da1eb4261b7f848673d3e3acac48779",
+      "commit_author": "jmejia31",
+      "fingerprint": "VAEP_TASK_GH_WRITE:6ad7bbf79c488191bf893e6c08ea9b5f",
+      "diagnostic_path": "docs/diagnostics/vaep-task-github-write-6ad7bbf79c488191bf893e6c08ea9b5f.md",
+      "diagnostic_branch": "test/chatgpt-write-verification-20261020",
+      "evidence_type": "ADMIN_GITHUB_WRITE_NO_COMMERCIAL_LEASE",
+      "owner_acceptance": "ACCEPTED"
+    },
+    {
+      "task_id": "6abd6241c3e48191a8856ed7b0f42c5c",
+      "slot": ":29",
+      "account": "Alex",
+      "commit": "963171871e5eebbbd48d522d2ef847bfdffb044b",
+      "commit_author": "morales35alex",
+      "fingerprint": "VAEP_TASK_GH_WRITE:6abd6241c3e48191a8856ed7b0f42c5c",
+      "diagnostic_path": "docs/diagnostics/vaep-task-github-write-6abd6241c3e48191a8856ed7b0f42c5c.md",
+      "diagnostic_branch": "test/chatgpt-write-verification-20261020",
+      "evidence_type": "ADMIN_GITHUB_WRITE_NO_COMMERCIAL_LEASE",
+      "owner_acceptance": "ACCEPTED"
+    }
+  ],
+  "owner_acceptance": {
+    "status": "CLOSED_OWNER_ACCEPTED_NO_REPEAT_PROBES",
+    "sheet_id": "1gcVyCoyhLU0jFMwRtf0s5_x8FSnfBs38ojml1QF7Xwk",
+    "sheet_tab": "_EVENTS_SOURCE",
+    "sheet_row": 94,
+    "event": "OWNER_ACCEPTS_2_EXISTING_GITHUB_DIAGNOSTICS_GATE_CLOSED",
+    "fingerprint": "OWNER_ACCEPT_TWO_WRITER_DIAGNOSTICS_20261021",
+    "authorization": "OWNER_CONDITIONAL_GO_ONLY_AFTER_CUTOVER"
+  },
+  "approved_security_engine": {
+    "pr_number": 3709,
+    "integrated_commit": "e3decb9f7d54b5ee977500f35b55d9c5928c7f7b",
+    "logical_lease_dispatch_blob_sha": "bae58a68dc68823cfb8078b685d92dca6f46f0b2",
+    "approved_by": "jmejia31",
+    "approval_utc": "2026-10-21T21:58:12Z",
+    "checks": "VAEP_ENGINE_AND_PROJECT_SCOPE_LOCK_SUCCESS",
+    "provider_fencing_evidence": "docs/diagnostics/vaep-logical-fence-provider-20261021.md"
+  },
+  "task_registry": {
+    "enabled_count_sheet_readback": 10,
+    "expected_task_ids_in_fixed_order": [
+      "6ad7bbf79c488191bf893e6c08ea9b5f",
+      "6abd62255ae88191a2dba6e1b00d3b4d",
+      "6ad7bc0d48748191aa1dd0ce2f18d22a",
+      "6abd6235e100819195785fc76a44a8e0",
+      "6ad7bc1cc7b8819190665e5ed78610d4",
+      "6abd6241c3e48191a8856ed7b0f42c5c",
+      "6ad7bc3001b88191add05d9b4d5a4130",
+      "6abd624e5e108191bef6bb879559328c",
+      "6ad7bc3ebea08191a16dc7c9f1f3303b",
+      "6abd625b397c8191a49904227946a20f"
+    ],
+    "prompt_preparation_status": "OWNER_REPORTED_PRE_GO_READ_ONLY_10_OF_10",
+    "runtime_source_row_count": 1123,
+    "in_progress_at_certification": 0,
+    "validating_at_certification": 0,
+    "owners_at_certification": 0
+  },
+  "logical_protocol": {
+    "write_guarantee": "SHEETS_BATCH_ATOMIC_ADD_NAMED_RANGE_PREDECESSOR_FENCE",
+    "dual_developer_metadata_cas": false,
+    "one_owner_per_scope": true,
+    "wip_per_writer": 1,
+    "readback_required": [
+      "OWNER",
+      "RUN_ID",
+      "FENCING_TOKEN",
+      "HEAD",
+      "TTL"
+    ],
+    "review_first_independent_author": true,
+    "allow_unfenced_updates": false,
+    "allow_external_writer_takeover": false,
+    "respect_tool_safety_block": true
+  },
   "write_policy_required": "LOGICAL_SINGLE_OWNER_TASK_WRITE_VERIFIED",
+  "sheet_policy_at_certification": "AUTOMATION_ONLY|RUNTIME_ACTIVO_OWNER_EXCEPTION|PER_SCOPE_EFFECTIVE_WRITE|DUAL_CAS_WIP1_REVIEW_FIRST",
+  "all_ten_sheet_policies_migrated": false,
   "verified_task_terminated_count": 0,
+  "previous_runs_terminal_readback_at_certification": false,
   "independent_reviewer_required": true,
   "safety_check_bypass_allowed": false,
-  "activation_permission": "NOT_GRANTED",
-  "notes": "Read-only candidate. Do not activate or change current CAS, Sheets ownership, Task prompts/schedules or main/PROD."
+  "activation_permission": "OWNER_APPROVED_PRE_GO_CONTRACT_ONLY",
+  "runtime_mode_at_certification": "PAUSADO",
+  "commercial_writes_allowed": false,
+  "cutover_remaining": [
+    "Confirm all 10 exact Task prompts under two owner accounts without creating new tasks",
+    "Complete one coordinated uniform 10/10 WRITE_POLICY change and LAST_HEAD readback",
+    "Check previous invocations terminal before dispatch and enforce per-run reentry and per-operation permissions",
+    "Confirm zero open leases and no parallel CAS/logical protocol writers",
+    "Approve new exact live-dev SHA and required CI/Project Scope Lock; rebind base_dev_sha for final GO",
+    "Only after all gates jointly succeed set ACTIVE_CERTIFIED and RUNTIME_MODE=ACTIVO"
+  ],
+  "notes": "Certified pre-GO contract; two owner-accepted GitHub diagnostic proofs, not direct scheduled-run readbacks or an authorization to write commercial data. Routing epoch frozen with this cohort. This file is NOT an active permission or an implementation of a Task scheduler. Do not repeat the two diagnostic writes."
 }
