@@ -29,7 +29,20 @@ class LogicalLeaseTests(unittest.TestCase):
                           epoch=EPOCH, expected_count=30) for actor in CANONICAL_EXECUTORS]
         self.assertEqual({x["action"] for x in winners}, {"BUILD"})
         self.assertEqual(len({x["selected"] for x in winners}), 10)
-        self.assertEqual({x["order"] for x in winners}, set(range(1, 11)))
+        self.assertEqual({x["order"] for x in winners}, set(range(1, 20, 2)))
+
+    def test_real_plan_odd_order_regression_does_not_starve_supervisors(self):
+        # Before this regression, ORDER modulo ten selected only 6/10 lanes
+        # for 31 pending scopes, because most eligible ORDERs were odd.
+        representative_orders = [4, 5, 7, 9, 11, 13, 17, 19, 21] + list(range(25, 69, 2))
+        self.assertEqual(len(representative_orders), 31)
+        routes = [writer_for_order(n, CANONICAL_EXECUTORS, EPOCH)
+                  for n in representative_orders]
+        self.assertEqual(set(routes), set(CANONICAL_EXECUTORS))
+        # Static pairing prevents shifting ownership as tasks complete.
+        for n in range(1, 1123, 2):
+            self.assertEqual(writer_for_order(n, CANONICAL_EXECUTORS, EPOCH),
+                             writer_for_order(n + 1, CANONICAL_EXECUTORS, EPOCH))
 
     def test_one_verified_writer_can_work_without_claim_from_other_nine(self):
         c, r = rows()
@@ -46,7 +59,7 @@ class LogicalLeaseTests(unittest.TestCase):
             x = writer_for_order(n, CANONICAL_EXECUTORS, EPOCH)
             y = reviewer_for_order(n, CANONICAL_EXECUTORS, EPOCH)
             self.assertNotEqual(x, y)
-            self.assertEqual(x, CANONICAL_EXECUTORS[(n - 1) % 10])
+            self.assertEqual(x, CANONICAL_EXECUTORS[((n - 1) // 2) % 10])
 
     def test_fail_closed_missing_reviewer(self):
         with self.assertRaisesRegex(UnsafeSnapshot, "INDEPENDENT_REVIEWER_NOT_AVAILABLE"):
@@ -210,7 +223,7 @@ class LogicalSafetyRegressionTests(unittest.TestCase):
             c, r, actor_id=reviewer, writer_ids=pool, epoch=EPOCH,
             expected_count=20)["action"], "REVIEW")
         with self.assertRaisesRegex(UnsafeSnapshot, "LOGICAL_CLAIM_NOT_ADMISSIBLE"):
-            build_logical_claim(c, r, task_id="T-0002", actor_id=reviewer,
+            build_logical_claim(c, r, task_id="T-0003", actor_id=reviewer,
                                 writer_ids=pool, epoch=EPOCH,
                                 run_id="SUP05-20261021T080500Z", head=HEAD,
                                 now=datetime.now(timezone.utc), runtime_sheet_id=3,
