@@ -299,3 +299,102 @@ class LogicalSafetyRegressionTests(unittest.TestCase):
         r[1][3] = "RELEASED|WRONG_TOKEN"
         with self.assertRaisesRegex(UnsafeSnapshot, "LOGICAL_LISTO_READBACK_MISMATCH"):
             verify_review_completion_response(rev, new_lease, {"replies": [{}, {}, {}]}, r[1])
+
+
+
+class LogicalRecoveryTests(unittest.TestCase):
+    def test_review_rejection_only_original_author_can_rework(self):
+        from logical_lease_dispatch import (
+            build_review_claim, build_review_rejection,
+            verify_review_rejection_response, select_review, select_action,
+            build_rework_claim,
+        )
+        c, r = rows()
+        a, b = CANONICAL_EXECUTORS[:2]
+        now = datetime(2026, 10, 21, 10, tzinfo=timezone.utc)
+        r[1][1], r[1][3] = ("VALIDANDO", f"RELEASED|ORIGINAL_AUTHOR={a}|TOKEN=handoff")
+        r[1][5] = "https://github.com/solqaryn/Solqaryn/pull/3701"
+        review = build_review_claim(
+            c, r, task_id="T-0001", actor_id=b, writer_ids=[a, b],
+            epoch=EPOCH, run_id="SUP05-20261021T100000Z",
+            head=HEAD, now=now, runtime_sheet_id=3, events_sheet_id=4,
+            previous_run_terminal_proven=True, expected_count=20)
+        r[1][2], r[1][3], r[1][4] = b, review.lease, HEAD
+        rejected, reqs = build_review_rejection(
+            review, r, now=now, review_evidence_url=r[1][5],
+            reason="Tests de seguridad pendientes", runtime_sheet_id=3,
+            events_sheet_id=4)
+        self.assertEqual(len(reqs), 4)
+        self.assertIn("REVIEW_REJECTED=1", rejected)
+        r[1][2], r[1][3] = "", rejected
+        self.assertTrue(verify_review_rejection_response(
+            review, rejected, {"replies": [{}, {}, {}, {}]}, r[1]))
+        self.assertNotEqual(select_review(
+            c, r, actor_id=b, writer_ids=[a, b],
+            epoch=EPOCH, expected_count=20)["action"], "REVIEW")
+        action = select_action(c, r, actor_id=a, writer_ids=[a, b],
+                               epoch=EPOCH, expected_count=20)
+        self.assertEqual((action["action"], action["selected"]), ("REWORK", "T-0001"))
+        with self.assertRaisesRegex(UnsafeSnapshot, "REWORK_NOT_ADMISSIBLE"):
+            build_rework_claim(c, r, task_id="T-0001", actor_id=b,
+                               writer_ids=[a, b], epoch=EPOCH,
+                               run_id="SUP05-20261021T110000Z", head=HEAD,
+                               now=now, runtime_sheet_id=3, events_sheet_id=4,
+                               previous_run_terminal_proven=True, expected_count=20)
+        rework = build_rework_claim(
+            c, r, task_id="T-0001", actor_id=a,
+            writer_ids=[a, b], epoch=EPOCH, run_id="TASK00-20261021T110000Z",
+            head=HEAD, now=now, runtime_sheet_id=3, events_sheet_id=4,
+            previous_run_terminal_proven=True, expected_count=20)
+        self.assertEqual(rework.task_id, "T-0001")
+        self.assertEqual(len(rework.requests), 3)
+
+    def test_heartbeat_and_fenced_own_stale_recovery(self):
+        from datetime import timedelta
+        from logical_lease_dispatch import (
+            build_heartbeat, verify_heartbeat_response,
+            build_own_stale_recovery, verify_own_stale_recovery_response,
+            build_handoff,
+        )
+        c, r = rows()
+        actor = CANONICAL_EXECUTORS[0]
+        now = datetime(2026, 10, 21, 10, tzinfo=timezone.utc)
+        claim = build_logical_claim(
+            c, r, task_id="T-0001", actor_id=actor, writer_ids=[actor],
+            epoch=EPOCH, run_id="TASK00-20261021T100000Z", head=HEAD, now=now,
+            runtime_sheet_id=3, events_sheet_id=4,
+            previous_run_terminal_proven=True, expected_count=20)
+        r[1][1], r[1][2], r[1][3], r[1][4] = "EN_PROGRESO", actor, claim.lease, HEAD
+        with self.assertRaisesRegex(UnsafeSnapshot, "LIVE_RUN_PROOF_REQUIRED"):
+            build_heartbeat(claim, r, now=now + timedelta(minutes=2),
+                            runtime_sheet_id=3, events_sheet_id=4)
+        updated = build_heartbeat(
+            claim, r, now=now + timedelta(minutes=2),
+            run_still_active_proven=True, runtime_sheet_id=3, events_sheet_id=4)
+        self.assertEqual(updated.token, claim.token)
+        self.assertNotEqual(updated.lease, claim.lease)
+        r[1][3] = updated.lease
+        self.assertTrue(verify_heartbeat_response(
+            updated, {"replies": [{}, {}, {}]}, r[1]))
+        with self.assertRaisesRegex(UnsafeSnapshot, "TERMINAL_RUN_PROOF_REQUIRED"):
+            build_own_stale_recovery(
+                updated, r, now=now + timedelta(minutes=14),
+                runtime_sheet_id=3, events_sheet_id=4)
+        with self.assertRaisesRegex(UnsafeSnapshot, "LEASE_STILL_FRESH"):
+            build_own_stale_recovery(
+                updated, r, now=now + timedelta(minutes=9),
+                previous_run_terminal_proven=True,
+                runtime_sheet_id=3, events_sheet_id=4)
+        recovered, reqs = build_own_stale_recovery(
+            updated, r, now=now + timedelta(minutes=14),
+            previous_run_terminal_proven=True,
+            runtime_sheet_id=3, events_sheet_id=4)
+        self.assertEqual(len(reqs), 3)
+        self.assertIn("FENCING_TOKEN=", recovered)
+        r[1][1], r[1][2], r[1][3] = "PENDIENTE", "", recovered
+        self.assertTrue(verify_own_stale_recovery_response(
+            updated, recovered, {"replies": [{}, {}, {}]}, r[1]))
+        with self.assertRaisesRegex(UnsafeSnapshot, "LOGICAL_HANDOFF_OWNERSHIP_MISMATCH"):
+            build_handoff(updated, r, evidence_url="https://github.com/solqaryn/Solqaryn/pull/3701",
+                          now=now + timedelta(minutes=14),
+                          runtime_sheet_id=3, events_sheet_id=4)
