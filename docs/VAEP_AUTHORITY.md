@@ -178,6 +178,23 @@ Para cada microtarea elegible:
 
 Los ejemplos de la tarea programada no son una autoridad nueva ni conceden permiso para crear nuevos cron/jobs, usar servicios pagos o modificar QA/main/PROD. Los resultados deben registrarse en las pestañas fuente autorizadas y pasar por `REVIEW_FIRST`; nunca actualizar manualmente `LISTO` sin evidencia.
 
+### Alternativa evaluable: lease logico con propietario determinista (NO ACTIVADA)
+
+El respaldo historico auditado de SOLQARYN describe un lease logico con `LEASE_SCOPE`, `LEASE_OWNER_AUTOMATION_ID`, `LEASE_HEARTBEAT_AT`, `LEASE_TOKEN`, TTL de 10 minutos, read-before-write y readback; no dependia del candado dual `DeveloperMetadata` agregado el 20 de octubre. Este dato es evidencia de coordinacion anterior, **nunca** una autorizacion para revivir el plan historico.
+
+La solicitud del propietario de recuperar ese comportamiento se estudia en `scripts/vaep/logical_lease_dispatch.py`, que implementa solo un **candidato no activo**. Mantiene 1.123 microtareas del Plan Comercial Inicial vigente, asigna cada `ORDEN` a exactamente un escritor GitHub acreditado **desde su propia ChatGPT Task**, mediante una lista ordenada y un `ROUTING_EPOCH` inmovilizados; no crea una Task adicional ni cambia horarios. El candidato construye tres operaciones de Sheets sin `DeveloperMetadata`, pero el constructor **no las envia**, no tiene credenciales ni certifica un lease vivo.
+
+**Limites de seguridad y condiciones de admision:**
+- Mientras `WRITE_POLICY` y los diez prompts actuales exijan CAS dual, **el protocolo CAS sigue siendo la unica autoridad para escrituras comerciales**. Esta alternativa no modifica esas flags, no permite escribir producto/dev y no se debe activar desde un chat por cambiar la forma de una llamada previamente bloqueada por la plataforma.
+- No actualizar la lista de escritores acreditados ni el epoch durante un trabajo en curso. Cualquier ampliacion exige cero leases sin liberar, prueba de invocaciones terminales, readback de los diez prompts y un nuevo epoch sincronizado en ambas cuentas. El reparto es exclusivo por `ORDEN`, no por lane comercial; no se permite que dos actores elijan la misma fila.
+- El constructor alternativo exige prueba real de terminacion del run anterior del **mismo** ejecutor para evitar reentrada. El argumento `previous_run_terminal_proven` es solo una condicion declarativa: su autenticidad se comprueba fuera del modulo en ChatGPT Tasks; un booleano o un timestamp de hoja nunca constituyen esa prueba.
+- No reservar ninguna tarea sin permiso GitHub **desde esa Task**, confirmacion del proveedor Sheets, readback de `OWNER/RUN_ID/TOKEN/HEAD`, WIP=1 y dependencias `LISTO`. Si una operacion cae en `TOOL_SAFETY_BLOCK`, respetar la negativa y no recurrir a otra cuenta, ruta o llamada para eludirla.
+- `REVIEW_FIRST` continua siendo ajeno al autor. Si solo existe un escritor acreditado, no se permite simular una revision independiente o declarar `LISTO`. No habilitar el piloto hasta tener implementado y probado tambien el handoff, rechazo, recuperacion cercada, release y cierre con readback.
+- La restauracion de continuidad requiere CI de la rama, revision de seguridad y de Alex, una prueba real de transicion en DEV aceptada por las herramientas, y una sincronizacion atomica/operativa de las diez instrucciones con el registro `_AUTOMATION_SOURCE`. Los horarios, `RUNTIME_MODE=ACTIVO`, los 1.123 IDs y los estados existentes se preservan.
+- **Rollback:** la alternativa no activada se descarta sin afectar los leases CAS; si se autoriza una migracion ulterior, su rollback debe separar cohortes y limpiar exclusivamente leases propios con fencing, no permitir doble protocolo simultaneo.
+
+Este ensayo no acredita por si solo recuperacion comercial ni certificacion 10/10. Su objetivo es probar una sustitucion segura del bloqueo CAS, sin presentar pruebas administrativas como trabajo material.
+
 ## 3. Regla CURRENT-STATE ONLY
 
 Todo agente o automatización debe decidir desde el estado vivo actual:
