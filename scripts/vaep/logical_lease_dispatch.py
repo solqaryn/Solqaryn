@@ -195,7 +195,7 @@ def select_review(commercial_rows, runtime_rows, *, actor_id, writer_ids, epoch,
     for t in sorted(tasks.values(), key=lambda x: x["order"]):
         if t["state"] != "VALIDANDO" or t["owner"]:
             continue
-        if not t["lease"].startswith("RELEASED|ORIGINAL_AUTHOR="):
+        if not t["lease"].startswith("RELEASED|ORIGINAL_AUTHOR=") or "|REVIEW_REJECTED=1|" in t["lease"]:
             continue
         author = t["lease"].split("|", 2)[1].split("=", 1)[-1]
         if not ID_RE.fullmatch(author) or author == actor_id:
@@ -220,7 +220,12 @@ def select_action(commercial_rows, runtime_rows, *, actor_id, writer_ids, epoch,
     review = select_review(commercial_rows, runtime_rows, actor_id=actor_id,
                            writer_ids=writer_ids, epoch=epoch,
                            expected_count=expected_count)
-    return review if review["action"] == "REVIEW" else base
+    if review["action"] == "REVIEW":
+        return review
+    rework = select_rework(commercial_rows, runtime_rows, actor_id=actor_id,
+                           writer_ids=writer_ids, epoch=epoch,
+                           expected_count=expected_count)
+    return rework if rework["action"] == "REWORK" else base
 
 
 def _confirm_source_claim(claim, runtime_rows):
@@ -403,4 +408,107 @@ def verify_review_completion_response(review, released_lease, api_response,
             or runtime_row[3] != released_lease or runtime_row[4] != review.head
             or review.reviewer == review.author):
         raise UnsafeSnapshot("LOGICAL_LISTO_READBACK_MISMATCH")
+    return True
+
+
+
+def select_rework(commercial_rows, runtime_rows, *, actor_id, writer_ids, epoch,
+                  expected_count=1123):
+    """A rejected delivery returns exclusively to its original author."""
+    pool = freeze_pool(writer_ids, epoch)
+    if actor_id not in pool:
+        return {"action": "NO_GITHUB_TASK_WRITE_PROOF", "selected": None}
+    tasks = snapshot(commercial_rows, runtime_rows, expected_count)
+    if any(t["owner"] == actor_id and t["state"] in ("EN_PROGRESO", "VALIDANDO")
+           and not t["lease"].startswith("RELEASED") for t in tasks.values()):
+        return {"action": "OWN_WIP_MUST_FINISH", "selected": None}
+    for task in sorted(tasks.values(), key=lambda t: t["order"]):
+        if task["state"] != "VALIDANDO" or task["owner"]:
+            continue
+        lease = task["lease"]
+        if (not lease.startswith("RELEASED|ORIGINAL_AUTHOR=")
+                or "|REVIEW_REJECTED=1|" not in lease):
+            continue
+        if lease.split("|", 2)[1] != f"ORIGINAL_AUTHOR={actor_id}":
+            continue
+        if not all(tasks[d]["state"] == "LISTO" for d in task["dependencies"]):
+            continue
+        if writer_for_order(task["order"], pool, epoch) == actor_id:
+            return {"action": "REWORK", "selected": task["id"],
+                    "order": task["order"]}
+    return {"action": "NO_AUTHORIZED_REWORK", "selected": None}
+
+
+def build_review_rejection(review, runtime_rows, *, now, review_evidence_url,
+                           reason, runtime_sheet_id, events_sheet_id):
+    """Release rejected review to original author, keeping original evidence."""
+    row = next((i for i, r in enumerate(runtime_rows) if i and r[0] == review.task_id), None)
+    if row is None:
+        raise UnsafeSnapshot("TASK_NOT_FOUND")
+    live = runtime_rows[row]
+    if (review.author == review.reviewer or len(live) < 6 or live[1] != "VALIDANDO"
+            or live[2] != review.reviewer or live[3] != review.lease
+            or not str(live[5]).startswith("https://")):
+        raise UnsafeSnapshot("REJECTION_OWNERSHIP_OR_EVIDENCE_MISMATCH")
+    if (not str(review_evidence_url).startswith("https://")
+            or not isinstance(reason, str) or len(reason) < 8
+            or len(reason) > 200 or "|" in reason or "\n" in reason):
+        raise UnsafeSnapshot("REVIEW_REJECTION_PROOF_REQUIRED")
+    stamp = _stamp(now)
+    _require_live_lease(review.lease, now)
+    released = (f"RELEASED|ORIGINAL_AUTHOR={review.author}|REVIEW_REJECTED=1|"
+                f"REVIEWER={review.reviewer}|TOKEN={review.token}|"
+                f"RUN_ID={review.run_id}|AT={stamp}|HEAD={review.head}")
+    event = [stamp, review.reviewer, review.task_id,
+             "LOGICAL_REVIEW_FIRST_REJECTED", "VALIDANDO", "VALIDANDO",
+             review.head, review_evidence_url, "REWORK_REQUIRED",
+             reason, review.run_id, review.token]
+    return released, (
+        _write_range(runtime_sheet_id, row, 2, ["", released, review.head]),
+        _write_range(runtime_sheet_id, row, 7, [f"REWORK_ORIGINAL_AUTHOR={review.author}"]),
+        _write_range(runtime_sheet_id, row, 8, [stamp]),
+        _event_request(events_sheet_id, event),
+    )
+
+
+def build_rework_claim(commercial_rows, runtime_rows, *, task_id, actor_id,
+                       writer_ids, epoch, run_id, head, now, runtime_sheet_id,
+                       events_sheet_id, previous_run_terminal_proven=False,
+                       expected_count=1123):
+    """Only original authorized author can re-enter a rejected VALIDANDO."""
+    if not previous_run_terminal_proven:
+        raise UnsafeSnapshot("PRIOR_SCHEDULED_RUN_TERMINAL_PROOF_REQUIRED")
+    if not SHA_RE.fullmatch(str(head)):
+        raise UnsafeSnapshot("INVALID_HEAD")
+    if not re.fullmatch(r"[A-Za-z0-9_.:-]{8,128}", str(run_id)):
+        raise UnsafeSnapshot("INVALID_RUN_ID")
+    decision = select_action(commercial_rows, runtime_rows, actor_id=actor_id,
+                             writer_ids=writer_ids, epoch=epoch,
+                             expected_count=expected_count)
+    if decision["action"] != "REWORK" or decision["selected"] != task_id:
+        raise UnsafeSnapshot("REWORK_NOT_ADMISSIBLE")
+    row = next((i for i, r in enumerate(runtime_rows) if i and r[0] == task_id), None)
+    stamp = _stamp(now)
+    expiry = _stamp(now + timedelta(minutes=10))
+    token = secrets.token_hex(16)
+    lease = (f"ACTIVE|OWNER={actor_id}|TOKEN={token}|RUN_ID={run_id}|"
+             f"START={stamp}|EXPIRES={expiry}|HEAD={head}|ROUTING_EPOCH={epoch}")
+    event = [stamp, actor_id, task_id, "LOGICAL_REWORK_ACQUIRED",
+             "VALIDANDO", "EN_PROGRESO", head, "",
+             "REWORK_MATERIAL_PENDING", "ORIGINAL_AUTHOR_RESUMED", run_id, token]
+    reqs = (
+        _write_range(runtime_sheet_id, row, 1, ["EN_PROGRESO", actor_id, lease, head]),
+        _write_range(runtime_sheet_id, row, 8, [stamp]),
+        _event_request(events_sheet_id, event),
+    )
+    return LogicalClaim(task_id, actor_id, run_id, head, token, lease, reqs)
+
+
+def verify_review_rejection_response(review, released_lease, api_response,
+                                     runtime_row):
+    _verify_batch(api_response, 4)
+    if (len(runtime_row) < 5 or runtime_row[0] != review.task_id
+            or runtime_row[1] != "VALIDANDO" or runtime_row[2] != ""
+            or runtime_row[3] != released_lease or runtime_row[4] != review.head):
+        raise UnsafeSnapshot("REJECTED_REVIEW_READBACK_MISMATCH")
     return True
