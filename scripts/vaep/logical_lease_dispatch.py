@@ -5,7 +5,7 @@ read-only policy/planning code, not an authenticated Task, a lock, or a proof
 of GitHub write access. The runtime must check real Task-origin write proof,
 prior-run termination, sheet readback, and authorized mode before writing.
 """
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timedelta, timezone
 import re
 import secrets
@@ -511,4 +511,92 @@ def verify_review_rejection_response(review, released_lease, api_response,
             or runtime_row[1] != "VALIDANDO" or runtime_row[2] != ""
             or runtime_row[3] != released_lease or runtime_row[4] != review.head):
         raise UnsafeSnapshot("REJECTED_REVIEW_READBACK_MISMATCH")
+    return True
+
+
+
+def _expired_at(lease, now):
+    stamp = _stamp(now)
+    parts = [p for p in str(lease).split("|") if p.startswith("EXPIRES=")]
+    if len(parts) != 1:
+        raise UnsafeSnapshot("LOGICAL_EXPIRY_REQUIRED")
+    try:
+        value = datetime.fromisoformat(parts[0].split("=", 1)[1].replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise UnsafeSnapshot("LOGICAL_EXPIRY_INVALID") from exc
+    return now.astimezone(timezone.utc) >= value
+
+
+def build_heartbeat(claim, runtime_rows, *, now, run_still_active_proven=False,
+                    runtime_sheet_id, events_sheet_id):
+    """Renew only same active Task run, matching exact owner+token+HEAD."""
+    if run_still_active_proven is not True:
+        raise UnsafeSnapshot("LIVE_RUN_PROOF_REQUIRED_FOR_RENEWAL")
+    row = _confirm_source_claim(claim, runtime_rows)
+    _require_live_lease(claim.lease, now)
+    old_expiry = [p for p in claim.lease.split("|") if p.startswith("EXPIRES=")]
+    if len(old_expiry) != 1:
+        raise UnsafeSnapshot("LEASE_EXPIRY_MISSING")
+    new_expiry = f"EXPIRES={_stamp(now + timedelta(minutes=10))}"
+    new_lease = claim.lease.replace(old_expiry[0], new_expiry)
+    stamp = _stamp(now)
+    event = [stamp, claim.actor_id, claim.task_id, "LOGICAL_LEASE_HEARTBEAT",
+             "EN_PROGRESO", "EN_PROGRESO", claim.head, "",
+             "RUN_MATERIAL_STILL_ACTIVE", "NO_OWNER_CHANGE", claim.run_id, claim.token]
+    reqs = (
+        _write_range(runtime_sheet_id, row, 3, [new_lease]),
+        _write_range(runtime_sheet_id, row, 8, [stamp]),
+        _event_request(events_sheet_id, event),
+    )
+    return replace(claim, lease=new_lease, requests=reqs)
+
+
+def verify_heartbeat_response(claim, api_response, runtime_row):
+    _verify_batch(api_response, 3)
+    if (len(runtime_row) < 5 or runtime_row[0] != claim.task_id
+            or runtime_row[1] != "EN_PROGRESO"
+            or runtime_row[2] != claim.actor_id
+            or runtime_row[3] != claim.lease
+            or runtime_row[4] != claim.head):
+        raise UnsafeSnapshot("HEARTBEAT_READBACK_MISMATCH")
+    return True
+
+
+def build_own_stale_recovery(claim, runtime_rows, *, now, 
+                             previous_run_terminal_proven=False,
+                             runtime_sheet_id, events_sheet_id):
+    """Recover only same actor's terminal expired run with token fencing.
+
+    Cross-actor recovery must never occur without a new globally approved
+    routing epoch, all previous runs terminal and documented readbacks.
+    """
+    if previous_run_terminal_proven is not True:
+        raise UnsafeSnapshot("TERMINAL_RUN_PROOF_REQUIRED_FOR_RECOVERY")
+    row = _confirm_source_claim(claim, runtime_rows)
+    if not _expired_at(claim.lease, now):
+        raise UnsafeSnapshot("LEASE_STILL_FRESH")
+    stamp = _stamp(now)
+    fence = secrets.token_hex(16)
+    recovered = (f"RECOVERED|STALE_OWNER={claim.actor_id}|STALE_TOKEN={claim.token}|"
+                 f"FENCING_TOKEN={fence}|RECOVERED_AT={stamp}|HEAD={claim.head}")
+    event = [stamp, claim.actor_id, claim.task_id,
+             "LOGICAL_SELF_STALE_RECOVERY", "EN_PROGRESO", "PENDIENTE",
+             claim.head, "", "STALE_TERMINAL_PROVEN_FENCED",
+             "SAME_DESIGNATED_OWNER_RECLAIMABLE", claim.run_id, fence]
+    reqs = (
+        _write_range(runtime_sheet_id, row, 1, ["PENDIENTE", "", recovered, claim.head]),
+        _write_range(runtime_sheet_id, row, 8, [stamp]),
+        _event_request(events_sheet_id, event),
+    )
+    return recovered, reqs
+
+
+def verify_own_stale_recovery_response(claim, recovered, api_response,
+                                       runtime_row):
+    _verify_batch(api_response, 3)
+    if (len(runtime_row) < 5 or runtime_row[0] != claim.task_id
+            or runtime_row[1] != "PENDIENTE" or runtime_row[2] != ""
+            or runtime_row[3] != recovered or runtime_row[4] != claim.head
+            or f"STALE_TOKEN={claim.token}" not in recovered):
+        raise UnsafeSnapshot("STALE_RECOVERY_READBACK_MISMATCH")
     return True
