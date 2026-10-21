@@ -430,8 +430,10 @@ class LogicalCutoverGateTests(unittest.TestCase):
         path = Path(__file__).resolve().parents[2] / "vaep/control/logical-lease-candidate.json"
         with path.open(encoding="utf-8") as source:
             manifest = json.load(source)
-        self.assertEqual(manifest["mode"], "PROPOSAL_ONLY")
-        self.assertEqual(manifest["verified_writer_task_ids"], [])
+        self.assertEqual(manifest["mode"], "PRE_GO_READ_ONLY_CERTIFIED")
+        self.assertEqual(manifest["verified_writer_task_ids"], [CANONICAL_EXECUTORS[0], CANONICAL_EXECUTORS[5]])
+        self.assertEqual(manifest["verified_task_terminated_count"], 0)
+        self.assertEqual(manifest["activation_permission"], "OWNER_APPROVED_PRE_GO_ONLY")
         self.assertFalse(manifest["safety_check_bypass_allowed"])
         with self.assertRaisesRegex(UnsafeSnapshot, "LOGICAL_CUTOVER_NOT_ACTIVATED"):
             evaluate_live_cutover_manifest(
@@ -472,6 +474,83 @@ class LogicalCutoverGateTests(unittest.TestCase):
             evaluate_live_cutover_manifest(
                 {**manifest, "safety_check_bypass_allowed": True}, **args)
 
+
+
+
+class LogicalPreGoEvidenceTests(unittest.TestCase):
+    def _manifest(self):
+        import json
+        from pathlib import Path
+        path = Path(__file__).resolve().parents[2] / "vaep/control/logical-lease-candidate.json"
+        with path.open(encoding="utf-8") as source:
+            return json.load(source)
+
+    def _args(self, manifest):
+        return {
+            "dev_base_sha": manifest["base_dev_sha"],
+            "sheet_writer_policies": [
+                manifest["readback_snapshot"]["pre_cutover_write_policy"]
+            ] * 10,
+            "sheet_runtime_mode": "PAUSADO",
+            "unowned_task_count": 1123,
+            "owner_acceptance_confirmed": True,
+            "security_review_approved": True,
+            "exact_head_checks_passed": True,
+        }
+
+    def test_manifest_evidence_epoch_and_contract_are_certified_pre_go(self):
+        from logical_lease_dispatch import evaluate_pre_go_manifest
+        manifest = self._manifest()
+        decision = evaluate_pre_go_manifest(manifest, **self._args(manifest))
+        self.assertEqual(decision["stage"], "PRE_GO_READ_ONLY_CERTIFIED")
+        self.assertEqual(decision["commercial_admission"], "NO_GO")
+        self.assertEqual(decision["writer_ids"], (CANONICAL_EXECUTORS[0], CANONICAL_EXECUTORS[5]))
+        self.assertEqual(decision["epoch"], "VAEP_LOGICAL_20261021_PILOT")
+        self.assertEqual(decision["owner_accepted_admin_evidence_count"], 2)
+
+    def test_manifest_prego_refuses_fake_owner_acceptance_or_security_review(self):
+        from logical_lease_dispatch import evaluate_pre_go_manifest
+        m = self._manifest()
+        args = self._args(m)
+        for k, expected in [("owner_acceptance_confirmed", "OWNER_ACCEPTANCE"),
+                            ("security_review_approved", "SECURITY_OR_CI"),
+                            ("exact_head_checks_passed", "SECURITY_OR_CI")]:
+            with self.subTest(k=k), self.assertRaisesRegex(UnsafeSnapshot, expected):
+                evaluate_pre_go_manifest(m, **{**args, k: False})
+
+    def test_manifest_prego_refuses_wrong_pool_proofs_epoch_or_terminal_fabrication(self):
+        from logical_lease_dispatch import evaluate_pre_go_manifest
+        m = self._manifest()
+        args = self._args(m)
+        variants = [
+            ({**m, "verified_writer_task_ids": [CANONICAL_EXECUTORS[0]]}, "WRITER_POOL"),
+            ({**m, "routing_epoch": "UNFROZEN"}, "ROUTING_EPOCH"),
+            ({**m, "writer_evidence": m["writer_evidence"][:1]}, "EVIDENCE_MISSING"),
+            ({**m, "verified_task_terminated_count": 2}, "TERMINALITY_MISMATCH"),
+            ({**m, "mode": "ACTIVE_CERTIFIED"}, "SCOPE_OR_MODE_MISMATCH"),
+            ({**m, "activation_permission": "OWNER_APPROVED_REVIEWED"}, "SCOPE_OR_MODE_MISMATCH"),
+        ]
+        for mutant, diagnostic in variants:
+            with self.subTest(diagnostic=diagnostic), self.assertRaisesRegex(
+                    UnsafeSnapshot, diagnostic):
+                evaluate_pre_go_manifest(mutant, **args)
+        bad = {**m, "writer_evidence": [dict(x) for x in m["writer_evidence"]]}
+        bad["writer_evidence"][1]["fingerprint"] = "VAEP_TASK_GH_WRITE:FAKE"
+        with self.assertRaisesRegex(UnsafeSnapshot, "PROOF_CONTENT_MISMATCH"):
+            evaluate_pre_go_manifest(bad, **args)
+
+    def test_manifest_prego_never_approves_mixed_or_active_sheet_policies(self):
+        from logical_lease_dispatch import evaluate_pre_go_manifest
+        m = self._manifest()
+        args = self._args(m)
+        for policies in [["LOGICAL_SINGLE_OWNER_TASK_WRITE_VERIFIED"] * 10,
+                         args["sheet_writer_policies"][:9]]:
+            with self.assertRaisesRegex(UnsafeSnapshot, "SHEET_HOLD_OR_TERMINALITY"):
+                evaluate_pre_go_manifest(m, **{**args, "sheet_writer_policies": policies})
+        with self.assertRaisesRegex(UnsafeSnapshot, "SHEET_HOLD_OR_TERMINALITY"):
+            evaluate_pre_go_manifest(m, **{**args, "sheet_runtime_mode": "ACTIVO"})
+        with self.assertRaisesRegex(UnsafeSnapshot, "SHEET_HOLD_OR_TERMINALITY"):
+            evaluate_pre_go_manifest(m, **{**args, "unowned_task_count": 1122})
 
 
 class LogicalHistoricProvenanceTests(unittest.TestCase):
