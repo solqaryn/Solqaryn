@@ -175,3 +175,166 @@ def verify_logical_claim(claim, api_response, runtime_row):
             or runtime_row[3] != claim.lease):
         raise UnsafeSnapshot("LOGICAL_OWNER_TOKEN_READBACK_MISMATCH")
     return True
+
+
+def select_review(commercial_rows, runtime_rows, *, actor_id, writer_ids, epoch,
+                  expected_count=1123):
+    """Review is assigned to exactly one other verified writer per scope."""
+    pool = freeze_pool(writer_ids, epoch)
+    if actor_id not in pool:
+        return {"action": "NO_GITHUB_TASK_WRITE_PROOF", "selected": None}
+    if len(pool) < 2:
+        return {"action": "INDEPENDENT_REVIEWER_NOT_AVAILABLE", "selected": None}
+    tasks = snapshot(commercial_rows, runtime_rows, expected_count)
+    if audit_wip_violations(runtime_rows):
+        raise UnsafeSnapshot("DUPLICATE_ACTIVE_WIP")
+    if any(t["owner"] == actor_id and t["state"] in ("EN_PROGRESO", "VALIDANDO")
+           and not t["lease"].startswith("RELEASED") for t in tasks.values()):
+        return {"action": "OWN_WIP_MUST_FINISH", "selected": None}
+    rt = {row[0]: row for row in runtime_rows[1:]}
+    for t in sorted(tasks.values(), key=lambda x: x["order"]):
+        if t["state"] != "VALIDANDO" or t["owner"]:
+            continue
+        if not t["lease"].startswith("RELEASED|ORIGINAL_AUTHOR="):
+            continue
+        author = t["lease"].split("|", 2)[1].split("=", 1)[-1]
+        if not ID_RE.fullmatch(author) or author == actor_id:
+            continue
+        if not all(tasks[d]["state"] == "LISTO" for d in t["dependencies"]):
+            continue
+        if len(rt[t["id"]]) < 6 or not str(rt[t["id"]][5]).startswith("https://"):
+            continue
+        if reviewer_for_order(t["order"], pool, epoch) == actor_id:
+            return {"action": "REVIEW", "selected": t["id"],
+                    "order": t["order"], "original_author": author}
+    return {"action": "NO_INDEPENDENT_REVIEW_FOR_THIS_ACTOR", "selected": None}
+
+
+def select_action(commercial_rows, runtime_rows, *, actor_id, writer_ids, epoch,
+                  expected_count=1123):
+    """Own WIP, then independent REVIEW, then BUILD; never autoapprove."""
+    base = select(commercial_rows, runtime_rows, actor_id=actor_id,
+                  writer_ids=writer_ids, epoch=epoch, expected_count=expected_count)
+    if base["action"] in ("NO_GITHUB_TASK_WRITE_PROOF", "CONTINUE_OWNED_OR_RECOVER"):
+        return base
+    review = select_review(commercial_rows, runtime_rows, actor_id=actor_id,
+                           writer_ids=writer_ids, epoch=epoch,
+                           expected_count=expected_count)
+    return review if review["action"] == "REVIEW" else base
+
+
+def _confirm_source_claim(claim, runtime_rows):
+    row = next((i for i, r in enumerate(runtime_rows) if i and r[0] == claim.task_id), None)
+    if row is None:
+        raise UnsafeSnapshot("TASK_NOT_FOUND")
+    old = runtime_rows[row]
+    if (len(old) < 4 or old[1] != "EN_PROGRESO"
+            or old[2] != claim.actor_id or old[3] != claim.lease):
+        raise UnsafeSnapshot("LOGICAL_HANDOFF_OWNERSHIP_MISMATCH")
+    return row
+
+
+def build_handoff(claim, runtime_rows, *, evidence_url, now,
+                  runtime_sheet_id, events_sheet_id):
+    """Own build can only hand off to VALIDANDO; never directly to LISTO."""
+    row = _confirm_source_claim(claim, runtime_rows)
+    if not isinstance(evidence_url, str) or not evidence_url.startswith("https://"):
+        raise UnsafeSnapshot("MATERIAL_EVIDENCE_REQUIRED")
+    stamp = _stamp(now)
+    lease = (f"RELEASED|ORIGINAL_AUTHOR={claim.actor_id}|TOKEN={claim.token}|"
+             f"RUN_ID={claim.run_id}|AT={stamp}|HEAD={claim.head}")
+    event = [stamp, claim.actor_id, claim.task_id, "LOGICAL_BUILD_HANDOFF",
+             "EN_PROGRESO", "VALIDANDO", claim.head, evidence_url,
+             "REVIEW_FIRST_PENDING", "ORIGINAL_AUTHOR_PRESERVED", claim.run_id, claim.token]
+    return lease, (
+        _write_range(runtime_sheet_id, row, 1, ["VALIDANDO", "", lease, claim.head]),
+        _write_range(runtime_sheet_id, row, 5, [evidence_url]),
+        _write_range(runtime_sheet_id, row, 8, [stamp]),
+        _event_request(events_sheet_id, event),
+    )
+
+
+def _stamp(now):
+    if not isinstance(now, datetime) or now.tzinfo is None:
+        raise UnsafeSnapshot("UTC_TIMESTAMP_REQUIRED")
+    return now.astimezone(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
+
+
+def _event_request(sheet_id, values):
+    return {"appendCells": {"sheetId": sheet_id,
+             "rows": [{"values": [_cell(v) for v in values]}],
+             "fields": "userEnteredValue"}}
+
+
+@dataclass(frozen=True)
+class LogicalReview:
+    task_id: str
+    reviewer: str
+    author: str
+    run_id: str
+    head: str
+    token: str
+    lease: str
+    requests: tuple
+
+
+def build_review_claim(commercial_rows, runtime_rows, *, task_id, actor_id,
+                       writer_ids, epoch, run_id, head, now,
+                       runtime_sheet_id, events_sheet_id,
+                       previous_run_terminal_proven=False,
+                       expected_count=1123):
+    if not previous_run_terminal_proven:
+        raise UnsafeSnapshot("PRIOR_SCHEDULED_RUN_TERMINAL_PROOF_REQUIRED")
+    if not SHA_RE.fullmatch(str(head)):
+        raise UnsafeSnapshot("INVALID_HEAD")
+    if not re.fullmatch(r"[A-Za-z0-9_.:-]{8,128}", str(run_id)):
+        raise UnsafeSnapshot("INVALID_RUN_ID")
+    choice = select_review(commercial_rows, runtime_rows, actor_id=actor_id,
+                           writer_ids=writer_ids, epoch=epoch,
+                           expected_count=expected_count)
+    if choice["action"] != "REVIEW" or choice["selected"] != task_id:
+        raise UnsafeSnapshot("LOGICAL_REVIEW_NOT_ADMISSIBLE")
+    row = next((i for i, r in enumerate(runtime_rows) if i and r[0] == task_id), None)
+    stamp = _stamp(now)
+    token = secrets.token_hex(16)
+    lease = (f"ACTIVE|REVIEWER={actor_id}|ORIGINAL_AUTHOR={choice['original_author']}|"
+             f"TOKEN={token}|RUN_ID={run_id}|HEAD={head}|ROUTING_EPOCH={epoch}")
+    event = [stamp, actor_id, task_id, "LOGICAL_REVIEW_ACQUIRED",
+             "VALIDANDO", "VALIDANDO", head, "",
+             "REVIEW_MATERIAL_PENDING", "INDEPENDENT_REVIEWER_LEASE", run_id, token]
+    requests = (
+        _write_range(runtime_sheet_id, row, 2, [actor_id, lease, head]),
+        _write_range(runtime_sheet_id, row, 8, [stamp]),
+        _event_request(events_sheet_id, event),
+    )
+    return LogicalReview(task_id, actor_id, choice["original_author"],
+                         run_id, head, token, lease, requests)
+
+
+def build_review_completion(review, runtime_rows, *, now, review_evidence_url,
+                            exact_head_checks_passed, p0, p1, runtime_sheet_id,
+                            events_sheet_id):
+    """Only independent review with zero P0/P1 and exact-head CI may mark LISTO."""
+    row = next((i for i, r in enumerate(runtime_rows) if i and r[0] == review.task_id), None)
+    if row is None:
+        raise UnsafeSnapshot("TASK_NOT_FOUND")
+    live = runtime_rows[row]
+    if (review.author == review.reviewer or len(live) < 6 or live[1] != "VALIDANDO"
+            or live[2] != review.reviewer or live[3] != review.lease
+            or not str(live[5]).startswith("https://")):
+        raise UnsafeSnapshot("REVIEW_OWNERSHIP_OR_ORIGINAL_EVIDENCE_MISMATCH")
+    if (exact_head_checks_passed is not True or p0 != 0 or p1 != 0
+            or not str(review_evidence_url).startswith("https://")):
+        raise UnsafeSnapshot("REVIEW_FIRST_EVIDENCE_OR_GATES_MISSING")
+    stamp = _stamp(now)
+    released = (f"RELEASED|ORIGINAL_AUTHOR={review.author}|REVIEWER={review.reviewer}|"
+                f"TOKEN={review.token}|RUN_ID={review.run_id}|AT={stamp}|HEAD={review.head}")
+    event = [stamp, review.reviewer, review.task_id, "LOGICAL_REVIEW_FIRST_LISTO",
+             "VALIDANDO", "LISTO", review.head, review_evidence_url,
+             "INDEPENDENT_REVIEW_APPROVED", "P0=0;P1=0;CI_EXACT_HEAD=PASS",
+             review.run_id, review.token]
+    return released, (
+        _write_range(runtime_sheet_id, row, 1, ["LISTO", "", released, review.head]),
+        _write_range(runtime_sheet_id, row, 8, [stamp]),
+        _event_request(events_sheet_id, event),
+    )
