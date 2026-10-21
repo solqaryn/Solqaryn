@@ -194,3 +194,108 @@ class LogicalLifecycleTests(unittest.TestCase):
         self.assertEqual(len(requests), 4)
         self.assertIn(f"ORIGINAL_AUTHOR={author}", lease)
         self.assertEqual(requests[0]["updateCells"]["rows"][0]["values"][0]["userEnteredValue"]["stringValue"], "VALIDANDO")
+
+
+
+class LogicalSafetyRegressionTests(unittest.TestCase):
+    def test_build_claim_must_not_bypass_review_priority(self):
+        from logical_lease_dispatch import select_action
+        c, r = rows()
+        author, reviewer = CANONICAL_EXECUTORS[:2]
+        pool = [author, reviewer]
+        r[1][1] = "VALIDANDO"
+        r[1][3] = f"RELEASED|ORIGINAL_AUTHOR={author}|TOKEN=previous"
+        r[1][5] = "https://github.com/solqaryn/Solqaryn/pull/3701"
+        self.assertEqual(select_action(
+            c, r, actor_id=reviewer, writer_ids=pool, epoch=EPOCH,
+            expected_count=20)["action"], "REVIEW")
+        with self.assertRaisesRegex(UnsafeSnapshot, "LOGICAL_CLAIM_NOT_ADMISSIBLE"):
+            build_logical_claim(c, r, task_id="T-0002", actor_id=reviewer,
+                                writer_ids=pool, epoch=EPOCH,
+                                run_id="SUP05-20261021T080500Z", head=HEAD,
+                                now=datetime.now(timezone.utc), runtime_sheet_id=3,
+                                events_sheet_id=4,
+                                previous_run_terminal_proven=True,
+                                expected_count=20)
+
+    def test_expired_builder_cannot_handoff(self):
+        from datetime import timedelta
+        from logical_lease_dispatch import build_handoff
+        c, r = rows()
+        now = datetime(2026, 10, 21, 10, tzinfo=timezone.utc)
+        owner = CANONICAL_EXECUTORS[0]
+        claim = build_logical_claim(c, r, task_id="T-0001", actor_id=owner,
+                                    writer_ids=[owner], epoch=EPOCH,
+                                    run_id="TASK00-20261021T100000Z", head=HEAD,
+                                    now=now, runtime_sheet_id=3, events_sheet_id=4,
+                                    previous_run_terminal_proven=True,
+                                    expected_count=20)
+        r[1][1], r[1][2], r[1][3] = "EN_PROGRESO", owner, claim.lease
+        with self.assertRaisesRegex(UnsafeSnapshot, "LOGICAL_LEASE_EXPIRED"):
+            build_handoff(claim, r, evidence_url="https://github.com/solqaryn/Solqaryn/pull/3701",
+                          now=now + timedelta(minutes=11),
+                          runtime_sheet_id=3, events_sheet_id=4)
+
+    def test_expired_reviewer_cannot_certify(self):
+        from datetime import timedelta
+        from logical_lease_dispatch import build_review_claim, build_review_completion
+        c, r = rows()
+        a, b = CANONICAL_EXECUTORS[:2]
+        r[1][1] = "VALIDANDO"
+        r[1][3] = f"RELEASED|ORIGINAL_AUTHOR={a}|TOKEN=previous"
+        r[1][5] = "https://github.com/solqaryn/Solqaryn/pull/3701"
+        now = datetime(2026, 10, 21, 10, tzinfo=timezone.utc)
+        review = build_review_claim(
+            c, r, task_id="T-0001", actor_id=b,
+            writer_ids=[a, b], epoch=EPOCH, run_id="SUP05-20261021T100000Z",
+            head=HEAD, now=now, runtime_sheet_id=3, events_sheet_id=4,
+            previous_run_terminal_proven=True, expected_count=20)
+        r[1][2], r[1][3] = b, review.lease
+        with self.assertRaisesRegex(UnsafeSnapshot, "LOGICAL_LEASE_EXPIRED"):
+            build_review_completion(review, r,
+                                    now=now + timedelta(minutes=11),
+                                    review_evidence_url="https://github.com/solqaryn/Solqaryn/pull/3701",
+                                    exact_head_checks_passed=True, p0=0, p1=0,
+                                    runtime_sheet_id=3, events_sheet_id=4)
+
+    def test_transition_readback_and_partial_failure(self):
+        from logical_lease_dispatch import (
+            build_handoff, verify_handoff_response, build_review_claim,
+            verify_review_claim_response, build_review_completion,
+            verify_review_completion_response,
+        )
+        c, r = rows()
+        author, reviewer = CANONICAL_EXECUTORS[:2]
+        pool = [author, reviewer]
+        now = datetime.now(timezone.utc)
+        delivery = "https://github.com/solqaryn/Solqaryn/pull/3701"
+        claim = build_logical_claim(c, r, task_id="T-0001", actor_id=author,
+                                    writer_ids=pool, epoch=EPOCH,
+                                    run_id="TASK00-20261021T100000Z", head=HEAD,
+                                    now=now, runtime_sheet_id=3, events_sheet_id=4,
+                                    previous_run_terminal_proven=True,
+                                    expected_count=20)
+        r[1][1], r[1][2], r[1][3], r[1][4] = "EN_PROGRESO", author, claim.lease, HEAD
+        lease, reqs = build_handoff(claim, r, evidence_url=delivery, now=now,
+                                     runtime_sheet_id=3, events_sheet_id=4)
+        r[1][1], r[1][2], r[1][3], r[1][5] = "VALIDANDO", "", lease, delivery
+        self.assertTrue(verify_handoff_response(claim, lease, {"replies": [{}, {}, {}, {}]}, r[1], delivery))
+        with self.assertRaisesRegex(UnsafeSnapshot, "REPLY_COUNT"):
+            verify_handoff_response(claim, lease, {"replies": [{}, {}]}, r[1], delivery)
+        rev = build_review_claim(c, r, task_id="T-0001", actor_id=reviewer,
+                                 writer_ids=pool, epoch=EPOCH,
+                                 run_id="SUP05-20261021T100500Z", head=HEAD,
+                                 now=now, runtime_sheet_id=3, events_sheet_id=4,
+                                 previous_run_terminal_proven=True, expected_count=20)
+        r[1][2], r[1][3] = reviewer, rev.lease
+        self.assertTrue(verify_review_claim_response(rev, {"replies": [{}, {}, {}]}, r[1]))
+        new_lease, final_requests = build_review_completion(
+            rev, r, now=now, review_evidence_url=delivery,
+            exact_head_checks_passed=True, p0=0, p1=0,
+            runtime_sheet_id=3, events_sheet_id=4)
+        r[1][1], r[1][2], r[1][3] = "LISTO", "", new_lease
+        self.assertTrue(verify_review_completion_response(
+            rev, new_lease, {"replies": [{}, {}, {}]}, r[1]))
+        r[1][3] = "RELEASED|WRONG_TOKEN"
+        with self.assertRaisesRegex(UnsafeSnapshot, "LOGICAL_LISTO_READBACK_MISMATCH"):
+            verify_review_completion_response(rev, new_lease, {"replies": [{}, {}, {}]}, r[1])
