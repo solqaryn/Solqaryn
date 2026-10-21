@@ -136,6 +136,24 @@ class LeaseWriterTests(unittest.TestCase):
         r[1][3] = "RELEASED|OWNER=old"
         self.assertEqual(claim(commercial=c, runtime=r).task_id, "P001")
 
+    def test_claim_refuses_owner_suspension_and_allows_next_unsuspended(self):
+        c, runtime = fixture(3)
+        runtime[1][7] = 'PENDIENTE SIN OWNER; SUSPENDIDO HASTA NUEVA ORDEN DEL PROPIETARIO'
+        candidate = build_claim(
+            c, runtime, task_id='P002', owner=OWNER, run_id='RUN_NEXT',
+            head=HEAD, now=NOW, runtime_sheet_id=2017583524,
+            events_sheet_id=958655496, expected_count=3,
+        )
+        self.assertEqual(candidate.task_id, 'P002')
+        self.assertEqual(candidate.metadata_id, METADATA_BASE + 2)
+        self.assertEqual(len(candidate.requests), 5)
+        with self.assertRaisesRegex(UnsafeSnapshot, 'OUT_OF_ORDER_CLAIM'):
+            build_claim(
+                c, runtime, task_id='P001', owner=OWNER, run_id='RUN_FORBIDDEN',
+                head=HEAD, now=NOW, runtime_sheet_id=2017583524,
+                events_sheet_id=958655496, expected_count=3,
+            )
+
     def test_naive_time_rejected(self):
         with self.assertRaisesRegex(UnsafeSnapshot, "UTC_AWARE_TIMESTAMP_REQUIRED"):
             claim(now=datetime(2026, 10, 20, 14, 30))
