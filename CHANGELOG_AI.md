@@ -1,3 +1,9 @@
+## 2026-10-21 — Correccion de revision historica del candidato logico
+
+- Se impide que el revisor predeterminado coincida con `ORIGINAL_AUTHOR` tras una variacion de epoch o entrega historica: el selector elige una identidad independiente determinista.
+- Una `REVIEW_REJECTED=1` se devuelve exclusivamente al autor original acreditado, aun si su bucket fijo cambio. El prototipo sigue sin activarse y no escribe en Sheets ni cambia Tasks.
+- Pruebas negativas agregadas para no autoaprobacion, reviewer correcto y rework exclusivo; CI y readback causal del PR requeridos.
+
 ## 2026-10-20 — npm audit transitivas Angular 22
 
 - Corregidas dependencias transitivas vulnerables de Angular CLI/Build 22.2.1 mediante overrides exactos: `@modelcontextprotocol/server` 2.3.1 (antes 2.0.0) y `vite` 8.3.4 (antes 8.3.0). Angular permanece en 22.2.1.
