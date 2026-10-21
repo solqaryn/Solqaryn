@@ -4,13 +4,18 @@
 - Una `REVIEW_REJECTED=1` se devuelve exclusivamente al autor original acreditado, aun si su bucket fijo cambio. El prototipo sigue sin activarse y no escribe en Sheets ni cambia Tasks.
 - Pruebas negativas agregadas para no autoaprobacion, reviewer correcto y rework exclusivo; CI y readback causal del PR requeridos.
 
+## 2026-10-20 — npm audit transitivas Angular 22
+
+- Corregidas dependencias transitivas vulnerables de Angular CLI/Build 22.2.1 mediante overrides exactos: `@modelcontextprotocol/server` 2.3.1 (antes 2.0.0) y `vite` 8.3.4 (antes 8.3.0). Angular permanece en 22.2.1.
+- Regenerado `frontend/package-lock.json` con `npm install --package-lock-only --ignore-scripts`; instalación reproducible y `npm audit --audit-level=high` comprobados mediante CI aislada de rama. La herramienta temporal de generación fue retirada del PR; no se usó `npm audit fix --force`.
+- Alcance estrictamente DEV/frontend, sin modificar código de aplicación, bases de datos, leases, automatizaciones, QA/main/PROD ni secretos. Integración condicionada a la CI de PR y controles protegidos.
+
 ## 2026-10-21 — Candidato de coordinacion VAEP sin CAS dual (NO ACTIVADO)
 
 - Se verifico que el contrato historico interno usaba lease logico de owner/scope/token/heartbeat/TTL/readback, no DeveloperMetadata dual. Esa evidencia es tecnica, sin revivir el plan historico.
 - Se incorpora `scripts/vaep/logical_lease_dispatch.py`: seleccion determinista por ORDEN y cohortes GitHub Task-write acreditadas con epoch congelado, WIP=1 y constructor de tres requests de Sheets sin CAS. Solo genera decisiones y batches; no tiene credenciales ni activa el runtime.
 - Se ampliaron las pruebas deterministas para diez escritores, WIP=1, dependencias, rechazo y rework al autor original, vencimiento/renovacion del lease, fencing de run propio finalizado, readback de handoff/REVIEW_FIRST y manifiesto de activacion. La CI VAEP y Project Scope Lock aprueban el codigo candidato sobre los commits revisados; ello no equivale a certificacion material desde Scheduled Tasks.
-- Se detecto por simulacion sobre el runtime real que el modulo inicial ORDER mod 10 distribuia 31 elegibles entre 6/10 ejecutores. El reparto fijo en parejas `((ORDEN-1)//2)%10` distribuye esas 31 entre 10/10 slots (2-4 por slot), sin asignar ningun OWNER ni modificar los horarios; una regresion de ordenes mayoritariamente impares evita la repeticion de ese error. 
-- El manifiesto `vaep/control/logical-lease-candidate.json` permanece PROPOSAL_ONLY con cohortes vacias: el gate exige permiso de propietario, HEAD exacto, 10 politicas sincronizadas, >=2 escritores con evidencia Task-origin y runs terminales comprobados. El piloto NO modifica Tasks/horarios, `_AUTOMATION_SOURCE`, `CONFIG`, propietarios, leases actuales ni estados de 1123 tareas. El CAS actual sigue siendo el unico protocolo de escritura hasta un cutover adicional seguro; no se hacen reintentos de operaciones bloqueadas por seguridad de la plataforma.
+- Se detecto por simulacion sobre el runtime real que el modulo inicial ORDER mod 10 distribuia 31 elegibles entre 6/10 ejecutores. El reparto fijo en parejas `((ORDEN-1)//2)%10` distribuye esas 31 entre 10/10 slots (2-4 por slot), sin asignar ningun OWNER ni modificar los horarios; una regresion de ordenes mayoritariamente impares evita la repeticion de ese error.\n- El manifiesto `vaep/control/logical-lease-candidate.json` permanece PROPOSAL_ONLY con cohortes vacias: el gate exige permiso de propietario, HEAD exacto, 10 politicas sincronizadas, >=2 escritores con evidencia Task-origin y runs terminales comprobados. El piloto NO modifica Tasks/horarios, `_AUTOMATION_SOURCE`, `CONFIG`, propietarios, leases actuales ni estados de 1123 tareas. El CAS actual sigue siendo el unico protocolo de escritura hasta un cutover adicional seguro; no se hacen reintentos de operaciones bloqueadas por seguridad de la plataforma.
 
 ## 2026-10-20 — Corrección de autoridad activa VAEP 10/10
 
