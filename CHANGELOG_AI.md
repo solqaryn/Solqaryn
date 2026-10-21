@@ -1,3 +1,10 @@
+## 2026-10-21 — Candidato de coordinacion VAEP sin CAS dual (NO ACTIVADO)
+
+- Se verifico que el contrato historico interno usaba lease logico de owner/scope/token/heartbeat/TTL/readback, no DeveloperMetadata dual. Esa evidencia es tecnica, sin revivir el plan historico.
+- Se incorpora `scripts/vaep/logical_lease_dispatch.py`: seleccion determinista por ORDEN y cohortes GitHub Task-write acreditadas con epoch congelado, WIP=1 y constructor de tres requests de Sheets sin CAS. Solo genera decisiones y batches; no tiene credenciales ni activa el runtime.
+- Se incorporan diez pruebas de exclusividad 10 escritores, actor unico, no auto-review, deps, owner ajeno, WIP, epoch, ausencia de CAS y readback. La CI VAEP las ejecutara en PR.
+- El piloto NO modifica diez Tasks/horarios, `_AUTOMATION_SOURCE`, `CONFIG`, propietarios, leases actuales ni estados de 1123 tareas. El CAS actual sigue siendo el unico protocolo de escritura hasta un cutover adicional verificado (handoff/review/recovery/fencing, permisos por Task y revision ajena). No se hacen reintentos de llamadas bloqueadas por seguridad de plataforma.
+
 ## 2026-10-20 — Corrección de autoridad activa VAEP 10/10
 
 - Se corrige el contrato de admisión de las diez Tasks existentes según autorización explícita del propietario en CONFIG.F18: RUNTIME_MODE=ACTIVO, AUTOMATION_ACTIVATION=HABILITADA_CON_AUDITORIA y readback 10/10 real. El marcador TASK_WRITE_VERIFIED=10/10 no bloquea globalmente el trabajo seguro; cada escritura sigue requiriendo permiso real, CAS dual task+executor, fencing, WIP=1, CI exact-head y revisión ajena.
