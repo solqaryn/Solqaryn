@@ -1,3 +1,9 @@
+## 2026-10-21 — Admission VAEP respeta suspension expresa del propietario
+
+- `commercial_dispatch.py` excluye unicamente las filas `PENDIENTE` cuyo `NEXT_ACTION` indica `SUSPENDIDO HASTA NUEVA ORDEN DEL PROPIETARIO` (con prefijo opcional `PENDIENTE SIN OWNER;`). Conserva el orden ascendente entre elegibles y reporta `owner_suspended` con razon auditable.
+- Pruebas negativas cubren suspension, formato, prioridad/orden, dependencias, WIP=1 y prohibicion de autorevision REVIEW_FIRST. `cas_lease_writer.py` y `continuity_dispatch.py` consumen la misma admision; no se elimina ni sustituye CAS dual.
+- Scope exclusivo de codigo y pruebas en rama de DEV. No modifica ninguna de las 1123 filas, sus 8 suspensiones, locks, propietarios, activacion de Tasks ni el candidato `PROPOSAL_ONLY`. `P0-011.A` solo es una posible seleccion de lectura; cualquier escritura comercial requiere prueba real por Task, claim atomico y readback.
+
 ## 2026-10-21 — Correccion de revision historica del candidato logico
 
 - Se impide que el revisor predeterminado coincida con `ORIGINAL_AUTHOR` tras una variacion de epoch o entrega historica: el selector elige una identidad independiente determinista.
