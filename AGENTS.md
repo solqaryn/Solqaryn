@@ -5,7 +5,7 @@ PROJECT_ID=SOLQARYN
 REPOSITORY=solqaryn/Solqaryn
 BRANCH=dev
 PROJECT_SKILL=.agents/skills/solqaryn-project-governance/SKILL.md
-EXECUTION_PLAN_DRIVE_FILE_ID=1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j
+EXECUTION_PLAN_DRIVE_FILE_ID=1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA
 CURRENT_COMMERCIAL_ONLY=TRUE
 AUTOMATION_RUNTIME=RETIRED
 
@@ -13,7 +13,7 @@ AUTOMATION_RUNTIME=RETIRED
 
 1. `docs/PROJECT_SCOPE_LOCK.md` regula la identidad de SOLQARYN y el acceso a sus fuentes.
 2. `docs/AUTOMATION_STATUS.md` declara si existe un motor programado autorizado.
-3. El documento `SOLQARYN PLAN COMERCIAL INICIAL UNIFICADO` es la fuente actual del alcance comercial. Ninguna hoja, manifiesto, bitácora o plan histórico es ejecutable por inferencia.
+3. El documento `STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES` es la fuente actual del alcance comercial. Ninguna hoja, manifiesto, bitácora o plan histórico es ejecutable por inferencia.
 4. La única Skill local permitida sigue siendo `solqaryn-project-governance`; las referencias externas son opcionales y se consultan únicamente para una necesidad técnica real.
 
 ## Estado de automatización (22-10-2026)

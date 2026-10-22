@@ -34,7 +34,7 @@ Queda prohibido consultar una copia, fork, mirror, cache documental o reutilizac
 
 1. Invocar primero `solqaryn-project-governance`, y contrastar sus instrucciones cargadas con el `SKILL.md` original de SOLQARYN en el HEAD **real de dev**. La copia instalada en ChatGPT puede quedarse rezagada tras un merge.
 2. Ejecutar `node scripts/verify-solqaryn-skills.mjs --self-test` sobre checkout actual o confirmar el check CI exact-head correspondiente. Si el stack, la autoridad comercial o los once pins GitHub divergen, **NO_GO**.
-3. Verificar la fuente comercial actual (Drive `1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j`), `AGENTS.md` y `docs/AUTOMATION_STATUS.md`. No existe un sistema de leases ni Tasks autorizado actualmente. Ningún plan histórico puede convertirse en fallback.
+3. Verificar la fuente comercial actual (Drive `1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA`), `AGENTS.md` y `docs/AUTOMATION_STATUS.md`. No existe un sistema de leases ni Tasks autorizado actualmente. Ningún plan histórico puede convertirse en fallback.
 4. Sólo consultar las referencias externas necesarias para la tarea; mantener exactamente los once pins GitHub y SKREF-02 integrado. El acceso a los orígenes no equivale a instalación de una Skill.
 5. Las diez Tasks, sus IDs y su coordinación Primary/Supervisor fueron eliminadas por el propietario. No reactivarlas ni reconstruirlas. Si la Skill instalada no coincide con el repositorio, no ejecutar acciones afectadas hasta sincronizarla.
 

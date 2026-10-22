@@ -9,11 +9,11 @@ LOCAL_SKILL_COUNT=1
 LOCAL_SKILL=.agents/skills/solqaryn-project-governance/SKILL.md
 EXTERNAL_PROJECT_CONTEXT=DENY_BY_DEFAULT
 CONTEXT_MODE=CURRENT_STATE_ONLY
-EXECUTION_PLAN_DRIVE_FILE_ID=1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j
+EXECUTION_PLAN_DRIVE_FILE_ID=1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA
 
 ## Alcance actual
 
-La fuente comercial aprobada es `SOLQARYN PLAN COMERCIAL INICIAL UNIFICADO` (ID de Drive citado arriba). Los planes antiguos, manifestaciones, hojas, Tasks y calendarios ya retirados no tienen autoridad ejecutiva, y no se reutilizan automáticamente. El estado de automatización se documenta solamente en `docs/AUTOMATION_STATUS.md`.
+La fuente comercial aprobada es `STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES` (ID de Drive citado arriba). Los planes antiguos, manifestaciones, hojas, Tasks y calendarios ya retirados no tienen autoridad ejecutiva, y no se reutilizan automáticamente. El estado de automatización se documenta solamente en `docs/AUTOMATION_STATUS.md`.
 
 ## Identidad, código y seguridad
 
