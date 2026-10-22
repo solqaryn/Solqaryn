@@ -2,7 +2,7 @@
 
 Este archivo es la fuente canónica de pendientes deliberadamente aplazados o decisiones todavía no ejecutadas por el propietario. No deben bloquear trabajo no dependiente y no deben reinterpretarse como fallos de DEV, QA o PROD.
 
-Última reconciliación: **2026-10-12**.
+Última reconciliación: **2026-10-22**.
 
 ## Estado resumido
 
@@ -88,25 +88,19 @@ Este archivo es la fuente canónica de pendientes deliberadamente aplazados o de
 
 ---
 
-## 4. Automatizaciones VAEP
+## 4. Sistema de automatización retirado
 
-**Estado:** PAUSADAS POR DECISIÓN DEL PROPIETARIO / NO ES FALLA DE INFRAESTRUCTURA
+**Estado:** RETIRADO / SIN TASKS AUTORIZADAS / NO BLOQUEANTE PARA EL DESARROLLO MANUAL.
 
-**Estado actual:** las **10 automatizaciones canónicas permanecen pausadas (0/10 habilitadas)**.
+El propietario eliminó las diez Tasks de ChatGPT y la hoja operativa antigua. GitHub retiró el scheduler y el despacho comercial. **No existe una cohorte de cinco o diez Tasks pendiente de reactivación.** Los IDs, horarios, leases y epochs anteriores no tienen validez operativa.
 
-**Distribución canónica:**
+**Decisión vigente:** no buscar, recrear, recuperar ni habilitar las antiguas Tasks. Cualquier sistema futuro deberá diseñarse como instancia independiente, con autorización expresa y basarse únicamente en referencias históricas verificadas, nunca en las políticas ejecutivas de un plan anterior.
 
-- cinco Primary bajo responsabilidad operativa de Javier Mejía: `:00/:12/:24/:36/:48`;
-- cinco Supervisor bajo responsabilidad operativa de Alex Morales: `:05/:17/:29/:41/:53`.
+**Estado documental:** `docs/AUTOMATION_STATUS.md`. La seguridad, las pruebas funcionales y el respaldo del ERP continúan independientes.
 
-**Decisión vigente:** no reactivar, crear, eliminar ni sustituir automatizaciones sin autorización explícita de los responsables aplicables.
+**Acción actual:** no existe activación que ejecutar. El desarrollo manual solicitado por el propietario puede continuar en `dev` con seguridad, revisión y pruebas proporcionales.
 
-**Acción actual:** ninguna.
-
-**Se retoma cuando:** el propietario autorice expresamente reanudar el runtime VAEP.
-
-**Al retomar, validar:** IDs canónicos, ownership, slots, estado pausado -> habilitado, autoridad `docs/VAEP_AUTHORITY.md`, readback y ausencia de duplicados/automatizaciones legacy.
-
+**Reapertura:** exclusivamente mediante una orden nueva para diseñar e implementar automatizaciones nuevas.
 ---
 
 ## 5. Plan Comercial Inicial / Maestro futuro
@@ -121,7 +115,7 @@ Este archivo es la fuente canónica de pendientes deliberadamente aplazados o de
 
 **Acción actual:** ninguna fuera del trabajo que el propietario autorice/active desde el Plan Comercial Inicial.
 
-**Se retoma/continúa cuando:** se reactive la ejecución funcional/VAEP o el propietario solicite el siguiente alcance del roadmap.
+**Se retoma/continúa cuando:** el propietario solicite implementar trabajo concreto del Plan Comercial Inicial o autorice un motor nuevo.
 
 ---
 
@@ -135,7 +129,7 @@ La promoción permanece sin ejecutar: PR #3583 (`dev → qa`) y PR #3574 (`qa �
 
 ## Dictamen de pendientes
 
-Los seis puntos numerados de este archivo y la promoción modernizada diferida mantienen su tratamiento. **La normalización y prueba individual/ZIP de las 11 imágenes Cloudinary DEV ya no son pendientes.**
+Los seis puntos numerados de este archivo y la promoción modernizada diferida conservan su tratamiento actualizado. La coordinación antigua fue retirada, no pausada. **La normalización y prueba individual/ZIP de las 11 imágenes Cloudinary DEV ya no son pendientes.**
 
 Esto no significa que el producto esté terminado: el punto 5 engloba el trabajo futuro normal del Plan Maestro/ERP. Los puntos 1-4 son decisiones operativas o de infraestructura diferidas explícitamente.
 

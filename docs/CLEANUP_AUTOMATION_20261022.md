@@ -8,11 +8,20 @@ Este archivo sustituye una memoria informal con un registro versionado y verific
 - [x] El propietario confirmó la limpieza de Google Drive y papelera; conserva dos documentos del proyecto.
 - [x] GitHub PR #3713 retiró los cron VAEP y el reescritor automático de admisión.
 - [x] El propietario retiró del ruleset dev el check `VAEP engine TASKS_ONLY`; verificar en API antes de fusionar.
-- [ ] Retirar scripts VAEP, manifiestos, epoch, AntiG y configurador Jules antiguos del árbol actual.
-- [ ] Sustituir autoridad antigua por `docs/AUTOMATION_STATUS.md` y adaptar validadores canónicos.
-- [ ] Desacoplar los workflows de fases anteriores, dejando sus pruebas históricas como manuales y conservando regresiones del ERP.
-- [ ] Sustituir los checks antiguos de Fase 7 por checks de calidad generales; actualizar ruleset tras comprobar su funcionamiento.
-- [ ] Ejecutar pruebas, comprobar PR, integrar protegido y efectuar readback.
-- [ ] Verificar que no queden cron ni dispatch comerciales programados y que seguridad, QA/PROD y backups mantengan sus controles.
+- [x] PR #3715 retiró scripts VAEP, manifiestos, epoch, AntiG y configurador Jules antiguos del árbol actual.
+- [x] PR #3715 sustituyó la autoridad antigua por `docs/AUTOMATION_STATUS.md` y adaptó los validadores.
+- [x] PR #3715 convirtió a manuales los workflows de modernización y matrices, conservando las regresiones del ERP.
+- [x] Ruleset actualizado y confirmado: únicamente los tres checks estándar del ERP; se retiran las capas temporales Fase 7.
+- [x] PR #3715 fusionado y con readback de archivos. La certificación post-merge de este cambio final continúa aparte.
+- [ ] Certificar la limpieza final en el HEAD integrado: ausencia de despacho, checks estándar, backups y fronteras QA/PROD.
 
 **No borrar:** módulos de negocio ERP; JWT/RBAC/aislamiento empresa; backups y restauración MySQL; integraciones Cloudinary, SMTP, QuestPDF; controles de seguridad; historia Git. El flujo M12 de automatización comercial del ERP no equivale al ejecutor ChatGPT.
+
+## Limpieza final — 22-10-2026
+
+- Retirar aliases temporales «Fase 7» y workflows manuales VAEP que únicamente reproducían planes archivados.
+- Corregir README, pendientes y documentos corrientes que describían las diez Tasks como pausadas.
+- Admitir únicamente material documental histórico para comparar motores, sin convertirlo en autoridad, plan o ejecución.
+- Mantener los recibos en `vaep/evidence/` por auditoría, pero sin motor ni autoridad activa.
+- Preservar seguridad, compilación, regresiones funcionales, correo, MySQL y backup programado.
+- Verificar GitHub Actions sobre el HEAD integrado exacto antes del cierre.

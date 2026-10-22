@@ -67,7 +67,7 @@ Ver `ARCHITECTURE.md` para detalles y `PROJECT_INDEX.md` para localizar componen
 
 ## Preparación local
 
-El acceso local y la participación de agentes se rigen por `AGENTS.md`: Javier Mejía conserva la decisión final; Codex participa solo por orden explícita y AntiG/Antigravity permanece `RESERVED_INACTIVE`. ChatGPT/VAEP y Chat B operan como controladores/QA remotos sobre `dev` bajo el MAESTRO.
+El acceso local y la colaboración técnica se rigen por `AGENTS.md` y `docs/PROJECT_SCOPE_LOCK.md`. El antiguo sistema de Tasks y coordinación VAEP está **retirado**. No hay controladores autónomos autorizados. La fuente vigente es `docs/AUTOMATION_STATUS.md`; ningún agente debe reconstruir el sistema anterior sin una nueva orden explícita.
 
 ```powershell
 git fetch origin

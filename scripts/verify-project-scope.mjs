@@ -10,24 +10,6 @@ const onlyLocalSkill = '.agents/skills/solqaryn-project-governance/SKILL.md';
 const registryPath = 'docs/REGISTRO_REFERENCIAS_SKILLS_SOLQARYN.md';
 const allowlistPath = 'docs/PROJECT_EXTERNAL_CONTEXT_ALLOWLIST.md';
 
-const retiredPlanningArtifacts = [
-  ['PLAN', 'EJECUCION', 'AUTONOMA.md'].join('_'),
-  ['implementation', 'plan.md'].join('_'),
-  ['docs', ['PLAN', 'CIERRE', 'SOLQARYN.md'].join('_')].join('/'),
-  ['docs', ['PLAN', 'MAESTRO', 'MEJORAS', 'EMPRESARIALES', '2026.md'].join('_')].join('/'),
-  ['docs', ['PLAN', 'MAESTRO', 'TRACEABILITY.md'].join('_')].join('/'),
-  ['docs', 'seguimiento', ['01', 'PLAN', 'FASES.md'].join('-')].join('/'),
-  ['docs', ['FASE8', 'PLAN', 'FACTURACION', 'ENVIOS', 'VARIANTES', 'CARGAS.md'].join('_')].join('/'),
-  ['docs', ['FASE9', 'PLAN', 'LIBERACION', 'Y', 'ROLLBACK.md'].join('_')].join('/'),
-  ['docs', ['N5.2', 'REPORTES', 'INVENTARIO', 'PERSISTENCE', 'QA', 'PLAN.md'].join('_')].join('/'),
-  ['docs', ['N5.2', 'REPORTES', 'INVENTARIO', 'PERSISTENCE', 'QUERY', 'PLAN.md'].join('_')].join('/'),
-  ['docs', 'matrices-evaluacion', '00_GOBERNANZA', ['N8', '18', 'A', 'REFACTOR', 'PLAN.md'].join('_')].join('/'),
-  ['docs', 'matrices-evaluacion', '00_GOBERNANZA', ['PLAN', 'INTERVENCION', 'N8', '15', 'N8', '24.md'].join('_')].join('/'),
-  ['vaep', 'prearm', ['N28A', 'R2', 'PLAN', 'DO', 'NOT', 'DISPATCH.md'].join('_')].join('/'),
-  ['docs', ['CONTEXTO', 'CHATGPT', 'VAEP.md'].join('_')].join('/'),
-];
-
-
 const mandatory = [
   'AGENTS.md',
   'PROJECT_CONTEXT.md',
@@ -71,11 +53,21 @@ const obsoleteRuntime = [
   '.github/scripts/vaep-checkpoint.sh',
   '.github/scripts/vaep-policy-parser.sh',
   'vaep/control',
+  'vaep/controller',
+  'vaep/health',
+  'vaep/schemas',
+  'docs/VAEP_AUTHORITY.md',
   '.github/workflows/vaep-engine-ci.yml',
   '.github/workflows/vaep-checkpoints.yml',
   '.github/workflows/vaep-admission-open-guard.yml',
 ];
 const errors = [];
+for (const abs of walk(join(root, '.github', 'workflows'))) {
+  const rel = relative(root, abs).split(sep).join('/');
+  if (/^\.github\/workflows\/vaep-[^/]+\.ya?ml$/i.test(rel)) {
+    errors.push('retired VAEP workflow must not exist: ' + rel);
+  }
+}
 for (const rel of obsoleteRuntime) {
   if (existsSync(join(root, rel))) errors.push(`retired automation control plane must not be restored: ${rel}`);
 }
@@ -98,12 +90,6 @@ function walk(dir) {
 for (const rel of mandatory) {
   if (!existsSync(join(root, rel))) {
     errors.push(`missing required SOLQARYN file: ${rel}`);
-  }
-}
-
-for (const rel of retiredPlanningArtifacts) {
-  if (existsSync(join(root, rel))) {
-    errors.push(`retired planning artifact must not exist in current tree: ${rel}`);
   }
 }
 
@@ -274,30 +260,6 @@ for (const rel of currentStateIdentityFiles) {
   }
 }
 
-const currentStatePlanningFiles = [
-  ...currentStateIdentityFiles,
-  "TASKS.md",
-  "docs/COLABORATIVO.md",
-  "docs/COLABORACION_IA.md",
-
-];
-
-const retiredPlanningTokens = [
-  ['Plan Maestro ERP', 'V5'].join(' '),
-  ['1rWGOP', '_Z64kM4Q2NZbrTvge3ReqJkJ_vJmhByogbPbR8'].join(''),
-  ['19RrOmbhcqQf7zXWCuqjNPORlVOfuHMa9i43wjOyy8eY'].join(''),
-];
-
-for (const rel of currentStatePlanningFiles) {
-  if (!existsSync(join(root, rel))) continue;
-  const source = read(rel);
-  for (const token of retiredPlanningTokens) {
-    if (source.includes(token)) {
-      errors.push("retired planning authority remains in current-state document: " + rel);
-    }
-  }
-}
-
 const repositoryWideRetiredPatterns = [
   new RegExp(["inven", "tory"].join(""), "i"),
   new RegExp(["vari", "app"].join("[\\s_-]*"), "i"),
@@ -306,13 +268,19 @@ const repositoryWideRetiredPatterns = [
   new RegExp(["varia", "storage"].join("[\\s_-]*"), "i"),
 ];
 
+// Las referencias documentales históricas nunca son identidad ni runtime operativo.
+const historicalReferenceRoot = ['docs/referencias-historicas/', ['vari','app'].join(''), '/'].join('');
+const isHistoricalReferenceDocument = rel =>
+  rel.startsWith(historicalReferenceRoot) && /\.(?:md|txt)$/i.test(rel);
+
 const trackedFiles = execFileSync("git", ["ls-files", "-z"], { cwd: root })
   .toString("utf8")
   .split("\0")
   .filter(Boolean);
 
 for (const rel of trackedFiles) {
-  if (repositoryWideRetiredPatterns.some(pattern => pattern.test(rel))) {
+  const referenceOnly = isHistoricalReferenceDocument(rel);
+  if (!referenceOnly && repositoryWideRetiredPatterns.some(pattern => pattern.test(rel))) {
     errors.push("retired identity token remains in tracked path: " + rel);
   }
   const abs = join(root, rel);
@@ -320,7 +288,7 @@ for (const rel of trackedFiles) {
   const raw = readFileSync(abs);
   if (raw.includes(0)) continue;
   const source = raw.toString("utf8");
-  if (repositoryWideRetiredPatterns.some(pattern => pattern.test(source))) {
+  if (!referenceOnly && repositoryWideRetiredPatterns.some(pattern => pattern.test(source))) {
     errors.push("retired identity token remains in tracked content: " + rel);
   }
 }

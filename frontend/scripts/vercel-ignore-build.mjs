@@ -62,24 +62,25 @@ try {
   process.exit(1);
 }
 
+// Solo DEV: los cambios de documentacion, gobierno, CI y evidencia no
+// alteran la compilacion de Angular. QA y PROD siempre requieren su build.
+const nonRuntimeRoots = ['docs/', '.github/', '.agents/', 'vaep/', 'scripts/'];
+const nonRuntimeFiles = new Set([
+  'AGENTS.md',
+  'PROJECT_CONTEXT.md',
+  'PROJECT_INDEX.md',
+  'ARCHITECTURE.md',
+  'ARCHITECTURE_CHANGELOG.md',
+  'TASKS.md',
+  'CHANGELOG_AI.md',
+  'README.md'
+]);
 const explicitlyNonRuntime = file =>
-  file.startsWith('vaep/') ||
-  file.startsWith('scripts/vaep/') ||
-  file.startsWith('.github/scripts/vaep-') ||
-  file.startsWith('.github/workflows/vaep-') ||
-  file.startsWith('docs/VAEP_') ||
-  [
-    'AGENTS.md',
-    'PROJECT_CONTEXT.md',
-    'PROJECT_INDEX.md',
-    'ARCHITECTURE.md',
-    'ARCHITECTURE_CHANGELOG.md',
-    'TASKS.md',
-    'CHANGELOG_AI.md'
-  ].includes(file);
+  nonRuntimeRoots.some(prefix => file.startsWith(prefix)) ||
+  nonRuntimeFiles.has(file);
 
 if (changedFiles.length > 0 && changedFiles.every(explicitlyNonRuntime)) {
-  console.log(`VAEP_CONTROL_PLANE_ONLY_SKIP files=${changedFiles.length} branch=${branch}`);
+  console.log(`NON_RUNTIME_GOVERNANCE_ONLY_SKIP files=${changedFiles.length} branch=${branch}`);
   process.exit(0);
 }
 

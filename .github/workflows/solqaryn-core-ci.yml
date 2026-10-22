@@ -92,27 +92,3 @@ jobs:
           npx tsc --noEmit -p tsconfig.app.json
           node scripts/lint-quality.mjs
           npm run build:prod
-
-  ci_compat_security:
-    # Compatibility only: no Phase 7 contract is executed. Retire this job
-    # after GitHub ruleset 22829243 uses the generic SOLQARYN check names.
-    name: Fase 7 - security tenancy vulnerability gate
-    needs: [seguridad]
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Exigir la prueba permanente de seguridad
-        env:
-          CORE_RESULT: ${{ needs.seguridad.result }}
-        run: test "$CORE_RESULT" = success
-
-  ci_compat_backend:
-    name: Fase 7 - build unit EF toolchain
-    needs: [backend]
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Exigir la compilacion permanente del ERP
-        env:
-          CORE_RESULT: ${{ needs.backend.result }}
-        run: test "$CORE_RESULT" = success
