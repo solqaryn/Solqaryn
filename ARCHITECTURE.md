@@ -1,5 +1,10 @@
 # Arquitectura técnica vigente — SOLQARYN
 
+## 2026-10-22 — Baja del control anterior de automatizaciones
+
+**ESTADO VIGENTE: NO HAY AUTOMATIZACIONES CHATGPT ACTIVAS AUTORIZADAS.** El propietario confirmó la eliminación de las diez Tasks y de la hoja operativa anterior. Se retiraron los cron VAEP y el workflow de readmisión mediante PR #3713. `scripts/vaep/logical_lease_dispatch.py` y `vaep/control/logical-lease-candidate.json` fueron retirados del árbol vivo. Las referencias a diez Tasks, IDs, epochs, leases y pautas PRE-GO que aparecen bajo esta nota son **históricas e inoperantes**; no autorizan ejecución, recuperación, despachos, creación de Tasks ni reactivación de Sheets. El workflow `vaep-engine-ci.yml` solo conserva temporalmente un check de compatibilidad porque GitHub requiere su nombre para fusionar PRs. La fuente comercial conservada es el Plan Comercial Inicial Unificado. El producto ERP, CI de seguridad y protección de ramas no se desactivan. El nuevo modelo de trabajo requiere autorización y diseño nuevos.
+
+
 ## 2026-10-21 — Arquitectura VAEP de preparacion sin CAS dual (DEV; NO_GO)
 
 La ruta de escritura propuesta pasa a `scripts/vaep/logical_lease_dispatch.py`: excluye transiciones concurrentes del mismo scope con `addNamedRange` de identificador derivado de estado previo, en el mismo `spreadsheets.batchUpdate` que OWNER/LEASE/auditoria y con readback de RUN_ID/TOKEN/HEAD/TTL. El modulo Python es un constructor, no un scheduler residente ni permiso para ejecutar una Task. Se retiran `scripts/vaep/cas_lease_writer.py` y su suite de la rama candidata; ninguna operacion futura recupera el CAS dual por fallback. Los metadatos historicos en Google Sheets se conservan hasta lectura exacta autorizada y recuperación cercada. El manifiesto permanece `PRE_GO_CONTRACT_CERTIFIED`; solo 2 Task IDs cuentan con evidencias GitHub administrativas aceptadas, no 10 writers materialmente habilitados. `RUNTIME_MODE=PAUSADO` y no existe GO comercial. La migración de las diez políticas en Sheets y sus prompts no prueba replica funcional del historial de VarApp ni la terminalidad de runs.
