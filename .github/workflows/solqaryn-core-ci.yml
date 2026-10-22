@@ -1,0 +1,94 @@
+name: SOLQARYN - CI permanente del ERP
+
+on:
+  push:
+    branches: [dev]
+  pull_request:
+    branches: [dev]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: solqaryn-core-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  seguridad:
+    name: SOLQARYN - Seguridad multiempresa
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scope del proyecto
+        run: node scripts/verify-project-scope.mjs
+      - name: Validar aislamiento actual de empresa y permisos
+        run: python3 scripts/security/priority3_tenant_isolation_audit.py --require-certified
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Restaurar backend
+        working-directory: backend
+        run: dotnet restore Solqaryn.sln
+      - name: Ejecutar regresiones de tenancy y autorizacion
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj \
+            --configuration Release --no-restore \
+            --filter 'FullyQualifiedName~Tenant|FullyQualifiedName~Authorization|FullyQualifiedName~Security|FullyQualifiedName~Isolation'
+      - name: Comprobar vulnerabilidades de paquetes productivos
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet list Solqaryn.sln package --vulnerable --include-transitive > "$RUNNER_TEMP/nuget-vulnerable.txt"
+          if grep -q 'has the following vulnerable packages' "$RUNNER_TEMP/nuget-vulnerable.txt"; then
+            cat "$RUNNER_TEMP/nuget-vulnerable.txt"
+            exit 1
+          fi
+          echo 'SECURITY_DEPENDENCIES=PASS'
+
+  backend:
+    name: SOLQARYN - Build y pruebas backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Restaurar, compilar y probar sin imponer fases previas
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+          dotnet test Solqaryn.sln --configuration Release --no-build \
+            --filter 'Category!=Integration'
+
+  frontend:
+    name: SOLQARYN - Frontend tipado y build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Instalar npm version compatible
+        run: npm install --global npm@11.19.0
+      - name: Dependencias, tipos, calidad actual y produccion
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          npx tsc --noEmit -p tsconfig.app.json
+          node scripts/lint-quality.mjs
+          npm run build:prod
