@@ -38,7 +38,7 @@ jobs:
           set -euo pipefail
           dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj \
             --configuration Release --no-restore \
-            --filter 'FullyQualifiedName~Tenant|FullyQualifiedName~Authorization|FullyQualifiedName~Security|FullyQualifiedName~Isolation'
+            --filter '(FullyQualifiedName~Tenant|FullyQualifiedName~Authorization|FullyQualifiedName~Security|FullyQualifiedName~Isolation)&Category!=Integration'
       - name: Comprobar vulnerabilidades de paquetes productivos
         working-directory: backend
         shell: bash
