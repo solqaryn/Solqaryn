@@ -1,3 +1,7 @@
+## 2026-10-22 — Baja del control anterior de automatizaciones
+
+**ESTADO VIGENTE: NO HAY AUTOMATIZACIONES CHATGPT ACTIVAS AUTORIZADAS.** El propietario confirmó la eliminación de las diez Tasks y de la hoja operativa anterior. Se retiraron los cron VAEP y el workflow de readmisión mediante PR #3713. `scripts/vaep/logical_lease_dispatch.py` y `vaep/control/logical-lease-candidate.json` fueron retirados del árbol vivo. Las referencias a diez Tasks, IDs, epochs, leases y pautas PRE-GO que aparecen bajo esta nota son **históricas e inoperantes**; no autorizan ejecución, recuperación, despachos, creación de Tasks ni reactivación de Sheets. El workflow `vaep-engine-ci.yml` solo conserva temporalmente un check de compatibilidad porque GitHub requiere su nombre para fusionar PRs. La fuente comercial conservada es el Plan Comercial Inicial Unificado. El producto ERP, CI de seguridad y protección de ramas no se desactivan. El nuevo modelo de trabajo requiere autorización y diseño nuevos.
+
 ## 2026-10-21 — Corrección causal: retirar escritor CAS dual todavía presente en DEV (SIN GO)
 
 - Auditoría del propietario identificó deuda real en HEAD `de1df99ce7a00b61eaec9c3056e118d369be1ec1`: aunque las 10 políticas de Sheets ya eran `LOGICAL_SINGLE_OWNER_TASK_WRITE_VERIFIED`, `scripts/vaep/cas_lease_writer.py` seguía presente, `AGENTS.md` lo mandaba usar y `vaep-engine-ci.yml` lo compilaba y probaba. La migración fue solamente PRE-GO documental, no una sustitución operativa completa; nunca declararla activada.
