@@ -19,7 +19,7 @@ description: "Gobierno tecnico obligatorio y unica skill local de SOLQARYN. Usar
 - `LEGACY_INFRASTRUCTURE=DENY`
 - `LEGACY_DATA_SOURCE=VERIFIED_BACKUP_ONLY`
 
-Esta es la unica skill local y la primera puerta de entrada para cualquier chat, agente o automatizacion que trabaje sobre SOLQARYN. Identidades, repositorios, deployments, servicios o cuentas retirados no se consultan ni se usan como fallback. El único dato heredado autorizado es un respaldo histórico verificado destinado a una migración futura explícita.
+Esta es la única Skill local y la primera puerta de entrada para cualquier chat o agente autorizado que trabaje sobre SOLQARYN. El motor de automatizaciones anteriores fue retirado por orden del propietario el 22-10-2026: no buscar, reinstalar o crear Tasks ni reactivar coordinación VAEP sin nueva autorización. Su estado se declara en `docs/AUTOMATION_STATUS.md`. Identidades, repositorios, deployments, servicios o cuentas retirados no se consultan ni se usan como fallback. El único dato heredado autorizado es un respaldo histórico verificado destinado a una migración futura explícita.
 
 ## 2. Fuentes canonicas
 
@@ -27,7 +27,7 @@ Leer en el orden necesario:
 
 1. `docs/PROJECT_SCOPE_LOCK.md`;
 2. `AGENTS.md`;
-3. `docs/VAEP_AUTHORITY.md` cuando la tarea toque VAEP/automatizaciones;
+3. `docs/AUTOMATION_STATUS.md` para confirmar que el sistema de automatización está retirado y no tiene autoridad activa;
 4. HEAD vivo de `dev`;
 5. `PROJECT_CONTEXT.md` y `PROJECT_INDEX.md`;
 6. `ARCHITECTURE.md` cuando exista impacto estructural/transversal;
@@ -36,10 +36,10 @@ Leer en el orden necesario:
 
 Toda decision operativa se basa en el estado vivo y en las autoridades vigentes. Fuentes no citadas por el Plan Comercial Inicial Unificado (única autoridad ejecutable actual) no introducen dependencias, prioridades ni gates. Los documentos del futuro Plan Maestro están fuera de la cola y no pueden imponer tareas.
 
-### Comprobación de frescura obligatoria (VAEP y automatizaciones)
+### Comprobación de frescura obligatoria del gobierno del proyecto
 
 - La Skill incluida por ChatGPT o por otra interfaz **puede quedar desactualizada** aunque `dev` tenga código nuevo. Tras invocarla, consultar siempre **esta misma Skill canónica en el HEAD actual** de `solqaryn/Solqaryn` y `references/architecture.md`, usando el repositorio original y la rama `dev`.
-- El único plan ejecutable es `SOLQARYN PLAN COMERCIAL INICIAL UNIFICADO`, Drive ID `1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j`. Confirmar además `AGENTS.md`, `docs/PROJECT_SCOPE_LOCK.md` y `docs/VAEP_AUTHORITY.md` vigentes; los planes archivados nunca son fallback.
+- El único plan ejecutable es `SOLQARYN PLAN COMERCIAL INICIAL UNIFICADO`, Drive ID `1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j`. Confirmar además `AGENTS.md`, `docs/PROJECT_SCOPE_LOCK.md` y `docs/AUTOMATION_STATUS.md` vigentes; los planes archivados nunca son fallback.
 - Ejecutar `node scripts/verify-solqaryn-skills.mjs --self-test` cuando haya checkout del HEAD; sin checkout, comprobar en GitHub que el check `SOLQARYN Project Scope Lock` aprobó **ese SHA exacto** e inspeccionar sus evidencias de versión. Verificar versiones contra `frontend/package.json`, `backend/src/API/Solqaryn.API.csproj` y `backend/src/Infrastructure/Solqaryn.Infrastructure.csproj`.
 - Si la Skill cargada contradice la del repositorio o no es posible acreditar la comprobación, **NO_GO para escrituras, leases, certificaciones y activación**. Informar `SKILL_VERSION_MISMATCH` y pedir sincronización de la Skill instalada; nunca asumir que GitHub actualiza automáticamente la copia instalada en ChatGPT.
 - Aplicar las referencias externas sólo cuando la microtarea las requiera, según el registro y su pin exacto. Ninguna automatización puede instalar, copiar o ejecutar scripts de repositorios externos sin aprobación. Mantener `dev` y seguridad fail-closed.
@@ -112,7 +112,7 @@ Reglas:
 
 - esta skill local siempre va primero;
 - las otras doce entradas son referencias externas, no skills locales;
-- cada Primary/Supervisor, antes de ejecutar su microtarea, identifica componente, riesgos y validaciones, y sólo consulta las referencias autorizadas que corresponden a esa tarea (ninguna, una o varias); no se aplican las doce indiscriminadamente;
+- cada agente autorizado, antes de ejecutar un cambio real, identifica componente, riesgos y validaciones, y sólo consulta las referencias autorizadas que corresponden a esa tarea (ninguna, una o varias); no se aplican las doce indiscriminadamente;
 - SKREF-10 Angular Developer: Angular 22.2.1, Signals, formularios, routing, accesibilidad y pruebas cuando la tarea modifica frontend; sin crear una app nueva ni cambiar dependencias;
 - SKREF-11 Security Threat Model: sólo ante una tarea que requiera modelar amenazas, abuso o límites de confianza multiempresa/JWT/RBAC/HMAC; no imponer nuevos informes ni pausas a tareas no relacionadas;
 - SKREF-12 .NET Performance: tareas concretas de profiling o performance .NET 10, LINQ, async, memoria o I/O; optimizar únicamente con evidencia y regresiones;
@@ -123,7 +123,7 @@ Reglas:
 
 ### Plan comercial y avisos
 
-Nunca esperar una fase histórica ni reutilizar sus tareas como autoridad. El trabajo aprobado es únicamente el Plan Comercial Inicial; usar CI de seguridad y regresiones causales del código vigente sin confundir un nombre de workflow viejo con una dependencia de roadmap. Si se requiere una decisión o permiso del propietario, registrar una sola acción humana concreta y verificable con fingerprint, emitir notificación deduplicada mediante el mecanismo autorizado, detener únicamente el scope bloqueado y seguir otra microtarea independiente. Intentos técnicos fallidos sin nueva hipótesis/evidencia no deben repetirse indefinidamente. No comprar, contratar ni activar planes de pago. Mantener fail-closed para operaciones no autorizadas, QA/main/PROD y supervisión 10/10.
+Nunca esperar una fase histórica ni reutilizar sus tareas como autoridad. El trabajo aprobado es únicamente el Plan Comercial Inicial; usar CI de seguridad y regresiones causales del código vigente sin confundir un nombre de workflow viejo con una dependencia de roadmap. Si se requiere una decisión o permiso del propietario, registrar una sola acción humana concreta y verificable con fingerprint, emitir notificación deduplicada mediante el mecanismo autorizado, detener únicamente el scope bloqueado y seguir otra microtarea independiente. Intentos técnicos fallidos sin nueva hipótesis/evidencia no deben repetirse indefinidamente. No comprar, contratar ni activar planes de pago. Mantener fail-closed para operaciones no autorizadas y QA/main/PROD. Las diez Tasks, las parejas Primary/Supervisor y el motor VAEP están retirados; no existe supervisión 10/10 vigente.
 
 ## 8. Calidad y cierre
 
