@@ -5,7 +5,7 @@ import { join } from 'node:path';
 const root=process.cwd();
 const read=(p)=>readFileSync(join(root,p),"utf8").replace(/\r\n/g, "\n");
 const skRoot=".agents/skills/solqaryn-project-governance";
-const planId="1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j";
+const planId="1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA";
 const sources=[
 ["agentskills/agentskills","69ef37e9424c0a7ea9dd2293b559e43ec8176379"],
 ["pbakaus/impeccable","2149fcce39a90bb409df5f16515f316a76dc6199"],

@@ -1,3 +1,12 @@
+## 2026-10-22 — Migración documental nativa (autoridad comercial vigente)
+
+- Fuente comercial aprobada: [STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES](https://docs.google.com/document/d/1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA/edit), Google Docs nativo, 492 unidades y 1.123 microtareas con texto y estructura certificados; sustituye el ID Word histórico `1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j`.
+- Seguimiento documental: [STANDARD DE AUTOMATIZACIONES EN SOLQARYN](https://docs.google.com/spreadsheets/d/1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU/edit), 1.123 tareas en PENDIENTE, `PLAN_MAESTRO` editable, `COLA` calculada y `BITACORA` inicial vacía, sin ejecución automática.
+- [STANDARD AUTORIDAD OPERATIVA VAEP](https://docs.google.com/document/d/1A525NGt09mBiZez_r6hFcdCYAdoOAwOZM--N0uXPBOQ/edit) conserva el contrato como referencia histórica de las diez Tasks retiradas; no habilita leases, cron ni despachos.
+- Los enlaces e IDs que aparecen en secciones anteriores al corte son evidencia histórica, no referencias vigentes. El ID nuevo rige para validaciones de autoridad; la versión V3 y las 1.123 descripciones se conservan íntegramente.
+
+---
+
 ## 2026-10-22 — Depuración técnica de scripts y CI histórica
 
 Se retira del árbol operativo el workflow manual de matrices VAEP y sus diez validadores N8.17/N8.18, cuyos archivos de evidencia permanecen en el historial Git y documentación de archivo. Los seis scripts de correo de prueba, runtime, auditoría de código y paridad PDF conservan su contenido funcional con denominaciones estándar; se alinean los workflows consumidores y los filtros de CI. No se modifica producto comercial, base de datos, autenticación, desplegables ni secretos. La integración depende de CI y PR protegido.

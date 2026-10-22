@@ -4,12 +4,16 @@ PROJECT_SCOPE_LOCK=STRICT
 PROJECT_ID=SOLQARYN
 REPOSITORY=solqaryn/Solqaryn
 BRANCH=dev
-EXECUTION_PLAN_DRIVE_FILE_ID=1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j
+EXECUTION_PLAN_DRIVE_FILE_ID=1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA
 CURRENT_COMMERCIAL_ONLY=TRUE
 AUTOMATION_RUNTIME=RETIRED
 SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0
 VAEP_DISPATCH_AUTHORIZED=FALSE
 JULES_WORKERS_AUTHORIZED=0
+
+## Fuentes nativas vigentes
+
+Documento rector: [STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES](https://docs.google.com/document/d/1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA/edit). Seguimiento manual: [STANDARD DE AUTOMATIZACIONES EN SOLQARYN](https://docs.google.com/spreadsheets/d/1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU/edit). [STANDARD AUTORIDAD OPERATIVA VAEP](https://docs.google.com/document/d/1A525NGt09mBiZez_r6hFcdCYAdoOAwOZM--N0uXPBOQ/edit) es archivo histórico no ejecutable. No existen Tasks ni jobs comerciales autorizados.
 
 ## Estado vigente
 

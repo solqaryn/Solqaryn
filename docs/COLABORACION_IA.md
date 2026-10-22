@@ -4,9 +4,9 @@ PROJECT_SCOPE_LOCK=STRICT
 PROJECT_ID=SOLQARYN
 REPOSITORY=solqaryn/Solqaryn
 BRANCH=dev
-EXECUTION_PLAN_DRIVE_FILE_ID=1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j
+EXECUTION_PLAN_DRIVE_FILE_ID=1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA
 
-Los chats o agentes autorizados trabajan sobre el repositorio y el alcance actual del Plan Comercial Inicial Unificado. Consultar `AGENTS.md`, `docs/PROJECT_SCOPE_LOCK.md`, el HEAD vivo de `dev` y `docs/AUTOMATION_STATUS.md`.
+Los chats o agentes autorizados trabajan sobre el repositorio y el alcance actual de STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES. Consultar `AGENTS.md`, `docs/PROJECT_SCOPE_LOCK.md`, el HEAD vivo de `dev` y `docs/AUTOMATION_STATUS.md`.
 
 Los diez ejecutores ChatGPT anteriores, sus pares Primary/Supervisor, epochs, hojas y scripts VAEP fueron retirados. **No recuperar, buscar ni crear Tasks**, ni ejecutar automatizaciones antiguas como requisito para nuevos cambios.
 

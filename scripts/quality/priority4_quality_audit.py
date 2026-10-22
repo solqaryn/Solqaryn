@@ -196,7 +196,7 @@ if not external_telemetry:
 # Current project identity and actual runtime state, without obsolete master files.
 agents = read("AGENTS.md")
 automation = read("docs/AUTOMATION_STATUS.md")
-commercial_plan_id = "1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j"
+commercial_plan_id = "1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA"
 ok(commercial_plan_id in agents and commercial_plan_id in automation,
    "CURRENT_COMMERCIAL_PLAN_ID_MATCH")
 ok("AUTOMATION_RUNTIME=RETIRED" in automation and "SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0" in automation,

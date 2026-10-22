@@ -109,7 +109,7 @@ El propietario eliminó las diez Tasks de ChatGPT y la hoja operativa antigua. G
 
 **Naturaleza:** este punto no es deuda de DEV/QA/PROD ni una falla de infraestructura. El Plan Comercial Inicial aprobado define el alcance ejecutable previo al Maestro futuro.
 
-**Autoridad comercial actual:** Drive ID `1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j`; visión futura pospuesta y fuera de la cola.
+**Autoridad comercial actual:** Drive ID `1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA`; visión futura pospuesta y fuera de la cola.
 
 **Decisión vigente:** continuar la ejecución únicamente desde el Plan Comercial Inicial actual, el estado vivo y las dependencias técnicas reales. Históricos, planes retirados, fases viejas o receipts previos no gobiernan trabajo nuevo.
 
