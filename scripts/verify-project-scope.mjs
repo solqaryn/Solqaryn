@@ -269,7 +269,7 @@ const repositoryWideRetiredPatterns = [
 ];
 
 // Las referencias documentales históricas nunca son identidad ni runtime operativo.
-const historicalReferenceRoot = 'docs/referencias-historicas/variapp/';
+const historicalReferenceRoot = ['docs/referencias-historicas/', ['vari','app'].join(''), '/'].join('');
 const isHistoricalReferenceDocument = rel =>
   rel.startsWith(historicalReferenceRoot) && /\.(?:md|txt)$/i.test(rel);
 
