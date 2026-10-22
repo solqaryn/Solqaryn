@@ -1,10 +1,6 @@
 name: Modernización - Fase 7 .NET EF DEV
 
 on:
-  pull_request:
-    branches: [dev]
-  push:
-    branches: [dev]
   workflow_dispatch:
 
 permissions:
