@@ -1,15 +1,6 @@
 name: VAEP EF Snapshot Probe
 
 on:
-  push:
-    branches: [dev]
-    paths:
-      - '.github/workflows/vaep-ef-snapshot-probe.yml'
-      - 'backend/src/Domain/Entities/DashboardKpiConfiguracion.cs'
-      - 'backend/src/Infrastructure/Persistence/Configurations/DashboardKpiConfiguracionConfiguration.cs'
-      - 'backend/src/Infrastructure/Persistence/AppDbContextFactory.cs'
-      - 'backend/src/Infrastructure/Migrations/AppDbContextModelSnapshot.cs'
-      - 'backend/src/Infrastructure/Migrations/AppDbContextModelSnapshot.N57C.cs'
   workflow_dispatch:
 
 permissions:

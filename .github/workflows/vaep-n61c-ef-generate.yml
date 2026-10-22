@@ -1,14 +1,7 @@
 name: VAEP N6.1.C Exact Head Gate
 
 on:
-  push:
-    branches: [dev]
-    paths:
-      - '.github/workflows/vaep-n61c-ef-generate.yml'
-      - 'backend/src/Domain/Entities/Empresa.cs'
-      - 'backend/src/Infrastructure/Persistence/Configurations/EmpresaConfiguration.cs'
-      - 'backend/src/Infrastructure/Migrations/*N6_1_C_TenantEmpresaPersistence*.cs'
-      - 'backend/src/Infrastructure/Migrations/AppDbContextModelSnapshot.cs'
+  workflow_dispatch:
 
 permissions:
   contents: read

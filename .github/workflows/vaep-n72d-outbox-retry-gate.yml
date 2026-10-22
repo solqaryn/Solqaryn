@@ -1,20 +1,6 @@
 name: N7.2.D - Outbox retry exact-head
 
 on:
-  push:
-    branches:
-      - dev
-    paths:
-      - "backend/src/Application/Interfaces/IMensajeOutboxRepository.cs"
-      - "backend/src/Application/Services/OutboxRetryPolicy.cs"
-      - "backend/src/Application/Services/OutboxRetryProcessor.cs"
-      - "backend/src/Infrastructure/Repositories/MensajeOutboxRepository.cs"
-      - "backend/tests/Solqaryn.Tests/N71DOutboxApplicationApiTests.cs"
-      - "backend/tests/Solqaryn.Tests/N72DOutboxRetryPolicyTests.cs"
-      - "backend/tests/Solqaryn.Tests/N72DOutboxRetryProcessorTests.cs"
-      - "backend/tests/Solqaryn.Tests/N72DOutboxRepositoryClaimTests.cs"
-      - "backend/tests/Solqaryn.Tests/N72DOutboxMySqlConcurrencyTests.cs"
-      - ".github/workflows/vaep-n72d-outbox-retry-gate.yml"
   workflow_dispatch:
 
 permissions:
