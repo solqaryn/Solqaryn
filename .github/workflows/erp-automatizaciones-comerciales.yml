@@ -1,10 +1,10 @@
-name: M12 - Automatización transversal
+name: ERP - Automatizaciones comerciales
 
 on:
   push:
     branches: [dev]
     paths:
-      - .github/workflows/m12-automatizacion-transversal.yml
+      - .github/workflows/erp-automatizaciones-comerciales.yml
       - backend/src/API/Controllers/AutomatizacionesController.cs
       - backend/src/Application/DTOs/AutomatizacionDto.cs
       - backend/src/Application/Interfaces/IAutomatizacionService.cs
@@ -19,7 +19,7 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - .github/workflows/m12-automatizacion-transversal.yml
+      - .github/workflows/erp-automatizaciones-comerciales.yml
       - backend/src/API/Controllers/AutomatizacionesController.cs
       - backend/src/Application/DTOs/AutomatizacionDto.cs
       - backend/src/Application/Interfaces/IAutomatizacionService.cs
@@ -42,7 +42,7 @@ concurrency:
 
 jobs:
   m12:
-    name: MySQL, backend, Angular y Playwright M12
+    name: Validar automatizaciones comerciales ERP
     runs-on: ubuntu-latest
     timeout-minutes: 60
     services:

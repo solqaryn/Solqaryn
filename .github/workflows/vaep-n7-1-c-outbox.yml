@@ -1,20 +1,6 @@
 name: VAEP N7.1.C outbox exact-head gate
 
 on:
-  push:
-    branches:
-      - dev
-    paths:
-      - 'backend/src/Domain/Entities/MensajeOutbox.cs'
-      - 'backend/src/Domain/Enums/EstadoMensajeOutbox.cs'
-      - 'backend/src/Application/Interfaces/IMensajeOutboxRepository.cs'
-      - 'backend/src/Infrastructure/Persistence/AppDbContext.cs'
-      - 'backend/src/Infrastructure/Persistence/Configurations/MensajeOutboxConfiguration.cs'
-      - 'backend/src/Infrastructure/Migrations/20260913050800_N71COutboxPersistence.cs'
-      - 'backend/src/Infrastructure/Migrations/AppDbContextModelSnapshot.N69C.cs'
-      - 'backend/src/Infrastructure/Migrations/AppDbContextModelSnapshot.N71C.cs'
-      - 'backend/tests/Solqaryn.Tests/N71COutboxPersistenceModelTests.cs'
-      - '.github/workflows/vaep-n7-1-c-outbox.yml'
   workflow_dispatch:
 
 permissions:

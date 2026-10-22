@@ -2,10 +2,6 @@ name: Modernización - Fase 1 Aiven MySQL 8.4.8 aprobado
 # Aiven topology: one MySQL service hosts isolated DEV/QA/PROD databases; this workflow is fail-closed and never starts maintenance.
 
 on:
-  push:
-    branches: [dev]
-    paths:
-      - '.github/workflows/modernization-phase1-aiven-mysql.yml'
   workflow_dispatch:
 
 permissions:

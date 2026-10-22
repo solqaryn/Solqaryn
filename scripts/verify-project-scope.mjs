@@ -32,15 +32,13 @@ const mandatory = [
   'AGENTS.md',
   'PROJECT_CONTEXT.md',
   'CONTRIBUTING.md',
-  'docs/VAEP_AUTHORITY.md',
+  'docs/AUTOMATION_STATUS.md',
   'docs/COLABORATIVO.md',
   'docs/COLABORACION_IA.md',
   '.githooks/pre-commit',
   '.githooks/post-commit',
   'scripts/iniciar-sesion-ia.ps1',
-  'scripts/configurar-jules-vaep.ps1',
   'scripts/configurar-colaboracion.ps1',
-  'scripts/vaep/sync-bitacora.mjs',
   'docs/ROLLBACK_RUNBOOK.md',
   'docs/runbooks/GO_LIVE_MIGRATION_RUNBOOK.md',
   'docs/runbooks/HYPERCARE_RUNBOOK.md',
@@ -66,7 +64,21 @@ const expectedExternalSources = [
   ['dotnet/skills', '9386ed7c1148a7bef970aa0502371c982effa01c'],
 ];
 
+const obsoleteRuntime = [
+  'scripts/configurar-jules-vaep.ps1',
+  'scripts/vaep',
+  'scripts/antig',
+  '.github/scripts/vaep-checkpoint.sh',
+  '.github/scripts/vaep-policy-parser.sh',
+  'vaep/control',
+  '.github/workflows/vaep-engine-ci.yml',
+  '.github/workflows/vaep-checkpoints.yml',
+  '.github/workflows/vaep-admission-open-guard.yml',
+];
 const errors = [];
+for (const rel of obsoleteRuntime) {
+  if (existsSync(join(root, rel))) errors.push(`retired automation control plane must not be restored: ${rel}`);
+}
 
 function read(rel) {
   return readFileSync(join(root, rel), 'utf8');
@@ -248,7 +260,7 @@ const currentStateIdentityFiles = [
   "README.md",
   "CONTRIBUTING.md",
   "docs/PROJECT_SCOPE_LOCK.md",
-  "docs/VAEP_AUTHORITY.md",
+  "docs/AUTOMATION_STATUS.md",
   "docs/ENTORNOS_DEV_PROD.md",
   "docs/RENDER_ENVIRONMENT_CONTRACT.md",
   "docs/DETALLES_PENDIENTES.md",
@@ -267,7 +279,7 @@ const currentStatePlanningFiles = [
   "TASKS.md",
   "docs/COLABORATIVO.md",
   "docs/COLABORACION_IA.md",
-  "docs/VAEP_HANDOFF_CURRENT.md",
+
 ];
 
 const retiredPlanningTokens = [

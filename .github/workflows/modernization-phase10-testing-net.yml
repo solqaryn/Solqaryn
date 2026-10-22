@@ -1,16 +1,6 @@
 name: Modernizacion - Fase 10 Testing .NET DEV
 
 on:
-  pull_request:
-    branches: [dev]
-    paths:
-      - 'backend/**'
-      - '.github/workflows/modernization-phase10-testing-net.yml'
-  push:
-    branches: [dev]
-    paths:
-      - 'backend/**'
-      - '.github/workflows/modernization-phase10-testing-net.yml'
   workflow_dispatch:
 
 permissions:

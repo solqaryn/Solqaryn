@@ -24,7 +24,7 @@ return {skill:read(`${skRoot}/SKILL.md`),architecture:read(`${skRoot}/references
 routing:read(`${skRoot}/references/skill-routing.md`),meta:read(`${skRoot}/agents/openai.yaml`),
 registry:read("docs/REGISTRO_REFERENCIAS_SKILLS_SOLQARYN.md"),
 allowlist:read("docs/PROJECT_EXTERNAL_CONTEXT_ALLOWLIST.md"),agents:read("AGENTS.md"),
-vaep:read("docs/VAEP_AUTHORITY.md"),frontend:read("frontend/package.json"),
+automation:read("docs/AUTOMATION_STATUS.md"),frontend:read("frontend/package.json"),
 api:read("backend/src/API/Solqaryn.API.csproj"),infra:read("backend/src/Infrastructure/Solqaryn.Infrastructure.csproj"),
 dirs:readdirSync(".agents/skills",{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>x.name)};
 };
@@ -56,7 +56,7 @@ if(!/^---\nname: solqaryn-project-governance\n/.test(x.skill))bad.push("invalid 
 if(!x.meta.includes("display_name: \"SOLQARYN"))bad.push("missing Skill UI metadata");
 if(x.dirs.length!==1||x.dirs[0]!=="solqaryn-project-governance")bad.push("local Skill count !=1");
 for(const [src,pin] of sources){expect(x.registry,src,"registry origin");expect(x.registry,pin,"registry pin");expect(x.allowlist,src,"allowlist origin");expect(x.allowlist,pin,"allowlist pin");}
-for(const [n,body] of [["Skill",x.skill],["AGENTS",x.agents],["VAEP",x.vaep]])expect(body,planId,n);
+for(const [n,body] of [["Skill",x.skill],["AGENTS",x.agents],["AUTOMATION",x.automation]])expect(body,planId,n);
 expect(x.skill,"Plan Comercial Inicial Unificado","Skill authority");
 expect(x.registry,"EXTERNAL_SKILL_SOURCES=12","registry count");
 expect(x.allowlist,"AUTHORIZED_ORIGINAL_SKILL_SOURCES=12","allowlist count");
@@ -66,7 +66,8 @@ for(const ref of ["SKREF-10","SKREF-11","SKREF-12"]){
  expect(x.routing,ref,"skill routing id");
 }
 expect(x.routing,"docs/REGISTRO_REFERENCIAS_SKILLS_SOLQARYN.md","routing");
-expect(x.vaep,"CURRENT_COMMERCIAL_ONLY=TRUE","VAEP mode");
+expect(x.automation,"AUTOMATION_RUNTIME=RETIRED","automation retirement");
+expect(x.automation,"CURRENT_COMMERCIAL_ONLY=TRUE","commercial scope");
 expect(x.agents,"PROJECT_SKILL=.agents/skills/solqaryn-project-governance/SKILL.md","AGENTS path");
 return bad;
 }

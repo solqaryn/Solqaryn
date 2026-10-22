@@ -1,17 +1,7 @@
 name: VAEP N5.7.C effective EF snapshot exact-head gate
 
 on:
-  push:
-    branches:
-      - dev
-    paths:
-      - .github/workflows/vaep-n57c-snapshot-repair-probe.yml
-      - backend/src/Infrastructure/Migrations/AppDbContextModelSnapshot.N43C.cs
-      - backend/src/Infrastructure/Migrations/AppDbContextModelSnapshot.N57C.cs
-      - backend/src/Infrastructure/Migrations/20260910113300_N5_7_C_DashboardKpiConfiguraciones.cs
-      - backend/src/Infrastructure/Persistence/AppDbContext.cs
-      - backend/src/Infrastructure/Persistence/Configurations/DashboardKpiConfiguracionConfiguration.cs
-      - backend/src/Domain/Entities/DashboardKpiConfiguracion.cs
+  workflow_dispatch:
 
 permissions:
   contents: read

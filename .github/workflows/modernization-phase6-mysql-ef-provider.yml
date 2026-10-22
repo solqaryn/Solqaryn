@@ -1,21 +1,6 @@
 name: Modernización - Fase 6 MySQL EF Provider Gate DEV
 
 on:
-  push:
-    branches: [dev]
-    paths:
-      - 'backend/**'
-      - 'scripts/security/priority3_tenant_isolation_audit.py'
-      - '.github/workflows/modernization-phase6-mysql-ef-provider.yml'
-      - '.github/workflows/modernization-phase7-dotnet-ef.yml'
-      - 'docs/evidencias/modernizacion/**'
-      - 'ARCHITECTURE.md'
-      - 'ARCHITECTURE_CHANGELOG.md'
-      - 'PROJECT_CONTEXT.md'
-      - 'PROJECT_INDEX.md'
-      - 'CHANGELOG_AI.md'
-  pull_request:
-    branches: [dev]
   workflow_dispatch:
 
 permissions:

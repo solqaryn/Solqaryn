@@ -1,6 +1,0 @@
-{
-  "newDispatchAdmission": "OPEN",
-  "allowExistingActiveSessions": true,
-  "reason": "OPEN_ONLY_INVARIANT_REPAIR__TASK_EXECUTION_GATES_ONLY",
-  "updatedAtUtc": "2026-09-17T00:35:09Z"
-}

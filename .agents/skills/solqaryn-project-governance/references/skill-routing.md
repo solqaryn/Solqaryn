@@ -19,9 +19,9 @@ Las demas entradas se consultan como referencias externas originales segun `docs
 | SKREF-11 Security Threat Model | Amenazas o límites de confianza explícitos A/B, JWT, RBAC, HMAC o sesiones | Consultar sólo su SKILL.md original de openai/skills en pin; analizar evidencia específica del repositorio |
 | SKREF-12 .NET Performance | Cuellos de botella demostrados, profiling, problemas LINQ, async, memoria o I/O .NET 10 | Consultar sólo su SKILL.md original de dotnet/skills en pin; no optimizar sin medición |
 
-## Uso por lane del Plan Comercial Inicial
+## Orientación técnica opcional por tipo de cambio
 
-| Lane VAEP | Skill local | Referencias externas condicionales |
+| Área del producto | Skill local | Referencias externas condicionales |
 | --- | --- | --- |
 | 01_SEGURIDAD | Governance, autenticación y tenancy | SKREF-11 si se requiere modelado de amenazas/límites de confianza; SKREF-01/02 sólo al modificar Skills |
 | 02_COMERCIO | Governance y aislamiento de empresa | SKREF-10 para Angular, SKREF-03 para UX administrativa, SKREF-05 para tienda, SKREF-11 ante amenaza explícita, SKREF-12 para performance .NET demostrada |
@@ -31,8 +31,8 @@ Las demas entradas se consultan como referencias externas originales segun `docs
 
 El ejecutor debe usar **primero la Skill local del repositorio en el HEAD de dev**, confirmar que la copia instalada coincide y pasar `scripts/verify-solqaryn-skills.mjs` o el check de CI exact-head. Si hay discrepancia, `NO_GO`. No es válido alegar que una referencia fue aplicada por existir en el registro: registrar qué referencia, pin/ruta y por qué fue necesaria.
 
-Cada Primary y Supervisor debe ejecutar este routing para cada microtarea existente del Plan Comercial Inicial: consultar primero la Skill local canónica y comprobar frescura, clasificar el alcance de la microtarea, seleccionar 0..N referencias, validar fuente original + pin + ruta registrada, registrar cuáles aplicó y ejecutar las pruebas causales. Si ninguna aplica, basta Governance; si el origen fijado falla, no usar forks o mirrors ni simular su consulta. Bloquear sólo el scope que la necesita.
+Cada agente autorizado debe seleccionar referencias únicamente ante un cambio técnico concreto del Plan Comercial Inicial: consultar primero la Skill local canónica y comprobar frescura, clasificar el alcance de la microtarea, seleccionar 0..N referencias, validar fuente original + pin + ruta registrada, registrar cuáles aplicó y ejecutar las pruebas causales. Si ninguna aplica, basta Governance; si el origen fijado falla, no usar forks o mirrors ni simular su consulta. Bloquear sólo el scope que la necesita.
 
-No se instalan Skills externas como copias locales, no se ejecutan herramientas externas ni se importan agentes, dependencias, migraciones o defaults de otros repositorios. No se crean microtareas, automatizaciones ni informes no requeridos.
+No se instalan Skills externas como copias locales, no se ejecutan herramientas externas ni se importan agentes, dependencias, migraciones o defaults de otros repositorios. No se crean microtareas, automatizaciones, Tasks ni informes no requeridos. El sistema Primary/Supervisor anterior está retirado.
 
 Cuando apliquen varias referencias, usar primero governance, luego referencias de superficie y por ultimo referencias de redaccion/contexto.
