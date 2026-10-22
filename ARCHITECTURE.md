@@ -1,5 +1,10 @@
 # Arquitectura técnica vigente — SOLQARYN
 
+## 2026-10-21 — Arquitectura VAEP de preparacion sin CAS dual (DEV; NO_GO)
+
+La ruta de escritura propuesta pasa a `scripts/vaep/logical_lease_dispatch.py`: excluye transiciones concurrentes del mismo scope con `addNamedRange` de identificador derivado de estado previo, en el mismo `spreadsheets.batchUpdate` que OWNER/LEASE/auditoria y con readback de RUN_ID/TOKEN/HEAD/TTL. El modulo Python es un constructor, no un scheduler residente ni permiso para ejecutar una Task. Se retiran `scripts/vaep/cas_lease_writer.py` y su suite de la rama candidata; ninguna operacion futura recupera el CAS dual por fallback. Los metadatos historicos en Google Sheets se conservan hasta lectura exacta autorizada y recuperación cercada. El manifiesto permanece `PRE_GO_CONTRACT_CERTIFIED`; solo 2 Task IDs cuentan con evidencias GitHub administrativas aceptadas, no 10 writers materialmente habilitados. `RUNTIME_MODE=PAUSADO` y no existe GO comercial. La migración de las diez políticas en Sheets y sus prompts no prueba replica funcional del historial de VarApp ni la terminalidad de runs.
+
+
 **Alcance de ejecución actual:** SOLQARYN PLAN COMERCIAL INICIAL UNIFICADO (Drive `1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j`), desglosado en 1123 tareas bajo el control VAEP comercial. Este cambio de autoridad operativa **no altera el stack ni la arquitectura probada**, ni revive documentos históricos como dependencias. Los bloques fechados a continuación son registros técnicos históricos, no instrucciones de ejecución. Revisar siempre HEAD de `dev` antes de trabajar.
 
 ## 2026-10-19 — Corrección 2: alta empresarial con administrador nuevo (candidato DEV)
