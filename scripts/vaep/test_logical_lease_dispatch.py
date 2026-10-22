@@ -465,7 +465,19 @@ class LogicalCutoverGateTests(unittest.TestCase):
                          proofs[0]["commit_author"])
         self.assertEqual(manifest["verified_task_terminated_count"], 0)
         self.assertIs(manifest["previous_runs_terminal_readback_at_certification"], False)
-        self.assertIs(manifest["all_ten_sheet_policies_migrated"], False)
+        # Sheets policy synchronization is real and already complete, but it
+        # cannot be elevated into a Task-origin write or terminal-run proof.
+        self.assertIs(manifest["all_ten_sheet_policies_migrated"], True)
+        self.assertEqual(manifest["sheet_policy_live_readback"],
+                         "LOGICAL_SINGLE_OWNER_TASK_WRITE_VERIFIED")
+        self.assertEqual(manifest["sheet_policy_latest_readback_dev_sha"],
+                         "de1df99ce7a00b61eaec9c3056e118d369be1ec1")
+        self.assertEqual(manifest["planned_operational_writer_task_ids"],
+                         list(CANONICAL_EXECUTORS))
+        self.assertEqual(
+            manifest["operational_cohort_status"],
+            "PLANNED_10_OF_10_NOT_MATERIALLY_AUTHORIZED_PRE_GO")
+        self.assertEqual(len(manifest["verified_writer_task_ids"]), 2)
         self.assertIs(manifest["commercial_writes_allowed"], False)
         self.assertIs(manifest["safety_check_bypass_allowed"], False)
         self.assertEqual(manifest["runtime_mode_at_certification"], "PAUSADO")

@@ -37,7 +37,7 @@ jobs:
         run: |
           set -euo pipefail
           node -e "JSON.parse(require('fs').readFileSync('vaep/control/dispatch-admission.json')); console.log('json valid')"
-          python3 -m py_compile scripts/vaep/state_sync.py scripts/vaep/parent_transition.py scripts/vaep/commercial_dispatch.py scripts/vaep/cas_lease_writer.py scripts/vaep/continuity_dispatch.py scripts/vaep/logical_lease_dispatch.py
+          python3 -m py_compile scripts/vaep/state_sync.py scripts/vaep/parent_transition.py scripts/vaep/commercial_dispatch.py scripts/vaep/continuity_dispatch.py scripts/vaep/logical_lease_dispatch.py
           bash -n .github/scripts/vaep-policy-parser.sh .github/scripts/vaep-checkpoint.sh
           bash .github/scripts/vaep-policy-parser.sh --self-test
           bash .github/scripts/vaep-policy-parser.sh --validate docs/VAEP_AUTHORITY.md
@@ -102,7 +102,8 @@ jobs:
           python3 -m unittest discover -s scripts/vaep -p test_state_sync.py
           python3 -m unittest discover -s scripts/vaep -p test_commercial_dispatch.py
           python3 -m unittest discover -s scripts/vaep -p test_continuity_dispatch.py
-          python3 -m unittest discover -s scripts/vaep -p test_cas_lease_writer.py
+          test ! -f scripts/vaep/cas_lease_writer.py || { echo 'RETIRED_DEVELOPER_METADATA_CAS_WRITER_REINTRODUCED' >&2; exit 1; }
+          test ! -f scripts/vaep/test_cas_lease_writer.py || { echo 'RETIRED_DUAL_CAS_TESTS_REINTRODUCED' >&2; exit 1; }
           python3 -m unittest discover -s scripts/vaep -p test_logical_lease_dispatch.py
           python3 -m unittest discover -s scripts/vaep -p test_reopen_authorization.py
           git diff --check
