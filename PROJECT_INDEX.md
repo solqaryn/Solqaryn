@@ -1,3 +1,10 @@
+## 2026-10-21 — VAEP migracion real: indices de verificacion (PRE-GO)
+
+- Autoridad viva: `docs/VAEP_AUTHORITY.md`; entrada ejecutores: `AGENTS.md`; motor logico futuro: `scripts/vaep/logical_lease_dispatch.py`; manifiesto: `vaep/control/logical-lease-candidate.json`.
+- Retiro de codigo antiguo propuesto: `scripts/vaep/cas_lease_writer.py` y `scripts/vaep/test_cas_lease_writer.py`, sin tocar metadata fisica historica de Sheets.
+- Evidencia PRE-GO: PR #3709 (concurrencia/fencing) y #3710 (dos pruebas administrativas y epoch); Sheets 10/10 policies y 1123 scopes; runtime PAUSADO y manifest NO_GO.
+- Faltante para corte efectivo: corpus historico verificado para comparacion VarApp si aplica, terminalidad/locks fisicos/permiso material por Task, 10 writers reales autorizados bajo epoch nuevo, CI y GO protegido. No declarar replicada ni activar la red de Tasks por editar registros.
+
 ## 2026-10-19 — AUTORIDAD ÚNICA PARA EJECUCIÓN COMERCIAL INICIAL
 
 La única fuente **ejecutable en esta etapa** es [SOLQARYN PLAN COMERCIAL INICIAL UNIFICADO](https://drive.google.com/file/d/1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j/view), ID `1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j`. Su descomposición operativa de 492 fichas a 1123 microtareas está en el [control VAEP comercial](https://docs.google.com/spreadsheets/d/1gcVyCoyhLU0jFMwRtf0s5_x8FSnfBs38ojml1QF7Xwk/edit), pestaña `PLAN_COMERCIAL`. El antiguo Plan Maestro (ID `1YdQlNJ312HuziyKb9E-GEt55dcgSmuFGgfsHxyzPUaw`) se conserva como **visión futura no ejecutable**, sin borrar su historia. Esta decisión expresa del propietario reemplaza referencias antiguas de autoridad. Toda automatización debe comprobar que sus pares, su prompt, el contrato y la cola coinciden antes de activarse; mientras falte ese readback debe permanecer inactiva. No afecta controles de seguridad, CI, aislamiento A/B, backups ni prohibición de promover PROD sin autorización nueva.
