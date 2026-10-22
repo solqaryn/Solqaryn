@@ -7,7 +7,7 @@ import tempfile
 from pathlib import Path
 
 if len(sys.argv) != 4:
-    raise SystemExit("usage: phase9_compare_pdf_renders.py BASELINE_DIR CANDIDATE_DIR REPORT")
+    raise SystemExit("usage: compare_pdf_renders.py BASELINE_DIR CANDIDATE_DIR REPORT")
 
 baseline_dir = Path(sys.argv[1])
 candidate_dir = Path(sys.argv[2])

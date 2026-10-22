@@ -10,8 +10,9 @@ on:
       - .github/workflows/modernization-phase5-frontend-tooling.yml
       - frontend/**
       - backend/**
-      - scripts/fase7_*
-      - scripts/fase8_*
+      - scripts/smtp_capture_server.py
+      - scripts/validate_email_delivery.py
+      - scripts/validate_runtime_safety.py
       - docs/evidencias/modernizacion/**
       - docs/DETALLES_PENDIENTES.md
       - ARCHITECTURE_CHANGELOG.md
@@ -24,8 +25,9 @@ on:
       - .github/workflows/modernization-phase5-frontend-tooling.yml
       - frontend/**
       - backend/**
-      - scripts/fase7_*
-      - scripts/fase8_*
+      - scripts/smtp_capture_server.py
+      - scripts/validate_email_delivery.py
+      - scripts/validate_runtime_safety.py
       - docs/evidencias/modernizacion/**
       - docs/DETALLES_PENDIENTES.md
       - ARCHITECTURE_CHANGELOG.md
@@ -147,7 +149,7 @@ jobs:
           set -euo pipefail
           rm -rf "$SMTP_CAPTURE_DIR"
           mkdir -p "$SMTP_CAPTURE_DIR"
-          nohup python3 scripts/fase7_fake_smtp.py > fase7-smtp.log 2>&1 &
+          nohup python3 scripts/smtp_capture_server.py > fase7-smtp.log 2>&1 &
           echo $! > fase7-smtp.pid
           for attempt in $(seq 1 30); do
             if (echo > /dev/tcp/127.0.0.1/1025) >/dev/null 2>&1; then
@@ -415,7 +417,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 scripts/fase7_validate_email.py
+          python3 scripts/validate_email_delivery.py
           mkdir -p frontend/test-results/fase7-smtp
           cp -a "$SMTP_CAPTURE_DIR"/. frontend/test-results/fase7-smtp/
           cp fase7-smtp.log frontend/test-results/fase7-smtp/server.log

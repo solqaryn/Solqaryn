@@ -101,7 +101,7 @@ for path in files:
 todo_re = re.compile(r"\b(TODO|FIXME|HACK|XXX)\b", re.I)
 for path in files:
     rel = str(path.relative_to(ROOT)).replace("\\", "/")
-    if rel.startswith(("docs/", ".github/", "scripts/m13_static_audit.py")) or not is_text(path):
+    if rel.startswith(("docs/", ".github/", "scripts/audit_source_quality.py")) or not is_text(path):
         continue
     count = len(todo_re.findall(read(path)))
     if count:
