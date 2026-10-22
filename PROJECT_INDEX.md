@@ -1,6 +1,10 @@
-## 2026-10-22 — Baja del control anterior de automatizaciones
+## 2026-10-22 — Estado vigente después del retiro de automatizaciones
 
-**ESTADO VIGENTE: NO HAY AUTOMATIZACIONES CHATGPT ACTIVAS AUTORIZADAS.** El propietario confirmó la eliminación de las diez Tasks y de la hoja operativa anterior. Se retiraron los cron VAEP y el workflow de readmisión mediante PR #3713. `scripts/vaep/logical_lease_dispatch.py` y `vaep/control/logical-lease-candidate.json` fueron retirados del árbol vivo. Las referencias a diez Tasks, IDs, epochs, leases y pautas PRE-GO que aparecen bajo esta nota son **históricas e inoperantes**; no autorizan ejecución, recuperación, despachos, creación de Tasks ni reactivación de Sheets. El workflow `vaep-engine-ci.yml` solo conserva temporalmente un check de compatibilidad porque GitHub requiere su nombre para fusionar PRs. La fuente comercial conservada es el Plan Comercial Inicial Unificado. El producto ERP, CI de seguridad y protección de ramas no se desactivan. El nuevo modelo de trabajo requiere autorización y diseño nuevos.
+**ÚNICA AUTORIDAD OPERATIVA:** `AGENTS.md`, `docs/PROJECT_SCOPE_LOCK.md`, `docs/AUTOMATION_STATUS.md` y el Plan Comercial Inicial Unificado. El antiguo motor VAEP de diez Tasks fue retirado. No existen supervisores, cron de despacho, epochs, leases ni manifest de coordinación autorizados. El ruleset exige solamente `verify-solqaryn-project-scope`, `SOLQARYN - Seguridad multiempresa` y `SOLQARYN - Build y pruebas backend`.
+
+**El trabajo comercial nuevo no hereda fases, gates ni prioridades de planes anteriores.** Los apartados cronológicos anteriores al 22-10-2026 se conservan como antecedentes técnicos auditables, pero no autorizan tareas, despachos, escritura en Google Sheets, integración ni promoción a QA/PROD. El código de seguridad, compilación, base de datos, frontend y las pruebas funcionales reales del ERP permanece vigente según su impacto técnico.
+
+---
 
 ## 2026-10-21 — VAEP migracion real: indices de verificacion (PRE-GO)
 
