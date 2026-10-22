@@ -216,7 +216,7 @@ def decide(commercial_rows, runtime_rows, *, actor_id, now,
     if stale:
         return result(
             "SAFE_RECOVERY_REQUIRED", selected=next_recovery,
-            reason="CHECK_TERMINAL_RUN_THEN_FENCED_CAS_OR_STAY_READ_ONLY",
+            reason="CHECK_TERMINAL_RUN_THEN_ATOMIC_LOGICAL_FENCE_OR_STAY_READ_ONLY",
             recovery_candidate=next_recovery,
         )
 
