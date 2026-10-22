@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail-closed static audit for Priority 4 quality invariants.
+"""Fail-closed static audit for permanent ERP quality invariants.
 
 This gate intentionally distinguishes enforceable repository invariants from
 future runtime certifications (full performance load test, external telemetry,
@@ -170,9 +170,9 @@ ok('"type": "anyComponentStyle"' in budget_blob and '"maximumError": "32kb"' in 
    "ANGULAR_COMPONENT_STYLE_ERROR_BUDGET_32KB")
 ok((ROOT / "backend/src/API/Filters/MedirRendimientoBusquedaFilter.cs").is_file(),
    "API_SEARCH_LATENCY_FILTER_PRESENT")
-perf_cert = read("docs/N5.9_REPORT_PERFORMANCE_CERTIFICATION.md")
-ok("No se afirma mejora porcentual" in perf_cert and "benchmark reproducible" in perf_cert,
-   "PERFORMANCE_CERTIFICATION_DOES_NOT_INVENT_LATENCY")
+perf_contract = read("docs/PERFORMANCE_BENCHMARK_CONTRACT.md")
+ok("P50/P95/P99" in perf_contract and "inventar un porcentaje" in perf_contract,
+   "PERFORMANCE_REPRODUCIBLE_NO_UNSUPPORTED_METRICS")
 if not (ROOT / "docs/PERFORMANCE_BENCHMARK_CONTRACT.md").is_file():
     warnings.append("PERFORMANCE_LOAD_BENCHMARK_CONTRACT_MISSING")
 
@@ -193,16 +193,16 @@ external_telemetry = any(
 if not external_telemetry:
     warnings.append("EXTERNAL_TELEMETRY_NOT_CONFIGURED__N8.12_T9_REMAINS_NOT_CERTIFIED")
 
-# 35 - current planning authority must be canonical and current-state only.
+# Current project identity and actual runtime state, without obsolete master files.
 agents = read("AGENTS.md")
-vaep = read("docs/VAEP_AUTHORITY.md")
+automation = read("docs/AUTOMATION_STATUS.md")
 commercial_plan_id = "1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j"
-ok(commercial_plan_id in agents and commercial_plan_id in vaep,
-   "CURRENT_COMMERCIAL_PLAN_AUTHORITY_PINNED")
-ok("CURRENT_COMMERCIAL_ONLY=TRUE" in vaep and "PREVIOUS_PLAN_DEPENDENCY=PROHIBITED" in vaep,
-   "RETIRED_PLAN_DEPENDENCIES_BLOCKED")
-ok("CONTEXT_MODE=CURRENT_STATE_ONLY" in agents and "CONTEXT_MODE=CURRENT_STATE_ONLY" in vaep,
-   "CURRENT_STATE_ONLY_PLANNING")
+ok(commercial_plan_id in agents and commercial_plan_id in automation,
+   "CURRENT_COMMERCIAL_PLAN_ID_MATCH")
+ok("AUTOMATION_RUNTIME=RETIRED" in automation and "SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0" in automation,
+   "RETIRED_AUTOMATION_RUNTIME_LOCKED")
+ok("PROJECT_SCOPE_LOCK=STRICT" in agents and "PROJECT_ID=SOLQARYN" in automation,
+   "CURRENT_PROJECT_SCOPE_VALID")
 
 print("PRIORITY4_QUALITY_AUDIT")
 for item in passes:

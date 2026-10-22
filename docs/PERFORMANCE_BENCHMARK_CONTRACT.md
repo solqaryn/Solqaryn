@@ -1,6 +1,6 @@
-# Contrato reproducible de rendimiento — Prioridad 4
+# Contrato permanente de rendimiento — ERP SOLQARYN
 
-Autoridad: `docs/VAEP_AUTHORITY.md` y T8 del Plan Maestro.
+Autoridad técnica vigente: `docs/PROJECT_SCOPE_LOCK.md`, `AGENTS.md` y comportamiento real del ERP. Ningún plan antiguo define automáticamente un gate.
 
 ## Qué ya está demostrado
 

@@ -1,10 +1,10 @@
 # Contrato de preparación para Producción — Solqaryn
 
-Autoridad operativa: `docs/VAEP_AUTHORITY.md`.
+Autoridad vigente: `docs/PROJECT_SCOPE_LOCK.md`, `AGENTS.md` y autorizaciones expresas del propietario. No depende de un plan histórico.
 
 ## Propósito
 
-Este documento define lo que debe demostrarse antes de afirmar que el ERP está preparado para Producción. No autoriza deploy, no contiene secretos y no sustituye N8/N9. Un health check verde o un build exitoso por sí solos **no** significan Production Ready.
+Este documento define lo que debe demostrarse antes de afirmar que el ERP está preparado para Producción. No autoriza deploy, no contiene secretos y no sustituye pruebas técnicas del producto ni autorización de promoción. Un health check verde o un build exitoso por sí solos **no** significan Production Ready.
 
 ## Configuración requerida por entorno
 

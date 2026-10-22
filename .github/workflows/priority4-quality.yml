@@ -1,4 +1,4 @@
-name: Priority 4 - Interfaces architecture and quality
+name: SOLQARYN - Calidad y contratos del ERP
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
       - 'backend/**'
       - 'scripts/quality/**'
       - 'AGENTS.md'
-      - 'docs/VAEP_AUTHORITY.md'
+      - 'docs/AUTOMATION_STATUS.md'
       - 'docs/PRODUCTION_READINESS_CONTRACT.md'
       - 'docs/PERFORMANCE_BENCHMARK_CONTRACT.md'
       - '.github/workflows/priority4-quality.yml'
@@ -32,7 +32,7 @@ concurrency:
 
 jobs:
   quality:
-    name: Static contracts, tests and production build
+    name: ERP - Contratos, pruebas y build
     runs-on: ubuntu-latest
     timeout-minutes: 45
     services:
@@ -59,10 +59,10 @@ jobs:
       - name: Checkout exact commit
         uses: actions/checkout@v4
 
-      - name: Priority 4 fail-closed audit
+      - name: Auditoría de calidad ERP vigente
         run: python3 scripts/quality/priority4_quality_audit.py
 
-      - name: Configure .NET 8
+      - name: Configurar .NET 10
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.401'
@@ -95,15 +95,15 @@ jobs:
         working-directory: frontend
         run: npx ng test --watch=false --include=src/app/features/configuracion/empresa-administracion-card.component.spec.ts
 
-      - name: Verify N7.6.E WhatsApp verified-tenant boundary
+      - name: Validar seguridad de empresa en WhatsApp
         working-directory: frontend
         run: npx ng test --watch=false --include=src/app/features/configuracion/whatsapp-business-card.component.spec.ts
 
-      - name: Verify N7.7.E email enterprise verified-tenant and idempotency boundary
+      - name: Validar correo empresarial, empresa e idempotencia
         working-directory: frontend
         run: npx ng test --watch=false --include=src/app/features/configuracion/email-empresarial-card.component.spec.ts
 
-      - name: Verify N7.10.E fiscal issuance verified-tenant, permission and idempotency boundary
+      - name: Validar facturación fiscal, permisos e idempotencia
         working-directory: frontend
         run: npx ng test --watch=false --include=src/app/features/facturas/factura-fiscal-emision.component.spec.ts
 
@@ -115,9 +115,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: priority4-quality-${{ github.sha }}
+          name: erp-quality-${{ github.sha }}
           path: |
-            docs/PLAN_MAESTRO_TRACEABILITY.md
             docs/PRODUCTION_READINESS_CONTRACT.md
             docs/PERFORMANCE_BENCHMARK_CONTRACT.md
           if-no-files-found: error
