@@ -1,13 +1,6 @@
 name: Modernización - Fase 2 Node 24 npm 11 DEV
 
 on:
-  push:
-    branches: [dev]
-    paths:
-      - 'frontend/**'
-      - '.nvmrc'
-      - '.node-version'
-      - '.github/workflows/modernization-phase2-node-npm.yml'
   workflow_dispatch:
 
 permissions:
