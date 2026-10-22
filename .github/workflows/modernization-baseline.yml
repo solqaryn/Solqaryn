@@ -338,7 +338,7 @@ jobs:
         shell: bash
         run: |
           rm -rf "$SMTP_CAPTURE_DIR" && mkdir -p "$SMTP_CAPTURE_DIR"
-          nohup python3 scripts/fase7_fake_smtp.py > fase0-smtp.log 2>&1 &
+          nohup python3 scripts/smtp_capture_server.py > fase0-smtp.log 2>&1 &
           for attempt in $(seq 1 30); do (echo > /dev/tcp/127.0.0.1/1025) >/dev/null 2>&1 && exit 0; sleep 1; done
           cat fase0-smtp.log >&2 || true
           exit 1
@@ -479,8 +479,8 @@ jobs:
           cp backend/fase0-api.log backend/fase8-api.log
           cp frontend/fase0-frontend.log frontend/fase8-frontend.log
           cp fase0-smtp.log fase8-smtp.log
-          python3 scripts/fase7_validate_email.py
-          python3 scripts/fase8_validate_runtime.py
+          python3 scripts/validate_email_delivery.py
+          python3 scripts/validate_runtime_safety.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:

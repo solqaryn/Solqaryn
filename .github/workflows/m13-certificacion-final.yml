@@ -62,7 +62,7 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - name: Auditoría estática fail-closed
-        run: python3 scripts/m13_static_audit.py
+        run: python3 scripts/audit_source_quality.py
       - name: Auditar paquetes .NET vulnerables y deprecados
         working-directory: backend
         shell: bash
@@ -374,7 +374,7 @@ jobs:
         shell: bash
         run: |
           rm -rf "$SMTP_CAPTURE_DIR" && mkdir -p "$SMTP_CAPTURE_DIR"
-          nohup python3 scripts/fase7_fake_smtp.py > m13-smtp.log 2>&1 &
+          nohup python3 scripts/smtp_capture_server.py > m13-smtp.log 2>&1 &
           for attempt in $(seq 1 30); do (echo > /dev/tcp/127.0.0.1/1025) >/dev/null 2>&1 && exit 0; sleep 1; done
           cat m13-smtp.log >&2 || true; exit 1
       - name: API Staging y migraciones
@@ -436,8 +436,8 @@ jobs:
           PHASE8_DATABASE_PASSWORD: 'root'
         shell: bash
         run: |
-          python3 scripts/fase7_validate_email.py
-          python3 scripts/fase8_validate_runtime.py
+          python3 scripts/validate_email_delivery.py
+          python3 scripts/validate_runtime_safety.py
       - name: Publicar evidencia runtime
         if: always()
         uses: actions/upload-artifact@v4

@@ -146,7 +146,7 @@ jobs:
           set -euo pipefail
           rm -rf "$SMTP_CAPTURE_DIR"
           mkdir -p "$SMTP_CAPTURE_DIR"
-          nohup python3 scripts/fase7_fake_smtp.py > fase8-smtp.log 2>&1 &
+          nohup python3 scripts/smtp_capture_server.py > fase8-smtp.log 2>&1 &
           echo $! > fase8-smtp.pid
           for attempt in $(seq 1 30); do
             if (echo > /dev/tcp/127.0.0.1/1025) >/dev/null 2>&1; then
@@ -252,7 +252,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 scripts/fase7_validate_email.py
+          python3 scripts/validate_email_delivery.py
           mkdir -p frontend/test-results/fase8-smtp
           cp -a "$SMTP_CAPTURE_DIR"/. frontend/test-results/fase8-smtp/
           cp fase8-smtp.log frontend/test-results/fase8-smtp/server.log
@@ -263,7 +263,7 @@ jobs:
           PHASE8_JWT_SECRET: 'Fase8-E2E-Only-Secret-With-More-Than-32-Characters-2026'
           PHASE8_SMTP_PASSWORD: 'smtp-pass'
           PHASE8_DATABASE_PASSWORD: 'root'
-        run: python3 scripts/fase8_validate_runtime.py
+        run: python3 scripts/validate_runtime_safety.py
 
       - name: Crear manifiesto de certificación
         if: always()

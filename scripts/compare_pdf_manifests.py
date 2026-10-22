@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 if len(sys.argv) != 4:
-    raise SystemExit("usage: phase9_compare_pdf_manifests.py BASELINE CANDIDATE REPORT")
+    raise SystemExit("usage: compare_pdf_manifests.py BASELINE CANDIDATE REPORT")
 
 baseline_path, candidate_path, report_path = map(Path, sys.argv[1:])
 baseline = json.loads(baseline_path.read_text(encoding="utf-8"))
