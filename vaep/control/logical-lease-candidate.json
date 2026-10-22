@@ -97,7 +97,7 @@
   },
   "write_policy_required": "LOGICAL_SINGLE_OWNER_TASK_WRITE_VERIFIED",
   "sheet_policy_at_certification": "AUTOMATION_ONLY|RUNTIME_ACTIVO_OWNER_EXCEPTION|PER_SCOPE_EFFECTIVE_WRITE|DUAL_CAS_WIP1_REVIEW_FIRST",
-  "all_ten_sheet_policies_migrated": false,
+  "all_ten_sheet_policies_migrated": true,
   "verified_task_terminated_count": 0,
   "previous_runs_terminal_readback_at_certification": false,
   "independent_reviewer_required": true,
@@ -106,12 +106,31 @@
   "runtime_mode_at_certification": "PAUSADO",
   "commercial_writes_allowed": false,
   "cutover_remaining": [
-    "Confirm all 10 exact Task prompts under two owner accounts without creating new tasks",
-    "Complete one coordinated uniform 10/10 WRITE_POLICY change and LAST_HEAD readback",
-    "Check previous invocations terminal before dispatch and enforce per-run reentry and per-operation permissions",
-    "Confirm zero open leases and no parallel CAS/logical protocol writers",
-    "Approve new exact live-dev SHA and required CI/Project Scope Lock; rebind base_dev_sha for final GO",
-    "Only after all gates jointly succeed set ACTIVE_CERTIFIED and RUNTIME_MODE=ACTIVO"
+    "Ten native Tasks have PRE-GO prompt readback reported from Javier and Alex; re-check exact current prompts, identities and epoch at GO",
+    "Confirm previous invocations authentically terminal from ChatGPT Tasks for each effective writer immediately before material operation",
+    "Read physical DeveloperMetadata and named-range guards to exclude cross-protocol/stale leases; no unverified metadata deletion",
+    "Prove per-Task effective GitHub and Sheets permissions at the point of material execution, without bypassing TOOL_SAFETY_BLOCK",
+    "Approve a new immutable operational epoch and certify all ten writer IDs if ten active workers are intended; two accepted administrative proofs do not certify eight others",
+    "Rebind exact live dev SHA after protected merge, certify CI and Project Scope Lock, independent security review and final owner GO",
+    "Only after all gates jointly succeed update manifest ACTIVE_CERTIFIED and CONFIG.RUNTIME_MODE=ACTIVO with zero mixed-protocol writers"
   ],
-  "notes": "Certified pre-GO contract; two owner-accepted GitHub diagnostic proofs, not direct scheduled-run readbacks or an authorization to write commercial data. Routing epoch frozen with this cohort. This file is NOT an active permission or an implementation of a Task scheduler. Do not repeat the two diagnostic writes."
+  "notes": "PRE-GO only; 10/10 Sheets policy and LAST_HEAD readback now recorded, but no operational GO. Original base_dev_sha and sheet_policy_at_certification preserve their earlier historical snapshot; do not treat as live head. Planned operational cohort has ten registered IDs, not ten proven effective writers. Verified administrative GitHub proofs remain two, owner-accepted without repetition. Prior runs terminality and physical stale CAS metadata remain unverified. No activity allowed while PAUSADO.",
+  "sheet_policy_live_readback": "LOGICAL_SINGLE_OWNER_TASK_WRITE_VERIFIED",
+  "sheet_policy_latest_readback_dev_sha": "de1df99ce7a00b61eaec9c3056e118d369be1ec1",
+  "sheet_policy_latest_readback_event": "VAEP_LOGICAL_WRITE_POLICY_AND_LAST_HEAD_MIGRATED_10_OF_10",
+  "sheet_policy_latest_readback_sheet_row": 97,
+  "last_policy_readback_scope": "10/10 _AUTOMATION_SOURCE WRITE_POLICY AND LAST_HEAD, confirmed while CONFIG.RUNTIME_MODE=PAUSADO",
+  "planned_operational_writer_task_ids": [
+    "6ad7bbf79c488191bf893e6c08ea9b5f",
+    "6abd62255ae88191a2dba6e1b00d3b4d",
+    "6ad7bc0d48748191aa1dd0ce2f18d22a",
+    "6abd6235e100819195785fc76a44a8e0",
+    "6ad7bc1cc7b8819190665e5ed78610d4",
+    "6abd6241c3e48191a8856ed7b0f42c5c",
+    "6ad7bc3001b88191add05d9b4d5a4130",
+    "6abd624e5e108191bef6bb879559328c",
+    "6ad7bc3ebea08191a16dc7c9f1f3303b",
+    "6abd625b397c8191a49904227946a20f"
+  ],
+  "operational_cohort_status": "PLANNED_10_OF_10_NOT_MATERIALLY_AUTHORIZED_PRE_GO"
 }
