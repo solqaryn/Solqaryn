@@ -86,10 +86,12 @@ jobs:
               '.github/workflows/vaep-n93h-byte-append.yml': 'removed',
               '.github/workflows/vaep-n95h-byte-append.yml': 'removed',
               '.github/workflows/promotion-source-guard.yml': 'modified',
+              'frontend/package.json': 'modified',
+              'frontend/package-lock.json': 'modified',
           }
           actual = {f['filename']: f['status'] for f in changed}
-          if len(changed) != 17 or pr['changed_files'] != 17 or actual != expected:
-              raise SystemExit('Mantenimiento bloqueado: diff distinto de 16 borrados VAEP y guard controlado')
+          if len(changed) != 19 or pr['changed_files'] != 19 or actual != expected:
+              raise SystemExit('Mantenimiento bloqueado: diff distinto de 16 retiros VAEP, guard y 2 manifiestos de seguridad frontend')
           if any(f['additions'] != 0 or f['deletions'] <= 0 for f in changed if f['status'] == 'removed'):
               raise SystemExit('Mantenimiento bloqueado: operaciones de borrado inesperadas')
           print('PROMOTION_SOURCE_GUARD=PASS; MAINTENANCE_VAEP_EXACT=16')
