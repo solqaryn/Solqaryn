@@ -1,3 +1,13 @@
+## 2026-10-23 — Retirada definitiva del árbol VAEP heredado y preparación de limpieza de ramas
+
+- En la rama protegida de trabajo se retiran del árbol actual **1.499 archivos heredados**: 1.493 piezas de evidencias archivadas del motor VAEP, dos archivos del probe heredado, un disparador efímero y tres workflows manuales obsoletos (algunos todavía admitían escritura DEV). Los commits anteriores de Git conservan el rastro de auditoría; las referencias a pruebas antiguas no confieren autoridad operativa.
+- Se añade un ejecutor GitHub Actions **de uso único y alcance exclusivo al repositorio**, con manifiesto por SHA de 47 ramas obsoletas. Solo puede correr tras un merge protegido en `dev`, con verificaciones de ancestry, las tres comprobaciones CI obligatorias, permisos reales y coincidencia exacta de las referencias; aborta ante desviación.
+- Tras las comprobaciones, la limpieza solicitada cierra PR pendientes históricos y elimina únicamente las ramas no protegidas auditadas; debe conservar `dev`, `qa` y `main` (producción). **No se fusiona ninguna rama antigua ni se altera QA o PROD**.
+- La limpieza física no se considera certificada hasta disponer del resultado GitHub Actions y una nueva lectura del inventario remoto. El ejecutor de uso único se retirará posteriormente por PR protegido.
+- Los estándares del Sheet se preservan: microfase 2 `CERTIFICADA`, `AUTOMATION_RUNTIME=RETIRED`, cero Tasks físicas y cero autorizadas. No se crean Tasks ni se habilita despacho comercial.
+
+---
+
 ## 2026-10-23 — Auditoría de ramas DEV y estado de despliegues (sin limpieza destructiva)
 
 - `docs/BRANCH_CONSOLIDATION_AUDIT_20261023.md` registra 50 ramas remotas: `dev`, `qa`, `main` protegidas, 11 referencias completamente detrás de `dev` y 36 divergentes con commits propios. Se listan por nombre y separación respecto al HEAD `eb149ff4d25f9ed37d65fbf2582c19bf5c560baa`.
