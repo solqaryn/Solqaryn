@@ -1,8 +1,0 @@
-{
-  "schemaVersion":"vaep.parent-receipt.v1","authority":"docs/VAEP_AUTHORITY.md","parent":"N8.4.D","status":"LISTO_REAL","closedAtUtc":"2026-09-15T08:04:40Z","branch":"Desarrollo","stage":"BACKEND_API",
-  "dependency":{"parent":"N8.4.C","status":"LISTO_REAL","receipt":"vaep/evidence/receipts/N8.4.C_LISTO_REAL_20260915T080340Z_SUP48.json"},
-  "reviewFirst":"vaep/evidence/reviews/N8.4.D_REVIEW_FIRST_20260915T080420Z_SUP48.json","reviewResult":"PASS__GROUNDED_NA__EXISTING_API_REUSED__P0_0__P1_0__P2_0",
-  "dod":{"newBackend":"N_A_GROUNDED","newApi":"N_A_GROUNDED","barcodeResolution":"REUSE_EXISTING","thermalPdf":"REUSE_EXISTING","nativeDeviceApi":"NOT_AUTHORIZED","P0":0,"P1":0,"P2":0},
-  "sheetTarget":{"rowId":"N8.4.D","rowNumber":651,"nextParent":"N8.4.E","mutationPolicy":"UPDATE_EXISTING_ROW_ONLY__NO_APPEND_INSERT_DELETE"},"nextParent":"N8.4.E","nextParentDependencySatisfied":true,
-  "guards":{"singleWriter":true,"falsePass":false,"falseListo":false,"mainUntouched":true,"productionUntouched":true,"deployUntouched":true,"secretsUntouched":true,"pr2Untouched":true}
-}

@@ -1,9 +1,0 @@
-{
-  "schemaVersion":"vaep.review-first.v1","authority":"docs/VAEP_AUTHORITY.md","parent":"N8.4.E","stage":"FRONTEND_UX","branch":"Desarrollo","reviewedAtUtc":"2026-09-15T08:05:20Z",
-  "reviewerAutomationId":"6aa365706b7c8191bd29f52a1133da07","leaseToken":"SUP48-N84E-20260915T080450Z",
-  "dependency":{"parent":"N8.4.D","status":"LISTO_REAL","receipt":"vaep/evidence/receipts/N8.4.D_LISTO_REAL_20260915T080440Z_SUP48.json"},
-  "assessment":{"newFrontendDeltaRequired":false,"scannerUi":"PASS__CodigoScannerInput declares USB/Bluetooth physical reader mode, Enter capture, feedback and refocus","saleIntegration":"PASS__VentaForm resolves scanned code through existing API and consolidates stock-aware detail","thermalPrintUi":"PASS__FacturaView exposes POS58/POS80 and permission-gated print flow","cashDrawerUi":"N_A__NO_AUTHORIZED_DIRECT_DEVICE_INTEGRATION","physicalExecution":"DEFERRED_TO_N8.4.G__REAL_HARDWARE_REQUIRED"},
-  "directedChecks":{"routeRbac":"PASS__ventas/nueva auth+Ventas/Crear","scannerFocusAndEnterContract":"PASS_STATIC","thermalFormatContract":"PASS_STATIC","noSpeculativeDeviceUi":"PASS"},
-  "findings":{"P0":[],"P1":[],"P2":[]},"result":"PASS__EXISTING_FRONTEND_SATISFIES_CONTRACT__NO_RUNTIME_DELTA__P0_0__P1_0__P2_0",
-  "guards":{"falsePass":false,"falseListo":false,"mainUntouched":true,"productionUntouched":true,"deployUntouched":true,"secretsUntouched":true,"pr2Untouched":true}
-}

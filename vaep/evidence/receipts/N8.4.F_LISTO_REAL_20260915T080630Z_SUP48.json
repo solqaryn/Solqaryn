@@ -1,8 +1,0 @@
-{
-  "schemaVersion":"vaep.parent-receipt.v1","authority":"docs/VAEP_AUTHORITY.md","parent":"N8.4.F","status":"LISTO_REAL","closedAtUtc":"2026-09-15T08:06:30Z","branch":"Desarrollo","stage":"SEC_AUDIT",
-  "dependency":{"parent":"N8.4.E","status":"LISTO_REAL","receipt":"vaep/evidence/receipts/N8.4.E_LISTO_REAL_20260915T080540Z_SUP48.json"},
-  "reviewFirst":"vaep/evidence/reviews/N8.4.F_REVIEW_FIRST_20260915T080610Z_SUP48.json","reviewResult":"PASS__P0_0__P1_0__P2_0__SECURITY_REUSE_NO_NATIVE_DEVICE_PRIVILEGE",
-  "dod":{"ventaAuthorization":"PASS","printAuthorization":"PASS","nativeDevicePrivilege":"NONE","newSecrets":"NONE","newRbac":"NONE","P0":0,"P1":0,"P2":0},
-  "sheetTarget":{"rowId":"N8.4.F","rowNumber":653,"nextParent":"N8.4.G","mutationPolicy":"UPDATE_EXISTING_ROW_ONLY__NO_APPEND_INSERT_DELETE"},"nextParent":"N8.4.G","nextParentDependencySatisfied":true,
-  "guards":{"singleWriter":true,"falsePass":false,"falseListo":false,"mainUntouched":true,"productionUntouched":true,"deployUntouched":true,"secretsUntouched":true,"pr2Untouched":true}
-}

@@ -1,7 +1,0 @@
-{
-  "parent": "N9.5.F",
-  "state": "LISTO",
-  "issuedAt": "2026-09-18T04:14:50Z",
-  "result": "LISTO__SEC_AUDIT_SMOKE_PASS__401_BARRIERS_PASS__NO_SECRET__NO_MUTATION__P0_0_P1_0",
-  "nextParent": "N9.5.G"
-}

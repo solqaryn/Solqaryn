@@ -1,8 +1,0 @@
-{
-  "schemaVersion":"vaep.review-first.v1","authority":"docs/VAEP_AUTHORITY.md","parent":"N8.4.D","stage":"BACKEND_API","branch":"Desarrollo","reviewedAtUtc":"2026-09-15T08:04:20Z",
-  "reviewerAutomationId":"6aa365706b7c8191bd29f52a1133da07","leaseToken":"SUP48-N84D-20260915T080350Z",
-  "dependency":{"parent":"N8.4.C","status":"LISTO_REAL","receipt":"vaep/evidence/receipts/N8.4.C_LISTO_REAL_20260915T080340Z_SUP48.json"},
-  "assessment":{"newBackendRequired":false,"newApiRequired":false,"existingSurfaces":["GET /ventas/productos/por-codigo via VentaService.buscarProductoPorCodigo","existing Venta create/update/confirm flows","existing Facturacion PDF generation consumed by FacturaView POS58/POS80"],"reason":"N8.4 validates physical I/O against already-authorized application flows. Native device/cash-drawer APIs are not specified and must not be invented."},
-  "findings":{"P0":[],"P1":[],"P2":[]},"result":"PASS__GROUNDED_NA__EXISTING_API_REUSED__P0_0__P1_0__P2_0",
-  "guards":{"falsePass":false,"falseListo":false,"mainUntouched":true,"productionUntouched":true,"deployUntouched":true,"secretsUntouched":true,"pr2Untouched":true}
-}

@@ -1,3 +1,0 @@
-{
-  "schema":"vaep-review-first/v1","scope":"N8.22.B","parent":"N8.22","stage":"DOMAIN","branch":"Desarrollo","reviewed_at_utc":"2026-09-16T16:29:15Z","reviewer":"Tarea Supervisión :00","lease_token":"SUP00-N822B-CLOSER-20260916T162820Z","candidate_head":"88e34824c98f6bebd21b015d63935ee9d4aefaad","evidence":"docs/evidencias/staging-equivalence/N8.22.B_DOMAIN_20260916T162900Z.json","checks":{"same_repository":true,"same_layered_backend_contract":true,"release_delta_explicitly_expected":true,"material_gap_count":0,"unknown_count":0,"prod_write":0,"main_write":0,"secrets_exposed":0},"findings":[],"summary":{"P0":0,"P1":0,"P2":0,"verdict":"PASS"},"boundaries":{"main":false,"production":false,"deploy":false,"secrets":false,"pr_2":false}
-}

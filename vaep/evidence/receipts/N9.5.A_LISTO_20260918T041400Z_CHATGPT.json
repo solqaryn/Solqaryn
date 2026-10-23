@@ -1,7 +1,0 @@
-{
-  "parent": "N9.5.A",
-  "state": "LISTO",
-  "issuedAt": "2026-09-18T04:14:00Z",
-  "result": "LISTO__PROD_SMOKE_PREFLIGHT_PASS__READONLY_PATH_PROVEN__AUTH_IDENTITY_REQUIREMENT_ISOLATED_TO_N9.5.G",
-  "nextParent": "N9.5.B"
-}
