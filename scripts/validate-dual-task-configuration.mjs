@@ -20,8 +20,8 @@ const expected = {
   SECONDARY_TASK_ROLE: 'SECONDARY_02',
   PRIMARY_TASK_ACCOUNT: 'JAVIER_CHATGPT',
   SECONDARY_TASK_ACCOUNT: 'ALEX_CHATGPT',
-  AUTOMATION_RUNTIME: 'RETIRED',
-  SCHEDULED_CHATGPT_TASKS_AUTHORIZED: '0',
+  AUTOMATION_RUNTIME: 'ACTIVE_DEV',
+  SCHEDULED_CHATGPT_TASKS_AUTHORIZED: '1',
   VAEP_DISPATCH_AUTHORIZED: 'FALSE',
   JULES_WORKERS_AUTHORIZED: '0',
 };
@@ -111,10 +111,20 @@ export function validateProposedRun(p) {
     if (!p.authorizationVerified) errors.push('authorization');
     const actorSlot = slots.find(s => s.role === p.actorRole && s.account === p.actorAccount);
     const nativeRunVerified = knownRunId(p.runId) && p.nativeRunIdVerified === true;
+    // Scoped GitHub work is evidenced by its branch/PR, without provider RUN_ID.
+    const artifactRunVerified = p.stage === 'ACTIVE_DEV_PILOT' && p.mode === 'ACTIVE_DEV' &&
+      p.actorRole === 'PRIMARY_01' && p.operation === 'WRITE' && p.ownerAuthorized === true &&
+      typeof p.scopeId === 'string' && /^P[0-9]+-[0-9]+\.[A-Z]$/.test(p.scopeId) &&
+      typeof p.branchName === 'string' && p.branchName.startsWith('work/solqaryn-') &&
+      p.exactHeadVerified === true && p.exclusiveScopeVerified === true && !p.conflictingClaim;
+    const artifactReadVerified = p.stage === 'ACTIVE_DEV_PILOT' && p.mode === 'ACTIVE_DEV' && p.operation === 'READ';
+    const artifactReviewVerified = p.stage === 'ACTIVE_DEV_PILOT' && p.mode === 'ACTIVE_DEV' && p.operation === 'REVIEW' &&
+      typeof p.reviewedPrRef === 'string' && /^https:\/\/github\.com\/solqaryn\/Solqaryn\/pull\/[0-9]+$/.test(p.reviewedPrRef);
     const equivalentRunVerified = p.mode === 'READ_ONLY' &&
       p.stage === 'DUAL_READ_ONLY' && (p.operation === 'READ' || p.operation === 'REVIEW') &&
       verifiedScheduledReadOnlyProof(p.runEvidence, actorSlot);
-    if ((!nativeRunVerified && !equivalentRunVerified) || !p.evidence)
+    if ((!nativeRunVerified && !equivalentRunVerified && !artifactRunVerified && !artifactReadVerified && !artifactReviewVerified) ||
+        ((p.operation === 'WRITE' || p.stage !== 'ACTIVE_DEV_PILOT') && !p.evidence))
       errors.push('missing_evidence');
     if (!p.actorRole || !ownerByRole[p.actorRole]) errors.push('unknown_actor');
     if (p.actorAccount !== ownerByRole[p.actorRole]) errors.push('actor_account_mismatch');
@@ -133,7 +143,7 @@ export function validateProposedRun(p) {
       const equivalentReviewedVerified = p.mode === 'READ_ONLY' &&
         p.stage === 'DUAL_READ_ONLY' &&
         verifiedScheduledReadOnlyProof(p.reviewedEvidence, authorSlot);
-      if (!nativeReviewedVerified && !equivalentReviewedVerified)
+      if (!nativeReviewedVerified && !equivalentReviewedVerified && !artifactReviewVerified)
         errors.push('review_without_run');
       if (equivalentRunVerified && equivalentReviewedVerified &&
           p.runEvidence.evidenceRef === p.reviewedEvidence.evidenceRef)
@@ -268,8 +278,8 @@ if (failures.length) {
     ['cap', {authority:authority.replace('PILOT_TASK_LIMIT=2','PILOT_TASK_LIMIT=3')}],
     ['role', {authority:authority.replace('PRIMARY_TASK_ROLE=PRIMARY_01','PRIMARY_TASK_ROLE=SECONDARY_02')}],
     ['owner', {authority:authority.replace('SECONDARY_TASK_ACCOUNT=ALEX_CHATGPT','SECONDARY_TASK_ACCOUNT=JAVIER_CHATGPT')}],
-    ['runtime', {status:status.replace('AUTOMATION_RUNTIME=RETIRED','AUTOMATION_RUNTIME=ACTIVE_DEV')}],
-    ['authorized task', {status:status.replace('SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0','SCHEDULED_CHATGPT_TASKS_AUTHORIZED=2')}],
+    ['runtime', {status:status.replace('AUTOMATION_RUNTIME=ACTIVE_DEV','AUTOMATION_RUNTIME=RETIRED')}],
+    ['authorized task', {status:status.replace('SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1','SCHEDULED_CHATGPT_TASKS_AUTHORIZED=2')}],
     ['human parity', {authority:authority.replace('HUMAN_ROLE_PARITY=TRUE','HUMAN_ROLE_PARITY=FALSE')}],
     ['revived previous dispatch', {status:status.replace('VAEP_DISPATCH_AUTHORIZED=FALSE','VAEP_DISPATCH_AUTHORIZED=TRUE')}],
   ];
@@ -339,8 +349,31 @@ if (failures.length) {
   for (const [name, fragment] of approvalDocMutants) {
     if (!validateDocuments({...sources,...fragment}).length) throw Error('Approval document gate must reject: ' + name);
   }
+  const pilot = {...base,stage:'ACTIVE_DEV_PILOT',mode:'ACTIVE_DEV',operation:'WRITE',
+    actorRole:'PRIMARY_01',actorAccount:'JAVIER_CHATGPT',ownerAuthorized:true,
+    scopeId:'P0-012.A',branchName:'work/solqaryn-P0-012-A',
+    writePermissionVerified:true,exclusiveScopeVerified:true,exactHeadVerified:true,
+    conflictingClaim:false,idempotencyKey:'P0-012.A:exact-head',runId:'NO_VERIFICADO',
+    nativeRunIdVerified:false,evidence:'github-branch-readback'};
+  if(validateProposedRun(pilot).length)throw Error('ACTIVE_DEV Primary pilot requires only GitHub artifact, not RUN_ID');
+  const pilotNegatives=[
+    ['wrong writer',p=>{p.actorRole='SECONDARY_02';p.actorAccount='ALEX_CHATGPT';}],
+    ['missing owner consent',p=>p.ownerAuthorized=false],
+    ['wrong branch',p=>p.branchName='main'],
+    ['wrong scope',p=>p.scopeId=''],
+    ['scope collision',p=>p.conflictingClaim=true],
+    ['stale HEAD',p=>p.exactHeadVerified=false],
+    ['lost permission',p=>p.writePermissionVerified=false],
+    ['prod',p=>p.environment='prod']];
+  for(const [name,mutate] of pilotNegatives){const p=clone(pilot);mutate(p);
+    if(!validateProposedRun(p).length)throw Error('Pilot safety not enforced: '+name);}
+  const review={...base,stage:'ACTIVE_DEV_PILOT',mode:'ACTIVE_DEV',operation:'REVIEW',
+    runId:'NO_VERIFICADO',reviewedRunId:'NO_VERIFICADO',
+    reviewedPrRef:'https://github.com/solqaryn/Solqaryn/pull/3733'};
+  if(validateProposedRun(review).length)throw Error('Review by PR must not require native run ID');
+  console.log('Scoped DEV pilot PASS; native RUN_ID optional; 8 safety negatives');
   console.log('Flexible approval policy PASS: Javier, Alex, SOLQARYN Platform; ' + (approvalMutants.length + approvalDocMutants.length) + ' fail-closed negative tests');
-  console.log(`Dual account authority PASS: 1 Primary Javier + 1 Secondary Alex, zero authorized Tasks, ${mutants.length + documentMutants.length} dual-Task negative tests`);
+  console.log(`Dual account authority PASS: 1 Primary Javier + 1 Secondary Alex, one authorized writer, ${mutants.length + documentMutants.length} dual-Task negative tests`);
 } else {
-  console.log('Dual account authority PASS (preparation only, zero authorized Tasks)');
+  console.log('Dual account authority PASS (one Primary authorized for DEV)');
 }
