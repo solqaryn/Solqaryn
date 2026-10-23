@@ -43,7 +43,7 @@ No incorporar automáticamente commits heredados. Analizar diff versus código v
 | `chore/comercial-rename-required-ci-checks-20261019` | 3 | 173 |
 | `chore/vaep-logical-prego-evidence-epoch-20261021` | 6 | 95 |
 | `cleanup/canonical-solqaryn-identity-20260930` | 38 | 1807 |
-| `diagnostic/dev-tenant-readonly-inventory-20261012` | 3 | 972 |
+| `diagnostic/dev-tenant-readonly-[MASKED_IDENTITY_TOKEN]-20261012 (SHA `fab9e6d22c07d55f26212e6fee2a7ddf419e03e4`)` | 3 | 972 |
 | `feat/dev-commercial-independent-owners-20261013` | 35 | 959 |
 | `feat/dev-commercial-natural-keys-scoped-20261013` | 10 | 956 |
 | `feat/dev-commercial-sales-documents-20261013` | 13 | 962 |
@@ -52,7 +52,7 @@ No incorporar automáticamente commits heredados. Analizar diff versus código v
 | `fix/dev-n11-n12-oracle-bootstrap-20261012` | 5 | 1020 |
 | `fix/dev-p4-commercial-natural-keys-reconciled-20261014` | 11 | 730 |
 | `fix/dev-p4-config-rbac-route-20261014` | 2 | 804 |
-| `fix/dev-p4-inventory-physical-scope-20261014` | 10 | 774 |
+| `fix/dev-p4-[MASKED_IDENTITY_TOKEN]-physical-scope-20261014 (SHA `8062cff73ebb09449d4ba9a065337037f9a4a6a5`)` | 10 | 774 |
 | `fix/dev-p4-kardex-tenant-scoped-20261014` | 6 | 774 |
 | `fix/dev-p4-legacy-scope-failclosed-20261014` | 5 | 774 |
 | `fix/dev-p4-m9-bootstrap-ci-20261014` | 4 | 765 |
