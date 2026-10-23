@@ -146,6 +146,30 @@ la politica la exija. Primary no puede autorizarse por simular a Alex;
 Alex tampoco puede autoaprobar sus cambios. Una Task sin autenticacion
 propia o sin privilegios comprobados queda `BLOCKED`.
 
+
+### Aprobaciones flexibles por disponibilidad — política de revisión independiente
+
+APPROVAL_ROUTING=FIRST_AVAILABLE_ELIGIBLE
+APPROVAL_CANDIDATES=JAVIER,ALEX,SOLQARYN_PLATFORM
+APPROVAL_INDEPENDENCE_REQUIRED=TRUE
+APPROVAL_SELF_REVIEW=DENY
+APPROVAL_PLATFORM_OPERATOR_VERIFICATION=REQUIRED
+APPROVAL_TASK_REVIEW_COUNTS_AS_GITHUB_APPROVAL=FALSE
+
+Las solicitudes de aprobación humana, revisión de PR y aceptación técnica del piloto podrán ser atendidas por **Javier**, **Alex** o por la cuenta institucional **SOLQARYN Platform**, sin revisor predeterminado, orden jerárquico ni dependencia exclusiva de Secondary. Se elegirá al **primer aprobador disponible que sea realmente elegible**, con identidad autenticada, permiso actual comprobado, independencia efectiva respecto del autor y autorización para el alcance. Disponibilidad significa confirmación verificable, no presencia supuesta ni un mecanismo de autoaprobación.
+
+- Cambio redactado o realizado por Javier: Alex o un operador humano institucional realmente distinto podrán revisarlo; Javier no podrá aprobar su propio cambio.
+- Cambio redactado o realizado por Alex: Javier o un operador humano institucional realmente distinto podrán revisarlo; Alex no podrá aprobar su propio cambio.
+- Cambio realizado desde SOLQARYN Platform: Javier o Alex podrán revisar **solo cuando sean personas distintas del autor real**. La cuenta institucional no es por sí misma un revisor humano.
+- El uso de `solqaryn-platform` como cuenta GitHub de revisión requiere identificar al operador humano real y demostrar que no es la persona que preparó o ejecutó el cambio. **No se permite utilizar un segundo login del mismo individuo para aparentar revisión independiente**, ni usar sesiones, tokens o credenciales compartidas.
+- La ausencia de un aprobador elegible causa `BLOCKED` para la aprobación que exige separación de deberes. Se podrá solicitar revisión a otro candidato habilitado cuando esté disponible; no se omitirá el control.
+- Para PR con revisión formal exigida, registrar el evento GitHub `APPROVED` de una identidad elegible sobre el SHA vigente; un comentario, informe de Secondary, aprobación por una Task o un estado de Sheets no lo reemplazan. Verificar tres checks protegidos, HEAD y reglas de `dev` antes de fusionar.
+- La autorización institucional de nuevas Tasks, `ACTIVE_DEV`, cambios de propietario, secretos, `main`, QA o PROD **no se delega por simple disponibilidad**: sigue su autoridad específica. Esta política no aumenta permisos ni cuenta de Tasks y no activa el runtime.
+- Registrar autor humano real, identidad GitHub/Drive aplicable, revisor humano real, cuenta usada, relación de independencia, alcance, SHA, fecha, aprobación y evidencia verificable. Las pruebas del contrato deben rechazar a quien no reúna esas condiciones.
+
+La selección flexible no altera la topología funcional **1 Primary Javier + 1 Secondary Alex**: Secondary seguirá validando técnicamente, pero **la aprobación humana** podrá realizarla cualquier revisor disponible elegible entre Javier, Alex y el operador institucional debidamente verificado.
+
+
 ## 8. Google Sheets y transiciones de tareas
 
 Conservar el Sheet nativo existente, las seis pestañas actuales y las 1.123 microtareas originales. En la microfase 2 agregar solamente `TAREAS_PROGRAMADAS` y `AUTOMATIZACIONES` (ocho hojas en total). `PLAN_MAESTRO` conserva identidad/datos fuente; `COLA` es derivada y sus 15.722 fórmulas no son un canal de escritura. `CONFIG` y `DASHBOARD` informan estados, nunca activan Tasks. `BITACORA` registra eventos nuevos sin inventar historia. `LEYENDA` describe reglas. `CONTROL_TOWER` y `TAREAS_DE_SUPERVISION` quedan fuera del piloto.
