@@ -28,7 +28,7 @@ export function validateAuthority(input) {
     'STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES','1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA',
     '1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU',
     '15.722','1.123','TAREAS_PROGRAMADAS','AUTOMATIZACIONES','NO_VERIFICADO',
-    'reconciliación','PROD','GitHub','Google Sheets',
+    'reconciliación','PROD','GitHub','Google Sheets','permisos efectivos','dependencias existentes y satisfechas',
     'no puede autoaprobarlo','La paridad 01/02 no equivale a aprobación automática',
     'no activa Tasks','No se importa CAS'
   ]);
@@ -46,19 +46,19 @@ const errors = validateAuthority(source);
 if (errors.length) { console.error('AUTOMATION AUTHORITY NO_GO:\n' + errors.join('\n')); process.exitCode = 1; }
 else if (process.argv.includes('--self-test')) {
   const tests = [
-    ['repository', {authority:authority.replace('REPOSITORY=solqaryn/Solqaryn', 'REPOSITORY=other/Other')}],
-    ['branch', {authority:authority.replace('BRANCH=dev', 'BRANCH=main')}],
-    ['role', {authority:authority.replace('EJECUTOR_PRINCIPAL_02', 'OBSERVER_02')}],
-    ['confused task', {authority:authority.replace('ACTOR_AUTOMATIZADO', 'ACTOR_HUMANO')}],
-    ['self approval', {authority:authority.replace('no puede autoaprobarlo','puede autoaprobarlo')}],
-    ['collision', {authority:authority.replace('No se importa CAS', 'Se importa CAS')}],
-    ['dependency', {authority:authority.replace('dependencias existentes y satisfechas','dependencias ignoradas')}],
-    ['writing', {authority:authority.replace('AUTOMATION_RUNTIME=RETIRED','AUTOMATION_RUNTIME=ACTIVE_DEV')}],
-    ['duplicate idempotency', {authority:authority.replace('IDEMPOTENCY_KEY','DUPLICATE_KEY')}],
-    ['missing evidence', {authority:authority.replace('NO_VERIFICADO','APROBADO_SIN_EVIDENCIA')}],
+    ['repository', {authority:authority.replaceAll('REPOSITORY=solqaryn/Solqaryn', 'REPOSITORY=other/Other')}],
+    ['branch', {authority:authority.replaceAll('BRANCH=dev', 'BRANCH=main')}],
+    ['role', {authority:authority.replaceAll('EJECUTOR_PRINCIPAL_02', 'OBSERVER_02')}],
+    ['confused task', {authority:authority.replaceAll('ACTOR_AUTOMATIZADO', 'ACTOR_HUMANO')}],
+    ['self approval', {authority:authority.replaceAll('no puede autoaprobarlo','puede autoaprobarlo')}],
+    ['collision', {authority:authority.replaceAll('No se importa CAS', 'Se importa CAS')}],
+    ['dependency', {authority:authority.replaceAll('dependencias existentes y satisfechas','dependencias ignoradas')}],
+    ['writing', {authority:authority.replaceAll('AUTOMATION_RUNTIME=RETIRED','AUTOMATION_RUNTIME=ACTIVE_DEV')}],
+    ['duplicate idempotency', {authority:authority.replaceAll('IDEMPOTENCY_KEY','DUPLICATE_KEY')}],
+    ['missing evidence', {authority:authority.replaceAll('NO_VERIFICADO','APROBADO_SIN_EVIDENCIA')}],
     ['wrong contract status', {status:status.replace('docs/AUTOMATION_AUTHORITY.md','legacy/VAEP_AUTHORITY.md')}],
-    ['revoked privilege', {authority:authority.replace('permisos efectivos','permisos supuestos')}],
-    ['prod', {authority:authority.replace('PROD','UNRESTRICTED')}],
+    ['revoked privilege', {authority:authority.replaceAll('permisos efectivos','permisos supuestos')}],
+    ['prod', {authority:authority.replaceAll('PROD','UNRESTRICTED')}],
     ['reactivate vaep', {status:status.replace('VAEP_DISPATCH_AUTHORIZED=FALSE','VAEP_DISPATCH_AUTHORIZED=TRUE')}],
     ['reactivate workers', {status:status.replace('JULES_WORKERS_AUTHORIZED=0','JULES_WORKERS_AUTHORIZED=5')}],
     ['activated Task', {status:status.replace('SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0','SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1')}]
