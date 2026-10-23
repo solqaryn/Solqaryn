@@ -1,3 +1,12 @@
+## 2026-10-23 — CI DEV: aceptación funcional solo ante cambios con impacto real
+
+- La suite `DEV - aceptación funcional integral` ya no se dispara solo por cambios en `CHANGELOG_AI.md`; se eliminó este archivo de los filtros `push` y `pull_request` en `.github/workflows/catalogos-aceptacion.yml`.
+- La aceptación Playwright/MySQL/Angular/.NET/SMTP se conserva ante cambios a frontend, backend, scripts funcionales o su propio workflow. Esta optimización no elimina ningún check obligatorio de `dev` ni reduce cobertura de cambios de producto.
+- Causa: en el PR #3731 (contrato de `RUN_ID`/`EVIDENCE_REF`) el changelog activó de forma innecesaria el E2E completo, que tardó aproximadamente 20 minutos y finalizó `SUCCESS`.
+- Nota de validación: modificar este workflow ejecuta una última vez la suite integral sobre su propio PR; desde el merge, las modificaciones **solo** de changelog no la activarán. El contrato `RUN_ID` se tramita por separado en el PR #3731.
+
+---
+
 ## 2026-10-23 — Microfase 3: evidencia verificable de RUN_ID y coordinación del piloto
 
 - Se aclara el contrato 1.2 de `docs/AUTOMATION_AUTHORITY.md`: cuando ChatGPT no exponga `RUN_ID` en la lectura de Tasks, se permite exclusivamente en el piloto `READ_ONLY` evidencia equivalente **individual, programada, finalizada y autenticada** con revisión humana independiente. `TASK_ID`, `EVENT_ID` y `last_run_time` jamás sustituyen a un `RUN_ID` nativo.

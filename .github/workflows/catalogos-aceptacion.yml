@@ -16,7 +16,6 @@ on:
       - docs/evidencias/modernizacion/**
       - docs/DETALLES_PENDIENTES.md
       - ARCHITECTURE_CHANGELOG.md
-      - CHANGELOG_AI.md
   pull_request:
     branches:
       - dev
@@ -31,7 +30,6 @@ on:
       - docs/evidencias/modernizacion/**
       - docs/DETALLES_PENDIENTES.md
       - ARCHITECTURE_CHANGELOG.md
-      - CHANGELOG_AI.md
   workflow_dispatch:
 
 permissions:
