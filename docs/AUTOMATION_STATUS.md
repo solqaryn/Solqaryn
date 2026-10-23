@@ -10,6 +10,13 @@ AUTOMATION_RUNTIME=RETIRED
 SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0
 VAEP_DISPATCH_AUTHORIZED=FALSE
 JULES_WORKERS_AUTHORIZED=0
+PILOT_TASK_LIMIT=2
+PILOT_PRIMARY_TASKS=1
+PILOT_SECONDARY_TASKS=1
+PRIMARY_TASK_ROLE=PRIMARY_01
+SECONDARY_TASK_ROLE=SECONDARY_02
+PRIMARY_TASK_ACCOUNT=JAVIER_CHATGPT
+SECONDARY_TASK_ACCOUNT=ALEX_CHATGPT
 
 ## Fuentes nativas vigentes
 
@@ -28,6 +35,21 @@ Las pruebas de compilación, aislamiento multiempresa, seguridad, respaldo, fron
 ## Contrato nuevo en preparación (microfase 1)
 
 `docs/AUTOMATION_AUTHORITY.md` define exclusivamente la política del piloto de doble ejecutor humano paritario (`EJECUTOR_PRINCIPAL_01` Javier / `EJECUTOR_PRINCIPAL_02` Alex; `PROPIETARIA_INSTITUCIONAL` SOLQARYN Platform). Ninguna Task se crea por esta referencia. Los valores de `AUTOMATION_RUNTIME=RETIRED`, `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0`, `VAEP_DISPATCH_AUTHORIZED=FALSE` y `JULES_WORKERS_AUTHORIZED=0` siguen siendo la única verdad operativa de esta fase. Las 4 microfases requieren cierres separados; el contrato no implica autorización de despliegue o escritura programada.
+
+## Enmienda v1.2 - 1 Primary Javier + 1 Secondary Alex
+
+El nuevo contrato autoriza solamente el *diseno* de dos Tasks futuras,
+una por cuenta: `PRIMARY_01` en ChatGPT Javier y `SECONDARY_02` en ChatGPT
+Alex. Ambos siguen como ejecutores humanos con igual autoridad; SOLQARYN
+Platform conserva la propiedad institucional. Los marcadores de plan
+`PILOT_TASK_LIMIT=2`, `PILOT_PRIMARY_TASKS=1` y `PILOT_SECONDARY_TASKS=1`
+NO prueban creacion ni autorizan cron, escritura, claims o revisiones.
+
+En esta enmienda sigue `AUTOMATION_RUNTIME=RETIRED`,
+`SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0`. Cada cuenta debe certificar
+separadamente Task, identidad, conectores, programacion, readback y permisos
+en microfase 3. No recuperar un motor retirado ni crear ambas Tasks bajo
+Javier como alternativa a la cuenta independiente de Alex.
 
 ## Volver a automatizar en el futuro
 

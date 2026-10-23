@@ -8,6 +8,7 @@ PROJECT_SKILL=.agents/skills/solqaryn-project-governance/SKILL.md
 EXECUTION_PLAN_DRIVE_FILE_ID=1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA
 CURRENT_COMMERCIAL_ONLY=TRUE
 AUTOMATION_RUNTIME=RETIRED
+DUAL_TASK_DESIGN=PRIMARY_01_JAVIER_SECONDARY_02_ALEX
 
 ## Autoridades vigentes
 
@@ -20,6 +21,15 @@ AUTOMATION_RUNTIME=RETIRED
 ## Estado de automatización (22-10-2026)
 
 El propietario informó que eliminó las diez Tasks de ChatGPT y la hoja operativa antigua. **No hay tareas de ChatGPT activas autorizadas, workers Jules, coordinadores ni cola VAEP en ejecución por este contrato.** No crear o reconstruir Tasks, activar cron, restaurar Sheets, reclamar leases, realizar despachos comerciales ni interpretar evidencias históricas como instrucciones vigentes. Todo motor nuevo necesita diseño y autorización explícitos; esta regla no impide el trabajo manual solicitado.
+
+## Enmienda v1.2 - dos cuentas independientes, sin activacion
+
+La arquitectura prevista asigna la Task futura `PRIMARY_01` a ChatGPT de
+Javier y la Task `SECONDARY_02` a ChatGPT de Alex. La paridad humana
+existente es inalterable: los nombres de las funciones automatizadas no
+crean rango administrativo ni permisos heredados. Las dos Tasks necesitan
+certificacion fisica propia, y su limite futuro no sustituye el contador
+vivo `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0` ni el modo `RETIRED`.
 
 ## Trabajo de desarrollo
 
