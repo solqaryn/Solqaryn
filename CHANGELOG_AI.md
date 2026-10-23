@@ -1,3 +1,12 @@
+## 2026-10-23 — CI DEV: aceptación funcional solo ante cambios con impacto real
+
+- La suite `DEV - aceptación funcional integral` ya no se dispara solo por cambios en `CHANGELOG_AI.md`; se eliminó este archivo de los filtros `push` y `pull_request` en `.github/workflows/catalogos-aceptacion.yml`.
+- La aceptación Playwright/MySQL/Angular/.NET/SMTP se conserva ante cambios a frontend, backend, scripts funcionales o su propio workflow. Esta optimización no elimina ningún check obligatorio de `dev` ni reduce cobertura de cambios de producto.
+- Causa: en el PR #3731 (contrato de `RUN_ID`/`EVIDENCE_REF`) el changelog activó de forma innecesaria el E2E completo, que tardó aproximadamente 20 minutos y finalizó `SUCCESS`.
+- Nota de validación: modificar este workflow ejecuta una última vez la suite integral sobre su propio PR; desde el merge, las modificaciones **solo** de changelog no la activarán. El contrato `RUN_ID` se tramita por separado en el PR #3731.
+
+---
+
 ## 2026-10-23 — Limpieza física de ramas y retirada del ejecutor temporal
 
 - PR #3728 fusionado en DEV (`0cb0c69573ae555feae9b5de0a29d63e2cc7b47e`): se retiran del árbol actual 1.499 archivos VAEP históricos, incluidos tres workflows manuales obsoletos. Project Scope Lock, Seguridad multiempresa y Build backend aprobaron el HEAD del merge.
