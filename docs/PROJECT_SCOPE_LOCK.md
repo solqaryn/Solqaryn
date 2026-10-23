@@ -15,7 +15,7 @@ EXECUTION_PLAN_DRIVE_FILE_ID=1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA
 
 La fuente comercial aprobada es `STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES` (ID de Drive citado arriba). Los planes antiguos, manifestaciones, hojas, Tasks y calendarios ya retirados no tienen autoridad ejecutiva, y no se reutilizan automáticamente. El estado de automatización se documenta solamente en `docs/AUTOMATION_STATUS.md`.
 
-## Identidad, código y seguridad
+## Preparación de nueva autoridad de automatizaciones\n\n`docs/AUTOMATION_AUTHORITY.md` regula únicamente el contrato nuevo en preparación: `PROPIETARIA_INSTITUCIONAL` = SOLQARYN Platform; `EJECUTOR_PRINCIPAL_01` = Javier y `EJECUTOR_PRINCIPAL_02` = Alex con derechos humanos paritarios, sin jerarquía ni herencia de sesiones o permisos de Tasks. El estado de ejecución y contador autorizados siguen únicamente en `docs/AUTOMATION_STATUS.md`; al introducir la referencia no se activa ninguna Task.\n\n## Identidad, código y seguridad
 
 Se permite una única Skill local: `solqaryn-project-governance`. Las referencias externas se utilizan solo bajo el registro y allowlist actual del proyecto, con pin y fuente aprobados. No recurrir a otras identidades, proyectos o repositorios como fallback.
 
