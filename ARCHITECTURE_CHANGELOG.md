@@ -1,3 +1,9 @@
+## 2026-10-22 — Preparación de control de automatizaciones sin nuevos runtimes
+
+Se formaliza la frontera normativa futura en `docs/AUTOMATION_AUTHORITY.md`, manteniendo el control efectivo en `docs/AUTOMATION_STATUS.md`, las identidades humanas paritarias Javier 01 y Alex 02 y propiedad institucional separada. La microfase 1 no agrega infraestructura ni cambia el backend, frontend, tenancy, DB, deployment ni el ERP; cero Tasks/cron/ejecutores nuevos. Se añade un gate negativo de contrato al Project Scope Lock. Revertir por PR sin debilitar los controles actuales.
+
+---
+
 ## 2026-10-22 — Migración documental nativa (autoridad comercial vigente)
 
 - Fuente comercial aprobada: [STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES](https://docs.google.com/document/d/1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA/edit), Google Docs nativo, 492 unidades y 1.123 microtareas con texto y estructura certificados; sustituye el ID Word histórico `1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j`.
