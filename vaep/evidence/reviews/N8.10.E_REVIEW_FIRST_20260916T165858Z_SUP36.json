@@ -1,3 +1,0 @@
-{
-  "schema":"vaep-review-first/v1","authority":"docs/VAEP_AUTHORITY.md","scope":"N8.10.E","parent":"N8.10","stage":"FRONTEND_UX","branch":"Desarrollo","reviewed_at_utc":"2026-09-16T16:58:58Z","reviewer":"Tarea Supervisión :36","lease_token":"SUP36-N810E-CLOSER-20260916T165820Z","evidence":"docs/evidencias/dr/N8.10.E_FRONTEND_UX_20260916T165845Z.json","checks":{"dependency_N8_10_D_LISTO_REAL":true,"new_frontend_surface_required":false,"na_causally_justified":true,"prior_frontend_na_evidence_exists":true,"new_browser_e2e_required":false,"false_ui_claim":false,"main_write":0,"production_write":0,"deploy":0,"secret_values_read":false,"pr_2_write":0},"findings":[],"summary":{"P0":0,"P1":0,"P2":0,"verdict":"PASS_FRONTEND_NA"},"next_dependency_valid_scope":"N8.10.F"
-}

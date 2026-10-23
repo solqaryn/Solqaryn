@@ -1,7 +1,0 @@
-{
-  "parent": "N9.4.G",
-  "state": "LISTO",
-  "issuedAt": "2026-09-18T04:03:00Z",
-  "result": "LISTO__CAUSAL_CI_PASS__2328_TESTS__N0_4_FULL_GATE_PASS__PROD_DB_UP_TO_DATE__P0_0_P1_0",
-  "nextParent": "N9.4.H"
-}

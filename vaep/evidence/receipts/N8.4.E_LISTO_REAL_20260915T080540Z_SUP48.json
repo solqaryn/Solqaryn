@@ -1,8 +1,0 @@
-{
-  "schemaVersion":"vaep.parent-receipt.v1","authority":"docs/VAEP_AUTHORITY.md","parent":"N8.4.E","status":"LISTO_REAL","closedAtUtc":"2026-09-15T08:05:40Z","branch":"Desarrollo","stage":"FRONTEND_UX",
-  "dependency":{"parent":"N8.4.D","status":"LISTO_REAL","receipt":"vaep/evidence/receipts/N8.4.D_LISTO_REAL_20260915T080440Z_SUP48.json"},
-  "reviewFirst":"vaep/evidence/reviews/N8.4.E_REVIEW_FIRST_20260915T080520Z_SUP48.json","reviewResult":"PASS__EXISTING_FRONTEND_SATISFIES_CONTRACT__NO_RUNTIME_DELTA__P0_0__P1_0__P2_0",
-  "dod":{"scannerUi":"REUSE_PASS","barcodeResolution":"REUSE_PASS","thermalPrintPos58Pos80":"REUSE_PASS","cashDrawerUi":"N_A_NO_AUTHORIZED_INTEGRATION","physicalHardwareValidation":"REQUIRED_AT_N8.4.G","P0":0,"P1":0,"P2":0},
-  "sheetTarget":{"rowId":"N8.4.E","rowNumber":652,"nextParent":"N8.4.F","mutationPolicy":"UPDATE_EXISTING_ROW_ONLY__NO_APPEND_INSERT_DELETE"},"nextParent":"N8.4.F","nextParentDependencySatisfied":true,
-  "guards":{"singleWriter":true,"falsePass":false,"falseListo":false,"mainUntouched":true,"productionUntouched":true,"deployUntouched":true,"secretsUntouched":true,"pr2Untouched":true}
-}

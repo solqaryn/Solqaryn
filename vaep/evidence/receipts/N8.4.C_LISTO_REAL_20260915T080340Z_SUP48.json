@@ -1,8 +1,0 @@
-{
-  "schemaVersion":"vaep.parent-receipt.v1","authority":"docs/VAEP_AUTHORITY.md","parent":"N8.4.C","status":"LISTO_REAL","closedAtUtc":"2026-09-15T08:03:40Z","branch":"Desarrollo","stage":"DB_MIG",
-  "dependency":{"parent":"N8.4.B","status":"LISTO_REAL","receipt":"vaep/evidence/receipts/N8.4.B_LISTO_REAL_20260915T080250Z_SUP48.json"},
-  "reviewFirst":"vaep/evidence/reviews/N8.4.C_REVIEW_FIRST_20260915T080320Z_SUP48.json","reviewResult":"PASS__GROUNDED_NA__NO_DB_DELTA__P0_0__P1_0__P2_0",
-  "dod":{"persistence":"N_A_GROUNDED","migration":"N_A_GROUNDED","backfill":"N_A_GROUNDED","productionExecuted":false,"P0":0,"P1":0,"P2":0},
-  "sheetTarget":{"rowId":"N8.4.C","rowNumber":650,"nextParent":"N8.4.D","mutationPolicy":"UPDATE_EXISTING_ROW_ONLY__NO_APPEND_INSERT_DELETE"},"nextParent":"N8.4.D","nextParentDependencySatisfied":true,
-  "guards":{"singleWriter":true,"falsePass":false,"falseListo":false,"mainUntouched":true,"productionUntouched":true,"deployUntouched":true,"secretsUntouched":true,"pr2Untouched":true}
-}

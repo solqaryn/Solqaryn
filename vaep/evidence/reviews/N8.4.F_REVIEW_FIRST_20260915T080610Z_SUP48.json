@@ -1,8 +1,0 @@
-{
-  "schemaVersion":"vaep.review-first.v1","authority":"docs/VAEP_AUTHORITY.md","parent":"N8.4.F","stage":"SEC_AUDIT","branch":"Desarrollo","reviewedAtUtc":"2026-09-15T08:06:10Z",
-  "reviewerAutomationId":"6aa365706b7c8191bd29f52a1133da07","leaseToken":"SUP48-N84F-20260915T080550Z",
-  "dependency":{"parent":"N8.4.E","status":"LISTO_REAL","receipt":"vaep/evidence/receipts/N8.4.E_LISTO_REAL_20260915T080540Z_SUP48.json"},
-  "securityReview":{"ventaRoute":"PASS__authGuard+Ventas/Crear","printAuthorization":"PASS__Facturacion/Imprimir runtime permission","scannerPrivilege":"PASS__keyboard/input surface; no native USB/Bluetooth privilege requested","nativeDeviceBridge":"ABSENT__NO_UNAUTHORIZED_LOCAL_SERVICE_OR_SECRET","tenantRbac":"REUSE_EXISTING__NO_DELTA","audit":"REUSE_EXISTING__NO_PRODUCT_DELTA","observability":"NO_NEW_RUNTIME_COMPONENT"},
-  "findings":{"P0":[],"P1":[],"P2":[]},"result":"PASS__P0_0__P1_0__P2_0__SECURITY_REUSE_NO_NATIVE_DEVICE_PRIVILEGE",
-  "guards":{"falsePass":false,"falseListo":false,"mainUntouched":true,"productionUntouched":true,"deployUntouched":true,"secretsUntouched":true,"pr2Untouched":true}
-}

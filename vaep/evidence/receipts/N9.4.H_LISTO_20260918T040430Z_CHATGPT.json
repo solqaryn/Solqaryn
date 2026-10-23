@@ -1,7 +1,0 @@
-{
-  "parent": "N9.4.H",
-  "state": "LISTO",
-  "issuedAt": "2026-09-18T04:04:30Z",
-  "review": "vaep/evidence/reviews/N9.4.H_DOC_CERT_REVIEW_20260918T040430Z_CHATGPT.json",
-  "result": "LISTO__DOC_CERT_PASS__TASKS_PLUS12_MINUS0__CHANGELOG_PLUS5_MINUS0__TEMP_WRITER_RETIRED__P0_0_P1_0__PARENT_N9.4_LISTO__NEXT_N9.5.A"
-}

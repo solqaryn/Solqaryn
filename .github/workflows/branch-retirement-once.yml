@@ -1,0 +1,43 @@
+name: SOLQARYN - One-time cleanup of superseded branches
+on:
+  pull_request:
+    branches: [dev]
+    paths:
+      - '.github/workflows/branch-retirement-once.yml'
+      - 'scripts/maintenance/prune-branches-once.mjs'
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/branch-retirement-once.yml'
+      - 'scripts/maintenance/prune-branches-once.mjs'
+permissions: {}
+jobs:
+  validate:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Validate one-time cleanup syntax
+        run: node --check scripts/maintenance/prune-branches-once.mjs
+  retire:
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'prune-old-refs-now')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    concurrency:
+      group: solqaryn-one-time-branch-retirement
+      cancel-in-progress: false
+    permissions:
+      contents: write
+      pull-requests: write
+      checks: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Exact-head protected and obsolete-ref retirement
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          SOLQARYN_COMMIT: ${{ github.sha }}
+        run: node scripts/maintenance/prune-branches-once.mjs

@@ -1,7 +1,0 @@
-{
-  "parent": "N9.4.F",
-  "state": "LISTO",
-  "issuedAt": "2026-09-18T04:02:00Z",
-  "result": "LISTO__SEC_AUDIT_PASS__MAINTENANCE_CONTROLLED__RBAC_GUARDS_PASS__NO_POST_REOPEN_ERRORS__P0_0_P1_0",
-  "nextParent": "N9.4.G"
-}
