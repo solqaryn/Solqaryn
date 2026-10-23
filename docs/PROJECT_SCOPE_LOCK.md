@@ -10,6 +10,7 @@ LOCAL_SKILL=.agents/skills/solqaryn-project-governance/SKILL.md
 EXTERNAL_PROJECT_CONTEXT=DENY_BY_DEFAULT
 CONTEXT_MODE=CURRENT_STATE_ONLY
 EXECUTION_PLAN_DRIVE_FILE_ID=1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA
+PILOT_TASK_LIMIT=2
 
 ## Alcance actual
 
@@ -26,6 +27,14 @@ Se permite una única Skill local: `solqaryn-project-governance`. Las referencia
 El trabajo ordinario se hace en `dev` por PR protegido. Nunca usar force-push, alterar `main` o producción sin autorización específica. Conservar aislamiento empresarial, JWT, RBAC, auditoría, migraciones MySQL, respaldo, pruebas de código actuales y secretos fuera del repositorio.
 
 Las restricciones de seguridad del producto no son hitos de un roadmap antiguo: permanecen mientras la funcionalidad protegida exista. Las validaciones históricas que exigen certificaciones de fases anteriores deben ejecutarse manualmente o sustituirse por regresiones actuales relevantes, no bloquear cada nuevo cambio sin causa.
+
+### Enmienda 1.2: dos Tasks futuras, sin jerarquia humana
+
+`PRIMARY_01` pertenece a la cuenta de Javier; `SECONDARY_02` a la cuenta
+de Alex. El limite maximo de dos Tasks no implica que existan ni permite
+escrituras o ejecucion en `RETIRED`. El detalle unico de roles y permisos
+reside en `docs/AUTOMATION_AUTHORITY.md`; este Scope Lock mantiene
+`PROJECT_SCOPE_LOCK=STRICT` y protege la propiedad institucional.
 
 ## Control de cambios
 

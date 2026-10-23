@@ -24,5 +24,7 @@ jobs:
         run: node scripts/verify-solqaryn-skills.mjs --self-test
       - name: Validate new automation authority with negative contract tests
         run: node scripts/validate-automation-authority.mjs --self-test
+      - name: Validate Primary Javier and Secondary Alex account separation
+        run: node scripts/validate-dual-task-configuration.mjs --self-test
       - name: Reject artificial Render keep-alive
         run: node scripts/validate-render-free-policy.mjs

@@ -1,3 +1,17 @@
+## 2026-10-22 - Enmienda v1.2 del contrato de automatizaciones (PR pendiente)
+
+- Topologia futura: exactamente 1 Task Primary de Javier y 1 Task
+  Secondary de Alex, cada una en su propia cuenta de ChatGPT. Los dos
+  operadores humanos conservan autoridad administrativa paritaria;
+  SOLQARYN Platform mantiene propiedad institucional.
+- Validador nuevo de separacion de cuentas, permisos, exclusividad,
+  evidencia y revision; ejecutado por Project Scope Lock. Sin cambios
+  en seguridad ERP, datos, secretos, Sheets, main, QA o PROD.
+- El nuevo limite es exclusivamente de diseno. `AUTOMATION_RUNTIME=RETIRED`,
+  `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0`. Reversion por PR protegido.
+
+---
+
 ## 2026-10-22 — Microfase 1: autoridad nueva de automatizaciones (propuesta PR, NO ACTIVA)
 
 - Se añade `docs/AUTOMATION_AUTHORITY.md` y contrato fail-closed (`scripts/validate-automation-authority.mjs`) integrado al check de scope. Dos ejecutores humanos principales paritarios: Javier 01, Alex 02; la numeración no es jerarquía. SOLQARYN Platform conserva titularidad institucional.

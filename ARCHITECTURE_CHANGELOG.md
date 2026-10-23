@@ -1,3 +1,13 @@
+## 2026-10-22 - Contrato dual Primary/Secondary sin nuevo runtime
+
+Se amplia el control normativo a dos futuras Tasks, una desde cada cuenta:
+Primary (Javier) y Secondary (Alex). No hay modificacion de componentes,
+API, base de datos ni arquitectura desplegada del ERP; se preserva la
+propiedad institucional y la igualdad humana. Exigir independencia real,
+readback y exclusividad antes de activar cualquier modo de escritura.
+
+---
+
 ## 2026-10-22 — Preparación de control de automatizaciones sin nuevos runtimes
 
 Se formaliza la frontera normativa futura en `docs/AUTOMATION_AUTHORITY.md`, manteniendo el control efectivo en `docs/AUTOMATION_STATUS.md`, las identidades humanas paritarias Javier 01 y Alex 02 y propiedad institucional separada. La microfase 1 no agrega infraestructura ni cambia el backend, frontend, tenancy, DB, deployment ni el ERP; cero Tasks/cron/ejecutores nuevos. Se añade un gate negativo de contrato al Project Scope Lock. Revertir por PR sin debilitar los controles actuales.
