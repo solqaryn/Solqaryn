@@ -1,3 +1,11 @@
+## 2026-10-23 — Aprobaciones flexibles entre los tres actores (PR en preparación)
+
+- Revisión humana independiente según disponibilidad verificada: Javier, Alex o operador humano distinto de SOLQARYN Platform. Ningún revisor prefijado; el autor no puede autoaprobarse a través de una segunda cuenta.
+- Contrato `docs/AUTOMATION_AUTHORITY.md` y su prueba negativa reconocen la selección de un aprobador elegible con identidad individual, permiso vigente y evidencias; no alteran la topología `1 Primary Javier + 1 Secondary Alex`.
+- `AUTOMATION_RUNTIME=RETIRED`, Tasks autorizadas 0, sin modificación de ERP, Google Sheets, main, QA, PROD ni secretos. Reversión por PR protegido.
+
+---
+
 ## 2026-10-22 - Enmienda v1.2 del contrato de automatizaciones (PR pendiente)
 
 - Topologia futura: exactamente 1 Task Primary de Javier y 1 Task
