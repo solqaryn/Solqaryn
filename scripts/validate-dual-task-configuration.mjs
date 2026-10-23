@@ -26,6 +26,15 @@ const expected = {
   JULES_WORKERS_AUTHORIZED: '0',
 };
 
+const expectedApproval = {
+  APPROVAL_ROUTING: 'FIRST_AVAILABLE_ELIGIBLE',
+  APPROVAL_CANDIDATES: 'JAVIER,ALEX,SOLQARYN_PLATFORM',
+  APPROVAL_INDEPENDENCE_REQUIRED: 'TRUE',
+  APPROVAL_SELF_REVIEW: 'DENY',
+  APPROVAL_PLATFORM_OPERATOR_VERIFICATION: 'REQUIRED',
+  APPROVAL_TASK_REVIEW_COUNTS_AS_GITHUB_APPROVAL: 'FALSE',
+};
+
 function readKey(source, key) {
   const matches = [...source.matchAll(new RegExp('^' + key + '=([^\\r\\n]+)$', 'gm'))];
   return matches.length === 1 ? matches[0][1] : null;
@@ -37,6 +46,10 @@ export function validateDocuments(sources) {
   for (const [key, value] of Object.entries(expected)) {
     if (readKey(a, key) !== value) errors.push('authority ' + key);
   }
+  for (const [key, value] of Object.entries(expectedApproval)) {
+    if (readKey(a, key) !== value) errors.push('authority approval ' + key);
+  }
+  if (!g.includes('APPROVAL_ROUTING=FIRST_AVAILABLE_ELIGIBLE')) errors.push('agents approval routing');
   for (const key of ['PROJECT_SCOPE_LOCK', 'PILOT_TASK_LIMIT', 'PILOT_PRIMARY_TASKS', 'PILOT_SECONDARY_TASKS', 'PRIMARY_TASK_ROLE', 'SECONDARY_TASK_ROLE', 'PRIMARY_TASK_ACCOUNT', 'SECONDARY_TASK_ACCOUNT', 'AUTOMATION_RUNTIME', 'SCHEDULED_CHATGPT_TASKS_AUTHORIZED', 'VAEP_DISPATCH_AUTHORIZED', 'JULES_WORKERS_AUTHORIZED']) {
     if (readKey(s, key) !== expected[key]) errors.push('status ' + key);
   }
@@ -48,6 +61,30 @@ export function validateDocuments(sources) {
   if (!a.includes('JAVIER_CHATGPT')) errors.push('primary account label');
   if (!a.includes('ALEX_CHATGPT')) errors.push('secondary account label');
   return errors;
+}
+
+
+const approvedReviewerRoles = new Set(['JAVIER', 'ALEX', 'SOLQARYN_PLATFORM']);
+
+// This is a pure eligibility check, not a real-time presence detector,
+// automatic GitHub approval, or authorization to use another account.
+export function firstAvailableIndependentApprover(request) {
+  if (!request || !approvedReviewerRoles.has(request.authorActor) ||
+      typeof request.authorPersonId !== 'string' || !request.authorPersonId.trim()) return null;
+  const candidates = Array.isArray(request.candidates) ? request.candidates : [];
+  for (const candidate of candidates) {
+    if (!candidate || !approvedReviewerRoles.has(candidate.actor)) continue;
+    if (candidate.actor === request.authorActor) continue;
+    if (typeof candidate.personId !== 'string' || !candidate.personId.trim()) continue;
+    if (candidate.personId === request.authorPersonId) continue;
+    if (candidate.available !== true || candidate.identityVerified !== true ||
+        candidate.permissionVerified !== true || candidate.independenceVerified !== true ||
+        candidate.scopeAuthorized !== true || candidate.sharedCredentials === true) continue;
+    if (candidate.actor === 'SOLQARYN_PLATFORM' &&
+        candidate.institutionalOperatorVerified !== true) continue;
+    return candidate.actor;
+  }
+  return null;
 }
 
 const ownerByRole = { PRIMARY_01: 'JAVIER_CHATGPT', SECONDARY_02: 'ALEX_CHATGPT' };
@@ -149,6 +186,53 @@ if (failures.length) {
     const test = clone(base); mutate(test);
     if (!validateProposedRun(test).length) throw Error('Fail-closed test did not reject: ' + name);
   }
+  const eligible = (actor, personId, institutionalOperatorVerified = false) => ({
+    actor, personId, institutionalOperatorVerified,
+    available: true, identityVerified: true, permissionVerified: true,
+    independenceVerified: true, scopeAuthorized: true, sharedCredentials: false,
+  });
+  const selection = {
+    authorActor: 'JAVIER',
+    authorPersonId: 'human-javier',
+    candidates: [
+      eligible('ALEX', 'human-alex'),
+      eligible('SOLQARYN_PLATFORM', 'human-platform-reviewer', true),
+    ],
+  };
+  if (firstAvailableIndependentApprover(selection) !== 'ALEX') throw Error('First available independent reviewer selection fails');
+  if (firstAvailableIndependentApprover({
+    ...selection, candidates: [{...selection.candidates[0], available:false}, selection.candidates[1]]
+  }) !== 'SOLQARYN_PLATFORM') throw Error('Independent institutional fallback selection fails');
+  if (firstAvailableIndependentApprover({
+    authorActor:'ALEX', authorPersonId:'human-alex', candidates:[eligible('JAVIER','human-javier')]
+  }) !== 'JAVIER') throw Error('Javier must be eligible for review of Alex');
+  if (firstAvailableIndependentApprover({
+    authorActor:'SOLQARYN_PLATFORM', authorPersonId:'human-platform-reviewer',
+    candidates:[eligible('ALEX','human-alex')]
+  }) !== 'ALEX') throw Error('Alex must be eligible for institutional changes');
+
+  const approvalMutants = [
+    ['self approval by author', p => p.candidates=[eligible('JAVIER','human-javier')]],
+    ['institutional shared human', p => p.candidates=[eligible('SOLQARYN_PLATFORM','human-javier',true)]],
+    ['institutional unidentified operator', p => p.candidates=[eligible('SOLQARYN_PLATFORM','human-platform-reviewer',false)]],
+    ['reviewer unavailable', p => p.candidates[0].available=false],
+    ['permission missing', p => p.candidates[0].permissionVerified=false],
+    ['identity missing', p => p.candidates[0].identityVerified=false],
+    ['independence not proved', p => p.candidates[0].independenceVerified=false],
+    ['scope unauthorized', p => p.candidates[0].scopeAuthorized=false],
+    ['shared credentials', p => p.candidates[0].sharedCredentials=true],
+    ['unknown reviewer', p => p.candidates[0].actor='UNAUTHORIZED'],
+    ['missing author human identity', p => p.authorPersonId=''],
+  ];
+  for (const [name, mutate] of approvalMutants) {
+    const test = structuredClone(selection);
+    test.candidates = [structuredClone(selection.candidates[0])];
+    mutate(test);
+    if (firstAvailableIndependentApprover(test) !== null) {
+      throw Error('Availability policy must reject: ' + name);
+    }
+  }
+
   const documentMutants = [
     ['cap', {authority:authority.replace('PILOT_TASK_LIMIT=2','PILOT_TASK_LIMIT=3')}],
     ['role', {authority:authority.replace('PRIMARY_TASK_ROLE=PRIMARY_01','PRIMARY_TASK_ROLE=SECONDARY_02')}],
@@ -157,11 +241,15 @@ if (failures.length) {
     ['authorized task', {status:status.replace('SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0','SCHEDULED_CHATGPT_TASKS_AUTHORIZED=2')}],
     ['human parity', {authority:authority.replace('HUMAN_ROLE_PARITY=TRUE','HUMAN_ROLE_PARITY=FALSE')}],
     ['revived previous dispatch', {status:status.replace('VAEP_DISPATCH_AUTHORIZED=FALSE','VAEP_DISPATCH_AUTHORIZED=TRUE')}],
+    ['approval routing disabled', {authority:authority.replace('APPROVAL_ROUTING=FIRST_AVAILABLE_ELIGIBLE','APPROVAL_ROUTING=FIXED_ALICE')}],
+    ['institutional operator ignored', {authority:authority.replace('APPROVAL_PLATFORM_OPERATOR_VERIFICATION=REQUIRED','APPROVAL_PLATFORM_OPERATOR_VERIFICATION=NOT_REQUIRED')}],
+    ['self approval authorized', {authority:authority.replace('APPROVAL_SELF_REVIEW=DENY','APPROVAL_SELF_REVIEW=ALLOW')}],
+    ['task approvals substituted', {authority:authority.replace('APPROVAL_TASK_REVIEW_COUNTS_AS_GITHUB_APPROVAL=FALSE','APPROVAL_TASK_REVIEW_COUNTS_AS_GITHUB_APPROVAL=TRUE')}],
   ];
   for (const [name, fragment] of documentMutants) {
     if (!validateDocuments({...sources,...fragment}).length) throw Error('Document negative test did not reject: ' + name);
   }
-  console.log(`Dual account authority PASS: 1 Primary Javier + 1 Secondary Alex, zero authorized Tasks, ${mutants.length + documentMutants.length} negative tests`);
+  console.log(`Dual account authority PASS: 1 Primary Javier + 1 Secondary Alex, zero authorized Tasks, ${mutants.length + documentMutants.length + approvalMutants.length} negative tests`);
 } else {
   console.log('Dual account authority PASS (preparation only, zero authorized Tasks)');
 }
