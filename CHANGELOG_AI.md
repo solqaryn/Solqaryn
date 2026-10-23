@@ -1,3 +1,11 @@
+## 2026-10-23 — Adenda de aprobadores disponibles (PR de gobernanza, sin activación)
+
+- Se documenta en `docs/AUTOMATION_AUTHORITY.md` sección 7.1 un grupo flexible de aprobadores: Javier, Alex y SOLQARYN Platform, seleccionados por disponibilidad y autorización individual real, en GitHub, Render, Vercel, Google Sheets/Drive y otros proveedores que lo permitan.
+- No se debilitan las revisiones independientes, reglas del proveedor, aprobaciones múltiples, controles de despliegue ni prohibiciones de PROD/QA/main; una cuenta institucional no constituye un revisor independiente cuando está operada por el autor.
+- `scripts/validate-dual-task-configuration.mjs` añade validaciones y casos negativos para identidad, permiso, disponibilidad, autoaprobación, ámbito, evidencia y controles nativos. Sin crear Tasks ni cambiar runtime, ERP, datos, Sheets, secretos o infraestructura. Reversión: PR protegido.
+
+---
+
 ## 2026-10-22 - Enmienda v1.2 del contrato de automatizaciones (PR pendiente)
 
 - Topologia futura: exactamente 1 Task Primary de Javier y 1 Task
