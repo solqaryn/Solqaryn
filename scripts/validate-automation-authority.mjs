@@ -19,7 +19,7 @@ export function validateAuthority(input) {
     'BRANCH=dev','AUTOMATION_RUNTIME=RETIRED','SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0',
     'VAEP_DISPATCH_AUTHORIZED=FALSE','JULES_WORKERS_AUTHORIZED=0',
     'PROPIETARIA_INSTITUCIONAL','EJECUTOR_PRINCIPAL_01','EJECUTOR_PRINCIPAL_02',
-    'jmejia31','morales35alex','numeración', 'idéntica autoridad', 
+    '93171442','morales35alex','numeración', 'idéntica autoridad', 
     'ACTOR_HUMANO','CREADOR_TASK','ACTOR_AUTOMATIZADO','TASK_ID','RUN_ID','EVENT_ID',
     'IDEMPOTENCY_KEY','REVISOR','separación de deberes','independiente',
     'RETIRED','PREPARING','READ_ONLY','ACTIVE_DEV','PAUSED','BLOCKED','DISABLED',
