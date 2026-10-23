@@ -35,6 +35,12 @@ vivo `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0` ni el modo `RETIRED`.
 
 La norma única de selección flexible reside en `docs/AUTOMATION_AUTHORITY.md`, sección 7.1. Una aprobación pendiente de GitHub, Render, Vercel, Google Sheets/Drive u otra plataforma podrá dirigirse a **Javier, Alex o SOLQARYN Platform**, según disponibilidad y permisos individuales **efectivamente comprobados**, sin prioridad fija. Ninguna cuenta puede autoaprobar un cambio cuando se exige revisión independiente; la cuenta institucional necesita representante humano identificable e independiente si el proveedor exige esa independencia. Respetar las aprobaciones nativas, checks, controles del proveedor, límites de entorno y evidencia; ninguna disponibilidad habilita Tasks o PROD.
 
+## Conciliación física del piloto M3 — 23-10-2026 (solo lectura)
+
+Posteriormente al diseño de la enmienda v1.2, se registraron **dos Tasks piloto físicamente habilitadas**, sin autoridad comercial: `PRIMARY_01` en Javier (ID `6adbb9fff1548191a1bd5b30d9e9984a`, horario `:30`, `automations.peek` directo), y `SECONDARY_02` en Alex (ID `6adbbc9ad9e88191bea8eb69104afb25`, horario `:05`, último readback declarado por Alex). La cuenta Javier no permite inspeccionar nativamente la Task privada de Alex. Los dos IDs se registran en el Sheet institucional; existencia, habilitación, autorización y ejecución finalizada son cuatro controles separados.
+
+En el último corte documental hay **0/4 ejecuciones individuales certificadas**, sin `RUN_ID` nativo o `EVIDENCE_REF` suficiente revisada de ambas cuentas. `READ_ONLY` permite comprobar documentación y preparar informes, no realizar microtareas ni escrituras desde Tasks. Permanecen `AUTOMATION_RUNTIME=RETIRED` y `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0`. Los detalles viven en `docs/AUTOMATION_STATUS.md`, contrato 1.2, [Issue #3730](https://github.com/solqaryn/Solqaryn/issues/3730) y Google Sheet original. Las frases históricas "futuras" y "NO_CREADA" de microfase 2 no describen el inventario físico posterior.
+
 ## Trabajo de desarrollo
 
 - Trabajar en `solqaryn/Solqaryn`, rama `dev`, por PR y fusión protegida. Consultar el HEAD actual y no sobrescribir trabajo concurrente.
