@@ -4,9 +4,9 @@ PROJECT_ID=SOLQARYN
 REPOSITORY=solqaryn/Solqaryn
 BRANCH=dev
 CONTRACT_VERSION=1.2
-CONTRACT_PHASE=AMENDMENT_PRE_MICROFASE_2
-AUTOMATION_RUNTIME=RETIRED
-SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0
+CONTRACT_PHASE=ACTIVE_DEV_PRIMARY_PILOT_20261023
+AUTOMATION_RUNTIME=ACTIVE_DEV
+SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1
 VAEP_DISPATCH_AUTHORIZED=FALSE
 JULES_WORKERS_AUTHORIZED=0
 PILOT_TASK_LIMIT=2
@@ -24,6 +24,15 @@ REVIEW_INDEPENDENCE_REQUIRED=TRUE
 NO_CROSS_ACCOUNT_CREDENTIALS=TRUE
 NO_LEGACY_REACTIVATION=TRUE
 
+## 2026-10-23 — PILOTO DEV PRIMARY AUTORIZADO POR EL PROPIETARIO (reemplaza gates historicos de microfase 3)
+
+El propietario ordena reanudar las microtareas DEV ahora. PRIMARY_01 existente de Javier es el unico escritor automatizado autorizado, SECONDARY_02 de Alex permanece revisor READ_ONLY. Se limita a solqaryn/Solqaryn, base dev, rama especifica por microtarea del Plan Comercial Inicial y PR contra dev. Prohibido merge autonomo, QA, main, PROD, Render, Vercel, secretos o cambios productivos.
+
+El RUN_ID, RUN_URL, TASK_ID_NATIVO_DEL_RUN, correo ChatGPT, RUN_COMPLETED_NATIVO, REVIEWED_RUN_ID y EVIDENCE_REF_AUTENTICADO no son condiciones de elegibilidad ni certificacion de trabajo DEV cuando ChatGPT no los expone. NO inventar campos. Evidencia operativa suficiente: TASK_ID configurado, ID de microtarea, HEAD base real, rama y PR/commit GitHub verdaderos, checks de CI y evidencia de readback. El 4/4 de ejecuciones de diagnostico READ_ONLY deja de ser requisito del piloto DEV.
+
+Control de colisiones: un solo escritor Primary con WIP=1, comprobar ramas/PR activos del mismo ID antes de iniciar; continuar el PR existente en vez de duplicar. GitHub proporciona HEAD y proteccion de PR. Sin CAS ni leases en Sheets. Alex revisa un PR/SHA concreto, sin REVIEWED_RUN_ID de ChatGPT ni aprobacion ficticia. Se mantienen Project Scope Lock, permisos reales, seguridad multiempresa, CI exact-head y revision humana independiente cuando GitHub lo exija.
+
+Esta habilitacion se vuelve efectiva unicamente al fusionar con checks obligatorios este contrato a dev y comprobar el HEAD nuevo. Los prompts programados deben validar la autoridad viva antes de escribir.
 ## 1. Vigencia, jerarquía y límites
 
 Este documento define el **contrato normativo para preparar** un sistema nuevo; no lo activa y no activa Tasks. Hasta que una autorización posterior, las certificaciones físicas y el estado vivo en `docs/AUTOMATION_STATUS.md` habiliten una transición expresa, no se permite crear Tasks, despachar trabajo, escribir desde Tasks, adquirir ownership automático ni ejecutar trabajos comerciales de forma desatendida.
