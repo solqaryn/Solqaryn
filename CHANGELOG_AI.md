@@ -1,3 +1,12 @@
+## 2026-10-23 — Auditoría de ramas DEV y estado de despliegues (sin limpieza destructiva)
+
+- `docs/BRANCH_CONSOLIDATION_AUDIT_20261023.md` registra 50 ramas remotas: `dev`, `qa`, `main` protegidas, 11 referencias completamente detrás de `dev` y 36 divergentes con commits propios. Se listan por nombre y separación respecto al HEAD `eb149ff4d25f9ed37d65fbf2582c19bf5c560baa`.
+- 13 PR abiertos requieren revisión antes de eliminar ramas, incluida autoridad antigua VAEP y propuestas con base `qa`/`main`; ninguna se incorpora automáticamente a `dev`.
+- Render DEV: despliegue `dep-dbdq8vss728c7385augg` `live` sobre PR #3725. Vercel DEV: `READY` anterior con código de aplicación sin rutas frontend/backend modificadas en la comparación; el build exacto #3725 fue omitido intencionalmente por política de gobernanza, no certificado `READY`.
+- Esta intervención documental no autoriza fusión directa, borrado de ramas, alteraciones QA/PROD, reactivación VAEP, creación de Tasks ni escritura en Google Sheets. Limpieza de ramas y eventual sincronización exacta de despliegue quedan sujetas a gates específicos y lectura posterior.
+
+---
+
 ## 2026-10-23 — Microfase 2 — Google Sheets 8/8 (evidencia y cierre técnico)
 
 - Configurado y verificado exclusivamente el Google Sheets nativo existente de SOLQARYN: ocho pestañas, dos posiciones reservadas de Task (`PRIMARY_01` Javier y `SECONDARY_02` Alex) sin `TASK_ID`, y cinco capacidades lógicas `NO_ACTIVA`.
