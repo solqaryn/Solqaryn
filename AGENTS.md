@@ -31,6 +31,13 @@ crean rango administrativo ni permisos heredados. Las dos Tasks necesitan
 certificacion fisica propia, y su limite futuro no sustituye el contador
 vivo `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0` ni el modo `RETIRED`.
 
+## Aprobaciones por disponibilidad con independencia obligatoria
+
+APPROVAL_ROUTING=FIRST_AVAILABLE_ELIGIBLE
+APPROVAL_CANDIDATES=JAVIER,ALEX,SOLQARYN_PLATFORM
+
+Conforme a `docs/AUTOMATION_AUTHORITY.md`, los PR y cierres humanos que exijan revisión independiente pueden ser aprobados por Javier, Alex o un operador humano distinto y comprobado de SOLQARYN Platform: quien esté disponible y cumpla identidad, ACL y ausencia de conflicto con el autor real. Nadie se autoaprueba mediante otra cuenta; tampoco la revisión automatizada de Secondary equivale a aprobación GitHub. Si no hay candidato independiente elegible, la aprobación queda bloqueada. Las autorizaciones reservadas a la propietaria institucional no se delegan por disponibilidad. La política no crea Tasks ni modifica `RETIRED`.
+
 ## Trabajo de desarrollo
 
 - Trabajar en `solqaryn/Solqaryn`, rama `dev`, por PR y fusión protegida. Consultar el HEAD actual y no sobrescribir trabajo concurrente.
