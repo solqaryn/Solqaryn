@@ -1,3 +1,14 @@
+## 2026-10-23 — Microfase 2 — Google Sheets 8/8 (evidencia y cierre técnico)
+
+- Configurado y verificado exclusivamente el Google Sheets nativo existente de SOLQARYN: ocho pestañas, dos posiciones reservadas de Task (`PRIMARY_01` Javier y `SECONDARY_02` Alex) sin `TASK_ID`, y cinco capacidades lógicas `NO_ACTIVA`.
+- Preservadas las seis pestañas comerciales originales, 1.123 IDs de microtarea, estados `PENDIENTE`, dependencias y las 15.722 fórmulas de `COLA`; 3/3 huellas FNV64 coincidentes.
+- Dashboard extendido sin alterar los ocho indicadores originales; `CONFIG` incorpora contrato v1.2, autoridad paritaria, permisos humanos comprobados, runtime `RETIRED`, pool de aprobadores y límites de ejecución.
+- Esquema `BITACORA` actualizado de 9 a 25 columnas, conservando el historial real de esta microfase. 16 validaciones nativas estrictas verificadas; 38/38 casos negativos **aislados en memoria**, no pruebas de rechazo real del proveedor. Protecciones de advertencia de rangos sin suplantar autorización real.
+- `docs/AUTOMATION_MICROFASE_2_CERTIFICATION_20261023.md` contiene contrato, IDs, verificaciones, evidencia de revisión Drive, observaciones y rollback. `docs/AUTOMATION_STATUS.md` declara exclusivamente `MICROFASE_2_SHEETS_READBACK=PASS`, sin activar el piloto.
+- GitHub: commit en rama protegida de trabajo y PR hacia `dev` sujetos a CI del HEAD exacto y aprobación válida de un revisor independiente; no se saltan permisos, no cambia ERP funcional, `main`, QA, PROD ni secretos. `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0`; las Tasks de microfase 3 **no se han creado** por este cambio.
+
+---
+
 ## 2026-10-23 — Adenda de aprobadores disponibles (PR de gobernanza, sin activación)
 
 - Se documenta en `docs/AUTOMATION_AUTHORITY.md` sección 7.1 un grupo flexible de aprobadores: Javier, Alex y SOLQARYN Platform, seleccionados por disponibilidad y autorización individual real, en GitHub, Render, Vercel, Google Sheets/Drive y otros proveedores que lo permitan.
