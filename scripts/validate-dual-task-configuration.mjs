@@ -63,6 +63,27 @@ export function validateDocuments(sources) {
 }
 
 const ownerByRole = { PRIMARY_01: 'JAVIER_CHATGPT', SECONDARY_02: 'ALEX_CHATGPT' };
+
+const knownRunId = v => typeof v === 'string' && v.trim() !== '' && v !== 'NO_VERIFICADO';
+const validEvidenceRef = v => typeof v === 'string' && /^https:\/\//.test(v);
+// Validates provided proof metadata only; a human must verify its native ChatGPT provenance.
+export function verifiedScheduledReadOnlyProof(proof, slot) {
+  if (!slot || !proof || typeof proof !== 'object') return false;
+  return proof.kind === 'CHATGPT_SCHEDULED_TASK_RESULT' &&
+    proof.taskId === slot.taskId && proof.account === slot.account &&
+    proof.source === 'OWNER_CHATGPT_TASK_HISTORY' &&
+    proof.scheduled === true && proof.completed === true &&
+    proof.ownerReadbackVerified === true && proof.resultReadbackVerified === true &&
+    proof.independentReviewerVerified === true &&
+    typeof proof.reviewerAccount === 'string' &&
+    proof.reviewerAccount !== slot.account &&
+    validEvidenceRef(proof.evidenceRef) &&
+    proof.evidenceRef !== proof.taskShareUrl &&
+    typeof proof.outputSha256 === 'string' &&
+    /^[a-f0-9]{64}$/i.test(proof.outputSha256) &&
+    typeof proof.timestampUtc === 'string' &&
+    !Number.isNaN(Date.parse(proof.timestampUtc));
+}
 export function validateProposedRun(p) {
   const errors = [];
   const slots = Array.isArray(p.slots) ? p.slots : [];
@@ -88,7 +109,13 @@ export function validateProposedRun(p) {
   if (p.operation && p.operation !== 'NONE') {
     if (p.mode === 'RETIRED' || p.mode === 'PREPARING' || p.mode === 'PAUSED' || p.mode === 'BLOCKED' || p.mode === 'DISABLED') errors.push('disabled_operation');
     if (!p.authorizationVerified) errors.push('authorization');
-    if (!p.runId || !p.evidence) errors.push('missing_evidence');
+    const actorSlot = slots.find(s => s.role === p.actorRole && s.account === p.actorAccount);
+    const nativeRunVerified = knownRunId(p.runId) && p.nativeRunIdVerified === true;
+    const equivalentRunVerified = p.mode === 'READ_ONLY' &&
+      p.stage === 'DUAL_READ_ONLY' && (p.operation === 'READ' || p.operation === 'REVIEW') &&
+      verifiedScheduledReadOnlyProof(p.runEvidence, actorSlot);
+    if ((!nativeRunVerified && !equivalentRunVerified) || !p.evidence)
+      errors.push('missing_evidence');
     if (!p.actorRole || !ownerByRole[p.actorRole]) errors.push('unknown_actor');
     if (p.actorAccount !== ownerByRole[p.actorRole]) errors.push('actor_account_mismatch');
     if (!slots.some(s => s.role === p.actorRole && s.account === p.actorAccount)) errors.push('actor_not_registered');
@@ -101,7 +128,16 @@ export function validateProposedRun(p) {
     if (p.operation === 'REVIEW') {
       if (p.authorAccount === p.actorAccount) errors.push('self_review');
       if (!p.independentReviewerVerified) errors.push('reviewer_unverified');
-      if (!p.reviewedRunId) errors.push('review_without_run');
+      const authorSlot = slots.find(s => s.account === p.authorAccount);
+      const nativeReviewedVerified = knownRunId(p.reviewedRunId) && p.reviewedRunIdVerified === true;
+      const equivalentReviewedVerified = p.mode === 'READ_ONLY' &&
+        p.stage === 'DUAL_READ_ONLY' &&
+        verifiedScheduledReadOnlyProof(p.reviewedEvidence, authorSlot);
+      if (!nativeReviewedVerified && !equivalentReviewedVerified)
+        errors.push('review_without_run');
+      if (equivalentRunVerified && equivalentReviewedVerified &&
+          p.runEvidence.evidenceRef === p.reviewedEvidence.evidenceRef)
+        errors.push('reused_evidence');
     }
     if (!['READ','WRITE','REVIEW'].includes(p.operation)) errors.push('unknown_operation');
   }
@@ -143,9 +179,9 @@ if (failures.length) {
   const base = {
     repo: 'solqaryn/Solqaryn', branch: 'dev', pilotMax: 2, primaryMax: 1, secondaryMax: 1,
     stage: 'DUAL_READ_ONLY', environment: 'dev', mode: 'READ_ONLY', operation: 'REVIEW',
-    authorizationVerified: true, runId: 'RUN-READ-01', evidence: 'verified:readback',
+    authorizationVerified: true, runId: 'RUN-READ-01', nativeRunIdVerified:true, evidence: 'verified:readback',
     actorRole: 'SECONDARY_02', actorAccount: 'ALEX_CHATGPT', authorAccount: 'JAVIER_CHATGPT',
-    reviewedRunId: 'RUN-PRIMARY-01', independentReviewerVerified: true,
+    reviewedRunId: 'RUN-PRIMARY-01', reviewedRunIdVerified:true, independentReviewerVerified: true,
     slots: [
       { role:'PRIMARY_01', account:'JAVIER_CHATGPT', taskId:'TASK-P1', permissionsVerified:true, schedulerVerified:true },
       { role:'SECONDARY_02', account:'ALEX_CHATGPT', taskId:'TASK-S1', permissionsVerified:true, schedulerVerified:true },
@@ -182,6 +218,47 @@ if (failures.length) {
     ['secondary write without permission', p => {p.operation='WRITE';p.mode='ACTIVE_DEV';p.writePermissionVerified=true;p.exclusiveScopeVerified=true;p.idempotencyKey='KEY';p.exactHeadVerified=true;}],
   ];
   if (validateProposedRun(base).length) throw Error('Safe simulation must pass');
+
+  const positiveProof = (role, taskId, account, reviewerAccount, ref, digest) => ({
+    kind: 'CHATGPT_SCHEDULED_TASK_RESULT', taskId, account,
+    source: 'OWNER_CHATGPT_TASK_HISTORY', scheduled: true, completed: true,
+    ownerReadbackVerified: true, resultReadbackVerified: true,
+    independentReviewerVerified: true, reviewerAccount,
+    evidenceRef: ref, outputSha256: digest, timestampUtc: '2026-10-23T21:04:34Z',
+  });
+  const proofPrimary = positiveProof('PRIMARY_01', 'TASK-P1', 'JAVIER_CHATGPT', 'ALEX_CHATGPT', 'https://example.test/primary-run', 'a'.repeat(64));
+  const proofSecondary = positiveProof('SECONDARY_02', 'TASK-S1', 'ALEX_CHATGPT', 'JAVIER_CHATGPT', 'https://example.test/secondary-run', 'b'.repeat(64));
+  const equivalent = clone(base);
+  equivalent.runId = 'NO_VERIFICADO';
+  equivalent.reviewedRunId = 'NO_VERIFICADO';
+  equivalent.runEvidence = proofSecondary;
+  equivalent.reviewedEvidence = proofPrimary;
+  if (validateProposedRun(equivalent).length)
+    throw Error('Verified individual scheduled read-only proofs must pass when native RUN_ID unavailable');
+  const evidenceMutants = [
+    ['missing proof', p => p.runEvidence = null],
+    ['wrong task', p => p.runEvidence.taskId = 'OTHER-TASK'],
+    ['wrong owner', p => p.runEvidence.account = 'JAVIER_CHATGPT'],
+    ['manual run', p => p.runEvidence.scheduled = false],
+    ['unfinished run', p => p.runEvidence.completed = false],
+    ['unauthenticated history', p => p.runEvidence.ownerReadbackVerified = false],
+    ['unverified result', p => p.runEvidence.resultReadbackVerified = false],
+    ['unverified reviewer', p => p.runEvidence.independentReviewerVerified = false],
+    ['self reviewed', p => p.runEvidence.reviewerAccount = 'ALEX_CHATGPT'],
+    ['fake share', p => p.runEvidence.evidenceRef = 'not-a-source'],
+    ['share task not run', p => p.runEvidence.taskShareUrl = p.runEvidence.evidenceRef],
+    ['missing output digest', p => p.runEvidence.outputSha256 = ''],
+    ['missing reviewed proof', p => p.reviewedEvidence = null],
+    ['reviewed same evidence', p => p.reviewedEvidence.evidenceRef = p.runEvidence.evidenceRef],
+    ['equivalent used to write', p => p.operation = 'WRITE'],
+    ['equivalent used active dev', p => p.mode = 'ACTIVE_DEV'],
+  ];
+  for (const [name, mutate] of evidenceMutants) {
+    const test = clone(equivalent); mutate(test);
+    if (!validateProposedRun(test).length)
+      throw Error('Equivalence negative test did not reject: ' + name);
+  }
+
   if (validateProposedRun({...base, stage:'PREPARING', mode:'RETIRED', operation:'NONE', slots:[]}).length) throw Error('Safe zero-Task preparing state must pass');
   for (const [name, mutate] of mutants) {
     const test = clone(base); mutate(test);
