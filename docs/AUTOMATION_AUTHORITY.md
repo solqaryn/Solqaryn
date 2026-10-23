@@ -146,6 +146,27 @@ la politica la exija. Primary no puede autorizarse por simular a Alex;
 Alex tampoco puede autoaprobar sus cambios. Una Task sin autenticacion
 propia o sin privilegios comprobados queda `BLOCKED`.
 
+### 7.1. Bolsa flexible de aprobadores autorizados (adenda 23/10/2026)
+
+APPROVAL_POOL_MEMBERS=JAVIER,ALEX,SOLQARYN_PLATFORM
+APPROVAL_SELECTION=ANY_AVAILABLE_ELIGIBLE
+APPROVAL_NO_SELF_REVIEW=TRUE
+APPROVAL_PROVIDER_GATES_MANDATORY=TRUE
+APPROVAL_HUMAN_WHEN_REQUIRED=TRUE
+APPROVAL_AVAILABILITY_MUST_BE_VERIFIED=TRUE
+
+**Regla general.** Las solicitudes de aprobación, validación o conformidad relacionadas con SOLQARYN en GitHub, Render, Vercel, Google Sheets, Google Drive y otros servicios podrán dirigirse indistintamente a **Javier Mejía**, **Alex Morales** o **SOLQARYN Platform**, eligiendo a quien esté realmente disponible **y habilitado para esa acción específica**. No hay prioridad jerárquica ni turno fijo. Esta regla flexibiliza la selección del firmante, no los requisitos de cada servicio.
+
+**Elegibilidad por operación.** Antes de elegir, comprobar identidad autenticada individual, disponibilidad expresamente confirmada o constatada por canal autorizado, permiso efectivo del proveedor, alcance concreto, entorno, licencia/rol exigido, independencia requerida y posibles aprobaciones múltiples. Seleccionar a cualquier integrante elegible del grupo; si ninguno lo está, registrar `PENDIENTE_APROBACION` o `BLOCKED` y no ejecutar la acción. Disponibilidad no se infiere de una Task o del silencio de alguien. No compartir sesiones, credenciales ni asumir que el permiso de una plataforma sirve para otra.
+
+**Revisión independiente.** Quien redactó, ejecutó o impulsó un cambio no puede aprobarlo como revisor independiente cuando la política, el riesgo o el proveedor exija separación de deberes, aunque tenga otra cuenta. GitHub `APPROVED` debe proceder de la cuenta permitida y no del autor. SOLQARYN Platform podrá actuar como cuenta institucional autorizadora cuando el servicio lo permita, **pero no contará como revisor humano independiente si la persona que la opera es la misma que realizó el cambio**. Si el proveedor exige aprobación humana personal, el usuario firmante debe estar identificado y ser elegible; una cuenta institucional automatizada no lo sustituye.
+
+**Por plataforma.** En GitHub conservar rama protegida, revisión requerida, checks, HEAD y reglas de merge. En Render y Vercel conservar protecciones de despliegue/entorno y roles reales; una aprobación no despliega ni promociona por sí sola. En Sheets/Drive, si el servicio no ofrece un evento nativo de `Approve`, registrar decisión humana auditable sin inventar una aprobación del proveedor. En todo sistema conservar controles nativos, privilegio mínimo y readback. Queda prohibido sortear aprobaciones, reglas de rama, permisos, revisiones o confirmaciones técnicas.
+
+**Alcance del permiso.** El grupo flexible no concede acceso nuevo, control de Tasks ajenas, poderes para `main`, QA o PROD, secretos, presupuestos o cambios institucionales sensibles. Toda acción de mayor riesgo o entorno prohibido exige autorización específica adicional de la propietaria y las puertas técnicas vigentes. Las dos Tasks siguen `PRIMARY_01` de Javier y `SECONDARY_02` de Alex; el cambio de aprobador **no** crea, sustituye, duplica, activa ni reasigna Tasks.
+
+**Auditoría y recuperación.** Por aprobación documentar `APPROVAL_ID`, plataforma, objeto/rango, versión o HEAD, `REQUESTER`, `AUTHOR`, `APPROVER_PRINCIPAL`, `APPROVER_ACCOUNT`, `RESPONSIBLE_HUMAN` para cuenta institucional, capacidad, permiso y disponibilidad comprobados, independencia, fundamento, timestamp UTC, evidencia y readback. Un rechazo, revocación, conflicto, pérdida de confirmación o ausencia de aprobación deja la operación sin autorizar. Redirigir la solicitud a otro elegible **no** equivale a suplantación, aprobación tácita o anulación del rechazo.
+
 ## 8. Google Sheets y transiciones de tareas
 
 Conservar el Sheet nativo existente, las seis pestañas actuales y las 1.123 microtareas originales. En la microfase 2 agregar solamente `TAREAS_PROGRAMADAS` y `AUTOMATIZACIONES` (ocho hojas en total). `PLAN_MAESTRO` conserva identidad/datos fuente; `COLA` es derivada y sus 15.722 fórmulas no son un canal de escritura. `CONFIG` y `DASHBOARD` informan estados, nunca activan Tasks. `BITACORA` registra eventos nuevos sin inventar historia. `LEYENDA` describe reglas. `CONTROL_TOWER` y `TAREAS_DE_SUPERVISION` quedan fuera del piloto.
