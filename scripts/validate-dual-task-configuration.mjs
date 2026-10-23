@@ -201,7 +201,7 @@ if (failures.length) {
   }
   const baseApproval = {
     approverPrincipal: 'ALEX', approverAccount: 'morales35alex',
-    responsibleHumanId: 'alex', authorHumanId: 'javier', authorAccount: 'jmejia31',
+    responsibleHumanId: 'alex', authorHumanId: 'javier', authorAccount: 'github-javier-93171442',
     provider: 'github', objectId: 'PR-EXAMPLE', revisionOrHead: 'HEAD-EXAMPLE',
     environment: 'dev', identityVerified: true, accountVerified: true,
     permissionVerified: true, availabilityVerified: true, available: true,
@@ -213,7 +213,7 @@ if (failures.length) {
   };
   if (validateApprovalDecision(baseApproval).length) throw Error('Eligible Alex must pass');
   if (validateApprovalDecision({...baseApproval,
-      approverPrincipal: 'JAVIER', approverAccount:'jmejia31',
+      approverPrincipal: 'JAVIER', approverAccount:'github-javier-93171442',
       responsibleHumanId:'javier', authorHumanId:'alex', authorAccount:'morales35alex'}).length)
     throw Error('Eligible Javier must pass');
   if (validateApprovalDecision({...baseApproval,
@@ -235,7 +235,7 @@ if (failures.length) {
     ['human signatory absent', p=>p.humanActorVerified=false],
     ['self review same human', p=>p.responsibleHumanId='javier'],
     ['independence not verified', p=>p.independenceVerified=false],
-    ['self review github account', p=>p.approverAccount='jmejia31'],
+    ['self review github account', p=>p.approverAccount='github-javier-93171442'],
     ['stale github head', p=>p.exactHeadVerified=false],
     ['shared credentials', p=>p.sharedCredentials=true],
     ['impersonated', p=>p.impersonated=true],
