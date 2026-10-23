@@ -7,6 +7,15 @@
 
 ---
 
+## 2026-10-23 — Microfase 3: evidencia verificable de RUN_ID y coordinación del piloto
+
+- Se aclara el contrato 1.2 de `docs/AUTOMATION_AUTHORITY.md`: cuando ChatGPT no exponga `RUN_ID` en la lectura de Tasks, se permite exclusivamente en el piloto `READ_ONLY` evidencia equivalente **individual, programada, finalizada y autenticada** con revisión humana independiente. `TASK_ID`, `EVENT_ID` y `last_run_time` jamás sustituyen a un `RUN_ID` nativo.
+- `scripts/validate-dual-task-configuration.mjs --self-test` incorpora condiciones positivas y mutaciones negativas para la prueba equivalente; permanece prohibido aprovecharla en `ACTIVE_DEV` o `WRITE`, y se preservan separación de cuentas, topología 1+1, límite 2 y bloqueo comercial.
+- Evidencias preliminares de Javier (:00 anterior; ahora :30) y Alex (:05) se documentan en [Issue #3730](https://github.com/solqaryn/Solqaryn/issues/3730) y el Sheet existente. Las cuatro ejecuciones requieren comprobantes nativos o equivalentes **revisados realmente**; no se concede 4/4 por modificar el contrato.
+- Sin cambio de `AUTOMATION_RUNTIME=RETIRED`, `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0`, Tasks comerciales, VAEP, QA ni PROD.
+
+---
+
 ## 2026-10-23 — Limpieza física de ramas y retirada del ejecutor temporal
 
 - PR #3728 fusionado en DEV (`0cb0c69573ae555feae9b5de0a29d63e2cc7b47e`): se retiran del árbol actual 1.499 archivos VAEP históricos, incluidos tres workflows manuales obsoletos. Project Scope Lock, Seguridad multiempresa y Build backend aprobaron el HEAD del merge.
