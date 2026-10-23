@@ -51,6 +51,33 @@ separadamente Task, identidad, conectores, programacion, readback y permisos
 en microfase 3. No recuperar un motor retirado ni crear ambas Tasks bajo
 Javier como alternativa a la cuenta independiente de Alex.
 
+## Microfase 2 - estructura de Google Sheets (23-10-2026)
+
+MICROFASE_2_SHEETS_READBACK=PASS
+MICROFASE_2_SHEETS_ID=1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU
+MICROFASE_2_SHEET_TABS=8
+MICROFASE_2_PREPARED_TASK_SLOTS=2
+MICROFASE_2_LOGICAL_CAPABILITIES=5
+MICROFASE_2_PHYSICAL_TASKS_VERIFIED=0
+
+La estructura del Google Sheets existente fue leida, configurada y verificada.
+Hay exactamente dos reservas de rol (Primary Javier y Secondary Alex),
+ambas `NO_CREADA` y sin `TASK_ID`; no se han certificado Tasks fisicas
+en sus cuentas. Las cinco capacidades permanecen `NO_ACTIVA`.
+
+El readback comercial confirma 1.123 microtareas, 1.123 IDs unicos,
+cero dependencias invalidas/ciclicas y 15.722 formulas intactas.
+Hay 16 validaciones estrictas verificadas en Google Sheets y 38 casos
+negativos **simulados aisladamente, no ejecuciones de escritura reales**.
+La evidencia exacta, huellas y alcance de rollback figuran en
+[`AUTOMATION_MICROFASE_2_CERTIFICATION_20261023.md`](AUTOMATION_MICROFASE_2_CERTIFICATION_20261023.md).
+
+Esta constancia no significa que un PR este aprobado ni que las Tasks
+existan o esten habilitadas. Antes de cualquier fase posterior se
+requiere cierre por flujo GitHub protegido y autorizacion especifica.
+Permanecen `AUTOMATION_RUNTIME=RETIRED`,
+`SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0`, VAEP retirado y Jules cero.
+
 ## Volver a automatizar en el futuro
 
 Requerirá un contrato nuevo, aprobación del propietario, diseño explícito de concurrencia y derechos de escritura, aislamiento de credenciales, pruebas de cierre causal y una configuración nueva comprobada. Ningún archivo de este estado produce activaciones.
