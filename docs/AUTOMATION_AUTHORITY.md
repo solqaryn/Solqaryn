@@ -12,7 +12,7 @@ JULES_WORKERS_AUTHORIZED=0
 
 ## 1. Vigencia, jerarquía y límites
 
-Este documento define el **contrato normativo para preparar** un sistema nuevo; no lo activa. Hasta que una autorización posterior, las certificaciones físicas y el estado vivo en `docs/AUTOMATION_STATUS.md` habiliten una transición expresa, no se permite crear Tasks, despachar trabajo, escribir desde Tasks, adquirir ownership automático ni ejecutar trabajos comerciales de forma desatendida.
+Este documento define el **contrato normativo para preparar** un sistema nuevo; no lo activa y no activa Tasks. Hasta que una autorización posterior, las certificaciones físicas y el estado vivo en `docs/AUTOMATION_STATUS.md` habiliten una transición expresa, no se permite crear Tasks, despachar trabajo, escribir desde Tasks, adquirir ownership automático ni ejecutar trabajos comerciales de forma desatendida.
 
 Precedencia: `docs/PROJECT_SCOPE_LOCK.md` y `AGENTS.md` + Skill canónica de SOLQARYN para identidad y seguridad; este contrato para políticas específicas de automatizaciones; `docs/AUTOMATION_STATUS.md` para estado y permiso efectivos; `STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES` (Drive ID `1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA`) para el alcance comercial; `STANDARD DE AUTOMATIZACIONES EN SOLQARYN` (Sheet ID `1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU`) para el seguimiento. Un registro de Sheets, un prompt o una Task jamás prevalece sobre una denegación normativa o física. La evidencia de VariApp/VAEP es archivo no ejecutable.
 
@@ -24,7 +24,7 @@ Precedencia: `docs/PROJECT_SCOPE_LOCK.md` y `AGENTS.md` + Skill canónica de SOL
 | `EJECUTOR_PRINCIPAL_01` | Javier Mejía; GitHub `jmejia31`; ChatGPT `javiermejia3112@gmail.com` | Ejecutor humano principal con idéntica autoridad operativa que 02, limitada por ACL reales, contrato, PR y revisión. Cuenta prevista para la única Task piloto futura. |
 | `EJECUTOR_PRINCIPAL_02` | Alex Morales; GitHub `morales35alex` | Ejecutor humano principal con idéntica autoridad operativa que 01, limitada por ACL reales, contrato, PR y revisión. No se crea Task en su nombre durante el piloto. |
 
-Los índices 01/02 son identificadores estables, **nunca jerarquía, preferencia, supervisor, suplencia automática ni privilegio**. La propiedad institucional no se transfiere. Ninguno usa credenciales, sesiones, secretos o tokens del otro. `ACTOR_HUMANO`, `CREADOR_TASK`, `ACTOR_AUTOMATIZADO`, `TASK_ID`, `RUN_ID`, `EVENT_ID` y `REVISOR` son campos separados; ningún rol implica identidad de Task ni herencia de permisos. Escribir el nombre de otro actor sin evidencia de su autenticación es suplantación y causa `BLOCKED`.
+La numeración 01/02 identifica auditablemente; los índices 01/02 son identificadores estables, **nunca jerarquía, preferencia, supervisor, suplencia automática ni privilegio**. La propiedad institucional no se transfiere. Ninguno usa credenciales, sesiones, secretos o tokens del otro. `ACTOR_HUMANO`, `CREADOR_TASK`, `ACTOR_AUTOMATIZADO`, `TASK_ID`, `RUN_ID`, `EVENT_ID` y `REVISOR` son campos separados; ningún rol implica identidad de Task ni herencia de permisos. Escribir el nombre de otro actor sin evidencia de su autenticación es suplantación y causa `BLOCKED`.
 
 ### Admisión y revocación individual
 
