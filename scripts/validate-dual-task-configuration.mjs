@@ -26,6 +26,15 @@ const expected = {
   JULES_WORKERS_AUTHORIZED: '0',
 };
 
+const expectedApprovalPolicy = {
+  APPROVAL_POOL_MEMBERS: 'JAVIER,ALEX,SOLQARYN_PLATFORM',
+  APPROVAL_SELECTION: 'ANY_AVAILABLE_ELIGIBLE',
+  APPROVAL_NO_SELF_REVIEW: 'TRUE',
+  APPROVAL_PROVIDER_GATES_MANDATORY: 'TRUE',
+  APPROVAL_HUMAN_WHEN_REQUIRED: 'TRUE',
+  APPROVAL_AVAILABILITY_MUST_BE_VERIFIED: 'TRUE',
+};
+
 function readKey(source, key) {
   const matches = [...source.matchAll(new RegExp('^' + key + '=([^\\r\\n]+)$', 'gm'))];
   return matches.length === 1 ? matches[0][1] : null;
@@ -36,6 +45,9 @@ export function validateDocuments(sources) {
   const errors = [];
   for (const [key, value] of Object.entries(expected)) {
     if (readKey(a, key) !== value) errors.push('authority ' + key);
+  }
+  for (const [key, value] of Object.entries(expectedApprovalPolicy)) {
+    if (readKey(a, key) !== value) errors.push('authority approval ' + key);
   }
   for (const key of ['PROJECT_SCOPE_LOCK', 'PILOT_TASK_LIMIT', 'PILOT_PRIMARY_TASKS', 'PILOT_SECONDARY_TASKS', 'PRIMARY_TASK_ROLE', 'SECONDARY_TASK_ROLE', 'PRIMARY_TASK_ACCOUNT', 'SECONDARY_TASK_ACCOUNT', 'AUTOMATION_RUNTIME', 'SCHEDULED_CHATGPT_TASKS_AUTHORIZED', 'VAEP_DISPATCH_AUTHORIZED', 'JULES_WORKERS_AUTHORIZED']) {
     if (readKey(s, key) !== expected[key]) errors.push('status ' + key);
@@ -93,6 +105,32 @@ export function validateProposedRun(p) {
     }
     if (!['READ','WRITE','REVIEW'].includes(p.operation)) errors.push('unknown_operation');
   }
+  return errors;
+}
+
+// Policy-level eligibility only: no action or provider approval is performed here.
+const approvedPrincipals = new Set(['JAVIER', 'ALEX', 'SOLQARYN_PLATFORM']);
+export function validateApprovalDecision(p) {
+  const errors = [];
+  if (!approvedPrincipals.has(p.approverPrincipal)) errors.push('unknown_approver');
+  if (!p.provider || !p.objectId || !p.revisionOrHead) errors.push('unscoped_approval');
+  if (p.environment !== 'dev' && p.environment !== 'general') errors.push('unauthorized_environment');
+  if (!p.identityVerified || !p.accountVerified || !p.permissionVerified) errors.push('identity_or_permission');
+  if (!p.availabilityVerified || !p.available) errors.push('unavailable_approver');
+  if (!p.providerRulesSatisfied || !p.requiredApprovalsSatisfied || !p.scopeAuthorized) errors.push('provider_gate');
+  if (!p.nativeApprovalVerified && p.nativeApprovalRequired) errors.push('native_approval_missing');
+  if (p.humanApprovalRequired && !p.humanActorVerified) errors.push('human_required');
+  if (p.approverPrincipal === 'SOLQARYN_PLATFORM') {
+    if (!p.institutionalAuthorityVerified || !p.responsibleHumanId) errors.push('institutional_representation');
+  }
+  if (p.independentReviewRequired &&
+      (!p.independenceVerified || !p.authorHumanId || !p.responsibleHumanId ||
+       p.authorHumanId === p.responsibleHumanId)) errors.push('not_independent');
+  if (p.provider === 'github' &&
+      (!p.nativeApprovalVerified || !p.exactHeadVerified ||
+       !p.authorAccount || p.authorAccount === p.approverAccount)) errors.push('github_review');
+  if (p.sharedCredentials || p.impersonated || p.accountBorrowed) errors.push('impersonation');
+  if (!p.approvalId || !p.auditEvidence || !p.readbackVerified) errors.push('missing_audit');
   return errors;
 }
 
@@ -161,7 +199,71 @@ if (failures.length) {
   for (const [name, fragment] of documentMutants) {
     if (!validateDocuments({...sources,...fragment}).length) throw Error('Document negative test did not reject: ' + name);
   }
-  console.log(`Dual account authority PASS: 1 Primary Javier + 1 Secondary Alex, zero authorized Tasks, ${mutants.length + documentMutants.length} negative tests`);
+  const baseApproval = {
+    approverPrincipal: 'ALEX', approverAccount: 'morales35alex',
+    responsibleHumanId: 'alex', authorHumanId: 'javier', authorAccount: 'jmejia31',
+    provider: 'github', objectId: 'PR-EXAMPLE', revisionOrHead: 'HEAD-EXAMPLE',
+    environment: 'dev', identityVerified: true, accountVerified: true,
+    permissionVerified: true, availabilityVerified: true, available: true,
+    providerRulesSatisfied: true, requiredApprovalsSatisfied: true, scopeAuthorized: true,
+    nativeApprovalRequired: true, nativeApprovalVerified: true,
+    humanApprovalRequired: true, humanActorVerified: true, independentReviewRequired: true,
+    independenceVerified: true, exactHeadVerified: true, approvalId: 'APP-EXAMPLE',
+    auditEvidence: 'verified-readback', readbackVerified: true,
+  };
+  if (validateApprovalDecision(baseApproval).length) throw Error('Eligible Alex must pass');
+  if (validateApprovalDecision({...baseApproval,
+      approverPrincipal: 'JAVIER', approverAccount:'jmejia31',
+      responsibleHumanId:'javier', authorHumanId:'alex', authorAccount:'morales35alex'}).length)
+    throw Error('Eligible Javier must pass');
+  if (validateApprovalDecision({...baseApproval,
+      approverPrincipal: 'SOLQARYN_PLATFORM', approverAccount:'solqaryn-platform',
+      responsibleHumanId:'independent-institutional-representative',
+      institutionalAuthorityVerified:true}).length)
+    throw Error('Eligible independent institutional signatory must pass');
+  const approvalMutants = [
+    ['unknown approver', p=>p.approverPrincipal='UNKNOWN'],
+    ['unverified identity', p=>p.identityVerified=false],
+    ['unverified account', p=>p.accountVerified=false],
+    ['revoked permission', p=>p.permissionVerified=false],
+    ['unverified availability', p=>p.availabilityVerified=false],
+    ['approver absent', p=>p.available=false],
+    ['provider rules bypass', p=>p.providerRulesSatisfied=false],
+    ['multiple approvals missing', p=>p.requiredApprovalsSatisfied=false],
+    ['unapproved scope', p=>p.scopeAuthorized=false],
+    ['native provider approval absent', p=>p.nativeApprovalVerified=false],
+    ['human signatory absent', p=>p.humanActorVerified=false],
+    ['self review same human', p=>p.responsibleHumanId='javier'],
+    ['independence not verified', p=>p.independenceVerified=false],
+    ['self review github account', p=>p.approverAccount='jmejia31'],
+    ['stale github head', p=>p.exactHeadVerified=false],
+    ['shared credentials', p=>p.sharedCredentials=true],
+    ['impersonated', p=>p.impersonated=true],
+    ['production environment', p=>p.environment='prod'],
+    ['qa environment without authorization', p=>p.environment='qa'],
+    ['no object reference', p=>p.objectId=''],
+    ['no approval evidence', p=>p.auditEvidence=''],
+    ['no readback', p=>p.readbackVerified=false],
+    ['no approval id', p=>p.approvalId=''],
+    ['institutional account without human', p=>{p.approverPrincipal='SOLQARYN_PLATFORM';p.approverAccount='solqaryn-platform';p.responsibleHumanId='';p.institutionalAuthorityVerified=true;}],
+    ['institutional account unverified', p=>{p.approverPrincipal='SOLQARYN_PLATFORM';p.approverAccount='solqaryn-platform';p.responsibleHumanId='independent';p.institutionalAuthorityVerified=false;}],
+    ['institutional same human as author', p=>{p.approverPrincipal='SOLQARYN_PLATFORM';p.approverAccount='solqaryn-platform';p.responsibleHumanId='javier';p.institutionalAuthorityVerified=true;}],
+  ];
+  for (const [name, mutate] of approvalMutants) {
+    const test = clone(baseApproval); mutate(test);
+    if (!validateApprovalDecision(test).length) throw Error('Approval gate must reject: ' + name);
+  }
+  const approvalDocMutants = [
+    ['approver removed', {authority:authority.replace('APPROVAL_POOL_MEMBERS=JAVIER,ALEX,SOLQARYN_PLATFORM','APPROVAL_POOL_MEMBERS=JAVIER')}],
+    ['self review enabled', {authority:authority.replace('APPROVAL_NO_SELF_REVIEW=TRUE','APPROVAL_NO_SELF_REVIEW=FALSE')}],
+    ['native provider gates disabled', {authority:authority.replace('APPROVAL_PROVIDER_GATES_MANDATORY=TRUE','APPROVAL_PROVIDER_GATES_MANDATORY=FALSE')}],
+    ['availability assumption', {authority:authority.replace('APPROVAL_AVAILABILITY_MUST_BE_VERIFIED=TRUE','APPROVAL_AVAILABILITY_MUST_BE_VERIFIED=FALSE')}],
+  ];
+  for (const [name, fragment] of approvalDocMutants) {
+    if (!validateDocuments({...sources,...fragment}).length) throw Error('Approval document gate must reject: ' + name);
+  }
+  console.log('Flexible approval policy PASS: Javier, Alex, SOLQARYN Platform; ' + (approvalMutants.length + approvalDocMutants.length) + ' fail-closed negative tests');
+  console.log(`Dual account authority PASS: 1 Primary Javier + 1 Secondary Alex, zero authorized Tasks, ${mutants.length + documentMutants.length} dual-Task negative tests`);
 } else {
   console.log('Dual account authority PASS (preparation only, zero authorized Tasks)');
 }
