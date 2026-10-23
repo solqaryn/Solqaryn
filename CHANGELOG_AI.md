@@ -1,3 +1,11 @@
+## 2026-10-23 — Piloto DEV Primary: eliminar dependencia de RUN_ID nativo
+
+- Autorizacion expresa del propietario para que Primary Javier pueda iniciar microtareas DEV con rama y PR, sin 4/4 runs de diagnostico ni RUN_ID inobservable.
+- Un solo writer Primary; Secondary Alex revisa, no hace writes. Sin reactivar VAEP; mantener ruleset, CI, seguridad multiempresa, QA/PROD fuera del scope.
+- Efectivo despues del merge de PR y readback de fuente dev, no por cambiar solo prompt/Sheet.
+
+---
+
 ## 2026-10-23 — Conciliación documental de dos Tasks READ_ONLY de microfase 3
 
 - Se documenta explícitamente la diferencia entre diseño histórico M2 y Task física M3: Primary Javier `6adbb9fff1548191a1bd5b30d9e9984a` (horario :30, readback directo) y Secondary Alex `6adbbc9ad9e88191bea8eb69104afb25` (horario :05, readback declarado por su cuenta).
