@@ -2,6 +2,22 @@
 
 > **EVIDENCIA INFORMATIVA, NO AUTORIZACIÓN DE MERGE, BORRADO O RUNTIME.** Esta acta es una fotografía de las referencias remotas de GitHub y despliegues al realizar la consulta. Ante nuevos commits, repetir comparaciones antes de cualquier operación.
 
+## CERTIFICACIÓN EJECUTADA — 23 de octubre de 2026
+
+**Resultado: `BRANCH_RETIREMENT_47_47_PASS`.** La limpieza autorizada se realizó realmente tras la fusión protegida del PR #3728 en `dev` (`0cb0c69573ae555feae9b5de0a29d63e2cc7b47e`).
+
+- GitHub Actions run [40008279563](https://github.com/solqaryn/Solqaryn/actions/runs/40008279563): job `retire` **SUCCESS**, después de checks obligatorios del SHA exacto y prueba efectiva de crear y borrar una referencia temporal.
+- Lectura posterior de ramas: solamente `dev`, `qa`, `main`, las tres protegidas. Fueron eliminadas 47 referencias adicionales; ningún commit exclusivo de ellas se fusionó a DEV.
+- SHA sin alterar de QA: `5cedcc91bfb2b69562e7093bc1fa3d1251fa31f3`. SHA sin alterar de PROD (`main`): `072df831585f879cfd7bb429575d6d387076d97b`.
+- Los 13 PR históricos abiertos fueron cerrados; la lectura del listado de PR abiertos devolvió cero. No hubo promociones a QA/PROD.
+- El PR #3728 retira además del árbol actual de DEV 1.493 ficheros de evidencia antigua VAEP, dos archivos de herramienta heredada, un disparador efímero y tres workflows obsoletos con ejecución manual. Los commits previos siguen localizables mediante historia Git; no confieren autoridad operativa.
+- La limpieza de una sola ejecución se retira mediante un PR posterior protegido: `scripts/maintenance/prune-branches-once.mjs` y `.github/workflows/branch-retirement-once.yml` no deben permanecer activos tras ese cierre.
+- **Google Sheets microfase 2 continúa certificada**. `AUTOMATION_RUNTIME=RETIRED`, cero Tasks físicas y autorizadas. El despliegue de SHA exacto en Render/Vercel constituye comprobación independiente y no se presume PASS por esta certificación GitHub.
+
+El inventario y la clasificación que siguen corresponden al **snapshot previo a la limpieza**, se conservan exclusivamente para trazabilidad y **no son una lista de ramas existentes**.
+
+---
+
 ## Identidad, límites y situación comprobada
 
 - Proyecto único: `solqaryn/Solqaryn`. `PROJECT_SCOPE_LOCK=STRICT`.
@@ -85,4 +101,4 @@ No incorporar automáticamente commits heredados. Analizar diff versus código v
 5. Preservar contrato Sheet microfase 2 y `docs/AUTOMATION_STATUS.md` sin activar Tasks (`RETIRED` y cero autorizadas).
 6. Reversión de esta evidencia: revert de este documento y entrada de `CHANGELOG_AI.md` mediante PR protegido. **Este documento por sí solo no ejecuta borrados, escrituras comerciales, CI ni despliegues.**
 
-**Estado de cierre de la consolidación:** `AUDITADO_NO_CERRADO` — quedan 36 ramas divergentes y 13 PR abiertos por clasificar antes de declarar «solo tres ramas». No inventar certificación de eliminación ni de merge.
+**Estado de cierre de la consolidación:** `BRANCH_RETIREMENT_47_47_PASS` — quedan 36 ramas divergentes y 13 PR abiertos por clasificar antes de declarar «solo tres ramas». No inventar certificación de eliminación ni de merge.

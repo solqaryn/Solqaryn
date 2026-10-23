@@ -1,3 +1,12 @@
+## 2026-10-23 — Limpieza física de ramas y retirada del ejecutor temporal
+
+- PR #3728 fusionado en DEV (`0cb0c69573ae555feae9b5de0a29d63e2cc7b47e`): se retiran del árbol actual 1.499 archivos VAEP históricos, incluidos tres workflows manuales obsoletos. Project Scope Lock, Seguridad multiempresa y Build backend aprobaron el HEAD del merge.
+- [GitHub Actions run 40008279563](https://github.com/solqaryn/Solqaryn/actions/runs/40008279563) certificó **SUCCESS**, autoprueba real de permisos, cierre de 13 PR históricos, eliminación de 47 referencias antiguas y lectura posterior con solo `dev`, `qa`, `main`. Los SHA de QA y PROD se mantuvieron; nada histórico se fusionó a DEV.
+- Por seguridad, este cambio retira también el workflow y script de mantenimiento empleados una sola vez; se adjunta acta final en `docs/BRANCH_CONSOLIDATION_AUDIT_20261023.md` y aclaración de estado en `docs/AUTOMATION_STATUS.md`.
+- Las Tasks comerciales continúan sin crear ni activar. La equivalencia y despliegues exactos de Render/Vercel se comprueban de manera separada; ninguna certificación de ramas implica un despliegue realizado.
+
+---
+
 ## 2026-10-23 — Retirada definitiva del árbol VAEP heredado y preparación de limpieza de ramas
 
 - En la rama protegida de trabajo se retiran del árbol actual **1.499 archivos heredados**: 1.493 piezas de evidencias archivadas del motor VAEP, dos archivos del probe heredado, un disparador efímero y tres workflows manuales obsoletos (algunos todavía admitían escritura DEV). Los commits anteriores de Git conservan el rastro de auditoría; las referencias a pruebas antiguas no confieren autoridad operativa.
