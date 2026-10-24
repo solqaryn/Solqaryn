@@ -26,7 +26,7 @@ Esta entrega aborda la microtarea oficial «CERTIFICAR: Resolver conflicto de au
 
 `scripts/validate-automation-authority.mjs` ahora inspecciona el texto **operativo**, previo al primer encabezado explícito de archivo histórico, de `AGENTS.md`, `PROJECT_SCOPE_LOCK.md`, `AUTOMATION_STATUS.md` y `AUTOMATION_AUTHORITY.md`. Rechaza: (1) IDs de microtareas `SQ-000` a `SQ-999` en autoridad operativa, y (2) enlaces Google Docs/Sheets activos con ID ajeno al documento rector y al seguimiento institucional. Conservar referencias en apartados de archivo histórico no las ejecuta.
 
-Se agregan tres mutaciones negativas causales: introducir `SQ-123` ejecutable en AGENTS, apuntar al Word fuente previo desde Scope Lock y sustituir el Sheet institucional por otro ID en Status. Las tres deben fallar en `node scripts/validate-automation-authority.mjs --self-test`. El check obligatorio `SOLQARYN Project Scope Lock` ya llama a ese comando en CI.
+Se agregan cuatro mutaciones negativas causales: introducir `SQ-123` ejecutable en AGENTS, apuntar al Word fuente previo desde Scope Lock, sustituir el Sheet institucional por otro ID en Status y anteponer un encabezado de archivo histórico falso para ocultar el runtime vigente. Las cuatro deben fallar en `node scripts/validate-automation-authority.mjs --self-test`. Además se comprueba la presencia exacta de marcadores operativos en el tramo vivo de cada archivo, evitando que validaciones por subcadena acepten autoridad relegada al archivo. El check obligatorio `SOLQARYN Project Scope Lock` ya llama a ese comando en CI.
 
 ## Dependencias y criterios pendientes de cierre
 
