@@ -183,7 +183,7 @@ if(failures.length){
   const clone=x=>structuredClone(x);
   if(validateProposedRun(base).length)throw Error('DEV without native RUN_ID must be allowed');
   const variants=[
-    ['wrong repo',p=>p.repo='variapp/VariApp'],
+    ['wrong repo',p=>p.repo='external/Other'],
     ['wrong branch',p=>p.branch='qa'],
     ['over-cap',p=>p.slots=[...p.slots,...p.slots,...p.slots,...p.slots]],
     ['same role',p=>p.slots[1].role='PRIMARY_01'],
