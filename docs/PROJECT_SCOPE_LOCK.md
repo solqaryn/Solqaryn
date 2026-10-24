@@ -10,15 +10,15 @@ LOCAL_SKILL=.agents/skills/solqaryn-project-governance/SKILL.md
 EXTERNAL_PROJECT_CONTEXT=DENY_BY_DEFAULT
 CONTEXT_MODE=CURRENT_STATE_ONLY
 EXECUTION_PLAN_DRIVE_FILE_ID=1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA
-PILOT_TASK_LIMIT=2
+PILOT_TASK_LIMIT=6
 
 ## Alcance actual
 
 La fuente comercial aprobada es `STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES` (ID de Drive citado arriba). Los planes antiguos, manifestaciones, hojas, Tasks y calendarios ya retirados no tienen autoridad ejecutiva, y no se reutilizan automáticamente. El estado de automatización se documenta solamente en `docs/AUTOMATION_STATUS.md`.
 
-## Preparación de nueva autoridad de automatizaciones
+## Autoridad actual de microfase 3
 
-`docs/AUTOMATION_AUTHORITY.md` regula únicamente el contrato nuevo en preparación: `PROPIETARIA_INSTITUCIONAL` = SOLQARYN Platform; `EJECUTOR_PRINCIPAL_01` = Javier y `EJECUTOR_PRINCIPAL_02` = Alex con derechos humanos paritarios, sin jerarquía ni herencia de sesiones o permisos de Tasks. El estado de ejecución y contador autorizados siguen únicamente en `docs/AUTOMATION_STATUS.md`; al introducir la referencia no se activa ninguna Task.
+`docs/AUTOMATION_AUTHORITY.md` regula el piloto DEV y el diseño 3+3 autorizado: `PROPIETARIA_INSTITUCIONAL` = SOLQARYN Platform; `EJECUTOR_PRINCIPAL_01` = Javier y `EJECUTOR_PRINCIPAL_02` = Alex con derechos humanos paritarios, sin jerarquía ni herencia de sesiones o permisos de Tasks. El estado de ejecución y el contador efectivo autorizados siguen únicamente en `docs/AUTOMATION_STATUS.md`. El límite de seis es techo de diseño, no acredita instalación ni concede permisos por sí solo. Las reglas completas residen en `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md`.
 
 ## Identidad, código y seguridad
 
@@ -28,13 +28,10 @@ El trabajo ordinario se hace en `dev` por PR protegido. Nunca usar force-push, a
 
 Las restricciones de seguridad del producto no son hitos de un roadmap antiguo: permanecen mientras la funcionalidad protegida exista. Las validaciones históricas que exigen certificaciones de fases anteriores deben ejecutarse manualmente o sustituirse por regresiones actuales relevantes, no bloquear cada nuevo cambio sin causa.
 
-### Enmienda 1.2: dos Tasks futuras, sin jerarquia humana
+### Enmienda histórica 1.2: dos Tasks (no vigente para la topología)
 
 `PRIMARY_01` pertenece a la cuenta de Javier; `SECONDARY_02` a la cuenta
-de Alex. El limite maximo de dos Tasks no implica que existan ni permite
-escrituras o ejecucion en `RETIRED`. El detalle unico de roles y permisos
-reside en `docs/AUTOMATION_AUTHORITY.md`; este Scope Lock mantiene
-`PROJECT_SCOPE_LOCK=STRICT` y protege la propiedad institucional.
+de Alex. El antiguo límite de dos se sustituyó por topología objetivo 3+3 en microfase 3. No equivale a seis Tasks instaladas ni autoriza escrituras sin comprobación individual. `PROJECT_SCOPE_LOCK=STRICT` conserva la propiedad institucional y los permisos efectivos por cuenta.
 
 ## Control de cambios
 
