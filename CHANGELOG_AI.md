@@ -1,3 +1,11 @@
+## 2026-10-24 — M3.2: reconciliación de las seis Tasks físicas, autorización operativa todavía parcial
+
+- Se documentaron los seis TASK_ID reales, horarios intercalados :00/:10/:20/:30/:40/:50 y readbacks de ambas cuentas, conservando los dos IDs originales; evidencia: Google Sheet `TAREAS_PROGRAMADAS!A2:Z7` y `BITACORA!A42:Z42`.
+- Se actualizan `PHYSICAL_TASKS_REGISTERED=6` y el estado M3.2 de `docs/AUTOMATION_STATUS.md`, `docs/AUTOMATION_AUTHORITY.md` y el contrato 3+3 sin conceder autorizaciones nuevas. Se conserva `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1`, `ACTIVE_DEV_WRITERS_OBSERVED=1`, `VAEP_DISPATCH_AUTHORIZED=FALSE`, `JULES_WORKERS_AUTHORIZED=0` y `PROJECT_SCOPE_LOCK=STRICT`. Cinco Tasks aún requieren pruebas de permisos desde su ejecución programada.
+- Documentación solamente en rama y PR protegido. `PARTIAL_NOT_CERTIFIED` hasta CI, revisión independiente, integración documental y certificación de permisos por cada Task. Se preservan los datos, código de ERP, ramas QA/main/PROD, secretos y Tasks sin cambios.
+
+---
+
 ## 2026-10-23 — P0-012.B: cierre de superficie de autoridad comercial en DEV
 
 - Se añadió control de regresión a `scripts/validate-automation-authority.mjs`: rechazar IDs ejecutivos SQ históricos en los encabezados operativos y enlaces Google Docs/Sheets distintos del plan rector y Sheet institucional.

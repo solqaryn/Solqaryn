@@ -4,7 +4,7 @@ PROJECT_ID=SOLQARYN
 REPOSITORY=solqaryn/Solqaryn
 BRANCH=dev
 CONTRACT_VERSION=2.0
-CONTRACT_PHASE=M3_1_DESIGN_3X3_AWAITING_PHYSICAL_EXPANSION
+CONTRACT_PHASE=M3_2_6_FISICAS_INSTALADAS_PERMISOS_PENDIENTES
 AUTOMATION_RUNTIME=ACTIVE_DEV
 SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1
 VAEP_DISPATCH_AUTHORIZED=FALSE
@@ -25,7 +25,7 @@ NO_CROSS_ACCOUNT_CREDENTIALS=TRUE
 NO_LEGACY_REACTIVATION=TRUE
 
 DESIGN_TOPOLOGY=SYMMETRIC_3X3
-PHYSICAL_TASKS_REGISTERED=2
+PHYSICAL_TASKS_REGISTERED=6
 ACTIVE_DEV_WRITERS_OBSERVED=1
 MAX_CONCURRENT_SCOPES=2
 
@@ -33,7 +33,7 @@ MAX_CONCURRENT_SCOPES=2
 
 La autoridad comercial sigue limitada a `COMMERCIAL_AUTHORITY_MODE=CURRENT_PLAN_ONLY` con `LEGACY_MASTER_EXECUTABLE=FALSE` en Scope Lock; P0-012.A fue integrado como PR #3734 (merge `17ca160ae5f2d1e20ef27b1820e670fbfb1099d8`).
 
-El propietario autorizó el diseño 3+3: seis Tasks equivalentes, cualquier cuenta puede tomar, desarrollar, revisar, corregir en el mismo PR y tramitar el cierre si tiene permisos efectivos. Las Tasks antiguas conservan ID; cuatro nuevas dependen de microfase 3.2. El contador autorizado permanece en uno durante la migración hasta readbacks individuales y no declara seis instaladas.
+El diseño 3+3 integrado en PR #3735 contempla seis Tasks con igual capacidad funcional para desarrollo, revisión y corrección, condicionada por permisos individuales. La microfase 3.2 registró seis IDs físicos: tres Tasks Javier en :00/:20/:40, tres Tasks Alex en :10/:30/:50, conservando los dos IDs originales; véase `docs/AUTOMATION_STATUS.md` y `TAREAS_PROGRAMADAS!A2:Z7`. La creación y readback de configuración NO prueban permisos de escritura desde cada ejecución. El contador autorizado continúa exactamente en uno hasta verificaciones efectivas de las otras cinco; M3.2 permanece `PARTIAL_NOT_CERTIFIED`.
 
 La única especificación vigente de selección, aislamiento de microtareas, corrección por el revisor, validación independiente del código corregido, CI, integración en dev, cambio a LISTO y desbloqueo de dependencias es `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md`. Al detectar defectos, el revisor corrige y mantiene VALIDANDO; sus commits requieren revisión ajena y pruebas del SHA final, sin autoaprobación. El PR que aprueba no habilita todavía a una sucesora hasta merge, readback y LISTO. No reactivar VAEP/Jules ni escribir QA/main/PROD.
 
@@ -59,8 +59,8 @@ Precedencia: `docs/PROJECT_SCOPE_LOCK.md` y `AGENTS.md` + Skill canónica de SOL
 | Identidad | Sujeto | Autoridad y límites |
 |---|---|---|
 | `PROPIETARIA_INSTITUCIONAL` | SOLQARYN Platform; `solqaryn.platform@outlook.com` | Titularidad de datos y documentos; autorización institucional. No es identidad humana ejecutora ni Task. |
-| `EJECUTOR_PRINCIPAL_01` | Javier Mejía; GitHub user ID `93171442`; ChatGPT de Javier (identidad de cuenta a validar físicamente) | Ejecutor humano principal con idéntica autoridad operativa que 02, limitada por ACL reales, contrato, PR y revisión. Cuenta prevista para la Task fisica PRIMARY_01 en su propia cuenta de ChatGPT, aun no creada. |
-| `EJECUTOR_PRINCIPAL_02` | Alex Morales; GitHub `morales35alex` | Ejecutor humano principal con idéntica autoridad operativa que 01, limitada por ACL reales, contrato, PR y revisión. Cuenta prevista para la Task fisica SECONDARY_02 en su propia cuenta de ChatGPT, aun no creada. |
+| `EJECUTOR_PRINCIPAL_01` | Javier Mejía; GitHub user ID `93171442`; ChatGPT de Javier (identidad de cuenta a validar físicamente) | Ejecutor humano principal con idéntica autoridad operativa que 02, limitada por ACL reales, contrato, PR y revisión. La Task original PRIMARY_01 fue conservada y su configuración se verificó desde la cuenta de Javier; la instalación 3/3 no supone permisos nuevos. |
+| `EJECUTOR_PRINCIPAL_02` | Alex Morales; GitHub `morales35alex` | Ejecutor humano principal con idéntica autoridad operativa que 01, limitada por ACL reales, contrato, PR y revisión. La Task original SECONDARY_02 fue conservada y renombrada como SECONDARY_REVIEW_01; su configuración 3/3 fue constatada por Alex en su cuenta. No implica autorización de escritura. |
 
 La numeración 01/02 identifica auditablemente; los índices 01/02 son identificadores estables, **nunca jerarquia humana, preferencia, suplencia automatica ni privilegio; los roles Primary y Secondary son funciones de Task, no rangos humanos**. La propiedad institucional no se transfiere. Ninguno usa credenciales, sesiones, secretos o tokens del otro. `ACTOR_HUMANO`, `CREADOR_TASK`, `ACTOR_AUTOMATIZADO`, `TASK_ID`, `RUN_ID`, `EVENT_ID` y `REVISOR` son campos separados; ningún rol implica identidad de Task ni herencia de permisos. Escribir el nombre de otro actor sin evidencia de su autenticación es suplantación y causa `BLOCKED`.
 

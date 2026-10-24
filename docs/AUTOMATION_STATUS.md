@@ -20,13 +20,26 @@ SECONDARY_TASK_ACCOUNT=ALEX_CHATGPT
 
 DESIGN_VERSION=2.0
 DESIGN_TOPOLOGY=3_JAVIER_3_ALEX
-PHYSICAL_TASKS_REGISTERED=2
+PHYSICAL_TASKS_REGISTERED=6
 MAX_CONCURRENT_SCOPES=2
 LEGACY_AUTOMATION_RUNTIME=RETIRED
 
-## Estado de microfase 3.1 — diseño 3+3, expansión física pendiente
+## Estado de microfase 3.2 — seis Tasks físicas, autorización operativa parcial
 
-Se aprobó el diseño simétrico de seis Tasks con idénticas capacidades para ambas cuentas. `PILOT_TASK_LIMIT=6` fija un techo, NO afirma seis Tasks instaladas. Las dos originales permanecen. `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1` describe únicamente la autoridad DEV efectiva conocida del piloto anterior, no el número de Tasks a crear. En microfase 3.2 el contador se aumentará solo con readback y permisos autenticados de la propia cuenta. El archivo normativo es `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md`.
+El diseño simétrico 3+3 v2.0 fue integrado en PR #3735. La microfase 3.2 confirmó seis Tasks físicas de identidad única y horarios intercalados, incluidas las dos originales con ID conservado. `PHYSICAL_TASKS_REGISTERED=6` procede de lectura nativa Javier (3/3) y readback aportado por Alex (3/3) con conciliación en Google Sheets. `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1` sigue siendo el contador de autorización conocido: habilitación y programación no equivalen a permisos efectivos en ejecución. Las cinco Tasks restantes siguen pendientes de validación operativa individual, sin concederles escritura por esta modificación. El contrato normativo es `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md`.
+
+**Inventario físico M3.2 (horas `America/Tegucigalpa`, readback en `TAREAS_PROGRAMADAS!A2:Z7`, evento `BITACORA!A42:Z42`):**
+
+| Cuenta | Slot canónico | Minuto | Task ID físico | Evidencia de habilitación |
+| --- | --- | --- | --- | --- |
+| Javier | `PRIMARY_DEV_01` (`PRIMARY_01` histórico) | :00 | `6adbb9fff1548191a1bd5b30d9e9984a` | ChatGPT `automations.peek` Javier; habilitada |
+| Alex | `SECONDARY_REVIEW_01` (`SECONDARY_02` histórico) | :10 | `6adbbc9ad9e88191bea8eb69104afb25` | `automations.peek` Alex reportado y asentado en Sheet; habilitada |
+| Javier | `PRIMARY_DEV_02` | :20 | `6adc2e4bd8a48191ac7d8641ed95a1a3` | ChatGPT `automations.peek` Javier; habilitada |
+| Alex | `SECONDARY_REVIEW_02` | :30 | `6adcc97a260881919d92bb9bacae1626` | `automations.peek` Alex reportado y asentado en Sheet; habilitada |
+| Javier | `PRIMARY_DEV_03` | :40 | `6adc2e55f47c81919f6374e561687076` | ChatGPT `automations.peek` Javier; habilitada |
+| Alex | `SECONDARY_REVIEW_03` | :50 | `6adcc98a80a48191b71a5156624c21df` | `automations.peek` Alex reportado y asentado en Sheet; habilitada |
+
+**Separación de estados:** `6/6` es *inventario físico*, NO `6/6` de ejecuciones, permisos, aprobación o certificación. Conservamos `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1`, `ACTIVE_DEV_WRITERS_OBSERVED=1` y permisos de las cinco adicionales en `NO_VERIFICADO` hasta evidencias desde sus ejecuciones. La certificación `PASS_M3_2_CERTIFICADA` está pendiente. Un `last_run_time` no acredita entrega. No exigir `RUN_ID` nativo inobservable.
 
 El histórico de la topología 1+1 queda abajo como evidencia, no como autoridad vigente. VAEP y Jules permanecen retirados. No exigir RUN_ID nativo que ChatGPT no expone ni falsificar resultados. La Task privada de Alex debe verificarse desde su cuenta antes de cualquier escritura de Alex.
 
@@ -41,7 +54,7 @@ Control de colisiones: un solo escritor Primary con WIP=1, comprobar ramas/PR ac
 Esta habilitacion se vuelve efectiva unicamente al fusionar con checks obligatorios este contrato a dev y comprobar el HEAD nuevo. Los prompts programados deben validar la autoridad viva antes de escribir.
 ## Fuentes nativas vigentes
 
-Documento rector: [STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES](https://docs.google.com/document/d/1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA/edit). Seguimiento manual: [STANDARD DE AUTOMATIZACIONES EN SOLQARYN](https://docs.google.com/spreadsheets/d/1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU/edit). [STANDARD AUTORIDAD OPERATIVA VAEP](https://docs.google.com/document/d/1A525NGt09mBiZez_r6hFcdCYAdoOAwOZM--N0uXPBOQ/edit) es archivo histórico no ejecutable. El seguimiento comercial permanece en el Sheet institucional; el piloto DEV autoriza únicamente una Task escritora conocida hasta el readback individual de M3.2. Las dos Tasks originales existen como registros físicos. El diseño 3+3 no crea por sí mismo otras cuatro ni autoriza despliegues.
+Documento rector: [STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES](https://docs.google.com/document/d/1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA/edit). Seguimiento manual: [STANDARD DE AUTOMATIZACIONES EN SOLQARYN](https://docs.google.com/spreadsheets/d/1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU/edit). [STANDARD AUTORIDAD OPERATIVA VAEP](https://docs.google.com/document/d/1A525NGt09mBiZez_r6hFcdCYAdoOAwOZM--N0uXPBOQ/edit) es archivo histórico no ejecutable. El seguimiento comercial permanece en el Sheet institucional; el piloto DEV autoriza únicamente una Task escritora conocida hasta el readback individual de M3.2. Existen seis Tasks físicas registradas, de ellas dos originales con ID estable y cuatro nuevas creadas durante M3.2 desde sus cuentas respectivas. El inventario no autoriza despliegues ni escrituras adicionales.
 
 ## Archivo histórico — retirada inicial (22-10-2026, no describe el runtime actual)
 
