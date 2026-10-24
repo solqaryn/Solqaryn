@@ -29,6 +29,18 @@ PHYSICAL_TASKS_REGISTERED=6
 ACTIVE_DEV_WRITERS_OBSERVED=1
 MAX_CONCURRENT_SCOPES=2
 
+## Concesión de prueba M3.2 PRIMARY_DEV_02 — autorización quirúrgica no comercial
+
+La solicitud expresa del propietario del 24-10-2026 para habilitar `PRIMARY_DEV_02` autoriza preparar una comprobación **limitada a la Task física `6adc2e4bd8a48191ac7d8641ed95a1a3` de la cuenta Javier**. La vigencia comienza solo tras merge protegido en `dev`, checks requeridos `3/3 SUCCESS` del SHA integrado y lectura posterior desde la propia Task. Las lecturas `GH_READ=PASS` y `DRIVE_READ=PASS` proceden del informe de ejecución de la Task (UTC de referencia `2026-10-24T18:24:54Z`) y de `automations.peek` con `last_run_time=2026-10-24T18:26:56.644003Z`; **no** prueban privilegio de escritura.
+
+**Permiso excepcional de diagnóstico, una sola vez por proveedor, no transferible a otras Tasks:**
+
+1. **GitHub:** la propia Task puede publicar **un único comentario de diagnóstico** en la conversación del [PR #3737](https://github.com/solqaryn/Solqaryn/pull/3737), con el fingerprint `M3_2_TASK02_GH_WRITE_PROBE:6adc2e4bd8a48191ac7d8641ed95a1a3`, su hora UTC y el SHA vigente de `dev`; confirmar la escritura mediante lectura posterior del comentario y su ID real. No crear commits, ramas, PR, etiquetas, releases ni modificar archivos como parte de este permiso. Este resultado acredita **comentarios GitHub**, no `contents:write`, y no implica capacidad de desarrollar.
+2. **Google Sheets:** la propia Task puede insertar **una sola fila de auditoría** nueva y única en `BITACORA` del archivo institucional `1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU`, tras consultar metadata, encabezados, validaciones y fila vacía, con `EVENT_ID=M3_2_TASK02_DRIVE_WRITE_PROBE_6adc2e4bd8a48191ac7d8641ed95a1a3_<UTC>`, `TASK_ID`, identidad auténtica, estado `PARTIAL_NOT_CERTIFIED`, evidencia del comentario y UTC real; inmediatamente verificar la fila mediante lectura posterior. No modificar `CONFIG`, `PLAN_MAESTRO`, `COLA`, las otras filas de `TAREAS_PROGRAMADAS`, ni contenido comercial. Si el proveedor no permite el acceso o no hay fila inequívoca disponible, `NO_REALIZADA`, sin sustituir por una sesión humana ni reintentar en bucle.
+3. La ejecución registra `GH_WRITE_COMMENT=PASS/FAIL`, `DRIVE_WRITE_AUDIT=PASS/FAIL`, identidades, URLs, timestamps y pruebas de readback. El permiso termina al probar o fallar cada operación, no persiste para escrituras ordinarias. No eliminar comprobantes de auditoría.
+
+El indicador global `TASK_AUTOMATED_WRITES_AUTHORIZED=FALSE` en `CONFIG!B57` sigue prohibiendo **escrituras comerciales automáticas generales** y no se modifica: esta sección es una excepción exclusivamente para esas dos operaciones de auditoría y solo después de quedar integrada. `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1` y `ACTIVE_DEV_WRITERS_OBSERVED=1` se mantienen hasta evidencia adicional de escritura de código/PR y nueva autorización protegida; una prueba de comentario no los eleva. `PROJECT_SCOPE_LOCK=STRICT`, independencia de revisión, límites de 3 ramas permanentes, máximo dos scopes de trabajo y prohibición de QA/main/PROD/VAEP/Jules siguen vigentes. No forzar permisos del proveedor ni declarar `PASS_M3_2_CERTIFICADA` con solo estas pruebas.
+
 ## Contrato normativo v2.0 — microfase 3.1
 
 La autoridad comercial sigue limitada a `COMMERCIAL_AUTHORITY_MODE=CURRENT_PLAN_ONLY` con `LEGACY_MASTER_EXECUTABLE=FALSE` en Scope Lock; P0-012.A fue integrado como PR #3734 (merge `17ca160ae5f2d1e20ef27b1820e670fbfb1099d8`).
