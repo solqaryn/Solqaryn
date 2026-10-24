@@ -21,23 +21,26 @@ demuestre permisos efectivos. `DESIGN_TASK_LIMIT=6` es un techo de arquitectura,
 una prueba de seis Tasks creadas, habilitadas o materialmente ejecutadas. Los conteos
 físicos y autorizados actuales se leen en `docs/AUTOMATION_STATUS.md` y Google Sheets.
 
-Se conservan las dos Tasks físicas originales, con sus TASK_ID y sin creación de
-Tasks adicionales hasta la microfase 3.2. Está prohibido usar sesiones o credenciales
+Se conservaron las dos Tasks físicas originales con sus TASK_ID estables y se
+crearon las otras cuatro durante M3.2, desde cada cuenta. El readback de las seis
+configuraciones está en `TAREAS_PROGRAMADAS!A2:Z7` y BITACORA. La instalación
+NO incrementa `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1` ni autoriza escritura a
+los cinco slots restantes sin permisos demostrados desde sus ejecuciones. Está prohibido usar sesiones o credenciales
 de otra cuenta o invocar la Task privada de Alex desde Javier.
 
 ## Programacion nominal, no asignacion
 
 | Slot | Cuenta | Minuto por hora | Implantacion |
 | --- | --- | --- | --- |
-| PRIMARY_DEV_01 | JAVIER_CHATGPT | :00 | Conservar Task ID existente |
-| SECONDARY_REVIEW_01 | ALEX_CHATGPT | :10 | Conservar Task ID existente |
-| PRIMARY_DEV_02 | JAVIER_CHATGPT | :20 | Nueva Task desde Javier |
-| SECONDARY_REVIEW_02 | ALEX_CHATGPT | :30 | Nueva Task desde Alex |
-| PRIMARY_DEV_03 | JAVIER_CHATGPT | :40 | Nueva Task desde Javier |
-| SECONDARY_REVIEW_03 | ALEX_CHATGPT | :50 | Nueva Task desde Alex |
+| PRIMARY_DEV_01 | JAVIER_CHATGPT | :00 | ID original conservado; instalada |
+| SECONDARY_REVIEW_01 | ALEX_CHATGPT | :10 | ID original conservado; instalada |
+| PRIMARY_DEV_02 | JAVIER_CHATGPT | :20 | Instalada desde Javier |
+| SECONDARY_REVIEW_02 | ALEX_CHATGPT | :30 | Instalada desde Alex |
+| PRIMARY_DEV_03 | JAVIER_CHATGPT | :40 | Instalada desde Javier |
+| SECONDARY_REVIEW_03 | ALEX_CHATGPT | :50 | Instalada desde Alex |
 
 Los identificadores originales `PRIMARY_01` (Javier) y `SECONDARY_02`
-(Alex) se conservan como aliases operativos mientras M3.2 migra las
+(Alex) se conservan como aliases operativos aun despues de la migracion M3.2 de las
 etiquetas logicas `PRIMARY_DEV_01` y `SECONDARY_REVIEW_01`.
 Los **TASK_ID físicos originales no cambian**. La numeración en pantalla
 no transfiere permisos ni duplica una Task; `TAREAS_PROGRAMADAS` debe
