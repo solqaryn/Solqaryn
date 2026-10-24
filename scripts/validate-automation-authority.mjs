@@ -16,7 +16,7 @@ export function validateAuthority(input) {
   }
   required(d.authority, 'authority', [
     'PROJECT_SCOPE_LOCK=STRICT','PROJECT_ID=SOLQARYN','REPOSITORY=solqaryn/Solqaryn',
-    'BRANCH=dev','AUTOMATION_RUNTIME=ACTIVE_DEV','SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1',
+    'BRANCH=dev','AUTOMATION_RUNTIME=ACTIVE_DEV','PILOT_TASK_LIMIT=6',
     'VAEP_DISPATCH_AUTHORIZED=FALSE','JULES_WORKERS_AUTHORIZED=0',
     'PROPIETARIA_INSTITUCIONAL','EJECUTOR_PRINCIPAL_01','EJECUTOR_PRINCIPAL_02',
     '93171442','morales35alex','numeración', 'idéntica autoridad', 
@@ -33,10 +33,14 @@ export function validateAuthority(input) {
     'no activa Tasks','No se importa CAS'
   ]);
   required(d.agents, 'AGENTS', ['PROJECT_SCOPE_LOCK=STRICT','AUTOMATION_RUNTIME=ACTIVE_DEV','docs/AUTOMATION_AUTHORITY.md','EJECUTOR_PRINCIPAL_01','EJECUTOR_PRINCIPAL_02']);
-  required(d.status, 'AUTOMATION_STATUS', ['AUTOMATION_RUNTIME=ACTIVE_DEV','SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1','VAEP_DISPATCH_AUTHORIZED=FALSE','JULES_WORKERS_AUTHORIZED=0','docs/AUTOMATION_AUTHORITY.md']);
-  required(d.scope, 'PROJECT_SCOPE_LOCK', ['PROJECT_SCOPE_LOCK=STRICT','REPOSITORY=solqaryn/Solqaryn','docs/AUTOMATION_AUTHORITY.md']);
-  if (!/^SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1$/m.test(d.status)) failures.push('Primary DEV pilot must have exactly one authorized writer');
-  if (!/^AUTOMATION_RUNTIME=ACTIVE_DEV$/m.test(d.status)) failures.push('Primary DEV pilot runtime mismatch');
+  required(d.status, 'AUTOMATION_STATUS', ['AUTOMATION_RUNTIME=ACTIVE_DEV','PILOT_TASK_LIMIT=6','VAEP_DISPATCH_AUTHORIZED=FALSE','JULES_WORKERS_AUTHORIZED=0','docs/AUTOMATION_AUTHORITY.md']);
+  required(d.scope, 'PROJECT_SCOPE_LOCK', ['PROJECT_SCOPE_LOCK=STRICT','REPOSITORY=solqaryn/Solqaryn','PILOT_TASK_LIMIT=6','docs/AUTOMATION_AUTHORITY.md']);
+  const aCount=Number(d.authority.match(/^SCHEDULED_CHATGPT_TASKS_AUTHORIZED=(\d+)$/m)?.[1]);
+  const sCount=Number(d.status.match(/^SCHEDULED_CHATGPT_TASKS_AUTHORIZED=(\d+)$/m)?.[1]);
+  if (!Number.isInteger(aCount)||aCount<1||aCount>6||aCount!==sCount)
+    failures.push('Authorized count must be verified, identical and within 1..6');
+  if (!/^AUTOMATION_RUNTIME=ACTIVE_DEV$/m.test(d.status)) failures.push('3x3 DEV runtime mismatch');
+  if (!d.authority.includes('docs/AUTOMATION_3X3_OPERATING_CONTRACT.md') || !d.agents.includes('TASK_DESIGN=AUTONOMOUS_3_JAVIER_3_ALEX')) failures.push('3x3 contract routing');
   if (/VAEP_DISPATCH_AUTHORIZED\s*=\s*TRUE/.test(d.status)) failures.push('VAEP must remain retired');
   if (/JULES_WORKERS_AUTHORIZED\s*=\s*[1-9]/.test(d.status)) failures.push('Jules worker reactivation forbidden');
   return failures;
@@ -61,7 +65,9 @@ else if (process.argv.includes('--self-test')) {
     ['prod', {authority:authority.replaceAll('PROD','UNRESTRICTED')}],
     ['reactivate vaep', {status:status.replace('VAEP_DISPATCH_AUTHORIZED=FALSE','VAEP_DISPATCH_AUTHORIZED=TRUE')}],
     ['reactivate workers', {status:status.replace('JULES_WORKERS_AUTHORIZED=0','JULES_WORKERS_AUTHORIZED=5')}],
-    ['activated Task', {status:status.replace('SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1','SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0')}]
+    ['missing authorized Task', {status:status.replace('SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1','SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0')}],
+    ['wrong 3x3 cap', {scope:scope.replace('PILOT_TASK_LIMIT=6','PILOT_TASK_LIMIT=2')}],
+    ['no 3x3 agent routing', {agents:agents.replace('TASK_DESIGN=AUTONOMOUS_3_JAVIER_3_ALEX','TASK_DESIGN=DUAL_TASK')}]
   ];
   for (const [label, override] of tests) {
     const errs = validateAuthority({...source,...override});
