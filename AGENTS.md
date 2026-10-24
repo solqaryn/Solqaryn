@@ -24,31 +24,24 @@ Esta habilitacion se vuelve efectiva unicamente al fusionar con checks obligator
 1. `docs/PROJECT_SCOPE_LOCK.md` regula la identidad de SOLQARYN y el acceso a sus fuentes.
 2. `docs/AUTOMATION_STATUS.md` declara si existe un motor programado autorizado.
 3. El documento `STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES` es la fuente actual del alcance comercial. Ninguna hoja, manifiesto, bitácora o plan histórico es ejecutable por inferencia.
-4. `docs/AUTOMATION_AUTHORITY.md` es el contrato de preparación del NUEVO sistema; no activa Tasks, no sustituye `docs/AUTOMATION_STATUS.md` ni reutiliza el VAEP retirado. Gobierno paritario: `PROPIETARIA_INSTITUCIONAL` SOLQARYN Platform; `EJECUTOR_PRINCIPAL_01` Javier (GitHub user ID `93171442`) y `EJECUTOR_PRINCIPAL_02` Alex (`morales35alex`) son pares humanos, sin jerarquía ni transferencia de permisos de Task.
+4. `docs/AUTOMATION_AUTHORITY.md` es el contrato vigente del piloto `ACTIVE_DEV` ya autorizado en `dev`: una única Task Primary de Javier puede preparar ramas/PRs, mientras Secondary de Alex revisa en lectura. No activa Tasks adicionales, no sustituye `docs/AUTOMATION_STATUS.md` ni reutiliza VAEP retirado. Gobierno paritario: `PROPIETARIA_INSTITUCIONAL` SOLQARYN Platform; `EJECUTOR_PRINCIPAL_01` Javier (GitHub user ID `93171442`) y `EJECUTOR_PRINCIPAL_02` Alex (`morales35alex`) son pares humanos, sin jerarquía ni transferencia de permisos de Task.
 5. La única Skill local permitida sigue siendo `solqaryn-project-governance`; las referencias externas son opcionales y se consultan únicamente para una necesidad técnica real.
 
-## Estado de automatización (22-10-2026)
+## Archivo histórico — estado de automatización al 22-10-2026 (sin vigencia operativa)
 
-El propietario informó que eliminó las diez Tasks de ChatGPT y la hoja operativa antigua. **No hay tareas de ChatGPT activas autorizadas, workers Jules, coordinadores ni cola VAEP en ejecución por este contrato.** No crear o reconstruir Tasks, activar cron, restaurar Sheets, reclamar leases, realizar despachos comerciales ni interpretar evidencias históricas como instrucciones vigentes. Todo motor nuevo necesita diseño y autorización explícitos; esta regla no impide el trabajo manual solicitado.
+El propietario informó que eliminó las diez Tasks de ChatGPT y la hoja operativa antigua. **En aquel corte no había Tasks nuevas autorizadas, y se habían retirado las diez Tasks anteriores, workers Jules, coordinadores y cola VAEP.** No crear o reconstruir Tasks, activar cron, restaurar Sheets, reclamar leases, realizar despachos comerciales ni interpretar evidencias históricas como instrucciones vigentes. Todo motor nuevo necesita diseño y autorización explícitos; esta regla no impide el trabajo manual solicitado.
 
-## Enmienda v1.2 - dos cuentas independientes, sin activacion
+## Archivo histórico — enmienda v1.2 previa al piloto DEV
 
-La arquitectura prevista asigna la Task futura `PRIMARY_01` a ChatGPT de
-Javier y la Task `SECONDARY_02` a ChatGPT de Alex. La paridad humana
-existente es inalterable: los nombres de las funciones automatizadas no
-crean rango administrativo ni permisos heredados. Las dos Tasks necesitan
-certificacion fisica propia, y su limite futuro no sustituye el contador
-vivo `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0` ni el modo `RETIRED`.
+Inicialmente se diseñaron dos Tasks independientes, una de Javier y otra de Alex, sin permiso de operación. En aquel momento `AUTOMATION_RUNTIME=RETIRED` y `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0` eran los valores vigentes. Esa fotografía quedó sustituida por el piloto `ACTIVE_DEV` autorizado el 23-10-2026. No se trasladan permisos de cuenta, ni jerarquías humanas, ni autorizaciones de QA/PROD.
 
 ## Aprobaciones delegables con controles intactos (23-10-2026)
 
 La norma única de selección flexible reside en `docs/AUTOMATION_AUTHORITY.md`, sección 7.1. Una aprobación pendiente de GitHub, Render, Vercel, Google Sheets/Drive u otra plataforma podrá dirigirse a **Javier, Alex o SOLQARYN Platform**, según disponibilidad y permisos individuales **efectivamente comprobados**, sin prioridad fija. Ninguna cuenta puede autoaprobar un cambio cuando se exige revisión independiente; la cuenta institucional necesita representante humano identificable e independiente si el proveedor exige esa independencia. Respetar las aprobaciones nativas, checks, controles del proveedor, límites de entorno y evidencia; ninguna disponibilidad habilita Tasks o PROD.
 
-## Conciliación física del piloto M3 — 23-10-2026 (solo lectura)
+## Archivo histórico — microfase 3 READ_ONLY, superada como puerta de ejecución DEV
 
-Posteriormente al diseño de la enmienda v1.2, se registraron **dos Tasks piloto físicamente habilitadas**, sin autoridad comercial: `PRIMARY_01` en Javier (ID `6adbb9fff1548191a1bd5b30d9e9984a`, horario `:30`, `automations.peek` directo), y `SECONDARY_02` en Alex (ID `6adbbc9ad9e88191bea8eb69104afb25`, horario `:05`, último readback declarado por Alex). La cuenta Javier no permite inspeccionar nativamente la Task privada de Alex. Los dos IDs se registran en el Sheet institucional; existencia, habilitación, autorización y ejecución finalizada son cuatro controles separados.
-
-En el último corte documental hay **0/4 ejecuciones individuales certificadas**, sin `RUN_ID` nativo o `EVIDENCE_REF` suficiente revisada de ambas cuentas. `READ_ONLY` permite comprobar documentación y preparar informes, no realizar microtareas ni escrituras desde Tasks. Permanecen `AUTOMATION_RUNTIME=RETIRED` y `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0`. Los detalles viven en `docs/AUTOMATION_STATUS.md`, contrato 1.2, [Issue #3730](https://github.com/solqaryn/Solqaryn/issues/3730) y Google Sheet original. Las frases históricas "futuras" y "NO_CREADA" de microfase 2 no describen el inventario físico posterior.
+El 23-10-2026 se constataron dos Tasks físicas, Primary Javier (`6adbb9fff1548191a1bd5b30d9e9984a`) y Secondary Alex (`6adbbc9ad9e88191bea8eb69104afb25`). En aquel corte la certificación individual estaba en `0/4` y el runtime `RETIRED`. Esa evidencia se conserva en `docs/AUTOMATION_STATUS.md` e Issue #3730 exclusivamente como historia; ni sus horarios anteriores ni `RUN_ID`/`EVIDENCE_REF` condicionan el piloto DEV vigente. El modo y permisos actuales están únicamente en las claves de `docs/AUTOMATION_STATUS.md`, y la revisión de Alex exige evidencia GitHub del PR/SHA, no acceso a chats privados.
 
 ## Trabajo de desarrollo
 
@@ -58,7 +51,7 @@ En el último corte documental hay **0/4 ejecuciones individuales certificadas**
 - Frontend Angular 22, backend .NET 10, MySQL EF Core, Cloudinary, SMTP y QuestPDF permanecen bajo la arquitectura vigente.
 - Las pruebas de producto de CI son distintas de las automatizaciones que coordinaban Tasks. No usar un job llamado `automatizacion` como criterio único para borrarlo: verificar sus consumidores.
 - No promover a QA/main/PROD, alterar datos productivos, secretos, dominios ni pagar servicios sin autorización nueva y explícita.
-- `docs/VAEP_AUTHORITY.md` es un archivo de compatibilidad histórica sin mandato operacional; no aplicar sus antiguas reglas.
+- `docs/VAEP_AUTHORITY.md` ya no existe en el árbol vivo `dev` (solo puede consultarse en historia Git); su autoridad antigua quedó retirada y jamás es fallback.
 
 ## Cierre
 
