@@ -42,6 +42,17 @@ revisar, corregir, preparar PR y tramitar el cierre en DEV. Cada accion requiere
 identidad de su propia cuenta, permiso real, contrato vigente y ausencia de conflicto.
 No se garantiza inicio ni duracion ininterrumpida por programacion nominal de ChatGPT.
 
+**SIMETRIA SIN EXCEPCIONES POR NOMBRE:** Javier Primary 01/02/03 Y Alex
+Secondary 01/02/03 pueden seleccionar indistintamente una microtarea
+`PENDIENTE` elegible para DESARROLLAR o una microtarea `VALIDANDO` de la
+otra cuenta para REVISAR, CORREGIR y tramitar el cierre. Un nombre
+`REVIEW` NO significa solo lectura ni prohíbe crear ramas/PR; un
+nombre `DEV` NO prohíbe revisión de PR ajenos. La prioridad
+`REVIEW_FIRST` establece el ORDEN de búsqueda de trabajo disponible,
+no la asignación exclusiva de revisión a Alex ni de desarrollo a Javier.
+La autonomía equivalente nunca elimina la independencia entre autor
+y revisor, los permisos efectivos, el Scope Lock ni los checks de GitHub.
+
 ## Seleccion y continuidad
 
 Orden uniforme para las seis Tasks:
