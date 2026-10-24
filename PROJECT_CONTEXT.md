@@ -1,3 +1,9 @@
+## 2026-10-23 — AUTORIDAD ACTUAL M3.1 (3+3)
+
+El propietario autorizó el diseño 3+3: Tasks Javier :00/:20/:40 y Alex :10/:30/:50 con capacidades simétricas, pero **la creación física de cuatro Tasks permanece pendiente de M3.2**. Priorizar revisión de PR en VALIDANDO, autocorrección en el mismo PR y revisión ajena de los commits del revisor; la microtarea solo libera dependientes después de LISTO respaldado por merge protegido y readback del Sheet. Ramas temporales por microtarea con limpieza automática y máximo dos scopes concurrentes. VAEP/Jules retirados; qa/main/PROD excluidos. Único contrato nuevo: `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md`; `docs/AUTOMATION_STATUS.md` conserva el contador físico vigente. El PR #3734 es independiente y no debe contaminarse con esta migración. Los registros históricos siguientes no conceden autoridad vigente.
+
+---
+
 ## 2026-10-22 — Migración documental nativa (autoridad comercial vigente)
 
 - Fuente comercial aprobada: [STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES](https://docs.google.com/document/d/1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA/edit), Google Docs nativo, 492 unidades y 1.123 microtareas con texto y estructura certificados; sustituye el ID Word histórico `1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j`.
