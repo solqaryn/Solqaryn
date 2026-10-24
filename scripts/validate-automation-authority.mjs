@@ -71,7 +71,24 @@ export function validateAuthority(input) {
     '1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA',
     '1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU',
   ]);
-  const activeSection = text => text.split(/^#{2,3}\s+Archivo hist[oó]rico\b/m)[0];
+  // Keep the required markers in the original live header, but scan all
+  // other live sections: a historical block must not hide later policy.
+  const activeHeader = text => text.split(/^#{2,3}\s+Archivo hist[oó]rico\b/m)[0];
+  const operationalSections = text => {
+    const liveLines = [];
+    let archiveHeadingLevel = 0;
+    for (const line of text.split(/\r?\n/)) {
+      const heading = line.match(/^(#{1,6})\s+(.+)$/);
+      if (heading) {
+        const level = heading[1].length;
+        if (archiveHeadingLevel && level <= archiveHeadingLevel) archiveHeadingLevel = 0;
+        if (/^(?:\d+(?:\.\d+)*\.?\s+)?Archivo hist[oó]rico\b/i.test(heading[2]))
+          archiveHeadingLevel = level;
+      }
+      if (!archiveHeadingLevel) liveLines.push(line);
+    }
+    return liveLines.join('\n');
+  };
   // Do not permit a forged "Archivo histórico" heading to hide the live
   // operating header while substring-only checks still pass on the archive.
   const liveMarkers = {
@@ -84,15 +101,23 @@ export function validateAuthority(input) {
     ['authority', d.authority], ['AGENTS', d.agents],
     ['AUTOMATION_STATUS', d.status], ['PROJECT_SCOPE_LOCK', d.scope],
   ]) {
-    const active = activeSection(text);
+    const header = activeHeader(text);
+    const operational = operationalSections(text);
     for (const marker of liveMarkers[name]) {
-      if (!active.split(/\r?\n/).includes(marker)) failures.push(name + ': live authority marker missing ' + marker);
+      if (!header.split(/\r?\n/).includes(marker)) failures.push(name + ': live authority marker missing ' + marker);
     }
-    if (/\bSQ-\d{3}\b/.test(active))
+    if (/\bSQ-\d{3}\b/.test(operational))
       failures.push(name + ': historical SQ microtasks in active policy');
-    for (const match of active.matchAll(/https:\/\/docs\.google\.com\/(?:document|spreadsheets)\/d\/([A-Za-z0-9_-]+)/g)) {
-      if (!approvedGoogleIds.has(match[1]))
-        failures.push(name + ': unauthorized Google authority document ' + match[1]);
+    for (const line of operational.split(/\r?\n/)) {
+      for (const match of line.matchAll(/https:\/\/docs\.google\.com\/(?:document|spreadsheets)\/d\/([A-Za-z0-9_-]+)/g)) {
+        // Explicitly documented as non-executable history, not a plan source.
+        const historicalCitation = name === 'AUTOMATION_STATUS'
+          && match[1] === '1A525NGt09mBiZez_r6hFcdCYAdoOAwOZM--N0uXPBOQ'
+          && line.includes('[STANDARD AUTORIDAD OPERATIVA VAEP]')
+          && /es archivo hist[oó]rico no ejecutable/i.test(line);
+        if (!approvedGoogleIds.has(match[1]) && !historicalCitation)
+          failures.push(name + ': unauthorized Google authority document ' + match[1]);
+      }
     }
   }
   return failures;
@@ -126,7 +151,9 @@ else if (process.argv.includes('--self-test')) {
     ['legacy SQ command in live AGENTS', {agents:agents.replace('TASK_DESIGN=AUTONOMOUS_3_JAVIER_3_ALEX','TASK_DESIGN=AUTONOMOUS_3_JAVIER_3_ALEX\nEXECUTE=SQ-123')}],
     ['historical Word made live in Scope Lock', {scope:scope.replace('LEGACY_MASTER_EXECUTABLE=FALSE','LEGACY_MASTER_EXECUTABLE=FALSE\nSOURCE=https://docs.google.com/document/d/1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j/edit')}],
     ['unapproved Sheet made live in Status', {status:status.replace('SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1','SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1\nSOURCE=https://docs.google.com/spreadsheets/d/HISTORICAL_SHEET_123/edit')}],
-    ['archive heading cannot hide live runtime', {status:status.replace('AUTOMATION_RUNTIME=ACTIVE_DEV','## Archivo histórico\nAUTOMATION_RUNTIME=ACTIVE_DEV')}]
+    ['archive heading cannot hide live runtime', {status:status.replace('AUTOMATION_RUNTIME=ACTIVE_DEV','## Archivo histórico\nAUTOMATION_RUNTIME=ACTIVE_DEV')}],
+    ['legacy SQ hidden after historical section', {agents:agents.replace('## Trabajo de desarrollo','## Trabajo de desarrollo\nEXECUTE=SQ-123')}],
+    ['foreign plan after historical section', {status:status.replace('## Fuentes nativas vigentes','## Fuentes nativas vigentes\nSOURCE=https://docs.google.com/document/d/1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j/edit')}]
   ];
   for (const [label, override] of tests) {
     const errs = validateAuthority({...source,...override});
