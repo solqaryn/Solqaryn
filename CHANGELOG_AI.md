@@ -1,3 +1,20 @@
+## 2026-10-23 — Piloto DEV Primary: eliminar dependencia de RUN_ID nativo
+
+- Autorizacion expresa del propietario para que Primary Javier pueda iniciar microtareas DEV con rama y PR, sin 4/4 runs de diagnostico ni RUN_ID inobservable.
+- Un solo writer Primary; Secondary Alex revisa, no hace writes. Sin reactivar VAEP; mantener ruleset, CI, seguridad multiempresa, QA/PROD fuera del scope.
+- Efectivo despues del merge de PR y readback de fuente dev, no por cambiar solo prompt/Sheet.
+
+---
+
+## 2026-10-23 — Conciliación documental de dos Tasks READ_ONLY de microfase 3
+
+- Se documenta explícitamente la diferencia entre diseño histórico M2 y Task física M3: Primary Javier `6adbb9fff1548191a1bd5b30d9e9984a` (horario :30, readback directo) y Secondary Alex `6adbbc9ad9e88191bea8eb69104afb25` (horario :05, readback declarado por su cuenta).
+- El Google Doc rector y Sheet institucional conservan identificadores únicos, y Javier/Alex tienen acceso humano `writer` comprobado. La sesión Javier no certifica el historial privado de Alex ni la finalización programada de runs.
+- 0/4 ejecuciones aceptadas, `RUN_ID`/ `EVIDENCE_REF` aún pendientes de prueba individual autenticada y revisión independiente. El PR #3731 ya admite la evidencia equivalente en `READ_ONLY`; los dos informes observados no bastan para activar el trabajo comercial.
+- Solo documentación: no se modifican Tasks, RRULE, Google Sheets, microtareas, algoritmos, seguridad, VAEP, QA/PROD ni despliegues. Siguen `AUTOMATION_RUNTIME=RETIRED` y `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0`. Fuente compartida de evidencia: https://github.com/solqaryn/Solqaryn/issues/3730.
+
+---
+
 ## 2026-10-23 — CI DEV: aceptación funcional solo ante cambios con impacto real
 
 - La suite `DEV - aceptación funcional integral` ya no se dispara solo por cambios en `CHANGELOG_AI.md`; se eliminó este archivo de los filtros `push` y `pull_request` en `.github/workflows/catalogos-aceptacion.yml`.

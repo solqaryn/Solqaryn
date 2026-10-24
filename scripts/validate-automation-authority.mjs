@@ -16,7 +16,7 @@ export function validateAuthority(input) {
   }
   required(d.authority, 'authority', [
     'PROJECT_SCOPE_LOCK=STRICT','PROJECT_ID=SOLQARYN','REPOSITORY=solqaryn/Solqaryn',
-    'BRANCH=dev','AUTOMATION_RUNTIME=RETIRED','SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0',
+    'BRANCH=dev','AUTOMATION_RUNTIME=ACTIVE_DEV','SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1',
     'VAEP_DISPATCH_AUTHORIZED=FALSE','JULES_WORKERS_AUTHORIZED=0',
     'PROPIETARIA_INSTITUCIONAL','EJECUTOR_PRINCIPAL_01','EJECUTOR_PRINCIPAL_02',
     '93171442','morales35alex','numeración', 'idéntica autoridad', 
@@ -32,11 +32,11 @@ export function validateAuthority(input) {
     'no puede autoaprobarlo','La paridad 01/02 no equivale a aprobación automática',
     'no activa Tasks','No se importa CAS'
   ]);
-  required(d.agents, 'AGENTS', ['PROJECT_SCOPE_LOCK=STRICT','AUTOMATION_RUNTIME=RETIRED','docs/AUTOMATION_AUTHORITY.md','EJECUTOR_PRINCIPAL_01','EJECUTOR_PRINCIPAL_02']);
-  required(d.status, 'AUTOMATION_STATUS', ['AUTOMATION_RUNTIME=RETIRED','SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0','VAEP_DISPATCH_AUTHORIZED=FALSE','JULES_WORKERS_AUTHORIZED=0','docs/AUTOMATION_AUTHORITY.md']);
+  required(d.agents, 'AGENTS', ['PROJECT_SCOPE_LOCK=STRICT','AUTOMATION_RUNTIME=ACTIVE_DEV','docs/AUTOMATION_AUTHORITY.md','EJECUTOR_PRINCIPAL_01','EJECUTOR_PRINCIPAL_02']);
+  required(d.status, 'AUTOMATION_STATUS', ['AUTOMATION_RUNTIME=ACTIVE_DEV','SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1','VAEP_DISPATCH_AUTHORIZED=FALSE','JULES_WORKERS_AUTHORIZED=0','docs/AUTOMATION_AUTHORITY.md']);
   required(d.scope, 'PROJECT_SCOPE_LOCK', ['PROJECT_SCOPE_LOCK=STRICT','REPOSITORY=solqaryn/Solqaryn','docs/AUTOMATION_AUTHORITY.md']);
-  if (/SCHEDULED_CHATGPT_TASKS_AUTHORIZED\s*=\s*[1-9]/.test(d.status)) failures.push('Task activation is forbidden in microphase 1');
-  if (/AUTOMATION_RUNTIME\s*=\s*(ACTIVE_DEV|READ_ONLY|PREPARING)/.test(d.status)) failures.push('Runtime activation is forbidden in microphase 1');
+  if (!/^SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1$/m.test(d.status)) failures.push('Primary DEV pilot must have exactly one authorized writer');
+  if (!/^AUTOMATION_RUNTIME=ACTIVE_DEV$/m.test(d.status)) failures.push('Primary DEV pilot runtime mismatch');
   if (/VAEP_DISPATCH_AUTHORIZED\s*=\s*TRUE/.test(d.status)) failures.push('VAEP must remain retired');
   if (/JULES_WORKERS_AUTHORIZED\s*=\s*[1-9]/.test(d.status)) failures.push('Jules worker reactivation forbidden');
   return failures;
@@ -53,7 +53,7 @@ else if (process.argv.includes('--self-test')) {
     ['self approval', {authority:authority.replaceAll('no puede autoaprobarlo','puede autoaprobarlo')}],
     ['collision', {authority:authority.replaceAll('No se importa CAS', 'Se importa CAS')}],
     ['dependency', {authority:authority.replaceAll('dependencias existentes y satisfechas','dependencias ignoradas')}],
-    ['writing', {authority:authority.replaceAll('AUTOMATION_RUNTIME=RETIRED','AUTOMATION_RUNTIME=ACTIVE_DEV')}],
+    ['writing', {authority:authority.replaceAll('AUTOMATION_RUNTIME=ACTIVE_DEV','AUTOMATION_RUNTIME=RETIRED')}],
     ['duplicate idempotency', {authority:authority.replaceAll('IDEMPOTENCY_KEY','DUPLICATE_KEY')}],
     ['missing evidence', {authority:authority.replaceAll('NO_VERIFICADO','APROBADO_SIN_EVIDENCIA')}],
     ['wrong contract status', {status:status.replace('docs/AUTOMATION_AUTHORITY.md','legacy/VAEP_AUTHORITY.md')}],
@@ -61,7 +61,7 @@ else if (process.argv.includes('--self-test')) {
     ['prod', {authority:authority.replaceAll('PROD','UNRESTRICTED')}],
     ['reactivate vaep', {status:status.replace('VAEP_DISPATCH_AUTHORIZED=FALSE','VAEP_DISPATCH_AUTHORIZED=TRUE')}],
     ['reactivate workers', {status:status.replace('JULES_WORKERS_AUTHORIZED=0','JULES_WORKERS_AUTHORIZED=5')}],
-    ['activated Task', {status:status.replace('SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0','SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1')}]
+    ['activated Task', {status:status.replace('SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1','SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0')}]
   ];
   for (const [label, override] of tests) {
     const errs = validateAuthority({...source,...override});

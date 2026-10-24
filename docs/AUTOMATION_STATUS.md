@@ -6,8 +6,8 @@ REPOSITORY=solqaryn/Solqaryn
 BRANCH=dev
 EXECUTION_PLAN_DRIVE_FILE_ID=1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA
 CURRENT_COMMERCIAL_ONLY=TRUE
-AUTOMATION_RUNTIME=RETIRED
-SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0
+AUTOMATION_RUNTIME=ACTIVE_DEV
+SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1
 VAEP_DISPATCH_AUTHORIZED=FALSE
 JULES_WORKERS_AUTHORIZED=0
 PILOT_TASK_LIMIT=2
@@ -18,9 +18,18 @@ SECONDARY_TASK_ROLE=SECONDARY_02
 PRIMARY_TASK_ACCOUNT=JAVIER_CHATGPT
 SECONDARY_TASK_ACCOUNT=ALEX_CHATGPT
 
+## 2026-10-23 — PILOTO DEV PRIMARY AUTORIZADO POR EL PROPIETARIO (reemplaza gates historicos de microfase 3)
+
+El propietario ordena reanudar las microtareas DEV ahora. PRIMARY_01 existente de Javier es el unico escritor automatizado autorizado, SECONDARY_02 de Alex permanece revisor READ_ONLY. Se limita a solqaryn/Solqaryn, base dev, rama especifica por microtarea del Plan Comercial Inicial y PR contra dev. Prohibido merge autonomo, QA, main, PROD, Render, Vercel, secretos o cambios productivos.
+
+El RUN_ID, RUN_URL, TASK_ID_NATIVO_DEL_RUN, correo ChatGPT, RUN_COMPLETED_NATIVO, REVIEWED_RUN_ID y EVIDENCE_REF_AUTENTICADO no son condiciones de elegibilidad ni certificacion de trabajo DEV cuando ChatGPT no los expone. NO inventar campos. Evidencia operativa suficiente: TASK_ID configurado, ID de microtarea, HEAD base real, rama y PR/commit GitHub verdaderos, checks de CI y evidencia de readback. El 4/4 de ejecuciones de diagnostico READ_ONLY deja de ser requisito del piloto DEV.
+
+Control de colisiones: un solo escritor Primary con WIP=1, comprobar ramas/PR activos del mismo ID antes de iniciar; continuar el PR existente en vez de duplicar. GitHub proporciona HEAD y proteccion de PR. Sin CAS ni leases en Sheets. Alex revisa un PR/SHA concreto, sin REVIEWED_RUN_ID de ChatGPT ni aprobacion ficticia. Se mantienen Project Scope Lock, permisos reales, seguridad multiempresa, CI exact-head y revision humana independiente cuando GitHub lo exija.
+
+Esta habilitacion se vuelve efectiva unicamente al fusionar con checks obligatorios este contrato a dev y comprobar el HEAD nuevo. Los prompts programados deben validar la autoridad viva antes de escribir.
 ## Fuentes nativas vigentes
 
-Documento rector: [STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES](https://docs.google.com/document/d/1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA/edit). Seguimiento manual: [STANDARD DE AUTOMATIZACIONES EN SOLQARYN](https://docs.google.com/spreadsheets/d/1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU/edit). [STANDARD AUTORIDAD OPERATIVA VAEP](https://docs.google.com/document/d/1A525NGt09mBiZez_r6hFcdCYAdoOAwOZM--N0uXPBOQ/edit) es archivo histórico no ejecutable. No existen Tasks ni jobs comerciales autorizados.
+Documento rector: [STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES](https://docs.google.com/document/d/1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA/edit). Seguimiento manual: [STANDARD DE AUTOMATIZACIONES EN SOLQARYN](https://docs.google.com/spreadsheets/d/1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU/edit). [STANDARD AUTORIDAD OPERATIVA VAEP](https://docs.google.com/document/d/1A525NGt09mBiZez_r6hFcdCYAdoOAwOZM--N0uXPBOQ/edit) es archivo histórico no ejecutable. No existen Tasks ni jobs con autoridad comercial. La instalación física de dos Tasks piloto READ_ONLY, diferenciada de su autorización operativa, se describe en microfase 3.
 
 ## Estado vigente
 
@@ -44,8 +53,8 @@ Las pruebas de compilación, aislamiento multiempresa, seguridad, respaldo, fron
 
 ## Enmienda v1.2 - 1 Primary Javier + 1 Secondary Alex
 
-El nuevo contrato autoriza solamente el *diseno* de dos Tasks futuras,
-una por cuenta: `PRIMARY_01` en ChatGPT Javier y `SECONDARY_02` en ChatGPT
+El contrato v1.2 autorizó inicialmente el *diseno* de dos Tasks,
+una por cuenta, antes de los readbacks físicos registrados en microfase 3: `PRIMARY_01` en ChatGPT Javier y `SECONDARY_02` en ChatGPT
 Alex. Ambos siguen como ejecutores humanos con igual autoridad; SOLQARYN
 Platform conserva la propiedad institucional. Los marcadores de plan
 `PILOT_TASK_LIMIT=2`, `PILOT_PRIMARY_TASKS=1` y `PILOT_SECONDARY_TASKS=1`
@@ -67,9 +76,11 @@ MICROFASE_2_LOGICAL_CAPABILITIES=5
 MICROFASE_2_PHYSICAL_TASKS_VERIFIED=0
 
 La estructura del Google Sheets existente fue leida, configurada y verificada.
-Hay exactamente dos reservas de rol (Primary Javier y Secondary Alex),
-ambas `NO_CREADA` y sin `TASK_ID`; no se han certificado Tasks fisicas
-en sus cuentas. Las cinco capacidades permanecen `NO_ACTIVA`.
+En el corte original de microfase 2 había dos reservas de rol (Primary Javier
+y Secondary Alex), ambas `NO_CREADA` y sin `TASK_ID`. Esa evidencia
+histórica no certifica instalación; la creación y habilitación posterior de
+ambas Tasks se registran separadamente en microfase 3. Las cinco capacidades
+comerciales permanecen `NO_ACTIVA`.
 
 El readback comercial confirma 1.123 microtareas, 1.123 IDs unicos,
 cero dependencias invalidas/ciclicas y 15.722 formulas intactas.
@@ -83,6 +94,19 @@ existan o esten habilitadas. Antes de cualquier fase posterior se
 requiere cierre por flujo GitHub protegido y autorizacion especifica.
 Permanecen `AUTOMATION_RUNTIME=RETIRED`,
 `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0`, VAEP retirado y Jules cero.
+
+## Microfase 3 — sincronización documental de Tasks piloto READ_ONLY (23-10-2026)
+
+**Inventario físico informado, independiente de autorización comercial:**
+
+- **Primary Javier:** `TASK_ID=6adbb9fff1548191a1bd5b30d9e9984a`, propietaria de cuenta ChatGPT declarada Javier; `is_enabled=true`, `RRULE:FREQ=HOURLY;BYMINUTE=30;BYSECOND=0`, zona `America/Tegucigalpa`. Verificado directamente mediante `automations.peek` de Javier; última actividad observable `2026-10-23T22:37:15.829987Z`, que **no acredita terminación del run**.
+- **Secondary Alex:** `TASK_ID=6adbbc9ad9e88191bea8eb69104afb25`, propietaria de cuenta ChatGPT declarada Alex; `is_enabled=true`, `RRULE:FREQ=HOURLY;BYMINUTE=5;BYSECOND=0`, zona `America/Tegucigalpa`, según readback independiente declarado por Alex `2026-10-23T21:00:52.262389Z`. La sesión de Javier **no tiene lectura nativa de la Task ni del historial privado de Alex**, por lo que no equivale a una verificación presente desde su cuenta.
+- Referencia única del plan: Google Doc `1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA`. Seguimiento único: Google Sheet `1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU` (`TAREAS_PROGRAMADAS!A2:Z3`, `CONFIG`, `BITACORA`); ambas cuentas humanas Javier y Alex tienen permiso `writer`, SOLQARYN Platform `owner`.
+- Contrato operativo v1.2, corrección [PR #3731](https://github.com/solqaryn/Solqaryn/pull/3731) ya incorporada: `RUN_ID` nativo puede sustituirse **solo en microfase 3 READ_ONLY** por `EVIDENCE_REF` auténtica de una ejecución individual, programada y finalizada, aceptada por revisor independiente. No inventar IDs ni acreditar `RUN_COMPLETED` con `last_run_time`.
+- **Certificación de ejecuciones individuales: 0/4** a la fecha de esta conciliación. `RUN_ID` y resultado finalizado no comprobados de manera suficiente en ambas cuentas. El informe de la Primary en [Issue #3730](https://github.com/solqaryn/Solqaryn/issues/3730) sigue siendo una publicación humana, no un certificado de run; Alex debe validar la fuente independiente.
+- Dos Tasks físicamente habilitadas **NO** equivalen a dos Tasks comercialmente autorizadas: prevalecen `AUTOMATION_RUNTIME=RETIRED`, `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0`, `VAEP_DISPATCH_AUTHORIZED=FALSE`, cinco capacidades `NO_ACTIVA` y prohibición de escrituras comerciales desde Tasks. La programación `:05` de Alex revisa la Primary `:30` de la hora anterior cuando exista una evidencia finalizada publicada.
+
+Esta sección registra hechos observados y límites, no crea, modifica, habilita ni eleva el permiso de ninguna Task. Los resúmenes de microfase 2 anteriores son fotografías históricas; para estado operativo manda esta sección y la lectura actual de proveedores, con la autorización global limitada por las claves de inicio de documento.
 
 ## Volver a automatizar en el futuro
 
