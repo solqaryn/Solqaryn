@@ -25,11 +25,6 @@
       "name": "main",
       "sha": "072df831585f879cfd7bb429575d6d387076d97b",
       "protected": true
-    },
-    {
-      "name": "work/solqaryn-m3-2-alex-physical-inventory",
-      "sha": "e1d7afd82ea814cc70121b866b0ce86843eb8d10",
-      "protected": false
     }
   ],
   "merged_prs": [
@@ -93,5 +88,7 @@
       },
       "observed_page_size": 12
     }
-  }
+  },
+  "other_temporary_refs_observed": 1,
+  "other_temporary_refs_note": "Una rama temporal adicional constaba en el listado GitHub; se omite el nombre en los documentos operativos por política de identidad del Scope Lock. Fuente: https://github.com/solqaryn/Solqaryn/branches"
 }
