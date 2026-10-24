@@ -6,7 +6,7 @@
 
 - Repositorio original: `solqaryn/Solqaryn`; HEAD base `dev=41d05dda3ffb57707275132f834c40cace3f8594` (rama protegida).
 - `qa=5cedcc91bfb2b69562e7093bc1fa3d1251fa31f3`, `main=072df831585f879cfd7bb429575d6d387076d97b` (ambas protegidas; **solo lectura**, no promoción).
-- Rama residual observada `work/solqaryn-m3-2-alex-physical-inventory=e1d7afd82ea814cc70121b866b0ce86843eb8d10`. No se le atribuye trabajo activo sin PR.
+- Se observó además una rama temporal residual (4 ramas en total). Su nombre no se incorpora al documento operativo por el Scope Lock de identidades retiradas; queda trazable mediante [listado nativo de ramas](https://github.com/solqaryn/Solqaryn/branches), sin atribuirle trabajo activo.
 - PR fusionados recientes contra `dev`: [#3737](https://github.com/solqaryn/Solqaryn/pull/3737) → `41d05dda3ffb57707275132f834c40cace3f8594`, [#3736](https://github.com/solqaryn/Solqaryn/pull/3736) → `cca60745bc6a49c14a35064a88504dcef180fa1c`, [#3735](https://github.com/solqaryn/Solqaryn/pull/3735) → `e1d7afd82ea814cc70121b866b0ce86843eb8d10`, [#3734](https://github.com/solqaryn/Solqaryn/pull/3734) → `17ca160ae5f2d1e20ef27b1820e670fbfb1099d8`, [#3733](https://github.com/solqaryn/Solqaryn/pull/3733) → `3a98afbf290e8895e177861183b623ed3cb5bed0`.
 - No había PR abierto hacia dev en la consulta previa a adquirir `work/solqaryn-p0-001-a`. La rama determinista se creó desde el HEAD exacto, sin colisión de ese ID.
 
