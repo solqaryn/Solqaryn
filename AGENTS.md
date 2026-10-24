@@ -8,9 +8,17 @@ PROJECT_SKILL=.agents/skills/solqaryn-project-governance/SKILL.md
 EXECUTION_PLAN_DRIVE_FILE_ID=1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA
 CURRENT_COMMERCIAL_ONLY=TRUE
 AUTOMATION_RUNTIME=ACTIVE_DEV
-DUAL_TASK_DESIGN=PRIMARY_01_JAVIER_SECONDARY_02_ALEX
+TASK_DESIGN=AUTONOMOUS_3_JAVIER_3_ALEX
 
-## 2026-10-23 — PILOTO DEV PRIMARY AUTORIZADO POR EL PROPIETARIO (reemplaza gates historicos de microfase 3)
+## Microfase 3.1 — contrato activo v2.0 de coordinación 3+3
+
+La arquitectura aprobada es de seis Tasks: tres Javier (:00/:20/:40) y tres Alex (:10/:30/:50), con capacidades simétricas de desarrollo, revisión, corrección y tramitación del cierre. El rol nominal no concede privilegio; cada operación requiere identidad, permisos, HEAD, exclusividad y CI reales. Dos Tasks existen físicamente; las cuatro restantes NO se crean ni autorizan hasta la microfase 3.2. La única autoridad de la nueva lógica está en `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md` y el contador efectivo en `docs/AUTOMATION_STATUS.md`.
+
+Una Task elige primero VALIDANDO de otra identidad y después PENDIENTE con TODAS las dependencias LISTO. El revisor corrige directamente en el mismo PR, conservando VALIDANDO. Sus commits requieren revisión independiente y CI del SHA final; jamás autoaprobar. Solo un merge protegido verificado en dev más readback Plan Maestro/Cola/Bitácora permite LISTO. No crear rama almacén ni duplicar ramas; máximo dos trabajos en paralelo. El runtime no es indefinido: registrar commits y punto de continuación ante interrupción.
+
+Las reglas históricas del piloto 1+1 que aparecen abajo son archivo de trazabilidad y no limitan las capacidades v2.0. VAEP y Jules siguen retirados; QA, main, PROD y secretos fuera de alcance.
+
+## Archivo histórico v1.2 — 2026-10-23 — PILOTO DEV PRIMARY AUTORIZADO POR EL PROPIETARIO (reemplaza gates historicos de microfase 3)
 
 El propietario ordena reanudar las microtareas DEV ahora. PRIMARY_01 existente de Javier es el unico escritor automatizado autorizado, SECONDARY_02 de Alex permanece revisor READ_ONLY. Se limita a solqaryn/Solqaryn, base dev, rama especifica por microtarea del Plan Comercial Inicial y PR contra dev. Prohibido merge autonomo, QA, main, PROD, Render, Vercel, secretos o cambios productivos.
 
@@ -24,7 +32,7 @@ Esta habilitacion se vuelve efectiva unicamente al fusionar con checks obligator
 1. `docs/PROJECT_SCOPE_LOCK.md` regula la identidad de SOLQARYN y el acceso a sus fuentes.
 2. `docs/AUTOMATION_STATUS.md` declara si existe un motor programado autorizado.
 3. El documento `STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES` es la fuente actual del alcance comercial. Ninguna hoja, manifiesto, bitácora o plan histórico es ejecutable por inferencia.
-4. `docs/AUTOMATION_AUTHORITY.md` es el contrato vigente del piloto `ACTIVE_DEV` ya autorizado en `dev`: una única Task Primary de Javier puede preparar ramas/PRs, mientras Secondary de Alex revisa en lectura. No activa Tasks adicionales, no sustituye `docs/AUTOMATION_STATUS.md` ni reutiliza VAEP retirado. Gobierno paritario: `PROPIETARIA_INSTITUCIONAL` SOLQARYN Platform; `EJECUTOR_PRINCIPAL_01` Javier (GitHub user ID `93171442`) y `EJECUTOR_PRINCIPAL_02` Alex (`morales35alex`) son pares humanos, sin jerarquía ni transferencia de permisos de Task.
+4. `docs/AUTOMATION_AUTHORITY.md` regula el diseño 3+3 autorizado y `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md` su operación futura. La autoridad real sigue sujeta a `docs/AUTOMATION_STATUS.md`, conexiones y permisos verificados: el techo seis no concede escritura a cuatro Tasks aún no creadas. El piloto v1.2 (una Primary escritora y una Secondary READ_ONLY) permanece documentado únicamente como antecedente. No autoriza QA/main/PROD ni restaura VAEP. Gobierno paritario: `PROPIETARIA_INSTITUCIONAL` SOLQARYN Platform; `EJECUTOR_PRINCIPAL_01` Javier (GitHub user ID `93171442`) y `EJECUTOR_PRINCIPAL_02` Alex (`morales35alex`) son pares humanos, sin jerarquía ni transferencia de permisos de Task.
 5. La única Skill local permitida sigue siendo `solqaryn-project-governance`; las referencias externas son opcionales y se consultan únicamente para una necesidad técnica real.
 
 ## Archivo histórico — estado de automatización al 22-10-2026 (sin vigencia operativa)

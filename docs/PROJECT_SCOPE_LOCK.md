@@ -12,15 +12,15 @@ CONTEXT_MODE=CURRENT_STATE_ONLY
 EXECUTION_PLAN_DRIVE_FILE_ID=1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA
 COMMERCIAL_AUTHORITY_MODE=CURRENT_PLAN_ONLY
 LEGACY_MASTER_EXECUTABLE=FALSE
-PILOT_TASK_LIMIT=2
+PILOT_TASK_LIMIT=6
 
 ## Alcance actual
 
 La fuente comercial aprobada es `STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES` (ID de Drive citado arriba). Los planes antiguos, manifestaciones, hojas, Tasks y calendarios ya retirados no tienen autoridad ejecutiva, y no se reutilizan automáticamente. El estado de automatización se documenta solamente en `docs/AUTOMATION_STATUS.md`.
 
-## Autoridad vigente del piloto DEV (23-10-2026)
+## Autoridad actual de microfase 3
 
-`docs/AUTOMATION_AUTHORITY.md` regula el piloto `ACTIVE_DEV` autorizado para la Task física `PRIMARY_01` de Javier como único escritor automatizado de ramas y PRs hacia `dev`. `SECONDARY_02` de Alex permanece revisor `READ_ONLY`. `PROPIETARIA_INSTITUCIONAL` = SOLQARYN Platform; los ejecutores humanos conservan paridad, sin delegación de credenciales ni de sesión. La fuente única para el contador y modo de ejecución es `docs/AUTOMATION_STATUS.md` (`SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1`); este documento no activa Tasks adicionales, autoriza merges automáticos ni habilita QA, main o PROD. El VAEP retirado y Jules siguen prohibidos.
+`docs/AUTOMATION_AUTHORITY.md` regula el piloto DEV y el diseño 3+3 autorizado: `PROPIETARIA_INSTITUCIONAL` = SOLQARYN Platform; `EJECUTOR_PRINCIPAL_01` = Javier y `EJECUTOR_PRINCIPAL_02` = Alex con derechos humanos paritarios, sin jerarquía ni herencia de sesiones o permisos de Tasks. El estado de ejecución y el contador efectivo autorizados siguen únicamente en `docs/AUTOMATION_STATUS.md`. El límite de seis es techo de diseño, no acredita instalación ni concede permisos por sí solo. `COMMERCIAL_AUTHORITY_MODE=CURRENT_PLAN_ONLY` y `LEGACY_MASTER_EXECUTABLE=FALSE` permanecen controles obligatorios, y la única fuente comercial es el Documento vigente. Las reglas completas residen en `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md`.
 
 ## Identidad, código y seguridad
 
@@ -30,9 +30,16 @@ El trabajo ordinario se hace en `dev` por PR protegido. Nunca usar force-push, a
 
 Las restricciones de seguridad del producto no son hitos de un roadmap antiguo: permanecen mientras la funcionalidad protegida exista. Las validaciones históricas que exigen certificaciones de fases anteriores deben ejecutarse manualmente o sustituirse por regresiones actuales relevantes, no bloquear cada nuevo cambio sin causa.
 
-### Enmienda 1.2: Tasks físicas existentes y límites del piloto
+### Archivo histórico 1.2 — dos Tasks (no vigente para la topología 3+3)
 
-`PRIMARY_01` pertenece a la cuenta de Javier; `SECONDARY_02` a la de Alex. Su instalación es independiente del permiso de escritura: solo una Task está autorizada a producir ramas y PRs de microtareas DEV mediante el piloto `ACTIVE_DEV` y controles nativos GitHub. El límite de dos impide crear duplicados. El detalle de roles está en `docs/AUTOMATION_AUTHORITY.md`; `PROJECT_SCOPE_LOCK=STRICT` conserva la propiedad institucional y el aislamiento de datos. El antiguo Maestro (incluidos identificadores `SQ-000` a `SQ-353` y el Word histórico) es referencia futura/no ejecutable, no fuente de microtareas, despachos, dependencias ni autorizaciones.
+`PRIMARY_01` corresponde a Javier y `SECONDARY_02` a Alex. En el
+piloto anterior, una Task escritora DEV y una Secondary READ_ONLY eran la
+capacidad autorizada; esa fotografía no limita el nuevo diseño 3+3.
+Ninguna Task inexistente obtiene permisos por el mero cambio del techo a 6.
+`PROJECT_SCOPE_LOCK=STRICT` conserva identidad, propiedad institucional,
+aislamiento de datos y los permisos efectivos por cuenta. El Maestro
+anterior (`SQ-000` a `SQ-353` y Word histórico) es visión futura
+NO EJECUTABLE, jamás fuente de microtareas ni autorizaciones.
 
 ## Control de cambios
 

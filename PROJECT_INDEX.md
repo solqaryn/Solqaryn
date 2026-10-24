@@ -1,3 +1,13 @@
+## 2026-10-23 — Índice operativo vigente M3.1 (reemplaza referencias históricas)
+
+- Gobierno activo: `AGENTS.md`, `docs/PROJECT_SCOPE_LOCK.md`, `docs/AUTOMATION_STATUS.md`.
+- Flujo canónico 3+3: `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md` (igualdad Javier/Alex, selector por dependencias LISTO, revisión primero, corrección por revisor, aprobación independiente, merge protegido, readback Sheet).
+- El techo físico son seis Tasks; solo dos existían antes de M3.2. No confundir techo, existencia, autorización ni ejecución.
+- Único ERP: rama `dev`, Scope Lock STRICT; tres ramas permanentes dev/qa/main y ramas `work/solqaryn-<scope>` temporales. PR #3734 integrado previamente en dev y preservado en la reconciliación del PR #3735.
+- Los motores antiguos retirados no son ejecutables. Fuentes posteriores de este archivo son snapshots de contexto previos.
+
+---
+
 ## 2026-10-23 — P0-012.A | Autoridad documental del Plan Comercial Inicial
 
 - Microtarea `P0-012.A`, origen `PLAN_MAESTRO!A24:R24` y `COLA!A24:N24` del Sheet institucional: `P0`, `PENDIENTE`, sin dependencias previas, `DEPENDENCIAS_OK=SI` al iniciar el trabajo. La certificación independiente `P0-012.B` sigue pendiente y depende de esta entrega.

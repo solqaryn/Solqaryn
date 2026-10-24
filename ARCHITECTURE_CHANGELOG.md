@@ -1,3 +1,9 @@
+## 2026-10-23 — Diseño de control M3.1: 3+3 Tasks sin nuevo runtime
+
+La microfase 3 define topología de seis Tasks horarias con capacidades simétricas entre Javier y Alex. Se conserva la arquitectura del ERP, seguridad multiempresa, ramas permanentes y protecciones CI. Se agrega solo coordinación ligera mediante GitHub (rama por microtarea, PR, comprobación de exclusividad, dos ramas operativas máximas), selector por dependencias LISTO y autocorrección del revisor dentro de VALIDANDO, con revisión independiente de commits correctivos antes de cerrar. No se importa VAEP, Vibe, Jules ni una cola/scheduler residente. Fuente nueva: `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md`. Cualquier modificación de ejecución física será M3.2, y la certificación extremo a extremo M3.3. Rollback: revert del PR de diseño sin eliminar ramas/PR de microtareas ni Tasks originales.
+
+---
+
 ## 2026-10-22 - Contrato dual Primary/Secondary sin nuevo runtime
 
 Se amplia el control normativo a dos futuras Tasks, una desde cada cuenta:

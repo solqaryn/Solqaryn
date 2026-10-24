@@ -66,7 +66,13 @@ for(const ref of ["SKREF-10","SKREF-11","SKREF-12"]){
  expect(x.routing,ref,"skill routing id");
 }
 expect(x.routing,"docs/REGISTRO_REFERENCIAS_SKILLS_SOLQARYN.md","routing");
-expect(x.automation,"AUTOMATION_RUNTIME=RETIRED","automation retirement");
+expect(x.automation,"AUTOMATION_RUNTIME=ACTIVE_DEV","DEV runtime");
+expect(x.automation,"VAEP_DISPATCH_AUTHORIZED=FALSE","retired VAEP dispatch");
+expect(x.automation,"JULES_WORKERS_AUTHORIZED=0","retired Jules worker");
+expect(x.automation,"DESIGN_TOPOLOGY=3_JAVIER_3_ALEX","3x3 topology");
+if(!/^VAEP_DISPATCH_AUTHORIZED=FALSE$/m.test(x.automation))bad.push("retired VAEP dispatch");
+if(!/^JULES_WORKERS_AUTHORIZED=0$/m.test(x.automation))bad.push("retired Jules worker");
+if(!/^DESIGN_TOPOLOGY=3_JAVIER_3_ALEX$/m.test(x.automation))bad.push("3x3 topology");
 expect(x.automation,"CURRENT_COMMERCIAL_ONLY=TRUE","commercial scope");
 expect(x.agents,"PROJECT_SKILL=.agents/skills/solqaryn-project-governance/SKILL.md","AGENTS path");
 return bad;
@@ -82,7 +88,9 @@ const tests=[
 [{...x,dirs:[...x.dirs,"rogue-skill"]},"local Skill count"],
 [{...x,registry:x.registry.replace("6808966993bf2b2d455d9b6245e960a59a01b9a9","PIN_REMOVED")},"registry pin"],
 [{...x,allowlist:x.allowlist.replace("49f948faa9258a0c61caceaf225e179651397431","PIN_REMOVED")},"allowlist pin"],
-[{...x,routing:x.routing.replaceAll("SKREF-12","REFERENCE_REMOVED")},"skill routing id"]
+[{...x,routing:x.routing.replaceAll("SKREF-12","REFERENCE_REMOVED")},"skill routing id"],
+[{...x,automation:x.automation.replace("VAEP_DISPATCH_AUTHORIZED=FALSE","VAEP_DISPATCH_AUTHORIZED=TRUE")},"retired VAEP dispatch"],
+[{...x,automation:x.automation.replace("DESIGN_TOPOLOGY=3_JAVIER_3_ALEX","DESIGN_TOPOLOGY=DUAL")},"3x3 topology"]
 ];
 for(const [broken,needle] of tests){if(!validate(broken).some(x=>x.includes(needle)))throw Error("Negative test not rejected: "+needle);}
 console.log(`Skill freshness negative self-tests PASS (${tests.length})`);

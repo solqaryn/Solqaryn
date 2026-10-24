@@ -1,3 +1,9 @@
+## 2026-10-23 — AUTORIDAD ACTUAL M3.1 (3+3)
+
+El propietario autorizó el diseño 3+3: Tasks Javier :00/:20/:40 y Alex :10/:30/:50 con capacidades simétricas, pero **la creación física de cuatro Tasks permanece pendiente de M3.2**. Priorizar revisión de PR en VALIDANDO, autocorrección en el mismo PR y revisión ajena de los commits del revisor; la microtarea solo libera dependientes después de LISTO respaldado por merge protegido y readback del Sheet. Ramas temporales por microtarea con limpieza automática y máximo dos scopes concurrentes. VAEP/Jules retirados; qa/main/PROD excluidos. Único contrato nuevo: `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md`; `docs/AUTOMATION_STATUS.md` conserva el contador físico vigente. El PR #3734 ya fue integrado a dev mediante 17ca160ae5f2d1e20ef27b1820e670fbfb1099d8; esta migración conserva íntegros sus ocho archivos y sus controles de autoridad comercial. Los registros históricos siguientes no conceden autoridad vigente.
+
+---
+
 ## 2026-10-23 — P0-012.A | Autoridad documental del Plan Comercial Inicial
 
 - Microtarea `P0-012.A`, origen `PLAN_MAESTRO!A24:R24` y `COLA!A24:N24` del Sheet institucional: `P0`, `PENDIENTE`, sin dependencias previas, `DEPENDENCIAS_OK=SI` al iniciar el trabajo. La certificación independiente `P0-012.B` sigue pendiente y depende de esta entrega.
