@@ -4,7 +4,7 @@
 - Flujo canónico 3+3: `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md` (igualdad Javier/Alex, selector por dependencias LISTO, revisión primero, corrección por revisor, aprobación independiente, merge protegido, readback Sheet).
 - El techo físico son seis Tasks; solo dos existían antes de M3.2. No confundir techo, existencia, autorización ni ejecución.
 - Único ERP: rama `dev`, Scope Lock STRICT; tres ramas permanentes dev/qa/main y ramas `work/solqaryn-<scope>` temporales. PR #3734 no forma parte del rediseño.
-- Históricos VAEP/VariApp no son ejecutables. Fuentes posteriores de este archivo son snapshots de contexto previos.
+- Los motores antiguos retirados no son ejecutables. Fuentes posteriores de este archivo son snapshots de contexto previos.
 
 ---
 
