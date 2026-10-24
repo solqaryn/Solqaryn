@@ -1,3 +1,11 @@
+## 2026-10-24 — P0-001.A: snapshot comprobable de HEAD, PRs y despliegue DEV (propuesto)
+
+- Rama `work/solqaryn-p0-001-a`, base `dev@41d05dda3ffb57707275132f834c40cace3f8594`; nuevo inventario `docs/P0-001-A-BASELINE-DEV.md` + `docs/baselines/P0-001-A-DEV-20261024.json` y validador local con negativas `scripts/verify-p0-001-a-baseline.mjs --self-test`.
+- En Vercel DEV el intento del HEAD está CANCELED y el primer READY de la página consultada corresponde a otro SHA; Render solo queda declarado por `render.yaml`, sin workspace proveedor confirmado. No se afirma paridad desplegada ni se modifica ningún servicio. Evidencia estática fechada y congelada, no gate permanente ni reemplazo de readback.
+- Alcance documental exclusivamente: sin cambios en runtime, seguridad, MySQL, frontend, backend, credenciales, flujos de Tasks, QA, main ni PROD. Cierre sujeto a CI del PR, revisión independiente, merge protegido y registro institucional; rollback por PR de revert de estos archivos.
+
+---
+
 ## 2026-10-24 — M3.2: reconciliación de las seis Tasks físicas, autorización operativa todavía parcial
 
 - Se documentaron los seis TASK_ID reales, horarios intercalados :00/:10/:20/:30/:40/:50 y readbacks de ambas cuentas, conservando los dos IDs originales; evidencia: Google Sheet `TAREAS_PROGRAMADAS!A2:Z7` y `BITACORA!A42:Z42`.
