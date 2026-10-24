@@ -213,6 +213,12 @@ if(failures.length){
     reviewedPrRef:'https://github.com/solqaryn/Solqaryn/pull/3734',
     independentReviewerVerified:true};
   if(validateProposedRun(review).length)throw Error('Alex review denied');
+  const javierReview={...review,actorRole:'PRIMARY_01',
+    actorAccount:'JAVIER_CHATGPT',authorAccount:'ALEX_CHATGPT'};
+  if(validateProposedRun(javierReview).length)
+    throw Error('Javier cannot review Alex PR: asymmetric authorization');
+  if(!validateProposedRun({...javierReview,authorAccount:'JAVIER_CHATGPT'}).length)
+    throw Error('Javier self-review was accepted');
   if(!validateProposedRun({...review,authorAccount:'ALEX_CHATGPT'}).length)
     throw Error('self review was accepted');
   const close={...review,operation:'CLOSE',mergedIntoDev:true,mergeSha:'merge-sha',
@@ -235,6 +241,17 @@ if(failures.length){
       prUrl:'https://github.com/solqaryn/Solqaryn/pull/99'}];
   if(selectWork(options,{'P0-012.A':'LISTO'},'ALEX_CHATGPT').action!=='REVIEW')
     throw Error('Review-first selection regression');
+  const alexPR={id:'P0-013.A',state:'VALIDANDO',
+    authorAccount:'ALEX_CHATGPT',
+    prUrl:'https://github.com/solqaryn/Solqaryn/pull/3736'};
+  if(selectWork([alexPR,options[0]],{'P0-012.A':'LISTO'},'JAVIER_CHATGPT').action!=='REVIEW')
+    throw Error('Javier must prioritize review of Alex over eligible pending');
+  if(selectWork([options[0]],{'P0-012.A':'LISTO'},'ALEX_CHATGPT').action!=='CLAIM')
+    throw Error('Alex must be able to develop eligible PENDIENTE');
+  if(selectWork([options[0]],{'P0-012.A':'LISTO'},'JAVIER_CHATGPT').action!=='CLAIM')
+    throw Error('Javier must be able to develop eligible PENDIENTE');
+  if(selectWork([alexPR],{},'ALEX_CHATGPT').action!=='NO_ELIGIBLE')
+    throw Error('Alex must not review own VALIDANDO');
   if(selectWork([options[0]],{'P0-012.A':'VALIDANDO'},'ALEX_CHATGPT').action!=='NO_ELIGIBLE')
     throw Error('Unready dependency claimed');
   const mutation={...documents,status:status.replace('PILOT_TASK_LIMIT=6','PILOT_TASK_LIMIT=2')};
@@ -246,7 +263,7 @@ if(failures.length){
   if(validateApprovalDecision(approved).length)throw Error('Independent approval rejected');
   if(!validateApprovalDecision({...approved,allContributionsReviewed:false}).length)
     throw Error('Approval of unreviewed correction accepted');
-  console.log('SOLQARYN 3x3 autonomy PASS: symmetric writers, review-first, dependency LISTO, correction independence, 20+ negative safeguards');
+  console.log('SOLQARYN 3x3 autonomy PASS: Alex and Javier both CLAIM PENDIENTE and REVIEW other-account VALIDANDO, review-first, dependency LISTO, correction independence, 20+ negative safeguards');
 }else{
   console.log('SOLQARYN 3x3 authority PASS');
 }
