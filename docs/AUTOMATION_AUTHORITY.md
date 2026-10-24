@@ -3,15 +3,15 @@ PROJECT_SCOPE_LOCK=STRICT
 PROJECT_ID=SOLQARYN
 REPOSITORY=solqaryn/Solqaryn
 BRANCH=dev
-CONTRACT_VERSION=1.2
-CONTRACT_PHASE=ACTIVE_DEV_PRIMARY_PILOT_20261023
+CONTRACT_VERSION=2.0
+CONTRACT_PHASE=M3_1_DESIGN_3X3_AWAITING_PHYSICAL_EXPANSION
 AUTOMATION_RUNTIME=ACTIVE_DEV
 SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1
 VAEP_DISPATCH_AUTHORIZED=FALSE
 JULES_WORKERS_AUTHORIZED=0
-PILOT_TASK_LIMIT=2
-PILOT_PRIMARY_TASKS=1
-PILOT_SECONDARY_TASKS=1
+PILOT_TASK_LIMIT=6
+PILOT_PRIMARY_TASKS=3
+PILOT_SECONDARY_TASKS=3
 PRIMARY_TASK_ROLE=PRIMARY_01
 SECONDARY_TASK_ROLE=SECONDARY_02
 PRIMARY_TASK_ACCOUNT=JAVIER_CHATGPT
@@ -24,7 +24,20 @@ REVIEW_INDEPENDENCE_REQUIRED=TRUE
 NO_CROSS_ACCOUNT_CREDENTIALS=TRUE
 NO_LEGACY_REACTIVATION=TRUE
 
-## 2026-10-23 — PILOTO DEV PRIMARY AUTORIZADO POR EL PROPIETARIO (reemplaza gates historicos de microfase 3)
+DESIGN_TOPOLOGY=SYMMETRIC_3X3
+PHYSICAL_TASKS_REGISTERED=2
+ACTIVE_DEV_WRITERS_OBSERVED=1
+MAX_CONCURRENT_SCOPES=2
+
+## Contrato normativo v2.0 — microfase 3.1
+
+El propietario autorizó el diseño 3+3: seis Tasks equivalentes, cualquier cuenta puede tomar, desarrollar, revisar, corregir en el mismo PR y tramitar el cierre si tiene permisos efectivos. Las Tasks antiguas conservan ID; cuatro nuevas dependen de microfase 3.2. El contador autorizado permanece en uno durante la migración hasta readbacks individuales y no declara seis instaladas.
+
+La única especificación vigente de selección, aislamiento de microtareas, corrección por el revisor, validación independiente del código corregido, CI, integración en dev, cambio a LISTO y desbloqueo de dependencias es `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md`. Al detectar defectos, el revisor corrige y mantiene VALIDANDO; sus commits requieren revisión ajena y pruebas del SHA final, sin autoaprobación. El PR que aprueba no habilita todavía a una sucesora hasta merge, readback y LISTO. No reactivar VAEP/Jules ni escribir QA/main/PROD.
+
+Los apartados 1+1 siguientes son archivo histórico no normativo. Las cuentas conservan propiedad y permisos independientes.
+
+## Archivo histórico v1.2 — 2026-10-23 — PILOTO DEV PRIMARY AUTORIZADO POR EL PROPIETARIO (reemplaza gates historicos de microfase 3)
 
 El propietario ordena reanudar las microtareas DEV ahora. PRIMARY_01 existente de Javier es el unico escritor automatizado autorizado, SECONDARY_02 de Alex permanece revisor READ_ONLY. Se limita a solqaryn/Solqaryn, base dev, rama especifica por microtarea del Plan Comercial Inicial y PR contra dev. Prohibido merge autonomo, QA, main, PROD, Render, Vercel, secretos o cambios productivos.
 
