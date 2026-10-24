@@ -47,6 +47,62 @@ export function validateAuthority(input) {
   const sCount=Number(d.status.match(/^SCHEDULED_CHATGPT_TASKS_AUTHORIZED=(\d+)$/m)?.[1]);
   if (!Number.isInteger(aCount)||aCount<1||aCount>6||aCount!==sCount)
     failures.push('Authorized count must be verified, identical and within 1..6');
+  // Fail closed against historic narrative copies of operational values.
+  // A substring match is insufficient: an old paragraph may still say FALSE
+  // when the current header was silently changed to TRUE.
+  const exactKey = (content, name, expected) => {
+    const escaped = name.replace(/[.*+?^\u0024{}()|[\]\\]/g, '\\  if (!/^AUTOMATION_RUNTIME=ACTIVE_DEV$/m.test(d.status)) failures.push('3x3 DEV runtime mismatch');');
+    const hits = content.match(new RegExp('^' + escaped + '=([^\\r\\n]*)
+  if (!d.authority.includes('docs/AUTOMATION_3X3_OPERATING_CONTRACT.md') || !d.agents.includes('TASK_DESIGN=AUTONOMOUS_3_JAVIER_3_ALEX')) failures.push('3x3 contract routing');
+  if (/VAEP_DISPATCH_AUTHORIZED\s*=\s*TRUE/.test(d.status)) failures.push('VAEP must remain retired');
+  if (/JULES_WORKERS_AUTHORIZED\s*=\s*[1-9]/.test(d.status)) failures.push('Jules worker reactivation forbidden');
+  return failures;
+}
+const source = { authority, agents, status, scope };
+const errors = validateAuthority(source);
+if (errors.length) { console.error('AUTOMATION AUTHORITY NO_GO:\n' + errors.join('\n')); process.exitCode = 1; }
+else if (process.argv.includes('--self-test')) {
+  const tests = [
+    ['repository', {authority:authority.replaceAll('REPOSITORY=solqaryn/Solqaryn', 'REPOSITORY=other/Other')}],
+    ['branch', {authority:authority.replaceAll('BRANCH=dev', 'BRANCH=main')}],
+    ['role', {authority:authority.replaceAll('EJECUTOR_PRINCIPAL_02', 'OBSERVER_02')}],
+    ['confused task', {authority:authority.replaceAll('ACTOR_AUTOMATIZADO', 'ACTOR_HUMANO')}],
+    ['self approval', {authority:authority.replaceAll('no puede autoaprobarlo','puede autoaprobarlo')}],
+    ['collision', {authority:authority.replaceAll('No se importa CAS', 'Se importa CAS')}],
+    ['dependency', {authority:authority.replaceAll('dependencias existentes y satisfechas','dependencias ignoradas')}],
+    ['writing', {authority:authority.replaceAll('AUTOMATION_RUNTIME=ACTIVE_DEV','AUTOMATION_RUNTIME=RETIRED')}],
+    ['duplicate idempotency', {authority:authority.replaceAll('IDEMPOTENCY_KEY','DUPLICATE_KEY')}],
+    ['missing evidence', {authority:authority.replaceAll('NO_VERIFICADO','APROBADO_SIN_EVIDENCIA')}],
+    ['wrong contract status', {status:status.replace('docs/AUTOMATION_AUTHORITY.md','legacy/VAEP_AUTHORITY.md')}],
+    ['revoked privilege', {authority:authority.replaceAll('permisos efectivos','permisos supuestos')}],
+    ['prod', {authority:authority.replaceAll('PROD','UNRESTRICTED')}],
+    ['reactivate vaep', {status:status.replace('VAEP_DISPATCH_AUTHORIZED=FALSE','VAEP_DISPATCH_AUTHORIZED=TRUE')}],
+    ['reactivate workers', {status:status.replace('JULES_WORKERS_AUTHORIZED=0','JULES_WORKERS_AUTHORIZED=5')}],
+    ['missing authorized Task', {status:status.replace('SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1','SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0')}],
+    ['wrong 3x3 cap', {scope:scope.replace('PILOT_TASK_LIMIT=6','PILOT_TASK_LIMIT=2')}],
+    ['no 3x3 agent routing', {agents:agents.replace('TASK_DESIGN=AUTONOMOUS_3_JAVIER_3_ALEX','TASK_DESIGN=DUAL_TASK')}],
+    ['legacy Master executable', {scope:scope.replace('LEGACY_MASTER_EXECUTABLE=FALSE','LEGACY_MASTER_EXECUTABLE=TRUE')}],
+    ['commercial authority substituted', {scope:scope.replace('COMMERCIAL_AUTHORITY_MODE=CURRENT_PLAN_ONLY','COMMERCIAL_AUTHORITY_MODE=LEGACY_MASTER')}],
+    ['commercial plan switched', {scope:scope.replace('1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA','HISTORICAL_PLAN_ID')}]
+  ];
+  for (const [label, override] of tests) {
+    const errs = validateAuthority({...source,...override});
+    if (errs.length === 0) throw Error('Negative contract test not rejected: ' + label);
+  }
+  console.log('SOLQARYN automation authority PASS: canonical identities, parity, flags and ' + tests.length + ' fail-closed negative mutations');
+} else if (!errors.length) console.log('SOLQARYN automation authority PASS');
+, 'gm')) || [];
+    return hits.length === 1 && hits[0] === name + '=' + expected;
+  };
+  for (const [name, value] of [
+    ['PROJECT_SCOPE_LOCK', 'STRICT'],
+    ['EXECUTION_PLAN_DRIVE_FILE_ID', '1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA'],
+    ['COMMERCIAL_AUTHORITY_MODE', 'CURRENT_PLAN_ONLY'],
+    ['LEGACY_MASTER_EXECUTABLE', 'FALSE'],
+    ['PILOT_TASK_LIMIT', '6']
+  ]) {
+    if (!exactKey(d.scope, name, value)) failures.push('scope header ' + name);
+  }
   if (!/^AUTOMATION_RUNTIME=ACTIVE_DEV$/m.test(d.status)) failures.push('3x3 DEV runtime mismatch');
   if (!d.authority.includes('docs/AUTOMATION_3X3_OPERATING_CONTRACT.md') || !d.agents.includes('TASK_DESIGN=AUTONOMOUS_3_JAVIER_3_ALEX')) failures.push('3x3 contract routing');
   if (/VAEP_DISPATCH_AUTHORIZED\s*=\s*TRUE/.test(d.status)) failures.push('VAEP must remain retired');
