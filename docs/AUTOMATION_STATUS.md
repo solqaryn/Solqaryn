@@ -10,15 +10,27 @@ AUTOMATION_RUNTIME=ACTIVE_DEV
 SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1
 VAEP_DISPATCH_AUTHORIZED=FALSE
 JULES_WORKERS_AUTHORIZED=0
-PILOT_TASK_LIMIT=2
-PILOT_PRIMARY_TASKS=1
-PILOT_SECONDARY_TASKS=1
+PILOT_TASK_LIMIT=6
+PILOT_PRIMARY_TASKS=3
+PILOT_SECONDARY_TASKS=3
 PRIMARY_TASK_ROLE=PRIMARY_01
 SECONDARY_TASK_ROLE=SECONDARY_02
 PRIMARY_TASK_ACCOUNT=JAVIER_CHATGPT
 SECONDARY_TASK_ACCOUNT=ALEX_CHATGPT
 
-## 2026-10-23 — PILOTO DEV PRIMARY AUTORIZADO POR EL PROPIETARIO (reemplaza gates historicos de microfase 3)
+DESIGN_VERSION=2.0
+DESIGN_TOPOLOGY=3_JAVIER_3_ALEX
+PHYSICAL_TASKS_REGISTERED=2
+MAX_CONCURRENT_SCOPES=2
+LEGACY_AUTOMATION_RUNTIME=RETIRED
+
+## Estado de microfase 3.1 — diseño 3+3, expansión física pendiente
+
+Se aprobó el diseño simétrico de seis Tasks con idénticas capacidades para ambas cuentas. `PILOT_TASK_LIMIT=6` fija un techo, NO afirma seis Tasks instaladas. Las dos originales permanecen. `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1` describe únicamente la autoridad DEV efectiva conocida del piloto anterior, no el número de Tasks a crear. En microfase 3.2 el contador se aumentará solo con readback y permisos autenticados de la propia cuenta. El archivo normativo es `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md`.
+
+El histórico de la topología 1+1 queda abajo como evidencia, no como autoridad vigente. VAEP y Jules permanecen retirados. No exigir RUN_ID nativo que ChatGPT no expone ni falsificar resultados. La Task privada de Alex debe verificarse desde su cuenta antes de cualquier escritura de Alex.
+
+## Archivo histórico v1.2 — 2026-10-23 — PILOTO DEV PRIMARY AUTORIZADO POR EL PROPIETARIO (reemplaza gates historicos de microfase 3)
 
 El propietario ordena reanudar las microtareas DEV ahora. PRIMARY_01 existente de Javier es el unico escritor automatizado autorizado, SECONDARY_02 de Alex permanece revisor READ_ONLY. Se limita a solqaryn/Solqaryn, base dev, rama especifica por microtarea del Plan Comercial Inicial y PR contra dev. Prohibido merge autonomo, QA, main, PROD, Render, Vercel, secretos o cambios productivos.
 
