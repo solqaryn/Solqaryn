@@ -22,8 +22,17 @@ export function validateBaseline(s) {
   assert.ok(s.observed_at_utc.endsWith('Z'), 'Conservar UTC original');
   assert.equal(s.branches.find(b => b.name === 'dev')?.sha, s.base_head);
   assert.equal(s.branches.find(b => b.name === 'dev')?.protected, true);
-  assert.equal(s.required_checks.length, 3);
-  assert.ok(s.required_checks.every(c => c.status === 'success' && c.url.startsWith('https://github.com/')));
+  // Snapshot consistency is not provider attestation; live GitHub checks remain authoritative.
+  const requiredNames = [
+    'verify-solqaryn-project-scope',
+    'SOLQARYN - Seguridad multiempresa',
+    'SOLQARYN - Build y pruebas backend'
+  ];
+  assert.deepEqual(s.required_checks.map(c => c.name).sort(), requiredNames.sort());
+  assert.ok(s.required_checks.every(c => c.status === 'success'
+    && c.head_sha === s.base_head
+    && /^https:\/\/github\.com\/solqaryn\/Solqaryn\/actions\/runs\/\d+\/job\/\d+$/.test(c.url)),
+    'CI requerido debe referir al commit y repositorio exactos');
   assert.equal(s.providers.render.live_status, 'NOT_VERIFIED', 'Render sin workspace no acredita READY');
   assert.equal(s.providers.render.live_sha, null);
   const v = s.providers.vercel;
@@ -44,6 +53,9 @@ if (process.argv.includes('--self-test')) {
     s => { s.base_head = 'invalid'; },
     s => { s.repository = 'foreign/repo'; },
     s => { s.required_checks[0].status = 'failure'; },
+    s => { s.required_checks[0].head_sha = '0000000000000000000000000000000000000000'; },
+    s => { s.required_checks[0].name = s.required_checks[1].name; },
+    s => { s.required_checks[0].url = 'https://github.com.evil.invalid/checks/123'; },
     s => { s.providers.render.live_status = 'READY'; },
     s => { s.providers.vercel.latest_observed.state = 'READY'; },
     s => { s.providers.vercel.first_ready_in_observed_page.sha = s.base_head; }
