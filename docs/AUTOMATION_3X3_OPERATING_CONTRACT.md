@@ -36,6 +36,13 @@ de otra cuenta o invocar la Task privada de Alex desde Javier.
 | PRIMARY_DEV_03 | JAVIER_CHATGPT | :40 | Nueva Task desde Javier |
 | SECONDARY_REVIEW_03 | ALEX_CHATGPT | :50 | Nueva Task desde Alex |
 
+Los identificadores originales `PRIMARY_01` (Javier) y `SECONDARY_02`
+(Alex) se conservan como aliases operativos mientras M3.2 migra las
+etiquetas logicas `PRIMARY_DEV_01` y `SECONDARY_REVIEW_01`.
+Los **TASK_ID físicos originales no cambian**. La numeración en pantalla
+no transfiere permisos ni duplica una Task; `TAREAS_PROGRAMADAS` debe
+confirmar unicidad de ID/propietario/horario.
+
 Los nombres Primary/Secondary y Dev/Review **no conceden privilegios ni
 limitaciones distintos**: las seis tienen igual capacidad funcional de desarrollar,
 revisar, corregir, preparar PR y tramitar el cierre en DEV. Cada accion requiere
@@ -57,7 +64,7 @@ y revisor, los permisos efectivos, el Scope Lock ni los checks de GitHub.
 
 Orden uniforme para las seis Tasks:
 1. Reanudar trabajo propio incompleto con rama/PR y evidencia, si no hay otro editor.
-2. Revisar `VALIDANDO` que provenga de otra identidad y no tenga revisor activo.
+2. Revisar `VALIDANDO` que provenga de otra identidad verificable y no tenga revisor activo; confirmar PR GitHub y permisos efectivos antes de asumir la revisión.
 3. Tomar `PENDIENTE` con **todas** sus dependencias en `LISTO`, prioridad P0 antes
    que P1 y orden del Plan Maestro dentro de una misma prioridad.
 4. Si no hay elegibles, dejar como máximo un evento deduplicado
