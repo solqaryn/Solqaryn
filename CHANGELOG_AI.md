@@ -1,3 +1,11 @@
+## 2026-10-24 — M3.2: 3 Tasks adicionales con lectura verificada por reporte; 3 pruebas aisladas propuestas
+
+- Diagnósticos de ejecución reales **reportados**: Alex `SECONDARY_REVIEW_01` :10 (`6adbbc9ad9e88191bea8eb69104afb25`), Javier `PRIMARY_DEV_02` :20 y Javier `PRIMARY_DEV_03` :40 (`6adc2e55f47c81919f6374e561687076`) confirman `GH_READ=PASS`, `DRIVE_READ=PASS`, sin escrituras. Sus evidencias se conciliaron en `BITACORA!A51:Z54` y las filas 3, 4 y 6 de `TAREAS_PROGRAMADAS`, sin atribuir resultados a conexiones humanas ni confundir `last_run_time` con readback de cada operación.
+- Se amplía en el **mismo PR documental #3739**, sujeto a aprobación independiente y 3/3 CI, la concesión no comercial para los tres IDs específicos. Cada Task puede comprobar una sola operación de comentario GitHub y una sola fila `BITACORA` con readback, **solo después de merge y lectura del contrato vigente**. El permiso expira tras la prueba; no autoriza escritura comercial de código ni ramas.
+- Sin cambios a `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1`, `ACTIVE_DEV_WRITERS_OBSERVED=1`, `PHYSICAL_TASKS_REGISTERED=6`, `CONFIG!B57=FALSE` o Scope Lock STRICT. No se declaran autorizaciones de escritura de 3/6, ni M3.2 certificada; ninguna Task fue creada, modificada o deshabilitada. Sin cambios de ERP, datos comerciales, QA/main/PROD.
+
+---
+
 ## 2026-10-24 — M3.2: PRIMARY_DEV_02 pasa a prueba diagnóstica de escritura (autorización condicionada)
 
 - Evidencia nativa reportada: `PRIMARY_DEV_02` Task ID `6adc2e4bd8a48191ac7d8641ed95a1a3`, `GH_READ=PASS` y `DRIVE_READ=PASS`, `automations.peek` con ejecución real a `2026-10-24T18:26:56.644003Z`. El usuario reportó `GH_WRITE=NO_AUTORIZADO`, `DRIVE_WRITE=NO_AUTORIZADO`; conciliado en Sheet `TAREAS_PROGRAMADAS!O4:Z4` y `BITACORA!A51:Z51` desde sesión interactiva sin atribuir escrituras a la Task.
