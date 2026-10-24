@@ -1,3 +1,11 @@
+## 2026-10-23 — P0-012.A | Conciliación de autoridad documental de SOLQARYN
+
+- Fuente única ejecutable: Plan Comercial Inicial Unificado V3 (Google Doc `1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA`), con `COMMERCIAL_AUTHORITY_MODE=CURRENT_PLAN_ONLY` y `LEGACY_MASTER_EXECUTABLE=FALSE` protegidos por tres pruebas negativas adicionales.
+- Se corrigen contradicciones entre el contrato del piloto `ACTIVE_DEV` fusionado por PR #3733 y afirmaciones históricas de microfases `RETIRED` en Scope Lock, AGENTS, Status y Authority. El antiguo Maestro y 10 Tasks retiradas carecen de autoridad operativa; una Primary puede presentar PRs en `dev`, Secondary los revisa sin escribir.
+- Alcance solo documental + validador Node, sin cambios en producto/BD/despliegues/Sheets/Tasks. Tests de contrato y Scope Lock exigidos por CI del PR; cierre P0-012.A sujeto a revisión, P0-012.B sigue pendiente.
+
+---
+
 ## 2026-10-23 — Piloto DEV Primary: eliminar dependencia de RUN_ID nativo
 
 - Autorizacion expresa del propietario para que Primary Javier pueda iniciar microtareas DEV con rama y PR, sin 4/4 runs de diagnostico ni RUN_ID inobservable.

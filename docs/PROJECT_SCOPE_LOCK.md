@@ -10,15 +10,17 @@ LOCAL_SKILL=.agents/skills/solqaryn-project-governance/SKILL.md
 EXTERNAL_PROJECT_CONTEXT=DENY_BY_DEFAULT
 CONTEXT_MODE=CURRENT_STATE_ONLY
 EXECUTION_PLAN_DRIVE_FILE_ID=1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA
+COMMERCIAL_AUTHORITY_MODE=CURRENT_PLAN_ONLY
+LEGACY_MASTER_EXECUTABLE=FALSE
 PILOT_TASK_LIMIT=2
 
 ## Alcance actual
 
 La fuente comercial aprobada es `STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES` (ID de Drive citado arriba). Los planes antiguos, manifestaciones, hojas, Tasks y calendarios ya retirados no tienen autoridad ejecutiva, y no se reutilizan automáticamente. El estado de automatización se documenta solamente en `docs/AUTOMATION_STATUS.md`.
 
-## Preparación de nueva autoridad de automatizaciones
+## Autoridad vigente del piloto DEV (23-10-2026)
 
-`docs/AUTOMATION_AUTHORITY.md` regula únicamente el contrato nuevo en preparación: `PROPIETARIA_INSTITUCIONAL` = SOLQARYN Platform; `EJECUTOR_PRINCIPAL_01` = Javier y `EJECUTOR_PRINCIPAL_02` = Alex con derechos humanos paritarios, sin jerarquía ni herencia de sesiones o permisos de Tasks. El estado de ejecución y contador autorizados siguen únicamente en `docs/AUTOMATION_STATUS.md`; al introducir la referencia no se activa ninguna Task.
+`docs/AUTOMATION_AUTHORITY.md` regula el piloto `ACTIVE_DEV` autorizado para la Task física `PRIMARY_01` de Javier como único escritor automatizado de ramas y PRs hacia `dev`. `SECONDARY_02` de Alex permanece revisor `READ_ONLY`. `PROPIETARIA_INSTITUCIONAL` = SOLQARYN Platform; los ejecutores humanos conservan paridad, sin delegación de credenciales ni de sesión. La fuente única para el contador y modo de ejecución es `docs/AUTOMATION_STATUS.md` (`SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1`); este documento no activa Tasks adicionales, autoriza merges automáticos ni habilita QA, main o PROD. El VAEP retirado y Jules siguen prohibidos.
 
 ## Identidad, código y seguridad
 
@@ -28,13 +30,9 @@ El trabajo ordinario se hace en `dev` por PR protegido. Nunca usar force-push, a
 
 Las restricciones de seguridad del producto no son hitos de un roadmap antiguo: permanecen mientras la funcionalidad protegida exista. Las validaciones históricas que exigen certificaciones de fases anteriores deben ejecutarse manualmente o sustituirse por regresiones actuales relevantes, no bloquear cada nuevo cambio sin causa.
 
-### Enmienda 1.2: dos Tasks futuras, sin jerarquia humana
+### Enmienda 1.2: Tasks físicas existentes y límites del piloto
 
-`PRIMARY_01` pertenece a la cuenta de Javier; `SECONDARY_02` a la cuenta
-de Alex. El limite maximo de dos Tasks no implica que existan ni permite
-escrituras o ejecucion en `RETIRED`. El detalle unico de roles y permisos
-reside en `docs/AUTOMATION_AUTHORITY.md`; este Scope Lock mantiene
-`PROJECT_SCOPE_LOCK=STRICT` y protege la propiedad institucional.
+`PRIMARY_01` pertenece a la cuenta de Javier; `SECONDARY_02` a la de Alex. Su instalación es independiente del permiso de escritura: solo una Task está autorizada a producir ramas y PRs de microtareas DEV mediante el piloto `ACTIVE_DEV` y controles nativos GitHub. El límite de dos impide crear duplicados. El detalle de roles está en `docs/AUTOMATION_AUTHORITY.md`; `PROJECT_SCOPE_LOCK=STRICT` conserva la propiedad institucional y el aislamiento de datos. El antiguo Maestro (incluidos identificadores `SQ-000` a `SQ-353` y el Word histórico) es referencia futura/no ejecutable, no fuente de microtareas, despachos, dependencias ni autorizaciones.
 
 ## Control de cambios
 

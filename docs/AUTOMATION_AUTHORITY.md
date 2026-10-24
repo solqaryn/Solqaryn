@@ -87,8 +87,9 @@ Topologia fija: **1 Primary (Javier) + 1 Secondary (Alex)**; no se crean
 Tasks adicionales y tampoco un motor historico de multiples parejas.
 
 - `PRIMARY_01`: Task fisica en ChatGPT de Javier. Puede leer y, solo tras
-  certificacion de microfase 4, ejecutar trabajo DEV estrictamente autorizado
-  mediante rama y PR protegido, con exclusividad e idempotencia.
+  autorización vigente del piloto `ACTIVE_DEV` y permisos GitHub efectivos,
+  ejecutar UNA microtarea DEV con rama por ID y PR protegido hacia `dev`,
+  con WIP=1, verificación de colisiones e idempotencia por artefactos GitHub.
 - `SECONDARY_02`: Task fisica en ChatGPT de Alex. Lee entregables Primary,
   verifica CI, evidencia, consistencia, seguridad y regresion desde su
   identidad individual. No equivale a aprobacion humana formal de GitHub.
@@ -96,11 +97,11 @@ Tasks adicionales y tampoco un motor historico de multiples parejas.
 - La Task que crea una cuenta permanece bajo esa cuenta. No existen
   delegaciones cruzadas, copias de secretos ni cambio de propietaria.
 
-Microfase 3 solo comienza tras las puertas previas: crear una Task desde
-cada cuenta, comprobar cada `TASK_ID`, su programacion y conectores reales,
-y obtener **dos ejecuciones programadas efectivas por cada Task**. Si la
-cuenta de Alex no admite Tasks o no puede verificar accesos, no crear una
-segunda Task en Javier para compensarlo y no declarar el piloto dual PASS.
+Históricamente, microfase 3 contemplaba dos ejecuciones READ_ONLY por Task.
+Este requisito de 4/4 y los metadatos nativos del proveedor **no son gates**
+para el piloto `ACTIVE_DEV` autorizado el 23-10-2026: su entrega se identifica
+mediante ID de microtarea, rama, commit, PR, HEAD y CI reales. Primary no
+crea Tasks adicionales; Secondary revisa desde su propia identidad.
 
 Los campos `TASK_ROLE`, `CREADOR_TASK`, `ACCOUNT_OWNER`, `TASK_ID`, `RUN_ID`,
 `EVENT_ID`, `REVIEWED_RUN_ID`, `REVISOR`, `IDEMPOTENCY_KEY`, HEAD y readback
@@ -115,13 +116,14 @@ Las cinco capacidades logicas, NO cinco Tasks adicionales, siguen siendo
 
 Origen de selección: 1.123 microtareas del plan comercial vigente; Google Sheets es seguimiento, no fuente de nuevas prioridades ni autorización. Validar ID único, estado permitido, dependencias existentes y satisfechas, alcance aprobado, permiso y HEAD fresco. `DISPONIBLE_PARA_REVISION` significa candidato a **revisión**, no orden de despacho.
 
-WIP máximo 1 por ejecutor humano o Task para scopes comerciales cuando exista ejecución. Exclusividad **por microtarea y por recurso compartido**: una identidad no puede tomar scope ocupado por Javier, Alex u otra ejecución; la colisión => no escribir, registrar evidencia y reevaluar. No es suficiente un read-before-write no atómico de Sheet para garantizar exclusividad. Antes de automatizar, adoptar y probar un mecanismo de exclusión e idempotencia compatible con el recurso de escritura; hasta entonces `ACTIVE_DEV` está prohibido. No se importa CAS, leases, manifests o epochs de VAEP retirado. No se reasigna trabajo automáticamente ante error, pausa, revocación o ausencia.
+WIP máximo 1 por ejecutor humano o Task para scopes comerciales cuando exista ejecución. Exclusividad **por microtarea y por recurso compartido**: una identidad no puede tomar scope ocupado por Javier, Alex u otra ejecución; la colisión => no escribir, registrar evidencia y reevaluar. No es suficiente un read-before-write no atómico de Sheet para garantizar exclusividad. En el piloto `ACTIVE_DEV` autorizado, usar rama GitHub única por ID `work/solqaryn-<ID>`, un único PR/WIP=1 y readback de ramas/PRs para detectar colisiones antes de escribir. Nunca tratar la hoja como un lock atómico, ni reclamar scopes, ni replicar el motor histórico. Ante rama o PR concurrente, no duplicar y reconciliar. No se importa CAS, leases, manifests o epochs de VAEP retirado. No se reasigna trabajo automáticamente ante error, pausa, revocación o ausencia.
 
 ### Coordinacion segura Primary / Secondary
 
-La Primary entrega trabajo auditable; Secondary revisa una entrega
-identificada por `REVIEWED_RUN_ID` nativo o por `EVIDENCE_REF` equivalente
-aceptada conforme al apartado 6.1, con identidad de autor distinta. Ni el
+La Primary entrega trabajo auditable; Secondary revisa un PR y HEAD GitHub
+concretos, junto con las pruebas causales, desde una identidad distinta.
+`REVIEWED_RUN_ID` o `EVIDENCE_REF` del piloto READ_ONLY anterior no son
+requisitos para revisar entregables `ACTIVE_DEV`. Ni el
 desfase de horarios ni una lectura de Google Sheets constituyen exclusividad
 atomica. Para cada `SCOPE_KEY`, verificar que no haya colisiones de Javier,
 Alex ni otras operaciones antes de cualquier escritura. Si hay duplicado,
@@ -131,21 +133,22 @@ trabajo al otro ejecutor. Ninguna Task se autoaprueba.
 
 ## 6. Identificadores, idempotencia y fallo parcial
 
-Toda ejecución debe registrar `ACTOR_HUMANO` (si aplica), `TASK_ID` físico comprobado, `CREADOR_TASK`, `ACTOR_AUTOMATIZADO`, `RUN_ID`, `EVENT_ID`, `SCOPE_KEY`, `IDEMPOTENCY_KEY`, `BASE_HEAD`, `RESULT_HEAD`, `REVISOR`, transición, timestamp UTC y evidencia. Los valores desconocidos son `NO_VERIFICADO`, no se inventan.
+En el piloto `ACTIVE_DEV`, cada entrega debe identificar `TASK_ROLE`, microtarea, `ACTOR_AUTOMATIZADO`, cuenta declarada, `SCOPE_KEY`, `IDEMPOTENCY_KEY` basado en la rama/PR y el ID, `BASE_HEAD`, `RESULT_HEAD`, PR, pruebas, estado y `REVISOR` independiente cuando corresponda. `ACTOR_HUMANO`, `CREADOR_TASK`, `TASK_ID`, `RUN_ID` y `EVENT_ID` se registran solo cuando procedan y estén verificados; cualquier dato ausente queda `NO_VERIFICADO`, nunca se inventa. No se necesita `RUN_ID` del proveedor para abrir rama/PR.
 
-El registro dual tambien exige `TASK_ROLE`, `ACCOUNT_OWNER` y
-`REVIEWED_RUN_ID` para cada revision. La Task de Alex debe comprobar la
+El registro dual conserva `TASK_ROLE` y `ACCOUNT_OWNER` cuando sean comprobables;
+`REVIEWED_RUN_ID` nativo no es exigible en revisiones `ACTIVE_DEV`, que se
+vinculan al SHA/PR de GitHub. La Task de Alex debe comprobar la
 identidad de la Primary, el resultado de las pruebas y los efectos
 causales, pero su propio reporte no es un evento GitHub `APPROVED`. La
 separacion de deberes es obligatoria incluso cuando Alex sea autor.
 Los valores sin comprobar permanecen `NO_VERIFICADO`.
 
 
-### 6.1. Evidencia de ejecución programada sin RUN_ID nativo — microfase 3 READ_ONLY
+### 6.1. Archivo histórico — evidencia sin RUN_ID de microfase 3 READ_ONLY (no es gate DEV)
 
 La plataforma ChatGPT puede registrar un `TASK_ID` estable y `last_run_time` sin exponer un identificador individual `RUN_ID` ni un resultado de finalización en la herramienta de administración. **No existe autorización para generar un RUN_ID artificial**: ni `TASK_ID`, ni `last_run_time`, ni `EVENT_ID`, ni `OBSERVATION_ID`, ni un SHA fabricado identifican una ejecución del proveedor.
 
-Solo **en el piloto de microfase 3, modo READ_ONLY**, la ausencia comprobada de `RUN_ID` nativo puede suplirse por `EVIDENCE_REF` de un **resultado individual real, programado y finalizado**; este mecanismo no sustituye un `RUN_ID` en acciones `ACTIVE_DEV`/escrituras, aprobaciones GitHub, idempotencia transaccional ni microfase 4. Un `last_run_time` aislado acredita actividad registrada, **no** finalización, resultado ni programación efectiva.
+Solo **en el piloto de microfase 3, modo READ_ONLY**, la ausencia comprobada de `RUN_ID` nativo puede suplirse por `EVIDENCE_REF` de un **resultado individual real, programado y finalizado**; este mecanismo no sustituye artefactos GitHub (rama, commit, PR, CI), revisión independiente ni idempotencia de operaciones en `ACTIVE_DEV`. Un `last_run_time` aislado acredita actividad registrada, **no** finalización, resultado ni programación efectiva.
 
 Se acepta uno de dos comprobantes por ejecución:
 
@@ -154,9 +157,9 @@ Se acepta uno de dos comprobantes por ejecución:
 
 El registro por ejecución debe conservar `TASK_ROLE`, `TASK_ID`, `ACCOUNT_OWNER`, horario nominal, timestamp real, HEAD, versión de contrato, fuentes leídas, resultado observado, constancia de cero escrituras y `EVIDENCE_REF` único. `BITACORA!W` y `TAREAS_PROGRAMADAS!V` referencian el comprobante y su huella; `BITACORA!A` recibe un `EVENT_ID` distinto de la ejecución. Cuando el proveedor **no** expone `RUN_ID`, mantener `BITACORA!H` y `TAREAS_PROGRAMADAS!T` como `NO_VERIFICADO` o vacíos según el esquema: **nunca insertar la referencia equivalente como RUN_ID nativo**. Para una revisión Secondary sin `REVIEWED_RUN_ID` del proveedor, registrar `REVIEWED_EVIDENCE_REF` en `BITACORA!W`, conservando `BITACORA!I=NO_VERIFICADO`.
 
-**Gates obligatorios, sin excepciones**: dos resultados programados y finalizados **distintos** por cuenta (4 en total), no contar manuales/reintentos ni un mismo comprobante dos veces; readback real del propietario de cada Task; acceso y resultado contrastados con las fuentes; revisión de la evidencia Primary por Alex desde su propia identidad con un dictamen separado y sin autoaprobación; pruebas negativas de suplantación, prueba repetida, ejecución incompleta, permisos y escritura indebida; readback de Sheet, Bitácora, GitHub y CI sobre el HEAD pertinente. Si el proveedor no muestra el resultado individual o su origen no puede validarse, `BLOCKED_NO_RUN_EVIDENCE` y **0 certificación de esa ejecución**. Publicar evidencias únicamente mediante sesión humana autorizada; nunca conceder escritura automática a las Tasks por este mecanismo.
+**Gates históricos, exclusivos de la microfase 3 READ_ONLY y no exigibles al piloto ACTIVE_DEV**: dos resultados programados y finalizados **distintos** por cuenta (4 en total), no contar manuales/reintentos ni un mismo comprobante dos veces; readback real del propietario de cada Task; acceso y resultado contrastados con las fuentes; revisión de la evidencia Primary por Alex desde su propia identidad con un dictamen separado y sin autoaprobación; pruebas negativas de suplantación, prueba repetida, ejecución incompleta, permisos y escritura indebida; readback de Sheet, Bitácora, GitHub y CI sobre el HEAD pertinente. Si el proveedor no muestra el resultado individual o su origen no puede validarse, `BLOCKED_NO_RUN_EVIDENCE` y **0 certificación de esa ejecución**. Publicar evidencias únicamente mediante sesión humana autorizada; nunca conceder escritura automática a las Tasks por este mecanismo.
 
-El validador de configuración solo puede evaluar metadatos y declaraciones verificadas que se le suministren: **no sustituye** la inspección autenticada del historial de ChatGPT. El estado global `AUTOMATION_RUNTIME=RETIRED` y `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0` no cambian por admitir una prueba equivalente.
+El validador de configuración solo puede evaluar metadatos y declaraciones verificadas que se le suministren: **no sustituye** la inspección autenticada del historial de ChatGPT. Al registrar ese piloto histórico, `AUTOMATION_RUNTIME=RETIRED` y `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0` no cambiaban por admitir prueba equivalente. El estado vigente del piloto DEV lo fija únicamente `docs/AUTOMATION_STATUS.md` (`ACTIVE_DEV`, `1`).
 
 El identificador idempotente se vincula a operación, scope y versión del contrato; un reintento verifica resultado previo antes de repetir efectos. El estado `INDETERMINADO` tras pérdida de confirmación detiene nuevas escrituras hasta readback por GitHub/Drive y reconciliación. El sistema GitHub + Sheets + ChatGPT carece de transacción única distribuida: registrar intención y resultado separadamente, reconciliar, y **nunca** avanzar a `LISTO` si una de las escrituras/evidencias fue ambigua.
 
@@ -200,7 +203,7 @@ APPROVAL_AVAILABILITY_MUST_BE_VERIFIED=TRUE
 Conservar el Sheet nativo existente, las seis pestañas actuales y las 1.123 microtareas originales. En la microfase 2 agregar solamente `TAREAS_PROGRAMADAS` y `AUTOMATIZACIONES` (ocho hojas en total). `PLAN_MAESTRO` conserva identidad/datos fuente; `COLA` es derivada y sus 15.722 fórmulas no son un canal de escritura. `CONFIG` y `DASHBOARD` informan estados, nunca activan Tasks. `BITACORA` registra eventos nuevos sin inventar historia. `LEYENDA` describe reglas. `CONTROL_TOWER` y `TAREAS_DE_SUPERVISION` quedan fuera del piloto.
 
 
-La futura `TAREAS_PROGRAMADAS` tiene como maximo dos slots: uno para
+La pestaña existente `TAREAS_PROGRAMADAS` tiene como maximo dos slots: uno para
 `PRIMARY_01` y otro para `SECONDARY_02`, cada uno con cuenta propia,
 `TASK_ID` real, ultimo `RUN_ID`, modo configurado y modo comprobado.
 Hasta contar con evidencia se registra `NO_VERIFICADO`, no IDs ficticios.
@@ -221,9 +224,12 @@ ambos roles y preservacion de 1.123 microtareas y 15.722 formulas.
 **Microfase 3**: una Task `PRIMARY_01` creada en Javier y una `SECONDARY_02`
 creada en Alex, ambas inicialmente `READ_ONLY`, dos ejecuciones reales por
 cuenta y readback individual (RUN_ID nativo o prueba equivalente del apartado 6.1), sin escritura comercial.
-**Microfase 4**: piloto DEV de Primary con verificacion independiente de
-Secondary; `ACTIVE_DEV` solo tras permisos, exclusividad e idempotencia
-probados desde las Tasks correspondientes. No activar si falta una cuenta.
+**Piloto DEV vigente desde el merge del contrato el 23-10-2026**: la
+Primary de Javier es el único escritor de ramas/PRs hacia `dev`; la
+Secondary de Alex revisa los PR/SHA de forma independiente y en lectura.
+`ACTIVE_DEV` no habilita despliegues, merges automáticos, nuevas Tasks ni
+trabajo fuera del Plan Comercial Inicial. Las microfases 1-3 anteriores
+se preservan aquí como historial, no como gates recurrentes.
 
 Ante falla: detener únicamente scope afectado cuando la seguridad global esté intacta; si se pierde autoridad/identidad/concurrencia, bloqueo global de despachos. Pausa: deshabilitar Task en ChatGPT, verificar estado real, registrar evento y revocar escritura si procede. Recuperación: inspeccionar efectos ya consumados, leer HEAD/Sheets, corregir anomalías en rama y PR, no repetir operación ambigua. Rollback de microfase 1: PR de reversión, preservando historia y dejando `AUTOMATION_RUNTIME=RETIRED`. Cada PASS incluye evidencia del estado posterior, no promesas.
 
