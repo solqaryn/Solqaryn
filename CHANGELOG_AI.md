@@ -1,3 +1,11 @@
+## 2026-10-24 — M3.2: PRIMARY_DEV_02 pasa a prueba diagnóstica de escritura (autorización condicionada)
+
+- Evidencia nativa reportada: `PRIMARY_DEV_02` Task ID `6adc2e4bd8a48191ac7d8641ed95a1a3`, `GH_READ=PASS` y `DRIVE_READ=PASS`, `automations.peek` con ejecución real a `2026-10-24T18:26:56.644003Z`. El usuario reportó `GH_WRITE=NO_AUTORIZADO`, `DRIVE_WRITE=NO_AUTORIZADO`; conciliado en Sheet `TAREAS_PROGRAMADAS!O4:Z4` y `BITACORA!A51:Z51` desde sesión interactiva sin atribuir escrituras a la Task.
+- Enmienda documental condicionada a revisión independiente y merge protegido: autorizar una única prueba GitHub de comentario en PR #3737 y una única inserción auditada en BITACORA **desde la propia Task**, con lectura posterior. No habilita commits, PR comerciales, cambios de código, archivos productivos ni las otras cinco Tasks.
+- Se conservan `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1`, `PHYSICAL_TASKS_REGISTERED=6`, `ACTIVE_DEV_WRITERS_OBSERVED=1`, `CONFIG!B57=FALSE`, Scope Lock STRICT, VAEP/Jules retirados y QA/main/PROD fuera de alcance. Una prueba de comentario no acredita GitHub `contents:write`; la certificación operativa M3.2 sigue parcial.
+
+---
+
 ## 2026-10-24 — M3.2: reconciliación de las seis Tasks físicas, autorización operativa todavía parcial
 
 - Se documentaron los seis TASK_ID reales, horarios intercalados :00/:10/:20/:30/:40/:50 y readbacks de ambas cuentas, conservando los dos IDs originales; evidencia: Google Sheet `TAREAS_PROGRAMADAS!A2:Z7` y `BITACORA!A42:Z42`.
