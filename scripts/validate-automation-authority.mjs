@@ -34,7 +34,13 @@ export function validateAuthority(input) {
   ]);
   required(d.agents, 'AGENTS', ['PROJECT_SCOPE_LOCK=STRICT','AUTOMATION_RUNTIME=ACTIVE_DEV','docs/AUTOMATION_AUTHORITY.md','EJECUTOR_PRINCIPAL_01','EJECUTOR_PRINCIPAL_02']);
   required(d.status, 'AUTOMATION_STATUS', ['AUTOMATION_RUNTIME=ACTIVE_DEV','SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1','VAEP_DISPATCH_AUTHORIZED=FALSE','JULES_WORKERS_AUTHORIZED=0','docs/AUTOMATION_AUTHORITY.md']);
-  required(d.scope, 'PROJECT_SCOPE_LOCK', ['PROJECT_SCOPE_LOCK=STRICT','REPOSITORY=solqaryn/Solqaryn','docs/AUTOMATION_AUTHORITY.md']);
+  required(d.scope, 'PROJECT_SCOPE_LOCK', [
+    'PROJECT_SCOPE_LOCK=STRICT', 'REPOSITORY=solqaryn/Solqaryn',
+    'docs/AUTOMATION_AUTHORITY.md',
+    'EXECUTION_PLAN_DRIVE_FILE_ID=1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA',
+    'COMMERCIAL_AUTHORITY_MODE=CURRENT_PLAN_ONLY',
+    'LEGACY_MASTER_EXECUTABLE=FALSE'
+  ]);
   if (!/^SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1$/m.test(d.status)) failures.push('Primary DEV pilot must have exactly one authorized writer');
   if (!/^AUTOMATION_RUNTIME=ACTIVE_DEV$/m.test(d.status)) failures.push('Primary DEV pilot runtime mismatch');
   if (/VAEP_DISPATCH_AUTHORIZED\s*=\s*TRUE/.test(d.status)) failures.push('VAEP must remain retired');
@@ -61,7 +67,11 @@ else if (process.argv.includes('--self-test')) {
     ['prod', {authority:authority.replaceAll('PROD','UNRESTRICTED')}],
     ['reactivate vaep', {status:status.replace('VAEP_DISPATCH_AUTHORIZED=FALSE','VAEP_DISPATCH_AUTHORIZED=TRUE')}],
     ['reactivate workers', {status:status.replace('JULES_WORKERS_AUTHORIZED=0','JULES_WORKERS_AUTHORIZED=5')}],
-    ['activated Task', {status:status.replace('SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1','SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0')}]
+    ['activated Task', {status:status.replace('SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1','SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0')}],
+    ['legacy Master executable', {scope:scope.replace('LEGACY_MASTER_EXECUTABLE=FALSE','LEGACY_MASTER_EXECUTABLE=TRUE')}],
+    ['commercial authority substituted', {scope:scope.replace('COMMERCIAL_AUTHORITY_MODE=CURRENT_PLAN_ONLY','COMMERCIAL_AUTHORITY_MODE=LEGACY_MASTER')}],
+    ['commercial plan switched', {scope:scope.replace('1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA', 'HISTORICAL_PLAN_ID')}]
+
   ];
   for (const [label, override] of tests) {
     const errs = validateAuthority({...source,...override});
