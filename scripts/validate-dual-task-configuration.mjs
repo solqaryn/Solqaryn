@@ -9,10 +9,12 @@ const scope = read('docs/PROJECT_SCOPE_LOCK.md');
 const contract = read('docs/AUTOMATION_3X3_OPERATING_CONTRACT.md');
 
 const ownerByRole = Object.freeze({
-  PRIMARY_01: 'JAVIER_CHATGPT',
+  PRIMARY_01: 'JAVIER_CHATGPT', // role historico de la Task existente
+  PRIMARY_DEV_01: 'JAVIER_CHATGPT', // alias canonico 3+3
   PRIMARY_DEV_02: 'JAVIER_CHATGPT',
   PRIMARY_DEV_03: 'JAVIER_CHATGPT',
-  SECONDARY_02: 'ALEX_CHATGPT',
+  SECONDARY_02: 'ALEX_CHATGPT', // role historico de la Task existente
+  SECONDARY_REVIEW_01: 'ALEX_CHATGPT', // alias canonico 3+3
   SECONDARY_REVIEW_02: 'ALEX_CHATGPT',
   SECONDARY_REVIEW_03: 'ALEX_CHATGPT',
 });
@@ -79,12 +81,17 @@ export function dependenciesSatisfied(task, stateById) {
     task.dependencies.every(id => stateById[id] === 'LISTO');
 }
 export function selectWork(tasks, stateById, account, activeReviewIds = new Set()) {
+  if (account !== 'JAVIER_CHATGPT' && account !== 'ALEX_CHATGPT')
+    return {action:'NO_ELIGIBLE',reason:'UNKNOWN_ACCOUNT'};
   const assigned = tasks.find(t => t.state === 'EN_PROGRESO' &&
     t.ownerAccount === account && t.resumeAuthorized === true &&
     t.exclusiveScopeVerified === true);
   if (assigned) return {action:'RESUME',task:assigned};
-  const review = tasks.find(t => t.state === 'VALIDANDO' && t.authorAccount !== account &&
-    !activeReviewIds.has(t.id) && t.prUrl && t.reviewerAllowed !== false);
+  const review = tasks.find(t => t.state === 'VALIDANDO' &&
+    ['JAVIER_CHATGPT','ALEX_CHATGPT'].includes(t.authorAccount) &&
+    t.authorAccount !== account && !activeReviewIds.has(t.id) &&
+    isUrl(t.prUrl) && t.reviewerAllowed === true &&
+    t.reviewPermissionVerified === true);
   if (review) return {action:'REVIEW',task:review};
   const eligible = tasks.filter(t => t.state === 'PENDIENTE' &&
     validScope(t.id) && dependenciesSatisfied(t,stateById) &&
@@ -238,12 +245,14 @@ if(failures.length){
   const options=[{id:'P0-012.B',state:'PENDIENTE',dependencies:['P0-012.A'],
     priority:'P0',planOrder:24,permissionsVerified:true},
     {id:'P1-100.A',state:'VALIDANDO',authorAccount:'JAVIER_CHATGPT',
-      prUrl:'https://github.com/solqaryn/Solqaryn/pull/99'}];
+      prUrl:'https://github.com/solqaryn/Solqaryn/pull/99',
+      reviewerAllowed:true,reviewPermissionVerified:true}];
   if(selectWork(options,{'P0-012.A':'LISTO'},'ALEX_CHATGPT').action!=='REVIEW')
     throw Error('Review-first selection regression');
   const alexPR={id:'P0-013.A',state:'VALIDANDO',
     authorAccount:'ALEX_CHATGPT',
-    prUrl:'https://github.com/solqaryn/Solqaryn/pull/3736'};
+    prUrl:'https://github.com/solqaryn/Solqaryn/pull/3736',
+    reviewerAllowed:true,reviewPermissionVerified:true};
   if(selectWork([alexPR,options[0]],{'P0-012.A':'LISTO'},'JAVIER_CHATGPT').action!=='REVIEW')
     throw Error('Javier must prioritize review of Alex over eligible pending');
   if(selectWork([options[0]],{'P0-012.A':'LISTO'},'ALEX_CHATGPT').action!=='CLAIM')
@@ -252,6 +261,23 @@ if(failures.length){
     throw Error('Javier must be able to develop eligible PENDIENTE');
   if(selectWork([alexPR],{},'ALEX_CHATGPT').action!=='NO_ELIGIBLE')
     throw Error('Alex must not review own VALIDANDO');
+  if(selectWork([{...alexPR,authorAccount:undefined}],{},'JAVIER_CHATGPT').action!=='NO_ELIGIBLE')
+    throw Error('A review with unverifiable author cannot be claimed');
+  if(selectWork([{...alexPR,reviewPermissionVerified:false}],{},'JAVIER_CHATGPT').action!=='NO_ELIGIBLE')
+    throw Error('A review without permission cannot be claimed');
+  if(selectWork([alexPR],{},'UNKNOWN_ACCOUNT').action!=='NO_ELIGIBLE')
+    throw Error('An unknown account cannot claim a review');
+  const canonicalAlex=clone(base);
+  canonicalAlex.slots[1].role='SECONDARY_REVIEW_01';
+  canonicalAlex.actorRole='SECONDARY_REVIEW_01';
+  canonicalAlex.actorAccount='ALEX_CHATGPT';
+  if(validateProposedRun(canonicalAlex).length)
+    throw Error('Canonical Alex slot role should be permitted');
+  const canonicalJavier=clone(base);
+  canonicalJavier.slots[0].role='PRIMARY_DEV_01';
+  canonicalJavier.actorRole='PRIMARY_DEV_01';
+  if(validateProposedRun(canonicalJavier).length)
+    throw Error('Canonical Javier slot role should be permitted');
   if(selectWork([options[0]],{'P0-012.A':'VALIDANDO'},'ALEX_CHATGPT').action!=='NO_ELIGIBLE')
     throw Error('Unready dependency claimed');
   const mutation={...documents,status:status.replace('PILOT_TASK_LIMIT=6','PILOT_TASK_LIMIT=2')};
