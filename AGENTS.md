@@ -8,9 +8,17 @@ PROJECT_SKILL=.agents/skills/solqaryn-project-governance/SKILL.md
 EXECUTION_PLAN_DRIVE_FILE_ID=1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA
 CURRENT_COMMERCIAL_ONLY=TRUE
 AUTOMATION_RUNTIME=ACTIVE_DEV
-DUAL_TASK_DESIGN=PRIMARY_01_JAVIER_SECONDARY_02_ALEX
+TASK_DESIGN=AUTONOMOUS_3_JAVIER_3_ALEX
 
-## 2026-10-23 — PILOTO DEV PRIMARY AUTORIZADO POR EL PROPIETARIO (reemplaza gates historicos de microfase 3)
+## Microfase 3.1 — contrato activo v2.0 de coordinación 3+3
+
+La arquitectura aprobada es de seis Tasks: tres Javier (:00/:20/:40) y tres Alex (:10/:30/:50), con capacidades simétricas de desarrollo, revisión, corrección y tramitación del cierre. El rol nominal no concede privilegio; cada operación requiere identidad, permisos, HEAD, exclusividad y CI reales. Dos Tasks existen físicamente; las cuatro restantes NO se crean ni autorizan hasta la microfase 3.2. La única autoridad de la nueva lógica está en `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md` y el contador efectivo en `docs/AUTOMATION_STATUS.md`.
+
+Una Task elige primero VALIDANDO de otra identidad y después PENDIENTE con TODAS las dependencias LISTO. El revisor corrige directamente en el mismo PR, conservando VALIDANDO. Sus commits requieren revisión independiente y CI del SHA final; jamás autoaprobar. Solo un merge protegido verificado en dev más readback Plan Maestro/Cola/Bitácora permite LISTO. No crear rama almacén ni duplicar ramas; máximo dos trabajos en paralelo. El runtime no es indefinido: registrar commits y punto de continuación ante interrupción.
+
+Las reglas históricas del piloto 1+1 que aparecen abajo son archivo de trazabilidad y no limitan las capacidades v2.0. VAEP y Jules siguen retirados; QA, main, PROD y secretos fuera de alcance.
+
+## Archivo histórico de piloto v1.2 — 2026-10-23 — PILOTO DEV PRIMARY AUTORIZADO POR EL PROPIETARIO (reemplaza gates historicos de microfase 3)
 
 El propietario ordena reanudar las microtareas DEV ahora. PRIMARY_01 existente de Javier es el unico escritor automatizado autorizado, SECONDARY_02 de Alex permanece revisor READ_ONLY. Se limita a solqaryn/Solqaryn, base dev, rama especifica por microtarea del Plan Comercial Inicial y PR contra dev. Prohibido merge autonomo, QA, main, PROD, Render, Vercel, secretos o cambios productivos.
 
