@@ -72,11 +72,22 @@ export function validateAuthority(input) {
     '1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU',
   ]);
   const activeSection = text => text.split(/^#{2,3}\s+Archivo hist[oó]rico\b/m)[0];
+  // Do not permit a forged "Archivo histórico" heading to hide the live
+  // operating header while substring-only checks still pass on the archive.
+  const liveMarkers = {
+    authority: ['CONTRACT_VERSION=2.0', 'AUTOMATION_RUNTIME=ACTIVE_DEV', 'SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1'],
+    AGENTS: ['AUTOMATION_RUNTIME=ACTIVE_DEV', 'TASK_DESIGN=AUTONOMOUS_3_JAVIER_3_ALEX'],
+    AUTOMATION_STATUS: ['AUTOMATION_RUNTIME=ACTIVE_DEV', 'SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1'],
+    PROJECT_SCOPE_LOCK: ['COMMERCIAL_AUTHORITY_MODE=CURRENT_PLAN_ONLY', 'LEGACY_MASTER_EXECUTABLE=FALSE'],
+  };
   for (const [name, text] of [
     ['authority', d.authority], ['AGENTS', d.agents],
     ['AUTOMATION_STATUS', d.status], ['PROJECT_SCOPE_LOCK', d.scope],
   ]) {
     const active = activeSection(text);
+    for (const marker of liveMarkers[name]) {
+      if (!active.split(/\r?\n/).includes(marker)) failures.push(name + ': live authority marker missing ' + marker);
+    }
     if (/\bSQ-\d{3}\b/.test(active))
       failures.push(name + ': historical SQ microtasks in active policy');
     for (const match of active.matchAll(/https:\/\/docs\.google\.com\/(?:document|spreadsheets)\/d\/([A-Za-z0-9_-]+)/g)) {
@@ -114,7 +125,8 @@ else if (process.argv.includes('--self-test')) {
     ['commercial plan switched', {scope:scope.replace('1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA','HISTORICAL_PLAN_ID')}],
     ['legacy SQ command in live AGENTS', {agents:agents.replace('TASK_DESIGN=AUTONOMOUS_3_JAVIER_3_ALEX','TASK_DESIGN=AUTONOMOUS_3_JAVIER_3_ALEX\nEXECUTE=SQ-123')}],
     ['historical Word made live in Scope Lock', {scope:scope.replace('LEGACY_MASTER_EXECUTABLE=FALSE','LEGACY_MASTER_EXECUTABLE=FALSE\nSOURCE=https://docs.google.com/document/d/1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j/edit')}],
-    ['unapproved Sheet made live in Status', {status:status.replace('SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1','SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1\nSOURCE=https://docs.google.com/spreadsheets/d/HISTORICAL_SHEET_123/edit')}]
+    ['unapproved Sheet made live in Status', {status:status.replace('SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1','SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1\nSOURCE=https://docs.google.com/spreadsheets/d/HISTORICAL_SHEET_123/edit')}],
+    ['archive heading cannot hide live runtime', {status:status.replace('AUTOMATION_RUNTIME=ACTIVE_DEV','## Archivo histórico\nAUTOMATION_RUNTIME=ACTIVE_DEV')}]
   ];
   for (const [label, override] of tests) {
     const errs = validateAuthority({...source,...override});
