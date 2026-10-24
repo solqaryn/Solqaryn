@@ -4,7 +4,15 @@
 - Regla nueva: ante defecto en VALIDANDO, el revisor lo corrige en la misma rama, vuelve a probar y conserva VALIDANDO; sus commits deben recibir revisión independiente, sin autoaprobación. Solo LISTO tras CI, merge protegido, Sheet y Bitácora libera dependencias.
 - Arquitectura: tres ramas permanentes y como máximo dos ramas temporales de trabajo, con `delete_branch_on_merge`; no rama almacén.
 - Contrato `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md`, proyecto Scope Lock STRICT, sin runtime VAEP.
-- M3.1 solamente prepara PR normativo; no crea cuatro Tasks ni afirma 6/6. M3.2 instalación real por cuentas; M3.3 prueba completa. PR #3734 preservado, independiente.
+- M3.1 solamente prepara PR normativo; no crea cuatro Tasks ni afirma 6/6. M3.2 instalación real por cuentas; M3.3 prueba completa. PR #3734 ya fusionado en dev (merge 17ca160ae5f2d1e20ef27b1820e670fbfb1099d8) y conservado íntegro en esta reconciliación.
+
+---
+
+## 2026-10-23 — P0-012.A | Conciliación de autoridad documental de SOLQARYN
+
+- Fuente única ejecutable: Plan Comercial Inicial Unificado V3 (Google Doc `1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA`), con `COMMERCIAL_AUTHORITY_MODE=CURRENT_PLAN_ONLY` y `LEGACY_MASTER_EXECUTABLE=FALSE` protegidos por tres pruebas negativas adicionales.
+- Se corrigen contradicciones entre el contrato del piloto `ACTIVE_DEV` fusionado por PR #3733 y afirmaciones históricas de microfases `RETIRED` en Scope Lock, AGENTS, Status y Authority. El antiguo Maestro y 10 Tasks retiradas carecen de autoridad operativa; una Primary puede presentar PRs en `dev`, Secondary los revisa sin escribir.
+- Alcance solo documental + validador Node, sin cambios en producto/BD/despliegues/Sheets/Tasks. Tests de contrato y Scope Lock exigidos por CI del PR; cierre P0-012.A sujeto a revisión, P0-012.B sigue pendiente.
 
 ---
 

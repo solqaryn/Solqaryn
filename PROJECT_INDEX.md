@@ -3,8 +3,18 @@
 - Gobierno activo: `AGENTS.md`, `docs/PROJECT_SCOPE_LOCK.md`, `docs/AUTOMATION_STATUS.md`.
 - Flujo canónico 3+3: `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md` (igualdad Javier/Alex, selector por dependencias LISTO, revisión primero, corrección por revisor, aprobación independiente, merge protegido, readback Sheet).
 - El techo físico son seis Tasks; solo dos existían antes de M3.2. No confundir techo, existencia, autorización ni ejecución.
-- Único ERP: rama `dev`, Scope Lock STRICT; tres ramas permanentes dev/qa/main y ramas `work/solqaryn-<scope>` temporales. PR #3734 no forma parte del rediseño.
+- Único ERP: rama `dev`, Scope Lock STRICT; tres ramas permanentes dev/qa/main y ramas `work/solqaryn-<scope>` temporales. PR #3734 integrado previamente en dev y preservado en la reconciliación del PR #3735.
 - Los motores antiguos retirados no son ejecutables. Fuentes posteriores de este archivo son snapshots de contexto previos.
+
+---
+
+## 2026-10-23 — P0-012.A | Autoridad documental del Plan Comercial Inicial
+
+- Microtarea `P0-012.A`, origen `PLAN_MAESTRO!A24:R24` y `COLA!A24:N24` del Sheet institucional: `P0`, `PENDIENTE`, sin dependencias previas, `DEPENDENCIAS_OK=SI` al iniciar el trabajo. La certificación independiente `P0-012.B` sigue pendiente y depende de esta entrega.
+- Se comprobó el merge del contrato [PR #3733](https://github.com/solqaryn/Solqaryn/pull/3733), HEAD base `3a98afbf290e8895e177861183b623ed3cb5bed0`; autoridad operativa viva en `docs/AUTOMATION_STATUS.md`: `AUTOMATION_RUNTIME=ACTIVE_DEV`, `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1`, VAEP y Jules sin autorizar. Únicamente la Primary de Javier puede preparar ramas/PRs DEV; Alex mantiene revisión separada READ_ONLY. No hay autorización de merge ni de QA/PROD.
+- `docs/PROJECT_SCOPE_LOCK.md` fija `COMMERCIAL_AUTHORITY_MODE=CURRENT_PLAN_ONLY` y `LEGACY_MASTER_EXECUTABLE=FALSE`: el único plan ejecutable es [STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES](https://docs.google.com/document/d/1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA/edit). El Maestro antiguo (SQ-000..SQ-353 y Word histórico) queda como visión futura no ejecutable; ninguna Task, Sheet ni documentacion histórica lo reactivan.
+- Se armonizaron `AGENTS.md`, `docs/PROJECT_SCOPE_LOCK.md`, `docs/AUTOMATION_STATUS.md` y `docs/AUTOMATION_AUTHORITY.md` para separar el piloto DEV vigente de los registros históricos M1-M3. Se ampliaron pruebas negativas en `scripts/validate-automation-authority.mjs` para impedir regresiones a autoridad histórica o cambio silencioso de fuente comercial.
+- Entrega no productiva: rama `work/solqaryn-p0-012-a` hacia `dev`; las pruebas efectivas y revisión independientes deben comprobarse en CI del PR antes de certificar `P0-012.B`. No se alteran ERP, base de datos, secretos, Sheets, despliegues ni otras ramas. Rollback: revertir únicamente los commits de este PR mediante nuevo PR protegido, sin reactivar autoridad heredada.
 
 ---
 

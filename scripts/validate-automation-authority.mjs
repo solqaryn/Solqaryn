@@ -34,7 +34,15 @@ export function validateAuthority(input) {
   ]);
   required(d.agents, 'AGENTS', ['PROJECT_SCOPE_LOCK=STRICT','AUTOMATION_RUNTIME=ACTIVE_DEV','docs/AUTOMATION_AUTHORITY.md','EJECUTOR_PRINCIPAL_01','EJECUTOR_PRINCIPAL_02']);
   required(d.status, 'AUTOMATION_STATUS', ['AUTOMATION_RUNTIME=ACTIVE_DEV','PILOT_TASK_LIMIT=6','VAEP_DISPATCH_AUTHORIZED=FALSE','JULES_WORKERS_AUTHORIZED=0','docs/AUTOMATION_AUTHORITY.md']);
-  required(d.scope, 'PROJECT_SCOPE_LOCK', ['PROJECT_SCOPE_LOCK=STRICT','REPOSITORY=solqaryn/Solqaryn','PILOT_TASK_LIMIT=6','docs/AUTOMATION_AUTHORITY.md']);
+  required(d.scope, 'PROJECT_SCOPE_LOCK', [
+    'PROJECT_SCOPE_LOCK=STRICT',
+    'REPOSITORY=solqaryn/Solqaryn',
+    'PILOT_TASK_LIMIT=6',
+    'docs/AUTOMATION_AUTHORITY.md',
+    'EXECUTION_PLAN_DRIVE_FILE_ID=1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA',
+    'COMMERCIAL_AUTHORITY_MODE=CURRENT_PLAN_ONLY',
+    'LEGACY_MASTER_EXECUTABLE=FALSE'
+  ]);
   const aCount=Number(d.authority.match(/^SCHEDULED_CHATGPT_TASKS_AUTHORIZED=(\d+)$/m)?.[1]);
   const sCount=Number(d.status.match(/^SCHEDULED_CHATGPT_TASKS_AUTHORIZED=(\d+)$/m)?.[1]);
   if (!Number.isInteger(aCount)||aCount<1||aCount>6||aCount!==sCount)
@@ -67,7 +75,10 @@ else if (process.argv.includes('--self-test')) {
     ['reactivate workers', {status:status.replace('JULES_WORKERS_AUTHORIZED=0','JULES_WORKERS_AUTHORIZED=5')}],
     ['missing authorized Task', {status:status.replace('SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1','SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0')}],
     ['wrong 3x3 cap', {scope:scope.replace('PILOT_TASK_LIMIT=6','PILOT_TASK_LIMIT=2')}],
-    ['no 3x3 agent routing', {agents:agents.replace('TASK_DESIGN=AUTONOMOUS_3_JAVIER_3_ALEX','TASK_DESIGN=DUAL_TASK')}]
+    ['no 3x3 agent routing', {agents:agents.replace('TASK_DESIGN=AUTONOMOUS_3_JAVIER_3_ALEX','TASK_DESIGN=DUAL_TASK')}],
+    ['legacy Master executable', {scope:scope.replace('LEGACY_MASTER_EXECUTABLE=FALSE','LEGACY_MASTER_EXECUTABLE=TRUE')}],
+    ['commercial authority substituted', {scope:scope.replace('COMMERCIAL_AUTHORITY_MODE=CURRENT_PLAN_ONLY','COMMERCIAL_AUTHORITY_MODE=LEGACY_MASTER')}],
+    ['commercial plan switched', {scope:scope.replace('1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA','HISTORICAL_PLAN_ID')}]
   ];
   for (const [label, override] of tests) {
     const errs = validateAuthority({...source,...override});

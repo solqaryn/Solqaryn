@@ -41,9 +41,9 @@ Control de colisiones: un solo escritor Primary con WIP=1, comprobar ramas/PR ac
 Esta habilitacion se vuelve efectiva unicamente al fusionar con checks obligatorios este contrato a dev y comprobar el HEAD nuevo. Los prompts programados deben validar la autoridad viva antes de escribir.
 ## Fuentes nativas vigentes
 
-Documento rector: [STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES](https://docs.google.com/document/d/1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA/edit). Seguimiento manual: [STANDARD DE AUTOMATIZACIONES EN SOLQARYN](https://docs.google.com/spreadsheets/d/1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU/edit). [STANDARD AUTORIDAD OPERATIVA VAEP](https://docs.google.com/document/d/1A525NGt09mBiZez_r6hFcdCYAdoOAwOZM--N0uXPBOQ/edit) es archivo histórico no ejecutable. No existen Tasks ni jobs con autoridad comercial. La instalación física de dos Tasks piloto READ_ONLY, diferenciada de su autorización operativa, se describe en microfase 3.
+Documento rector: [STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES](https://docs.google.com/document/d/1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA/edit). Seguimiento manual: [STANDARD DE AUTOMATIZACIONES EN SOLQARYN](https://docs.google.com/spreadsheets/d/1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU/edit). [STANDARD AUTORIDAD OPERATIVA VAEP](https://docs.google.com/document/d/1A525NGt09mBiZez_r6hFcdCYAdoOAwOZM--N0uXPBOQ/edit) es archivo histórico no ejecutable. El seguimiento comercial permanece en el Sheet institucional; el piloto DEV autoriza únicamente una Task escritora conocida hasta el readback individual de M3.2. Las dos Tasks originales existen como registros físicos. El diseño 3+3 no crea por sí mismo otras cuatro ni autoriza despliegues.
 
-## Estado vigente
+## Archivo histórico — retirada inicial (22-10-2026, no describe el runtime actual)
 
 El propietario confirmó el 22-10-2026 que eliminó las diez Tasks de ChatGPT y retiró la antigua hoja de control de Google Drive. Este repositorio no autoriza despachos, leases, reintentos ni trabajos comerciales automáticos. La eliminación de los cron VAEP y el escritor de admisión automática se integró en DEV mediante el PR #3713.
 
@@ -59,11 +59,11 @@ Del árbol actual de DEV se retiraron 1.499 archivos VAEP heredados, incluidas t
 
 Las pruebas de compilación, aislamiento multiempresa, seguridad, respaldo, frontend y regresiones causales siguen siendo controles técnicos. No deben depender de completar un roadmap anterior ni de la terminación de Tasks inexistentes. Las integraciones del ERP (incluida la funcionalidad comercial propia de automatizaciones M12) no se confunden con el motor retirado.
 
-## Contrato nuevo en preparación (microfase 1)
+## Archivo histórico — contrato de preparación de microfase 1 (sin vigencia operativa)
 
-`docs/AUTOMATION_AUTHORITY.md` define exclusivamente la política del piloto de doble ejecutor humano paritario (`EJECUTOR_PRINCIPAL_01` Javier / `EJECUTOR_PRINCIPAL_02` Alex; `PROPIETARIA_INSTITUCIONAL` SOLQARYN Platform). Ninguna Task se crea por esta referencia. Los valores de `AUTOMATION_RUNTIME=RETIRED`, `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0`, `VAEP_DISPATCH_AUTHORIZED=FALSE` y `JULES_WORKERS_AUTHORIZED=0` siguen siendo la única verdad operativa de esta fase. Las 4 microfases requieren cierres separados; el contrato no implica autorización de despliegue o escritura programada.
+`docs/AUTOMATION_AUTHORITY.md` define exclusivamente la política del piloto de doble ejecutor humano paritario (`EJECUTOR_PRINCIPAL_01` Javier / `EJECUTOR_PRINCIPAL_02` Alex; `PROPIETARIA_INSTITUCIONAL` SOLQARYN Platform). Ninguna Task se crea por esta referencia. En aquella microfase los valores `AUTOMATION_RUNTIME=RETIRED`, `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0`, `VAEP_DISPATCH_AUTHORIZED=FALSE` y `JULES_WORKERS_AUTHORIZED=0` eran la verdad operativa; la autoridad actual es exclusivamente el encabezado `ACTIVE_DEV` de este archivo, no este registro histórico. Las 4 microfases requieren cierres separados; el contrato no implica autorización de despliegue o escritura programada.
 
-## Enmienda v1.2 - 1 Primary Javier + 1 Secondary Alex
+## Archivo histórico — enmienda inicial v1.2 (sin activación)
 
 El contrato v1.2 autorizó inicialmente el *diseno* de dos Tasks,
 una por cuenta, antes de los readbacks físicos registrados en microfase 3: `PRIMARY_01` en ChatGPT Javier y `SECONDARY_02` en ChatGPT
@@ -72,13 +72,13 @@ Platform conserva la propiedad institucional. Los marcadores de plan
 `PILOT_TASK_LIMIT=2`, `PILOT_PRIMARY_TASKS=1` y `PILOT_SECONDARY_TASKS=1`
 NO prueban creacion ni autorizan cron, escritura, claims o revisiones.
 
-En esta enmienda sigue `AUTOMATION_RUNTIME=RETIRED`,
-`SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0`. Cada cuenta debe certificar
+En aquel corte de la enmienda se mantenían `AUTOMATION_RUNTIME=RETIRED` y
+`SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0`. Entonces cada cuenta debía certificar
 separadamente Task, identidad, conectores, programacion, readback y permisos
 en microfase 3. No recuperar un motor retirado ni crear ambas Tasks bajo
 Javier como alternativa a la cuenta independiente de Alex.
 
-## Microfase 2 - estructura de Google Sheets (23-10-2026)
+## Archivo histórico — microfase 2, estructura de Google Sheets (23-10-2026)
 
 MICROFASE_2_SHEETS_READBACK=PASS
 MICROFASE_2_SHEETS_ID=1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU
@@ -104,10 +104,10 @@ La evidencia exacta, huellas y alcance de rollback figuran en
 Esta constancia no significa que un PR este aprobado ni que las Tasks
 existan o esten habilitadas. Antes de cualquier fase posterior se
 requiere cierre por flujo GitHub protegido y autorizacion especifica.
-Permanecen `AUTOMATION_RUNTIME=RETIRED`,
-`SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0`, VAEP retirado y Jules cero.
+En aquel corte se mantenían `AUTOMATION_RUNTIME=RETIRED`,
+`SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0`, VAEP retirado y Jules cero. El encabezado de este documento conserva la autoridad operativa actual.
 
-## Microfase 3 — sincronización documental de Tasks piloto READ_ONLY (23-10-2026)
+## Archivo histórico — microfase 3 READ_ONLY, previa al piloto DEV (23-10-2026)
 
 **Inventario físico informado, independiente de autorización comercial:**
 
@@ -116,11 +116,11 @@ Permanecen `AUTOMATION_RUNTIME=RETIRED`,
 - Referencia única del plan: Google Doc `1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA`. Seguimiento único: Google Sheet `1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU` (`TAREAS_PROGRAMADAS!A2:Z3`, `CONFIG`, `BITACORA`); ambas cuentas humanas Javier y Alex tienen permiso `writer`, SOLQARYN Platform `owner`.
 - Contrato operativo v1.2, corrección [PR #3731](https://github.com/solqaryn/Solqaryn/pull/3731) ya incorporada: `RUN_ID` nativo puede sustituirse **solo en microfase 3 READ_ONLY** por `EVIDENCE_REF` auténtica de una ejecución individual, programada y finalizada, aceptada por revisor independiente. No inventar IDs ni acreditar `RUN_COMPLETED` con `last_run_time`.
 - **Certificación de ejecuciones individuales: 0/4** a la fecha de esta conciliación. `RUN_ID` y resultado finalizado no comprobados de manera suficiente en ambas cuentas. El informe de la Primary en [Issue #3730](https://github.com/solqaryn/Solqaryn/issues/3730) sigue siendo una publicación humana, no un certificado de run; Alex debe validar la fuente independiente.
-- Dos Tasks físicamente habilitadas **NO** equivalen a dos Tasks comercialmente autorizadas: prevalecen `AUTOMATION_RUNTIME=RETIRED`, `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0`, `VAEP_DISPATCH_AUTHORIZED=FALSE`, cinco capacidades `NO_ACTIVA` y prohibición de escrituras comerciales desde Tasks. La programación `:05` de Alex revisa la Primary `:30` de la hora anterior cuando exista una evidencia finalizada publicada.
+- En aquel corte dos Tasks físicamente habilitadas **NO** equivalían a dos Tasks comercialmente autorizadas: se mantenían `AUTOMATION_RUNTIME=RETIRED`, `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0`, `VAEP_DISPATCH_AUTHORIZED=FALSE` y cinco capacidades `NO_ACTIVA`. El piloto `ACTIVE_DEV` aprobado posteriormente permite **solo** a Primary abrir ramas y PRs de `dev` según la autoridad vigente; no reactiva VAEP, no autoriza despliegues ni añade Tasks. La programación `:05` de Alex revisa la Primary `:30` de la hora anterior cuando exista una evidencia finalizada publicada.
 
 Esta sección registra hechos observados y límites, no crea, modifica, habilita ni eleva el permiso de ninguna Task. Los resúmenes de microfase 2 anteriores son fotografías históricas; para estado operativo manda esta sección y la lectura actual de proveedores, con la autorización global limitada por las claves de inicio de documento.
 
-## Volver a automatizar en el futuro
+## Automatización adicional futura, fuera del único piloto DEV
 
 Requerirá un contrato nuevo, aprobación del propietario, diseño explícito de concurrencia y derechos de escritura, aislamiento de credenciales, pruebas de cierre causal y una configuración nueva comprobada. Ningún archivo de este estado produce activaciones.
 

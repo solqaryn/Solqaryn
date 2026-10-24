@@ -10,6 +10,8 @@ LOCAL_SKILL=.agents/skills/solqaryn-project-governance/SKILL.md
 EXTERNAL_PROJECT_CONTEXT=DENY_BY_DEFAULT
 CONTEXT_MODE=CURRENT_STATE_ONLY
 EXECUTION_PLAN_DRIVE_FILE_ID=1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA
+COMMERCIAL_AUTHORITY_MODE=CURRENT_PLAN_ONLY
+LEGACY_MASTER_EXECUTABLE=FALSE
 PILOT_TASK_LIMIT=6
 
 ## Alcance actual
@@ -18,7 +20,7 @@ La fuente comercial aprobada es `STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES
 
 ## Autoridad actual de microfase 3
 
-`docs/AUTOMATION_AUTHORITY.md` regula el piloto DEV y el diseño 3+3 autorizado: `PROPIETARIA_INSTITUCIONAL` = SOLQARYN Platform; `EJECUTOR_PRINCIPAL_01` = Javier y `EJECUTOR_PRINCIPAL_02` = Alex con derechos humanos paritarios, sin jerarquía ni herencia de sesiones o permisos de Tasks. El estado de ejecución y el contador efectivo autorizados siguen únicamente en `docs/AUTOMATION_STATUS.md`. El límite de seis es techo de diseño, no acredita instalación ni concede permisos por sí solo. Las reglas completas residen en `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md`.
+`docs/AUTOMATION_AUTHORITY.md` regula el piloto DEV y el diseño 3+3 autorizado: `PROPIETARIA_INSTITUCIONAL` = SOLQARYN Platform; `EJECUTOR_PRINCIPAL_01` = Javier y `EJECUTOR_PRINCIPAL_02` = Alex con derechos humanos paritarios, sin jerarquía ni herencia de sesiones o permisos de Tasks. El estado de ejecución y el contador efectivo autorizados siguen únicamente en `docs/AUTOMATION_STATUS.md`. El límite de seis es techo de diseño, no acredita instalación ni concede permisos por sí solo. `COMMERCIAL_AUTHORITY_MODE=CURRENT_PLAN_ONLY` y `LEGACY_MASTER_EXECUTABLE=FALSE` permanecen controles obligatorios, y la única fuente comercial es el Documento vigente. Las reglas completas residen en `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md`.
 
 ## Identidad, código y seguridad
 
@@ -28,10 +30,16 @@ El trabajo ordinario se hace en `dev` por PR protegido. Nunca usar force-push, a
 
 Las restricciones de seguridad del producto no son hitos de un roadmap antiguo: permanecen mientras la funcionalidad protegida exista. Las validaciones históricas que exigen certificaciones de fases anteriores deben ejecutarse manualmente o sustituirse por regresiones actuales relevantes, no bloquear cada nuevo cambio sin causa.
 
-### Enmienda histórica 1.2: dos Tasks (no vigente para la topología)
+### Archivo histórico 1.2 — dos Tasks (no vigente para la topología 3+3)
 
-`PRIMARY_01` pertenece a la cuenta de Javier; `SECONDARY_02` a la cuenta
-de Alex. El antiguo límite de dos se sustituyó por topología objetivo 3+3 en microfase 3. No equivale a seis Tasks instaladas ni autoriza escrituras sin comprobación individual. `PROJECT_SCOPE_LOCK=STRICT` conserva la propiedad institucional y los permisos efectivos por cuenta.
+`PRIMARY_01` corresponde a Javier y `SECONDARY_02` a Alex. En el
+piloto anterior, una Task escritora DEV y una Secondary READ_ONLY eran la
+capacidad autorizada; esa fotografía no limita el nuevo diseño 3+3.
+Ninguna Task inexistente obtiene permisos por el mero cambio del techo a 6.
+`PROJECT_SCOPE_LOCK=STRICT` conserva identidad, propiedad institucional,
+aislamiento de datos y los permisos efectivos por cuenta. El Maestro
+anterior (`SQ-000` a `SQ-353` y Word histórico) es visión futura
+NO EJECUTABLE, jamás fuente de microtareas ni autorizaciones.
 
 ## Control de cambios
 
