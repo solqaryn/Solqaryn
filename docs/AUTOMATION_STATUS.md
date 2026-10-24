@@ -24,6 +24,14 @@ PHYSICAL_TASKS_REGISTERED=6
 MAX_CONCURRENT_SCOPES=2
 LEGACY_AUTOMATION_RUNTIME=RETIRED
 
+## M3.2 — habilitación diagnóstica limitada para PRIMARY_DEV_02 (:20, Javier)
+
+**Task individual:** `6adc2e4bd8a48191ac7d8641ed95a1a3`, propietaria `JAVIER_CHATGPT`, programada cada hora a :20 (`America/Tegucigalpa`), `is_enabled=true`. El usuario aportó un informe de su ejecución del 24-10-2026 con `GH_READ=PASS`, `DRIVE_READ=PASS`, `GH_WRITE=NO_AUTORIZADO` y `DRIVE_WRITE=NO_AUTORIZADO`; `automations.peek` confirmó `last_run_time=2026-10-24T18:26:56.644003Z`. Estas lecturas fueron **reportadas** desde la ejecución y conciliadas por Javier en `TAREAS_PROGRAMADAS!O4:Z4` y `BITACORA!A51:Z51`; no son una prueba de escritura ni permiten atribuir conexiones interactivas a la Task.
+
+**Autorización condicionada:** tras integrar mediante PR protegido y revisión independiente esta enmienda al HEAD actual de `dev`, el propietario permite **una prueba de escritura no comercial y estrictamente delimitada** únicamente desde esta Task, según `docs/AUTOMATION_AUTHORITY.md`, sección «Concesión de prueba M3.2 PRIMARY_DEV_02». Esta excepción no permite desarrollo comercial, cambios a `dev`, PR funcionales, trabajo de otras Tasks, escalamiento de permisos del proveedor ni bypass de sus protecciones.
+
+**Estado hasta readback real:** `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1`, `PHYSICAL_TASKS_REGISTERED=6`, `ACTIVE_DEV_WRITERS_OBSERVED=1` y `CONFIG!B57=FALSE` continúan intactos. La habilitación diagnóstica no certifica `GH_WRITE` de código ni `DRIVE_WRITE` hasta que una ejecución autentique la operación y sus lecturas posteriores; tampoco concede a la Task acceso que el proveedor niegue. Antes de cualquier autorización comercial individual hace falta verificar capacidades de escritura para crear rama/commit/PR en GitHub y editar el Sheet institucional de forma controlada, y entonces conciliar GitHub/Sheet mediante un nuevo cambio protegido. `PASS_M3_2_CERTIFICADA` permanece pendiente.
+
 ## Estado de microfase 3.2 — seis Tasks físicas, autorización operativa parcial
 
 El diseño simétrico 3+3 v2.0 fue integrado en PR #3735. La microfase 3.2 confirmó seis Tasks físicas de identidad única y horarios intercalados, incluidas las dos originales con ID conservado. `PHYSICAL_TASKS_REGISTERED=6` procede de lectura nativa Javier (3/3) y readback aportado por Alex (3/3) con conciliación en Google Sheets. `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1` sigue siendo el contador de autorización conocido: habilitación y programación no equivalen a permisos efectivos en ejecución. Las cinco Tasks restantes siguen pendientes de validación operativa individual, sin concederles escritura por esta modificación. El contrato normativo es `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md`.
