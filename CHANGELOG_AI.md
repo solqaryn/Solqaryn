@@ -1,7 +1,7 @@
 ## 2026-10-23 — P0-012.B: cierre de superficie de autoridad comercial en DEV
 
 - Se añadió control de regresión a `scripts/validate-automation-authority.mjs`: rechazar IDs ejecutivos SQ históricos en los encabezados operativos y enlaces Google Docs/Sheets distintos del plan rector y Sheet institucional.
-- Se agregaron tres mutaciones negativas contra referencias ejecutivas históricas y fuentes Google no autorizadas; el workflow `project-scope-lock.yml` ya ejecuta el self-test del validador.
+- Se agregaron cuatro mutaciones negativas contra referencias ejecutivas históricas, fuentes Google no autorizadas y eludir controles mediante un encabezado de archivo anticipado; los marcadores operativos se verifican en el tramo activo. El workflow `project-scope-lock.yml` ejecuta el self-test.
 - Documento de trazabilidad y criterios de cierre `docs/P0-012-B-AUTHORITY-CERTIFICATION.md` con fuentes reales (Google Docs, Google Sheets y HEAD de dev), límite de alcance y pendientes de revisión.
 - Cambio sin tocar producto, base de datos, permisos, QA/main/PROD, despliegues ni motores históricos. P0-012.B debe permanecer VALIDANDO hasta CI exact-HEAD, revisión independiente, merge protegido y readback de Sheets.
 
