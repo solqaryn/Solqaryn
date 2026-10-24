@@ -63,7 +63,7 @@ export function validateAuthority(input) {
   if (!/^AUTOMATION_RUNTIME=ACTIVE_DEV$/m.test(d.status)) failures.push('3x3 DEV runtime mismatch');
   if (!d.authority.includes('docs/AUTOMATION_3X3_OPERATING_CONTRACT.md') || !d.agents.includes('TASK_DESIGN=AUTONOMOUS_3_JAVIER_3_ALEX')) failures.push('3x3 contract routing');
   if (/VAEP_DISPATCH_AUTHORIZED\s*=\s*TRUE/.test(d.status)) failures.push('VAEP must remain retired');
-  if (/JULES_WORKERS_AUTHORIZED\\s*=\\s*[1-9]/.test(d.status)) failures.push('Jules worker reactivation forbidden');
+  if (/JULES_WORKERS_AUTHORIZED\s*=\s*[1-9]/.test(d.status)) failures.push('Jules worker reactivation forbidden');
   // P0-012.B: the operational policy must not route executable work to
   // legacy SQ identifiers or to a second Google Doc/Sheet. Historical
   // sections remain available for audit but have no execution authority.
@@ -71,15 +71,15 @@ export function validateAuthority(input) {
     '1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA',
     '1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU',
   ]);
-  const activeSection = text => text.split(/^#{2,3}\\s+Archivo hist[oó]rico\\b/m)[0];
+  const activeSection = text => text.split(/^#{2,3}\s+Archivo hist[oó]rico\b/m)[0];
   for (const [name, text] of [
     ['authority', d.authority], ['AGENTS', d.agents],
     ['AUTOMATION_STATUS', d.status], ['PROJECT_SCOPE_LOCK', d.scope],
   ]) {
     const active = activeSection(text);
-    if (/\\bSQ-\\d{3}\\b/.test(active))
+    if (/\bSQ-\d{3}\b/.test(active))
       failures.push(name + ': historical SQ microtasks in active policy');
-    for (const match of active.matchAll(/https:\\/\\/docs\\.google\\.com\\/(?:document|spreadsheets)\\/d\\/([A-Za-z0-9_-]+)/g)) {
+    for (const match of active.matchAll(/https:\/\/docs\.google\.com\/(?:document|spreadsheets)\/d\/([A-Za-z0-9_-]+)/g)) {
       if (!approvedGoogleIds.has(match[1]))
         failures.push(name + ': unauthorized Google authority document ' + match[1]);
     }
@@ -112,9 +112,9 @@ else if (process.argv.includes('--self-test')) {
     ['legacy Master executable', {scope:scope.replace('LEGACY_MASTER_EXECUTABLE=FALSE','LEGACY_MASTER_EXECUTABLE=TRUE')}],
     ['commercial authority substituted', {scope:scope.replace('COMMERCIAL_AUTHORITY_MODE=CURRENT_PLAN_ONLY','COMMERCIAL_AUTHORITY_MODE=LEGACY_MASTER')}],
     ['commercial plan switched', {scope:scope.replace('1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA','HISTORICAL_PLAN_ID')}],
-    ['legacy SQ command in live AGENTS', {agents:agents.replace('TASK_DESIGN=AUTONOMOUS_3_JAVIER_3_ALEX','TASK_DESIGN=AUTONOMOUS_3_JAVIER_3_ALEX\\nEXECUTE=SQ-123')}],
-    ['historical Word made live in Scope Lock', {scope:scope.replace('LEGACY_MASTER_EXECUTABLE=FALSE','LEGACY_MASTER_EXECUTABLE=FALSE\\nSOURCE=https://docs.google.com/document/d/1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j/edit')}],
-    ['unapproved Sheet made live in Status', {status:status.replace('SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1','SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1\\nSOURCE=https://docs.google.com/spreadsheets/d/HISTORICAL_SHEET_123/edit')}]
+    ['legacy SQ command in live AGENTS', {agents:agents.replace('TASK_DESIGN=AUTONOMOUS_3_JAVIER_3_ALEX','TASK_DESIGN=AUTONOMOUS_3_JAVIER_3_ALEX\nEXECUTE=SQ-123')}],
+    ['historical Word made live in Scope Lock', {scope:scope.replace('LEGACY_MASTER_EXECUTABLE=FALSE','LEGACY_MASTER_EXECUTABLE=FALSE\nSOURCE=https://docs.google.com/document/d/1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j/edit')}],
+    ['unapproved Sheet made live in Status', {status:status.replace('SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1','SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1\nSOURCE=https://docs.google.com/spreadsheets/d/HISTORICAL_SHEET_123/edit')}]
   ];
   for (const [label, override] of tests) {
     const errs = validateAuthority({...source,...override});
