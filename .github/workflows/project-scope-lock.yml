@@ -28,3 +28,25 @@ jobs:
         run: node scripts/validate-dual-task-configuration.mjs --self-test
       - name: Reject artificial Render keep-alive
         run: node scripts/validate-render-free-policy.mjs
+
+  verify-p0-007-a-component-catalog:
+    name: P0-007.A - Catalogo Angular exact-HEAD (solo lectura)
+    if: github.ref == 'refs/heads/dev' || (github.event_name == 'pull_request' && github.base_ref == 'dev')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout commit exacto
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Ejecutar catalogo y casos negativos sobre HEAD exacto
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          actual_sha="$(git rev-parse HEAD)"
+          test "$actual_sha" = "$EXPECTED_SHA"
+          echo "P0_007_A_TESTED_SHA=$actual_sha"
+          node scripts/verify-p0-007-a-component-catalog.mjs --self-test
