@@ -1,0 +1,39 @@
+name: SOLQARYN DEV - Vercel consolidated release
+
+on:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: 'Optional exact current dev HEAD (blank = latest dev HEAD). No historical or QA/PROD SHAs.'
+        required: false
+        type: string
+  schedule:
+    - cron: '53 * * * *'
+
+permissions:
+  contents: read
+  checks: read
+
+concurrency:
+  group: solqaryn-dev-vercel-consolidated
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout protected DEV policy
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Verify release policy and negative tests without secrets
+        run: node scripts/dev-vercel-release.mjs --self-test
+      - name: Publish selected consolidated SHA to Vercel project DEV only
+        run: node scripts/dev-vercel-release.mjs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          REQUESTED_SHA: ${{ inputs.sha || '' }}
