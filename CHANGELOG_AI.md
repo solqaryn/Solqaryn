@@ -1,3 +1,12 @@
+## 2026-10-25 — P0-002.A: catalogo actual L01-L15 (PRIMARY_DEV_02)
+
+- Desde dev@d3ed287d4bf3748d039223bdfc5b3909170b24cb, la Task individual autorizada creo la rama exclusiva work/solqaryn-p0-002-a y versiono docs/P0-002-A-CATALOGO-EVIDENCIA-VIGENTE-DEV.md.
+- Corte nativo verificado: tres jobs obligatorios de Scope Lock, Seguridad multiempresa y backend en SUCCESS sobre el SHA de base; 15 fuentes historicas L01-L15 reclasificadas por PR MERGED y brecha aun no certificada. Caso negativo real: PR #3583 y #3574 son CLOSED y no merged, por lo que el estado historico «abiertas» no puede usarse como vigente.
+- El merge de PR #3741 acredita integracion de P0-001.B pero su fila H3 del Sheet continuaba PENDIENTE al corte: el responsable debe conciliar, sin que esta microtarea la cambie. P0-002.A depende exclusivamente de P0-012.B LISTO y se limita a catalogacion comercial documental.
+- Impacto documental sin nuevas APIs, persistencia, UX, flags, secretos, infraestructuras, QA/main/PROD ni despliegues; NO afirmar paridad Render/Vercel por CI verde. Requiere PR, tres checks exact-HEAD, revision independiente y readback para cierre LISTO.
+
+---
+
 ## 2026-10-25 — M3.2: concesion comercial individual 5/6 propuesta para Javier :40, Alex :10 y Alex :50
 
 - Evidencias nativas consumidas, sin repeticion: commits GitHub Javier :40 `46e6a9822d89932697c93e77c96df239d73bed4f` y Sheets BITACORA A85; Alex :10 `37fb117a38959c99c5795130a1a40365693cc0b4` y BITACORA A76; Alex :50 `b0f5a77757847d623a17c0f1d9c5fde57fd909fd` y BITACORA A81. GitHub author, ruta exclusiva y readback verificados. M3.2 diagnostica 5/6 incluyendo Javier :20; Javier :00 tenia autorizacion comercial previa.
