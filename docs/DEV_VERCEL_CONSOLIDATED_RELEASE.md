@@ -25,6 +25,12 @@ El job lee la configuración de `frontend/vercel.json`, ejecuta su suite negativ
 4. Separar aceptación del **código** (CI/PR/merge) de aceptación del **despliegue** (estado READY + SHA y pruebas HTTP cuando el scope las exija). Una microtarea como P0-001.B que requiere paridad Render/Vercel no pasa a `LISTO` solo porque la publicación está programada.
 5. Leer los eventos del deployment si el proveedor rechaza el job; no repetir a ciegas cuando haya límite Hobby. El target y la ruta siempre son DEV.
 
+## 3.1. Cuota Hobby compartida y evidencia negativa real
+
+El 25-10-2026, el proveedor respondió a una solicitud de despliegue explícito del HEAD protegido `08f84a3b096325b05702a44630f0c2fdb0c1fc4c` con `402 payment_required`, código `api-deployments-free-per-day` y `retryAfter=86400`: **no se obtuvo `READY` ni deployment ID nuevo**. En los últimos cien intentos visibles del equipo SOLQARYN había 32 del proyecto DEV, 34 de QA y 34 de PROD, todos `CANCELED`, principalmente porque se dispararon en ramas que el Ignored Build Step rechazaba. Los tres proyectos comparten la cuota del equipo. Esta observación es histórica, no prueba la capacidad futura.
+
+Para evitar intentar publicaciones inútiles cada hora, `scripts/dev-vercel-release.mjs` hace una consulta **de solo lectura** al conjunto de deployments del equipo; si hay 95 o más intentos en la ventana de 24 horas, omite la llamada de creación y declara `NO_READY_ATTESTED`. La ejecución no infiere un límite distinto al que informe Vercel ni cambia permisos o proyectos QA/PROD. El resultado `READY` debe provenir de una nueva publicación exitosa y del SHA real, nunca de las pruebas offline.
+
 ## 4. Recuperación
 
 Rollback de política mediante PR protegido que revierte exclusivamente `git.deploymentEnabled.dev=false` y workflow/script, luego actualización explícita de la configuración de previews del proyecto DEV si se desea reactivar ese comportamiento. No se usa `force-push`, no se despliega QA/PROD y no se cancela trabajo ajeno.
