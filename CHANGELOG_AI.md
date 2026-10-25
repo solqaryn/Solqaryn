@@ -5,6 +5,11 @@
 - Contrato operativo, AGENTS, dos autoridades y script 3×3 actualizados con pruebas negativas de techo global, sexto cupo lleno, dos scopes por Task, un escritor, READY/VALIDANDO y revisión primero. No se modifican algoritmos ERP, frontend/backend, DB, RBAC, GitHub rulesets, permisos o programaciones de Tasks, Sheets comercial, QA/main/PROD, Render/Vercel ni secretos. Los PR de gobierno y diagnósticos continúan fuera del WIP.
 - Se conserva procedimiento de PR protegido, CI exact SHA y aprobación independiente; cualquier rollback requiere PR protegido y readback de WIP real, nunca eliminar ramas legítimas.
 
+## 2026-10-25 — P0-009.B: prueba negativa cuota/CI por entorno (SECONDARY_REVIEW_01)
+
+- Task 6adbbc9ad9e88191bea8eb69104afb25 / morales35alex agrega prueba Node sintética para preservar un fallo histórico de cuota sin equipararlo con paridad Render/Vercel ni aprobar PROD no verificado. Reutiliza P0-009.A desde dev@9a558516be56980d0673654bf96e6bf1e537ea00; flujo aislado de GitHub Actions contents:read.
+- No se consultan QA/main/PROD, proveedor Vercel, infraestructura ni secretos. CI 3/3, revisión independiente, merge protegido dev y readback institucional requeridos antes de LISTO.
+
 ## 2026-10-25 — P0-007.B: separación de evidencia estática y UX (SECONDARY_REVIEW_01)
 
 - Task 6adbbc9ad9e88191bea8eb69104afb25 (GitHub morales35alex) añade acta de certificación negativa, script Node de seis fixtures y workflow aislado sobre el inventario de 137 componentes de P0-007.A, desde dev@05cfd207279fac6feca768f6e9cf743da513d812.
