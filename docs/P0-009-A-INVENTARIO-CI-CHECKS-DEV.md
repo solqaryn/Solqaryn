@@ -31,7 +31,7 @@ El atributo target=production en registros del proyecto llamado solqaryn-dev es 
 1. El Plan solicita guardar 48/48 y 21/21. **NO se comprobó que esas cifras correspondan al HEAD actual.** Los jobs de CI exactos exhiben 943/943 y 2902/2902; NO sustituir pruebas ni presentar 48/48 y 21/21 como resultados nuevos. Se conserva su condición histórica NO_REVALIDADA hasta obtener logs específicos.
 2. No convertir CI SUCCESS en equivalencia Vercel/Render ni en READY para el SHA actual. Un READY de SHA anterior o CANCELED de SHA más reciente es negativo para paridad. El gate de P0-001.B permanece independiente.
 3. No inferir aprobación formal independiente del parámetro 0 del ruleset. Exigir otro login real, commit SHA final, checks 3/3 y merge protegido.
-4. Script reproducible: scripts/verify-p0-009-a-ci-evidence.mjs --self-test, un fixture positivo y seis mutaciones negativas: check ausente, SHA ajeno, deployment CANCELED, READY de otro SHA, self-review y revisión de commit antiguo. PASS en Node efímero local el 25-10-2026. Es prueba sintética de fail-closed, NO lectura del proveedor; sin checkout/CI dirigido del script no afirmar que lo ejecutó GitHub Actions.
+4. Script reproducible: scripts/verify-p0-009-a-ci-evidence.mjs --self-test, un fixture positivo y ocho mutaciones negativas: check requerido ausente, check de SHA ajeno, deployment CANCELED, READY con SHA ajeno, revisión por el autor, revisión por el último contribuyente, aprobación de commit antiguo y PR sin SHA. PASS en Node efímero local el 25-10-2026. Es prueba sintética de fail-closed, NO lectura del proveedor; sin checkout/CI dirigido del script no afirmar que lo ejecutó GitHub Actions.
 
 ## Impacto y cierre
 
