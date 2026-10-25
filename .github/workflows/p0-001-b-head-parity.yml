@@ -1,0 +1,31 @@
+name: P0-001.B - Certificacion negativa de HEAD DEV (read-only)
+
+on:
+  pull_request:
+    branches: [dev]
+    paths:
+      - 'docs/P0-001-B-CERTIFICACION-NEGATIVA-HEAD-DEV.md'
+      - 'docs/baselines/P0-001-B-DEV-20261025-REFRESCO-PRIMARY03.json'
+      - 'scripts/verify-p0-001-b-parity.mjs'
+      - '.github/workflows/p0-001-b-head-parity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  negative-parity:
+    name: P0-001.B - Snapshot exact-SHA y negativos
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validar snapshot actual sin proveedores ni secretos
+        run: node scripts/verify-p0-001-b-parity.mjs --snapshot P0-001-B-DEV-20261025-REFRESCO-PRIMARY03.json --self-test
+      - name: Preservar regresion sobre snapshot historico
+        run: node scripts/verify-p0-001-b-parity.mjs --self-test
