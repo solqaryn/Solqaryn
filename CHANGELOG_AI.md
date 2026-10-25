@@ -1,3 +1,12 @@
+## 2026-10-25 — P0-002.A: catalogo actual L01-L15 (PRIMARY_DEV_02)
+
+- Desde dev@d3ed287d4bf3748d039223bdfc5b3909170b24cb, la Task individual autorizada creo la rama exclusiva work/solqaryn-p0-002-a y versiono docs/P0-002-A-CATALOGO-EVIDENCIA-VIGENTE-DEV.md.
+- Corte nativo verificado: tres jobs obligatorios de Scope Lock, Seguridad multiempresa y backend en SUCCESS sobre el SHA de base; 15 fuentes historicas L01-L15 reclasificadas por PR MERGED y brecha aun no certificada. Caso negativo real: PR #3583 y #3574 son CLOSED y no merged, por lo que el estado historico «abiertas» no puede usarse como vigente.
+- El merge de PR #3741 acredita integracion de P0-001.B pero su fila H3 del Sheet continuaba PENDIENTE al corte: el responsable debe conciliar, sin que esta microtarea la cambie. P0-002.A depende exclusivamente de P0-012.B LISTO y se limita a catalogacion comercial documental.
+- Impacto documental sin nuevas APIs, persistencia, UX, flags, secretos, infraestructuras, QA/main/PROD ni despliegues; NO afirmar paridad Render/Vercel por CI verde. Requiere PR, tres checks exact-HEAD, revision independiente y readback para cierre LISTO.
+
+---
+
 ## 2026-10-25 — P0-001.B: negativa de paridad Render/Vercel DEV (PR pendiente)
 
 - Rama exclusiva `work/solqaryn-p0-001-b` desde `dev@05e6a67a7bbbd2a94b4aeaf1322258ece90c730b`. Scope: snapshot inmutable, validador offline y acta de negativa para `PLAN_MAESTRO!A3`.
