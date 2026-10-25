@@ -2,6 +2,7 @@
 
 - Task `6adbb9fff1548191a1bd5b30d9e9984a` (`jmejia31`) agrega `scripts/verify-p0-006-b-route-guards.mjs` y `docs/P0-006-B-CERTIFICACION-NEGATIVA-RUTAS-DEV.md` desde `dev@bafcde53ce2562f70d5b4115184df51e5c48483d`. Invariantes estáticos: 92 `path`, 90 `loadComponent`, 2 redirects, 39 enlaces, guards sobre rutas privadas y ausencia de matcher público raíz `:slug`; cuatro mutaciones negativas detectadas en evaluación de fuentes GitHub. El script reproducible requiere ejecución nativa sobre checkout para cierre formal.
 - No altera frontend/backend/routing, QA/main/PROD, datos, credenciales ni despliegues. No equiparar prueba estática con E2E/tenant/backend RBAC ni declarar `LISTO` antes de CI 3/3 exact HEAD, revisión independiente, merge protegido y readback Sheets.
+- Workflow P0-006.B aislado (permissions contents:read) añade prueba nativa del self-test Node sobre checkout del PR. Publicar el workflow NO constituye prueba ejecutada; CI exact-SHA y revisión independiente siguen obligatorios.
 
 ## 2026-10-25 — P0-007.A: inventario de 137 archivos de componentes Angular (SECONDARY_REVIEW_01)
 

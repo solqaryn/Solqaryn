@@ -30,6 +30,10 @@ Ejecutar, en un checkout de la **rama del PR**: `node scripts/verify-p0-006-b-ro
 
 ## Impacto, reversión y cierre
 
-Impacto: `scripts/verify-p0-006-b-route-guards.mjs`, esta acta y `CHANGELOG_AI.md`; ninguna API, DTO, tabla, migración, endpoint, guard o servicio es modificado. Consumidores: revisores de CI y mantenimiento de navegación. Seguridad: prueba de regresión sobre patrones/guards existentes, sin cambiar JWT/RBAC/PII. Observabilidad: evidencia de SHA, PR, checks y Sheet.
+Impacto: `scripts/verify-p0-006-b-route-guards.mjs`, `.github/workflows/p0-006-b-route-guards.yml`, esta acta y `CHANGELOG_AI.md`; ninguna API, DTO, tabla, migración, endpoint, guard o servicio es modificado. Consumidores: revisores de CI y mantenimiento de navegación. Seguridad: prueba de regresión sobre patrones/guards existentes, sin cambiar JWT/RBAC/PII. Observabilidad: evidencia de SHA, PR, checks y Sheet.
 
 **Rollback:** revert protegido del script/acta/changelog sobre `dev`, sin tocar frontend de producción ni datos. El PR debe someterse a revisión de otra identidad GitHub, Scope Lock, seguridad y backend **3/3 SUCCESS del HEAD exacto**, y merge protegido antes de declarar `LISTO`. El readback de `PLAN_MAESTRO/COLA/BITACORA` es obligatorio. Hasta entonces: `VALIDANDO`.
+
+## Ejecución nativa dirigida en CI del PR
+
+Se incorpora el workflow mínimo `.github/workflows/p0-006-b-route-guards.yml`, limitado a eventos `pull_request` sobre `dev` cuando cambian los guardas, rutas, el validador o el propio workflow. `permissions: contents: read`; utiliza `actions/checkout@v4` y Node 24.21.0, sin instalar dependencias, escribir datos ni desplegar. El comando obligatorio es `node scripts/verify-p0-006-b-route-guards.mjs --self-test` sobre el checkout del SHA del PR. El job es evidencia adicional, **no reemplaza** los tres checks protegidos, aprobación GitHub independiente, merge ni conciliación Sheets. Registrar su resultado real solo cuando GitHub Actions lo confirme; no presumir PASS al publicar YAML. La reversión del changeset debe incluir este workflow.
