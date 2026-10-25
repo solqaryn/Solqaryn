@@ -1,3 +1,8 @@
+## 2026-10-25 — P0-006.B: prueba negativa de matcher público y guards DEV (PRIMARY_DEV_01)
+
+- Task `6adbb9fff1548191a1bd5b30d9e9984a` (`jmejia31`) agrega `scripts/verify-p0-006-b-route-guards.mjs` y `docs/P0-006-B-CERTIFICACION-NEGATIVA-RUTAS-DEV.md` desde `dev@bafcde53ce2562f70d5b4115184df51e5c48483d`. Invariantes estáticos: 92 `path`, 90 `loadComponent`, 2 redirects, 39 enlaces, guards sobre rutas privadas y ausencia de matcher público raíz `:slug`; cuatro mutaciones negativas detectadas en evaluación de fuentes GitHub. El script reproducible requiere ejecución nativa sobre checkout para cierre formal.
+- No altera frontend/backend/routing, QA/main/PROD, datos, credenciales ni despliegues. No equiparar prueba estática con E2E/tenant/backend RBAC ni declarar `LISTO` antes de CI 3/3 exact HEAD, revisión independiente, merge protegido y readback Sheets.
+
 ## 2026-10-25 — P0-006.A: inventario de 92 rutas Angular y 39 enlaces DEV (SECONDARY_REVIEW_03)
 
 - Task `6adcc98a80a48191b71a5156624c21df` (GitHub `morales35alex`) documenta en `docs/P0-006-A-INVENTARIO-RUTAS-ADMIN-DEV.md` las 92 declaraciones `path` del router principal, 90 lazies y 2 redirecciones; cruza 39 `routerLink` con módulos registrados y capacidades RBAC. Base comprobada `dev@6de952a43dda3449a9c6756d3c567374d686c5df`.
