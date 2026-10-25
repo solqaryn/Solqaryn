@@ -37,6 +37,13 @@ function recentRelease(deployments, now) {
     now - Number(d.created ?? d.createdAt) >= 0 &&
     now - Number(d.created ?? d.createdAt) < 3600000);
 }
+// Vercel Hobby daily quota is shared by DEV, QA and PROD. Read-only guard.
+function teamQuotaHeadroom(all, now) {
+  const count = all.filter(d => Number.isFinite(Number(d.created ?? d.createdAt)) &&
+    now - Number(d.created ?? d.createdAt) >= 0 &&
+    now - Number(d.created ?? d.createdAt) < 86400000).length;
+  return count < 95;
+}
 async function requestJson(url, token, opts = {}) {
   const resp = await fetch(url, { ...opts, headers: {
     Accept: 'application/json', Authorization: 'Bearer ' + token,
@@ -60,6 +67,8 @@ async function main() {
     assert.equal(matchesReady({state:'READY',gitSource:{sha:'b'.repeat(40)}},sha),false);
     assert.equal(recentRelease([{created:Date.now()-300000,meta:{solqarynConsolidatedDev:'true'}}],Date.now()),true);
     assert.equal(recentRelease([{created:Date.now()-3900000,meta:{solqarynConsolidatedDev:'true'}}],Date.now()),false);
+    assert.equal(teamQuotaHeadroom(Array.from({length:95},()=>({created:Date.now()-1000})),Date.now()),false);
+    assert.equal(teamQuotaHeadroom(Array.from({length:94},()=>({created:Date.now()-1000})),Date.now()),true);
     console.log('DEV_VERCEL_RELEASE_POLICY_SELF_TEST=PASS');
     return;
   }
@@ -80,6 +89,11 @@ async function main() {
   const recent = await requestJson(url + '/v6/deployments?teamId=' + TEAM + '&projectId=' + PROJECT + '&limit=100',vt);
   const deployments = recent.deployments || [];
   if (deployments.some(d => matchesReady(d,sha))) { console.log('ALREADY_READY_SHA=' + sha); return; }
+  const teamList = await requestJson(url+'/v6/deployments?teamId='+TEAM+'&limit=100',vt);
+  if (!teamQuotaHeadroom(teamList.deployments || [],Date.now())) {
+    console.log('DEV_RELEASE_SKIPPED_TEAM_HOBBY_QUOTA_NEAR_100_PER_DAY; NO_READY_ATTESTED');
+    return;
+  }
   if (recentRelease(deployments,Date.now())) { console.log('SKIP_ONE_EXPLICIT_RELEASE_PER_HOUR'); return; }
   const body = {
     name:'solqaryn-dev',project:PROJECT,target:'production',
