@@ -23,6 +23,10 @@ DESIGN_VERSION=2.0
 DESIGN_TOPOLOGY=3_JAVIER_3_ALEX
 PHYSICAL_TASKS_REGISTERED=6
 MAX_CONCURRENT_SCOPES=2
+
+## Regla operativa actual de WIP comercial (25-10-2026)
+
+El límite aplica exclusivamente a **microtareas comerciales** abiertas (`work/solqaryn-<microtarea>` con entrega aún no cerrada), con identidad y exclusividad verificables. La rama diagnóstica temporal `test/solqaryn-m3-2-native-write-20261024`, sus comprobantes y PRs documentales de gobierno que no reclaman microtarea comercial **NO** ocupan cupo comercial. No duplicar scopes ni saltar el límite; no tomar simultáneamente una rama ajena sin traspaso. Con un PR comercial abierto y una rama diagnóstica, WIP comercial=1/2, no 2/2. Esta corrección no concede permiso comercial a Javier :40 ni Alex; `AUTHORIZED_COMMERCIAL_TASK_IDS` sigue prevaleciendo. La meta deseada de 6 microtareas LISTO/hora es objetivo, no resultado certificado ni motivo para rebajar CI, PR protegido o aprobación externa.
 LEGACY_AUTOMATION_RUNTIME=RETIRED
 
 ## M3.2 — certificacion individual Javier PRIMARY_DEV_02 (25-10-2026)
