@@ -1,0 +1,97 @@
+{
+  "schema": "solqaryn.p0-001-a.dev-baseline.v1",
+  "microtask": "P0-001.A",
+  "observed_at_utc": "2026-10-24T17:05:08.679Z",
+  "repository": "solqaryn/Solqaryn",
+  "base_branch": "dev",
+  "base_head": "41d05dda3ffb57707275132f834c40cace3f8594",
+  "scope_lock": "STRICT",
+  "sources": {
+    "commercial_doc": "1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA",
+    "institutional_sheet": "1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU"
+  },
+  "branches": [
+    {
+      "name": "dev",
+      "sha": "41d05dda3ffb57707275132f834c40cace3f8594",
+      "protected": true
+    },
+    {
+      "name": "qa",
+      "sha": "5cedcc91bfb2b69562e7093bc1fa3d1251fa31f3",
+      "protected": true
+    },
+    {
+      "name": "main",
+      "sha": "072df831585f879cfd7bb429575d6d387076d97b",
+      "protected": true
+    }
+  ],
+  "merged_prs": [
+    {
+      "number": 3737,
+      "merge_sha": "41d05dda3ffb57707275132f834c40cace3f8594"
+    },
+    {
+      "number": 3736,
+      "merge_sha": "cca60745bc6a49c14a35064a88504dcef180fa1c"
+    },
+    {
+      "number": 3735,
+      "merge_sha": "e1d7afd82ea814cc70121b866b0ce86843eb8d10"
+    },
+    {
+      "number": 3734,
+      "merge_sha": "17ca160ae5f2d1e20ef27b1820e670fbfb1099d8"
+    },
+    {
+      "number": 3733,
+      "merge_sha": "3a98afbf290e8895e177861183b623ed3cb5bed0"
+    }
+  ],
+  "required_checks": [
+    {
+      "name": "verify-solqaryn-project-scope",
+      "status": "success",
+      "url": "https://github.com/solqaryn/Solqaryn/actions/runs/40110973868/job/120922432797",
+      "head_sha": "41d05dda3ffb57707275132f834c40cace3f8594"
+    },
+    {
+      "name": "SOLQARYN - Seguridad multiempresa",
+      "status": "success",
+      "url": "https://github.com/solqaryn/Solqaryn/actions/runs/40110973880/job/120922433040",
+      "head_sha": "41d05dda3ffb57707275132f834c40cace3f8594"
+    },
+    {
+      "name": "SOLQARYN - Build y pruebas backend",
+      "status": "success",
+      "url": "https://github.com/solqaryn/Solqaryn/actions/runs/40110973880/job/120922433109",
+      "head_sha": "41d05dda3ffb57707275132f834c40cace3f8594"
+    }
+  ],
+  "providers": {
+    "render": {
+      "declared_dev_service": "solqaryn-api-dev",
+      "declaration_source": "render.yaml@41d05dda3ffb57707275132f834c40cace3f8594",
+      "live_status": "NOT_VERIFIED",
+      "live_sha": null,
+      "reason": "Render connector requires a workspaceId previously confirmed by user; no workspace selected in this execution."
+    },
+    "vercel": {
+      "dev_project": "solqaryn-dev",
+      "latest_observed": {
+        "state": "CANCELED",
+        "sha": "41d05dda3ffb57707275132f834c40cace3f8594",
+        "url": "https://vercel.com/solqaryn/solqaryn-dev/3q9fTQ767MQaS6DrzJAMXZw7sAdh"
+      },
+      "first_ready_in_observed_page": {
+        "state": "READY",
+        "sha": "e1d7afd82ea814cc70121b866b0ce86843eb8d10",
+        "url": "https://vercel.com/solqaryn/solqaryn-dev/G1WdmcE8THiDZg5VPserQRo1qjLP"
+      },
+      "observed_page_size": 12
+    }
+  },
+  "other_temporary_refs_observed": 1,
+  "other_temporary_refs_note": "Una rama temporal adicional constaba en el listado GitHub; se omite el nombre en los documentos operativos por política de identidad del Scope Lock. Fuente: https://github.com/solqaryn/Solqaryn/branches"
+}
