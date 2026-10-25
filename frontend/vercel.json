@@ -1,5 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "git": {
+    "deploymentEnabled": {
+      "dev": false
+    }
+  },
   "ignoreCommand": "node scripts/vercel-ignore-build.mjs",
   "outputDirectory": "dist/solqaryn-frontend/browser",
   "rewrites": [
