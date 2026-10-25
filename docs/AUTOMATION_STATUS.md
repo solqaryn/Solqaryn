@@ -7,7 +7,8 @@ BRANCH=dev
 EXECUTION_PLAN_DRIVE_FILE_ID=1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA
 CURRENT_COMMERCIAL_ONLY=TRUE
 AUTOMATION_RUNTIME=ACTIVE_DEV
-SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1
+SCHEDULED_CHATGPT_TASKS_AUTHORIZED=2
+AUTHORIZED_COMMERCIAL_TASK_IDS=6adbb9fff1548191a1bd5b30d9e9984a,6adc2e4bd8a48191ac7d8641ed95a1a3
 VAEP_DISPATCH_AUTHORIZED=FALSE
 JULES_WORKERS_AUTHORIZED=0
 PILOT_TASK_LIMIT=6
@@ -23,6 +24,12 @@ DESIGN_TOPOLOGY=3_JAVIER_3_ALEX
 PHYSICAL_TASKS_REGISTERED=6
 MAX_CONCURRENT_SCOPES=2
 LEGACY_AUTOMATION_RUNTIME=RETIRED
+
+## M3.2 — certificacion individual Javier PRIMARY_DEV_02 (25-10-2026)
+
+**Autoridad propuesta condicionada a PR protegido y readback de dev.** El propietario autoriza comercialmente exclusivamente TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3` (JAVIER_CHATGPT, :20 America/Tegucigalpa) para desarrollar y corregir microtareas del plan comercial vigente en ramas de trabajo hacia dev; registrar estados PLAN_MAESTRO!H:M y auditoria BITACORA con readback; revisar trabajo de otro TASK_ID (revision tecnica cruzada), y tramitar merge/cierre solo si GitHub acredita una aprobacion formal genuina desde otra identidad y CI del SHA final. No transferir permisos a otros slots; max dos scopes, exclusividad real, dependencias LISTO, sin QA/main/PROD. El cambio de permiso es efectivo solo despues del merge protegido de esta enmienda y conciliacion exacta del Sheet institucional. `CONFIG!B57` pasa a TRUE para habilitar exclusivamente ejecuciones individuales enumeradas como comerciales en este documento, nunca autoriza todas las seis Tasks por defecto.
+
+**Evidencia ya consumida, no repetir:** commit de contenido GitHub `aaca89247d9aaf61eb21a308c2e43fd5fef24526` y archivo `automation-probes/m3-2/6adc2e4bd8a48191ac7d8641ed95a1a3.txt` en rama temporal `test/solqaryn-m3-2-native-write-20261024`; autor real la cuenta GitHub autenticada de Javier (ID 93171442), UTC `2026-10-25T15:26:15.942Z`. BITACORA!A77:Z77 contiene fingerprint `M3_2_CONTENT_WRITE_PROBE:6adc2e4bd8a48191ac7d8641ed95a1a3:2026-10-25T15:26:15.942Z`, readback 26 columnas y commit coincidente. GH_CONTENT_WRITE=PASS y DRIVE_AUDIT_WRITE=PASS observables; ello no certifica autoaprobacion, merge ni acceso comercial a cualquier recurso no probado. `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=2` solo reconoce Primary 01 y Primary 02, no Primary 03 ni Alex. `ACTIVE_DEV_WRITERS_OBSERVED` historico 1 deja de ser autoridad si contradice esta evidencia.
 
 ## M3.2 — tres escrituras de auditoría verificadas y propuesta de pruebas de contenido
 

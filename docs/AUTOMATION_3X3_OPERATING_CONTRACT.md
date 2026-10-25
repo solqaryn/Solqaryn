@@ -23,9 +23,13 @@ físicos y autorizados actuales se leen en `docs/AUTOMATION_STATUS.md` y Google 
 
 Se conservaron las dos Tasks físicas originales con sus TASK_ID estables y se
 crearon las otras cuatro durante M3.2, desde cada cuenta. El readback de las seis
-configuraciones está en `TAREAS_PROGRAMADAS!A2:Z7` y BITACORA. La instalación
-NO incrementa `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1` ni autoriza escritura a
-los cinco slots restantes sin permisos demostrados desde sus ejecuciones. Está prohibido usar sesiones o credenciales
+configuraciones está en `TAREAS_PROGRAMADAS!A2:Z7` y BITACORA. La instalación no incrementa por sí misma el contador de autorizaciones comerciales.
+La autoridad efectiva depende de `SCHEDULED_CHATGPT_TASKS_AUTHORIZED` y de
+`AUTHORIZED_COMMERCIAL_TASK_IDS`, enumerados en `docs/AUTOMATION_STATUS.md` y
+`docs/AUTOMATION_AUTHORITY.md`: cada ID nuevo requiere evidencia, autorización
+individual, PR protegido y readback. La habilitación física no permite escritura
+comercial a los slots que no figuran en la lista, aunque el flag global de Sheets
+esté activo. Está prohibido usar sesiones o credenciales
 de otra cuenta o invocar la Task privada de Alex desde Javier.
 
 ## Programacion nominal, no asignacion
