@@ -1,3 +1,9 @@
+## 2026-10-25 — P0-001.B: certificar bloqueo por falta de paridad exact-SHA DEV (PRIMARY_DEV_03)
+
+- Task `6adc2e55f47c81919f6374e561687076`, GitHub `jmejia31`, rama exclusiva `work/solqaryn-p0-001-b`; base `dev@6a6d6e8870b0a53db9b3dc19f197be409082b6e6`. Dependencias P0-001.A/P0-012.B LISTO y WIP protegido 6.
+- Evidencia nueva `docs/baselines/P0-001-B-DEV-20261025-REFRESCO-PRIMARY03.json` y acta `docs/P0-001-B-CERTIFICACION-NEGATIVA-HEAD-DEV.md`: CI HEAD 3/3 SUCCESS, Vercel DEV CANCELED de SHA bafcde53, READY de SHA 29dbcb06 no coincidente, Render live NO_VERIFICADO por workspaceId no confirmado. Dictamen `NO_GO`, nunca paridad, despliegue ni release acreditado.
+- El verificador existente `scripts/verify-p0-001-b-parity.mjs` admite snapshot versionado sin mutar el histórico; regresiones sintéticas Node y workflow `.github/workflows/p0-001-b-head-parity.yml` en PR. No se tocan código ERP, base de datos, QA/main/PROD, secretos, dominios ni proveedores. Cierre condicionado a CI exact-HEAD, revisión GitHub independiente, merge protegido y readback Sheets; rollback por revert protegido.
+
 ## 2026-10-25 — M3.4: ampliar WIP comercial protegido de 3 a 6
 
 - Autorización explícita del propietario: admitir hasta seis microtareas comerciales distintas simultáneamente, sin exigir seis Tasks autorizadas. Se mantienen EXACTAMENTE las cinco identidades comerciales del manifiesto, Alex :30 excluido, 6 Tasks físicas y tres controles CI/Scope Lock protegidos.
