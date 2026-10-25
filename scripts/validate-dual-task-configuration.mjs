@@ -57,13 +57,20 @@ export function validateDocuments(src) {
   const countA = Number(key(src.authority,'SCHEDULED_CHATGPT_TASKS_AUTHORIZED'));
   const countS = Number(key(src.status,'SCHEDULED_CHATGPT_TASKS_AUTHORIZED'));
   if (!Number.isInteger(countA) || countA < 1 || countA > 6 || countA !== countS) errors.push('authorized counter');
+  // The commercial WIP cap is a dedicated invariant, independent from the 5/6 Task allowlist.
+  const capAuthority = Number(key(src.authority,'MAX_CONCURRENT_SCOPES'));
+  const capStatus = Number(key(src.status,'MAX_CONCURRENT_SCOPES'));
+  const capContract = Number(key(src.contract,'MAX_CONCURRENT_SCOPES'));
+  const capBranches = Number(key(src.contract,'MAX_OPEN_WORK_BRANCHES'));
+  if (![capAuthority,capStatus,capContract,capBranches].every(x=>Number.isInteger(x)&&x===3))
+    errors.push('commercial WIP cap mismatch');
   if (key(src.scope,'PILOT_TASK_LIMIT') !== '6') errors.push('scope topology');
   if (key(src.scope,'PROJECT_SCOPE_LOCK') !== 'STRICT') errors.push('strict lock');
   if (!src.agents.includes('TASK_DESIGN=AUTONOMOUS_3_JAVIER_3_ALEX')) errors.push('agents topology');
   for (const [name,value] of Object.entries(approvalPolicy))
     if (key(src.authority,name) !== value) errors.push('approval ' + name);
   for (const phrase of ['DESIGN_TASK_LIMIT=6','DESIGN_JAVIER_TASKS=3',
-    'DESIGN_ALEX_TASKS=3','MAX_OPEN_WORK_BRANCHES=2',
+    'DESIGN_ALEX_TASKS=3','MAX_OPEN_WORK_BRANCHES=3','MAX_CONCURRENT_SCOPES=3',
     'REVIEW_INDEPENDENCE_REQUIRED=TRUE','America/Tegucigalpa',
     'PENDIENTE -> EN_PROGRESO','EN_PROGRESO -> VALIDANDO',
     'VALIDANDO -> LISTO','VALIDANDO -> VALIDANDO']) {
@@ -134,7 +141,10 @@ export function validateProposedRun(p) {
       !p.exclusiveScopeVerified||!p.createdExclusively||!p.branchReadbackVerified||
       p.conflictingClaim||!p.idempotencyKey||!p.branchName?.startsWith('work/solqaryn-'))
       errors.push('unsafe_write');
-    if(p.openWorkBranches>2)errors.push('branch_cap');
+    // openWorkBranches is the VERIFIED count of distinct active COMMERCIAL scopes,
+    // excluding governance PRs, diagnostic test branches and merged history.
+    if(!Number.isInteger(p.openWorkBranches)||p.openWorkBranches<0||p.openWorkBranches>3)
+      errors.push('branch_cap');
     if(p.activeEditorAccount&&p.activeEditorAccount!==p.actorAccount)
       errors.push('concurrent_editor');
   }else if(p.operation==='REVIEW'){
@@ -185,7 +195,7 @@ if(failures.length){
     operation:'WRITE',ownerAuthorized:true,writePermissionVerified:true,
     scopeId:'P0-012.A',exclusiveScopeVerified:true,createdExclusively:true,
     branchReadbackVerified:true,branchName:'work/solqaryn-p0-012-a',
-    openWorkBranches:2,idempotencyKey:'P0-012.A:base-sha',conflictingClaim:false,
+    openWorkBranches:3,idempotencyKey:'P0-012.A:base-sha',conflictingClaim:false,
     runId:'NO_VERIFICADO'};
   const clone=x=>structuredClone(x);
   if(validateProposedRun(base).length)throw Error('DEV without native RUN_ID must be allowed');
@@ -202,7 +212,9 @@ if(failures.length){
     ['branch not verified',p=>p.branchReadbackVerified=false],
     ['wrong scope',p=>p.scopeId=''],
     ['stale head',p=>p.exactHeadVerified=false],
-    ['too many branches',p=>p.openWorkBranches=3],
+    ['too many branches',p=>p.openWorkBranches=4],
+    ['negative WIP count',p=>p.openWorkBranches=-1],
+    ['noninteger WIP count',p=>p.openWorkBranches=2.5],
     ['forbidden prod',p=>p.environment='prod'],
     ['shared credentials',p=>p.sharedCredentials=true],
     ['unknown actor',p=>p.actorRole='VAEP_SUPERVISOR'],
@@ -282,6 +294,12 @@ if(failures.length){
     throw Error('Unready dependency claimed');
   const mutation={...documents,status:status.replace('PILOT_TASK_LIMIT=6','PILOT_TASK_LIMIT=2')};
   if(!validateDocuments(mutation).length)throw Error('Document mutation bypass');
+  if(!validateDocuments({...documents,status:status.replace('MAX_CONCURRENT_SCOPES=3','MAX_CONCURRENT_SCOPES=4')}).length)
+    throw Error('WIP status mutation bypass');
+  if(!validateDocuments({...documents,contract:contract.replace('MAX_OPEN_WORK_BRANCHES=3','MAX_OPEN_WORK_BRANCHES=4')}).length)
+    throw Error('WIP contract mutation bypass');
+  if(!validateDocuments({...documents,authority:authority.replace('MAX_CONCURRENT_SCOPES=3','MAX_CONCURRENT_SCOPES=4')}).length)
+    throw Error('WIP authority mutation bypass');
   const approved={approverPrincipal:'ALEX',identityVerified:true,permissionVerified:true,
     providerRulesSatisfied:true,nativeApprovalVerified:true,exactHeadVerified:true,
     readbackVerified:true,independenceVerified:true,allContributionsReviewed:true,

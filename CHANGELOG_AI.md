@@ -1,3 +1,12 @@
+## 2026-10-25 — M3.3: corregir WIP comercial real y recuperar la cola (#3743)
+
+- Corrige la contabilidad falsa de ramas: `MAX_CONCURRENT_SCOPES=3` y `MAX_OPEN_WORK_BRANCHES=3` se refieren exclusivamente a microtareas comerciales distintas del Plan Inicial; no incluyen PR #3743/#3745 de gobierno, diagnósticos `test/`, auditorías ni ramas fusionadas. WIP máximo 1 por Task individualmente autorizada.
+- Se conserva exactamente la allowlist de cinco Tasks aprobada por PR #3749; Alex :30 no recibe autoridad comercial. Ninguna Task nueva ni credencial se crea o comparte.
+- El catálogo P0-002.A fue integrado mediante PR #3744 (merge dev `5b573b1aca57b84b854b12b89d9418d402560f3c`), revisión independiente `5644656871`, CI del SHA `7c41a4668bf3e051009f3d2e43fb74b7cdb1e0f8` 3/3 SUCCESS; su estado en Sheets requiere readback separado para LISTO.
+- Objetivo seis cierres `LISTO` verificados por hora entre ejecutores autorizados; no es SLA ni permite omitir dependencias, CI, revisión, merge o readback. Un bloqueo de Vercel en P0-001.B no impide otro P0 independiente.
+- El validador 3×3 `scripts/validate-dual-task-configuration.mjs` mantiene fail-closed con techo comercial 3, conteos enteros, pruebas positivas al borde y negativas para 4, negativos/decimales, desigualdad entre status/authority/contract; no cambia los límites por cuenta, protección de rama ni revisión independiente.
+- Impacto: contrato y validador de gobierno operativo únicamente, sin cambios de ERP, APIs, RBAC, DB, secretos, QA/main/PROD ni despliegues. Rollback: revert protegido del changeset y nueva conciliación documental; nunca reescritura de historial.
+
 ## 2026-10-25 — P0-002.A: catalogo actual L01-L15 (PRIMARY_DEV_02)
 
 - Desde dev@d3ed287d4bf3748d039223bdfc5b3909170b24cb, la Task individual autorizada creo la rama exclusiva work/solqaryn-p0-002-a y versiono docs/P0-002-A-CATALOGO-EVIDENCIA-VIGENTE-DEV.md.

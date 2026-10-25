@@ -22,8 +22,14 @@ SECONDARY_TASK_ACCOUNT=ALEX_CHATGPT
 DESIGN_VERSION=2.0
 DESIGN_TOPOLOGY=3_JAVIER_3_ALEX
 PHYSICAL_TASKS_REGISTERED=6
-MAX_CONCURRENT_SCOPES=2
+MAX_CONCURRENT_SCOPES=3
 LEGACY_AUTOMATION_RUNTIME=RETIRED
+
+## M3.3 — Censo WIP comercial, sin ramas administrativas bloqueantes (25-10-2026)
+
+`MAX_CONCURRENT_SCOPES=3` limita exclusivamente microtareas comerciales distintas abiertas del Plan Inicial, con PR o rama `work/solqaryn-<microtarea>` real, como máximo una por Task individualmente autorizada. No cuentan `test/solqaryn-m3-2-native-write-*`, PR de gobierno (incluidos #3743/#3745), pruebas diagnósticas, auditorías, ramas ya fusionadas ni eventos históricos. No se borran ramas para inventar cupo, y toda escritura exige exclusividad efectiva de su propio recurso. La allowlist comercial sigue en 5/6, sin incluir Alex :30.
+
+Objetivo del propietario: 6 cierres comprobados LISTO por hora entre Tasks autorizadas; es una métrica de rendimiento, nunca una garantía ni sustituto del CI del SHA, revisión formal GitHub independiente, merge protegido y readback Sheets. Ante paridad Vercel NO_GO de P0-001.B, no marcar LISTO sin despliegue real; trabajar otros P0 independientes cuando el DAG y WIP lo permitan. PR #3744 está fusionado en dev con catálogo L01–L15, pero su cierre institucional exige conciliación y readback por separado. Para rollback, revert protegido de esta norma, sin alterar QA/main/PROD ni eliminar evidencias.
 
 ## M3.2 — habilitacion comercial individual adicional 5/6 (25-10-2026)
 
@@ -33,7 +39,7 @@ LEGACY_AUTOMATION_RUNTIME=RETIRED
 
 **Pendiente independiente:** SECONDARY_REVIEW_02 Alex :30 (`6adcc97a260881919d92bb9bacae1626`) posee GH_COMMENT_WRITE=PASS y DRIVE_AUDIT_WRITE=PASS (BITACORA!A78:Z78); su intento de contents:write fue bloqueado por seguridad antes de GitHub (BITACORA!A79:Z79), sin commit ni archivo. Por eso NO entra en esta allowlist ni obtiene desarrollo comercial. No se repetirán los diagnósticos válidos de las otras Tasks; cualquier acreditacion posterior propia de :30 exigira evidencia nueva real desde su ejecucion y autorizacion protegida separada.
 
-**Alcance individual de las tres nuevas Tasks:** trabajar en ramas comerciales work/solqaryn-<microtarea> y PR a dev con exclusividad y maximo dos scopes segun contrato actual; revisar/corregir trabajo de otro Task ID sin autoaprobar; PLAN_MAESTRO!H:M solo del scope poseido, TAREAS_PROGRAMADAS fila propia, BITACORA eventos idempotentes y readback; COLA derivada NO se edita. LISTO solo tras CI exact SHA, revision de identidad GitHub distinta del autor, merge protegido, verificacion de resultados y readback Sheets. No secretos, privilegios globales, bypass ni deployment QA/PROD.
+**Alcance individual de las tres nuevas Tasks:** trabajar en ramas comerciales work/solqaryn-<microtarea> y PR a dev con exclusividad y máximo tres scopes comerciales según contrato actual; revisar/corregir trabajo de otro Task ID sin autoaprobar; PLAN_MAESTRO!H:M solo del scope poseido, TAREAS_PROGRAMADAS fila propia, BITACORA eventos idempotentes y readback; COLA derivada NO se edita. LISTO solo tras CI exact SHA, revision de identidad GitHub distinta del autor, merge protegido, verificacion de resultados y readback Sheets. No secretos, privilegios globales, bypass ni deployment QA/PROD.
 
 ## M3.2 — certificacion individual Javier PRIMARY_DEV_02 (25-10-2026)
 

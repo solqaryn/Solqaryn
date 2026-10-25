@@ -8,7 +8,8 @@ TIMEZONE=America/Tegucigalpa
 DESIGN_TASK_LIMIT=6
 DESIGN_JAVIER_TASKS=3
 DESIGN_ALEX_TASKS=3
-MAX_OPEN_WORK_BRANCHES=2
+MAX_OPEN_WORK_BRANCHES=3
+MAX_CONCURRENT_SCOPES=3
 REVIEW_INDEPENDENCE_REQUIRED=TRUE
 VAEP_DISPATCH_AUTHORIZED=FALSE
 JULES_WORKERS_AUTHORIZED=0
@@ -74,9 +75,10 @@ Orden uniforme para las seis Tasks:
 2. Revisar `VALIDANDO` que provenga de otra identidad verificable y no tenga revisor activo; confirmar PR GitHub y permisos efectivos antes de asumir la revisión.
 3. Tomar `PENDIENTE` con **todas** sus dependencias en `LISTO`, prioridad P0 antes
    que P1 y orden del Plan Maestro dentro de una misma prioridad.
-4. Si no hay elegibles, dejar como máximo un evento deduplicado
+4. Objetivo de medición: 6 microtareas comerciales realmente LISTO por hora entre Tasks autorizadas, nunca garantía de resultado. Tras cada LISTO comprobado, recargar PLAN_MAESTRO/COLA y continuar si hay espacio. Un impedimento externo (p. ej. Vercel CANCELED en P0-001.B) detiene solo ese scope; no inmoviliza candidatos independientes. No contar diagnóstico, PR documental NO_GO, auditoría ni ejecución horaria como LISTO.
+5. Si no hay elegibles, dejar como máximo un evento deduplicado
    `SIN_TRABAJO_ELEGIBLE` y finalizar esa ejecución.
-5. Tras un cierre `LISTO`, recalcular dependencias y tomar otra elegible dentro
+6. Tras un cierre `LISTO`, recalcular dependencias y tomar otra elegible dentro
    de la capacidad efectiva restante. No limitar artificialmente a un cierre por run.
 
 `VALIDANDO` no libera dependencias. Una sucesora puede prepararse en solo lectura
@@ -114,9 +116,7 @@ commits, PR y responsable: nunca simular continuidad infinita o cierre.
 Ramas permanentes: `dev`, `qa` y `main`. Para cada microtarea elegible
 crear/reutilizar **una** rama determinista `work/solqaryn-<id-normalizado>`
 y PR exclusivo hacia `dev`. No utilizar una rama almacén compartida.
-Máximo dos ramas de trabajo abiertas al inicio del piloto; cuentan todas
-las ramas `work/solqaryn-*` no fusionadas y ramas operativas de esta microfase
-cuando correspondan, sin borrar trabajo existente.
+Máximo **tres scopes comerciales distintos activos** (`MAX_CONCURRENT_SCOPES=3`, equivalente al límite `MAX_OPEN_WORK_BRANCHES=3` aplicado solo a ramas comerciales reales), y nunca más de uno por Task individualmente autorizada. Contar exclusivamente IDs de microtarea del Plan Comercial Inicial con rama determinista `work/solqaryn-<id-normalizado>`, PR abierto o entrega comercial en progreso; una misma microtarea no se contabiliza dos veces. No cuentan PR normativos/de gobierno como #3743/#3745, ramas `test/solqaryn-m3-2-native-write-*` de diagnóstico sin microtarea comercial, auditorías, ni ramas fusionadas o históricas. La existencia de una rama de prueba sigue exigiendo exclusividad sobre ESE recurso, pero no consume WIP comercial. Ningún contador otorga permisos: debe estar en la allowlist 5/6 vigente, preservar identidad, dependencias y revisión independiente. No borrar trabajo existente para liberar cupo.
 
 La toma de una microtarea requiere una primitiva de exclusividad **real** del
 proveedor: crear una referencia GitHub con nombre determinista solo si no existe
