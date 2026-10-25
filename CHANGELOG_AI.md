@@ -1,3 +1,8 @@
+## 2026-10-25 — P0-003.A: comparación causal Render/Vercel DEV (PRIMARY_DEV_02)
+
+- Task `6adc2e4bd8a48191ac7d8641ed95a1a3`, GitHub `jmejia31`: acta `docs/P0-003-A-COMPARATIVA-RENDER-VERCEL-DEV.md` desde `dev@bafcde53ce2562f70d5b4115184df51e5c48483d`. Render DEV `dep-dbf5age7bikc73c8467g` `live` y mismo SHA; Vercel DEV alias `READY` con SHA `29dbcb06...`, intento de HEAD `CANCELED` (política consolidada). Liveness/readiness devolvieron cuerpos sanos; no se certificó HTTP numérico, CORS efectivo ni paridad exacta.
+- Negativos N1-N5 impiden inferir que un deployment `CANCELED` equivale a `READY` o que un Render saludable garantiza frontend actualizado. No modifica despliegues, secretos, código de producto, QA/main/PROD. Sólo acto documental y changelog, rollback por revert protegido. Estado candidato hasta CI 3/3 SHA final, revisión independiente, merge y readback Sheets.
+
 ## 2026-10-25 — P0-006.B: prueba negativa de matcher público y guards DEV (PRIMARY_DEV_01)
 
 - Task `6adbb9fff1548191a1bd5b30d9e9984a` (`jmejia31`) agrega `scripts/verify-p0-006-b-route-guards.mjs` y `docs/P0-006-B-CERTIFICACION-NEGATIVA-RUTAS-DEV.md` desde `dev@bafcde53ce2562f70d5b4115184df51e5c48483d`. Invariantes estáticos: 92 `path`, 90 `loadComponent`, 2 redirects, 39 enlaces, guards sobre rutas privadas y ausencia de matcher público raíz `:slug`; cuatro mutaciones negativas detectadas en evaluación de fuentes GitHub. El script reproducible requiere ejecución nativa sobre checkout para cierre formal.
