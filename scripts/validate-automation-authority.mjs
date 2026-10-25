@@ -43,10 +43,36 @@ export function validateAuthority(input) {
     'COMMERCIAL_AUTHORITY_MODE=CURRENT_PLAN_ONLY',
     'LEGACY_MASTER_EXECUTABLE=FALSE'
   ]);
-  const aCount=Number(d.authority.match(/^SCHEDULED_CHATGPT_TASKS_AUTHORIZED=(\d+)$/m)?.[1]);
-  const sCount=Number(d.status.match(/^SCHEDULED_CHATGPT_TASKS_AUTHORIZED=(\d+)$/m)?.[1]);
-  if (!Number.isInteger(aCount)||aCount<1||aCount>6||aCount!==sCount)
-    failures.push('Authorized count must be verified, identical and within 1..6');
+  const authorizationKey = 'SCHEDULED_CHATGPT_TASKS_AUTHORIZED';
+  const counterMatches = text => [...text.matchAll(/^SCHEDULED_CHATGPT_TASKS_AUTHORIZED=(\d+)$/gm)];
+  const aMatches = counterMatches(d.authority), sMatches = counterMatches(d.status);
+  const aCount = Number(aMatches[0]?.[1]), sCount = Number(sMatches[0]?.[1]);
+  if (aMatches.length !== 1 || sMatches.length !== 1 ||
+      !Number.isInteger(aCount) || aCount < 1 || aCount > 6 || aCount !== sCount)
+    failures.push('Authorized count must be unique, verified, identical and within 1..6');
+
+  // A global Sheet flag or a raw count cannot authorize a Task.
+  // Each commercial executor must be listed in both live authorities.
+  const installedTaskIds = new Set([
+    '6adbb9fff1548191a1bd5b30d9e9984a', // Javier :00
+    '6adc2e4bd8a48191ac7d8641ed95a1a3', // Javier :20
+    '6adc2e55f47c81919f6374e561687076', // Javier :40
+    '6adbbc9ad9e88191bea8eb69104afb25', // Alex :10
+    '6adcc97a260881919d92bb9bacae1626', // Alex :30
+    '6adcc98a80a48191b71a5156624c21df', // Alex :50
+  ]);
+  const parseAuthorizedIds = source => {
+    const lines = [...source.matchAll(/^AUTHORIZED_COMMERCIAL_TASK_IDS=([^\r\n]*)$/gm)];
+    if (lines.length !== 1) return null;
+    const ids = lines[0][1].split(',').map(v => v.trim());
+    if (ids.length === 0 || ids.some(id => !installedTaskIds.has(id)) ||
+        new Set(ids).size !== ids.length) return null;
+    return ids;
+  };
+  const aIds = parseAuthorizedIds(d.authority), sIds = parseAuthorizedIds(d.status);
+  if (!aIds || !sIds || aIds.length !== aCount || sIds.length !== sCount ||
+      aIds.join(',') !== sIds.join(','))
+    failures.push('Commercial Task allowlist must be identical, unique, installed and exactly match count');
   // Reject values changed in the operational header even when historical prose
   // still contains the expected string (substring checks alone are unsafe).
   const exactKey = (source, key, value) => {
@@ -92,9 +118,13 @@ export function validateAuthority(input) {
   // Do not permit a forged "Archivo histórico" heading to hide the live
   // operating header while substring-only checks still pass on the archive.
   const liveMarkers = {
-    authority: ['CONTRACT_VERSION=2.0', 'AUTOMATION_RUNTIME=ACTIVE_DEV', 'SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1'],
+    authority: ['CONTRACT_VERSION=2.0', 'AUTOMATION_RUNTIME=ACTIVE_DEV',
+      authorizationKey + '=' + aCount,
+      'AUTHORIZED_COMMERCIAL_TASK_IDS=' + (aIds?.join(',') ?? 'INVALID')],
     AGENTS: ['AUTOMATION_RUNTIME=ACTIVE_DEV', 'TASK_DESIGN=AUTONOMOUS_3_JAVIER_3_ALEX'],
-    AUTOMATION_STATUS: ['AUTOMATION_RUNTIME=ACTIVE_DEV', 'SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1'],
+    AUTOMATION_STATUS: ['AUTOMATION_RUNTIME=ACTIVE_DEV',
+      authorizationKey + '=' + sCount,
+      'AUTHORIZED_COMMERCIAL_TASK_IDS=' + (sIds?.join(',') ?? 'INVALID')],
     PROJECT_SCOPE_LOCK: ['COMMERCIAL_AUTHORITY_MODE=CURRENT_PLAN_ONLY', 'LEGACY_MASTER_EXECUTABLE=FALSE'],
   };
   for (const [name, text] of [
@@ -142,7 +172,11 @@ else if (process.argv.includes('--self-test')) {
     ['prod', {authority:authority.replaceAll('PROD','UNRESTRICTED')}],
     ['reactivate vaep', {status:status.replace('VAEP_DISPATCH_AUTHORIZED=FALSE','VAEP_DISPATCH_AUTHORIZED=TRUE')}],
     ['reactivate workers', {status:status.replace('JULES_WORKERS_AUTHORIZED=0','JULES_WORKERS_AUTHORIZED=5')}],
-    ['missing authorized Task', {status:status.replace('SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1','SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0')}],
+    ['missing authorized Task', {status:status.replace(/^SCHEDULED_CHATGPT_TASKS_AUTHORIZED=\d+$/m,'SCHEDULED_CHATGPT_TASKS_AUTHORIZED=0')}],
+    ['mismatched commercial count', {status:status.replace(/^SCHEDULED_CHATGPT_TASKS_AUTHORIZED=\d+$/m,'SCHEDULED_CHATGPT_TASKS_AUTHORIZED=6')}],
+    ['unapproved commercial Task', {authority:authority.replace(/^AUTHORIZED_COMMERCIAL_TASK_IDS=.*$/m, line => line + ',deadbeefdeadbeefdeadbeefdeadbeef')}],
+    ['duplicate commercial Task', {status:status.replace(/^AUTHORIZED_COMMERCIAL_TASK_IDS=(.*)$/m, (_, ids) => 'AUTHORIZED_COMMERCIAL_TASK_IDS=' + ids + ',' + ids.split(',')[0])}],
+    ['commercial list length mismatch', {authority:authority.replace(/^AUTHORIZED_COMMERCIAL_TASK_IDS=(.*)$/m, (_, ids) => 'AUTHORIZED_COMMERCIAL_TASK_IDS=' + ids.split(',')[0])}],
     ['wrong 3x3 cap', {scope:scope.replace('PILOT_TASK_LIMIT=6','PILOT_TASK_LIMIT=2')}],
     ['no 3x3 agent routing', {agents:agents.replace('TASK_DESIGN=AUTONOMOUS_3_JAVIER_3_ALEX','TASK_DESIGN=DUAL_TASK')}],
     ['legacy Master executable', {scope:scope.replace('LEGACY_MASTER_EXECUTABLE=FALSE','LEGACY_MASTER_EXECUTABLE=TRUE')}],
@@ -150,7 +184,7 @@ else if (process.argv.includes('--self-test')) {
     ['commercial plan switched', {scope:scope.replace('1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA','HISTORICAL_PLAN_ID')}],
     ['legacy SQ command in live AGENTS', {agents:agents.replace('TASK_DESIGN=AUTONOMOUS_3_JAVIER_3_ALEX','TASK_DESIGN=AUTONOMOUS_3_JAVIER_3_ALEX\nEXECUTE=SQ-123')}],
     ['historical Word made live in Scope Lock', {scope:scope.replace('LEGACY_MASTER_EXECUTABLE=FALSE','LEGACY_MASTER_EXECUTABLE=FALSE\nSOURCE=https://docs.google.com/document/d/1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j/edit')}],
-    ['unapproved Sheet made live in Status', {status:status.replace('SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1','SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1\nSOURCE=https://docs.google.com/spreadsheets/d/HISTORICAL_SHEET_123/edit')}],
+    ['unapproved Sheet made live in Status', {status:status.replace(/^SCHEDULED_CHATGPT_TASKS_AUTHORIZED=\d+$/m, line => line + '\nSOURCE=https://docs.google.com/spreadsheets/d/HISTORICAL_SHEET_123/edit')}],
     ['archive heading cannot hide live runtime', {status:status.replace('AUTOMATION_RUNTIME=ACTIVE_DEV','## Archivo histórico\nAUTOMATION_RUNTIME=ACTIVE_DEV')}],
     ['legacy SQ hidden after historical section', {agents:agents.replace('## Trabajo de desarrollo','## Trabajo de desarrollo\nEXECUTE=SQ-123')}],
     ['foreign plan after historical section', {status:status.replace('## Fuentes nativas vigentes','## Fuentes nativas vigentes\nSOURCE=https://docs.google.com/document/d/1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j/edit')}]
