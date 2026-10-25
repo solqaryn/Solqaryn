@@ -1,3 +1,9 @@
+## 2026-10-25 — P0-006.A: inventario de 92 rutas Angular y 39 enlaces DEV (SECONDARY_REVIEW_03)
+
+- Task `6adcc98a80a48191b71a5156624c21df` (GitHub `morales35alex`) documenta en `docs/P0-006-A-INVENTARIO-RUTAS-ADMIN-DEV.md` las 92 declaraciones `path` del router principal, 90 lazies y 2 redirecciones; cruza 39 `routerLink` con módulos registrados y capacidades RBAC. Base comprobada `dev@6de952a43dda3449a9c6756d3c567374d686c5df`.
+- Resultado estático: 39/39 destinos resueltos tras expandir rutas anidadas; hallazgo a certificar P0-006.B: las rutas de facturas-proveedor (14) y transferencias (4) se registran por dos vías. Sin concluir vulnerabilidad ni alterar código/routing, QA/main/PROD, infraestructura, datos o secretos.
+- Este commit documental no equivale a LISTO: exige PR, 3/3 CI exact-SHA, aprobación GitHub ajena, merge protegido y readback PLAN_MAESTRO/COLA/BITACORA.
+
 ## 2026-10-25 — P0-002.B: certificar frescura de evidencias L01–L15 (PRIMARY_DEV_03)
 
 - La Task `6adc2e55f47c81919f6374e561687076` crea en rama exclusiva `work/solqaryn-p0-002-b` el acta `docs/P0-002-B-CERTIFICACION-FRESCURA-EVIDENCIA-DEV.md`, basada en dev `a41140bd67dfa5bdb7599882573661df941d0c45`.
