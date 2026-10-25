@@ -6,8 +6,8 @@ BRANCH=dev
 CONTRACT_VERSION=2.0
 CONTRACT_PHASE=M3_2_6_FISICAS_INSTALADAS_PERMISOS_PENDIENTES
 AUTOMATION_RUNTIME=ACTIVE_DEV
-SCHEDULED_CHATGPT_TASKS_AUTHORIZED=2
-AUTHORIZED_COMMERCIAL_TASK_IDS=6adbb9fff1548191a1bd5b30d9e9984a,6adc2e4bd8a48191ac7d8641ed95a1a3
+SCHEDULED_CHATGPT_TASKS_AUTHORIZED=5
+AUTHORIZED_COMMERCIAL_TASK_IDS=6adbb9fff1548191a1bd5b30d9e9984a,6adc2e4bd8a48191ac7d8641ed95a1a3,6adc2e55f47c81919f6374e561687076,6adbbc9ad9e88191bea8eb69104afb25,6adcc98a80a48191b71a5156624c21df
 VAEP_DISPATCH_AUTHORIZED=FALSE
 JULES_WORKERS_AUTHORIZED=0
 PILOT_TASK_LIMIT=6
@@ -30,11 +30,19 @@ PHYSICAL_TASKS_REGISTERED=6
 ACTIVE_DEV_WRITERS_OBSERVED=1
 MAX_CONCURRENT_SCOPES=3
 
-## M3.3 — semántica de WIP comercial, exclusividad y rendimiento
+## M3.3 — WIP comercial efectivo y continuidad del piloto 5/6
 
-Desde el merge protegido de esta enmienda, `MAX_CONCURRENT_SCOPES=3` es una cota de microtareas **comerciales** con rama/PR vivos. Se permite 1 scope comercial activo por Task individualmente autorizada; las Tasks no enumeradas en `AUTHORIZED_COMMERCIAL_TASK_IDS` permanecen sin escritura comercial. La rama `test/solqaryn-m3-2-native-write-20261024` es exclusivamente diagnóstica y **NO** consume cupo comercial por estar creada, aunque cada escritor debe preservar exclusividad real sobre ella y su archivo. PR de política, pruebas aisladas, auditorías, ramas ya fusionadas o commits sin scope comercial no son WIP del Plan Maestro. Ninguna rama protegida se elimina para fingir capacidad; se preservan evidencias.
+Desde la integración protegida de esta corrección, el techo es `MAX_CONCURRENT_SCOPES=3` únicamente para microtareas comerciales distintas del Plan Inicial con rama/PR vivos y no cerradas. Máximo un scope por Task habilitada. No cuentan PR normativos ni de gobierno (#3743/#3745), ramas de prueba `test/solqaryn-m3-2-native-write-*`, auditorías ni ramas ya fusionadas; cada rama y recurso siguen sujetos a exclusividad real y ninguna evidencia será eliminada para simular cupo. La allowlist sigue siendo exactamente 5/6: Javier :00/:20/:40 y Alex :10/:50; Alex :30 excluido sin prueba propia contents:write.
 
-Al detectar un PR con conflictos, recuperar o corregir en la misma rama con merge no destructivo, revalidar SHA/CI/revisión y no duplicar scope. Ante despliegue externo NO_GO, bloquear solo esa microtarea, no toda la cola. Después de cada LISTO con readback, reevaluar P0 independientes. Objetivo de productividad del propietario: 6 LISTO/hora **medidos con evidencias**, no umbral de autorización ni licencia para saltar revisión. Protecciones de seguridad y separación de cuentas se mantienen.
+Cuando un PR comercial esté VALIDANDO, priorizar revisión genuinamente independiente y corregir en la misma rama, sin autoaprobar. Ante bloqueo de despliegue externo, detener solo ese scope y continuar una microtarea P0 independiente con dependencias LISTO. Tras cada cierre con CI exact SHA, merge y readback PLAN/COLA/BITACORA, recalcular elegibilidad. Objetivo del propietario: 6 transiciones auténticas a LISTO por hora, indicador no garantizado, sin degradar seguridad, QA/main/PROD ni WIP por Task. Los números 2/6 y WIP=2 en actas anteriores son históricos y no sustituyen las claves vigentes.
+
+## Concesion comercial individual Javier :40 y Alex :10 / :50, condicionada al merge protegido
+
+El propietario autoriza incorporar **exclusivamente** las tres identidades fisicas `6adc2e55f47c81919f6374e561687076` (Javier PRIMARY_DEV_03 :40), `6adbbc9ad9e88191bea8eb69104afb25` (Alex SECONDARY_REVIEW_01 :10) y `6adcc98a80a48191b71a5156624c21df` (Alex SECONDARY_REVIEW_03 :50) a las dos ya comerciales. Evidencia propia y trazable: GitHub contents:write commits `46e6a9822d89932697c93e77c96df239d73bed4f`, `37fb117a38959c99c5795130a1a40365693cc0b4` y `b0f5a77757847d623a17c0f1d9c5fde57fd909fd` respectivamente; Google Sheets BITACORA filas 85, 76 y 81 con readback independiente. Todos los archivos son pruebas temporales aisladas y no se volveran a crear. El estado de fila 76 de readback pendiente en su indicador historico se preserva: el readback de valores y el commit estan contrastados. El conteo 5/6 se vuelve efectivo solo tras CI 3/3 SUCCESS en SHA exacto, revision GitHub realmente independiente, merge protegido de la enmienda a dev y conciliacion/lectura posterior del Sheet.
+
+**Permisos individuales comerciales DEV, no colectivos:** cada Task puede reclamar una microtarea pendiente elegible y no ocupada del Plan Comercial Inicial vigente; trabajar en rama de desarrollo exclusiva, crear commit/PR a dev, ejecutar pruebas, revisar o corregir scope ajeno bajo identidad verificable, y registrar exclusivamente el propio estado de PLAN_MAESTRO H:M, BITACORA auditada y fila propia de TAREAS_PROGRAMADAS. No tocar COLA calculada ni CONFIG general en operaciones comerciales ordinarias. Ninguna Task puede aprobar formalmente un PR emitido por su mismo login de GitHub aunque sea otra Task distinta; toda aprobacion protegida requiere cuenta GitHub de autor distinto y cumplimiento de las politicas. LISTO solo con CI protegido, revision independiente, merge y readback de Plan/Cola/Bitacora. Se preserva MAX_CONCURRENT_SCOPES=3, Scope Lock STRICT, no QA/main/PROD, no VAEP/Jules, no despliegues productivos, no force-push ni exposicion de secretos.
+
+**Exclusion explicita:** `6adcc97a260881919d92bb9bacae1626` (Alex SECONDARY_REVIEW_02 :30) NO recibe autoridad comercial. Tiene comentario GitHub y auditoria Sheets autenticos (BITACORA A78), pero no hay commit contents:write suyo: el intento anterior quedo bloqueado antes del API GitHub (BITACORA A79). Su propio archivo no se ha certificado. No simular PASS ni inferir permisos compartidos de la cuenta Alex. Un cambio posterior exige una evidencia propia real desde la Task y una nueva concesion protegida. El flag `CONFIG!B57=TRUE` es condicional exclusivamente a la allowlist exacta; tras integracion, `CONFIG!B39=5`, y solo Q3/Q6/Q7 de Tasks autorizadas se conciliaran, sin alterar Q5.
 
 ## Concesion comercial individual PRIMARY_DEV_02, sujeta a merge protegido
 

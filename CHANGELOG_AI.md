@@ -1,10 +1,26 @@
-## 2026-10-25 — M3.3: correccion de WIP comercial y objetivo 6 LISTO/hora
+## 2026-10-25 — M3.3: corregir WIP comercial real y recuperar la cola (#3743)
 
-- Diagnóstico causal: las Tasks estaban registrando `SIN_TRABAJO_ELEGIBLE WIP2/2` al contar un PR de P0-001.B junto con una rama temporal M3.2 `test/solqaryn-m3-2-native-write-20261024`. Una prueba aislada sin microtarea ni PR comercial NO ocupa cupo de la cola.
-- Contrato actualizado a `MAX_CONCURRENT_SCOPES=3` solo para microtareas comerciales distintas con ownership real; WIP 1 por Task comercialmente autorizada. Permanecen **2/6 Tasks autorizadas**, no se crea una tercera autorización ni se tocan permisos externos.
-- Objetivo **seis transiciones verificadas a LISTO por hora** en ventana móvil, no promesa ni conteo de auditorías/PR; recuperación de PR previo, revisión genuina, selección de DAG independiente, pruebas, CI, merge y readback son obligatorios.
-- PR #3741 se recuperó por merge no destructivo sin descartar archivos, se aprobó con identidad institucional diferente y CI 3/3 exact-HEAD; su cierre documental NO_GO no acredita paridad DEV con Vercel. No se realiza despliegue ni cambios productivos.
-- Impacto: gobierno documental del runtime de ChatGPT + disciplina operativa; sin cambios a Angular, backend, APIs, DB, secrets, Render/Vercel, QA, main o PROD. Rollback por PR protegido que revierta exclusivamente esta corrección.
+- Corrige la contabilidad falsa de ramas: `MAX_CONCURRENT_SCOPES=3` y `MAX_OPEN_WORK_BRANCHES=3` se refieren exclusivamente a microtareas comerciales distintas del Plan Inicial; no incluyen PR #3743/#3745 de gobierno, diagnósticos `test/`, auditorías ni ramas fusionadas. WIP máximo 1 por Task individualmente autorizada.
+- Se conserva exactamente la allowlist de cinco Tasks aprobada por PR #3749; Alex :30 no recibe autoridad comercial. Ninguna Task nueva ni credencial se crea o comparte.
+- El catálogo P0-002.A fue integrado mediante PR #3744 (merge dev `5b573b1aca57b84b854b12b89d9418d402560f3c`), revisión independiente `5644656871`, CI del SHA `7c41a4668bf3e051009f3d2e43fb74b7cdb1e0f8` 3/3 SUCCESS; su estado en Sheets requiere readback separado para LISTO.
+- Objetivo seis cierres `LISTO` verificados por hora entre ejecutores autorizados; no es SLA ni permite omitir dependencias, CI, revisión, merge o readback. Un bloqueo de Vercel en P0-001.B no impide otro P0 independiente.
+- Impacto documental operativo únicamente, sin cambios de ERP, APIs, RBAC, DB, secretos, QA/main/PROD ni despliegues. Rollback: revert protegido del changeset y nueva conciliación documental; nunca reescritura de historial.
+
+## 2026-10-25 — P0-002.A: catalogo actual L01-L15 (PRIMARY_DEV_02)
+
+- Desde dev@d3ed287d4bf3748d039223bdfc5b3909170b24cb, la Task individual autorizada creo la rama exclusiva work/solqaryn-p0-002-a y versiono docs/P0-002-A-CATALOGO-EVIDENCIA-VIGENTE-DEV.md.
+- Corte nativo verificado: tres jobs obligatorios de Scope Lock, Seguridad multiempresa y backend en SUCCESS sobre el SHA de base; 15 fuentes historicas L01-L15 reclasificadas por PR MERGED y brecha aun no certificada. Caso negativo real: PR #3583 y #3574 son CLOSED y no merged, por lo que el estado historico «abiertas» no puede usarse como vigente.
+- El merge de PR #3741 acredita integracion de P0-001.B pero su fila H3 del Sheet continuaba PENDIENTE al corte: el responsable debe conciliar, sin que esta microtarea la cambie. P0-002.A depende exclusivamente de P0-012.B LISTO y se limita a catalogacion comercial documental.
+- Impacto documental sin nuevas APIs, persistencia, UX, flags, secretos, infraestructuras, QA/main/PROD ni despliegues; NO afirmar paridad Render/Vercel por CI verde. Requiere PR, tres checks exact-HEAD, revision independiente y readback para cierre LISTO.
+
+---
+
+## 2026-10-25 — M3.2: concesion comercial individual 5/6 propuesta para Javier :40, Alex :10 y Alex :50
+
+- Evidencias nativas consumidas, sin repeticion: commits GitHub Javier :40 `46e6a9822d89932697c93e77c96df239d73bed4f` y Sheets BITACORA A85; Alex :10 `37fb117a38959c99c5795130a1a40365693cc0b4` y BITACORA A76; Alex :50 `b0f5a77757847d623a17c0f1d9c5fde57fd909fd` y BITACORA A81. GitHub author, ruta exclusiva y readback verificados. M3.2 diagnostica 5/6 incluyendo Javier :20; Javier :00 tenia autorizacion comercial previa.
+- El contador y la allowlist cambian de 2 a 5 SOLO al superar CI 3/3 SHA exacto, aprobacion independiente, merge protegido y readback CONFIG/TAREAS/BITACORA. Se autorizan tareas comerciales estrictamente DEV y revisiones cruzadas tecnicas; no autoaprobacion GitHub, force-push ni QA/main/PROD.
+- Alex :30 (Task `6adcc97a260881919d92bb9bacae1626`) permanece excluido: comentario/auditoria PASS, pero contents:write no certificado por bloqueo del proveedor. No declarar 6/6 ni modificar Q5.
+- Files de autoridad: docs/AUTOMATION_STATUS.md, docs/AUTOMATION_AUTHORITY.md, AGENTS.md. No se modifica codigo ERP, base de datos o infraestructura. Rollback: revert por PR protegido y conciliacion explicita del contador y allowlist.
 
 ## 2026-10-25 — P0-001.B: negativa de paridad Render/Vercel DEV (PR pendiente)
 
