@@ -12,7 +12,17 @@ const requiredChecks = [
   'SOLQARYN - Build y pruebas backend'
 ];
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const input = path.join(root, 'docs/baselines/P0-001-B-DEV-20261025.json');
+const snapshotsDir = path.join(root, 'docs/baselines');
+function snapshotPath() {
+  const index = process.argv.indexOf('--snapshot');
+  if (index < 0) return path.join(snapshotsDir, 'P0-001-B-DEV-20261025.json');
+  const name = process.argv[index + 1];
+  // A basename only: never follow arbitrary files, external data or secrets.
+  if (typeof name !== 'string' || !/^P0-001-B-DEV-20261025(?:-[A-Z0-9-]+)?\.json$/.test(name)) {
+    throw Error('Snapshot basename P0-001-B-DEV-20261025[-SUFFIX].json required');
+  }
+  return path.join(snapshotsDir, name);
+}
 
 export function evaluateParity(s) {
   const reasons = [];
@@ -53,11 +63,14 @@ export function verifySnapshot(s) {
 }
 
 function main() {
-  const s = JSON.parse(readFileSync(input, 'utf8'));
+  const s = JSON.parse(readFileSync(snapshotPath(), 'utf8'));
   const out = verifySnapshot(s);
   if (process.argv.includes('--self-test')) {
     const positive = structuredClone(s);
+    positive.render.status = 'live';
+    positive.render.sha = positive.dev_head;
     positive.vercel.state = 'READY';
+    positive.vercel.sha = positive.dev_head;
     positive.parity_result = 'MATCH';
     assert.equal(verifySnapshot(positive).decision, 'MATCH');
     const cases = [
@@ -70,7 +83,11 @@ function main() {
       ['foreign CI SHA', x => x.ci[0].head_sha = '0'.repeat(40)],
       ['spoofed CI URL', x => x.ci[0].url = 'https://github.com.evil.invalid/runs/12'],
       ['foreign repo', x => x.repository = 'foreign/repo'],
-      ['invalid head', x => x.dev_head = 'invalid']
+      ['invalid head', x => x.dev_head = 'invalid'],
+      ['render service identity', x => x.render.service_name = 'foreign-dev'],
+      ['vercel project identity', x => x.vercel.project_name = 'foreign-dev'],
+      ['wrong branch', x => x.branch = 'main'],
+      ['missing render SHA', x => x.render.sha = null]
     ];
     for (const [name, mutate] of cases) {
       const t = structuredClone(positive);
