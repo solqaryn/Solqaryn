@@ -7,6 +7,13 @@
 
 ---
 
+## 2026-10-25 — M3.2: concesion comercial individual 5/6 propuesta para Javier :40, Alex :10 y Alex :50
+
+- Evidencias nativas consumidas, sin repeticion: commits GitHub Javier :40 `46e6a9822d89932697c93e77c96df239d73bed4f` y Sheets BITACORA A85; Alex :10 `37fb117a38959c99c5795130a1a40365693cc0b4` y BITACORA A76; Alex :50 `b0f5a77757847d623a17c0f1d9c5fde57fd909fd` y BITACORA A81. GitHub author, ruta exclusiva y readback verificados. M3.2 diagnostica 5/6 incluyendo Javier :20; Javier :00 tenia autorizacion comercial previa.
+- El contador y la allowlist cambian de 2 a 5 SOLO al superar CI 3/3 SHA exacto, aprobacion independiente, merge protegido y readback CONFIG/TAREAS/BITACORA. Se autorizan tareas comerciales estrictamente DEV y revisiones cruzadas tecnicas; no autoaprobacion GitHub, force-push ni QA/main/PROD.
+- Alex :30 (Task `6adcc97a260881919d92bb9bacae1626`) permanece excluido: comentario/auditoria PASS, pero contents:write no certificado por bloqueo del proveedor. No declarar 6/6 ni modificar Q5.
+- Files de autoridad: docs/AUTOMATION_STATUS.md, docs/AUTOMATION_AUTHORITY.md, AGENTS.md. No se modifica codigo ERP, base de datos o infraestructura. Rollback: revert por PR protegido y conciliacion explicita del contador y allowlist.
+
 ## 2026-10-25 — P0-001.B: negativa de paridad Render/Vercel DEV (PR pendiente)
 
 - Rama exclusiva `work/solqaryn-p0-001-b` desde `dev@05e6a67a7bbbd2a94b4aeaf1322258ece90c730b`. Scope: snapshot inmutable, validador offline y acta de negativa para `PLAN_MAESTRO!A3`.
