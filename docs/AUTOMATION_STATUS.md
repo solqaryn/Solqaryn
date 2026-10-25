@@ -24,9 +24,9 @@ PHYSICAL_TASKS_REGISTERED=6
 MAX_CONCURRENT_SCOPES=2
 LEGACY_AUTOMATION_RUNTIME=RETIRED
 
-## M3.2 — dos escrituras de auditoria verificadas y propuesta de siguiente prueba de contenidos
+## M3.2 — tres escrituras de auditoría verificadas y propuesta de pruebas de contenido
 
-Tras integrar el PR #3739, los informes de Task Alex :10 (`6adbbc9ad9e88191bea8eb69104afb25`) y Javier :20 (`6adc2e4bd8a48191ac7d8641ed95a1a3`) indican pruebas unicas de comentario GitHub y fila `BITACORA`. Se verificaron directamente los autores GitHub (`morales35alex` comentario 6392818168; cuenta GitHub de Javier, comentario 6392908957) y la existencia de las filas `BITACORA!A63:Z64` desde Javier y SOLQARYN Platform. El readback independiente quedo en `BITACORA!A65:Z65`, con los cinco informes de lectura `GH_READ=PASS` y `DRIVE_READ=PASS` reportados para las Tasks adicionales. Esto acredita **operaciones diagnosticas de comentario y auditoria**, pero **NO** escritura de codigo ni creacion de PR, y no identifica por si sola la sesion nativa que creo cada fila.
+Tras integrar el PR #3739, se verificaron tres comentarios GitHub y sus filas de auditoría correspondientes: Alex :10 (comentario `6392818168`, `BITACORA!A63`), Javier :20 (`6392908957`, `BITACORA!A64`) y Javier :40 (`6393029857`, `BITACORA!A67`), con identidades GitHub y fingerprints reales. Los readbacks independientes desde Javier y SOLQARYN Platform se registraron en `BITACORA!A65` y `BITACORA!A68`. Los cinco informes individuales `GH_READ=PASS` y `DRIVE_READ=PASS` siguen documentados. Estas pruebas NO acreditan `contents:write` ni commits o PR comerciales, y el origen nativo exacto de cada escritura de Sheet se sustenta en reportes de Task, no en una identidad de ChatGPT expuesta por la API de Google.
 
 La concesion actual #3739 abarca solo Alex :10, Javier :20 y Javier :40 para comentario/Bitacora. Alex :30 y :50 mantienen `READ_ONLY`. Se propone una unica siguiente enmienda para conceder a esos dos slots auditoria no comercial y a las cinco Tasks una **prueba unica de contenido GitHub** en una sola rama aislada, con lectura posterior y verificaciones de concurrencia; una autorizacion de revision independiente solo para Alex :10 sobre PR #3738 despues de probar capacidad de contenido. **Esta propuesta no es efectiva antes de su propio merge protegido.**
 

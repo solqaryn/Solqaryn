@@ -67,7 +67,7 @@ Esta ampliacion **NO activa cinco escritores comerciales ni eleva el contador**.
 | ALEX_CHATGPT | SECONDARY_REVIEW_01 :10 | `6adbbc9ad9e88191bea8eb69104afb25` | GitHub comentario 6392818168 y BITACORA A63, readback cruzado |
 | JAVIER_CHATGPT | PRIMARY_DEV_02 :20 | `6adc2e4bd8a48191ac7d8641ed95a1a3` | GitHub comentario 6392908957 y BITACORA A64, readback cruzado |
 | ALEX_CHATGPT | SECONDARY_REVIEW_02 :30 | `6adcc97a260881919d92bb9bacae1626` | GH_READ y DRIVE_READ PASS reportados; escritura no probada |
-| JAVIER_CHATGPT | PRIMARY_DEV_03 :40 | `6adc2e55f47c81919f6374e561687076` | GH_READ y DRIVE_READ PASS reportados; prueba de comentario/fila ya autorizada por PR #3739, pendiente |
+| JAVIER_CHATGPT | PRIMARY_DEV_03 :40 | `6adc2e55f47c81919f6374e561687076` | GH_READ y DRIVE_READ PASS reportados; comentario GitHub `6393029857` y fila `BITACORA!A67` con GET y readback cruzado (`BITACORA!A68`); `contents:write` de código NO_VERIFICADO |
 | ALEX_CHATGPT | SECONDARY_REVIEW_03 :50 | `6adcc98a80a48191b71a5156624c21df` | GH_READ y DRIVE_READ PASS reportados; escritura no probada |
 
 **Etapa A — completar dos permisos de auditoria para Alex :30 y :50:** se concede exclusivamente a `6adcc97a260881919d92bb9bacae1626` y `6adcc98a80a48191b71a5156624c21df` el mismo test individual de PR #3739: un comentario de diagnostico cada una en el PR historico ya fusionado #3737, con fingerprint `M3_2_TASK_GH_WRITE_PROBE:<TASK_ID>:<UTC>` y readback por ID, y una fila `BITACORA` auditada con `EVENT_ID` unico, autor/cuenta/UTC autenticos y `PARTIAL_NOT_CERTIFIED`, comprobada despues de insertar. Se niegan reintentos duplicados si ya existe el comentario/fila con fingerprint. Las otras tres ya tienen esa concesion de PR #3739; no volver a repetir una prueba consumida.
