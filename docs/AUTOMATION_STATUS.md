@@ -7,8 +7,8 @@ BRANCH=dev
 EXECUTION_PLAN_DRIVE_FILE_ID=1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA
 CURRENT_COMMERCIAL_ONLY=TRUE
 AUTOMATION_RUNTIME=ACTIVE_DEV
-SCHEDULED_CHATGPT_TASKS_AUTHORIZED=2
-AUTHORIZED_COMMERCIAL_TASK_IDS=6adbb9fff1548191a1bd5b30d9e9984a,6adc2e4bd8a48191ac7d8641ed95a1a3
+SCHEDULED_CHATGPT_TASKS_AUTHORIZED=5
+AUTHORIZED_COMMERCIAL_TASK_IDS=6adbb9fff1548191a1bd5b30d9e9984a,6adc2e4bd8a48191ac7d8641ed95a1a3,6adc2e55f47c81919f6374e561687076,6adbbc9ad9e88191bea8eb69104afb25,6adcc98a80a48191b71a5156624c21df
 VAEP_DISPATCH_AUTHORIZED=FALSE
 JULES_WORKERS_AUTHORIZED=0
 PILOT_TASK_LIMIT=6
@@ -24,6 +24,16 @@ DESIGN_TOPOLOGY=3_JAVIER_3_ALEX
 PHYSICAL_TASKS_REGISTERED=6
 MAX_CONCURRENT_SCOPES=2
 LEGACY_AUTOMATION_RUNTIME=RETIRED
+
+## M3.2 — habilitacion comercial individual adicional 5/6 (25-10-2026)
+
+**Concesion de alcance DEV otorgada por el propietario, supeditada al merge protegido y conciliacion institucional:** se incorporan SOLO las Tasks PRIMARY_DEV_03 Javier :40 (`6adc2e55f47c81919f6374e561687076`), SECONDARY_REVIEW_01 Alex :10 (`6adbbc9ad9e88191bea8eb69104afb25`) y SECONDARY_REVIEW_03 Alex :50 (`6adcc98a80a48191b71a5156624c21df`) a las dos ya autorizadas. El contrato comercial sigue siendo exclusivamente DEV, no QA/main/PROD; Scope Lock STRICT y exigencia de revision formal independiente permanecen. La autoridad efectiva de esta enmienda nace solo despues de CI obligatorio 3/3 en SHA final, aprobacion independiente, merge protegido dev y readback de CONFIG!B39=5, CONFIG!B57=TRUE con allowlist, TAREAS_PROGRAMADAS!Q3/Q6/Q7=AUTORIZADA_VERIFICADA_DESDE_TASK y BITACORA de conciliacion. Hasta ese punto el contador anterior 2/6 continua operativo. No se crean ni alteran horarios, IDs o cuentas fisicas de Tasks.
+
+**Evidencia diagnostica propia, consumida y no repetible:** Javier :40 GitHub commit `46e6a9822d89932697c93e77c96df239d73bed4f`, archivo `automation-probes/m3-2/6adc2e55f47c81919f6374e561687076.txt`, BITACORA!A85:Z85. Alex :10 GitHub commit `37fb117a38959c99c5795130a1a40365693cc0b4`, archivo `automation-probes/m3-2/6adbbc9ad9e88191bea8eb69104afb25.txt`, BITACORA!A76:Z76 (readback de fila corroborado, el indicador Y76 historico se conserva). Alex :50 GitHub commit `b0f5a77757847d623a17c0f1d9c5fde57fd909fd`, archivo `automation-probes/m3-2/6adcc98a80a48191b71a5156624c21df.txt`, BITACORA!A81:Z81. En los tres casos GitHub confirma archivo unico y commit de la cuenta asignada, y Sheets contiene Task ID, fingerprint, commit y UTC. Las pruebas desde Tasks distintas no son intercambiables.
+
+**Pendiente independiente:** SECONDARY_REVIEW_02 Alex :30 (`6adcc97a260881919d92bb9bacae1626`) posee GH_COMMENT_WRITE=PASS y DRIVE_AUDIT_WRITE=PASS (BITACORA!A78:Z78); su intento de contents:write fue bloqueado por seguridad antes de GitHub (BITACORA!A79:Z79), sin commit ni archivo. Por eso NO entra en esta allowlist ni obtiene desarrollo comercial. No se repetirán los diagnósticos válidos de las otras Tasks; cualquier acreditacion posterior propia de :30 exigira evidencia nueva real desde su ejecucion y autorizacion protegida separada.
+
+**Alcance individual de las tres nuevas Tasks:** trabajar en ramas comerciales work/solqaryn-<microtarea> y PR a dev con exclusividad y maximo dos scopes segun contrato actual; revisar/corregir trabajo de otro Task ID sin autoaprobar; PLAN_MAESTRO!H:M solo del scope poseido, TAREAS_PROGRAMADAS fila propia, BITACORA eventos idempotentes y readback; COLA derivada NO se edita. LISTO solo tras CI exact SHA, revision de identidad GitHub distinta del autor, merge protegido, verificacion de resultados y readback Sheets. No secretos, privilegios globales, bypass ni deployment QA/PROD.
 
 ## M3.2 — certificacion individual Javier PRIMARY_DEV_02 (25-10-2026)
 
