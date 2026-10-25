@@ -3,6 +3,18 @@
 - Task 6adc2e55f47c81919f6374e561687076 / jmejia31 reclama exclusivamente P0-009.A (PLAN_MAESTRO fila 18) desde dev@72327d132ee69955c5bb13a03423b229a08bd432 y documenta jobs CI exactos: Scope Lock SUCCESS, seguridad 943/943, backend 2902/2902, frontend build SUCCESS con warning SCSS.
 - Plan referencia 48/48 y 21/21: NO_REVALIDADOS en HEAD actual. Vercel proyecto solqaryn-dev muestra READY solo para SHA 29dbcb06 y dos CANCELED para bafcde53, nunca paridad con 72327d13. QA/PROD NO consultados. Agrega script local de 1 positivo + 8 regresiones negativas sintéticas, sin contactar proveedores. No cambia runtime, CI workflows, permisos ni secretos.
 - Scope VALIDANDO solo con PR y CI exact SHA 3/3, revisión formal independiente, merge protegido y readback PLAN/COLA/BITACORA. No cierra P0-001.B ni realiza despliegues.
+- En el PR final se agrega workflow seguro dedicado `.github/workflows/p0-009-a-ci-evidence.yml` (checkout read-only, Node 24, self-test nativo exact SHA); el workflow no sustituye las tres comprobaciones ni APPROVED independiente y solo se certifica cuando GitHub devuelve SUCCESS.
+
+## 2026-10-25 — P0-003.A: comparación causal Render/Vercel DEV (PRIMARY_DEV_02)
+
+- Task `6adc2e4bd8a48191ac7d8641ed95a1a3`, GitHub `jmejia31`: acta `docs/P0-003-A-COMPARATIVA-RENDER-VERCEL-DEV.md` desde `dev@bafcde53ce2562f70d5b4115184df51e5c48483d`. Render DEV `dep-dbf5age7bikc73c8467g` `live` y mismo SHA; Vercel DEV alias `READY` con SHA `29dbcb06...`, intento de HEAD `CANCELED` (política consolidada). Liveness/readiness devolvieron cuerpos sanos; no se certificó HTTP numérico, CORS efectivo ni paridad exacta.
+- Negativos N1-N5 impiden inferir que un deployment `CANCELED` equivale a `READY` o que un Render saludable garantiza frontend actualizado. No modifica despliegues, secretos, código de producto, QA/main/PROD. Sólo acto documental y changelog, rollback por revert protegido. Estado candidato hasta CI 3/3 SHA final, revisión independiente, merge y readback Sheets.
+
+## 2026-10-25 — P0-006.B: prueba negativa de matcher público y guards DEV (PRIMARY_DEV_01)
+
+- Task `6adbb9fff1548191a1bd5b30d9e9984a` (`jmejia31`) agrega `scripts/verify-p0-006-b-route-guards.mjs` y `docs/P0-006-B-CERTIFICACION-NEGATIVA-RUTAS-DEV.md` desde `dev@bafcde53ce2562f70d5b4115184df51e5c48483d`. Invariantes estáticos: 92 `path`, 90 `loadComponent`, 2 redirects, 39 enlaces, guards sobre rutas privadas y ausencia de matcher público raíz `:slug`; cuatro mutaciones negativas detectadas en evaluación de fuentes GitHub. El script reproducible requiere ejecución nativa sobre checkout para cierre formal.
+- No altera frontend/backend/routing, QA/main/PROD, datos, credenciales ni despliegues. No equiparar prueba estática con E2E/tenant/backend RBAC ni declarar `LISTO` antes de CI 3/3 exact HEAD, revisión independiente, merge protegido y readback Sheets.
+- Workflow P0-006.B aislado (permissions contents:read) añade prueba nativa del self-test Node sobre checkout del PR. Publicar el workflow NO constituye prueba ejecutada; CI exact-SHA y revisión independiente siguen obligatorios.
 
 ## 2026-10-25 — P0-007.A: inventario de 137 archivos de componentes Angular (SECONDARY_REVIEW_01)
 

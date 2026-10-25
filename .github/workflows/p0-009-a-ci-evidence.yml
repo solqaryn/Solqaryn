@@ -1,0 +1,25 @@
+name: P0-009.A - CI evidence negative fixtures
+
+on:
+  pull_request:
+    branches: [dev]
+    paths:
+      - 'scripts/verify-p0-009-a-ci-evidence.mjs'
+      - '.github/workflows/p0-009-a-ci-evidence.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native-ci-evidence-negatives:
+    name: P0-009.A - Native CI evidence negative fixtures
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+      - name: Run one positive and eight fail-closed negative fixtures
+        run: node scripts/verify-p0-009-a-ci-evidence.mjs --self-test

@@ -38,3 +38,7 @@ El atributo target=production en registros del proyecto llamado solqaryn-dev es 
 Solo esta acta, un script de pruebas puras y CHANGELOG_AI.md. Sin cambios de API, DTO, frontend, RBAC, MySQL, migraciones, secretos, datos, workflows, proveedor, QA/main/PROD o despliegues. Consumidores: revisión de CI y mantenimiento DEV; observabilidad por SHA, jobs y links. Rollback mediante revert protegido de esos tres archivos, sin reescribir historia.
 
 **Estado:** candidato en VALIDANDO tras PR; LISTO requiere CI obligatorio 3/3 exact SHA del PR, validación independiente del script, APPROVED de otro GitHub login, merge protegido y readback PLAN_MAESTRO/COLA/BITACORA. No cerrar P0-001.B por esta acta.
+
+## Prueba reproducible de este PR
+
+Se incorpora un workflow mínimo de GitHub Actions (`.github/workflows/p0-009-a-ci-evidence.yml`) con `permissions: contents: read`, `actions/checkout@v4` y Node 24.21.0 para ejecutar `node scripts/verify-p0-009-a-ci-evidence.mjs --self-test` sobre el SHA exacto del PR. Este self-test valida un positivo y ocho mutaciones negativas sintéticas; no contacta proveedores. **El resultado nativo solo es PASS al comprobar el job SUCCESS**, no por existir el YAML. La revisión independiente debe observar el job y los tres checks obligatorios antes del merge y conciliación. Este cambio no crea despliegues, credenciales ni edita código ERP.
