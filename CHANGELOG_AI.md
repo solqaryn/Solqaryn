@@ -1,3 +1,10 @@
+## 2026-10-25 — P0-009.A: CI exact-SHA y Vercel DEV (PRIMARY_DEV_03)
+
+- Task 6adc2e55f47c81919f6374e561687076 / jmejia31 reclama exclusivamente P0-009.A (PLAN_MAESTRO fila 18) desde dev@72327d132ee69955c5bb13a03423b229a08bd432 y documenta jobs CI exactos: Scope Lock SUCCESS, seguridad 943/943, backend 2902/2902, frontend build SUCCESS con warning SCSS.
+- Plan referencia 48/48 y 21/21: NO_REVALIDADOS en HEAD actual. Vercel proyecto solqaryn-dev muestra READY solo para SHA 29dbcb06 y dos CANCELED para bafcde53, nunca paridad con 72327d13. QA/PROD NO consultados. Agrega script local de 1 positivo + 8 regresiones negativas sintéticas, sin contactar proveedores. No cambia runtime, CI workflows, permisos ni secretos.
+- Scope VALIDANDO solo con PR y CI exact SHA 3/3, revisión formal independiente, merge protegido y readback PLAN/COLA/BITACORA. No cierra P0-001.B ni realiza despliegues.
+- En el PR final se agrega workflow seguro dedicado `.github/workflows/p0-009-a-ci-evidence.yml` (checkout read-only, Node 24, self-test nativo exact SHA); el workflow no sustituye las tres comprobaciones ni APPROVED independiente y solo se certifica cuando GitHub devuelve SUCCESS.
+
 ## 2026-10-25 — P0-003.A: comparación causal Render/Vercel DEV (PRIMARY_DEV_02)
 
 - Task `6adc2e4bd8a48191ac7d8641ed95a1a3`, GitHub `jmejia31`: acta `docs/P0-003-A-COMPARATIVA-RENDER-VERCEL-DEV.md` desde `dev@bafcde53ce2562f70d5b4115184df51e5c48483d`. Render DEV `dep-dbf5age7bikc73c8467g` `live` y mismo SHA; Vercel DEV alias `READY` con SHA `29dbcb06...`, intento de HEAD `CANCELED` (política consolidada). Liveness/readiness devolvieron cuerpos sanos; no se certificó HTTP numérico, CORS efectivo ni paridad exacta.
