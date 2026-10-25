@@ -1,3 +1,9 @@
+## 2026-10-25 — P0-002.B: certificar frescura de evidencias L01–L15 (PRIMARY_DEV_03)
+
+- La Task `6adc2e55f47c81919f6374e561687076` crea en rama exclusiva `work/solqaryn-p0-002-b` el acta `docs/P0-002-B-CERTIFICACION-FRESCURA-EVIDENCIA-DEV.md`, basada en dev `a41140bd67dfa5bdb7599882573661df941d0c45`.
+- Prueba negativa real: PR #3583 y #3574 están CLOSED/no MERGED, contrario a conclusiones históricas de 12–15 octubre; la base antigua del catálogo difiere del HEAD actual y CI/merge no implican despliegue.
+- Sólo documentación DEV. No altera código, datos, terceros, QA/main/PROD. `VALIDANDO` hasta CI 3/3 SHA final, revisión independiente, merge protegido y readback Sheets; no declarar LISTO sin esas condiciones.
+
 ## 2026-10-25 — M3.3: corregir WIP comercial real y recuperar la cola (#3743)
 
 - Corrige la contabilidad falsa de ramas: `MAX_CONCURRENT_SCOPES=3` y `MAX_OPEN_WORK_BRANCHES=3` se refieren exclusivamente a microtareas comerciales distintas del Plan Inicial; no incluyen PR #3743/#3745 de gobierno, diagnósticos `test/`, auditorías ni ramas fusionadas. WIP máximo 1 por Task individualmente autorizada.
