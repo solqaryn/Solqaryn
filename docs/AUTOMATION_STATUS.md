@@ -24,6 +24,14 @@ PHYSICAL_TASKS_REGISTERED=6
 MAX_CONCURRENT_SCOPES=2
 LEGACY_AUTOMATION_RUNTIME=RETIRED
 
+## M3.2 — tres escrituras de auditoría verificadas y propuesta de pruebas de contenido
+
+Tras integrar el PR #3739, se verificaron tres comentarios GitHub y sus filas de auditoría correspondientes: Alex :10 (comentario `6392818168`, `BITACORA!A63`), Javier :20 (`6392908957`, `BITACORA!A64`) y Javier :40 (`6393029857`, `BITACORA!A67`), con identidades GitHub y fingerprints reales. Los readbacks independientes desde Javier y SOLQARYN Platform se registraron en `BITACORA!A65` y `BITACORA!A68`. Los cinco informes individuales `GH_READ=PASS` y `DRIVE_READ=PASS` siguen documentados. Estas pruebas NO acreditan `contents:write` ni commits o PR comerciales, y el origen nativo exacto de cada escritura de Sheet se sustenta en reportes de Task, no en una identidad de ChatGPT expuesta por la API de Google.
+
+La concesion actual #3739 abarca solo Alex :10, Javier :20 y Javier :40 para comentario/Bitacora. Alex :30 y :50 mantienen `READ_ONLY`. Se propone una unica siguiente enmienda para conceder a esos dos slots auditoria no comercial y a las cinco Tasks una **prueba unica de contenido GitHub** en una sola rama aislada, con lectura posterior y verificaciones de concurrencia; una autorizacion de revision independiente solo para Alex :10 sobre PR #3738 despues de probar capacidad de contenido. **Esta propuesta no es efectiva antes de su propio merge protegido.**
+
+Conservar sin elevar: `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1`, `PHYSICAL_TASKS_REGISTERED=6`, `ACTIVE_DEV_WRITERS_OBSERVED=1`, `CONFIG!B39=1`, `CONFIG!B57=FALSE`; ningun permiso comercial masivo por documento. El resto de controles de Scope Lock, QA/main/PROD, VAEP/Jules e independencia siguen intactos.
+
 ## M3.2 — habilitación diagnóstica limitada para PRIMARY_DEV_02 (:20, Javier)
 
 **Task individual:** `6adc2e4bd8a48191ac7d8641ed95a1a3`, propietaria `JAVIER_CHATGPT`, programada cada hora a :20 (`America/Tegucigalpa`), `is_enabled=true`. El usuario aportó un informe de su ejecución del 24-10-2026 con `GH_READ=PASS`, `DRIVE_READ=PASS`, `GH_WRITE=NO_AUTORIZADO` y `DRIVE_WRITE=NO_AUTORIZADO`; `automations.peek` confirmó `last_run_time=2026-10-24T18:26:56.644003Z`. Estas lecturas fueron **reportadas** desde la ejecución y conciliadas por Javier en `TAREAS_PROGRAMADAS!O4:Z4` y `BITACORA!A51:Z51`; no son una prueba de escritura ni permiten atribuir conexiones interactivas a la Task.
