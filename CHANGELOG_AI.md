@@ -3,6 +3,12 @@
 - Task `6adc2e4bd8a48191ac7d8641ed95a1a3`, GitHub `jmejia31`: acta `docs/P0-003-A-COMPARATIVA-RENDER-VERCEL-DEV.md` desde `dev@bafcde53ce2562f70d5b4115184df51e5c48483d`. Render DEV `dep-dbf5age7bikc73c8467g` `live` y mismo SHA; Vercel DEV alias `READY` con SHA `29dbcb06...`, intento de HEAD `CANCELED` (política consolidada). Liveness/readiness devolvieron cuerpos sanos; no se certificó HTTP numérico, CORS efectivo ni paridad exacta.
 - Negativos N1-N5 impiden inferir que un deployment `CANCELED` equivale a `READY` o que un Render saludable garantiza frontend actualizado. No modifica despliegues, secretos, código de producto, QA/main/PROD. Sólo acto documental y changelog, rollback por revert protegido. Estado candidato hasta CI 3/3 SHA final, revisión independiente, merge y readback Sheets.
 
+## 2026-10-25 — P0-006.B: prueba negativa de matcher público y guards DEV (PRIMARY_DEV_01)
+
+- Task `6adbb9fff1548191a1bd5b30d9e9984a` (`jmejia31`) agrega `scripts/verify-p0-006-b-route-guards.mjs` y `docs/P0-006-B-CERTIFICACION-NEGATIVA-RUTAS-DEV.md` desde `dev@bafcde53ce2562f70d5b4115184df51e5c48483d`. Invariantes estáticos: 92 `path`, 90 `loadComponent`, 2 redirects, 39 enlaces, guards sobre rutas privadas y ausencia de matcher público raíz `:slug`; cuatro mutaciones negativas detectadas en evaluación de fuentes GitHub. El script reproducible requiere ejecución nativa sobre checkout para cierre formal.
+- No altera frontend/backend/routing, QA/main/PROD, datos, credenciales ni despliegues. No equiparar prueba estática con E2E/tenant/backend RBAC ni declarar `LISTO` antes de CI 3/3 exact HEAD, revisión independiente, merge protegido y readback Sheets.
+- Workflow P0-006.B aislado (permissions contents:read) añade prueba nativa del self-test Node sobre checkout del PR. Publicar el workflow NO constituye prueba ejecutada; CI exact-SHA y revisión independiente siguen obligatorios.
+
 ## 2026-10-25 — P0-007.A: inventario de 137 archivos de componentes Angular (SECONDARY_REVIEW_01)
 
 - Task `6adbbc9ad9e88191bea8eb69104afb25` / `ALEX_CHATGPT` / GitHub `morales35alex` crea `docs/P0-007-A-INVENTARIO-COMPONENTES-DEV.md` y `scripts/verify-p0-007-a-component-catalog.mjs` desde `dev@bafcde53ce2562f70d5b4115184df51e5c48483d`. Un árbol GitHub no truncado identifica 129 `features/**/*.component.ts` y 8 `shared/**/*.component.ts`, separados de 2 archivos `app/core` y raíz. El verificador compara el inventario Markdown con un checkout y rechaza entradas borradas/agregadas, sin escribir archivos.
