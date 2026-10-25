@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// P0-007.B: negative evidence test. Never translates source inventory into UX certification.
+// P0-007.B: negative evidence test. Never translates source source list into UX certification.
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
