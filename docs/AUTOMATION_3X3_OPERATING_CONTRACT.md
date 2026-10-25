@@ -114,9 +114,7 @@ commits, PR y responsable: nunca simular continuidad infinita o cierre.
 Ramas permanentes: `dev`, `qa` y `main`. Para cada microtarea elegible
 crear/reutilizar **una** rama determinista `work/solqaryn-<id-normalizado>`
 y PR exclusivo hacia `dev`. No utilizar una rama almacén compartida.
-Máximo dos ramas de trabajo abiertas al inicio del piloto; cuentan todas
-las ramas `work/solqaryn-*` no fusionadas y ramas operativas de esta microfase
-cuando correspondan, sin borrar trabajo existente.
+`MAX_CONCURRENT_SCOPES=2` limita **microtareas comerciales activas**, no el número de ramas de auditoría o pruebas. Cuentan solamente scopes del Plan Comercial con rama `work/solqaryn-<id-normalizado>` y trabajo sin cierre; una sola microtarea con varios commits/PR no se cuenta dos veces. Las ramas `test/` diagnósticas M3.2 y PRs normativos sin microtarea comercial NO consumen WIP comercial. Conservar exclusividad por rama y por recurso compartido, sin borrar ni interferir con trabajo existente. Una microtarea bloqueada por proveedor que retiene rama/PR ocupa su propio scope hasta cierre o liberación autorizada, pero no inmoviliza otros scopes independientes. La Task debe computar el WIP desde PRs y ramas vivas, no desde eventos históricos o un valor en Bitácora. El límite no reduce verificaciones de seguridad ni el requisito de aprobación independiente.
 
 La toma de una microtarea requiere una primitiva de exclusividad **real** del
 proveedor: crear una referencia GitHub con nombre determinista solo si no existe
