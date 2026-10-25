@@ -1,3 +1,7 @@
+## 2026-10-25 — Flujo de entregas consolidadas en Vercel DEV
+
+En el proyecto `solqaryn-dev` (ID `prj_1Anhx5mWyXEBX89lWC24Py6JXe7A`) se separa la integracion continua de GitHub `dev` de las publicaciones de frontend: `frontend/vercel.json` desactiva solo el autodeploy Git de la rama `dev`; la validacion de cada PR sigue con Scope Lock STRICT, CI backend y seguridad multiempresa. `.github/workflows/solqaryn-dev-vercel-consolidated.yml` selecciona el HEAD actual de `dev` con CI 3/3 y puede publicar una version DEV consolidada a lo sumo una vez por hora, usando credencial de repositorio `VERCEL_TOKEN` de privilegio minimo, si esta configurada. La palabra `production` de Vercel significa exclusivamente el target interno del proyecto DEV, nunca `solqaryn-prod` ni `main`. No cambia arquitectura frontend, API, persistencia, dominios, QA o PROD. Un resultado CI de GitHub NO sustituye deployment `READY` con SHA real. Detalles y rollback en `docs/DEV_VERCEL_CONSOLIDATED_RELEASE.md`.
+
 # Arquitectura técnica vigente — SOLQARYN
 
 ## 2026-10-22 — Migración documental nativa (autoridad comercial vigente)
