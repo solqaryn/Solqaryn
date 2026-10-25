@@ -1,3 +1,9 @@
+## 2026-10-25 — PR #3742: corrección causal de Scope Lock
+
+- Los tres jobs fallidos eran efecto de un único check `scripts/verify-project-scope.mjs` que detectó el login legado `jmejia31` en AGENTS.md y docs/AUTOMATION_STATUS.md, documentos de estado actual.
+- Se reemplazó la referencia por identificación funcional de Javier y su ID GitHub 93171442 exclusivamente en dichos documentos. No se modificó el script, los permisos de GitHub ni la validación de tenancy; el login histórico permanece trazable en evidencia GitHub y BITACORA.
+- Los permisos comerciales siguen condicionados al merge protegido de este mismo PR, CI exact-HEAD y readback de CONFIG y registro de la Task. No se afirma éxito CI antes de la ejecución posterior.
+
 ## 2026-10-25 — M3.2 Javier :20: autorizacion comercial individual propuesta
 
 - Verificada prueba de contenido: commit `aaca89247d9aaf61eb21a308c2e43fd5fef24526`, archivo `automation-probes/m3-2/6adc2e4bd8a48191ac7d8641ed95a1a3.txt`, identidad jmejia31, UTC 2026-10-25T15:26:15.942Z. BITACORA!A77:Z77 con readback coincidente.
