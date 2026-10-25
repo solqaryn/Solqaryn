@@ -1,3 +1,9 @@
+## 2026-10-25 — Throughput 3x3: conteo WIP comercial, no pruebas M3.2
+
+- Corregido el conteo de concurrencia: `MAX_CONCURRENT_SCOPES=2` limita microtareas comerciales activas; las ramas de diagnóstico `test/` y los PRs normativos sin scope comercial no ocupan WIP comercial. Se conserva exclusividad por rama, CI, revisión independiente y autorización individual de Tasks.
+- PR #3741 recuperado por merge no destructivo y fusionado en dev `d3ed287d4bf3748d039223bdfc5b3909170b24cb`, pero su acta NO_GO no certifica paridad Render/Vercel ni convierte P0-001.B en LISTO. Se prioriza trabajo comercial independiente elegible.
+- Meta operacional 6 microtareas LISTO/hora; solo se cuentan cierres verificados en Plan Maestro, Cola derivada y Bitácora, nunca auditorías o ejecuciones nominales. Rollback: revert por PR protegido de este ajuste documental.
+
 ## 2026-10-25 — P0-001.B: negativa de paridad Render/Vercel DEV (PR pendiente)
 
 - Rama exclusiva `work/solqaryn-p0-001-b` desde `dev@05e6a67a7bbbd2a94b4aeaf1322258ece90c730b`. Scope: snapshot inmutable, validador offline y acta de negativa para `PLAN_MAESTRO!A3`.
