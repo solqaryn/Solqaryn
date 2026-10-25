@@ -22,10 +22,20 @@ SECONDARY_TASK_ACCOUNT=ALEX_CHATGPT
 DESIGN_VERSION=2.0
 DESIGN_TOPOLOGY=3_JAVIER_3_ALEX
 PHYSICAL_TASKS_REGISTERED=6
-MAX_CONCURRENT_SCOPES=3
+MAX_CONCURRENT_SCOPES=6
+MAX_OWNED_SCOPES_PER_TASK=2
+MAX_ACTIVE_WRITES_PER_TASK=1
 LEGACY_AUTOMATION_RUNTIME=RETIRED
 
-## M3.3 — Censo WIP comercial, sin ramas administrativas bloqueantes (25-10-2026)
+## M3.4 — ampliación quirúrgica WIP comercial a 6 (25-10-2026)
+
+**AUTORIDAD VIGENTE tras merge protegido y comprobación del HEAD:** `MAX_CONCURRENT_SCOPES=6` y `MAX_OPEN_WORK_BRANCHES=6` describen **microtareas comerciales distintas, no autorizaciones de Tasks**. Se preserva EXACTAMENTE `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=5` y su allowlist vigente: Javier :00/:20/:40 y Alex :10/:50. Alex :30 sigue sin permiso comercial. WIP actual se mide contando scopes con PR/ramas de trabajo comerciales realmente abiertos; una rama fusionada, un PR de gobierno, una prueba diagnóstica y una fila obsoleta de Sheet no ocupan un scope. El nuevo límite NO exige que estén ocupados los seis, ni permite simular LISTO.
+
+**Control de concurrencia y continuidad:** una Task autorizada puede mantener como máximo **dos microtareas asignadas** y a la vez **un solo scope en edición activa**. Puede reclamar una segunda únicamente cuando su primera entrega esté en `VALIDANDO` con PR auténtico, no exista edición ni revisión correctiva en curso de esa rama, y haya cumplido `REVIEW_FIRST` sobre los PR `VALIDANDO` de otra cuenta. Las dos microtareas deben tener IDs, ramas, owners y auditorías distintos, todas las dependencias `LISTO`, prioridad P0 y toma exclusiva de GitHub con readback; no se comparten ramas ni se reescriben PR. Una Task con un scope `EN_PROGRESO` o dos ya asignados NO puede reclamar un tercero. La única revisión formal válida es de login GitHub diferente al autor y a los contribuyentes revisados. Ci exact-SHA 3/3, merge protegido a dev y readback PLAN/COLA/BITACORA siguen obligatorios. El techo de 6 es global; permisos individuales siguen siendo 5/6.
+
+**Riesgo y mitigación:** más PR puede aumentar conflictos en CHANGELOG_AI.md y cola de revisiones. Priorizar RECOVER/REVIEW_FIRST y cierres, reconciliar en la misma rama sin force-push, nunca tomar trabajos con editor ajeno activo, no iniciar una segunda tarea si existe revisión independiente abordable. No se cambian backend/frontend ERP, migraciones MySQL, RBAC, entornos QA/main/PROD, secretos ni Vercel/Render. Rollback mediante PR protegido que restaure el techo, únicamente tras verificar WIP vivo, sin eliminar scopes legítimos.
+
+## M3.3 — HISTÓRICO: censo previo WIP 3 (sustituido por M3.4)
 
 `MAX_CONCURRENT_SCOPES=3` limita exclusivamente microtareas comerciales distintas abiertas del Plan Inicial, con PR o rama `work/solqaryn-<microtarea>` real, como máximo una por Task individualmente autorizada. No cuentan `test/solqaryn-m3-2-native-write-*`, PR de gobierno (incluidos #3743/#3745), pruebas diagnósticas, auditorías, ramas ya fusionadas ni eventos históricos. No se borran ramas para inventar cupo, y toda escritura exige exclusividad efectiva de su propio recurso. La allowlist comercial sigue en 5/6, sin incluir Alex :30.
 
@@ -39,7 +49,7 @@ Objetivo del propietario: 6 cierres comprobados LISTO por hora entre Tasks autor
 
 **Pendiente independiente:** SECONDARY_REVIEW_02 Alex :30 (`6adcc97a260881919d92bb9bacae1626`) posee GH_COMMENT_WRITE=PASS y DRIVE_AUDIT_WRITE=PASS (BITACORA!A78:Z78); su intento de contents:write fue bloqueado por seguridad antes de GitHub (BITACORA!A79:Z79), sin commit ni archivo. Por eso NO entra en esta allowlist ni obtiene desarrollo comercial. No se repetirán los diagnósticos válidos de las otras Tasks; cualquier acreditacion posterior propia de :30 exigira evidencia nueva real desde su ejecucion y autorizacion protegida separada.
 
-**Alcance individual de las tres nuevas Tasks:** trabajar en ramas comerciales work/solqaryn-<microtarea> y PR a dev con exclusividad y máximo tres scopes comerciales según contrato actual; revisar/corregir trabajo de otro Task ID sin autoaprobar; PLAN_MAESTRO!H:M solo del scope poseido, TAREAS_PROGRAMADAS fila propia, BITACORA eventos idempotentes y readback; COLA derivada NO se edita. LISTO solo tras CI exact SHA, revision de identidad GitHub distinta del autor, merge protegido, verificacion de resultados y readback Sheets. No secretos, privilegios globales, bypass ni deployment QA/PROD.
+**Alcance individual de las tres nuevas Tasks:** trabajar en ramas comerciales work/solqaryn-<microtarea> y PR a dev con exclusividad y máximo seis scopes comerciales según contrato vivo M3.4; revisar/corregir trabajo de otro Task ID sin autoaprobar; PLAN_MAESTRO!H:M solo del scope poseido, TAREAS_PROGRAMADAS fila propia, BITACORA eventos idempotentes y readback; COLA derivada NO se edita. LISTO solo tras CI exact SHA, revision de identidad GitHub distinta del autor, merge protegido, verificacion de resultados y readback Sheets. No secretos, privilegios globales, bypass ni deployment QA/PROD.
 
 ## M3.2 — certificacion individual Javier PRIMARY_DEV_02 (25-10-2026)
 

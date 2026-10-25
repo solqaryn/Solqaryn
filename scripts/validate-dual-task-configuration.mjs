@@ -62,15 +62,20 @@ export function validateDocuments(src) {
   const capStatus = Number(key(src.status,'MAX_CONCURRENT_SCOPES'));
   const capContract = Number(key(src.contract,'MAX_CONCURRENT_SCOPES'));
   const capBranches = Number(key(src.contract,'MAX_OPEN_WORK_BRANCHES'));
-  if (![capAuthority,capStatus,capContract,capBranches].every(x=>Number.isInteger(x)&&x===3))
+  if (![capAuthority,capStatus,capContract,capBranches].every(x=>Number.isInteger(x)&&x===6))
     errors.push('commercial WIP cap mismatch');
+  const ownedCaps = [src.authority, src.status, src.contract].map(x => Number(key(x,'MAX_OWNED_SCOPES_PER_TASK')));
+  const activeWriteCaps = [src.authority, src.status, src.contract].map(x => Number(key(x,'MAX_ACTIVE_WRITES_PER_TASK')));
+  if (!ownedCaps.every(x=>Number.isInteger(x)&&x===2)) errors.push('per-task scope cap mismatch');
+  if (!activeWriteCaps.every(x=>Number.isInteger(x)&&x===1)) errors.push('single active editor cap mismatch');
   if (key(src.scope,'PILOT_TASK_LIMIT') !== '6') errors.push('scope topology');
   if (key(src.scope,'PROJECT_SCOPE_LOCK') !== 'STRICT') errors.push('strict lock');
   if (!src.agents.includes('TASK_DESIGN=AUTONOMOUS_3_JAVIER_3_ALEX')) errors.push('agents topology');
   for (const [name,value] of Object.entries(approvalPolicy))
     if (key(src.authority,name) !== value) errors.push('approval ' + name);
   for (const phrase of ['DESIGN_TASK_LIMIT=6','DESIGN_JAVIER_TASKS=3',
-    'DESIGN_ALEX_TASKS=3','MAX_OPEN_WORK_BRANCHES=3','MAX_CONCURRENT_SCOPES=3',
+    'DESIGN_ALEX_TASKS=3','MAX_OPEN_WORK_BRANCHES=6','MAX_CONCURRENT_SCOPES=6',
+    'MAX_OWNED_SCOPES_PER_TASK=2','MAX_ACTIVE_WRITES_PER_TASK=1',
     'REVIEW_INDEPENDENCE_REQUIRED=TRUE','America/Tegucigalpa',
     'PENDIENTE -> EN_PROGRESO','EN_PROGRESO -> VALIDANDO',
     'VALIDANDO -> LISTO','VALIDANDO -> VALIDANDO']) {
@@ -143,8 +148,22 @@ export function validateProposedRun(p) {
       errors.push('unsafe_write');
     // openWorkBranches is the VERIFIED count of distinct active COMMERCIAL scopes,
     // excluding governance PRs, diagnostic test branches and merged history.
-    if(!Number.isInteger(p.openWorkBranches)||p.openWorkBranches<0||p.openWorkBranches>3)
-      errors.push('branch_cap');
+    // Count before a NEW claim; at WIP=6 a seventh claim must be rejected.
+    // A read/write RESUME of an already counted scope does not consume another slot.
+    if(!Number.isInteger(p.openWorkBranches)||p.openWorkBranches<0||p.openWorkBranches>6||
+       (!p.resumingExistingScope&&p.openWorkBranches>=6)) errors.push('branch_cap');
+    if(!Number.isInteger(p.taskOwnedScopeCount)||p.taskOwnedScopeCount<0||p.taskOwnedScopeCount>2||
+       (!p.resumingExistingScope&&p.taskOwnedScopeCount>=2)) errors.push('task_scope_cap');
+    // One active editor per Task even when the Task owns two scopes.
+    if(!Number.isInteger(p.taskActiveWriteCount)||p.taskActiveWriteCount<0||
+       p.taskActiveWriteCount>1||(!p.resumingExistingScope&&p.taskActiveWriteCount!==0)||
+       p.sameTaskOtherScopeBeingEdited===true) errors.push('task_active_write');
+    // A second scope is only claimable when the previous PR is already VALIDANDO
+    // without an active editor, and REVIEW_FIRST was exhausted for this actor.
+    if(!p.resumingExistingScope&&p.taskOwnedScopeCount===1&&
+       (p.existingScopeState!=='VALIDANDO'||p.existingScopeActiveEditor===true||
+        p.reviewFirstChecked!==true||p.hasEligibleExternalReview===true))
+      errors.push('second_scope_gate');
     if(p.activeEditorAccount&&p.activeEditorAccount!==p.actorAccount)
       errors.push('concurrent_editor');
   }else if(p.operation==='REVIEW'){
@@ -195,7 +214,10 @@ if(failures.length){
     operation:'WRITE',ownerAuthorized:true,writePermissionVerified:true,
     scopeId:'P0-012.A',exclusiveScopeVerified:true,createdExclusively:true,
     branchReadbackVerified:true,branchName:'work/solqaryn-p0-012-a',
-    openWorkBranches:3,idempotencyKey:'P0-012.A:base-sha',conflictingClaim:false,
+    openWorkBranches:5,taskOwnedScopeCount:0,taskActiveWriteCount:0,
+    existingScopeState:null,existingScopeActiveEditor:false,reviewFirstChecked:true,
+    hasEligibleExternalReview:false,resumingExistingScope:false,
+    idempotencyKey:'P0-012.A:base-sha',conflictingClaim:false,
     runId:'NO_VERIFICADO'};
   const clone=x=>structuredClone(x);
   if(validateProposedRun(base).length)throw Error('DEV without native RUN_ID must be allowed');
@@ -212,7 +234,12 @@ if(failures.length){
     ['branch not verified',p=>p.branchReadbackVerified=false],
     ['wrong scope',p=>p.scopeId=''],
     ['stale head',p=>p.exactHeadVerified=false],
-    ['too many branches',p=>p.openWorkBranches=4],
+    ['too many branches',p=>p.openWorkBranches=7],
+    ['sixth slot already occupied',p=>p.openWorkBranches=6],
+    ['too many scopes owned',p=>p.taskOwnedScopeCount=3],
+    ['missing task scope count',p=>delete p.taskOwnedScopeCount],
+    ['multiple active editors',p=>p.taskActiveWriteCount=2],
+    ['negative per task scope count',p=>p.taskOwnedScopeCount=-1],
     ['negative WIP count',p=>p.openWorkBranches=-1],
     ['noninteger WIP count',p=>p.openWorkBranches=2.5],
     ['forbidden prod',p=>p.environment='prod'],
@@ -224,6 +251,29 @@ if(failures.length){
     const t=clone(base);mutate(t);
     if(!validateProposedRun(t).length)throw Error('negative test bypass: '+name);
   }
+  // The sixth commercial scope is available to one of five already authorized
+  // Tasks only if it has exactly one previous PR in VALIDANDO, no concurrent
+  // editor, and there is no eligible cross-account review being skipped.
+  const secondClaim=clone(base);
+  Object.assign(secondClaim,{taskOwnedScopeCount:1,existingScopeState:'VALIDANDO',
+    existingScopeActiveEditor:false,reviewFirstChecked:true,hasEligibleExternalReview:false});
+  if(validateProposedRun(secondClaim).length)throw Error('Second safe scope denied');
+  for(const [name,patch] of [
+    ['in progress instead of validating',p=>p.existingScopeState='EN_PROGRESO'],
+    ['previous active editor',p=>p.existingScopeActiveEditor=true],
+    ['review first not checked',p=>p.reviewFirstChecked=false],
+    ['cross review opportunity ignored',p=>p.hasEligibleExternalReview=true],
+    ['second claim while active write',p=>p.taskActiveWriteCount=1],
+    ['task already owns two scopes',p=>p.taskOwnedScopeCount=2],
+    ['same Task editing other scope',p=>p.sameTaskOtherScopeBeingEdited=true],
+  ]){
+    const test=clone(secondClaim);patch(test);
+    if(!validateProposedRun(test).length)throw Error('Second-scope fail-closed bypass: '+name);
+  }
+  const resumeFull=clone(base);
+  Object.assign(resumeFull,{openWorkBranches:6,taskOwnedScopeCount:2,
+    taskActiveWriteCount:1,resumingExistingScope:true});
+  if(validateProposedRun(resumeFull).length)throw Error('Safe resume at WIP=6 denied');
   const alexWrite=clone(base);
   alexWrite.actorRole='SECONDARY_02';alexWrite.actorAccount='ALEX_CHATGPT';
   if(validateProposedRun(alexWrite).length)throw Error('Equal write capability denied to Alex');
@@ -294,12 +344,17 @@ if(failures.length){
     throw Error('Unready dependency claimed');
   const mutation={...documents,status:status.replace('PILOT_TASK_LIMIT=6','PILOT_TASK_LIMIT=2')};
   if(!validateDocuments(mutation).length)throw Error('Document mutation bypass');
-  if(!validateDocuments({...documents,status:status.replace('MAX_CONCURRENT_SCOPES=3','MAX_CONCURRENT_SCOPES=4')}).length)
+  if(!validateDocuments({...documents,status:status.replace('MAX_CONCURRENT_SCOPES=6','MAX_CONCURRENT_SCOPES=7')}).length)
     throw Error('WIP status mutation bypass');
-  if(!validateDocuments({...documents,contract:contract.replace('MAX_OPEN_WORK_BRANCHES=3','MAX_OPEN_WORK_BRANCHES=4')}).length)
+  if(!validateDocuments({...documents,contract:contract.replace('MAX_OPEN_WORK_BRANCHES=6','MAX_OPEN_WORK_BRANCHES=7')}).length)
     throw Error('WIP contract mutation bypass');
-  if(!validateDocuments({...documents,authority:authority.replace('MAX_CONCURRENT_SCOPES=3','MAX_CONCURRENT_SCOPES=4')}).length)
+  if(!validateDocuments({...documents,authority:authority.replace('MAX_CONCURRENT_SCOPES=6','MAX_CONCURRENT_SCOPES=7')}).length)
     throw Error('WIP authority mutation bypass');
+  for(const [name,mutated] of [
+    ['per-task cap', {...documents,authority:authority.replace('MAX_OWNED_SCOPES_PER_TASK=2','MAX_OWNED_SCOPES_PER_TASK=3')}],
+    ['active edit cap', {...documents,status:status.replace('MAX_ACTIVE_WRITES_PER_TASK=1','MAX_ACTIVE_WRITES_PER_TASK=2')}],
+    ['contract per-task cap', {...documents,contract:contract.replace('MAX_OWNED_SCOPES_PER_TASK=2','MAX_OWNED_SCOPES_PER_TASK=3')}],
+  ]) if(!validateDocuments(mutated).length)throw Error('WIP mutation bypass: '+name);
   const approved={approverPrincipal:'ALEX',identityVerified:true,permissionVerified:true,
     providerRulesSatisfied:true,nativeApprovalVerified:true,exactHeadVerified:true,
     readbackVerified:true,independenceVerified:true,allContributionsReviewed:true,
