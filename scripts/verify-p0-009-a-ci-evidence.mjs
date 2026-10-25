@@ -19,9 +19,10 @@ export function evaluateCiEvidence(evidence) {
     deployment?.gitRef === 'dev' && deployment?.state === 'READY' &&
     deployment?.gitSha === sha);
   const review = evidence?.review;
-  const independentReview = Boolean(review?.state === 'APPROVED' &&
-    review?.commitSha === evidence?.prSha && review?.login && evidence?.authorLogin &&
-    review.login !== evidence.authorLogin);
+  const independentReview = Boolean(SHA40.test(evidence?.prSha ?? '') &&
+    review?.state === 'APPROVED' && review?.commitSha === evidence?.prSha &&
+    review?.login && evidence?.authorLogin && evidence?.lastContributorLogin &&
+    review.login !== evidence.authorLogin && review.login !== evidence.lastContributorLogin);
   return { ciValid: Boolean(ciValid), devParity, independentReview };
 }
 
@@ -32,7 +33,7 @@ if (process.argv.includes('--self-test')) {
     devSha: sha,
     checks: REQUIRED.map((name) => ({ name, sha, conclusion: 'success' })),
     vercelDev: { project: 'solqaryn-dev', gitRef: 'dev', state: 'READY', gitSha: sha },
-    prSha, authorLogin: 'dev-author',
+    prSha, authorLogin: 'dev-author', lastContributorLogin: 'fixer',
     review: { login: 'independent-reviewer', state: 'APPROVED', commitSha: prSha },
   };
   const copy = () => structuredClone(base);
@@ -49,9 +50,13 @@ if (process.argv.includes('--self-test')) {
   assert.equal(evaluateCiEvidence(staleReady).devParity, false);
   const selfReview = copy(); selfReview.review.login = base.authorLogin;
   assert.equal(evaluateCiEvidence(selfReview).independentReview, false);
+  const lastContributorReview = copy(); lastContributorReview.review.login = base.lastContributorLogin;
+  assert.equal(evaluateCiEvidence(lastContributorReview).independentReview, false);
   const staleApproval = copy(); staleApproval.review.commitSha = 'e'.repeat(40);
   assert.equal(evaluateCiEvidence(staleApproval).independentReview, false);
-  console.log('P0-009.A SELF-TEST PASS: 1 positive fixture and 6 fail-closed negative fixtures.');
+  const missingPrSha = copy(); delete missingPrSha.prSha;
+  assert.equal(evaluateCiEvidence(missingPrSha).independentReview, false);
+  console.log('P0-009.A SELF-TEST PASS: 1 positive fixture and 8 fail-closed negative fixtures.');
   console.log('LIMIT: synthetic assertions do not verify live CI, branch protection, Vercel, PROD or native PR review.');
 } else {
   console.log('Run with --self-test. This script never calls providers or accesses credentials.');
