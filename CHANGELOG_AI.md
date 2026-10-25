@@ -1,3 +1,12 @@
+## 2026-10-25 — P0-001.B: negativa de paridad Render/Vercel DEV (PR pendiente)
+
+- Rama exclusiva `work/solqaryn-p0-001-b` desde `dev@05e6a67a7bbbd2a94b4aeaf1322258ece90c730b`. Scope: snapshot inmutable, validador offline y acta de negativa para `PLAN_MAESTRO!A3`.
+- Lectura nativa: Render DEV deployment `dep-dbf1kouq1p3s73eng1n0` = `live` con SHA exacto; Vercel proyecto DEV deployment `dpl_AxCj2iPM9NCPfgweeCa9254VL65q` = `CANCELED` sobre ese mismo SHA. Decision `NO_GO`: no hay paridad READY/live probada. CI del SHA base 3/3 SUCCESS no convierte Vercel CANCELED en READY.
+- `scripts/verify-p0-001-b-parity.mjs --self-test`: 10 negativos (SHA Render/Vercel, estados, CI ausente/duplicado/ajeno, URL y repo), contrafactual positivo solo algorítmico y NO_GO real. No hace requests ni modifica proveedores.
+- Archivos: `docs/P0-001-B-VALIDACION-PARIDAD-DEV.md`, `docs/baselines/P0-001-B-DEV-20261025.json`, `scripts/verify-p0-001-b-parity.mjs`. Sin alteracion de producto, datos, secretos, autoritades, QA/main/PROD. El PR aun requiere CI final y revision independiente antes de cierre.
+
+---
+
 ## 2026-10-25 — PR #3742: corrección causal de Scope Lock
 
 - Los tres jobs fallidos eran efecto de un único check `scripts/verify-project-scope.mjs` que detectó el login legado `jmejia31` en AGENTS.md y docs/AUTOMATION_STATUS.md, documentos de estado actual.
