@@ -8,6 +8,15 @@
 
 ---
 
+## 2026-10-24 — M3.2: consolidacion de pruebas nativas y etapa de contents:write acotada
+
+- PR #3739 fue aprobado por `morales35alex` Review 5639552438 al HEAD `d2179b0b47d7cdd50986c69c506edd880e5c7bb6`, y fusionado en `dev` SHA `868f7e673f9239a5fb38b58885fa8116065c9186` con CI requerido 3/3 SUCCESS.
+- Tres Tasks reportaron comentarios GitHub y filas de auditoría desde sus ejecuciones: Alex :10 (comentario 6392818168, `BITACORA!A63`), Javier :20 (6392908957, `BITACORA!A64`) y Javier :40 (6393029857, `BITACORA!A67`). Los autores GitHub/IDs/fingerprints se comprobaron mediante GET y las filas se leyeron desde Javier y SOLQARYN Platform; conciliaciones `BITACORA!A65` y `BITACORA!A68`. Estas evidencias no acreditan `contents:write` ni autoría de las celdas a nivel API; no se modifican contadores de autorización.
+- Se propone un unico contrato adicional: permitir a Alex :30 y :50 completar auditoria diagnostica y permitir prueba única `create_file` por cada una de las cinco Tasks adicionales en una sola rama aislada, sin tocar `dev`; solo Alex :10 podria revisar independientemente el PR #3738 despues de comprobar escritura de contenido. Sin cambios de flags autorizados hasta prueba real y cierre independiente.
+- Documento/autoridad unicamente, sin cambio de ERP, BD, secretos, QA/main/PROD, despliegues, permisologia del proveedor, VAEP ni Jules. Nuevo PR sujeto a CI, aprobacion independiente y merge protegido; antes del merge, alcance todavia no efectivo.
+
+---
+
 ## 2026-10-24 — M3.2: 3 Tasks adicionales con lectura verificada por reporte; 3 pruebas aisladas propuestas
 
 - Diagnósticos de ejecución reales **reportados**: Alex `SECONDARY_REVIEW_01` :10 (`6adbbc9ad9e88191bea8eb69104afb25`), Javier `PRIMARY_DEV_02` :20 y Javier `PRIMARY_DEV_03` :40 (`6adc2e55f47c81919f6374e561687076`) confirman `GH_READ=PASS`, `DRIVE_READ=PASS`, sin escrituras. Sus evidencias se conciliaron en `BITACORA!A51:Z54` y las filas 3, 4 y 6 de `TAREAS_PROGRAMADAS`, sin atribuir resultados a conexiones humanas ni confundir `last_run_time` con readback de cada operación.
