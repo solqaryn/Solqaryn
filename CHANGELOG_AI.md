@@ -1,3 +1,11 @@
+## 2026-10-25 — M3.3: correccion de WIP comercial y objetivo 6 LISTO/hora
+
+- Diagnóstico causal: las Tasks estaban registrando `SIN_TRABAJO_ELEGIBLE WIP2/2` al contar un PR de P0-001.B junto con una rama temporal M3.2 `test/solqaryn-m3-2-native-write-20261024`. Una prueba aislada sin microtarea ni PR comercial NO ocupa cupo de la cola.
+- Contrato actualizado a `MAX_CONCURRENT_SCOPES=3` solo para microtareas comerciales distintas con ownership real; WIP 1 por Task comercialmente autorizada. Permanecen **2/6 Tasks autorizadas**, no se crea una tercera autorización ni se tocan permisos externos.
+- Objetivo **seis transiciones verificadas a LISTO por hora** en ventana móvil, no promesa ni conteo de auditorías/PR; recuperación de PR previo, revisión genuina, selección de DAG independiente, pruebas, CI, merge y readback son obligatorios.
+- PR #3741 se recuperó por merge no destructivo sin descartar archivos, se aprobó con identidad institucional diferente y CI 3/3 exact-HEAD; su cierre documental NO_GO no acredita paridad DEV con Vercel. No se realiza despliegue ni cambios productivos.
+- Impacto: gobierno documental del runtime de ChatGPT + disciplina operativa; sin cambios a Angular, backend, APIs, DB, secrets, Render/Vercel, QA, main o PROD. Rollback por PR protegido que revierta exclusivamente esta corrección.
+
 ## 2026-10-25 — P0-001.B: negativa de paridad Render/Vercel DEV (PR pendiente)
 
 - Rama exclusiva `work/solqaryn-p0-001-b` desde `dev@05e6a67a7bbbd2a94b4aeaf1322258ece90c730b`. Scope: snapshot inmutable, validador offline y acta de negativa para `PLAN_MAESTRO!A3`.

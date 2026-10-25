@@ -74,9 +74,16 @@ Orden uniforme para las seis Tasks:
 2. Revisar `VALIDANDO` que provenga de otra identidad verificable y no tenga revisor activo; confirmar PR GitHub y permisos efectivos antes de asumir la revisión.
 3. Tomar `PENDIENTE` con **todas** sus dependencias en `LISTO`, prioridad P0 antes
    que P1 y orden del Plan Maestro dentro de una misma prioridad.
-4. Si no hay elegibles, dejar como máximo un evento deduplicado
+4. Objetivo de throughput: 6 microtareas genuinamente LISTO por hora entre
+   Tasks comercialmente autorizadas, sin considerarlo SLA garantizado.
+   No limitar a un cierre por ejecución: después de LISTO verificado, recargar
+   Plan Maestro/COLA y continuar. Si un scope tiene un impedimento externo
+   causal (p. ej. Vercel CANCELED), detener solo ese scope y elegir otro
+   independiente según DAG/capacidad. Nunca contar PR documental NO_GO,
+   pruebas M3.2, comentarios o ejecución horaria como LISTO.
+5. Si no hay elegibles, dejar como máximo un evento deduplicado
    `SIN_TRABAJO_ELEGIBLE` y finalizar esa ejecución.
-5. Tras un cierre `LISTO`, recalcular dependencias y tomar otra elegible dentro
+6. Tras un cierre `LISTO`, recalcular dependencias y tomar otra elegible dentro
    de la capacidad efectiva restante. No limitar artificialmente a un cierre por run.
 
 `VALIDANDO` no libera dependencias. Una sucesora puede prepararse en solo lectura
@@ -114,9 +121,17 @@ commits, PR y responsable: nunca simular continuidad infinita o cierre.
 Ramas permanentes: `dev`, `qa` y `main`. Para cada microtarea elegible
 crear/reutilizar **una** rama determinista `work/solqaryn-<id-normalizado>`
 y PR exclusivo hacia `dev`. No utilizar una rama almacén compartida.
-Máximo dos ramas de trabajo abiertas al inicio del piloto; cuentan todas
-las ramas `work/solqaryn-*` no fusionadas y ramas operativas de esta microfase
-cuando correspondan, sin borrar trabajo existente.
+Máximo **tres scopes comerciales activos** bajo `MAX_CONCURRENT_SCOPES=3`
+y nunca más de uno por Task **individualmente autorizada**. Para contar el WIP,
+considerar los IDs de microtarea comercial con rama determinista
+`work/solqaryn-<id-normalizado>`, PR abierto o edición de código vigente,
+sin duplicar el mismo scope. Excluir las ramas `test/solqaryn-m3-2-native-write-*`
+usadas exclusivamente para pruebas diagnósticas, los PR de gobierno, ramas
+históricas ya fusionadas y auditorías sin desarrollo comercial. Una rama
+diagnóstica sigue requiriendo editor exclusivo y control de colisiones, pero
+no consume cupo comercial por su mera existencia. La cifra 3 es capacidad
+máxima, no permisos: únicamente Tasks presentes en la allowlist de autoridad
+pueden reclamar trabajo comercial. No borrar trabajo existente para liberar WIP.
 
 La toma de una microtarea requiere una primitiva de exclusividad **real** del
 proveedor: crear una referencia GitHub con nombre determinista solo si no existe

@@ -22,8 +22,18 @@ SECONDARY_TASK_ACCOUNT=ALEX_CHATGPT
 DESIGN_VERSION=2.0
 DESIGN_TOPOLOGY=3_JAVIER_3_ALEX
 PHYSICAL_TASKS_REGISTERED=6
-MAX_CONCURRENT_SCOPES=2
+MAX_CONCURRENT_SCOPES=3
 LEGACY_AUTOMATION_RUNTIME=RETIRED
+
+## M3.3 — capacidad comercial y objetivo operativo de productividad (2026-10-25)
+
+La meta del propietario es **6 microtareas comerciales realmente LISTO por hora** como indicador de rendimiento, no garantía de una Task, permiso para falsear cierres ni cuota que rebaje CI. Cada Javier habilitada puede completar varias microtareas sucesivas en su misma ejecución cuando alcance tiempo, dependencias, revisión independiente y readbacks reales.
+
+`MAX_CONCURRENT_SCOPES=3` es techo de **microtareas comerciales distintas activas**, con máximo un scope activo por Task comercial individualmente autorizada y rama determinista `work/solqaryn-<microtarea>`. No concede autorización a una Task adicional. Mientras solo :00 y :20 consten en `AUTHORIZED_COMMERCIAL_TASK_IDS`, como máximo dos ejecutores podrán escribir comercialmente aunque exista capacidad numérica 3.
+
+**Exclusiones del WIP comercial:** ramas `test/solqaryn-m3-2-native-write-*` con pruebas de diagnóstico no comercial, PR puramente normativos/de gobierno, ramas fusionadas, logs y auditorías. Su uso puede requerir exclusividad sobre esa rama/recurso, pero su mera existencia no reserva un scope comercial ni bloquea candidatos independientes como P0-002.A. No clasificar `SIN_TRABAJO_ELEGIBLE` solo por un PR comercial + rama diagnóstica; computar PRs/ramas/owners vivos sin duplicarlos. P0-001.B mantiene NO_GO de paridad mientras Vercel DEV esté CANCELED; su acta documental integrada no implica LISTO.
+
+**Métrica:** contar eventos únicos de transición a LISTO con PR fusionado, 3/3 CI del SHA final, revisión independiente y readback de PLAN_MAESTRO/COLA/BITACORA durante ventana móvil de 60 minutos. No contar ejecuciones, commits, comentarios, pruebas, PR abiertos ni documentos NO_GO como entregas. Recuperar y revisar antes de reclamar nueva tarea, reconsultar DAG tras cerrar y avanzar trabajo independiente ante bloqueos externos. Seguridad, Scope Lock y entornos fuera de DEV intactos.
 
 ## M3.2 — certificacion individual Javier PRIMARY_DEV_02 (25-10-2026)
 

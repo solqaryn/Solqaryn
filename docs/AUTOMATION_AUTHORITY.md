@@ -28,7 +28,13 @@ NO_LEGACY_REACTIVATION=TRUE
 DESIGN_TOPOLOGY=SYMMETRIC_3X3
 PHYSICAL_TASKS_REGISTERED=6
 ACTIVE_DEV_WRITERS_OBSERVED=1
-MAX_CONCURRENT_SCOPES=2
+MAX_CONCURRENT_SCOPES=3
+
+## M3.3 — semántica de WIP comercial, exclusividad y rendimiento
+
+Desde el merge protegido de esta enmienda, `MAX_CONCURRENT_SCOPES=3` es una cota de microtareas **comerciales** con rama/PR vivos. Se permite 1 scope comercial activo por Task individualmente autorizada; las Tasks no enumeradas en `AUTHORIZED_COMMERCIAL_TASK_IDS` permanecen sin escritura comercial. La rama `test/solqaryn-m3-2-native-write-20261024` es exclusivamente diagnóstica y **NO** consume cupo comercial por estar creada, aunque cada escritor debe preservar exclusividad real sobre ella y su archivo. PR de política, pruebas aisladas, auditorías, ramas ya fusionadas o commits sin scope comercial no son WIP del Plan Maestro. Ninguna rama protegida se elimina para fingir capacidad; se preservan evidencias.
+
+Al detectar un PR con conflictos, recuperar o corregir en la misma rama con merge no destructivo, revalidar SHA/CI/revisión y no duplicar scope. Ante despliegue externo NO_GO, bloquear solo esa microtarea, no toda la cola. Después de cada LISTO con readback, reevaluar P0 independientes. Objetivo de productividad del propietario: 6 LISTO/hora **medidos con evidencias**, no umbral de autorización ni licencia para saltar revisión. Protecciones de seguridad y separación de cuentas se mantienen.
 
 ## Concesion comercial individual PRIMARY_DEV_02, sujeta a merge protegido
 
