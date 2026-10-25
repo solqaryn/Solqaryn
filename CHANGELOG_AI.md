@@ -1,3 +1,8 @@
+## 2026-10-25 — P0-003.A: comparación causal Render/Vercel DEV (PRIMARY_DEV_02)
+
+- Task `6adc2e4bd8a48191ac7d8641ed95a1a3`, GitHub `jmejia31`: acta `docs/P0-003-A-COMPARATIVA-RENDER-VERCEL-DEV.md` desde `dev@bafcde53ce2562f70d5b4115184df51e5c48483d`. Render DEV `dep-dbf5age7bikc73c8467g` `live` y mismo SHA; Vercel DEV alias `READY` con SHA `29dbcb06...`, intento de HEAD `CANCELED` (política consolidada). Liveness/readiness devolvieron cuerpos sanos; no se certificó HTTP numérico, CORS efectivo ni paridad exacta.
+- Negativos N1-N5 impiden inferir que un deployment `CANCELED` equivale a `READY` o que un Render saludable garantiza frontend actualizado. No modifica despliegues, secretos, código de producto, QA/main/PROD. Sólo acto documental y changelog, rollback por revert protegido. Estado candidato hasta CI 3/3 SHA final, revisión independiente, merge y readback Sheets.
+
 ## 2026-10-25 — P0-006.A: inventario de 92 rutas Angular y 39 enlaces DEV (SECONDARY_REVIEW_03)
 
 - Task `6adcc98a80a48191b71a5156624c21df` (GitHub `morales35alex`) documenta en `docs/P0-006-A-INVENTARIO-RUTAS-ADMIN-DEV.md` las 92 declaraciones `path` del router principal, 90 lazies y 2 redirecciones; cruza 39 `routerLink` con módulos registrados y capacidades RBAC. Base comprobada `dev@6de952a43dda3449a9c6756d3c567374d686c5df`.
