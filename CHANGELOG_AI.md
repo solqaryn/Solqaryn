@@ -1,3 +1,8 @@
+## 2026-10-25 — P0-007.B: separación de evidencia estática y UX (SECONDARY_REVIEW_01)
+
+- Task 6adbbc9ad9e88191bea8eb69104afb25 (GitHub morales35alex) añade acta de certificación negativa, script Node de seis fixtures y workflow aislado sobre el inventario de 137 componentes de P0-007.A, desde dev@05cfd207279fac6feca768f6e9cf743da513d812.
+- Solo se acredita inventario y detección de inferencias UX inválidas, sin declarar pruebas reales de navegador, E2E, a11y, backend RBAC, tenant, Render/Vercel ni despliegues. PR y CI exacto, revisión independiente, merge protegido y readback institucional son requeridos antes de LISTO. Sin QA/main/PROD ni cambios runtime.
+
 ## 2026-10-25 — P0-003.A: comparación causal Render/Vercel DEV (PRIMARY_DEV_02)
 
 - Task `6adc2e4bd8a48191ac7d8641ed95a1a3`, GitHub `jmejia31`: acta `docs/P0-003-A-COMPARATIVA-RENDER-VERCEL-DEV.md` desde `dev@bafcde53ce2562f70d5b4115184df51e5c48483d`. Render DEV `dep-dbf5age7bikc73c8467g` `live` y mismo SHA; Vercel DEV alias `READY` con SHA `29dbcb06...`, intento de HEAD `CANCELED` (política consolidada). Liveness/readiness devolvieron cuerpos sanos; no se certificó HTTP numérico, CORS efectivo ni paridad exacta.
