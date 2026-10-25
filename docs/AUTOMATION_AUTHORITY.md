@@ -6,7 +6,7 @@ BRANCH=dev
 CONTRACT_VERSION=2.0
 CONTRACT_PHASE=M3_2_6_FISICAS_INSTALADAS_PERMISOS_PENDIENTES
 AUTOMATION_RUNTIME=ACTIVE_DEV
-SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1
+SCHEDULED_CHATGPT_TASKS_AUTHORIZED=2
 VAEP_DISPATCH_AUTHORIZED=FALSE
 JULES_WORKERS_AUTHORIZED=0
 PILOT_TASK_LIMIT=6
@@ -28,6 +28,10 @@ DESIGN_TOPOLOGY=SYMMETRIC_3X3
 PHYSICAL_TASKS_REGISTERED=6
 ACTIVE_DEV_WRITERS_OBSERVED=1
 MAX_CONCURRENT_SCOPES=2
+
+## Concesion comercial individual PRIMARY_DEV_02, sujeta a merge protegido
+
+El propietario aprueba que la Task `6adc2e4bd8a48191ac7d8641ed95a1a3` Javier :20 tenga autonomia comercial DEV individual una vez fusionada y verificada esta enmienda y conciliado el Sheet. Certificados GH_CONTENT_WRITE=PASS y DRIVE_AUDIT_WRITE=PASS segun commit aaca89247d9aaf61eb21a308c2e43fd5fef24526 y BITACORA A77:Z77. No repetir la prueba. Se autoriza GitHub ramas/commits/PR sobre dev, edicion PLAN_MAESTRO H:M y escritura BITACORA con readback, review correctiva de otra Task, transiciones PENDIENTE/EN_PROGRESO/VALIDANDO y LISTO solo tras revision independiente real, CI exact SHA, merge protegido y readback. La misma cuenta jmejia31 en :00/:20/:40 NO puede emitir una aprobacion formal independiente de sus PR. Prohibida elevacion colectiva 6/6, escritura de COLA calculada, QA/main/PROD, secretos y proveedores no autorizados. `CONFIG!B57=TRUE` habilita solo Tasks individualmente nombradas como comerciales en docs/AUTOMATION_STATUS.md; `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=2`. Reversion por nuevo PR protegido.
 
 ## Concesión de prueba M3.2 PRIMARY_DEV_02 — autorización quirúrgica no comercial
 
