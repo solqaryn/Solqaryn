@@ -1,3 +1,7 @@
+## 2026-10-25 — P0-007.A: inventario de 137 archivos de componentes Angular (SECONDARY_REVIEW_01)
+
+- Task `6adbbc9ad9e88191bea8eb69104afb25` / `ALEX_CHATGPT` / GitHub `morales35alex` crea `docs/P0-007-A-INVENTARIO-COMPONENTES-DEV.md` y `scripts/verify-p0-007-a-component-inventory.mjs` desde `dev@bafcde53ce2562f70d5b4115184df51e5c48483d`. Un árbol GitHub no truncado identifica 129 `features/**/*.component.ts` y 8 `shared/**/*.component.ts`, separados de 2 archivos `app/core` y raíz. El verificador compara el inventario Markdown con un checkout y rechaza entradas borradas/agregadas, sin escribir archivos.
+- **Alcance real:** inventario por rutas de archivos fuente, NO certificación de pantallas, rutas activas, pruebas E2E, accesibilidad, RBAC backend, tenant isolation o despliegues. La ejecución nativa del nuevo script en checkout requiere evidencia independiente; hasta entonces no anunciar que pasó. Sin cambios de runtime Angular, backend, datos, credenciales ni QA/main/PROD. `LISTO` solo con CI exact-HEAD, revisión independiente, merge dev protegido y readback de Sheets.
 ## 2026-10-25 — P0-006.A: inventario de 92 rutas Angular y 39 enlaces DEV (SECONDARY_REVIEW_03)
 
 - Task `6adcc98a80a48191b71a5156624c21df` (GitHub `morales35alex`) documenta en `docs/P0-006-A-INVENTARIO-RUTAS-ADMIN-DEV.md` las 92 declaraciones `path` del router principal, 90 lazies y 2 redirecciones; cruza 39 `routerLink` con módulos registrados y capacidades RBAC. Base comprobada `dev@6de952a43dda3449a9c6756d3c567374d686c5df`.
