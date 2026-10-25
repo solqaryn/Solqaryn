@@ -1,3 +1,9 @@
+## 2026-10-25 — M3.2 Javier :20: autorizacion comercial individual propuesta
+
+- Verificada prueba de contenido: commit `aaca89247d9aaf61eb21a308c2e43fd5fef24526`, archivo `automation-probes/m3-2/6adc2e4bd8a48191ac7d8641ed95a1a3.txt`, identidad jmejia31, UTC 2026-10-25T15:26:15.942Z. BITACORA!A77:Z77 con readback coincidente.
+- Se propone pasar contador a 2 (solo Javier :00 y :20) y CONFIG!B57 a TRUE para permisos individuales enumerados, no a habilitacion masiva. Efectivo tras CI, aprobacion independiente, merge protegido y readback Sheet.
+- Scope documental de autorizaciones: sin codigo ERP/DB, QA/main/PROD, secretos o cambios de infraestructura; rollback por PR protegido.
+
 ## 2026-10-24 — P0-001.A: snapshot comprobable de HEAD, PRs y despliegue DEV (propuesto)
 
 - Endurecimiento en el mismo PR: checks obligatorios vinculados a SHA base, nombres únicos y URLs canónicas; negativas de SHA ajeno, duplicado y URL suplantada. No equiparar consistencia offline con prueba del proveedor.
