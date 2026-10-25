@@ -1,7 +1,7 @@
 ## 2026-10-25 — P0-009.A: CI exact-SHA y Vercel DEV (PRIMARY_DEV_03)
 
 - Task 6adc2e55f47c81919f6374e561687076 / jmejia31 reclama exclusivamente P0-009.A (PLAN_MAESTRO fila 18) desde dev@72327d132ee69955c5bb13a03423b229a08bd432 y documenta jobs CI exactos: Scope Lock SUCCESS, seguridad 943/943, backend 2902/2902, frontend build SUCCESS con warning SCSS.
-- Plan referencia 48/48 y 21/21: NO_REVALIDADOS en HEAD actual. Vercel proyecto solqaryn-dev muestra READY solo para SHA 29dbcb06 y dos CANCELED para bafcde53, nunca paridad con 72327d13. QA/PROD NO consultados. Agrega script local de 1 positivo + 6 regresiones negativas sintéticas, sin contactar proveedores. No cambia runtime, CI workflows, permisos ni secretos.
+- Plan referencia 48/48 y 21/21: NO_REVALIDADOS en HEAD actual. Vercel proyecto solqaryn-dev muestra READY solo para SHA 29dbcb06 y dos CANCELED para bafcde53, nunca paridad con 72327d13. QA/PROD NO consultados. Agrega script local de 1 positivo + 8 regresiones negativas sintéticas, sin contactar proveedores. No cambia runtime, CI workflows, permisos ni secretos.
 - Scope VALIDANDO solo con PR y CI exact SHA 3/3, revisión formal independiente, merge protegido y readback PLAN/COLA/BITACORA. No cierra P0-001.B ni realiza despliegues.
 
 ## 2026-10-25 — P0-007.A: inventario de 137 archivos de componentes Angular (SECONDARY_REVIEW_01)
