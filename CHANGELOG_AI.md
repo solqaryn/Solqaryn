@@ -1,3 +1,8 @@
+## 2026-10-25 — P0-007.B: separación de evidencia estática y UX (SECONDARY_REVIEW_01)
+
+- Task 6adbbc9ad9e88191bea8eb69104afb25 (GitHub morales35alex) añade acta de certificación negativa, script Node de seis fixtures y workflow aislado sobre el inventario de 137 componentes de P0-007.A, desde dev@05cfd207279fac6feca768f6e9cf743da513d812.
+- Solo se acredita inventario y detección de inferencias UX inválidas, sin declarar pruebas reales de navegador, E2E, a11y, backend RBAC, tenant, Render/Vercel ni despliegues. PR y CI exacto, revisión independiente, merge protegido y readback institucional son requeridos antes de LISTO. Sin QA/main/PROD ni cambios runtime.
+
 ## 2026-10-25 — P0-009.A: CI exact-SHA y Vercel DEV (PRIMARY_DEV_03)
 
 - Task 6adc2e55f47c81919f6374e561687076 / jmejia31 reclama exclusivamente P0-009.A (PLAN_MAESTRO fila 18) desde dev@72327d132ee69955c5bb13a03423b229a08bd432 y documenta jobs CI exactos: Scope Lock SUCCESS, seguridad 943/943, backend 2902/2902, frontend build SUCCESS con warning SCSS.
