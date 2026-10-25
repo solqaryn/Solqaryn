@@ -12,7 +12,7 @@ Lectura GitHub nativa de `git/trees/bafcde53ce2562f70d5b4115184df51e5c48483d?rec
 
 - **N1 (UX):** que exista `.component.ts` no acredita funcionamiento, navegación, responsividad, accesibilidad, pruebas E2E ni despliegue. Ninguna pantalla se declara certificada por este inventario.
 - **N2 (alcance):** `app.component.ts`, `core/**`, `*.component.spec.ts` y `*.component.html` quedan fuera. La extensión requerida es `.component.ts` y las raíces son features/shared.
-- **N3 (regresión):** ejecutar `node scripts/verify-p0-007-a-component-inventory.mjs --self-test` en checkout de la rama. El comparador detecta rutas añadidas o eliminadas y mutaciones sintéticas (sin alterar archivos).
+- **N3 (regresión):** ejecutar `node scripts/verify-p0-007-a-component-catalog.mjs --self-test` en checkout de la rama. El comparador detecta rutas añadidas o eliminadas y mutaciones sintéticas (sin alterar archivos).
 - **N4 (seguridad):** una lista de archivos no sustituye JWT, RBAC backend, `authGuard`, `permisoGuard` ni aislamiento tenant. No inferir autorización desde la UI.
 
 El PR modifica únicamente documentación, validador de solo lectura y changelog; sin APIs, datos, migraciones, secrets, despliegues o QA/main/PROD. Rollback: revert protegido del changeset. `LISTO` requiere CI 3/3 exact-HEAD, revisión GitHub independiente, merge dev y readback PLAN_MAESTRO/COLA/BITACORA.
