@@ -1,3 +1,10 @@
+## 2026-10-25 — M3.4: ampliar WIP comercial protegido de 3 a 6
+
+- Autorización explícita del propietario: admitir hasta seis microtareas comerciales distintas simultáneamente, sin exigir seis Tasks autorizadas. Se mantienen EXACTAMENTE las cinco identidades comerciales del manifiesto, Alex :30 excluido, 6 Tasks físicas y tres controles CI/Scope Lock protegidos.
+- Cada Task puede conservar hasta dos scopes asignados **solo** si el primero está VALIDANDO sin editor activo y REVIEW_FIRST de otra cuenta fue verificado sin pendiente abordable; nunca dos escrituras activas desde la misma Task. Ante tres PR abiertos y al menos 28 PENDIENTE con dependencias SI en tramo PLAN/COLA A1:175, se amplía capacidad futura sin inventar cierres ni ocupar seis cupos por decreto.
+- Contrato operativo, AGENTS, dos autoridades y script 3×3 actualizados con pruebas negativas de techo global, sexto cupo lleno, dos scopes por Task, un escritor, READY/VALIDANDO y revisión primero. No se modifican algoritmos ERP, frontend/backend, DB, RBAC, GitHub rulesets, permisos o programaciones de Tasks, Sheets comercial, QA/main/PROD, Render/Vercel ni secretos. Los PR de gobierno y diagnósticos continúan fuera del WIP.
+- Se conserva procedimiento de PR protegido, CI exact SHA y aprobación independiente; cualquier rollback requiere PR protegido y readback de WIP real, nunca eliminar ramas legítimas.
+
 ## 2026-10-25 — P0-009.B: prueba negativa cuota/CI por entorno (SECONDARY_REVIEW_01)
 
 - Task 6adbbc9ad9e88191bea8eb69104afb25 / morales35alex agrega prueba Node sintética para preservar un fallo histórico de cuota sin equipararlo con paridad Render/Vercel ni aprobar PROD no verificado. Reutiliza P0-009.A desde dev@9a558516be56980d0673654bf96e6bf1e537ea00; flujo aislado de GitHub Actions contents:read.
