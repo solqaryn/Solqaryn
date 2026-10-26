@@ -1,3 +1,16 @@
+## 2026-10-26 — P0-003.B: paridad y seguridad DEV (PRIMARY_DEV_02)
+
+- Task: 6adc2e4bd8a48191ac7d8641ed95a1a3.
+- PR: #3758, rama work/solqaryn-p0-003-b.
+- Cambios: verificador de paridad DEV, workflow de pruebas negativas y acta de certificación documental.
+- Render DEV LIVE y Vercel DEV READY sobre dev@003cceea22bbd85a8f3f542c46816c6befbe5ee3.
+- CORS: preflight autorizado y rechazo de origen externo verificados el 26/10/2026.
+- JWT/RBAC/tenancy: workflows DEV MF3 #6 y #7 SUCCESS sobre el mismo SHA de dev.
+- Pruebas A/B/C: tres autenticaciones válidas, 12 rechazos entre empresas, 36 rechazos comerciales cruzados y 18 lecturas autorizadas.
+- MySQL DEV: conectividad comprobada mediante /health/ready.
+- Alcance: verificaciones no destructivas, sin modificar secretos, datos comerciales, QA ni PROD.
+- Estado: EN_PROGRESO. Cierre condicionado a CI sobre el SHA final del PR, revisión independiente, merge protegido y conciliación con Google Sheets.
+
 ## 2026-10-25 — P0-001.B: certificar bloqueo por falta de paridad exact-SHA DEV (PRIMARY_DEV_03)
 
 - Task `6adc2e55f47c81919f6374e561687076`, GitHub `jmejia31`, rama exclusiva `work/solqaryn-p0-001-b`; base `dev@6a6d6e8870b0a53db9b3dc19f197be409082b6e6`. Dependencias P0-001.A/P0-012.B LISTO y WIP protegido 6.
