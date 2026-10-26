@@ -1,6 +1,6 @@
 ## 2026-10-25 — P0-004.A: capturador SQL de solo lectura y negativos sinteticos (SECONDARY_REVIEW_03)
 
-- Task `6adcc98a80a48191b71a5156624c21df`, GitHub `morales35alex`, rama `work/solqaryn-p0-004-a`: SQL de nueve SELECTs para metadata MySQL DEV y `__EFMigrationsHistory` condicional, con prueba offline Node de 14 negativas y workflow de PR protegido.
+- Task `6adcc98a80a48191b71a5156624c21df`, GitHub `morales35alex`, rama `work/solqaryn-p0-004-a`: SQL de nueve SELECTs para metadata MySQL DEV y `__EFMigrationsHistory` condicional, con prueba offline Node ampliada a 20 negativas (incluidas funciones SELECT con acceso a archivos, locks, esperas, variables y subconsultas) y workflow de PR protegido; la CI exact-SHA del endurecimiento requiere nueva comprobacion.
 - No se conecto a MySQL DEV, ni se verificaron metadatos fisicos/backup, ni se ejecutaron migraciones ni se alteraron entornos. P0-004.A permanece EN_PROGRESO / NO_GO_LISTO hasta evidencia autentica; rollback solo mediante revert de PR protegido.
 
 
