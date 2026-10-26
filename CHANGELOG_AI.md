@@ -1,3 +1,11 @@
+## 2026-10-26 — P0-001.B: corrección de release Vercel DEV sin builds artificiales (seguimiento)
+
+- Evidencia verificada sobre `dev@3d2f0436b7c0c7bfc3eff07f8b01f3121dc3aa38`: PR #3768 APPROVED y MERGED; tres checks obligatorios SUCCESS; Render DEV `dep-dbfqjt29lscs73bmvs10` LIVE exact SHA; Vercel DEV `dpl_Bi9YNxDrMXXBqMLPHCa6aCtyA1NV` CANCELED porque `NON_RUNTIME_GOVERNANCE_ONLY_SKIP files=5`; deployment anterior `dpl_9wHGTwW1YNGucpmG58EqtYXtWsGs` READY en SHA `35c67e330f876ee66f8015e889ffa151d6d4643a`.
+- Comparación GitHub estricta del padre al HEAD: un commit, cinco archivos de documentación/CI/verificador; manifiesto Git `frontend/` idéntico. No cambiar `frontend/vercel.json` ni `frontend/scripts/vercel-ignore-build.mjs`.
+- El nuevo control `scripts/vercel-dev-runtime-equivalence.mjs` exige identidad DEV, READY de proveedor, árbol frontend inmutable, ancestro sin divergencia y cambios solo fuera del runtime; 20 negativos autoejecutables. `scripts/dev-vercel-release.mjs` evita disparar otro deployment artificial si la equivalencia fuente está comprobada; expone `VERCEL_EXACT_SHA_READY=NO` sin inferir PASS funcional.
+- Política y evidencia en `docs/P0-001-B-VERCEL-SOURCE-EQUIVALENCE-DEV-20261026.md`; workflow consolidado corre el verificador antes del release. Sin secretos, QA, PROD, MySQL ni alteración del frontend.
+- Estado: `EN_PROGRESO`. La fuente comercial original mantiene requisito exact-SHA; esta corrección no la enmienda ni permite `LISTO` sin autorización formal, CORS/preflight, E2E/SSO, RBAC del alcance, CI final, revisión independiente, merge protegido y readback Sheets. Rollback únicamente por revert protegido.
+
 ## 2026-10-26 — P0-001.B: recuperación de paridad exact-SHA DEV
 
 - PR de certificación: #3768, rama `work/solqaryn-p0-001-b`.
