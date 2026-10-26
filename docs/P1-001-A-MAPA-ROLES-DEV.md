@@ -19,19 +19,19 @@
 
 ## 2. Relaciones y reglas EF declaradas
 
-- `Roles`: PK `Id`; CHECK `Ambito IN (1,2)`; si `Ambito=2`, `EmpresaId IS NULL`; `EmpresaId` positivo o NULL; `NombreNormalizado` es **único globalmente** en la configuración EF (observar restricción de nombres homónimos entre empresas). FK opcional `EmpresaId`.
+- `Roles`: PK `Id`; CHECK `Ambito IN (1,2)`; si `Ambito=2`, `EmpresaId IS NULL`; `EmpresaId` positivo o NULL y FK opcional. **Modelo EF final:** aunque `RolConfiguration` inicialmente declara `NombreNormalizado` único global, `AppDbContext.OnModelCreating` aplica posteriormente `CommercialTenantNaturalKeysModel.Apply`. Esta última configuración lo sustituye por un índice simple **no único**, una unicidad compuesta `(EmpresaId, NombreNormalizado)` para roles con dueño y la columna calculada `NombreNormalizadoGlobalUnico` única para los roles sin empresa (plantillas/plataforma). Dos empresas pueden usar el mismo nombre normalizado en sus roles personalizados; dos roles sin dueño no pueden repetirlo. **El esquema físico de MySQL DEV sigue NO_VERIFICADO.**
 - `UsuarioEmpresas`: PK `Id`; FK `UsuarioId`, `EmpresaId`, `RolId`; `Activa` booleano; índice único `(UsuarioId,EmpresaId)`, por tanto el `RolId` empresarial es mutable y no identifica la fila. Las consultas verifican actividad del usuario, empresa y rol, no únicamente `Activa`.
 - `UsuarioRolesPlataforma`: PK `Id`; FK de usuario y rol; `Activa`; índice único `(UsuarioId,RolId)`. **No** es una membresía de empresa.
 - `RolPermisos`: clave `Id`; FK `RolId`, `PermisoId`; índice único `(RolId,PermisoId)`. La migración de backfill explica `EmpresaId` shadow para grants tenant; verificar su materialización real antes de atestar MySQL.
 - `Permisos`: claves únicas `Codigo` y `(Modulo,Accion)`; ámbito y estado activos se verifican además en consumidores.
 - `RolService`: crea roles personalizados solo con `TenantPermissionContext.GetAuthorizedEmpresaId`, impide mutar roles de sistema, plataforma o sin propietario. `RolesController` usa `[Authorize]` y `[RequierePermiso]`; `UsuarioScopeService` y `PlataformaScopeService` aplican reglas concretas en backend.
 
-**Fuentes de código:** `backend/src/Domain/Entities/{Rol,Usuario,UsuarioEmpresa,UsuarioRolPlataforma,RolPermiso,Permiso}.cs`, `backend/src/Domain/Enums/{AmbitoAutorizacion,RolUsuario}.cs`, `backend/src/Infrastructure/Persistence/Configurations/{Rol,UsuarioEmpresa,UsuarioRolPlataforma,RolPermiso,Permiso}Configuration.cs`, `backend/src/Infrastructure/Services/{UsuarioScopeService,PlataformaScopeService}.cs`, `backend/src/Infrastructure/Repositories/RolRepository.cs`, `backend/src/Application/Services/{AuthService,RolService}.cs`, `backend/src/API/Controllers/RolesController.cs`, `backend/src/Infrastructure.Migrations/Migrations/20261018200000_TenantRoleOwnershipDeterministicBackfill.cs`.
+**Fuentes de código:** `backend/src/Domain/Entities/{Rol,Usuario,UsuarioEmpresa,UsuarioRolPlataforma,RolPermiso,Permiso}.cs`, `backend/src/Domain/Enums/{AmbitoAutorizacion,RolUsuario}.cs`, `backend/src/Infrastructure/Persistence/Configurations/{Rol,UsuarioEmpresa,UsuarioRolPlataforma,RolPermiso,Permiso}Configuration.cs`, `backend/src/Infrastructure/Persistence/{AppDbContext,CommercialTenantNaturalKeysModel,CommercialTenantNaturalKeysPhysicalContract}.cs`, `backend/tests/Solqaryn.Tests/CommercialTenantNaturalKeysTests.cs`, `backend/src/Infrastructure/Services/{UsuarioScopeService,PlataformaScopeService}.cs`, `backend/src/Infrastructure/Repositories/RolRepository.cs`, `backend/src/Application/Services/{AuthService,RolService}.cs`, `backend/src/API/Controllers/RolesController.cs`, `backend/src/Infrastructure.Migrations/Migrations/20261018200000_TenantRoleOwnershipDeterministicBackfill.cs`.
 
 ## 3. Hallazgos para seguimiento, sin atribuir explotación
 
 1. **Lectura multiempresa: filtro EF comprobado estáticamente, no HTTP.** `RequierePermisoAttribute` resuelve y verifica la empresa antes de marcar `TenantPermissionContext.MarkAuthorizedEmpresaId`, y `AppDbContext.OnModelCreating` aplica `CommercialTenantReadFilterModel`. La consulta EF `Roles` usa `AuthorizedReadEmpresaId` de contexto verificado; cuando está presente, permite únicamente el rol propio o la plantilla de sistema de ámbito Empresa sin dueño. `RolRepository.GetAllAsync/GetByIdAsync` no agrega un predicado explícito y depende de ese filtro EF; `scopeAbsent` admite el catálogo completo en ejecuciones sin contexto RBAC. **No equivale a una prueba HTTP/MySQL DEV.** Probar lectura A/B, `GET /roles/{id}` ajeno, contexto ausente y `IgnoreQueryFilters` en consumidores relevantes antes de certificar aislamiento.
-2. **Índice de nombre global:** `RolConfiguration` declara unicidad global de `NombreNormalizado`, incluso para personalizados de empresas diferentes; confirmar intención comercial y estado real de la constraint.
+2. **Unicidad efectiva por tenant (corrección de lectura de código):** la declaración global inicial de `RolConfiguration` **no es el modelo final**: `CommercialTenantNaturalKeysModel.Apply`, llamado después por `AppDbContext`, establece `UX_Roles_Empresa_NombreNormalizado` único por empresa y desactiva la unicidad del índice simple; conserva `UX_Roles_NombreNormalizadoGlobalUnico` único para roles sin dueño. `CommercialTenantNaturalKeysTests` y el contrato de índice físico verifican este diseño en el repositorio. Confirmar en `INFORMATION_SCHEMA` que esas tres reglas están realmente desplegadas en MySQL DEV; un modelo EF o una migración versionada **no certifican** el esquema vivo.
 3. **Backfill y legado:** roles `EsSistema=false,EmpresaId=NULL` quedan sin titular hasta evidencia determinista; no regularizarlos por inferencia ni darles permisos automáticamente.
 4. **Evidencia MySQL faltante:** no se inspeccionaron credenciales, filas vivas, `INFORMATION_SCHEMA`, constraints desplegadas ni pruebas E2E con usuarios reales. Cualquier cantidad de roles, membresías o anomalías reales se deja **NO_VERIFICADO**. No declarar P1-001.A LISTO por esta acta.
 
@@ -75,6 +75,25 @@ INNER JOIN Roles r ON r.Id = urp.RolId
 WHERE urp.Activa = 1
   AND (r.Ambito <> 2 OR r.EmpresaId IS NOT NULL OR r.EsAdministrador = 0);
 ```
+
+-- Contrato físico esperado de nombres de roles (solo metadatos, sin PII).
+SELECT INDEX_NAME, NON_UNIQUE,
+       GROUP_CONCAT(COLUMN_NAME ORDER BY SEQ_IN_INDEX SEPARATOR ',') AS Columnas
+FROM INFORMATION_SCHEMA.STATISTICS
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'Roles'
+  AND INDEX_NAME IN ('UX_Roles_Empresa_NombreNormalizado',
+                     'IX_Roles_NombreNormalizado',
+                     'UX_Roles_NombreNormalizadoGlobalUnico')
+GROUP BY INDEX_NAME, NON_UNIQUE;
+
+-- Esperado: (EmpresaId,NombreNormalizado) único (NON_UNIQUE=0),
+-- NombreNormalizado simple no único (NON_UNIQUE=1),
+-- NombreNormalizadoGlobalUnico único (NON_UNIQUE=0).
+-- Verificar asimismo que la columna calculada está desplegada:
+SELECT COLUMN_NAME, GENERATION_EXPRESSION, EXTRA
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'Roles'
+  AND COLUMN_NAME = 'NombreNormalizadoGlobalUnico';
 
 No interpretar cero filas anómalas como prueba de autorización HTTP o de esquema: falta verificar índices físicos, scopes RBAC, denegación A/B y estado de despliegue.
 
