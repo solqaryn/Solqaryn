@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { assessDevSourceEquivalence } from './vercel-dev-runtime-equivalence.mjs';
 
 // DEV project only. This script never addresses the SOLQARYN QA or PROD projects.
 const REPO = 'solqaryn/Solqaryn';
@@ -52,6 +53,58 @@ async function requestJson(url, token, opts = {}) {
   if (!resp.ok) throw Error('PROVIDER_HTTP_' + resp.status + ':' + (await resp.text()).slice(0,250));
   return resp.json();
 }
+// A skipped control-plane commit must not trigger an artificial Vercel build.
+// This is a source-tree equivalence only: it never claims exact-SHA READY,
+// runtime configuration equivalence, functional PASS, or commercial LISTO.
+async function readySourceEquivalence(deployments, head, ghToken, vercelToken, headers) {
+  const candidates = deployments.filter(d =>
+    (d.state === 'READY' || d.readyState === 'READY') &&
+    d.name === 'solqaryn-dev' && shaOk(actualSha(d)) &&
+    d.meta?.githubCommitRef === 'dev' &&
+    d.meta?.githubOrg === 'solqaryn' && d.meta?.githubRepo === 'Solqaryn'
+  ).sort((a,b) => Number(b.created ?? b.createdAt) - Number(a.created ?? a.createdAt));
+  for (const item of candidates.slice(0, 5)) {
+    const priorSha = actualSha(item);
+    if (priorSha === head) continue;
+    const github = 'https://api.github.com/repos/' + REPO;
+    const [comparison, before, after, ready] = await Promise.all([
+      requestJson(github + '/compare/' + priorSha + '...' + head + '?per_page=100',
+        ghToken, {headers}),
+      requestJson(github + '/contents/frontend?ref=' + priorSha, ghToken, {headers}),
+      requestJson(github + '/contents/frontend?ref=' + head, ghToken, {headers}),
+      requestJson('https://api.vercel.com/v13/deployments/' +
+        encodeURIComponent(item.id) + '?teamId=' + TEAM, vercelToken)
+    ]);
+    if (ready.projectId && ready.projectId !== PROJECT) {
+      throw Error('SOURCE_EQUIVALENCE_WRONG_VERCEL_PROJECT');
+    }
+    const proof = {
+      repository: REPO, branch: 'dev', head_sha: head, project_id: PROJECT,
+      ready: {
+        id: ready.id, sha: actualSha(ready), state: ready.readyState || ready.state,
+        project_id: ready.projectId || ready.project?.id || PROJECT,
+        project_name: ready.name, branch: ready.meta?.githubCommitRef,
+        target: ready.target, aliases: ready.alias
+      },
+      compare: {
+        base: priorSha, head, status: comparison.status,
+        ahead_by: comparison.ahead_by, behind_by: comparison.behind_by,
+        total_commits: comparison.total_commits, files: comparison.files
+      },
+      frontend_before: before, frontend_after: after
+    };
+    const verdict = assessDevSourceEquivalence(proof);
+    if (verdict.decision === 'SOURCE_EQUIVALENT') {
+      console.log('DEV_FRONTEND_SOURCE_EQUIVALENCE=PASS HEAD=' + head +
+        ' READY_SHA=' + priorSha + ' DEPLOYMENT_ID=' + ready.id +
+        ' FRONTEND_MANIFEST_SHA256=' + verdict.frontend_manifest_sha256 +
+        ' VERCEL_EXACT_SHA_READY=NO FUNCTIONAL_CERTIFICATION=REQUIRED');
+      return true;
+    }
+    console.log('DEV_SOURCE_EQUIVALENCE_NO_GO=' + verdict.reasons.join(','));
+  }
+  return false;
+}
 async function main() {
   policy();
   if (process.argv.includes('--self-test')) {
@@ -89,6 +142,7 @@ async function main() {
   const recent = await requestJson(url + '/v6/deployments?teamId=' + TEAM + '&projectId=' + PROJECT + '&limit=100',vt);
   const deployments = recent.deployments || [];
   if (deployments.some(d => matchesReady(d,sha))) { console.log('ALREADY_READY_SHA=' + sha); return; }
+  if (await readySourceEquivalence(deployments, sha, gh, vt, headers)) return;
   const teamList = await requestJson(url+'/v6/deployments?teamId='+TEAM+'&limit=100',vt);
   if (!teamQuotaHeadroom(teamList.deployments || [],Date.now())) {
     console.log('DEV_RELEASE_SKIPPED_TEAM_HOBBY_QUOTA_NEAR_100_PER_DAY; NO_READY_ATTESTED');
