@@ -1,3 +1,8 @@
+## 2026-10-25 — P0-004.A: capturador SQL de solo lectura y negativos sinteticos (SECONDARY_REVIEW_03)
+
+- Task `6adcc98a80a48191b71a5156624c21df`, GitHub `morales35alex`, rama `work/solqaryn-p0-004-a`: SQL de nueve SELECTs para metadata MySQL DEV y `__EFMigrationsHistory` condicional, con prueba offline Node de 14 negativas y workflow de PR protegido.
+- No se conecto a MySQL DEV, ni se verificaron metadatos fisicos/backup, ni se ejecutaron migraciones ni se alteraron entornos. P0-004.A permanece EN_PROGRESO / NO_GO_LISTO hasta evidencia autentica; rollback solo mediante revert de PR protegido.
+
 ## 2026-10-25 — P0-009.B: prueba negativa cuota/CI por entorno (SECONDARY_REVIEW_01)
 
 - Task 6adbbc9ad9e88191bea8eb69104afb25 / morales35alex agrega prueba Node sintética para preservar un fallo histórico de cuota sin equipararlo con paridad Render/Vercel ni aprobar PROD no verificado. Reutiliza P0-009.A desde dev@9a558516be56980d0673654bf96e6bf1e537ea00; flujo aislado de GitHub Actions contents:read.

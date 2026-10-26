@@ -1,0 +1,29 @@
+name: P0-004.A - MySQL schema inventory SQL static safety
+
+on:
+  pull_request:
+    branches: [dev]
+    paths:
+      - 'backend/scripts/p0-004-a-readonly-mysql-inventory.sql'
+      - 'scripts/verify-p0-004-a-readonly-mysql-inventory.mjs'
+      - '.github/workflows/p0-004-a-readonly-mysql-inventory.yml'
+      - 'docs/P0-004-A-INVENTARIO-ESTATICO-MYSQL-MIGRACIONES-DEV.md'
+
+permissions:
+  contents: read
+
+jobs:
+  check-sql-contract:
+    name: P0-004.A - Select-only SQL and negative fixtures
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Reject mutable SQL and non-metadata reads
+        run: node scripts/verify-p0-004-a-readonly-mysql-inventory.mjs --self-test

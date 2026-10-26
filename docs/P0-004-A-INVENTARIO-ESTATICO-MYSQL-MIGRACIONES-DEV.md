@@ -57,3 +57,13 @@
 Solo se agrega documentación de un inventario estático; no cambia API, DTO, modelos, migraciones, permisos, datos, pipelines, jobs ni despliegues. Riesgos pendientes: drift físico de esquema e índices, diferencias entre ensamblajes de migraciones, aislamiento tenant en constraints y backups no comprobados. No hay certificación de entorno, RBAC, QA/main/PROD ni autorización de infraestructura.
 
 **NO_GO_LISTO:** falta lectura física autorizada del MySQL DEV y conciliación; conservar `EN_PROGRESO`, no liberar `P0-004.B`. Continuar desde este SHA de rama y registrar evidencia nueva; toda edición/merge futuro requiere CI exacto y revisión independiente. Rollback documental: revert protegido del PR, nunca reescritura de historial.
+
+## Instrumento verificable, pendiente de ejecucion contra MySQL DEV
+
+Se agrega `backend/scripts/p0-004-a-readonly-mysql-inventory.sql` con nueve consultas exclusivamente `SELECT`. La secuencia Q01-Q08 inspecciona version/base efectiva y metadatos de tablas, columnas, indices, constraints, claves y triggers sin leer filas comerciales. Q08 consulta si existe `__EFMigrationsHistory`; **Q09 se ejecuta manualmente solo si Q08 lo confirma**. Ante esquema inesperado, error de permisos, historial ausente o datos no coincidentes: **NO_GO**, no corregir ni crear objetos en esta microtarea.
+
+Antes de usarlo, una identidad proveedora autorizada debe confirmar la cuenta MySQL DEV de **solo lectura**, la base seleccionada y la prohibicion de publicar hostnames, usuarios, credenciales o datos sensibles. El SQL NO establece conexion, NO lee backups del proveedor y NO equivale a inventario fisico completado. Los metadatos de backup/retencion requieren readback independiente del proveedor; restauracion aislada pertenece a P0-005.
+
+`scripts/verify-p0-004-a-readonly-mysql-inventory.mjs --self-test` comprueba que el fichero solo tenga nueve instrucciones SELECT, que todas las fuentes sean INFORMATION_SCHEMA o historial EF y que 14 casos negativos de mutacion/exportacion/acceso a tablas comerciales sean rechazados. La comprobacion local del script se ejecuto con Node 22.16.0 y paso 9/9 consultas + 14/14 negativas. El workflow de PR `.github/workflows/p0-004-a-readonly-mysql-inventory.yml` usa Node 24, checkout del SHA exacto y permiso `contents:read`. **No se ha ejecutado SQL real ni confirmado CI GitHub de estos cambios al redactar este checkpoint.**
+
+Este progreso **no modifica** P0-004.A=EN_PROGRESO, no proporciona evidencia fisica de MySQL ni habilita LISTO o dependientes. DRAFT PR a dev puede validar exclusivamente el codigo estatico; cierre exige evidencia fisica, revision ajena y readbacks institucionales.
