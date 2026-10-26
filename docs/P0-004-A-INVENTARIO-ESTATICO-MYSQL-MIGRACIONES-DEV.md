@@ -69,3 +69,9 @@ Antes de usarlo, una identidad proveedora autorizada debe confirmar la cuenta My
 Refuerzo de contrato: se rechazan tablas secundarias mediante lista separada por coma y `STRAIGHT_JOIN`, antes no visibles para el extractor de fuentes. Dos pruebas negativas de sentencia y una del documento completo elevan la cobertura a 23; no se consulto MySQL DEV ni se modifico su esquema.
 
 Este progreso **no modifica** P0-004.A=EN_PROGRESO, no proporciona evidencia fisica de MySQL ni habilita LISTO o dependientes. DRAFT PR a dev puede validar exclusivamente el codigo estatico; cierre exige evidencia fisica, revision ajena y readbacks institucionales.
+
+## Refuerzo de lista cerrada — 26 regresiones negativas (2026-10-26)
+
+El validador offline ahora compara **todas** las fuentes `FROM`/`JOIN` contra una allowlist exacta formada por las seis tablas `INFORMATION_SCHEMA` que necesita este inventario y `__EFMigrationsHistory`. La regla anterior de prefijo `INFORMATION_SCHEMA.` aceptaba otras vistas sensibles de metadatos, como `USER_PRIVILEGES` y `PLUGINS`, sin que formaran parte del contrato. Dos pruebas negativas nuevas de sentencia y una de documento completo elevan el conjunto de 23 a **26**; las pruebas positivas existentes continúan. Los recuentos anteriores permanecen como checkpoints históricos, no como resultado final de este cambio.
+
+**Límite inalterado:** esta comprobación valida exclusivamente SQL estático, no conecta con MySQL DEV ni confirma la versión, los índices, las migraciones aplicadas o los respaldos. P0-004.A permanece `EN_PROGRESO` y PR #3766 permanece en `DRAFT`, sujeto al CI del nuevo SHA y a evidencia física solo lectura/revisión independiente antes de `VALIDANDO` y `LISTO`.

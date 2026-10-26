@@ -1,3 +1,8 @@
+## 2026-10-26 — P0-004.A: cierre de fuentes SQL permitidas (SECONDARY_REVIEW_03)
+
+- Se reemplaza la aceptación por prefijo `INFORMATION_SCHEMA.` por una lista exacta de tablas de metadatos autorizadas, cerrando acceso por `FROM`/`JOIN` a vistas no utilizadas (por ejemplo `USER_PRIVILEGES`, `PLUGINS`). Se añaden 3 regresiones negativas, total **26**. Validación dirigida local de la regla: 4 positivos y 3 negativos; CI exact-SHA pendiente de revalidación del changeset.
+- Sin conexión a MySQL DEV, sin cambios de esquema/infraestructura/secretos. PR #3766 continúa DRAFT, P0-004.A EN_PROGRESO y NO_GO_LISTO hasta evidencia física, CI y revisión independiente. Task `6adcc98a80a48191b71a5156624c21df` / GitHub `morales35alex`.
+
 ## 2026-10-25 — P0-004.A: capturador SQL de solo lectura y negativos sinteticos (SECONDARY_REVIEW_03)
 
 - Task `6adcc98a80a48191b71a5156624c21df`, GitHub `morales35alex`, rama `work/solqaryn-p0-004-a`: SQL de nueve SELECTs para metadata MySQL DEV y `__EFMigrationsHistory` condicional, con prueba offline Node ampliada a 23 negativas (incluidos acceso indirecto por coma y STRAIGHT_JOIN) (incluidas funciones SELECT con acceso a archivos, locks, esperas, variables y subconsultas) y workflow de PR protegido; la CI exact-SHA del endurecimiento requiere nueva comprobacion.

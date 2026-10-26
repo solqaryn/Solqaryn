@@ -50,8 +50,11 @@ function validateStatement(query) {
     throw new Error('Comma/STRAIGHT_JOIN table sources are not metadata-only');
   }
   const sources = [...query.matchAll(/\b(?:FROM|JOIN)\s+([`A-Za-z0-9_.]+)/gi)].map((m) => m[1].replaceAll('`', '').toUpperCase());
-  if (sources.some((source) => !source.startsWith('INFORMATION_SCHEMA.') && source !== '__EFMIGRATIONSHISTORY')) {
-    throw new Error('Reading business tables or another schema is prohibited');
+  // Permit only metadata sources actually required by this inventory.
+  // A broad INFORMATION_SCHEMA prefix would also accept ACL/plugin metadata.
+  const allowedSources = new Set(requiredSources.map((source) => source.toUpperCase()));
+  if (sources.some((source) => !allowedSources.has(source))) {
+    throw new Error('Reading an unapproved SQL metadata source is prohibited');
   }
 }
 
@@ -87,6 +90,8 @@ if (process.argv.includes('--self-test')) {
     'SELECT a.TABLE_NAME FROM INFORMATION_SCHEMA.TABLES a JOIN clientes c ON 1=1',
     'SELECT a.TABLE_NAME FROM INFORMATION_SCHEMA.TABLES a, clientes c',
     'SELECT a.TABLE_NAME FROM INFORMATION_SCHEMA.TABLES a STRAIGHT_JOIN clientes c',
+    'SELECT GRANTEE FROM INFORMATION_SCHEMA.USER_PRIVILEGES',
+    'SELECT PLUGIN_NAME FROM INFORMATION_SCHEMA.PLUGINS',
     'SET @x = 1',
     'CALL sp_mutation()',
     'SELECT 1; DROP TABLE `__EFMigrationsHistory`',
@@ -105,6 +110,8 @@ if (process.argv.includes('--self-test')) {
     sql.replace('FROM __EFMigrationsHistory', 'FROM usuarios'),
     sql.replace('FROM INFORMATION_SCHEMA.TABLES\nWHERE', 'FROM INFORMATION_SCHEMA.TABLES, clientes\nWHERE'),
     sql.replace('INFORMATION_SCHEMA.TRIGGERS', 'information_schema.FAKE'),
+    sql.replace('FROM INFORMATION_SCHEMA.TRIGGERS\nWHERE',
+      'FROM INFORMATION_SCHEMA.TRIGGERS JOIN INFORMATION_SCHEMA.USER_PRIVILEGES p ON 1=1\nWHERE'),
     sql.replace('ORDER BY MigrationId;', 'ORDER BY MigrationId; INSERT INTO t VALUES(1);'),
   ];
   for (const altered of negativeDocuments) assert.throws(() => verify(altered), Error);
