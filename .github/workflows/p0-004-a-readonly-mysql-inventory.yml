@@ -1,6 +1,13 @@
 name: P0-004.A - MySQL schema inventory SQL static safety
 
 on:
+  push:
+    branches: [work/solqaryn-p0-004-a]
+    paths:
+      - 'backend/scripts/p0-004-a-readonly-mysql-inventory.sql'
+      - 'scripts/verify-p0-004-a-readonly-mysql-inventory.mjs'
+      - '.github/workflows/p0-004-a-readonly-mysql-inventory.yml'
+      - 'docs/P0-004-A-INVENTARIO-ESTATICO-MYSQL-MIGRACIONES-DEV.md'
   pull_request:
     branches: [dev]
     paths:
@@ -20,7 +27,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
