@@ -8,8 +8,10 @@ TIMEZONE=America/Tegucigalpa
 DESIGN_TASK_LIMIT=6
 DESIGN_JAVIER_TASKS=3
 DESIGN_ALEX_TASKS=3
-MAX_OPEN_WORK_BRANCHES=3
-MAX_CONCURRENT_SCOPES=3
+MAX_OPEN_WORK_BRANCHES=6
+MAX_CONCURRENT_SCOPES=6
+MAX_OWNED_SCOPES_PER_TASK=2
+MAX_ACTIVE_WRITES_PER_TASK=1
 REVIEW_INDEPENDENCE_REQUIRED=TRUE
 VAEP_DISPATCH_AUTHORIZED=FALSE
 JULES_WORKERS_AUTHORIZED=0
@@ -73,7 +75,7 @@ y revisor, los permisos efectivos, el Scope Lock ni los checks de GitHub.
 Orden uniforme para las seis Tasks:
 1. Reanudar trabajo propio incompleto con rama/PR y evidencia, si no hay otro editor.
 2. Revisar `VALIDANDO` que provenga de otra identidad verificable y no tenga revisor activo; confirmar PR GitHub y permisos efectivos antes de asumir la revisión.
-3. Tomar `PENDIENTE` con **todas** sus dependencias en `LISTO`, prioridad P0 antes
+3. Tomar `PENDIENTE` con **todas** sus dependencias en `LISTO` solo si WIP global es menor que 6 y se dispone de cupo propio. Primera tarea sin otro scope asignado; segunda únicamente si la primera está `VALIDANDO` sin edición activa, el actor verificó `REVIEW_FIRST` y no hay revisión ajena abordable. Nunca mantener dos trabajos en escritura activa desde la misma Task. Prioridad P0 antes
    que P1 y orden del Plan Maestro dentro de una misma prioridad.
 4. Objetivo de medición: 6 microtareas comerciales realmente LISTO por hora entre Tasks autorizadas, nunca garantía de resultado. Tras cada LISTO comprobado, recargar PLAN_MAESTRO/COLA y continuar si hay espacio. Un impedimento externo (p. ej. Vercel CANCELED en P0-001.B) detiene solo ese scope; no inmoviliza candidatos independientes. No contar diagnóstico, PR documental NO_GO, auditoría ni ejecución horaria como LISTO.
 5. Si no hay elegibles, dejar como máximo un evento deduplicado
@@ -116,7 +118,7 @@ commits, PR y responsable: nunca simular continuidad infinita o cierre.
 Ramas permanentes: `dev`, `qa` y `main`. Para cada microtarea elegible
 crear/reutilizar **una** rama determinista `work/solqaryn-<id-normalizado>`
 y PR exclusivo hacia `dev`. No utilizar una rama almacén compartida.
-Máximo **tres scopes comerciales distintos activos** (`MAX_CONCURRENT_SCOPES=3`, equivalente al límite `MAX_OPEN_WORK_BRANCHES=3` aplicado solo a ramas comerciales reales), y nunca más de uno por Task individualmente autorizada. Contar exclusivamente IDs de microtarea del Plan Comercial Inicial con rama determinista `work/solqaryn-<id-normalizado>`, PR abierto o entrega comercial en progreso; una misma microtarea no se contabiliza dos veces. No cuentan PR normativos/de gobierno como #3743/#3745, ramas `test/solqaryn-m3-2-native-write-*` de diagnóstico sin microtarea comercial, auditorías, ni ramas fusionadas o históricas. La existencia de una rama de prueba sigue exigiendo exclusividad sobre ESE recurso, pero no consume WIP comercial. Ningún contador otorga permisos: debe estar en la allowlist 5/6 vigente, preservar identidad, dependencias y revisión independiente. No borrar trabajo existente para liberar cupo.
+Máximo **seis scopes comerciales distintos activos** (`MAX_CONCURRENT_SCOPES=6`, equivalente a `MAX_OPEN_WORK_BRANCHES=6` aplicado solo a ramas de microtareas comerciales), independientemente de que hoy solo cinco Tasks estén autorizadas. Cada Task de la allowlist 5/6 puede mantener **a lo sumo dos scopes asignados**, nunca más de uno con escritura activa. La segunda toma solo se permite con la primera en `VALIDANDO` y PR real, sin otro editor/revisor correctivo sobre el primer scope, luego de haber comprobado la ausencia de una revisión ajena abordable conforme a `REVIEW_FIRST`. Una Task con scope `EN_PROGRESO` debe RECOVER antes de CLAIM; una Task con dos scopes abiertos no puede reclamar un tercero. Contar IDs de microtarea únicos del Plan Comercial Inicial con rama determinista `work/solqaryn-<id-normalizado>`, PR abierto o entrega real en progreso, sin doble contar una misma microtarea. No cuentan PR normativos (#3743/#3745), ramas de diagnóstico `test/solqaryn-m3-2-native-write-*`, auditorías, ramas ya fusionadas ni estados obsoletos del Sheet. Toda rama existente conserva exclusividad de edición, aunque no consuma WIP. La toma requiere branch create-if-absent nativa y readback de dueño, permisos y dependencias `LISTO`. El sexto cupo **NO** autoriza a Alex :30, ni una segunda Task bajo la misma cuenta, ni revisión propia o saltos de CI. Jamás borrar trabajo para liberar cupo.
 
 La toma de una microtarea requiere una primitiva de exclusividad **real** del
 proveedor: crear una referencia GitHub con nombre determinista solo si no existe
