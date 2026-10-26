@@ -65,7 +65,20 @@ const contract = [
     ['[Authorize]', '[RequierePermiso(', 'TenantPermissionContext.GetAuthorizedEmpresaId']],
   ['backend/src/Infrastructure/Persistence/AppDbContext.cs',
     ['CommercialTenantReadFilterModel.Apply(modelBuilder, this)',
+      'CommercialTenantNaturalKeysModel.Apply(modelBuilder)',
       'CommercialTenantReadFilterModel.ApplySharedIdentityMembershipFilter(modelBuilder, this)']],
+  ['backend/src/Infrastructure/Persistence/CommercialTenantNaturalKeysModel.cs',
+    ['b.HasIndex(new[] { "EmpresaId", "NombreNormalizado" }).IsUnique()',
+      'b.HasIndex(new[] { "NombreNormalizado" }).IsUnique(false)',
+      'UX_Roles_Empresa_NombreNormalizado',
+      'NombreNormalizadoGlobalUnico',
+      'IF(EmpresaId IS NULL, NombreNormalizado, NULL)',
+      'UX_Roles_NombreNormalizadoGlobalUnico']],
+  ['backend/src/Infrastructure/Persistence/CommercialTenantNaturalKeysPhysicalContract.cs',
+    ['UX_Roles_Empresa_NombreNormalizado',
+      'IX_Roles_NombreNormalizado',
+      'UX_Roles_NombreNormalizadoGlobalUnico',
+      'INFORMATION_SCHEMA.STATISTICS']],
   ['backend/src/Infrastructure/Persistence/CommercialTenantReadFilterModel.cs',
     ['nameof(AppDbContext.AuthorizedReadEmpresaId)', 'scopeAbsent',
       'if (entity.ClrType == typeof(Rol))', 'nameof(Rol.EsSistema)',
@@ -102,7 +115,8 @@ function main() {
   for (const [p, fragments] of contract) expectFragments(p, fragments);
   const report = get('docs/P1-001-A-MAPA-ROLES-DEV.md');
   for (const s of ['P1-001.A', 'UsuarioEmpresas', 'UsuarioRolesPlataforma',
-    'Plataforma', 'personalizado', 'NO_VERIFICADO', 'solo conteos']) {
+    'Plataforma', 'personalizado', 'NO_VERIFICADO', 'solo conteos',
+    'UX_Roles_Empresa_NombreNormalizado', 'NombreNormalizadoGlobalUnico']) {
     assert.ok(report.includes(s), `Mapa documental incompleto: ${s}`);
   }
 
