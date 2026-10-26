@@ -47,7 +47,7 @@ const contract = [
     ['builder.ToTable("UsuarioEmpresas")',
       'new { x.UsuarioId, x.EmpresaId }', '.IsUnique()']],
   ['backend/src/Infrastructure/Persistence/Configurations/UsuarioRolPlataformaConfiguration.cs',
-    ['builder.ToTable("UsuarioRolesPlataforma")',
+    ['builder.ToTable("UsuarioRolesPlataforma"',
       'new { x.UsuarioId, x.RolId }', '.IsUnique()']],
   ['backend/src/Infrastructure/Persistence/Configurations/RolPermisoConfiguration.cs',
     ['builder.ToTable("RolPermisos")', 'new { p.RolId, p.PermisoId }']],
