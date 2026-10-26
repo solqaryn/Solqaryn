@@ -63,6 +63,19 @@ const contract = [
     ['ExigirRolMutable(rol)', 'EmpresaId = empresaIdAutorizada']],
   ['backend/src/API/Controllers/RolesController.cs',
     ['[Authorize]', '[RequierePermiso(', 'TenantPermissionContext.GetAuthorizedEmpresaId']],
+  ['backend/src/Infrastructure/Persistence/AppDbContext.cs',
+    ['CommercialTenantReadFilterModel.Apply(modelBuilder, this)',
+      'CommercialTenantReadFilterModel.ApplySharedIdentityMembershipFilter(modelBuilder, this)']],
+  ['backend/src/Infrastructure/Persistence/CommercialTenantReadFilterModel.cs',
+    ['nameof(AppDbContext.AuthorizedReadEmpresaId)', 'scopeAbsent',
+      'if (entity.ClrType == typeof(Rol))', 'nameof(Rol.EsSistema)',
+      'AmbitoAutorizacion.Empresa']],
+  ['backend/src/API/Filters/RequierePermisoAttribute.cs',
+    ['TenantPermissionContext.RequireEmpresaIdAsync', 'VerificarPermisoAsync',
+      'TenantPermissionContext.MarkAuthorizedEmpresaId', 'await next()']],
+  ['backend/src/Infrastructure/Repositories/RolRepository.cs',
+    ['_context.Roles.FirstOrDefaultAsync', '_context.Roles',
+      '.OrderBy(r => r.Nombre)']],
 ];
 
 function asignableEmpresa(rol, empresaId) {

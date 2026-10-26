@@ -30,10 +30,16 @@
 
 ## 3. Hallazgos para seguimiento, sin atribuir explotación
 
-1. **Verificar lectura multitenant de catálogo de roles:** `RolesController.GetAll/GetById` delega en `RolService` y `RolRepository.GetAllAsync/GetByIdAsync`; las consultas explícitas de ese repositorio no incorporan `EmpresaId`. Puede haber filtrado global EF adicional, middleware o autorización de contexto; **no está acreditado que estas rutas devuelvan únicamente roles del tenant** por los fragmentos inspeccionados. Prueba de integración A/B obligatoria antes de certificar ese comportamiento, sin publicar datos de terceros.
+1. **Lectura multiempresa: filtro EF comprobado estáticamente, no HTTP.** `RequierePermisoAttribute` resuelve y verifica la empresa antes de marcar `TenantPermissionContext.MarkAuthorizedEmpresaId`, y `AppDbContext.OnModelCreating` aplica `CommercialTenantReadFilterModel`. La consulta EF `Roles` usa `AuthorizedReadEmpresaId` de contexto verificado; cuando está presente, permite únicamente el rol propio o la plantilla de sistema de ámbito Empresa sin dueño. `RolRepository.GetAllAsync/GetByIdAsync` no agrega un predicado explícito y depende de ese filtro EF; `scopeAbsent` admite el catálogo completo en ejecuciones sin contexto RBAC. **No equivale a una prueba HTTP/MySQL DEV.** Probar lectura A/B, `GET /roles/{id}` ajeno, contexto ausente y `IgnoreQueryFilters` en consumidores relevantes antes de certificar aislamiento.
 2. **Índice de nombre global:** `RolConfiguration` declara unicidad global de `NombreNormalizado`, incluso para personalizados de empresas diferentes; confirmar intención comercial y estado real de la constraint.
 3. **Backfill y legado:** roles `EsSistema=false,EmpresaId=NULL` quedan sin titular hasta evidencia determinista; no regularizarlos por inferencia ni darles permisos automáticamente.
 4. **Evidencia MySQL faltante:** no se inspeccionaron credenciales, filas vivas, `INFORMATION_SCHEMA`, constraints desplegadas ni pruebas E2E con usuarios reales. Cualquier cantidad de roles, membresías o anomalías reales se deja **NO_VERIFICADO**. No declarar P1-001.A LISTO por esta acta.
+
+### 3.1. Escrituras de roles: alcance de la defensa a verificar
+
+`RolesController` aplica `RequierePermiso` a PUT/PATCH/DELETE, pero las rutas Update/Activar/Desactivar/Eliminar pasan solo `id` al `RolService`; `ExigirRolMutable` verifica tipo y dueño positivo, **no compara allí** `Rol.EmpresaId` contra el tenant autenticado. Las consultas normales pueden quedar limitadas por el filtro EF, y los guards de persistencia pueden agregar una segunda defensa; no se atribuye una vulnerabilidad explotable sin ejecutar negativas A/B. Exigir prueba de rechazo de IDs de B en GET, PUT, PATCH y DELETE desde A y prueba del contexto de lectura/escritura sin marca. No ampliar permisos ni editar datos reales para probarlo.
+
+**CI vs evidencia viva:** el workflow de alcance, frontend, backend y seguridad pueden aprobar el SHA del PR en GitHub Actions; eso acredita pruebas de repositorio y **no** la instancia MySQL DEV ni autenticación HTTP A/B. Cualquier hallazgo de aislamiento debe corregirse en un changeset acotado, con test rojo previo, revisión independiente y CI exact SHA antes de declarar aceptación.
 
 ## 4. Verificación MySQL DEV de solo lectura pendiente
 

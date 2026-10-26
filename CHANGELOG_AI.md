@@ -4396,3 +4396,10 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Comprobador read-only `scripts/verify-p1-001-a-rbac-role-map.mjs` y workflow acotado `.github/workflows/p1-001-a-rbac-role-map.yml`: 15 fuentes e hipótesis sintéticas 5 positivas + 14 negativas, sin credenciales ni conexiones MySQL.
 - Limitación explícita: no se certifica base MySQL DEV, filtros HTTP A/B, seguridad runtime ni despliegues; la microtarea no puede declararse LISTO sin evidencias adicionales, revisión y merge.
 - Rollback: revert protegido de documentación/script/workflow; sin cambios a entidades, endpoints, migraciones, grants ni entornos.
+
+### 2026-10-25 (DEV) — P1-001.A: readback estático de aislamiento RBAC
+
+- Recuperación en la misma rama y PR #3764; se cotejaron `RequierePermisoAttribute`, `TenantPermissionContext`, `AppDbContext`, `CommercialTenantReadFilterModel` y `RolRepository` en el SHA base.
+- El mapa aclara que `GET /roles` y `GET /roles/{id}` dependen del filtro EF aplicado con empresa RBAC, pero los contextos sin marca tienen alcance distinto. Se documenta la ausencia de comparación explícita owner/tenant en la capa de aplicación para actualizaciones y la necesidad de negativas HTTP A/B.
+- El verificador read-only incorpora cuatro contratos adicionales (19 fuentes totales). NO verifica MySQL DEV, denegación HTTP real, ACLs de datos ni autoriza cambios funcionales de RBAC.
+- Rollback: revert protegido de este changeset documental/verificador. Sin migraciones, endpoints, secretos ni despliegues.
