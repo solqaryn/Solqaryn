@@ -29,6 +29,20 @@ function validateStatement(query) {
   if (/\b(?:INTO\s+(?:OUTFILE|DUMPFILE)|FOR\s+UPDATE|LOCK\s+IN\s+SHARE\s+MODE|INSERT|UPDATE|DELETE|REPLACE|MERGE|CREATE|ALTER|DROP|TRUNCATE|GRANT|REVOKE|CALL|EXECUTE|LOAD|HANDLER|PREPARE|DEALLOCATE|SET)\b/i.test(query)) {
     throw new Error('Mutating/locking/export SQL construct rejected');
   }
+  // A SELECT-only prefix does not by itself prevent filesystem reads,
+  // session locks, delays, variable writes, or nested statements.
+  if (/\bINTO\b|@/.test(query)) {
+    throw new Error('Variable/INTO operations are not metadata-only reads');
+  }
+  if ((query.match(/\bSELECT\b/gi) || []).length !== 1) {
+    throw new Error('Nested or multiple SELECT expressions are not supported');
+  }
+  const allowedFunctions = new Set(['VERSION', 'DATABASE']);
+  for (const call of query.matchAll(/\b([A-Za-z_][A-Za-z0-9_]*)\s*\(/g)) {
+    if (!allowedFunctions.has(call[1].toUpperCase())) {
+      throw new Error('Unapproved SQL function in metadata query');
+    }
+  }
   const sources = [...query.matchAll(/\b(?:FROM|JOIN)\s+([`A-Za-z0-9_.]+)/gi)].map((m) => m[1].replaceAll('`', '').toUpperCase());
   if (sources.some((source) => !source.startsWith('INFORMATION_SCHEMA.') && source !== '__EFMIGRATIONSHISTORY')) {
     throw new Error('Reading business tables or another schema is prohibited');
@@ -68,6 +82,12 @@ if (process.argv.includes('--self-test')) {
     'SET @x = 1',
     'CALL sp_mutation()',
     'SELECT 1; DROP TABLE `__EFMigrationsHistory`',
+    "SELECT LOAD_FILE('/etc/passwd')",
+    "SELECT GET_LOCK('inventory-lock', 5)",
+    'SELECT SLEEP(60)',
+    'SELECT @@hostname',
+    'SELECT VERSION() INTO @probe',
+    'SELECT (SELECT id FROM empresas)',
   ];
   for (const bad of negativeStatements) {
     assert.throws(() => validateStatement(bad), Error, `Expected rejected query: ${bad}`);
