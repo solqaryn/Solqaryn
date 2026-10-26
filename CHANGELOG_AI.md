@@ -1,4 +1,17 @@
-## 2026-10-26 — P0-003.B: paridad y seguridad DEV (PRIMARY_DEV_02)
+## 2026-10-26 — P0-001.B: recuperación de paridad exact-SHA DEV
+
+- PR de certificación: #3768, rama `work/solqaryn-p0-001-b`.
+- GitHub DEV: `35c67e330f876ee66f8015e889ffa151d6d4643a`.
+- Render DEV: deployment `dep-dbfotee417fc73defu30`, LIVE.
+- Vercel DEV: deployment `dpl_9wHGTwW1YNGucpmG58EqtYXtWsGs`, READY.
+- CI obligatorio: 3/3 SUCCESS.
+- JWT/RBAC y aislamiento A/B/C: workflow #40377756848 SUCCESS.
+- P0-001.B: snapshot positivo MATCH y catorce regresiones negativas verificadas en PR #3768.
+- Certificación negativa histórica: conservada íntegramente.
+- Alcance: DEV, prueba de paridad y seguridad dirigida. La evaluación integral de todos los módulos ERP corresponde a un alcance independiente.
+- Estado: EN_PROGRESO. Cierre LISTO únicamente después de revisión independiente, merge protegido y readback de Google Sheets.
+-
+- ## 2026-10-26 — P0-003.B: paridad y seguridad DEV (PRIMARY_DEV_02)
 
 - Task: 6adc2e4bd8a48191ac7d8641ed95a1a3.
 - PR: #3758, rama work/solqaryn-p0-003-b.
