@@ -4403,3 +4403,9 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - El mapa aclara que `GET /roles` y `GET /roles/{id}` dependen del filtro EF aplicado con empresa RBAC, pero los contextos sin marca tienen alcance distinto. Se documenta la ausencia de comparación explícita owner/tenant en la capa de aplicación para actualizaciones y la necesidad de negativas HTTP A/B.
 - El verificador read-only incorpora cuatro contratos adicionales (19 fuentes totales). NO verifica MySQL DEV, denegación HTTP real, ACLs de datos ni autoriza cambios funcionales de RBAC.
 - Rollback: revert protegido de este changeset documental/verificador. Sin migraciones, endpoints, secretos ni despliegues.
+
+### 2026-10-26 (DEV) — P1-001.A: prueba negativa EF/servicio de roles A/B
+
+- Se añadió `backend/tests/Solqaryn.Tests/P1001ATenantRoleIsolationTests.cs`, con datos sintéticos EF Core InMemory, filtro `VerifiedCommercialTenant` y repositorio/servicio reales. Prueba visibilidad de A, ocultamiento de B, rechazos de seis operaciones por ID ajeno y control positivo para B. No consulta MySQL DEV ni ejecuta HTTP/JWT; no se alteran roles reales, grants ni endpoints.
+- La prueba se ejecuta mediante el CI permanente del backend y la regresión multiempresa cuando GitHub Actions complete el SHA final. Hasta disponer de esos resultados, la ejecución es **PENDIENTE**, sin atribuir PASS anticipado.
+- P1-001.A permanece `EN_PROGRESO` y PR #3764 permanece DRAFT; faltan MySQL DEV físico, índices reales, negativas HTTP autenticadas A/B, revisión independiente, CI final y merge protegido. Rollback: revert protegido del test y su documentación, sin cambios a runtime o base de datos.
