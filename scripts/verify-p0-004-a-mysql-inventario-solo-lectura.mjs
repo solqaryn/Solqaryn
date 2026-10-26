@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
-const path = resolve(root, 'backend/scripts/p0-004-a-readonly-mysql-inventory.sql');
+const path = resolve(root, 'backend/scripts/p0-004-a-mysql-inventario-solo-lectura.sql');
 const requiredSources = [
   'INFORMATION_SCHEMA.TABLES',
   'INFORMATION_SCHEMA.COLUMNS',

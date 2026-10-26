@@ -1,19 +1,19 @@
-name: P0-004.A - MySQL schema inventory SQL static safety
+name: P0-004.A - MySQL metadatos SQL seguridad estatica
 
 on:
   push:
     branches: [work/solqaryn-p0-004-a]
     paths:
-      - 'backend/scripts/p0-004-a-readonly-mysql-inventory.sql'
-      - 'scripts/verify-p0-004-a-readonly-mysql-inventory.mjs'
-      - '.github/workflows/p0-004-a-readonly-mysql-inventory.yml'
+      - 'backend/scripts/p0-004-a-mysql-inventario-solo-lectura.sql'
+      - 'scripts/verify-p0-004-a-mysql-inventario-solo-lectura.mjs'
+      - '.github/workflows/p0-004-a-mysql-inventario-solo-lectura.yml'
       - 'docs/P0-004-A-INVENTARIO-ESTATICO-MYSQL-MIGRACIONES-DEV.md'
   pull_request:
     branches: [dev]
     paths:
-      - 'backend/scripts/p0-004-a-readonly-mysql-inventory.sql'
-      - 'scripts/verify-p0-004-a-readonly-mysql-inventory.mjs'
-      - '.github/workflows/p0-004-a-readonly-mysql-inventory.yml'
+      - 'backend/scripts/p0-004-a-mysql-inventario-solo-lectura.sql'
+      - 'scripts/verify-p0-004-a-mysql-inventario-solo-lectura.mjs'
+      - '.github/workflows/p0-004-a-mysql-inventario-solo-lectura.yml'
       - 'docs/P0-004-A-INVENTARIO-ESTATICO-MYSQL-MIGRACIONES-DEV.md'
 
 permissions:
@@ -33,4 +33,4 @@ jobs:
         with:
           node-version: '24'
       - name: Reject mutable SQL and non-metadata reads
-        run: node scripts/verify-p0-004-a-readonly-mysql-inventory.mjs --self-test
+        run: node scripts/verify-p0-004-a-mysql-inventario-solo-lectura.mjs --self-test

@@ -1,4 +1,4 @@
--- P0-004.A / DEV ONLY / MANUAL READ-ONLY INVENTORY
+-- P0-004.A / DEV ONLY / MANUAL READ-ONLY INVENTARIO
 -- Requires a separately authorized read-only MySQL account.
 -- Do NOT execute via DatabaseBootstrap or EF migrations.
 -- Do NOT copy output containing server names, user identities, or secrets into git.
