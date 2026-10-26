@@ -4,6 +4,8 @@
 - Lecturas de metadata exclusivamente: Vercel proyecto `solqaryn-dev` 6 nombres sin valores (4 targets development/preview/production y 2 production-only); Render workspace SOLQARYN y servicio solqaryn-api-dev identificados, registro de claves Render no expuesto; GitHub secrets no leídos. NO se certifica completitud ni paridad.
 - Se incorporan `docs/baselines/P0-008-A-DEV-METADATA-20261026.json`, `docs/P0-008-A-REGISTRO-SECRETOS-METADATOS-DEV.md`, `scripts/verify-p0-008-a-secret-metadata.mjs` (12 negativos sintéticos) y workflow de Node read-only. Cierre sujeto a evidencia real, CI exact SHA, revisión independiente, merge protegido y readback. Sin escribir secretos, infra, API, base de datos, QA/main/PROD ni proveedores.
 
+- Verificación posterior `2026-10-26T07:07:34Z`: workflow de release DEV `40283854509` pasó política y falló con `MISSING_PROVIDER_TOKEN_IN_ACTIONS_SECRETS` para esa ejecución; Vercel proyecto `solqaryn-dev` reporta `live=false` y último deployment `CANCELED`. No implica inexistencia global del secreto, no certifica paridad ni autoriza modificarlo. Se mantiene P0-008.A PARTIAL_NO_GO y P0-001.B NO_GO; detalles en acta, sin valores ni cambios de proveedores.
+
 ## 2026-10-25 — P0-001.B: certificar bloqueo por falta de paridad exact-SHA DEV (PRIMARY_DEV_03)
 
 - Task `6adc2e55f47c81919f6374e561687076`, GitHub `jmejia31`, rama exclusiva `work/solqaryn-p0-001-b`; base `dev@6a6d6e8870b0a53db9b3dc19f197be409082b6e6`. Dependencias P0-001.A/P0-012.B LISTO y WIP protegido 6.
