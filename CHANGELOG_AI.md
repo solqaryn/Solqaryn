@@ -1,3 +1,11 @@
+## 2026-10-26 — P0-005.A: validador seguro de evidencia de restore DEV (PRIMARY_DEV_02)
+
+- Task `6adc2e4bd8a48191ac7d8641ed95a1a3`, GitHub `jmejia31`, rama propia `work/solqaryn-p0-005-a`, `dev@35c67e330f876ee66f8015e889ffa151d6d4643a`, dependencia P0-012.B LISTO.
+- Entrega parcial: script `scripts/verify-p0-005-a-restore-evidence.mjs`, workflow Node24 read-only y acta `docs/P0-005-A-BACKUP-RESTORE-DEV-NO-GO.md`, con 1 fixture positivo **sintético** y 20 negativos que no contactan proveedor.
+- GitHub scheduled backup DEV run `40339821803` fue **SKIPPED**: sin último backup real/verificación de SHA256 ni restore actual del mismo artefacto. Actas de septiembre son antecedentes y no certificado presente.
+- Resultado correcto: EN_PROGRESO / RESTORE_REAL_DEV_NO_VERIFICADO / NO_GO_VALIDANDO_LISTO. Exigir ejecución CI descartable y verificaciones de hashes/conteos actuales, luego revisión independiente y CI exact-SHA/merge protegido. No se ejecutó restore, no se contactó MySQL, no se tocó QA/main/PROD, secretos ni proveedores.
+- Rollback: revert protegido del changeset, preservando trazabilidad.
+
 ## 2026-10-26 — P0-003.B: paridad y seguridad DEV (PRIMARY_DEV_02)
 
 - Task: 6adc2e4bd8a48191ac7d8641ed95a1a3.
