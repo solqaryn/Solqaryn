@@ -4,6 +4,13 @@
 - Evidencia nueva `docs/baselines/P0-001-B-DEV-20261025-REFRESCO-PRIMARY03.json` y acta `docs/P0-001-B-CERTIFICACION-NEGATIVA-HEAD-DEV.md`: CI HEAD 3/3 SUCCESS, Vercel DEV CANCELED de SHA bafcde53, READY de SHA 29dbcb06 no coincidente, Render live NO_VERIFICADO por workspaceId no confirmado. Dictamen `NO_GO`, nunca paridad, despliegue ni release acreditado.
 - El verificador existente `scripts/verify-p0-001-b-parity.mjs` admite snapshot versionado sin mutar el histórico; regresiones sintéticas Node y workflow `.github/workflows/p0-001-b-head-parity.yml` en PR. No se tocan código ERP, base de datos, QA/main/PROD, secretos, dominios ni proveedores. Cierre condicionado a CI exact-HEAD, revisión GitHub independiente, merge protegido y readback Sheets; rollback por revert protegido.
 
+## 2026-10-25 — P0-011.B: negativa de funcionalidades FUTURO por alusion al Maestro (SECONDARY_REVIEW_01)
+
+- Task `6adbbc9ad9e88191bea8eb69104afb25`, GitHub `morales35alex`, rama `work/solqaryn-p0-011-b`, dev base `b90d0709314e646a553fe806c774e22ca56231e7`; dependencias P0-011.A/P0-012.B LISTO.
+- Se incorpora `docs/P0-011-B-CERTIFICACION-NEGATIVA-ALCANCE-DEV.md` y el test `scripts/verify-p0-011-b-future-exclusions.mjs`: clases FUTURO C14-C20, CONDICIONAL C11-C13, C07-C08 INICIAL, doce mutaciones negativas sinteticas para negar Experience Studio, IA/SDK, enterprise, billing automatico, DNS y planes de pago.
+- GitHub workflow `.github/workflows/p0-011-b-future-exclusions.yml` usa Node 24 y checkout exact-HEAD de solo lectura; pruebas nativas y CI deben acreditarse antes de marcar VALIDANDO y LISTO. No afirma despliegues, ausencia universal de funciones ni E2E/RBAC.
+- Alcance documental/test exclusivo, sin codigo de producto, MySQL, API/DTO, credenciales, QA/main/PROD, Render/Vercel ni proveedores; rollback por revert protegido.
+
 ## 2026-10-25 — P0-011.A: delimitar versión comercial inicial (SECONDARY_REVIEW_01)
 
 - Task `6adbbc9ad9e88191bea8eb69104afb25`, actor `morales35alex`; base `dev@6a6d6e8870b0a53db9b3dc19f197be409082b6e6`. Matriz documental de 20 decisiones INICIAL/FUTURO/CONDICIONAL apoyada únicamente en el Standard Comercial Inicial V3; no se convierte un requisito en funcionalidad certificada.
