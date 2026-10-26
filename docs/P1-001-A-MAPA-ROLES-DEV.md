@@ -76,6 +76,7 @@ WHERE urp.Activa = 1
   AND (r.Ambito <> 2 OR r.EmpresaId IS NOT NULL OR r.EsAdministrador = 0);
 ```
 
+```sql
 -- Contrato físico esperado de nombres de roles (solo metadatos, sin PII).
 SELECT INDEX_NAME, NON_UNIQUE,
        GROUP_CONCAT(COLUMN_NAME ORDER BY SEQ_IN_INDEX SEPARATOR ',') AS Columnas
@@ -94,6 +95,7 @@ SELECT COLUMN_NAME, GENERATION_EXPRESSION, EXTRA
 FROM INFORMATION_SCHEMA.COLUMNS
 WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'Roles'
   AND COLUMN_NAME = 'NombreNormalizadoGlobalUnico';
+```
 
 No interpretar cero filas anómalas como prueba de autorización HTTP o de esquema: falta verificar índices físicos, scopes RBAC, denegación A/B y estado de despliegue.
 
