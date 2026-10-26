@@ -18,8 +18,8 @@ function snapshotPath() {
   if (index < 0) return path.join(snapshotsDir, 'P0-001-B-DEV-20261025.json');
   const name = process.argv[index + 1];
   // A basename only: never follow arbitrary files, external data or secrets.
-  if (typeof name !== 'string' || !/^P0-001-B-DEV-20261025(?:-[A-Z0-9-]+)?\.json$/.test(name)) {
-    throw Error('Snapshot basename P0-001-B-DEV-20261025[-SUFFIX].json required');
+  if (typeof name !== 'string' || !/^P0-001-B-DEV-2026102[56](?:-[A-Z0-9-]+)?\.json$/.test(name)) {
+    throw Error('Snapshot basename P0-001-B-DEV-20261025 or 20261026[-SUFFIX].json required');
   }
   return path.join(snapshotsDir, name);
 }
@@ -94,8 +94,8 @@ function main() {
       mutate(t);
       assert.equal(evaluateParity(t).decision, 'NO_GO', name);
     }
-    assert.equal(out.decision, 'NO_GO', 'Observed Vercel canceled must deny parity');
-    console.log('PASS P0-001.B: ' + cases.length + ' negative mutations, one positive counterfactual, observed NO_GO');
+    assert.equal(out.decision, s.parity_result, 'Actual observed decision must remain consistent');
+    console.log('PASS P0-001.B: ' + cases.length + ' negative mutations, one positive counterfactual, observed ' + out.decision);
   } else {
     console.log(JSON.stringify(out));
   }

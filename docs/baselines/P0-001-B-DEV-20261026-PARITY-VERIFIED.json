@@ -1,0 +1,53 @@
+{
+  "schema": "solqaryn.p0-001-b.dev-parity.v1",
+  "microtask": "P0-001.B",
+  "repository": "solqaryn/Solqaryn",
+  "branch": "dev",
+  "observed_at_utc": "2026-10-26T19:04:58.878Z",
+  "dev_head": "35c67e330f876ee66f8015e889ffa151d6d4643a",
+  "ci": [
+    {
+      "name": "verify-solqaryn-project-scope",
+      "conclusion": "success",
+      "head_sha": "35c67e330f876ee66f8015e889ffa151d6d4643a",
+      "url": "https://github.com/solqaryn/Solqaryn/actions/runs/40369306836/job/121735413630"
+    },
+    {
+      "name": "SOLQARYN - Seguridad multiempresa",
+      "conclusion": "success",
+      "head_sha": "35c67e330f876ee66f8015e889ffa151d6d4643a",
+      "url": "https://github.com/solqaryn/Solqaryn/actions/runs/40369306931/job/121735415125"
+    },
+    {
+      "name": "SOLQARYN - Build y pruebas backend",
+      "conclusion": "success",
+      "head_sha": "35c67e330f876ee66f8015e889ffa151d6d4643a",
+      "url": "https://github.com/solqaryn/Solqaryn/actions/runs/40369306931/job/121735414945"
+    }
+  ],
+  "render": {
+    "service_name": "solqaryn-api-dev",
+    "service_id": "srv-daqvla49v7es738up9vg",
+    "deployment_id": "dep-dbfotee417fc73defu30",
+    "status": "live",
+    "sha": "35c67e330f876ee66f8015e889ffa151d6d4643a",
+    "url": "https://dashboard.render.com/web/srv-daqvla49v7es738up9vg"
+  },
+  "vercel": {
+    "project_name": "solqaryn-dev",
+    "project_id": "prj_1Anhx5mWyXEBX89lWC24Py6JXe7A",
+    "deployment_id": "dpl_9wHGTwW1YNGucpmG58EqtYXtWsGs",
+    "state": "READY",
+    "sha": "35c67e330f876ee66f8015e889ffa151d6d4643a",
+    "url": "https://vercel.com/solqaryn/solqaryn-dev/9wHGTwW1YNGucpmG58EqtYXtWsGs"
+  },
+  "parity_result": "MATCH",
+  "bounded_evidence": {
+    "health_ready": "Registro institucional BITACORA A191 y PLAN_MAESTRO L3 atestigua /health=status:ok y /health/ready=ready/database:connected para el mismo SHA; una consulta independiente de proxy devolvio 503, no se toma como PASS adicional.",
+    "cors": "OPTIONS /roles origen autorizado/rechazado PASS aportado por el propietario al corte anterior 003cceea; compare 003cceea..35c67e33 documenta exclusivamente 4 archivos docs/workflow/tests, sin cambios runtime; equivalencia de codigo, no nuevo OPTIONS.",
+    "auth_tenancy": "GitHub Actions MF3 run 40377756848 SUCCESS HEAD exacto; 3 usuarios, 12 negativas tenant, 36 negativas comerciales, 18 lecturas propias.",
+    "frontend": "Captura humana de /plataforma con administrador autenticado; no constituye suite E2E integral.",
+    "release": "GitHub Actions 40373973264 intento 2 SUCCESS, ALREADY_READY_SHA; Vercel READY exacto."
+  },
+  "limits": "MATCH acredita coincidencia exact SHA y escenarios DEV especificos; no certifica todas las funciones ERP ni garantiza disponibilidad permanente. Snapshot es evidencia, no autorización para escribir o cerrar sin PR protegido y readback."
+}
