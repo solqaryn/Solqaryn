@@ -4389,6 +4389,13 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Solo se añade una prueba de integración y esta evidencia; sin cambios runtime/DDL, datos Aiven, Render, QA, PROD ni quitar la cuarentena `503`. Estado **candidato** sujeto a REVIEW_FIRST, CI exact-head y MySQL real de GitHub Actions. No certifica el punto 4 integral.
 
 
+## 2026-10-26 — P0-010.A: corte auditado de deuda P0/P1 a 2026-10-26 (PRIMARY_DEV_01)
+
+- Task `6adbb9fff1548191a1bd5b30d9e9984a` / GitHub `jmejia31`: en rama exclusiva `work/solqaryn-p0-010-a` agrega un nuevo corte fechado desde `dev@acf5bca44a94d1bce9a39a6b30be1380e4e5f464`: 24 P0 (14 LISTO, 1 VALIDANDO, 3 EN_PROGRESO, 6 PENDIENTE) y 32 P1 PENDIENTE. El corte anterior permanece como historia.
+- El Issue #3730 es coordinación, no prueba de bug. Incidencias no registradas permanecen NOT_VERIFIED. No se infieren cero defectos ni paridad Render/Vercel por snapshots READY antiguos; P0-001.B conserva NO_GO de proveedor. Documentado en `docs/P0-010-A-VALORACION-DEUDA-P0-P1-DEV.md` y `docs/baselines/P0-010-A-DEV-20261026.json`.
+- Validador `scripts/verify-p0-010-a-debt-baseline.mjs --self-test` 1 positivo + 12 negativas sintéticas; workflow PR de lectura `.github/workflows/p0-010-a-debt-baseline.yml`. Prueba local PASS; faltan CI nativa exact SHA, revisión formal ajena, merge protegido y readback de PLAN/COLA/BITACORA para LISTO. Sin cambios runtime, datos, QA/main/PROD, secretos ni despliegues.
+
+
 ### 2026-10-25 (DEV) — P1-001.A: mapa de roles y membresías (avance parcial)
 
 - Fuente: Plan Comercial Inicial Unificado, microtarea P1-001.A. Rama `work/solqaryn-p1-001-a`; base `dev@785911f1095f13c0b6c0e859c35e0a7b733fcb3c`.

@@ -1,0 +1,46 @@
+{
+  "project": "SOLQARYN",
+  "repository": "solqaryn/Solqaryn",
+  "branch": "dev",
+  "devHead": "a0db2cd9ccced57bf5268bf583712bf93778672b",
+  "observedUtc": "2026-10-25T23:06:58.870Z",
+  "source": {
+    "sheetId": "1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU",
+    "sheetRange": "PLAN_MAESTRO!A1:H600",
+    "issuesQuery": "repo:solqaryn/Solqaryn is:issue is:open"
+  },
+  "totalPlanMicrotasks": 56,
+  "byPriority": {
+    "P0": {
+      "total": 24,
+      "states": {
+        "LISTO": 12,
+        "PENDIENTE": 10,
+        "EN_PROGRESO": 2
+      }
+    },
+    "P1": {
+      "total": 32,
+      "states": {
+        "PENDIENTE": 32
+      }
+    }
+  },
+  "openGithubIssueCount": 1,
+  "openGithubIssueClassification": "LEGACY_COORDINATION_NOT_PRODUCT_DEFECT",
+  "claims": {
+    "noKnownDefects": false,
+    "untrackedIncidents": "NOT_VERIFIED",
+    "p0p1PlanRowsAreDefects": false,
+    "allP0P1Closed": false,
+    "devProviderParity": "NO_ACREDITADA",
+    "p0_001_b": "PENDIENTE"
+  },
+  "liveGaps": [
+    "P0-001.B",
+    "P0-003.B",
+    "P0-004.A",
+    "P0-005.A",
+    "P0-008.A"
+  ]
+}
