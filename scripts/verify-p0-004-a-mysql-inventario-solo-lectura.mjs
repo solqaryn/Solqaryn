@@ -50,7 +50,7 @@ function validateStatement(query) {
     throw new Error('Comma/STRAIGHT_JOIN table sources are not metadata-only');
   }
   const sources = [...query.matchAll(/\b(?:FROM|JOIN)\s+([`A-Za-z0-9_.]+)/gi)].map((m) => m[1].replaceAll('`', '').toUpperCase());
-  // Permit only metadata sources actually required by this inventory.
+  // Permit only metadata tables required by the read-only metadata contract.
   // A broad INFORMATION_SCHEMA prefix would also accept ACL/plugin metadata.
   const allowedSources = new Set(requiredSources.map((source) => source.toUpperCase()));
   if (sources.some((source) => !allowedSources.has(source))) {
