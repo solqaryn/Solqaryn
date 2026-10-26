@@ -11,6 +11,12 @@ Inspección **solo de nombres, ámbitos y tipos declarados**, sin descargar, des
 - **GitHub:** HEAD `dev` y CI comprobados; el endpoint sensible de secretos de repositorio no está disponible mediante la lectura aprobada. Nombres/valores de secretos GitHub son `NO_VERIFICADOS`.
 - **Aiven, Cloudinary, SMTP:** fuera de esta lectura; cualquier validación exige canal propio autorizado y sin valores sensibles en informes.
 
+## Readback adicional de metadatos de proveedor (2026-10-26T06:07:42.411Z)
+
+- Render DEV: consulta autenticada de metadatos del servicio `srv-daqvla49v7es738up9vg` en el workspace `tea-dapjfom7bikc73fncodg`: `environmentId=evm-dapkqge7bikc73fros3g`, `branch=dev`, `autoDeployTrigger=checksPass`, `healthCheckPath=/health` (configuración declarada, **NO** prueba de health). El conector nativo **no expone un listado de nombres de variables de entorno**, por lo que `RENDER_ENV_KEYS=NO_VERIFICADAS` y `MYSQL_BIND=NO_VERIFICADO` permanecen inalterados. No se abrió ni escribió el registro de secretos.
+- Vercel DEV: lectura metadata-only repetida con `decrypt=false`, manteniendo **6 nombres** y el mismo reparto de targets; ninguna variable de `production` se considera automáticamente vinculada a `development`. No se conservan valores cifrados, descifrados, IDs sensibles de credenciales ni payloads de proveedor.
+- Resultado: esta lectura aumenta la trazabilidad del **servicio y entorno** Render, pero **NO** completa el inventario de bindings Render/MySQL. El PR continúa `DRAFT` y la microtarea `EN_PROGRESO / PARTIAL_NO_GO` hasta que exista evidencia específica permitida. No se autoriza deploy ni se altera entorno alguno.
+
 ## Prueba negativa, seguridad y límites
 
 `node scripts/verify-p0-008-a-secret-metadata.mjs --self-test` valida la estructura y **12 mutaciones negativas sintéticas**: decryption habilitada, valores insertados, duplicados, targets incorrectos, fuentes faltantes y conclusiones `GO` indebidas. La ejecución nativa depende del workflow de PR `p0-008-a-secret-metadata.yml`; la prueba de snapshot **no consulta servicios reales** ni sustituye un readback actual de proveedor.
