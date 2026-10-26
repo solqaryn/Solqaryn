@@ -3,6 +3,33 @@
 - Task `6adcc98a80a48191b71a5156624c21df`, GitHub `morales35alex`, rama `work/solqaryn-p0-004-a`: SQL de nueve SELECTs para metadata MySQL DEV y `__EFMigrationsHistory` condicional, con prueba offline Node de 14 negativas y workflow de PR protegido.
 - No se conecto a MySQL DEV, ni se verificaron metadatos fisicos/backup, ni se ejecutaron migraciones ni se alteraron entornos. P0-004.A permanece EN_PROGRESO / NO_GO_LISTO hasta evidencia autentica; rollback solo mediante revert de PR protegido.
 
+
+## 2026-10-25 — P0-001.B: certificar bloqueo por falta de paridad exact-SHA DEV (PRIMARY_DEV_03)
+
+- Task `6adc2e55f47c81919f6374e561687076`, GitHub `jmejia31`, rama exclusiva `work/solqaryn-p0-001-b`; base `dev@6a6d6e8870b0a53db9b3dc19f197be409082b6e6`. Dependencias P0-001.A/P0-012.B LISTO y WIP protegido 6.
+- Evidencia nueva `docs/baselines/P0-001-B-DEV-20261025-REFRESCO-PRIMARY03.json` y acta `docs/P0-001-B-CERTIFICACION-NEGATIVA-HEAD-DEV.md`: CI HEAD 3/3 SUCCESS, Vercel DEV CANCELED de SHA bafcde53, READY de SHA 29dbcb06 no coincidente, Render live NO_VERIFICADO por workspaceId no confirmado. Dictamen `NO_GO`, nunca paridad, despliegue ni release acreditado.
+- El verificador existente `scripts/verify-p0-001-b-parity.mjs` admite snapshot versionado sin mutar el histórico; regresiones sintéticas Node y workflow `.github/workflows/p0-001-b-head-parity.yml` en PR. No se tocan código ERP, base de datos, QA/main/PROD, secretos, dominios ni proveedores. Cierre condicionado a CI exact-HEAD, revisión GitHub independiente, merge protegido y readback Sheets; rollback por revert protegido.
+
+## 2026-10-25 — P0-011.B: negativa de funcionalidades FUTURO por alusion al Maestro (SECONDARY_REVIEW_01)
+
+- Task `6adbbc9ad9e88191bea8eb69104afb25`, GitHub `morales35alex`, rama `work/solqaryn-p0-011-b`, dev base `b90d0709314e646a553fe806c774e22ca56231e7`; dependencias P0-011.A/P0-012.B LISTO.
+- Se incorpora `docs/P0-011-B-CERTIFICACION-NEGATIVA-ALCANCE-DEV.md` y el test `scripts/verify-p0-011-b-future-exclusions.mjs`: clases FUTURO C14-C20, CONDICIONAL C11-C13, C07-C08 INICIAL, doce mutaciones negativas sinteticas para negar Experience Studio, IA/SDK, enterprise, billing automatico, DNS y planes de pago.
+- GitHub workflow `.github/workflows/p0-011-b-future-exclusions.yml` usa Node 24 y checkout exact-HEAD de solo lectura; pruebas nativas y CI deben acreditarse antes de marcar VALIDANDO y LISTO. No afirma despliegues, ausencia universal de funciones ni E2E/RBAC.
+- Alcance documental/test exclusivo, sin codigo de producto, MySQL, API/DTO, credenciales, QA/main/PROD, Render/Vercel ni proveedores; rollback por revert protegido.
+
+## 2026-10-25 — P0-011.A: delimitar versión comercial inicial (SECONDARY_REVIEW_01)
+
+- Task `6adbbc9ad9e88191bea8eb69104afb25`, actor `morales35alex`; base `dev@6a6d6e8870b0a53db9b3dc19f197be409082b6e6`. Matriz documental de 20 decisiones INICIAL/FUTURO/CONDICIONAL apoyada únicamente en el Standard Comercial Inicial V3; no se convierte un requisito en funcionalidad certificada.
+- `docs/P0-011-A-FRONTERA-VERSION-INICIAL-DEV.md` y `scripts/verify-p0-011-a-initial-scope.mjs` definen el límite del producto y 5 regresiones negativas. El workflow PR `.github/workflows/p0-011-a-initial-scope.yml` ejecuta checkout Node 24 sin secretos ni escritura. Resultados CI y revisión ajena deben comprobarse en SHA final antes de VALiDANDO/LISTO.
+- No se implementan Experience Studio, IA, billing enterprise, subdominios, DNS, QA/main/PROD ni infraestructura; rollback mediante revert protegido y lectura posterior.
+
+## 2026-10-25 — M3.4: ampliar WIP comercial protegido de 3 a 6
+
+- Autorización explícita del propietario: admitir hasta seis microtareas comerciales distintas simultáneamente, sin exigir seis Tasks autorizadas. Se mantienen EXACTAMENTE las cinco identidades comerciales del manifiesto, Alex :30 excluido, 6 Tasks físicas y tres controles CI/Scope Lock protegidos.
+- Cada Task puede conservar hasta dos scopes asignados **solo** si el primero está VALIDANDO sin editor activo y REVIEW_FIRST de otra cuenta fue verificado sin pendiente abordable; nunca dos escrituras activas desde la misma Task. Ante tres PR abiertos y al menos 28 PENDIENTE con dependencias SI en tramo PLAN/COLA A1:175, se amplía capacidad futura sin inventar cierres ni ocupar seis cupos por decreto.
+- Contrato operativo, AGENTS, dos autoridades y script 3×3 actualizados con pruebas negativas de techo global, sexto cupo lleno, dos scopes por Task, un escritor, READY/VALIDANDO y revisión primero. No se modifican algoritmos ERP, frontend/backend, DB, RBAC, GitHub rulesets, permisos o programaciones de Tasks, Sheets comercial, QA/main/PROD, Render/Vercel ni secretos. Los PR de gobierno y diagnósticos continúan fuera del WIP.
+- Se conserva procedimiento de PR protegido, CI exact SHA y aprobación independiente; cualquier rollback requiere PR protegido y readback de WIP real, nunca eliminar ramas legítimas.
+
 ## 2026-10-25 — P0-009.B: prueba negativa cuota/CI por entorno (SECONDARY_REVIEW_01)
 
 - Task 6adbbc9ad9e88191bea8eb69104afb25 / morales35alex agrega prueba Node sintética para preservar un fallo histórico de cuota sin equipararlo con paridad Render/Vercel ni aprobar PROD no verificado. Reutiliza P0-009.A desde dev@9a558516be56980d0673654bf96e6bf1e537ea00; flujo aislado de GitHub Actions contents:read.
