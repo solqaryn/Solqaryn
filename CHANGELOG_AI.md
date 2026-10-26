@@ -4,6 +4,12 @@
 - Evidencia nueva `docs/baselines/P0-001-B-DEV-20261025-REFRESCO-PRIMARY03.json` y acta `docs/P0-001-B-CERTIFICACION-NEGATIVA-HEAD-DEV.md`: CI HEAD 3/3 SUCCESS, Vercel DEV CANCELED de SHA bafcde53, READY de SHA 29dbcb06 no coincidente, Render live NO_VERIFICADO por workspaceId no confirmado. Dictamen `NO_GO`, nunca paridad, despliegue ni release acreditado.
 - El verificador existente `scripts/verify-p0-001-b-parity.mjs` admite snapshot versionado sin mutar el histórico; regresiones sintéticas Node y workflow `.github/workflows/p0-001-b-head-parity.yml` en PR. No se tocan código ERP, base de datos, QA/main/PROD, secretos, dominios ni proveedores. Cierre condicionado a CI exact-HEAD, revisión GitHub independiente, merge protegido y readback Sheets; rollback por revert protegido.
 
+## 2026-10-25 — P0-011.A: delimitar versión comercial inicial (SECONDARY_REVIEW_01)
+
+- Task `6adbbc9ad9e88191bea8eb69104afb25`, actor `morales35alex`; base `dev@6a6d6e8870b0a53db9b3dc19f197be409082b6e6`. Matriz documental de 20 decisiones INICIAL/FUTURO/CONDICIONAL apoyada únicamente en el Standard Comercial Inicial V3; no se convierte un requisito en funcionalidad certificada.
+- `docs/P0-011-A-FRONTERA-VERSION-INICIAL-DEV.md` y `scripts/verify-p0-011-a-initial-scope.mjs` definen el límite del producto y 5 regresiones negativas. El workflow PR `.github/workflows/p0-011-a-initial-scope.yml` ejecuta checkout Node 24 sin secretos ni escritura. Resultados CI y revisión ajena deben comprobarse en SHA final antes de VALiDANDO/LISTO.
+- No se implementan Experience Studio, IA, billing enterprise, subdominios, DNS, QA/main/PROD ni infraestructura; rollback mediante revert protegido y lectura posterior.
+
 ## 2026-10-25 — M3.4: ampliar WIP comercial protegido de 3 a 6
 
 - Autorización explícita del propietario: admitir hasta seis microtareas comerciales distintas simultáneamente, sin exigir seis Tasks autorizadas. Se mantienen EXACTAMENTE las cinco identidades comerciales del manifiesto, Alex :30 excluido, 6 Tasks físicas y tres controles CI/Scope Lock protegidos.
