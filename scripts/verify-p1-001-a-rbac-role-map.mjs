@@ -73,7 +73,7 @@ function asignableEmpresa(rol, empresaId) {
 function autoridadPlataforma(asignacion, usuario, rol) {
   return !!asignacion.activa && !!usuario.activo && !usuario.bloqueado &&
     !usuario.eliminado && !!rol.activo && !rol.eliminado &&
-    rol.esAdministrador && rol.ambito === 2 && rol.empresaId === null &&
+    !!rol.esAdministrador && rol.ambito === 2 && rol.empresaId === null &&
     asignacion.usuarioId === usuario.id && asignacion.rolId === rol.id;
 }
 function membresiaEmpresa(m, u, empresa, rol) {
