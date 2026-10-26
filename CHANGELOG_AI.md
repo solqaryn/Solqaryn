@@ -1,3 +1,9 @@
+## 2026-10-25 — P0-008.A: registro de metadatos de secretos DEV, NO_GO parcial (PRIMARY_DEV_01)
+
+- Task `6adbb9fff1548191a1bd5b30d9e9984a`, GitHub `jmejia31`; rama exclusiva `work/solqaryn-p0-008-a`; base `dev@785911f1095f13c0b6c0e859c35e0a7b733fcb3c`. Dependencia P0-012.B LISTO, PLAN_MAESTRO fila 16.
+- Lecturas de metadata exclusivamente: Vercel proyecto `solqaryn-dev` 6 nombres sin valores (4 targets development/preview/production y 2 production-only); Render workspace SOLQARYN y servicio solqaryn-api-dev identificados, registro de claves Render no expuesto; GitHub secrets no leídos. NO se certifica completitud ni paridad.
+- Se incorporan `docs/baselines/P0-008-A-DEV-METADATA-20261026.json`, `docs/P0-008-A-REGISTRO-SECRETOS-METADATOS-DEV.md`, `scripts/verify-p0-008-a-secret-metadata.mjs` (12 negativos sintéticos) y workflow de Node read-only. Cierre sujeto a evidencia real, CI exact SHA, revisión independiente, merge protegido y readback. Sin escribir secretos, infra, API, base de datos, QA/main/PROD ni proveedores.
+
 ## 2026-10-25 — P0-001.B: certificar bloqueo por falta de paridad exact-SHA DEV (PRIMARY_DEV_03)
 
 - Task `6adc2e55f47c81919f6374e561687076`, GitHub `jmejia31`, rama exclusiva `work/solqaryn-p0-001-b`; base `dev@6a6d6e8870b0a53db9b3dc19f197be409082b6e6`. Dependencias P0-001.A/P0-012.B LISTO y WIP protegido 6.
