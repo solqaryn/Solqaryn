@@ -11,7 +11,6 @@
 - Alcance: verificaciones no destructivas, sin modificar secretos, datos comerciales, QA ni PROD.
 - Estado: EN_PROGRESO. Cierre condicionado a CI sobre el SHA final del PR, revisión independiente, merge protegido y conciliación con Google Sheets.
 
-=======
 ## 2026-10-25 — P0-001.B: certificar bloqueo por falta de paridad exact-SHA DEV (PRIMARY_DEV_03)
 
 - Task `6adc2e55f47c81919f6374e561687076`, GitHub `jmejia31`, rama exclusiva `work/solqaryn-p0-001-b`; base `dev@6a6d6e8870b0a53db9b3dc19f197be409082b6e6`. Dependencias P0-001.A/P0-012.B LISTO y WIP protegido 6.
