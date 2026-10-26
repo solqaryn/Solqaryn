@@ -43,6 +43,12 @@ function validateStatement(query) {
       throw new Error('Unapproved SQL function in metadata query');
     }
   }
+  // Reject uninspected extra tables introduced with comma or STRAIGHT_JOIN.
+  // The source allowlist below otherwise sees only the first FROM table.
+  const fromClause = query.match(/\bFROM\s+([\s\S]*?)(?=\bWHERE\b|\bGROUP\s+BY\b|\bORDER\s+BY\b|\bLIMIT\b|$)/i)?.[1] ?? '';
+  if (/,|\bSTRAIGHT_JOIN\b/i.test(fromClause)) {
+    throw new Error('Comma/STRAIGHT_JOIN table sources are not metadata-only');
+  }
   const sources = [...query.matchAll(/\b(?:FROM|JOIN)\s+([`A-Za-z0-9_.]+)/gi)].map((m) => m[1].replaceAll('`', '').toUpperCase());
   if (sources.some((source) => !source.startsWith('INFORMATION_SCHEMA.') && source !== '__EFMIGRATIONSHISTORY')) {
     throw new Error('Reading business tables or another schema is prohibited');
@@ -79,6 +85,8 @@ if (process.argv.includes('--self-test')) {
     "SELECT 'x' INTO OUTFILE '/tmp/leak'",
     'SELECT id FROM empresas',
     'SELECT a.TABLE_NAME FROM INFORMATION_SCHEMA.TABLES a JOIN clientes c ON 1=1',
+    'SELECT a.TABLE_NAME FROM INFORMATION_SCHEMA.TABLES a, clientes c',
+    'SELECT a.TABLE_NAME FROM INFORMATION_SCHEMA.TABLES a STRAIGHT_JOIN clientes c',
     'SET @x = 1',
     'CALL sp_mutation()',
     'SELECT 1; DROP TABLE `__EFMigrationsHistory`',
@@ -95,6 +103,7 @@ if (process.argv.includes('--self-test')) {
   const negativeDocuments = [
     sql.replace('SELECT VERSION()', 'DELETE VERSION()'),
     sql.replace('FROM __EFMigrationsHistory', 'FROM usuarios'),
+    sql.replace('FROM INFORMATION_SCHEMA.TABLES\nWHERE', 'FROM INFORMATION_SCHEMA.TABLES, clientes\nWHERE'),
     sql.replace('INFORMATION_SCHEMA.TRIGGERS', 'information_schema.FAKE'),
     sql.replace('ORDER BY MigrationId;', 'ORDER BY MigrationId; INSERT INTO t VALUES(1);'),
   ];
