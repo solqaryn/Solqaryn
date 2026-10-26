@@ -41,6 +41,12 @@
 
 **CI vs evidencia viva:** el workflow de alcance, frontend, backend y seguridad pueden aprobar el SHA del PR en GitHub Actions; eso acredita pruebas de repositorio y **no** la instancia MySQL DEV ni autenticación HTTP A/B. Cualquier hallazgo de aislamiento debe corregirse en un changeset acotado, con test rojo previo, revisión independiente y CI exact SHA antes de declarar aceptación.
 
+### 3.2. Regresión adicional en memoria para lecturas y mutaciones A/B
+
+La prueba de xUnit `backend/tests/Solqaryn.Tests/P1001ATenantRoleIsolationTests.cs` ejercita el `RolRepository` real y el `RolService` sobre EF Core InMemory con dos empresas ficticias. Verifica lectura propia y ocultamiento del rol B por lista/ID al estar marcada la empresa A, rechazo sin auditoría de seis operaciones de aplicación por ID ajeno (editar, activar, desactivar, eliminar lógico, eliminar permanente y duplicar), ausencia de cambios pendientes y control positivo al seleccionar B.
+
+**Límite de la evidencia:** el contexto de empresa se marca deliberadamente en la prueba y no proviene de JWT ni de una petición HTTP real; tampoco ejecuta SQL en MySQL DEV. La prueba es una regresión de filtro EF y rutas de servicio con datos sintéticos, **no certificación funcional multiempresa**. Su resultado CI debe acreditarse sobre el SHA final de este PR. La aceptación sigue pendiente del MySQL DEV físico y negativas HTTP autenticadas A/B autorizadas.
+
 ## 4. Verificación MySQL DEV de solo lectura pendiente
 
 Ejecutar únicamente por operador autorizado en la instancia DEV identificada y con cuenta read-only, sin exportar PII ni compartir usuarios. Comparar migraciones aplicadas con el esquema declarado y registrar SHA de código, timestamp UTC y resultados agregados:
