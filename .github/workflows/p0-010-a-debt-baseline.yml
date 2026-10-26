@@ -1,0 +1,29 @@
+name: P0-010.A - Corte de deuda P0/P1 (negativos read-only)
+
+on:
+  pull_request:
+    branches: [dev]
+    paths:
+      - 'docs/baselines/P0-010-A-DEV-20261026.json'
+      - 'docs/P0-010-A-VALORACION-DEUDA-P0-P1-DEV.md'
+      - 'scripts/verify-p0-010-a-debt-baseline.mjs'
+      - '.github/workflows/p0-010-a-debt-baseline.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  dated-debt-snapshot-regressions:
+    name: P0-010.A - Corte fechado y 12 negativos
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validar snapshot fechado contra mutaciones fail-closed
+        run: node scripts/verify-p0-010-a-debt-baseline.mjs --self-test
