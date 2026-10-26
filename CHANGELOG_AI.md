@@ -4387,3 +4387,12 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - `CommercialPilotReadMySqlIntegrationTests` reutiliza el bootstrap oficial MySQL 8.4 descartable y ejercita `UnscopedCommercialTenantGuardMiddleware` con los dos propietarios A/B, productos persistidos, `PrivateReadPilotEnabled=true` solo en la fixture y un permiso de prueba asociado al usuario elegido. Cada solicitud materializa SQL real mediante el `AppDbContext` con marca `VerifiedCommercialTenant` emitida por el middleware.
 - Demuestra, en la misma base, lectura exclusiva de los productos A y B y denegación de cabecera falsificada, JWT ausente, bandera desactivada, POST, detalle y rutas comerciales no autorizadas. La autorización RBAC está simulada deliberadamente; la prueba no representa un login extremo a extremo ni un desbloqueo de facturas, inventarios, PDFs o Cloudinary.
 - Solo se añade una prueba de integración y esta evidencia; sin cambios runtime/DDL, datos Aiven, Render, QA, PROD ni quitar la cuarentena `503`. Estado **candidato** sujeto a REVIEW_FIRST, CI exact-head y MySQL real de GitHub Actions. No certifica el punto 4 integral.
+
+
+### 2026-10-25 (DEV) — P1-001.A: mapa de roles y membresías (avance parcial)
+
+- Fuente: Plan Comercial Inicial Unificado, microtarea P1-001.A. Rama `work/solqaryn-p1-001-a`; base `dev@785911f1095f13c0b6c0e859c35e0a7b733fcb3c`.
+- Se añadió `docs/P1-001-A-MAPA-ROLES-DEV.md`: ámbitos Empresa/Plataforma, roles de sistema, personalizados, huérfanos, `UsuarioEmpresas`, `UsuarioRolesPlataforma`, constraints EF y riesgos de filtrado; evidencia de código, no inventario de filas reales.
+- Comprobador read-only `scripts/verify-p1-001-a-rbac-role-map.mjs` y workflow acotado `.github/workflows/p1-001-a-rbac-role-map.yml`: 15 fuentes e hipótesis sintéticas 5 positivas + 14 negativas, sin credenciales ni conexiones MySQL.
+- Limitación explícita: no se certifica base MySQL DEV, filtros HTTP A/B, seguridad runtime ni despliegues; la microtarea no puede declararse LISTO sin evidencias adicionales, revisión y merge.
+- Rollback: revert protegido de documentación/script/workflow; sin cambios a entidades, endpoints, migraciones, grants ni entornos.
