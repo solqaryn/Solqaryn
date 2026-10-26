@@ -27,6 +27,23 @@
 - `backend/src/Infrastructure/Persistence/AppDbContextFactory.cs`: ruta de creación *design time* de `AppDbContext`; su valor por defecto existe para construir un modelo sin conexión. **No** usar un fallback de diseño como evidencia del servidor real o sus credenciales.
 - `backend/src/Infrastructure/Persistence/CanonicalMySqlPhysicalContract.cs`: `VerifyAsync` consulta `INFORMATION_SCHEMA.TRIGGERS`, `INFORMATION_SCHEMA.TABLE_CONSTRAINTS` y datos canónicos mediante EF. Este inventario **no lo ejecuta**, ni presupone que sus invariantes físicos existan.
 
+## Cadena de migraciones seleccionada por el runtime (evidencia estática adicional)
+
+**Corte de fuentes:** `dev` @ `785911f1095f13c0b6c0e859c35e0a7b733fcb3c` (26-10-2026 UTC). Este contraste amplía el inventario de código; **no existe lectura de MySQL DEV** y no valida el historial aplicado.
+
+| Evidencia de código | Comportamiento verificable en el repositorio | Límite de la conclusión |
+| --- | --- | --- |
+| `backend/src/API/Program.cs` | Registra `AppDbContext` con `UseMySQL(..., mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))`. | Selección de ensamblado en el código API; no prueba configuración ni conexión del despliegue vivo. |
+| `backend/src/API/OracleAppDbContextDesignTimeFactory.cs` | La fábrica API para tooling selecciona el mismo ensamblado de migraciones. | El fallback de diseño no representa la base DEV física. |
+| `backend/tools/Solqaryn.DatabaseBootstrap/Program.cs` | Bootstrap también usa ese ensamblado y consulta `GetMigrations()`; contiene `EnsureCreatedAsync`, `MigrateAsync` y SQL mutador. | **NO ejecutar** como diagnóstico de solo lectura, incluso en modo `adopt`, sin revisión/autorización separada. |
+| `backend/tests/Solqaryn.Tests/N33MigrationDiscoveryTests.cs` | La prueba estática de descubrimiento exige `20261006111818_OracleBaseline` y excluye `20260824120000_N3_3_C_PedidoVentaReservaInventario` de la cadena activa, preservando el tipo histórico como auditoría. | La presencia en `IMigrationsAssembly` no acredita filas en `__EFMigrationsHistory`. |
+| `backend/src/Infrastructure/Solqaryn.Infrastructure.csproj` | Excluye de compilación `Migrations/**/*.cs`, `Persistence/Migrations/**/*.cs` y la fábrica de diseño de Infrastructure. | Los recuentos de esos directorios no deben sumarse como migraciones activas. |
+| `backend/src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj` | Declara `AssemblyName=Solqaryn.Infrastructure.Migrations` y `MySql.EntityFrameworkCore=10.0.9`. | El nombre `OracleBaseline` no implica que se use Oracle Database. |
+
+**Control negativo de inventario:** la hipótesis «todos los `.cs` de los tres directorios de migraciones están activos/aplicados» queda **rechazada** por las exclusiones de compilación y la prueba de descubrimiento. La hipótesis «la cadena activa está aplicada en MySQL DEV» queda **NO VERIFICADA** hasta lectura auténtica de `INFORMATION_SCHEMA` y `__EFMigrationsHistory`. En ausencia de permisos efectivos de lectura MySQL o evidencia de respaldos, mantener `NO_GO_LISTO`.
+
+**Pruebas en esta adición:** inspección remota de archivos concretos y checks exitosos de `dev` exact-SHA (cinco checks GitHub); **no** se ejecutaron tests locales, consulta SQL, bootstrap ni migraciones. La rama de inventario deberá obtener CI propio cuando se publique PR y revisión independiente antes de cualquier cierre.
+
 ## Evidencia que aún falta para completar P0-004.A
 
 1. Lectura autenticada **solo lectura** del MySQL DEV real: proveedor/versión, `DATABASE()`, base/servidor de referencia sin revelar credenciales ni datos.
