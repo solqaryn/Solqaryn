@@ -83,7 +83,7 @@ if (process.argv.includes('--self-test')) {
     'CALL sp_mutation()',
     'SELECT 1; DROP TABLE `__EFMigrationsHistory`',
     "SELECT LOAD_FILE('/etc/passwd')",
-    "SELECT GET_LOCK('inventory-lock', 5)",
+    "SELECT GET_LOCK('metadata-lock', 5)",
     'SELECT SLEEP(60)',
     'SELECT @@hostname',
     'SELECT VERSION() INTO @probe',
