@@ -211,6 +211,8 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                 }
                 // Mientras se certifica la identidad/caché por tienda, no permitir
                 // almacenar el mismo path interno /tienda en un CDN compartido.
+                // El filtro MVC debe conocer la restricción antes de evaluar 304.
+                VerifiedPublicStoreTenant.RequirePrivateNoStore(httpContext);
                 httpContext.Response.OnStarting(() =>
                 {
                     httpContext.Response.Headers.CacheControl = "private, no-store, max-age=0";
@@ -253,6 +255,8 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                         return;
                     }
                     empresaPublica = explicitLegacyOwnerId;
+                    // Un owner legacy fijado tampoco puede recibir ETag/304 público.
+                    VerifiedPublicStoreTenant.RequirePrivateNoStore(httpContext);
                     httpContext.Response.OnStarting(() =>
                     {
                         httpContext.Response.Headers.CacheControl = "private, no-store, max-age=0";
