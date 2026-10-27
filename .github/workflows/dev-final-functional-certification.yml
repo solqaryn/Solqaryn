@@ -64,6 +64,7 @@ jobs:
           echo "HTTP_ROUTE_CHECK=PASS"
 
       - name: Diagnóstico causal HTTP 503 y CORS DEV (solo observación)
+        if: ${{ !cancelled() }}
         shell: bash
         run: |
           set -euo pipefail
@@ -122,7 +123,7 @@ jobs:
               --dump-header "$probe_dir/$case_name.headers" --output /dev/null \
               --write-out '%{http_code}' "$BACKEND/auth/login")" || cors_code="TRANSPORT_ERROR"
             printf 'DEV_CORS_%s_HTTP=%s\n' "$case_name" "$cors_code"
-            if grep -Fqi "access-control-allow-origin: $origin" "$probe_dir/$case_name.headers"; then
+            if tr -d '\r' < "$probe_dir/$case_name.headers" | grep -Fxi "access-control-allow-origin: $origin" >/dev/null; then
               printf 'DEV_CORS_%s_ALLOW_ORIGIN=MATCH\n' "$case_name"
             else
               printf 'DEV_CORS_%s_ALLOW_ORIGIN=ABSENT_OR_DIFFERENT\n' "$case_name"
