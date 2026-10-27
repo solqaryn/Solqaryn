@@ -1,3 +1,9 @@
+## 2026-10-27 — P0-001.B: restaurar la ejecución de fixtures A/B en certificación DEV
+
+- Evidencia causal: GitHub Actions run 40509650164, job 122207882951 en dev@663362b5315075d175985e804160ff5be4e1cf0b terminó FAILED (exit code 5): el paso de identidad ejecutó `unittest discover -s scripts/certification`, que informó `Ran 0 tests`; el código de la prueba está realmente en `scripts/ci/test_verify_dev_final_tenant_identity.py`. La ejecución se detuvo antes de la prueba HTTP tenant firmada, así que NO se atribuye el error a MySQL ni a la firma.
+- Cambio único en `.github/workflows/dev-final-functional-certification.yml`: corregir a `python3 -m unittest discover -s scripts/ci -p 'test_verify_dev_final_tenant_identity.py' -v`; conservar íntegramente el script read-only, los positivos A/B, los negativos HMAC/tenant/CORS, el guard y el gate fail-closed de catálogo. Los 7 casos unitarios deben ejecutarse; si el gate remoto falla, no se declara FINAL PASS.
+- Scope DEV únicamente, sin cambios de API, base de datos, datos, secretos, Vercel, Render, QA/main/PROD. Revisión formal independiente y CI 3/3 exact SHA antes del merge; nueva prueba DEV live después del merge y readback. Rollback seguro: revert protegido de este cambio puntual. P0-001.B permanece EN_PROGRESO/NO_LISTO.
+
 ## 2026-10-27 — P0-001.B: certificar identidad DEV por tenant firmado sin normalizar el 503 de cuarentena
 
 - Corrige el falso contrato HTTP 200 de `GET /api/empresa-configuracion/publica` en `.github/workflows/dev-final-functional-certification.yml`. Esa ruta **sin tenant** debe seguir respondiendo HTTP 503 y `TENANT_DATA_ISOLATION_REQUIRED` cuando hay 2+ empresas; ningún controller/middleware/proxy/secret está modificado.

@@ -170,7 +170,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 -m unittest discover -s scripts/certification -p 'test_verify_dev_final_tenant_identity.py' -v
+          python3 -m unittest discover -s scripts/ci -p 'test_verify_dev_final_tenant_identity.py' -v
           python3 scripts/ci/verify_dev_final_tenant_identity.py
 
       # El catálogo legacy no tiene un tenant verificado con 2+ empresas.
