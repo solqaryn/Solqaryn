@@ -62,7 +62,37 @@ function verify(sql) {
   if (/\/\*|\*\/|#[^\n]*|\\g\b/i.test(sql)) throw new Error('Unsupported SQL syntax or client command');
   const queries = statements(sql);
   if (queries.length !== 9) throw new Error(`Expected nine read-only queries, got ${queries.length}`);
-  for (const query of queries) validateStatement(query);
+  // Bind each of the nine fixed queries to its intended source. Merely
+  // mentioning every source somewhere in the file is insufficient.
+  const expectedSources = [
+    [],
+    ['INFORMATION_SCHEMA.TABLES'],
+    ['INFORMATION_SCHEMA.COLUMNS'],
+    ['INFORMATION_SCHEMA.STATISTICS'],
+    ['INFORMATION_SCHEMA.TABLE_CONSTRAINTS'],
+    ['INFORMATION_SCHEMA.KEY_COLUMN_USAGE'],
+    ['INFORMATION_SCHEMA.TRIGGERS'],
+    ['INFORMATION_SCHEMA.TABLES'],
+    ['__EFMigrationsHistory'],
+  ];
+  for (const [index, query] of queries.entries()) {
+    validateStatement(query);
+    const actual = [...query.matchAll(/\\b(?:FROM|JOIN)\\s+([`A-Za-z0-9_.]+)/gi)]
+      .map((match) => match[1].replaceAll('`', '').toUpperCase());
+    assert.deepEqual(actual, expectedSources[index], `Unexpected source(s) in Q${index + 1}`);
+    if (index >= 1 && index <= 7) {
+      const schemaColumn = index === 6 ? 'TRIGGER_SCHEMA' : 'TABLE_SCHEMA';
+      const guard = new RegExp(
+        `\\bWHERE\\s+${schemaColumn}\\s*=\\s*DATABASE\\(\\)(?=\\s*(?:AND\\b|ORDER\\s+BY\\b|$))`, 'i'
+      );
+      if (!guard.test(query) || /\\b(?:OR|XOR|UNION|EXCEPT|INTERSECT)\\b|\\|/.test(query)) {
+        throw new Error('Cross-schema metadata reads are not authorized');
+      }
+    }
+    if (index === 7 && !/\\bAND\\s+TABLE_NAME\\s*=\\s*'__EFMigrationsHistory'/i.test(query)) {
+      throw new Error('Q08 must verify the EF migrations history table');
+    }
+  }
   const normalized = queries.join('\n').toUpperCase();
   for (const source of requiredSources) {
     if (!normalized.includes(source.toUpperCase())) throw new Error(`Missing required source: ${source}`);
@@ -113,6 +143,12 @@ if (process.argv.includes('--self-test')) {
     sql.replace('FROM INFORMATION_SCHEMA.TRIGGERS\nWHERE',
       'FROM INFORMATION_SCHEMA.TRIGGERS JOIN INFORMATION_SCHEMA.USER_PRIVILEGES p ON 1=1\nWHERE'),
     sql.replace('ORDER BY MigrationId;', 'ORDER BY MigrationId; INSERT INTO t VALUES(1);'),
+    // An otherwise SELECT-only script must not list other databases metadata.
+    sql.replace('WHERE TABLE_SCHEMA = DATABASE()', 'WHERE 1=1'),
+    sql.replace('WHERE TABLE_SCHEMA = DATABASE()', 'WHERE TABLE_SCHEMA = DATABASE() OR 1=1'),
+    sql.replace('WHERE TRIGGER_SCHEMA = DATABASE()', 'WHERE 1=1'),
+    sql.replace("AND TABLE_NAME = '__EFMigrationsHistory'", 'AND TABLE_NAME IS NOT NULL'),
+    sql.replace('FROM INFORMATION_SCHEMA.COLUMNS', 'FROM INFORMATION_SCHEMA.TABLES'),
   ];
   for (const altered of negativeDocuments) assert.throws(() => verify(altered), Error);
   console.log(`P0-004.A static-only PASS: 9 SELECT queries; ${negativeStatements.length + negativeDocuments.length} negative regressions`);
