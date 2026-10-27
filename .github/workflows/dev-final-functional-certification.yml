@@ -6,12 +6,31 @@ on:
     paths:
       - .github/checkpoints/dev-final-functional-certification
   workflow_dispatch:
+  pull_request:
+    branches: [dev]
+    paths:
+      - .github/workflows/dev-final-functional-certification.yml
+      - scripts/ci/verify_dev_final_tenant_identity.py
+      - scripts/ci/test_verify_dev_final_tenant_identity.py
 
 permissions:
   contents: read
 
 jobs:
+  contract-tests:
+    name: Contrato DEV tenant identity A/B (sin infraestructura)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Positivos y negativos del contrato fail-closed
+        run: python3 -m unittest discover -s scripts/ci -p 'test_verify_dev_final_tenant_identity.py' -v
+
   certify:
+    if: github.event_name != 'pull_request'
     name: Certificar DEV canónico extremo a extremo
     runs-on: ubuntu-latest
     timeout-minutes: 25
@@ -152,7 +171,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 -m unittest discover -s scripts/certification -p 'test_verify_dev_final_tenant_identity.py' -v
-          python3 scripts/certification/verify_dev_final_tenant_identity.py
+          python3 scripts/ci/verify_dev_final_tenant_identity.py
 
       # El catálogo legacy no tiene un tenant verificado con 2+ empresas.
       # No convertir su cuarentena 503 en un falso 200 ni silenciar la
