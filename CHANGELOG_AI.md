@@ -1,6 +1,7 @@
 ## 2026-10-27 — CI catálogo DEV: vacío legítimo sin sembrar datos comerciales
 - Cambio acotado a la certificación DEV y sus fixtures offline: `verify_dev_catalog_gate.py` acepta `200` con categorías/productos vacíos de esquema válido. Nunca interpreta un `503 TENANT_DATA_ISOLATION_REQUIRED` como éxito ni relaja Cloudinary en catálogos poblados. Rechaza categorías/productos con elementos malformados. Distingue `PASS_EMPTY_CONTRACT` de `PASS_WITH_LIVE_IMAGES`.
 - Workflow `dev-final-functional-certification.yml` ejecuta en el job de certificación los casos offline positivos y hostiles y preserva el gate live obligatorio; las pruebas identity A/B existentes siguen exigidas. No se insertan fixtures en Aiven DEV ni se modifica Render, Vercel, QA, PROD, RBAC o protección multitenant.
+- El checkpoint `.github/checkpoints/dev-final-functional-certification` activa automáticamente la prueba funcional completa tras merge protegido en dev, sin forzar un despliegue ni falsear PASS.
 - Estado: cambio candidato. No certificar como LISTO antes de PR, CI exact SHA, revisión independiente, merge protegido, readback de workflow y conciliación de proveedores.
 
 ## 2026-10-27 — P0-001.B: diagnóstico causal del catálogo DEV, sin debilitar el aislamiento
