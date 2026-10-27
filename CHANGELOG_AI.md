@@ -1,3 +1,8 @@
+## 2026-10-26 — P0-004.A: impedir bypass del filtro por comentarios SQL inline (SECONDARY_REVIEW_03)
+
+- El SQL de metadatos se conserva intacto; la validacion fail-closed rechaza `--` dentro de una consulta, porque el `WHERE ... = DATABASE()` podria estar comentado y aun ser aceptado como texto. Se agregan tres negativos causales (Q02, Q07 y sentencia), de 32 a **35**.
+- Scope limitado al verificador, instrucciones y este registro; no hay DDL/DML, secretos, cambios runtime, migraciones ni acceso a MySQL DEV. CI del nuevo HEAD pendiente de readback; PR #3766 DRAFT, P0-004.A EN_PROGRESO / NO_GO_VALIDANDO / NO_GO_LISTO hasta evidencia fisica, checks exact-HEAD y revision independiente.
+
 ## 2026-10-26 — P0-004.A: scope MySQL metadata en nueve SELECTs (SECONDARY_REVIEW_03)
 
 - Se evita el bypass de inventario por `WHERE 1=1`, `OR`/operadores booleanos o sustitución de fuente manteniendo referencias textuales: se verifica fuente exacta por posición, restricción del esquema efectivo y existencia nominal de `__EFMigrationsHistory`.

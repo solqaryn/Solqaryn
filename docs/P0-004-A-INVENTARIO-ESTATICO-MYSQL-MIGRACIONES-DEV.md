@@ -9,6 +9,10 @@
 - Task: `6adcc98a80a48191b71a5156624c21df` / ALEX_CHATGPT / SECONDARY_REVIEW_03.
 - Operación exclusivamente de lectura de repositorio para inventario, sin conectarse a bases de datos, alterar infraestructura ni manipular valores de secretos.
 
+## Rechazo de comentarios SQL inline (`--`)
+
+El guard textual de `TABLE_SCHEMA = DATABASE()` o `TRIGGER_SCHEMA = DATABASE()` no es valido si aparece detras de `--` dentro de una sentencia: MySQL trataria el filtro como comentario y podria consultar metadatos de otros esquemas. El validador ahora **rechaza cualquier `--` que sobreviva al filtrado de comentarios de linea completa**, manteniendo solo los encabezados de documentacion. Una fixture de sentencia y dos alteraciones de documento verifican la clausula inerte en Q02/Q07. Con estos tres negativos el total pasa de 32 a **35**. Los nueve SELECT manuales son identicos, y no se consulto MySQL DEV. CI del nuevo SHA debe comprobarse antes de afirmar PASS; los metadatos fisicos y backups siguen `NO_VERIFICADOS`.
+
 ## Evidencia estática reproducible del árbol
 
 | Ubicación en el SHA base | Archivos encontrados | Interpretación precisa |

@@ -23,6 +23,9 @@ function statements(sql) {
 }
 
 function validateStatement(query) {
+  // Inline MySQL -- comments can conceal the required schema predicate while
+  // leaving its text visible to a regex. Only full-line header comments are supported.
+  if (/--/.test(query)) throw new Error('Inline SQL comments are not supported');
   if (!/^SELECT\s/i.test(query)) {
     throw new Error('Only SELECT statements are authorized');
   }
@@ -131,6 +134,7 @@ if (process.argv.includes('--self-test')) {
     'SELECT @@hostname',
     'SELECT VERSION() INTO @probe',
     'SELECT (SELECT id FROM empresas)',
+    'SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES -- WHERE TABLE_SCHEMA = DATABASE()',
   ];
   for (const bad of negativeStatements) {
     assert.throws(() => validateStatement(bad), Error, `Expected rejected query: ${bad}`);
@@ -144,6 +148,11 @@ if (process.argv.includes('--self-test')) {
       'FROM INFORMATION_SCHEMA.TRIGGERS JOIN INFORMATION_SCHEMA.USER_PRIVILEGES p ON 1=1\nWHERE'),
     sql.replace('ORDER BY MigrationId;', 'ORDER BY MigrationId; INSERT INTO t VALUES(1);'),
     // An otherwise SELECT-only script must not list other databases metadata.
+    // Guard text inside a MySQL inline comment must not count as a schema filter.
+    sql.replace('FROM INFORMATION_SCHEMA.TABLES\nWHERE TABLE_SCHEMA = DATABASE()\nORDER BY TABLE_NAME;',
+      'FROM INFORMATION_SCHEMA.TABLES -- WHERE TABLE_SCHEMA = DATABASE()\nORDER BY TABLE_NAME;'),
+    sql.replace('FROM INFORMATION_SCHEMA.TRIGGERS\nWHERE TRIGGER_SCHEMA = DATABASE()',
+      'FROM INFORMATION_SCHEMA.TRIGGERS -- WHERE TRIGGER_SCHEMA = DATABASE()'),
     sql.replace('WHERE TABLE_SCHEMA = DATABASE()', 'WHERE 1=1'),
     sql.replace('WHERE TABLE_SCHEMA = DATABASE()', 'WHERE TABLE_SCHEMA = DATABASE() OR 1=1'),
     sql.replace('WHERE TABLE_SCHEMA = DATABASE()', 'WHERE TABLE_SCHEMA = DATABASE() AND 1=1 or 1=1'),
