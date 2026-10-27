@@ -1,3 +1,9 @@
+## 2026-10-26 — P0-004.A: scope MySQL metadata en nueve SELECTs (SECONDARY_REVIEW_03)
+
+- Se evita el bypass de inventario por `WHERE 1=1`, `OR`/operadores booleanos o sustitución de fuente manteniendo referencias textuales: se verifica fuente exacta por posición, restricción del esquema efectivo y existencia nominal de `__EFMigrationsHistory`.
+- Los negativos sintéticos aumentan de 26 a 32; el SQL manual y sus nueve SELECT no cambian. CI exact HEAD del PR #3766 pendiente de comprobación tras este commit.
+- Estado: EN_PROGRESO / NO_GO_VALIDANDO / NO_GO_LISTO. MySQL DEV físico y respaldos del proveedor no consultados; falta evidencia autorizada de solo lectura, revisión independiente y merge protegido.
+
 ## 2026-10-26 — P0-004.A: cierre de fuentes SQL permitidas (SECONDARY_REVIEW_03)
 
 - Se reemplaza la aceptación por prefijo `INFORMATION_SCHEMA.` por una lista exacta de tablas de metadatos autorizadas, cerrando acceso por `FROM`/`JOIN` a vistas no utilizadas (por ejemplo `USER_PRIVILEGES`, `PLUGINS`). Se añaden 3 regresiones negativas, total **26**. Validación dirigida local de la regla: 4 positivos y 3 negativos; CI exact-SHA pendiente de revalidación del changeset.
