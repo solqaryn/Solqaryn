@@ -33,6 +33,33 @@ jobs:
           python3 -m unittest discover -s scripts/ci -p 'test_verify_dev_final_tenant_identity.py' -v
           python3 -m unittest discover -s scripts/ci -p 'test_verify_dev_catalog_gate.py' -v
 
+      - name: Clasificar catálogo público DEV (observación sin secretos, NO certificación)
+        shell: bash
+        env:
+          FRONTEND: https://solqaryn-dev.vercel.app
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import sys
+          sys.path.insert(0, "scripts/ci")
+          import verify_dev_catalog_gate as gate
+
+          try:
+              status, payload = gate.get_json(gate.FRONTEND + "/api/tienda/categorias", "CATEGORIES")
+              cats = gate.categories_from_response(status, payload)
+              print("DEV_PR_CATEGORIES_SHAPE=PASS count=" + str(len(cats)))
+              status, payload = gate.get_json(
+                  gate.FRONTEND + "/api/tienda/productos?pagina=1&tamano=100", "PRODUCTS")
+              products = gate.products_from_response(status, payload)
+              print("DEV_PR_PRODUCTS_SHAPE=PASS count=" + str(len(products)))
+              images = gate.images_from_products(products)
+              print("DEV_PR_CLOUDINARY_NAMESPACE=PASS count=" + str(len(images)))
+          except gate.GateError as error:
+              print("DEV_PR_CATALOG_OBSERVATION=" + str(error))
+          print("DEV_PR_CATALOG_CERTIFICATION=NOT_PERFORMED")
+          print("DEV_PR_IMAGE_HTTP=NOT_EXECUTED")
+          PY
+
   certify:
     if: github.event_name != 'pull_request'
     name: Certificar DEV canónico extremo a extremo
