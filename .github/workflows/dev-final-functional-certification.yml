@@ -128,32 +128,90 @@ jobs:
             else
               printf 'DEV_CORS_%s_ALLOW_ORIGIN=ABSENT_OR_DIFFERENT\n' "$case_name"
             fi
+            if [ "$case_name" = "allowed" ]; then
+              if [ "$cors_code" != "204" ] ||
+                 ! tr -d '\r' < "$probe_dir/$case_name.headers" |
+                   grep -Fxi "access-control-allow-origin: $origin" >/dev/null; then
+                echo "::error title=DEV CORS::ALLOWED_ORIGIN_PREFLIGHT_NOT_CERTIFIED"
+                exit 1
+              fi
+            else
+              if [ "$cors_code" != "204" ] ||
+                 tr -d '\r' < "$probe_dir/$case_name.headers" |
+                   grep -Eqi '^access-control-allow-origin:'; then
+                echo "::error title=DEV CORS::DENIED_ORIGIN_EXPOSED"
+                exit 1
+              fi
+            fi
           done
+          echo "DEV_CORS_ALLOWED_DENIED=PASS"
           echo "DEV_CAUSAL_PROBE=OBSERVATION_ONLY_NOT_CERTIFICATION"
 
-      - name: API identidad, categorías, productos e imágenes
+      - name: Identidad pública DEV tenant-bound (positivo A/B y negativos)
         shell: bash
         run: |
           set -euo pipefail
-          curl --retry 5 --retry-all-errors --retry-delay 3 --retry-max-time 150 --connect-timeout 8 --max-time 30 --fail --silent --show-error "$FRONTEND/api/empresa-configuracion/publica" -o /tmp/identity.json
-          curl --retry 5 --retry-all-errors --retry-delay 3 --retry-max-time 150 --connect-timeout 8 --max-time 30 --fail --silent --show-error "$FRONTEND/api/tienda/categorias" -o /tmp/categories.json
-          curl --retry 5 --retry-all-errors --retry-delay 3 --retry-max-time 150 --connect-timeout 8 --max-time 30 --fail --silent --show-error "$FRONTEND/api/tienda/productos?pagina=1&tamano=100" -o /tmp/products.json
+          python3 -m unittest discover -s scripts/certification -p 'test_verify_dev_final_tenant_identity.py' -v
+          python3 scripts/certification/verify_dev_final_tenant_identity.py
 
-          jq -e '.success == true and ((.data.nombreComercial | type) == "string") and ((.data.nombreComercial | length) > 0)' /tmp/identity.json >/dev/null
-          jq -e '.success == true and (.data | length) >= 1' /tmp/categories.json >/dev/null
-          jq -e '.success == true and (.data.items | length) >= 1' /tmp/products.json >/dev/null
+      # El catálogo legacy no tiene un tenant verificado con 2+ empresas.
+      # No convertir su cuarentena 503 en un falso 200 ni silenciar la
+      # ausencia de catálogo/imágenes públicas operativas en DEV.
+      - name: Catálogo, productos e imágenes DEV (requiere contrato comercial seguro)
+        shell: bash
+        run: |
+          set -euo pipefail
+          categories_code="$(curl --silent --show-error --connect-timeout 8 --max-time 30 \
+            --output "$RUNNER_TEMP/dev-categories.json" --write-out '%{http_code}' \
+            "$FRONTEND/api/tienda/categorias")" || {
+            echo "::error title=DEV catalog::CATALOG_HTTP_TRANSPORT_UNAVAILABLE"
+            exit 1
+          }
+          if [ "$categories_code" = "503" ] &&
+             jq -e '.code == "TENANT_DATA_ISOLATION_REQUIRED"' \
+               "$RUNNER_TEMP/dev-categories.json" >/dev/null 2>&1; then
+            echo "::error title=DEV catalog::TENANT_GUARD_CATALOG_NOT_YET_CERTIFIED: falta lectura positiva por tenant autorizado; no retirar guard ni declarar FINAL_DEV_CERTIFICATION PASS."
+            exit 1
+          fi
+          if [ "$categories_code" != "200" ]; then
+            echo "::error title=DEV catalog::CATALOG_UNEXPECTED_HTTP=$categories_code"
+            exit 1
+          fi
 
-          jq -r '.data.items[] | .imagenPrincipalUrl // empty, (.imagenes[]?.url // empty)' /tmp/products.json | sort -u > /tmp/images.txt
-          test -s /tmp/images.txt
-          if grep -Ev '^https://res\.cloudinary\.com/riyrzmob/.*/solqaryn_dev/' /tmp/images.txt; then
-            echo "Imagen fuera del namespace canónico solqaryn_dev" >&2
+          products_code="$(curl --silent --show-error --connect-timeout 8 --max-time 30 \
+            --output "$RUNNER_TEMP/dev-products.json" --write-out '%{http_code}' \
+            "$FRONTEND/api/tienda/productos?pagina=1&tamano=100")" || {
+            echo "::error title=DEV products::PRODUCTS_HTTP_TRANSPORT_UNAVAILABLE"
+            exit 1
+          }
+          if [ "$products_code" = "503" ] &&
+             jq -e '.code == "TENANT_DATA_ISOLATION_REQUIRED"' \
+               "$RUNNER_TEMP/dev-products.json" >/dev/null 2>&1; then
+            echo "::error title=DEV products::TENANT_GUARD_PRODUCTS_NOT_YET_CERTIFIED: requiere un tenant público verificado."
+            exit 1
+          fi
+          if [ "$products_code" != "200" ]; then
+            echo "::error title=DEV products::PRODUCTS_UNEXPECTED_HTTP=$products_code"
+            exit 1
+          fi
+          jq -e '.success == true and (.data | length) >= 1' \
+            "$RUNNER_TEMP/dev-categories.json" >/dev/null
+          jq -e '.success == true and (.data.items | length) >= 1' \
+            "$RUNNER_TEMP/dev-products.json" >/dev/null
+
+          jq -r '.data.items[] | .imagenPrincipalUrl // empty, (.imagenes[]?.url // empty)' \
+            "$RUNNER_TEMP/dev-products.json" | sort -u > "$RUNNER_TEMP/dev-images.txt"
+          test -s "$RUNNER_TEMP/dev-images.txt"
+          if grep -Eqv '^https://res\.cloudinary\.com/riyrzmob/.*/solqaryn_dev/' \
+            "$RUNNER_TEMP/dev-images.txt"; then
+            echo "::error title=DEV images::IMAGES_OUTSIDE_CANONICAL_NAMESPACE"
             exit 1
           fi
           while IFS= read -r url; do
-            code="$(curl -L -sS -o /dev/null -w '%{http_code}' "$url")"
+            code="$(curl -L -sS --connect-timeout 8 --max-time 30 -o /dev/null -w '%{http_code}' "$url")"
             test "$code" = "200"
-          done < /tmp/images.txt
-          echo "API_AND_IMAGES=PASS"
+          done < "$RUNNER_TEMP/dev-images.txt"
+          echo "API_CATALOG_PRODUCTS_IMAGES=PASS"
 
       - name: Render health
         run: |
