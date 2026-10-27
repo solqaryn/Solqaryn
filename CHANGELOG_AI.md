@@ -6,6 +6,40 @@
 
 - Verificación posterior `2026-10-26T07:07:34Z`: workflow de release DEV `40283854509` pasó política y falló con `MISSING_PROVIDER_TOKEN_IN_ACTIONS_SECRETS` para esa ejecución; Vercel proyecto `solqaryn-dev` reporta `live=false` y último deployment `CANCELED`. No implica inexistencia global del secreto, no certifica paridad ni autoriza modificarlo. Se mantiene P0-008.A PARTIAL_NO_GO y P0-001.B NO_GO; detalles en acta, sin valores ni cambios de proveedores.
 
+## 2026-10-26 — P0-001.B: corrección de release Vercel DEV sin builds artificiales (seguimiento)
+
+- Evidencia verificada sobre `dev@3d2f0436b7c0c7bfc3eff07f8b01f3121dc3aa38`: PR #3768 APPROVED y MERGED; tres checks obligatorios SUCCESS; Render DEV `dep-dbfqjt29lscs73bmvs10` LIVE exact SHA; Vercel DEV `dpl_Bi9YNxDrMXXBqMLPHCa6aCtyA1NV` CANCELED porque `NON_RUNTIME_GOVERNANCE_ONLY_SKIP files=5`; deployment anterior `dpl_9wHGTwW1YNGucpmG58EqtYXtWsGs` READY en SHA `35c67e330f876ee66f8015e889ffa151d6d4643a`.
+- Comparación GitHub estricta del padre al HEAD: un commit, cinco archivos de documentación/CI/verificador; manifiesto Git `frontend/` idéntico. No cambiar `frontend/vercel.json` ni `frontend/scripts/vercel-ignore-build.mjs`.
+- El nuevo control `scripts/vercel-dev-runtime-equivalence.mjs` exige identidad DEV, READY de proveedor, árbol frontend inmutable, ancestro sin divergencia y cambios solo fuera del runtime; 20 negativos autoejecutables. `scripts/dev-vercel-release.mjs` evita disparar otro deployment artificial si la equivalencia fuente está comprobada; expone `VERCEL_EXACT_SHA_READY=NO` sin inferir PASS funcional.
+- Política y evidencia en `docs/P0-001-B-VERCEL-SOURCE-EQUIVALENCE-DEV-20261026.md`; workflow consolidado corre el verificador antes del release. Sin secretos, QA, PROD, MySQL ni alteración del frontend.
+- Estado: `EN_PROGRESO`. La fuente comercial original mantiene requisito exact-SHA; esta corrección no la enmienda ni permite `LISTO` sin autorización formal, CORS/preflight, E2E/SSO, RBAC del alcance, CI final, revisión independiente, merge protegido y readback Sheets. Rollback únicamente por revert protegido.
+
+## 2026-10-26 — P0-001.B: recuperación de paridad exact-SHA DEV
+
+- PR de certificación: #3768, rama `work/solqaryn-p0-001-b`.
+- GitHub DEV: `35c67e330f876ee66f8015e889ffa151d6d4643a`.
+- Render DEV: deployment `dep-dbfotee417fc73defu30`, LIVE.
+- Vercel DEV: deployment `dpl_9wHGTwW1YNGucpmG58EqtYXtWsGs`, READY.
+- CI obligatorio: 3/3 SUCCESS.
+- JWT/RBAC y aislamiento A/B/C: workflow #40377756848 SUCCESS.
+- P0-001.B: snapshot positivo MATCH y catorce regresiones negativas verificadas en PR #3768.
+- Certificación negativa histórica: conservada íntegramente.
+- Alcance: DEV, prueba de paridad y seguridad dirigida. La evaluación integral de todos los módulos ERP corresponde a un alcance independiente.
+- Estado: EN_PROGRESO. Cierre LISTO únicamente después de revisión independiente, merge protegido y readback de Google Sheets.
+-
+- ## 2026-10-26 — P0-003.B: paridad y seguridad DEV (PRIMARY_DEV_02)
+
+- Task: 6adc2e4bd8a48191ac7d8641ed95a1a3.
+- PR: #3758, rama work/solqaryn-p0-003-b.
+- Cambios: verificador de paridad DEV, workflow de pruebas negativas y acta de certificación documental.
+- Render DEV LIVE y Vercel DEV READY sobre dev@003cceea22bbd85a8f3f542c46816c6befbe5ee3.
+- CORS: preflight autorizado y rechazo de origen externo verificados el 26/10/2026.
+- JWT/RBAC/tenancy: workflows DEV MF3 #6 y #7 SUCCESS sobre el mismo SHA de dev.
+- Pruebas A/B/C: tres autenticaciones válidas, 12 rechazos entre empresas, 36 rechazos comerciales cruzados y 18 lecturas autorizadas.
+- MySQL DEV: conectividad comprobada mediante /health/ready.
+- Alcance: verificaciones no destructivas, sin modificar secretos, datos comerciales, QA ni PROD.
+- Estado: EN_PROGRESO. Cierre condicionado a CI sobre el SHA final del PR, revisión independiente, merge protegido y conciliación con Google Sheets.
+
 ## 2026-10-25 — P0-001.B: certificar bloqueo por falta de paridad exact-SHA DEV (PRIMARY_DEV_03)
 
 - Task `6adc2e55f47c81919f6374e561687076`, GitHub `jmejia31`, rama exclusiva `work/solqaryn-p0-001-b`; base `dev@6a6d6e8870b0a53db9b3dc19f197be409082b6e6`. Dependencias P0-001.A/P0-012.B LISTO y WIP protegido 6.
@@ -4395,3 +4429,10 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - `CommercialPilotReadMySqlIntegrationTests` reutiliza el bootstrap oficial MySQL 8.4 descartable y ejercita `UnscopedCommercialTenantGuardMiddleware` con los dos propietarios A/B, productos persistidos, `PrivateReadPilotEnabled=true` solo en la fixture y un permiso de prueba asociado al usuario elegido. Cada solicitud materializa SQL real mediante el `AppDbContext` con marca `VerifiedCommercialTenant` emitida por el middleware.
 - Demuestra, en la misma base, lectura exclusiva de los productos A y B y denegación de cabecera falsificada, JWT ausente, bandera desactivada, POST, detalle y rutas comerciales no autorizadas. La autorización RBAC está simulada deliberadamente; la prueba no representa un login extremo a extremo ni un desbloqueo de facturas, inventarios, PDFs o Cloudinary.
 - Solo se añade una prueba de integración y esta evidencia; sin cambios runtime/DDL, datos Aiven, Render, QA, PROD ni quitar la cuarentena `503`. Estado **candidato** sujeto a REVIEW_FIRST, CI exact-head y MySQL real de GitHub Actions. No certifica el punto 4 integral.
+
+
+## 2026-10-26 — P0-010.A: corte auditado de deuda P0/P1 a 2026-10-26 (PRIMARY_DEV_01)
+
+- Task `6adbb9fff1548191a1bd5b30d9e9984a` / GitHub `jmejia31`: en rama exclusiva `work/solqaryn-p0-010-a` agrega un nuevo corte fechado desde `dev@acf5bca44a94d1bce9a39a6b30be1380e4e5f464`: 24 P0 (14 LISTO, 1 VALIDANDO, 3 EN_PROGRESO, 6 PENDIENTE) y 32 P1 PENDIENTE. El corte anterior permanece como historia.
+- El Issue #3730 es coordinación, no prueba de bug. Incidencias no registradas permanecen NOT_VERIFIED. No se infieren cero defectos ni paridad Render/Vercel por snapshots READY antiguos; P0-001.B conserva NO_GO de proveedor. Documentado en `docs/P0-010-A-VALORACION-DEUDA-P0-P1-DEV.md` y `docs/baselines/P0-010-A-DEV-20261026.json`.
+- Validador `scripts/verify-p0-010-a-debt-baseline.mjs --self-test` 1 positivo + 12 negativas sintéticas; workflow PR de lectura `.github/workflows/p0-010-a-debt-baseline.yml`. Prueba local PASS; faltan CI nativa exact SHA, revisión formal ajena, merge protegido y readback de PLAN/COLA/BITACORA para LISTO. Sin cambios runtime, datos, QA/main/PROD, secretos ni despliegues.
