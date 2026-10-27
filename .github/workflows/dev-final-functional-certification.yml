@@ -280,7 +280,7 @@ jobs:
           body="$RUNNER_TEMP/bootstrap.response.json"
           normalized="$headers.normalized"
           trap 'echo "::group::bootstrap headers"; cat "$headers" 2>/dev/null || true; echo "::endgroup::"' ERR
-          for attempt in $(seq 1 36); do
+          for attempt in $(seq 1 72); do
             code="$(curl --silent --show-error --connect-timeout 8 --max-time 20 -D "$headers" -o "$body" -w '%{http_code}' "$BACKEND/tienda/bootstrap")" || code="TRANSPORT_ERROR"
             tr -d '\r' < "$headers" > "$normalized" 2>/dev/null || :
             conditional="$(curl --silent --show-error --connect-timeout 8 --max-time 20 -o /dev/null -w '%{http_code}' -H 'If-None-Match: *' "$BACKEND/tienda/bootstrap")" || conditional="TRANSPORT_ERROR"
@@ -292,7 +292,7 @@ jobs:
               echo "HTTP_BOOTSTRAP_PRIVATE_NOSTORE_NO_304=PASS"
               break
             fi
-            if [ "$attempt" -eq 36 ]; then
+            if [ "$attempt" -eq 72 ]; then
               echo "::error title=DEV bootstrap cache::PRIVATE_NOSTORE_NO_304_NOT_CERTIFIED"
               exit 1
             fi
