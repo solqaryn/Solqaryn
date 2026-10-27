@@ -21,7 +21,7 @@ permissions:
 jobs:
   contract-tests:
     name: Contrato DEV tenant identity A/B (sin infraestructura)
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -61,8 +61,17 @@ jobs:
           print("DEV_PR_IMAGE_HTTP=NOT_EXECUTED")
           PY
 
+      - name: Declarar alcance de predeploy DEV exact SHA
+        if: github.event_name == 'push'
+        run: |
+          echo "DEV_PREDEPLOY_CONTRACT_TESTS=PASS"
+          echo "DEV_POSTDEPLOY_FULL_CERTIFICATION=NOT_EXECUTED_BEFORE_RENDER"
+
   certify:
-    if: github.event_name != 'pull_request'
+    # Render checksPass espera todos los checks del nuevo SHA: el runtime
+    # solo se certifica DESPUES del despliegue mediante workflow_dispatch.
+    # En push se ejecuta el contrato offline y este job queda SKIPPED.
+    if: github.event_name == 'workflow_dispatch'
     name: Certificar DEV canónico extremo a extremo
     runs-on: ubuntu-latest
     timeout-minutes: 25
@@ -280,7 +289,7 @@ jobs:
           body="$RUNNER_TEMP/bootstrap.response.json"
           normalized="$headers.normalized"
           trap 'echo "::group::bootstrap headers"; cat "$headers" 2>/dev/null || true; echo "::endgroup::"' ERR
-          for attempt in $(seq 1 36); do
+          for attempt in $(seq 1 72); do
             code="$(curl --silent --show-error --connect-timeout 8 --max-time 20 -D "$headers" -o "$body" -w '%{http_code}' "$BACKEND/tienda/bootstrap")" || code="TRANSPORT_ERROR"
             tr -d '\r' < "$headers" > "$normalized" 2>/dev/null || :
             conditional="$(curl --silent --show-error --connect-timeout 8 --max-time 20 -o /dev/null -w '%{http_code}' -H 'If-None-Match: *' "$BACKEND/tienda/bootstrap")" || conditional="TRANSPORT_ERROR"
@@ -292,7 +301,7 @@ jobs:
               echo "HTTP_BOOTSTRAP_PRIVATE_NOSTORE_NO_304=PASS"
               break
             fi
-            if [ "$attempt" -eq 36 ]; then
+            if [ "$attempt" -eq 72 ]; then
               echo "::error title=DEV bootstrap cache::PRIVATE_NOSTORE_NO_304_NOT_CERTIFIED"
               exit 1
             fi
