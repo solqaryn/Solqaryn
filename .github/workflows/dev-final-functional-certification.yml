@@ -12,6 +12,8 @@ on:
       - .github/workflows/dev-final-functional-certification.yml
       - scripts/ci/verify_dev_final_tenant_identity.py
       - scripts/ci/test_verify_dev_final_tenant_identity.py
+      - scripts/ci/verify_dev_catalog_gate.py
+      - scripts/ci/test_verify_dev_catalog_gate.py
 
 permissions:
   contents: read
@@ -27,7 +29,36 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Positivos y negativos del contrato fail-closed
-        run: python3 -m unittest discover -s scripts/ci -p 'test_verify_dev_final_tenant_identity.py' -v
+        run: |
+          python3 -m unittest discover -s scripts/ci -p 'test_verify_dev_final_tenant_identity.py' -v
+          python3 -m unittest discover -s scripts/ci -p 'test_verify_dev_catalog_gate.py' -v
+
+      - name: Clasificar catálogo público DEV (observación sin secretos, NO certificación)
+        shell: bash
+        env:
+          FRONTEND: https://solqaryn-dev.vercel.app
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import sys
+          sys.path.insert(0, "scripts/ci")
+          import verify_dev_catalog_gate as gate
+
+          try:
+              status, payload = gate.get_json(gate.FRONTEND + "/api/tienda/categorias", "CATEGORIES")
+              cats = gate.categories_from_response(status, payload)
+              print("DEV_PR_CATEGORIES_SHAPE=PASS")
+              status, payload = gate.get_json(
+                  gate.FRONTEND + "/api/tienda/productos?pagina=1&tamano=100", "PRODUCTS")
+              products = gate.products_from_response(status, payload)
+              print("DEV_PR_PRODUCTS_SHAPE=PASS")
+              images = gate.images_from_products(products)
+              print("DEV_PR_CLOUDINARY_NAMESPACE=PASS")
+          except gate.GateError as error:
+              print("DEV_PR_CATALOG_OBSERVATION=" + str(error))
+          print("DEV_PR_CATALOG_CERTIFICATION=NOT_PERFORMED")
+          print("DEV_PR_IMAGE_HTTP=NOT_EXECUTED")
+          PY
 
   certify:
     if: github.event_name != 'pull_request'
@@ -173,64 +204,61 @@ jobs:
           python3 -m unittest discover -s scripts/ci -p 'test_verify_dev_final_tenant_identity.py' -v
           python3 scripts/ci/verify_dev_final_tenant_identity.py
 
-      # El catálogo legacy no tiene un tenant verificado con 2+ empresas.
-      # No convertir su cuarentena 503 en un falso 200 ni silenciar la
-      # ausencia de catálogo/imágenes públicas operativas en DEV.
+      # El catálogo legacy sólo se acepta con datos auténticos y contexto
+      # empresarial verificado. No silenciar la cuarentena 503 ni fabricar
+      # datos o imágenes. Emitir un código de diagnóstico sin mostrar PII.
       - name: Catálogo, productos e imágenes DEV (requiere contrato comercial seguro)
+        id: catalog_gate
         shell: bash
         run: |
           set -euo pipefail
-          categories_code="$(curl --silent --show-error --connect-timeout 8 --max-time 30 \
-            --output "$RUNNER_TEMP/dev-categories.json" --write-out '%{http_code}' \
-            "$FRONTEND/api/tienda/categorias")" || {
-            echo "::error title=DEV catalog::CATALOG_HTTP_TRANSPORT_UNAVAILABLE"
-            exit 1
-          }
-          if [ "$categories_code" = "503" ] &&
-             jq -e '.code == "TENANT_DATA_ISOLATION_REQUIRED"' \
-               "$RUNNER_TEMP/dev-categories.json" >/dev/null 2>&1; then
-            echo "::error title=DEV catalog::TENANT_GUARD_CATALOG_NOT_YET_CERTIFIED: falta lectura positiva por tenant autorizado; no retirar guard ni declarar FINAL_DEV_CERTIFICATION PASS."
-            exit 1
-          fi
-          if [ "$categories_code" != "200" ]; then
-            echo "::error title=DEV catalog::CATALOG_UNEXPECTED_HTTP=$categories_code"
-            exit 1
-          fi
+          python3 scripts/ci/verify_dev_catalog_gate.py
 
-          products_code="$(curl --silent --show-error --connect-timeout 8 --max-time 30 \
-            --output "$RUNNER_TEMP/dev-products.json" --write-out '%{http_code}' \
-            "$FRONTEND/api/tienda/productos?pagina=1&tamano=100")" || {
-            echo "::error title=DEV products::PRODUCTS_HTTP_TRANSPORT_UNAVAILABLE"
-            exit 1
+      # Solo cuando el gate anterior falla: contraste de estados en DEV
+      # mediante SELECT agregado. No listar, atribuir, restaurar ni crear
+      # categorías/productos. Es observabilidad, no certificación ni bypass.
+      - name: Clasificar disponibilidad de categorías DEV (SQL agregado, sin PII)
+        if: ${{ !cancelled() && steps.catalog_gate.outcome == 'failure' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${DB_NAME:-}" != "solqaryn_dev" ] ||
+             [ "${DB_HOST:-}" != "solqaryn-mysql-solqaryn.h.aivencloud.com" ] ||
+             [ "${DB_PORT:-}" != "14402" ] ||
+             [ "${DB_USER:-}" != "solqaryn_dev_user" ]; then
+            echo "DEV_CATALOG_DB_STATE=DEV_DB_SCOPE_NOT_VERIFIED"
+            exit 0
+          fi
+          if [ -z "${DB_PASSWORD:-}" ]; then
+            echo "DEV_CATALOG_DB_STATE=DEV_DB_SECRET_NOT_AVAILABLE"
+            exit 0
+          fi
+          export MYSQL_PWD="$DB_PASSWORD"
+          # Query fija, exclusivamente SELECT y sin valores empresariales.
+          counts="$(mysql --protocol=TCP --ssl-mode=REQUIRED \
+            -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" \
+            --batch --skip-column-names --raw "$DB_NAME" \
+            -e 'SELECT COUNT(*), COALESCE(SUM(Activa=1),0), COALESCE(SUM(Activa=1 AND Eliminada=0),0) FROM Categorias;' \
+            2>/dev/null)" || {
+            echo "DEV_CATALOG_DB_STATE=READ_ONLY_QUERY_UNAVAILABLE"
+            exit 0
           }
-          if [ "$products_code" = "503" ] &&
-             jq -e '.code == "TENANT_DATA_ISOLATION_REQUIRED"' \
-               "$RUNNER_TEMP/dev-products.json" >/dev/null 2>&1; then
-            echo "::error title=DEV products::TENANT_GUARD_PRODUCTS_NOT_YET_CERTIFIED: requiere un tenant público verificado."
-            exit 1
+          read -r total active active_not_deleted <<< "$counts"
+          for count in "$total" "$active" "$active_not_deleted"; do
+            case "$count" in
+              ''|*[!0-9]*) echo "DEV_CATALOG_DB_STATE=INVALID_AGGREGATE_RESPONSE"; exit 0 ;;
+            esac
+          done
+          if [ "$total" -eq 0 ]; then
+            echo "DEV_CATALOG_DB_STATE=NO_CATEGORY_RECORDS"
+          elif [ "$active" -eq 0 ]; then
+            echo "DEV_CATALOG_DB_STATE=ALL_CATEGORIES_INACTIVE"
+          elif [ "$active_not_deleted" -eq 0 ]; then
+            echo "DEV_CATALOG_DB_STATE=ACTIVE_BUT_SOFT_DELETED"
+          else
+            echo "DEV_CATALOG_DB_STATE=GLOBAL_ACTIVE_CATEGORIES_PRESENT_PUBLIC_OWNER_UNPROVEN"
           fi
-          if [ "$products_code" != "200" ]; then
-            echo "::error title=DEV products::PRODUCTS_UNEXPECTED_HTTP=$products_code"
-            exit 1
-          fi
-          jq -e '.success == true and (.data | length) >= 1' \
-            "$RUNNER_TEMP/dev-categories.json" >/dev/null
-          jq -e '.success == true and (.data.items | length) >= 1' \
-            "$RUNNER_TEMP/dev-products.json" >/dev/null
-
-          jq -r '.data.items[] | .imagenPrincipalUrl // empty, (.imagenes[]?.url // empty)' \
-            "$RUNNER_TEMP/dev-products.json" | sort -u > "$RUNNER_TEMP/dev-images.txt"
-          test -s "$RUNNER_TEMP/dev-images.txt"
-          if grep -Eqv '^https://res\.cloudinary\.com/riyrzmob/.*/solqaryn_dev/' \
-            "$RUNNER_TEMP/dev-images.txt"; then
-            echo "::error title=DEV images::IMAGES_OUTSIDE_CANONICAL_NAMESPACE"
-            exit 1
-          fi
-          while IFS= read -r url; do
-            code="$(curl -L -sS --connect-timeout 8 --max-time 30 -o /dev/null -w '%{http_code}' "$url")"
-            test "$code" = "200"
-          done < "$RUNNER_TEMP/dev-images.txt"
-          echo "API_CATALOG_PRODUCTS_IMAGES=PASS"
+          echo "DEV_CATALOG_SQL_READBACK=SELECT_ONLY_REDACTED"
 
       - name: Render health
         run: |
