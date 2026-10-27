@@ -2,6 +2,7 @@
 - Evidencia GitHub Actions `dev@9e3ea182944d038d3548bcb04ae12bb8883e912a`, run `40585737092`: `npm audit --omit=dev --audit-level=high` falló por `zod@4.6.5`, vulnerabilidad alta de uso excesivo de memoria; GitHub Advisory `GHSA-mrhx-c7xc-m3w5` indica versión remediada `4.6.6`. El lockfile tenía Zod transitivo de Angular CLI (`4.6.5` exacta) y otros consumidores.
 - Intervención mínima: `frontend/package.json` añade `overrides.zod=4.6.6`; `frontend/package-lock.json` cambia solo la entrada `node_modules/zod` a `4.6.6` con el `sha512` oficial del tarball y misma licencia/funding. Conserva Angular 22.2.1, npm 11.19.0, provider, las demás dependencias, `npm audit` y checks de GitHub.
 - El cambio debe acreditar `npm ci`, `npm audit --omit=dev --audit-level=high`, build/frontend, seguridad multiempresa, 3 checks obligatorios, revisión independiente, PR/merge protegido y readback del nuevo SHA. No habilita despliegue manual ni cambia Render (`After CI Checks Pass`), Vercel, Aiven, QA, main o PROD.
+- El checkpoint DEV se actualiza para disparar certificación integral sobre el SHA fusionado; su espera fail-closed del bootstrap privado pasa de 36 a 72 intentos de diez segundos para permitir el despliegue Render `checksPass` posterior al CI, sin eliminar fallos de ETag/304 ni ampliar el tiempo máximo de todo el job (25 minutos).
 - No se marca certificación funcional integral ni paridad del proveedor LISTO hasta ejecución completa y evidencia independiente posterior.
 
 ## 2026-10-27 — Cert DEV: caché privada tenant sin ETag/304 público
