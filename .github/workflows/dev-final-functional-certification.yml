@@ -208,10 +208,57 @@ jobs:
       # empresarial verificado. No silenciar la cuarentena 503 ni fabricar
       # datos o imágenes. Emitir un código de diagnóstico sin mostrar PII.
       - name: Catálogo, productos e imágenes DEV (requiere contrato comercial seguro)
+        id: catalog_gate
         shell: bash
         run: |
           set -euo pipefail
           python3 scripts/ci/verify_dev_catalog_gate.py
+
+      # Solo cuando el gate anterior falla: contraste de estados en DEV
+      # mediante SELECT agregado. No listar, atribuir, restaurar ni crear
+      # categorías/productos. Es observabilidad, no certificación ni bypass.
+      - name: Clasificar disponibilidad de categorías DEV (SQL agregado, sin PII)
+        if: ${{ !cancelled() && steps.catalog_gate.outcome == 'failure' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${DB_NAME:-}" != "solqaryn_dev" ] ||
+             [ "${DB_HOST:-}" != "solqaryn-mysql-solqaryn.h.aivencloud.com" ] ||
+             [ "${DB_PORT:-}" != "14402" ] ||
+             [ "${DB_USER:-}" != "solqaryn_dev_user" ]; then
+            echo "DEV_CATALOG_DB_STATE=DEV_DB_SCOPE_NOT_VERIFIED"
+            exit 0
+          fi
+          if [ -z "${DB_PASSWORD:-}" ]; then
+            echo "DEV_CATALOG_DB_STATE=DEV_DB_SECRET_NOT_AVAILABLE"
+            exit 0
+          fi
+          export MYSQL_PWD="$DB_PASSWORD"
+          # Query fija, exclusivamente SELECT y sin valores empresariales.
+          counts="$(mysql --protocol=TCP --ssl-mode=REQUIRED \
+            -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" \
+            --batch --skip-column-names --raw "$DB_NAME" \
+            -e 'SELECT COUNT(*), COALESCE(SUM(Activa=1),0), COALESCE(SUM(Activa=1 AND Eliminada=0),0) FROM Categorias;' \
+            2>/dev/null)" || {
+            echo "DEV_CATALOG_DB_STATE=READ_ONLY_QUERY_UNAVAILABLE"
+            exit 0
+          }
+          read -r total active active_not_deleted <<< "$counts"
+          for count in "$total" "$active" "$active_not_deleted"; do
+            case "$count" in
+              ''|*[!0-9]*) echo "DEV_CATALOG_DB_STATE=INVALID_AGGREGATE_RESPONSE"; exit 0 ;;
+            esac
+          done
+          if [ "$total" -eq 0 ]; then
+            echo "DEV_CATALOG_DB_STATE=NO_CATEGORY_RECORDS"
+          elif [ "$active" -eq 0 ]; then
+            echo "DEV_CATALOG_DB_STATE=ALL_CATEGORIES_INACTIVE"
+          elif [ "$active_not_deleted" -eq 0 ]; then
+            echo "DEV_CATALOG_DB_STATE=ACTIVE_BUT_SOFT_DELETED"
+          else
+            echo "DEV_CATALOG_DB_STATE=GLOBAL_ACTIVE_CATEGORIES_PRESENT_PUBLIC_OWNER_UNPROVEN"
+          fi
+          echo "DEV_CATALOG_SQL_READBACK=SELECT_ONLY_REDACTED"
 
       - name: Render health
         run: |
