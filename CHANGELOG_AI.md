@@ -1,3 +1,11 @@
+## 2026-10-26 — P0-001.B: instrumentación HTTP causal DEV sin relajar gates (candidato)
+
+- Ante respuestas HTTP 503 sin cuerpo visible desde clientes externos, se instrumenta **solo** el workflow `.github/workflows/dev-final-functional-certification.yml` en su job DEV para registrar códigos de `/health/ready`, identidad pública Render y proxy Vercel, clasificación por igualdad exacta con `TENANT_DATA_ISOLATION_REQUIRED` o título de mantenimiento y presencia de `Retry-After: 300`.
+- Incluye preflight `OPTIONS` a `/auth/login` con `Origin: https://solqaryn-dev.vercel.app` y `Origin: https://untrusted.invalid`; informa códigos y coincidencia del encabezado `Access-Control-Allow-Origin` sin otorgar aprobaciones ni asumir una sesión autenticada.
+- Las respuestas HTTP y cabeceras se guardan únicamente en `RUNNER_TEMP`, sin imprimir payloads, tokens, cookies, correos, IDs de empresa ni secretos; el log solo emite indicadores acotados. No se crean artifacts, dominios, despliegues, credenciales ni cambios DB.
+- Se conserva intacta la certificación existente: `curl --fail`, validaciones `jq`, disponibilidad, E2E/SSO/RBAC y paridad exact-SHA no se dan por superados. El nuevo paso es `OBSERVATION_ONLY_NOT_CERTIFICATION`; no altera API ni bloqueos multiempresa.
+- Estado inicial: trabajo en rama exclusiva `work/solqaryn-p0-001-b`, por revisar con CI y revisión formal independiente; `P0-001.B=EN_PROGRESO` y `NO_LISTO`. Rollback: revert del commit de instrumentación vía PR protegido a `dev`.
+
 ## 2026-10-26 — P0-001.B: corrección de release Vercel DEV sin builds artificiales (seguimiento)
 
 - Evidencia verificada sobre `dev@3d2f0436b7c0c7bfc3eff07f8b01f3121dc3aa38`: PR #3768 APPROVED y MERGED; tres checks obligatorios SUCCESS; Render DEV `dep-dbfqjt29lscs73bmvs10` LIVE exact SHA; Vercel DEV `dpl_Bi9YNxDrMXXBqMLPHCa6aCtyA1NV` CANCELED porque `NON_RUNTIME_GOVERNANCE_ONLY_SKIP files=5`; deployment anterior `dpl_9wHGTwW1YNGucpmG58EqtYXtWsGs` READY en SHA `35c67e330f876ee66f8015e889ffa151d6d4643a`.
