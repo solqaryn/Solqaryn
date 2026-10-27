@@ -29,7 +29,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Positivos y negativos del contrato fail-closed
-        run: python3 -m unittest discover -s scripts/ci -p 'test_verify_dev_final_tenant_identity.py' -v
+        run: |
+          python3 -m unittest discover -s scripts/ci -p 'test_verify_dev_final_tenant_identity.py' -v
           python3 -m unittest discover -s scripts/ci -p 'test_verify_dev_catalog_gate.py' -v
 
   certify:
