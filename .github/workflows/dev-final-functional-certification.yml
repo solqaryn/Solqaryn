@@ -21,7 +21,7 @@ permissions:
 jobs:
   contract-tests:
     name: Contrato DEV tenant identity A/B (sin infraestructura)
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -61,8 +61,17 @@ jobs:
           print("DEV_PR_IMAGE_HTTP=NOT_EXECUTED")
           PY
 
+      - name: Declarar alcance de predeploy DEV exact SHA
+        if: github.event_name == 'push'
+        run: |
+          echo "DEV_PREDEPLOY_CONTRACT_TESTS=PASS"
+          echo "DEV_POSTDEPLOY_FULL_CERTIFICATION=NOT_EXECUTED_BEFORE_RENDER"
+
   certify:
-    if: github.event_name != 'pull_request'
+    # Render checksPass espera todos los checks del nuevo SHA: el runtime
+    # solo se certifica DESPUES del despliegue mediante workflow_dispatch.
+    # En push se ejecuta el contrato offline y este job queda SKIPPED.
+    if: github.event_name == 'workflow_dispatch'
     name: Certificar DEV canónico extremo a extremo
     runs-on: ubuntu-latest
     timeout-minutes: 25
