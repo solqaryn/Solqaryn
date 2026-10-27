@@ -12,6 +12,8 @@ on:
       - .github/workflows/dev-final-functional-certification.yml
       - scripts/ci/verify_dev_final_tenant_identity.py
       - scripts/ci/test_verify_dev_final_tenant_identity.py
+      - scripts/ci/verify_dev_catalog_gate.py
+      - scripts/ci/test_verify_dev_catalog_gate.py
 
 permissions:
   contents: read
@@ -28,6 +30,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Positivos y negativos del contrato fail-closed
         run: python3 -m unittest discover -s scripts/ci -p 'test_verify_dev_final_tenant_identity.py' -v
+          python3 -m unittest discover -s scripts/ci -p 'test_verify_dev_catalog_gate.py' -v
 
   certify:
     if: github.event_name != 'pull_request'
@@ -173,64 +176,14 @@ jobs:
           python3 -m unittest discover -s scripts/ci -p 'test_verify_dev_final_tenant_identity.py' -v
           python3 scripts/ci/verify_dev_final_tenant_identity.py
 
-      # El catálogo legacy no tiene un tenant verificado con 2+ empresas.
-      # No convertir su cuarentena 503 en un falso 200 ni silenciar la
-      # ausencia de catálogo/imágenes públicas operativas en DEV.
+      # El catálogo legacy sólo se acepta con datos auténticos y contexto
+      # empresarial verificado. No silenciar la cuarentena 503 ni fabricar
+      # datos o imágenes. Emitir un código de diagnóstico sin mostrar PII.
       - name: Catálogo, productos e imágenes DEV (requiere contrato comercial seguro)
         shell: bash
         run: |
           set -euo pipefail
-          categories_code="$(curl --silent --show-error --connect-timeout 8 --max-time 30 \
-            --output "$RUNNER_TEMP/dev-categories.json" --write-out '%{http_code}' \
-            "$FRONTEND/api/tienda/categorias")" || {
-            echo "::error title=DEV catalog::CATALOG_HTTP_TRANSPORT_UNAVAILABLE"
-            exit 1
-          }
-          if [ "$categories_code" = "503" ] &&
-             jq -e '.code == "TENANT_DATA_ISOLATION_REQUIRED"' \
-               "$RUNNER_TEMP/dev-categories.json" >/dev/null 2>&1; then
-            echo "::error title=DEV catalog::TENANT_GUARD_CATALOG_NOT_YET_CERTIFIED: falta lectura positiva por tenant autorizado; no retirar guard ni declarar FINAL_DEV_CERTIFICATION PASS."
-            exit 1
-          fi
-          if [ "$categories_code" != "200" ]; then
-            echo "::error title=DEV catalog::CATALOG_UNEXPECTED_HTTP=$categories_code"
-            exit 1
-          fi
-
-          products_code="$(curl --silent --show-error --connect-timeout 8 --max-time 30 \
-            --output "$RUNNER_TEMP/dev-products.json" --write-out '%{http_code}' \
-            "$FRONTEND/api/tienda/productos?pagina=1&tamano=100")" || {
-            echo "::error title=DEV products::PRODUCTS_HTTP_TRANSPORT_UNAVAILABLE"
-            exit 1
-          }
-          if [ "$products_code" = "503" ] &&
-             jq -e '.code == "TENANT_DATA_ISOLATION_REQUIRED"' \
-               "$RUNNER_TEMP/dev-products.json" >/dev/null 2>&1; then
-            echo "::error title=DEV products::TENANT_GUARD_PRODUCTS_NOT_YET_CERTIFIED: requiere un tenant público verificado."
-            exit 1
-          fi
-          if [ "$products_code" != "200" ]; then
-            echo "::error title=DEV products::PRODUCTS_UNEXPECTED_HTTP=$products_code"
-            exit 1
-          fi
-          jq -e '.success == true and (.data | length) >= 1' \
-            "$RUNNER_TEMP/dev-categories.json" >/dev/null
-          jq -e '.success == true and (.data.items | length) >= 1' \
-            "$RUNNER_TEMP/dev-products.json" >/dev/null
-
-          jq -r '.data.items[] | .imagenPrincipalUrl // empty, (.imagenes[]?.url // empty)' \
-            "$RUNNER_TEMP/dev-products.json" | sort -u > "$RUNNER_TEMP/dev-images.txt"
-          test -s "$RUNNER_TEMP/dev-images.txt"
-          if grep -Eqv '^https://res\.cloudinary\.com/riyrzmob/.*/solqaryn_dev/' \
-            "$RUNNER_TEMP/dev-images.txt"; then
-            echo "::error title=DEV images::IMAGES_OUTSIDE_CANONICAL_NAMESPACE"
-            exit 1
-          fi
-          while IFS= read -r url; do
-            code="$(curl -L -sS --connect-timeout 8 --max-time 30 -o /dev/null -w '%{http_code}' "$url")"
-            test "$code" = "200"
-          done < "$RUNNER_TEMP/dev-images.txt"
-          echo "API_CATALOG_PRODUCTS_IMAGES=PASS"
+          python3 scripts/ci/verify_dev_catalog_gate.py
 
       - name: Render health
         run: |
