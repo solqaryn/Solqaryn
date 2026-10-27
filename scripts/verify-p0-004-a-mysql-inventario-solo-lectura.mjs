@@ -85,7 +85,7 @@ function verify(sql) {
       const guard = new RegExp(
         `\\bWHERE\\s+${schemaColumn}\\s*=\\s*DATABASE\\(\\)(?=\\s*(?:AND\\b|ORDER\\s+BY\\b|$))`, 'i'
       );
-      if (!guard.test(query) || /\b(?:OR|XOR|UNION|EXCEPT|INTERSECT)\b|\|/.test(query)) {
+      if (!guard.test(query) || /\b(?:OR|XOR|UNION|EXCEPT|INTERSECT)\b|\|/i.test(query)) {
         throw new Error('Cross-schema metadata reads are not authorized');
       }
     }
@@ -146,6 +146,7 @@ if (process.argv.includes('--self-test')) {
     // An otherwise SELECT-only script must not list other databases metadata.
     sql.replace('WHERE TABLE_SCHEMA = DATABASE()', 'WHERE 1=1'),
     sql.replace('WHERE TABLE_SCHEMA = DATABASE()', 'WHERE TABLE_SCHEMA = DATABASE() OR 1=1'),
+    sql.replace('WHERE TABLE_SCHEMA = DATABASE()', 'WHERE TABLE_SCHEMA = DATABASE() AND 1=1 or 1=1'),
     sql.replace('WHERE TRIGGER_SCHEMA = DATABASE()', 'WHERE 1=1'),
     sql.replace("AND TABLE_NAME = '__EFMigrationsHistory'", 'AND TABLE_NAME IS NOT NULL'),
     sql.replace('FROM INFORMATION_SCHEMA.COLUMNS', 'FROM INFORMATION_SCHEMA.TABLES'),
