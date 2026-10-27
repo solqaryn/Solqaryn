@@ -7,10 +7,11 @@ Every response is inspected in-memory; no business names/IDs/URLs are logged.
 import json
 import os
 import re
+import subprocess
 import sys
-from urllib.error import HTTPError, URLError
+import tempfile
+from pathlib import Path
 from urllib.parse import urlsplit
-from urllib.request import Request, urlopen
 
 FRONTEND = "https://solqaryn-dev.vercel.app"
 ISOLATION = "TENANT_DATA_ISOLATION_REQUIRED"
@@ -82,39 +83,50 @@ def images_from_products(items):
 
 
 def get_json(url, label):
-    req = Request(url, headers={"Cache-Control": "no-store",
-                                "User-Agent": "SOLQARYN-DEV-CatalogGate/1.0"})
-    try:
-        with urlopen(req, timeout=30) as response:
-            status, data = response.status, response.read(2_000_001)
-            final_url = response.geturl()
-    except HTTPError as response:
-        status, data = response.code, response.read(2_000_001)
-        final_url = response.geturl()
-    except (URLError, TimeoutError, OSError):
-        raise GateError(label + "_TRANSPORT_UNAVAILABLE") from None
-    require(final_url.startswith(FRONTEND + "/api/"),
-            label + "_UNEXPECTED_REDIRECT")
-    require(len(data) <= 2_000_000, label + "_BODY_TOO_LARGE")
-    try:
-        return status, json.loads(data)
-    except (ValueError, UnicodeDecodeError):
-        raise GateError(label + "_NON_JSON_HTTP_" + str(status)) from None
+    # Preserve the original GitHub runner curl transport and its timeouts.
+    # Only the response is parsed in Python; body, URL and headers stay private.
+    with tempfile.TemporaryDirectory(prefix="solqaryn-dev-catalog-") as directory:
+        body_path = str(Path(directory) / "response.json")
+        args = ["curl", "--silent", "--show-error", "--connect-timeout", "8",
+                "--max-time", "30", "--output", body_path,
+                "--write-out", "%{http_code}", url]
+        try:
+            result = subprocess.run(args, capture_output=True, timeout=36)
+        except (OSError, subprocess.TimeoutExpired):
+            raise GateError(label + "_TRANSPORT_UNAVAILABLE") from None
+        require(result.returncode == 0, label + "_TRANSPORT_UNAVAILABLE")
+        raw_code = result.stdout.strip()
+        require(re.fullmatch(rb"[0-9]{3}", raw_code) is not None,
+                label + "_INVALID_HTTP_CODE")
+        status = int(raw_code)
+        try:
+            with open(body_path, "rb") as response:
+                data = response.read(2_000_001)
+        except OSError:
+            raise GateError(label + "_RESPONSE_NOT_SAVED") from None
+        require(len(data) <= 2_000_000, label + "_BODY_TOO_LARGE")
+        try:
+            return status, json.loads(data)
+        except (ValueError, UnicodeDecodeError):
+            raise GateError(label + "_NON_JSON_HTTP_" + str(status)) from None
 
 
 def verify_images(urls):
     for url in urls:
-        req = Request(url, headers={"User-Agent": "SOLQARYN-DEV-CatalogGate/1.0"})
+        args = ["curl", "--location", "--silent", "--show-error",
+                "--connect-timeout", "8", "--max-time", "30", "--output",
+                "/dev/null", "--write-out", "%{http_code}\n%{url_effective}", url]
         try:
-            with urlopen(req, timeout=30) as response:
-                status, final_url = response.status, response.geturl()
-        except HTTPError as response:
-            status, final_url = response.code, response.geturl()
-        except (URLError, TimeoutError, OSError):
+            result = subprocess.run(args, capture_output=True, timeout=36)
+        except (OSError, subprocess.TimeoutExpired):
             raise GateError("IMAGE_TRANSPORT_UNAVAILABLE") from None
-        require(canonical_cloudinary_image(final_url),
+        require(result.returncode == 0, "IMAGE_TRANSPORT_UNAVAILABLE")
+        parts = result.stdout.decode("utf-8", "replace").splitlines()
+        require(len(parts) == 2 and re.fullmatch(r"[0-9]{3}", parts[0]) is not None,
+                "IMAGE_INVALID_HTTP_CODE")
+        require(canonical_cloudinary_image(parts[1]),
                 "IMAGE_REDIRECT_OUTSIDE_CANONICAL_NAMESPACE")
-        require(status == 200, "IMAGE_HTTP_" + str(status))
+        require(parts[0] == "200", "IMAGE_HTTP_" + parts[0])
 
 
 def main():
