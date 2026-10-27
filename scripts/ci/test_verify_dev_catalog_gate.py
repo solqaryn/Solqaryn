@@ -1,9 +1,30 @@
 """Offline positive and hostile fixtures for the DEV public catalog gate."""
 import unittest
+import json
+from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
 import verify_dev_catalog_gate as gate
 
 
 class CatalogGateTests(unittest.TestCase):
+    def test_curl_transport_preserves_http_code_without_leaks(self):
+        def fake_run(args, **_kwargs):
+            Path(args[args.index("--output") + 1]).write_text(
+                json.dumps({"success": False, "code": gate.ISOLATION}))
+            return SimpleNamespace(returncode=0, stdout=b"503")
+        with patch.object(gate.subprocess, "run", side_effect=fake_run):
+            status, payload = gate.get_json(gate.FRONTEND + "/api/tienda/categorias", "CATEGORIES")
+        self.assertEqual(status, 503)
+        with self.assertRaisesRegex(gate.GateError, "TENANT_GUARD"):
+            gate.categories_from_response(status, payload)
+
+    def test_curl_transport_error_is_explicit(self):
+        with patch.object(gate.subprocess, "run", return_value=SimpleNamespace(
+                returncode=6, stdout=b"000")):
+            with self.assertRaisesRegex(gate.GateError, "TRANSPORT_UNAVAILABLE"):
+                gate.get_json(gate.FRONTEND + "/api/tienda/categorias", "CATEGORIES")
+
     def test_valid_categories_and_products(self):
         self.assertEqual(gate.categories_from_response(200, {"success": True, "data": [1]}), [1])
         self.assertEqual(gate.products_from_response(200, {
