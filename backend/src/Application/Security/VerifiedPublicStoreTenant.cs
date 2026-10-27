@@ -12,6 +12,20 @@ namespace Solqaryn.Application.Security;
 public static class VerifiedPublicStoreTenant
 {
     public const string AuthorizedEmpresaIdItemKey = "SOLQARYN_VERIFIED_PUBLIC_STORE_EMPRESA_ID";
+    // Solamente el middleware que comprobo el proxy firmado o el owner legacy
+    // puede marcar esta respuesta como privada ANTES del filtro MVC de ETag.
+    public const string PrivateNoStoreItemKey = "SOLQARYN_PUBLIC_STORE_PRIVATE_NOSTORE";
+
+    public static void RequirePrivateNoStore(HttpContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        context.Items[PrivateNoStoreItemKey] = true;
+    }
+
+    public static bool RequiresPrivateNoStore(HttpContext? context) =>
+        context is not null &&
+        context.Items.TryGetValue(PrivateNoStoreItemKey, out var required) &&
+        required is true;
 
     public static int? Resolve(HttpContext? context)
     {

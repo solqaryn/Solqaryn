@@ -1,5 +1,6 @@
 using Solqaryn.API.Controllers;
 using Solqaryn.API.Filters;
+using Solqaryn.Application.Security;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -55,6 +56,32 @@ public sealed class PublicHttpCacheAttributeTests
         var result = Assert.IsType<StatusCodeResult>(secondContext.Result);
         Assert.Equal(StatusCodes.Status304NotModified, result.StatusCode);
         Assert.Equal(etag, secondContext.HttpContext.Response.Headers[HeaderNames.ETag].ToString());
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task TenantVerificado_PrivateNoStore_IgnoraIfNoneMatchYNoDevuelve304(bool wildcard)
+    {
+        var payload = new { success = true, data = new[] { "tienda A" } };
+        var (publicContext, publicFilter) = CreateContext(
+            new OkObjectResult(payload), PublicHttpCacheProfile.Bootstrap);
+        await ExecuteAsync(publicContext, publicFilter);
+        var etag = publicContext.HttpContext.Response.Headers[HeaderNames.ETag].ToString();
+        Assert.NotEmpty(etag);
+
+        var originalResult = new OkObjectResult(payload);
+        var (context, filter) = CreateContext(originalResult, PublicHttpCacheProfile.Bootstrap);
+        VerifiedPublicStoreTenant.RequirePrivateNoStore(context.HttpContext);
+        context.HttpContext.Request.Headers[HeaderNames.IfNoneMatch] =
+            wildcard ? "*" : etag;
+
+        await ExecuteAsync(context, filter);
+
+        Assert.Same(originalResult, context.Result);
+        Assert.Equal("private, no-store, max-age=0",
+            context.HttpContext.Response.Headers[HeaderNames.CacheControl].ToString());
+        Assert.False(context.HttpContext.Response.Headers.ContainsKey(HeaderNames.ETag));
     }
 
     [Fact]

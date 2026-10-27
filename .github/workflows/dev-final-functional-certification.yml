@@ -21,7 +21,7 @@ permissions:
 jobs:
   contract-tests:
     name: Contrato DEV tenant identity A/B (sin infraestructura)
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -53,15 +53,25 @@ jobs:
               products = gate.products_from_response(status, payload)
               print("DEV_PR_PRODUCTS_SHAPE=PASS")
               images = gate.images_from_products(products)
-              print("DEV_PR_CLOUDINARY_NAMESPACE=PASS")
+              print("DEV_PR_CLOUDINARY_NAMESPACE=" +
+                    ("PASS" if images else "NOT_APPLICABLE_EMPTY_PRODUCTS"))
           except gate.GateError as error:
               print("DEV_PR_CATALOG_OBSERVATION=" + str(error))
           print("DEV_PR_CATALOG_CERTIFICATION=NOT_PERFORMED")
           print("DEV_PR_IMAGE_HTTP=NOT_EXECUTED")
           PY
 
+      - name: Declarar alcance de predeploy DEV exact SHA
+        if: github.event_name == 'push'
+        run: |
+          echo "DEV_PREDEPLOY_CONTRACT_TESTS=PASS"
+          echo "DEV_POSTDEPLOY_FULL_CERTIFICATION=NOT_EXECUTED_BEFORE_RENDER"
+
   certify:
-    if: github.event_name != 'pull_request'
+    # Render checksPass espera todos los checks del nuevo SHA: el runtime
+    # solo se certifica DESPUES del despliegue mediante workflow_dispatch.
+    # En push se ejecuta el contrato offline y este job queda SKIPPED.
+    if: github.event_name == 'workflow_dispatch'
     name: Certificar DEV canónico extremo a extremo
     runs-on: ubuntu-latest
     timeout-minutes: 25
@@ -202,12 +212,14 @@ jobs:
         run: |
           set -euo pipefail
           python3 -m unittest discover -s scripts/ci -p 'test_verify_dev_final_tenant_identity.py' -v
+          python3 -m unittest discover -s scripts/ci -p 'test_verify_dev_catalog_gate.py' -v
           python3 scripts/ci/verify_dev_final_tenant_identity.py
 
-      # El catálogo legacy sólo se acepta con datos auténticos y contexto
-      # empresarial verificado. No silenciar la cuarentena 503 ni fabricar
-      # datos o imágenes. Emitir un código de diagnóstico sin mostrar PII.
-      - name: Catálogo, productos e imágenes DEV (requiere contrato comercial seguro)
+      # Catálogos legítimamente vacíos (HTTP 200 + esquema correcto) son válidos.
+      # El contrato A/B positivo/negativo y los productos/imagenes poblados se
+      # prueban con fixtures aislados; el live gate nunca fabrica datos.
+      # 503 tenant isolation, respuestas inválidas y URLs externas siguen FAIL.
+      - name: Catálogo DEV vacío válido; productos/imágenes bajo aislamiento estricto
         id: catalog_gate
         shell: bash
         run: |
@@ -266,34 +278,53 @@ jobs:
           test "$(curl -sS -o /tmp/health.json -w '%{http_code}' "$BACKEND/health/ready")" = "200"
           echo "RENDER_HEALTH=PASS"
 
-      - name: HTTP cache y ETag bootstrap
+      # La cache de tienda verificada A/B debe ser privada; los ETag
+      # publicos solo se conservan en el caso monoempresa no marcado
+      # y sus pruebas unitarias. No aceptar 304 con contexto tenant.
+      - name: Cache privado bootstrap tenant (sin ETag ni 304)
         shell: bash
         run: |
           set -euo pipefail
           headers="$RUNNER_TEMP/bootstrap.headers"
-          trap 'echo "::group::bootstrap response headers"; cat "$headers" 2>/dev/null || true; echo "::endgroup::"' ERR
-          curl --retry 3 --fail --silent --show-error -D "$headers" -o /dev/null "$BACKEND/tienda/bootstrap"
+          body="$RUNNER_TEMP/bootstrap.response.json"
           normalized="$headers.normalized"
-          tr -d '\r' < "$headers" > "$normalized"
-          grep -Eqi '^cache-control:[[:space:]]*public, max-age=15, s-maxage=30, stale-while-revalidate=60$' "$normalized"
-          etag="$(awk -F': ' 'tolower($1)=="etag"{print $2}' "$normalized" | tail -n 1)"
-          test -n "$etag"
-          code="$(curl --retry 3 --silent --show-error -o /dev/null -w '%{http_code}' -H "If-None-Match: $etag" "$BACKEND/tienda/bootstrap")"
-          test "$code" = "304"
-          echo "HTTP_BOOTSTRAP_CACHE_ETAG=PASS"
+          trap 'echo "::group::bootstrap headers"; cat "$headers" 2>/dev/null || true; echo "::endgroup::"' ERR
+          for attempt in $(seq 1 72); do
+            code="$(curl --silent --show-error --connect-timeout 8 --max-time 20 -D "$headers" -o "$body" -w '%{http_code}' "$BACKEND/tienda/bootstrap")" || code="TRANSPORT_ERROR"
+            tr -d '\r' < "$headers" > "$normalized" 2>/dev/null || :
+            conditional="$(curl --silent --show-error --connect-timeout 8 --max-time 20 -o /dev/null -w '%{http_code}' -H 'If-None-Match: *' "$BACKEND/tienda/bootstrap")" || conditional="TRANSPORT_ERROR"
+            if [ "$code" = "200" ] &&
+               jq -e '.success == true and (.data | type) == "object"' "$body" >/dev/null 2>&1 &&
+               grep -Eqi '^cache-control:[[:space:]]*private, no-store, max-age=0$' "$normalized" &&
+               ! grep -Eqi '^etag:' "$normalized" &&
+               [ "$conditional" = "200" ]; then
+              echo "HTTP_BOOTSTRAP_PRIVATE_NOSTORE_NO_304=PASS"
+              break
+            fi
+            if [ "$attempt" -eq 72 ]; then
+              echo "::error title=DEV bootstrap cache::PRIVATE_NOSTORE_NO_304_NOT_CERTIFIED"
+              exit 1
+            fi
+            sleep 10
+          done
 
-      - name: HTTP cache y ETag productos
+      - name: Cache privado productos tenant (sin ETag ni 304)
         shell: bash
         run: |
           set -euo pipefail
           headers="$RUNNER_TEMP/products.headers"
-          trap 'echo "::group::products response headers"; cat "$headers" 2>/dev/null || true; echo "::endgroup::"' ERR
-          curl --retry 3 --fail --silent --show-error -D "$headers" -o /dev/null "$BACKEND/tienda/productos?page=1&pageSize=24"
+          body="$RUNNER_TEMP/products.response.json"
           normalized="$headers.normalized"
+          trap 'echo "::group::products headers"; cat "$headers" 2>/dev/null || true; echo "::endgroup::"' ERR
+          code="$(curl --fail --silent --show-error --connect-timeout 8 --max-time 20 -D "$headers" -o "$body" -w '%{http_code}' "$BACKEND/tienda/productos?page=1&pageSize=24")"
+          test "$code" = "200"
+          jq -e '.success == true and (.data.items | type) == "array"' "$body" >/dev/null
           tr -d '\r' < "$headers" > "$normalized"
-          grep -Eqi '^cache-control:[[:space:]]*public, max-age=5, s-maxage=15, must-revalidate$' "$normalized"
-          grep -Eqi '^etag:[[:space:]]*W/"[0-9a-f]{64}"$' "$normalized"
-          echo "HTTP_PRODUCTS_CACHE_ETAG=PASS"
+          grep -Eqi '^cache-control:[[:space:]]*private, no-store, max-age=0$' "$normalized"
+          ! grep -Eqi '^etag:' "$normalized"
+          conditional="$(curl --silent --show-error --connect-timeout 8 --max-time 20 -o /dev/null -w '%{http_code}' -H 'If-None-Match: *' "$BACKEND/tienda/productos?page=1&pageSize=24")"
+          test "$conditional" = "200"
+          echo "HTTP_PRODUCTS_PRIVATE_NOSTORE_NO_304=PASS"
 
       - name: Compresión Brotli
         shell: bash
