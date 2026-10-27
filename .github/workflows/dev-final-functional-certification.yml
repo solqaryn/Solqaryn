@@ -63,6 +63,74 @@ jobs:
           ! grep -qi "identidad-retirada-mysql-identidad-retirada.c.aivencloud.com" "$RUNNER_TEMP/login.html"
           echo "HTTP_ROUTE_CHECK=PASS"
 
+      - name: Diagnóstico causal HTTP 503 y CORS DEV (solo observación)
+        if: ${{ !cancelled() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          probe_dir="$RUNNER_TEMP/solqaryn-causal-probe"
+          mkdir -p "$probe_dir"
+
+          ready_code="$(curl --silent --show-error --connect-timeout 8 --max-time 20 \
+            --dump-header "$probe_dir/ready.headers" --output "$probe_dir/ready.body" \
+            --write-out '%{http_code}' "$BACKEND/health/ready")" || ready_code="TRANSPORT_ERROR"
+          echo "DEV_READY_HTTP=$ready_code"
+          if [ "$ready_code" = "200" ] &&
+             jq -e '.status == "ready" and .database == "connected"' "$probe_dir/ready.body" >/dev/null 2>&1; then
+            echo "DEV_READY_DB=CONNECTED"
+          elif jq -e '.status == "not_ready" and .database == "unavailable"' "$probe_dir/ready.body" >/dev/null 2>&1; then
+            echo "DEV_READY_DB=UNAVAILABLE"
+          else
+            echo "DEV_READY_DB=UNCLASSIFIED"
+          fi
+
+          for source in backend proxy; do
+            if [ "$source" = "backend" ]; then
+              target="$BACKEND/empresa-configuracion/publica"
+            else
+              target="$FRONTEND/api/empresa-configuracion/publica"
+            fi
+            response_code="$(curl --silent --show-error --connect-timeout 8 --max-time 25 \
+              --dump-header "$probe_dir/$source.headers" --output "$probe_dir/$source.body" \
+              --write-out '%{http_code}' "$target")" || response_code="TRANSPORT_ERROR"
+            printf 'DEV_PUBLIC_%s_HTTP=%s\n' "$source" "$response_code"
+            if [ "$response_code" = "503" ]; then
+              if jq -e '.code == "TENANT_DATA_ISOLATION_REQUIRED"' "$probe_dir/$source.body" >/dev/null 2>&1; then
+                printf 'DEV_PUBLIC_%s_503_CLASS=TENANT_GUARD\n' "$source"
+              elif jq -e '.title == "Servicio temporalmente en mantenimiento"' "$probe_dir/$source.body" >/dev/null 2>&1; then
+                printf 'DEV_PUBLIC_%s_503_CLASS=MAINTENANCE\n' "$source"
+              else
+                printf 'DEV_PUBLIC_%s_503_CLASS=UNCLASSIFIED\n' "$source"
+              fi
+              if grep -Eqi '^retry-after:[[:space:]]*300([[:space:]]|$)' "$probe_dir/$source.headers"; then
+                printf 'DEV_PUBLIC_%s_RETRY_AFTER_300=PRESENT\n' "$source"
+              else
+                printf 'DEV_PUBLIC_%s_RETRY_AFTER_300=ABSENT\n' "$source"
+              fi
+            fi
+          done
+
+          for case_name in allowed denied; do
+            if [ "$case_name" = "allowed" ]; then
+              origin="$FRONTEND"
+            else
+              origin="https://untrusted.invalid"
+            fi
+            cors_code="$(curl --silent --show-error --connect-timeout 8 --max-time 20 \
+              --request OPTIONS --header "Origin: $origin" \
+              --header 'Access-Control-Request-Method: POST' \
+              --header 'Access-Control-Request-Headers: content-type' \
+              --dump-header "$probe_dir/$case_name.headers" --output /dev/null \
+              --write-out '%{http_code}' "$BACKEND/auth/login")" || cors_code="TRANSPORT_ERROR"
+            printf 'DEV_CORS_%s_HTTP=%s\n' "$case_name" "$cors_code"
+            if tr -d '\r' < "$probe_dir/$case_name.headers" | grep -Fxi "access-control-allow-origin: $origin" >/dev/null; then
+              printf 'DEV_CORS_%s_ALLOW_ORIGIN=MATCH\n' "$case_name"
+            else
+              printf 'DEV_CORS_%s_ALLOW_ORIGIN=ABSENT_OR_DIFFERENT\n' "$case_name"
+            fi
+          done
+          echo "DEV_CAUSAL_PROBE=OBSERVATION_ONLY_NOT_CERTIFICATION"
+
       - name: API identidad, categorías, productos e imágenes
         shell: bash
         run: |
