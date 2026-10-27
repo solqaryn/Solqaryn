@@ -47,13 +47,13 @@ jobs:
           try:
               status, payload = gate.get_json(gate.FRONTEND + "/api/tienda/categorias", "CATEGORIES")
               cats = gate.categories_from_response(status, payload)
-              print("DEV_PR_CATEGORIES_SHAPE=PASS count=" + str(len(cats)))
+              print("DEV_PR_CATEGORIES_SHAPE=PASS")
               status, payload = gate.get_json(
                   gate.FRONTEND + "/api/tienda/productos?pagina=1&tamano=100", "PRODUCTS")
               products = gate.products_from_response(status, payload)
-              print("DEV_PR_PRODUCTS_SHAPE=PASS count=" + str(len(products)))
+              print("DEV_PR_PRODUCTS_SHAPE=PASS")
               images = gate.images_from_products(products)
-              print("DEV_PR_CLOUDINARY_NAMESPACE=PASS count=" + str(len(images)))
+              print("DEV_PR_CLOUDINARY_NAMESPACE=PASS")
           except gate.GateError as error:
               print("DEV_PR_CATALOG_OBSERVATION=" + str(error))
           print("DEV_PR_CATALOG_CERTIFICATION=NOT_PERFORMED")
