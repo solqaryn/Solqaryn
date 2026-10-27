@@ -21,3 +21,8 @@ TENANT_GUARD_BYPASS=FALSE
 
 # Next protected merge: recheck tenant-bound private cache + no ETag/304.
 TENANT_PRIVATE_CACHE_NO_304=VERIFY_LIVE_RENDER_AFTER_CHECKS_PASS
+
+# PR 3776: run exact-HEAD DEV full certification after npm audit mitigation and checksPass deployment.
+NPM_ZOD_GHSA_REMEDIATION=4.6.6_RECHECK_EXACT_SHA
+NPM_AUDIT_BYPASS=FALSE
+RENDER_AUTODEPLOY_TRIGGER=checksPass
