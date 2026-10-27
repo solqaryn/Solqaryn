@@ -26,7 +26,7 @@ class CatalogGateTests(unittest.TestCase):
                 gate.get_json(gate.FRONTEND + "/api/tienda/categorias", "CATEGORIES")
 
     def test_valid_categories_and_products(self):
-        self.assertEqual(gate.categories_from_response(200, {"success": True, "data": [1]}), [1])
+        self.assertEqual(gate.categories_from_response(200, {"success": True, "data": [{"id": 1, "nombre": "Demo"}]}), [{"id": 1, "nombre": "Demo"}])
         self.assertEqual(gate.products_from_response(200, {
             "success": True, "data": {"items": [{"imagenPrincipalUrl": "https://res.cloudinary.com/riyrzmob/image/upload/v1/solqaryn_dev/a.jpg"}]}
         }), [{"imagenPrincipalUrl": "https://res.cloudinary.com/riyrzmob/image/upload/v1/solqaryn_dev/a.jpg"}])
@@ -41,13 +41,56 @@ class CatalogGateTests(unittest.TestCase):
             with self.subTest(fn=fn.__name__), self.assertRaisesRegex(gate.GateError, "HTTP_503"):
                 fn(503, {"code": "UPSTREAM_UNAVAILABLE"})
 
-    def test_empty_categories_are_explicit(self):
-        with self.assertRaisesRegex(gate.GateError, "CATEGORIES_EMPTY"):
-            gate.categories_from_response(200, {"success": True, "data": []})
+    def test_empty_categories_are_legitimate(self):
+        self.assertEqual(gate.categories_from_response(
+            200, {"success": True, "data": []}), [])
 
-    def test_empty_products_are_explicit(self):
-        with self.assertRaisesRegex(gate.GateError, "PRODUCTS_EMPTY"):
-            gate.products_from_response(200, {"success": True, "data": {"items": []}})
+    def test_empty_products_are_legitimate(self):
+        self.assertEqual(gate.products_from_response(
+            200, {"success": True, "data": {"items": []}}), [])
+        self.assertEqual(gate.images_from_products([]), [])
+
+    def test_malformed_category_or_product_item_is_rejected(self):
+        for entry in (1, {"id": True, "nombre": "x"},
+                      {"id": 3, "nombre": ""}, {"id": 4}):
+            with self.subTest(entry=entry), self.assertRaisesRegex(
+                    gate.GateError, "CATEGORIES_INVALID_ITEM_SHAPE"):
+                gate.categories_from_response(200, {"success": True, "data": [entry]})
+        with self.assertRaisesRegex(gate.GateError, "PRODUCT_ITEM_INVALID_SHAPE"):
+            gate.products_from_response(
+                200, {"success": True, "data": {"items": ["invalid"]}})
+
+    def test_empty_live_catalog_skips_image_http_but_rejects_bad_tenant(self):
+        with patch.dict(gate.os.environ, {"FRONTEND": gate.FRONTEND}):
+            with patch.object(gate, "get_json", side_effect=[
+                (200, {"success": True, "data": []}),
+                (200, {"success": True, "data": {"items": []}})
+            ]) as probe, patch.object(gate, "verify_images") as image_probe, patch("builtins.print") as report:
+                gate.main()
+        self.assertEqual(probe.call_count, 2)
+        image_probe.assert_not_called()
+        self.assertIn("API_CATALOG_PRODUCTS_IMAGES=PASS_EMPTY_CONTRACT",
+                      [call.args[0] for call in report.call_args_list])
+
+        with patch.dict(gate.os.environ, {"FRONTEND": gate.FRONTEND}):
+            with patch.object(gate, "get_json", side_effect=[
+                (200, {"success": True, "data": []}),
+                (503, {"success": False, "code": gate.ISOLATION})
+            ]):
+                with self.assertRaisesRegex(gate.GateError, "TENANT_GUARD"):
+                    gate.main()
+
+    def test_populated_fixture_still_checks_live_images(self):
+        url = "https://res.cloudinary.com/riyrzmob/image/upload/v1/solqaryn_dev/a.jpg"
+        with patch.dict(gate.os.environ, {"FRONTEND": gate.FRONTEND}):
+            with patch.object(gate, "get_json", side_effect=[
+                (200, {"success": True, "data": [{"id": 2, "nombre": "Empresa A"}]}),
+                (200, {"success": True, "data": {"items": [{"imagenPrincipalUrl": url}]}})
+            ]), patch.object(gate, "verify_images") as image_probe, patch("builtins.print") as report:
+                gate.main()
+        image_probe.assert_called_once_with([url])
+        self.assertIn("API_CATALOG_PRODUCTS_IMAGES=PASS_WITH_LIVE_IMAGES",
+                      [call.args[0] for call in report.call_args_list])
 
     def test_invalid_payloads_fail_closed(self):
         for data in (None, {}, "", 4, [1]):

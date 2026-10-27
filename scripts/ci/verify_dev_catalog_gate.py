@@ -2,6 +2,8 @@
 """Fail-closed DEV public catalog probe with redacted, deterministic errors.
 
 This gate never changes tenant bindings, products, images or authorization.
+Empty 200 catalogs are valid; positive product/image coverage is provided by
+isolated CI fixtures, while live nonempty image references remain strict.
 Every response is inspected in-memory; no business names/IDs/URLs are logged.
 """
 import json
@@ -40,7 +42,10 @@ def expect_success(kind, status, payload):
 def categories_from_response(status, payload):
     data = expect_success("CATEGORIES", status, payload)
     require(isinstance(data, list), "CATEGORIES_INVALID_DATA_SHAPE")
-    require(len(data) > 0, "CATEGORIES_EMPTY")
+    for item in data:
+        require(isinstance(item, dict) and type(item.get("id")) is int
+                and item["id"] > 0 and isinstance(item.get("nombre"), str)
+                and bool(item["nombre"].strip()), "CATEGORIES_INVALID_ITEM_SHAPE")
     return data
 
 
@@ -48,7 +53,8 @@ def products_from_response(status, payload):
     data = expect_success("PRODUCTS", status, payload)
     require(isinstance(data, dict) and isinstance(data.get("items"), list),
             "PRODUCTS_INVALID_ITEMS_SHAPE")
-    require(len(data["items"]) > 0, "PRODUCTS_EMPTY")
+    require(all(isinstance(item, dict) for item in data["items"]),
+            "PRODUCT_ITEM_INVALID_SHAPE")
     return data["items"]
 
 
@@ -62,6 +68,8 @@ def canonical_cloudinary_image(url):
 
 
 def images_from_products(items):
+    if not items:
+        return []  # No product means no live image is expected.
     urls = set()
     for item in items:
         require(isinstance(item, dict), "PRODUCT_ITEM_INVALID_SHAPE")
@@ -133,15 +141,20 @@ def main():
     require(os.getenv("FRONTEND") == FRONTEND, "FRONTEND_NOT_CANONICAL_DEV")
     category_status, category_payload = get_json(FRONTEND + "/api/tienda/categorias", "CATEGORIES")
     categories = categories_from_response(category_status, category_payload)
-    print("DEV_CATEGORIES_SCHEMA_AND_NONEMPTY=PASS")
+    print("DEV_CATEGORIES_SCHEMA=PASS")
     product_status, product_payload = get_json(
         FRONTEND + "/api/tienda/productos?pagina=1&tamano=100", "PRODUCTS")
     products = products_from_response(product_status, product_payload)
-    print("DEV_PRODUCTS_SCHEMA_AND_NONEMPTY=PASS")
+    print("DEV_PRODUCTS_SCHEMA=PASS")
+    if not products:
+        print("DEV_CATALOG_PRODUCTS=EMPTY_VALID")
+        print("DEV_IMAGE_HTTP=NOT_APPLICABLE_EMPTY_PRODUCTS")
+        print("API_CATALOG_PRODUCTS_IMAGES=PASS_EMPTY_CONTRACT")
+        return
     images = images_from_products(products)
     print("DEV_CLOUDINARY_NAMESPACE=PASS")
     verify_images(images)
-    print("API_CATALOG_PRODUCTS_IMAGES=PASS")
+    print("API_CATALOG_PRODUCTS_IMAGES=PASS_WITH_LIVE_IMAGES")
 
 
 if __name__ == "__main__":

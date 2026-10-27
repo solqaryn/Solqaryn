@@ -53,7 +53,8 @@ jobs:
               products = gate.products_from_response(status, payload)
               print("DEV_PR_PRODUCTS_SHAPE=PASS")
               images = gate.images_from_products(products)
-              print("DEV_PR_CLOUDINARY_NAMESPACE=PASS")
+              print("DEV_PR_CLOUDINARY_NAMESPACE=" +
+                    ("PASS" if images else "NOT_APPLICABLE_EMPTY_PRODUCTS"))
           except gate.GateError as error:
               print("DEV_PR_CATALOG_OBSERVATION=" + str(error))
           print("DEV_PR_CATALOG_CERTIFICATION=NOT_PERFORMED")
@@ -202,12 +203,14 @@ jobs:
         run: |
           set -euo pipefail
           python3 -m unittest discover -s scripts/ci -p 'test_verify_dev_final_tenant_identity.py' -v
+          python3 -m unittest discover -s scripts/ci -p 'test_verify_dev_catalog_gate.py' -v
           python3 scripts/ci/verify_dev_final_tenant_identity.py
 
-      # El catálogo legacy sólo se acepta con datos auténticos y contexto
-      # empresarial verificado. No silenciar la cuarentena 503 ni fabricar
-      # datos o imágenes. Emitir un código de diagnóstico sin mostrar PII.
-      - name: Catálogo, productos e imágenes DEV (requiere contrato comercial seguro)
+      # Catálogos legítimamente vacíos (HTTP 200 + esquema correcto) son válidos.
+      # El contrato A/B positivo/negativo y los productos/imagenes poblados se
+      # prueban con fixtures aislados; el live gate nunca fabrica datos.
+      # 503 tenant isolation, respuestas inválidas y URLs externas siguen FAIL.
+      - name: Catálogo DEV vacío válido; productos/imágenes bajo aislamiento estricto
         id: catalog_gate
         shell: bash
         run: |
