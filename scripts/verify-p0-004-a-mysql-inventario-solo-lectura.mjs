@@ -73,7 +73,7 @@ function verify(sql) {
     ['INFORMATION_SCHEMA.KEY_COLUMN_USAGE'],
     ['INFORMATION_SCHEMA.TRIGGERS'],
     ['INFORMATION_SCHEMA.TABLES'],
-    ['__EFMigrationsHistory'],
+    ['__EFMIGRATIONSHISTORY'],
   ];
   for (const [index, query] of queries.entries()) {
     validateStatement(query);
