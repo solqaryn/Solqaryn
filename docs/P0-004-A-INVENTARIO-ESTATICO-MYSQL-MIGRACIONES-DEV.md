@@ -9,6 +9,12 @@
 - Task: `6adcc98a80a48191b71a5156624c21df` / ALEX_CHATGPT / SECONDARY_REVIEW_03.
 - Operación exclusivamente de lectura de repositorio para inventario, sin conectarse a bases de datos, alterar infraestructura ni manipular valores de secretos.
 
+## Cierre de bypass por predicado dentro de literal SQL
+
+Un `SELECT 'WHERE TABLE_SCHEMA = DATABASE() ORDER BY' FROM INFORMATION_SCHEMA.TABLES` puede devolver metadatos de **todos** los esquemas aunque una expresion regular vea el texto del filtro. Ocurre igualmente con `TRIGGER_SCHEMA` y literales entre comillas dobles, segun el modo MySQL. El validador de este inventario fijo rechaza cualquier literal SQL o identificador entrecomillado que no sea la unica cadena permitida `'__EFMigrationsHistory'` (Q08). El SQL de los nueve SELECT se conserva intacto; se incorporan cuatro pruebas negativas nuevas (2 sentencias y 2 documentos), total **39 regresiones**.
+
+El cambio no acredita consultas contra MySQL DEV, historial EF aplicado ni respaldos. CI del commit nuevo y revision independiente quedan pendientes; no mover `EN_PROGRESO` a `VALIDANDO` o `LISTO` sin los gates.
+
 ## Rechazo de comentarios SQL inline (`--`)
 
 El guard textual de `TABLE_SCHEMA = DATABASE()` o `TRIGGER_SCHEMA = DATABASE()` no es valido si aparece detras de `--` dentro de una sentencia: MySQL trataria el filtro como comentario y podria consultar metadatos de otros esquemas. El validador ahora **rechaza cualquier `--` que sobreviva al filtrado de comentarios de linea completa**, manteniendo solo los encabezados de documentacion. Una fixture de sentencia y dos alteraciones de documento verifican la clausula inerte en Q02/Q07. Con estos tres negativos el total pasa de 32 a **35**. Los nueve SELECT manuales son identicos, y no se consulto MySQL DEV. CI del nuevo SHA debe comprobarse antes de afirmar PASS; los metadatos fisicos y backups siguen `NO_VERIFICADOS`.

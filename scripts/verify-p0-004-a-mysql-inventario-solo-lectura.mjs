@@ -26,6 +26,13 @@ function validateStatement(query) {
   // Inline MySQL -- comments can conceal the required schema predicate while
   // leaving its text visible to a regex. Only full-line header comments are supported.
   if (/--/.test(query)) throw new Error('Inline SQL comments are not supported');
+  // The fixed metadata inventory allows only Q08's literal table name.
+  // A quoted SELECT value can otherwise spoof WHERE ... = DATABASE() while
+  // leaving the actual SELECT unrestricted across schemas.
+  const withoutHistoryLiteral = query.replaceAll("'__EFMigrationsHistory'", '');
+  if (/['"`]/.test(withoutHistoryLiteral)) {
+    throw new Error('Unapproved SQL literal or quoted identifier in metadata query');
+  }
   if (!/^SELECT\s/i.test(query)) {
     throw new Error('Only SELECT statements are authorized');
   }
@@ -135,11 +142,18 @@ if (process.argv.includes('--self-test')) {
     'SELECT VERSION() INTO @probe',
     'SELECT (SELECT id FROM empresas)',
     'SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES -- WHERE TABLE_SCHEMA = DATABASE()',
+    "SELECT 'WHERE TABLE_SCHEMA = DATABASE() ORDER BY' FROM INFORMATION_SCHEMA.TABLES",
+    'SELECT "WHERE TRIGGER_SCHEMA = DATABASE() ORDER BY" FROM INFORMATION_SCHEMA.TRIGGERS',
   ];
   for (const bad of negativeStatements) {
     assert.throws(() => validateStatement(bad), Error, `Expected rejected query: ${bad}`);
   }
   const negativeDocuments = [
+    // The apparent schema predicate is inside a selected string, not in SQL WHERE.
+    sql.replace('SELECT TABLE_NAME, TABLE_TYPE, ENGINE\\nFROM INFORMATION_SCHEMA.TABLES\\nWHERE TABLE_SCHEMA = DATABASE()\\nORDER BY TABLE_NAME;',
+      "SELECT 'WHERE TABLE_SCHEMA = DATABASE() ORDER BY' AS fake_guard, TABLE_NAME, TABLE_TYPE, ENGINE\\nFROM INFORMATION_SCHEMA.TABLES\\nORDER BY TABLE_NAME;"),
+    sql.replace('SELECT TRIGGER_NAME, EVENT_OBJECT_TABLE, ACTION_TIMING, EVENT_MANIPULATION\\nFROM INFORMATION_SCHEMA.TRIGGERS\\nWHERE TRIGGER_SCHEMA = DATABASE()\\nORDER BY EVENT_OBJECT_TABLE, TRIGGER_NAME;',
+      "SELECT 'WHERE TRIGGER_SCHEMA = DATABASE() ORDER BY' AS fake_guard, TRIGGER_NAME, EVENT_OBJECT_TABLE, ACTION_TIMING, EVENT_MANIPULATION\\nFROM INFORMATION_SCHEMA.TRIGGERS\\nORDER BY EVENT_OBJECT_TABLE, TRIGGER_NAME;"),
     sql.replace('SELECT VERSION()', 'DELETE VERSION()'),
     sql.replace('FROM __EFMigrationsHistory', 'FROM usuarios'),
     sql.replace('FROM INFORMATION_SCHEMA.TABLES\nWHERE', 'FROM INFORMATION_SCHEMA.TABLES, clientes\nWHERE'),

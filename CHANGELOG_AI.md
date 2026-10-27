@@ -1,3 +1,8 @@
+## 2026-10-27 — P0-004.A: evitar WHERE simulado dentro de cadenas SELECT (SECONDARY_REVIEW_03)
+
+- Se demostro que la comprobacion textual de `TABLE_SCHEMA = DATABASE()` o `TRIGGER_SCHEMA = DATABASE()` podia coincidir dentro de una cadena SELECT, aun sin filtro SQL ejecutable, y ampliar el inventario a otros esquemas. El guard rechaza literales/identificadores entrecomillados salvo el nombre fijo `'__EFMigrationsHistory'` de Q08. Cuatro regresiones negativas nuevas, total **39**; nueve SELECT manuales intactos.
+- Sin conexion a MySQL DEV ni migraciones, backups, cambios runtime, secretos o infraestructura. CI nuevo, readback, evidencia fisica y revision independiente pendientes. PR #3766 permanece DRAFT; P0-004.A EN_PROGRESO / NO_GO_VALIDANDO / NO_GO_LISTO.
+
 ## 2026-10-26 — P0-004.A: impedir bypass del filtro por comentarios SQL inline (SECONDARY_REVIEW_03)
 
 - El SQL de metadatos se conserva intacto; la validacion fail-closed rechaza `--` dentro de una consulta, porque el `WHERE ... = DATABASE()` podria estar comentado y aun ser aceptado como texto. Se agregan tres negativos causales (Q02, Q07 y sentencia), de 32 a **35**.
