@@ -26,7 +26,7 @@ function validateStatement(query) {
   // Inline MySQL -- comments can conceal the required schema predicate while
   // leaving its text visible to a regex. Only full-line header comments are supported.
   if (/--/.test(query)) throw new Error('Inline SQL comments are not supported');
-  // The fixed metadata inventory allows only Q08's literal table name.
+  // The fixed metadata contract allows only Q08's literal table name.
   // A quoted SELECT value can otherwise spoof WHERE ... = DATABASE() while
   // leaving the actual SELECT unrestricted across schemas.
   const withoutHistoryLiteral = query.replaceAll("'__EFMigrationsHistory'", '');
