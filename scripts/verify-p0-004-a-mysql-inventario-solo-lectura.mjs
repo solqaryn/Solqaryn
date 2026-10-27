@@ -77,7 +77,7 @@ function verify(sql) {
   ];
   for (const [index, query] of queries.entries()) {
     validateStatement(query);
-    const actual = [...query.matchAll(/\\b(?:FROM|JOIN)\\s+([`A-Za-z0-9_.]+)/gi)]
+    const actual = [...query.matchAll(/\b(?:FROM|JOIN)\s+([`A-Za-z0-9_.]+)/gi)]
       .map((match) => match[1].replaceAll('`', '').toUpperCase());
     assert.deepEqual(actual, expectedSources[index], `Unexpected source(s) in Q${index + 1}`);
     if (index >= 1 && index <= 7) {
@@ -85,11 +85,11 @@ function verify(sql) {
       const guard = new RegExp(
         `\\bWHERE\\s+${schemaColumn}\\s*=\\s*DATABASE\\(\\)(?=\\s*(?:AND\\b|ORDER\\s+BY\\b|$))`, 'i'
       );
-      if (!guard.test(query) || /\\b(?:OR|XOR|UNION|EXCEPT|INTERSECT)\\b|\\|/.test(query)) {
+      if (!guard.test(query) || /\b(?:OR|XOR|UNION|EXCEPT|INTERSECT)\b|\|/.test(query)) {
         throw new Error('Cross-schema metadata reads are not authorized');
       }
     }
-    if (index === 7 && !/\\bAND\\s+TABLE_NAME\\s*=\\s*'__EFMigrationsHistory'/i.test(query)) {
+    if (index === 7 && !/\bAND\s+TABLE_NAME\s*=\s*'__EFMigrationsHistory'/i.test(query)) {
       throw new Error('Q08 must verify the EF migrations history table');
     }
   }
