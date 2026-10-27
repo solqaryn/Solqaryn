@@ -133,13 +133,13 @@ def main():
     require(os.getenv("FRONTEND") == FRONTEND, "FRONTEND_NOT_CANONICAL_DEV")
     category_status, category_payload = get_json(FRONTEND + "/api/tienda/categorias", "CATEGORIES")
     categories = categories_from_response(category_status, category_payload)
-    print("DEV_CATEGORIES_SCHEMA_AND_NONEMPTY=PASS count=" + str(len(categories)))
+    print("DEV_CATEGORIES_SCHEMA_AND_NONEMPTY=PASS")
     product_status, product_payload = get_json(
         FRONTEND + "/api/tienda/productos?pagina=1&tamano=100", "PRODUCTS")
     products = products_from_response(product_status, product_payload)
-    print("DEV_PRODUCTS_SCHEMA_AND_NONEMPTY=PASS count=" + str(len(products)))
+    print("DEV_PRODUCTS_SCHEMA_AND_NONEMPTY=PASS")
     images = images_from_products(products)
-    print("DEV_CLOUDINARY_NAMESPACE=PASS count=" + str(len(images)))
+    print("DEV_CLOUDINARY_NAMESPACE=PASS")
     verify_images(images)
     print("API_CATALOG_PRODUCTS_IMAGES=PASS")
 
