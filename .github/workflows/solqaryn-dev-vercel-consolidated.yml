@@ -5,6 +5,8 @@ on:
     branches: [dev]
     paths:
       - 'frontend/vercel.json'
+      - 'frontend/scripts/vercel-ignore-build.mjs'
+      - 'frontend/scripts/vercel-ignore-build.test.mjs'
       - 'scripts/dev-vercel-release.mjs'
       - '.github/workflows/solqaryn-dev-vercel-consolidated.yml'
   workflow_dispatch:
@@ -33,6 +35,8 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
+      - name: Probar build DEV explicito y bloqueos cross-env (sin secretos)
+        run: node --test frontend/scripts/vercel-ignore-build.test.mjs
       - name: Validar equivalencia frontend y 20 casos negativos (sin secretos)
         run: node scripts/vercel-dev-runtime-equivalence.mjs --self-test
       - run: node scripts/dev-vercel-release.mjs --self-test
@@ -47,6 +51,8 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 1
+      - name: Verify explicit DEV build and cross-env deny cases without secrets
+        run: node --test frontend/scripts/vercel-ignore-build.test.mjs
       - name: Verify strict source equivalence and 20 negative tests without secrets
         run: node scripts/vercel-dev-runtime-equivalence.mjs --self-test
       - name: Verify release policy and negative tests without secrets
