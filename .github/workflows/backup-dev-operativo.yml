@@ -350,13 +350,18 @@ jobs:
           PY
           )"
           test "$migrations_after" = "$migrations_before"
-          python3 - "$ready_json" "$RUNNER_TEMP/solqaryn-restored-api-readiness.json" "$migrations_after" "$SOURCE_DEV_SHA" <<'PY'
+          cleanup_api
+          MYSQL_PWD="$TARGET_DB_PASSWORD" mysql --protocol=TCP -h 127.0.0.1 -P 3306 -uroot --ssl-mode=DISABLED -e 'DROP DATABASE IF EXISTS solqaryn_restore_drill;'
+          remaining_tables="$(MYSQL_PWD="$TARGET_DB_PASSWORD" mysql --protocol=TCP -h 127.0.0.1 -P 3306 -uroot --ssl-mode=DISABLED --batch --skip-column-names -e "SELECT COUNT(*) FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME='solqaryn_restore_drill';")"
+          test "$remaining_tables" = '0'
+          python3 - "$ready_json" "$RUNNER_TEMP/solqaryn-restored-api-readiness.json" "$migrations_after" "$SOURCE_DEV_SHA" "$RESTORE_REPORT_PATH" <<'PY'
           import json, sys
           with open(sys.argv[1], encoding='utf-8') as f:
               ready=json.load(f)
+          api_ready=ready.get('status') == 'ready' and ready.get('database') == 'connected'
           report={
               'status':'PASS',
-              'healthReady':ready.get('status') == 'ready' and ready.get('database') == 'connected',
+              'healthReady':api_ready,
               'database':'solqaryn_restore_drill',
               'targetHost':'127.0.0.1',
               'sourceDevSha':sys.argv[4],
@@ -368,8 +373,18 @@ jobs:
           }
           with open(sys.argv[2], 'w', encoding='utf-8') as f:
               json.dump(report,f,indent=2); f.write('\n')
+          with open(sys.argv[5], encoding='utf-8') as f:
+              restore=json.load(f)
+          restore['apiReady']=api_ready
+          restore['disposableCleanupVerified']=True
+          restore['secretsExposed']=0
+          restore['migrationsUnchanged']=True
+          with open(sys.argv[5], 'w', encoding='utf-8') as f:
+              json.dump(restore,f,ensure_ascii=False,indent=2); f.write('\n')
           PY
-          echo 'RESTORE_API_STARTUP_MIGRATIONS=UNCHANGED'
+          grep -q '"apiReady": true' "$RESTORE_REPORT_PATH"
+          grep -q '"disposableCleanupVerified": true' "$RESTORE_REPORT_PATH"
+          echo 'RESTORE_API_STARTUP_MIGRATIONS=UNCHANGED DISPOSABLE_DATABASE=CLEANED'
 
       - name: Publicar evidencia SOLQARYN cifrada y same-artifact drill
         uses: actions/upload-artifact@v4
