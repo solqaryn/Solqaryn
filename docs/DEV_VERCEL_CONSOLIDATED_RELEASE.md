@@ -39,6 +39,10 @@ La consulta detallada de cada candidato `READY` anterior es **optativa para calc
 
 Si la publicación nueva también recibe 404/403 desde el token de GitHub Actions, ese es un **problema de acceso del token `VERCEL_TOKEN`**, no un permiso para usar otra cuenta, copiar credenciales a logs o simular `READY`. Revisar sus permisos de proyecto y equipo en GitHub Actions/Vercel por el propietario; no repetir el mismo error de forma agresiva. El conector Vercel de ChatGPT y el token de GitHub Actions pueden tener autorizaciones distintas.
 
+## 3.3 Cambios en scripts raíz y el Ignored Build Step
+
+El release explícito requiere un deployment READY del SHA exacto. Por eso frontend/scripts/vercel-ignore-build.mjs no debe clasificar todo el directorio raíz scripts/ como no runtime: ahí viven scripts/dev-vercel-release.mjs y tooling que controla la creación y certificación del deployment. Si el ignore command devuelve 0, Vercel cancela el deployment y el release falla correctamente al no observar READY. Los cambios en docs/, .github/, .agents/ y vaep/ pueden seguir omitiendo el build DEV; los cambios bajo scripts/ raíz deben permitirlo. QA y PROD conservan su política de build en sus ramas canónicas.
+
 ## 4. Recuperación
 
 Rollback de política mediante PR protegido que revierte exclusivamente `git.deploymentEnabled.dev=false` y workflow/script, luego actualización explícita de la configuración de previews del proyecto DEV si se desea reactivar ese comportamiento. No se usa `force-push`, no se despliega QA/PROD y no se cancela trabajo ajeno.
