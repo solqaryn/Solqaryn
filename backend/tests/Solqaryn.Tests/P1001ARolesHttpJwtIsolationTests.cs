@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
 using Solqaryn.API.Controllers;
@@ -54,8 +55,10 @@ public sealed class P1001ARolesHttpJwtIsolationTests
             });
 
         var dbName = "p1001a-jwt-http-" + Guid.NewGuid().ToString("N");
-        using var server = new TestServer(new WebHostBuilder()
-            .ConfigureServices(services =>
+        using var host = await new HostBuilder()
+            .ConfigureWebHost(webHost => webHost
+                .UseTestServer()
+                .ConfigureServices(services =>
             {
                 services.AddSingleton<IHttpContextAccessor>(accessor);
                 services.AddDbContext<AppDbContext>(options =>
@@ -89,13 +92,14 @@ public sealed class P1001ARolesHttpJwtIsolationTests
                 app.UseAuthentication();
                 app.UseAuthorization();
                 app.UseEndpoints(endpoints => endpoints.MapControllers());
-            }));
+            }))
+            .StartAsync();
 
         int empresaAId;
         int empresaBId;
         int rolAId;
         int rolBId;
-        using (var scope = server.Services.CreateScope())
+        using (var scope = host.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             accessor.HttpContext = new DefaultHttpContext();
@@ -134,7 +138,7 @@ public sealed class P1001ARolesHttpJwtIsolationTests
             accessor.HttpContext = null;
         }
 
-        using var client = server.CreateClient();
+        using var client = host.GetTestClient();
         var tokenA = CrearJwtPrueba(empresaAId);
         var tokenB = CrearJwtPrueba(empresaBId);
 
