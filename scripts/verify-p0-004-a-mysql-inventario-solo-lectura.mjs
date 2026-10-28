@@ -15,7 +15,7 @@ const requiredSources = [
   '__EFMigrationsHistory',
 ];
 
-// Each fixed read-only inventory query has a closed projection contract.
+// Each fixed read-only metadata query has a closed projection contract.
 const expectedProjections = [
   'VERSION() AS MYSQL_VERSION, DATABASE() AS EFFECTIVE_SCHEMA',
   'TABLE_NAME, TABLE_TYPE, ENGINE',
