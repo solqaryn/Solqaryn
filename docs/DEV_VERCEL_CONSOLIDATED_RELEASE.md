@@ -6,7 +6,7 @@
 
 - Los commits y merges siguen ejecutándose por PR protegido con tres checks: `verify-solqaryn-project-scope`, `SOLQARYN - Seguridad multiempresa` y `SOLQARYN - Build y pruebas backend`.
 - `frontend/vercel.json` establece `git.deploymentEnabled.dev=false`, que impide **autodeploy Git de `dev`**. Las otras ramas no figuran en esta regla. El proyecto Vercel DEV tiene además las previews automáticas desactivadas (configuración de proyecto); verificación de esa propiedad desde el proveedor requerida ante cualquier cambio futuro.
-- El script anterior `frontend/scripts/vercel-ignore-build.mjs` se conserva. Una omisión de build NO se interpreta como despliegue `READY`.
+- `frontend/scripts/vercel-ignore-build.mjs` mantiene la barrera de proyecto/rama (`dev` sólo en proyecto DEV; QA y PROD en sus ramas), pero **NO cancela una publicación de la rama canónica** por cambios únicamente documentales/CI. En Vercel `exit 0` cancela la construcción y `exit 1` la permite; la decisión de solicitar un release DEV corresponde exclusivamente al workflow consolidado, protegido con CI exact-SHA, token y cuota. `git.deploymentEnabled.dev=false` permanece intacto: no se reactiva autodeploy por commits.
 - Múltiples commits se integran en `dev`; el release escoge **únicamente el HEAD vivo** que pasó 3/3 checks. Nunca selecciona arbitrariamente un SHA histórico ni un commit de un PR.
 
 ## 2. Publicación consolidada
@@ -38,6 +38,13 @@ El HEAD protegido `038da7e9dca2addd1e185737117468cab3534286` tiene CI 3/3 PASS y
 La consulta detallada de cada candidato `READY` anterior es **optativa para calcular equivalencia de fuente**. Ante `404` en esa llamada de solo lectura, se omite exclusivamente el candidato, se imprime `DEV_HISTORICAL_READY_DETAIL_HTTP_404=UNAVAILABLE SOURCE_EQUIVALENCE=NOT_ATTESTED` y se comprueba el siguiente candidato. No se declara paridad por ese registro, ni se promociona un SHA histórico. Los errores `401/402/403/429/5xx` y todos los errores de GitHub, cuota, despliegue nuevo o SHA siguen siendo fatales/no autorizan certificación. Después de agotar candidatos, el motor conserva sus controles originales de 3/3 checks exactos, anti-duplicado, cuota compartida y destino **solo** proyecto Vercel DEV; únicamente un nuevo despliegue `READY` con SHA exacto puede certificar la publicación.
 
 Si la publicación nueva también recibe 404/403 desde el token de GitHub Actions, ese es un **problema de acceso del token `VERCEL_TOKEN`**, no un permiso para usar otra cuenta, copiar credenciales a logs o simular `READY`. Revisar sus permisos de proyecto y equipo en GitHub Actions/Vercel por el propietario; no repetir el mismo error de forma agresiva. El conector Vercel de ChatGPT y el token de GitHub Actions pueden tener autorizaciones distintas.
+
+## 3.3. Causa probada: Ignored Build Step cancela releases DEV (28-10-2026)
+
+- GitHub Actions `40707395328`, job `122883098883`, verificó `dev@d2ea67586b7639a35b18c0b769568086f4c17c41` y 3/3 CI; creó `dpl_FcNqTvrcA7rXpCnDoR7B87DfD5eq`, pero el proveedor devolvió `CANCELED`.
+- Los eventos de build de ese deployment prueban `NON_RUNTIME_GOVERNANCE_ONLY_SKIP files=3 branch=dev` y `The deployment was canceled because the Ignored Build Step command returned exit code 0.` No fallaron credenciales, compilación ni cuotas en ese intento: Vercel canceló por una regla local de optimización.
+- Corrección: el Ignored Build Step **siempre permite el build de una rama canónica de un proyecto conocido** (exit 1), aunque el diff sea de gobierno/documentación. Para proyecto/rama cruzados conserva `CROSS_ENV_PROJECT_SKIP` (exit 0). ID de proyecto desconocido continúa sin certificado y debe pasar por los controles de binding del runtime.
+- Pruebas offline negativas comprueban la matriz DEV/QA/PROD, ramas ausentes y proyectos desconocidos, tanto en PR como antes de una publicación programada. No cambian `git.deploymentEnabled.dev=false`, el guard de un release por hora, el umbral Hobby de 95/24h, checks GitHub 3/3, ni la exigencia de `READY` con SHA verificado. El estado no es CERTIFICADO hasta que una publicación posterior termine en READY y se lea el SHA y la paridad real. No forzar reintentos contra un rechazo del proveedor.
 
 ## 4. Recuperación
 
