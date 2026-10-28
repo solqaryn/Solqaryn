@@ -293,6 +293,7 @@ jobs:
           SOURCE_DEV_SHA: ${{ github.sha }}
           Jwt__Issuer: solqaryn-p0-005-a-ci
           Jwt__Audience: solqaryn-p0-005-a-ci
+          Cors__AllowedOrigins__0: http://127.0.0.1:5088
           Cloudinary__CloudName: ci-invalid
           Cloudinary__ApiKey: ci-invalid
           Cloudinary__ApiSecret: ci-invalid
