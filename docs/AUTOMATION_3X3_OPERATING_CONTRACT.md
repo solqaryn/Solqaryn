@@ -108,6 +108,27 @@ No se fabrican candidatos para mantener ocupadas las Tasks.
 - `BLOQUEADO`: solo impedimento causal, con recuperación al estado real.
 - `CANCELADO`: solo autorización explícita, sin liberar dependientes.
 
+### Aceptación excepcional y limitada — P0-001.B / PR #3778 (2026-10-28)
+
+El propietario aceptó expresamente, para resolver únicamente el incumplimiento
+de secuencia de `P0-001.B`, la revisión independiente que Alex
+(`morales35alex`) registró después del merge del PR #3778. GitHub registra el
+merge `fed99ac8f2faf146df9c1bdbd6866f420d784cf8` a las `2026-10-28T15:25:26Z`
+y la revisión `APPROVED` #5685527254, anclada al HEAD del PR
+`57ab5885674e04ae24f1ea339e713ca037140600`, a las `2026-10-28T15:47:37Z`.
+La revisión fue posterior al merge; **esta aceptación no la convierte en una
+aprobación previa ni declara que se cumplió retroactivamente la secuencia**.
+
+La aceptación se limita a la omisión de revisión previa de ese PR y de esa
+microtarea. No modifica `REVIEW_INDEPENDENCE_REQUIRED=TRUE`, no establece un
+precedente ni dispensa revisiones previas para otros PR. La aprobación
+independiente posterior de Alex y la decisión expresa del propietario quedan
+como controles compensatorios documentados para este único caso. La transición
+de `P0-001.B` a `LISTO` todavía requiere incorporar esta decisión mediante PR
+protegido, CI requerido exact-SHA, conservar evidencia de Render/Vercel para el
+SHA de código certificado y realizar readback de `PLAN_MAESTRO`, `COLA` y
+`BITACORA`. Esta sección por sí sola no cambia el estado de la hoja.
+
 Se mantiene `VALIDANDO` durante reparaciones del revisor. No regresar
 artificialmente a `EN_PROGRESO` por un defecto corregible.
 Si una ejecución termina por limite del proveedor, conservar estado veridico,
