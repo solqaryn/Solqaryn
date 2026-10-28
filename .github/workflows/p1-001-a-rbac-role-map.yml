@@ -1,0 +1,33 @@
+name: P1-001.A - Mapa de roles RBAC (read-only)
+
+on:
+  pull_request:
+    paths:
+      - 'docs/P1-001-A-MAPA-ROLES-DEV.md'
+      - 'scripts/verify-p1-001-a-rbac-role-map.mjs'
+      - '.github/workflows/p1-001-a-rbac-role-map.yml'
+      - 'backend/src/Domain/Entities/Rol.cs'
+      - 'backend/src/Domain/Entities/UsuarioEmpresa.cs'
+      - 'backend/src/Domain/Entities/UsuarioRolPlataforma.cs'
+      - 'backend/src/Infrastructure/Persistence/Configurations/**'
+      - 'backend/src/Infrastructure/Services/UsuarioScopeService.cs'
+      - 'backend/src/Infrastructure/Services/PlataformaScopeService.cs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-role-map:
+    name: P1-001.A - Contrato y escenarios negativos (sin DB)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verificar fuente exacta y casos sintéticos
+        run: node scripts/verify-p1-001-a-rbac-role-map.mjs --self-test
