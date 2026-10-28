@@ -25,6 +25,14 @@
 
 ## Impacto y reversión
 
-**Componente:** evidencia de operación backup/restore en DEV. **Capas:** documentación, validador Node aislado y workflow de comprobación estática, sin cambio API/DTO, Angular, .NET, Domain/Application/Infrastructure o esquema MySQL. **Datos:** ninguno; no hay dump ni secretos. **Seguridad:** salvaguardas fail-closed para PROD, servidores remotos, origen de artefacto, hashes y fuga de secretos. **Observabilidad:** workflow y bitácora con IDs/SHA verificables, sin inferir éxito de un `skipped`. **Rollback:** revert mediante PR protegido de estos archivos sin destruir historial; preservar auditorías. **Arquitectura canónica:** sin alteraciones. **QA/main/PROD, pagos, Render/Vercel y VAEP/Jules:** fuera del alcance.
+**Componente:** evidencia de operación backup/restore en DEV. **Capas:** documentación, validador Node aislado y workflow de comprobación estática, sin cambio API/DTO, Angular, .NET, Domain/Application/Infrastructure o esquema MySQL. **Datos del changeset:** ninguno; el backup cifrado permanece únicamente en el artefacto temporal de Actions, fuera del repositorio. **Seguridad:** salvaguardas fail-closed para PROD, servidores remotos, origen de artefacto, hashes y fuga de secretos. **Observabilidad:** workflow y bitácora con IDs/SHA verificables, sin inferir éxito de un `skipped`. **Rollback:** revert mediante PR protegido de estos archivos sin destruir historial; preservar auditorías. **Arquitectura canónica:** sin alteraciones. **QA/main/PROD, pagos, Render/Vercel y VAEP/Jules:** fuera del alcance.
 
-**Dictamen:** **trabajo de validador iniciado; RESTORE_REAL_DEV_ACTUAL=NO_VERIFICADO, por tanto NO_GO_LISTO**.
+**Dictamen al corte inicial:** el restore real seguía `NO_VERIFICADO`; la evidencia posterior registrada abajo cambia ese punto a PASS, pero el cierre general sigue bloqueado por readiness, revisión, merge y readback pendientes.
+
+## Observación real posterior — backup/restore Aiven DEV (2026-10-28)
+
+El workflow manual [#40733383019](https://github.com/solqaryn/Solqaryn/actions/runs/40733383019), ejecutado contra el HEAD vivo `dev@8f7fe8cda3cdd11773fc79b614c46514c74492b4`, terminó `success`. El certificado autenticado confirma MySQL `8.4.11`, proveedor Aiven y TLS obligatorio, sin imprimir credenciales. Se creó el backup cifrado AES256 `solqaryn-dev-20261028T171251Z`; el job generó su archivo SHA-256 y la verificación `sha256sum -c` devolvió `OK` antes de restaurar.
+
+En el mismo job se restauró ese mismo archivo cifrado sobre `127.0.0.1` en la base descartable `solqaryn_restore_drill`. La ejecución terminó `success`: el script verificó los checksums internos/externos, conteo exacto de filas de todas las tablas, cantidad de tablas y migraciones, y publicó el artefacto `solqaryn-backup-dev-40733383019` (Artifact ID `12835153901`, 5,485,920 bytes; retención de 14 días). `productionTouched=false` fue condición de éxito. No se descargó el dump cifrado.
+
+**Brechas que permanecen:** esta corrida no levanta la API contra la base restaurada ni acredita readiness de aplicación; tampoco reemplaza la revisión independiente, CI final posterior a esta actualización documental, merge protegido ni readback institucional requeridos para LISTO. P0-005.A sigue `EN_PROGRESO` hasta completar esas puertas.
