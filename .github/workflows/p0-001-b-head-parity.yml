@@ -1,10 +1,12 @@
-name: P0-001.B - Certificacion negativa de HEAD DEV (read-only)
+name: P0-001.B - Paridad exact-SHA DEV, corte historico y actual (read-only)
 
 on:
   pull_request:
     branches: [dev]
     paths:
       - 'docs/P0-001-B-CERTIFICACION-NEGATIVA-HEAD-DEV.md'
+      - 'docs/P0-001-B-CERTIFICACION-PARIDAD-DEV-20261026.md'
+      - 'docs/baselines/P0-001-B-DEV-20261026-PARITY-VERIFIED.json'
       - 'docs/baselines/P0-001-B-DEV-20261025-REFRESCO-PRIMARY03.json'
       - 'scripts/verify-p0-001-b-parity.mjs'
       - '.github/workflows/p0-001-b-head-parity.yml'
@@ -15,7 +17,7 @@ permissions:
 
 jobs:
   negative-parity:
-    name: P0-001.B - Snapshot exact-SHA y negativos
+    name: P0-001.B - Paridad historica y positiva con negativos
     runs-on: ubuntu-latest
     timeout-minutes: 6
     steps:
@@ -27,5 +29,7 @@ jobs:
           node-version: '24'
       - name: Validar snapshot actual sin proveedores ni secretos
         run: node scripts/verify-p0-001-b-parity.mjs --snapshot P0-001-B-DEV-20261025-REFRESCO-PRIMARY03.json --self-test
+      - name: Validar snapshot positivo DEV actual y 14 mutaciones fail-closed
+        run: node scripts/verify-p0-001-b-parity.mjs --snapshot P0-001-B-DEV-20261026-PARITY-VERIFIED.json --self-test
       - name: Preservar regresion sobre snapshot historico
         run: node scripts/verify-p0-001-b-parity.mjs --self-test
