@@ -1,3 +1,9 @@
+## 2026-10-27 — P0-004.A: lista cerrada de proyecciones SQL por consulta (SECONDARY_REVIEW_03)
+
+- GitHub `morales35alex`, Task `6adcc98a80a48191b71a5156624c21df`: en la misma rama y PR #3766 se incorporo una lista cerrada para las columnas proyectadas de Q01–Q09; rechaza proyecciones extra y `SELECT *` sin alterar el SQL manual ni el alcance de lectura. Se agregaron **11 regresiones negativas** y el total de pruebas pasa de 39 a **50**.
+- Commit de codigo `55e8f4678fc88a28d28371bd2c1c07470a45c324` verificado en GitHub Actions `40623904238` con checkout literal y **9 SELECT / 50 negativas PASS**; documento tecnico actualizado en la misma rama. `dev` mantenia `038da7e9dca2addd1e185737117468cab3534286` durante la comprobacion inicial y su CI obligatorio era 3/3 SUCCESS.
+- **NO_GO_VALIDANDO / NO_GO_LISTO**: falta evidencia MySQL DEV y respaldo del proveedor, reconciliacion sin force-push del conflicto de rama, CI del HEAD final e inspeccion independiente. PR abierto DRAFT, sin aprobacion/merge; no hubo cambios a base de datos, secretos, entornos, ni infraestructura.
+
 ## 2026-10-27 — P0-004.A: evitar WHERE simulado dentro de cadenas SELECT (SECONDARY_REVIEW_03)
 
 - Se demostro que la comprobacion textual de `TABLE_SCHEMA = DATABASE()` o `TRIGGER_SCHEMA = DATABASE()` podia coincidir dentro de una cadena SELECT, aun sin filtro SQL ejecutable, y ampliar el inventario a otros esquemas. El guard rechaza literales/identificadores entrecomillados salvo el nombre fijo `'__EFMigrationsHistory'` de Q08. Cuatro regresiones negativas nuevas, total **39**; nueve SELECT manuales intactos.
