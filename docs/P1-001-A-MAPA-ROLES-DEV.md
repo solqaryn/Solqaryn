@@ -104,3 +104,9 @@ No interpretar cero filas anómalas como prueba de autorización HTTP o de esque
 **Verificable ahora:** inventario trazado a fuente GitHub del SHA exacto y comprobador Node read-only con pruebas negativas sintéticas; CI GitHub Actions del PR cuando se ejecute.  
 **Pendiente para certificación funcional:** readback MySQL DEV/constraints, prueba HTTP autenticada tenant A/B, autorización/denegación efectiva para roles custom y plataforma, revisión independiente y CI del SHA del PR. Se admite acta de reutilización únicamente si esas pruebas demuestran que el comportamiento actual cumple.  
 **Rollback:** revert protegido únicamente de documento/script/workflow; ningún DDL, cuenta, rol, grant, configuración productiva o permiso real se altera por este PR.
+
+## RECOVER — ensayo HTTP/JWT efimero de roles A/B (2026-10-28)
+
+Se incorpora `backend/tests/Solqaryn.Tests/P1001ARolesHttpJwtIsolationTests.cs` con TestServer real: JWT firmado unicamente para la prueba, `RolesController` y `RolService/RolRepository` reales, filtro `RequierePermisoAttribute` real, filtro EF InMemory por marca de tenant verificada y stub de `IPermisoService` que relaciona la cabecera con el claim de prueba. Casos: A consulta ID privado B = 404 tras entrar al controlador, lecturas A/B propias = 200, listado A sin rol B y ausencia de JWT = 401. Se agrega `Microsoft.AspNetCore.TestHost` 10.0.12 solo al proyecto de pruebas.
+
+**Evidencia todavía pendiente:** compilacion y resultado CI del SHA nuevo, permiso real de membresias de MySQL DEV, estructura e indices fisicos `INFORMATION_SCHEMA`, HTTP/JWT autenticado contra DEV real y revision independiente. Este ensayo NO certifica el permission service real ni MySQL DEV, NO modifica codigo runtime y NO autoriza VALIDANDO/LISTO. No se emplean credenciales ni entornos externos.
