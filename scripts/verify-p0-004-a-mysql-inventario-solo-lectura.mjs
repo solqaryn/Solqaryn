@@ -15,6 +15,19 @@ const requiredSources = [
   '__EFMigrationsHistory',
 ];
 
+// Each fixed read-only inventory query has a closed projection contract.
+const expectedProjections = [
+  'VERSION() AS MYSQL_VERSION, DATABASE() AS EFFECTIVE_SCHEMA',
+  'TABLE_NAME, TABLE_TYPE, ENGINE',
+  'TABLE_NAME, ORDINAL_POSITION, COLUMN_NAME, COLUMN_TYPE, IS_NULLABLE, EXTRA',
+  'TABLE_NAME, INDEX_NAME, NON_UNIQUE, SEQ_IN_INDEX, COLUMN_NAME, INDEX_TYPE',
+  'TABLE_NAME, CONSTRAINT_NAME, CONSTRAINT_TYPE',
+  'TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION, COLUMN_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME',
+  'TRIGGER_NAME, EVENT_OBJECT_TABLE, ACTION_TIMING, EVENT_MANIPULATION',
+  'TABLE_NAME',
+  'MIGRATIONID, PRODUCTVERSION',
+];
+
 function statements(sql) {
   // This contract deliberately does not support quoted semicolons, comments
   // inside statements, client directives, or dynamic SQL.
@@ -87,6 +100,11 @@ function verify(sql) {
   ];
   for (const [index, query] of queries.entries()) {
     validateStatement(query);
+    const actualProjection = query.match(/^SELECT\s+([\s\S]*?)(?=\s+FROM\s|$)/i)?.[1]
+      ?.replace(/\s+/g, ' ').trim().toUpperCase();
+    if (actualProjection !== expectedProjections[index]) {
+      throw new Error(`Unexpected selected column(s) in Q${index + 1}`);
+    }
     const actual = [...query.matchAll(/\b(?:FROM|JOIN)\s+([`A-Za-z0-9_.]+)/gi)]
       .map((match) => match[1].replaceAll('`', '').toUpperCase());
     assert.deepEqual(actual, expectedSources[index], `Unexpected source(s) in Q${index + 1}`);
@@ -175,7 +193,23 @@ if (process.argv.includes('--self-test')) {
     sql.replace('FROM INFORMATION_SCHEMA.COLUMNS', 'FROM INFORMATION_SCHEMA.TABLES'),
   ];
   for (const altered of negativeDocuments) assert.throws(() => verify(altered), Error);
-  console.log(`P0-004.A static-only PASS: 9 SELECT queries; ${negativeStatements.length + negativeDocuments.length} negative regressions`);
+  // Extra projected columns must be rejected even when all metadata sources
+  // and schema predicates remain unchanged. Cover each fixed query Q01-Q09.
+  const fixedQueries = statements(sql);
+  const projectionNegatives = fixedQueries.map((query, index) =>
+    fixedQueries.map((original, position) =>
+      position === index
+        ? query.replace(/^SELECT\s+/i, 'SELECT 1 AS unauthorized_projection, ')
+        : original
+    ).join(';\n') + ';'
+  );
+  projectionNegatives.push(
+    sql.replace('SELECT TABLE_NAME, TABLE_TYPE, ENGINE', 'SELECT *'),
+    sql.replace('SELECT TABLE_NAME, TABLE_TYPE, ENGINE',
+      'SELECT TABLE_NAME, TABLE_TYPE, ENGINE, TABLE_ROWS')
+  );
+  for (const altered of projectionNegatives) assert.throws(() => verify(altered), Error);
+  console.log(`P0-004.A static-only PASS: 9 SELECT queries; ${negativeStatements.length + negativeDocuments.length + projectionNegatives.length} negative regressions`);
 } else {
   console.log('P0-004.A static-only PASS: nine SELECT queries; no live MySQL access attempted');
 }
