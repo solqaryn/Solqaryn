@@ -1,3 +1,7 @@
+## 2026-10-28 — P0-008.A: readback nativo Render DEV exact-SHA, sin certificar MySQL (RENDER_DEV_LIVE_SHA_READBACK_20261028T0000)
+
+- Lectura autenticada metadata-only de servicio `solqaryn-api-dev` y deploy Render `dep-dbgi0215efls73dkhf40`: `live` sobre `dev@038da7e9dca2addd1e185737117468cab3534286`; repo/branch/Docker y healthCheckPath configurado verificados. Registro de variables Render, binding físico MySQL y backup/restore **NO_VERIFICADOS**. Se mantiene `EN_PROGRESO / PARTIAL_NO_GO`; ninguna credencial ni valor leído o modificado. Acta en `docs/P0-008-A-REGISTRO-SECRETOS-METADATOS-DEV.md`.
+
 ## 2026-10-25 — P0-008.A: registro de metadatos de secretos DEV, NO_GO parcial (PRIMARY_DEV_01)
 
 - Task `6adbb9fff1548191a1bd5b30d9e9984a`, GitHub `jmejia31`; rama exclusiva `work/solqaryn-p0-008-a`; base `dev@785911f1095f13c0b6c0e859c35e0a7b733fcb3c`. Dependencia P0-012.B LISTO, PLAN_MAESTRO fila 16.
