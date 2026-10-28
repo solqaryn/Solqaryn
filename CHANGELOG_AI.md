@@ -4496,3 +4496,35 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Task `6adbb9fff1548191a1bd5b30d9e9984a` / GitHub `jmejia31`: en rama exclusiva `work/solqaryn-p0-010-a` agrega un nuevo corte fechado desde `dev@acf5bca44a94d1bce9a39a6b30be1380e4e5f464`: 24 P0 (14 LISTO, 1 VALIDANDO, 3 EN_PROGRESO, 6 PENDIENTE) y 32 P1 PENDIENTE. El corte anterior permanece como historia.
 - El Issue #3730 es coordinación, no prueba de bug. Incidencias no registradas permanecen NOT_VERIFIED. No se infieren cero defectos ni paridad Render/Vercel por snapshots READY antiguos; P0-001.B conserva NO_GO de proveedor. Documentado en `docs/P0-010-A-VALORACION-DEUDA-P0-P1-DEV.md` y `docs/baselines/P0-010-A-DEV-20261026.json`.
 - Validador `scripts/verify-p0-010-a-debt-baseline.mjs --self-test` 1 positivo + 12 negativas sintéticas; workflow PR de lectura `.github/workflows/p0-010-a-debt-baseline.yml`. Prueba local PASS; faltan CI nativa exact SHA, revisión formal ajena, merge protegido y readback de PLAN/COLA/BITACORA para LISTO. Sin cambios runtime, datos, QA/main/PROD, secretos ni despliegues.
+
+### 2026-10-25 (DEV) — P1-001.A: mapa de roles y membresías (avance parcial)
+
+- Fuente: Plan Comercial Inicial Unificado, microtarea P1-001.A. Rama `work/solqaryn-p1-001-a`; base `dev@785911f1095f13c0b6c0e859c35e0a7b733fcb3c`.
+- Se añadió `docs/P1-001-A-MAPA-ROLES-DEV.md`: ámbitos Empresa/Plataforma, roles de sistema, personalizados, huérfanos, `UsuarioEmpresas`, `UsuarioRolesPlataforma`, constraints EF y riesgos de filtrado; evidencia de código, no inventario de filas reales.
+- Comprobador read-only `scripts/verify-p1-001-a-rbac-role-map.mjs` y workflow acotado `.github/workflows/p1-001-a-rbac-role-map.yml`: 15 fuentes e hipótesis sintéticas 5 positivas + 14 negativas, sin credenciales ni conexiones MySQL.
+- Limitación explícita: no se certifica base MySQL DEV, filtros HTTP A/B, seguridad runtime ni despliegues; la microtarea no puede declararse LISTO sin evidencias adicionales, revisión y merge.
+- Rollback: revert protegido de documentación/script/workflow; sin cambios a entidades, endpoints, migraciones, grants ni entornos.
+
+### 2026-10-25 (DEV) — P1-001.A: readback estático de aislamiento RBAC
+
+- Recuperación en la misma rama y PR #3764; se cotejaron `RequierePermisoAttribute`, `TenantPermissionContext`, `AppDbContext`, `CommercialTenantReadFilterModel` y `RolRepository` en el SHA base.
+- El mapa aclara que `GET /roles` y `GET /roles/{id}` dependen del filtro EF aplicado con empresa RBAC, pero los contextos sin marca tienen alcance distinto. Se documenta la ausencia de comparación explícita owner/tenant en la capa de aplicación para actualizaciones y la necesidad de negativas HTTP A/B.
+- El verificador read-only incorpora cuatro contratos adicionales (19 fuentes totales). NO verifica MySQL DEV, denegación HTTP real, ACLs de datos ni autoriza cambios funcionales de RBAC.
+- Rollback: revert protegido de este changeset documental/verificador. Sin migraciones, endpoints, secretos ni despliegues.
+
+### 2026-10-26 (DEV) — P1-001.A: prueba negativa EF/servicio de roles A/B
+
+- Se añadió `backend/tests/Solqaryn.Tests/P1001ATenantRoleIsolationTests.cs`, con datos sintéticos EF Core InMemory, filtro `VerifiedCommercialTenant` y repositorio/servicio reales. Prueba visibilidad de A, ocultamiento de B, rechazos de seis operaciones por ID ajeno y control positivo para B. No consulta MySQL DEV ni ejecuta HTTP/JWT; no se alteran roles reales, grants ni endpoints.
+- La prueba se ejecuta mediante el CI permanente del backend y la regresión multiempresa cuando GitHub Actions complete el SHA final. Hasta disponer de esos resultados, la ejecución es **PENDIENTE**, sin atribuir PASS anticipado.
+- P1-001.A permanece `EN_PROGRESO` y PR #3764 permanece DRAFT; faltan MySQL DEV físico, índices reales, negativas HTTP autenticadas A/B, revisión independiente, CI final y merge protegido. Rollback: revert protegido del test y su documentación, sin cambios a runtime o base de datos.
+
+
+### 2026-10-26 (DEV) — P1-001.A: corrección de unicidad de roles en el modelo EF final
+
+- Auditoría de fuentes `RolConfiguration.cs`, `AppDbContext.cs`, `CommercialTenantNaturalKeysModel.cs`, `CommercialTenantNaturalKeysPhysicalContract.cs` y `CommercialTenantNaturalKeysTests.cs`: la unicidad simple global declarada inicialmente **se reemplaza** en `OnModelCreating` por índice no único simple, índice `(EmpresaId, NombreNormalizado)` único y unicidad de columna calculada para roles sin empresa. La versión previa del mapa confundía la configuración parcial con el modelo EF final; esta entrega corrige el documento antes de certificación.
+- El verificador read-only añade contratos para la sobreescritura y los índices físicos esperados. Se documenta SQL agregado de `INFORMATION_SCHEMA` para ejecución futura exclusivamente con autorización de lectura en MySQL DEV. No se consultaron datos ni conexiones MySQL reales; sin cambios runtime/DDL/endpoints, QA/main/PROD, secretos ni autorizaciones.
+- PR #3764 continúa DRAFT y P1-001.A EN_PROGRESO hasta readback MySQL DEV, negativas HTTP autenticadas A/B, CI exacto del nuevo SHA y revisión independiente. Rollback: revert del changeset documental/verificador, sin alterar operaciones ni migraciones.
+
+- 2026-10-28 P1-001.A / SECONDARY_REVIEW_01 / Task `6adbbc9ad9e88191bea8eb69104afb25`: se agrega ensayo de regresion HTTP/JWT efimero `P1001ARolesHttpJwtIsolationTests` con TestServer, controlador/servicio/repositorio/EF tenant reales, y concesion de permisos simulada contra claim JWT de prueba; dependencia de test `Microsoft.AspNetCore.TestHost` 10.0.12. CI del commit candidato PENDIENTE al registrar este changeset. MySQL DEV fisico, INFORMATION_SCHEMA, permiso productivo y revision independiente NO_VERIFICADOS. PR #3764 se mantiene DRAFT / EN_PROGRESO; sin despliegue, secretos, QA, main ni PROD. MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+- 2026-10-28 P1-001.A / Task `6adbbc9ad9e88191bea8eb69104afb25`: primer CI de HTTP/JWT TestServer PR #3764 SHA 5a48f574 PASS: 2906 backend, 947 seguridad, frontend, Scope Lock y RBAC; checkout es merge sintetico `cf89a28`, no HEAD literal. Se detectaron y corrigieron en mismo PR warnings ASPDEPR004/ASPDEPR008 usando HostBuilder/UseTestServer; nuevo CI PENDIENTE. Mantener NO_GO MySQL DEV fisico/HTTP DEV/REVIEW. MAPA_ARQUITECTURA: SIN_CAMBIO.
