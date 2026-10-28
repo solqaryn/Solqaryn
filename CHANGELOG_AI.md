@@ -1,3 +1,90 @@
+## 2026-10-27 — DEV: remediar GHSA-mrhx-c7xc-m3w5 en Zod sin relajar npm audit
+- Evidencia GitHub Actions `dev@9e3ea182944d038d3548bcb04ae12bb8883e912a`, run `40585737092`: `npm audit --omit=dev --audit-level=high` falló por `zod@4.6.5`, vulnerabilidad alta de uso excesivo de memoria; GitHub Advisory `GHSA-mrhx-c7xc-m3w5` indica versión remediada `4.6.6`. El lockfile tenía Zod transitivo de Angular CLI (`4.6.5` exacta) y otros consumidores.
+- Intervención mínima: `frontend/package.json` añade `overrides.zod=4.6.6`; `frontend/package-lock.json` cambia solo la entrada `node_modules/zod` a `4.6.6` con el `sha512` oficial del tarball y misma licencia/funding. Conserva Angular 22.2.1, npm 11.19.0, provider, las demás dependencias, `npm audit` y checks de GitHub.
+- El cambio debe acreditar `npm ci`, `npm audit --omit=dev --audit-level=high`, build/frontend, seguridad multiempresa, 3 checks obligatorios, revisión independiente, PR/merge protegido y readback del nuevo SHA. No habilita despliegue manual ni cambia Render (`After CI Checks Pass`), Vercel, Aiven, QA, main o PROD.
+- La investigación confirmó circularidad: Render `checksPass` espera TODOS los checks del SHA, y el job push de certificación HTTP exige Render ya desplegado. Se separan PREDEPLOY (push/PR: contrato offline identidad A/B + catálogo) y POSTDEPLOY (solo `workflow_dispatch` tras Render LIVE exact SHA). El checkpoint activa únicamente la fase PREDEPLOY; nunca proclama certificación integral automática desde push. Se conserva la certificación runtime íntegra y fail-closed y su espera de bootstrap se amplía de 36 a 72 intentos sin cambiar el timeout del job (25 min). No se habilitan excepciones CI, autoDeploy On Commit ni keepalive.
+- No se marca certificación funcional integral ni paridad del proveedor LISTO hasta ejecución completa y evidencia independiente posterior.
+
+## 2026-10-27 — Cert DEV: caché privada tenant sin ETag/304 público
+- Ejecución nativa del workflow sobre dev@6f05bf58cfc5de534f12fdb64622a062c0a4a72a (run 40581099708): identidad firmada A/B, 22 pruebas y catálogo vacío PASS; fallo distinto en cabecera de GET /tienda/bootstrap: `private, no-store, max-age=0` con HTTP 200 frente al aserto antiguo de `public` + ETag/304.
+- El middleware `UnscopedCommercialTenantGuardMiddleware` ya imponía private no-store para firmas válidas y compatibilidad legacy con owner fijado, pero `PublicHttpCacheAttribute` calculaba 304 antes del callback OnStarting. Se introduce una marca server-side `VerifiedPublicStoreTenant.RequirePrivateNoStore` que anticipa la política sin confiar en headers de cliente. El filtro bloquea ETag y 304 para esos contextos; los casos monoempresa siguen conservando ETag público y su prueba positiva.
+- El workflow exige HTTP 200, envoltura JSON válida, `private no-store`, ausencia de ETag y `If-None-Match: *` no convertido a 304 tanto para bootstrap como productos; espera un despliegue Render DEV consistente con checksPass sin tocar la configuración del servicio. Se agregan 2 regresiones unitarias (wildcard y ETag idéntico) y checkpoint para recertificación post-merge.
+- Candidato sujeto a PR, aprobación independiente, 3/3 CI exact SHA, merge protegido y readback de certificación. Sin manipular datos Aiven, credenciales, identidad, permisos, QA/main/PROD, Render, Vercel ni aislamiento.
+
+## 2026-10-27 — CI catálogo DEV: vacío legítimo sin sembrar datos comerciales
+- Cambio acotado a la certificación DEV y sus fixtures offline: `verify_dev_catalog_gate.py` acepta `200` con categorías/productos vacíos de esquema válido. Nunca interpreta un `503 TENANT_DATA_ISOLATION_REQUIRED` como éxito ni relaja Cloudinary en catálogos poblados. Rechaza categorías/productos con elementos malformados. Distingue `PASS_EMPTY_CONTRACT` de `PASS_WITH_LIVE_IMAGES`.
+- Workflow `dev-final-functional-certification.yml` ejecuta en el job de certificación los casos offline positivos y hostiles y preserva el gate live obligatorio; las pruebas identity A/B existentes siguen exigidas. No se insertan fixtures en Aiven DEV ni se modifica Render, Vercel, QA, PROD, RBAC o protección multitenant.
+- El checkpoint `.github/checkpoints/dev-final-functional-certification` activa automáticamente la prueba funcional completa tras merge protegido en dev, sin forzar un despliegue ni falsear PASS.
+- Estado: cambio candidato. No certificar como LISTO antes de PR, CI exact SHA, revisión independiente, merge protegido, readback de workflow y conciliación de proveedores.
+
+## 2026-10-27 — P0-001.B: diagnóstico causal del catálogo DEV, sin debilitar el aislamiento
+- Diagnóstico posterior exclusivamente de lectura: si falla el gate de catálogo, el mismo workflow puede consultar agregados COUNT/SUM de Categorias en solqaryn_dev con credenciales DEV ya existentes, sin imprimir filas, IDs, nombres ni valores; diferencia ausencia de registros, inactividad, borrado lógico y presencia global sin dueño público acreditado. El resultado agregado NO desactiva el fallo ni concede permiso para publicar datos. Si el acceso SQL no es verificable, informa esa limitación y conserva NO_LISTO.
+
+- Evidencia: GitHub Actions run 40536464177, job 122302964457, dev@b045495b579c395b6f0220fc76e64730fd41e466. Readiness, CORS e identidad pública firmada A/B superaron sus pasos. El paso de catálogo/productos/imágenes terminó exit code 1 sin anotación porque jq -e, test -s y test 200 ocultaban el motivo; el log no acredita cuál de los predicados falló.
+- Sustituye exclusivamente la comprobación silenciosa de catálogo del workflow dev-final-functional-certification.yml por scripts/ci/verify_dev_catalog_gate.py (HTTP GET DEV público, sin autenticación ni escritura). Mantiene requisitos de categorías, productos e imágenes reales, namespace Cloudinary solqaryn_dev, HTTP 200 y rechazos de tenant. Cada incumplimiento emite un error estable y redactado, jamás datos, claves ni URLs comerciales.
+- Diez regresiones negativas/positivas en scripts/ci/test_verify_dev_catalog_gate.py, incluidas cuarentena 503, respuesta 503 no relacionada, listas vacías, esquemas erróneos, imágenes ausentes y namespace externo; se ejecutan en PR sin infraestructura. El checkpoint de DEV se actualiza para disparar recertificación posterior al merge protegido.
+- La ruta /api/tiendas/{storeKey}/tienda/... NO se usa como bypass: el proxy y el middleware vigentes permiten únicamente binding/configuración de tienda secundaria; la ampliación de datos comerciales exige contrato, propiedad y pruebas independientes. No se modifica backend, tenants, tablas, secretos, endpoints, Vercel, Render, QA/main/PROD. NO_LISTO permanece hasta que el catalog gate y todas las pruebas funcionales pasen.
+- Rollback: revertir mediante PR protegido este changeset, restaurando el paso anterior y checkpoint. Ninguna certificación se deriva de unit tests offline.
+
+## 2026-10-27 — P0-001.B: restaurar la ejecución de fixtures A/B en certificación DEV
+
+- Evidencia causal: GitHub Actions run 40509650164, job 122207882951 en dev@663362b5315075d175985e804160ff5be4e1cf0b terminó FAILED (exit code 5): el paso de identidad ejecutó `unittest discover -s scripts/certification`, que informó `Ran 0 tests`; el código de la prueba está realmente en `scripts/ci/test_verify_dev_final_tenant_identity.py`. La ejecución se detuvo antes de la prueba HTTP tenant firmada, así que NO se atribuye el error a MySQL ni a la firma.
+- Cambio único en `.github/workflows/dev-final-functional-certification.yml`: corregir a `python3 -m unittest discover -s scripts/ci -p 'test_verify_dev_final_tenant_identity.py' -v`; conservar íntegramente el script read-only, los positivos A/B, los negativos HMAC/tenant/CORS, el guard y el gate fail-closed de catálogo. Los 7 casos unitarios deben ejecutarse; si el gate remoto falla, no se declara FINAL PASS.
+- Scope DEV únicamente, sin cambios de API, base de datos, datos, secretos, Vercel, Render, QA/main/PROD. Revisión formal independiente y CI 3/3 exact SHA antes del merge; nueva prueba DEV live después del merge y readback. Rollback seguro: revert protegido de este cambio puntual. P0-001.B permanece EN_PROGRESO/NO_LISTO.
+
+## 2026-10-27 — P0-001.B: certificar identidad DEV por tenant firmado sin normalizar el 503 de cuarentena
+
+- Corrige el falso contrato HTTP 200 de `GET /api/empresa-configuracion/publica` en `.github/workflows/dev-final-functional-certification.yml`. Esa ruta **sin tenant** debe seguir respondiendo HTTP 503 y `TENANT_DATA_ISOLATION_REQUIRED` cuando hay 2+ empresas; ningún controller/middleware/proxy/secret está modificado.
+- El nuevo `scripts/ci/verify_dev_final_tenant_identity.py` usa exclusivamente datos DEV mediante un `SELECT` read-only sobre dos bindings públicos activos y sus nombres en MySQL. A través del proxy Vercel firmado existente, exige dos GET positivos distintos: `/api/tiendas/{storeKey}/tienda/binding` (id de empresa verificado) y `/api/tiendas/{storeKey}/tienda/configuracion` (nombre comercial concordante con MySQL).
+- Negativos obligatorios: identidad sin tenant directa y por proxy HTTP 503+codigo exacto, cabeceras de empresa/host falsificadas, binding sin HMAC, proof inválida y tienda desconocida. No se publican en logs nombres, claves de tienda, IDs, cuerpos completos, credenciales ni firmas. La prueba de dos empresas se considera bloqueada si falta una vinculación vigente.
+- CORS DEV mantiene 204+origen permitido exacto y 204 sin `Access-Control-Allow-Origin` para el host rechazado: ahora ambas condiciones **fallan el workflow** si hay desviación; la clasificación causal restante permanece observacional.
+- El catálogo y los productos legacy `/api/tienda/*` **no se declaran certificados** si el guard los rechaza con 503: el workflow registra un error causal específico y continúa en FAIL hasta contar con una ruta positiva por tenant segura y su evidencia de imágenes/caché; no convierte 503 en PASS global ni abre tienda multitenant.
+- Incluye fixtures unitarias ejecutadas por job PR separado sin credenciales DEV con positivos A/B y negativos por empresa equivocada, errores de formato, respuestas HTTP inesperadas y falsos éxitos. Validación propuesta en PR hacia `dev`: CI obligatoria 3/3 exact-head, revisión independiente de cuenta distinta al autor y merge protegido. El PR histórico #3770 fue fusionado sin revisión formal acreditada; esta corrección no pretende aprobarlo retroactivamente.
+- Alcance: solo CI DEV + script y pruebas read-only; sin migraciones, DML, cambios de API, frontend runtime, Render/Vercel, QA/main/PROD ni secretos. Rollback: revert protegido de este changeset de certificación manteniendo el guard y los gates preexistentes. `P0-001.B=EN_PROGRESO/NO_LISTO` hasta evidencia funcional completa.
+
+## 2026-10-26 — P0-001.B: instrumentación HTTP causal DEV sin relajar gates (candidato)
+
+- Ante respuestas HTTP 503 sin cuerpo visible desde clientes externos, se instrumenta **solo** el workflow `.github/workflows/dev-final-functional-certification.yml` en su job DEV para registrar códigos de `/health/ready`, identidad pública Render y proxy Vercel, clasificación por igualdad exacta con `TENANT_DATA_ISOLATION_REQUIRED` o título de mantenimiento y presencia de `Retry-After: 300`.
+- Incluye preflight `OPTIONS` a `/auth/login` con `Origin: https://solqaryn-dev.vercel.app` y `Origin: https://untrusted.invalid`; informa códigos y coincidencia del encabezado `Access-Control-Allow-Origin` sin otorgar aprobaciones ni asumir una sesión autenticada.
+- Corrección de continuidad: el paso diagnóstico usa `if: !cancelled()` para ejecutarse también cuando fallaron readiness o rutas anteriores, sin convertir ese fallo en éxito. La comparación de `Access-Control-Allow-Origin` ahora exige coincidencia de línea completa (no prefijo); prueba local de encabezado permitido y dos negativos de sufijo `*.evil` PASS.
+- Las respuestas HTTP y cabeceras se guardan únicamente en `RUNNER_TEMP`, sin imprimir payloads, tokens, cookies, correos, IDs de empresa ni secretos; el log solo emite indicadores acotados. No se crean artifacts, dominios, despliegues, credenciales ni cambios DB.
+- Se conserva intacta la certificación existente: `curl --fail`, validaciones `jq`, disponibilidad, E2E/SSO/RBAC y paridad exact-SHA no se dan por superados. El nuevo paso es `OBSERVATION_ONLY_NOT_CERTIFICATION`; no altera API ni bloqueos multiempresa.
+- Estado inicial: trabajo en rama exclusiva `work/solqaryn-p0-001-b`, por revisar con CI y revisión formal independiente; `P0-001.B=EN_PROGRESO` y `NO_LISTO`. Rollback: revert del commit de instrumentación vía PR protegido a `dev`.
+
+## 2026-10-26 — P0-001.B: corrección de release Vercel DEV sin builds artificiales (seguimiento)
+
+- Evidencia verificada sobre `dev@3d2f0436b7c0c7bfc3eff07f8b01f3121dc3aa38`: PR #3768 APPROVED y MERGED; tres checks obligatorios SUCCESS; Render DEV `dep-dbfqjt29lscs73bmvs10` LIVE exact SHA; Vercel DEV `dpl_Bi9YNxDrMXXBqMLPHCa6aCtyA1NV` CANCELED porque `NON_RUNTIME_GOVERNANCE_ONLY_SKIP files=5`; deployment anterior `dpl_9wHGTwW1YNGucpmG58EqtYXtWsGs` READY en SHA `35c67e330f876ee66f8015e889ffa151d6d4643a`.
+- Comparación GitHub estricta del padre al HEAD: un commit, cinco archivos de documentación/CI/verificador; manifiesto Git `frontend/` idéntico. No cambiar `frontend/vercel.json` ni `frontend/scripts/vercel-ignore-build.mjs`.
+- El nuevo control `scripts/vercel-dev-runtime-equivalence.mjs` exige identidad DEV, READY de proveedor, árbol frontend inmutable, ancestro sin divergencia y cambios solo fuera del runtime; 20 negativos autoejecutables. `scripts/dev-vercel-release.mjs` evita disparar otro deployment artificial si la equivalencia fuente está comprobada; expone `VERCEL_EXACT_SHA_READY=NO` sin inferir PASS funcional.
+- Política y evidencia en `docs/P0-001-B-VERCEL-SOURCE-EQUIVALENCE-DEV-20261026.md`; workflow consolidado corre el verificador antes del release. Sin secretos, QA, PROD, MySQL ni alteración del frontend.
+- Estado: `EN_PROGRESO`. La fuente comercial original mantiene requisito exact-SHA; esta corrección no la enmienda ni permite `LISTO` sin autorización formal, CORS/preflight, E2E/SSO, RBAC del alcance, CI final, revisión independiente, merge protegido y readback Sheets. Rollback únicamente por revert protegido.
+
+## 2026-10-26 — P0-001.B: recuperación de paridad exact-SHA DEV
+
+- PR de certificación: #3768, rama `work/solqaryn-p0-001-b`.
+- GitHub DEV: `35c67e330f876ee66f8015e889ffa151d6d4643a`.
+- Render DEV: deployment `dep-dbfotee417fc73defu30`, LIVE.
+- Vercel DEV: deployment `dpl_9wHGTwW1YNGucpmG58EqtYXtWsGs`, READY.
+- CI obligatorio: 3/3 SUCCESS.
+- JWT/RBAC y aislamiento A/B/C: workflow #40377756848 SUCCESS.
+- P0-001.B: snapshot positivo MATCH y catorce regresiones negativas verificadas en PR #3768.
+- Certificación negativa histórica: conservada íntegramente.
+- Alcance: DEV, prueba de paridad y seguridad dirigida. La evaluación integral de todos los módulos ERP corresponde a un alcance independiente.
+- Estado: EN_PROGRESO. Cierre LISTO únicamente después de revisión independiente, merge protegido y readback de Google Sheets.
+-
+- ## 2026-10-26 — P0-003.B: paridad y seguridad DEV (PRIMARY_DEV_02)
+
+- Task: 6adc2e4bd8a48191ac7d8641ed95a1a3.
+- PR: #3758, rama work/solqaryn-p0-003-b.
+- Cambios: verificador de paridad DEV, workflow de pruebas negativas y acta de certificación documental.
+- Render DEV LIVE y Vercel DEV READY sobre dev@003cceea22bbd85a8f3f542c46816c6befbe5ee3.
+- CORS: preflight autorizado y rechazo de origen externo verificados el 26/10/2026.
+- JWT/RBAC/tenancy: workflows DEV MF3 #6 y #7 SUCCESS sobre el mismo SHA de dev.
+- Pruebas A/B/C: tres autenticaciones válidas, 12 rechazos entre empresas, 36 rechazos comerciales cruzados y 18 lecturas autorizadas.
+- MySQL DEV: conectividad comprobada mediante /health/ready.
+- Alcance: verificaciones no destructivas, sin modificar secretos, datos comerciales, QA ni PROD.
+- Estado: EN_PROGRESO. Cierre condicionado a CI sobre el SHA final del PR, revisión independiente, merge protegido y conciliación con Google Sheets.
+
 ## 2026-10-25 — P0-001.B: certificar bloqueo por falta de paridad exact-SHA DEV (PRIMARY_DEV_03)
 
 - Task `6adc2e55f47c81919f6374e561687076`, GitHub `jmejia31`, rama exclusiva `work/solqaryn-p0-001-b`; base `dev@6a6d6e8870b0a53db9b3dc19f197be409082b6e6`. Dependencias P0-001.A/P0-012.B LISTO y WIP protegido 6.
@@ -4394,7 +4481,6 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Task `6adbb9fff1548191a1bd5b30d9e9984a` / GitHub `jmejia31`: en rama exclusiva `work/solqaryn-p0-010-a` agrega un nuevo corte fechado desde `dev@acf5bca44a94d1bce9a39a6b30be1380e4e5f464`: 24 P0 (14 LISTO, 1 VALIDANDO, 3 EN_PROGRESO, 6 PENDIENTE) y 32 P1 PENDIENTE. El corte anterior permanece como historia.
 - El Issue #3730 es coordinación, no prueba de bug. Incidencias no registradas permanecen NOT_VERIFIED. No se infieren cero defectos ni paridad Render/Vercel por snapshots READY antiguos; P0-001.B conserva NO_GO de proveedor. Documentado en `docs/P0-010-A-VALORACION-DEUDA-P0-P1-DEV.md` y `docs/baselines/P0-010-A-DEV-20261026.json`.
 - Validador `scripts/verify-p0-010-a-debt-baseline.mjs --self-test` 1 positivo + 12 negativas sintéticas; workflow PR de lectura `.github/workflows/p0-010-a-debt-baseline.yml`. Prueba local PASS; faltan CI nativa exact SHA, revisión formal ajena, merge protegido y readback de PLAN/COLA/BITACORA para LISTO. Sin cambios runtime, datos, QA/main/PROD, secretos ni despliegues.
-
 
 ### 2026-10-25 (DEV) — P1-001.A: mapa de roles y membresías (avance parcial)
 

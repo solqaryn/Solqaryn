@@ -1,3 +1,4 @@
+using Solqaryn.Application.Security;
 using System.Security.Cryptography;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
@@ -39,7 +40,10 @@ public sealed class PublicHttpCacheAttribute : Attribute, IAsyncResultFilter
             return;
         }
 
-        if (context.HttpContext.User.Identity?.IsAuthenticated == true
+        // La identidad tenant de servidor prevalece sobre If-None-Match:
+        // un recurso privado no debe responder 304 ni exponer ETag público.
+        if (VerifiedPublicStoreTenant.RequiresPrivateNoStore(context.HttpContext)
+            || context.HttpContext.User.Identity?.IsAuthenticated == true
             || request.Headers.ContainsKey(HeaderNames.Authorization))
         {
             SetNoStore(response);
