@@ -1,8 +1,12 @@
-import { execFileSync } from 'node:child_process';
-
+// The Ignored Build Step protocol uses exit 0 to CANCEL a Vercel deployment
+// and exit 1 to BUILD it. This is not the policy that authorizes a deployment.
+//
+// For solqaryn-dev, frontend/vercel.json disables Git auto-deploy from dev.
+// The separate consolidated-release workflow verifies protected dev HEAD,
+// exact-SHA CI 3/3, DEV project, quota and release idempotency BEFORE requesting
+// a deployment. A documentation-only commit still needs a real READY build.
+// Never cancel a canonical DEV release merely because the diff is non-runtime.
 const branch = process.env.VERCEL_GIT_COMMIT_REF;
-const current = process.env.VERCEL_GIT_COMMIT_SHA || 'HEAD';
-const configuredPrevious = process.env.VERCEL_GIT_PREVIOUS_SHA;
 const vercelProjectId = process.env.VERCEL_PROJECT_ID;
 
 const PROJECT_BRANCH_BINDINGS = Object.freeze({
@@ -13,75 +17,22 @@ const PROJECT_BRANCH_BINDINGS = Object.freeze({
 
 const expectedBranch = PROJECT_BRANCH_BINDINGS[vercelProjectId];
 
-// Cada proyecto Vercel corporativo sólo construye su rama canónica.
-// Exit 0 es el contrato de Vercel para ignorar el build.
+// Retain the cross-environment denylist: no QA/PROD build from dev and no
+// DEV build from qa/main. Only a project's canonical branch can build.
 if (expectedBranch && branch !== expectedBranch) {
   console.log(`CROSS_ENV_PROJECT_SKIP branch=${branch} expected=${expectedBranch} project=${vercelProjectId}`);
   process.exit(0);
 }
 
-// Un project ID desconocido falla abierto a build para no ocultar una
-// configuración nueva accidental; environment-binding.js fallará cerrado
-// en runtime hasta que el proyecto sea explícitamente autorizado.
+// Unknown projects continue to build rather than impersonate a known project.
+// Their deployment/runtime authorization remains a separate fail-closed gate.
 if (!expectedBranch) {
+  console.log('UNKNOWN_PROJECT_BUILD_NOT_ATTESTED');
   process.exit(1);
 }
 
-// La optimización de cambios de control-plane permanece deliberadamente
-// limitada a DEV. QA y PROD siempre construyen su rama canónica para que
-// cada promoción tenga evidencia de deployment exact-head.
-if (branch !== 'dev') {
-  process.exit(1);
-}
-
-const resolveCommit = ref =>
-  execFileSync('git', ['rev-parse', '--verify', ref], { encoding: 'utf8' }).trim();
-
-let previous;
-try {
-  if (configuredPrevious && /^[0-9a-f]{40}$/i.test(configuredPrevious)) {
-    previous = resolveCommit(configuredPrevious);
-  } else {
-    previous = resolveCommit(`${current}^`);
-  }
-} catch {
-  process.exit(1);
-}
-
-let changedFiles;
-try {
-  changedFiles = execFileSync(
-    'git',
-    ['diff', '--name-only', '--no-renames', previous, current],
-    { encoding: 'utf8' }
-  )
-    .split(/\r?\n/)
-    .map(file => file.trim().replaceAll('\\', '/'))
-    .filter(Boolean);
-} catch {
-  process.exit(1);
-}
-
-// Solo DEV: los cambios de documentacion, gobierno, CI y evidencia no
-// alteran la compilacion de Angular. QA y PROD siempre requieren su build.
-const nonRuntimeRoots = ['docs/', '.github/', '.agents/', 'vaep/', 'scripts/'];
-const nonRuntimeFiles = new Set([
-  'AGENTS.md',
-  'PROJECT_CONTEXT.md',
-  'PROJECT_INDEX.md',
-  'ARCHITECTURE.md',
-  'ARCHITECTURE_CHANGELOG.md',
-  'TASKS.md',
-  'CHANGELOG_AI.md',
-  'README.md'
-]);
-const explicitlyNonRuntime = file =>
-  nonRuntimeRoots.some(prefix => file.startsWith(prefix)) ||
-  nonRuntimeFiles.has(file);
-
-if (changedFiles.length > 0 && changedFiles.every(explicitlyNonRuntime)) {
-  console.log(`NON_RUNTIME_GOVERNANCE_ONLY_SKIP files=${changedFiles.length} branch=${branch}`);
-  process.exit(0);
-}
-
+// Canonical dev/qa/main builds must never be canceled by this heuristic.
+// Vercel's control-plane / release workflow already decides if a build
+// should have been requested; only READY + exact source SHA certifies it.
+console.log(`CANONICAL_PROJECT_BUILD_REQUIRED branch=${branch} project=${vercelProjectId}`);
 process.exit(1);
