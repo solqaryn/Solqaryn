@@ -45,12 +45,32 @@ function teamQuotaHeadroom(all, now) {
     now - Number(d.created ?? d.createdAt) < 86400000).length;
   return count < 95;
 }
+class ProviderHttpError extends Error {
+  constructor(status, detail) {
+    super('PROVIDER_HTTP_' + status + ':' + detail.slice(0, 250));
+    this.status = status;
+  }
+}
+// A historical READY record may be visible in Vercel's project-scoped list
+// but inaccessible through the GitHub Actions token's detail lookup.
+// A 404 here is NOT evidence of source equivalence or of a missing current SHA.
+// Only this optional historical lookup may continue; all other provider errors
+// (including 401/403, rate limits and deployment-create failures) remain fatal.
+async function optionalHistoricalDeployment(fetcher) {
+  try {
+    return await fetcher();
+  } catch (error) {
+    if (error instanceof ProviderHttpError && error.status === 404) return null;
+    throw error;
+  }
+}
+
 async function requestJson(url, token, opts = {}) {
   const resp = await fetch(url, { ...opts, headers: {
     Accept: 'application/json', Authorization: 'Bearer ' + token,
     ...(opts.body ? {'Content-Type':'application/json'} : {}), ...opts.headers
   }});
-  if (!resp.ok) throw Error('PROVIDER_HTTP_' + resp.status + ':' + (await resp.text()).slice(0,250));
+  if (!resp.ok) throw new ProviderHttpError(resp.status, await resp.text());
   return resp.json();
 }
 // A skipped control-plane commit must not trigger an artificial Vercel build.
@@ -72,9 +92,14 @@ async function readySourceEquivalence(deployments, head, ghToken, vercelToken, h
         ghToken, {headers}),
       requestJson(github + '/contents/frontend?ref=' + priorSha, ghToken, {headers}),
       requestJson(github + '/contents/frontend?ref=' + head, ghToken, {headers}),
-      requestJson('https://api.vercel.com/v13/deployments/' +
-        encodeURIComponent(item.id) + '?teamId=' + TEAM, vercelToken)
+      optionalHistoricalDeployment(() => requestJson(
+        'https://api.vercel.com/v13/deployments/' +
+        encodeURIComponent(item.id) + '?teamId=' + TEAM, vercelToken))
     ]);
+    if (ready === null) {
+      console.log('DEV_HISTORICAL_READY_DETAIL_HTTP_404=UNAVAILABLE SOURCE_EQUIVALENCE=NOT_ATTESTED');
+      continue;
+    }
     if (ready.projectId && ready.projectId !== PROJECT) {
       throw Error('SOURCE_EQUIVALENCE_WRONG_VERCEL_PROJECT');
     }
@@ -122,6 +147,23 @@ async function main() {
     assert.equal(recentRelease([{created:Date.now()-3900000,meta:{solqarynConsolidatedDev:'true'}}],Date.now()),false);
     assert.equal(teamQuotaHeadroom(Array.from({length:95},()=>({created:Date.now()-1000})),Date.now()),false);
     assert.equal(teamQuotaHeadroom(Array.from({length:94},()=>({created:Date.now()-1000})),Date.now()),true);
+    assert.equal(await optionalHistoricalDeployment(async () => {
+      throw new ProviderHttpError(404, '{"error":{"code":"not_found"}}');
+    }), null);
+    for (const status of [401, 402, 403, 429, 500]) {
+      await assert.rejects(
+        () => optionalHistoricalDeployment(async () => {
+          throw new ProviderHttpError(status, 'provider rejected');
+        }),
+        new RegExp('PROVIDER_HTTP_' + status)
+      );
+    }
+    await assert.rejects(
+      () => optionalHistoricalDeployment(async () => {
+        throw Error('PROVIDER_HTTP_404');
+      }),
+      /PROVIDER_HTTP_404/
+    );
     console.log('DEV_VERCEL_RELEASE_POLICY_SELF_TEST=PASS');
     return;
   }

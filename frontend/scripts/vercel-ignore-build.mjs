@@ -62,9 +62,10 @@ try {
   process.exit(1);
 }
 
-// Solo DEV: los cambios de documentacion, gobierno, CI y evidencia no
-// alteran la compilacion de Angular. QA y PROD siempre requieren su build.
-const nonRuntimeRoots = ['docs/', '.github/', '.agents/', 'vaep/', 'scripts/'];
+// Solo DEV: documentación, gobierno, CI y evidencia no alteran la compilación de Angular.
+// Los scripts raíz no se excluyen en bloque: tooling de release/build puede requerir un deployment exact-SHA.
+// QA y PROD siempre requieren su build.
+const nonRuntimeRoots = ['docs/', '.github/', '.agents/', 'vaep/'];
 const nonRuntimeFiles = new Set([
   'AGENTS.md',
   'PROJECT_CONTEXT.md',

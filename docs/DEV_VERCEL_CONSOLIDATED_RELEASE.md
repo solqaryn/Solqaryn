@@ -31,6 +31,18 @@ El 25-10-2026, el proveedor respondió a una solicitud de despliegue explícito 
 
 Para evitar intentar publicaciones inútiles cada hora, `scripts/dev-vercel-release.mjs` hace una consulta **de solo lectura** al conjunto de deployments del equipo; si hay 95 o más intentos en la ventana de 24 horas, omite la llamada de creación y declara `NO_READY_ATTESTED`. La ejecución no infiere un límite distinto al que informe Vercel ni cambia permisos o proyectos QA/PROD. El resultado `READY` debe provenir de una nueva publicación exitosa y del SHA real, nunca de las pruebas offline.
 
+## 3.2. GitHub Actions 404 en detalle histórico de Vercel (28-10-2026)
+
+El HEAD protegido `038da7e9dca2addd1e185737117468cab3534286` tiene CI 3/3 PASS y Render DEV LIVE, pero el release consolidado reportó `PROVIDER_HTTP_404` / `Deployment not found` al intentar leer el detalle de un deployment `READY` anterior. Se observó en tres runs programados: `40610934731`, `40643507499`, `40698037166`. La misma referencia histórica aparece en la lista del proyecto y es consultable desde una conexión Vercel autenticada diferente: el 404 del token de GitHub Actions **no acredita eliminación real** ni fallo del despliegue nuevo.
+
+La consulta detallada de cada candidato `READY` anterior es **optativa para calcular equivalencia de fuente**. Ante `404` en esa llamada de solo lectura, se omite exclusivamente el candidato, se imprime `DEV_HISTORICAL_READY_DETAIL_HTTP_404=UNAVAILABLE SOURCE_EQUIVALENCE=NOT_ATTESTED` y se comprueba el siguiente candidato. No se declara paridad por ese registro, ni se promociona un SHA histórico. Los errores `401/402/403/429/5xx` y todos los errores de GitHub, cuota, despliegue nuevo o SHA siguen siendo fatales/no autorizan certificación. Después de agotar candidatos, el motor conserva sus controles originales de 3/3 checks exactos, anti-duplicado, cuota compartida y destino **solo** proyecto Vercel DEV; únicamente un nuevo despliegue `READY` con SHA exacto puede certificar la publicación.
+
+Si la publicación nueva también recibe 404/403 desde el token de GitHub Actions, ese es un **problema de acceso del token `VERCEL_TOKEN`**, no un permiso para usar otra cuenta, copiar credenciales a logs o simular `READY`. Revisar sus permisos de proyecto y equipo en GitHub Actions/Vercel por el propietario; no repetir el mismo error de forma agresiva. El conector Vercel de ChatGPT y el token de GitHub Actions pueden tener autorizaciones distintas.
+
+## 3.3 Cambios en scripts raíz y el Ignored Build Step
+
+El release explícito requiere un deployment READY del SHA exacto. Por eso frontend/scripts/vercel-ignore-build.mjs no debe clasificar todo el directorio raíz scripts/ como no runtime: ahí viven scripts/dev-vercel-release.mjs y tooling que controla la creación y certificación del deployment. Si el ignore command devuelve 0, Vercel cancela el deployment y el release falla correctamente al no observar READY. Los cambios en docs/, .github/, .agents/ y vaep/ pueden seguir omitiendo el build DEV; los cambios bajo scripts/ raíz deben permitirlo. QA y PROD conservan su política de build en sus ramas canónicas.
+
 ## 4. Recuperación
 
 Rollback de política mediante PR protegido que revierte exclusivamente `git.deploymentEnabled.dev=false` y workflow/script, luego actualización explícita de la configuración de previews del proyecto DEV si se desea reactivar ese comportamiento. No se usa `force-push`, no se despliega QA/PROD y no se cancela trabajo ajeno.
