@@ -72,6 +72,14 @@ jobs:
         with:
           ref: dev
 
+      - name: Verificar checkout exacto de DEV
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = 'refs/heads/dev'
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          echo "BACKUP_RESTORE_SOURCE_SHA=$GITHUB_SHA"
+
       - name: Verificar configuración externa requerida
         shell: bash
         env:
@@ -192,6 +200,14 @@ jobs:
         with:
           ref: dev
 
+      - name: Verificar checkout exacto de DEV para backup y restore
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = 'refs/heads/dev'
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          echo "BACKUP_RESTORE_SOURCE_SHA=$GITHUB_SHA"
+
       - name: Crear backup cifrado de DEV
         id: backup
         shell: bash
@@ -255,6 +271,106 @@ jobs:
           grep -q '"status": "SUCCESS"' "$report_file"
           echo "restore_report=$report_file" >> "$GITHUB_OUTPUT"
 
+      - name: SDK .NET 10 para comprobar readiness de la API restaurada
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+
+      - name: Construir API del HEAD exacto de DEV
+        shell: bash
+        run: dotnet publish backend/src/API/Solqaryn.API.csproj --configuration Release --output "$RUNNER_TEMP/solqaryn-api-publish" --verbosity quiet
+
+      - name: Comprobar API ready contra la base restaurada (solo loopback, sin migraciones)
+        shell: bash
+        env:
+          ASPNETCORE_ENVIRONMENT: Development
+          ASPNETCORE_URLS: http://127.0.0.1:5088
+          ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=solqaryn_restore_drill;User=root;Password=solqaryn-ci-root-only;SslMode=Disabled;AllowPublicKeyRetrieval=True;
+          Database__ServerVersion: '8.4.0'
+          Database__ApplyMigrationsOnStartup: 'false'
+          TARGET_DB_PASSWORD: solqaryn-ci-root-only
+          RESTORE_REPORT_PATH: ${{ steps.restore.outputs.restore_report }}
+          SOURCE_DEV_SHA: ${{ github.sha }}
+          Jwt__Issuer: solqaryn-p0-005-a-ci
+          Jwt__Audience: solqaryn-p0-005-a-ci
+          Cloudinary__CloudName: ci-invalid
+          Cloudinary__ApiKey: ci-invalid
+          Cloudinary__ApiSecret: ci-invalid
+          Smtp__Host: 127.0.0.1
+          Smtp__Port: '9'
+          Smtp__RequiereAutenticacion: 'false'
+          Smtp__CorreoRemitente: ci-invalid@example.invalid
+        run: |
+          set -euo pipefail
+          jwt_secret="$(openssl rand -hex 32)"
+          echo "::add-mask::$jwt_secret"
+          export Jwt__Secret="$jwt_secret"
+          api_log="$RUNNER_TEMP/solqaryn-restored-api.log"
+          ready_json="$RUNNER_TEMP/solqaryn-restored-api-ready.json"
+          dotnet "$RUNNER_TEMP/solqaryn-api-publish/Solqaryn.API.dll" >"$api_log" 2>&1 &
+          api_pid=$!
+          cleanup_api() {
+            kill "$api_pid" 2>/dev/null || true
+            wait "$api_pid" 2>/dev/null || true
+            unset Jwt__Secret jwt_secret
+          }
+          trap cleanup_api EXIT
+
+          for attempt in $(seq 1 60); do
+            if ! kill -0 "$api_pid" 2>/dev/null; then
+              echo 'RESTORE_API_PROCESS=EXITED_BEFORE_READY' >&2
+              sed -E 's/(Password=)[^;]*/\1[REDACTED]/gi' "$api_log" | tail -n 40 >&2
+              exit 1
+            fi
+            http_code="$(curl --silent --show-error --connect-timeout 2 --max-time 5 \
+              --output "$ready_json" --write-out '%{http_code}' \
+              http://127.0.0.1:5088/health/ready)" || http_code='000'
+            if [ "$http_code" = '200' ] && jq -e '.status == "ready" and .database == "connected"' "$ready_json" >/dev/null; then
+              echo "RESTORE_API_READY=PASS attempts=$attempt"
+              break
+            fi
+            if [ "$attempt" -eq 60 ]; then
+              echo 'RESTORE_API_READY=FAIL' >&2
+              sed -E 's/(Password=)[^;]*/\1[REDACTED]/gi' "$api_log" | tail -n 40 >&2
+              exit 1
+            fi
+            sleep 2
+          done
+
+          migration_table="$(MYSQL_PWD="$TARGET_DB_PASSWORD" mysql --protocol=TCP -h 127.0.0.1 -P 3306 -uroot --ssl-mode=DISABLED solqaryn_restore_drill --batch --skip-column-names -e "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='__EFMigrationsHistory';")"
+          if [ "$migration_table" = '1' ]; then
+            migrations_after="$(MYSQL_PWD="$TARGET_DB_PASSWORD" mysql --protocol=TCP -h 127.0.0.1 -P 3306 -uroot --ssl-mode=DISABLED solqaryn_restore_drill --batch --skip-column-names -e 'SELECT COUNT(*) FROM __EFMigrationsHistory;')"
+          else
+            migrations_after='0'
+          fi
+          migrations_before="$(python3 - "$RESTORE_REPORT_PATH" <<'PY'
+          import json, sys
+          with open(sys.argv[1], encoding='utf-8') as f:
+              print(json.load(f)['efMigrationCount'])
+          PY
+          )"
+          test "$migrations_after" = "$migrations_before"
+          python3 - "$ready_json" "$RUNNER_TEMP/solqaryn-restored-api-readiness.json" "$migrations_after" "$SOURCE_DEV_SHA" <<'PY'
+          import json, sys
+          with open(sys.argv[1], encoding='utf-8') as f:
+              ready=json.load(f)
+          report={
+              'status':'PASS',
+              'healthReady':ready.get('status') == 'ready' and ready.get('database') == 'connected',
+              'database':'solqaryn_restore_drill',
+              'targetHost':'127.0.0.1',
+              'sourceDevSha':sys.argv[4],
+              'migrationsUnchanged':True,
+              'efMigrationCount':int(sys.argv[3]),
+              'applyMigrationsOnStartup':False,
+              'productionTouched':False,
+              'secretsExposed':0
+          }
+          with open(sys.argv[2], 'w', encoding='utf-8') as f:
+              json.dump(report,f,indent=2); f.write('\n')
+          PY
+          echo 'RESTORE_API_STARTUP_MIGRATIONS=UNCHANGED'
+
       - name: Publicar evidencia SOLQARYN cifrada y same-artifact drill
         uses: actions/upload-artifact@v4
         with:
@@ -264,5 +380,6 @@ jobs:
             ${{ steps.backup.outputs.checksum_file }}
             ${{ steps.backup.outputs.metadata_file }}
             ${{ steps.restore.outputs.restore_report }}
+            ${{ runner.temp }}/solqaryn-restored-api-readiness.json
           if-no-files-found: error
           retention-days: 14
