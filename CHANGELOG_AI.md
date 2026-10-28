@@ -1,3 +1,10 @@
+## 2026-10-28 — P0-005.B: certificado delimitado de restauración DEV probada (candidato)
+
+- Task propia `PRIMARY_DEV_02` (`6adc2e4bd8a48191ac7d8641ed95a1a3`), rama exclusiva `work/solqaryn-p0-005-b`, fuente `PLAN_MAESTRO!11`, dependencias `P0-005.A` y `P0-012.B` LISTO.
+- Se documenta en `docs/P0-005-B-CERTIFICACION-RESTORE-DEV.md` evidencia GitHub autenticada del run `40739107659` en `dev@018df83b36d32f2225af4025f4b69f640041c2b2`: backup AES256/SHA256 Aiven DEV, restore mismo artefacto en MySQL CI descartable, hashes y conteos, API readiness PASS, migraciones inmutables y cleanup PASS. Artifact `12837184798` cifrado; no descargado.
+- Revisión Alex premerge #3781 y #3782, dev `eff22b96aeeba323f43ef77c5e8ea54416b29cd2` con checks 3/3 SUCCESS. Negativas: run CORS #40736901522 FAILED, schedule #40704276606 SKIPPED, 20 fixtures offline del contrato A; ninguna es prueba positiva de restore. No se simula un nuevo restore del HEAD documental actual.
+- Alcance solo documentación y verificación de evidencia existente; sin DB de producción, sin nuevos secretos, sin QA/main/PROD. Estado `EN_PROGRESO` hasta CI exact-SHA, aprobación independiente, merge protegido y readback Sheets. Rollback: revert protegido de esta acta, preservando el historial.
+
 ## 2026-10-26 — P0-005.A: validador seguro de evidencia de restore DEV (PRIMARY_DEV_02)
 
 - Task `6adc2e4bd8a48191ac7d8641ed95a1a3`, GitHub `jmejia31`, rama propia `work/solqaryn-p0-005-a`, `dev@35c67e330f876ee66f8015e889ffa151d6d4643a`, dependencia P0-012.B LISTO.
