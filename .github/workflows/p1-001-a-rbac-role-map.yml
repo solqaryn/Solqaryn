@@ -12,6 +12,7 @@ on:
       - 'backend/src/Infrastructure/Persistence/Configurations/**'
       - 'backend/src/Infrastructure/Services/UsuarioScopeService.cs'
       - 'backend/src/Infrastructure/Services/PlataformaScopeService.cs'
+      - 'backend/src/Infrastructure.Migrations/Migrations/**'
   workflow_dispatch:
 
 permissions:

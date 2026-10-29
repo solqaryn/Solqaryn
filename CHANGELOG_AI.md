@@ -1,3 +1,9 @@
+## 2026-10-29 — P1-001.A: corregir índice físico de roles tenant
+
+- La lectura de `solqaryn_dev` encontró que `UX_Roles_Empresa_NombreNormalizado` existe pero no es único (`NON_UNIQUE=1`), pese a la migración aplicada y al modelo EF. Los conteos agregados no detectaron roles duplicados ni membresías/roles de plataforma inconsistentes.
+- Se añadió una migración EF acotada que reconstituye el índice único con un único `ALTER TABLE`; no ejecuta datos SQL desde esta tarea. El workflow P1 ahora corre ante cambios de migraciones y el verificador incluye una aserción estática del cambio.
+- La API DEV respondió 401 a `GET /roles` sin autenticación. Esto no reemplaza las negativas autenticadas A/B; permanecen pendientes, al igual que CI exact-SHA, revisión independiente, deployment/readback del índice único y certificación final. P1-001.A continúa EN_PROGRESO.
+
 ## 2026-10-27 — P0-004.A: lista cerrada de proyecciones SQL por consulta (SECONDARY_REVIEW_03)
 
 - GitHub `morales35alex`, Task `6adcc98a80a48191b71a5156624c21df`: en la misma rama y PR #3766 se incorporo una lista cerrada para las columnas proyectadas de Q01–Q09; rechaza proyecciones extra y `SELECT *` sin alterar el SQL manual ni el alcance de lectura. Se agregaron **11 regresiones negativas** y el total de pruebas pasa de 39 a **50**.
