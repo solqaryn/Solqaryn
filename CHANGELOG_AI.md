@@ -1,3 +1,9 @@
+## 2026-10-29 — P0-008.A: reparar auditoría NuGet de CI con dependencia exclusiva de tests
+
+- Evidencia: el CI exact-SHA del PR #3765 sobre `3502760158949298a335261a70f9790334a9e9f0` superó 947 pruebas pero falló en el control `dotnet list package --vulnerable` por `MySqlConnector 2.3.7` en `Solqaryn.Tests.csproj` (GHSA-473q-m89c-ghf8). El control de seguridad NO se desactiva ni se degrada.
+- Corrección mínima sobre la misma rama comercial: `MySqlConnector 2.6.1` (versión parchada) únicamente en el proyecto de tests, con `PrivateAssets="all"`. No cambia proveedor Oracle EF Core, API, persistencia, DB, RBAC, secretos ni QA/main/PROD. Revalidación final depende de CI 3/3 sobre el SHA definitivo, además de la aprobación externa.
+- Render DEV readback nativo mantiene `dep-dbh3fq97lnhs738i9v50` LIVE sobre `dev@eff22b96aeeba323f43ef77c5e8ea54416b29cd2`; los nombres/targets efectivos de Render y el binding físico Aiven siguen NO_VERIFICADOS. P0-008.A permanece `EN_PROGRESO/PARTIAL_NO_GO`, PR DRAFT, sin merge ni LISTO. Acta: `docs/P0-008-A-REGISTRO-SECRETOS-METADATOS-DEV.md`. Revertir solo por PR protegido.
+
 ## 2026-10-28 — P0-008.A: readback nativo Render DEV exact-SHA, sin certificar MySQL (RENDER_DEV_LIVE_SHA_READBACK_20261028T0000)
 
 - Lectura autenticada metadata-only de servicio `solqaryn-api-dev` y deploy Render `dep-dbgi0215efls73dkhf40`: `live` sobre `dev@038da7e9dca2addd1e185737117468cab3534286`; repo/branch/Docker y healthCheckPath configurado verificados. Registro de variables Render, binding físico MySQL y backup/restore **NO_VERIFICADOS**. Se mantiene `EN_PROGRESO / PARTIAL_NO_GO`; ninguna credencial ni valor leído o modificado. Acta en `docs/P0-008-A-REGISTRO-SECRETOS-METADATOS-DEV.md`.
