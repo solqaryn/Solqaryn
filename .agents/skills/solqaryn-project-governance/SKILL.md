@@ -19,7 +19,7 @@ description: "Gobierno tecnico obligatorio y unica skill local de SOLQARYN. Usar
 - `LEGACY_INFRASTRUCTURE=DENY`
 - `LEGACY_DATA_SOURCE=VERIFIED_BACKUP_ONLY`
 
-Esta es la única Skill local y la primera puerta de entrada para cualquier chat o agente autorizado que trabaje sobre SOLQARYN. El motor de automatizaciones anteriores fue retirado por orden del propietario el 22-10-2026: no buscar, reinstalar o crear Tasks ni reactivar coordinación VAEP sin nueva autorización. Su estado se declara en `docs/AUTOMATION_STATUS.md`. Identidades, repositorios, deployments, servicios o cuentas retirados no se consultan ni se usan como fallback. El único dato heredado autorizado es un respaldo histórico verificado destinado a una migración futura explícita.
+Esta es la única Skill local y la primera puerta de entrada para cualquier chat o agente autorizado que trabaje sobre SOLQARYN. Los motores heredados VAEP/Jules y la topología antigua de diez Tasks fueron retirados por el propietario: no buscar, reinstalar ni reactivar esos mecanismos. Esto no retira el runtime de Tasks programadas aprobado posteriormente: su estado operativo, las Tasks autorizadas y sus límites se leen exclusivamente de `docs/AUTOMATION_STATUS.md` vigente en `dev` y se revalidan con la identidad, los permisos y la evidencia de cada ejecución. No crear Tasks ni ampliar autorizaciones por inferencia. Identidades, repositorios, deployments, servicios o cuentas retirados no se consultan ni se usan como fallback. El único dato heredado autorizado es un respaldo histórico verificado destinado a una migración futura explícita.
 
 ## 2. Fuentes canonicas
 
@@ -27,7 +27,7 @@ Leer en el orden necesario:
 
 1. `docs/PROJECT_SCOPE_LOCK.md`;
 2. `AGENTS.md`;
-3. `docs/AUTOMATION_STATUS.md` para confirmar que el sistema de automatización está retirado y no tiene autoridad activa;
+3. `docs/AUTOMATION_STATUS.md` para determinar el estado operativo vivo del runtime programado, el allowlist de Tasks y sus límites; no inferir activación ni retirada a partir de notas históricas o de esta Skill;
 4. HEAD vivo de `dev`;
 5. `PROJECT_CONTEXT.md` y `PROJECT_INDEX.md`;
 6. `ARCHITECTURE.md` cuando exista impacto estructural/transversal;
