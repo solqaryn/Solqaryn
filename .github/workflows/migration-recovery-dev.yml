@@ -166,7 +166,8 @@ jobs:
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261016200000_PublicStoreProofReplayGuard';")" = 1
           test "$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='PublicStoreBindings';")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261018200000_TenantRoleOwnershipDeterministicBackfill';")" = 1
-          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory;")" = 15
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261029150000_EnforceTenantRoleNameUniqueIndex';")" = 1
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory;")" = 16
           test "$(q "SELECT COUNT(*) FROM (
             SELECT INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS
              WHERE TABLE_SCHEMA=DATABASE()
@@ -175,6 +176,7 @@ jobs:
              GROUP BY INDEX_NAME
             HAVING MIN(NON_UNIQUE)=0 AND GROUP_CONCAT(COLUMN_NAME ORDER BY SEQ_IN_INDEX SEPARATOR ',')='EmpresaId,CorreoNormalizado'
           ) scoped_email;")" = 1
+          test "$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='Roles' AND INDEX_NAME='UX_Roles_Empresa_NombreNormalizado' AND NON_UNIQUE=0;")" = 1
 
           table_count_after="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME <> '__EFMigrationsHistory';")"
           test "$table_count_after" -ge 136
