@@ -117,7 +117,8 @@ jobs:
           # Incluye migración P4 de cuentas públicas por empresa, sin atribuir
           # ni perder registros históricos de prueba de los módulos P3.
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261018200000_TenantRoleOwnershipDeterministicBackfill';")" = 1
-          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory;")" = 15
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261029150000_EnforceTenantRoleNameUniqueIndex';")" = 1
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory;")" = 16
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261014112000_PublicStoreAccountEmailPerEmpresa';")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013181500_CommercialTenantScopedRootIndexes';")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261013190000_CommercialTenantInvoiceDocuments';")" = 1

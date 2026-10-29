@@ -1,5 +1,15 @@
 # P1-001.A — Mapa verificable de roles y membresías (DEV)
 
+## Corte de solo lectura — 2026-10-29
+
+La conexión confirmada en DBeaver fue `solqaryn_dev` (Aiven MySQL 8.4.11); no se consultaron ni modificaron otras bases. Se observaron 3 empresas activas, 7 membresías empresariales activas, 3 roles, 239 permisos activos, 263 vínculos RolPermisos y 1 asignación de rol de plataforma. Los conteos agregados de membresías activas incompatibles y asignaciones de plataforma incompatibles fueron ambos **0**; los grupos duplicados de roles personalizados por empresa/nombre normalizado fueron **0**.
+
+Las migraciones `20261014130000_CommercialTenantNaturalKeysPostStorefront` y `20261018200000_TenantRoleOwnershipDeterministicBackfill` aparecen en `__EFMigrationsHistory` con EF `10.0.12`. Sin embargo, `INFORMATION_SCHEMA.STATISTICS` muestra `UX_Roles_Empresa_NombreNormalizado` con `NON_UNIQUE=1` sobre `(EmpresaId,NombreNormalizado)`, aunque el modelo y la migración declaran unicidad. `UX_Roles_NombreNormalizadoGlobalUnico` sí aparece único (`NON_UNIQUE=0`) y `NombreNormalizadoGlobalUnico` existe como columna virtual. Esto es una discrepancia física real; que actualmente no haya duplicados no sustituye la restricción de unicidad.
+
+Se confirmó que `GET /roles` en la API Render DEV responde `401` sin JWT. Esa respuesta acredita el gate de autenticación del endpoint, pero no las pruebas HTTP/JWT A/B con dos membresías válidas. La prueba existente `P1001ARolesHttpJwtIsolationTests` sigue usando JWT de prueba, TestServer y EF InMemory, no la API ni MySQL DEV reales.
+
+La migración correctiva nueva reemplaza el índice no único por el único mediante un solo `ALTER TABLE`; no se ha aplicado a la base. Antes de cerrar P1-001.A aún se requiere CI y revisión independiente del PR, deployment de esa migración en DEV y readback de `NON_UNIQUE=0`, más la prueba autenticada A/B contra el servicio DEV real. El estado permanece **EN_PROGRESO / NO_LISTO**. No se leyeron filas de usuarios, nombres, correos, contraseñas ni datos comerciales.
+
 **Estado:** inventario de código y contrato EF/MySQL; **NO** es un censo de filas de la base DEV.  
 **Microtarea:** P1-001.A · Fuente comercial única: `STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES` (Google Doc `1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA`).  
 **Base inspeccionada:** `dev@785911f1095f13c0b6c0e859c35e0a7b733fcb3c` (2026-10-26 UTC).  
