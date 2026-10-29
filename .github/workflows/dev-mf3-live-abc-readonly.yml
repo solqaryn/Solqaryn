@@ -92,7 +92,7 @@ jobs:
           SOLQARYN_DEV_B_USERNAME: ${{ secrets.SOLQARYN_DEV_B_USERNAME }}
           SOLQARYN_DEV_C_USERNAME: ${{ secrets.SOLQARYN_DEV_C_USERNAME }}
         run: bash scripts/ci/mf3-abc-membership-readonly.sh
-      - name: Prueba HTTP JWT propia y cruzada A/B/C contra Render DEV (solo GET comerciales)
+      - name: Prueba HTTP JWT propia y cruzada A/B/C contra Render DEV (solo GET)
         shell: bash
         env:
           SOLQARYN_DEV_A_USERNAME: ${{ secrets.SOLQARYN_DEV_A_USERNAME }}
@@ -113,6 +113,7 @@ jobs:
             echo '- Tres identidades activas independientes / tres empresas activas: PASS'
             echo '- JWT reales y contexto empresarial propio: PASS'
             echo '- Rechazo cruzado y respuesta de permisos empresarial: PASS'
+            echo '- Lectura de roles A/B propia y negativa cruzada: PASS'
             echo '- Lecturas comerciales certificadas sólo por grants + flags: PASS'
             echo '- Operaciones de escritura comercial: NO ejecutadas'
             echo '- Secretos y tokens: no volcados a artefactos ni summaries'

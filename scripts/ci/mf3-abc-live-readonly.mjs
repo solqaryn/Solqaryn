@@ -18,6 +18,8 @@ const commercial = [
 ];
 const dataOf = v => v?.data ?? v?.Data ?? null;
 const firstOf = (v, camel, pascal) => v?.[camel] ?? v?.[pascal];
+const roleIdsOf = roles => new Set(roles.map(role =>
+  Number(firstOf(role, 'id', 'Id'))));
 
 function requireThat(ok, key) {
   if (!ok) throw new Error('MF3_BLOCKED=' + key);
@@ -244,6 +246,59 @@ async function verifyCommercial(users) {
   console.log('MF3_UNCERTIFIED_READS_DENIED=PASS count=' + quarantineReads);
   // Cada identidad probó al menos una lectura comercial legítima, no solo el grupo.
 }
+async function verifyLiveRoles(users) {
+  const a = users.find(user => user.label === 'A');
+  const b = users.find(user => user.label === 'B');
+  requireThat(a && b, 'roles_test_identities_missing');
+  const roleIdA = Number(process.env.MF3_ROLE_A_ID);
+  const roleIdB = Number(process.env.MF3_ROLE_B_ID);
+  requireThat(Number.isSafeInteger(roleIdA) && roleIdA > 0,
+    'tenant_role_mapping_A_missing');
+  requireThat(Number.isSafeInteger(roleIdB) && roleIdB > 0 && roleIdB !== roleIdA,
+    'tenant_role_mapping_B_missing');
+  for (const user of [a, b]) {
+    const grants = new Set(firstOf(user.permissions, 'permisos', 'Permisos'));
+    const caps = new Set(firstOf(user.permissions,
+      'capacidadesHabilitadas', 'CapacidadesHabilitadas'));
+    requireThat(grants.has('Roles:Ver') && caps.has('Roles:Ver'),
+      'roles_read_not_granted_' + user.label);
+  }
+
+  for (const [user, ownRoleId, foreignRoleId] of [
+    [a, roleIdA, roleIdB], [b, roleIdB, roleIdA]
+  ]) {
+    phase = 'OWN_ROLES_LIST_' + user.label;
+    const list = await http('/roles', user.token, user.id, undefined, true);
+    requireThat(list.status === 200,
+      'own_roles_list_' + user.label + '_http_' + list.status);
+    const roles = dataOf(list.data);
+    requireThat(Array.isArray(roles), 'roles_list_contract_' + user.label);
+    const ids = roleIdsOf(roles);
+    requireThat(ids.has(ownRoleId), 'own_role_absent_' + user.label);
+    requireThat(!ids.has(foreignRoleId), 'foreign_role_leaked_' + user.label);
+
+    phase = 'OWN_ROLE_DETAIL_' + user.label;
+    const own = await http('/roles/' + ownRoleId, user.token, user.id,
+      undefined, true);
+    requireThat(own.status === 200,
+      'own_role_detail_' + user.label + '_http_' + own.status);
+    const ownDto = dataOf(own.data);
+    requireThat(Number(firstOf(ownDto, 'id', 'Id')) === ownRoleId &&
+      Number(firstOf(ownDto, 'empresaId', 'EmpresaId')) === user.id,
+      'own_role_detail_scope_' + user.label);
+
+    phase = 'CROSS_ROLE_DETAIL_' + user.label;
+    const crossed = await http('/roles/' + foreignRoleId, user.token, user.id,
+      undefined, true);
+    requireThat(crossed.status === 404,
+      'cross_role_detail_' + user.label + '_http_' + crossed.status);
+  }
+  phase = 'ANONYMOUS_ROLES';
+  const anonymous = await http('/roles');
+  requireThat(denied.has(anonymous.status),
+    'anonymous_roles_list_http_' + anonymous.status);
+  console.log('MF3_LIVE_ROLES_AB_ISOLATION=PASS');
+}
 async function main() {
   if (process.argv.includes('--self-test')) {
     assert.deepEqual(labels, ['A', 'B', 'C']);
@@ -251,6 +306,7 @@ async function main() {
     assert.equal(dataOf({ data: { id: 1 } }).id, 1);
     assert.equal(firstOf({ empresaId: 3 }, 'empresaId', 'EmpresaId'), 3);
     assert(commercial.length >= 6 && commercial.every(x => x.path.startsWith('/')));
+    assert.deepEqual([...roleIdsOf([{ id: 7 }, { Id: '8' }])], [7, 8]);
     console.log('MF3_CONTRACT_SELF_TEST=PASS');
     return;
   }
@@ -264,6 +320,7 @@ async function main() {
     'duplicated_jwt');
   for (const user of users) await validateOwnedIdentity(user);
   await verifyCrossedContexts(users);
+  await verifyLiveRoles(users);
   await verifyCommercial(users);
   console.log('MF3_DEV_ABC_REAL_JWT=PASS');
 }
