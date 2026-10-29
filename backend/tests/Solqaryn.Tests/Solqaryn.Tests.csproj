@@ -17,7 +17,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.12" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.12" />
     <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.13" />
-    <PackageReference Include="MySqlConnector" Version="2.3.7" PrivateAssets="all" />
+    <PackageReference Include="MySqlConnector" Version="2.6.2" PrivateAssets="all" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Application\Solqaryn.Application.csproj" />
