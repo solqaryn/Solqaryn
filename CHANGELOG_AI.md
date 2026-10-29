@@ -1,3 +1,9 @@
+## 2026-10-29 — P0-001.B: habilitar autodespliegue Git de Vercel DEV
+- Se habilita `git.deploymentEnabled.dev=true` únicamente en `frontend/vercel.json` del proyecto `solqaryn-dev`; no se alteran QA, PROD ni las previews de PR.
+- Se alinea la política de `scripts/dev-vercel-release.mjs` para que el workflow consolidado valide el mismo ajuste y no lo revierta implícitamente.
+- Se actualiza `docs/DEV_VERCEL_CONSOLIDATED_RELEASE.md`; el filtro de cambios de gobernanza permanece intacto y los cambios de `frontend/vercel.json` sí permiten construir.
+- Verificación local: Project Scope, frescura de Skill, equivalencia Vercel (20 negativas), política de release, 14 negativas/1 positiva contrafactual de P0-001.B y contrato de routing PASS. El deployment exact-SHA actual queda pendiente de la integración protegida y el readback de Vercel/Render.
+
 ## 2026-10-28 — P0-005.B: certificado delimitado de restauración DEV probada (candidato)
 
 - Task propia `PRIMARY_DEV_02` (`6adc2e4bd8a48191ac7d8641ed95a1a3`), rama exclusiva `work/solqaryn-p0-005-b`, fuente `PLAN_MAESTRO!11`, dependencias `P0-005.A` y `P0-012.B` LISTO.
