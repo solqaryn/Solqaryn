@@ -176,7 +176,7 @@ jobs:
              GROUP BY INDEX_NAME
             HAVING MIN(NON_UNIQUE)=0 AND GROUP_CONCAT(COLUMN_NAME ORDER BY SEQ_IN_INDEX SEPARATOR ',')='EmpresaId,CorreoNormalizado'
           ) scoped_email;")" = 1
-          test "$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='Roles' AND INDEX_NAME='UX_Roles_Empresa_NombreNormalizado' AND NON_UNIQUE=0;")" = 1
+          test "$(q "SELECT COUNT(DISTINCT INDEX_NAME) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='Roles' AND INDEX_NAME='UX_Roles_Empresa_NombreNormalizado' AND NON_UNIQUE=0;")" = 1
 
           table_count_after="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME <> '__EFMigrationsHistory';")"
           test "$table_count_after" -ge 136
