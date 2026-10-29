@@ -1,3 +1,35 @@
+## 2026-10-27 — P0-004.A: lista cerrada de proyecciones SQL por consulta (SECONDARY_REVIEW_03)
+
+- GitHub `morales35alex`, Task `6adcc98a80a48191b71a5156624c21df`: en la misma rama y PR #3766 se incorporo una lista cerrada para las columnas proyectadas de Q01–Q09; rechaza proyecciones extra y `SELECT *` sin alterar el SQL manual ni el alcance de lectura. Se agregaron **11 regresiones negativas** y el total de pruebas pasa de 39 a **50**.
+- Commit de codigo `55e8f4678fc88a28d28371bd2c1c07470a45c324` verificado en GitHub Actions `40623904238` con checkout literal y **9 SELECT / 50 negativas PASS**; documento tecnico actualizado en la misma rama. `dev` mantenia `038da7e9dca2addd1e185737117468cab3534286` durante la comprobacion inicial y su CI obligatorio era 3/3 SUCCESS.
+- **NO_GO_VALIDANDO / NO_GO_LISTO**: falta evidencia MySQL DEV y respaldo del proveedor, reconciliacion sin force-push del conflicto de rama, CI del HEAD final e inspeccion independiente. PR abierto DRAFT, sin aprobacion/merge; no hubo cambios a base de datos, secretos, entornos, ni infraestructura.
+
+## 2026-10-27 — P0-004.A: evitar WHERE simulado dentro de cadenas SELECT (SECONDARY_REVIEW_03)
+
+- Se demostro que la comprobacion textual de `TABLE_SCHEMA = DATABASE()` o `TRIGGER_SCHEMA = DATABASE()` podia coincidir dentro de una cadena SELECT, aun sin filtro SQL ejecutable, y ampliar el inventario a otros esquemas. El guard rechaza literales/identificadores entrecomillados salvo el nombre fijo `'__EFMigrationsHistory'` de Q08. Cuatro regresiones negativas nuevas, total **39**; nueve SELECT manuales intactos.
+- Sin conexion a MySQL DEV ni migraciones, backups, cambios runtime, secretos o infraestructura. CI nuevo, readback, evidencia fisica y revision independiente pendientes. PR #3766 permanece DRAFT; P0-004.A EN_PROGRESO / NO_GO_VALIDANDO / NO_GO_LISTO.
+
+## 2026-10-26 — P0-004.A: impedir bypass del filtro por comentarios SQL inline (SECONDARY_REVIEW_03)
+
+- El SQL de metadatos se conserva intacto; la validacion fail-closed rechaza `--` dentro de una consulta, porque el `WHERE ... = DATABASE()` podria estar comentado y aun ser aceptado como texto. Se agregan tres negativos causales (Q02, Q07 y sentencia), de 32 a **35**.
+- Scope limitado al verificador, instrucciones y este registro; no hay DDL/DML, secretos, cambios runtime, migraciones ni acceso a MySQL DEV. CI del nuevo HEAD pendiente de readback; PR #3766 DRAFT, P0-004.A EN_PROGRESO / NO_GO_VALIDANDO / NO_GO_LISTO hasta evidencia fisica, checks exact-HEAD y revision independiente.
+
+## 2026-10-26 — P0-004.A: scope MySQL metadata en nueve SELECTs (SECONDARY_REVIEW_03)
+
+- Se evita el bypass de inventario por `WHERE 1=1`, `OR`/operadores booleanos o sustitución de fuente manteniendo referencias textuales: se verifica fuente exacta por posición, restricción del esquema efectivo y existencia nominal de `__EFMigrationsHistory`.
+- Los negativos sintéticos aumentan de 26 a 32; el SQL manual y sus nueve SELECT no cambian. CI exact HEAD del PR #3766 pendiente de comprobación tras este commit.
+- Estado: EN_PROGRESO / NO_GO_VALIDANDO / NO_GO_LISTO. MySQL DEV físico y respaldos del proveedor no consultados; falta evidencia autorizada de solo lectura, revisión independiente y merge protegido.
+
+## 2026-10-26 — P0-004.A: cierre de fuentes SQL permitidas (SECONDARY_REVIEW_03)
+
+- Se reemplaza la aceptación por prefijo `INFORMATION_SCHEMA.` por una lista exacta de tablas de metadatos autorizadas, cerrando acceso por `FROM`/`JOIN` a vistas no utilizadas (por ejemplo `USER_PRIVILEGES`, `PLUGINS`). Se añaden 3 regresiones negativas, total **26**. Validación dirigida local de la regla: 4 positivos y 3 negativos; CI exact-SHA pendiente de revalidación del changeset.
+- Sin conexión a MySQL DEV, sin cambios de esquema/infraestructura/secretos. PR #3766 continúa DRAFT, P0-004.A EN_PROGRESO y NO_GO_LISTO hasta evidencia física, CI y revisión independiente. Task `6adcc98a80a48191b71a5156624c21df` / GitHub `morales35alex`.
+
+## 2026-10-25 — P0-004.A: capturador SQL de solo lectura y negativos sinteticos (SECONDARY_REVIEW_03)
+
+- Task `6adcc98a80a48191b71a5156624c21df`, GitHub `morales35alex`, rama `work/solqaryn-p0-004-a`: SQL de nueve SELECTs para metadata MySQL DEV y `__EFMigrationsHistory` condicional, con prueba offline Node ampliada a 23 negativas (incluidos acceso indirecto por coma y STRAIGHT_JOIN) (incluidas funciones SELECT con acceso a archivos, locks, esperas, variables y subconsultas) y workflow de PR protegido; la CI exact-SHA del endurecimiento requiere nueva comprobacion.
+- No se conecto a MySQL DEV, ni se verificaron metadatos fisicos/backup, ni se ejecutaron migraciones ni se alteraron entornos. P0-004.A permanece EN_PROGRESO / NO_GO_LISTO hasta evidencia autentica; rollback solo mediante revert de PR protegido.
+
 ## 2026-10-29 — P0-001.B: habilitar autodespliegue Git de Vercel DEV
 
 - Se habilita `git.deploymentEnabled.dev=true` únicamente en `frontend/vercel.json` del proyecto `solqaryn-dev`; no se alteran QA, PROD ni las previews de PR.
@@ -35,7 +67,6 @@
 - Se documenta en `docs/P0-005-B-CERTIFICACION-RESTORE-DEV.md` evidencia GitHub autenticada del run `40739107659` en `dev@018df83b36d32f2225af4025f4b69f640041c2b2`: backup AES256/SHA256 Aiven DEV, restore mismo artefacto en MySQL CI descartable, hashes y conteos, API readiness PASS, migraciones inmutables y cleanup PASS. Artifact `12837184798` cifrado; no descargado.
 - Revisión Alex premerge #3781 y #3782, dev `eff22b96aeeba323f43ef77c5e8ea54416b29cd2` con checks 3/3 SUCCESS. Negativas: run CORS #40736901522 FAILED, schedule #40704276606 SKIPPED, 20 fixtures offline del contrato A; ninguna es prueba positiva de restore. No se simula un nuevo restore del HEAD documental actual.
 - Alcance solo documentación y verificación de evidencia existente; sin DB de producción, sin nuevos secretos, sin QA/main/PROD. Estado `EN_PROGRESO` hasta CI exact-SHA, aprobación independiente, merge protegido y readback Sheets. Rollback: revert protegido de esta acta, preservando el historial.
-
 ## 2026-10-26 — P0-005.A: validador seguro de evidencia de restore DEV (PRIMARY_DEV_02)
 
 - Task `6adc2e4bd8a48191ac7d8641ed95a1a3`, GitHub `jmejia31`, rama propia `work/solqaryn-p0-005-a`, `dev@35c67e330f876ee66f8015e889ffa151d6d4643a`, dependencia P0-012.B LISTO.
