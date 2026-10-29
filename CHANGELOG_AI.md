@@ -1,8 +1,22 @@
+## 2026-10-29 — P0-001.B: habilitar autodespliegue Git de Vercel DEV
+
+- Se habilita `git.deploymentEnabled.dev=true` únicamente en `frontend/vercel.json` del proyecto `solqaryn-dev`; no se alteran QA, PROD ni las previews de PR.
+- Se alinea la política de `scripts/dev-vercel-release.mjs` para que el workflow consolidado valide el mismo ajuste y no lo revierta implícitamente.
+- Se actualiza `docs/DEV_VERCEL_CONSOLIDATED_RELEASE.md`; el filtro de cambios de gobernanza permanece intacto y los cambios de `frontend/vercel.json` sí permiten construir.
+- Verificación local: Project Scope, frescura de Skill, equivalencia Vercel (20 negativas), política de release, 14 negativas/1 positiva contrafactual de P0-001.B y contrato de routing PASS. El deployment exact-SHA actual queda pendiente de la integración protegida y el readback de Vercel/Render.
+
 ## 2026-10-29 — P0-008.A: reparar auditoría NuGet de CI con dependencia exclusiva de tests
 
 - Evidencia: el CI exact-SHA del PR #3765 sobre `3502760158949298a335261a70f9790334a9e9f0` superó 947 pruebas pero falló en el control `dotnet list package --vulnerable` por `MySqlConnector 2.3.7` en `Solqaryn.Tests.csproj` (GHSA-473q-m89c-ghf8). El control de seguridad NO se desactiva ni se degrada.
-- Corrección mínima sobre la misma rama comercial: `MySqlConnector 2.6.1` (versión parchada) únicamente en el proyecto de tests, con `PrivateAssets="all"`. No cambia proveedor Oracle EF Core, API, persistencia, DB, RBAC, secretos ni QA/main/PROD. Revalidación final depende de CI 3/3 sobre el SHA definitivo, además de la aprobación externa.
-- Render DEV readback nativo mantiene `dep-dbh3fq97lnhs738i9v50` LIVE sobre `dev@eff22b96aeeba323f43ef77c5e8ea54416b29cd2`; los nombres/targets efectivos de Render y el binding físico Aiven siguen NO_VERIFICADOS. P0-008.A permanece `EN_PROGRESO/PARTIAL_NO_GO`, PR DRAFT, sin merge ni LISTO. Acta: `docs/P0-008-A-REGISTRO-SECRETOS-METADATOS-DEV.md`. Revertir solo por PR protegido.
+- Corrección mínima sobre la misma rama comercial: `MySqlConnector 2.6.1` únicamente en el proyecto de tests, con `PrivateAssets="all"`; al reconciliarse con `dev`, quedó `2.6.2`, también exclusivamente en tests. No cambia proveedor Oracle EF Core, API, persistencia, DB, RBAC, secretos ni QA/main/PROD. La revalidación requiere CI 3/3 sobre SHA final y aprobación nueva anclada a ese SHA.
+- Evidencia de Render/Aiven y límites actualizados en el corte siguiente. El PR sigue `EN_PROGRESO/PARTIAL_NO_GO` hasta CI, revisión, merge protegido y readback.
+
+## 2026-10-29 — P0-008.A: inventario metadata-only y binding de base DEV verificado
+
+- Lecturas autenticadas de Render, Aiven, GitHub y Vercel; valores de secretos permanecieron enmascarados/no descifrados y no se copiaron a archivos. Render `solqaryn-api-dev` reportó 52 nombres de variables, con 28 claves administradas por el contrato; `RENDER_ENV_CONTRACT=PASS` y `/health/ready` devolvió `ready/connected`.
+- El servicio Aiven MySQL `solqaryn-mysql` estaba `RUNNING`, 8.4.11, TLS requerido. El guard del HEAD vivo de Render valida el host/puerto, `Development`, base `solqaryn_dev` y usuario `solqaryn_dev_user`; readiness acreditó conexión efectiva desde el runtime DEV. No se inspeccionó credencial ni se ejecutó SQL.
+- Snapshot metadata-only: `docs/baselines/P0-008-A-DEV-METADATA-20261029.json`. El baseline 20261026 se conserva como historia. El validador de 12 negativas se actualiza para proteger el snapshot nuevo.
+- Esto resuelve la evidencia previa de nombres/binding de proveedor, pero no certifica inventario SQL de roles/grants/esquema, integridad comercial, paridad de despliegues ni completitud de secretos para otros consumidores. Estado sigue `EN_PROGRESO/PARTIAL_NO_GO` hasta reconciliación, CI exact-SHA, revisión independiente actualizada, merge protegido y readback institucional.
 
 ## 2026-10-28 — P0-008.A: readback nativo Render DEV exact-SHA, sin certificar MySQL (RENDER_DEV_LIVE_SHA_READBACK_20261028T0000)
 
@@ -15,6 +29,12 @@
 - Se incorporan `docs/baselines/P0-008-A-DEV-METADATA-20261026.json`, `docs/P0-008-A-REGISTRO-SECRETOS-METADATOS-DEV.md`, `scripts/verify-p0-008-a-secret-metadata.mjs` (12 negativos sintéticos) y workflow de Node read-only. Cierre sujeto a evidencia real, CI exact SHA, revisión independiente, merge protegido y readback. Sin escribir secretos, infra, API, base de datos, QA/main/PROD ni proveedores.
 
 - Verificación posterior `2026-10-26T07:07:34Z`: workflow de release DEV `40283854509` pasó política y falló con `MISSING_PROVIDER_TOKEN_IN_ACTIONS_SECRETS` para esa ejecución; Vercel proyecto `solqaryn-dev` reporta `live=false` y último deployment `CANCELED`. No implica inexistencia global del secreto, no certifica paridad ni autoriza modificarlo. Se mantiene P0-008.A PARTIAL_NO_GO y P0-001.B NO_GO; detalles en acta, sin valores ni cambios de proveedores.
+## 2026-10-28 — P0-005.B: certificado delimitado de restauración DEV probada (candidato)
+
+- Task propia `PRIMARY_DEV_02` (`6adc2e4bd8a48191ac7d8641ed95a1a3`), rama exclusiva `work/solqaryn-p0-005-b`, fuente `PLAN_MAESTRO!11`, dependencias `P0-005.A` y `P0-012.B` LISTO.
+- Se documenta en `docs/P0-005-B-CERTIFICACION-RESTORE-DEV.md` evidencia GitHub autenticada del run `40739107659` en `dev@018df83b36d32f2225af4025f4b69f640041c2b2`: backup AES256/SHA256 Aiven DEV, restore mismo artefacto en MySQL CI descartable, hashes y conteos, API readiness PASS, migraciones inmutables y cleanup PASS. Artifact `12837184798` cifrado; no descargado.
+- Revisión Alex premerge #3781 y #3782, dev `eff22b96aeeba323f43ef77c5e8ea54416b29cd2` con checks 3/3 SUCCESS. Negativas: run CORS #40736901522 FAILED, schedule #40704276606 SKIPPED, 20 fixtures offline del contrato A; ninguna es prueba positiva de restore. No se simula un nuevo restore del HEAD documental actual.
+- Alcance solo documentación y verificación de evidencia existente; sin DB de producción, sin nuevos secretos, sin QA/main/PROD. Estado `EN_PROGRESO` hasta CI exact-SHA, aprobación independiente, merge protegido y readback Sheets. Rollback: revert protegido de esta acta, preservando el historial.
 
 ## 2026-10-26 — P0-005.A: validador seguro de evidencia de restore DEV (PRIMARY_DEV_02)
 

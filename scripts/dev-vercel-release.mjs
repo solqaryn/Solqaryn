@@ -12,7 +12,7 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 function policy() {
   const json = JSON.parse(readFileSync('frontend/vercel.json', 'utf8'));
-  assert.equal(json.git?.deploymentEnabled?.dev, false);
+  assert.equal(json.git?.deploymentEnabled?.dev, true);
   assert.deepEqual(Object.keys(json.git.deploymentEnabled), ['dev']);
   assert.equal(json.ignoreCommand, 'node scripts/vercel-ignore-build.mjs');
 }
