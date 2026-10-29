@@ -2,6 +2,13 @@
 
 **Estado de evidencia:** `EN_PROGRESO / PARTIAL_NO_GO`. **Task:** PRIMARY_DEV_01 Javier :00, ID `6adbb9fff1548191a1bd5b30d9e9984a`. **Actor GitHub:** `jmejia31`. **Dependencia:** P0-012.B LISTO. **Base auditada:** `dev@785911f1095f13c0b6c0e859c35e0a7b733fcb3c`. **Fuente comercial:** Plan Inicial V3, PLAN_MAESTRO fila 16, Doc Drive ID `1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA`.
 
+## Readback CI seguridad 2026-10-29 (control de regresión, sin cierre)
+
+- El CI obligatorio de PR #3765 sobre SHA `3502760158949298a335261a70f9790334a9e9f0` reportó FAIL en auditoría NuGet del proyecto exclusivo de pruebas: paquete `MySqlConnector 2.3.7` con advisory moderado `GHSA-473q-m89c-ghf8`. Las 947 pruebas anteriores a la auditoría pasaron (0 fallos); esa ejecución **NO** certifica 3/3.
+- Remediación quirúrgica en el **mismo PR/branch**: commit `93ef9effc083de4a865651afab4eb6b7514aa348` actualiza solo `backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj` a `MySqlConnector 2.6.1`, mínimo corregido según el advisory. Se conserva `PrivateAssets="all"` y no se modifican paquetes del runtime, API, DB, autenticación, claves, endpoints ni producción. Validación exact-SHA posterior **PENDIENTE de readback concluyente** al registrar este cambio.
+- Nueva lectura autenticada Render en workspace `SOLQARYN`: `solqaryn-api-dev` mantiene despliegue `dep-dbh3fq97lnhs738i9v50` status `live` sobre `dev@eff22b96aeeba323f43ef77c5e8ea54416b29cd2` (estado del proveedor, no prueba de SQL). Registro efectivo de variables Render y binding físico Aiven MySQL continúan **NO_VERIFICADOS**; los grants y el soft-delete `Categorias.Id=2` son constancias del propietario, sin SQL propio.
+- Se mantiene `P0-008.A=EN_PROGRESO/PARTIAL_NO_GO`; PR DRAFT, sin revisión formal/merge. El test-dependency bump corrige solo el bloqueo CI descubierto y NO suple evidencia provider/binding. Rollback por revert del cambio acotado mediante PR protegido.
+
 ## Alcance / fuente reproducible
 
 Inspección **solo de nombres, ámbitos y tipos declarados**, sin descargar, descifrar, registrar ni comparar valores. La evidencia es una instantánea de metadatos de proveedores conectados; **NO** acredita que la aplicación haya usado estos valores, que estén vigentes, ni que exista paridad/seguridad real. El snapshot versionado `docs/baselines/P0-008-A-DEV-METADATA-20261026.json` es histórico y no reemplaza nuevas lecturas del proveedor.
@@ -38,4 +45,4 @@ Inspección **solo de nombres, ámbitos y tipos declarados**, sin descargar, des
 
 ## Impacto y rollback
 
-Cambios solo en documentación, snapshot de nombres, script Node de comprobación offline y workflow read-only. No se modifican UI Angular, API/DTO, MySQL, migraciones, RBAC, secretos, provider settings, dominios, deployments ni QA/main/PROD. El rollback consiste en revertir exclusivamente este changeset mediante PR protegido, preservando evidencia histórica.
+Cambios de la entrega en documentación, snapshot de nombres, script Node de comprobación offline y workflow read-only; remedio CI adicional limitado a la versión de MySqlConnector del proyecto de pruebas, sin alterar paquete del runtime. No se modifican UI Angular, API/DTO, MySQL, migraciones, RBAC, secretos, provider settings, dominios, deployments ni QA/main/PROD. El rollback consiste en revertir exclusivamente este changeset mediante PR protegido, preservando evidencia histórica.
