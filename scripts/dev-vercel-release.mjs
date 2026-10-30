@@ -32,6 +32,20 @@ function matchesReady(d, sha) {
   return (d.state === 'READY' || d.readyState === 'READY') &&
     actualSha(d) === sha && (!d.projectId || d.projectId === PROJECT);
 }
+function isExpectedGovernanceSkip(d, events, sha) {
+  if (!shaOk(sha) || (d.state !== 'CANCELED' && d.readyState !== 'CANCELED')) return false;
+  if (d.id == null || d.projectId !== PROJECT || d.name !== 'solqaryn-dev' ||
+      actualSha(d) !== sha || d.meta?.githubCommitRef !== 'dev' ||
+      !String(d.errorLink || '').includes('#ignored-build-step')) return false;
+  const lines = (events || []).map(e => ({
+    type: e.type || e.payload?.type,
+    text: String(e.text || e.payload?.text || '')
+  }));
+  return lines.some(e => e.type === 'stdout' &&
+      /NON_RUNTIME_GOVERNANCE_ONLY_SKIP files=\d+ branch=dev/.test(e.text)) &&
+    lines.some(e => e.type === 'stderr' &&
+      /deployment was canceled because the Ignored Build Step command returned exit code 0/i.test(e.text));
+}
 function recentRelease(deployments, now) {
   return deployments.some(d => d.meta?.solqarynConsolidatedDev === 'true' &&
     Number.isFinite(Number(d.created ?? d.createdAt)) &&
@@ -143,6 +157,18 @@ async function main() {
     assert.equal(matchesReady({state:'CANCELED',gitSource:{sha}},sha),false);
     assert.equal(matchesReady({state:'READY',gitSource:{sha}},sha),true);
     assert.equal(matchesReady({state:'READY',gitSource:{sha:'b'.repeat(40)}},sha),false);
+    const skipped = {id:'dpl-test',state:'CANCELED',projectId:PROJECT,name:'solqaryn-dev',
+      gitSource:{sha},meta:{githubCommitRef:'dev'},errorLink:'https://vercel.com/errors#ignored-build-step'};
+    const skipEvents = [
+      {type:'stdout',text:'NON_RUNTIME_GOVERNANCE_ONLY_SKIP files=2 branch=dev'},
+      {type:'stderr',text:'The deployment was canceled because the Ignored Build Step command returned exit code 0.'}
+    ];
+    assert.equal(isExpectedGovernanceSkip(skipped,skipEvents,sha),true);
+    assert.equal(isExpectedGovernanceSkip({...skipped,gitSource:{sha:'b'.repeat(40)}},skipEvents,sha),false);
+    assert.equal(isExpectedGovernanceSkip({...skipped,projectId:'wrong'},skipEvents,sha),false);
+    assert.equal(isExpectedGovernanceSkip({...skipped,errorLink:'https://vercel.com/errors#build-error'},skipEvents,sha),false);
+    assert.equal(isExpectedGovernanceSkip(skipped,skipEvents.slice(0,1),sha),false);
+    assert.equal(isExpectedGovernanceSkip({...skipped,state:'ERROR'},skipEvents,sha),false);
     assert.equal(recentRelease([{created:Date.now()-300000,meta:{solqarynConsolidatedDev:'true'}}],Date.now()),true);
     assert.equal(recentRelease([{created:Date.now()-3900000,meta:{solqarynConsolidatedDev:'true'}}],Date.now()),false);
     assert.equal(teamQuotaHeadroom(Array.from({length:95},()=>({created:Date.now()-1000})),Date.now()),false);
@@ -211,7 +237,16 @@ async function main() {
       console.log('DEV_DEPLOYMENT_READY=PASS SHA='+sha+' ID='+d.id+' URL='+d.url);
       return;
     }
-    if (['ERROR','CANCELED','BLOCKED','SKIPPED'].includes(state)) throw Error('DEV_DEPLOYMENT_NOT_READY:'+state+':'+d.id);
+    if (['ERROR','CANCELED','BLOCKED','SKIPPED'].includes(state)) {
+      if (state === 'CANCELED' && d.projectId === PROJECT && actualSha(d) === sha) {
+        const events = await requestJson(url+'/v3/deployments/'+encodeURIComponent(d.id)+'/events?teamId='+TEAM+'&limit=100',vt);
+        if (isExpectedGovernanceSkip(d, events.events || events, sha)) {
+          console.log('DEV_DEPLOYMENT_SKIPPED_NON_RUNTIME=PASS SHA='+sha+' ID='+d.id+' VERCEL_EXACT_SHA_READY=NO');
+          return;
+        }
+      }
+      throw Error('DEV_DEPLOYMENT_NOT_READY:'+state+':'+d.id);
+    }
     await sleep(5000);
   }
   throw Error('DEV_DEPLOYMENT_TIMEOUT:'+made.id);
