@@ -161,6 +161,19 @@ requerido exact-SHA del PR que documenta la excepción, merge protegido y
 readback de `PLAN_MAESTRO`, `COLA` y `BITACORA`. Esta sección no cambia por sí
 sola el estado institucional.
 
+#### Seguimiento del control compensatorio (2026-10-30)
+
+El PR documental #3794, commit `8f6778c012d8d7ed6cf90133aa99b45d09b92f26`,
+se fusionó por `solqaryn-platform` como
+`804d9c636540e1aaa4a92e0bfecdd6f2260d65e7` sin una revisión formal (`reviews=[]`).
+Por tanto, #3794 integra la decisión del propietario y el registro factual,
+pero **no satisface** el control compensatorio independiente descrito arriba.
+El PR #3795 se mantiene en borrador para solicitar a Alex (`morales35alex`) una
+revisión formal del diff exacto de #3793 (`e5032751b22cb1eab56762f5c79638c777a9ed27`)
+y del flujo real #41087748364. El revisor deberá consignar en su review el
+resultado de esa inspección. No marcar como listo ni habilitar el merge de
+#3795 antes de esa revisión.
+
 Se mantiene `VALIDANDO` durante reparaciones del revisor. No regresar
 artificialmente a `EN_PROGRESO` por un defecto corregible.
 Si una ejecución termina por limite del proveedor, conservar estado veridico,
