@@ -55,6 +55,19 @@ for label in A B C; do
   seen_users[$uid]=1
   seen_companies[$cid]=1
   printf 'MF3_COMPANY_%s_ID=%s\n' "$label" "$cid" >> "$GITHUB_ENV"
+  if [[ "$label" == A || "$label" == B ]]; then
+    role_id="$(query "
+      SELECT Id
+      FROM Roles
+      WHERE EmpresaId=$cid AND Ambito=1 AND EsSistema=0
+        AND Activo=1 AND Eliminado=0
+      ORDER BY Id
+      LIMIT 1
+    ")"
+    [[ "$role_id" =~ ^[1-9][0-9]*$ ]] || stop "tenant_role_${label}_missing"
+    printf 'MF3_ROLE_%s_ID=%s\n' "$label" "$role_id" >> "$GITHUB_ENV"
+    printf 'MF3_TENANT_ROLE_%s=PREFLIGHT_PASS\n' "$label"
+  fi
   printf 'MF3_IDENTITY_%s=PREFLIGHT_PASS\n' "$label"
 done
 
