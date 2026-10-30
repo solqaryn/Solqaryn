@@ -88,21 +88,25 @@ jobs:
           DB_NAME: ${{ vars.SOLQARYN_DEV_DB_NAME }}
           DB_USER: ${{ vars.SOLQARYN_DEV_DB_USER }}
           DB_PASSWORD: ${{ secrets.SOLQARYN_DEV_DB_PASSWORD }}
+          # Los nombres A/B nuevos se verifican contra IDs 2/3. Los slots
+          # originales B/C guardan sus contraseñas; el slot A anterior queda C (ID 1).
           SOLQARYN_DEV_A_USERNAME: admin_prueba_a
           SOLQARYN_DEV_B_USERNAME: admin_prueba_b
-          SOLQARYN_DEV_C_USERNAME: ${{ secrets.SOLQARYN_DEV_C_USERNAME }}
+          SOLQARYN_DEV_C_USERNAME: ${{ secrets.SOLQARYN_DEV_A_USERNAME }}
           SOLQARYN_DEV_A_EXPECTED_COMPANY_ID: '2'
           SOLQARYN_DEV_B_EXPECTED_COMPANY_ID: '3'
+          SOLQARYN_DEV_C_EXPECTED_COMPANY_ID: '1'
         run: bash scripts/ci/mf3-abc-membership-readonly.sh
       - name: Prueba HTTP JWT propia y cruzada A/B/C contra Render DEV (solo GET)
         shell: bash
         env:
+          # Mantener cada contraseña ligada a la cuenta que ya validó el preflight.
           SOLQARYN_DEV_A_USERNAME: admin_prueba_a
-          SOLQARYN_DEV_A_PASSWORD: ${{ secrets.SOLQARYN_DEV_A_PASSWORD }}
+          SOLQARYN_DEV_A_PASSWORD: ${{ secrets.SOLQARYN_DEV_B_PASSWORD }}
           SOLQARYN_DEV_B_USERNAME: admin_prueba_b
-          SOLQARYN_DEV_B_PASSWORD: ${{ secrets.SOLQARYN_DEV_B_PASSWORD }}
-          SOLQARYN_DEV_C_USERNAME: ${{ secrets.SOLQARYN_DEV_C_USERNAME }}
-          SOLQARYN_DEV_C_PASSWORD: ${{ secrets.SOLQARYN_DEV_C_PASSWORD }}
+          SOLQARYN_DEV_B_PASSWORD: ${{ secrets.SOLQARYN_DEV_C_PASSWORD }}
+          SOLQARYN_DEV_C_USERNAME: ${{ secrets.SOLQARYN_DEV_A_USERNAME }}
+          SOLQARYN_DEV_C_PASSWORD: ${{ secrets.SOLQARYN_DEV_A_PASSWORD }}
         run: |
           set -euo pipefail
           node scripts/ci/mf3-abc-live-readonly.mjs
