@@ -25,6 +25,12 @@ const isRoleVisibleToTenant = (role, companyId) => {
   return owner === companyId || (owner == null &&
     firstOf(role, 'esSistema', 'EsSistema') === true);
 };
+const canReadRoles = user => {
+  const grants = new Set(firstOf(user.permissions, 'permisos', 'Permisos'));
+  const caps = new Set(firstOf(user.permissions,
+    'capacidadesHabilitadas', 'CapacidadesHabilitadas'));
+  return grants.has('Roles:Ver') && caps.has('Roles:Ver');
+};
 
 function requireThat(ok, key) {
   if (!ok) throw new Error('MF3_BLOCKED=' + key);
@@ -272,16 +278,21 @@ async function verifyLiveRoles(users) {
       'assigned_role_mapping_' + label + '_missing');
     assignedRoleIds.set(label, assignedId);
   }
-  for (const user of [a, b]) {
-    const grants = new Set(firstOf(user.permissions, 'permisos', 'Permisos'));
-    const caps = new Set(firstOf(user.permissions,
-      'capacidadesHabilitadas', 'CapacidadesHabilitadas'));
-    requireThat(grants.has('Roles:Ver') && caps.has('Roles:Ver'),
-      'roles_read_not_granted_' + user.label);
-  }
-
   let crossIdChecks = 0;
   for (const user of [a, b]) {
+    if (!canReadRoles(user)) {
+      phase = 'DENIED_ROLES_LIST_' + user.label;
+      const listDenied = await http('/roles', user.token, user.id);
+      requireThat(listDenied.status === 403,
+        'roles_list_without_grant_' + user.label + '_http_' + listDenied.status);
+      phase = 'DENIED_ROLE_DETAIL_' + user.label;
+      const detailDenied = await http('/roles/' + assignedRoleIds.get(user.label),
+        user.token, user.id);
+      requireThat(detailDenied.status === 403,
+        'role_detail_without_grant_' + user.label + '_http_' + detailDenied.status);
+      console.log('MF3_ROLES_READ_DENIED_AS_CONFIGURED_' + user.label + '=PASS');
+      continue;
+    }
     phase = 'OWN_ROLES_LIST_' + user.label;
     const list = await http('/roles', user.token, user.id, undefined, true);
     requireThat(list.status === 200,
@@ -328,7 +339,7 @@ async function verifyLiveRoles(users) {
     console.log('MF3_CROSS_ROLE_ID_DENIALS=PASS count=' + crossIdChecks);
   else
     console.log('MF3_CROSS_ROLE_ID_DENIALS=NOT_RUN reason=no_private_role_fixture');
-  console.log('MF3_LIVE_ROLES_AB_READS=PASS');
+  console.log('MF3_LIVE_ROLES_AB_AUTHORIZATION=PASS');
 }
 async function main() {
   if (process.argv.includes('--self-test')) {
@@ -342,6 +353,12 @@ async function main() {
     assert(isRoleVisibleToTenant({ EmpresaId: null, EsSistema: true }, 4));
     assert(!isRoleVisibleToTenant({ empresaId: 5, esSistema: false }, 4));
     assert(!isRoleVisibleToTenant({ EmpresaId: null, EsSistema: false }, 4));
+    assert(canReadRoles({ permissions: {
+      permisos: ['Roles:Ver'], capacidadesHabilitadas: ['Roles:Ver']
+    } }));
+    assert(!canReadRoles({ permissions: {
+      permisos: [], capacidadesHabilitadas: []
+    } }));
     console.log('MF3_CONTRACT_SELF_TEST=PASS');
     return;
   }
