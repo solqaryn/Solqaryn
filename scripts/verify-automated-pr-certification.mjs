@@ -23,15 +23,16 @@ export function certify({ pr, files, runs, reviews = [], commits = [], repositor
   if (!pr || pr.base?.ref !== 'dev') fail('BASE_NOT_DEV');
   if (!pr || !/^[a-f0-9]{40}$/i.test(pr.head?.sha || '') || pr.head?.sha !== expectedHead) fail('HEAD_SHA_MISMATCH');
   if (!pr || pr.head?.repo?.full_name !== repository || pr.base?.repo?.full_name !== repository) fail('FOREIGN_REPOSITORY');
-  if (![['jmejia','31'].join(''), 'morales35alex'].includes(pr?.user?.login)) fail('TASK_GITHUB_IDENTITY_NOT_ALLOWLISTED');
+  if (![['jmejia','31'].join(''), 'morales35alex', 'solqaryn-platform'].includes(pr?.user?.login)) fail('GITHUB_AUTHOR_NOT_ALLOWLISTED');
   if (!Array.isArray(files) || files.length === 0 || files.length > 200) fail('PR_FILE_COUNT_INVALID');
   const scope = pr?.title?.match(SCOPE)?.[1]?.toUpperCase();
+  if (scope && pr?.user?.login === 'solqaryn-platform') fail('INSTITUTIONAL_GITHUB_IDENTITY_NOT_COMMERCIAL_TASK');
   const names = files?.map(x => x.filename) || [];
   if (new Set(names).size !== names.length || names.some(n => typeof n !== 'string' || n.includes('..') || n.includes('\\'))) fail('UNSAFE_FILE_PATH');
   if (names.some(n => BLOCKED_RUNTIME_PATHS.test(n))) fail('QA_PROD_SECRET_FILE_SCOPE_FORBIDDEN');
   if (!names.includes('CHANGELOG_AI.md')) fail('CHANGELOG_MISSING');
   if (scope) {
-    if (!pr.head.ref.startsWith('work/solqaryn-' + scope.toLowerCase().replace(/\./g, '-'))) fail('NON_DETERMINISTIC_COMMERCIAL_BRANCH');
+    if (pr.head.ref !== 'work/solqaryn-' + scope.toLowerCase().replace(/\./g, '-')) fail('NON_DETERMINISTIC_COMMERCIAL_BRANCH');
     if (!String(pr.body || '').includes(scope)) fail('SCOPE_EVIDENCE_MISSING');
   }
   for (const file of files || []) {
@@ -82,6 +83,7 @@ function selfTest() {
   assertReject('draft', x => { x.pr.draft = true; return x; });
   assertReject('foreign repo', x => { x.pr.head.repo.full_name = 'other/repo'; return x; });
   assertReject('forbidden author', x => { x.pr.user.login = 'unknown'; return x; });
+  assertReject('platform cannot claim commercial scope', x => { x.pr.user.login = 'solqaryn-platform'; return x; });
   assertReject('missing targeted test', x => ({...x, runs: x.runs.slice(0, 2)}));
   assertReject('pending check', x => { x.runs[2].status = 'in_progress'; x.runs[2].conclusion = null; return x; });
   assertReject('non deterministic branch', x => { x.pr.head.ref = 'feature/random'; return x; });
@@ -91,6 +93,9 @@ function selfTest() {
   const human = clone(fixture); human.files.push({filename:'docs/AUTOMATION_STATUS.md'});
   human.reviews = [{ state:'APPROVED', commit_id:h, user:{login:'morales35alex'} }];
   assertPass('separate formal governance review', human);
+  const institution = clone(human); institution.pr.user.login = 'solqaryn-platform'; institution.pr.title = 'docs(governance): Update policy'; institution.pr.head.ref = 'codex/governance-update'; institution.reviews = [{state:'APPROVED',commit_id:h,user:{login:'morales35alex'}}];
+  assertPass('platform governance with independent review', institution);
+
   assertReject('self governance approval', x => { x.files.push({filename:'docs/AUTOMATION_STATUS.md'}); x.reviews = [{state:'APPROVED',commit_id:h,user:{login:['jmejia','31'].join('')}}];return x; });
   assertReject('stale governance review', x => { x.files.push({filename:'docs/AUTOMATION_STATUS.md'}); x.reviews = [{state:'APPROVED',commit_id:'b'.repeat(40),user:{login:'morales35alex'}}];return x; });
   console.log('AUTO_CERT_SELF_TEST=PASS (2 positive + 15 fail-closed negatives)');
