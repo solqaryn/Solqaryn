@@ -20,6 +20,11 @@ const dataOf = v => v?.data ?? v?.Data ?? null;
 const firstOf = (v, camel, pascal) => v?.[camel] ?? v?.[pascal];
 const roleIdsOf = roles => new Set(roles.map(role =>
   Number(firstOf(role, 'id', 'Id'))));
+const isRoleVisibleToTenant = (role, companyId) => {
+  const owner = firstOf(role, 'empresaId', 'EmpresaId');
+  return owner === companyId || (owner == null &&
+    firstOf(role, 'esSistema', 'EsSistema') === true);
+};
 
 function requireThat(ok, key) {
   if (!ok) throw new Error('MF3_BLOCKED=' + key);
@@ -250,12 +255,23 @@ async function verifyLiveRoles(users) {
   const a = users.find(user => user.label === 'A');
   const b = users.find(user => user.label === 'B');
   requireThat(a && b, 'roles_test_identities_missing');
-  const roleIdA = Number(process.env.MF3_ROLE_A_ID);
-  const roleIdB = Number(process.env.MF3_ROLE_B_ID);
-  requireThat(Number.isSafeInteger(roleIdA) && roleIdA > 0,
-    'tenant_role_mapping_A_missing');
-  requireThat(Number.isSafeInteger(roleIdB) && roleIdB > 0 && roleIdB !== roleIdA,
-    'tenant_role_mapping_B_missing');
+  const privateRoleIds = new Map();
+  const assignedRoleIds = new Map();
+  for (const label of ['A', 'B']) {
+    const privateRaw = process.env['MF3_ROLE_' + label + '_ID'] ?? '';
+    if (privateRaw === '') {
+      privateRoleIds.set(label, null);
+    } else {
+      const privateId = Number(privateRaw);
+      requireThat(Number.isSafeInteger(privateId) && privateId > 0,
+        'tenant_role_mapping_' + label + '_invalid');
+      privateRoleIds.set(label, privateId);
+    }
+    const assignedId = Number(process.env['MF3_ASSIGNED_ROLE_' + label + '_ID']);
+    requireThat(Number.isSafeInteger(assignedId) && assignedId > 0,
+      'assigned_role_mapping_' + label + '_missing');
+    assignedRoleIds.set(label, assignedId);
+  }
   for (const user of [a, b]) {
     const grants = new Set(firstOf(user.permissions, 'permisos', 'Permisos'));
     const caps = new Set(firstOf(user.permissions,
@@ -264,9 +280,8 @@ async function verifyLiveRoles(users) {
       'roles_read_not_granted_' + user.label);
   }
 
-  for (const [user, ownRoleId, foreignRoleId] of [
-    [a, roleIdA, roleIdB], [b, roleIdB, roleIdA]
-  ]) {
+  let crossIdChecks = 0;
+  for (const user of [a, b]) {
     phase = 'OWN_ROLES_LIST_' + user.label;
     const list = await http('/roles', user.token, user.id, undefined, true);
     requireThat(list.status === 200,
@@ -274,8 +289,12 @@ async function verifyLiveRoles(users) {
     const roles = dataOf(list.data);
     requireThat(Array.isArray(roles), 'roles_list_contract_' + user.label);
     const ids = roleIdsOf(roles);
-    requireThat(ids.has(ownRoleId), 'own_role_absent_' + user.label);
-    requireThat(!ids.has(foreignRoleId), 'foreign_role_leaked_' + user.label);
+    const ownRoleId = assignedRoleIds.get(user.label);
+    requireThat(ids.has(ownRoleId), 'assigned_role_absent_' + user.label);
+    for (const role of roles) {
+      requireThat(isRoleVisibleToTenant(role, user.id),
+        'foreign_or_unowned_role_in_list_' + user.label);
+    }
 
     phase = 'OWN_ROLE_DETAIL_' + user.label;
     const own = await http('/roles/' + ownRoleId, user.token, user.id,
@@ -284,20 +303,32 @@ async function verifyLiveRoles(users) {
       'own_role_detail_' + user.label + '_http_' + own.status);
     const ownDto = dataOf(own.data);
     requireThat(Number(firstOf(ownDto, 'id', 'Id')) === ownRoleId &&
-      Number(firstOf(ownDto, 'empresaId', 'EmpresaId')) === user.id,
+      (Number(firstOf(ownDto, 'empresaId', 'EmpresaId')) === user.id ||
+        (firstOf(ownDto, 'empresaId', 'EmpresaId') == null &&
+          firstOf(ownDto, 'esSistema', 'EsSistema') === true)),
       'own_role_detail_scope_' + user.label);
 
-    phase = 'CROSS_ROLE_DETAIL_' + user.label;
-    const crossed = await http('/roles/' + foreignRoleId, user.token, user.id,
-      undefined, true);
-    requireThat(crossed.status === 404,
-      'cross_role_detail_' + user.label + '_http_' + crossed.status);
+    const otherLabel = user.label === 'A' ? 'B' : 'A';
+    const foreignRoleId = privateRoleIds.get(otherLabel);
+    if (foreignRoleId !== null) {
+      requireThat(!ids.has(foreignRoleId), 'foreign_role_leaked_' + user.label);
+      phase = 'CROSS_ROLE_DETAIL_' + user.label;
+      const crossed = await http('/roles/' + foreignRoleId, user.token, user.id,
+        undefined, true);
+      requireThat(crossed.status === 404,
+        'cross_role_detail_' + user.label + '_http_' + crossed.status);
+      crossIdChecks++;
+    }
   }
   phase = 'ANONYMOUS_ROLES';
   const anonymous = await http('/roles');
   requireThat(denied.has(anonymous.status),
     'anonymous_roles_list_http_' + anonymous.status);
-  console.log('MF3_LIVE_ROLES_AB_ISOLATION=PASS');
+  if (crossIdChecks > 0)
+    console.log('MF3_CROSS_ROLE_ID_DENIALS=PASS count=' + crossIdChecks);
+  else
+    console.log('MF3_CROSS_ROLE_ID_DENIALS=NOT_RUN reason=no_private_role_fixture');
+  console.log('MF3_LIVE_ROLES_AB_READS=PASS');
 }
 async function main() {
   if (process.argv.includes('--self-test')) {
@@ -307,6 +338,10 @@ async function main() {
     assert.equal(firstOf({ empresaId: 3 }, 'empresaId', 'EmpresaId'), 3);
     assert(commercial.length >= 6 && commercial.every(x => x.path.startsWith('/')));
     assert.deepEqual([...roleIdsOf([{ id: 7 }, { Id: '8' }])], [7, 8]);
+    assert(isRoleVisibleToTenant({ empresaId: 4, esSistema: false }, 4));
+    assert(isRoleVisibleToTenant({ EmpresaId: null, EsSistema: true }, 4));
+    assert(!isRoleVisibleToTenant({ empresaId: 5, esSistema: false }, 4));
+    assert(!isRoleVisibleToTenant({ EmpresaId: null, EsSistema: false }, 4));
     console.log('MF3_CONTRACT_SELF_TEST=PASS');
     return;
   }
