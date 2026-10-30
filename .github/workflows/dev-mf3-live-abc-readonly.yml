@@ -91,8 +91,8 @@ jobs:
           SOLQARYN_DEV_A_USERNAME: admin_prueba_a
           SOLQARYN_DEV_B_USERNAME: admin_prueba_b
           SOLQARYN_DEV_C_USERNAME: ${{ secrets.SOLQARYN_DEV_C_USERNAME }}
-          SOLQARYN_DEV_A_EXPECTED_COMPANY_ID: '6'
-          SOLQARYN_DEV_B_EXPECTED_COMPANY_ID: '7'
+          SOLQARYN_DEV_A_EXPECTED_COMPANY_ID: '2'
+          SOLQARYN_DEV_B_EXPECTED_COMPANY_ID: '3'
         run: bash scripts/ci/mf3-abc-membership-readonly.sh
       - name: Prueba HTTP JWT propia y cruzada A/B/C contra Render DEV (solo GET)
         shell: bash
