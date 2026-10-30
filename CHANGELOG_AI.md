@@ -1,3 +1,10 @@
+## 2026-10-30 — P1-001.A: aceptación excepcional limitada de revisión tardía
+
+- Por decisión expresa del propietario, se documenta una excepción exclusiva para P1-001.A/#3793: el PR se fusionó sin revisión formal; no se afirma cumplimiento previo ni se extiende precedente. Se conservan el autor, SHA de código, actor/fecha de merge y ausencia de reviews tal como GitHub los registra.
+- Se exige revisión compensatoria posterior del diff exacto y evidencia del flujo real por Alex o un representante humano identificable de SOLQARYN Platform, con login independiente, además de CI del PR documental, merge protegido y readback institucional antes de LISTO.
+- Evidencia técnica: DEV workflow #41087748364 SUCCESS en SHA `064dfd4979811164ab34c1e0319b3b7b609db44e`; SQL solo SELECT y peticiones API solo GET. Este changeset es únicamente de gobierno; no modifica código runtime, base de datos, secretos ni infraestructura.
+- Estado institucional sigue EN_PROGRESO hasta completar los controles compensatorios.
+
 ## 2026-10-29 — P1-001.A: corregir índice físico de roles tenant
 
 - La lectura de `solqaryn_dev` encontró que `UX_Roles_Empresa_NombreNormalizado` existe pero no es único (`NON_UNIQUE=1`), pese a la migración aplicada y al modelo EF. Los conteos agregados no detectaron roles duplicados ni membresías/roles de plataforma inconsistentes.
