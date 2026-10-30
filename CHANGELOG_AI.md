@@ -1,4 +1,12 @@
 
+## 2026-10-30 — P0-008.B: negativos de fuga de secretos en inventario DEV (propuesta)
+
+- Scope comercial P0-008.B fila 17, dependencias P0-008.A/P0-012.B LISTO. Segundo scope de PRIMARY_DEV_01 solo después de P0-004.B VALIDANDO sin edición.
+- Script scripts/verify-p0-008-b-secret-evidence.mjs y workflow de solo lectura: reutilizan 12 negativas de P0-008.A y agregan 10 alteraciones ficticias rechazadas de campos/valores de credenciales. Ninguna lectura/desencriptado de secreto real ni acceso a proveedores.
+- Acta docs/P0-008-B-PRUEBA-NEGATIVA-SECRETOS-DEV.md limita la conclusión a este snapshot de metadatos y patrones; NO pretende cobertura de secretos del repositorio completo.
+- CI exact SHA, revisión independiente, merge protegido dev y conciliación institucional requeridos para LISTO; rollback por revert protegido, sin infraestructura ni DB.
+
+
 ## 2026-10-30 — P0-004.B: certificación negativa MySQL DEV (entrega en validación)
 
 - Fuente comercial: PLAN_MAESTRO/COLA fila 9; DEV-only, Scope Lock STRICT y dependencia P0-004.A=LISTO.
