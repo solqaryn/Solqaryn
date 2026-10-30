@@ -4643,3 +4643,11 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - 2026-10-30 P1-001.A: el PR #3788 aprobado por Alex y fusionado a `dev` (`fa58fcafbc37017764d856f33fc5b10fc46e7e9d`) pasó CI obligatorio 3/3, pero la ejecución real #41074452135 volvió a confirmar que A carece de rol personalizado no eliminado. El siguiente ajuste ya no exige fixtures privados: el preflight exporta el `RolId` realmente asignado a A/B, mantiene opcionales los IDs privados y el HTTP JWT comprueba `GET /roles`, visibilidad del rol asignado y que la lista solo contenga roles propios o plantillas de sistema válidas. Las negativas por ID privado se ejecutan cuando exista un fixture; si no, el resultado lo dice explícitamente y no afirma que esa negativa se probó. No se crean ni modifican filas.
 
 - 2026-10-30 P1-001.A: seguimiento de la ejecución #41074452135. El workflow no puede exigir roles personalizados de prueba que no existen en MySQL DEV. Se corrige el preflight para exponer solo el RolId ya asignado y se amplía la prueba JWT live a listado/detalle A/B y validación de propietario; el rechazo por ID privado queda condicional y explícito. Validaciones locales de alcance, frescura de Skill, sintaxis bash/Node, self-test y diff PASS. Falta revisión independiente, CI exact-SHA, merge protegido y nueva ejecución live; si no hay roles privados, el flujo informa que esa negativa no se ejecutó y P1-001.A no se cierra por inferencia.
+
+
+## 2026-10-30 — Inventario configurable de Tasks programadas
+
+- Se elimina el techo interno de seis Tasks y el reparto fijo 3+3; el inventario físico y distribución actuales quedan como fotografía, sujetos a capacidad efectiva del proveedor.
+- Se mantienen sin cambios los seis IDs físicos observados, cinco IDs con autorización comercial, la exclusión de Alex :30 y el WIP máximo de seis scopes, más controles de revisión, CI y merge protegido.
+- El validador ahora contrasta inventarios registrados entre autoridades y permite expansión futura consistente, rechazando IDs duplicados/desconocidos y diferencias de conteo; no concede permisos ni crea Tasks.
+- No se modifican Sheets, Tasks, horarios, backend, frontend, datos, proveedores, QA, main ni PROD en esta enmienda de código.

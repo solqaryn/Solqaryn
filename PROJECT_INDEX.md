@@ -1,8 +1,8 @@
-## 2026-10-23 — Índice operativo vigente M3.1 (reemplaza referencias históricas)
+## 2026-10-23 — Índice operativo M3.1 histórico (actualizado por enmienda 2026-10-30)
 
 - Gobierno activo: `AGENTS.md`, `docs/PROJECT_SCOPE_LOCK.md`, `docs/AUTOMATION_STATUS.md`.
-- Flujo canónico 3+3: `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md` (igualdad Javier/Alex, selector por dependencias LISTO, revisión primero, corrección por revisor, aprobación independiente, merge protegido, readback Sheet).
-- El techo físico son seis Tasks; solo dos existían antes de M3.2. No confundir techo, existencia, autorización ni ejecución.
+- Flujo de automatización con inventario configurable (censo actual 6, distribución 3+3) y allowlist comercial 5: `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md` (selector por dependencias LISTO, revisión primero, aprobación independiente, merge protegido, readback Sheet).
+- No existe techo interno fijo para Tasks físicas. Distinguir censo, capacidad del proveedor, autorización individual y ejecución; el WIP comercial sigue limitado a seis scopes.
 - Único ERP: rama `dev`, Scope Lock STRICT; tres ramas permanentes dev/qa/main y ramas `work/solqaryn-<scope>` temporales. PR #3734 integrado previamente en dev y preservado en la reconciliación del PR #3735.
 - Los motores antiguos retirados no son ejecutables. Fuentes posteriores de este archivo son snapshots de contexto previos.
 

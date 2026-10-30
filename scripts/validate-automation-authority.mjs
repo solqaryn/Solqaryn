@@ -16,7 +16,7 @@ export function validateAuthority(input) {
   }
   required(d.authority, 'authority', [
     'PROJECT_SCOPE_LOCK=STRICT','PROJECT_ID=SOLQARYN','REPOSITORY=solqaryn/Solqaryn',
-    'BRANCH=dev','AUTOMATION_RUNTIME=ACTIVE_DEV','PILOT_TASK_LIMIT=6',
+    'BRANCH=dev','AUTOMATION_RUNTIME=ACTIVE_DEV','TASK_COUNT_LIMIT=PROVIDER_EFFECTIVE_CAPACITY','TASK_ASSIGNMENT_MODEL=OWNER_CONFIGURABLE',
     'VAEP_DISPATCH_AUTHORIZED=FALSE','JULES_WORKERS_AUTHORIZED=0',
     'PROPIETARIA_INSTITUCIONAL','EJECUTOR_PRINCIPAL_01','EJECUTOR_PRINCIPAL_02',
     '93171442','morales35alex','numeración', 'idéntica autoridad', 
@@ -33,11 +33,11 @@ export function validateAuthority(input) {
     'no activa Tasks','No se importa CAS'
   ]);
   required(d.agents, 'AGENTS', ['PROJECT_SCOPE_LOCK=STRICT','AUTOMATION_RUNTIME=ACTIVE_DEV','docs/AUTOMATION_AUTHORITY.md','EJECUTOR_PRINCIPAL_01','EJECUTOR_PRINCIPAL_02']);
-  required(d.status, 'AUTOMATION_STATUS', ['AUTOMATION_RUNTIME=ACTIVE_DEV','PILOT_TASK_LIMIT=6','VAEP_DISPATCH_AUTHORIZED=FALSE','JULES_WORKERS_AUTHORIZED=0','docs/AUTOMATION_AUTHORITY.md']);
+  required(d.status, 'AUTOMATION_STATUS', ['AUTOMATION_RUNTIME=ACTIVE_DEV','TASK_COUNT_LIMIT=PROVIDER_EFFECTIVE_CAPACITY','TASK_ASSIGNMENT_MODEL=OWNER_CONFIGURABLE','VAEP_DISPATCH_AUTHORIZED=FALSE','JULES_WORKERS_AUTHORIZED=0','docs/AUTOMATION_AUTHORITY.md']);
   required(d.scope, 'PROJECT_SCOPE_LOCK', [
     'PROJECT_SCOPE_LOCK=STRICT',
     'REPOSITORY=solqaryn/Solqaryn',
-    'PILOT_TASK_LIMIT=6',
+    'TASK_COUNT_LIMIT=PROVIDER_EFFECTIVE_CAPACITY',
     'docs/AUTOMATION_AUTHORITY.md',
     'EXECUTION_PLAN_DRIVE_FILE_ID=1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA',
     'COMMERCIAL_AUTHORITY_MODE=CURRENT_PLAN_ONLY',
@@ -48,31 +48,36 @@ export function validateAuthority(input) {
   const aMatches = counterMatches(d.authority), sMatches = counterMatches(d.status);
   const aCount = Number(aMatches[0]?.[1]), sCount = Number(sMatches[0]?.[1]);
   if (aMatches.length !== 1 || sMatches.length !== 1 ||
-      !Number.isInteger(aCount) || aCount < 1 || aCount > 6 || aCount !== sCount)
-    failures.push('Authorized count must be unique, verified, identical and within 1..6');
+      !Number.isInteger(aCount) || aCount < 1 || aCount !== sCount)
+    failures.push('Authorized count must be unique, positive, verified and identical');
 
   // A global Sheet flag or a raw count cannot authorize a Task.
   // Each commercial executor must be listed in both live authorities.
-  const installedTaskIds = new Set([
-    '6adbb9fff1548191a1bd5b30d9e9984a', // Javier :00
-    '6adc2e4bd8a48191ac7d8641ed95a1a3', // Javier :20
-    '6adc2e55f47c81919f6374e561687076', // Javier :40
-    '6adbbc9ad9e88191bea8eb69104afb25', // Alex :10
-    '6adcc97a260881919d92bb9bacae1626', // Alex :30
-    '6adcc98a80a48191b71a5156624c21df', // Alex :50
-  ]);
-  const parseAuthorizedIds = source => {
-    const lines = [...source.matchAll(/^AUTHORIZED_COMMERCIAL_TASK_IDS=([^\r\n]*)$/gm)];
+  const parseIds = (source, key) => {
+    const lines = [...source.matchAll(new RegExp('^' + key + '=([^\\r\\n]*)$', 'gm'))];
     if (lines.length !== 1) return null;
     const ids = lines[0][1].split(',').map(v => v.trim());
-    if (ids.length === 0 || ids.some(id => !installedTaskIds.has(id)) ||
+    if (ids.length === 0 || ids.some(id => !/^[a-f0-9]{32}$/i.test(id)) ||
         new Set(ids).size !== ids.length) return null;
     return ids;
   };
-  const aIds = parseAuthorizedIds(d.authority), sIds = parseAuthorizedIds(d.status);
+  const aRegistered = parseIds(d.authority, 'REGISTERED_TASK_IDS');
+  const sRegistered = parseIds(d.status, 'REGISTERED_TASK_IDS');
+  const aIds = parseIds(d.authority, 'AUTHORIZED_COMMERCIAL_TASK_IDS');
+  const sIds = parseIds(d.status, 'AUTHORIZED_COMMERCIAL_TASK_IDS');
+  const registered = new Set(aRegistered ?? []);
+  const physicalCounts = text => [...text.matchAll(/^PHYSICAL_TASKS_REGISTERED=(\d+)$/gm)];
+  const aPhysical = physicalCounts(d.authority), sPhysical = physicalCounts(d.status);
+  if (!aRegistered || !sRegistered || aRegistered.join(',') !== sRegistered.join(',') ||
+      aPhysical.length !== 1 || sPhysical.length !== 1 ||
+      Number(aPhysical[0]?.[1]) !== aRegistered.length ||
+      Number(sPhysical[0]?.[1]) !== sRegistered.length)
+    failures.push('Registered Task roster must be unique and identical in live authorities');
   if (!aIds || !sIds || aIds.length !== aCount || sIds.length !== sCount ||
       aIds.join(',') !== sIds.join(','))
-    failures.push('Commercial Task allowlist must be identical, unique, installed and exactly match count');
+    failures.push('Commercial Task allowlist must be identical, unique and exactly match count');
+  if (aIds && aIds.some(id => !registered.has(id)))
+    failures.push('Commercial Task allowlist must be a subset of the registered Task roster');
   // Reject values changed in the operational header even when historical prose
   // still contains the expected string (substring checks alone are unsafe).
   const exactKey = (source, key, value) => {
@@ -84,10 +89,10 @@ export function validateAuthority(input) {
     ['EXECUTION_PLAN_DRIVE_FILE_ID', '1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA'],
     ['COMMERCIAL_AUTHORITY_MODE', 'CURRENT_PLAN_ONLY'],
     ['LEGACY_MASTER_EXECUTABLE', 'FALSE'],
-    ['PILOT_TASK_LIMIT', '6']
+    ['TASK_COUNT_LIMIT', 'PROVIDER_EFFECTIVE_CAPACITY']
   ]) if (!exactKey(d.scope, key, value)) failures.push('scope header ' + key);
   if (!/^AUTOMATION_RUNTIME=ACTIVE_DEV$/m.test(d.status)) failures.push('3x3 DEV runtime mismatch');
-  if (!d.authority.includes('docs/AUTOMATION_3X3_OPERATING_CONTRACT.md') || !d.agents.includes('TASK_DESIGN=AUTONOMOUS_3_JAVIER_3_ALEX')) failures.push('3x3 contract routing');
+  if (!d.authority.includes('docs/AUTOMATION_3X3_OPERATING_CONTRACT.md') || !d.agents.includes('TASK_DESIGN=OWNER_CONFIGURABLE_TASK_SET')) failures.push('configurable Task contract routing');
   if (/VAEP_DISPATCH_AUTHORIZED\s*=\s*TRUE/.test(d.status)) failures.push('VAEP must remain retired');
   if (/JULES_WORKERS_AUTHORIZED\s*=\s*[1-9]/.test(d.status)) failures.push('Jules worker reactivation forbidden');
   // P0-012.B: the operational policy must not route executable work to
@@ -120,11 +125,13 @@ export function validateAuthority(input) {
   const liveMarkers = {
     authority: ['CONTRACT_VERSION=2.0', 'AUTOMATION_RUNTIME=ACTIVE_DEV',
       authorizationKey + '=' + aCount,
-      'AUTHORIZED_COMMERCIAL_TASK_IDS=' + (aIds?.join(',') ?? 'INVALID')],
-    AGENTS: ['AUTOMATION_RUNTIME=ACTIVE_DEV', 'TASK_DESIGN=AUTONOMOUS_3_JAVIER_3_ALEX'],
+      'AUTHORIZED_COMMERCIAL_TASK_IDS=' + (aIds?.join(',') ?? 'INVALID'),
+      'REGISTERED_TASK_IDS=' + (aRegistered?.join(',') ?? 'INVALID')],
+    AGENTS: ['AUTOMATION_RUNTIME=ACTIVE_DEV', 'TASK_DESIGN=OWNER_CONFIGURABLE_TASK_SET'],
     AUTOMATION_STATUS: ['AUTOMATION_RUNTIME=ACTIVE_DEV',
       authorizationKey + '=' + sCount,
-      'AUTHORIZED_COMMERCIAL_TASK_IDS=' + (sIds?.join(',') ?? 'INVALID')],
+      'AUTHORIZED_COMMERCIAL_TASK_IDS=' + (sIds?.join(',') ?? 'INVALID'),
+      'REGISTERED_TASK_IDS=' + (sRegistered?.join(',') ?? 'INVALID')],
     PROJECT_SCOPE_LOCK: ['COMMERCIAL_AUTHORITY_MODE=CURRENT_PLAN_ONLY', 'LEGACY_MASTER_EXECUTABLE=FALSE'],
   };
   for (const [name, text] of [
@@ -156,6 +163,15 @@ const source = { authority, agents, status, scope };
 const errors = validateAuthority(source);
 if (errors.length) { console.error('AUTOMATION AUTHORITY NO_GO:\n' + errors.join('\n')); process.exitCode = 1; }
 else if (process.argv.includes('--self-test')) {
+  const expandedRoster = {...source};
+  const additionalTaskId = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+  for (const key of ['authority','status']) {
+    expandedRoster[key] = expandedRoster[key]
+      .replace(/^REGISTERED_TASK_IDS=(.*)$/m, (_, ids) => 'REGISTERED_TASK_IDS=' + ids + ',' + additionalTaskId)
+      .replace(/^PHYSICAL_TASKS_REGISTERED=6$/m, 'PHYSICAL_TASKS_REGISTERED=7');
+  }
+  if (validateAuthority(expandedRoster).length)
+    throw Error('Positive configurability test failed for a seven-Task roster');
   const tests = [
     ['repository', {authority:authority.replaceAll('REPOSITORY=solqaryn/Solqaryn', 'REPOSITORY=other/Other')}],
     ['branch', {authority:authority.replaceAll('BRANCH=dev', 'BRANCH=main')}],
@@ -177,12 +193,14 @@ else if (process.argv.includes('--self-test')) {
     ['unapproved commercial Task', {authority:authority.replace(/^AUTHORIZED_COMMERCIAL_TASK_IDS=.*$/m, line => line + ',deadbeefdeadbeefdeadbeefdeadbeef')}],
     ['duplicate commercial Task', {status:status.replace(/^AUTHORIZED_COMMERCIAL_TASK_IDS=(.*)$/m, (_, ids) => 'AUTHORIZED_COMMERCIAL_TASK_IDS=' + ids + ',' + ids.split(',')[0])}],
     ['commercial list length mismatch', {authority:authority.replace(/^AUTHORIZED_COMMERCIAL_TASK_IDS=(.*)$/m, (_, ids) => 'AUTHORIZED_COMMERCIAL_TASK_IDS=' + ids.split(',')[0])}],
-    ['wrong 3x3 cap', {scope:scope.replace('PILOT_TASK_LIMIT=6','PILOT_TASK_LIMIT=2')}],
-    ['no 3x3 agent routing', {agents:agents.replace('TASK_DESIGN=AUTONOMOUS_3_JAVIER_3_ALEX','TASK_DESIGN=DUAL_TASK')}],
+    ['unregistered but syntactically valid commercial Task', {status:status.replace(/^AUTHORIZED_COMMERCIAL_TASK_IDS=(.*)$/m, (_, ids) => 'AUTHORIZED_COMMERCIAL_TASK_IDS=' + ids + ',aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').replace(/^SCHEDULED_CHATGPT_TASKS_AUTHORIZED=5$/m, 'SCHEDULED_CHATGPT_TASKS_AUTHORIZED=6')}],
+    ['registered roster count mismatch', {status:status.replace(/^PHYSICAL_TASKS_REGISTERED=6$/m, 'PHYSICAL_TASKS_REGISTERED=7')}],
+    ['reintroduced fixed task ceiling', {scope:scope.replace('TASK_COUNT_LIMIT=PROVIDER_EFFECTIVE_CAPACITY','PILOT_TASK_LIMIT=6')}],
+    ['no configurable agent routing', {agents:agents.replace('TASK_DESIGN=OWNER_CONFIGURABLE_TASK_SET','TASK_DESIGN=DUAL_TASK')}],
     ['legacy Master executable', {scope:scope.replace('LEGACY_MASTER_EXECUTABLE=FALSE','LEGACY_MASTER_EXECUTABLE=TRUE')}],
     ['commercial authority substituted', {scope:scope.replace('COMMERCIAL_AUTHORITY_MODE=CURRENT_PLAN_ONLY','COMMERCIAL_AUTHORITY_MODE=LEGACY_MASTER')}],
     ['commercial plan switched', {scope:scope.replace('1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA','HISTORICAL_PLAN_ID')}],
-    ['legacy SQ command in live AGENTS', {agents:agents.replace('TASK_DESIGN=AUTONOMOUS_3_JAVIER_3_ALEX','TASK_DESIGN=AUTONOMOUS_3_JAVIER_3_ALEX\nEXECUTE=SQ-123')}],
+    ['legacy SQ command in live AGENTS', {agents:agents.replace('TASK_DESIGN=OWNER_CONFIGURABLE_TASK_SET','TASK_DESIGN=OWNER_CONFIGURABLE_TASK_SET\nEXECUTE=SQ-123')}],
     ['historical Word made live in Scope Lock', {scope:scope.replace('LEGACY_MASTER_EXECUTABLE=FALSE','LEGACY_MASTER_EXECUTABLE=FALSE\nSOURCE=https://docs.google.com/document/d/1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j/edit')}],
     ['unapproved Sheet made live in Status', {status:status.replace(/^SCHEDULED_CHATGPT_TASKS_AUTHORIZED=\d+$/m, line => line + '\nSOURCE=https://docs.google.com/spreadsheets/d/HISTORICAL_SHEET_123/edit')}],
     ['archive heading cannot hide live runtime', {status:status.replace('AUTOMATION_RUNTIME=ACTIVE_DEV','## Archivo histórico\nAUTOMATION_RUNTIME=ACTIVE_DEV')}],
@@ -193,5 +211,5 @@ else if (process.argv.includes('--self-test')) {
     const errs = validateAuthority({...source,...override});
     if (errs.length === 0) throw Error('Negative contract test not rejected: ' + label);
   }
-  console.log('SOLQARYN automation authority PASS: canonical identities, parity, flags and ' + tests.length + ' fail-closed negative mutations');
+  console.log('SOLQARYN automation authority PASS: configurable Task roster, canonical identities, parity, flags, one positive expansion test and ' + tests.length + ' fail-closed negative mutations');
 } else if (!errors.length) console.log('SOLQARYN automation authority PASS');

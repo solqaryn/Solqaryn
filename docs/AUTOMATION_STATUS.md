@@ -11,21 +11,28 @@ SCHEDULED_CHATGPT_TASKS_AUTHORIZED=5
 AUTHORIZED_COMMERCIAL_TASK_IDS=6adbb9fff1548191a1bd5b30d9e9984a,6adc2e4bd8a48191ac7d8641ed95a1a3,6adc2e55f47c81919f6374e561687076,6adbbc9ad9e88191bea8eb69104afb25,6adcc98a80a48191b71a5156624c21df
 VAEP_DISPATCH_AUTHORIZED=FALSE
 JULES_WORKERS_AUTHORIZED=0
-PILOT_TASK_LIMIT=6
-PILOT_PRIMARY_TASKS=3
-PILOT_SECONDARY_TASKS=3
+TASK_COUNT_LIMIT=PROVIDER_EFFECTIVE_CAPACITY
+TASK_ASSIGNMENT_MODEL=OWNER_CONFIGURABLE
+REGISTERED_TASK_IDS=6adbb9fff1548191a1bd5b30d9e9984a,6adbbc9ad9e88191bea8eb69104afb25,6adc2e4bd8a48191ac7d8641ed95a1a3,6adcc97a260881919d92bb9bacae1626,6adc2e55f47c81919f6374e561687076,6adcc98a80a48191b71a5156624c21df
 PRIMARY_TASK_ROLE=PRIMARY_01
 SECONDARY_TASK_ROLE=SECONDARY_02
 PRIMARY_TASK_ACCOUNT=JAVIER_CHATGPT
 SECONDARY_TASK_ACCOUNT=ALEX_CHATGPT
 
 DESIGN_VERSION=2.0
-DESIGN_TOPOLOGY=3_JAVIER_3_ALEX
+DESIGN_TOPOLOGY=OWNER_CONFIGURABLE
+CURRENT_TASK_DISTRIBUTION=3_JAVIER_3_ALEX
 PHYSICAL_TASKS_REGISTERED=6
 MAX_CONCURRENT_SCOPES=6
 MAX_OWNED_SCOPES_PER_TASK=2
 MAX_ACTIVE_WRITES_PER_TASK=1
 LEGACY_AUTOMATION_RUNTIME=RETIRED
+
+## Enmienda vigente — inventario configurable de Tasks (2026-10-30)
+
+No hay un máximo interno fijo de Tasks ni una proporción obligatoria entre cuentas. `PHYSICAL_TASKS_REGISTERED` y `REGISTERED_TASK_IDS` son el censo actual (seis IDs, distribuidos 3+3), no un límite. Cada alta, baja o cambio de distribución exige decisión institucional protegida, capacidad efectiva confirmada por el proveedor y readback de identidad, propietario, ID, horario y estado habilitado. La enmienda por sí sola no crea ni modifica Tasks. Se preserva exactamente `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=5` y su allowlist; Alex :30 sigue excluido. `MAX_CONCURRENT_SCOPES=6` limita microtareas abiertas, no Tasks físicas.
+
+Las secciones M3.2–M3.3 siguientes preservan evidencias históricas; en caso de conflicto, prevalecen las claves y la enmienda vigente de este encabezado.
 
 ## M3.4 — ampliación quirúrgica WIP comercial a 6 (25-10-2026)
 
@@ -81,9 +88,9 @@ Junto con `PRIMARY_DEV_02` Javier :20, hay **tres diagnósticos individuales con
 
 `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1`, `ACTIVE_DEV_WRITERS_OBSERVED=1`, `CONFIG!B39=1`, `CONFIG!B57=FALSE` y `PHYSICAL_TASKS_REGISTERED=6` permanecen sin cambios; `PASS_M3_2_CERTIFICADA` sigue pendiente de escrituras autenticadas. Esta concesión no autoriza commits ni revisión/aprobación de PR comerciales, ni modifica QA/main/PROD.
 
-## Estado de microfase 3.2 — seis Tasks físicas, autorización operativa parcial
+## Archivo histórico M3.2 — seis Tasks físicas, autorización operativa parcial
 
-El diseño simétrico 3+3 v2.0 fue integrado en PR #3735. La microfase 3.2 confirmó seis Tasks físicas de identidad única y horarios intercalados, incluidas las dos originales con ID conservado. `PHYSICAL_TASKS_REGISTERED=6` procede de lectura nativa Javier (3/3) y readback aportado por Alex (3/3) con conciliación en Google Sheets. `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1` sigue siendo el contador de autorización conocido: habilitación y programación no equivalen a permisos efectivos en ejecución. Las cinco Tasks restantes siguen pendientes de validación operativa individual, sin concederles escritura por esta modificación. El contrato normativo es `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md`.
+El diseño simétrico 3+3 v2.0 fue integrado en PR #3735; este párrafo registra el estado de aquel momento, no es autoridad vigente. La microfase 3.2 confirmó seis Tasks físicas de identidad única y horarios intercalados, incluidas las dos originales con ID conservado. `PHYSICAL_TASKS_REGISTERED=6` procede de lectura nativa Javier (3/3) y readback aportado por Alex (3/3) con conciliación en Google Sheets. `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1` sigue siendo el contador de autorización conocido: habilitación y programación no equivalen a permisos efectivos en ejecución. Las cinco Tasks restantes siguen pendientes de validación operativa individual, sin concederles escritura por esta modificación. El contrato normativo es `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md`.
 
 **Inventario físico M3.2 (horas `America/Tegucigalpa`, readback en `TAREAS_PROGRAMADAS!A2:Z7`, evento `BITACORA!A42:Z42`):**
 
@@ -111,7 +118,7 @@ Control de colisiones: un solo escritor Primary con WIP=1, comprobar ramas/PR ac
 Esta habilitacion se vuelve efectiva unicamente al fusionar con checks obligatorios este contrato a dev y comprobar el HEAD nuevo. Los prompts programados deben validar la autoridad viva antes de escribir.
 ## Fuentes nativas vigentes
 
-Documento rector: [STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES](https://docs.google.com/document/d/1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA/edit). Seguimiento manual: [STANDARD DE AUTOMATIZACIONES EN SOLQARYN](https://docs.google.com/spreadsheets/d/1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU/edit). [STANDARD AUTORIDAD OPERATIVA VAEP](https://docs.google.com/document/d/1A525NGt09mBiZez_r6hFcdCYAdoOAwOZM--N0uXPBOQ/edit) es archivo histórico no ejecutable. El seguimiento comercial permanece en el Sheet institucional; el piloto DEV autoriza únicamente una Task escritora conocida hasta el readback individual de M3.2. Existen seis Tasks físicas registradas, de ellas dos originales con ID estable y cuatro nuevas creadas durante M3.2 desde sus cuentas respectivas. El inventario no autoriza despliegues ni escrituras adicionales.
+Documento rector: [STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES](https://docs.google.com/document/d/1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA/edit). Seguimiento: [STANDARD DE AUTOMATIZACIONES EN SOLQARYN](https://docs.google.com/spreadsheets/d/1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU/edit). El runtime DEV usa el censo configurable del encabezado, limitado por capacidad efectiva del proveedor y decisión institucional; el allowlist comercial individual y el WIP máximo de seis scopes son controles separados. Ningún plan histórico, existencia de Task ni habilitación física concede permisos por sí solo.
 
 ## Archivo histórico — retirada inicial (22-10-2026, no describe el runtime actual)
 

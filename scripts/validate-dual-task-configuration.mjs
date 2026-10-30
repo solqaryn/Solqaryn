@@ -8,25 +8,15 @@ const agents = read('AGENTS.md');
 const scope = read('docs/PROJECT_SCOPE_LOCK.md');
 const contract = read('docs/AUTOMATION_3X3_OPERATING_CONTRACT.md');
 
-const ownerByRole = Object.freeze({
-  PRIMARY_01: 'JAVIER_CHATGPT', // role historico de la Task existente
-  PRIMARY_DEV_01: 'JAVIER_CHATGPT', // alias canonico 3+3
-  PRIMARY_DEV_02: 'JAVIER_CHATGPT',
-  PRIMARY_DEV_03: 'JAVIER_CHATGPT',
-  SECONDARY_02: 'ALEX_CHATGPT', // role historico de la Task existente
-  SECONDARY_REVIEW_01: 'ALEX_CHATGPT', // alias canonico 3+3
-  SECONDARY_REVIEW_02: 'ALEX_CHATGPT',
-  SECONDARY_REVIEW_03: 'ALEX_CHATGPT',
-});
+const supportedAccounts = new Set(['JAVIER_CHATGPT','ALEX_CHATGPT']);
 const expected = {
   PROJECT_SCOPE_LOCK: 'STRICT',
   PROJECT_ID: 'SOLQARYN',
   REPOSITORY: 'solqaryn/Solqaryn',
   BRANCH: 'dev',
   CONTRACT_VERSION: '2.0',
-  PILOT_TASK_LIMIT: '6',
-  PILOT_PRIMARY_TASKS: '3',
-  PILOT_SECONDARY_TASKS: '3',
+  TASK_COUNT_LIMIT: 'PROVIDER_EFFECTIVE_CAPACITY',
+  TASK_ASSIGNMENT_MODEL: 'OWNER_CONFIGURABLE',
   AUTOMATION_RUNTIME: 'ACTIVE_DEV',
   SCHEDULED_CHATGPT_TASKS_AUTHORIZED: '1',
   VAEP_DISPATCH_AUTHORIZED: 'FALSE',
@@ -56,7 +46,16 @@ export function validateDocuments(src) {
   if (key(src.authority,'CONTRACT_VERSION') !== '2.0') errors.push('contract version');
   const countA = Number(key(src.authority,'SCHEDULED_CHATGPT_TASKS_AUTHORIZED'));
   const countS = Number(key(src.status,'SCHEDULED_CHATGPT_TASKS_AUTHORIZED'));
-  if (!Number.isInteger(countA) || countA < 1 || countA > 6 || countA !== countS) errors.push('authorized counter');
+  if (!Number.isInteger(countA) || countA < 1 || countA !== countS) errors.push('authorized counter');
+  const readIds=(source,keyName)=>{const value=key(source,keyName);if(value===null)return null;const ids=value.split(',').map(x=>x.trim());return ids.length&&ids.every(x=>/^[a-f0-9]{32}$/i.test(x))&&new Set(ids).size===ids.length?ids:null;};
+  const registeredA=readIds(src.authority,'REGISTERED_TASK_IDS'), registeredS=readIds(src.status,'REGISTERED_TASK_IDS');
+  const authorizedA=readIds(src.authority,'AUTHORIZED_COMMERCIAL_TASK_IDS'), authorizedS=readIds(src.status,'AUTHORIZED_COMMERCIAL_TASK_IDS');
+  if(!registeredA||!registeredS||registeredA.join(',')!==registeredS.join(',')||
+     Number(key(src.authority,'PHYSICAL_TASKS_REGISTERED'))!==registeredA.length||
+     Number(key(src.status,'PHYSICAL_TASKS_REGISTERED'))!==registeredS.length)errors.push('registered Task set');
+  if(!authorizedA||!authorizedS||authorizedA.join(',')!==authorizedS.join(',')||
+     authorizedA.length!==countA||authorizedS.length!==countS||
+     authorizedA.some(id=>!new Set(registeredA||[]).has(id)))errors.push('commercial Task allowlist');
   // The commercial WIP cap is a dedicated invariant, independent from the 5/6 Task allowlist.
   const capAuthority = Number(key(src.authority,'MAX_CONCURRENT_SCOPES'));
   const capStatus = Number(key(src.status,'MAX_CONCURRENT_SCOPES'));
@@ -68,13 +67,12 @@ export function validateDocuments(src) {
   const activeWriteCaps = [src.authority, src.status, src.contract].map(x => Number(key(x,'MAX_ACTIVE_WRITES_PER_TASK')));
   if (!ownedCaps.every(x=>Number.isInteger(x)&&x===2)) errors.push('per-task scope cap mismatch');
   if (!activeWriteCaps.every(x=>Number.isInteger(x)&&x===1)) errors.push('single active editor cap mismatch');
-  if (key(src.scope,'PILOT_TASK_LIMIT') !== '6') errors.push('scope topology');
+  if (key(src.scope,'TASK_COUNT_LIMIT') !== 'PROVIDER_EFFECTIVE_CAPACITY') errors.push('Task count policy');
   if (key(src.scope,'PROJECT_SCOPE_LOCK') !== 'STRICT') errors.push('strict lock');
-  if (!src.agents.includes('TASK_DESIGN=AUTONOMOUS_3_JAVIER_3_ALEX')) errors.push('agents topology');
+  if (!src.agents.includes('TASK_DESIGN=OWNER_CONFIGURABLE_TASK_SET')) errors.push('agents Task set policy');
   for (const [name,value] of Object.entries(approvalPolicy))
     if (key(src.authority,name) !== value) errors.push('approval ' + name);
-  for (const phrase of ['DESIGN_TASK_LIMIT=6','DESIGN_JAVIER_TASKS=3',
-    'DESIGN_ALEX_TASKS=3','MAX_OPEN_WORK_BRANCHES=6','MAX_CONCURRENT_SCOPES=6',
+  for (const phrase of ['TASK_COUNT_LIMIT=PROVIDER_EFFECTIVE_CAPACITY','TASK_ASSIGNMENT_MODEL=OWNER_CONFIGURABLE','MAX_OPEN_WORK_BRANCHES=6','MAX_CONCURRENT_SCOPES=6',
     'MAX_OWNED_SCOPES_PER_TASK=2','MAX_ACTIVE_WRITES_PER_TASK=1',
     'REVIEW_INDEPENDENCE_REQUIRED=TRUE','America/Tegucigalpa',
     'PENDIENTE -> EN_PROGRESO','EN_PROGRESO -> VALIDANDO',
@@ -122,23 +120,21 @@ export function validateProposedRun(p) {
   const errors=[];
   if(p.repo!=='solqaryn/Solqaryn'||p.branch!=='dev')errors.push('identity');
   if(p.environment!=='dev')errors.push('environment');
-  if(p.pilotMax!==6||p.primaryMax!==3||p.secondaryMax!==3)errors.push('cap');
-  if(p.ownerChanged||p.sharedCredentials||p.legacyReactivate)errors.push('scope');
-  if(!Array.isArray(p.slots)||p.slots.length>6)errors.push('slot_count');
-  const seenId=new Set(),seenRole=new Set(),perAccount={JAVIER_CHATGPT:0,ALEX_CHATGPT:0};
+  if(p.ownerChanged&&(p.configurationChangeAuthorized!==true||p.providerCapacityVerified!==true))errors.push('unverified_configuration_change');
+  if(p.sharedCredentials||p.legacyReactivate)errors.push('scope');
+  if(!Array.isArray(p.slots))errors.push('slot_registry');
+  const seenId=new Set();
   for(const slot of p.slots||[]) {
-    if(ownerByRole[slot.role]!==slot.account)errors.push('slot_account');
-    if(seenRole.has(slot.role)||seenId.has(slot.taskId))errors.push('slot_duplicate');
-    if(!slot.taskId||slot.taskId==='NO_VERIFICADO'||!slot.permissionsVerified||!slot.schedulerVerified)
+    if(!supportedAccounts.has(slot.account))errors.push('slot_account_unverified');
+    if(seenId.has(slot.taskId))errors.push('slot_duplicate');
+    if(!slot.taskId||slot.taskId==='NO_VERIFICADO'||!slot.role||!slot.permissionsVerified||!slot.schedulerVerified)
       errors.push('slot_unverified');
-    perAccount[slot.account]=(perAccount[slot.account]||0)+1;
-    seenRole.add(slot.role);seenId.add(slot.taskId);
+    seenId.add(slot.taskId);
   }
-  if(perAccount.JAVIER_CHATGPT>3||perAccount.ALEX_CHATGPT>3)errors.push('account_over_cap');
   if(p.operation==='NONE')return errors;
   if(!p.authorizationVerified||p.mode!=='ACTIVE_DEV')errors.push('authorization');
-  if(ownerByRole[p.actorRole]!==p.actorAccount ||
-     !(p.slots||[]).some(s=>s.role===p.actorRole&&s.account===p.actorAccount))
+  if(!supportedAccounts.has(p.actorAccount) ||
+     !(p.slots||[]).some(s=>s.role===p.actorRole&&s.account===p.actorAccount&&s.permissionsVerified===true))
     errors.push('actor_auth');
   if(!p.permissionVerified||!p.exactHeadVerified)errors.push('permission_or_head');
   if(p.operation==='WRITE'){
@@ -199,7 +195,7 @@ export function validateApprovalDecision(p) {
 const documents={authority,status,agents,scope,contract};
 const failures=validateDocuments(documents);
 if(failures.length){
-  console.error('SOLQARYN 3X3 AUTHORITY NO_GO: '+failures.join(' | '));
+  console.error('SOLQARYN AUTOMATION AUTHORITY NO_GO: '+failures.join(' | '));
   process.exitCode=1;
 }else if(process.argv.includes('--self-test')){
   const slots=[
@@ -207,7 +203,7 @@ if(failures.length){
     {role:'SECONDARY_02',account:'ALEX_CHATGPT',taskId:'SECONDARY-REAL',permissionsVerified:true,schedulerVerified:true},
   ];
   const base={repo:'solqaryn/Solqaryn',branch:'dev',environment:'dev',
-    pilotMax:6,primaryMax:3,secondaryMax:3,slots,
+    slots,
     mode:'ACTIVE_DEV',authorizationVerified:true,
     actorRole:'PRIMARY_01',actorAccount:'JAVIER_CHATGPT',
     permissionVerified:true,exactHeadVerified:true,
@@ -221,11 +217,16 @@ if(failures.length){
     runId:'NO_VERIFICADO'};
   const clone=x=>structuredClone(x);
   if(validateProposedRun(base).length)throw Error('DEV without native RUN_ID must be allowed');
+  const sameFunction=clone(base);sameFunction.slots[1].role=sameFunction.slots[0].role;
+  if(validateProposedRun(sameFunction).length)throw Error('A repeated operational role must not impose a quota');
+  const fifteenJavier=clone(base);fifteenJavier.operation='NONE';fifteenJavier.slots=Array.from({length:15},(_,i)=>({role:'JAVIER_TASK_'+String(i+1).padStart(2,'0'),account:'JAVIER_CHATGPT',taskId:'JAVIER-TASK-'+String(i+1).padStart(2,'0'),permissionsVerified:true,schedulerVerified:true}));fifteenJavier.ownerChanged=true;fifteenJavier.configurationChangeAuthorized=true;fifteenJavier.providerCapacityVerified=true;
+  if(validateProposedRun(fifteenJavier).length)throw Error('A verified 15-Task single-account roster must not hit an internal quota');
+  const unverifiedResize=clone(fifteenJavier);unverifiedResize.providerCapacityVerified=false;
+  if(!validateProposedRun(unverifiedResize).length)throw Error('Unverified provider capacity change accepted');
   const variants=[
     ['wrong repo',p=>p.repo='external/Other'],
     ['wrong branch',p=>p.branch='qa'],
-    ['over-cap',p=>p.slots=[...p.slots,...p.slots,...p.slots,...p.slots]],
-    ['same role',p=>p.slots[1].role='PRIMARY_01'],
+    ['duplicate Task ID',p=>p.slots=[...p.slots,...p.slots]],
     ['duplicate id',p=>p.slots[1].taskId='PRIMARY-REAL'],
     ['wrong account',p=>p.slots[0].account='ALEX_CHATGPT'],
     ['missing provider right',p=>p.writePermissionVerified=false],
@@ -342,8 +343,12 @@ if(failures.length){
     throw Error('Canonical Javier slot role should be permitted');
   if(selectWork([options[0]],{'P0-012.A':'VALIDANDO'},'ALEX_CHATGPT').action!=='NO_ELIGIBLE')
     throw Error('Unready dependency claimed');
-  const mutation={...documents,status:status.replace('PILOT_TASK_LIMIT=6','PILOT_TASK_LIMIT=2')};
-  if(!validateDocuments(mutation).length)throw Error('Document mutation bypass');
+  const mutation={...documents,status:status.replace('TASK_COUNT_LIMIT=PROVIDER_EFFECTIVE_CAPACITY','TASK_COUNT_LIMIT=6')};
+  if(!validateDocuments(mutation).length)throw Error('Task count policy mutation bypass');
+  const expanded={...documents};
+  expanded.status=expanded.status.replace(/^REGISTERED_TASK_IDS=(.*)$/m,(_,ids)=>'REGISTERED_TASK_IDS='+ids+',aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').replace(/^PHYSICAL_TASKS_REGISTERED=6$/m,'PHYSICAL_TASKS_REGISTERED=7');
+  expanded.authority=expanded.authority.replace(/^REGISTERED_TASK_IDS=(.*)$/m,(_,ids)=>'REGISTERED_TASK_IDS='+ids+',aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').replace(/^PHYSICAL_TASKS_REGISTERED=6$/m,'PHYSICAL_TASKS_REGISTERED=7');
+  if(validateDocuments(expanded).length)throw Error('Configurable roster must accept seven registered Tasks while keeping commercial permissions unchanged');
   if(!validateDocuments({...documents,status:status.replace('MAX_CONCURRENT_SCOPES=6','MAX_CONCURRENT_SCOPES=7')}).length)
     throw Error('WIP status mutation bypass');
   if(!validateDocuments({...documents,contract:contract.replace('MAX_OPEN_WORK_BRANCHES=6','MAX_OPEN_WORK_BRANCHES=7')}).length)
@@ -362,7 +367,7 @@ if(failures.length){
   if(validateApprovalDecision(approved).length)throw Error('Independent approval rejected');
   if(!validateApprovalDecision({...approved,allContributionsReviewed:false}).length)
     throw Error('Approval of unreviewed correction accepted');
-  console.log('SOLQARYN 3x3 autonomy PASS: Alex and Javier both CLAIM PENDIENTE and REVIEW other-account VALIDANDO, review-first, dependency LISTO, correction independence, 20+ negative safeguards');
+  console.log('SOLQARYN configurable Task autonomy PASS: both accounts CLAIM/REVIEW under individual permissions, review-first, dependency LISTO, independent approval, expanded roster accepted, WIP remains capped at six');
 }else{
-  console.log('SOLQARYN 3x3 authority PASS');
+  console.log('SOLQARYN automation authority PASS');
 }

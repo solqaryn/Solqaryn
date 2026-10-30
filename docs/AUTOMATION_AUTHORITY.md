@@ -10,9 +10,9 @@ SCHEDULED_CHATGPT_TASKS_AUTHORIZED=5
 AUTHORIZED_COMMERCIAL_TASK_IDS=6adbb9fff1548191a1bd5b30d9e9984a,6adc2e4bd8a48191ac7d8641ed95a1a3,6adc2e55f47c81919f6374e561687076,6adbbc9ad9e88191bea8eb69104afb25,6adcc98a80a48191b71a5156624c21df
 VAEP_DISPATCH_AUTHORIZED=FALSE
 JULES_WORKERS_AUTHORIZED=0
-PILOT_TASK_LIMIT=6
-PILOT_PRIMARY_TASKS=3
-PILOT_SECONDARY_TASKS=3
+TASK_COUNT_LIMIT=PROVIDER_EFFECTIVE_CAPACITY
+TASK_ASSIGNMENT_MODEL=OWNER_CONFIGURABLE
+REGISTERED_TASK_IDS=6adbb9fff1548191a1bd5b30d9e9984a,6adbbc9ad9e88191bea8eb69104afb25,6adc2e4bd8a48191ac7d8641ed95a1a3,6adcc97a260881919d92bb9bacae1626,6adc2e55f47c81919f6374e561687076,6adcc98a80a48191b71a5156624c21df
 PRIMARY_TASK_ROLE=PRIMARY_01
 SECONDARY_TASK_ROLE=SECONDARY_02
 PRIMARY_TASK_ACCOUNT=JAVIER_CHATGPT
@@ -25,14 +25,21 @@ REVIEW_INDEPENDENCE_REQUIRED=TRUE
 NO_CROSS_ACCOUNT_CREDENTIALS=TRUE
 NO_LEGACY_REACTIVATION=TRUE
 
-DESIGN_TOPOLOGY=SYMMETRIC_3X3
+DESIGN_TOPOLOGY=OWNER_CONFIGURABLE
+CURRENT_TASK_DISTRIBUTION=3_JAVIER_3_ALEX
 PHYSICAL_TASKS_REGISTERED=6
 ACTIVE_DEV_WRITERS_OBSERVED=1
 MAX_CONCURRENT_SCOPES=6
 MAX_OWNED_SCOPES_PER_TASK=2
 MAX_ACTIVE_WRITES_PER_TASK=1
 
+## Enmienda vigente — inventario configurable de Tasks (2026-10-30)
+
+La cantidad y distribución no tienen techo interno fijo ni proporción obligatoria por cuenta. El inventario y la distribución 3+3 son fotografías, no autorización ni permiso comercial. Los cambios requieren enmienda de gobierno protegida, capacidad efectiva del proveedor y readback de IDs, cuentas, horarios y habilitación; cada Task requiere autorización individual antes de trabajo comercial. Esta regla no crea, elimina ni habilita Tasks. Se conserva el allowlist exacto de cinco IDs, Alex :30 excluido, WIP global máximo seis scopes, máximo dos asignados por Task y una escritura activa por Task, con revisión independiente, CI exact-SHA 3/3, merge protegido y readback institucional.
+
 ## M3.4 — ampliación quirúrgica WIP comercial a 6 (25-10-2026)
+
+El techo indicado en esta sección aplica exclusivamente a scopes/microtareas comerciales, nunca a la cantidad física de Tasks.
 
 **AUTORIDAD VIGENTE tras merge protegido y comprobación del HEAD:** `MAX_CONCURRENT_SCOPES=6` y `MAX_OPEN_WORK_BRANCHES=6` describen **microtareas comerciales distintas, no autorizaciones de Tasks**. Se preserva EXACTAMENTE `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=5` y su allowlist vigente: Javier :00/:20/:40 y Alex :10/:50. Alex :30 sigue sin permiso comercial. WIP actual se mide contando scopes con PR/ramas de trabajo comerciales realmente abiertos; una rama fusionada, un PR de gobierno, una prueba diagnóstica y una fila obsoleta de Sheet no ocupan un scope. El nuevo límite NO exige que estén ocupados los seis, ni permite simular LISTO.
 
@@ -111,13 +118,13 @@ Cada Task agrega mediante `create_file` **una sola vez** el archivo `automation-
 
 **Cierre:** el comprobante de comentario no equivale a `contents:write`, el archivo de diagnostico no equivale a `APPROVE`, y ninguno por si solo certifica capacidad comercial global. La transicion definitiva de cada slot se registra solo con pruebas verdaderas y una actualizacion protegida de los valores canonicos/Sheet. Sin pruebas suficientes conservar `PARTIAL_NOT_CERTIFIED`. 
 
-## Contrato normativo v2.0 — microfase 3.1
+## Contrato normativo v2.0 — flujo operativo con conjunto configurable
 
-La autoridad comercial sigue limitada a `COMMERCIAL_AUTHORITY_MODE=CURRENT_PLAN_ONLY` con `LEGACY_MASTER_EXECUTABLE=FALSE` en Scope Lock; P0-012.A fue integrado como PR #3734 (merge `17ca160ae5f2d1e20ef27b1820e670fbfb1099d8`).
+La autoridad comercial sigue limitada a `COMMERCIAL_AUTHORITY_MODE=CURRENT_PLAN_ONLY` con `LEGACY_MASTER_EXECUTABLE=FALSE` en Scope Lock. P0-012.A fue integrado mediante PR #3734; los cambios de cuenta o cantidad de Tasks no alteran el plan comercial ni autorizan microtareas.
 
-El diseño 3+3 integrado en PR #3735 contempla seis Tasks con igual capacidad funcional para desarrollo, revisión y corrección, condicionada por permisos individuales. La microfase 3.2 registró seis IDs físicos: tres Tasks Javier en :00/:20/:40, tres Tasks Alex en :10/:30/:50, conservando los dos IDs originales; véase `docs/AUTOMATION_STATUS.md` y `TAREAS_PROGRAMADAS!A2:Z7`. La creación y readback de configuración NO prueban permisos de escritura desde cada ejecución. El contador autorizado continúa exactamente en uno hasta verificaciones efectivas de las otras cinco; M3.2 permanece `PARTIAL_NOT_CERTIFIED`.
+El conjunto de seis IDs y distribución 3+3 registrado en M3.2 es una fotografía histórica, reemplazada como topología normativa por el conjunto configurable vigente en este documento y `docs/AUTOMATION_STATUS.md`. Las autorizaciones comerciales actuales dependen exclusivamente del contador y allowlist explícitos del encabezado operativo y de verificación individual por Task; la cantidad física o la habilitación no concede permisos.
 
-La única especificación vigente de selección, aislamiento de microtareas, corrección por el revisor, validación independiente del código corregido, CI, integración en dev, cambio a LISTO y desbloqueo de dependencias es `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md`. Al detectar defectos, el revisor corrige y mantiene VALIDANDO; sus commits requieren revisión ajena y pruebas del SHA final, sin autoaprobación. El PR que aprueba no habilita todavía a una sucesora hasta merge, readback y LISTO. No reactivar VAEP/Jules ni escribir QA/main/PROD.
+La especificación vigente de selección, aislamiento de microtareas, corrección por el revisor, validación independiente del código corregido, CI, integración en dev, cambio a LISTO y desbloqueo de dependencias es `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md`; el nombre histórico del archivo no fija un reparto de Tasks. Al detectar defectos, el revisor corrige y mantiene VALIDANDO; sus commits requieren revisión ajena y pruebas del SHA final, sin autoaprobación. El PR que aprueba no habilita todavía a una sucesora hasta merge, readback y LISTO. No reactivar VAEP/Jules ni escribir QA/main/PROD.
 
 Los apartados 1+1 siguientes son archivo histórico no normativo. Las cuentas conservan propiedad y permisos independientes.
 

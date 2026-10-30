@@ -12,7 +12,7 @@ CONTEXT_MODE=CURRENT_STATE_ONLY
 EXECUTION_PLAN_DRIVE_FILE_ID=1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA
 COMMERCIAL_AUTHORITY_MODE=CURRENT_PLAN_ONLY
 LEGACY_MASTER_EXECUTABLE=FALSE
-PILOT_TASK_LIMIT=6
+TASK_COUNT_LIMIT=PROVIDER_EFFECTIVE_CAPACITY
 
 ## Alcance actual
 
@@ -20,7 +20,7 @@ La fuente comercial aprobada es `STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES
 
 ## Autoridad actual de microfase 3
 
-`docs/AUTOMATION_AUTHORITY.md` regula el piloto DEV y el diseño 3+3 autorizado: `PROPIETARIA_INSTITUCIONAL` = SOLQARYN Platform; `EJECUTOR_PRINCIPAL_01` = Javier y `EJECUTOR_PRINCIPAL_02` = Alex con derechos humanos paritarios, sin jerarquía ni herencia de sesiones o permisos de Tasks. El estado de ejecución y el contador efectivo autorizados siguen únicamente en `docs/AUTOMATION_STATUS.md`. El límite de seis es techo de diseño, no acredita instalación ni concede permisos por sí solo. `COMMERCIAL_AUTHORITY_MODE=CURRENT_PLAN_ONLY` y `LEGACY_MASTER_EXECUTABLE=FALSE` permanecen controles obligatorios, y la única fuente comercial es el Documento vigente. Las reglas completas residen en `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md`.
+`docs/AUTOMATION_AUTHORITY.md` regula un inventario de Tasks configurable por decisión institucional protegida. No existe techo interno de cantidad ni distribución obligatoria por cuenta; altas, bajas o cambios requieren comprobar capacidad efectiva del proveedor y conciliar identidad, ID, propietario, horario, habilitación y permisos. El censo actual de seis Tasks y distribución 3+3 es solo una fotografía. El estado operativo y el allowlist comercial siguen en `docs/AUTOMATION_STATUS.md`; esta regla no altera los cinco IDs autorizados ni el WIP máximo de seis microtareas. La propietaria institucional y los ejecutores Javier y Alex conservan paridad humana sin herencia de sesiones o permisos. `COMMERCIAL_AUTHORITY_MODE=CURRENT_PLAN_ONLY` y `LEGACY_MASTER_EXECUTABLE=FALSE` permanecen obligatorios. Las reglas completas residen en `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md`.
 
 ## Identidad, código y seguridad
 
