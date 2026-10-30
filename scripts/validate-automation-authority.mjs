@@ -61,7 +61,12 @@ export function validateAuthority(input) {
       ['FORMAL_APPROVAL_ROUTINE_COMMERCIAL_REQUIRED', 'FALSE'],
       ['FORMAL_APPROVAL_GOVERNANCE_REQUIRED', 'TRUE'],
     ]) {
-      const matches = [...body.matchAll(new RegExp('^' + key + '=(.+)
+      const matches = body.split(/\r?\n/).filter(line => line.startsWith(key + '='));
+      if (matches.length !== 1 || matches[0] !== key + '=' + wanted)
+        failures.push(label + ': invalid ' + key);
+    }
+  }
+  const authorizationKey = 'SCHEDULED_CHATGPT_TASKS_AUTHORIZED';
   const counterMatches = text => [...text.matchAll(/^SCHEDULED_CHATGPT_TASKS_AUTHORIZED=(\d+)$/gm)];
   const aMatches = counterMatches(d.authority), sMatches = counterMatches(d.status);
   const aCount = Number(aMatches[0]?.[1]), sCount = Number(sMatches[0]?.[1]);
