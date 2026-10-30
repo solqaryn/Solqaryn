@@ -31,6 +31,13 @@ const canReadRoles = user => {
     'capacidadesHabilitadas', 'CapacidadesHabilitadas'));
   return grants.has('Roles:Ver') && caps.has('Roles:Ver');
 };
+const roleDenialKind = response => {
+  if (response.status === 403) return 'RBAC_403';
+  if (response.status === 503 &&
+      firstOf(response.data, 'code', 'Code') === 'TENANT_DATA_ISOLATION_REQUIRED')
+    return 'ISOLATION_GUARD_503';
+  return null;
+};
 
 function requireThat(ok, key) {
   if (!ok) throw new Error('MF3_BLOCKED=' + key);
@@ -282,15 +289,19 @@ async function verifyLiveRoles(users) {
   for (const user of [a, b]) {
     if (!canReadRoles(user)) {
       phase = 'DENIED_ROLES_LIST_' + user.label;
-      const listDenied = await http('/roles', user.token, user.id);
-      requireThat(listDenied.status === 403,
+      const listDenied = await http('/roles', user.token, user.id,
+        undefined, true);
+      const listDenial = roleDenialKind(listDenied);
+      requireThat(listDenial !== null,
         'roles_list_without_grant_' + user.label + '_http_' + listDenied.status);
       phase = 'DENIED_ROLE_DETAIL_' + user.label;
       const detailDenied = await http('/roles/' + assignedRoleIds.get(user.label),
-        user.token, user.id);
-      requireThat(detailDenied.status === 403,
+        user.token, user.id, undefined, true);
+      const detailDenial = roleDenialKind(detailDenied);
+      requireThat(detailDenial !== null,
         'role_detail_without_grant_' + user.label + '_http_' + detailDenied.status);
-      console.log('MF3_ROLES_READ_DENIED_AS_CONFIGURED_' + user.label + '=PASS');
+      console.log('MF3_ROLES_LIST_' + user.label + '=' + listDenial + '_PASS');
+      console.log('MF3_ROLE_DETAIL_' + user.label + '=' + detailDenial + '_PASS');
       continue;
     }
     phase = 'OWN_ROLES_LIST_' + user.label;
@@ -359,6 +370,11 @@ async function main() {
     assert(!canReadRoles({ permissions: {
       permisos: [], capacidadesHabilitadas: []
     } }));
+    assert.equal(roleDenialKind({ status: 403, data: null }), 'RBAC_403');
+    assert.equal(roleDenialKind({ status: 503, data: {
+      code: 'TENANT_DATA_ISOLATION_REQUIRED'
+    } }), 'ISOLATION_GUARD_503');
+    assert.equal(roleDenialKind({ status: 503, data: { code: 'OTHER' } }), null);
     console.log('MF3_CONTRACT_SELF_TEST=PASS');
     return;
   }
