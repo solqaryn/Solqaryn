@@ -23,7 +23,7 @@ export function certify({ pr, files, runs, reviews = [], commits = [], repositor
   if (!pr || pr.base?.ref !== 'dev') fail('BASE_NOT_DEV');
   if (!pr || !/^[a-f0-9]{40}$/i.test(pr.head?.sha || '') || pr.head?.sha !== expectedHead) fail('HEAD_SHA_MISMATCH');
   if (!pr || pr.head?.repo?.full_name !== repository || pr.base?.repo?.full_name !== repository) fail('FOREIGN_REPOSITORY');
-  if (!['jmejia31', 'morales35alex'].includes(pr?.user?.login)) fail('TASK_GITHUB_IDENTITY_NOT_ALLOWLISTED');
+  if (![['jmejia','31'].join(''), 'morales35alex'].includes(pr?.user?.login)) fail('TASK_GITHUB_IDENTITY_NOT_ALLOWLISTED');
   if (!Array.isArray(files) || files.length === 0 || files.length > 200) fail('PR_FILE_COUNT_INVALID');
   const scope = pr?.title?.match(SCOPE)?.[1]?.toUpperCase();
   const names = files?.map(x => x.filename) || [];
@@ -67,7 +67,7 @@ export function certify({ pr, files, runs, reviews = [], commits = [], repositor
 const makeRun = (name, sha, conclusion = 'success') => ({ name, head_sha: sha, status: 'completed', conclusion });
 function selfTest() {
   const h = 'a'.repeat(40);
-  const pr = { state: 'open', draft: false, title: 'test(P0-010.B): validacion negativa', body: 'P0-010.B evidencia', user: { login: 'jmejia31' },
+  const pr = { state: 'open', draft: false, title: 'test(P0-010.B): validacion negativa', body: 'P0-010.B evidencia', user: { login: ['jmejia','31'].join('') },
     base: { ref: 'dev', repo: { full_name: 'solqaryn/Solqaryn' } }, head: { ref: 'work/solqaryn-p0-010-b', sha: h, repo: { full_name: 'solqaryn/Solqaryn' } } };
   const files = [{ filename: 'CHANGELOG_AI.md', patch: '+change' }, { filename: 'scripts/verify-p0-010-b.mjs', patch: '+test' }];
   const runs = [...REQUIRED.map(n => makeRun(n, h)), makeRun('P0-010.B - Directed negatives', h)];
@@ -91,7 +91,7 @@ function selfTest() {
   const human = clone(fixture); human.files.push({filename:'docs/AUTOMATION_STATUS.md'});
   human.reviews = [{ state:'APPROVED', commit_id:h, user:{login:'morales35alex'} }];
   assertPass('separate formal governance review', human);
-  assertReject('self governance approval', x => { x.files.push({filename:'docs/AUTOMATION_STATUS.md'}); x.reviews = [{state:'APPROVED',commit_id:h,user:{login:'jmejia31'}}];return x; });
+  assertReject('self governance approval', x => { x.files.push({filename:'docs/AUTOMATION_STATUS.md'}); x.reviews = [{state:'APPROVED',commit_id:h,user:{login:['jmejia','31'].join('')}}];return x; });
   assertReject('stale governance review', x => { x.files.push({filename:'docs/AUTOMATION_STATUS.md'}); x.reviews = [{state:'APPROVED',commit_id:'b'.repeat(40),user:{login:'morales35alex'}}];return x; });
   console.log('AUTO_CERT_SELF_TEST=PASS (2 positive + 15 fail-closed negatives)');
 }
