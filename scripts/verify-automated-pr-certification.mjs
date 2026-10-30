@@ -98,7 +98,7 @@ function selfTest() {
 
   assertReject('self governance approval', x => { x.files.push({filename:'docs/AUTOMATION_STATUS.md'}); x.reviews = [{state:'APPROVED',commit_id:h,user:{login:['jmejia','31'].join('')}}];return x; });
   assertReject('stale governance review', x => { x.files.push({filename:'docs/AUTOMATION_STATUS.md'}); x.reviews = [{state:'APPROVED',commit_id:'b'.repeat(40),user:{login:'morales35alex'}}];return x; });
-  console.log('AUTO_CERT_SELF_TEST=PASS (2 positive + 15 fail-closed negatives)');
+  console.log('AUTO_CERT_SELF_TEST=PASS (3 positive + 16 fail-closed negatives)');
 }
 
 const args = new Set(process.argv.slice(2));
