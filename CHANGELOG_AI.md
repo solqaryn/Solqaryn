@@ -1,3 +1,10 @@
+## 2026-10-30 — P0-001.B: aceptación excepcional limitada de revisión tardía en #3797
+
+- Por autorización expresa del propietario, se documenta una excepción adicional, única y exclusiva para la secuencia de revisión del PR #3797. El PR se fusionó a `dev` como `6282d59319fded41a4b65641720890853c29b65a` a las `2026-10-30T18:12:35Z`; SOLQARYN Platform registró `APPROVED` #5717654037 sobre el HEAD `cd8c7dfd24b6a3ac30d46995b78ae9b451082b6c` a las `2026-10-30T19:26:25Z`, después del merge.
+- Se conserva la secuencia real: la revisión no fue previa y no se atribuye cumplimiento retroactivo. La excepción no extiende la aceptación de #3778 a otros PR ni crea precedente; `REVIEW_INDEPENDENCE_REQUIRED=TRUE` sigue vigente.
+- Evidencia exact-SHA sobre el merge: CI requerido 3/3 SUCCESS, Render LIVE y Vercel READY. No se alteran código runtime, base de datos, secretos, configuración de proveedores ni entornos distintos de DEV.
+- La aceptación de gobierno por sí sola no cambia el estado institucional: P0-001.B permanece EN_PROGRESO hasta merge protegido con revisión independiente de este changeset y readback de PLAN_MAESTRO/COLA/BITACORA.
+
 ## 2026-10-30 — P1-001.A: revisión compensatoria aún pendiente
 
 - #3794 integró en `dev` la excepción limitada del propietario, pero GitHub registra que se fusionó sin revisiones formales. Luego `solqaryn-platform` aprobó #3793 después del merge (review #5715412300, SHA exacto), pero el perfil es institucional y no identifica una persona humana; aún falta el revisor compensatorio identificable.

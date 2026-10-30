@@ -128,6 +128,29 @@ protegido, CI requerido exact-SHA, conservar evidencia de Render/Vercel para el
 SHA de código certificado y realizar readback de `PLAN_MAESTRO`, `COLA` y
 `BITACORA`. Esta sección por sí sola no cambia el estado de la hoja.
 
+### Aceptación excepcional y limitada — P0-001.B / PR #3797 (2026-10-30)
+
+El propietario autorizó expresamente una excepción adicional, única y limitada
+a la secuencia de revisión del PR #3797 de `P0-001.B`. El PR fue creado por
+`jmejia31` con HEAD `cd8c7dfd24b6a3ac30d46995b78ae9b451082b6c` y se fusionó en
+`dev` el `2026-10-30T18:12:35Z`, con merge SHA
+`6282d59319fded41a4b65641720890853c29b65a`. No se registró una revisión formal
+antes del merge. SOLQARYN Platform registró después la revisión independiente
+`APPROVED` #5717654037, anclada al HEAD exacto del PR, a las
+`2026-10-30T19:26:25Z`. Esa revisión fue posterior al merge y **no se declara
+como aprobación previa ni como cumplimiento retroactivo de la secuencia**.
+
+La excepción compensa exclusivamente la falta de revisión previa de
+P0-001.B/#3797. No amplía ni reinterpreta la excepción P0-001.B/#3778, no
+modifica `REVIEW_INDEPENDENCE_REQUIRED=TRUE`, ni establece precedente para
+otros PR o scopes. Permanecen obligatorios CI exact-SHA, merge protegido y
+readback institucional. Para #3797 se verificaron CI requerido 3/3 y los
+deployments Render LIVE y Vercel READY sobre el merge SHA
+`6282d59319fded41a4b65641720890853c29b65a`; la excepción documental y los
+readbacks de `PLAN_MAESTRO`, `COLA` y `BITACORA` deben integrarse y verificarse
+antes de cambiar el estado de la tarea. Esta sección por sí sola no cambia el
+estado institucional.
+
 ### Aceptación excepcional y limitada — P1-001.A / PR #3793 (2026-10-30)
 
 El propietario aceptó expresamente una excepción única para la falta de revisión
