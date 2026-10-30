@@ -49,6 +49,14 @@ for label in A B C; do
   [[ "$rows" =~ ^[1-9][0-9]*:[1-9][0-9]*:[1-9][0-9]*$ ]] ||
     stop "identity_${label}_not_exclusive_active_tenant"
   IFS=: read -r uid cid assigned_role_id <<< "$rows"
+  if [[ "$label" == A || "$label" == B ]]; then
+    expected_key="SOLQARYN_DEV_${label}_EXPECTED_COMPANY_ID"
+    expected_company_id="${!expected_key:-}"
+    [[ "$expected_company_id" =~ ^[1-9][0-9]*$ ]] ||
+      stop "expected_company_${label}_missing"
+    [[ "$cid" == "$expected_company_id" ]] ||
+      stop "company_mapping_${label}_mismatch"
+  fi
   [[ -z "${seen_users[$uid]:-}" ]] || stop 'duplicate_user_identity'
   [[ -z "${seen_companies[$cid]:-}" ]] || stop 'users_share_same_company'
   seen_users[$uid]=1

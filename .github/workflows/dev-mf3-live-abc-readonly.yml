@@ -88,16 +88,18 @@ jobs:
           DB_NAME: ${{ vars.SOLQARYN_DEV_DB_NAME }}
           DB_USER: ${{ vars.SOLQARYN_DEV_DB_USER }}
           DB_PASSWORD: ${{ secrets.SOLQARYN_DEV_DB_PASSWORD }}
-          SOLQARYN_DEV_A_USERNAME: ${{ secrets.SOLQARYN_DEV_A_USERNAME }}
-          SOLQARYN_DEV_B_USERNAME: ${{ secrets.SOLQARYN_DEV_B_USERNAME }}
+          SOLQARYN_DEV_A_USERNAME: admin_prueba_a
+          SOLQARYN_DEV_B_USERNAME: admin_prueba_b
           SOLQARYN_DEV_C_USERNAME: ${{ secrets.SOLQARYN_DEV_C_USERNAME }}
+          SOLQARYN_DEV_A_EXPECTED_COMPANY_ID: '2'
+          SOLQARYN_DEV_B_EXPECTED_COMPANY_ID: '3'
         run: bash scripts/ci/mf3-abc-membership-readonly.sh
       - name: Prueba HTTP JWT propia y cruzada A/B/C contra Render DEV (solo GET)
         shell: bash
         env:
-          SOLQARYN_DEV_A_USERNAME: ${{ secrets.SOLQARYN_DEV_A_USERNAME }}
+          SOLQARYN_DEV_A_USERNAME: admin_prueba_a
           SOLQARYN_DEV_A_PASSWORD: ${{ secrets.SOLQARYN_DEV_A_PASSWORD }}
-          SOLQARYN_DEV_B_USERNAME: ${{ secrets.SOLQARYN_DEV_B_USERNAME }}
+          SOLQARYN_DEV_B_USERNAME: admin_prueba_b
           SOLQARYN_DEV_B_PASSWORD: ${{ secrets.SOLQARYN_DEV_B_PASSWORD }}
           SOLQARYN_DEV_C_USERNAME: ${{ secrets.SOLQARYN_DEV_C_USERNAME }}
           SOLQARYN_DEV_C_PASSWORD: ${{ secrets.SOLQARYN_DEV_C_PASSWORD }}
