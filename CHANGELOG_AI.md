@@ -1,3 +1,10 @@
+## 2026-10-30 — P1-002.A: contrato de superadministracion sin acceso silencioso a tenants
+
+- Scope comercial P1-002.A (fila 28), base dev@0cec1a3b06793c95dceb3f316c1ae4cb22951f76. Rama propia work/solqaryn-p1-002-a de PRIMARY_DEV_03; el cierre exige revisión formal independiente y CI exact-SHA.
+- Acta docs/P1-002-A-CONTRATO-SUPERADMIN-GLOBAL-DEV.md delimita la sesión SaaS, la autorización empresarial revalidada y la exigencia de motivo/auditoría para cualquier delegación futura. NO implementa bypass ni acceso universal.
+- Nuevo test backend/tests/Solqaryn.Tests/API/Controllers/P1002ASuperadminGlobalTenantBoundaryTests.cs: grant global positivo, negativas A/B sin membresía y no expansión B al tener membresía A; InMemory, sin MySQL real.
+- Estado EN_PROGRESO; no atribuir PASS hasta ejecutar tests y validar los tres checks exact-SHA, revisión independiente, merge protegido y readback institucional. Rollback por revert en PR protegido.
+
 
 ## 2026-10-30 — P0-008.B: negativos de fuga de secretos en inventario DEV (propuesta)
 
