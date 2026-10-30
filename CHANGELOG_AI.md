@@ -4674,3 +4674,10 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Se mantienen sin cambios los seis IDs físicos observados, cinco IDs con autorización comercial, la exclusión de Alex :30 y el WIP máximo de seis scopes, más controles de revisión, CI y merge protegido.
 - El validador ahora contrasta inventarios registrados entre autoridades y permite expansión futura consistente, rechazando IDs duplicados/desconocidos y diferencias de conteo; no concede permisos ni crea Tasks.
 - No se modifican Sheets, Tasks, horarios, backend, frontend, datos, proveedores, QA, main ni PROD en esta enmienda de código.
+
+
+## 2026-10-30 — P1-001.B: negativos de asignacion de rol cruzado (candidato)
+
+- Task Javier PRIMARY_DEV_02, ID `6adc2e4bd8a48191ac7d8641ed95a1a3`, GitHub `jmejia31`: seleccion dinamica P1-001.B tras no existir P0 disponible; dependencia P1-001.A LISTO. Claim GitHub atomico de `work/solqaryn-p1-001-b` desde `dev@0cec1a3b06793c95dceb3f316c1ae4cb22951f76` con readback exclusivo.
+- `P1001BRoleAssignmentCertificationTests`: cinco negativas de roles ajenos/plataforma/huérfano/inactivo/eliminado para alta y actualizacion de membresía, verificando ausencia de escritura y conservación del RolId original; positiva de alta y cambio con rol empresarial propio. Es prueba del servicio con repositorios simulados, NO test autenticado real de Render/Aiven.
+- Acta `docs/P1-001-B-CERTIFICACION-ROL-ENTRE-TENANTS-DEV.md`. Sin mutaciones del ERP, MySQL, frontend, API, secretos, QA/main/PROD. Estado candidato sujeto a CI exact SHA, revisión independiente, merge protegido y readback; LISTO NO acreditado.
