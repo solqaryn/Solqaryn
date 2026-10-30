@@ -168,11 +168,17 @@ se fusionó por `solqaryn-platform` como
 `804d9c636540e1aaa4a92e0bfecdd6f2260d65e7` sin una revisión formal (`reviews=[]`).
 Por tanto, #3794 integra la decisión del propietario y el registro factual,
 pero **no satisface** el control compensatorio independiente descrito arriba.
-El PR #3795 se mantiene en borrador para solicitar a Alex (`morales35alex`) una
-revisión formal del diff exacto de #3793 (`e5032751b22cb1eab56762f5c79638c777a9ed27`)
-y del flujo real #41087748364. El revisor deberá consignar en su review el
-resultado de esa inspección. No marcar como listo ni habilitar el merge de
-#3795 antes de esa revisión.
+Después, `solqaryn-platform` registró la review `APPROVED` #5715412300 en
+#3793, anclada al commit exacto `e5032751b22cb1eab56762f5c79638c777a9ed27`,
+el `2026-10-30T16:31:36Z`. Es una revisión formal posterior al merge, pero el
+perfil consultado identifica una cuenta institucional sin una persona humana
+nominal; no basta para satisfacer la condición de representante humano
+identificable que exige esta aceptación. Alex (`morales35alex`) fue solicitado
+como revisor en #3793 y en el borrador #3795. El control seguirá pendiente
+hasta que Alex o un representante humano identificable de SOLQARYN Platform
+revise el diff exacto de #3793 y el flujo real #41087748364, y consigne el
+resultado en una review formal. No habilitar el merge de #3795 antes de esa
+revisión.
 
 Se mantiene `VALIDANDO` durante reparaciones del revisor. No regresar
 artificialmente a `EN_PROGRESO` por un defecto corregible.

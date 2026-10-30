@@ -1,7 +1,7 @@
 ## 2026-10-30 — P1-001.A: revisión compensatoria aún pendiente
 
-- #3794 integró en `dev` la excepción limitada del propietario, pero GitHub registra que se fusionó sin revisiones formales. Por ello no satisface la revisión compensatoria y P1-001.A sigue EN_PROGRESO.
-- Se prepara el PR #3795 como borrador para pedir a Alex una revisión formal e independiente del diff de #3793 (`e5032751b22cb1eab56762f5c79638c777a9ed27`) y del flujo real #41087748364. No se habilitará el merge del borrador antes de esa revisión.
+- #3794 integró en `dev` la excepción limitada del propietario, pero GitHub registra que se fusionó sin revisiones formales. Luego `solqaryn-platform` aprobó #3793 después del merge (review #5715412300, SHA exacto), pero el perfil es institucional y no identifica una persona humana; aún falta el revisor compensatorio identificable.
+- Se solicita a Alex revisión formal sobre #3793 y el PR #3795, mantenido como borrador, del diff `e5032751b22cb1eab56762f5c79638c777a9ed27` y el flujo real #41087748364. No se habilitará el merge antes de la review independiente elegible.
 - Este registro no declara una aprobación inexistente ni altera el código runtime o la base de datos.
 
 ## 2026-10-30 — P1-001.A: aceptación excepcional limitada de revisión tardía
