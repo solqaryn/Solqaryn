@@ -1,3 +1,11 @@
+
+## 2026-10-30 — P0-008.B: negativos de fuga de secretos en inventario DEV (propuesta)
+
+- Scope comercial P0-008.B fila 17, dependencias P0-008.A/P0-012.B LISTO. Segundo scope de PRIMARY_DEV_01 solo después de P0-004.B VALIDANDO sin edición.
+- Script scripts/verify-p0-008-b-secret-evidence.mjs y workflow de solo lectura: reutilizan 12 negativas de P0-008.A y agregan 10 alteraciones ficticias rechazadas de campos/valores de credenciales. Ninguna lectura/desencriptado de secreto real ni acceso a proveedores.
+- Acta docs/P0-008-B-PRUEBA-NEGATIVA-SECRETOS-DEV.md limita la conclusión a este snapshot de metadatos y patrones; NO pretende cobertura de secretos del repositorio completo.
+- CI exact SHA, revisión independiente, merge protegido dev y conciliación institucional requeridos para LISTO; rollback por revert protegido, sin infraestructura ni DB.
+
 ## 2026-10-30 — P0-001.B: aceptación excepcional limitada de revisión tardía en #3797
 
 - Por autorización expresa del propietario, se documenta una excepción adicional, única y exclusiva para la secuencia de revisión del PR #3797. El PR se fusionó a `dev` como `6282d59319fded41a4b65641720890853c29b65a` a las `2026-10-30T18:12:35Z`; SOLQARYN Platform registró `APPROVED` #5717654037 sobre el HEAD `cd8c7dfd24b6a3ac30d46995b78ae9b451082b6c` a las `2026-10-30T19:26:25Z`, después del merge.
