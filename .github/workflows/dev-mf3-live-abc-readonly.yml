@@ -119,7 +119,7 @@ jobs:
             echo '- Tres identidades activas independientes / tres empresas activas: PASS'
             echo '- JWT reales y contexto empresarial propio: PASS'
             echo '- Rechazo cruzado y respuesta de permisos empresarial: PASS'
-            echo '- GET /roles A/B: valida lectura tenant-scoped si está concedida; valida 403 en lista y detalle si no está concedida'
+            echo '- GET /roles A/B: con permiso valida lectura tenant-scoped; sin permiso valida 403 RBAC o 503 TENANT_DATA_ISOLATION_REQUIRED en lista y detalle'
             echo '- GET /roles/{id} cruzado: PASS cuando hay roles privados A/B; si no, se informa NO_FIXTURE'
             echo '- Lecturas comerciales certificadas sólo por grants + flags: PASS'
             echo '- Operaciones de escritura comercial: NO ejecutadas'
