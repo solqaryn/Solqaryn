@@ -36,7 +36,7 @@ for label in A B C; do
   [[ "$hex" =~ ^[[:xdigit:]]+$ ]] || stop "username_${label}_invalid"
   # La membresía exige usuario, empresa y rol empresarial activos y congruentes.
   rows="$(query "
-    SELECT CONCAT(u.Id,':',ue.EmpresaId)
+    SELECT CONCAT(u.Id,':',ue.EmpresaId,':',ue.RolId)
     FROM Usuarios u
     JOIN UsuarioEmpresas ue ON ue.UsuarioId=u.Id AND ue.Activa=1
     JOIN Empresas e ON e.Id=ue.EmpresaId AND e.Activa=1
@@ -46,15 +46,17 @@ for label in A B C; do
       AND r.Ambito=1
       AND (r.EmpresaId=e.Id OR (r.EmpresaId IS NULL AND r.EsSistema=1))
   ")"
-  [[ "$rows" =~ ^[1-9][0-9]*:[1-9][0-9]*$ ]] ||
+  [[ "$rows" =~ ^[1-9][0-9]*:[1-9][0-9]*:[1-9][0-9]*$ ]] ||
     stop "identity_${label}_not_exclusive_active_tenant"
-  uid="${rows%%:*}"
-  cid="${rows##*:}"
+  IFS=: read -r uid cid assigned_role_id <<< "$rows"
   [[ -z "${seen_users[$uid]:-}" ]] || stop 'duplicate_user_identity'
   [[ -z "${seen_companies[$cid]:-}" ]] || stop 'users_share_same_company'
   seen_users[$uid]=1
   seen_companies[$cid]=1
   printf 'MF3_COMPANY_%s_ID=%s\n' "$label" "$cid" >> "$GITHUB_ENV"
+  if [[ "$label" == A || "$label" == B ]]; then
+    printf 'MF3_ASSIGNED_ROLE_%s_ID=%s\n' "$label" "$assigned_role_id" >> "$GITHUB_ENV"
+  fi
   if [[ "$label" == A || "$label" == B ]]; then
     role_id="$(query "
       SELECT Id
@@ -63,9 +65,15 @@ for label in A B C; do
       ORDER BY Activo DESC, Id
       LIMIT 1
     ")"
-    [[ "$role_id" =~ ^[1-9][0-9]*$ ]] || stop "tenant_role_${label}_missing"
+    if [[ -n "$role_id" && ! "$role_id" =~ ^[1-9][0-9]*$ ]]; then
+      stop "tenant_role_${label}_invalid"
+    fi
     printf 'MF3_ROLE_%s_ID=%s\n' "$label" "$role_id" >> "$GITHUB_ENV"
-    printf 'MF3_TENANT_ROLE_%s=FOUND_READ_ONLY\n' "$label"
+    if [[ -n "$role_id" ]]; then
+      printf 'MF3_TENANT_ROLE_%s=FOUND_READ_ONLY\n' "$label"
+    else
+      printf 'MF3_TENANT_ROLE_%s=NO_PRIVATE_FIXTURE\n' "$label"
+    fi
   fi
   printf 'MF3_IDENTITY_%s=PREFLIGHT_PASS\n' "$label"
 done
