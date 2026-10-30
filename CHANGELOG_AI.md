@@ -1,4 +1,13 @@
 
+## 2026-10-30 — P1-004.A: delegacion explicita de competencias de plataforma (DEV, en progreso)
+
+- Scope autonomo de Javier Task :20, rama determinista work/solqaryn-p1-004-a, dependency P0-012.B LISTO; P1-001.B propia permanece VALIDANDO sin edicion y PR #3802 no se autoaprueba.
+- Contrato IPlataformaDelegacionService + PlataformaDelegacionService verifica alcance global vivo desde IPlataformaScopeService y grant exacto RolPermiso/Permiso en MySQL, con rol NO sistema en Ambito Plataforma, activo/no eliminado y permiso activo/no eliminado en Ambito Plataforma; sin ampliar autoridad de JWT/tenant ni confiar en EsAdministrador por si solo.
+- Registro DI y pruebas xUnit para un grant legitimo, ausencia de scope/grant, permisos empresariales, roles sistema, revocaciones e inactivaciones; ninguna nueva API de alta/reasignacion de grants, sin DML, migraciones, proveedores ni secretos.
+- Evidencia de alcance limitada: los tests son InMemory y no acreditan un flujo HTTP de delegacion ni autorizacion final de un endpoint. CI especifica y exact-SHA, seguridad aplicable, revision independiente, merge protegido y readback institucional pendientes. Gate externo de secretos #3805 sin excepciones ni desactivacion.
+- Rollback: revert protegido de los archivos P1-004.A sin tocar QA/main/PROD.
+
+
 ## 2026-10-30 — P0-008.B: negativos de fuga de secretos en inventario DEV (propuesta)
 
 - Scope comercial P0-008.B fila 17, dependencias P0-008.A/P0-012.B LISTO. Segundo scope de PRIMARY_DEV_01 solo después de P0-004.B VALIDANDO sin edición.
