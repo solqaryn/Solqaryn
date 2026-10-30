@@ -129,6 +129,38 @@ protegido, CI requerido exact-SHA, conservar evidencia de Render/Vercel para el
 SHA de código certificado y realizar readback de `PLAN_MAESTRO`, `COLA` y
 `BITACORA`. Esta sección por sí sola no cambia el estado de la hoja.
 
+### Aceptación excepcional y limitada — P1-001.A / PR #3793 (2026-10-30)
+
+El propietario aceptó expresamente una excepción única para la falta de revisión
+independiente previa al merge del PR #3793, correspondiente exclusivamente a
+P1-001.A. El PR fue creado por `jmejia31` con el commit
+`e5032751b22cb1eab56762f5c79638c777a9ed27` y se integró en `dev` el
+`2026-10-30T16:12:24Z` como merge SHA
+`064dfd4979811164ab34c1e0319b3b7b609db44e`, por `solqaryn-platform`. GitHub
+registra `reviews=[]`: no hubo aprobación formal previa ni posterior en ese PR.
+La descripción del PR indicaba que se esperaba revisión previa; el resultado
+real no cumplió esa secuencia. Esta aceptación no la presenta como cumplida
+retroactivamente.
+
+Como control compensatorio obligatorio, un revisor independiente debe examinar
+el diff exacto de #3793 y la evidencia de su ejecución real posterior al merge
+antes de cerrar P1-001.A. Son elegibles Alex (`morales35alex`) o SOLQARYN
+Platform mediante un representante humano identificable, siempre que el login
+de revisión sea distinto del autor y de los contribuyentes revisados. La
+revisión y esta aceptación se registrarán en un PR protegido separado con CI
+exact-SHA; ese PR debe integrarse en `dev` antes de cualquier cierre
+institucional. El flujo real #41087748364 terminó `SUCCESS` sobre el merge SHA:
+MySQL se consultó solo con SELECT; `/roles` aceptó 403 RBAC o el 503 exacto
+`TENANT_DATA_ISOLATION_REQUIRED`; los controles A/B/C de identidad, contexto
+propio y aislamiento cruzado pasaron. La evidencia no sustituye la revisión.
+
+La excepción se limita a P1-001.A/#3793, no modifica
+`REVIEW_INDEPENDENCE_REQUIRED=TRUE` ni establece precedente. P1-001.A solo
+podrá pasar a `LISTO` después de la revisión independiente compensatoria, CI
+requerido exact-SHA del PR que documenta la excepción, merge protegido y
+readback de `PLAN_MAESTRO`, `COLA` y `BITACORA`. Esta sección no cambia por sí
+sola el estado institucional.
+
 Se mantiene `VALIDANDO` durante reparaciones del revisor. No regresar
 artificialmente a `EN_PROGRESO` por un defecto corregible.
 Si una ejecución termina por limite del proveedor, conservar estado veridico,
