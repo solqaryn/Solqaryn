@@ -11,6 +11,17 @@ AUTOMATION_RUNTIME=ACTIVE_DEV
 TASK_DESIGN=OWNER_CONFIGURABLE_TASK_SET
 TASK_COUNT_LIMIT=PROVIDER_EFFECTIVE_CAPACITY
 CURRENT_REGISTERED_TASKS=6
+AUTO_CERTIFICATION_MODE=REQUIRED_SCOPE_LOCK
+FORMAL_APPROVAL_ROUTINE_COMMERCIAL_REQUIRED=FALSE
+FORMAL_APPROVAL_GOVERNANCE_REQUIRED=TRUE
+
+## Enmienda operativa propuesta — certificación automática CI en DEV (2026-10-30)
+
+**Vigencia condicionada:** esta norma solo sustituye la revisión formal para futuros PR comerciales ordinarios cuando el changeset esté fusionado por PR protegido en `dev`, el job requerido `verify-solqaryn-project-scope` ejecute la certificación contra el SHA exacto y exista readback de CI. Durante la implantación/bootstrap de este PR normativo sigue exigida revisión formal realmente independiente. No se simula un `APPROVED` humano: `AUTO_CERT=PASS` significa exclusivamente certificación técnica de GitHub Actions.
+
+Para PR comerciales de ramas deterministas `work/solqaryn-<microtarea>`, el gate automático comprueba identidad y repositorio originales, alcance/diff, base DEV, SHA exacto, ausencia de secretos añadidos en código productivo, tres checks requeridos (incluyendo el propio Scope Lock), pruebas específicas del scope, resultado de todos los checks aplicables y rechazo fail-closed de fallos, faltas de evidencia o cambios concurrentes de HEAD. El código del verificador se ejecuta desde el commit BASE confiable, no desde el PR que evalúa. El job de Scope Lock ya es obligatorio en el ruleset de dev; no se requieren botones ni aprobación humana para el PR comercial que supera toda la certificación y sea fusionado mediante permisos reales y el flujo protegido. Un PASS de una Task o de Sheets no sustituye este gate.
+
+Los PR que cambian gobierno, Skill, reglas de seguridad, workflows requeridos o el propio verificador **siguen necesitando revisión formal independiente** del SHA final. El bootstrap no puede autocertificarse. Ningún cambio expande el allowlist comercial 5/6 ni habilita Alex :30; no altera QA/main/PROD, credenciales, Aiven, grants ni despliegues. Una Task no puede autoaprobarse ni usar otra identidad. El cierre `LISTO` exige merge protegido, CI postmerge aplicable y readback de `PLAN_MAESTRO`, `COLA` (fórmula intacta) y `BITACORA`. Revertir mediante PR protegido con nuevo CI, sin eliminar evidencia histórica.
 
 ## M3.4 — ampliación quirúrgica WIP comercial a 6 (25-10-2026)
 
