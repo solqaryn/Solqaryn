@@ -6,6 +6,14 @@
 - Acta docs/P0-008-B-PRUEBA-NEGATIVA-SECRETOS-DEV.md limita la conclusión a este snapshot de metadatos y patrones; NO pretende cobertura de secretos del repositorio completo.
 - CI exact SHA, revisión independiente, merge protegido dev y conciliación institucional requeridos para LISTO; rollback por revert protegido, sin infraestructura ni DB.
 
+
+## 2026-10-30 — P0-004.B: certificación negativa MySQL DEV (entrega en validación)
+
+- Fuente comercial: PLAN_MAESTRO/COLA fila 9; DEV-only, Scope Lock STRICT y dependencia P0-004.A=LISTO.
+- Se añade test offline scripts/verify-p0-004-b-certificacion-negativa.mjs y workflow exclusivo: 8 negativas adicionales sobre copias temporales del contrato SQL (9 SELECT y 50 negativas originales). No conecta a MySQL ni aplica migraciones o cambios de datos.
+- Acta docs/P0-004-B-CERTIFICACION-NEGATIVA-MYSQL-DEV.md separa evidencia física declarada por el propietario de evidencia estática; respaldo/restauración no acreditados desde esta Task.
+- Pendiente CI exact HEAD, revisión formal independiente, merge protegido y readback institucional. Rollback documental por PR protegido.
+
 ## 2026-10-30 — P0-001.B: aceptación excepcional limitada de revisión tardía en #3797
 
 - Por autorización expresa del propietario, se documenta una excepción adicional, única y exclusiva para la secuencia de revisión del PR #3797. El PR se fusionó a `dev` como `6282d59319fded41a4b65641720890853c29b65a` a las `2026-10-30T18:12:35Z`; SOLQARYN Platform registró `APPROVED` #5717654037 sobre el HEAD `cd8c7dfd24b6a3ac30d46995b78ae9b451082b6c` a las `2026-10-30T19:26:25Z`, después del merge.
