@@ -1,3 +1,15 @@
+## 2026-10-30 — P1-001.A: revisión compensatoria aún pendiente
+
+- #3794 integró en `dev` la excepción limitada del propietario, pero GitHub registra que se fusionó sin revisiones formales. Luego `solqaryn-platform` aprobó #3793 después del merge (review #5715412300, SHA exacto), pero el perfil es institucional y no identifica una persona humana; aún falta el revisor compensatorio identificable.
+- Se solicita a Alex revisión formal sobre #3793 y el PR #3795, mantenido como borrador, del diff `e5032751b22cb1eab56762f5c79638c777a9ed27` y el flujo real #41087748364. No se habilitará el merge antes de la review independiente elegible.
+- Este registro no declara una aprobación inexistente ni altera el código runtime o la base de datos.
+
+### Actualización del recheck — 2026-10-30 16:36:31Z
+
+- Alex (`morales35alex`) registró `APPROVED` #5715473373 en #3793 sobre el commit exacto `e5032751b22cb1eab56762f5c79638c777a9ed27`, después del merge. Es independiente del autor `jmejia31`; no se afirma aprobación previa.
+- El workflow real #41087748364 terminó `SUCCESS` sobre el merge SHA `064dfd4979811164ab34c1e0319b3b7b609db44e`; las consultas fueron MySQL `SELECT` y API `GET`, con controles A/B/C PASS.
+- La aprobación compensatoria de Alex satisface la revisión humana autorizada por el propietario. P1-001.A permanece `EN_PROGRESO` porque el contrato exige además integrar protegido el PR documental #3795 con CI exact-SHA y revisión independiente; al recheck sigue `OPEN/DRAFT`, sin reviews.
+
 ## 2026-10-30 — P1-001.A: aceptación excepcional limitada de revisión tardía
 
 - Por decisión expresa del propietario, se documenta una excepción exclusiva para P1-001.A/#3793: el PR se fusionó sin revisión formal; no se afirma cumplimiento previo ni se extiende precedente. Se conservan el autor, SHA de código, actor/fecha de merge y ausencia de reviews tal como GitHub los registra.

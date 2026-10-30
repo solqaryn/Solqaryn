@@ -137,7 +137,8 @@ P1-001.A. El PR fue creado por `jmejia31` con el commit
 `e5032751b22cb1eab56762f5c79638c777a9ed27` y se integró en `dev` el
 `2026-10-30T16:12:24Z` como merge SHA
 `064dfd4979811164ab34c1e0319b3b7b609db44e`, por `solqaryn-platform`. GitHub
-registra `reviews=[]`: no hubo aprobación formal previa ni posterior en ese PR.
+Al momento del merge, GitHub registraba `reviews=[]`: no hubo aprobación formal
+previa al merge.
 La descripción del PR indicaba que se esperaba revisión previa; el resultado
 real no cumplió esa secuencia. Esta aceptación no la presenta como cumplida
 retroactivamente.
@@ -160,6 +161,30 @@ podrá pasar a `LISTO` después de la revisión independiente compensatoria, CI
 requerido exact-SHA del PR que documenta la excepción, merge protegido y
 readback de `PLAN_MAESTRO`, `COLA` y `BITACORA`. Esta sección no cambia por sí
 sola el estado institucional.
+
+#### Seguimiento del control compensatorio (2026-10-30)
+
+El PR documental #3794, commit `8f6778c012d8d7ed6cf90133aa99b45d09b92f26`,
+se fusionó por `solqaryn-platform` como
+`804d9c636540e1aaa4a92e0bfecdd6f2260d65e7` sin una revisión formal (`reviews=[]`).
+Por tanto, #3794 integra la decisión del propietario y el registro factual,
+pero **no satisface** el control compensatorio independiente descrito arriba.
+Después, `solqaryn-platform` registró la review `APPROVED` #5715412300 en
+#3793, anclada al commit exacto `e5032751b22cb1eab56762f5c79638c777a9ed27`,
+el `2026-10-30T16:31:36Z`. En el recheck, Alex (`morales35alex`) también
+registró `APPROVED` #5715473373 en #3793 a las `2026-10-30T16:36:31Z`,
+anclada al mismo commit; su login es distinto del autor `jmejia31`. Esta
+aprobación humana es posterior al merge, no se presenta como previa y satisface
+la revisión compensatoria autorizada por el propietario.
+
+El flujo real #41087748364 terminó `SUCCESS` sobre el merge SHA: MySQL se
+consultó solo con `SELECT`; la API solo recibió `GET`; las pruebas A/B/C de
+identidad, contexto propio y aislamiento cruzado pasaron. El PR documental #3795
+debe actualizar este registro con la review de Alex y el resultado real. Sigue
+`OPEN/DRAFT` y sin reviews; el control institucional permanecerá
+`EN_PROGRESO` hasta que #3795 pase CI requerido exact-SHA, reciba revisión
+independiente y se integre mediante merge protegido. No habilitar el merge de
+#3795 antes de esos controles.
 
 Se mantiene `VALIDANDO` durante reparaciones del revisor. No regresar
 artificialmente a `EN_PROGRESO` por un defecto corregible.
