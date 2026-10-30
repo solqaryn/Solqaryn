@@ -42,7 +42,7 @@ public sealed class SolicitudContextoSoporteTests
     [InlineData("")]
     [InlineData("   ")]
     [InlineData("motivo insuficiente")]
-    [InlineData("Justificación válida\\ncon nueva línea")]
+    [InlineData("Justificación válida\ncon nueva línea")]
     public void Rechaza_justificaciones_invalidas(string? motivo)
     {
         Assert.Throws<ArgumentException>(() =>
