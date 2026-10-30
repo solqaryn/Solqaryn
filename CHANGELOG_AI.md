@@ -1,4 +1,12 @@
 
+## 2026-10-30 — P0-010.B: test negativo contra inferencia de defectos por Issues vacíos (propuesta)
+
+- Scope P0-010.B fila 21 elegible tras P0-008.B VALIDANDO y P0-004.B LISTO; DEV protegido, sin otras Task editoras.
+- Snapshot fechado docs/baselines/P0-010-B-DEV-20261030.json: COLA P0/P1 y GitHub Issues (#3730 coordinación, no defecto reproducido). No declara ausencia de bugs o paridad viva.
+- Test scripts/verify-p0-010-b-issue-inference.mjs + workflow negativo: caso positivo y 12 alteraciones sintéticas rechazadas de informes falsamente limpios, conteos e incidencias no verificadas.
+- Pendiente CI exact SHA, aprobación formal de identidad distinta, merge protegido dev y readback institucional. No se modifican datos o runtime; rollback por revert del PR.
+
+
 ## 2026-10-30 — P0-008.B: negativos de fuga de secretos en inventario DEV (propuesta)
 
 - Scope comercial P0-008.B fila 17, dependencias P0-008.A/P0-012.B LISTO. Segundo scope de PRIMARY_DEV_01 solo después de P0-004.B VALIDANDO sin edición.
