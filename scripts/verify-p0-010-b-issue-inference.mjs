@@ -30,14 +30,14 @@ function validate(data) {
     expect(states.every(k => Number.isSafeInteger(p[k]) && p[k] >= 0), 'nonnegative state counts');
     expect(Number.isSafeInteger(p.total) && p.total === states.reduce((a, k) => a + (p[k]||0), 0), 'priority counts reconcile');
   }
-  expect(p0.total === 24 && p1.total === 32, 'bounded P0/P1 inventory');
+  expect(p0.total === 24 && p1.total === 32, 'bounded P0/P1 counts');
   expect(p0.LISTO === 22 && p0.VALIDANDO === 1 && p0.EN_PROGRESO === 1 && p0.PENDIENTE === 0, 'dated P0 readback');
   expect(p1.LISTO === 1 && p1.PENDIENTE === 31 && p1.VALIDANDO === 0 && p1.EN_PROGRESO === 0, 'dated P1 readback');
   const claims = data.claims ?? {};
   expect(claims.noKnownDefects === false, 'empty issue tracker cannot certify zero defects');
   expect(claims.allP0P1Closed === false, 'open backlog must remain open');
   expect(claims.untrackedIncidents === 'NOT_VERIFIED', 'untracked incidents cannot be inferred absent');
-  expect(claims.issueTrackerCoversAllIncidents === false, 'issue tracker is not an exhaustive defect inventory');
+  expect(claims.issueTrackerCoversAllIncidents === false, 'issue tracker is not an exhaustive defect counts');
   expect(claims.zeroIssuesGuaranteesNoBugs === false, 'zero issues does not guarantee clean application');
   const limitations = data.limitations;
   expect(Array.isArray(limitations) &&
@@ -67,4 +67,4 @@ for (const mutate of negatives) {
   mutate(fixture);
   assert.ok(validate(fixture).length > 0, 'Unsupported good-news inference must fail');
 }
-console.log('P0-010.B PASS: dated inventory positive + 12/12 negative inference fixtures; zero issue != zero defects');
+console.log('P0-010.B PASS: dated counts positive + 12/12 negative inference fixtures; zero issue != zero defects');
