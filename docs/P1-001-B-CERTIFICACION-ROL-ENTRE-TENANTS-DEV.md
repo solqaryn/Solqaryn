@@ -19,3 +19,9 @@ La prueba añadida `P1001BRoleAssignmentCertificationTests` llama al servicio re
 - **Rollback:** revertir este test y acta mediante PR protegido; no existen mutaciones de datos que revertir.
 
 **Estado de entrega inicial:** candidato de prueba dirigido. La certificación institucional queda pendiente de GitHub CI, revisión independiente y readback.
+
+## Proveniencia de CI: diferencia entre status asociado y checkout
+
+En el primer SHA de PR `fc1322d77cd77be65d7957789dcd2a06b872c1f6` los tres checks requeridos aparecieron `SUCCESS` en GitHub y la suite backend registró 2912/2912 PASS, seguridad 952/952 PASS. **Sin embargo, los jobs nativos ejecutaron el commit de fusión sintético `c06f52bf744cc1d2cd1a7e65acdfe0c8e086b22d` (`refs/remotes/pull/3802/merge`), no un checkout directo de `fc1322d...`.** El status asociado no se presenta como prueba de checkout directo del HEAD.
+
+La prueba dirigida adicional `.github/workflows/p1-001-b-role-isolation.yml` utiliza `actions/checkout` con `ref: ${{ github.event.pull_request.head.sha || github.sha }}` tanto en PR como en push, seguido de `dotnet test` filtrado. El resultado se certifica solamente después de verificar el log original, la identidad del SHA final y los seis escenarios (cinco mutaciones negativas y una positiva). El workflow no modifica Aiven ni ejecuta requests autenticadas a Render; la certificación completa de dichos proveedores sigue siendo independiente.
