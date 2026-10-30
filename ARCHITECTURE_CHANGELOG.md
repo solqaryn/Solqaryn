@@ -705,3 +705,8 @@ Se incorpora un trabajador DEV restringido a Render Development y Aiven `solqary
 ## 2026-10-18 — DEV: readback con evidencia HMAC/suspension compuesta, retirado worker efimero
 
 Tras tres PASS reales de Render sobre SHA `49195f34...` con firma 200, replay 503, firma fresca 200 y MySQL ledger correcto, la certificacion independiente incorpora la evidencia autentica de suspension/reactivacion de los intentos 5/6 del run 39084418982. Se reemplaza la exigencia imposible de una empresa suspendida y dos activas al mismo tiempo por una atestacion fija de autoria corporativa, con PR fusionado, comentario no alterado, rutas de guard/signer/proxy/binding byte-identicas al SHA acreditado y readback MySQL/HTTP actual. El estado `PASS_ATTESTED` queda separado de las pruebas ejecutadas en la corrida. Se retira el worker temporal, su flag de appsettings, su excepcion en scanner, tests y runbook; sin variar middleware HMAC, bindings, DDL, datos, permisos, QA ni PROD. El certificado y manual vigente estan en `docs/certifications/`.
+
+
+## 2026-10-30 — Inventario flexible de automatizaciones
+
+Se retiró la topología física fija 3+3 como regla vigente. La cantidad/distribución de Tasks depende de capacidad del proveedor y decisión institucional protegida; el allowlist comercial y WIP permanecen controles separados. No se cambiaron integraciones ni runtime.

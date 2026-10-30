@@ -1,13 +1,15 @@
-# SOLQARYN — Contrato operativo 3+3 de microfase 3
+# SOLQARYN — Contrato operativo de automatizaciones de microfase 3
 
 VERSION=2.0
 PROJECT_ID=SOLQARYN
 REPOSITORY=solqaryn/Solqaryn
 BASE_BRANCH=dev
 TIMEZONE=America/Tegucigalpa
-DESIGN_TASK_LIMIT=6
-DESIGN_JAVIER_TASKS=3
-DESIGN_ALEX_TASKS=3
+TASK_COUNT_LIMIT=PROVIDER_EFFECTIVE_CAPACITY
+TASK_ASSIGNMENT_MODEL=OWNER_CONFIGURABLE
+CURRENT_REGISTERED_TASKS=6
+CURRENT_JAVIER_TASKS=3
+CURRENT_ALEX_TASKS=3
 MAX_OPEN_WORK_BRANCHES=6
 MAX_CONCURRENT_SCOPES=6
 MAX_OWNED_SCOPES_PER_TASK=2
@@ -18,11 +20,8 @@ JULES_WORKERS_AUTHORIZED=0
 
 ## Autoridad y etapa de implantacion
 
-Este contrato v2.0 se aplica al piloto 3+3 **solo cuando** este archivo y los validadores
-esten integrados en el HEAD vigente de `dev`, el Scope Lock sea STRICT y el proveedor
-demuestre permisos efectivos. `DESIGN_TASK_LIMIT=6` es un techo de arquitectura, no
-una prueba de seis Tasks creadas, habilitadas o materialmente ejecutadas. Los conteos
-físicos y autorizados actuales se leen en `docs/AUTOMATION_STATUS.md` y Google Sheets.
+Este contrato v2.0 se aplica al inventario configurable de Tasks solo cuando este archivo y los validadores
+esten integrados en el HEAD vigente de `dev`, el Scope Lock sea STRICT y el proveedor demuestre permisos efectivos. No existe techo interno fijo ni distribución obligatoria por cuenta; la capacidad efectiva depende del proveedor y de la autoridad institucional protegida. Los conteos físicos y autorizados se leen en `docs/AUTOMATION_STATUS.md` y Google Sheets. El WIP comercial máximo de seis scopes es independiente del inventario físico de Tasks.
 
 Se conservaron las dos Tasks físicas originales con sus TASK_ID estables y se
 crearon las otras cuatro durante M3.2, desde cada cuenta. El readback de las seis
@@ -31,11 +30,11 @@ La autoridad efectiva depende de `SCHEDULED_CHATGPT_TASKS_AUTHORIZED` y de
 `AUTHORIZED_COMMERCIAL_TASK_IDS`, enumerados en `docs/AUTOMATION_STATUS.md` y
 `docs/AUTOMATION_AUTHORITY.md`: cada ID nuevo requiere evidencia, autorización
 individual, PR protegido y readback. La habilitación física no permite escritura
-comercial a los slots que no figuran en la lista, aunque el flag global de Sheets
-esté activo. Está prohibido usar sesiones o credenciales
-de otra cuenta o invocar la Task privada de Alex desde Javier.
+comercial a los IDs que no figuran en la lista, aunque el flag global de Sheets esté activo. Está prohibido usar sesiones o credenciales de otra cuenta o invocar una Task privada ajena. La propietaria puede proponer cambios de cantidad o distribución mediante enmienda protegida. Antes de activar una Task se confirma capacidad del proveedor, se leen de vuelta ID, cuenta, propietario, horario y estado habilitado, y se tramita su autorización individual por separado. Esta regla no ordena altas/bajas ni cambia el inventario o allowlist actuales.
 
 ## Programacion nominal, no asignacion
+
+La tabla siguiente es el censo de las seis Tasks actualmente registradas y su distribución observada, no una cantidad ni reparto obligatorio para futuras configuraciones.
 
 | Slot | Cuenta | Minuto por hora | Implantacion |
 | --- | --- | --- | --- |
@@ -247,4 +246,4 @@ No crear IDs nativos ficticios.
     reconciliar desde pruebas reales.
 
 La certificacion requiere artefactos efectivos, no porcentajes o campos de
-RUN_ID imposibles. El contrato 3+3 no habilita por sí solo cuatro Tasks inexistentes.
+RUN_ID imposibles. El contrato no impone una cantidad ni reparto fijo; la existencia de una Task no la autoriza comercialmente.
