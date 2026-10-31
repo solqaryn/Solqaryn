@@ -28,6 +28,17 @@ public sealed class SolicitudContextoSoporteNegativosTests
                 9, 101, motivo!, 10, new RelojFijo()));
     }
 
+    [Theory]
+    [InlineData("Motivo de soporte \u200B con marca invisible zero width")]
+    [InlineData("Motivo de soporte \u202E con anulacion bidi oculta")]
+    [InlineData("Motivo de soporte \u2066 con aislador bidi oculto")]
+    public void Rechaza_formatos_unicode_invisibles_en_justificacion(string motivo)
+    {
+        Assert.Throws<ArgumentException>(() =>
+            SolicitudContextoSoporte.CrearDesdeRelojServidor(
+                9, 101, motivo, 10, new RelojFijo()));
+    }
+
     [Fact]
     public void Rechaza_motivo_superior_al_maximo()
     {
