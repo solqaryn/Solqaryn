@@ -135,7 +135,7 @@ public sealed class PlataformaSoporteSessionService : IPlataformaSoporteSessionS
             if (session is null || session.RevocadaUtc is not null)
             {
                 _db.Set<RegistroAuditoria>().Add(CreateAudit(
-                    actor.UsuarioId, actor.NombreUsuario, null, null,
+                    actor.UsuarioId, actor.NombreUsuario, null, SafeModule(null),
                     AccionPermiso.Desactivar, sessionId,
                     "Se rechazó una solicitud de revocación de sesión de soporte inexistente o ya revocada.",
                     null, audit, "Denegado", "SUPPORT_SESSION_NOT_ACTIVE",
@@ -396,8 +396,9 @@ public sealed class PlataformaSoporteSessionService : IPlataformaSoporteSessionS
         int sessionId, CancellationToken cancellationToken)
     {
         if (_db.Database.ProviderName?.Contains("MySql", StringComparison.OrdinalIgnoreCase) == true)
-            return await _db.Set<PlataformaSesionSoporte>().IgnoreQueryFilters()
+            return await _db.Set<PlataformaSesionSoporte>()
                 .FromSqlInterpolated($"SELECT * FROM `PlataformaSesionesSoporte` WHERE `Id` = {sessionId} FOR UPDATE")
+                .IgnoreQueryFilters()
                 .SingleOrDefaultAsync(cancellationToken);
 
         return await _db.Set<PlataformaSesionSoporte>().IgnoreQueryFilters()
@@ -408,8 +409,9 @@ public sealed class PlataformaSoporteSessionService : IPlataformaSoporteSessionS
         string tokenHash, CancellationToken cancellationToken)
     {
         if (_db.Database.ProviderName?.Contains("MySql", StringComparison.OrdinalIgnoreCase) == true)
-            return await _db.Set<PlataformaSesionSoporte>().IgnoreQueryFilters()
+            return await _db.Set<PlataformaSesionSoporte>()
                 .FromSqlInterpolated($"SELECT * FROM `PlataformaSesionesSoporte` WHERE `TokenHash` = {tokenHash} FOR UPDATE")
+                .IgnoreQueryFilters()
                 .SingleOrDefaultAsync(cancellationToken);
 
         return await _db.Set<PlataformaSesionSoporte>().IgnoreQueryFilters()
