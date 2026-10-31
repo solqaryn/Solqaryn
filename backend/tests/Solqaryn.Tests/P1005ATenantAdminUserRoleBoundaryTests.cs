@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Moq;
 using Solqaryn.API.Controllers;
 using Solqaryn.Application.DTOs;
@@ -9,6 +10,8 @@ using Solqaryn.Application.Security;
 using Solqaryn.Application.Services;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Enums;
+using Solqaryn.Infrastructure.Persistence;
+using Solqaryn.Infrastructure.Repositories;
 using Xunit;
 
 namespace Solqaryn.Tests;
@@ -99,6 +102,102 @@ public sealed class P1005ATenantAdminUserRoleBoundaryTests
             }));
 
         usuarios.Verify(x => x.UpdateAsync(30, It.IsAny<UpdateUsuarioDto>()), Times.Never);
+    }
+
+
+    [Fact]
+    public async Task Repositorio_no_considera_exclusiva_identidad_A_B_aun_con_B_inactiva()
+    {
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase("p1005a-identity-ab-" + Guid.NewGuid().ToString("N"))
+            .Options;
+        await using var db = new AppDbContext(options);
+        var empresaA = new Empresa("Empresa A");
+        var empresaB = new Empresa("Empresa B");
+        db.Set<Empresa>().AddRange(empresaA, empresaB);
+        await db.SaveChangesAsync();
+
+        var rolA = new Rol
+        {
+            Nombre = "Rol A", NombreNormalizado = "ROL_A",
+            EmpresaId = empresaA.Id, Activo = true
+        };
+        var rolB = new Rol
+        {
+            Nombre = "Rol B", NombreNormalizado = "ROL_B",
+            EmpresaId = empresaB.Id, Activo = true
+        };
+        db.Roles.AddRange(rolA, rolB);
+        await db.SaveChangesAsync();
+        var usuario = new Usuario
+        {
+            NombreUsuario = "usuario-ab", NombreCompleto = "Usuario AB",
+            PasswordHash = "solo-pruebas", RolId = rolA.Id, Activo = true
+        };
+        db.Usuarios.Add(usuario);
+        await db.SaveChangesAsync();
+        db.UsuarioEmpresas.Add(new UsuarioEmpresa(usuario.Id, empresaA.Id, rolA.Id));
+        await db.SaveChangesAsync();
+
+        var repo = new UsuarioRepository(db);
+        Assert.True(await repo.EsIdentidadExclusivaDeEmpresaAsync(usuario.Id, empresaA.Id));
+        Assert.False(await repo.EsIdentidadExclusivaDeEmpresaAsync(usuario.Id, empresaB.Id));
+
+        var membresiaB = new UsuarioEmpresa(usuario.Id, empresaB.Id, rolB.Id);
+        db.UsuarioEmpresas.Add(membresiaB);
+        await db.SaveChangesAsync();
+        Assert.False(await repo.EsIdentidadExclusivaDeEmpresaAsync(usuario.Id, empresaA.Id));
+        Assert.False(await repo.EsIdentidadExclusivaDeEmpresaAsync(usuario.Id, empresaB.Id));
+
+        membresiaB.Desactivar();
+        await db.SaveChangesAsync();
+        Assert.False(await repo.EsIdentidadExclusivaDeEmpresaAsync(usuario.Id, empresaA.Id));
+    }
+
+    [Fact]
+    public async Task Servicio_rechaza_edicion_global_compartida_sin_escribir_identidad()
+    {
+        var users = new Mock<IUsuarioRepository>(MockBehavior.Strict);
+        users.Setup(x => x.EsIdentidadExclusivaDeEmpresaAsync(30, 11)).ReturnsAsync(false);
+        var service = ConstruirServicio(users.Object, Mock.Of<IRolRepository>());
+
+        var error = await Assert.ThrowsAsync<ForbiddenAccessException>(() =>
+            service.UpdateDesdeEmpresaAsync(30, new UpdateUsuarioDto
+            {
+                NombreUsuario = "nuevo-nombre", NombreCompleto = "Nombre Nuevo",
+                RolId = 7, NuevaPassword = "Password-no-real-pruebas"
+            }, 11));
+        Assert.Contains("identidad", error.Message, StringComparison.OrdinalIgnoreCase);
+        users.Verify(x => x.GetByIdAsync(It.IsAny<int>()), Times.Never);
+        users.Verify(x => x.Update(It.IsAny<Usuario>()), Times.Never);
+        users.Verify(x => x.SaveChangesAsync(), Times.Never);
+    }
+
+    [Fact]
+    public async Task Controlador_usa_edicion_empresa_y_no_operacion_global_directa()
+    {
+        var users = new Mock<IUsuarioService>(MockBehavior.Strict);
+        users.Setup(x => x.GetByIdAsync(30)).ReturnsAsync(
+            new UsuarioDetalleDto { Id = 30, RolId = 7, Rol = "Rol A" });
+        users.Setup(x => x.ValidarRolEmpresaAsync(7, 11)).Returns(Task.CompletedTask);
+        users.Setup(x => x.UpdateDesdeEmpresaAsync(30, It.IsAny<UpdateUsuarioDto>(), 11))
+            .ThrowsAsync(new ForbiddenAccessException("Identidad compartida no editable."));
+        var permissions = new Mock<IPermisoService>(MockBehavior.Strict);
+        var http = new DefaultHttpContext();
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = 11;
+        var controller = new UsuariosController(
+            users.Object, permissions.Object, Mock.Of<ICurrentUserService>())
+        {
+            ControllerContext = new ControllerContext { HttpContext = http }
+        };
+
+        await Assert.ThrowsAsync<ForbiddenAccessException>(() =>
+            controller.Update(30, new UpdateUsuarioDto
+            {
+                NombreUsuario = "usuario-ab", NombreCompleto = "Usuario AB", RolId = 7
+            }));
+        users.Verify(x => x.UpdateAsync(It.IsAny<int>(), It.IsAny<UpdateUsuarioDto>()), Times.Never);
+        permissions.VerifyNoOtherCalls();
     }
 
     private static UsuarioService ConstruirServicio(

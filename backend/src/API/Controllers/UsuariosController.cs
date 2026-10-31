@@ -99,11 +99,11 @@ public class UsuariosController : ControllerBase
                 TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext),
                 ModuloSistema.Usuarios, AccionPermiso.RestablecerContrasena);
 
-        // La edición del usuario tampoco puede asignar un rol ajeno o global.
-        await _usuarioService.ValidarRolEmpresaAsync(
-            dto.RolId, TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext));
-
-        var actualizado = await _usuarioService.UpdateAsync(id, dto);
+        // El RolId global y las credenciales se comparten entre empresas:
+        // solo editar identidad si pertenece exclusivamente al tenant activo.
+        var empresaAutorizada = TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext);
+        await _usuarioService.ValidarRolEmpresaAsync(dto.RolId, empresaAutorizada);
+        var actualizado = await _usuarioService.UpdateDesdeEmpresaAsync(id, dto, empresaAutorizada);
         if (actualizado is null)
             return NotFound(ApiResponse<object>.Fail("Usuario no encontrado."));
 

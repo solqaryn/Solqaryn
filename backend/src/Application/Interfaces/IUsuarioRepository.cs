@@ -8,6 +8,10 @@ public interface IUsuarioRepository
     Task<Usuario?> GetByNombreUsuarioAsync(string nombreUsuario);
     Task<Usuario?> GetByIdAsync(int id);
 
+    // Solo es seguro mutar la identidad global desde empresa si esta
+    // tiene la unica membresia activa del usuario (incluye inactivas ajenas).
+    Task<bool> EsIdentidadExclusivaDeEmpresaAsync(int usuarioId, int empresaIdAutorizada);
+
     // Alta inicial: solo el creador puede localizar una identidad que
     // aun no pertenece a ninguna empresa. Nunca usar en listados.
     Task<Usuario?> GetPendientePrimeraMembresiaAsync(int id, int creadorId);

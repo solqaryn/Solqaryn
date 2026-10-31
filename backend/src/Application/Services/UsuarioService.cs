@@ -123,6 +123,20 @@ public class UsuarioService : IUsuarioService
         return ToDto(usuario);
     }
 
+    // UpdateAsync modifica identidad global (rol legacy, nombre y contrasena).
+    // Cuando el actor es administrador de empresa, bloquear A+B incluso si
+    // la membresia de B esta inactiva; usar las rutas /empresas para el rol A.
+    public async Task<UsuarioDto?> UpdateDesdeEmpresaAsync(
+        int id, UpdateUsuarioDto dto, int empresaIdAutorizada)
+    {
+        if (empresaIdAutorizada <= 0)
+            throw new ForbiddenAccessException("Se requiere empresa autorizada para editar usuarios.");
+        if (!await _repository.EsIdentidadExclusivaDeEmpresaAsync(id, empresaIdAutorizada))
+            throw new ForbiddenAccessException(
+                "La identidad no permite edicion global desde esta empresa; administre su membresia empresarial.");
+        return await UpdateAsync(id, dto);
+    }
+
     public async Task<UsuarioDto?> UpdateAsync(int id, UpdateUsuarioDto dto)
     {
         var usuario = await _repository.GetByIdAsync(id);

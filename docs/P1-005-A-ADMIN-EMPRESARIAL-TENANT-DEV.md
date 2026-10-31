@@ -22,3 +22,11 @@ Alcance: ADMIN EMPRESARIAL, crear y editar usuarios sin aceptar roles privados d
 - Negativas: rol privado de B, rol de plataforma, rol legacy sin owner, ausencia de tenant, POST/PUT sin persistencia tras rechazo.
 - Positivas: rol privado de A y plantilla empresarial sistema. Sin MySQL real ni JWT HTTP en este archivo; quedan como pruebas complementarias/CI, nunca PASS supuesto.
 - Cierre solo tras todos los checks aplicables, aprobacion independiente mientras auto-cert no este activa en dev, merge protegido y readback institucional.
+
+## Regresion A/B sobre identidad global compartida
+
+- `PUT /usuarios/{id}` cambia campos de `Usuario` globales (incluido `RolId`, nombre y contrasena), no una membresia `UsuarioEmpresa`. Un usuario con membresias A+B, incluso B inactiva, no admite esa escritura desde administracion de A.
+- El controlador ahora llama `UpdateDesdeEmpresaAsync` con empresa ya autorizada. La aplicacion exige `EsIdentidadExclusivaDeEmpresaAsync`: exactamente una membresia activa, correspondiente al tenant A. Infraestructura inspecciona las membresias con `IgnoreQueryFilters`, devolviendo exclusivamente un booleano; nunca devuelve ids o datos de B al consumidor HTTP.
+- Los cambios de rol por empresa corresponden a `PUT /usuarios/{id}/empresas/{empresaId}/rol`. No se introducen migraciones, bypass global, modificaciones JWT ni lecturas comerciales de B.
+- Regresiones EF InMemory: identidad solo A permitida, identidad A+B rechazada (incluida B inactiva), sin membresia A rechazada; prueba de servicio verifica que una identidad compartida no llega a `Update` o `SaveChangesAsync`; prueba de controlador asegura que no llama al metodo global directamente.
+- Limites: InMemory no equivale a MySQL ni acredita atomicidad frente a inserciones concurrentes de membresia. Se mantiene DRAFT, y el check transversal issue #3805 sigue bloqueando cierre hasta remediacion protegida y CI completo.

@@ -1,3 +1,9 @@
+## 2026-10-30 - P1-005.A: regresion A/B sobre identidad global (DEV, propuesta)
+
+- `PUT /usuarios/{id}` pasa por `UpdateDesdeEmpresaAsync`; prohíbe mutar nombre, credenciales o RolId globales de una identidad con membresias en A+B, incluso B inactiva. Verificacion desde repositorio sin divulgar ids ajenos; la ruta de membresia permanece disponible.
+- Pruebas nuevas: EF InMemory A exclusivo frente a A+B, negativa de persistencia y verificacion de ruta del controlador. Sin equivalencia a MySQL/HTTP ni certificacion de carrera concurrente.
+- #3808 sigue DRAFT y sin LISTO: Priority3 issue #3805 externo, revisar CI nuevo y aprobacion independiente.
+
 ## 2026-10-30 - P1-005.A: fail-closed de roles al crear/editar usuarios (DEV, propuesta)
 
 - UsuariosController POST/PUT valida el RolId contra la empresa RBAC autorizada antes de crear o editar; UsuarioService utiliza Rol.EsAsignableAEmpresa para negar roles B, plataforma o sin propietario. No se altera tenant, migraciones ni credenciales.
