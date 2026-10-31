@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 
 namespace Solqaryn.Domain.Entities;
 
@@ -63,7 +64,9 @@ public sealed class SolicitudContextoSoporte
         if (string.IsNullOrEmpty(motivo) ||
             motivo.Length < JustificacionMinimaCaracteres ||
             motivo.Length > JustificacionMaximaCaracteres ||
-            motivo.Any(char.IsControl))
+            motivo.Any(static caracter =>
+                char.IsControl(caracter) ||
+                CharUnicodeInfo.GetUnicodeCategory(caracter) == UnicodeCategory.Format))
             throw new ArgumentException("Se requiere una justificación válida, acotada y sin caracteres de control.", nameof(justificacion));
 
         UsuarioPlataformaId = usuarioPlataformaId;
@@ -71,6 +74,18 @@ public sealed class SolicitudContextoSoporte
         Justificacion = motivo;
         InicioUtc = inicioUtc;
         ExpiracionUtc = expiracionUtc;
+    }
+
+    /// <summary>
+    /// Comprueba solo la ventana solicitada usando el reloj del servidor.
+    /// NO acredita autorización RBAC, auditoría, tenant ni ausencia de revocación.
+    /// La expiración es exclusiva; después del límite se rechaza.
+    /// </summary>
+    public bool EstaDentroDeVentanaSolicitada(TimeProvider relojServidor)
+    {
+        ArgumentNullException.ThrowIfNull(relojServidor);
+        var ahoraUtc = relojServidor.GetUtcNow().ToUniversalTime();
+        return ahoraUtc >= InicioUtc && ahoraUtc < ExpiracionUtc;
     }
 
     public int UsuarioPlataformaId { get; }
