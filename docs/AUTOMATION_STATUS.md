@@ -1,5 +1,13 @@
 # SOLQARYN — Estado estándar de automatización
 
+## 2026-10-31 — Reparación de CI comercial autónomo (propuesta, no activa)
+
+- Referencia de auditoría: `docs/AUTO_CERTIFICATION_REPAIR_20261031.md`. En `dev@ffdda57fa42537e2531f41b511c3969b496565e1`, Scope Lock, Seguridad multiempresa y Build/backend fueron SUCCESS exact-SHA. Esto no equivale a `AUTO_CERT=PASS` de un PR comercial.
+- PR #3804 se fusionó sin revisión formal de bootstrap; se conserva la desviación histórica sin acreditación retroactiva. PRs antiguos conservaron base obsoleta y emitieron `AUTO_CERT_BOOTSTRAP`; se propone rechazarlo explícitamente y exigir base vigente, test xUnit dirigido real (cantidad > 0), y validación de scripts de seguridad/workflows como gobierno protegido.
+- Tres Tasks Javier :00/:20/:40 habilitadas con últimos runs nativos `completed`; 5/6 Task IDs comerciales permanecen autorizados y Alex :30 queda fuera. No se alteran backend funcional, datos, migraciones, QA/main/PROD ni permisos.
+- La activación solo ocurre después de merge protegido y readback de un PR comercial posterior con `AUTO_CERT=PASS`, merge, PLAN/COLA/BITACORA. Un PR de gobierno sigue separado de auto-certificación rutinaria; no se falsifican aprobaciones.
+
+
 PROJECT_SCOPE_LOCK=STRICT
 PROJECT_ID=SOLQARYN
 REPOSITORY=solqaryn/Solqaryn
