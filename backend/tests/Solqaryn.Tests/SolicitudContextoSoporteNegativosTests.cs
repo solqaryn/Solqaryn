@@ -32,6 +32,8 @@ public sealed class SolicitudContextoSoporteNegativosTests
     [InlineData("Motivo de soporte \u200B con marca invisible zero width")]
     [InlineData("Motivo de soporte \u202E con anulacion bidi oculta")]
     [InlineData("Motivo de soporte \u2066 con aislador bidi oculto")]
+    [InlineData("Motivo de soporte \u2028 con separador de linea oculto")]
+    [InlineData("Motivo de soporte \u2029 con separador de parrafo oculto")]
     public void Rechaza_formatos_unicode_invisibles_en_justificacion(string motivo)
     {
         Assert.Throws<ArgumentException>(() =>
