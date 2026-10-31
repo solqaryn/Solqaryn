@@ -79,6 +79,7 @@ builder.Services.AddSingleton<RequestObservability>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IUsuarioScopeService, UsuarioScopeService>();
 builder.Services.AddScoped<IPlataformaScopeService, PlataformaScopeService>();
+builder.Services.AddScoped<IPlataformaDelegacionService, PlataformaDelegacionService>();
 builder.Services.AddScoped<IMensajeOutboxRepository, MensajeOutboxRepository>();
 builder.Services.AddScoped<IMensajeOutboxService, MensajeOutboxService>();
 builder.Services.AddScoped<IEmpresaRepository, EmpresaRepository>();
