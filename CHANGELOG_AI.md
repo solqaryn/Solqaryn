@@ -1,9 +1,16 @@
 ## 2026-10-30 — P1-002.A: contrato de superadministracion sin acceso silencioso a tenants
 
-- Scope comercial P1-002.A (fila 28), base dev@0cec1a3b06793c95dceb3f316c1ae4cb22951f76. Rama propia work/solqaryn-p1-002-a de PRIMARY_DEV_03.
-- Acta docs/P1-002-A-CONTRATO-SUPERADMIN-GLOBAL-DEV.md delimita la sesión SaaS, la autorización empresarial revalidada y la exigencia de motivo/auditoría para cualquier delegación futura. NO implementa bypass ni acceso universal.
-- Nuevo test backend/tests/Solqaryn.Tests/API/Controllers/P1002ASuperadminGlobalTenantBoundaryTests.cs: grant de Plataforma positivo, negativas A/B sin membresía y no expansión B al tener membresía A; EF InMemory, sin MySQL real.
-- Estado EN_PROGRESO. Cierre sujeto a AUTO_CERT=PASS del gate Scope Lock para el SHA exacto, checks requeridos y prueba dirigida en verde, merge protegido a dev y readback institucional. No se solicita revisión humana formal ni se simula APPROVED; rollback por revert en PR protegido.
+## 2026-10-31 — Reparación limpia del gate de certificación automática
+
+- Se prepara una sustitución de #3809 porque su historial mezcló `jmejia31` y `solqaryn-platform`; ese PR no admite aprobación independiente de ninguna de esas cuentas.
+- El gate falla de inmediato ante bloqueo de gobierno o falta de checks activos; solo espera checks exact-HEAD que sigan ejecutándose. Los checks obligatorios y la prueba comercial dirigida deben proceder de GitHub Actions y corresponder al SHA evaluado.
+- La revisión institucional exige aprobación formal de Javier (`jmejia31`) sobre el SHA exacto, sin que Javier figure como autor o contribuidor. Esta entrada describe el cambio propuesto; su activación depende de CI y merge protegido.
+
+## 2026-10-31 — Separación de cuentas institucional / revisión Javier (propuesta protegida)
+
+- Nueva regla predeterminada para intervenciones GitHub de este asistente: `solqaryn-platform` ejecuta, crea commits y PR; `jmejia31` revisa y aprueba únicamente con independencia real y SHA exacto. Referencia `docs/GITHUB_ACCOUNT_ROLES.md`.
+- El verificador permite PR comerciales de la cuenta institucional pero exige la revisión formal de Javier si son institucionales; conserva el control de no autoaprobación y no cambia los PR comerciales históricos creados desde cuentas existentes.
+- Sin modificación de Tasks activas, autorizaciones 5/6, Scope Lock, proveedor, datos, QA/main/PROD ni reglas de GitHub. El cambio sólo será norma en dev tras CI y merge protegido.
 
 ## 2026-10-30 — Certificación automática de PR comerciales DEV (propuesta protegida)
 
