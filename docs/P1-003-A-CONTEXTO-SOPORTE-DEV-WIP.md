@@ -4,24 +4,27 @@
 
 ## Alcance de esta entrega parcial
 
-Se incorpora un objeto de dominio inerte `SolicitudContextoSoporte` con invariantes mínimas de solicitud: usuario de plataforma y empresa destino con ID positivo, justificación no vacía de 20 a 500 caracteres sin controles, reloj UTC y vigencia solicitada mayor que cero y de máximo 15 minutos. Sus tests incluyen entradas válidas y rechazo de IDs, motivos, horas y expiraciones inválidas.
+Se incorpora un objeto de dominio inerte `SolicitudContextoSoporte` con invariantes mínimas de solicitud: identificadores positivos para actor de plataforma y empresa destino, justificación de 20 a 500 caracteres sin caracteres de control, y expiración solicitada entre 1 y 15 minutos.
+
+**Endurecimiento adicional:** la fábrica pública `CrearDesdeRelojServidor` recibe un `TimeProvider` del backend y calcula internamente inicio y vencimiento; el constructor con timestamps arbitrarios es privado. La normalización a UTC y la duración máxima se verifican con reloj determinista en pruebas. El request HTTP futuro no debe aceptar timestamps libres ni un `TimeProvider` controlado por el cliente.
 
 **Este objeto NO crea una sesión, NO emite JWT, NO cambia tenant, NO comprueba roles y NO escribe auditoría.** No hay endpoint, persistencia, migración ni UI. El cambio no concede acceso comercial entre empresas y no debe presentarse como `P1-003.A=LISTO`.
 
 ## Fronteras y dependencias antes de implementar runtime
 
 1. Backend/Application debe volver a leer desde DB la autoridad **activa** de plataforma del actor autenticado, con permiso específico de soporte, y validar empresa destino habilitada. No confiar en flags, IDs, claims viejos o elección del cliente.
-2. Justificación y plazo son datos solicitados, no fuente de autoridad. El servidor establece UTC y debe acotar la expiración efectiva. Cualquier contexto debe vincular actor, tenant, motivo, instante y correlación a una auditoría duradera confirmada antes del cambio.
+2. Justificación y plazo son datos solicitados, no fuente de autoridad. El servidor fija UTC. Cualquier contexto debe vincular actor, tenant, motivo, instante y correlación a una auditoría duradera confirmada antes del cambio.
 3. Las operaciones de datos deben seguir pasando por guards/repositorios tenant y revalidar rol/permisos/estado/expiración en cada solicitud. Nunca se obtiene acceso general a todos los tenants por rol global.
 4. Rechazar tenant inexistente/no autorizado, rol inactivo/revocado, justificación insuficiente, falta de registro auditable, vencimiento y reutilización de contexto. Negativos multiempresa obligatorios.
 5. Establecer expiración/revocación y observabilidad sin registrar PII ni secretos en logs. No introducir campos de soporte en JWT ni habilitar endpoint hasta que las pruebas de seguridad y auditoría sean concluyentes.
-6. Revisar el contrato existente `UsuarioRolPlataforma` / `RegistroAuditoria` y las dependencias P1-002.A/P1-003.B antes de integrar. Cambios de esquema o API requerirán el análisis arquitectónico y pruebas correspondientes.
+6. Revisar el contrato existente `UsuarioRolPlataforma` / `RegistroAuditoria` y las dependencias P1-002.A/P1-003.B antes de integrar. Cambios de esquema o API requerirán análisis de impacto y pruebas correspondientes.
 
-## Impacto y rollback
+## Impacto, CI y rollback
 
-- Componente primario: `backend/src/Domain` y tests xUnit de backend. No hay frontend ni consumidor runtime todavía.
+- Componente: `backend/src/Domain/Entities/SolicitudContextoSoporte.cs`, tests xUnit, este documento. Sin frontend ni consumidor runtime.
 - Datos, MySQL, migraciones, credenciales, proveedores y despliegues: **ningún cambio**.
-- Seguridad: el código nuevo representa únicamente una solicitud inválida o válida en memoria; no realiza autorización.
-- Rollback: revertir los dos archivos de dominio/tests mediante PR protegido, sin datos que migrar.
+- Seguridad: solicitud representada en memoria, sin autorización ni bypass tenant.
+- Gate adicional transversal: issue #3805 describe un hallazgo del escáner en fixtures históricos de P0-008.B; no se cambia escáner ni se afirma CI aplicable PASS hasta verificación de SHA exacto.
+- Rollback: revertir estos archivos mediante PR protegido, sin datos que migrar.
 
-**Pendiente para VALIDANDO:** implementación integrada y validada del caso de uso, auditoría persistida, controles JWT/RBAC/tenancy, pruebas causales positivas/negativas, CI exact-SHA y revisión/certificación conforme a autoridad viva.
+**Pendiente para VALIDANDO:** caso de uso integrado, autorización backend vigente, auditoría persistida, expiración/revocación efectivas, pruebas JWT/RBAC/tenancy positivas/negativas, CI aplicable exact-SHA y revisión/certificación conforme a autoridad viva.
