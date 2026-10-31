@@ -1,0 +1,45 @@
+{
+  "schema": "solqaryn-debt-certification-v1",
+  "project": "SOLQARYN",
+  "repository": "solqaryn/Solqaryn",
+  "branch": "dev",
+  "snapshotType": "AS_OF_ONLY_NOT_LIVE",
+  "observedUtc": "2026-10-30T21:22:36Z",
+  "devHead": "0cec1a3b06793c95dceb3f316c1ae4cb22951f76",
+  "source": {
+    "sheetId": "1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU",
+    "sheetRange": "COLA!A1:I1124",
+    "githubOpenIssues": 1,
+    "githubIssueId": 3730,
+    "issueClassification": "LEGACY_COORDINATION_NOT_PRODUCT_DEFECT"
+  },
+  "byPriority": {
+    "P0": {
+      "total": 24,
+      "LISTO": 22,
+      "VALIDANDO": 1,
+      "EN_PROGRESO": 1,
+      "PENDIENTE": 0
+    },
+    "P1": {
+      "total": 32,
+      "LISTO": 1,
+      "VALIDANDO": 0,
+      "EN_PROGRESO": 0,
+      "PENDIENTE": 31
+    }
+  },
+  "claims": {
+    "noKnownDefects": false,
+    "allP0P1Closed": false,
+    "untrackedIncidents": "NOT_VERIFIED",
+    "issueTrackerCoversAllIncidents": false,
+    "zeroIssuesGuaranteesNoBugs": false
+  },
+  "limitations": [
+    "DATED_SNAPSHOT_ONLY",
+    "ISSUES_NOT_EXHAUSTIVE",
+    "UNTRACKED_INCIDENTS_NOT_VERIFIED",
+    "BACKLOG_NOT_EQUAL_PRODUCT_DEFECTS"
+  ]
+}
