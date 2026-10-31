@@ -14721,6 +14721,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.HasIndex("OperadorUsuarioId", "CreadaUtc")
                         .HasDatabaseName("IX_PlataformaSesionesSoporte_Operador_Creada");
 
+                    b.HasIndex("RevocadaPorUsuarioId")
+                        .HasDatabaseName("IX_PlataformaSesionesSoporte_RevocadaPorUsuarioId");
+
                     b.ToTable("PlataformaSesionesSoporte", null, t =>
                         {
                             t.HasCheckConstraint("CK_PlataformaSesionesSoporte_Modulo", "`Modulo` IN (2,3)");

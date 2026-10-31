@@ -45,6 +45,9 @@ public sealed class PlataformaSesionSoporteConfiguration
         builder.HasIndex(x => new { x.OperadorUsuarioId, x.CreadaUtc })
             .HasDatabaseName("IX_PlataformaSesionesSoporte_Operador_Creada");
 
+        builder.HasIndex(x => x.RevocadaPorUsuarioId)
+            .HasDatabaseName("IX_PlataformaSesionesSoporte_RevocadaPorUsuarioId");
+
         builder.HasOne<Usuario>().WithMany().HasForeignKey(x => x.OperadorUsuarioId)
             .OnDelete(DeleteBehavior.Restrict)
             .HasConstraintName("FK_PlataformaSesionesSoporte_Usuarios_Operador");

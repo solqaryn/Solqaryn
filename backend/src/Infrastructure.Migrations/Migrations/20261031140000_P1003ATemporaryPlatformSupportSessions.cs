@@ -1,13 +1,9 @@
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Solqaryn.Infrastructure.Persistence;
 
 #nullable disable
 namespace Solqaryn.Infrastructure.Migrations.Oracle;
 
-[DbContext(typeof(AppDbContext))]
-[Migration("20261031140000_P1003ATemporaryPlatformSupportSessions")]
-public sealed class P1003ATemporaryPlatformSupportSessions : Migration
+public sealed partial class P1003ATemporaryPlatformSupportSessions : Migration
 {
     protected override void Up(MigrationBuilder migrationBuilder)
     {
@@ -47,6 +43,11 @@ public sealed class P1003ATemporaryPlatformSupportSessions : Migration
                     FOREIGN KEY (`RevocadaPorUsuarioId`) REFERENCES `Usuarios` (`Id`) ON DELETE RESTRICT
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
             """);
+
+        migrationBuilder.CreateIndex(
+            name: "IX_PlataformaSesionesSoporte_RevocadaPorUsuarioId",
+            table: "PlataformaSesionesSoporte",
+            column: "RevocadaPorUsuarioId");
     }
 
     protected override void Down(MigrationBuilder migrationBuilder) =>
