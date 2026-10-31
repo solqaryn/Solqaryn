@@ -13,8 +13,11 @@ on:
 jobs:
   verify-solqaryn-project-scope:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     permissions:
       contents: read
+      checks: read
+      pull-requests: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,6 +31,27 @@ jobs:
         run: node scripts/validate-dual-task-configuration.mjs --self-test
       - name: Reject artificial Render keep-alive
         run: node scripts/validate-render-free-policy.mjs
+      - name: Certificar automáticamente el PR desde código confiable del base
+        if: github.event_name == 'pull_request' && github.base_ref == 'dev'
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 origin "$PR_BASE_SHA"
+          trusted="$RUNNER_TEMP/verify-automated-pr-certification.mjs"
+          if git cat-file -e "$PR_BASE_SHA:scripts/verify-automated-pr-certification.mjs" 2>/dev/null; then
+            git show "$PR_BASE_SHA:scripts/verify-automated-pr-certification.mjs" > "$trusted"
+            node "$trusted" --self-test
+            node "$trusted" --pr
+          else
+            # Bootstrap is never presented as an independent CI certification.
+            # Existing governance still requires a real independent review for this PR.
+            node scripts/verify-automated-pr-certification.mjs --self-test
+            echo "AUTO_CERT_BOOTSTRAP=NO_TRUSTED_BASE_VERIFIER"
+            echo "BOOTSTRAP_REQUIRES_REAL_INDEPENDENT_REVIEW_BEFORE_MERGE"
+          fi
 
   verify-p0-007-a-component-catalog:
     name: P0-007.A - Catalogo Angular exact-HEAD (solo lectura)

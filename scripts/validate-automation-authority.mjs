@@ -17,6 +17,7 @@ export function validateAuthority(input) {
   required(d.authority, 'authority', [
     'PROJECT_SCOPE_LOCK=STRICT','PROJECT_ID=SOLQARYN','REPOSITORY=solqaryn/Solqaryn',
     'BRANCH=dev','AUTOMATION_RUNTIME=ACTIVE_DEV','TASK_COUNT_LIMIT=PROVIDER_EFFECTIVE_CAPACITY','TASK_ASSIGNMENT_MODEL=OWNER_CONFIGURABLE',
+    'AUTO_CERTIFICATION_MODE=REQUIRED_SCOPE_LOCK', 'FORMAL_APPROVAL_ROUTINE_COMMERCIAL_REQUIRED=FALSE', 'FORMAL_APPROVAL_GOVERNANCE_REQUIRED=TRUE',
     'VAEP_DISPATCH_AUTHORIZED=FALSE','JULES_WORKERS_AUTHORIZED=0',
     'PROPIETARIA_INSTITUCIONAL','EJECUTOR_PRINCIPAL_01','EJECUTOR_PRINCIPAL_02',
     '93171442','morales35alex','numeración', 'idéntica autoridad', 
@@ -43,6 +44,28 @@ export function validateAuthority(input) {
     'COMMERCIAL_AUTHORITY_MODE=CURRENT_PLAN_ONLY',
     'LEGACY_MASTER_EXECUTABLE=FALSE'
   ]);
+  // Enforce the current automatic CI certification as a unique live property,
+  // while preserving formal independent review for governance modifications.
+  for (const [label, body] of [
+    ['authority', d.authority], ['AGENTS', d.agents],
+    ['AUTOMATION_STATUS', d.status], ['PROJECT_SCOPE_LOCK', d.scope],
+  ]) {
+    const hits = [...body.matchAll(/^AUTO_CERTIFICATION_MODE=(.+)$/gm)];
+    if (hits.length !== 1 || hits[0][1] !== 'REQUIRED_SCOPE_LOCK')
+      failures.push(label + ': automatic certification gate missing or duplicated');
+  }
+  for (const [label, body] of [
+    ['authority', d.authority], ['AGENTS', d.agents], ['AUTOMATION_STATUS', d.status],
+  ]) {
+    for (const [key, wanted] of [
+      ['FORMAL_APPROVAL_ROUTINE_COMMERCIAL_REQUIRED', 'FALSE'],
+      ['FORMAL_APPROVAL_GOVERNANCE_REQUIRED', 'TRUE'],
+    ]) {
+      const matches = body.split(/\r?\n/).filter(line => line.startsWith(key + '='));
+      if (matches.length !== 1 || matches[0] !== key + '=' + wanted)
+        failures.push(label + ': invalid ' + key);
+    }
+  }
   const authorizationKey = 'SCHEDULED_CHATGPT_TASKS_AUTHORIZED';
   const counterMatches = text => [...text.matchAll(/^SCHEDULED_CHATGPT_TASKS_AUTHORIZED=(\d+)$/gm)];
   const aMatches = counterMatches(d.authority), sMatches = counterMatches(d.status);
@@ -194,6 +217,9 @@ else if (process.argv.includes('--self-test')) {
     ['duplicate commercial Task', {status:status.replace(/^AUTHORIZED_COMMERCIAL_TASK_IDS=(.*)$/m, (_, ids) => 'AUTHORIZED_COMMERCIAL_TASK_IDS=' + ids + ',' + ids.split(',')[0])}],
     ['commercial list length mismatch', {authority:authority.replace(/^AUTHORIZED_COMMERCIAL_TASK_IDS=(.*)$/m, (_, ids) => 'AUTHORIZED_COMMERCIAL_TASK_IDS=' + ids.split(',')[0])}],
     ['unregistered but syntactically valid commercial Task', {status:status.replace(/^AUTHORIZED_COMMERCIAL_TASK_IDS=(.*)$/m, (_, ids) => 'AUTHORIZED_COMMERCIAL_TASK_IDS=' + ids + ',aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').replace(/^SCHEDULED_CHATGPT_TASKS_AUTHORIZED=5$/m, 'SCHEDULED_CHATGPT_TASKS_AUTHORIZED=6')}],
+    ['automatic CI gate disabled', {status:status.replace('AUTO_CERTIFICATION_MODE=REQUIRED_SCOPE_LOCK','AUTO_CERTIFICATION_MODE=DISABLED')}],
+    ['old mandatory human approval restored', {authority:authority.replace('FORMAL_APPROVAL_ROUTINE_COMMERCIAL_REQUIRED=FALSE','FORMAL_APPROVAL_ROUTINE_COMMERCIAL_REQUIRED=TRUE')}],
+    ['governance independent review weakened', {authority:authority.replace('FORMAL_APPROVAL_GOVERNANCE_REQUIRED=TRUE','FORMAL_APPROVAL_GOVERNANCE_REQUIRED=FALSE')}],
     ['registered roster count mismatch', {status:status.replace(/^PHYSICAL_TASKS_REGISTERED=6$/m, 'PHYSICAL_TASKS_REGISTERED=7')}],
     ['reintroduced fixed task ceiling', {scope:scope.replace('TASK_COUNT_LIMIT=PROVIDER_EFFECTIVE_CAPACITY','PILOT_TASK_LIMIT=6')}],
     ['no configurable agent routing', {agents:agents.replace('TASK_DESIGN=OWNER_CONFIGURABLE_TASK_SET','TASK_DESIGN=DUAL_TASK')}],

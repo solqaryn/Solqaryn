@@ -1,3 +1,12 @@
+## 2026-10-30 — Certificación automática de PR comerciales DEV (propuesta protegida)
+
+- El propietario ordenó sustituir aprobación humana recurrente por un gate CI técnico de SHA exacto; no se finge revisión `APPROVED`. El verificador `scripts/verify-automated-pr-certification.mjs` queda anclado a la versión confiable de `dev` y se ejecutará dentro del check requerido `verify-solqaryn-project-scope`, con tres checks obligatorios, pruebas dirigidas y fallos fail-closed.
+- Las modificaciones de gobierno, Skill, workflows requeridos, guardas CI y el bootstrap inicial conservan revisión formal independiente para no permitir que el autor invalide su propio control. Los PR comerciales rutinarios pueden continuar y fusionarse autónomamente si la nueva norma ya está fusionada, el check es SUCCESS y la identidad GitHub tiene permiso real.
+- Se preserva Scope Lock STRICT, la allowlist 5/6 (Alex :30 excluida), WIP 6/2/1, `dev` protegido, aislamiento multiempresa, rollback protegido, evidencia GitHub y readback de Sheets. No se tocan Aiven, secretos, QA/main/PROD ni despliegues. Si no se puede verificar un control, se rechaza ese PR y continúa trabajo distinto permitido.
+- La activación no se declara antes de merge y ejecución comprobada del gate sobre un PR posterior; la Skill instalada lee la autoridad del HEAD y no debe ser editada únicamente para simular el nuevo modo.
+
+---
+
 ## 2026-10-23 — Diseño de control M3.1: 3+3 Tasks sin nuevo runtime
 
 La microfase 3 define topología de seis Tasks horarias con capacidades simétricas entre Javier y Alex. Se conserva la arquitectura del ERP, seguridad multiempresa, ramas permanentes y protecciones CI. Se agrega solo coordinación ligera mediante GitHub (rama por microtarea, PR, comprobación de exclusividad, dos ramas operativas máximas), selector por dependencias LISTO y autocorrección del revisor dentro de VALIDANDO, con revisión independiente de commits correctivos antes de cerrar. No se importa VAEP, Vibe, Jules ni una cola/scheduler residente. Fuente nueva: `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md`. Cualquier modificación de ejecución física será M3.2, y la certificación extremo a extremo M3.3. Rollback: revert del PR de diseño sin eliminar ramas/PR de microtareas ni Tasks originales.
