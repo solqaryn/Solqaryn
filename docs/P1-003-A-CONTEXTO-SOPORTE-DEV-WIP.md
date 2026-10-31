@@ -29,6 +29,10 @@ La solicitud incorpora `SolicitudId` de tipo `Guid`, creado exclusivamente dentr
 
 **No se ha persistido ningún registro ni se ha implementado revocación runtime.** No utilizar `SolicitudId` como capability o secreto, ni abrir endpoints con este cambio. La concesión debe depender de permisos DB, autorización del tenant y commit de auditoría confirmado. La prueba de unicidad no sustituye el control de colisiones a nivel DB antes de una futura persistencia.
 
+## Vinculacion de identidad solicitada (31-10-2026)
+
+El dominio añade `CorrespondeAActorYEmpresaSolicitados(usuarioPlataformaId, empresaDestinoId)` para comparar la solicitud original con el actor y el tenant objetivo. Rechaza identificadores no positivos o cruzados (actor A / empresa B y combinaciones) sin consultar permisos ni modificar estado. Ocho casos xUnit verifican coincidencia exacta y negativas; otro comprueba que coincidir con ambos IDs no prorroga la vigencia temporal. Es un predicado de integridad de la solicitud, **no un guard de autorizacion ni una capability**. Cualquier uso futuro sigue exigiendo comprobacion DB de rol y permiso de soporte, tenant destino autorizado, auditoria durable confirmada y revocacion en cada acceso. No se expone endpoint ni se activa acceso.
+
 ## Impacto, CI y rollback
 
 - Componente: `backend/src/Domain/Entities/SolicitudContextoSoporte.cs`, tests xUnit, este documento. Sin frontend ni consumidor runtime.

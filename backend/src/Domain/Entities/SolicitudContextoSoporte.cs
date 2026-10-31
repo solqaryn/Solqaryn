@@ -96,6 +96,19 @@ public sealed class SolicitudContextoSoporte
     /// Identificador opaco para correlacionar una futura auditoria duradera.
     /// No concede permisos ni garantiza persistencia o revocacion.
     /// </summary>
+    /// <summary>
+    /// Vincula la solicitud original con el actor y empresa de destino indicados.
+    /// La coincidencia NO concede permiso, no acredita RBAC ni auditoria y
+    /// nunca sustituye la revalidacion del tenant en el backend.
+    /// </summary>
+    public bool CorrespondeAActorYEmpresaSolicitados(int usuarioPlataformaId, int empresaDestinoId)
+    {
+        return usuarioPlataformaId > 0 &&
+               empresaDestinoId > 0 &&
+               UsuarioPlataformaId == usuarioPlataformaId &&
+               EmpresaDestinoId == empresaDestinoId;
+    }
+
     public Guid SolicitudId { get; }
 
     public int UsuarioPlataformaId { get; }

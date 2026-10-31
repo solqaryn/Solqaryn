@@ -32,6 +32,36 @@ public sealed class SolicitudContextoSoporteTests
         Assert.NotEqual(primera.SolicitudId, segunda.SolicitudId);
     }
 
+    [Theory]
+    [InlineData(9, 101, true)]
+    [InlineData(9, 102, false)]
+    [InlineData(10, 101, false)]
+    [InlineData(10, 102, false)]
+    [InlineData(0, 101, false)]
+    [InlineData(9, 0, false)]
+    [InlineData(-1, 101, false)]
+    [InlineData(9, -1, false)]
+    public void Solicitud_original_solo_coincide_con_su_actor_y_empresa(
+        int usuarioId, int empresaId, bool esperado)
+    {
+        var solicitud = SolicitudContextoSoporte.CrearDesdeRelojServidor(
+            9, 101, Motivo, 10, new RelojFijo(Fecha));
+
+        Assert.Equal(esperado,
+            solicitud.CorrespondeAActorYEmpresaSolicitados(usuarioId, empresaId));
+    }
+
+    [Fact]
+    public void Coincidir_actor_y_empresa_no_extiende_la_ventana_solicitada()
+    {
+        var solicitud = SolicitudContextoSoporte.CrearDesdeRelojServidor(
+            9, 101, Motivo, 10, new RelojFijo(Fecha));
+
+        Assert.True(solicitud.CorrespondeAActorYEmpresaSolicitados(9, 101));
+        Assert.False(solicitud.EstaDentroDeVentanaSolicitada(
+            new RelojFijo(Fecha.AddMinutes(10))));
+    }
+
     [Fact]
     public void Genera_solicitud_con_reloj_del_servidor_y_expiracion_corta()
     {

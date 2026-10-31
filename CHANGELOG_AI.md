@@ -4680,3 +4680,5 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Se mantienen sin cambios los seis IDs físicos observados, cinco IDs con autorización comercial, la exclusión de Alex :30 y el WIP máximo de seis scopes, más controles de revisión, CI y merge protegido.
 - El validador ahora contrasta inventarios registrados entre autoridades y permite expansión futura consistente, rechazando IDs duplicados/desconocidos y diferencias de conteo; no concede permisos ni crea Tasks.
 - No se modifican Sheets, Tasks, horarios, backend, frontend, datos, proveedores, QA, main ni PROD en esta enmienda de código.
+
+- 2026-10-31 P1-003.A: se agrega comparacion inerte del actor y empresa destino solicitados (`CorrespondeAActorYEmpresaSolicitados`) con ocho variantes xUnit y una regresion de expiracion; evita confundir una solicitud original con identidades cruzadas. Sigue sin permisos, JWT, endpoint, persistencia, auditoria durable o revocacion. Requiere CI del SHA nuevo y no se declara VALIDANDO/LISTO; el gate transversal Priority3 #3805 continua independiente.
