@@ -1,3 +1,9 @@
+## 2026-10-31 — Reparación limpia del gate de certificación automática
+
+- Se prepara una sustitución de #3809 porque su historial mezcló `jmejia31` y `solqaryn-platform`; ese PR no admite aprobación independiente de ninguna de esas cuentas.
+- El gate falla de inmediato ante bloqueo de gobierno o falta de checks activos; solo espera checks exact-HEAD que sigan ejecutándose. Los checks obligatorios y la prueba comercial dirigida deben proceder de GitHub Actions y corresponder al SHA evaluado.
+- La revisión institucional exige aprobación formal de Javier (`jmejia31`) sobre el SHA exacto, sin que Javier figure como autor o contribuidor. Esta entrada describe el cambio propuesto; su activación depende de CI y merge protegido.
+
 ## 2026-10-31 — Separación de cuentas institucional / revisión Javier (propuesta protegida)
 
 - Nueva regla predeterminada para intervenciones GitHub de este asistente: `solqaryn-platform` ejecuta, crea commits y PR; `jmejia31` revisa y aprueba únicamente con independencia real y SHA exacto. Referencia `docs/GITHUB_ACCOUNT_ROLES.md`.
