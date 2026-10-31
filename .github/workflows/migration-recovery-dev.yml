@@ -167,7 +167,7 @@ jobs:
           test "$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='PublicStoreBindings';")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261018200000_TenantRoleOwnershipDeterministicBackfill';")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261029150000_EnforceTenantRoleNameUniqueIndex';")" = 1
-          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory;")" = 16
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory;")" = 17
           test "$(q "SELECT COUNT(*) FROM (
             SELECT INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS
              WHERE TABLE_SCHEMA=DATABASE()

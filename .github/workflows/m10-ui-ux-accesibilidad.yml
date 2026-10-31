@@ -122,7 +122,7 @@ jobs:
             --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj \
             --configuration Release --no-build \
             | tee "$RUNNER_TEMP/m10-oracle-fresh-bootstrap.log"
-          grep -Fx 'SOLQARYN_ORACLE_BOOTSTRAP=PASS mode=fresh tables=138 pending=0' \
+          grep -Fx 'SOLQARYN_ORACLE_BOOTSTRAP=PASS mode=fresh tables=139 pending=0' \
             "$RUNNER_TEMP/m10-oracle-fresh-bootstrap.log"
           test "$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -uroot \
             solqaryn_m10_e2e --batch --skip-column-names \

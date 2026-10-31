@@ -28,9 +28,22 @@ public class AppDbContext : DbContext
     // Mientras las rutas públicas/jobs no tengan un binding tenant certificado,
     // el gate HTTP P0 de segunda empresa sigue siendo obligatorio.
     public int? AuthorizedReadEmpresaId =>
-        VerifiedCommercialTenant.Resolve(_tenantHttpContextAccessor?.HttpContext)
+        VerifiedPlatformSupportTenant.ResolveEmpresaId(_tenantHttpContextAccessor?.HttpContext)
+        ?? VerifiedCommercialTenant.Resolve(_tenantHttpContextAccessor?.HttpContext)
         ?? VerifiedPublicStoreTenant.Resolve(_tenantHttpContextAccessor?.HttpContext)
         ?? VerifiedPublicInvoiceTenant.Resolve(_tenantHttpContextAccessor?.HttpContext);
+
+    public bool IsPlatformSupportReadRequest =>
+        _tenantHttpContextAccessor?.HttpContext is { } http &&
+        HttpMethods.IsGet(http.Request.Method) &&
+        VerifiedPlatformSupportTenant.Resolve(http) is not null;
+
+    private void EnsureSupportRequestIsReadOnly()
+    {
+        if (IsPlatformSupportReadRequest && ChangeTracker.HasChanges())
+            throw new ForbiddenAccessException(
+                "Una sesión temporal de soporte es estrictamente de solo lectura.");
+    }
 
     // Una capability pública de tienda o factura NO concede RBAC administrativo.
     public int? AuthorizedCommercialEmpresaId =>
@@ -131,6 +144,7 @@ public class AppDbContext : DbContext
 
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
+        EnsureSupportRequestIsReadOnly();
         var cambiaComercial = ChangeTracker.Entries()
             .Any(e => e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted &&
                       ((e.Entity is Producto or Cliente or Proveedor or Compra or Venta or
@@ -156,6 +170,7 @@ public class AppDbContext : DbContext
         bool acceptAllChangesOnSuccess,
         CancellationToken cancellationToken = default)
     {
+        EnsureSupportRequestIsReadOnly();
         var cacheSegments = DetectarInvalidacionesStorefront();
 
         // Solo el contexto RBAC verificado por backend autoriza escribir filas con dueño.
@@ -454,15 +469,16 @@ public class AppDbContext : DbContext
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         base.OnModelCreating(modelBuilder);
 
-        // El modelo SQLite de pruebas no soporta collation MySQL; sólo
-        // MySQL impone comparación binaria en Host+StoreKey. SQL de migración
-        // preserva la misma collation en bases ya aprovisionadas.
+        // El modelo SQLite de pruebas no admite collations propias de MySQL.
+        // Se aplican aquí las mismas collations que definen las migraciones MySQL.
         if (Database.ProviderName?.Contains("MySql", StringComparison.OrdinalIgnoreCase) == true)
         {
             modelBuilder.Entity<PublicStoreBinding>().Property(x => x.Host)
                 .UseCollation("utf8mb4_bin");
             modelBuilder.Entity<PublicStoreBinding>().Property(x => x.StoreKey)
                 .UseCollation("utf8mb4_bin");
+            modelBuilder.Entity<PlataformaSesionSoporte>().Property(x => x.TokenHash)
+                .UseCollation("ascii_bin");
         }
 
         modelBuilder.HasAnnotation(RelationalAnnotationNames.MaxIdentifierLength, 64);

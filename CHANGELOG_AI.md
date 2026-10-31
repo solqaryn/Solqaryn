@@ -1,3 +1,11 @@
+## 2026-10-31 — P1-003.A: sesión temporal de soporte multiempresa DEV (propuesta)
+
+- Se agrega una concesión explícita, temporal (1–30 minutos), revocable y de solo lectura. La allowlist inicial queda limitada a Productos y Categorías y a cinco rutas GET exactas revisadas; cualquier otro módulo/endpoint falla cerrado. El operador debe conservar autoridad global vigente; la empresa debe estar activa.
+- El token aleatorio no se persiste: MySQL conserva solo su digest SHA-256. Cada uso vuelve a comprobar operador, sesión, vigencia, empresa, módulo y revocación.
+- Las cinco rutas registradas requieren GET, permiso Ver del mismo módulo y X-Empresa-Id explícito que coincida con la sesión. El filtro EF limita filas al tenant autorizado; SaveChanges y el interceptor SQL rechazan escrituras y lecturas con bloqueo.
+- La auditoría de concesión/uso/rechazo/revocación es durable. La lectura mantiene el bloqueo de sesión hasta terminar el request para serializarla frente a revocaciones.
+- La cobertura propuesta usa MySQL efímero en CI, prueba tenant A/B, autoridad y empresa revocadas, replay, bloqueo de escritura y carrera de revocación. No crea ni modifica membresías DEV; CI exact-head, revisión independiente, merge y despliegue aún no están certificados.
+
 ## 2026-10-31 — Limpieza de documentación fuera del alcance vigente
 
 - Se retira el README histórico que no corresponde a la identidad actual del repositorio. Sin cambios de código, automatizaciones, autorizaciones, datos ni entornos.
