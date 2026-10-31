@@ -1,5 +1,10 @@
 ## 2026-10-30 — P1-002.A: contrato de superadministracion sin acceso silencioso a tenants
 
+- Scope comercial P1-002.A (fila 28), base dev@0cec1a3b06793c95dceb3f316c1ae4cb22951f76. Rama propia work/solqaryn-p1-002-a de PRIMARY_DEV_03.
+- Acta docs/P1-002-A-CONTRATO-SUPERADMIN-GLOBAL-DEV.md delimita la sesión SaaS, la autorización empresarial revalidada y la exigencia de motivo/auditoría para cualquier delegación futura. NO implementa bypass ni acceso universal.
+- Nuevo test backend/tests/Solqaryn.Tests/API/Controllers/P1002ASuperadminGlobalTenantBoundaryTests.cs: grant de Plataforma positivo, negativas A/B sin membresía y no expansión B al tener membresía A; EF InMemory, sin MySQL real.
+- Estado EN_PROGRESO. Cierre sujeto a AUTO_CERT=PASS del gate Scope Lock para el SHA exacto, checks requeridos y prueba dirigida en verde, merge protegido a dev y readback institucional. No se solicita revisión humana formal ni se simula APPROVED; rollback por revert en PR protegido.
+
 ## 2026-10-30 — Certificación automática de PR comerciales DEV (propuesta protegida)
 
 - El propietario ordenó sustituir aprobación humana recurrente por un gate CI técnico de SHA exacto; no se finge revisión `APPROVED`. El verificador `scripts/verify-automated-pr-certification.mjs` queda anclado a la versión confiable de `dev` y se ejecutará dentro del check requerido `verify-solqaryn-project-scope`, con tres checks obligatorios, pruebas dirigidas y fallos fail-closed.
