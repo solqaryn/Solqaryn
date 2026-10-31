@@ -110,7 +110,25 @@ function selfTest() {
 
   assertReject('self governance approval', x => { x.files.push({filename:'docs/AUTOMATION_STATUS.md'}); x.reviews = [{state:'APPROVED',commit_id:h,user:{login:['jmejia','31'].join('')}}];return x; });
   assertReject('stale governance review', x => { x.files.push({filename:'docs/AUTOMATION_STATUS.md'}); x.reviews = [{state:'APPROVED',commit_id:'b'.repeat(40),user:{login:'morales35alex'}}];return x; });
-  console.log('AUTO_CERT_SELF_TEST=PASS (3 positive + 22 fail-closed negatives)');
+  const governanceBlocked = certify({...fixture, files:[...files,{filename:'.github/workflows/project-scope-lock.yml'}]});
+  if (shouldWaitForActiveChecks(governanceBlocked, [{head_sha:h,name:'Build',status:'in_progress'}], h))
+    throw Error('GOVERNANCE_BLOCKER_MUST_FAIL_IMMEDIATELY');
+  const missingDirected = certify({...fixture, runs:runs.slice(0,2)});
+  if (shouldWaitForActiveChecks(missingDirected, [], h))
+    throw Error('MISSING_CHECK_WITHOUT_ACTIVE_RUN_MUST_FAIL_IMMEDIATELY');
+  if (!shouldWaitForActiveChecks(missingDirected, [{head_sha:h,name:'Build',status:'in_progress'}], h))
+    throw Error('ACTIVE_EXACT_HEAD_CHECK_MUST_BE_WAITABLE');
+  if (shouldWaitForActiveChecks(missingDirected, [{head_sha:'b'.repeat(40),name:'Build',status:'in_progress'}], h))
+    throw Error('OTHER_HEAD_CHECK_MUST_NOT_DELAY_CERTIFICATION');
+  console.log('AUTO_CERT_SELF_TEST=PASS (3 positive + 22 fail-closed negatives; wait logic 4/4)');
+}
+
+function shouldWaitForActiveChecks(report, runs, expectedHead) {
+  if (report.failures.includes('GOVERNANCE_REQUIRES_INDEPENDENT_FORMAL_REVIEW')) return false;
+  const pendingOnly = report.failures.length > 0 && report.failures.every(f =>
+    f.startsWith('OTHER_CHECKS_PENDING:') || f.startsWith('REQUIRED_CHECK_NOT_GREEN:') || f.startsWith('SCOPE_DIRECTED_TEST_MISSING:'));
+  if (!pendingOnly) return false;
+  return runs.some(run => run.head_sha === expectedHead && run.name !== 'verify-solqaryn-project-scope' && run.status !== 'completed');
 }
 
 const args = new Set(process.argv.slice(2));
@@ -146,8 +164,9 @@ else if (args.has('--pr')) {
     if (pr.changed_files > 100 || checkList.total_count > 100 || pr.commits > 100) throw Error('UNBOUNDED_PR_METADATA');
     report = certify({ pr, files: filesResp, runs: checkList.check_runs || [], reviews, commits, repository, expectedHead });
     if (report.pass) break;
-    const transient = report.failures.every(f => f.startsWith('OTHER_CHECKS_PENDING:') || f.startsWith('REQUIRED_CHECK_NOT_GREEN:') || f.startsWith('SCOPE_DIRECTED_TEST_MISSING:') || f === 'GOVERNANCE_REQUIRES_INDEPENDENT_FORMAL_REVIEW');
-    if (!transient || Date.now() >= deadline) break;
+    if (!shouldWaitForActiveChecks(report, checkList.check_runs || [], expectedHead) || Date.now() >= deadline) break;
+    console.log('AUTO_CERT_WAITING_FOR_ACTIVE_CHECKS=' + (checkList.check_runs || []).filter(run =>
+      run.head_sha === expectedHead && run.name !== 'verify-solqaryn-project-scope' && run.status !== 'completed').map(run => run.name).join(','));
     await sleep(20000);
   }
   console.log('AUTO_CERT_MODE=' + report.mode + ' SHA=' + report.sha + ' SCOPE=' + (report.scope || 'NONE'));
