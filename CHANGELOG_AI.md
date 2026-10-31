@@ -1,4 +1,10 @@
 
+## 2026-10-31 — P1-001.B: secret-scan false positive in synthetic fixtures
+
+- The Priority 3 scanner matched the deliberate GitHub-token and private-key inputs in P0-008.B's negative-test source, including its immutable historical blob. The current test now assembles those synthetic values at runtime.
+- History scanning retains all rules except for the exact verified historical fixture blob `a60e4fb318dae3aad89f502776be01a5f3b8ca85`, where only the `github-token` and `private-key` fixture matches are ignored. All other paths, blobs, rules, and exported Actions data remain scanned.
+- No credential values were exposed or added; no provider, database, QA, main, or PROD access was performed.
+
 ## 2026-10-30 — P0-008.B: negativos de fuga de secretos en inventario DEV (propuesta)
 
 - Scope comercial P0-008.B fila 17, dependencias P0-008.A/P0-012.B LISTO. Segundo scope de PRIMARY_DEV_01 solo después de P0-004.B VALIDANDO sin edición.
