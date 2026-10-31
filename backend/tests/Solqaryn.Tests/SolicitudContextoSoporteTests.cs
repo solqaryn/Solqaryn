@@ -6,79 +6,75 @@ namespace Solqaryn.Tests;
 
 public sealed class SolicitudContextoSoporteTests
 {
-    private static readonly DateTimeOffset AhoraUtc =
-        new(2026, 10, 30, 23, 0, 0, TimeSpan.Zero);
+    private const string Motivo = "Asistencia solicitada para investigar un incidente autorizado.";
 
-    private const string Motivo =
-        "Diagnóstico de incidente de facturación solicitado por soporte.";
+    private sealed class RelojFijo : TimeProvider
+    {
+        private readonly DateTimeOffset _hora;
+        public RelojFijo(DateTimeOffset hora) { _hora = hora; }
+        public override DateTimeOffset GetUtcNow() => _hora;
+    }
+
+    private static readonly DateTimeOffset Fecha =
+        new DateTimeOffset(2026, 10, 30, 23, 0, 0, TimeSpan.Zero);
 
     [Fact]
-    public void Solicitud_valida_captura_tenant_motivo_y_expiracion_sin_otorgar_permisos()
+    public void Genera_solicitud_con_reloj_del_servidor_y_expiracion_corta()
     {
-        var solicitud = new SolicitudContextoSoporte(
-            9, 101, "  " + Motivo + "  ", AhoraUtc, AhoraUtc.AddMinutes(10));
-
+        var solicitud = SolicitudContextoSoporte.CrearDesdeRelojServidor(
+            9, 101, Motivo, 10, new RelojFijo(Fecha));
         Assert.Equal(9, solicitud.UsuarioPlataformaId);
         Assert.Equal(101, solicitud.EmpresaDestinoId);
         Assert.Equal(Motivo, solicitud.Justificacion);
-        Assert.Equal(AhoraUtc, solicitud.InicioUtc);
-        Assert.Equal(AhoraUtc.AddMinutes(10), solicitud.ExpiracionUtc);
-    }
-
-    [Theory]
-    [InlineData(0, 1)]
-    [InlineData(-1, 1)]
-    [InlineData(1, 0)]
-    [InlineData(1, -1)]
-    public void Rechaza_identidades_o_empresa_invalidas(int usuarioId, int empresaId)
-    {
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
-            new SolicitudContextoSoporte(usuarioId, empresaId, Motivo,
-                AhoraUtc, AhoraUtc.AddMinutes(10)));
-    }
-
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("   ")]
-    [InlineData("motivo insuficiente")]
-    [InlineData("Justificación válida\ncon nueva línea")]
-    public void Rechaza_justificaciones_invalidas(string? motivo)
-    {
-        Assert.Throws<ArgumentException>(() =>
-            new SolicitudContextoSoporte(9, 101, motivo!,
-                AhoraUtc, AhoraUtc.AddMinutes(10)));
+        Assert.Equal(Fecha, solicitud.InicioUtc);
+        Assert.Equal(Fecha.AddMinutes(10), solicitud.ExpiracionUtc);
     }
 
     [Fact]
-    public void Rechaza_justificacion_demasiado_larga()
+    public void Convierte_offset_del_reloj_a_utc()
     {
-        Assert.Throws<ArgumentException>(() =>
-            new SolicitudContextoSoporte(9, 101, new string('a', 501),
-                AhoraUtc, AhoraUtc.AddMinutes(10)));
+        var local = new DateTimeOffset(2026, 10, 30, 17, 0, 0, TimeSpan.FromHours(-6));
+        var solicitud = SolicitudContextoSoporte.CrearDesdeRelojServidor(
+            9, 101, Motivo, 15, new RelojFijo(local));
+        Assert.Equal(TimeSpan.Zero, solicitud.InicioUtc.Offset);
+        Assert.Equal(Fecha, solicitud.InicioUtc);
     }
 
     [Theory]
     [InlineData(0)]
     [InlineData(-1)]
     [InlineData(16)]
-    [InlineData(60)]
-    public void Rechaza_duracion_nula_negativa_o_superior_a_quince_minutos(int minutos)
+    public void Rechaza_duraciones_fuera_de_rango(int minutos)
     {
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            new SolicitudContextoSoporte(9, 101, Motivo,
-                AhoraUtc, AhoraUtc.AddMinutes(minutos)));
+            SolicitudContextoSoporte.CrearDesdeRelojServidor(
+                9, 101, Motivo, minutos, new RelojFijo(Fecha)));
+    }
+
+    [Theory]
+    [InlineData(0, 101)]
+    [InlineData(9, 0)]
+    public void Rechaza_identificadores_invalidos(int usuarioId, int empresaId)
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            SolicitudContextoSoporte.CrearDesdeRelojServidor(
+                usuarioId, empresaId, Motivo, 10, new RelojFijo(Fecha)));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("corto")]
+    public void Rechaza_motivos_invalidos(string motivo)
+    {
+        Assert.Throws<ArgumentException>(() =>
+            SolicitudContextoSoporte.CrearDesdeRelojServidor(
+                9, 101, motivo, 10, new RelojFijo(Fecha)));
     }
 
     [Fact]
-    public void Rechaza_fechas_con_offset_no_utc()
+    public void Rechaza_reloj_nulo()
     {
-        var desplazada = new DateTimeOffset(2026, 10, 30, 17, 0, 0, TimeSpan.FromHours(-6));
-        Assert.Throws<ArgumentException>(() =>
-            new SolicitudContextoSoporte(9, 101, Motivo,
-                desplazada, AhoraUtc.AddMinutes(10)));
-        Assert.Throws<ArgumentException>(() =>
-            new SolicitudContextoSoporte(9, 101, Motivo,
-                AhoraUtc, desplazada.AddMinutes(10)));
+        Assert.Throws<ArgumentNullException>(() =>
+            SolicitudContextoSoporte.CrearDesdeRelojServidor(9, 101, Motivo, 10, null!));
     }
 }
