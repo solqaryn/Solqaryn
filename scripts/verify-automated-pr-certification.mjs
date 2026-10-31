@@ -3,6 +3,8 @@ import { readFileSync } from 'node:fs';
 // Trusted verifier: on later PRs the required Scope Lock check executes this file
 // from the target DEV base, not from the untrusted pull-request head.
 const REQUIRED = ['SOLQARYN - Seguridad multiempresa', 'SOLQARYN - Build y pruebas backend'];
+const DIRECTED_CHECK = 'SOLQARYN - Directed commercial scope';
+const TRUSTED_GITHUB_ACTIONS_APP_ID = 15368;
 const SCOPE = /\b(P\d+-\d{3}\.[A-Z])\b/i;
 const INSTITUTIONAL_EXECUTOR = 'solqaryn-platform';
 const INDEPENDENT_REVIEWER = ['jmejia', '31'].join('');
@@ -15,7 +17,7 @@ const GUARDED = new Set([
   'scripts/verify-automated-pr-certification.mjs', 'scripts/verify-solqaryn-skills.mjs',
 ]);
 const SECRET = /gh[pousr]_[a-zA-Z0-9_]{20,}|AKIA[A-Z0-9]{16}|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|(?:password|token|secret)\s*[:=]\s*['"][^'"]{12,}['"]/i;
-const isGuarded = name => GUARDED.has(name) || name.startsWith('.agents/skills/');
+const isGuarded = name => GUARDED.has(name) || name.startsWith('.agents/skills/') || name.startsWith('.github/') || name.startsWith('scripts/security/');
 const isProductionSource = name => /^(?:backend\/src\/|frontend\/src\/)/.test(name) && !/(?:\/tests?\/|\.spec\.|\.test\.)/.test(name);
 
 export function certify({ pr, files, runs, reviews = [], commits = [], repository, expectedHead }) {
@@ -48,14 +50,14 @@ export function certify({ pr, files, runs, reviews = [], commits = [], repositor
   const byName = new Map((runs || []).filter(x => x.head_sha === expectedHead).map(x => [x.name, x]));
   for (const name of REQUIRED) {
     const item = byName.get(name);
-    if (!item || item.status !== 'completed' || item.conclusion !== 'success') fail('REQUIRED_CHECK_NOT_GREEN:' + name);
+    if (!item || item.status !== 'completed' || item.conclusion !== 'success' || item.app?.id !== TRUSTED_GITHUB_ACTIONS_APP_ID) fail('REQUIRED_CHECK_NOT_GREEN:' + name);
   }
   const applicable = [...byName.values()].filter(x => x.name !== 'verify-solqaryn-project-scope');
   const incomplete = applicable.filter(x => x.status !== 'completed');
   if (incomplete.length) fail('OTHER_CHECKS_PENDING:' + incomplete.map(x => x.name).join(','));
-  const bad = applicable.filter(x => !['success', 'skipped'].includes(x.conclusion));
+  const bad = applicable.filter(x => x.status === 'completed' && !['success', 'skipped'].includes(x.conclusion));
   if (bad.length) fail('CHECK_FAILED:' + bad.map(x => x.name).join(','));
-  if (scope && !applicable.some(x => x.name.toUpperCase().includes(scope) && x.status === 'completed' && x.conclusion === 'success')) fail('SCOPE_DIRECTED_TEST_MISSING:' + scope);
+  if (scope && !applicable.some(x => x.name === DIRECTED_CHECK && x.status === 'completed' && x.conclusion === 'success' && x.app?.id === TRUSTED_GITHUB_ACTIONS_APP_ID)) fail('SCOPE_DIRECTED_TEST_MISSING:' + scope);
   const changesGuarded = names.some(isGuarded);
   const institutionalPR = pr?.user?.login === INSTITUTIONAL_EXECUTOR;
   if (changesGuarded || institutionalPR) {
@@ -71,13 +73,13 @@ export function certify({ pr, files, runs, reviews = [], commits = [], repositor
   return { pass: failures.length === 0, failures, mode: changesGuarded ? 'GOVERNANCE_REVIEW' : institutionalPR ? 'INSTITUTIONAL_REVIEW' : 'AUTONOMOUS_COMMERCIAL_CERT', scope: scope || null, sha: expectedHead };
 }
 
-const makeRun = (name, sha, conclusion = 'success') => ({ name, head_sha: sha, status: 'completed', conclusion });
+const makeRun = (name, sha, conclusion = 'success') => ({ name, head_sha: sha, status: 'completed', conclusion, app: { id: TRUSTED_GITHUB_ACTIONS_APP_ID } });
 function selfTest() {
   const h = 'a'.repeat(40);
   const pr = { state: 'open', draft: false, title: 'test(P0-010.B): validacion negativa', body: 'P0-010.B evidencia', user: { login: ['jmejia','31'].join('') },
     base: { ref: 'dev', repo: { full_name: 'solqaryn/Solqaryn' } }, head: { ref: 'work/solqaryn-p0-010-b', sha: h, repo: { full_name: 'solqaryn/Solqaryn' } } };
   const files = [{ filename: 'CHANGELOG_AI.md', patch: '+change' }, { filename: 'scripts/verify-p0-010-b.mjs', patch: '+test' }];
-  const runs = [...REQUIRED.map(n => makeRun(n, h)), makeRun('P0-010.B - Directed negatives', h)];
+  const runs = [...REQUIRED.map(n => makeRun(n, h)), makeRun(DIRECTED_CHECK, h)];
   const fixture = { pr, files, runs, repository: 'solqaryn/Solqaryn', expectedHead: h };
   const clone = v => structuredClone(v);
   const assertPass = (label, obj) => { const x = certify(obj); if (!x.pass) throw Error('positive ' + label + ': ' + x.failures.join(';')); };
@@ -97,6 +99,10 @@ function selfTest() {
   assertReject('institutional commercial wrong reviewer', x => { x.pr.user.login = INSTITUTIONAL_EXECUTOR; x.reviews = [{state:'APPROVED',commit_id:h,user:{login:'morales35alex'}}];return x; });
   assertReject('institutional review by contributor', x => { x.pr.user.login = INSTITUTIONAL_EXECUTOR; x.reviews = [{state:'APPROVED',commit_id:h,user:{login:INDEPENDENT_REVIEWER}}]; x.commits = [{author:{login:INDEPENDENT_REVIEWER}}];return x; });
   assertReject('institutional stale review', x => { x.pr.user.login = INSTITUTIONAL_EXECUTOR; x.reviews = [{state:'APPROVED',commit_id:'b'.repeat(40),user:{login:INDEPENDENT_REVIEWER}}];return x; });
+  assertReject('forged directed success from untrusted app', x => { x.runs[2].app.id = 1; return x; });
+  assertReject('forged backend success from untrusted app', x => { x.runs[1].app.id = 1; return x; });
+  assertReject('untrusted arbitrary check name cannot certify directed tests', x => { x.runs[2].name = 'P0-010.B - Arbitrary check'; return x; });
+  assertReject('unexpanded workflow expression cannot certify directed tests', x => { x.runs[2].name = 'SOLQARYN - Directed ${{ github.event.pull_request.title }}'; return x; });
   assertReject('missing targeted test', x => ({...x, runs: x.runs.slice(0, 2)}));
   assertReject('pending check', x => { x.runs[2].status = 'in_progress'; x.runs[2].conclusion = null; return x; });
   assertReject('non deterministic branch', x => { x.pr.head.ref = 'feature/random'; return x; });
@@ -112,7 +118,20 @@ function selfTest() {
 
   assertReject('self governance approval', x => { x.files.push({filename:'docs/AUTOMATION_STATUS.md'}); x.reviews = [{state:'APPROVED',commit_id:h,user:{login:['jmejia','31'].join('')}}];return x; });
   assertReject('stale governance review', x => { x.files.push({filename:'docs/AUTOMATION_STATUS.md'}); x.reviews = [{state:'APPROVED',commit_id:'b'.repeat(40),user:{login:'morales35alex'}}];return x; });
-  console.log('AUTO_CERT_SELF_TEST=PASS (4 positive + 19 fail-closed negatives)');
+  const governanceBlocked = certify({...fixture, files:[...files,{filename:'.github/workflows/project-scope-lock.yml'}]});
+  if (shouldWaitForActiveChecks(governanceBlocked, [{head_sha:h,name:'Build',status:'in_progress'}], h)) throw Error('GOVERNANCE_BLOCKER_MUST_FAIL_IMMEDIATELY');
+  const missingDirected = certify({...fixture, runs:runs.slice(0,2)});
+  if (shouldWaitForActiveChecks(missingDirected, [], h)) throw Error('MISSING_CHECK_WITHOUT_ACTIVE_RUN_MUST_FAIL_IMMEDIATELY');
+  if (!shouldWaitForActiveChecks(missingDirected, [{head_sha:h,name:'Build',status:'in_progress'}], h)) throw Error('ACTIVE_EXACT_HEAD_CHECK_MUST_BE_WAITABLE');
+  if (shouldWaitForActiveChecks(missingDirected, [{head_sha:'b'.repeat(40),name:'Build',status:'in_progress'}], h)) throw Error('OTHER_HEAD_CHECK_MUST_NOT_DELAY_CERTIFICATION');
+  console.log('AUTO_CERT_SELF_TEST=PASS (4 positive + 22 fail-closed negatives; wait logic 4/4)');
+}
+
+function shouldWaitForActiveChecks(report, runs, expectedHead) {
+  if (report.failures.includes('GOVERNANCE_REQUIRES_INDEPENDENT_FORMAL_REVIEW') || report.failures.includes('INSTITUTIONAL_REQUIRES_JAVIER_INDEPENDENT_REVIEW')) return false;
+  const pendingOnly = report.failures.length > 0 && report.failures.every(f => f.startsWith('OTHER_CHECKS_PENDING:') || f.startsWith('REQUIRED_CHECK_NOT_GREEN:') || f.startsWith('SCOPE_DIRECTED_TEST_MISSING:'));
+  if (!pendingOnly) return false;
+  return runs.some(run => run.head_sha === expectedHead && run.name !== 'verify-solqaryn-project-scope' && run.status !== 'completed');
 }
 
 const args = new Set(process.argv.slice(2));
@@ -148,8 +167,8 @@ else if (args.has('--pr')) {
     if (pr.changed_files > 100 || checkList.total_count > 100 || pr.commits > 100) throw Error('UNBOUNDED_PR_METADATA');
     report = certify({ pr, files: filesResp, runs: checkList.check_runs || [], reviews, commits, repository, expectedHead });
     if (report.pass) break;
-    const transient = report.failures.every(f => f.startsWith('OTHER_CHECKS_PENDING:') || f.startsWith('REQUIRED_CHECK_NOT_GREEN:') || (f === 'GOVERNANCE_REQUIRES_INDEPENDENT_FORMAL_REVIEW' || f === 'INSTITUTIONAL_REQUIRES_JAVIER_INDEPENDENT_REVIEW'));
-    if (!transient || Date.now() >= deadline) break;
+    if (!shouldWaitForActiveChecks(report, checkList.check_runs || [], expectedHead) || Date.now() >= deadline) break;
+    console.log('AUTO_CERT_WAITING_FOR_ACTIVE_CHECKS=' + (checkList.check_runs || []).filter(run => run.head_sha === expectedHead && run.name !== 'verify-solqaryn-project-scope' && run.status !== 'completed').map(run => run.name).join(','));
     await sleep(20000);
   }
   console.log('AUTO_CERT_MODE=' + report.mode + ' SHA=' + report.sha + ' SCOPE=' + (report.scope || 'NONE'));
