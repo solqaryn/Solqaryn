@@ -53,7 +53,7 @@ public sealed class P1004APlataformaDelegacionNegativasTests
     }
 
     [Fact]
-    public async Task Revocacion_de_grant_surje_efecto_en_siguiente_consulta()
+    public async Task Revocacion_de_grant_surte_efecto_en_siguiente_consulta()
     {
         var fixture = await CrearAsync();
         await using var db = fixture.Db;
@@ -61,7 +61,7 @@ public sealed class P1004APlataformaDelegacionNegativasTests
         Assert.True(await fixture.Service.TienePermisoDelegadoAsync(
             ModuloSistema.Configuracion, AccionPermiso.Ver));
 
-        db.Set<RolPermiso>().RemoveRange(db.Set<RolPermiso>());
+        db.Set<RolPermiso>().RemoveRange(await db.Set<RolPermiso>().ToListAsync());
         await db.SaveChangesAsync();
 
         Assert.False(await fixture.Service.TienePermisoDelegadoAsync(
