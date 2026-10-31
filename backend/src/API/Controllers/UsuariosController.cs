@@ -116,8 +116,9 @@ public class UsuariosController : ControllerBase
         if (!dto.Activo && _currentUser.UsuarioId == id)
             return BadRequest(ApiResponse<object>.Fail("No puedes desactivar tu propia cuenta."));
 
-        await AutorizarEmpresaYPermisoAsync(
+        var empresaAutorizada = await AutorizarEmpresaYPermisoAsync(
             dto.Activo ? AccionPermiso.Activar : AccionPermiso.Desactivar);
+        await _usuarioService.ExigirIdentidadExclusivaDeEmpresaAsync(id, empresaAutorizada);
 
         var actualizado = await _usuarioService.UpdateEstadoAsync(id, dto.Activo);
         if (actualizado is null)
@@ -130,7 +131,8 @@ public class UsuariosController : ControllerBase
     [HttpPut("{id:int}/bloquear")]
     public async Task<IActionResult> Bloquear(int id, [FromBody] BloquearUsuarioDto dto)
     {
-        await AutorizarEmpresaYPermisoAsync(AccionPermiso.Desactivar);
+        var empresaAutorizada = await AutorizarEmpresaYPermisoAsync(AccionPermiso.Desactivar);
+        await _usuarioService.ExigirIdentidadExclusivaDeEmpresaAsync(id, empresaAutorizada);
         var actualizado = await _usuarioService.BloquearAsync(id, dto.Motivo);
         return Ok(ApiResponse<UsuarioDto>.Ok(actualizado, "Usuario bloqueado correctamente."));
     }
@@ -138,7 +140,8 @@ public class UsuariosController : ControllerBase
     [HttpPut("{id:int}/desbloquear")]
     public async Task<IActionResult> Desbloquear(int id)
     {
-        await AutorizarEmpresaYPermisoAsync(AccionPermiso.Activar);
+        var empresaAutorizada = await AutorizarEmpresaYPermisoAsync(AccionPermiso.Activar);
+        await _usuarioService.ExigirIdentidadExclusivaDeEmpresaAsync(id, empresaAutorizada);
         var actualizado = await _usuarioService.DesbloquearAsync(id);
         return Ok(ApiResponse<UsuarioDto>.Ok(actualizado, "Usuario desbloqueado correctamente."));
     }
@@ -147,6 +150,8 @@ public class UsuariosController : ControllerBase
     [RequierePermiso(ModuloSistema.Usuarios, AccionPermiso.EliminarLogico)]
     public async Task<IActionResult> Eliminar(int id)
     {
+        var empresaAutorizada = TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext);
+        await _usuarioService.ExigirIdentidadExclusivaDeEmpresaAsync(id, empresaAutorizada);
         await _usuarioService.EliminarAsync(id);
         return Ok(ApiResponse<object>.Ok(new { }, "Usuario eliminado correctamente."));
     }
