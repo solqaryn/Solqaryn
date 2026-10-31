@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Solqaryn.Tests;
 
-public sealed class SolicitudContextoSoporteNegativosTests
+public sealed class P1003ASolicitudContextoSoporteNegativosTests
 {
     private const string Motivo =
         "Revision de incidente solicitada por soporte autorizado.";
