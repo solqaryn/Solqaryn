@@ -1,3 +1,12 @@
+## 2026-10-30 — Certificación automática de PR comerciales DEV (propuesta protegida)
+
+- El propietario ordenó sustituir aprobación humana recurrente por un gate CI técnico de SHA exacto; no se finge revisión `APPROVED`. El verificador `scripts/verify-automated-pr-certification.mjs` queda anclado a la versión confiable de `dev` y se ejecutará dentro del check requerido `verify-solqaryn-project-scope`, con tres checks obligatorios, pruebas dirigidas y fallos fail-closed.
+- Las modificaciones de gobierno, Skill, workflows requeridos, guardas CI y el bootstrap inicial conservan revisión formal independiente para no permitir que el autor invalide su propio control. Los PR comerciales rutinarios pueden continuar y fusionarse autónomamente si la nueva norma ya está fusionada, el check es SUCCESS y la identidad GitHub tiene permiso real.
+- Se preserva Scope Lock STRICT, la allowlist 5/6 (Alex :30 excluida), WIP 6/2/1, `dev` protegido, aislamiento multiempresa, rollback protegido, evidencia GitHub y readback de Sheets. No se tocan Aiven, secretos, QA/main/PROD ni despliegues. Si no se puede verificar un control, se rechaza ese PR y continúa trabajo distinto permitido.
+- La activación no se declara antes de merge y ejecución comprobada del gate sobre un PR posterior; la Skill instalada lee la autoridad del HEAD y no debe ser editada únicamente para simular el nuevo modo.
+
+---
+
 ## 2026-10-23 — AUTORIDAD HISTÓRICA M3.1 (3+3, sustituida 2026-10-30)
 
 En ese corte se autorizó el diseño 3+3; posteriormente se instaló el inventario y se autorizó individualmente un allowlist comercial 5/6. El 3+3 queda como fotografía histórica, sustituida el 2026-10-30 por inventario configurable sin techo interno fijo. La nueva regla no amplía permisos ni cambia las Tasks físicas actuales. Priorizar revisión de PR en VALIDANDO, autocorrección en el mismo PR y revisión ajena de los commits del revisor; la microtarea solo libera dependientes después de LISTO respaldado por merge protegido y readback del Sheet. Ramas temporales por microtarea con limpieza automática y máximo dos scopes concurrentes. VAEP/Jules retirados; qa/main/PROD excluidos. Único contrato nuevo: `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md`; `docs/AUTOMATION_STATUS.md` conserva el contador físico vigente. El PR #3734 ya fue integrado a dev mediante 17ca160ae5f2d1e20ef27b1820e670fbfb1099d8; esta migración conserva íntegros sus ocho archivos y sus controles de autoridad comercial. Los registros históricos siguientes no conceden autoridad vigente.
