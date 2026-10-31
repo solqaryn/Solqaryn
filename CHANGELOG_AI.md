@@ -1,3 +1,9 @@
+## 2026-10-31 — Separación de cuentas institucional / revisión Javier (propuesta protegida)
+
+- Nueva regla predeterminada para intervenciones GitHub de este asistente: `solqaryn-platform` ejecuta, crea commits y PR; `jmejia31` revisa y aprueba únicamente con independencia real y SHA exacto. Referencia `docs/GITHUB_ACCOUNT_ROLES.md`.
+- El verificador permite PR comerciales de la cuenta institucional pero exige la revisión formal de Javier si son institucionales; conserva el control de no autoaprobación y no cambia los PR comerciales históricos creados desde cuentas existentes.
+- Sin modificación de Tasks activas, autorizaciones 5/6, Scope Lock, proveedor, datos, QA/main/PROD ni reglas de GitHub. El cambio sólo será norma en dev tras CI y merge protegido.
+
 ## 2026-10-30 — Certificación automática de PR comerciales DEV (propuesta protegida)
 
 - El propietario ordenó sustituir aprobación humana recurrente por un gate CI técnico de SHA exacto; no se finge revisión `APPROVED`. El verificador `scripts/verify-automated-pr-certification.mjs` queda anclado a la versión confiable de `dev` y se ejecutará dentro del check requerido `verify-solqaryn-project-scope`, con tres checks obligatorios, pruebas dirigidas y fallos fail-closed.
