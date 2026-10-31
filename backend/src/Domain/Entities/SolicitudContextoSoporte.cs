@@ -71,6 +71,8 @@ public sealed class SolicitudContextoSoporte
                     UnicodeCategory.ParagraphSeparator))
             throw new ArgumentException("Se requiere una justificación válida, acotada y sin caracteres de control.", nameof(justificacion));
 
+        // Correlacion propia generada exclusivamente por el servidor. No es un token de acceso.
+        SolicitudId = Guid.NewGuid();
         UsuarioPlataformaId = usuarioPlataformaId;
         EmpresaDestinoId = empresaDestinoId;
         Justificacion = motivo;
@@ -89,6 +91,12 @@ public sealed class SolicitudContextoSoporte
         var ahoraUtc = relojServidor.GetUtcNow().ToUniversalTime();
         return ahoraUtc >= InicioUtc && ahoraUtc < ExpiracionUtc;
     }
+
+    /// <summary>
+    /// Identificador opaco para correlacionar una futura auditoria duradera.
+    /// No concede permisos ni garantiza persistencia o revocacion.
+    /// </summary>
+    public Guid SolicitudId { get; }
 
     public int UsuarioPlataformaId { get; }
     public int EmpresaDestinoId { get; }

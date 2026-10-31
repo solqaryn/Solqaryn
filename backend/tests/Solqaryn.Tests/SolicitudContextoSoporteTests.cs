@@ -19,6 +19,20 @@ public sealed class SolicitudContextoSoporteTests
         new DateTimeOffset(2026, 10, 30, 23, 0, 0, TimeSpan.Zero);
 
     [Fact]
+    public void Solicitudes_distintas_del_mismo_actor_y_tenant_tienen_correlaciones_independientes()
+    {
+        var reloj = new RelojFijo(Fecha);
+        var primera = SolicitudContextoSoporte.CrearDesdeRelojServidor(
+            9, 101, Motivo, 10, reloj);
+        var segunda = SolicitudContextoSoporte.CrearDesdeRelojServidor(
+            9, 101, Motivo, 10, reloj);
+
+        Assert.NotEqual(Guid.Empty, primera.SolicitudId);
+        Assert.NotEqual(Guid.Empty, segunda.SolicitudId);
+        Assert.NotEqual(primera.SolicitudId, segunda.SolicitudId);
+    }
+
+    [Fact]
     public void Genera_solicitud_con_reloj_del_servidor_y_expiracion_corta()
     {
         var solicitud = SolicitudContextoSoporte.CrearDesdeRelojServidor(

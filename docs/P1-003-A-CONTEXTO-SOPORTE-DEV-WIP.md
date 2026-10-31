@@ -23,6 +23,12 @@ Se incorpora un objeto de dominio inerte `SolicitudContextoSoporte` con invarian
 5. Establecer expiración/revocación y observabilidad sin registrar PII ni secretos en logs. No introducir campos de soporte en JWT ni habilitar endpoint hasta que las pruebas de seguridad y auditoría sean concluyentes.
 6. Revisar el contrato existente `UsuarioRolPlataforma` / `RegistroAuditoria` y las dependencias P1-002.A/P1-003.B antes de integrar. Cambios de esquema o API requerirán análisis de impacto y pruebas correspondientes.
 
+## Identificador de correlación (31-10-2026)
+
+La solicitud incorpora `SolicitudId` de tipo `Guid`, creado exclusivamente dentro de la fábrica del servidor. Dos solicitudes separadas del mismo actor, empresa, motivo y reloj conservan IDs distintos. Este identificador permitirá correlacionar **futuros** registros duraderos de concesión/denegación, expiración y revocación; la prueba xUnit comprueba unicidad de dos instancias y prohíbe interpretar el ID como token de acceso o como evidencia de autorización.
+
+**No se ha persistido ningún registro ni se ha implementado revocación runtime.** No utilizar `SolicitudId` como capability o secreto, ni abrir endpoints con este cambio. La concesión debe depender de permisos DB, autorización del tenant y commit de auditoría confirmado. La prueba de unicidad no sustituye el control de colisiones a nivel DB antes de una futura persistencia.
+
 ## Impacto, CI y rollback
 
 - Componente: `backend/src/Domain/Entities/SolicitudContextoSoporte.cs`, tests xUnit, este documento. Sin frontend ni consumidor runtime.

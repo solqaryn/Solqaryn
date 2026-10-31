@@ -1,4 +1,10 @@
 
+## 2026-10-31 — P1-003.A: correlación independiente de solicitudes de soporte (DEV, WIP)
+
+- Se introduce `SolicitudId` generado en el backend con `Guid.NewGuid()` al validar una intención de soporte; la fábrica no recibe un identificador del cliente. Dos solicitudes del mismo actor/empresa/reloj tienen IDs distintos, con nuevo test xUnit dirigido.
+- Es exclusivamente correlación futura, NO un permiso, token de soporte, sesión, grant, persistencia, auditoría realizada ni revocación efectiva. Los gates RBAC/tenant/auditoría y el escáner Priority3 de issue #3805 siguen pendientes. Sin endpoints, cambios de esquema, infraestructura, QA/main/PROD ni datos comerciales.
+- PR #3806 sigue DRAFT/EN_PROGRESO hasta CI exact-SHA y revisión independiente; rollback por PR protegido que revierta este changeset sin modificar datos.
+
 ## 2026-10-30 — P0-008.B: negativos de fuga de secretos en inventario DEV (propuesta)
 
 - Scope comercial P0-008.B fila 17, dependencias P0-008.A/P0-012.B LISTO. Segundo scope de PRIMARY_DEV_01 solo después de P0-004.B VALIDANDO sin edición.
