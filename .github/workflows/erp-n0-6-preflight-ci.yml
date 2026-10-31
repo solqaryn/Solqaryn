@@ -129,14 +129,32 @@ jobs:
                  'TR_MovimientosInventario_N06_OrigenTipado_BI',
                  'TR_MovimientosInventario_N06_OrigenTipado_BU');")" = 2
 
-      - name: Verificar modelo Oracle sin drift
+      - name: Verificar modelo Oracle y mostrar el drift exacto
         working-directory: backend
+        shell: bash
         run: |
           set -euo pipefail
-          dotnet tool run dotnet-ef migrations has-pending-model-changes \
-            --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj \
-            --startup-project src/API/Solqaryn.API.csproj \
-            --context AppDbContext \
-            --configuration Release \
-            --no-build
-          echo 'ERP_N06_FINAL_CONTRACT=PASS'
+          project=src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj
+          startup=src/API/Solqaryn.API.csproj
+          common=(--project "$project" --startup-project "$startup" --context AppDbContext --configuration Release --no-build)
+          if dotnet tool run dotnet-ef migrations has-pending-model-changes "${common[@]}"; then
+            echo 'ERP_N06_FINAL_CONTRACT=PASS'
+            exit 0
+          fi
+
+          diag_dir=src/Infrastructure.Migrations/Migrations/__diagnostic
+          trap 'rm -rf "$diag_dir"' EXIT
+          mkdir -p "$diag_dir"
+          echo 'ERP_N06_MODEL_DRIFT=FAIL; migración diferencial generada solo en el runner desechable:'
+          dotnet tool run dotnet-ef migrations add P1003AModelDriftDiagnostic "${common[@]}" --output-dir Migrations/__diagnostic
+          mapfile -t migrations < <(find "$diag_dir" -maxdepth 1 -type f -name '*P1003AModelDriftDiagnostic.cs' ! -name '*.Designer.cs' -print)
+          if (("${#migrations[@]}" == 0)); then
+            echo 'EF no generó operaciones; se muestra el diff del snapshot para identificar las anotaciones divergentes.'
+          else
+            for migration in "${migrations[@]}"; do
+              sed -n '1,240p' "$migration"
+            done
+          fi
+          echo '=== Snapshot diff summary (runner only) ==='
+          git diff --stat -- src/Infrastructure.Migrations/Migrations/OracleAppDbContextModelSnapshot.cs
+          exit 1
