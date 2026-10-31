@@ -156,7 +156,7 @@ public sealed class P1003ASupportSessionMySqlIntegrationTests
 
                 var products = await dbRead.Productos.AsNoTracking().ToListAsync();
                 var product = Assert.Single(products);
-                Assert.Equal(productAId, product.Id);
+                Assert.Equal(productoAId, product.Id);
                 Assert.DoesNotContain(products, x => x.Id == productoBId);
 
                 var tracked = await dbRead.Productos.SingleAsync(x => x.Id == productoAId);
