@@ -15,7 +15,7 @@ using Xunit;
 namespace Solqaryn.Tests;
 
 [Trait("Category", "Integration")]
-public sealed class P1003ASupportSessionMySqlIntegrationTests
+public sealed class SupportSessionMySqlIntegrationTests
 {
     [Fact]
     public async Task Temporary_support_session_is_scoped_read_only_audited_and_revocable()
