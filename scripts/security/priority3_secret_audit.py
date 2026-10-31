@@ -27,12 +27,29 @@ RULES = [
         re.I)),
 ]
 
+# This immutable historical blob is the P0-008.B negative-test fixture. Its
+# token/key-shaped strings are deliberate synthetic inputs, not credentials.
+# The exception is limited to those two detector rules, this exact blob, and
+# this exact path. The current fixture is assembled at runtime so new versions
+# do not need a history exemption.
+SYNTHETIC_FIXTURE_HISTORY_ALLOWLIST = {
+    (
+        "a60e4fb318dae3aad89f502776be01a5f3b8ca85",
+        "scripts/verify-p0-008-b-secret-evidence.mjs",
+    ): frozenset({"github-token", "private-key"}),
+}
 
-def scan_bytes(data: bytes, label: str, findings: list[tuple[str, str]]) -> None:
+
+def scan_bytes(
+    data: bytes,
+    label: str,
+    findings: list[tuple[str, str]],
+    ignored_rules: frozenset[str] = frozenset(),
+) -> None:
     if not data or len(data) > MAX_BYTES or b"\0" in data[:4096]:
         return
     for name, pattern in RULES:
-        if pattern.search(data):
+        if name not in ignored_rules and pattern.search(data):
             findings.append((name, label))
 
 
@@ -85,7 +102,16 @@ def scan_history(findings: list[tuple[str, str]]) -> None:
             data = git("cat-file", "blob", object_id)
         except (subprocess.CalledProcessError, ValueError):
             continue
-        scan_bytes(data, f"history:{object_id}:{path or '<path-unknown>'}", findings)
+        history_path = path or "<path-unknown>"
+        ignored_rules = SYNTHETIC_FIXTURE_HISTORY_ALLOWLIST.get(
+            (object_id, history_path), frozenset()
+        )
+        scan_bytes(
+            data,
+            f"history:{object_id}:{history_path}",
+            findings,
+            ignored_rules=ignored_rules,
+        )
 
 
 def main() -> int:
