@@ -30,3 +30,10 @@ Alcance: ADMIN EMPRESARIAL, crear y editar usuarios sin aceptar roles privados d
 - Los cambios de rol por empresa corresponden a `PUT /usuarios/{id}/empresas/{empresaId}/rol`. No se introducen migraciones, bypass global, modificaciones JWT ni lecturas comerciales de B.
 - Regresiones EF InMemory: identidad solo A permitida, identidad A+B rechazada (incluida B inactiva), sin membresia A rechazada; prueba de servicio verifica que una identidad compartida no llega a `Update` o `SaveChangesAsync`; prueba de controlador asegura que no llama al metodo global directamente.
 - Limites: InMemory no equivale a MySQL ni acredita atomicidad frente a inserciones concurrentes de membresia. Se mantiene DRAFT, y el check transversal issue #3805 sigue bloqueando cierre hasta remediacion protegida y CI completo.
+
+## Operaciones globales adicionales protegidas
+
+- Los endpoints de estado, bloqueo, desbloqueo y eliminacion logica de Usuario ahora exigen `ExigirIdentidadExclusivaDeEmpresaAsync` desde la misma empresa autenticada/autorizada antes de invocar los metodos globales del servicio. El controlador no transforma la mutacion global en una operacion de membresia.
+- La verificacion reutiliza `EsIdentidadExclusivaDeEmpresaAsync` (cuenta las membresias A+B, incluso inactivas) y rechaza la identidad compartida sin emitir datos de la otra empresa.
+- Cuatro pruebas negativas dirigidas verifican que el controlador no llama a las operaciones globales cuando el gate rechaza.
+- Limitacion deliberada: lectura/mutacion no son atomicamente serializables con el alta concurrente de otra membresia. No declarar proteccion TOCTOU, MySQL/HTTP ni LISTO sin evidencia posterior; mantener PR DRAFT y CI completo.
