@@ -8,6 +8,12 @@
 ---
 
 
+## 2026-10-31 — P1-001.B: secret-scan false positive in synthetic fixtures
+
+- The Priority 3 scanner matched the deliberate GitHub-token and private-key inputs in P0-008.B's negative-test source, including its immutable historical blob. The current test now assembles those synthetic values at runtime.
+- History scanning retains all rules except for the exact verified historical fixture blob `a60e4fb318dae3aad89f502776be01a5f3b8ca85`, where only the `github-token` and `private-key` fixture matches are ignored. All other paths, blobs, rules, and exported Actions data remain scanned.
+- No credential values were exposed or added; no provider, database, QA, main, or PROD access was performed.
+
 ## 2026-10-30 — P0-008.B: negativos de fuga de secretos en inventario DEV (propuesta)
 
 - Scope comercial P0-008.B fila 17, dependencias P0-008.A/P0-012.B LISTO. Segundo scope de PRIMARY_DEV_01 solo después de P0-004.B VALIDANDO sin edición.
@@ -4683,3 +4689,12 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Se mantienen sin cambios los seis IDs físicos observados, cinco IDs con autorización comercial, la exclusión de Alex :30 y el WIP máximo de seis scopes, más controles de revisión, CI y merge protegido.
 - El validador ahora contrasta inventarios registrados entre autoridades y permite expansión futura consistente, rechazando IDs duplicados/desconocidos y diferencias de conteo; no concede permisos ni crea Tasks.
 - No se modifican Sheets, Tasks, horarios, backend, frontend, datos, proveedores, QA, main ni PROD en esta enmienda de código.
+
+
+## 2026-10-30 — P1-001.B: negativos de asignacion de rol cruzado (candidato)
+
+- Task Javier PRIMARY_DEV_02, ID `6adc2e4bd8a48191ac7d8641ed95a1a3`, GitHub `jmejia31`: seleccion dinamica P1-001.B tras no existir P0 disponible; dependencia P1-001.A LISTO. Claim GitHub atomico de `work/solqaryn-p1-001-b` desde `dev@0cec1a3b06793c95dceb3f316c1ae4cb22951f76` con readback exclusivo.
+- `P1001BRoleAssignmentCertificationTests`: cinco negativas de roles ajenos/plataforma/huérfano/inactivo/eliminado para alta y actualizacion de membresía, verificando ausencia de escritura y conservación del RolId original; positiva de alta y cambio con rol empresarial propio. Es prueba del servicio con repositorios simulados, NO test autenticado real de Render/Aiven.
+- Acta `docs/P1-001-B-CERTIFICACION-ROL-ENTRE-TENANTS-DEV.md`. Sin mutaciones del ERP, MySQL, frontend, API, secretos, QA/main/PROD. Estado candidato sujeto a CI exact SHA, revisión independiente, merge protegido y readback; LISTO NO acreditado.
+
+- CI_PROVENIENCIA_DIRECT_HEAD_P1001B: check-runs 3/3 vinculados inicialmente al PR SHA `fc1322d` ejecutaban fisicamente el merge sintetico `c06f52b`, no checkout directo. Se añade workflow dirigido `.github/workflows/p1-001-b-role-isolation.yml` con checkout explícito `github.event.pull_request.head.sha || github.sha`, para verificar en el SHA final el test xUnit de seis casos sin datos reales. La evidencia de HEAD directo requiere log autenticado; no confundir el status asociado con el commit ejecutado. Estado VALIDANDO condicionado por ese gate.
