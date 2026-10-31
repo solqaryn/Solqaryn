@@ -71,6 +71,53 @@ public sealed class SolicitudContextoSoporteTests
                 9, 101, motivo, 10, new RelojFijo(Fecha)));
     }
 
+    [Theory]
+    [InlineData(-1, false)]
+    [InlineData(0, true)]
+    [InlineData(9, true)]
+    [InlineData(10, false)]
+    [InlineData(11, false)]
+    public void Ventana_solicitada_usa_limite_superior_exclusivo(int minuto, bool esperado)
+    {
+        var solicitud = SolicitudContextoSoporte.CrearDesdeRelojServidor(
+            9, 101, Motivo, 10, new RelojFijo(Fecha));
+
+        Assert.Equal(esperado,
+            solicitud.EstaDentroDeVentanaSolicitada(
+                new RelojFijo(Fecha.AddMinutes(minuto))));
+    }
+
+    [Fact]
+    public void Ultimo_tick_anterior_a_expiracion_pertenece_a_ventana()
+    {
+        var solicitud = SolicitudContextoSoporte.CrearDesdeRelojServidor(
+            9, 101, Motivo, 10, new RelojFijo(Fecha));
+
+        Assert.True(solicitud.EstaDentroDeVentanaSolicitada(
+            new RelojFijo(Fecha.AddMinutes(10).AddTicks(-1))));
+    }
+
+    [Fact]
+    public void Ventana_temporal_rechaza_reloj_nulo()
+    {
+        var solicitud = SolicitudContextoSoporte.CrearDesdeRelojServidor(
+            9, 101, Motivo, 10, new RelojFijo(Fecha));
+
+        Assert.Throws<ArgumentNullException>(() =>
+            solicitud.EstaDentroDeVentanaSolicitada(null!));
+    }
+
+    [Fact]
+    public void Ventana_normaliza_offset_suministrado_por_reloj_del_servidor()
+    {
+        var solicitud = SolicitudContextoSoporte.CrearDesdeRelojServidor(
+            9, 101, Motivo, 10, new RelojFijo(Fecha));
+        var local = new DateTimeOffset(2026, 10, 30, 17, 5, 0,
+            TimeSpan.FromHours(-6));
+
+        Assert.True(solicitud.EstaDentroDeVentanaSolicitada(new RelojFijo(local)));
+    }
+
     [Fact]
     public void Rechaza_reloj_nulo()
     {
