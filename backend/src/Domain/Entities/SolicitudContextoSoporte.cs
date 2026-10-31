@@ -1,0 +1,119 @@
+using System;
+using System.Globalization;
+
+namespace Solqaryn.Domain.Entities;
+
+/// <summary>
+/// Intención de solicitar asistencia temporal sobre una empresa.
+/// No concede autoridad, no cambia el tenant activo y NO sustituye
+/// la validación de rol de plataforma, permisos, membresía y auditoría persistida.
+/// El reloj proviene del servidor, nunca del cliente.
+/// </summary>
+public sealed class SolicitudContextoSoporte
+{
+    public const int DuracionMaximaMinutos = 15;
+    public const int JustificacionMinimaCaracteres = 20;
+    public const int JustificacionMaximaCaracteres = 500;
+
+    /// <summary>
+    /// El servidor calcula ambos instantes a partir de un reloj confiable.
+    /// El solicitante no puede inyectar inicio ni expiración por separado.
+    /// Esta fábrica NO autoriza una sesión de soporte.
+    /// </summary>
+    public static SolicitudContextoSoporte CrearDesdeRelojServidor(
+        int usuarioPlataformaId,
+        int empresaDestinoId,
+        string justificacion,
+        int duracionMinutos,
+        TimeProvider relojServidor)
+    {
+        ArgumentNullException.ThrowIfNull(relojServidor);
+        if (duracionMinutos <= 0 || duracionMinutos > DuracionMaximaMinutos)
+            throw new ArgumentOutOfRangeException(nameof(duracionMinutos));
+
+        var inicioUtc = relojServidor.GetUtcNow().ToUniversalTime();
+        return new SolicitudContextoSoporte(
+            usuarioPlataformaId,
+            empresaDestinoId,
+            justificacion,
+            inicioUtc,
+            inicioUtc.AddMinutes(duracionMinutos));
+    }
+
+    private SolicitudContextoSoporte(
+        int usuarioPlataformaId,
+        int empresaDestinoId,
+        string justificacion,
+        DateTimeOffset inicioUtc,
+        DateTimeOffset expiracionUtc)
+    {
+        if (usuarioPlataformaId <= 0)
+            throw new ArgumentOutOfRangeException(nameof(usuarioPlataformaId));
+        if (empresaDestinoId <= 0)
+            throw new ArgumentOutOfRangeException(nameof(empresaDestinoId));
+
+        if (inicioUtc.Offset != TimeSpan.Zero)
+            throw new ArgumentException("La hora de inicio debe ser UTC.", nameof(inicioUtc));
+        if (expiracionUtc.Offset != TimeSpan.Zero)
+            throw new ArgumentException("La expiración debe ser UTC.", nameof(expiracionUtc));
+        if (expiracionUtc <= inicioUtc ||
+            expiracionUtc > inicioUtc.AddMinutes(DuracionMaximaMinutos))
+            throw new ArgumentOutOfRangeException(nameof(expiracionUtc));
+
+        var motivo = justificacion?.Trim();
+        if (string.IsNullOrEmpty(motivo) ||
+            motivo.Length < JustificacionMinimaCaracteres ||
+            motivo.Length > JustificacionMaximaCaracteres ||
+            motivo.Any(static caracter =>
+                char.IsControl(caracter) ||
+                CharUnicodeInfo.GetUnicodeCategory(caracter) is
+                    UnicodeCategory.Format or UnicodeCategory.LineSeparator or
+                    UnicodeCategory.ParagraphSeparator))
+            throw new ArgumentException("Se requiere una justificación válida, acotada y sin caracteres de control.", nameof(justificacion));
+
+        // Correlacion propia generada exclusivamente por el servidor. No es un token de acceso.
+        SolicitudId = Guid.NewGuid();
+        UsuarioPlataformaId = usuarioPlataformaId;
+        EmpresaDestinoId = empresaDestinoId;
+        Justificacion = motivo;
+        InicioUtc = inicioUtc;
+        ExpiracionUtc = expiracionUtc;
+    }
+
+    /// <summary>
+    /// Comprueba solo la ventana solicitada usando el reloj del servidor.
+    /// NO acredita autorización RBAC, auditoría, tenant ni ausencia de revocación.
+    /// La expiración es exclusiva; después del límite se rechaza.
+    /// </summary>
+    public bool EstaDentroDeVentanaSolicitada(TimeProvider relojServidor)
+    {
+        ArgumentNullException.ThrowIfNull(relojServidor);
+        var ahoraUtc = relojServidor.GetUtcNow().ToUniversalTime();
+        return ahoraUtc >= InicioUtc && ahoraUtc < ExpiracionUtc;
+    }
+
+    /// <summary>
+    /// Identificador opaco para correlacionar una futura auditoria duradera.
+    /// No concede permisos ni garantiza persistencia o revocacion.
+    /// </summary>
+    /// <summary>
+    /// Vincula la solicitud original con el actor y empresa de destino indicados.
+    /// La coincidencia NO concede permiso, no acredita RBAC ni auditoria y
+    /// nunca sustituye la revalidacion del tenant en el backend.
+    /// </summary>
+    public bool CorrespondeAActorYEmpresaSolicitados(int usuarioPlataformaId, int empresaDestinoId)
+    {
+        return usuarioPlataformaId > 0 &&
+               empresaDestinoId > 0 &&
+               UsuarioPlataformaId == usuarioPlataformaId &&
+               EmpresaDestinoId == empresaDestinoId;
+    }
+
+    public Guid SolicitudId { get; }
+
+    public int UsuarioPlataformaId { get; }
+    public int EmpresaDestinoId { get; }
+    public string Justificacion { get; }
+    public DateTimeOffset InicioUtc { get; }
+    public DateTimeOffset ExpiracionUtc { get; }
+}

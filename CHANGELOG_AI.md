@@ -22,6 +22,12 @@
 - Pendiente CI exact SHA, aprobación formal de identidad distinta, merge protegido dev y readback institucional. No se modifican datos o runtime; rollback por revert del PR.
 
 
+## 2026-10-31 — P1-003.A: correlación independiente de solicitudes de soporte (DEV, WIP)
+
+- Se introduce `SolicitudId` generado en el backend con `Guid.NewGuid()` al validar una intención de soporte; la fábrica no recibe un identificador del cliente. Dos solicitudes del mismo actor/empresa/reloj tienen IDs distintos, con nuevo test xUnit dirigido.
+- Es exclusivamente correlación futura, NO un permiso, token de soporte, sesión, grant, persistencia, auditoría realizada ni revocación efectiva. Los gates RBAC/tenant/auditoría y el escáner Priority3 de issue #3805 siguen pendientes. Sin endpoints, cambios de esquema, infraestructura, QA/main/PROD ni datos comerciales.
+- PR #3806 sigue DRAFT/EN_PROGRESO hasta CI exact-SHA y revisión independiente; rollback por PR protegido que revierta este changeset sin modificar datos.
+
 ## 2026-10-30 — P0-008.B: negativos de fuga de secretos en inventario DEV (propuesta)
 
 - Scope comercial P0-008.B fila 17, dependencias P0-008.A/P0-012.B LISTO. Segundo scope de PRIMARY_DEV_01 solo después de P0-004.B VALIDANDO sin edición.
@@ -4697,6 +4703,8 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Se mantienen sin cambios los seis IDs físicos observados, cinco IDs con autorización comercial, la exclusión de Alex :30 y el WIP máximo de seis scopes, más controles de revisión, CI y merge protegido.
 - El validador ahora contrasta inventarios registrados entre autoridades y permite expansión futura consistente, rechazando IDs duplicados/desconocidos y diferencias de conteo; no concede permisos ni crea Tasks.
 - No se modifican Sheets, Tasks, horarios, backend, frontend, datos, proveedores, QA, main ni PROD en esta enmienda de código.
+
+- 2026-10-31 P1-003.A: se agrega comparacion inerte del actor y empresa destino solicitados (`CorrespondeAActorYEmpresaSolicitados`) con ocho variantes xUnit y una regresion de expiracion; evita confundir una solicitud original con identidades cruzadas. Sigue sin permisos, JWT, endpoint, persistencia, auditoria durable o revocacion. Requiere CI del SHA nuevo y no se declara VALIDANDO/LISTO; el gate transversal Priority3 #3805 continua independiente.
 
 
 ## 2026-10-30 — P1-001.B: negativos de asignacion de rol cruzado (candidato)
