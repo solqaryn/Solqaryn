@@ -1,0 +1,77 @@
+name: SOLQARYN - Prueba comercial dirigida
+
+on:
+  pull_request:
+    branches: [dev]
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft, edited]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: solqaryn-directed-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}
+  cancel-in-progress: true
+
+jobs:
+  directed:
+    name: SOLQARYN - Directed ${{ github.event.pull_request.title }}
+    if: ${{ !github.event.pull_request.draft && startsWith(github.event.pull_request.head.ref, 'work/solqaryn-') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      PR_TITLE: ${{ github.event.pull_request.title }}
+      EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Verify immutable PR commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          echo "DIRECTED_SHA=$EXPECTED_HEAD"
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Restore backend solution
+        working-directory: backend
+        run: dotnet restore Solqaryn.sln
+      - name: Run scope-matched xUnit tests and reject zero matches
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          filter="$(python3 - <<'PY'
+          import os,re,sys
+          title=os.environ['PR_TITLE']
+          match=re.search(r'\b(P\d+-\d{3}\.[A-Z])\b',title,re.I)
+          if not match:
+              sys.exit('DIRECTED_NO_VALID_COMMERCIAL_SCOPE')
+          scope=match.group(1).upper()
+          print(scope.replace('-','').replace('.',''))
+          PY
+          )"
+          mkdir -p "$RUNNER_TEMP/solqaryn-directed"
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj \
+            --configuration Release --no-restore \
+            --filter "FullyQualifiedName~$filter" \
+            --logger "trx;LogFileName=scope.trx" \
+            --results-directory "$RUNNER_TEMP/solqaryn-directed"
+          python3 - <<'PY'
+          import os,sys,xml.etree.ElementTree as ET
+          path=os.path.join(os.environ['RUNNER_TEMP'],'solqaryn-directed','scope.trx')
+          root=ET.parse(path).getroot()
+          counts=root.find('.//{*}Counters')
+          if counts is None:
+              sys.exit('DIRECTED_TRX_COUNTERS_UNAVAILABLE')
+          total=int(counts.get('total','0'))
+          passed=int(counts.get('passed','0'))
+          failed=int(counts.get('failed','0'))
+          errors=int(counts.get('error','0'))
+          aborted=int(counts.get('aborted','0'))
+          if total<1 or passed<1 or failed or errors or aborted:
+              sys.exit('DIRECTED_SCOPE_NO_GO total=%d passed=%d failed=%d error=%d aborted=%d'%(total,passed,failed,errors,aborted))
+          print('DIRECTED_SCOPE_PASS total=%d passed=%d exact_head=%s'%(total,passed,os.environ['EXPECTED_HEAD']))
+          PY
