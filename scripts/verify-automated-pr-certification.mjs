@@ -50,7 +50,7 @@ export function certify({ pr, files, runs, reviews = [], commits = [], repositor
   const applicable = [...byName.values()].filter(x => x.name !== 'verify-solqaryn-project-scope');
   const incomplete = applicable.filter(x => x.status !== 'completed');
   if (incomplete.length) fail('OTHER_CHECKS_PENDING:' + incomplete.map(x => x.name).join(','));
-  const bad = applicable.filter(x => !['success', 'skipped'].includes(x.conclusion));
+  const bad = applicable.filter(x => x.status === 'completed' && !['success', 'skipped'].includes(x.conclusion));
   if (bad.length) fail('CHECK_FAILED:' + bad.map(x => x.name).join(','));
   if (scope && !applicable.some(x => x.name === 'SOLQARYN - Directed ' + pr.title && x.status === 'completed' && x.conclusion === 'success')) fail('SCOPE_DIRECTED_TEST_MISSING:' + scope);
   const changesGuarded = names.some(isGuarded);
@@ -86,6 +86,10 @@ function selfTest() {
   assertReject('platform cannot claim commercial scope', x => { x.pr.user.login = 'solqaryn-platform'; return x; });
   assertReject('missing targeted test', x => ({...x, runs: x.runs.slice(0, 2)}));
   assertReject('pending check', x => { x.runs[2].status = 'in_progress'; x.runs[2].conclusion = null; return x; });
+  const pending = clone(fixture); pending.runs[2].status = 'in_progress'; pending.runs[2].conclusion = null;
+  const pendingResult = certify(pending);
+  if (!pendingResult.failures.some(x => x.startsWith('OTHER_CHECKS_PENDING:')) || pendingResult.failures.some(x => x.startsWith('CHECK_FAILED:')))
+    throw Error('PENDING_CHECK_MUST_NOT_BE_TREATED_AS_FAILED');
   assertReject('non deterministic branch', x => { x.pr.head.ref = 'feature/random'; return x; });
   assertReject('production config', x => { x.files.push({filename:'backend/appsettings.Production.json'}); return x; });
   assertReject('secret in production source', x => { x.files.push({filename:'backend/src/API/Secrets.cs',patch:'@@ -0,0 +1 @@\n+private string password = "aVeryLongPassword1234";'}); return x; });
