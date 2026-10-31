@@ -16,6 +16,29 @@
 - Nueva prueba dirigida P1005ATenantAdminUserRoleBoundaryTests: negativas B/plataforma/legacy/sin tenant, no escritura tras rechazo; positivas rol A y plantilla de sistema. Acta docs/P1-005-A-ADMIN-EMPRESARIAL-TENANT-DEV.md.
 - PR protegido, CI exact-SHA y revision/merge pendientes; no se declara LISTO. El gate transversal de secretos en issue #3805 permanece separado.
 
+## 2026-10-30 — Certificación automática de PR comerciales DEV (propuesta protegida)
+
+- El propietario ordenó sustituir aprobación humana recurrente por un gate CI técnico de SHA exacto; no se finge revisión `APPROVED`. El verificador `scripts/verify-automated-pr-certification.mjs` queda anclado a la versión confiable de `dev` y se ejecutará dentro del check requerido `verify-solqaryn-project-scope`, con tres checks obligatorios, pruebas dirigidas y fallos fail-closed.
+- Las modificaciones de gobierno, Skill, workflows requeridos, guardas CI y el bootstrap inicial conservan revisión formal independiente para no permitir que el autor invalide su propio control. Los PR comerciales rutinarios pueden continuar y fusionarse autónomamente si la nueva norma ya está fusionada, el check es SUCCESS y la identidad GitHub tiene permiso real.
+- Se preserva Scope Lock STRICT, la allowlist 5/6 (Alex :30 excluida), WIP 6/2/1, `dev` protegido, aislamiento multiempresa, rollback protegido, evidencia GitHub y readback de Sheets. No se tocan Aiven, secretos, QA/main/PROD ni despliegues. Si no se puede verificar un control, se rechaza ese PR y continúa trabajo distinto permitido.
+- La activación no se declara antes de merge y ejecución comprobada del gate sobre un PR posterior; la Skill instalada lee la autoridad del HEAD y no debe ser editada únicamente para simular el nuevo modo.
+
+---
+
+
+## 2026-10-31 — P1-001.B: secret-scan false positive in synthetic fixtures
+
+- The Priority 3 scanner matched the deliberate GitHub-token and private-key inputs in P0-008.B's negative-test source, including its immutable historical blob. The current test now assembles those synthetic values at runtime.
+- History scanning retains all rules except for the exact verified historical fixture blob `a60e4fb318dae3aad89f502776be01a5f3b8ca85`, where only the `github-token` and `private-key` fixture matches are ignored. All other paths, blobs, rules, and exported Actions data remain scanned.
+- No credential values were exposed or added; no provider, database, QA, main, or PROD access was performed.
+
+## 2026-10-30 — P0-010.B: test negativo contra inferencia de defectos por Issues vacíos (propuesta)
+
+- Scope P0-010.B fila 21 elegible tras P0-008.B VALIDANDO y P0-004.B LISTO; DEV protegido, sin otras Task editoras.
+- Snapshot fechado docs/baselines/P0-010-B-DEV-20261030.json: COLA P0/P1 y GitHub Issues (#3730 coordinación, no defecto reproducido). No declara ausencia de bugs o paridad viva.
+- Test scripts/verify-p0-010-b-issue-inference.mjs + workflow negativo: caso positivo y 12 alteraciones sintéticas rechazadas de informes falsamente limpios, conteos e incidencias no verificadas.
+- Pendiente CI exact SHA, aprobación formal de identidad distinta, merge protegido dev y readback institucional. No se modifican datos o runtime; rollback por revert del PR.
+
 
 ## 2026-10-30 — P0-008.B: negativos de fuga de secretos en inventario DEV (propuesta)
 
@@ -4692,3 +4715,12 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Se mantienen sin cambios los seis IDs físicos observados, cinco IDs con autorización comercial, la exclusión de Alex :30 y el WIP máximo de seis scopes, más controles de revisión, CI y merge protegido.
 - El validador ahora contrasta inventarios registrados entre autoridades y permite expansión futura consistente, rechazando IDs duplicados/desconocidos y diferencias de conteo; no concede permisos ni crea Tasks.
 - No se modifican Sheets, Tasks, horarios, backend, frontend, datos, proveedores, QA, main ni PROD en esta enmienda de código.
+
+
+## 2026-10-30 — P1-001.B: negativos de asignacion de rol cruzado (candidato)
+
+- Task Javier PRIMARY_DEV_02, ID `6adc2e4bd8a48191ac7d8641ed95a1a3`, GitHub `jmejia31`: seleccion dinamica P1-001.B tras no existir P0 disponible; dependencia P1-001.A LISTO. Claim GitHub atomico de `work/solqaryn-p1-001-b` desde `dev@0cec1a3b06793c95dceb3f316c1ae4cb22951f76` con readback exclusivo.
+- `P1001BRoleAssignmentCertificationTests`: cinco negativas de roles ajenos/plataforma/huérfano/inactivo/eliminado para alta y actualizacion de membresía, verificando ausencia de escritura y conservación del RolId original; positiva de alta y cambio con rol empresarial propio. Es prueba del servicio con repositorios simulados, NO test autenticado real de Render/Aiven.
+- Acta `docs/P1-001-B-CERTIFICACION-ROL-ENTRE-TENANTS-DEV.md`. Sin mutaciones del ERP, MySQL, frontend, API, secretos, QA/main/PROD. Estado candidato sujeto a CI exact SHA, revisión independiente, merge protegido y readback; LISTO NO acreditado.
+
+- CI_PROVENIENCIA_DIRECT_HEAD_P1001B: check-runs 3/3 vinculados inicialmente al PR SHA `fc1322d` ejecutaban fisicamente el merge sintetico `c06f52b`, no checkout directo. Se añade workflow dirigido `.github/workflows/p1-001-b-role-isolation.yml` con checkout explícito `github.event.pull_request.head.sha || github.sha`, para verificar en el SHA final el test xUnit de seis casos sin datos reales. La evidencia de HEAD directo requiere log autenticado; no confundir el status asociado con el commit ejecutado. Estado VALIDANDO condicionado por ese gate.
