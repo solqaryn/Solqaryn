@@ -68,6 +68,48 @@ public sealed class P1004APlataformaDelegacionNegativasTests
             ModuloSistema.Configuracion, AccionPermiso.Ver));
     }
 
+    [Fact]
+    public async Task Deniega_si_la_asignacion_se_revoca_despues_del_scope()
+    {
+        var fixture = await CrearAsync();
+        await using var db = fixture.Db;
+
+        fixture.Scope.Setup(x => x.ObtenerActualAsync(It.IsAny<CancellationToken>()))
+            .Returns((CancellationToken _) =>
+            {
+                var asignacion = db.Set<UsuarioRolPlataforma>().Single();
+                asignacion.Desactivar();
+                db.SaveChanges();
+                return Task.FromResult<UsuarioPlataformaScopeActual?>(
+                    new UsuarioPlataformaScopeActual(
+                        7, fixture.Rol.Id, "delegado", fixture.Rol.Nombre));
+            });
+
+        Assert.False(await fixture.Service.TienePermisoDelegadoAsync(
+            ModuloSistema.Configuracion, AccionPermiso.Ver));
+    }
+
+    [Fact]
+    public async Task Deniega_si_usuario_se_bloquea_despues_del_scope()
+    {
+        var fixture = await CrearAsync();
+        await using var db = fixture.Db;
+
+        fixture.Scope.Setup(x => x.ObtenerActualAsync(It.IsAny<CancellationToken>()))
+            .Returns((CancellationToken _) =>
+            {
+                var usuario = db.Usuarios.Single();
+                usuario.Bloqueado = true;
+                db.SaveChanges();
+                return Task.FromResult<UsuarioPlataformaScopeActual?>(
+                    new UsuarioPlataformaScopeActual(
+                        7, fixture.Rol.Id, "delegado", fixture.Rol.Nombre));
+            });
+
+        Assert.False(await fixture.Service.TienePermisoDelegadoAsync(
+            ModuloSistema.Configuracion, AccionPermiso.Ver));
+    }
+
     private sealed record Fixture(
         AppDbContext Db,
         Rol Rol,
@@ -112,6 +154,22 @@ public sealed class P1004APlataformaDelegacionNegativasTests
             RolId = rol.Id,
             PermisoId = permiso.Id
         });
+        await db.SaveChangesAsync();
+
+        var usuario = new Usuario
+        {
+            Id = 7,
+            NombreUsuario = "delegado",
+            NombreCompleto = "Delegado sintetico",
+            PasswordHash = "solo-fixture-no-credencial",
+            RolId = rol.Id,
+            Activo = true,
+            Bloqueado = false,
+            Eliminado = false
+        };
+        db.Usuarios.Add(usuario);
+        db.Set<UsuarioRolPlataforma>().Add(
+            new UsuarioRolPlataforma(usuario.Id, rol.Id));
         await db.SaveChangesAsync();
 
         var scope = new Mock<IPlataformaScopeService>();

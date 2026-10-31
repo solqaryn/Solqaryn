@@ -140,6 +140,22 @@ public sealed class P1004APlataformaDelegacionTests
             });
             await db.SaveChangesAsync();
 
+            var usuario = new Usuario
+            {
+                Id = 7,
+                NombreUsuario = "delegado",
+                NombreCompleto = "Delegado sintetico",
+                PasswordHash = "solo-fixture-no-credencial",
+                RolId = rol.Id,
+                Activo = true,
+                Bloqueado = false,
+                Eliminado = false
+            };
+            db.Usuarios.Add(usuario);
+            db.Set<UsuarioRolPlataforma>().Add(
+                new UsuarioRolPlataforma(usuario.Id, rol.Id));
+            await db.SaveChangesAsync();
+
             var scope = new Mock<IPlataformaScopeService>();
             scope.Setup(x => x.ObtenerActualAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new UsuarioPlataformaScopeActual(7, rol.Id, "delegado", rol.Nombre));
