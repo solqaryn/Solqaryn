@@ -39,19 +39,21 @@ jobs:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           set -euo pipefail
+          live_base="$(git ls-remote --exit-code origin refs/heads/dev | awk '{print $1}')"
+          if test -z "$live_base" || test "$PR_BASE_SHA" != "$live_base"; then
+            echo "::error::AUTO_CERT=NO_GO BASE_DEV_STALE; update this PR from the current dev without force push"
+            echo "PR_BASE_SHA=$PR_BASE_SHA DEV_HEAD=$live_base"
+            exit 1
+          fi
           git fetch --no-tags --depth=1 origin "$PR_BASE_SHA"
           trusted="$RUNNER_TEMP/verify-automated-pr-certification.mjs"
-          if git cat-file -e "$PR_BASE_SHA:scripts/verify-automated-pr-certification.mjs" 2>/dev/null; then
-            git show "$PR_BASE_SHA:scripts/verify-automated-pr-certification.mjs" > "$trusted"
-            node "$trusted" --self-test
-            node "$trusted" --pr
-          else
-            # Bootstrap is never presented as an independent CI certification.
-            # Existing governance still requires a real independent review for this PR.
-            node scripts/verify-automated-pr-certification.mjs --self-test
-            echo "AUTO_CERT_BOOTSTRAP=NO_TRUSTED_BASE_VERIFIER"
-            echo "BOOTSTRAP_REQUIRES_REAL_INDEPENDENT_REVIEW_BEFORE_MERGE"
+          if ! git cat-file -e "$PR_BASE_SHA:scripts/verify-automated-pr-certification.mjs" 2>/dev/null; then
+            echo "::error::AUTO_CERT=NO_GO TRUSTED_BASE_VERIFIER_MISSING"
+            exit 1
           fi
+          git show "$PR_BASE_SHA:scripts/verify-automated-pr-certification.mjs" > "$trusted"
+          node "$trusted" --self-test
+          node "$trusted" --pr
 
   verify-p0-007-a-component-catalog:
     name: P0-007.A - Catalogo Angular exact-HEAD (solo lectura)
