@@ -8,6 +8,8 @@ Se incorpora un objeto de dominio inerte `SolicitudContextoSoporte` con invarian
 
 **Endurecimiento adicional:** la fábrica pública `CrearDesdeRelojServidor` recibe un `TimeProvider` del backend y calcula internamente inicio y vencimiento; el constructor con timestamps arbitrarios es privado. La normalización a UTC y la duración máxima se verifican con reloj determinista en pruebas. El request HTTP futuro no debe aceptar timestamps libres ni un `TimeProvider` controlado por el cliente.
 
+**Endurecimiento temporal y de auditoría de la solicitud (30-10-2026):** se añade `EstaDentroDeVentanaSolicitada(TimeProvider)`, con instante inicial inclusivo y expiración exclusiva, normalización UTC y rechazo de reloj nulo. Esta comprobación cubre exclusivamente el intervalo solicitado; **NO es una concesión de permisos ni una sesión válida**. La justificación rechaza caracteres invisibles `UnicodeCategory.Format` (incluidos zero-width y controles de dirección bidi) además de caracteres de control ordinarios para reducir el riesgo de ocultamiento en auditoría. Las pruebas ejercitan bordes, último tick antes de expiración y offsets.
+
 **Este objeto NO crea una sesión, NO emite JWT, NO cambia tenant, NO comprueba roles y NO escribe auditoría.** No hay endpoint, persistencia, migración ni UI. El cambio no concede acceso comercial entre empresas y no debe presentarse como `P1-003.A=LISTO`.
 
 ## Fronteras y dependencias antes de implementar runtime
