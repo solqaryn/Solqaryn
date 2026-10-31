@@ -1,3 +1,5 @@
+## 2026-10-30 — P1-002.A: contrato de superadministracion sin acceso silencioso a tenants
+
 ## 2026-10-31 — Reparación limpia del gate de certificación automática
 
 - Se prepara una sustitución de #3809 porque su historial mezcló `jmejia31` y `solqaryn-platform`; ese PR no admite aprobación independiente de ninguna de esas cuentas.
