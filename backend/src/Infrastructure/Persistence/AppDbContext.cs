@@ -28,9 +28,22 @@ public class AppDbContext : DbContext
     // Mientras las rutas públicas/jobs no tengan un binding tenant certificado,
     // el gate HTTP P0 de segunda empresa sigue siendo obligatorio.
     public int? AuthorizedReadEmpresaId =>
-        VerifiedCommercialTenant.Resolve(_tenantHttpContextAccessor?.HttpContext)
+        VerifiedPlatformSupportTenant.ResolveEmpresaId(_tenantHttpContextAccessor?.HttpContext)
+        ?? VerifiedCommercialTenant.Resolve(_tenantHttpContextAccessor?.HttpContext)
         ?? VerifiedPublicStoreTenant.Resolve(_tenantHttpContextAccessor?.HttpContext)
         ?? VerifiedPublicInvoiceTenant.Resolve(_tenantHttpContextAccessor?.HttpContext);
+
+    public bool IsPlatformSupportReadRequest =>
+        _tenantHttpContextAccessor?.HttpContext is { } http &&
+        HttpMethods.IsGet(http.Request.Method) &&
+        VerifiedPlatformSupportTenant.Resolve(http) is not null;
+
+    private void EnsureSupportRequestIsReadOnly()
+    {
+        if (IsPlatformSupportReadRequest && ChangeTracker.HasChanges())
+            throw new ForbiddenAccessException(
+                "Una sesión temporal de soporte es estrictamente de solo lectura.");
+    }
 
     // Una capability pública de tienda o factura NO concede RBAC administrativo.
     public int? AuthorizedCommercialEmpresaId =>
@@ -131,6 +144,7 @@ public class AppDbContext : DbContext
 
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
+        EnsureSupportRequestIsReadOnly();
         var cambiaComercial = ChangeTracker.Entries()
             .Any(e => e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted &&
                       ((e.Entity is Producto or Cliente or Proveedor or Compra or Venta or
@@ -156,6 +170,7 @@ public class AppDbContext : DbContext
         bool acceptAllChangesOnSuccess,
         CancellationToken cancellationToken = default)
     {
+        EnsureSupportRequestIsReadOnly();
         var cacheSegments = DetectarInvalidacionesStorefront();
 
         // Solo el contexto RBAC verificado por backend autoriza escribir filas con dueño.

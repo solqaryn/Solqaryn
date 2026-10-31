@@ -70,15 +70,19 @@ builder.Services.AddSingleton<IPublicStoreHostTenantResolver, ConfiguredPublicSt
 // A shared MySQL unique key (not instance memory) prevents HMAC replay.
 builder.Services.AddScoped<IPublicStoreProofReplayStore, MySqlPublicStoreProofReplayStore>();
 builder.Services.AddSingleton<DbQueryTimingInterceptor>();
+builder.Services.AddSingleton<SupportReadOnlyCommandInterceptor>();
 builder.Services.AddDbContext<AppDbContext>((serviceProvider, options) =>
     options
         .UseMySQL(connectionString, mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
-        .AddInterceptors(serviceProvider.GetRequiredService<DbQueryTimingInterceptor>()));
+        .AddInterceptors(
+            serviceProvider.GetRequiredService<DbQueryTimingInterceptor>(),
+            serviceProvider.GetRequiredService<SupportReadOnlyCommandInterceptor>()));
 builder.Services.Configure<ObservabilityOptions>(builder.Configuration.GetSection("Observability"));
 builder.Services.AddSingleton<RequestObservability>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IUsuarioScopeService, UsuarioScopeService>();
 builder.Services.AddScoped<IPlataformaScopeService, PlataformaScopeService>();
+builder.Services.AddScoped<IPlataformaSoporteSessionService, PlataformaSoporteSessionService>();
 builder.Services.AddScoped<IMensajeOutboxRepository, MensajeOutboxRepository>();
 builder.Services.AddScoped<IMensajeOutboxService, MensajeOutboxService>();
 builder.Services.AddScoped<IEmpresaRepository, EmpresaRepository>();
@@ -298,6 +302,7 @@ app.Use(async (context, next) =>
     await next();
 });
 app.UseMiddleware<CorrelationIdMiddleware>();
+app.UseRouting();
 app.UseMiddleware<RequestObservabilityMiddleware>();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.Use(async (context, next) => { context.Response.Headers.TryAdd("X-Content-Type-Options", "nosniff"); context.Response.Headers.TryAdd("X-Frame-Options", "DENY"); context.Response.Headers.TryAdd("Referrer-Policy", "no-referrer"); context.Response.Headers.TryAdd("Permissions-Policy", "camera=(), microphone=(), geolocation=()"); await next(); });

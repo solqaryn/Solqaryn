@@ -14663,6 +14663,93 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         .HasDatabaseName("UX_Roles_NombreNormalizadoGlobalUnico");
                 });
 
+            modelBuilder.Entity("Solqaryn.Domain.Entities.PlataformaSesionSoporte", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreadaUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("EmpresaId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ExpiraUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .IsUnicode(false)
+                        .UseCollation("ascii_bin")
+                        .HasColumnType("char(64)");
+
+                    b.Property<string>("Motivo")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<int>("Modulo")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OperadorUsuarioId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("RevocadaUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int?>("RevocadaPorUsuarioId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Version")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1)
+                        .IsConcurrencyToken();
+
+                    b.HasKey("Id")
+                        .HasName("PK_PlataformaSesionesSoporte");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique()
+                        .HasDatabaseName("UX_PlataformaSesionesSoporte_TokenHash");
+
+                    b.HasIndex("EmpresaId", "ExpiraUtc", "RevocadaUtc")
+                        .HasDatabaseName("IX_PlataformaSesionesSoporte_Empresa_Vigencia");
+
+                    b.HasIndex("OperadorUsuarioId", "CreadaUtc")
+                        .HasDatabaseName("IX_PlataformaSesionesSoporte_Operador_Creada");
+
+                    b.ToTable("PlataformaSesionesSoporte", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_PlataformaSesionesSoporte_Modulo", "`Modulo` IN (2,3)");
+                            t.HasCheckConstraint("CK_PlataformaSesionesSoporte_Motivo", "CHAR_LENGTH(TRIM(`Motivo`)) BETWEEN 10 AND 500");
+                            t.HasCheckConstraint("CK_PlataformaSesionesSoporte_Vigencia", "`ExpiraUtc` > `CreadaUtc`");
+                            t.HasCheckConstraint("CK_PlataformaSesionesSoporte_Revocacion", "(`RevocadaUtc` IS NULL AND `RevocadaPorUsuarioId` IS NULL) OR (`RevocadaUtc` IS NOT NULL AND `RevocadaPorUsuarioId` IS NOT NULL)");
+                        });
+
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_PlataformaSesionesSoporte_Empresas_Empresa");
+
+                    b.HasOne("Solqaryn.Domain.Entities.Usuario", null)
+                        .WithMany()
+                        .HasForeignKey("OperadorUsuarioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_PlataformaSesionesSoporte_Usuarios_Operador");
+
+                    b.HasOne("Solqaryn.Domain.Entities.Usuario", null)
+                        .WithMany()
+                        .HasForeignKey("RevocadaPorUsuarioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_PlataformaSesionesSoporte_Usuarios_Revocador");
+                });
+
 #pragma warning restore 612, 618
         }
     }

@@ -154,10 +154,17 @@ internal static class Phase7MySqlTestDatabase
             """);
         await db.Database.CloseConnectionAsync();
 
-        // Normalmente aplicar las migraciones aún pendientes. La prueba de
-        // backfill puede preparar primero roles históricos en una DB efímera.
+        // El bootstrap EnsureCreated contiene el modelo actual. Aplicar primero
+        // todas las migraciones previas a P1-003.A y luego dejar que la migración
+        // nueva cree su tabla real; no se adopta una tabla creada por EnsureCreated.
         if (applyPendingOracleMigrations)
         {
+            // EnsureCreated ya materializó el modelo final, incluida la tabla
+            // de sesiones de soporte. Retirarla solo en la DB efímera para que
+            // la migración pendiente la cree y certifique su DDL real.
+            await db.Database.ExecuteSqlRawAsync(
+                "DROP TABLE IF EXISTS PlataformaSesionesSoporte;");
+            await db.Database.MigrateAsync("20261029150000_EnforceTenantRoleNameUniqueIndex");
             await db.Database.MigrateAsync();
             if ((await db.Database.GetPendingMigrationsAsync()).Any())
                 throw new InvalidOperationException("Phase 7 test bootstrap left pending Oracle migrations.");
