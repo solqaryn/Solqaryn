@@ -1,3 +1,8 @@
+## 2026-10-31 — Corrección de identidad del check dirigido
+
+- El workflow de pruebas comerciales publica un nombre estático y el verificador confiable exige exactamente `SOLQARYN - Directed commercial scope` para certificar xUnit del scope del PR.
+- Se añade un negativo que rechaza el nombre literal de expresión GitHub sin interpolar; no cambia los criterios de permisos ni omite checks.
+
 ## 2026-10-30 — Certificación automática de PR comerciales DEV (propuesta protegida)
 
 ## 2026-10-31 — CI autonoma DEV: reparacion fail-closed (propuesta)

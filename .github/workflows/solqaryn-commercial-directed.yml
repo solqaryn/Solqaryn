@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   directed:
-    name: SOLQARYN - Directed ${{ github.event.pull_request.title }}
+    name: SOLQARYN - Directed commercial scope
     if: ${{ !github.event.pull_request.draft && startsWith(github.event.pull_request.head.ref, 'work/solqaryn-') }}
     runs-on: ubuntu-latest
     timeout-minutes: 35

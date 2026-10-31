@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 // Trusted verifier: on later PRs the required Scope Lock check executes this file
 // from the target DEV base, not from the untrusted pull-request head.
 const REQUIRED = ['SOLQARYN - Seguridad multiempresa', 'SOLQARYN - Build y pruebas backend'];
+const DIRECTED_CHECK = 'SOLQARYN - Directed commercial scope';
 const SCOPE = /\b(P\d+-\d{3}\.[A-Z])\b/i;
 const BLOCKED_RUNTIME_PATHS = /(^|\/)(?:\.env(?:\..*)?|[^/]+\.(?:pem|p12|key)|appsettings\.Production\.json)$|^(?:qa|prod|main)\//i;
 const GUARDED = new Set([
@@ -52,7 +53,7 @@ export function certify({ pr, files, runs, reviews = [], commits = [], repositor
   if (incomplete.length) fail('OTHER_CHECKS_PENDING:' + incomplete.map(x => x.name).join(','));
   const bad = applicable.filter(x => x.status === 'completed' && !['success', 'skipped'].includes(x.conclusion));
   if (bad.length) fail('CHECK_FAILED:' + bad.map(x => x.name).join(','));
-  if (scope && !applicable.some(x => x.name === 'SOLQARYN - Directed ' + pr.title && x.status === 'completed' && x.conclusion === 'success')) fail('SCOPE_DIRECTED_TEST_MISSING:' + scope);
+  if (scope && !applicable.some(x => x.name === DIRECTED_CHECK && x.status === 'completed' && x.conclusion === 'success')) fail('SCOPE_DIRECTED_TEST_MISSING:' + scope);
   const changesGuarded = names.some(isGuarded);
   if (changesGuarded) {
     const contributorLogins = new Set([pr?.user?.login]);
@@ -71,7 +72,7 @@ function selfTest() {
   const pr = { state: 'open', draft: false, title: 'test(P0-010.B): validacion negativa', body: 'P0-010.B evidencia', user: { login: ['jmejia','31'].join('') },
     base: { ref: 'dev', repo: { full_name: 'solqaryn/Solqaryn' } }, head: { ref: 'work/solqaryn-p0-010-b', sha: h, repo: { full_name: 'solqaryn/Solqaryn' } } };
   const files = [{ filename: 'CHANGELOG_AI.md', patch: '+change' }, { filename: 'scripts/verify-p0-010-b.mjs', patch: '+test' }];
-  const runs = [...REQUIRED.map(n => makeRun(n, h)), makeRun('SOLQARYN - Directed ' + pr.title, h)];
+  const runs = [...REQUIRED.map(n => makeRun(n, h)), makeRun(DIRECTED_CHECK, h)];
   const fixture = { pr, files, runs, repository: 'solqaryn/Solqaryn', expectedHead: h };
   const clone = v => structuredClone(v);
   const assertPass = (label, obj) => { const x = certify(obj); if (!x.pass) throw Error('positive ' + label + ': ' + x.failures.join(';')); };
@@ -97,6 +98,7 @@ function selfTest() {
   assertReject('security scanner requires independent governance review', x => { x.files.push({filename:'scripts/security/priority3_secret_audit.py'}); return x; });
   assertReject('new workflow requires governance review', x => { x.files.push({filename:'.github/workflows/other.yml'}); return x; });
   assertReject('untrusted arbitrary check name cannot certify directed tests', x => { x.runs[2].name = 'P0-010.B - Arbitrary check'; return x; });
+  assertReject('unexpanded workflow expression cannot certify directed tests', x => { x.runs[2].name = 'SOLQARYN - Directed ${{ github.event.pull_request.title }}'; return x; });
   const human = clone(fixture); human.files.push({filename:'docs/AUTOMATION_STATUS.md'});
   human.reviews = [{ state:'APPROVED', commit_id:h, user:{login:'morales35alex'} }];
   assertPass('separate formal governance review', human);
@@ -105,7 +107,7 @@ function selfTest() {
 
   assertReject('self governance approval', x => { x.files.push({filename:'docs/AUTOMATION_STATUS.md'}); x.reviews = [{state:'APPROVED',commit_id:h,user:{login:['jmejia','31'].join('')}}];return x; });
   assertReject('stale governance review', x => { x.files.push({filename:'docs/AUTOMATION_STATUS.md'}); x.reviews = [{state:'APPROVED',commit_id:'b'.repeat(40),user:{login:'morales35alex'}}];return x; });
-  console.log('AUTO_CERT_SELF_TEST=PASS (3 positive + 19 fail-closed negatives)');
+  console.log('AUTO_CERT_SELF_TEST=PASS (3 positive + 20 fail-closed negatives)');
 }
 
 const args = new Set(process.argv.slice(2));
