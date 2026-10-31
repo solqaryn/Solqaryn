@@ -76,6 +76,18 @@ public class UsuarioService : IUsuarioService
                 "El rol empresarial no pertenece a la empresa seleccionada o es un rol de plataforma.");
     }
 
+    // P1-005.A: el permiso Usuarios:AsignarRol debe aplicarse al mismo tenant
+    // que posee el rol; no basta con un RolId activo o un claim global.
+    public async Task ValidarRolEmpresaAsync(int? rolId, int empresaIdAutorizada)
+    {
+        if (empresaIdAutorizada <= 0)
+            throw new ForbiddenAccessException(
+                "Se requiere una empresa previamente autorizada para administrar roles.");
+
+        var rol = await ResolverRolDinamicoAsync(rolId);
+        ValidarRolDeEmpresa(rol, empresaIdAutorizada);
+    }
+
     public async Task<UsuarioDto> CreateAsync(CreateUsuarioDto dto)
     {
         var nombreUsuario = NormalizarNombreUsuario(dto.NombreUsuario);

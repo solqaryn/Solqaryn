@@ -1,3 +1,9 @@
+## 2026-10-30 - P1-005.A: fail-closed de roles al crear/editar usuarios (DEV, propuesta)
+
+- UsuariosController POST/PUT valida el RolId contra la empresa RBAC autorizada antes de crear o editar; UsuarioService utiliza Rol.EsAsignableAEmpresa para negar roles B, plataforma o sin propietario. No se altera tenant, migraciones ni credenciales.
+- Nueva prueba dirigida P1005ATenantAdminUserRoleBoundaryTests: negativas B/plataforma/legacy/sin tenant, no escritura tras rechazo; positivas rol A y plantilla de sistema. Acta docs/P1-005-A-ADMIN-EMPRESARIAL-TENANT-DEV.md.
+- PR protegido, CI exact-SHA y revision/merge pendientes; no se declara LISTO. El gate transversal de secretos en issue #3805 permanece separado.
+
 
 ## 2026-10-30 — P0-008.B: negativos de fuga de secretos en inventario DEV (propuesta)
 
