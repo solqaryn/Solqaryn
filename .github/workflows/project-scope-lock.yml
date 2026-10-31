@@ -31,6 +31,8 @@ jobs:
         run: node scripts/validate-dual-task-configuration.mjs --self-test
       - name: Reject artificial Render keep-alive
         run: node scripts/validate-render-free-policy.mjs
+      - name: Probar negativos del verificador propuesto (sin conceder autoridad)
+        run: node scripts/verify-automated-pr-certification.mjs --self-test
       - name: Certificar automáticamente el PR desde código confiable del base
         if: github.event_name == 'pull_request' && github.base_ref == 'dev'
         shell: bash
