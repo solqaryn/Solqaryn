@@ -1,3 +1,7 @@
+## 2026-10-31 — Limpieza de documentación fuera del alcance vigente
+
+- Se retira el README histórico que no corresponde a la identidad actual del repositorio. Sin cambios de código, automatizaciones, autorizaciones, datos ni entornos.
+
 ## 2026-10-30 — P1-002.A: contrato de superadministracion sin acceso silencioso a tenants
 
 ## 2026-10-31 — Reparación limpia del gate de certificación automática
