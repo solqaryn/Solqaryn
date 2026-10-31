@@ -200,6 +200,55 @@ public sealed class P1005ATenantAdminUserRoleBoundaryTests
         permissions.VerifyNoOtherCalls();
     }
 
+    [Theory]
+    [InlineData("estado")]
+    [InlineData("bloquear")]
+    [InlineData("desbloquear")]
+    [InlineData("eliminar")]
+    public async Task Mutaciones_globales_rechazan_identidad_compartida_A_B_antes_de_escribir(string ruta)
+    {
+        var users = new Mock<IUsuarioService>(MockBehavior.Strict);
+        users.Setup(x => x.ExigirIdentidadExclusivaDeEmpresaAsync(30, 11))
+            .ThrowsAsync(new ForbiddenAccessException("Identidad compartida no editable."));
+        var permisos = new Mock<IPermisoService>(MockBehavior.Strict);
+        permisos.Setup(x => x.VerificarPermisoAsync(
+                11, ModuloSistema.Usuarios, It.IsAny<AccionPermiso>()))
+            .Returns(Task.CompletedTask);
+        var http = new DefaultHttpContext();
+        http.Request.Headers["X-Empresa-Id"] = "11";
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = 11;
+        var controller = new UsuariosController(
+            users.Object, permisos.Object, Mock.Of<ICurrentUserService>())
+        {
+            ControllerContext = new ControllerContext { HttpContext = http }
+        };
+
+        await Assert.ThrowsAsync<ForbiddenAccessException>(async () =>
+        {
+            switch (ruta)
+            {
+                case "estado":
+                    await controller.UpdateEstado(30, new UpdateUsuarioEstadoDto { Activo = false });
+                    break;
+                case "bloquear":
+                    await controller.Bloquear(30, new BloquearUsuarioDto { Motivo = "prueba" });
+                    break;
+                case "desbloquear":
+                    await controller.Desbloquear(30);
+                    break;
+                case "eliminar":
+                    await controller.Eliminar(30);
+                    break;
+            }
+        });
+
+        users.Verify(x => x.UpdateEstadoAsync(It.IsAny<int>(), It.IsAny<bool>()), Times.Never);
+        users.Verify(x => x.BloquearAsync(It.IsAny<int>(), It.IsAny<string>()), Times.Never);
+        users.Verify(x => x.DesbloquearAsync(It.IsAny<int>()), Times.Never);
+        users.Verify(x => x.EliminarAsync(It.IsAny<int>()), Times.Never);
+        users.Verify(x => x.ExigirIdentidadExclusivaDeEmpresaAsync(30, 11), Times.Once);
+    }
+
     private static UsuarioService ConstruirServicio(
         IUsuarioRepository users, IRolRepository roles) =>
         new(users, roles,
