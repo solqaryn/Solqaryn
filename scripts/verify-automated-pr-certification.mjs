@@ -13,7 +13,7 @@ const GUARDED = new Set([
   'scripts/verify-automated-pr-certification.mjs', 'scripts/verify-solqaryn-skills.mjs',
 ]);
 const SECRET = /gh[pousr]_[a-zA-Z0-9_]{20,}|AKIA[A-Z0-9]{16}|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|(?:password|token|secret)\s*[:=]\s*['"][^'"]{12,}['"]/i;
-const isGuarded = name => GUARDED.has(name) || name.startsWith('.agents/skills/');
+const isGuarded = name => GUARDED.has(name) || name.startsWith('.agents/skills/') || name.startsWith('.github/') || name.startsWith('scripts/security/');
 const isProductionSource = name => /^(?:backend\/src\/|frontend\/src\/)/.test(name) && !/(?:\/tests?\/|\.spec\.|\.test\.)/.test(name);
 
 export function certify({ pr, files, runs, reviews = [], commits = [], repository, expectedHead }) {
@@ -52,7 +52,7 @@ export function certify({ pr, files, runs, reviews = [], commits = [], repositor
   if (incomplete.length) fail('OTHER_CHECKS_PENDING:' + incomplete.map(x => x.name).join(','));
   const bad = applicable.filter(x => !['success', 'skipped'].includes(x.conclusion));
   if (bad.length) fail('CHECK_FAILED:' + bad.map(x => x.name).join(','));
-  if (scope && !applicable.some(x => x.name.toUpperCase().includes(scope) && x.status === 'completed' && x.conclusion === 'success')) fail('SCOPE_DIRECTED_TEST_MISSING:' + scope);
+  if (scope && !applicable.some(x => x.name === 'SOLQARYN - Directed ' + pr.title && x.status === 'completed' && x.conclusion === 'success')) fail('SCOPE_DIRECTED_TEST_MISSING:' + scope);
   const changesGuarded = names.some(isGuarded);
   if (changesGuarded) {
     const contributorLogins = new Set([pr?.user?.login]);
@@ -71,7 +71,7 @@ function selfTest() {
   const pr = { state: 'open', draft: false, title: 'test(P0-010.B): validacion negativa', body: 'P0-010.B evidencia', user: { login: ['jmejia','31'].join('') },
     base: { ref: 'dev', repo: { full_name: 'solqaryn/Solqaryn' } }, head: { ref: 'work/solqaryn-p0-010-b', sha: h, repo: { full_name: 'solqaryn/Solqaryn' } } };
   const files = [{ filename: 'CHANGELOG_AI.md', patch: '+change' }, { filename: 'scripts/verify-p0-010-b.mjs', patch: '+test' }];
-  const runs = [...REQUIRED.map(n => makeRun(n, h)), makeRun('P0-010.B - Directed negatives', h)];
+  const runs = [...REQUIRED.map(n => makeRun(n, h)), makeRun('SOLQARYN - Directed ' + pr.title, h)];
   const fixture = { pr, files, runs, repository: 'solqaryn/Solqaryn', expectedHead: h };
   const clone = v => structuredClone(v);
   const assertPass = (label, obj) => { const x = certify(obj); if (!x.pass) throw Error('positive ' + label + ': ' + x.failures.join(';')); };
@@ -90,6 +90,9 @@ function selfTest() {
   assertReject('production config', x => { x.files.push({filename:'backend/appsettings.Production.json'}); return x; });
   assertReject('secret in production source', x => { x.files.push({filename:'backend/src/API/Secrets.cs',patch:'@@ -0,0 +1 @@\n+private string password = "aVeryLongPassword1234";'}); return x; });
   assertReject('guarded workflow no review', x => { x.files.push({filename:'.github/workflows/project-scope-lock.yml'}); return x; });
+  assertReject('security scanner requires independent governance review', x => { x.files.push({filename:'scripts/security/priority3_secret_audit.py'}); return x; });
+  assertReject('new workflow requires governance review', x => { x.files.push({filename:'.github/workflows/other.yml'}); return x; });
+  assertReject('untrusted arbitrary check name cannot certify directed tests', x => { x.runs[2].name = 'P0-010.B - Arbitrary check'; return x; });
   const human = clone(fixture); human.files.push({filename:'docs/AUTOMATION_STATUS.md'});
   human.reviews = [{ state:'APPROVED', commit_id:h, user:{login:'morales35alex'} }];
   assertPass('separate formal governance review', human);
@@ -98,7 +101,7 @@ function selfTest() {
 
   assertReject('self governance approval', x => { x.files.push({filename:'docs/AUTOMATION_STATUS.md'}); x.reviews = [{state:'APPROVED',commit_id:h,user:{login:['jmejia','31'].join('')}}];return x; });
   assertReject('stale governance review', x => { x.files.push({filename:'docs/AUTOMATION_STATUS.md'}); x.reviews = [{state:'APPROVED',commit_id:'b'.repeat(40),user:{login:'morales35alex'}}];return x; });
-  console.log('AUTO_CERT_SELF_TEST=PASS (3 positive + 16 fail-closed negatives)');
+  console.log('AUTO_CERT_SELF_TEST=PASS (3 positive + 19 fail-closed negatives)');
 }
 
 const args = new Set(process.argv.slice(2));
@@ -134,7 +137,7 @@ else if (args.has('--pr')) {
     if (pr.changed_files > 100 || checkList.total_count > 100 || pr.commits > 100) throw Error('UNBOUNDED_PR_METADATA');
     report = certify({ pr, files: filesResp, runs: checkList.check_runs || [], reviews, commits, repository, expectedHead });
     if (report.pass) break;
-    const transient = report.failures.every(f => f.startsWith('OTHER_CHECKS_PENDING:') || f.startsWith('REQUIRED_CHECK_NOT_GREEN:') || f === 'GOVERNANCE_REQUIRES_INDEPENDENT_FORMAL_REVIEW');
+    const transient = report.failures.every(f => f.startsWith('OTHER_CHECKS_PENDING:') || f.startsWith('REQUIRED_CHECK_NOT_GREEN:') || f.startsWith('SCOPE_DIRECTED_TEST_MISSING:') || f === 'GOVERNANCE_REQUIRES_INDEPENDENT_FORMAL_REVIEW');
     if (!transient || Date.now() >= deadline) break;
     await sleep(20000);
   }
