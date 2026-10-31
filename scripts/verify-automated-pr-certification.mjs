@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 // from the target DEV base, not from the untrusted pull-request head.
 const REQUIRED = ['SOLQARYN - Seguridad multiempresa', 'SOLQARYN - Build y pruebas backend'];
 const DIRECTED_CHECK = 'SOLQARYN - Directed commercial scope';
+const TRUSTED_GITHUB_ACTIONS_APP_ID = 15368;
 const SCOPE = /\b(P\d+-\d{3}\.[A-Z])\b/i;
 const BLOCKED_RUNTIME_PATHS = /(^|\/)(?:\.env(?:\..*)?|[^/]+\.(?:pem|p12|key)|appsettings\.Production\.json)$|^(?:qa|prod|main)\//i;
 const GUARDED = new Set([
@@ -46,14 +47,14 @@ export function certify({ pr, files, runs, reviews = [], commits = [], repositor
   const byName = new Map((runs || []).filter(x => x.head_sha === expectedHead).map(x => [x.name, x]));
   for (const name of REQUIRED) {
     const item = byName.get(name);
-    if (!item || item.status !== 'completed' || item.conclusion !== 'success') fail('REQUIRED_CHECK_NOT_GREEN:' + name);
+    if (!item || item.status !== 'completed' || item.conclusion !== 'success' || item.app?.id !== TRUSTED_GITHUB_ACTIONS_APP_ID) fail('REQUIRED_CHECK_NOT_GREEN:' + name);
   }
   const applicable = [...byName.values()].filter(x => x.name !== 'verify-solqaryn-project-scope');
   const incomplete = applicable.filter(x => x.status !== 'completed');
   if (incomplete.length) fail('OTHER_CHECKS_PENDING:' + incomplete.map(x => x.name).join(','));
   const bad = applicable.filter(x => x.status === 'completed' && !['success', 'skipped'].includes(x.conclusion));
   if (bad.length) fail('CHECK_FAILED:' + bad.map(x => x.name).join(','));
-  if (scope && !applicable.some(x => x.name === DIRECTED_CHECK && x.status === 'completed' && x.conclusion === 'success')) fail('SCOPE_DIRECTED_TEST_MISSING:' + scope);
+  if (scope && !applicable.some(x => x.name === DIRECTED_CHECK && x.status === 'completed' && x.conclusion === 'success' && x.app?.id === TRUSTED_GITHUB_ACTIONS_APP_ID)) fail('SCOPE_DIRECTED_TEST_MISSING:' + scope);
   const changesGuarded = names.some(isGuarded);
   if (changesGuarded) {
     const contributorLogins = new Set([pr?.user?.login]);
@@ -66,7 +67,7 @@ export function certify({ pr, files, runs, reviews = [], commits = [], repositor
   return { pass: failures.length === 0, failures, mode: changesGuarded ? 'GOVERNANCE_REVIEW' : 'AUTONOMOUS_COMMERCIAL_CERT', scope: scope || null, sha: expectedHead };
 }
 
-const makeRun = (name, sha, conclusion = 'success') => ({ name, head_sha: sha, status: 'completed', conclusion });
+const makeRun = (name, sha, conclusion = 'success') => ({ name, head_sha: sha, status: 'completed', conclusion, app: { id: TRUSTED_GITHUB_ACTIONS_APP_ID } });
 function selfTest() {
   const h = 'a'.repeat(40);
   const pr = { state: 'open', draft: false, title: 'test(P0-010.B): validacion negativa', body: 'P0-010.B evidencia', user: { login: ['jmejia','31'].join('') },
@@ -86,6 +87,8 @@ function selfTest() {
   assertReject('forbidden author', x => { x.pr.user.login = 'unknown'; return x; });
   assertReject('platform cannot claim commercial scope', x => { x.pr.user.login = 'solqaryn-platform'; return x; });
   assertReject('missing targeted test', x => ({...x, runs: x.runs.slice(0, 2)}));
+  assertReject('forged directed success from untrusted app', x => { x.runs[2].app.id = 1; return x; });
+  assertReject('forged backend success from untrusted app', x => { x.runs[1].app.id = 1; return x; });
   assertReject('pending check', x => { x.runs[2].status = 'in_progress'; x.runs[2].conclusion = null; return x; });
   const pending = clone(fixture); pending.runs[2].status = 'in_progress'; pending.runs[2].conclusion = null;
   const pendingResult = certify(pending);
@@ -107,7 +110,7 @@ function selfTest() {
 
   assertReject('self governance approval', x => { x.files.push({filename:'docs/AUTOMATION_STATUS.md'}); x.reviews = [{state:'APPROVED',commit_id:h,user:{login:['jmejia','31'].join('')}}];return x; });
   assertReject('stale governance review', x => { x.files.push({filename:'docs/AUTOMATION_STATUS.md'}); x.reviews = [{state:'APPROVED',commit_id:'b'.repeat(40),user:{login:'morales35alex'}}];return x; });
-  console.log('AUTO_CERT_SELF_TEST=PASS (3 positive + 20 fail-closed negatives)');
+  console.log('AUTO_CERT_SELF_TEST=PASS (3 positive + 22 fail-closed negatives)');
 }
 
 const args = new Set(process.argv.slice(2));
