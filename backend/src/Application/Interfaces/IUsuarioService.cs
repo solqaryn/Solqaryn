@@ -12,6 +12,8 @@ public interface IUsuarioService
     Task ValidarRolEmpresaAsync(int? rolId, int empresaIdAutorizada);
     // Administracion empresarial: no modificar campos globales de A+B.
     Task<UsuarioDto?> UpdateDesdeEmpresaAsync(int id, UpdateUsuarioDto dto, int empresaIdAutorizada);
+    // Exigir exclusividad A antes de cualquier mutacion de identidad global.
+    Task ExigirIdentidadExclusivaDeEmpresaAsync(int id, int empresaIdAutorizada);
     Task<UsuarioDto> CreateAsync(CreateUsuarioDto dto);
     Task<UsuarioDto?> UpdateAsync(int id, UpdateUsuarioDto dto);
     Task<UsuarioDto?> UpdateEstadoAsync(int id, bool activo);
