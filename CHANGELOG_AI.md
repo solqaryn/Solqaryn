@@ -1,3 +1,9 @@
+## 2026-10-31 - P1-005.A: proteccion de cuatro mutaciones globales A/B (DEV, propuesta)
+
+- `UsuariosController` comprueba identidad exclusiva A para estado, bloqueo, desbloqueo y eliminacion logica, antes de cambiar datos globales de `Usuario`. No expone membresias de B y conserva permisos existentes.
+- Cuatro casos negativos prueban rechazo previo a escritura. Persisten limites de atomicidad/TOCTOU y ausencia de evidencia HTTP/MySQL causal.
+- PR #3808 sigue DRAFT/EN_PROGRESO; CI exact-SHA, gate transversal #3805, revision independiente y merge pendientes.
+
 ## 2026-10-30 - P1-005.A: regresion A/B sobre identidad global (DEV, propuesta)
 
 - `PUT /usuarios/{id}` pasa por `UpdateDesdeEmpresaAsync`; prohíbe mutar nombre, credenciales o RolId globales de una identidad con membresias en A+B, incluso B inactiva. Verificacion desde repositorio sin divulgar ids ajenos; la ruta de membresia permanece disponible.
