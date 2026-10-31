@@ -6,7 +6,7 @@ namespace Solqaryn.Domain.Entities;
 /// Intención de solicitar asistencia temporal sobre una empresa.
 /// No concede autoridad, no cambia el tenant activo y NO sustituye
 /// la validación de rol de plataforma, permisos, membresía y auditoría persistida.
-/// El caso de uso debe emplear un reloj UTC del servidor, nunca uno del cliente.
+/// El reloj proviene del servidor, nunca del cliente.
 /// </summary>
 public sealed class SolicitudContextoSoporte
 {
@@ -14,7 +14,32 @@ public sealed class SolicitudContextoSoporte
     public const int JustificacionMinimaCaracteres = 20;
     public const int JustificacionMaximaCaracteres = 500;
 
-    public SolicitudContextoSoporte(
+    /// <summary>
+    /// El servidor calcula ambos instantes a partir de un reloj confiable.
+    /// El solicitante no puede inyectar inicio ni expiración por separado.
+    /// Esta fábrica NO autoriza una sesión de soporte.
+    /// </summary>
+    public static SolicitudContextoSoporte CrearDesdeRelojServidor(
+        int usuarioPlataformaId,
+        int empresaDestinoId,
+        string justificacion,
+        int duracionMinutos,
+        TimeProvider relojServidor)
+    {
+        ArgumentNullException.ThrowIfNull(relojServidor);
+        if (duracionMinutos <= 0 || duracionMinutos > DuracionMaximaMinutos)
+            throw new ArgumentOutOfRangeException(nameof(duracionMinutos));
+
+        var inicioUtc = relojServidor.GetUtcNow().ToUniversalTime();
+        return new SolicitudContextoSoporte(
+            usuarioPlataformaId,
+            empresaDestinoId,
+            justificacion,
+            inicioUtc,
+            inicioUtc.AddMinutes(duracionMinutos));
+    }
+
+    private SolicitudContextoSoporte(
         int usuarioPlataformaId,
         int empresaDestinoId,
         string justificacion,
