@@ -166,9 +166,8 @@ public sealed class SupportSessionMySqlIntegrationTests
                 dbRead.Entry(tracked).State = EntityState.Unchanged;
 
                 await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                    dbRead.Database.ExecuteSqlRawAsync(
-                        "UPDATE Productos SET Nombre = 'bloqueado' WHERE Id = " +
-                        productoAId.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+                    dbRead.Database.ExecuteSqlInterpolatedAsync(
+                        $"UPDATE Productos SET Nombre = 'bloqueado' WHERE Id = {productoAId}"));
 
                 await Assert.ThrowsAsync<InvalidOperationException>(() =>
                     dbRead.Database.ExecuteSqlRawAsync(

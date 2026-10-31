@@ -32,7 +32,7 @@ public sealed class PlataformaSesionSoporteConfiguration
         builder.Property(x => x.Modulo).HasConversion<int>().IsRequired();
         builder.Property(x => x.Motivo).IsRequired().HasMaxLength(500);
         builder.Property(x => x.TokenHash).HasColumnType("char(64)").IsRequired().HasMaxLength(64)
-            .IsUnicode(false).UseCollation("ascii_bin");
+            .IsUnicode(false);
         builder.Property(x => x.CreadaUtc).HasColumnType("datetime(6)");
         builder.Property(x => x.ExpiraUtc).HasColumnType("datetime(6)");
         builder.Property(x => x.RevocadaUtc).HasColumnType("datetime(6)");
