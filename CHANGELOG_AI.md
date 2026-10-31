@@ -1,3 +1,21 @@
+## 2026-10-31 - P1-005.A: proteccion de cuatro mutaciones globales A/B (DEV, propuesta)
+
+- `UsuariosController` comprueba identidad exclusiva A para estado, bloqueo, desbloqueo y eliminacion logica, antes de cambiar datos globales de `Usuario`. No expone membresias de B y conserva permisos existentes.
+- Cuatro casos negativos prueban rechazo previo a escritura. Persisten limites de atomicidad/TOCTOU y ausencia de evidencia HTTP/MySQL causal.
+- PR #3808 sigue DRAFT/EN_PROGRESO; CI exact-SHA, gate transversal #3805, revision independiente y merge pendientes.
+
+## 2026-10-30 - P1-005.A: regresion A/B sobre identidad global (DEV, propuesta)
+
+- `PUT /usuarios/{id}` pasa por `UpdateDesdeEmpresaAsync`; prohíbe mutar nombre, credenciales o RolId globales de una identidad con membresias en A+B, incluso B inactiva. Verificacion desde repositorio sin divulgar ids ajenos; la ruta de membresia permanece disponible.
+- Pruebas nuevas: EF InMemory A exclusivo frente a A+B, negativa de persistencia y verificacion de ruta del controlador. Sin equivalencia a MySQL/HTTP ni certificacion de carrera concurrente.
+- #3808 sigue DRAFT y sin LISTO: Priority3 issue #3805 externo, revisar CI nuevo y aprobacion independiente.
+
+## 2026-10-30 - P1-005.A: fail-closed de roles al crear/editar usuarios (DEV, propuesta)
+
+- UsuariosController POST/PUT valida el RolId contra la empresa RBAC autorizada antes de crear o editar; UsuarioService utiliza Rol.EsAsignableAEmpresa para negar roles B, plataforma o sin propietario. No se altera tenant, migraciones ni credenciales.
+- Nueva prueba dirigida P1005ATenantAdminUserRoleBoundaryTests: negativas B/plataforma/legacy/sin tenant, no escritura tras rechazo; positivas rol A y plantilla de sistema. Acta docs/P1-005-A-ADMIN-EMPRESARIAL-TENANT-DEV.md.
+- PR protegido, CI exact-SHA y revision/merge pendientes; no se declara LISTO. El gate transversal de secretos en issue #3805 permanece separado.
+
 ## 2026-10-30 — Certificación automática de PR comerciales DEV (propuesta protegida)
 
 - El propietario ordenó sustituir aprobación humana recurrente por un gate CI técnico de SHA exacto; no se finge revisión `APPROVED`. El verificador `scripts/verify-automated-pr-certification.mjs` queda anclado a la versión confiable de `dev` y se ejecutará dentro del check requerido `verify-solqaryn-project-scope`, con tres checks obligatorios, pruebas dirigidas y fallos fail-closed.

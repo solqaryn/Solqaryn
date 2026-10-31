@@ -76,6 +76,18 @@ public class UsuarioService : IUsuarioService
                 "El rol empresarial no pertenece a la empresa seleccionada o es un rol de plataforma.");
     }
 
+    // P1-005.A: el permiso Usuarios:AsignarRol debe aplicarse al mismo tenant
+    // que posee el rol; no basta con un RolId activo o un claim global.
+    public async Task ValidarRolEmpresaAsync(int? rolId, int empresaIdAutorizada)
+    {
+        if (empresaIdAutorizada <= 0)
+            throw new ForbiddenAccessException(
+                "Se requiere una empresa previamente autorizada para administrar roles.");
+
+        var rol = await ResolverRolDinamicoAsync(rolId);
+        ValidarRolDeEmpresa(rol, empresaIdAutorizada);
+    }
+
     public async Task<UsuarioDto> CreateAsync(CreateUsuarioDto dto)
     {
         var nombreUsuario = NormalizarNombreUsuario(dto.NombreUsuario);
@@ -109,6 +121,25 @@ public class UsuarioService : IUsuarioService
             valoresNuevos: new { usuario.NombreUsuario, usuario.NombreCompleto, RolId = rol.Id, Rol = rol.Nombre });
 
         return ToDto(usuario);
+    }
+
+    // UpdateAsync modifica identidad global (rol legacy, nombre y contrasena).
+    // Cuando el actor es administrador de empresa, bloquear A+B incluso si
+    // la membresia de B esta inactiva; usar las rutas /empresas para el rol A.
+    public async Task ExigirIdentidadExclusivaDeEmpresaAsync(int id, int empresaIdAutorizada)
+    {
+        if (empresaIdAutorizada <= 0)
+            throw new ForbiddenAccessException("Se requiere empresa autorizada para editar usuarios.");
+        if (!await _repository.EsIdentidadExclusivaDeEmpresaAsync(id, empresaIdAutorizada))
+            throw new ForbiddenAccessException(
+                "La identidad no permite edicion global desde esta empresa; administre su membresia empresarial.");
+    }
+
+    public async Task<UsuarioDto?> UpdateDesdeEmpresaAsync(
+        int id, UpdateUsuarioDto dto, int empresaIdAutorizada)
+    {
+        await ExigirIdentidadExclusivaDeEmpresaAsync(id, empresaIdAutorizada);
+        return await UpdateAsync(id, dto);
     }
 
     public async Task<UsuarioDto?> UpdateAsync(int id, UpdateUsuarioDto dto)

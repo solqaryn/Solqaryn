@@ -30,6 +30,22 @@ public class UsuarioRepository : IUsuarioRepository
             .Include(u => u.RolEntidad)
             .FirstOrDefaultAsync(u => u.Id == id && !u.Eliminado);
 
+    // Gate fail-closed: inspecciona membresias de TODAS las empresas,
+    // aunque un filtro tenant o una baja las oculte. No devuelve ids ajenos.
+    public async Task<bool> EsIdentidadExclusivaDeEmpresaAsync(int usuarioId, int empresaIdAutorizada)
+    {
+        if (usuarioId <= 0 || empresaIdAutorizada <= 0) return false;
+        var membresias = await _context.UsuarioEmpresas
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .Where(m => m.UsuarioId == usuarioId)
+            .Select(m => new { m.EmpresaId, m.Activa })
+            .ToListAsync();
+        return membresias.Count == 1 &&
+               membresias[0].EmpresaId == empresaIdAutorizada &&
+               membresias[0].Activa;
+    }
+
     public async Task<Usuario?> GetPendientePrimeraMembresiaAsync(int id, int creadorId)
     {
         if (id <= 0 || creadorId <= 0)

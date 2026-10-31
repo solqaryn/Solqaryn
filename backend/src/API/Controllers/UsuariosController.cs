@@ -58,9 +58,12 @@ public class UsuariosController : ControllerBase
     [RequierePermiso(ModuloSistema.Usuarios, AccionPermiso.Crear)]
     public async Task<IActionResult> Create([FromBody] CreateUsuarioDto dto)
     {
+        var empresaAutorizada = TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext);
         await _permisoService.VerificarPermisoAsync(
-                TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext),
-                ModuloSistema.Usuarios, AccionPermiso.AsignarRol);
+                empresaAutorizada, ModuloSistema.Usuarios, AccionPermiso.AsignarRol);
+        // Bloquear roles privados de B, plataforma y legacy sin propietario
+        // antes de crear identidad global o escribir el RolId.
+        await _usuarioService.ValidarRolEmpresaAsync(dto.RolId, empresaAutorizada);
 
         try
         {
@@ -96,7 +99,11 @@ public class UsuariosController : ControllerBase
                 TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext),
                 ModuloSistema.Usuarios, AccionPermiso.RestablecerContrasena);
 
-        var actualizado = await _usuarioService.UpdateAsync(id, dto);
+        // El RolId global y las credenciales se comparten entre empresas:
+        // solo editar identidad si pertenece exclusivamente al tenant activo.
+        var empresaAutorizada = TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext);
+        await _usuarioService.ValidarRolEmpresaAsync(dto.RolId, empresaAutorizada);
+        var actualizado = await _usuarioService.UpdateDesdeEmpresaAsync(id, dto, empresaAutorizada);
         if (actualizado is null)
             return NotFound(ApiResponse<object>.Fail("Usuario no encontrado."));
 
@@ -109,8 +116,9 @@ public class UsuariosController : ControllerBase
         if (!dto.Activo && _currentUser.UsuarioId == id)
             return BadRequest(ApiResponse<object>.Fail("No puedes desactivar tu propia cuenta."));
 
-        await AutorizarEmpresaYPermisoAsync(
+        var empresaAutorizada = await AutorizarEmpresaYPermisoAsync(
             dto.Activo ? AccionPermiso.Activar : AccionPermiso.Desactivar);
+        await _usuarioService.ExigirIdentidadExclusivaDeEmpresaAsync(id, empresaAutorizada);
 
         var actualizado = await _usuarioService.UpdateEstadoAsync(id, dto.Activo);
         if (actualizado is null)
@@ -123,7 +131,8 @@ public class UsuariosController : ControllerBase
     [HttpPut("{id:int}/bloquear")]
     public async Task<IActionResult> Bloquear(int id, [FromBody] BloquearUsuarioDto dto)
     {
-        await AutorizarEmpresaYPermisoAsync(AccionPermiso.Desactivar);
+        var empresaAutorizada = await AutorizarEmpresaYPermisoAsync(AccionPermiso.Desactivar);
+        await _usuarioService.ExigirIdentidadExclusivaDeEmpresaAsync(id, empresaAutorizada);
         var actualizado = await _usuarioService.BloquearAsync(id, dto.Motivo);
         return Ok(ApiResponse<UsuarioDto>.Ok(actualizado, "Usuario bloqueado correctamente."));
     }
@@ -131,7 +140,8 @@ public class UsuariosController : ControllerBase
     [HttpPut("{id:int}/desbloquear")]
     public async Task<IActionResult> Desbloquear(int id)
     {
-        await AutorizarEmpresaYPermisoAsync(AccionPermiso.Activar);
+        var empresaAutorizada = await AutorizarEmpresaYPermisoAsync(AccionPermiso.Activar);
+        await _usuarioService.ExigirIdentidadExclusivaDeEmpresaAsync(id, empresaAutorizada);
         var actualizado = await _usuarioService.DesbloquearAsync(id);
         return Ok(ApiResponse<UsuarioDto>.Ok(actualizado, "Usuario desbloqueado correctamente."));
     }
@@ -140,6 +150,8 @@ public class UsuariosController : ControllerBase
     [RequierePermiso(ModuloSistema.Usuarios, AccionPermiso.EliminarLogico)]
     public async Task<IActionResult> Eliminar(int id)
     {
+        var empresaAutorizada = TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext);
+        await _usuarioService.ExigirIdentidadExclusivaDeEmpresaAsync(id, empresaAutorizada);
         await _usuarioService.EliminarAsync(id);
         return Ok(ApiResponse<object>.Ok(new { }, "Usuario eliminado correctamente."));
     }
