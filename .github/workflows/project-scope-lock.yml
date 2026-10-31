@@ -33,6 +33,65 @@ jobs:
         run: node scripts/validate-render-free-policy.mjs
       - name: Probar negativos del verificador propuesto (sin conceder autoridad)
         run: node scripts/verify-automated-pr-certification.mjs --self-test
+      - name: Fail fast on immutable governance blockers
+        if: github.event_name == 'pull_request' && github.base_ref == 'dev'
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          node --input-type=module <<'NODE'
+          const api = async path => {
+            const response = await fetch((process.env.GITHUB_API_URL || 'https://api.github.com') + path, {
+              headers: { Authorization: 'Bearer ' + process.env.GITHUB_TOKEN, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' },
+              signal: AbortSignal.timeout(20000),
+            });
+            if (!response.ok) throw Error('GOVERNANCE_PREFLIGHT_API_' + response.status);
+            return response.json();
+          };
+          const pages = async path => {
+            const all = [];
+            for (let page = 1; page <= 10; page++) {
+              const batch = await api(path + (path.includes('?') ? '&' : '?') + 'per_page=100&page=' + page);
+              if (!Array.isArray(batch)) throw Error('GOVERNANCE_PREFLIGHT_INVALID_RESPONSE');
+              all.push(...batch);
+              if (batch.length < 100) return all;
+            }
+            throw Error('GOVERNANCE_PREFLIGHT_METADATA_LIMIT');
+          };
+          const number = Number(process.env.PR_NUMBER);
+          const repo = process.env.GITHUB_REPOSITORY;
+          if (!Number.isInteger(number) || !/^[\w.-]+\/[\w.-]+$/.test(repo || '') || !/^[a-f0-9]{40}$/i.test(process.env.PR_HEAD_SHA || ''))
+            throw Error('GOVERNANCE_PREFLIGHT_INVALID_CONTEXT');
+          const pr = await api('/repos/' + repo + '/pulls/' + number);
+          if (pr.head?.sha !== process.env.PR_HEAD_SHA) throw Error('GOVERNANCE_PREFLIGHT_HEAD_CHANGED');
+          const [files, commits, reviews] = await Promise.all([
+            pages('/repos/' + repo + '/pulls/' + number + '/files'),
+            pages('/repos/' + repo + '/pulls/' + number + '/commits'),
+            pages('/repos/' + repo + '/pulls/' + number + '/reviews'),
+          ]);
+          const guarded = name => [
+            'AGENTS.md', 'docs/PROJECT_SCOPE_LOCK.md', 'docs/AUTOMATION_STATUS.md',
+            'docs/AUTOMATION_AUTHORITY.md', 'docs/AUTOMATION_3X3_OPERATING_CONTRACT.md',
+            '.github/workflows/project-scope-lock.yml', '.github/workflows/solqaryn-core-ci.yml',
+            'scripts/validate-automation-authority.mjs', 'scripts/verify-project-scope.mjs',
+            'scripts/verify-automated-pr-certification.mjs', 'scripts/verify-solqaryn-skills.mjs',
+          ].includes(name) || name.startsWith('.agents/skills/') || name.startsWith('.github/') || name.startsWith('scripts/security/');
+          if (!files.some(file => guarded(file.filename))) {
+            console.log('GOVERNANCE_PREFLIGHT=NOT_APPLICABLE');
+          } else {
+            const contributors = new Set([pr.user?.login]);
+            for (const commit of commits) for (const login of [commit.author?.login, commit.committer?.login]) if (login) contributors.add(login);
+            const approved = reviews.some(review => review.state === 'APPROVED' && review.commit_id === process.env.PR_HEAD_SHA && review.user?.login && !contributors.has(review.user.login));
+            if (!approved) {
+              console.error('::error::AUTO_CERT=NO_GO GOVERNANCE_REQUIRES_INDEPENDENT_FORMAL_REVIEW');
+              process.exit(1);
+            }
+            console.log('GOVERNANCE_PREFLIGHT=PASS exact-head independent review');
+          }
+          NODE
       - name: Certificar automáticamente el PR desde código confiable del base
         if: github.event_name == 'pull_request' && github.base_ref == 'dev'
         shell: bash
