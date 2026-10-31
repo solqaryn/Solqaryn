@@ -66,7 +66,9 @@ public sealed class SolicitudContextoSoporte
             motivo.Length > JustificacionMaximaCaracteres ||
             motivo.Any(static caracter =>
                 char.IsControl(caracter) ||
-                CharUnicodeInfo.GetUnicodeCategory(caracter) == UnicodeCategory.Format))
+                CharUnicodeInfo.GetUnicodeCategory(caracter) is
+                    UnicodeCategory.Format or UnicodeCategory.LineSeparator or
+                    UnicodeCategory.ParagraphSeparator))
             throw new ArgumentException("Se requiere una justificación válida, acotada y sin caracteres de control.", nameof(justificacion));
 
         UsuarioPlataformaId = usuarioPlataformaId;
