@@ -1,5 +1,13 @@
 ## 2026-10-30 — Certificación automática de PR comerciales DEV (propuesta protegida)
 
+## 2026-10-31 — CI autonoma DEV: reparacion fail-closed (propuesta)
+
+- Auditoria: docs/AUTO_CERTIFICATION_REPAIR_20261031.md. El HEAD dev ffdda57fa42537e2531f41b511c3969b496565e1 cuenta con CI requerido exact-SHA 3/3 SUCCESS, pero PR #3804 se fusiono sin review independiente y no produjo AUTO_CERT=PASS.
+- Nuevo workflow de pruebas dirigidas xUnit verifica commit SHA, filtro por ID de microtarea, tests ejecutados >0 y cero fallos; el gate requerido espera su check y rechaza resultados arbitrarios, base desactualizada y bootstrap sin verificador confiable.
+- Cualquier cambio a .github/ o scripts/security/ se clasifica como gobierno, sin permitir certificacion ordinaria de seguridad por el mismo autor. Mantener los permisos y allowlist 5/6, con Alex :30 fuera. Sin cambio ERP, datos, migraciones, QA/main/PROD, secretos ni deployments.
+- Cierre condicionado a PR protegido, evidencia AUTO_CERT=PASS en PR comercial posterior, merge y readback PLAN_MAESTRO/COLA/BITACORA. Rollback por PR revert protegido; no reescribir historial.
+
+
 - El propietario ordenó sustituir aprobación humana recurrente por un gate CI técnico de SHA exacto; no se finge revisión `APPROVED`. El verificador `scripts/verify-automated-pr-certification.mjs` queda anclado a la versión confiable de `dev` y se ejecutará dentro del check requerido `verify-solqaryn-project-scope`, con tres checks obligatorios, pruebas dirigidas y fallos fail-closed.
 - Las modificaciones de gobierno, Skill, workflows requeridos, guardas CI y el bootstrap inicial conservan revisión formal independiente para no permitir que el autor invalide su propio control. Los PR comerciales rutinarios pueden continuar y fusionarse autónomamente si la nueva norma ya está fusionada, el check es SUCCESS y la identidad GitHub tiene permiso real.
 - Se preserva Scope Lock STRICT, la allowlist 5/6 (Alex :30 excluida), WIP 6/2/1, `dev` protegido, aislamiento multiempresa, rollback protegido, evidencia GitHub y readback de Sheets. No se tocan Aiven, secretos, QA/main/PROD ni despliegues. Si no se puede verificar un control, se rechaza ese PR y continúa trabajo distinto permitido.
