@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Solqaryn.Tests;
 
-public sealed class SolicitudContextoSoporteTests
+public sealed class P1003ASolicitudContextoSoporteTests
 {
     private const string Motivo = "Asistencia solicitada para investigar un incidente autorizado.";
 
