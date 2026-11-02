@@ -34,9 +34,24 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24.21.0'
+      - name: Detect trusted runtime on protected DEV (bootstrap-safe)
+        id: runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          if test -f scripts/security/retry-scope-lock-after-review.mjs; then
+            echo 'installed=true' >> "$GITHUB_OUTPUT"
+            echo 'SCOPE_REVIEW_RETRY_RUNTIME=TRUSTED_DEV_AVAILABLE'
+          else
+            echo 'installed=false' >> "$GITHUB_OUTPUT"
+            echo 'SCOPE_REVIEW_RETRY_RUNTIME=BOOTSTRAP_DEFERRED_UNTIL_MERGE'
+            echo 'Installation PR bootstrap: no GitHub write action attempted; review and Scope Lock remain mandatory.' >> "$GITHUB_STEP_SUMMARY"
+          fi
       - name: Test exact-head approval and rejected cases
+        if: steps.runtime.outputs.installed == 'true'
         run: node scripts/security/retry-scope-lock-after-review.mjs --self-test
       - name: Retry only failed exact-head Scope Lock
+        if: steps.runtime.outputs.installed == 'true'
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/security/retry-scope-lock-after-review.mjs --review-event

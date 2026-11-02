@@ -12,6 +12,9 @@ El script `scripts/security/retry-scope-lock-after-review.mjs` verifica actor y 
 
 El job reintentado vuelve a aplicar todas las reglas preexistentes; si otro control falla, no certifica. La fusión de PR sigue exigiendo checks requeridos, revisión independiente y branch protection. El workflow no sustituye ninguna Task programada.
 
+## Bootstrap de instalación sin ejecutar código de PR
+
+Este workflow puede recibir una revisión en su propio PR de instalación antes de que el script exista en `dev`. En ese escenario, el checkout confiable `dev` comprueba la existencia del script y registra `SCOPE_REVIEW_RETRY_RUNTIME=BOOTSTRAP_DEFERRED_UNTIL_MERGE`. Las etapas de prueba y reintento no se ejecutan. El resultado del job no acredita aún operación en vivo del reintento; el Scope Lock original y la revisión exact-HEAD siguen siendo bloqueantes y, para este PR de instalación, requieren el último re-run normal del job original. Solo después del merge, cuando el script esté integrado en `dev`, se ejecuta el runtime protegido y puede emitir `SCOPE_REVIEW_RETRY=STARTED`. No se descarga ni ejecuta código desde la rama del PR con `actions:write`.
 ## Pruebas y despliegue
 
 - `SCOPE_REVIEW_RETRY_SELF_TEST=PASS` incluye 16 casos positivos y negativos: SHA desactualizado, revisión no vigente, actor ajeno, auto-revisión, branch distinta, fork, fallo no relacionado y exceso de reintentos.
