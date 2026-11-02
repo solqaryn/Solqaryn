@@ -1,0 +1,42 @@
+name: SOLQARYN - Reintentar Scope Lock tras revision independiente
+
+on:
+  pull_request_review:
+    types: [submitted]
+
+permissions:
+  contents: read
+  pull-requests: read
+  actions: write
+
+concurrency:
+  group: solqaryn-scope-review-retry-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}
+  cancel-in-progress: false
+
+jobs:
+  retry-reviewed-governance:
+    name: Revalidar Scope Lock tras aprobacion independiente
+    if: >-
+      github.event.review.state == 'approved' &&
+      github.event.pull_request.base.ref == 'dev' &&
+      github.event.pull_request.head.repo.full_name == 'solqaryn/Solqaryn' &&
+      (github.actor == 'jmejia31' || github.actor == 'morales35alex')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # NEVER run PR/merge-ref code with an Actions write token.
+      - name: Checkout trusted DEV only
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+          persist-credentials: false
+      - name: Configure Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+      - name: Test exact-head approval and rejected cases
+        run: node scripts/security/retry-scope-lock-after-review.mjs --self-test
+      - name: Retry only failed exact-head Scope Lock
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/security/retry-scope-lock-after-review.mjs --review-event
