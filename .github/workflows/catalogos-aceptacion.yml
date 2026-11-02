@@ -10,6 +10,7 @@ on:
       - .github/workflows/modernization-phase5-frontend-tooling.yml
       - frontend/**
       - backend/**
+      - '!backend/tests/**'
       - scripts/smtp_capture_server.py
       - scripts/validate_email_delivery.py
       - scripts/validate_runtime_safety.py
@@ -24,6 +25,7 @@ on:
       - .github/workflows/modernization-phase5-frontend-tooling.yml
       - frontend/**
       - backend/**
+      - '!backend/tests/**'
       - scripts/smtp_capture_server.py
       - scripts/validate_email_delivery.py
       - scripts/validate_runtime_safety.py

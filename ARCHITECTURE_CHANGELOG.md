@@ -1,3 +1,8 @@
+## 2026-11-02 - CI selectiva por impacto (propuesta protegida)
+
+- Se separa la ruta corta de PR comerciales del ciclo de regresiones amplias. Los tres checks obligatorios, la prueba dirigida y el verificador Scope Lock exact-SHA permanecen sin alteracion. Un clasificador fail-closed bajo `scripts/security/ci-impact-routing.mjs` conserva MySQL ante codigo backend, migraciones, integraciones o paths desconocidos.
+- Playwright y Priority4 dejan de dispararse por test backend aislado; Priority4 ya no duplica tests `Category=Integration` cubiertos por dev-ci. Clasificacion negativa/positiva se prueba en el propio Scope Lock y dev-ci. El cambio queda sujeto a PR formal, aprobacion independiente, CI exacta y lectura de pruebas antes del merge.
+- Contrato: `docs/CI_IMPACT_ROUTING.md`. Sin cambios en ERP, seguridad, permisos, entorno DEV/QA/PROD, datos ni proveedores; reversion por PR protegido.
 ## 2026-10-30 — Certificación automática de PR comerciales DEV (propuesta protegida)
 
 - El propietario ordenó sustituir aprobación humana recurrente por un gate CI técnico de SHA exacto; no se finge revisión `APPROVED`. El verificador `scripts/verify-automated-pr-certification.mjs` queda anclado a la versión confiable de `dev` y se ejecutará dentro del check requerido `verify-solqaryn-project-scope`, con tres checks obligatorios, pruebas dirigidas y fallos fail-closed.

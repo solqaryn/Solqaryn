@@ -33,6 +33,8 @@ jobs:
         run: node scripts/validate-render-free-policy.mjs
       - name: Probar negativos del verificador propuesto (sin conceder autoridad)
         run: node scripts/verify-automated-pr-certification.mjs --self-test
+      - name: Validar clasificacion conservadora de CI
+        run: node scripts/security/ci-impact-routing.mjs --self-test
       - name: Fail fast on immutable governance blockers
         if: github.event_name == 'pull_request' && github.base_ref == 'dev'
         shell: bash

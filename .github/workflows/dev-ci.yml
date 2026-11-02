@@ -13,6 +13,7 @@ on:
       - 'render.yaml'
       - 'global.json'
       - 'Directory.*'
+      - 'scripts/security/ci-impact-routing.mjs'
       - '.github/workflows/dev-ci.yml'
   pull_request:
     branches: [dev]
@@ -26,6 +27,7 @@ on:
       - 'render.yaml'
       - 'global.json'
       - 'Directory.*'
+      - 'scripts/security/ci-impact-routing.mjs'
       - '.github/workflows/dev-ci.yml'
   workflow_dispatch:
 
@@ -37,6 +39,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  impact:
+    name: Impacto CI - clasificacion MySQL fail-closed
+    runs-on: ubuntu-latest
+    outputs:
+      run_mysql_integration: ${{ steps.classify.outputs.run_mysql_integration }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+      - name: Probar clasificador de impacto (positivos y negativos)
+        run: node scripts/security/ci-impact-routing.mjs --self-test
+      - name: Clasificar diff exacto
+        id: classify
+        env:
+          CI_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || '' }}
+          CI_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/security/ci-impact-routing.mjs --github-output
   hygiene:
     name: Higiene del repositorio
     runs-on: ubuntu-latest
@@ -96,6 +118,8 @@ jobs:
 
   migrations:
     name: Migraciones EF Oracle, variantes y cargas masivas en MySQL 8.4
+    needs: impact
+    if: needs.impact.outputs.run_mysql_integration == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 35
     services:

@@ -1,3 +1,8 @@
+## 2026-11-02 - CI DEV selectiva por impacto (PR de gobernanza propuesto)
+
+- Playwright y calidad ERP se dejan de ejecutar por cambios exclusivamente en tests backend. `priority4-quality.yml` corre no-integracion y `dev-ci.yml` conserva pruebas MySQL para impacto productivo, tests de integracion y rutas ambiguas.
+- Nuevo clasificador fail-closed `scripts/security/ci-impact-routing.mjs` con self-test en Scope Lock, Node 24 y comparacion SHA. Solo se omite MySQL en diffs de documentacion/frontend/test unitario comercial PddddX verificado. Los checks requeridos, prueba comercial dirigida, reglas de merge, secretos y DB quedan intactos.
+- Evidencias y rollback en `docs/CI_IMPACT_ROUTING.md`. No declarar vigente hasta aprobacion independiente y merge protegido.
 ## 2026-11-02 — P1-003.B: corregir identidad del operador en prueba LIVE DEV
 
 - Se sustituyó el uso incorrecto de `SOLQARYN_DEV_A_USERNAME` (cuenta empresarial C en el contrato MF3) como operador por `javier`, única identidad global acreditada en DEV.
