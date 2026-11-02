@@ -1,3 +1,10 @@
+## 2026-11-02 — P1-004.A: delegación administrativa de mínimo privilegio (PR protegido)
+
+- Backend PlataformaScopeService restringe superadmin a rol de sistema vivo; PlataformaDelegacionService valida rol personalizado, asignación global única y grant explícito PLATAFORMA.DELEGACION.EMPRESAS_VER, jamás claims o tenant.
+- Nueva API /plataforma/delegaciones: concesión/revocación por superadmin a terceros exclusivamente, permiso fijo de lectura de directorio, motivo y auditoría atómica MySQL; GET de delegado revalida y audita sin acceso ERP. SeedPermisoService excluye permisos Plataforma del grant automático empresarial.
+- Sin nuevos índices/migraciones, permisos arbitrarios, frontend, secretos ni escrituras manuales Aiven; ocho tests P1004A con fixtures efímeros. A requiere review y CI exact-SHA; B (HTTP/JWT/MySQL LIVE, autoelevación, revocación, auditoría) seguirá independiente tras merge.
+- Impacto Application/Infrastructure/API/RBAC y documentación. Rollback por PR protegido. No reutilizar rama ni evidencia de PR #3807 cerrado.
+
 ## 2026-11-02 - CI selectiva por impacto (propuesta protegida)
 
 - Se separa la ruta corta de PR comerciales del ciclo de regresiones amplias. Los tres checks obligatorios, la prueba dirigida y el verificador Scope Lock exact-SHA permanecen sin alteracion. Un clasificador fail-closed bajo `scripts/security/ci-impact-routing.mjs` conserva MySQL ante codigo backend, migraciones, integraciones o paths desconocidos.

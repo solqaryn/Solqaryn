@@ -114,7 +114,8 @@ public class SeedPermisoService
 
         var permisos = await _context.Permisos
             .IgnoreQueryFilters()
-            .Where(p => p.Activo && !p.Eliminado)
+            .Where(p => p.Ambito == Solqaryn.Domain.Enums.AmbitoAutorizacion.Empresa &&
+                        p.Activo && !p.Eliminado)
             .ToListAsync();
 
         var rolIds = administradores.Select(r => r.Id).ToList();

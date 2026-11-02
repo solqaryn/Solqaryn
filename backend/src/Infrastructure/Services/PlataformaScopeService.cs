@@ -42,7 +42,7 @@ public sealed class PlataformaScopeService : IPlataformaScopeService
             where asignacion.UsuarioId == usuarioId &&
                   asignacion.Activa &&
                   usuario.Activo && !usuario.Bloqueado && !usuario.Eliminado &&
-                  rol.Activo && !rol.Eliminado && rol.EsAdministrador &&
+                  rol.Activo && !rol.Eliminado && rol.EsAdministrador && rol.EsSistema &&
                   rol.Ambito == AmbitoAutorizacion.Plataforma &&
                   rol.EmpresaId == null
             select new UsuarioPlataformaScopeActual(
