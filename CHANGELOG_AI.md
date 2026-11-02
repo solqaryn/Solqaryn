@@ -1,3 +1,27 @@
+## 2026-11-02 — P1-003.B: corregir identidad del operador en prueba LIVE DEV
+
+- Se sustituyó el uso incorrecto de `SOLQARYN_DEV_A_USERNAME` (cuenta empresarial C en el contrato MF3) como operador por `javier`, única identidad global acreditada en DEV.
+- La autenticación del operador se obtiene exclusivamente del secreto protegido `SOLQARYN_DEV_PLATFORM_PASSWORD` en Environment DEV; si no existe o es inválido la certificación falla cerrada, sin cambiar contraseñas o permisos.
+- Se mantiene inalterada la pareja empresarial de contraste `admin_prueba_a` + `SOLQARYN_DEV_B_PASSWORD`, que es correcta según el contrato MF3 ya certificado.
+- Esta corrección no equivale a PASS LIVE; requiere aprobación independiente del nuevo SHA, CI protegida y prueba real en DEV.
+
+## 2026-11-02 — P1-003.B: corregir infraestructura del gate comercial dirigido
+
+- El check `SOLQARYN - Directed commercial scope` no levanta MySQL; la clase de integración MySQL existente recupera su nombre original, sin alterar aserciones.
+- Se añade `P1003BSupportRouteCertificationTests` con pruebas positivas de cinco rutas permitidas, negativas de módulos/verbos/rutas, y rechazo del contexto candidato no autorizado. El gate dirigido ejecuta aserciones reales sin necesitar MySQL.
+- La cobertura transaccional MySQL sigue en el job ERP con MySQL efímero; el test LIVE DEV de sesiones, JWT y auditoría se ejecutará solo después de merge protegido.
+
+## 2026-11-02 — P1-003.B: prueba MySQL dirigida a scope exacto
+
+- La clase de integración MySQL preexistente mantiene íntegramente su prueba real de sesiones, bloqueo concurrente, auditoría y revocación; su identificador de clase ahora incluye `P1003B` para permitir al check `SOLQARYN - Directed commercial scope` ejecutar esa prueba real, no un test artificial.
+- Se mantiene separada la prueba LIVE Render DEV con secretos protegidos, ejecutable solo después de merge a dev. En PR corre únicamente el contrato offline y la integración MySQL efímera.
+
+## 2026-11-02 — P1-003.B: contrato de certificación LIVE controlada (propuesta)
+
+- Añadido un workflow DEV ejecutable solo tras integración en dev, con contrato offline en PR y prueba HTTP/JWT real más auditoría MySQL; sin PII ni secretos en logs.
+- El test exige rol global vigente, niega membresía empresarial implícita, verifica lectura de Productos y Categorías en una sola empresa, expiración y revocación. No modifica roles, membresías ni datos comerciales.
+- No equivale a certificación aprobada: falta integración protegida, ejecución LIVE con la cuenta de plataforma y conciliación del Sheet.
+
 ## 2026-11-02 — P1-003.A: reparaciones acotadas de CI para #3813
 
 - Se corrigió el fixture MySQL **efímero** de migraciones diferidas: `EnsureCreated` crea también la tabla nueva de soporte; esa tabla se retira solo en el modo de pruebas legacy, antes de sembrar casos y ejecutar la migración pendiente con su DDL real. Las dos pruebas de backfill conservan sus aserciones originales y no se deshabilitan.

@@ -1,0 +1,96 @@
+name: DEV - P1-003.B soporte temporal real JWT MySQL
+on:
+  pull_request:
+    branches: [dev]
+    paths:
+      - .github/workflows/p1-003-b-live-support-dev.yml
+      - scripts/ci/p1-003-b-live-support-dev.mjs
+  push:
+    branches: [dev]
+    paths:
+      - .github/workflows/p1-003-b-live-support-dev.yml
+      - scripts/ci/p1-003-b-live-support-dev.mjs
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: solqaryn-p1003b-live-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  contract:
+    name: P1-003.B — contrato offline sin credenciales
+    if: github.repository == 'solqaryn/Solqaryn'
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Scope Lock + sintaxis + negativos del contrato
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-project-scope.mjs
+          node --check scripts/ci/p1-003-b-live-support-dev.mjs
+          node scripts/ci/p1-003-b-live-support-dev.mjs --self-test
+  live:
+    name: P1-003.B — soporte temporal real DEV
+    needs: [contract]
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/dev' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    environment: DEV
+    timeout-minutes: 15
+    env:
+      API_ORIGIN: https://solqaryn-api-dev-fxx8.onrender.com
+      DB_HOST: ${{ vars.SOLQARYN_DEV_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_DEV_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_DEV_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_DEV_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_DEV_DB_PASSWORD }}
+      SUPPORT_USERNAME: javier
+      SUPPORT_PASSWORD: ${{ secrets.SOLQARYN_DEV_PLATFORM_PASSWORD }}
+      BUSINESS_USERNAME: admin_prueba_a
+      BUSINESS_PASSWORD: ${{ secrets.SOLQARYN_DEV_B_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Confirmar DEV y código exacto
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = 'solqaryn/Solqaryn'
+          test "$GITHUB_REF" = 'refs/heads/dev'
+          test "$GITHUB_SHA" = "$(git rev-parse HEAD)"
+          node scripts/verify-project-scope.mjs
+      - name: Instalar cliente MySQL exclusivamente para SELECT
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq > /dev/null
+          sudo apt-get install -qq -y mysql-client > /dev/null
+      - name: Certificar JWT, sesión, aislamiento, expiración, revocación y auditoría
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/ci/p1-003-b-live-support-dev.mjs
+      - name: Informe sin PII, contraseñas ni tokens
+        if: success()
+        shell: bash
+        run: |
+          {
+            echo '## P1-003.B — DEV real'
+            echo '- Autoridad de plataforma y denegación empresarial: PASS'
+            echo '- Lecturas por módulo y empresa, negativas y expiración: PASS'
+            echo '- Revocación inmediata y auditoría MySQL durable: PASS'
+            echo '- Empresas, roles, membresías y contraseñas: no modificados'
+            echo '- Escrituras DEV deliberadas: sesiones temporales y auditoría únicamente'
+            echo '- Secretos y JWT: nunca volcados a logs ni artefactos'
+            echo "- SHA probado: $GITHUB_SHA"
+          } >> "$GITHUB_STEP_SUMMARY"
