@@ -16,7 +16,7 @@ Estado actual: **PENDIENTE DE PR PROTEGIDO, CI LIVE y lectura posterior**. No de
 
 ## Prueba dirigida de CI
 
-El filtro `FullyQualifiedName~P1003B` debe encontrar y ejecutar la prueba MySQL original, ahora identificada como `P1003BSupportSessionMySqlIntegrationTests`. No se duplica ni se deshabilita la integración existente; toda la lógica de aislamiento, token, revocación y auditoría se conserva. La prueba LIVE sigue siendo un gate distinto de posterior ejecución en DEV.
+El filtro `FullyQualifiedName~P1003B` ejecuta `P1003BSupportRouteCertificationTests`, con aserciones reales de allowlist y contexto verificado por servidor, sin MySQL porque el gate dirigido no dispone de ese servicio. La integración MySQL original sigue en `SupportSessionMySqlIntegrationTests`, sin cambio de aserciones, ejecutada por los jobs que sí levantan MySQL; el escenario LIVE es otro gate posterior al merge.
 
 ## Aceptación
 

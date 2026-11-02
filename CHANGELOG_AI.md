@@ -1,3 +1,9 @@
+## 2026-11-02 — P1-003.B: corregir infraestructura del gate comercial dirigido
+
+- El check `SOLQARYN - Directed commercial scope` no levanta MySQL; la clase de integración MySQL existente recupera su nombre original, sin alterar aserciones.
+- Se añade `P1003BSupportRouteCertificationTests` con pruebas positivas de cinco rutas permitidas, negativas de módulos/verbos/rutas, y rechazo del contexto candidato no autorizado. El gate dirigido ejecuta aserciones reales sin necesitar MySQL.
+- La cobertura transaccional MySQL sigue en el job ERP con MySQL efímero; el test LIVE DEV de sesiones, JWT y auditoría se ejecutará solo después de merge protegido.
+
 ## 2026-11-02 — P1-003.B: prueba MySQL dirigida a scope exacto
 
 - La clase de integración MySQL preexistente mantiene íntegramente su prueba real de sesiones, bloqueo concurrente, auditoría y revocación; su identificador de clase ahora incluye `P1003B` para permitir al check `SOLQARYN - Directed commercial scope` ejecutar esa prueba real, no un test artificial.
