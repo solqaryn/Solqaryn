@@ -1,3 +1,9 @@
+## 2026-11-02 — P1-003.B: contrato de certificación LIVE controlada (propuesta)
+
+- Añadido un workflow DEV ejecutable solo tras integración en dev, con contrato offline en PR y prueba HTTP/JWT real más auditoría MySQL; sin PII ni secretos en logs.
+- El test exige rol global vigente, niega membresía empresarial implícita, verifica lectura de Productos y Categorías en una sola empresa, expiración y revocación. No modifica roles, membresías ni datos comerciales.
+- No equivale a certificación aprobada: falta integración protegida, ejecución LIVE con la cuenta de plataforma y conciliación del Sheet.
+
 ## 2026-11-02 — P1-003.A: reparaciones acotadas de CI para #3813
 
 - Se corrigió el fixture MySQL **efímero** de migraciones diferidas: `EnsureCreated` crea también la tabla nueva de soporte; esa tabla se retira solo en el modo de pruebas legacy, antes de sembrar casos y ejecutar la migración pendiente con su DDL real. Las dos pruebas de backfill conservan sus aserciones originales y no se deshabilitan.
