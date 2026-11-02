@@ -10,6 +10,7 @@ Siguen obligatorios `verify-solqaryn-project-scope`, `SOLQARYN - Seguridad multi
 - `priority4-quality.yml`: no se activa por `backend/tests/**` como unico impacto; mantiene compilacion, lint y regresiones `Category!=Integration`. La integracion MySQL pertenece al job de migraciones de `dev-ci.yml`.
 - `dev-ci.yml`: un preflight `impact` ejecuta el clasificador en Node 24, lo prueba y compara los SHA exactos de base y HEAD; el job MySQL solo se omite cuando el diff contiene exclusivamente frontend, documentacion, `CHANGELOG_AI.md` y/o archivos unitarios comerciales `backend/tests/Solqaryn.Tests/PddddX*Tests.cs` cuyo contenido no declara `Category=Integration` ni hace uso conocido de base de datos.
 - `scripts/security/ci-impact-routing.mjs`: cambios desconocidos, eliminaciones ambiguas, rutas de gobernanza, codigo productivo, migraciones, pruebas de integracion o referencias a DbContext/MySQL obligan a ejecutar MySQL; fallos del diff o del clasificador impiden la certificacion. Dispacho manual sin base ejecuta la suite completa.
+- `solqaryn-commercial-directed.yml`: solo se ejecuta para ramas comerciales deterministas `work/solqaryn-p*`; los PR de gobierno no disparan una prueba comercial ficticia. Scope Lock sigue rechazando cualquier PR comercial en rama incorrecta.
 - `project-scope-lock.yml`: ejecuta los casos positivos y negativos del clasificador; permanece con revision independiente requerida para cualquier cambio de workflows o rutas de `scripts/security/**`.
 
 ## Aseguramiento
