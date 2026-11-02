@@ -1,3 +1,8 @@
+## 2026-11-02 — P1-003.B: prueba MySQL dirigida a scope exacto
+
+- La clase de integración MySQL preexistente mantiene íntegramente su prueba real de sesiones, bloqueo concurrente, auditoría y revocación; su identificador de clase ahora incluye `P1003B` para permitir al check `SOLQARYN - Directed commercial scope` ejecutar esa prueba real, no un test artificial.
+- Se mantiene separada la prueba LIVE Render DEV con secretos protegidos, ejecutable solo después de merge a dev. En PR corre únicamente el contrato offline y la integración MySQL efímera.
+
 ## 2026-11-02 — P1-003.B: contrato de certificación LIVE controlada (propuesta)
 
 - Añadido un workflow DEV ejecutable solo tras integración en dev, con contrato offline en PR y prueba HTTP/JWT real más auditoría MySQL; sin PII ni secretos en logs.

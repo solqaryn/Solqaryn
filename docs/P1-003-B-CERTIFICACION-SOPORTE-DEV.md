@@ -14,6 +14,10 @@ Estado actual: **PENDIENTE DE PR PROTEGIDO, CI LIVE y lectura posterior**. No de
 - En caso de fallo posterior a una creación, intento de revocación en finally; si no es verificable, emitir NO_GO sin ocultar la incidencia.
 - La prueba online se ejecuta únicamente desde código ya integrado en dev (push/dispatch), nunca desde código no revisado de PR.
 
+## Prueba dirigida de CI
+
+El filtro `FullyQualifiedName~P1003B` debe encontrar y ejecutar la prueba MySQL original, ahora identificada como `P1003BSupportSessionMySqlIntegrationTests`. No se duplica ni se deshabilita la integración existente; toda la lógica de aislamiento, token, revocación y auditoría se conserva. La prueba LIVE sigue siendo un gate distinto de posterior ejecución en DEV.
+
 ## Aceptación
 
 LISTO requiere: contrato offline PASS, test online PASS de JWT real y MySQL DEV para el SHA desplegado en Render, ejecución exacta con autorización del operador, rechazo empresarial, aislamiento A/B, expiración, revocación y auditoría, integración protegida del workflow con revisión independiente y readback de PLAN_MAESTRO, COLA y BITACORA. Si el secreto de la cuenta de soporte no corresponde a un administrador real de plataforma, conservar PENDIENTE/VALIDANDO y registrar el dato como impedimento de credenciales, sin inventar autoridad.
