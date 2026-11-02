@@ -18,6 +18,8 @@ Predecesor P1-004.A LISTO por PR #3819, reviewed jmejia31 en 3713a83b98e0cfc113d
 
 ## Evidencia y criterio de cierre
 
+Cinco regresiones dirigidas `P1004BDelegacionCertNegativesTests` comprueban concesión limitada, rechazo de autoelevación, revocación inmediata, aislamiento y no reactivación silenciosa del permiso en EF InMemory. Ese nivel no certifica MySQL/JWT real.
+
 El contrato offline no certifica B. Requiere job LIVE real SUCCESS, SHA y ejecución identificables, lectura de auditoría MySQL, CI exact-SHA, cierre y readback PLAN/COLA/BITACORA. Las pruebas EF InMemory de A no son sustituto. Si Render todavía sirve un SHA previo, esperar la publicación actualizada; no alterar el servicio automático ni saltarse el gate.
 
 ## Impacto
