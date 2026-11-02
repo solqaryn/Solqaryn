@@ -169,5 +169,14 @@ internal static class Phase7MySqlTestDatabase
             if ((await db.Database.GetPendingMigrationsAsync()).Any())
                 throw new InvalidOperationException("Phase 7 test bootstrap left pending Oracle migrations.");
         }
+        else
+        {
+            // Solo en MySQL efímero de pruebas: EnsureCreated ya creó la tabla P1-003.A.
+            // Los tests de backfill siembran filas legacy antes de llamar a MigrateAsync;
+            // dejar ausente esta tabla permite que la migración pendiente ejecute su DDL.
+            // Nunca eliminar tablas de una base DEV/Aiven ni de un bootstrap productivo.
+            await db.Database.ExecuteSqlRawAsync(
+                "DROP TABLE IF EXISTS `PlataformaSesionesSoporte`;");
+        }
     }
 }

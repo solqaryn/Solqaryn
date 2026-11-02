@@ -1,3 +1,9 @@
+## 2026-11-02 — P1-003.A: reparaciones acotadas de CI para #3813
+
+- Se corrigió el fixture MySQL **efímero** de migraciones diferidas: `EnsureCreated` crea también la tabla nueva de soporte; esa tabla se retira solo en el modo de pruebas legacy, antes de sembrar casos y ejecutar la migración pendiente con su DDL real. Las dos pruebas de backfill conservan sus aserciones originales y no se deshabilitan.
+- Se estabilizó la prueba M10 del drawer esperando que finalice la gestión de foco de `NavigationEnd` antes de pulsar Enter. Se mantienen las aserciones de apertura, `aria-expanded`, captura de foco, Escape y devolución de foco, sin introducir reintentos ni cambios en la UI productiva.
+- Sin cambios en autorizaciones, membresías, tokens, secretos, migraciones productivas, bases DEV/Aiven, QA, main ni producción. CI exact-SHA y revisión independiente del PR siguen siendo obligatorios.
+
 ## 2026-10-31 — P1-003.A: sesión temporal de soporte multiempresa DEV (propuesta)
 
 - Se agrega una concesión explícita, temporal (1–30 minutos), revocable y de solo lectura. La allowlist inicial queda limitada a Productos y Categorías y a cinco rutas GET exactas revisadas; cualquier otro módulo/endpoint falla cerrado. El operador debe conservar autoridad global vigente; la empresa debe estar activa.
