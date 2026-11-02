@@ -1,3 +1,10 @@
+## 2026-11-02 — P1-004.B: certificación LIVE independiente de delegación (PR)
+
+- P1-004.A ya integrado dev@665964be33f484b53a89cb59bf387ec27ccf5fc1 por PR #3819. B define exclusivamente el contrato HTTP/JWT/MySQL real de DEV con dos identidades existentes, concesión temporal revocable y auditoría durable (ver `docs/P1-004-B-CERTIFICACION-DEV.md`).
+- Script de seguridad fail-closed y workflow Node 24: contrato sin secretos para PR, live únicamente tras push a dev protegido y con environment DEV; ninguna acción de QA/main/PROD ni cambio de API/ERP/migraciones/proveedores.
+- Negativos: autoelevación de delegado/super, lectura no autorizada pre/post revocación, scope empresa B, gestión global y soporte. Positivo: metadatos de directorio y evidencia de auditoría MySQL. Usuarios/membresías de DEV conservados; readback y cleanup del grant por API.
+- No certificar B hasta éxito del job LIVE real, SHA exacto, merge protegido, CI y readback Sheets.
+
 ## 2026-11-02 — P1-004.A: delegación administrativa de mínimo privilegio (PR protegido)
 
 - Backend PlataformaScopeService restringe superadmin a rol de sistema vivo; PlataformaDelegacionService valida rol personalizado, asignación global única y grant explícito PLATAFORMA.DELEGACION.EMPRESAS_VER, jamás claims o tenant.
