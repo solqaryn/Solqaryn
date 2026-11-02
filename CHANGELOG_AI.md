@@ -1,3 +1,10 @@
+## 2026-11-02 — P1-003.B: corregir identidad del operador en prueba LIVE DEV
+
+- Se sustituyó el uso incorrecto de `SOLQARYN_DEV_A_USERNAME` (cuenta empresarial C en el contrato MF3) como operador por `javier`, única identidad global acreditada en DEV.
+- La autenticación del operador se obtiene exclusivamente del secreto protegido `SOLQARYN_DEV_PLATFORM_PASSWORD` en Environment DEV; si no existe o es inválido la certificación falla cerrada, sin cambiar contraseñas o permisos.
+- Se mantiene inalterada la pareja empresarial de contraste `admin_prueba_a` + `SOLQARYN_DEV_B_PASSWORD`, que es correcta según el contrato MF3 ya certificado.
+- Esta corrección no equivale a PASS LIVE; requiere aprobación independiente del nuevo SHA, CI protegida y prueba real en DEV.
+
 ## 2026-11-02 — P1-003.B: corregir infraestructura del gate comercial dirigido
 
 - El check `SOLQARYN - Directed commercial scope` no levanta MySQL; la clase de integración MySQL existente recupera su nombre original, sin alterar aserciones.

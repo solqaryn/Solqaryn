@@ -50,8 +50,8 @@ jobs:
       DB_NAME: ${{ vars.SOLQARYN_DEV_DB_NAME }}
       DB_USER: ${{ vars.SOLQARYN_DEV_DB_USER }}
       DB_PASSWORD: ${{ secrets.SOLQARYN_DEV_DB_PASSWORD }}
-      SUPPORT_USERNAME: ${{ secrets.SOLQARYN_DEV_A_USERNAME }}
-      SUPPORT_PASSWORD: ${{ secrets.SOLQARYN_DEV_A_PASSWORD }}
+      SUPPORT_USERNAME: javier
+      SUPPORT_PASSWORD: ${{ secrets.SOLQARYN_DEV_PLATFORM_PASSWORD }}
       BUSINESS_USERNAME: admin_prueba_a
       BUSINESS_PASSWORD: ${{ secrets.SOLQARYN_DEV_B_PASSWORD }}
     steps:

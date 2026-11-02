@@ -39,6 +39,8 @@ function preflightEnv() {
   for (const key of ['DB_PASSWORD','SUPPORT_USERNAME','SUPPORT_PASSWORD','BUSINESS_USERNAME','BUSINESS_PASSWORD']) {
     required(typeof process.env[key] === 'string' && process.env[key].length>0, 'MISSING_' + key);
   }
+  required(process.env.SUPPORT_USERNAME === 'javier', 'OPERATOR_IDENTITY_NOT_JAVIER');
+  required(process.env.SUPPORT_USERNAME.toLowerCase() !== process.env.BUSINESS_USERNAME.toLowerCase(), 'PLATFORM_AND_BUSINESS_MUST_DIFFER');
 }
 
 function query(sql) {
