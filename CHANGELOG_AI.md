@@ -1,3 +1,9 @@
+## 2026-11-02 - Fast lane causal de certificacion CI (PR protegido propuesto)
+
+- `scripts/verify-automated-pr-certification.mjs`: deja de esperar suites opcionales extensas pendientes solo para cambios documentales no protegidos o test unitario comercial verificado por clasificador CI y MySQL SKIPPED. Cualquier fallo ya observado, check desconocido, cambios de gobierno/productivos/DB y required Core+directed siguen bloqueando.
+- Se fortalece la espera por nombre relevante y SHA exacto con casos negativos para contexto desconocido, apps falsificadas, fallos opcionales, MySQL requerido, revisions y check comercial dirigido. La ejecucion de Tasks pausadas, rulesets, infraestructura, secretos y QA/main/PROD no cambia.
+- Politica y reversion en `docs/CI_IMPACT_ROUTING.md`. No declarar vigente antes de aprobacion genuina, CI exacta y merge protegido.
+
 ## 2026-11-02 - Corrección de bootstrap del rerun por review (PR #3817)
 
 - El workflow de `pull_request_review` comprueba que el script de recuperación está integrado en el `dev` protegido antes de invocarlo. Durante el propio PR de instalación deja constancia `BOOTSTRAP_DEFERRED_UNTIL_MERGE` y no ejecuta ni confía en código del PR con permisos `actions:write`. Scope Lock y aprobación independiente siguen siendo obligatorios; no se falsea la certificación LIVE del nuevo runtime.

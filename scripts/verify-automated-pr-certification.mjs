@@ -20,6 +20,63 @@ const SECRET = /gh[pousr]_[a-zA-Z0-9_]{20,}|AKIA[A-Z0-9]{16}|-----BEGIN (?:RSA |
 const isGuarded = name => GUARDED.has(name) || name.startsWith('.agents/skills/') || name.startsWith('.github/') || name.startsWith('scripts/security/');
 const isProductionSource = name => /^(?:backend\/src\/|frontend\/src\/)/.test(name) && !/(?:\/tests?\/|\.spec\.|\.test\.)/.test(name);
 
+// Only known, non-mandatory broad suites may finish after the fast lane.
+// Never defer required security/backend, the directed scope or an unknown check.
+const CI_IMPACT_CHECK = 'Impacto CI - clasificacion MySQL fail-closed';
+const MYSQL_INTEGRATION_CHECK = 'Migraciones EF Oracle, variantes y cargas masivas en MySQL 8.4';
+const BROAD_OPTIONAL = new Set([
+  'Módulos, cargas, sesión, catálogos, variantes, accesibilidad, facturación y correo',
+  'ERP - Contratos, pruebas y build',
+  'Migraciones EF Oracle, variantes y cargas masivas en MySQL 8.4',
+  'Authorization, files, secrets and tenant gate',
+  'MySQL 8.4 isolated backup and restore proof',
+  'Backend Release y pruebas',
+  'Frontend producción',
+  'SOLQARYN - Frontend tipado y build',
+  'Docker y aislamiento de entornos',
+  'Preflight, backfill y autoridad en MySQL 8.4',
+]);
+const DOCS_WITH_RUNTIME_CONTRACTS = new Set([
+  'docs/PRODUCTION_READINESS_CONTRACT.md',
+  'docs/PERFORMANCE_BENCHMARK_CONTRACT.md',
+  'docs/DETALLES_PENDIENTES.md',
+]);
+const OFFLINE_COMMERCIAL_UNIT = /^backend\/tests\/Solqaryn\.Tests\/P\d{4}[A-Z][A-Za-z0-9_]*Tests\.cs$/;
+
+function canDeferUnrelatedSuites(files, byName) {
+  if (!Array.isArray(files) || files.length === 0 || files.length > 200) return false;
+  if (files.some(f => !f || !['added', 'modified'].includes(f.status) ||
+      typeof f.filename !== 'string' || f.filename.includes('..') ||
+      f.filename.includes('\\') || BLOCKED_RUNTIME_PATHS.test(f.filename) ||
+      isGuarded(f.filename))) return false;
+  let unitCount = 0;
+  for (const file of files) {
+    const path = file.filename;
+    if (path === 'CHANGELOG_AI.md') continue;
+    if (path.startsWith('docs/') && path.endsWith('.md') &&
+        !DOCS_WITH_RUNTIME_CONTRACTS.has(path) &&
+        !path.startsWith('docs/evidencias/modernizacion/')) continue;
+    if (OFFLINE_COMMERCIAL_UNIT.test(path)) { unitCount++; continue; }
+    return false;
+  }
+  if (!unitCount) return true; // only non-executable evidence
+  // Unit-only changes require positive trusted proof that MySQL was classified
+  // as not needed; missing, forged, queued or failed evidence is NOT fast lane.
+  const impact = byName.get(CI_IMPACT_CHECK);
+  const mysql = byName.get(MYSQL_INTEGRATION_CHECK);
+  return impact?.status === 'completed' && impact.conclusion === 'success' &&
+    impact.app?.id === TRUSTED_GITHUB_ACTIONS_APP_ID &&
+    mysql?.status === 'completed' && mysql.conclusion === 'skipped' &&
+    mysql.app?.id === TRUSTED_GITHUB_ACTIONS_APP_ID;
+}
+
+function optionalPendingDeferred(files, byName) {
+  if (!canDeferUnrelatedSuites(files, byName)) return [];
+  return [...byName.values()].filter(check => BROAD_OPTIONAL.has(check.name) &&
+    ['queued', 'in_progress'].includes(check.status) &&
+    check.app?.id === TRUSTED_GITHUB_ACTIONS_APP_ID).map(check => check.name);
+}
+
 export function certify({ pr, files, runs, reviews = [], commits = [], repository, expectedHead }) {
   const failures = [];
   const fail = reason => failures.push(reason);
@@ -53,8 +110,10 @@ export function certify({ pr, files, runs, reviews = [], commits = [], repositor
     if (!item || item.status !== 'completed' || item.conclusion !== 'success' || item.app?.id !== TRUSTED_GITHUB_ACTIONS_APP_ID) fail('REQUIRED_CHECK_NOT_GREEN:' + name);
   }
   const applicable = [...byName.values()].filter(x => x.name !== 'verify-solqaryn-project-scope');
-  const incomplete = applicable.filter(x => x.status !== 'completed');
+  const deferred = optionalPendingDeferred(files, byName);
+  const incomplete = applicable.filter(x => x.status !== 'completed' && !deferred.includes(x.name));
   if (incomplete.length) fail('OTHER_CHECKS_PENDING:' + incomplete.map(x => x.name).join(','));
+  // Even in the fast lane, an already failed check is NEVER silently ignored.
   const bad = applicable.filter(x => x.status === 'completed' && !['success', 'skipped'].includes(x.conclusion));
   if (bad.length) fail('CHECK_FAILED:' + bad.map(x => x.name).join(','));
   if (scope && !applicable.some(x => x.name === DIRECTED_CHECK && x.status === 'completed' && x.conclusion === 'success' && x.app?.id === TRUSTED_GITHUB_ACTIONS_APP_ID)) fail('SCOPE_DIRECTED_TEST_MISSING:' + scope);
@@ -70,7 +129,11 @@ export function certify({ pr, files, runs, reviews = [], commits = [], repositor
   } else if (!scope) {
     fail('UNCLASSIFIED_AUTONOMOUS_CHANGE');
   }
-  return { pass: failures.length === 0, failures, mode: changesGuarded ? 'GOVERNANCE_REVIEW' : institutionalPR ? 'INSTITUTIONAL_REVIEW' : 'AUTONOMOUS_COMMERCIAL_CERT', scope: scope || null, sha: expectedHead };
+  return { pass: failures.length === 0, failures,
+    mode: changesGuarded ? 'GOVERNANCE_REVIEW' : institutionalPR ? 'INSTITUTIONAL_REVIEW' : 'AUTONOMOUS_COMMERCIAL_CERT',
+    scope: scope || null, sha: expectedHead,
+    deferred, awaiting: incomplete.map(x => x.name),
+  };
 }
 
 const makeRun = (name, sha, conclusion = 'success') => ({ name, head_sha: sha, status: 'completed', conclusion, app: { id: TRUSTED_GITHUB_ACTIONS_APP_ID } });
@@ -82,8 +145,9 @@ function selfTest() {
   const runs = [...REQUIRED.map(n => makeRun(n, h)), makeRun(DIRECTED_CHECK, h)];
   const fixture = { pr, files, runs, repository: 'solqaryn/Solqaryn', expectedHead: h };
   const clone = v => structuredClone(v);
-  const assertPass = (label, obj) => { const x = certify(obj); if (!x.pass) throw Error('positive ' + label + ': ' + x.failures.join(';')); };
-  const assertReject = (label, change) => { const x = certify(change(clone(fixture))); if (x.pass) throw Error('negative not rejected ' + label); };
+  let positives = 0, negatives = 0, waitCases = 0;
+  const assertPass = (label, obj) => { const x = certify(obj); if (!x.pass) throw Error('positive ' + label + ': ' + x.failures.join(';')); positives++; };
+  const assertReject = (label, change) => { const x = certify(change(clone(fixture))); if (x.pass) throw Error('negative not rejected ' + label); negatives++; };
   assertPass('ordinary commercial PR', fixture);
   assertReject('missing security check', x => ({...x, runs: x.runs.filter(c => c.name !== REQUIRED[0])}));
   assertReject('failed backend', x => { x.runs[1].conclusion = 'failure'; return x; });
@@ -118,20 +182,93 @@ function selfTest() {
 
   assertReject('self governance approval', x => { x.files.push({filename:'docs/AUTOMATION_STATUS.md'}); x.reviews = [{state:'APPROVED',commit_id:h,user:{login:['jmejia','31'].join('')}}];return x; });
   assertReject('stale governance review', x => { x.files.push({filename:'docs/AUTOMATION_STATUS.md'}); x.reviews = [{state:'APPROVED',commit_id:'b'.repeat(40),user:{login:'morales35alex'}}];return x; });
+  const pending = name => ({...makeRun(name, h), status:'in_progress', conclusion:null});
+  const optional = 'Authorization, files, secrets and tenant gate';
+  const docs = [{filename:'CHANGELOG_AI.md',status:'modified'},
+    {filename:'docs/CI_NOTE.md',status:'modified'}];
+  const docsLane = clone(fixture);
+  docsLane.files = docs;
+  docsLane.runs.push(pending(optional));
+  assertPass('docs evidence can certify while unrelated ERP suite runs', docsLane);
+  const docsResult = certify(docsLane);
+  if (!docsResult.deferred.includes(optional)) throw Error('DOCS_FAST_LANE_MUST_RECORD_DEFERRED_CHECK');
+  const unitPath = 'backend/tests/Solqaryn.Tests/P1003BSupportRouteCertificationTests.cs';
+  const unitsLane = clone(docsLane);
+  unitsLane.files = [docs[0],{filename:unitPath,status:'added'}];
+  unitsLane.runs.push(makeRun(CI_IMPACT_CHECK,h), makeRun(MYSQL_INTEGRATION_CHECK,h,'skipped'));
+  assertPass('scoped unit with exact-head trusted CI and skipped MySQL', unitsLane);
+  assertReject('unit without CI classifier', x => { x.files = unitsLane.files; x.runs.push(pending(optional)); return x; });
+  assertReject('unit classifier forged by untrusted app', x => {
+    x.files = unitsLane.files; x.runs = clone(unitsLane.runs);
+    x.runs.find(z=>z.name===CI_IMPACT_CHECK).app.id = 42; return x;
+  });
+  assertReject('unit with MySQL integration required', x => {
+    x.files = unitsLane.files; x.runs = clone(unitsLane.runs);
+    x.runs.find(z=>z.name===MYSQL_INTEGRATION_CHECK).conclusion='success'; return x;
+  });
+  assertReject('unknown script cannot defer', x => {
+    x.files=[...docs,{filename:'scripts/ci/unknown.mjs',status:'added'}];
+    x.runs.push(pending(optional)); return x;
+  });
+  assertReject('governance file cannot defer', x => {
+    x.files=[...docs,{filename:'scripts/verify-automated-pr-certification.mjs',status:'modified'}];
+    x.reviews=[{state:'APPROVED',commit_id:h,user:{login:'morales35alex'}}];
+    x.runs.push(pending(optional)); return x;
+  });
+  assertReject('protected runtime contract document cannot defer', x => {
+    x.files=[docs[0],{filename:'docs/PRODUCTION_READINESS_CONTRACT.md',status:'modified'}];
+    x.runs.push(pending(optional)); return x;
+  });
+  assertReject('deleted evidence cannot defer', x => {
+    x.files=[docs[0],{filename:'docs/CI_NOTE.md',status:'removed'}];
+    x.runs.push(pending(optional)); return x;
+  });
+  assertReject('untrusted optional check cannot defer', x => {
+    x.files=docs; const other=pending(optional); other.app.id=42;
+    x.runs.push(other); return x;
+  });
+  assertReject('unknown optional check cannot defer', x => {
+    x.files=docs; x.runs.push(pending('New mandatory audit with unknown name')); return x;
+  });
+  assertReject('known optional failure still blocks in fast lane', x => {
+    x.files=docs; x.runs.push(makeRun(optional,h,'failure')); return x;
+  });
+  assertReject('required backend pending always blocks fast lane', x => {
+    x.files=docs; x.runs[1]=pending(REQUIRED[1]);return x;
+  });
+  assertReject('directed scope pending always blocks fast lane', x => {
+    x.files=docs; x.runs[2]=pending(DIRECTED_CHECK);return x;
+  });
+  const assertWait=(label,report,active,expected)=>{
+    const actual=shouldWaitForActiveChecks(report,active,h);
+    if(actual!==expected)throw Error('WAIT_CLASSIFICATION_WRONG:'+label+':'+actual);
+    waitCases++;
+  };
   const governanceBlocked = certify({...fixture, files:[...files,{filename:'.github/workflows/project-scope-lock.yml'}]});
-  if (shouldWaitForActiveChecks(governanceBlocked, [{head_sha:h,name:'Build',status:'in_progress'}], h)) throw Error('GOVERNANCE_BLOCKER_MUST_FAIL_IMMEDIATELY');
+  assertWait('governance blocked immediately',governanceBlocked,[pending(REQUIRED[0])],false);
   const missingDirected = certify({...fixture, runs:runs.slice(0,2)});
-  if (shouldWaitForActiveChecks(missingDirected, [], h)) throw Error('MISSING_CHECK_WITHOUT_ACTIVE_RUN_MUST_FAIL_IMMEDIATELY');
-  if (!shouldWaitForActiveChecks(missingDirected, [{head_sha:h,name:'Build',status:'in_progress'}], h)) throw Error('ACTIVE_EXACT_HEAD_CHECK_MUST_BE_WAITABLE');
-  if (shouldWaitForActiveChecks(missingDirected, [{head_sha:'b'.repeat(40),name:'Build',status:'in_progress'}], h)) throw Error('OTHER_HEAD_CHECK_MUST_NOT_DELAY_CERTIFICATION');
-  console.log('AUTO_CERT_SELF_TEST=PASS (4 positive + 22 fail-closed negatives; wait logic 4/4)');
+  assertWait('missing directed without active',missingDirected,[],false);
+  assertWait('unrelated active cannot mask missing directed',missingDirected,[pending(optional)],false);
+  assertWait('other SHA cannot mask missing directed',missingDirected,[{...pending(DIRECTED_CHECK),head_sha:'b'.repeat(40)}],false);
+  const queuedRequired=certify({...docsLane,runs:[pending(REQUIRED[0]),runs[1],runs[2]]});
+  assertWait('required check in progress remains waitable',queuedRequired,[pending(REQUIRED[0])],true);
+  const queuedDirected=certify({...docsLane,runs:[runs[0],runs[1],pending(DIRECTED_CHECK)]});
+  assertWait('directed check in progress remains waitable',queuedDirected,[pending(DIRECTED_CHECK)],true);
+  assertWait('fast lane deferred optional does not delay',docsResult,[pending(optional)],false);
+  const activeOptional = certify({...fixture,runs:[...runs,pending(optional)]});
+  assertWait('risky scope still waits relevant optional',activeOptional,[pending(optional)],true);
+  console.log('AUTO_CERT_SELF_TEST=PASS ('+positives+' positives; '+negatives+
+    ' fail-closed negatives; '+waitCases+' wait conditions)');
 }
 
 function shouldWaitForActiveChecks(report, runs, expectedHead) {
   if (report.failures.includes('GOVERNANCE_REQUIRES_INDEPENDENT_FORMAL_REVIEW') || report.failures.includes('INSTITUTIONAL_REQUIRES_JAVIER_INDEPENDENT_REVIEW')) return false;
   const pendingOnly = report.failures.length > 0 && report.failures.every(f => f.startsWith('OTHER_CHECKS_PENDING:') || f.startsWith('REQUIRED_CHECK_NOT_GREEN:') || f.startsWith('SCOPE_DIRECTED_TEST_MISSING:'));
   if (!pendingOnly) return false;
-  return runs.some(run => run.head_sha === expectedHead && run.name !== 'verify-solqaryn-project-scope' && run.status !== 'completed');
+  // Only actually relevant pending jobs may extend certification time.
+  const names = new Set(report.awaiting || []);
+  return runs.some(run => run.head_sha === expectedHead && names.has(run.name) &&
+    run.name !== 'verify-solqaryn-project-scope' && run.status !== 'completed');
 }
 
 const args = new Set(process.argv.slice(2));
@@ -172,6 +309,7 @@ else if (args.has('--pr')) {
     await sleep(20000);
   }
   console.log('AUTO_CERT_MODE=' + report.mode + ' SHA=' + report.sha + ' SCOPE=' + (report.scope || 'NONE'));
+  console.log('AUTO_CERT_DEFERRED_UNRELATED_CHECKS=' + (report.deferred.length ? report.deferred.join(',') : 'NONE'));
   if (!report.pass) throw Error('AUTO_CERT=NO_GO ' + report.failures.join(' | '));
-  console.log('AUTO_CERT=PASS (checks exact-head, source scope, negative tests, trust boundary)');
+  console.log('AUTO_CERT=PASS (required and relevant checks exact-head, source scope, negative tests, trust boundary)');
 } else throw Error('Provide --self-test or --pr');
