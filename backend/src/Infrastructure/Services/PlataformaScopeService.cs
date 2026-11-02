@@ -31,6 +31,12 @@ public sealed class PlataformaScopeService : IPlataformaScopeService
             return null;
 
         var usuarioId = _current.UsuarioId.Value;
+        // No permitir identidad global ambigua: un superadmin no puede conservar
+        // simultáneamente otra asignación delegada, incluso si no es de sistema.
+        if (await _db.Set<UsuarioRolPlataforma>().IgnoreQueryFilters().AsNoTracking()
+            .CountAsync(x => x.UsuarioId == usuarioId && x.Activa, cancellationToken) != 1)
+            return null;
+
         // IgnoreQueryFilters solo para tablas de IDENTIDAD: comprobar estado
         // explícitamente. No se lee ni modifica ningún dato comercial.
         var matching = await (
