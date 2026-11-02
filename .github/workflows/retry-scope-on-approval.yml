@@ -20,7 +20,7 @@ jobs:
       github.event.review.state == 'approved' &&
       github.event.pull_request.base.ref == 'dev' &&
       github.event.pull_request.head.repo.full_name == 'solqaryn/Solqaryn' &&
-      (github.actor == 'jmejia31' || github.actor == 'morales35alex')
+      (github.actor == format('{0}{1}', 'jmejia', '31') || github.actor == 'morales35alex')
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

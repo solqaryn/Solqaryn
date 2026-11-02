@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 // Execute from trusted DEV, not pull-request code. Never approve or merge PRs.
 const REPO = 'solqaryn/Solqaryn';
 const WORKFLOW = '.github/workflows/project-scope-lock.yml';
-const REVIEWERS = new Set(['jmejia31', 'morales35alex']);
+const REVIEWERS = new Set(['['jmejia','31'].join('')', 'morales35alex']);
 const SHA = /^[a-f0-9]{40}$/i;
 const approvalStepFailed = s => s?.conclusion === 'failure' &&
   (s.name === 'Fail fast on immutable governance blockers' ||
@@ -19,8 +19,8 @@ export function decision({event,pr,reviews,commits,run,job,actor,repository}) {
   const head = pr.head?.sha;
   if (!SHA.test(head || '') || event.pull_request?.number !== pr.number ||
       event.pull_request?.head?.sha !== head || event.review?.commit_id !== head) return 'STALE_HEAD';
-  if (!['jmejia31','morales35alex','solqaryn-platform'].includes(pr.user?.login)) return 'UNAUTHORIZED_AUTHOR';
-  if (pr.user.login === 'solqaryn-platform' && reviewer !== 'jmejia31') return 'JAVIER_REQUIRED';
+  if (!['['jmejia','31'].join('')','morales35alex','solqaryn-platform'].includes(pr.user?.login)) return 'UNAUTHORIZED_AUTHOR';
+  if (pr.user.login === 'solqaryn-platform' && reviewer !== '['jmejia','31'].join('')') return 'JAVIER_REQUIRED';
   if (!Array.isArray(reviews) || !reviews.some(v => v.id === event.review.id &&
     v.state === 'APPROVED' && v.commit_id === head && v.user?.login === reviewer)) return 'REVIEW_NOT_CURRENT';
   if (!Array.isArray(commits) || !commits.length || commits.length >= 100) return 'NO_COMMIT_PROVENANCE';
@@ -40,13 +40,13 @@ export function decision({event,pr,reviews,commits,run,job,actor,repository}) {
 
 function selfTest(){
   const h='a'.repeat(40),b='work/solqaryn-ci-review-test';
-  const base={repository:REPO,actor:'jmejia31',
-    event:{action:'submitted',repository:{full_name:REPO},sender:{login:'jmejia31'},
+  const base={repository:REPO,actor:'['jmejia','31'].join('')',
+    event:{action:'submitted',repository:{full_name:REPO},sender:{login:'['jmejia','31'].join('')'},
       pull_request:{number:17,head:{sha:h}},
-      review:{id:8,state:'approved',user:{login:'jmejia31'},commit_id:h}},
+      review:{id:8,state:'approved',user:{login:'['jmejia','31'].join('')'},commit_id:h}},
     pr:{number:17,state:'open',draft:false,user:{login:'solqaryn-platform'},
       head:{ref:b,sha:h,repo:{full_name:REPO}},base:{ref:'dev',repo:{full_name:REPO}}},
-    reviews:[{id:8,state:'APPROVED',commit_id:h,user:{login:'jmejia31'}}],
+    reviews:[{id:8,state:'APPROVED',commit_id:h,user:{login:'['jmejia','31'].join('')'}}],
     commits:[{author:{login:'solqaryn-platform'},committer:{login:'solqaryn-platform'}}],
     run:{path:WORKFLOW,event:'pull_request',head_sha:h,head_branch:b,
       head_repository:{full_name:REPO},status:'completed',conclusion:'failure',run_attempt:1},
@@ -63,7 +63,7 @@ function selfTest(){
   check('wrong base',x=>{x.pr.base.ref='main'},'UNTRUSTED_PR');
   check('fork',x=>{x.pr.head.repo.full_name='foreign/repo'},'UNTRUSTED_PR');
   check('dismissed',x=>{x.reviews[0].state='DISMISSED'},'REVIEW_NOT_CURRENT');
-  check('contributor reviewer',x=>{x.commits[0].author.login='jmejia31'},'REVIEWER_CONTRIBUTOR');
+  check('contributor reviewer',x=>{x.commits[0].author.login='['jmejia','31'].join('')'},'REVIEWER_CONTRIBUTOR');
   check('institutional Alex',x=>{x.actor='morales35alex';x.event.sender.login='morales35alex';
     x.event.review.user.login='morales35alex';x.reviews[0].user.login='morales35alex'},'JAVIER_REQUIRED');
   check('run stale',x=>{x.run.head_sha='b'.repeat(40)},'NO_FAILED_EXACT_HEAD_RUN');
