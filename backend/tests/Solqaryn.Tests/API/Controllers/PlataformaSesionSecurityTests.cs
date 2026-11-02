@@ -135,12 +135,14 @@ public sealed class PlataformaSesionSecurityTests
         var roleA = new Rol
         {
             Nombre = "Global A", NombreNormalizado = "GLOBAL_A",
-            Ambito = AmbitoAutorizacion.Plataforma, EsAdministrador = true, Activo = true
+            Ambito = AmbitoAutorizacion.Plataforma, EsAdministrador = true,
+            EsSistema = true, Activo = true
         };
         var roleB = new Rol
         {
             Nombre = "Global B", NombreNormalizado = "GLOBAL_B",
-            Ambito = AmbitoAutorizacion.Plataforma, EsAdministrador = true, Activo = true
+            Ambito = AmbitoAutorizacion.Plataforma, EsAdministrador = true,
+            EsSistema = true, Activo = true
         };
         db.Roles.AddRange(roleA, roleB);
         await db.SaveChangesAsync();
@@ -164,6 +166,14 @@ public sealed class PlataformaSesionSecurityTests
 
         var otherGrant = await db.Set<UsuarioRolPlataforma>()
             .SingleAsync(x => x.RolId == roleB.Id);
+        otherGrant.Desactivar();
+        await db.SaveChangesAsync();
+        Assert.NotNull(await scope.ObtenerActualAsync());
+        // Una segunda asignación no-sistema activa también debe cerrar el scope.
+        roleB.EsSistema = false;
+        otherGrant.Activar();
+        await db.SaveChangesAsync();
+        Assert.Null(await scope.ObtenerActualAsync());
         otherGrant.Desactivar();
         await db.SaveChangesAsync();
         Assert.NotNull(await scope.ObtenerActualAsync());

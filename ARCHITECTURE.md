@@ -1,3 +1,10 @@
+## Backend DEV — Delegación administrativa (P1-004.A, 2026-11-02)
+
+- Superadmin: solamente rol de Plataforma de sistema vivo, revalidado MySQL; un JWT nunca concede datos de tenant automáticamente.
+- Delegado: rol personalizado de Plataforma, una única asignación activa y permiso PLATAFORMA.DELEGACION.EMPRESAS_VER vigente, únicamente para directorio de metadatos empresariales auditado.
+- Solo superadmin asigna/revoca a terceros con motivo explícito y transacción MySQL + RegistroAuditoria. Semilla de roles empresariales no distribuye permisos de Plataforma.
+- Contrato, pruebas y reversión en docs/P1-004-A-DELEGACION-PLATAFORMA-DEV.md; P1-004.B LIVE separado y pendiente hasta integrar A.
+
 ## 2026-11-02 - CI selectiva por impacto (propuesta protegida)
 
 - Se separa la ruta corta de PR comerciales del ciclo de regresiones amplias. Los tres checks obligatorios, la prueba dirigida y el verificador Scope Lock exact-SHA permanecen sin alteracion. Un clasificador fail-closed bajo `scripts/security/ci-impact-routing.mjs` conserva MySQL ante codigo backend, migraciones, integraciones o paths desconocidos.

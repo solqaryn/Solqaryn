@@ -1,3 +1,10 @@
+## 2026-11-02 — P1-004.A: delegación administrativa de mínimo privilegio (PR protegido)
+
+- Backend PlataformaScopeService restringe superadmin a rol de sistema vivo; PlataformaDelegacionService valida rol personalizado, asignación global única y grant explícito PLATAFORMA.DELEGACION.EMPRESAS_VER, jamás claims o tenant.
+- Nueva API /plataforma/delegaciones: concesión/revocación por superadmin a terceros exclusivamente, permiso fijo de lectura de directorio, motivo y auditoría atómica MySQL; GET de delegado revalida y audita sin acceso ERP. SeedPermisoService excluye permisos Plataforma del grant automático empresarial.
+- Sin nuevos índices/migraciones, permisos arbitrarios, frontend, secretos ni escrituras manuales Aiven; ocho tests P1004A con fixtures efímeros. A requiere review y CI exact-SHA; B (HTTP/JWT/MySQL LIVE, autoelevación, revocación, auditoría) seguirá independiente tras merge.
+- Impacto Application/Infrastructure/API/RBAC y documentación. Rollback por PR protegido. No reutilizar rama ni evidencia de PR #3807 cerrado.
+
 ## 2026-11-02 - Fast lane causal de certificacion CI (PR protegido propuesto)
 
 - `scripts/verify-automated-pr-certification.mjs`: deja de esperar suites opcionales extensas pendientes solo para cambios documentales no protegidos o test unitario comercial verificado por clasificador CI y MySQL SKIPPED. Cualquier fallo ya observado, check desconocido, cambios de gobierno/productivos/DB y required Core+directed siguen bloqueando.
