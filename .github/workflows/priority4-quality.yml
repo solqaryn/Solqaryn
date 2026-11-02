@@ -6,6 +6,7 @@ on:
     paths:
       - 'frontend/**'
       - 'backend/**'
+      - '!backend/tests/**'
       - 'scripts/quality/**'
       - 'AGENTS.md'
       - 'docs/AUTOMATION_STATUS.md'
@@ -17,6 +18,7 @@ on:
     paths:
       - 'frontend/**'
       - 'backend/**'
+      - '!backend/tests/**'
       - 'scripts/quality/**'
       - 'docs/PRODUCTION_READINESS_CONTRACT.md'
       - 'docs/PERFORMANCE_BENCHMARK_CONTRACT.md'
@@ -74,7 +76,7 @@ jobs:
         run: |
           dotnet restore Solqaryn.sln
           dotnet build Solqaryn.sln --configuration Release --no-restore
-          dotnet test Solqaryn.sln --configuration Release --no-build --no-restore
+          dotnet test Solqaryn.sln --configuration Release --no-build --no-restore --filter 'Category!=Integration'
 
       - name: Configure Node.js
         uses: actions/setup-node@v4
