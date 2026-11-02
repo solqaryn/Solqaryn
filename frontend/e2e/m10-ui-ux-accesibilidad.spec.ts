@@ -194,6 +194,10 @@ test.describe('M10 — UI/UX empresarial y accesibilidad', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await login(page);
     await page.goto('/dashboard');
+    // NavigationEnd programa focus al main y cierre del sidebar. Esperar ese
+    // foco impide que la navegacion cierre el drawer tras pulsar Enter.
+    // Conservamos la comprobacion estricta de teclado, aria-expanded y Escape.
+    await expect(page.locator('#main-content')).toBeFocused();
 
     const toggle = page.getByRole('button', { name: 'Abrir menú principal' });
     await expect(toggle).toBeVisible();

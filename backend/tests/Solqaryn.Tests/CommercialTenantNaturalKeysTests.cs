@@ -50,6 +50,8 @@ public sealed class CommercialTenantNaturalKeysTests
             "EnlacesPublicosFactura.Token",
             "MensajesOutbox.EventoId",
             "TiendaSesionesCliente.TokenHash",
+            // SHA-256 de sesión de soporte: unicidad técnica, no clave natural comercial.
+            "PlataformaSesionesSoporte.TokenHash",
             "Roles.NombreNormalizadoGlobalUnico",
             "ProductoImagenes.PrincipalAmbitoKey",
             "ProductoVariantes.IdentidadActivaUnica",

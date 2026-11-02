@@ -8,6 +8,8 @@ using Solqaryn.Application.Interfaces;
 using Solqaryn.Application.Security;
 using Solqaryn.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Routing;
 
 namespace Solqaryn.API.Middleware;
 
@@ -34,6 +36,94 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         if (EsRutaDeSeguridadPermitida(httpContext.Request))
         {
             await _next(httpContext);
+            return;
+        }
+
+        var supportTokenHeaders = httpContext.Request.Headers["X-Solqaryn-Support-Token"];
+        var supportPath = httpContext.Request.Path.StartsWithSegments(
+            "/plataforma/soporte", StringComparison.OrdinalIgnoreCase);
+        if (supportPath || supportTokenHeaders.Count > 0)
+        {
+            if (supportTokenHeaders.Count == 0 &&
+                EsRutaGestionSoporte(httpContext.Request))
+            {
+                if (httpContext.User.Identity?.IsAuthenticated == true)
+                    await _next(httpContext);
+                else
+                    await RechazarSoporteAsync(
+                        httpContext, StatusCodes.Status403Forbidden, "PLATFORM_AUTHORITY_REQUIRED");
+                return;
+            }
+
+            var endpoint = httpContext.GetEndpoint();
+            var permissions = endpoint?.Metadata
+                .GetOrderedMetadata<RequierePermisoAttribute>()
+                .ToArray() ?? Array.Empty<RequierePermisoAttribute>();
+            var actionDescriptor = endpoint?.Metadata
+                .GetMetadata<ControllerActionDescriptor>();
+            var routeTemplate = (endpoint as RouteEndpoint)?.RoutePattern.RawText;
+            var sameReadPermission = permissions.Length > 0 &&
+                permissions.All(x => x.Accion == AccionPermiso.Ver &&
+                                     x.Modulo == permissions[0].Modulo);
+            var requestedModule = sameReadPermission ? permissions[0].Modulo : (ModuloSistema?)null;
+            var companyHeader = httpContext.Request.Headers[TenantPermissionContext.EmpresaHeader];
+            int? requestedCompany = companyHeader.Count == 1 &&
+                int.TryParse(companyHeader[0], out var parsedCompany) &&
+                parsedCompany > 0
+                    ? parsedCompany
+                    : null;
+            var explicitRead = !supportPath &&
+                sameReadPermission &&
+                requestedCompany is > 0 &&
+                requestedModule is not null &&
+                actionDescriptor is not null &&
+                PlatformSupportPolicy.IsAllowedReadRoute(
+                    httpContext.Request.Method,
+                    actionDescriptor.ControllerName,
+                    actionDescriptor.ActionName,
+                    routeTemplate,
+                    requestedModule.Value) &&
+                supportTokenHeaders.Count == 1 &&
+                !string.IsNullOrWhiteSpace(supportTokenHeaders[0]);
+
+            var supportService = httpContext.RequestServices
+                .GetService<IPlataformaSoporteSessionService>();
+            if (supportService is null)
+            {
+                await RechazarSoporteAsync(
+                    httpContext, StatusCodes.Status503ServiceUnavailable,
+                    "SUPPORT_AUTHORITY_UNAVAILABLE");
+                return;
+            }
+
+            var result = await supportService.AuthorizeReadAsync(
+                supportTokenHeaders.Count == 1 ? supportTokenHeaders[0] : null,
+                requestedCompany, requestedModule, explicitRead,
+                CreateSupportAuditContext(httpContext),
+                httpContext.RequestAborted);
+            if (!result.Authorized)
+            {
+                await RechazarSoporteAsync(httpContext, result.StatusCode, result.Code);
+                return;
+            }
+
+            try
+            {
+                VerifiedPlatformSupportTenant.MarkCandidate(
+                    httpContext,
+                    new VerifiedPlatformSupportTenant.Scope(
+                        result.SessionId!.Value, requestedCompany!.Value, requestedModule!.Value));
+                await _next(httpContext);
+            }
+            catch
+            {
+                await supportService.CompleteAuthorizedReadAsync(
+                    requestCompleted: false, CancellationToken.None);
+                throw;
+            }
+
+            await supportService.CompleteAuthorizedReadAsync(
+                requestCompleted: true, CancellationToken.None);
             return;
         }
 
@@ -695,6 +785,42 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         TenantPermissionContext.MarkAuthorizedEmpresaId(http, empresaId);
         await _next(http);
         return true;
+    }
+
+    private static PlatformSupportAuditContext CreateSupportAuditContext(HttpContext context) =>
+        new(
+            context.Connection.RemoteIpAddress?.ToString(),
+            context.Request.Headers.UserAgent.ToString(),
+            context.TraceIdentifier);
+
+    private static bool EsRutaGestionSoporte(HttpRequest request)
+    {
+        if (HttpMethods.IsPost(request.Method) &&
+            EsRutaExacta(request.Path, "/plataforma/soporte/sesiones"))
+            return true;
+
+        var segments = request.Path.Value?.Split('/', StringSplitOptions.None);
+        return HttpMethods.IsDelete(request.Method) &&
+               segments is { Length: 5 } &&
+               segments[0] == "" &&
+               segments[1].Equals("plataforma", StringComparison.OrdinalIgnoreCase) &&
+               segments[2].Equals("soporte", StringComparison.OrdinalIgnoreCase) &&
+               segments[3].Equals("sesiones", StringComparison.OrdinalIgnoreCase) &&
+               segments[4].Length > 0 &&
+               segments[4].All(c => c is >= '0' and <= '9') &&
+               int.TryParse(segments[4], out var id) && id > 0;
+    }
+
+    private static async Task RechazarSoporteAsync(
+        HttpContext context, int statusCode, string code)
+    {
+        context.Response.StatusCode = statusCode;
+        context.Response.ContentType = "application/json; charset=utf-8";
+        context.Response.Headers.CacheControl = "private, no-store, max-age=0";
+        context.Response.Headers.Pragma = "no-cache";
+        await context.Response.WriteAsJsonAsync(
+            new { success = false, code },
+            context.RequestAborted);
     }
 
     private static bool EsRutaGestionBasicaPlataforma(HttpRequest request)

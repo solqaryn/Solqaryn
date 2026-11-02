@@ -21,8 +21,9 @@ await db.Database.OpenConnectionAsync();
 // canónico EF10 ni siquiera la contiene (no aceptar historia falsa).
 var known = db.Database.GetMigrations().ToArray();
 if (!known.Contains("20261016095000_PublicStoreBindingsPersistence", StringComparer.Ordinal) ||
-    !known.Contains("20261016200000_PublicStoreProofReplayGuard", StringComparer.Ordinal))
-    throw new InvalidOperationException("La migración persistente de tiendas no está registrada en EF Oracle.");
+    !known.Contains("20261016200000_PublicStoreProofReplayGuard", StringComparer.Ordinal) ||
+    !known.Contains("20261031140000_P1003ATemporaryPlatformSupportSessions", StringComparer.Ordinal))
+    throw new InvalidOperationException("Las migraciones Oracle de tiendas y soporte P1-003 no están registradas en EF.");
 
 static async Task<long> ScalarLongAsync(AppDbContext db, string sql)
 {
@@ -126,6 +127,11 @@ var publicStoreTableBeforeAdoption = await ScalarLongAsync(db, """
 var replayTableBeforeAdoption = await ScalarLongAsync(db, """
     SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'PublicStoreProofReplays'
+      AND TABLE_TYPE = 'BASE TABLE';
+    """);
+var supportTableBeforeAdoption = await ScalarLongAsync(db, """
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'PlataformaSesionesSoporte'
       AND TABLE_TYPE = 'BASE TABLE';
     """);
 
@@ -277,7 +283,29 @@ if (mode == "fresh")
         """);
     await db.Database.CloseConnectionAsync();
 }
-// Both fresh and persistent schemas now apply the one new ledger migration.
+if (mode == "adopt")
+{
+    await db.Database.OpenConnectionAsync();
+    var supportMigrationRecorded = await ScalarLongAsync(db, """
+        SELECT COUNT(*) FROM __EFMigrationsHistory
+        WHERE MigrationId = '20261031140000_P1003ATemporaryPlatformSupportSessions';
+        """);
+    await db.Database.CloseConnectionAsync();
+
+    if ((supportTableBeforeAdoption == 1) != (supportMigrationRecorded == 1))
+        throw new InvalidOperationException(
+            "Support-session table and P1-003 migration marker are inconsistent; refusing implicit adoption.");
+}
+else
+{
+    // Fresh mode has already rejected non-empty databases. EnsureCreated also
+    // emits the current model, so remove its empty support table and apply the
+    // real migration DDL below instead of attempting to create the table twice.
+    await db.Database.ExecuteSqlRawAsync(
+        "DROP TABLE IF EXISTS `PlataformaSesionesSoporte`;");
+}
+
+// Both modes apply P1-003 through the registered migration on an empty table slot.
 await db.Database.MigrateAsync();
 await db.Database.OpenConnectionAsync();
 
@@ -291,10 +319,11 @@ var afterAdoption = await ScalarLongAsync(
       AND TABLE_NAME <> '__EFMigrationsHistory';
     """);
 
-// Persisted legacy schemas gain exactly one new table through an EF migration;
-// fresh EnsureCreated has already included it and only adopts history.
+// Persisted schemas gain tables only when absent. Fresh mode drops and recreates
+// the empty support table, so its net count remains unchanged.
 var expectedAfterAdoption = beforeAdoption + (publicStoreTableBeforeAdoption == 0 ? 1 : 0)
-    + (replayTableBeforeAdoption == 0 ? 1 : 0);
+    + (replayTableBeforeAdoption == 0 ? 1 : 0)
+    + (supportTableBeforeAdoption == 0 ? 1 : 0);
 if (afterAdoption != expectedAfterAdoption)
     throw new InvalidOperationException($"Oracle bootstrap changed unexpected table count: before={beforeAdoption}, after={afterAdoption}, expected={expectedAfterAdoption}.");
 

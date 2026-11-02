@@ -32,7 +32,7 @@ public sealed class CommercialTenantReadFilterTests
                              entity.FindProperty("EmpresaId") is not null)
             .ToList();
 
-        Assert.Equal(125, owners.Count);
+        Assert.Equal(126, owners.Count);
         Assert.All(owners, entity =>
             Assert.NotEmpty(entity.GetDeclaredQueryFilters()));
 
