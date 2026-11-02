@@ -1,3 +1,11 @@
+## 2026-11-02 - Corrección de bootstrap del rerun por review (PR #3817)
+
+- El workflow de `pull_request_review` comprueba que el script de recuperación está integrado en el `dev` protegido antes de invocarlo. Durante el propio PR de instalación deja constancia `BOOTSTRAP_DEFERRED_UNTIL_MERGE` y no ejecuta ni confía en código del PR con permisos `actions:write`. Scope Lock y aprobación independiente siguen siendo obligatorios; no se falsea la certificación LIVE del nuevo runtime.
+- Validación: check de bootstrap en PR, autopruebas del script desde Scope Lock, re-run del gate histórico tras aprobación exacta, y smoke posterior al merge en DEV. Ver `docs/CI_REVIEW_RETRY.md`.
+## 2026-11-02 - Gobernanza CI: reintento de Scope Lock por aprobación independiente
+
+- Se añade un workflow de `pull_request_review` que consulta una aprobación auténtica y SHA exacto, y reejecuta solo el job Scope Lock previamente fallido por preflight de revisión. Se consulta únicamente código confiable de `dev` con permisos Actions de escritura acotados.
+- No crea aprobaciones ni fusiona PR, no altera pruebas requeridas y deja fail-closed cualquier falta de evidencia. Casos negativos bajo `scripts/security/retry-scope-lock-after-review.mjs` y `docs/CI_REVIEW_RETRY.md`. Revisión humana auténtica y CI exacta obligatorias para introducirlo.
 ## 2026-11-02 - CI DEV selectiva por impacto (PR de gobernanza propuesto)
 
 - Playwright y calidad ERP se dejan de ejecutar por cambios exclusivamente en tests backend. `priority4-quality.yml` corre no-integracion y `dev-ci.yml` conserva pruebas MySQL para impacto productivo, tests de integracion y rutas ambiguas.
