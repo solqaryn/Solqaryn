@@ -45,6 +45,7 @@ function selfTest(){
   assert(!blocked({status:200}));assert(!blocked({status:400}));
   assert(!blocked({status:401}));assert(!blocked({status:503}));
   assert.equal(headersFor('test',2,null)['X-Empresa-Id'],'2');
+  assert.equal('qa_p1005b_45db008d_'.length,20);
   assert.equal(ORIGIN,'https://solqaryn-api-dev-fxx8.onrender.com');
   console.log('P1005B_OFFLINE_CONTRACT=PASS');
 }
@@ -129,12 +130,12 @@ function preflight(){
   console.log('P1005B_MYSQL_TWO_TENANT_PREFLIGHT=PASS');
   return {a,b,platformRole,roleAowned,roleBowned,targetRole,alternateRole};
 }
-async function call(path,method='GET',jwt='',tenant=0,payload){
+async function call(path,method='GET',jwt='',tenant=0,payload,timeoutMs=30000){
   const url=new URL(path,ORIGIN);
   must(url.origin===ORIGIN&&url.protocol==='https:','URL');
   const body=payload===undefined?null:JSON.stringify(payload);
   return new Promise((resolve,reject)=>{
-    const req=httpsRequest(url,{method,headers:headersFor(jwt,tenant,body),timeout:30000},res=>{
+    const req=httpsRequest(url,{method,headers:headersFor(jwt,tenant,body),timeout:timeoutMs},res=>{
       let raw='';res.setEncoding('utf8');
       res.on('data',x=>{raw+=x;if(raw.length>250000)req.destroy(Error('TOO_MUCH_DATA'));});
       res.on('end',()=>{let json=null;try{json=JSON.parse(raw);}catch{}
@@ -181,7 +182,11 @@ function membershipDigestQuery(a,b){
 function membershipDigest(a,b){return sql(membershipDigestQuery(a,b));}
 async function run(){
   env();const {a,b,platformRole,roleAowned,roleBowned,targetRole,alternateRole}=preflight();
-  expect(await call('/health/ready'),200,'RENDER_READY');
+  // Render DEV can cold-start the free instance for longer than 30s.
+  // Only the idempotent readiness GET has an extended, bounded timeout.
+  // All mutating operations retain their 30s limit and fail closed.
+  expect(await call('/health/ready','GET','',0,undefined,120000),200,'RENDER_READY');
+  console.log('P1005B_RENDER_READY=PASS');
   const jwtA=await login(process.env.A_USERNAME,process.env.A_PASSWORD,'A');
   const jwtB=await login(process.env.B_USERNAME,process.env.B_PASSWORD,'B');
   const anonymous=await call('/usuarios','GET','',2);
@@ -255,6 +260,38 @@ async function run(){
   // tenant API correctly rejects self-edit with HTTP 403. Auditable
   // Editar/AsignarRol positives are exercised only on the temporary user.
   console.log('P1005B_ACTOR_SELF_EDIT=NOT_APPLICABLE_PLATFORM_IDENTITY');
+
+  // Recovery of the one prior fixture left active by the legacy DELETE 503
+  // (LIVE run 41649878991 attempt 3, user id 8). Never delete an arbitrary
+  // user: enforce exact per-SHA prefix, expected full name, actor creator,
+  // unique A-only membership, restored Vendedor role, and no platform grants.
+  const priorPrefix='qa_p1005b_45db008d_';
+  const priorClause='BINARY LEFT(u.NombreUsuario,'+priorPrefix.length+
+    ')=BINARY '+literal(priorPrefix);
+  const priorCount=count('SELECT COUNT(*) FROM Usuarios u WHERE '+
+    priorClause+' AND u.Activo=1 AND u.Eliminado=0');
+  if(priorCount>0){
+    must(priorCount===1,'PRIOR_FIXTURE_AMBIGUOUS');
+    must(count('SELECT COUNT(*) FROM Usuarios u WHERE u.Id=8 AND '+
+      priorClause+' AND u.NombreCompleto='+literal('Certificacion automatizada P1-005.B DEV')+
+      ' AND u.CreadoPorUsuarioId='+a.uid+' AND u.RolId='+targetRole+
+      ' AND u.Activo=1 AND u.Eliminado=0')===1,'PRIOR_FIXTURE_IDENTITY');
+    must(count('SELECT COUNT(*) FROM UsuarioEmpresas WHERE UsuarioId=8')===1,
+      'PRIOR_FIXTURE_MEMBERSHIP_COUNT');
+    must(count('SELECT COUNT(*) FROM UsuarioEmpresas WHERE UsuarioId=8 '+
+      'AND EmpresaId=2 AND RolId='+targetRole+' AND Activa=1')===1,
+      'PRIOR_FIXTURE_MEMBERSHIP');
+    must(count('SELECT COUNT(*) FROM UsuarioRolesPlataforma WHERE UsuarioId=8')===0,
+      'PRIOR_FIXTURE_PLATFORM_PROVENANCE');
+    const repaired=await call('/usuarios/8','DELETE',jwtA,2);
+    expect(repaired,200,'PRIOR_FIXTURE_DELETE');
+    must(count('SELECT COUNT(*) FROM Usuarios WHERE Id=8 AND Activo=0 AND Eliminado=1')===1,
+      'PRIOR_FIXTURE_DELETED_SQL');
+    must(count('SELECT COUNT(*) FROM UsuarioEmpresas WHERE UsuarioId=8 '+
+      'AND EmpresaId=2 AND Activa=0')===1,'PRIOR_FIXTURE_MEMBERSHIP_REVOKED');
+    console.log('P1005B_PREVIOUS_FIXTURE_RECOVERY=PASS');
+  }else console.log('P1005B_PREVIOUS_FIXTURE_RECOVERY=NOT_REQUIRED');
+
   // One-time, single-tenant fixture via normal API. The three existing DEV
   // identities are preserved; the generated password is never logged/stored.
   const qaUsername='qa_p1005b_'+process.env.GITHUB_SHA.slice(0,8)+'_'+randomBytes(7).toString('hex');
