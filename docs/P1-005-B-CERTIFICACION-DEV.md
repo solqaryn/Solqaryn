@@ -32,6 +32,64 @@ El script conserva inmutables los tres accesos de prueba preexistentes y traslad
 
 En la misma revisión preventiva se corrigió otra validación del script que usaba accidentalmente una expresión regular de dos barras `/^\\\\d+$/` al leer el ID numérico de la cuenta efímera. Ahora el conversor de ID no negativo acepta únicamente el patrón real `/^[0-9]+$/`, verifica entero seguro y tiene pruebas offline para cero, positivos y entradas inválidas. Esta corrección no toca el backend, bases de datos ni credenciales; requiere **nueva LIVE postmerge** y readback institucional antes de `LISTO`.
 
+## 2026-11-03 — Certificación LIVE del PR #3829 y limpieza pendiente de usuario efímero DEV
+
+La LIVE de `dev@45db008d6be664c48c214e0ca2a2227cac6f8a9a` (run
+[`41649878991`](https://github.com/solqaryn/Solqaryn/actions/runs/41649878991),
+último intento) acreditó con datos HTTP/JWT/MySQL reales:
+- `P1005B_MYSQL_TWO_TENANT_PREFLIGHT=PASS`;
+- `P1005B_HTTP_JWT_A_B_ISOLATION=PASS`;
+- `P1005B_CROSS_TENANT_EDIT_DENIED_MYSQL=PASS`;
+- `P1005B_ROLE_ASSIGNMENT_REVOCATION_MYSQL=PASS`.
+
+**No fue PASS integral:** el `DELETE /usuarios/8` del usuario efímero creado
+por la prueba recibió HTTP 503, confirmado en logs de Render
+`2026-11-03T14:46:13Z`. La acción de reversión de rol ya estaba certificada,
+pero `QA_LOGICAL_DELETE_FAILED,QA_FINAL_STATE_UNVERIFIED` bloqueó
+correctamente el cierre. La identidad temporal conserva contraseña aleatoria
+no registrada; **hasta readback no se afirma eliminada/inactiva**.
+
+### Causa y reparación restringida a DEV
+
+El endpoint `UsuariosController.Eliminar` todavía invocaba
+`UsuarioService.EliminarAsync`, un flujo global heredado que lee
+`UsuarioRepository.GetByIdAsync` y recibe 503 por la cuarentena de lectura
+comercial. El alta y la edición ya usan
+`IUsuarioAdministracionEmpresaService` con autoridad tenant verificada.
+
+Se añade eliminación lógica a ese servicio empresarial, conservando
+`Usuarios:EliminarLogico`, sesión vigente de administrador, empresa A
+autorizada, pertenencia **única y activa**, prohibición de borrar al actor,
+denegación de cualquier identidad con grants de plataforma (incluso
+inactivos) o rol global heredado. Una transacción serializable cambia
+`Usuarios.Activo=0,Eliminado=1`, desactiva su única membresía y registra
+auditoría estricta `EliminarLogico`. El controlador devuelve `404` si no
+existe y nunca ejecuta la ruta legacy para borrar empresas ajenas.
+
+Se añaden siete regresiones xUnit: eliminación positiva, identidad compartida,
+empresa ajena, procedencia global inactiva, rol legacy de plataforma,
+autoborrado/no administrador y ausencia de permiso. La prueba LIVE amplía
+solamente el timeout del GET idempotente `/health/ready` a 120 s para permitir
+arranque frío de Render free, sin reintentos ciegos de POST/PUT/DELETE.
+
+### Recuperación de la cuenta temporal pendiente
+
+El script de certificación comprueba mediante SQL **exclusivamente SELECT**
+el único posible usuario de prueba anterior con prefijo binario
+`qa_p1005b_45db008d_`, Id=8, nombre completo fijo, creador original A,
+rol `Vendedor`, membresía exclusiva y activa en empresa 2 y sin historial
+de autoridad global. **Sólo si todas esas condiciones coinciden** llama a
+la API empresarial `DELETE /usuarios/8` después del despliegue del fix,
+verificando `Activo=0`, `Eliminado=1` y membresía inactiva. Ante ambigüedad,
+aborta con NO_GO; no toca otras identidades. Después prueba un fixture nuevo
+con la misma política de restauración, auditoría y eliminación.
+
+**Cierre:** el PR correctivo debe superar revisión independiente y Scope Lock,
+fusionarse por flujo protegido en `dev`, publicarse el backend corregido
+en Render DEV, ejecutar LIVE positiva y readback completo, y conciliar
+`PLAN_MAESTRO`, `COLA` y `BITACORA` antes de `LISTO`. No hay
+autorización de cambios en QA, `main` ni PROD.
+
 ## Evidencia requerida para declarar LISTO
 
 - Correr `scripts/ci/p1-005-b-live-enterprise-roles-dev.mjs --self-test` sin credenciales en PR, con Scope Lock y sintaxis Node 24.
