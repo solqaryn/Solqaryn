@@ -1,3 +1,10 @@
+## 2026-11-02 — P1-005.B: contrato independiente de certificación LIVE de roles empresariales DEV
+
+- P1-005.A integrado por PR #3823 con HEAD aprobado 296a3228 y merge protegido dev a654d03d; Scope Lock PR y postmerge PASS. La evidencia de integración A no sustituye la certificación funcional B.
+- Nuevo workflow y script aislado `p1-005-b-live-enterprise-roles-dev`: contrato offline sin secretos en PR y ejecución LIVE HTTP/JWT/MySQL tras merge en dev. Preconditions fijos de Aiven DEV, usuarios de prueba A/B y empresas 2/3.
+- Negativos para acceso anónimo, rol ajeno, privilegio global y edición entre empresas; positivos sobre lectura A/B, edición idempotente propia y cambio/restauración de rol de usuario QA existente mediante API auditada con readback MySQL. Sin crear usuarios/roles, sin DML por SQL, sin migraciones, sin tocar QA/main/PROD ni tareas.
+- B permanece PENDIENTE/VALIDANDO hasta que el SHA exacto esté aprobado, el runtime DEV de A publicado y la LIVE real finalice PASS con restauración comprobada; rollback mediante revert protegido.
+
 ## 2026-11-02 — P1-005.A: corregir fixture E2E de primera membresía empresarial
 
 - La prueba `frontend/e2e/fase6-reportes-administrativos.spec.ts` duplicaba la membresía creada atómicamente por `POST /usuarios` en P1-005.A; el `POST /usuarios/{id}/empresas` posterior recibía legítimamente HTTP 400 e impedía completar los tests seriales de reportes administrativos.
