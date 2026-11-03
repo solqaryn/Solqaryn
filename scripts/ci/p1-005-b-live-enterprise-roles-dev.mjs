@@ -27,6 +27,12 @@ function selfTest(){
   assert.equal(num('4','SCOPE'),4);
   assert.equal(field({data:{id:5}},'id'),5);
   assert.equal(literal('a'),"CONVERT(UNHEX('61') USING utf8mb4)");
+  const digest=membershipDigestQuery({uid:2},{uid:3});
+  assert.equal(digest, 'SELECT CONCAT(COUNT(*),'+literal(':')+
+    ',COALESCE(SUM(Activa),0),'+literal(':')+
+    ',COALESCE(SUM(RolId),0)) FROM UsuarioEmpresas WHERE UsuarioId IN (2,3)');
+  assert(!digest.includes('\":\"'));
+
   assert(blocked({status:403}));assert(blocked({status:404}));
   assert(!blocked({status:200}));assert(!blocked({status:400}));
   assert(!blocked({status:401}));assert(!blocked({status:503}));
@@ -157,11 +163,14 @@ function userPayload(row,role){
   return {nombreUsuario:obj.nombreUsuario,nombreCompleto:obj.nombreCompleto,
     rol:obj.rol||'Vendedor',rolId:role};
 }
-function membershipDigest(a,b){
-  return sql('SELECT CONCAT(COUNT(*),":",COALESCE(SUM(Activa),0),":",'+
-    'COALESCE(SUM(RolId),0)) FROM UsuarioEmpresas WHERE UsuarioId IN ('+
-    a.uid+','+b.uid+')');
+function membershipDigestQuery(a,b){
+  // Aiven DEV may have ANSI_QUOTES: double quotes are identifier delimiters.
+  // Generate UTF-8 SQL literals, never use ":" as a SQL string literal.
+  return 'SELECT CONCAT(COUNT(*),'+literal(':')+',COALESCE(SUM(Activa),0),'+
+    literal(':')+',COALESCE(SUM(RolId),0)) FROM UsuarioEmpresas WHERE UsuarioId IN ('+
+    num(a.uid,'MEMBERSHIP_UID_A')+','+num(b.uid,'MEMBERSHIP_UID_B')+')';
 }
+function membershipDigest(a,b){return sql(membershipDigestQuery(a,b));}
 async function run(){
   env();const {a,b,platformRole,roleAowned,roleBowned,targetRole,alternateRole}=preflight();
   expect(await call('/health/ready'),200,'RENDER_READY');
