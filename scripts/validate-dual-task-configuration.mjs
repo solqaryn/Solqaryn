@@ -346,9 +346,9 @@ if(failures.length){
   const mutation={...documents,status:status.replace('TASK_COUNT_LIMIT=PROVIDER_EFFECTIVE_CAPACITY','TASK_COUNT_LIMIT=6')};
   if(!validateDocuments(mutation).length)throw Error('Task count policy mutation bypass');
   const expanded={...documents};
-  expanded.status=expanded.status.replace(/^REGISTERED_TASK_IDS=(.*)$/m,(_,ids)=>'REGISTERED_TASK_IDS='+ids+',aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').replace(/^PHYSICAL_TASKS_REGISTERED=6$/m,'PHYSICAL_TASKS_REGISTERED=7');
-  expanded.authority=expanded.authority.replace(/^REGISTERED_TASK_IDS=(.*)$/m,(_,ids)=>'REGISTERED_TASK_IDS='+ids+',aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').replace(/^PHYSICAL_TASKS_REGISTERED=6$/m,'PHYSICAL_TASKS_REGISTERED=7');
-  if(validateDocuments(expanded).length)throw Error('Configurable roster must accept seven registered Tasks while keeping commercial permissions unchanged');
+  expanded.status=expanded.status.replace(/^REGISTERED_TASK_IDS=(.*)$/m,(_,ids)=>'REGISTERED_TASK_IDS='+ids+',aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').replace(/^PHYSICAL_TASKS_REGISTERED=(\d+)$/m, (_,n) => 'PHYSICAL_TASKS_REGISTERED=' + (Number(n) + 1));
+  expanded.authority=expanded.authority.replace(/^REGISTERED_TASK_IDS=(.*)$/m,(_,ids)=>'REGISTERED_TASK_IDS='+ids+',aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').replace(/^PHYSICAL_TASKS_REGISTERED=(\d+)$/m, (_,n) => 'PHYSICAL_TASKS_REGISTERED=' + (Number(n) + 1));
+  if(validateDocuments(expanded).length)throw Error('Configurable roster must accept expansion without new commercial authority');
   if(!validateDocuments({...documents,status:status.replace('MAX_CONCURRENT_SCOPES=6','MAX_CONCURRENT_SCOPES=7')}).length)
     throw Error('WIP status mutation bypass');
   if(!validateDocuments({...documents,contract:contract.replace('MAX_OPEN_WORK_BRANCHES=6','MAX_OPEN_WORK_BRANCHES=7')}).length)

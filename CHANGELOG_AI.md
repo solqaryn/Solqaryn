@@ -1,3 +1,7 @@
+## 2026-11-03 — Gobierno M3.2: retiro operativo de slot no autorizado y censo institucional de cinco IDs
+
+El propietario ordena retirar la posición de Alex a las :30 del inventario ejecutivo, sin crear otra Task, activar automations, ampliar permisos ni borrar auditoría. La cuenta actual registra sólo tres Tasks Javier pausadas; Alex verificó previamente sus posiciones :10/:50, pero la baja nativa de la posición :30 no es verificable desde esta conexión y **no se declara**. Las cinco IDs del allowlist comercial ya coinciden con las cinco del registro actualizado. Se actualizan cabezales de gobierno, contrato configurable, validadores con pruebas de tamaño dinámico y documentación de roles, conservando `MAX_CONCURRENT_SCOPES=6`, `MAX_OWNED_SCOPES_PER_TASK=2`, `MAX_ACTIVE_WRITES_PER_TASK=1`, `PROJECT_SCOPE_LOCK=STRICT` y los permisos individuales. Sin QA/main/PROD.
+
 ## 2026-11-03 — P1-005.B: habilitar DELETE empresarial exacto en middleware fail-closed
 
 - PR #3830 fusionado `dev@bfa914ff`; Render DEV desplegó ese SHA en `dep-dbkvvcrncjis73fg7820` (LIVE 15:41:21Z). LIVE posterior `41664870250` job `126023199709`: preflight MySQL, Render readiness, HTTP/JWT A/B y denegación cruzada con readback **PASS**. Recuperación del usuario temporal #8 sigue **NO_GO HTTP 503** pese al servicio DELETE actualizado.

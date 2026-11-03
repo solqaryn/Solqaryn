@@ -7,9 +7,9 @@ BASE_BRANCH=dev
 TIMEZONE=America/Tegucigalpa
 TASK_COUNT_LIMIT=PROVIDER_EFFECTIVE_CAPACITY
 TASK_ASSIGNMENT_MODEL=OWNER_CONFIGURABLE
-CURRENT_REGISTERED_TASKS=6
+CURRENT_REGISTERED_TASKS=5
 CURRENT_JAVIER_TASKS=3
-CURRENT_ALEX_TASKS=3
+CURRENT_ALEX_TASKS=2
 MAX_OPEN_WORK_BRANCHES=6
 MAX_CONCURRENT_SCOPES=6
 MAX_OWNED_SCOPES_PER_TASK=2
@@ -25,6 +25,10 @@ GITHUB_CHAT_ROLE_POLICY=docs/GITHUB_ACCOUNT_ROLES.md
 VAEP_DISPATCH_AUTHORIZED=FALSE
 JULES_WORKERS_AUTHORIZED=0
 
+## Estado institucional vigente M3.2 (2026-11-03)
+
+Cinco identidades autorizadas y registradas, no un reparto obligatorio: Javier :00/:20/:40 y Alex :10/:50. El slot antiguo :30 está excluido; su ausencia física no puede certificarse desde la cuenta ajena. Los fragmentos que describen el inventario de seis son históricas y no autorizan altas ni revisiones propias. Las cinco identidades están sujetas a cuentas, ACL y rol GitHub efectivos; ninguna automatización se activa desde la documentación.
+
 ## Enmienda operativa propuesta — certificación automática CI en DEV (2026-10-30)
 
 **Vigencia condicionada:** esta norma solo sustituye la revisión formal para futuros PR comerciales ordinarios cuando el changeset esté fusionado por PR protegido en `dev`, el job requerido `verify-solqaryn-project-scope` ejecute la certificación contra el SHA exacto y exista readback de CI. Durante la implantación/bootstrap de este PR normativo sigue exigida revisión formal realmente independiente. No se simula un `APPROVED` humano: `AUTO_CERT=PASS` significa exclusivamente certificación técnica de GitHub Actions.
@@ -38,9 +42,11 @@ Los PR que cambian gobierno, Skill, reglas de seguridad, workflows requeridos o 
 Este contrato v2.0 se aplica al inventario configurable de Tasks solo cuando este archivo y los validadores
 esten integrados en el HEAD vigente de `dev`, el Scope Lock sea STRICT y el proveedor demuestre permisos efectivos. No existe techo interno fijo ni distribución obligatoria por cuenta; la capacidad efectiva depende del proveedor y de la autoridad institucional protegida. Los conteos físicos y autorizados se leen en `docs/AUTOMATION_STATUS.md` y Google Sheets. El WIP comercial máximo de seis scopes es independiente del inventario físico de Tasks.
 
-Se conservaron las dos Tasks físicas originales con sus TASK_ID estables y se
-crearon las otras cuatro durante M3.2, desde cada cuenta. El readback de las seis
-configuraciones está en `TAREAS_PROGRAMADAS!A2:Z7` y BITACORA. La instalación no incrementa por sí misma el contador de autorizaciones comerciales.
+Los registros originales de M3.2 incluyeron seis Tasks, pero el inventario institucional
+operativo vigente incluye únicamente cinco identidades autorizadas, conservando los
+dos TASK_ID originales. La cuenta de Alex se verifica desde su propietario; no inferir
+eliminación física de una Task fuera del censo a partir de una lectura inaccesible.
+Las evidencias previas están en BITACORA como auditoría, no como autoridad ejecutable. La instalación no incrementa por sí misma el contador de autorizaciones comerciales.
 La autoridad efectiva depende de `SCHEDULED_CHATGPT_TASKS_AUTHORIZED` y de
 `AUTHORIZED_COMMERCIAL_TASK_IDS`, enumerados en `docs/AUTOMATION_STATUS.md` y
 `docs/AUTOMATION_AUTHORITY.md`: cada ID nuevo requiere evidencia, autorización
@@ -49,14 +55,13 @@ comercial a los IDs que no figuran en la lista, aunque el flag global de Sheets 
 
 ## Programacion nominal, no asignacion
 
-La tabla siguiente es el censo de las seis Tasks actualmente registradas y su distribución observada, no una cantidad ni reparto obligatorio para futuras configuraciones.
+La tabla siguiente enumera las cinco Tasks del censo operativo autorizado; no fija una cantidad ni un reparto obligatorio. Cualquier Task externa requiere verificación y autorización propia.
 
 | Slot | Cuenta | Minuto por hora | Implantacion |
 | --- | --- | --- | --- |
 | PRIMARY_DEV_01 | JAVIER_CHATGPT | :00 | ID original conservado; instalada |
 | SECONDARY_REVIEW_01 | ALEX_CHATGPT | :10 | ID original conservado; instalada |
 | PRIMARY_DEV_02 | JAVIER_CHATGPT | :20 | Instalada desde Javier |
-| SECONDARY_REVIEW_02 | ALEX_CHATGPT | :30 | Instalada desde Alex |
 | PRIMARY_DEV_03 | JAVIER_CHATGPT | :40 | Instalada desde Javier |
 | SECONDARY_REVIEW_03 | ALEX_CHATGPT | :50 | Instalada desde Alex |
 
@@ -68,8 +73,9 @@ no transfiere permisos ni duplica una Task; `TAREAS_PROGRAMADAS` debe
 confirmar unicidad de ID/propietario/horario.
 
 Los nombres Primary/Secondary y Dev/Review **no conceden privilegios ni
-limitaciones distintos**: las seis tienen igual capacidad funcional de desarrollar,
-revisar, corregir, preparar PR y tramitar el cierre en DEV. Cada accion requiere
+limitaciones distintos**: las cinco identidades del censo sólo ejercen capacidades efectivas de su cuenta:
+Javier permanece en modo REVIEWER_ONLY; SOLQARYN Platform prepara los PR institucionales.
+Cada otra función depende de permisos individuales, sin autoaprobación. Cada accion requiere
 identidad de su propia cuenta, permiso real, contrato vigente y ausencia de conflicto.
 No se garantiza inicio ni duracion ininterrumpida por programacion nominal de ChatGPT.
 

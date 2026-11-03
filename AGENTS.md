@@ -10,7 +10,7 @@ CURRENT_COMMERCIAL_ONLY=TRUE
 AUTOMATION_RUNTIME=ACTIVE_DEV
 TASK_DESIGN=OWNER_CONFIGURABLE_TASK_SET
 TASK_COUNT_LIMIT=PROVIDER_EFFECTIVE_CAPACITY
-CURRENT_REGISTERED_TASKS=6
+CURRENT_REGISTERED_TASKS=5
 AUTO_CERTIFICATION_MODE=REQUIRED_SCOPE_LOCK
 FORMAL_APPROVAL_ROUTINE_COMMERCIAL_REQUIRED=FALSE
 FORMAL_APPROVAL_GOVERNANCE_REQUIRED=TRUE
@@ -18,6 +18,10 @@ GITHUB_CHAT_EXECUTOR=solqaryn-platform
 GITHUB_CHAT_REVIEWER=JAVIER_GITHUB_LOGIN
 GITHUB_CHAT_ROLE_SEPARATION=STRICT
 GITHUB_CHAT_ROLE_POLICY=docs/GITHUB_ACCOUNT_ROLES.md
+
+## Censo institucional operativo vigente — M3.2 (2026-11-03)
+
+Cinco TASK_ID autorizados individualmente: Javier :00/:20/:40 y Alex :10/:50. El antiguo slot :30 no es parte del registro operativo ni del allowlist; su baja física requiere comprobación desde la propia cuenta de Alex y **no queda certificada por este cambio**. Los registros anteriores solo son auditoría. Ninguna Task se reactiva y no se modifican los límites de concurrencia 6/2/1 ni la revisión independiente de gobierno.
 
 ## Enmienda operativa propuesta — certificación automática CI en DEV (2026-10-30)
 
