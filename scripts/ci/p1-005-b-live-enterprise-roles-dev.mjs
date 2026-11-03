@@ -77,24 +77,39 @@ function preflight(){
     'TWO_TENANTS_REQUIRED');
   const a=identity(process.env.A_USERNAME,2),b=identity(process.env.B_USERNAME,3);
   must(a.uid!==b.uid,'TENANT_SEPARATION_INVALID');
-  const ownRole=id=>num(sql('SELECT MIN(Id) FROM Roles WHERE EmpresaId='+id+
-    ' AND Ambito<>2 AND EsSistema=0 AND Activo=1 AND Eliminado=0'),'TENANT_OWNED_ROLE_'+id);
-  const roleAowned=ownRole(2),roleBowned=ownRole(3);
+  // No exigir roles personalizados: las plantillas empresariales son válidas.
+  // Un rol privado existe únicamente cuando tiene EmpresaId del tenant.
+  const tenantOwnedRole=id=>{
+    const raw=sql('SELECT COALESCE(MIN(Id),0) FROM Roles WHERE EmpresaId='+id+
+      ' AND Ambito=1 AND Activo=1 AND Eliminado=0');
+    must(/^\d+$/.test(raw),'TENANT_ROLE_SQL_INVALID');
+    return Number(raw);
+  };
+  const roleAowned=tenantOwnedRole(2),roleBowned=tenantOwnedRole(3);
+  console.log('P1005B_TENANT_PRIVATE_ROLES_A='+Number(roleAowned>0)+
+    ' B='+Number(roleBowned>0));
   const qaOnly="(LOWER(u.NombreUsuario) LIKE 'qa_%' OR LOWER(u.NombreUsuario) LIKE 'e2e_%' "+
     "OR LOWER(u.NombreUsuario) LIKE 'fase6_%' OR LOWER(u.NombreUsuario) LIKE 'test_%' "+
     "OR LOWER(u.NombreUsuario) LIKE '%prueba%')";
   const qaFrom=' FROM Usuarios u JOIN UsuarioEmpresas m ON m.UsuarioId=u.Id '+
     'JOIN Roles r ON r.Id=m.RolId '+
     'WHERE m.EmpresaId=2 AND m.Activa=1 AND u.Activo=1 AND u.Eliminado=0 '+
-    'AND r.EsAdministrador=0 AND '+qaOnly+' AND '+
+    'AND r.EsAdministrador=0 AND r.Ambito=1 AND r.Activo=1 AND r.Eliminado=0 '+
+    'AND (r.EmpresaId=2 OR (r.EmpresaId IS NULL AND r.EsSistema=1)) '+
+    'AND '+qaOnly+' AND '+
     '(SELECT COUNT(*) FROM UsuarioEmpresas z WHERE z.UsuarioId=u.Id)=1 AND '+
     '(SELECT COUNT(*) FROM UsuarioRolesPlataforma gp WHERE gp.UsuarioId=u.Id)=0';
+  const qaCount=count('SELECT COUNT(*)'+qaFrom);
+  console.log('P1005B_SAFE_QA_CANDIDATES_A='+Math.min(qaCount,999));
+  must(qaCount>0,'SAFE_QA_USER_A_REQUIRED');
   const targetId=num(sql('SELECT MIN(u.Id)'+qaFrom),'SAFE_QA_USER_A_REQUIRED');
   const targetRole=num(sql('SELECT m.RolId FROM UsuarioEmpresas m WHERE m.EmpresaId=2 AND '+
     'm.UsuarioId='+targetId+' AND m.Activa=1'),'SAFE_QA_ROLE');
-  const alternateRole=num(sql('SELECT MIN(Id) FROM Roles WHERE EmpresaId=2 '+
-    'AND EsSistema=0 AND Ambito<>2 AND Activo=1 AND Eliminado=0 AND '+
-    'EsAdministrador=0 AND Id<> '+targetRole),'ALTERNATE_ROLE_A_REQUIRED');
+  // EsAsignableAEmpresa(2): propio o plantilla empresarial del sistema.
+  const alternateRole=num(sql('SELECT MIN(Id) FROM Roles WHERE Ambito=1 '+
+    'AND Activo=1 AND Eliminado=0 AND EsAdministrador=0 '+
+    'AND (EmpresaId=2 OR (EmpresaId IS NULL AND EsSistema=1)) '+
+    'AND Id<> '+targetRole),'ALTERNATE_ROLE_A_REQUIRED');
   must(targetId!==a.uid&&targetId!==b.uid,'SAFE_QA_ACCOUNT_CONFLICT');
   const platformRole=num(sql('SELECT Id FROM Roles WHERE Ambito=2 '+
     'AND EsSistema=1 AND EsAdministrador=1 AND EmpresaId IS NULL '+
