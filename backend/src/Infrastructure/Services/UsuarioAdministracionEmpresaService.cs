@@ -137,6 +137,11 @@ public sealed class UsuarioAdministracionEmpresaService : IUsuarioAdministracion
         var usuario = await _db.Usuarios.IgnoreQueryFilters().AsNoTracking()
             .FirstOrDefaultAsync(u => u.Id == usuarioId && !u.Eliminado, ct);
         if (usuario is null) return null;
+        if (await _db.Roles.IgnoreQueryFilters().AsNoTracking()
+            .AnyAsync(r => r.Id == usuario.RolId &&
+                r.Ambito == AmbitoAutorizacion.Plataforma, ct))
+            throw new ForbiddenAccessException(
+                "Una identidad con rol global heredado no puede editarse desde una empresa.");
 
         if (usuario.RolId != dto.RolId)
             await _permisos.VerificarPermisoAsync(
