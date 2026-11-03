@@ -154,7 +154,16 @@ async function run(){
   const businessJwt=await login(process.env.BUSINESS_USERNAME,process.env.BUSINESS_PASSWORD,'BUSINESS');
   expect(await call('/plataforma/sesion','GET',superJwt),200,'SUPERADMIN');
   expect(await call('/plataforma/sesion','GET',businessJwt),403,'NO_PLATFORM_PRE_GRANT');
-  const before=await call('/plataforma/delegaciones/empresas','GET',businessJwt);
+  // El push protegido puede iniciar antes de finalizar el despliegue en Render.
+  // Reintentar SOLO la respuesta 503 específica del gate antiguo; jamás
+  // interpretar un 503 como autorización correcta ni conceder grants antes.
+  let before=await call('/plataforma/delegaciones/empresas','GET',businessJwt);
+  for(let attempt=0;attempt<18 && before.status===503 &&
+      before.json?.code==='TENANT_DATA_ISOLATION_REQUIRED';attempt++){
+    if(attempt===0)console.log('P1004B_WAIT_EXACT_DEV_GATE_ROLLOUT=BOUNDED');
+    await new Promise(resolve=>setTimeout(resolve,10000));
+    before=await call('/plataforma/delegaciones/empresas','GET',businessJwt);
+  }
   if(before.status===404)fail('DEV_RENDER_NOT_DEPLOYED_TO_P1004A');
   expect(before,403,'PRE_GRANT_DENIED');
   expect(await call('/plataforma/delegaciones','POST',businessJwt,
