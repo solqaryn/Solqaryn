@@ -217,10 +217,10 @@ async function run(){
     ' AND Accion='+literal('AsignarRol')+" AND Resultado='Exito'");
   let changed=false,restored=false;
   try{
+    changed=true; // ensure cleanup also after an ambiguous HTTP failure
     const assign=await call('/usuarios/'+targetId,'PUT',jwtA,2,
       {...qaOriginal,rolId:alternateRole});
     expect(assign,200,'ASSIGN_TENANT_ROLE_A');
-    changed=true;
     must(roleRead().every(v=>Number(v)===alternateRole),'ASSIGNMENT_NOT_DURABLE');
     const auditGrantAfter=count('SELECT COUNT(*) FROM RegistrosAuditoria WHERE '+
       'UsuarioId='+a.uid+' AND ReferenciaId='+targetId+
@@ -228,11 +228,11 @@ async function run(){
     must(auditGrantAfter>auditGrantBefore,'GRANT_AUDIT_NOT_DURABLE');
     const revoke=await call('/usuarios/'+targetId,'PUT',jwtA,2,qaOriginal);
     expect(revoke,200,'RESTORE_TENANT_ROLE_A');
-    restored=true;
     must(roleRead().every(v=>Number(v)===targetRole),'REVOCATION_NOT_DURABLE');
+    restored=true;
     console.log('P1005B_ROLE_ASSIGNMENT_REVOCATION_MYSQL=PASS');
   }finally{
-    if(changed&&!restored){
+    if(changed&&!restored && !roleRead().every(v=>Number(v)===targetRole)){
       try{
         const cleanup=await call('/usuarios/'+targetId,'PUT',jwtA,2,qaOriginal);
         if(cleanup.status===200&&roleRead().every(v=>Number(v)===targetRole))
