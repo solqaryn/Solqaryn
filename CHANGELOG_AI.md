@@ -1,3 +1,9 @@
+## 2026-11-02 — P1-005.B: literal SQL portable ante ANSI_QUOTES Aiven DEV
+
+- La LIVE posterior a #3827 (`dev@390ca582`, run `41572965177`) confirmó preflight A/B, HTTP/JWT y `P1005B_CROSS_TENANT_EDIT_DENIED_MYSQL=PASS`. Antes de la edición de roles, `membershipDigest` abortó por MySQL 1054 `Unknown column ':'`: usaba el separador SQL `":"` bajo modo de comillas dobles como identificadores. No se efectuó cambio de roles ni de credenciales.
+- Se construye la consulta mediante `membershipDigestQuery` con `literal(':')` UTF-8 hex (`CONVERT(UNHEX('3a') USING utf8mb4)`), evitando depender de `ANSI_QUOTES`, y el self-test offline exige el SQL exacto. Se revisaron los demás SQL del script: los literales variables existentes se parametrizan con `literal` o comillas simples, sin otros separadores con comillas dobles.
+- Cambio limitado a script de certificación y documentación; sin backend, frontend, API, roles, empresas, migraciones, secretos, otras ramas o entornos. Requiere PR protegido y nueva LIVE postmerge con auditoría/restauración, más Sheets, antes de P1-005.B LISTO.
+
 ## 2026-11-02 — P1-005.B: rechazo cross-tenant 404 válido con readback MySQL inmutable
 
 - El run LIVE postmerge de #3826 (`41572046099`, intento #2, `dev@042270af`) acreditó preflight de A/B y aislamiento HTTP/JWT pero se detuvo en `A_CANNOT_EDIT_B_HTTP_404` porque el test esperaba solo 403 ante `PUT /usuarios/{idB}`. El controlador existente usa `GetByIdAsync` con filtrado tenant antes de mutar, devolviendo 404 para identidades de B invisibles al actor A; no es prueba de fallo de aislamiento ni de modificación de B.
