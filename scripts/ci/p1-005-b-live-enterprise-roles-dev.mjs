@@ -1,6 +1,9 @@
-// P1-005.B independent LIVE DEV certification; only idempotent same-value edit
-// of existing QA administrator. No new user/role, SQL DML, or permission grants.
+// P1-005.B LIVE DEV certification. Existing enterprises/users are test data.
+// Actor credentials and roles remain unchanged. A short-lived user created via
+// the tenant API proves role transitions, then is restored and soft-deleted.
+// All SQL access is SELECT; never log passwords, JWTs or secret values.
 import assert from 'node:assert/strict';
+import {randomBytes} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 import {request as httpsRequest} from 'node:https';
 
@@ -88,35 +91,28 @@ function preflight(){
   const roleAowned=tenantOwnedRole(2),roleBowned=tenantOwnedRole(3);
   console.log('P1005B_TENANT_PRIVATE_ROLES_A='+Number(roleAowned>0)+
     ' B='+Number(roleBowned>0));
-  const qaOnly="(LOWER(u.NombreUsuario) LIKE 'qa_%' OR LOWER(u.NombreUsuario) LIKE 'e2e_%' "+
-    "OR LOWER(u.NombreUsuario) LIKE 'fase6_%' OR LOWER(u.NombreUsuario) LIKE 'test_%' "+
-    "OR LOWER(u.NombreUsuario) LIKE '%prueba%')";
-  const qaFrom=' FROM Usuarios u JOIN UsuarioEmpresas m ON m.UsuarioId=u.Id '+
-    'JOIN Roles r ON r.Id=m.RolId '+
-    'WHERE m.EmpresaId=2 AND m.Activa=1 AND u.Activo=1 AND u.Eliminado=0 '+
-    'AND r.EsAdministrador=0 AND r.Ambito=1 AND r.Activo=1 AND r.Eliminado=0 '+
-    'AND (r.EmpresaId=2 OR (r.EmpresaId IS NULL AND r.EsSistema=1)) '+
-    'AND '+qaOnly+' AND '+
-    '(SELECT COUNT(*) FROM UsuarioEmpresas z WHERE z.UsuarioId=u.Id)=1 AND '+
-    '(SELECT COUNT(*) FROM UsuarioRolesPlataforma gp WHERE gp.UsuarioId=u.Id)=0';
-  const qaCount=count('SELECT COUNT(*)'+qaFrom);
-  console.log('P1005B_SAFE_QA_CANDIDATES_A='+Math.min(qaCount,999));
-  must(qaCount>0,'SAFE_QA_USER_A_REQUIRED');
-  const targetId=num(sql('SELECT MIN(u.Id)'+qaFrom),'SAFE_QA_USER_A_REQUIRED');
-  const targetRole=num(sql('SELECT m.RolId FROM UsuarioEmpresas m WHERE m.EmpresaId=2 AND '+
-    'm.UsuarioId='+targetId+' AND m.Activa=1'),'SAFE_QA_ROLE');
-  // EsAsignableAEmpresa(2): propio o plantilla empresarial del sistema.
-  const alternateRole=num(sql('SELECT MIN(Id) FROM Roles WHERE Ambito=1 '+
+  // No require a pre-existing non-admin user: the three DEV logins are
+  // reserved for their real A/B/platform boundary tests. Create a dedicated
+  // temporary Vendedor via the API for role assignment and revocation.
+  const targetRole=num(sql('SELECT MIN(Id) FROM Roles WHERE Ambito=1 '+
     'AND Activo=1 AND Eliminado=0 AND EsAdministrador=0 '+
-    'AND (EmpresaId=2 OR (EmpresaId IS NULL AND EsSistema=1)) '+
-    'AND Id<> '+targetRole),'ALTERNATE_ROLE_A_REQUIRED');
-  must(targetId!==a.uid&&targetId!==b.uid,'SAFE_QA_ACCOUNT_CONFLICT');
+    'AND (EmpresaId=2 OR (EmpresaId IS NULL AND EsSistema=1))'),
+    'TENANT_NONADMIN_ROLE_REQUIRED');
+  // DEV seeds only Administrador and Vendedor by default. Use the existing
+  // enterprise administrator template as the distinct transition role, never
+  // a global/platform role. The temporary user never receives a JWT.
+  const alternateRole=a.role;
+  must(alternateRole!==targetRole,'TENANT_ROLE_TRANSITION_NOT_DISTINCT');
+  must(count('SELECT COUNT(*) FROM Roles WHERE Id='+alternateRole+
+    ' AND Ambito=1 AND EsAdministrador=1 AND Activo=1 AND Eliminado=0 '+
+    'AND (EmpresaId=2 OR (EmpresaId IS NULL AND EsSistema=1))')===1,
+    'TENANT_ADMIN_ROLE_REQUIRED');
   const platformRole=num(sql('SELECT Id FROM Roles WHERE Ambito=2 '+
     'AND EsSistema=1 AND EsAdministrador=1 AND EmpresaId IS NULL '+
     'ORDER BY Id LIMIT 1'),'PLATFORM_ROLE');
   must(platformRole!==a.role&&platformRole!==b.role,'PLATFORM_ROLE_CONFLICT');
   console.log('P1005B_MYSQL_TWO_TENANT_PREFLIGHT=PASS');
-  return {a,b,platformRole,roleAowned,roleBowned,targetId,targetRole,alternateRole};
+  return {a,b,platformRole,roleAowned,roleBowned,targetRole,alternateRole};
 }
 async function call(path,method='GET',jwt='',tenant=0,payload){
   const url=new URL(path,ORIGIN);
@@ -166,7 +162,7 @@ function membershipDigest(a,b){
     a.uid+','+b.uid+')');
 }
 async function run(){
-  env();const {a,b,platformRole,roleAowned,roleBowned,targetId,targetRole,alternateRole}=preflight();
+  env();const {a,b,platformRole,roleAowned,roleBowned,targetRole,alternateRole}=preflight();
   expect(await call('/health/ready'),200,'RENDER_READY');
   const jwtA=await login(process.env.A_USERNAME,process.env.A_PASSWORD,'A');
   const jwtB=await login(process.env.B_USERNAME,process.env.B_PASSWORD,'B');
@@ -238,48 +234,127 @@ async function run(){
     ' AND Accion='+literal('Editar')+" AND Resultado='Exito'");
   must(auditAfter>auditBefore,'AUDIT_NOT_DURABLE');
   console.log('P1005B_OWN_ROLE_IDEMPOTENT_EDIT_AUDIT=PASS');
-  // Change only an existing, safely identified DEV QA user. Restore in
-  // finally even if the live role-change or audit assertion fails.
-  const qaGet=await call('/usuarios/'+targetId,'GET',jwtA,2);
-  expect(qaGet,200,'QA_USER_GET');
-  const qaOriginal=userPayload(qaGet.json,targetRole);
-  const roleRead=()=>[
-    sql('SELECT RolId FROM Usuarios WHERE Id='+targetId),
-    sql('SELECT RolId FROM UsuarioEmpresas WHERE UsuarioId='+targetId+
+  // One-time, single-tenant fixture via normal API. The three existing DEV
+  // identities are preserved; the generated password is never logged/stored.
+  const qaUsername='qa_p1005b_'+process.env.GITHUB_SHA.slice(0,8)+'_'+randomBytes(7).toString('hex');
+  const qaPassword='P1005b!'+randomBytes(20).toString('hex')+'Aa9!';
+  const qaOriginal={nombreUsuario:qaUsername,
+    nombreCompleto:'Certificacion automatizada P1-005.B DEV',
+    rol:'Vendedor',rolId:targetRole};
+  const qaByName=()=>{
+    const raw=sql('SELECT COALESCE(MIN(Id),0) FROM Usuarios WHERE '+
+      'BINARY NombreUsuario=BINARY '+literal(qaUsername));
+    must(/^\\d+$/.test(raw),'QA_LOOKUP_INVALID');
+    return Number(raw);
+  };
+  const roleRead=id=>[
+    sql('SELECT RolId FROM Usuarios WHERE Id='+id),
+    sql('SELECT RolId FROM UsuarioEmpresas WHERE UsuarioId='+id+
       ' AND EmpresaId=2 AND Activa=1')
   ];
-  const first=roleRead();
-  must(first.every(v=>Number(v)===targetRole),'QA_BEFORE_ROLE');
-  const auditGrantBefore=count('SELECT COUNT(*) FROM RegistrosAuditoria WHERE '+
-    'UsuarioId='+a.uid+' AND ReferenciaId='+targetId+
-    ' AND Accion='+literal('Editar')+" AND Resultado='Exito'");
-  let changed=false,restored=false;
+  must(qaByName()===0,'QA_NAME_COLLISION');
+  let targetId=0,primaryError=null;
+  const cleanupErrors=[];
   try{
-    changed=true; // ensure cleanup also after an ambiguous HTTP failure
+    // Create returns HTTP 200 in UsuariosController. The JWT of actor A is
+    // still required and the backend enforces Crear and AsignarRol.
+    const created=await call('/usuarios','POST',jwtA,2,
+      {...qaOriginal,password:qaPassword});
+    expect(created,200,'QA_CREATE');
+    targetId=num(field(created.json,'id'),'QA_CREATED_ID');
+    must(qaByName()===targetId,'QA_CREATED_SQL_ID_MISMATCH');
+    must(count('SELECT COUNT(*) FROM Usuarios WHERE Id='+targetId+
+      ' AND Activo=1 AND Eliminado=0')===1,'QA_NOT_ACTIVE');
+    must(count('SELECT COUNT(*) FROM UsuarioEmpresas WHERE UsuarioId='+targetId+
+      ' AND EmpresaId=2 AND Activa=1 AND RolId='+targetRole)===1,
+      'QA_MEMBERSHIP_NOT_DURABLE');
+    must(count('SELECT COUNT(*) FROM UsuarioEmpresas WHERE UsuarioId='+targetId)===1,
+      'QA_SHARED_MEMBERSHIP');
+    must(count('SELECT COUNT(*) FROM UsuarioRolesPlataforma WHERE UsuarioId='+targetId)===0,
+      'QA_PLATFORM_GRANT');
+    const qaGet=await call('/usuarios/'+targetId,'GET',jwtA,2);
+    expect(qaGet,200,'QA_USER_GET');
+    must(field(qaGet.json,'nombreUsuario')===qaUsername,'QA_USER_IDENTITY');
+    must(roleRead(targetId).every(v=>Number(v)===targetRole),'QA_INITIAL_ROLE');
+    const auditQuery='SELECT COUNT(*) FROM RegistrosAuditoria WHERE '+
+      'UsuarioId='+a.uid+' AND ReferenciaId='+targetId+
+      ' AND Accion='+literal('Editar')+" AND Resultado='Exito'";
+    const auditBefore=count(auditQuery);
     const assign=await call('/usuarios/'+targetId,'PUT',jwtA,2,
       {...qaOriginal,rolId:alternateRole});
     expect(assign,200,'ASSIGN_TENANT_ROLE_A');
-    must(roleRead().every(v=>Number(v)===alternateRole),'ASSIGNMENT_NOT_DURABLE');
-    const auditGrantAfter=count('SELECT COUNT(*) FROM RegistrosAuditoria WHERE '+
-      'UsuarioId='+a.uid+' AND ReferenciaId='+targetId+
-      ' AND Accion='+literal('Editar')+" AND Resultado='Exito'");
-    must(auditGrantAfter>auditGrantBefore,'GRANT_AUDIT_NOT_DURABLE');
+    must(roleRead(targetId).every(v=>Number(v)===alternateRole),
+      'ASSIGNMENT_NOT_DURABLE');
+    must(count('SELECT COUNT(*) FROM UsuarioRolesPlataforma WHERE UsuarioId='+targetId)===0,
+      'QA_PLATFORM_ESCALATION');
+    const auditGrantAfter=count(auditQuery);
+    must(auditGrantAfter>auditBefore,'GRANT_AUDIT_NOT_DURABLE');
     const revoke=await call('/usuarios/'+targetId,'PUT',jwtA,2,qaOriginal);
     expect(revoke,200,'RESTORE_TENANT_ROLE_A');
-    must(roleRead().every(v=>Number(v)===targetRole),'REVOCATION_NOT_DURABLE');
-    restored=true;
+    must(roleRead(targetId).every(v=>Number(v)===targetRole),
+      'REVOCATION_NOT_DURABLE');
+    must(count(auditQuery)>auditGrantAfter,'REVOCATION_AUDIT_NOT_DURABLE');
     console.log('P1005B_ROLE_ASSIGNMENT_REVOCATION_MYSQL=PASS');
-  }finally{
-    if(changed&&!restored && !roleRead().every(v=>Number(v)===targetRole)){
+  }catch(e){primaryError=e;}
+  finally{
+    // An ambiguous network failure after POST can still have committed the
+    // user: recover by the prechecked unique name, without changing actors.
+    let observedId=targetId;
+    try{
+      const found=qaByName();
+      if(targetId>0&&found>0)must(found===targetId,'QA_ID_CHANGED');
+      observedId=found||targetId;
+    }catch{cleanupErrors.push('QA_LOOKUP_UNVERIFIED');}
+    if(observedId>0){
+      let owned=false;
       try{
-        const cleanup=await call('/usuarios/'+targetId,'PUT',jwtA,2,qaOriginal);
-        if(cleanup.status===200&&roleRead().every(v=>Number(v)===targetRole))
-          console.log('P1005B_EMERGENCY_ROLE_RESTORE=PASS');
-        else console.error('P1005B_NO_GO=QA_ROLE_RESTORE_UNVERIFIED');
-      }catch{console.error('P1005B_NO_GO=QA_ROLE_RESTORE_UNVERIFIED');}
+        must(count('SELECT COUNT(*) FROM Usuarios WHERE Id='+observedId+
+          ' AND BINARY NombreUsuario=BINARY '+literal(qaUsername))===1,
+          'QA_USERNAME_MISMATCH');
+        must(count('SELECT COUNT(*) FROM UsuarioEmpresas WHERE UsuarioId='+observedId+
+          ' AND EmpresaId=2')===1,'QA_WRONG_TENANT');
+        must(count('SELECT COUNT(*) FROM UsuarioEmpresas WHERE UsuarioId='+observedId)===1,
+          'QA_SHARED_AFTER_CREATE');
+        must(count('SELECT COUNT(*) FROM UsuarioRolesPlataforma WHERE UsuarioId='+observedId)===0,
+          'QA_PLATFORM_AFTER_CREATE');
+        owned=true;
+      }catch{cleanupErrors.push('QA_OWNERSHIP_UNVERIFIED');}
+      if(owned){
+        try{
+          if(count('SELECT COUNT(*) FROM Usuarios WHERE Id='+observedId+
+            ' AND Activo=1 AND Eliminado=0')===1){
+            // Restore first even after an ambiguous assign/revoke response.
+            try{
+              if(!roleRead(observedId).every(v=>Number(v)===targetRole)){
+                const rescue=await call('/usuarios/'+observedId,'PUT',jwtA,2,qaOriginal);
+                expect(rescue,200,'QA_EMERGENCY_RESTORE');
+                must(roleRead(observedId).every(v=>Number(v)===targetRole),
+                  'QA_EMERGENCY_RESTORE_UNVERIFIED');
+                console.log('P1005B_EMERGENCY_ROLE_RESTORE=PASS');
+              }
+            }catch{cleanupErrors.push('QA_ROLE_RESTORE_UNVERIFIED');}
+            // Always attempt deletion of the owned, newly created identity,
+            // including when restoration failed, to eliminate active access.
+            try{
+              const del=await call('/usuarios/'+observedId,'DELETE',jwtA,2);
+              expect(del,200,'QA_DELETE');
+            }catch{cleanupErrors.push('QA_LOGICAL_DELETE_FAILED');}
+          }
+          must(count('SELECT COUNT(*) FROM Usuarios WHERE Id='+observedId+
+            ' AND Activo=0 AND Eliminado=1')===1,'QA_DELETE_SQL_UNVERIFIED');
+          console.log('P1005B_QA_FIXTURE_LOGICAL_DELETE=PASS');
+        }catch{cleanupErrors.push('QA_FINAL_STATE_UNVERIFIED');}
+      }
     }
   }
-
+  if(cleanupErrors.length){
+    console.error('P1005B_NO_GO='+cleanupErrors.join(','));
+    fail('QA_CLEANUP_UNVERIFIED');
+  }
+  if(primaryError)throw primaryError;
+  must(membershipDigest(a,b)===beforeMembership,'ACTOR_MEMBERSHIPS_CHANGED');
+  must(count('SELECT COUNT(*) FROM UsuarioRolesPlataforma WHERE UsuarioId IN ('+
+    a.uid+','+b.uid+') AND Activa=1')===0,'ACTOR_PLATFORM_ESCALATION');
   console.log('P1005B_LIVE_DEV_HTTP_JWT_MYSQL=PASS');
 }
 if(process.argv.includes('--self-test'))selfTest();
