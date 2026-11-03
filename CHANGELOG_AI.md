@@ -1,3 +1,9 @@
+## 2026-11-02 — P1-005.B: rechazo cross-tenant 404 válido con readback MySQL inmutable
+
+- El run LIVE postmerge de #3826 (`41572046099`, intento #2, `dev@042270af`) acreditó preflight de A/B y aislamiento HTTP/JWT pero se detuvo en `A_CANNOT_EDIT_B_HTTP_404` porque el test esperaba solo 403 ante `PUT /usuarios/{idB}`. El controlador existente usa `GetByIdAsync` con filtrado tenant antes de mutar, devolviendo 404 para identidades de B invisibles al actor A; no es prueba de fallo de aislamiento ni de modificación de B.
+- El test acepta solamente HTTP 403/404 para este negativo, mantiene 200/400/401/5xx como NO_GO y exige readback SQL SELECT exacto de la identidad y membresía B antes/después, incluida fecha de actualización. Marca `P1005B_CROSS_TENANT_EDIT_DENIED_MYSQL=PASS` solo con rechazo y ausencia de cambio. Incluye regresiones offline de los códigos admitidos y rechazados.
+- Sin cambios al backend, frontend, roles, permisos, migraciones, credenciales, Render, Aiven ni entornos QA/main/PROD. No reintentar el run anterior como certificación; requiere merge protegido, Scope Lock, LIVE PASS postmerge y readback PLAN/COLA/BITACORA para P1-005.B LISTO.
+
 ## 2026-11-02 — P1-005.B: datos DEV autorizados y certificación sin fixture preexistente
 
 - El propietario declara expresamente que las empresas y las tres identidades actuales de `solqaryn_dev` son de prueba. Se documentan cuentas, pertenencias conocidas y nombres **de secretos** (no valores) de GitHub Environment DEV en `docs/DEV_EMPRESAS_USUARIOS_PRUEBA.md`. Los slots de secretos A/B/C no son los nombres de empresas actuales.

@@ -28,7 +28,8 @@ function selfTest(){
   assert.equal(field({data:{id:5}},'id'),5);
   assert.equal(literal('a'),"CONVERT(UNHEX('61') USING utf8mb4)");
   assert(blocked({status:403}));assert(blocked({status:404}));
-  assert(!blocked({status:200}));assert(!blocked({status:503}));
+  assert(!blocked({status:200}));assert(!blocked({status:400}));
+  assert(!blocked({status:401}));assert(!blocked({status:503}));
   assert.equal(headersFor('test',2,null)['X-Empresa-Id'],'2');
   assert.equal(ORIGIN,'https://solqaryn-api-dev-fxx8.onrender.com');
   console.log('P1005B_OFFLINE_CONTRACT=PASS');
@@ -216,8 +217,21 @@ async function run(){
     ...duplicate,rolId:platformRole,password:'QATest-P1005B-No-Write-2026!'
   });
   expect(global,403,'A_CANNOT_ASSIGN_PLATFORM_ROLE');
+  // The scope-aware GetById in UsuariosController.Update returns 404 for
+  // identities hidden from the actor. A 403 is also an authorized rejection;
+  // neither must be mistaken for a real edit or a network/server failure.
+  // Readback proves the cross-tenant negative did not change B in MySQL.
+  const crossSql='SELECT CONCAT_WS(\':\',HEX(u.NombreUsuario),'+
+    'HEX(u.NombreCompleto),u.RolId,u.Activo,u.Bloqueado,u.Eliminado,'+
+    'COALESCE(HEX(CAST(u.FechaActualizacion AS CHAR)),\'NONE\'),m.RolId,m.Activa) '+
+    'FROM Usuarios u JOIN UsuarioEmpresas m ON m.UsuarioId=u.Id '+
+    'WHERE u.Id='+b.uid+' AND m.EmpresaId=3';
+  const crossBefore=sql(crossSql);
+  must(crossBefore.length>0,'B_CROSS_BASELINE_MISSING');
   const crossUpdate=await call('/usuarios/'+b.uid,'PUT',jwtA,2,userPayload(ownB.json,a.role));
-  expect(crossUpdate,403,'A_CANNOT_EDIT_B');
+  must(blocked(crossUpdate),'A_CANNOT_EDIT_B_HTTP_'+crossUpdate.status);
+  must(sql(crossSql)===crossBefore,'A_CANNOT_EDIT_B_STATE_CHANGED');
+  console.log('P1005B_CROSS_TENANT_EDIT_DENIED_MYSQL=PASS');
   const beforeMembership=membershipDigest(a,b);
   const auditBefore=count('SELECT COUNT(*) FROM RegistrosAuditoria WHERE UsuarioId='+a.uid+
     ' AND Entidad='+literal('Usuario')+' AND ReferenciaId='+a.uid+
