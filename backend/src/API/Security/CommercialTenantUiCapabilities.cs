@@ -63,6 +63,26 @@ public static class CommercialTenantUiCapabilities
         if (config.GetValue<bool>("MultiEmpresa:PrivateInventarioReadPilotEnabled"))
             Habilitar("MovimientosInventario", "Ver", "inventario/movimientos");
 
+        // P1-005.A: las rutas Angular de administración del tenant se muestran
+        // SOLO a administradores con cada grant vivo; la UI no autoriza la API.
+        if (dto.EsAdministrador)
+        {
+            var grants = dto.Permisos.ToHashSet(StringComparer.OrdinalIgnoreCase);
+            void HabilitarSiConcedido(string modulo, string accion, params string[] routes)
+            {
+                if (grants.Contains($"{modulo}:{accion}"))
+                    Habilitar(modulo, accion, routes);
+            }
+
+            HabilitarSiConcedido("Usuarios", "Ver", "usuarios", "usuarios/:id");
+            HabilitarSiConcedido("Usuarios", "Crear", "usuarios");
+            HabilitarSiConcedido("Usuarios", "Editar", "usuarios/:id/editar");
+            HabilitarSiConcedido("Roles", "Ver", "roles");
+            HabilitarSiConcedido("Roles", "Crear", "roles/nuevo");
+            HabilitarSiConcedido("Roles", "Editar", "roles/:id/editar");
+            HabilitarSiConcedido("Permisos", "Administrar", "permisos");
+        }
+
         // Confirmación, pagos, PDF, descarga de media, reports y jobs son
         // capacidades de API puntuales: no equivalen a habilitar toda su UI.
         dto.CapacidadesHabilitadas = capacidades.OrderBy(x => x, StringComparer.Ordinal).ToList();
