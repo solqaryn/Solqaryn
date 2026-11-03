@@ -24,6 +24,14 @@ La ejecución DEV del merge #3827 (`dev@390ca582`, run `41572965177`) acreditó 
 
 Causa: `membershipDigest` concatenaba conteos usando `":"` como cadena SQL. Con el modo de SQL observado en Aiven DEV, las comillas dobles delimitan identificadores y `":"` se interpreta erróneamente como columna. Se reemplaza exclusivamente por `literal(':')`, que genera `CONVERT(UNHEX('3a') USING utf8mb4)`, independiente de `ANSI_QUOTES`. El contrato offline prueba el SQL resultante, incluyendo IDs y separadores, y rechaza expresiones heredadas con comillas dobles. Sin SQL DML ni cambios a backend, roles, credenciales o empresas. Se requiere nueva LIVE postmerge real: los PASS previos no sustituyen cambio/revocación, auditoría y limpieza.
 
+## Corrección del escenario positivo LIVE postmerge #3828 (2026-11-02 Honduras)
+
+El run `41573886949`, `dev@1929dd6d`, superó MySQL A/B, HTTP/JWT y `P1005B_CROSS_TENANT_EDIT_DENIED_MYSQL=PASS`, y se detuvo en `P1005B_NO_GO=OWN_A_IDEMPOTENT_EDIT_HTTP_403`, antes de crear usuarios temporales o cambiar roles. **Render DEV confirmó la causa**, mediante `ForbiddenAccessException: Una identidad de plataforma no puede editarse desde una empresa`. La identidad empresarial A puede actuar con su contexto autorizado, pero conserva procedencia histórica de plataforma; la implementación por seguridad prohíbe editarla desde tenant incluso si sus grants globales activos son cero. No modificar esa prohibición ni intentar convertir la cuenta A en fixture mutable.
+
+El script conserva inmutables los tres accesos de prueba preexistentes y traslada **todos los positivos de edición/AsignarRol/revocación y auditoría** al único usuario efímero generado por el job en empresa A, con password aleatorio no registrado, membresía exclusiva y sin grants de plataforma. Verifica alta, edición a plantilla administradora de empresa, restauración a rol Vendedor y `DELETE` lógico con readback SQL. Se mantiene el negativo A→B y los controles anti-escalada. Cualquier fallo de limpieza es `NO_GO`, nunca PASS.
+
+En la misma revisión preventiva se corrigió otra validación del script que usaba accidentalmente una expresión regular de dos barras `/^\\\\d+$/` al leer el ID numérico de la cuenta efímera. Ahora el conversor de ID no negativo acepta únicamente el patrón real `/^[0-9]+$/`, verifica entero seguro y tiene pruebas offline para cero, positivos y entradas inválidas. Esta corrección no toca el backend, bases de datos ni credenciales; requiere **nueva LIVE postmerge** y readback institucional antes de `LISTO`.
+
 ## Evidencia requerida para declarar LISTO
 
 - Correr `scripts/ci/p1-005-b-live-enterprise-roles-dev.mjs --self-test` sin credenciales en PR, con Scope Lock y sintaxis Node 24.
