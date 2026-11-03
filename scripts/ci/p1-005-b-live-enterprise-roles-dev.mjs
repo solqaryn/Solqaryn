@@ -76,13 +76,16 @@ function preflight(){
   must(count('SELECT COUNT(*) FROM Empresas WHERE Id IN (2,3) AND Activa=1')===2,
     'TWO_TENANTS_REQUIRED');
   const a=identity(process.env.A_USERNAME,2),b=identity(process.env.B_USERNAME,3);
-  must(a.uid!==b.uid&&a.role!==b.role,'TENANT_SEPARATION_INVALID');
+  must(a.uid!==b.uid,'TENANT_SEPARATION_INVALID');
+  const ownRole=id=>num(sql('SELECT MIN(Id) FROM Roles WHERE EmpresaId='+id+
+    ' AND Ambito<>2 AND EsSistema=0 AND Activo=1 AND Eliminado=0'),'TENANT_OWNED_ROLE_'+id);
+  const roleAowned=ownRole(2),roleBowned=ownRole(3);
   const platformRole=num(sql('SELECT Id FROM Roles WHERE Ambito=2 '+
     'AND EsSistema=1 AND EsAdministrador=1 AND EmpresaId IS NULL '+
     'ORDER BY Id LIMIT 1'),'PLATFORM_ROLE');
   must(platformRole!==a.role&&platformRole!==b.role,'PLATFORM_ROLE_CONFLICT');
   console.log('P1005B_MYSQL_TWO_TENANT_PREFLIGHT=PASS');
-  return {a,b,platformRole};
+  return {a,b,platformRole,roleAowned,roleBowned};
 }
 async function call(path,method='GET',jwt='',tenant=0,payload){
   const url=new URL(path,ORIGIN);
@@ -129,7 +132,7 @@ function membershipDigest(a,b){
     a.uid+','+b.uid+')');
 }
 async function run(){
-  env();const {a,b,platformRole}=preflight();
+  env();const {a,b,platformRole,roleAowned,roleBowned}=preflight();
   expect(await call('/health/ready'),200,'RENDER_READY');
   const jwtA=await login(process.env.A_USERNAME,process.env.A_PASSWORD,'A');
   const jwtB=await login(process.env.B_USERNAME,process.env.B_PASSWORD,'B');
@@ -145,8 +148,8 @@ async function run(){
   for(const [r,label] of [
     [await call('/usuarios/'+b.uid,'GET',jwtA,2),'A_READ_USER_B'],
     [await call('/usuarios/'+a.uid,'GET',jwtB,3),'B_READ_USER_A'],
-    [await call('/roles/'+b.role,'GET',jwtA,2),'A_READ_ROLE_B'],
-    [await call('/roles/'+a.role,'GET',jwtB,3),'B_READ_ROLE_A']])
+    [await call('/roles/'+roleBowned,'GET',jwtA,2),'A_READ_ROLE_B'],
+    [await call('/roles/'+roleAowned,'GET',jwtB,3),'B_READ_ROLE_A']])
     must(blocked(r),label+'_HTTP_'+r.status);
   expect(await call('/plataforma/sesion','GET',jwtA,2),403,'NO_GLOBAL_A');
   expect(await call('/plataforma/sesion','GET',jwtB,3),403,'NO_GLOBAL_B');
@@ -154,7 +157,7 @@ async function run(){
 
   // Denied POST uses an already-existing username: if RBAC breaks, uniqueness
   // still prevents creation. A non-403 status is NO_GO, never accepted as PASS.
-  const duplicate=userPayload(ownA.json,b.role);
+  const duplicate=userPayload(ownA.json,roleBowned);
   const denyRoleB=await call('/usuarios','POST',jwtA,2,{
     ...duplicate,password:'QATest-P1005B-No-Write-2026!'
   });
@@ -163,7 +166,7 @@ async function run(){
     ...duplicate,rolId:platformRole,password:'QATest-P1005B-No-Write-2026!'
   });
   expect(global,403,'A_CANNOT_ASSIGN_PLATFORM_ROLE');
-  const crossUpdate=await call('/usuarios/'+b.uid,'PUT',jwtA,2,userPayload(ownB.json,b.role));
+  const crossUpdate=await call('/usuarios/'+b.uid,'PUT',jwtA,2,userPayload(ownB.json,roleBowned));
   expect(crossUpdate,403,'A_CANNOT_EDIT_B');
   const beforeMembership=membershipDigest(a,b);
   const auditBefore=count('SELECT COUNT(*) FROM RegistrosAuditoria WHERE UsuarioId='+a.uid+
