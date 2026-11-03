@@ -1,3 +1,11 @@
+## 2026-11-03 — P1-005.B: habilitar DELETE empresarial exacto en middleware fail-closed
+
+- PR #3830 fusionado `dev@bfa914ff`; Render DEV desplegó ese SHA en `dep-dbkvvcrncjis73fg7820` (LIVE 15:41:21Z). LIVE posterior `41664870250` job `126023199709`: preflight MySQL, Render readiness, HTTP/JWT A/B y denegación cruzada con readback **PASS**. Recuperación del usuario temporal #8 sigue **NO_GO HTTP 503** pese al servicio DELETE actualizado.
+- Logs Render confirman que el middleware de cuarentena ejecutaba solo `SELECT Empresas ORDER BY Id LIMIT 2` y retornaba 503 antes del controlador. La allowlist P1-005.A de `UnscopedCommercialTenantGuardMiddleware.EsRutaAdministracionEmpresa` omitía `DELETE /usuarios/{id}`.
+- Se añade exclusivamente DELETE para un ID entero positivo exacto, con acción `Usuarios:EliminarLogico` y **el mismo** gate de JWT, administrador tenant vivo y permiso MySQL. Continúan bloqueados DELETE en roles, IDs inválidos, subrutas y métodos no autorizados. La eliminación efectiva sigue gestionada por el servicio tenant-aware de #3830 con membresía exclusiva, protección de plataforma y auditoría estricta.
+- Nuevas regresiones middleware: ruta positiva exacta; rechazo de ID cero/negativo, slash final, rutas vecinas, JWT ausente, administrador no vigente y permiso revocado. Regresión de atributo/permiso en controlador.
+- Alcance: middleware/API y tests más documentación en `dev`; sin cambios a base, usuarios, secretos, migraciones, frontend, permisos persistidos, QA/main/PROD. Requiere PR protegido y revisión independiente, posterior publicación Render del nuevo SHA y LIVE con limpieza del fixture #8 y del nuevo usuario, auditoría y conciliación de Sheets antes de `LISTO`.
+
 ## 2026-11-03 — P1-005.B: DELETE tenant-aware, recuperación de fixture DEV y cierre LIVE pendiente
 
 - PR #3829 fusionado en `dev@45db008d` con revisión independiente y Scope Lock postmerge PASS. LIVE run `41649878991`: MySQL A/B PASS, aislamiento HTTP/JWT PASS, negativa de edición cruzada y readback MySQL PASS, **asignación/revocación con auditoría duradera PASS**. El cierre falló por `DELETE /usuarios/8` HTTP 503 y `QA_LOGICAL_DELETE_FAILED,QA_FINAL_STATE_UNVERIFIED`; el rol de la identidad efímera quedó restaurado, pero el borrado lógico **no está acreditado**. Render confirma DELETE 503 a las `2026-11-03T14:46:13Z`.
