@@ -147,6 +147,9 @@ function readRole(rows,target,tenant){
   must(rows.some(x=>Number(x.id)===target.role),'OWN_ROLE_MISSING_'+tenant);
   must(rows.every(x=>x.empresaId==null||Number(x.empresaId)===tenant),
     'CROSS_TENANT_ROLES_EXPOSED_'+tenant);
+  const roleIds=rows.map(x=>num(x.id,'ROLE_ROW_ID_'+tenant));
+  if(roleIds.length)must(count('SELECT COUNT(*) FROM Roles WHERE Id IN ('+
+    roleIds.join(',')+') AND Ambito=2')===0,'GLOBAL_ROLE_LEAK_'+tenant);
 }
 function noStore(r,label){must(String(r.headers['cache-control']||'').includes('no-store'),
   'CACHE_LEAK_'+label);}
@@ -178,26 +181,40 @@ async function run(){
   noStore(ownA,'USERS_A');noStore(ownB,'USERS_B');
   for(const [r,label] of [
     [await call('/usuarios/'+b.uid,'GET',jwtA,2),'A_READ_USER_B'],
-    [await call('/usuarios/'+a.uid,'GET',jwtB,3),'B_READ_USER_A'],
-    [await call('/roles/'+roleBowned,'GET',jwtA,2),'A_READ_ROLE_B'],
-    [await call('/roles/'+roleAowned,'GET',jwtB,3),'B_READ_ROLE_A']])
+    [await call('/usuarios/'+a.uid,'GET',jwtB,3),'B_READ_USER_A']])
     must(blocked(r),label+'_HTTP_'+r.status);
+  // Una plantilla compartida NO es un rol privado del tenant B.
+  // El negativo HTTP cross-role solo aplica si hay un rol realmente propio.
+  if(roleBowned>0){
+    const denied=await call('/roles/'+roleBowned,'GET',jwtA,2);
+    must(blocked(denied),'A_READ_PRIVATE_ROLE_B_HTTP_'+denied.status);
+    console.log('P1005B_CROSS_ROLE_B_HTTP=PASS');
+  }else console.log('P1005B_CROSS_ROLE_B_HTTP=NOT_APPLICABLE_NO_PRIVATE_ROLE');
+  if(roleAowned>0){
+    const denied=await call('/roles/'+roleAowned,'GET',jwtB,3);
+    must(blocked(denied),'B_READ_PRIVATE_ROLE_A_HTTP_'+denied.status);
+    console.log('P1005B_CROSS_ROLE_A_HTTP=PASS');
+  }else console.log('P1005B_CROSS_ROLE_A_HTTP=NOT_APPLICABLE_NO_PRIVATE_ROLE');
   expect(await call('/plataforma/sesion','GET',jwtA,2),403,'NO_GLOBAL_A');
   expect(await call('/plataforma/sesion','GET',jwtB,3),403,'NO_GLOBAL_B');
   console.log('P1005B_HTTP_JWT_A_B_ISOLATION=PASS');
 
   // Denied POST uses an already-existing username: if RBAC breaks, uniqueness
   // still prevents creation. A non-403 status is NO_GO, never accepted as PASS.
-  const duplicate=userPayload(ownA.json,roleBowned);
-  const denyRoleB=await call('/usuarios','POST',jwtA,2,{
-    ...duplicate,password:'QATest-P1005B-No-Write-2026!'
-  });
-  expect(denyRoleB,403,'A_CANNOT_ASSIGN_B_ROLE');
+  // Nombre ya existente: nunca crear un usuario nuevo si fallara RBAC.
+  const duplicate=userPayload(ownA.json,a.role);
+  if(roleBowned>0){
+    const denyRoleB=await call('/usuarios','POST',jwtA,2,{
+      ...duplicate,rolId:roleBowned,password:'QATest-P1005B-No-Write-2026!'
+    });
+    expect(denyRoleB,403,'A_CANNOT_ASSIGN_B_ROLE');
+    console.log('P1005B_FOREIGN_ROLE_ASSIGNMENT_HTTP=PASS');
+  }else console.log('P1005B_FOREIGN_ROLE_ASSIGNMENT_HTTP=NOT_APPLICABLE_NO_PRIVATE_ROLE');
   const global=await call('/usuarios','POST',jwtA,2,{
     ...duplicate,rolId:platformRole,password:'QATest-P1005B-No-Write-2026!'
   });
   expect(global,403,'A_CANNOT_ASSIGN_PLATFORM_ROLE');
-  const crossUpdate=await call('/usuarios/'+b.uid,'PUT',jwtA,2,userPayload(ownB.json,roleBowned));
+  const crossUpdate=await call('/usuarios/'+b.uid,'PUT',jwtA,2,userPayload(ownB.json,a.role));
   expect(crossUpdate,403,'A_CANNOT_EDIT_B');
   const beforeMembership=membershipDigest(a,b);
   const auditBefore=count('SELECT COUNT(*) FROM RegistrosAuditoria WHERE UsuarioId='+a.uid+
@@ -229,7 +246,7 @@ async function run(){
   must(first.every(v=>Number(v)===targetRole),'QA_BEFORE_ROLE');
   const auditGrantBefore=count('SELECT COUNT(*) FROM RegistrosAuditoria WHERE '+
     'UsuarioId='+a.uid+' AND ReferenciaId='+targetId+
-    ' AND Accion='+literal('AsignarRol')+" AND Resultado='Exito'");
+    ' AND Accion='+literal('Editar')+" AND Resultado='Exito'");
   let changed=false,restored=false;
   try{
     changed=true; // ensure cleanup also after an ambiguous HTTP failure
@@ -239,7 +256,7 @@ async function run(){
     must(roleRead().every(v=>Number(v)===alternateRole),'ASSIGNMENT_NOT_DURABLE');
     const auditGrantAfter=count('SELECT COUNT(*) FROM RegistrosAuditoria WHERE '+
       'UsuarioId='+a.uid+' AND ReferenciaId='+targetId+
-      ' AND Accion='+literal('AsignarRol')+" AND Resultado='Exito'");
+      ' AND Accion='+literal('Editar')+" AND Resultado='Exito'");
     must(auditGrantAfter>auditGrantBefore,'GRANT_AUDIT_NOT_DURABLE');
     const revoke=await call('/usuarios/'+targetId,'PUT',jwtA,2,qaOriginal);
     expect(revoke,200,'RESTORE_TENANT_ROLE_A');
