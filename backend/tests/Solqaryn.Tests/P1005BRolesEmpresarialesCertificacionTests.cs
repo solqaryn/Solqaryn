@@ -268,4 +268,126 @@ public sealed class P1005BRolesEmpresarialesCertificacionTests
         Assert.Equal(111, Assert.Single(db.UsuarioEmpresas).RolId);
         t.Users.VerifyNoOtherCalls();
     }
+    [Fact]
+    public async Task P1005B_EliminarUsuarioPropio_RevocaLoginMembresiaYAudiTa()
+    {
+        var t = Setup();
+        using var db = t.Db;
+        await UsuarioPropioAsync(db);
+
+        var eliminado = await t.Sut.EliminarAsync(71, 11);
+
+        Assert.True(eliminado);
+        var user = Assert.Single(db.Usuarios);
+        Assert.True(user.Eliminado);
+        Assert.False(user.Activo);
+        Assert.NotNull(user.FechaEliminacion);
+        Assert.Equal(1, user.EliminadoPorUsuarioId);
+        Assert.False(Assert.Single(db.UsuarioEmpresas).Activa);
+        t.Audit.Verify(x => x.RegistrarEstrictoAsync(
+            ModuloSistema.Usuarios, AccionPermiso.EliminarLogico,
+            It.IsAny<string>(), 71, "Usuario",
+            It.IsAny<object?>(), It.IsAny<object?>(), It.IsAny<string?>(),
+            It.IsAny<string>(), It.IsAny<string?>()), Times.Once);
+        t.Users.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task P1005B_EliminarCompartidoAB_DenegadoSinMutar()
+    {
+        var t = Setup();
+        using var db = t.Db;
+        await UsuarioPropioAsync(db);
+        db.UsuarioEmpresas.Add(new UsuarioEmpresa(71, 22, 220));
+        await db.SaveChangesAsync();
+
+        await Assert.ThrowsAsync<ForbiddenAccessException>(
+            () => t.Sut.EliminarAsync(71, 11));
+        Assert.False(db.Usuarios.Single(u => u.Id == 71).Eliminado);
+        Assert.True(db.Usuarios.Single(u => u.Id == 71).Activo);
+        Assert.Equal(2, db.UsuarioEmpresas.Count());
+        Assert.All(db.UsuarioEmpresas, x => Assert.True(x.Activa));
+    }
+
+    [Fact]
+    public async Task P1005B_EliminarBDesdeA_DenegadoSinMutar()
+    {
+        var t = Setup();
+        using var db = t.Db;
+        db.Usuarios.Add(new Usuario { Id = 71, NombreUsuario = "solo_b",
+            NombreCompleto = "Solo B", PasswordHash = "fixture",
+            RolId = 220, Activo = true });
+        db.UsuarioEmpresas.Add(new UsuarioEmpresa(71, 22, 220));
+        await db.SaveChangesAsync();
+
+        await Assert.ThrowsAsync<ForbiddenAccessException>(
+            () => t.Sut.EliminarAsync(71, 11));
+        Assert.False(Assert.Single(db.Usuarios).Eliminado);
+        Assert.True(Assert.Single(db.UsuarioEmpresas).Activa);
+    }
+
+    [Fact]
+    public async Task P1005B_EliminarPlataformaInactiva_DenegadoPorProcedencia()
+    {
+        var t = Setup();
+        using var db = t.Db;
+        await UsuarioPropioAsync(db);
+        var grant = new UsuarioRolPlataforma(71, 300);
+        grant.Desactivar();
+        db.UsuarioRolesPlataforma.Add(grant);
+        await db.SaveChangesAsync();
+
+        await Assert.ThrowsAsync<ForbiddenAccessException>(
+            () => t.Sut.EliminarAsync(71, 11));
+        Assert.False(Assert.Single(db.Usuarios).Eliminado);
+        Assert.True(Assert.Single(db.UsuarioEmpresas).Activa);
+    }
+
+    [Fact]
+    public async Task P1005B_EliminarRolGlobalLegacy_DenegadoSinMutar()
+    {
+        var t = Setup();
+        using var db = t.Db;
+        await UsuarioPropioAsync(db);
+        db.Usuarios.Single(u => u.Id == 71).RolId = 300;
+        await db.SaveChangesAsync();
+
+        await Assert.ThrowsAsync<ForbiddenAccessException>(
+            () => t.Sut.EliminarAsync(71, 11));
+        Assert.False(Assert.Single(db.Usuarios).Eliminado);
+    }
+
+    [Fact]
+    public async Task P1005B_EliminarPropiaCuentaOActorSinAdmin_Denegado()
+    {
+        var t = Setup();
+        using (t.Db)
+        {
+            await Assert.ThrowsAsync<BusinessRuleException>(
+                () => t.Sut.EliminarAsync(1, 11));
+        }
+        var nonAdmin = Setup(administrador: false);
+        using (nonAdmin.Db)
+        {
+            await Assert.ThrowsAsync<ForbiddenAccessException>(
+                () => nonAdmin.Sut.EliminarAsync(71, 11));
+        }
+    }
+
+    [Fact]
+    public async Task P1005B_EliminarSinPermiso_RespetaRBAC()
+    {
+        var t = Setup();
+        using var db = t.Db;
+        await UsuarioPropioAsync(db);
+        t.Perms.Setup(x => x.VerificarPermisoAsync(
+                11, ModuloSistema.Usuarios, AccionPermiso.EliminarLogico))
+            .ThrowsAsync(new ForbiddenAccessException("Sin permiso para eliminar."));
+
+        await Assert.ThrowsAsync<ForbiddenAccessException>(
+            () => t.Sut.EliminarAsync(71, 11));
+        Assert.False(Assert.Single(db.Usuarios).Eliminado);
+        Assert.True(Assert.Single(db.UsuarioEmpresas).Activa);
+    }
+
 }
