@@ -5,6 +5,8 @@ on:
     paths:
       - .github/workflows/p1-005-a-empresa-admin-directed.yml
       - backend/src/API/Controllers/UsuariosController.cs
+      - backend/src/API/Security/CommercialTenantUiCapabilities.cs
+      - backend/tests/Solqaryn.Tests/API/CommercialTenantUiCapabilitiesTests.cs
       - backend/src/API/Middleware/UnscopedCommercialTenantGuardMiddleware.cs
       - backend/src/API/Program.cs
       - backend/src/Application/Interfaces/IUsuarioAdministracionEmpresaService.cs
@@ -17,6 +19,8 @@ on:
     paths:
       - .github/workflows/p1-005-a-empresa-admin-directed.yml
       - backend/src/API/Controllers/UsuariosController.cs
+      - backend/src/API/Security/CommercialTenantUiCapabilities.cs
+      - backend/tests/Solqaryn.Tests/API/CommercialTenantUiCapabilitiesTests.cs
       - backend/src/API/Middleware/UnscopedCommercialTenantGuardMiddleware.cs
       - backend/src/API/Program.cs
       - backend/src/Application/Interfaces/IUsuarioAdministracionEmpresaService.cs
@@ -48,4 +52,4 @@ jobs:
         run: |
           set -euo pipefail
           node scripts/verify-project-scope.mjs
-          dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --filter 'FullyQualifiedName~P1005AEmpresaAdminScopeTests|FullyQualifiedName~P1005AEmpresaAdminMiddlewareTests' --verbosity minimal
+          dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --filter 'FullyQualifiedName~P1005AEmpresaAdminScopeTests|FullyQualifiedName~P1005AEmpresaAdminMiddlewareTests|FullyQualifiedName~CommercialTenantUiCapabilitiesTests' --verbosity minimal
