@@ -10,6 +10,14 @@ El segundo job postmerge de #3825 (SHA `b14dc2f5`, run `41569475372`) se detuvo 
 
 Se exige un **nuevo** job LIVE SUCCESS del commit integrado, comprobación de restauración, y conciliación de Sheets antes de declarar LISTO.
 
+## Ajuste de contrato HTTP tras LIVE postmerge del PR #3826 (2026-11-02 Honduras)
+
+El run `41572046099`, intento #2, commit DEV `042270af`, **superó** el preflight MySQL A/B, el login y aislamiento HTTP/JWT y los negativos de roles de plataforma. La única detención posterior fue `P1005B_NO_GO=A_CANNOT_EDIT_B_HTTP_404`: el test exigía exclusivamente `403` ante `PUT /usuarios/{idB}` desde el administrador A, aunque el controlador llama a `GetByIdAsync` antes de editar y, con filtrado de alcance, devuelve `404` para identidades invisibles al tenant. La misma prueba de lectura cross-tenant ya acepta `403` o `404` como rechazo.
+
+Se alinea **solo la expectativa del test**: la edición cruzada debe devolver exactamente `403` o `404`, nunca `2xx`, `400`, `401` o `5xx`, y además se comprueba por consultas SELECT a MySQL que la identidad y membresía de B mantuvieron sus campos relevantes intactos (incluida fecha de actualización). `P1005B_CROSS_TENANT_EDIT_DENIED_MYSQL=PASS` requiere ambas condiciones. No se modifica backend, autorización, fixture o datos. El resultado `404` no equivale a editar B; previene enumeración de identidades ajenas.
+
+El cierre aún requiere **una nueva LIVE real postmerge**, restauración del rol efímero, borrado lógico verificado y conciliación del plan. No contabilizar como PASS el run fallido anterior.
+
 ## Evidencia requerida para declarar LISTO
 
 - Correr `scripts/ci/p1-005-b-live-enterprise-roles-dev.mjs --self-test` sin credenciales en PR, con Scope Lock y sintaxis Node 24.
