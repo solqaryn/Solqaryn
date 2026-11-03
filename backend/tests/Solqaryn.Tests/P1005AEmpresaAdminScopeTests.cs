@@ -153,4 +153,30 @@ public sealed class P1005AEmpresaAdminScopeTests
             t.Sut.ActualizarAsync(61,new UpdateUsuarioDto { RolId=102 },11));
         t.Users.VerifyNoOtherCalls();
     }
+
+    [Fact]
+    public async Task EdicionA_CambiaRolEfectivoDeMembresiaAdemasDelLegacy()
+    {
+        var t=Setup();
+        using var db=t.Db;
+        db.Usuarios.Add(new Usuario
+        {
+            Id=61, NombreUsuario="usuarioa", NombreCompleto="Usuario Empresa A",
+            PasswordHash="solo-fixture", RolId=101, Activo=true
+        });
+        db.UsuarioEmpresas.Add(new UsuarioEmpresa(61,11,101));
+        await db.SaveChangesAsync();
+        t.Users.Setup(x=>x.UpdateAsync(61,It.IsAny<UpdateUsuarioDto>()))
+            .ReturnsAsync(new UsuarioDto { Id=61, RolId=104 });
+        var result=await t.Sut.ActualizarAsync(61,
+            new UpdateUsuarioDto { RolId=104, NombreUsuario="usuarioa", NombreCompleto="Usuario Empresa A" },11);
+        Assert.Equal(104,result?.RolId);
+        Assert.Equal(104,Assert.Single(db.UsuarioEmpresas).RolId);
+        t.Audit.Verify(x=>x.RegistrarEstrictoAsync(
+            ModuloSistema.Usuarios,AccionPermiso.Editar,
+            It.IsAny<string>(),61,"Usuario",
+            It.IsAny<object?>(),It.IsAny<object?>(),It.IsAny<string?>(),
+            It.IsAny<string>(),It.IsAny<string?>()),Times.Once);
+    }
+
 }
