@@ -234,8 +234,10 @@ public sealed class UnscopedCommercialTenantGuardTests
             ("GET", "/permisos/mis-permisos/empresa/abc", true),
             ("GET", "/permisos/mis-permisos/empresa/2/", true),
             ("GET", "/permisos/mis-permisos/empresa/2/extra", true),
-            ("GET", "/permisos/matriz/2", true),
-            ("PUT", "/permisos/matriz/2", true)
+            // P1-005.A permite matriz únicamente a admin con RBAC MySQL;
+            // este fixture sin DI verifica que un anónimo sigue en 503.
+            ("GET", "/permisos/matriz/2", false),
+            ("PUT", "/permisos/matriz/2", false)
         })
         {
             var bloqueado = await ProcesarAsync(db, metodo, ruta, autenticado);
