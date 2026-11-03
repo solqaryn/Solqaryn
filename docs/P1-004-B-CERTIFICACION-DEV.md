@@ -1,3 +1,7 @@
+## Corrección del readback de auditoría LIVE (2026-11-02)
+
+La ejecución LIVE postdeploy run #41552893191 intento #3 en dev@49f22c37 confirmó preflight MySQL, negativos HTTP/JWT, concesión de capacidad limitada y rechazo cross-scope (PASS); falló únicamente la lectura de auditoría con GRANT_AUDIT_NOT_DURABLE. La configuración EF real `RegistroAuditoriaConfiguration` aplica `HasConversion<string>()` a `Accion`, pero el test buscaba enteros 17/9/20. El readback se corrige a los literales `AsignarRol`, `Desactivar`, `ConsultarHistorial` manteniendo filtrado por usuario, referencia, motivo, ámbito Plataforma, resultado y tiempo. Esta causa no permite afirmar todavía persistencia durable: exigir nueva ejecución LIVE real después de merge. No se edita ningún registro, rol, membresía, esquema ni configuración de Render. Rollback: revert protegido del script.
+
 ## Reparación causal del 503 previo a la concesión (2026-11-02)
 
 - El job LIVE de dev@a7553b32 (run 41549812213) llegó a MySQL y JWT con preflight PASS, pero `GET /plataforma/delegaciones/empresas` antes de conceder recibió 503 donde el contrato exige 403. La cuarentena `UnscopedCommercialTenantGuardMiddleware` carecía de excepción para las rutas nuevas de delegación; con 2+ empresas su respuesta de rechazo es `TENANT_DATA_ISOLATION_REQUIRED`.
