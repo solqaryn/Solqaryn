@@ -18,6 +18,12 @@ Se alinea **solo la expectativa del test**: la edición cruzada debe devolver ex
 
 El cierre aún requiere **una nueva LIVE real postmerge**, restauración del rol efímero, borrado lógico verificado y conciliación del plan. No contabilizar como PASS el run fallido anterior.
 
+## Corrección adicional: SQL ANSI_QUOTES tras LIVE postmerge #3827 (2026-11-02 Honduras)
+
+La ejecución DEV del merge #3827 (`dev@390ca582`, run `41572965177`) acreditó `P1005B_MYSQL_TWO_TENANT_PREFLIGHT=PASS`, `P1005B_HTTP_JWT_A_B_ISOLATION=PASS` y `P1005B_CROSS_TENANT_EDIT_DENIED_MYSQL=PASS`: el acceso cruzado se rechaza y la cuenta B sigue intacta. La siguiente consulta, todavía antes de editar roles, falló con **MySQL ERROR 1054 Unknown column ':'** y `P1005B_NO_GO=MYSQL_SELECT_FAILED`.
+
+Causa: `membershipDigest` concatenaba conteos usando `":"` como cadena SQL. Con el modo de SQL observado en Aiven DEV, las comillas dobles delimitan identificadores y `":"` se interpreta erróneamente como columna. Se reemplaza exclusivamente por `literal(':')`, que genera `CONVERT(UNHEX('3a') USING utf8mb4)`, independiente de `ANSI_QUOTES`. El contrato offline prueba el SQL resultante, incluyendo IDs y separadores, y rechaza expresiones heredadas con comillas dobles. Sin SQL DML ni cambios a backend, roles, credenciales o empresas. Se requiere nueva LIVE postmerge real: los PASS previos no sustituyen cambio/revocación, auditoría y limpieza.
+
 ## Evidencia requerida para declarar LISTO
 
 - Correr `scripts/ci/p1-005-b-live-enterprise-roles-dev.mjs --self-test` sin credenciales en PR, con Scope Lock y sintaxis Node 24.
