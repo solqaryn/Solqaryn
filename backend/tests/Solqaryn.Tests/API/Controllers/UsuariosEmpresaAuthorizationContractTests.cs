@@ -29,6 +29,7 @@ public class UsuariosEmpresaAuthorizationContractTests
     [InlineData(nameof(UsuariosController.GetEmpresas), typeof(HttpGetAttribute), "{id:int}/empresas", AccionPermiso.Ver)]
     [InlineData(nameof(UsuariosController.AsignarEmpresa), typeof(HttpPostAttribute), "{id:int}/empresas", AccionPermiso.AsignarRol)]
     [InlineData(nameof(UsuariosController.CambiarRolEmpresa), typeof(HttpPutAttribute), "{id:int}/empresas/{empresaId:int}/rol", AccionPermiso.AsignarRol)]
+    [InlineData(nameof(UsuariosController.Eliminar), typeof(HttpDeleteAttribute), "{id:int}", AccionPermiso.EliminarLogico)]
     public void Endpoints_Empresa_DebenExigirPermisoUsuarios(
         string methodName,
         Type expectedVerb,
@@ -44,6 +45,7 @@ public class UsuariosEmpresaAuthorizationContractTests
             HttpGetAttribute get => get.Template,
             HttpPostAttribute post => post.Template,
             HttpPutAttribute put => put.Template,
+            HttpDeleteAttribute delete => delete.Template,
             _ => null
         };
         Assert.Equal(expectedTemplate, template);
