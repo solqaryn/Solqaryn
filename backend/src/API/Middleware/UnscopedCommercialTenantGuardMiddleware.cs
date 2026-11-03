@@ -141,6 +141,48 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
             return;
         }
 
+        // P1-005.A: solo administración empresarial con rol y permisos VIVOS.
+        // El selector X-Empresa-Id nunca autoriza; se releen membresía y RBAC.
+        // No abre rutas ERP, catálogo global de permisos ni mutadores de plataforma.
+        if (EsRutaAdministracionEmpresa(httpContext.Request, out var adminModulo,
+                out var adminAccion))
+        {
+            if (httpContext.User.Identity?.IsAuthenticated != true)
+            {
+                await RechazarAsync(httpContext);
+                return;
+            }
+
+            var empresaId = await TenantPermissionContext.RequireEmpresaIdAsync(
+                httpContext, httpContext.RequestAborted);
+            var scope = await httpContext.RequestServices
+                .GetRequiredService<IUsuarioScopeService>()
+                .ObtenerActualAsync(empresaId, httpContext.RequestAborted);
+            if (scope is null || !scope.EsAdministrador || scope.EmpresaId != empresaId)
+                throw new ForbiddenAccessException(
+                    "Se requiere administrador empresarial vigente.");
+
+            // Limitar carga JSON antes de llegar a los mutadores.
+            if (HttpMethods.IsPost(httpContext.Request.Method) ||
+                HttpMethods.IsPut(httpContext.Request.Method))
+            {
+                if (httpContext.Request.ContentLength is not > 0 or > 32768 ||
+                    httpContext.Request.ContentType?.StartsWith(
+                        "application/json", StringComparison.OrdinalIgnoreCase) != true)
+                {
+                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    return;
+                }
+            }
+
+            await httpContext.RequestServices.GetRequiredService<IPermisoService>()
+                .VerificarPermisoAsync(empresaId, adminModulo, adminAccion);
+            TenantPermissionContext.MarkAuthorizedEmpresaId(httpContext, empresaId);
+            httpContext.Response.Headers.CacheControl = "private, no-store, max-age=0";
+            await _next(httpContext);
+            return;
+        }
+
         // Autogestión de perfil: únicamente GET exacto y con JWT ya autenticado.
         // El controlador no recibe UsuarioId ni EmpresaId; PerfilService relee la
         // cuenta propia por claim y exige que siga activa, no bloqueada y no eliminada.
@@ -836,6 +878,59 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         await context.Response.WriteAsJsonAsync(
             new { success = false, code },
             context.RequestAborted);
+    }
+
+    private static bool EsRutaAdministracionEmpresa(
+        HttpRequest request, out ModuloSistema modulo, out AccionPermiso accion)
+    {
+        modulo = ModuloSistema.Usuarios;
+        accion = AccionPermiso.Ver;
+        var s = request.Path.Value?.Split('/', StringSplitOptions.None);
+        if (s is null || s.Length < 2 || s[0] != "") return false;
+        static bool Eq(string left, string right) =>
+            left.Equals(right, StringComparison.OrdinalIgnoreCase);
+        static bool Id(string value) =>
+            value.Length > 0 && value.All(c => c is >= '0' and <= '9') &&
+            int.TryParse(value, out var id) && id > 0;
+        bool get = HttpMethods.IsGet(request.Method);
+        bool post = HttpMethods.IsPost(request.Method);
+        bool put = HttpMethods.IsPut(request.Method);
+
+        if (Eq(s[1], "roles"))
+        {
+            modulo = ModuloSistema.Roles;
+            if (s.Length == 2 && get) { accion = AccionPermiso.Ver; return true; }
+            if (s.Length == 2 && post) { accion = AccionPermiso.Crear; return true; }
+            if (s.Length == 3 && Id(s[2]) && get) { accion = AccionPermiso.Ver; return true; }
+            if (s.Length == 3 && Id(s[2]) && put) { accion = AccionPermiso.Editar; return true; }
+            return false;
+        }
+        if (Eq(s[1], "permisos") && s.Length == 4 &&
+            Eq(s[2], "matriz") && Id(s[3]) && (get || put))
+        {
+            modulo = ModuloSistema.Permisos;
+            accion = AccionPermiso.Administrar;
+            return true;
+        }
+        if (!Eq(s[1], "usuarios")) return false;
+        modulo = ModuloSistema.Usuarios;
+        if (s.Length == 2 && get) { accion = AccionPermiso.Ver; return true; }
+        if (s.Length == 2 && post) { accion = AccionPermiso.Crear; return true; }
+        if (s.Length == 3 && get && Eq(s[2], "paginado"))
+        { accion = AccionPermiso.Ver; return true; }
+        if (s.Length == 3 && Id(s[2]) && get)
+        { accion = AccionPermiso.Ver; return true; }
+        if (s.Length == 3 && Id(s[2]) && put)
+        { accion = AccionPermiso.Editar; return true; }
+        if (s.Length == 4 && Id(s[2]) && Eq(s[3], "empresas"))
+        {
+            if (get) { accion = AccionPermiso.Ver; return true; }
+            if (post) { accion = AccionPermiso.AsignarRol; return true; }
+        }
+        if (s.Length == 6 && Id(s[2]) && Eq(s[3], "empresas") &&
+            Id(s[4]) && Eq(s[5], "rol") && put)
+        { accion = AccionPermiso.AsignarRol; return true; }
+        return false;
     }
 
     private static bool EsRutaDelegacionPlataforma(HttpRequest request)
