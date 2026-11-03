@@ -2,7 +2,7 @@
 
 - Se habilitan solo rutas GET/POST/PUT exactas de roles/usuarios/matriz por middleware de cuarentena, con JWT, rol administrador empresarial vivo, membresía y permisos MySQL. No se abre ERP, permisos globales ni rutas vecinas.
 - Alta de usuario y primera membresía con rol empresarial propio en una transacción MySQL y auditoría estricta; bloqueo de duplicados globales. Edición denegada para usuario B, compartido A/B, rol plataforma o identidad de autoridad global.
-- Matriz de permisos empresariales rechaza grants de ámbito Plataforma. Tests xUnit dirigidos de casos positivos y negativos; nuevo workflow causal de A, sin esperas por suites extensas no relacionadas.
+- Matriz de permisos empresariales rechaza grants de ámbito Plataforma. La proyección UI expone solo rutas Angular de usuarios/roles/matriz cuando hay admin vigente y grant específico, sin ampliar otras rutas. Tests xUnit dirigidos de casos positivos y negativos; nuevo workflow causal de A, sin esperas por suites extensas no relacionadas.
 - Sin cambios de schema, seeds, cuentas productivas, secretos, QA/main/PROD ni tareas programadas. P1-005.B se certificará separadamente después de integración y LIVE real DEV; A no se cierra antes de review, CI, merge y Sheets.
 
 ## 2026-11-02 — P1-004.B: readback LIVE de auditoría
