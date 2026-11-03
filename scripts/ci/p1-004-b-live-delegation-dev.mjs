@@ -22,6 +22,12 @@ function selfTest(){
   assert.equal(field({data:{token:'synthetic'}},'token'),'synthetic');
   assert.equal(field({Data:{UsuarioId:3}},'usuarioId'),3);
   assert.equal(literal('abc'),"CONVERT(UNHEX('616263') USING utf8mb4)");
+  // Los valores de RegistrosAuditoria.Accion se almacenan con HasConversion<string>().
+  for(const action of ['AsignarRol','Desactivar','ConsultarHistorial'])
+    assert.match(literal(action),/^CONVERT\(UNHEX\('[0-9a-f]+'\) USING utf8mb4\)$/);
+  assert.notEqual(literal('AsignarRol'),literal('17'));
+  assert.notEqual(literal('Desactivar'),literal('9'));
+  assert.notEqual(literal('ConsultarHistorial'),literal('20'));
   assert.equal(ORIGIN,'https://solqaryn-api-dev-fxx8.onrender.com');
   console.log('P1004B_OFFLINE_CONTRACT=PASS');
 }
