@@ -38,7 +38,7 @@ public class PermisoService : IPermisoService
 
         var existentes = await _repository.GetByRolIdAsync(rolId);
         var catalogo = (await _permisoRepository.GetAllAsync())
-            .Where(p => p.Activo && !p.Eliminado)
+            .Where(p => p.Activo && !p.Eliminado && p.Ambito == AmbitoAutorizacion.Empresa)
             .OrderBy(p => p.Modulo)
             .ThenBy(p => p.Accion)
             .ToList();
@@ -67,7 +67,7 @@ public class PermisoService : IPermisoService
                 "Solo pueden modificarse permisos de roles personalizados con empresa propietaria.");
 
         var catalogoActivo = (await _permisoRepository.GetAllAsync())
-            .Where(p => p.Activo && !p.Eliminado)
+            .Where(p => p.Activo && !p.Eliminado && p.Ambito == AmbitoAutorizacion.Empresa)
             .ToList();
         var nuevaMatriz = new List<RolPermiso>();
         var permisoIds = new HashSet<int>();
@@ -80,6 +80,10 @@ public class PermisoService : IPermisoService
 
             var permiso = await _permisoRepository.GetByModuloAccionAsync(modulo, accion)
                 ?? throw new BusinessRuleException($"El permiso '{modulo}:{accion}' no existe, está inactivo o fue eliminado.");
+
+            if (permiso.Ambito != AmbitoAutorizacion.Empresa)
+                throw new ForbiddenAccessException(
+                    "Los roles empresariales no pueden recibir privilegios de plataforma.");
 
             if (!permisoIds.Add(permiso.Id))
                 throw new BusinessRuleException($"El permiso '{permiso.Codigo}' viene duplicado en la solicitud.");

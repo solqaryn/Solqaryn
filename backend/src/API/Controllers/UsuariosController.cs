@@ -5,6 +5,7 @@ using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Solqaryn.API.Controllers;
 
@@ -64,7 +65,10 @@ public class UsuariosController : ControllerBase
 
         try
         {
-            var creado = await _usuarioService.CreateAsync(dto);
+            var creado = await HttpContext.RequestServices
+                .GetRequiredService<IUsuarioAdministracionEmpresaService>()
+                .CrearAsync(dto, TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext),
+                    HttpContext.RequestAborted);
             return Ok(ApiResponse<UsuarioDto>.Ok(creado, "Usuario creado correctamente."));
         }
         catch (InvalidOperationException ex)
@@ -96,7 +100,10 @@ public class UsuariosController : ControllerBase
                 TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext),
                 ModuloSistema.Usuarios, AccionPermiso.RestablecerContrasena);
 
-        var actualizado = await _usuarioService.UpdateAsync(id, dto);
+        var actualizado = await HttpContext.RequestServices
+            .GetRequiredService<IUsuarioAdministracionEmpresaService>()
+            .ActualizarAsync(id, dto, TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext),
+                HttpContext.RequestAborted);
         if (actualizado is null)
             return NotFound(ApiResponse<object>.Fail("Usuario no encontrado."));
 

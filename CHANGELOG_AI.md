@@ -1,3 +1,18 @@
+## 2026-11-02 — P1-005.A: corregir fixture E2E de primera membresía empresarial
+
+- La prueba `frontend/e2e/fase6-reportes-administrativos.spec.ts` duplicaba la membresía creada atómicamente por `POST /usuarios` en P1-005.A; el `POST /usuarios/{id}/empresas` posterior recibía legítimamente HTTP 400 e impedía completar los tests seriales de reportes administrativos.
+- Se sustituye solo el POST duplicado por `GET /usuarios/{id}/empresas` y se comprueba una única membresía activa con `UsuarioId`, `EmpresaId` y `RolId` correctos. El rechazo de duplicados, JWT, RBAC, auditoría y transacciones del backend permanecen intactos.
+- La corrección requiere CI y Scope Lock PASS sobre el nuevo SHA, revisión independiente exact-head y merge protegido antes de certificar P1-005.A. P1-005.B LIVE sigue separada.
+
+## 2026-11-02 — P1-005.A: admin empresarial, RBAC tenant y primera membresía atómica
+
+- Se habilitan solo rutas GET/POST/PUT exactas de roles/usuarios/matriz por middleware de cuarentena, con JWT, rol administrador empresarial vivo, membresía y permisos MySQL. No se abre ERP, permisos globales ni rutas vecinas.
+- Revalidación de administrador, permisos y titularidad dentro de transacciones MySQL `Serializable`, evitando que una revocación concurrente se separe del cambio de rol o del alta.
+- Un cambio del rol del usuario actualiza también `UsuarioEmpresa.RolId` (fuente RBAC) en la misma transacción y exige auditoría estricta.
+- Alta de usuario y primera membresía con rol empresarial propio en una transacción MySQL y auditoría estricta; bloqueo de duplicados globales. Edición denegada para usuario B, compartido A/B, rol plataforma o identidad de autoridad global.
+- Matriz de permisos empresariales rechaza grants de ámbito Plataforma. La proyección UI expone solo rutas Angular de usuarios/roles/matriz cuando hay admin vigente y grant específico, sin ampliar otras rutas. Tests xUnit dirigidos de casos positivos y negativos; nuevo workflow causal de A, sin esperas por suites extensas no relacionadas.
+- Sin cambios de schema, seeds, cuentas productivas, secretos, QA/main/PROD ni tareas programadas. P1-005.B se certificará separadamente después de integración y LIVE real DEV; A no se cierra antes de review, CI, merge y Sheets.
+
 ## 2026-11-02 — P1-004.B: readback LIVE de auditoría
 
 - Render DEV publicó dev@49f22c37; run LIVE 41552893191 intento 3 pasó preflight JWT/MySQL, concesión limitada, aislamiento y negativas, pero falló readback `GRANT_AUDIT_NOT_DURABLE`.

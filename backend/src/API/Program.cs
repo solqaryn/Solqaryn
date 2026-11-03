@@ -182,6 +182,7 @@ builder.Services.AddScoped<ITipoClientePredeterminadoResolver, TipoClientePredet
 builder.Services.AddScoped<IAuditoriaService, AuditoriaService>();
 builder.Services.AddScoped<IPermisoService, PermisoService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+builder.Services.AddScoped<IUsuarioAdministracionEmpresaService, UsuarioAdministracionEmpresaService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IJwtService, JwtService>();

@@ -78,6 +78,34 @@ public sealed class CommercialTenantUiCapabilitiesTests
         Assert.Empty(dto.RutasHabilitadas);
     }
 
+    [Fact]
+    public void P1005A_AdminConGrantsVeSoloRutasDeUsuariosRolesYPermisos()
+    {
+        var dto = new MisPermisosDto
+        {
+            Rol = "Administrador A",
+            EsAdministrador = true,
+            Permisos = new List<string>
+            {
+                "Usuarios:Ver", "Usuarios:Editar", "Usuarios:Crear",
+                "Roles:Ver", "Roles:Crear", "Roles:Editar", "Permisos:Administrar"
+            }
+        };
+        CommercialTenantUiCapabilities.Apply(dto, Config(), multipleEmpresas: true);
+        Assert.Contains("usuarios", dto.RutasHabilitadas);
+        Assert.Contains("usuarios/:id/editar", dto.RutasHabilitadas);
+        Assert.Contains("roles", dto.RutasHabilitadas);
+        Assert.Contains("roles/nuevo", dto.RutasHabilitadas);
+        Assert.Contains("permisos", dto.RutasHabilitadas);
+        Assert.DoesNotContain("plataforma", dto.RutasHabilitadas);
+        Assert.DoesNotContain("ventas", dto.RutasHabilitadas);
+
+        dto.EsAdministrador = false;
+        CommercialTenantUiCapabilities.Apply(dto, Config(), multipleEmpresas: true);
+        Assert.Empty(dto.RutasHabilitadas);
+        Assert.Empty(dto.CapacidadesHabilitadas);
+    }
+
     private static IConfiguration Config(params (string Key, string Value)[] variables) =>
         new ConfigurationBuilder().AddInMemoryCollection(
             variables.ToDictionary(x => x.Key, x => (string?)x.Value)).Build();
