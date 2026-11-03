@@ -147,7 +147,13 @@ public class UsuariosController : ControllerBase
     [RequierePermiso(ModuloSistema.Usuarios, AccionPermiso.EliminarLogico)]
     public async Task<IActionResult> Eliminar(int id)
     {
-        await _usuarioService.EliminarAsync(id);
+        var eliminado = await HttpContext.RequestServices
+            .GetRequiredService<IUsuarioAdministracionEmpresaService>()
+            .EliminarAsync(id, TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext),
+                HttpContext.RequestAborted);
+        if (!eliminado)
+            return NotFound(ApiResponse<object>.Fail("Usuario no encontrado."));
+
         return Ok(ApiResponse<object>.Ok(new { }, "Usuario eliminado correctamente."));
     }
 
