@@ -895,6 +895,7 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         bool get = HttpMethods.IsGet(request.Method);
         bool post = HttpMethods.IsPost(request.Method);
         bool put = HttpMethods.IsPut(request.Method);
+        bool delete = HttpMethods.IsDelete(request.Method);
 
         if (Eq(s[1], "roles"))
         {
@@ -922,6 +923,11 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         { accion = AccionPermiso.Ver; return true; }
         if (s.Length == 3 && Id(s[2]) && put)
         { accion = AccionPermiso.Editar; return true; }
+        // P1-005.B: allow only exact tenant-owned user DELETE through the
+        // same live-admin + RBAC gate as POST/PUT. The service rechecks
+        // exclusive membership, actor, platform provenance and soft-delete.
+        if (s.Length == 3 && Id(s[2]) && delete)
+        { accion = AccionPermiso.EliminarLogico; return true; }
         if (s.Length == 4 && Id(s[2]) && Eq(s[3], "empresas"))
         {
             if (get) { accion = AccionPermiso.Ver; return true; }
