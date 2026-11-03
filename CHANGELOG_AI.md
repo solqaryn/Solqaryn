@@ -1,3 +1,10 @@
+## 2026-11-02 — P1-005.B: actor plataforma inmutable y prueba de rol efímera DEV
+
+- La LIVE de `dev@1929dd6d` tras PR #3828 (run `41573886949`) acreditó MySQL A/B, HTTP/JWT y negación A→B con readback inmutable, pero devolvió 403 en la edición idempotente de la identidad A original. Los logs Render DEV confirmaron `ForbiddenAccessException: Una identidad de plataforma no puede editarse desde una empresa.` La restricción es legítima; no cambiar backend, permisos ni datos preexistentes.
+- Se retira exclusivamente la mutación positiva de `admin_prueba_a`. La prueba usa las identidades preexistentes A/B solo para autenticación, permisos, negativas y aislamiento; el positivo real de `Editar`, cambio de rol empresarial, revocación y auditoría se realiza sobre la identidad efímera, con restauración y borrado lógico verificados por MySQL SELECT.
+- Se corrige patrón mal escapado de `qaByName` para leer IDs numéricos no negativos con `/^[0-9]+$/`, `Number.isSafeInteger` y self-tests de casos positivos/negativos. La limpieza falla de forma segura ante una anomalía de nombre, membresía, grants o borrado.
+- Alcance exclusivamente script/documentación/CHANGELOG bajo DEV. No cambios al backend, frontend, bases, roles o credenciales actuales, ni a QA/main/PROD. No declarar P1-005.B LISTO hasta PR protegido, LIVE PASS real, restauración, auditoría y readback de Sheets.
+
 ## 2026-11-02 — P1-005.B: literal SQL portable ante ANSI_QUOTES Aiven DEV
 
 - La LIVE posterior a #3827 (`dev@390ca582`, run `41572965177`) confirmó preflight A/B, HTTP/JWT y `P1005B_CROSS_TENANT_EDIT_DENIED_MYSQL=PASS`. Antes de la edición de roles, `membershipDigest` abortó por MySQL 1054 `Unknown column ':'`: usaba el separador SQL `":"` bajo modo de comillas dobles como identificadores. No se efectuó cambio de roles ni de credenciales.
