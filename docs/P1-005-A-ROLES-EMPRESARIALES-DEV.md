@@ -17,6 +17,10 @@ Se habilita solo una allowlist exacta de acciones de administración (GET/POST/P
 - Roles: los controladores existentes conservan propiedad, plantillas inmutables, filtros y auditoría. La matriz limita el catálogo a `Ambito=Empresa` y prohíbe conceder permisos globales a un rol tenant.
 - Comportamiento denegado: cuentas compartidas A/B, rol ajeno, global, huérfano, sin admin vivo, subrutas vecinas, métodos inesperados, tamaños JSON excesivos y acceso anónimo.
 
+## Corrección E2E de fixture de alta (2026-11-02)
+
+La aceptación Fase 6 (`frontend/e2e/fase6-reportes-administrativos.spec.ts`) fallaba en el `beforeAll` porque creaba al usuario con `POST /usuarios` y repetía `POST /usuarios/{id}/empresas` para la misma empresa. Desde P1-005.A el primero ya crea `UsuarioEmpresa` en la misma transacción; el 400 `El usuario ya tiene una membresía registrada` era el rechazo correcto, no una falla de persistencia. El fixture ahora lee `GET /usuarios/{id}/empresas` y comprueba que existe exactamente una membresía activa de la empresa y rol esperados. Se conservan la regla de unicidad, las restricciones A/B, JWT/RBAC, las pruebas negativas y la integración de auditoría. No hay migraciones ni cambios a producción. Scope Lock requiere nuevas CI y revisión independientes exact-HEAD después del commit; la falla de Scope Lock anterior fue consecuencia de la E2E fallida.
+
 ## Matriz de impacto
 
 - API: `UsuariosController`, `UnscopedCommercialTenantGuardMiddleware`, registro DI de `Program`.
