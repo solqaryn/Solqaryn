@@ -1,3 +1,10 @@
+## 2026-11-02 — P1-005.B: preflight LIVE respeta plantillas empresariales y auditoría efectiva
+
+- La primera ejecución LIVE tras el merge #3824 (run 41566437486) alcanzó MySQL DEV, pero se detuvo en `P1005B_NO_GO=TENANT_OWNED_ROLE_2`: el fixture exigía un rol personalizado A inexistente. No hubo mutaciones, y no implica un defecto del backend.
+- Se alinea la prueba con `Rol.EsAsignableAEmpresa`: rol propio o plantilla de sistema empresarial sin dueño; solo se prueban roles privados cross-tenant HTTP cuando existen. Su ausencia se registra como `NOT_APPLICABLE_NO_PRIVATE_ROLE`, nunca PASS inventado. xUnit cubre plantilla compartida, rol exclusivo B, legacy sin dueño y plataforma.
+- Se corrige el readback de auditoría conforme al código: el servicio de edición registra `Accion=Editar` al modificar el rol. Se comprueba ausencia de roles globales en el listado HTTP y se usa alta duplicada (HTTP 400) como control no destructivo para evitar negativos trivialmente 403.
+- Se preservan HTTP/JWT/MySQL real, ausencia de DML SQL, bloqueo a identidades ajenas, usuario QA no administrador, restauración obligatoria de rol por API, review independiente y Scope Lock. No se modifican backend/Frontend/Domain, datos productivos, membresías ni tareas.
+
 ## 2026-11-02 — P1-005.B: contrato independiente de certificación LIVE de roles empresariales DEV
 
 - P1-005.A integrado por PR #3823 con HEAD aprobado 296a3228 y merge protegido dev a654d03d; Scope Lock PR y postmerge PASS. La evidencia de integración A no sustituye la certificación funcional B.
