@@ -45,7 +45,7 @@ function selfTest(){
   assert(!blocked({status:200}));assert(!blocked({status:400}));
   assert(!blocked({status:401}));assert(!blocked({status:503}));
   assert.equal(headersFor('test',2,null)['X-Empresa-Id'],'2');
-  assert.equal('qa_p1005b_45db008d_'.length,20);
+  assert.equal('qa_p1005b_45db008d_'.length,19);
   assert.equal(ORIGIN,'https://solqaryn-api-dev-fxx8.onrender.com');
   console.log('P1005B_OFFLINE_CONTRACT=PASS');
 }
