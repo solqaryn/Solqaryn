@@ -203,6 +203,12 @@ async function run(){
   // still prevents creation. A non-403 status is NO_GO, never accepted as PASS.
   // Nombre ya existente: nunca crear un usuario nuevo si fallara RBAC.
   const duplicate=userPayload(ownA.json,a.role);
+  const safeBaseline=await call('/usuarios','POST',jwtA,2,{
+    ...duplicate,password:'QATest-P1005B-No-Write-2026!'
+  });
+  // Con rol válido, la única respuesta admisible es 400 por nombre duplicado,
+  // nunca 201 (creación) ni 403 (falta de autoridad para evaluar la frontera).
+  expect(safeBaseline,400,'OWN_ROLE_DUPLICATE_NOT_CREATED');
   if(roleBowned>0){
     const denyRoleB=await call('/usuarios','POST',jwtA,2,{
       ...duplicate,rolId:roleBowned,password:'QATest-P1005B-No-Write-2026!'
