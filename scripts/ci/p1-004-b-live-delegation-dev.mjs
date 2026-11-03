@@ -22,6 +22,12 @@ function selfTest(){
   assert.equal(field({data:{token:'synthetic'}},'token'),'synthetic');
   assert.equal(field({Data:{UsuarioId:3}},'usuarioId'),3);
   assert.equal(literal('abc'),"CONVERT(UNHEX('616263') USING utf8mb4)");
+  // Los valores de RegistrosAuditoria.Accion se almacenan con HasConversion<string>().
+  for(const action of ['AsignarRol','Desactivar','ConsultarHistorial'])
+    assert.match(literal(action),/^CONVERT\(UNHEX\('[0-9a-f]+'\) USING utf8mb4\)$/);
+  assert.notEqual(literal('AsignarRol'),literal('17'));
+  assert.notEqual(literal('Desactivar'),literal('9'));
+  assert.notEqual(literal('ConsultarHistorial'),literal('20'));
   assert.equal(ORIGIN,'https://solqaryn-api-dev-fxx8.onrender.com');
   console.log('P1004B_OFFLINE_CONTRACT=PASS');
 }
@@ -135,13 +141,13 @@ function readback({platformId,targetId,tenantMembership},grantReason,revokeReaso
   const audit=" FROM RegistrosAuditoria WHERE Entidad='UsuarioRolPlataforma' "+
     "AND AmbitoAutoridad=2 AND OrigenAutorizacion=2 AND EmpresaId IS NULL";
   must(count('SELECT COUNT(*)'+audit+' AND UsuarioId='+platformId+
-    ' AND ReferenciaId='+targetId+' AND Accion=17 AND Motivo='+literal(grantReason)+
+    ' AND ReferenciaId='+targetId+' AND Accion='+literal('AsignarRol')+' AND Motivo='+literal(grantReason)+
     " AND Resultado='Exito'",'GRANT_AUDIT')===1,'GRANT_AUDIT_NOT_DURABLE');
   must(count('SELECT COUNT(*)'+audit+' AND UsuarioId='+platformId+
-    ' AND ReferenciaId='+targetId+' AND Accion=9 AND Motivo='+literal(revokeReason)+
+    ' AND ReferenciaId='+targetId+' AND Accion='+literal('Desactivar')+' AND Motivo='+literal(revokeReason)+
     " AND Resultado='Exito'",'REVOKE_AUDIT')===1,'REVOKE_AUDIT_NOT_DURABLE');
   must(count('SELECT COUNT(*)'+audit+' AND UsuarioId='+targetId+
-    " AND Accion=20 AND Resultado='Exito' AND Motivo="+literal('Lectura delegada explícita')+
+    " AND Accion="+literal('ConsultarHistorial')+" AND Resultado='Exito' AND Motivo="+literal('Lectura delegada explícita')+
     ' AND Fecha >= UTC_TIMESTAMP() - INTERVAL 30 MINUTE','READ_AUDIT')>=1,'READ_AUDIT_NOT_DURABLE');
   console.log('P1004B_MYSQL_REVOCATION_AND_DURABLE_AUDIT=PASS');
 }

@@ -1,3 +1,9 @@
+## 2026-11-02 — P1-004.B: readback LIVE de auditoría
+
+- Render DEV publicó dev@49f22c37; run LIVE 41552893191 intento 3 pasó preflight JWT/MySQL, concesión limitada, aislamiento y negativas, pero falló readback `GRANT_AUDIT_NOT_DURABLE`.
+- Causa de test demostrable: columna `RegistrosAuditoria.Accion` se persiste como string EF (`HasConversion<string>()`), mientras script comparaba enteros 17/9/20. Corregidos literales string y añadida regresión offline sin secretos.
+- Sin cambios backend, BD, frontend, Render, permisos, ni usuarios. B sigue VALIDANDO hasta LIVE SUCCESS y readback institucional.
+
 ## 2026-11-02 — P1-004.B: corrección de cuarentena HTTP 503 en delegación DEV
 
 - Diagnóstico de run 41549812213: MySQL y JWT PASS pero `GET /plataforma/delegaciones/empresas` devolvía 503 desde la allowlist multiempresa, antes de revisar la autorización delegada.
