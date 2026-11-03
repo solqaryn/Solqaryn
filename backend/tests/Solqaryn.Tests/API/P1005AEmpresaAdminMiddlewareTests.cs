@@ -24,6 +24,7 @@ public sealed class P1005AEmpresaAdminMiddlewareTests
     [InlineData("GET","/usuarios")]
     [InlineData("POST","/usuarios")]
     [InlineData("PUT","/usuarios/19")]
+    [InlineData("DELETE","/usuarios/19")]
     [InlineData("GET","/usuarios/19/empresas")]
     [InlineData("POST","/usuarios/19/empresas")]
     [InlineData("PUT","/usuarios/19/empresas/11/rol")]
@@ -43,7 +44,11 @@ public sealed class P1005AEmpresaAdminMiddlewareTests
     [InlineData("GET","/roles/8/extra")]
     [InlineData("GET","/usuarios/0")]
     [InlineData("POST","/usuarios/19/roles")]
-    [InlineData("DELETE","/usuarios/19")]
+    [InlineData("DELETE","/usuarios/0")]
+    [InlineData("DELETE","/usuarios/-1")]
+    [InlineData("DELETE","/usuarios/19/")]
+    [InlineData("DELETE","/usuarios/19/extra")]
+    [InlineData("DELETE","/usuarios/19/empresas")]
     [InlineData("PUT","/usuarios/19/empresas/11/estado")]
     [InlineData("PUT","/usuarios/19/empresas/11/rol/extra")]
     [InlineData("PUT","/permisos/catalogo/1")]
@@ -71,8 +76,25 @@ public sealed class P1005AEmpresaAdminMiddlewareTests
         Assert.Equal(503,result.Status);
     }
 
+    [Fact]
+    public async Task EliminarSinAdministradorOPermiso_EsDenegado()
+    {
+        await Assert.ThrowsAsync<ForbiddenAccessException>(() =>
+            Ejecutar("DELETE","/usuarios/19",true,false));
+        await Assert.ThrowsAsync<ForbiddenAccessException>(() =>
+            Ejecutar("DELETE","/usuarios/19",true,true,false));
+    }
+
+    [Fact]
+    public async Task EliminarSinJwt_NoAtravesaraGate()
+    {
+        var result=await Ejecutar("DELETE","/usuarios/19",false,true);
+        Assert.False(result.Passed);
+        Assert.Equal(503,result.Status);
+    }
+
     private static async Task<(bool Passed,int Status)> Ejecutar(
-        string method,string path,bool jwt,bool admin)
+        string method,string path,bool jwt,bool admin,bool permit=true)
     {
         await using var db = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase("p1005a-mw-"+Guid.NewGuid().ToString("N")).Options);
@@ -86,6 +108,10 @@ public sealed class P1005AEmpresaAdminMiddlewareTests
         permisos.Setup(x=>x.VerificarPermisoAsync(11,
             It.IsAny<ModuloSistema>(),It.IsAny<AccionPermiso>()))
             .Returns(Task.CompletedTask);
+        if(!permit)
+            permisos.Setup(x=>x.VerificarPermisoAsync(11,
+                ModuloSistema.Usuarios,AccionPermiso.EliminarLogico))
+                .ThrowsAsync(new ForbiddenAccessException("Sin permiso EliminarLogico."));
         using var provider=new ServiceCollection()
             .AddSingleton(scope.Object)
             .AddSingleton(permisos.Object)
