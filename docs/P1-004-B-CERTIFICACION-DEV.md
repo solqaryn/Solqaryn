@@ -1,3 +1,11 @@
+## Reparación causal del 503 previo a la concesión (2026-11-02)
+
+- El job LIVE de dev@a7553b32 (run 41549812213) llegó a MySQL y JWT con preflight PASS, pero `GET /plataforma/delegaciones/empresas` antes de conceder recibió 503 donde el contrato exige 403. La cuarentena `UnscopedCommercialTenantGuardMiddleware` carecía de excepción para las rutas nuevas de delegación; con 2+ empresas su respuesta de rechazo es `TENANT_DATA_ISOLATION_REQUIRED`.
+- Corrección estricta: atraviesan la cuarentena solo peticiones con identidad autenticada para `GET /plataforma/delegaciones/empresas`, `POST /plataforma/delegaciones` y `DELETE /plataforma/delegaciones/{id positivo}`. MVC `[Authorize]` y servicios siguen verificando roles y grants vivos MySQL. No se permite una ruta comercial ni se amplían los poderes del delegado.
+- Nuevos tests dirigidos comprueban las rutas exactas y sus variantes rechazadas: sin JWT, métodos distintos, IDs nulos/negativos/desbordados, rutas con prefijos o segmentos adicionales; la cuarentena multiempresa restante permanece inalterada.
+- El workflow P1-004.B se activa cuando cambia el middleware/prueba y el runner espera un máximo acotado únicamente si detecta el 503 específico de la cuarentena anterior durante el despliegue. Nunca se sustituye 403 por 503 ni se concede permiso sin haber pasado el negativo pre-grant.
+- B se mantiene `VALIDANDO` hasta PASS LIVE postmerge real, revocación y auditoría MySQL, evidencia de SHA y readback del plan. Sin migraciones, secretos, cambios comerciales, QA/main/PROD ni modificaciones de infraestructura.
+
 # SOLQARYN — P1-004.B: certificación independiente de delegación DEV
 
 ## Dependencia y autoridad
