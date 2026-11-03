@@ -1,3 +1,11 @@
+## 2026-11-02 — P1-005.B: datos DEV autorizados y certificación sin fixture preexistente
+
+- El propietario declara expresamente que las empresas y las tres identidades actuales de `solqaryn_dev` son de prueba. Se documentan cuentas, pertenencias conocidas y nombres **de secretos** (no valores) de GitHub Environment DEV en `docs/DEV_EMPRESAS_USUARIOS_PRUEBA.md`. Los slots de secretos A/B/C no son los nombres de empresas actuales.
+- La segunda LIVE tras el PR #3825 (run 41569475372, `dev@b14dc2f5`) se detuvo antes de mutar en `SAFE_QA_USER_A_REQUIRED` por no existir otro usuario no administrador en empresa A; no significa que falten los administradores A/B ni revela defecto del backend.
+- Se elimina el filtro de prefijos de usuario y el supuesto artificial de dos roles no administradores. Los administradores reales de prueba A/B siguen siendo actores inmutables del JWT/RBAC. Solo la transición de rol usa una identidad aleatoria efímera generada mediante API autorizada de DEV (`Vendedor → Administrador de empresa → Vendedor`), con SQL exclusivamente SELECT, control de auditoría `Editar`, limpieza `finally`, borrado lógico por API y readback de `Activo=0,Eliminado=1`. Nunca se publica el password de esta identidad.
+- Ante respuesta ambigua, la limpieza reidentifica **exclusivamente** su cuenta aleatoria, comprueba titularidad única A y ausencia de privilegios de plataforma antes de restaurar o eliminar. Un rollback o verificación fallidos producen NO_GO real. Sin cambios a runtime ASP.NET, Angular, EF/migraciones, roles de usuarios existentes, secretos ni entornos distintos de DEV.
+- No declarar P1-005.B LISTO hasta nuevo merge protegido, CI por SHA exacto, LIVE PASS con restauración verificada y readback institucional de PLAN/COLA/BITACORA.
+
 ## 2026-11-02 — P1-005.B: preflight LIVE respeta plantillas empresariales y auditoría efectiva
 
 - La primera ejecución LIVE tras el merge #3824 (run 41566437486) alcanzó MySQL DEV, pero se detuvo en `P1005B_NO_GO=TENANT_OWNED_ROLE_2`: el fixture exigía un rol personalizado A inexistente. No hubo mutaciones, y no implica un defecto del backend.
