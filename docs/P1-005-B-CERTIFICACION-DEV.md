@@ -2,15 +2,23 @@
 
 Estado de preparación: **VALIDANDO**. Alcance del Plan Comercial Inicial `PLAN_MAESTRO!A35`. P1-005.A está integrado y documentado en `dev@a654d03d6ca646306ae4f0fde31ee582b238c2ac`; PR A #3823, HEAD `296a3228`, APPROVED por Javier en ese HEAD, checks de PR y Scope Lock postmerge PASS.
 
+## Aclaración de autorización y corrección LIVE (2026-11-02 Honduras)
+
+El propietario autorizó expresamente usar **todas las empresas y usuarios existentes de DEV** como datos de prueba. Sus identidades, las claves de secreto de GitHub Environment DEV y la distinción entre slots históricos A/B/C están documentadas en [DEV_EMPRESAS_USUARIOS_PRUEBA.md](DEV_EMPRESAS_USUARIOS_PRUEBA.md). Los secretos nunca se copian ni revelan.
+
+El segundo job postmerge de #3825 (SHA `b14dc2f5`, run `41569475372`) se detuvo en `P1005B_SAFE_QA_CANDIDATES_A=0` y `P1005B_NO_GO=SAFE_QA_USER_A_REQUIRED` antes de mutar. Esto **no** indica usuarios faltantes en DEV ni fallo confirmado del backend: era una restricción artificial a nombres `qa_`/roles no administrativos. La solución usa las cuentas administrativas A/B existentes para toda la prueba de JWT/RBAC/aislamiento y una cuenta adicional efímera, creada y eliminada lógicamente con API auditada, solo para el cambio real de rol. Se comprueba la restitución exacta y `Activo=0,Eliminado=1` de la cuenta efímera. Las tres identidades originales permanecen intactas.
+
+Se exige un **nuevo** job LIVE SUCCESS del commit integrado, comprobación de restauración, y conciliación de Sheets antes de declarar LISTO.
+
 ## Evidencia requerida para declarar LISTO
 
 - Correr `scripts/ci/p1-005-b-live-enterprise-roles-dev.mjs --self-test` sin credenciales en PR, con Scope Lock y sintaxis Node 24.
 - **Solo después de PR de B aprobado y fusionado**, correr el job LIVE separado por `push dev` con secretos del environment `DEV`. Debe consultar el backend Render DEV desplegado con la versión de A, dos tenants A/B de prueba (IDs 2/3) y MySQL Aiven DEV exacto.
 - Comprobar JWT y administrador A/B con membresías únicas y activas verificadas en MySQL, ausencia de roles de plataforma, aislamiento de GET roles/usuarios y rechazo de lectura entre empresas.
 - Negativos HTTP 403: A asignando rol empresarial ajeno, rol de plataforma, editando usuario B; sin autenticación no hay acceso administrativo; A/B sin acceso a consola plataforma. Ningún negativo se cuenta como PASS si se obtiene 200.
-- Positivo: edición idempotente de administrador QA A con **el mismo** nombre, rol y sin cambio de contraseña; comprobar membresía intacta, ausencia de grants plataforma y auditoría `Editar` durable.
-- Positivo adicional: usuario QA existente en A, de nombre estrictamente de prueba, sin rol de administrador, sin membresías adicionales ni autoridad global. Cambiar temporalmente su rol a otro rol A propio/no administrador, verificar en MySQL tanto `Usuarios.RolId` como `UsuarioEmpresas.RolId`, auditoría `AsignarRol`, y **restaurar el rol inicial por API**, verificando de nuevo ambos roles. Si falla o la restauración no se acredita, NO_GO y acción de recuperación; no alterar credenciales.
-- No se crean usuarios/roles ni se cambia ningún registro productivo. SQL se limita a `SELECT`, sin DML; solo API auditable muta el rol temporal del fixture QA y lo restaura. Los eventos de auditoría se conservan.
+- Positivo: edición idempotente del administrador de prueba A existente con **el mismo** nombre, rol y sin cambio de contraseña; comprobar membresía intacta, ausencia de grants plataforma y auditoría `Editar` durable.
+- Positivo adicional: con las cuentas existentes A/B intactas, crear una **identidad efímera** mediante la API de DEV, con password aleatorio no registrado, membresía exclusiva A y rol empresarial no administrador. Cambiar temporalmente a la plantilla administradora *de empresa* de A, verificar `Usuarios.RolId` y `UsuarioEmpresas.RolId` y auditoría `Editar`, **restaurar el rol no administrador** y después eliminar lógicamente la cuenta efímera por API. La eliminación se acredita con `Activo=0,Eliminado=1`. Cualquier fallo de restitución o limpieza sigue siendo NO_GO.
+- No se crean roles ni se alteran credenciales/roles de las cuentas originales. Solo se crea y elimina lógicamente por API una identidad efímera autorizada de **DEV**. SQL se limita a `SELECT` sin DML; los eventos de auditoría y la fila de borrado lógico se conservan. Véase `docs/DEV_EMPRESAS_USUARIOS_PRUEBA.md`.
 - A no se reabre. B solo pasa LISTO después de LIVE SUCCESS sobre SHA real, revisión y Scope Lock exact-head, readback de `dev`, conciliación PLAN/COLA/BITACORA y verificación de que Render DEV publicó A.
 
 ## Corrección del preflight tras primera LIVE (2026-11-02 Honduras)
@@ -19,15 +27,15 @@ El primer job LIVE de B, run #41566437486, se detuvo en `P1005B_NO_GO=TENANT_OWN
 
 Se añadió un control no destructivo: un `POST /usuarios` con nombre que ya existe y rol válido debe devolver 400 por duplicado (no 201 ni 403), antes de comprobar 403 para un rol ajeno real o global. Se verifica también que el listado HTTP no contiene roles de `Ambito=Plataforma`. La auditoría del mutador `UsuarioAdministracionEmpresaService.ActualizarAsync` registra `Accion=Editar` aun al cambiar `RolId`, no `AsignarRol`; el readback LIVE exige el valor que efectivamente escribe el backend.
 
-No se crean usuarios ni roles. Se requiere usuario QA A real existente, no administrador, sin autoridad global y con membresía única; así como rol empresarial alternativo asignable sin privilegios de administrador. **Si falta alguno, NO_GO antes de mutar** y se documenta el fixture faltante. Si la restauración falla, no se declara PASS. Certificación B = LISTO solamente si los controles aplicables son auténticos, las excepciones N/A están explícitas y el cierre está autorizado.
+La ausencia de un usuario `qa_` no es un bloqueo: el propietario confirmó que los usuarios y empresas de DEV son datos de prueba. El certificador usa las cuentas A/B existentes y crea su propio usuario temporal no administrador por API. En DEV las plantillas de sistema disponibles son `Vendedor` (inicio/restauración) y `Administrador` empresarial (transición efímera); no exigir dos roles no administradores. La cuenta temporal no se autentica ni tiene roles de plataforma. La restauración y el borrado lógico son obligatorios, sin falsos PASS. Certificación B = LISTO solamente si los controles aplicables son auténticos, las excepciones N/A están explícitas y el cierre está autorizado.
 
 ## Arquitectura e impacto
 
-API/Angular/Domain/Application/Infrastructure: **sin cambios**. Solo script `scripts/ci/p1-005-b-live-enterprise-roles-dev.mjs` y workflow GH `.github/workflows/p1-005-b-live-enterprise-roles-dev.yml`, bajo permisos `contents:read` y environment `DEV`. Las contraseñas de A/B y MySQL se inyectan como secretos sin imprimir. MySQL bajo identidad exacta y consultas `SELECT`. No modificar QA/main/PROD, proveedor, migrations, users reales, tareas ni políticas de autorización.
+API/Angular/Domain/Application/Infrastructure: **sin cambios**. Solo script `scripts/ci/p1-005-b-live-enterprise-roles-dev.mjs` y workflow GH `.github/workflows/p1-005-b-live-enterprise-roles-dev.yml`, bajo permisos `contents:read` y environment `DEV`. Las contraseñas de A/B y MySQL se inyectan como secretos sin imprimir. MySQL bajo identidad exacta y consultas `SELECT`. No modificar QA/main/PROD, proveedor, migraciones, credenciales o roles de las tres cuentas preexistentes, tareas ni políticas de autorización.
 
 ### Riesgos / fail-closed
 
-Si Render sigue en versión anterior de P1-005.A, las rutas autorizadas fallarán; no alterar el middleware ni admitir HTTP 503 como 403. Si no existe usuario QA A seguro o plantilla/rol alternativo A válidos, detener en preflight sin writes; no exigir roles personalizados donde solo existen plantillas de sistema. Si falla una restauración, registrar `P1005B_NO_GO=QA_ROLE_RESTORE_UNVERIFIED` e impedir cierre; se requiere conciliación manual por operador autorizado, nunca intentar rescate con rol global ni SQL DML. Reversión del código de pruebas mediante PR protegido.
+Si Render sigue en versión anterior de P1-005.A, las rutas autorizadas fallarán; no alterar el middleware ni admitir HTTP 503 como 403. No detener por ausencia de usuario `qa_` preexistente: crear identidad efímera en DEV usando la API autorizada. Si falla la creación, el permiso de borrado, la restauración o el readback, NO_GO; no exigir roles personalizados ni dos plantillas no administrativas. Si falla una restauración, registrar `P1005B_NO_GO=QA_ROLE_RESTORE_UNVERIFIED` e impedir cierre; se requiere conciliación manual por operador autorizado, nunca intentar rescate con rol global ni SQL DML. Reversión del código de pruebas mediante PR protegido.
 
 ### Evidencia pendiente
 

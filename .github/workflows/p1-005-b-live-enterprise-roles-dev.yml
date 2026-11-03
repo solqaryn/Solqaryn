@@ -6,12 +6,14 @@ on:
       - .github/workflows/p1-005-b-live-enterprise-roles-dev.yml
       - scripts/ci/p1-005-b-live-enterprise-roles-dev.mjs
       - docs/P1-005-B-CERTIFICACION-DEV.md
+      - docs/DEV_EMPRESAS_USUARIOS_PRUEBA.md
   push:
     branches: [dev]
     paths:
       - .github/workflows/p1-005-b-live-enterprise-roles-dev.yml
       - scripts/ci/p1-005-b-live-enterprise-roles-dev.mjs
       - docs/P1-005-B-CERTIFICACION-DEV.md
+      - docs/DEV_EMPRESAS_USUARIOS_PRUEBA.md
 permissions:
   contents: read
 concurrency:
@@ -92,8 +94,10 @@ jobs:
             echo '- Negativos de plataforma y edicion cruzada: PASS'
             echo '- Rol privado B: PASS o NOT_APPLICABLE_NO_PRIVATE_ROLE segun logs'
             echo '- Edicion idempotente propia y auditoria durable: PASS'
-            echo '- Asignacion temporal de rol QA A y restauracion por API: PASS'
+            echo '- Fixture efimero A: Vendedor a Administrador empresarial a Vendedor y auditoria durable: PASS'
+            echo '- Usuario efimero desactivado y eliminado logicamente con readback MySQL: PASS'
             echo '- Membresias y privilegios plataforma intactos: PASS'
-            echo '- Sin usuarios ni roles nuevos; sin DML directo'
+            echo '- Tres credenciales originales intactas; sin roles ni grants globales nuevos; sin SQL DML'
+            echo '- Solo API DEV auditable para alta y eliminacion logica de usuario de ensayo'
             echo "- Exact code SHA: $GITHUB_SHA"
           } >> "$GITHUB_STEP_SUMMARY"
