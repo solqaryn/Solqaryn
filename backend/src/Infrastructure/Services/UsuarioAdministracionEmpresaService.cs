@@ -67,6 +67,11 @@ public sealed class UsuarioAdministracionEmpresaService : IUsuarioAdministracion
     public async Task<UsuarioDto> CrearAsync(
         CreateUsuarioDto dto, int empresaIdAutorizada, CancellationToken ct = default)
     {
+        // SERIALIZABLE: autorización, titularidad y mutación comparten snapshot
+        // transaccional; una revocación concurrente no deja un alta huérfana.
+        await using var tx = _db.Database.IsRelational()
+            ? await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct)
+            : null;
         var actor = await ExigirAdministradorAsync(
             empresaIdAutorizada, AccionPermiso.Crear, ct);
         await _permisos.VerificarPermisoAsync(
@@ -79,9 +84,6 @@ public sealed class UsuarioAdministracionEmpresaService : IUsuarioAdministracion
                 u => !u.Eliminado && u.NombreUsuario.ToLower() == nombre, ct))
             throw new BusinessRuleException("El nombre de usuario no está disponible.");
 
-        await using var tx = _db.Database.IsRelational()
-            ? await _db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct)
-            : null;
         var creado = await _usuarios.CreateAsync(dto);
         var membresia = new UsuarioEmpresa(
             creado.Id, empresaIdAutorizada, dto.RolId!.Value)
@@ -104,16 +106,17 @@ public sealed class UsuarioAdministracionEmpresaService : IUsuarioAdministracion
         int usuarioId, UpdateUsuarioDto dto, int empresaIdAutorizada,
         CancellationToken ct = default)
     {
-        await ExigirAdministradorAsync(
-            empresaIdAutorizada, AccionPermiso.Editar, ct);
-        await ExigirRolEmpresarialAsync(dto.RolId, empresaIdAutorizada, ct);
-
         if (usuarioId <= 0)
             throw new ForbiddenAccessException("Usuario inválido.");
 
+        // El scope vivo, las membresías (incluidas inactivas) y el cambio de
+        // rol se leen/aplican en una única transacción serializable.
         await using var tx = _db.Database.IsRelational()
-            ? await _db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct)
+            ? await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct)
             : null;
+        await ExigirAdministradorAsync(
+            empresaIdAutorizada, AccionPermiso.Editar, ct);
+        await ExigirRolEmpresarialAsync(dto.RolId, empresaIdAutorizada, ct);
 
         // El usuario puede tener identidad global, pero un administrador de A
         // nunca modifica atributos compartidos de alguien con membresía en B,
