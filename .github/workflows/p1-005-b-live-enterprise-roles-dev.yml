@@ -1,0 +1,97 @@
+name: DEV - P1-005.B roles empresariales JWT MySQL real
+on:
+  pull_request:
+    branches: [dev]
+    paths:
+      - .github/workflows/p1-005-b-live-enterprise-roles-dev.yml
+      - scripts/ci/p1-005-b-live-enterprise-roles-dev.mjs
+      - docs/P1-005-B-CERTIFICACION-DEV.md
+  push:
+    branches: [dev]
+    paths:
+      - .github/workflows/p1-005-b-live-enterprise-roles-dev.yml
+      - scripts/ci/p1-005-b-live-enterprise-roles-dev.mjs
+      - docs/P1-005-B-CERTIFICACION-DEV.md
+permissions:
+  contents: read
+concurrency:
+  group: solqaryn-p1005b-live-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  contract:
+    name: P1-005.B - contrato offline sin credenciales
+    if: github.repository == 'solqaryn/Solqaryn'
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Scope Lock, sintaxis y negativos offline
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-project-scope.mjs
+          node --check scripts/ci/p1-005-b-live-enterprise-roles-dev.mjs
+          node scripts/ci/p1-005-b-live-enterprise-roles-dev.mjs --self-test
+  live:
+    name: P1-005.B - roles empresariales reales HTTP JWT MySQL DEV
+    needs: [contract]
+    if: github.repository == 'solqaryn/Solqaryn' && github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    environment: DEV
+    timeout-minutes: 15
+    env:
+      API_ORIGIN: https://solqaryn-api-dev-fxx8.onrender.com
+      DB_HOST: ${{ vars.SOLQARYN_DEV_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_DEV_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_DEV_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_DEV_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_DEV_DB_PASSWORD }}
+      A_USERNAME: admin_prueba_a
+      A_PASSWORD: ${{ secrets.SOLQARYN_DEV_B_PASSWORD }}
+      B_USERNAME: admin_prueba_b
+      B_PASSWORD: ${{ secrets.SOLQARYN_DEV_C_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verificar origen y commit dev protegidos
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = 'solqaryn/Solqaryn'
+          test "$GITHUB_REF" = 'refs/heads/dev'
+          test "$GITHUB_SHA" = "$(git rev-parse HEAD)"
+          node scripts/verify-project-scope.mjs
+      - name: Instalar cliente MySQL solo para SELECT
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq > /dev/null
+          sudo apt-get install -qq -y mysql-client > /dev/null
+      - name: Certificar tenants A B RBAC JWT y auditoria
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/ci/p1-005-b-live-enterprise-roles-dev.mjs
+      - name: Evidencia causal sin secretos
+        if: success()
+        shell: bash
+        run: |
+          {
+            echo '## SOLQARYN P1-005.B - Certificacion DEV real'
+            echo '- Identidades A/B y roles exclusivos MySQL: PASS'
+            echo '- JWT y lectura de propios, rechazo de extranjeros y global: PASS'
+            echo '- Negativos rol B/plataforma y edicion cruzada: PASS'
+            echo '- Edicion idempotente propia sin cambios de rol/clave: PASS'
+            echo '- Membresias intactas y auditoria durable MySQL: PASS'
+            echo '- Sin usuarios ni roles nuevos; sin DML directo'
+            echo "- Exact code SHA: $GITHUB_SHA"
+          } >> "$GITHUB_STEP_SUMMARY"
