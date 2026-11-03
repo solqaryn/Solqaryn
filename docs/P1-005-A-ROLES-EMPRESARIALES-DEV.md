@@ -11,6 +11,7 @@ Se habilita solo una allowlist exacta de acciones de administración (GET/POST/P
 ### Contrato de operaciones
 
 - Alta empresarial: `IUsuarioAdministracionEmpresaService.CrearAsync` exige permisos `Usuarios:Crear` y `Usuarios:AsignarRol`, admin de empresa vigente, rol de empresa asignable propio o plantilla de sistema. Duplicados globales no se exponen; alta de `Usuarios`, primera `UsuarioEmpresas` y auditoría crítica se realizan en una misma transacción MySQL. Una falla revierte la transacción completa.
+- Cambio de rol: `Usuario.RolId` (compatibilidad) y `UsuarioEmpresa.RolId` (rol RBAC efectivo) se actualizan en la misma transacción y se registran en auditoría estricta; la vista no puede mostrar un rol diferente al autorizado.
 - Edición empresarial: solo membresía activa y exclusiva de esa empresa. Identidades con otra membresía (incluso inactiva), asignación de Plataforma o rol global heredado son inmutables desde tenant. Rol destino debe ser propio o plantilla empresarial válida; cambio de rol y contraseña requieren permisos explícitos adicionales, revalidados desde el servicio. Auditoría estricta transaccional.
 - Roles: los controladores existentes conservan propiedad, plantillas inmutables, filtros y auditoría. La matriz limita el catálogo a `Ambito=Empresa` y prohíbe conceder permisos globales a un rol tenant.
 - Comportamiento denegado: cuentas compartidas A/B, rol ajeno, global, huérfano, sin admin vivo, subrutas vecinas, métodos inesperados, tamaños JSON excesivos y acceso anónimo.
