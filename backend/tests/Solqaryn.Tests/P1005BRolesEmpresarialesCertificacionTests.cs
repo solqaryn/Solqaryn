@@ -98,6 +98,38 @@ public sealed class P1005BRolesEmpresarialesCertificacionTests
         await db.SaveChangesAsync();
     }
 
+
+    [Fact]
+    public void P1005B_PlantillaEmpresarialEsCompartiblePeroNoPrivilegioGlobal()
+    {
+        var plantilla = new Rol
+        {
+            Id = 170, Nombre = "Vendedor plantilla",
+            EmpresaId = null, EsSistema = true,
+            Ambito = AmbitoAutorizacion.Empresa, Activo = true
+        };
+        Assert.True(plantilla.EsAsignableAEmpresa(11));
+        Assert.True(plantilla.EsAsignableAEmpresa(22));
+
+        var legacySinDueno = new Rol
+        {
+            Id = 171, EmpresaId = null, EsSistema = false,
+            Ambito = AmbitoAutorizacion.Empresa, Activo = true
+        };
+        Assert.False(legacySinDueno.EsAsignableAEmpresa(11));
+
+        var privadaB = new Rol
+        {
+            Id = 172, EmpresaId = 22, EsSistema = false,
+            Ambito = AmbitoAutorizacion.Empresa, Activo = true
+        };
+        Assert.True(privadaB.EsAsignableAEmpresa(22));
+        Assert.False(privadaB.EsAsignableAEmpresa(11));
+
+        plantilla.Ambito = AmbitoAutorizacion.Plataforma;
+        Assert.False(plantilla.EsAsignableAEmpresa(11));
+    }
+
     [Fact]
     public async Task P1005B_Alta_InstalaUnaSolaMembresiaDeA_YAudita()
     {

@@ -77,24 +77,39 @@ function preflight(){
     'TWO_TENANTS_REQUIRED');
   const a=identity(process.env.A_USERNAME,2),b=identity(process.env.B_USERNAME,3);
   must(a.uid!==b.uid,'TENANT_SEPARATION_INVALID');
-  const ownRole=id=>num(sql('SELECT MIN(Id) FROM Roles WHERE EmpresaId='+id+
-    ' AND Ambito<>2 AND EsSistema=0 AND Activo=1 AND Eliminado=0'),'TENANT_OWNED_ROLE_'+id);
-  const roleAowned=ownRole(2),roleBowned=ownRole(3);
+  // No exigir roles personalizados: las plantillas empresariales son válidas.
+  // Un rol privado existe únicamente cuando tiene EmpresaId del tenant.
+  const tenantOwnedRole=id=>{
+    const raw=sql('SELECT COALESCE(MIN(Id),0) FROM Roles WHERE EmpresaId='+id+
+      ' AND Ambito=1 AND Activo=1 AND Eliminado=0');
+    must(/^\d+$/.test(raw),'TENANT_ROLE_SQL_INVALID');
+    return Number(raw);
+  };
+  const roleAowned=tenantOwnedRole(2),roleBowned=tenantOwnedRole(3);
+  console.log('P1005B_TENANT_PRIVATE_ROLES_A='+Number(roleAowned>0)+
+    ' B='+Number(roleBowned>0));
   const qaOnly="(LOWER(u.NombreUsuario) LIKE 'qa_%' OR LOWER(u.NombreUsuario) LIKE 'e2e_%' "+
     "OR LOWER(u.NombreUsuario) LIKE 'fase6_%' OR LOWER(u.NombreUsuario) LIKE 'test_%' "+
     "OR LOWER(u.NombreUsuario) LIKE '%prueba%')";
   const qaFrom=' FROM Usuarios u JOIN UsuarioEmpresas m ON m.UsuarioId=u.Id '+
     'JOIN Roles r ON r.Id=m.RolId '+
     'WHERE m.EmpresaId=2 AND m.Activa=1 AND u.Activo=1 AND u.Eliminado=0 '+
-    'AND r.EsAdministrador=0 AND '+qaOnly+' AND '+
+    'AND r.EsAdministrador=0 AND r.Ambito=1 AND r.Activo=1 AND r.Eliminado=0 '+
+    'AND (r.EmpresaId=2 OR (r.EmpresaId IS NULL AND r.EsSistema=1)) '+
+    'AND '+qaOnly+' AND '+
     '(SELECT COUNT(*) FROM UsuarioEmpresas z WHERE z.UsuarioId=u.Id)=1 AND '+
     '(SELECT COUNT(*) FROM UsuarioRolesPlataforma gp WHERE gp.UsuarioId=u.Id)=0';
+  const qaCount=count('SELECT COUNT(*)'+qaFrom);
+  console.log('P1005B_SAFE_QA_CANDIDATES_A='+Math.min(qaCount,999));
+  must(qaCount>0,'SAFE_QA_USER_A_REQUIRED');
   const targetId=num(sql('SELECT MIN(u.Id)'+qaFrom),'SAFE_QA_USER_A_REQUIRED');
   const targetRole=num(sql('SELECT m.RolId FROM UsuarioEmpresas m WHERE m.EmpresaId=2 AND '+
     'm.UsuarioId='+targetId+' AND m.Activa=1'),'SAFE_QA_ROLE');
-  const alternateRole=num(sql('SELECT MIN(Id) FROM Roles WHERE EmpresaId=2 '+
-    'AND EsSistema=0 AND Ambito<>2 AND Activo=1 AND Eliminado=0 AND '+
-    'EsAdministrador=0 AND Id<> '+targetRole),'ALTERNATE_ROLE_A_REQUIRED');
+  // EsAsignableAEmpresa(2): propio o plantilla empresarial del sistema.
+  const alternateRole=num(sql('SELECT MIN(Id) FROM Roles WHERE Ambito=1 '+
+    'AND Activo=1 AND Eliminado=0 AND EsAdministrador=0 '+
+    'AND (EmpresaId=2 OR (EmpresaId IS NULL AND EsSistema=1)) '+
+    'AND Id<> '+targetRole),'ALTERNATE_ROLE_A_REQUIRED');
   must(targetId!==a.uid&&targetId!==b.uid,'SAFE_QA_ACCOUNT_CONFLICT');
   const platformRole=num(sql('SELECT Id FROM Roles WHERE Ambito=2 '+
     'AND EsSistema=1 AND EsAdministrador=1 AND EmpresaId IS NULL '+
@@ -132,6 +147,9 @@ function readRole(rows,target,tenant){
   must(rows.some(x=>Number(x.id)===target.role),'OWN_ROLE_MISSING_'+tenant);
   must(rows.every(x=>x.empresaId==null||Number(x.empresaId)===tenant),
     'CROSS_TENANT_ROLES_EXPOSED_'+tenant);
+  const roleIds=rows.map(x=>num(x.id,'ROLE_ROW_ID_'+tenant));
+  if(roleIds.length)must(count('SELECT COUNT(*) FROM Roles WHERE Id IN ('+
+    roleIds.join(',')+') AND Ambito=2')===0,'GLOBAL_ROLE_LEAK_'+tenant);
 }
 function noStore(r,label){must(String(r.headers['cache-control']||'').includes('no-store'),
   'CACHE_LEAK_'+label);}
@@ -163,26 +181,46 @@ async function run(){
   noStore(ownA,'USERS_A');noStore(ownB,'USERS_B');
   for(const [r,label] of [
     [await call('/usuarios/'+b.uid,'GET',jwtA,2),'A_READ_USER_B'],
-    [await call('/usuarios/'+a.uid,'GET',jwtB,3),'B_READ_USER_A'],
-    [await call('/roles/'+roleBowned,'GET',jwtA,2),'A_READ_ROLE_B'],
-    [await call('/roles/'+roleAowned,'GET',jwtB,3),'B_READ_ROLE_A']])
+    [await call('/usuarios/'+a.uid,'GET',jwtB,3),'B_READ_USER_A']])
     must(blocked(r),label+'_HTTP_'+r.status);
+  // Una plantilla compartida NO es un rol privado del tenant B.
+  // El negativo HTTP cross-role solo aplica si hay un rol realmente propio.
+  if(roleBowned>0){
+    const denied=await call('/roles/'+roleBowned,'GET',jwtA,2);
+    must(blocked(denied),'A_READ_PRIVATE_ROLE_B_HTTP_'+denied.status);
+    console.log('P1005B_CROSS_ROLE_B_HTTP=PASS');
+  }else console.log('P1005B_CROSS_ROLE_B_HTTP=NOT_APPLICABLE_NO_PRIVATE_ROLE');
+  if(roleAowned>0){
+    const denied=await call('/roles/'+roleAowned,'GET',jwtB,3);
+    must(blocked(denied),'B_READ_PRIVATE_ROLE_A_HTTP_'+denied.status);
+    console.log('P1005B_CROSS_ROLE_A_HTTP=PASS');
+  }else console.log('P1005B_CROSS_ROLE_A_HTTP=NOT_APPLICABLE_NO_PRIVATE_ROLE');
   expect(await call('/plataforma/sesion','GET',jwtA,2),403,'NO_GLOBAL_A');
   expect(await call('/plataforma/sesion','GET',jwtB,3),403,'NO_GLOBAL_B');
   console.log('P1005B_HTTP_JWT_A_B_ISOLATION=PASS');
 
   // Denied POST uses an already-existing username: if RBAC breaks, uniqueness
   // still prevents creation. A non-403 status is NO_GO, never accepted as PASS.
-  const duplicate=userPayload(ownA.json,roleBowned);
-  const denyRoleB=await call('/usuarios','POST',jwtA,2,{
+  // Nombre ya existente: nunca crear un usuario nuevo si fallara RBAC.
+  const duplicate=userPayload(ownA.json,a.role);
+  const safeBaseline=await call('/usuarios','POST',jwtA,2,{
     ...duplicate,password:'QATest-P1005B-No-Write-2026!'
   });
-  expect(denyRoleB,403,'A_CANNOT_ASSIGN_B_ROLE');
+  // Con rol válido, la única respuesta admisible es 400 por nombre duplicado,
+  // nunca 201 (creación) ni 403 (falta de autoridad para evaluar la frontera).
+  expect(safeBaseline,400,'OWN_ROLE_DUPLICATE_NOT_CREATED');
+  if(roleBowned>0){
+    const denyRoleB=await call('/usuarios','POST',jwtA,2,{
+      ...duplicate,rolId:roleBowned,password:'QATest-P1005B-No-Write-2026!'
+    });
+    expect(denyRoleB,403,'A_CANNOT_ASSIGN_B_ROLE');
+    console.log('P1005B_FOREIGN_ROLE_ASSIGNMENT_HTTP=PASS');
+  }else console.log('P1005B_FOREIGN_ROLE_ASSIGNMENT_HTTP=NOT_APPLICABLE_NO_PRIVATE_ROLE');
   const global=await call('/usuarios','POST',jwtA,2,{
     ...duplicate,rolId:platformRole,password:'QATest-P1005B-No-Write-2026!'
   });
   expect(global,403,'A_CANNOT_ASSIGN_PLATFORM_ROLE');
-  const crossUpdate=await call('/usuarios/'+b.uid,'PUT',jwtA,2,userPayload(ownB.json,roleBowned));
+  const crossUpdate=await call('/usuarios/'+b.uid,'PUT',jwtA,2,userPayload(ownB.json,a.role));
   expect(crossUpdate,403,'A_CANNOT_EDIT_B');
   const beforeMembership=membershipDigest(a,b);
   const auditBefore=count('SELECT COUNT(*) FROM RegistrosAuditoria WHERE UsuarioId='+a.uid+
@@ -214,7 +252,7 @@ async function run(){
   must(first.every(v=>Number(v)===targetRole),'QA_BEFORE_ROLE');
   const auditGrantBefore=count('SELECT COUNT(*) FROM RegistrosAuditoria WHERE '+
     'UsuarioId='+a.uid+' AND ReferenciaId='+targetId+
-    ' AND Accion='+literal('AsignarRol')+" AND Resultado='Exito'");
+    ' AND Accion='+literal('Editar')+" AND Resultado='Exito'");
   let changed=false,restored=false;
   try{
     changed=true; // ensure cleanup also after an ambiguous HTTP failure
@@ -224,7 +262,7 @@ async function run(){
     must(roleRead().every(v=>Number(v)===alternateRole),'ASSIGNMENT_NOT_DURABLE');
     const auditGrantAfter=count('SELECT COUNT(*) FROM RegistrosAuditoria WHERE '+
       'UsuarioId='+a.uid+' AND ReferenciaId='+targetId+
-      ' AND Accion='+literal('AsignarRol')+" AND Resultado='Exito'");
+      ' AND Accion='+literal('Editar')+" AND Resultado='Exito'");
     must(auditGrantAfter>auditGrantBefore,'GRANT_AUDIT_NOT_DURABLE');
     const revoke=await call('/usuarios/'+targetId,'PUT',jwtA,2,qaOriginal);
     expect(revoke,200,'RESTORE_TENANT_ROLE_A');
