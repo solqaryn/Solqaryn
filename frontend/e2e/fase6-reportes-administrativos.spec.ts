@@ -98,11 +98,22 @@ test.describe('Fase 6 — permisos, auditoría y reportes administrativos', () =
     });
     expect(userResponse.status(), await userResponse.text()).toBe(200);
     const limitedUser = await dataOf(userResponse);
-    const membershipResponse = await request.post(`${API_URL}/usuarios/${limitedUser.id}/empresas`, {
-      headers: auth(adminToken),
-      data: { empresaId: TENANT_ID, rolId: limitedRoleId }
+
+    // P1-005.A crea Usuario + UsuarioEmpresa atomicamente desde POST /usuarios.
+    // No asignar una segunda vez la misma empresa: la API debe rechazar duplicados.
+    const membershipResponse = await request.get(`${API_URL}/usuarios/${limitedUser.id}/empresas`, {
+      headers: auth(adminToken)
     });
     expect(membershipResponse.status(), await membershipResponse.text()).toBe(200);
+    const memberships = await dataOf(membershipResponse) as Array<Record<string, any>>;
+    expect(memberships).toHaveLength(1);
+    expect(memberships[0]).toMatchObject({
+      usuarioId: limitedUser.id,
+      empresaId: TENANT_ID,
+      rolId: limitedRoleId,
+      activa: true
+    });
+
     limitedToken = await login(request, LIMITED_USERNAME, LIMITED_PASSWORD);
   });
 
