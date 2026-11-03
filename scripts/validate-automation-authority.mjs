@@ -191,10 +191,10 @@ else if (process.argv.includes('--self-test')) {
   for (const key of ['authority','status']) {
     expandedRoster[key] = expandedRoster[key]
       .replace(/^REGISTERED_TASK_IDS=(.*)$/m, (_, ids) => 'REGISTERED_TASK_IDS=' + ids + ',' + additionalTaskId)
-      .replace(/^PHYSICAL_TASKS_REGISTERED=6$/m, 'PHYSICAL_TASKS_REGISTERED=7');
+      .replace(/^PHYSICAL_TASKS_REGISTERED=(\d+)$/m, (_,n) => 'PHYSICAL_TASKS_REGISTERED=' + (Number(n) + 1));
   }
   if (validateAuthority(expandedRoster).length)
-    throw Error('Positive configurability test failed for a seven-Task roster');
+    throw Error('Positive configurability test failed for expanded registered roster');
   const tests = [
     ['repository', {authority:authority.replaceAll('REPOSITORY=solqaryn/Solqaryn', 'REPOSITORY=other/Other')}],
     ['branch', {authority:authority.replaceAll('BRANCH=dev', 'BRANCH=main')}],
@@ -220,7 +220,7 @@ else if (process.argv.includes('--self-test')) {
     ['automatic CI gate disabled', {status:status.replace('AUTO_CERTIFICATION_MODE=REQUIRED_SCOPE_LOCK','AUTO_CERTIFICATION_MODE=DISABLED')}],
     ['old mandatory human approval restored', {authority:authority.replace('FORMAL_APPROVAL_ROUTINE_COMMERCIAL_REQUIRED=FALSE','FORMAL_APPROVAL_ROUTINE_COMMERCIAL_REQUIRED=TRUE')}],
     ['governance independent review weakened', {authority:authority.replace('FORMAL_APPROVAL_GOVERNANCE_REQUIRED=TRUE','FORMAL_APPROVAL_GOVERNANCE_REQUIRED=FALSE')}],
-    ['registered roster count mismatch', {status:status.replace(/^PHYSICAL_TASKS_REGISTERED=6$/m, 'PHYSICAL_TASKS_REGISTERED=7')}],
+    ['registered roster count mismatch', {status:status.replace(/^PHYSICAL_TASKS_REGISTERED=(\d+)$/m, (_,n) => 'PHYSICAL_TASKS_REGISTERED=' + (Number(n) + 1))}],
     ['reintroduced fixed task ceiling', {scope:scope.replace('TASK_COUNT_LIMIT=PROVIDER_EFFECTIVE_CAPACITY','PILOT_TASK_LIMIT=6')}],
     ['no configurable agent routing', {agents:agents.replace('TASK_DESIGN=OWNER_CONFIGURABLE_TASK_SET','TASK_DESIGN=DUAL_TASK')}],
     ['legacy Master executable', {scope:scope.replace('LEGACY_MASTER_EXECUTABLE=FALSE','LEGACY_MASTER_EXECUTABLE=TRUE')}],

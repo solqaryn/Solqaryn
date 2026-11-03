@@ -13,7 +13,7 @@ VAEP_DISPATCH_AUTHORIZED=FALSE
 JULES_WORKERS_AUTHORIZED=0
 TASK_COUNT_LIMIT=PROVIDER_EFFECTIVE_CAPACITY
 TASK_ASSIGNMENT_MODEL=OWNER_CONFIGURABLE
-REGISTERED_TASK_IDS=6adbb9fff1548191a1bd5b30d9e9984a,6adbbc9ad9e88191bea8eb69104afb25,6adc2e4bd8a48191ac7d8641ed95a1a3,6adcc97a260881919d92bb9bacae1626,6adc2e55f47c81919f6374e561687076,6adcc98a80a48191b71a5156624c21df
+REGISTERED_TASK_IDS=6adbb9fff1548191a1bd5b30d9e9984a,6adbbc9ad9e88191bea8eb69104afb25,6adc2e4bd8a48191ac7d8641ed95a1a3,6adc2e55f47c81919f6374e561687076,6adcc98a80a48191b71a5156624c21df
 PRIMARY_TASK_ROLE=PRIMARY_01
 SECONDARY_TASK_ROLE=SECONDARY_02
 PRIMARY_TASK_ACCOUNT=JAVIER_CHATGPT
@@ -21,8 +21,8 @@ SECONDARY_TASK_ACCOUNT=ALEX_CHATGPT
 
 DESIGN_VERSION=2.0
 DESIGN_TOPOLOGY=OWNER_CONFIGURABLE
-CURRENT_TASK_DISTRIBUTION=3_JAVIER_3_ALEX
-PHYSICAL_TASKS_REGISTERED=6
+CURRENT_TASK_DISTRIBUTION=3_JAVIER_2_ALEX
+PHYSICAL_TASKS_REGISTERED=5
 MAX_CONCURRENT_SCOPES=6
 MAX_OWNED_SCOPES_PER_TASK=2
 MAX_ACTIVE_WRITES_PER_TASK=1
@@ -35,6 +35,10 @@ GITHUB_CHAT_ROLE_SEPARATION=STRICT
 GITHUB_CHAT_ROLE_POLICY=docs/GITHUB_ACCOUNT_ROLES.md
 LEGACY_AUTOMATION_RUNTIME=RETIRED
 
+## Estado operativo prevalente M3.2 — 2026-11-03
+
+El censo ejecutable se limita a las cinco identidades presentes en `REGISTERED_TASK_IDS`, iguales a la allowlist comercial; distribución actual 3 Javier (:00/:20/:40) y 2 Alex (:10/:50), **sin límite interno fijo**. Se retira la antigua posición no autorizada :30 del registro, no se crean Tasks ni se conceden permisos nuevos. La conexión actual no permite certificar la eliminación física en la cuenta de Alex; cualquier Task externa al censo mantiene `NO_AUTORIZADO` y no recibe autoridad por inferencia. Las referencias a seis instalaciones en las secciones inferiores son evidencias históricas, nunca fuentes de identidad operativa. `AUTOMATION_RUNTIME=ACTIVE_DEV` es capacidad lógica, no estado `is_enabled`.
+
 ## Enmienda operativa propuesta — certificación automática CI en DEV (2026-10-30)
 
 **Vigencia condicionada:** esta norma solo sustituye la revisión formal para futuros PR comerciales ordinarios cuando el changeset esté fusionado por PR protegido en `dev`, el job requerido `verify-solqaryn-project-scope` ejecute la certificación contra el SHA exacto y exista readback de CI. Durante la implantación/bootstrap de este PR normativo sigue exigida revisión formal realmente independiente. No se simula un `APPROVED` humano: `AUTO_CERT=PASS` significa exclusivamente certificación técnica de GitHub Actions.
@@ -45,7 +49,7 @@ Los PR que cambian gobierno, Skill, reglas de seguridad, workflows requeridos o 
 
 ## Enmienda vigente — inventario configurable de Tasks (2026-10-30)
 
-No hay un máximo interno fijo de Tasks ni una proporción obligatoria entre cuentas. `PHYSICAL_TASKS_REGISTERED` y `REGISTERED_TASK_IDS` son el censo actual (seis IDs, distribuidos 3+3), no un límite. Cada alta, baja o cambio de distribución exige decisión institucional protegida, capacidad efectiva confirmada por el proveedor y readback de identidad, propietario, ID, horario y estado habilitado. La enmienda por sí sola no crea ni modifica Tasks. Se preserva exactamente `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=5` y su allowlist; Alex :30 sigue excluido. `MAX_CONCURRENT_SCOPES=6` limita microtareas abiertas, no Tasks físicas.
+No hay un máximo interno fijo de Tasks ni una proporción obligatoria entre cuentas. `PHYSICAL_TASKS_REGISTERED` y `REGISTERED_TASK_IDS` describen ahora cinco IDs operativos registrados (3 de Javier, 2 de Alex); no son un límite ni prueban la eliminación física de una Task ajena no accesible. Cada alta, baja o cambio de distribución exige decisión institucional protegida, capacidad efectiva confirmada por el proveedor y readback de identidad, propietario, ID, horario y estado habilitado. La enmienda por sí sola no crea ni modifica Tasks. Se preserva exactamente `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=5` y su allowlist; Alex :30 sigue excluido. `MAX_CONCURRENT_SCOPES=6` limita microtareas abiertas, no Tasks físicas.
 
 Las secciones M3.2–M3.3 siguientes preservan evidencias históricas; en caso de conflicto, prevalecen las claves y la enmienda vigente de este encabezado.
 
