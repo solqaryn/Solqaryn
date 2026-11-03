@@ -177,6 +177,21 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
             return;
         }
 
+        // P1-004.B: bypass estricto SOLO de las tres rutas de delegación.
+        // No confiere autoridad: [Authorize] y el controlador releen rol/grant
+        // vigente desde MySQL; no se conceden privilegios tenant ni se aceptan
+        // rutas hijas, IDs ambiguos o métodos diferentes.
+        if (EsRutaDelegacionPlataforma(httpContext.Request))
+        {
+            if (httpContext.User.Identity?.IsAuthenticated == true)
+            {
+                await _next(httpContext);
+                return;
+            }
+            await RechazarAsync(httpContext);
+            return;
+        }
+
         // Gestión de identidad estricta de plataforma. Nunca se libera el
         // resto de la API comercial; MVC exige JWT y grant global vigente.
         // Los verbos y los segmentos numéricos son una allowlist exacta.
@@ -821,6 +836,26 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         await context.Response.WriteAsJsonAsync(
             new { success = false, code },
             context.RequestAborted);
+    }
+
+    private static bool EsRutaDelegacionPlataforma(HttpRequest request)
+    {
+        if (HttpMethods.IsGet(request.Method) &&
+            EsRutaExacta(request.Path, "/plataforma/delegaciones/empresas"))
+            return true;
+        if (HttpMethods.IsPost(request.Method) &&
+            EsRutaExacta(request.Path, "/plataforma/delegaciones"))
+            return true;
+        if (!HttpMethods.IsDelete(request.Method))
+            return false;
+
+        var segmentos = request.Path.Value?.Split('/', StringSplitOptions.None);
+        return segmentos is { Length: 4 } && segmentos[0].Length == 0 &&
+               segmentos[1].Equals("plataforma", StringComparison.OrdinalIgnoreCase) &&
+               segmentos[2].Equals("delegaciones", StringComparison.OrdinalIgnoreCase) &&
+               segmentos[3].Length > 0 &&
+               segmentos[3].All(c => c is >= '0' and <= '9') &&
+               int.TryParse(segmentos[3], out var id) && id > 0;
     }
 
     private static bool EsRutaGestionBasicaPlataforma(HttpRequest request)

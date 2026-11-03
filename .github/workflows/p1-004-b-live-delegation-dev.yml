@@ -6,12 +6,16 @@ on:
       - .github/workflows/p1-004-b-live-delegation-dev.yml
       - scripts/ci/p1-004-b-live-delegation-dev.mjs
       - docs/P1-004-B-CERTIFICACION-DEV.md
+      - backend/src/API/Middleware/UnscopedCommercialTenantGuardMiddleware.cs
+      - backend/tests/Solqaryn.Tests/API/P1004BDelegacionMiddlewareGateTests.cs
   push:
     branches: [dev]
     paths:
       - .github/workflows/p1-004-b-live-delegation-dev.yml
       - scripts/ci/p1-004-b-live-delegation-dev.mjs
       - docs/P1-004-B-CERTIFICACION-DEV.md
+      - backend/src/API/Middleware/UnscopedCommercialTenantGuardMiddleware.cs
+      - backend/tests/Solqaryn.Tests/API/P1004BDelegacionMiddlewareGateTests.cs
   workflow_dispatch:
 permissions:
   contents: read

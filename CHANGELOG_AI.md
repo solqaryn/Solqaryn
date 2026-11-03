@@ -1,3 +1,10 @@
+## 2026-11-02 — P1-004.B: corrección de cuarentena HTTP 503 en delegación DEV
+
+- Diagnóstico de run 41549812213: MySQL y JWT PASS pero `GET /plataforma/delegaciones/empresas` devolvía 503 desde la allowlist multiempresa, antes de revisar la autorización delegada.
+- `UnscopedCommercialTenantGuardMiddleware` permite únicamente tres rutas/métodos exactos con autenticación para que el controlador verifique RBAC real: GET directorio, POST concesión, DELETE revocación por ID positivo. Nada cambia los permisos ni el aislamiento ERP.
+- Pruebas dirigidas de bypass exacto, falta de JWT, métodos alternativos, rutas vecinas/IDs inválidos. Workflow reactiva LIVE tras merge de backend y script espera acotada por despliegue solamente ante `TENANT_DATA_ISOLATION_REQUIRED`, sin aceptar 503 como 403.
+- P1-004.B sigue NO_GO hasta certificación real HTTP/JWT/MySQL, revocación y auditoría con CI, merge y conciliación. Reversión por PR protegido; sin DML manual, migraciones ni cambios QA/main/PROD.
+
 ## 2026-11-02 — P1-004.B: certificación LIVE independiente de delegación (PR)
 
 - P1-004.A ya integrado dev@665964be33f484b53a89cb59bf387ec27ccf5fc1 por PR #3819. B define exclusivamente el contrato HTTP/JWT/MySQL real de DEV con dos identidades existentes, concesión temporal revocable y auditoría durable (ver `docs/P1-004-B-CERTIFICACION-DEV.md`).
