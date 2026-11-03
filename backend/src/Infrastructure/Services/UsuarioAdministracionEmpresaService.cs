@@ -177,4 +177,74 @@ public sealed class UsuarioAdministracionEmpresaService : IUsuarioAdministracion
         if (tx is not null) await tx.CommitAsync(ct);
         return actualizado;
     }
+    /// <summary>
+    /// Soft-delete a user that belongs exclusively to the authorized tenant.
+    /// Never use the legacy global-user repository for tenant deletion: its
+    /// unspecialized read scope triggers DEV quarantine (HTTP 503). Verify all
+    /// memberships and platform provenance before bypassing global read filters.
+    /// </summary>
+    public async Task<bool> EliminarAsync(
+        int usuarioId, int empresaIdAutorizada, CancellationToken ct = default)
+    {
+        if (usuarioId <= 0)
+            throw new ForbiddenAccessException("Usuario inválido.");
+
+        await using var tx = _db.Database.IsRelational()
+            ? await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct)
+            : null;
+        var actorId = await ExigirAdministradorAsync(
+            empresaIdAutorizada, AccionPermiso.EliminarLogico, ct);
+        if (usuarioId == actorId)
+            throw new BusinessRuleException("No puedes eliminar tu propia cuenta.");
+
+        // Membership is global, so check EVERY tenant, including inactive ones,
+        // before touching a shared identity. A JWT/header alone never suffices.
+        var memberships = await _db.UsuarioEmpresas.IgnoreQueryFilters()
+            .Where(m => m.UsuarioId == usuarioId).ToListAsync(ct);
+        if (memberships.Count != 1 ||
+            memberships[0].EmpresaId != empresaIdAutorizada ||
+            !memberships[0].Activa)
+            throw new ForbiddenAccessException(
+                "No se puede eliminar una identidad ajena o compartida con otra empresa.");
+
+        // Even inactive platform grants encode platform provenance.
+        if (await _db.UsuarioRolesPlataforma.IgnoreQueryFilters().AsNoTracking()
+                .AnyAsync(g => g.UsuarioId == usuarioId, ct))
+            throw new ForbiddenAccessException(
+                "Una identidad de plataforma no puede eliminarse desde una empresa.");
+
+        var usuario = await _db.Usuarios.IgnoreQueryFilters()
+            .SingleOrDefaultAsync(u => u.Id == usuarioId && !u.Eliminado, ct);
+        if (usuario is null) return false;
+        if (await _db.Roles.IgnoreQueryFilters().AsNoTracking()
+            .AnyAsync(r => r.Id == usuario.RolId &&
+                r.Ambito == AmbitoAutorizacion.Plataforma, ct))
+            throw new ForbiddenAccessException(
+                "Una identidad con rol global heredado no puede eliminarse desde una empresa.");
+
+        // ExigirAdministradorAsync already guarantees an independent ACTIVE
+        // administrator in this same tenant (the actor is never the target).
+        var now = DateTime.UtcNow;
+        usuario.Eliminado = true;
+        usuario.Activo = false;
+        usuario.FechaEliminacion = now;
+        usuario.EliminadoPorUsuarioId = actorId;
+        usuario.ActualizadoPorUsuarioId = actorId;
+        usuario.FechaActualizacion = now;
+        memberships[0].Desactivar();
+        memberships[0].ActualizadoPorUsuarioId = actorId;
+        memberships[0].FechaActualizacion = now;
+
+        // Durable audit and both revoked states share the same transaction.
+        await _db.SaveChangesAsync(ct);
+        await _auditoria.RegistrarEstrictoAsync(
+            ModuloSistema.Usuarios, AccionPermiso.EliminarLogico,
+            "Eliminación lógica de usuario empresarial exclusivo.",
+            usuarioId, entidad: "Usuario",
+            valoresNuevos: new { EmpresaId = empresaIdAutorizada,
+                Eliminado = true, Activo = false, MembresiaActiva = false });
+        if (tx is not null) await tx.CommitAsync(ct);
+        return true;
+    }
+
 }
