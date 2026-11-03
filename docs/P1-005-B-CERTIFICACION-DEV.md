@@ -90,6 +90,17 @@ en Render DEV, ejecutar LIVE positiva y readback completo, y conciliar
 `PLAN_MAESTRO`, `COLA` y `BITACORA` antes de `LISTO`. No hay
 autorización de cambios en QA, `main` ni PROD.
 
+## 2026-11-03 — Hallazgo definitivo middleware: allowlist DELETE (PR posterior a #3830)
+
+- PR #3830 aprobado y fusionado `dev@bfa914ffc2038e224be689661a18262befe5f5a1`; Scope Lock y CI del SHA exacto PASS.
+- Render DEV desplegó **LIVE** el mismo commit, deploy `dep-dbkvvcrncjis73fg7820`, a las `2026-11-03T15:41:21Z`.
+- La LIVE posterior al despliegue (run `41664870250`, job `126023199709`) acreditó `P1005B_MYSQL_TWO_TENANT_PREFLIGHT=PASS`, `P1005B_RENDER_READY=PASS`, `P1005B_HTTP_JWT_A_B_ISOLATION=PASS` y `P1005B_CROSS_TENANT_EDIT_DENIED_MYSQL=PASS`, pero `P1005B_NO_GO=PRIOR_FIXTURE_DELETE_HTTP_503`.
+- Render registró que el `DELETE /usuarios/8` hizo **solamente** `SELECT Empresas ORDER BY Id LIMIT 2` antes de devolver 503; no alcanzó el controlador ni el servicio tenant-aware. La causa exacta era `UnscopedCommercialTenantGuardMiddleware.EsRutaAdministracionEmpresa`: autorizaba GET/POST/PUT `/usuarios`, pero omitía el verbo DELETE aunque `UsuariosController.Eliminar` tenía `[RequierePermiso(Usuarios, EliminarLogico)]`.
+- Se incorpora **únicamente** `DELETE /usuarios/{id:int positivo}` a la allowlist comercial, después del gate de JWT, administrador vigente de empresa y `Usuarios:EliminarLogico`. El servicio empresarial corregido en #3830 revalida empresa exclusiva, rol global histórico, actor propio y revocación transaccional. No se habilita ningún otro verbo ni ruta.
+- Regresiones del middleware verifican allowlist exacta, prohibición de `/usuarios/0`, IDs negativos, subrutas y slash final, JWT ausente, administrador no vigente y `EliminarLogico` revocado. Un test de contrato verifica el atributo `HttpDelete` y el permiso del controlador.
+
+La cuenta temporal ID 8 sigue **sin borrado acreditado**: no hacer SQL DML ni declarar LISTO mientras no exista un LIVE postmerge, sobre Render DEV exact-SHA nuevo, con `P1005B_PREVIOUS_FIXTURE_RECOVERY=PASS`, asignación/revocación, auditoría y `P1005B_QA_FIXTURE_LOGICAL_DELETE=PASS`, además de readback `PLAN_MAESTRO/COLA/BITACORA`.
+
 ## Evidencia requerida para declarar LISTO
 
 - Correr `scripts/ci/p1-005-b-live-enterprise-roles-dev.mjs --self-test` sin credenciales en PR, con Scope Lock y sintaxis Node 24.
