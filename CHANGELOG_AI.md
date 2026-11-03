@@ -1,6 +1,7 @@
 ## 2026-11-02 — P1-005.A: admin empresarial, RBAC tenant y primera membresía atómica
 
 - Se habilitan solo rutas GET/POST/PUT exactas de roles/usuarios/matriz por middleware de cuarentena, con JWT, rol administrador empresarial vivo, membresía y permisos MySQL. No se abre ERP, permisos globales ni rutas vecinas.
+- Revalidación de administrador, permisos y titularidad dentro de transacciones MySQL `Serializable`, evitando que una revocación concurrente se separe del cambio de rol o del alta.
 - Un cambio del rol del usuario actualiza también `UsuarioEmpresa.RolId` (fuente RBAC) en la misma transacción y exige auditoría estricta.
 - Alta de usuario y primera membresía con rol empresarial propio en una transacción MySQL y auditoría estricta; bloqueo de duplicados globales. Edición denegada para usuario B, compartido A/B, rol plataforma o identidad de autoridad global.
 - Matriz de permisos empresariales rechaza grants de ámbito Plataforma. La proyección UI expone solo rutas Angular de usuarios/roles/matriz cuando hay admin vigente y grant específico, sin ampliar otras rutas. Tests xUnit dirigidos de casos positivos y negativos; nuevo workflow causal de A, sin esperas por suites extensas no relacionadas.
