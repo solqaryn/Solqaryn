@@ -150,8 +150,22 @@ public sealed class UsuarioAdministracionEmpresaService : IUsuarioAdministracion
             await _permisos.VerificarPermisoAsync(
                 empresaIdAutorizada, ModuloSistema.Usuarios, AccionPermiso.RestablecerContrasena);
 
+        var cambioRol = usuario.RolId != dto.RolId;
         var actualizado = await _usuarios.UpdateAsync(usuarioId, dto);
         if (actualizado is null) return null;
+
+        if (cambioRol)
+        {
+            // El rol efectivo procede de UsuarioEmpresa y no de Usuario.RolId.
+            // Actualizar ambos dentro de la MISMA transacción preserva RBAC vivo.
+            var membresia = await _db.UsuarioEmpresas.SingleAsync(m =>
+                m.UsuarioId == usuarioId && m.EmpresaId == empresaIdAutorizada, ct);
+            membresia.CambiarRol(dto.RolId!.Value);
+            membresia.ActualizadoPorUsuarioId = _actual.UsuarioId;
+            membresia.FechaActualizacion = DateTime.UtcNow;
+            await _db.SaveChangesAsync(ct);
+        }
+
         await _auditoria.RegistrarEstrictoAsync(
             ModuloSistema.Usuarios, AccionPermiso.Editar,
             "Edición administrativa de identidad empresarial propia.",
