@@ -80,12 +80,28 @@ function preflight(){
   const ownRole=id=>num(sql('SELECT MIN(Id) FROM Roles WHERE EmpresaId='+id+
     ' AND Ambito<>2 AND EsSistema=0 AND Activo=1 AND Eliminado=0'),'TENANT_OWNED_ROLE_'+id);
   const roleAowned=ownRole(2),roleBowned=ownRole(3);
+  const qaOnly="(LOWER(u.NombreUsuario) LIKE 'qa_%' OR LOWER(u.NombreUsuario) LIKE 'e2e_%' "+
+    "OR LOWER(u.NombreUsuario) LIKE 'fase6_%' OR LOWER(u.NombreUsuario) LIKE 'test_%' "+
+    "OR LOWER(u.NombreUsuario) LIKE '%prueba%')";
+  const qaFrom=' FROM Usuarios u JOIN UsuarioEmpresas m ON m.UsuarioId=u.Id '+
+    'JOIN Roles r ON r.Id=m.RolId '+
+    'WHERE m.EmpresaId=2 AND m.Activa=1 AND u.Activo=1 AND u.Eliminado=0 '+
+    'AND r.EsAdministrador=0 AND '+qaOnly+' AND '+
+    '(SELECT COUNT(*) FROM UsuarioEmpresas z WHERE z.UsuarioId=u.Id)=1 AND '+
+    '(SELECT COUNT(*) FROM UsuarioRolesPlataforma gp WHERE gp.UsuarioId=u.Id)=0';
+  const targetId=num(sql('SELECT MIN(u.Id)'+qaFrom),'SAFE_QA_USER_A_REQUIRED');
+  const targetRole=num(sql('SELECT m.RolId FROM UsuarioEmpresas m WHERE m.EmpresaId=2 AND '+
+    'm.UsuarioId='+targetId+' AND m.Activa=1'),'SAFE_QA_ROLE');
+  const alternateRole=num(sql('SELECT MIN(Id) FROM Roles WHERE EmpresaId=2 '+
+    'AND EsSistema=0 AND Ambito<>2 AND Activo=1 AND Eliminado=0 AND '+
+    'EsAdministrador=0 AND Id<> '+targetRole),'ALTERNATE_ROLE_A_REQUIRED');
+  must(targetId!==a.uid&&targetId!==b.uid,'SAFE_QA_ACCOUNT_CONFLICT');
   const platformRole=num(sql('SELECT Id FROM Roles WHERE Ambito=2 '+
     'AND EsSistema=1 AND EsAdministrador=1 AND EmpresaId IS NULL '+
     'ORDER BY Id LIMIT 1'),'PLATFORM_ROLE');
   must(platformRole!==a.role&&platformRole!==b.role,'PLATFORM_ROLE_CONFLICT');
   console.log('P1005B_MYSQL_TWO_TENANT_PREFLIGHT=PASS');
-  return {a,b,platformRole,roleAowned,roleBowned};
+  return {a,b,platformRole,roleAowned,roleBowned,targetId,targetRole,alternateRole};
 }
 async function call(path,method='GET',jwt='',tenant=0,payload){
   const url=new URL(path,ORIGIN);
@@ -132,7 +148,7 @@ function membershipDigest(a,b){
     a.uid+','+b.uid+')');
 }
 async function run(){
-  env();const {a,b,platformRole,roleAowned,roleBowned}=preflight();
+  env();const {a,b,platformRole,roleAowned,roleBowned,targetId,targetRole,alternateRole}=preflight();
   expect(await call('/health/ready'),200,'RENDER_READY');
   const jwtA=await login(process.env.A_USERNAME,process.env.A_PASSWORD,'A');
   const jwtB=await login(process.env.B_USERNAME,process.env.B_PASSWORD,'B');
@@ -184,6 +200,48 @@ async function run(){
     ' AND Accion='+literal('Editar')+" AND Resultado='Exito'");
   must(auditAfter>auditBefore,'AUDIT_NOT_DURABLE');
   console.log('P1005B_OWN_ROLE_IDEMPOTENT_EDIT_AUDIT=PASS');
+  // Change only an existing, safely identified DEV QA user. Restore in
+  // finally even if the live role-change or audit assertion fails.
+  const qaGet=await call('/usuarios/'+targetId,'GET',jwtA,2);
+  expect(qaGet,200,'QA_USER_GET');
+  const qaOriginal=userPayload(qaGet.json,targetRole);
+  const roleRead=()=>[
+    sql('SELECT RolId FROM Usuarios WHERE Id='+targetId),
+    sql('SELECT RolId FROM UsuarioEmpresas WHERE UsuarioId='+targetId+
+      ' AND EmpresaId=2 AND Activa=1')
+  ];
+  const first=roleRead();
+  must(first.every(v=>Number(v)===targetRole),'QA_BEFORE_ROLE');
+  const auditGrantBefore=count('SELECT COUNT(*) FROM RegistrosAuditoria WHERE '+
+    'UsuarioId='+a.uid+' AND ReferenciaId='+targetId+
+    ' AND Accion='+literal('AsignarRol')+" AND Resultado='Exito'");
+  let changed=false,restored=false;
+  try{
+    const assign=await call('/usuarios/'+targetId,'PUT',jwtA,2,
+      {...qaOriginal,rolId:alternateRole});
+    expect(assign,200,'ASSIGN_TENANT_ROLE_A');
+    changed=true;
+    must(roleRead().every(v=>Number(v)===alternateRole),'ASSIGNMENT_NOT_DURABLE');
+    const auditGrantAfter=count('SELECT COUNT(*) FROM RegistrosAuditoria WHERE '+
+      'UsuarioId='+a.uid+' AND ReferenciaId='+targetId+
+      ' AND Accion='+literal('AsignarRol')+" AND Resultado='Exito'");
+    must(auditGrantAfter>auditGrantBefore,'GRANT_AUDIT_NOT_DURABLE');
+    const revoke=await call('/usuarios/'+targetId,'PUT',jwtA,2,qaOriginal);
+    expect(revoke,200,'RESTORE_TENANT_ROLE_A');
+    restored=true;
+    must(roleRead().every(v=>Number(v)===targetRole),'REVOCATION_NOT_DURABLE');
+    console.log('P1005B_ROLE_ASSIGNMENT_REVOCATION_MYSQL=PASS');
+  }finally{
+    if(changed&&!restored){
+      try{
+        const cleanup=await call('/usuarios/'+targetId,'PUT',jwtA,2,qaOriginal);
+        if(cleanup.status===200&&roleRead().every(v=>Number(v)===targetRole))
+          console.log('P1005B_EMERGENCY_ROLE_RESTORE=PASS');
+        else console.error('P1005B_NO_GO=QA_ROLE_RESTORE_UNVERIFIED');
+      }catch{console.error('P1005B_NO_GO=QA_ROLE_RESTORE_UNVERIFIED');}
+    }
+  }
+
   console.log('P1005B_LIVE_DEV_HTTP_JWT_MYSQL=PASS');
 }
 if(process.argv.includes('--self-test'))selfTest();
