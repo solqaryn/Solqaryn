@@ -1,3 +1,9 @@
+## 2026-11-02 — P1-005.A: corregir fixture E2E de primera membresía empresarial
+
+- La prueba `frontend/e2e/fase6-reportes-administrativos.spec.ts` duplicaba la membresía creada atómicamente por `POST /usuarios` en P1-005.A; el `POST /usuarios/{id}/empresas` posterior recibía legítimamente HTTP 400 e impedía completar los tests seriales de reportes administrativos.
+- Se sustituye solo el POST duplicado por `GET /usuarios/{id}/empresas` y se comprueba una única membresía activa con `UsuarioId`, `EmpresaId` y `RolId` correctos. El rechazo de duplicados, JWT, RBAC, auditoría y transacciones del backend permanecen intactos.
+- La corrección requiere CI y Scope Lock PASS sobre el nuevo SHA, revisión independiente exact-head y merge protegido antes de certificar P1-005.A. P1-005.B LIVE sigue separada.
+
 ## 2026-11-02 — P1-005.A: admin empresarial, RBAC tenant y primera membresía atómica
 
 - Se habilitan solo rutas GET/POST/PUT exactas de roles/usuarios/matriz por middleware de cuarentena, con JWT, rol administrador empresarial vivo, membresía y permisos MySQL. No se abre ERP, permisos globales ni rutas vecinas.
