@@ -23,7 +23,7 @@ Se habilita solo una allowlist exacta de acciones de administración (GET/POST/P
 - Domain: sin cambios.
 - Datos/migraciones: ninguna migración ni escritura manual de datos DEV. Una vez fusionado, las operaciones autorizadas de la API escribirán la primera membresía en transacción y registrarán auditoría.
 - Security: JWT, RBAC relacional, EF filters, no plataforma, no cross-tenant, no elevación por header ni JWT informativo.
-- Frontend: no se amplían permisos de UI ni se modifican componentes.
+- Frontend: proyección de capacidades UI administrativas ya existentes solo con `EsAdministrador` y cada grant vigente. Rutas Angular de usuarios/roles/matriz visibles cuando están autorizadas; ninguna autoridad nace de UI ni se agregan componentes.
 - CI: xUnit dirigido para positivos/negativos y suite permanente backend/seguridad.
 - Rollback: revert protegido del PR y mantener la cuarentena multiempresa (sin borrados o DML manual).
 
