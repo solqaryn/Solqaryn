@@ -1,3 +1,10 @@
+## 2026-11-02 — P1-005.A: frontera de administración empresarial (DEV)
+
+- API multiempresa: `UnscopedCommercialTenantGuardMiddleware` habilita exclusivamente rutas administrativas `usuarios`, `roles` y `permisos/matriz` con método y path exactos, identidad JWT, membresía y rol administrador verificados MySQL, permiso específico y marca tenant validada. Esta vía no abre rutas de ERP comerciales, gestión global ni catálogo de permisos.
+- Capa Infrastructure: `UsuarioAdministracionEmpresaService` encapsula el alta de identidad más membresía propia y auditoría estricta en transacción; edición solo para identidad de membresía única en ese tenant, nunca identidades compartidas, plataformas o roles globales. Domain sin cambios, no migraciones ni scripts DML.
+- Capa Application: interfaz explícita de administración tenant-scoped y defensa contra grants `Ambito=Plataforma` a roles empresariales. Proyección UI de rutas únicamente cuando `EsAdministrador` y grant específicos; no cambia las autoridades efectivas.
+- Seguridad y rollback: cuenta empresa A nunca puede mutar identidad B, rol B, rol global ni usuario compartido; pruebas xUnit causales y workflow separado. Revert por PR protegido mantiene cuarentena de rutas. Certificación LIVE de A/B y auditoría se reserva exclusivamente a P1-005.B tras integración A.
+
 ## Backend DEV — Delegación administrativa (P1-004.A, 2026-11-02)
 
 - Superadmin: solamente rol de Plataforma de sistema vivo, revalidado MySQL; un JWT nunca concede datos de tenant automáticamente.
