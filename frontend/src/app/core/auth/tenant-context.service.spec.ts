@@ -165,4 +165,49 @@ describe('TenantContextService', () => {
   });
 
 
+
+  it('lista solo empresas entregadas por el backend sin conceder contexto por localStorage', () => {
+    localStorage.setItem('solqaryn_empresa_solicitada_id', '999');
+    const service = TestBed.inject(TenantContextService);
+    let empresas: { empresaId: number; nombre: string }[] = [];
+    service.listarEmpresasSeleccionables().subscribe(resultado => { empresas = resultado; });
+
+    const request = httpMock.expectOne(`${environment.apiUrl}/tenant-context/empresas`);
+    request.flush({
+      success: true,
+      data: [{ empresaId: 7, nombre: 'Empresa A' }]
+    });
+    expect(empresas).toEqual([{ empresaId: 7, nombre: 'Empresa A' }]);
+    expect(service.contextoVerificado()).toBeNull();
+    expect(service.empresaSolicitadaId()).toBe(999);
+    expect(service.tieneContextoVerificado()).toBe(false);
+  });
+
+  it('falla cerrado si el listado de empresas está mal formado', () => {
+    const service = TestBed.inject(TenantContextService);
+    let rechazado = false;
+    service.listarEmpresasSeleccionables().subscribe({
+      error: () => { rechazado = true; }
+    });
+    const request = httpMock.expectOne(`${environment.apiUrl}/tenant-context/empresas`);
+    request.flush({
+      success: true,
+      data: [{ empresaId: -1, nombre: 'Empresa inválida' }]
+    });
+    expect(rechazado).toBe(true);
+    expect(service.contextoVerificado()).toBeNull();
+  });
+
+  it('no obtiene empresas si el servidor rechaza el JWT', () => {
+    const service = TestBed.inject(TenantContextService);
+    let rechazado = false;
+    service.listarEmpresasSeleccionables().subscribe({
+      error: () => { rechazado = true; }
+    });
+    const request = httpMock.expectOne(`${environment.apiUrl}/tenant-context/empresas`);
+    request.flush({}, { status: 401, statusText: 'Unauthorized' });
+    expect(rechazado).toBe(true);
+    expect(service.tieneContextoVerificado()).toBe(false);
+  });
+
 });
