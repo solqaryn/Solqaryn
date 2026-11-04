@@ -1,3 +1,8 @@
+## 2026-11-04 — Preparacion del gobierno para liberacion al entrar en VALIDANDO
+
+Autoridad viva: `docs/AUTOMATION_STATUS.md` y `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md`; nueva propuesta `STAGE_OWNERSHIP_MODE=AUTHOR_PROVENANCE_HANDOFF_V1`, con autor inmutable, owner por etapa, reserva exclusiva revisor, release idempotente con readback de Google Sheets y GitHub. Orden operativo: VALIDANDO ajena liberada -> EN_PROGRESO abandonada con lease libre -> PENDIENTE con dependencias LISTO -> auditoria read-only. Limites comerciales actuales 6/1/1 no cambian; seis Tasks autorizadas 4 Javier + 2 Alex, sin techo fisico interno mas alla de capacidad acreditada del proveedor. Requiere PR protegido, CI, revision formal, luego prompts nativos actualizados; las Tasks en VALIDANDO existentes no se migran sin prueba de lease.
+No introduce otra fuente de plan ni altera arquitectura ERP de produccion, seguridad RBAC, bases, QA/main/PROD. Rollback por revert protegido + reconciliacion de custodia institucional.
+
 ## 2026-11-02 — P1-005.A: frontera de administración empresarial (DEV)
 
 **Censo comercial propuesto 2026-11-04:** seis identidades individuales: Javier :00/:20/:30/:40 y Alex :10/:50. La Task Javier :30 nueva (ID `6aeacb7820ac8191b7d768a6f33dfa09`) está creada y PAUSADA, pendiente de PR de gobierno aprobado, CI exact-SHA, readback de Sheets y activación de proveedor. Antigua Alex :30 excluida. Los registros y conteos con fecha anterior son históricos; la autoridad prevalente está en `docs/AUTOMATION_STATUS.md`. WIP comercial 6/2/1 sin cambios.

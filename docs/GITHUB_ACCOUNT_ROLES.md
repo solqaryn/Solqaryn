@@ -3,6 +3,14 @@
 **Decisión expresa del propietario: 31 de octubre de 2026.**
 **Repositorio:** `solqaryn/Solqaryn`. **Rama protegida:** `dev`.
 
+
+## Norma propuesta - autor inmutable y revisor operativo por TASK_ID (2026-11-04)
+
+`AUTHOR_TASK_ID` del primer ejecutor se mantiene inmutable en PR, rama y evidencia, aunque al pasar a VALIDANDO se libere su cupo 1 tras lease libre y readback institucional. El reviewer adquiere `STAGE_OWNER_TASK_ID` solo mediante reserva exclusiva verificada, nunca por la mera seleccion. La unidad de independencia tecnica es `TASK_ID`: autor diferente del revisor y de cualquier contribuyente sustantivo que amerite nuevo cotejo. La identidad de GitHub sigue mandando para `APPROVED` formal; tecnicas cruzadas por Task ID no suplantan un login independiente. Si el revisor modifica codigo sustantivo y corresponde nueva revision, debe soltar su propio cupo al devolverlo a VALIDANDO y asignar una Task diferente.
+
+WIP comercial global actual 6, propietario activo 1, escritor activo 1. No se modifica seguridad, CODEOWNERS, branches protegidas ni permisos de GitHub. Norma propuesta hasta merge del PR y cambio autorizado de prompts nativos.
+
+
 ## Protocolo vigente de revisión técnica por TASK_ID — orden 2026-11-04
 
 La unidad de autoría funcional de una microtarea comercial es el `TASK_ID` físico autorizado y su evidencia de `PLAN_MAESTRO`/`BITACORA`, no la coincidencia del login GitHub. Una Task habilitada **distinta de la autora** puede revisar técnica y sustantivamente el PR de una Task que use la misma cuenta GitHub, comprobar diff, aislamiento multitenant/RBAC, checks y pruebas exact-SHA, registrar `TECH_REVIEW_PASS` o `REQUEST_CHANGES` con `TASK_ID_AUTOR != TASK_ID_REVISOR`, SHA y readback. Si todo cumple y los permisos y reglas protegidas lo permiten, la Task revisora puede efectuar el merge y el cierre `LISTO` después de CI postmerge exact-SHA y readback de `PLAN_MAESTRO`, `COLA` (fórmulas intactas) y `BITACORA`. **La Task autora no puede emitir aprobación técnica cruzada ni marcar como LISTO su propia microtarea.** Un traspaso de edición requiere lease libre, consentimiento/propiedad válida y ausencia de edición simultánea; revisión solo lectura no otorga permiso de escritura.

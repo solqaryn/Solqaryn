@@ -1,3 +1,9 @@
+## 2026-11-04 — Contrato de entrega sin bloqueo al autor (propuesta protegida)
+
+Orden del propietario: cuando una Task real entrega su microtarea desde EN_PROGRESO a VALIDANDO, debe liberar su unico cupo activo una vez documentado el release del lease y el readback de Plan, Bitacora y GitHub. La autoria TASK_ID sigue siendo inmutable. Un TASK_ID distinto puede adquirir la custodia de la revision con reserva exclusiva y, si procede, corregir y cerrar, o liberar otra vez cuando necesita un tercero. REVIEW_FIRST -> RECOVER -> CLAIM conserva el orden; WIP global seis incluye VALIDANDO y la Task autora no se autoaprueba. Trabajos historicos en VALIDANDO no se reasignan masivamente; se migran con evidencia caso a caso. No se altera el censo operativo actual de cuatro Javier/dos Alex ni el limite efectivo del proveedor; una futura capacidad fisica de 15 por cuenta requiere constatacion y autorizacion de IDs, no un tope interno ni creacion automatica.
+
+Alcance solo gobierno de Tasks, scripts y documentacion; sin cambios ERP, BD, API, frontend, QA/main/PROD ni secretos. Riesgo controlado por lease CAS, huella idempotente, readback; CI/regresion negativa y revision formal obligatorias para integrar. Rollback: revert del PR; los ownership ya migrados preservan autor/acta y se reconcilian uno por uno.
+
 ## 2026-11-02 — P1-005.A: frontera de administración empresarial (DEV)
 
 **Estado nuevo 2026-11-04:** Task `PRIMARY DEV 04 — JAVIER` :30, ID `6aeacb7820ac8191b7d768a6f33dfa09`, creada desde ChatGPT y pausada preventivamente antes de ser autorizada comercialmente. Se propone actualizar el inventario a cuatro Javier y dos Alex mediante PR protegido con revisión independiente; la antigua Alex :30 conserva su exclusión. Los límites WIP 6/2/1 no cambian y `docs/AUTOMATION_STATUS.md` sigue siendo la autoridad prevalente.

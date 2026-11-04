@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { validValidationRelease, isStageOwnedBy, reviewReleaseEligible, assertStageReleaseNegativeTests } from './automation-stage-ownership.mjs';
 
 const read = path => readFileSync(join(process.cwd(), path), 'utf8');
 const authority = read('docs/AUTOMATION_AUTHORITY.md');
@@ -19,6 +20,8 @@ const expected = {
   TASK_ASSIGNMENT_MODEL: 'OWNER_CONFIGURABLE',
   AUTOMATION_RUNTIME: 'ACTIVE_DEV',
   SCHEDULED_CHATGPT_TASKS_AUTHORIZED: '1',
+  STAGE_OWNERSHIP_MODE: 'AUTHOR_PROVENANCE_HANDOFF_V1',
+  REVIEW_RESERVATION_MODE: 'EXCLUSIVE_CAS_READBACK',
   VAEP_DISPATCH_AUTHORIZED: 'FALSE',
   JULES_WORKERS_AUTHORIZED: '0',
 };
@@ -68,6 +71,10 @@ export function validateDocuments(src) {
   if (!ownedCaps.every(x=>Number.isInteger(x)&&x===1)) errors.push('per-task scope cap mismatch');
   if (!activeWriteCaps.every(x=>Number.isInteger(x)&&x===1)) errors.push('single active editor cap mismatch');
   if (key(src.scope,'TASK_COUNT_LIMIT') !== 'PROVIDER_EFFECTIVE_CAPACITY') errors.push('Task count policy');
+  for (const [name,value] of [['STAGE_OWNERSHIP_MODE','AUTHOR_PROVENANCE_HANDOFF_V1'],
+                               ['REVIEW_RESERVATION_MODE','EXCLUSIVE_CAS_READBACK']]) {
+    if (key(src.contract,name)!==value) errors.push('contract '+name);
+  }
   if (key(src.scope,'PROJECT_SCOPE_LOCK') !== 'STRICT') errors.push('strict lock');
   if (!src.agents.includes('TASK_DESIGN=OWNER_CONFIGURABLE_TASK_SET')) errors.push('agents Task set policy');
   for (const [name,value] of Object.entries(approvalPolicy))
@@ -96,6 +103,20 @@ export function selectWork(tasks, stateById, account, activeReviewIds = new Set(
   // REVIEW_FIRST: same-login review is allowed ONLY across distinct TASK_IDs
   // with technical evidence; NEVER claim it as native GitHub APPROVED.
   const validTaskId = typeof taskId === 'string' && /^[a-f0-9]{32}$/i.test(taskId);
+  // A verified VALIDANDO release frees the author but retains global WIP.
+  // Only another TASK_ID with its own free slot can reserve the review.
+  // A proposed candidate NEVER implies an acquired lease or ownership.
+  const busy = validTaskId && tasks.some(t => isStageOwnedBy(t,taskId));
+  const availableStage = tasks.find(t =>
+    reviewReleaseEligible(t,taskId,activeReviewIds) &&
+    ['JAVIER_CHATGPT','ALEX_CHATGPT'].includes(t.authorAccount) &&
+    isUrl(t.prUrl) && t.exactHeadVerified === true &&
+    (t.authorAccount !== account ||
+      (t.technicalReviewAllowed === true && t.technicalEvidenceVerified === true &&
+       t.formalGithubApprovalRequested !== true)));
+  if (availableStage && ownershipReadbackVerified === true && !busy)
+    return {action:'REVIEW_RESERVATION_CANDIDATE',task:availableStage,
+      requiresExclusiveReviewLease:true,requiresOwnerReadback:true};
   const review = tasks.find(t => {
     const technical = t.authorAccount===account && validTaskId &&
       /^[a-f0-9]{32}$/i.test(t.authorTaskId||'') && t.authorTaskId!==taskId &&
@@ -111,6 +132,7 @@ export function selectWork(tasks, stateById, account, activeReviewIds = new Set(
   // REVIEW_FIRST also includes technical follow-up on the CURRENT TASK's own VALIDANDO.
   // This is NEVER an independent review or a grant to another Task of the same login.
   const ownValidating = tasks.find(t => t.state === 'VALIDANDO' &&
+    !validValidationRelease(t) &&
     typeof taskId === 'string' && /^[a-f0-9]{32}$/i.test(taskId) &&
     t.ownerAccount === account && t.ownerTaskId === taskId &&
     t.ownValidationContinuationAuthorized === true &&
@@ -124,11 +146,10 @@ export function selectWork(tasks, stateById, account, activeReviewIds = new Set(
     t.exclusiveScopeVerified === true && t.activeEditorVerifiedAbsent === true &&
     t.branchReadbackVerified === true && !t.conflictingClaim);
   if (own) return {action:'RESUME',task:own};
-  // No acquisition is allowed if this physical Task already owns any scope,
-  // whether EN_PROGRESO or VALIDANDO. Verify the COMPLETE ownership readback.
+  // A missing release receipt leaves VALIDANDO attached to its author.
   if(!validTaskId || ownershipReadbackVerified!==true)
     return {action:'NO_ELIGIBLE',reason:'OWNERSHIP_READBACK_REQUIRED'};
-  if(tasks.some(t=>(t.state==='EN_PROGRESO'||t.state==='VALIDANDO')&&t.ownerTaskId===taskId))
+  if(tasks.some(t=>isStageOwnedBy(t,taskId)))
     return {action:'NO_ELIGIBLE',reason:'TASK_ALREADY_OWNS_SCOPE'};
   // Foreign IN_PROGRESS: no unverified takeover or lost commits.
   const handoff = tasks.find(t => t.state === 'EN_PROGRESO' &&
@@ -212,6 +233,12 @@ export function validateProposedRun(p) {
     errors.push('actor_auth');
   if(!p.permissionVerified||!p.exactHeadVerified)errors.push('permission_or_head');
   if(p.operation==='WRITE'){
+    if(p.stageOwnershipLedgerReadbackVerified!==true) errors.push('stage_ledger_readback');
+    if(p.previousScopeWasValidating===true &&
+      (p.previousValidationReleaseReadbackVerified!==true ||
+       typeof p.previousScopeReleaseEventId!=='string' ||
+       p.previousScopeReleaseEventId.length<9))
+       errors.push('previous_validation_release_receipt');
     if(!validScope(p.scopeId)||!p.ownerAuthorized||!p.writePermissionVerified||
       !p.exclusiveScopeVerified||!p.createdExclusively||!p.branchReadbackVerified||
       p.conflictingClaim||!p.idempotencyKey||!p.branchName?.startsWith('work/solqaryn-'))
@@ -232,7 +259,8 @@ export function validateProposedRun(p) {
     if(!Number.isInteger(p.taskActiveWriteCount)||p.taskActiveWriteCount<0||
        p.taskActiveWriteCount>1||(!p.resumingExistingScope&&p.taskActiveWriteCount!==0)||
        p.sameTaskOtherScopeBeingEdited===true) errors.push('task_active_write');
-    // No second claim while the first is VALIDANDO or awaiting CI/review.
+    // An unreleased VALIDANDO still consumes the author slot. A verified
+    // release preserves the global WIP count while clearing that slot.
     if(p.resumingExistingScope && p.recoveringForeignScope===true &&
        (p.handoffAuthorized!==true || p.previousLeaseReleased!==true ||
         p.activeEditorVerifiedAbsent!==true || p.lastCommitVerified!==true ||
@@ -302,6 +330,7 @@ if(failures.length){
     mode:'ACTIVE_DEV',authorizationVerified:true,
     actorRole:'PRIMARY_01',actorAccount:'JAVIER_CHATGPT',
     actorTaskId:'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',ownershipReadbackVerified:true,
+    stageOwnershipLedgerReadbackVerified:true,
     permissionVerified:true,exactHeadVerified:true,
     operation:'WRITE',ownerAuthorized:true,writePermissionVerified:true,
     scopeId:'P0-012.A',exclusiveScopeVerified:true,createdExclusively:true,
@@ -336,6 +365,9 @@ if(failures.length){
     ['too many scopes owned',p=>p.taskOwnedScopeCount=2],
     ['already owns one in VALIDANDO',p=>{p.taskOwnedScopeCount=1;p.existingScopeState='VALIDANDO';}],
     ['missing ownership readback readback',p=>p.ownershipReadbackVerified=false],
+    ['missing stage ownership ledger',p=>p.stageOwnershipLedgerReadbackVerified=false],
+    ['unproven validation release',p=>{p.previousScopeWasValidating=true;
+      p.previousValidationReleaseReadbackVerified=false;}],
     ['missing task scope count',p=>delete p.taskOwnedScopeCount],
     ['multiple active editors',p=>p.taskActiveWriteCount=2],
     ['negative per task scope count',p=>p.taskOwnedScopeCount=-1],
@@ -522,7 +554,33 @@ if(failures.length){
   if(selectWork([idle,alexPR],{},'JAVIER_CHATGPT',new Set(),'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',true).action!=='REVIEW') throw Error('Foreign handoff bypassed review');
   if(selectWork([options[0],ownValidating],{'P0-012.A':'LISTO'},
      'JAVIER_CHATGPT',new Set(),idOwnValidating,true).action==='CLAIM')
-    throw Error('Second CLAIM accepted with first VALIDANDO');
+    throw Error('Second CLAIM accepted with unreleased VALIDANDO');
+  // Strict review-first reservation on a released delivery.
+  const released={...sameLoginPeer,originalAuthorTaskId:idOwnValidating,
+    stageReleaseRequested:true,stageReleaseReceiptVerified:true,
+    stageOwnerTaskId:null,ownerTaskId:null,reviewReservationTaskId:null,
+    releaseEventId:'verified-release-unique',provenancePreserved:true,
+    prHeadReadbackVerified:true,deliveryTestsVerified:true,
+    previousLeaseReleased:true,releaseActiveEditorAbsentVerified:true,
+    githubReadbackVerified:true,planReadbackVerified:true,
+    bitacoraReadbackVerified:true,releaseVersionVerified:true,
+    noConflictingClaim:true,exactHeadVerified:true};
+  const openReady={'P0-012.A':'LISTO'};
+  if(selectWork([released,options[0]],openReady,'JAVIER_CHATGPT',
+      new Set(),'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',true).action!=='REVIEW_RESERVATION_CANDIDATE')
+    throw Error('Released VALIDANDO did not outrank PENDIENTE');
+  if(selectWork([released,options[0]],openReady,'JAVIER_CHATGPT',
+      new Set(),idOwnValidating,true).action==='REVIEW_RESERVATION_CANDIDATE')
+    throw Error('Author selected own VALIDANDO review');
+  if(selectWork([released,options[0]],openReady,'JAVIER_CHATGPT',
+      new Set([released.id]),'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',true)
+      .action==='REVIEW_RESERVATION_CANDIDATE')
+    throw Error('Busy review reservation was selected');
+  if(selectWork([released,options[0]],openReady,'JAVIER_CHATGPT',
+      new Set(),'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',false)
+      .action==='REVIEW_RESERVATION_CANDIDATE')
+    throw Error('Review reserved without ownership readback');
+
   if(selectWork([options[0]],{'P0-012.A':'LISTO'},
      'JAVIER_CHATGPT',new Set(),idOwnValidating,false).action==='CLAIM')
     throw Error('CLAIM accepted without ownership readback');
@@ -601,7 +659,8 @@ if(failures.length){
     throw Error('Ranking improperly grants handoff authorization');
   if(selectNextScheduledFreeTask(candidates,'bad','JAVIER_CHATGPT').action!=='NO_GO')
     throw Error('Invalid clock allowed handoff');
-  console.log('SOLQARYN WIP 6/1/1 PASS: strict one assigned scope even VALIDANDO, verified ownership and no self-approval');
+  assertStageReleaseNegativeTests();
+  console.log('SOLQARYN WIP 6/1/1 + STAGE_RELEASE PASS: released VALIDANDO frees its author only after ledger readback; reviews are exclusive and non-self');
 }else{
   console.log('SOLQARYN automation authority PASS');
 }

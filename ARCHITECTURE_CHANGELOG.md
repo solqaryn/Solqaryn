@@ -1,3 +1,11 @@
+## 2026-11-04 — Propuesta de propiedad de etapas y revision exclusiva (DEV governance)
+
+- Se separan autoria inmutable y custodia operativa, y se agregan gates fail-closed para release validado de `EN_PROGRESO` a `VALIDANDO`, lease exclusivo de revisor `TASK_ID` ajeno y readback GitHub/Sheets.
+- Se mantiene WIP global 6, un scope bajo responsabilidad activa por Task y un escritor. Los `VALIDANDO` sin responsable cuentan para WIP; no bloquean artificialmente al autor una vez confirmado el release.
+- Alcance: `docs/AUTOMATION_*`, `AGENTS.md`, `GITHUB_ACCOUNT_ROLES.md`, scripts de validacion y test negativo. Sin cambios en Domain, Application, Infrastructure, API, frontend, JWT/RBAC, datos ERP o despliegues.
+- Riesgo de carrera entre Google Sheets y GitHub: no hay transaccion cruzada, se exige lease, version, evento idempotente y doble readback; fallo implica owner anterior bloqueado hasta reconciliacion. Rollback: revert protegido del contrato y actualizacion gradual de prompts.
+- Las seis Tasks fisicas actuales permanecen autorizadas; capacidad futura no presupone alta. Integrar unicamente con revision formal y CI exact-SHA.
+
 ## 2026-11-02 — P1-005.A: frontera de administración empresarial (DEV)
 
 - API multiempresa: `UnscopedCommercialTenantGuardMiddleware` habilita exclusivamente rutas administrativas `usuarios`, `roles` y `permisos/matriz` con método y path exactos, identidad JWT, membresía y rol administrador verificados MySQL, permiso específico y marca tenant validada. Esta vía no abre rutas de ERP comerciales, gestión global ni catálogo de permisos.

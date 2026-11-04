@@ -1,3 +1,10 @@
+## 2026-11-04 — Control plane de Tasks: custodia por etapa con autoria inmutable (PR candidato)
+
+- El estado comercial sigue en el mismo `PLAN_MAESTRO`, `COLA` y `BITACORA` institucionales, sin nuevos almacenes, endpoints, DTO, DDL, credenciales ni movimientos de DEV/QA/PROD.
+- `EN_PROGRESO -> VALIDANDO` entrega la custodia, verifica CI/pruebas disponibles y libera el lease y el cupo de su autor original tras readback documentado. La entrega mantiene su identidad GitHub/TASK_ID autor y sigue consumiendo WIP global; no libera dependencias hasta LISTO.
+- Control de concurrencia: `AUTHOR_TASK_ID` inmutable, `STAGE_OWNER_TASK_ID` mutable por transicion verificada y `REVIEW_RESERVATION_TASK_ID` exclusivo con compare-and-set/version y readback. Un review solo lectura es distinto de la toma de etapa. Autoaprobacion prohibida.
+- La implementacion operacional requiere fusion protegida del contrato, prompt nativo de cada Task y migracion controlada por microtarea preexistente. Rollback de gobierno por revert protegido + mantenimiento de la ultima custodia auditable. El limite fisico depende del proveedor; quedan seis IDs autorizados y WIP 6/1/1.
+
 ## 2026-11-02 — P1-005.A: frontera de administración empresarial (DEV)
 
 - API multiempresa: `UnscopedCommercialTenantGuardMiddleware` habilita exclusivamente rutas administrativas `usuarios`, `roles` y `permisos/matriz` con método y path exactos, identidad JWT, membresía y rol administrador verificados MySQL, permiso específico y marca tenant validada. Esta vía no abre rutas de ERP comerciales, gestión global ni catálogo de permisos.

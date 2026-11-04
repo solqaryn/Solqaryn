@@ -1,3 +1,10 @@
+## 2026-11-04 — Propuesta de liberacion VALIDANDO y autonomia comercial futura (gobierno DEV)
+
+- Conciliacion Sheets de Alex :10/:50: `TAREAS_PROGRAMADAS!M3,M6=HABILITADA_REPORTADA`, `CONFIG!B43,B45` y `BITACORA!571` con readback PASS; se preserva la diferencia entre declaracion del propietario desde su cuenta y acceso nativo del conector Javier. No repetir pruebas ni editar Tasks Alex.
+- Gobierno candidato: separar `AUTHOR_TASK_ID` inmutable de owner operativo por etapa, liberar el cupo del autor solo tras entrega EN_PROGRESO -> VALIDANDO con lease y readback de GitHub y Sheets. Revisores diferentes adquieren la custodia con reserva exclusiva; el segundo editor esta prohibido y si corrige sustantivamente puede requerir otra revision independiente.
+- WIP 6/1/1 actual, REVIEW_FIRST -> RECOVER -> CLAIM, CI y merge protegidos sin atajos. Permitir un roster fisico configurable sujeto a provider capacity y autorizacion de nuevas Task IDs, sin convertir los seis IDs actuales en techo interno de crecimiento.
+- Modificacion acotada a documentos de gobierno y verificador + pruebas negativas, no datos comerciales, ERP, API, frontend, BD, QA/main/PROD. Las reglas propuestas son inactivas hasta PR protegido fusionado y prompts nativos adaptados.
+
 ## 2026-11-04 — P1-012.A: regresión de alta con administrador registrado (DEV)
 
 - Javier :00, TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`, tomó el único scope P1-012.A con WIP 6/1/1, dependencia P0-012.B LISTO y COLA!G48=SI. Rama determinista `work/solqaryn-p1-012-a` creada desde `dev@4ac3fe76cc7f98c40a2aa1160c92560e1aab6bb2` con readback GitHub y Sheets.
