@@ -1,5 +1,5 @@
 import { Injectable, computed, signal } from '@angular/core';
-import { catchError, map, of } from 'rxjs';
+import { Observable, catchError, finalize, map, of, shareReplay } from 'rxjs';
 import { PermisoService } from '../../services/permiso.service';
 import { TenantContextService } from './tenant-context.service';
 
@@ -39,6 +39,11 @@ export class PermisosRuntimeService {
   // Una petición de permisos anterior nunca puede reemplazar ni revocar la
   // autorización de la empresa seleccionada posteriormente.
   private versionCarga = 0;
+  private cargaEnCurso: {
+    empresaId: number;
+    version: number;
+    solicitud: Observable<boolean>;
+  } | null = null;
 
   readonly esAdministrador = computed(() =>
     this._cargado() &&
@@ -57,11 +62,17 @@ export class PermisosRuntimeService {
     private tenantContext: TenantContextService
   ) {}
 
-  cargar() {
+  cargar(): Observable<boolean> {
     const empresaId = this.tenantContext.empresaIdVerificada();
     if (!empresaId) {
       this.limpiar();
       return of(false);
+    }
+
+    // Guard y barra de navegación pueden solicitar simultáneamente los mismos
+    // permisos. Compartir un único HTTP evita una falsa denegación entre guards.
+    if (this.cargaEnCurso?.empresaId === empresaId) {
+      return this.cargaEnCurso.solicitud;
     }
 
     // Revocar caches y rutas en memoria ANTES de volver a pedir permisos.
@@ -69,7 +80,7 @@ export class PermisosRuntimeService {
     const version = ++this.versionCarga;
     this.limpiarEstado();
 
-    return this.permisoService.getMisPermisos(empresaId).pipe(
+    const solicitud = this.permisoService.getMisPermisos(empresaId).pipe(
       map((res) => {
         // Una respuesta antigua no puede borrar los permisos del nuevo tenant.
         if (version !== this.versionCarga ||
@@ -107,12 +118,21 @@ export class PermisosRuntimeService {
           this._cargado.set(true);
         }
         return of(false);
-      })
+      }),
+      finalize(() => {
+        if (this.cargaEnCurso?.version === version) {
+          this.cargaEnCurso = null;
+        }
+      }),
+      shareReplay({ bufferSize: 1, refCount: true })
     );
+    this.cargaEnCurso = { empresaId, version, solicitud };
+    return solicitud;
   }
 
   limpiar(): void {
     this.versionCarga++;
+    this.cargaEnCurso = null;
     this.limpiarEstado();
   }
 
