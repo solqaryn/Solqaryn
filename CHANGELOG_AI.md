@@ -1,3 +1,10 @@
+## 2026-11-04 — P1-009.A: reutilización de plantillas y unicidad de roles (DEV)
+
+- Scope exclusivo `P1-009.A`: Task Javier :30 `6aeacb7820ac8191b7d768a6f33dfa09`, GitHub `jmejia31`, rama `work/solqaryn-p1-009-a`, base `dev@30bf43749a8eb7b164a065f5aabebfa024aa0faa`. Dependencia `P0-012.B=LISTO`.
+- Se reutilizan el aislamiento por `EmpresaId`, las plantillas `EsSistema` empresariales y el índice único global `NombreNormalizado` integrados por el PR #3669. Sin cambios al runtime, RBAC, MySQL ni migraciones.
+- Nueva suite dirigida `P1009ARoleTemplateUniquenessTests` comprueba A/B, denegación de rol ajeno/global/huérfano, configuración EF de unicidad y bloqueo de nombre normalizado duplicado antes de persistir. Acta `docs/P1-009-A-ROLE-TEMPLATE-UNICIDAD-DEV.md`.
+- Pendiente: ejecución real CI exact SHA, Scope Lock confiable, prueba dirigida, integración protegida y readback institucional. No declarar PASS ni LISTO por publicar el diff; P1-009.B es scope posterior.
+
 ## 2026-11-04 — Nueva cuarta Task de Javier (:30), ampliación de censo bajo revisión protegida
 
 - Por orden del propietario se creó `SOLQARYN — PRIMARY DEV 04 — JAVIER` con identidad propia en ChatGPT, hora `:30` en `America/Tegucigalpa` y contrato 2.0; quedó PAUSADA como control preventivo hasta integrar su nueva autorización y verificarla individualmente.
