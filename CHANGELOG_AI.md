@@ -1,3 +1,9 @@
+## 2026-11-04 — P1-006.B: certificación negativa del selector empresarial (en validación CI)
+
+- Task Javier :00, ID `6adbb9fff1548191a1bd5b30d9e9984a`, reclama rama determinista `work/solqaryn-p1-006-b` desde `dev@376d90d5663a` después de certificar y cerrar P1-006.A con CI postmerge 22/22 SUCCESS.
+- Se agrega `P1006BSelectorEmpresarialAislamientoTests.cs`: dos identidades distintas, membresías propias y ajenas, revocación, sesión sin JWT, cuenta desactivada y protección del contrato GET `/tenant-context/empresas`.
+- Sólo pruebas y documentación. No amplía JWT/RBAC ni expone catálogo global; no modifica infraestructura, migraciones, secretos ni QA/main/PROD. Se exige prueba xUnit dirigida y gates CI exact-SHA antes de VALIDANDO/merge/LISTO.
+
 ## 2026-11-04 — P1-009.B: certificación HTTP 4xx de rol ajeno/global (DEV)
 
 - Task física Javier :30 `6aeacb7820ac8191b7d768a6f33dfa09` reclama P1-009.B después de comprobar P1-009.A=LISTO en PLAN/COLA/BITACORA, allowlist de seis, Skill canónica y exclusividad. Rama `work/solqaryn-p1-009-b` desde `dev@edc7be2c36abd903318dab9cc96489a668207817`; WIP 4/6 antes del claim.
