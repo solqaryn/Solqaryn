@@ -249,7 +249,7 @@ public sealed class PlataformaGestionMvpSecurityTests
     // P1-008.A: consultar inactivas y reactivar solo la membresía elegida,
     // sin conceder permisos globales ni alterar una membresía de otra empresa.
     [Fact]
-    public async Task MembresiaInactivaSeListaYReactivaSinModificarEmpresaB()
+    public async Task P1008A_MembresiaInactivaSeListaYReactivaSinModificarEmpresaB()
     {
         var t = await PrepararAsync();
         await using (t.Db)
@@ -281,7 +281,7 @@ public sealed class PlataformaGestionMvpSecurityTests
     }
 
     [Fact]
-    public async Task ReactivarRolGlobalDeOtraEmpresaSeRechazaSinMutacion()
+    public async Task P1008A_ReactivarRolGlobalDeOtraEmpresaSeRechazaSinMutacion()
     {
         var t = await PrepararAsync();
         await using (t.Db)
@@ -302,7 +302,7 @@ public sealed class PlataformaGestionMvpSecurityTests
     }
 
     [Fact]
-    public async Task ReactivacionRequiereAutoridadGlobalVigente()
+    public async Task P1008A_ReactivacionRequiereAutoridadGlobalVigente()
     {
         var t = await PrepararAsync(global: false);
         await using (t.Db)
