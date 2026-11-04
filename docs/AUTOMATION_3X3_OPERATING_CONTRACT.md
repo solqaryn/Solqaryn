@@ -41,7 +41,8 @@ Este control verifica un ciclo comercial real de extremo a extremo, **no** una c
 - Las pruebas #3751, #3753 y #3757 ocurrieron ANTES de la separación institucional de roles del 31-10-2026. Son evidencia verificable de funcionamiento entonces, no autorización actual para que Javier o Alex publiquen nuevos PR desde este asistente.
 - El self-test de scripts/validate-dual-task-configuration.mjs incluye casos negativos de colisión de scope, permisos ausentes, rama sin readback, WIP excedido, revisión propia, corrección no revisada, fallo de Sheets y dependencias. Un test de modelo NO sustituye una ejecución física concurrente de dos Tasks.
 
-**Criterio de certificación:** EVIDENCIA_CICLO_REAL_PREEXISTENTE=PASS. Para la certificación integral M3.3, cada criterio debe tener una prueba atribuible y las negativas simuladas deben distinguirse de un ensayo nativo. Si no está acreditada una doble toma física o caída real de Sheets, declarar NO_ACREDITADO por control y no inventar PASS global. AUTOMATION_RUNTIME=ACTIVE_DEV describe autoridad lógica, no el valor is_enabled. En esta revisión las tres Tasks Javier están pausadas; Alex :10/:50 constaban pausadas en último readback documentado. La confirmación humana de eliminación Alex :30 no es una lectura nativa de esta sesión.
+**Criterio de certificación actualizado:** EVIDENCIA_CICLO_REAL_PREEXISTENTE=PASS. Los negativos se verifican mediante invariantes probados, self-tests fail-closed y evidencias GitHub/Sheets preexistentes; no se afirma que existieron simultaneidad real o cortes físicos si no ocurrieron. El PASS integral exige revisión independiente de cualquier cambio de gobierno, CI, merge protegido y readback. AUTOMATION_RUNTIME=ACTIVE_DEV es autoridad lógica, no habilitación física; las tres Tasks Javier constan pausadas en lectura nativa y las dos Alex figuran pausadas según último readback institucional. La Task Alex :30 sigue excluida.
+
 ## Enmienda operativa propuesta — certificación automática CI en DEV (2026-10-30)
 
 **Vigencia condicionada:** esta norma solo sustituye la revisión formal para futuros PR comerciales ordinarios cuando el changeset esté fusionado por PR protegido en `dev`, el job requerido `verify-solqaryn-project-scope` ejecute la certificación contra el SHA exacto y exista readback de CI. Durante la implantación/bootstrap de este PR normativo sigue exigida revisión formal realmente independiente. No se simula un `APPROVED` humano: `AUTO_CERT=PASS` significa exclusivamente certificación técnica de GitHub Actions.
@@ -96,11 +97,10 @@ No se garantiza inicio ni duracion ininterrumpida por programacion nominal de Ch
 
 ## Seleccion y continuidad
 
-Orden de evaluación de trabajo para los actores expresamente habilitados y autorizados, sujeto a la separación de cuentas GitHub vigente:
-1. Reanudar trabajo propio incompleto con rama/PR y evidencia, si no hay otro editor.
-2. Revisar `VALIDANDO` que provenga de otra identidad verificable y no tenga revisor activo; confirmar PR GitHub y permisos efectivos antes de asumir la revisión.
-3. Tomar `PENDIENTE` con **todas** sus dependencias en `LISTO` solo si WIP global es menor que 6 y se dispone de cupo propio. Primera tarea sin otro scope asignado; segunda únicamente si la primera está `VALIDANDO` sin edición activa, el actor verificó `REVIEW_FIRST` y no hay revisión ajena abordable. Nunca mantener dos trabajos en escritura activa desde la misma Task. Prioridad P0 antes
-   que P1 y orden del Plan Maestro dentro de una misma prioridad.
+Orden de selección **vigente** para las cinco Tasks autorizadas (ningún nombre de Task transfiere credenciales ni sustituye `docs/GITHUB_ACCOUNT_ROLES.md`):
+1. **REVIEW_FIRST:** seleccionar primero `VALIDANDO` de autor independiente, con PR y derecho de revisión real, sin revisor activo. Si tiene revisor asignado inactivo, exigir verificación de lease libre antes de tomarlo. Diagnosticar y solicitar correcciones; la ejecutora institucional publica commits y el SHA final se vuelve a revisar.
+2. **RECOVER:** después, reanudar `EN_PROGRESO` propio con rama real, lectura posterior y sin otro editor. Un `EN_PROGRESO` de otra Task solo admite traspaso expresamente autorizado, lease anterior liberado, último commit/branch verificados, permiso y cesión de propietario comprobados, sin editor activo. Nunca asumir libertad solo por inactividad aparente.
+3. **CLAIM:** después, tomar `PENDIENTE` elegible con todas las dependencias `LISTO`, rama atómica exclusiva y permisos propios; WIP máximo 6/2/1, segundo scope solo si el anterior está `VALIDANDO` sin edición y REVIEW_FIRST agotado. Prioridad P0 antes que P1 y luego orden del Plan Maestro.
 4. Objetivo de medición: 6 microtareas comerciales realmente LISTO por hora entre Tasks autorizadas, nunca garantía de resultado. Tras cada LISTO comprobado, recargar PLAN_MAESTRO/COLA y continuar si hay espacio. Un impedimento externo (p. ej. Vercel CANCELED en P0-001.B) detiene solo ese scope; no inmoviliza candidatos independientes. No contar diagnóstico, PR documental NO_GO, auditoría ni ejecución horaria como LISTO.
 5. Si no hay elegibles, dejar como máximo un evento deduplicado
    `SIN_TRABAJO_ELEGIBLE` y finalizar esa ejecución.
@@ -286,5 +286,8 @@ No crear IDs nativos ficticios.
 10. Perdida de permisos o de Google Sheets: bloquear solo operación afectada;
     reconciliar desde pruebas reales.
 
-La certificacion requiere artefactos efectivos, no porcentajes o campos de
-RUN_ID imposibles. El contrato no impone una cantidad ni reparto fijo; la existencia de una Task no la autoriza comercialmente.
+La certificacion requiere artefactos efectivos, no porcentajes o campos de RUN_ID imposibles. El contrato no impone una cantidad ni reparto fijo; la existencia de una Task no la autoriza comercialmente.
+
+**Acreditación negativa no destructiva:** un caso de colisión o pérdida de permisos de Sheets se evalúa mediante regresiones deterministas fail-closed del validador y los readbacks nativos ya existentes de claims, commits, PR, revisión, CI y Sheets. No es necesario provocar físicamente dos Tasks en ejecución ni cortar acceso a Sheets para comprobar una protección, pero los tests no se presentarán como incidentes nativos. Un indicador `PASS` integral requiere revisión protegida de esta norma, CI exact-SHA de selector/negativas y conciliación institucional. Los diez minutos entre arranques no garantizan ausencia de solapamiento.
+
+**Regla consolidada:** REVIEW_FIRST -> RECOVER propio -> RECOVER ajeno solo con traspaso autorizado y lease liberado -> CLAIM elegible. Ningún Task ID puede autoevaluar sus propios cambios; dos Task IDs asociados al mismo login GitHub tampoco constituyen aprobación independiente.
