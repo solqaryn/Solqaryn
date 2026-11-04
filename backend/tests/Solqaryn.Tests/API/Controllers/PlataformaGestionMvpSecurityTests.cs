@@ -246,6 +246,78 @@ public sealed class PlataformaGestionMvpSecurityTests
         }
     }
 
+    // P1-008.A: consultar inactivas y reactivar solo la membresía elegida,
+    // sin conceder permisos globales ni alterar una membresía de otra empresa.
+    [Fact]
+    public async Task P1008A_MembresiaInactivaSeListaYReactivaSinModificarEmpresaB()
+    {
+        var t = await PrepararAsync();
+        await using (t.Db)
+        {
+            var enA = new UsuarioEmpresa(t.EmpresaAdmin.Id, t.EmpresaA.Id, t.RolEmpresa.Id);
+            enA.Desactivar();
+            t.Db.Set<UsuarioEmpresa>().Add(enA);
+            await t.Db.SaveChangesAsync();
+
+            var listado = Assert.IsType<OkObjectResult>(
+                await t.Controller.Miembros(t.EmpresaA.Id, CancellationToken.None));
+            var payload = System.Text.Json.JsonSerializer.Serialize(listado.Value);
+            Assert.Contains("adminempresa", payload);
+            Assert.Contains("\"activa\":false", payload);
+            Assert.False(enA.Activa);
+
+            Assert.IsType<OkObjectResult>(
+                await t.Controller.CambiarEstadoMembresia(t.EmpresaA.Id, t.EmpresaAdmin.Id,
+                    new() { Activa = true }, CancellationToken.None));
+
+            Assert.True(enA.Activa);
+            var enB = await t.Db.Set<UsuarioEmpresa>().SingleAsync(
+                m => m.EmpresaId == t.EmpresaB.Id && m.UsuarioId == t.EmpresaAdmin.Id);
+            Assert.True(enB.Activa);
+            Assert.Equal(t.RolAdmin.Id, enB.RolId);
+            Assert.Contains(await t.Db.Set<RegistroAuditoria>().ToListAsync(),
+                a => a.EmpresaId == t.EmpresaA.Id);
+        }
+    }
+
+    [Fact]
+    public async Task P1008A_ReactivarRolGlobalDeOtraEmpresaSeRechazaSinMutacion()
+    {
+        var t = await PrepararAsync();
+        await using (t.Db)
+        {
+            var enA = new UsuarioEmpresa(t.EmpresaAdmin.Id, t.EmpresaA.Id, t.RolPlataforma.Id);
+            enA.Desactivar();
+            t.Db.Set<UsuarioEmpresa>().Add(enA);
+            await t.Db.SaveChangesAsync();
+
+            Assert.IsType<BadRequestObjectResult>(
+                await t.Controller.CambiarEstadoMembresia(t.EmpresaA.Id, t.EmpresaAdmin.Id,
+                    new() { Activa = true }, CancellationToken.None));
+            Assert.False(enA.Activa);
+            Assert.True((await t.Db.Set<UsuarioEmpresa>().SingleAsync(
+                m => m.EmpresaId == t.EmpresaB.Id && m.UsuarioId == t.EmpresaAdmin.Id)).Activa);
+            Assert.Empty(await t.Db.Set<RegistroAuditoria>().ToListAsync());
+        }
+    }
+
+    [Fact]
+    public async Task P1008A_ReactivacionRequiereAutoridadGlobalVigente()
+    {
+        var t = await PrepararAsync(global: false);
+        await using (t.Db)
+        {
+            Assert.IsType<ForbidResult>(
+                await t.Controller.Miembros(t.EmpresaB.Id, CancellationToken.None));
+            Assert.IsType<ForbidResult>(
+                await t.Controller.CambiarEstadoMembresia(t.EmpresaB.Id, t.EmpresaAdmin.Id,
+                    new() { Activa = false }, CancellationToken.None));
+            Assert.True((await t.Db.Set<UsuarioEmpresa>().SingleAsync(
+                m => m.EmpresaId == t.EmpresaB.Id && m.UsuarioId == t.EmpresaAdmin.Id)).Activa);
+            Assert.Empty(await t.Db.Set<RegistroAuditoria>().ToListAsync());
+        }
+    }
+
     [Fact]
     public async Task EmpresaInactivaNoSeReactivaSinAdminYLaEdicionDeNombreEsAuditada()
     {

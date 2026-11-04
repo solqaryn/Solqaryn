@@ -4966,3 +4966,9 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Actualización de procedencia del PR #3838: después de incorporar el gobierno protegido #3837, se reconciliaron el HEAD activo de `dev@30bf43749a8eb7b164a065f5aabebfa024aa0faa` y la base GitHub del PR en `dev`, sin alterar ningún archivo de gobierno. La entrega continúa EN_PROGRESO; sólo CI del HEAD siguiente puede certificar su seguridad y pruebas.
 
 - Corrección causal P1-006.A tras inspección del artefacto E2E run 41785235514: HTTP 500 de `GET /tenant-context/empresas` causado por proyección LINQ `new UsuarioTenantScopeActual(...).EmpresaId` no traducible como subquery `Contains` en MySql.EntityFrameworkCore 10.0.9. `UsuarioScopeService` materializa exclusivamente scopes JWT/tenant válidos, deduplica IDs autorizados y consulta nombres con esos IDs; sin alterar RBAC ni usar catálogo global. Nueva CI exact-SHA/E2E y AUTO_CERT pendientes; no certificar hasta PASS.
+
+## 2026-11-04 — P1-008.A: regresiones de consulta y reactivación de membresías (DEV)
+
+- Scope P1-008.A asignado únicamente a Task Javier :40 (ID `6adc2e55f47c81919f6374e561687076`) mediante rama exclusiva `work/solqaryn-p1-008-a` desde `dev@30bf43749a8eb7b164a065f5aabebfa024aa0faa`; `P0-012.B=LISTO`. No se reclaman otras microtareas.
+- Se reutiliza el controller/servicio existente para GET de membresías inactivas y PUT de reactivación por par `EmpresaId+UsuarioId`; no se modifica código de producción. Regresión A/B: reactivar A conserva B y su rol; denegar rol global como membresía empresarial; denegar actor sin autoridad global. Suite dirigida pendiente de CI exact-SHA; no se afirma E2E ni despliegue.
+- Acta `docs/P1-008-A-REACTIVACION-MEMBRESIAS-DEV.md`. Arquitectura: SIN_CAMBIO. Datos/migración/secretos: SIN_CAMBIO. Cierre solo después de checks, Scope Lock, merge protegido y readback institucional; `LISTO` NO acreditado.
