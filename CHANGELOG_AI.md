@@ -1,3 +1,9 @@
+## 2026-11-04 — P1-014.A: flujo guiado comercial de alta (DEV)
+
+- Javier :00 (TASK_ID 6adbb9fff1548191a1bd5b30d9e9984a) reclamó P1-014.A con WIP 6/1/1 y lectura posterior de PLAN_MAESTRO fila 52, COLA y BITACORA fila 580. Rama work/solqaryn-p1-014-a desde dev@89b3687d14336734788bda26e2e187f0eea763c2.
+- Asistente Angular en tres pasos (empresa, administrador, revisión/confirmación) con validación, navegación accesible, contraseña omitida del resumen, control de permiso comercial y reuso del backend protegido, sin nuevas rutas o activación de flags.
+- Suite de regresiones frontend P1014A incorporada; no atribuir PASS sin CI real. Autor no se autoaprueba ni marca LISTO; requeridos merge protegido, CI postmerge y cierre cruzado.
+
 ## 2026-11-04 — P1-012.A: regresión de alta con administrador registrado (DEV)
 
 - Javier :00, TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`, tomó el único scope P1-012.A con WIP 6/1/1, dependencia P0-012.B LISTO y COLA!G48=SI. Rama determinista `work/solqaryn-p1-012-a` creada desde `dev@4ac3fe76cc7f98c40a2aa1160c92560e1aab6bb2` con readback GitHub y Sheets.
