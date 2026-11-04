@@ -4924,3 +4924,5 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 
 
 - Actualización de procedencia del PR #3838: después de incorporar el gobierno protegido #3837, se reconciliaron el HEAD activo de `dev@30bf43749a8eb7b164a065f5aabebfa024aa0faa` y la base GitHub del PR en `dev`, sin alterar ningún archivo de gobierno. La entrega continúa EN_PROGRESO; sólo CI del HEAD siguiente puede certificar su seguridad y pruebas.
+
+- Corrección causal P1-006.A tras inspección del artefacto E2E run 41785235514: HTTP 500 de `GET /tenant-context/empresas` causado por proyección LINQ `new UsuarioTenantScopeActual(...).EmpresaId` no traducible como subquery `Contains` en MySql.EntityFrameworkCore 10.0.9. `UsuarioScopeService` materializa exclusivamente scopes JWT/tenant válidos, deduplica IDs autorizados y consulta nombres con esos IDs; sin alterar RBAC ni usar catálogo global. Nueva CI exact-SHA/E2E y AUTO_CERT pendientes; no certificar hasta PASS.
