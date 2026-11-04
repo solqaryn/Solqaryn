@@ -1,3 +1,10 @@
+## 2026-11-04 — P1-007.A: aislamiento de permisos y rutas ante cambio de tenant (DEV)
+
+- `PermisosRuntimeService` revoca capacidades, rutas, modo administrador y cache de permisos antes de cada nueva consulta, e identifica cada solicitud con una versión de selección para rechazar respuestas HTTP tardías de otra empresa.
+- `esAdministrador` y `cargado` quedan condicionados al tenant efectivamente verificado y al EmpresaId de los permisos, impidiendo mostrar autorización de A cuando el usuario solicita B.
+- Pruebas frontend dirigidas: ocultación inmediata de rutas/admin al cambiar empresa; respuesta tardía de A en SUCCESS o ERROR no sobrescribe ni borra permisos de B. Permanecen JWT/guards, autorización y aislamiento final en backend.
+- Alcance: Angular frontend servicio de permisos y tests. Sin endpoints, DTO, DB, migraciones, datos productivos, secretos, QA/main/PROD, proveedores ni cambios de gobierno. Reversión: revert del commit vía PR protegido, preservando evidencia.
+
 ## 2026-11-04 — Nueva cuarta Task de Javier (:30), ampliación de censo bajo revisión protegida
 
 - Por orden del propietario se creó `SOLQARYN — PRIMARY DEV 04 — JAVIER` con identidad propia en ChatGPT, hora `:30` en `America/Tegucigalpa` y contrato 2.0; quedó PAUSADA como control preventivo hasta integrar su nueva autorización y verificarla individualmente.
