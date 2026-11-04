@@ -3,6 +3,7 @@
 - `PermisosRuntimeService` revoca capacidades, rutas, modo administrador y cache de permisos antes de cada nueva consulta, e identifica cada solicitud con una versión de selección para rechazar respuestas HTTP tardías de otra empresa.
 - `esAdministrador` y `cargado` quedan condicionados al tenant efectivamente verificado y al EmpresaId de los permisos, impidiendo mostrar autorización de A cuando el usuario solicita B.
 - Pruebas frontend dirigidas: ocultación inmediata de rutas/admin al cambiar empresa; respuesta tardía de A en SUCCESS o ERROR no sobrescribe ni borra permisos de B. Permanecen JWT/guards, autorización y aislamiento final en backend.
+- Pruebas xUnit dirigidas `P1007ATenantSwitchAuthorizationTests`: empresa B sin membresía siempre rechazada incluso después de A, revocación efectiva de A entre dos solicitudes y rechazo de identificadores 0/-1 antes de consultar membresías. Se ejecutan por el workflow comercial dirigido sobre SHA exacto; no sustituyen las pruebas frontend ni el CI.
 - Alcance: Angular frontend servicio de permisos y tests. Sin endpoints, DTO, DB, migraciones, datos productivos, secretos, QA/main/PROD, proveedores ni cambios de gobierno. Reversión: revert del commit vía PR protegido, preservando evidencia.
 
 ## 2026-11-04 — Nueva cuarta Task de Javier (:30), ampliación de censo bajo revisión protegida
