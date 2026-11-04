@@ -4920,3 +4920,9 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Acta `docs/P1-001-B-CERTIFICACION-ROL-ENTRE-TENANTS-DEV.md`. Sin mutaciones del ERP, MySQL, frontend, API, secretos, QA/main/PROD. Estado candidato sujeto a CI exact SHA, revisión independiente, merge protegido y readback; LISTO NO acreditado.
 
 - CI_PROVENIENCIA_DIRECT_HEAD_P1001B: check-runs 3/3 vinculados inicialmente al PR SHA `fc1322d` ejecutaban fisicamente el merge sintetico `c06f52b`, no checkout directo. Se añade workflow dirigido `.github/workflows/p1-001-b-role-isolation.yml` con checkout explícito `github.event.pull_request.head.sha || github.sha`, para verificar en el SHA final el test xUnit de seis casos sin datos reales. La evidencia de HEAD directo requiere log autenticado; no confundir el status asociado con el commit ejecutado. Estado VALIDANDO condicionado por ese gate.
+
+## 2026-11-04 — P1-008.A: regresiones de consulta y reactivación de membresías (DEV)
+
+- Scope P1-008.A asignado únicamente a Task Javier :40 (ID `6adc2e55f47c81919f6374e561687076`) mediante rama exclusiva `work/solqaryn-p1-008-a` desde `dev@30bf43749a8eb7b164a065f5aabebfa024aa0faa`; `P0-012.B=LISTO`. No se reclaman otras microtareas.
+- Se reutiliza el controller/servicio existente para GET de membresías inactivas y PUT de reactivación por par `EmpresaId+UsuarioId`; no se modifica código de producción. Regresión A/B: reactivar A conserva B y su rol; denegar rol global como membresía empresarial; denegar actor sin autoridad global. Suite dirigida pendiente de CI exact-SHA; no se afirma E2E ni despliegue.
+- Acta `docs/P1-008-A-REACTIVACION-MEMBRESIAS-DEV.md`. Arquitectura: SIN_CAMBIO. Datos/migración/secretos: SIN_CAMBIO. Cierre solo después de checks, Scope Lock, merge protegido y readback institucional; `LISTO` NO acreditado.
