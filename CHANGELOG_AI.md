@@ -1,3 +1,11 @@
+## 2026-11-03 — Precisión de autonomía 5 Tasks: autoevaluación permitida, autocertificación prohibida
+
+- Cambio normativo propuesto en `docs/GITHUB_ACCOUNT_ROLES.md`, `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md` y `docs/AUTOMATION_AUTHORITY.md`: separación de operaciones manuales de este asistente (`solqaryn-platform` autora, `jmejia31` revisor) respecto de las cinco Tasks comerciales paritarias autorizadas.
+- Las cinco Tasks de Javier :00/:20/:40 y Alex :10/:50, si están físicamente habilitadas, pueden desarrollar, probar, revisar entregas ajenas, corregir y recuperar scopes con sus propios permisos. Etiquetas PRIMARY/SECONDARY no imponen función permanente. No se modifican IDs, propietarios, cron, capacidad efectiva, gates ni grants.
+- Se permite autoevaluación técnica, pruebas y autocorrección; se prohíbe fingir revisión formal independiente del trabajo propio o de un PR en el que se participó. En PR comerciales ordinarios se conserva certificación CI/Scope Lock confiable SHA-exacto sin aprobación humana rutinaria; gobierno, seguridad y controladores de CI mantienen revisión independiente exigida.
+- `REVIEW_FIRST -> RECOVER -> CLAIM`, WIP 6/2/1, rama y PR únicos, claim/lease reales, rollback y readback PLAN/COLA/BITACORA sin cambios. Excluido Alex :30; prohibidos cambios QA/main/PROD, credenciales, secretos, ERP y bypass de protecciones.
+- Esta enmienda de gobierno solo será efectiva tras revisión independiente real, checks requeridos, merge protegido y readback del commit en `dev`. Las tres Tasks Javier continúan pausadas y su prompt REVIEWER_ONLY requiere ajuste separado sin reactivarlas. Rollback mediante revert en PR protegido.
+
 ## 2026-11-03 — Roles y permisos M3.3: cinco Tasks, autonomía condicionada y separación GitHub
 
 - Revisión quirúrgica del apartado «5. Responsables y permisos después del cambio»: se confirma censo 5 (3 Javier :00/:20/:40, 2 Alex :10/:50; :30 excluida), sin volver a 3+3, sin modificar Tasks, habilitaciones o permisos de proveedor.
