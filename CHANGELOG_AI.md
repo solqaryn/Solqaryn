@@ -1,3 +1,9 @@
+## 2026-11-03 — Roles y permisos M3.3: cinco Tasks, autonomía condicionada y separación GitHub
+
+- Revisión quirúrgica del apartado «5. Responsables y permisos después del cambio»: se confirma censo 5 (3 Javier :00/:20/:40, 2 Alex :10/:50; :30 excluida), sin volver a 3+3, sin modificar Tasks, habilitaciones o permisos de proveedor.
+- Se consolida matriz de selección, desarrollo, corrección, revisión, CI, merge y cierre según identidad efectiva; no se equipara elegibilidad funcional a derecho a publicar PR desde una cuenta revisora. Para cambios nuevos gestionados aquí `solqaryn-platform` publica y `jmejia31` revisa, con separación real de autores y sin autoaprobaciones.
+- Se conserva `REVIEW_FIRST → RECOVER propio/ajeno seguro → CLAIM`, WIP 6/2/1, Scope Lock y readback PLAN/COLA/BITACORA. PR #3833/#3834 y `BITACORA!468` son evidencia certificada; ninguna prueba o permiso se infiere nuevamente.
+- Cambios documentales únicamente en contrato de automatizaciones, autoridad, estado y changelog. El Plan Comercial Inicial de Drive (ID `1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA`) se leyó, pero no contiene ese apartado textual; no se lo altera, ni se toca ERP, API, DB, datos, QA/main/PROD, secretos, infraestructura o Task prompts. Requiere PR protegido y revisión independiente por tratar gobierno; rollback por PR de revert.
 ## 2026-11-03 — M3.3: prioridad REVIEW_FIRST y recuperación segura con pruebas ya disponibles
 
 - El propietario aclara el orden deseado: VALIDANDO libre para revisión, EN_PROGRESO propio o con traspaso comprobado, y finalmente PENDIENTE elegible. Antes el selector recuperaba trabajo propio antes de REVIEW y no reconocía el handoff seguro de trabajo ajeno.
