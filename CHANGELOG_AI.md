@@ -1,3 +1,11 @@
+## 2026-11-04 — P1-010.A: roles y membresías independientes por tenant (DEV)
+
+- La Task Javier :20 (`6adc2e4bd8a48191ac7d8641ed95a1a3`) reclamó exclusivamente `work/solqaryn-p1-010-a` desde `dev@30bf43749a8eb7b164a065f5aabebfa024aa0faa`, con P1-007.A en VALIDANDO sin escritor activo.
+- Se añadió suite xUnit `P1010AMultiEmpresaMembershipTests` con siete pruebas del `UsuarioScopeService` real sobre EF InMemory: membresías A/B con roles distintos, selección ambigua rechazada, reactivación, rol ajeno, usuario bloqueado, empresa/rol inactivos y ausencia de autoridad por rol legacy.
+- La entrega conserva código productivo, API, MySQL, migraciones, RBAC, seguridad, entornos y secretos intactos. Documento: `docs/P1-010-A-USUARIO-MULTIEMPRESA-DEV.md`.
+- Responsable actual: Javier :00 (TASK_ID 6adbb9fff1548191a1bd5b30d9e9984a), por transferencia institucional desde Javier :20; preservar el autor original y la rama/PR. Gobierno vigente 6/1/1; sin doble claim.
+- CI exact-SHA, prueba TRX dirigida, `AUTO_CERT=PASS`, merge protegido y conciliación institucional son obligatorios para el nuevo SHA. Reversión vía PR protegido.
+
 ## 2026-11-04 — P1-007.A: aislamiento de permisos y rutas ante cambio de tenant (DEV)
 
 - `PermisosRuntimeService` revoca capacidades, rutas, modo administrador y cache de permisos antes de cada nueva consulta, e identifica cada solicitud con una versión de selección para rechazar respuestas HTTP tardías de otra empresa.
