@@ -98,6 +98,27 @@ public sealed class UsuarioScopeService : IUsuarioScopeService
         return candidatos.Count == 1 ? candidatos[0] : null;
     }
 
+    public async Task<IReadOnlyList<EmpresaSeleccionable>> ListarEmpresasSeleccionablesAsync(
+        CancellationToken cancellationToken = default)
+    {
+        if (!_currentUser.EstaAutenticado || !_currentUser.UsuarioId.HasValue)
+            return Array.Empty<EmpresaSeleccionable>();
+
+        // Se reutiliza el mismo predicado de UsuarioEmpresa/Usuario/Empresa/Rol
+        // que autoriza la selección individual. El filtrado ocurre en MySQL:
+        // ninguna empresa ajena o membresía inactiva se materializa en memoria.
+        var empresasAutorizadas = ContextosTenantValidos(_currentUser.UsuarioId.Value)
+            .Select(contexto => contexto.EmpresaId);
+
+        return await _context.Set<Empresa>()
+            .AsNoTracking()
+            .Where(empresa => empresasAutorizadas.Contains(empresa.Id))
+            .OrderBy(empresa => empresa.Nombre)
+            .ThenBy(empresa => empresa.Id)
+            .Select(empresa => new EmpresaSeleccionable(empresa.Id, empresa.Nombre))
+            .ToListAsync(cancellationToken);
+    }
+
     private IQueryable<UsuarioTenantScopeActual> ContextosTenantValidos(
         int usuarioId,
         int? empresaId = null)
