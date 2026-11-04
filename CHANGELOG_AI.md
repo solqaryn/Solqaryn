@@ -1,3 +1,9 @@
+## 2026-11-04 — P1-008.B: pruebas negativas de reactivación de membresías
+
+- Task Javier :40 (`6adc2e55f47c81919f6374e561687076`) reclama P1-008.B tras LISTO real de P1-008.A. Rama `work/solqaryn-p1-008-b` desde `dev@51689ca4260db6fb702fe9d8c94da986de6d4aec`.
+- Cuatro pruebas xUnit `P1008B`: usuario inactivo/bloqueado, rol inactivo o privado de otro tenant. Rechazos sin mutación ni auditoría exitosa; controller productivo intacto.
+- Documento `docs/P1-008-B-NEGATIVOS-REACTIVACION-DEV.md`; CI/SHA/AUTO_CERT/merge/postmerge/revisión por otro TASK_ID/readbacks pendientes. Arquitectura, API, DB, migraciones y secretos SIN_CAMBIO.
+
 ## 2026-11-04 — Revisión técnica cruzada entre Tasks por TASK_ID (solicitud expresa del propietario)
 
 - Se distingue la aceptación técnica entre Tasks individuales del mismo login GitHub y la revisión formal `APPROVED` que GitHub vincula a un usuario. `TASK_ID_AUTOR != TASK_ID_REVISOR` y evidencia exact-SHA son obligatorios para la aceptación técnica; la Task autora no puede marcar su propia microtarea `LISTO`.

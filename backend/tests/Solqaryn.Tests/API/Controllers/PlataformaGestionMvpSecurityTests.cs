@@ -318,6 +318,116 @@ public sealed class PlataformaGestionMvpSecurityTests
         }
     }
 
+
+    // P1-008.B: rechazo sin saltarse identidad/rol empresarial ni mutar otro tenant.
+    [Fact]
+    public async Task P1008B_UsuarioInactivoNoSeReactivaPorMembresia()
+    {
+        var t = await PrepararAsync();
+        await using (t.Db)
+        {
+            var enA = new UsuarioEmpresa(t.EmpresaAdmin.Id, t.EmpresaA.Id, t.RolEmpresa.Id);
+            enA.Desactivar();
+            t.Db.Set<UsuarioEmpresa>().Add(enA);
+            t.EmpresaAdmin.Activo = false;
+            await t.Db.SaveChangesAsync();
+
+            Assert.IsType<BadRequestObjectResult>(
+                await t.Controller.CambiarEstadoMembresia(t.EmpresaA.Id, t.EmpresaAdmin.Id,
+                    new() { Activa = true }, CancellationToken.None));
+            Assert.False(enA.Activa);
+            Assert.False(t.EmpresaAdmin.Activo);
+            var enB = await t.Db.Set<UsuarioEmpresa>().SingleAsync(
+                m => m.EmpresaId == t.EmpresaB.Id && m.UsuarioId == t.EmpresaAdmin.Id);
+            Assert.True(enB.Activa);
+            Assert.Equal(t.RolAdmin.Id, enB.RolId);
+            Assert.Empty(await t.Db.Set<RegistroAuditoria>().ToListAsync());
+        }
+    }
+
+    [Fact]
+    public async Task P1008B_UsuarioBloqueadoNoSeReactivaPorMembresia()
+    {
+        var t = await PrepararAsync();
+        await using (t.Db)
+        {
+            var enA = new UsuarioEmpresa(t.EmpresaAdmin.Id, t.EmpresaA.Id, t.RolEmpresa.Id);
+            enA.Desactivar();
+            t.Db.Set<UsuarioEmpresa>().Add(enA);
+            t.EmpresaAdmin.Bloqueado = true;
+            await t.Db.SaveChangesAsync();
+
+            Assert.IsType<BadRequestObjectResult>(
+                await t.Controller.CambiarEstadoMembresia(t.EmpresaA.Id, t.EmpresaAdmin.Id,
+                    new() { Activa = true }, CancellationToken.None));
+            Assert.False(enA.Activa);
+            Assert.True(t.EmpresaAdmin.Bloqueado);
+            Assert.True((await t.Db.Set<UsuarioEmpresa>().SingleAsync(
+                m => m.EmpresaId == t.EmpresaB.Id && m.UsuarioId == t.EmpresaAdmin.Id)).Activa);
+            Assert.Empty(await t.Db.Set<RegistroAuditoria>().ToListAsync());
+        }
+    }
+
+    [Fact]
+    public async Task P1008B_RolInactivoNoHabilitaMembresia()
+    {
+        var t = await PrepararAsync();
+        await using (t.Db)
+        {
+            var rolInactivo = new Rol {
+                Nombre = "Rol suspendido A", NombreNormalizado = "P1008B_ROL_INACTIVO_A",
+                Ambito = AmbitoAutorizacion.Empresa, EmpresaId = t.EmpresaA.Id, Activo = false
+            };
+            t.Db.Roles.Add(rolInactivo);
+            await t.Db.SaveChangesAsync();
+            var enA = new UsuarioEmpresa(t.EmpresaAdmin.Id, t.EmpresaA.Id, rolInactivo.Id);
+            enA.Desactivar();
+            t.Db.Set<UsuarioEmpresa>().Add(enA);
+            await t.Db.SaveChangesAsync();
+
+            Assert.IsType<BadRequestObjectResult>(
+                await t.Controller.CambiarEstadoMembresia(t.EmpresaA.Id, t.EmpresaAdmin.Id,
+                    new() { Activa = true }, CancellationToken.None));
+            Assert.False(enA.Activa);
+            Assert.False(rolInactivo.Activo);
+            var enB = await t.Db.Set<UsuarioEmpresa>().SingleAsync(
+                m => m.EmpresaId == t.EmpresaB.Id && m.UsuarioId == t.EmpresaAdmin.Id);
+            Assert.True(enB.Activa);
+            Assert.Equal(t.RolAdmin.Id, enB.RolId);
+            Assert.Empty(await t.Db.Set<RegistroAuditoria>().ToListAsync());
+        }
+    }
+
+    [Fact]
+    public async Task P1008B_RolPrivadoDeEmpresaBNoHabilitaMembresiaA()
+    {
+        var t = await PrepararAsync();
+        await using (t.Db)
+        {
+            var rolSoloB = new Rol {
+                Nombre = "Rol privado B", NombreNormalizado = "P1008B_ROL_SOLO_B",
+                Ambito = AmbitoAutorizacion.Empresa, EmpresaId = t.EmpresaB.Id, Activo = true
+            };
+            t.Db.Roles.Add(rolSoloB);
+            await t.Db.SaveChangesAsync();
+            var enA = new UsuarioEmpresa(t.EmpresaAdmin.Id, t.EmpresaA.Id, rolSoloB.Id);
+            enA.Desactivar();
+            t.Db.Set<UsuarioEmpresa>().Add(enA);
+            await t.Db.SaveChangesAsync();
+
+            Assert.IsType<BadRequestObjectResult>(
+                await t.Controller.CambiarEstadoMembresia(t.EmpresaA.Id, t.EmpresaAdmin.Id,
+                    new() { Activa = true }, CancellationToken.None));
+            Assert.False(enA.Activa);
+            Assert.Equal(rolSoloB.Id, enA.RolId);
+            var enB = await t.Db.Set<UsuarioEmpresa>().SingleAsync(
+                m => m.EmpresaId == t.EmpresaB.Id && m.UsuarioId == t.EmpresaAdmin.Id);
+            Assert.True(enB.Activa);
+            Assert.Equal(t.RolAdmin.Id, enB.RolId);
+            Assert.Empty(await t.Db.Set<RegistroAuditoria>().ToListAsync());
+        }
+    }
+
     [Fact]
     public async Task EmpresaInactivaNoSeReactivaSinAdminYLaEdicionDeNombreEsAuditada()
     {
