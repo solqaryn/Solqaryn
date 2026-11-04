@@ -1,3 +1,10 @@
+## 2026-11-04 — Nueva cuarta Task de Javier (:30), ampliación de censo bajo revisión protegida
+
+- Por orden del propietario se creó `SOLQARYN — PRIMARY DEV 04 — JAVIER` con identidad propia en ChatGPT, hora `:30` en `America/Tegucigalpa` y contrato 2.0; quedó PAUSADA como control preventivo hasta integrar su nueva autorización y verificarla individualmente.
+- Se propone ampliar el inventario institucional a seis IDs comerciales únicos (Javier cuatro y Alex dos), conservando excluida la antigua Alex :30 y WIP 6/2/1. Se actualizan AGENTS, Scope Lock, autoridades, contrato, roles y los índices; el test negativo de conteo en el validador se vuelve dinámico.
+- La habilitación para desarrollo comercial exige revisión formal independiente del SHA final, tres checks PASS, merge protegido, readback de Sheets y autorización efectiva de proveedor desde la propia Task. El permiso manual de GitHub/Drive no sustituye el test de la Task.
+- Ningún cambio a ERP, infraestructura, Aiven, secretos, QA/main/PROD ni las Tasks anteriores. Rollback de autorización mediante PR protegido y pausa nativa de la nueva Task.
+
 ## 2026-11-03 — Precisión de autonomía 5 Tasks: autoevaluación permitida, autocertificación prohibida
 
 - Cambio normativo propuesto en `docs/GITHUB_ACCOUNT_ROLES.md`, `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md` y `docs/AUTOMATION_AUTHORITY.md`: separación de operaciones manuales de este asistente (`solqaryn-platform` autora, `jmejia31` revisor) respecto de las cinco Tasks comerciales paritarias autorizadas.
