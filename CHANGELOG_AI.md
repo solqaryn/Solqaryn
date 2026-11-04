@@ -6,6 +6,14 @@
 - RECOVER al actualizar `dev`: rama sincronizada con commit de dos padres `c3eac64d1f018418471e55b06213b7cfb91d996f`, diff original de tres archivos, sin force-push. Primer HEAD `2f11ba1e...`: CI dirigido 2/2 PASS y AUTO_CERT PASS. En `c3eac64d...` el Scope Lock fue NO_GO por un check dirigido duplicado (primero cancelled, segundo success) y otros jobs todavía pendientes; nuevo HEAD documental exige pruebas y AUTO_CERT propios. Nunca autocertificar.
 - Reversión: PR protegido de revert para tests y documentación, sin alterar historial comercial.
 
+- RECOVER 2026-11-04: integración no destructiva de dev con P1-011.A; se conservan los tres métodos P1011A renombrados, las dos regresiones P1012B y el histórico de ambas microtareas. CI nuevo del HEAD aún por ejecutar; no es LISTO.
+
+## 2026-11-04 — P1-011.A: trazabilidad de alta atómica de administrador nuevo (DEV)
+
+- Reutilización técnica de PR #3683: alta de usuario + empresa + ConfigEmpresa + membresía + auditoría con commit/rollback MySQL, BCrypt y ausencia de privilegios de plataforma. No se vuelve a implementar código productivo.
+- Corrección causal CI: el runner dirigido no ofrece MySQL; el P1011A anterior de integración falló por entorno ausente y Scope Lock bloqueó el merge. Se restaura nombre original del test MySQL (`Category=Integration`, job MySQL efímero) y se prefijan tres pruebas InMemory ya existentes como `P1011A_` para el check dirigido, sin duplicar ni alterar cuerpos. Ambos carriles exigidos sobre SHA final. Acta: `docs/P1-011-A-ALTA-ATOMICA-ADMIN-DEV.md`.
+- El cambio no certifica resultados CI antes de su ejecución. Requiere Scope Lock y checks protegidos, merge, CI postmerge y cierre por otra Task; no toca QA/main/PROD ni secretos.
+
 ## 2026-11-04 — P1-010.B: certificación HTTP/JWT separada por membresía (DEV)
 
 - Javier :30 (TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`) reclamó P1-010.B con WIP 6/1/1 desde `dev@4ac3fe76cc7f98c40a2aa1160c92560e1aab6bb2`; `PLAN_MAESTRO!H45=EN_PROGRESO` y `BITACORA!557` leídos de vuelta.
