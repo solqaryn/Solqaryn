@@ -86,12 +86,29 @@ Los **TASK_ID físicos originales no cambian**. La numeración en pantalla
 no transfiere permisos ni duplica una Task; `TAREAS_PROGRAMADAS` debe
 confirmar unicidad de ID/propietario/horario.
 
-Los nombres Primary/Secondary y Dev/Review **no conceden privilegios ni
-limitaciones distintos**: las cinco identidades del censo sólo ejercen capacidades efectivas de su cuenta:
-Javier permanece en modo REVIEWER_ONLY; SOLQARYN Platform prepara los PR institucionales.
-Cada otra función depende de permisos individuales, sin autoaprobación. Cada accion requiere
-identidad de su propia cuenta, permiso real, contrato vigente y ausencia de conflicto.
-No se garantiza inicio ni duracion ininterrumpida por programacion nominal de ChatGPT.
+## 5. Responsables y permisos — cinco Tasks autorizadas (interpretación vigente 2026-11-03)
+
+**Igualdad de protocolo no es igualdad automática de credenciales ni activación.** El censo actual contiene cinco `TASK_ID` autorizados: Javier `:00/:20/:40` y Alex `:10/:50`; Alex `:30` queda excluida. Las etiquetas visibles `PRIMARY_DEV` y `SECONDARY_REVIEW` son aliases históricos, no categorías de privilegio ni autorizaciones adicionales. El censo no impone un máximo inmutable ni una distribución 3+3. Cada operación se decide por `TASK_ID` vigente, cuenta autenticada, permiso efectivo, estado `is_enabled`, lease/owner del scope, revisión realmente independiente y Scope Lock `STRICT`.
+
+| Operación | Actor admisible según la autoridad **actual** | Control indispensable |
+| --- | --- | --- |
+| Buscar y seleccionar trabajo | Cualquiera de los cinco IDs **si está habilitado** y posee permisos reales; también puede examinar candidatos en solo lectura | `REVIEW_FIRST` primero, `RECOVER` después y `CLAIM` al final; no apropiarse de scopes ajenos por aparente inactividad |
+| Tomar `PENDIENTE` | Task individualmente autorizada y habilitada que pueda efectuar un claim exclusivo | Dependencias todas `LISTO`, rama determinista create-if-absent, readback, WIP global 6, máximo 2 scopes por Task y 1 escritura activa |
+| Recuperar `EN_PROGRESO` | Task propietaria con recuperación válida o Task distinta con traspaso expresamente autorizado | Lease liberado, ausencia de editor, rama y último commit reales, permisos y cambio de owner verificados; conservar PR existente |
+| Desarrollar, corregir código, publicar commit o PR | **Para nuevos cambios gestionados por este asistente:** conexión `solqaryn-platform`, autora institucional; otras cuentas solo si una autorización nueva y sus permisos efectivos lo permiten | No prestar credenciales ni usar a Javier como autora de cambios que luego aprobará; ninguna autorización histórica se reactiva por este cuadro |
+| Revisar `VALIDANDO` y diagnosticar defectos | Identidad GitHub **independiente** de todos los autores/contribuyentes, con permiso efectivo y revisión disponible; para PR institucionales, `jmejia31` es el revisor designado | Task ID diferente no basta si comparte login o contribuciones; lease de revisión no ocupado; el revisor solicita cambios, no se autoaprueba |
+| Corregir el defecto detectado | Autora autorizada del mismo PR; para trabajo de este asistente, `solqaryn-platform` | Reutilizar PR/rama y publicar nuevo SHA; requerir revisión independiente de la corrección; un revisor que escribió código necesita otro revisor genuino |
+| Registrar `EN_PROGRESO` y `VALIDANDO` | Actor autorizado que acredita claim y entrega auténticos | Registro auditable y PR/diff/pruebas reales; no adelantar estados por calendario |
+| Emitir aceptación técnica | CI exigida en el SHA exacto; para gobierno, además `APPROVED` humano de revisor realmente independiente | CI no simula aprobación humana y otro Task ID tampoco; no autoevaluación ni bypass |
+| Merge a `dev` | Identidad GitHub que realmente tenga permiso de merge en rama protegida | Scope Lock, checks y aprobaciones exigidas, estado exacto y ausencia de conflicto |
+| Registrar `LISTO` | Actor autorizado que comprueba el cierre efectivo | Merge SHA y HEAD de `dev`, `PLAN_MAESTRO` y `BITACORA` con readback; `COLA` recalculada por fórmulas intactas y sucesoras solo con todas las dependencias `LISTO` |
+
+**Jerarquía de decisión:** `VALIDANDO` ajeno con permiso y lease de revisión libre → `EN_PROGRESO` propio recuperable → `EN_PROGRESO` ajeno con handoff autenticado y seguro → `PENDIENTE` elegible → evento `SIN_TRABAJO_ELEGIBLE` deduplicado. Los horarios separados por 10 minutos no sustituyen el control de concurrencia. No crear dos ramas/editores para el mismo scope. Sin transferencia de sesiones ni autoaprobaciones.
+
+**Estado real, sin inferencias:** `AUTOMATION_RUNTIME=ACTIVE_DEV` expresa capacidad contractual, **no** que las Tasks estén encendidas: último readback nativo Javier `:00/:20/:40 = PAUSADA`; último readback institucional Alex `:10/:50 = PAUSADA`. La eliminación física de Alex `:30` no se acredita aquí; únicamente consta excluida del censo autorizado. La certificación integral M3.3 `PASS` (PR #3833/#3834; `BITACORA!468`) acredita pruebas previas y validadores, no actividad presente.
+
+**Autoridades:** `docs/GITHUB_ACCOUNT_ROLES.md` rige nuevas operaciones de este asistente; `docs/AUTOMATION_STATUS.md` y `docs/AUTOMATION_AUTHORITY.md` determinan IDs y permisos individuales; `scripts/validate-dual-task-configuration.mjs` valida el selector. Esta matriz interpreta reglas existentes; por sí sola no concede permisos, crea/activa Tasks, cambia grants o autoriza QA/main/PROD.
+
 
 **REFERENCIA HISTÓRICA — NO EJECUTABLE:** durante el piloto inicial, los nombres Primary/Secondary no asignaban por sí mismos desarrollo o revisión. Esa simetría dejó de definir las conexiones GitHub utilizadas por este asistente. Para cambios nuevos rige docs/GITHUB_ACCOUNT_ROLES.md: solqaryn-platform es la autora institucional de ramas, commits y PR; Javier (jmejia31) es revisor independiente cuando corresponda. Nadie puede escribir código desde la identidad revisora para aprobar sus propios commits, intercambiar cuentas o heredar permisos de la etiqueta visible. Se conserva la evidencia de trabajo anterior sin reinstaurar sus permisos.
 
