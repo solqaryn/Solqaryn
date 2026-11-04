@@ -1,3 +1,10 @@
+## 2026-11-04 — P1-010.B: certificación HTTP/JWT separada por membresía (DEV)
+
+- Javier :30 (TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`) reclamó P1-010.B con WIP 6/1/1 desde `dev@4ac3fe76cc7f98c40a2aa1160c92560e1aab6bb2`; `PLAN_MAESTRO!H45=EN_PROGRESO` y `BITACORA!557` leídos de vuelta.
+- Nueva suite `P1010BMultiEmpresaHttpJwtCertificationTests`: cuatro regresiones TestServer con JWT real de prueba, controlador y UsuarioScopeService reales, roles distintos A/B, denegación de C, revocación/reactivación B, rechazo rol privado A en B y rechazo de usuario bloqueado/anonimato.
+- Persistencia de las pruebas: EF InMemory; NO acredita MySQL real ni servidor remoto DEV, ni reemplaza la certificación independiente que corresponda. Sólo archivos de tests, documentación de P1-010.B y este changelog; sin código productivo, migraciones, secretos o entornos QA/main/PROD.
+- Validar `dotnet test ... --filter FullyQualifiedName~P1010B` con TRX real y CI exact SHA de PR antes de READY/merge. Autor no autoaprueba ni marca LISTO. Rollback: PR protegido de revert y preservación de evidencia institucional.
+
 ## 2026-11-04 — P1-010.A: roles y membresías independientes por tenant (DEV)
 
 - La Task Javier :20 (`6adc2e4bd8a48191ac7d8641ed95a1a3`) reclamó exclusivamente `work/solqaryn-p1-010-a` desde `dev@30bf43749a8eb7b164a065f5aabebfa024aa0faa`, con P1-007.A en VALIDANDO sin escritor activo.
