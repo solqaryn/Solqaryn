@@ -20,6 +20,13 @@
 - Primera ejecución dirigida sobre PR #3841, SHA `e89d57189c261a48378599d3a5a7ca343867978c`: 5 PASS / 1 FAIL (test de modelo que confundió unicidad intermedia con final). Este commit corrige la **aserción**, no el esquema, conservando evidencia del fallo anterior. El nuevo SHA requiere ejecución dirigida independiente; no extrapolar PASS.
 - Los tests en memoria y metadatos EF **no certifican el índice físico de Aiven ni respuestas HTTP 4xx reales**. La conversión a 4xx depende de la capa de excepciones/HTTP y requiere verificación independiente cuando aplique. Ninguna de estas pruebas sustituye aceptación MySQL/JWT live de DEV.
 
+## Readback de CI dirigido y concurrencia de checks
+- Primer SHA `e89d57189c261a48378599d3a5a7ca343867978c`: 5/6 PASS y 1 FAIL debido a la aserción equivocada sobre unicidad global intermedia de `RolConfiguration`.
+- Segundo SHA `9f21a469b00affcf6d7ba038d22e3fe14c85d4de`: workflow dirigido `SOLQARYN - Directed commercial scope` ejecutó **6/6 PASS**, `DIRECTED_SHA` exacto y `DIRECTED_SCOPE_PASS total=6 passed=6` en [job 126453449865](https://github.com/solqaryn/Solqaryn/actions/runs/41793791918/job/126453449865).
+- Editar el cuerpo del PR en ese mismo SHA lanzó un segundo evento GitHub `pull_request.edited`; existe además un check dirigido anterior `cancelled`. El Scope Lock correspondiente había finalizado en `failure` durante checks activos; **no es un 3/3 certificado**. El verificador confiable agrupa por nombre y necesita evidencias consistentes del mismo HEAD.
+- Se incorpora esta evidencia mediante commit **solo documental** en la misma rama (sin reescribir historia ni tocar gobierno), creando un HEAD nuevo y una única ejecución `pull_request.synchronize` para evitar reutilizar el check cancelado del SHA anterior. No volver a editar metadata PR después del nuevo push. Confirmar de cero CI dirigido, seguridad, backend y Scope Lock para ese nuevo HEAD.
+- Los tests dirigidos no sustituyen validación MySQL física ni negativa HTTP/JWT A/B real; ninguna aprobación independiente se atribuye a la propia cuenta de GitHub.
+
 ## Impacto, seguridad y cierre
 - Diff limitado a xUnit, esta acta y `CHANGELOG_AI.md`. Backend runtime, frontend, API, JWT, RBAC, migraciones, Aiven, Render, Vercel, secretos, QA/main/PROD sin cambios.
 - Riesgo de regresión reducido por reutilizar invariantes actuales; no ampliar permisos ni inferir owner. No tocar plan calculado `COLA`.
