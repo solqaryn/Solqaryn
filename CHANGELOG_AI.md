@@ -1,3 +1,12 @@
+## 2026-11-04 — WIP comercial estricto 6/1/1 y revisión técnica cruzada validable
+
+- Orden expresa del propietario: 6 scopes comerciales globales máximos, **1 scope propio no cerrado por TASK_ID**, **1 editor activo por Task**. Un scope en EN_PROGRESO o VALIDANDO sigue asignado mientras espera CI/revisión; jamás hay excepción de segundo CLAIM por VALIDANDO.
+- Se actualizan AGENTS.md, docs/AUTOMATION_AUTHORITY.md, docs/AUTOMATION_STATUS.md y docs/AUTOMATION_3X3_OPERATING_CONTRACT.md, con sección normativa vigente que prevalece sobre evidencias históricas 6/2/1; se conserva REVIEW_FIRST -> RECOVER -> CLAIM, ramas deterministas, permisos reales y preflight de inventario.
+- scripts/validate-dual-task-configuration.mjs rechaza el segundo CLAIM, exige cuenta/TASK_ID e inventario readback para nuevos claims y handoffs; RESUME solo del scope propio. Casos negativos: VALIDANDO en espera, conteo ausente, lease/editor ocupado, handoff no acreditado, autorrrevisión, falta de CI/permisos/evidencia.
+- La revisión técnica entre TASK_ID diferentes del mismo login GitHub queda diferenciada de APPROVED formal: no sustituye reglas de proveedor ni permite que el TASK_ID autor certifique o cierre su propia microtarea. Los PR comerciales ordinarios conservan CI/Scope Lock SHA-exacto; cambio de gobierno requiere revisión formal independiente de login.
+- Se preserva la conciliación realizada previamente (BITACORA!546): P1-007.A con Javier :20; P1-010.A con Javier :00; P1-008.B con Javier :40; Javier :30 sin microtarea propia. Se exige nuevo readback vivo antes de operar, no se reasigna nada mediante este commit.
+- Sin cambios a Tasks de Alex, horarios, cuentas, secretos, schemas, ERP, datos de usuarios, infraestructura, QA/main/PROD o reglas protegidas. Integración condicionada a PR de gobierno, aprobación independiente, CI requerida, merge protegido y verificación postmerge. Rollback por revert mediante PR protegido; nunca borrar trabajo comercial ni falsificar liberación de WIP.
+
 ## 2026-11-04 — P1-008.B: pruebas negativas de reactivación de membresías
 
 - Task Javier :40 (`6adc2e55f47c81919f6374e561687076`) reclama P1-008.B tras LISTO real de P1-008.A. Rama `work/solqaryn-p1-008-b` desde `dev@51689ca4260db6fb702fe9d8c94da986de6d4aec`.
