@@ -19,6 +19,10 @@ GITHUB_CHAT_REVIEWER=JAVIER_GITHUB_LOGIN
 GITHUB_CHAT_ROLE_SEPARATION=STRICT
 GITHUB_CHAT_ROLE_POLICY=docs/GITHUB_ACCOUNT_ROLES.md
 
+## Prioridad de revisión y cierre — corrección operativa 2026-11-04
+
+Todas las Tasks autorizadas deben inspeccionar **TODOS** los `VALIDANDO` (primero los ajenos con revisión genuinamente independiente posible, después los propios del TASK_ID exacto para corregir, verificar, integrar cuando lo permitan las reglas y cerrar postmerge) antes de `EN_PROGRESO` y de `PENDIENTE`. Prohibido filtrar todos los PR de la propia cuenta GitHub y olvidar los `VALIDANDO` de esa misma cuenta. La continuidad técnica propia NO equivale a aprobación humana independiente; IDs de Javier comparten `jmejia31` y no pueden aprobarse entre sí. Ante bloqueo externo verificable registrar NO_GO deduplicado y continuar con otro `VALIDANDO` o `EN_PROGRESO` elegible, sin reclamar trabajos nuevos mientras haya un `VALIDANDO` propio cerrable. Preservar WIP 6/2/1, `PROJECT_SCOPE_LOCK=STRICT`, checks exact-SHA y merge protegido. Detalle y selector: `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md` y `scripts/validate-dual-task-configuration.mjs`.
+
 ## Censo institucional vigente — 2026-11-04
 
 Seis Tasks físicas registradas; seis IDs comerciales autorizables tras el merge protegido: Javier cuatro (:00/:20/:30/:40) y Alex dos (:10/:50). La nueva Javier :30 usa el ID exclusivo `6aeacb7820ac8191b7d768a6f33dfa09` y está PAUSADA preventivamente hasta aprobar el PR de gobierno, CI exact-SHA, conciliación de Sheets y habilitación nativa. La antigua Alex :30 sigue excluida: no se reactiva ni se reutiliza su identificador. La paridad funcional depende de los permisos individuales; WIP 6/2/1, Scope Lock, revisión formal independiente de gobierno y prohibición de QA/main/PROD se conservan.
