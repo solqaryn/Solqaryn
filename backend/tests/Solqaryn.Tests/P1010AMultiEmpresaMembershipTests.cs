@@ -100,6 +100,31 @@ public sealed class P1010AMultiEmpresaMembershipTests
     }
 
     [Fact]
+    public async Task UsuarioInactivoNoPuedeListarNiSeleccionarEmpresasHastaReactivarse()
+    {
+        var f = await CrearEscenarioAsync();
+        await using var db = f.Db;
+
+        // Con ambas membresias activas, usuario inactivo no puede enumerar tenants.
+        f.Usuario.Activo = false;
+        await db.SaveChangesAsync();
+
+        Assert.Null(await f.Scope.ObtenerActualAsync(f.EmpresaA.Id));
+        Assert.Null(await f.Scope.ObtenerActualAsync(f.EmpresaB.Id));
+        Assert.Null(await f.Scope.ObtenerUnicoActualAsync());
+        Assert.Empty(await f.Scope.ListarEmpresasSeleccionablesAsync());
+
+        // La reactivacion solo restituye autoridad segun la membresia de cada tenant.
+        f.Usuario.Activo = true;
+        await db.SaveChangesAsync();
+
+        Assert.Equal(f.RolA.Id, (await f.Scope.ObtenerActualAsync(f.EmpresaA.Id))!.RolId);
+        Assert.Equal(f.RolB.Id, (await f.Scope.ObtenerActualAsync(f.EmpresaB.Id))!.RolId);
+        Assert.Equal(2, (await f.Scope.ListarEmpresasSeleccionablesAsync()).Count);
+        Assert.Null(await f.Scope.ObtenerUnicoActualAsync());
+    }
+
+    [Fact]
     public async Task EmpresaBInactivaNoRevocaLaMembresiaActivaDeA()
     {
         var f = await CrearEscenarioAsync();
