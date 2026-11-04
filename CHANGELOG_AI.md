@@ -1,3 +1,10 @@
+## 2026-11-04 — P1-010.A: roles y membresías independientes por tenant (DEV)
+
+- La Task Javier :20 (`6adc2e4bd8a48191ac7d8641ed95a1a3`) reclamó exclusivamente `work/solqaryn-p1-010-a` desde `dev@30bf43749a8eb7b164a065f5aabebfa024aa0faa`, con P1-007.A en VALIDANDO sin escritor activo.
+- Se añadió suite xUnit `P1010AMultiEmpresaMembershipTests` con siete pruebas del `UsuarioScopeService` real sobre EF InMemory: membresías A/B con roles distintos, selección ambigua rechazada, reactivación, rol ajeno, usuario bloqueado, empresa/rol inactivos y ausencia de autoridad por rol legacy.
+- La entrega conserva código productivo, API, MySQL, migraciones, RBAC, seguridad, entornos y secretos intactos. Documento: `docs/P1-010-A-USUARIO-MULTIEMPRESA-DEV.md`.
+- CI exact-SHA, prueba TRX dirigida, `AUTO_CERT=PASS`, merge protegido y conciliación institucional son gates pendientes al publicar; ningún test o cierre se declara aprobado antes de su ejecución real. Reversión vía PR protegido.
+
 ## 2026-11-04 — Nueva cuarta Task de Javier (:30), ampliación de censo bajo revisión protegida
 
 - Por orden del propietario se creó `SOLQARYN — PRIMARY DEV 04 — JAVIER` con identidad propia en ChatGPT, hora `:30` en `America/Tegucigalpa` y contrato 2.0; quedó PAUSADA como control preventivo hasta integrar su nueva autorización y verificarla individualmente.
