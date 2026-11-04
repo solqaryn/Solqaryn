@@ -1,3 +1,9 @@
+## 2026-11-04 — P1-015.A: auditoría del acceso global privilegiado (DEV)
+
+- Javier :30, TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`: CLAIM exclusivo WIP 6/1/1, PLAN_MAESTRO!H54/I54 y BITACORA!592, rama `work/solqaryn-p1-015-a` desde `dev@fa10d1a92c90ee06d693a3c89bc8586d5ffc9be2` con readback, sin alterar otras Tasks.
+- Se agregaron seis regresiones `P1015APrivilegedAccessAuditTests` sobre concesión/revocación global, lectura delegada, actor/motivo/EmpresaId/correlación, autodelegación rechazada y no acceso por administrador empresarial; no hay modificaciones productivas ni migraciones.
+- Acta `docs/P1-015-A-AUDITORIA-ACCESO-PRIVILEGIADO-DEV.md`: reutilizar auditoría existente, contrato de rechazo y límites de prueba EF InMemory. Pendiente ejecución dirigida y CI exact SHA; **NO** afirmar PASS, aprobación formal, merge ni LISTO antes de las evidencias y del cierre cruzado por otra Task.
+
 ## 2026-11-04 — P1-010.B: certificación HTTP/JWT separada por membresía (DEV)
 
 - Javier :30 (TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`) reclamó P1-010.B con WIP 6/1/1 desde `dev@4ac3fe76cc7f98c40a2aa1160c92560e1aab6bb2`; `PLAN_MAESTRO!H45=EN_PROGRESO` y `BITACORA!557` leídos de vuelta.
