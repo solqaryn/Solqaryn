@@ -138,7 +138,8 @@ export function selectWork(tasks, stateById, account, activeReviewIds = new Set(
     t.previousLeaseReleased === true && t.activeEditorVerifiedAbsent === true &&
     t.exclusiveScopeVerified === true && t.branchReadbackVerified === true &&
     t.lastCommitVerified === true && t.permissionsVerified === true &&
-    t.ownerTransferReadbackVerified === true && !t.conflictingClaim &&
+    t.ownerTransferReadbackVerified === true && t.nextRunRecipientSelectionVerified === true &&
+    t.handoffTargetTaskId === taskId && !t.conflictingClaim &&
     t.branchName === 'work/solqaryn-' + t.id.toLowerCase().replace('.', '-'));
   if (handoff) return {action:'RECOVER_HANDOFF',task:handoff};
   const eligible = tasks.filter(t => t.state === 'PENDIENTE' &&
@@ -235,7 +236,8 @@ export function validateProposedRun(p) {
     if(p.resumingExistingScope && p.recoveringForeignScope===true &&
        (p.handoffAuthorized!==true || p.previousLeaseReleased!==true ||
         p.activeEditorVerifiedAbsent!==true || p.lastCommitVerified!==true ||
-        p.ownerTransferReadbackVerified!==true || !p.branchReadbackVerified))
+        p.ownerTransferReadbackVerified!==true || !p.branchReadbackVerified ||
+         p.nextRunRecipientSelectionVerified!==true || p.handoffTargetTaskId!==p.actorTaskId))
       errors.push('unsafe_recovery_handoff');
     if(p.activeEditorAccount&&p.activeEditorAccount!==p.actorAccount)
       errors.push('concurrent_editor');
@@ -363,10 +365,12 @@ if(failures.length){
   if(validateProposedRun(resumeFull).length)throw Error('Safe resume at WIP=6 denied');
   const handoffWrite=clone(resumeFull);
   Object.assign(handoffWrite,{recoveringForeignScope:true,handoffAuthorized:true,previousLeaseReleased:true,
-    activeEditorVerifiedAbsent:true,lastCommitVerified:true,ownerTransferReadbackVerified:true});
+    activeEditorVerifiedAbsent:true,lastCommitVerified:true,ownerTransferReadbackVerified:true,
+    nextRunRecipientSelectionVerified:true,handoffTargetTaskId:base.actorTaskId});
   if(validateProposedRun(handoffWrite).length) throw Error('Verified handoff write rejected');
   for(const key of ['handoffAuthorized','previousLeaseReleased','activeEditorVerifiedAbsent',
-    'lastCommitVerified','ownerTransferReadbackVerified','branchReadbackVerified']) {
+    'lastCommitVerified','ownerTransferReadbackVerified','branchReadbackVerified',
+     'nextRunRecipientSelectionVerified']) {
     const x=clone(handoffWrite); x[key]=false;
     if(!validateProposedRun(x).length) throw Error('Unsafe handoff WRITE permitted: '+key);
   }
@@ -502,12 +506,15 @@ if(failures.length){
   const idle={id:'P0-014.A',state:'EN_PROGRESO',ownerAccount:'ALEX_CHATGPT',handoffAuthorized:true,
     previousLeaseReleased:true,activeEditorVerifiedAbsent:true,exclusiveScopeVerified:true,
     branchReadbackVerified:true,lastCommitVerified:true,permissionsVerified:true,
-    ownerTransferReadbackVerified:true,conflictingClaim:false,branchName:'work/solqaryn-p0-014-a'};
+    ownerTransferReadbackVerified:true,nextRunRecipientSelectionVerified:true,
+    handoffTargetTaskId:'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+    conflictingClaim:false,branchName:'work/solqaryn-p0-014-a'};
   if(selectWork([idle],{},'JAVIER_CHATGPT',new Set(),'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',true).action!=='RECOVER_HANDOFF') throw Error('Safe handoff rejected');
   for(const [field,value] of [['handoffAuthorized',false],['previousLeaseReleased',false],
     ['activeEditorVerifiedAbsent',false],['exclusiveScopeVerified',false],
     ['branchReadbackVerified',false],['lastCommitVerified',false],
     ['permissionsVerified',false],['ownerTransferReadbackVerified',false],
+     ['nextRunRecipientSelectionVerified',false],['handoffTargetTaskId','dddddddddddddddddddddddddddddddd'],
     ['conflictingClaim',true],['branchName','work/solqaryn-different']]) {
     if(selectWork([{...idle,[field]:value}],{},'JAVIER_CHATGPT',new Set(),'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',true).action!=='NO_ELIGIBLE')
       throw Error('Unverified foreign recovery accepted: '+field);
