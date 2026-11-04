@@ -138,7 +138,8 @@ export function selectWork(tasks, stateById, account, activeReviewIds = new Set(
     t.previousLeaseReleased === true && t.activeEditorVerifiedAbsent === true &&
     t.exclusiveScopeVerified === true && t.branchReadbackVerified === true &&
     t.lastCommitVerified === true && t.permissionsVerified === true &&
-    t.ownerTransferReadbackVerified === true && !t.conflictingClaim &&
+    t.ownerTransferReadbackVerified === true && t.nextRunRecipientSelectionVerified === true &&
+    t.handoffTargetTaskId === taskId && !t.conflictingClaim &&
     t.branchName === 'work/solqaryn-' + t.id.toLowerCase().replace('.', '-'));
   if (handoff) return {action:'RECOVER_HANDOFF',task:handoff};
   const eligible = tasks.filter(t => t.state === 'PENDIENTE' &&
@@ -147,6 +148,37 @@ export function selectWork(tasks, stateById, account, activeReviewIds = new Set(
   eligible.sort((x,y)=>Number(x.priority.slice(1))-Number(y.priority.slice(1)) ||
     x.planOrder-y.planOrder);
   return eligible.length ? {action:'CLAIM',task:eligible[0]} : {action:'NO_ELIGIBLE'};
+}
+// Advisory only: never changes an owner or grants permissions.
+// Every candidate requires an independently verified, future scheduled occurrence.
+export function selectNextScheduledFreeTask(candidates, nowIso, account, previousOwnerTaskId=null) {
+  const instant=x=>typeof x==='string' &&
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2})$/.test(x) &&
+    Number.isFinite(Date.parse(x));
+  const taskId=x=>typeof x==='string' && /^[a-f0-9]{32}$/i.test(x);
+  if(!instant(nowIso)||!['JAVIER_CHATGPT','ALEX_CHATGPT'].includes(account))
+    return {action:'NO_GO',reason:'UNVERIFIED_CLOCK_OR_ACCOUNT'};
+  if(!Array.isArray(candidates))
+    return {action:'NO_GO',reason:'ROSTER_NOT_VERIFIED'};
+  const now=Date.parse(nowIso);
+  const verified=candidates.filter(c=>c&&taskId(c.taskId)&&
+    c.taskId!==previousOwnerTaskId&&c.account===account&&
+    c.registeredTask===true&&c.authorizedTask===true&&
+    c.isEnabled===true&&c.schedulerVerified===true&&
+    c.rruleVerified===true&&c.timezone==='America/Tegucigalpa'&&
+    c.identityVerified===true&&c.permissionsVerified===true&&
+    c.ownershipReadbackVerified===true&&c.ownedOpenScopes===0&&
+    c.activeRun===false&&c.activeEditor===false&&c.activeLease===false&&
+    ['PROVIDER_NEXT_RUN','DERIVED_VERIFIED_RRULE'].includes(c.nextRunSource)&&
+    instant(c.nextRunAt)&&Date.parse(c.nextRunAt)>now&&
+    Date.parse(c.nextRunAt)-now<=60*60*1000);
+  verified.sort((a,b)=>Date.parse(a.nextRunAt)-Date.parse(b.nextRunAt)||
+    a.taskId.localeCompare(b.taskId));
+  const first=verified[0];
+  return first
+    ? {action:'HANDOFF_CANDIDATE',taskId:first.taskId,nextRunAt:first.nextRunAt,
+       nextRunSource:first.nextRunSource,requiresAuthorizationAndLeaseReadback:true}
+    : {action:'NO_GO',reason:'NO_VERIFIED_FREE_FUTURE_RUN'};
 }
 // Historical read-only evidence is optional metadata and NEVER a gate for DEV.
 export function verifiedScheduledReadOnlyProof(proof,slot) {
@@ -204,7 +236,8 @@ export function validateProposedRun(p) {
     if(p.resumingExistingScope && p.recoveringForeignScope===true &&
        (p.handoffAuthorized!==true || p.previousLeaseReleased!==true ||
         p.activeEditorVerifiedAbsent!==true || p.lastCommitVerified!==true ||
-        p.ownerTransferReadbackVerified!==true || !p.branchReadbackVerified))
+        p.ownerTransferReadbackVerified!==true || !p.branchReadbackVerified ||
+         p.nextRunRecipientSelectionVerified!==true || p.handoffTargetTaskId!==p.actorTaskId))
       errors.push('unsafe_recovery_handoff');
     if(p.activeEditorAccount&&p.activeEditorAccount!==p.actorAccount)
       errors.push('concurrent_editor');
@@ -332,10 +365,12 @@ if(failures.length){
   if(validateProposedRun(resumeFull).length)throw Error('Safe resume at WIP=6 denied');
   const handoffWrite=clone(resumeFull);
   Object.assign(handoffWrite,{recoveringForeignScope:true,handoffAuthorized:true,previousLeaseReleased:true,
-    activeEditorVerifiedAbsent:true,lastCommitVerified:true,ownerTransferReadbackVerified:true});
+    activeEditorVerifiedAbsent:true,lastCommitVerified:true,ownerTransferReadbackVerified:true,
+    nextRunRecipientSelectionVerified:true,handoffTargetTaskId:base.actorTaskId});
   if(validateProposedRun(handoffWrite).length) throw Error('Verified handoff write rejected');
   for(const key of ['handoffAuthorized','previousLeaseReleased','activeEditorVerifiedAbsent',
-    'lastCommitVerified','ownerTransferReadbackVerified','branchReadbackVerified']) {
+    'lastCommitVerified','ownerTransferReadbackVerified','branchReadbackVerified',
+     'nextRunRecipientSelectionVerified']) {
     const x=clone(handoffWrite); x[key]=false;
     if(!validateProposedRun(x).length) throw Error('Unsafe handoff WRITE permitted: '+key);
   }
@@ -471,12 +506,15 @@ if(failures.length){
   const idle={id:'P0-014.A',state:'EN_PROGRESO',ownerAccount:'ALEX_CHATGPT',handoffAuthorized:true,
     previousLeaseReleased:true,activeEditorVerifiedAbsent:true,exclusiveScopeVerified:true,
     branchReadbackVerified:true,lastCommitVerified:true,permissionsVerified:true,
-    ownerTransferReadbackVerified:true,conflictingClaim:false,branchName:'work/solqaryn-p0-014-a'};
+    ownerTransferReadbackVerified:true,nextRunRecipientSelectionVerified:true,
+    handoffTargetTaskId:'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+    conflictingClaim:false,branchName:'work/solqaryn-p0-014-a'};
   if(selectWork([idle],{},'JAVIER_CHATGPT',new Set(),'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',true).action!=='RECOVER_HANDOFF') throw Error('Safe handoff rejected');
   for(const [field,value] of [['handoffAuthorized',false],['previousLeaseReleased',false],
     ['activeEditorVerifiedAbsent',false],['exclusiveScopeVerified',false],
     ['branchReadbackVerified',false],['lastCommitVerified',false],
     ['permissionsVerified',false],['ownerTransferReadbackVerified',false],
+     ['nextRunRecipientSelectionVerified',false],['handoffTargetTaskId','dddddddddddddddddddddddddddddddd'],
     ['conflictingClaim',true],['branchName','work/solqaryn-different']]) {
     if(selectWork([{...idle,[field]:value}],{},'JAVIER_CHATGPT',new Set(),'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',true).action!=='NO_ELIGIBLE')
       throw Error('Unverified foreign recovery accepted: '+field);
@@ -528,6 +566,41 @@ if(failures.length){
   if(validateApprovalDecision(approved).length)throw Error('Independent approval rejected');
   if(!validateApprovalDecision({...approved,allContributionsReviewed:false}).length)
     throw Error('Approval of unreviewed correction accepted');
+  // Selection respects the upcoming execution, not the Task label or list order.
+  const when='2026-11-04T11:21:57-06:00';
+  const free={account:'JAVIER_CHATGPT',registeredTask:true,authorizedTask:true,
+    isEnabled:true,schedulerVerified:true,rruleVerified:true,timezone:'America/Tegucigalpa',
+    identityVerified:true,permissionsVerified:true,ownershipReadbackVerified:true,
+    ownedOpenScopes:0,activeRun:false,activeEditor:false,activeLease:false,
+    nextRunSource:'DERIVED_VERIFIED_RRULE'};
+  const candidates=[
+    {...free,taskId:'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',nextRunAt:'2026-11-04T12:00:00-06:00'},
+    {...free,taskId:'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',nextRunAt:'2026-11-04T11:30:00-06:00'},
+    {...free,taskId:'cccccccccccccccccccccccccccccccc',nextRunAt:'2026-11-04T11:40:00-06:00'}];
+  const pick=(xs,acc='JAVIER_CHATGPT')=>selectNextScheduledFreeTask(xs,when,acc);
+  if(pick(candidates).taskId!=='bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb')
+    throw Error('Closest scheduled free Task not selected');
+  if(pick([{...candidates[1],activeRun:true},candidates[0],candidates[2]]).taskId!=='cccccccccccccccccccccccccccccccc')
+    throw Error('Active Task chosen for transfer');
+  if(pick([{...candidates[1],ownedOpenScopes:1},candidates[0],candidates[2]]).taskId!=='cccccccccccccccccccccccccccccccc')
+    throw Error('Task already owning a scope was chosen');
+  for(const [key,value] of [
+    ['isEnabled',false],['authorizedTask',false],['registeredTask',false],
+    ['permissionsVerified',false],['ownershipReadbackVerified',false],
+    ['rruleVerified',false],['schedulerVerified',false],
+    ['identityVerified',false],['activeEditor',true],['activeLease',true],
+    ['timezone','UTC'],['nextRunSource','UNVERIFIED'],['activeRun',true]]){
+    if(pick([{...candidates[1],[key]:value}]).action!=='NO_GO')
+      throw Error('Unverified candidate selected: '+key);
+  }
+  if(pick([{...candidates[1],nextRunAt:'2026-11-04T11:20:00-06:00'}]).action!=='NO_GO')
+    throw Error('Past schedule accepted');
+  if(pick([{...candidates[1],account:'ALEX_CHATGPT'}]).action!=='NO_GO')
+    throw Error('Other account selected');
+  if(pick(candidates).requiresAuthorizationAndLeaseReadback!==true)
+    throw Error('Ranking improperly grants handoff authorization');
+  if(selectNextScheduledFreeTask(candidates,'bad','JAVIER_CHATGPT').action!=='NO_GO')
+    throw Error('Invalid clock allowed handoff');
   console.log('SOLQARYN WIP 6/1/1 PASS: strict one assigned scope even VALIDANDO, verified ownership and no self-approval');
 }else{
   console.log('SOLQARYN automation authority PASS');
