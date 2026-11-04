@@ -5,6 +5,13 @@
 - Acta `docs/P1-012-B-NEGATIVOS-ALTA-ADMIN-REGISTRADO-DEV.md`. Fixture EF InMemory; no acredita MySQL transaccional real ni HTTP/JWT remoto. Prueba dirigida `FullyQualifiedName~P1012B`, regresión P1012A, CI exact SHA, revisión técnica por otra Task, merge protegido, CI posmerge y cierre institucional pendientes de acreditar. No autoaprobar ni declarar LISTO.
 - Reversión: PR protegido de revert para tests y documentación, sin alterar historial comercial.
 
+## 2026-11-04 — P1-010.B: certificación HTTP/JWT separada por membresía (DEV)
+
+- Javier :30 (TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`) reclamó P1-010.B con WIP 6/1/1 desde `dev@4ac3fe76cc7f98c40a2aa1160c92560e1aab6bb2`; `PLAN_MAESTRO!H45=EN_PROGRESO` y `BITACORA!557` leídos de vuelta.
+- Nueva suite `P1010BMultiEmpresaHttpJwtCertificationTests`: cuatro regresiones TestServer con JWT real de prueba, controlador y UsuarioScopeService reales, roles distintos A/B, denegación de C, revocación/reactivación B, rechazo rol privado A en B y rechazo de usuario bloqueado/anonimato.
+- Persistencia de las pruebas: EF InMemory; NO acredita MySQL real ni servidor remoto DEV, ni reemplaza la certificación independiente que corresponda. Sólo archivos de tests, documentación de P1-010.B y este changelog; sin código productivo, migraciones, secretos o entornos QA/main/PROD.
+- Validar `dotnet test ... --filter FullyQualifiedName~P1010B` con TRX real y CI exact SHA de PR antes de READY/merge. Autor no autoaprueba ni marca LISTO. Rollback: PR protegido de revert y preservación de evidencia institucional.
+
 ## 2026-11-04 — P1-012.A: regresión de alta con administrador registrado (DEV)
 
 - Javier :00, TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`, tomó el único scope P1-012.A con WIP 6/1/1, dependencia P0-012.B LISTO y COLA!G48=SI. Rama determinista `work/solqaryn-p1-012-a` creada desde `dev@4ac3fe76cc7f98c40a2aa1160c92560e1aab6bb2` con readback GitHub y Sheets.
