@@ -1,3 +1,9 @@
+## 2026-11-04 — Revisión técnica cruzada entre Tasks por TASK_ID (solicitud expresa del propietario)
+
+- Se distingue la aceptación técnica entre Tasks individuales del mismo login GitHub y la revisión formal `APPROVED` que GitHub vincula a un usuario. `TASK_ID_AUTOR != TASK_ID_REVISOR` y evidencia exact-SHA son obligatorios para la aceptación técnica; la Task autora no puede marcar su propia microtarea `LISTO`.
+- No se solicita rutinariamente a la cuenta de Alex revisar tareas de Javier, ni a la cuenta de Javier revisar tareas de Alex; revisión formal distinta solo cuando el ruleset/verificador protegido la exige. Alex sigue inactiva, sin cambios físicos.
+- La nueva regla no elude CI, `PROJECT_SCOPE_LOCK=STRICT`, GitHub ni la protección de ramas. PR comercial `#3839` continúa con conflicto en `CHANGELOG_AI.md`; no se falsea su cierre. Reversión: nuevo PR protegido e independiente.
+
 ## 2026-11-04 — P1-006.B: certificación negativa del selector empresarial (en validación CI)
 
 - Task Javier :00, ID `6adbb9fff1548191a1bd5b30d9e9984a`, reclama rama determinista `work/solqaryn-p1-006-b` desde `dev@376d90d5663a` después de certificar y cerrar P1-006.A con CI postmerge 22/22 SUCCESS.

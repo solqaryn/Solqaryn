@@ -3,6 +3,12 @@
 **Decisión expresa del propietario: 31 de octubre de 2026.**
 **Repositorio:** `solqaryn/Solqaryn`. **Rama protegida:** `dev`.
 
+## Protocolo vigente de revisión técnica por TASK_ID — orden 2026-11-04
+
+La unidad de autoría funcional de una microtarea comercial es el `TASK_ID` físico autorizado y su evidencia de `PLAN_MAESTRO`/`BITACORA`, no la coincidencia del login GitHub. Una Task habilitada **distinta de la autora** puede revisar técnica y sustantivamente el PR de una Task que use la misma cuenta GitHub, comprobar diff, aislamiento multitenant/RBAC, checks y pruebas exact-SHA, registrar `TECH_REVIEW_PASS` o `REQUEST_CHANGES` con `TASK_ID_AUTOR != TASK_ID_REVISOR`, SHA y readback. Si todo cumple y los permisos y reglas protegidas lo permiten, la Task revisora puede efectuar el merge y el cierre `LISTO` después de CI postmerge exact-SHA y readback de `PLAN_MAESTRO`, `COLA` (fórmulas intactas) y `BITACORA`. **La Task autora no puede emitir aprobación técnica cruzada ni marcar como LISTO su propia microtarea.** Un traspaso de edición requiere lease libre, consentimiento/propiedad válida y ausencia de edición simultánea; revisión solo lectura no otorga permiso de escritura.
+
+La validación cruzada por `TASK_ID` es **técnica**, no un GitHub `APPROVED` formal de otra identidad. GitHub sigue identificando a las cuatro Tasks Javier como `jmejia31` y a las dos Alex como un solo login de su cuenta. No falsificar cuentas, reviews ni firmar aprobaciones propias. PR comerciales ordinarios aprovechan `AUTO_CERT=PASS` confiable y los checks reales sin pedir rutinariamente revisión humana; los PR protegidos de gobierno/validadores o un ruleset que exija aprobación formal conservan sus controles por identidad GitHub realmente independiente. No solicitar de forma predeterminada a `morales35alex` que apruebe trabajo de Javier, ni a `jmejia31` que apruebe trabajo de Alex. La regla es simétrica y no activa ni reprograma Tasks de Alex, que permanecen inactivas hasta nueva orden. Se preservan `PROJECT_SCOPE_LOCK=STRICT`, WIP 6/2/1, rama base `dev`, veto a autoaprobación formal, prohibición de force-push y límites de PROD.
+
 ## Identidades predeterminadas
 
 - **Ejecutora institucional:** `solqaryn-platform`. Es la única conexión GitHub que este asistente emplea para crear ramas, agregar o editar código, redactar documentos, registrar commits, abrir PR y ejecutar cambios de mantenimiento. Todos los commits nuevos de un mismo PR deben proceder de esa identidad, con autoría auténtica.
