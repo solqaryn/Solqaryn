@@ -4,15 +4,15 @@ PROJECT_ID=SOLQARYN
 REPOSITORY=solqaryn/Solqaryn
 BRANCH=dev
 CONTRACT_VERSION=2.0
-CONTRACT_PHASE=M3_2_FIVE_IDS_RECONCILED_NATIVE_RETIREMENT_NOT_ATTESTED
+CONTRACT_PHASE=M3_2_SIX_IDS_JAVIER4_ALEX2_PROTECTED_AUTHORIZATION
 AUTOMATION_RUNTIME=ACTIVE_DEV
-SCHEDULED_CHATGPT_TASKS_AUTHORIZED=5
-AUTHORIZED_COMMERCIAL_TASK_IDS=6adbb9fff1548191a1bd5b30d9e9984a,6adc2e4bd8a48191ac7d8641ed95a1a3,6adc2e55f47c81919f6374e561687076,6adbbc9ad9e88191bea8eb69104afb25,6adcc98a80a48191b71a5156624c21df
+SCHEDULED_CHATGPT_TASKS_AUTHORIZED=6
+AUTHORIZED_COMMERCIAL_TASK_IDS=6adbb9fff1548191a1bd5b30d9e9984a,6adc2e4bd8a48191ac7d8641ed95a1a3,6adc2e55f47c81919f6374e561687076,6adbbc9ad9e88191bea8eb69104afb25,6adcc98a80a48191b71a5156624c21df,6aeacb7820ac8191b7d768a6f33dfa09
 VAEP_DISPATCH_AUTHORIZED=FALSE
 JULES_WORKERS_AUTHORIZED=0
 TASK_COUNT_LIMIT=PROVIDER_EFFECTIVE_CAPACITY
 TASK_ASSIGNMENT_MODEL=OWNER_CONFIGURABLE
-REGISTERED_TASK_IDS=6adbb9fff1548191a1bd5b30d9e9984a,6adbbc9ad9e88191bea8eb69104afb25,6adc2e4bd8a48191ac7d8641ed95a1a3,6adc2e55f47c81919f6374e561687076,6adcc98a80a48191b71a5156624c21df
+REGISTERED_TASK_IDS=6adbb9fff1548191a1bd5b30d9e9984a,6adbbc9ad9e88191bea8eb69104afb25,6adc2e4bd8a48191ac7d8641ed95a1a3,6adc2e55f47c81919f6374e561687076,6adcc98a80a48191b71a5156624c21df,6aeacb7820ac8191b7d768a6f33dfa09
 PRIMARY_TASK_ROLE=PRIMARY_01
 SECONDARY_TASK_ROLE=SECONDARY_02
 PRIMARY_TASK_ACCOUNT=JAVIER_CHATGPT
@@ -33,14 +33,22 @@ NO_CROSS_ACCOUNT_CREDENTIALS=TRUE
 NO_LEGACY_REACTIVATION=TRUE
 
 DESIGN_TOPOLOGY=OWNER_CONFIGURABLE
-CURRENT_TASK_DISTRIBUTION=3_JAVIER_2_ALEX
-PHYSICAL_TASKS_REGISTERED=5
+CURRENT_TASK_DISTRIBUTION=4_JAVIER_2_ALEX
+PHYSICAL_TASKS_REGISTERED=6
 ACTIVE_DEV_WRITERS_OBSERVED=1
 MAX_CONCURRENT_SCOPES=6
 MAX_OWNED_SCOPES_PER_TASK=2
 MAX_ACTIVE_WRITES_PER_TASK=1
 
-## Censo vigente M3.2 — autoridad individual de cinco IDs (2026-11-03)
+## Censo vigente — incorporación de Javier :30 (2026-11-04)
+
+Orden expresa del propietario: crear una cuarta Task de `JAVIER_CHATGPT` para el minuto `:30` de cada hora en `America/Tegucigalpa`, con ID físico nuevo `6aeacb7820ac8191b7d768a6f33dfa09` y nombre `SOLQARYN — PRIMARY DEV 04 — JAVIER`. Fue creada desde la cuenta de Javier por la herramienta nativa de ChatGPT y su horario/identidad fueron leídos de vuelta. **Estado al preparar el PR: is_enabled=false (pausada preventivamente mientras se autoriza en gobierno)**. No se reutiliza la antigua Task de Alex :30, que conserva su exclusión y su ID anterior sin autorización.
+
+La lista individual de seis IDs corresponde a Javier :00/:20/:30/:40 y Alex :10/:50. La presente autorización comercial para el ID nuevo **solo entra en vigor tras revisión formal independiente del SHA final, los checks obligatorios, merge protegido a `dev` y readback de `TAREAS_PROGRAMADAS`, `CONFIG` y bitácora institucional**. Antes de ese cierre, aun si la Task estuviera habilitada físicamente, no puede escribir, reclamar scopes ni integrarse comercialmente. La activación real será verificada por separado con `automations.peek` y pruebas nativas desde su entorno programado. No se infiere acceso por el horario ni por pruebas manuales.
+
+Se conservan `MAX_CONCURRENT_SCOPES=6`, `MAX_OWNED_SCOPES_PER_TASK=2`, `MAX_ACTIVE_WRITES_PER_TASK=1`, contrato 2.0, `REVIEW_FIRST → RECOVER → CLAIM`, los checks de Scope Lock y las restricciones de DEV; nunca modificar QA/main/PROD, secretos, roles, grants ni permisos de otras Tasks.
+
+## Registro anterior M3.2 — autoridad individual de cinco IDs (2026-11-03, histórico)
 
 El registro canónico y la lista comercial contienen exactamente cinco TASK_ID (Javier :00/:20/:40; Alex :10/:50), sin distribución obligatoria. La posición anterior de Alex :30 se excluye del censo operacional y ya carece de autorización; su eliminación física **no está demostrada** desde la cuenta conectada, por lo que no debe afirmarse. Ninguna identidad ajena al censo puede adoptar el slot o sus permisos. Las referencias inferiores a seis Tasks corresponden a observaciones históricas. Permanecen intactos los límites WIP 6/2/1, `REVIEW_FIRST`, `PROJECT_SCOPE_LOCK=STRICT` y aprobación independiente para cambios de gobierno; las Tasks permanecen sin activar.
 
