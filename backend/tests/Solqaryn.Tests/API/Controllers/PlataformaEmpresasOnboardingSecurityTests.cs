@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -7,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Solqaryn.API.Controllers;
+using Solqaryn.Application.Common;
 using Solqaryn.API.Middleware;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Entities;
@@ -26,11 +28,36 @@ public sealed class PlataformaEmpresasOnboardingSecurityTests
             typeof(PlataformaEmpresasController), typeof(AuthorizeAttribute)));
     }
 
+    // P1-013.A: la disponibilidad del alta se calcula con ambos gates; un
+    // solo flag no promociona empresas ni habilita operaciones comerciales.
+    [Theory]
+    [InlineData(false, false, false)]
+    [InlineData(false, true, false)]
+    [InlineData(true, false, false)]
+    [InlineData(true, true, true)]
+    public async Task P1013A_DirectorioNoAnunciaAltaSinDobleGate(
+        bool onboarding, bool aislamiento, bool puedeCrear)
+    {
+        var fixture = await PrepararAsync(onboarding, aislamiento, true);
+        await using var db = fixture.Db;
+        var result = Assert.IsType<OkObjectResult>(
+            await fixture.Controller.Listar(cancellationToken: CancellationToken.None));
+        var response = Assert.IsType<ApiResponse<object>>(result.Value);
+        Assert.True(response.Success);
+        var data = JsonSerializer.SerializeToElement(response.Data);
+        Assert.Equal(puedeCrear, data.GetProperty("puedeCrear").GetBoolean());
+        // Listar no crea empresas, membresías ni configuración comercial.
+        Assert.Empty(await db.Set<Empresa>().ToListAsync());
+        Assert.Empty(await db.Set<UsuarioEmpresa>().ToListAsync());
+        Assert.Empty(await db.Set<ConfigEmpresa>().ToListAsync());
+        Assert.Single(await db.Set<RegistroAuditoria>().ToListAsync());
+    }
+
     [Theory]
     [InlineData(false, false)]
     [InlineData(true, false)]
     [InlineData(false, true)]
-    public async Task AltaRechazadaPorCualquierGateApagado(
+    public async Task P1013A_AltaRechazadaPorCualquierGateApagado(
         bool onboarding, bool aislamiento)
     {
         var fixture = await PrepararAsync(onboarding, aislamiento, true);
@@ -352,7 +379,7 @@ public sealed class PlataformaEmpresasOnboardingSecurityTests
     }
 
     [Fact]
-    public async Task MiddlewareSoloDejaPasarRutaDePlataformaExactaConDobleGateYJwt()
+    public async Task P1013A_MiddlewareSoloDejaPasarRutaExactaConDobleGateYJwt()
     {
         var fixture = await PrepararAsync(true, true, true);
         await using var db = fixture.Db;
