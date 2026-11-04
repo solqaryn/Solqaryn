@@ -209,8 +209,18 @@ export function validateProposedRun(p) {
     if(p.activeEditorAccount&&p.activeEditorAccount!==p.actorAccount)
       errors.push('concurrent_editor');
   }else if(p.operation==='REVIEW'){
-    if(!isUrl(p.reviewedPrRef)||p.authorAccount===p.actorAccount||
-      !p.independentReviewerVerified||p.activeReviewerConflict)
+    const technical = p.reviewMode==='TECHNICAL_CROSS_TASK';
+    if(!isUrl(p.reviewedPrRef)||p.activeReviewerConflict)
+      errors.push('review_integrity');
+    if(technical){
+      // Technical review by another TASK_ID is valid even on the same GitHub
+      // login, but it cannot claim formal independent provider approval.
+      if(!/^[a-f0-9]{32}$/i.test(p.authorTaskId||'')||
+        p.authorTaskId===p.actorTaskId||p.technicalEvidenceVerified!==true||
+        p.reviewPermissionVerified!==true||p.exactHeadVerified!==true||
+        p.formalGithubApprovalRequested===true)
+        errors.push('technical_review_integrity');
+    }else if(p.authorAccount===p.actorAccount||!p.independentReviewerVerified)
       errors.push('review_integrity');
   }else if(p.operation==='CLOSE'){
     if(!isUrl(p.reviewedPrRef)||!p.mergedIntoDev||!p.mergeSha||
@@ -218,7 +228,13 @@ export function validateProposedRun(p) {
       !p.allContributionsReviewed||!p.sheetReadbackVerified||
       !p.ledgerReadbackVerified||!p.dependentsRecalculated)
       errors.push('close_integrity');
-    if(p.actorAccount===p.authorAccount && !p.separateApprovalAccount)
+    if(p.authorTaskId && p.actorTaskId===p.authorTaskId)
+      errors.push('self_signoff');
+    if(p.actorAccount===p.authorAccount &&
+      (!p.authorTaskId||p.actorTaskId===p.authorTaskId||
+       p.technicalReviewPassed!==true||p.technicalEvidenceVerified!==true||
+       p.automaticCertificationVerified!==true||p.providerRulesSatisfied!==true||
+       p.formalReviewRequired===true))
       errors.push('self_signoff');
   }else if(p.operation!=='READ'){
     errors.push('unknown_operation');
@@ -348,6 +364,36 @@ if(failures.length){
     throw Error('Unreviewed corrective commit bypass');
   if(!validateProposedRun({...close,sheetReadbackVerified:false}).length)
     throw Error('Sheet failure bypass');
+  const technicalReview={...base,operation:'REVIEW',reviewMode:'TECHNICAL_CROSS_TASK',
+    authorAccount:'JAVIER_CHATGPT',authorTaskId:'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+    reviewedPrRef:'https://github.com/solqaryn/Solqaryn/pull/3842',
+    technicalEvidenceVerified:true,reviewPermissionVerified:true,
+    independentReviewerVerified:false,formalGithubApprovalRequested:false};
+  if(validateProposedRun(technicalReview).length)
+    throw Error('Same-login distinct-TASK_ID technical review refused');
+  for(const [name,patch] of [
+    ['same TASK_ID',p=>p.authorTaskId=p.actorTaskId],
+    ['missing evidence',p=>p.technicalEvidenceVerified=false],
+    ['unverified permission',p=>p.reviewPermissionVerified=false],
+    ['fake formal APPROVED',p=>p.formalGithubApprovalRequested=true]
+  ]){const x=clone(technicalReview);patch(x);
+    if(!validateProposedRun(x).length)throw Error('Unsafe technical review accepted: '+name);}
+  const crossClose={...close,actorAccount:'JAVIER_CHATGPT',
+    actorRole:'PRIMARY_01',actorTaskId:base.actorTaskId,
+    authorAccount:'JAVIER_CHATGPT',authorTaskId:'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+    technicalReviewPassed:true,technicalEvidenceVerified:true,
+    automaticCertificationVerified:true,providerRulesSatisfied:true,
+    formalReviewRequired:false};
+  if(validateProposedRun(crossClose).length)
+    throw Error('Verified cross-Task postmerge closure rejected');
+  for(const [name,patch] of [
+    ['own Task',p=>p.authorTaskId=p.actorTaskId],
+    ['technical review missing',p=>p.technicalReviewPassed=false],
+    ['auto cert missing',p=>p.automaticCertificationVerified=false],
+    ['provider gate missing',p=>p.providerRulesSatisfied=false],
+    ['formal review required',p=>p.formalReviewRequired=true]
+  ]){const x=clone(crossClose);patch(x);
+    if(!validateProposedRun(x).length)throw Error('Unsafe cross-Task close accepted: '+name);}
   const graph={'P0-012.A':'VALIDANDO'};
   if(dependenciesSatisfied({dependencies:['P0-012.A']},graph))
     throw Error('VALIDANDO incorrectly released dependency');
@@ -392,6 +438,17 @@ if(failures.length){
     throw Error('Own VALIDANDO must precede EN_PROGRESO recovery');
   if(selectWork([alexPR,ownValidating,own],{},'JAVIER_CHATGPT',new Set(),idOwnValidating).action!=='REVIEW')
     throw Error('Independent external review must remain first');
+  const sameLoginPeer={...ownValidating,authorTaskId:idOwnValidating,
+    reviewerAllowed:true,reviewPermissionVerified:true,reviewerLeaseAvailable:true,
+    technicalReviewAllowed:true,technicalEvidenceVerified:true};
+  if(selectWork([sameLoginPeer],{},'JAVIER_CHATGPT',new Set(),'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').action!=='REVIEW_TECHNICAL')
+    throw Error('Distinct-TASK_ID same-login review missing');
+  if(selectWork([{...sameLoginPeer,authorTaskId:'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'}],{},
+     'JAVIER_CHATGPT',new Set(),'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').action!=='NO_ELIGIBLE')
+    throw Error('Same-TASK_ID self-review accepted');
+  if(selectWork([{...sameLoginPeer,formalGithubApprovalRequested:true}],{},
+     'JAVIER_CHATGPT',new Set(),'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').action!=='NO_ELIGIBLE')
+    throw Error('Same-login fake formal APPROVED accepted');
   if(selectWork([ownValidating],{},'JAVIER_CHATGPT',new Set(),'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').action!=='NO_ELIGIBLE')
     throw Error('Another Task with shared GitHub login must not recover own VALIDANDO');
   if(selectWork([ownValidating],{},'JAVIER_CHATGPT',new Set()).action!=='NO_ELIGIBLE')
@@ -425,6 +482,12 @@ if(failures.length){
       throw Error('Unverified foreign recovery accepted: '+field);
   }
   if(selectWork([idle,alexPR],{},'JAVIER_CHATGPT',new Set(),'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',true).action!=='REVIEW') throw Error('Foreign handoff bypassed review');
+  if(selectWork([options[0],ownValidating],{'P0-012.A':'LISTO'},
+     'JAVIER_CHATGPT',new Set(),idOwnValidating,true).action==='CLAIM')
+    throw Error('Second CLAIM accepted with first VALIDANDO');
+  if(selectWork([options[0]],{'P0-012.A':'LISTO'},
+     'JAVIER_CHATGPT',new Set(),idOwnValidating,false).action==='CLAIM')
+    throw Error('CLAIM accepted without ownership inventory');
   if(selectWork([{...alexPR,authorAccount:'JAVIER_CHATGPT'}],{},'JAVIER_CHATGPT').action!=='NO_ELIGIBLE')
     throw Error('Same-account self review accepted');
   const canonicalAlex=clone(base);
