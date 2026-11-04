@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, computed, signal } from '@angular/core';
 import { catchError, map, of } from 'rxjs';
 import { PermisoService } from '../../services/permiso.service';
 import { TenantContextService } from './tenant-context.service';
@@ -36,9 +36,21 @@ export class PermisosRuntimeService {
   private readonly _operacionRestringida = signal(true);
   private readonly _capacidades = signal<Set<string>>(new Set());
   private readonly _rutasHabilitadas = signal<Set<string>>(new Set());
+  // Una petición de permisos anterior nunca puede reemplazar ni revocar la
+  // autorización de la empresa seleccionada posteriormente.
+  private versionCarga = 0;
 
-  readonly esAdministrador = this._esAdministrador.asReadonly();
-  readonly cargado = this._cargado.asReadonly();
+  readonly esAdministrador = computed(() =>
+    this._cargado() &&
+    this._esAdministrador() &&
+    this.tenantContext.tieneContextoVerificado() &&
+    this._empresaPermisosId() === this.tenantContext.empresaIdVerificada()
+  );
+  readonly cargado = computed(() =>
+    this._cargado() &&
+    this.tenantContext.tieneContextoVerificado() &&
+    this._empresaPermisosId() === this.tenantContext.empresaIdVerificada()
+  );
 
   constructor(
     private permisoService: PermisoService,
@@ -52,11 +64,17 @@ export class PermisosRuntimeService {
       return of(false);
     }
 
+    // Revocar caches y rutas en memoria ANTES de volver a pedir permisos.
+    // La revisión separa peticiones solapadas, incluso del mismo tenant.
+    const version = ++this.versionCarga;
+    this.limpiarEstado();
+
     return this.permisoService.getMisPermisos(empresaId).pipe(
       map((res) => {
-        // No aceptar una respuesta si el tenant cambió mientras la petición estaba en vuelo.
-        if (this.tenantContext.empresaIdVerificada() !== empresaId) {
-          this.limpiar();
+        // Una respuesta antigua no puede borrar los permisos del nuevo tenant.
+        if (version !== this.versionCarga ||
+            this.tenantContext.empresaIdVerificada() !== empresaId ||
+            !this.tenantContext.tieneContextoVerificado()) {
           return false;
         }
 
@@ -80,19 +98,25 @@ export class PermisosRuntimeService {
         return true;
       }),
       catchError(() => {
-        this._empresaPermisosId.set(null);
-        this._permisos.set(new Set());
-        this._esAdministrador.set(false);
-        this._operacionRestringida.set(true);
-        this._capacidades.set(new Set());
-        this._rutasHabilitadas.set(new Set());
-        this._cargado.set(true);
+        // Un error HTTP de A recibido después del éxito de B no puede
+        // invalidar los permisos ni la navegación actual de B.
+        if (version === this.versionCarga &&
+            this.tenantContext.empresaIdVerificada() === empresaId &&
+            this.tenantContext.tieneContextoVerificado()) {
+          this.limpiarEstado();
+          this._cargado.set(true);
+        }
         return of(false);
       })
     );
   }
 
   limpiar(): void {
+    this.versionCarga++;
+    this.limpiarEstado();
+  }
+
+  private limpiarEstado(): void {
     this._empresaPermisosId.set(null);
     this._permisos.set(new Set());
     this._esAdministrador.set(false);
