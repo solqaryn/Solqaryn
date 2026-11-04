@@ -1,3 +1,10 @@
+## 2026-11-04 — P1-012.A: regresión de alta con administrador registrado (DEV)
+
+- Javier :00, TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`, tomó el único scope P1-012.A con WIP 6/1/1, dependencia P0-012.B LISTO y COLA!G48=SI. Rama determinista `work/solqaryn-p1-012-a` creada desde `dev@4ac3fe76cc7f98c40a2aa1160c92560e1aab6bb2` con readback GitHub y Sheets.
+- Se reutiliza el flujo del PR #3683: una prueba existente del controlador fue identificada como `P1012A_PlataformaCreaEmpresaConAdminRegistradoSinEscaladaGlobal` y reforzada para comprobar que la empresa y su membresía no duplican la cuenta, no modifican su rol ni asignan autoridad global. No se modifican API productiva, RBAC, BD, migraciones, QA/main/PROD ni secretos.
+- Acta `docs/P1-012-A-ALTA-ADMIN-REGISTRADO-DEV.md`. Fixture EF InMemory: no es prueba HTTP/JWT remoto ni MySQL live. CI exact HEAD, test dirigido `FullyQualifiedName~P1012A`, Scope Lock, seguridad, build, revisión técnica por otro TASK_ID y CI postmerge **aún por verificar**; no se afirma PASS ni LISTO anticipados.
+- Rollback únicamente por nuevo PR protegido que revierta test/documentación, preservando la trazabilidad de PLAN_MAESTRO/COLA/BITACORA.
+
 ## 2026-11-04 — P1-010.A: roles y membresías independientes por tenant (DEV)
 
 - La Task Javier :20 (`6adc2e4bd8a48191ac7d8641ed95a1a3`) reclamó exclusivamente `work/solqaryn-p1-010-a` desde `dev@30bf43749a8eb7b164a065f5aabebfa024aa0faa`, con P1-007.A en VALIDANDO sin escritor activo.
