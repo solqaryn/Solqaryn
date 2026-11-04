@@ -29,6 +29,19 @@ JULES_WORKERS_AUTHORIZED=0
 
 Cinco identidades autorizadas y registradas, no un reparto obligatorio: Javier :00/:20/:40 y Alex :10/:50. El slot antiguo :30 está excluido; su ausencia física no puede certificarse desde la cuenta ajena. Los fragmentos que describen el inventario de seis son históricas y no autorizan altas ni revisiones propias. Las cinco identidades están sujetas a cuentas, ACL y rol GitHub efectivos; ninguna automatización se activa desde la documentación.
 
+## M3.3 — Interpretación vigente y evidencia reutilizable (2026-11-03)
+
+Este control verifica un ciclo comercial real de extremo a extremo, **no** una cantidad de Tasks encendidas. La topología autorizada sigue siendo cinco identidades (Javier :00/:20/:40; Alex :10/:50), WIP comercial 6/2/1 y Scope Lock STRICT. El trabajo nace exclusivamente del Plan Comercial Inicial. No crear Tasks, reactivar automatizaciones, ampliar permisos, modificar COLA ni repetir pruebas diagnósticas consumidas.
+
+**Evidencia funcional real preexistente, no autorización vigente de escritura:**
+
+- P0-006.A: Task Alex :50 (6adcc98a80a48191b71a5156624c21df) tomó el scope y abrió PR [#3751](https://github.com/solqaryn/Solqaryn/pull/3751) en SHA 30274e27f036b3a619b9e1ff543cce202a49bdaf. Javier jmejia31 aprobó revisión #5644765982; tres checks requeridos SUCCESS; merge protegido bafcde53ce2562f70d5b4115184df51e5c48483d. BITACORA!92:93 registra VALIDANDO -> LISTO, PLAN_MAESTRO!H12, COLA!E12 y sucesora COLA!G13=SI.
+- P0-007.A: Task Alex :10 (6adbbc9ad9e88191bea8eb69104afb25) creó el PR [#3753](https://github.com/solqaryn/Solqaryn/pull/3753), corrigió el mismo PR y publicó HEAD final 7d8846107d57be815450660daac3d108b69dc54a. Javier :40/:20 documentó revisión cruzada y jmejia31 aprobó formalmente #5645065439 en ese HEAD; tres checks requeridos SUCCESS, prueba dirigida y CI postmerge 5/5 SUCCESS. Merge 72327d132ee69955c5bb13a03423b229a08bd432; BITACORA!96,97,99,103 acredita PLAN_MAESTRO!H14=LISTO, COLA!E14=LISTO y COLA!G15/N15=SI.
+- P0-007.B: [PR #3757](https://github.com/solqaryn/Solqaryn/pull/3757) y BITACORA!108,110,113,114 registran recuperación de conflicto, corrección del PR existente sin force-push, CI del SHA actualizado y cierre. Esto demuestra continuidad en ese caso, no que las Tasks hoy estén encendidas.
+- Las pruebas #3751, #3753 y #3757 ocurrieron ANTES de la separación institucional de roles del 31-10-2026. Son evidencia verificable de funcionamiento entonces, no autorización actual para que Javier o Alex publiquen nuevos PR desde este asistente.
+- El self-test de scripts/validate-dual-task-configuration.mjs incluye casos negativos de colisión de scope, permisos ausentes, rama sin readback, WIP excedido, revisión propia, corrección no revisada, fallo de Sheets y dependencias. Un test de modelo NO sustituye una ejecución física concurrente de dos Tasks.
+
+**Criterio de certificación:** EVIDENCIA_CICLO_REAL_PREEXISTENTE=PASS. Para la certificación integral M3.3, cada criterio debe tener una prueba atribuible y las negativas simuladas deben distinguirse de un ensayo nativo. Si no está acreditada una doble toma física o caída real de Sheets, declarar NO_ACREDITADO por control y no inventar PASS global. AUTOMATION_RUNTIME=ACTIVE_DEV describe autoridad lógica, no el valor is_enabled. En esta revisión las tres Tasks Javier están pausadas; Alex :10/:50 constaban pausadas en último readback documentado. La confirmación humana de eliminación Alex :30 no es una lectura nativa de esta sesión.
 ## Enmienda operativa propuesta — certificación automática CI en DEV (2026-10-30)
 
 **Vigencia condicionada:** esta norma solo sustituye la revisión formal para futuros PR comerciales ordinarios cuando el changeset esté fusionado por PR protegido en `dev`, el job requerido `verify-solqaryn-project-scope` ejecute la certificación contra el SHA exacto y exista readback de CI. Durante la implantación/bootstrap de este PR normativo sigue exigida revisión formal realmente independiente. No se simula un `APPROVED` humano: `AUTO_CERT=PASS` significa exclusivamente certificación técnica de GitHub Actions.
@@ -79,20 +92,11 @@ Cada otra función depende de permisos individuales, sin autoaprobación. Cada a
 identidad de su propia cuenta, permiso real, contrato vigente y ausencia de conflicto.
 No se garantiza inicio ni duracion ininterrumpida por programacion nominal de ChatGPT.
 
-**SIMETRIA SIN EXCEPCIONES POR NOMBRE:** Javier Primary 01/02/03 Y Alex
-Secondary 01/02/03 pueden seleccionar indistintamente una microtarea
-`PENDIENTE` elegible para DESARROLLAR o una microtarea `VALIDANDO` de la
-otra cuenta para REVISAR, CORREGIR y tramitar el cierre. Un nombre
-`REVIEW` NO significa solo lectura ni prohíbe crear ramas/PR; un
-nombre `DEV` NO prohíbe revisión de PR ajenos. La prioridad
-`REVIEW_FIRST` establece el ORDEN de búsqueda de trabajo disponible,
-no la asignación exclusiva de revisión a Alex ni de desarrollo a Javier.
-La autonomía equivalente nunca elimina la independencia entre autor
-y revisor, los permisos efectivos, el Scope Lock ni los checks de GitHub.
+**REFERENCIA HISTÓRICA — NO EJECUTABLE:** durante el piloto inicial, los nombres Primary/Secondary no asignaban por sí mismos desarrollo o revisión. Esa simetría dejó de definir las conexiones GitHub utilizadas por este asistente. Para cambios nuevos rige docs/GITHUB_ACCOUNT_ROLES.md: solqaryn-platform es la autora institucional de ramas, commits y PR; Javier (jmejia31) es revisor independiente cuando corresponda. Nadie puede escribir código desde la identidad revisora para aprobar sus propios commits, intercambiar cuentas o heredar permisos de la etiqueta visible. Se conserva la evidencia de trabajo anterior sin reinstaurar sus permisos.
 
 ## Seleccion y continuidad
 
-Orden uniforme para las seis Tasks:
+Orden de evaluación de trabajo para los actores expresamente habilitados y autorizados, sujeto a la separación de cuentas GitHub vigente:
 1. Reanudar trabajo propio incompleto con rama/PR y evidencia, si no hay otro editor.
 2. Revisar `VALIDANDO` que provenga de otra identidad verificable y no tenga revisor activo; confirmar PR GitHub y permisos efectivos antes de asumir la revisión.
 3. Tomar `PENDIENTE` con **todas** sus dependencias en `LISTO` solo si WIP global es menor que 6 y se dispone de cupo propio. Primera tarea sin otro scope asignado; segunda únicamente si la primera está `VALIDANDO` sin edición activa, el actor verificó `REVIEW_FIRST` y no hay revisión ajena abordable. Nunca mantener dos trabajos en escritura activa desde la misma Task. Prioridad P0 antes
@@ -112,14 +116,8 @@ No se fabrican candidatos para mantener ocupadas las Tasks.
 
 - `PENDIENTE -> EN_PROGRESO`: una Task con toma exclusiva efectiva y avance real.
 - `EN_PROGRESO -> VALIDANDO`: quien implementa presenta PR + diff + pruebas reales.
-- `VALIDANDO -> VALIDANDO` (correccion): el revisor de **otra cuenta**
-  diagnostica y corrige en la misma rama/PR, sin devolver la implementacion al
-  primer actor. Sus cambios quedan identificados por SHA, autor y pruebas nuevas.
-- Si el revisor añadió commits, necesita revisión **independiente** de sus cambios
-  antes de cierre. El autor original puede analizar el diff correctivo, pero no
-  emitir una aprobacion formal de su propio PR; si la proteccion exige aprobacion
-  formal adicional se requiere otro revisor elegible. Ninguna identidad puede
-  aprobar sus propias modificaciones fingiendo independencia.
+- `VALIDANDO -> VALIDANDO` (corrección vigente): el revisor independiente diagnostica y solicita cambios. solqaryn-platform corrige en el MISMO PR con su identidad real y publica un SHA nuevo. Javier revisa ese SHA final sin escribir código ni reutilizar aprobaciones de versiones anteriores.
+- Si una identidad revisora hubiera aportado commits reales al PR, hace falta revisión por un tercero independiente de TODOS los contribuyentes, sin autoaprobación ni cambio de cuentas para fingirla. La corrección histórica entre Tasks no vuelve a ser una orden operativa.
 - `VALIDANDO -> LISTO`: revisión independiente requerida completa, CI exact-HEAD
   completo, merge autorizado y **confirmado en dev**, SHA de merge verificable,
   `PLAN_MAESTRO` actualizado, `COLA` recalculada por formula y evento en
@@ -280,9 +278,8 @@ No crear IDs nativos ficticios.
 2. Microtarea ocupada: segundo actor no sobrescribe ni interrumpe.
 3. Dependencia `VALIDANDO`: sucesora no elegible.
 4. Dependencia `LISTO`: sucesora elegible si todas satisfechas.
-5. Review correctiva: una Task de la otra cuenta corrige en mismo PR.
-6. Correcciones del revisor: comprobación independiente de esos commits,
-   sin autoaprobaciones ni supuestas aprobaciones nativas.
+5. Revisión correctiva: Javier u otro revisor genuinamente independiente solicita cambios; la ejecutora institucional corrige en el mismo PR y el SHA final se vuelve a revisar.
+6. Si existiesen commits de quien revisa, un tercero independiente de todos los contribuyentes comprueba los cambios; nunca se simulan aprobaciones ni identidades.
 7. CI exact-HEAD; merge protegido real; `VALIDANDO -> LISTO` con readback.
 8. Sin trabajo: evento deduplicado, sin nuevas ramas ni microtareas ficticias.
 9. Interrupcion: reanudar desde commit/PR sin perder ni duplicar.
