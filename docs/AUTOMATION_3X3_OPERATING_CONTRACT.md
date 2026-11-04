@@ -7,8 +7,8 @@ BASE_BRANCH=dev
 TIMEZONE=America/Tegucigalpa
 TASK_COUNT_LIMIT=PROVIDER_EFFECTIVE_CAPACITY
 TASK_ASSIGNMENT_MODEL=OWNER_CONFIGURABLE
-CURRENT_REGISTERED_TASKS=5
-CURRENT_JAVIER_TASKS=3
+CURRENT_REGISTERED_TASKS=6
+CURRENT_JAVIER_TASKS=4
 CURRENT_ALEX_TASKS=2
 MAX_OPEN_WORK_BRANCHES=6
 MAX_CONCURRENT_SCOPES=6
@@ -25,7 +25,11 @@ GITHUB_CHAT_ROLE_POLICY=docs/GITHUB_ACCOUNT_ROLES.md
 VAEP_DISPATCH_AUTHORIZED=FALSE
 JULES_WORKERS_AUTHORIZED=0
 
-## Estado institucional vigente M3.2 (2026-11-03)
+## Censo vigente — Javier :30 (2026-11-04)
+
+Por orden expresa del propietario se creó `SOLQARYN — PRIMARY DEV 04 — JAVIER`, ID `6aeacb7820ac8191b7d768a6f33dfa09`, cada hora al minuto :30 en America/Tegucigalpa. Identidad y horario verificados en ChatGPT; quedó PAUSADA hasta formalizar autorización individual en PR protegido, revisión independiente, CI exact-SHA y Sheets. Después del merge serán seis identidades autorizadas: cuatro Javier (:00/:20/:30/:40) y dos Alex (:10/:50). La antigua Alex :30 permanece excluida, sin reactivación ni herencia de permisos. No se amplían límites de scopes WIP 6/2/1 ni autorizaciones a QA/main/PROD. Permisos individuales y prueba nativa de lectura/escritura siguen sujetos a evidencia, y las pruebas desde un chat manual no sustituyen las de una Task.
+
+## Registro anterior M3.2 (2026-11-03, histórico)
 
 Cinco identidades autorizadas y registradas, no un reparto obligatorio: Javier :00/:20/:40 y Alex :10/:50. El slot antiguo :30 está excluido; su ausencia física no puede certificarse desde la cuenta ajena. Los fragmentos que describen el inventario de seis son históricas y no autorizan altas ni revisiones propias. Las cinco identidades están sujetas a cuentas, ACL y rol GitHub efectivos; ninguna automatización se activa desde la documentación.
 
@@ -69,13 +73,14 @@ comercial a los IDs que no figuran en la lista, aunque el flag global de Sheets 
 
 ## Programacion nominal, no asignacion
 
-La tabla siguiente enumera las cinco Tasks del censo operativo autorizado; no fija una cantidad ni un reparto obligatorio. Cualquier Task externa requiere verificación y autorización propia.
+La tabla siguiente enumera las seis Tasks del censo comercial que autoriza esta enmienda después de su merge protegido; no fija una cantidad ni un reparto obligatorio. Cualquier Task externa requiere verificación y autorización propia.
 
 | Slot | Cuenta | Minuto por hora | Implantacion |
 | --- | --- | --- | --- |
 | PRIMARY_DEV_01 | JAVIER_CHATGPT | :00 | ID original conservado; instalada |
 | SECONDARY_REVIEW_01 | ALEX_CHATGPT | :10 | ID original conservado; instalada |
 | PRIMARY_DEV_02 | JAVIER_CHATGPT | :20 | Instalada desde Javier |
+| PRIMARY_DEV_04 | JAVIER_CHATGPT | :30 | Nueva; ID 6aeacb7820ac8191b7d768a6f33dfa09; contrato 2.0, autorización protegida |
 | PRIMARY_DEV_03 | JAVIER_CHATGPT | :40 | Instalada desde Javier |
 | SECONDARY_REVIEW_03 | ALEX_CHATGPT | :50 | Instalada desde Alex |
 
@@ -86,17 +91,17 @@ Los **TASK_ID físicos originales no cambian**. La numeración en pantalla
 no transfiere permisos ni duplica una Task; `TAREAS_PROGRAMADAS` debe
 confirmar unicidad de ID/propietario/horario.
 
-## 5. Responsables y permisos — cinco Tasks autorizadas (interpretación vigente 2026-11-03)
+## 5. Responsables y permisos — seis Tasks autorizadas (actualizado 2026-11-04)
 
-**Igualdad de protocolo no es igualdad automática de credenciales ni activación.** El censo actual contiene cinco `TASK_ID` autorizados: Javier `:00/:20/:40` y Alex `:10/:50`; Alex `:30` queda excluida. Las etiquetas visibles `PRIMARY_DEV` y `SECONDARY_REVIEW` son aliases históricos, no categorías de privilegio ni autorizaciones adicionales. El censo no impone un máximo inmutable ni una distribución 3+3. Cada operación se decide por `TASK_ID` vigente, cuenta autenticada, permiso efectivo, estado `is_enabled`, lease/owner del scope, revisión realmente independiente y Scope Lock `STRICT`.
+**Igualdad de protocolo no es igualdad automática de credenciales ni activación.** El censo actual contiene seis `TASK_ID` autorizados: Javier `:00/:20/:30/:40` y Alex `:10/:50`; la antigua Alex `:30` queda excluida. Las etiquetas visibles `PRIMARY_DEV` y `SECONDARY_REVIEW` son aliases históricos, no categorías de privilegio ni autorizaciones adicionales. El censo no impone un máximo inmutable ni una distribución 3+3. Cada operación se decide por `TASK_ID` vigente, cuenta autenticada, permiso efectivo, estado `is_enabled`, lease/owner del scope, revisión realmente independiente y Scope Lock `STRICT`.
 
 | Operación | Actor admisible según la autoridad **actual** | Control indispensable |
 | --- | --- | --- |
-| Buscar y seleccionar trabajo | Cualquiera de los cinco IDs **si está habilitado** y posee permisos reales; también puede examinar candidatos en solo lectura | `REVIEW_FIRST` primero, `RECOVER` después y `CLAIM` al final; no apropiarse de scopes ajenos por aparente inactividad |
+| Buscar y seleccionar trabajo | Cualquiera de los seis IDs **si está habilitado** y posee permisos reales; también puede examinar candidatos en solo lectura | `REVIEW_FIRST` primero, `RECOVER` después y `CLAIM` al final; no apropiarse de scopes ajenos por aparente inactividad |
 | Tomar `PENDIENTE` | Task individualmente autorizada y habilitada que pueda efectuar un claim exclusivo | Dependencias todas `LISTO`, rama determinista create-if-absent, readback, WIP global 6, máximo 2 scopes por Task y 1 escritura activa |
 | Recuperar `EN_PROGRESO` | Task propietaria con recuperación válida o Task distinta con traspaso expresamente autorizado | Lease liberado, ausencia de editor, rama y último commit reales, permisos y cambio de owner verificados; conservar PR existente |
-| Desarrollar, corregir código, publicar commit o PR | **Cualquiera de los cinco TASK_ID comerciales** si está habilitado y tiene identidad GitHub propia, `contents:write` y permisos efectivos; **solo para intervenciones manuales de este asistente** aplica la autoría institucional `solqaryn-platform` | No intercambiar sesiones ni cuentas; una Task que contribuyó al PR no puede emitir revisión independiente del mismo PR |
-| Revisar `VALIDANDO`, diagnosticar y corregir | Cualquiera de los cinco TASK_ID con permisos efectivos; revisión **independiente formal** solo por login GitHub ajeno a todos los contribuyentes y con derecho real de revisión; `jmejia31` es revisor predeterminado **solo para PR manuales institucionales** | Se permite autoevaluación técnica, comentarios y corrección del defecto en la rama original; al contribuir, ese actor pierde independencia formal en ese PR, que requerirá otro revisor independiente cuando sea exigible |
+| Desarrollar, corregir código, publicar commit o PR | **Cualquiera de los seis TASK_ID comerciales** si está habilitado y tiene identidad GitHub propia, `contents:write` y permisos efectivos; **solo para intervenciones manuales de este asistente** aplica la autoría institucional `solqaryn-platform` | No intercambiar sesiones ni cuentas; una Task que contribuyó al PR no puede emitir revisión independiente del mismo PR |
+| Revisar `VALIDANDO`, diagnosticar y corregir | Cualquiera de los seis TASK_ID con permisos efectivos; revisión **independiente formal** solo por login GitHub ajeno a todos los contribuyentes y con derecho real de revisión; `jmejia31` es revisor predeterminado **solo para PR manuales institucionales** | Se permite autoevaluación técnica, comentarios y corrección del defecto en la rama original; al contribuir, ese actor pierde independencia formal en ese PR, que requerirá otro revisor independiente cuando sea exigible |
 | Corregir el defecto detectado | Autora inicial o Task revisora con permisos autenticados y traspaso/exclusividad de escritura verificados; en intervenciones manuales de este asistente corrige `solqaryn-platform` | Reutilizar el mismo PR/rama y publicar SHA nuevo; si corrigió el revisor, dejar de considerarlo independiente y tramitar revisión formal de otro login solo cuando resulte obligatoria |
 | Registrar `EN_PROGRESO` y `VALIDANDO` | Actor autorizado que acredita claim y entrega auténticos | Registro auditable y PR/diff/pruebas reales; no adelantar estados por calendario |
 | Emitir aceptación técnica | CI/Scope Lock confiable del SHA exacto para PR comerciales ordinarios; cambios de gobierno/seguridad/validadores requieren además `APPROVED` de revisor formalmente independiente | Autoevaluación técnica propia permitida, autocertificación independiente prohibida; CI no simula un `APPROVED` humano ni autoriza bypass |
