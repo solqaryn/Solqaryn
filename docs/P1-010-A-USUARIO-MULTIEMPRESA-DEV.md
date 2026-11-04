@@ -18,3 +18,10 @@
 - Tras CI terminal sin fallos y verificacion de pruebas dirigidas, evaluar cambio EN_PROGRESO a VALIDANDO por via institucional autorizada.
 - Merge solo por flujo GitHub protegido con permisos efectivos; postmerge CI y PLAN_MAESTRO/COLA (formulas intactas)/BITACORA requieren readback. P1-010.B queda separado.
 - No QA/main/PROD, Aiven productivo, secretos, cambios de proveedores, adquisiciones, toggles ni tareas fisicas nuevas.
+
+## Reconciliación con dev vigente — 2026-11-04
+
+- El PR #3838 de P1-006.A se fusionó en `dev@376d90d5663afd72563b2e5935234322a549e6ff` después de los checks anteriores del PR #3842.
+- Se preservaron los dos commits de esta rama y se incorporó `dev` mediante un **merge Git no destructivo** en el commit `76a0ad80e7ff7ccea8f10cde78771b98e47a369c`, con padres `ee3a224eada4c465eef908dffd11052051a97556` y `376d90d5663afd72563b2e5935234322a549e6ff`, sin force-push.
+- Resolución de `CHANGELOG_AI.md`: se añadió la sección P1-010.A sobre el archivo vivo de `dev` sin eliminar las incorporaciones ajenas. El diff contra `dev` tras el merge fue solo tres archivos: CHANGELOG, suite xUnit y acta; `behind_by=0`.
+- El resultado anterior `AUTO_CERT=PASS`, xUnit 7/7 y 17 SUCCESS / 1 SKIPPED pertenece al SHA **anterior** `ee3a224eada4c465eef908dffd11052051a97556`; no se reutiliza para el nuevo HEAD. La certificación del SHA posterior, sus checks dirigidos y el merge protegido siguen **PENDIENTES** y no se declara `LISTO`.
