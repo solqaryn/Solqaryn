@@ -104,11 +104,21 @@ public sealed class UsuarioScopeService : IUsuarioScopeService
         if (!_currentUser.EstaAutenticado || !_currentUser.UsuarioId.HasValue)
             return Array.Empty<EmpresaSeleccionable>();
 
-        // Se reutiliza el mismo predicado de UsuarioEmpresa/Usuario/Empresa/Rol
-        // que autoriza la selección individual. El filtrado ocurre en MySQL:
-        // ninguna empresa ajena o membresía inactiva se materializa en memoria.
-        var empresasAutorizadas = ContextosTenantValidos(_currentUser.UsuarioId.Value)
-            .Select(contexto => contexto.EmpresaId);
+        // Materializar primero los scopes que el mismo predicado JWT/RBAC
+        // autorizó desde MySQL. El proveedor Oracle de EF Core no traduce
+        // Contains sobre la proyección intermedia de UsuarioTenantScopeActual.
+        // La segunda consulta recibe únicamente IDs autorizados, nunca un
+        // catálogo global ni una membresía inactiva/ajena.
+        var contextosAutorizados = await ContextosTenantValidos(_currentUser.UsuarioId.Value)
+            .ToListAsync(cancellationToken);
+
+        if (contextosAutorizados.Count == 0)
+            return Array.Empty<EmpresaSeleccionable>();
+
+        var empresasAutorizadas = contextosAutorizados
+            .Select(contexto => contexto.EmpresaId)
+            .Distinct()
+            .ToArray();
 
         return await _context.Set<Empresa>()
             .AsNoTracking()
