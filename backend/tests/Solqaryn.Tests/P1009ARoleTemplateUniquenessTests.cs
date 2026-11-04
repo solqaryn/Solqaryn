@@ -53,17 +53,29 @@ public sealed class P1009ARoleTemplateUniquenessTests
     }
 
     [Fact]
-    public void P1009A_IndiceDeNombreNormalizadoEsUnicoEnModeloEF()
+    public void P1009A_ModeloConservaUnicidadPorTenantYPlantillasGlobales()
     {
         using var db = new AppDbContext(
             new DbContextOptionsBuilder<AppDbContext>()
                 .UseInMemoryDatabase("p1009a-model-" + Guid.NewGuid().ToString("N"))
                 .Options);
 
+        // CommercialTenantNaturalKeysModel.Apply reemplaza la unicidad simple
+        // inicial de RolConfiguration; no comprobar la configuración intermedia.
         var entity = db.Model.FindEntityType(typeof(Rol));
         Assert.NotNull(entity);
-        Assert.Contains(entity!.GetIndexes(), index =>
+        var indices = entity!.GetIndexes().ToArray();
+
+        Assert.Contains(indices, index =>
             index.IsUnique &&
+            index.Properties.Select(p => p.Name).SequenceEqual(
+                new[] { nameof(Rol.EmpresaId), nameof(Rol.NombreNormalizado) }));
+        Assert.Contains(indices, index =>
+            index.IsUnique &&
+            index.Properties.Count == 1 &&
+            index.Properties[0].Name == "NombreNormalizadoGlobalUnico");
+        Assert.Contains(indices, index =>
+            !index.IsUnique &&
             index.Properties.Count == 1 &&
             index.Properties[0].Name == nameof(Rol.NombreNormalizado));
     }
