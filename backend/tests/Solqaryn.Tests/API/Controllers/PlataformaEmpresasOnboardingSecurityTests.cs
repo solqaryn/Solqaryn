@@ -77,12 +77,18 @@ public sealed class PlataformaEmpresasOnboardingSecurityTests
     }
 
     [Fact]
-    public async Task PlataformaCreaEmpresaYMembresiaAtomicaSinConcederAutoridadPlataformaAlTenant()
+    public async Task P1012A_PlataformaCreaEmpresaConAdminRegistradoSinEscaladaGlobal()
     {
         var fixture = await PrepararAsync(true, true, true);
         await using var db = fixture.Db;
         db.Set<Empresa>().Add(new Empresa("A histórica"));
         await db.SaveChangesAsync();
+
+        // P1-012.A: modalidad legacy exige reutilizar el usuario ya registrado.
+        var usuarioOriginal = await db.Usuarios.IgnoreQueryFilters().AsNoTracking()
+            .SingleAsync(x => x.Id == fixture.AdministradorId);
+        var totalUsuariosPrevio = await db.Usuarios.IgnoreQueryFilters().CountAsync();
+        var rolOriginalId = usuarioOriginal.RolId;
 
         var result = await fixture.Controller.AltaControlada(new()
         {
@@ -122,6 +128,18 @@ public sealed class PlataformaEmpresasOnboardingSecurityTests
         Assert.Equal(fixture.ActorId, audit.UsuarioId);
         Assert.Equal(AccionPermiso.Crear, audit.Accion);
         Assert.Contains("\"ConfigEmpresaId\"", audit.ValoresNuevos ?? "");
+
+        // La creación de la empresa no crea otra identidad ni promueve al
+        // administrador empresarial a autoridad de plataforma.
+        Assert.Equal(totalUsuariosPrevio,
+            await db.Usuarios.IgnoreQueryFilters().CountAsync());
+        var usuarioFinal = await db.Usuarios.IgnoreQueryFilters().AsNoTracking()
+            .SingleAsync(x => x.Id == fixture.AdministradorId);
+        Assert.Equal(usuarioOriginal.NombreUsuario, usuarioFinal.NombreUsuario);
+        Assert.Equal(rolOriginalId, usuarioFinal.RolId);
+        Assert.True(usuarioFinal.Activo);
+        Assert.False(await db.Set<UsuarioRolPlataforma>().IgnoreQueryFilters()
+            .AnyAsync(x => x.UsuarioId == fixture.AdministradorId));
     }
 
     [Fact]
