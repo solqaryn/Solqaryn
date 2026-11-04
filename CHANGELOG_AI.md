@@ -1,3 +1,11 @@
+## 2026-11-04 — P1-006.A: selector empresarial JWT basado en membresías activas (WIP, PR #3838)
+
+- Se reclamó atómicamente `work/solqaryn-p1-006-a` desde `dev@d89806cbbf4fea18ff9b503df94445839e83c78b` mediante GitHub y readback; Task de Javier `:00`, identidad `jmejia31`, prioridad P1, dependencias P0-012.B LISTO.
+- `GET /tenant-context/empresas` exige JWT y consulta exclusivamente empresas con `UsuarioEmpresa` activa, cuenta/empresa/rol vigentes y rol empresarial autorizado. No permite enumerar empresas de otros usuarios ni convertir roles de Plataforma en privilegios tenant.
+- Angular reemplaza el ID digitado por selector de nombres provistos por el servidor. El ID persistido es una solicitud no autoritativa; siempre se valida de nuevo por `GET /tenant-context/{id}`. Error de red, JWT o listado inconsistente falla cerrado.
+- Se agregaron tests xUnit A/B/C/D/E/anónimo, tests de contrato Angular y de selector; documentación de arquitectura y rollback en `docs/P1-006-A-SELECTOR-MEMBRESIAS-DEV.md`.
+- Estado: **EN_PROGRESO**, PR #3838 inicialmente DRAFT; no confundir CI pendiente/fallida con certificación ni marcar LISTO. P1-006.B es otra microtarea de cierre LIVE. Sin modificaciones en QA/main/PROD/Aiven/secretos.
+
 ## 2026-11-03 — Precisión de autonomía 5 Tasks: autoevaluación permitida, autocertificación prohibida
 
 - Cambio normativo propuesto en `docs/GITHUB_ACCOUNT_ROLES.md`, `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md` y `docs/AUTOMATION_AUTHORITY.md`: separación de operaciones manuales de este asistente (`solqaryn-platform` autora, `jmejia31` revisor) respecto de las cinco Tasks comerciales paritarias autorizadas.
