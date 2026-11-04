@@ -104,6 +104,36 @@ describe('MF3 - permisos vs capacidades empresariales', () => {
     expect(runtime.puede('Productos', 'Ver')).toBe(false);
     expect(runtime.rutaHabilitada('productos')).toBe(false);
   });
+  it('comparte consulta concurrente del mismo tenant sin denegar al primer guard', () => {
+    const pendiente = new Subject<any>();
+    let llamadas = 0;
+    const permisoService = {
+      getMisPermisos: (_id: number) => {
+        llamadas++;
+        return pendiente.asObservable();
+      }
+    } as unknown as PermisoService;
+    const tenantContext = {
+      empresaIdVerificada: () => empresa(),
+      tieneContextoVerificado: () => empresa() !== null
+    } as unknown as TenantContextService;
+    runtime = new PermisosRuntimeService(permisoService, tenantContext);
+
+    const resultadosA: boolean[] = [];
+    const resultadosB: boolean[] = [];
+    runtime.cargar().subscribe(ok => resultadosA.push(ok));
+    runtime.cargar().subscribe(ok => resultadosB.push(ok));
+
+    expect(llamadas).toBe(1);
+    pendiente.next(response);
+    pendiente.complete();
+
+    expect(resultadosA).toEqual([true]);
+    expect(resultadosB).toEqual([true]);
+    expect(runtime.puede('Productos', 'Ver')).toBe(true);
+    expect(runtime.cargado()).toBe(true);
+  });
+
   it('oculta inmediatamente permisos, rutas y rol administrador al pedir otra empresa', () => {
     runtime.cargar().subscribe();
     expect(runtime.esAdministrador()).toBe(true);
