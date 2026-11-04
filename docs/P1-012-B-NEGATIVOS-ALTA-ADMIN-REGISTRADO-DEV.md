@@ -16,6 +16,12 @@ La regresión existente `P1012A_PlataformaCreaEmpresaConAdminRegistradoSinEscala
 
 Se reutilizan instancias EF Core **InMemory**, identidades de test y `PlataformaEmpresasController` real del repositorio. Estas pruebas verifican lógica y efectos observables del controlador, **NO** la ruta HTTP/JWT de un servidor DEV externo, transacciones físicas MySQL, índices, unicidad SQL en carreras concurrentes ni valores de flags de un despliegue. La prueba MySQL del proyecto se rige por CI separada; nunca inferir un PASS por esta acta.
 
+## Evidencia causal del primer HEAD y control de reejecución
+
+- Sobre el primer HEAD `2f11ba1e9c844e5c2432d5bdbfe4d1afeaa70ef5`, el workflow comercial dirigido ejecutó **2 pruebas P1012B, 2 PASS, 0 FAIL**, job `126890372318`. El Scope Lock del mismo SHA registró `AUTO_CERT=PASS`, job `126890372240`; 17 checks SUCCESS y 1 SKIPPED. Evidencia válida únicamente para ese SHA.
+- Se reconcilió sin force-push el avance de `dev@fa10d1a92c90ee06d693a3c89bc8586d5ffc9be2` con merge de dos padres `c3eac64d1f018418471e55b06213b7cfb91d996f`, preservando el diff de tres archivos, autoría y README histórico. GitHub confirma `mergeable=true`, `behind=0`.
+- CI de `c3eac64d...`: se observaron dos ejecuciones del check dirigido para el mismo SHA; la primera quedó `cancelled`, aunque su log presenta 2/2 PASS, y una segunda terminó `success`. Scope Lock job `126920806073` produjo `AUTO_CERT=NO_GO` al evaluar el check cancelado y otros checks todavía pendientes. No se reconoce PASS de ese SHA ni se desactiva el gate. La actualización documental crea un HEAD nuevo para una ejecución de CI coherente, sin modificar tests productivos ni políticas de seguridad.
+
 ## Cierre exigido
 
 - Ejecutar `dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --filter FullyQualifiedName~P1012B`, verificando **al menos dos pruebas descubiertas**, dos éxitos y cero fallos mediante salida real o TRX.
