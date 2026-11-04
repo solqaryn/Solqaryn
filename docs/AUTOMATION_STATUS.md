@@ -35,6 +35,13 @@ GITHUB_CHAT_ROLE_SEPARATION=STRICT
 GITHUB_CHAT_ROLE_POLICY=docs/GITHUB_ACCOUNT_ROLES.md
 LEGACY_AUTOMATION_RUNTIME=RETIRED
 
+
+## Protocolo vigente de revisión técnica por TASK_ID — orden 2026-11-04
+
+La unidad de autoría funcional de una microtarea comercial es el `TASK_ID` físico autorizado y su evidencia de `PLAN_MAESTRO`/`BITACORA`, no la coincidencia del login GitHub. Una Task habilitada **distinta de la autora** puede revisar técnica y sustantivamente el PR de una Task que use la misma cuenta GitHub, comprobar diff, aislamiento multitenant/RBAC, checks y pruebas exact-SHA, registrar `TECH_REVIEW_PASS` o `REQUEST_CHANGES` con `TASK_ID_AUTOR != TASK_ID_REVISOR`, SHA y readback. Si todo cumple y los permisos y reglas protegidas lo permiten, la Task revisora puede efectuar el merge y el cierre `LISTO` después de CI postmerge exact-SHA y readback de `PLAN_MAESTRO`, `COLA` (fórmulas intactas) y `BITACORA`. **La Task autora no puede emitir aprobación técnica cruzada ni marcar como LISTO su propia microtarea.** Un traspaso de edición requiere lease libre, consentimiento/propiedad válida y ausencia de edición simultánea; revisión solo lectura no otorga permiso de escritura.
+
+La validación cruzada por `TASK_ID` es **técnica**, no un GitHub `APPROVED` formal de otra identidad. GitHub sigue identificando a las cuatro Tasks Javier como `jmejia31` y a las dos Alex como un solo login de su cuenta. No falsificar cuentas, reviews ni firmar aprobaciones propias. PR comerciales ordinarios aprovechan `AUTO_CERT=PASS` confiable y los checks reales sin pedir rutinariamente revisión humana; los PR protegidos de gobierno/validadores o un ruleset que exija aprobación formal conservan sus controles por identidad GitHub realmente independiente. No solicitar de forma predeterminada a `morales35alex` que apruebe trabajo de Javier, ni a `jmejia31` que apruebe trabajo de Alex. La regla es simétrica y no activa ni reprograma Tasks de Alex, que permanecen inactivas hasta nueva orden. Se preservan `PROJECT_SCOPE_LOCK=STRICT`, WIP 6/2/1, rama base `dev`, veto a autoaprobación formal, prohibición de force-push y límites de PROD.
+
 ## Censo vigente — incorporación de Javier :30 (2026-11-04)
 
 Orden expresa del propietario: crear una cuarta Task de `JAVIER_CHATGPT` para el minuto `:30` de cada hora en `America/Tegucigalpa`, con ID físico nuevo `6aeacb7820ac8191b7d768a6f33dfa09` y nombre `SOLQARYN — PRIMARY DEV 04 — JAVIER`. Fue creada desde la cuenta de Javier por la herramienta nativa de ChatGPT y su horario/identidad fueron leídos de vuelta. **Estado al preparar el PR: is_enabled=false (pausada preventivamente mientras se autoriza en gobierno)**. No se reutiliza la antigua Task de Alex :30, que conserva su exclusión y su ID anterior sin autorización.
