@@ -4922,3 +4922,5 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Se agregaron tests xUnit A/B/C/D/E/anónimo, tests de contrato Angular y de selector; documentación de arquitectura y rollback en `docs/P1-006-A-SELECTOR-MEMBRESIAS-DEV.md`.
 - Estado: **EN_PROGRESO**, PR #3838 inicialmente DRAFT; no confundir CI pendiente/fallida con certificación ni marcar LISTO. P1-006.B es otra microtarea de cierre LIVE. Sin modificaciones en QA/main/PROD/Aiven/secretos.
 
+
+- Actualización de procedencia del PR #3838: después de incorporar el gobierno protegido #3837, se reconciliaron el HEAD activo de `dev@30bf43749a8eb7b164a065f5aabebfa024aa0faa` y la base GitHub del PR en `dev`, sin alterar ningún archivo de gobierno. La entrega continúa EN_PROGRESO; sólo CI del HEAD siguiente puede certificar su seguridad y pruebas.
