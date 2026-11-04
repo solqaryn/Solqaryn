@@ -4920,3 +4920,16 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Acta `docs/P1-001-B-CERTIFICACION-ROL-ENTRE-TENANTS-DEV.md`. Sin mutaciones del ERP, MySQL, frontend, API, secretos, QA/main/PROD. Estado candidato sujeto a CI exact SHA, revisión independiente, merge protegido y readback; LISTO NO acreditado.
 
 - CI_PROVENIENCIA_DIRECT_HEAD_P1001B: check-runs 3/3 vinculados inicialmente al PR SHA `fc1322d` ejecutaban fisicamente el merge sintetico `c06f52b`, no checkout directo. Se añade workflow dirigido `.github/workflows/p1-001-b-role-isolation.yml` con checkout explícito `github.event.pull_request.head.sha || github.sha`, para verificar en el SHA final el test xUnit de seis casos sin datos reales. La evidencia de HEAD directo requiere log autenticado; no confundir el status asociado con el commit ejecutado. Estado VALIDANDO condicionado por ese gate.
+
+## 2026-11-04 — P1-006.A: selector empresarial JWT basado en membresías activas (WIP, PR #3838)
+
+- Se reclamó atómicamente `work/solqaryn-p1-006-a` desde `dev@d89806cbbf4fea18ff9b503df94445839e83c78b` mediante GitHub y readback; Task de Javier `:00`, identidad `jmejia31`, prioridad P1, dependencias P0-012.B LISTO.
+- `GET /tenant-context/empresas` exige JWT y consulta exclusivamente empresas con `UsuarioEmpresa` activa, cuenta/empresa/rol vigentes y rol empresarial autorizado. No permite enumerar empresas de otros usuarios ni convertir roles de Plataforma en privilegios tenant.
+- Angular reemplaza el ID digitado por selector de nombres provistos por el servidor. El ID persistido es una solicitud no autoritativa; siempre se valida de nuevo por `GET /tenant-context/{id}`. Error de red, JWT o listado inconsistente falla cerrado.
+- Se agregaron tests xUnit A/B/C/D/E/anónimo, tests de contrato Angular y de selector; documentación de arquitectura y rollback en `docs/P1-006-A-SELECTOR-MEMBRESIAS-DEV.md`.
+- Estado: **EN_PROGRESO**, PR #3838 inicialmente DRAFT; no confundir CI pendiente/fallida con certificación ni marcar LISTO. P1-006.B es otra microtarea de cierre LIVE. Sin modificaciones en QA/main/PROD/Aiven/secretos.
+
+
+- Actualización de procedencia del PR #3838: después de incorporar el gobierno protegido #3837, se reconciliaron el HEAD activo de `dev@30bf43749a8eb7b164a065f5aabebfa024aa0faa` y la base GitHub del PR en `dev`, sin alterar ningún archivo de gobierno. La entrega continúa EN_PROGRESO; sólo CI del HEAD siguiente puede certificar su seguridad y pruebas.
+
+- Corrección causal P1-006.A tras inspección del artefacto E2E run 41785235514: HTTP 500 de `GET /tenant-context/empresas` causado por proyección LINQ `new UsuarioTenantScopeActual(...).EmpresaId` no traducible como subquery `Contains` en MySql.EntityFrameworkCore 10.0.9. `UsuarioScopeService` materializa exclusivamente scopes JWT/tenant válidos, deduplica IDs autorizados y consulta nombres con esos IDs; sin alterar RBAC ni usar catálogo global. Nueva CI exact-SHA/E2E y AUTO_CERT pendientes; no certificar hasta PASS.

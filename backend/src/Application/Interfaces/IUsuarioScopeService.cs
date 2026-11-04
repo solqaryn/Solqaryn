@@ -21,6 +21,12 @@ public sealed record UsuarioTenantScopeActual(
     string RolNombre,
     bool EsAdministrador);
 
+/// <summary>
+/// Empresa mostrada en el selector. Solo se publica cuando existe una membresía
+/// activa y válida del usuario autenticado; nunca se enumeran empresas globales.
+/// </summary>
+public sealed record EmpresaSeleccionable(int EmpresaId, string Nombre);
+
 public interface IUsuarioScopeService
 {
     /// <summary>
@@ -28,6 +34,15 @@ public interface IUsuarioScopeService
     /// Los flujos tenant-owned deben usar la sobrecarga con EmpresaId.
     /// </summary>
     Task<UsuarioScopeActual?> ObtenerActualAsync();
+
+    /// <summary>
+    /// Lista exclusivamente empresas asociadas a membresías activas válidas
+    /// del actor autenticado. Implementaciones que no soporten la operación
+    /// fallan cerrado sin exponer empresas.
+    /// </summary>
+    Task<IReadOnlyList<EmpresaSeleccionable>> ListarEmpresasSeleccionablesAsync(
+        CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyList<EmpresaSeleccionable>>(Array.Empty<EmpresaSeleccionable>());
 
     /// <summary>
     /// Resuelve el contexto efectivo para la empresa solicitada a partir de

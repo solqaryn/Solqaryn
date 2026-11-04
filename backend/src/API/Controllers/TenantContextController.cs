@@ -22,6 +22,18 @@ public sealed class TenantContextController : ControllerBase
         _usuarioScopeService = usuarioScopeService;
     }
 
+    /// <summary>
+    /// Selector seguro: solo las empresas con membresía vigente del actor JWT.
+    /// No utiliza el catálogo administrativo global ni el ID suministrado por UI.
+    /// </summary>
+    [HttpGet("empresas")]
+    public async Task<IActionResult> ListarEmpresas(CancellationToken cancellationToken)
+    {
+        var empresas = await _usuarioScopeService.ListarEmpresasSeleccionablesAsync(cancellationToken);
+        return Ok(ApiResponse<IReadOnlyList<EmpresaSeleccionable>>.Ok(
+            empresas, "Empresas activas autorizadas."));
+    }
+
     [HttpGet("{empresaId:int}")]
     public async Task<IActionResult> Obtener(
         int empresaId,
