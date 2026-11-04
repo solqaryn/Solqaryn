@@ -98,6 +98,37 @@ public sealed class UsuarioScopeService : IUsuarioScopeService
         return candidatos.Count == 1 ? candidatos[0] : null;
     }
 
+    public async Task<IReadOnlyList<EmpresaSeleccionable>> ListarEmpresasSeleccionablesAsync(
+        CancellationToken cancellationToken = default)
+    {
+        if (!_currentUser.EstaAutenticado || !_currentUser.UsuarioId.HasValue)
+            return Array.Empty<EmpresaSeleccionable>();
+
+        // Materializar primero los scopes que el mismo predicado JWT/RBAC
+        // autorizó desde MySQL. El proveedor Oracle de EF Core no traduce
+        // Contains sobre la proyección intermedia de UsuarioTenantScopeActual.
+        // La segunda consulta recibe únicamente IDs autorizados, nunca un
+        // catálogo global ni una membresía inactiva/ajena.
+        var contextosAutorizados = await ContextosTenantValidos(_currentUser.UsuarioId.Value)
+            .ToListAsync(cancellationToken);
+
+        if (contextosAutorizados.Count == 0)
+            return Array.Empty<EmpresaSeleccionable>();
+
+        var empresasAutorizadas = contextosAutorizados
+            .Select(contexto => contexto.EmpresaId)
+            .Distinct()
+            .ToArray();
+
+        return await _context.Set<Empresa>()
+            .AsNoTracking()
+            .Where(empresa => empresasAutorizadas.Contains(empresa.Id))
+            .OrderBy(empresa => empresa.Nombre)
+            .ThenBy(empresa => empresa.Id)
+            .Select(empresa => new EmpresaSeleccionable(empresa.Id, empresa.Nombre))
+            .ToListAsync(cancellationToken);
+    }
+
     private IQueryable<UsuarioTenantScopeActual> ContextosTenantValidos(
         int usuarioId,
         int? empresaId = null)
