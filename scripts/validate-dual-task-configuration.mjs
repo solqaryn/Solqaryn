@@ -65,7 +65,7 @@ export function validateDocuments(src) {
     errors.push('commercial WIP cap mismatch');
   const ownedCaps = [src.authority, src.status, src.contract].map(x => Number(key(x,'MAX_OWNED_SCOPES_PER_TASK')));
   const activeWriteCaps = [src.authority, src.status, src.contract].map(x => Number(key(x,'MAX_ACTIVE_WRITES_PER_TASK')));
-  if (!ownedCaps.every(x=>Number.isInteger(x)&&x===2)) errors.push('per-task scope cap mismatch');
+  if (!ownedCaps.every(x=>Number.isInteger(x)&&x===1)) errors.push('per-task scope cap mismatch');
   if (!activeWriteCaps.every(x=>Number.isInteger(x)&&x===1)) errors.push('single active editor cap mismatch');
   if (key(src.scope,'TASK_COUNT_LIMIT') !== 'PROVIDER_EFFECTIVE_CAPACITY') errors.push('Task count policy');
   if (key(src.scope,'PROJECT_SCOPE_LOCK') !== 'STRICT') errors.push('strict lock');
@@ -73,7 +73,7 @@ export function validateDocuments(src) {
   for (const [name,value] of Object.entries(approvalPolicy))
     if (key(src.authority,name) !== value) errors.push('approval ' + name);
   for (const phrase of ['TASK_COUNT_LIMIT=PROVIDER_EFFECTIVE_CAPACITY','TASK_ASSIGNMENT_MODEL=OWNER_CONFIGURABLE','MAX_OPEN_WORK_BRANCHES=6','MAX_CONCURRENT_SCOPES=6',
-    'MAX_OWNED_SCOPES_PER_TASK=2','MAX_ACTIVE_WRITES_PER_TASK=1',
+    'MAX_OWNED_SCOPES_PER_TASK=1','MAX_ACTIVE_WRITES_PER_TASK=1',
     'REVIEW_INDEPENDENCE_REQUIRED=TRUE','America/Tegucigalpa',
     'PENDIENTE -> EN_PROGRESO','EN_PROGRESO -> VALIDANDO',
     'VALIDANDO -> LISTO','VALIDANDO -> VALIDANDO']) {
@@ -90,16 +90,24 @@ export function dependenciesSatisfied(task, stateById) {
   return Array.isArray(task.dependencies) &&
     task.dependencies.every(id => stateById[id] === 'LISTO');
 }
-export function selectWork(tasks, stateById, account, activeReviewIds = new Set(), taskId = null) {
+export function selectWork(tasks, stateById, account, activeReviewIds = new Set(), taskId = null, ownershipReadbackVerified = false) {
   if (!['JAVIER_CHATGPT','ALEX_CHATGPT'].includes(account))
     return {action:'NO_ELIGIBLE',reason:'UNKNOWN_ACCOUNT'};
-  // REVIEW_FIRST: no active reviewer; assigned but idle requires lease readback.
-  const review = tasks.find(t => t.state === 'VALIDANDO' &&
-    ['JAVIER_CHATGPT','ALEX_CHATGPT','SOLQARYN_PLATFORM'].includes(t.authorAccount) &&
-    t.authorAccount !== account && !activeReviewIds.has(t.id) &&
-    isUrl(t.prUrl) && t.reviewerAllowed === true &&
-    t.reviewPermissionVerified === true && t.reviewerLeaseAvailable === true);
-  if (review) return {action:'REVIEW',task:review};
+  // REVIEW_FIRST: same-login review is allowed ONLY across distinct TASK_IDs
+  // with technical evidence; NEVER claim it as native GitHub APPROVED.
+  const validTaskId = typeof taskId === 'string' && /^[a-f0-9]{32}$/i.test(taskId);
+  const review = tasks.find(t => {
+    const technical = t.authorAccount===account && validTaskId &&
+      /^[a-f0-9]{32}$/i.test(t.authorTaskId||'') && t.authorTaskId!==taskId &&
+      t.technicalReviewAllowed===true && t.technicalEvidenceVerified===true &&
+      t.formalGithubApprovalRequested!==true;
+    return t.state==='VALIDANDO' &&
+      ['JAVIER_CHATGPT','ALEX_CHATGPT','SOLQARYN_PLATFORM'].includes(t.authorAccount) &&
+      (t.authorAccount!==account || technical) && !activeReviewIds.has(t.id) &&
+      isUrl(t.prUrl) && t.reviewerAllowed===true &&
+      t.reviewPermissionVerified===true && t.reviewerLeaseAvailable===true;
+  });
+  if(review) return {action:review.authorAccount===account?'REVIEW_TECHNICAL':'REVIEW',task:review};
   // REVIEW_FIRST also includes technical follow-up on the CURRENT TASK's own VALIDANDO.
   // This is NEVER an independent review or a grant to another Task of the same login.
   const ownValidating = tasks.find(t => t.state === 'VALIDANDO' &&
@@ -112,18 +120,26 @@ export function selectWork(tasks, stateById, account, activeReviewIds = new Set(
        t.branchReadbackVerified === true && !activeReviewIds.has(t.id))));
   if (ownValidating) return {action:'RECOVER_VALIDANDO',task:ownValidating};
   const own = tasks.find(t => t.state === 'EN_PROGRESO' &&
-    t.ownerAccount === account && t.resumeAuthorized === true &&
+    validTaskId && t.ownerTaskId===taskId && t.ownerAccount === account && t.resumeAuthorized === true &&
     t.exclusiveScopeVerified === true && t.activeEditorVerifiedAbsent === true &&
     t.branchReadbackVerified === true && !t.conflictingClaim);
   if (own) return {action:'RESUME',task:own};
+  // No acquisition is allowed if this physical Task already owns any scope,
+  // whether EN_PROGRESO or VALIDANDO. Verify the COMPLETE ownership readback.
+  if(!validTaskId || ownershipReadbackVerified!==true)
+    return {action:'NO_ELIGIBLE',reason:'OWNERSHIP_READBACK_REQUIRED'};
+  if(tasks.some(t=>(t.state==='EN_PROGRESO'||t.state==='VALIDANDO')&&t.ownerTaskId===taskId))
+    return {action:'NO_ELIGIBLE',reason:'TASK_ALREADY_OWNS_SCOPE'};
   // Foreign IN_PROGRESS: no unverified takeover or lost commits.
   const handoff = tasks.find(t => t.state === 'EN_PROGRESO' &&
     validScope(t.id) && ['JAVIER_CHATGPT','ALEX_CHATGPT'].includes(t.ownerAccount) &&
-    t.ownerAccount !== account && t.handoffAuthorized === true &&
+    (t.ownerAccount!==account || (t.ownerTaskId!==taskId &&
+      t.handoffTargetTaskId===taskId)) && t.handoffAuthorized === true &&
     t.previousLeaseReleased === true && t.activeEditorVerifiedAbsent === true &&
     t.exclusiveScopeVerified === true && t.branchReadbackVerified === true &&
     t.lastCommitVerified === true && t.permissionsVerified === true &&
-    t.ownerTransferReadbackVerified === true && !t.conflictingClaim &&
+    t.ownerTransferReadbackVerified === true && t.nextRunRecipientSelectionVerified === true &&
+    t.handoffTargetTaskId === taskId && !t.conflictingClaim &&
     t.branchName === 'work/solqaryn-' + t.id.toLowerCase().replace('.', '-'));
   if (handoff) return {action:'RECOVER_HANDOFF',task:handoff};
   const eligible = tasks.filter(t => t.state === 'PENDIENTE' &&
@@ -132,6 +148,37 @@ export function selectWork(tasks, stateById, account, activeReviewIds = new Set(
   eligible.sort((x,y)=>Number(x.priority.slice(1))-Number(y.priority.slice(1)) ||
     x.planOrder-y.planOrder);
   return eligible.length ? {action:'CLAIM',task:eligible[0]} : {action:'NO_ELIGIBLE'};
+}
+// Advisory only: never changes an owner or grants permissions.
+// Every candidate requires an independently verified, future scheduled occurrence.
+export function selectNextScheduledFreeTask(candidates, nowIso, account, previousOwnerTaskId=null) {
+  const instant=x=>typeof x==='string' &&
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2})$/.test(x) &&
+    Number.isFinite(Date.parse(x));
+  const taskId=x=>typeof x==='string' && /^[a-f0-9]{32}$/i.test(x);
+  if(!instant(nowIso)||!['JAVIER_CHATGPT','ALEX_CHATGPT'].includes(account))
+    return {action:'NO_GO',reason:'UNVERIFIED_CLOCK_OR_ACCOUNT'};
+  if(!Array.isArray(candidates))
+    return {action:'NO_GO',reason:'ROSTER_NOT_VERIFIED'};
+  const now=Date.parse(nowIso);
+  const verified=candidates.filter(c=>c&&taskId(c.taskId)&&
+    c.taskId!==previousOwnerTaskId&&c.account===account&&
+    c.registeredTask===true&&c.authorizedTask===true&&
+    c.isEnabled===true&&c.schedulerVerified===true&&
+    c.rruleVerified===true&&c.timezone==='America/Tegucigalpa'&&
+    c.identityVerified===true&&c.permissionsVerified===true&&
+    c.ownershipReadbackVerified===true&&c.ownedOpenScopes===0&&
+    c.activeRun===false&&c.activeEditor===false&&c.activeLease===false&&
+    ['PROVIDER_NEXT_RUN','DERIVED_VERIFIED_RRULE'].includes(c.nextRunSource)&&
+    instant(c.nextRunAt)&&Date.parse(c.nextRunAt)>now&&
+    Date.parse(c.nextRunAt)-now<=60*60*1000);
+  verified.sort((a,b)=>Date.parse(a.nextRunAt)-Date.parse(b.nextRunAt)||
+    a.taskId.localeCompare(b.taskId));
+  const first=verified[0];
+  return first
+    ? {action:'HANDOFF_CANDIDATE',taskId:first.taskId,nextRunAt:first.nextRunAt,
+       nextRunSource:first.nextRunSource,requiresAuthorizationAndLeaseReadback:true}
+    : {action:'NO_GO',reason:'NO_VERIFIED_FREE_FUTURE_RUN'};
 }
 // Historical read-only evidence is optional metadata and NEVER a gate for DEV.
 export function verifiedScheduledReadOnlyProof(proof,slot) {
@@ -155,6 +202,10 @@ export function validateProposedRun(p) {
     seenId.add(slot.taskId);
   }
   if(p.operation==='NONE')return errors;
+  if(!/^[a-f0-9]{32}$/i.test(p.actorTaskId||'')||
+     !(p.slots||[]).some(s=>s.taskId===p.actorTaskId &&
+       s.account===p.actorAccount&&s.role===p.actorRole&&s.permissionsVerified===true))
+    errors.push('actor_task_identity');
   if(!p.authorizationVerified||p.mode!=='ACTIVE_DEV')errors.push('authorization');
   if(!supportedAccounts.has(p.actorAccount) ||
      !(p.slots||[]).some(s=>s.role===p.actorRole&&s.account===p.actorAccount&&s.permissionsVerified===true))
@@ -171,28 +222,38 @@ export function validateProposedRun(p) {
     // A read/write RESUME of an already counted scope does not consume another slot.
     if(!Number.isInteger(p.openWorkBranches)||p.openWorkBranches<0||p.openWorkBranches>6||
        (!p.resumingExistingScope&&p.openWorkBranches>=6)) errors.push('branch_cap');
-    if(!Number.isInteger(p.taskOwnedScopeCount)||p.taskOwnedScopeCount<0||p.taskOwnedScopeCount>2||
-       (!p.resumingExistingScope&&p.taskOwnedScopeCount>=2)) errors.push('task_scope_cap');
-    // One active editor per Task even when the Task owns two scopes.
+    if(p.ownershipReadbackVerified!==true ||
+       !Number.isInteger(p.taskOwnedScopeCount)||p.taskOwnedScopeCount<0||p.taskOwnedScopeCount>1||
+       (!p.resumingExistingScope&&p.taskOwnedScopeCount!==0)||
+       (p.resumingExistingScope&&(p.taskOwnedScopeCount!==1||
+         p.ownedScopeId!==p.scopeId||p.scopeOwnerTaskId!==p.actorTaskId)))
+      errors.push('task_scope_cap');
+    // Only one active editor in the single assigned scope.
     if(!Number.isInteger(p.taskActiveWriteCount)||p.taskActiveWriteCount<0||
        p.taskActiveWriteCount>1||(!p.resumingExistingScope&&p.taskActiveWriteCount!==0)||
        p.sameTaskOtherScopeBeingEdited===true) errors.push('task_active_write');
-    // A second scope is only claimable when the previous PR is already VALIDANDO
-    // without an active editor, and REVIEW_FIRST was exhausted for this actor.
-    if(!p.resumingExistingScope&&p.taskOwnedScopeCount===1&&
-       (p.existingScopeState!=='VALIDANDO'||p.existingScopeActiveEditor===true||
-        p.reviewFirstChecked!==true||p.hasEligibleExternalReview===true))
-      errors.push('second_scope_gate');
+    // No second claim while the first is VALIDANDO or awaiting CI/review.
     if(p.resumingExistingScope && p.recoveringForeignScope===true &&
        (p.handoffAuthorized!==true || p.previousLeaseReleased!==true ||
         p.activeEditorVerifiedAbsent!==true || p.lastCommitVerified!==true ||
-        p.ownerTransferReadbackVerified!==true || !p.branchReadbackVerified))
+        p.ownerTransferReadbackVerified!==true || !p.branchReadbackVerified ||
+         p.nextRunRecipientSelectionVerified!==true || p.handoffTargetTaskId!==p.actorTaskId))
       errors.push('unsafe_recovery_handoff');
     if(p.activeEditorAccount&&p.activeEditorAccount!==p.actorAccount)
       errors.push('concurrent_editor');
   }else if(p.operation==='REVIEW'){
-    if(!isUrl(p.reviewedPrRef)||p.authorAccount===p.actorAccount||
-      !p.independentReviewerVerified||p.activeReviewerConflict)
+    const technical = p.reviewMode==='TECHNICAL_CROSS_TASK';
+    if(!isUrl(p.reviewedPrRef)||p.activeReviewerConflict)
+      errors.push('review_integrity');
+    if(technical){
+      // Technical review by another TASK_ID is valid even on the same GitHub
+      // login, but it cannot claim formal independent provider approval.
+      if(!/^[a-f0-9]{32}$/i.test(p.authorTaskId||'')||
+        p.authorTaskId===p.actorTaskId||p.technicalEvidenceVerified!==true||
+        p.reviewPermissionVerified!==true||p.exactHeadVerified!==true||
+        p.formalGithubApprovalRequested===true)
+        errors.push('technical_review_integrity');
+    }else if(p.authorAccount===p.actorAccount||!p.independentReviewerVerified)
       errors.push('review_integrity');
   }else if(p.operation==='CLOSE'){
     if(!isUrl(p.reviewedPrRef)||!p.mergedIntoDev||!p.mergeSha||
@@ -200,7 +261,13 @@ export function validateProposedRun(p) {
       !p.allContributionsReviewed||!p.sheetReadbackVerified||
       !p.ledgerReadbackVerified||!p.dependentsRecalculated)
       errors.push('close_integrity');
-    if(p.actorAccount===p.authorAccount && !p.separateApprovalAccount)
+    if(p.authorTaskId && p.actorTaskId===p.authorTaskId)
+      errors.push('self_signoff');
+    if(p.actorAccount===p.authorAccount &&
+      (!p.authorTaskId||p.actorTaskId===p.authorTaskId||
+       p.technicalReviewPassed!==true||p.technicalEvidenceVerified!==true||
+       p.automaticCertificationVerified!==true||p.providerRulesSatisfied!==true||
+       p.formalReviewRequired===true))
       errors.push('self_signoff');
   }else if(p.operation!=='READ'){
     errors.push('unknown_operation');
@@ -227,13 +294,14 @@ if(failures.length){
   process.exitCode=1;
 }else if(process.argv.includes('--self-test')){
   const slots=[
-    {role:'PRIMARY_01',account:'JAVIER_CHATGPT',taskId:'PRIMARY-REAL',permissionsVerified:true,schedulerVerified:true},
-    {role:'SECONDARY_02',account:'ALEX_CHATGPT',taskId:'SECONDARY-REAL',permissionsVerified:true,schedulerVerified:true},
+    {role:'PRIMARY_01',account:'JAVIER_CHATGPT',taskId:'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',permissionsVerified:true,schedulerVerified:true},
+    {role:'SECONDARY_02',account:'ALEX_CHATGPT',taskId:'cccccccccccccccccccccccccccccccc',permissionsVerified:true,schedulerVerified:true},
   ];
   const base={repo:'solqaryn/Solqaryn',branch:'dev',environment:'dev',
     slots,
     mode:'ACTIVE_DEV',authorizationVerified:true,
     actorRole:'PRIMARY_01',actorAccount:'JAVIER_CHATGPT',
+    actorTaskId:'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',ownershipReadbackVerified:true,
     permissionVerified:true,exactHeadVerified:true,
     operation:'WRITE',ownerAuthorized:true,writePermissionVerified:true,
     scopeId:'P0-012.A',exclusiveScopeVerified:true,createdExclusively:true,
@@ -255,7 +323,7 @@ if(failures.length){
     ['wrong repo',p=>p.repo='external/Other'],
     ['wrong branch',p=>p.branch='qa'],
     ['duplicate Task ID',p=>p.slots=[...p.slots,...p.slots]],
-    ['duplicate id',p=>p.slots[1].taskId='PRIMARY-REAL'],
+    ['duplicate id',p=>p.slots[1].taskId=p.slots[0].taskId],
     ['wrong account',p=>p.slots[0].account='ALEX_CHATGPT'],
     ['missing provider right',p=>p.writePermissionVerified=false],
     ['scope collision',p=>p.conflictingClaim=true],
@@ -265,7 +333,9 @@ if(failures.length){
     ['stale head',p=>p.exactHeadVerified=false],
     ['too many branches',p=>p.openWorkBranches=7],
     ['sixth slot already occupied',p=>p.openWorkBranches=6],
-    ['too many scopes owned',p=>p.taskOwnedScopeCount=3],
+    ['too many scopes owned',p=>p.taskOwnedScopeCount=2],
+    ['already owns one in VALIDANDO',p=>{p.taskOwnedScopeCount=1;p.existingScopeState='VALIDANDO';}],
+    ['missing ownership readback readback',p=>p.ownershipReadbackVerified=false],
     ['missing task scope count',p=>delete p.taskOwnedScopeCount],
     ['multiple active editors',p=>p.taskActiveWriteCount=2],
     ['negative per task scope count',p=>p.taskOwnedScopeCount=-1],
@@ -280,48 +350,40 @@ if(failures.length){
     const t=clone(base);mutate(t);
     if(!validateProposedRun(t).length)throw Error('negative test bypass: '+name);
   }
-  // The sixth commercial scope is available to one of five already authorized
-  // Tasks only if it has exactly one previous PR in VALIDANDO, no concurrent
-  // editor, and there is no eligible cross-account review being skipped.
-  const secondClaim=clone(base);
-  Object.assign(secondClaim,{taskOwnedScopeCount:1,existingScopeState:'VALIDANDO',
-    existingScopeActiveEditor:false,reviewFirstChecked:true,hasEligibleExternalReview:false});
-  if(validateProposedRun(secondClaim).length)throw Error('Second safe scope denied');
-  for(const [name,patch] of [
-    ['in progress instead of validating',p=>p.existingScopeState='EN_PROGRESO'],
-    ['previous active editor',p=>p.existingScopeActiveEditor=true],
-    ['review first not checked',p=>p.reviewFirstChecked=false],
-    ['cross review opportunity ignored',p=>p.hasEligibleExternalReview=true],
-    ['second claim while active write',p=>p.taskActiveWriteCount=1],
-    ['task already owns two scopes',p=>p.taskOwnedScopeCount=2],
-    ['same Task editing other scope',p=>p.sameTaskOtherScopeBeingEdited=true],
-  ]){
-    const test=clone(secondClaim);patch(test);
-    if(!validateProposedRun(test).length)throw Error('Second-scope fail-closed bypass: '+name);
+  // NEW CLAIM must reject a second scope even with a VALIDANDO PR and idle CI.
+  for(const state of ['EN_PROGRESO','VALIDANDO']){
+    const second=clone(base);
+    Object.assign(second,{taskOwnedScopeCount:1,existingScopeState:state,
+      existingScopeActiveEditor:false,reviewFirstChecked:true});
+    if(!validateProposedRun(second).includes('task_scope_cap'))
+      throw Error('WIP6/1/1 second claim accepted: '+state);
   }
   const resumeFull=clone(base);
-  Object.assign(resumeFull,{openWorkBranches:6,taskOwnedScopeCount:2,
-    taskActiveWriteCount:1,resumingExistingScope:true});
+  Object.assign(resumeFull,{openWorkBranches:6,taskOwnedScopeCount:1,
+    taskActiveWriteCount:1,resumingExistingScope:true,
+    ownedScopeId:base.scopeId,scopeOwnerTaskId:base.actorTaskId});
   if(validateProposedRun(resumeFull).length)throw Error('Safe resume at WIP=6 denied');
   const handoffWrite=clone(resumeFull);
   Object.assign(handoffWrite,{recoveringForeignScope:true,handoffAuthorized:true,previousLeaseReleased:true,
-    activeEditorVerifiedAbsent:true,lastCommitVerified:true,ownerTransferReadbackVerified:true});
+    activeEditorVerifiedAbsent:true,lastCommitVerified:true,ownerTransferReadbackVerified:true,
+    nextRunRecipientSelectionVerified:true,handoffTargetTaskId:base.actorTaskId});
   if(validateProposedRun(handoffWrite).length) throw Error('Verified handoff write rejected');
   for(const key of ['handoffAuthorized','previousLeaseReleased','activeEditorVerifiedAbsent',
-    'lastCommitVerified','ownerTransferReadbackVerified','branchReadbackVerified']) {
+    'lastCommitVerified','ownerTransferReadbackVerified','branchReadbackVerified',
+     'nextRunRecipientSelectionVerified']) {
     const x=clone(handoffWrite); x[key]=false;
     if(!validateProposedRun(x).length) throw Error('Unsafe handoff WRITE permitted: '+key);
   }
   const alexWrite=clone(base);
-  alexWrite.actorRole='SECONDARY_02';alexWrite.actorAccount='ALEX_CHATGPT';
+  alexWrite.actorRole='SECONDARY_02';alexWrite.actorAccount='ALEX_CHATGPT';alexWrite.actorTaskId='cccccccccccccccccccccccccccccccc';
   if(validateProposedRun(alexWrite).length)throw Error('Equal write capability denied to Alex');
   const review={...base,operation:'REVIEW',actorRole:'SECONDARY_02',
-    actorAccount:'ALEX_CHATGPT',authorAccount:'JAVIER_CHATGPT',
+    actorAccount:'ALEX_CHATGPT',actorTaskId:'cccccccccccccccccccccccccccccccc',authorAccount:'JAVIER_CHATGPT',
     reviewedPrRef:'https://github.com/solqaryn/Solqaryn/pull/3734',
     independentReviewerVerified:true};
   if(validateProposedRun(review).length)throw Error('Alex review denied');
   const javierReview={...review,actorRole:'PRIMARY_01',
-    actorAccount:'JAVIER_CHATGPT',authorAccount:'ALEX_CHATGPT'};
+    actorAccount:'JAVIER_CHATGPT',actorTaskId:'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',authorAccount:'ALEX_CHATGPT'};
   if(validateProposedRun(javierReview).length)
     throw Error('Javier cannot review Alex PR: asymmetric authorization');
   if(!validateProposedRun({...javierReview,authorAccount:'JAVIER_CHATGPT'}).length)
@@ -337,6 +399,36 @@ if(failures.length){
     throw Error('Unreviewed corrective commit bypass');
   if(!validateProposedRun({...close,sheetReadbackVerified:false}).length)
     throw Error('Sheet failure bypass');
+  const technicalReview={...base,operation:'REVIEW',reviewMode:'TECHNICAL_CROSS_TASK',
+    authorAccount:'JAVIER_CHATGPT',authorTaskId:'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+    reviewedPrRef:'https://github.com/solqaryn/Solqaryn/pull/3842',
+    technicalEvidenceVerified:true,reviewPermissionVerified:true,
+    independentReviewerVerified:false,formalGithubApprovalRequested:false};
+  if(validateProposedRun(technicalReview).length)
+    throw Error('Same-login distinct-TASK_ID technical review refused');
+  for(const [name,patch] of [
+    ['same TASK_ID',p=>p.authorTaskId=p.actorTaskId],
+    ['missing evidence',p=>p.technicalEvidenceVerified=false],
+    ['unverified permission',p=>p.reviewPermissionVerified=false],
+    ['fake formal APPROVED',p=>p.formalGithubApprovalRequested=true]
+  ]){const x=clone(technicalReview);patch(x);
+    if(!validateProposedRun(x).length)throw Error('Unsafe technical review accepted: '+name);}
+  const crossClose={...close,actorAccount:'JAVIER_CHATGPT',
+    actorRole:'PRIMARY_01',actorTaskId:base.actorTaskId,
+    authorAccount:'JAVIER_CHATGPT',authorTaskId:'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+    technicalReviewPassed:true,technicalEvidenceVerified:true,
+    automaticCertificationVerified:true,providerRulesSatisfied:true,
+    formalReviewRequired:false};
+  if(validateProposedRun(crossClose).length)
+    throw Error('Verified cross-Task postmerge closure rejected');
+  for(const [name,patch] of [
+    ['own Task',p=>p.authorTaskId=p.actorTaskId],
+    ['technical review missing',p=>p.technicalReviewPassed=false],
+    ['auto cert missing',p=>p.automaticCertificationVerified=false],
+    ['provider gate missing',p=>p.providerRulesSatisfied=false],
+    ['formal review required',p=>p.formalReviewRequired=true]
+  ]){const x=clone(crossClose);patch(x);
+    if(!validateProposedRun(x).length)throw Error('Unsafe cross-Task close accepted: '+name);}
   const graph={'P0-012.A':'VALIDANDO'};
   if(dependenciesSatisfied({dependencies:['P0-012.A']},graph))
     throw Error('VALIDANDO incorrectly released dependency');
@@ -355,9 +447,9 @@ if(failures.length){
     reviewerAllowed:true,reviewPermissionVerified:true,reviewerLeaseAvailable:true};
   if(selectWork([alexPR,options[0]],{'P0-012.A':'LISTO'},'JAVIER_CHATGPT').action!=='REVIEW')
     throw Error('Javier must prioritize review of Alex over eligible pending');
-  if(selectWork([options[0]],{'P0-012.A':'LISTO'},'ALEX_CHATGPT').action!=='CLAIM')
+  if(selectWork([options[0]],{'P0-012.A':'LISTO'},'ALEX_CHATGPT',new Set(),'cccccccccccccccccccccccccccccccc',true).action!=='CLAIM')
     throw Error('Alex must be able to develop eligible PENDIENTE');
-  if(selectWork([options[0]],{'P0-012.A':'LISTO'},'JAVIER_CHATGPT').action!=='CLAIM')
+  if(selectWork([options[0]],{'P0-012.A':'LISTO'},'JAVIER_CHATGPT',new Set(),'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',true).action!=='CLAIM')
     throw Error('Javier must be able to develop eligible PENDIENTE');
   if(selectWork([alexPR],{},'ALEX_CHATGPT').action!=='NO_ELIGIBLE')
     throw Error('Alex must not review own VALIDANDO');
@@ -367,10 +459,10 @@ if(failures.length){
     throw Error('A review without permission cannot be claimed');
   if(selectWork([alexPR],{},'UNKNOWN_ACCOUNT').action!=='NO_ELIGIBLE')
     throw Error('An unknown account cannot claim a review');
-  const own={id:'P0-014.A',state:'EN_PROGRESO',ownerAccount:'JAVIER_CHATGPT',
+  const own={id:'P0-014.A',state:'EN_PROGRESO',ownerAccount:'JAVIER_CHATGPT',ownerTaskId:'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
     resumeAuthorized:true,exclusiveScopeVerified:true,activeEditorVerifiedAbsent:true,branchReadbackVerified:true};
   if(selectWork([own,alexPR],{},'JAVIER_CHATGPT').action!=='REVIEW') throw Error('Own recovery bypassed REVIEW_FIRST');
-  if(selectWork([own],{},'JAVIER_CHATGPT').action!=='RESUME') throw Error('Safe own resume denied');
+  if(selectWork([own],{},'JAVIER_CHATGPT',new Set(),'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb').action!=='RESUME') throw Error('Safe own resume denied');
   const idOwnValidating = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
   const ownValidating = {id:'P1-009.A',state:'VALIDANDO',
     authorAccount:'JAVIER_CHATGPT',ownerAccount:'JAVIER_CHATGPT',
@@ -381,6 +473,17 @@ if(failures.length){
     throw Error('Own VALIDANDO must precede EN_PROGRESO recovery');
   if(selectWork([alexPR,ownValidating,own],{},'JAVIER_CHATGPT',new Set(),idOwnValidating).action!=='REVIEW')
     throw Error('Independent external review must remain first');
+  const sameLoginPeer={...ownValidating,authorTaskId:idOwnValidating,
+    reviewerAllowed:true,reviewPermissionVerified:true,reviewerLeaseAvailable:true,
+    technicalReviewAllowed:true,technicalEvidenceVerified:true};
+  if(selectWork([sameLoginPeer],{},'JAVIER_CHATGPT',new Set(),'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').action!=='REVIEW_TECHNICAL')
+    throw Error('Distinct-TASK_ID same-login review missing');
+  if(selectWork([{...sameLoginPeer,authorTaskId:'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'}],{},
+     'JAVIER_CHATGPT',new Set(),'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').action!=='NO_ELIGIBLE')
+    throw Error('Same-TASK_ID self-review accepted');
+  if(selectWork([{...sameLoginPeer,formalGithubApprovalRequested:true}],{},
+     'JAVIER_CHATGPT',new Set(),'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').action!=='NO_ELIGIBLE')
+    throw Error('Same-login fake formal APPROVED accepted');
   if(selectWork([ownValidating],{},'JAVIER_CHATGPT',new Set(),'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').action!=='NO_ELIGIBLE')
     throw Error('Another Task with shared GitHub login must not recover own VALIDANDO');
   if(selectWork([ownValidating],{},'JAVIER_CHATGPT',new Set()).action!=='NO_ELIGIBLE')
@@ -395,31 +498,41 @@ if(failures.length){
     throw Error('Merged own VALIDANDO must be selectable for postmerge reconciliation');
   if(selectWork([{...ownMerged,mergeShaVerified:false}],{},'JAVIER_CHATGPT',new Set(),idOwnValidating).action!=='NO_ELIGIBLE')
     throw Error('Unverified merged PR must not bypass postmerge proof');
-  if(selectWork([{...own,activeEditorVerifiedAbsent:false}],{},'JAVIER_CHATGPT').action!=='NO_ELIGIBLE') throw Error('Occupied own work stolen');
-  if(selectWork([{...own,branchReadbackVerified:false}],{},'JAVIER_CHATGPT').action!=='NO_ELIGIBLE') throw Error('Unverified own branch recovered');
+  if(selectWork([{...own,activeEditorVerifiedAbsent:false}],{},'JAVIER_CHATGPT',new Set(),'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb').action!=='NO_ELIGIBLE') throw Error('Occupied own work stolen');
+  if(selectWork([{...own,branchReadbackVerified:false}],{},'JAVIER_CHATGPT',new Set(),'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb').action!=='NO_ELIGIBLE') throw Error('Unverified own branch recovered');
   const institution={...alexPR,authorAccount:'SOLQARYN_PLATFORM'};
   if(selectWork([institution],{},'JAVIER_CHATGPT').action!=='REVIEW') throw Error('Institutional PR incorrectly excluded from review');
   if(selectWork([{...institution,reviewerLeaseAvailable:false}],{},'JAVIER_CHATGPT').action!=='NO_ELIGIBLE') throw Error('Busy review stolen');
   const idle={id:'P0-014.A',state:'EN_PROGRESO',ownerAccount:'ALEX_CHATGPT',handoffAuthorized:true,
     previousLeaseReleased:true,activeEditorVerifiedAbsent:true,exclusiveScopeVerified:true,
     branchReadbackVerified:true,lastCommitVerified:true,permissionsVerified:true,
-    ownerTransferReadbackVerified:true,conflictingClaim:false,branchName:'work/solqaryn-p0-014-a'};
-  if(selectWork([idle],{},'JAVIER_CHATGPT').action!=='RECOVER_HANDOFF') throw Error('Safe handoff rejected');
+    ownerTransferReadbackVerified:true,nextRunRecipientSelectionVerified:true,
+    handoffTargetTaskId:'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+    conflictingClaim:false,branchName:'work/solqaryn-p0-014-a'};
+  if(selectWork([idle],{},'JAVIER_CHATGPT',new Set(),'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',true).action!=='RECOVER_HANDOFF') throw Error('Safe handoff rejected');
   for(const [field,value] of [['handoffAuthorized',false],['previousLeaseReleased',false],
     ['activeEditorVerifiedAbsent',false],['exclusiveScopeVerified',false],
     ['branchReadbackVerified',false],['lastCommitVerified',false],
     ['permissionsVerified',false],['ownerTransferReadbackVerified',false],
+     ['nextRunRecipientSelectionVerified',false],['handoffTargetTaskId','dddddddddddddddddddddddddddddddd'],
     ['conflictingClaim',true],['branchName','work/solqaryn-different']]) {
-    if(selectWork([{...idle,[field]:value}],{},'JAVIER_CHATGPT').action!=='NO_ELIGIBLE')
+    if(selectWork([{...idle,[field]:value}],{},'JAVIER_CHATGPT',new Set(),'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',true).action!=='NO_ELIGIBLE')
       throw Error('Unverified foreign recovery accepted: '+field);
   }
-  if(selectWork([idle,alexPR],{},'JAVIER_CHATGPT').action!=='REVIEW') throw Error('Foreign handoff bypassed review');
+  if(selectWork([idle,alexPR],{},'JAVIER_CHATGPT',new Set(),'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',true).action!=='REVIEW') throw Error('Foreign handoff bypassed review');
+  if(selectWork([options[0],ownValidating],{'P0-012.A':'LISTO'},
+     'JAVIER_CHATGPT',new Set(),idOwnValidating,true).action==='CLAIM')
+    throw Error('Second CLAIM accepted with first VALIDANDO');
+  if(selectWork([options[0]],{'P0-012.A':'LISTO'},
+     'JAVIER_CHATGPT',new Set(),idOwnValidating,false).action==='CLAIM')
+    throw Error('CLAIM accepted without ownership readback');
   if(selectWork([{...alexPR,authorAccount:'JAVIER_CHATGPT'}],{},'JAVIER_CHATGPT').action!=='NO_ELIGIBLE')
     throw Error('Same-account self review accepted');
   const canonicalAlex=clone(base);
   canonicalAlex.slots[1].role='SECONDARY_REVIEW_01';
   canonicalAlex.actorRole='SECONDARY_REVIEW_01';
   canonicalAlex.actorAccount='ALEX_CHATGPT';
+  canonicalAlex.actorTaskId='cccccccccccccccccccccccccccccccc';
   if(validateProposedRun(canonicalAlex).length)
     throw Error('Canonical Alex slot role should be permitted');
   const canonicalJavier=clone(base);
@@ -442,9 +555,9 @@ if(failures.length){
   if(!validateDocuments({...documents,authority:authority.replace('MAX_CONCURRENT_SCOPES=6','MAX_CONCURRENT_SCOPES=7')}).length)
     throw Error('WIP authority mutation bypass');
   for(const [name,mutated] of [
-    ['per-task cap', {...documents,authority:authority.replace('MAX_OWNED_SCOPES_PER_TASK=2','MAX_OWNED_SCOPES_PER_TASK=3')}],
+    ['per-task cap', {...documents,authority:authority.replace('MAX_OWNED_SCOPES_PER_TASK=1','MAX_OWNED_SCOPES_PER_TASK=2')}],
     ['active edit cap', {...documents,status:status.replace('MAX_ACTIVE_WRITES_PER_TASK=1','MAX_ACTIVE_WRITES_PER_TASK=2')}],
-    ['contract per-task cap', {...documents,contract:contract.replace('MAX_OWNED_SCOPES_PER_TASK=2','MAX_OWNED_SCOPES_PER_TASK=3')}],
+    ['contract per-task cap', {...documents,contract:contract.replace('MAX_OWNED_SCOPES_PER_TASK=1','MAX_OWNED_SCOPES_PER_TASK=2')}],
   ]) if(!validateDocuments(mutated).length)throw Error('WIP mutation bypass: '+name);
   const approved={approverPrincipal:'ALEX',identityVerified:true,permissionVerified:true,
     providerRulesSatisfied:true,nativeApprovalVerified:true,exactHeadVerified:true,
@@ -453,7 +566,42 @@ if(failures.length){
   if(validateApprovalDecision(approved).length)throw Error('Independent approval rejected');
   if(!validateApprovalDecision({...approved,allContributionsReviewed:false}).length)
     throw Error('Approval of unreviewed correction accepted');
-  console.log('SOLQARYN configurable Task autonomy PASS: both accounts CLAIM/REVIEW under individual permissions, review-first, dependency LISTO, independent approval, expanded roster accepted, WIP remains capped at six');
+  // Selection respects the upcoming execution, not the Task label or list order.
+  const when='2026-11-04T11:21:57-06:00';
+  const free={account:'JAVIER_CHATGPT',registeredTask:true,authorizedTask:true,
+    isEnabled:true,schedulerVerified:true,rruleVerified:true,timezone:'America/Tegucigalpa',
+    identityVerified:true,permissionsVerified:true,ownershipReadbackVerified:true,
+    ownedOpenScopes:0,activeRun:false,activeEditor:false,activeLease:false,
+    nextRunSource:'DERIVED_VERIFIED_RRULE'};
+  const candidates=[
+    {...free,taskId:'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',nextRunAt:'2026-11-04T12:00:00-06:00'},
+    {...free,taskId:'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',nextRunAt:'2026-11-04T11:30:00-06:00'},
+    {...free,taskId:'cccccccccccccccccccccccccccccccc',nextRunAt:'2026-11-04T11:40:00-06:00'}];
+  const pick=(xs,acc='JAVIER_CHATGPT')=>selectNextScheduledFreeTask(xs,when,acc);
+  if(pick(candidates).taskId!=='bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb')
+    throw Error('Closest scheduled free Task not selected');
+  if(pick([{...candidates[1],activeRun:true},candidates[0],candidates[2]]).taskId!=='cccccccccccccccccccccccccccccccc')
+    throw Error('Active Task chosen for transfer');
+  if(pick([{...candidates[1],ownedOpenScopes:1},candidates[0],candidates[2]]).taskId!=='cccccccccccccccccccccccccccccccc')
+    throw Error('Task already owning a scope was chosen');
+  for(const [key,value] of [
+    ['isEnabled',false],['authorizedTask',false],['registeredTask',false],
+    ['permissionsVerified',false],['ownershipReadbackVerified',false],
+    ['rruleVerified',false],['schedulerVerified',false],
+    ['identityVerified',false],['activeEditor',true],['activeLease',true],
+    ['timezone','UTC'],['nextRunSource','UNVERIFIED'],['activeRun',true]]){
+    if(pick([{...candidates[1],[key]:value}]).action!=='NO_GO')
+      throw Error('Unverified candidate selected: '+key);
+  }
+  if(pick([{...candidates[1],nextRunAt:'2026-11-04T11:20:00-06:00'}]).action!=='NO_GO')
+    throw Error('Past schedule accepted');
+  if(pick([{...candidates[1],account:'ALEX_CHATGPT'}]).action!=='NO_GO')
+    throw Error('Other account selected');
+  if(pick(candidates).requiresAuthorizationAndLeaseReadback!==true)
+    throw Error('Ranking improperly grants handoff authorization');
+  if(selectNextScheduledFreeTask(candidates,'bad','JAVIER_CHATGPT').action!=='NO_GO')
+    throw Error('Invalid clock allowed handoff');
+  console.log('SOLQARYN WIP 6/1/1 PASS: strict one assigned scope even VALIDANDO, verified ownership and no self-approval');
 }else{
   console.log('SOLQARYN automation authority PASS');
 }

@@ -1,5 +1,5 @@
 import { Injectable, computed, signal } from '@angular/core';
-import { catchError, map, of, switchMap, tap } from 'rxjs';
+import { catchError, map, of, switchMap } from 'rxjs';
 import { EmpresaConfiguracion } from '../core/models/empresa-configuracion.model';
 import { EmpresaConfiguracionService } from './empresa-configuracion.service';
 
@@ -24,6 +24,7 @@ const DEFAULT_CONFIG: EmpresaConfiguracion = {
 export class EmpresaIdentidadService {
   private readonly _config = signal<EmpresaConfiguracion>(DEFAULT_CONFIG);
   private cargada = false;
+  private versionIdentidad = 0;
 
   readonly config = this._config.asReadonly();
   readonly nombreSistema = computed(() => this._config().nombreVisibleSistema || this._config().nombreComercial || 'SOLQARYN');
@@ -41,6 +42,7 @@ export class EmpresaIdentidadService {
 
   cargar(force = false) {
     if (this.cargada && !force) return of(this._config());
+    const version = ++this.versionIdentidad;
     return this.empresaService.getPublica().pipe(
       switchMap((res) => {
         const config = { ...DEFAULT_CONFIG, ...res.data };
@@ -56,23 +58,30 @@ export class EmpresaIdentidadService {
           catchError(() => of(config))
         );
       }),
-      tap((config) => {
-        this._config.set(config);
-        this.cargada = true;
+      map((config) => {
+        // Una respuesta iniciada en A no puede restaurar nombre/logo o datos
+        // empresariales después de limpiar A y seleccionar B.
+        if (version === this.versionIdentidad) {
+          this._config.set(config);
+          this.cargada = true;
+        }
+        return this._config();
       }),
       catchError(() => {
-        this.cargada = true;
+        if (version === this.versionIdentidad) this.cargada = true;
         return of(this._config());
       })
     );
   }
 
   usarPlataforma(): void {
+    this.versionIdentidad++;
     this._config.set({ ...DEFAULT_CONFIG });
     this.cargada = false;
   }
 
   refrescarDespuesDeGuardar(config: EmpresaConfiguracion): void {
+    this.versionIdentidad++;
     this._config.set({ ...DEFAULT_CONFIG, ...config });
     this.cargada = true;
   }
