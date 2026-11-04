@@ -1,3 +1,10 @@
+## 2026-11-03 — M3.3: prioridad REVIEW_FIRST y recuperación segura con pruebas ya disponibles
+
+- El propietario aclara el orden deseado: VALIDANDO libre para revisión, EN_PROGRESO propio o con traspaso comprobado, y finalmente PENDIENTE elegible. Antes el selector recuperaba trabajo propio antes de REVIEW y no reconocía el handoff seguro de trabajo ajeno.
+- Se alinea la selección y se incluyen negativos fail-closed para lease de revisión ocupado, scope en edición, rama sin readback, commit no verificado y propietario sin cesión. No se interpreta una asignación inactiva como libre sin prueba.
+- Se admiten negativos deterministas con evidencia nativa de operaciones previas sin ejecutar pruebas destructivas ni simular colisión física o caída de Sheets. Las revisiones siguen siendo independientes por identidad GitHub, no solo por Task ID.
+- Cambio limitado a `scripts/validate-dual-task-configuration.mjs`, contrato y changelog. Cinco TASK_ID autorizados, Javier :00/:20/:40, Alex :10/:50, Alex :30 excluida; WIP 6/2/1, STRICT, ningún cambio de Tasks, ERP, datos, secretos, QA/main/PROD. PR protegido y aprobación independiente obligatorios.
+
 ## 2026-11-03 — M3.3: evidencia funcional reutilizada y roles actuales (PR protegido)
 
 - Se armoniza el criterio M3.3 con solqaryn-platform como autora institucional y Javier jmejia31 como revisor independiente. Se retira la orden heredada de corregir código mediante la identidad que después lo revisaría.

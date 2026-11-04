@@ -91,18 +91,30 @@ export function dependenciesSatisfied(task, stateById) {
     task.dependencies.every(id => stateById[id] === 'LISTO');
 }
 export function selectWork(tasks, stateById, account, activeReviewIds = new Set()) {
-  if (account !== 'JAVIER_CHATGPT' && account !== 'ALEX_CHATGPT')
+  if (!['JAVIER_CHATGPT','ALEX_CHATGPT'].includes(account))
     return {action:'NO_ELIGIBLE',reason:'UNKNOWN_ACCOUNT'};
-  const assigned = tasks.find(t => t.state === 'EN_PROGRESO' &&
-    t.ownerAccount === account && t.resumeAuthorized === true &&
-    t.exclusiveScopeVerified === true);
-  if (assigned) return {action:'RESUME',task:assigned};
+  // REVIEW_FIRST: no active reviewer; assigned but idle requires lease readback.
   const review = tasks.find(t => t.state === 'VALIDANDO' &&
-    ['JAVIER_CHATGPT','ALEX_CHATGPT'].includes(t.authorAccount) &&
+    ['JAVIER_CHATGPT','ALEX_CHATGPT','SOLQARYN_PLATFORM'].includes(t.authorAccount) &&
     t.authorAccount !== account && !activeReviewIds.has(t.id) &&
     isUrl(t.prUrl) && t.reviewerAllowed === true &&
-    t.reviewPermissionVerified === true);
+    t.reviewPermissionVerified === true && t.reviewerLeaseAvailable === true);
   if (review) return {action:'REVIEW',task:review};
+  const own = tasks.find(t => t.state === 'EN_PROGRESO' &&
+    t.ownerAccount === account && t.resumeAuthorized === true &&
+    t.exclusiveScopeVerified === true && t.activeEditorVerifiedAbsent === true &&
+    t.branchReadbackVerified === true && !t.conflictingClaim);
+  if (own) return {action:'RESUME',task:own};
+  // Foreign IN_PROGRESS: no unverified takeover or lost commits.
+  const handoff = tasks.find(t => t.state === 'EN_PROGRESO' &&
+    validScope(t.id) && ['JAVIER_CHATGPT','ALEX_CHATGPT'].includes(t.ownerAccount) &&
+    t.ownerAccount !== account && t.handoffAuthorized === true &&
+    t.previousLeaseReleased === true && t.activeEditorVerifiedAbsent === true &&
+    t.exclusiveScopeVerified === true && t.branchReadbackVerified === true &&
+    t.lastCommitVerified === true && t.permissionsVerified === true &&
+    t.ownerTransferReadbackVerified === true && !t.conflictingClaim &&
+    t.branchName === 'work/solqaryn-' + t.id.toLowerCase().replace('.', '-'));
+  if (handoff) return {action:'RECOVER_HANDOFF',task:handoff};
   const eligible = tasks.filter(t => t.state === 'PENDIENTE' &&
     validScope(t.id) && dependenciesSatisfied(t,stateById) &&
     !t.existingBranch && !t.conflictingClaim && t.permissionsVerified);
@@ -160,6 +172,11 @@ export function validateProposedRun(p) {
        (p.existingScopeState!=='VALIDANDO'||p.existingScopeActiveEditor===true||
         p.reviewFirstChecked!==true||p.hasEligibleExternalReview===true))
       errors.push('second_scope_gate');
+    if(p.resumingExistingScope && p.recoveringForeignScope===true &&
+       (p.handoffAuthorized!==true || p.previousLeaseReleased!==true ||
+        p.activeEditorVerifiedAbsent!==true || p.lastCommitVerified!==true ||
+        p.ownerTransferReadbackVerified!==true || !p.branchReadbackVerified))
+      errors.push('unsafe_recovery_handoff');
     if(p.activeEditorAccount&&p.activeEditorAccount!==p.actorAccount)
       errors.push('concurrent_editor');
   }else if(p.operation==='REVIEW'){
@@ -275,6 +292,15 @@ if(failures.length){
   Object.assign(resumeFull,{openWorkBranches:6,taskOwnedScopeCount:2,
     taskActiveWriteCount:1,resumingExistingScope:true});
   if(validateProposedRun(resumeFull).length)throw Error('Safe resume at WIP=6 denied');
+  const handoffWrite=clone(resumeFull);
+  Object.assign(handoffWrite,{recoveringForeignScope:true,handoffAuthorized:true,previousLeaseReleased:true,
+    activeEditorVerifiedAbsent:true,lastCommitVerified:true,ownerTransferReadbackVerified:true});
+  if(validateProposedRun(handoffWrite).length) throw Error('Verified handoff write rejected');
+  for(const key of ['handoffAuthorized','previousLeaseReleased','activeEditorVerifiedAbsent',
+    'lastCommitVerified','ownerTransferReadbackVerified','branchReadbackVerified']) {
+    const x=clone(handoffWrite); x[key]=false;
+    if(!validateProposedRun(x).length) throw Error('Unsafe handoff WRITE permitted: '+key);
+  }
   const alexWrite=clone(base);
   alexWrite.actorRole='SECONDARY_02';alexWrite.actorAccount='ALEX_CHATGPT';
   if(validateProposedRun(alexWrite).length)throw Error('Equal write capability denied to Alex');
@@ -309,13 +335,13 @@ if(failures.length){
     priority:'P0',planOrder:24,permissionsVerified:true},
     {id:'P1-100.A',state:'VALIDANDO',authorAccount:'JAVIER_CHATGPT',
       prUrl:'https://github.com/solqaryn/Solqaryn/pull/99',
-      reviewerAllowed:true,reviewPermissionVerified:true}];
+      reviewerAllowed:true,reviewPermissionVerified:true,reviewerLeaseAvailable:true}];
   if(selectWork(options,{'P0-012.A':'LISTO'},'ALEX_CHATGPT').action!=='REVIEW')
     throw Error('Review-first selection regression');
   const alexPR={id:'P0-013.A',state:'VALIDANDO',
     authorAccount:'ALEX_CHATGPT',
     prUrl:'https://github.com/solqaryn/Solqaryn/pull/3736',
-    reviewerAllowed:true,reviewPermissionVerified:true};
+    reviewerAllowed:true,reviewPermissionVerified:true,reviewerLeaseAvailable:true};
   if(selectWork([alexPR,options[0]],{'P0-012.A':'LISTO'},'JAVIER_CHATGPT').action!=='REVIEW')
     throw Error('Javier must prioritize review of Alex over eligible pending');
   if(selectWork([options[0]],{'P0-012.A':'LISTO'},'ALEX_CHATGPT').action!=='CLAIM')
@@ -330,6 +356,31 @@ if(failures.length){
     throw Error('A review without permission cannot be claimed');
   if(selectWork([alexPR],{},'UNKNOWN_ACCOUNT').action!=='NO_ELIGIBLE')
     throw Error('An unknown account cannot claim a review');
+  const own={id:'P0-014.A',state:'EN_PROGRESO',ownerAccount:'JAVIER_CHATGPT',
+    resumeAuthorized:true,exclusiveScopeVerified:true,activeEditorVerifiedAbsent:true,branchReadbackVerified:true};
+  if(selectWork([own,alexPR],{},'JAVIER_CHATGPT').action!=='REVIEW') throw Error('Own recovery bypassed REVIEW_FIRST');
+  if(selectWork([own],{},'JAVIER_CHATGPT').action!=='RESUME') throw Error('Safe own resume denied');
+  if(selectWork([{...own,activeEditorVerifiedAbsent:false}],{},'JAVIER_CHATGPT').action!=='NO_ELIGIBLE') throw Error('Occupied own work stolen');
+  if(selectWork([{...own,branchReadbackVerified:false}],{},'JAVIER_CHATGPT').action!=='NO_ELIGIBLE') throw Error('Unverified own branch recovered');
+  const institution={...alexPR,authorAccount:'SOLQARYN_PLATFORM'};
+  if(selectWork([institution],{},'JAVIER_CHATGPT').action!=='REVIEW') throw Error('Institutional PR incorrectly excluded from review');
+  if(selectWork([{...institution,reviewerLeaseAvailable:false}],{},'JAVIER_CHATGPT').action!=='NO_ELIGIBLE') throw Error('Busy review stolen');
+  const idle={id:'P0-014.A',state:'EN_PROGRESO',ownerAccount:'ALEX_CHATGPT',handoffAuthorized:true,
+    previousLeaseReleased:true,activeEditorVerifiedAbsent:true,exclusiveScopeVerified:true,
+    branchReadbackVerified:true,lastCommitVerified:true,permissionsVerified:true,
+    ownerTransferReadbackVerified:true,conflictingClaim:false,branchName:'work/solqaryn-p0-014-a'};
+  if(selectWork([idle],{},'JAVIER_CHATGPT').action!=='RECOVER_HANDOFF') throw Error('Safe handoff rejected');
+  for(const [field,value] of [['handoffAuthorized',false],['previousLeaseReleased',false],
+    ['activeEditorVerifiedAbsent',false],['exclusiveScopeVerified',false],
+    ['branchReadbackVerified',false],['lastCommitVerified',false],
+    ['permissionsVerified',false],['ownerTransferReadbackVerified',false],
+    ['conflictingClaim',true],['branchName','work/solqaryn-different']]) {
+    if(selectWork([{...idle,[field]:value}],{},'JAVIER_CHATGPT').action!=='NO_ELIGIBLE')
+      throw Error('Unverified foreign recovery accepted: '+field);
+  }
+  if(selectWork([idle,alexPR],{},'JAVIER_CHATGPT').action!=='REVIEW') throw Error('Foreign handoff bypassed review');
+  if(selectWork([{...alexPR,authorAccount:'JAVIER_CHATGPT'}],{},'JAVIER_CHATGPT').action!=='NO_ELIGIBLE')
+    throw Error('Same-account self review accepted');
   const canonicalAlex=clone(base);
   canonicalAlex.slots[1].role='SECONDARY_REVIEW_01';
   canonicalAlex.actorRole='SECONDARY_REVIEW_01';
