@@ -44,7 +44,7 @@ Para cada candidata libre, obtener la **próxima fecha-hora futura** de ejecuci�
 
 La elección de receptora **NO efectúa el traspaso**: seguir exigiendo autorización expresa, release real del lease previo, ausencia de edición concurrente, misma rama/PR/HEAD, permisos reales, readback de GitHub y `PLAN_MAESTRO`/`BITACORA` y preservación de autoría; no autoaprobar, eludir bloqueos del proveedor ni declarar `LISTO` sin CI/merge protegido. Las revisiones técnicas de un `TASK_ID` sobre otro NO constituyen propiedad de una microtarea. `MAX_CONCURRENT_SCOPES=6`, `MAX_OWNED_SCOPES_PER_TASK=1`, `MAX_ACTIVE_WRITES_PER_TASK=1` y `REVIEW_FIRST → RECOVER → CLAIM` permanecen vigentes.
 
-**Excepción expresa de esta orden:** conservar `P1-010.A` asignada a Javier `:00`; no modificar retroactivamente su dueño, PR #3842 ni rama. Este criterio gobierna solo **futuros** traspasos autorizados.
+**Instrucción más reciente del propietario, 2026-11-04:** la candidata libre más próxima para `P1-010.A` es Javier `:30`, no Javier `:00` (a las 11:29, ejecución `:30` frente a siguiente `:00` a las 12:00). El nuevo owner **NO queda efectivo hasta liberar la ejecución/lease de :30, registrar y releer `PLAN_MAESTRO!I44` y BITACORA y conservar PR #3842/HEAD/autoría**. Si :30 está en ejecución al intentar el traspaso, NO_GO parcial sin sobrescribir el trabajo y revalidar tras la liberación. No repetir escrituras GitHub previamente rechazadas. Esta actualización prevalece sobre la excepción anterior que conservaba a Javier :00. Las transferencias futuras obedecen el mismo criterio de siguiente horario libre y verificado.
 
 ## Orden vigente del propietario — WIP comercial 6/1/1 (2026-11-04)
 
