@@ -10,7 +10,7 @@ CURRENT_COMMERCIAL_ONLY=TRUE
 AUTOMATION_RUNTIME=ACTIVE_DEV
 TASK_DESIGN=OWNER_CONFIGURABLE_TASK_SET
 TASK_COUNT_LIMIT=PROVIDER_EFFECTIVE_CAPACITY
-CURRENT_REGISTERED_TASKS=5
+CURRENT_REGISTERED_TASKS=6
 AUTO_CERTIFICATION_MODE=REQUIRED_SCOPE_LOCK
 FORMAL_APPROVAL_ROUTINE_COMMERCIAL_REQUIRED=FALSE
 FORMAL_APPROVAL_GOVERNANCE_REQUIRED=TRUE
@@ -19,7 +19,11 @@ GITHUB_CHAT_REVIEWER=JAVIER_GITHUB_LOGIN
 GITHUB_CHAT_ROLE_SEPARATION=STRICT
 GITHUB_CHAT_ROLE_POLICY=docs/GITHUB_ACCOUNT_ROLES.md
 
-## Censo institucional operativo vigente — M3.2 (2026-11-03)
+## Censo institucional vigente — 2026-11-04
+
+Seis Tasks físicas registradas; seis IDs comerciales autorizables tras el merge protegido: Javier cuatro (:00/:20/:30/:40) y Alex dos (:10/:50). La nueva Javier :30 usa el ID exclusivo `6aeacb7820ac8191b7d768a6f33dfa09` y está PAUSADA preventivamente hasta aprobar el PR de gobierno, CI exact-SHA, conciliación de Sheets y habilitación nativa. La antigua Alex :30 sigue excluida: no se reactiva ni se reutiliza su identificador. La paridad funcional depende de los permisos individuales; WIP 6/2/1, Scope Lock, revisión formal independiente de gobierno y prohibición de QA/main/PROD se conservan.
+
+## Censo anterior M3.2 — fotografía histórica (2026-11-03)
 
 Cinco TASK_ID autorizados individualmente: Javier :00/:20/:40 y Alex :10/:50. El antiguo slot :30 no es parte del registro operativo ni del allowlist; su baja física requiere comprobación desde la propia cuenta de Alex y **no queda certificada por este cambio**. Los registros anteriores solo son auditoría. Ninguna Task se reactiva y no se modifican los límites de concurrencia 6/2/1 ni la revisión independiente de gobierno.
 
