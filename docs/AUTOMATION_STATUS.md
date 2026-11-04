@@ -39,9 +39,11 @@ LEGACY_AUTOMATION_RUNTIME=RETIRED
 
 
 
+**Distribución normativa:** `docs/AUTOMATION_AUTHORITY.md` regula las transiciones; este archivo conserva exclusivamente el estado, censo y límites vigentes.
+
 ## Norma de etapa vigente - AUTOR LIBERADO EN VALIDANDO (orden propietario 2026-11-04)
 
-STAGE_OWNERSHIP_MODE=AUTHOR_PROVENANCE_HANDOFF_V1; REVIEW_RESERVATION_MODE=EXCLUSIVE_CAS_READBACK. Prevalece sobre notas anteriores que retienen al autor hasta LISTO; no reescribe la auditoria historica. Este cambio es una **propuesta protegida hasta su merge y conciliacion**, y sus reglas operativas solo entran en vigor al integrar el PR protegido y actualizar los prompts nativos.
+**Modelo de etapa:** `STAGE_OWNERSHIP_MODE=AUTHOR_PROVENANCE_HANDOFF_V1` y `REVIEW_RESERVATION_MODE=EXCLUSIVE_CAS_READBACK`. Prevalece sobre notas anteriores que retienen al autor hasta LISTO; no reescribe la auditoria historica. Este cambio es una **propuesta protegida hasta su merge y conciliacion**, y sus reglas operativas solo entran en vigor al integrar el PR protegido y actualizar los prompts nativos.
 
 - **Autoria y responsabilidad distintas:** `AUTHOR_TASK_ID` original es inmutable, conserva cuenta, PR/rama/SHA y evidencia; `STAGE_OWNER_TASK_ID` solo identifica a quien trabaja actualmente; `REVIEW_RESERVATION_TASK_ID` evita dos revisores. El ID autor nunca cambia por correccion o cierre ajenos. El estado `VALIDANDO` cuenta siempre dentro de `MAX_CONCURRENT_SCOPES=6` aunque no tenga responsable.
 - **Entrega EN_PROGRESO -> VALIDANDO:** solo tras commit/PR, pruebas dirigidas, HEAD readback, ausencia de editor activo y liberacion de lease anterior, registrar un evento idempotente en BITACORA y su provenance, comprobar GitHub y PLAN_MAESTRO, y realizar una segunda lectura de release + revision. Cuando estas lecturas PASS, limpiar exclusivamente el owner *operativo* de esa etapa: el autor libera su cupo personal 1, pero no se libera el espacio global WIP 6. Ante escritura o lectura fallida, seguir contando la etapa como propia del autor (fail-closed).
@@ -87,7 +89,7 @@ Se conservan `MAX_CONCURRENT_SCOPES=6`, `MAX_OWNED_SCOPES_PER_TASK=1`, `MAX_ACTI
 
 El censo ejecutable se limita a las cinco identidades presentes en `REGISTERED_TASK_IDS`, iguales a la allowlist comercial; distribución actual 3 Javier (:00/:20/:40) y 2 Alex (:10/:50), **sin límite interno fijo**. Se retira la antigua posición no autorizada :30 del registro, no se crean Tasks ni se conceden permisos nuevos. La conexión actual no permite certificar la eliminación física en la cuenta de Alex; cualquier Task externa al censo mantiene `NO_AUTORIZADO` y no recibe autoridad por inferencia. Las referencias a seis instalaciones en las secciones inferiores son evidencias históricas, nunca fuentes de identidad operativa. `AUTOMATION_RUNTIME=ACTIVE_DEV` es capacidad lógica, no estado `is_enabled`.
 
-**Remisión de roles vigentes (2026-11-03):** La matriz de responsables y permisos del apartado 5 de `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md` aplica al censo de cinco, sin clases artificiales derivadas del nombre de la Task. Permiso de escribir/merge/aprobar se evalúa por identidad GitHub y proveedor, nunca por la etiqueta o por otro Task ID. Para nuevas operaciones del asistente, `solqaryn-platform` es autora y `JAVIER_GITHUB_LOGIN` revisor independiente, conforme a `docs/GITHUB_ACCOUNT_ROLES.md`. La autorización de cinco IDs no equivale a `is_enabled` ni cambia los estados físicos registrados.
+**Remisión de roles vigentes:** la distribución y permisos actuales dependen de la allowlist de este estado, de `docs/AUTOMATION_AUTHORITY.md` y de `docs/GITHUB_ACCOUNT_ROLES.md`. Los nombres de Tasks no conceden permisos.
 
 ## Enmienda operativa propuesta — certificación automática CI en DEV (2026-10-30)
 
@@ -159,7 +161,7 @@ Junto con `PRIMARY_DEV_02` Javier :20, hay **tres diagnósticos individuales con
 
 ## Archivo histórico M3.2 — seis Tasks físicas, autorización operativa parcial
 
-El diseño simétrico 3+3 v2.0 fue integrado en PR #3735; este párrafo registra el estado de aquel momento, no es autoridad vigente. La microfase 3.2 confirmó seis Tasks físicas de identidad única y horarios intercalados, incluidas las dos originales con ID conservado. `PHYSICAL_TASKS_REGISTERED=6` procede de lectura nativa Javier (3/3) y readback aportado por Alex (3/3) con conciliación en Google Sheets. `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1` sigue siendo el contador de autorización conocido: habilitación y programación no equivalen a permisos efectivos en ejecución. Las cinco Tasks restantes siguen pendientes de validación operativa individual, sin concederles escritura por esta modificación. El contrato normativo es `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md`.
+El diseño simétrico 3+3 v2.0 fue integrado en PR #3735; este párrafo registra el estado de aquel momento, no es autoridad vigente. La microfase 3.2 confirmó seis Tasks físicas de identidad única y horarios intercalados, incluidas las dos originales con ID conservado. `PHYSICAL_TASKS_REGISTERED=6` procede de lectura nativa Javier (3/3) y readback aportado por Alex (3/3) con conciliación en Google Sheets. `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1` sigue siendo el contador de autorización conocido: habilitación y programación no equivalen a permisos efectivos en ejecución. Las cinco Tasks restantes siguen pendientes de validación operativa individual, sin concederles escritura por esta modificación. El contrato normativo es `docs/AUTOMATION_AUTHORITY.md`.
 
 **Inventario físico M3.2 (horas `America/Tegucigalpa`, readback en `TAREAS_PROGRAMADAS!A2:Z7`, evento `BITACORA!A42:Z42`):**
 

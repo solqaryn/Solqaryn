@@ -7,7 +7,6 @@ const authority = read('docs/AUTOMATION_AUTHORITY.md');
 const status = read('docs/AUTOMATION_STATUS.md');
 const agents = read('AGENTS.md');
 const scope = read('docs/PROJECT_SCOPE_LOCK.md');
-const contract = read('docs/AUTOMATION_3X3_OPERATING_CONTRACT.md');
 
 const supportedAccounts = new Set(['JAVIER_CHATGPT','ALEX_CHATGPT']);
 const expected = {
@@ -62,19 +61,14 @@ export function validateDocuments(src) {
   // The commercial WIP cap is a dedicated invariant, independent from the 5/6 Task allowlist.
   const capAuthority = Number(key(src.authority,'MAX_CONCURRENT_SCOPES'));
   const capStatus = Number(key(src.status,'MAX_CONCURRENT_SCOPES'));
-  const capContract = Number(key(src.contract,'MAX_CONCURRENT_SCOPES'));
-  const capBranches = Number(key(src.contract,'MAX_OPEN_WORK_BRANCHES'));
-  if (![capAuthority,capStatus,capContract,capBranches].every(x=>Number.isInteger(x)&&x===6))
+  const capBranches = Number(key(src.authority,'MAX_OPEN_WORK_BRANCHES'));
+  if (![capAuthority,capStatus,capBranches].every(x=>Number.isInteger(x)&&x===6))
     errors.push('commercial WIP cap mismatch');
-  const ownedCaps = [src.authority, src.status, src.contract].map(x => Number(key(x,'MAX_OWNED_SCOPES_PER_TASK')));
-  const activeWriteCaps = [src.authority, src.status, src.contract].map(x => Number(key(x,'MAX_ACTIVE_WRITES_PER_TASK')));
+  const ownedCaps = [src.authority, src.status].map(x => Number(key(x,'MAX_OWNED_SCOPES_PER_TASK')));
+  const activeWriteCaps = [src.authority, src.status].map(x => Number(key(x,'MAX_ACTIVE_WRITES_PER_TASK')));
   if (!ownedCaps.every(x=>Number.isInteger(x)&&x===1)) errors.push('per-task scope cap mismatch');
   if (!activeWriteCaps.every(x=>Number.isInteger(x)&&x===1)) errors.push('single active editor cap mismatch');
   if (key(src.scope,'TASK_COUNT_LIMIT') !== 'PROVIDER_EFFECTIVE_CAPACITY') errors.push('Task count policy');
-  for (const [name,value] of [['STAGE_OWNERSHIP_MODE','AUTHOR_PROVENANCE_HANDOFF_V1'],
-                               ['REVIEW_RESERVATION_MODE','EXCLUSIVE_CAS_READBACK']]) {
-    if (key(src.contract,name)!==value) errors.push('contract '+name);
-  }
   if (key(src.scope,'PROJECT_SCOPE_LOCK') !== 'STRICT') errors.push('strict lock');
   if (!src.agents.includes('TASK_DESIGN=OWNER_CONFIGURABLE_TASK_SET')) errors.push('agents Task set policy');
   for (const [name,value] of Object.entries(approvalPolicy))
@@ -84,11 +78,11 @@ export function validateDocuments(src) {
     'REVIEW_INDEPENDENCE_REQUIRED=TRUE','America/Tegucigalpa',
     'PENDIENTE -> EN_PROGRESO','EN_PROGRESO -> VALIDANDO',
     'VALIDANDO -> LISTO','VALIDANDO -> VALIDANDO']) {
-    if (!src.contract.includes(phrase)) errors.push('contract ' + phrase);
+    if (!src.authority.includes(phrase)) errors.push('authority ' + phrase);
   }
-  if (!src.authority.includes('docs/AUTOMATION_3X3_OPERATING_CONTRACT.md') ||
-      !src.status.includes('docs/AUTOMATION_3X3_OPERATING_CONTRACT.md'))
-    errors.push('contract routing');
+  if (!src.status.includes('docs/AUTOMATION_AUTHORITY.md') ||
+      !src.agents.includes('docs/AUTOMATION_AUTHORITY.md'))
+    errors.push('authority routing');
   return errors;
 }
 const isUrl = ref => typeof ref === 'string' && /^https:\/\/github\.com\/solqaryn\/Solqaryn\/pull\/[1-9]\d*$/.test(ref);
@@ -315,7 +309,7 @@ export function validateApprovalDecision(p) {
   if(p.environment!=='dev'||p.impersonated||p.accountBorrowed)errors.push('scope');
   return errors;
 }
-const documents={authority,status,agents,scope,contract};
+const documents={authority,status,agents,scope};
 const failures=validateDocuments(documents);
 if(failures.length){
   console.error('SOLQARYN AUTOMATION AUTHORITY NO_GO: '+failures.join(' | '));
@@ -608,14 +602,13 @@ if(failures.length){
   if(validateDocuments(expanded).length)throw Error('Configurable roster must accept expansion without new commercial authority');
   if(!validateDocuments({...documents,status:status.replace('MAX_CONCURRENT_SCOPES=6','MAX_CONCURRENT_SCOPES=7')}).length)
     throw Error('WIP status mutation bypass');
-  if(!validateDocuments({...documents,contract:contract.replace('MAX_OPEN_WORK_BRANCHES=6','MAX_OPEN_WORK_BRANCHES=7')}).length)
+  if(!validateDocuments({...documents,authority:authority.replace(/^MAX_OPEN_WORK_BRANCHES=6$/m,'MAX_OPEN_WORK_BRANCHES=7')}).length)
     throw Error('WIP contract mutation bypass');
   if(!validateDocuments({...documents,authority:authority.replace('MAX_CONCURRENT_SCOPES=6','MAX_CONCURRENT_SCOPES=7')}).length)
     throw Error('WIP authority mutation bypass');
   for(const [name,mutated] of [
     ['per-task cap', {...documents,authority:authority.replace('MAX_OWNED_SCOPES_PER_TASK=1','MAX_OWNED_SCOPES_PER_TASK=2')}],
     ['active edit cap', {...documents,status:status.replace('MAX_ACTIVE_WRITES_PER_TASK=1','MAX_ACTIVE_WRITES_PER_TASK=2')}],
-    ['contract per-task cap', {...documents,contract:contract.replace('MAX_OWNED_SCOPES_PER_TASK=1','MAX_OWNED_SCOPES_PER_TASK=2')}],
   ]) if(!validateDocuments(mutated).length)throw Error('WIP mutation bypass: '+name);
   const approved={approverPrincipal:'ALEX',identityVerified:true,permissionVerified:true,
     providerRulesSatisfied:true,nativeApprovalVerified:true,exactHeadVerified:true,

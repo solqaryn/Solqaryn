@@ -1,6 +1,6 @@
 ## 2026-11-04 — Preparacion del gobierno para liberacion al entrar en VALIDANDO
 
-Autoridad viva: `docs/AUTOMATION_STATUS.md` y `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md`; nueva propuesta `STAGE_OWNERSHIP_MODE=AUTHOR_PROVENANCE_HANDOFF_V1`, con autor inmutable, owner por etapa, reserva exclusiva revisor, release idempotente con readback de Google Sheets y GitHub. Orden operativo: VALIDANDO ajena liberada -> EN_PROGRESO abandonada con lease libre -> PENDIENTE con dependencias LISTO -> auditoria read-only. Limites comerciales actuales 6/1/1 no cambian; seis Tasks autorizadas 4 Javier + 2 Alex, sin techo fisico interno mas alla de capacidad acreditada del proveedor. Requiere PR protegido, CI, revision formal, luego prompts nativos actualizados; las Tasks en VALIDANDO existentes no se migran sin prueba de lease.
+Autoridades vigentes: censo y runtime en `docs/AUTOMATION_STATUS.md`; reglas y transiciones en `docs/AUTOMATION_AUTHORITY.md`; nueva propuesta `STAGE_OWNERSHIP_MODE=AUTHOR_PROVENANCE_HANDOFF_V1`, con autor inmutable, owner por etapa, reserva exclusiva revisor, release idempotente con readback de Google Sheets y GitHub. Orden operativo: VALIDANDO ajena liberada -> EN_PROGRESO abandonada con lease libre -> PENDIENTE con dependencias LISTO -> auditoria read-only. Limites comerciales actuales 6/1/1 no cambian; seis Tasks autorizadas 4 Javier + 2 Alex, sin techo fisico interno mas alla de capacidad acreditada del proveedor. Requiere PR protegido, CI, revision formal, luego prompts nativos actualizados; las Tasks en VALIDANDO existentes no se migran sin prueba de lease.
 No introduce otra fuente de plan ni altera arquitectura ERP de produccion, seguridad RBAC, bases, QA/main/PROD. Rollback por revert protegido + reconciliacion de custodia institucional.
 
 ## 2026-11-02 — P1-005.A: frontera de administración empresarial (DEV)
@@ -37,7 +37,7 @@ No introduce otra fuente de plan ni altera arquitectura ERP de produccion, segur
 ## 2026-10-23 — Índice operativo M3.1 histórico (actualizado por enmienda 2026-10-30)
 
 - Gobierno activo: `AGENTS.md`, `docs/PROJECT_SCOPE_LOCK.md`, `docs/AUTOMATION_STATUS.md`.
-- Flujo de automatización con inventario configurable (censo actual 6, distribución 3+3) y allowlist comercial 5: `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md` (selector por dependencias LISTO, revisión primero, aprobación independiente, merge protegido, readback Sheet).
+- Flujo de automatización con inventario configurable (censo actual 6, distribución 3+3) y allowlist comercial 5: `docs/AUTOMATION_AUTHORITY.md` (selector por dependencias LISTO, revisión primero, aprobación independiente, merge protegido, readback Sheet).
 - No existe techo interno fijo para Tasks físicas. Distinguir censo, capacidad del proveedor, autorización individual y ejecución; el WIP comercial sigue limitado a seis scopes.
 - Único ERP: rama `dev`, Scope Lock STRICT; tres ramas permanentes dev/qa/main y ramas `work/solqaryn-<scope>` temporales. PR #3734 integrado previamente en dev y preservado en la reconciliación del PR #3735.
 - Los motores antiguos retirados no son ejecutables. Fuentes posteriores de este archivo son snapshots de contexto previos.

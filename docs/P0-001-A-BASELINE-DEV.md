@@ -30,7 +30,7 @@ Para `41d05dda3ffb57707275132f834c40cace3f8594` se consultaron checks reales Git
 | Persistencia | `backend/src/Infrastructure/`, EF Core 10.0.12 / MySQL Oracle 10.0.9 | Sin datos, esquemas, migraciones ni transacciones nuevas |
 | Seguridad | JWT, RBAC, aislamiento multiempresa, auditoría | Se conservan comprobaciones; no sustituidas por UI |
 | Infra DEV | `render.yaml`, Vercel DEV | Solo inventario; Render live no verificado; Vercel HEAD cancelado |
-| Gobierno | `AGENTS.md`, `docs/PROJECT_SCOPE_LOCK.md`, `docs/AUTOMATION_STATUS.md`, `docs/AUTOMATION_AUTHORITY.md`, `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md` | Sin cambios en autoridad o en Tasks |
+| Gobierno | `AGENTS.md`, `docs/PROJECT_SCOPE_LOCK.md`, `docs/AUTOMATION_STATUS.md`, `docs/AUTOMATION_AUTHORITY.md` | Sin cambios en autoridad o en Tasks |
 
 **Impacto:** exclusivamente documentación y regresiones de baseline; sin API/DTO, bases de datos, PII, secretos, jobs, aplicaciones, integraciones, observabilidad ni permisos modificados. Dependencia comercial: `P0-012.B=LISTO` leído en `PLAN_MAESTRO!H25` y `COLA!E25`; `P0-001.B` no se inicia hasta `P0-001.A=LISTO`.
 

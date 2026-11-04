@@ -1,5 +1,10 @@
 ## 2026-11-04 — Control plane de Tasks: custodia por etapa con autoria inmutable (PR candidato)
 
+## 2026-11-04 — Consolidación de gobierno de Tasks
+
+Se retira el contrato 3X3 duplicado del árbol vigente. `docs/AUTOMATION_AUTHORITY.md` queda como única autoridad normativa de las automatizaciones, y `docs/AUTOMATION_STATUS.md` conserva censo y estado del runtime. Validadores y workflow protegidos se alinean al cambio. Sin cambios a ERP, API, BD, credenciales, QA/main/PROD ni Tasks físicas.
+
+
 - El estado comercial sigue en el mismo `PLAN_MAESTRO`, `COLA` y `BITACORA` institucionales, sin nuevos almacenes, endpoints, DTO, DDL, credenciales ni movimientos de DEV/QA/PROD.
 - `EN_PROGRESO -> VALIDANDO` entrega la custodia, verifica CI/pruebas disponibles y libera el lease y el cupo de su autor original tras readback documentado. La entrega mantiene su identidad GitHub/TASK_ID autor y sigue consumiendo WIP global; no libera dependencias hasta LISTO.
 - Control de concurrencia: `AUTHOR_TASK_ID` inmutable, `STAGE_OWNER_TASK_ID` mutable por transicion verificada y `REVIEW_RESERVATION_TASK_ID` exclusivo con compare-and-set/version y readback. Un review solo lectura es distinto de la toma de etapa. Autoaprobacion prohibida.
