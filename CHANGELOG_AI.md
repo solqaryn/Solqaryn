@@ -1,3 +1,9 @@
+## 2026-11-04 — P1-006.B: certificación negativa del selector empresarial (en validación CI)
+
+- Task Javier :00, ID `6adbb9fff1548191a1bd5b30d9e9984a`, reclama rama determinista `work/solqaryn-p1-006-b` desde `dev@376d90d5663a` después de certificar y cerrar P1-006.A con CI postmerge 22/22 SUCCESS.
+- Se agrega `P1006BSelectorEmpresarialAislamientoTests.cs`: dos identidades distintas, membresías propias y ajenas, revocación, sesión sin JWT, cuenta desactivada y protección del contrato GET `/tenant-context/empresas`.
+- Sólo pruebas y documentación. No amplía JWT/RBAC ni expone catálogo global; no modifica infraestructura, migraciones, secretos ni QA/main/PROD. Se exige prueba xUnit dirigida y gates CI exact-SHA antes de VALIDANDO/merge/LISTO.
+
 ## 2026-11-04 — Nueva cuarta Task de Javier (:30), ampliación de censo bajo revisión protegida
 
 - Por orden del propietario se creó `SOLQARYN — PRIMARY DEV 04 — JAVIER` con identidad propia en ChatGPT, hora `:30` en `America/Tegucigalpa` y contrato 2.0; quedó PAUSADA como control preventivo hasta integrar su nueva autorización y verificarla individualmente.
