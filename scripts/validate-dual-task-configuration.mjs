@@ -494,6 +494,7 @@ if(failures.length){
   canonicalAlex.slots[1].role='SECONDARY_REVIEW_01';
   canonicalAlex.actorRole='SECONDARY_REVIEW_01';
   canonicalAlex.actorAccount='ALEX_CHATGPT';
+  canonicalAlex.actorTaskId='cccccccccccccccccccccccccccccccc';
   if(validateProposedRun(canonicalAlex).length)
     throw Error('Canonical Alex slot role should be permitted');
   const canonicalJavier=clone(base);
