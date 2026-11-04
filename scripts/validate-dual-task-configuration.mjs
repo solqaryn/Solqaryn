@@ -90,7 +90,7 @@ export function dependenciesSatisfied(task, stateById) {
   return Array.isArray(task.dependencies) &&
     task.dependencies.every(id => stateById[id] === 'LISTO');
 }
-export function selectWork(tasks, stateById, account, activeReviewIds = new Set()) {
+export function selectWork(tasks, stateById, account, activeReviewIds = new Set(), taskId = null) {
   if (!['JAVIER_CHATGPT','ALEX_CHATGPT'].includes(account))
     return {action:'NO_ELIGIBLE',reason:'UNKNOWN_ACCOUNT'};
   // REVIEW_FIRST: no active reviewer; assigned but idle requires lease readback.
@@ -100,6 +100,17 @@ export function selectWork(tasks, stateById, account, activeReviewIds = new Set(
     isUrl(t.prUrl) && t.reviewerAllowed === true &&
     t.reviewPermissionVerified === true && t.reviewerLeaseAvailable === true);
   if (review) return {action:'REVIEW',task:review};
+  // REVIEW_FIRST also includes technical follow-up on the CURRENT TASK's own VALIDANDO.
+  // This is NEVER an independent review or a grant to another Task of the same login.
+  const ownValidating = tasks.find(t => t.state === 'VALIDANDO' &&
+    typeof taskId === 'string' && /^[a-f0-9]{32}$/i.test(taskId) &&
+    t.ownerAccount === account && t.ownerTaskId === taskId &&
+    t.ownValidationContinuationAuthorized === true &&
+    isUrl(t.prUrl) && !t.conflictingClaim &&
+    ((t.mergedIntoDevVerified === true && t.mergeShaVerified === true) ||
+      (t.exclusiveScopeVerified === true && t.activeEditorVerifiedAbsent === true &&
+       t.branchReadbackVerified === true && !activeReviewIds.has(t.id))));
+  if (ownValidating) return {action:'RECOVER_VALIDANDO',task:ownValidating};
   const own = tasks.find(t => t.state === 'EN_PROGRESO' &&
     t.ownerAccount === account && t.resumeAuthorized === true &&
     t.exclusiveScopeVerified === true && t.activeEditorVerifiedAbsent === true &&
@@ -360,6 +371,30 @@ if(failures.length){
     resumeAuthorized:true,exclusiveScopeVerified:true,activeEditorVerifiedAbsent:true,branchReadbackVerified:true};
   if(selectWork([own,alexPR],{},'JAVIER_CHATGPT').action!=='REVIEW') throw Error('Own recovery bypassed REVIEW_FIRST');
   if(selectWork([own],{},'JAVIER_CHATGPT').action!=='RESUME') throw Error('Safe own resume denied');
+  const idOwnValidating = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+  const ownValidating = {id:'P1-009.A',state:'VALIDANDO',
+    authorAccount:'JAVIER_CHATGPT',ownerAccount:'JAVIER_CHATGPT',
+    ownerTaskId:idOwnValidating,prUrl:'https://github.com/solqaryn/Solqaryn/pull/3841',
+    ownValidationContinuationAuthorized:true,exclusiveScopeVerified:true,
+    activeEditorVerifiedAbsent:true,branchReadbackVerified:true,conflictingClaim:false};
+  if(selectWork([ownValidating,own],{},'JAVIER_CHATGPT',new Set(),idOwnValidating).action!=='RECOVER_VALIDANDO')
+    throw Error('Own VALIDANDO must precede EN_PROGRESO recovery');
+  if(selectWork([alexPR,ownValidating,own],{},'JAVIER_CHATGPT',new Set(),idOwnValidating).action!=='REVIEW')
+    throw Error('Independent external review must remain first');
+  if(selectWork([ownValidating],{},'JAVIER_CHATGPT',new Set(),'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').action!=='NO_ELIGIBLE')
+    throw Error('Another Task with shared GitHub login must not recover own VALIDANDO');
+  if(selectWork([ownValidating],{},'JAVIER_CHATGPT',new Set()).action!=='NO_ELIGIBLE')
+    throw Error('Unknown TASK_ID must fail closed for own VALIDANDO');
+  if(selectWork([{...ownValidating,ownValidationContinuationAuthorized:false}],{},'JAVIER_CHATGPT',new Set(),idOwnValidating).action!=='NO_ELIGIBLE')
+    throw Error('Unverified continuation of own VALIDANDO bypassed');
+  if(selectWork([{...ownValidating,activeEditorVerifiedAbsent:false}],{},'JAVIER_CHATGPT',new Set(),idOwnValidating).action!=='NO_ELIGIBLE')
+    throw Error('Busy VALIDANDO editor bypassed');
+  const ownMerged={...ownValidating,mergedIntoDevVerified:true,mergeShaVerified:true,
+    exclusiveScopeVerified:false,activeEditorVerifiedAbsent:false,branchReadbackVerified:false};
+  if(selectWork([ownMerged],{},'JAVIER_CHATGPT',new Set(),idOwnValidating).action!=='RECOVER_VALIDANDO')
+    throw Error('Merged own VALIDANDO must be selectable for postmerge reconciliation');
+  if(selectWork([{...ownMerged,mergeShaVerified:false}],{},'JAVIER_CHATGPT',new Set(),idOwnValidating).action!=='NO_ELIGIBLE')
+    throw Error('Unverified merged PR must not bypass postmerge proof');
   if(selectWork([{...own,activeEditorVerifiedAbsent:false}],{},'JAVIER_CHATGPT').action!=='NO_ELIGIBLE') throw Error('Occupied own work stolen');
   if(selectWork([{...own,branchReadbackVerified:false}],{},'JAVIER_CHATGPT').action!=='NO_ELIGIBLE') throw Error('Unverified own branch recovered');
   const institution={...alexPR,authorAccount:'SOLQARYN_PLATFORM'};

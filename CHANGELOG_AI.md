@@ -1,3 +1,10 @@
+## 2026-11-04 — REVIEW_FIRST incluye continuidad y cierre de VALIDANDO propio (DEV)
+
+- Se corrige el filtro operativo que solo examinaba `VALIDANDO` ajenos, dejando sin atender cierres de las Tasks Javier bajo el mismo login GitHub `jmejia31`.
+- Jerarquía: revisión independiente externa que realmente corresponda; luego continuidad técnica del `VALIDANDO` de TASK_ID propio para CI, sincronización de rama, merge protegido y readback postmerge; después `EN_PROGRESO` recuperable y por último `PENDIENTE` elegible. Cada bloqueo externo se documenta una sola vez, sin detener scopes independientes.
+- `scripts/validate-dual-task-configuration.mjs` añade selección `RECOVER_VALIDANDO` con identidad física, permiso, exclusividad y evidencia de PR/merge, más negativos contra robo entre Tasks del mismo GitHub login, editor ocupado y falso merge. No emite aprobaciones independientes ni cambia permisos.
+- PR de gobierno exige revisión de otra identidad sobre el SHA final y Scope Lock PASS. No cambia código productivo, bases de datos, roles, secretos, QA/main/PROD ni límites WIP 6/2/1. Reversión por PR protegido sin alterar Tasks ni borrar evidencias.
+
 ## 2026-11-04 — P1-009.A: reutilización de plantillas y unicidad de roles (DEV)
 
 - Scope exclusivo `P1-009.A`: Task Javier :30 `6aeacb7820ac8191b7d768a6f33dfa09`, GitHub `jmejia31`, rama `work/solqaryn-p1-009-a`, base `dev@30bf43749a8eb7b164a065f5aabebfa024aa0faa`. Dependencia `P0-012.B=LISTO`.
