@@ -32,3 +32,9 @@
 - Riesgo de regresión reducido por reutilizar invariantes actuales; no ampliar permisos ni inferir owner. No tocar plan calculado `COLA`.
 - **Estado: CANDIDATO/EN_PROGRESO.** CI exact-HEAD y Scope Lock, test dirigido, revisión de seguridad y readback de PR requeridos; no `LISTO` ni merge hasta todos los gates. Certificación de P1-009.B permanece separada.
 - Rollback: nuevo PR protegido que revierta solo estos tests/acta/changelog; no hay datos ni banderas activadas.
+
+## Conciliación con dev tras merge de P1-006.A — 2026-11-04
+
+- Rebase no destructivo mediante **merge con dos padres**, sin `force-push`: rama previa `6bc5e33d5c5609ceb3207a37f887aca9f4f86afc` y DEV vigente `376d90d5663afd72563b2e5935234322a549e6ff` convergieron en commit `64db9e39162d6d0ccb992e054f9644535f616be2` sobre la misma rama y PR #3841.
+- Comparación GitHub exacta contra `dev`: `behind=0`, tres archivos propios del alcance, sin cambios de runtime, endpoints, permisos ni migraciones. `CHANGELOG_AI.md` conserva tanto los cambios de DEV como el acta de P1-009.A.
+- Observación inmediata: GitHub mostraba el ref actualizado, pero `pulls/3841.head.sha` seguía temporalmente en `6bc5e33d` y el commit de merge aún no tenía checks. Este commit documental por la API de contenidos busca provocar una nueva sincronización de PR/CI. **Ningún PASS previo se hereda**; hay que acreditar checks requeridos y Scope Lock para el nuevo SHA, además de merge protegido y readback institucional antes de `LISTO`.
