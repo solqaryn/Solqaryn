@@ -5,6 +5,20 @@
 - La entrega conserva código productivo, API, MySQL, migraciones, RBAC, seguridad, entornos y secretos intactos. Documento: `docs/P1-010-A-USUARIO-MULTIEMPRESA-DEV.md`.
 - CI exact-SHA, prueba TRX dirigida, `AUTO_CERT=PASS`, merge protegido y conciliación institucional son gates pendientes al publicar; ningún test o cierre se declara aprobado antes de su ejecución real. Reversión vía PR protegido.
 
+## 2026-11-04 — REVIEW_FIRST incluye continuidad y cierre de VALIDANDO propio (DEV)
+
+- Se corrige el filtro operativo que solo examinaba `VALIDANDO` ajenos, dejando sin atender cierres de las Tasks Javier bajo el mismo login GitHub `jmejia31`.
+- Jerarquía: revisión independiente externa que realmente corresponda; luego continuidad técnica del `VALIDANDO` de TASK_ID propio para CI, sincronización de rama, merge protegido y readback postmerge; después `EN_PROGRESO` recuperable y por último `PENDIENTE` elegible. Cada bloqueo externo se documenta una sola vez, sin detener scopes independientes.
+- `scripts/validate-dual-task-configuration.mjs` añade selección `RECOVER_VALIDANDO` con identidad física, permiso, exclusividad y evidencia de PR/merge, más negativos contra robo entre Tasks del mismo GitHub login, editor ocupado y falso merge. No emite aprobaciones independientes ni cambia permisos.
+- PR de gobierno exige revisión de otra identidad sobre el SHA final y Scope Lock PASS. No cambia código productivo, bases de datos, roles, secretos, QA/main/PROD ni límites WIP 6/2/1. Reversión por PR protegido sin alterar Tasks ni borrar evidencias.
+
+## 2026-11-04 — P1-009.A: reutilización de plantillas y unicidad de roles (DEV)
+
+- Scope exclusivo `P1-009.A`: Task Javier :30 `6aeacb7820ac8191b7d768a6f33dfa09`, GitHub `jmejia31`, rama `work/solqaryn-p1-009-a`, base `dev@30bf43749a8eb7b164a065f5aabebfa024aa0faa`. Dependencia `P0-012.B=LISTO`.
+- Se reutilizan el aislamiento por `EmpresaId`, las plantillas `EsSistema` empresariales y la unicidad final **por empresa** `(EmpresaId,NombreNormalizado)` más unicidad de plantilla/global sin dueño `NombreNormalizadoGlobalUnico` (configuración posterior `CommercialTenantNaturalKeysModel`, no la declaración intermedia de `RolConfiguration`). Sin cambios al runtime, RBAC, MySQL ni migraciones.
+- Nueva suite dirigida `P1009ARoleTemplateUniquenessTests` comprueba A/B, denegación de rol ajeno/global/huérfano, **modelo final de índices tenant/global** y bloqueo de nombre normalizado duplicado antes de persistir. Primer CI detectó un test que presumía equivocadamente índice global único (5/6 PASS); corregido sin tocar el runtime. Acta `docs/P1-009-A-ROLE-TEMPLATE-UNICIDAD-DEV.md`.
+- Pendiente: ejecución real CI exact SHA, Scope Lock confiable, prueba dirigida, integración protegida y readback institucional. No declarar PASS ni LISTO por publicar el diff; P1-009.B es scope posterior.
+
 ## 2026-11-04 — Nueva cuarta Task de Javier (:30), ampliación de censo bajo revisión protegida
 
 - Por orden del propietario se creó `SOLQARYN — PRIMARY DEV 04 — JAVIER` con identidad propia en ChatGPT, hora `:30` en `America/Tegucigalpa` y contrato 2.0; quedó PAUSADA como control preventivo hasta integrar su nueva autorización y verificarla individualmente.
