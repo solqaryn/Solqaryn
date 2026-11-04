@@ -1,5 +1,5 @@
 import { signal } from '@angular/core';
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { PermisoService } from '../../services/permiso.service';
 import { TenantContextService } from './tenant-context.service';
 import { PermisosRuntimeService } from './permisos-runtime.service';
@@ -104,4 +104,118 @@ describe('MF3 - permisos vs capacidades empresariales', () => {
     expect(runtime.puede('Productos', 'Ver')).toBe(false);
     expect(runtime.rutaHabilitada('productos')).toBe(false);
   });
+  it('comparte consulta concurrente del mismo tenant sin denegar al primer guard', () => {
+    const pendiente = new Subject<any>();
+    let llamadas = 0;
+    const permisoService = {
+      getMisPermisos: (_id: number) => {
+        llamadas++;
+        return pendiente.asObservable();
+      }
+    } as unknown as PermisoService;
+    const tenantContext = {
+      empresaIdVerificada: () => empresa(),
+      tieneContextoVerificado: () => empresa() !== null
+    } as unknown as TenantContextService;
+    runtime = new PermisosRuntimeService(permisoService, tenantContext);
+
+    const resultadosA: boolean[] = [];
+    const resultadosB: boolean[] = [];
+    runtime.cargar().subscribe(ok => resultadosA.push(ok));
+    runtime.cargar().subscribe(ok => resultadosB.push(ok));
+
+    expect(llamadas).toBe(1);
+    pendiente.next(response);
+    pendiente.complete();
+
+    expect(resultadosA).toEqual([true]);
+    expect(resultadosB).toEqual([true]);
+    expect(runtime.puede('Productos', 'Ver')).toBe(true);
+    expect(runtime.cargado()).toBe(true);
+  });
+
+  it('oculta inmediatamente permisos, rutas y rol administrador al pedir otra empresa', () => {
+    runtime.cargar().subscribe();
+    expect(runtime.esAdministrador()).toBe(true);
+    expect(runtime.cargado()).toBe(true);
+
+    empresa.set(22);
+    expect(runtime.cargado()).toBe(false);
+    expect(runtime.esAdministrador()).toBe(false);
+    expect(runtime.puede('Productos', 'Ver')).toBe(false);
+    expect(runtime.rutaHabilitada('productos')).toBe(false);
+  });
+
+  it('la respuesta tardía de A no sobrescribe los permisos ya cargados de B', () => {
+    const pendientes = new Map<number, Subject<any>>();
+    const permisoService = {
+      getMisPermisos: (id: number) => {
+        const solicitud = new Subject<any>();
+        pendientes.set(id, solicitud);
+        return solicitud.asObservable();
+      }
+    } as unknown as PermisoService;
+    const tenantContext = {
+      empresaIdVerificada: () => empresa(),
+      tieneContextoVerificado: () => empresa() !== null
+    } as unknown as TenantContextService;
+    runtime = new PermisosRuntimeService(permisoService, tenantContext);
+
+    runtime.cargar().subscribe();
+    empresa.set(22);
+    runtime.cargar().subscribe();
+    pendientes.get(22)!.next(reply({
+      esAdministrador: false, permisos: ['Clientes:Ver'],
+      operacionMultiEmpresaRestringida: true,
+      capacidadesHabilitadas: ['Clientes:Ver'],
+      rutasHabilitadas: ['clientes']
+    }));
+    pendientes.get(22)!.complete();
+
+    expect(runtime.puede('Clientes', 'Ver')).toBe(true);
+    pendientes.get(11)!.next(reply({
+      esAdministrador: true, permisos: ['Productos:Ver'],
+      operacionMultiEmpresaRestringida: false,
+      capacidadesHabilitadas: [], rutasHabilitadas: []
+    }));
+    pendientes.get(11)!.complete();
+
+    expect(runtime.puede('Clientes', 'Ver')).toBe(true);
+    expect(runtime.puede('Productos', 'Ver')).toBe(false);
+    expect(runtime.rutaHabilitada('clientes')).toBe(true);
+    expect(runtime.esAdministrador()).toBe(false);
+  });
+
+  it('el error tardío de A no limpia los permisos validados de B', () => {
+    const pendientes = new Map<number, Subject<any>>();
+    const permisoService = {
+      getMisPermisos: (id: number) => {
+        const solicitud = new Subject<any>();
+        pendientes.set(id, solicitud);
+        return solicitud.asObservable();
+      }
+    } as unknown as PermisoService;
+    const tenantContext = {
+      empresaIdVerificada: () => empresa(),
+      tieneContextoVerificado: () => empresa() !== null
+    } as unknown as TenantContextService;
+    runtime = new PermisosRuntimeService(permisoService, tenantContext);
+
+    runtime.cargar().subscribe();
+    empresa.set(22);
+    runtime.cargar().subscribe();
+    pendientes.get(22)!.next(reply({
+      esAdministrador: false, permisos: ['Clientes:Ver'],
+      operacionMultiEmpresaRestringida: true,
+      capacidadesHabilitadas: ['Clientes:Ver'],
+      rutasHabilitadas: ['clientes']
+    }));
+    pendientes.get(22)!.complete();
+    pendientes.get(11)!.error(new Error('Respuesta antigua de A: 403'));
+
+    expect(runtime.cargado()).toBe(true);
+    expect(runtime.puede('Clientes', 'Ver')).toBe(true);
+    expect(runtime.rutaHabilitada('clientes')).toBe(true);
+  });
+
 });
