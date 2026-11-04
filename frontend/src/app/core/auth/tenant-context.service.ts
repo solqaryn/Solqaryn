@@ -1,10 +1,16 @@
 import { Injectable, computed, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, catchError, finalize, shareReplay, tap, throwError, timeout } from 'rxjs';
+import { Observable, catchError, finalize, map, shareReplay, tap, throwError, timeout } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
 
 const EMPRESA_SOLICITADA_KEY = 'solqaryn_empresa_solicitada_id';
+
+/** Identidad empresarial que el servidor autorizó a mostrar al usuario actual. */
+export interface EmpresaSeleccionable {
+  empresaId: number;
+  nombre: string;
+}
 
 export interface TenantContextoVerificado {
   usuarioId: number;
@@ -45,6 +51,24 @@ export class TenantContextService {
   readonly tieneContextoVerificado = computed(() => this._contextoVerificado() !== null);
 
   constructor(private readonly http: HttpClient) {}
+
+  listarEmpresasSeleccionables(): Observable<EmpresaSeleccionable[]> {
+    // La lista se resuelve en MySQL por membresías activas del JWT actual.
+    // Este método nunca considera localStorage ni cabeceras tenant una autoridad.
+    return this.http.get<ApiResponse<EmpresaSeleccionable[]>>(`${this.apiUrl}/empresas`).pipe(
+      timeout({ first: 15_000 }),
+      map(respuesta => {
+        const empresas = respuesta?.success === true ? respuesta.data : null;
+        if (!Array.isArray(empresas) || empresas.some(empresa =>
+          !Number.isInteger(empresa?.empresaId) || empresa.empresaId <= 0 ||
+          typeof empresa.nombre !== 'string' || empresa.nombre.trim().length === 0
+        )) {
+          throw new Error('El servidor no devolvió una lista empresarial válida.');
+        }
+        return empresas;
+      })
+    );
+  }
 
   seleccionarEmpresa(empresaId: number): Observable<ApiResponse<TenantContextoVerificado>> {
     if (!Number.isInteger(empresaId) || empresaId <= 0) {
