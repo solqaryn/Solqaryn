@@ -1,3 +1,10 @@
+## 2026-11-04 — P1-009.B: certificación HTTP 4xx de rol ajeno/global (DEV)
+
+- Task física Javier :30 `6aeacb7820ac8191b7d768a6f33dfa09` reclama P1-009.B después de comprobar P1-009.A=LISTO en PLAN/COLA/BITACORA, allowlist de seis, Skill canónica y exclusividad. Rama `work/solqaryn-p1-009-b` desde `dev@edc7be2c36abd903318dab9cc96489a668207817`; WIP 4/6 antes del claim.
+- Suite `P1009BRoleHttpIsolationCertificationTests`: TestServer, JWT local, `RolesController`, filtro de permisos, servicio y middleware reales; tres casos negativos (rol de otra empresa, global de Plataforma y huérfano) exigen HTTP 400 causal y cero operaciones de persistencia. Reutiliza invariantes P1-009.A/#3841 y regresiones P1001A/RolServiceTenantOwnership.
+- Acta `docs/P1-009-B-ROLES-HTTP-4XX-CERTIFICACION-DEV.md`: la prueba con repositorio simulado no acredita membresías/índices MySQL físicos ni HTTP live. Sin cambios de runtime, permisos, RBAC, migraciones, frontend, QA/main/PROD, credenciales o secretos.
+- Pendiente: ejecutar xUnit dirigido en CI sobre SHA real del PR, certificar Scope Lock y todos los checks, merge protegido y readback institucional antes de `LISTO`. No atribuir PASS, `APPROVED` humano ni integración antes de que exista evidencia. Rollback por revert protegido del changeset de prueba/documentación.
+
 ## 2026-11-04 — REVIEW_FIRST incluye continuidad y cierre de VALIDANDO propio (DEV)
 
 - Se corrige el filtro operativo que solo examinaba `VALIDANDO` ajenos, dejando sin atender cierres de las Tasks Javier bajo el mismo login GitHub `jmejia31`.
