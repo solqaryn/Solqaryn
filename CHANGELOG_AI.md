@@ -7,6 +7,60 @@
 - Pruebas xUnit dirigidas `P1007ATenantSwitchAuthorizationTests`: empresa B sin membresía siempre rechazada incluso después de A, revocación efectiva de A entre dos solicitudes y rechazo de identificadores 0/-1 antes de consultar membresías. Se ejecutan por el workflow comercial dirigido sobre SHA exacto; no sustituyen las pruebas frontend ni el CI.
 - Alcance: Angular frontend servicio de permisos y tests. Sin endpoints, DTO, DB, migraciones, datos productivos, secretos, QA/main/PROD, proveedores ni cambios de gobierno. Reversión: revert del commit vía PR protegido, preservando evidencia.
 
+## 2026-11-04 — Traspaso comercial a Task libre de próxima ejecución más cercana (DEV)
+
+- Orden expresa del propietario: elegir la Task física realmente libre, habilitada, autorizada y con próxima ocurrencia horaria futura más cercana, usando tiempo local America/Tegucigalpa, next_run_time verificable o RRULE comprobada; no elegir por nombre ni orden de lista. 6/1/1 sigue obligatorio.
+- Nuevo selector fail-closed y pruebas negativas en scripts/validate-dual-task-configuration.mjs; `HANDOFF_CANDIDATE` solo propone receptor, no cambia ownership ni omite lease, autoría, permisos, review o CI. RECOVER_HANDOFF requiere comprobación de selección del receptor.
+- Los cuatro prompts Javier contienen la norma. El propietario corrigió la selección anterior: Javier :30 era la próxima Task libre frente a Javier :00. Traspaso actual P1-010.A condicionado a completar la corrida en curso y a readback en Sheets; no certificarlo antes. Mantener PR #3842, HEAD, rama y autor histórico. Las Tasks de Alex permanecen inactivas y no se altera QA/main/PROD.
+
+## 2026-11-04 — WIP comercial estricto 6/1/1 y revisión técnica cruzada validable
+
+- Orden expresa del propietario: 6 scopes comerciales globales máximos, **1 scope propio no cerrado por TASK_ID**, **1 editor activo por Task**. Un scope en EN_PROGRESO o VALIDANDO sigue asignado mientras espera CI/revisión; jamás hay excepción de segundo CLAIM por VALIDANDO.
+- Se actualizan AGENTS.md, docs/AUTOMATION_AUTHORITY.md, docs/AUTOMATION_STATUS.md y docs/AUTOMATION_3X3_OPERATING_CONTRACT.md, con sección normativa vigente que prevalece sobre evidencias históricas 6/2/1; se conserva REVIEW_FIRST -> RECOVER -> CLAIM, ramas deterministas, permisos reales y preflight de inventario.
+- scripts/validate-dual-task-configuration.mjs rechaza el segundo CLAIM, exige cuenta/TASK_ID e inventario readback para nuevos claims y handoffs; RESUME solo del scope propio. Casos negativos: VALIDANDO en espera, conteo ausente, lease/editor ocupado, handoff no acreditado, autorrrevisión, falta de CI/permisos/evidencia.
+- La revisión técnica entre TASK_ID diferentes del mismo login GitHub queda diferenciada de APPROVED formal: no sustituye reglas de proveedor ni permite que el TASK_ID autor certifique o cierre su propia microtarea. Los PR comerciales ordinarios conservan CI/Scope Lock SHA-exacto; cambio de gobierno requiere revisión formal independiente de login.
+- Se preserva la conciliación realizada previamente (BITACORA!546): P1-007.A con Javier :20; P1-010.A con Javier :00; P1-008.B con Javier :40; Javier :30 sin microtarea propia. Se exige nuevo readback vivo antes de operar, no se reasigna nada mediante este commit.
+- Sin cambios a Tasks de Alex, horarios, cuentas, secretos, schemas, ERP, datos de usuarios, infraestructura, QA/main/PROD o reglas protegidas. Integración condicionada a PR de gobierno, aprobación independiente, CI requerida, merge protegido y verificación postmerge. Rollback por revert mediante PR protegido; nunca borrar trabajo comercial ni falsificar liberación de WIP.
+
+## 2026-11-04 — P1-008.B: pruebas negativas de reactivación de membresías
+
+- Task Javier :40 (`6adc2e55f47c81919f6374e561687076`) reclama P1-008.B tras LISTO real de P1-008.A. Rama `work/solqaryn-p1-008-b` desde `dev@51689ca4260db6fb702fe9d8c94da986de6d4aec`.
+- Cuatro pruebas xUnit `P1008B`: usuario inactivo/bloqueado, rol inactivo o privado de otro tenant. Rechazos sin mutación ni auditoría exitosa; controller productivo intacto.
+- Documento `docs/P1-008-B-NEGATIVOS-REACTIVACION-DEV.md`; CI/SHA/AUTO_CERT/merge/postmerge/revisión por otro TASK_ID/readbacks pendientes. Arquitectura, API, DB, migraciones y secretos SIN_CAMBIO.
+
+## 2026-11-04 — Revisión técnica cruzada entre Tasks por TASK_ID (solicitud expresa del propietario)
+
+- Se distingue la aceptación técnica entre Tasks individuales del mismo login GitHub y la revisión formal `APPROVED` que GitHub vincula a un usuario. `TASK_ID_AUTOR != TASK_ID_REVISOR` y evidencia exact-SHA son obligatorios para la aceptación técnica; la Task autora no puede marcar su propia microtarea `LISTO`.
+- No se solicita rutinariamente a la cuenta de Alex revisar tareas de Javier, ni a la cuenta de Javier revisar tareas de Alex; revisión formal distinta solo cuando el ruleset/verificador protegido la exige. Alex sigue inactiva, sin cambios físicos.
+- La nueva regla no elude CI, `PROJECT_SCOPE_LOCK=STRICT`, GitHub ni la protección de ramas. PR comercial `#3839` continúa con conflicto en `CHANGELOG_AI.md`; no se falsea su cierre. Reversión: nuevo PR protegido e independiente.
+
+## 2026-11-04 — P1-006.B: certificación negativa del selector empresarial (en validación CI)
+
+- Task Javier :00, ID `6adbb9fff1548191a1bd5b30d9e9984a`, reclama rama determinista `work/solqaryn-p1-006-b` desde `dev@376d90d5663a` después de certificar y cerrar P1-006.A con CI postmerge 22/22 SUCCESS.
+- Se agrega `P1006BSelectorEmpresarialAislamientoTests.cs`: dos identidades distintas, membresías propias y ajenas, revocación, sesión sin JWT, cuenta desactivada y protección del contrato GET `/tenant-context/empresas`.
+- Sólo pruebas y documentación. No amplía JWT/RBAC ni expone catálogo global; no modifica infraestructura, migraciones, secretos ni QA/main/PROD. Se exige prueba xUnit dirigida y gates CI exact-SHA antes de VALIDANDO/merge/LISTO.
+
+## 2026-11-04 — P1-009.B: certificación HTTP 4xx de rol ajeno/global (DEV)
+
+- Task física Javier :30 `6aeacb7820ac8191b7d768a6f33dfa09` reclama P1-009.B después de comprobar P1-009.A=LISTO en PLAN/COLA/BITACORA, allowlist de seis, Skill canónica y exclusividad. Rama `work/solqaryn-p1-009-b` desde `dev@edc7be2c36abd903318dab9cc96489a668207817`; WIP 4/6 antes del claim.
+- Suite `P1009BRoleHttpIsolationCertificationTests`: TestServer, JWT local, `RolesController`, filtro de permisos, servicio y middleware reales; tres casos negativos (rol de otra empresa, global de Plataforma y huérfano) exigen HTTP 400 causal y cero operaciones de persistencia. Reutiliza invariantes P1-009.A/#3841 y regresiones P1001A/RolServiceTenantOwnership.
+- Acta `docs/P1-009-B-ROLES-HTTP-4XX-CERTIFICACION-DEV.md`: la prueba con repositorio simulado no acredita membresías/índices MySQL físicos ni HTTP live. Sin cambios de runtime, permisos, RBAC, migraciones, frontend, QA/main/PROD, credenciales o secretos.
+- Pendiente: ejecutar xUnit dirigido en CI sobre SHA real del PR, certificar Scope Lock y todos los checks, merge protegido y readback institucional antes de `LISTO`. No atribuir PASS, `APPROVED` humano ni integración antes de que exista evidencia. Rollback por revert protegido del changeset de prueba/documentación.
+
+## 2026-11-04 — REVIEW_FIRST incluye continuidad y cierre de VALIDANDO propio (DEV)
+
+- Se corrige el filtro operativo que solo examinaba `VALIDANDO` ajenos, dejando sin atender cierres de las Tasks Javier bajo el mismo login GitHub `jmejia31`.
+- Jerarquía: revisión independiente externa que realmente corresponda; luego continuidad técnica del `VALIDANDO` de TASK_ID propio para CI, sincronización de rama, merge protegido y readback postmerge; después `EN_PROGRESO` recuperable y por último `PENDIENTE` elegible. Cada bloqueo externo se documenta una sola vez, sin detener scopes independientes.
+- `scripts/validate-dual-task-configuration.mjs` añade selección `RECOVER_VALIDANDO` con identidad física, permiso, exclusividad y evidencia de PR/merge, más negativos contra robo entre Tasks del mismo GitHub login, editor ocupado y falso merge. No emite aprobaciones independientes ni cambia permisos.
+- PR de gobierno exige revisión de otra identidad sobre el SHA final y Scope Lock PASS. No cambia código productivo, bases de datos, roles, secretos, QA/main/PROD ni límites WIP 6/2/1. Reversión por PR protegido sin alterar Tasks ni borrar evidencias.
+
+## 2026-11-04 — P1-009.A: reutilización de plantillas y unicidad de roles (DEV)
+
+- Scope exclusivo `P1-009.A`: Task Javier :30 `6aeacb7820ac8191b7d768a6f33dfa09`, GitHub `jmejia31`, rama `work/solqaryn-p1-009-a`, base `dev@30bf43749a8eb7b164a065f5aabebfa024aa0faa`. Dependencia `P0-012.B=LISTO`.
+- Se reutilizan el aislamiento por `EmpresaId`, las plantillas `EsSistema` empresariales y la unicidad final **por empresa** `(EmpresaId,NombreNormalizado)` más unicidad de plantilla/global sin dueño `NombreNormalizadoGlobalUnico` (configuración posterior `CommercialTenantNaturalKeysModel`, no la declaración intermedia de `RolConfiguration`). Sin cambios al runtime, RBAC, MySQL ni migraciones.
+- Nueva suite dirigida `P1009ARoleTemplateUniquenessTests` comprueba A/B, denegación de rol ajeno/global/huérfano, **modelo final de índices tenant/global** y bloqueo de nombre normalizado duplicado antes de persistir. Primer CI detectó un test que presumía equivocadamente índice global único (5/6 PASS); corregido sin tocar el runtime. Acta `docs/P1-009-A-ROLE-TEMPLATE-UNICIDAD-DEV.md`.
+- Pendiente: ejecución real CI exact SHA, Scope Lock confiable, prueba dirigida, integración protegida y readback institucional. No declarar PASS ni LISTO por publicar el diff; P1-009.B es scope posterior.
+
 ## 2026-11-04 — Nueva cuarta Task de Javier (:30), ampliación de censo bajo revisión protegida
 
 - Por orden del propietario se creó `SOLQARYN — PRIMARY DEV 04 — JAVIER` con identidad propia en ChatGPT, hora `:30` en `America/Tegucigalpa` y contrato 2.0; quedó PAUSADA como control preventivo hasta integrar su nueva autorización y verificarla individualmente.
@@ -4929,3 +4983,22 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Acta `docs/P1-001-B-CERTIFICACION-ROL-ENTRE-TENANTS-DEV.md`. Sin mutaciones del ERP, MySQL, frontend, API, secretos, QA/main/PROD. Estado candidato sujeto a CI exact SHA, revisión independiente, merge protegido y readback; LISTO NO acreditado.
 
 - CI_PROVENIENCIA_DIRECT_HEAD_P1001B: check-runs 3/3 vinculados inicialmente al PR SHA `fc1322d` ejecutaban fisicamente el merge sintetico `c06f52b`, no checkout directo. Se añade workflow dirigido `.github/workflows/p1-001-b-role-isolation.yml` con checkout explícito `github.event.pull_request.head.sha || github.sha`, para verificar en el SHA final el test xUnit de seis casos sin datos reales. La evidencia de HEAD directo requiere log autenticado; no confundir el status asociado con el commit ejecutado. Estado VALIDANDO condicionado por ese gate.
+
+## 2026-11-04 — P1-006.A: selector empresarial JWT basado en membresías activas (WIP, PR #3838)
+
+- Se reclamó atómicamente `work/solqaryn-p1-006-a` desde `dev@d89806cbbf4fea18ff9b503df94445839e83c78b` mediante GitHub y readback; Task de Javier `:00`, identidad `jmejia31`, prioridad P1, dependencias P0-012.B LISTO.
+- `GET /tenant-context/empresas` exige JWT y consulta exclusivamente empresas con `UsuarioEmpresa` activa, cuenta/empresa/rol vigentes y rol empresarial autorizado. No permite enumerar empresas de otros usuarios ni convertir roles de Plataforma en privilegios tenant.
+- Angular reemplaza el ID digitado por selector de nombres provistos por el servidor. El ID persistido es una solicitud no autoritativa; siempre se valida de nuevo por `GET /tenant-context/{id}`. Error de red, JWT o listado inconsistente falla cerrado.
+- Se agregaron tests xUnit A/B/C/D/E/anónimo, tests de contrato Angular y de selector; documentación de arquitectura y rollback en `docs/P1-006-A-SELECTOR-MEMBRESIAS-DEV.md`.
+- Estado: **EN_PROGRESO**, PR #3838 inicialmente DRAFT; no confundir CI pendiente/fallida con certificación ni marcar LISTO. P1-006.B es otra microtarea de cierre LIVE. Sin modificaciones en QA/main/PROD/Aiven/secretos.
+
+
+- Actualización de procedencia del PR #3838: después de incorporar el gobierno protegido #3837, se reconciliaron el HEAD activo de `dev@30bf43749a8eb7b164a065f5aabebfa024aa0faa` y la base GitHub del PR en `dev`, sin alterar ningún archivo de gobierno. La entrega continúa EN_PROGRESO; sólo CI del HEAD siguiente puede certificar su seguridad y pruebas.
+
+- Corrección causal P1-006.A tras inspección del artefacto E2E run 41785235514: HTTP 500 de `GET /tenant-context/empresas` causado por proyección LINQ `new UsuarioTenantScopeActual(...).EmpresaId` no traducible como subquery `Contains` en MySql.EntityFrameworkCore 10.0.9. `UsuarioScopeService` materializa exclusivamente scopes JWT/tenant válidos, deduplica IDs autorizados y consulta nombres con esos IDs; sin alterar RBAC ni usar catálogo global. Nueva CI exact-SHA/E2E y AUTO_CERT pendientes; no certificar hasta PASS.
+
+## 2026-11-04 — P1-008.A: regresiones de consulta y reactivación de membresías (DEV)
+
+- Scope P1-008.A asignado únicamente a Task Javier :40 (ID `6adc2e55f47c81919f6374e561687076`) mediante rama exclusiva `work/solqaryn-p1-008-a` desde `dev@30bf43749a8eb7b164a065f5aabebfa024aa0faa`; `P0-012.B=LISTO`. No se reclaman otras microtareas.
+- Se reutiliza el controller/servicio existente para GET de membresías inactivas y PUT de reactivación por par `EmpresaId+UsuarioId`; no se modifica código de producción. Regresión A/B: reactivar A conserva B y su rol; denegar rol global como membresía empresarial; denegar actor sin autoridad global. Suite dirigida pendiente de CI exact-SHA; no se afirma E2E ni despliegue.
+- Acta `docs/P1-008-A-REACTIVACION-MEMBRESIAS-DEV.md`. Arquitectura: SIN_CAMBIO. Datos/migración/secretos: SIN_CAMBIO. Cierre solo después de checks, Scope Lock, merge protegido y readback institucional; `LISTO` NO acreditado.
