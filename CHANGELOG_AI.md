@@ -1,3 +1,9 @@
+## 2026-11-04 — P1-011.A: trazabilidad de alta atómica de administrador nuevo (DEV)
+
+- Reutilización técnica de PR #3683: alta de usuario + empresa + ConfigEmpresa + membresía + auditoría con commit/rollback MySQL, BCrypt y ausencia de privilegios de plataforma. No se vuelve a implementar código productivo.
+- La regresión MySQL integrada existente queda identificada con filtro `P1011A` para CI dirigida del SHA exacto, sin duplicar tests. Acta: `docs/P1-011-A-ALTA-ATOMICA-ADMIN-DEV.md`.
+- El cambio no certifica resultados CI antes de su ejecución. Requiere Scope Lock y checks protegidos, merge, CI postmerge y cierre por otra Task; no toca QA/main/PROD ni secretos.
+
 ## 2026-11-04 — P1-010.A: roles y membresías independientes por tenant (DEV)
 
 - La Task Javier :20 (`6adc2e4bd8a48191ac7d8641ed95a1a3`) reclamó exclusivamente `work/solqaryn-p1-010-a` desde `dev@30bf43749a8eb7b164a065f5aabebfa024aa0faa`, con P1-007.A en VALIDANDO sin escritor activo.
