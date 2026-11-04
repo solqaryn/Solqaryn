@@ -7,13 +7,13 @@ BRANCH=dev
 EXECUTION_PLAN_DRIVE_FILE_ID=1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA
 CURRENT_COMMERCIAL_ONLY=TRUE
 AUTOMATION_RUNTIME=ACTIVE_DEV
-SCHEDULED_CHATGPT_TASKS_AUTHORIZED=5
-AUTHORIZED_COMMERCIAL_TASK_IDS=6adbb9fff1548191a1bd5b30d9e9984a,6adc2e4bd8a48191ac7d8641ed95a1a3,6adc2e55f47c81919f6374e561687076,6adbbc9ad9e88191bea8eb69104afb25,6adcc98a80a48191b71a5156624c21df
+SCHEDULED_CHATGPT_TASKS_AUTHORIZED=6
+AUTHORIZED_COMMERCIAL_TASK_IDS=6adbb9fff1548191a1bd5b30d9e9984a,6adc2e4bd8a48191ac7d8641ed95a1a3,6adc2e55f47c81919f6374e561687076,6adbbc9ad9e88191bea8eb69104afb25,6adcc98a80a48191b71a5156624c21df,6aeacb7820ac8191b7d768a6f33dfa09
 VAEP_DISPATCH_AUTHORIZED=FALSE
 JULES_WORKERS_AUTHORIZED=0
 TASK_COUNT_LIMIT=PROVIDER_EFFECTIVE_CAPACITY
 TASK_ASSIGNMENT_MODEL=OWNER_CONFIGURABLE
-REGISTERED_TASK_IDS=6adbb9fff1548191a1bd5b30d9e9984a,6adbbc9ad9e88191bea8eb69104afb25,6adc2e4bd8a48191ac7d8641ed95a1a3,6adc2e55f47c81919f6374e561687076,6adcc98a80a48191b71a5156624c21df
+REGISTERED_TASK_IDS=6adbb9fff1548191a1bd5b30d9e9984a,6adbbc9ad9e88191bea8eb69104afb25,6adc2e4bd8a48191ac7d8641ed95a1a3,6adc2e55f47c81919f6374e561687076,6adcc98a80a48191b71a5156624c21df,6aeacb7820ac8191b7d768a6f33dfa09
 PRIMARY_TASK_ROLE=PRIMARY_01
 SECONDARY_TASK_ROLE=SECONDARY_02
 PRIMARY_TASK_ACCOUNT=JAVIER_CHATGPT
@@ -21,8 +21,8 @@ SECONDARY_TASK_ACCOUNT=ALEX_CHATGPT
 
 DESIGN_VERSION=2.0
 DESIGN_TOPOLOGY=OWNER_CONFIGURABLE
-CURRENT_TASK_DISTRIBUTION=3_JAVIER_2_ALEX
-PHYSICAL_TASKS_REGISTERED=5
+CURRENT_TASK_DISTRIBUTION=4_JAVIER_2_ALEX
+PHYSICAL_TASKS_REGISTERED=6
 MAX_CONCURRENT_SCOPES=6
 MAX_OWNED_SCOPES_PER_TASK=2
 MAX_ACTIVE_WRITES_PER_TASK=1
@@ -35,7 +35,15 @@ GITHUB_CHAT_ROLE_SEPARATION=STRICT
 GITHUB_CHAT_ROLE_POLICY=docs/GITHUB_ACCOUNT_ROLES.md
 LEGACY_AUTOMATION_RUNTIME=RETIRED
 
-## Estado operativo prevalente M3.2 — 2026-11-03
+## Censo vigente — incorporación de Javier :30 (2026-11-04)
+
+Orden expresa del propietario: crear una cuarta Task de `JAVIER_CHATGPT` para el minuto `:30` de cada hora en `America/Tegucigalpa`, con ID físico nuevo `6aeacb7820ac8191b7d768a6f33dfa09` y nombre `SOLQARYN — PRIMARY DEV 04 — JAVIER`. Fue creada desde la cuenta de Javier por la herramienta nativa de ChatGPT y su horario/identidad fueron leídos de vuelta. **Estado al preparar el PR: is_enabled=false (pausada preventivamente mientras se autoriza en gobierno)**. No se reutiliza la antigua Task de Alex :30, que conserva su exclusión y su ID anterior sin autorización.
+
+La lista individual de seis IDs corresponde a Javier :00/:20/:30/:40 y Alex :10/:50. La presente autorización comercial para el ID nuevo **solo entra en vigor tras revisión formal independiente del SHA final, los checks obligatorios, merge protegido a `dev` y readback de `TAREAS_PROGRAMADAS`, `CONFIG` y bitácora institucional**. Antes de ese cierre, aun si la Task estuviera habilitada físicamente, no puede escribir, reclamar scopes ni integrarse comercialmente. La activación real será verificada por separado con `automations.peek` y pruebas nativas desde su entorno programado. No se infiere acceso por el horario ni por pruebas manuales.
+
+Se conservan `MAX_CONCURRENT_SCOPES=6`, `MAX_OWNED_SCOPES_PER_TASK=2`, `MAX_ACTIVE_WRITES_PER_TASK=1`, contrato 2.0, `REVIEW_FIRST → RECOVER → CLAIM`, los checks de Scope Lock y las restricciones de DEV; nunca modificar QA/main/PROD, secretos, roles, grants ni permisos de otras Tasks.
+
+## Estado anterior M3.2 — 2026-11-03 (histórico)
 
 El censo ejecutable se limita a las cinco identidades presentes en `REGISTERED_TASK_IDS`, iguales a la allowlist comercial; distribución actual 3 Javier (:00/:20/:40) y 2 Alex (:10/:50), **sin límite interno fijo**. Se retira la antigua posición no autorizada :30 del registro, no se crean Tasks ni se conceden permisos nuevos. La conexión actual no permite certificar la eliminación física en la cuenta de Alex; cualquier Task externa al censo mantiene `NO_AUTORIZADO` y no recibe autoridad por inferencia. Las referencias a seis instalaciones en las secciones inferiores son evidencias históricas, nunca fuentes de identidad operativa. `AUTOMATION_RUNTIME=ACTIVE_DEV` es capacidad lógica, no estado `is_enabled`.
 
