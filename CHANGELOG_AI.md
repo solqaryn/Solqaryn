@@ -1,6 +1,7 @@
 ## 2026-11-04 — P1-007.A: aislamiento de permisos y rutas ante cambio de tenant (DEV)
 
 - `PermisosRuntimeService` revoca capacidades, rutas, modo administrador y cache de permisos antes de cada nueva consulta, e identifica cada solicitud con una versión de selección para rechazar respuestas HTTP tardías de otra empresa.
+- `EmpresaIdentidadService` invalida respuestas antiguas de configuración visual entre empresas: `usarPlataforma()` y guardado invalidan solicitudes anteriores, sin rehidratar logotipo/nombre A al cambiar a B; se añadieron tres tests frontend de carreras de respuesta.
 - `esAdministrador` y `cargado` quedan condicionados al tenant efectivamente verificado y al EmpresaId de los permisos, impidiendo mostrar autorización de A cuando el usuario solicita B.
 - Pruebas frontend dirigidas: ocultación inmediata de rutas/admin al cambiar empresa; respuesta tardía de A en SUCCESS o ERROR no sobrescribe ni borra permisos de B; dos guards del mismo tenant reutilizan una sola solicitud HTTP en vuelo para evitar una falsa denegación. Permanecen JWT/guards, autorización y aislamiento final en backend.
 - Pruebas xUnit dirigidas `P1007ATenantSwitchAuthorizationTests`: empresa B sin membresía siempre rechazada incluso después de A, revocación efectiva de A entre dos solicitudes y rechazo de identificadores 0/-1 antes de consultar membresías. Se ejecutan por el workflow comercial dirigido sobre SHA exacto; no sustituyen las pruebas frontend ni el CI.
