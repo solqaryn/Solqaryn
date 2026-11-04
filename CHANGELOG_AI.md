@@ -1,3 +1,10 @@
+## 2026-11-04 — P1-012.B: pruebas negativas de alta con cuenta existente (DEV)
+
+- Alex :50, TASK_ID `6adcc98a80a48191b71a5156624c21df`, reclamó exclusivamente P1-012.B en `work/solqaryn-p1-012-b` desde `dev@89b3687d14336734788bda26e2e187f0eea763c2`. `PLAN_MAESTRO!H49=EN_PROGRESO`, `COLA!E49` fórmula y `BITACORA!578` con readback. Dependencia P1-012.A LISTO.
+- Dos pruebas xUnit `P1012B_` del controlador verifican (a) que repetir el alta del mismo nombre responde conflicto sin duplicar cuenta, membresía, configuración ni auditoría; (b) que un administrador previamente vinculado a A con rol privado no transmite su rol a una empresa B creada. No cambian código productivo, API, DB, migraciones, secretos, permisos ni ambientes.
+- Acta `docs/P1-012-B-NEGATIVOS-ALTA-ADMIN-REGISTRADO-DEV.md`. Fixture EF InMemory; no acredita MySQL transaccional real ni HTTP/JWT remoto. Prueba dirigida `FullyQualifiedName~P1012B`, regresión P1012A, CI exact SHA, revisión técnica por otra Task, merge protegido, CI posmerge y cierre institucional pendientes de acreditar. No autoaprobar ni declarar LISTO.
+- Reversión: PR protegido de revert para tests y documentación, sin alterar historial comercial.
+
 ## 2026-11-04 — P1-012.A: regresión de alta con administrador registrado (DEV)
 
 - Javier :00, TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`, tomó el único scope P1-012.A con WIP 6/1/1, dependencia P0-012.B LISTO y COLA!G48=SI. Rama determinista `work/solqaryn-p1-012-a` creada desde `dev@4ac3fe76cc7f98c40a2aa1160c92560e1aab6bb2` con readback GitHub y Sheets.
