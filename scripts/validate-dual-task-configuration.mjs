@@ -90,7 +90,7 @@ export function dependenciesSatisfied(task, stateById) {
   return Array.isArray(task.dependencies) &&
     task.dependencies.every(id => stateById[id] === 'LISTO');
 }
-export function selectWork(tasks, stateById, account, activeReviewIds = new Set(), taskId = null, ownershipInventoryVerified = false) {
+export function selectWork(tasks, stateById, account, activeReviewIds = new Set(), taskId = null, ownershipReadbackVerified = false) {
   if (!['JAVIER_CHATGPT','ALEX_CHATGPT'].includes(account))
     return {action:'NO_ELIGIBLE',reason:'UNKNOWN_ACCOUNT'};
   // REVIEW_FIRST: same-login review is allowed ONLY across distinct TASK_IDs
@@ -125,8 +125,8 @@ export function selectWork(tasks, stateById, account, activeReviewIds = new Set(
     t.branchReadbackVerified === true && !t.conflictingClaim);
   if (own) return {action:'RESUME',task:own};
   // No acquisition is allowed if this physical Task already owns any scope,
-  // whether EN_PROGRESO or VALIDANDO. Verify the COMPLETE ownership inventory.
-  if(!validTaskId || ownershipInventoryVerified!==true)
+  // whether EN_PROGRESO or VALIDANDO. Verify the COMPLETE ownership readback.
+  if(!validTaskId || ownershipReadbackVerified!==true)
     return {action:'NO_ELIGIBLE',reason:'OWNERSHIP_READBACK_REQUIRED'};
   if(tasks.some(t=>(t.state==='EN_PROGRESO'||t.state==='VALIDANDO')&&t.ownerTaskId===taskId))
     return {action:'NO_ELIGIBLE',reason:'TASK_ALREADY_OWNS_SCOPE'};
@@ -190,7 +190,7 @@ export function validateProposedRun(p) {
     // A read/write RESUME of an already counted scope does not consume another slot.
     if(!Number.isInteger(p.openWorkBranches)||p.openWorkBranches<0||p.openWorkBranches>6||
        (!p.resumingExistingScope&&p.openWorkBranches>=6)) errors.push('branch_cap');
-    if(p.ownershipInventoryVerified!==true ||
+    if(p.ownershipReadbackVerified!==true ||
        !Number.isInteger(p.taskOwnedScopeCount)||p.taskOwnedScopeCount<0||p.taskOwnedScopeCount>1||
        (!p.resumingExistingScope&&p.taskOwnedScopeCount!==0)||
        (p.resumingExistingScope&&(p.taskOwnedScopeCount!==1||
@@ -268,7 +268,7 @@ if(failures.length){
     slots,
     mode:'ACTIVE_DEV',authorizationVerified:true,
     actorRole:'PRIMARY_01',actorAccount:'JAVIER_CHATGPT',
-    actorTaskId:'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',ownershipInventoryVerified:true,
+    actorTaskId:'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',ownershipReadbackVerified:true,
     permissionVerified:true,exactHeadVerified:true,
     operation:'WRITE',ownerAuthorized:true,writePermissionVerified:true,
     scopeId:'P0-012.A',exclusiveScopeVerified:true,createdExclusively:true,
@@ -302,7 +302,7 @@ if(failures.length){
     ['sixth slot already occupied',p=>p.openWorkBranches=6],
     ['too many scopes owned',p=>p.taskOwnedScopeCount=2],
     ['already owns one in VALIDANDO',p=>{p.taskOwnedScopeCount=1;p.existingScopeState='VALIDANDO';}],
-    ['missing ownership inventory readback',p=>p.ownershipInventoryVerified=false],
+    ['missing ownership readback readback',p=>p.ownershipReadbackVerified=false],
     ['missing task scope count',p=>delete p.taskOwnedScopeCount],
     ['multiple active editors',p=>p.taskActiveWriteCount=2],
     ['negative per task scope count',p=>p.taskOwnedScopeCount=-1],
@@ -487,7 +487,7 @@ if(failures.length){
     throw Error('Second CLAIM accepted with first VALIDANDO');
   if(selectWork([options[0]],{'P0-012.A':'LISTO'},
      'JAVIER_CHATGPT',new Set(),idOwnValidating,false).action==='CLAIM')
-    throw Error('CLAIM accepted without ownership inventory');
+    throw Error('CLAIM accepted without ownership readback');
   if(selectWork([{...alexPR,authorAccount:'JAVIER_CHATGPT'}],{},'JAVIER_CHATGPT').action!=='NO_ELIGIBLE')
     throw Error('Same-account self review accepted');
   const canonicalAlex=clone(base);
