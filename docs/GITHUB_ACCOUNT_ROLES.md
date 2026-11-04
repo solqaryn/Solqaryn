@@ -9,7 +9,11 @@
 - **Revisor asignado:** `jmejia31` (Javier). Su función para esos PR es leer diff, CI exact-SHA, seguridad, pruebas y evidencias, emitir comentarios, solicitar correcciones o registrar `APPROVED` cuando el cambio realmente cumpla las condiciones y su identidad sea independiente de todos los contribuyentes del PR.
 - No alternar entre las conexiones `solqaryn-platform` y `jmejia31` para redactar o publicar commits del mismo trabajo. No usar `jmejia31` para corregir el PR que después deba aprobar. Si hay que corregirlo, la ejecutora institucional hace el commit y la revisión se renueva sobre el SHA final.
 
-## Separación manual / automatizada — criterio vigente 2026-11-03
+## Actualización de identidad — 2026-11-04
+
+A petición expresa del propietario se creó `PRIMARY_DEV_04` de Javier al minuto :30 con ID `6aeacb7820ac8191b7d768a6f33dfa09`, diferente del ID retirado de Alex :30. El censo propuesto tras autorización protegida es seis Tasks: Javier cuatro (:00/:20/:30/:40) y Alex dos (:10/:50). La nueva Task está PAUSADA preventivamente y solo se habilita después de revisión formal independiente sobre SHA final, CI/Scope Lock, merge a dev y readback institucional. No cambia el reparto manual `solqaryn-platform` autora y `jmejia31` revisor ni la prohibición de autoaprobar el propio PR.
+
+## Criterio anterior de separación (2026-11-03)
 
 La regla `solqaryn-platform` autora y `jmejia31` revisor aplica a **los PR gestionados manualmente por este asistente**, no a las cinco Tasks físicas de ChatGPT. Cada Task opera únicamente con la identidad GitHub efectivamente autenticada y sus propios permisos, sin suplantación. Se permite **autoevaluación técnica** (pruebas, análisis, depuración y corrección) y se prohíbe **autocertificación independiente** cuando la política exige un tercero. El revisor que corrige código en una entrega ajena pierde la independencia respecto de esa entrega, pero puede continuar contribuyendo si tiene permiso; deberá intervenir otro revisor independiente cuando sea obligatorio. `REVIEW_FIRST → RECOVER → CLAIM` permanece obligatorio. Ninguna de estas aclaraciones activa Tasks ni elimina protecciones o aprobaciones excepcionales.
 
