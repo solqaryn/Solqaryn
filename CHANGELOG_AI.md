@@ -1,3 +1,9 @@
+## 2026-11-04 — Traspaso comercial a Task libre de próxima ejecución más cercana (DEV)
+
+- Orden expresa del propietario: elegir la Task física realmente libre, habilitada, autorizada y con próxima ocurrencia horaria futura más cercana, usando tiempo local America/Tegucigalpa, next_run_time verificable o RRULE comprobada; no elegir por nombre ni orden de lista. 6/1/1 sigue obligatorio.
+- Nuevo selector fail-closed y pruebas negativas en scripts/validate-dual-task-configuration.mjs; `HANDOFF_CANDIDATE` solo propone receptor, no cambia ownership ni omite lease, autoría, permisos, review o CI. RECOVER_HANDOFF requiere comprobación de selección del receptor.
+- Los cuatro prompts Javier contienen la norma. El propietario corrigió la selección anterior: Javier :30 era la próxima Task libre frente a Javier :00. Traspaso actual P1-010.A condicionado a completar la corrida en curso y a readback en Sheets; no certificarlo antes. Mantener PR #3842, HEAD, rama y autor histórico. Las Tasks de Alex permanecen inactivas y no se altera QA/main/PROD.
+
 ## 2026-11-04 — WIP comercial estricto 6/1/1 y revisión técnica cruzada validable
 
 - Orden expresa del propietario: 6 scopes comerciales globales máximos, **1 scope propio no cerrado por TASK_ID**, **1 editor activo por Task**. Un scope en EN_PROGRESO o VALIDANDO sigue asignado mientras espera CI/revisión; jamás hay excepción de segundo CLAIM por VALIDANDO.
