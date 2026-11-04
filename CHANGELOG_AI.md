@@ -1,3 +1,10 @@
+## 2026-11-04 — P1-013.A: regresión de gates de onboarding (DEV)
+
+- Task física Alex :10 `6adbbc9ad9e88191bea8eb69104afb25` reclamó `P1-013.A` por rama determinista `work/solqaryn-p1-013-a`, desde `dev@89b3687d14336734788bda26e2e187f0eea763c2`, tras `REVIEW_FIRST` de P1-012.A ajena, sin autoaprobar ni reclamar segundo scope. Plan/COLA/BITACORA con readback.
+- Reutiliza `CommercialIsolationCertified` + `PlatformOnboardingEnabled`: se identifican pruebas negativas existentes y se agrega matriz xUnit `P1013A` sobre el valor del directorio `puedeCrear`, sin duplicar ni modificar implementación comercial. Acta `docs/P1-013-A-GATES-ONBOARDING-DEV.md`.
+- Ausencia de flags en appsettings versionados implica falso **solo como default de fuente**; valor del DEV desplegado NO_VERIFICADO. Fixture EF InMemory y mocks no equivalen a HTTP/MySQL remoto. No se alteraron secretos, infra, permisos, QA/main/PROD ni se habilitaron flags.
+- Para aceptar: test dirigido `FullyQualifiedName~P1013A` con >0 PASS y 0 FAIL, CI/scope lock exact SHA, PR protegido, revisión TECH por Task ID distinto, postmerge exact SHA y readback institucional. No marcar LISTO de manera anticipada.
+
 ## 2026-11-04 — P1-012.A: regresión de alta con administrador registrado (DEV)
 
 - Javier :00, TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`, tomó el único scope P1-012.A con WIP 6/1/1, dependencia P0-012.B LISTO y COLA!G48=SI. Rama determinista `work/solqaryn-p1-012-a` creada desde `dev@4ac3fe76cc7f98c40a2aa1160c92560e1aab6bb2` con readback GitHub y Sheets.
