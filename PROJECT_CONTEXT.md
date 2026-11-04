@@ -1,5 +1,8 @@
 ## 2026-11-02 — P1-005.A: frontera de administración empresarial (DEV)
 
+**Estado nuevo 2026-11-04:** Task `PRIMARY DEV 04 — JAVIER` :30, ID `6aeacb7820ac8191b7d768a6f33dfa09`, creada desde ChatGPT y pausada preventivamente antes de ser autorizada comercialmente. Se propone actualizar el inventario a cuatro Javier y dos Alex mediante PR protegido con revisión independiente; la antigua Alex :30 conserva su exclusión. Los límites WIP 6/2/1 no cambian y `docs/AUTOMATION_STATUS.md` sigue siendo la autoridad prevalente.
+
+
 - API multiempresa: `UnscopedCommercialTenantGuardMiddleware` habilita exclusivamente rutas administrativas `usuarios`, `roles` y `permisos/matriz` con método y path exactos, identidad JWT, membresía y rol administrador verificados MySQL, permiso específico y marca tenant validada. Esta vía no abre rutas de ERP comerciales, gestión global ni catálogo de permisos.
 - Capa Infrastructure: `UsuarioAdministracionEmpresaService` encapsula el alta de identidad más membresía propia y auditoría estricta en transacción; edición solo para identidad de membresía única en ese tenant, nunca identidades compartidas, plataformas o roles globales. Domain sin cambios, no migraciones ni scripts DML.
 - Capa Application: interfaz explícita de administración tenant-scoped y defensa contra grants `Ambito=Plataforma` a roles empresariales. Proyección UI de rutas únicamente cuando `EsAdministrador` y grant específicos; no cambia las autoridades efectivas.
