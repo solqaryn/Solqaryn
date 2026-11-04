@@ -290,7 +290,7 @@ if(failures.length){
     ['wrong repo',p=>p.repo='external/Other'],
     ['wrong branch',p=>p.branch='qa'],
     ['duplicate Task ID',p=>p.slots=[...p.slots,...p.slots]],
-    ['duplicate id',p=>p.slots[1].taskId='PRIMARY-REAL'],
+    ['duplicate id',p=>p.slots[1].taskId=p.slots[0].taskId],
     ['wrong account',p=>p.slots[0].account='ALEX_CHATGPT'],
     ['missing provider right',p=>p.writePermissionVerified=false],
     ['scope collision',p=>p.conflictingClaim=true],
