@@ -1,7 +1,7 @@
 ## 2026-11-04 — P1-011.A: trazabilidad de alta atómica de administrador nuevo (DEV)
 
 - Reutilización técnica de PR #3683: alta de usuario + empresa + ConfigEmpresa + membresía + auditoría con commit/rollback MySQL, BCrypt y ausencia de privilegios de plataforma. No se vuelve a implementar código productivo.
-- La regresión MySQL integrada existente queda identificada con filtro `P1011A` para CI dirigida del SHA exacto, sin duplicar tests. Acta: `docs/P1-011-A-ALTA-ATOMICA-ADMIN-DEV.md`.
+- Corrección causal CI: el runner dirigido no ofrece MySQL; el P1011A anterior de integración falló por entorno ausente y Scope Lock bloqueó el merge. Se restaura nombre original del test MySQL (`Category=Integration`, job MySQL efímero) y se prefijan tres pruebas InMemory ya existentes como `P1011A_` para el check dirigido, sin duplicar ni alterar cuerpos. Ambos carriles exigidos sobre SHA final. Acta: `docs/P1-011-A-ALTA-ATOMICA-ADMIN-DEV.md`.
 - El cambio no certifica resultados CI antes de su ejecución. Requiere Scope Lock y checks protegidos, merge, CI postmerge y cierre por otra Task; no toca QA/main/PROD ni secretos.
 
 ## 2026-11-04 — P1-010.A: roles y membresías independientes por tenant (DEV)

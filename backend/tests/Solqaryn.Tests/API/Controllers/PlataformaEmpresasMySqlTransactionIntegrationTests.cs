@@ -22,7 +22,7 @@ namespace Solqaryn.Tests.API.Controllers;
 public sealed class PlataformaEmpresasMySqlTransactionIntegrationTests
 {
     [Fact]
-    public async Task P1011A_AltaA_B_EsTransaccional_ConAuditoriaYRollbackEnMySqlReal()
+    public async Task AltaA_B_EsTransaccional_ConAuditoriaYRollbackEnMySqlReal()
     {
         var raw = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
             ?? throw new InvalidOperationException("MySQL efímero CI no configurado.");

@@ -17,18 +17,17 @@
 - Seguridad de credenciales: BCrypt workFactor 12 para contraseña nueva. Ni contraseña ni hash se incluyen en auditoría/respuesta.
 - Sin cambios a QA, main, PROD, credenciales, secretos, roles de proveedor ni reglas protegidas.
 
-## Prueba dirigida MySQL real, sin duplicar ejecución
+## Dos carriles de pruebas existentes, sin duplicar ni debilitar cobertura
 
-- Suite de referencia: `backend/tests/Solqaryn.Tests/API/Controllers/PlataformaEmpresasMySqlTransactionIntegrationTests.cs`.
-- El test existente conserva todos sus pasos y aserciones; se etiqueta en el nombre como `P1011A_AltaA_B_EsTransaccional_ConAuditoriaYRollbackEnMySqlReal`, para filtrar explícitamente la microtarea en CI de PR. Es un **renombrado identificativo**, no una prueba nueva ni un resultado ejecutado.
-- Comando de ejecución dirigido (CI, MySQL **efímero** disponible): `dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --filter FullyQualifiedName~P1011A`.
-- Positivo: usuario nuevo activo y BCrypt verificable; rol base empresarial sin privilegios, membresía admin única del tenant; empresa, configuración y auditoría en una sola operación confirmada.
-- Negativos: inyección de fallo al insertar **ConfigEmpresa**, **UsuarioEmpresa** y **RegistroAuditoria**; la prueba existente verifica que no sobreviva usuario, empresa ni filas auxiliares de transacciones fallidas. También se preserva el flujo de administrador preexistente y su rollback.
-- Cobertura auxiliar existente: `PlataformaEmpresasOnboardingSecurityTests` comprueba contraseñas débiles, duplicidad, modalidades mezcladas, doble gate y falta de autoridad de plataforma.
+**Diagnóstico PR #3851, SHA c65885ae:** el check `SOLQARYN - Directed commercial scope` ejecutó xUnit sin servicio MySQL ni `ConnectionStrings__DefaultConnection`. La prueba `Category=Integration` falló con `MySQL efímero CI no configurado`, mientras el job Oracle/MySQL de `dev-ci` sí proporciona MySQL efímero y terminó SUCCESS. Scope Lock rechazó correctamente el SHA anterior. Este fallo de preparación no acredita fallo funcional de transacciones.
+
+- **Prueba dirigida de PR, sin MySQL externo:** prefijo `P1011A_` en tres pruebas existentes de `PlataformaEmpresasOnboardingSecurityTests.cs`, sin alterar cuerpos ni aserciones. Comprueban BCrypt, rol empresarial base, membresía admin, configuración/auditoría, contraseñas débiles, duplicidad, modalidades mezcladas, doble gate y falta de autoridad global. El filtro `FullyQualifiedName~P1011A` exige TRX con al menos un PASS y cero FAIL sobre HEAD exacto.
+- **Integración MySQL efímero real:** mantener nombre original y cuerpo íntegro de `PlataformaEmpresasMySqlTransactionIntegrationTests.AltaA_B_EsTransaccional_ConAuditoriaYRollbackEnMySqlReal` con `Category=Integration`. El job `Migraciones EF Oracle, variantes y cargas masivas en MySQL 8.4` de `dev-ci` usa servicio MySQL 8.4 y cadena de conexión temporales, y ejecuta `dotnet test ... --filter Category=Integration`. Incluye commit atómico y rollbacks ante ConfigEmpresa, UsuarioEmpresa y auditoría.
+- **Gates separados:** un PASS InMemory no prueba transacciones MySQL, y un PASS de migraciones no sustituye el check comercial dirigido. Ambos deben acreditar éxito sobre el SHA final, junto con Scope Lock y seguridad aplicables. No se cambia el workflow, ni DB externa, ni código productivo.
 
 ## Gates y limitaciones
 
-- La presencia de tests en el repositorio **no demuestra una corrida exitosa**. Exigir log/TRX de prueba `P1011A` con al menos 1 PASS, 0 FAIL, sobre **SHA exacto del PR** y MySQL efímero; los check-runs requeridos, Scope Lock `AUTO_CERT=PASS` confiable y demás checks aplicables han de terminar.
+- La presencia de tests en el repositorio **no demuestra una corrida exitosa**. Exigir log/TRX dirigido `P1011A` con al menos 1 PASS y 0 FAIL sin MySQL, **y** job MySQL efímero `Category=Integration` SUCCESS con regresión transaccional existente, ambos sobre SHA exacto, además de Scope Lock `AUTO_CERT=PASS` confiable y todos los checks aplicables.
 - El merge protegido a `dev` y los workflows/checks `push` sobre SHA de merge son condiciones posteriores independientes. `LISTO` únicamente por **otro TASK_ID habilitado**, con revisión técnica cruzada, `PLAN_MAESTRO/COLA/BITACORA` leídos de vuelta y fórmulas preservadas.
 - No afirmar prueba HTTP/JWT o MySQL vivo DEV remoto por el resultado de un fixture; estos gates, si el alcance final lo exige, se certifican separadamente.
 - Reversión: revert mediante PR protegido del cambio documental/etiqueta del test. Nunca borrar empresas o usuarios legítimos ni forzar el branch.
