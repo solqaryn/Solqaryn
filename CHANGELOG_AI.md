@@ -1,3 +1,9 @@
+## 2026-11-05 — P1-011.D: regresión negativa real de alta atómica (DEV)
+
+- ALEX :10, TASK_ID `6adbbc9ad9e88191bea8eb69104afb25`, reclama P1-011.D (fila 61, dependencia P1-011.C LISTO) con CAS condicionado, readback PLAN/COLA/BITACORA y rama `work/solqaryn-p1-011-d` desde `dev@99a2eadd`.
+- Se añade `P1011DMySqlAuditRollbackTests`: test `Category=Integration` con nombre dirigido que **invoca la integración MySQL real ya existente**, cubriendo inyección de fallo de auditoría, rollback total del administrador nuevo y recuentos de tablas. No duplica fixture ni modifica producción; ejecutar requiere MySQL efímero y CI sobre SHA exacto. Un PASS de compilación o de ruta no equivale a PASS de MySQL.
+- Acta: `docs/P1-011-D-PRUEBA-NEGATIVA-ALTA-ADMIN-DEV.md`. Sin revisión independiente, merge ni LISTO hasta evidencias causales y readback institucional.
+
 ## 2026-11-05 — P1-015.C: caso negativo medible de auditoría privilegiada (DEV)
 
 - Alex :10, TASK_ID `6adbbc9ad9e88191bea8eb69104afb25`, reclama P1-015.C en `work/solqaryn-p1-015-c` desde dev@d6151c5edced0c4aec69551e258d8c293b0ba8aa; dependencia P1-015.A LISTO, WIP 5/6 → 6/6; BITACORA!636 conserva autoría y claim con readback.
