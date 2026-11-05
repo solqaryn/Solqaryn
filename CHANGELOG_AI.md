@@ -1,3 +1,7 @@
+## 2026-11-05 — P1-014.D: rechazo HTTP 403 del alta guiada (DEV)
+
+Task Javier :30 (6aeacb7820ac8191b7d768a6f33dfa09) añade prueba negativa dirigida Angular sobre el asistente de alta: respuesta 403 del servidor no confirma alta ni pierde datos del formulario. Acta docs/P1-014-D-RECHAZO-ALTA-GUIADA-DEV.md. Prueba aún no ejecutada ni CI certificada al crear el changeset; no es evidencia de MySQL/JWT remoto ni altera backend productivo. Rama histórica work/solqaryn-p1-014-d, rollback por PR protegido limitado a esta prueba/documentación.
+
 ## 2026-11-05 — Selección directa de scopes por Task, sin bloqueos de Sheets
 
 El propietario retira el mecanismo de reserva condicional de Sheets. Reparto único por microtarea y autoría mediante scripts/automation-review-routing.mjs; cada Task calcula su ruta solo al ejecutarse y no crea reservas ni bloqueos persistentes. Conserva los 15/15/15, REVIEW_FIRST, los PR protegidos de GitHub, permisos y las comprobaciones necesarias para LISTO. Ante ocupación positiva de otro editor se respeta su trabajo. No restaura motores históricos ni crea Tasks.
