@@ -1,3 +1,9 @@
+## 2026-11-05 — Selección directa de scopes por Task, sin bloqueos de Sheets
+
+El propietario retira el mecanismo de reserva condicional de Sheets. Reparto único por microtarea y autoría mediante scripts/automation-review-routing.mjs; cada Task calcula su ruta solo al ejecutarse y no crea reservas ni bloqueos persistentes. Conserva los 15/15/15, REVIEW_FIRST, los PR protegidos de GitHub, permisos y las comprobaciones necesarias para LISTO. Ante ocupación positiva de otro editor se respeta su trabajo. No restaura motores históricos ni crea Tasks.
+
+**Impacto:** solo gobierno y scripts de validación/selección; sin cambios de frontend/backend/API/DTO, migraciones, datos empresariales, secretos ni entornos. Revertir exclusivamente el PR mediante otro PR protegido. El historial de cierres y los registros institucionales existentes se conservan sin inventar nuevos.
+
 ## 2026-11-04 — Contexto vigente de custodia comercial por etapa (PR #3854)
 
 El ciclo comercial `PENDIENTE -> EN_PROGRESO -> VALIDANDO -> LISTO` separa `AUTHOR_TASK_ID` inmutable de responsable/revisor por etapa. `VALIDANDO` mantiene el WIP global, pero su autora queda libre tras lease liberado y recibos reales; otra Task distinta reclama revisión exclusiva. El nuevo módulo puro `scripts/automation-stage-ownership.mjs` valida estas precondiciones y fallos; no crea motor paralelo ni modifica Sheets o Tasks automáticamente. Autoridad: `docs/AUTOMATION_AUTHORITY.md`; censo: `docs/AUTOMATION_STATUS.md`. Ningún cambio a ERP, API, base de datos, QA/main/PROD o credenciales.

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 
-// Advisory only: this module NEVER grants a merge, a lease, or LISTO.
+// Advisory only: this module NEVER grants a merge, an assignment, or LISTO.
 // Classify trusted exact-SHA checks to avoid idle scheduled-Task runs.
 export const HOURLY_LISTO_TARGET = 6;
 export const THROUGHPUT_WINDOW_MS = 60 * 60 * 1000;
@@ -40,12 +40,10 @@ export function classifyCiContinuation(data) {
     return decision('NO_GO_UNKNOWN_CHECK_STATUS');
   if (pending.length) {
     // CI runs on GitHub; Tasks MUST NOT sleep or poll repeatedly while CI runs.
-    // Release a reviewer lease only after version/CAS and independent readback.
+    // Never hold a scheduled Task for a workflow; no row reservation is created.
     return decision('CI_PENDING_ASYNC_CONTINUE', {
       pending: pending.map(x => x.name),
-      reviewerLeaseReleaseRequired: data.reviewComplete === true && data.reviewerLeaseReleased !== true,
-      mayClaimOtherScope: data.reviewComplete === true && data.reviewerLeaseReleased === true &&
-        data.releaseReadbackVerified === true,
+      mayClaimOtherScope: data.reviewComplete === true,
     });
   }
   // Green PR checks do not attest a protected merge, postmerge CI, or sheet readback.
@@ -93,12 +91,10 @@ function selfTest() {
   const pending={...base,checks:[check('Security'),check('Build','in_progress',null)]};
   const q=classifyCiContinuation({...pending,reviewComplete:true,reviewerLeaseReleased:false});
   assert.equal(q.action,'CI_PENDING_ASYNC_CONTINUE');
-  assert.equal(q.reviewerLeaseReleaseRequired,true);
-  assert.equal(q.mayClaimOtherScope,false);
+  assert.equal(q.mayClaimOtherScope,true);
   assert.equal(q.canMerge,false);
   assert.equal(classifyCiContinuation({...pending,reviewComplete:false}).mayClaimOtherScope,false);
-  assert.equal(classifyCiContinuation({...pending,reviewComplete:true,reviewerLeaseReleased:true,
-    releaseReadbackVerified:true}).mayClaimOtherScope,true);
+  assert.equal(classifyCiContinuation({...pending,reviewComplete:true}).mayClaimOtherScope,true);
   assert.equal(classifyCiContinuation({...base,requiredCheckNames:['Security','Security']}).action,'NO_GO_UNVERIFIED_INPUT');
   const now='2026-11-05T18:00:00Z';
   const item=scopeId=>({scopeId,state:'LISTO',closedAt:'2026-11-05T17:30:00Z',mergeSha:sha,
