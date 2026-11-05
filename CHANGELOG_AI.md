@@ -4,6 +4,12 @@
 - Nueva suite xUnit `P1016A` (cinco casos) verifica superadmin global sin membresías y Empresa Piloto Inactiva efímera inactiva, usuario sin rol global, admin empresarial sin escalamiento por `X-Empresa-Id`, revocación por bloqueo y rechazo HTTP no autenticado; auditoría permanece global y sin tenant. Únicamente tests/acta; **sin cambios productivos** ni proveedores.
 - El acta `docs/P1-016-A-PLATAFORMA-SIN-TENANT-DEV.md` delimita riesgo y rollback. La prueba EF InMemory **no certifica** MySQL/HTTP DEV vivo. No atribuir `PASS`, merge o `LISTO` antes de CI exact SHA, Scope Lock `AUTO_CERT=PASS`, revisión técnica de otra Task, merge protegido y readback institucional.
 
+## 2026-11-04 — P1-015.A: auditoría del acceso global privilegiado (DEV)
+
+- Javier :30, TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`: CLAIM exclusivo WIP 6/1/1, PLAN_MAESTRO!H54/I54 y BITACORA!592, rama `work/solqaryn-p1-015-a` desde `dev@fa10d1a92c90ee06d693a3c89bc8586d5ffc9be2` con readback, sin alterar otras Tasks.
+- Se agregaron seis regresiones `P1015APrivilegedAccessAuditTests` sobre concesión/revocación global, lectura delegada, actor/motivo/EmpresaId/correlación, autodelegación rechazada y no acceso por administrador empresarial; no hay modificaciones productivas ni migraciones.
+- Acta `docs/P1-015-A-AUDITORIA-ACCESO-PRIVILEGIADO-DEV.md`: reutilizar auditoría existente, contrato de rechazo y límites de prueba EF InMemory. Pendiente ejecución dirigida y CI exact SHA; **NO** afirmar PASS, aprobación formal, merge ni LISTO antes de las evidencias y del cierre cruzado por otra Task.
+
 ## 2026-11-04 — Reconciliación PR #3854 con gobierno DEV vigente
 
 - Resolución de `BASE_DEV_STALE` y colisiones normativas posteriores al PR #3858: integrar la implementación original de `automation-stage-ownership.mjs` sobre `dev` sin restaurar `RECOVER_VALIDANDO` propio ni el archivo de contrato 3×3 eliminado.
