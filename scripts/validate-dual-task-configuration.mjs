@@ -103,7 +103,7 @@ export function selectWork(tasks, stateById, account, activeReviewIds = new Set(
     (t.stageReleaseRequested===true
       ? !validValidationRelease(t)
       : !(t.validationHandoffVerified===true&&t.developmentLeaseReleased===true&&t.authorTaskId===taskId)));
-  const stageBusy=validTaskId && tasks.some(t=>isStageOwnedBy(t,taskId));
+  const stageBusy=validTaskId && tasks.some(t=>(t.stageReleaseRequested===true&&isStageOwnedBy(t,taskId)));
   const assignedStage=tasks.find(t=>validTaskId&&ownershipReadbackVerified===true&&
     t.state==='VALIDANDO'&&t.stageReleaseRequested===true&&validValidationRelease(t)&&
     t.stageOwnerTaskId===taskId&&t.reviewReservationTaskId===taskId&&
@@ -146,7 +146,7 @@ export function selectWork(tasks, stateById, account, activeReviewIds = new Set(
   // whether EN_PROGRESO or VALIDANDO. Verify the COMPLETE ownership readback.
   if(!validTaskId || ownershipReadbackVerified!==true)
     return {action:'NO_ELIGIBLE',reason:'OWNERSHIP_READBACK_REQUIRED'};
-  if(tasks.some(t=>isStageOwnedBy(t,taskId)||(t.state==='EN_PROGRESO'&&t.ownerTaskId===taskId)||
+  if(tasks.some(t=>(t.stageReleaseRequested===true&&isStageOwnedBy(t,taskId))||(t.state==='EN_PROGRESO'&&t.ownerTaskId===taskId)||
     (t.state==='VALIDANDO'&&(t.reviewerTaskId===taskId ||
     (t.ownerTaskId===taskId && !(t.validationHandoffVerified===true && t.developmentLeaseReleased===true && t.authorTaskId===taskId))))))
     return {action:'NO_ELIGIBLE',reason:'TASK_ALREADY_OWNS_SCOPE'};
