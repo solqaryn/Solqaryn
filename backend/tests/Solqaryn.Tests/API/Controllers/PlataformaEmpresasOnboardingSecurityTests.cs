@@ -186,6 +186,100 @@ public sealed class PlataformaEmpresasOnboardingSecurityTests
     }
 
     [Fact]
+    public async Task P1012B_AltaRepetidaNoDuplicaIdentidadMembresiaNiAuditoria()
+    {
+        var fixture = await PrepararAsync(true, true, true);
+        await using var db = fixture.Db;
+        var adminAntes = await db.Usuarios.AsNoTracking()
+            .SingleAsync(u => u.Id == fixture.AdministradorId);
+        var totalUsuarios = await db.Usuarios.CountAsync();
+
+        var request = new AltaEmpresaPlataformaRequest
+        {
+            Nombre = "Empresa de alta única",
+            AdministradorUsuarioId = fixture.AdministradorId
+        };
+        Assert.IsType<CreatedResult>(
+            await fixture.Controller.AltaControlada(request, CancellationToken.None));
+        Assert.IsType<ConflictObjectResult>(
+            await fixture.Controller.AltaControlada(request, CancellationToken.None));
+
+        var empresa = Assert.Single(await db.Set<Empresa>().IgnoreQueryFilters().ToListAsync());
+        var membresia = Assert.Single(await db.Set<UsuarioEmpresa>()
+            .IgnoreQueryFilters().ToListAsync());
+        Assert.Equal(empresa.Id, membresia.EmpresaId);
+        Assert.Equal(fixture.AdministradorId, membresia.UsuarioId);
+        Assert.Single(await db.Set<ConfigEmpresa>().IgnoreQueryFilters().ToListAsync());
+        Assert.Single(await db.Set<RegistroAuditoria>().IgnoreQueryFilters().ToListAsync());
+        Assert.Equal(totalUsuarios, await db.Usuarios.IgnoreQueryFilters().CountAsync());
+        var adminDespues = await db.Usuarios.IgnoreQueryFilters().AsNoTracking()
+            .SingleAsync(u => u.Id == fixture.AdministradorId);
+        Assert.Equal(adminAntes.RolId, adminDespues.RolId);
+        Assert.False(await db.Set<UsuarioRolPlataforma>().IgnoreQueryFilters()
+            .AnyAsync(x => x.UsuarioId == fixture.AdministradorId));
+    }
+
+    [Fact]
+    public async Task P1012B_AdminYaMiembroDeA_NoTransfiereRolPrivadoAOtraEmpresa()
+    {
+        var fixture = await PrepararAsync(true, true, true);
+        await using var db = fixture.Db;
+        var empresaA = new Empresa("Empresa A previa");
+        db.Set<Empresa>().Add(empresaA);
+        await db.SaveChangesAsync();
+
+        var rolPrivadoA = new Rol
+        {
+            Nombre = "Administrador privado A",
+            NombreNormalizado = "ADMIN_PRIVADO_A_P1012B",
+            EmpresaId = empresaA.Id,
+            Ambito = AmbitoAutorizacion.Empresa,
+            EsAdministrador = true,
+            EsSistema = false,
+            Activo = true
+        };
+        db.Roles.Add(rolPrivadoA);
+        await db.SaveChangesAsync();
+        db.Set<UsuarioEmpresa>().Add(new UsuarioEmpresa(
+            fixture.AdministradorId, empresaA.Id, rolPrivadoA.Id));
+        await db.SaveChangesAsync();
+
+        var adminOriginal = await db.Usuarios.IgnoreQueryFilters().AsNoTracking()
+            .SingleAsync(x => x.Id == fixture.AdministradorId);
+        Assert.IsType<CreatedResult>(
+            await fixture.Controller.AltaControlada(new AltaEmpresaPlataformaRequest
+            {
+                Nombre = "Empresa B aislada",
+                AdministradorUsuarioId = fixture.AdministradorId
+            }, CancellationToken.None));
+
+        var empresaB = await db.Set<Empresa>().IgnoreQueryFilters()
+            .SingleAsync(x => x.Nombre == "Empresa B aislada");
+        var miembros = await db.Set<UsuarioEmpresa>().IgnoreQueryFilters().AsNoTracking()
+            .Where(x => x.UsuarioId == fixture.AdministradorId).ToListAsync();
+        Assert.Equal(2, miembros.Count);
+        Assert.Equal(2, miembros.Select(x => x.EmpresaId).Distinct().Count());
+        Assert.Equal(rolPrivadoA.Id,
+            Assert.Single(miembros.Where(x => x.EmpresaId == empresaA.Id)).RolId);
+
+        var nuevoRolId = Assert.Single(miembros.Where(x => x.EmpresaId == empresaB.Id)).RolId;
+        Assert.NotEqual(rolPrivadoA.Id, nuevoRolId);
+        var rolDeB = await db.Roles.IgnoreQueryFilters().AsNoTracking()
+            .SingleAsync(x => x.Id == nuevoRolId);
+        Assert.Equal(AmbitoAutorizacion.Empresa, rolDeB.Ambito);
+        Assert.True(rolDeB.EsSistema);
+        Assert.True(rolDeB.EsAdministrador);
+        Assert.Null(rolDeB.EmpresaId);
+        var adminFinal = await db.Usuarios.IgnoreQueryFilters().AsNoTracking()
+            .SingleAsync(x => x.Id == fixture.AdministradorId);
+        Assert.Equal(adminOriginal.RolId, adminFinal.RolId);
+        Assert.False(await db.Set<UsuarioRolPlataforma>().IgnoreQueryFilters()
+            .AnyAsync(x => x.UsuarioId == fixture.AdministradorId));
+        Assert.Single(await db.Set<ConfigEmpresa>().IgnoreQueryFilters().ToListAsync());
+        Assert.Single(await db.Set<RegistroAuditoria>().IgnoreQueryFilters().ToListAsync());
+    }
+
+    [Fact]
     public async Task NoCreaEmpresaConAdministradorInactivoNiRepiteNombre()
     {
         var fixture = await PrepararAsync(true, true, true);
