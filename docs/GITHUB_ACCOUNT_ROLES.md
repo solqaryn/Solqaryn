@@ -6,13 +6,13 @@
 
 ### Distribucion y revision por TASK_ID — contrato 15/15/15, 2026-11-05
 
-Cada Task habilitada puede custodiar hasta 15 scopes distintos dentro del limite global de 15, pero no se le reserva ninguna microtarea antes de su propia ejecucion nativa. Cuando haya varias Tasks elegibles, priorizar la que no tiene responsabilidades; entre iguales, la proxima ejecucion realmente verificada. El ciclo primero revisa VALIDANDO ajena sin reserva, luego EN_PROGRESO abandonada confirmada, despues PENDIENTE elegible. El maximo 15 NO permite tomar el mismo scope por duplicado, editar trabajo de otra Task activa, falsear independencia ni presentar un login compartido como GitHub APPROVED formal. Revision y escritura por scope requieren version/lease/CAS/readback y autoria original inmutable.
+Cada Task autorizada puede trabajar scopes distintos dentro del limite 15/15/15. Las revisiones se distribuyen con scripts/automation-review-routing.mjs, sin reservas en Sheets ni preasignaciones; un mismo scope nunca se revisa por la Task autora, no se editan PR ajenos activos y los gates GitHub siguen protegidos.
 
 
 
 ## Reserva operativa para revisión en VALIDANDO (PR #3854)
 
-Una entrega validada libera a la autora únicamente con lease liberado y recibo de GitHub/Sheets. Otra Task distinta adquiere la custodia con `RESERVE_REVIEW` y versión/lease exclusivo; una sugerencia `REVIEW_RESERVATION_CANDIDATE` nunca constituye aprobación ni asignación. La misma cuenta GitHub compartida por Tasks no aporta un `APPROVED` independiente: las reglas formales del repositorio siguen siendo obligatorias. No activar ni cambiar Tasks ajenas, no perder identidad histórica y nunca transferir un editor activo.
+Una entrega VALIDANDO preserva autora y PR, pero no crea bloqueo persistente de fila. La revisión corresponde a una Task diferente según ruta determinista; cada Task verifica GitHub y evita intervención ante un actor efectivamente ocupado.
 
 
 ## Protocolo vigente de revisión técnica por TASK_ID — orden 2026-11-04

@@ -31,7 +31,7 @@ export function validateAuthority(input) {
     '15.722','1.123','TAREAS_PROGRAMADAS','AUTOMATIZACIONES','NO_VERIFICADO',
     'reconciliación','PROD','GitHub','Google Sheets','permisos efectivos','dependencias existentes y satisfechas',
     'no puede autoaprobarlo','La paridad 01/02 no equivale a aprobación automática',
-    'no activa Tasks','No se importa CAS'
+    'no activa Tasks','No se importa un reservador de Sheets'
   ]);
   required(d.agents, 'AGENTS', ['PROJECT_SCOPE_LOCK=STRICT','AUTOMATION_RUNTIME=ACTIVE_DEV','docs/AUTOMATION_AUTHORITY.md','EJECUTOR_PRINCIPAL_01','EJECUTOR_PRINCIPAL_02']);
   required(d.status, 'AUTOMATION_STATUS', ['AUTOMATION_RUNTIME=ACTIVE_DEV','TASK_COUNT_LIMIT=PROVIDER_EFFECTIVE_CAPACITY','TASK_ASSIGNMENT_MODEL=OWNER_CONFIGURABLE','VAEP_DISPATCH_AUTHORIZED=FALSE','JULES_WORKERS_AUTHORIZED=0','docs/AUTOMATION_AUTHORITY.md']);
@@ -212,7 +212,7 @@ else if (process.argv.includes('--self-test')) {
     ['role', {authority:authority.replaceAll('EJECUTOR_PRINCIPAL_02', 'OBSERVER_02')}],
     ['confused task', {authority:authority.replaceAll('ACTOR_AUTOMATIZADO', 'ACTOR_HUMANO')}],
     ['self approval', {authority:authority.replaceAll('no puede autoaprobarlo','puede autoaprobarlo')}],
-    ['collision', {authority:authority.replaceAll('No se importa CAS', 'Se importa CAS')}],
+    ['collision', {authority:authority.replaceAll('No se importa un reservador de Sheets', 'Se importa un reservador de Sheets')}],
     ['dependency', {authority:authority.replaceAll('dependencias existentes y satisfechas','dependencias ignoradas')}],
     ['writing', {authority:authority.replaceAll('AUTOMATION_RUNTIME=ACTIVE_DEV','AUTOMATION_RUNTIME=RETIRED')}],
     ['duplicate idempotency', {authority:authority.replaceAll('IDEMPOTENCY_KEY','DUPLICATE_KEY')}],
