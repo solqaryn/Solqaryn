@@ -1,8 +1,8 @@
-## 2026-11-05 — P1-011.D: regresión negativa real de alta atómica (DEV)
+## 2026-11-05 — P1-011.D: regresión negativa MySQL de alta atómica (DEV)
 
-- ALEX :10, TASK_ID `6adbbc9ad9e88191bea8eb69104afb25`, reclama P1-011.D (fila 61, dependencia P1-011.C LISTO) con CAS condicionado, readback PLAN/COLA/BITACORA y rama `work/solqaryn-p1-011-d` desde `dev@99a2eadd`.
-- Se añade `P1011DMySqlAuditRollbackTests`: test `Category=Integration` con nombre dirigido que **invoca la integración MySQL real ya existente**, cubriendo inyección de fallo de auditoría, rollback total del administrador nuevo y recuentos de tablas. No duplica fixture ni modifica producción; ejecutar requiere MySQL efímero y CI sobre SHA exacto. Un PASS de compilación o de ruta no equivale a PASS de MySQL.
-- Acta: `docs/P1-011-D-PRUEBA-NEGATIVA-ALTA-ADMIN-DEV.md`. Sin revisión independiente, merge ni LISTO hasta evidencias causales y readback institucional.
+- ALEX :10, TASK_ID `6adbbc9ad9e88191bea8eb69104afb25`, reclama P1-011.D (fila 61, dependencia P1-011.C LISTO) por CAS con readback PLAN/COLA/BITACORA y rama `work/solqaryn-p1-011-d` desde `dev@99a2eadd`. PR #3870.
+- CI separada de forma causal: el workflow dirigido `FullyQualifiedName~P1011D` **no dispone de MySQL** y solo valida que exista el Fact de integración mediante `P1011DDirectedContractTests`. En el runner efímero MySQL 8.4, el `Fact` `AltaAdminNuevoAuditoriaRollbackRealMySqlTests` con `Category=Integration` ejecuta el fixture transaccional real existente, con fallo de auditoría y aserciones de rollback; sin duplicar implementación. El filtro dirigido no alcanza el test real. No certificar solo con PASS de routing ni con SKIPPED de MySQL.
+- Acta: `docs/P1-011-D-PRUEBA-NEGATIVA-ALTA-ADMIN-DEV.md`. Requiere CI exact SHA de ambos gates, revisión ajena, merge protegido y readbacks antes de `LISTO`. Sin cambios productivos/secretos/migraciones/QA/main/PROD.
 
 ## 2026-11-05 — P1-015.C: caso negativo medible de auditoría privilegiada (DEV)
 
