@@ -1,3 +1,9 @@
+## 2026-11-05 — P1-014.A: test Angular ejecutado en GitHub Actions
+
+- El workflow `priority4-quality.yml` ahora ejecuta explícitamente el spec `plataforma-gestion-mvp.component.spec.ts` con Node 24.21.0 y las dependencias fijadas por `npm ci`.
+- Esto deja la salida verificable en GitHub Actions para las solicitudes a `dev` y para el push posterior al merge. El resultado local 5/5 en el merge SHA anterior no se presenta como ejecución de CI ni cambia por sí solo el estado institucional.
+- Sin cambios de runtime, API, datos, migraciones, secretos ni proveedores.
+
 ## 2026-11-04 — P1-013.A: regresión de gates de onboarding (DEV)
 
 - Task física Alex :10 `6adbbc9ad9e88191bea8eb69104afb25` reclamó `P1-013.A` por rama determinista `work/solqaryn-p1-013-a`, desde `dev@89b3687d14336734788bda26e2e187f0eea763c2`, tras `REVIEW_FIRST` de P1-012.A ajena, sin autoaprobar ni reclamar segundo scope. Plan/COLA/BITACORA con readback.
