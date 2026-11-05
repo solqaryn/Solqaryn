@@ -4,6 +4,12 @@
 - Nueva suite xUnit `P1016A` (cinco casos) verifica superadmin global sin membresías y Empresa Piloto Inactiva efímera inactiva, usuario sin rol global, admin empresarial sin escalamiento por `X-Empresa-Id`, revocación por bloqueo y rechazo HTTP no autenticado; auditoría permanece global y sin tenant. Únicamente tests/acta; **sin cambios productivos** ni proveedores.
 - El acta `docs/P1-016-A-PLATAFORMA-SIN-TENANT-DEV.md` delimita riesgo y rollback. La prueba EF InMemory **no certifica** MySQL/HTTP DEV vivo. No atribuir `PASS`, merge o `LISTO` antes de CI exact SHA, Scope Lock `AUTO_CERT=PASS`, revisión técnica de otra Task, merge protegido y readback institucional.
 
+## 2026-11-04 — Reconciliación PR #3854 con gobierno DEV vigente
+
+- Resolución de `BASE_DEV_STALE` y colisiones normativas posteriores al PR #3858: integrar la implementación original de `automation-stage-ownership.mjs` sobre `dev` sin restaurar `RECOVER_VALIDANDO` propio ni el archivo de contrato 3×3 eliminado.
+- El validador de selección ahora distingue entrega verificada, reserva de revisión exclusiva y continuación por revisora ya asignada; nuevas pruebas negativas de doble propiedad, auto-revisión, readback omitido y autor liberado sin lease.
+- Scope Lock protege el nuevo script, conservando revisión formal independiente, CI exact-SHA, rama/PR originales y rollback protegido. No modificar Tasks físicas, Sheets, credenciales, QA/main/PROD ni datos comerciales con este PR.
+
 ## 2026-11-04 — Gobierno DEV: liberacion verificada en VALIDANDO y consolidacion de autoridad
 
 - Orden expresa del propietario: tras entrega confirmada EN_PROGRESO -> VALIDANDO, el TASK_ID autor conserva autoria historica pero su cupo operativo se libera solo con SHA/PR, lease y readback de Sheets verificables. El scope VALIDANDO continua consumiendo WIP global (6) hasta LISTO y queda disponible para una revisora Task diferente, que puede corregir/merge/cerrar bajo CI y reglas reales de GitHub.

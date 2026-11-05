@@ -1,3 +1,7 @@
+## 2026-11-04 — Contexto vigente de custodia comercial por etapa (PR #3854)
+
+El ciclo comercial `PENDIENTE -> EN_PROGRESO -> VALIDANDO -> LISTO` separa `AUTHOR_TASK_ID` inmutable de responsable/revisor por etapa. `VALIDANDO` mantiene el WIP global, pero su autora queda libre tras lease liberado y recibos reales; otra Task distinta reclama revisión exclusiva. El nuevo módulo puro `scripts/automation-stage-ownership.mjs` valida estas precondiciones y fallos; no crea motor paralelo ni modifica Sheets o Tasks automáticamente. Autoridad: `docs/AUTOMATION_AUTHORITY.md`; censo: `docs/AUTOMATION_STATUS.md`. Ningún cambio a ERP, API, base de datos, QA/main/PROD o credenciales.
+
 ## 2026-11-02 — P1-005.A: frontera de administración empresarial (DEV)
 
 **Estado nuevo 2026-11-04:** Task `PRIMARY DEV 04 — JAVIER` :30, ID `6aeacb7820ac8191b7d768a6f33dfa09`, creada desde ChatGPT y pausada preventivamente antes de ser autorizada comercialmente. Se propone actualizar el inventario a cuatro Javier y dos Alex mediante PR protegido con revisión independiente; la antigua Alex :30 conserva su exclusión. Los límites WIP 6/2/1 no cambian y `docs/AUTOMATION_STATUS.md` sigue siendo la autoridad prevalente.
