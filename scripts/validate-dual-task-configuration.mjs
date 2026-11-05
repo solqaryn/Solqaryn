@@ -204,7 +204,15 @@ export function validateProposedRun(p) {
      !(p.slots||[]).some(s=>s.role===p.actorRole&&s.account===p.actorAccount&&s.permissionsVerified===true))
     errors.push('actor_auth');
   if(!p.permissionVerified||!p.exactHeadVerified)errors.push('permission_or_head');
-  if(p.operation==='WRITE'){
+  if(p.operation==='DELIVER_VALIDANDO'){
+    if(!validScope(p.scopeId)||p.authorTaskId!==p.actorTaskId||
+       p.fromState!=='EN_PROGRESO'||p.toState!=='VALIDANDO'||!isUrl(p.reviewedPrRef)||
+       p.deliveryCommittedInSheets!==true||p.validationHandoffVerified!==true||
+       p.developmentLeaseReleased!==true||p.activeEditorVerifiedAbsent!==true||
+       p.ownershipReadbackVerified!==true||p.authorshipPreserved!==true||
+       p.reviewUnassignedReadbackVerified!==true||p.ledgerReadbackVerified!==true)
+       errors.push('unsafe_validation_release');
+  }else if(p.operation==='WRITE'){
     if(!validScope(p.scopeId)||!p.ownerAuthorized||!p.writePermissionVerified||
       !p.exclusiveScopeVerified||!p.createdExclusively||!p.branchReadbackVerified||
       p.conflictingClaim||!p.idempotencyKey||!p.branchName?.startsWith('work/solqaryn-'))
@@ -235,6 +243,10 @@ export function validateProposedRun(p) {
     if(p.activeEditorAccount&&p.activeEditorAccount!==p.actorAccount)
       errors.push('concurrent_editor');
   }else if(p.operation==='REVIEW'){
+    if(p.actorTaskId===p.authorTaskId||p.ownershipReadbackVerified!==true||
+       p.reviewerClaimAtomicVerified!==true||p.reviewerTaskId!==p.actorTaskId||
+       p.reviewerLeaseReadbackVerified!==true||p.developmentLeaseReleased!==true||
+       p.validationHandoffVerified!==true)errors.push('unsafe_reviewer_claim');
     const technical = p.reviewMode==='TECHNICAL_CROSS_TASK';
     if(!isUrl(p.reviewedPrRef)||p.activeReviewerConflict)
       errors.push('review_integrity');
@@ -367,16 +379,26 @@ if(failures.length){
     const x=clone(handoffWrite); x[key]=false;
     if(!validateProposedRun(x).length) throw Error('Unsafe handoff WRITE permitted: '+key);
   }
+  const release={...base,operation:'DELIVER_VALIDANDO',fromState:'EN_PROGRESO',toState:'VALIDANDO',
+    authorTaskId:base.actorTaskId,reviewedPrRef:'https://github.com/solqaryn/Solqaryn/pull/3841',
+    deliveryCommittedInSheets:true,validationHandoffVerified:true,developmentLeaseReleased:true,
+    activeEditorVerifiedAbsent:true,authorshipPreserved:true,reviewUnassignedReadbackVerified:true,
+    ledgerReadbackVerified:true};
+  if(validateProposedRun(release).length)throw Error('Verified delivery rejected');
+  for(const field of ['deliveryCommittedInSheets','validationHandoffVerified','developmentLeaseReleased',
+    'activeEditorVerifiedAbsent','authorshipPreserved','reviewUnassignedReadbackVerified','ledgerReadbackVerified'])
+    if(!validateProposedRun({...release,[field]:false}).includes('unsafe_validation_release'))
+      throw Error('Unsafe delivery accepted: '+field);
   const alexWrite=clone(base);
   alexWrite.actorRole='SECONDARY_02';alexWrite.actorAccount='ALEX_CHATGPT';alexWrite.actorTaskId='cccccccccccccccccccccccccccccccc';
   if(validateProposedRun(alexWrite).length)throw Error('Equal write capability denied to Alex');
   const review={...base,operation:'REVIEW',actorRole:'SECONDARY_02',
     actorAccount:'ALEX_CHATGPT',actorTaskId:'cccccccccccccccccccccccccccccccc',authorAccount:'JAVIER_CHATGPT',
     reviewedPrRef:'https://github.com/solqaryn/Solqaryn/pull/3734',
-    independentReviewerVerified:true};
+    independentReviewerVerified:true,authorTaskId:'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',reviewerTaskId:'cccccccccccccccccccccccccccccccc',reviewerClaimAtomicVerified:true,reviewerLeaseReadbackVerified:true,developmentLeaseReleased:true,validationHandoffVerified:true};
   if(validateProposedRun(review).length)throw Error('Alex review denied');
   const javierReview={...review,actorRole:'PRIMARY_01',
-    actorAccount:'JAVIER_CHATGPT',actorTaskId:'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',authorAccount:'ALEX_CHATGPT'};
+    actorAccount:'JAVIER_CHATGPT',actorTaskId:'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',reviewerTaskId:'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',authorAccount:'ALEX_CHATGPT'};
   if(validateProposedRun(javierReview).length)
     throw Error('Javier cannot review Alex PR: asymmetric authorization');
   if(!validateProposedRun({...javierReview,authorAccount:'JAVIER_CHATGPT'}).length)
@@ -396,7 +418,7 @@ if(failures.length){
     authorAccount:'JAVIER_CHATGPT',authorTaskId:'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
     reviewedPrRef:'https://github.com/solqaryn/Solqaryn/pull/3842',
     technicalEvidenceVerified:true,reviewPermissionVerified:true,
-    independentReviewerVerified:false,formalGithubApprovalRequested:false};
+    independentReviewerVerified:false,formalGithubApprovalRequested:false,reviewerTaskId:base.actorTaskId,reviewerClaimAtomicVerified:true,reviewerLeaseReadbackVerified:true,developmentLeaseReleased:true,validationHandoffVerified:true};
   if(validateProposedRun(technicalReview).length)
     throw Error('Same-login distinct-TASK_ID technical review refused');
   for(const [name,patch] of [
