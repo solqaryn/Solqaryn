@@ -1,3 +1,9 @@
+## 2026-11-05 — P1-015.D: rechazo dirigido de autodelegacion privilegiada (DEV)
+
+- ALEX :50, TASK_ID `6adcc98a80a48191b71a5156624c21df`: `P1-015.D` pasa a EN_PROGRESO, con `P1-015.C=LISTO` y routing determinista `developerFor=ALEX50`. Rama unica `work/solqaryn-p1-015-d`, desde dev@`0c280ab7c4b8a56b1a0674b3a3bca438d3078e1b`; entrada de BITACORA!704 y readback PLAN/COLA.
+- Test xUnit filtrable `P1015D` ejecuta el rechazo REAL ya cubierto por `P1015APrivilegedAccessAuditTests.SelfGrant_IsDeniedAndAuditedWithoutNewPrivilege`: ForbidResult, auditoria Denegado, actor/correlacion/motivo, EmpresaId nulo y sin nuevo rol. Documentacion en `docs/P1-015-D-NEGATIVO-AUDITORIA-PRIVILEGIADA-DEV.md`.
+- Sin cambio productivo, base de datos, roles, JWT, secretos ni entornos. El commit por si mismo NO acredita test PASS, CI, revision externa, merge ni LISTO. Requiere pruebas dirigidas exact-SHA, Scope Lock, regresion de seguridad y cierre independiente.
+
 ## 2026-11-05 — Selección directa de scopes por Task, sin bloqueos de Sheets
 
 El propietario retira el mecanismo de reserva condicional de Sheets. Reparto único por microtarea y autoría mediante scripts/automation-review-routing.mjs; cada Task calcula su ruta solo al ejecutarse y no crea reservas ni bloqueos persistentes. Conserva los 15/15/15, REVIEW_FIRST, los PR protegidos de GitHub, permisos y las comprobaciones necesarias para LISTO. Ante ocupación positiva de otro editor se respeta su trabajo. No restaura motores históricos ni crea Tasks.
