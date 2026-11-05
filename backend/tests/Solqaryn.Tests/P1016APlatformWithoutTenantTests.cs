@@ -21,7 +21,7 @@ namespace Solqaryn.Tests;
 public sealed class P1016APlatformWithoutTenantTests
 {
     [Fact]
-    public async Task P1016A_SuperadminSinMembresiasEntraAunqueVaristorehnEsteInactiva()
+    public async Task P1016A_SuperadminSinMembresiasEntraAunqueEmpresaPilotoEsteInactiva()
     {
         var f = await CrearAsync(plataforma: true, membresia: false, empresaActiva: false);
         await using var db = f.Db;
@@ -139,7 +139,7 @@ public sealed class P1016APlatformWithoutTenantTests
         var db = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase("p1016a-" + Guid.NewGuid().ToString("N")).Options);
 
-        var empresa = new Empresa("VARISTOREHN");
+        var empresa = new Empresa("Empresa Piloto Inactiva");
         if (!empresaActiva)
             empresa.Desactivar();
         db.Set<Empresa>().Add(empresa);
