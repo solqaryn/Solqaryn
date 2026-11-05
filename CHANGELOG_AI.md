@@ -1,3 +1,9 @@
+## 2026-11-05 — Eliminación de reglas operativas anteriores y censo 4+2
+
+- Conforme a la autorización del propietario, se retiran de las fuentes operativas de gobierno los apartados históricos M3.3/M3.4 y sus instrucciones contradictorias de cupos; permanece únicamente el contrato autorizado 15/15/15.
+- Se consolida el censo de seis TASK_ID (cuatro Javier y dos Alex), sin confundir capacidad por Task con alta física o habilitación de automatizaciones pausadas.
+- Se preservan las evidencias históricas en el registro Git, la revisión independiente, Project Scope Lock STRICT, las reservas exclusivas por scope y la CI exact SHA. No se alteran microtareas comerciales que está cerrando Codex ni se reactivan Tasks.
+
 ## 2026-11-05 — Gobierno comercial 15/15/15 y reparto inteligente por ejecucion
 
 - Orden expresa del propietario: hasta 15 microtareas comerciales distintas abiertas globalmente, 15 responsabilidades por Task y 15 reservas/escrituras de diferentes scopes por Task; cada scope tiene un unico editor/revisor exclusivo.
