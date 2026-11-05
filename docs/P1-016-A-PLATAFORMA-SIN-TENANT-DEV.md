@@ -9,13 +9,13 @@
 ## Alcance de la regresión
 Se reutilizan **sin cambios productivos** el servicio `PlataformaScopeService`, el `UsuarioScopeService` y `GET /plataforma/sesion` para verificar su separación real:
 
-1. Cuenta superadministradora con exactamente un rol global de sistema activo **sí** puede entrar en la sesión de plataforma aun cuando `VARISTOREHN` esté inactiva y no exista ninguna membresía empresarial.
+1. Cuenta superadministradora con exactamente un rol global de sistema activo **sí** puede entrar en la sesión de plataforma aun cuando `Empresa Piloto Inactiva` esté inactiva y no exista ninguna membresía empresarial.
 2. Una identidad autenticada pero sin rol global ni membresía **no** recibe autoridad por su `Usuario.RolId` legado; la solicitud responde `Forbid` y registra rechazo de ámbito global.
 3. Un administrador empresarial activo con membresía y rol de empresa **no** adquiere autoridad global ni siquiera aportando `X-Empresa-Id`; la auditoría de sesión no se asocia a una empresa.
 4. El bloqueo del usuario global revoca su sesión aun cuando la identidad JWT de prueba siga autenticada.
 5. Si falta autenticación HTTP, el controlador falla cerrado antes de escribir auditoría.
 
-Archivo: `backend/tests/Solqaryn.Tests/P1016APlatformWithoutTenantTests.cs`, cinco pruebas `P1016A_`. Los escenarios incluyen verificación de `Cache-Control: private, no-store, max-age=0`, identidad exacta y ausencia de membresías/lecturas empresariales implícitas. No se conceden roles ni permisos, no se toca la empresa real: `VARISTOREHN` es **solo un objeto efímero en EF InMemory**.
+Archivo: `backend/tests/Solqaryn.Tests/P1016APlatformWithoutTenantTests.cs`, cinco pruebas `P1016A_`. Los escenarios incluyen verificación de `Cache-Control: private, no-store, max-age=0`, identidad exacta y ausencia de membresías/lecturas empresariales implícitas. No se conceden roles ni permisos, no se toca la empresa real: `Empresa Piloto Inactiva` es **solo un objeto efímero en EF InMemory** (nombre sintético: no se usa la identidad histórica del tenant, conforme a Scope Lock).
 
 ## Evidencia exigida para VALIDANDO y LISTO
 - Ejecutar `dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --filter FullyQualifiedName~P1016A`, comprobar recuento positivo, cero fallos y SHA exacto en GitHub Actions.
