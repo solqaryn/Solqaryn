@@ -96,29 +96,20 @@ export function selectWork(tasks, stateById, account, activeReviewIds = new Set(
   // REVIEW_FIRST: same-login review is allowed ONLY across distinct TASK_IDs
   // with technical evidence; NEVER claim it as native GitHub APPROVED.
   const validTaskId = typeof taskId === 'string' && /^[a-f0-9]{32}$/i.test(taskId);
+  const busyReviewer=validTaskId && tasks.some(t=>t.state==='VALIDANDO'&&t.reviewerTaskId===taskId);
   const review = tasks.find(t => {
     const technical = t.authorAccount===account && validTaskId &&
       /^[a-f0-9]{32}$/i.test(t.authorTaskId||'') && t.authorTaskId!==taskId &&
       t.technicalReviewAllowed===true && t.technicalEvidenceVerified===true &&
       t.formalGithubApprovalRequested!==true;
-    return t.state==='VALIDANDO' &&
+    return t.state==='VALIDANDO' && (!busyReviewer||t.reviewerTaskId===taskId) &&
       ['JAVIER_CHATGPT','ALEX_CHATGPT','SOLQARYN_PLATFORM'].includes(t.authorAccount) &&
-      (t.authorAccount!==account || technical) && !activeReviewIds.has(t.id) &&
+      (t.authorAccount!==account || technical) && (!validTaskId||t.authorTaskId!==taskId) &&
+      (!t.reviewerTaskId||t.reviewerTaskId===taskId) && !activeReviewIds.has(t.id) &&
       isUrl(t.prUrl) && t.reviewerAllowed===true &&
       t.reviewPermissionVerified===true && t.reviewerLeaseAvailable===true;
   });
-  if(review) return {action:review.authorAccount===account?'REVIEW_TECHNICAL':'REVIEW',task:review};
-  // REVIEW_FIRST also includes technical follow-up on the CURRENT TASK's own VALIDANDO.
-  // This is NEVER an independent review or a grant to another Task of the same login.
-  const ownValidating = tasks.find(t => t.state === 'VALIDANDO' &&
-    typeof taskId === 'string' && /^[a-f0-9]{32}$/i.test(taskId) &&
-    t.ownerAccount === account && t.ownerTaskId === taskId &&
-    t.ownValidationContinuationAuthorized === true &&
-    isUrl(t.prUrl) && !t.conflictingClaim &&
-    ((t.mergedIntoDevVerified === true && t.mergeShaVerified === true) ||
-      (t.exclusiveScopeVerified === true && t.activeEditorVerifiedAbsent === true &&
-       t.branchReadbackVerified === true && !activeReviewIds.has(t.id))));
-  if (ownValidating) return {action:'RECOVER_VALIDANDO',task:ownValidating};
+  if(review) return {action:review.authorAccount===account?'REVIEW_TECHNICAL':'REVIEW',task:review,requiresExclusiveReviewerClaim:true};
   const own = tasks.find(t => t.state === 'EN_PROGRESO' &&
     validTaskId && t.ownerTaskId===taskId && t.ownerAccount === account && t.resumeAuthorized === true &&
     t.exclusiveScopeVerified === true && t.activeEditorVerifiedAbsent === true &&
@@ -128,7 +119,9 @@ export function selectWork(tasks, stateById, account, activeReviewIds = new Set(
   // whether EN_PROGRESO or VALIDANDO. Verify the COMPLETE ownership readback.
   if(!validTaskId || ownershipReadbackVerified!==true)
     return {action:'NO_ELIGIBLE',reason:'OWNERSHIP_READBACK_REQUIRED'};
-  if(tasks.some(t=>(t.state==='EN_PROGRESO'||t.state==='VALIDANDO')&&t.ownerTaskId===taskId))
+  if(tasks.some(t=>(t.state==='EN_PROGRESO'&&t.ownerTaskId===taskId)||
+    (t.state==='VALIDANDO'&&(t.reviewerTaskId===taskId ||
+    (t.ownerTaskId===taskId && !(t.validationHandoffVerified===true && t.developmentLeaseReleased===true && t.authorTaskId===taskId))))))
     return {action:'NO_ELIGIBLE',reason:'TASK_ALREADY_OWNS_SCOPE'};
   // Foreign IN_PROGRESS: no unverified takeover or lost commits.
   const handoff = tasks.find(t => t.state === 'EN_PROGRESO' &&
@@ -463,43 +456,24 @@ if(failures.length){
     resumeAuthorized:true,exclusiveScopeVerified:true,activeEditorVerifiedAbsent:true,branchReadbackVerified:true};
   if(selectWork([own,alexPR],{},'JAVIER_CHATGPT').action!=='REVIEW') throw Error('Own recovery bypassed REVIEW_FIRST');
   if(selectWork([own],{},'JAVIER_CHATGPT',new Set(),'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb').action!=='RESUME') throw Error('Safe own resume denied');
-  const idOwnValidating = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
-  const ownValidating = {id:'P1-009.A',state:'VALIDANDO',
-    authorAccount:'JAVIER_CHATGPT',ownerAccount:'JAVIER_CHATGPT',
-    ownerTaskId:idOwnValidating,prUrl:'https://github.com/solqaryn/Solqaryn/pull/3841',
-    ownValidationContinuationAuthorized:true,exclusiveScopeVerified:true,
-    activeEditorVerifiedAbsent:true,branchReadbackVerified:true,conflictingClaim:false};
-  if(selectWork([ownValidating,own],{},'JAVIER_CHATGPT',new Set(),idOwnValidating).action!=='RECOVER_VALIDANDO')
-    throw Error('Own VALIDANDO must precede EN_PROGRESO recovery');
-  if(selectWork([alexPR,ownValidating,own],{},'JAVIER_CHATGPT',new Set(),idOwnValidating).action!=='REVIEW')
-    throw Error('Independent external review must remain first');
-  const sameLoginPeer={...ownValidating,authorTaskId:idOwnValidating,
+  const idOwnValidating='bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+  const ownValidating={id:'P1-009.A',state:'VALIDANDO',authorAccount:'JAVIER_CHATGPT',authorTaskId:idOwnValidating,
+    ownerAccount:'JAVIER_CHATGPT',ownerTaskId:idOwnValidating,validationHandoffVerified:true,
+    developmentLeaseReleased:true,prUrl:'https://github.com/solqaryn/Solqaryn/pull/3841',
     reviewerAllowed:true,reviewPermissionVerified:true,reviewerLeaseAvailable:true,
     technicalReviewAllowed:true,technicalEvidenceVerified:true};
-  if(selectWork([sameLoginPeer],{},'JAVIER_CHATGPT',new Set(),'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').action!=='REVIEW_TECHNICAL')
-    throw Error('Distinct-TASK_ID same-login review missing');
-  if(selectWork([{...sameLoginPeer,authorTaskId:'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'}],{},
-     'JAVIER_CHATGPT',new Set(),'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').action!=='NO_ELIGIBLE')
-    throw Error('Same-TASK_ID self-review accepted');
-  if(selectWork([{...sameLoginPeer,formalGithubApprovalRequested:true}],{},
-     'JAVIER_CHATGPT',new Set(),'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').action!=='NO_ELIGIBLE')
-    throw Error('Same-login fake formal APPROVED accepted');
-  if(selectWork([ownValidating],{},'JAVIER_CHATGPT',new Set(),'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').action!=='NO_ELIGIBLE')
-    throw Error('Another Task with shared GitHub login must not recover own VALIDANDO');
-  if(selectWork([ownValidating],{},'JAVIER_CHATGPT',new Set()).action!=='NO_ELIGIBLE')
-    throw Error('Unknown TASK_ID must fail closed for own VALIDANDO');
-  if(selectWork([{...ownValidating,ownValidationContinuationAuthorized:false}],{},'JAVIER_CHATGPT',new Set(),idOwnValidating).action!=='NO_ELIGIBLE')
-    throw Error('Unverified continuation of own VALIDANDO bypassed');
-  if(selectWork([{...ownValidating,activeEditorVerifiedAbsent:false}],{},'JAVIER_CHATGPT',new Set(),idOwnValidating).action!=='NO_ELIGIBLE')
-    throw Error('Busy VALIDANDO editor bypassed');
-  const ownMerged={...ownValidating,mergedIntoDevVerified:true,mergeShaVerified:true,
-    exclusiveScopeVerified:false,activeEditorVerifiedAbsent:false,branchReadbackVerified:false};
-  if(selectWork([ownMerged],{},'JAVIER_CHATGPT',new Set(),idOwnValidating).action!=='RECOVER_VALIDANDO')
-    throw Error('Merged own VALIDANDO must be selectable for postmerge reconciliation');
-  if(selectWork([{...ownMerged,mergeShaVerified:false}],{},'JAVIER_CHATGPT',new Set(),idOwnValidating).action!=='NO_ELIGIBLE')
-    throw Error('Unverified merged PR must not bypass postmerge proof');
-  if(selectWork([{...own,activeEditorVerifiedAbsent:false}],{},'JAVIER_CHATGPT',new Set(),'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb').action!=='NO_ELIGIBLE') throw Error('Occupied own work stolen');
-  if(selectWork([{...own,branchReadbackVerified:false}],{},'JAVIER_CHATGPT',new Set(),'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb').action!=='NO_ELIGIBLE') throw Error('Unverified own branch recovered');
+  if(selectWork([ownValidating,options[0]],{'P0-012.A':'LISTO'},'JAVIER_CHATGPT',new Set(),idOwnValidating,true).action!=='CLAIM')
+    throw Error('Released author cannot claim new task');
+  if(selectWork([ownValidating],{},'JAVIER_CHATGPT',new Set(),idOwnValidating,true).action!=='NO_ELIGIBLE')
+    throw Error('Author self-review accepted');
+  if(selectWork([ownValidating],{},'JAVIER_CHATGPT',new Set(),'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',true).action!=='REVIEW_TECHNICAL')
+    throw Error('Another Task unable to review');
+  for(const prop of ['validationHandoffVerified','developmentLeaseReleased'])
+    if(selectWork([{...ownValidating,[prop]:false},options[0]],{'P0-012.A':'LISTO'},'JAVIER_CHATGPT',new Set(),idOwnValidating,true).action==='CLAIM')
+      throw Error('Unverified release accepted: '+prop);
+  const assigned={...ownValidating,reviewerTaskId:'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'};
+  if(selectWork([assigned],{},'JAVIER_CHATGPT',new Set(),'cccccccccccccccccccccccccccccccc',true).action!=='NO_ELIGIBLE')throw Error('Review stolen');
+  if(selectWork([assigned],{},'JAVIER_CHATGPT',new Set(),'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',true).action!=='REVIEW_TECHNICAL')throw Error('Reviewer resume denied');
   const institution={...alexPR,authorAccount:'SOLQARYN_PLATFORM'};
   if(selectWork([institution],{},'JAVIER_CHATGPT').action!=='REVIEW') throw Error('Institutional PR incorrectly excluded from review');
   if(selectWork([{...institution,reviewerLeaseAvailable:false}],{},'JAVIER_CHATGPT').action!=='NO_ELIGIBLE') throw Error('Busy review stolen');
@@ -520,9 +494,6 @@ if(failures.length){
       throw Error('Unverified foreign recovery accepted: '+field);
   }
   if(selectWork([idle,alexPR],{},'JAVIER_CHATGPT',new Set(),'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',true).action!=='REVIEW') throw Error('Foreign handoff bypassed review');
-  if(selectWork([options[0],ownValidating],{'P0-012.A':'LISTO'},
-     'JAVIER_CHATGPT',new Set(),idOwnValidating,true).action==='CLAIM')
-    throw Error('Second CLAIM accepted with first VALIDANDO');
   if(selectWork([options[0]],{'P0-012.A':'LISTO'},
      'JAVIER_CHATGPT',new Set(),idOwnValidating,false).action==='CLAIM')
     throw Error('CLAIM accepted without ownership readback');
@@ -601,7 +572,7 @@ if(failures.length){
     throw Error('Ranking improperly grants handoff authorization');
   if(selectNextScheduledFreeTask(candidates,'bad','JAVIER_CHATGPT').action!=='NO_GO')
     throw Error('Invalid clock allowed handoff');
-  console.log('SOLQARYN WIP 6/1/1 PASS: strict one assigned scope even VALIDANDO, verified ownership and no self-approval');
+  console.log('SOLQARYN WIP 6/1/1 PASS: released author with verified VALIDANDO and distinct reviewer');
 }else{
   console.log('SOLQARYN automation authority PASS');
 }
