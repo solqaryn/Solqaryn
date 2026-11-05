@@ -22,6 +22,49 @@ namespace Solqaryn.Tests.API.Controllers;
 public sealed class PlataformaEmpresasOnboardingSecurityTests
 {
     [Fact]
+    public async Task P1014A_ConfirmacionGuiadaNoEludeGatesNiCreaDatosSinAutorizacion()
+    {
+        // El asistente de Angular solo presenta pasos; este endpoint sigue
+        // aplicando la autoridad real y no crea datos si un gate está OFF.
+        var denied = await PrepararAsync(false, true, true);
+        await using (var db = denied.Db)
+        {
+            var result = await denied.Controller.AltaControlada(new()
+            {
+                Nombre = "Empresa guiada",
+                AdministradorUsuarioId = denied.AdministradorId
+            }, CancellationToken.None);
+
+            Assert.Equal(503, Assert.IsType<ObjectResult>(result).StatusCode);
+            Assert.Empty(await db.Set<Empresa>().ToListAsync());
+            Assert.Empty(await db.Set<UsuarioEmpresa>().ToListAsync());
+            Assert.Empty(await db.Set<ConfigEmpresa>().ToListAsync());
+        }
+
+        // Con autoridad de plataforma y ambos gates vigentes, una sola
+        // confirmación reutiliza la transacción, ConfigEmpresa y membresía.
+        var allowed = await PrepararAsync(true, true, true);
+        await using (var db = allowed.Db)
+        {
+            var result = await allowed.Controller.AltaControlada(new()
+            {
+                Nombre = "Empresa guiada",
+                AdministradorUsuarioId = allowed.AdministradorId
+            }, CancellationToken.None);
+
+            Assert.IsType<CreatedResult>(result);
+            var empresa = Assert.Single(await db.Set<Empresa>().ToListAsync());
+            var config = Assert.Single(await db.Set<ConfigEmpresa>().ToListAsync());
+            var membresia = Assert.Single(await db.Set<UsuarioEmpresa>().ToListAsync());
+            Assert.Equal(empresa.Id, config.EmpresaId);
+            Assert.Equal(empresa.Id, membresia.EmpresaId);
+            Assert.Equal(allowed.AdministradorId, membresia.UsuarioId);
+            Assert.False(await db.Set<UsuarioRolPlataforma>()
+                .AnyAsync(x => x.UsuarioId == allowed.AdministradorId));
+        }
+    }
+
+    [Fact]
     public void EndpointDePlataformaExigeJwt()
     {
         Assert.NotNull(Attribute.GetCustomAttribute(

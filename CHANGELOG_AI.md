@@ -5,6 +5,12 @@
 - Ausencia de flags en appsettings versionados implica falso **solo como default de fuente**; valor del DEV desplegado NO_VERIFICADO. Fixture EF InMemory y mocks no equivalen a HTTP/MySQL remoto. No se alteraron secretos, infra, permisos, QA/main/PROD ni se habilitaron flags.
 - Para aceptar: test dirigido `FullyQualifiedName~P1013A` con >0 PASS y 0 FAIL, CI/scope lock exact SHA, PR protegido, revisión TECH por Task ID distinto, postmerge exact SHA y readback institucional. No marcar LISTO de manera anticipada.
 
+## 2026-11-04 — P1-014.A: flujo guiado comercial de alta (DEV)
+
+- Javier :00 (TASK_ID 6adbb9fff1548191a1bd5b30d9e9984a) reclamó P1-014.A con WIP 6/1/1 y lectura posterior de PLAN_MAESTRO fila 52, COLA y BITACORA fila 580. Rama work/solqaryn-p1-014-a desde dev@89b3687d14336734788bda26e2e187f0eea763c2.
+- Asistente Angular en tres pasos (empresa, administrador, revisión/confirmación) con validación, navegación accesible, contraseña omitida del resumen, control de permiso comercial y reuso del backend protegido, sin nuevas rutas o activación de flags.
+- Suite de regresiones frontend P1014A incorporada; no atribuir PASS sin CI real. Autor no se autoaprueba ni marca LISTO; requeridos merge protegido, CI postmerge y cierre cruzado.
+
 ## 2026-11-04 — P1-012.B: pruebas negativas de alta con cuenta existente (DEV)
 
 - Alex :50, TASK_ID `6adcc98a80a48191b71a5156624c21df`, reclamó exclusivamente P1-012.B en `work/solqaryn-p1-012-b` desde `dev@89b3687d14336734788bda26e2e187f0eea763c2`. `PLAN_MAESTRO!H49=EN_PROGRESO`, `COLA!E49` fórmula y `BITACORA!578` con readback. Dependencia P1-012.A LISTO.
