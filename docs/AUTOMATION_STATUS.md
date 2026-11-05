@@ -42,12 +42,12 @@ LEGACY_AUTOMATION_RUNTIME=RETIRED
 
 ## Campos de runtime para custodia de etapa — 2026-11-04
 
-El modelo `STAGE_OWNERSHIP_MODE=AUTHOR_PROVENANCE_HANDOFF_V1` separa autor original de responsabilidad operativa. `REVIEW_RESERVATION_MODE=EXCLUSIVE_CAS_READBACK` exige lease/version/readback antes de editar. Estos campos identifican reglas del validador, no certifican que las Tasks físicas ni las filas existentes hayan migrado. Autoría histórica, WIP global 6/1/1 y estados reales del proveedor se vuelven a comprobar en cada ejecución. Contrato detallado: `docs/AUTOMATION_AUTHORITY.md`.
+El modelo `STAGE_OWNERSHIP_MODE=AUTHOR_PROVENANCE_HANDOFF_V1` separa autor original de responsabilidad operativa. `REVIEW_RESERVATION_MODE=EXCLUSIVE_CAS_READBACK` exige lease/version/readback antes de editar. Estos campos identifican reglas del validador, no certifican que las Tasks físicas ni las filas existentes hayan migrado. Autoría histórica, WIP global 15/15/15 y estados reales del proveedor se vuelven a comprobar en cada ejecución. Contrato detallado: `docs/AUTOMATION_AUTHORITY.md`.
 
 
 ## ORDEN VIGENTE — 15/15/15 CON ASIGNACION AL DISPARARSE LA TASK (2026-11-05)
 
-**Precedencia:** esta orden sustituye la regla 6/1/1, la propuesta intermedia 6/6/6 y todos los bloqueos de responsabilidad individual unica. Conservar PROJECT_SCOPE_LOCK=STRICT.
+**Precedencia:** esta política sustituye íntegramente los contratos de cupos anteriores. La única autoridad vigente es 15/15/15, con exclusividad por scope, revisión independiente, CAS y PROJECT_SCOPE_LOCK=STRICT.
 
 - `MAX_CONCURRENT_SCOPES=15`: maximo global de quince microtareas comerciales distintas en EN_PROGRESO o VALIDANDO (no PR de gobierno, PENDIENTE, historia ni tareas ya LISTO).
 - `MAX_OWNED_SCOPES_PER_TASK=15` y `MAX_ACTIVE_WRITES_PER_TASK=15`: techo de hasta quince scopes DISTINTOS por Task fisica autorizada. Un scope tiene un unico editor y una unica reserva de revisor, con CAS/lease/version/readback. No dos Tasks simultaneas en el mismo scope, branch ni PR; el techo no garantiza quince runs concurrentes del proveedor.
@@ -77,39 +77,15 @@ Orden expresa del propietario: crear una cuarta Task de `JAVIER_CHATGPT` para el
 La lista individual de seis IDs corresponde a Javier :00/:20/:30/:40 y Alex :10/:50. La presente autorización comercial para el ID nuevo **solo entra en vigor tras revisión formal independiente del SHA final, los checks obligatorios, merge protegido a `dev` y readback de `TAREAS_PROGRAMADAS`, `CONFIG` y bitácora institucional**. Antes de ese cierre, aun si la Task estuviera habilitada físicamente, no puede escribir, reclamar scopes ni integrarse comercialmente. La activación real será verificada por separado con `automations.peek` y pruebas nativas desde su entorno programado. No se infiere acceso por el horario ni por pruebas manuales.
 
 
-## Estado anterior M3.2 — 2026-11-03 (histórico)
 
-El censo ejecutable se limita a las cinco identidades presentes en `REGISTERED_TASK_IDS`, iguales a la allowlist comercial; distribución actual 3 Javier (:00/:20/:40) y 2 Alex (:10/:50), **sin límite interno fijo**. Se retira la antigua posición no autorizada :30 del registro, no se crean Tasks ni se conceden permisos nuevos. La conexión actual no permite certificar la eliminación física en la cuenta de Alex; cualquier Task externa al censo mantiene `NO_AUTORIZADO` y no recibe autoridad por inferencia. Las referencias a seis instalaciones en las secciones inferiores son evidencias históricas, nunca fuentes de identidad operativa. `AUTOMATION_RUNTIME=ACTIVE_DEV` es capacidad lógica, no estado `is_enabled`.
-
-**Remisión de roles vigentes (2026-11-03):** La matriz de responsables y permisos del apartado 5 de `docs/AUTOMATION_AUTHORITY.md` aplica al censo de cinco, sin clases artificiales derivadas del nombre de la Task. Permiso de escribir/merge/aprobar se evalúa por identidad GitHub y proveedor, nunca por la etiqueta o por otro Task ID. Para nuevas operaciones del asistente, `solqaryn-platform` es autora y `JAVIER_GITHUB_LOGIN` revisor independiente, conforme a `docs/GITHUB_ACCOUNT_ROLES.md`. La autorización de cinco IDs no equivale a `is_enabled` ni cambia los estados físicos registrados.
-
-## Enmienda operativa propuesta — certificación automática CI en DEV (2026-10-30)
-
-**Vigencia condicionada:** esta norma solo sustituye la revisión formal para futuros PR comerciales ordinarios cuando el changeset esté fusionado por PR protegido en `dev`, el job requerido `verify-solqaryn-project-scope` ejecute la certificación contra el SHA exacto y exista readback de CI. Durante la implantación/bootstrap de este PR normativo sigue exigida revisión formal realmente independiente. No se simula un `APPROVED` humano: `AUTO_CERT=PASS` significa exclusivamente certificación técnica de GitHub Actions.
-
-Para PR comerciales de ramas deterministas `work/solqaryn-<microtarea>`, el gate automático comprueba identidad y repositorio originales, alcance/diff, base DEV, SHA exacto, ausencia de secretos añadidos en código productivo, tres checks requeridos (incluyendo el propio Scope Lock), pruebas específicas del scope, resultado de todos los checks aplicables y rechazo fail-closed de fallos, faltas de evidencia o cambios concurrentes de HEAD. El código del verificador se ejecuta desde el commit BASE confiable, no desde el PR que evalúa. El job de Scope Lock ya es obligatorio en el ruleset de dev; no se requieren botones ni aprobación humana para el PR comercial que supera toda la certificación y sea fusionado mediante permisos reales y el flujo protegido. Un PASS de una Task o de Sheets no sustituye este gate.
-
-Los PR que cambian gobierno, Skill, reglas de seguridad, workflows requeridos o el propio verificador **siguen necesitando revisión formal independiente** del SHA final. El bootstrap no puede autocertificarse. Ningún cambio expande el allowlist comercial 5/6 ni habilita Alex :30; no altera QA/main/PROD, credenciales, Aiven, grants ni despliegues. Una Task no puede autoaprobarse ni usar otra identidad. El cierre `LISTO` exige merge protegido, CI postmerge aplicable y readback de `PLAN_MAESTRO`, `COLA` (fórmula intacta) y `BITACORA`. Revertir mediante PR protegido con nuevo CI, sin eliminar evidencia histórica.
 
 ## Enmienda vigente — inventario configurable de Tasks (2026-10-30)
 
-No hay un máximo interno fijo de Tasks ni una proporción obligatoria entre cuentas. `PHYSICAL_TASKS_REGISTERED` y `REGISTERED_TASK_IDS` describen ahora cinco IDs operativos registrados (3 de Javier, 2 de Alex); no son un límite ni prueban la eliminación física de una Task ajena no accesible. Cada alta, baja o cambio de distribución exige decisión institucional protegida, capacidad efectiva confirmada por el proveedor y readback de identidad, propietario, ID, horario y estado habilitado. La enmienda por sí sola no crea ni modifica Tasks. Se preserva exactamente `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=5` y su allowlist; Alex :30 sigue excluido. `MAX_CONCURRENT_SCOPES=6` limita microtareas abiertas, no Tasks físicas.
+No hay un máximo interno fijo de Tasks ni una proporción obligatoria entre cuentas. `PHYSICAL_TASKS_REGISTERED` y `REGISTERED_TASK_IDS` describen **seis IDs autorizados (cuatro Javier y dos Alex)**, no un límite absoluto de futuras Tasks. Su estado físico se comprueba en la cuenta propietaria; ninguna activación se presume a partir del gobierno. Se preserva `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=6` y la allowlist canónica, sin reactivar la antigua Task Alex :30. La concurrencia comercial queda regulada exclusivamente por 15/15/15.
 
-Las secciones M3.2–M3.3 siguientes preservan evidencias históricas; en caso de conflicto, prevalecen las claves y la enmienda vigente de este encabezado.
+El historial de cupos permanece en los commits de Git; ninguna sección histórica constituye política operativa. Prevalece exclusivamente el contrato 15/15/15 de este encabezado.
 
-## M3.4 — ampliación quirúrgica WIP comercial a 6 (25-10-2026)
 
-**AUTORIDAD HISTÓRICA M3.4 (sustituida por orden 6/1/1 del encabezado):** `MAX_CONCURRENT_SCOPES=6` y `MAX_OPEN_WORK_BRANCHES=6` describen **microtareas comerciales distintas, no autorizaciones de Tasks**. Se preserva EXACTAMENTE `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=5` y su allowlist vigente: Javier :00/:20/:40 y Alex :10/:50. Alex :30 sigue sin permiso comercial. WIP actual se mide contando scopes con PR/ramas de trabajo comerciales realmente abiertos; una rama fusionada, un PR de gobierno, una prueba diagnóstica y una fila obsoleta de Sheet no ocupan un scope. El nuevo límite NO exige que estén ocupados los seis, ni permite simular LISTO.
-
-**Control de concurrencia y continuidad — HISTÓRICO M3.4, sustituido por la orden 6/1/1 del encabezado:** la autorización anterior permitía dos scopes en circunstancias especiales; esa excepción ya no existe. Vigente: máximo una microtarea asignada por Task hasta LISTO, incluso en VALIDANDO. Un segundo CLAIM/traspaso es NO_GO mientras figure un scope abierto, aun con CI esperando; mantener revisión técnica cruzada sin transferir propiedad y exclusividad real de edición.
-
-**Riesgo y mitigación:** más PR puede aumentar conflictos en CHANGELOG_AI.md y cola de revisiones. Priorizar RECOVER/REVIEW_FIRST y cierres, reconciliar en la misma rama sin force-push, nunca tomar trabajos con editor ajeno activo, no iniciar una segunda tarea si existe revisión independiente abordable. No se cambian backend/frontend ERP, migraciones MySQL, RBAC, entornos QA/main/PROD, secretos ni Vercel/Render. Rollback mediante PR protegido que restaure el techo, únicamente tras verificar WIP vivo, sin eliminar scopes legítimos.
-
-## M3.3 — HISTÓRICO: censo previo WIP 3 (sustituido por M3.4)
-
-`MAX_CONCURRENT_SCOPES=3` limita exclusivamente microtareas comerciales distintas abiertas del Plan Inicial, con PR o rama `work/solqaryn-<microtarea>` real, como máximo una por Task individualmente autorizada. No cuentan `test/solqaryn-m3-2-native-write-*`, PR de gobierno (incluidos #3743/#3745), pruebas diagnósticas, auditorías, ramas ya fusionadas ni eventos históricos. No se borran ramas para inventar cupo, y toda escritura exige exclusividad efectiva de su propio recurso. La allowlist comercial sigue en 5/6, sin incluir Alex :30.
-
-Objetivo del propietario: 6 cierres comprobados LISTO por hora entre Tasks autorizadas; es una métrica de rendimiento, nunca una garantía ni sustituto del CI del SHA, revisión formal GitHub independiente, merge protegido y readback Sheets. Ante paridad Vercel NO_GO de P0-001.B, no marcar LISTO sin despliegue real; trabajar otros P0 independientes cuando el DAG y WIP lo permitan. PR #3744 está fusionado en dev con catálogo L01–L15, pero su cierre institucional exige conciliación y readback por separado. Para rollback, revert protegido de esta norma, sin alterar QA/main/PROD ni eliminar evidencias.
 
 ## M3.2 — habilitacion comercial individual adicional 5/6 (25-10-2026)
 
