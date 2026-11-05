@@ -37,7 +37,7 @@ export function canReviewInNativeRun(data) {
       data.authorTaskId === data.actorTaskId ||
       data.activeEditorConflict === true || data.activeReviewerConflict === true ||
       data.codexActiveConflict === true || data.permissionsVerified !== true ||
-      data.state !== 'VALIDANDO' || data.prMerged !== true) return false;
+      data.state !== 'VALIDANDO' || (data.prMerged !== true && data.prExists !== true)) return false;
   return reviewerFor(data.scopeId, data.authorTaskId, data.authorizedTaskIds) === data.actorTaskId;
 }
 export function selfTestReviewRouting() {
