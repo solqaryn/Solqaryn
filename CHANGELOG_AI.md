@@ -8,6 +8,18 @@
 
 - RECOVER 2026-11-04: integración no destructiva de dev con P1-011.A; se conservan los tres métodos P1011A renombrados, las dos regresiones P1012B y el histórico de ambas microtareas. CI nuevo del HEAD aún por ejecutar; no es LISTO.
 
+## 2026-11-04 — Reconciliación PR #3854 con gobierno DEV vigente
+
+- Resolución de `BASE_DEV_STALE` y colisiones normativas posteriores al PR #3858: integrar la implementación original de `automation-stage-ownership.mjs` sobre `dev` sin restaurar `RECOVER_VALIDANDO` propio ni el archivo de contrato 3×3 eliminado.
+- El validador de selección ahora distingue entrega verificada, reserva de revisión exclusiva y continuación por revisora ya asignada; nuevas pruebas negativas de doble propiedad, auto-revisión, readback omitido y autor liberado sin lease.
+- Scope Lock protege el nuevo script, conservando revisión formal independiente, CI exact-SHA, rama/PR originales y rollback protegido. No modificar Tasks físicas, Sheets, credenciales, QA/main/PROD ni datos comerciales con este PR.
+
+## 2026-11-04 — Gobierno DEV: liberacion verificada en VALIDANDO y consolidacion de autoridad
+
+- Orden expresa del propietario: tras entrega confirmada EN_PROGRESO -> VALIDANDO, el TASK_ID autor conserva autoria historica pero su cupo operativo se libera solo con SHA/PR, lease y readback de Sheets verificables. El scope VALIDANDO continua consumiendo WIP global (6) hasta LISTO y queda disponible para una revisora Task diferente, que puede corregir/merge/cerrar bajo CI y reglas reales de GitHub.
+- Cambios: fuentes de gobierno AGENTS, PROJECT_SCOPE_LOCK, AUTOMATION_STATUS y AUTOMATION_AUTHORITY; selector y validaciones negativas; validadores/Scope Lock con referencias consolidadas; retiro del archivo contractual redundante. Sin reactivar Alex, sin cambiar Tasks fisicas, horarios, Secrets, datos, QA/main/PROD. Certificacion condicionada a revision formal independiente de gobierno, CI exact-head y merge protegido.
+- Rollback: revert por PR protegido, sin reescribir historia ni alterar registros comerciales.
+
 ## 2026-11-04 — P1-011.A: trazabilidad de alta atómica de administrador nuevo (DEV)
 
 - Reutilización técnica de PR #3683: alta de usuario + empresa + ConfigEmpresa + membresía + auditoría con commit/rollback MySQL, BCrypt y ausencia de privilegios de plataforma. No se vuelve a implementar código productivo.

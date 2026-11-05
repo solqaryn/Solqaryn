@@ -1,3 +1,10 @@
+## 2026-11-04 — Contrato verificable de entrega y revisión exclusiva (PR #3854)
+
+- Se incorpora validación fail-closed de liberación en VALIDANDO y reserva de revisión con lease/version/readback, manteniendo autoría histórica y WIP 6/1/1.
+- Consumidores: `scripts/validate-dual-task-configuration.mjs`, `docs/AUTOMATION_AUTHORITY.md` y `docs/AUTOMATION_STATUS.md`, Scope Lock y validador de certificación de PR. No se reintroduce el contrato 3×3 retirado.
+- Riesgo principal: carreras GitHub/Sheets y falsa aprobación; se exige exclusividad, readback, pruebas negativas y reglas GitHub realmente independientes. No se altera infraestructura ni datos ERP.
+- Reversión: PR protegido, preservando commits, AUTOR_TASK_ID, leases y bitácora; no restaurar propietarios anteriores a ciegas.
+
 ## 2026-11-02 — P1-005.A: frontera de administración empresarial (DEV)
 
 - API multiempresa: `UnscopedCommercialTenantGuardMiddleware` habilita exclusivamente rutas administrativas `usuarios`, `roles` y `permisos/matriz` con método y path exactos, identidad JWT, membresía y rol administrador verificados MySQL, permiso específico y marca tenant validada. Esta vía no abre rutas de ERP comerciales, gestión global ni catálogo de permisos.
@@ -28,7 +35,7 @@
 
 ## 2026-10-23 — Diseño de control M3.1: 3+3 Tasks sin nuevo runtime
 
-La microfase 3 define topología de seis Tasks horarias con capacidades simétricas entre Javier y Alex. Se conserva la arquitectura del ERP, seguridad multiempresa, ramas permanentes y protecciones CI. Se agrega solo coordinación ligera mediante GitHub (rama por microtarea, PR, comprobación de exclusividad, dos ramas operativas máximas), selector por dependencias LISTO y autocorrección del revisor dentro de VALIDANDO, con revisión independiente de commits correctivos antes de cerrar. No se importa VAEP, Vibe, Jules ni una cola/scheduler residente. Fuente nueva: `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md`. Cualquier modificación de ejecución física será M3.2, y la certificación extremo a extremo M3.3. Rollback: revert del PR de diseño sin eliminar ramas/PR de microtareas ni Tasks originales.
+La microfase 3 define topología de seis Tasks horarias con capacidades simétricas entre Javier y Alex. Se conserva la arquitectura del ERP, seguridad multiempresa, ramas permanentes y protecciones CI. Se agrega solo coordinación ligera mediante GitHub (rama por microtarea, PR, comprobación de exclusividad, dos ramas operativas máximas), selector por dependencias LISTO y autocorrección del revisor dentro de VALIDANDO, con revisión independiente de commits correctivos antes de cerrar. No se importa VAEP, Vibe, Jules ni una cola/scheduler residente. Fuente nueva: `docs/AUTOMATION_AUTHORITY.md`. Cualquier modificación de ejecución física será M3.2, y la certificación extremo a extremo M3.3. Rollback: revert del PR de diseño sin eliminar ramas/PR de microtareas ni Tasks originales.
 
 ---
 
