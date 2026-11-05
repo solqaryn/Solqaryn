@@ -8,6 +8,12 @@
 
 - RECOVER 2026-11-04: integración no destructiva de dev con P1-011.A; se conservan los tres métodos P1011A renombrados, las dos regresiones P1012B y el histórico de ambas microtareas. CI nuevo del HEAD aún por ejecutar; no es LISTO.
 
+## 2026-11-04 — P1-015.A: auditoría del acceso global privilegiado (DEV)
+
+- Javier :30, TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`: CLAIM exclusivo WIP 6/1/1, PLAN_MAESTRO!H54/I54 y BITACORA!592, rama `work/solqaryn-p1-015-a` desde `dev@fa10d1a92c90ee06d693a3c89bc8586d5ffc9be2` con readback, sin alterar otras Tasks.
+- Se agregaron seis regresiones `P1015APrivilegedAccessAuditTests` sobre concesión/revocación global, lectura delegada, actor/motivo/EmpresaId/correlación, autodelegación rechazada y no acceso por administrador empresarial; no hay modificaciones productivas ni migraciones.
+- Acta `docs/P1-015-A-AUDITORIA-ACCESO-PRIVILEGIADO-DEV.md`: reutilizar auditoría existente, contrato de rechazo y límites de prueba EF InMemory. Pendiente ejecución dirigida y CI exact SHA; **NO** afirmar PASS, aprobación formal, merge ni LISTO antes de las evidencias y del cierre cruzado por otra Task.
+
 ## 2026-11-04 — Reconciliación PR #3854 con gobierno DEV vigente
 
 - Resolución de `BASE_DEV_STALE` y colisiones normativas posteriores al PR #3858: integrar la implementación original de `automation-stage-ownership.mjs` sobre `dev` sin restaurar `RECOVER_VALIDANDO` propio ni el archivo de contrato 3×3 eliminado.
