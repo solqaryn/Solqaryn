@@ -1,22 +1,17 @@
-# P1-011.D — Ejecución dirigida del negativo de alta atómica (DEV)
+# P1-011.D — Probar negativo de alta atómica de administrador (DEV)
 
-## Autoridad y alcance
-- Microtarea P1-011.D, PLAN_MAESTRO fila 61, orden 60, depende de P1-011.C=LISTO. Único plan comercial autorizado: STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES.
-- Autor físico: ALEX :10, SECONDARY_REVIEW_01, TASK_ID `6adbbc9ad9e88191bea8eb69104afb25`, GitHub `morales35alex`.
-- Reclamo condicional de `PLAN_MAESTRO!H61` desde PENDIENTE a EN_PROGRESO (1 coincidencia), con `I61` propietario, `COLA!E61` derivada, evento `SQ-P1-011-D-ALEX10-CLAIM-99A2EADD-20261105T1511`. Rama exclusiva `work/solqaryn-p1-011-d`; base `dev@99a2eadd8503b1de15baf53da7a52e454c2bfe9a`.
-- Impacto: **solo prueba de integración .NET, esta acta y changelog**. Sin cambios de API, DTO, configuración de proveedor, migraciones, JWT, RBAC, tenant, secretos, QA/main/PROD ni infraestructura.
+## Alcance autorizado
+- Microtarea P1-011.D, PLAN_MAESTRO fila 61, orden 60, dependencia P1-011.C=LISTO, plan comercial único STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES.
+- Autor físico ALEX :10, TASK_ID `6adbbc9ad9e88191bea8eb69104afb25`, GitHub `morales35alex`, rama `work/solqaryn-p1-011-d`, base `dev@99a2eadd8503b1de15baf53da7a52e454c2bfe9a`.
+- Reclamo CAS H61 PENDIENTE→EN_PROGRESO con una coincidencia, responsable I61, COLA E61 por fórmula, BITACORA!696 y posterior evidencia PR #3870. Ningún código productivo, API, DTO, DB/migraciones, secretos, JWT, RBAC, flags o entornos protegidos se modifica.
 
-## Negativo reproducible real
-- Comando dirigido (con **MySQL 8.4 efímero y `ConnectionStrings__DefaultConnection` proporcionado por CI**, nunca por este documento):
+## Prueba negativa y dos gates distintos
+1. **Gate dirigido sin MySQL.** El workflow `.github/workflows/solqaryn-commercial-directed.yml` filtra `FullyQualifiedName~P1011D` y no crea una base MySQL ni suministra `ConnectionStrings__DefaultConnection`. `P1011DDirectedContractTests.P1011D_ExisteRegresionRealMySql_DeAltaAtomicaConAuditoriaFallida` comprueba mediante reflexión que la prueba de integración existe, es `Fact` asincrónico, está etiquetada `Category=Integration` y mantiene su fixture original. Su `PASS` demuestra **solo enrutamiento**, nunca el rollback.
+2. **Gate funcional con MySQL 8.4 efímero.** El job `Migraciones EF Oracle, variantes y cargas masivas en MySQL 8.4` de `.github/workflows/dev-ci.yml` clasifica el diff de prueba como integración, provee `ConnectionStrings__DefaultConnection` de CI y ejecuta `--filter "Category=Integration"`. Allí se ejecuta el `Fact` `AltaAdminNuevoAuditoriaRollbackRealMySqlTests.AuditoriaFallida_CausaRollbackRealDeAltaAdministradorNuevo`, que **invoca realmente** el fixture probado en P1-011.A. No usa el prefijo P1011D en su nombre completamente calificado para evitar ejecutarse en el runner dirigido sin MySQL. Los dos Fact están en `P1011DMySqlAuditRollbackTests.cs`.
+3. El fixture existente `PlataformaEmpresasMySqlTransactionIntegrationTests.AltaA_B_EsTransaccional_ConAuditoriaYRollbackEnMySqlReal` crea por ejecución una base MySQL sintética aislada; tras insertar usuario, empresa, configuración y membresía, `SimulatedAuditFailure` inyecta `InvalidOperationException` sobre `RegistroAuditoria`. Un nuevo `DbContext` con `IgnoreQueryFilters` verifica que `p4-rollback-audit` y `Empresa rollback auditoria nueva` no permanecen y que `ConfigEmpresa`, `UsuarioEmpresa` y auditoría respetan sus totales esperados. Limpia la base en `finally`. La segunda invocación del fixture es deliberada y aislada: no copia el código productivo ni suplanta una prueba HTTP/JWT.
+4. **FAIL cerrado:** si falta servicio MySQL o la cadena de conexión en el job de integración, el test real falla. No aceptar `SKIPPED`, falso `PASS` de routing, suites de otra SHA ni recuento de integración cero.
 
-  `dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj --filter "FullyQualifiedName~P1011D" --no-restore`
-
-- El nuevo test `P1011D_AltaAdministradorNuevo_AuditoriaFallida_NoDejaPersistenciaParcial` tiene `Category=Integration` y **ejecuta**, no inspecciona solamente, la integración reutilizable `PlataformaEmpresasMySqlTransactionIntegrationTests.AltaA_B_EsTransaccional_ConAuditoriaYRollbackEnMySqlReal`.
-- El fixture real utiliza MySQL, nombres sintéticos, interceptación `SimulatedAuditFailure`, y crea una base independiente por ejecución. Debe rechazar `Empresa rollback auditoria nueva` con admin `p4-rollback-audit` por `InvalidOperationException`; verifica con nuevo `DbContext` e `IgnoreQueryFilters` que ninguno de los usuarios/empresas fallidos persiste y que los recuentos de `ConfigEmpresa`, `UsuarioEmpresa` y `RegistroAuditoria` son exactamente los esperados; destruye la base en `finally`.
-- La integración ejecutada también valida los escenarios baseline de éxito y las fallas por configuración/membresía. La envoltura dirigida causa una **segunda ejecución aislada** de esa integración cuando una suite corre ambos Facts. No es una implementación duplicada del caso ni una prueba HTTP/JWT en un servidor.
-- **FAIL**: cualquier alta parcial, cambio de recuentos, ausencia del filtro `P1011D`, excepción diferente o falta de servicio MySQL. No convertir `SKIPPED` ni CI anterior en PASS.
-
-## Evidencia y límites de certificación
-- Estado inicial: código y acta preparados, **pruebas aún no certificadas** en este commit. Los resultados se vincularán al HEAD exacto del PR y al job MySQL si dicho runner lo ejecuta. Sin .NET/MySQL disponibles localmente en esta ejecución; los checks de GitHub decidirán el resultado.
-- Para entregar VALIDANDO: PR a `dev`, SHA, pruebas dirigidas MySQL ejecutadas con recuento >0 y cero fallos, CI aplicable exact-SHA, Scope Lock y readback GitHub/PLAN_MAESTRO/COLA/BITACORA. El autor libera custodia después de probarlo; revisión y LISTO requieren otra Task autorizada.
-- Rollback: revert protegido del changeset de prueba/acta/changelog. Sin manipulación de datos productivos.
+## Evidencia exigida
+- CI sobre HEAD exacto del PR #3870: **dos comprobaciones** dirigidas distintas: routing `P1011D` (sin MySQL) y job `Category=Integration` real con TRX/log, recuento >0, cero fallos, más seguridad, backend y Scope Lock. No afirmar que ambos ya pasaron hasta GitHub terminal.
+- Para `VALIDANDO` debe finalizar CI y acreditarse entrega con PR/SHA, lease de autor liberado y readbacks GitHub, PLAN_MAESTRO, COLA y BITACORA. Revisión sustantiva y `LISTO` corresponden a otro TASK_ID, merge protegido y CI `push` postmerge. Ninguna autoaprobación.
+- Rollback del cambio: revert protegido del test, acta y entrada en CHANGELOG_AI.md. Sin datos reales ni producción.
