@@ -6,6 +6,12 @@
 
 - Corrección causal de CI: el primer SHA de PR #3860 obtuvo `DIRECTED_SCOPE_NO_GO total=0` porque aún no existía el filtro `P1011C`. Se incorporó `P1011CCaseRoutingTests` (solo metacontrato xUnit del fixture MySQL `Category=Integration`, sin conectarse a MySQL). El verdadero rollback sigue exigiendo job MySQL efímero separado; no presentar el PASS de routing como prueba funcional. Nuevo SHA exige CI propia.
 
+## 2026-11-05 — P1-016.C: caso negativo de sesión de plataforma sin tenant (DEV)
+
+- ALEX :10, TASK_ID `6adbbc9ad9e88191bea8eb69104afb25`, reclamó exclusivamente P1-016.C desde `dev@41e2edffbbe394ad788baa477c3f3e8a731c27b0`, rama `work/solqaryn-p1-016-c`, WIP 5→6/6; `PLAN_MAESTRO!57`, `COLA`, `BITACORA!646` con CAS/readback. Dependencia P1-016.A LISTO.
+- Caso: administrador empresarial con `X-Empresa-Id` no obtiene sesión global, conserva auditoría `Rechazado` sin `EmpresaId` ni `UsuarioRolPlataforma`. Test `P1016CCaseRoutingTests` reutiliza una regresión P1016A ya integrada; acta `docs/P1-016-C-CASO-SESION-GLOBAL-SIN-TENANT-DEV.md`.
+- Solo archivos de prueba/documentación; EF InMemory no certifica HTTP/JWT/MySQL remoto. CI exact SHA y revisión ajena pendientes, NO APPROVED/MERGED/LISTO. Sin cambios productivos, secretos ni QA/main/PROD.
+
 ## 2026-11-05 — CI asíncrona y objetivo verificado de 6 LISTO/h
 
 - El propietario fija meta mínima operativa de seis microtareas distintas verdaderamente LISTO por ventana móvil de 60 minutos, con déficit medido y sin fabricar cierres. Mantiene WIP 15/15/15.
