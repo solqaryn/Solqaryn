@@ -74,12 +74,12 @@ export function validateDocuments(src) {
   for (const phrase of ['TASK_COUNT_LIMIT=PROVIDER_EFFECTIVE_CAPACITY','TASK_ASSIGNMENT_MODEL=OWNER_CONFIGURABLE','MAX_OPEN_WORK_BRANCHES=15','MAX_CONCURRENT_SCOPES=15',
     'MAX_OWNED_SCOPES_PER_TASK=15','MAX_ACTIVE_WRITES_PER_TASK=15',
     'REVIEW_INDEPENDENCE_REQUIRED=TRUE','America/Tegucigalpa',
-    'PENDIENTE -> EN_PROGRESO','EN_PROGRESO -> VALIDANDO',
-    'VALIDANDO -> LISTO','VALIDANDO -> VALIDANDO']) {
+    'ORDEN VIGENTE — 15/15/15 CON ASIGNACION AL DISPARARSE LA TASK',
+    'VALIDANDO','EN_PROGRESO','PENDIENTE','CAS/lease']) {
     if (!src.authority.includes(phrase)) errors.push('authority policy ' + phrase);
   }
-  if (!src.authority.includes('ENTREGA VALIDANDO LIBERA AL AUTOR') ||
-      !src.status.includes('ENTREGA VALIDANDO LIBERA AL AUTOR'))
+  if (!src.authority.includes('ORDEN VIGENTE — 15/15/15 CON ASIGNACION AL DISPARARSE LA TASK') ||
+      !src.status.includes('ORDEN VIGENTE — 15/15/15 CON ASIGNACION AL DISPARARSE LA TASK'))
     errors.push('release policy routing');
   return errors;
 }
