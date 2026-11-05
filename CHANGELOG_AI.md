@@ -1,7 +1,7 @@
 ## 2026-11-04 — P1-016.A: sesión global sin tenant (DEV, regresión)
 
 - Alex :10, TASK_ID `6adbbc9ad9e88191bea8eb69104afb25`, reclamó `P1-016.A` desde `dev@5c47317120bd4587a0570b11522acf898ef59c98` con exclusividad nativa GitHub (rama `work/solqaryn-p1-016-a`) y readback de `PLAN_MAESTRO!H56:M56`, `COLA` y `BITACORA`; dependencia `P0-012.B=LISTO` y WIP 6/1/1.
-- Nueva suite xUnit `P1016A` (cinco casos) verifica superadmin global sin membresías y VARISTOREHN efímera inactiva, usuario sin rol global, admin empresarial sin escalamiento por `X-Empresa-Id`, revocación por bloqueo y rechazo HTTP no autenticado; auditoría permanece global y sin tenant. Únicamente tests/acta; **sin cambios productivos** ni proveedores.
+- Nueva suite xUnit `P1016A` (cinco casos) verifica superadmin global sin membresías y Empresa Piloto Inactiva efímera inactiva, usuario sin rol global, admin empresarial sin escalamiento por `X-Empresa-Id`, revocación por bloqueo y rechazo HTTP no autenticado; auditoría permanece global y sin tenant. Únicamente tests/acta; **sin cambios productivos** ni proveedores.
 - El acta `docs/P1-016-A-PLATAFORMA-SIN-TENANT-DEV.md` delimita riesgo y rollback. La prueba EF InMemory **no certifica** MySQL/HTTP DEV vivo. No atribuir `PASS`, merge o `LISTO` antes de CI exact SHA, Scope Lock `AUTO_CERT=PASS`, revisión técnica de otra Task, merge protegido y readback institucional.
 
 ## 2026-11-04 — Gobierno DEV: liberacion verificada en VALIDANDO y consolidacion de autoridad
