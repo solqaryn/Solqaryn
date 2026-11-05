@@ -1,3 +1,8 @@
+## 2026-11-05 — P1-013.C: caso negativo de gate de aislamiento durante onboarding (DEV)
+
+- Task Javier :30 `6aeacb7820ac8191b7d768a6f33dfa09` prepara una unica condicion medible: onboarding habilitado, aislamiento comercial deshabilitado y operador global del fixture; el controlador debe responder 503 sin crear empresas, membresias, configuraciones ni auditoria. Se reutilizan aserciones P1013A mediante wrapper xUnit P1013C sin cambios productivos.
+- Acta `docs/P1-013-C-GATE-AISLAMIENTO-ONBOARDING-DEV.md`. Prueba local NO_EJECUTADA en este runtime; CI del SHA del PR y revision ajena requeridas. EF InMemory no acredita HTTP/JWT/MySQL remoto ni flags efectivos DEV. No editar QA/main/PROD, secretos ni autorizaciones.
+
 ## 2026-11-05 — P1-014.D: rechazo HTTP 403 del alta guiada (DEV)
 
 Task Javier :30 (6aeacb7820ac8191b7d768a6f33dfa09) añade prueba negativa dirigida Angular sobre el asistente de alta: respuesta 403 del servidor no confirma alta ni pierde datos del formulario. Acta docs/P1-014-D-RECHAZO-ALTA-GUIADA-DEV.md. Prueba aún no ejecutada ni CI certificada al crear el changeset; no es evidencia de MySQL/JWT remoto ni altera backend productivo. Rama histórica work/solqaryn-p1-014-d, rollback por PR protegido limitado a esta prueba/documentación.
