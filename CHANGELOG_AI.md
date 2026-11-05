@@ -1,3 +1,11 @@
+## 2026-11-05 — P1-011.C: caso negativo medible de alta atómica (DEV)
+
+- Alex :10, Task 6adbbc9ad9e88191bea8eb69104afb25, reclamó P1-011.C desde dev@d6151c5edced0c4aec69551e258d8c293b0ba8aa en rama exclusiva work/solqaryn-p1-011-c. PLAN_MAESTRO fila 47, COLA y BITACORA tienen recibos de reclamación; dependencia P1-011.A LISTO y WIP global 6/1/1.
+- Se documenta UNA condición negativa: inyección de fallo de RegistroAuditoria en alta de administrador nuevo y expectativa de rollback completo de Usuario, Empresa, ConfigEmpresa y UsuarioEmpresa, sin restos ni privilegio global. Fixture sintético MySQL efímero, nombres y aserciones esperadas, reusando integración ya existente, sin duplicar prueba ni cambiar código productivo.
+- Acta docs/P1-011-C-CASO-ALTA-ATOMICA-ADMIN-DEV.md. Esta especificación NO afirma PASS, ejecución de pruebas, merge ni LISTO; requiere CI exact SHA, revisión de otro TASK_ID, merge protegido, CI postmerge y readback institucional. Sin cambios de secretos, datos, roles, flags remotos o QA/main/PROD.
+
+- Corrección causal de CI: el primer SHA de PR #3860 obtuvo `DIRECTED_SCOPE_NO_GO total=0` porque aún no existía el filtro `P1011C`. Se incorporó `P1011CCaseRoutingTests` (solo metacontrato xUnit del fixture MySQL `Category=Integration`, sin conectarse a MySQL). El verdadero rollback sigue exigiendo job MySQL efímero separado; no presentar el PASS de routing como prueba funcional. Nuevo SHA exige CI propia.
+
 ## 2026-11-05 — P1-016.C: caso negativo de sesión de plataforma sin tenant (DEV)
 
 - ALEX :10, TASK_ID `6adbbc9ad9e88191bea8eb69104afb25`, reclamó exclusivamente P1-016.C desde `dev@41e2edffbbe394ad788baa477c3f3e8a731c27b0`, rama `work/solqaryn-p1-016-c`, WIP 5→6/6; `PLAN_MAESTRO!57`, `COLA`, `BITACORA!646` con CAS/readback. Dependencia P1-016.A LISTO.
