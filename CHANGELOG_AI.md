@@ -5,6 +5,13 @@
 - Las pruebas comprueban que usuario/rol/contexto de A no permanezcan visibles ni en memoria ni en `localStorage` durante o después del cambio. Los cambios son solo de pruebas/documentación: no modifican runtime, endpoints, datos, migraciones, flags ni proveedores; la autorización efectiva continúa correspondiendo al backend.
 - Spec frontend dirigido: 13/13 PASS con Node 24.21.0 y npm 11.19.0. CI dirigida y controles exactos del SHA pendientes de GitHub. La entrega requiere revisión independiente, merge protegido, CI posterior y conciliación institucional antes de `LISTO`.
 
+## 2026-11-05 — Gobierno comercial 15/15/15 y reparto inteligente por ejecucion
+
+- Orden expresa del propietario: hasta 15 microtareas comerciales distintas abiertas globalmente, 15 responsabilidades por Task y 15 reservas/escrituras de diferentes scopes por Task; cada scope tiene un unico editor/revisor exclusivo.
+- El selector prioriza la Task genuinamente libre y, ante igual disponibilidad, la proxima ejecucion verificada. No se preasignan scopes: unicamente la Task que se dispara puede reservar para si un scope con version/CAS/readback. No tomar VALIDANDO de la propia autoria ni duplicar reservas.
+- Prioridad estricta VALIDANDO ajena no reservada → EN_PROGRESO verdaderamente abandonada, con handoff verificado → PENDIENTE elegible y dependencias LISTO. Cuando no hay elegible, auditoria no invasiva con asignaciones y actividad verificadas.
+- Se actualizan AGENTS, PROJECT_SCOPE_LOCK, AUTOMATION_STATUS, AUTOMATION_AUTHORITY, GITHUB_ACCOUNT_ROLES, validadores y pruebas. Se mantienen PROJECT_SCOPE_LOCK=STRICT, CI exact-SHA, independiente formal cuando se exige, dev protegido y no cambios de QA/main/PROD ni creacion de Tasks.
+
 ## 2026-11-05 — P1-014.A: test Angular ejecutado en GitHub Actions
 
 - El workflow `priority4-quality.yml` ahora ejecuta explícitamente el spec `plataforma-gestion-mvp.component.spec.ts` con Node 24.21.0 y las dependencias fijadas por `npm ci`.

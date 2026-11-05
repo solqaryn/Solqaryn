@@ -60,26 +60,26 @@ export function validateDocuments(src) {
   const capAuthority = Number(key(src.authority,'MAX_CONCURRENT_SCOPES'));
   const capStatus = Number(key(src.status,'MAX_CONCURRENT_SCOPES'));
   const capBranches = Number(key(src.status,'MAX_OPEN_WORK_BRANCHES'));
-  if (![capAuthority,capStatus,capBranches].every(x=>Number.isInteger(x)&&x===6))
+  if (![capAuthority,capStatus,capBranches].every(x=>Number.isInteger(x)&&x===15))
     errors.push('commercial WIP cap mismatch');
   const ownedCaps = [src.authority, src.status].map(x => Number(key(x,'MAX_OWNED_SCOPES_PER_TASK')));
   const activeWriteCaps = [src.authority, src.status].map(x => Number(key(x,'MAX_ACTIVE_WRITES_PER_TASK')));
-  if (!ownedCaps.every(x=>Number.isInteger(x)&&x===1)) errors.push('per-task scope cap mismatch');
-  if (!activeWriteCaps.every(x=>Number.isInteger(x)&&x===1)) errors.push('single active editor cap mismatch');
+  if (!ownedCaps.every(x=>Number.isInteger(x)&&x===15)) errors.push('per-task scope cap mismatch');
+  if (!activeWriteCaps.every(x=>Number.isInteger(x)&&x===15)) errors.push('single active editor cap mismatch');
   if (key(src.scope,'TASK_COUNT_LIMIT') !== 'PROVIDER_EFFECTIVE_CAPACITY') errors.push('Task count policy');
   if (key(src.scope,'PROJECT_SCOPE_LOCK') !== 'STRICT') errors.push('strict lock');
   if (!src.agents.includes('TASK_DESIGN=OWNER_CONFIGURABLE_TASK_SET')) errors.push('agents Task set policy');
   for (const [name,value] of Object.entries(approvalPolicy))
     if (key(src.authority,name) !== value) errors.push('approval ' + name);
-  for (const phrase of ['TASK_COUNT_LIMIT=PROVIDER_EFFECTIVE_CAPACITY','TASK_ASSIGNMENT_MODEL=OWNER_CONFIGURABLE','MAX_OPEN_WORK_BRANCHES=6','MAX_CONCURRENT_SCOPES=6',
-    'MAX_OWNED_SCOPES_PER_TASK=1','MAX_ACTIVE_WRITES_PER_TASK=1',
+  for (const phrase of ['TASK_COUNT_LIMIT=PROVIDER_EFFECTIVE_CAPACITY','TASK_ASSIGNMENT_MODEL=OWNER_CONFIGURABLE','MAX_OPEN_WORK_BRANCHES=15','MAX_CONCURRENT_SCOPES=15',
+    'MAX_OWNED_SCOPES_PER_TASK=15','MAX_ACTIVE_WRITES_PER_TASK=15',
     'REVIEW_INDEPENDENCE_REQUIRED=TRUE','America/Tegucigalpa',
-    'PENDIENTE -> EN_PROGRESO','EN_PROGRESO -> VALIDANDO',
-    'VALIDANDO -> LISTO','VALIDANDO -> VALIDANDO']) {
+    'ORDEN VIGENTE — 15/15/15 CON ASIGNACION AL DISPARARSE LA TASK',
+    'VALIDANDO','EN_PROGRESO','PENDIENTE','CAS/lease']) {
     if (!src.authority.includes(phrase)) errors.push('authority policy ' + phrase);
   }
-  if (!src.authority.includes('ENTREGA VALIDANDO LIBERA AL AUTOR') ||
-      !src.status.includes('ENTREGA VALIDANDO LIBERA AL AUTOR'))
+  if (!src.authority.includes('ORDEN VIGENTE — 15/15/15 CON ASIGNACION AL DISPARARSE LA TASK') ||
+      !src.status.includes('ORDEN VIGENTE — 15/15/15 CON ASIGNACION AL DISPARARSE LA TASK'))
     errors.push('release policy routing');
   return errors;
 }
@@ -95,15 +95,16 @@ export function selectWork(tasks, stateById, account, activeReviewIds = new Set(
   // REVIEW_FIRST: same-login review is allowed ONLY across distinct TASK_IDs
   // with technical evidence; NEVER claim it as native GitHub APPROVED.
   const validTaskId = typeof taskId === 'string' && /^[a-f0-9]{32}$/i.test(taskId);
-  const busyReviewer=validTaskId && tasks.some(t=>t.state==='VALIDANDO'&&t.reviewerTaskId===taskId);
-  const developmentOwned=validTaskId && tasks.some(t=>t.state==='EN_PROGRESO'&&t.ownerTaskId===taskId);
   // A missing or incomplete stage release receipt cannot free the original author.
   const unreleasedDelivery=validTaskId && tasks.some(t=>t.state==='VALIDANDO'&&
     (t.ownerTaskId===taskId||t.authorTaskId===taskId)&&
     (t.stageReleaseRequested===true
       ? !validValidationRelease(t)
       : !(t.validationHandoffVerified===true&&t.developmentLeaseReleased===true&&t.authorTaskId===taskId)));
-  const stageBusy=validTaskId && tasks.some(t=>(t.stageReleaseRequested===true&&isStageOwnedBy(t,taskId)));
+  // A Task can own multiple DISTINCT scopes; a released author's provenance is not ownership.
+  const assignedIds=new Set(tasks.filter(t=>validTaskId&&((t.state==='EN_PROGRESO'&&t.ownerTaskId===taskId)||
+    (t.state==='VALIDANDO'&&(isStageOwnedBy(t,taskId)||t.reviewerTaskId===taskId)))).map(t=>t.id));
+  const hasCapacity=!validTaskId||assignedIds.size<15;
   const assignedStage=tasks.find(t=>validTaskId&&ownershipReadbackVerified===true&&
     t.state==='VALIDANDO'&&t.stageReleaseRequested===true&&validValidationRelease(t)&&
     t.stageOwnerTaskId===taskId&&t.reviewReservationTaskId===taskId&&
@@ -119,8 +120,7 @@ export function selectWork(tasks, stateById, account, activeReviewIds = new Set(
     (t.authorAccount!==account||
       (t.technicalReviewAllowed===true&&t.technicalEvidenceVerified===true&&
        t.formalGithubApprovalRequested!==true)));
-  if(stageCandidate&&ownershipReadbackVerified===true&&!stageBusy&&!busyReviewer&&
-    !developmentOwned&&!unreleasedDelivery)
+  if(stageCandidate&&ownershipReadbackVerified===true&&hasCapacity&&!unreleasedDelivery)
     return {action:'REVIEW_RESERVATION_CANDIDATE',task:stageCandidate,
       requiresExclusiveReviewLease:true,requiresOwnerReadback:true};
   const review = tasks.find(t => {
@@ -128,7 +128,7 @@ export function selectWork(tasks, stateById, account, activeReviewIds = new Set(
       /^[a-f0-9]{32}$/i.test(t.authorTaskId||'') && t.authorTaskId!==taskId &&
       t.technicalReviewAllowed===true && t.technicalEvidenceVerified===true &&
       t.formalGithubApprovalRequested!==true;
-    return t.state==='VALIDANDO' && t.stageReleaseRequested!==true && (!busyReviewer||t.reviewerTaskId===taskId) &&
+    return t.state==='VALIDANDO' && t.stageReleaseRequested!==true &&
       (!validTaskId||/^[a-f0-9]{32}$/i.test(t.authorTaskId||'')) &&
       ['JAVIER_CHATGPT','ALEX_CHATGPT','SOLQARYN_PLATFORM'].includes(t.authorAccount) &&
       (t.authorAccount!==account || technical) && (!validTaskId||t.authorTaskId!==taskId) &&
@@ -136,7 +136,7 @@ export function selectWork(tasks, stateById, account, activeReviewIds = new Set(
       isUrl(t.prUrl) && t.reviewerAllowed===true &&
       t.reviewPermissionVerified===true && t.reviewerLeaseAvailable===true;
   });
-  if(review && !developmentOwned && !unreleasedDelivery && !stageBusy) return {action:review.authorAccount===account?'REVIEW_TECHNICAL':'REVIEW',task:review,requiresExclusiveReviewerClaim:true};
+  if(review && hasCapacity && !unreleasedDelivery) return {action:review.authorAccount===account?'REVIEW_TECHNICAL':'REVIEW',task:review,requiresExclusiveReviewerClaim:true};
   const own = tasks.find(t => t.state === 'EN_PROGRESO' &&
     validTaskId && t.ownerTaskId===taskId && t.ownerAccount === account && t.resumeAuthorized === true &&
     t.exclusiveScopeVerified === true && t.activeEditorVerifiedAbsent === true &&
@@ -146,10 +146,8 @@ export function selectWork(tasks, stateById, account, activeReviewIds = new Set(
   // whether EN_PROGRESO or VALIDANDO. Verify the COMPLETE ownership readback.
   if(!validTaskId || ownershipReadbackVerified!==true)
     return {action:'NO_ELIGIBLE',reason:'OWNERSHIP_READBACK_REQUIRED'};
-  if(tasks.some(t=>(t.stageReleaseRequested===true&&isStageOwnedBy(t,taskId))||(t.state==='EN_PROGRESO'&&t.ownerTaskId===taskId)||
-    (t.state==='VALIDANDO'&&(t.reviewerTaskId===taskId ||
-    (t.ownerTaskId===taskId && !(t.validationHandoffVerified===true && t.developmentLeaseReleased===true && t.authorTaskId===taskId))))))
-    return {action:'NO_ELIGIBLE',reason:'TASK_ALREADY_OWNS_SCOPE'};
+  if(unreleasedDelivery)return {action:'NO_ELIGIBLE',reason:'UNRELEASED_DELIVERY_NO_CLAIM'};
+  if(!hasCapacity)return {action:'NO_ELIGIBLE',reason:'TASK_CAPACITY_15'};
   // Foreign IN_PROGRESS: no unverified takeover or lost commits.
   const handoff = tasks.find(t => t.state === 'EN_PROGRESO' &&
     validScope(t.id) && ['JAVIER_CHATGPT','ALEX_CHATGPT'].includes(t.ownerAccount) &&
@@ -162,6 +160,8 @@ export function selectWork(tasks, stateById, account, activeReviewIds = new Set(
     t.handoffTargetTaskId === taskId && !t.conflictingClaim &&
     t.branchName === 'work/solqaryn-' + t.id.toLowerCase().replace('.', '-'));
   if (handoff) return {action:'RECOVER_HANDOFF',task:handoff};
+  if(tasks.filter(t=>t.state==='VALIDANDO'||t.state==='EN_PROGRESO').length>=15)
+    return {action:'NO_ELIGIBLE',reason:'GLOBAL_WIP_15'};
   const eligible = tasks.filter(t => t.state === 'PENDIENTE' &&
     validScope(t.id) && dependenciesSatisfied(t,stateById) &&
     !t.existingBranch && !t.conflictingClaim && t.permissionsVerified);
@@ -187,13 +187,15 @@ export function selectNextScheduledFreeTask(candidates, nowIso, account, previou
     c.isEnabled===true&&c.schedulerVerified===true&&
     c.rruleVerified===true&&c.timezone==='America/Tegucigalpa'&&
     c.identityVerified===true&&c.permissionsVerified===true&&
-    c.ownershipReadbackVerified===true&&c.ownedOpenScopes===0&&
+    c.ownershipReadbackVerified===true&&Number.isInteger(c.ownedOpenScopes)&&
+    c.ownedOpenScopes>=0&&c.ownedOpenScopes<15&&
     c.activeRun===false&&c.activeEditor===false&&c.activeLease===false&&
     ['PROVIDER_NEXT_RUN','DERIVED_VERIFIED_RRULE'].includes(c.nextRunSource)&&
     instant(c.nextRunAt)&&Date.parse(c.nextRunAt)>now&&
     Date.parse(c.nextRunAt)-now<=60*60*1000);
-  verified.sort((a,b)=>Date.parse(a.nextRunAt)-Date.parse(b.nextRunAt)||
-    a.taskId.localeCompare(b.taskId));
+  // Free Tasks before busy Tasks; nearest real scheduled occurrence within equal load tiers.
+  verified.sort((a,b)=>Number(a.ownedOpenScopes>0)-Number(b.ownedOpenScopes>0)||
+    Date.parse(a.nextRunAt)-Date.parse(b.nextRunAt)||a.taskId.localeCompare(b.taskId));
   const first=verified[0];
   return first
     ? {action:'HANDOFF_CANDIDATE',taskId:first.taskId,nextRunAt:first.nextRunAt,
@@ -231,6 +233,11 @@ export function validateProposedRun(p) {
      !(p.slots||[]).some(s=>s.role===p.actorRole&&s.account===p.actorAccount&&s.permissionsVerified===true))
     errors.push('actor_auth');
   if(!p.permissionVerified||!p.exactHeadVerified)errors.push('permission_or_head');
+  // No external scheduler may preassign a scope before the intended physical Task fires.
+  if((p.operation==='WRITE'&&!p.resumingExistingScope)||p.operation==='RESERVE_REVIEW'){
+    if(p.actorNativeOccurrenceVerified!==true||p.dispatchReadbackVerified!==true)
+      errors.push('native_trigger_and_dispatch_readback_required');
+  }
   if(p.operation==='DELIVER_VALIDANDO'){
     if(p.stageReleaseRequested===true){
       if(p.authorTaskId!==p.actorTaskId||p.ownershipReadbackVerified!==true||
@@ -250,20 +257,20 @@ export function validateProposedRun(p) {
       errors.push('unsafe_write');
     // openWorkBranches is the VERIFIED count of distinct active COMMERCIAL scopes,
     // excluding governance PRs, diagnostic test branches and merged history.
-    // Count before a NEW claim; at WIP=6 a seventh claim must be rejected.
+    // Count before a NEW claim; at WIP=15 a seventh claim must be rejected.
     // A read/write RESUME of an already counted scope does not consume another slot.
-    if(!Number.isInteger(p.openWorkBranches)||p.openWorkBranches<0||p.openWorkBranches>6||
-       (!p.resumingExistingScope&&p.openWorkBranches>=6)) errors.push('branch_cap');
+    if(!Number.isInteger(p.openWorkBranches)||p.openWorkBranches<0||p.openWorkBranches>15||
+       (!p.resumingExistingScope&&p.openWorkBranches>=15)) errors.push('branch_cap');
     if(p.ownershipReadbackVerified!==true ||
-       !Number.isInteger(p.taskOwnedScopeCount)||p.taskOwnedScopeCount<0||p.taskOwnedScopeCount>1||
-       (!p.resumingExistingScope&&p.taskOwnedScopeCount!==0)||
-       (p.resumingExistingScope&&(p.taskOwnedScopeCount!==1||
+       !Number.isInteger(p.taskOwnedScopeCount)||p.taskOwnedScopeCount<0||p.taskOwnedScopeCount>15||
+       (!p.resumingExistingScope&&p.taskOwnedScopeCount>=15)||
+       (p.resumingExistingScope&&(p.taskOwnedScopeCount<1||
          p.ownedScopeId!==p.scopeId||p.scopeOwnerTaskId!==p.actorTaskId)))
       errors.push('task_scope_cap');
     // Only one active editor in the single assigned scope.
     if(!Number.isInteger(p.taskActiveWriteCount)||p.taskActiveWriteCount<0||
-       p.taskActiveWriteCount>1||(!p.resumingExistingScope&&p.taskActiveWriteCount!==0)||
-       p.sameTaskOtherScopeBeingEdited===true) errors.push('task_active_write');
+       p.taskActiveWriteCount>15||(!p.resumingExistingScope&&p.taskActiveWriteCount>=15)||
+       p.activeEditorConflictOnTarget===true) errors.push('task_active_write');
     // No second claim while the first is VALIDANDO or awaiting CI/review.
     if(p.resumingExistingScope && p.recoveringForeignScope===true &&
        (p.handoffAuthorized!==true || p.previousLeaseReleased!==true ||
@@ -356,7 +363,7 @@ if(failures.length){
     existingScopeState:null,existingScopeActiveEditor:false,reviewFirstChecked:true,
     hasEligibleExternalReview:false,resumingExistingScope:false,
     idempotencyKey:'P0-012.A:base-sha',conflictingClaim:false,
-    runId:'NO_VERIFICADO'};
+    runId:'NO_VERIFICADO',actorNativeOccurrenceVerified:true,dispatchReadbackVerified:true};
   const clone=x=>structuredClone(x);
   if(validateProposedRun(base).length)throw Error('DEV without native RUN_ID must be allowed');
   const sameFunction=clone(base);sameFunction.slots[1].role=sameFunction.slots[0].role;
@@ -377,13 +384,12 @@ if(failures.length){
     ['branch not verified',p=>p.branchReadbackVerified=false],
     ['wrong scope',p=>p.scopeId=''],
     ['stale head',p=>p.exactHeadVerified=false],
-    ['too many branches',p=>p.openWorkBranches=7],
-    ['sixth slot already occupied',p=>p.openWorkBranches=6],
-    ['too many scopes owned',p=>p.taskOwnedScopeCount=2],
-    ['already owns one in VALIDANDO',p=>{p.taskOwnedScopeCount=1;p.existingScopeState='VALIDANDO';}],
+    ['too many branches',p=>p.openWorkBranches=16],
+    ['global fifteenth slot occupied',p=>p.openWorkBranches=15],
+    ['Task capacity full',p=>p.taskOwnedScopeCount=15],
     ['missing ownership readback readback',p=>p.ownershipReadbackVerified=false],
     ['missing task scope count',p=>delete p.taskOwnedScopeCount],
-    ['multiple active editors',p=>p.taskActiveWriteCount=2],
+    ['writer capacity full',p=>p.taskActiveWriteCount=15],
     ['negative per task scope count',p=>p.taskOwnedScopeCount=-1],
     ['negative WIP count',p=>p.openWorkBranches=-1],
     ['noninteger WIP count',p=>p.openWorkBranches=2.5],
@@ -396,19 +402,25 @@ if(failures.length){
     const t=clone(base);mutate(t);
     if(!validateProposedRun(t).length)throw Error('negative test bypass: '+name);
   }
-  // NEW CLAIM must reject a second scope even with a VALIDANDO PR and idle CI.
+  // A second independent scope may be claimed on a real run; a sixteenth is forbidden.
   for(const state of ['EN_PROGRESO','VALIDANDO']){
     const second=clone(base);
-    Object.assign(second,{taskOwnedScopeCount:1,existingScopeState:state,
-      existingScopeActiveEditor:false,reviewFirstChecked:true});
-    if(!validateProposedRun(second).includes('task_scope_cap'))
-      throw Error('WIP6/1/1 second claim accepted: '+state);
+    Object.assign(second,{taskOwnedScopeCount:1,existingScopeState:state,existingScopeActiveEditor:false,reviewFirstChecked:true});
+    if(validateProposedRun(second).length)throw Error('Safe second scope rejected: '+state);
+    const fifteenth={...second,taskOwnedScopeCount:14,taskActiveWriteCount:14};
+    if(validateProposedRun(fifteenth).length)throw Error('Safe fifteenth scope rejected: '+state);
+    if(!validateProposedRun({...fifteenth,taskOwnedScopeCount:15}).includes('task_scope_cap'))throw Error('Sixteenth scope accepted: '+state);
+    if(!validateProposedRun({...fifteenth,taskActiveWriteCount:15}).includes('task_active_write'))throw Error('Sixteenth editor accepted: '+state);
   }
+  if(!validateProposedRun({...base,actorNativeOccurrenceVerified:false}).includes('native_trigger_and_dispatch_readback_required'))
+    throw Error('Preassignment without physical occurrence accepted');
+  if(!validateProposedRun({...base,dispatchReadbackVerified:false}).includes('native_trigger_and_dispatch_readback_required'))
+    throw Error('Claim without dispatch readback accepted');
   const resumeFull=clone(base);
-  Object.assign(resumeFull,{openWorkBranches:6,taskOwnedScopeCount:1,
+  Object.assign(resumeFull,{openWorkBranches:15,taskOwnedScopeCount:1,
     taskActiveWriteCount:1,resumingExistingScope:true,
     ownedScopeId:base.scopeId,scopeOwnerTaskId:base.actorTaskId});
-  if(validateProposedRun(resumeFull).length)throw Error('Safe resume at WIP=6 denied');
+  if(validateProposedRun(resumeFull).length)throw Error('Safe resume at WIP=15 denied');
   const handoffWrite=clone(resumeFull);
   Object.assign(handoffWrite,{recoveringForeignScope:true,handoffAuthorized:true,previousLeaseReleased:true,
     activeEditorVerifiedAbsent:true,lastCommitVerified:true,ownerTransferReadbackVerified:true,
@@ -518,8 +530,8 @@ if(failures.length){
   const own={id:'P0-014.A',state:'EN_PROGRESO',ownerAccount:'JAVIER_CHATGPT',ownerTaskId:'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
     resumeAuthorized:true,exclusiveScopeVerified:true,activeEditorVerifiedAbsent:true,branchReadbackVerified:true};
   if(selectWork([own,alexPR],{},'JAVIER_CHATGPT').action!=='REVIEW') throw Error('Advisory review scan missing');
-  if(selectWork([own,alexPR],{},'JAVIER_CHATGPT',new Set(),'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',true).action!=='RESUME')
-    throw Error('Busy developer illegally claimed review while owning work');
+  if(selectWork([own,alexPR],{},'JAVIER_CHATGPT',new Set(),'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',true).action!=='REVIEW')
+    throw Error('Review first blocked by another independent scope');
   if(selectWork([own],{},'JAVIER_CHATGPT',new Set(),'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb').action!=='RESUME') throw Error('Safe own resume denied');
   const idOwnValidating='bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
   const ownValidating={id:'P1-009.A',state:'VALIDANDO',authorAccount:'JAVIER_CHATGPT',authorTaskId:idOwnValidating,
@@ -584,15 +596,15 @@ if(failures.length){
   expanded.status=expanded.status.replace(/^REGISTERED_TASK_IDS=(.*)$/m,(_,ids)=>'REGISTERED_TASK_IDS='+ids+',aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').replace(/^PHYSICAL_TASKS_REGISTERED=(\d+)$/m, (_,n) => 'PHYSICAL_TASKS_REGISTERED=' + (Number(n) + 1));
   expanded.authority=expanded.authority.replace(/^REGISTERED_TASK_IDS=(.*)$/m,(_,ids)=>'REGISTERED_TASK_IDS='+ids+',aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').replace(/^PHYSICAL_TASKS_REGISTERED=(\d+)$/m, (_,n) => 'PHYSICAL_TASKS_REGISTERED=' + (Number(n) + 1));
   if(validateDocuments(expanded).length)throw Error('Configurable roster must accept expansion without new commercial authority');
-  if(!validateDocuments({...documents,status:status.replace('MAX_CONCURRENT_SCOPES=6','MAX_CONCURRENT_SCOPES=7')}).length)
+  if(!validateDocuments({...documents,status:status.replace('MAX_CONCURRENT_SCOPES=15','MAX_CONCURRENT_SCOPES=16')}).length)
     throw Error('WIP status mutation bypass');
-  if(!validateDocuments({...documents,status:status.replace('MAX_OPEN_WORK_BRANCHES=6','MAX_OPEN_WORK_BRANCHES=7')}).length)
+  if(!validateDocuments({...documents,status:status.replace('MAX_OPEN_WORK_BRANCHES=15','MAX_OPEN_WORK_BRANCHES=16')}).length)
     throw Error('WIP branches mutation bypass');
-  if(!validateDocuments({...documents,authority:authority.replace('MAX_CONCURRENT_SCOPES=6','MAX_CONCURRENT_SCOPES=7')}).length)
+  if(!validateDocuments({...documents,authority:authority.replace('MAX_CONCURRENT_SCOPES=15','MAX_CONCURRENT_SCOPES=16')}).length)
     throw Error('WIP authority mutation bypass');
   for(const [name,mutated] of [
-    ['per-task cap', {...documents,authority:authority.replace('MAX_OWNED_SCOPES_PER_TASK=1','MAX_OWNED_SCOPES_PER_TASK=2')}],
-    ['active edit cap', {...documents,status:status.replace('MAX_ACTIVE_WRITES_PER_TASK=1','MAX_ACTIVE_WRITES_PER_TASK=2')}],
+    ['per-task cap', {...documents,authority:authority.replace('MAX_OWNED_SCOPES_PER_TASK=15','MAX_OWNED_SCOPES_PER_TASK=16')}],
+    ['active edit cap', {...documents,status:status.replace('MAX_ACTIVE_WRITES_PER_TASK=15','MAX_ACTIVE_WRITES_PER_TASK=16')}],
   ]) if(!validateDocuments(mutated).length)throw Error('WIP mutation bypass: '+name);
   const approved={approverPrincipal:'ALEX',identityVerified:true,permissionVerified:true,
     providerRulesSatisfied:true,nativeApprovalVerified:true,exactHeadVerified:true,
@@ -618,7 +630,9 @@ if(failures.length){
   if(pick([{...candidates[1],activeRun:true},candidates[0],candidates[2]]).taskId!=='cccccccccccccccccccccccccccccccc')
     throw Error('Active Task chosen for transfer');
   if(pick([{...candidates[1],ownedOpenScopes:1},candidates[0],candidates[2]]).taskId!=='cccccccccccccccccccccccccccccccc')
-    throw Error('Task already owning a scope was chosen');
+    throw Error('A completely free Task should be selected over one with scopes');
+  if(pick([{...candidates[1],ownedOpenScopes:15},candidates[0],candidates[2]]).taskId!=='cccccccccccccccccccccccccccccccc')
+    throw Error('Full Task chosen for handoff');
   for(const [key,value] of [
     ['isEnabled',false],['authorizedTask',false],['registeredTask',false],
     ['permissionsVerified',false],['ownershipReadbackVerified',false],
@@ -710,7 +724,7 @@ if(failures.length){
   }
   if(!validateProposedRun({...stageReservation,authorTaskId:base.actorTaskId}).length)
     throw Error('Self-review reservation allowed');
-  console.log('SOLQARYN WIP 6/1/1 + STAGE_RELEASE PASS: verified handoff, exclusive reviewer and author freed with readback');
+  console.log('SOLQARYN WIP 15/15/15 + STAGE_RELEASE PASS: verified handoff, exclusive reviewer and author freed with readback');
 }else{
   console.log('SOLQARYN automation authority PASS');
 }
