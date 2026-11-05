@@ -1,3 +1,9 @@
+## 2026-11-05 — P1-015.C: caso negativo medible de auditoría privilegiada (DEV)
+
+- Alex :10, TASK_ID `6adbbc9ad9e88191bea8eb69104afb25`, reclama P1-015.C en `work/solqaryn-p1-015-c` desde dev@d6151c5edced0c4aec69551e258d8c293b0ba8aa; dependencia P1-015.A LISTO, WIP 5/6 → 6/6; BITACORA!636 conserva autoría y claim con readback.
+- Una condición: **autodelegación privilegiada** por `p1015a-super` debe retornar `ForbidResult`, registrar evento `Denegado` con actor, motivo, correlación y `EmpresaId=null`, y no aumentar `UsuarioRolesPlataforma`. Acta `docs/P1-015-C-CASO-NEGATIVO-AUDITORIA-PRIVILEGIADA-DEV.md`.
+- `P1015CCaseRoutingTests` ejecuta el negativo original de `P1015APrivilegedAccessAuditTests` reutilizando fixture EF InMemory sin repetir lógica; no certifica MySQL o HTTP remoto. Hasta CI exact-SHA y TRX, **NO declarar PASS**, merge ni LISTO. No se cambia código productivo, permisos, secretos, flags ni QA/main/PROD.
+
 ## 2026-11-04 — P1-016.A: sesión global sin tenant (DEV, regresión)
 
 - Alex :10, TASK_ID `6adbbc9ad9e88191bea8eb69104afb25`, reclamó `P1-016.A` desde `dev@5c47317120bd4587a0570b11522acf898ef59c98` con exclusividad nativa GitHub (rama `work/solqaryn-p1-016-a`) y readback de `PLAN_MAESTRO!H56:M56`, `COLA` y `BITACORA`; dependencia `P0-012.B=LISTO` y WIP 6/1/1.
