@@ -14,8 +14,11 @@ public sealed class P1011CCaseRoutingTests
     public void P1011C_AuditoriaFallida_ConservaRutaDeIntegracionMySql()
     {
         var tipo = typeof(PlataformaEmpresasMySqlTransactionIntegrationTests);
-        Assert.Contains(tipo.GetCustomAttributes<TraitAttribute>(),
-            atributo => atributo.Name == "Category" && atributo.Value == "Integration");
+        Assert.Contains(tipo.CustomAttributes, atributo =>
+            atributo.AttributeType == typeof(TraitAttribute)
+            && atributo.ConstructorArguments.Count == 2
+            && Equals(atributo.ConstructorArguments[0].Value, "Category")
+            && Equals(atributo.ConstructorArguments[1].Value, "Integration"));
 
         var metodo = tipo.GetMethod(
             "AltaA_B_EsTransaccional_ConAuditoriaYRollbackEnMySqlReal",
