@@ -8,8 +8,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Solqaryn.API.Controllers;
-using Solqaryn.Application.Common;
 using Solqaryn.API.Middleware;
+using Solqaryn.Application.Common;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Enums;
@@ -225,7 +225,7 @@ public sealed class PlataformaEmpresasOnboardingSecurityTests
     }
 
     [Fact]
-    public async Task NuevoAdministradorSeCreaConBCryptRolBaseYUnaMembresiaDeEmpresa()
+    public async Task P1011A_NuevoAdministradorSeCreaConBCryptRolBaseYUnaMembresiaDeEmpresa()
     {
         var fixture = await PrepararAsync(true, true, true);
         await using var db = fixture.Db;
@@ -277,7 +277,7 @@ public sealed class PlataformaEmpresasOnboardingSecurityTests
     }
 
     [Fact]
-    public async Task NuevoAdminRechazaClaveDebilDuplicadoYModalidadesMezcladas()
+    public async Task P1011A_NuevoAdminRechazaClaveDebilDuplicadoYModalidadesMezcladas()
     {
         var fixture = await PrepararAsync(true, true, true);
         await using var db = fixture.Db;
@@ -325,7 +325,7 @@ public sealed class PlataformaEmpresasOnboardingSecurityTests
     }
 
     [Fact]
-    public async Task NuevoAdminNoSorteaDobleGateNiAutoridadGlobal()
+    public async Task P1011A_NuevoAdminNoSorteaDobleGateNiAutoridadGlobal()
     {
         var fixture = await PrepararAsync(false, true, true);
         await using var db = fixture.Db;
