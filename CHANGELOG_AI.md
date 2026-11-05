@@ -15,6 +15,22 @@
 
 - RECOVER 2026-11-04: integración no destructiva de dev con P1-011.A; se conservan los tres métodos P1011A renombrados, las dos regresiones P1012B y el histórico de ambas microtareas. CI nuevo del HEAD aún por ejecutar; no es LISTO.
 
+## 2026-11-04 — P1-016.A: sesión global sin tenant (DEV, regresión)
+
+- Alex :10, TASK_ID `6adbbc9ad9e88191bea8eb69104afb25`, reclamó `P1-016.A` desde `dev@5c47317120bd4587a0570b11522acf898ef59c98` con exclusividad nativa GitHub (rama `work/solqaryn-p1-016-a`) y readback de `PLAN_MAESTRO!H56:M56`, `COLA` y `BITACORA`; dependencia `P0-012.B=LISTO` y WIP 6/1/1.
+- Nueva suite xUnit `P1016A` (cinco casos) verifica superadmin global sin membresías y Empresa Piloto Inactiva efímera inactiva, usuario sin rol global, admin empresarial sin escalamiento por `X-Empresa-Id`, revocación por bloqueo y rechazo HTTP no autenticado; auditoría permanece global y sin tenant. Únicamente tests/acta; **sin cambios productivos** ni proveedores.
+- El acta `docs/P1-016-A-PLATAFORMA-SIN-TENANT-DEV.md` delimita riesgo y rollback. La prueba EF InMemory **no certifica** MySQL/HTTP DEV vivo. No atribuir `PASS`, merge o `LISTO` antes de CI exact SHA, Scope Lock `AUTO_CERT=PASS`, revisión técnica de otra Task, merge protegido y readback institucional.
+
+## 2026-11-04 — P1-012.B: pruebas negativas de alta con cuenta existente (DEV)
+
+- Alex :50, TASK_ID `6adcc98a80a48191b71a5156624c21df`, reclamó exclusivamente P1-012.B en `work/solqaryn-p1-012-b` desde `dev@89b3687d14336734788bda26e2e187f0eea763c2`. `PLAN_MAESTRO!H49=EN_PROGRESO`, `COLA!E49` fórmula y `BITACORA!578` con readback. Dependencia P1-012.A LISTO.
+- Dos pruebas xUnit `P1012B_` del controlador verifican (a) que repetir el alta del mismo nombre responde conflicto sin duplicar cuenta, membresía, configuración ni auditoría; (b) que un administrador previamente vinculado a A con rol privado no transmite su rol a una empresa B creada. No cambian código productivo, API, DB, migraciones, secretos, permisos ni ambientes.
+- Acta `docs/P1-012-B-NEGATIVOS-ALTA-ADMIN-REGISTRADO-DEV.md`. Fixture EF InMemory; no acredita MySQL transaccional real ni HTTP/JWT remoto. Prueba dirigida `FullyQualifiedName~P1012B`, regresión P1012A, CI exact SHA, revisión técnica por otra Task, merge protegido, CI posmerge y cierre institucional pendientes de acreditar. No autoaprobar ni declarar LISTO.
+- RECOVER al actualizar `dev`: rama sincronizada con commit de dos padres `c3eac64d1f018418471e55b06213b7cfb91d996f`, diff original de tres archivos, sin force-push. Primer HEAD `2f11ba1e...`: CI dirigido 2/2 PASS y AUTO_CERT PASS. En `c3eac64d...` el Scope Lock fue NO_GO por un check dirigido duplicado (primero cancelled, segundo success) y otros jobs todavía pendientes; nuevo HEAD documental exige pruebas y AUTO_CERT propios. Nunca autocertificar.
+- Reversión: PR protegido de revert para tests y documentación, sin alterar historial comercial.
+
+- RECOVER 2026-11-04: integración no destructiva de dev con P1-011.A; se conservan los tres métodos P1011A renombrados, las dos regresiones P1012B y el histórico de ambas microtareas. CI nuevo del HEAD aún por ejecutar; no es LISTO.
+
 ## 2026-11-04 — P1-015.A: auditoría del acceso global privilegiado (DEV)
 
 - Javier :30, TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`: CLAIM exclusivo WIP 6/1/1, PLAN_MAESTRO!H54/I54 y BITACORA!592, rama `work/solqaryn-p1-015-a` desde `dev@fa10d1a92c90ee06d693a3c89bc8586d5ffc9be2` con readback, sin alterar otras Tasks.
