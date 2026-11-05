@@ -28,14 +28,15 @@ export function validateDocuments(src) {
   const auth=key(src.authority,'AUTHORIZED_COMMERCIAL_TASK_IDS')?.split(',')||[];
   const state=key(src.status,'AUTHORIZED_COMMERCIAL_TASK_IDS')?.split(',')||[];
   const registered=key(src.status,'REGISTERED_TASK_IDS')?.split(',')||[];
-  if(auth.length!==6 || auth.some(x=>!TASK.test(x)) ||
+  const count=Number(key(src.status,'SCHEDULED_CHATGPT_TASKS_AUTHORIZED'));
+  if(!Number.isInteger(count)||count<1||auth.length!==count||auth.some(x=>!TASK.test(x)) ||
      new Set(auth).size!==6 || auth.join(',')!==state.join(',') ||
      auth.some(x=>!registered.includes(x))) errors.push('task identity allowlist');
   if(key(src.scope,'PROJECT_SCOPE_LOCK')!=='STRICT' ||
      !src.scope.includes('SIN BLOQUEO EN SHEETS') ||
      !src.agents.includes('SIN BLOQUEO EN SHEETS'))
       errors.push('governance lock');
-  if(!['6'].includes(key(src.status,'SCHEDULED_CHATGPT_TASKS_AUTHORIZED')) ||
+  if(!Number.isInteger(Number(key(src.status,'SCHEDULED_CHATGPT_TASKS_AUTHORIZED'))) ||
      key(src.status,'VAEP_DISPATCH_AUTHORIZED')!=='FALSE' ||
      key(src.status,'JULES_WORKERS_AUTHORIZED')!=='0')
       errors.push('registered Task runtime');
@@ -50,8 +51,10 @@ export function dependenciesSatisfied(task, stateById) {
 export function selectWork(tasks,stateById,account,activeReviewIds=new Set(),taskId=null,ownershipReadbackVerified=false){
   if(!['JAVIER_CHATGPT','ALEX_CHATGPT'].includes(account) ||
      !Array.isArray(tasks)) return {action:'NO_ELIGIBLE',reason:'ACCOUNT_OR_ROSTER'};
+  const expectedAccount=(taskId==='6adbbc9ad9e88191bea8eb69104afb25' ||
+    taskId==='6adcc98a80a48191b71a5156624c21df') ? 'ALEX_CHATGPT' : 'JAVIER_CHATGPT';
   const eligible=TASK.test(taskId||'') && roster.includes(taskId) &&
-    ownershipReadbackVerified === true;
+    ownershipReadbackVerified === true && account===expectedAccount;
   if(!eligible) return {action:'NO_ELIGIBLE',reason:'NATIVE_ID_OR_READBACK_REQUIRED'};
   const owned=tasks.filter(t=>t.state==='EN_PROGRESO'&&t.ownerTaskId===taskId).length;
   if(owned>=15) return {action:'NO_ELIGIBLE',reason:'TASK_CAPACITY_15'};
@@ -61,7 +64,8 @@ export function selectWork(tasks,stateById,account,activeReviewIds=new Set(),tas
     !activeReviewIds.has(t.id) && t.activeEditorConflict!==true &&
     t.activeReviewerConflict!==true && t.reviewerAllowed===true &&
     t.reviewPermissionVerified===true && PR.test(t.prUrl||'') &&
-    (t.ownerTaskId==null || t.ownerTaskId===taskId || t.authorDeliveryVerified===true));
+    (t.ownerTaskId==null || t.ownerTaskId===taskId || t.authorDeliveryVerified===true ||
+      (t.prMerged===true && t.githubCurrentVerified===true && t.activeEditorConflict!==true)));
   if(review) return {action:'REVIEW',task:review,requiresNativeCurrentReadback:true};
   const own=tasks.find(t=>t.state==='EN_PROGRESO'&&t.ownerTaskId===taskId&&
     t.activeEditorConflict!==true&&t.branchReadbackVerified===true);
@@ -202,9 +206,10 @@ else if(process.argv.includes('--self-test')){
     throw Error('active editor collision');
   const pending={id:'P1-014.D',state:'PENDIENTE',dependencies:[],permissionsVerified:true};
   const developer=developerFor(pending.id,ids);
-  if(selectWork([pending],{},'JAVIER_CHATGPT',new Set(),developer,true).action!=='CLAIM')
+  const ownerAccount=(developer===ids[3]||developer===ids[4])?'ALEX_CHATGPT':'JAVIER_CHATGPT';
+  if(selectWork([pending],{},ownerAccount,new Set(),developer,true).action!=='CLAIM')
     throw Error('eligible work not routed');
-  if(selectWork([{...pending,dependencies:['P1-013.A']}],{},'JAVIER_CHATGPT',new Set(),developer,true).action!=='NO_ELIGIBLE')
+  if(selectWork([{...pending,dependencies:['P1-013.A']}],{},ownerAccount,new Set(),developer,true).action!=='NO_ELIGIBLE')
     throw Error('unmet dependency allowed');
   const p={repo:'solqaryn/Solqaryn',branch:'dev',environment:'dev',operation:'REVIEW',
     actorTaskId:reviewer,actorAccount:'JAVIER_CHATGPT',authorizationVerified:true,
