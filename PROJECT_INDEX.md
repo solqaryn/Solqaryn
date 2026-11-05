@@ -1,7 +1,8 @@
-## 2026-11-04 — Preparacion del gobierno para liberacion al entrar en VALIDANDO
+## 2026-11-04 — Índice operativo de custodia por etapa (PR #3854)
 
-Autoridades vigentes: censo y runtime en `docs/AUTOMATION_STATUS.md`; reglas y transiciones en `docs/AUTOMATION_AUTHORITY.md`; nueva propuesta `STAGE_OWNERSHIP_MODE=AUTHOR_PROVENANCE_HANDOFF_V1`, con autor inmutable, owner por etapa, reserva exclusiva revisor, release idempotente con readback de Google Sheets y GitHub. Orden operativo: VALIDANDO ajena liberada -> EN_PROGRESO abandonada con lease libre -> PENDIENTE con dependencias LISTO -> auditoria read-only. Limites comerciales actuales 6/1/1 no cambian; seis Tasks autorizadas 4 Javier + 2 Alex, sin techo fisico interno mas alla de capacidad acreditada del proveedor. Requiere PR protegido, CI, revision formal, luego prompts nativos actualizados; las Tasks en VALIDANDO existentes no se migran sin prueba de lease.
-No introduce otra fuente de plan ni altera arquitectura ERP de produccion, seguridad RBAC, bases, QA/main/PROD. Rollback por revert protegido + reconciliacion de custodia institucional.
+- Normativa central: `docs/AUTOMATION_AUTHORITY.md`; censo/runtime: `docs/AUTOMATION_STATUS.md`. No existe `AUTOMATION_3X3_OPERATING_CONTRACT.md` en el árbol operativo.
+- Módulo: `scripts/automation-stage-ownership.mjs` y su consumidor `scripts/validate-dual-task-configuration.mjs`. Scope Lock revisa el contrato y los cambios de código protegidos.
+- WIP 6/1/1: autor liberado solo con transición real `VALIDANDO`, lease y readback; otra Task reserva revisión sin autoaprobar, y solo `LISTO` libera dependencias.
 
 ## 2026-11-02 — P1-005.A: frontera de administración empresarial (DEV)
 

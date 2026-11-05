@@ -4,11 +4,9 @@
 **Repositorio:** `solqaryn/Solqaryn`. **Rama protegida:** `dev`.
 
 
-## Norma propuesta - autor inmutable y revisor operativo por TASK_ID (2026-11-04)
+## Reserva operativa para revisión en VALIDANDO (PR #3854)
 
-`AUTHOR_TASK_ID` del primer ejecutor se mantiene inmutable en PR, rama y evidencia, aunque al pasar a VALIDANDO se libere su cupo 1 tras lease libre y readback institucional. El reviewer adquiere `STAGE_OWNER_TASK_ID` solo mediante reserva exclusiva verificada, nunca por la mera seleccion. La unidad de independencia tecnica es `TASK_ID`: autor diferente del revisor y de cualquier contribuyente sustantivo que amerite nuevo cotejo. La identidad de GitHub sigue mandando para `APPROVED` formal; tecnicas cruzadas por Task ID no suplantan un login independiente. Si el revisor modifica codigo sustantivo y corresponde nueva revision, debe soltar su propio cupo al devolverlo a VALIDANDO y asignar una Task diferente.
-
-WIP comercial global actual 6, propietario activo 1, escritor activo 1. No se modifica seguridad, CODEOWNERS, branches protegidas ni permisos de GitHub. Norma propuesta hasta merge del PR y cambio autorizado de prompts nativos.
+Una entrega validada libera a la autora únicamente con lease liberado y recibo de GitHub/Sheets. Otra Task distinta adquiere la custodia con `RESERVE_REVIEW` y versión/lease exclusivo; una sugerencia `REVIEW_RESERVATION_CANDIDATE` nunca constituye aprobación ni asignación. La misma cuenta GitHub compartida por Tasks no aporta un `APPROVED` independiente: las reglas formales del repositorio siguen siendo obligatorias. No activar ni cambiar Tasks ajenas, no perder identidad histórica y nunca transferir un editor activo.
 
 
 ## Protocolo vigente de revisión técnica por TASK_ID — orden 2026-11-04

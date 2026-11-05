@@ -1,10 +1,9 @@
-## 2026-11-04 — Propuesta de propiedad de etapas y revision exclusiva (DEV governance)
+## 2026-11-04 — Contrato verificable de entrega y revisión exclusiva (PR #3854)
 
-- Se separan autoria inmutable y custodia operativa, y se agregan gates fail-closed para release validado de `EN_PROGRESO` a `VALIDANDO`, lease exclusivo de revisor `TASK_ID` ajeno y readback GitHub/Sheets.
-- Se mantiene WIP global 6, un scope bajo responsabilidad activa por Task y un escritor. Los `VALIDANDO` sin responsable cuentan para WIP; no bloquean artificialmente al autor una vez confirmado el release.
-- Alcance: `docs/AUTOMATION_*`, `AGENTS.md`, `GITHUB_ACCOUNT_ROLES.md`, scripts de validacion y test negativo. Sin cambios en Domain, Application, Infrastructure, API, frontend, JWT/RBAC, datos ERP o despliegues.
-- Riesgo de carrera entre Google Sheets y GitHub: no hay transaccion cruzada, se exige lease, version, evento idempotente y doble readback; fallo implica owner anterior bloqueado hasta reconciliacion. Rollback: revert protegido del contrato y actualizacion gradual de prompts.
-- Las seis Tasks fisicas actuales permanecen autorizadas; capacidad futura no presupone alta. Integrar unicamente con revision formal y CI exact-SHA.
+- Se incorpora validación fail-closed de liberación en VALIDANDO y reserva de revisión con lease/version/readback, manteniendo autoría histórica y WIP 6/1/1.
+- Consumidores: `scripts/validate-dual-task-configuration.mjs`, `docs/AUTOMATION_AUTHORITY.md` y `docs/AUTOMATION_STATUS.md`, Scope Lock y validador de certificación de PR. No se reintroduce el contrato 3×3 retirado.
+- Riesgo principal: carreras GitHub/Sheets y falsa aprobación; se exige exclusividad, readback, pruebas negativas y reglas GitHub realmente independientes. No se altera infraestructura ni datos ERP.
+- Reversión: PR protegido, preservando commits, AUTOR_TASK_ID, leases y bitácora; no restaurar propietarios anteriores a ciegas.
 
 ## 2026-11-02 — P1-005.A: frontera de administración empresarial (DEV)
 

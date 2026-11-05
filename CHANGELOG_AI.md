@@ -1,3 +1,15 @@
+## 2026-11-04 — Reconciliación PR #3854 con gobierno DEV vigente
+
+- Resolución de `BASE_DEV_STALE` y colisiones normativas posteriores al PR #3858: integrar la implementación original de `automation-stage-ownership.mjs` sobre `dev` sin restaurar `RECOVER_VALIDANDO` propio ni el archivo de contrato 3×3 eliminado.
+- El validador de selección ahora distingue entrega verificada, reserva de revisión exclusiva y continuación por revisora ya asignada; nuevas pruebas negativas de doble propiedad, auto-revisión, readback omitido y autor liberado sin lease.
+- Scope Lock protege el nuevo script, conservando revisión formal independiente, CI exact-SHA, rama/PR originales y rollback protegido. No modificar Tasks físicas, Sheets, credenciales, QA/main/PROD ni datos comerciales con este PR.
+
+## 2026-11-04 — Gobierno DEV: liberacion verificada en VALIDANDO y consolidacion de autoridad
+
+- Orden expresa del propietario: tras entrega confirmada EN_PROGRESO -> VALIDANDO, el TASK_ID autor conserva autoria historica pero su cupo operativo se libera solo con SHA/PR, lease y readback de Sheets verificables. El scope VALIDANDO continua consumiendo WIP global (6) hasta LISTO y queda disponible para una revisora Task diferente, que puede corregir/merge/cerrar bajo CI y reglas reales de GitHub.
+- Cambios: fuentes de gobierno AGENTS, PROJECT_SCOPE_LOCK, AUTOMATION_STATUS y AUTOMATION_AUTHORITY; selector y validaciones negativas; validadores/Scope Lock con referencias consolidadas; retiro del archivo contractual redundante. Sin reactivar Alex, sin cambiar Tasks fisicas, horarios, Secrets, datos, QA/main/PROD. Certificacion condicionada a revision formal independiente de gobierno, CI exact-head y merge protegido.
+- Rollback: revert por PR protegido, sin reescribir historia ni alterar registros comerciales.
+
 ## 2026-11-04 — P1-011.A: trazabilidad de alta atómica de administrador nuevo (DEV)
 
 - Reutilización técnica de PR #3683: alta de usuario + empresa + ConfigEmpresa + membresía + auditoría con commit/rollback MySQL, BCrypt y ausencia de privilegios de plataforma. No se vuelve a implementar código productivo.
@@ -10,19 +22,6 @@
 - Nueva suite `P1010BMultiEmpresaHttpJwtCertificationTests`: cuatro regresiones TestServer con JWT real de prueba, controlador y UsuarioScopeService reales, roles distintos A/B, denegación de C, revocación/reactivación B, rechazo rol privado A en B y rechazo de usuario bloqueado/anonimato.
 - Persistencia de las pruebas: EF InMemory; NO acredita MySQL real ni servidor remoto DEV, ni reemplaza la certificación independiente que corresponda. Sólo archivos de tests, documentación de P1-010.B y este changelog; sin código productivo, migraciones, secretos o entornos QA/main/PROD.
 - Validar `dotnet test ... --filter FullyQualifiedName~P1010B` con TRX real y CI exact SHA de PR antes de READY/merge. Autor no autoaprueba ni marca LISTO. Rollback: PR protegido de revert y preservación de evidencia institucional.
-
-## 2026-11-04 — Consolidación de documentos normativos de automatizaciones
-
-- Retirar el contrato 3X3 y sus referencias ejecutables; evitar una segunda autoridad.
-- Mantener `docs/AUTOMATION_AUTHORITY.md` como única fuente normativa y `docs/AUTOMATION_STATUS.md` como censo/runtime, con estados, WIP 6/1/1, revisión independiente y release de VALIDANDO auditados.
-- Adaptar validadores, Scope Lock y documentación sin modificar código ERP, plan comercial, Tasks físicas, QA/main/PROD; requiere CI y revisión de nuevo SHA antes del merge.
-
-## 2026-11-04 — Propuesta de liberacion VALIDANDO y autonomia comercial futura (gobierno DEV)
-
-- Conciliacion Sheets de Alex :10/:50: `TAREAS_PROGRAMADAS!M3,M6=HABILITADA_REPORTADA`, `CONFIG!B43,B45` y `BITACORA!571` con readback PASS; se preserva la diferencia entre declaracion del propietario desde su cuenta y acceso nativo del conector Javier. No repetir pruebas ni editar Tasks Alex.
-- Gobierno candidato: separar `AUTHOR_TASK_ID` inmutable de owner operativo por etapa, liberar el cupo del autor solo tras entrega EN_PROGRESO -> VALIDANDO con lease y readback de GitHub y Sheets. Revisores diferentes adquieren la custodia con reserva exclusiva; el segundo editor esta prohibido y si corrige sustantivamente puede requerir otra revision independiente.
-- WIP 6/1/1 actual, REVIEW_FIRST -> RECOVER -> CLAIM, CI y merge protegidos sin atajos. Permitir un roster fisico configurable sujeto a provider capacity y autorizacion de nuevas Task IDs, sin convertir los seis IDs actuales en techo interno de crecimiento.
-- Modificacion acotada a documentos de gobierno y verificador + pruebas negativas, no datos comerciales, ERP, API, frontend, BD, QA/main/PROD. Las reglas propuestas son inactivas hasta PR protegido fusionado y prompts nativos adaptados.
 
 ## 2026-11-04 — P1-012.A: regresión de alta con administrador registrado (DEV)
 
@@ -57,7 +56,7 @@
 ## 2026-11-04 — WIP comercial estricto 6/1/1 y revisión técnica cruzada validable
 
 - Orden expresa del propietario: 6 scopes comerciales globales máximos, **1 scope propio no cerrado por TASK_ID**, **1 editor activo por Task**. Un scope en EN_PROGRESO o VALIDANDO sigue asignado mientras espera CI/revisión; jamás hay excepción de segundo CLAIM por VALIDANDO.
-- Se actualizan AGENTS.md, docs/AUTOMATION_AUTHORITY.md, docs/AUTOMATION_STATUS.md y docs/AUTOMATION_AUTHORITY.md, con sección normativa vigente que prevalece sobre evidencias históricas 6/2/1; se conserva REVIEW_FIRST -> RECOVER -> CLAIM, ramas deterministas, permisos reales y preflight de inventario.
+- Se actualizan AGENTS.md, docs/AUTOMATION_AUTHORITY.md, docs/AUTOMATION_STATUS.md y docs/AUTOMATION_3X3_OPERATING_CONTRACT.md, con sección normativa vigente que prevalece sobre evidencias históricas 6/2/1; se conserva REVIEW_FIRST -> RECOVER -> CLAIM, ramas deterministas, permisos reales y preflight de inventario.
 - scripts/validate-dual-task-configuration.mjs rechaza el segundo CLAIM, exige cuenta/TASK_ID e inventario readback para nuevos claims y handoffs; RESUME solo del scope propio. Casos negativos: VALIDANDO en espera, conteo ausente, lease/editor ocupado, handoff no acreditado, autorrrevisión, falta de CI/permisos/evidencia.
 - La revisión técnica entre TASK_ID diferentes del mismo login GitHub queda diferenciada de APPROVED formal: no sustituye reglas de proveedor ni permite que el TASK_ID autor certifique o cierre su propia microtarea. Los PR comerciales ordinarios conservan CI/Scope Lock SHA-exacto; cambio de gobierno requiere revisión formal independiente de login.
 - Se preserva la conciliación realizada previamente (BITACORA!546): P1-007.A con Javier :20; P1-010.A con Javier :00; P1-008.B con Javier :40; Javier :30 sin microtarea propia. Se exige nuevo readback vivo antes de operar, no se reasigna nada mediante este commit.
@@ -111,7 +110,7 @@
 
 ## 2026-11-03 — Precisión de autonomía 5 Tasks: autoevaluación permitida, autocertificación prohibida
 
-- Cambio normativo propuesto en `docs/GITHUB_ACCOUNT_ROLES.md`, `docs/AUTOMATION_AUTHORITY.md` y `docs/AUTOMATION_AUTHORITY.md`: separación de operaciones manuales de este asistente (`solqaryn-platform` autora, `jmejia31` revisor) respecto de las cinco Tasks comerciales paritarias autorizadas.
+- Cambio normativo propuesto en `docs/GITHUB_ACCOUNT_ROLES.md`, `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md` y `docs/AUTOMATION_AUTHORITY.md`: separación de operaciones manuales de este asistente (`solqaryn-platform` autora, `jmejia31` revisor) respecto de las cinco Tasks comerciales paritarias autorizadas.
 - Las cinco Tasks de Javier :00/:20/:40 y Alex :10/:50, si están físicamente habilitadas, pueden desarrollar, probar, revisar entregas ajenas, corregir y recuperar scopes con sus propios permisos. Etiquetas PRIMARY/SECONDARY no imponen función permanente. No se modifican IDs, propietarios, cron, capacidad efectiva, gates ni grants.
 - Se permite autoevaluación técnica, pruebas y autocorrección; se prohíbe fingir revisión formal independiente del trabajo propio o de un PR en el que se participó. En PR comerciales ordinarios se conserva certificación CI/Scope Lock confiable SHA-exacto sin aprobación humana rutinaria; gobierno, seguridad y controladores de CI mantienen revisión independiente exigida.
 - `REVIEW_FIRST -> RECOVER -> CLAIM`, WIP 6/2/1, rama y PR únicos, claim/lease reales, rollback y readback PLAN/COLA/BITACORA sin cambios. Excluido Alex :30; prohibidos cambios QA/main/PROD, credenciales, secretos, ERP y bypass de protecciones.
@@ -467,7 +466,7 @@ El propietario ordena retirar la posición de Alex a las :30 del inventario ejec
 - Rollback: revert protegido del changeset, preservando trazabilidad.
 ## 2026-10-28 — Aceptación excepcional y limitada de revisión posterior al merge para P0-001.B
 - Hecho: GitHub fusionó el PR #3778 en `dev` como `fed99ac8f2faf146df9c1bdbd6866f420d784cf8` a las `2026-10-28T15:25:26Z`; Alex (`morales35alex`) registró después la revisión formal `APPROVED` #5685527254, anclada al PR HEAD `57ab5885674e04ae24f1ea339e713ca037140600`, a las `2026-10-28T15:47:37Z`. No hubo revisión formal previa al merge.
-- Decisión: el propietario acepta explícitamente solo para P0-001.B la desviación temporal de esa revisión, como control compensatorio; no la presenta como previa, no crea precedente y mantiene obligatoria la revisión independiente anterior al merge para los demás PR. El detalle queda en `docs/AUTOMATION_AUTHORITY.md`.
+- Decisión: el propietario acepta explícitamente solo para P0-001.B la desviación temporal de esa revisión, como control compensatorio; no la presenta como previa, no crea precedente y mantiene obligatoria la revisión independiente anterior al merge para los demás PR. El detalle queda en `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md`.
 - Alcance: cambio documental de gobierno únicamente. No modifica código de runtime, Render, Vercel, `qa`, `main`, PROD, datos ni secretos. La aceptación no cambia por sí sola el estado de Sheets; el cierre requiere PR protegido de esta decisión, checks exact-SHA y readback PLAN_MAESTRO/COLA/BITACORA.
 
 ## 2026-10-28 — Vercel DEV: no omitir releases exact-SHA por cambios en scripts raíz
@@ -741,7 +740,7 @@ El propietario ordena retirar la posición de Alex a las :30 del inventario ejec
 - Aprobación del propietario para seis Tasks futuras, tres en cada cuenta, con autonomía paritaria de desarrollo, revisión, autocorrección y cierre.
 - Regla nueva: ante defecto en VALIDANDO, el revisor lo corrige en la misma rama, vuelve a probar y conserva VALIDANDO; sus commits deben recibir revisión independiente, sin autoaprobación. Solo LISTO tras CI, merge protegido, Sheet y Bitácora libera dependencias.
 - Arquitectura: tres ramas permanentes y como máximo dos ramas temporales de trabajo, con `delete_branch_on_merge`; no rama almacén.
-- Contrato `docs/AUTOMATION_AUTHORITY.md`, proyecto Scope Lock STRICT, sin runtime VAEP.
+- Contrato `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md`, proyecto Scope Lock STRICT, sin runtime VAEP.
 - M3.1 solamente prepara PR normativo; no crea cuatro Tasks ni afirma 6/6. M3.2 instalación real por cuentas; M3.3 prueba completa. PR #3734 ya fusionado en dev (merge 17ca160ae5f2d1e20ef27b1820e670fbfb1099d8) y conservado íntegro en esta reconciliación.
 
 ---

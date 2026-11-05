@@ -1,3 +1,7 @@
+## Contrato técnico de custodia por etapa — PR #3854
+
+El validador `scripts/automation-stage-ownership.mjs` complementa la orden vigente `ENTREGA VALIDANDO LIBERA AL AUTOR` sin derogarla. Separar siempre `AUTHOR_TASK_ID` histórico, `STAGE_OWNER_TASK_ID` y `REVIEW_RESERVATION_TASK_ID`. El resultado `REVIEW_RESERVATION_CANDIDATE` es solo una propuesta: reservar revisión requiere lease/version exclusivo con readback GitHub, PLAN_MAESTRO y BITACORA antes de editar. Una entrega `VALIDANDO` sin recibo de liberación NO deja libre al autor; una entrega liberada no consume su cupo individual pero sí WIP global. No usar `RECOVER_VALIDANDO` sobre la propia autoría. El módulo solo valida pruebas de transiciones, no crea una transacción multi-proveedor. `docs/AUTOMATION_AUTHORITY.md` continúa siendo autoridad y `docs/AUTOMATION_STATUS.md` es censo.
+
 # SOLQARYN — Reglas actuales de trabajo
 
 PROJECT_SCOPE_LOCK=STRICT
@@ -11,8 +15,6 @@ AUTOMATION_RUNTIME=ACTIVE_DEV
 TASK_DESIGN=OWNER_CONFIGURABLE_TASK_SET
 TASK_COUNT_LIMIT=PROVIDER_EFFECTIVE_CAPACITY
 CURRENT_REGISTERED_TASKS=6
-STAGE_OWNERSHIP_MODE=AUTHOR_PROVENANCE_HANDOFF_V1
-REVIEW_RESERVATION_MODE=EXCLUSIVE_CAS_READBACK
 AUTO_CERTIFICATION_MODE=REQUIRED_SCOPE_LOCK
 FORMAL_APPROVAL_ROUTINE_COMMERCIAL_REQUIRED=FALSE
 FORMAL_APPROVAL_GOVERNANCE_REQUIRED=TRUE
@@ -21,23 +23,27 @@ GITHUB_CHAT_REVIEWER=JAVIER_GITHUB_LOGIN
 GITHUB_CHAT_ROLE_SEPARATION=STRICT
 GITHUB_CHAT_ROLE_POLICY=docs/GITHUB_ACCOUNT_ROLES.md
 
+## ORDEN VIGENTE DEL PROPIETARIO — ENTREGA VALIDANDO LIBERA AL AUTOR (2026-11-04)
 
-## Gobierno actual de etapas comerciales (2026-11-04) - precendencia sobre retenciones antiguas
+**Precedencia:** esta seccion reemplaza cualquier afirmacion previa de que la autoria mantiene ocupado el cupo individual durante VALIDANDO. Diferenciar siempre AUTOR_TASK_ID historico e inmutable, RESPONSABLE_TASK_ID operativo, REVISOR_TASK_ID y lease de escritura. Nunca cambiar la autoria para transferir responsabilidad.
 
-La autoria de un PR y su owner operativo son distintos. EN_PROGRESO -> VALIDANDO, con pruebas/HEAD/lease y release idempotente leidos de vuelta en PLAN_MAESTRO, BITACORA y GitHub, libera al autor original. El autor es inmutable; VALIDANDO cuenta para WIP global 6, pero no ocupa el cupo 1 de su autor una vez completado el release. Otra Task con distinto TASK_ID puede reservar exclusivamente su revision, corregir, pasar a LISTO con CI/merge/readback o liberar de nuevo la etapa para un tercero si las correcciones requieren revision independiente. Ninguna Task revisa su propia contribucion ni elude reglas nativas de aprobacion. Un release incompleto sigue bloqueando al autor.
-
-Cada ciclo: REVIEW_FIRST de entregas ajenas VALIDANDO liberadas y sin reserva; despues RECOVER de EN_PROGRESO abandonada con lease libre; despues CLAIM de PENDIENTE con dependencias LISTO. Si no hay trabajo elegible, auditar en modo solo lectura. Sin suponer cero segundos de espera real de proveedor. WIP 6/1/1 no varia y el limite fisico es capacidad real del proveedor, no un maximo fijo de seis Tasks. Solo seis IDs se encuentran autorizados hoy (4 Javier, 2 Alex); futuras Tasks exigen autorizacion y allowlist. El informe de Alex indica que :10/:50 estan activas, pero esta cuenta no sustituye su readback nativo.
-
-Esta politica es una propuesta pendiente de merge protegido y de actualizacion de prompts fisicos: no ejecutar traspasos de etapas bajo este nuevo modelo antes de integracion y conciliacion autorizadas.
+- WIP 6/1/1: maximo 6 microtareas comerciales distintas abiertas globalmente (EN_PROGRESO + VALIDANDO), 1 responsabilidad operativa por TASK_ID y 1 escritura activa por TASK_ID. VALIDANDO cuenta globalmente, no ocupa al autor tras entrega verificable.
+- PENDIENTE -> EN_PROGRESO: reclamar una microtarea elegible con dependencias LISTO y lease exclusivo.
+- EN_PROGRESO -> VALIDANDO: registrar entrega PR/SHA, autoria inmutable y transicion, liberar lease y RESPONSABLE_TASK_ID de la autora, dejar revisor sin asignar, verificar atomicamente PLAN_MAESTRO/BITACORA. Si falla la confirmacion, NO declarar libre a la autora.
+- VALIDANDO -> LISTO: otra Task de ID distinto toma en exclusiva la revision y eventual correccion; CI exact-SHA, reglas GitHub, merge protegido y readback PLAN_MAESTRO/COLA/BITACORA son obligatorios.
+- VALIDANDO -> VALIDANDO: si la revisora introduce una correccion que necesita revision independiente adicional, entrega y libera su cupo/lease para otra Task elegible; conservar cadena de contribuciones.
+- EN_PROGRESO abandonada: solo transferir tras ausencia de editor/run, lease anterior liberado, ultimo commit verificado, autorizacion y readback. No robar trabajo activo por retraso.
+- Prioridad: VALIDANDO libre de otra Task -> EN_PROGRESO propio o recuperable -> PENDIENTE elegible. Elegir receptora habilitada/autorizada y sin otro scope por proxima ejecucion futura verificada, sin preferencia fija de nombre.
+- No permitir que la Task autora revise/cierre formal ni tecnicamente su propia entrega. La revision tecnica entre distintos TASK_ID que comparten login NO crea un APPROVED humano independiente. No activar Tasks de Alex pausadas ni modificar QA/main/PROD.
 
 
 ## Criterio obligatorio para FUTUROS traspasos — próxima Task libre en ejecutarse (orden 2026-11-04)
 
-Antes de reasignar una microtarea comercial por exceso de propiedad o transferencia autorizada, **NO escoger una Task libre por conveniencia ni por orden de nombre**. Obtener la hora de decisión actual con zona `America/Tegucigalpa` y un censo vivo de las Tasks individuales autorizadas: `AUTHORIZED_COMMERCIAL_TASK_IDS`, `REGISTERED_TASK_IDS`, identidad, cuenta, conexión, permisos efectivos, `automations.peek` (incluido `is_enabled` y ejecución actual), `TAREAS_PROGRAMADAS`, `CONFIG`, y ownership completo `PLAN_MAESTRO`/`COLA`/`BITACORA`. Filtrar candidatas cuyo `TASK_ID` no esté autorizado, habilitado o dentro del mismo pool/cuenta expresamente permitidos; con otra etapa operativa propia `EN_PROGRESO` o `VALIDANDO` sin release completo (incluido su rol revisor); con edición, lease o ejecución activa; sin permiso/schedule/identity/Scope Lock verificados. **No editar la activacion fisica de otra cuenta. Alex :10/:50 reportadas activas por su propietario; verificar desde la cuenta de origen antes de incluirlas como candidatas.**
+Antes de reasignar una microtarea comercial por exceso de propiedad o transferencia autorizada, **NO escoger una Task libre por conveniencia ni por orden de nombre**. Obtener la hora de decisión actual con zona `America/Tegucigalpa` y un censo vivo de las Tasks individuales autorizadas: `AUTHORIZED_COMMERCIAL_TASK_IDS`, `REGISTERED_TASK_IDS`, identidad, cuenta, conexión, permisos efectivos, `automations.peek` (incluido `is_enabled` y ejecución actual), `TAREAS_PROGRAMADAS`, `CONFIG`, y ownership completo `PLAN_MAESTRO`/`COLA`/`BITACORA`. Filtrar candidatas cuyo `TASK_ID` no esté autorizado, habilitado o dentro del mismo pool/cuenta expresamente permitidos; con otra microtarea propia `EN_PROGRESO`/`VALIDANDO`; con edición, lease o ejecución activa; sin permiso/schedule/identity/Scope Lock verificados. **No habilitar Tasks pausadas de Alex ni solicitar su revisión ordinaria**.
 
 Para cada candidata libre, obtener la **próxima fecha-hora futura** de ejecución programada (no comparar solamente `:00/:20/:30/:40`): usar `next_run_time` nativo si está expuesto; cuando el proveedor no lo exponga, calcular la siguiente ocurrencia desde el `RRULE` horaria verificable y la zona horaria, dejando explícito que es predicción de programación, no garantía de ejecución. Ordenar las candidatas por instante futuro creciente; desempatar deterministamente por `TASK_ID`. Seleccionar solo la primera realmente elegible, después de comparar si el traspaso reduce la espera respecto de la continuación legítima del propietario actual. En ausencia de datos fiables, **NO_GO** del traspaso, no suponer disponibilidad. Revalidar disponibilidad inmediatamente antes de registrar el cambio.
 
-La elección de receptora **NO efectúa el traspaso**: seguir exigiendo autorización expresa, release real del lease previo, ausencia de edición concurrente, misma rama/PR/HEAD, permisos reales, readback de GitHub y `PLAN_MAESTRO`/`BITACORA` y preservación de autoría; no autoaprobar, eludir bloqueos del proveedor ni declarar `LISTO` sin CI/merge protegido. Una revision tecnica solo lectura NO constituye propiedad; una reserva exclusiva de revision sobre VALIDANDO liberado SI consume el cupo operativo 1 hasta LISTO o nuevo release. `MAX_CONCURRENT_SCOPES=6`, `MAX_OWNED_SCOPES_PER_TASK=1`, `MAX_ACTIVE_WRITES_PER_TASK=1` y `REVIEW_FIRST → RECOVER → CLAIM` permanecen vigentes.
+La elección de receptora **NO efectúa el traspaso**: seguir exigiendo autorización expresa, release real del lease previo, ausencia de edición concurrente, misma rama/PR/HEAD, permisos reales, readback de GitHub y `PLAN_MAESTRO`/`BITACORA` y preservación de autoría; no autoaprobar, eludir bloqueos del proveedor ni declarar `LISTO` sin CI/merge protegido. Las revisiones técnicas de un `TASK_ID` sobre otro NO constituyen propiedad de una microtarea. `MAX_CONCURRENT_SCOPES=6`, `MAX_OWNED_SCOPES_PER_TASK=1`, `MAX_ACTIVE_WRITES_PER_TASK=1` y `REVIEW_FIRST → RECOVER → CLAIM` permanecen vigentes.
 
 **Caso de 2026-11-04:** a las 11:29 Javier :30 era la siguiente Task libre en horario, pero su ejecución real arrancó antes del readback para traspasar P1-010.A, por lo que el gate la excluyó; a las 11:37 :30 terminó y cerró P1-008.B, liberando a :40, cuyo turno 11:40 también inició antes de registrar el cambio. **No ocurrió un traspaso nuevo**: P1-010.A conserva como propietario real a Javier :00 hasta un cambio autorizado, atómico y leído de vuelta. Los comentarios de GitHub sobre candidatos temporales no sustituyen ownership institucional. Aplicar la selección por próximo turno FUTURO de forma dinámica en el momento de cualquier nuevo traspaso y evitar dobles asignaciones. El selector propone candidato, nunca crea permisos, lease, revisión, ejecución programada ni cierre LISTO.
 
@@ -118,7 +124,7 @@ Esta habilitacion se vuelve efectiva unicamente al fusionar con checks obligator
 1. `docs/PROJECT_SCOPE_LOCK.md` regula la identidad de SOLQARYN y el acceso a sus fuentes.
 2. `docs/AUTOMATION_STATUS.md` declara si existe un motor programado autorizado.
 3. El documento `STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES` es la fuente actual del alcance comercial. Ninguna hoja, manifiesto, bitácora o plan histórico es ejecutable por inferencia.
-4. `docs/AUTOMATION_AUTHORITY.md` regulan un inventario configurable por la propietaria, con permisos comprobados individualmente. El censo de seis Tasks y la distribución actual 3+3 son fotografía, no techo ni autorización. Se preservan el allowlist comercial vigente de cinco Tasks y el WIP máximo seis scopes. El piloto v1.2 permanece como antecedente. No autoriza QA/main/PROD ni restaura VAEP. Gobierno paritario: `PROPIETARIA_INSTITUCIONAL` SOLQARYN Platform; `EJECUTOR_PRINCIPAL_01` Javier (`93171442`) y `EJECUTOR_PRINCIPAL_02` Alex (`morales35alex`) son pares humanos, sin jerarquía ni transferencia de permisos.
+4. `docs/AUTOMATION_AUTHORITY.md` y `docs/AUTOMATION_AUTHORITY.md` regulan un inventario configurable por la propietaria, con permisos comprobados individualmente. El censo de seis Tasks y la distribución actual 3+3 son fotografía, no techo ni autorización. Se preservan el allowlist comercial vigente de cinco Tasks y el WIP máximo seis scopes. El piloto v1.2 permanece como antecedente. No autoriza QA/main/PROD ni restaura VAEP. Gobierno paritario: `PROPIETARIA_INSTITUCIONAL` SOLQARYN Platform; `EJECUTOR_PRINCIPAL_01` Javier (`93171442`) y `EJECUTOR_PRINCIPAL_02` Alex (`morales35alex`) son pares humanos, sin jerarquía ni transferencia de permisos.
 5. La única Skill local permitida sigue siendo `solqaryn-project-governance`; las referencias externas son opcionales y se consultan únicamente para una necesidad técnica real.
 
 ## Archivo histórico — estado de automatización al 22-10-2026 (sin vigencia operativa)

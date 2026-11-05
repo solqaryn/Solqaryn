@@ -1,8 +1,6 @@
-## 2026-11-04 — Contrato de entrega sin bloqueo al autor (propuesta protegida)
+## 2026-11-04 — Contexto vigente de custodia comercial por etapa (PR #3854)
 
-Orden del propietario: cuando una Task real entrega su microtarea desde EN_PROGRESO a VALIDANDO, debe liberar su unico cupo activo una vez documentado el release del lease y el readback de Plan, Bitacora y GitHub. La autoria TASK_ID sigue siendo inmutable. Un TASK_ID distinto puede adquirir la custodia de la revision con reserva exclusiva y, si procede, corregir y cerrar, o liberar otra vez cuando necesita un tercero. REVIEW_FIRST -> RECOVER -> CLAIM conserva el orden; WIP global seis incluye VALIDANDO y la Task autora no se autoaprueba. Trabajos historicos en VALIDANDO no se reasignan masivamente; se migran con evidencia caso a caso. No se altera el censo operativo actual de cuatro Javier/dos Alex ni el limite efectivo del proveedor; una futura capacidad fisica de 15 por cuenta requiere constatacion y autorizacion de IDs, no un tope interno ni creacion automatica.
-
-Alcance solo gobierno de Tasks, scripts y documentacion; sin cambios ERP, BD, API, frontend, QA/main/PROD ni secretos. Riesgo controlado por lease CAS, huella idempotente, readback; CI/regresion negativa y revision formal obligatorias para integrar. Rollback: revert del PR; los ownership ya migrados preservan autor/acta y se reconcilian uno por uno.
+El ciclo comercial `PENDIENTE -> EN_PROGRESO -> VALIDANDO -> LISTO` separa `AUTHOR_TASK_ID` inmutable de responsable/revisor por etapa. `VALIDANDO` mantiene el WIP global, pero su autora queda libre tras lease liberado y recibos reales; otra Task distinta reclama revisión exclusiva. El nuevo módulo puro `scripts/automation-stage-ownership.mjs` valida estas precondiciones y fallos; no crea motor paralelo ni modifica Sheets o Tasks automáticamente. Autoridad: `docs/AUTOMATION_AUTHORITY.md`; censo: `docs/AUTOMATION_STATUS.md`. Ningún cambio a ERP, API, base de datos, QA/main/PROD o credenciales.
 
 ## 2026-11-02 — P1-005.A: frontera de administración empresarial (DEV)
 

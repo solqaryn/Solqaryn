@@ -1,14 +1,9 @@
-## 2026-11-04 — Control plane de Tasks: custodia por etapa con autoria inmutable (PR candidato)
+## 2026-11-04 — Custodia por etapa de automatizaciones comerciales (DEV, PR #3854)
 
-## 2026-11-04 — Consolidación de gobierno de Tasks
-
-Se retira el contrato 3X3 duplicado del árbol vigente. `docs/AUTOMATION_AUTHORITY.md` queda como única autoridad normativa de las automatizaciones, y `docs/AUTOMATION_STATUS.md` conserva censo y estado del runtime. Validadores y workflow protegidos se alinean al cambio. Sin cambios a ERP, API, BD, credenciales, QA/main/PROD ni Tasks físicas.
-
-
-- El estado comercial sigue en el mismo `PLAN_MAESTRO`, `COLA` y `BITACORA` institucionales, sin nuevos almacenes, endpoints, DTO, DDL, credenciales ni movimientos de DEV/QA/PROD.
-- `EN_PROGRESO -> VALIDANDO` entrega la custodia, verifica CI/pruebas disponibles y libera el lease y el cupo de su autor original tras readback documentado. La entrega mantiene su identidad GitHub/TASK_ID autor y sigue consumiendo WIP global; no libera dependencias hasta LISTO.
-- Control de concurrencia: `AUTHOR_TASK_ID` inmutable, `STAGE_OWNER_TASK_ID` mutable por transicion verificada y `REVIEW_RESERVATION_TASK_ID` exclusivo con compare-and-set/version y readback. Un review solo lectura es distinto de la toma de etapa. Autoaprobacion prohibida.
-- La implementacion operacional requiere fusion protegida del contrato, prompt nativo de cada Task y migracion controlada por microtarea preexistente. Rollback de gobierno por revert protegido + mantenimiento de la ultima custodia auditable. El limite fisico depende del proveedor; quedan seis IDs autorizados y WIP 6/1/1.
+- Control plane de automatizaciones basado en Sheets/GitHub existentes, sin nuevos servicios, bases, endpoints, DTOs, migraciones, ni cambios ERP. El módulo `scripts/automation-stage-ownership.mjs` valida liberación `EN_PROGRESO -> VALIDANDO`, autoría inmutable `AUTHOR_TASK_ID`, exclusividad de `REVIEW_RESERVATION_TASK_ID` y responsabilidad `STAGE_OWNER_TASK_ID`.
+- Las transiciones exigen evidencia real de PR/SHA, lease, versión, ausencia de edición activa y readback GitHub/PLAN_MAESTRO/BITACORA. No existe transacción atómica entre proveedores: el validador falla cerrado si falta un recibo.
+- Prioridad: revisión cruzada de VALIDANDO liberado, recuperación segura de EN_PROGRESO, CLAIM de PENDIENTE elegible. WIP global 6 incluye VALIDANDO, aunque su autora entregante quede libre. El revisor ocupa un cupo individual al reservar en exclusiva; correcciones sustantivas requieren revisión posterior independiente.
+- Sin cambios en Angular, .NET, MySQL, JWT, RBAC, CI de aplicación, QA/main/PROD, secretos ni tareas físicas. La ruta de verificación se protege en Scope Lock. Rollback por revert protegido y reconciliación individual sin borrar historia.
 
 ## 2026-11-02 — P1-005.A: frontera de administración empresarial (DEV)
 
