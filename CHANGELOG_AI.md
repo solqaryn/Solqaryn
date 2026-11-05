@@ -1,3 +1,9 @@
+## 2026-11-05 — P1-014.A: test Angular ejecutado en GitHub Actions
+
+- El workflow `priority4-quality.yml` ahora ejecuta explícitamente el spec `plataforma-gestion-mvp.component.spec.ts` con Node 24.21.0 y las dependencias fijadas por `npm ci`.
+- Esto deja la salida verificable en GitHub Actions para las solicitudes a `dev` y para el push posterior al merge. El resultado local 5/5 en el merge SHA anterior no se presenta como ejecución de CI ni cambia por sí solo el estado institucional.
+- Sin cambios de runtime, API, datos, migraciones, secretos ni proveedores.
+
 ## 2026-11-05 — P1-014.C: caso negativo del flujo guiado de alta (DEV)
 
 - Autor funcional ALEX :10 `6adbbc9ad9e88191bea8eb69104afb25` / GitHub `morales35alex`, única responsabilidad operativa en `work/solqaryn-p1-014-c`; CLAIM CAS `PLAN_MAESTRO!H53` PENDIENTE→EN_PROGRESO con una coincidencia y readbacks, dev base `7a9730cdc3b39a98d37237774ac907f888a0a414`.

@@ -109,6 +109,10 @@ jobs:
         working-directory: frontend
         run: npx ng test --watch=false --include=src/app/features/facturas/factura-fiscal-emision.component.spec.ts
 
+      - name: P1-014.A - Validar asistente guiado de alta empresarial
+        working-directory: frontend
+        run: npx ng test --watch=false --include=src/app/features/plataforma/plataforma-gestion-mvp.component.spec.ts
+
       - name: Production frontend build and budget enforcement
         working-directory: frontend
         run: npm run build:prod
