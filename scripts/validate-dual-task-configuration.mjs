@@ -146,6 +146,7 @@ export function selectWork(tasks, stateById, account, activeReviewIds = new Set(
   // whether EN_PROGRESO or VALIDANDO. Verify the COMPLETE ownership readback.
   if(!validTaskId || ownershipReadbackVerified!==true)
     return {action:'NO_ELIGIBLE',reason:'OWNERSHIP_READBACK_REQUIRED'};
+  if(unreleasedDelivery)return {action:'NO_ELIGIBLE',reason:'UNRELEASED_DELIVERY_NO_CLAIM'};
   if(!hasCapacity)return {action:'NO_ELIGIBLE',reason:'TASK_CAPACITY_15'};
   // Foreign IN_PROGRESS: no unverified takeover or lost commits.
   const handoff = tasks.find(t => t.state === 'EN_PROGRESO' &&
