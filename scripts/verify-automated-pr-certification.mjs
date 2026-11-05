@@ -13,7 +13,8 @@ const GUARDED = new Set([
   'AGENTS.md', 'docs/PROJECT_SCOPE_LOCK.md', 'docs/AUTOMATION_STATUS.md', 'docs/GITHUB_ACCOUNT_ROLES.md',
   'docs/AUTOMATION_AUTHORITY.md',
   '.github/workflows/project-scope-lock.yml', '.github/workflows/solqaryn-core-ci.yml',
-  'scripts/validate-automation-authority.mjs', 'scripts/verify-project-scope.mjs',
+  'scripts/automation-stage-ownership.mjs',
+            'scripts/validate-automation-authority.mjs', 'scripts/verify-project-scope.mjs',
   'scripts/verify-automated-pr-certification.mjs', 'scripts/verify-solqaryn-skills.mjs',
 ]);
 const SECRET = /gh[pousr]_[a-zA-Z0-9_]{20,}|AKIA[A-Z0-9]{16}|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|(?:password|token|secret)\s*[:=]\s*['"][^'"]{12,}['"]/i;

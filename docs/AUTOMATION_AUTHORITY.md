@@ -40,6 +40,18 @@ MAX_CONCURRENT_SCOPES=6
 MAX_OPEN_WORK_BRANCHES=6
 MAX_OWNED_SCOPES_PER_TASK=1
 MAX_ACTIVE_WRITES_PER_TASK=1
+STAGE_OWNERSHIP_MODE=AUTHOR_PROVENANCE_HANDOFF_V1
+REVIEW_RESERVATION_MODE=EXCLUSIVE_CAS_READBACK
+
+
+
+## Contrato técnico de custodia por etapa — integración del PR #3854
+
+- `scripts/automation-stage-ownership.mjs` contiene validadores puros fail-closed de `VALIDANDO`: no es un motor de asignación ni una transacción automática entre proveedores.
+- `AUTHOR_TASK_ID` y `originalAuthorTaskId` preservan identidad histórica. El autor solo deja de consumir cupo individual cuando `stageReleaseRequested=true`, `stageReleaseReceiptVerified=true`, `ownerTaskId=null`, `stageOwnerTaskId=null` y `reviewReservationTaskId=null`, con prueba de entrega, SHA/PR, ausencia de editor, lease liberado, evento idempotente, versión y readbacks GitHub/PLAN_MAESTRO/BITACORA. Fallar un campo mantiene NO_GO, sin asumir atomicidad entre GitHub y Sheets.
+- `reviewReleaseEligible` solo propone una revisión ajena, sin reservarla. La operación `RESERVE_REVIEW` exige compare-and-set/lease exclusivo, TASK_ID diferente, cero responsabilidades/escrituras previas, autorización, control WIP global y readback institucional. `REVIEW_RESERVATION_CANDIDATE` no otorga propiedad; una reserva confirmada consume una de las responsabilidades individuales.
+- La revisora que corrige debe conservar rama y PR originales, obtener revisión independiente posterior cuando aplique y liberar su propia custodia en `VALIDANDO` antes de reclamar otra. `LISTO` solo tras gates reales, merge protegido y conciliación exacta. La autora inicial nunca revisa ni cierra su propia entrega.
+- Los `VALIDANDO` previos al contrato mantienen su autoría e historial. Migración caso por caso, sin vaciar propietarios masivamente ni suponer recursos nativos de Tasks ajenas. La entrega sigue contando en WIP 6 hasta LISTO; su autor liberado no ocupa un cupo individual. `AUTOMATION_STATUS.md` continúa como censo/runtime y este documento como autoridad normativa.
 
 
 ## ORDEN VIGENTE DEL PROPIETARIO — ENTREGA VALIDANDO LIBERA AL AUTOR (2026-11-04)
