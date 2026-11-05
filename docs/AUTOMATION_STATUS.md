@@ -36,6 +36,21 @@ GITHUB_CHAT_ROLE_POLICY=docs/GITHUB_ACCOUNT_ROLES.md
 LEGACY_AUTOMATION_RUNTIME=RETIRED
 
 
+## ORDEN VIGENTE DEL PROPIETARIO — ENTREGA VALIDANDO LIBERA AL AUTOR (2026-11-04)
+
+**Precedencia:** esta seccion reemplaza cualquier afirmacion previa de que la autoria mantiene ocupado el cupo individual durante VALIDANDO. Diferenciar siempre AUTOR_TASK_ID historico e inmutable, RESPONSABLE_TASK_ID operativo, REVISOR_TASK_ID y lease de escritura. Nunca cambiar la autoria para transferir responsabilidad.
+
+- WIP 6/1/1: maximo 6 microtareas comerciales distintas abiertas globalmente (EN_PROGRESO + VALIDANDO), 1 responsabilidad operativa por TASK_ID y 1 escritura activa por TASK_ID. VALIDANDO cuenta globalmente, no ocupa al autor tras entrega verificable.
+- PENDIENTE -> EN_PROGRESO: reclamar una microtarea elegible con dependencias LISTO y lease exclusivo.
+- EN_PROGRESO -> VALIDANDO: registrar entrega PR/SHA, autoria inmutable y transicion, liberar lease y RESPONSABLE_TASK_ID de la autora, dejar revisor sin asignar, verificar atomicamente PLAN_MAESTRO/BITACORA. Si falla la confirmacion, NO declarar libre a la autora.
+- VALIDANDO -> LISTO: otra Task de ID distinto toma en exclusiva la revision y eventual correccion; CI exact-SHA, reglas GitHub, merge protegido y readback PLAN_MAESTRO/COLA/BITACORA son obligatorios.
+- VALIDANDO -> VALIDANDO: si la revisora introduce una correccion que necesita revision independiente adicional, entrega y libera su cupo/lease para otra Task elegible; conservar cadena de contribuciones.
+- EN_PROGRESO abandonada: solo transferir tras ausencia de editor/run, lease anterior liberado, ultimo commit verificado, autorizacion y readback. No robar trabajo activo por retraso.
+- Prioridad: VALIDANDO libre de otra Task -> EN_PROGRESO propio o recuperable -> PENDIENTE elegible. Elegir receptora habilitada/autorizada y sin otro scope por proxima ejecucion futura verificada, sin preferencia fija de nombre.
+- No permitir que la Task autora revise/cierre formal ni tecnicamente su propia entrega. La revision tecnica entre distintos TASK_ID que comparten login NO crea un APPROVED humano independiente. No activar Tasks de Alex pausadas ni modificar QA/main/PROD.
+
+
+
 ## Criterio obligatorio para FUTUROS traspasos — próxima Task libre en ejecutarse (orden 2026-11-04)
 
 Antes de reasignar una microtarea comercial por exceso de propiedad o transferencia autorizada, **NO escoger una Task libre por conveniencia ni por orden de nombre**. Obtener la hora de decisión actual con zona `America/Tegucigalpa` y un censo vivo de las Tasks individuales autorizadas: `AUTHORIZED_COMMERCIAL_TASK_IDS`, `REGISTERED_TASK_IDS`, identidad, cuenta, conexión, permisos efectivos, `automations.peek` (incluido `is_enabled` y ejecución actual), `TAREAS_PROGRAMADAS`, `CONFIG`, y ownership completo `PLAN_MAESTRO`/`COLA`/`BITACORA`. Filtrar candidatas cuyo `TASK_ID` no esté autorizado, habilitado o dentro del mismo pool/cuenta expresamente permitidos; con otra microtarea propia `EN_PROGRESO`/`VALIDANDO`; con edición, lease o ejecución activa; sin permiso/schedule/identity/Scope Lock verificados. **No habilitar Tasks pausadas de Alex ni solicitar su revisión ordinaria**.
