@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import { PlataformaGestionMvpService } from '../../core/auth/plataforma-gestion-mvp.service';
 import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.service';
@@ -114,5 +114,28 @@ describe('P1-014.A — alta guiada empresarial', () => {
     expect(api.altaControlada).toHaveBeenCalledWith('Empresa D', 7);
     expect(c.pasoAlta()).toBe(1);
     expect(c.empresaNueva()).toBe('');
+  });
+
+  it('P1014D conserva el alta guiada cuando el backend rechaza con HTTP 403', () => {
+    api.altaControlada.mockImplementationOnce(() => throwError(() => ({
+      status: 403, error: { message: 'Operacion no autorizada' }
+    })));
+    const f = vista(true), c = f.componentInstance;
+    c.empresaNueva.set('Empresa Rechazada');
+    c.avanzarAlta();
+    c.buscado.set({ id: 7, nombreUsuario: 'admin', nombreCompleto: 'Admin',
+      activo: true, bloqueado: false, pendienteAsignacion: false });
+    c.avanzarAlta();
+    f.detectChanges();
+    expect(c.pasoAlta()).toBe(3);
+    c.crearEmpresa();
+    f.detectChanges();
+    expect(api.altaControlada).toHaveBeenCalledOnce();
+    expect(api.altaControlada).toHaveBeenCalledWith('Empresa Rechazada', 7);
+    expect(api.altaControladaConAdministradorNuevo).not.toHaveBeenCalled();
+    expect(c.pasoAlta()).toBe(3);
+    expect(c.empresaNueva()).toBe('Empresa Rechazada');
+    expect(c.error()).toBeTruthy();
+    expect(c.ocupado()).toBe(false);
   });
 });
