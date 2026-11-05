@@ -1,14 +1,26 @@
-## 2026-11-04 — P1-011.A: trazabilidad de alta atómica de administrador nuevo (DEV)
-
-- Reutilización técnica de PR #3683: alta de usuario + empresa + ConfigEmpresa + membresía + auditoría con commit/rollback MySQL, BCrypt y ausencia de privilegios de plataforma. No se vuelve a implementar código productivo.
-- Corrección causal CI: el runner dirigido no ofrece MySQL; el P1011A anterior de integración falló por entorno ausente y Scope Lock bloqueó el merge. Se restaura nombre original del test MySQL (`Category=Integration`, job MySQL efímero) y se prefijan tres pruebas InMemory ya existentes como `P1011A_` para el check dirigido, sin duplicar ni alterar cuerpos. Ambos carriles exigidos sobre SHA final. Acta: `docs/P1-011-A-ALTA-ATOMICA-ADMIN-DEV.md`.
-- El cambio no certifica resultados CI antes de su ejecución. Requiere Scope Lock y checks protegidos, merge, CI postmerge y cierre por otra Task; no toca QA/main/PROD ni secretos.
-
 ## 2026-11-04 — P1-014.A: flujo guiado comercial de alta (DEV)
 
 - Javier :00 (TASK_ID 6adbb9fff1548191a1bd5b30d9e9984a) reclamó P1-014.A con WIP 6/1/1 y lectura posterior de PLAN_MAESTRO fila 52, COLA y BITACORA fila 580. Rama work/solqaryn-p1-014-a desde dev@89b3687d14336734788bda26e2e187f0eea763c2.
 - Asistente Angular en tres pasos (empresa, administrador, revisión/confirmación) con validación, navegación accesible, contraseña omitida del resumen, control de permiso comercial y reuso del backend protegido, sin nuevas rutas o activación de flags.
 - Suite de regresiones frontend P1014A incorporada; no atribuir PASS sin CI real. Autor no se autoaprueba ni marca LISTO; requeridos merge protegido, CI postmerge y cierre cruzado.
+
+## 2026-11-04 — Reconciliación PR #3854 con gobierno DEV vigente
+
+- Resolución de `BASE_DEV_STALE` y colisiones normativas posteriores al PR #3858: integrar la implementación original de `automation-stage-ownership.mjs` sobre `dev` sin restaurar `RECOVER_VALIDANDO` propio ni el archivo de contrato 3×3 eliminado.
+- El validador de selección ahora distingue entrega verificada, reserva de revisión exclusiva y continuación por revisora ya asignada; nuevas pruebas negativas de doble propiedad, auto-revisión, readback omitido y autor liberado sin lease.
+- Scope Lock protege el nuevo script, conservando revisión formal independiente, CI exact-SHA, rama/PR originales y rollback protegido. No modificar Tasks físicas, Sheets, credenciales, QA/main/PROD ni datos comerciales con este PR.
+
+## 2026-11-04 — Gobierno DEV: liberacion verificada en VALIDANDO y consolidacion de autoridad
+
+- Orden expresa del propietario: tras entrega confirmada EN_PROGRESO -> VALIDANDO, el TASK_ID autor conserva autoria historica pero su cupo operativo se libera solo con SHA/PR, lease y readback de Sheets verificables. El scope VALIDANDO continua consumiendo WIP global (6) hasta LISTO y queda disponible para una revisora Task diferente, que puede corregir/merge/cerrar bajo CI y reglas reales de GitHub.
+- Cambios: fuentes de gobierno AGENTS, PROJECT_SCOPE_LOCK, AUTOMATION_STATUS y AUTOMATION_AUTHORITY; selector y validaciones negativas; validadores/Scope Lock con referencias consolidadas; retiro del archivo contractual redundante. Sin reactivar Alex, sin cambiar Tasks fisicas, horarios, Secrets, datos, QA/main/PROD. Certificacion condicionada a revision formal independiente de gobierno, CI exact-head y merge protegido.
+- Rollback: revert por PR protegido, sin reescribir historia ni alterar registros comerciales.
+
+## 2026-11-04 — P1-011.A: trazabilidad de alta atómica de administrador nuevo (DEV)
+
+- Reutilización técnica de PR #3683: alta de usuario + empresa + ConfigEmpresa + membresía + auditoría con commit/rollback MySQL, BCrypt y ausencia de privilegios de plataforma. No se vuelve a implementar código productivo.
+- Corrección causal CI: el runner dirigido no ofrece MySQL; el P1011A anterior de integración falló por entorno ausente y Scope Lock bloqueó el merge. Se restaura nombre original del test MySQL (`Category=Integration`, job MySQL efímero) y se prefijan tres pruebas InMemory ya existentes como `P1011A_` para el check dirigido, sin duplicar ni alterar cuerpos. Ambos carriles exigidos sobre SHA final. Acta: `docs/P1-011-A-ALTA-ATOMICA-ADMIN-DEV.md`.
+- El cambio no certifica resultados CI antes de su ejecución. Requiere Scope Lock y checks protegidos, merge, CI postmerge y cierre por otra Task; no toca QA/main/PROD ni secretos.
 
 ## 2026-11-04 — P1-010.B: certificación HTTP/JWT separada por membresía (DEV)
 

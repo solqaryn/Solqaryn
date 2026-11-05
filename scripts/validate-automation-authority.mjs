@@ -115,7 +115,7 @@ export function validateAuthority(input) {
     ['TASK_COUNT_LIMIT', 'PROVIDER_EFFECTIVE_CAPACITY']
   ]) if (!exactKey(d.scope, key, value)) failures.push('scope header ' + key);
   if (!/^AUTOMATION_RUNTIME=ACTIVE_DEV$/m.test(d.status)) failures.push('3x3 DEV runtime mismatch');
-  if (!d.authority.includes('docs/AUTOMATION_3X3_OPERATING_CONTRACT.md') || !d.agents.includes('TASK_DESIGN=OWNER_CONFIGURABLE_TASK_SET')) failures.push('configurable Task contract routing');
+  if (!d.authority.includes('ENTREGA VALIDANDO LIBERA AL AUTOR') || !d.status.includes('ENTREGA VALIDANDO LIBERA AL AUTOR') || !d.agents.includes('TASK_DESIGN=OWNER_CONFIGURABLE_TASK_SET')) failures.push('current handoff authority routing');
   if (/VAEP_DISPATCH_AUTHORIZED\s*=\s*TRUE/.test(d.status)) failures.push('VAEP must remain retired');
   if (/JULES_WORKERS_AUTHORIZED\s*=\s*[1-9]/.test(d.status)) failures.push('Jules worker reactivation forbidden');
   // P0-012.B: the operational policy must not route executable work to
@@ -206,7 +206,7 @@ else if (process.argv.includes('--self-test')) {
     ['writing', {authority:authority.replaceAll('AUTOMATION_RUNTIME=ACTIVE_DEV','AUTOMATION_RUNTIME=RETIRED')}],
     ['duplicate idempotency', {authority:authority.replaceAll('IDEMPOTENCY_KEY','DUPLICATE_KEY')}],
     ['missing evidence', {authority:authority.replaceAll('NO_VERIFICADO','APROBADO_SIN_EVIDENCIA')}],
-    ['wrong contract status', {status:status.replace('docs/AUTOMATION_AUTHORITY.md','legacy/VAEP_AUTHORITY.md')}],
+    ['wrong contract status', {status:status.replace(/^AUTOMATION_RUNTIME=ACTIVE_DEV$/m,'AUTOMATION_RUNTIME=DISABLED')}],
     ['revoked privilege', {authority:authority.replaceAll('permisos efectivos','permisos supuestos')}],
     ['prod', {authority:authority.replaceAll('PROD','UNRESTRICTED')}],
     ['reactivate vaep', {status:status.replace('VAEP_DISPATCH_AUTHORIZED=FALSE','VAEP_DISPATCH_AUTHORIZED=TRUE')}],
