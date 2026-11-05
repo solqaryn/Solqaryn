@@ -121,7 +121,12 @@ export function validateAuthority(input) {
   for(const [name,body] of [['AUTOMATION_AUTHORITY',d.authority],['AUTOMATION_STATUS',d.status]]){
     for(const [key,value] of [['MAX_CONCURRENT_SCOPES','15'],['MAX_OPEN_WORK_BRANCHES','15'],
       ['MAX_OWNED_SCOPES_PER_TASK','15'],['MAX_ACTIVE_WRITES_PER_TASK','15']]){
-      const rows=[...body.matchAll(new RegExp('^'+key+'=(.+)
+      const rows=body.split(String.fromCharCode(10)).filter(line=>line.startsWith(key+'='));
+      if(rows.length!==1||rows[0]!==key+'='+value) failures.push(name+': invalid '+key);
+    }
+  }
+  if (!d.agents.includes('TASK_DESIGN=OWNER_CONFIGURABLE_TASK_SET'))
+    failures.push('current Task assignment model');
   if (/VAEP_DISPATCH_AUTHORIZED\s*=\s*TRUE/.test(d.status)) failures.push('VAEP must remain retired');
   if (/JULES_WORKERS_AUTHORIZED\s*=\s*[1-9]/.test(d.status)) failures.push('Jules worker reactivation forbidden');
   // P0-012.B: the operational policy must not route executable work to
