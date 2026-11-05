@@ -6,6 +6,68 @@
 
 - Corrección causal de CI: el primer SHA de PR #3860 obtuvo `DIRECTED_SCOPE_NO_GO total=0` porque aún no existía el filtro `P1011C`. Se incorporó `P1011CCaseRoutingTests` (solo metacontrato xUnit del fixture MySQL `Category=Integration`, sin conectarse a MySQL). El verdadero rollback sigue exigiendo job MySQL efímero separado; no presentar el PASS de routing como prueba funcional. Nuevo SHA exige CI propia.
 
+## 2026-11-05 — CI asíncrona y objetivo verificado de 6 LISTO/h
+
+- El propietario fija meta mínima operativa de seis microtareas distintas verdaderamente LISTO por ventana móvil de 60 minutos, con déficit medido y sin fabricar cierres. Mantiene WIP 15/15/15.
+- Ninguna Task programada debe permanecer esperando los checks de GitHub Actions: una consulta por scope y ocurrencia real, registrar CI_PENDING_ASYNC con SHA/PR/lease, liberar reviewer solo mediante CAS/readback cuando la revisión terminó y avanzar otra microtarea elegible. Sin work elegible, auditar y terminar el run.
+- El Scope Lock conserva los checks obligatorios y auto-certificación exact-SHA; cancela runs obsoletos cuando se publica un nuevo SHA del mismo PR, sin cancelar PR ajenos ni alterar rulesets. Se agrega prueba negativa de certificación prematura y conteo duplicado.
+- No reactivar las Tasks pausadas, no tocar PR comerciales gestionados por Codex ni omitir control de seguridad por rendimiento.
+
+## 2026-11-05 — P1-007.B: regresiones negativas de cambio de tenant A → B
+
+- En `TenantContextService` se agregan dos regresiones: el 403 al cambiar de A a B revoca el contexto anterior, y un HTTP 200 para B que devuelve identidad/rol/contexto de A se rechaza por no coincidir la empresa solicitada.
+- Se agrega `P1007BTenantSwitchIsolationTests`: la resolución backend rechaza B cuando el usuario solo tiene membresía en A y conserva únicamente el scope válido de A. Fixture EF InMemory; no acredita MySQL DEV en vivo.
+- Las pruebas comprueban que usuario/rol/contexto de A no permanezcan visibles ni en memoria ni en `localStorage` durante o después del cambio. Los cambios son solo de pruebas/documentación: no modifican runtime, endpoints, datos, migraciones, flags ni proveedores; la autorización efectiva continúa correspondiendo al backend.
+- Spec frontend dirigido: 13/13 PASS con Node 24.21.0 y npm 11.19.0. CI dirigida y controles exactos del SHA pendientes de GitHub. La entrega requiere revisión independiente, merge protegido, CI posterior y conciliación institucional antes de `LISTO`.
+## 2026-11-05 — Eliminación de reglas operativas anteriores y censo 4+2
+
+- Conforme a la autorización del propietario, se retiran de las fuentes operativas de gobierno los apartados históricos M3.3/M3.4 y sus instrucciones contradictorias de cupos; permanece únicamente el contrato autorizado 15/15/15.
+- Se consolida el censo de seis TASK_ID (cuatro Javier y dos Alex), sin confundir capacidad por Task con alta física o habilitación de automatizaciones pausadas.
+- Se preservan las evidencias históricas en el registro Git, la revisión independiente, Project Scope Lock STRICT, las reservas exclusivas por scope y la CI exact SHA. No se alteran microtareas comerciales que está cerrando Codex ni se reactivan Tasks.
+
+## 2026-11-05 — Gobierno comercial 15/15/15 y reparto inteligente por ejecucion
+
+- Orden expresa del propietario: hasta 15 microtareas comerciales distintas abiertas globalmente, 15 responsabilidades por Task y 15 reservas/escrituras de diferentes scopes por Task; cada scope tiene un unico editor/revisor exclusivo.
+- El selector prioriza la Task genuinamente libre y, ante igual disponibilidad, la proxima ejecucion verificada. No se preasignan scopes: unicamente la Task que se dispara puede reservar para si un scope con version/CAS/readback. No tomar VALIDANDO de la propia autoria ni duplicar reservas.
+- Prioridad estricta VALIDANDO ajena no reservada → EN_PROGRESO verdaderamente abandonada, con handoff verificado → PENDIENTE elegible y dependencias LISTO. Cuando no hay elegible, auditoria no invasiva con asignaciones y actividad verificadas.
+- Se actualizan AGENTS, PROJECT_SCOPE_LOCK, AUTOMATION_STATUS, AUTOMATION_AUTHORITY, GITHUB_ACCOUNT_ROLES, validadores y pruebas. Se mantienen PROJECT_SCOPE_LOCK=STRICT, CI exact-SHA, independiente formal cuando se exige, dev protegido y no cambios de QA/main/PROD ni creacion de Tasks.
+
+## 2026-11-05 — P1-014.A: test Angular ejecutado en GitHub Actions
+
+- El workflow `priority4-quality.yml` ahora ejecuta explícitamente el spec `plataforma-gestion-mvp.component.spec.ts` con Node 24.21.0 y las dependencias fijadas por `npm ci`.
+- Esto deja la salida verificable en GitHub Actions para las solicitudes a `dev` y para el push posterior al merge. El resultado local 5/5 en el merge SHA anterior no se presenta como ejecución de CI ni cambia por sí solo el estado institucional.
+- Sin cambios de runtime, API, datos, migraciones, secretos ni proveedores.
+
+## 2026-11-05 — P1-014.C: caso negativo del flujo guiado de alta (DEV)
+
+- Autor funcional ALEX :10 `6adbbc9ad9e88191bea8eb69104afb25` / GitHub `morales35alex`, única responsabilidad operativa en `work/solqaryn-p1-014-c`; CLAIM CAS `PLAN_MAESTRO!H53` PENDIENTE→EN_PROGRESO con una coincidencia y readbacks, dev base `7a9730cdc3b39a98d37237774ac907f888a0a414`.
+- Prueba dirigida `P1014C` reutiliza `P1013A_AltaRechazadaPorCualquierGateApagado(false, true)` del controlador. Condición: onboarding OFF y aislamiento ON, operador global autorizado; esperado: status lógico 503, cero Empresa/UsuarioEmpresa/ConfigEmpresa. Fixture EF InMemory, no HTTP/JWT/MySQL remotos.
+- Acta `docs/P1-014-C-CASO-NEGATIVO-GUIA-ALTA-DEV.md`. Sin cambios de código productivo, endpoints, contratos, DB, migraciones, flags, secretos, permisos ni QA/main/PROD.
+- La publicación no certifica ejecución ni CI; exigir test P1014C >0 PASS/0 FAIL, Scope Lock AUTO_CERT y checks exact SHA. Entrega VALIDANDO con liberación y readbacks, revisión técnica por TASK_ID ajeno, merge protegido y CI postmerge antes de LISTO.
+
+## 2026-11-04 — P1-013.A: regresión de gates de onboarding (DEV)
+
+- Task física Alex :10 `6adbbc9ad9e88191bea8eb69104afb25` reclamó `P1-013.A` por rama determinista `work/solqaryn-p1-013-a`, desde `dev@89b3687d14336734788bda26e2e187f0eea763c2`, tras `REVIEW_FIRST` de P1-012.A ajena, sin autoaprobar ni reclamar segundo scope. Plan/COLA/BITACORA con readback.
+- Reutiliza `CommercialIsolationCertified` + `PlatformOnboardingEnabled`: se identifican pruebas negativas existentes y se agrega matriz xUnit `P1013A` sobre el valor del directorio `puedeCrear`, sin duplicar ni modificar implementación comercial. Acta `docs/P1-013-A-GATES-ONBOARDING-DEV.md`.
+- Ausencia de flags en appsettings versionados implica falso **solo como default de fuente**; valor del DEV desplegado NO_VERIFICADO. Fixture EF InMemory y mocks no equivalen a HTTP/MySQL remoto. No se alteraron secretos, infra, permisos, QA/main/PROD ni se habilitaron flags.
+- Para aceptar: test dirigido `FullyQualifiedName~P1013A` con >0 PASS y 0 FAIL, CI/scope lock exact SHA, PR protegido, revisión TECH por Task ID distinto, postmerge exact SHA y readback institucional. No marcar LISTO de manera anticipada.
+
+## 2026-11-04 — P1-014.A: flujo guiado comercial de alta (DEV)
+
+- Javier :00 (TASK_ID 6adbb9fff1548191a1bd5b30d9e9984a) reclamó P1-014.A con WIP 6/1/1 y lectura posterior de PLAN_MAESTRO fila 52, COLA y BITACORA fila 580. Rama work/solqaryn-p1-014-a desde dev@89b3687d14336734788bda26e2e187f0eea763c2.
+- Asistente Angular en tres pasos (empresa, administrador, revisión/confirmación) con validación, navegación accesible, contraseña omitida del resumen, control de permiso comercial y reuso del backend protegido, sin nuevas rutas o activación de flags.
+- Suite de regresiones frontend P1014A incorporada; no atribuir PASS sin CI real. Autor no se autoaprueba ni marca LISTO; requeridos merge protegido, CI postmerge y cierre cruzado.
+
+## 2026-11-04 — P1-012.B: pruebas negativas de alta con cuenta existente (DEV)
+
+- Alex :50, TASK_ID `6adcc98a80a48191b71a5156624c21df`, reclamó exclusivamente P1-012.B en `work/solqaryn-p1-012-b` desde `dev@89b3687d14336734788bda26e2e187f0eea763c2`. `PLAN_MAESTRO!H49=EN_PROGRESO`, `COLA!E49` fórmula y `BITACORA!578` con readback. Dependencia P1-012.A LISTO.
+- Dos pruebas xUnit `P1012B_` del controlador verifican (a) que repetir el alta del mismo nombre responde conflicto sin duplicar cuenta, membresía, configuración ni auditoría; (b) que un administrador previamente vinculado a A con rol privado no transmite su rol a una empresa B creada. No cambian código productivo, API, DB, migraciones, secretos, permisos ni ambientes.
+- Acta `docs/P1-012-B-NEGATIVOS-ALTA-ADMIN-REGISTRADO-DEV.md`. Fixture EF InMemory; no acredita MySQL transaccional real ni HTTP/JWT remoto. Prueba dirigida `FullyQualifiedName~P1012B`, regresión P1012A, CI exact SHA, revisión técnica por otra Task, merge protegido, CI posmerge y cierre institucional pendientes de acreditar. No autoaprobar ni declarar LISTO.
+- RECOVER al actualizar `dev`: rama sincronizada con commit de dos padres `c3eac64d1f018418471e55b06213b7cfb91d996f`, diff original de tres archivos, sin force-push. Primer HEAD `2f11ba1e...`: CI dirigido 2/2 PASS y AUTO_CERT PASS. En `c3eac64d...` el Scope Lock fue NO_GO por un check dirigido duplicado (primero cancelled, segundo success) y otros jobs todavía pendientes; nuevo HEAD documental exige pruebas y AUTO_CERT propios. Nunca autocertificar.
+- Reversión: PR protegido de revert para tests y documentación, sin alterar historial comercial.
+
+- RECOVER 2026-11-04: integración no destructiva de dev con P1-011.A; se conservan los tres métodos P1011A renombrados, las dos regresiones P1012B y el histórico de ambas microtareas. CI nuevo del HEAD aún por ejecutar; no es LISTO.
+
 ## 2026-11-04 — P1-016.A: sesión global sin tenant (DEV, regresión)
 
 - Alex :10, TASK_ID `6adbbc9ad9e88191bea8eb69104afb25`, reclamó `P1-016.A` desde `dev@5c47317120bd4587a0570b11522acf898ef59c98` con exclusividad nativa GitHub (rama `work/solqaryn-p1-016-a`) y readback de `PLAN_MAESTRO!H56:M56`, `COLA` y `BITACORA`; dependencia `P0-012.B=LISTO` y WIP 6/1/1.

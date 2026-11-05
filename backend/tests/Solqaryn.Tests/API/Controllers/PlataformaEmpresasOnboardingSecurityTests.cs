@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -8,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Solqaryn.API.Controllers;
 using Solqaryn.API.Middleware;
+using Solqaryn.Application.Common;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Enums;
@@ -20,17 +22,85 @@ namespace Solqaryn.Tests.API.Controllers;
 public sealed class PlataformaEmpresasOnboardingSecurityTests
 {
     [Fact]
+    public async Task P1014A_ConfirmacionGuiadaNoEludeGatesNiCreaDatosSinAutorizacion()
+    {
+        // El asistente de Angular solo presenta pasos; este endpoint sigue
+        // aplicando la autoridad real y no crea datos si un gate está OFF.
+        var denied = await PrepararAsync(false, true, true);
+        await using (var db = denied.Db)
+        {
+            var result = await denied.Controller.AltaControlada(new()
+            {
+                Nombre = "Empresa guiada",
+                AdministradorUsuarioId = denied.AdministradorId
+            }, CancellationToken.None);
+
+            Assert.Equal(503, Assert.IsType<ObjectResult>(result).StatusCode);
+            Assert.Empty(await db.Set<Empresa>().ToListAsync());
+            Assert.Empty(await db.Set<UsuarioEmpresa>().ToListAsync());
+            Assert.Empty(await db.Set<ConfigEmpresa>().ToListAsync());
+        }
+
+        // Con autoridad de plataforma y ambos gates vigentes, una sola
+        // confirmación reutiliza la transacción, ConfigEmpresa y membresía.
+        var allowed = await PrepararAsync(true, true, true);
+        await using (var db = allowed.Db)
+        {
+            var result = await allowed.Controller.AltaControlada(new()
+            {
+                Nombre = "Empresa guiada",
+                AdministradorUsuarioId = allowed.AdministradorId
+            }, CancellationToken.None);
+
+            Assert.IsType<CreatedResult>(result);
+            var empresa = Assert.Single(await db.Set<Empresa>().ToListAsync());
+            var config = Assert.Single(await db.Set<ConfigEmpresa>().ToListAsync());
+            var membresia = Assert.Single(await db.Set<UsuarioEmpresa>().ToListAsync());
+            Assert.Equal(empresa.Id, config.EmpresaId);
+            Assert.Equal(empresa.Id, membresia.EmpresaId);
+            Assert.Equal(allowed.AdministradorId, membresia.UsuarioId);
+            Assert.False(await db.Set<UsuarioRolPlataforma>()
+                .AnyAsync(x => x.UsuarioId == allowed.AdministradorId));
+        }
+    }
+
+    [Fact]
     public void EndpointDePlataformaExigeJwt()
     {
         Assert.NotNull(Attribute.GetCustomAttribute(
             typeof(PlataformaEmpresasController), typeof(AuthorizeAttribute)));
     }
 
+    // P1-013.A: la disponibilidad del alta se calcula con ambos gates; un
+    // solo flag no promociona empresas ni habilita operaciones comerciales.
+    [Theory]
+    [InlineData(false, false, false)]
+    [InlineData(false, true, false)]
+    [InlineData(true, false, false)]
+    [InlineData(true, true, true)]
+    public async Task P1013A_DirectorioNoAnunciaAltaSinDobleGate(
+        bool onboarding, bool aislamiento, bool puedeCrear)
+    {
+        var fixture = await PrepararAsync(onboarding, aislamiento, true);
+        await using var db = fixture.Db;
+        var result = Assert.IsType<OkObjectResult>(
+            await fixture.Controller.Listar(cancellationToken: CancellationToken.None));
+        var response = Assert.IsType<ApiResponse<object>>(result.Value);
+        Assert.True(response.Success);
+        var data = JsonSerializer.SerializeToElement(response.Data);
+        Assert.Equal(puedeCrear, data.GetProperty("puedeCrear").GetBoolean());
+        // Listar no crea empresas, membresías ni configuración comercial.
+        Assert.Empty(await db.Set<Empresa>().ToListAsync());
+        Assert.Empty(await db.Set<UsuarioEmpresa>().ToListAsync());
+        Assert.Empty(await db.Set<ConfigEmpresa>().ToListAsync());
+        Assert.Single(await db.Set<RegistroAuditoria>().ToListAsync());
+    }
+
     [Theory]
     [InlineData(false, false)]
     [InlineData(true, false)]
     [InlineData(false, true)]
-    public async Task AltaRechazadaPorCualquierGateApagado(
+    public async Task P1013A_AltaRechazadaPorCualquierGateApagado(
         bool onboarding, bool aislamiento)
     {
         var fixture = await PrepararAsync(onboarding, aislamiento, true);
@@ -446,7 +516,7 @@ public sealed class PlataformaEmpresasOnboardingSecurityTests
     }
 
     [Fact]
-    public async Task MiddlewareSoloDejaPasarRutaDePlataformaExactaConDobleGateYJwt()
+    public async Task P1013A_MiddlewareSoloDejaPasarRutaExactaConDobleGateYJwt()
     {
         var fixture = await PrepararAsync(true, true, true);
         await using var db = fixture.Db;

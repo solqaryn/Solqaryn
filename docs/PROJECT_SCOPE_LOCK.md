@@ -15,19 +15,18 @@ LEGACY_MASTER_EXECUTABLE=FALSE
 TASK_COUNT_LIMIT=PROVIDER_EFFECTIVE_CAPACITY
 AUTO_CERTIFICATION_MODE=REQUIRED_SCOPE_LOCK
 
-## ORDEN VIGENTE DEL PROPIETARIO — ENTREGA VALIDANDO LIBERA AL AUTOR (2026-11-04)
+## ORDEN VIGENTE — 15/15/15 CON ASIGNACION AL DISPARARSE LA TASK (2026-11-05)
 
-**Precedencia:** esta seccion reemplaza cualquier afirmacion previa de que la autoria mantiene ocupado el cupo individual durante VALIDANDO. Diferenciar siempre AUTOR_TASK_ID historico e inmutable, RESPONSABLE_TASK_ID operativo, REVISOR_TASK_ID y lease de escritura. Nunca cambiar la autoria para transferir responsabilidad.
+**Precedencia:** esta orden sustituye la regla 6/1/1, la propuesta intermedia 6/6/6 y todos los bloqueos de responsabilidad individual unica. Conservar PROJECT_SCOPE_LOCK=STRICT.
 
-- WIP 6/1/1: maximo 6 microtareas comerciales distintas abiertas globalmente (EN_PROGRESO + VALIDANDO), 1 responsabilidad operativa por TASK_ID y 1 escritura activa por TASK_ID. VALIDANDO cuenta globalmente, no ocupa al autor tras entrega verificable.
-- PENDIENTE -> EN_PROGRESO: reclamar una microtarea elegible con dependencias LISTO y lease exclusivo.
-- EN_PROGRESO -> VALIDANDO: registrar entrega PR/SHA, autoria inmutable y transicion, liberar lease y RESPONSABLE_TASK_ID de la autora, dejar revisor sin asignar, verificar atomicamente PLAN_MAESTRO/BITACORA. Si falla la confirmacion, NO declarar libre a la autora.
-- VALIDANDO -> LISTO: otra Task de ID distinto toma en exclusiva la revision y eventual correccion; CI exact-SHA, reglas GitHub, merge protegido y readback PLAN_MAESTRO/COLA/BITACORA son obligatorios.
-- VALIDANDO -> VALIDANDO: si la revisora introduce una correccion que necesita revision independiente adicional, entrega y libera su cupo/lease para otra Task elegible; conservar cadena de contribuciones.
-- EN_PROGRESO abandonada: solo transferir tras ausencia de editor/run, lease anterior liberado, ultimo commit verificado, autorizacion y readback. No robar trabajo activo por retraso.
-- Prioridad: VALIDANDO libre de otra Task -> EN_PROGRESO propio o recuperable -> PENDIENTE elegible. Elegir receptora habilitada/autorizada y sin otro scope por proxima ejecucion futura verificada, sin preferencia fija de nombre.
-- No permitir que la Task autora revise/cierre formal ni tecnicamente su propia entrega. La revision tecnica entre distintos TASK_ID que comparten login NO crea un APPROVED humano independiente. No activar Tasks de Alex pausadas ni modificar QA/main/PROD.
-
+- `MAX_CONCURRENT_SCOPES=15`: maximo global de quince microtareas comerciales distintas en EN_PROGRESO o VALIDANDO (no PR de gobierno, PENDIENTE, historia ni tareas ya LISTO).
+- `MAX_OWNED_SCOPES_PER_TASK=15` y `MAX_ACTIVE_WRITES_PER_TASK=15`: techo de hasta quince scopes DISTINTOS por Task fisica autorizada. Un scope tiene un unico editor y una unica reserva de revisor, con CAS/lease/version/readback. No dos Tasks simultaneas en el mismo scope, branch ni PR; el techo no garantiza quince runs concurrentes del proveedor.
+- **Asignacion unicamente durante una ejecucion nativa real de la Task**: cada Task se despierta, valida su propia identidad, hora, permisos, RUN, estado y carga, estado vivo de las seis Tasks autorizadas, cola, dependencias, autorias, reservas, leases y GitHub. Solo entonces reclama para SI MISMA un scope libre y elegible, con CAS/readback; no pre-asignar scopes para una Task que todavia no se ha disparado. No reservar dos veces el mismo scope mientras otro permanece libre.
+- **Prioridad invariable**: (1) VALIDANDO sin reviewer/lease, ajena a la propia autoria, para revisar/corregir/cerrar; (2) EN_PROGRESO realmente abandonada, con ausencia comprobada de run/editor/lease y handoff autorizado en rama original; (3) PENDIENTE elegible, con TODAS sus dependencias LISTO y cupo global disponible. Nunca tomar trabajo activo ni inferir abandono por tiempo transcurrido.
+- **Distribucion inteligente**: preferir Tasks habilitadas genuinamente LIBRES (cero scopes/reservas propias). Para traspasos futuros, desempatar por la proxima ejecucion REAL verificada mas cercana dentro del pool y cuenta autorizados. Una Task con trabajo solo toma un scope adicional si no hay otra Task genuinamente libre disponible y los scopes son independientes; no bloquear a una Task que ya se disparo solo por la proximidad teorica de otra sin prueba de elegibilidad. La seleccion NO equivale a autorizacion, reserva ni escritura.
+- El AUTOR_TASK_ID permanece historico; el autor que libero una entrega VALIDANDO no puede revisarla/certificarla, aunque tenga capacidad. Se requiere otra Task_ID para TECH_REVIEW, sin simular GitHub APPROVED formal ni eludir rulesets. VALIDANDO -> LISTO requiere evidencia causal, CI exact-SHA, merge protegido cuando aplique y readback PLAN_MAESTRO/COLA (formulas intactas)/BITACORA.
+- Si la CI esta pendiente, registrar estado y continuar otro scope elegible sin esperar pasivamente. Cuando **ningun scope** sea elegible en ese orden, solamente auditar, registrar quien trabaja en los scopes activos y las razones precisas de no elegibilidad, sin interferir ni inventar LISTO.
+- El tope 15 no crea ni activa Tasks nuevas: conservamos seis TASK_ID autorizados (cuatro Javier, dos Alex). No tocar QA/main/PROD, secretos, credenciales, seguridad multitenant, fuerza de ramas ni permisos.
 
 
 ## Enmienda operativa propuesta — certificación automática CI en DEV (2026-10-30)

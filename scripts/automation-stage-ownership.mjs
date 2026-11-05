@@ -76,10 +76,11 @@ export function validateReviewReservation(p){
     p.bitacoraReadbackVerified!==true)
       errors.push('review_reservation_readback');
   if(p.reviewerOwnershipReadbackVerified!==true||
-    p.reviewerOwnedScopeCount!==0||p.reviewerActiveWriteCount!==0||
+    !Number.isInteger(p.reviewerOwnedScopeCount)||p.reviewerOwnedScopeCount<0||p.reviewerOwnedScopeCount>=15||
+    !Number.isInteger(p.reviewerActiveWriteCount)||p.reviewerActiveWriteCount<0||p.reviewerActiveWriteCount>=15||
     p.globalOpenScopesReadbackVerified!==true||
     !Number.isInteger(p.globalOpenScopeCount)||p.globalOpenScopeCount<1||
-    p.globalOpenScopeCount>6) errors.push('reviewer_busy_or_wip');
+    p.globalOpenScopeCount>15) errors.push('reviewer_busy_or_wip');
   if(p.exactHeadVerified!==true||p.reviewPermissionVerified!==true)
       errors.push('review_permissions');
   return errors;
@@ -144,9 +145,17 @@ export function assertStageReleaseNegativeTests(){
     ownerTransferReadbackVerified:true,planReadbackVerified:true,
     bitacoraReadbackVerified:true,exactHeadVerified:true,reviewPermissionVerified:true};
   if(validateReviewReservation(rev).length)throw Error('valid review reservation denied');
+  if(validateReviewReservation({...rev,reviewerOwnedScopeCount:14,reviewerActiveWriteCount:14}).length)
+    throw Error('Safe independent reviewer with 14 distinct scopes rejected');
+  if(!validateReviewReservation({...rev,reviewerOwnedScopeCount:15}).includes('reviewer_busy_or_wip'))
+    throw Error('16th review responsibility wrongly accepted');
+  if(!validateReviewReservation({...rev,reviewerActiveWriteCount:15}).includes('reviewer_busy_or_wip'))
+    throw Error('16th writer reservation wrongly accepted');
+  if(!validateReviewReservation({...rev,globalOpenScopeCount:16}).includes('reviewer_busy_or_wip'))
+    throw Error('Global 16th scope wrongly accepted');
   if(!validateReviewReservation({...rev,reviewerTaskId:a}).length ||
     !validateReviewReservation({...rev,noConflictingReviewer:false}).length ||
-    !validateReviewReservation({...rev,reviewerOwnedScopeCount:1}).length ||
-    !validateReviewReservation({...rev,globalOpenScopeCount:7}).length)
+    !validateReviewReservation({...rev,reviewerOwnedScopeCount:15}).length ||
+    !validateReviewReservation({...rev,globalOpenScopeCount:16}).length)
       throw Error('unsafe reviewer accepted');
 }
