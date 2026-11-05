@@ -4,6 +4,13 @@
 - Esto deja la salida verificable en GitHub Actions para las solicitudes a `dev` y para el push posterior al merge. El resultado local 5/5 en el merge SHA anterior no se presenta como ejecución de CI ni cambia por sí solo el estado institucional.
 - Sin cambios de runtime, API, datos, migraciones, secretos ni proveedores.
 
+## 2026-11-05 — P1-014.C: caso negativo del flujo guiado de alta (DEV)
+
+- Autor funcional ALEX :10 `6adbbc9ad9e88191bea8eb69104afb25` / GitHub `morales35alex`, única responsabilidad operativa en `work/solqaryn-p1-014-c`; CLAIM CAS `PLAN_MAESTRO!H53` PENDIENTE→EN_PROGRESO con una coincidencia y readbacks, dev base `7a9730cdc3b39a98d37237774ac907f888a0a414`.
+- Prueba dirigida `P1014C` reutiliza `P1013A_AltaRechazadaPorCualquierGateApagado(false, true)` del controlador. Condición: onboarding OFF y aislamiento ON, operador global autorizado; esperado: status lógico 503, cero Empresa/UsuarioEmpresa/ConfigEmpresa. Fixture EF InMemory, no HTTP/JWT/MySQL remotos.
+- Acta `docs/P1-014-C-CASO-NEGATIVO-GUIA-ALTA-DEV.md`. Sin cambios de código productivo, endpoints, contratos, DB, migraciones, flags, secretos, permisos ni QA/main/PROD.
+- La publicación no certifica ejecución ni CI; exigir test P1014C >0 PASS/0 FAIL, Scope Lock AUTO_CERT y checks exact SHA. Entrega VALIDANDO con liberación y readbacks, revisión técnica por TASK_ID ajeno, merge protegido y CI postmerge antes de LISTO.
+
 ## 2026-11-04 — P1-013.A: regresión de gates de onboarding (DEV)
 
 - Task física Alex :10 `6adbbc9ad9e88191bea8eb69104afb25` reclamó `P1-013.A` por rama determinista `work/solqaryn-p1-013-a`, desde `dev@89b3687d14336734788bda26e2e187f0eea763c2`, tras `REVIEW_FIRST` de P1-012.A ajena, sin autoaprobar ni reclamar segundo scope. Plan/COLA/BITACORA con readback.
