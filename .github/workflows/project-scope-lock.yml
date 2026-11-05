@@ -80,6 +80,7 @@ jobs:
             'AGENTS.md', 'docs/PROJECT_SCOPE_LOCK.md', 'docs/AUTOMATION_STATUS.md',
             'docs/AUTOMATION_AUTHORITY.md',
             '.github/workflows/project-scope-lock.yml', '.github/workflows/solqaryn-core-ci.yml',
+            'scripts/automation-stage-ownership.mjs',
             'scripts/validate-automation-authority.mjs', 'scripts/verify-project-scope.mjs',
             'scripts/verify-automated-pr-certification.mjs', 'scripts/verify-solqaryn-skills.mjs',
           ].includes(name) || name.startsWith('.agents/skills/') || name.startsWith('.github/') || name.startsWith('scripts/security/');

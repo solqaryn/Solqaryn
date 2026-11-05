@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { validValidationRelease, isStageOwnedBy, reviewReleaseEligible, validateReleaseTransition, validateReviewReservation, assertStageReleaseNegativeTests } from './automation-stage-ownership.mjs';
 
 const read = path => readFileSync(join(process.cwd(), path), 'utf8');
 const authority = read('docs/AUTOMATION_AUTHORITY.md');
@@ -96,14 +97,38 @@ export function selectWork(tasks, stateById, account, activeReviewIds = new Set(
   const validTaskId = typeof taskId === 'string' && /^[a-f0-9]{32}$/i.test(taskId);
   const busyReviewer=validTaskId && tasks.some(t=>t.state==='VALIDANDO'&&t.reviewerTaskId===taskId);
   const developmentOwned=validTaskId && tasks.some(t=>t.state==='EN_PROGRESO'&&t.ownerTaskId===taskId);
-  const unreleasedDelivery=validTaskId && tasks.some(t=>t.state==='VALIDANDO'&&t.ownerTaskId===taskId&&
-    !(t.validationHandoffVerified===true&&t.developmentLeaseReleased===true&&t.authorTaskId===taskId));
+  // A missing or incomplete stage release receipt cannot free the original author.
+  const unreleasedDelivery=validTaskId && tasks.some(t=>t.state==='VALIDANDO'&&
+    (t.ownerTaskId===taskId||t.authorTaskId===taskId)&&
+    (t.stageReleaseRequested===true
+      ? !validValidationRelease(t)
+      : !(t.validationHandoffVerified===true&&t.developmentLeaseReleased===true&&t.authorTaskId===taskId)));
+  const stageBusy=validTaskId && tasks.some(t=>(t.stageReleaseRequested===true&&isStageOwnedBy(t,taskId)));
+  const assignedStage=tasks.find(t=>validTaskId&&ownershipReadbackVerified===true&&
+    t.state==='VALIDANDO'&&t.stageReleaseRequested===true&&validValidationRelease(t)&&
+    t.stageOwnerTaskId===taskId&&t.reviewReservationTaskId===taskId&&
+    t.authorTaskId!==taskId&&t.stageReviewReservationReadbackVerified===true&&
+    t.reviewerLeaseReadbackVerified===true&&t.reviewVersionVerified===true&&
+    t.exactHeadVerified===true&&isUrl(t.prUrl)&&
+    t.reviewPermissionVerified===true&&!activeReviewIds.has(t.id));
+  if(assignedStage) return {action:'RESUME_REVIEW',task:assignedStage};
+  const stageCandidate=tasks.find(t=>validTaskId&&
+    reviewReleaseEligible(t,taskId,activeReviewIds)&&
+    ['JAVIER_CHATGPT','ALEX_CHATGPT'].includes(t.authorAccount)&&
+    t.exactHeadVerified===true&&isUrl(t.prUrl)&&
+    (t.authorAccount!==account||
+      (t.technicalReviewAllowed===true&&t.technicalEvidenceVerified===true&&
+       t.formalGithubApprovalRequested!==true)));
+  if(stageCandidate&&ownershipReadbackVerified===true&&!stageBusy&&!busyReviewer&&
+    !developmentOwned&&!unreleasedDelivery)
+    return {action:'REVIEW_RESERVATION_CANDIDATE',task:stageCandidate,
+      requiresExclusiveReviewLease:true,requiresOwnerReadback:true};
   const review = tasks.find(t => {
     const technical = t.authorAccount===account && validTaskId &&
       /^[a-f0-9]{32}$/i.test(t.authorTaskId||'') && t.authorTaskId!==taskId &&
       t.technicalReviewAllowed===true && t.technicalEvidenceVerified===true &&
       t.formalGithubApprovalRequested!==true;
-    return t.state==='VALIDANDO' && (!busyReviewer||t.reviewerTaskId===taskId) &&
+    return t.state==='VALIDANDO' && t.stageReleaseRequested!==true && (!busyReviewer||t.reviewerTaskId===taskId) &&
       (!validTaskId||/^[a-f0-9]{32}$/i.test(t.authorTaskId||'')) &&
       ['JAVIER_CHATGPT','ALEX_CHATGPT','SOLQARYN_PLATFORM'].includes(t.authorAccount) &&
       (t.authorAccount!==account || technical) && (!validTaskId||t.authorTaskId!==taskId) &&
@@ -111,7 +136,7 @@ export function selectWork(tasks, stateById, account, activeReviewIds = new Set(
       isUrl(t.prUrl) && t.reviewerAllowed===true &&
       t.reviewPermissionVerified===true && t.reviewerLeaseAvailable===true;
   });
-  if(review && !developmentOwned && !unreleasedDelivery) return {action:review.authorAccount===account?'REVIEW_TECHNICAL':'REVIEW',task:review,requiresExclusiveReviewerClaim:true};
+  if(review && !developmentOwned && !unreleasedDelivery && !stageBusy) return {action:review.authorAccount===account?'REVIEW_TECHNICAL':'REVIEW',task:review,requiresExclusiveReviewerClaim:true};
   const own = tasks.find(t => t.state === 'EN_PROGRESO' &&
     validTaskId && t.ownerTaskId===taskId && t.ownerAccount === account && t.resumeAuthorized === true &&
     t.exclusiveScopeVerified === true && t.activeEditorVerifiedAbsent === true &&
@@ -121,7 +146,7 @@ export function selectWork(tasks, stateById, account, activeReviewIds = new Set(
   // whether EN_PROGRESO or VALIDANDO. Verify the COMPLETE ownership readback.
   if(!validTaskId || ownershipReadbackVerified!==true)
     return {action:'NO_ELIGIBLE',reason:'OWNERSHIP_READBACK_REQUIRED'};
-  if(tasks.some(t=>(t.state==='EN_PROGRESO'&&t.ownerTaskId===taskId)||
+  if(tasks.some(t=>(t.stageReleaseRequested===true&&isStageOwnedBy(t,taskId))||(t.state==='EN_PROGRESO'&&t.ownerTaskId===taskId)||
     (t.state==='VALIDANDO'&&(t.reviewerTaskId===taskId ||
     (t.ownerTaskId===taskId && !(t.validationHandoffVerified===true && t.developmentLeaseReleased===true && t.authorTaskId===taskId))))))
     return {action:'NO_ELIGIBLE',reason:'TASK_ALREADY_OWNS_SCOPE'};
@@ -207,7 +232,11 @@ export function validateProposedRun(p) {
     errors.push('actor_auth');
   if(!p.permissionVerified||!p.exactHeadVerified)errors.push('permission_or_head');
   if(p.operation==='DELIVER_VALIDANDO'){
-    if(!validScope(p.scopeId)||p.authorTaskId!==p.actorTaskId||
+    if(p.stageReleaseRequested===true){
+      if(p.authorTaskId!==p.actorTaskId||p.ownershipReadbackVerified!==true||
+        !isUrl(p.reviewedPrRef))errors.push('unsafe_validation_release');
+      errors.push(...validateReleaseTransition(p));
+    }else if(!validScope(p.scopeId)||p.authorTaskId!==p.actorTaskId||
        p.fromState!=='EN_PROGRESO'||p.toState!=='VALIDANDO'||!isUrl(p.reviewedPrRef)||
        p.deliveryCommittedInSheets!==true||p.validationHandoffVerified!==true||
        p.developmentLeaseReleased!==true||p.activeEditorVerifiedAbsent!==true||
@@ -244,7 +273,17 @@ export function validateProposedRun(p) {
       errors.push('unsafe_recovery_handoff');
     if(p.activeEditorAccount&&p.activeEditorAccount!==p.actorAccount)
       errors.push('concurrent_editor');
+  }else if(p.operation==='RESERVE_REVIEW'){
+    if(p.stageReleaseRequested!==true||p.reviewerTaskId!==p.actorTaskId||
+       !isUrl(p.reviewedPrRef)||p.ownershipReadbackVerified!==true)
+      errors.push('review_reservation_integrity');
+    errors.push(...validateReviewReservation(p));
   }else if(p.operation==='REVIEW'){
+    if(p.stageReleaseRequested===true&&
+      (p.stageReviewReservationReadbackVerified!==true||
+       p.reviewReservationTaskId!==p.actorTaskId||
+       p.stageReleaseReceiptVerified!==true))
+      errors.push('unverified_stage_review');
     if(p.actorTaskId===p.authorTaskId||p.ownershipReadbackVerified!==true||
        p.reviewerClaimAtomicVerified!==true||p.reviewerTaskId!==p.actorTaskId||
        p.reviewerLeaseReadbackVerified!==true||p.developmentLeaseReleased!==true||
@@ -597,7 +636,81 @@ if(failures.length){
     throw Error('Ranking improperly grants handoff authorization');
   if(selectNextScheduledFreeTask(candidates,'bad','JAVIER_CHATGPT').action!=='NO_GO')
     throw Error('Invalid clock allowed handoff');
-  console.log('SOLQARYN WIP 6/1/1 PASS: released author with verified VALIDANDO and distinct reviewer');
+  assertStageReleaseNegativeTests();
+  const releasedStage={
+    id:'P1-010.B',state:'VALIDANDO',authorAccount:'JAVIER_CHATGPT',
+    authorTaskId:'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+    originalAuthorTaskId:'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+    stageReleaseRequested:true,ownerTaskId:null,stageOwnerTaskId:null,
+    reviewReservationTaskId:null,stageReleaseReceiptVerified:true,
+    releaseEventId:'stage-release-complete',
+    provenancePreserved:true,prHeadReadbackVerified:true,deliveryTestsVerified:true,
+    previousLeaseReleased:true,releaseActiveEditorAbsentVerified:true,
+    githubReadbackVerified:true,planReadbackVerified:true,bitacoraReadbackVerified:true,
+    releaseVersionVerified:true,noConflictingClaim:true,
+    reviewerAllowed:true,reviewPermissionVerified:true,reviewerLeaseAvailable:true,
+    exactHeadVerified:true,technicalReviewAllowed:true,technicalEvidenceVerified:true,
+    prUrl:'https://github.com/solqaryn/Solqaryn/pull/3850'};
+  if(selectWork([releasedStage,options[0]],{'P0-012.A':'LISTO'},
+    'JAVIER_CHATGPT',new Set(),'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',true).action!=='REVIEW_RESERVATION_CANDIDATE')
+    throw Error('Verified stage release not prioritizing exclusive review reservation');
+  if(selectWork([releasedStage,options[0]],{'P0-012.A':'LISTO'},
+    'JAVIER_CHATGPT',new Set(),releasedStage.authorTaskId,true).action!=='CLAIM')
+    throw Error('Original author remained occupied after stage release');
+  for(const field of ['planReadbackVerified','previousLeaseReleased','releaseVersionVerified']){
+    if(selectWork([{...releasedStage,[field]:false},options[0]],{'P0-012.A':'LISTO'},
+      'JAVIER_CHATGPT',new Set(),releasedStage.authorTaskId,true).action==='CLAIM')
+      throw Error('Missing stage release receipt freed author: '+field);
+  }
+  const stageAssigned={...releasedStage,
+    stageOwnerTaskId:'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+    reviewReservationTaskId:'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+    stageReviewReservationReadbackVerified:true,
+    reviewerLeaseReadbackVerified:true,reviewVersionVerified:true};
+  if(selectWork([stageAssigned],{},'JAVIER_CHATGPT',new Set(),
+    'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',true).action!=='RESUME_REVIEW')
+    throw Error('Reserved reviewer could not continue own stage');
+  if(selectWork([stageAssigned],{},'JAVIER_CHATGPT',new Set(),
+    'cccccccccccccccccccccccccccccccc',true).action!=='NO_ELIGIBLE')
+    throw Error('Reserved review could be stolen');
+  if(selectWork([releasedStage],{},'JAVIER_CHATGPT',new Set(),
+    releasedStage.authorTaskId,true).action!=='NO_ELIGIBLE')
+    throw Error('Author selected own stage review');
+  const stageDelivery={...release,stageReleaseRequested:true,
+    requesterTaskId:release.actorTaskId,
+    workDeliveredVerified:true,deliveryTestsVerified:true,
+    branchReadbackVerified:true,provenancePreserved:true,
+    previousLeaseReleased:true,releaseLockAcquired:true,
+    noConflictingClaim:true,githubReadbackVerified:true,planReadbackVerified:true,
+    bitacoraReadbackVerified:true,releaseVersionVerified:true,
+    releaseEventId:'stage-delivery-event',stageOwnerTaskId:null,
+    reviewReservationTaskId:null};
+  if(validateProposedRun(stageDelivery).length)
+    throw Error('Verified staged delivery rejected');
+  for(const field of ['releaseVersionVerified','previousLeaseReleased','planReadbackVerified']){
+    if(!validateProposedRun({...stageDelivery,[field]:false}).length)
+      throw Error('Unsafe staged delivery allowed: '+field);
+  }
+  const stageReservation={...base,operation:'RESERVE_REVIEW',
+    stageReleaseRequested:true,reviewedPrRef:release.reviewedPrRef,
+    authorTaskId:'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+    reviewerTaskId:base.actorTaskId,releaseReadbackVerified:true,
+    provenancePreserved:true,reviewLeaseAcquiredExclusively:true,
+    reviewVersionVerified:true,noConflictingReviewer:true,
+    previousLeaseReleased:true,ownerTransferReadbackVerified:true,
+    planReadbackVerified:true,bitacoraReadbackVerified:true,
+    reviewerOwnershipReadbackVerified:true,reviewerOwnedScopeCount:0,
+    reviewerActiveWriteCount:0,globalOpenScopesReadbackVerified:true,
+    globalOpenScopeCount:6,reviewPermissionVerified:true};
+  if(validateProposedRun(stageReservation).length)
+    throw Error('Verified exclusive reviewer reservation rejected');
+  for(const field of ['reviewLeaseAcquiredExclusively','reviewVersionVerified','reviewerOwnershipReadbackVerified']){
+    if(!validateProposedRun({...stageReservation,[field]:false}).length)
+      throw Error('Unverified reviewer reservation allowed: '+field);
+  }
+  if(!validateProposedRun({...stageReservation,authorTaskId:base.actorTaskId}).length)
+    throw Error('Self-review reservation allowed');
+  console.log('SOLQARYN WIP 6/1/1 + STAGE_RELEASE PASS: verified handoff, exclusive reviewer and author freed with readback');
 }else{
   console.log('SOLQARYN automation authority PASS');
 }

@@ -1,3 +1,7 @@
+## Contrato técnico de custodia por etapa — PR #3854
+
+El validador `scripts/automation-stage-ownership.mjs` complementa la orden vigente `ENTREGA VALIDANDO LIBERA AL AUTOR` sin derogarla. Separar siempre `AUTHOR_TASK_ID` histórico, `STAGE_OWNER_TASK_ID` y `REVIEW_RESERVATION_TASK_ID`. El resultado `REVIEW_RESERVATION_CANDIDATE` es solo una propuesta: reservar revisión requiere lease/version exclusivo con readback GitHub, PLAN_MAESTRO y BITACORA antes de editar. Una entrega `VALIDANDO` sin recibo de liberación NO deja libre al autor; una entrega liberada no consume su cupo individual pero sí WIP global. No usar `RECOVER_VALIDANDO` sobre la propia autoría. El módulo solo valida pruebas de transiciones, no crea una transacción multi-proveedor. `docs/AUTOMATION_AUTHORITY.md` continúa siendo autoridad y `docs/AUTOMATION_STATUS.md` es censo.
+
 # SOLQARYN — Reglas actuales de trabajo
 
 PROJECT_SCOPE_LOCK=STRICT

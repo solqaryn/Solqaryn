@@ -1,3 +1,9 @@
+## 2026-11-04 — Reconciliación PR #3854 con gobierno DEV vigente
+
+- Resolución de `BASE_DEV_STALE` y colisiones normativas posteriores al PR #3858: integrar la implementación original de `automation-stage-ownership.mjs` sobre `dev` sin restaurar `RECOVER_VALIDANDO` propio ni el archivo de contrato 3×3 eliminado.
+- El validador de selección ahora distingue entrega verificada, reserva de revisión exclusiva y continuación por revisora ya asignada; nuevas pruebas negativas de doble propiedad, auto-revisión, readback omitido y autor liberado sin lease.
+- Scope Lock protege el nuevo script, conservando revisión formal independiente, CI exact-SHA, rama/PR originales y rollback protegido. No modificar Tasks físicas, Sheets, credenciales, QA/main/PROD ni datos comerciales con este PR.
+
 ## 2026-11-04 — Gobierno DEV: liberacion verificada en VALIDANDO y consolidacion de autoridad
 
 - Orden expresa del propietario: tras entrega confirmada EN_PROGRESO -> VALIDANDO, el TASK_ID autor conserva autoria historica pero su cupo operativo se libera solo con SHA/PR, lease y readback de Sheets verificables. El scope VALIDANDO continua consumiendo WIP global (6) hasta LISTO y queda disponible para una revisora Task diferente, que puede corregir/merge/cerrar bajo CI y reglas reales de GitHub.

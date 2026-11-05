@@ -1,3 +1,10 @@
+## 2026-11-04 — Custodia por etapa de automatizaciones comerciales (DEV, PR #3854)
+
+- Control plane de automatizaciones basado en Sheets/GitHub existentes, sin nuevos servicios, bases, endpoints, DTOs, migraciones, ni cambios ERP. El módulo `scripts/automation-stage-ownership.mjs` valida liberación `EN_PROGRESO -> VALIDANDO`, autoría inmutable `AUTHOR_TASK_ID`, exclusividad de `REVIEW_RESERVATION_TASK_ID` y responsabilidad `STAGE_OWNER_TASK_ID`.
+- Las transiciones exigen evidencia real de PR/SHA, lease, versión, ausencia de edición activa y readback GitHub/PLAN_MAESTRO/BITACORA. No existe transacción atómica entre proveedores: el validador falla cerrado si falta un recibo.
+- Prioridad: revisión cruzada de VALIDANDO liberado, recuperación segura de EN_PROGRESO, CLAIM de PENDIENTE elegible. WIP global 6 incluye VALIDANDO, aunque su autora entregante quede libre. El revisor ocupa un cupo individual al reservar en exclusiva; correcciones sustantivas requieren revisión posterior independiente.
+- Sin cambios en Angular, .NET, MySQL, JWT, RBAC, CI de aplicación, QA/main/PROD, secretos ni tareas físicas. La ruta de verificación se protege en Scope Lock. Rollback por revert protegido y reconciliación individual sin borrar historia.
+
 ## 2026-11-02 — P1-005.A: frontera de administración empresarial (DEV)
 
 - API multiempresa: `UnscopedCommercialTenantGuardMiddleware` habilita exclusivamente rutas administrativas `usuarios`, `roles` y `permisos/matriz` con método y path exactos, identidad JWT, membresía y rol administrador verificados MySQL, permiso específico y marca tenant validada. Esta vía no abre rutas de ERP comerciales, gestión global ni catálogo de permisos.

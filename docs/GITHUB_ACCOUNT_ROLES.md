@@ -3,6 +3,12 @@
 **Decisión expresa del propietario: 31 de octubre de 2026.**
 **Repositorio:** `solqaryn/Solqaryn`. **Rama protegida:** `dev`.
 
+
+## Reserva operativa para revisión en VALIDANDO (PR #3854)
+
+Una entrega validada libera a la autora únicamente con lease liberado y recibo de GitHub/Sheets. Otra Task distinta adquiere la custodia con `RESERVE_REVIEW` y versión/lease exclusivo; una sugerencia `REVIEW_RESERVATION_CANDIDATE` nunca constituye aprobación ni asignación. La misma cuenta GitHub compartida por Tasks no aporta un `APPROVED` independiente: las reglas formales del repositorio siguen siendo obligatorias. No activar ni cambiar Tasks ajenas, no perder identidad histórica y nunca transferir un editor activo.
+
+
 ## Protocolo vigente de revisión técnica por TASK_ID — orden 2026-11-04
 
 La unidad de autoría funcional de una microtarea comercial es el `TASK_ID` físico autorizado y su evidencia de `PLAN_MAESTRO`/`BITACORA`, no la coincidencia del login GitHub. Una Task habilitada **distinta de la autora** puede revisar técnica y sustantivamente el PR de una Task que use la misma cuenta GitHub, comprobar diff, aislamiento multitenant/RBAC, checks y pruebas exact-SHA, registrar `TECH_REVIEW_PASS` o `REQUEST_CHANGES` con `TASK_ID_AUTOR != TASK_ID_REVISOR`, SHA y readback. Si todo cumple y los permisos y reglas protegidas lo permiten, la Task revisora puede efectuar el merge y el cierre `LISTO` después de CI postmerge exact-SHA y readback de `PLAN_MAESTRO`, `COLA` (fórmulas intactas) y `BITACORA`. **La Task autora no puede emitir aprobación técnica cruzada ni marcar como LISTO su propia microtarea.** Un traspaso de edición requiere lease libre, consentimiento/propiedad válida y ausencia de edición simultánea; revisión solo lectura no otorga permiso de escritura.
