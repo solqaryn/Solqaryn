@@ -206,7 +206,7 @@ else if (process.argv.includes('--self-test')) {
     ['writing', {authority:authority.replaceAll('AUTOMATION_RUNTIME=ACTIVE_DEV','AUTOMATION_RUNTIME=RETIRED')}],
     ['duplicate idempotency', {authority:authority.replaceAll('IDEMPOTENCY_KEY','DUPLICATE_KEY')}],
     ['missing evidence', {authority:authority.replaceAll('NO_VERIFICADO','APROBADO_SIN_EVIDENCIA')}],
-    ['wrong contract status', {status:status.replace('docs/AUTOMATION_AUTHORITY.md','legacy/VAEP_AUTHORITY.md')}],
+    ['wrong contract status', {status:status.replace(/^AUTOMATION_RUNTIME=ACTIVE_DEV$/m,'AUTOMATION_RUNTIME=DISABLED')}],
     ['revoked privilege', {authority:authority.replaceAll('permisos efectivos','permisos supuestos')}],
     ['prod', {authority:authority.replaceAll('PROD','UNRESTRICTED')}],
     ['reactivate vaep', {status:status.replace('VAEP_DISPATCH_AUTHORIZED=FALSE','VAEP_DISPATCH_AUTHORIZED=TRUE')}],
