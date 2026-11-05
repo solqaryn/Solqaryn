@@ -1,3 +1,9 @@
+## 2026-11-05 — P1-011.C: caso negativo medible de alta atómica (DEV)
+
+- Alex :10, Task 6adbbc9ad9e88191bea8eb69104afb25, reclamó P1-011.C desde dev@d6151c5edced0c4aec69551e258d8c293b0ba8aa en rama exclusiva work/solqaryn-p1-011-c. PLAN_MAESTRO fila 47, COLA y BITACORA tienen recibos de reclamación; dependencia P1-011.A LISTO y WIP global 6/1/1.
+- Se documenta UNA condición negativa: inyección de fallo de RegistroAuditoria en alta de administrador nuevo y expectativa de rollback completo de Usuario, Empresa, ConfigEmpresa y UsuarioEmpresa, sin restos ni privilegio global. Fixture sintético MySQL efímero, nombres y aserciones esperadas, reusando integración ya existente, sin duplicar prueba ni cambiar código productivo.
+- Acta docs/P1-011-C-CASO-ALTA-ATOMICA-ADMIN-DEV.md. Esta especificación NO afirma PASS, ejecución de pruebas, merge ni LISTO; requiere CI exact SHA, revisión de otro TASK_ID, merge protegido, CI postmerge y readback institucional. Sin cambios de secretos, datos, roles, flags remotos o QA/main/PROD.
+
 ## 2026-11-04 — P1-016.A: sesión global sin tenant (DEV, regresión)
 
 - Alex :10, TASK_ID `6adbbc9ad9e88191bea8eb69104afb25`, reclamó `P1-016.A` desde `dev@5c47317120bd4587a0570b11522acf898ef59c98` con exclusividad nativa GitHub (rama `work/solqaryn-p1-016-a`) y readback de `PLAN_MAESTRO!H56:M56`, `COLA` y `BITACORA`; dependencia `P0-012.B=LISTO` y WIP 6/1/1.
