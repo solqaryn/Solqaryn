@@ -5,6 +5,12 @@
 - Ausencia de flags en appsettings versionados implica falso **solo como default de fuente**; valor del DEV desplegado NO_VERIFICADO. Fixture EF InMemory y mocks no equivalen a HTTP/MySQL remoto. No se alteraron secretos, infra, permisos, QA/main/PROD ni se habilitaron flags.
 - Para aceptar: test dirigido `FullyQualifiedName~P1013A` con >0 PASS y 0 FAIL, CI/scope lock exact SHA, PR protegido, revisión TECH por Task ID distinto, postmerge exact SHA y readback institucional. No marcar LISTO de manera anticipada.
 
+## 2026-11-04 — Gobierno DEV: liberacion verificada en VALIDANDO y consolidacion de autoridad
+
+- Orden expresa del propietario: tras entrega confirmada EN_PROGRESO -> VALIDANDO, el TASK_ID autor conserva autoria historica pero su cupo operativo se libera solo con SHA/PR, lease y readback de Sheets verificables. El scope VALIDANDO continua consumiendo WIP global (6) hasta LISTO y queda disponible para una revisora Task diferente, que puede corregir/merge/cerrar bajo CI y reglas reales de GitHub.
+- Cambios: fuentes de gobierno AGENTS, PROJECT_SCOPE_LOCK, AUTOMATION_STATUS y AUTOMATION_AUTHORITY; selector y validaciones negativas; validadores/Scope Lock con referencias consolidadas; retiro del archivo contractual redundante. Sin reactivar Alex, sin cambiar Tasks fisicas, horarios, Secrets, datos, QA/main/PROD. Certificacion condicionada a revision formal independiente de gobierno, CI exact-head y merge protegido.
+- Rollback: revert por PR protegido, sin reescribir historia ni alterar registros comerciales.
+
 ## 2026-11-04 — P1-011.A: trazabilidad de alta atómica de administrador nuevo (DEV)
 
 - Reutilización técnica de PR #3683: alta de usuario + empresa + ConfigEmpresa + membresía + auditoría con commit/rollback MySQL, BCrypt y ausencia de privilegios de plataforma. No se vuelve a implementar código productivo.
