@@ -1,3 +1,9 @@
+## 2026-11-05 — P1-007.B: regresiones negativas de cambio de tenant A → B
+
+- En `TenantContextService` se agregan dos regresiones: el 403 al cambiar de A a B revoca el contexto anterior, y un HTTP 200 para B que devuelve identidad/rol/contexto de A se rechaza por no coincidir la empresa solicitada.
+- Se agrega `P1007BTenantSwitchIsolationTests`: la resolución backend rechaza B cuando el usuario solo tiene membresía en A y conserva únicamente el scope válido de A. Fixture EF InMemory; no acredita MySQL DEV en vivo.
+- Las pruebas comprueban que usuario/rol/contexto de A no permanezcan visibles ni en memoria ni en `localStorage` durante o después del cambio. Los cambios son solo de pruebas/documentación: no modifican runtime, endpoints, datos, migraciones, flags ni proveedores; la autorización efectiva continúa correspondiendo al backend.
+- Spec frontend dirigido: 13/13 PASS con Node 24.21.0 y npm 11.19.0. CI dirigida y controles exactos del SHA pendientes de GitHub. La entrega requiere revisión independiente, merge protegido, CI posterior y conciliación institucional antes de `LISTO`.
 ## 2026-11-05 — Eliminación de reglas operativas anteriores y censo 4+2
 
 - Conforme a la autorización del propietario, se retiran de las fuentes operativas de gobierno los apartados históricos M3.3/M3.4 y sus instrucciones contradictorias de cupos; permanece únicamente el contrato autorizado 15/15/15.
