@@ -1,3 +1,7 @@
+## 2026-11-05 — Revisor independiente para P1-013.A
+
+Corregida la preferencia consultiva de `scripts/automation-review-routing.mjs`: P1-013.A deja de dirigirse a Javier :00, quien contribuyó a su integración anterior, y pasa a Javier :20 (Task distinta de la autora Alex :10 y sin contribución acreditada al PR #3853). No hay preasignación, reserva ni bloqueo en Sheets: Javier :20 solo podrá actuar tras ejecución nativa, readback institucional, comprobación de conflicto real y pruebas de flags efectivos en Render DEV. Javier :00 permanece libre para otra ruta válida. Mantener VALIDANDO hasta revisión técnica independiente, CI exact-SHA y aceptación real. Sin cambios de API, frontend, datos, secretos, QA/main/PROD ni activación de flags. Rollback mediante PR protegido que revierta solo esta preferencia.
+
 ## 2026-11-05 — Selección directa de scopes por Task, sin bloqueos de Sheets
 
 El propietario retira el mecanismo de reserva condicional de Sheets. Reparto único por microtarea y autoría mediante scripts/automation-review-routing.mjs; cada Task calcula su ruta solo al ejecutarse y no crea reservas ni bloqueos persistentes. Conserva los 15/15/15, REVIEW_FIRST, los PR protegidos de GitHub, permisos y las comprobaciones necesarias para LISTO. Ante ocupación positiva de otro editor se respeta su trabajo. No restaura motores históricos ni crea Tasks.

@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 export const PRIORITY_REVIEWERS = Object.freeze({
   'P1-007.B': '6adcc98a80a48191b71a5156624c21df', // Alex :50; author Javier :20
   'P1-011.C': '6adc2e55f47c81919f6374e561687076', // Javier :40; author Alex :10
-  'P1-013.A': '6adbb9fff1548191a1bd5b30d9e9984a', // Javier :00; author Alex :10
+  'P1-013.A': '6adc2e4bd8a48191ac7d8641ed95a1a3', // Javier :20; independent of author Alex :10 and J00 integration contributor
   'P1-015.C': '6adc2e4bd8a48191ac7d8641ed95a1a3', // Javier :20; author Alex :10
   'P1-016.C': '6aeacb7820ac8191b7d768a6f33dfa09', // Javier :30; author Alex :10
 });
@@ -64,6 +64,7 @@ export function selfTestReviewRouting() {
     assert.equal(canReviewInNativeRun({...live,activeReviewerConflict:true}),false);
     assert.equal(canReviewInNativeRun({...live,permissionsVerified:false}),false);
   }
+  assert.equal(reviewerFor('P1-013.A',author,roster),roster[1]); // skip J00 contributor to PR #3853
   assert.equal(reviewerFor('P1-007.B',roster[1],roster),roster[4]);
   assert.equal(developerFor('P1-014.D',roster),developerFor('P1-014.D',[...roster].reverse()));
 }
