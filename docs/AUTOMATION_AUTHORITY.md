@@ -68,6 +68,22 @@ REVIEW_RESERVATION_MODE=EXCLUSIVE_CAS_READBACK
 - El tope 15 no crea ni activa Tasks nuevas: conservamos seis TASK_ID autorizados (cuatro Javier, dos Alex). No tocar QA/main/PROD, secretos, credenciales, seguridad multitenant, fuerza de ramas ni permisos.
 
 
+
+## COMPLEMENTO OPERATIVO VIGENTE — CI ASÍNCRONA Y META 6 LISTO/H (2026-11-05)
+
+**Objetivo de rendimiento:** `THROUGHPUT_TARGET_LISTO_PER_HOUR=6` microtareas distintas realmente certificadas como LISTO en ventana móvil de `THROUGHPUT_WINDOW_MINUTES=60`. Es una **meta operativa mínima**, no una garantía, permiso para falsificar evidencia o sexto cierre ficticio. Medir `LISTO_60M`, `DEFICIT_60M=max(0,6-LISTO_60M)` y razones específicas; solo contar IDs únicos con revisión independiente, merge protegido cuando corresponda, CI obligatoria y postmerge aplicable en verde y PLAN_MAESTRO/COLA/BITACORA readback completo. Si el ledger no está verificado, reportar `METRIC_UNVERIFIED`, nunca cero supuesto ni seis imaginarios.
+
+**CI independiente del turno:** `CI_WAIT_MODE=ASYNC_NO_TASK_IDLE`. Cuando un PR esté VALIDANDO y los checks del SHA exacto figuren QUEUED/IN_PROGRESS, consultar GitHub una vez por scope y por ejecución física; registrar evento deduplicado `CI_PENDING_ASYNC` con scope, SHA, PR, nombres de checks, autor/revisor, hora y próxima comprobación en una ejecución posterior. No hacer sleep, polling prolongado, loops de espera, no ocupar el turno de una Task ni agotar capacidad artificialmente esperando GitHub. El pipeline de Actions puede continuar sus controles por su cuenta. Al detectar fallo real, `CI_FAILED_FIX_SCOPE` y corregir solo ese scope; no certificar por excepción.
+
+**Liberación de reserva de revisión:** si la revisión técnica independiente ya terminó pero la CI sigue pendiente, liberar el lease de REVIEWER solo cuando esté permitido y quede acreditado mediante CAS/version/readback de GitHub y PLAN_MAESTRO/BITACORA. Preservar el AUTHOR_TASK_ID, la rama, PR y SHA; la microtarea continúa `VALIDANDO` y cuenta en el WIP global 15. Si el reviewer aún no concluyó, continuar su revisión sin suplantarla. Sin recibo válido, la reserva sigue exclusiva y NO se crea una segunda.
+
+**Trabajo productivo sin interferencia:** tras registrar CI pendiente, elegir de nuevo trabajo `VALIDANDO` ajeno libre → `EN_PROGRESO` realmente abandonada con handoff → `PENDIENTE` elegible y dependencias LISTO, prefiriendo Tasks nativas libres y evitando una segunda responsabilidad arbitraria. Solo la Task que se disparó puede aceptar un scope libre mediante CAS/readback. Si no existe ningún scope elegible, auditoría no invasiva con todos los ocupantes y gates pendientes; terminar el run sin espera. Nunca crear nuevos scopes para simular productividad ni tocar trabajos activos de Codex u otro agente.
+
+**Cierre estricto:** los required checks no se desactivan ni se usan estados SKIPPED/PENDING como PASS. Al volver verde la CI exact-SHA, un revisor elegible verifica el merge protegido y postmerge aplicable; solo después concilia LISTO institucional. Las revisiones y autorizaciones humanas exigibles siguen intactas. La priorización y la meta no modifican el contrato 15/15/15, ni crean/reanudan las seis Tasks físicas pausadas.
+
+**Implementación comprobable:** `scripts/automation-ci-throughput.mjs --self-test` evalúa decisiones sin escritura y contabiliza los cierres únicos con comprobación completa. Es apoyo de auditoría, nunca sustituye la verificación real de GitHub ni concede leases, aprobaciones o estados.
+
+
 ## Traspasos futuros — idle-first, proxima ejecucion, sin preasignacion (2026-11-05)
 
 El selector de proxima Task libre es consultivo: revisar la capacidad, permisos, estado nativo, lease y RRULE reales de todas las Tasks de la misma cuenta autorizada. Preferir una candidata sin scopes; entre candidatas de igual carga, elegir la ejecucion futura comprobada mas proxima. Nunca asignar ANTES de que la Task elegida se active: solo ella puede aceptar/reclamar mediante version/CAS/readback. El traspaso de una EN_PROGRESO requiere evidencia de abandono, autorizacion, lease anterior liberado, SHA/rama original y ausencia de editor o run activo. No confundir Task libre con scope libre.

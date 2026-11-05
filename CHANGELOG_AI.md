@@ -1,3 +1,10 @@
+## 2026-11-05 — CI asíncrona y objetivo verificado de 6 LISTO/h
+
+- El propietario fija meta mínima operativa de seis microtareas distintas verdaderamente LISTO por ventana móvil de 60 minutos, con déficit medido y sin fabricar cierres. Mantiene WIP 15/15/15.
+- Ninguna Task programada debe permanecer esperando los checks de GitHub Actions: una consulta por scope y ocurrencia real, registrar CI_PENDING_ASYNC con SHA/PR/lease, liberar reviewer solo mediante CAS/readback cuando la revisión terminó y avanzar otra microtarea elegible. Sin work elegible, auditar y terminar el run.
+- El Scope Lock conserva los checks obligatorios y auto-certificación exact-SHA; cancela runs obsoletos cuando se publica un nuevo SHA del mismo PR, sin cancelar PR ajenos ni alterar rulesets. Se agrega prueba negativa de certificación prematura y conteo duplicado.
+- No reactivar las Tasks pausadas, no tocar PR comerciales gestionados por Codex ni omitir control de seguridad por rendimiento.
+
 ## 2026-11-05 — P1-007.B: regresiones negativas de cambio de tenant A → B
 
 - En `TenantContextService` se agregan dos regresiones: el 403 al cambiar de A a B revoca el contexto anterior, y un HTTP 200 para B que devuelve identidad/rol/contexto de A se rechaza por no coincidir la empresa solicitada.
