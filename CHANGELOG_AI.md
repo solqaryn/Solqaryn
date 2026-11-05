@@ -1,3 +1,9 @@
+## 2026-11-05 — P1-007.B: regresiones negativas de cambio de tenant A → B
+
+- En `TenantContextService` se agregan dos regresiones: el 403 al cambiar de A a B revoca el contexto anterior, y un HTTP 200 para B que devuelve identidad/rol/contexto de A se rechaza por no coincidir la empresa solicitada.
+- Las pruebas comprueban que usuario/rol/contexto de A no permanezcan visibles ni en memoria ni en `localStorage` durante o después del cambio. No modifican implementación, backend, endpoints, datos, migraciones, flags ni proveedores; la autorización efectiva continúa correspondiendo al backend.
+- CI dirigida y controles exactos del SHA pendientes de GitHub. La entrega requiere revisión independiente, merge protegido, CI posterior y conciliación institucional antes de `LISTO`.
+
 ## 2026-11-05 — P1-014.A: test Angular ejecutado en GitHub Actions
 
 - El workflow `priority4-quality.yml` ahora ejecuta explícitamente el spec `plataforma-gestion-mvp.component.spec.ts` con Node 24.21.0 y las dependencias fijadas por `npm ci`.

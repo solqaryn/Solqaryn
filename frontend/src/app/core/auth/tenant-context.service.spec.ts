@@ -88,6 +88,50 @@ describe('TenantContextService', () => {
     data: { usuarioId: 11, empresaId: 1, rolId: 4, rolNombre: 'Administrador', esAdministrador: true }
   };
 
+  it('no conserva el contexto de A mientras el backend rechaza el cambio a B con 403', () => {
+    const service = TestBed.inject(TenantContextService);
+    service.seleccionarEmpresa(1).subscribe();
+    httpMock.expectOne(`${environment.apiUrl}/tenant-context/1`).flush(tenant1);
+    expect(service.empresaIdVerificada()).toBe(1);
+    expect(service.rolVerificado()).toBe('Administrador');
+
+    let rechazado = false;
+    service.seleccionarEmpresa(2).subscribe({ error: () => { rechazado = true; } });
+    expect(service.contextoVerificado()).toBeNull();
+    expect(service.rolVerificado()).toBeNull();
+    expect(localStorage.getItem('solqaryn_empresa_solicitada_id')).toBe('2');
+
+    httpMock.expectOne(`${environment.apiUrl}/tenant-context/2`).flush(
+      {}, { status: 403, statusText: 'Forbidden' }
+    );
+
+    expect(rechazado).toBe(true);
+    expect(service.contextoVerificado()).toBeNull();
+    expect(service.empresaSolicitadaId()).toBeNull();
+    expect(service.rolVerificado()).toBeNull();
+    expect(localStorage.getItem('solqaryn_empresa_solicitada_id')).toBeNull();
+  });
+
+  it('rechaza HTTP 200 de A al solicitar B sin exponer el usuario ni el rol anterior', () => {
+    const service = TestBed.inject(TenantContextService);
+    service.seleccionarEmpresa(1).subscribe();
+    httpMock.expectOne(`${environment.apiUrl}/tenant-context/1`).flush(tenant1);
+
+    let rechazado = false;
+    service.seleccionarEmpresa(2).subscribe({ error: () => { rechazado = true; } });
+    expect(service.contextoVerificado()).toBeNull();
+    expect(service.empresaIdVerificada()).toBeNull();
+    expect(service.rolVerificado()).toBeNull();
+
+    httpMock.expectOne(`${environment.apiUrl}/tenant-context/2`).flush(tenant1);
+
+    expect(rechazado).toBe(true);
+    expect(service.contextoVerificado()).toBeNull();
+    expect(service.empresaSolicitadaId()).toBeNull();
+    expect(service.rolVerificado()).toBeNull();
+    expect(localStorage.getItem('solqaryn_empresa_solicitada_id')).toBeNull();
+  });
+
   it('comparte la única petición cuando selector y guards verifican la misma empresa a la vez', () => {
     const service = TestBed.inject(TenantContextService);
     let resueltoA = false;
