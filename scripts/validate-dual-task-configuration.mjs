@@ -142,8 +142,8 @@ export function selectWork(tasks, stateById, account, activeReviewIds = new Set(
     t.exclusiveScopeVerified === true && t.activeEditorVerifiedAbsent === true &&
     t.branchReadbackVerified === true && !t.conflictingClaim);
   if (own) return {action:'RESUME',task:own};
-  // No acquisition is allowed if this physical Task already owns any scope,
-  // whether EN_PROGRESO or VALIDANDO. Verify the COMPLETE ownership readback.
+  // New independent responsibilities are allowed up to 15 only after complete
+  // ownership readback; no duplicate lease or unverified release is allowed.
   if(!validTaskId || ownershipReadbackVerified!==true)
     return {action:'NO_ELIGIBLE',reason:'OWNERSHIP_READBACK_REQUIRED'};
   if(unreleasedDelivery)return {action:'NO_ELIGIBLE',reason:'UNRELEASED_DELIVERY_NO_CLAIM'};
@@ -257,7 +257,7 @@ export function validateProposedRun(p) {
       errors.push('unsafe_write');
     // openWorkBranches is the VERIFIED count of distinct active COMMERCIAL scopes,
     // excluding governance PRs, diagnostic test branches and merged history.
-    // Count before a NEW claim; at WIP=15 a seventh claim must be rejected.
+    // Count before a NEW claim; at global WIP=15 a sixteenth claim is rejected.
     // A read/write RESUME of an already counted scope does not consume another slot.
     if(!Number.isInteger(p.openWorkBranches)||p.openWorkBranches<0||p.openWorkBranches>15||
        (!p.resumingExistingScope&&p.openWorkBranches>=15)) errors.push('branch_cap');
