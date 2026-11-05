@@ -1,3 +1,9 @@
+## 2026-11-05 — P1-016.D: rechazo dirigido de sesion global empresarial (DEV)
+
+- Task nativa Javier :40 (`6adc2e55f47c81919f6374e561687076`) inicio P1-016.D con ruta determinista, dependencia P1-016.C LISTO y WIP 3/15; rama unica `work/solqaryn-p1-016-d` desde `dev@0c280ab7c4b8a56b1a0674b3a3bca438d3078e1b`.
+- `P1016DDirectedDenialTests` ejecuta el negativo real P1-016.A: administrador empresarial con cabecera X-Empresa-Id no obtiene sesion global, devuelve Forbid y deja auditoria Rechazado sin EmpresaId/rol plataforma. Fixture EF InMemory sintetica, sin modificar backend productivo.
+- Acta: `docs/P1-016-D-NEGATIVO-SESION-PLATAFORMA-DEV.md`. La prueba, CI, revision independiente, merge y LISTO **no se acreditan** antes de sus recibos exact-SHA; no equiparar prueba sintetica a HTTP/JWT/MySQL DEV.
+
 ## 2026-11-05 — Selección directa de scopes por Task, sin bloqueos de Sheets
 
 El propietario retira el mecanismo de reserva condicional de Sheets. Reparto único por microtarea y autoría mediante scripts/automation-review-routing.mjs; cada Task calcula su ruta solo al ejecutarse y no crea reservas ni bloqueos persistentes. Conserva los 15/15/15, REVIEW_FIRST, los PR protegidos de GitHub, permisos y las comprobaciones necesarias para LISTO. Ante ocupación positiva de otro editor se respeta su trabajo. No restaura motores históricos ni crea Tasks.
