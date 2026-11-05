@@ -16,6 +16,10 @@
 
 **Referencia técnica que ya implementa el negativo (reutilizar, no duplicar):** backend/tests/Solqaryn.Tests/API/Controllers/PlataformaEmpresasMySqlTransactionIntegrationTests.cs, método AltaA_B_EsTransaccional_ConAuditoriaYRollbackEnMySqlReal, segmento de auditoría fallida para p4-rollback-audit. Antecedente documental docs/P1-011-A-ALTA-ATOMICA-ADMIN-DEV.md, PR #3851. P1-011.C documenta una expectativa ya comprobable en el código, sin afirmar que se haya ejecutado ahora.
 
+## Corrección causal de CI dirigida (caso PREPARADO, no MySQL ejecutado)
+
+La primera CI del PR #3860 sobre SHA eed13307d1bdc9cbc9043f3bfad931e8c4b13b79 rechazó correctamente `FullyQualifiedName~P1011C` porque aún no existía prueba con ese prefijo: `DIRECTED_SCOPE_NO_GO total=0`. Para que la preparación tenga un gate dirigido, se agregó **una prueba de contrato/routing** en `backend/tests/Solqaryn.Tests/API/Controllers/P1011CCaseRoutingTests.cs`: comprueba por reflexión que el fixture original conserva el método de integración xUnit y su clasificación `Category=Integration`. **Esta comprobación no prueba el rollback ni sustituye ejecutar MySQL**; el caso funcional original sigue separado en CI con MySQL efímero. Cualquier PASS de la prueba de routing solo significa que existe la ruta de validación causal, no que la transacción esté certificada.
+
 ## Validación, seguridad y cierre
 
 - Para aceptar este caso, exigir job con MySQL temporal 8.4 y ConnectionStrings__DefaultConnection de CI, TRX/log con prueba de integración ejecutada (recuento >0, cero fallos) sobre SHA exacto; junto a regresiones backend, JWT/RBAC/tenancy, Scope Lock y los checks aplicables.
