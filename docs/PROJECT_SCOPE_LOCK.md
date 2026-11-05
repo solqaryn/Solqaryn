@@ -15,6 +15,21 @@ LEGACY_MASTER_EXECUTABLE=FALSE
 TASK_COUNT_LIMIT=PROVIDER_EFFECTIVE_CAPACITY
 AUTO_CERTIFICATION_MODE=REQUIRED_SCOPE_LOCK
 
+## ORDEN VIGENTE DEL PROPIETARIO — ENTREGA VALIDANDO LIBERA AL AUTOR (2026-11-04)
+
+**Precedencia:** esta seccion reemplaza cualquier afirmacion previa de que la autoria mantiene ocupado el cupo individual durante VALIDANDO. Diferenciar siempre AUTOR_TASK_ID historico e inmutable, RESPONSABLE_TASK_ID operativo, REVISOR_TASK_ID y lease de escritura. Nunca cambiar la autoria para transferir responsabilidad.
+
+- WIP 6/1/1: maximo 6 microtareas comerciales distintas abiertas globalmente (EN_PROGRESO + VALIDANDO), 1 responsabilidad operativa por TASK_ID y 1 escritura activa por TASK_ID. VALIDANDO cuenta globalmente, no ocupa al autor tras entrega verificable.
+- PENDIENTE -> EN_PROGRESO: reclamar una microtarea elegible con dependencias LISTO y lease exclusivo.
+- EN_PROGRESO -> VALIDANDO: registrar entrega PR/SHA, autoria inmutable y transicion, liberar lease y RESPONSABLE_TASK_ID de la autora, dejar revisor sin asignar, verificar atomicamente PLAN_MAESTRO/BITACORA. Si falla la confirmacion, NO declarar libre a la autora.
+- VALIDANDO -> LISTO: otra Task de ID distinto toma en exclusiva la revision y eventual correccion; CI exact-SHA, reglas GitHub, merge protegido y readback PLAN_MAESTRO/COLA/BITACORA son obligatorios.
+- VALIDANDO -> VALIDANDO: si la revisora introduce una correccion que necesita revision independiente adicional, entrega y libera su cupo/lease para otra Task elegible; conservar cadena de contribuciones.
+- EN_PROGRESO abandonada: solo transferir tras ausencia de editor/run, lease anterior liberado, ultimo commit verificado, autorizacion y readback. No robar trabajo activo por retraso.
+- Prioridad: VALIDANDO libre de otra Task -> EN_PROGRESO propio o recuperable -> PENDIENTE elegible. Elegir receptora habilitada/autorizada y sin otro scope por proxima ejecucion futura verificada, sin preferencia fija de nombre.
+- No permitir que la Task autora revise/cierre formal ni tecnicamente su propia entrega. La revision tecnica entre distintos TASK_ID que comparten login NO crea un APPROVED humano independiente. No activar Tasks de Alex pausadas ni modificar QA/main/PROD.
+
+
+
 ## Enmienda operativa propuesta — certificación automática CI en DEV (2026-10-30)
 
 **Vigencia condicionada:** esta norma solo sustituye la revisión formal para futuros PR comerciales ordinarios cuando el changeset esté fusionado por PR protegido en `dev`, el job requerido `verify-solqaryn-project-scope` ejecute la certificación contra el SHA exacto y exista readback de CI. Durante la implantación/bootstrap de este PR normativo sigue exigida revisión formal realmente independiente. No se simula un `APPROVED` humano: `AUTO_CERT=PASS` significa exclusivamente certificación técnica de GitHub Actions.
