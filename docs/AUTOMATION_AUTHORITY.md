@@ -37,8 +37,36 @@ CURRENT_TASK_DISTRIBUTION=4_JAVIER_2_ALEX
 PHYSICAL_TASKS_REGISTERED=6
 ACTIVE_DEV_WRITERS_OBSERVED=1
 MAX_CONCURRENT_SCOPES=6
+MAX_OPEN_WORK_BRANCHES=6
 MAX_OWNED_SCOPES_PER_TASK=1
 MAX_ACTIVE_WRITES_PER_TASK=1
+STAGE_OWNERSHIP_MODE=AUTHOR_PROVENANCE_HANDOFF_V1
+REVIEW_RESERVATION_MODE=EXCLUSIVE_CAS_READBACK
+
+
+
+## Contrato técnico de custodia por etapa — integración del PR #3854
+
+- `scripts/automation-stage-ownership.mjs` contiene validadores puros fail-closed de `VALIDANDO`: no es un motor de asignación ni una transacción automática entre proveedores.
+- `AUTHOR_TASK_ID` y `originalAuthorTaskId` preservan identidad histórica. El autor solo deja de consumir cupo individual cuando `stageReleaseRequested=true`, `stageReleaseReceiptVerified=true`, `ownerTaskId=null`, `stageOwnerTaskId=null` y `reviewReservationTaskId=null`, con prueba de entrega, SHA/PR, ausencia de editor, lease liberado, evento idempotente, versión y readbacks GitHub/PLAN_MAESTRO/BITACORA. Fallar un campo mantiene NO_GO, sin asumir atomicidad entre GitHub y Sheets.
+- `reviewReleaseEligible` solo propone una revisión ajena, sin reservarla. La operación `RESERVE_REVIEW` exige compare-and-set/lease exclusivo, TASK_ID diferente, cero responsabilidades/escrituras previas, autorización, control WIP global y readback institucional. `REVIEW_RESERVATION_CANDIDATE` no otorga propiedad; una reserva confirmada consume una de las responsabilidades individuales.
+- La revisora que corrige debe conservar rama y PR originales, obtener revisión independiente posterior cuando aplique y liberar su propia custodia en `VALIDANDO` antes de reclamar otra. `LISTO` solo tras gates reales, merge protegido y conciliación exacta. La autora inicial nunca revisa ni cierra su propia entrega.
+- Los `VALIDANDO` previos al contrato mantienen su autoría e historial. Migración caso por caso, sin vaciar propietarios masivamente ni suponer recursos nativos de Tasks ajenas. La entrega sigue contando en WIP 6 hasta LISTO; su autor liberado no ocupa un cupo individual. `AUTOMATION_STATUS.md` continúa como censo/runtime y este documento como autoridad normativa.
+
+
+## ORDEN VIGENTE DEL PROPIETARIO — ENTREGA VALIDANDO LIBERA AL AUTOR (2026-11-04)
+
+**Precedencia:** esta seccion reemplaza cualquier afirmacion previa de que la autoria mantiene ocupado el cupo individual durante VALIDANDO. Diferenciar siempre AUTOR_TASK_ID historico e inmutable, RESPONSABLE_TASK_ID operativo, REVISOR_TASK_ID y lease de escritura. Nunca cambiar la autoria para transferir responsabilidad.
+
+- WIP 6/1/1: maximo 6 microtareas comerciales distintas abiertas globalmente (EN_PROGRESO + VALIDANDO), 1 responsabilidad operativa por TASK_ID y 1 escritura activa por TASK_ID. VALIDANDO cuenta globalmente, no ocupa al autor tras entrega verificable.
+- PENDIENTE -> EN_PROGRESO: reclamar una microtarea elegible con dependencias LISTO y lease exclusivo.
+- EN_PROGRESO -> VALIDANDO: registrar entrega PR/SHA, autoria inmutable y transicion, liberar lease y RESPONSABLE_TASK_ID de la autora, dejar revisor sin asignar, verificar atomicamente PLAN_MAESTRO/BITACORA. Si falla la confirmacion, NO declarar libre a la autora.
+- VALIDANDO -> LISTO: otra Task de ID distinto toma en exclusiva la revision y eventual correccion; CI exact-SHA, reglas GitHub, merge protegido y readback PLAN_MAESTRO/COLA/BITACORA son obligatorios.
+- VALIDANDO -> VALIDANDO: si la revisora introduce una correccion que necesita revision independiente adicional, entrega y libera su cupo/lease para otra Task elegible; conservar cadena de contribuciones.
+- EN_PROGRESO abandonada: solo transferir tras ausencia de editor/run, lease anterior liberado, ultimo commit verificado, autorizacion y readback. No robar trabajo activo por retraso.
+- Prioridad: VALIDANDO libre de otra Task -> EN_PROGRESO propio o recuperable -> PENDIENTE elegible. Elegir receptora habilitada/autorizada y sin otro scope por proxima ejecucion futura verificada, sin preferencia fija de nombre.
+- No permitir que la Task autora revise/cierre formal ni tecnicamente su propia entrega. La revision tecnica entre distintos TASK_ID que comparten login NO crea un APPROVED humano independiente. No activar Tasks de Alex pausadas ni modificar QA/main/PROD.
+
 
 
 ## Criterio obligatorio para FUTUROS traspasos — próxima Task libre en ejecutarse (orden 2026-11-04)
@@ -75,7 +103,7 @@ Se conservan `MAX_CONCURRENT_SCOPES=6`, `MAX_OWNED_SCOPES_PER_TASK=1`, `MAX_ACTI
 
 El registro canónico y la lista comercial contienen exactamente cinco TASK_ID (Javier :00/:20/:40; Alex :10/:50), sin distribución obligatoria. La posición anterior de Alex :30 se excluye del censo operacional y ya carece de autorización; su eliminación física **no está demostrada** desde la cuenta conectada, por lo que no debe afirmarse. Ninguna identidad ajena al censo puede adoptar el slot o sus permisos. Las referencias inferiores a seis Tasks corresponden a observaciones históricas. Permanecen intactos los límites WIP 6/2/1, `REVIEW_FIRST`, `PROJECT_SCOPE_LOCK=STRICT` y aprobación independiente para cambios de gobierno; las Tasks permanecen sin activar.
 
-**Nota operativa consolidada (2026-11-03):** Los cinco TASK_ID poseen **paridad funcional** condicionada a sus identidades autenticadas, estado real y permisos efectivos: cualquiera puede seleccionar, desarrollar, revisar entregas ajenas, probar y corregir su propio código o el ajeno, recuperar scopes, integrar y cerrar cambios comerciales en `dev` si supera los controles. Para las intervenciones **manuales de este asistente** rige `docs/GITHUB_ACCOUNT_ROLES.md`: `solqaryn-platform` publica cambios y Javier (`jmejia31`) revisa cuando corresponda; esta separación no convierte a las Tasks de Javier en `REVIEWER_ONLY`. Se permite autoauditoría y autocorrección técnica, pero no autocertificación formal independiente de PR propios o con contribución personal. Los PR comerciales ordinarios pueden certificarse automáticamente con CI/Scope Lock confiable sobre SHA exacto sin aprobación humana rutinaria; los cambios de gobierno y seguridad conservan revisión independiente exigida. La secuencia `REVIEW_FIRST` → `RECOVER` con lease/branch/commit verificados → `CLAIM` elegible sigue vigente en `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md`, apartado 5. Esta enmienda no activa ninguna Task, no modifica los cinco IDs ni altera el WIP 6/2/1.
+**Nota operativa consolidada (2026-11-03):** Los cinco TASK_ID poseen **paridad funcional** condicionada a sus identidades autenticadas, estado real y permisos efectivos: cualquiera puede seleccionar, desarrollar, revisar entregas ajenas, probar y corregir su propio código o el ajeno, recuperar scopes, integrar y cerrar cambios comerciales en `dev` si supera los controles. Para las intervenciones **manuales de este asistente** rige `docs/GITHUB_ACCOUNT_ROLES.md`: `solqaryn-platform` publica cambios y Javier (`jmejia31`) revisa cuando corresponda; esta separación no convierte a las Tasks de Javier en `REVIEWER_ONLY`. Se permite autoauditoría y autocorrección técnica, pero no autocertificación formal independiente de PR propios o con contribución personal. Los PR comerciales ordinarios pueden certificarse automáticamente con CI/Scope Lock confiable sobre SHA exacto sin aprobación humana rutinaria; los cambios de gobierno y seguridad conservan revisión independiente exigida. La secuencia `REVIEW_FIRST` → `RECOVER` con lease/branch/commit verificados → `CLAIM` elegible sigue vigente en `docs/AUTOMATION_STATUS.md`, apartado 5. Esta enmienda no activa ninguna Task, no modifica los cinco IDs ni altera el WIP 6/2/1.
 
 ## Enmienda operativa propuesta — certificación automática CI en DEV (2026-10-30)
 
@@ -176,7 +204,7 @@ La autoridad comercial sigue limitada a `COMMERCIAL_AUTHORITY_MODE=CURRENT_PLAN_
 
 El conjunto de seis IDs y distribución 3+3 registrado en M3.2 es una fotografía histórica, reemplazada como topología normativa por el conjunto configurable vigente en este documento y `docs/AUTOMATION_STATUS.md`. Las autorizaciones comerciales actuales dependen exclusivamente del contador y allowlist explícitos del encabezado operativo y de verificación individual por Task; la cantidad física o la habilitación no concede permisos.
 
-La especificación vigente de selección, aislamiento de microtareas, autoauditoría técnica, corrección por cualquier Task autorizada, revisión formal independiente cuando sea exigible, CI, integración en `dev`, cambio a `LISTO` y desbloqueo de dependencias es `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md`; su nombre histórico no fija roles ni reparto. Al detectar defectos, cualquier Task con permisos efectivos y exclusividad puede corregir el mismo PR conservando `VALIDANDO`, incluso si ella misma los detectó. La Task contribuyente no puede otorgarse independencia formal; un gate CI/Scope Lock confiable cubre PR comerciales ordinarios conforme a su política, y gobierno/seguridad requiere otra identidad revisora legítima. Los commits nuevos exigen comprobación del SHA final y no habilitan sucesoras hasta merge, readback y `LISTO`. No reactivar VAEP/Jules ni escribir QA/main/PROD.
+La especificación vigente de selección, aislamiento de microtareas, autoauditoría técnica, corrección por cualquier Task autorizada, revisión formal independiente cuando sea exigible, CI, integración en `dev`, cambio a `LISTO` y desbloqueo de dependencias es `docs/AUTOMATION_STATUS.md`; su nombre histórico no fija roles ni reparto. Al detectar defectos, cualquier Task con permisos efectivos y exclusividad puede corregir el mismo PR conservando `VALIDANDO`, incluso si ella misma los detectó. La Task contribuyente no puede otorgarse independencia formal; un gate CI/Scope Lock confiable cubre PR comerciales ordinarios conforme a su política, y gobierno/seguridad requiere otra identidad revisora legítima. Los commits nuevos exigen comprobación del SHA final y no habilitan sucesoras hasta merge, readback y `LISTO`. No reactivar VAEP/Jules ni escribir QA/main/PROD.
 
 Los apartados 1+1 siguientes son archivo histórico no normativo. Las cuentas conservan propiedad y permisos independientes.
 

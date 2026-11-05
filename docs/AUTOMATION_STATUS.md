@@ -24,8 +24,11 @@ DESIGN_TOPOLOGY=OWNER_CONFIGURABLE
 CURRENT_TASK_DISTRIBUTION=4_JAVIER_2_ALEX
 PHYSICAL_TASKS_REGISTERED=6
 MAX_CONCURRENT_SCOPES=6
+MAX_OPEN_WORK_BRANCHES=6
 MAX_OWNED_SCOPES_PER_TASK=1
 MAX_ACTIVE_WRITES_PER_TASK=1
+STAGE_OWNERSHIP_MODE=AUTHOR_PROVENANCE_HANDOFF_V1
+REVIEW_RESERVATION_MODE=EXCLUSIVE_CAS_READBACK
 AUTO_CERTIFICATION_MODE=REQUIRED_SCOPE_LOCK
 FORMAL_APPROVAL_ROUTINE_COMMERCIAL_REQUIRED=FALSE
 FORMAL_APPROVAL_GOVERNANCE_REQUIRED=TRUE
@@ -34,6 +37,27 @@ GITHUB_CHAT_REVIEWER=JAVIER_GITHUB_LOGIN
 GITHUB_CHAT_ROLE_SEPARATION=STRICT
 GITHUB_CHAT_ROLE_POLICY=docs/GITHUB_ACCOUNT_ROLES.md
 LEGACY_AUTOMATION_RUNTIME=RETIRED
+
+
+
+## Campos de runtime para custodia de etapa — 2026-11-04
+
+El modelo `STAGE_OWNERSHIP_MODE=AUTHOR_PROVENANCE_HANDOFF_V1` separa autor original de responsabilidad operativa. `REVIEW_RESERVATION_MODE=EXCLUSIVE_CAS_READBACK` exige lease/version/readback antes de editar. Estos campos identifican reglas del validador, no certifican que las Tasks físicas ni las filas existentes hayan migrado. Autoría histórica, WIP global 6/1/1 y estados reales del proveedor se vuelven a comprobar en cada ejecución. Contrato detallado: `docs/AUTOMATION_AUTHORITY.md`.
+
+
+## ORDEN VIGENTE DEL PROPIETARIO — ENTREGA VALIDANDO LIBERA AL AUTOR (2026-11-04)
+
+**Precedencia:** esta seccion reemplaza cualquier afirmacion previa de que la autoria mantiene ocupado el cupo individual durante VALIDANDO. Diferenciar siempre AUTOR_TASK_ID historico e inmutable, RESPONSABLE_TASK_ID operativo, REVISOR_TASK_ID y lease de escritura. Nunca cambiar la autoria para transferir responsabilidad.
+
+- WIP 6/1/1: maximo 6 microtareas comerciales distintas abiertas globalmente (EN_PROGRESO + VALIDANDO), 1 responsabilidad operativa por TASK_ID y 1 escritura activa por TASK_ID. VALIDANDO cuenta globalmente, no ocupa al autor tras entrega verificable.
+- PENDIENTE -> EN_PROGRESO: reclamar una microtarea elegible con dependencias LISTO y lease exclusivo.
+- EN_PROGRESO -> VALIDANDO: registrar entrega PR/SHA, autoria inmutable y transicion, liberar lease y RESPONSABLE_TASK_ID de la autora, dejar revisor sin asignar, verificar atomicamente PLAN_MAESTRO/BITACORA. Si falla la confirmacion, NO declarar libre a la autora.
+- VALIDANDO -> LISTO: otra Task de ID distinto toma en exclusiva la revision y eventual correccion; CI exact-SHA, reglas GitHub, merge protegido y readback PLAN_MAESTRO/COLA/BITACORA son obligatorios.
+- VALIDANDO -> VALIDANDO: si la revisora introduce una correccion que necesita revision independiente adicional, entrega y libera su cupo/lease para otra Task elegible; conservar cadena de contribuciones.
+- EN_PROGRESO abandonada: solo transferir tras ausencia de editor/run, lease anterior liberado, ultimo commit verificado, autorizacion y readback. No robar trabajo activo por retraso.
+- Prioridad: VALIDANDO libre de otra Task -> EN_PROGRESO propio o recuperable -> PENDIENTE elegible. Elegir receptora habilitada/autorizada y sin otro scope por proxima ejecucion futura verificada, sin preferencia fija de nombre.
+- No permitir que la Task autora revise/cierre formal ni tecnicamente su propia entrega. La revision tecnica entre distintos TASK_ID que comparten login NO crea un APPROVED humano independiente. No activar Tasks de Alex pausadas ni modificar QA/main/PROD.
+
 
 
 ## Criterio obligatorio para FUTUROS traspasos — próxima Task libre en ejecutarse (orden 2026-11-04)
@@ -70,7 +94,7 @@ Se conservan `MAX_CONCURRENT_SCOPES=6`, `MAX_OWNED_SCOPES_PER_TASK=1`, `MAX_ACTI
 
 El censo ejecutable se limita a las cinco identidades presentes en `REGISTERED_TASK_IDS`, iguales a la allowlist comercial; distribución actual 3 Javier (:00/:20/:40) y 2 Alex (:10/:50), **sin límite interno fijo**. Se retira la antigua posición no autorizada :30 del registro, no se crean Tasks ni se conceden permisos nuevos. La conexión actual no permite certificar la eliminación física en la cuenta de Alex; cualquier Task externa al censo mantiene `NO_AUTORIZADO` y no recibe autoridad por inferencia. Las referencias a seis instalaciones en las secciones inferiores son evidencias históricas, nunca fuentes de identidad operativa. `AUTOMATION_RUNTIME=ACTIVE_DEV` es capacidad lógica, no estado `is_enabled`.
 
-**Remisión de roles vigentes (2026-11-03):** La matriz de responsables y permisos del apartado 5 de `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md` aplica al censo de cinco, sin clases artificiales derivadas del nombre de la Task. Permiso de escribir/merge/aprobar se evalúa por identidad GitHub y proveedor, nunca por la etiqueta o por otro Task ID. Para nuevas operaciones del asistente, `solqaryn-platform` es autora y `JAVIER_GITHUB_LOGIN` revisor independiente, conforme a `docs/GITHUB_ACCOUNT_ROLES.md`. La autorización de cinco IDs no equivale a `is_enabled` ni cambia los estados físicos registrados.
+**Remisión de roles vigentes (2026-11-03):** La matriz de responsables y permisos del apartado 5 de `docs/AUTOMATION_AUTHORITY.md` aplica al censo de cinco, sin clases artificiales derivadas del nombre de la Task. Permiso de escribir/merge/aprobar se evalúa por identidad GitHub y proveedor, nunca por la etiqueta o por otro Task ID. Para nuevas operaciones del asistente, `solqaryn-platform` es autora y `JAVIER_GITHUB_LOGIN` revisor independiente, conforme a `docs/GITHUB_ACCOUNT_ROLES.md`. La autorización de cinco IDs no equivale a `is_enabled` ni cambia los estados físicos registrados.
 
 ## Enmienda operativa propuesta — certificación automática CI en DEV (2026-10-30)
 
@@ -142,7 +166,7 @@ Junto con `PRIMARY_DEV_02` Javier :20, hay **tres diagnósticos individuales con
 
 ## Archivo histórico M3.2 — seis Tasks físicas, autorización operativa parcial
 
-El diseño simétrico 3+3 v2.0 fue integrado en PR #3735; este párrafo registra el estado de aquel momento, no es autoridad vigente. La microfase 3.2 confirmó seis Tasks físicas de identidad única y horarios intercalados, incluidas las dos originales con ID conservado. `PHYSICAL_TASKS_REGISTERED=6` procede de lectura nativa Javier (3/3) y readback aportado por Alex (3/3) con conciliación en Google Sheets. `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1` sigue siendo el contador de autorización conocido: habilitación y programación no equivalen a permisos efectivos en ejecución. Las cinco Tasks restantes siguen pendientes de validación operativa individual, sin concederles escritura por esta modificación. El contrato normativo es `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md`.
+El diseño simétrico 3+3 v2.0 fue integrado en PR #3735; este párrafo registra el estado de aquel momento, no es autoridad vigente. La microfase 3.2 confirmó seis Tasks físicas de identidad única y horarios intercalados, incluidas las dos originales con ID conservado. `PHYSICAL_TASKS_REGISTERED=6` procede de lectura nativa Javier (3/3) y readback aportado por Alex (3/3) con conciliación en Google Sheets. `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=1` sigue siendo el contador de autorización conocido: habilitación y programación no equivalen a permisos efectivos en ejecución. Las cinco Tasks restantes siguen pendientes de validación operativa individual, sin concederles escritura por esta modificación. El contrato normativo es `docs/AUTOMATION_AUTHORITY.md`.
 
 **Inventario físico M3.2 (horas `America/Tegucigalpa`, readback en `TAREAS_PROGRAMADAS!A2:Z7`, evento `BITACORA!A42:Z42`):**
 

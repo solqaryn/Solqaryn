@@ -1,3 +1,9 @@
+## 2026-11-04 — Índice operativo de custodia por etapa (PR #3854)
+
+- Normativa central: `docs/AUTOMATION_AUTHORITY.md`; censo/runtime: `docs/AUTOMATION_STATUS.md`. No existe `AUTOMATION_3X3_OPERATING_CONTRACT.md` en el árbol operativo.
+- Módulo: `scripts/automation-stage-ownership.mjs` y su consumidor `scripts/validate-dual-task-configuration.mjs`. Scope Lock revisa el contrato y los cambios de código protegidos.
+- WIP 6/1/1: autor liberado solo con transición real `VALIDANDO`, lease y readback; otra Task reserva revisión sin autoaprobar, y solo `LISTO` libera dependencias.
+
 ## 2026-11-02 — P1-005.A: frontera de administración empresarial (DEV)
 
 **Censo comercial propuesto 2026-11-04:** seis identidades individuales: Javier :00/:20/:30/:40 y Alex :10/:50. La Task Javier :30 nueva (ID `6aeacb7820ac8191b7d768a6f33dfa09`) está creada y PAUSADA, pendiente de PR de gobierno aprobado, CI exact-SHA, readback de Sheets y activación de proveedor. Antigua Alex :30 excluida. Los registros y conteos con fecha anterior son históricos; la autoridad prevalente está en `docs/AUTOMATION_STATUS.md`. WIP comercial 6/2/1 sin cambios.
@@ -32,7 +38,7 @@
 ## 2026-10-23 — Índice operativo M3.1 histórico (actualizado por enmienda 2026-10-30)
 
 - Gobierno activo: `AGENTS.md`, `docs/PROJECT_SCOPE_LOCK.md`, `docs/AUTOMATION_STATUS.md`.
-- Flujo de automatización con inventario configurable (censo actual 6, distribución 3+3) y allowlist comercial 5: `docs/AUTOMATION_3X3_OPERATING_CONTRACT.md` (selector por dependencias LISTO, revisión primero, aprobación independiente, merge protegido, readback Sheet).
+- Flujo de automatización con inventario configurable (censo actual 6, distribución 3+3) y allowlist comercial 5: `docs/AUTOMATION_AUTHORITY.md` (selector por dependencias LISTO, revisión primero, aprobación independiente, merge protegido, readback Sheet).
 - No existe techo interno fijo para Tasks físicas. Distinguir censo, capacidad del proveedor, autorización individual y ejecución; el WIP comercial sigue limitado a seis scopes.
 - Único ERP: rama `dev`, Scope Lock STRICT; tres ramas permanentes dev/qa/main y ramas `work/solqaryn-<scope>` temporales. PR #3734 integrado previamente en dev y preservado en la reconciliación del PR #3735.
 - Los motores antiguos retirados no son ejecutables. Fuentes posteriores de este archivo son snapshots de contexto previos.
