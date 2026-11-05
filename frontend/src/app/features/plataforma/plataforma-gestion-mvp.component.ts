@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { finalize, forkJoin } from 'rxjs';
@@ -95,13 +95,26 @@ import {
 
         <section class="subsection" aria-labelledby="alta-empresa">
           <h3 id="alta-empresa">Registrar una nueva empresa</h3>
-          <p>Puedes elegir un administrador ya registrado o crear su cuenta y empresa en una única transacción. Ambas opciones requieren autoridad global y los dos controles de certificación del servidor.</p>
-          <div class="form-grid">
+          <p>Completa los datos en tres pasos. El servidor valida la autoridad global, el aislamiento empresarial y los controles de certificación antes de crear registros.</p>
+          <ol class="alta-pasos" aria-label="Pasos para registrar una empresa">
+            <li [attr.aria-current]="pasoAlta() === 1 ? 'step' : null">Empresa</li>
+            <li [attr.aria-current]="pasoAlta() === 2 ? 'step' : null">Administrador</li>
+            <li [attr.aria-current]="pasoAlta() === 3 ? 'step' : null">Revisar y confirmar</li>
+          </ol>
+          @if (pasoAlta() === 1) {
             <div class="field">
-              <label for="empresa-nueva">Nombre de empresa</label>
-              <input id="empresa-nueva" maxlength="200" [value]="empresaNueva()"
-                (input)="empresaNueva.set($any($event.target).value)" />
+              <label for="empresa-nueva">Nombre de empresa (2–200 caracteres)</label>
+              <input id="empresa-nueva" maxlength="200" autocomplete="organization"
+                [value]="empresaNueva()" (input)="empresaNueva.set($any($event.target).value)"
+                [attr.aria-invalid]="empresaNueva().length > 0 && !nombreAltaValido() ? 'true' : null" />
             </div>
+            <div class="alta-acciones">
+              <button mat-flat-button type="button" (click)="avanzarAlta()"
+                [disabled]="ocupado() || !nombreAltaValido()">Continuar al administrador</button>
+              <button mat-stroked-button type="button" (click)="crearBorrador()"
+                [disabled]="ocupado() || !nombreAltaValido()">Guardar borrador inactivo</button>
+            </div>
+          } @else if (pasoAlta() === 2) {
             <div class="field">
               <label for="modo-alta-empresa">Administrador inicial</label>
               <select id="modo-alta-empresa" [value]="modoAlta()"
@@ -110,50 +123,63 @@ import {
                 <option value="nuevo">Crear nueva cuenta junto con la empresa</option>
               </select>
             </div>
-          </div>
-          @if (modoAlta() === 'existente') {
-            <div class="field">
-              <label for="admin-empresa">ID de cuenta administradora verificada</label>
-              <input id="admin-empresa" type="number" [value]="buscado()?.id ?? 0" readonly
-                aria-describedby="admin-empresa-aviso" />
-              <small id="admin-empresa-aviso">Selecciona la cuenta por búsqueda exacta; no se admite un ID arbitrario.</small>
+            @if (modoAlta() === 'existente') {
+              <div class="field">
+                <label for="admin-empresa">Cuenta administradora verificada</label>
+                <input id="admin-empresa" type="text" readonly
+                  [value]="buscado()?.nombreUsuario ?? 'Sin seleccionar'"
+                  aria-describedby="admin-empresa-aviso" />
+                <small id="admin-empresa-aviso">Usa la búsqueda exacta de cuentas de este panel. Una cuenta inactiva o bloqueada no se puede asignar; no se admite un ID arbitrario.</small>
+              </div>
+            } @else {
+              <div class="form-grid" role="group" aria-label="Datos del administrador nuevo">
+                <div class="field">
+                  <label for="admin-empresa-usuario">Usuario nuevo (3–50 caracteres)</label>
+                  <input id="admin-empresa-usuario" type="text" maxlength="50" autocomplete="off"
+                    [value]="adminEmpresaUsuarioNuevo()"
+                    (input)="adminEmpresaUsuarioNuevo.set($any($event.target).value)" />
+                </div>
+                <div class="field">
+                  <label for="admin-empresa-nombre">Nombre completo</label>
+                  <input id="admin-empresa-nombre" type="text" maxlength="150" autocomplete="name"
+                    [value]="adminEmpresaNombreNuevo()"
+                    (input)="adminEmpresaNombreNuevo.set($any($event.target).value)" />
+                </div>
+                <div class="field">
+                  <label for="admin-empresa-clave">Contraseña inicial (10–128, mayúscula, minúscula, número y símbolo)</label>
+                  <input id="admin-empresa-clave" type="password" minlength="10" maxlength="128"
+                    autocomplete="new-password" [value]="adminEmpresaClaveNueva()"
+                    (input)="adminEmpresaClaveNueva.set($any($event.target).value)" />
+                </div>
+              </div>
+              <p class="secondary">La cuenta nueva se crea únicamente si la transacción empresarial se confirma. No recibe privilegios globales.</p>
+            }
+            <div class="alta-acciones">
+              <button mat-stroked-button type="button" (click)="retrocederAlta()" [disabled]="ocupado()">Volver a empresa</button>
+              <button mat-flat-button type="button" (click)="avanzarAlta()"
+                [disabled]="ocupado() || !administradorAltaValido()">Revisar alta</button>
             </div>
           } @else {
-            <div class="form-grid" role="group" aria-label="Datos del administrador nuevo">
-              <div class="field">
-                <label for="admin-empresa-usuario">Usuario nuevo (3–50 caracteres)</label>
-                <input id="admin-empresa-usuario" type="text" maxlength="50" autocomplete="off"
-                  [value]="adminEmpresaUsuarioNuevo()"
-                  (input)="adminEmpresaUsuarioNuevo.set($any($event.target).value)" />
-              </div>
-              <div class="field">
-                <label for="admin-empresa-nombre">Nombre completo</label>
-                <input id="admin-empresa-nombre" type="text" maxlength="150" autocomplete="name"
-                  [value]="adminEmpresaNombreNuevo()"
-                  (input)="adminEmpresaNombreNuevo.set($any($event.target).value)" />
-              </div>
-              <div class="field">
-                <label for="admin-empresa-clave">Contraseña inicial (10–128, mayúscula, minúscula, número y símbolo)</label>
-                <input id="admin-empresa-clave" type="password" minlength="10" maxlength="128"
-                  autocomplete="new-password" [value]="adminEmpresaClaveNueva()"
-                  (input)="adminEmpresaClaveNueva.set($any($event.target).value)" />
-              </div>
+            <div class="alta-resumen" role="group" aria-label="Resumen previo a la confirmación">
+              <dl>
+                <dt>Empresa</dt><dd>{{ empresaNueva().trim() }}</dd>
+                <dt>Administrador</dt>
+                <dd>{{ modoAlta() === 'nuevo' ? adminEmpresaUsuarioNuevo().trim() : (buscado()?.nombreUsuario ?? 'Sin seleccionar') }}</dd>
+                <dt>Configuración inicial</dt>
+                <dd>El servidor crea la configuración de empresa y la membresía durante el alta; no se activan tiendas ni permisos globales desde este asistente.</dd>
+              </dl>
             </div>
-            <p class="secondary">La cuenta se creará únicamente si toda la operación se confirma en MySQL. No recibirá permisos globales.</p>
+            <p class="secondary">La contraseña no se muestra en el resumen. La confirmación envía una sola solicitud y los permisos se comprueban nuevamente en el servidor.</p>
+            <div class="alta-acciones">
+              <button mat-stroked-button type="button" (click)="retrocederAlta()" [disabled]="ocupado()">Volver al administrador</button>
+              <button mat-flat-button type="button" (click)="crearEmpresa()"
+                [disabled]="ocupado() || !nombreAltaValido() || !administradorAltaValido() || directorio()?.puedeCrear !== true">
+                {{ ocupado() ? 'Procesando alta…' : 'Confirmar alta empresarial' }}
+              </button>
+            </div>
           }
-          <button mat-flat-button type="button" (click)="crearEmpresa()"
-            [disabled]="ocupado() || directorio()?.puedeCrear !== true ||
-              (modoAlta() === 'existente' && ((buscado()?.activo !== true && buscado()?.pendienteAsignacion !== true) || buscado()?.bloqueado === true)) ||
-              (modoAlta() === 'nuevo' && (adminEmpresaUsuarioNuevo().trim().length < 3 ||
-                adminEmpresaNombreNuevo().trim().length < 3 || adminEmpresaClaveNueva().length < 10))">
-            {{ modoAlta() === 'nuevo' ? 'Crear empresa y administrador en un solo paso' : 'Crear empresa con administrador existente' }}
-          </button>
-          <button mat-stroked-button type="button" (click)="crearBorrador()"
-            [disabled]="ocupado() || empresaNueva().trim().length < 2">
-            Guardar empresa como borrador inactivo
-          </button>
           @if (directorio()?.puedeCrear !== true) {
-            <p class="warning" role="status">La creación comercial activa sigue protegida. Puedes preparar empresas inactivas y asignarles administradores sin publicar tiendas.</p>
+            <p class="warning" role="status">La creación comercial activa está protegida. Puedes guardar un borrador inactivo desde el primer paso; no se publican tiendas automáticamente.</p>
           }
         </section>
 
@@ -281,6 +307,17 @@ import {
     p { line-height: 1.5; }
     .subsection { margin-top: 28px; border-top: 1px solid #dce3ed; padding-top: 22px; }
     .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 15px 0; }
+
+    .alta-pasos { display: flex; gap: 24px; flex-wrap: wrap; padding: 0 0 0 22px; margin: 16px 0 20px; }
+    .alta-pasos li { padding: 4px 2px; color: var(--color-text, #182435); }
+    .alta-pasos li[aria-current="step"] { font-weight: 700; text-decoration: underline; text-underline-offset: 5px; }
+    .alta-acciones { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+    .alta-resumen { background: var(--color-background, #fff); border: 1px solid #c7d2df; border-radius: 9px; padding: 12px 16px; }
+    .alta-resumen dl { display: grid; grid-template-columns: minmax(110px, 1fr) 2fr; gap: 12px; margin: 0; }
+    .alta-resumen dt { font-weight: 650; }
+    .alta-resumen dd { margin: 0; overflow-wrap: anywhere; }
+    .alta-acciones button { min-height: 44px; }
+
     .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
     .field.grow { flex: 1; }
     .field label { font-size: .87rem; font-weight: 600; }
@@ -326,6 +363,27 @@ export class PlataformaGestionMvpComponent {
   readonly claveNueva = signal('');
   readonly empresaNueva = signal('');
   readonly modoAlta = signal<'existente' | 'nuevo'>('existente');
+  readonly pasoAlta = signal<1 | 2 | 3>(1);
+  readonly nombreAltaValido = computed(() => {
+    const nombre = this.empresaNueva().trim();
+    return nombre.length >= 2 && nombre.length <= 200;
+  });
+  readonly administradorAltaValido = computed(() => {
+    if (this.modoAlta() === 'existente') {
+      const cuenta = this.buscado();
+      return !!cuenta && cuenta.id > 0 && !cuenta.bloqueado &&
+        (cuenta.activo || cuenta.pendienteAsignacion);
+    }
+    const usuario = this.adminEmpresaUsuarioNuevo().trim();
+    const nombre = this.adminEmpresaNombreNuevo().trim();
+    const clave = this.adminEmpresaClaveNueva();
+    return /^[a-zA-Z0-9._-]{3,50}$/.test(usuario) &&
+      nombre.length >= 3 && nombre.length <= 150 &&
+      clave.length >= 10 && clave.length <= 128 &&
+      /[A-Z]/.test(clave) && /[a-z]/.test(clave) &&
+      /[0-9]/.test(clave) && /[^a-zA-Z0-9]/.test(clave);
+  });
+
   readonly adminEmpresaUsuarioNuevo = signal('');
   readonly adminEmpresaNombreNuevo = signal('');
   readonly adminEmpresaClaveNueva = signal('');
@@ -450,6 +508,24 @@ export class PlataformaGestionMvpComponent {
     );
   }
 
+  avanzarAlta(): void {
+    if (this.ocupado()) return;
+    if (this.pasoAlta() === 1 && this.nombreAltaValido()) {
+      this.limpiarMensajes();
+      this.pasoAlta.set(2);
+    } else if (this.pasoAlta() === 2 && this.administradorAltaValido()) {
+      this.limpiarMensajes();
+      this.pasoAlta.set(3);
+    }
+  }
+
+  retrocederAlta(): void {
+    if (this.ocupado()) return;
+    if (this.pasoAlta() === 3) this.pasoAlta.set(2);
+    else if (this.pasoAlta() === 2) this.pasoAlta.set(1);
+    this.limpiarMensajes();
+  }
+
   crearBorrador(): void {
     const nombre = this.empresaNueva().trim();
     if (this.ocupado() || nombre.length < 2 || nombre.length > 200) return;
@@ -459,6 +535,7 @@ export class PlataformaGestionMvpComponent {
         .subscribe({
           next: data => {
             this.empresaNueva.set('');
+            this.pasoAlta.set(1);
             this.exito.set('Borrador empresarial inactivo creado. ID: ' + data.empresaId +
               '. Asigna un administrador antes de solicitar su activación.');
             this.actualizarDirectorio.emit();
@@ -532,6 +609,7 @@ export class PlataformaGestionMvpComponent {
       })).subscribe({
         next: data => {
           this.empresaNueva.set('');
+          this.pasoAlta.set(1);
           if (crearNuevo) {
             this.adminEmpresaUsuarioNuevo.set('');
             this.adminEmpresaNombreNuevo.set('');
