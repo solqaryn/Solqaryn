@@ -95,19 +95,23 @@ export function selectWork(tasks, stateById, account, activeReviewIds = new Set(
   // with technical evidence; NEVER claim it as native GitHub APPROVED.
   const validTaskId = typeof taskId === 'string' && /^[a-f0-9]{32}$/i.test(taskId);
   const busyReviewer=validTaskId && tasks.some(t=>t.state==='VALIDANDO'&&t.reviewerTaskId===taskId);
+  const developmentOwned=validTaskId && tasks.some(t=>t.state==='EN_PROGRESO'&&t.ownerTaskId===taskId);
+  const unreleasedDelivery=validTaskId && tasks.some(t=>t.state==='VALIDANDO'&&t.ownerTaskId===taskId&&
+    !(t.validationHandoffVerified===true&&t.developmentLeaseReleased===true&&t.authorTaskId===taskId));
   const review = tasks.find(t => {
     const technical = t.authorAccount===account && validTaskId &&
       /^[a-f0-9]{32}$/i.test(t.authorTaskId||'') && t.authorTaskId!==taskId &&
       t.technicalReviewAllowed===true && t.technicalEvidenceVerified===true &&
       t.formalGithubApprovalRequested!==true;
     return t.state==='VALIDANDO' && (!busyReviewer||t.reviewerTaskId===taskId) &&
+      (!validTaskId||/^[a-f0-9]{32}$/i.test(t.authorTaskId||'')) &&
       ['JAVIER_CHATGPT','ALEX_CHATGPT','SOLQARYN_PLATFORM'].includes(t.authorAccount) &&
       (t.authorAccount!==account || technical) && (!validTaskId||t.authorTaskId!==taskId) &&
       (!t.reviewerTaskId||t.reviewerTaskId===taskId) && !activeReviewIds.has(t.id) &&
       isUrl(t.prUrl) && t.reviewerAllowed===true &&
       t.reviewPermissionVerified===true && t.reviewerLeaseAvailable===true;
   });
-  if(review) return {action:review.authorAccount===account?'REVIEW_TECHNICAL':'REVIEW',task:review,requiresExclusiveReviewerClaim:true};
+  if(review && !developmentOwned && !unreleasedDelivery) return {action:review.authorAccount===account?'REVIEW_TECHNICAL':'REVIEW',task:review,requiresExclusiveReviewerClaim:true};
   const own = tasks.find(t => t.state === 'EN_PROGRESO' &&
     validTaskId && t.ownerTaskId===taskId && t.ownerAccount === account && t.resumeAuthorized === true &&
     t.exclusiveScopeVerified === true && t.activeEditorVerifiedAbsent === true &&
@@ -455,7 +459,7 @@ if(failures.length){
   if(selectWork(options,{'P0-012.A':'LISTO'},'ALEX_CHATGPT').action!=='REVIEW')
     throw Error('Review-first selection regression');
   const alexPR={id:'P0-013.A',state:'VALIDANDO',
-    authorAccount:'ALEX_CHATGPT',
+    authorAccount:'ALEX_CHATGPT',authorTaskId:'cccccccccccccccccccccccccccccccc',
     prUrl:'https://github.com/solqaryn/Solqaryn/pull/3736',
     reviewerAllowed:true,reviewPermissionVerified:true,reviewerLeaseAvailable:true};
   if(selectWork([alexPR,options[0]],{'P0-012.A':'LISTO'},'JAVIER_CHATGPT').action!=='REVIEW')
@@ -474,7 +478,9 @@ if(failures.length){
     throw Error('An unknown account cannot claim a review');
   const own={id:'P0-014.A',state:'EN_PROGRESO',ownerAccount:'JAVIER_CHATGPT',ownerTaskId:'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
     resumeAuthorized:true,exclusiveScopeVerified:true,activeEditorVerifiedAbsent:true,branchReadbackVerified:true};
-  if(selectWork([own,alexPR],{},'JAVIER_CHATGPT').action!=='REVIEW') throw Error('Own recovery bypassed REVIEW_FIRST');
+  if(selectWork([own,alexPR],{},'JAVIER_CHATGPT').action!=='REVIEW') throw Error('Advisory review scan missing');
+  if(selectWork([own,alexPR],{},'JAVIER_CHATGPT',new Set(),'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',true).action!=='RESUME')
+    throw Error('Busy developer illegally claimed review while owning work');
   if(selectWork([own],{},'JAVIER_CHATGPT',new Set(),'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb').action!=='RESUME') throw Error('Safe own resume denied');
   const idOwnValidating='bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
   const ownValidating={id:'P1-009.A',state:'VALIDANDO',authorAccount:'JAVIER_CHATGPT',authorTaskId:idOwnValidating,
