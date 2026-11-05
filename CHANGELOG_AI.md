@@ -1,3 +1,7 @@
+## 2026-11-05 — P1-014.D: rechazo HTTP 403 del alta guiada (DEV)
+
+Task Javier :30 (6aeacb7820ac8191b7d768a6f33dfa09) añade prueba negativa dirigida Angular sobre el asistente de alta: respuesta 403 del servidor no confirma alta ni pierde datos del formulario. Acta docs/P1-014-D-RECHAZO-ALTA-GUIADA-DEV.md. Prueba aún no ejecutada ni CI certificada al crear el changeset; no es evidencia de MySQL/JWT remoto ni altera backend productivo. Rama histórica work/solqaryn-p1-014-d, rollback por PR protegido limitado a esta prueba/documentación.
+
 ## 2026-11-05 — Revisor independiente para P1-013.A
 
 Corregida la preferencia consultiva de `scripts/automation-review-routing.mjs`: P1-013.A deja de dirigirse a Javier :00, quien contribuyó a su integración anterior, y pasa a Javier :20 (Task distinta de la autora Alex :10 y sin contribución acreditada al PR #3853). No hay preasignación, reserva ni bloqueo en Sheets: Javier :20 solo podrá actuar tras ejecución nativa, readback institucional, comprobación de conflicto real y pruebas de flags efectivos en Render DEV. Javier :00 permanece libre para otra ruta válida. Mantener VALIDANDO hasta revisión técnica independiente, CI exact-SHA y aceptación real. Sin cambios de API, frontend, datos, secretos, QA/main/PROD ni activación de flags. Rollback mediante PR protegido que revierta solo esta preferencia.
