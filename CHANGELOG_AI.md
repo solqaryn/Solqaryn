@@ -1,3 +1,9 @@
+## 2026-11-05 — P1-016.C: caso negativo de sesión de plataforma sin tenant (DEV)
+
+- ALEX :10, TASK_ID `6adbbc9ad9e88191bea8eb69104afb25`, reclamó exclusivamente P1-016.C desde `dev@41e2edffbbe394ad788baa477c3f3e8a731c27b0`, rama `work/solqaryn-p1-016-c`, WIP 5→6/6; `PLAN_MAESTRO!57`, `COLA`, `BITACORA!646` con CAS/readback. Dependencia P1-016.A LISTO.
+- Caso: administrador empresarial con `X-Empresa-Id` no obtiene sesión global, conserva auditoría `Rechazado` sin `EmpresaId` ni `UsuarioRolPlataforma`. Test `P1016CCaseRoutingTests` reutiliza una regresión P1016A ya integrada; acta `docs/P1-016-C-CASO-SESION-GLOBAL-SIN-TENANT-DEV.md`.
+- Solo archivos de prueba/documentación; EF InMemory no certifica HTTP/JWT/MySQL remoto. CI exact SHA y revisión ajena pendientes, NO APPROVED/MERGED/LISTO. Sin cambios productivos, secretos ni QA/main/PROD.
+
 ## 2026-11-04 — P1-014.A: flujo guiado comercial de alta (DEV)
 
 - Javier :00 (TASK_ID 6adbb9fff1548191a1bd5b30d9e9984a) reclamó P1-014.A con WIP 6/1/1 y lectura posterior de PLAN_MAESTRO fila 52, COLA y BITACORA fila 580. Rama work/solqaryn-p1-014-a desde dev@89b3687d14336734788bda26e2e187f0eea763c2.
