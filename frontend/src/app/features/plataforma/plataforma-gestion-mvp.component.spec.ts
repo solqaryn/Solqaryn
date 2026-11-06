@@ -138,4 +138,38 @@ describe('P1-014.A — alta guiada empresarial', () => {
     expect(c.error()).toBeTruthy();
     expect(c.ocupado()).toBe(false);
   });
+
+  it('P1014E flujo positivo crea empresa y administrador nuevo con una sola confirmación', () => {
+    const f = vista(true), c = f.componentInstance;
+    c.empresaNueva.set('Empresa Positiva');
+    c.avanzarAlta();
+    c.modoAlta.set('nuevo');
+    c.adminEmpresaUsuarioNuevo.set('admin.positivo');
+    c.adminEmpresaNombreNuevo.set('Administrador Positivo');
+    c.adminEmpresaClaveNueva.set('ClaveSegura!2026');
+    c.avanzarAlta();
+    f.detectChanges();
+    expect(c.pasoAlta()).toBe(3);
+
+    const confirmar = Array.from((f.nativeElement as HTMLElement).querySelectorAll('button'))
+      .find(x => x.textContent?.includes('Confirmar alta empresarial'));
+    expect(confirmar).toBeDefined();
+    expect(confirmar!.disabled).toBe(false);
+    confirmar!.click();
+    f.detectChanges();
+
+    expect(api.altaControladaConAdministradorNuevo).toHaveBeenCalledOnce();
+    expect(api.altaControladaConAdministradorNuevo).toHaveBeenCalledWith('Empresa Positiva', {
+      nombreUsuario: 'admin.positivo',
+      nombreCompleto: 'Administrador Positivo',
+      password: 'ClaveSegura!2026'
+    });
+    expect(api.altaControlada).not.toHaveBeenCalled();
+    expect(c.pasoAlta()).toBe(1);
+    expect(c.empresaNueva()).toBe('');
+    expect(c.adminEmpresaClaveNueva()).toBe('');
+    expect(c.buscado()?.nombreUsuario).toBe('admin.positivo');
+    expect(c.exito()).toContain('creados de forma atómica');
+  });
+
 });

@@ -1,3 +1,7 @@
+## 2026-11-05 — P1-014.E: regresión positiva de alta guiada (DEV)
+
+Task Javier :00 `6adbb9fff1548191a1bd5b30d9e9984a` incorpora prueba positiva Angular P1014E y prueba xUnit dirigida que reutiliza el fixture positivo/negativo P1014A, sin modificar comportamiento productivo. Acta `docs/P1-014-E-POSITIVO-ALTA-GUIADA-DEV.md`. CI y revisión exact-SHA pendientes de verificación; no se atribuyen pruebas locales ni certificación de DEV vivo. Rama work/solqaryn-p1-014-e. Rollback limitado a estos cuatro archivos.
+
 ## 2026-11-06 — P1-011.B: negativo BCrypt corregido tras REQUEST_CHANGES (DEV)
 
 - ALEX :10, autor TASK_ID `6adbbc9ad9e88191bea8eb69104afb25`, atiende review independiente #5796363344 en la misma rama/PR #3887. El controlador mantiene el constructor público y BCrypt coste 12; solo agrega un constructor interno de pruebas con delegado de hashing e InternalsVisibleTo para Solqaryn.Tests.
