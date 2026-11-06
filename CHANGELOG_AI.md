@@ -1,3 +1,8 @@
+## 2026-11-05 — P1-013.C: caso negativo de gate de aislamiento durante onboarding (DEV)
+
+- Task Javier :30 `6aeacb7820ac8191b7d768a6f33dfa09` prepara una unica condicion medible: onboarding habilitado, aislamiento comercial deshabilitado y operador global del fixture; el controlador debe responder 503 sin crear empresas, membresias, configuraciones ni auditoria. Se reutilizan aserciones P1013A mediante wrapper xUnit P1013C sin cambios productivos.
+- Acta `docs/P1-013-C-GATE-AISLAMIENTO-ONBOARDING-DEV.md`. Prueba local NO_EJECUTADA en este runtime; CI del SHA del PR y revision ajena requeridas. EF InMemory no acredita HTTP/JWT/MySQL remoto ni flags efectivos DEV. No editar QA/main/PROD, secretos ni autorizaciones.
+
 ## 2026-11-05 — P1-011.E — regresion positiva dirigida de alta con administrador nuevo (DEV)
 
 - Task Javier :40 `6adc2e55f47c81919f6374e561687076` incorpora xUnit dirigido `P1011E` que invoca la regresion P1011A existente: alta con BCrypt, rol empresarial, membresia unica y auditoria sin credenciales. Solo fixture EF InMemory, sin prueba remota MySQL/JWT/HTTP.
