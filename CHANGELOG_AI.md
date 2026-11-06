@@ -1,3 +1,10 @@
+## 2026-11-06 — P2-006.C: ventas por EmpresaId verificado, prueba dirigida (DEV)
+
+- Autora: Task nativa Javier :20, TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`, GitHub `jmejia31`. Escenario delimitado: `backend/tests/Solqaryn.Tests/P2006CVentasEmpresaIdTests.cs`.
+- EF InMemory con ventas borrador A/B: una cabecera `X-Empresa-Id` falsificada no cambia el filtro de lectura contra el tenant verificado, y el filtro se reevalúa al cambiar el tenant dentro del mismo `AppDbContext`. `IgnoreQueryFilters` solo prueba la presencia de ambas filas de fixture y NO es vía autorizada de consulta.
+- No se cambió lógica productiva, esquema, migraciones, secretos, workflows ni permisos. Este test no certifica HTTP/JWT/RBAC, MySQL real, jobs ni contenido legacy sin EmpresaId. Sin ejecución local de .NET: compilación y CI dirigida quedan pendientes de GitHub y revisión independiente.
+- Dependencia `P1-016.B` LISTO, `COLA!O174=SI` al iniciar. Reversión: revert protegido del test y esta entrada conservando las entradas concurrentes.
+
 ## 2026-11-06 — V11 progreso visible y CI opcional asíncrona (DEV)
 
 - Registrar EN_PROGRESO real antes de desarrollar, PLAN H/I y BITACORA; tras PR pasar a VALIDANDO, conservando autoria y readback. Sin CAS.
