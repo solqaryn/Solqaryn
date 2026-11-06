@@ -42,15 +42,19 @@ export function orderCommercialPRsByCreation(prs) {
 }
 // Advisory selector only; re-read GitHub, Sheets and branch protection before merge.
 export function oldestProtectedMergeReady(prs) {
-  return orderCommercialPRsByCreation(prs).find(p =>
-    p.stage === 'VALIDANDO' && p.githubState === 'open' &&
-    p.dependenciesOk === true && p.independentTechReview === true &&
-    p.requiredChecksSuccess === true && p.mergeable === true &&
-    p.currentHeadVerified === true && p.activeEditorConflict !== true &&
-    TASK.test(p.authorTaskId || '') && TASK.test(p.reviewerTaskId || '') &&
-    p.authorTaskId !== p.reviewerTaskId &&
-    /^[a-f0-9]{40}$/i.test(p.headSha || '') &&
-    p.reviewedHeadSha === p.headSha && p.checksHeadSha === p.headSha) || null;
+  // STRICT_FIFO_NO_IDLE_V10: never bypass the oldest still-open PR to dev,
+  // including governance/technical PRs. Development may proceed in PENDIENTE.
+  const first = orderCommercialPRsByCreation(prs).find(p => p.githubState === 'open');
+  if (!first) return null;
+  const ready = first.stage === 'VALIDANDO' &&
+    first.dependenciesOk === true && first.independentTechReview === true &&
+    first.requiredChecksSuccess === true && first.mergeable === true &&
+    first.currentHeadVerified === true && first.activeEditorConflict !== true &&
+    TASK.test(first.authorTaskId || '') && TASK.test(first.reviewerTaskId || '') &&
+    first.authorTaskId !== first.reviewerTaskId &&
+    /^[a-f0-9]{40}$/i.test(first.headSha || '') &&
+    first.reviewedHeadSha === first.headSha && first.checksHeadSha === first.headSha;
+  return ready ? first : null;
 }
 
 export function canReviewInNativeRun(data) {
@@ -115,15 +119,20 @@ export function selfTestReviewRouting() {
   const newest=make(52,'2026-11-05T03:00:00Z');
   assert.equal(oldestProtectedMergeReady([later,oldest,newest]).number,50);
   assert.equal(oldestProtectedMergeReady([newest,later,oldest]).number,50);
-  assert.equal(oldestProtectedMergeReady([{...oldest,dependenciesOk:false},later]).number,51);
-  assert.equal(oldestProtectedMergeReady([{...oldest,mergeable:false},later]).number,51);
-  assert.equal(oldestProtectedMergeReady([{...oldest,requiredChecksSuccess:false},later]).number,51);
-  assert.equal(oldestProtectedMergeReady([{...oldest,reviewedHeadSha:'b'.repeat(40)},later]).number,51);
-  assert.equal(oldestProtectedMergeReady([{...oldest,reviewerTaskId:roster[0]},later]).number,51);
-  assert.equal(oldestProtectedMergeReady([{...oldest,checksHeadSha:'b'.repeat(40)},later]).number,51);
+  assert.equal(oldestProtectedMergeReady([{...oldest,dependenciesOk:false},later]),null);
+  assert.equal(oldestProtectedMergeReady([{...oldest,mergeable:false},later]),null);
+  assert.equal(oldestProtectedMergeReady([{...oldest,requiredChecksSuccess:false},later]),null);
+  assert.equal(oldestProtectedMergeReady([{...oldest,reviewedHeadSha:'b'.repeat(40)},later]),null);
+  assert.equal(oldestProtectedMergeReady([{...oldest,reviewerTaskId:roster[0]},later]),null);
+  assert.equal(oldestProtectedMergeReady([{...oldest,checksHeadSha:'b'.repeat(40)},later]),null);
   assert.equal(oldestProtectedMergeReady([{...oldest,currentHeadVerified:false}]),null);
   assert.equal(oldestProtectedMergeReady([{...oldest,activeEditorConflict:true}]),null);
   assert.equal(oldestProtectedMergeReady([{...oldest,githubState:'closed'}]),null);
+  const technicalOlder = {number:49,created_at:'2026-11-05T00:10:00Z',
+    githubState:'open',stage:'GOVERNANCE'};
+  assert.equal(oldestProtectedMergeReady([later,technicalOlder]),null);
+  assert.equal(oldestProtectedMergeReady([later,{...technicalOlder,githubState:'closed'}]).number,51);
+  assert.equal(oldestProtectedMergeReady([later,{...oldest,githubState:'closed'}]).number,51);
   assert.equal(oldestProtectedMergeReady([{},null]),null);
   assert.deepEqual(orderCommercialPRsByCreation([newest,oldest,later]).map(p=>p.number),[50,51,52]);
   assert.equal(oldestProtectedMergeReady([{...oldest,headSha:'c'.repeat(40),
