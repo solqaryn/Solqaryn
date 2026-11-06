@@ -1,3 +1,9 @@
+## 2026-11-05 — P1-011.B: cierre atómico de administrador nuevo (DEV)
+
+- ALEX :10 (TASK_ID `6adbbc9ad9e88191bea8eb69104afb25`) reutiliza las entregas P1-011.C (#3860), P1-011.D (#3870) y P1-011.E (#3880), institucionalmente LISTO; rama `work/solqaryn-p1-011-b` actualizada sin force-push desde dev vigente.
+- `P1011BAtomicAdminClosureTests` ejecuta la regresión positiva de identidad BCrypt/rol/membresía/auditoría y verifica por contrato la presencia de la regresión MySQL real de rollback (configuración, membresía, auditoría). La comprobación por reflexión NO ejecuta rollback; el job MySQL `Category=Integration` debe ejecutarlo en SHA exacto. No hay inyección específica de fallo BCrypt, aunque su hash se calcula antes de persistir: no fingir cobertura que falta.
+- Acta `docs/P1-011-B-CIERRE-ATOMICO-ADMIN-DEV.md`. Sin código productivo, cambios de JWT/RBAC, datos, secretos ni QA/main/PROD. Tests locales no ejecutados; CI, revisión de otra Task, merge protegido y LISTO se verificarán por separado.
+
 ## 2026-11-05 — P1-011.E — regresion positiva dirigida de alta con administrador nuevo (DEV)
 
 - Task Javier :40 `6adc2e55f47c81919f6374e561687076` incorpora xUnit dirigido `P1011E` que invoca la regresion P1011A existente: alta con BCrypt, rol empresarial, membresia unica y auditoria sin credenciales. Solo fixture EF InMemory, sin prueba remota MySQL/JWT/HTTP.
