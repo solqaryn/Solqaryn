@@ -4,6 +4,18 @@
 - Alcance limitado a ajustes de inventario en borrador y filtros EF; no certifica Kardex global, HTTP, JWT/RBAC, MySQL ni otras rutas. Test definido, sin ejecucion local certificada; CI dirigida, los tres checks obligatorios exact-HEAD y revision de otra Task siguen pendientes.
 - Sin cambios productivos, migraciones, secretos, workflows o entornos. Rollback: revertir test y entrada por PR protegido.
 
+## 2026-11-06 — P2-004.C: delimitar proveedores por EmpresaId verificado (DEV)
+
+- Task nativa Javier :30, TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`. Prueba xUnit dirigida `backend/tests/Solqaryn.Tests/P2004CProveedoresEmpresaIdTests.cs`: proveedores A/B y marca comercial RBAC verificada, cabecera `X-Empresa-Id` falsificada y alternancia de empresa con el mismo `AppDbContext` (EF InMemory).
+- Alcance limitado a lectura EF; NO demuestra autenticación JWT, guard HTTP sin marca, SQL MySQL ni aislamiento total de plataforma. Sin cambios productivos, migraciones, permisos, secretos, reglas GitHub, workflows ni entornos. CI exact-SHA y revisión independiente por Task distinta pendientes.
+- Dependencia `P1-016.B` LISTO; `COLA!O172=SI`, `COLA!G172=SI` al iniciar. Rollback: revert del test y esta entrada mediante PR protegido; no desactivar controles.
+
+## 2026-11-06 — P2-003.C: regresión dirigida de clientes por EmpresaId (DEV)
+
+- Ejecutor interactivo institucional `solqaryn-platform`, sin suplantar ninguna Task física. Prueba `backend/tests/Solqaryn.Tests/P2003CClientesEmpresaIdTests.cs`: filas A/B, marca RBAC autorizada, header de otra empresa y cambio de contexto sin contaminar el filtro EF.
+- Solo test y acta; no se cambian entidades, DbContext, seguridad HTTP, base de datos, migraciones ni entornos. EF InMemory no certifica SQL/HTTP. CI y revisión sobre HEAD exacto pendientes hasta evidencia GitHub; no autoaprobación.
+- Rollback por PR protegido y conservación de la trazabilidad de P2-003.C.
+
 ## 2026-11-06 — P2-002.C: regresión de productos por EmpresaId y límite HTTP (DEV)
 
 - Autora Task Alex :10 (6adbbc9ad9e88191bea8eb69104afb25). La prueba `P2002CProductoEmpresaIdTests.cs` delimita productos A/B con marca RBAC verificada y comprueba que una cabecera `X-Empresa-Id` de B no cambia la lectura de A.
