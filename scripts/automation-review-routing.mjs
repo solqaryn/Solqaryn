@@ -10,7 +10,7 @@ export const PRIORITY_REVIEWERS = Object.freeze({
   'P1-016.C': '6aeacb7820ac8191b7d768a6f33dfa09', // Javier :30; author Alex :10
 });
 const TASK = /^[a-f0-9]{32}$/i;
-const SCOPE = /^P\d+-\d+\.[A-Z]$/;
+const SCOPE = /^(?:P\d+|I8|G0)-\d+\.[A-Z]$/;
 const sortedEligible = (taskIds, author) =>
   [...new Set(Array.isArray(taskIds) ? taskIds.filter(x => TASK.test(x)) : [])]
     .filter(x => x !== author).sort();
@@ -28,8 +28,9 @@ export function developerFor(scopeId, taskIds) {
   if (!SCOPE.test(scopeId || '')) return null;
   const candidates = sortedEligible(taskIds, null);
   if (!candidates.length) return null;
-  const m = /^P(\d+)-(\d+)\.([A-Z])$/.exec(scopeId);
-  return candidates[(Number(m[1]) * 131 + Number(m[2]) * 29 + m[3].charCodeAt(0)) % candidates.length];
+  const m = /^([A-Z])(\d+)-(\d+)\.([A-Z])$/.exec(scopeId);
+  const programBias = m[1] === 'P' ? 0 : m[1].charCodeAt(0) * 17;
+  return candidates[(programBias + Number(m[2]) * 131 + Number(m[3]) * 29 + m[4].charCodeAt(0)) % candidates.length];
 }
 // FIFO-READY_V8_2: prioritize PR created_at, not CI completion or scope suffix.
 export function orderCommercialPRsByCreation(prs) {
@@ -96,6 +97,13 @@ export function selfTestReviewRouting() {
   assert.equal(reviewerFor('P1-013.A',author,roster),roster[1]); // skip J00 contributor to PR #3853
   assert.equal(reviewerFor('P1-007.B',roster[1],roster),roster[4]);
   assert.equal(developerFor('P1-014.D',roster),developerFor('P1-014.D',[...roster].reverse()));
+  for (const id of ['P2-019.C','I8-001.C','G0-001.C']) {
+    assert(developerFor(id,roster));
+    assert.equal(developerFor(id,roster),developerFor(id,[...roster].reverse()));
+    assert(reviewerFor(id,author,roster) !== author);
+  }
+  assert.equal(developerFor('X9-001.C',roster),null);
+  assert.equal(reviewerFor('X9-001.C',author,roster),null);
   const sha='a'.repeat(40);
   const make=(n,date)=>({number:n,created_at:date,stage:'VALIDANDO',
     githubState:'open',dependenciesOk:true,independentTechReview:true,

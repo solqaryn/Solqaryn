@@ -1,3 +1,13 @@
+## PRECEDENCIA NO_IDLE_PENDING_RELEASE_V9 — 2026-11-06 — Plan Comercial Inicial, dev
+
+Correccion expresa del propietario sobre V8.2: VALIDANDO tiene prioridad SOLO cuando exista una accion de integracion o cierre realmente ejecutable. No hay que vaciar VALIDANDO antes de desarrollar PENDIENTE.
+
+1. En cada run nativo comprobar PR VALIDANDO, created_at, revision independiente exact HEAD, dependencias COLA!G=SI, mergeability CLEAN y required checks SUCCESS exact SHA. Si existe uno fusionable AHORA, fusionar el mas antiguo entre los aptos, protegido y de uno en uno; revalidar dev y repetir mientras haya otro fusionable.
+2. Si NO hay otro PR apto para MERGE/CERTIFICACION AHORA (CI pendiente, conflictos sin traspaso, revision pendiente o dependencia G=NO), comprobar de inmediato PENDIENTE con COLA!O=SI y sin propietario/editor ni rama/PR duplicados; seleccionar cualquiera disponible del PLAN COMERCIAL VIGENTE, con preferencia developerFor no exclusiva. No exigir que VALIDANDO quede vacio ni un cierre LISTO previo para comenzar desarrollo. PENDIENTE no tiene FIFO estricto; no frenar trabajo nuevo por PR bloqueados.
+3. COLA!O DESARROLLO_HABILITADO se calcula para IDs del plan comercial vigente P[0-9]+, I8 y G0 (nunca planes ajenos): PENDIENTE, responsable vacio y todas las dependencias en VALIDANDO o LISTO (maximo dos). Es gate de DESARROLLO, no gate de MERGE. COLA!G DEPENDENCIAS_OK sigue exigiendo LISTO para fusion y cierre y conserva sus formulas intactas. La formula O y el selector deben coincidir; no basta con instruir prompts si la hoja devuelve NO a todo.
+4. Al tomar PENDIENTE desarrollar una sola microtarea libre en una rama y PR originales, con prueba causal y entregar VALIDANDO sin esperar CI opcional. Si la ejecucion alcanza un cierre LISTO y aun puede continuar, puede desarrollar otra PENDIENTE, respetando WIP 15/15/15 como techos, no cuotas. Si realmente no existe trabajo ejecutable, reportar causa concreta y no inventar actividad.
+5. Mantener PR review independiente por TASK_ID ajeno, seguridad, Scope Lock, tres checks required PREMERGE exact-HEAD, integracion protegida, rollback, bitacora y readback. CI opcional no bloquea; no eliminar REQUIRED, no CAS/leases, no cambiar Tasks/horarios/cuentas ni QA/main/PROD. No ejecutar esta regla fuera de la autoridad del Plan Comercial vigente.
+
 ## PRECEDENCIA VALIDANDO_FIRST_FIFO_READY_V8_2 — 2026-11-06, Plan Comercial Inicial, dev
 
 Objetivo: 6 microtareas LISTO por hora cuando existan PR aptos. Indicador de producción, nunca autorización para falsear pruebas ni eludir GitHub. Esta regla tiene prioridad sobre V8, V7 y ordenamientos por CI para selección, integración y cierre. No crear Tasks, CAS, reservas ni cambios de horarios.
