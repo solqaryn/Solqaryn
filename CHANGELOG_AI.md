@@ -1,3 +1,8 @@
+## 2026-11-05 — P1-013.E: regresion positiva dirigida de gates onboarding (DEV)
+
+- Task Javier :40 (`6adc2e55f47c81919f6374e561687076`) prepara wrapper xUnit filtrable `P1013E` reutilizando casos integrados P1013A (ambos gates ON) y P1012A (alta efectiva, ConfigEmpresa, membresía, auditoría y sin escalada). Solo prueba y acta `docs/P1-013-E-REGRESION-POSITIVA-ONBOARDING-DEV.md`, sin cambiar producción.
+- Desarrollo habilitado por `COLA!O66=SI` con P1-013.D VALIDANDO; `COLA!G66=NO` bloquea merge/LISTO hasta dependencia LISTO. Prueba local NO_EJECUTADA; CI exact-SHA y revisión independiente obligatorias.
+
 ## 2026-11-05 — P1-015.E: prueba positiva dirigida de auditoria privilegiada (DEV)
 
 - Javier :30, Task `6aeacb7820ac8191b7d768a6f33dfa09`: xUnit filtrable P1015E reutiliza afirmaciones reales del caso positivo P1015A: concesion autorizada, actor, motivo, correlacion, ambito global y auditoria. Acta `docs/P1-015-E-POSITIVO-AUDITORIA-PRIVILEGIADA-DEV.md`. Sin cambios productivos, pruebas locales NO ejecutadas; CI, review y merge requieren evidencia independiente.
