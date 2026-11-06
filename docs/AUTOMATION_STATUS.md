@@ -1,3 +1,12 @@
+## PRECEDENCIA STRICT_FIFO_NO_IDLE_V10 — 2026-11-06 — ORDEN EXPLICITA DEL PROPIETARIO
+
+Esta regla V10 reemplaza el fallback de V9/V8.2 que saltaba PR antiguos bloqueados para MERGE. Mantiene SIN CAMBIOS la liberacion de desarrollo al entrar un requisito en VALIDANDO y deja COLA!O y COLA!G intactas.
+
+1. En cada run native/interactive autentico revisar PR contra dev, reconciliar VALIDANDO ya fusionado y analizar el PR ABIERTO mas antiguo por GitHub PR.created_at (empate PR number), incluyendo PR de gobierno y tecnicos como #3891. Solo este PR antiguo tiene turno de MERGE. Si no tiene los gates reales (CLEAN, required checks 3/3 SUCCESS exact-HEAD, revision independiente, dependencias COLA!G=SI para comerciales, ausencia de editor activo), NO fusionar ninguno mas nuevo. No adelantar PR2/PR3/PR4 aunque esten listos cuando PR1 no lo esta; respetar integridad topologica y branch protection.
+2. Si el PR mas antiguo NO puede fusionarse en este run, diagnosticar una vez el obstaculo y NO hacer polling ni esperar suites opcionales. Tomar inmediatamente una PENDIENTE realmente libre con COLA!O=SI, sin FIFO estricto en PENDIENTE, aunque haya decenas VALIDANDO. La dependencia VALIDANDO o LISTO libera DESARROLLO de sucesora; solo LISTO en COLA!G libera MERGE/certificacion final. Preparar una rama/PR por scope con prueba causal y entregar VALIDANDO; continuar otro scope cuando exista capacidad real y WIP 15/15/15 lo permita.
+3. Una PR cerrada sin merge de forma autorizada y documentada sale de la cola de merge; una abierta no se salta por conflicto, CI o revisión pendiente. No modificar PR de otro editor/autor activo sin traspaso; NO CAS, lease ni reserva Sheets; conservar identidad de cuenta, horarios, ramas, revisión cruzada, seguridad, tests, required checks, readback y BITACORA.
+4. Alinear los seis prompts fisicos y el selector con esta precedencia. El selector solo aconseja; antes de cualquier merge comprobar live la lista completa de PR abiertos contra dev y el turno global. Si un PR antiguo bloquea merge, la accion alternativa siempre es PENDIENTE habilitada, no inactividad. Nunca falsear productividad, estados o certificaciones.
+
 ## PRECEDENCIA NO_IDLE_PENDING_RELEASE_V9 — 2026-11-06 — Plan Comercial Inicial, dev
 
 Correccion expresa del propietario sobre V8.2: VALIDANDO tiene prioridad SOLO cuando exista una accion de integracion o cierre realmente ejecutable. No hay que vaciar VALIDANDO antes de desarrollar PENDIENTE.

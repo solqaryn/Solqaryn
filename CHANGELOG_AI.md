@@ -1,8 +1,21 @@
-## 2026-11-06 — P2-002.C: delimitar un caso de productos por EmpresaId (DEV)
+## 2026-11-06 — P2-002.C: regresión de productos por EmpresaId y límite HTTP (DEV)
 
-- Task Alex :10, TASK_ID `6adbbc9ad9e88191bea8eb69104afb25`. Regresión dirigida `backend/tests/Solqaryn.Tests/P2002CProductoEmpresaIdTests.cs`: dos productos de empresas A/B, marca de tenant comprobada, intento de suplantación con `X-Empresa-Id` y lectura sin marca verificada; el producto B no debe filtrarse hacia A ni mostrarse sin marca.
-- Cambio exclusivamente de pruebas InMemory, sin tocar código de aplicación, JWT, RBAC, persistencia productiva, secretos, entornos ni migraciones. Prueba compilada/ejecutada: pendiente de CI del PR exact-SHA; no declarar `LISTO` hasta revisión independiente, checks requeridos y merge protegido.
-- Rollback: revertir únicamente el test por PR protegido, conservando el filtro tenant existente.
+- Autora Task Alex :10 (6adbbc9ad9e88191bea8eb69104afb25). La prueba `P2002CProductoEmpresaIdTests.cs` delimita productos A/B con marca RBAC verificada y comprueba que una cabecera `X-Empresa-Id` de B no cambia la lectura de A.
+- Revisión correctiva del fallo CI: `CommercialTenantReadFilterModel.Apply` permite por diseño consulta EF global cuando falta `AuthorizedReadEmpresaId`; una aserción previa `Assert.Empty` era incompatible con el contrato existente y falló en la CI. El test ahora comprueba explícitamente el límite real sin afirmar aislamiento EF sin marca. El gate HTTP P0 de dos empresas debe impedir el acceso sin marca (`UnscopedCommercialTenantGuardTests.DosEmpresas_NoPuedenRecibirDatosComerciales`). No habilitar multiempresa ni proclamar seguridad completa por este test.
+- Cambio exclusivamente de pruebas InMemory y esta nota, sin alterar runtime, JWT/RBAC, migraciones, permisos ni secretos. CI dirigida exact-SHA y revisión independiente renovada pendientes; no marcar LISTO antes de controles, merge protegido y readback. Reversión por revert protegido de este test y nota.
+
+## 2026-11-06 — STRICT_FIFO_NO_IDLE_V10: merge sin adelantamientos, desarrollo continuo (DEV)
+
+- El propietario exige FIFO estricto para fusionar contra dev: un PR abierto mas antiguo bloquea el merge de los posteriores aunque esten CLEAN; la regla corrige V8/V9, que permitian saltar bloqueados.
+- Mientras el PR antiguo no es fusionable, se avanza inmediatamente en PENDIENTE elegible con COLA!O=SI, sin FIFO de desarrollo y con la dependencia VALIDANDO/LISTO. COLA!G conserva LISTO estricto para cierre. No exige vaciar VALIDANDO.
+- Selector consultivo fail-closed y pruebas negativas: PR tecnico/governance antiguo y antiguo con CI/revision/conflicto pendiente impiden recomendar PR posterior para merge; PR cerrado deja turno libre. Sin CAS, force-push, perdida de checks requeridos, QA/main/PROD o cambios de horarios.
+- Reversion mediante PR protegido, conservando historial de BITACORA.
+
+## 2026-11-06 — P2-001.C: delimitar matriz de lectura comercial por endpoint (DEV)
+
+- Task nativa Javier :20, TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Regresión xUnit dirigida `backend/tests/Solqaryn.Tests/P2001CMatrizComercialLecturaTests.cs`: contrato de autenticación `[Authorize]`, ausencia de `[AllowAnonymous]`, ruta fija y permiso RBAC `Ver` para las lecturas de clientes, productos y ventas; tres entradas en matriz declarativa.
+- Sólo metadatos/atributos HTTP de controladores existentes; no afirma prueba dinámica de JWT, pertenencia de empresa, filtros EF ni autorización real contra MySQL. Ningún cambio productivo, migración, permiso, workflow, secreto o entorno. Las pruebas dirigidas y CI exact-SHA quedan para GitHub Actions antes de merge.
+- Dependencia `P1-016.B` LISTO, `COLA!O169=SI`, `COLA!G169=SI` al iniciar. Revisión técnica independiente por Task distinta antes de fusionar; rollback mediante revert protegido del archivo de prueba y esta nota.
 
 ## 2026-11-06 — CI dirigida compatible con I8/G0 en el Plan Comercial Inicial (DEV)
 

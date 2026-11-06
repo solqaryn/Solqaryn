@@ -14,7 +14,7 @@ namespace Solqaryn.Tests;
 public sealed class P2002CProductoEmpresaIdTests
 {
     [Fact]
-    public async Task Cabecera_de_B_sin_tenant_verificado_no_expone_productos_de_B()
+    public async Task Cabecera_falsificada_no_cambia_tenant_y_sin_marca_EF_no_es_autorizacion()
     {
         var http = new DefaultHttpContext();
         var options = new DbContextOptionsBuilder<AppDbContext>()
@@ -47,9 +47,15 @@ public sealed class P2002CProductoEmpresaIdTests
         Assert.Equal(new[] { productoA.Id },
             await db.Productos.AsNoTracking().Select(p => p.Id).ToArrayAsync());
 
+        // EF sin marca verificada conserva visibilidad global por compatibilidad
+        // con flujos internos: NO es una autorizacion HTTP multiempresa.
+        // UnscopedCommercialTenantGuardTests.DosEmpresas_NoPuedenRecibirDatosComerciales
+        // comprueba por separado que /productos se rechaza con HTTP 503.
         http.Items.Remove(VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey);
         Assert.Null(db.AuthorizedReadEmpresaId);
-        Assert.Empty(await db.Productos.AsNoTracking().ToArrayAsync());
+        var sinMarca = await db.Productos.AsNoTracking()
+            .OrderBy(p => p.Id).Select(p => p.Id).ToArrayAsync();
+        Assert.Equal(new[] { productoA.Id, productoB.Id }.OrderBy(id => id).ToArray(), sinMarca);
 
         http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = empresaB.Id;
         Assert.Equal(new[] { productoB.Id },
