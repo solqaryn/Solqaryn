@@ -10,7 +10,7 @@ using Xunit;
 namespace Solqaryn.Tests;
 
 /// <summary>
-/// P2-001.C: matriz mínima de lectura comercial por endpoint.
+/// P2-001.C + P2-001.D: matriz de lectura comercial por endpoint.
 /// Comprueba metadata del contrato HTTP, no sustituye pruebas de JWT,
 /// membresía/tenant real ni decisiones del middleware de autorización.
 /// </summary>
@@ -20,6 +20,8 @@ public sealed class P2001CMatrizComercialLecturaTests
     [InlineData(typeof(ClientesController), nameof(ClientesController.GetAll), "clientes", ModuloSistema.Clientes)]
     [InlineData(typeof(ProductosController), nameof(ProductosController.GetPaged), "productos", ModuloSistema.Productos)]
     [InlineData(typeof(VentasController), nameof(VentasController.GetPaged), "ventas", ModuloSistema.Ventas)]
+    [InlineData(typeof(ProveedoresController), nameof(ProveedoresController.GetAll), "proveedores", ModuloSistema.Proveedores)]
+    [InlineData(typeof(ComprasController), nameof(ComprasController.GetPaged), "compras", ModuloSistema.Compras)]
     public void Lectura_comercial_no_puede_perder_autenticacion_o_permiso(
         Type controllerType, string actionName, string route, ModuloSistema modulo)
     {

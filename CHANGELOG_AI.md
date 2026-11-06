@@ -1,3 +1,12 @@
+## 2026-11-06 — P2-001.D: ampliar matriz de lectura comercial a proveedores y compras (DEV)
+
+- Task nativa Javier :20, TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Se amplió el test `[Theory]` `P2001CMatrizComercialLecturaTests` de tres a cinco endpoints, añadiendo `GET proveedores` y `GET compras` con `[Authorize]`, sin `[AllowAnonymous]` y `RequierePermiso(ModuloSistema.Proveedores/Compras, AccionPermiso.Ver)`; el control se ejecuta sobre atributos del contrato HTTP, no sobre respuestas con JWT real.
+- Dependencia `P2-001.C` LISTO, COLA!O187=SI y COLA!G187=SI al inicio. Prueba causal definida y verificada estáticamente contra controladores `ProveedoresController.GetAll` y `ComprasController.GetPaged`; `dotnet test` no se ejecutó localmente. GitHub CI exact-HEAD y revisión independiente por otra Task requeridos antes del merge FIFO.
+- Riesgo contenido: solo archivo de test y CHANGELOG, sin cambios en servicios, DbContext, endpoints productivos, migraciones, JWT, permisos, secrets, rulesets o entornos. No afirma aislamiento multiempresa por metadatos; rollback por revert protegido del test y esta entrada.
+
+
+- P2-001.D: reparar Directed 0 tests exact-SHA: CI #3908 sobre SHA 9b360a1efa456a29b319583b435be907bff0dcbe reportó `DIRECTED_SCOPE_NO_GO total=0` porque filtraba `FullyQualifiedName~P2001D` y los casos ampliados residían en clase P2001C. Agregada suite xUnit P2001D con dos casos que reutilizan las aserciones C para proveedores/compras; sin modificar la prueba C ni el runtime, requiere CI nueva y revisión ajena.
+
 ## 2026-11-06 — P2-010.C: exportaciones CSV/XLSX aisladas por EmpresaId (DEV)
 
 - Task física Alex :10 (`6adbbc9ad9e88191bea8eb69104afb25`); prueba xUnit `backend/tests/Solqaryn.Tests/P2010CExportacionesEmpresaIdTests.cs`. Datos de auditoría A/B sintéticos, marcador comercial verificado, cabecera `X-Empresa-Id` suplantada, cambio de tenant en el mismo `AppDbContext`, falta de marca y rechazo explícito de formato ZIP no soportado.
