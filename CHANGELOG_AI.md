@@ -1,3 +1,9 @@
+## 2026-11-06 — P2-008.C: facturas privadas ante cabecera de otra empresa (DEV)
+
+- Task Javier :40, TASK_ID `6adc2e55f47c81919f6374e561687076`. Regresion dirigida `backend/tests/Solqaryn.Tests/P2008CFacturasPrivadasEmpresaIdTests.cs`: factura/venta A y B, marca verificada, cabecera `X-Empresa-Id` falsificada, cambio de tenant en el mismo contexto y bloqueo de lectura privada sin marca con dos empresas.
+- Solo test EF InMemory de `FacturaRepository` y esta entrada; no cambia runtime, HTTP, JWT/RBAC, bases de datos, migraciones, reglas GitHub, secretos ni QA/main/PROD. No demuestra acceso HTTP real, emision PDF, SQL/MySQL, firma JWT ni permisos globales; esos controles conservan su propia CI.
+- Prueba local .NET no ejecutada en este runtime; exigir suite dirigida y 3 required checks GitHub exact HEAD, revision independiente de otra Task y FIFO estricto antes de merge/LISTO. Reversion: revert protegido de este test y su entrada conservando cambios ajenos.
+
 ## 2026-11-06 — P2-003.C: regresión dirigida de clientes por EmpresaId (DEV)
 
 - Ejecutor interactivo institucional `solqaryn-platform`, sin suplantar ninguna Task física. Prueba `backend/tests/Solqaryn.Tests/P2003CClientesEmpresaIdTests.cs`: filas A/B, marca RBAC autorizada, header de otra empresa y cambio de contexto sin contaminar el filtro EF.
