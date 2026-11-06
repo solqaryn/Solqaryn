@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import { PlataformaGestionMvpService } from '../../core/auth/plataforma-gestion-mvp.service';
 import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.service';
@@ -138,4 +138,62 @@ describe('P1-014.A — alta guiada empresarial', () => {
     expect(c.error()).toBeTruthy();
     expect(c.ocupado()).toBe(false);
   });
+  it('P1014B no anuncia éxito mientras la respuesta HTTP sigue pendiente y rechaza error tardío', () => {
+    // El servidor solo puede responder OK después de confirmar su transacción.
+    // Esta prueba de cliente NO pretende simular ni certificar un COMMIT MySQL.
+    const respuesta = new Subject<{ empresaId: number; administradorUsuarioId: number }>();
+    api.altaControlada.mockReturnValueOnce(respuesta.asObservable());
+    const f = vista(true), c = f.componentInstance;
+    const refrescos = vi.fn();
+    const suscripcion = c.actualizarDirectorio.subscribe(refrescos);
+    c.empresaNueva.set('Empresa Commit Pendiente');
+    c.avanzarAlta();
+    c.buscado.set({ id: 7, nombreUsuario: 'admin', nombreCompleto: 'Admin',
+      activo: true, bloqueado: false, pendienteAsignacion: false });
+    c.avanzarAlta();
+    expect(c.pasoAlta()).toBe(3);
+    c.crearEmpresa();
+    f.detectChanges();
+    expect(api.altaControlada).toHaveBeenCalledOnce();
+    expect(c.ocupado()).toBe(true);
+    expect(c.exito()).toBeNull();
+    expect(c.pasoAlta()).toBe(3);
+    expect(refrescos).not.toHaveBeenCalled();
+
+    // Simula respuesta tardía de error/rollback del backend, no un COMMIT.
+    respuesta.error({ status: 500, error: { message: 'Transacción no confirmada' } });
+    f.detectChanges();
+    expect(c.ocupado()).toBe(false);
+    expect(c.exito()).toBeNull();
+    expect(c.error()).toBeTruthy();
+    expect(c.pasoAlta()).toBe(3);
+    expect(c.empresaNueva()).toBe('Empresa Commit Pendiente');
+    expect(refrescos).not.toHaveBeenCalled();
+    suscripcion.unsubscribe();
+  });
+
+  it('P1014B emite éxito solo después de respuesta confirmada, exactamente una vez', () => {
+    const respuesta = new Subject<{ empresaId: number; administradorUsuarioId: number }>();
+    api.altaControlada.mockReturnValueOnce(respuesta.asObservable());
+    const f = vista(true), c = f.componentInstance;
+    const refrescos = vi.fn();
+    const suscripcion = c.actualizarDirectorio.subscribe(refrescos);
+    c.empresaNueva.set('Empresa Commit Confirmado');
+    c.avanzarAlta();
+    c.buscado.set({ id: 7, nombreUsuario: 'admin', nombreCompleto: 'Admin',
+      activo: true, bloqueado: false, pendienteAsignacion: false });
+    c.avanzarAlta();
+    c.crearEmpresa();
+    expect(c.exito()).toBeNull();
+    expect(refrescos).not.toHaveBeenCalled();
+    respuesta.next({ empresaId: 91, administradorUsuarioId: 7 });
+    respuesta.complete();
+    f.detectChanges();
+    expect(c.ocupado()).toBe(false);
+    expect(c.exito()).toContain('Empresa creada con administrador existente. ID: 91');
+    expect(c.pasoAlta()).toBe(1);
+    expect(refrescos).toHaveBeenCalledOnce();
+    suscripcion.unsubscribe();
+  });
+
 });
