@@ -1,3 +1,10 @@
+## 2026-11-06 — P2-014.C: concurrencia A/B de contextos verificados (DEV)
+
+- Task nativa Javier :40, TASK_ID `6adc2e55f47c81919f6374e561687076`. Prueba causal `backend/tests/Solqaryn.Tests/P2014CConcurrenciaTenantTests.cs`: dos peticiones independientes con diferentes `HttpContext` / `AppDbContext`, dos ventas A/B, cabeceras `X-Empresa-Id` cruzadas y consultas `Task.WhenAll` sobre la misma base EF InMemory, aisladas por marca de tenant verificado.
+- Solo test + esta entrada; sin cambios productivos, JWT/RBAC, API HTTP, migraciones, MySQL, reglas CI, secretos, QA/main/PROD. El test no demuestra concurrencia de escrituras MySQL ni autorizacion HTTP real; no afirmar PASS .NET local sin ejecutar. CI Directed y tres required exact HEAD, revision independiente por Task distinta y FIFO antes del merge.
+- Recuperación causal V12: el primer CI exact HEAD falló al compartir `HttpContextAccessor` (AsyncLocal) entre dos contextos creados secuencialmente; las consultas A/B ahora establecen el HttpContext verificado DENTRO de cada tarea paralela y esperan resultados asincrónicos, sin `Task.Result`. Se revalidará en Directed y required del nuevo SHA; NO declarar éxito antes de CI.
+- Rollback: revert protegido del test y esta entrada, conservando entradas de otros PR y autores.
+
 ## 2026-11-06 — P2-003.D: clientes homonimos aislados por empresa verificada (DEV)
 
 - Autor real Javier :20 / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Nueva regresión xUnit `P2003DClientesHomonimosEmpresaIdTests.cs`: clientes A/B con mismo nombre e identidad, cabecera `X-Empresa-Id` de otro tenant y alternancia RBAC verificada en el mismo `AppDbContext`. La lectura EF se limita a la empresa autorizada y sin marca permanece global por contrato.
