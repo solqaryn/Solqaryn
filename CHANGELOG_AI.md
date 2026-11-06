@@ -1,3 +1,7 @@
+## 2026-11-05 — P1-016.E: positivo dirigido de sesion global sin tenant (DEV)
+
+- Task nativa Javier :00 (`6adbb9fff1548191a1bd5b30d9e9984a`) y rama unica `work/solqaryn-p1-016-e`: prueba xUnit `P1016E` reutiliza las aserciones positivas existentes `P1016A_SuperadminSinMembresiasEntraAunqueEmpresaPilotoEsteInactiva` (respuesta 200, auditoria Exito sin EmpresaId, sin membresia; empresa piloto inactiva). Acta `docs/P1-016-E-POSITIVO-SESION-PLATAFORMA-DEV.md`. Solo prueba/documentacion, sin codigo productivo ni despliegue. No hay dotnet local; CI, TECH_REVIEW independiente, merge y LISTO quedan sujetos a evidencia exact-SHA.
+
 ## 2026-11-05 — P1-015.E: prueba positiva dirigida de auditoria privilegiada (DEV)
 
 - Javier :30, Task `6aeacb7820ac8191b7d768a6f33dfa09`: xUnit filtrable P1015E reutiliza afirmaciones reales del caso positivo P1015A: concesion autorizada, actor, motivo, correlacion, ambito global y auditoria. Acta `docs/P1-015-E-POSITIVO-AUDITORIA-PRIVILEGIADA-DEV.md`. Sin cambios productivos, pruebas locales NO ejecutadas; CI, review y merge requieren evidencia independiente.
