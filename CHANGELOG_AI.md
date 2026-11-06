@@ -1,3 +1,9 @@
+## 2026-11-06 — P2-001.D: ampliar matriz de lectura comercial a proveedores y compras (DEV)
+
+- Task nativa Javier :20, TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Se amplió el test `[Theory]` `P2001CMatrizComercialLecturaTests` de tres a cinco endpoints, añadiendo `GET proveedores` y `GET compras` con `[Authorize]`, sin `[AllowAnonymous]` y `RequierePermiso(ModuloSistema.Proveedores/Compras, AccionPermiso.Ver)`; el control se ejecuta sobre atributos del contrato HTTP, no sobre respuestas con JWT real.
+- Dependencia `P2-001.C` LISTO, COLA!O187=SI y COLA!G187=SI al inicio. Prueba causal definida y verificada estáticamente contra controladores `ProveedoresController.GetAll` y `ComprasController.GetPaged`; `dotnet test` no se ejecutó localmente. GitHub CI exact-HEAD y revisión independiente por otra Task requeridos antes del merge FIFO.
+- Riesgo contenido: solo archivo de test y CHANGELOG, sin cambios en servicios, DbContext, endpoints productivos, migraciones, JWT, permisos, secrets, rulesets o entornos. No afirma aislamiento multiempresa por metadatos; rollback por revert protegido del test y esta entrada.
+
 ## 2026-11-06 — P2-004.C: delimitar proveedores por EmpresaId verificado (DEV)
 
 - Task nativa Javier :30, TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`. Prueba xUnit dirigida `backend/tests/Solqaryn.Tests/P2004CProveedoresEmpresaIdTests.cs`: proveedores A/B y marca comercial RBAC verificada, cabecera `X-Empresa-Id` falsificada y alternancia de empresa con el mismo `AppDbContext` (EF InMemory).
