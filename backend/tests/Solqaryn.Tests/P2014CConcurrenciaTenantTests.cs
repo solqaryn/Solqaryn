@@ -56,16 +56,22 @@ public sealed class P2014CConcurrenciaTenantTests
         requestA.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = empresaA.Id;
         requestB.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = empresaB.Id;
 
-        await using var dbA = new AppDbContext(options,
-            tenantHttpContextAccessor: new HttpContextAccessor { HttpContext = requestA });
-        await using var dbB = new AppDbContext(options,
-            tenantHttpContextAccessor: new HttpContextAccessor { HttpContext = requestB });
+        // HttpContextAccessor usa AsyncLocal; cada solicitud debe establecer su
+        // contexto DENTRO de su propio flujo asincrono antes de crear AppDbContext.
+        // Construir ambos accessors secuencialmente en el mismo flujo ambient
+        // filtraria erradamente ambas lecturas por la ultima empresa.
+        async Task<int[]> ConsultarEnSolicitudAsync(DefaultHttpContext request)
+        {
+            var accessor = new HttpContextAccessor { HttpContext = request };
+            await using var db = new AppDbContext(options, tenantHttpContextAccessor: accessor);
+            return await db.Ventas.AsNoTracking().Select(v => v.Id).ToArrayAsync();
+        }
 
-        var consultaA = dbA.Ventas.AsNoTracking().Select(v => v.Id).ToArrayAsync();
-        var consultaB = dbB.Ventas.AsNoTracking().Select(v => v.Id).ToArrayAsync();
-        await Task.WhenAll(consultaA, consultaB);
+        var consultaA = Task.Run(() => ConsultarEnSolicitudAsync(requestA));
+        var consultaB = Task.Run(() => ConsultarEnSolicitudAsync(requestB));
+        var resultados = await Task.WhenAll(consultaA, consultaB);
 
-        Assert.Equal(new[] { ventaA.Id }, consultaA.Result);
-        Assert.Equal(new[] { ventaB.Id }, consultaB.Result);
+        Assert.Equal(new[] { ventaA.Id }, resultados[0]);
+        Assert.Equal(new[] { ventaB.Id }, resultados[1]);
     }
 }
