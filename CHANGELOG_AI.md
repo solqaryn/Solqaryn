@@ -1,3 +1,9 @@
+## 2026-11-06 — NO_IDLE_PENDING_RELEASE_V9: continuar trabajo habilitado aunque VALIDANDO no este vacio (DEV)
+
+- Prioridad real: merge protegido de VALIDANDO apto por created_at; en ausencia de fusion apta, continuar inmediatamente con PENDIENTE elegible sin FIFO por ID/fecha y sin requerir un LISTO previo.
+- Se amplia la lectura advisory del selector a programas autorizados P, I8 y G0 del Plan Comercial Inicial vigente; los IDs externos y conflicto positivo siguen bloqueados. COLA!O debe calcular para esos programas desarrollo con dependencia VALIDANDO/LISTO; COLA!G sigue exigiendo LISTO para merge.
+- No se tocan checks required, SQL, auth, workflows, ni QA/main/PROD. Revision independiente, rama unica, validaciones y bitacora se preservan. Rollback por PR protegido y restauracion de formula O anterior en Sheets.
+
 ## 2026-11-05 — P1-014.B: prueba de no anunciar éxito antes de confirmación HTTP (DEV)
 
 - Task Javier :30, `6aeacb7820ac8191b7d768a6f33dfa09`: regresión P1014B negativa/positiva de alta guiada pendiente y error tardío sin falso éxito; xUnit dirigido sobre fixture P1014A, acta `docs/P1-014-B-CIERRE-ATOMICO-ALTA-GUIADA-DEV.md`. No se acredita COMMIT MySQL por mock Angular/EF InMemory. Desarrollo con COLA!O71=SI y dependencia P1-014.E todavía VALIDANDO; merge/LISTO prohibidos hasta COLA!G71=SI, CI exact-SHA y revisión ajena. Sin ejecución local de tests; sin cambios productivos.
