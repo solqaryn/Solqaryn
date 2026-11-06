@@ -1,3 +1,9 @@
+## 2026-11-06 — P2-005.D: compras con NumeroCompra homónimo en tenants A/B (DEV)
+
+- Autor real Task Javier :20 (`6adc2e4bd8a48191ac7d8641ed95a1a3`), rama exclusiva `work/solqaryn-p2-005-d`; prueba causal xUnit `backend/tests/Solqaryn.Tests/P2005DComprasNumeroHomonimoTests.cs` sobre dos compras sintéticas de igual número pero distinta EmpresaId, verificación del filtro EF de ambas empresas con cabecera `X-Empresa-Id` falsificada y conmutación de marca comercial verificada en el mismo DbContext.
+- Complementa P2-005.C, que usaba números distintos; alcance únicamente EF InMemory. No se afirma autenticación HTTP/JWT/RBAC, unicidad MySQL ni ejecución local de dotnet. No cambia producción, migraciones, secretos, reglas, servicios, QA/main/PROD.
+- Dependencia P2-005.C LISTO, COLA!O191=SI y G191=SI antes de iniciar; wymag revisión técnica independiente por Task ajena, CI required + Directed exact-SHA y merge FIFO protegido antes de LISTO; revert proporcional por PR protegido.
+
 ## 2026-11-06 — P2-010.C: exportaciones CSV/XLSX aisladas por EmpresaId (DEV)
 
 - Task física Alex :10 (`6adbbc9ad9e88191bea8eb69104afb25`); prueba xUnit `backend/tests/Solqaryn.Tests/P2010CExportacionesEmpresaIdTests.cs`. Datos de auditoría A/B sintéticos, marcador comercial verificado, cabecera `X-Empresa-Id` suplantada, cambio de tenant en el mismo `AppDbContext`, falta de marca y rechazo explícito de formato ZIP no soportado.
