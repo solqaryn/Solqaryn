@@ -1,3 +1,9 @@
+## 2026-11-06 — P2-007.C: aislamiento de ajustes de inventario por EmpresaId (DEV)
+
+- Task Javier :30, TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`. Regresion xUnit `backend/tests/Solqaryn.Tests/P2007CInventarioEmpresaIdTests.cs`: dos empresas, owner persistido y lecturas EF aisladas tras alternar la marca tenant verificada.
+- Alcance limitado a ajustes de inventario en borrador y filtros EF; no certifica Kardex global, HTTP, JWT/RBAC, MySQL ni otras rutas. Test definido, sin ejecucion local certificada; CI dirigida, los tres checks obligatorios exact-HEAD y revision de otra Task siguen pendientes.
+- Sin cambios productivos, migraciones, secretos, workflows o entornos. Rollback: revertir test y entrada por PR protegido.
+
 ## 2026-11-06 — CI por impacto: evitar MySQL 23 minutos en tests P1 anidados de solo regresión (DEV)
 
 - El clasificador fail-closed acepta wrappers offline P1 dentro de subcarpetas ordinarias (p. ej. API/Controllers/P1013B*Tests.cs), sin código de DB/Integration ni cambios de runtime; actualmente un falso no-reconocimiento activaba MySQL 8.4 durante 23m10s en P1-013.B.
