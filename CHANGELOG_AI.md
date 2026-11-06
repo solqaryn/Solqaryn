@@ -1,3 +1,9 @@
+## 2026-11-06 — P2-003.C: regresión dirigida de clientes por EmpresaId (DEV)
+
+- Ejecutor interactivo institucional `solqaryn-platform`, sin suplantar ninguna Task física. Prueba `backend/tests/Solqaryn.Tests/P2003CClientesEmpresaIdTests.cs`: filas A/B, marca RBAC autorizada, header de otra empresa y cambio de contexto sin contaminar el filtro EF.
+- Solo test y acta; no se cambian entidades, DbContext, seguridad HTTP, base de datos, migraciones ni entornos. EF InMemory no certifica SQL/HTTP. CI y revisión sobre HEAD exacto pendientes hasta evidencia GitHub; no autoaprobación.
+- Rollback por PR protegido y conservación de la trazabilidad de P2-003.C.
+
 ## 2026-11-06 — CI dirigida compatible con I8/G0 en el Plan Comercial Inicial (DEV)
 
 - El selector V9 y COLA!O habilitan I8/G0, pero Scope Lock solo aceptaba P y el workflow de pruebas dirigidas solo escuchaba ramas P; se corrige esa incompatibilidad sin abrir el gobierno a programas ajenos.
