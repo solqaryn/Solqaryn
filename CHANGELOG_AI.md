@@ -10,6 +10,13 @@
 - Solo test y acta; no se cambian entidades, DbContext, seguridad HTTP, base de datos, migraciones ni entornos. EF InMemory no certifica SQL/HTTP. CI y revisión sobre HEAD exacto pendientes hasta evidencia GitHub; no autoaprobación.
 - Rollback por PR protegido y conservación de la trazabilidad de P2-003.C.
 
+## 2026-11-06 — P2-005.C: compras aisladas por EmpresaId verificado (DEV)
+
+- Task Javier :40, `6adc2e55f47c81919f6374e561687076`: prueba xUnit `backend/tests/Solqaryn.Tests/P2005CComprasEmpresaIdTests.cs` para compras borrador de empresas A/B, header `X-Empresa-Id` falsificado y cambio del tenant verificado sobre el mismo DbContext.
+- Sólo test, sin cambios de producción/API/SQL/migraciones, credenciales, workflows ni rulesets. `COLA!O173=SI` y `COLA!G173=SI` al iniciar; dependencia P1-016.B LISTO.
+- Sin ejecución local .NET; CI y revisión independiente por TASK_ID ajeno son requisitos antes del merge. EF InMemory no demuestra acceso HTTP JWT/RBAC, persistencia real MySQL ni política de solicitudes sin tenant; no afirmarlo.
+- Rollback: revert protegido exclusivo del test y esta entrada, conservando otros registros.
+
 ## 2026-11-06 — P2-002.C: regresión de productos por EmpresaId y límite HTTP (DEV)
 
 - Autora Task Alex :10 (6adbbc9ad9e88191bea8eb69104afb25). La prueba `P2002CProductoEmpresaIdTests.cs` delimita productos A/B con marca RBAC verificada y comprueba que una cabecera `X-Empresa-Id` de B no cambia la lectura de A.
