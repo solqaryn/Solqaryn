@@ -1,3 +1,8 @@
+## 2026-11-05 — P1-013.D: negativo dirigido de onboarding apagado (DEV)
+
+- Task Javier :20 `6adc2e4bd8a48191ac7d8641ed95a1a3` anade prueba P1013D sobre fixture P1013A integrado: `onboarding=false, aislamiento=true`, rechazo 503 y cero efectos persistidos.
+- Acta `docs/P1-013-D-REGRESION-NEGATIVA-ONBOARDING-DEV.md`. Prueba local NO_EJECUTADA: dotnet no disponible; exigir CI causal, revision independiente y dependencias LISTO (COLA!G62=SI) antes de merge/LISTO. Sin cambios productivos ni de flags.
+
 ## 2026-11-05 — P1-015.E: prueba positiva dirigida de auditoria privilegiada (DEV)
 
 - Javier :30, Task `6aeacb7820ac8191b7d768a6f33dfa09`: xUnit filtrable P1015E reutiliza afirmaciones reales del caso positivo P1015A: concesion autorizada, actor, motivo, correlacion, ambito global y auditoria. Acta `docs/P1-015-E-POSITIVO-AUDITORIA-PRIVILEGIADA-DEV.md`. Sin cambios productivos, pruebas locales NO ejecutadas; CI, review y merge requieren evidencia independiente.
