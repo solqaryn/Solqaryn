@@ -39,7 +39,7 @@ jobs:
               return hashlib.sha1(b'blob ' + str(len(data)).encode() + b'\0' + data).hexdigest()
           def api(suffix, payload=None):
               # Creates unreferenced TREE objects only. No refs, PRs or settings writes.
-              require('..' not in suffix and not suffix.startswith('/'), 'Unsafe API path')
+              require('..' not in suffix.split('/') and not suffix.startswith('/'), 'Unsafe API path')
               require(payload is None or suffix == 'git/trees', 'Write endpoint forbidden')
               request = urllib.request.Request('https://api.github.com/repos/' + REPO + '/' + suffix,
                   data=None if payload is None else json.dumps(payload, ensure_ascii=False).encode(),
@@ -130,7 +130,7 @@ jobs:
               require(os.environ.get('GITHUB_ACTOR') == 'solqaryn-platform', 'Wrong initiating account')
               bootstrap = os.environ['GITHUB_SHA']
               boot_commit = api('git/commits/' + bootstrap)
-              require([p['sha'] for p in boot_commit['parents']] == [TARGETS[0][2]], 'Unexpected bootstrap parent')
+              require([p['sha'] for p in boot_commit['parents']] == ['c20a3d73a76d9c77e6db5daef1446b2443763b6f'], 'Unexpected bootstrap parent')
               boot_diff = api('compare/' + TARGETS[0][2] + '...' + bootstrap)
               require([(f['filename'], f['status']) for f in boot_diff['files']] == [(HELPER, 'added')],
                       'Bootstrap changed unrelated content')
