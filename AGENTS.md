@@ -1,3 +1,9 @@
+## V11 — EN_PROGRESO visible y Scope Lock sin espera CI opcional (2026-11-06)
+
+Continuar V10 FIFO estricto de PR OPEN para MERGE; si el primero no cumple los tres REQUIRED exact-HEAD, revision independiente, seguridad y dependencias COLA!G=SI, ninguno posterior se fusiona. Pero el desarrollo de PENDIENTE con COLA!O=SI y predecesoras VALIDANDO/LISTO continua sin esperar VALIDANDO vacio ni usar FIFO estricto en PENDIENTE.
+Al comenzar trabajo REAL en rama única verificada, registrar PLAN_MAESTRO!H=EN_PROGRESO e I=responsable/TASK_ID auténticos, BITACORA PENDIENTE→EN_PROGRESO y readback COLA!E/I por formulas. No CAS ni reserva; si no empezó código, mantener PENDIENTE. Al entregar código, pruebas causales y PR originales registrar EN_PROGRESO→VALIDANDO, limpiar responsable I, preservar autor real y hacer readback; no esperar CI opcional. Si se interrumpe, EN_PROGRESO refleja ejecución pendiente real para reanudar solo por autor/traspaso autorizado. Tareas muy rápidas pueden cambiar de estado en segundos; BITACORA conserva ambos eventos.
+Selector: P/I8/G0 del plan vigente, COLA!O=SI, dependencias VALIDANDO/LISTO para desarrollo, developerFor solo preferencia, no PR/branch/owner/editor duplicado; COLA!G solo LISTO para MERGE.
+Scope Lock: pruebas opcionales MySQL/BROAD pueden continuar asincronicamente exclusivamente en cambios no-runtime allowlisted con revisión formal cuando aplique, checks exact-HEAD y regresiones. No eximir fallos ya terminados, checks no reconocidos, riesgo DB/runtime, seguridad, directed comercial ni 3 checks obligatorios de branch protection; no cambiar ruleset ni QA/main/PROD.
 ## PRECEDENCIA STRICT_FIFO_NO_IDLE_V10 — 2026-11-06 — ORDEN EXPLICITA DEL PROPIETARIO
 
 Esta regla V10 reemplaza el fallback de V9/V8.2 que saltaba PR antiguos bloqueados para MERGE. Mantiene SIN CAMBIOS la liberacion de desarrollo al entrar un requisito en VALIDANDO y deja COLA!O y COLA!G intactas.
