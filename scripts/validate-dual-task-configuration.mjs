@@ -63,9 +63,9 @@ export function selectWork(tasks,stateById,account,activeReviewIds=new Set(),tas
   if(owned>=15) return {action:'NO_ELIGIBLE',reason:'TASK_CAPACITY_15'};
   const review=tasks.find(t=>t.state==='VALIDANDO' && SCOPE.test(t.id||'') &&
     TASK.test(t.authorTaskId||'') && t.authorTaskId!==taskId &&
-    reviewerFor(t.id,t.authorTaskId,roster)===taskId &&
+    roster.includes(taskId) &&
     !activeReviewIds.has(t.id) && t.activeEditorConflict!==true &&
-    t.activeReviewerConflict!==true && t.reviewerAllowed===true &&
+    t.activeReviewerConflict!==true && t.reviewWorkAvailable!==false && t.reviewerAllowed===true &&
     t.reviewPermissionVerified===true && PR.test(t.prUrl||'') &&
     (t.ownerTaskId==null || t.ownerTaskId===taskId || t.authorDeliveryVerified===true ||
       (t.prMerged===true && t.githubCurrentVerified===true && t.activeEditorConflict!==true)));
@@ -76,7 +76,8 @@ export function selectWork(tasks,stateById,account,activeReviewIds=new Set(),tas
   if(tasks.filter(t=>['EN_PROGRESO','VALIDANDO'].includes(t.state)).length>=15)
     return {action:'NO_ELIGIBLE',reason:'GLOBAL_WIP_15'};
   const work=tasks.filter(t=>t.state==='PENDIENTE'&&SCOPE.test(t.id||'')&&
-    t.developmentEnabled===true&&developmentDependenciesSatisfied(t,stateById)&&
+    (t.developmentEnabled===true||t.developmentEnabled==='SI')&&
+    developmentDependenciesSatisfied(t,stateById)&&
     t.permissionsVerified===true&&t.ownerTaskId==null&&
     t.activeEditorConflict!==true&&t.activeAuthorConflict!==true&&
     t.branchExists!==true&&t.prExists!==true&&!t.conflictingClaim)
@@ -217,6 +218,11 @@ else if(process.argv.includes('--self-test')){
   const ownerAccount=(developer===ids[3]||developer===ids[4])?'ALEX_CHATGPT':'JAVIER_CHATGPT';
   if(selectWork([pending],{},ownerAccount,new Set(),developer,true).action!=='CLAIM')
     throw Error('development enabled missing');
+  if(selectWork([{...pending,developmentEnabled:'SI'}],{},ownerAccount,new Set(),developer,true).action!=='CLAIM')
+    throw Error('COLA O=SI string must release development');
+  const busyReview={...row,reviewWorkAvailable:false};
+  if(selectWork([busyReview,pending],{},ownerAccount,new Set(),developer,true).action!=='CLAIM')
+    throw Error('already reviewed VALIDANDO must fall back to PENDIENTE');
   const successor={...pending,id:'I8-001.C',dependencies:['P1-016.B']};
   if(selectWork([successor],{'P1-016.B':'VALIDANDO'},ownerAccount,new Set(),developer,true).action!=='CLAIM')
     throw Error('VALIDANDO prerequisite did not release');
