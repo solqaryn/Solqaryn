@@ -1,3 +1,9 @@
+
+## 2026-11-05 — P1-013.B — preparación de cierre de gates de onboarding (DEV)
+
+- Task física Javier :20 `6adc2e4bd8a48191ac7d8641ed95a1a3` añadió el test dirigido `P1013B` sobre la matriz negativa heredada `P1013A` y el acta `docs/P1-013-B-CONCILIACION-GATES-ONBOARDING-DEV.md` con recibos C/D/E todavía pendientes.
+- `COLA!O70=SI` permite el desarrollo; `COLA!G70=NO` prohíbe merge/LISTO mientras P1-013.E siga VALIDANDO. Test no ejecutado localmente; CI/revisión ajena y evidencia de dependencias no certificadas. Sin cambios productivos ni flags DEV.
+
 ## 2026-11-06 — FIFO_READY_V8_2: REVIEW_FIRST y cierre P1 no bloqueante (DEV)
 
 - VALIDANDO -> LISTO primero, luego una PENDIENTE por cierre; FIFO por PR created_at ENTRE PR realmente aptos y dependencias LISTO, nunca por fin de CI; volver a leer dev entre merges.
