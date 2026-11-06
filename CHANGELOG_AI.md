@@ -1,3 +1,6 @@
+## 2026-11-05 — P1-016.E: positivo dirigido de sesion global sin tenant (DEV)
+
+- Task nativa Javier :00 (`6adbb9fff1548191a1bd5b30d9e9984a`) y rama unica `work/solqaryn-p1-016-e`: prueba xUnit `P1016E` reutiliza las aserciones positivas existentes `P1016A_SuperadminSinMembresiasEntraAunqueEmpresaPilotoEsteInactiva` (respuesta 200, auditoria Exito sin EmpresaId, sin membresia; empresa piloto inactiva). Acta `docs/P1-016-E-POSITIVO-SESION-PLATAFORMA-DEV.md`. Solo prueba/documentacion, sin codigo productivo ni despliegue. No hay dotnet local; CI, TECH_REVIEW independiente, merge y LISTO quedan sujetos a evidencia exact-SHA.
 
 ## 2026-11-05 — P1-013.B — preparación de cierre de gates de onboarding (DEV)
 
