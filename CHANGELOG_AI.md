@@ -1,3 +1,9 @@
+## 2026-11-06 — P2-003.D: clientes homonimos aislados por empresa verificada (DEV)
+
+- Autor real Javier :20 / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Nueva regresión xUnit `P2003DClientesHomonimosEmpresaIdTests.cs`: clientes A/B con mismo nombre e identidad, cabecera `X-Empresa-Id` de otro tenant y alternancia RBAC verificada en el mismo `AppDbContext`. La lectura EF se limita a la empresa autorizada y sin marca permanece global por contrato.
+- Solo prueba efímera EF InMemory y este registro; no hay cambio de backend productivo, migraciones, SQL real, JWT/RBAC, API, secretos, workflows ni QA/main/PROD. La prueba no certifica HTTP, MySQL ni política de cuarentena sin tenant; exigir CI Directed y los tres required checks exact HEAD, revisión independiente de TASK_ID distinta y merge FIFO protegido.
+- Dependencia P2-003.C LISTO; COLA!O189=SI y G189=SI al inicio; rama exclusiva `work/solqaryn-p2-003-d`. Reversión por revert protegido del test y esta entrada; preservar cambios ajenos.
+
 ## 2026-11-06 — P2-004.C: delimitar proveedores por EmpresaId verificado (DEV)
 
 - Task nativa Javier :30, TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`. Prueba xUnit dirigida `backend/tests/Solqaryn.Tests/P2004CProveedoresEmpresaIdTests.cs`: proveedores A/B y marca comercial RBAC verificada, cabecera `X-Empresa-Id` falsificada y alternancia de empresa con el mismo `AppDbContext` (EF InMemory).
