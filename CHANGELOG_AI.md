@@ -1,8 +1,8 @@
-## 2026-11-06 — P2-008.C: facturas privadas ante cabecera de otra empresa (DEV)
+## 2026-11-06 — P2-004.C: delimitar proveedores por EmpresaId verificado (DEV)
 
-- Task Javier :40, TASK_ID `6adc2e55f47c81919f6374e561687076`. Regresion dirigida `backend/tests/Solqaryn.Tests/P2008CFacturasPrivadasEmpresaIdTests.cs`: factura/venta A y B, marca verificada, cabecera `X-Empresa-Id` falsificada, cambio de tenant en el mismo contexto y bloqueo de lectura privada sin marca con dos empresas.
-- Solo test EF InMemory de `FacturaRepository` y esta entrada; no cambia runtime, HTTP, JWT/RBAC, bases de datos, migraciones, reglas GitHub, secretos ni QA/main/PROD. No demuestra acceso HTTP real, emision PDF, SQL/MySQL, firma JWT ni permisos globales; esos controles conservan su propia CI.
-- Prueba local .NET no ejecutada en este runtime; exigir suite dirigida y 3 required checks GitHub exact HEAD, revision independiente de otra Task y FIFO estricto antes de merge/LISTO. Reversion: revert protegido de este test y su entrada conservando cambios ajenos.
+- Task nativa Javier :30, TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`. Prueba xUnit dirigida `backend/tests/Solqaryn.Tests/P2004CProveedoresEmpresaIdTests.cs`: proveedores A/B y marca comercial RBAC verificada, cabecera `X-Empresa-Id` falsificada y alternancia de empresa con el mismo `AppDbContext` (EF InMemory).
+- Alcance limitado a lectura EF; NO demuestra autenticación JWT, guard HTTP sin marca, SQL MySQL ni aislamiento total de plataforma. Sin cambios productivos, migraciones, permisos, secretos, reglas GitHub, workflows ni entornos. CI exact-SHA y revisión independiente por Task distinta pendientes.
+- Dependencia `P1-016.B` LISTO; `COLA!O172=SI`, `COLA!G172=SI` al iniciar. Rollback: revert del test y esta entrada mediante PR protegido; no desactivar controles.
 
 ## 2026-11-06 — P2-003.C: regresión dirigida de clientes por EmpresaId (DEV)
 
@@ -63,6 +63,12 @@
 
 - Javier :20 (Task `6adc2e4bd8a48191ac7d8641ed95a1a3`) entrega wrapper xUnit `P1016B` de cinco casos reales heredados de `P1016A`: permiso global sin tenant, rechazo de admin empresarial con cabecera, rol global ausente, usuario bloqueado y HTTP no autenticado. Acta `docs/P1-016-B-CIERRE-SESION-PLATAFORMA-DEV.md`.
 - COLA!O60=SI habilita desarrollo, pero COLA!G60=NO impide merge/LISTO mientras P1-016.E no sea LISTO. Sin ejecucion local; no afirmar CI, pruebas remotas, JWT real/MySQL ni review. Sin cambios productivos, flags, secretos ni QA/main/PROD.
+
+## 2026-11-06 — P2-008.C: facturas privadas ante cabecera de otra empresa (DEV)
+
+- Task Javier :40, TASK_ID `6adc2e55f47c81919f6374e561687076`. Regresion dirigida `backend/tests/Solqaryn.Tests/P2008CFacturasPrivadasEmpresaIdTests.cs`: factura/venta A y B, marca verificada, cabecera `X-Empresa-Id` falsificada, cambio de tenant en el mismo contexto y bloqueo de lectura privada sin marca con dos empresas.
+- Solo test EF InMemory de `FacturaRepository` y esta entrada; no cambia runtime, HTTP, JWT/RBAC, bases de datos, migraciones, reglas GitHub, secretos ni QA/main/PROD. No demuestra acceso HTTP real, emision PDF, SQL/MySQL, firma JWT ni permisos globales; esos controles conservan su propia CI.
+- Prueba local .NET no ejecutada en este runtime; exigir suite dirigida y 3 required checks GitHub exact HEAD, revision independiente de otra Task y FIFO estricto antes de merge/LISTO. Reversion: revert protegido de este test y su entrada conservando cambios ajenos.
 
 ## 2026-11-05 — P1-016.E: positivo dirigido de sesion global sin tenant (DEV)
 
