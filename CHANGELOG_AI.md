@@ -1,3 +1,9 @@
+## 2026-11-06 — P2-003.C: regresión dirigida de clientes por EmpresaId (DEV)
+
+- Ejecutor interactivo institucional `solqaryn-platform`, sin suplantar ninguna Task física. Prueba `backend/tests/Solqaryn.Tests/P2003CClientesEmpresaIdTests.cs`: filas A/B, marca RBAC autorizada, header de otra empresa y cambio de contexto sin contaminar el filtro EF.
+- Solo test y acta; no se cambian entidades, DbContext, seguridad HTTP, base de datos, migraciones ni entornos. EF InMemory no certifica SQL/HTTP. CI y revisión sobre HEAD exacto pendientes hasta evidencia GitHub; no autoaprobación.
+- Rollback por PR protegido y conservación de la trazabilidad de P2-003.C.
+
 ## 2026-11-06 — P2-002.C: regresión de productos por EmpresaId y límite HTTP (DEV)
 
 - Autora Task Alex :10 (6adbbc9ad9e88191bea8eb69104afb25). La prueba `P2002CProductoEmpresaIdTests.cs` delimita productos A/B con marca RBAC verificada y comprueba que una cabecera `X-Empresa-Id` de B no cambia la lectura de A.
