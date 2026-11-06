@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 // Classify trusted exact-SHA checks to avoid idle scheduled-Task runs.
 export const HOURLY_LISTO_TARGET = 6;
 export const THROUGHPUT_WINDOW_MS = 60 * 60 * 1000;
-const SCOPE = /^P\d+-\d{3}\.[A-Z]$/;
+const SCOPE = /^(?:P\d+|I8|G0)-\d{3}\.[A-Z]$/;
 const SHA = /^[a-f0-9]{40}$/i;
 const TASK_ID = /^[a-f0-9]{32}$/i;
 const trusted = c => c?.app?.id === 15368 && typeof c?.name === 'string';
@@ -82,6 +82,9 @@ function selfTest() {
     requiredCheckNames:['Security','Build'],checks:[check('Security'),check('Build')]};
   assert.equal(classifyCiContinuation(base).action,'CI_GREEN_VERIFY_MERGE_AND_POSTMERGE');
   assert.equal(classifyCiContinuation(base).canMarkListo,false);
+  for(const id of ['P2-003.C','I8-001.C','G0-006.C'])
+    assert.equal(classifyCiContinuation({...base,scopeId:id}).action,'CI_GREEN_VERIFY_MERGE_AND_POSTMERGE');
+  assert.equal(classifyCiContinuation({...base,scopeId:'X9-001.C'}).action,'NO_GO_UNVERIFIED_INPUT');
   assert.equal(classifyCiContinuation({...base,githubReadbackVerified:false}).action,'NO_GO_UNVERIFIED_INPUT');
   assert.equal(classifyCiContinuation({...base,checks:[check('Security')]}).action,'NO_GO_REQUIRED_CHECK_MISSING_OR_UNTRUSTED');
   assert.equal(classifyCiContinuation({...base,reviewerTaskId:author}).action,'NO_GO_SELF_REVIEW_OR_INVALID_REVIEWER');

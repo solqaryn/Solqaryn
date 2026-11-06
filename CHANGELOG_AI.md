@@ -4,6 +4,19 @@
 - Revisión correctiva del fallo CI: `CommercialTenantReadFilterModel.Apply` permite por diseño consulta EF global cuando falta `AuthorizedReadEmpresaId`; una aserción previa `Assert.Empty` era incompatible con el contrato existente y falló en la CI. El test ahora comprueba explícitamente el límite real sin afirmar aislamiento EF sin marca. El gate HTTP P0 de dos empresas debe impedir el acceso sin marca (`UnscopedCommercialTenantGuardTests.DosEmpresas_NoPuedenRecibirDatosComerciales`). No habilitar multiempresa ni proclamar seguridad completa por este test.
 - Cambio exclusivamente de pruebas InMemory y esta nota, sin alterar runtime, JWT/RBAC, migraciones, permisos ni secretos. CI dirigida exact-SHA y revisión independiente renovada pendientes; no marcar LISTO antes de controles, merge protegido y readback. Reversión por revert protegido de este test y nota.
 
+## 2026-11-06 — CI por impacto: evitar MySQL 23 minutos en tests P1 anidados de solo regresión (DEV)
+
+- El clasificador fail-closed acepta wrappers offline P1 dentro de subcarpetas ordinarias (p. ej. API/Controllers/P1013B*Tests.cs), sin código de DB/Integration ni cambios de runtime; actualmente un falso no-reconocimiento activaba MySQL 8.4 durante 23m10s en P1-013.B.
+- Se mantienen los tres checks requeridos por GitHub dev, revisión independiente y pruebas dirigidas. Nunca se omiten suites MySQL ante migraciones, test DB/integration, rutas protegidas/desconocidas, ausencia de archivo o fallos del clasificador.
+- Quince regresiones añadidas al self-test del clasificador. La prueba opcional integral sigue disponible para cambios de impacto real y workflow_dispatch. Reversión: revertir este PR protegido.
+
+## 2026-11-06 — V11 progreso visible y CI opcional asíncrona (DEV)
+
+- Registrar EN_PROGRESO real antes de desarrollar, PLAN H/I y BITACORA; tras PR pasar a VALIDANDO, conservando autoria y readback. Sin CAS.
+- Selector usar COLA!O y dependencia VALIDANDO/LISTO, developerFor no exclusivo e IDs I8/G0; FIFO V10 exclusivo para merges.
+- Trusted certifier permite diferir known optional broad cuando diffs no-runtime allowlisted y revisión/pruebas completas; no difiere fallas, unknown checks, DB/runtime ni REQUIRED.
+- Sin backend productivo ni migraciones/secrets; rollback por PR protegido.
+
 ## 2026-11-06 — STRICT_FIFO_NO_IDLE_V10: merge sin adelantamientos, desarrollo continuo (DEV)
 
 - El propietario exige FIFO estricto para fusionar contra dev: un PR abierto mas antiguo bloquea el merge de los posteriores aunque esten CLEAN; la regla corrige V8/V9, que permitian saltar bloqueados.

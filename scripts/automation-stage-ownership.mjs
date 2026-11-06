@@ -1,8 +1,23 @@
 // Read-only validation of author provenance and stage transition.
 // No persistent reviewer row reservation; one reviewer is selected by deterministic routing.
 const TASK = /^[a-f0-9]{32}$/i;
-const SCOPE = /^P\d+-\d+\.[A-Z]$/;
+const SCOPE = /^(?:P\d+|I8|G0)-\d+\.[A-Z]$/;
 const validTask = id => typeof id === 'string' && TASK.test(id);
+export function validateVisibleProgressEntry(p){
+ const errors=[];
+ if(!p||!SCOPE.test(p.scopeId||'')||!validTask(p.authorTaskId)||
+   p.actorTaskId!==p.authorTaskId||p.fromState!=='PENDIENTE'||
+   p.toState!=='EN_PROGRESO'||p.developmentEnabled!==true)
+   errors.push('start_identity');
+ if(p?.realWorkStarted!==true||p?.githubBranchUniqueVerified!==true||
+   p?.branchReadbackVerified!==true||p?.activeEditorConflict===true||
+   p?.duplicatePrExists===true||p?.previousOwnerPresent===true)
+   errors.push('start_actual_work');
+ if(p?.planProgressReadbackVerified!==true||p?.planOwnerTaskId!==p?.actorTaskId||
+   p?.colaProgressReadbackVerified!==true||p?.bitacoraStartReadbackVerified!==true)
+   errors.push('start_readback');
+ return errors;
+}
 export function validValidationRelease(t) {
   return Boolean(t && SCOPE.test(t.id || '') && t.state === 'VALIDANDO' &&
     validTask(t.authorTaskId) &&
@@ -68,12 +83,24 @@ export function assertStageReleaseNegativeTests(){
      !reviewReleaseEligible(delivered,b) || reviewReleaseEligible(delivered,a) ||
      reviewReleaseEligible({...delivered,activeReviewerConflict:true},b))
     throw Error('stage provenance or distinct reviewer');
+  const started={scopeId:'I8-001.C',authorTaskId:a,actorTaskId:a,
+   fromState:'PENDIENTE',toState:'EN_PROGRESO',developmentEnabled:true,
+   realWorkStarted:true,githubBranchUniqueVerified:true,branchReadbackVerified:true,
+   planProgressReadbackVerified:true,planOwnerTaskId:a,
+   colaProgressReadbackVerified:true,bitacoraStartReadbackVerified:true};
+  if(validateVisibleProgressEntry(started).length||
+   !validateVisibleProgressEntry({...started,realWorkStarted:false}).length||
+   !validateVisibleProgressEntry({...started,githubBranchUniqueVerified:false}).length||
+   !validateVisibleProgressEntry({...started,previousOwnerPresent:true}).length||
+   !validateVisibleProgressEntry({...started,planOwnerTaskId:b}).length)
+   throw Error('actual progress stage validation');
   const release={scopeId:'P1-010.B',authorTaskId:a,requesterTaskId:a,
     fromState:'EN_PROGRESO',toState:'VALIDANDO',workDeliveredVerified:true,
     deliveryTestsVerified:true,exactHeadVerified:true,branchReadbackVerified:true,
     provenancePreserved:true,githubReadbackVerified:true,planReadbackVerified:true,
     bitacoraReadbackVerified:true,stageOwnerTaskId:null};
   if(validateReleaseTransition(release).length ||
+    !validateReleaseTransition({...release,fromState:'PENDIENTE'}).length||
     !validateReleaseTransition({...release,workDeliveredVerified:false}).length)
     throw Error('unsafe release');
   const review={scopeId:'P1-010.B',authorTaskId:a,reviewerTaskId:b,
