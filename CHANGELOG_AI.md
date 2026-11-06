@@ -5,6 +5,8 @@
 - Riesgo contenido: solo archivo de test y CHANGELOG, sin cambios en servicios, DbContext, endpoints productivos, migraciones, JWT, permisos, secrets, rulesets o entornos. No afirma aislamiento multiempresa por metadatos; rollback por revert protegido del test y esta entrada.
 
 
+- P2-001.D: reparar Directed 0 tests exact-SHA: CI #3908 sobre SHA 9b360a1efa456a29b319583b435be907bff0dcbe reportó `DIRECTED_SCOPE_NO_GO total=0` porque filtraba `FullyQualifiedName~P2001D` y los casos ampliados residían en clase P2001C. Agregada suite xUnit P2001D con dos casos que reutilizan las aserciones C para proveedores/compras; sin modificar la prueba C ni el runtime, requiere CI nueva y revisión ajena.
+
 ## 2026-11-06 — P2-010.C: exportaciones CSV/XLSX aisladas por EmpresaId (DEV)
 
 - Task física Alex :10 (`6adbbc9ad9e88191bea8eb69104afb25`); prueba xUnit `backend/tests/Solqaryn.Tests/P2010CExportacionesEmpresaIdTests.cs`. Datos de auditoría A/B sintéticos, marcador comercial verificado, cabecera `X-Empresa-Id` suplantada, cambio de tenant en el mismo `AppDbContext`, falta de marca y rechazo explícito de formato ZIP no soportado.
