@@ -26,6 +26,7 @@ public sealed class PlataformaEmpresasController : ControllerBase
     private readonly ICurrentUserService _currentUser;
     private readonly IConfiguration _configuration;
     private readonly IPlataformaScopeService _plataforma;
+    private readonly Func<string, string> _hashPasswordForOnboarding;
 
     public PlataformaEmpresasController(
         AppDbContext db,
@@ -37,6 +38,20 @@ public sealed class PlataformaEmpresasController : ControllerBase
         _currentUser = currentUser;
         _configuration = configuration;
         _plataforma = plataforma;
+        _hashPasswordForOnboarding = password => BCrypt.Net.BCrypt.HashPassword(password, workFactor: 12);
+    }
+
+    // Accessible only to the unit-test assembly. Production always uses the
+    // original BCrypt implementation through the public four-parameter constructor.
+    internal PlataformaEmpresasController(
+        AppDbContext db,
+        ICurrentUserService currentUser,
+        IConfiguration configuration,
+        IPlataformaScopeService plataforma,
+        Func<string, string> passwordHasher)
+        : this(db, currentUser, configuration, plataforma)
+    {
+        _hashPasswordForOnboarding = passwordHasher ?? throw new ArgumentNullException(nameof(passwordHasher));
     }
 
     /// <summary>
@@ -317,7 +332,7 @@ public sealed class PlataformaEmpresasController : ControllerBase
         // El coste BCrypt se calcula antes de abrir la transacción, sin writes;
         // la creación del Usuario y toda su persistencia sí comparten el commit.
         var hashNuevo = nuevo is null ? null :
-            BCrypt.Net.BCrypt.HashPassword(nuevo.Password, workFactor: 12);
+            _hashPasswordForOnboarding(nuevo.Password);
         await using var transaction = _db.Database.IsRelational()
             ? await _db.Database.BeginTransactionAsync(cancellationToken)
             : null;
