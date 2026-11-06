@@ -2,7 +2,8 @@
 
 - Revisión independiente habilitada para cualquier TASK_ID autorizado distinto del autor cuando no exista conflicto activo, conservando reviewerFor como preferencia no exclusiva.
 - El gate de merge usa únicamente checks exigidos por ruleset en SHA exacto y COLA!G=SI; los workflows opcionales extensos no bloquean. Cierre LISTO solo con merge protegido, revisión técnica ajena, CI requerida postmerge aplicable y readback institucional.
-- Self-test negativo de autoría, permiso y conflictos; sin CAS, force-push, cambios en seguridad, workflows, reglas de protección ni QA/main/PROD. Reversión: revertir este commit/PR protegido.
+- Self-test negativo de autoría, permiso y conflictos; sin CAS, force-push, cambios en rulesets, workflows, secretos o QA/main/PROD. Reversión: revertir este commit/PR protegido.
+- Scope Lock: clasificacion rapida para PR P1 exclusivamente de pruebas (rutas backend/tests anidadas y frontend .spec.ts) con CI de impacto confiable; suites opcionales siguen asincronas, errores conocidos no se ocultan, tres gates de rama se mantienen y espera activa acotada a 4 minutos.
 
 ## 2026-11-05 — P1-013.C: caso negativo de gate de aislamiento durante onboarding (DEV)
 
