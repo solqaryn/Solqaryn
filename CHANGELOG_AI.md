@@ -2,6 +2,12 @@
 
 Task Javier :00 `6adbb9fff1548191a1bd5b30d9e9984a` incorpora prueba positiva Angular P1014E y prueba xUnit dirigida que reutiliza el fixture positivo/negativo P1014A, sin modificar comportamiento productivo. Acta `docs/P1-014-E-POSITIVO-ALTA-GUIADA-DEV.md`. CI y revisión exact-SHA pendientes de verificación; no se atribuyen pruebas locales ni certificación de DEV vivo. Rama work/solqaryn-p1-014-e. Rollback limitado a estos cuatro archivos.
 
+## 2026-11-05 — P1-016.D: rechazo dirigido de sesion global empresarial (DEV)
+
+- Task nativa Javier :40 (`6adc2e55f47c81919f6374e561687076`) inicio P1-016.D con ruta determinista, dependencia P1-016.C LISTO y WIP 3/15; rama unica `work/solqaryn-p1-016-d` desde `dev@0c280ab7c4b8a56b1a0674b3a3bca438d3078e1b`.
+- `P1016DDirectedDenialTests` ejecuta el negativo real P1-016.A: administrador empresarial con cabecera X-Empresa-Id no obtiene sesion global, devuelve Forbid y deja auditoria Rechazado sin EmpresaId/rol plataforma. Fixture EF InMemory sintetica, sin modificar backend productivo.
+- Acta: `docs/P1-016-D-NEGATIVO-SESION-PLATAFORMA-DEV.md`. La prueba, CI, revision independiente, merge y LISTO **no se acreditan** antes de sus recibos exact-SHA; no equiparar prueba sintetica a HTTP/JWT/MySQL DEV.
+
 ## 2026-11-05 — P1-015.D: rechazo dirigido de autodelegacion privilegiada (DEV)
 
 - ALEX :50, TASK_ID `6adcc98a80a48191b71a5156624c21df`: `P1-015.D` pasa a EN_PROGRESO, con `P1-015.C=LISTO` y routing determinista `developerFor=ALEX50`. Rama unica `work/solqaryn-p1-015-d`, desde dev@`0c280ab7c4b8a56b1a0674b3a3bca438d3078e1b`; entrada de BITACORA!704 y readback PLAN/COLA.
@@ -5176,3 +5182,9 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Scope P1-008.A asignado únicamente a Task Javier :40 (ID `6adc2e55f47c81919f6374e561687076`) mediante rama exclusiva `work/solqaryn-p1-008-a` desde `dev@30bf43749a8eb7b164a065f5aabebfa024aa0faa`; `P0-012.B=LISTO`. No se reclaman otras microtareas.
 - Se reutiliza el controller/servicio existente para GET de membresías inactivas y PUT de reactivación por par `EmpresaId+UsuarioId`; no se modifica código de producción. Regresión A/B: reactivar A conserva B y su rol; denegar rol global como membresía empresarial; denegar actor sin autoridad global. Suite dirigida pendiente de CI exact-SHA; no se afirma E2E ni despliegue.
 - Acta `docs/P1-008-A-REACTIVACION-MEMBRESIAS-DEV.md`. Arquitectura: SIN_CAMBIO. Datos/migración/secretos: SIN_CAMBIO. Cierre solo después de checks, Scope Lock, merge protegido y readback institucional; `LISTO` NO acreditado.
+
+## 2026-11-05 — CI postmerge de dev sin cancelación por commits posteriores
+
+- Incidente real: la CI de merge SHA `5b9549c2` para P1-011.D canceló el job MySQL obligatorio porque el workflow `.github/workflows/dev-ci.yml` agrupaba todos los `push` de `dev` por `github.ref` y usaba `cancel-in-progress: true`. La incorporación posterior de P1-015.D puede cancelar CI anterior y retrasar certificaciones aunque los PR ya estén fusionados.
+- Cambio mínimo en DEV CI: para `push` la clave de concurrencia se define por SHA exacto, sin cancelación; para `pull_request` la clave sigue agrupada por ref y se cancelan ejecuciones anteriores cuando cambia el HEAD. Se conservan todos los jobs, triggers, pruebas MySQL 8.4, Scope Lock y controles de seguridad. No cambia API, UI, DB, migraciones ni QA/main/PROD.
+- Coste controlado: los push de commits diferentes pueden ejecutar CI en paralelo, pero no se esperan mediante Tasks programadas; los resultados terminales del SHA correspondiente se comprueban al certificar LISTO. La validación se hace con CI y revisión protegida del PR de gobierno. Reversión: revertir únicamente esta configuración mediante PR protegido.

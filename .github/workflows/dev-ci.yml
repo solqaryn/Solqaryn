@@ -35,8 +35,10 @@ permissions:
   contents: read
 
 concurrency:
-  group: dev-ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # La CI de cada push protegido a dev debe terminar, incluso cuando otro PR se fusiona.
+  # Solo los runs de pull_request se sustituyen al recibir un HEAD mas nuevo del mismo PR.
+  group: dev-ci-${{ github.workflow }}-${{ github.event_name == 'push' && github.sha || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   impact:
