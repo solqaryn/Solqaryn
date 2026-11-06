@@ -1,3 +1,9 @@
+## 2026-11-05 — FAST_CLOSE_V8: resolver bloqueo de VALIDANDO sin esperar CI opcional (DEV)
+
+- Revisión independiente habilitada para cualquier TASK_ID autorizado distinto del autor cuando no exista conflicto activo, conservando reviewerFor como preferencia no exclusiva.
+- El gate de merge usa únicamente checks exigidos por ruleset en SHA exacto y COLA!G=SI; los workflows opcionales extensos no bloquean. Cierre LISTO solo con merge protegido, revisión técnica ajena, CI requerida postmerge aplicable y readback institucional.
+- Self-test negativo de autoría, permiso y conflictos; sin CAS, force-push, cambios en seguridad, workflows, reglas de protección ni QA/main/PROD. Reversión: revertir este commit/PR protegido.
+
 ## 2026-11-05 — P1-015.B: cierre atomico de auditoria privilegiada sin secretos (DEV)
 
 - Task ALEX :10, `TASK_ID=6adbbc9ad9e88191bea8eb69104afb25`: por FALLBACK_PENDING_V4 inicio rama canonica `work/solqaryn-p1-015-b` sobre `dev@9ec3107e`, al comprobar `P1-015.E=LISTO`, `COLA!G72=SI`, scope libre y WIP 4/15. `P1015BPrivilegedAuditPrivacyTests` cubre concesion y autodelegacion denegada sin copiar hash ni nombre de perfil al `RegistroAuditoria` sintetico; acta `docs/P1-015-B-CIERRE-AUDITORIA-PRIVILEGIADA-DEV.md` concilia PR #3861/#3873/#3879 y limites. Sin cambios productivos, secretos, QA/main/PROD. NO_TEST_LOCAL_VERIFIED: no afirmar PASS/APPROVED/merge/LISTO sin CI y revision independiente en SHA exacto.

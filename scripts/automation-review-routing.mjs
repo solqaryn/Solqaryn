@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
-// Stable partition of work, no row locks, claim service, or persistent reviewer ownership.
-// Advisory result: each native Task must re-read the live scope and GitHub before work.
+// FAST_CLOSE_V8: reviewerFor is a deterministic preference, not an exclusive authorization.
+// No row locks, claim service or persistent reviewer ownership; re-read native run and GitHub.
 export const PRIORITY_REVIEWERS = Object.freeze({
   'P1-007.B': '6adcc98a80a48191b71a5156624c21df', // Alex :50; author Javier :20
   'P1-011.C': '6adc2e55f47c81919f6374e561687076', // Javier :40; author Alex :10
@@ -38,7 +38,11 @@ export function canReviewInNativeRun(data) {
       data.activeEditorConflict === true || data.activeReviewerConflict === true ||
       data.codexActiveConflict === true || data.permissionsVerified !== true ||
       data.state !== 'VALIDANDO' || (data.prMerged !== true && data.prExists !== true)) return false;
-  return reviewerFor(data.scopeId, data.authorTaskId, data.authorizedTaskIds) === data.actorTaskId;
+  // reviewerFor is an advisory preference, never an exclusive queue or reservation.
+  // Any authorized independent Task may review an unoccupied VALIDANDO on a native run.
+  const preferred = reviewerFor(data.scopeId, data.authorTaskId, data.authorizedTaskIds);
+  return preferred !== null && sortedEligible(data.authorizedTaskIds, data.authorTaskId)
+    .includes(data.actorTaskId);
 }
 export function selfTestReviewRouting() {
   const roster=[
@@ -59,6 +63,10 @@ export function selfTestReviewRouting() {
       nativeRunVerified:true,githubCurrentVerified:true,planCurrentVerified:true,
       permissionsVerified:true,state:'VALIDANDO',prMerged:true};
     assert.equal(canReviewInNativeRun(live),true);
+    // A free, independent non-preferred Task can clear the VALIDANDO backlog.
+    const otherReviewer = roster.find(x => x !== author && x !== a);
+    assert.equal(canReviewInNativeRun({...live,actorTaskId:otherReviewer}),true);
+    assert.equal(canReviewInNativeRun({...live,actorTaskId:'00000000000000000000000000000000'}),false);
     assert.equal(canReviewInNativeRun({...live,actorTaskId:author}),false);
     assert.equal(canReviewInNativeRun({...live,codexActiveConflict:true}),false);
     assert.equal(canReviewInNativeRun({...live,activeReviewerConflict:true}),false);
