@@ -1,3 +1,9 @@
+## 2026-11-06 — P2-010.C: exportaciones CSV/XLSX aisladas por EmpresaId (DEV)
+
+- Task física Alex :10 (`6adbbc9ad9e88191bea8eb69104afb25`); prueba xUnit `backend/tests/Solqaryn.Tests/P2010CExportacionesEmpresaIdTests.cs`. Datos de auditoría A/B sintéticos, marcador comercial verificado, cabecera `X-Empresa-Id` suplantada, cambio de tenant en el mismo `AppDbContext`, falta de marca y rechazo explícito de formato ZIP no soportado.
+- Prueba focal en CSV y lectura XLSX, sin cambios al backend productivo, JWT/RBAC, migraciones, bases de datos, secretos, flags, workflows ni entornos. EF InMemory NO demuestra protección HTTP, MySQL ni aislamiento de otros módulos; ZIP permanece no implementado. Requiere CI exact-SHA, revisión cruzada, FIFO protegido y postmerge antes de LISTO.
+- Dependencia `P1-016.B` LISTO, `COLA!G178=SI`, `COLA!O178=SI` al iniciar. Rollback: revert protegido de prueba y entrada; preservar trabajo concurrente.
+
 ## 2026-11-06 — P2-004.C: delimitar proveedores por EmpresaId verificado (DEV)
 
 - Task nativa Javier :30, TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`. Prueba xUnit dirigida `backend/tests/Solqaryn.Tests/P2004CProveedoresEmpresaIdTests.cs`: proveedores A/B y marca comercial RBAC verificada, cabecera `X-Empresa-Id` falsificada y alternancia de empresa con el mismo `AppDbContext` (EF InMemory).
