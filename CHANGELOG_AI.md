@@ -4,6 +4,12 @@
 - Alcance limitado a ajustes de inventario en borrador y filtros EF; no certifica Kardex global, HTTP, JWT/RBAC, MySQL ni otras rutas. Test definido, sin ejecucion local certificada; CI dirigida, los tres checks obligatorios exact-HEAD y revision de otra Task siguen pendientes.
 - Sin cambios productivos, migraciones, secretos, workflows o entornos. Rollback: revertir test y entrada por PR protegido.
 
+## 2026-11-06 — P2-002.C: regresión de productos por EmpresaId y límite HTTP (DEV)
+
+- Autora Task Alex :10 (6adbbc9ad9e88191bea8eb69104afb25). La prueba `P2002CProductoEmpresaIdTests.cs` delimita productos A/B con marca RBAC verificada y comprueba que una cabecera `X-Empresa-Id` de B no cambia la lectura de A.
+- Revisión correctiva del fallo CI: `CommercialTenantReadFilterModel.Apply` permite por diseño consulta EF global cuando falta `AuthorizedReadEmpresaId`; una aserción previa `Assert.Empty` era incompatible con el contrato existente y falló en la CI. El test ahora comprueba explícitamente el límite real sin afirmar aislamiento EF sin marca. El gate HTTP P0 de dos empresas debe impedir el acceso sin marca (`UnscopedCommercialTenantGuardTests.DosEmpresas_NoPuedenRecibirDatosComerciales`). No habilitar multiempresa ni proclamar seguridad completa por este test.
+- Cambio exclusivamente de pruebas InMemory y esta nota, sin alterar runtime, JWT/RBAC, migraciones, permisos ni secretos. CI dirigida exact-SHA y revisión independiente renovada pendientes; no marcar LISTO antes de controles, merge protegido y readback. Reversión por revert protegido de este test y nota.
+
 ## 2026-11-06 — CI por impacto: evitar MySQL 23 minutos en tests P1 anidados de solo regresión (DEV)
 
 - El clasificador fail-closed acepta wrappers offline P1 dentro de subcarpetas ordinarias (p. ej. API/Controllers/P1013B*Tests.cs), sin código de DB/Integration ni cambios de runtime; actualmente un falso no-reconocimiento activaba MySQL 8.4 durante 23m10s en P1-013.B.
