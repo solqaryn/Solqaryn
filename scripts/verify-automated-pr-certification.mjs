@@ -42,7 +42,11 @@ const DOCS_WITH_RUNTIME_CONTRACTS = new Set([
   'docs/PERFORMANCE_BENCHMARK_CONTRACT.md',
   'docs/DETALLES_PENDIENTES.md',
 ]);
-const OFFLINE_COMMERCIAL_UNIT = /^backend\/tests\/Solqaryn\.Tests\/P\d{4}[A-Z][A-Za-z0-9_]*Tests\.cs$/;
+// Test-only P1 changes are already exercised by required backend/security + directed scope jobs.
+// Exclude integration-suite paths, runtime code and protected contracts from the fast lane.
+const OFFLINE_COMMERCIAL_UNIT = /^backend\/tests\/Solqaryn\.Tests\/(?:[A-Za-z0-9_.-]+\/)*P\d{4}[A-Z][A-Za-z0-9_]*Tests\.cs$/;
+const FRONTEND_TEST_ONLY = /^frontend\/src\/[A-Za-z0-9_./-]+\.spec\.ts$/;
+const INTEGRATION_TEST_PATH = /(?:\/Integration(?:Tests)?\/|\/Database(?:Tests)?\/|IntegrationTests\.cs$)/i;
 
 function canDeferUnrelatedSuites(files, byName) {
   if (!Array.isArray(files) || files.length === 0 || files.length > 200) return false;
@@ -57,18 +61,21 @@ function canDeferUnrelatedSuites(files, byName) {
     if (path.startsWith('docs/') && path.endsWith('.md') &&
         !DOCS_WITH_RUNTIME_CONTRACTS.has(path) &&
         !path.startsWith('docs/evidencias/modernizacion/')) continue;
-    if (OFFLINE_COMMERCIAL_UNIT.test(path)) { unitCount++; continue; }
+    if (!INTEGRATION_TEST_PATH.test(path) &&
+        (OFFLINE_COMMERCIAL_UNIT.test(path) || FRONTEND_TEST_ONLY.test(path))) { unitCount++; continue; }
     return false;
   }
   if (!unitCount) return true; // only non-executable evidence
-  // Unit-only changes require positive trusted proof that MySQL was classified
-  // as not needed; missing, forged, queued or failed evidence is NOT fast lane.
+  // For test-only changes, a trusted successful CI-impact classifier is mandatory.
+  // Broad MySQL and other optional suites continue asynchronously. Preserve their
+  // failures as blockers if already completed; only QUEUED/IN_PROGRESS are deferred.
   const impact = byName.get(CI_IMPACT_CHECK);
   const mysql = byName.get(MYSQL_INTEGRATION_CHECK);
   return impact?.status === 'completed' && impact.conclusion === 'success' &&
     impact.app?.id === TRUSTED_GITHUB_ACTIONS_APP_ID &&
-    mysql?.status === 'completed' && mysql.conclusion === 'skipped' &&
-    mysql.app?.id === TRUSTED_GITHUB_ACTIONS_APP_ID;
+    mysql?.app?.id === TRUSTED_GITHUB_ACTIONS_APP_ID &&
+    (['queued', 'in_progress'].includes(mysql.status) ||
+      (mysql.status === 'completed' && ['success', 'skipped'].includes(mysql.conclusion)));
 }
 
 function optionalPendingDeferred(files, byName) {
@@ -203,9 +210,29 @@ function selfTest() {
     x.files = unitsLane.files; x.runs = clone(unitsLane.runs);
     x.runs.find(z=>z.name===CI_IMPACT_CHECK).app.id = 42; return x;
   });
-  assertReject('unit with MySQL integration required', x => {
-    x.files = unitsLane.files; x.runs = clone(unitsLane.runs);
-    x.runs.find(z=>z.name===MYSQL_INTEGRATION_CHECK).conclusion='success'; return x;
+  const unitMysqlComplete = clone(unitsLane);
+  unitMysqlComplete.runs.find(z=>z.name===MYSQL_INTEGRATION_CHECK).conclusion='success';
+  assertPass('test-only PR with successful optional MySQL is still fast', unitMysqlComplete);
+  const mixedP1Lane = clone(docsLane);
+  mixedP1Lane.files = [docs[0],
+    {filename:'backend/tests/Solqaryn.Tests/API/Controllers/P1014EGuidedOnboardingPositiveTests.cs',status:'added'},
+    {filename:'frontend/src/app/features/plataforma/plataforma-gestion-mvp.component.spec.ts',status:'modified'}];
+  mixedP1Lane.runs.push(makeRun(CI_IMPACT_CHECK,h),pending(MYSQL_INTEGRATION_CHECK));
+  assertPass('P1 nested backend + Angular specs defer broad optional CI', mixedP1Lane);
+  const mixedReport=certify(mixedP1Lane);
+  if(!mixedReport.deferred.includes(optional) || !mixedReport.deferred.includes(MYSQL_INTEGRATION_CHECK))
+    throw Error('P1_FAST_LANE_MUST_RECORD_ASYNC_MYSQL_AND_OPTIONAL');
+  assertReject('P1 nested unit without trusted impact check',x=>{
+    x.files=clone(mixedP1Lane.files);x.runs=clone(mixedP1Lane.runs).filter(run=>run.name!==CI_IMPACT_CHECK);return x;
+  });
+  assertReject('P1 actual database integration test cannot defer optional',x=>{
+    x.files=[docs[0],{filename:'backend/tests/Solqaryn.Tests/Integration/P1014EIntegrationTests.cs',status:'added'}];
+    x.runs=clone(mixedP1Lane.runs);return x;
+  });
+  assertReject('test-only with completed MySQL failure cannot certify',x=>{
+    x.files=clone(mixedP1Lane.files);x.runs=clone(mixedP1Lane.runs);
+    const mysql=x.runs.find(run=>run.name===MYSQL_INTEGRATION_CHECK);
+    mysql.status='completed';mysql.conclusion='failure';return x;
   });
   assertReject('unknown script cannot defer', x => {
     x.files=[...docs,{filename:'scripts/ci/unknown.mjs',status:'added'}];
@@ -291,7 +318,9 @@ else if (args.has('--pr')) {
   const number = event.pull_request?.number;
   const expectedHead = event.pull_request?.head?.sha;
   if (!Number.isInteger(number) || !/^[a-f0-9]{40}$/i.test(expectedHead || '')) throw Error('INVALID_PULL_REQUEST_EVENT');
-  const deadline = Date.now() + 30 * 60 * 1000;
+  // Bounded wait for required/relevant checks; never occupy a job for half an hour.
+  // If still pending, fail closed so the native retry can run after CI completes.
+  const deadline = Date.now() + 4 * 60 * 1000;
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
   let report;
   for (;;) {
