@@ -1,3 +1,9 @@
+## 2026-11-06 — CI por impacto: evitar MySQL 23 minutos en tests P1 anidados de solo regresión (DEV)
+
+- El clasificador fail-closed acepta wrappers offline P1 dentro de subcarpetas ordinarias (p. ej. API/Controllers/P1013B*Tests.cs), sin código de DB/Integration ni cambios de runtime; actualmente un falso no-reconocimiento activaba MySQL 8.4 durante 23m10s en P1-013.B.
+- Se mantienen los tres checks requeridos por GitHub dev, revisión independiente y pruebas dirigidas. Nunca se omiten suites MySQL ante migraciones, test DB/integration, rutas protegidas/desconocidas, ausencia de archivo o fallos del clasificador.
+- Quince regresiones añadidas al self-test del clasificador. La prueba opcional integral sigue disponible para cambios de impacto real y workflow_dispatch. Reversión: revertir este PR protegido.
+
 ## 2026-11-06 — V11 progreso visible y CI opcional asíncrona (DEV)
 
 - Registrar EN_PROGRESO real antes de desarrollar, PLAN H/I y BITACORA; tras PR pasar a VALIDANDO, conservando autoria y readback. Sin CAS.
