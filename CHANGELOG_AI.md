@@ -1,3 +1,9 @@
+## 2026-11-06 — P2-007.C: aislamiento de ajustes de inventario por EmpresaId (DEV)
+
+- Task Javier :30, TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`. Regresion xUnit `backend/tests/Solqaryn.Tests/P2007CInventarioEmpresaIdTests.cs`: dos empresas, owner persistido y lecturas EF aisladas tras alternar la marca tenant verificada.
+- Alcance limitado a ajustes de inventario en borrador y filtros EF; no certifica Kardex global, HTTP, JWT/RBAC, MySQL ni otras rutas. Test definido, sin ejecucion local certificada; CI dirigida, los tres checks obligatorios exact-HEAD y revision de otra Task siguen pendientes.
+- Sin cambios productivos, migraciones, secretos, workflows o entornos. Rollback: revertir test y entrada por PR protegido.
+
 ## 2026-11-06 — P2-004.C: delimitar proveedores por EmpresaId verificado (DEV)
 
 - Task nativa Javier :30, TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`. Prueba xUnit dirigida `backend/tests/Solqaryn.Tests/P2004CProveedoresEmpresaIdTests.cs`: proveedores A/B y marca comercial RBAC verificada, cabecera `X-Empresa-Id` falsificada y alternancia de empresa con el mismo `AppDbContext` (EF InMemory).
