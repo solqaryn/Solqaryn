@@ -1,3 +1,10 @@
+## 2026-11-06 — FIFO_READY_V8_2: REVIEW_FIRST y cierre P1 no bloqueante (DEV)
+
+- VALIDANDO -> LISTO primero, luego una PENDIENTE por cierre; FIFO por PR created_at ENTRE PR realmente aptos y dependencias LISTO, nunca por fin de CI; volver a leer dev entre merges.
+- Selector oldestProtectedMergeReady con negativos de autoría, HEAD, dependencia, CI y conflictos. Reviewer fallback ajeno sin CAS.
+- Para cambios P1 solo de pruebas/docs, CI posmerge continúa ASYNC con vigilancia e incidente ante fallos, en lugar de retrasar el primer LISTO; required premerge, revisión independiente, merge protegido y readback siguen obligatorios; cambios críticos mantienen postmerge.
+- Rollback: revertir PR protegido y conciliar cualquier incidente posmerge.
+
 ## 2026-11-05 — FAST_CLOSE_V8: resolver bloqueo de VALIDANDO sin esperar CI opcional (DEV)
 
 - Revisión independiente habilitada para cualquier TASK_ID autorizado distinto del autor cuando no exista conflicto activo, conservando reviewerFor como preferencia no exclusiva.
