@@ -12,6 +12,11 @@
 
 - Task ALEX :10, `TASK_ID=6adbbc9ad9e88191bea8eb69104afb25`: por FALLBACK_PENDING_V4 inicio rama canonica `work/solqaryn-p1-015-b` sobre `dev@9ec3107e`, al comprobar `P1-015.E=LISTO`, `COLA!G72=SI`, scope libre y WIP 4/15. `P1015BPrivilegedAuditPrivacyTests` cubre concesion y autodelegacion denegada sin copiar hash ni nombre de perfil al `RegistroAuditoria` sintetico; acta `docs/P1-015-B-CIERRE-AUDITORIA-PRIVILEGIADA-DEV.md` concilia PR #3861/#3873/#3879 y limites. Sin cambios productivos, secretos, QA/main/PROD. NO_TEST_LOCAL_VERIFIED: no afirmar PASS/APPROVED/merge/LISTO sin CI y revision independiente en SHA exacto.
 
+## 2026-11-05 — P1-013.D: negativo dirigido de onboarding apagado (DEV)
+
+- Task Javier :20 `6adc2e4bd8a48191ac7d8641ed95a1a3` anade prueba P1013D sobre fixture P1013A integrado: `onboarding=false, aislamiento=true`, rechazo 503 y cero efectos persistidos.
+- Acta `docs/P1-013-D-REGRESION-NEGATIVA-ONBOARDING-DEV.md`. Prueba local NO_EJECUTADA: dotnet no disponible; exigir CI causal, revision independiente y dependencias LISTO (COLA!G62=SI) antes de merge/LISTO. Sin cambios productivos ni de flags.
+
 ## 2026-11-05 — P1-015.E: prueba positiva dirigida de auditoria privilegiada (DEV)
 
 - Javier :30, Task `6aeacb7820ac8191b7d768a6f33dfa09`: xUnit filtrable P1015E reutiliza afirmaciones reales del caso positivo P1015A: concesion autorizada, actor, motivo, correlacion, ambito global y auditoria. Acta `docs/P1-015-E-POSITIVO-AUDITORIA-PRIVILEGIADA-DEV.md`. Sin cambios productivos, pruebas locales NO ejecutadas; CI, review y merge requieren evidencia independiente.
