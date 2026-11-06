@@ -1,3 +1,8 @@
+## 2026-11-05 — P1-013.E: regresion positiva dirigida de gates onboarding (DEV)
+
+- Task Javier :40 (`6adc2e55f47c81919f6374e561687076`) prepara wrapper xUnit filtrable `P1013E` reutilizando casos integrados P1013A (ambos gates ON) y P1012A (alta efectiva, ConfigEmpresa, membresía, auditoría y sin escalada). Solo prueba y acta `docs/P1-013-E-REGRESION-POSITIVA-ONBOARDING-DEV.md`, sin cambiar producción.
+- Desarrollo habilitado por `COLA!O66=SI` con P1-013.D VALIDANDO; `COLA!G66=NO` bloquea merge/LISTO hasta dependencia LISTO. Prueba local NO_EJECUTADA; CI exact-SHA y revisión independiente obligatorias.
+
 ## 2026-11-05 — P1-013.C: caso negativo de gate de aislamiento durante onboarding (DEV)
 
 - Task Javier :30 `6aeacb7820ac8191b7d768a6f33dfa09` prepara una unica condicion medible: onboarding habilitado, aislamiento comercial deshabilitado y operador global del fixture; el controlador debe responder 503 sin crear empresas, membresias, configuraciones ni auditoria. Se reutilizan aserciones P1013A mediante wrapper xUnit P1013C sin cambios productivos.
