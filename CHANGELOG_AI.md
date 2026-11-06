@@ -2,6 +2,28 @@
 
 - Task Javier :30, `6aeacb7820ac8191b7d768a6f33dfa09`: regresión P1014B negativa/positiva de alta guiada pendiente y error tardío sin falso éxito; xUnit dirigido sobre fixture P1014A, acta `docs/P1-014-B-CIERRE-ATOMICO-ALTA-GUIADA-DEV.md`. No se acredita COMMIT MySQL por mock Angular/EF InMemory. Desarrollo con COLA!O71=SI y dependencia P1-014.E todavía VALIDANDO; merge/LISTO prohibidos hasta COLA!G71=SI, CI exact-SHA y revisión ajena. Sin ejecución local de tests; sin cambios productivos.
 
+## 2026-11-06 — P1-011.B: negativo BCrypt corregido tras REQUEST_CHANGES (DEV)
+
+- ALEX :10, autor TASK_ID `6adbbc9ad9e88191bea8eb69104afb25`, atiende review independiente #5796363344 en la misma rama/PR #3887. El controlador mantiene el constructor público y BCrypt coste 12; solo agrega un constructor interno de pruebas con delegado de hashing e InternalsVisibleTo para Solqaryn.Tests.
+- `P1011B_FalloBCryptInyectadoNoDejaUsuarioNiEmpresaHuerfanos` ejecuta falla determinista de hashing antes de cualquier escritura y verifica ausencia de usuario/empresa/configuración/membresía/auditoría nuevos. No suplanta el rollback real MySQL de ConfigEmpresa/membresía/auditoría.
+- Sin alteraciones a JWT/RBAC, endpoints, datos productivos, flags, QA/main/PROD. No se ejecutó dotnet localmente. Requerir CI exact-SHA y nueva revisión de TASK_ID independiente; NO MERGE/LISTO anticipado.
+
+## 2026-11-05 — P1-011.B: cierre atómico de administrador nuevo (DEV)
+
+- ALEX :10 (TASK_ID `6adbbc9ad9e88191bea8eb69104afb25`) reutiliza las entregas P1-011.C (#3860), P1-011.D (#3870) y P1-011.E (#3880), institucionalmente LISTO; rama `work/solqaryn-p1-011-b` actualizada sin force-push desde dev vigente.
+- `P1011BAtomicAdminClosureTests` ejecuta la regresión positiva de identidad BCrypt/rol/membresía/auditoría y verifica por contrato la presencia de la regresión MySQL real de rollback (configuración, membresía, auditoría). La comprobación por reflexión NO ejecuta rollback; el job MySQL `Category=Integration` debe ejecutarlo en SHA exacto. No hay inyección específica de fallo BCrypt, aunque su hash se calcula antes de persistir: no fingir cobertura que falta.
+- Acta `docs/P1-011-B-CIERRE-ATOMICO-ADMIN-DEV.md`. Sin código productivo, cambios de JWT/RBAC, datos, secretos ni QA/main/PROD. Tests locales no ejecutados; CI, revisión de otra Task, merge protegido y LISTO se verificarán por separado.
+
+## 2026-11-05 — P1-013.E: regresion positiva dirigida de gates onboarding (DEV)
+
+- Task Javier :40 (`6adc2e55f47c81919f6374e561687076`) prepara wrapper xUnit filtrable `P1013E` reutilizando casos integrados P1013A (ambos gates ON) y P1012A (alta efectiva, ConfigEmpresa, membresía, auditoría y sin escalada). Solo prueba y acta `docs/P1-013-E-REGRESION-POSITIVA-ONBOARDING-DEV.md`, sin cambiar producción.
+- Desarrollo habilitado por `COLA!O66=SI` con P1-013.D VALIDANDO; `COLA!G66=NO` bloquea merge/LISTO hasta dependencia LISTO. Prueba local NO_EJECUTADA; CI exact-SHA y revisión independiente obligatorias.
+
+## 2026-11-05 — P1-013.C: caso negativo de gate de aislamiento durante onboarding (DEV)
+
+- Task Javier :30 `6aeacb7820ac8191b7d768a6f33dfa09` prepara una unica condicion medible: onboarding habilitado, aislamiento comercial deshabilitado y operador global del fixture; el controlador debe responder 503 sin crear empresas, membresias, configuraciones ni auditoria. Se reutilizan aserciones P1013A mediante wrapper xUnit P1013C sin cambios productivos.
+- Acta `docs/P1-013-C-GATE-AISLAMIENTO-ONBOARDING-DEV.md`. Prueba local NO_EJECUTADA en este runtime; CI del SHA del PR y revision ajena requeridas. EF InMemory no acredita HTTP/JWT/MySQL remoto ni flags efectivos DEV. No editar QA/main/PROD, secretos ni autorizaciones.
+
 ## 2026-11-05 — P1-011.E — regresion positiva dirigida de alta con administrador nuevo (DEV)
 
 - Task Javier :40 `6adc2e55f47c81919f6374e561687076` incorpora xUnit dirigido `P1011E` que invoca la regresion P1011A existente: alta con BCrypt, rol empresarial, membresia unica y auditoria sin credenciales. Solo fixture EF InMemory, sin prueba remota MySQL/JWT/HTTP.
@@ -10,6 +32,11 @@
 ## 2026-11-05 — P1-015.B: cierre atomico de auditoria privilegiada sin secretos (DEV)
 
 - Task ALEX :10, `TASK_ID=6adbbc9ad9e88191bea8eb69104afb25`: por FALLBACK_PENDING_V4 inicio rama canonica `work/solqaryn-p1-015-b` sobre `dev@9ec3107e`, al comprobar `P1-015.E=LISTO`, `COLA!G72=SI`, scope libre y WIP 4/15. `P1015BPrivilegedAuditPrivacyTests` cubre concesion y autodelegacion denegada sin copiar hash ni nombre de perfil al `RegistroAuditoria` sintetico; acta `docs/P1-015-B-CIERRE-AUDITORIA-PRIVILEGIADA-DEV.md` concilia PR #3861/#3873/#3879 y limites. Sin cambios productivos, secretos, QA/main/PROD. NO_TEST_LOCAL_VERIFIED: no afirmar PASS/APPROVED/merge/LISTO sin CI y revision independiente en SHA exacto.
+
+## 2026-11-05 — P1-013.D: negativo dirigido de onboarding apagado (DEV)
+
+- Task Javier :20 `6adc2e4bd8a48191ac7d8641ed95a1a3` anade prueba P1013D sobre fixture P1013A integrado: `onboarding=false, aislamiento=true`, rechazo 503 y cero efectos persistidos.
+- Acta `docs/P1-013-D-REGRESION-NEGATIVA-ONBOARDING-DEV.md`. Prueba local NO_EJECUTADA: dotnet no disponible; exigir CI causal, revision independiente y dependencias LISTO (COLA!G62=SI) antes de merge/LISTO. Sin cambios productivos ni de flags.
 
 ## 2026-11-05 — P1-015.E: prueba positiva dirigida de auditoria privilegiada (DEV)
 
