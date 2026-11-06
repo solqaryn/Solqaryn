@@ -1,3 +1,10 @@
+## 2026-11-06 — P2-006.D: ventas con folios homónimos aislados por tenant verificado (DEV)
+
+- Autora nativa Task Javier :40, TASK_ID `6adc2e55f47c81919f6374e561687076`, GitHub `jmejia31`. Nuevo test dirigido `backend/tests/Solqaryn.Tests/P2006DVentasNumeroHomonimoTests.cs`: dos ventas sintéticas A/B comparten `NumeroVenta`, se falsifica `X-Empresa-Id` en ambos sentidos y el filtro de `VerifiedCommercialTenant` debe devolver solo la venta de la empresa autorizada, incluso tras cambiar tenant en el mismo `AppDbContext`.
+- Cambios solo en test y CHANGELOG; sin runtime, API, JWT/RBAC, EF/MySQL productivo, migraciones, reglas, secretos, QA/main/PROD. La prueba EF InMemory no demuestra autenticación HTTP/JWT, MySQL real o integridad de números de venta; no se ejecutó `dotnet test` localmente: Directed y REQUIRED de GitHub deben verificar HEAD exacto.
+- Dependencia `P2-006.C` LISTO y `COLA!O192=SI` al iniciar desarrollo; para merge se requiere `COLA!G192=SI`, revisión causal independiente de otro TASK_ID, tres checks REQUIRED y Directed SUCCESS, PR CLEAN, FIFO global encabezado por #3909 mientras permanezca OPEN. Para P2 exigir CI postmerge required exact MERGE_SHA antes de LISTO.
+- Rollback proporcional: revert protegido del test y nota idempotente, preservando otros cambios.
+
 ## 2026-11-06 — P2-001.D: ampliar matriz de lectura comercial a proveedores y compras (DEV)
 
 - Task nativa Javier :20, TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Se amplió el test `[Theory]` `P2001CMatrizComercialLecturaTests` de tres a cinco endpoints, añadiendo `GET proveedores` y `GET compras` con `[Authorize]`, sin `[AllowAnonymous]` y `RequierePermiso(ModuloSistema.Proveedores/Compras, AccionPermiso.Ver)`; el control se ejecuta sobre atributos del contrato HTTP, no sobre respuestas con JWT real.
