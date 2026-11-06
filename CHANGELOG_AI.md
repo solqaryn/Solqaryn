@@ -1,3 +1,8 @@
+## 2026-11-06 - P1-016.B: cierre dirigido de sesion global sin tenant (DEV)
+
+- Javier :20 (Task `6adc2e4bd8a48191ac7d8641ed95a1a3`) entrega wrapper xUnit `P1016B` de cinco casos reales heredados de `P1016A`: permiso global sin tenant, rechazo de admin empresarial con cabecera, rol global ausente, usuario bloqueado y HTTP no autenticado. Acta `docs/P1-016-B-CIERRE-SESION-PLATAFORMA-DEV.md`.
+- COLA!O60=SI habilita desarrollo, pero COLA!G60=NO impide merge/LISTO mientras P1-016.E no sea LISTO. Sin ejecucion local; no afirmar CI, pruebas remotas, JWT real/MySQL ni review. Sin cambios productivos, flags, secretos ni QA/main/PROD.
+
 ## 2026-11-05 — P1-016.E: positivo dirigido de sesion global sin tenant (DEV)
 
 - Task nativa Javier :00 (`6adbb9fff1548191a1bd5b30d9e9984a`) y rama unica `work/solqaryn-p1-016-e`: prueba xUnit `P1016E` reutiliza las aserciones positivas existentes `P1016A_SuperadminSinMembresiasEntraAunqueEmpresaPilotoEsteInactiva` (respuesta 200, auditoria Exito sin EmpresaId, sin membresia; empresa piloto inactiva). Acta `docs/P1-016-E-POSITIVO-SESION-PLATAFORMA-DEV.md`. Solo prueba/documentacion, sin codigo productivo ni despliegue. No hay dotnet local; CI, TECH_REVIEW independiente, merge y LISTO quedan sujetos a evidencia exact-SHA.
