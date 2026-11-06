@@ -1,3 +1,9 @@
+## 2026-11-06 — P2-002.C: delimitar un caso de productos por EmpresaId (DEV)
+
+- Task Alex :10, TASK_ID `6adbbc9ad9e88191bea8eb69104afb25`. Regresión dirigida `backend/tests/Solqaryn.Tests/P2002CProductoEmpresaIdTests.cs`: dos productos de empresas A/B, marca de tenant comprobada, intento de suplantación con `X-Empresa-Id` y lectura sin marca verificada; el producto B no debe filtrarse hacia A ni mostrarse sin marca.
+- Cambio exclusivamente de pruebas InMemory, sin tocar código de aplicación, JWT, RBAC, persistencia productiva, secretos, entornos ni migraciones. Prueba compilada/ejecutada: pendiente de CI del PR exact-SHA; no declarar `LISTO` hasta revisión independiente, checks requeridos y merge protegido.
+- Rollback: revertir únicamente el test por PR protegido, conservando el filtro tenant existente.
+
 ## 2026-11-06 — NO_IDLE_PENDING_RELEASE_V9: continuar trabajo habilitado aunque VALIDANDO no este vacio (DEV)
 
 - Prioridad real: merge protegido de VALIDANDO apto por created_at; en ausencia de fusion apta, continuar inmediatamente con PENDIENTE elegible sin FIFO por ID/fecha y sin requerir un LISTO previo.
