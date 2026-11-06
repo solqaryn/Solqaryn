@@ -1,3 +1,10 @@
+## 2026-11-06 — STRICT_FIFO_NO_IDLE_V10: merge sin adelantamientos, desarrollo continuo (DEV)
+
+- El propietario exige FIFO estricto para fusionar contra dev: un PR abierto mas antiguo bloquea el merge de los posteriores aunque esten CLEAN; la regla corrige V8/V9, que permitian saltar bloqueados.
+- Mientras el PR antiguo no es fusionable, se avanza inmediatamente en PENDIENTE elegible con COLA!O=SI, sin FIFO de desarrollo y con la dependencia VALIDANDO/LISTO. COLA!G conserva LISTO estricto para cierre. No exige vaciar VALIDANDO.
+- Selector consultivo fail-closed y pruebas negativas: PR tecnico/governance antiguo y antiguo con CI/revision/conflicto pendiente impiden recomendar PR posterior para merge; PR cerrado deja turno libre. Sin CAS, force-push, perdida de checks requeridos, QA/main/PROD o cambios de horarios.
+- Reversion mediante PR protegido, conservando historial de BITACORA.
+
 ## 2026-11-06 — P2-001.C: delimitar matriz de lectura comercial por endpoint (DEV)
 
 - Task nativa Javier :20, TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Regresión xUnit dirigida `backend/tests/Solqaryn.Tests/P2001CMatrizComercialLecturaTests.cs`: contrato de autenticación `[Authorize]`, ausencia de `[AllowAnonymous]`, ruta fija y permiso RBAC `Ver` para las lecturas de clientes, productos y ventas; tres entradas en matriz declarativa.
