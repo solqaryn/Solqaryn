@@ -1,3 +1,8 @@
+## 2026-11-06 — P2-017.C: baja logica de rol B y revocacion de membresia sin afectar empresa A (DEV)
+
+- Task nativa Javier :30, AUTHOR_TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`, alcance único P2-017.C, rama `work/solqaryn-p2-017-c`. Nuevo test xUnit `backend/tests/Solqaryn.Tests/P2017CRolesPertenenciasTests.cs` ejercita `UsuarioScopeService` real sobre EF InMemory para A/B: `Rol.Eliminado` de B bloquea acceso/listado B aun con membresía activa y `Usuario.RolId` legacy apuntando a B; después restaurar rol y desactivar la membresía B no autoriza su reingreso, preservando rol y empresa A. Control positivo B activo previo al corte; no se alteró runtime, JWT, RBAC productivo, migraciones, secretos ni workflows.
+- `COLA!O185=SI`, dependencia `P1-016.B=LISTO` al inicio; autoría y V11 EN_PROGRESO acreditadas en PLAN/BITACORA. Verificación causal de código estática; `dotnet test` local **no ejecutado**. Se requiere Directed y REQUIRED CI exact SHA, revisión independiente por TASK_ID ajeno y FIFO global antes de merge; P2 necesita CI posmerge requerida exact MERGE SHA para LISTO. No pretende certificar HTTP/JWT real ni MySQL. Rollback protegido: revertir test y entrada de CHANGELOG.
+
 ## 2026-11-06 — P2-001.D: ampliar matriz de lectura comercial a proveedores y compras (DEV)
 
 - Task nativa Javier :20, TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Se amplió el test `[Theory]` `P2001CMatrizComercialLecturaTests` de tres a cinco endpoints, añadiendo `GET proveedores` y `GET compras` con `[Authorize]`, sin `[AllowAnonymous]` y `RequierePermiso(ModuloSistema.Proveedores/Compras, AccionPermiso.Ver)`; el control se ejecuta sobre atributos del contrato HTTP, no sobre respuestas con JWT real.
