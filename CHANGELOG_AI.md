@@ -1,3 +1,9 @@
+## 2026-11-06 — P2-016.C: datos históricos sintéticos sin EmpresaId (DEV)
+
+- Task autora Alex :10 / `6adbbc9ad9e88191bea8eb69104afb25`. La regresión `P2016CDatosHistoricosEmpresaIdTests.cs` crea una categoría legado `EmpresaId=NULL` y dos categorías A/B, verifica aislamiento con marca RBAC por empresa y rechaza que `X-Empresa-Id` asigne acceso o propietario al registro histórico.
+- El filtro EF sin marca RBAC mantiene consulta global para flujos internos por contrato vigente; **no** equivale a acceso HTTP autorizado. La cuarentena multiempresa HTTP P0 se prueba separadamente. Todo son datos InMemory sintéticos: no se imputan propietarios históricos ni se modifican SQL, migraciones, autenticación, reglas RBAC, producto, tienda, secretos, QA/main/PROD.
+- Prueba causal definida, ejecución local NO_VERIFICADA; exigir CI dirigida/requerida exact-HEAD, revisión independiente ajena, merge protegido FIFO y readback institucional antes de LISTO. Rollback por revert protegido del test y esta nota.
+
 ## 2026-11-06 — V11 progreso visible y CI opcional asíncrona (DEV)
 
 - Registrar EN_PROGRESO real antes de desarrollar, PLAN H/I y BITACORA; tras PR pasar a VALIDANDO, conservando autoria y readback. Sin CAS.
