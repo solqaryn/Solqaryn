@@ -3,6 +3,10 @@
 - Task Javier :30 `6aeacb7820ac8191b7d768a6f33dfa09` prepara una unica condicion medible: onboarding habilitado, aislamiento comercial deshabilitado y operador global del fixture; el controlador debe responder 503 sin crear empresas, membresias, configuraciones ni auditoria. Se reutilizan aserciones P1013A mediante wrapper xUnit P1013C sin cambios productivos.
 - Acta `docs/P1-013-C-GATE-AISLAMIENTO-ONBOARDING-DEV.md`. Prueba local NO_EJECUTADA en este runtime; CI del SHA del PR y revision ajena requeridas. EF InMemory no acredita HTTP/JWT/MySQL remoto ni flags efectivos DEV. No editar QA/main/PROD, secretos ni autorizaciones.
 
+## 2026-11-05 — P1-015.E: prueba positiva dirigida de auditoria privilegiada (DEV)
+
+- Javier :30, Task `6aeacb7820ac8191b7d768a6f33dfa09`: xUnit filtrable P1015E reutiliza afirmaciones reales del caso positivo P1015A: concesion autorizada, actor, motivo, correlacion, ambito global y auditoria. Acta `docs/P1-015-E-POSITIVO-AUDITORIA-PRIVILEGIADA-DEV.md`. Sin cambios productivos, pruebas locales NO ejecutadas; CI, review y merge requieren evidencia independiente.
+
 ## 2026-11-05 — P1-016.D: rechazo dirigido de sesion global empresarial (DEV)
 
 - Task nativa Javier :40 (`6adc2e55f47c81919f6374e561687076`) inicio P1-016.D con ruta determinista, dependencia P1-016.C LISTO y WIP 3/15; rama unica `work/solqaryn-p1-016-d` desde `dev@0c280ab7c4b8a56b1a0674b3a3bca438d3078e1b`.
