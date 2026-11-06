@@ -1,3 +1,9 @@
+## 2026-11-06 — P2-001.C: delimitar matriz de lectura comercial por endpoint (DEV)
+
+- Task nativa Javier :20, TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Regresión xUnit dirigida `backend/tests/Solqaryn.Tests/P2001CMatrizComercialLecturaTests.cs`: contrato de autenticación `[Authorize]`, ausencia de `[AllowAnonymous]`, ruta fija y permiso RBAC `Ver` para las lecturas de clientes, productos y ventas; tres entradas en matriz declarativa.
+- Sólo metadatos/atributos HTTP de controladores existentes; no afirma prueba dinámica de JWT, pertenencia de empresa, filtros EF ni autorización real contra MySQL. Ningún cambio productivo, migración, permiso, workflow, secreto o entorno. Las pruebas dirigidas y CI exact-SHA quedan para GitHub Actions antes de merge.
+- Dependencia `P1-016.B` LISTO, `COLA!O169=SI`, `COLA!G169=SI` al iniciar. Revisión técnica independiente por Task distinta antes de fusionar; rollback mediante revert protegido del archivo de prueba y esta nota.
+
 ## 2026-11-06 — CI dirigida compatible con I8/G0 en el Plan Comercial Inicial (DEV)
 
 - El selector V9 y COLA!O habilitan I8/G0, pero Scope Lock solo aceptaba P y el workflow de pruebas dirigidas solo escuchaba ramas P; se corrige esa incompatibilidad sin abrir el gobierno a programas ajenos.
