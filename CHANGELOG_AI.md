@@ -2,6 +2,44 @@
 
 - Task Javier :30, `6aeacb7820ac8191b7d768a6f33dfa09`: regresión P1014B negativa/positiva de alta guiada pendiente y error tardío sin falso éxito; xUnit dirigido sobre fixture P1014A, acta `docs/P1-014-B-CIERRE-ATOMICO-ALTA-GUIADA-DEV.md`. No se acredita COMMIT MySQL por mock Angular/EF InMemory. Desarrollo con COLA!O71=SI y dependencia P1-014.E todavía VALIDANDO; merge/LISTO prohibidos hasta COLA!G71=SI, CI exact-SHA y revisión ajena. Sin ejecución local de tests; sin cambios productivos.
 
+## 2026-11-06 - P1-016.B: cierre dirigido de sesion global sin tenant (DEV)
+
+- Javier :20 (Task `6adc2e4bd8a48191ac7d8641ed95a1a3`) entrega wrapper xUnit `P1016B` de cinco casos reales heredados de `P1016A`: permiso global sin tenant, rechazo de admin empresarial con cabecera, rol global ausente, usuario bloqueado y HTTP no autenticado. Acta `docs/P1-016-B-CIERRE-SESION-PLATAFORMA-DEV.md`.
+- COLA!O60=SI habilita desarrollo, pero COLA!G60=NO impide merge/LISTO mientras P1-016.E no sea LISTO. Sin ejecucion local; no afirmar CI, pruebas remotas, JWT real/MySQL ni review. Sin cambios productivos, flags, secretos ni QA/main/PROD.
+
+## 2026-11-05 — P1-016.E: positivo dirigido de sesion global sin tenant (DEV)
+
+- Task nativa Javier :00 (`6adbb9fff1548191a1bd5b30d9e9984a`) y rama unica `work/solqaryn-p1-016-e`: prueba xUnit `P1016E` reutiliza las aserciones positivas existentes `P1016A_SuperadminSinMembresiasEntraAunqueEmpresaPilotoEsteInactiva` (respuesta 200, auditoria Exito sin EmpresaId, sin membresia; empresa piloto inactiva). Acta `docs/P1-016-E-POSITIVO-SESION-PLATAFORMA-DEV.md`. Solo prueba/documentacion, sin codigo productivo ni despliegue. No hay dotnet local; CI, TECH_REVIEW independiente, merge y LISTO quedan sujetos a evidencia exact-SHA.
+
+## 2026-11-05 — P1-013.B — preparación de cierre de gates de onboarding (DEV)
+
+- Task física Javier :20 `6adc2e4bd8a48191ac7d8641ed95a1a3` añadió el test dirigido `P1013B` sobre la matriz negativa heredada `P1013A` y el acta `docs/P1-013-B-CONCILIACION-GATES-ONBOARDING-DEV.md` con recibos C/D/E todavía pendientes.
+- `COLA!O70=SI` permite el desarrollo; `COLA!G70=NO` prohíbe merge/LISTO mientras P1-013.E siga VALIDANDO. Test no ejecutado localmente; CI/revisión ajena y evidencia de dependencias no certificadas. Sin cambios productivos ni flags DEV.
+
+## 2026-11-06 — FIFO_READY_V8_2: REVIEW_FIRST y cierre P1 no bloqueante (DEV)
+
+- VALIDANDO -> LISTO primero, luego una PENDIENTE por cierre; FIFO por PR created_at ENTRE PR realmente aptos y dependencias LISTO, nunca por fin de CI; volver a leer dev entre merges.
+- Selector oldestProtectedMergeReady con negativos de autoría, HEAD, dependencia, CI y conflictos. Reviewer fallback ajeno sin CAS.
+- Para cambios P1 solo de pruebas/docs, CI posmerge continúa ASYNC con vigilancia e incidente ante fallos, en lugar de retrasar el primer LISTO; required premerge, revisión independiente, merge protegido y readback siguen obligatorios; cambios críticos mantienen postmerge.
+- Rollback: revertir PR protegido y conciliar cualquier incidente posmerge.
+
+## 2026-11-05 — FAST_CLOSE_V8: resolver bloqueo de VALIDANDO sin esperar CI opcional (DEV)
+
+- Revisión independiente habilitada para cualquier TASK_ID autorizado distinto del autor cuando no exista conflicto activo, conservando reviewerFor como preferencia no exclusiva.
+- El gate de merge usa únicamente checks exigidos por ruleset en SHA exacto y COLA!G=SI; los workflows opcionales extensos no bloquean. Cierre LISTO solo con merge protegido, revisión técnica ajena, CI requerida postmerge aplicable y readback institucional.
+- Self-test negativo de autoría, permiso y conflictos; sin CAS, force-push, cambios en rulesets, workflows, secretos o QA/main/PROD. Reversión: revertir este commit/PR protegido.
+- Scope Lock: clasificacion rapida para PR P1 exclusivamente de pruebas (rutas backend/tests anidadas y frontend .spec.ts) con CI de impacto confiable; suites opcionales siguen asincronas, errores conocidos no se ocultan, tres gates de rama se mantienen y espera activa acotada a 4 minutos.
+
+## 2026-11-05 — P1-013.C: caso negativo de gate de aislamiento durante onboarding (DEV)
+
+- Task Javier :30 `6aeacb7820ac8191b7d768a6f33dfa09` prepara una unica condicion medible: onboarding habilitado, aislamiento comercial deshabilitado y operador global del fixture; el controlador debe responder 503 sin crear empresas, membresias, configuraciones ni auditoria. Se reutilizan aserciones P1013A mediante wrapper xUnit P1013C sin cambios productivos.
+- Acta `docs/P1-013-C-GATE-AISLAMIENTO-ONBOARDING-DEV.md`. Prueba local NO_EJECUTADA en este runtime; CI del SHA del PR y revision ajena requeridas. EF InMemory no acredita HTTP/JWT/MySQL remoto ni flags efectivos DEV. No editar QA/main/PROD, secretos ni autorizaciones.
+
+## 2026-11-05 — P1-011.E — regresion positiva dirigida de alta con administrador nuevo (DEV)
+
+- Task Javier :40 `6adc2e55f47c81919f6374e561687076` incorpora xUnit dirigido `P1011E` que invoca la regresion P1011A existente: alta con BCrypt, rol empresarial, membresia unica y auditoria sin credenciales. Solo fixture EF InMemory, sin prueba remota MySQL/JWT/HTTP.
+- Acta: `docs/P1-011-E-REGRESION-POSITIVA-ADMIN-DEV.md`. Sin cambios productivos. No atribuir CI, review independiente, merge ni LISTO antes de recibir gates exact-SHA; entrega a VALIDANDO libera autora y conserva revision ajena.
+
 ## 2026-11-05 — P1-014.E: regresión positiva de alta guiada (DEV)
 
 Task Javier :00 `6adbb9fff1548191a1bd5b30d9e9984a` incorpora prueba positiva Angular P1014E y prueba xUnit dirigida que reutiliza el fixture positivo/negativo P1014A, sin modificar comportamiento productivo. Acta `docs/P1-014-E-POSITIVO-ALTA-GUIADA-DEV.md`. CI y revisión exact-SHA pendientes de verificación; no se atribuyen pruebas locales ni certificación de DEV vivo. Rama work/solqaryn-p1-014-e. Rollback limitado a estos cuatro archivos.
