@@ -1,3 +1,9 @@
+## 2026-11-05 — P1-015.D: rechazo dirigido de autodelegacion privilegiada (DEV)
+
+- ALEX :50, TASK_ID `6adcc98a80a48191b71a5156624c21df`: `P1-015.D` pasa a EN_PROGRESO, con `P1-015.C=LISTO` y routing determinista `developerFor=ALEX50`. Rama unica `work/solqaryn-p1-015-d`, desde dev@`0c280ab7c4b8a56b1a0674b3a3bca438d3078e1b`; entrada de BITACORA!704 y readback PLAN/COLA.
+- Test xUnit filtrable `P1015D` ejecuta el rechazo REAL ya cubierto por `P1015APrivilegedAccessAuditTests.SelfGrant_IsDeniedAndAuditedWithoutNewPrivilege`: ForbidResult, auditoria Denegado, actor/correlacion/motivo, EmpresaId nulo y sin nuevo rol. Documentacion en `docs/P1-015-D-NEGATIVO-AUDITORIA-PRIVILEGIADA-DEV.md`.
+- Sin cambio productivo, base de datos, roles, JWT, secretos ni entornos. El commit por si mismo NO acredita test PASS, CI, revision externa, merge ni LISTO. Requiere pruebas dirigidas exact-SHA, Scope Lock, regresion de seguridad y cierre independiente.
+
 ## 2026-11-05 — P1-011.D: regresión negativa MySQL de alta atómica (DEV)
 
 - ALEX :10, TASK_ID `6adbbc9ad9e88191bea8eb69104afb25`, reclama P1-011.D (fila 61, dependencia P1-011.C LISTO) por CAS con readback PLAN/COLA/BITACORA y rama `work/solqaryn-p1-011-d` desde `dev@99a2eadd`. PR #3870.
