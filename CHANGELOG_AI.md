@@ -4,6 +4,13 @@
 - Cambio exclusivamente de pruebas InMemory, sin tocar código de aplicación, JWT, RBAC, persistencia productiva, secretos, entornos ni migraciones. Prueba compilada/ejecutada: pendiente de CI del PR exact-SHA; no declarar `LISTO` hasta revisión independiente, checks requeridos y merge protegido.
 - Rollback: revertir únicamente el test por PR protegido, conservando el filtro tenant existente.
 
+## 2026-11-06 — CI dirigida compatible con I8/G0 en el Plan Comercial Inicial (DEV)
+
+- El selector V9 y COLA!O habilitan I8/G0, pero Scope Lock solo aceptaba P y el workflow de pruebas dirigidas solo escuchaba ramas P; se corrige esa incompatibilidad sin abrir el gobierno a programas ajenos.
+- Scope Lock reconoce únicamente P[digitos], I8 y G0 con ID de tres digitos y sufijo A-Z, exige rama determinista, evidencia en PR y check dirigido de GitHub Actions exact-HEAD.
+- Workflow de CI dirigida corre para ramas comerciales work/solqaryn-p*, work/solqaryn-i8-* y work/solqaryn-g0-*, exige xUnit con al menos un match y cero fallos; conserva los tres checks required, revision independiente, seguridad, CI de MySQL segun impacto, no CAS ni QA/main/PROD.
+- Pruebas positivas I8/G0 y negativas por suite dirigida ausente, rama incorrecta y programa externo. Reversion por PR protegido.
+
 ## 2026-11-06 — NO_IDLE_PENDING_RELEASE_V9: continuar trabajo habilitado aunque VALIDANDO no este vacio (DEV)
 
 - Prioridad real: merge protegido de VALIDANDO apto por created_at; en ausencia de fusion apta, continuar inmediatamente con PENDIENTE elegible sin FIFO por ID/fecha y sin requerir un LISTO previo.

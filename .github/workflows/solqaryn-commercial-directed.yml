@@ -15,7 +15,7 @@ concurrency:
 jobs:
   directed:
     name: SOLQARYN - Directed commercial scope
-    if: ${{ !github.event.pull_request.draft && startsWith(github.event.pull_request.head.ref, 'work/solqaryn-p') }}
+    if: ${{ !github.event.pull_request.draft && (startsWith(github.event.pull_request.head.ref, 'work/solqaryn-p') || startsWith(github.event.pull_request.head.ref, 'work/solqaryn-i8-') || startsWith(github.event.pull_request.head.ref, 'work/solqaryn-g0-')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 35
     env:
@@ -46,7 +46,7 @@ jobs:
           filter="$(python3 - <<'PY'
           import os,re,sys
           title=os.environ['PR_TITLE']
-          match=re.search(r'\b(P\d+-\d{3}\.[A-Z])\b',title,re.I)
+          match=re.search(r'\b((?:P\d+|I8|G0)-\d{3}\.[A-Z])\b',title,re.I)
           if not match:
               sys.exit('DIRECTED_NO_VALID_COMMERCIAL_SCOPE')
           scope=match.group(1).upper()
