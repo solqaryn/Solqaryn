@@ -1,3 +1,7 @@
+## 2026-11-05 — P1-014.B: prueba de no anunciar éxito antes de confirmación HTTP (DEV)
+
+- Task Javier :30, `6aeacb7820ac8191b7d768a6f33dfa09`: regresión P1014B negativa/positiva de alta guiada pendiente y error tardío sin falso éxito; xUnit dirigido sobre fixture P1014A, acta `docs/P1-014-B-CIERRE-ATOMICO-ALTA-GUIADA-DEV.md`. No se acredita COMMIT MySQL por mock Angular/EF InMemory. Desarrollo con COLA!O71=SI y dependencia P1-014.E todavía VALIDANDO; merge/LISTO prohibidos hasta COLA!G71=SI, CI exact-SHA y revisión ajena. Sin ejecución local de tests; sin cambios productivos.
+
 ## 2026-11-06 - P1-016.B: cierre dirigido de sesion global sin tenant (DEV)
 
 - Javier :20 (Task `6adc2e4bd8a48191ac7d8641ed95a1a3`) entrega wrapper xUnit `P1016B` de cinco casos reales heredados de `P1016A`: permiso global sin tenant, rechazo de admin empresarial con cabecera, rol global ausente, usuario bloqueado y HTTP no autenticado. Acta `docs/P1-016-B-CIERRE-SESION-PLATAFORMA-DEV.md`.
@@ -7,7 +11,7 @@
 
 - El clasificador fail-closed acepta wrappers offline P1 dentro de subcarpetas ordinarias (p. ej. API/Controllers/P1013B*Tests.cs), sin código de DB/Integration ni cambios de runtime; actualmente un falso no-reconocimiento activaba MySQL 8.4 durante 23m10s en P1-013.B.
 - Se mantienen los tres checks requeridos por GitHub dev, revisión independiente y pruebas dirigidas. Nunca se omiten suites MySQL ante migraciones, test DB/integration, rutas protegidas/desconocidas, ausencia de archivo o fallos del clasificador.
-- Diez regresiones añadidas al self-test del clasificador. La prueba opcional integral sigue disponible para cambios de impacto real y workflow_dispatch. Reversión: revertir este PR protegido.
+- Quince regresiones añadidas al self-test del clasificador. La prueba opcional integral sigue disponible para cambios de impacto real y workflow_dispatch. Reversión: revertir este PR protegido.
 
 ## 2026-11-05 — P1-016.E: positivo dirigido de sesion global sin tenant (DEV)
 
