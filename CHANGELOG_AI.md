@@ -2,6 +2,18 @@
 
 Task Javier :00 `6adbb9fff1548191a1bd5b30d9e9984a` incorpora prueba positiva Angular P1014E y prueba xUnit dirigida que reutiliza el fixture positivo/negativo P1014A, sin modificar comportamiento productivo. Acta `docs/P1-014-E-POSITIVO-ALTA-GUIADA-DEV.md`. CI y revisión exact-SHA pendientes de verificación; no se atribuyen pruebas locales ni certificación de DEV vivo. Rama work/solqaryn-p1-014-e. Rollback limitado a estos cuatro archivos.
 
+## 2026-11-05 — P1-015.D: rechazo dirigido de autodelegacion privilegiada (DEV)
+
+- ALEX :50, TASK_ID `6adcc98a80a48191b71a5156624c21df`: `P1-015.D` pasa a EN_PROGRESO, con `P1-015.C=LISTO` y routing determinista `developerFor=ALEX50`. Rama unica `work/solqaryn-p1-015-d`, desde dev@`0c280ab7c4b8a56b1a0674b3a3bca438d3078e1b`; entrada de BITACORA!704 y readback PLAN/COLA.
+- Test xUnit filtrable `P1015D` ejecuta el rechazo REAL ya cubierto por `P1015APrivilegedAccessAuditTests.SelfGrant_IsDeniedAndAuditedWithoutNewPrivilege`: ForbidResult, auditoria Denegado, actor/correlacion/motivo, EmpresaId nulo y sin nuevo rol. Documentacion en `docs/P1-015-D-NEGATIVO-AUDITORIA-PRIVILEGIADA-DEV.md`.
+- Sin cambio productivo, base de datos, roles, JWT, secretos ni entornos. El commit por si mismo NO acredita test PASS, CI, revision externa, merge ni LISTO. Requiere pruebas dirigidas exact-SHA, Scope Lock, regresion de seguridad y cierre independiente.
+
+## 2026-11-05 — P1-011.D: regresión negativa MySQL de alta atómica (DEV)
+
+- ALEX :10, TASK_ID `6adbbc9ad9e88191bea8eb69104afb25`, reclama P1-011.D (fila 61, dependencia P1-011.C LISTO) por CAS con readback PLAN/COLA/BITACORA y rama `work/solqaryn-p1-011-d` desde `dev@99a2eadd`. PR #3870.
+- CI separada de forma causal: el workflow dirigido `FullyQualifiedName~P1011D` **no dispone de MySQL** y solo valida que exista el Fact de integración mediante `P1011DDirectedContractTests`. En el runner efímero MySQL 8.4, el `Fact` `AltaAdminNuevoAuditoriaRollbackRealMySqlTests` con `Category=Integration` ejecuta el fixture transaccional real existente, con fallo de auditoría y aserciones de rollback; sin duplicar implementación. El filtro dirigido no alcanza el test real. No certificar solo con PASS de routing ni con SKIPPED de MySQL.
+- Acta: `docs/P1-011-D-PRUEBA-NEGATIVA-ALTA-ADMIN-DEV.md`. Requiere CI exact SHA de ambos gates, revisión ajena, merge protegido y readbacks antes de `LISTO`. Sin cambios productivos/secretos/migraciones/QA/main/PROD.
+
 ## 2026-11-05 — P1-014.D: rechazo HTTP 403 del alta guiada (DEV)
 
 Task Javier :30 (6aeacb7820ac8191b7d768a6f33dfa09) añade prueba negativa dirigida Angular sobre el asistente de alta: respuesta 403 del servidor no confirma alta ni pierde datos del formulario. Acta docs/P1-014-D-RECHAZO-ALTA-GUIADA-DEV.md. Prueba aún no ejecutada ni CI certificada al crear el changeset; no es evidencia de MySQL/JWT remoto ni altera backend productivo. Rama histórica work/solqaryn-p1-014-d, rollback por PR protegido limitado a esta prueba/documentación.
