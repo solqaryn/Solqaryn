@@ -1,3 +1,9 @@
+
+## 2026-11-05 — P1-013.B — preparación de cierre de gates de onboarding (DEV)
+
+- Task física Javier :20 `6adc2e4bd8a48191ac7d8641ed95a1a3` añadió el test dirigido `P1013B` sobre la matriz negativa heredada `P1013A` y el acta `docs/P1-013-B-CONCILIACION-GATES-ONBOARDING-DEV.md` con recibos C/D/E todavía pendientes.
+- `COLA!O70=SI` permite el desarrollo; `COLA!G70=NO` prohíbe merge/LISTO mientras P1-013.E siga VALIDANDO. Test no ejecutado localmente; CI/revisión ajena y evidencia de dependencias no certificadas. Sin cambios productivos ni flags DEV.
+
 ## 2026-11-05 — P1-015.B: cierre atomico de auditoria privilegiada sin secretos (DEV)
 
 - Task ALEX :10, `TASK_ID=6adbbc9ad9e88191bea8eb69104afb25`: por FALLBACK_PENDING_V4 inicio rama canonica `work/solqaryn-p1-015-b` sobre `dev@9ec3107e`, al comprobar `P1-015.E=LISTO`, `COLA!G72=SI`, scope libre y WIP 4/15. `P1015BPrivilegedAuditPrivacyTests` cubre concesion y autodelegacion denegada sin copiar hash ni nombre de perfil al `RegistroAuditoria` sintetico; acta `docs/P1-015-B-CIERRE-AUDITORIA-PRIVILEGIADA-DEV.md` concilia PR #3861/#3873/#3879 y limites. Sin cambios productivos, secretos, QA/main/PROD. NO_TEST_LOCAL_VERIFIED: no afirmar PASS/APPROVED/merge/LISTO sin CI y revision independiente en SHA exacto.
