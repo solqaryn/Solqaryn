@@ -3,6 +3,12 @@
 - Task Javier :30 `6aeacb7820ac8191b7d768a6f33dfa09` prepara una unica condicion medible: onboarding habilitado, aislamiento comercial deshabilitado y operador global del fixture; el controlador debe responder 503 sin crear empresas, membresias, configuraciones ni auditoria. Se reutilizan aserciones P1013A mediante wrapper xUnit P1013C sin cambios productivos.
 - Acta `docs/P1-013-C-GATE-AISLAMIENTO-ONBOARDING-DEV.md`. Prueba local NO_EJECUTADA en este runtime; CI del SHA del PR y revision ajena requeridas. EF InMemory no acredita HTTP/JWT/MySQL remoto ni flags efectivos DEV. No editar QA/main/PROD, secretos ni autorizaciones.
 
+## 2026-11-05 — P1-015.D: rechazo dirigido de autodelegacion privilegiada (DEV)
+
+- ALEX :50, TASK_ID `6adcc98a80a48191b71a5156624c21df`: `P1-015.D` pasa a EN_PROGRESO, con `P1-015.C=LISTO` y routing determinista `developerFor=ALEX50`. Rama unica `work/solqaryn-p1-015-d`, desde dev@`0c280ab7c4b8a56b1a0674b3a3bca438d3078e1b`; entrada de BITACORA!704 y readback PLAN/COLA.
+- Test xUnit filtrable `P1015D` ejecuta el rechazo REAL ya cubierto por `P1015APrivilegedAccessAuditTests.SelfGrant_IsDeniedAndAuditedWithoutNewPrivilege`: ForbidResult, auditoria Denegado, actor/correlacion/motivo, EmpresaId nulo y sin nuevo rol. Documentacion en `docs/P1-015-D-NEGATIVO-AUDITORIA-PRIVILEGIADA-DEV.md`.
+- Sin cambio productivo, base de datos, roles, JWT, secretos ni entornos. El commit por si mismo NO acredita test PASS, CI, revision externa, merge ni LISTO. Requiere pruebas dirigidas exact-SHA, Scope Lock, regresion de seguridad y cierre independiente.
+
 ## 2026-11-05 — P1-011.D: regresión negativa MySQL de alta atómica (DEV)
 
 - ALEX :10, TASK_ID `6adbbc9ad9e88191bea8eb69104afb25`, reclama P1-011.D (fila 61, dependencia P1-011.C LISTO) por CAS con readback PLAN/COLA/BITACORA y rama `work/solqaryn-p1-011-d` desde `dev@99a2eadd`. PR #3870.
@@ -5171,3 +5177,9 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Scope P1-008.A asignado únicamente a Task Javier :40 (ID `6adc2e55f47c81919f6374e561687076`) mediante rama exclusiva `work/solqaryn-p1-008-a` desde `dev@30bf43749a8eb7b164a065f5aabebfa024aa0faa`; `P0-012.B=LISTO`. No se reclaman otras microtareas.
 - Se reutiliza el controller/servicio existente para GET de membresías inactivas y PUT de reactivación por par `EmpresaId+UsuarioId`; no se modifica código de producción. Regresión A/B: reactivar A conserva B y su rol; denegar rol global como membresía empresarial; denegar actor sin autoridad global. Suite dirigida pendiente de CI exact-SHA; no se afirma E2E ni despliegue.
 - Acta `docs/P1-008-A-REACTIVACION-MEMBRESIAS-DEV.md`. Arquitectura: SIN_CAMBIO. Datos/migración/secretos: SIN_CAMBIO. Cierre solo después de checks, Scope Lock, merge protegido y readback institucional; `LISTO` NO acreditado.
+
+## 2026-11-05 — CI postmerge de dev sin cancelación por commits posteriores
+
+- Incidente real: la CI de merge SHA `5b9549c2` para P1-011.D canceló el job MySQL obligatorio porque el workflow `.github/workflows/dev-ci.yml` agrupaba todos los `push` de `dev` por `github.ref` y usaba `cancel-in-progress: true`. La incorporación posterior de P1-015.D puede cancelar CI anterior y retrasar certificaciones aunque los PR ya estén fusionados.
+- Cambio mínimo en DEV CI: para `push` la clave de concurrencia se define por SHA exacto, sin cancelación; para `pull_request` la clave sigue agrupada por ref y se cancelan ejecuciones anteriores cuando cambia el HEAD. Se conservan todos los jobs, triggers, pruebas MySQL 8.4, Scope Lock y controles de seguridad. No cambia API, UI, DB, migraciones ni QA/main/PROD.
+- Coste controlado: los push de commits diferentes pueden ejecutar CI en paralelo, pero no se esperan mediante Tasks programadas; los resultados terminales del SHA correspondiente se comprueban al certificar LISTO. La validación se hace con CI y revisión protegida del PR de gobierno. Reversión: revertir únicamente esta configuración mediante PR protegido.
