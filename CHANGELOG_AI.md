@@ -1,3 +1,9 @@
+## 2026-11-06 — P2-002.E: prueba dirigida de IDOR por ProductoRepository (DEV)
+
+- Task nativa Javier :20 / JAVIER_CHATGPT / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Test xUnit `P2002EProductoRepositorioIdorTests`: dos productos homónimos de tenants A/B, lectura directa por ID ajeno, cabecera manipulada `X-Empresa-Id`, aislamiento por marca de tenant verificada, conteos separados y alternancia sobre el mismo AppDbContext. Incluye límite de EF interno sin marca, que **no autoriza HTTP**.
+- Solo prueba de regresión efímera EF InMemory y esta entrada. Sin cambios en código productivo, JWT/RBAC, base de datos, migraciones, dependencias, workflow, secrets o entornos. El test **NO acredita** HTTP/JWT ni MySQL; no se ejecutó dotnet local, por lo que no se declara PASS; pedir Directed commercial scope y required 3/3 exact-HEAD GitHub y revisión independiente de Task ajena.
+- Dependencia P2-002.D LISTO; COLA!O206=SI, G206=SI en inicio real. Rama exclusiva `work/solqaryn-p2-002-e` desde `dev@9a9ce2b7b1e0f72e6cc0e274e1018f94dfb9911f`. Reversión por revert protegido solo del test y esta entrada, preservando otras microtareas.
+
 ## 2026-11-06 — P2-002.D: productos homónimos aislados por EmpresaId verificado (DEV)
 
 - Task nativa Javier :00, TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`, cuenta JAVIER_CHATGPT. Prueba causal nueva `backend/tests/Solqaryn.Tests/P2002DProductosHomonimosEmpresaIdTests.cs`: nombres idénticos en dos empresas, cabecera `X-Empresa-Id` maliciosamente cruzada, filtro de empresa verificada por servidor y alternancia de tenant sobre el mismo `AppDbContext`.
