@@ -96,6 +96,12 @@
 - Javier :20 (Task `6adc2e4bd8a48191ac7d8641ed95a1a3`) entrega wrapper xUnit `P1016B` de cinco casos reales heredados de `P1016A`: permiso global sin tenant, rechazo de admin empresarial con cabecera, rol global ausente, usuario bloqueado y HTTP no autenticado. Acta `docs/P1-016-B-CIERRE-SESION-PLATAFORMA-DEV.md`.
 - COLA!O60=SI habilita desarrollo, pero COLA!G60=NO impide merge/LISTO mientras P1-016.E no sea LISTO. Sin ejecucion local; no afirmar CI, pruebas remotas, JWT real/MySQL ni review. Sin cambios productivos, flags, secretos ni QA/main/PROD.
 
+## 2026-11-06 — P2-008.C: facturas privadas ante cabecera de otra empresa (DEV)
+
+- Task Javier :40, TASK_ID `6adc2e55f47c81919f6374e561687076`. Regresion dirigida `backend/tests/Solqaryn.Tests/P2008CFacturasPrivadasEmpresaIdTests.cs`: factura/venta A y B, marca verificada, cabecera `X-Empresa-Id` falsificada, cambio de tenant en el mismo contexto y bloqueo de lectura privada sin marca con dos empresas.
+- Solo test EF InMemory de `FacturaRepository` y esta entrada; no cambia runtime, HTTP, JWT/RBAC, bases de datos, migraciones, reglas GitHub, secretos ni QA/main/PROD. No demuestra acceso HTTP real, emision PDF, SQL/MySQL, firma JWT ni permisos globales; esos controles conservan su propia CI.
+- Prueba local .NET no ejecutada en este runtime; exigir suite dirigida y 3 required checks GitHub exact HEAD, revision independiente de otra Task y FIFO estricto antes de merge/LISTO. Reversion: revert protegido de este test y su entrada conservando cambios ajenos.
+
 ## 2026-11-05 — P1-016.E: positivo dirigido de sesion global sin tenant (DEV)
 
 - Task nativa Javier :00 (`6adbb9fff1548191a1bd5b30d9e9984a`) y rama unica `work/solqaryn-p1-016-e`: prueba xUnit `P1016E` reutiliza las aserciones positivas existentes `P1016A_SuperadminSinMembresiasEntraAunqueEmpresaPilotoEsteInactiva` (respuesta 200, auditoria Exito sin EmpresaId, sin membresia; empresa piloto inactiva). Acta `docs/P1-016-E-POSITIVO-SESION-PLATAFORMA-DEV.md`. Solo prueba/documentacion, sin codigo productivo ni despliegue. No hay dotnet local; CI, TECH_REVIEW independiente, merge y LISTO quedan sujetos a evidencia exact-SHA.
