@@ -49,6 +49,12 @@
 - Selector consultivo fail-closed y pruebas negativas: PR tecnico/governance antiguo y antiguo con CI/revision/conflicto pendiente impiden recomendar PR posterior para merge; PR cerrado deja turno libre. Sin CAS, force-push, perdida de checks requeridos, QA/main/PROD o cambios de horarios.
 - Reversion mediante PR protegido, conservando historial de BITACORA.
 
+## 2026-11-06 — P2-016.C: datos históricos sintéticos sin EmpresaId (DEV)
+
+- Task autora Alex :10 / `6adbbc9ad9e88191bea8eb69104afb25`. La regresión `P2016CDatosHistoricosEmpresaIdTests.cs` crea una categoría legado `EmpresaId=NULL` y dos categorías A/B, verifica aislamiento con marca RBAC por empresa y rechaza que `X-Empresa-Id` asigne acceso o propietario al registro histórico.
+- El filtro EF sin marca RBAC mantiene consulta global para flujos internos por contrato vigente; **no** equivale a acceso HTTP autorizado. La cuarentena multiempresa HTTP P0 se prueba separadamente. Todo son datos InMemory sintéticos: no se imputan propietarios históricos ni se modifican SQL, migraciones, autenticación, reglas RBAC, producto, tienda, secretos, QA/main/PROD.
+- Prueba causal definida, ejecución local NO_VERIFICADA; exigir CI dirigida/requerida exact-HEAD, revisión independiente ajena, merge protegido FIFO y readback institucional antes de LISTO. Rollback por revert protegido del test y esta nota.
+
 ## 2026-11-06 — P2-001.C: delimitar matriz de lectura comercial por endpoint (DEV)
 
 - Task nativa Javier :20, TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Regresión xUnit dirigida `backend/tests/Solqaryn.Tests/P2001CMatrizComercialLecturaTests.cs`: contrato de autenticación `[Authorize]`, ausencia de `[AllowAnonymous]`, ruta fija y permiso RBAC `Ver` para las lecturas de clientes, productos y ventas; tres entradas en matriz declarativa.
