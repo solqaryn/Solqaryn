@@ -6,7 +6,7 @@ import { execFileSync } from 'node:child_process';
 const SHA = /^[a-f0-9]{40}$/i;
 // Allow directed P1 regressions in ordinary nested unit-test folders.
 // Integration/database/migration/fixture paths remain fail-closed regardless of filename.
-const SCOPED_UNIT = /^backend\/tests\/Solqaryn\.Tests\/(?:[A-Za-z0-9_.-]+\/)*P\d{4}[A-Z][A-Za-z0-9_]*Tests\.cs$/;
+const SCOPED_UNIT = /^backend\/tests\/Solqaryn\.Tests\/(?:[A-Za-z0-9_.-]+\/)*P1\d{3}[A-Z][A-Za-z0-9_]*Tests\.cs$/;
 const DB_RISK_TEST_PATH = /\/(?:Integration(?:Tests)?|Database(?:Tests)?|Migration(?:s)?|Fixture(?:s)?|Infrastructure|E2E)\//i;
 const DB_CODE = /\b(?:MySqlConnection|MySqlConnector|AppDbContext|DbContext|Testcontainers|SqlConnection|DatabaseFixture)\b|(?:\.\s*UseMySql\s*\(|\.\s*Migrate\s*\(|\bDatabase\s*\.)/i;
 const INTEGRATION_TRAIT = /\[\s*Trait\s*\(\s*"Category"\s*,\s*"Integration"\s*\)/i;
@@ -45,6 +45,11 @@ function selfTest() {
     ['integration subdirectory stays required', ['backend/tests/Solqaryn.Tests/Integration/P1013BOnboardingGateClosureRegressionTests.cs'], clean, true],
     ['database subdirectory stays required', ['backend/tests/Solqaryn.Tests/Database/P1013BOnboardingGateClosureRegressionTests.cs'], clean, true],
     ['migration subdirectory stays required', ['backend/tests/Solqaryn.Tests/Migrations/P1013BOnboardingGateClosureRegressionTests.cs'], clean, true],
+    ['non-P1 P9 nested test stays required', ['backend/tests/Solqaryn.Tests/API/Controllers/P9013BUnexpectedTests.cs'], clean, true],
+    ['non-P1 P2 nested test stays required', ['backend/tests/Solqaryn.Tests/API/Controllers/P2013BUnexpectedTests.cs'], clean, true],
+    ['fixtures subdirectory stays required', ['backend/tests/Solqaryn.Tests/Fixtures/P1013BOnboardingGateClosureRegressionTests.cs'], clean, true],
+    ['infrastructure subdirectory stays required', ['backend/tests/Solqaryn.Tests/Infrastructure/P1013BOnboardingGateClosureRegressionTests.cs'], clean, true],
+    ['E2E subdirectory stays required', ['backend/tests/Solqaryn.Tests/E2E/P1013BOnboardingGateClosureRegressionTests.cs'], clean, true],
     ['arbitrary nested backend test stays required', ['backend/tests/Solqaryn.Tests/API/Controllers/OnboardingSecurityTests.cs'], clean, true],
     ['nested P1 plus runtime code stays required', ['backend/tests/Solqaryn.Tests/API/Controllers/P1013BOnboardingGateClosureRegressionTests.cs', 'backend/src/API/Program.cs'], clean, true],
     ['nested missing file fails closed', ['backend/tests/Solqaryn.Tests/API/Controllers/P1013BOnboardingGateClosureRegressionTests.cs'], null, true],
