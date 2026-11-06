@@ -1,3 +1,9 @@
+## 2026-11-06 — I8-001.C: auditoria causal de credenciales ERP actuales (DEV)
+
+- Task nativa Javier :00, TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`. Microtarea `I8-001.C`, desarrollo habilitado por `COLA!O73=SI` y dependencia `P1-016.B` LISTO. Archivo dirigido `backend/tests/Solqaryn.Tests/I8001CCredencialesErpTests.cs`.
+- Contrato de `AuthService.LoginAsync`: se exige verificacion BCrypt previa a emitir token; usuario eliminado, password incorrecto, cuenta bloqueada o inactiva no emiten JWT; credencial correcta con rol activo habilita solo un token simulado del mock. Login normaliza nombre. Las pruebas son unitarias y no acreditan firma JWT real, MFA, reset/recovery, migraciones, persistencia ni aislamiento HTTP multitenant.
+- Solo test xUnit y nota, sin modificar codigo productivo, credenciales, migraciones, API ni seguridad del proveedor. Prueba dirigida y CI exact-SHA quedan sujetas a ejecucion real y revision independiente de otra Task. No confundir definicion de prueba con PASS. Rollback: revert protegido de test y nota.
+
 ## 2026-11-06 — STRICT_FIFO_NO_IDLE_V10: merge sin adelantamientos, desarrollo continuo (DEV)
 
 - El propietario exige FIFO estricto para fusionar contra dev: un PR abierto mas antiguo bloquea el merge de los posteriores aunque esten CLEAN; la regla corrige V8/V9, que permitian saltar bloqueados.
