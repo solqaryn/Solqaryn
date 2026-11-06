@@ -1,3 +1,10 @@
+## 2026-11-06 — P2-005.C: compras aisladas por EmpresaId verificado (DEV)
+
+- Task Javier :40, `6adc2e55f47c81919f6374e561687076`: prueba xUnit `backend/tests/Solqaryn.Tests/P2005CComprasEmpresaIdTests.cs` para compras borrador de empresas A/B, header `X-Empresa-Id` falsificado y cambio del tenant verificado sobre el mismo DbContext.
+- Sólo test, sin cambios de producción/API/SQL/migraciones, credenciales, workflows ni rulesets. `COLA!O173=SI` y `COLA!G173=SI` al iniciar; dependencia P1-016.B LISTO.
+- Sin ejecución local .NET; CI y revisión independiente por TASK_ID ajeno son requisitos antes del merge. EF InMemory no demuestra acceso HTTP JWT/RBAC, persistencia real MySQL ni política de solicitudes sin tenant; no afirmarlo.
+- Rollback: revert protegido exclusivo del test y esta entrada, conservando otros registros.
+
 ## 2026-11-06 — P2-001.C: delimitar matriz de lectura comercial por endpoint (DEV)
 
 - Task nativa Javier :20, TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Regresión xUnit dirigida `backend/tests/Solqaryn.Tests/P2001CMatrizComercialLecturaTests.cs`: contrato de autenticación `[Authorize]`, ausencia de `[AllowAnonymous]`, ruta fija y permiso RBAC `Ver` para las lecturas de clientes, productos y ventas; tres entradas en matriz declarativa.
