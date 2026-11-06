@@ -8,7 +8,7 @@ const status=read('docs/AUTOMATION_STATUS.md');
 const agents=read('AGENTS.md');
 const scope=read('docs/PROJECT_SCOPE_LOCK.md');
 const TASK=/^[a-f0-9]{32}$/i;
-const SCOPE=/^P\d+-\d+\.[A-Z]$/;
+const SCOPE=/^(?:P\d+|I8|G0)-\d+\.[A-Z]$/;
 const PR=/^https:\/\/github\.com\/solqaryn\/Solqaryn\/pull\/[1-9]\d*$/;
 const key=(s,k)=>(s.match(new RegExp('^'+k+'=([^\\r\\n]+)$','m'))||[])[1]||null;
 const roster=key(authority,'AUTHORIZED_COMMERCIAL_TASK_IDS')?.split(',')||[];
@@ -44,9 +44,12 @@ export function validateDocuments(src) {
     errors.push('independent review');
   return errors;
 }
-export function dependenciesSatisfied(task, stateById) {
-  return Array.isArray(task?.dependencies) &&
-    task.dependencies.every(id=>stateById[id]==='LISTO');
+export function dependenciesSatisfied(task,stateById){
+ return Array.isArray(task?.dependencies)&&task.dependencies.every(id=>stateById[id]==='LISTO');
+}
+export function developmentDependenciesSatisfied(task,stateById){
+ return Array.isArray(task?.dependencies)&&task.dependencies.length<=2&&
+   task.dependencies.every(id=>['VALIDANDO','LISTO'].includes(stateById?.[id]));
 }
 export function selectWork(tasks,stateById,account,activeReviewIds=new Set(),taskId=null,ownershipReadbackVerified=false){
   if(!['JAVIER_CHATGPT','ALEX_CHATGPT'].includes(account) ||
@@ -60,9 +63,9 @@ export function selectWork(tasks,stateById,account,activeReviewIds=new Set(),tas
   if(owned>=15) return {action:'NO_ELIGIBLE',reason:'TASK_CAPACITY_15'};
   const review=tasks.find(t=>t.state==='VALIDANDO' && SCOPE.test(t.id||'') &&
     TASK.test(t.authorTaskId||'') && t.authorTaskId!==taskId &&
-    reviewerFor(t.id,t.authorTaskId,roster)===taskId &&
+    roster.includes(taskId) &&
     !activeReviewIds.has(t.id) && t.activeEditorConflict!==true &&
-    t.activeReviewerConflict!==true && t.reviewerAllowed===true &&
+    t.activeReviewerConflict!==true && t.reviewWorkAvailable!==false && t.reviewerAllowed===true &&
     t.reviewPermissionVerified===true && PR.test(t.prUrl||'') &&
     (t.ownerTaskId==null || t.ownerTaskId===taskId || t.authorDeliveryVerified===true ||
       (t.prMerged===true && t.githubCurrentVerified===true && t.activeEditorConflict!==true)));
@@ -73,11 +76,16 @@ export function selectWork(tasks,stateById,account,activeReviewIds=new Set(),tas
   if(tasks.filter(t=>['EN_PROGRESO','VALIDANDO'].includes(t.state)).length>=15)
     return {action:'NO_ELIGIBLE',reason:'GLOBAL_WIP_15'};
   const work=tasks.filter(t=>t.state==='PENDIENTE'&&SCOPE.test(t.id||'')&&
-    developerFor(t.id,roster)===taskId&&dependenciesSatisfied(t,stateById)&&
-    t.permissionsVerified===true&&t.activeEditorConflict!==true&&!t.conflictingClaim)
-    .sort((a,b)=>(a.planOrder??0)-(b.planOrder??0));
-  return work.length?{action:'CLAIM',task:work[0],requiresNativeCurrentReadback:true}:
-    {action:'NO_ELIGIBLE',reason:'NO_SCOPE_ON_THIS_ROUTE'};
+    (t.developmentEnabled===true||t.developmentEnabled==='SI')&&
+    developmentDependenciesSatisfied(t,stateById)&&
+    t.permissionsVerified===true&&t.ownerTaskId==null&&
+    t.activeEditorConflict!==true&&t.activeAuthorConflict!==true&&
+    t.branchExists!==true&&t.prExists!==true&&!t.conflictingClaim)
+    .sort((a,b)=>Number(developerFor(b.id,roster)===taskId)-
+      Number(developerFor(a.id,roster)===taskId));
+  return work.length?{action:'CLAIM',task:work[0],requiresNativeCurrentReadback:true,
+    requiresVisibleProgressEntry:true}:
+    {action:'NO_ELIGIBLE',reason:'NO_FREE_DEVELOPMENT_ENABLED_SCOPE'};
 }
 export function selectNextScheduledFreeTask(candidates, nowIso, account, previousOwnerTaskId=null) {
   const instant=x=>typeof x==='string' &&
@@ -148,7 +156,7 @@ export function validateProposedRun(p){
       errors.push('writer_capacity');
   }else if(p.operation==='REVIEW'){
     if(!TASK.test(p.authorTaskId||'')||p.authorTaskId===p.actorTaskId||
-       reviewerFor(p.scopeId,p.authorTaskId,roster)!==p.actorTaskId||
+       !roster.includes(p.actorTaskId)||
        !PR.test(p.reviewedPrRef||'')||
        p.githubCurrentVerified!==true||p.planCurrentVerified!==true||
        p.activeReviewerConflict===true||p.activeEditorConflict===true)
@@ -204,13 +212,30 @@ else if(process.argv.includes('--self-test')){
     throw Error('active reviewer collision');
   if(selectWork([{...row,activeEditorConflict:true}],{},'JAVIER_CHATGPT',new Set(),reviewer,true).action!=='NO_ELIGIBLE')
     throw Error('active editor collision');
-  const pending={id:'P1-014.D',state:'PENDIENTE',dependencies:[],permissionsVerified:true};
+  const pending={id:'P1-014.D',state:'PENDIENTE',dependencies:[],
+   developmentEnabled:true,permissionsVerified:true};
   const developer=developerFor(pending.id,ids);
   const ownerAccount=(developer===ids[3]||developer===ids[4])?'ALEX_CHATGPT':'JAVIER_CHATGPT';
   if(selectWork([pending],{},ownerAccount,new Set(),developer,true).action!=='CLAIM')
-    throw Error('eligible work not routed');
-  if(selectWork([{...pending,dependencies:['P1-013.A']}],{},ownerAccount,new Set(),developer,true).action!=='NO_ELIGIBLE')
-    throw Error('unmet dependency allowed');
+    throw Error('development enabled missing');
+  if(selectWork([{...pending,developmentEnabled:'SI'}],{},ownerAccount,new Set(),developer,true).action!=='CLAIM')
+    throw Error('COLA O=SI string must release development');
+  const busyReview={...row,reviewWorkAvailable:false};
+  if(selectWork([busyReview,pending],{},ownerAccount,new Set(),developer,true).action!=='CLAIM')
+    throw Error('already reviewed VALIDANDO must fall back to PENDIENTE');
+  const successor={...pending,id:'I8-001.C',dependencies:['P1-016.B']};
+  if(selectWork([successor],{'P1-016.B':'VALIDANDO'},ownerAccount,new Set(),developer,true).action!=='CLAIM')
+    throw Error('VALIDANDO prerequisite did not release');
+  if(selectWork([successor],{'P1-016.B':'PENDIENTE'},ownerAccount,new Set(),developer,true).action!=='NO_ELIGIBLE')
+    throw Error('unmet dependency accepted');
+  for(const bad of [{...pending,developmentEnabled:false},{...pending,branchExists:true},
+    {...pending,ownerTaskId:ids[0]},{...pending,prExists:true}])
+    if(selectWork([bad],{},ownerAccount,new Set(),developer,true).action!=='NO_ELIGIBLE')
+      throw Error('collision or O=NO accepted');
+  const other=ids.find(x=>x!==developer&&x!==author);
+  const otherAccount=(other===ids[3]||other===ids[4])?'ALEX_CHATGPT':'JAVIER_CHATGPT';
+  if(selectWork([pending],{},otherAccount,new Set(),other,true).action!=='CLAIM')
+    throw Error('developerFor was exclusive');
   const p={repo:'solqaryn/Solqaryn',branch:'dev',environment:'dev',operation:'REVIEW',
     actorTaskId:reviewer,actorAccount:'JAVIER_CHATGPT',authorizationVerified:true,
     mode:'ACTIVE_DEV',permissionVerified:true,exactHeadVerified:true,

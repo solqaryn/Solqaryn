@@ -14,6 +14,8 @@ const GUARDED = new Set([
   'docs/AUTOMATION_AUTHORITY.md',
   '.github/workflows/project-scope-lock.yml', '.github/workflows/solqaryn-core-ci.yml',
   'scripts/automation-stage-ownership.mjs',
+  'scripts/automation-review-routing.mjs', 'scripts/automation-ci-throughput.mjs',
+  'scripts/validate-dual-task-configuration.mjs',
             'scripts/validate-automation-authority.mjs', 'scripts/verify-project-scope.mjs',
   'scripts/verify-automated-pr-certification.mjs', 'scripts/verify-solqaryn-skills.mjs',
 ]);
@@ -37,6 +39,13 @@ const BROAD_OPTIONAL = new Set([
   'Docker y aislamiento de entornos',
   'Preflight, backfill y autoridad en MySQL 8.4',
 ]);
+const ASYNC_REVIEWED_NON_RUNTIME=new Set([
+ 'AGENTS.md','docs/PROJECT_SCOPE_LOCK.md','docs/AUTOMATION_STATUS.md',
+ 'docs/AUTOMATION_AUTHORITY.md','scripts/automation-review-routing.mjs',
+ 'scripts/automation-stage-ownership.mjs','scripts/automation-ci-throughput.mjs',
+ 'scripts/validate-dual-task-configuration.mjs','scripts/security/ci-impact-routing.mjs',
+]);
+const CI_IMPACT_SOURCE='scripts/security/ci-impact-routing.mjs';
 const DOCS_WITH_RUNTIME_CONTRACTS = new Set([
   'docs/PRODUCTION_READINESS_CONTRACT.md',
   'docs/PERFORMANCE_BENCHMARK_CONTRACT.md',
@@ -48,34 +57,34 @@ const OFFLINE_COMMERCIAL_UNIT = /^backend\/tests\/Solqaryn\.Tests\/(?:[A-Za-z0-9
 const FRONTEND_TEST_ONLY = /^frontend\/src\/[A-Za-z0-9_./-]+\.spec\.ts$/;
 const INTEGRATION_TEST_PATH = /(?:\/Integration(?:Tests)?\/|\/Database(?:Tests)?\/|IntegrationTests\.cs$)/i;
 
-function canDeferUnrelatedSuites(files, byName) {
-  if (!Array.isArray(files) || files.length === 0 || files.length > 200) return false;
-  if (files.some(f => !f || !['added', 'modified'].includes(f.status) ||
-      typeof f.filename !== 'string' || f.filename.includes('..') ||
-      f.filename.includes('\\') || BLOCKED_RUNTIME_PATHS.test(f.filename) ||
-      isGuarded(f.filename))) return false;
-  let unitCount = 0;
-  for (const file of files) {
-    const path = file.filename;
-    if (path === 'CHANGELOG_AI.md') continue;
-    if (path.startsWith('docs/') && path.endsWith('.md') &&
-        !DOCS_WITH_RUNTIME_CONTRACTS.has(path) &&
-        !path.startsWith('docs/evidencias/modernizacion/')) continue;
-    if (!INTEGRATION_TEST_PATH.test(path) &&
-        (OFFLINE_COMMERCIAL_UNIT.test(path) || FRONTEND_TEST_ONLY.test(path))) { unitCount++; continue; }
-    return false;
+function canDeferUnrelatedSuites(files,byName){
+ if(!Array.isArray(files)||!files.length||files.length>200)return false;
+ if(files.some(f=>!f||!['added','modified'].includes(f.status)||
+   typeof f.filename!=='string'||f.filename.includes('..')||
+   f.filename.includes('\\')||BLOCKED_RUNTIME_PATHS.test(f.filename)||
+   (isGuarded(f.filename)&&!ASYNC_REVIEWED_NON_RUNTIME.has(f.filename))))return false;
+ let units=0,governance=0,classifier=false;
+ for(const f of files){
+  const path=f.filename;
+  if(path==='CHANGELOG_AI.md')continue;
+  if(ASYNC_REVIEWED_NON_RUNTIME.has(path)){
+   governance++;if(path===CI_IMPACT_SOURCE)classifier=true;continue;
   }
-  if (!unitCount) return true; // only non-executable evidence
-  // For test-only changes, a trusted successful CI-impact classifier is mandatory.
-  // Broad MySQL and other optional suites continue asynchronously. Preserve their
-  // failures as blockers if already completed; only QUEUED/IN_PROGRESS are deferred.
-  const impact = byName.get(CI_IMPACT_CHECK);
-  const mysql = byName.get(MYSQL_INTEGRATION_CHECK);
-  return impact?.status === 'completed' && impact.conclusion === 'success' &&
-    impact.app?.id === TRUSTED_GITHUB_ACTIONS_APP_ID &&
-    mysql?.app?.id === TRUSTED_GITHUB_ACTIONS_APP_ID &&
-    (['queued', 'in_progress'].includes(mysql.status) ||
-      (mysql.status === 'completed' && ['success', 'skipped'].includes(mysql.conclusion)));
+  if(path.startsWith('docs/')&&path.endsWith('.md')&&
+     !DOCS_WITH_RUNTIME_CONTRACTS.has(path)&&
+     !path.startsWith('docs/evidencias/modernizacion/'))continue;
+  if(!INTEGRATION_TEST_PATH.test(path)&&
+     (OFFLINE_COMMERCIAL_UNIT.test(path)||FRONTEND_TEST_ONLY.test(path))){units++;continue;}
+  return false;
+ }
+ if(units&&governance)return false;
+ if(!units&&!classifier)return true;
+ const impact=byName.get(CI_IMPACT_CHECK),mysql=byName.get(MYSQL_INTEGRATION_CHECK);
+ return impact?.head_sha===mysql?.head_sha&&impact?.status==='completed'&&
+   impact.conclusion==='success'&&impact.app?.id===TRUSTED_GITHUB_ACTIONS_APP_ID&&
+   mysql?.app?.id===TRUSTED_GITHUB_ACTIONS_APP_ID&&
+   (['queued','in_progress'].includes(mysql.status)||
+   (mysql.status==='completed'&&['success','skipped'].includes(mysql.conclusion)));
 }
 
 function optionalPendingDeferred(files, byName) {
@@ -259,6 +268,37 @@ function selfTest() {
     const mysql=x.runs.find(run=>run.name===MYSQL_INTEGRATION_CHECK);
     mysql.status='completed';mysql.conclusion='failure';return x;
   });
+  const classifier=clone(docsLane);
+  classifier.pr.user.login=INSTITUTIONAL_EXECUTOR;
+  classifier.pr.title='fix(ci): classifier';
+  classifier.pr.head.ref='work/solqaryn-ci-impact-p1-nested-v1';
+  classifier.files=[docs[0],{filename:'docs/CI_IMPACT_ROUTING.md',status:'modified'},
+    {filename:CI_IMPACT_SOURCE,status:'modified'}];
+  classifier.reviews=[{state:'APPROVED',commit_id:h,user:{login:INDEPENDENT_REVIEWER}}];
+  classifier.runs.push(makeRun(CI_IMPACT_CHECK,h),pending(MYSQL_INTEGRATION_CHECK));
+  assertPass('reviewed classifier with optional MySQL pending',classifier);
+  if(!certify(classifier).deferred.includes(MYSQL_INTEGRATION_CHECK))
+    throw Error('CLASSIFIER_OPTIONAL_NOT_DEFERRED');
+  assertReject('classifier without reviewer',x=>{
+    x.pr=clone(classifier.pr);x.files=clone(classifier.files);x.runs=clone(classifier.runs);
+    return x;});
+  assertReject('classifier without trusted impact',x=>{
+    x.pr=clone(classifier.pr);x.files=clone(classifier.files);x.reviews=clone(classifier.reviews);
+    x.runs=clone(classifier.runs).filter(z=>z.name!==CI_IMPACT_CHECK);return x;});
+  assertReject('classifier with completed optional failure',x=>{
+    x.pr=clone(classifier.pr);x.files=clone(classifier.files);x.reviews=clone(classifier.reviews);
+    x.runs=clone(classifier.runs);const m=x.runs.find(z=>z.name===MYSQL_INTEGRATION_CHECK);
+    m.status='completed';m.conclusion='failure';return x;});
+  const reviewedGov=clone(docsLane);
+  reviewedGov.files=[docs[0],{filename:'AGENTS.md',status:'modified'},
+   {filename:'scripts/automation-review-routing.mjs',status:'modified'}];
+  reviewedGov.reviews=[{state:'APPROVED',commit_id:h,user:{login:'morales35alex'}}];
+  assertPass('reviewed advisory governance with optional suite pending',reviewedGov);
+  assertReject('governance without review',x=>{
+   x.files=clone(reviewedGov.files);x.runs=clone(reviewedGov.runs);return x;});
+  assertReject('governance with runtime file cannot defer',x=>{
+   x.files=[...clone(reviewedGov.files),{filename:'backend/src/API/Startup.cs',status:'modified'}];
+   x.runs=clone(reviewedGov.runs);x.reviews=clone(reviewedGov.reviews);return x;});
   assertReject('unknown script cannot defer', x => {
     x.files=[...docs,{filename:'scripts/ci/unknown.mjs',status:'added'}];
     x.runs.push(pending(optional)); return x;
