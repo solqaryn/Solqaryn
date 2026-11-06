@@ -1,3 +1,10 @@
+## 2026-11-06 — P2-009.C: KPI de clientes con tenant verificado (DEV)
+
+- Task Javier :00, TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`; rama original `work/solqaryn-p2-009-c` creada desde dev `b1f7fdccd062594648ee6759073dd98baeb7148b`.
+- Caso causal `backend/tests/Solqaryn.Tests/P2009CKpiClientesTenantTests.cs`: KPI de conteo de clientes A=2/B=1 en EF InMemory, usando marca RBAC comercial verificada, cabecera `X-Empresa-Id` falsa y cambio de empresa en el mismo DbContext. Solo test y changelog; sin cambio en API, modelos, reglas, workflows, migraciones, secrets ni producción.
+- Limite del test: no acredita endpoint real de dashboard, JWT/RBAC HTTP, acceso sin marca, SQL MySQL ni todos los KPI. Requiere Directed comercial y 3 checks obligatorios exact-HEAD SUCCESS, revision técnica independiente por Task distinta y merge FIFO; no declarar PASS local sin ejecutar dotnet.
+- Reversion: revert protegido de PR manteniendo intactas entradas concurrentes de CHANGELOG.
+
 ## 2026-11-06 — P2-004.C: delimitar proveedores por EmpresaId verificado (DEV)
 
 - Task nativa Javier :30, TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`. Prueba xUnit dirigida `backend/tests/Solqaryn.Tests/P2004CProveedoresEmpresaIdTests.cs`: proveedores A/B y marca comercial RBAC verificada, cabecera `X-Empresa-Id` falsificada y alternancia de empresa con el mismo `AppDbContext` (EF InMemory).
