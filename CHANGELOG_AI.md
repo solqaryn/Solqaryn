@@ -1,3 +1,8 @@
+## 2026-11-06 - P1-016.B: cierre dirigido de sesion global sin tenant (DEV)
+
+- Javier :20 (Task `6adc2e4bd8a48191ac7d8641ed95a1a3`) entrega wrapper xUnit `P1016B` de cinco casos reales heredados de `P1016A`: permiso global sin tenant, rechazo de admin empresarial con cabecera, rol global ausente, usuario bloqueado y HTTP no autenticado. Acta `docs/P1-016-B-CIERRE-SESION-PLATAFORMA-DEV.md`.
+- COLA!O60=SI habilita desarrollo, pero COLA!G60=NO impide merge/LISTO mientras P1-016.E no sea LISTO. Sin ejecucion local; no afirmar CI, pruebas remotas, JWT real/MySQL ni review. Sin cambios productivos, flags, secretos ni QA/main/PROD.
+
 ## 2026-11-06 — P1-011.B: negativo BCrypt corregido tras REQUEST_CHANGES (DEV)
 
 - ALEX :10, autor TASK_ID `6adbbc9ad9e88191bea8eb69104afb25`, atiende review independiente #5796363344 en la misma rama/PR #3887. El controlador mantiene el constructor público y BCrypt coste 12; solo agrega un constructor interno de pruebas con delegado de hashing e InternalsVisibleTo para Solqaryn.Tests.
