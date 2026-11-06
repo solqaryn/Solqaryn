@@ -1,3 +1,9 @@
+## 2026-11-05 — P1-016.D: rechazo dirigido de sesion global empresarial (DEV)
+
+- Task nativa Javier :40 (`6adc2e55f47c81919f6374e561687076`) inicio P1-016.D con ruta determinista, dependencia P1-016.C LISTO y WIP 3/15; rama unica `work/solqaryn-p1-016-d` desde `dev@0c280ab7c4b8a56b1a0674b3a3bca438d3078e1b`.
+- `P1016DDirectedDenialTests` ejecuta el negativo real P1-016.A: administrador empresarial con cabecera X-Empresa-Id no obtiene sesion global, devuelve Forbid y deja auditoria Rechazado sin EmpresaId/rol plataforma. Fixture EF InMemory sintetica, sin modificar backend productivo.
+- Acta: `docs/P1-016-D-NEGATIVO-SESION-PLATAFORMA-DEV.md`. La prueba, CI, revision independiente, merge y LISTO **no se acreditan** antes de sus recibos exact-SHA; no equiparar prueba sintetica a HTTP/JWT/MySQL DEV.
+
 ## 2026-11-05 — P1-015.D: rechazo dirigido de autodelegacion privilegiada (DEV)
 
 - ALEX :50, TASK_ID `6adcc98a80a48191b71a5156624c21df`: `P1-015.D` pasa a EN_PROGRESO, con `P1-015.C=LISTO` y routing determinista `developerFor=ALEX50`. Rama unica `work/solqaryn-p1-015-d`, desde dev@`0c280ab7c4b8a56b1a0674b3a3bca438d3078e1b`; entrada de BITACORA!704 y readback PLAN/COLA.
