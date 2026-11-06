@@ -1,3 +1,7 @@
+## 2026-11-05 — P1-014.E: regresión positiva de alta guiada (DEV)
+
+Task Javier :00 `6adbb9fff1548191a1bd5b30d9e9984a` incorpora prueba positiva Angular P1014E y prueba xUnit dirigida que reutiliza el fixture positivo/negativo P1014A, sin modificar comportamiento productivo. Acta `docs/P1-014-E-POSITIVO-ALTA-GUIADA-DEV.md`. CI y revisión exact-SHA pendientes de verificación; no se atribuyen pruebas locales ni certificación de DEV vivo. Rama work/solqaryn-p1-014-e. Rollback limitado a estos cuatro archivos.
+
 ## 2026-11-05 — P1-014.D: rechazo HTTP 403 del alta guiada (DEV)
 
 Task Javier :30 (6aeacb7820ac8191b7d768a6f33dfa09) añade prueba negativa dirigida Angular sobre el asistente de alta: respuesta 403 del servidor no confirma alta ni pierde datos del formulario. Acta docs/P1-014-D-RECHAZO-ALTA-GUIADA-DEV.md. Prueba aún no ejecutada ni CI certificada al crear el changeset; no es evidencia de MySQL/JWT remoto ni altera backend productivo. Rama histórica work/solqaryn-p1-014-d, rollback por PR protegido limitado a esta prueba/documentación.
