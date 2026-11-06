@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 const REQUIRED = ['SOLQARYN - Seguridad multiempresa', 'SOLQARYN - Build y pruebas backend'];
 const DIRECTED_CHECK = 'SOLQARYN - Directed commercial scope';
 const TRUSTED_GITHUB_ACTIONS_APP_ID = 15368;
-const SCOPE = /\b(P\d+-\d{3}\.[A-Z])\b/i;
+const SCOPE = /\b((?:P\d+|I8|G0)-\d{3}\.[A-Z])\b/i;
 const INSTITUTIONAL_EXECUTOR = 'solqaryn-platform';
 const INDEPENDENT_REVIEWER = ['jmejia', '31'].join('');
 const BLOCKED_RUNTIME_PATHS = /(^|\/)(?:\.env(?:\..*)?|[^/]+\.(?:pem|p12|key)|appsettings\.Production\.json)$|^(?:qa|prod|main)\//i;
@@ -157,6 +157,31 @@ function selfTest() {
   const assertPass = (label, obj) => { const x = certify(obj); if (!x.pass) throw Error('positive ' + label + ': ' + x.failures.join(';')); positives++; };
   const assertReject = (label, change) => { const x = certify(change(clone(fixture))); if (x.pass) throw Error('negative not rejected ' + label); negatives++; };
   assertPass('ordinary commercial PR', fixture);
+  // V9: only authorized I8/G0 follow-ups; branch evidence and a trusted directed
+  // exact-HEAD check remain mandatory just as for P-program scopes.
+  for (const nextScope of ['I8-001.C', 'G0-006.C']) {
+    const native = clone(fixture);
+    native.pr.title = 'test(' + nextScope + '): causal commercial closure';
+    native.pr.body = nextScope + ' evidence';
+    native.pr.head.ref = 'work/solqaryn-' + nextScope.toLowerCase().replace(/\./g, '-');
+    assertPass('authorized directed ' + nextScope, native);
+    const unsigned = clone(native);
+    unsigned.runs = unsigned.runs.filter(run => run.name !== DIRECTED_CHECK);
+    const missing = certify(unsigned);
+    if (missing.pass || !missing.failures.includes('SCOPE_DIRECTED_TEST_MISSING:' + nextScope))
+      throw Error('NON_P_SCOPE_DIRECTED_CHECK_REQUIRED:' + nextScope);
+    negatives++;
+    const wrongBranch = clone(native);
+    wrongBranch.pr.head.ref = 'feature/unverified';
+    if (certify(wrongBranch).pass) throw Error('NON_P_SCOPE_BRANCH_LOCK_MISSING:' + nextScope);
+    negatives++;
+  }
+  assertReject('unapproved external program cannot be certified', x => {
+    x.pr.title = 'test(X9-001.C): unsupported';
+    x.pr.body = 'X9-001.C';
+    x.pr.head.ref = 'work/solqaryn-x9-001-c';
+    return x;
+  });
   assertReject('missing security check', x => ({...x, runs: x.runs.filter(c => c.name !== REQUIRED[0])}));
   assertReject('failed backend', x => { x.runs[1].conclusion = 'failure'; return x; });
   assertReject('stale head', x => ({...x, expectedHead: 'b'.repeat(40)}));

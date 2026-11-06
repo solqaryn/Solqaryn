@@ -1,3 +1,22 @@
+## 2026-11-06 — CI por impacto: evitar MySQL 23 minutos en tests P1 anidados de solo regresión (DEV)
+
+- El clasificador fail-closed acepta wrappers offline P1 dentro de subcarpetas ordinarias (p. ej. API/Controllers/P1013B*Tests.cs), sin código de DB/Integration ni cambios de runtime; actualmente un falso no-reconocimiento activaba MySQL 8.4 durante 23m10s en P1-013.B.
+- Se mantienen los tres checks requeridos por GitHub dev, revisión independiente y pruebas dirigidas. Nunca se omiten suites MySQL ante migraciones, test DB/integration, rutas protegidas/desconocidas, ausencia de archivo o fallos del clasificador.
+- Quince regresiones añadidas al self-test del clasificador. La prueba opcional integral sigue disponible para cambios de impacto real y workflow_dispatch. Reversión: revertir este PR protegido.
+
+## 2026-11-06 — CI dirigida compatible con I8/G0 en el Plan Comercial Inicial (DEV)
+
+- El selector V9 y COLA!O habilitan I8/G0, pero Scope Lock solo aceptaba P y el workflow de pruebas dirigidas solo escuchaba ramas P; se corrige esa incompatibilidad sin abrir el gobierno a programas ajenos.
+- Scope Lock reconoce únicamente P[digitos], I8 y G0 con ID de tres digitos y sufijo A-Z, exige rama determinista, evidencia en PR y check dirigido de GitHub Actions exact-HEAD.
+- Workflow de CI dirigida corre para ramas comerciales work/solqaryn-p*, work/solqaryn-i8-* y work/solqaryn-g0-*, exige xUnit con al menos un match y cero fallos; conserva los tres checks required, revision independiente, seguridad, CI de MySQL segun impacto, no CAS ni QA/main/PROD.
+- Pruebas positivas I8/G0 y negativas por suite dirigida ausente, rama incorrecta y programa externo. Reversion por PR protegido.
+
+## 2026-11-06 — NO_IDLE_PENDING_RELEASE_V9: continuar trabajo habilitado aunque VALIDANDO no este vacio (DEV)
+
+- Prioridad real: merge protegido de VALIDANDO apto por created_at; en ausencia de fusion apta, continuar inmediatamente con PENDIENTE elegible sin FIFO por ID/fecha y sin requerir un LISTO previo.
+- Se amplia la lectura advisory del selector a programas autorizados P, I8 y G0 del Plan Comercial Inicial vigente; los IDs externos y conflicto positivo siguen bloqueados. COLA!O debe calcular para esos programas desarrollo con dependencia VALIDANDO/LISTO; COLA!G sigue exigiendo LISTO para merge.
+- No se tocan checks required, SQL, auth, workflows, ni QA/main/PROD. Revision independiente, rama unica, validaciones y bitacora se preservan. Rollback por PR protegido y restauracion de formula O anterior en Sheets.
+
 ## 2026-11-05 — P1-014.B: prueba de no anunciar éxito antes de confirmación HTTP (DEV)
 
 - Task Javier :30, `6aeacb7820ac8191b7d768a6f33dfa09`: regresión P1014B negativa/positiva de alta guiada pendiente y error tardío sin falso éxito; xUnit dirigido sobre fixture P1014A, acta `docs/P1-014-B-CIERRE-ATOMICO-ALTA-GUIADA-DEV.md`. No se acredita COMMIT MySQL por mock Angular/EF InMemory. Desarrollo con COLA!O71=SI y dependencia P1-014.E todavía VALIDANDO; merge/LISTO prohibidos hasta COLA!G71=SI, CI exact-SHA y revisión ajena. Sin ejecución local de tests; sin cambios productivos.
@@ -6,12 +25,6 @@
 
 - Javier :20 (Task `6adc2e4bd8a48191ac7d8641ed95a1a3`) entrega wrapper xUnit `P1016B` de cinco casos reales heredados de `P1016A`: permiso global sin tenant, rechazo de admin empresarial con cabecera, rol global ausente, usuario bloqueado y HTTP no autenticado. Acta `docs/P1-016-B-CIERRE-SESION-PLATAFORMA-DEV.md`.
 - COLA!O60=SI habilita desarrollo, pero COLA!G60=NO impide merge/LISTO mientras P1-016.E no sea LISTO. Sin ejecucion local; no afirmar CI, pruebas remotas, JWT real/MySQL ni review. Sin cambios productivos, flags, secretos ni QA/main/PROD.
-
-## 2026-11-06 — CI por impacto: evitar MySQL 23 minutos en tests P1 anidados de solo regresión (DEV)
-
-- El clasificador fail-closed acepta wrappers offline P1 dentro de subcarpetas ordinarias (p. ej. API/Controllers/P1013B*Tests.cs), sin código de DB/Integration ni cambios de runtime; actualmente un falso no-reconocimiento activaba MySQL 8.4 durante 23m10s en P1-013.B.
-- Se mantienen los tres checks requeridos por GitHub dev, revisión independiente y pruebas dirigidas. Nunca se omiten suites MySQL ante migraciones, test DB/integration, rutas protegidas/desconocidas, ausencia de archivo o fallos del clasificador.
-- Quince regresiones añadidas al self-test del clasificador. La prueba opcional integral sigue disponible para cambios de impacto real y workflow_dispatch. Reversión: revertir este PR protegido.
 
 ## 2026-11-05 — P1-016.E: positivo dirigido de sesion global sin tenant (DEV)
 
