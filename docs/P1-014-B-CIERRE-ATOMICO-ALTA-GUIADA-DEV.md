@@ -1,0 +1,10 @@
+# P1-014.B — Cierre atómico del alta guiada comercial (DEV)
+
+- Fuente exclusiva: Plan Comercial Inicial V3; P1-014.B; PLAN_MAESTRO fila 71; dependencia P1-014.E en VALIDANDO al iniciar. Ingreso autorizado por COLA!O71=SI, **sin** autorización para merge/LISTO mientras COLA!G71=NO.
+- Ejecutor histórico: Task física Javier :30, TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`, GitHub `jmejia31`. Rama única `work/solqaryn-p1-014-b`, base `dev@95965fb934d8490faacfbbaeeb616b21fcdeb1d5`.
+- Negativo Angular `P1014B`: respuesta HTTP pendiente no genera mensaje de éxito, reseteo del asistente ni actualización de directorio. Error tardío 500 conserva los datos y emite error sin éxito. Positivo: un resultado exitoso confirmado por el observable genera un solo refresco de directorio y anuncio de éxito.
+- Prueba dirigida backend `P1014B`: delega a fixture P1014A ya integrado para comprobar `CreatedResult` con Empresa/ConfigEmpresa/UsuarioEmpresa y ausencia de filas en rechazo por gate. Este fixture utiliza EF InMemory; NO demuestra commit/rollback de MySQL DEV ni fallo inyectado en commit.
+- Probar: `dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj --filter FullyQualifiedName~P1014B`; `cd frontend && npm run test:unit -- --include src/app/features/plataforma/plataforma-gestion-mvp.component.spec.ts`. Sin checkout red, **prueba local no ejecutada**: depender de CI exact-SHA, revisión independiente y pruebas requeridas por alcance.
+- Recibos a verificar por Task revisora: P1-014.C y P1-014.D LISTO; P1-014.E debe alcanzar LISTO y COLA!G71=SI antes de merge. Verificar evidencia de HTTP/backend y transacción MySQL si es requisito de cierre; no interpretar mock RxJS como prueba de commit.
+- Impacto: solo pruebas Angular/.NET, este acta y CHANGELOG_AI; sin cambio a API, servicio productivo, JWT, RBAC, multitenancy, migraciones, flags, entornos QA/main/PROD ni credenciales.
+- Revisión funcional: TASK_ID distinto de la autora. Rollback proporcional: revertir estos archivos en un PR protegido, sin reescribir commits ni historial ajeno. No declarar LISTO sin gates.
