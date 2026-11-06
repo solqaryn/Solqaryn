@@ -4,6 +4,34 @@
 - Regresión negativa: producto B nunca aparece en lectura autorizada A y viceversa pese a compartir nombre. No cambia runtime, API, JWT/RBAC, MySQL, migraciones, secretos, rulesets ni despliegues. Prueba EF InMemory no acredita HTTP ni MySQL; dotnet local no ejecutado, CI de GitHub y revisión independiente del SHA de PR pendientes.
 - Dependencia `P2-002.C` LISTO, `COLA!O188=SI` al iniciar desarrollo, `COLA!G188=SI` para merge. Rollback: revert protegido sólo de esta prueba y entrada conservando cualquier otro scope.
 
+## 2026-11-06 — P2-001.D: ampliar matriz de lectura comercial a proveedores y compras (DEV)
+
+- Task nativa Javier :20, TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Se amplió el test `[Theory]` `P2001CMatrizComercialLecturaTests` de tres a cinco endpoints, añadiendo `GET proveedores` y `GET compras` con `[Authorize]`, sin `[AllowAnonymous]` y `RequierePermiso(ModuloSistema.Proveedores/Compras, AccionPermiso.Ver)`; el control se ejecuta sobre atributos del contrato HTTP, no sobre respuestas con JWT real.
+- Dependencia `P2-001.C` LISTO, COLA!O187=SI y COLA!G187=SI al inicio. Prueba causal definida y verificada estáticamente contra controladores `ProveedoresController.GetAll` y `ComprasController.GetPaged`; `dotnet test` no se ejecutó localmente. GitHub CI exact-HEAD y revisión independiente por otra Task requeridos antes del merge FIFO.
+- Riesgo contenido: solo archivo de test y CHANGELOG, sin cambios en servicios, DbContext, endpoints productivos, migraciones, JWT, permisos, secrets, rulesets o entornos. No afirma aislamiento multiempresa por metadatos; rollback por revert protegido del test y esta entrada.
+
+
+- P2-001.D: reparar Directed 0 tests exact-SHA: CI #3908 sobre SHA 9b360a1efa456a29b319583b435be907bff0dcbe reportó `DIRECTED_SCOPE_NO_GO total=0` porque filtraba `FullyQualifiedName~P2001D` y los casos ampliados residían en clase P2001C. Agregada suite xUnit P2001D con dos casos que reutilizan las aserciones C para proveedores/compras; sin modificar la prueba C ni el runtime, requiere CI nueva y revisión ajena.
+
+## 2026-11-06 — P2-010.C: exportaciones CSV/XLSX aisladas por EmpresaId (DEV)
+
+- Task física Alex :10 (`6adbbc9ad9e88191bea8eb69104afb25`); prueba xUnit `backend/tests/Solqaryn.Tests/P2010CExportacionesEmpresaIdTests.cs`. Datos de auditoría A/B sintéticos, marcador comercial verificado, cabecera `X-Empresa-Id` suplantada, cambio de tenant en el mismo `AppDbContext`, falta de marca y rechazo explícito de formato ZIP no soportado.
+- Prueba focal en CSV y lectura XLSX, sin cambios al backend productivo, JWT/RBAC, migraciones, bases de datos, secretos, flags, workflows ni entornos. EF InMemory NO demuestra protección HTTP, MySQL ni aislamiento de otros módulos; ZIP permanece no implementado. Requiere CI exact-SHA, revisión cruzada, FIFO protegido y postmerge antes de LISTO.
+- Dependencia `P1-016.B` LISTO, `COLA!G178=SI`, `COLA!O178=SI` al iniciar. Rollback: revert protegido de prueba y entrada; preservar trabajo concurrente.
+
+## 2026-11-06 — P2-009.C: KPI de clientes con tenant verificado (DEV)
+
+- Task Javier :00, TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`; rama original `work/solqaryn-p2-009-c` creada desde dev `b1f7fdccd062594648ee6759073dd98baeb7148b`.
+- Caso causal `backend/tests/Solqaryn.Tests/P2009CKpiClientesTenantTests.cs`: KPI de conteo de clientes A=2/B=1 en EF InMemory, usando marca RBAC comercial verificada, cabecera `X-Empresa-Id` falsa y cambio de empresa en el mismo DbContext. Solo test y changelog; sin cambio en API, modelos, reglas, workflows, migraciones, secrets ni producción.
+- Limite del test: no acredita endpoint real de dashboard, JWT/RBAC HTTP, acceso sin marca, SQL MySQL ni todos los KPI. Requiere Directed comercial y 3 checks obligatorios exact-HEAD SUCCESS, revision técnica independiente por Task distinta y merge FIFO; no declarar PASS local sin ejecutar dotnet.
+- Reversion: revert protegido de PR manteniendo intactas entradas concurrentes de CHANGELOG.
+
+## 2026-11-06 — P2-007.C: aislamiento de ajustes de inventario por EmpresaId (DEV)
+
+- Task Javier :30, TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`. Regresion xUnit `backend/tests/Solqaryn.Tests/P2007CInventarioEmpresaIdTests.cs`: dos empresas, owner persistido y lecturas EF aisladas tras alternar la marca tenant verificada.
+- Alcance limitado a ajustes de inventario en borrador y filtros EF; no certifica Kardex global, HTTP, JWT/RBAC, MySQL ni otras rutas. Test definido, sin ejecucion local certificada; CI dirigida, los tres checks obligatorios exact-HEAD y revision de otra Task siguen pendientes.
+- Sin cambios productivos, migraciones, secretos, workflows o entornos. Rollback: revertir test y entrada por PR protegido.
+
 ## 2026-11-06 — P2-004.C: delimitar proveedores por EmpresaId verificado (DEV)
 
 - Task nativa Javier :30, TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`. Prueba xUnit dirigida `backend/tests/Solqaryn.Tests/P2004CProveedoresEmpresaIdTests.cs`: proveedores A/B y marca comercial RBAC verificada, cabecera `X-Empresa-Id` falsificada y alternancia de empresa con el mismo `AppDbContext` (EF InMemory).
@@ -35,6 +63,12 @@
 - Se mantienen los tres checks requeridos por GitHub dev, revisión independiente y pruebas dirigidas. Nunca se omiten suites MySQL ante migraciones, test DB/integration, rutas protegidas/desconocidas, ausencia de archivo o fallos del clasificador.
 - Quince regresiones añadidas al self-test del clasificador. La prueba opcional integral sigue disponible para cambios de impacto real y workflow_dispatch. Reversión: revertir este PR protegido.
 
+## 2026-11-06 — I8-001.C: auditoria causal de credenciales ERP actuales (DEV)
+
+- Task nativa Javier :00, TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`. Microtarea `I8-001.C`, desarrollo habilitado por `COLA!O73=SI` y dependencia `P1-016.B` LISTO. Archivo dirigido `backend/tests/Solqaryn.Tests/I8001CCredencialesErpTests.cs`.
+- Contrato de `AuthService.LoginAsync`: se exige verificacion BCrypt previa a emitir token; usuario eliminado, password incorrecto, cuenta bloqueada o inactiva no emiten JWT; credencial correcta con rol activo habilita solo un token simulado del mock. Login normaliza nombre. Las pruebas son unitarias y no acreditan firma JWT real, MFA, reset/recovery, migraciones, persistencia ni aislamiento HTTP multitenant.
+- Solo test xUnit y nota, sin modificar codigo productivo, credenciales, migraciones, API ni seguridad del proveedor. Prueba dirigida y CI exact-SHA quedan sujetas a ejecucion real y revision independiente de otra Task. No confundir definicion de prueba con PASS. Rollback: revert protegido de test y nota.
+
 ## 2026-11-06 — V11 progreso visible y CI opcional asíncrona (DEV)
 
 - Registrar EN_PROGRESO real antes de desarrollar, PLAN H/I y BITACORA; tras PR pasar a VALIDANDO, conservando autoria y readback. Sin CAS.
@@ -49,6 +83,12 @@
 - Selector consultivo fail-closed y pruebas negativas: PR tecnico/governance antiguo y antiguo con CI/revision/conflicto pendiente impiden recomendar PR posterior para merge; PR cerrado deja turno libre. Sin CAS, force-push, perdida de checks requeridos, QA/main/PROD o cambios de horarios.
 - Reversion mediante PR protegido, conservando historial de BITACORA.
 
+## 2026-11-06 — P2-016.C: datos históricos sintéticos sin EmpresaId (DEV)
+
+- Task autora Alex :10 / `6adbbc9ad9e88191bea8eb69104afb25`. La regresión `P2016CDatosHistoricosEmpresaIdTests.cs` crea una categoría legado `EmpresaId=NULL` y dos categorías A/B, verifica aislamiento con marca RBAC por empresa y rechaza que `X-Empresa-Id` asigne acceso o propietario al registro histórico.
+- El filtro EF sin marca RBAC mantiene consulta global para flujos internos por contrato vigente; **no** equivale a acceso HTTP autorizado. La cuarentena multiempresa HTTP P0 se prueba separadamente. Todo son datos InMemory sintéticos: no se imputan propietarios históricos ni se modifican SQL, migraciones, autenticación, reglas RBAC, producto, tienda, secretos, QA/main/PROD.
+- Prueba causal definida, ejecución local NO_VERIFICADA; exigir CI dirigida/requerida exact-HEAD, revisión independiente ajena, merge protegido FIFO y readback institucional antes de LISTO. Rollback por revert protegido del test y esta nota.
+
 ## 2026-11-06 — P2-001.C: delimitar matriz de lectura comercial por endpoint (DEV)
 
 - Task nativa Javier :20, TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Regresión xUnit dirigida `backend/tests/Solqaryn.Tests/P2001CMatrizComercialLecturaTests.cs`: contrato de autenticación `[Authorize]`, ausencia de `[AllowAnonymous]`, ruta fija y permiso RBAC `Ver` para las lecturas de clientes, productos y ventas; tres entradas en matriz declarativa.
@@ -61,6 +101,13 @@
 - Scope Lock reconoce únicamente P[digitos], I8 y G0 con ID de tres digitos y sufijo A-Z, exige rama determinista, evidencia en PR y check dirigido de GitHub Actions exact-HEAD.
 - Workflow de CI dirigida corre para ramas comerciales work/solqaryn-p*, work/solqaryn-i8-* y work/solqaryn-g0-*, exige xUnit con al menos un match y cero fallos; conserva los tres checks required, revision independiente, seguridad, CI de MySQL segun impacto, no CAS ni QA/main/PROD.
 - Pruebas positivas I8/G0 y negativas por suite dirigida ausente, rama incorrecta y programa externo. Reversion por PR protegido.
+
+## 2026-11-06 — P2-006.C: ventas por EmpresaId verificado, prueba dirigida (DEV)
+
+- Autora: Task nativa Javier :20, TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`, GitHub `jmejia31`. Escenario delimitado: `backend/tests/Solqaryn.Tests/P2006CVentasEmpresaIdTests.cs`.
+- EF InMemory con ventas borrador A/B: una cabecera `X-Empresa-Id` falsificada no cambia el filtro de lectura contra el tenant verificado, y el filtro se reevalúa al cambiar el tenant dentro del mismo `AppDbContext`. `IgnoreQueryFilters` solo prueba la presencia de ambas filas de fixture y NO es vía autorizada de consulta.
+- No se cambió lógica productiva, esquema, migraciones, secretos, workflows ni permisos. Este test no certifica HTTP/JWT/RBAC, MySQL real, jobs ni contenido legacy sin EmpresaId. Sin ejecución local de .NET: compilación y CI dirigida quedan pendientes de GitHub y revisión independiente.
+- Dependencia `P1-016.B` LISTO, `COLA!O174=SI` al iniciar. Reversión: revert protegido del test y esta entrada conservando las entradas concurrentes.
 
 ## 2026-11-06 — NO_IDLE_PENDING_RELEASE_V9: continuar trabajo habilitado aunque VALIDANDO no este vacio (DEV)
 
@@ -76,6 +123,12 @@
 
 - Javier :20 (Task `6adc2e4bd8a48191ac7d8641ed95a1a3`) entrega wrapper xUnit `P1016B` de cinco casos reales heredados de `P1016A`: permiso global sin tenant, rechazo de admin empresarial con cabecera, rol global ausente, usuario bloqueado y HTTP no autenticado. Acta `docs/P1-016-B-CIERRE-SESION-PLATAFORMA-DEV.md`.
 - COLA!O60=SI habilita desarrollo, pero COLA!G60=NO impide merge/LISTO mientras P1-016.E no sea LISTO. Sin ejecucion local; no afirmar CI, pruebas remotas, JWT real/MySQL ni review. Sin cambios productivos, flags, secretos ni QA/main/PROD.
+
+## 2026-11-06 — P2-008.C: facturas privadas ante cabecera de otra empresa (DEV)
+
+- Task Javier :40, TASK_ID `6adc2e55f47c81919f6374e561687076`. Regresion dirigida `backend/tests/Solqaryn.Tests/P2008CFacturasPrivadasEmpresaIdTests.cs`: factura/venta A y B, marca verificada, cabecera `X-Empresa-Id` falsificada, cambio de tenant en el mismo contexto y bloqueo de lectura privada sin marca con dos empresas.
+- Solo test EF InMemory de `FacturaRepository` y esta entrada; no cambia runtime, HTTP, JWT/RBAC, bases de datos, migraciones, reglas GitHub, secretos ni QA/main/PROD. No demuestra acceso HTTP real, emision PDF, SQL/MySQL, firma JWT ni permisos globales; esos controles conservan su propia CI.
+- Prueba local .NET no ejecutada en este runtime; exigir suite dirigida y 3 required checks GitHub exact HEAD, revision independiente de otra Task y FIFO estricto antes de merge/LISTO. Reversion: revert protegido de este test y su entrada conservando cambios ajenos.
 
 ## 2026-11-05 — P1-016.E: positivo dirigido de sesion global sin tenant (DEV)
 
@@ -616,7 +669,6 @@ El propietario ordena retirar la posición de Alex a las :30 del inventario ejec
 
 ---
 
-
 ## 2026-10-31 — P1-001.B: secret-scan false positive in synthetic fixtures
 
 - The Priority 3 scanner matched the deliberate GitHub-token and private-key inputs in P0-008.B's negative-test source, including its immutable historical blob. The current test now assembles those synthetic values at runtime.
@@ -630,14 +682,12 @@ El propietario ordena retirar la posición de Alex a las :30 del inventario ejec
 - Test scripts/verify-p0-010-b-issue-inference.mjs + workflow negativo: caso positivo y 12 alteraciones sintéticas rechazadas de informes falsamente limpios, conteos e incidencias no verificadas.
 - Pendiente CI exact SHA, aprobación formal de identidad distinta, merge protegido dev y readback institucional. No se modifican datos o runtime; rollback por revert del PR.
 
-
 ## 2026-10-30 — P0-008.B: negativos de fuga de secretos en inventario DEV (propuesta)
 
 - Scope comercial P0-008.B fila 17, dependencias P0-008.A/P0-012.B LISTO. Segundo scope de PRIMARY_DEV_01 solo después de P0-004.B VALIDANDO sin edición.
 - Script scripts/verify-p0-008-b-secret-evidence.mjs y workflow de solo lectura: reutilizan 12 negativas de P0-008.A y agregan 10 alteraciones ficticias rechazadas de campos/valores de credenciales. Ninguna lectura/desencriptado de secreto real ni acceso a proveedores.
 - Acta docs/P0-008-B-PRUEBA-NEGATIVA-SECRETOS-DEV.md limita la conclusión a este snapshot de metadatos y patrones; NO pretende cobertura de secretos del repositorio completo.
 - CI exact SHA, revisión independiente, merge protegido dev y conciliación institucional requeridos para LISTO; rollback por revert protegido, sin infraestructura ni DB.
-
 
 ## 2026-10-30 — P0-004.B: certificación negativa MySQL DEV (entrega en validación)
 
@@ -1342,7 +1392,6 @@ Se retira del árbol operativo el workflow manual de matrices VAEP y sus diez va
 - Actualización de la skill local y su referencia de arquitectura a Angular 22.2.1, ASP.NET Core 10, EF Core 10.0.12, proveedor Oracle MySQL 10.0.9 verificados en los csproj. Evita que nuevos ejecutores hereden ASP.NET 8/Pomelo de una descripción de gobierno anterior.
 - Reparada la clave booleana CURRENT_COMMERCIAL_ONLY en el parser bash y sus nombres técnicos de policy; sujeto a CI exact-head.
 
-
 - Decisión aprobada por propietario: fuente ejecutable exclusiva `SOLQARYN PLAN COMERCIAL INICIAL UNIFICADO`, Drive `1T41ppLvC3x-p6sORCtpaPvzLWPP9_Z7j`. Descompuesto en 1123 microtareas comprobables a partir de 492 fichas; hoja `1gcVyCoyhLU0jFMwRtf0s5_x8FSnfBs38ojml1QF7Xwk` actualizada con `PLAN_COMERCIAL` y `_COMERCIAL_SOURCE`.
 - Se sustituyen referencias operativas contradictorias en AGENTS, contrato VAEP, PROJECT_CONTEXT, TASKS e índice sin alterar historial de cambios ni evidencias de PR/CI anteriores. Archivos históricos únicamente como backup y sin autoridad operativa.
 - La hoja conserva protección y cotas visibles; cinco primarias preparadas pero PAUSADAS. Cinco supervisoras administradas por otro usuario siguen inaccesibles; admisión `NO_GO` hasta readback 10/10, merge y CI exact-head.
@@ -1891,7 +1940,6 @@ Se retira del árbol operativo el workflow manual de matrices VAEP y sus diez va
 - Agregado workflow `.github/workflows/dev-tenant-commercial-temporal-provenance.yml` con controles de identidad estrictos `solqaryn/Solqaryn`/`dev`/`solqaryn_dev`/MySQL 8.4.8. Cuenta por tabla comercial fechas de membresía anteriores/posteriores a las 19 filas legacy, marcas temporales contradictorias y cobertura agregada del owner en `RegistrosAuditoria`; nunca imprime identificadores, filas o PII.
 - Criterios e interpretación en `docs/tenancy/ATRIBUCION_HISTORICA_TEMPORAL_DEV.md`. Una membresía única actual, o con fecha compatible, **no basta** para otorgar propiedad histórica; NO ejecutar backfill sin prueba primaria individual.
 - Mantener cuarentena, no habilitar una segunda empresa, no modificar Aiven, QA ni PROD. Requiere CI y readback causal de su ejecución en DEV.
-
 
 ## 2026-10-13 — Recovery E2E causal para fusion segura de PR #3596
 
@@ -3253,7 +3301,6 @@ Bitácora colaborativa de cambios realizados por Javier Mejía, Codex, AntiG/Ant
 
 No reemplaza `git log`: registra intención, alcance, validaciones y handoff. Todo changeset intencional debe incluir una entrada breve; no modificar otros colaborativos si su contenido no cambió.
 
-
 ## 2026-09-24 — Cierre de configuración Aiven/GitHub canónica DEV/PROD
 
 **Responsable:** ChatGPT/VAEP con autorización expresa del propietario.
@@ -4248,8 +4295,6 @@ El punto de Codex sobre las cinco automatizaciones era una limitación de audito
 
 Resultado: `CODEX_AUDIT_REMEDIATION=PASS`; `LEGACY_JULES_A_MANIFESTS=0`; `MASTER_POLICY_KEYS=9`; `TASKS_MACHINE_CURRENT_STATE=PROHIBITED`; `FIVE_AUTOMATIONS_EXTERNAL_EVIDENCE=PASS`; `FALSE_PASS=NO`.
 
-
-
 ## VAEP dependency-safe closure reconciliation
 
 Controller: CHATGPT_BUSINESS / canonical checkpoint.
@@ -4257,7 +4302,6 @@ Validated parent: `GATE-N4`; successor: `N5.1.A`.
 Base: `560f51596734900edf7fcba73235cda5b96922c7`. Existing closure receipt and exact-head causal gates validated.
 Selector uses explicit roadmap dependencies; no lexical ordering or gate bypass.
 Admission transition is guarded; no production, merge or secret changes.
-
 
 ## VAEP dependency-safe closure reconciliation
 
@@ -4267,7 +4311,6 @@ Base: `936eb5d16eb6bde8afdfc9087aa0e10f44984088`. Existing closure receipt and e
 Selector uses explicit roadmap dependencies; no lexical ordering or gate bypass.
 Admission transition is guarded; no production, merge or secret changes.
 
-
 ## VAEP dependency-safe closure reconciliation
 
 Controller: CHATGPT_BUSINESS / canonical checkpoint.
@@ -4275,7 +4318,6 @@ Validated parent: `N5.1.C`; successor: `N5.1.D`.
 Base: `ded69fe8f25c2de77e41b0acdf32fc5dbff87726`. Existing closure receipt and exact-head causal gates validated.
 Selector uses explicit roadmap dependencies; no lexical ordering or gate bypass.
 Admission transition is guarded; no production, merge or secret changes.
-
 
 ## VAEP dependency-safe closure reconciliation
 
@@ -4285,7 +4327,6 @@ Base: `45f8e9e3da51470cfd4e1b742ee2eba55b8b3bcf`. Existing closure receipt and e
 Selector uses explicit roadmap dependencies; no lexical ordering or gate bypass.
 Admission transition is guarded; no production, merge or secret changes.
 
-
 ## VAEP dependency-safe closure reconciliation
 
 Controller: CHATGPT_BUSINESS / canonical checkpoint.
@@ -4293,7 +4334,6 @@ Validated parent: `N5.2.B`; successor: `N5.2.C`.
 Base: `35c87f161819f40e680d9034a202d60fbac2743b`. Existing closure receipt and exact-head causal gates validated.
 Selector uses explicit roadmap dependencies; no lexical ordering or gate bypass.
 Admission transition is guarded; no production, merge or secret changes.
-
 
 ## VAEP dependency-safe closure reconciliation
 
@@ -4303,7 +4343,6 @@ Base: `ecadca71adb7a85dfc12666ab7db504cf0d7ddfc`. Existing closure receipt and e
 Selector uses explicit roadmap dependencies; no lexical ordering or gate bypass.
 Admission transition is guarded; no production, merge or secret changes.
 
-
 ## VAEP dependency-safe closure reconciliation
 
 Controller: CHATGPT_BUSINESS / canonical checkpoint.
@@ -4311,7 +4350,6 @@ Validated parent: `N5.3.C`; successor: `N5.3.D`.
 Base: `0fe20816e5ec5347296cc666ed03e88983850420`. Existing closure receipt and exact-head causal gates validated.
 Selector uses explicit roadmap dependencies; no lexical ordering or gate bypass.
 Admission transition is guarded; no production, merge or secret changes.
-
 
 ## 2026-09-11 — ERP-N6.4 Usuarios por empresa — cierre documental append-only
 
@@ -4403,7 +4441,6 @@ Admission transition is guarded; no production, merge or secret changes.
 
 **Control:** esta publicación resuelve los P1 documentales mediante append byte-exacto. No declara por sí sola `N7.7.H=LISTO_REAL`: exige hard verify de prefijo/tamaño, REVIEW_FIRST fresco P0=0/P1=0, equivalencia funcional y receipt H persistido/releído antes de promover N7.8.A. Sin cambios a `main`, Producción, deploys, secretos ni PR #2.
 
-
 ## 2026-09-14 — ERP-N7.8 Pagos online — reconciliación documental append-only
 
 **Responsable:** VAEP / DOC_CERT N7.8.H.
@@ -4458,12 +4495,9 @@ Este registro es histórico y no falsea H: N8.3.H sólo es `LISTO_REAL` cuando e
 
 - N8.1.G delegated browser UAT captured on Desarrollo at 2026-09-15T15:10:49.1317092Z (exact head 0e1854c42941e3eaf74af88628f99f197ddfbf89): real CUA observations cover purchasing, sales/invoicing, payments, BI, RBAC, inventario and native-dialog modal behavior. Finance has a pre-existing sale-movement reconciliation mismatch (Pendiente vs invoice Pagada); WhatsApp/email provider scope is unconfigured. No synthetic PNG/JPG or human PASS was created; literal N8.1 human acceptance and external Sheet readback remain required. Evidence: vaep\evidence\browser\N8.1.G\N8.1.G_DELEGATED_BROWSER_UAT_CAPTURED_20260915T151049Z.json.
 
-
 - Evidence JSON normalization follow-up for the authenticated delegated UAT capture (same browser observations; syntax corrected before consumption).
 
-
 - Sheet reconciliation remains pending at exact evidence head 1700accb50edf550123b1e2e794b1dc8fb664ea4 (2026-09-15T15:12:40.8585093Z); no connector or external readback was available, and the Finance/payment mismatch plus unconfigured providers are recorded without synthetic state changes. Evidence: vaep/evidence/reconciliations/N8.1_G_H_SHEET_RECONCILIATION_PENDING_20260915T151240Z.json.
-
 
 ## 2026-09-15 — Cierre visual SMTP DEV/UAT
 
@@ -4518,7 +4552,6 @@ ventas y cotizaciones son de solo lectura y la prueba de aplicación cubre una m
 de L. 1 frente a un catálogo de L. 200. La regla canónica quedó en
 `docs/REGLA_INTEGRIDAD_PRECIOS_VENTAS.md`.
 
-
 ## 2026-09-15 — ERP-N8.4 POS físico — reconciliación documental H
 
 **Responsable:** Tarea Supervisión :24 bajo `docs/VAEP_AUTHORITY.md`.
@@ -4557,7 +4590,6 @@ La certificación final se materializó en `docs/CERTIFICACION_N8_11_SEGURIDAD.m
 
 Este registro es histórico y no falsea H: N8.11.H sólo es `LISTO_REAL` cuando exista su REVIEW_FIRST documental, receipt final y readback/reconciliación del control-plane.
 
-
 ## 2026-09-17 — ERP-N8.6 WhatsApp real — revalidación current-standard append-only
 
 **Responsable:** VAEP :48 Debt bajo `docs/VAEP_AUTHORITY.md`.
@@ -4590,7 +4622,6 @@ Este registro es histórico y no falsea H: N8.11.H sólo es `LISTO_REAL` cuando 
 
 **Control:** esta publicación resuelve únicamente el P1 documental de `CHANGELOG_AI.md`. No declara por sí sola `N8.8.H=LISTO`: todavía exige hard verify de prefijo/tamaño, compare con `additions>0/deletions=0`, REVIEW_FIRST fresco P0=0/P1=0, equivalencia funcional, receipt H persistido/releído y reconciliación `COLA/CONFIG` antes de promover `N8.9.A`. Sin cambios a `main`, Producción, deploys, secretos, DNS/certificados ni PR #2.
 
-
 ## 2026-09-17 — ERP-N8.9 Restore real — revalidación current-standard append-only
 
 **Responsable:** `CHATGPT_CONTROLLER` bajo `docs/VAEP_AUTHORITY.md`.
@@ -4603,11 +4634,9 @@ Este registro es histórico y no falsea H: N8.11.H sólo es `LISTO_REAL` cuando 
 
 **Control:** este append resuelve el último P1 documental. `N8.9.H` sólo puede pasar a `LISTO` tras REVIEW_FIRST documental final P0=0/P1=0, exact-head/equivalencia, receipt persistido/releído y write/readback del control-plane; únicamente entonces puede promoverse `N8.10.A`.
 
-
 ## ERP-N8.10 Disaster Recovery — revalidación current-standard 2026-09-17
 
 `CHATGPT_CONTROLLER` revalidó `N8.10.A-G` sin confiar en cierres históricos: PRE/domain/DB/API/UI/security/TEST_CI quedaron P0=0/P1=0 con receipts frescos. El gate material usa restore actual `35223693868:105209822216:SUCCESS`, equivalencia backend vigente y ausencia de delta de migraciones; RPO `<=24h` y RTO `1244s <= 3600s` permanecen PASS. Certificación current-standard: `docs/CERTIFICACION_N8_10_DISASTER_RECOVERY_CURRENT_STANDARD_20260917.md`. Desarrollo only; sin Producción, `main`, PR #2, secretos, DNS/certificados ni restore destructivo del proveedor.
-
 
 ## 2026-09-17 — ERP-N8.11 Seguridad — reconciliación current-standard append-only
 
@@ -4617,11 +4646,9 @@ N8.11.A-G fueron revalidados secuencialmente contra el estándar vigente. El fun
 
 Este append resuelve únicamente la reconciliación documental de `CHANGELOG_AI.md`; no declara por sí solo `N8.11.H=LISTO`. El cierre requiere hard verify de prefijo exacto de `TASKS.md` y este archivo, REVIEW_FIRST final P0=0/P1=0, receipt H y write/readback antes de promover `N8.12.A`. Sin cambios a `main`, Producción, PR #2, secretos, DNS/certificados ni datos productivos.
 
-
 ## ERP-N8.12 Observabilidad — revalidación current-standard 2026-09-17
 
 `Tarea Supervisión :36` revalidó `N8.12.A-G` bajo current-standard con REVIEW_FIRST/DoD/receipts frescos. El runtime conserva métricas HTTP de cardinalidad acotada, correlation/trace context, señales estructuradas de 5xx/latencia y health/readiness sin exponer secretos; `RequestObservabilityTests` y `SecurityBoundaryContractTests` están incluidos en el árbol exacto probado. Gates causales `35258962286` y `35258969104` permanecen `SUCCESS` sobre `6fd3e28c`, equivalente a los árboles de producto actuales. Certificación: `docs/CERTIFICACION_N8_12_OBSERVABILIDAD_CURRENT_STANDARD.md`. Desarrollo only; sin Producción, `main`, merge PR #2, secretos, DNS/certificados ni writes productivos.
-
 
 ## 2026-09-17 - N8.13 staging current-standard revalidation
 
@@ -4629,7 +4656,6 @@ Este append resuelve únicamente la reconciliación documental de `CHANGELOG_AI.
 - Fresh material revalidation through `N8.13.G` is preserved as supporting evidence for DOC_CERT; historical receipts are evidence only.
 - `TASKS.md` reconciliation is present with exact-prefix verification at `7aeab0ecb4fc6fb7f0a5fdd452c2ad2dcb8420ec`.
 - `CHANGELOG_AI.md` reconciliation for `N8.13.H` is appended byte-exact/additive-only; final REVIEW_FIRST, receipt, and control-plane readback are separate closure evidence.
-
 
 ## ERP-N8.14 — Rollback — REVALIDACIÓN CURRENT-STANDARD 2026-09-17
 
@@ -4639,7 +4665,6 @@ Este append resuelve únicamente la reconciliación documental de `CHANGELOG_AI.
 
 Este append es estrictamente history-preserving y no declara por sí solo `N8.14.H=LISTO`: el cierre exige hard verify de prefijo/tamaño, REVIEW_FIRST documental final P0=0/P1=0, receipt H y reconciliación write/readback de `COLA/CONFIG/CONTROL_TOWER/PLAN_MAESTRO`. Sin cambios a `main`, Producción, deploys productivos, PR #2, secretos, DNS/certificados ni datos productivos.
 
-
 ## ERP-N9.1 — Release Candidate — FEATURE FREEZE 2026-09-17
 
 **Responsable:** `Tarea Supervisión :24` bajo `docs/VAEP_AUTHORITY.md`.
@@ -4647,7 +4672,6 @@ Este append es estrictamente history-preserving y no declara por sí solo `N8.14
 `GATE-N8` cerró current-standard y habilitó `N9.1`. El Release Candidate funcional queda fijado por SHA `4eadd208322e8f19d84d669fffc70a9de85ba567`. `N9.1.A-F` fueron revisados secuencialmente con P0=0/P1=0: no existe delta de dominio, DB/migraciones, backend/API ni frontend/UI requerido por el freeze; seguridad conserva controles heredados. `N9.1.G` certificó equivalencia exacta del producto y cobertura causal con security `35258962286`, quality `35258969104`, backup/restore `35223693868` y performance `35219847763`, todos `SUCCESS`.
 
 Feature freeze: no se aceptan nuevas features sobre este candidato. Un cambio de producto obliga a fijar nuevo candidate SHA y recertificar gates aplicables. La certificación está en `vaep/evidence/certifications/N9.1_RELEASE_CANDIDATE_FREEZE_20260917T224932Z_SUP24.md`. Este append es history-preserving y no declara por sí solo `N9.1.H=LISTO`; falta hard verify, REVIEW_FIRST final, receipt y reconciliación write/readback. Sin cambios a `main`, Producción, PR #2 merge, secretos, DNS/certificados ni datos productivos.
-
 
 ## 2026-09-17 — N9.2 Checklist de salida — cierre current-standard
 
@@ -4658,7 +4682,6 @@ Feature freeze: no se aceptan nuevas features sobre este candidato. Un cambio de
 - REVIEW_FIRST final requerido: `P0=0 / P1=0`; después receipt/readback y promoción de `N9.3.A`.
 - Seguridad: solo `Desarrollo`; sin `main`, Producción, merge de PR #2, secretos, DNS/certificados ni writes productivos.
 
-
 ## 2026-09-18 — ERP-N9.3 — Backup pre-release current-standard
 
 **Responsable:** Tarea Supervisión :24, `Desarrollo` únicamente.
@@ -4667,11 +4690,9 @@ Se revalidó N9.3 de extremo a extremo. El gate material fue M11 run `3528875620
 
 N9.3.B/D/E se mantuvieron como N/A grounded donde el backup no exige cambios de dominio, API o UI; N9.3.C/F/G certificaron backup/restore, seguridad y gates causales. P0=0/P1=0 antes del cierre final. Este append es estrictamente aditivo y forma parte de N9.3.H; `LISTO` sólo se declara después de verificar prefijo histórico exacto, `additions>0/deletions=0`, retirar este writer temporal y persistir receipt/readback. No se modificaron `main`, Producción, PR #2, secretos, DNS ni certificados.
 
-
 ## ERP-N9.4 Migraciones productivas — cierre current-standard 2026-09-18
 
 La liberación productiva autorizada fue ejecutada bajo ventana de mantenimiento. La base MySQL fue migrada hasta 20260914232400_N7_10_C_DocumentoFiscalPersistencia; el incidente N0.4 por duplicados RBAC legacy se resolvió con migración retry-safe y certificación causal exact-head 35304697573/105474385670 SUCCESS (2328/2328 tests y guards/postchecks completos). Producción quedó LIVE sobre 7f140442d598aaea36b39952bad5ebd9ab4f2613, deploy dep-damb4lqjnfac73efl1pg, maintenance OFF, EF sin migraciones pendientes y sin hard errors/503 posteriores en el corte validado. N9.4.D/E quedaron N/A grounded; F/G certificados P0=0/P1=0. El cierre H exige todavía verificación byte-safe de este append, REVIEW_FIRST, receipt y readback.
-
 
 ## 2026-09-18 — ERP-N9.5 — Smoke test current-standard
 
@@ -4683,7 +4704,6 @@ El REVIEW_FIRST de N9.5.G quedó en `vaep/evidence/reviews/N9.5.G_REVIEW_FIRST_2
 
 Este bloque forma parte de N9.5.H y se añade de forma estrictamente aditiva junto con `TASKS.md`; `LISTO` para H y para el parent N9.5 sólo se declara después de verificar prefijo histórico exacto, `additions>0/deletions=0`, retirar el writer temporal, ejecutar REVIEW_FIRST final, persistir receipt y hacer write/readback de COLA/CONFIG/PLAN_MAESTRO. No se modificaron `main`, Producción, PR #2, secretos, DNS ni certificados.
 
-
 ## 2026-09-18 — ERP-N9.6 — Hypercare current-standard
 
 **Responsable:** Tarea Supervisión :24, `Desarrollo` únicamente.
@@ -4694,7 +4714,6 @@ N9.6.B–E resultaron N/A materiales porque Hypercare no introdujo cambios de do
 
 La certificación canónica quedó en `docs/CERTIFICACION_N9_6_HYPERCARE.md`. No se modificaron `main`, Producción, PR #2, secretos, DNS, certificados ni datos/infraestructura productiva. Este bloque se añade de forma estrictamente append-only junto con `TASKS.md`; el cierre `LISTO` de N9.6.H y del parent N9.6 requiere todavía el readback final, REVIE_FIRST P0=0/P1=0 y receipt posterior al append.
 
-
 ## 2026-09-18 — ERP-N9.7 — Postmortem current-standard
 
 **Responsable:** Tarea Supervisión :24, `Desarrollo` únicamente.
@@ -4704,7 +4723,6 @@ Se completó la revalidación current-standard de N9.7. El PRE quedó materializ
 N9.7.B–E resultaron N/A materiales por ausencia demostrada de cambios de dominio, contratos, persistencia/schema/migraciones, backend/API y frontend/UX. N9.7.F revalidó que no existe delta de seguridad/RBAC de producto ni exposición de secretos. N9.7.G conservó como evidencia causal la aceptación exact-product `35316302603` en SUCCESS con `100/100` Playwright más SMTP/PDF y el gate Hypercare DEV `35319732966` en SUCCESS, sustentados por equivalencia de producto con el functional/test head `1ac95f51176d8b9240741b2e33ab2bd4c2605dc0`.
 
 No se modificaron `main`, Producción, PR #2, secretos, DNS, certificados ni datos/infraestructura productiva. Este bloque se agrega exclusivamente mediante append byte-safe junto con `TASKS.md`; el cierre LISTO de N9.7.H y del parent N9.7 requiere todavía el readback final, REVIEW_FIRST P0=0/P1=0 y receipt posterior al append.
-
 
 ## 2026-09-18 — SOLQARYN Fase 8: búsqueda, filtros y ordenamiento
 - Alcance: catálogo público `/SOLQARYN/productos`, sin modificar Fases 0–7 ni superficies administrativas.
@@ -4717,14 +4735,12 @@ No se modificaron `main`, Producción, PR #2, secretos, DNS, certificados ni dat
 - Añadidos validador estático, Playwright Fase 8 y workflow acumulado Fases 1–8.
 - MAPA_ARQUITECTURA: NO_APLICA — se amplía comportamiento dentro del catálogo público existente, sin cambiar capas, datos, tenancy, seguridad, jobs ni ownership.
 
-
 ## 2026-09-18 — Auditoría quirúrgica SOLQARYN Fase 8
 - Hallazgo corregido: una URL compartida con `pagina` mayor al total podía dejar el grid vacío y mostrar un estado de paginación incoherente.
 - La página ahora se acota al rango válido después de cargar catálogo/categorías y también ante navegación por historial.
 - Hardening adicional: el alias histórico `orden=destacados` se normaliza a `relevancia` y se limpia de la URL para que el `select` no quede con un valor sin opción visible.
 - Playwright Fase 8 cubre ambos casos y el validador estático impide retirar estas protecciones accidentalmente.
 - MAPA_ARQUITECTURA: NO_APLICA — corrección local de estado/URL en el catálogo público; no cambia capas, datos, tenancy, seguridad ni contratos HTTP.
-
 
 ## 2026-09-18 — SOLQARYN Fase 9: ofertas e inventario
 - Promociones públicas reutilizan la autoridad administrable de `Descuento` (vigencia, prioridad y alcance); no se crearon columnas/tablas promocionales paralelas.
@@ -4737,7 +4753,6 @@ No se modificaron `main`, Producción, PR #2, secretos, DNS, certificados ni dat
 - Inventario por sucursal: NO_APLICA. El ERP posee sucursales/almacenes/existencias, pero la tienda pública no tiene selección de sucursal ni requisito comercial que autorice inventarla.
 - Skills aplicadas: gobierno, arquitectura-impacto, calidad UI y QA.
 - MAPA_ARQUITECTURA: NO_APLICA — se mantiene el patrón existente API -> servicio Application -> repositorio; sin nueva capa, esquema, tenancy o deployment.
-
 
 ## 2026-09-18 — Auditoría quirúrgica post-cierre SOLQARYN Fase 9
 - Hallazgo material corregido: Fase 9 seguía proyectando y validando stock desde `ProductoVariante.Cantidad`, aunque ERP-N1.4 define `ExistenciaVariante` como autoridad de stock vivo.
@@ -4759,11 +4774,9 @@ Como barrido administrativo one-shot se incorpora temporalmente `.github/workflo
 
 No se toca `main`, no se despliega Producción, no se leen/modifican secretos y no se reescribe historial Git.
 
-
 ## 2026-09-24 — Recovery del barrido administrativo GitHub
 
 El primer intento one-shot del barrido post-transferencia falló por un HTTP 502 de GitHub GraphQL antes de alcanzar la fase de ramas. Se aplicó recovery same-run: el workflow temporal reduce los lotes de mutación, incorpora reintentos con backoff, elimina primero referencias de ramas históricas y revalida fail-closed antes de cerrar Issues históricos. El Issue funcional vigente #3410 continúa preservado. No se toca `main`, Producción, secretos ni historial Git.
-
 
 ## 2026-09-24 — Cierre de control GitHub post-transfer a SOLQARYN
 
@@ -4784,7 +4797,6 @@ Se elimina esa dependencia personal. `fase8-validacion-completa.yml` y `m13-cert
 
 No se modifica `main`, Producción, secretos, datos productivos, dominios ni certificados.
 
-
 ## 2026-09-24 — Cutover canónico de Render DEV hacia solqaryn-api-dev
 
 **Responsable:** ChatGPT/VAEP remoto, `Desarrollo` únicamente.
@@ -4795,7 +4807,6 @@ No se modifica `main`, Producción, secretos, datos productivos, dominios ni cer
 - Producción no fue modificada. No se tocaron `main`, datos productivos, secretos ni credenciales.
 
 MAPA_ARQUITECTURA: NO_APLICA — cambio de naming/configuración de infraestructura DEV sin modificar dominio, persistencia, contratos funcionales ni Producción.
-
 
 ## 2026-09-24 — Cutover canónico GitHub a dev / DEV / PROD
 
@@ -4813,7 +4824,6 @@ MAPA_ARQUITECTURA: NO_APLICA — cambio de naming/configuración de infraestruct
 
 MAPA_ARQUITECTURA: ACTUALIZADO — normalización transversal de gobierno, CI y topología GitHub; no modifica datos de PROD.
 
-
 ## 2026-09-24 — Normalización operativa del endpoint Render DEV
 
 - Se reemplazó el endpoint operativo retirado `https://solqaryn-api-desarrollo.onrender.com` por `https://solqaryn-api-dev.onrender.com` en los consumidores frontend activos.
@@ -4824,7 +4834,6 @@ MAPA_ARQUITECTURA: ACTUALIZADO — normalización transversal de gobierno, CI y 
 
 MAPA_ARQUITECTURA: SIN_CAMBIO — normalización de configuración operativa y consumidores DEV.
 
-
 ## 2026-09-24 — Retiro de referencias operativas Render Desarrollo
 
 - Runbooks operativos de rollback, smoke e hypercare ya apuntan a `solqaryn-api-dev` en lugar del servicio retirado `solqaryn-api-desarrollo`.
@@ -4833,7 +4842,6 @@ MAPA_ARQUITECTURA: SIN_CAMBIO — normalización de configuración operativa y c
 - PROD no fue modificado.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
-
 
 ## 2026-09-25 — Reset canónico de autoridad a CURRENT-STATE ONLY
 
@@ -4844,7 +4852,6 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - La libertad para rediseñar o reemplazar implementación no elimina seguridad, RBAC, tenancy, integridad de datos, trazabilidad, rollback ni autorización explícita para `main`/PROD.
 - No se reescribió historial Git ni se modificó producto, datos o infraestructura.
 
-
 ## 2026-09-26 — Descarga de imágenes y galería por variante
 
 - Corregida la descarga de imágenes de producto desde Cloudinary: el backend ya no devuelve un stream ligado a una conexión HTTP que se cierra al abandonar el método; ahora materializa el contenido antes de responder al navegador.
@@ -4854,7 +4861,6 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Las variantes sin imágenes propias continúan mostrando la galería general como respaldo.
 - La galería de variantes ahora permite descargar tanto imágenes específicas como imágenes generales mostradas como fallback, respetando el permiso `Productos/Exportar`.
 - Sin cambios de esquema ni migraciones. Sin cambios en `main` ni PROD.
-
 
 ## 2026-09-27 — Cierre de migración histórica PROD y Cloudinary
 
@@ -4961,13 +4967,11 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
 
-
 ## 2026-09-29 — Release prep: Priority 4 audit aligned with certified Angular budget
 
 - El PR PROD #3486 detectó que `scripts/quality/priority4_quality_audit.py` conservaba el contrato stale de `2mb` para el budget inicial Angular.
 - El gate fue alineado al contrato ya certificado del Punto 8: `650kb` warning / `750kb` error, sin relajar límites ni cambiar runtime.
 - Alcance: CI/gobernanza de calidad únicamente; sin datos, migraciones, secretos, planes, DNS ni cambios productivos directos.
-
 
 ## 2026-09-30 — VAEP: migración Google corporativa y corrección de las 10 automatizaciones
 
@@ -5002,7 +5006,6 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - `N8_17_H_CERTIFICATION.json` y `N8_18_D_BACKEND_REFACTOR.json` dejan de declarar la rama retirada `Desarrollo` y quedan alineados a la rama canónica `dev` exigida por sus validadores vigentes.
 - Cambio documental/CI únicamente; sin runtime, datos, migraciones, PROD ni servicios pagos.
 
-
 ## 2026-10-01 — Corrección versionada del output Vercel Angular para PROD
 
 - Diagnosticado el deployment PROD posterior a la promoción `dev -> main`: Vercel finalizó el build pero falló con `STATIC_BUILD_NO_OUT_DIR` porque la configuración productiva buscaba `browser` en la raíz.
@@ -5011,7 +5014,6 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Cambio de build/deployment únicamente; sin datos, migraciones, secretos, DNS ni compra de servicios.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
-
 
 ## 2026-10-01 — Recuperación PROD: binding Vercel por project id
 
@@ -5023,7 +5025,6 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Sin datos, migraciones, secretos, DNS ni compra de servicios.
 
 MAPA_ARQUITECTURA: ACTUALIZADO.
-
 
 ## 2026-10-01 — Corrección de falso negativo E2E en matriz visual
 
@@ -5248,7 +5249,6 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Demuestra, en la misma base, lectura exclusiva de los productos A y B y denegación de cabecera falsificada, JWT ausente, bandera desactivada, POST, detalle y rutas comerciales no autorizadas. La autorización RBAC está simulada deliberadamente; la prueba no representa un login extremo a extremo ni un desbloqueo de facturas, inventarios, PDFs o Cloudinary.
 - Solo se añade una prueba de integración y esta evidencia; sin cambios runtime/DDL, datos Aiven, Render, QA, PROD ni quitar la cuarentena `503`. Estado **candidato** sujeto a REVIEW_FIRST, CI exact-head y MySQL real de GitHub Actions. No certifica el punto 4 integral.
 
-
 ## 2026-10-26 — P0-010.A: corte auditado de deuda P0/P1 a 2026-10-26 (PRIMARY_DEV_01)
 
 - Task `6adbb9fff1548191a1bd5b30d9e9984a` / GitHub `jmejia31`: en rama exclusiva `work/solqaryn-p0-010-a` agrega un nuevo corte fechado desde `dev@acf5bca44a94d1bce9a39a6b30be1380e4e5f464`: 24 P0 (14 LISTO, 1 VALIDANDO, 3 EN_PROGRESO, 6 PENDIENTE) y 32 P1 PENDIENTE. El corte anterior permanece como historia.
@@ -5276,7 +5276,6 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - La prueba se ejecuta mediante el CI permanente del backend y la regresión multiempresa cuando GitHub Actions complete el SHA final. Hasta disponer de esos resultados, la ejecución es **PENDIENTE**, sin atribuir PASS anticipado.
 - P1-001.A permanece `EN_PROGRESO` y PR #3764 permanece DRAFT; faltan MySQL DEV físico, índices reales, negativas HTTP autenticadas A/B, revisión independiente, CI final y merge protegido. Rollback: revert protegido del test y su documentación, sin cambios a runtime o base de datos.
 
-
 ### 2026-10-26 (DEV) — P1-001.A: corrección de unicidad de roles en el modelo EF final
 
 - Auditoría de fuentes `RolConfiguration.cs`, `AppDbContext.cs`, `CommercialTenantNaturalKeysModel.cs`, `CommercialTenantNaturalKeysPhysicalContract.cs` y `CommercialTenantNaturalKeysTests.cs`: la unicidad simple global declarada inicialmente **se reemplaza** en `OnModelCreating` por índice no único simple, índice `(EmpresaId, NombreNormalizado)` único y unicidad de columna calculada para roles sin empresa. La versión previa del mapa confundía la configuración parcial con el modelo EF final; esta entrega corrige el documento antes de certificación.
@@ -5299,14 +5298,12 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 
 - 2026-10-30 P1-001.A: seguimiento de la ejecución #41074452135. El workflow no puede exigir roles personalizados de prueba que no existen en MySQL DEV. Se corrige el preflight para exponer solo el RolId ya asignado y se amplía la prueba JWT live a listado/detalle A/B y validación de propietario; el rechazo por ID privado queda condicional y explícito. Validaciones locales de alcance, frescura de Skill, sintaxis bash/Node, self-test y diff PASS. Falta revisión independiente, CI exact-SHA, merge protegido y nueva ejecución live; si no hay roles privados, el flujo informa que esa negativa no se ejecutó y P1-001.A no se cierra por inferencia.
 
-
 ## 2026-10-30 — Inventario configurable de Tasks programadas
 
 - Se elimina el techo interno de seis Tasks y el reparto fijo 3+3; el inventario físico y distribución actuales quedan como fotografía, sujetos a capacidad efectiva del proveedor.
 - Se mantienen sin cambios los seis IDs físicos observados, cinco IDs con autorización comercial, la exclusión de Alex :30 y el WIP máximo de seis scopes, más controles de revisión, CI y merge protegido.
 - El validador ahora contrasta inventarios registrados entre autoridades y permite expansión futura consistente, rechazando IDs duplicados/desconocidos y diferencias de conteo; no concede permisos ni crea Tasks.
 - No se modifican Sheets, Tasks, horarios, backend, frontend, datos, proveedores, QA, main ni PROD en esta enmienda de código.
-
 
 ## 2026-10-30 — P1-001.B: negativos de asignacion de rol cruzado (candidato)
 
@@ -5323,7 +5320,6 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Angular reemplaza el ID digitado por selector de nombres provistos por el servidor. El ID persistido es una solicitud no autoritativa; siempre se valida de nuevo por `GET /tenant-context/{id}`. Error de red, JWT o listado inconsistente falla cerrado.
 - Se agregaron tests xUnit A/B/C/D/E/anónimo, tests de contrato Angular y de selector; documentación de arquitectura y rollback en `docs/P1-006-A-SELECTOR-MEMBRESIAS-DEV.md`.
 - Estado: **EN_PROGRESO**, PR #3838 inicialmente DRAFT; no confundir CI pendiente/fallida con certificación ni marcar LISTO. P1-006.B es otra microtarea de cierre LIVE. Sin modificaciones en QA/main/PROD/Aiven/secretos.
-
 
 - Actualización de procedencia del PR #3838: después de incorporar el gobierno protegido #3837, se reconciliaron el HEAD activo de `dev@30bf43749a8eb7b164a065f5aabebfa024aa0faa` y la base GitHub del PR en `dev`, sin alterar ningún archivo de gobierno. La entrega continúa EN_PROGRESO; sólo CI del HEAD siguiente puede certificar su seguridad y pruebas.
 
