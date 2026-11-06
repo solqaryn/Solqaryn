@@ -1,8 +1,39 @@
+## 2026-11-06 — P2-004.C: delimitar proveedores por EmpresaId verificado (DEV)
+
+- Task nativa Javier :30, TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`. Prueba xUnit dirigida `backend/tests/Solqaryn.Tests/P2004CProveedoresEmpresaIdTests.cs`: proveedores A/B y marca comercial RBAC verificada, cabecera `X-Empresa-Id` falsificada y alternancia de empresa con el mismo `AppDbContext` (EF InMemory).
+- Alcance limitado a lectura EF; NO demuestra autenticación JWT, guard HTTP sin marca, SQL MySQL ni aislamiento total de plataforma. Sin cambios productivos, migraciones, permisos, secretos, reglas GitHub, workflows ni entornos. CI exact-SHA y revisión independiente por Task distinta pendientes.
+- Dependencia `P1-016.B` LISTO; `COLA!O172=SI`, `COLA!G172=SI` al iniciar. Rollback: revert del test y esta entrada mediante PR protegido; no desactivar controles.
+
+## 2026-11-06 — P2-003.C: regresión dirigida de clientes por EmpresaId (DEV)
+
+- Ejecutor interactivo institucional `solqaryn-platform`, sin suplantar ninguna Task física. Prueba `backend/tests/Solqaryn.Tests/P2003CClientesEmpresaIdTests.cs`: filas A/B, marca RBAC autorizada, header de otra empresa y cambio de contexto sin contaminar el filtro EF.
+- Solo test y acta; no se cambian entidades, DbContext, seguridad HTTP, base de datos, migraciones ni entornos. EF InMemory no certifica SQL/HTTP. CI y revisión sobre HEAD exacto pendientes hasta evidencia GitHub; no autoaprobación.
+- Rollback por PR protegido y conservación de la trazabilidad de P2-003.C.
+
+## 2026-11-06 — P2-002.C: regresión de productos por EmpresaId y límite HTTP (DEV)
+
+- Autora Task Alex :10 (6adbbc9ad9e88191bea8eb69104afb25). La prueba `P2002CProductoEmpresaIdTests.cs` delimita productos A/B con marca RBAC verificada y comprueba que una cabecera `X-Empresa-Id` de B no cambia la lectura de A.
+- Revisión correctiva del fallo CI: `CommercialTenantReadFilterModel.Apply` permite por diseño consulta EF global cuando falta `AuthorizedReadEmpresaId`; una aserción previa `Assert.Empty` era incompatible con el contrato existente y falló en la CI. El test ahora comprueba explícitamente el límite real sin afirmar aislamiento EF sin marca. El gate HTTP P0 de dos empresas debe impedir el acceso sin marca (`UnscopedCommercialTenantGuardTests.DosEmpresas_NoPuedenRecibirDatosComerciales`). No habilitar multiempresa ni proclamar seguridad completa por este test.
+- Cambio exclusivamente de pruebas InMemory y esta nota, sin alterar runtime, JWT/RBAC, migraciones, permisos ni secretos. CI dirigida exact-SHA y revisión independiente renovada pendientes; no marcar LISTO antes de controles, merge protegido y readback. Reversión por revert protegido de este test y nota.
+
+## 2026-11-06 — CI por impacto: evitar MySQL 23 minutos en tests P1 anidados de solo regresión (DEV)
+
+- El clasificador fail-closed acepta wrappers offline P1 dentro de subcarpetas ordinarias (p. ej. API/Controllers/P1013B*Tests.cs), sin código de DB/Integration ni cambios de runtime; actualmente un falso no-reconocimiento activaba MySQL 8.4 durante 23m10s en P1-013.B.
+- Se mantienen los tres checks requeridos por GitHub dev, revisión independiente y pruebas dirigidas. Nunca se omiten suites MySQL ante migraciones, test DB/integration, rutas protegidas/desconocidas, ausencia de archivo o fallos del clasificador.
+- Quince regresiones añadidas al self-test del clasificador. La prueba opcional integral sigue disponible para cambios de impacto real y workflow_dispatch. Reversión: revertir este PR protegido.
+
 ## 2026-11-06 — I8-001.C: auditoria causal de credenciales ERP actuales (DEV)
 
 - Task nativa Javier :00, TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`. Microtarea `I8-001.C`, desarrollo habilitado por `COLA!O73=SI` y dependencia `P1-016.B` LISTO. Archivo dirigido `backend/tests/Solqaryn.Tests/I8001CCredencialesErpTests.cs`.
 - Contrato de `AuthService.LoginAsync`: se exige verificacion BCrypt previa a emitir token; usuario eliminado, password incorrecto, cuenta bloqueada o inactiva no emiten JWT; credencial correcta con rol activo habilita solo un token simulado del mock. Login normaliza nombre. Las pruebas son unitarias y no acreditan firma JWT real, MFA, reset/recovery, migraciones, persistencia ni aislamiento HTTP multitenant.
 - Solo test xUnit y nota, sin modificar codigo productivo, credenciales, migraciones, API ni seguridad del proveedor. Prueba dirigida y CI exact-SHA quedan sujetas a ejecucion real y revision independiente de otra Task. No confundir definicion de prueba con PASS. Rollback: revert protegido de test y nota.
+
+## 2026-11-06 — V11 progreso visible y CI opcional asíncrona (DEV)
+
+- Registrar EN_PROGRESO real antes de desarrollar, PLAN H/I y BITACORA; tras PR pasar a VALIDANDO, conservando autoria y readback. Sin CAS.
+- Selector usar COLA!O y dependencia VALIDANDO/LISTO, developerFor no exclusivo e IDs I8/G0; FIFO V10 exclusivo para merges.
+- Trusted certifier permite diferir known optional broad cuando diffs no-runtime allowlisted y revisión/pruebas completas; no difiere fallas, unknown checks, DB/runtime ni REQUIRED.
+- Sin backend productivo ni migraciones/secrets; rollback por PR protegido.
 
 ## 2026-11-06 — STRICT_FIFO_NO_IDLE_V10: merge sin adelantamientos, desarrollo continuo (DEV)
 
