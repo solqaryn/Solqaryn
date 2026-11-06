@@ -1,3 +1,11 @@
+## 2026-11-05 — Liberacion de desarrollo al pasar predecesora a VALIDANDO
+
+- Nuevo gate automatico de desarrollo P1 en COLA!O: estado PENDIENTE, responsable vacio y dependencias VALIDANDO o LISTO; la formula recalcula sin esperas de CI.
+- COLA!G mantiene estrictamente dependencias LISTO para merge/cierre; seguridad, proteccion de rama, revision independiente, CI exact-SHA y WIP 15/15/15 sin cambios. Ningun CAS ni reserva Sheets.
+- Contrato coherente en AGENTS, PROJECT_SCOPE_LOCK, AUTOMATION_STATUS, AUTOMATION_AUTHORITY y selector puro con pruebas negativas.
+- Las seis Tasks conservan horarios/identidades; V7 aplicado en las cuatro nativas de Javier y pendiente de sincronizacion desde cuenta Alex para :10/:50.
+- Rollback: restaurar el gate O y prompts precedentes por PR protegido; no reescribir historia.
+
 ## 2026-11-05 — P1-015.E: prueba positiva dirigida de auditoria privilegiada (DEV)
 
 - Javier :30, Task `6aeacb7820ac8191b7d768a6f33dfa09`: xUnit filtrable P1015E reutiliza afirmaciones reales del caso positivo P1015A: concesion autorizada, actor, motivo, correlacion, ambito global y auditoria. Acta `docs/P1-015-E-POSITIVO-AUDITORIA-PRIVILEGIADA-DEV.md`. Sin cambios productivos, pruebas locales NO ejecutadas; CI, review y merge requieren evidencia independiente.

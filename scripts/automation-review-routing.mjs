@@ -31,6 +31,40 @@ export function developerFor(scopeId, taskIds) {
   const m = /^P(\d+)-(\d+)\.([A-Z])$/.exec(scopeId);
   return candidates[(Number(m[1]) * 131 + Number(m[2]) * 29 + m[3].charCodeAt(0)) % candidates.length];
 }
+// Read-only preflight. A PENDIENTE successor can START when predecessors are
+// VALIDANDO or LISTO, but cannot be merged or certified until all are LISTO.
+// COLA!O is the advisory start gate; COLA!G remains the strict completion gate.
+export function canBeginDevelopmentInNativeRun(data) {
+  if (!data || !/^P1-\d+\.[A-Z]$/.test(data.scopeId || '') ||
+      data.state !== 'PENDIENTE' || data.developmentEnabled !== 'SI' ||
+      !Array.isArray(data.dependencyStatuses) || data.dependencyStatuses.length > 2 ||
+      !data.dependencyStatuses.every(s => s === 'LISTO' || s === 'VALIDANDO') ||
+      Boolean(data.ownerTaskId) || data.activeEditorConflict !== false ||
+      data.codexActiveConflict === true || data.branchAlreadyExists !== false ||
+      data.prAlreadyExists !== false || data.wipWithinLimit !== true ||
+      data.nativeRunVerified !== true || data.githubCurrentVerified !== true ||
+      data.planCurrentVerified !== true || data.permissionsVerified !== true ||
+      !sortedEligible(data.authorizedTaskIds, null).includes(data.actorTaskId)) return false;
+  return true;
+}
+export function dependenciesReadyForIntegration(statuses) {
+  return Array.isArray(statuses) && statuses.every(s => s === 'LISTO');
+}
+// This is a ranking suggestion, not a claim or lock. Native exclusivity applies later.
+export function developmentCandidatesFor(actorTaskId, rows, taskIds) {
+  const authorized = sortedEligible(taskIds, null);
+  if (!authorized.includes(actorTaskId) || !Array.isArray(rows)) return [];
+  return rows.filter(r => r && /^P1-\d+\.[A-Z]$/.test(r.scopeId || '') &&
+      r.state === 'PENDIENTE' && r.developmentEnabled === 'SI' && !r.ownerTaskId)
+    .sort((a, b) => {
+      const preferenceA = developerFor(a.scopeId, authorized) === actorTaskId ? 0 : 1;
+      const preferenceB = developerFor(b.scopeId, authorized) === actorTaskId ? 0 : 1;
+      return preferenceA - preferenceB ||
+        (Number.isSafeInteger(a.queueRow) ? a.queueRow : 999999) -
+        (Number.isSafeInteger(b.queueRow) ? b.queueRow : 999999) ||
+        a.scopeId.localeCompare(b.scopeId);
+    }).map(r => r.scopeId);
+}
 export function canReviewInNativeRun(data) {
   if (!data || data.nativeRunVerified !== true ||
       data.githubCurrentVerified !== true || data.planCurrentVerified !== true ||
@@ -67,5 +101,28 @@ export function selfTestReviewRouting() {
   assert.equal(reviewerFor('P1-013.A',author,roster),roster[1]); // skip J00 contributor to PR #3853
   assert.equal(reviewerFor('P1-007.B',roster[1],roster),roster[4]);
   assert.equal(developerFor('P1-014.D',roster),developerFor('P1-014.D',[...roster].reverse()));
+  const start = {scopeId:'P1-013.D',state:'PENDIENTE',developmentEnabled:'SI',
+    dependencyStatuses:['VALIDANDO'],ownerTaskId:null,activeEditorConflict:false,
+    codexActiveConflict:false,branchAlreadyExists:false,prAlreadyExists:false,
+    wipWithinLimit:true,nativeRunVerified:true,githubCurrentVerified:true,
+    planCurrentVerified:true,permissionsVerified:true,authorizedTaskIds:roster,
+    actorTaskId:roster[0]};
+  assert.equal(canBeginDevelopmentInNativeRun(start),true);
+  assert.equal(canBeginDevelopmentInNativeRun({...start,dependencyStatuses:['LISTO']}),true);
+  assert.equal(canBeginDevelopmentInNativeRun({...start,dependencyStatuses:['PENDIENTE']}),false);
+  assert.equal(canBeginDevelopmentInNativeRun({...start,activeEditorConflict:true}),false);
+  assert.equal(canBeginDevelopmentInNativeRun({...start,branchAlreadyExists:true}),false);
+  assert.equal(canBeginDevelopmentInNativeRun({...start,permissionsVerified:false}),false);
+  assert.equal(canBeginDevelopmentInNativeRun({...start,developmentEnabled:'NO'}),false);
+  assert.equal(dependenciesReadyForIntegration(['VALIDANDO']),false);
+  assert.equal(dependenciesReadyForIntegration(['LISTO']),true);
+  const pending = [
+    {scopeId:'P1-013.D',state:'PENDIENTE',developmentEnabled:'SI',queueRow:62},
+    {scopeId:'P1-011.B',state:'PENDIENTE',developmentEnabled:'SI',queueRow:69},
+    {scopeId:'P1-013.E',state:'PENDIENTE',developmentEnabled:'NO',queueRow:66}
+  ];
+  assert.equal(developmentCandidatesFor(roster[0],pending,roster).length,2);
+  assert.deepEqual(developmentCandidatesFor('invalid',pending,roster),[]);
+
 }
 if(process.argv.includes('--self-test')) {selfTestReviewRouting(); console.log('SOLQARYN REVIEW ROUTING SELF_TEST=PASS');}
