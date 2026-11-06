@@ -68,6 +68,13 @@
 - Workflow de CI dirigida corre para ramas comerciales work/solqaryn-p*, work/solqaryn-i8-* y work/solqaryn-g0-*, exige xUnit con al menos un match y cero fallos; conserva los tres checks required, revision independiente, seguridad, CI de MySQL segun impacto, no CAS ni QA/main/PROD.
 - Pruebas positivas I8/G0 y negativas por suite dirigida ausente, rama incorrecta y programa externo. Reversion por PR protegido.
 
+## 2026-11-06 — P2-006.C: ventas por EmpresaId verificado, prueba dirigida (DEV)
+
+- Autora: Task nativa Javier :20, TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`, GitHub `jmejia31`. Escenario delimitado: `backend/tests/Solqaryn.Tests/P2006CVentasEmpresaIdTests.cs`.
+- EF InMemory con ventas borrador A/B: una cabecera `X-Empresa-Id` falsificada no cambia el filtro de lectura contra el tenant verificado, y el filtro se reevalúa al cambiar el tenant dentro del mismo `AppDbContext`. `IgnoreQueryFilters` solo prueba la presencia de ambas filas de fixture y NO es vía autorizada de consulta.
+- No se cambió lógica productiva, esquema, migraciones, secretos, workflows ni permisos. Este test no certifica HTTP/JWT/RBAC, MySQL real, jobs ni contenido legacy sin EmpresaId. Sin ejecución local de .NET: compilación y CI dirigida quedan pendientes de GitHub y revisión independiente.
+- Dependencia `P1-016.B` LISTO, `COLA!O174=SI` al iniciar. Reversión: revert protegido del test y esta entrada conservando las entradas concurrentes.
+
 ## 2026-11-06 — NO_IDLE_PENDING_RELEASE_V9: continuar trabajo habilitado aunque VALIDANDO no este vacio (DEV)
 
 - Prioridad real: merge protegido de VALIDANDO apto por created_at; en ausencia de fusion apta, continuar inmediatamente con PENDIENTE elegible sin FIFO por ID/fecha y sin requerir un LISTO previo.
