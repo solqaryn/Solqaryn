@@ -1,3 +1,8 @@
+## 2026-11-05 — P1-011.E — regresion positiva dirigida de alta con administrador nuevo (DEV)
+
+- Task Javier :40 `6adc2e55f47c81919f6374e561687076` incorpora xUnit dirigido `P1011E` que invoca la regresion P1011A existente: alta con BCrypt, rol empresarial, membresia unica y auditoria sin credenciales. Solo fixture EF InMemory, sin prueba remota MySQL/JWT/HTTP.
+- Acta: `docs/P1-011-E-REGRESION-POSITIVA-ADMIN-DEV.md`. Sin cambios productivos. No atribuir CI, review independiente, merge ni LISTO antes de recibir gates exact-SHA; entrega a VALIDANDO libera autora y conserva revision ajena.
+
 ## 2026-11-05 — P1-016.D: rechazo dirigido de sesion global empresarial (DEV)
 
 - Task nativa Javier :40 (`6adc2e55f47c81919f6374e561687076`) inicio P1-016.D con ruta determinista, dependencia P1-016.C LISTO y WIP 3/15; rama unica `work/solqaryn-p1-016-d` desde `dev@0c280ab7c4b8a56b1a0674b3a3bca438d3078e1b`.
