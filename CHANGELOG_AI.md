@@ -1,3 +1,12 @@
+## 2026-11-05 — P1-011.E — regresion positiva dirigida de alta con administrador nuevo (DEV)
+
+- Task Javier :40 `6adc2e55f47c81919f6374e561687076` incorpora xUnit dirigido `P1011E` que invoca la regresion P1011A existente: alta con BCrypt, rol empresarial, membresia unica y auditoria sin credenciales. Solo fixture EF InMemory, sin prueba remota MySQL/JWT/HTTP.
+- Acta: `docs/P1-011-E-REGRESION-POSITIVA-ADMIN-DEV.md`. Sin cambios productivos. No atribuir CI, review independiente, merge ni LISTO antes de recibir gates exact-SHA; entrega a VALIDANDO libera autora y conserva revision ajena.
+
+## 2026-11-05 — P1-015.B: cierre atomico de auditoria privilegiada sin secretos (DEV)
+
+- Task ALEX :10, `TASK_ID=6adbbc9ad9e88191bea8eb69104afb25`: por FALLBACK_PENDING_V4 inicio rama canonica `work/solqaryn-p1-015-b` sobre `dev@9ec3107e`, al comprobar `P1-015.E=LISTO`, `COLA!G72=SI`, scope libre y WIP 4/15. `P1015BPrivilegedAuditPrivacyTests` cubre concesion y autodelegacion denegada sin copiar hash ni nombre de perfil al `RegistroAuditoria` sintetico; acta `docs/P1-015-B-CIERRE-AUDITORIA-PRIVILEGIADA-DEV.md` concilia PR #3861/#3873/#3879 y limites. Sin cambios productivos, secretos, QA/main/PROD. NO_TEST_LOCAL_VERIFIED: no afirmar PASS/APPROVED/merge/LISTO sin CI y revision independiente en SHA exacto.
+
 ## 2026-11-05 — P1-013.D: negativo dirigido de onboarding apagado (DEV)
 
 - Task Javier :20 `6adc2e4bd8a48191ac7d8641ed95a1a3` anade prueba P1013D sobre fixture P1013A integrado: `onboarding=false, aislamiento=true`, rechazo 503 y cero efectos persistidos.
