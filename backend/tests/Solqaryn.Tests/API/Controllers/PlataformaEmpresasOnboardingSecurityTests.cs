@@ -361,6 +361,47 @@ public sealed class PlataformaEmpresasOnboardingSecurityTests
         Assert.Single(await db.Set<RegistroAuditoria>().ToListAsync());
     }
 
+
+    [Fact]
+    public async Task P1011B_FalloBCryptInyectadoNoDejaUsuarioNiEmpresaHuerfanos()
+    {
+        var llamadasHash = 0;
+        var fixture = await PrepararAsync(true, true, true, passwordHasher: password =>
+        {
+            Assert.Equal("ClaveSegura!42", password);
+            llamadasHash++;
+            throw new InvalidOperationException("P1011B: fallo BCrypt inyectado.");
+        });
+        await using var db = fixture.Db;
+        var usuariosAntes = await db.Usuarios.IgnoreQueryFilters().CountAsync();
+        var auditoriasAntes = await db.Set<RegistroAuditoria>()
+            .IgnoreQueryFilters().CountAsync();
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            fixture.Controller.AltaControlada(new AltaEmpresaPlataformaRequest
+            {
+                Nombre = "Empresa fallo BCrypt",
+                AdministradorNuevo = new AdministradorNuevoEmpresaRequest
+                {
+                    NombreUsuario = "admin.fallo.bcrypt",
+                    NombreCompleto = "Administrador de prueba BCrypt",
+                    Password = "ClaveSegura!42"
+                }
+            }, CancellationToken.None));
+        Assert.Contains("fallo BCrypt inyectado", error.Message);
+        Assert.Equal(1, llamadasHash);
+        Assert.Equal(usuariosAntes, await db.Usuarios.IgnoreQueryFilters().CountAsync());
+        Assert.DoesNotContain(await db.Usuarios.IgnoreQueryFilters().ToListAsync(),
+            usuario => usuario.NombreUsuario == "admin.fallo.bcrypt");
+        Assert.Empty(await db.Set<Empresa>().IgnoreQueryFilters().ToListAsync());
+        Assert.Empty(await db.Set<ConfigEmpresa>().IgnoreQueryFilters().ToListAsync());
+        Assert.Empty(await db.Set<UsuarioEmpresa>().IgnoreQueryFilters().ToListAsync());
+        Assert.Equal(auditoriasAntes, await db.Set<RegistroAuditoria>()
+            .IgnoreQueryFilters().CountAsync());
+        Assert.DoesNotContain(db.ChangeTracker.Entries(),
+            entry => entry.State is EntityState.Added or EntityState.Modified or EntityState.Deleted);
+    }
+
     [Fact]
     public async Task P1011A_NuevoAdministradorSeCreaConBCryptRolBaseYUnaMembresiaDeEmpresa()
     {
@@ -572,7 +613,8 @@ public sealed class PlataformaEmpresasOnboardingSecurityTests
 
     private static async Task<Fixture> PrepararAsync(
         bool onboarding, bool aislamiento, bool platformMembership,
-        bool currentUserValid = true)
+        bool currentUserValid = true,
+        Func<string, string>? passwordHasher = null)
     {
         var db = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase("platform-onboarding-" + Guid.NewGuid().ToString("N"))
@@ -636,11 +678,11 @@ public sealed class PlataformaEmpresasOnboardingSecurityTests
         http.User = new ClaimsPrincipal(new ClaimsIdentity(
             new[] { new Claim(ClaimTypes.NameIdentifier, actor.Id.ToString()) },
             "TestJwt"));
-        var controller = new PlataformaEmpresasController(db, current.Object, config,
-            new PlataformaScopeService(db, current.Object))
-        {
-            ControllerContext = new ControllerContext { HttpContext = http }
-        };
+        var scopeService = new PlataformaScopeService(db, current.Object);
+        var controller = passwordHasher is null
+            ? new PlataformaEmpresasController(db, current.Object, config, scopeService)
+            : new PlataformaEmpresasController(db, current.Object, config, scopeService, passwordHasher);
+        controller.ControllerContext = new ControllerContext { HttpContext = http };
         return new Fixture(db, controller, actor.Id, administrator.Id);
     }
 

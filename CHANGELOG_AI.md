@@ -1,3 +1,9 @@
+## 2026-11-06 — P1-011.B: negativo BCrypt corregido tras REQUEST_CHANGES (DEV)
+
+- ALEX :10, autor TASK_ID `6adbbc9ad9e88191bea8eb69104afb25`, atiende review independiente #5796363344 en la misma rama/PR #3887. El controlador mantiene el constructor público y BCrypt coste 12; solo agrega un constructor interno de pruebas con delegado de hashing e InternalsVisibleTo para Solqaryn.Tests.
+- `P1011B_FalloBCryptInyectadoNoDejaUsuarioNiEmpresaHuerfanos` ejecuta falla determinista de hashing antes de cualquier escritura y verifica ausencia de usuario/empresa/configuración/membresía/auditoría nuevos. No suplanta el rollback real MySQL de ConfigEmpresa/membresía/auditoría.
+- Sin alteraciones a JWT/RBAC, endpoints, datos productivos, flags, QA/main/PROD. No se ejecutó dotnet localmente. Requerir CI exact-SHA y nueva revisión de TASK_ID independiente; NO MERGE/LISTO anticipado.
+
 ## 2026-11-05 — P1-011.B: cierre atómico de administrador nuevo (DEV)
 
 - ALEX :10 (TASK_ID `6adbbc9ad9e88191bea8eb69104afb25`) reutiliza las entregas P1-011.C (#3860), P1-011.D (#3870) y P1-011.E (#3880), institucionalmente LISTO; rama `work/solqaryn-p1-011-b` actualizada sin force-push desde dev vigente.
