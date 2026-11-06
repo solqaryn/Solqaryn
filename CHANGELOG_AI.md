@@ -16,6 +16,13 @@
 - Solo test y acta; no se cambian entidades, DbContext, seguridad HTTP, base de datos, migraciones ni entornos. EF InMemory no certifica SQL/HTTP. CI y revisión sobre HEAD exacto pendientes hasta evidencia GitHub; no autoaprobación.
 - Rollback por PR protegido y conservación de la trazabilidad de P2-003.C.
 
+## 2026-11-06 — P2-005.C: compras aisladas por EmpresaId verificado (DEV)
+
+- Task Javier :40, `6adc2e55f47c81919f6374e561687076`: prueba xUnit `backend/tests/Solqaryn.Tests/P2005CComprasEmpresaIdTests.cs` para compras borrador de empresas A/B, header `X-Empresa-Id` falsificado y cambio del tenant verificado sobre el mismo DbContext.
+- Sólo test, sin cambios de producción/API/SQL/migraciones, credenciales, workflows ni rulesets. `COLA!O173=SI` y `COLA!G173=SI` al iniciar; dependencia P1-016.B LISTO.
+- Sin ejecución local .NET; CI y revisión independiente por TASK_ID ajeno son requisitos antes del merge. EF InMemory no demuestra acceso HTTP JWT/RBAC, persistencia real MySQL ni política de solicitudes sin tenant; no afirmarlo.
+- Rollback: revert protegido exclusivo del test y esta entrada, conservando otros registros.
+
 ## 2026-11-06 — P2-002.C: regresión de productos por EmpresaId y límite HTTP (DEV)
 
 - Autora Task Alex :10 (6adbbc9ad9e88191bea8eb69104afb25). La prueba `P2002CProductoEmpresaIdTests.cs` delimita productos A/B con marca RBAC verificada y comprueba que una cabecera `X-Empresa-Id` de B no cambia la lectura de A.
@@ -27,6 +34,12 @@
 - El clasificador fail-closed acepta wrappers offline P1 dentro de subcarpetas ordinarias (p. ej. API/Controllers/P1013B*Tests.cs), sin código de DB/Integration ni cambios de runtime; actualmente un falso no-reconocimiento activaba MySQL 8.4 durante 23m10s en P1-013.B.
 - Se mantienen los tres checks requeridos por GitHub dev, revisión independiente y pruebas dirigidas. Nunca se omiten suites MySQL ante migraciones, test DB/integration, rutas protegidas/desconocidas, ausencia de archivo o fallos del clasificador.
 - Quince regresiones añadidas al self-test del clasificador. La prueba opcional integral sigue disponible para cambios de impacto real y workflow_dispatch. Reversión: revertir este PR protegido.
+
+## 2026-11-06 — I8-001.C: auditoria causal de credenciales ERP actuales (DEV)
+
+- Task nativa Javier :00, TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`. Microtarea `I8-001.C`, desarrollo habilitado por `COLA!O73=SI` y dependencia `P1-016.B` LISTO. Archivo dirigido `backend/tests/Solqaryn.Tests/I8001CCredencialesErpTests.cs`.
+- Contrato de `AuthService.LoginAsync`: se exige verificacion BCrypt previa a emitir token; usuario eliminado, password incorrecto, cuenta bloqueada o inactiva no emiten JWT; credencial correcta con rol activo habilita solo un token simulado del mock. Login normaliza nombre. Las pruebas son unitarias y no acreditan firma JWT real, MFA, reset/recovery, migraciones, persistencia ni aislamiento HTTP multitenant.
+- Solo test xUnit y nota, sin modificar codigo productivo, credenciales, migraciones, API ni seguridad del proveedor. Prueba dirigida y CI exact-SHA quedan sujetas a ejecucion real y revision independiente de otra Task. No confundir definicion de prueba con PASS. Rollback: revert protegido de test y nota.
 
 ## 2026-11-06 — V11 progreso visible y CI opcional asíncrona (DEV)
 
@@ -42,6 +55,12 @@
 - Selector consultivo fail-closed y pruebas negativas: PR tecnico/governance antiguo y antiguo con CI/revision/conflicto pendiente impiden recomendar PR posterior para merge; PR cerrado deja turno libre. Sin CAS, force-push, perdida de checks requeridos, QA/main/PROD o cambios de horarios.
 - Reversion mediante PR protegido, conservando historial de BITACORA.
 
+## 2026-11-06 — P2-016.C: datos históricos sintéticos sin EmpresaId (DEV)
+
+- Task autora Alex :10 / `6adbbc9ad9e88191bea8eb69104afb25`. La regresión `P2016CDatosHistoricosEmpresaIdTests.cs` crea una categoría legado `EmpresaId=NULL` y dos categorías A/B, verifica aislamiento con marca RBAC por empresa y rechaza que `X-Empresa-Id` asigne acceso o propietario al registro histórico.
+- El filtro EF sin marca RBAC mantiene consulta global para flujos internos por contrato vigente; **no** equivale a acceso HTTP autorizado. La cuarentena multiempresa HTTP P0 se prueba separadamente. Todo son datos InMemory sintéticos: no se imputan propietarios históricos ni se modifican SQL, migraciones, autenticación, reglas RBAC, producto, tienda, secretos, QA/main/PROD.
+- Prueba causal definida, ejecución local NO_VERIFICADA; exigir CI dirigida/requerida exact-HEAD, revisión independiente ajena, merge protegido FIFO y readback institucional antes de LISTO. Rollback por revert protegido del test y esta nota.
+
 ## 2026-11-06 — P2-001.C: delimitar matriz de lectura comercial por endpoint (DEV)
 
 - Task nativa Javier :20, TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Regresión xUnit dirigida `backend/tests/Solqaryn.Tests/P2001CMatrizComercialLecturaTests.cs`: contrato de autenticación `[Authorize]`, ausencia de `[AllowAnonymous]`, ruta fija y permiso RBAC `Ver` para las lecturas de clientes, productos y ventas; tres entradas en matriz declarativa.
@@ -54,6 +73,13 @@
 - Scope Lock reconoce únicamente P[digitos], I8 y G0 con ID de tres digitos y sufijo A-Z, exige rama determinista, evidencia en PR y check dirigido de GitHub Actions exact-HEAD.
 - Workflow de CI dirigida corre para ramas comerciales work/solqaryn-p*, work/solqaryn-i8-* y work/solqaryn-g0-*, exige xUnit con al menos un match y cero fallos; conserva los tres checks required, revision independiente, seguridad, CI de MySQL segun impacto, no CAS ni QA/main/PROD.
 - Pruebas positivas I8/G0 y negativas por suite dirigida ausente, rama incorrecta y programa externo. Reversion por PR protegido.
+
+## 2026-11-06 — P2-006.C: ventas por EmpresaId verificado, prueba dirigida (DEV)
+
+- Autora: Task nativa Javier :20, TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`, GitHub `jmejia31`. Escenario delimitado: `backend/tests/Solqaryn.Tests/P2006CVentasEmpresaIdTests.cs`.
+- EF InMemory con ventas borrador A/B: una cabecera `X-Empresa-Id` falsificada no cambia el filtro de lectura contra el tenant verificado, y el filtro se reevalúa al cambiar el tenant dentro del mismo `AppDbContext`. `IgnoreQueryFilters` solo prueba la presencia de ambas filas de fixture y NO es vía autorizada de consulta.
+- No se cambió lógica productiva, esquema, migraciones, secretos, workflows ni permisos. Este test no certifica HTTP/JWT/RBAC, MySQL real, jobs ni contenido legacy sin EmpresaId. Sin ejecución local de .NET: compilación y CI dirigida quedan pendientes de GitHub y revisión independiente.
+- Dependencia `P1-016.B` LISTO, `COLA!O174=SI` al iniciar. Reversión: revert protegido del test y esta entrada conservando las entradas concurrentes.
 
 ## 2026-11-06 — NO_IDLE_PENDING_RELEASE_V9: continuar trabajo habilitado aunque VALIDANDO no este vacio (DEV)
 
