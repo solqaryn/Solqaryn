@@ -1,3 +1,7 @@
+## 2026-11-05 — P1-015.B: cierre atomico de auditoria privilegiada sin secretos (DEV)
+
+- Task ALEX :10, `TASK_ID=6adbbc9ad9e88191bea8eb69104afb25`: por FALLBACK_PENDING_V4 inicio rama canonica `work/solqaryn-p1-015-b` sobre `dev@9ec3107e`, al comprobar `P1-015.E=LISTO`, `COLA!G72=SI`, scope libre y WIP 4/15. `P1015BPrivilegedAuditPrivacyTests` cubre concesion y autodelegacion denegada sin copiar hash ni nombre de perfil al `RegistroAuditoria` sintetico; acta `docs/P1-015-B-CIERRE-AUDITORIA-PRIVILEGIADA-DEV.md` concilia PR #3861/#3873/#3879 y limites. Sin cambios productivos, secretos, QA/main/PROD. NO_TEST_LOCAL_VERIFIED: no afirmar PASS/APPROVED/merge/LISTO sin CI y revision independiente en SHA exacto.
+
 ## 2026-11-05 — P1-015.E: prueba positiva dirigida de auditoria privilegiada (DEV)
 
 - Javier :30, Task `6aeacb7820ac8191b7d768a6f33dfa09`: xUnit filtrable P1015E reutiliza afirmaciones reales del caso positivo P1015A: concesion autorizada, actor, motivo, correlacion, ambito global y auditoria. Acta `docs/P1-015-E-POSITIVO-AUDITORIA-PRIVILEGIADA-DEV.md`. Sin cambios productivos, pruebas locales NO ejecutadas; CI, review y merge requieren evidencia independiente.
