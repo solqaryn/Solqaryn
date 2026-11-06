@@ -1,3 +1,9 @@
+## 2026-11-06 — P2-014.C: concurrencia A/B de contextos verificados (DEV)
+
+- Task nativa Javier :40, TASK_ID `6adc2e55f47c81919f6374e561687076`. Prueba causal `backend/tests/Solqaryn.Tests/P2014CConcurrenciaTenantTests.cs`: dos peticiones independientes con diferentes `HttpContext` / `AppDbContext`, dos ventas A/B, cabeceras `X-Empresa-Id` cruzadas y consultas `Task.WhenAll` sobre la misma base EF InMemory, aisladas por marca de tenant verificado.
+- Solo test + esta entrada; sin cambios productivos, JWT/RBAC, API HTTP, migraciones, MySQL, reglas CI, secretos, QA/main/PROD. El test no demuestra concurrencia de escrituras MySQL ni autorizacion HTTP real; no afirmar PASS .NET local sin ejecutar. CI Directed y tres required exact HEAD, revision independiente por Task distinta y FIFO antes del merge.
+- Rollback: revert protegido del test y esta entrada, conservando entradas de otros PR y autores.
+
 ## 2026-11-06 — P2-007.C: aislamiento de ajustes de inventario por EmpresaId (DEV)
 
 - Task Javier :30, TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`. Regresion xUnit `backend/tests/Solqaryn.Tests/P2007CInventarioEmpresaIdTests.cs`: dos empresas, owner persistido y lecturas EF aisladas tras alternar la marca tenant verificada.
