@@ -4,6 +4,18 @@
 - Task física Javier :20 `6adc2e4bd8a48191ac7d8641ed95a1a3` añadió el test dirigido `P1013B` sobre la matriz negativa heredada `P1013A` y el acta `docs/P1-013-B-CONCILIACION-GATES-ONBOARDING-DEV.md` con recibos C/D/E todavía pendientes.
 - `COLA!O70=SI` permite el desarrollo; `COLA!G70=NO` prohíbe merge/LISTO mientras P1-013.E siga VALIDANDO. Test no ejecutado localmente; CI/revisión ajena y evidencia de dependencias no certificadas. Sin cambios productivos ni flags DEV.
 
+## 2026-11-06 — P1-011.B: negativo BCrypt corregido tras REQUEST_CHANGES (DEV)
+
+- ALEX :10, autor TASK_ID `6adbbc9ad9e88191bea8eb69104afb25`, atiende review independiente #5796363344 en la misma rama/PR #3887. El controlador mantiene el constructor público y BCrypt coste 12; solo agrega un constructor interno de pruebas con delegado de hashing e InternalsVisibleTo para Solqaryn.Tests.
+- `P1011B_FalloBCryptInyectadoNoDejaUsuarioNiEmpresaHuerfanos` ejecuta falla determinista de hashing antes de cualquier escritura y verifica ausencia de usuario/empresa/configuración/membresía/auditoría nuevos. No suplanta el rollback real MySQL de ConfigEmpresa/membresía/auditoría.
+- Sin alteraciones a JWT/RBAC, endpoints, datos productivos, flags, QA/main/PROD. No se ejecutó dotnet localmente. Requerir CI exact-SHA y nueva revisión de TASK_ID independiente; NO MERGE/LISTO anticipado.
+
+## 2026-11-05 — P1-011.B: cierre atómico de administrador nuevo (DEV)
+
+- ALEX :10 (TASK_ID `6adbbc9ad9e88191bea8eb69104afb25`) reutiliza las entregas P1-011.C (#3860), P1-011.D (#3870) y P1-011.E (#3880), institucionalmente LISTO; rama `work/solqaryn-p1-011-b` actualizada sin force-push desde dev vigente.
+- `P1011BAtomicAdminClosureTests` ejecuta la regresión positiva de identidad BCrypt/rol/membresía/auditoría y verifica por contrato la presencia de la regresión MySQL real de rollback (configuración, membresía, auditoría). La comprobación por reflexión NO ejecuta rollback; el job MySQL `Category=Integration` debe ejecutarlo en SHA exacto. No hay inyección específica de fallo BCrypt, aunque su hash se calcula antes de persistir: no fingir cobertura que falta.
+- Acta `docs/P1-011-B-CIERRE-ATOMICO-ADMIN-DEV.md`. Sin código productivo, cambios de JWT/RBAC, datos, secretos ni QA/main/PROD. Tests locales no ejecutados; CI, revisión de otra Task, merge protegido y LISTO se verificarán por separado.
+
 ## 2026-11-05 — P1-013.E: regresion positiva dirigida de gates onboarding (DEV)
 
 - Task Javier :40 (`6adc2e55f47c81919f6374e561687076`) prepara wrapper xUnit filtrable `P1013E` reutilizando casos integrados P1013A (ambos gates ON) y P1012A (alta efectiva, ConfigEmpresa, membresía, auditoría y sin escalada). Solo prueba y acta `docs/P1-013-E-REGRESION-POSITIVA-ONBOARDING-DEV.md`, sin cambiar producción.
