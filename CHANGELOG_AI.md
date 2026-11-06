@@ -1,3 +1,9 @@
+## 2026-11-06 — P2-013.C: identidad JWT no autoriza tenant B sin membresía A/B (DEV)
+
+- Desarrollo nativo Alex :50 / ALEX_CHATGPT, AUTHOR_TASK_ID `6adcc98a80a48191b71a5156624c21df`, rama exclusiva `work/solqaryn-p2-013-c`, nacida de `dev@f74bb8435ef8f91b4bbc02acfc3ee757cf6b4085`. Dependencia P1-016.B LISTO; COLA!O181=SI y G181=SI al iniciar. Evento V11 PENDIENTE → EN_PROGRESO acreditado en PLAN_MAESTRO/BITACORA.
+- Prueba xUnit puntual `backend/tests/Solqaryn.Tests/P2013CJwtSesionRbacTenantTests.cs`: usuario con JWT sintético que sólo identifica actor, dos empresas A/B, rol y membresía válida de A; header `X-Empresa-Id=B` falsificado no habilita `TenantContextController.Obtener(B)` y A sigue autorizada por `UsuarioScopeService` con membresía verificada. Verifica atributo `[Authorize]` del controlador, no ejecución del middleware ni validación criptográfica HTTP.
+- Sólo test + esta entrada aditiva, sin modificar runtime, JWT productivo, endpoint, permisos, BD/migraciones, secretos, workflows, QA/main/PROD. Sin dotnet local: exigir Directed y tres REQUIRED Check Runs exact HEAD, revisión técnica por otra TASK_ID, FIFO PR más antiguo y CI postmerge P2 requerida antes de LISTO. EF InMemory no prueba MySQL, JWT de extremo a extremo ni carga real. Revert protegido sólo del test y nota para rollback.
+
 ## 2026-11-06 — P2-001.D: ampliar matriz de lectura comercial a proveedores y compras (DEV)
 
 - Task nativa Javier :20, TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Se amplió el test `[Theory]` `P2001CMatrizComercialLecturaTests` de tres a cinco endpoints, añadiendo `GET proveedores` y `GET compras` con `[Authorize]`, sin `[AllowAnonymous]` y `RequierePermiso(ModuloSistema.Proveedores/Compras, AccionPermiso.Ver)`; el control se ejecuta sobre atributos del contrato HTTP, no sobre respuestas con JWT real.
