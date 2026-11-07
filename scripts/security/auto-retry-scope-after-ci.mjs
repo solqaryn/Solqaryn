@@ -128,7 +128,7 @@ function selfTest() {
     head_sha:h,status:'in_progress',conclusion:null,app:{id:TRUSTED_ACTIONS_APP_ID}})},'OTHER_CHECKS_NOT_ALL_GREEN');
   check('completed failure',x=>{x.checks[1].conclusion='failure'},'OTHER_CHECKS_NOT_ALL_GREEN');
   check('forged check app',x=>{x.checks[0].app.id=42},'UNVERIFIED_CHECK_SET');
-  check('non-scope branch',x=>{x.pr.head.ref='unknown'},'DIRECTED_OR_SCOPE_MISSING');
+  check('non-scope branch',x=>{x.pr.head.ref='unknown';x.scopeRun.head_branch='unknown'},'DIRECTED_OR_SCOPE_MISSING');
   check('directed skipped',x=>{x.checks[2].conclusion='skipped'},'DIRECTED_OR_SCOPE_MISSING');
   check('governance failure not retried',x=>{x.log='Error: AUTO_CERT=NO_GO GOVERNANCE_REQUIRES_INDEPENDENT_FORMAL_REVIEW'},'NOT_A_CI_TIMING_FAILURE');
   check('secret scan failure not retried',x=>{x.log='Error: AUTO_CERT=NO_GO CHECK_FAILED:Authorization, files, secrets and tenant gate'},'NOT_A_CI_TIMING_FAILURE');
