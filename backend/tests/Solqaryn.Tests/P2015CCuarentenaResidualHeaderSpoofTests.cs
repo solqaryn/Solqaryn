@@ -84,9 +84,15 @@ public sealed class P2015CCuarentenaResidualHeaderSpoofTests
         http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = a.Id;
         var autorizadoA = await scope.ObtenerActualAsync();
         Assert.NotNull(autorizadoA);
-        Assert.Equal(a.Id, autorizadoA.EmpresaId);
         Assert.Equal(operadorA.Id, autorizadoA.RolId);
         Assert.False(autorizadoA.EsAdministrador);
+
+        // La sobrecarga tenant-aware expone EmpresaId; el resultado legacy
+        // no lo contiene. Ambos deben resolver el mismo rol empresarial A.
+        var autorizadoTenantA = await scope.ObtenerActualAsync(a.Id);
+        Assert.NotNull(autorizadoTenantA);
+        Assert.Equal(a.Id, autorizadoTenantA.EmpresaId);
+        Assert.Equal(autorizadoA.RolId, autorizadoTenantA.RolId);
 
         http.Items.Remove(VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey);
         Assert.Null(await scope.ObtenerActualAsync());
