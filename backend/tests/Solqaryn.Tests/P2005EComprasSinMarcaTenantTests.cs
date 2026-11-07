@@ -1,8 +1,12 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Moq;
+using Solqaryn.Application.Common;
+using Solqaryn.Application.Interfaces;
 using Solqaryn.Application.Security;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Infrastructure.Persistence;
+using Solqaryn.Infrastructure.Repositories;
 using Xunit;
 
 namespace Solqaryn.Tests;
@@ -49,25 +53,47 @@ public sealed class P2005EComprasSinMarcaTenantTests
         await db.SaveChangesAsync();
 
         Assert.Equal(2, await db.Compras.IgnoreQueryFilters().CountAsync());
+        db.ChangeTracker.Clear();
 
-        // La cabecera B no establece una autorizacion cuando falta la marca servidor.
+        // La consulta EF directa no es el limite de confianza: el filtro global
+        // permite lectores internos sin HTTP. Probar el repositorio PRIVADO real
+        // con un administrador legacy deliberadamente habilitado.
+        var usuario = new Mock<ICurrentUserService>();
+        var scopes = new Mock<IUsuarioScopeService>();
+        scopes.Setup(s => s.ObtenerActualAsync())
+            .ReturnsAsync(new UsuarioScopeActual(91, 1, "Admin legacy", true));
+        scopes.Setup(s => s.ObtenerActualAsync(empresaA.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new UsuarioTenantScopeActual(91, empresaA.Id, 1, "Admin A", true));
+        scopes.Setup(s => s.ObtenerActualAsync(empresaB.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new UsuarioTenantScopeActual(91, empresaB.Id, 1, "Admin B", true));
+        var compras = new CompraRepository(db, usuario.Object, scopes.Object);
+        var pagina = new PagedRequest { Page = 1, PageSize = 10 };
+
+        // Aunque el rol legacy sea administrador, 2+ empresas sin marca
+        // implican denegacion para listado, lookup por ID y lecturas recientes.
         http.Items.Remove(VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey);
         http.Request.Headers["X-Empresa-Id"] = empresaB.Id.ToString();
         Assert.Null(db.AuthorizedCommercialEmpresaId);
-        Assert.Empty(await db.Compras.AsNoTracking().ToArrayAsync());
-        Assert.Null(await db.Compras.AsNoTracking()
-            .SingleOrDefaultAsync(c => c.Id == compraB.Id));
+        var (sinMarca, totalSinMarca) = await compras.GetPagedAsync(pagina);
+        Assert.Empty(sinMarca);
+        Assert.Equal(0, totalSinMarca);
+        Assert.Null(await compras.GetByIdAsync(compraB.Id));
+        Assert.Empty(await compras.GetUltimasAsync());
+        Assert.Equal(0, await compras.ContarTodasAsync());
+        scopes.Verify(s => s.ObtenerActualAsync(), Times.Never);
 
-        // Control positivo: solo el tenant confirmado A puede leer su compra.
+        // La marca RBAC A prevalece sobre el encabezado falso de B.
         http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = empresaA.Id;
-        var visiblesA = await db.Compras.AsNoTracking()
-            .Select(c => c.Id).ToArrayAsync();
-        Assert.Equal(new[] { compraA.Id }, visiblesA);
-        Assert.DoesNotContain(compraB.Id, visiblesA);
+        var (visiblesA, totalA) = await compras.GetPagedAsync(pagina);
+        Assert.Equal(1, totalA);
+        Assert.Equal(new[] { compraA.Id }, visiblesA.Select(c => c.Id));
+        Assert.NotNull(await compras.GetByIdAsync(compraA.Id));
+        Assert.Null(await compras.GetByIdAsync(compraB.Id));
 
-        // La misma instancia vuelve a denegar lecturas cuando se revoca la marca.
+        // Revocada la marca en la misma instancia, el repositorio falla cerrado.
         http.Items.Remove(VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey);
         http.Request.Headers["X-Empresa-Id"] = empresaA.Id.ToString();
-        Assert.Empty(await db.Compras.AsNoTracking().ToArrayAsync());
+        Assert.Empty((await compras.GetPagedAsync(pagina)).Items);
+        Assert.Null(await compras.GetByIdAsync(compraA.Id));
     }
 }
