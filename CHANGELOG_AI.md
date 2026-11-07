@@ -1,3 +1,9 @@
+## 2026-11-06 — P2-013.C: identidad JWT no autoriza tenant B sin membresía A/B (DEV)
+
+- Desarrollo nativo Alex :50 / ALEX_CHATGPT, AUTHOR_TASK_ID `6adcc98a80a48191b71a5156624c21df`, rama exclusiva `work/solqaryn-p2-013-c`, nacida de `dev@f74bb8435ef8f91b4bbc02acfc3ee757cf6b4085`. Dependencia P1-016.B LISTO; COLA!O181=SI y G181=SI al iniciar. Evento V11 PENDIENTE → EN_PROGRESO acreditado en PLAN_MAESTRO/BITACORA.
+- Prueba xUnit puntual `backend/tests/Solqaryn.Tests/P2013CJwtSesionRbacTenantTests.cs`: usuario con JWT sintético que sólo identifica actor, dos empresas A/B, rol y membresía válida de A; header `X-Empresa-Id=B` falsificado no habilita `TenantContextController.Obtener(B)` y A sigue autorizada por `UsuarioScopeService` con membresía verificada. Verifica atributo `[Authorize]` del controlador, no ejecución del middleware ni validación criptográfica HTTP.
+- Sólo test + esta entrada aditiva, sin modificar runtime, JWT productivo, endpoint, permisos, BD/migraciones, secretos, workflows, QA/main/PROD. Sin dotnet local: exigir Directed y tres REQUIRED Check Runs exact HEAD, revisión técnica por otra TASK_ID, FIFO PR más antiguo y CI postmerge P2 requerida antes de LISTO. EF InMemory no prueba MySQL, JWT de extremo a extremo ni carga real. Revert protegido sólo del test y nota para rollback.
+
 ## 2026-11-06 — P2-006.D: ventas con folios homónimos aislados por tenant verificado (DEV)
 
 - Autora nativa Task Javier :40, TASK_ID `6adc2e55f47c81919f6374e561687076`, GitHub `jmejia31`. Nuevo test dirigido `backend/tests/Solqaryn.Tests/P2006DVentasNumeroHomonimoTests.cs`: dos ventas sintéticas A/B comparten `NumeroVenta`, se falsifica `X-Empresa-Id` en ambos sentidos y el filtro de `VerifiedCommercialTenant` debe devolver solo la venta de la empresa autorizada, incluso tras cambiar tenant en el mismo `AppDbContext`.
