@@ -1,3 +1,9 @@
+## 2026-11-06 — P2-004.E: regresión IDOR por proveedor entre empresas (DEV)
+
+- Task nativa Javier :20 / JAVIER_CHATGPT / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Prueba xUnit `P2004EProveedorRepositorioIdorTests` sobre `ProveedorRepository`: dos proveedores homónimos con `EmpresaId` distinto, lectura por ID ajeno, `GetByIdConComprasAsync`, búsqueda de activos, cabecera `X-Empresa-Id` falsificada y alternancia del tenant verificado en un mismo `AppDbContext`.
+- Solo test EF InMemory y entrada aditiva CHANGELOG_AI.md; ningún cambio productivo/API/JWT/RBAC/MySQL/migraciones/workflows/secretos. No declara pruebas ejecutadas localmente; exigir Directed P2004E, tres required checks exact HEAD y revisión independiente de otra Task, además de postmerge required P2 antes de LISTO.
+- Plan Comercial vigente P2-004.E, dependencia P2-004.D LISTO; inicio con COLA!O208=SI/G208=SI, rama exclusiva `work/solqaryn-p2-004-e` desde dev@`de3dd9d97e043729ef73e0eef37ef8479c147ed6`. Reversión por revert protegido del test y esta nota sin afectar cambios ajenos.
+
 ## 2026-11-06 — P2-013.D: revocar membresía vigente invalida acceso tenant de JWT previo (DEV)
 
 - Desarrollo nativo Javier :00, JAVIER_CHATGPT, AUTHOR_TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`, rama exclusiva `work/solqaryn-p2-013-d`, dev base `3a1e5c003cf916023653b40b1c48c0b440f6b3fd`; dependencia P2-013.C LISTO, COLA!O199=SI y G199=SI al inicio.
