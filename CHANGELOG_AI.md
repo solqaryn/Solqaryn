@@ -1,3 +1,10 @@
+## 2026-11-06 — P2-005.E: negar compras sin marca de tenant verificada (DEV)
+
+- Autor nativo Javier :20 / JAVIER_CHATGPT / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Rama exclusiva `work/solqaryn-p2-005-e`, creada desde `dev@c9e0bb59b93c625649f8ae6f55c928c8f191a83c` con registro PENDIENTE → EN_PROGRESO y readback institucional.
+- Regresion negativa xUnit `backend/tests/Solqaryn.Tests/P2005EComprasSinMarcaTenantTests.cs`: dos empresas y dos compras válidas, cabecera falsa `X-Empresa-Id`, eliminación de `VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey`, denegación de listado y lookup por ID, control positivo A y revocación posterior en el mismo DbContext.
+- El alcance es solo test EF InMemory y esta entrada idempotente; no hay runtime/API/JWT/RBAC, MySQL, migración, infraestructura, secretos, workflows ni otros entornos. No se afirma prueba local sin `dotnet`; CI Directed + tres required exact-HEAD, revisión independiente y dependencias COLA G son gates para merge FIFO. P2 requiere CI postmerge requerida antes LISTO.
+- Rollback: revert protegido de este test y su entrada, preservando cambios concurrentes.
+
 ## 2026-11-06 — P2-008.D: acceso privado a factura por venta aislado por tenant (DEV)
 
 - Task Javier :00, AUTHOR_TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`, rama exclusiva `work/solqaryn-p2-008-d` desde `dev@fa346a03ab4ded3a848e6bc1b1b4c51030be559c`.
