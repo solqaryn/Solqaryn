@@ -11,6 +11,20 @@
 - Cambio solo de test causal y esta entrada aditiva. No runtime, API, JWT, migraciones, MySQL, secretos, workflows ni rulesets. EF InMemory no certifica HTTP/JWT ni base productiva; dotnet test local NO ejecutado. Requiere CI Directed y 3 required exact HEAD SUCCESS, revisión independiente distinta Task, FIFO PR OPEN y controles posmerge P2 antes de LISTO.
 - Rollback proporcional mediante revert protegido del test y de esta entrada conservando el CHANGELOG concurrente.
 
+## 2026-11-06 — P2-006.E: prueba negativa IDOR de Venta.Id por tenant verificado (DEV)
+
+- Autor Task Javier :30, TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09, rama exclusiva work/solqaryn-p2-006-e, base dev@b7273e2743a03cf80e8836ecbcd9c2c29c75ca9e.
+- Prueba xUnit nueva backend/tests/Solqaryn.Tests/P2006EVentasIdorTenantTests.cs: Venta.Id de empresa ajena es invisible para tenant A/B verificado aunque X-Empresa-Id falsificado reclame otra empresa; confirma acceso propio y retorno seguro a A en el mismo AppDbContext.
+- Complementa P2-006.D (folio homonimo) con acceso directo por ID para demostrar negativo IDOR. Solo fixture EF InMemory; NO certifica endpoint HTTP/JWT, MySQL ni regla de negocio real. No se modifica runtime, migraciones, secretos, infraestructura o reglas.
+- Dotnet test local NO ejecutado; exigir Directed commercial scope y tres required checks exact HEAD SUCCESS, revision tecnica independiente, FIFO protegido y tres required POSTMERGE antes de LISTO. Revert protegido como rollback proporcional.
+
+## 2026-11-06 — P2-014.E: regresión concurrente A/B/A con tenant verificado mutable por DbContext (DEV)
+
+- Autor nativo Javier :00 / JAVIER_CHATGPT / TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`. Una rama exclusiva `work/solqaryn-p2-014-e`, desde dev `7b04bed40fed830f1754c12888ce3304691a02aa`; PLAN_MAESTRO!H218/I218 y BITACORA PENDIENTE->EN_PROGRESO comprobados ANTES de editar.
+- Prueba xUnit nueva `backend/tests/Solqaryn.Tests/P2014EConcurrenciaCambioTenantTests.cs`: dos ventas A/B con folio compartido, ocho Tasks independientes con sus propios HttpContextAccessor y AppDbContext; cada tarea alterna marca de tenant verificada A/B/A en EL MISMO contexto con cabecera X-Empresa-Id falsificada, comprobando que ninguna consulta hereda la empresa anterior ni lee el registro ajeno. Complementa P2-014.C/D sin compartir DbContext entre tareas ni repetir sólo los casos de dos consultas.
+- Únicamente test y entrada aditiva de CHANGELOG_AI.md. Sin cambios productivos, JWT/RBAC, API, migraciones, MySQL, secretos, rulesets, workflows ni QA/main/PROD. EF InMemory no acredita HTTP, validación JWT real, MySQL ni concurrencia transaccional; dotnet test local NO ejecutado; exigir Directed comercial + tres required SUCCESS exact HEAD y revisión independiente Task distinta, PR CLEAN y FIFO global antes de merge. P2 requiere tres REQUIRED postmerge exact MERGE_SHA antes de LISTO.
+- Reversión por revert protegido exclusivo de la prueba y esta entrada preservando registros concurrentes.
+
 ## 2026-11-07 — P2-005.E: corregir aislamiento de lecturas privadas de compras (DEV)
 
 - Autor Task Javier :20 / JAVIER_CHATGPT / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Se conserva el PR #3929 y la rama exclusiva `work/solqaryn-p2-005-e`, sin force-push; recuperación causal de REQUEST_CHANGES #5809885464.
