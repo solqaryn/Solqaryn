@@ -1,3 +1,10 @@
+## 2026-11-07 — P2-003.A: matriz negativa de clientes A/B con EmpresaId verificado (DEV)
+
+- Autora nativa Javier :30 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`, GitHub `jmejia31`; rama exclusiva `work/solqaryn-p2-003-a` desde dev@`e81e1edcd544500fbf40508a73d15b7d1d02fbeb`.
+- Prueba xUnit `backend/tests/Solqaryn.Tests/P2003AClientesMatrizEndpointTests.cs`: matriz de `ClienteRepository` listado, activos, búsqueda, detalle, verificación de identidad y detalle con ventas; dos clientes homónimos A/B, cabecera `X-Empresa-Id` falsificada y cambios de empresa verificada A/B/A. Reutiliza regresiones P2-003.C/D/E ya fusionadas, sin reescribir sus pruebas.
+- Alcance: exclusivamente prueba EF InMemory + esta entrada aditiva, sin cambios a runtime/API/DTO, BD, migraciones, roles, secretos, workflows ni QA/main/PROD. No demuestra HTTP/JWT/MySQL, importaciones o mutaciones; esos controles requieren evidencia independiente. No se ejecutó dotnet test local; CI y revisión independiente exact-HEAD son pendientes, así como FIFO global y posmerge requerido P2.
+- Reversión: revert protegido selectivo de esta prueba y entrada, preservando tests/historial concurrentes. No se certifica LISTO por abrir PR.
+
 ## 2026-11-07 — P2-017.E: rol de Plataforma y plantilla empresarial A/B (DEV)
 
 - Autora real Task Alex :50 / ALEX_CHATGPT / AUTHOR_TASK_ID=6adcc98a80a48191b71a5156624c21df, GitHub morales35alex. Rama exclusiva work/solqaryn-p2-017-e desde dev@6980a66b4572567e80261bb4cb60256f9f660394; transicion inicial PENDIENTE -> EN_PROGRESO y readback en PLAN_MAESTRO!221, COLA!221 y BITACORA!1071.
