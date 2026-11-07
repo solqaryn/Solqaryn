@@ -1,3 +1,9 @@
+## 2026-11-06 — P2-013.D: revocar membresía vigente invalida acceso tenant de JWT previo (DEV)
+
+- Desarrollo nativo Javier :00, JAVIER_CHATGPT, AUTHOR_TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`, rama exclusiva `work/solqaryn-p2-013-d`, dev base `3a1e5c003cf916023653b40b1c48c0b440f6b3fd`; dependencia P2-013.C LISTO, COLA!O199=SI y G199=SI al inicio.
+- Test xUnit dirigido `backend/tests/Solqaryn.Tests/P2013DJwtMembresiaRevocadaTests.cs`: JWT sintético con sólo id usuario, rol y membresía A activos; B rechazado aunque X-Empresa-Id=B; A permitido antes de revocar; A y B rechazados luego de UsuarioEmpresa.Desactivar sin reemitir JWT. Usa TenantContextController + UsuarioScopeService real y EF InMemory, sin alterar runtime, API, permisos, migraciones, workflows o secretos.
+- No se ejecuta dotnet local; CI exact HEAD requerida, Directed comercial y revisión independiente de distinta TASK_ID antes de merge FIFO, más CI postmerge P2 para LISTO. EF InMemory y decodificación de JWT no prueban firma real, middleware HTTP ni MySQL. Reversión por revert protegido sólo de prueba y nota.
+
 ## 2026-11-06 — P2-010.D: capacidades públicas no autorizan exportaciones CSV/XLSX/PDF privadas (DEV)
 
 - Autoría real: Task Javier :20, TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`, cuenta `JAVIER_CHATGPT`, GitHub `jmejia31`; rama exclusiva `work/solqaryn-p2-010-d` creada desde `dev@19fe61b3149f3ccb4533af439f381a4139cc89f3`. Dependencia P2-010.C LISTO; COLA!O196=SI y G196=SI al comenzar. Inicio V11 EN_PROGRESO certificado con EVENT_ID SQ-P2-010-D-J20-START-19FE61B3-20261106.
