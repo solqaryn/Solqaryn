@@ -1,3 +1,9 @@
+## 2026-11-07 — P2-010.E: neutralización de fórmulas en exportaciones privadas A/B (DEV)
+
+- Autora Task nativa Javier :00 / JAVIER_CHATGPT / TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`. Test xUnit `backend/tests/Solqaryn.Tests/P2010EFormulaInyeccionExportacionTests.cs`: cuatro cargas de contenido de auditoría con prefijos de fórmula (=,+,-,@). Confirma escape seguro al exportar CSV y que XLSX no contiene fórmulas activas, con cabecera `X-Empresa-Id` falsificada B y tenant comercial verificado A. Comprueba ausencia de registros B y archivo con una sola fila A. Complementa P2-010.C (aislamiento general A/B) y P2-010.D (capacidad pública ajena y revocación de tenant).
+- Scope exclusivo P2-010.E, prueba unitaria reproducible basada en EF InMemory; sin código productivo/API/JWT/RBAC/DDL/MySQL/Cloudinary/secretos ni QA/main/PROD. El escenario no certifica HTTP, MySQL ni ZIP; `dotnet test` local NO ejecutado. CI requerida exact HEAD + Directed comercial, revisión independiente de otra TASK_ID, dependencias COLA!G=SI y FIFO antes de fusionar; postmerge P2 requiere tres required SUCCESS exact MERGE_SHA para LISTO.
+- Reversión por revert protegido del test y su única entrada de changelog; preservar todo el historial concurrente.
+
 ## 2026-11-06 — P2-009.E: negativa de reportes y KPI sin alcance autenticado (DEV)
 
 - Autora nativa: Alex :50 / ALEX_CHATGPT / TASK_ID `6adcc98a80a48191b71a5156624c21df`. Prueba xUnit `backend/tests/Solqaryn.Tests/P2009EDashboardScopeNegativoTests.cs`: `DashboardService.GetResumenAsync()` y `GetInventarioVariantesAsync()` deben lanzar `ForbiddenAccessException` sin `UsuarioScopeActual` autenticado resoluble. Mocks estrictos y `VerifyNoOtherCalls()` acreditan que no se consulta ningún repositorio cuando falta el alcance; regresión separada de P2-009.C (conteo EF) y P2-009.D (agrupación EF por empresa).
