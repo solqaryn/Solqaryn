@@ -5,6 +5,13 @@
 - Complementa P2-006.D (folio homonimo) con acceso directo por ID para demostrar negativo IDOR. Solo fixture EF InMemory; NO certifica endpoint HTTP/JWT, MySQL ni regla de negocio real. No se modifica runtime, migraciones, secretos, infraestructura o reglas.
 - Dotnet test local NO ejecutado; exigir Directed commercial scope y tres required checks exact HEAD SUCCESS, revision tecnica independiente, FIFO protegido y tres required POSTMERGE antes de LISTO. Revert protegido como rollback proporcional.
 
+## 2026-11-06 — P2-014.E: regresión concurrente A/B/A con tenant verificado mutable por DbContext (DEV)
+
+- Autor nativo Javier :00 / JAVIER_CHATGPT / TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`. Una rama exclusiva `work/solqaryn-p2-014-e`, desde dev `7b04bed40fed830f1754c12888ce3304691a02aa`; PLAN_MAESTRO!H218/I218 y BITACORA PENDIENTE->EN_PROGRESO comprobados ANTES de editar.
+- Prueba xUnit nueva `backend/tests/Solqaryn.Tests/P2014EConcurrenciaCambioTenantTests.cs`: dos ventas A/B con folio compartido, ocho Tasks independientes con sus propios HttpContextAccessor y AppDbContext; cada tarea alterna marca de tenant verificada A/B/A en EL MISMO contexto con cabecera X-Empresa-Id falsificada, comprobando que ninguna consulta hereda la empresa anterior ni lee el registro ajeno. Complementa P2-014.C/D sin compartir DbContext entre tareas ni repetir sólo los casos de dos consultas.
+- Únicamente test y entrada aditiva de CHANGELOG_AI.md. Sin cambios productivos, JWT/RBAC, API, migraciones, MySQL, secretos, rulesets, workflows ni QA/main/PROD. EF InMemory no acredita HTTP, validación JWT real, MySQL ni concurrencia transaccional; dotnet test local NO ejecutado; exigir Directed comercial + tres required SUCCESS exact HEAD y revisión independiente Task distinta, PR CLEAN y FIFO global antes de merge. P2 requiere tres REQUIRED postmerge exact MERGE_SHA antes de LISTO.
+- Reversión por revert protegido exclusivo de la prueba y esta entrada preservando registros concurrentes.
+
 ## 2026-11-07 — P2-005.E: corregir aislamiento de lecturas privadas de compras (DEV)
 
 - Autor Task Javier :20 / JAVIER_CHATGPT / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Se conserva el PR #3929 y la rama exclusiva `work/solqaryn-p2-005-e`, sin force-push; recuperación causal de REQUEST_CHANGES #5809885464.
