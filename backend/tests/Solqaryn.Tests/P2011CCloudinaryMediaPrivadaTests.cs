@@ -1,5 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Solqaryn.Application.Exceptions;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Application.Security;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Security;
 using Solqaryn.Infrastructure.Services;
