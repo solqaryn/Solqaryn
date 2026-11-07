@@ -3,6 +3,25 @@
 - Task nativa Javier :30, AUTHOR_TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`, alcance único P2-017.C, rama `work/solqaryn-p2-017-c`. Nuevo test xUnit `backend/tests/Solqaryn.Tests/P2017CRolesPertenenciasTests.cs` ejercita `UsuarioScopeService` real sobre EF InMemory para A/B: `Rol.Eliminado` de B bloquea acceso/listado B aun con membresía activa y `Usuario.RolId` legacy apuntando a B; después restaurar rol y desactivar la membresía B no autoriza su reingreso, preservando rol y empresa A. Control positivo B activo previo al corte; no se alteró runtime, JWT, RBAC productivo, migraciones, secretos ni workflows.
 - `COLA!O185=SI`, dependencia `P1-016.B=LISTO` al inicio; autoría y V11 EN_PROGRESO acreditadas en PLAN/BITACORA. Verificación causal de código estática; `dotnet test` local **no ejecutado**. Se requiere Directed y REQUIRED CI exact SHA, revisión independiente por TASK_ID ajeno y FIFO global antes de merge; P2 necesita CI posmerge requerida exact MERGE SHA para LISTO. No pretende certificar HTTP/JWT real ni MySQL. Rollback protegido: revertir test y entrada de CHANGELOG.
 
+## 2026-11-06 — P2-005.D: compras con NumeroCompra homónimo en tenants A/B (DEV)
+
+- Autor real Task Javier :20 (`6adc2e4bd8a48191ac7d8641ed95a1a3`), rama exclusiva `work/solqaryn-p2-005-d`; prueba causal xUnit `backend/tests/Solqaryn.Tests/P2005DComprasNumeroHomonimoTests.cs` sobre dos compras sintéticas de igual número pero distinta EmpresaId, verificación del filtro EF de ambas empresas con cabecera `X-Empresa-Id` falsificada y conmutación de marca comercial verificada en el mismo DbContext.
+- Complementa P2-005.C, que usaba números distintos; alcance únicamente EF InMemory. No se afirma autenticación HTTP/JWT/RBAC, unicidad MySQL ni ejecución local de dotnet. No cambia producción, migraciones, secretos, reglas, servicios, QA/main/PROD.
+- Dependencia P2-005.C LISTO, COLA!O191=SI y G191=SI antes de iniciar; wymag revisión técnica independiente por Task ajena, CI required + Directed exact-SHA y merge FIFO protegido antes de LISTO; revert proporcional por PR protegido.
+
+## 2026-11-06 — P2-004.D: repositorio de proveedores aislado por tenant verificado (DEV)
+
+- Task Javier :00, AUTHOR_TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`, rama unica `work/solqaryn-p2-004-d` desde `dev@64f913a36f57ff1ee21dbe857c3f489cbbf18d4d`.
+- Regresion xUnit `backend/tests/Solqaryn.Tests/P2004DProveedorRepositorioTenantTests.cs`: dos empresas A/B, repositorio real `ProveedorRepository.GetAllAsync` y `GetByIdAsync`, cabecera `X-Empresa-Id` falsificada y alternancia de la marca RBAC verificada sobre el mismo `AppDbContext` en EF InMemory; se rechazan IDs ajenos.
+- Solo test de lectura + entrada idempotente CHANGELOG; no cambia runtime, API, DTO, JWT, RBAC, migraciones, base de datos, rulesets, workflows, secretos ni QA/main/PROD. No certifica HTTP real, MySQL ni todo el modulo. Prueba local dotnet no ejecutada; exigir directed GitHub y tres required checks exact HEAD, revision independiente por otra Task y merge FIFO protegido con COLA G190=SI. P2 exige postmerge CI requerida exact MERGE_SHA para LISTO.
+- Rollback proporcional: revert protegido solo de prueba y su entrada, preservando otras microtareas.
+
+## 2026-11-06 — P2-014.C: concurrencia A/B de contextos verificados (DEV)
+
+- Task nativa Javier :40, TASK_ID `6adc2e55f47c81919f6374e561687076`. Prueba causal `backend/tests/Solqaryn.Tests/P2014CConcurrenciaTenantTests.cs`: dos peticiones independientes con diferentes `HttpContext` / `AppDbContext`, dos ventas A/B, cabeceras `X-Empresa-Id` cruzadas y consultas `Task.WhenAll` sobre la misma base EF InMemory, aisladas por marca de tenant verificado.
+- Solo test + esta entrada; sin cambios productivos, JWT/RBAC, API HTTP, migraciones, MySQL, reglas CI, secretos, QA/main/PROD. El test no demuestra concurrencia de escrituras MySQL ni autorizacion HTTP real; no afirmar PASS .NET local sin ejecutar. CI Directed y tres required exact HEAD, revision independiente por Task distinta y FIFO antes del merge.
+- Recuperación causal V12: el primer CI exact HEAD falló al compartir `HttpContextAccessor` (AsyncLocal) entre dos contextos creados secuencialmente; las consultas A/B ahora establecen el HttpContext verificado DENTRO de cada tarea paralela y esperan resultados asincrónicos, sin `Task.Result`. Se revalidará en Directed y required del nuevo SHA; NO declarar éxito antes de CI.
+- Rollback: revert protegido del test y esta entrada, conservando entradas de otros PR y autores.
 
 ## 2026-11-06 — P2-003.D: clientes homonimos aislados por empresa verificada (DEV)
 
