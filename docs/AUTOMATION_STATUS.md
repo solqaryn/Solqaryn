@@ -1,49 +1,8 @@
-## V11 — EN_PROGRESO visible y Scope Lock sin espera CI opcional (2026-11-06)
+## V13 — contrato consolidado 1000 x 4 y FIFO multicierre (2026-11-07)
 
-Continuar V10 FIFO estricto de PR OPEN para MERGE; si el primero no cumple los tres REQUIRED exact-HEAD, revision independiente, seguridad y dependencias COLA!G=SI, ninguno posterior se fusiona. Pero el desarrollo de PENDIENTE con COLA!O=SI y predecesoras VALIDANDO/LISTO continua sin esperar VALIDANDO vacio ni usar FIFO estricto en PENDIENTE.
-Al comenzar trabajo REAL en rama única verificada, registrar PLAN_MAESTRO!H=EN_PROGRESO e I=responsable/TASK_ID auténticos, BITACORA PENDIENTE→EN_PROGRESO y readback COLA!E/I por formulas. No CAS ni reserva; si no empezó código, mantener PENDIENTE. Al entregar código, pruebas causales y PR originales registrar EN_PROGRESO→VALIDANDO, limpiar responsable I, preservar autor real y hacer readback; no esperar CI opcional. Si se interrumpe, EN_PROGRESO refleja ejecución pendiente real para reanudar solo por autor/traspaso autorizado. Tareas muy rápidas pueden cambiar de estado en segundos; BITACORA conserva ambos eventos.
-Selector: P/I8/G0 del plan vigente, COLA!O=SI, dependencias VALIDANDO/LISTO para desarrollo, developerFor solo preferencia, no PR/branch/owner/editor duplicado; COLA!G solo LISTO para MERGE.
-Scope Lock: pruebas opcionales MySQL/BROAD pueden continuar asincronicamente exclusivamente en cambios no-runtime allowlisted con revisión formal cuando aplique, checks exact-HEAD y regresiones. No eximir fallos ya terminados, checks no reconocidos, riesgo DB/runtime, seguridad, directed comercial ni 3 checks obligatorios de branch protection; no cambiar ruleset ni QA/main/PROD.
-## PRECEDENCIA STRICT_FIFO_NO_IDLE_V10 — 2026-11-06 — ORDEN EXPLICITA DEL PROPIETARIO
+CAPACITY_POLICY_VERSION=V13_1000_FIFO_BATCH
 
-Esta regla V10 reemplaza el fallback de V9/V8.2 que saltaba PR antiguos bloqueados para MERGE. Mantiene SIN CAMBIOS la liberacion de desarrollo al entrar un requisito en VALIDANDO y deja COLA!O y COLA!G intactas.
-
-1. En cada run native/interactive autentico revisar PR contra dev, reconciliar VALIDANDO ya fusionado y analizar el PR ABIERTO mas antiguo por GitHub PR.created_at (empate PR number), incluyendo PR de gobierno y tecnicos como #3891. Solo este PR antiguo tiene turno de MERGE. Si no tiene los gates reales (CLEAN, required checks 3/3 SUCCESS exact-HEAD, revision independiente, dependencias COLA!G=SI para comerciales, ausencia de editor activo), NO fusionar ninguno mas nuevo. No adelantar PR2/PR3/PR4 aunque esten listos cuando PR1 no lo esta; respetar integridad topologica y branch protection.
-2. Si el PR mas antiguo NO puede fusionarse en este run, diagnosticar una vez el obstaculo y NO hacer polling ni esperar suites opcionales. Tomar inmediatamente una PENDIENTE realmente libre con COLA!O=SI, sin FIFO estricto en PENDIENTE, aunque haya decenas VALIDANDO. La dependencia VALIDANDO o LISTO libera DESARROLLO de sucesora; solo LISTO en COLA!G libera MERGE/certificacion final. Preparar una rama/PR por scope con prueba causal y entregar VALIDANDO; continuar otro scope cuando exista capacidad real y WIP 15/15/15 lo permita.
-3. Una PR cerrada sin merge de forma autorizada y documentada sale de la cola de merge; una abierta no se salta por conflicto, CI o revisión pendiente. No modificar PR de otro editor/autor activo sin traspaso; NO CAS, lease ni reserva Sheets; conservar identidad de cuenta, horarios, ramas, revisión cruzada, seguridad, tests, required checks, readback y BITACORA.
-4. Alinear los seis prompts fisicos y el selector con esta precedencia. El selector solo aconseja; antes de cualquier merge comprobar live la lista completa de PR abiertos contra dev y el turno global. Si un PR antiguo bloquea merge, la accion alternativa siempre es PENDIENTE habilitada, no inactividad. Nunca falsear productividad, estados o certificaciones.
-
-## PRECEDENCIA NO_IDLE_PENDING_RELEASE_V9 — 2026-11-06 — Plan Comercial Inicial, dev
-
-Correccion expresa del propietario sobre V8.2: VALIDANDO tiene prioridad SOLO cuando exista una accion de integracion o cierre realmente ejecutable. No hay que vaciar VALIDANDO antes de desarrollar PENDIENTE.
-
-1. En cada run nativo comprobar PR VALIDANDO, created_at, revision independiente exact HEAD, dependencias COLA!G=SI, mergeability CLEAN y required checks SUCCESS exact SHA. Si existe uno fusionable AHORA, fusionar el mas antiguo entre los aptos, protegido y de uno en uno; revalidar dev y repetir mientras haya otro fusionable.
-2. Si NO hay otro PR apto para MERGE/CERTIFICACION AHORA (CI pendiente, conflictos sin traspaso, revision pendiente o dependencia G=NO), comprobar de inmediato PENDIENTE con COLA!O=SI y sin propietario/editor ni rama/PR duplicados; seleccionar cualquiera disponible del PLAN COMERCIAL VIGENTE, con preferencia developerFor no exclusiva. No exigir que VALIDANDO quede vacio ni un cierre LISTO previo para comenzar desarrollo. PENDIENTE no tiene FIFO estricto; no frenar trabajo nuevo por PR bloqueados.
-3. COLA!O DESARROLLO_HABILITADO se calcula para IDs del plan comercial vigente P[0-9]+, I8 y G0 (nunca planes ajenos): PENDIENTE, responsable vacio y todas las dependencias en VALIDANDO o LISTO (maximo dos). Es gate de DESARROLLO, no gate de MERGE. COLA!G DEPENDENCIAS_OK sigue exigiendo LISTO para fusion y cierre y conserva sus formulas intactas. La formula O y el selector deben coincidir; no basta con instruir prompts si la hoja devuelve NO a todo.
-4. Al tomar PENDIENTE desarrollar una sola microtarea libre en una rama y PR originales, con prueba causal y entregar VALIDANDO sin esperar CI opcional. Si la ejecucion alcanza un cierre LISTO y aun puede continuar, puede desarrollar otra PENDIENTE, respetando WIP 15/15/15 como techos, no cuotas. Si realmente no existe trabajo ejecutable, reportar causa concreta y no inventar actividad.
-5. Mantener PR review independiente por TASK_ID ajeno, seguridad, Scope Lock, tres checks required PREMERGE exact-HEAD, integracion protegida, rollback, bitacora y readback. CI opcional no bloquea; no eliminar REQUIRED, no CAS/leases, no cambiar Tasks/horarios/cuentas ni QA/main/PROD. No ejecutar esta regla fuera de la autoridad del Plan Comercial vigente.
-
-## PRECEDENCIA VALIDANDO_FIRST_FIFO_READY_V8_2 — 2026-11-06, Plan Comercial Inicial, dev
-
-Objetivo: 6 microtareas LISTO por hora cuando existan PR aptos. Indicador de producción, nunca autorización para falsear pruebas ni eludir GitHub. Esta regla tiene prioridad sobre V8, V7 y ordenamientos por CI para selección, integración y cierre. No crear Tasks, CAS, reservas ni cambios de horarios.
-
-1. REVIEW_FIRST estricto. En cada ejecución nativa: conciliar VALIDANDO ya fusionados, revisar VALIDANDO de autor distinto con evidencia y permisos reales, y después fusionar los comercialmente aptos. Revisión independiente una vez por diff/SHA, seguridad y pruebas causales; renovar si cambia el código. reviewerFor es preferencia y no reserva exclusiva cuando el HEAD lo habilite. No autoaprobar. Solo tomar PENDIENTE tras cerrar un LISTO o si no hay VALIDANDO ejecutable; como máximo una nueva PENDIENTE por LISTO de ese run.
-2. FIFO por PR created_at, nunca por finalización de CI, letras A/B/C/D ni selector de Task. Entre PR elegibles fusionar primero el más antiguo que tenga COLA!G=SI, diff revisado por TASK_ID ajeno en HEAD actual, checks REQUIRED exact-head SUCCESS, mergeable=true y ningún editor activo. Respetar dependencias topológicas. Si el antiguo está pendiente de CI, en conflicto o con G=NO, registrar bloqueo una vez, revisar siguiente ejecutable y poder fusionar otro realmente elegible; no inmovilizar toda la cola. Solo un merge protegido a la vez, refrescar dev HEAD, PR, CI y COLA antes de cada merge; GitHub rechaza carreras.
-3. Conflictos: autor/editor propio incorpora dev en misma rama/PR, sin force-push, conservando idempotentemente todas las entradas de CHANGELOG_AI.md y tests/funcionalidad concurrentes; nueva revisión independiente si cambia SHA. No intervenir código de autor ajeno sin traspaso. Reducir colisiones no garantiza literalmente cero conflictos.
-4. Entrada y merge: COLA!O=SI permite empezar desarrollo con predecesoras VALIDANDO/LISTO; COLA!G=SI exige predecesoras LISTO para fusionar. Mantener Scope Lock, Seguridad multiempresa, Build backend y pruebas dirigidas aplicables como ordene branch protection sobre PR HEAD exacto. No esperar suites opcionales por mera existencia. FAILED/SKIPPED/CANCELLED/PENDING de REQUIRED no son SUCCESS.
-5. Cierre rápido proporcional: para microtareas P1 que solo cambian tests/docs, sin código productivo, migraciones, permisos, secretos, workflows o contratos críticos, una vez comprobados merge protegido a dev, revisión independiente, COLA!G=SI y todos los required PREMERGE SUCCESS exact-HEAD, registrar LISTO y readback en PLAN_MAESTRO, COLA y BITACORA EN ESE RUN, con MERGE_SHA y etiqueta POSTMERGE_CI_ASYNC. Esto no declara CI posmerge SUCCESS: vigilarla después; un fallo requerido posmerge exige incidente único, impedir cierre de sucesoras dependientes y reabrir el scope a VALIDANDO hasta reparar/revertir por cauce protegido. Para cambios de runtime, seguridad, datos, migraciones o gobierno conservar CI requerida postmerge exact-SHA antes de LISTO. HASTA que este contrato se fusione en dev, exigir el cierre postmerge anterior y sin espera pasiva.
-6. Si falta CI requerida, registrar CI_PENDING_ASYNC una vez, trabajar otro VALIDANDO sin sleep/polling. Sin CI fingida ni merges prematuros. Límite 15/15/15 es techo, no cuota. Sin QA/main/PROD ni alteraciones de protecciones.
-
-## PRECEDENCIA OPERATIVA FAST_CLOSE_V8 — revisión libre y cierre ágil (2026-11-05)
-Orden expresa del propietario: el cuello de botella es VALIDANDO -> LISTO, no la mera admisión a desarrollo. Para microtareas P1 de dev, esta regla sustituye cualquier interpretación anterior que reserve exclusivamente el review a reviewerFor o que espere todos los jobs opcionales antes del merge/cierre. No elimina seguridad, revisión independiente, CI de branch protection, dependencias LISTO para merge ni auditoría institucional.
-
-1. Primero conciliar VALIDANDO cuyo PR ya esté MERGED, con TECH_REVIEW_PASS de TASK_ID diferente del autor sobre el diff aprobado y checks postmerge REQUERIDOS exact-SHA SUCCESS; cualquier Task comercial autorizada puede hacer esa conciliación administrativa, incluso la autora, sin reauditar ni reaprobar. Marcar LISTO y readback PLAN_MAESTRO/COLA/BITACORA en el mismo run.
-2. Luego revisar cualquier VALIDANDO de otra Task sin conflicto positivo de editor o revisor, con native run/permisos/autoría vigentes; reviewerFor es una PREFERENCIA de reparto, nunca veto ni reserva temporal. La verificación técnica sustantiva se hace una vez: diff, pruebas dirigidas, seguridad multitenant/RBAC/JWT, SHA y TECH_REVIEW_PASS/REQUEST_CHANGES auténtico. No exigir aprobación formal humana en PR comercial ordinario con required_reviews=0; gobernanza y reglas especiales conservan revisión formal independiente.
-3. Para fusionar: PR sin conflictos, COLA!G=SI, TECH_REVIEW_PASS independiente y ÚNICAMENTE los checks que exija el ruleset actual de dev en el HEAD exacto con resultado SUCCESS (al aprobar esta enmienda: verify-solqaryn-project-scope, SOLQARYN - Seguridad multiempresa, SOLQARYN - Build y pruebas backend). Merge protegido en el MISMO run. Los workflows no requeridos, por ejemplo las integraciones MySQL de 20+ minutos, no son gates por mera existencia, aunque sus fallos reales de seguridad deben atenderse proporcionalmente.
-4. Después del merge, revisar únicamente los checks POSTMERGE requeridos que correspondan al merge SHA; cuando estén verdes, conciliar LISTO sin esperar CI opcional ni nueva aprobación. Si required sigue pendiente, registrar una sola vez CI_PENDING_ASYNC sin sleep/polling y tomar otro scope; cualquier siguiente Task puede conciliar cuando se complete. SKIPPED/CANCELLED/FAILED no equivalen a PASS requerido.
-5. Si PR está dirty, no fusionar: el autor/editor autorizado debe actualizar ESA rama preservando commits y tests, sin force-push ni segundo PR, y renovar verificaciones del nuevo SHA. Ninguna revisora que cambie código puede avalar su propia contribución.
-6. Después de cierres/revisiones, EN_PROGRESO propio; después, PENDIENTE libre con COLA!O=SI aunque G=NO (G=SI solo para merge/LISTO). Sin CAS, leases, bloqueos o preasignación en Sheets. Se preservan límites 15/15/15 y alcance DEV sin QA/main/PROD.
-Esta enmienda no autoriza pasar scopes concretos a LISTO antes de sus controles reales ni alterar rulesets/workflows. No ejecutar el cambio de selector hasta que se integre protegidamente al HEAD dev.
+Unica regla operativa de capacidad, FIFO, parada ante autor y desarrollo sin CAS: `docs/AUTOMATION_V13.md`. Sustituye V8/V9/V10/V11/V12 en todo punto contradictorio, manteniendo seguridad, independencia, CI exact-SHA y alcance dev. Esta propuesta NO es vigente antes del merge protegido y readback.
 
 # SOLQARYN — Estado estándar de automatización
 
@@ -70,10 +29,10 @@ DESIGN_VERSION=2.0
 DESIGN_TOPOLOGY=OWNER_CONFIGURABLE
 CURRENT_TASK_DISTRIBUTION=4_JAVIER_2_ALEX
 PHYSICAL_TASKS_REGISTERED=6
-MAX_CONCURRENT_SCOPES=15
-MAX_OPEN_WORK_BRANCHES=15
-MAX_OWNED_SCOPES_PER_TASK=15
-MAX_ACTIVE_WRITES_PER_TASK=15
+MAX_CONCURRENT_SCOPES=1000
+MAX_OPEN_WORK_BRANCHES=1000
+MAX_OWNED_SCOPES_PER_TASK=1000
+MAX_ACTIVE_WRITES_PER_TASK=1000
 STAGE_OWNERSHIP_MODE=AUTHOR_PROVENANCE_DIRECT_REVIEW_V2
 REVIEW_ROUTE_MODE=DETERMINISTIC_AUTHOR_EXCLUSION
 AUTO_CERTIFICATION_MODE=REQUIRED_SCOPE_LOCK
@@ -92,20 +51,11 @@ LEGACY_AUTOMATION_RUNTIME=RETIRED
 El modelo vigente conserva AUTHOR_TASK_ID historico y permite revisión de TASK_ID diferente. La selección de revisora usa una ruta estable calculada y no solicita registros de ocupación artificiales; un actor externo confirmado como activo sí impide intervenir. Los eventos previos de liberación son historia y no reservas perpetuas.
 
 
-## ORDEN VIGENTE — 15/15/15 CON ASIGNACION AL DISPARARSE LA TASK (2026-11-05)
+## ORDEN VIGENTE — V13 1000/1000/1000/1000 CON ASIGNACION AL DISPARARSE LA TASK (2026-11-07)
 
-**Precedencia:** orden expresa del propietario: distribucion directa por microtarea, SIN BLOQUEO EN SHEETS, sin compare-and-swap, sin escritor de reservas ni control de vencimiento. El contrato 15/15/15, la autoria independiente, los permisos y PROJECT_SCOPE_LOCK=STRICT permanecen.
+**Contrato unico V13:** capacidad 1000 en los cuatro controles; FIFO global con multiples cierres por corrida, verificaciones individuales y barrera ante autoria propia, seguido de una PENDIENTE realmente elegible. Sin cambio de los gates de CI, review independiente, seguridad y dependencias. SIN BLOQUEO EN SHEETS, sin CAS ni leases; `docs/AUTOMATION_V13.md` es la referencia no redundante.
 
-- MAX_CONCURRENT_SCOPES=15; MAX_OWNED_SCOPES_PER_TASK=15; MAX_ACTIVE_WRITES_PER_TASK=15. Son techos de scopes distintos, NO instruccion de reclamar quince trabajos por Task.
-- La propia Task selecciona trabajo cuando su ocurrencia nativa se inicia; no se apartan scopes ni se escriben propietarios por anticipado. Solo usa el plan comercial vigente, sus dependencias, PLAN_MAESTRO/COLA, BITACORA y GitHub live; la historia no impide un nuevo trabajo libre.
-- **Reparto sin reservador:** para cada scope, el selector scripts/automation-review-routing.mjs determina exactamente una Task revisora distinta del autor usando los seis IDs autorizados y preferencia fija solo para las cinco entregas actualmente VALIDANDO. El resultado es routing consultivo (no propiedad, no lease, no bloqueo en Sheets). Si un actor no es el seleccionado, debe continuar con otro scope correspondiente a su ruta. El routing debe ser identico para todas las Tasks; no elegir a dos revisoras para un scope.
-- Primero revisar VALIDANDO ajeno con PR verificable y sin actor/editor activo comprobado; despues continuar EN_PROGRESO propio o transferencia verdaderamente autorizada; finalmente PENDIENTE elegible con todas las dependencias LISTO. NO exigir demostrar inexistencia absoluta de actividad externa de Codex; solo respetar conflictos POSITIVOS vigentes. La delegacion historica o un comentario viejo no constituyen ocupacion.
-- Al iniciar una edicion, contrastar GH branch/PR y el responsable actual. Mantener una sola rama/PR por scope. GitHub protege el commit y los cambios concurrentes con sus controles nativos. Nunca recrear una rama/PR existente ni forzar pushes, reescribir historia o editar otro scope activo. Ante conflicto real, parar solo ese scope y seleccionar otro.
-- La revision tecnica solo puede hacerla otra TASK_ID diferente del AUTHOR_TASK_ID. No convertir un login compartido en GitHub APPROVED formal; no aprobarse a si misma, no editar entregas de Codex ocupadas. Los cierres exigen CI exact-SHA requerida, merge protegido aplicable, validacion independiente y conciliacion PLAN_MAESTRO/COLA/BITACORA.
-- Cuando la CI siga en curso, registrar CI_PENDING_ASYNC una vez, continuar otra tarea de la misma ruta sin esperar el workflow. Al liberarse trabajo no hay reserva que cancelar: conservar autor y PR, documentar estado y finalizar el turno.
-- Nunca crear Tasks, cambiar sus RRULE, habilitar QA/main/PROD ni desactivar checks exigidos. Si falta informacion critica de permisos o hay conflicto positivo, NO_GO solo en el scope afectado; no convertir la falta de una reserva historica en bloqueo global.
-
-## COMPLEMENTO OPERATIVO VIGENTE — CI ASÍNCRONA Y META 6 LISTO/H (2026-11-05)
+## Complemento de CI asíncrona y meta 6 LISTO/h subordinado a V13 (2026-11-05)
 
 **Objetivo de rendimiento:** `THROUGHPUT_TARGET_LISTO_PER_HOUR=6` microtareas distintas realmente certificadas como LISTO en ventana móvil de `THROUGHPUT_WINDOW_MINUTES=60`. Es una **meta operativa mínima**, no una garantía, permiso para falsificar evidencia o sexto cierre ficticio. Medir `LISTO_60M`, `DEFICIT_60M=max(0,6-LISTO_60M)` y razones específicas; solo contar IDs únicos con revisión independiente, merge protegido cuando corresponda, CI obligatoria y postmerge aplicable en verde y PLAN_MAESTRO/COLA/BITACORA readback completo. Si el ledger no está verificado, reportar `METRIC_UNVERIFIED`, nunca cero supuesto ni seis imaginarios.
 
@@ -115,7 +65,7 @@ El modelo vigente conserva AUTHOR_TASK_ID historico y permite revisión de TASK_
 
 **Trabajo productivo sin interferencia:** tras CI pendiente, continuar VALIDANDO ajena asignable por ruta → EN_PROGRESO recuperable con traspaso explícito → PENDIENTE elegible. Reutilizar GitHub branch/PR sin crear bloqueos; un conflicto positivo detiene solo ese scope. Los comentarios antiguos de Codex no impiden tomar trabajo nuevo cuando ya no hay ejecución activa documentada.
 
-**Cierre estricto:** los required checks no se desactivan ni se usan estados SKIPPED/PENDING como PASS. Al volver verde la CI exact-SHA, un revisor elegible verifica el merge protegido y postmerge aplicable; solo después concilia LISTO institucional. Las revisiones y autorizaciones humanas exigibles siguen intactas. La priorización y la meta no modifican el contrato 15/15/15, ni crean/reanudan las seis Tasks físicas pausadas.
+**Cierre estricto:** los required checks no se desactivan ni se usan estados SKIPPED/PENDING como PASS. Al volver verde la CI exact-SHA, un revisor elegible verifica el merge protegido y postmerge aplicable; solo después concilia LISTO institucional. Las revisiones y autorizaciones humanas exigibles siguen intactas. La priorización y la meta no modifican el contrato 1000/1000/1000/1000, ni crean/reanudan las seis Tasks físicas pausadas.
 
 **Implementación comprobable:** scripts/automation-review-routing.mjs y scripts/automation-ci-throughput.mjs se validan sin escribir en negocio. Ningún selector concede una aprobación, permiso, revisión formal o LISTO.
 
@@ -131,7 +81,7 @@ El selector de próxima Task libre es consultivo y no asigna propiedad antes de 
 La unidad de autoría funcional de una microtarea comercial es el `TASK_ID` físico autorizado y su evidencia de `PLAN_MAESTRO`/`BITACORA`, no la coincidencia del login GitHub. Una Task habilitada **distinta de la autora** puede revisar técnica y sustantivamente el PR de una Task que use la misma cuenta GitHub, comprobar diff, aislamiento multitenant/RBAC, checks y pruebas exact-SHA, registrar `TECH_REVIEW_PASS` o `REQUEST_CHANGES` con `TASK_ID_AUTOR != TASK_ID_REVISOR`, SHA y readback. Si todo cumple y los permisos y reglas protegidas lo permiten, la Task revisora puede efectuar el merge y el cierre `LISTO` después de CI postmerge exact-SHA y readback de `PLAN_MAESTRO`, `COLA` (fórmulas intactas) y `BITACORA`. **La Task autora no puede emitir aprobación técnica cruzada ni marcar como LISTO su propia microtarea.** Un traspaso de edición requiere autorización positiva y ausencia de edición simultánea comprobada; revisión de solo lectura no concede permiso de escritura.
 
 
-## Censo vigente — incorporación de Javier :30 (2026-11-04)
+## Archivo histórico — incorporación de Javier :30 (2026-11-04)
 
 Orden expresa del propietario: crear una cuarta Task de `JAVIER_CHATGPT` para el minuto `:30` de cada hora en `America/Tegucigalpa`, con ID físico nuevo `6aeacb7820ac8191b7d768a6f33dfa09` y nombre `SOLQARYN — PRIMARY DEV 04 — JAVIER`. Fue creada desde la cuenta de Javier por la herramienta nativa de ChatGPT y su horario/identidad fueron leídos de vuelta. **Estado al preparar el PR: is_enabled=false (pausada preventivamente mientras se autoriza en gobierno)**. No se reutiliza la antigua Task de Alex :30, que conserva su exclusión y su ID anterior sin autorización.
 
@@ -140,15 +90,15 @@ La lista individual de seis IDs corresponde a Javier :00/:20/:30/:40 y Alex :10/
 
 
 
-## Enmienda vigente — inventario configurable de Tasks (2026-10-30)
+## Contrato de inventario configurable — seis IDs vigentes (actualizado para V13)
 
-No hay un máximo interno fijo de Tasks ni una proporción obligatoria entre cuentas. `PHYSICAL_TASKS_REGISTERED` y `REGISTERED_TASK_IDS` describen **seis IDs autorizados (cuatro Javier y dos Alex)**, no un límite absoluto de futuras Tasks. Su estado físico se comprueba en la cuenta propietaria; ninguna activación se presume a partir del gobierno. Se preserva `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=6` y la allowlist canónica, sin reactivar la antigua Task Alex :30. La concurrencia comercial queda regulada exclusivamente por 15/15/15.
+No hay un máximo interno fijo de Tasks ni una proporción obligatoria entre cuentas. `PHYSICAL_TASKS_REGISTERED` y `REGISTERED_TASK_IDS` describen **seis IDs autorizados (cuatro Javier y dos Alex)**, no un límite absoluto de futuras Tasks. Su estado físico se comprueba en la cuenta propietaria; ninguna activación se presume a partir del gobierno. Se preserva `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=6` y la allowlist canónica, sin reactivar la antigua Task Alex :30. La concurrencia comercial queda regulada por los cuatro techos 1000 de `docs/AUTOMATION_V13.md` exclusivamente tras su integración protegida y readback; el antiguo 15/15/15 no se ejecuta desde esta sección.
 
-El historial de cupos permanece en los commits de Git; ninguna sección histórica constituye política operativa. Prevalece exclusivamente el contrato 15/15/15 de este encabezado.
+El historial de cupos permanece en los commits de Git; ninguna sección histórica constituye política operativa. Prevalece exclusivamente el contrato 1000/1000/1000/1000 de este encabezado.
 
 
 
-## M3.2 — habilitacion comercial individual adicional 5/6 (25-10-2026)
+## Archivo histórico — M3.2, habilitacion comercial individual adicional 5/6 (25-10-2026)
 
 **Concesion de alcance DEV otorgada por el propietario, supeditada al merge protegido y conciliacion institucional:** se incorporan SOLO las Tasks PRIMARY_DEV_03 Javier :40 (`6adc2e55f47c81919f6374e561687076`), SECONDARY_REVIEW_01 Alex :10 (`6adbbc9ad9e88191bea8eb69104afb25`) y SECONDARY_REVIEW_03 Alex :50 (`6adcc98a80a48191b71a5156624c21df`) a las dos ya autorizadas. El contrato comercial sigue siendo exclusivamente DEV, no QA/main/PROD; Scope Lock STRICT y exigencia de revision formal independiente permanecen. La autoridad efectiva de esta enmienda nace solo despues de CI obligatorio 3/3 en SHA final, aprobacion independiente, merge protegido dev y readback de CONFIG!B39=5, CONFIG!B57=TRUE con allowlist, TAREAS_PROGRAMADAS!Q3/Q6/Q7=AUTORIZADA_VERIFICADA_DESDE_TASK y BITACORA de conciliacion. Hasta ese punto el contador anterior 2/6 continua operativo. No se crean ni alteran horarios, IDs o cuentas fisicas de Tasks.
 
@@ -158,7 +108,7 @@ El historial de cupos permanece en los commits de Git; ninguna sección históri
 
 **Alcance individual de las tres nuevas Tasks:** trabajar en ramas comerciales work/solqaryn-<microtarea> y PR a dev con exclusividad y máximo seis scopes comerciales según contrato vivo M3.4; revisar/corregir trabajo de otro Task ID sin autoaprobar; PLAN_MAESTRO!H:M solo del scope poseido, TAREAS_PROGRAMADAS fila propia, BITACORA eventos idempotentes y readback; COLA derivada NO se edita. LISTO solo tras CI exact SHA, revision de identidad GitHub distinta del autor, merge protegido, verificacion de resultados y readback Sheets. No secretos, privilegios globales, bypass ni deployment QA/PROD.
 
-## M3.2 — certificacion individual Javier PRIMARY_DEV_02 (25-10-2026)
+## Archivo histórico — M3.2, certificacion individual Javier PRIMARY_DEV_02 (25-10-2026)
 
 **Autoridad propuesta condicionada a PR protegido y readback de dev.** El propietario autoriza comercialmente exclusivamente TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3` (JAVIER_CHATGPT, :20 America/Tegucigalpa) para desarrollar y corregir microtareas del plan comercial vigente en ramas de trabajo hacia dev; registrar estados PLAN_MAESTRO!H:M y auditoria BITACORA con readback; revisar trabajo de otro TASK_ID (revision tecnica cruzada), y tramitar merge/cierre solo si GitHub acredita una aprobacion formal genuina desde otra identidad y CI del SHA final. No transferir permisos a otros slots; max dos scopes, exclusividad real, dependencias LISTO, sin QA/main/PROD. El cambio de permiso es efectivo solo despues del merge protegido de esta enmienda y conciliacion exacta del Sheet institucional. `CONFIG!B57` pasa a TRUE para habilitar exclusivamente ejecuciones individuales enumeradas como comerciales en este documento, nunca autoriza todas las seis Tasks por defecto.
 
@@ -218,7 +168,7 @@ Control de colisiones: un solo escritor Primary con WIP=1, comprobar ramas/PR ac
 Esta habilitacion se vuelve efectiva unicamente al fusionar con checks obligatorios este contrato a dev y comprobar el HEAD nuevo. Los prompts programados deben validar la autoridad viva antes de escribir.
 ## Fuentes nativas vigentes
 
-Documento rector: [STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES](https://docs.google.com/document/d/1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA/edit). Seguimiento: [STANDARD DE AUTOMATIZACIONES EN SOLQARYN](https://docs.google.com/spreadsheets/d/1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU/edit). El runtime DEV usa el censo configurable del encabezado, limitado por capacidad efectiva del proveedor y decisión institucional; el allowlist comercial individual y el WIP máximo de seis scopes son controles separados. Ningún plan histórico, existencia de Task ni habilitación física concede permisos por sí solo.
+Documento rector: [STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES](https://docs.google.com/document/d/1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA/edit). Seguimiento: [STANDARD DE AUTOMATIZACIONES EN SOLQARYN](https://docs.google.com/spreadsheets/d/1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU/edit). El runtime DEV usa exclusivamente el censo actual de seis IDs autorizados del encabezado. El WIP se rige por los cuatro techos V13 de 1000 solo tras el merge protegido, sin inferir permisos por existencia de Tasks. Ningún plan histórico, existencia de Task ni habilitación física concede permisos por sí solo.
 
 ## Archivo histórico — retirada inicial (22-10-2026, no describe el runtime actual)
 
