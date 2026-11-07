@@ -1,3 +1,10 @@
+## 2026-11-07 — P2-015.C: delimitar cuarentena residual ante cabecera tenant falsificada (DEV)
+
+- Autora nativa Javier :40 / JAVIER_CHATGPT, TASK_ID `6adc2e55f47c81919f6374e561687076`. Rama exclusiva `work/solqaryn-p2-015-c` desde `dev@81556a36fe92683e3d2f546a3d0b02b04ce55812`, registro PENDIENTE → EN_PROGRESO con readback PLAN/COLA/BITACORA antes del código.
+- Alcance delimitado a una prueba xUnit sintética de `UsuarioScopeService`: `backend/tests/Solqaryn.Tests/P2015CCuarentenaResidualHeaderSpoofTests.cs`. Dos empresas A/B con membresías activas y rol global legacy de B; cabeceras `X-Empresa-Id` falsificadas para A/B no producen autorización privada sin `VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey`. Control positivo exige rol de A tras marca interna, y revocación de marca vuelve a denegar.
+- Solo test EF InMemory y este CHANGELOG; sin modificaciones runtime/API/DTO/JWT/RBAC/MySQL/migraciones/workflows/secrets ni otros ambientes. No se ejecutó dotnet local. La regresión no certifica HTTP/JWT ni MySQL real: Directed, required exact-HEAD y revisión independiente se exigen antes del merge FIFO; P2 exige postmerge required exact MERGE_SHA antes de LISTO.
+- Rollback mediante revert protegido solo de prueba y esta entrada, preservando aportes ajenos.
+
 ## 2026-11-07 — P2-005.E: corregir aislamiento de lecturas privadas de compras (DEV)
 
 - Autor Task Javier :20 / JAVIER_CHATGPT / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Se conserva el PR #3929 y la rama exclusiva `work/solqaryn-p2-005-e`, sin force-push; recuperación causal de REQUEST_CHANGES #5809885464.
