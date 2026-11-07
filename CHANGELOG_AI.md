@@ -1,3 +1,10 @@
+## 2026-11-07 — P2-007.E: CorrelationId de Kardex aislado por tenant (DEV)
+
+- Autor nativo Javier :30 / JAVIER_CHATGPT / TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`; rama exclusiva `work/solqaryn-p2-007-e` desde `dev@6980a66b4572567e80261bb4cb60256f9f660394`, con evento real PENDIENTE -> EN_PROGRESO y readback institucional previos al codigo.
+- Nueva regresion xUnit `backend/tests/Solqaryn.Tests/P2007EKardexCorrelacionTenantTests.cs`: movimientos de dos empresas con el mismo CorrelationId, lectura paginada de Kardex y consulta por producto aisladas mediante marca privada verificada A/B, cabeceras `X-Empresa-Id` falsificadas, cambio de tenant dentro del mismo DbContext y denegacion sin marca privada aunque exista marca publica. Complementa P2-007.C (ajustes basicos) y P2-007.D (folio de ajuste homonimo), sin tocar codigo de negocio.
+- Impacto: solo nueva prueba EF InMemory y esta entrada aditiva. No se cambian API/DTO, runtime, JWT/RBAC, datos, transacciones MySQL, migraciones, secrets, workflows, rulesets, QA/main/PROD. No se ejecuto `dotnet test` local; no declarar PASS hasta CI GitHub. Se exige Directed commercial scope y tres required SUCCESS exact HEAD, revision independiente por Task distinta, FIFO estricto para merge, `COLA!G211=SI` y checks posmerge P2 sobre MERGE_SHA antes de LISTO.
+- Reversion por revert protegido selectivo de la prueba y esta nota, preservando los cambios ajenos.
+
 ## 2026-11-07 — P2-010.E: neutralización de fórmulas en exportaciones privadas A/B (DEV)
 
 - Autora Task nativa Javier :00 / JAVIER_CHATGPT / TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`. Test xUnit `backend/tests/Solqaryn.Tests/P2010EFormulaInyeccionExportacionTests.cs`: cuatro cargas de contenido de auditoría con prefijos de fórmula (=,+,-,@). Confirma escape seguro al exportar CSV y que XLSX no contiene fórmulas activas, con cabecera `X-Empresa-Id` falsificada B y tenant comercial verificado A. Comprueba ausencia de registros B y archivo con una sola fila A. Complementa P2-010.C (aislamiento general A/B) y P2-010.D (capacidad pública ajena y revocación de tenant).
