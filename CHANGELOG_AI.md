@@ -1,3 +1,17 @@
+## 2026-11-07 — V13_1000_FIFO_BATCH en PR #3932 (candidato protegido dev)
+
+- Saneamiento de fuentes operativas: referencias activas de WIP seis, 15/15/15, CAS/leases y allowlists de cinco Tasks se corrigen o reclasifican como evidencia histórica sin borrar auditoría.
+- Cuatro techos 1000, FIFO global multicierre por pasada con nueva lectura tras cada merge, parada obligatoria ante AUTHOR_TASK_ID propio y fallback a PENDIENTE con COLA!O=SI.
+- docs/AUTOMATION_V13.md unifica la autoridad operativa; tests negativos de capacidades y del barrido. Sin CAS, sin nuevas Tasks, ni cambios a Scope Lock/CI requerida, QA/main/PROD.
+- Conserva la prueba original P2-017.D y todas las entradas históricas, requiere revisión formal independiente exact-HEAD antes de activación.
+
+## 2026-11-06 — P2-017.D: regresión de rol cruzado en membresía A/B (DEV)
+
+- Task autora Javier :30 / JAVIER_CHATGPT / TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09. Rama exclusiva work/solqaryn-p2-017-d creada desde dev@2e752ff1f810495679c23964b422a9e32fa974a1, con PLAN_MAESTRO EN_PROGRESO y BITACORA inicio real confirmados antes de editar.
+- Prueba xUnit backend/tests/Solqaryn.Tests/P2017DRolCruzadoMembresiaTests.cs: usuario con rol legacy admin B y membresía manipulada A->rolB NO accede a A; conserva B legítima. Al corregir A->rolA, ambos scopes funcionan con privilegios independientes; al revocar B, A continúa válida y B se niega. Verifica selector de empresas y ausencia de scope único cuando existen dos permisos.
+- Cambio solo de test causal y esta entrada aditiva. No runtime, API, JWT, migraciones, MySQL, secretos, workflows ni rulesets. EF InMemory no certifica HTTP/JWT ni base productiva; dotnet test local NO ejecutado. Requiere CI Directed y 3 required exact HEAD SUCCESS, revisión independiente distinta Task, FIFO PR OPEN y controles posmerge P2 antes de LISTO.
+- Rollback proporcional mediante revert protegido del test y de esta entrada conservando el CHANGELOG concurrente.
+
 ## 2026-11-06 — P2-006.E: prueba negativa IDOR de Venta.Id por tenant verificado (DEV)
 
 - Autor Task Javier :30, TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09, rama exclusiva work/solqaryn-p2-006-e, base dev@b7273e2743a03cf80e8836ecbcd9c2c29c75ca9e.
@@ -5484,7 +5498,6 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Incidente real: la CI de merge SHA `5b9549c2` para P1-011.D canceló el job MySQL obligatorio porque el workflow `.github/workflows/dev-ci.yml` agrupaba todos los `push` de `dev` por `github.ref` y usaba `cancel-in-progress: true`. La incorporación posterior de P1-015.D puede cancelar CI anterior y retrasar certificaciones aunque los PR ya estén fusionados.
 - Cambio mínimo en DEV CI: para `push` la clave de concurrencia se define por SHA exacto, sin cancelación; para `pull_request` la clave sigue agrupada por ref y se cancelan ejecuciones anteriores cuando cambia el HEAD. Se conservan todos los jobs, triggers, pruebas MySQL 8.4, Scope Lock y controles de seguridad. No cambia API, UI, DB, migraciones ni QA/main/PROD.
 - Coste controlado: los push de commits diferentes pueden ejecutar CI en paralelo, pero no se esperan mediante Tasks programadas; los resultados terminales del SHA correspondiente se comprueban al certificar LISTO. La validación se hace con CI y revisión protegida del PR de gobierno. Reversión: revertir únicamente esta configuración mediante PR protegido.
-
 
 ## 2026-11-07 — I8-003.C: reset administrado con permiso y tenant verificado (DEV)
 

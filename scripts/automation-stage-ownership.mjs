@@ -1,3 +1,4 @@
+import {MAX_CONCURRENT_SCOPES,MAX_OWNED_SCOPES_PER_TASK} from './automation-capacity-v13.mjs';
 // Read-only validation of author provenance and stage transition.
 // No persistent reviewer row reservation; one reviewer is selected by deterministic routing.
 const TASK = /^[a-f0-9]{32}$/i;
@@ -67,8 +68,8 @@ export function validateReviewReservation(p) {
      p?.activeEditorConflict === true || p?.activeReviewerConflict === true)
     errors.push('review_route_or_conflict');
   if(!Number.isInteger(p?.reviewerOwnedScopeCount) || p.reviewerOwnedScopeCount < 0 ||
-     p.reviewerOwnedScopeCount >= 15 || !Number.isInteger(p?.globalOpenScopeCount) ||
-     p.globalOpenScopeCount < 1 || p.globalOpenScopeCount > 15)
+     p.reviewerOwnedScopeCount >= MAX_OWNED_SCOPES_PER_TASK || !Number.isInteger(p?.globalOpenScopeCount) ||
+     p.globalOpenScopeCount < 1 || p.globalOpenScopeCount > MAX_CONCURRENT_SCOPES)
     errors.push('review_capacity');
   return errors;
 }

@@ -1,3 +1,4 @@
+import { CAPACITY_POLICY_VERSION,MAX_CONCURRENT_SCOPES,MAX_OPEN_WORK_BRANCHES,MAX_OWNED_SCOPES_PER_TASK,MAX_ACTIVE_WRITES_PER_TASK } from './automation-capacity-v13.mjs';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -115,15 +116,19 @@ export function validateAuthority(input) {
     ['TASK_COUNT_LIMIT', 'PROVIDER_EFFECTIVE_CAPACITY']
   ]) if (!exactKey(d.scope, key, value)) failures.push('scope header ' + key);
   if (!/^AUTOMATION_RUNTIME=ACTIVE_DEV$/m.test(d.status)) failures.push('3x3 DEV runtime mismatch');
-  // The owner superseded the one-scope contract; validate the authoritative 15/15/15 routing.
-  if (![d.authority,d.status,d.agents,d.scope].every(body=>body.includes('ORDEN VIGENTE — 15/15/15 CON ASIGNACION AL DISPARARSE LA TASK')))
-    failures.push('current 15/15/15 trigger-only routing');
+  // V13: validate all four ceiling values and preserve protected authority gates.
+  if (![d.authority,d.status,d.agents,d.scope].every(body=>body.includes('ORDEN VIGENTE — V13 1000/1000/1000/1000 CON ASIGNACION AL DISPARARSE LA TASK')))
+    failures.push('current V13 trigger-only routing');
   for(const [name,body] of [['AUTOMATION_AUTHORITY',d.authority],['AUTOMATION_STATUS',d.status]]){
-    for(const [key,value] of [['MAX_CONCURRENT_SCOPES','15'],['MAX_OPEN_WORK_BRANCHES','15'],
-      ['MAX_OWNED_SCOPES_PER_TASK','15'],['MAX_ACTIVE_WRITES_PER_TASK','15']]){
+    for(const [key,value] of [['MAX_CONCURRENT_SCOPES',String(MAX_CONCURRENT_SCOPES)],['MAX_OPEN_WORK_BRANCHES',String(MAX_OPEN_WORK_BRANCHES)],
+      ['MAX_OWNED_SCOPES_PER_TASK',String(MAX_OWNED_SCOPES_PER_TASK)],['MAX_ACTIVE_WRITES_PER_TASK',String(MAX_ACTIVE_WRITES_PER_TASK)]]){
       const rows=body.split(String.fromCharCode(10)).filter(line=>line.startsWith(key+'='));
       if(rows.length!==1||rows[0]!==key+'='+value) failures.push(name+': invalid '+key);
     }
+  }
+  for(const [name,body] of [['authority',d.authority],['AGENTS',d.agents],['status',d.status],['scope',d.scope]]) {
+    const v=[...body.matchAll(/^CAPACITY_POLICY_VERSION=(.+)$/gm)];
+    if(v.length!==1 || v[0][1]!==CAPACITY_POLICY_VERSION) failures.push(name+': invalid V13 marker');
   }
   if (!d.agents.includes('TASK_DESIGN=OWNER_CONFIGURABLE_TASK_SET'))
     failures.push('current Task assignment model');
@@ -231,6 +236,7 @@ else if (process.argv.includes('--self-test')) {
     ['automatic CI gate disabled', {status:status.replace('AUTO_CERTIFICATION_MODE=REQUIRED_SCOPE_LOCK','AUTO_CERTIFICATION_MODE=DISABLED')}],
     ['old mandatory human approval restored', {authority:authority.replace('FORMAL_APPROVAL_ROUTINE_COMMERCIAL_REQUIRED=FALSE','FORMAL_APPROVAL_ROUTINE_COMMERCIAL_REQUIRED=TRUE')}],
     ['governance independent review weakened', {authority:authority.replace('FORMAL_APPROVAL_GOVERNANCE_REQUIRED=TRUE','FORMAL_APPROVAL_GOVERNANCE_REQUIRED=FALSE')}],
+    ['V13 15 ceiling regression', {status:status.replace(/^MAX_CONCURRENT_SCOPES=1000$/m,'MAX_CONCURRENT_SCOPES=15')}],
     ['registered roster count mismatch', {status:status.replace(/^PHYSICAL_TASKS_REGISTERED=(\d+)$/m, (_,n) => 'PHYSICAL_TASKS_REGISTERED=' + (Number(n) + 1))}],
     ['reintroduced fixed task ceiling', {scope:scope.replace('TASK_COUNT_LIMIT=PROVIDER_EFFECTIVE_CAPACITY','PILOT_TASK_LIMIT=6')}],
     ['no configurable agent routing', {agents:agents.replace('TASK_DESIGN=OWNER_CONFIGURABLE_TASK_SET','TASK_DESIGN=DUAL_TASK')}],
