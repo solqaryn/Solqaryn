@@ -5,6 +5,29 @@
 - Sólo test + esta nota; sin modificación de runtime, API, JWT/RBAC, MySQL, migraciones, configuración, secretos, workflows o ambientes ajenos. No se ejecutó `dotnet test` local; exigir Scope Lock, Seguridad multiempresa, Build backend y Directed comercial sobre SHA exacto, revisión técnica independiente de TASK_ID ajena, FIFO protegido y postmerge requerido para certificar P2. El fixture offline no prueba la red Cloudinary ni autorización HTTP.
 - Rollback: revert protegido únicamente de este test y nota, preservando las contribuciones de otras ramas.
 
+## 2026-11-06 — P2-009.E: negativa de reportes y KPI sin alcance autenticado (DEV)
+
+- Autora nativa: Alex :50 / ALEX_CHATGPT / TASK_ID `6adcc98a80a48191b71a5156624c21df`. Prueba xUnit `backend/tests/Solqaryn.Tests/P2009EDashboardScopeNegativoTests.cs`: `DashboardService.GetResumenAsync()` y `GetInventarioVariantesAsync()` deben lanzar `ForbiddenAccessException` sin `UsuarioScopeActual` autenticado resoluble. Mocks estrictos y `VerifyNoOtherCalls()` acreditan que no se consulta ningún repositorio cuando falta el alcance; regresión separada de P2-009.C (conteo EF) y P2-009.D (agrupación EF por empresa).
+- Test unitario únicamente, sin cambio runtime/API/DTO, JWT/RBAC productivo, MySQL, migraciones, datos, secrets ni reglas. No se ejecutó `dotnet test` local; exigir CI dirigida y tres checks requeridos exact SHA, revisión técnica independiente de Task distinta. La prueba no valida autorización HTTP/JWT ni filtros EF/MySQL reales. Dependencia P2-009.D sigue VALIDANDO: COLA!O=SI autoriza desarrollar, pero COLA!G=NO PROHIBE MERGE/LISTO hasta que P2-009.D sea LISTO. FIFO global sin adelantar PR. Rollback: revert protegido solo de prueba y esta entrada sin tocar contribuciones ajenas.
+
+## 2026-11-06 — P2-004.E: regresión IDOR por proveedor entre empresas (DEV)
+
+- Task nativa Javier :20 / JAVIER_CHATGPT / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Prueba xUnit `P2004EProveedorRepositorioIdorTests` sobre `ProveedorRepository`: dos proveedores homónimos con `EmpresaId` distinto, lectura por ID ajeno, `GetByIdConComprasAsync`, búsqueda de activos, cabecera `X-Empresa-Id` falsificada y alternancia del tenant verificado en un mismo `AppDbContext`.
+- Solo test EF InMemory y entrada aditiva CHANGELOG_AI.md; ningún cambio productivo/API/JWT/RBAC/MySQL/migraciones/workflows/secretos. No declara pruebas ejecutadas localmente; exigir Directed P2004E, tres required checks exact HEAD y revisión independiente de otra Task, además de postmerge required P2 antes de LISTO.
+- Plan Comercial vigente P2-004.E, dependencia P2-004.D LISTO; inicio con COLA!O208=SI/G208=SI, rama exclusiva `work/solqaryn-p2-004-e` desde dev@`de3dd9d97e043729ef73e0eef37ef8479c147ed6`. Reversión por revert protegido del test y esta nota sin afectar cambios ajenos.
+
+## 2026-11-06 — P2-013.D: revocar membresía vigente invalida acceso tenant de JWT previo (DEV)
+
+- Desarrollo nativo Javier :00, JAVIER_CHATGPT, AUTHOR_TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`, rama exclusiva `work/solqaryn-p2-013-d`, dev base `3a1e5c003cf916023653b40b1c48c0b440f6b3fd`; dependencia P2-013.C LISTO, COLA!O199=SI y G199=SI al inicio.
+- Test xUnit dirigido `backend/tests/Solqaryn.Tests/P2013DJwtMembresiaRevocadaTests.cs`: JWT sintético con sólo id usuario, rol y membresía A activos; B rechazado aunque X-Empresa-Id=B; A permitido antes de revocar; A y B rechazados luego de UsuarioEmpresa.Desactivar sin reemitir JWT. Usa TenantContextController + UsuarioScopeService real y EF InMemory, sin alterar runtime, API, permisos, migraciones, workflows o secretos.
+- No se ejecuta dotnet local; CI exact HEAD requerida, Directed comercial y revisión independiente de distinta TASK_ID antes de merge FIFO, más CI postmerge P2 para LISTO. EF InMemory y decodificación de JWT no prueban firma real, middleware HTTP ni MySQL. Reversión por revert protegido sólo de prueba y nota.
+
+## 2026-11-06 — P2-010.D: capacidades públicas no autorizan exportaciones CSV/XLSX/PDF privadas (DEV)
+
+- Autoría real: Task Javier :20, TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`, cuenta `JAVIER_CHATGPT`, GitHub `jmejia31`; rama exclusiva `work/solqaryn-p2-010-d` creada desde `dev@19fe61b3149f3ccb4533af439f381a4139cc89f3`. Dependencia P2-010.C LISTO; COLA!O196=SI y G196=SI al comenzar. Inicio V11 EN_PROGRESO certificado con EVENT_ID SQ-P2-010-D-J20-START-19FE61B3-20261106.
+- Nuevo test xUnit `backend/tests/Solqaryn.Tests/P2010DExportacionesCapacidadPublicaTests.cs`: acceso comercial verificado A produce XLSX sólo con auditoría A aunque `X-Empresa-Id=B` y capacidades de tienda/factura públicas B estén presentes; al revocar el tenant comercial, CSV, XLSX y PDF fallan cerrado aun con esas capacidades públicas y cabecera falsificada. Datos sintéticos EF InMemory; no se modifican runtime, JWT, RBAC, DB, migraciones, servicios, secrets, workflows ni QA/main/PROD.
+- `dotnet test` local no ejecutado: verificar Directed P2010D y tres REQUIRED Check Runs exact HEAD, revisión técnica independiente por TASK_ID distinto, PR CLEAN, FIFO global, merge protegido y checks postmerge P2 exact MERGE_SHA antes de LISTO. Esta prueba no certifica seguridad HTTP/JWT/MySQL real; el rollback es revert protegido del test y esta entrada, sin perder entradas ajenas.
+
 ## 2026-11-06 — P2-011.C: validación tenant de media privada Cloudinary sin red (DEV)
 
 - Autoría nativa real: Javier :00 / JAVIER_CHATGPT / TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a` / GitHub `jmejia31`. Scope P2-011.C, rama exclusiva `work/solqaryn-p2-011-c`, origen dev `19fe61b3149f3ccb4533af439f381a4139cc89f3`. V11 PENDIENTE→EN_PROGRESO registrado antes de modificar código.
