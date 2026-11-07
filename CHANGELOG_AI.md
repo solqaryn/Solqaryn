@@ -1,3 +1,9 @@
+## 2026-11-06 — P2-009.D: KPI agrupado de clientes homónimos por tenant verificado (DEV)
+
+- Autor real Task Javier :30 (`6aeacb7820ac8191b7d768a6f33dfa09`), rama exclusiva `work/solqaryn-p2-009-d`, base `dev@789dfc1e40c7993f4c65de5c08c681cca0bebe85`. Prueba dirigida xUnit `backend/tests/Solqaryn.Tests/P2009DKpiClientesHomonimosTenantTests.cs` con grupos de clientes homónimos: A=2 y B=1 con el mismo nombre, además de clientes exclusivos A/B; la agregación `GroupBy` obedece `VerifiedCommercialTenant`, incluso con cabecera `X-Empresa-Id` falsificada y al cambiar de tenant en el mismo DbContext.
+- Complementa P2-009.C, que contaba filas totales sin agrupar. Solo EF Core InMemory; **no** acredita endpoint de dashboard, JWT/RBAC HTTP ni SQL MySQL. No modifica runtime, modelos, migraciones, secretos, reglas o entornos. `COLA!O195=SI` y `G195=SI` al comenzar; V11 inicio REAL EN_PROGRESO en PLAN/BITACORA. Requiere CI Directed y tres required exact HEAD, revisión independiente, FIFO protected merge y CI posmerge requerida P2 antes de LISTO. No se afirma ejecución local de dotnet.
+- Rollback proporcional mediante revert protegido del test y esta entrada preservando todas las demás notas.
+
 ## 2026-11-06 — P2-003.E: prueba negativa IDOR de clientes por EmpresaId (DEV)
 
 - Task nativa Javier :20, AUTHOR_TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`, rama original exclusiva `work/solqaryn-p2-003-e` creada desde `dev@61b8e66c2719d4f522a594b5aff53b3e9a2eca5a`.
