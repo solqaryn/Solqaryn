@@ -1,3 +1,9 @@
+## 2026-11-06 — P2-013.D: revocar membresía vigente invalida acceso tenant de JWT previo (DEV)
+
+- Desarrollo nativo Javier :00, JAVIER_CHATGPT, AUTHOR_TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`, rama exclusiva `work/solqaryn-p2-013-d`, dev base `3a1e5c003cf916023653b40b1c48c0b440f6b3fd`; dependencia P2-013.C LISTO, COLA!O199=SI y G199=SI al inicio.
+- Test xUnit dirigido `backend/tests/Solqaryn.Tests/P2013DJwtMembresiaRevocadaTests.cs`: JWT sintético con sólo id usuario, rol y membresía A activos; B rechazado aunque X-Empresa-Id=B; A permitido antes de revocar; A y B rechazados luego de UsuarioEmpresa.Desactivar sin reemitir JWT. Usa TenantContextController + UsuarioScopeService real y EF InMemory, sin alterar runtime, API, permisos, migraciones, workflows o secretos.
+- No se ejecuta dotnet local; CI exact HEAD requerida, Directed comercial y revisión independiente de distinta TASK_ID antes de merge FIFO, más CI postmerge P2 para LISTO. EF InMemory y decodificación de JWT no prueban firma real, middleware HTTP ni MySQL. Reversión por revert protegido sólo de prueba y nota.
+
 ## 2026-11-06 — P2-013.C: identidad JWT no autoriza tenant B sin membresía A/B (DEV)
 
 - Desarrollo nativo Alex :50 / ALEX_CHATGPT, AUTHOR_TASK_ID `6adcc98a80a48191b71a5156624c21df`, rama exclusiva `work/solqaryn-p2-013-c`, nacida de `dev@f74bb8435ef8f91b4bbc02acfc3ee757cf6b4085`. Dependencia P1-016.B LISTO; COLA!O181=SI y G181=SI al iniciar. Evento V11 PENDIENTE → EN_PROGRESO acreditado en PLAN_MAESTRO/BITACORA.
