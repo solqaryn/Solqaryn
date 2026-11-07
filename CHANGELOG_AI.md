@@ -1,3 +1,9 @@
+## 2026-11-06 — P2-014.D: ocho consultas concurrentes A/B con folio compartido y cabeceras cruzadas (DEV)
+
+- Autora Task nativa Javier :40, TASK_ID `6adc2e55f47c81919f6374e561687076`. Nuevo test xUnit `backend/tests/Solqaryn.Tests/P2014DConcurrenciaFolioIdenticoTenantTests.cs` extiende P2-014.C: 8 flujos paralelos, HttpContextAccessor/DbContext exclusivos por solicitud, dos ventas A/B con el mismo NumeroVenta, cabecera `X-Empresa-Id` cruzada, aislamiento por VerifiedCommercialTenant verificado, resultado exacto de empresa autorizada en cada flujo. El fixture usa datos sintéticos EF InMemory, sin prueba de HTTP/JWT real ni concurrencia MySQL.
+- Solo test y nota idempotente; no cambios de runtime, API, RBAC/JWT, migraciones, DB productiva, secretos, workflows, reglas, QA/main/PROD. No dotnet test local; requeridos Scope Lock, Seguridad multiempresa, Build backend y Directed SUCCESS exact HEAD más revisión independiente de Task distinta, COLA!G200=SI, FIFO global y CI postmerge required P2 antes de LISTO.
+- Rollback por revert protegido exclusivo de test/nota, conservando contribuciones concurrentes.
+
 ## 2026-11-06 — P2-009.D: KPI agrupado de clientes homónimos por tenant verificado (DEV)
 
 - Autor real Task Javier :30 (`6aeacb7820ac8191b7d768a6f33dfa09`), rama exclusiva `work/solqaryn-p2-009-d`, base `dev@789dfc1e40c7993f4c65de5c08c681cca0bebe85`. Prueba dirigida xUnit `backend/tests/Solqaryn.Tests/P2009DKpiClientesHomonimosTenantTests.cs` con grupos de clientes homónimos: A=2 y B=1 con el mismo nombre, además de clientes exclusivos A/B; la agregación `GroupBy` obedece `VerifiedCommercialTenant`, incluso con cabecera `X-Empresa-Id` falsificada y al cambiar de tenant en el mismo DbContext.
