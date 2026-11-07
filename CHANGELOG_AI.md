@@ -1,3 +1,11 @@
+## 2026-11-06 — P2-011.C: validación tenant de media privada Cloudinary sin red (DEV)
+
+- Autoría nativa real: Javier :00 / JAVIER_CHATGPT / TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a` / GitHub `jmejia31`. Scope P2-011.C, rama exclusiva `work/solqaryn-p2-011-c`, origen dev `19fe61b3149f3ccb4533af439f381a4139cc89f3`. V11 PENDIENTE→EN_PROGRESO registrado antes de modificar código.
+- Prueba dirigida `backend/tests/Solqaryn.Tests/P2011CCloudinaryMediaPrivadaTests.cs`: comprobante privado `CloudinaryCompraDocumentoStorageService.DownloadAsync` con tenant verificado 31, rechazo de locators de tenant 32/310, hostname suplantado, HTTP inseguro y credenciales URL; control positivo de URL exacta tenant 31. Se usa token ya cancelado para demostrar fallo anterior a HTTP o aceptación del locator sin tráfico externo. Sin credenciales reales ni mutación Cloudinary.
+- Sólo test y CHANGELOG; no se cambia código runtime, endpoint, autorización JWT/RBAC, BD, migraciones, secretos, ruleset, QA/main/PROD. La prueba NO certifica autenticación HTTP, titularidad de registros DB, tráfico real Cloudinary o MySQL; `dotnet test` local no acreditado, Directed comercial y CI deben verificar el SHA exacto.
+- COLA!O179=SI habilitó desarrollo; COLA!G179=SI se revalidará antes de merge. Exigir PR CLEAN, revisión independiente por Task distinta, los tres required checks y Directed SUCCESS exact-HEAD, FIFO global; para P2 exigir postmerge REQUIRED exact MERGE_SHA antes de LISTO.
+- Rollback: revert protegido del test y esta entrada, preservando cambios ajenos y pruebas existentes.
+
 ## 2026-11-06 — P2-006.D: ventas con folios homónimos aislados por tenant verificado (DEV)
 
 - Autora nativa Task Javier :40, TASK_ID `6adc2e55f47c81919f6374e561687076`, GitHub `jmejia31`. Nuevo test dirigido `backend/tests/Solqaryn.Tests/P2006DVentasNumeroHomonimoTests.cs`: dos ventas sintéticas A/B comparten `NumeroVenta`, se falsifica `X-Empresa-Id` en ambos sentidos y el filtro de `VerifiedCommercialTenant` debe devolver solo la venta de la empresa autorizada, incluso tras cambiar tenant en el mismo `AppDbContext`.
