@@ -5,6 +5,22 @@
 - Sólo test + esta nota; sin modificación de runtime, API, JWT/RBAC, MySQL, migraciones, configuración, secretos, workflows o ambientes ajenos. No se ejecutó `dotnet test` local; exigir Scope Lock, Seguridad multiempresa, Build backend y Directed comercial sobre SHA exacto, revisión técnica independiente de TASK_ID ajena, FIFO protegido y postmerge requerido para certificar P2. El fixture offline no prueba la red Cloudinary ni autorización HTTP.
 - Rollback: revert protegido únicamente de este test y nota, preservando las contribuciones de otras ramas.
 
+## 2026-11-07 — P2-005.E: corregir aislamiento de lecturas privadas de compras (DEV)
+
+- Autor Task Javier :20 / JAVIER_CHATGPT / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Se conserva el PR #3929 y la rama exclusiva `work/solqaryn-p2-005-e`, sin force-push; recuperación causal de REQUEST_CHANGES #5809885464.
+- Causa: el filtro EF global de `CommercialTenantReadFilterModel` permite intencionalmente consultas internas sin marca; no constituye el limite de autorización HTTP. El test anterior consultaba directamente `DbSet<Compra>` y exigía una denegación que corresponde al repositorio privado.
+- Se protege `CompraRepository`: con 2+ empresas (incluidas inactivas), cualquier lectura privada sin marca RBAC deniega incluso al usuario legacy administrador; con marca verificada se exige membresía activa y predicado empresarial explícito, en listados, consultas por ID, últimas y agregados. Bases de 0–1 empresa conservan el flujo legacy.
+- La regresión xUnit `P2005EComprasSinMarcaTenantTests.cs` verifica dos empresas, encabezados falsos, respuesta vacía/ID nulo sin marca, rol legacy administrador, acceso correcto a A y revocación de marca en el mismo DbContext. La prueba conserva la negativa multiempresa en la frontera autorizada en vez de debilitar seguridad.
+- Impacto localizado en Infrastructure/Repositorio y prueba EF InMemory, sin cambios en API/DTO, arquitectura, migraciones, datos productivos, secretos, reglas, QA/main/PROD. No se reclama prueba local ni prueba HTTP/MySQL integral; exigir Directed y tres REQUIRED SUCCESS exact HEAD, revisión independiente renovada y, tras merge FIFO protegido, postmerge REQUIRED exact MERGE_SHA para LISTO.
+- Rollback: revert protegido y selectivo de esta corrección, prueba y entrada de changelog, preservando trabajo ajeno.
+
+## 2026-11-06 — P2-005.E: negar compras sin marca de tenant verificada (DEV)
+
+- Autor nativo Javier :20 / JAVIER_CHATGPT / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Rama exclusiva `work/solqaryn-p2-005-e`, creada desde `dev@c9e0bb59b93c625649f8ae6f55c928c8f191a83c` con registro PENDIENTE → EN_PROGRESO y readback institucional.
+- Regresion negativa xUnit `backend/tests/Solqaryn.Tests/P2005EComprasSinMarcaTenantTests.cs`: dos empresas y dos compras válidas, cabecera falsa `X-Empresa-Id`, eliminación de `VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey`, denegación de listado y lookup por ID, control positivo A y revocación posterior en el mismo DbContext.
+- El alcance es solo test EF InMemory y esta entrada idempotente; no hay runtime/API/JWT/RBAC, MySQL, migración, infraestructura, secretos, workflows ni otros entornos. No se afirma prueba local sin `dotnet`; CI Directed + tres required exact-HEAD, revisión independiente y dependencias COLA G son gates para merge FIFO. P2 requiere CI postmerge requerida antes LISTO.
+- Rollback: revert protegido de este test y su entrada, preservando cambios concurrentes.
+
 ## 2026-11-06 — P2-009.E: negativa de reportes y KPI sin alcance autenticado (DEV)
 
 - Autora nativa: Alex :50 / ALEX_CHATGPT / TASK_ID `6adcc98a80a48191b71a5156624c21df`. Prueba xUnit `backend/tests/Solqaryn.Tests/P2009EDashboardScopeNegativoTests.cs`: `DashboardService.GetResumenAsync()` y `GetInventarioVariantesAsync()` deben lanzar `ForbiddenAccessException` sin `UsuarioScopeActual` autenticado resoluble. Mocks estrictos y `VerifyNoOtherCalls()` acreditan que no se consulta ningún repositorio cuando falta el alcance; regresión separada de P2-009.C (conteo EF) y P2-009.D (agrupación EF por empresa).
