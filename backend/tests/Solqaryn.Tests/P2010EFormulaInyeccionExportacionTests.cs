@@ -98,7 +98,7 @@ public sealed class P2010EFormulaInyeccionExportacionTests
         using var hojaStream = hojaXml!.Open();
         var documento = XDocument.Load(hojaStream);
         XNamespace ns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
-        var celdaXml = Assert.Single(document.Descendants(ns + "c")
+        var celdaXml = Assert.Single(documento.Descendants(ns + "c")
             .Where(nodo => (string?)nodo.Attribute("r") == "H2"));
         Assert.Null(celdaXml.Element(ns + "f"));
         Assert.Matches("^(s|inlineStr)$", (string?)celdaXml.Attribute("t") ?? "");
