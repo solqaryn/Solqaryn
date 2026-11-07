@@ -1,3 +1,10 @@
+## 2026-11-06 — P2-017.D: regresión de rol cruzado en membresía A/B (DEV)
+
+- Task autora Javier :30 / JAVIER_CHATGPT / TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09. Rama exclusiva work/solqaryn-p2-017-d creada desde dev@2e752ff1f810495679c23964b422a9e32fa974a1, con PLAN_MAESTRO EN_PROGRESO y BITACORA inicio real confirmados antes de editar.
+- Prueba xUnit backend/tests/Solqaryn.Tests/P2017DRolCruzadoMembresiaTests.cs: usuario con rol legacy admin B y membresía manipulada A->rolB NO accede a A; conserva B legítima. Al corregir A->rolA, ambos scopes funcionan con privilegios independientes; al revocar B, A continúa válida y B se niega. Verifica selector de empresas y ausencia de scope único cuando existen dos permisos.
+- Cambio solo de test causal y esta entrada aditiva. No runtime, API, JWT, migraciones, MySQL, secretos, workflows ni rulesets. EF InMemory no certifica HTTP/JWT ni base productiva; dotnet test local NO ejecutado. Requiere CI Directed y 3 required exact HEAD SUCCESS, revisión independiente distinta Task, FIFO PR OPEN y controles posmerge P2 antes de LISTO.
+- Rollback proporcional mediante revert protegido del test y de esta entrada conservando el CHANGELOG concurrente.
+
 ## 2026-11-06 — P2-004.E: regresión IDOR por proveedor entre empresas (DEV)
 
 - Task nativa Javier :20 / JAVIER_CHATGPT / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Prueba xUnit `P2004EProveedorRepositorioIdorTests` sobre `ProveedorRepository`: dos proveedores homónimos con `EmpresaId` distinto, lectura por ID ajeno, `GetByIdConComprasAsync`, búsqueda de activos, cabecera `X-Empresa-Id` falsificada y alternancia del tenant verificado en un mismo `AppDbContext`.
