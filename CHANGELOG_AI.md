@@ -1,3 +1,9 @@
+## 2026-11-07 — P2-011.E: locators Cloudinary privados con delimitadores codificados (DEV)
+
+- Autoría física Javier :20 / JAVIER_CHATGPT, TASK_ID 6adc2e4bd8a48191ac7d8641ed95a1a3, GitHub jmejia31. Rama exclusiva work/solqaryn-p2-011-e desde dev@788acb02bff46b337c7432036c3a4f140931b201; inicio EN_PROGRESO persistido previamente en PLAN_MAESTRO!215 y BITACORA!1119. COLA!O215=SI permite desarrollo, COLA!G215=NO bloquea merge hasta P2-011.D LISTO.
+- Test xUnit backend/tests/Solqaryn.Tests/P2011ECloudinaryLocatorCodificadoTests.cs: deniega locators ajenos Cloudinary con cabeceras falsas dentro de query/fragment, prefijo tenant parcial 31-alt y separadores URL percent-encoded (%2F); control propio comprueba paso por validación de tenant y cancelación antes de red. Complementa descargas P2-011.C y borrados P2-011.D sin introducir otro scope.
+- Alcance limitado a prueba sintética + esta nota aditiva; sin cambios de runtime, API, RBAC/JWT, datos, migraciones, servicios, secretos, workflows/rulesets, QA/main/PROD. No se ejecutó dotnet test local ni se acredita HTTP/JWT/MySQL o red real. Exigir prueba dirigida, 3 checks required y Directed SUCCESS exact-HEAD, revisión independiente por TASK_ID distinta, FIFO global y postmerge required exact MERGE_SHA antes de LISTO. Rollback protegido selectivo del test y nota, preservando contribuciones concurrentes.
+
 ## 2026-11-06 — P2-006.E: prueba negativa IDOR de Venta.Id por tenant verificado (DEV)
 
 - Autor Task Javier :30, TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09, rama exclusiva work/solqaryn-p2-006-e, base dev@b7273e2743a03cf80e8836ecbcd9c2c29c75ca9e.
