@@ -1,3 +1,10 @@
+## 2026-11-07 — Scope Lock: reintento por finalizacion de CI exact-HEAD sin falsos PASS (DEV)
+
+- Cambio de gobierno/CI redactado por SOLQARYN Platform en rama `fix/solqaryn-scope-lock-ci-retry-20261107`; revisión formal humana independiente del HEAD final obligatoria antes de merge, sin adelantar FIFO ni modificar rulesets.
+- Corrige la causa `AUTO_CERT=NO_GO OTHER_CHECKS_PENDING` por checks que finalizan despues de la ventana acotada; nuevo workflow trusted-dev escucha cierre de DEV CI, Core, Directed y Priority 3 y reintenta **solo** un job Scope Lock fallido cuya causa comprobada fue esperar CI, con identidad, SHA, estado y pruebas reales revalidados, límite de intentos y negativos fail-closed. No ejecuta codigo de ramas PR ni aprueba/mergea scopes.
+- Refuerza `scripts/verify-automated-pr-certification.mjs`: un MySQL queued/in_progress nunca se difiere por el mero PASS del clasificador; exige SUCCESS/SKIPPED terminal antes de fast lane de tests. Conserva Core, Security, Directed, independencia, Scope Lock y todas las suites causales; sin alteraciones a frontend/backend de producto, API, auth, DB, secretos, QA/main/PROD ni despliegues.
+- Validación: selftests de verificador y nuevo helper deben aprobarse en CI del SHA final; sin CI/review exacta no publicar ni certificar. Rollback: revert protegido de workflow, helper, verificador, documentación y entrada de changelog.
+
 ## 2026-11-07 — P2-013.E: JWT previo no autoriza rol inactivo ni usuario bloqueado entre empresas (DEV)
 
 - Desarrollo nativo Alex :50 / ALEX_CHATGPT / AUTHOR_TASK_ID `6adcc98a80a48191b71a5156624c21df`; rama exclusiva `work/solqaryn-p2-013-e` iniciada desde dev@`6980a66b4572567e80261bb4cb60256f9f660394`. Dependencia P2-013.D LISTO, COLA!O217=SI y COLA!G217=SI al inicio; registro real PENDIENTE -> EN_PROGRESO y readback.
