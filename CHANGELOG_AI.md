@@ -1,3 +1,10 @@
+## 2026-11-07 — P2-012.E: fallo aislado de Outbox A y entrega B sin HTTP (DEV)
+
+- Autoría nativa: Javier :00 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`, GitHub jmejia31. Rama exclusiva `work/solqaryn-p2-012-e` desde `dev@c9f98f376f261f219aec479819f98582ccc1f35d`; inicio EN_PROGRESO acreditado por PLAN_MAESTRO!216 y BITACORA!1299 antes del código.
+- Test xUnit `P2012EOutboxFalloTenantSinHttpTests`: mensajes Outbox de empresas A/B con idéntica clave idempotente; un fallo externo en A registra únicamente `DELIVERY_FAILED` y reprograma A sin confirmar B; procesar B después entrega B sin heredar el fallo, sin cabeceras HTTP ni HttpContext. Complementa P2-012.C (entrega positiva A/B) y P2-012.D (rechazo de lotes contaminados).
+- Cambios solo en prueba sintética y esta nota aditiva; sin runtime, endpoints, migraciones, MySQL, secretos, workflows, rulesets ni QA/main/PROD. No se ejecutó `dotnet test` local; CI GitHub y Directed exact-HEAD deben acreditar cualquier PASS. No certifica HTTP/JWT/MySQL ni efectos de proveedor real.
+- Requiere PR original, revisión por TASK_ID diferente de autor y contribuyentes, FIFO global, COLA!G216=SI para merge, checks requeridos+Directed SUCCESS exact HEAD y postmerge 3/3 exact MERGE_SHA antes de LISTO. Revert protegido selectivo si corresponde, conservando entradas de otros scopes.
+
 ## 2026-11-07 — P2-013.E: JWT previo no autoriza rol inactivo ni usuario bloqueado entre empresas (DEV)
 
 - Desarrollo nativo Alex :50 / ALEX_CHATGPT / AUTHOR_TASK_ID `6adcc98a80a48191b71a5156624c21df`; rama exclusiva `work/solqaryn-p2-013-e` iniciada desde dev@`6980a66b4572567e80261bb4cb60256f9f660394`. Dependencia P2-013.D LISTO, COLA!O217=SI y COLA!G217=SI al inicio; registro real PENDIENTE -> EN_PROGRESO y readback.
