@@ -4,6 +4,55 @@
 - Prueba causal xUnit `backend/tests/Solqaryn.Tests/P2003EClientesIdorTenantTests.cs`: dos clientes de empresas A/B, búsqueda directa `Cliente.Id` con `AsNoTracking`, cabecera `X-Empresa-Id` falsificada, positivos de pertenencia, negativos de ID ajeno y alternancia de tenant verificado en el mismo `AppDbContext`. Complementa P2-003.D, que prueba homónimos por nombre/identidad.
 - Sólo prueba EF InMemory y esta entrada; no cambia código productivo, HTTP/JWT/RBAC, migraciones, MySQL, secretos, workflows, rulesets ni QA/main/PROD. Dotnet local no ejecutado: exigir Directed comercial + tres required checks exact-HEAD SUCCESS y revisión independiente antes de merge FIFO, postmerge CI P2 requerida antes LISTO. Rollback por revert protegido preservando cambios ajenos.
 
+## 2026-11-06 — P2-008.D: acceso privado a factura por venta aislado por tenant (DEV)
+
+- Task Javier :00, AUTHOR_TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`, rama exclusiva `work/solqaryn-p2-008-d` desde `dev@fa346a03ab4ded3a848e6bc1b1b4c51030be559c`.
+- Regresion causal xUnit `backend/tests/Solqaryn.Tests/P2008DFacturaPorVentaTenantTests.cs`: `FacturaRepository.GetByVentaIdAsync` en A/B con numeros de venta y factura homonimos, cabeceras `X-Empresa-Id` cruzadas, marca tenant verificada alternante y rechazo sin marca en base multiempresa. Complementa P2-008.C (`GetAllAsync` y `GetByIdAsync`).
+- Solo test y CHANGELOG idempotente; no runtime/API/JWT/RBAC/productivo, bases, migraciones, reglas ni secretos. No demuestra URL de documentos, autorización HTTP/JWT, PDF real ni MySQL; pruebas locales .NET NO ejecutadas. Se requieren revisión independiente de Task distinta, Directed y 3 required exact HEAD, FIFO y COLA G para merge; P2 exige postmerge required exact MERGE_SHA antes LISTO.
+- Rollback proporcional: revert protegido del test y su entrada, conservando changesets ajenos.
+
+## 2026-11-06 — P2-001.E: prueba negativa de RBAC para matriz comercial GET (DEV)
+
+- Autor real Javier :30 / JAVIER_CHATGPT / TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09. Un unico test xUnit backend/tests/Solqaryn.Tests/P2001EPermisoTenantLecturaTests.cs ejercita el filtro productivo existente RequierePermisoAttribute en GET de clientes, productos, ventas, proveedores y compras; el permiso simulado deniega empresa B ante X-Empresa-Id de otro tenant, exige que no se invoque la accion ni se marque autorizacion y comprueba control positivo de A verificada. Es una prueba del contrato del filtro con IPermisoService simulado, no HTTP/JWT real ni permisos almacenados/MySQL; no se modifico codigo runtime, migraciones, secretos, rulesets o workflows.
+- COLA!O205=SI habilito desarrollo y COLA!G205=SI debe revalidarse al merge. Rama exclusiva work/solqaryn-p2-001-e de dev@757fdbd78266a8d6379bb4bb7f3022768eb20987. dotnet test local no ejecutado; CI Directed y tres required exact HEAD, auditoria independiente de Task distinta, PR sin conflictos y FIFO global son obligatorios. Para P2, LISTO requiere CI requerida posmerge exact MERGE_SHA y readback institucional. Rollback proporcional: revert protegido solo test y esta entrada.
+
+## 2026-11-06 — P2-002.E: prueba dirigida de IDOR por ProductoRepository (DEV)
+
+- Task nativa Javier :20 / JAVIER_CHATGPT / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Test xUnit `P2002EProductoRepositorioIdorTests`: dos productos homónimos de tenants A/B, lectura directa por ID ajeno, cabecera manipulada `X-Empresa-Id`, aislamiento por marca de tenant verificada, conteos separados y alternancia sobre el mismo AppDbContext. Incluye límite de EF interno sin marca, que **no autoriza HTTP**.
+- Solo prueba de regresión efímera EF InMemory y esta entrada. Sin cambios en código productivo, JWT/RBAC, base de datos, migraciones, dependencias, workflow, secrets o entornos. El test **NO acredita** HTTP/JWT ni MySQL; no se ejecutó dotnet local, por lo que no se declara PASS; pedir Directed commercial scope y required 3/3 exact-HEAD GitHub y revisión independiente de Task ajena.
+- Dependencia P2-002.D LISTO; COLA!O206=SI, G206=SI en inicio real. Rama exclusiva `work/solqaryn-p2-002-e` desde `dev@9a9ce2b7b1e0f72e6cc0e274e1018f94dfb9911f`. Reversión por revert protegido solo del test y esta entrada, preservando otras microtareas.
+
+## 2026-11-06 — P2-007.D: ajustes de inventario con folio homónimo aislados por empresa (DEV)
+
+- Task Javier :00, TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`, cuenta JAVIER_CHATGPT. Test causal `backend/tests/Solqaryn.Tests/P2007DInventarioFolioHomonimoTests.cs`: dos ajustes A/B con el mismo `NumeroAjuste`, cabecera `X-Empresa-Id` falsificada en ambas direcciones y cambio de tenant verificado sobre el mismo `AppDbContext`; cada lectura debe mostrar exclusivamente su ajuste.
+- Cambios limitados al test EF InMemory y esta entrada; sin runtime, API, JWT/RBAC productivo, MySQL, migraciones, secretos, workflows, rulesets, QA/main/PROD. `dotnet test` local no ejecutado; exigir Directed P2007D, tres required checks exact HEAD y revisión de Task independiente.
+- Dependencia P2-007.C LISTO; `COLA!O193=SI` al comenzar, `COLA!G193=SI` a revalidar para merge. Reversión mediante revert protegido exclusivo del test y nota sin perder cambios ajenos.
+
+## 2026-11-06 — P2-013.C: identidad JWT no autoriza tenant B sin membresía A/B (DEV)
+
+- Desarrollo nativo Alex :50 / ALEX_CHATGPT, AUTHOR_TASK_ID `6adcc98a80a48191b71a5156624c21df`, rama exclusiva `work/solqaryn-p2-013-c`, nacida de `dev@f74bb8435ef8f91b4bbc02acfc3ee757cf6b4085`. Dependencia P1-016.B LISTO; COLA!O181=SI y G181=SI al iniciar. Evento V11 PENDIENTE → EN_PROGRESO acreditado en PLAN_MAESTRO/BITACORA.
+- Prueba xUnit puntual `backend/tests/Solqaryn.Tests/P2013CJwtSesionRbacTenantTests.cs`: usuario con JWT sintético que sólo identifica actor, dos empresas A/B, rol y membresía válida de A; header `X-Empresa-Id=B` falsificado no habilita `TenantContextController.Obtener(B)` y A sigue autorizada por `UsuarioScopeService` con membresía verificada. Verifica atributo `[Authorize]` del controlador, no ejecución del middleware ni validación criptográfica HTTP.
+- Sólo test + esta entrada aditiva, sin modificar runtime, JWT productivo, endpoint, permisos, BD/migraciones, secretos, workflows, QA/main/PROD. Sin dotnet local: exigir Directed y tres REQUIRED Check Runs exact HEAD, revisión técnica por otra TASK_ID, FIFO PR más antiguo y CI postmerge P2 requerida antes de LISTO. EF InMemory no prueba MySQL, JWT de extremo a extremo ni carga real. Revert protegido sólo del test y nota para rollback.
+
+## 2026-11-06 — P2-006.D: ventas con folios homónimos aislados por tenant verificado (DEV)
+
+- Autora nativa Task Javier :40, TASK_ID `6adc2e55f47c81919f6374e561687076`, GitHub `jmejia31`. Nuevo test dirigido `backend/tests/Solqaryn.Tests/P2006DVentasNumeroHomonimoTests.cs`: dos ventas sintéticas A/B comparten `NumeroVenta`, se falsifica `X-Empresa-Id` en ambos sentidos y el filtro de `VerifiedCommercialTenant` debe devolver solo la venta de la empresa autorizada, incluso tras cambiar tenant en el mismo `AppDbContext`.
+- Cambios solo en test y CHANGELOG; sin runtime, API, JWT/RBAC, EF/MySQL productivo, migraciones, reglas, secretos, QA/main/PROD. La prueba EF InMemory no demuestra autenticación HTTP/JWT, MySQL real o integridad de números de venta; no se ejecutó `dotnet test` localmente: Directed y REQUIRED de GitHub deben verificar HEAD exacto.
+- Dependencia `P2-006.C` LISTO y `COLA!O192=SI` al iniciar desarrollo; para merge se requiere `COLA!G192=SI`, revisión causal independiente de otro TASK_ID, tres checks REQUIRED y Directed SUCCESS, PR CLEAN, FIFO global encabezado por #3909 mientras permanezca OPEN. Para P2 exigir CI postmerge required exact MERGE_SHA antes de LISTO.
+- Rollback proporcional: revert protegido del test y nota idempotente, preservando otros cambios.
+
+
+## 2026-11-06 — P2-017.C: baja logica de rol B y revocacion de membresia sin afectar empresa A (DEV)
+
+- Task nativa Javier :30, AUTHOR_TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`, alcance único P2-017.C, rama `work/solqaryn-p2-017-c`. Nuevo test xUnit `backend/tests/Solqaryn.Tests/P2017CRolesPertenenciasTests.cs` ejercita `UsuarioScopeService` real sobre EF InMemory para A/B: `Rol.Eliminado` de B bloquea acceso/listado B aun con membresía activa y `Usuario.RolId` legacy apuntando a B; después restaurar rol y desactivar la membresía B no autoriza su reingreso, preservando rol y empresa A. Control positivo B activo previo al corte; no se alteró runtime, JWT, RBAC productivo, migraciones, secretos ni workflows.
+- `COLA!O185=SI`, dependencia `P1-016.B=LISTO` al inicio; autoría y V11 EN_PROGRESO acreditadas en PLAN/BITACORA. Verificación causal de código estática; `dotnet test` local **no ejecutado**. Se requiere Directed y REQUIRED CI exact SHA, revisión independiente por TASK_ID ajeno y FIFO global antes de merge; P2 necesita CI posmerge requerida exact MERGE SHA para LISTO. No pretende certificar HTTP/JWT real ni MySQL. Rollback protegido: revertir test y entrada de CHANGELOG.
+
+## 2026-11-06 — P2-005.D: compras con NumeroCompra homónimo en tenants A/B (DEV)
+
+- Autor real Task Javier :20 (`6adc2e4bd8a48191ac7d8641ed95a1a3`), rama exclusiva `work/solqaryn-p2-005-d`; prueba causal xUnit `backend/tests/Solqaryn.Tests/P2005DComprasNumeroHomonimoTests.cs` sobre dos compras sintéticas de igual número pero distinta EmpresaId, verificación del filtro EF de ambas empresas con cabecera `X-Empresa-Id` falsificada y conmutación de marca comercial verificada en el mismo DbContext.
+- Complementa P2-005.C, que usaba números distintos; alcance únicamente EF InMemory. No se afirma autenticación HTTP/JWT/RBAC, unicidad MySQL ni ejecución local de dotnet. No cambia producción, migraciones, secretos, reglas, servicios, QA/main/PROD.
+- Dependencia P2-005.C LISTO, COLA!O191=SI y G191=SI antes de iniciar; wymag revisión técnica independiente por Task ajena, CI required + Directed exact-SHA y merge FIFO protegido antes de LISTO; revert proporcional por PR protegido.
+
 ## 2026-11-06 — P2-004.D: repositorio de proveedores aislado por tenant verificado (DEV)
 
 - Task Javier :00, AUTHOR_TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`, rama unica `work/solqaryn-p2-004-d` desde `dev@64f913a36f57ff1ee21dbe857c3f489cbbf18d4d`.
