@@ -4,6 +4,25 @@
 - Solo test y nota idempotente; no cambios de runtime, API, RBAC/JWT, migraciones, DB productiva, secretos, workflows, reglas, QA/main/PROD. No dotnet test local; requeridos Scope Lock, Seguridad multiempresa, Build backend y Directed SUCCESS exact HEAD más revisión independiente de Task distinta, COLA!G200=SI, FIFO global y CI postmerge required P2 antes de LISTO.
 - Rollback por revert protegido exclusivo de test/nota, conservando contribuciones concurrentes.
 
+## 2026-11-06 — P2-009.D: KPI agrupado de clientes homónimos por tenant verificado (DEV)
+
+- Autor real Task Javier :30 (`6aeacb7820ac8191b7d768a6f33dfa09`), rama exclusiva `work/solqaryn-p2-009-d`, base `dev@789dfc1e40c7993f4c65de5c08c681cca0bebe85`. Prueba dirigida xUnit `backend/tests/Solqaryn.Tests/P2009DKpiClientesHomonimosTenantTests.cs` con grupos de clientes homónimos: A=2 y B=1 con el mismo nombre, además de clientes exclusivos A/B; la agregación `GroupBy` obedece `VerifiedCommercialTenant`, incluso con cabecera `X-Empresa-Id` falsificada y al cambiar de tenant en el mismo DbContext.
+- Complementa P2-009.C, que contaba filas totales sin agrupar. Solo EF Core InMemory; **no** acredita endpoint de dashboard, JWT/RBAC HTTP ni SQL MySQL. No modifica runtime, modelos, migraciones, secretos, reglas o entornos. `COLA!O195=SI` y `G195=SI` al comenzar; V11 inicio REAL EN_PROGRESO en PLAN/BITACORA. Requiere CI Directed y tres required exact HEAD, revisión independiente, FIFO protected merge y CI posmerge requerida P2 antes de LISTO. No se afirma ejecución local de dotnet.
+- Rollback proporcional mediante revert protegido del test y esta entrada preservando todas las demás notas.
+
+## 2026-11-06 — P2-003.E: prueba negativa IDOR de clientes por EmpresaId (DEV)
+
+- Task nativa Javier :20, AUTHOR_TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`, rama original exclusiva `work/solqaryn-p2-003-e` creada desde `dev@61b8e66c2719d4f522a594b5aff53b3e9a2eca5a`.
+- Prueba causal xUnit `backend/tests/Solqaryn.Tests/P2003EClientesIdorTenantTests.cs`: dos clientes de empresas A/B, búsqueda directa `Cliente.Id` con `AsNoTracking`, cabecera `X-Empresa-Id` falsificada, positivos de pertenencia, negativos de ID ajeno y alternancia de tenant verificado en el mismo `AppDbContext`. Complementa P2-003.D, que prueba homónimos por nombre/identidad.
+- Sólo prueba EF InMemory y esta entrada; no cambia código productivo, HTTP/JWT/RBAC, migraciones, MySQL, secretos, workflows, rulesets ni QA/main/PROD. Dotnet local no ejecutado: exigir Directed comercial + tres required checks exact-HEAD SUCCESS y revisión independiente antes de merge FIFO, postmerge CI P2 requerida antes LISTO. Rollback por revert protegido preservando cambios ajenos.
+
+## 2026-11-06 — P2-008.D: acceso privado a factura por venta aislado por tenant (DEV)
+
+- Task Javier :00, AUTHOR_TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`, rama exclusiva `work/solqaryn-p2-008-d` desde `dev@fa346a03ab4ded3a848e6bc1b1b4c51030be559c`.
+- Regresion causal xUnit `backend/tests/Solqaryn.Tests/P2008DFacturaPorVentaTenantTests.cs`: `FacturaRepository.GetByVentaIdAsync` en A/B con numeros de venta y factura homonimos, cabeceras `X-Empresa-Id` cruzadas, marca tenant verificada alternante y rechazo sin marca en base multiempresa. Complementa P2-008.C (`GetAllAsync` y `GetByIdAsync`).
+- Solo test y CHANGELOG idempotente; no runtime/API/JWT/RBAC/productivo, bases, migraciones, reglas ni secretos. No demuestra URL de documentos, autorización HTTP/JWT, PDF real ni MySQL; pruebas locales .NET NO ejecutadas. Se requieren revisión independiente de Task distinta, Directed y 3 required exact HEAD, FIFO y COLA G para merge; P2 exige postmerge required exact MERGE_SHA antes LISTO.
+- Rollback proporcional: revert protegido del test y su entrada, conservando changesets ajenos.
+
 ## 2026-11-06 — P2-001.E: prueba negativa de RBAC para matriz comercial GET (DEV)
 
 - Autor real Javier :30 / JAVIER_CHATGPT / TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09. Un unico test xUnit backend/tests/Solqaryn.Tests/P2001EPermisoTenantLecturaTests.cs ejercita el filtro productivo existente RequierePermisoAttribute en GET de clientes, productos, ventas, proveedores y compras; el permiso simulado deniega empresa B ante X-Empresa-Id de otro tenant, exige que no se invoque la accion ni se marque autorizacion y comprueba control positivo de A verificada. Es una prueba del contrato del filtro con IPermisoService simulado, no HTTP/JWT real ni permisos almacenados/MySQL; no se modifico codigo runtime, migraciones, secretos, rulesets o workflows.
