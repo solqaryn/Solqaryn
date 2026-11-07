@@ -1,3 +1,10 @@
+## 2026-11-06 — P2-014.E: regresión concurrente A/B/A con tenant verificado mutable por DbContext (DEV)
+
+- Autor nativo Javier :00 / JAVIER_CHATGPT / TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`. Una rama exclusiva `work/solqaryn-p2-014-e`, desde dev `7b04bed40fed830f1754c12888ce3304691a02aa`; PLAN_MAESTRO!H218/I218 y BITACORA PENDIENTE->EN_PROGRESO comprobados ANTES de editar.
+- Prueba xUnit nueva `backend/tests/Solqaryn.Tests/P2014EConcurrenciaCambioTenantTests.cs`: dos ventas A/B con folio compartido, ocho Tasks independientes con sus propios HttpContextAccessor y AppDbContext; cada tarea alterna marca de tenant verificada A/B/A en EL MISMO contexto con cabecera X-Empresa-Id falsificada, comprobando que ninguna consulta hereda la empresa anterior ni lee el registro ajeno. Complementa P2-014.C/D sin compartir DbContext entre tareas ni repetir sólo los casos de dos consultas.
+- Únicamente test y entrada aditiva de CHANGELOG_AI.md. Sin cambios productivos, JWT/RBAC, API, migraciones, MySQL, secretos, rulesets, workflows ni QA/main/PROD. EF InMemory no acredita HTTP, validación JWT real, MySQL ni concurrencia transaccional; dotnet test local NO ejecutado; exigir Directed comercial + tres required SUCCESS exact HEAD y revisión independiente Task distinta, PR CLEAN y FIFO global antes de merge. P2 requiere tres REQUIRED postmerge exact MERGE_SHA antes de LISTO.
+- Reversión por revert protegido exclusivo de la prueba y esta entrada preservando registros concurrentes.
+
 ## 2026-11-06 — P2-009.E: negativa de reportes y KPI sin alcance autenticado (DEV)
 
 - Autora nativa: Alex :50 / ALEX_CHATGPT / TASK_ID `6adcc98a80a48191b71a5156624c21df`. Prueba xUnit `backend/tests/Solqaryn.Tests/P2009EDashboardScopeNegativoTests.cs`: `DashboardService.GetResumenAsync()` y `GetInventarioVariantesAsync()` deben lanzar `ForbiddenAccessException` sin `UsuarioScopeActual` autenticado resoluble. Mocks estrictos y `VerifyNoOtherCalls()` acreditan que no se consulta ningún repositorio cuando falta el alcance; regresión separada de P2-009.C (conteo EF) y P2-009.D (agrupación EF por empresa).
