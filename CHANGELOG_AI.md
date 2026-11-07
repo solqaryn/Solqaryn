@@ -1,3 +1,10 @@
+## 2026-11-06 — P2-012.C: Outbox sin HTTP aislado por tenant (DEV)
+
+- Autoría nativa Javier :40, JAVIER_CHATGPT, TASK_ID `6adc2e55f47c81919f6374e561687076`, GitHub `jmejia31`; rama exclusiva `work/solqaryn-p2-012-c` creada desde `dev@2e752ff1f810495679c23964b422a9e32fa974a1`. Inicio V11 certificado con BITACORA `SQ-P2-012-C-J40-START-2E752FF1-20261106`.
+- Nuevo test `backend/tests/Solqaryn.Tests/P2012COutboxSinHttpTenantTests.cs`: dos trabajos durable Outbox con misma clave idempotente en empresas A/B se procesan sin HttpContext y únicamente por EmpresaId del worker; un tenant 0/-1 falla antes del claim o dispatch. Simulación de repositorio y despachador, sin operaciones de red ni MySQL real.
+- Cambio exclusivo de test y entrada CHANGELOG. No se modifican runtime, HTTP/JWT/RBAC, transacciones DB, migraciones, secretos, workflows, rulesets ni QA/main/PROD. Dotnet local no ejecutado: se requieren 3 checks de branch protection + Directed exact-HEAD, revisión por Task diferente y merge FIFO protegido; P2 exige checks postmerge requeridos exact MERGE_SHA para LISTO.
+- Rollback: revert protegido del test y de esta entrada respetando historial ajeno.
+
 ## 2026-11-06 — P2-009.E: negativa de reportes y KPI sin alcance autenticado (DEV)
 
 - Autora nativa: Alex :50 / ALEX_CHATGPT / TASK_ID `6adcc98a80a48191b71a5156624c21df`. Prueba xUnit `backend/tests/Solqaryn.Tests/P2009EDashboardScopeNegativoTests.cs`: `DashboardService.GetResumenAsync()` y `GetInventarioVariantesAsync()` deben lanzar `ForbiddenAccessException` sin `UsuarioScopeActual` autenticado resoluble. Mocks estrictos y `VerifyNoOtherCalls()` acreditan que no se consulta ningún repositorio cuando falta el alcance; regresión separada de P2-009.C (conteo EF) y P2-009.D (agrupación EF por empresa).
