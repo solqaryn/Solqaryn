@@ -3,7 +3,15 @@
 - Autora nativa Javier :40 / JAVIER_CHATGPT, TASK_ID `6adc2e55f47c81919f6374e561687076`. Rama exclusiva `work/solqaryn-p2-015-c` desde `dev@81556a36fe92683e3d2f546a3d0b02b04ce55812`, registro PENDIENTE → EN_PROGRESO con readback PLAN/COLA/BITACORA antes del código.
 - Alcance delimitado a una prueba xUnit sintética de `UsuarioScopeService`: `backend/tests/Solqaryn.Tests/P2015CCuarentenaResidualHeaderSpoofTests.cs`. Dos empresas A/B con membresías activas y rol global legacy de B; cabeceras `X-Empresa-Id` falsificadas para A/B no producen autorización privada sin `VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey`. Control positivo exige rol de A tras marca interna, y revocación de marca vuelve a denegar.
 - Solo test EF InMemory y este CHANGELOG; sin modificaciones runtime/API/DTO/JWT/RBAC/MySQL/migraciones/workflows/secrets ni otros ambientes. No se ejecutó dotnet local. La regresión no certifica HTTP/JWT ni MySQL real: Directed, required exact-HEAD y revisión independiente se exigen antes del merge FIFO; P2 exige postmerge required exact MERGE_SHA antes de LISTO.
+- Corrección causal CI (2026-11-07): la primera versión intentó acceder a `EmpresaId` en `UsuarioScopeActual` (CS1061). Mantiene el control negativo `ObtenerActualAsync()` y verifica `EmpresaId` únicamente mediante la sobrecarga `ObtenerActualAsync(a.Id)` que devuelve `UsuarioTenantScopeActual`; conservar sin cambios los controles de cabecera falsificada y rol A/B. Revisión independiente y CI del nuevo HEAD aún pendientes.
 - Rollback mediante revert protegido solo de prueba y esta entrada, preservando aportes ajenos.
+
+## 2026-11-06 — P2-006.E: prueba negativa IDOR de Venta.Id por tenant verificado (DEV)
+
+- Autor Task Javier :30, TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09, rama exclusiva work/solqaryn-p2-006-e, base dev@b7273e2743a03cf80e8836ecbcd9c2c29c75ca9e.
+- Prueba xUnit nueva backend/tests/Solqaryn.Tests/P2006EVentasIdorTenantTests.cs: Venta.Id de empresa ajena es invisible para tenant A/B verificado aunque X-Empresa-Id falsificado reclame otra empresa; confirma acceso propio y retorno seguro a A en el mismo AppDbContext.
+- Complementa P2-006.D (folio homonimo) con acceso directo por ID para demostrar negativo IDOR. Solo fixture EF InMemory; NO certifica endpoint HTTP/JWT, MySQL ni regla de negocio real. No se modifica runtime, migraciones, secretos, infraestructura o reglas.
+- Dotnet test local NO ejecutado; exigir Directed commercial scope y tres required checks exact HEAD SUCCESS, revision tecnica independiente, FIFO protegido y tres required POSTMERGE antes de LISTO. Revert protegido como rollback proporcional.
 
 ## 2026-11-07 — P2-005.E: corregir aislamiento de lecturas privadas de compras (DEV)
 
