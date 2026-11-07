@@ -54,10 +54,39 @@ public class CompraRepository : ICompraRepository
         return query.Where(c => c.CreadoPorUsuarioId == alcance.UsuarioId);
     }
 
+    // La consulta privada exige una marca RBAC verificable; la compatibilidad
+    // legacy solo se conserva cuando hay como maximo una empresa, incluso inactiva.
+    // El filtro global EF permite flujos internos sin HTTP y NO otorga permiso.
+    private async Task<IQueryable<Compra>> LecturaPrivadaAsync(
+        IQueryable<Compra> query, int? usuarioSolicitadoPorAdministrador = null)
+    {
+        var empresaId = _context.AuthorizedCommercialEmpresaId;
+        if (empresaId is > 0)
+        {
+            var alcance = await _usuarioScope.ObtenerActualAsync(empresaId.Value);
+            if (alcance is null || alcance.EmpresaId != empresaId.Value)
+                return query.Where(_ => false);
+
+            query = query.Where(c => c.EmpresaId == empresaId.Value);
+            if (!alcance.EsAdministrador)
+                return query.Where(c => c.CreadoPorUsuarioId == alcance.UsuarioId);
+            return usuarioSolicitadoPorAdministrador.HasValue
+                ? query.Where(c => c.CreadoPorUsuarioId == usuarioSolicitadoPorAdministrador.Value)
+                : query;
+        }
+
+        var empresas = await _context.Set<Empresa>().IgnoreQueryFilters()
+            .AsNoTracking().Take(2).CountAsync();
+        if (empresas > 1)
+            return query.Where(_ => false);
+
+        return AplicarAlcance(query, await _usuarioScope.ObtenerActualAsync(),
+            usuarioSolicitadoPorAdministrador);
+    }
+
     public async Task<Compra?> GetByIdAsync(int id)
     {
-        var alcance = await _usuarioScope.ObtenerActualAsync();
-        return await AplicarAlcance(ConIncludes(), alcance)
+        return await (await LecturaPrivadaAsync(ConIncludes()))
             .FirstOrDefaultAsync(c => c.Id == id);
     }
 
@@ -158,9 +187,7 @@ public class CompraRepository : ICompraRepository
 
     public async Task<(List<Compra> Items, int TotalCount)> GetPagedAsync(PagedRequest request)
     {
-        var alcance = await _usuarioScope.ObtenerActualAsync();
-        var usuarioSolicitado = alcance?.EsAdministrador == true ? request.UsuarioIdScope : null;
-        var query = AplicarAlcance(ConIncludes().AsNoTracking(), alcance, usuarioSolicitado);
+        var query = await LecturaPrivadaAsync(ConIncludes().AsNoTracking(), request.UsuarioIdScope);
 
         if (!string.IsNullOrWhiteSpace(request.Search))
         {
@@ -193,18 +220,14 @@ public class CompraRepository : ICompraRepository
 
     public async Task<int> GetTotalDelMesAsync(int? usuarioId = null)
     {
-        var alcance = await _usuarioScope.ObtenerActualAsync();
-        var usuarioSolicitado = alcance?.EsAdministrador == true ? usuarioId : null;
         var inicioMes = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-        var query = AplicarAlcance(_context.Compras.AsQueryable(), alcance, usuarioSolicitado);
+        var query = await LecturaPrivadaAsync(_context.Compras.AsQueryable(), usuarioId);
         return await query.CountAsync(c => c.Fecha >= inicioMes && c.Estado == EstadoDocumento.Confirmada);
     }
 
     public async Task<decimal> GetCuentasPorPagarAsync(int? usuarioId = null)
     {
-        var alcance = await _usuarioScope.ObtenerActualAsync();
-        var usuarioSolicitado = alcance?.EsAdministrador == true ? usuarioId : null;
-        var query = AplicarAlcance(_context.Compras.AsQueryable(), alcance, usuarioSolicitado);
+        var query = await LecturaPrivadaAsync(_context.Compras.AsQueryable(), usuarioId);
         return await query
             .Where(c => c.Estado == EstadoDocumento.Confirmada && c.EstadoPago != EstadoPago.Pagado)
             .SumAsync(c => (decimal?)c.Total) ?? 0m;
@@ -212,9 +235,7 @@ public class CompraRepository : ICompraRepository
 
     public async Task<List<Compra>> GetUltimasAsync(int cantidad = 5, int? usuarioId = null)
     {
-        var alcance = await _usuarioScope.ObtenerActualAsync();
-        var usuarioSolicitado = alcance?.EsAdministrador == true ? usuarioId : null;
-        return await AplicarAlcance(ConIncludes(), alcance, usuarioSolicitado)
+        return await (await LecturaPrivadaAsync(ConIncludes(), usuarioId))
             .OrderByDescending(c => c.Fecha)
             .Take(cantidad)
             .ToListAsync();
