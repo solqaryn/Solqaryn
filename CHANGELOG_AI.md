@@ -1,3 +1,9 @@
+## 2026-11-06 — P2-007.D: ajustes de inventario con folio homónimo aislados por empresa (DEV)
+
+- Task Javier :00, TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`, cuenta JAVIER_CHATGPT. Test causal `backend/tests/Solqaryn.Tests/P2007DInventarioFolioHomonimoTests.cs`: dos ajustes A/B con el mismo `NumeroAjuste`, cabecera `X-Empresa-Id` falsificada en ambas direcciones y cambio de tenant verificado sobre el mismo `AppDbContext`; cada lectura debe mostrar exclusivamente su ajuste.
+- Cambios limitados al test EF InMemory y esta entrada; sin runtime, API, JWT/RBAC productivo, MySQL, migraciones, secretos, workflows, rulesets, QA/main/PROD. `dotnet test` local no ejecutado; exigir Directed P2007D, tres required checks exact HEAD y revisión de Task independiente.
+- Dependencia P2-007.C LISTO; `COLA!O193=SI` al comenzar, `COLA!G193=SI` a revalidar para merge. Reversión mediante revert protegido exclusivo del test y nota sin perder cambios ajenos.
+
 ## 2026-11-06 — P2-013.C: identidad JWT no autoriza tenant B sin membresía A/B (DEV)
 
 - Desarrollo nativo Alex :50 / ALEX_CHATGPT, AUTHOR_TASK_ID `6adcc98a80a48191b71a5156624c21df`, rama exclusiva `work/solqaryn-p2-013-c`, nacida de `dev@f74bb8435ef8f91b4bbc02acfc3ee757cf6b4085`. Dependencia P1-016.B LISTO; COLA!O181=SI y G181=SI al iniciar. Evento V11 PENDIENTE → EN_PROGRESO acreditado en PLAN_MAESTRO/BITACORA.
