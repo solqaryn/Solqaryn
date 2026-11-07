@@ -44,7 +44,7 @@ public sealed class P2014DConcurrenciaFolioIdenticoTenantTests
             Assert.Equal(2, await seed.Ventas.IgnoreQueryFilters()
                 .CountAsync(v => v.NumeroVenta == folio));
 
-            async Task<int[]> LeerConSolicitudAisladaAsync(int verificada, int headerFalsificado)
+            async Task<int?[]> LeerConSolicitudAisladaAsync(int verificada, int headerFalsificado)
             {
                 // HttpContextAccessor es AsyncLocal: establecer dentro del flujo de cada
                 // tarea, y nunca compartir un DbContext entre consultas paralelas.
@@ -70,7 +70,7 @@ public sealed class P2014DConcurrenciaFolioIdenticoTenantTests
             for (var i = 0; i < resultados.Length; i++)
             {
                 var empresaEsperada = i % 2 == 0 ? empresaA.Id : empresaB.Id;
-                Assert.Equal(new[] { empresaEsperada }, resultados[i]);
+                Assert.Equal(new int?[] { empresaEsperada }, resultados[i]);
             }
         }
     }
