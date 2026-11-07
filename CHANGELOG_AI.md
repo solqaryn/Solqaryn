@@ -1,3 +1,10 @@
+## 2026-11-07 — P2-013.E: JWT previo no autoriza rol inactivo ni usuario bloqueado entre empresas (DEV)
+
+- Desarrollo nativo Alex :50 / ALEX_CHATGPT / AUTHOR_TASK_ID `6adcc98a80a48191b71a5156624c21df`; rama exclusiva `work/solqaryn-p2-013-e` iniciada desde dev@`6980a66b4572567e80261bb4cb60256f9f660394`. Dependencia P2-013.D LISTO, COLA!O217=SI y COLA!G217=SI al inicio; registro real PENDIENTE -> EN_PROGRESO y readback.
+- Prueba xUnit aislada `backend/tests/Solqaryn.Tests/P2013EJwtRolInactivoTests.cs`: JWT sintético emitido para usuario de A; A válido al inicio y B prohibido con cabecera X-Empresa-Id forzada; al desactivar rol A, el mismo token deja de permitir A y oculta empresas seleccionables; al bloquear usuario, deniega A/B incluso reactivando rol; al desbloquear, A recupera acceso pero B sigue rechazado.
+- Solo test EF InMemory y changelog: sin cambios en runtime/API, modelos, contratos, MySQL, datos, migraciones, secretos, rulesets ni QA/main/PROD. No se ejecutó dotnet local; se exigen prueba dirigida y tres checks obligatorios exact-HEAD, revisión independiente de Task distinta, FIFO y postmerge P2 required antes de LISTO. EF InMemory y parseo de token no certifican firma JWT, middleware HTTP ni MySQL.
+- Rollback: revertir de forma protegida únicamente esta prueba y esta entrada, sin perder trabajos concurrentes.
+
 ## 2026-11-06 — P2-009.E: negativa de reportes y KPI sin alcance autenticado (DEV)
 
 - Autora nativa: Alex :50 / ALEX_CHATGPT / TASK_ID `6adcc98a80a48191b71a5156624c21df`. Prueba xUnit `backend/tests/Solqaryn.Tests/P2009EDashboardScopeNegativoTests.cs`: `DashboardService.GetResumenAsync()` y `GetInventarioVariantesAsync()` deben lanzar `ForbiddenAccessException` sin `UsuarioScopeActual` autenticado resoluble. Mocks estrictos y `VerifyNoOtherCalls()` acreditan que no se consulta ningún repositorio cuando falta el alcance; regresión separada de P2-009.C (conteo EF) y P2-009.D (agrupación EF por empresa).
