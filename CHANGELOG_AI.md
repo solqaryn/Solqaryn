@@ -1,3 +1,9 @@
+## 2026-11-06 — P2-005.D: compras con NumeroCompra homónimo en tenants A/B (DEV)
+
+- Autor real Task Javier :20 (`6adc2e4bd8a48191ac7d8641ed95a1a3`), rama exclusiva `work/solqaryn-p2-005-d`; prueba causal xUnit `backend/tests/Solqaryn.Tests/P2005DComprasNumeroHomonimoTests.cs` sobre dos compras sintéticas de igual número pero distinta EmpresaId, verificación del filtro EF de ambas empresas con cabecera `X-Empresa-Id` falsificada y conmutación de marca comercial verificada en el mismo DbContext.
+- Complementa P2-005.C, que usaba números distintos; alcance únicamente EF InMemory. No se afirma autenticación HTTP/JWT/RBAC, unicidad MySQL ni ejecución local de dotnet. No cambia producción, migraciones, secretos, reglas, servicios, QA/main/PROD.
+- Dependencia P2-005.C LISTO, COLA!O191=SI y G191=SI antes de iniciar; wymag revisión técnica independiente por Task ajena, CI required + Directed exact-SHA y merge FIFO protegido antes de LISTO; revert proporcional por PR protegido.
+
 ## 2026-11-06 — P2-004.D: repositorio de proveedores aislado por tenant verificado (DEV)
 
 - Task Javier :00, AUTHOR_TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`, rama unica `work/solqaryn-p2-004-d` desde `dev@64f913a36f57ff1ee21dbe857c3f489cbbf18d4d`.
