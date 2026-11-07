@@ -57,6 +57,22 @@ export function oldestProtectedMergeReady(prs) {
   return ready ? first : null;
 }
 
+// V13: only an advisory one-at-a-time FIFO decision; re-read GitHub/dev/Sheets after EVERY close.
+export function nextV13FifoAction(prs,actorTaskId){
+ if(!TASK.test(actorTaskId||'')||!Array.isArray(prs))return {action:'NO_GO_UNVERIFIED_QUEUE'};
+ const first=orderCommercialPRsByCreation(prs).find(p=>p.githubState==='open'||(p.githubState==='merged'&&p.institutionalListo!==true));
+ if(!first)return {action:'NO_OLDER_PR_DEVELOP_PENDING'};
+ if(!TASK.test(first.authorTaskId||''))return {action:'FIFO_BLOCKED_AUTHOR_UNVERIFIED',prNumber:first.number};
+ if(first.authorTaskId===actorTaskId)return {action:'STOP_SELF_AUTHOR_DEVELOP_PENDING',prNumber:first.number};
+ if(first.githubState==='merged'){
+  const passed=first.independentTechReview===true&&TASK.test(first.reviewerTaskId||'')&&first.reviewerTaskId!==first.authorTaskId&&
+    /^[a-f0-9]{40}$/i.test(first.mergeSha||'')&&first.mergeShaVerified===true&&first.requiredPostmergeSuccess===true&&
+    first.postmergeChecksSha===first.mergeSha&&first.dependenciesOk===true&&first.planCurrentVerified===true&&first.bitacoraAvailable===true;
+  return passed?{action:'CERTIFY_ONE_LISTO_AND_RECHECK',prNumber:first.number}:{action:'FIFO_POSTMERGE_BLOCKED_DEVELOP_PENDING',prNumber:first.number};
+ }
+ return oldestProtectedMergeReady([first])?{action:'MERGE_ONE_PROTECTED_AND_RECHECK',prNumber:first.number}:{action:'FIFO_BLOCKED_DEVELOP_PENDING',prNumber:first.number};
+}
+
 export function canReviewInNativeRun(data) {
   if (!data || data.nativeRunVerified !== true ||
       data.githubCurrentVerified !== true || data.planCurrentVerified !== true ||
@@ -135,6 +151,19 @@ export function selfTestReviewRouting() {
   assert.equal(oldestProtectedMergeReady([later,{...oldest,githubState:'closed'}]).number,51);
   assert.equal(oldestProtectedMergeReady([{},null]),null);
   assert.deepEqual(orderCommercialPRsByCreation([newest,oldest,later]).map(p=>p.number),[50,51,52]);
+  const many=Array.from({length:10},(_,i)=>make(100+i,new Date(Date.parse('2026-11-05T03:00:00Z')+60000*i).toISOString()));
+  let q=[...many],done=0;
+  while(q.length){assert.equal(nextV13FifoAction(q,roster[2]).action,'MERGE_ONE_PROTECTED_AND_RECHECK');q=q.slice(1);done++;}
+  assert.equal(done,10);
+  const stop=[...many.slice(0,2),{...many[2],authorTaskId:roster[2]},...many.slice(3)];
+  assert.equal(nextV13FifoAction(stop,roster[2]).prNumber,100);
+  assert.equal(nextV13FifoAction(stop.slice(1),roster[2]).prNumber,101);
+  assert.deepEqual(nextV13FifoAction(stop.slice(2),roster[2]),{action:'STOP_SELF_AUTHOR_DEVELOP_PENDING',prNumber:102});
+  assert.equal(nextV13FifoAction([{...many[0],requiredChecksSuccess:false},many[1]],roster[2]).action,'FIFO_BLOCKED_DEVELOP_PENDING');
+  const merged={...many[0],githubState:'merged',mergeSha:sha,mergeShaVerified:true,postmergeChecksSha:sha,
+    requiredPostmergeSuccess:true,planCurrentVerified:true,bitacoraAvailable:true};
+  assert.equal(nextV13FifoAction([merged,many[1]],roster[2]).action,'CERTIFY_ONE_LISTO_AND_RECHECK');
+  assert.equal(nextV13FifoAction([{...merged,requiredPostmergeSuccess:false},many[1]],roster[2]).action,'FIFO_POSTMERGE_BLOCKED_DEVELOP_PENDING');
   assert.equal(oldestProtectedMergeReady([{...oldest,headSha:'c'.repeat(40),
     reviewedHeadSha:'c'.repeat(40),checksHeadSha:'c'.repeat(40)},later]).number,50);
 
