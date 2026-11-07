@@ -4,6 +4,20 @@
 - Scope exclusivo P2-010.E, prueba unitaria reproducible basada en EF InMemory; sin código productivo/API/JWT/RBAC/DDL/MySQL/Cloudinary/secretos ni QA/main/PROD. El escenario no certifica HTTP, MySQL ni ZIP; `dotnet test` local NO ejecutado. CI requerida exact HEAD + Directed comercial, revisión independiente de otra TASK_ID, dependencias COLA!G=SI y FIFO antes de fusionar; postmerge P2 requiere tres required SUCCESS exact MERGE_SHA para LISTO.
 - Reversión por revert protegido del test y su única entrada de changelog; preservar todo el historial concurrente.
 
+## 2026-11-06 — P2-011.D: borrado privado Cloudinary por tenant verificado (DEV)
+
+- Autoria real Alex :10 / ALEX_CHATGPT, AUTHOR_TASK_ID `6adbbc9ad9e88191bea8eb69104afb25`, GitHub morales35alex, rama exclusiva `work/solqaryn-p2-011-d` desde dev `2e752ff1f810495679c23964b422a9e32fa974a1`. V11 inicio EN_PROGRESO registrado y comprobado antes de editar código, con COLA!O197=SI y predecesora P2-011.C LISTO.
+- Prueba causal xUnit `backend/tests/Solqaryn.Tests/P2011DCloudinaryBorradoAisladoTests.cs`: un tenant verificado 31 no puede eliminar comprobantes con publicId ajeno 32, 310, prefijo parecido 31-alt, carpeta sin archivo o ruta de productos. Control positivo verifica publicId propio; CancellationToken cancelado impide tráfico Cloudinary e identifica validación de locator anterior al uso de red.
+- Sólo test + esta nota; sin modificación de runtime, API, JWT/RBAC, MySQL, migraciones, configuración, secretos, workflows o ambientes ajenos. No se ejecutó `dotnet test` local; exigir Scope Lock, Seguridad multiempresa, Build backend y Directed comercial sobre SHA exacto, revisión técnica independiente de TASK_ID ajena, FIFO protegido y postmerge requerido para certificar P2. El fixture offline no prueba la red Cloudinary ni autorización HTTP.
+- Rollback: revert protegido únicamente de este test y nota, preservando las contribuciones de otras ramas.
+
+## 2026-11-06 — P2-012.C: Outbox sin HTTP aislado por tenant (DEV)
+
+- Autoría nativa Javier :40, JAVIER_CHATGPT, TASK_ID `6adc2e55f47c81919f6374e561687076`, GitHub `jmejia31`; rama exclusiva `work/solqaryn-p2-012-c` creada desde `dev@2e752ff1f810495679c23964b422a9e32fa974a1`. Inicio V11 certificado con BITACORA `SQ-P2-012-C-J40-START-2E752FF1-20261106`.
+- Nuevo test `backend/tests/Solqaryn.Tests/P2012COutboxSinHttpTenantTests.cs`: dos trabajos durable Outbox con misma clave idempotente en empresas A/B se procesan sin HttpContext y únicamente por EmpresaId del worker; un tenant 0/-1 falla antes del claim o dispatch. Simulación de repositorio y despachador, sin operaciones de red ni MySQL real.
+- Cambio exclusivo de test y entrada CHANGELOG. No se modifican runtime, HTTP/JWT/RBAC, transacciones DB, migraciones, secretos, workflows, rulesets ni QA/main/PROD. Dotnet local no ejecutado: se requieren 3 checks de branch protection + Directed exact-HEAD, revisión por Task diferente y merge FIFO protegido; P2 exige checks postmerge requeridos exact MERGE_SHA para LISTO.
+- Rollback: revert protegido del test y de esta entrada respetando historial ajeno.
+
 ## 2026-11-07 — V13_1000_FIFO_BATCH en PR #3932 (candidato protegido dev)
 
 - Saneamiento de fuentes operativas: referencias activas de WIP seis, 15/15/15, CAS/leases y allowlists de cinco Tasks se corrigen o reclasifican como evidencia histórica sin borrar auditoría.
