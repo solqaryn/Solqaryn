@@ -142,7 +142,7 @@ public class PerfilServiceTests
     }
 
     [Fact]
-    public async Task CambiarPasswordAsync_Actual_Incorrecta_No_Modifica_Hash_Ni_Persiste()
+    public async Task I8006C_CambiarPasswordAsync_Actual_Incorrecta_No_Modifica_Hash_Ni_Persiste()
     {
         var usuario = CrearUsuario();
         var hashAnterior = usuario.PasswordHash;

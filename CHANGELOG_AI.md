@@ -3,6 +3,7 @@
 - Scope exclusivo I8-006.C (Plan Comercial Inicial). Prueba xUnit negativa agregada a `backend/tests/Solqaryn.Tests/PerfilServiceTests.cs`: el usuario autenticado 25 ingresa contraseña actual incorrecta y una contraseña nueva válida; se comprueba rechazo de la operación, conservación del hash y cero escrituras al repositorio, sin acceder a otro UsuarioId.
 - Alcance: solo test de servicio `PerfilService.CambiarPasswordAsync` y esta entrada aditiva. No se modifican API, runtime, DTO, persistencia, migraciones, JWT, RBAC, secretos ni entornos. No acredita HTTP, firma JWT, SMTP ni MySQL real.
 - Entrega mediante rama exclusiva `work/solqaryn-i8-006-c`, PR original contra dev, con revisión independiente, CI required, Directed y postmerge exigibles antes de LISTO. Sin `dotnet test` local; ninguna afirmación de PASS anticipado.
+- Corrección causal del filtro CI dirigido: el nombre del método xUnit lleva el prefijo `I8006C_` para coincidir con `FullyQualifiedName~I8006C`. No se cambian aserciones ni lógica de seguridad; CI y revisión exact-HEAD deben ejecutarse de nuevo.
 
 ## 2026-11-07 — P2-007.E: CorrelationId de Kardex aislado por tenant (DEV)
 
