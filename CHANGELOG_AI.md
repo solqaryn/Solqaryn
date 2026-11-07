@@ -1,3 +1,10 @@
+## 2026-11-06 — P2-011.D: borrado privado Cloudinary por tenant verificado (DEV)
+
+- Autoria real Alex :10 / ALEX_CHATGPT, AUTHOR_TASK_ID `6adbbc9ad9e88191bea8eb69104afb25`, GitHub morales35alex, rama exclusiva `work/solqaryn-p2-011-d` desde dev `2e752ff1f810495679c23964b422a9e32fa974a1`. V11 inicio EN_PROGRESO registrado y comprobado antes de editar código, con COLA!O197=SI y predecesora P2-011.C LISTO.
+- Prueba causal xUnit `backend/tests/Solqaryn.Tests/P2011DCloudinaryBorradoAisladoTests.cs`: un tenant verificado 31 no puede eliminar comprobantes con publicId ajeno 32, 310, prefijo parecido 31-alt, carpeta sin archivo o ruta de productos. Control positivo verifica publicId propio; CancellationToken cancelado impide tráfico Cloudinary e identifica validación de locator anterior al uso de red.
+- Sólo test + esta nota; sin modificación de runtime, API, JWT/RBAC, MySQL, migraciones, configuración, secretos, workflows o ambientes ajenos. No se ejecutó `dotnet test` local; exigir Scope Lock, Seguridad multiempresa, Build backend y Directed comercial sobre SHA exacto, revisión técnica independiente de TASK_ID ajena, FIFO protegido y postmerge requerido para certificar P2. El fixture offline no prueba la red Cloudinary ni autorización HTTP.
+- Rollback: revert protegido únicamente de este test y nota, preservando las contribuciones de otras ramas.
+
 ## 2026-11-06 — P2-011.C: validación tenant de media privada Cloudinary sin red (DEV)
 
 - Autoría nativa real: Javier :00 / JAVIER_CHATGPT / TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a` / GitHub `jmejia31`. Scope P2-011.C, rama exclusiva `work/solqaryn-p2-011-c`, origen dev `19fe61b3149f3ccb4533af439f381a4139cc89f3`. V11 PENDIENTE→EN_PROGRESO registrado antes de modificar código.
