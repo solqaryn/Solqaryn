@@ -1,3 +1,10 @@
+## 2026-11-07 — I8-011.C: superadmin Plataforma sin bypass de tenant comercial A/B (DEV)
+
+- Autoría nativa: Task Javier :40 / JAVIER_CHATGPT / AUTHOR_TASK_ID=6adc2e55f47c81919f6374e561687076; trabajo exclusivo en rama `work/solqaryn-i8-011-c`, base `dev@c9f98f376f261f219aec479819f98582ccc1f35d`. Inicio real EN_PROGRESO con PLAN_MAESTRO!83 y BITACORA!1301, readback COLA previo al código.
+- Prueba causal `backend/tests/Solqaryn.Tests/I8011CSuperadminTenantBoundaryTests.cs`: rol global de sistema válido admite ámbito Plataforma, pero sin membresía de empresa deniega A/B, legacy sin tenant y catálogo; un grant empresarial explícito concede únicamente A sin elevar a administrador ni abrir B; bloqueo revoca los scopes global y empresarial.
+- Alcance: únicamente prueba xUnit sintética EF InMemory y esta entrada aditiva. Sin alteraciones en runtime, API, JWT, migraciones, BD MySQL productiva, reglas CI, secretos, QA/main/PROD ni entornos. `dotnet test` local NO ejecutado; no certifica HTTP/JWT real ni MySQL.
+- Gates de entrega: PR original a `dev`, revisión por TASK_ID diferente y contribuyentes no revisados, Check Runs requeridos Scope Lock/Seguridad/Build backend y Directed cuando aplique SUCCESS exact HEAD; FIFO global, COLA G=SI, CI postmerge 3/3 exact MERGE_SHA para I8 antes de LISTO. Rollback solo por revert protegido de prueba/nota, preservando CHANGELOG concurrente.
+
 ## 2026-11-07 — P2-013.E: JWT previo no autoriza rol inactivo ni usuario bloqueado entre empresas (DEV)
 
 - Desarrollo nativo Alex :50 / ALEX_CHATGPT / AUTHOR_TASK_ID `6adcc98a80a48191b71a5156624c21df`; rama exclusiva `work/solqaryn-p2-013-e` iniciada desde dev@`6980a66b4572567e80261bb4cb60256f9f660394`. Dependencia P2-013.D LISTO, COLA!O217=SI y COLA!G217=SI al inicio; registro real PENDIENTE -> EN_PROGRESO y readback.
