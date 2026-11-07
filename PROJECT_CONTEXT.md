@@ -1,3 +1,7 @@
+## 2026-11-07 — V13_1000_FIFO_BATCH (PR #3932)
+
+Cambio de gobierno candidato en PR #3932: cuatro techos de 1000, FIFO multiple de cierres independientes en cada corrida, parada ante PR propio, progreso visible y CI asincrona. Se conserva dev, revisión independiente, seguridad, Scope Lock, formulas O/G y no-CAS. Fuente normativa unica: docs/AUTOMATION_V13.md; implementacion en scripts/automation-capacity-v13.mjs y scripts/automation-review-routing.mjs. Vigencia solo posmerge protegido y readback Sheets/Tasks, sin cambios de arquitectura frontend/backend.
+
 ## 2026-11-05 — Selección directa de scopes por Task, sin bloqueos de Sheets
 
 El propietario retira el mecanismo de reserva condicional de Sheets. Reparto único por microtarea y autoría mediante scripts/automation-review-routing.mjs; cada Task calcula su ruta solo al ejecutarse y no crea reservas ni bloqueos persistentes. Conserva los 15/15/15, REVIEW_FIRST, los PR protegidos de GitHub, permisos y las comprobaciones necesarias para LISTO. Ante ocupación positiva de otro editor se respeta su trabajo. No restaura motores históricos ni crea Tasks.
