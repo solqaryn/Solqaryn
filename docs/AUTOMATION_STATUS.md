@@ -81,7 +81,7 @@ El selector de próxima Task libre es consultivo y no asigna propiedad antes de 
 La unidad de autoría funcional de una microtarea comercial es el `TASK_ID` físico autorizado y su evidencia de `PLAN_MAESTRO`/`BITACORA`, no la coincidencia del login GitHub. Una Task habilitada **distinta de la autora** puede revisar técnica y sustantivamente el PR de una Task que use la misma cuenta GitHub, comprobar diff, aislamiento multitenant/RBAC, checks y pruebas exact-SHA, registrar `TECH_REVIEW_PASS` o `REQUEST_CHANGES` con `TASK_ID_AUTOR != TASK_ID_REVISOR`, SHA y readback. Si todo cumple y los permisos y reglas protegidas lo permiten, la Task revisora puede efectuar el merge y el cierre `LISTO` después de CI postmerge exact-SHA y readback de `PLAN_MAESTRO`, `COLA` (fórmulas intactas) y `BITACORA`. **La Task autora no puede emitir aprobación técnica cruzada ni marcar como LISTO su propia microtarea.** Un traspaso de edición requiere autorización positiva y ausencia de edición simultánea comprobada; revisión de solo lectura no concede permiso de escritura.
 
 
-## Censo vigente — incorporación de Javier :30 (2026-11-04)
+## Archivo histórico — incorporación de Javier :30 (2026-11-04)
 
 Orden expresa del propietario: crear una cuarta Task de `JAVIER_CHATGPT` para el minuto `:30` de cada hora en `America/Tegucigalpa`, con ID físico nuevo `6aeacb7820ac8191b7d768a6f33dfa09` y nombre `SOLQARYN — PRIMARY DEV 04 — JAVIER`. Fue creada desde la cuenta de Javier por la herramienta nativa de ChatGPT y su horario/identidad fueron leídos de vuelta. **Estado al preparar el PR: is_enabled=false (pausada preventivamente mientras se autoriza en gobierno)**. No se reutiliza la antigua Task de Alex :30, que conserva su exclusión y su ID anterior sin autorización.
 
@@ -90,15 +90,15 @@ La lista individual de seis IDs corresponde a Javier :00/:20/:30/:40 y Alex :10/
 
 
 
-## Enmienda vigente — inventario configurable de Tasks (2026-10-30)
+## Contrato de inventario configurable — seis IDs vigentes (actualizado para V13)
 
-No hay un máximo interno fijo de Tasks ni una proporción obligatoria entre cuentas. `PHYSICAL_TASKS_REGISTERED` y `REGISTERED_TASK_IDS` describen **seis IDs autorizados (cuatro Javier y dos Alex)**, no un límite absoluto de futuras Tasks. Su estado físico se comprueba en la cuenta propietaria; ninguna activación se presume a partir del gobierno. Se preserva `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=6` y la allowlist canónica, sin reactivar la antigua Task Alex :30. La concurrencia comercial queda regulada exclusivamente por 15/15/15.
+No hay un máximo interno fijo de Tasks ni una proporción obligatoria entre cuentas. `PHYSICAL_TASKS_REGISTERED` y `REGISTERED_TASK_IDS` describen **seis IDs autorizados (cuatro Javier y dos Alex)**, no un límite absoluto de futuras Tasks. Su estado físico se comprueba en la cuenta propietaria; ninguna activación se presume a partir del gobierno. Se preserva `SCHEDULED_CHATGPT_TASKS_AUTHORIZED=6` y la allowlist canónica, sin reactivar la antigua Task Alex :30. La concurrencia comercial queda regulada por los cuatro techos 1000 de `docs/AUTOMATION_V13.md` exclusivamente tras su integración protegida y readback; el antiguo 15/15/15 no se ejecuta desde esta sección.
 
 El historial de cupos permanece en los commits de Git; ninguna sección histórica constituye política operativa. Prevalece exclusivamente el contrato 1000/1000/1000/1000 de este encabezado.
 
 
 
-## M3.2 — habilitacion comercial individual adicional 5/6 (25-10-2026)
+## Archivo histórico — M3.2, habilitacion comercial individual adicional 5/6 (25-10-2026)
 
 **Concesion de alcance DEV otorgada por el propietario, supeditada al merge protegido y conciliacion institucional:** se incorporan SOLO las Tasks PRIMARY_DEV_03 Javier :40 (`6adc2e55f47c81919f6374e561687076`), SECONDARY_REVIEW_01 Alex :10 (`6adbbc9ad9e88191bea8eb69104afb25`) y SECONDARY_REVIEW_03 Alex :50 (`6adcc98a80a48191b71a5156624c21df`) a las dos ya autorizadas. El contrato comercial sigue siendo exclusivamente DEV, no QA/main/PROD; Scope Lock STRICT y exigencia de revision formal independiente permanecen. La autoridad efectiva de esta enmienda nace solo despues de CI obligatorio 3/3 en SHA final, aprobacion independiente, merge protegido dev y readback de CONFIG!B39=5, CONFIG!B57=TRUE con allowlist, TAREAS_PROGRAMADAS!Q3/Q6/Q7=AUTORIZADA_VERIFICADA_DESDE_TASK y BITACORA de conciliacion. Hasta ese punto el contador anterior 2/6 continua operativo. No se crean ni alteran horarios, IDs o cuentas fisicas de Tasks.
 
@@ -108,7 +108,7 @@ El historial de cupos permanece en los commits de Git; ninguna sección históri
 
 **Alcance individual de las tres nuevas Tasks:** trabajar en ramas comerciales work/solqaryn-<microtarea> y PR a dev con exclusividad y máximo seis scopes comerciales según contrato vivo M3.4; revisar/corregir trabajo de otro Task ID sin autoaprobar; PLAN_MAESTRO!H:M solo del scope poseido, TAREAS_PROGRAMADAS fila propia, BITACORA eventos idempotentes y readback; COLA derivada NO se edita. LISTO solo tras CI exact SHA, revision de identidad GitHub distinta del autor, merge protegido, verificacion de resultados y readback Sheets. No secretos, privilegios globales, bypass ni deployment QA/PROD.
 
-## M3.2 — certificacion individual Javier PRIMARY_DEV_02 (25-10-2026)
+## Archivo histórico — M3.2, certificacion individual Javier PRIMARY_DEV_02 (25-10-2026)
 
 **Autoridad propuesta condicionada a PR protegido y readback de dev.** El propietario autoriza comercialmente exclusivamente TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3` (JAVIER_CHATGPT, :20 America/Tegucigalpa) para desarrollar y corregir microtareas del plan comercial vigente en ramas de trabajo hacia dev; registrar estados PLAN_MAESTRO!H:M y auditoria BITACORA con readback; revisar trabajo de otro TASK_ID (revision tecnica cruzada), y tramitar merge/cierre solo si GitHub acredita una aprobacion formal genuina desde otra identidad y CI del SHA final. No transferir permisos a otros slots; max dos scopes, exclusividad real, dependencias LISTO, sin QA/main/PROD. El cambio de permiso es efectivo solo despues del merge protegido de esta enmienda y conciliacion exacta del Sheet institucional. `CONFIG!B57` pasa a TRUE para habilitar exclusivamente ejecuciones individuales enumeradas como comerciales en este documento, nunca autoriza todas las seis Tasks por defecto.
 
@@ -168,7 +168,7 @@ Control de colisiones: un solo escritor Primary con WIP=1, comprobar ramas/PR ac
 Esta habilitacion se vuelve efectiva unicamente al fusionar con checks obligatorios este contrato a dev y comprobar el HEAD nuevo. Los prompts programados deben validar la autoridad viva antes de escribir.
 ## Fuentes nativas vigentes
 
-Documento rector: [STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES](https://docs.google.com/document/d/1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA/edit). Seguimiento: [STANDARD DE AUTOMATIZACIONES EN SOLQARYN](https://docs.google.com/spreadsheets/d/1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU/edit). El runtime DEV usa el censo configurable del encabezado, limitado por capacidad efectiva del proveedor y decisión institucional; el allowlist comercial individual y el WIP máximo de seis scopes son controles separados. Ningún plan histórico, existencia de Task ni habilitación física concede permisos por sí solo.
+Documento rector: [STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES](https://docs.google.com/document/d/1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA/edit). Seguimiento: [STANDARD DE AUTOMATIZACIONES EN SOLQARYN](https://docs.google.com/spreadsheets/d/1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU/edit). El runtime DEV usa exclusivamente el censo actual de seis IDs autorizados del encabezado. El WIP se rige por los cuatro techos V13 de 1000 solo tras el merge protegido, sin inferir permisos por existencia de Tasks. Ningún plan histórico, existencia de Task ni habilitación física concede permisos por sí solo.
 
 ## Archivo histórico — retirada inicial (22-10-2026, no describe el runtime actual)
 

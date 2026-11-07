@@ -1,5 +1,6 @@
 ## 2026-11-07 — V13_1000_FIFO_BATCH en PR #3932 (candidato protegido dev)
 
+- Saneamiento de fuentes operativas: referencias activas de WIP seis, 15/15/15, CAS/leases y allowlists de cinco Tasks se corrigen o reclasifican como evidencia histórica sin borrar auditoría.
 - Cuatro techos 1000, FIFO global multicierre por pasada con nueva lectura tras cada merge, parada obligatoria ante AUTHOR_TASK_ID propio y fallback a PENDIENTE con COLA!O=SI.
 - docs/AUTOMATION_V13.md unifica la autoridad operativa; tests negativos de capacidades y del barrido. Sin CAS, sin nuevas Tasks, ni cambios a Scope Lock/CI requerida, QA/main/PROD.
 - Conserva la prueba original P2-017.D y todas las entradas históricas, requiere revisión formal independiente exact-HEAD antes de activación.

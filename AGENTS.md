@@ -6,7 +6,7 @@ Unica regla operativa de capacidad, FIFO, parada ante autor y desarrollo sin CAS
 
 ## Contrato técnico de custodia por etapa — PR #3854
 
-El selector de scripts/automation-review-routing.mjs reparte revisiones de forma determinista entre TASK_ID distintos, sin registrar bloqueos en Sheets. scripts/automation-stage-ownership.mjs conserva comprobaciones de autoría y transiciones, sin bloqueo externo. GitHub y las validaciones institucionales siguen protegiendo el código y los cierres.
+El selector consultivo scripts/automation-review-routing.mjs propone revisiones entre TASK_ID distintos; reviewerFor es preferencia y no veto ni reserva, sin bloqueos en Sheets. scripts/automation-stage-ownership.mjs conserva comprobaciones de autoría y transiciones, sin bloqueo externo. GitHub y las validaciones institucionales siguen protegiendo el código y los cierres.
 
 # SOLQARYN — Reglas actuales de trabajo
 
@@ -59,19 +59,16 @@ El selector de próxima Task libre es consultivo y no asigna propiedad antes de 
 La unidad de autoría funcional de una microtarea comercial es el `TASK_ID` físico autorizado y su evidencia de `PLAN_MAESTRO`/`BITACORA`, no la coincidencia del login GitHub. Una Task habilitada **distinta de la autora** puede revisar técnica y sustantivamente el PR de una Task que use la misma cuenta GitHub, comprobar diff, aislamiento multitenant/RBAC, checks y pruebas exact-SHA, registrar `TECH_REVIEW_PASS` o `REQUEST_CHANGES` con `TASK_ID_AUTOR != TASK_ID_REVISOR`, SHA y readback. Si todo cumple y los permisos y reglas protegidas lo permiten, la Task revisora puede efectuar el merge y el cierre `LISTO` después de CI postmerge exact-SHA y readback de `PLAN_MAESTRO`, `COLA` (fórmulas intactas) y `BITACORA`. **La Task autora no puede emitir aprobación técnica cruzada ni marcar como LISTO su propia microtarea.** Un traspaso de edición requiere autorización positiva y ausencia de edición simultánea comprobada; revisión de solo lectura no concede permiso de escritura.
 
 
-## Prioridad de revisión y cierre — corrección operativa 2026-11-04
-
-
 ## Censo autorizado actual — seis Tasks físicas (2026-11-05)
 
-El allowlist vigente incluye únicamente los cuatro TASK_ID de Javier (:00, :20, :30, :40) y los dos de Alex (:10, :50), según `REGISTERED_TASK_IDS` y `AUTHORIZED_COMMERCIAL_TASK_IDS` en AUTOMATION_AUTHORITY y AUTOMATION_STATUS. El máximo 15/15/15 NO registra quince Tasks ni reactiva ninguna. Los estados físicos reales son independientes de este censo y deben leerse en la cuenta nativa de cada propietario; las Tasks pausadas por el propietario permanecen pausadas hasta el readback de todas las configuraciones. No reintroducir reglas de cupo, censo o roles retirados.
+El allowlist vigente incluye únicamente los cuatro TASK_ID de Javier (:00, :20, :30, :40) y los dos de Alex (:10, :50), según `REGISTERED_TASK_IDS` y `AUTHORIZED_COMMERCIAL_TASK_IDS` en AUTOMATION_AUTHORITY y AUTOMATION_STATUS. Los techos propuestos V13 1000/1000/1000/1000 NO representan mil Tasks ni reactivan identidades; siguen siendo seis IDs autorizados y la efectividad V13 depende del merge protegido. Los estados físicos reales son independientes de este censo y deben leerse en la cuenta nativa de cada propietario; las Tasks pausadas por el propietario permanecen pausadas hasta el readback de todas las configuraciones. No reintroducir reglas de cupo, censo o roles retirados.
 
 
-## Autorizacion adicional M3.2 — Javier :40 y Alex :10/:50
+## Archivo histórico — Autorizacion adicional M3.2 — Javier :40 y Alex :10/:50
 
 Se amplía a 5/6 exclusivamente después de merge protegido y conciliación de Sheets; detalles y pruebas en `docs/AUTOMATION_STATUS.md` y `docs/AUTOMATION_AUTHORITY.md`. GitHub commits de prueba individuales: Javier :40 `46e6a9822d89932697c93e77c96df239d73bed4f`, Alex :10 `37fb117a38959c99c5795130a1a40365693cc0b4` y Alex :50 `b0f5a77757847d623a17c0f1d9c5fde57fd909fd`. BITACORA filas 85, 76 y 81 corroboran. Pruebas consumidas, no repetir. Se excluye Alex :30 hasta evidencia propia contents:write y nueva autorización protegida. Se conservan independencia GitHub de revisores, CI 3/3, Scope Lock STRICT, WIP comercial máximo 6 según M3.4, excluidos QA/main/PROD.
 
-## Autorizacion individual Javier :20 (condicionada al merge)
+## Archivo histórico — Autorizacion individual Javier :20 (condicionada al merge)
 
 El permiso comercial DEV de PRIMARY_DEV_02 TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3` se concede exclusivamente tras aprobar, fusionar y conciliar este changeset en dev/Sheet. GH contenido commit aaca89247d9aaf61eb21a308c2e43fd5fef24526 y BITACORA A77 verificadas. Permiso de GitHub ramas/PR, PLAN_MAESTRO y BITACORA solo con autoridad por identidad, WIP comercial máximo 6 conforme a M3.4, CI y revision independiente GitHub antes de LISTO. `CONFIG!B57=TRUE` no concede escritura a las otras cuatro Tasks no autorizadas. Nunca autoaprobar bajo la cuenta GitHub autenticada de Javier (ID 93171442). No QA/main/PROD ni despliegues.
 
@@ -97,7 +94,7 @@ Esta habilitacion se vuelve efectiva unicamente al fusionar con checks obligator
 1. `docs/PROJECT_SCOPE_LOCK.md` regula la identidad de SOLQARYN y el acceso a sus fuentes.
 2. `docs/AUTOMATION_STATUS.md` declara si existe un motor programado autorizado.
 3. El documento `STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES` es la fuente actual del alcance comercial. Ninguna hoja, manifiesto, bitácora o plan histórico es ejecutable por inferencia.
-4. `docs/AUTOMATION_AUTHORITY.md` y `docs/AUTOMATION_AUTHORITY.md` regulan un inventario configurable por la propietaria, con permisos comprobados individualmente. El censo de seis Tasks y la distribución actual 3+3 son fotografía, no techo ni autorización. Se preservan el allowlist comercial vigente de cinco Tasks y el WIP máximo seis scopes. El piloto v1.2 permanece como antecedente. No autoriza QA/main/PROD ni restaura VAEP. Gobierno paritario: `PROPIETARIA_INSTITUCIONAL` SOLQARYN Platform; `EJECUTOR_PRINCIPAL_01` Javier (`93171442`) y `EJECUTOR_PRINCIPAL_02` Alex (`morales35alex`) son pares humanos, sin jerarquía ni transferencia de permisos.
+4. `docs/AUTOMATION_AUTHORITY.md` conserva el inventario actual de seis Task IDs (cuatro Javier y dos Alex) y la separación de permisos; `docs/AUTOMATION_V13.md` consolida los cuatro techos 1000 y el FIFO multicierre solo al integrarse por PR protegido. Los cupos seis, la topología 3+3 y la antigua autorización de cinco Tasks son antecedentes, NO reglas operativas. Sin QA/main/PROD ni reactivación de VAEP. Gobierno paritario: `PROPIETARIA_INSTITUCIONAL` SOLQARYN Platform; `EJECUTOR_PRINCIPAL_01` Javier (`93171442`) y `EJECUTOR_PRINCIPAL_02` Alex (`morales35alex`) conservan sus identidades independientes.
 5. La única Skill local permitida sigue siendo `solqaryn-project-governance`; las referencias externas son opcionales y se consultan únicamente para una necesidad técnica real.
 
 ## Archivo histórico — estado de automatización al 22-10-2026 (sin vigencia operativa)
