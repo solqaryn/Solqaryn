@@ -1,3 +1,10 @@
+## 2026-11-07 — I8-002.C: delimitar el contrato de recuperación de usuarios empresa (DEV)
+
+- Scope único I8-002.C, autor Task Javier :00, TASK_ID 6adbb9fff1548191a1bd5b30d9e9984a, rama exclusiva work/solqaryn-i8-002-c desde dev@788acb02bff46b337c7432036c3a4f140931b201; predecesora P1-016.B LISTO y COLA!O74=SI.
+- Archivo delimitado: backend/src/API/Controllers/AuthController.cs, blob original 820134ca13b33e9d84ad3e5f381111db58e30df4. Regresión xUnit añadida backend/tests/Solqaryn.Tests/I8002CRecuperacionUsuariosEmpresaDelimitacionTests.cs, inspección de atributos POST: login presente, renovar marcado [Authorize] y rutas de recuperación/reset/forgot/password ausentes de AuthController.
+- Este micropaso preserva la superficie pública existente y documenta el gate de futura recuperación empresarial sin crear endpoint, token, email ni una vía de bypass. NO certifica la inexistencia de rutas en otros controladores ni prueba HTTP/JWT real, RBAC, MySQL o entrega de correo.
+- Sin cambios runtime, API, DTO, persistencia, migraciones, secretos, workflows/rulesets, QA/main/PROD. No se ejecutó dotnet test local; CI requerida exact HEAD y revisión Task independiente antes de cualquier merge. Para I8, postmerge REQUIRED exact MERGE_SHA antes de LISTO. Rollback mediante revert protegido exclusivo de la prueba y esta entrada.
+
 ## 2026-11-06 — P2-006.E: prueba negativa IDOR de Venta.Id por tenant verificado (DEV)
 
 - Autor Task Javier :30, TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09, rama exclusiva work/solqaryn-p2-006-e, base dev@b7273e2743a03cf80e8836ecbcd9c2c29c75ca9e.
