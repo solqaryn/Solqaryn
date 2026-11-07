@@ -1,3 +1,4 @@
+import { MAX_CONCURRENT_SCOPES,MAX_OPEN_WORK_BRANCHES,MAX_OWNED_SCOPES_PER_TASK,MAX_ACTIVE_WRITES_PER_TASK,countDistinctWip,selfTestCapacityV13 } from './automation-capacity-v13.mjs';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { reviewerFor, developerFor, selfTestReviewRouting } from './automation-review-routing.mjs';
@@ -17,9 +18,10 @@ export function validateDocuments(src) {
   for (const [name,body] of Object.entries({authority:src.authority,status:src.status})) {
     if(key(body,'PROJECT_SCOPE_LOCK')!=='STRICT' ||
        key(body,'AUTOMATION_RUNTIME')!=='ACTIVE_DEV' ||
-       key(body,'MAX_CONCURRENT_SCOPES')!=='15' ||
-       key(body,'MAX_OWNED_SCOPES_PER_TASK')!=='15' ||
-       key(body,'MAX_ACTIVE_WRITES_PER_TASK')!=='15')
+       key(body,'MAX_CONCURRENT_SCOPES')!==String(MAX_CONCURRENT_SCOPES) ||
+       key(body,'MAX_OPEN_WORK_BRANCHES')!==String(MAX_OPEN_WORK_BRANCHES) ||
+       key(body,'MAX_OWNED_SCOPES_PER_TASK')!==String(MAX_OWNED_SCOPES_PER_TASK) ||
+       key(body,'MAX_ACTIVE_WRITES_PER_TASK')!==String(MAX_ACTIVE_WRITES_PER_TASK))
       errors.push(name+' policy');
     if(key(body,'REVIEW_ROUTE_MODE')!=='DETERMINISTIC_AUTHOR_EXCLUSION')
       errors.push(name+' reviewer routing');
@@ -59,8 +61,8 @@ export function selectWork(tasks,stateById,account,activeReviewIds=new Set(),tas
   const eligible=TASK.test(taskId||'') && roster.includes(taskId) &&
     ownershipReadbackVerified === true && account===expectedAccount;
   if(!eligible) return {action:'NO_ELIGIBLE',reason:'NATIVE_ID_OR_READBACK_REQUIRED'};
-  const owned=tasks.filter(t=>t.state==='EN_PROGRESO'&&t.ownerTaskId===taskId).length;
-  if(owned>=15) return {action:'NO_ELIGIBLE',reason:'TASK_CAPACITY_15'};
+  const owned=new Set(tasks.filter(t=>t.state==='EN_PROGRESO'&&t.ownerTaskId===taskId).map(t=>t.id)).size;
+  if(owned>=MAX_OWNED_SCOPES_PER_TASK) return {action:'NO_ELIGIBLE',reason:'TASK_CAPACITY_1000'};
   const review=tasks.find(t=>t.state==='VALIDANDO' && SCOPE.test(t.id||'') &&
     TASK.test(t.authorTaskId||'') && t.authorTaskId!==taskId &&
     roster.includes(taskId) &&
@@ -73,8 +75,8 @@ export function selectWork(tasks,stateById,account,activeReviewIds=new Set(),tas
   const own=tasks.find(t=>t.state==='EN_PROGRESO'&&t.ownerTaskId===taskId&&
     t.activeEditorConflict!==true&&t.branchReadbackVerified===true);
   if(own) return {action:'RESUME',task:own};
-  if(tasks.filter(t=>['EN_PROGRESO','VALIDANDO'].includes(t.state)).length>=15)
-    return {action:'NO_ELIGIBLE',reason:'GLOBAL_WIP_15'};
+  if(countDistinctWip(tasks)==null || countDistinctWip(tasks)>=MAX_CONCURRENT_SCOPES)
+    return {action:'NO_ELIGIBLE',reason:'GLOBAL_WIP_1000'};
   const work=tasks.filter(t=>t.state==='PENDIENTE'&&SCOPE.test(t.id||'')&&
     (t.developmentEnabled===true||t.developmentEnabled==='SI')&&
     developmentDependenciesSatisfied(t,stateById)&&
@@ -104,7 +106,7 @@ export function selectNextScheduledFreeTask(candidates, nowIso, account, previou
     c.rruleVerified===true&&c.timezone==='America/Tegucigalpa'&&
     c.identityVerified===true&&c.permissionsVerified===true&&
     c.ownershipReadbackVerified===true&&Number.isInteger(c.ownedOpenScopes)&&
-    c.ownedOpenScopes>=0&&c.ownedOpenScopes<15&&
+    c.ownedOpenScopes>=0&&c.ownedOpenScopes<MAX_OWNED_SCOPES_PER_TASK&&
     c.activeRun===false&&c.activeEditor===false&&c.activeLease===false&&
     ['PROVIDER_NEXT_RUN','DERIVED_VERIFIED_RRULE'].includes(c.nextRunSource)&&
     instant(c.nextRunAt)&&Date.parse(c.nextRunAt)>now&&
@@ -145,14 +147,14 @@ export function validateProposedRun(p){
       p.branchReadbackVerified!==true||p.conflictingClaim===true||
       p.activeEditorConflictOnTarget===true||!p.branchName?.startsWith('work/solqaryn-'))
       errors.push('unsafe_edit');
-    if(!Number.isInteger(p.openWorkBranches)||p.openWorkBranches<0||p.openWorkBranches>15||
-       (!p.resumingExistingScope&&p.openWorkBranches>=15))
+    if(!Number.isInteger(p.openWorkBranches)||p.openWorkBranches<0||p.openWorkBranches>MAX_OPEN_WORK_BRANCHES||
+       (!p.resumingExistingScope&&p.openWorkBranches>=MAX_OPEN_WORK_BRANCHES))
       errors.push('global_capacity');
     if(!Number.isInteger(p.taskOwnedScopeCount)||p.taskOwnedScopeCount<0||
-       p.taskOwnedScopeCount>=15&&!p.resumingExistingScope)
+       p.taskOwnedScopeCount>=MAX_OWNED_SCOPES_PER_TASK&&!p.resumingExistingScope)
       errors.push('task_capacity');
     if(!Number.isInteger(p.taskActiveWriteCount)||p.taskActiveWriteCount<0||
-       p.taskActiveWriteCount>=15&&!p.resumingExistingScope)
+       p.taskActiveWriteCount>=MAX_ACTIVE_WRITES_PER_TASK&&!p.resumingExistingScope)
       errors.push('writer_capacity');
   }else if(p.operation==='REVIEW'){
     if(!TASK.test(p.authorTaskId||'')||p.authorTaskId===p.actorTaskId||
@@ -200,7 +202,7 @@ const source={authority,status,agents,scope};
 const errs=validateDocuments(source);
 if(errs.length){console.error('SOLQARYN AUTOMATION AUTHORITY NO_GO '+errs.join(' | '));process.exitCode=1;}
 else if(process.argv.includes('--self-test')){
-  selfTestReviewRouting();assertStageReleaseNegativeTests();
+  selfTestCapacityV13();selfTestReviewRouting();assertStageReleaseNegativeTests();
   const ids=roster,author=ids[3],reviewer=reviewerFor('P1-015.C',author,ids);
   const row={id:'P1-015.C',state:'VALIDANDO',authorTaskId:author,authorAccount:'ALEX_CHATGPT',
     reviewerAllowed:true,reviewPermissionVerified:true,prUrl:'https://github.com/solqaryn/Solqaryn/pull/3861'};
@@ -247,5 +249,10 @@ else if(process.argv.includes('--self-test')){
   if(!validateProposedRun({...p,authorTaskId:reviewer}).length)throw Error('self-review bypass');
   if(!validateProposedRun({...p,actorNativeOccurrenceVerified:false}).length)throw Error('non-native run bypass');
   if(!validateProposedRun({...p,activeEditorConflict:true}).length)throw Error('active collision bypass');
-  console.log('SOLQARYN DIRECT REVIEW 15/15/15 SELF_TEST=PASS');
+  const sixteen=Array.from({length:16},(_,i)=>({id:'P2-'+String(300+i)+'.A',state:'VALIDANDO'}));
+  if(selectWork([...sixteen,pending],{},ownerAccount,new Set(),developer,true).action!=='CLAIM') throw Error('obsolete 15 still blocks');
+  const max=Array.from({length:1000},(_,i)=>({id:'P2-'+String(1000+i)+'.A',state:'VALIDANDO'}));
+  if(selectWork([...max,pending],{},ownerAccount,new Set(),developer,true).reason!=='GLOBAL_WIP_1000') throw Error('1000 not enforced');
+  if(selectWork([...max.slice(0,999),pending],{},ownerAccount,new Set(),developer,true).action!=='CLAIM') throw Error('999 rejected');
+  console.log('SOLQARYN DIRECT REVIEW 1000x4 V13 SELF_TEST=PASS');
 }

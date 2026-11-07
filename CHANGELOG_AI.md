@@ -1,3 +1,9 @@
+## 2026-11-07 — V13_1000_FIFO_BATCH en PR #3932 (candidato protegido dev)
+
+- Cuatro techos 1000, FIFO global multicierre por pasada con nueva lectura tras cada merge, parada obligatoria ante AUTHOR_TASK_ID propio y fallback a PENDIENTE con COLA!O=SI.
+- docs/AUTOMATION_V13.md unifica la autoridad operativa; tests negativos de capacidades y del barrido. Sin CAS, sin nuevas Tasks, ni cambios a Scope Lock/CI requerida, QA/main/PROD.
+- Conserva la prueba original P2-017.D y todas las entradas históricas, requiere revisión formal independiente exact-HEAD antes de activación.
+
 ## 2026-11-06 — P2-017.D: regresión de rol cruzado en membresía A/B (DEV)
 
 - Task autora Javier :30 / JAVIER_CHATGPT / TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09. Rama exclusiva work/solqaryn-p2-017-d creada desde dev@2e752ff1f810495679c23964b422a9e32fa974a1, con PLAN_MAESTRO EN_PROGRESO y BITACORA inicio real confirmados antes de editar.
