@@ -1,3 +1,10 @@
+## 2026-11-07 — P2-008.E: capability de factura PDF aislada por empresa (DEV)
+
+- Autor real: Task Javier :20, cuenta JAVIER_CHATGPT, TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Una rama exclusiva `work/solqaryn-p2-008-e`, base `dev@81556a36fe92683e3d2f546a3d0b02b04ce55812`, un PR original hacia dev. Sin reutilizar ramas anteriores.
+- Regresion xUnit `P2008ECapabilityFacturaPrivadaTenantTests`: dos empresas con facturas y folios homonimos; la cabecera `X-Empresa-Id` falsificada y el identificador publico aislados no habilitan PDF. Una marca valida A autoriza solo su factura A, nunca B, listados privados ni busqueda por VentaId; trasplantar la FacturaId de B bajo marca A no autoriza B; B exige su marca propia. Retirar marca o salir de la ruta publica deniega el acceso.
+- Solo se agregan esta prueba y esta entrada de CHANGELOG; sin cambios de runtime, API, JWT/RBAC, datos, migraciones, workflows, secretos ni entornos. EF Core InMemory y mocks no equivalen a una prueba HTTP/JWT ni MySQL real. No se ejecuta dotnet test local; CI dirigida y los checks requeridos sobre HEAD exacto son evidencia pendiente.
+- Requiere revision independiente por TASK_ID distinta, FIFO estricto de PR OPEN contra dev, COLA!G=SI y CI pre/postmerge aplicable antes de certificar LISTO. Rollback por revert protegido del changeset en dev, nunca forzar push.
+
 ## 2026-11-07 — P2-005.E: corregir aislamiento de lecturas privadas de compras (DEV)
 
 - Autor Task Javier :20 / JAVIER_CHATGPT / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Se conserva el PR #3929 y la rama exclusiva `work/solqaryn-p2-005-e`, sin force-push; recuperación causal de REQUEST_CHANGES #5809885464.
