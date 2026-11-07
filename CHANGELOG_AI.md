@@ -1,3 +1,9 @@
+## 2026-11-07 — P2-016.D: persistencia de datos históricos sin propietario (DEV)
+
+- Autoría: Task nativa Javier :30 / JAVIER_CHATGPT / TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09. Rama exclusiva work/solqaryn-p2-016-d creada desde dev@81556a36fe92683e3d2f546a3d0b02b04ce55812. Dependencia P2-016.C=LISTO, COLA!O202=SI y G202=SI antes de iniciar.
+- Ajuste de cobertura por reuso de los filtros existentes: nueva regresión xUnit `P2016DDatosHistoricosPersistenciaTests.cs` en dos instancias separadas de AppDbContext: un dato histórico sintético con EmpresaId nulo se conserva sin atribución tras guardar categorías propias de A/B; la lectura RBAC A/B ignora cabeceras X-Empresa-Id falsificadas; la ruta interna explícita IgnoreQueryFilters comprueba que el owner sigue NULL tras recarga. Difiere de P2-016.C al verificar persistencia entre contextos, no sólo estado rastreado en uno.
+- Alcance sólo prueba EF InMemory + esta entrada aditiva; NO se alteran runtime, HTTP/JWT, MySQL, migraciones, datos históricos reales, secretos, rulesets, QA/main/PROD. No se ejecutó dotnet test local; no atribuir CI PASS hasta Check Runs exact-HEAD y revisión independiente por Task distinta. P2 requiere postmerge required 3/3 exact MERGE_SHA antes de LISTO. Rollback protegido selectivo.
+
 ## 2026-11-07 — P2-005.E: corregir aislamiento de lecturas privadas de compras (DEV)
 
 - Autor Task Javier :20 / JAVIER_CHATGPT / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Se conserva el PR #3929 y la rama exclusiva `work/solqaryn-p2-005-e`, sin force-push; recuperación causal de REQUEST_CHANGES #5809885464.
