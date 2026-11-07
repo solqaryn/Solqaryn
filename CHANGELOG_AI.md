@@ -5,6 +5,14 @@
 - Únicamente test y entrada aditiva de CHANGELOG_AI.md. Sin cambios productivos, JWT/RBAC, API, migraciones, MySQL, secretos, rulesets, workflows ni QA/main/PROD. EF InMemory no acredita HTTP, validación JWT real, MySQL ni concurrencia transaccional; dotnet test local NO ejecutado; exigir Directed comercial + tres required SUCCESS exact HEAD y revisión independiente Task distinta, PR CLEAN y FIFO global antes de merge. P2 requiere tres REQUIRED postmerge exact MERGE_SHA antes de LISTO.
 - Reversión por revert protegido exclusivo de la prueba y esta entrada preservando registros concurrentes.
 
+## 2026-11-06 — P2-011.C: validación tenant de media privada Cloudinary sin red (DEV)
+
+- Autoría nativa real: Javier :00 / JAVIER_CHATGPT / TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a` / GitHub `jmejia31`. Scope P2-011.C, rama exclusiva `work/solqaryn-p2-011-c`, origen dev `19fe61b3149f3ccb4533af439f381a4139cc89f3`. V11 PENDIENTE→EN_PROGRESO registrado antes de modificar código.
+- Prueba dirigida `backend/tests/Solqaryn.Tests/P2011CCloudinaryMediaPrivadaTests.cs`: comprobante privado `CloudinaryCompraDocumentoStorageService.DownloadAsync` con tenant verificado 31, rechazo de locators de tenant 32/310, hostname suplantado, HTTP inseguro y credenciales URL; control positivo de URL exacta tenant 31. Se usa token ya cancelado para demostrar fallo anterior a HTTP o aceptación del locator sin tráfico externo. Sin credenciales reales ni mutación Cloudinary.
+- Sólo test y CHANGELOG; no se cambia código runtime, endpoint, autorización JWT/RBAC, BD, migraciones, secretos, ruleset, QA/main/PROD. La prueba NO certifica autenticación HTTP, titularidad de registros DB, tráfico real Cloudinary o MySQL; `dotnet test` local no acreditado, Directed comercial y CI deben verificar el SHA exacto.
+- COLA!O179=SI habilitó desarrollo; COLA!G179=SI se revalidará antes de merge. Exigir PR CLEAN, revisión independiente por Task distinta, los tres required checks y Directed SUCCESS exact-HEAD, FIFO global; para P2 exigir postmerge REQUIRED exact MERGE_SHA antes de LISTO.
+- Rollback: revert protegido del test y esta entrada, preservando cambios ajenos y pruebas existentes.
+
 ## 2026-11-06 — P2-014.D: ocho consultas concurrentes A/B con folio compartido y cabeceras cruzadas (DEV)
 
 - Autora Task nativa Javier :40, TASK_ID `6adc2e55f47c81919f6374e561687076`. Nuevo test xUnit `backend/tests/Solqaryn.Tests/P2014DConcurrenciaFolioIdenticoTenantTests.cs` extiende P2-014.C: 8 flujos paralelos, HttpContextAccessor/DbContext exclusivos por solicitud, dos ventas A/B con el mismo NumeroVenta, cabecera `X-Empresa-Id` cruzada, aislamiento por VerifiedCommercialTenant verificado, resultado exacto de empresa autorizada en cada flujo. El fixture usa datos sintéticos EF InMemory, sin prueba de HTTP/JWT real ni concurrencia MySQL.
