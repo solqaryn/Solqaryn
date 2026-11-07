@@ -1,3 +1,10 @@
+## 2026-11-06 — P2-006.E: prueba negativa IDOR de Venta.Id por tenant verificado (DEV)
+
+- Autor Task Javier :30, TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09, rama exclusiva work/solqaryn-p2-006-e, base dev@b7273e2743a03cf80e8836ecbcd9c2c29c75ca9e.
+- Prueba xUnit nueva backend/tests/Solqaryn.Tests/P2006EVentasIdorTenantTests.cs: Venta.Id de empresa ajena es invisible para tenant A/B verificado aunque X-Empresa-Id falsificado reclame otra empresa; confirma acceso propio y retorno seguro a A en el mismo AppDbContext.
+- Complementa P2-006.D (folio homonimo) con acceso directo por ID para demostrar negativo IDOR. Solo fixture EF InMemory; NO certifica endpoint HTTP/JWT, MySQL ni regla de negocio real. No se modifica runtime, migraciones, secretos, infraestructura o reglas.
+- Dotnet test local NO ejecutado; exigir Directed commercial scope y tres required checks exact HEAD SUCCESS, revision tecnica independiente, FIFO protegido y tres required POSTMERGE antes de LISTO. Revert protegido como rollback proporcional.
+
 ## 2026-11-07 — P2-005.E: corregir aislamiento de lecturas privadas de compras (DEV)
 
 - Autor Task Javier :20 / JAVIER_CHATGPT / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Se conserva el PR #3929 y la rama exclusiva `work/solqaryn-p2-005-e`, sin force-push; recuperación causal de REQUEST_CHANGES #5809885464.
