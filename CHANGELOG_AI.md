@@ -4,6 +4,13 @@
 - Test xUnit backend/tests/Solqaryn.Tests/P2011ECloudinaryLocatorCodificadoTests.cs: deniega locators ajenos Cloudinary con cabeceras falsas dentro de query/fragment, prefijo tenant parcial 31-alt y separadores URL percent-encoded (%2F); control propio comprueba paso por validación de tenant y cancelación antes de red. Complementa descargas P2-011.C y borrados P2-011.D sin introducir otro scope.
 - Alcance limitado a prueba sintética + esta nota aditiva; sin cambios de runtime, API, RBAC/JWT, datos, migraciones, servicios, secretos, workflows/rulesets, QA/main/PROD. No se ejecutó dotnet test local ni se acredita HTTP/JWT/MySQL o red real. Exigir prueba dirigida, 3 checks required y Directed SUCCESS exact-HEAD, revisión independiente por TASK_ID distinta, FIFO global y postmerge required exact MERGE_SHA antes de LISTO. Rollback protegido selectivo del test y nota, preservando contribuciones concurrentes.
 
+## 2026-11-07 — P2-013.E: JWT previo no autoriza rol inactivo ni usuario bloqueado entre empresas (DEV)
+
+- Desarrollo nativo Alex :50 / ALEX_CHATGPT / AUTHOR_TASK_ID `6adcc98a80a48191b71a5156624c21df`; rama exclusiva `work/solqaryn-p2-013-e` iniciada desde dev@`6980a66b4572567e80261bb4cb60256f9f660394`. Dependencia P2-013.D LISTO, COLA!O217=SI y COLA!G217=SI al inicio; registro real PENDIENTE -> EN_PROGRESO y readback.
+- Prueba xUnit aislada `backend/tests/Solqaryn.Tests/P2013EJwtRolInactivoTests.cs`: JWT sintético emitido para usuario de A; A válido al inicio y B prohibido con cabecera X-Empresa-Id forzada; al desactivar rol A, el mismo token deja de permitir A y oculta empresas seleccionables; al bloquear usuario, deniega A/B incluso reactivando rol; al desbloquear, A recupera acceso pero B sigue rechazado.
+- Solo test EF InMemory y changelog: sin cambios en runtime/API, modelos, contratos, MySQL, datos, migraciones, secretos, rulesets ni QA/main/PROD. No se ejecutó dotnet local; se exigen prueba dirigida y tres checks obligatorios exact-HEAD, revisión independiente de Task distinta, FIFO y postmerge P2 required antes de LISTO. EF InMemory y parseo de token no certifican firma JWT, middleware HTTP ni MySQL.
+- Rollback: revertir de forma protegida únicamente esta prueba y esta entrada, sin perder trabajos concurrentes.
+
 ## 2026-11-07 — P2-007.E: CorrelationId de Kardex aislado por tenant (DEV)
 
 - Autor nativo Javier :30 / JAVIER_CHATGPT / TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`; rama exclusiva `work/solqaryn-p2-007-e` desde `dev@6980a66b4572567e80261bb4cb60256f9f660394`, con evento real PENDIENTE -> EN_PROGRESO y readback institucional previos al codigo.
