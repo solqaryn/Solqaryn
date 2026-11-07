@@ -1,3 +1,9 @@
+## 2026-11-07 — I8-006.C: delimitar cambio voluntario de contraseña
+
+- Scope exclusivo I8-006.C (Plan Comercial Inicial). Prueba xUnit negativa agregada a `backend/tests/Solqaryn.Tests/PerfilServiceTests.cs`: el usuario autenticado 25 ingresa contraseña actual incorrecta y una contraseña nueva válida; se comprueba rechazo de la operación, conservación del hash y cero escrituras al repositorio, sin acceder a otro UsuarioId.
+- Alcance: solo test de servicio `PerfilService.CambiarPasswordAsync` y esta entrada aditiva. No se modifican API, runtime, DTO, persistencia, migraciones, JWT, RBAC, secretos ni entornos. No acredita HTTP, firma JWT, SMTP ni MySQL real.
+- Entrega mediante rama exclusiva `work/solqaryn-i8-006-c`, PR original contra dev, con revisión independiente, CI required, Directed y postmerge exigibles antes de LISTO. Sin `dotnet test` local; ninguna afirmación de PASS anticipado.
+
 ## 2026-11-07 — P2-007.E: CorrelationId de Kardex aislado por tenant (DEV)
 
 - Autor nativo Javier :30 / JAVIER_CHATGPT / TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`; rama exclusiva `work/solqaryn-p2-007-e` desde `dev@6980a66b4572567e80261bb4cb60256f9f660394`, con evento real PENDIENTE -> EN_PROGRESO y readback institucional previos al codigo.
