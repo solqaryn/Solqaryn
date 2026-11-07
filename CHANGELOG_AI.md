@@ -5,6 +5,20 @@
 - Complementa P2-006.D (folio homonimo) con acceso directo por ID para demostrar negativo IDOR. Solo fixture EF InMemory; NO certifica endpoint HTTP/JWT, MySQL ni regla de negocio real. No se modifica runtime, migraciones, secretos, infraestructura o reglas.
 - Dotnet test local NO ejecutado; exigir Directed commercial scope y tres required checks exact HEAD SUCCESS, revision tecnica independiente, FIFO protegido y tres required POSTMERGE antes de LISTO. Revert protegido como rollback proporcional.
 
+## 2026-11-06 — P2-011.C: validación tenant de media privada Cloudinary sin red (DEV)
+
+- Autoría nativa real: Javier :00 / JAVIER_CHATGPT / TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a` / GitHub `jmejia31`. Scope P2-011.C, rama exclusiva `work/solqaryn-p2-011-c`, origen dev `19fe61b3149f3ccb4533af439f381a4139cc89f3`. V11 PENDIENTE→EN_PROGRESO registrado antes de modificar código.
+- Prueba dirigida `backend/tests/Solqaryn.Tests/P2011CCloudinaryMediaPrivadaTests.cs`: comprobante privado `CloudinaryCompraDocumentoStorageService.DownloadAsync` con tenant verificado 31, rechazo de locators de tenant 32/310, hostname suplantado, HTTP inseguro y credenciales URL; control positivo de URL exacta tenant 31. Se usa token ya cancelado para demostrar fallo anterior a HTTP o aceptación del locator sin tráfico externo. Sin credenciales reales ni mutación Cloudinary.
+- Sólo test y CHANGELOG; no se cambia código runtime, endpoint, autorización JWT/RBAC, BD, migraciones, secretos, ruleset, QA/main/PROD. La prueba NO certifica autenticación HTTP, titularidad de registros DB, tráfico real Cloudinary o MySQL; `dotnet test` local no acreditado, Directed comercial y CI deben verificar el SHA exacto.
+- COLA!O179=SI habilitó desarrollo; COLA!G179=SI se revalidará antes de merge. Exigir PR CLEAN, revisión independiente por Task distinta, los tres required checks y Directed SUCCESS exact-HEAD, FIFO global; para P2 exigir postmerge REQUIRED exact MERGE_SHA antes de LISTO.
+- Rollback: revert protegido del test y esta entrada, preservando cambios ajenos y pruebas existentes.
+
+## 2026-11-06 — P2-014.D: ocho consultas concurrentes A/B con folio compartido y cabeceras cruzadas (DEV)
+
+- Autora Task nativa Javier :40, TASK_ID `6adc2e55f47c81919f6374e561687076`. Nuevo test xUnit `backend/tests/Solqaryn.Tests/P2014DConcurrenciaFolioIdenticoTenantTests.cs` extiende P2-014.C: 8 flujos paralelos, HttpContextAccessor/DbContext exclusivos por solicitud, dos ventas A/B con el mismo NumeroVenta, cabecera `X-Empresa-Id` cruzada, aislamiento por VerifiedCommercialTenant verificado, resultado exacto de empresa autorizada en cada flujo. El fixture usa datos sintéticos EF InMemory, sin prueba de HTTP/JWT real ni concurrencia MySQL.
+- Solo test y nota idempotente; no cambios de runtime, API, RBAC/JWT, migraciones, DB productiva, secretos, workflows, reglas, QA/main/PROD. No dotnet test local; requeridos Scope Lock, Seguridad multiempresa, Build backend y Directed SUCCESS exact HEAD más revisión independiente de Task distinta, COLA!G200=SI, FIFO global y CI postmerge required P2 antes de LISTO.
+- Rollback por revert protegido exclusivo de test/nota, conservando contribuciones concurrentes.
+
 ## 2026-11-06 — P2-009.D: KPI agrupado de clientes homónimos por tenant verificado (DEV)
 
 - Autor real Task Javier :30 (`6aeacb7820ac8191b7d768a6f33dfa09`), rama exclusiva `work/solqaryn-p2-009-d`, base `dev@789dfc1e40c7993f4c65de5c08c681cca0bebe85`. Prueba dirigida xUnit `backend/tests/Solqaryn.Tests/P2009DKpiClientesHomonimosTenantTests.cs` con grupos de clientes homónimos: A=2 y B=1 con el mismo nombre, además de clientes exclusivos A/B; la agregación `GroupBy` obedece `VerifiedCommercialTenant`, incluso con cabecera `X-Empresa-Id` falsificada y al cambiar de tenant en el mismo DbContext.
