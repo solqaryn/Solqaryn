@@ -4,6 +4,14 @@
 - Solo test y nota idempotente; no cambios de runtime, API, RBAC/JWT, migraciones, DB productiva, secretos, workflows, reglas, QA/main/PROD. No dotnet test local; requeridos Scope Lock, Seguridad multiempresa, Build backend y Directed SUCCESS exact HEAD más revisión independiente de Task distinta, COLA!G200=SI, FIFO global y CI postmerge required P2 antes de LISTO.
 - Rollback por revert protegido exclusivo de test/nota, conservando contribuciones concurrentes.
 
+## 2026-11-06 — P2-006.D: ventas con folios homónimos aislados por tenant verificado (DEV)
+
+- Autora nativa Task Javier :40, TASK_ID `6adc2e55f47c81919f6374e561687076`, GitHub `jmejia31`. Nuevo test dirigido `backend/tests/Solqaryn.Tests/P2006DVentasNumeroHomonimoTests.cs`: dos ventas sintéticas A/B comparten `NumeroVenta`, se falsifica `X-Empresa-Id` en ambos sentidos y el filtro de `VerifiedCommercialTenant` debe devolver solo la venta de la empresa autorizada, incluso tras cambiar tenant en el mismo `AppDbContext`.
+- Cambios solo en test y CHANGELOG; sin runtime, API, JWT/RBAC, EF/MySQL productivo, migraciones, reglas, secretos, QA/main/PROD. La prueba EF InMemory no demuestra autenticación HTTP/JWT, MySQL real o integridad de números de venta; no se ejecutó `dotnet test` localmente: Directed y REQUIRED de GitHub deben verificar HEAD exacto.
+- Dependencia `P2-006.C` LISTO y `COLA!O192=SI` al iniciar desarrollo; para merge se requiere `COLA!G192=SI`, revisión causal independiente de otro TASK_ID, tres checks REQUIRED y Directed SUCCESS, PR CLEAN, FIFO global encabezado por #3909 mientras permanezca OPEN. Para P2 exigir CI postmerge required exact MERGE_SHA antes de LISTO.
+- Rollback proporcional: revert protegido del test y nota idempotente, preservando otros cambios.
+
+
 ## 2026-11-06 — P2-017.C: baja logica de rol B y revocacion de membresia sin afectar empresa A (DEV)
 
 - Task nativa Javier :30, AUTHOR_TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`, alcance único P2-017.C, rama `work/solqaryn-p2-017-c`. Nuevo test xUnit `backend/tests/Solqaryn.Tests/P2017CRolesPertenenciasTests.cs` ejercita `UsuarioScopeService` real sobre EF InMemory para A/B: `Rol.Eliminado` de B bloquea acceso/listado B aun con membresía activa y `Usuario.RolId` legacy apuntando a B; después restaurar rol y desactivar la membresía B no autoriza su reingreso, preservando rol y empresa A. Control positivo B activo previo al corte; no se alteró runtime, JWT, RBAC productivo, migraciones, secretos ni workflows.
