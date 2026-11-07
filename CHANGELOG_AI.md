@@ -1,3 +1,9 @@
+## 2026-11-06 — P2-010.D: capacidades públicas no autorizan exportaciones CSV/XLSX/PDF privadas (DEV)
+
+- Autoría real: Task Javier :20, TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`, cuenta `JAVIER_CHATGPT`, GitHub `jmejia31`; rama exclusiva `work/solqaryn-p2-010-d` creada desde `dev@19fe61b3149f3ccb4533af439f381a4139cc89f3`. Dependencia P2-010.C LISTO; COLA!O196=SI y G196=SI al comenzar. Inicio V11 EN_PROGRESO certificado con EVENT_ID SQ-P2-010-D-J20-START-19FE61B3-20261106.
+- Nuevo test xUnit `backend/tests/Solqaryn.Tests/P2010DExportacionesCapacidadPublicaTests.cs`: acceso comercial verificado A produce XLSX sólo con auditoría A aunque `X-Empresa-Id=B` y capacidades de tienda/factura públicas B estén presentes; al revocar el tenant comercial, CSV, XLSX y PDF fallan cerrado aun con esas capacidades públicas y cabecera falsificada. Datos sintéticos EF InMemory; no se modifican runtime, JWT, RBAC, DB, migraciones, servicios, secrets, workflows ni QA/main/PROD.
+- `dotnet test` local no ejecutado: verificar Directed P2010D y tres REQUIRED Check Runs exact HEAD, revisión técnica independiente por TASK_ID distinto, PR CLEAN, FIFO global, merge protegido y checks postmerge P2 exact MERGE_SHA antes de LISTO. Esta prueba no certifica seguridad HTTP/JWT/MySQL real; el rollback es revert protegido del test y esta entrada, sin perder entradas ajenas.
+
 ## 2026-11-06 — P2-006.D: ventas con folios homónimos aislados por tenant verificado (DEV)
 
 - Autora nativa Task Javier :40, TASK_ID `6adc2e55f47c81919f6374e561687076`, GitHub `jmejia31`. Nuevo test dirigido `backend/tests/Solqaryn.Tests/P2006DVentasNumeroHomonimoTests.cs`: dos ventas sintéticas A/B comparten `NumeroVenta`, se falsifica `X-Empresa-Id` en ambos sentidos y el filtro de `VerifiedCommercialTenant` debe devolver solo la venta de la empresa autorizada, incluso tras cambiar tenant en el mismo `AppDbContext`.
