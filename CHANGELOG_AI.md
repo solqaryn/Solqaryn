@@ -5,6 +5,11 @@
 - Cambio solo de test causal y esta entrada aditiva. No runtime, API, JWT, migraciones, MySQL, secretos, workflows ni rulesets. EF InMemory no certifica HTTP/JWT ni base productiva; dotnet test local NO ejecutado. Requiere CI Directed y 3 required exact HEAD SUCCESS, revisión independiente distinta Task, FIFO PR OPEN y controles posmerge P2 antes de LISTO.
 - Rollback proporcional mediante revert protegido del test y de esta entrada conservando el CHANGELOG concurrente.
 
+## 2026-11-06 — P2-009.E: negativa de reportes y KPI sin alcance autenticado (DEV)
+
+- Autora nativa: Alex :50 / ALEX_CHATGPT / TASK_ID `6adcc98a80a48191b71a5156624c21df`. Prueba xUnit `backend/tests/Solqaryn.Tests/P2009EDashboardScopeNegativoTests.cs`: `DashboardService.GetResumenAsync()` y `GetInventarioVariantesAsync()` deben lanzar `ForbiddenAccessException` sin `UsuarioScopeActual` autenticado resoluble. Mocks estrictos y `VerifyNoOtherCalls()` acreditan que no se consulta ningún repositorio cuando falta el alcance; regresión separada de P2-009.C (conteo EF) y P2-009.D (agrupación EF por empresa).
+- Test unitario únicamente, sin cambio runtime/API/DTO, JWT/RBAC productivo, MySQL, migraciones, datos, secrets ni reglas. No se ejecutó `dotnet test` local; exigir CI dirigida y tres checks requeridos exact SHA, revisión técnica independiente de Task distinta. La prueba no valida autorización HTTP/JWT ni filtros EF/MySQL reales. Dependencia P2-009.D sigue VALIDANDO: COLA!O=SI autoriza desarrollar, pero COLA!G=NO PROHIBE MERGE/LISTO hasta que P2-009.D sea LISTO. FIFO global sin adelantar PR. Rollback: revert protegido solo de prueba y esta entrada sin tocar contribuciones ajenas.
+
 ## 2026-11-06 — P2-004.E: regresión IDOR por proveedor entre empresas (DEV)
 
 - Task nativa Javier :20 / JAVIER_CHATGPT / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Prueba xUnit `P2004EProveedorRepositorioIdorTests` sobre `ProveedorRepository`: dos proveedores homónimos con `EmpresaId` distinto, lectura por ID ajeno, `GetByIdConComprasAsync`, búsqueda de activos, cabecera `X-Empresa-Id` falsificada y alternancia del tenant verificado en un mismo `AppDbContext`.
