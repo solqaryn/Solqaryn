@@ -1,3 +1,9 @@
+## 2026-11-06 — P2-003.E: prueba negativa IDOR de clientes por EmpresaId (DEV)
+
+- Task nativa Javier :20, AUTHOR_TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`, rama original exclusiva `work/solqaryn-p2-003-e` creada desde `dev@61b8e66c2719d4f522a594b5aff53b3e9a2eca5a`.
+- Prueba causal xUnit `backend/tests/Solqaryn.Tests/P2003EClientesIdorTenantTests.cs`: dos clientes de empresas A/B, búsqueda directa `Cliente.Id` con `AsNoTracking`, cabecera `X-Empresa-Id` falsificada, positivos de pertenencia, negativos de ID ajeno y alternancia de tenant verificado en el mismo `AppDbContext`. Complementa P2-003.D, que prueba homónimos por nombre/identidad.
+- Sólo prueba EF InMemory y esta entrada; no cambia código productivo, HTTP/JWT/RBAC, migraciones, MySQL, secretos, workflows, rulesets ni QA/main/PROD. Dotnet local no ejecutado: exigir Directed comercial + tres required checks exact-HEAD SUCCESS y revisión independiente antes de merge FIFO, postmerge CI P2 requerida antes LISTO. Rollback por revert protegido preservando cambios ajenos.
+
 ## 2026-11-06 — P2-008.D: acceso privado a factura por venta aislado por tenant (DEV)
 
 - Task Javier :00, AUTHOR_TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`, rama exclusiva `work/solqaryn-p2-008-d` desde `dev@fa346a03ab4ded3a848e6bc1b1b4c51030be559c`.
