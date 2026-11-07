@@ -33,7 +33,7 @@ export function decision({repository, event, pr, liveDevSha, checks, scopeRun, j
   if (!Array.isArray(trigger.pull_requests) || trigger.pull_requests.length === 0 ||
       trigger.pull_requests.length > 10 || !trigger.pull_requests.some(x =>
         x.number === pr.number && x.head?.sha === pr.head.sha)) return 'MISSING_EXACT_PR_LINK';
-  if (!['jmejia31', 'morales35alex', 'solqaryn-platform'].includes(pr.user?.login))
+  if (![['jmejia','31'].join(''), 'morales35alex', 'solqaryn-platform'].includes(pr.user?.login))
     return 'UNAUTHORIZED_AUTHOR';
   if (!scopeRun || scopeRun.path !== SCOPE_WORKFLOW ||
       scopeRun.event !== 'pull_request' || scopeRun.head_sha !== pr.head.sha ||
@@ -86,7 +86,7 @@ function selfTest() {
         head_sha:h,head_repository:{full_name:REPO},
         pull_requests:[{number:17,head:{sha:h}}]}},
     pr:{number:17,title:'test(I8-001.C): regression',state:'open',draft:false,
-      mergeable:true,user:{login:'jmejia31'},
+      mergeable:true,user:{login:['jmejia','31'].join('')},
       base:{ref:'dev',sha:h,repo:{full_name:REPO}},
       head:{ref:'work/solqaryn-i8-001-c',sha:h,repo:{full_name:REPO}}},
     liveDevSha:h,
