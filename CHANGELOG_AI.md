@@ -1,3 +1,9 @@
+## 2026-11-06 — P2-014.D: ocho consultas concurrentes A/B con folio compartido y cabeceras cruzadas (DEV)
+
+- Autora Task nativa Javier :40, TASK_ID `6adc2e55f47c81919f6374e561687076`. Nuevo test xUnit `backend/tests/Solqaryn.Tests/P2014DConcurrenciaFolioIdenticoTenantTests.cs` extiende P2-014.C: 8 flujos paralelos, HttpContextAccessor/DbContext exclusivos por solicitud, dos ventas A/B con el mismo NumeroVenta, cabecera `X-Empresa-Id` cruzada, aislamiento por VerifiedCommercialTenant verificado, resultado exacto de empresa autorizada en cada flujo. El fixture usa datos sintéticos EF InMemory, sin prueba de HTTP/JWT real ni concurrencia MySQL.
+- Solo test y nota idempotente; no cambios de runtime, API, RBAC/JWT, migraciones, DB productiva, secretos, workflows, reglas, QA/main/PROD. No dotnet test local; requeridos Scope Lock, Seguridad multiempresa, Build backend y Directed SUCCESS exact HEAD más revisión independiente de Task distinta, COLA!G200=SI, FIFO global y CI postmerge required P2 antes de LISTO.
+- Rollback por revert protegido exclusivo de test/nota, conservando contribuciones concurrentes.
+
 ## 2026-11-06 — P2-017.C: baja logica de rol B y revocacion de membresia sin afectar empresa A (DEV)
 
 - Task nativa Javier :30, AUTHOR_TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`, alcance único P2-017.C, rama `work/solqaryn-p2-017-c`. Nuevo test xUnit `backend/tests/Solqaryn.Tests/P2017CRolesPertenenciasTests.cs` ejercita `UsuarioScopeService` real sobre EF InMemory para A/B: `Rol.Eliminado` de B bloquea acceso/listado B aun con membresía activa y `Usuario.RolId` legacy apuntando a B; después restaurar rol y desactivar la membresía B no autoriza su reingreso, preservando rol y empresa A. Control positivo B activo previo al corte; no se alteró runtime, JWT, RBAC productivo, migraciones, secretos ni workflows.
