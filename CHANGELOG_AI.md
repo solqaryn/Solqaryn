@@ -1,3 +1,8 @@
+## 2026-11-06 — P2-001.E: prueba negativa de RBAC para matriz comercial GET (DEV)
+
+- Autor real Javier :30 / JAVIER_CHATGPT / TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09. Un unico test xUnit backend/tests/Solqaryn.Tests/P2001EPermisoTenantLecturaTests.cs ejercita el filtro productivo existente RequierePermisoAttribute en GET de clientes, productos, ventas, proveedores y compras; el permiso simulado deniega empresa B ante X-Empresa-Id de otro tenant, exige que no se invoque la accion ni se marque autorizacion y comprueba control positivo de A verificada. Es una prueba del contrato del filtro con IPermisoService simulado, no HTTP/JWT real ni permisos almacenados/MySQL; no se modifico codigo runtime, migraciones, secretos, rulesets o workflows.
+- COLA!O205=SI habilito desarrollo y COLA!G205=SI debe revalidarse al merge. Rama exclusiva work/solqaryn-p2-001-e de dev@757fdbd78266a8d6379bb4bb7f3022768eb20987. dotnet test local no ejecutado; CI Directed y tres required exact HEAD, auditoria independiente de Task distinta, PR sin conflictos y FIFO global son obligatorios. Para P2, LISTO requiere CI requerida posmerge exact MERGE_SHA y readback institucional. Rollback proporcional: revert protegido solo test y esta entrada.
+
 ## 2026-11-06 — P2-002.E: prueba dirigida de IDOR por ProductoRepository (DEV)
 
 - Task nativa Javier :20 / JAVIER_CHATGPT / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Test xUnit `P2002EProductoRepositorioIdorTests`: dos productos homónimos de tenants A/B, lectura directa por ID ajeno, cabecera manipulada `X-Empresa-Id`, aislamiento por marca de tenant verificada, conteos separados y alternancia sobre el mismo AppDbContext. Incluye límite de EF interno sin marca, que **no autoriza HTTP**.
