@@ -1,3 +1,10 @@
+## 2026-11-06 — P2-014.E: regresión concurrente A/B/A con tenant verificado mutable por DbContext (DEV)
+
+- Autor nativo Javier :00 / JAVIER_CHATGPT / TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`. Una rama exclusiva `work/solqaryn-p2-014-e`, desde dev `7b04bed40fed830f1754c12888ce3304691a02aa`; PLAN_MAESTRO!H218/I218 y BITACORA PENDIENTE->EN_PROGRESO comprobados ANTES de editar.
+- Prueba xUnit nueva `backend/tests/Solqaryn.Tests/P2014EConcurrenciaCambioTenantTests.cs`: dos ventas A/B con folio compartido, ocho Tasks independientes con sus propios HttpContextAccessor y AppDbContext; cada tarea alterna marca de tenant verificada A/B/A en EL MISMO contexto con cabecera X-Empresa-Id falsificada, comprobando que ninguna consulta hereda la empresa anterior ni lee el registro ajeno. Complementa P2-014.C/D sin compartir DbContext entre tareas ni repetir sólo los casos de dos consultas.
+- Únicamente test y entrada aditiva de CHANGELOG_AI.md. Sin cambios productivos, JWT/RBAC, API, migraciones, MySQL, secretos, rulesets, workflows ni QA/main/PROD. EF InMemory no acredita HTTP, validación JWT real, MySQL ni concurrencia transaccional; dotnet test local NO ejecutado; exigir Directed comercial + tres required SUCCESS exact HEAD y revisión independiente Task distinta, PR CLEAN y FIFO global antes de merge. P2 requiere tres REQUIRED postmerge exact MERGE_SHA antes de LISTO.
+- Reversión por revert protegido exclusivo de la prueba y esta entrada preservando registros concurrentes.
+
 ## 2026-11-06 — P2-014.D: ocho consultas concurrentes A/B con folio compartido y cabeceras cruzadas (DEV)
 
 - Autora Task nativa Javier :40, TASK_ID `6adc2e55f47c81919f6374e561687076`. Nuevo test xUnit `backend/tests/Solqaryn.Tests/P2014DConcurrenciaFolioIdenticoTenantTests.cs` extiende P2-014.C: 8 flujos paralelos, HttpContextAccessor/DbContext exclusivos por solicitud, dos ventas A/B con el mismo NumeroVenta, cabecera `X-Empresa-Id` cruzada, aislamiento por VerifiedCommercialTenant verificado, resultado exacto de empresa autorizada en cada flujo. El fixture usa datos sintéticos EF InMemory, sin prueba de HTTP/JWT real ni concurrencia MySQL.
