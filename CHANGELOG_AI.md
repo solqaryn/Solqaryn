@@ -1,3 +1,9 @@
+## 2026-11-07 — P2-016.E: cuarentena HTTP de histórico sin owner (DEV)
+
+- Autoría real: Task nativa Javier :00 / JAVIER_CHATGPT / TASK_ID 6adbb9fff1548191a1bd5b30d9e9984a; rama exclusiva work/solqaryn-p2-016-e creada desde dev@788acb02bff46b337c7432036c3a4f140931b201. P2-016.D permanece VALIDANDO: COLA!O220=SI habilitó desarrollo pero COLA!G220=NO impide merge hasta LISTO.
+- Regresión causal xUnit EF InMemory: backend/tests/Solqaryn.Tests/P2016EHistoricoSinOwnerGuardTests.cs. Dos empresas A/B y categoría histórica sintética con EmpresaId null; cabeceras X-Empresa-Id falsificadas A/B sin tenant verificado deben recibir 503/TENANT_DATA_ISOLATION_REQUIRED del UnscopedCommercialTenantGuardMiddleware, sin ejecutar next ni filtrar nombre histórico; el owner queda null bajo consulta interna IgnoreQueryFilters.
+- Complementa P2-016.C (aislamiento EF en el mismo contexto) y P2-016.D (persistencia al reabrir contexto), delimitando explícitamente el borde HTTP de cuarentena. No hay cambios runtime, API, migraciones, DB real, secretos, reglas, QA/main/PROD. La prueba no acredita ejecución JWT/HTTP real ni MySQL; dotnet test local NO ejecutado. Requerir revisión independiente, 3 REQUIRED + Directed exact HEAD y postmerge 3/3 exact MERGE_SHA para LISTO. Rollback por revert protegido de este scope.
+
 ## 2026-11-06 — P2-006.E: prueba negativa IDOR de Venta.Id por tenant verificado (DEV)
 
 - Autor Task Javier :30, TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09, rama exclusiva work/solqaryn-p2-006-e, base dev@b7273e2743a03cf80e8836ecbcd9c2c29c75ca9e.
