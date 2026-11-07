@@ -168,7 +168,7 @@ public sealed class P1010BMultiEmpresaHttpJwtCertificationTests
     /// La cabecera de cliente es no autoritativa frente a la membresia del servidor.
     /// </summary>
     [Fact]
-    public async Task SmokeHttpAB_HeaderFalsificado_NoCambiaRolNiPermiteTenantAjeno()
+    public async Task P2018C_SmokeHttpAB_HeaderFalsificado_NoCambiaRolNiPermiteTenantAjeno()
     {
         using var escenario = await CrearEscenarioAsync();
         using var cliente = escenario.Host.GetTestClient();
