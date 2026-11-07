@@ -163,6 +163,49 @@ public sealed class P1010BMultiEmpresaHttpJwtCertificationTests
         Assert.Equal(HttpStatusCode.Forbidden, contexto.StatusCode);
     }
 
+    /// <summary>
+    /// P2-018.C: smoke HTTP real con JWT de prueba y dos empresas, sin acceder a DEV.
+    /// La cabecera de cliente es no autoritativa frente a la membresia del servidor.
+    /// </summary>
+    [Fact]
+    public async Task SmokeHttpAB_HeaderFalsificado_NoCambiaRolNiPermiteTenantAjeno()
+    {
+        using var escenario = await CrearEscenarioAsync();
+        using var cliente = escenario.Host.GetTestClient();
+        cliente.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer", CrearJwtPrueba(escenario.UsuarioId, escenario.RolAdminAId));
+
+        // Cabecera B forzada, pero la ruta A conserva su rol verdadero.
+        cliente.DefaultRequestHeaders.TryAddWithoutValidation(
+            "X-Empresa-Id", escenario.EmpresaBId.ToString());
+        using (var a = await cliente.GetAsync($"/tenant-context/{escenario.EmpresaAId}"))
+        {
+            Assert.Equal(HttpStatusCode.OK, a.StatusCode);
+            using var json = JsonDocument.Parse(await a.Content.ReadAsStringAsync());
+            var datos = json.RootElement.GetProperty("data");
+            Assert.Equal(escenario.RolAdminAId, datos.GetProperty("rolId").GetInt32());
+            Assert.True(datos.GetProperty("esAdministrador").GetBoolean());
+        }
+
+        // La misma sesion pide B: ni la cabecera A ni el rol admin de A elevan B.
+        cliente.DefaultRequestHeaders.Remove("X-Empresa-Id");
+        cliente.DefaultRequestHeaders.TryAddWithoutValidation(
+            "X-Empresa-Id", escenario.EmpresaAId.ToString());
+        using (var b = await cliente.GetAsync($"/tenant-context/{escenario.EmpresaBId}"))
+        {
+            Assert.Equal(HttpStatusCode.OK, b.StatusCode);
+            using var json = JsonDocument.Parse(await b.Content.ReadAsStringAsync());
+            var datos = json.RootElement.GetProperty("data");
+            Assert.Equal(escenario.RolConsultaBId, datos.GetProperty("rolId").GetInt32());
+            Assert.False(datos.GetProperty("esAdministrador").GetBoolean());
+        }
+
+        // Una tercera empresa sin membresia siempre se deniega.
+        using var ajena = await cliente.GetAsync(
+            $"/tenant-context/{escenario.EmpresaAjenaId}");
+        Assert.Equal(HttpStatusCode.Forbidden, ajena.StatusCode);
+    }
+
     private static string CrearJwtPrueba(int usuarioId, int rolAdminAId)
     {
         var token = new JwtSecurityToken(
