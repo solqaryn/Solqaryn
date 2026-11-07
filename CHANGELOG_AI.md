@@ -5,6 +5,18 @@
 - Cambio exclusivo de test y entrada CHANGELOG. No se modifican runtime, HTTP/JWT/RBAC, transacciones DB, migraciones, secretos, workflows, rulesets ni QA/main/PROD. Dotnet local no ejecutado: se requieren 3 checks de branch protection + Directed exact-HEAD, revisión por Task diferente y merge FIFO protegido; P2 exige checks postmerge requeridos exact MERGE_SHA para LISTO.
 - Rollback: revert protegido del test y de esta entrada respetando historial ajeno.
 
+## 2026-11-06 — P2-004.E: regresión IDOR por proveedor entre empresas (DEV)
+
+- Task nativa Javier :20 / JAVIER_CHATGPT / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Prueba xUnit `P2004EProveedorRepositorioIdorTests` sobre `ProveedorRepository`: dos proveedores homónimos con `EmpresaId` distinto, lectura por ID ajeno, `GetByIdConComprasAsync`, búsqueda de activos, cabecera `X-Empresa-Id` falsificada y alternancia del tenant verificado en un mismo `AppDbContext`.
+- Solo test EF InMemory y entrada aditiva CHANGELOG_AI.md; ningún cambio productivo/API/JWT/RBAC/MySQL/migraciones/workflows/secretos. No declara pruebas ejecutadas localmente; exigir Directed P2004E, tres required checks exact HEAD y revisión independiente de otra Task, además de postmerge required P2 antes de LISTO.
+- Plan Comercial vigente P2-004.E, dependencia P2-004.D LISTO; inicio con COLA!O208=SI/G208=SI, rama exclusiva `work/solqaryn-p2-004-e` desde dev@`de3dd9d97e043729ef73e0eef37ef8479c147ed6`. Reversión por revert protegido del test y esta nota sin afectar cambios ajenos.
+
+## 2026-11-06 — P2-013.D: revocar membresía vigente invalida acceso tenant de JWT previo (DEV)
+
+- Desarrollo nativo Javier :00, JAVIER_CHATGPT, AUTHOR_TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`, rama exclusiva `work/solqaryn-p2-013-d`, dev base `3a1e5c003cf916023653b40b1c48c0b440f6b3fd`; dependencia P2-013.C LISTO, COLA!O199=SI y G199=SI al inicio.
+- Test xUnit dirigido `backend/tests/Solqaryn.Tests/P2013DJwtMembresiaRevocadaTests.cs`: JWT sintético con sólo id usuario, rol y membresía A activos; B rechazado aunque X-Empresa-Id=B; A permitido antes de revocar; A y B rechazados luego de UsuarioEmpresa.Desactivar sin reemitir JWT. Usa TenantContextController + UsuarioScopeService real y EF InMemory, sin alterar runtime, API, permisos, migraciones, workflows o secretos.
+- No se ejecuta dotnet local; CI exact HEAD requerida, Directed comercial y revisión independiente de distinta TASK_ID antes de merge FIFO, más CI postmerge P2 para LISTO. EF InMemory y decodificación de JWT no prueban firma real, middleware HTTP ni MySQL. Reversión por revert protegido sólo de prueba y nota.
+
 ## 2026-11-06 — P2-010.D: capacidades públicas no autorizan exportaciones CSV/XLSX/PDF privadas (DEV)
 
 - Autoría real: Task Javier :20, TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`, cuenta `JAVIER_CHATGPT`, GitHub `jmejia31`; rama exclusiva `work/solqaryn-p2-010-d` creada desde `dev@19fe61b3149f3ccb4533af439f381a4139cc89f3`. Dependencia P2-010.C LISTO; COLA!O196=SI y G196=SI al comenzar. Inicio V11 EN_PROGRESO certificado con EVENT_ID SQ-P2-010-D-J20-START-19FE61B3-20261106.
