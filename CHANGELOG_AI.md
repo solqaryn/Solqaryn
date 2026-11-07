@@ -1,3 +1,10 @@
+## 2026-11-06 — P2-008.D: acceso privado a factura por venta aislado por tenant (DEV)
+
+- Task Javier :00, AUTHOR_TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`, rama exclusiva `work/solqaryn-p2-008-d` desde `dev@fa346a03ab4ded3a848e6bc1b1b4c51030be559c`.
+- Regresion causal xUnit `backend/tests/Solqaryn.Tests/P2008DFacturaPorVentaTenantTests.cs`: `FacturaRepository.GetByVentaIdAsync` en A/B con numeros de venta y factura homonimos, cabeceras `X-Empresa-Id` cruzadas, marca tenant verificada alternante y rechazo sin marca en base multiempresa. Complementa P2-008.C (`GetAllAsync` y `GetByIdAsync`).
+- Solo test y CHANGELOG idempotente; no runtime/API/JWT/RBAC/productivo, bases, migraciones, reglas ni secretos. No demuestra URL de documentos, autorización HTTP/JWT, PDF real ni MySQL; pruebas locales .NET NO ejecutadas. Se requieren revisión independiente de Task distinta, Directed y 3 required exact HEAD, FIFO y COLA G para merge; P2 exige postmerge required exact MERGE_SHA antes LISTO.
+- Rollback proporcional: revert protegido del test y su entrada, conservando changesets ajenos.
+
 ## 2026-11-06 — P2-001.E: prueba negativa de RBAC para matriz comercial GET (DEV)
 
 - Autor real Javier :30 / JAVIER_CHATGPT / TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09. Un unico test xUnit backend/tests/Solqaryn.Tests/P2001EPermisoTenantLecturaTests.cs ejercita el filtro productivo existente RequierePermisoAttribute en GET de clientes, productos, ventas, proveedores y compras; el permiso simulado deniega empresa B ante X-Empresa-Id de otro tenant, exige que no se invoque la accion ni se marque autorizacion y comprueba control positivo de A verificada. Es una prueba del contrato del filtro con IPermisoService simulado, no HTTP/JWT real ni permisos almacenados/MySQL; no se modifico codigo runtime, migraciones, secretos, rulesets o workflows.
