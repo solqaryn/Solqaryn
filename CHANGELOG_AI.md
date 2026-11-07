@@ -1,3 +1,9 @@
+## 2026-11-07 — I8-004.C: transporte SMTP de recuperación fail-closed en DEV
+
+- Autoría nativa: Javier :20 / JAVIER_CHATGPT / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`; rama exclusiva `work/solqaryn-i8-004-c` creada desde `dev@c1fa4e083a9b98a5b33a616c9f1d97ecf0b335d1`. Inicio real `SQ-I8-004-C-J20-START-C1FA4E08-20261107`.
+- Prueba negativa xUnit `backend/tests/Solqaryn.Tests/I8004CCorreoSeguroTests.cs`: `SmtpEmailService.EnviarAsync` devuelve `SMTP_NO_CONFIGURADO` e `Intentos=0` si falta el refresh token OAuth2, sin MessageId ni exponer identificador de cliente en el error. No envía correo ni conecta con servidores en este escenario.
+- Alcance de I8-004.C limitado a delimitación de transporte; **NO** certifica URL exacta de recuperación por ambiente, generación/revocación de tokens, integración SMTP real o E2E. Sin cambios a runtime, API, DB, migraciones, secretos, workflows, main/QA/PROD. Requiere revisión independiente, CI exact-HEAD, FIFO y checks posmerge I8. Rollback: revert protegido del test y esta entrada, conservando demás historia.
+
 ## 2026-11-07 — V13_1000_FIFO_BATCH en PR #3932 (candidato protegido dev)
 
 - Saneamiento de fuentes operativas: referencias activas de WIP seis, 15/15/15, CAS/leases y allowlists de cinco Tasks se corrigen o reclasifican como evidencia histórica sin borrar auditoría.
