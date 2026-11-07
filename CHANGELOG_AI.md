@@ -1,8 +1,28 @@
 ## 2026-11-07 — P2-018.C: smoke integrado HTTP A/B
 
-- Prueba xUnit incremental en `backend/tests/Solqaryn.Tests/P1010BMultiEmpresaHttpJwtCertificationTests.cs`: `SmokeHttpAB_HeaderFalsificado_NoCambiaRolNiPermiteTenantAjeno`; TestServer con JWT de prueba y servicios reales; al falsificar `X-Empresa-Id`, A conserva rol administrador A, B conserva rol de consulta B y una tercera empresa sin membresía devuelve Forbidden. Se usa el fixture EF InMemory existente.
+- Prueba xUnit incremental en `backend/tests/Solqaryn.Tests/P1010BMultiEmpresaHttpJwtCertificationTests.cs`: `P2018C_SmokeHttpAB_HeaderFalsificado_NoCambiaRolNiPermiteTenantAjeno`; TestServer con JWT de prueba y servicios reales; al falsificar `X-Empresa-Id`, A conserva rol administrador A, B conserva rol de consulta B y una tercera empresa sin membresía devuelve Forbidden. Se usa el fixture EF InMemory existente.
 - Solo prueba causal y esta entrada aditiva; sin cambios de runtime, DB, API de producción, secretos ni reglas. No se ha ejecutado dotnet test local ni se considera prueba MySQL/DEV remoto; validar con required Scope Lock, Seguridad multiempresa, Build backend y Directed exact-HEAD del PR original. Revisora Task independiente obligatoria.
 - Rama original `work/solqaryn-p2-018-c` desde dev@`c1fa4e083a9b98a5b33a616c9f1d97ecf0b335d1`; FIFO bloqueado por autoría propia en PR #3933. Sin merge/LISTO anticipado; reversión mediante PR protegido, conservando evidencia histórica.
+
+## 2026-11-07 — P2-010.E: neutralización de fórmulas en exportaciones privadas A/B (DEV)
+
+- Autora Task nativa Javier :00 / JAVIER_CHATGPT / TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`. Test xUnit `backend/tests/Solqaryn.Tests/P2010EFormulaInyeccionExportacionTests.cs`: cuatro cargas de contenido de auditoría con prefijos de fórmula (=,+,-,@). Confirma escape seguro al exportar CSV y que XLSX no contiene fórmulas activas, con cabecera `X-Empresa-Id` falsificada B y tenant comercial verificado A. Comprueba ausencia de registros B y archivo con una sola fila A. Complementa P2-010.C (aislamiento general A/B) y P2-010.D (capacidad pública ajena y revocación de tenant).
+- Scope exclusivo P2-010.E, prueba unitaria reproducible basada en EF InMemory; sin código productivo/API/JWT/RBAC/DDL/MySQL/Cloudinary/secretos ni QA/main/PROD. El escenario no certifica HTTP, MySQL ni ZIP; `dotnet test` local NO ejecutado. CI requerida exact HEAD + Directed comercial, revisión independiente de otra TASK_ID, dependencias COLA!G=SI y FIFO antes de fusionar; postmerge P2 requiere tres required SUCCESS exact MERGE_SHA para LISTO.
+- Reversión por revert protegido del test y su única entrada de changelog; preservar todo el historial concurrente.
+
+## 2026-11-06 — P2-011.D: borrado privado Cloudinary por tenant verificado (DEV)
+
+- Autoria real Alex :10 / ALEX_CHATGPT, AUTHOR_TASK_ID `6adbbc9ad9e88191bea8eb69104afb25`, GitHub morales35alex, rama exclusiva `work/solqaryn-p2-011-d` desde dev `2e752ff1f810495679c23964b422a9e32fa974a1`. V11 inicio EN_PROGRESO registrado y comprobado antes de editar código, con COLA!O197=SI y predecesora P2-011.C LISTO.
+- Prueba causal xUnit `backend/tests/Solqaryn.Tests/P2011DCloudinaryBorradoAisladoTests.cs`: un tenant verificado 31 no puede eliminar comprobantes con publicId ajeno 32, 310, prefijo parecido 31-alt, carpeta sin archivo o ruta de productos. Control positivo verifica publicId propio; CancellationToken cancelado impide tráfico Cloudinary e identifica validación de locator anterior al uso de red.
+- Sólo test + esta nota; sin modificación de runtime, API, JWT/RBAC, MySQL, migraciones, configuración, secretos, workflows o ambientes ajenos. No se ejecutó `dotnet test` local; exigir Scope Lock, Seguridad multiempresa, Build backend y Directed comercial sobre SHA exacto, revisión técnica independiente de TASK_ID ajena, FIFO protegido y postmerge requerido para certificar P2. El fixture offline no prueba la red Cloudinary ni autorización HTTP.
+- Rollback: revert protegido únicamente de este test y nota, preservando las contribuciones de otras ramas.
+
+## 2026-11-06 — P2-012.C: Outbox sin HTTP aislado por tenant (DEV)
+
+- Autoría nativa Javier :40, JAVIER_CHATGPT, TASK_ID `6adc2e55f47c81919f6374e561687076`, GitHub `jmejia31`; rama exclusiva `work/solqaryn-p2-012-c` creada desde `dev@2e752ff1f810495679c23964b422a9e32fa974a1`. Inicio V11 certificado con BITACORA `SQ-P2-012-C-J40-START-2E752FF1-20261106`.
+- Nuevo test `backend/tests/Solqaryn.Tests/P2012COutboxSinHttpTenantTests.cs`: dos trabajos durable Outbox con misma clave idempotente en empresas A/B se procesan sin HttpContext y únicamente por EmpresaId del worker; un tenant 0/-1 falla antes del claim o dispatch. Simulación de repositorio y despachador, sin operaciones de red ni MySQL real.
+- Cambio exclusivo de test y entrada CHANGELOG. No se modifican runtime, HTTP/JWT/RBAC, transacciones DB, migraciones, secretos, workflows, rulesets ni QA/main/PROD. Dotnet local no ejecutado: se requieren 3 checks de branch protection + Directed exact-HEAD, revisión por Task diferente y merge FIFO protegido; P2 exige checks postmerge requeridos exact MERGE_SHA para LISTO.
+- Rollback: revert protegido del test y de esta entrada respetando historial ajeno.
 
 ## 2026-11-07 — V13_1000_FIFO_BATCH en PR #3932 (candidato protegido dev)
 
