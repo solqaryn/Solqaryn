@@ -1,3 +1,11 @@
+## 2026-11-07 — I8-005.C: delimitar token y antifuerza bruta (DEV)
+
+- Autor nativo Task Javier :40 / JAVIER_CHATGPT / TASK_ID `6adc2e55f47c81919f6374e561687076`; scope exclusivo I8-005.C, rama `work/solqaryn-i8-005-c` desde `dev@3696f2838ecfbd318970100e72f3ec1d979b50b1`. Inicio real EN_PROGRESO en PLAN_MAESTRO!77 y BITACORA!1270 con readback previo a codigo.
+- Regresion xUnit `backend/tests/Solqaryn.Tests/I8005CAuthTokenAntifuerzaBrutaDelimitacionTests.cs`: la unica accion POST anonima del AuthController es login bajo politica `AuthLogin`; el endpoint de renovacion exige `[Authorize]`, no `[AllowAnonymous]`. El contrato de Program.cs declara politica `AuthLogin` de ventana fija con rechazo HTTP 429. Si un futuro cambio abre un POST anonimo sin cobertura, falla la prueba.
+- Limite explicito: prueba por reflexion de metadata HTTP y politica declarada, NO certifica token de recuperacion revocable, invalidacion efectiva de JWT, fuerza bruta distribuida, ejecucion HTTP 429, MySQL ni entornos productivos. Las pruebas operativas de revocacion y antifuerza bruta se mantienen pendientes, no se falsea cierre integral.
+- Solo nuevo test y nota aditiva en CHANGELOG; sin modificar runtime, API, JWT/RBAC, datos, migraciones, secretos, workflows, reglas ni main/QA/PROD. Sin dotnet local; exigir required Scope Lock/Seguridad/Backend, Directed comercial aplicable, revision independiente, FIFO global y checks postmerge requeridos I8 exact MERGE_SHA antes de LISTO.
+- Reversion: revert selectivo mediante PR protegido, preservando pruebas y CHANGELOG concurrentes.
+
 ## 2026-11-07 — P2-010.E: neutralización de fórmulas en exportaciones privadas A/B (DEV)
 
 - Autora Task nativa Javier :00 / JAVIER_CHATGPT / TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`. Test xUnit `backend/tests/Solqaryn.Tests/P2010EFormulaInyeccionExportacionTests.cs`: cuatro cargas de contenido de auditoría con prefijos de fórmula (=,+,-,@). Confirma escape seguro al exportar CSV y que XLSX no contiene fórmulas activas, con cabecera `X-Empresa-Id` falsificada B y tenant comercial verificado A. Comprueba ausencia de registros B y archivo con una sola fila A. Complementa P2-010.C (aislamiento general A/B) y P2-010.D (capacidad pública ajena y revocación de tenant).
