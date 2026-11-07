@@ -1,5 +1,8 @@
 using System;
 using System.IO;
+using System.IO.Compression;
+using System.Linq;
+using System.Xml.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ClosedXML.Excel;
@@ -81,8 +84,24 @@ public sealed class P2010EFormulaInyeccionExportacionTests
         using var workbook = new XLWorkbook(stream);
         var hoja = workbook.Worksheet("Reporte");
         var celda = hoja.Cell(2, 8);
+        // ClosedXML normaliza el apóstrofo de escape al reabrir XLSX.
+        // La garantía real es que el OOXML contiene una celda de TEXTO y
+        // ningún nodo <f> ejecutable, aunque el texto empiece por =, +, - o @.
         Assert.False(celda.HasFormula);
-        Assert.Equal("'" + contenidoMalicioso, celda.GetString());
+        Assert.Equal(XLDataType.Text, celda.DataType);
+        Assert.Equal(contenidoMalicioso, celda.GetString());
+
+        using var paquete = new ZipArchive(
+            new MemoryStream(xlsx.Contenido), ZipArchiveMode.Read);
+        var hojaXml = paquete.GetEntry("xl/worksheets/sheet1.xml");
+        Assert.NotNull(hojaXml);
+        using var hojaStream = hojaXml!.Open();
+        var documento = XDocument.Load(hojaStream);
+        XNamespace ns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
+        var celdaXml = Assert.Single(document.Descendants(ns + "c")
+            .Where(nodo => (string?)nodo.Attribute("r") == "H2"));
+        Assert.Null(celdaXml.Element(ns + "f"));
+        Assert.Matches("^(s|inlineStr)$", (string?)celdaXml.Attribute("t") ?? "");
         Assert.Equal(2, hoja.LastRowUsed()!.RowNumber());
     }
 }
