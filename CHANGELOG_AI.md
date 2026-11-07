@@ -1,3 +1,35 @@
+## 2026-11-07 — I8-003.C: reset administrado con permiso y tenant verificado (DEV)
+
+- Autora Task nativa Javier :00 / JAVIER_CHATGPT / TASK_ID 6adbb9fff1548191a1bd5b30d9e9984a, GitHub jmejia31. Rama original exclusiva `work/solqaryn-i8-003-c` desde dev@e3dd861a9836b4d92493f9e31b94321e6d28c285; estado EN_PROGRESO y BITACORA inicial verificados ANTES del codigo.
+- Regresion xUnit `backend/tests/Solqaryn.Tests/I8003CResetAdminEmpresaAislamientoTests.cs`: PUT usuarios/{id} con NuevaPassword debe exigir el permiso Usuarios:RestablecerContrasena para el tenant A con marca autentica del servidor, aunque la cabecera reclame empresa B. Una cabecera sin marca de servidor se rechaza antes de consultar permisos; en ambos negativos no se edita el usuario.
+- DELIMITACION: llamada directa al controlador, no ejecucion de middleware HTTP/JWT, ni certificacion de MySQL, persistencia, correo o nuevo endpoint de reset; no se cambiaron produccion, API, contratos, migraciones, workflows, secretos, rulesets ni QA/main/PROD. Sin `dotnet test` local; requieren CI exact-HEAD, Directed, revision Task independiente, FIFO protegido, y required postmerge antes de LISTO. Reversion por PR protegido solo del test y la nota, preservando cambios concurrentes.
+## 2026-11-07 — P2-007.E: CorrelationId de Kardex aislado por tenant (DEV)
+
+- Autor nativo Javier :30 / JAVIER_CHATGPT / TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`; rama exclusiva `work/solqaryn-p2-007-e` desde `dev@6980a66b4572567e80261bb4cb60256f9f660394`, con evento real PENDIENTE -> EN_PROGRESO y readback institucional previos al codigo.
+- Nueva regresion xUnit `backend/tests/Solqaryn.Tests/P2007EKardexCorrelacionTenantTests.cs`: movimientos de dos empresas con el mismo CorrelationId, lectura paginada de Kardex y consulta por producto aisladas mediante marca privada verificada A/B, cabeceras `X-Empresa-Id` falsificadas, cambio de tenant dentro del mismo DbContext y denegacion sin marca privada aunque exista marca publica. Complementa P2-007.C (ajustes basicos) y P2-007.D (folio de ajuste homonimo), sin tocar codigo de negocio.
+- Impacto: solo nueva prueba EF InMemory y esta entrada aditiva. No se cambian API/DTO, runtime, JWT/RBAC, datos, transacciones MySQL, migraciones, secrets, workflows, rulesets, QA/main/PROD. No se ejecuto `dotnet test` local; no declarar PASS hasta CI GitHub. Se exige Directed commercial scope y tres required SUCCESS exact HEAD, revision independiente por Task distinta, FIFO estricto para merge, `COLA!G211=SI` y checks posmerge P2 sobre MERGE_SHA antes de LISTO.
+- Reversion por revert protegido selectivo de la prueba y esta nota, preservando los cambios ajenos.
+
+## 2026-11-07 — P2-010.E: neutralización de fórmulas en exportaciones privadas A/B (DEV)
+
+- Autora Task nativa Javier :00 / JAVIER_CHATGPT / TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`. Test xUnit `backend/tests/Solqaryn.Tests/P2010EFormulaInyeccionExportacionTests.cs`: cuatro cargas de contenido de auditoría con prefijos de fórmula (=,+,-,@). Confirma escape seguro al exportar CSV y que XLSX no contiene fórmulas activas, con cabecera `X-Empresa-Id` falsificada B y tenant comercial verificado A. Comprueba ausencia de registros B y archivo con una sola fila A. Complementa P2-010.C (aislamiento general A/B) y P2-010.D (capacidad pública ajena y revocación de tenant).
+- Scope exclusivo P2-010.E, prueba unitaria reproducible basada en EF InMemory; sin código productivo/API/JWT/RBAC/DDL/MySQL/Cloudinary/secretos ni QA/main/PROD. El escenario no certifica HTTP, MySQL ni ZIP; `dotnet test` local NO ejecutado. CI requerida exact HEAD + Directed comercial, revisión independiente de otra TASK_ID, dependencias COLA!G=SI y FIFO antes de fusionar; postmerge P2 requiere tres required SUCCESS exact MERGE_SHA para LISTO.
+- Reversión por revert protegido del test y su única entrada de changelog; preservar todo el historial concurrente.
+
+## 2026-11-06 — P2-011.D: borrado privado Cloudinary por tenant verificado (DEV)
+
+- Autoria real Alex :10 / ALEX_CHATGPT, AUTHOR_TASK_ID `6adbbc9ad9e88191bea8eb69104afb25`, GitHub morales35alex, rama exclusiva `work/solqaryn-p2-011-d` desde dev `2e752ff1f810495679c23964b422a9e32fa974a1`. V11 inicio EN_PROGRESO registrado y comprobado antes de editar código, con COLA!O197=SI y predecesora P2-011.C LISTO.
+- Prueba causal xUnit `backend/tests/Solqaryn.Tests/P2011DCloudinaryBorradoAisladoTests.cs`: un tenant verificado 31 no puede eliminar comprobantes con publicId ajeno 32, 310, prefijo parecido 31-alt, carpeta sin archivo o ruta de productos. Control positivo verifica publicId propio; CancellationToken cancelado impide tráfico Cloudinary e identifica validación de locator anterior al uso de red.
+- Sólo test + esta nota; sin modificación de runtime, API, JWT/RBAC, MySQL, migraciones, configuración, secretos, workflows o ambientes ajenos. No se ejecutó `dotnet test` local; exigir Scope Lock, Seguridad multiempresa, Build backend y Directed comercial sobre SHA exacto, revisión técnica independiente de TASK_ID ajena, FIFO protegido y postmerge requerido para certificar P2. El fixture offline no prueba la red Cloudinary ni autorización HTTP.
+- Rollback: revert protegido únicamente de este test y nota, preservando las contribuciones de otras ramas.
+
+## 2026-11-06 — P2-012.C: Outbox sin HTTP aislado por tenant (DEV)
+
+- Autoría nativa Javier :40, JAVIER_CHATGPT, TASK_ID `6adc2e55f47c81919f6374e561687076`, GitHub `jmejia31`; rama exclusiva `work/solqaryn-p2-012-c` creada desde `dev@2e752ff1f810495679c23964b422a9e32fa974a1`. Inicio V11 certificado con BITACORA `SQ-P2-012-C-J40-START-2E752FF1-20261106`.
+- Nuevo test `backend/tests/Solqaryn.Tests/P2012COutboxSinHttpTenantTests.cs`: dos trabajos durable Outbox con misma clave idempotente en empresas A/B se procesan sin HttpContext y únicamente por EmpresaId del worker; un tenant 0/-1 falla antes del claim o dispatch. Simulación de repositorio y despachador, sin operaciones de red ni MySQL real.
+- Cambio exclusivo de test y entrada CHANGELOG. No se modifican runtime, HTTP/JWT/RBAC, transacciones DB, migraciones, secretos, workflows, rulesets ni QA/main/PROD. Dotnet local no ejecutado: se requieren 3 checks de branch protection + Directed exact-HEAD, revisión por Task diferente y merge FIFO protegido; P2 exige checks postmerge requeridos exact MERGE_SHA para LISTO.
+- Rollback: revert protegido del test y de esta entrada respetando historial ajeno.
+
 ## 2026-11-07 — V13_1000_FIFO_BATCH en PR #3932 (candidato protegido dev)
 
 - Saneamiento de fuentes operativas: referencias activas de WIP seis, 15/15/15, CAS/leases y allowlists de cinco Tasks se corrigen o reclasifican como evidencia histórica sin borrar auditoría.
@@ -5498,9 +5530,3 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Incidente real: la CI de merge SHA `5b9549c2` para P1-011.D canceló el job MySQL obligatorio porque el workflow `.github/workflows/dev-ci.yml` agrupaba todos los `push` de `dev` por `github.ref` y usaba `cancel-in-progress: true`. La incorporación posterior de P1-015.D puede cancelar CI anterior y retrasar certificaciones aunque los PR ya estén fusionados.
 - Cambio mínimo en DEV CI: para `push` la clave de concurrencia se define por SHA exacto, sin cancelación; para `pull_request` la clave sigue agrupada por ref y se cancelan ejecuciones anteriores cuando cambia el HEAD. Se conservan todos los jobs, triggers, pruebas MySQL 8.4, Scope Lock y controles de seguridad. No cambia API, UI, DB, migraciones ni QA/main/PROD.
 - Coste controlado: los push de commits diferentes pueden ejecutar CI en paralelo, pero no se esperan mediante Tasks programadas; los resultados terminales del SHA correspondiente se comprueban al certificar LISTO. La validación se hace con CI y revisión protegida del PR de gobierno. Reversión: revertir únicamente esta configuración mediante PR protegido.
-
-## 2026-11-07 — I8-003.C: reset administrado con permiso y tenant verificado (DEV)
-
-- Autora Task nativa Javier :00 / JAVIER_CHATGPT / TASK_ID 6adbb9fff1548191a1bd5b30d9e9984a, GitHub jmejia31. Rama original exclusiva `work/solqaryn-i8-003-c` desde dev@e3dd861a9836b4d92493f9e31b94321e6d28c285; estado EN_PROGRESO y BITACORA inicial verificados ANTES del codigo.
-- Regresion xUnit `backend/tests/Solqaryn.Tests/I8003CResetAdminEmpresaAislamientoTests.cs`: PUT usuarios/{id} con NuevaPassword debe exigir el permiso Usuarios:RestablecerContrasena para el tenant A con marca autentica del servidor, aunque la cabecera reclame empresa B. Una cabecera sin marca de servidor se rechaza antes de consultar permisos; en ambos negativos no se edita el usuario.
-- DELIMITACION: llamada directa al controlador, no ejecucion de middleware HTTP/JWT, ni certificacion de MySQL, persistencia, correo o nuevo endpoint de reset; no se cambiaron produccion, API, contratos, migraciones, workflows, secretos, rulesets ni QA/main/PROD. Sin `dotnet test` local; requieren CI exact-HEAD, Directed, revision Task independiente, FIFO protegido, y required postmerge antes de LISTO. Reversion por PR protegido solo del test y la nota, preservando cambios concurrentes.
