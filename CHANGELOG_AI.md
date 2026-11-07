@@ -1,3 +1,10 @@
+## 2026-11-07 — I8-001.D: auditoria de hash BCrypt y credencial vigente del ERP (DEV)
+
+- Desarrollo nativo Javier :20 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`, rama exclusiva `work/solqaryn-i8-001-d` desde dev@`c9f98f376f261f219aec479819f98582ccc1f35d`. Inicio PENDIENTE -> EN_PROGRESO persistido y releido en PLAN/COLA/BITACORA antes del codigo.
+- Nueva regresion xUnit `backend/tests/Solqaryn.Tests/I8001DPasswordHashAuditoriaTests.cs`: hashes BCrypt del mismo secreto tienen sal distinta, no almacenan texto plano y rechazan secreto alterado; tras cambiar el hash del usuario ERP, el login ya no acepta la clave anterior, no emite JWT por ella y admite solo la nueva con rol activo. El test se limita a datos sinteticos y mocks.
+- Diff acotado a test nuevo y esta nota aditiva: sin cambios en AuthService, API, JWT real, roles, base de datos, migraciones, infraestructura, secretos, CI requerida, QA/main/PROD. No se ejecuto dotnet local; no certificar PASS hasta CI exact-HEAD/Directed y revision independiente de otra Task. No acredita revocacion de JWT emitidos antes de la rotacion ni auditoria de contrasenas productivas.
+- Reversion proporcional mediante PR protegido que retire solo el test y esta entrada, preservando el historial concurrente.
+
 ## 2026-11-07 — P2-013.E: JWT previo no autoriza rol inactivo ni usuario bloqueado entre empresas (DEV)
 
 - Desarrollo nativo Alex :50 / ALEX_CHATGPT / AUTHOR_TASK_ID `6adcc98a80a48191b71a5156624c21df`; rama exclusiva `work/solqaryn-p2-013-e` iniciada desde dev@`6980a66b4572567e80261bb4cb60256f9f660394`. Dependencia P2-013.D LISTO, COLA!O217=SI y COLA!G217=SI al inicio; registro real PENDIENTE -> EN_PROGRESO y readback.
