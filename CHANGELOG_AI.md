@@ -1,3 +1,10 @@
+## 2026-11-08 — P2-007.A: lectura cruzada de ajustes y Kardex A/B (DEV)
+
+- Autoría nativa: Javier :00 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`; rama original única `work/solqaryn-p2-007-a`; base `dev@3a9b21b6c5e237a359d39148bfefc42520cf377b`. Inicio PENDIENTE→EN_PROGRESO leído antes del código en PLAN_MAESTRO!229, COLA!229 y BITACORA!1357.
+- Recibos precedentes REUTILIZADOS, sin reescribirlos: P2-007.C PR #3904, P2-007.D PR #3917 y P2-007.E PR #3936, ya MERGED y LISTO. Nueva regresión xUnit `P2007AInventarioKardexCierreTenantTests.cs`: ajustes y movimientos de Kardex con folios/correlaciones compartidos entre empresas A/B, suma aislada, cabecera X-Empresa-Id falsificada y cambio A→B en el mismo DbContext. Negativo: sin marca comercial privada, la marca pública no expone ambas colecciones.
+- Impacto limitado a un test EF InMemory y esta nota; sin cambios de código productivo, entidades, API/DTO, permisos, MySQL, migraciones, secretos, workflows, rulesets ni QA/main/PROD. No equivale a ejecutar transferencias, conteos, reservas, valorización, HTTP/JWT o transacciones MySQL. `dotnet test` local no acreditado.
+- Integración: CI Scope Lock, Seguridad multiempresa, Backend y Directed SUCCESS exact HEAD, revisión técnica independiente por TASK_ID distinto, PR CLEAN, COLA!G229=SI, FIFO global. P2 exige 3 required checks postmerge exact MERGE_SHA antes de LISTO; ningún PASS ni cierre anticipado. Rollback: revert protegido selectivo del test y de esta entrada, conservando el historial ajeno.
+
 ## 2026-11-07 — P2-016.D: persistencia de datos históricos sin propietario (DEV)
 
 - Autoría: Task nativa Javier :30 / JAVIER_CHATGPT / TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09. Rama exclusiva work/solqaryn-p2-016-d creada desde dev@81556a36fe92683e3d2f546a3d0b02b04ce55812. Dependencia P2-016.C=LISTO, COLA!O202=SI y G202=SI antes de iniciar.
