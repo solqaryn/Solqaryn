@@ -1,3 +1,10 @@
+## 2026-11-07 — P2-004.A: cierre causal de coincidencias de proveedores por EmpresaId (DEV)
+
+- Autoría nativa: Javier :30 / JAVIER_CHATGPT / TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09. Rama original exclusiva `work/solqaryn-p2-004-a` desde `dev@3a9b21b6c5e237a359d39148bfefc42520cf377b`; inicio real PENDIENTE → EN_PROGRESO en PLAN_MAESTRO!H226 y BITACORA!1320, con readback.
+- Prueba causal xUnit `backend/tests/Solqaryn.Tests/P2004AProveedorCoincidenciaTenantTests.cs`: bajo marca verificada A/B con cabecera `X-Empresa-Id` falsificada, `ProveedorRepository.BuscarCoincidenciaActivaAsync` y `ExisteDocumentoAsync` no encuentran documento/correo de proveedor de otro tenant; el cambio A→B en el mismo contexto y una búsqueda positiva por tenant preservan regresiones. Completa la matriz C/D/E (listado, lectura, IDOR) sin modificar código productivo.
+- La consulta EF sin marca tenant permanece un flujo interno; NO se atribuye aislamiento HTTP sin `UnscopedCommercialTenantGuardMiddleware`. Cobertura EF InMemory, no prueba directa JWT/HTTP/MySQL. `dotnet test` local NO ejecutado. Sin cambios a seguridad runtime, migraciones, secretos, CI, pagos, rulesets, QA/main/PROD.
+- Entrega por PR original a `dev`; gates pendientes: revisión técnica de TASK_ID distinta del autor, required Scope Lock/Seguridad/Backend y Directed SUCCESS exact SHA, COLA!G226=SI, integración FIFO; P2 exige postmerge 3/3 exact MERGE_SHA antes de LISTO. Rollback por revert protegido selectivo de test y entrada aditiva.
+
 ## 2026-11-07 — P2-016.D: persistencia de datos históricos sin propietario (DEV)
 
 - Autoría: Task nativa Javier :30 / JAVIER_CHATGPT / TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09. Rama exclusiva work/solqaryn-p2-016-d creada desde dev@81556a36fe92683e3d2f546a3d0b02b04ce55812. Dependencia P2-016.C=LISTO, COLA!O202=SI y G202=SI antes de iniciar.
