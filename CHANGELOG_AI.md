@@ -1,3 +1,10 @@
+## 2026-11-07 — I8-006.C: delimitar cambio voluntario de contraseña
+
+- Scope exclusivo I8-006.C (Plan Comercial Inicial). Prueba xUnit negativa agregada a `backend/tests/Solqaryn.Tests/PerfilServiceTests.cs`: el usuario autenticado 25 ingresa contraseña actual incorrecta y una contraseña nueva válida; se comprueba rechazo de la operación, conservación del hash y cero escrituras al repositorio, sin acceder a otro UsuarioId.
+- Alcance: solo test de servicio `PerfilService.CambiarPasswordAsync` y esta entrada aditiva. No se modifican API, runtime, DTO, persistencia, migraciones, JWT, RBAC, secretos ni entornos. No acredita HTTP, firma JWT, SMTP ni MySQL real.
+- Entrega mediante rama exclusiva `work/solqaryn-i8-006-c`, PR original contra dev, con revisión independiente, CI required, Directed y postmerge exigibles antes de LISTO. Sin `dotnet test` local; ninguna afirmación de PASS anticipado.
+- Corrección causal del filtro CI dirigido: el nombre del método xUnit lleva el prefijo `I8006C_` para coincidir con `FullyQualifiedName~I8006C`. No se cambian aserciones ni lógica de seguridad; CI y revisión exact-HEAD deben ejecutarse de nuevo.
+
 ## 2026-11-07 — I8-005.C: delimitar token y antifuerza bruta (DEV)
 
 - Autor nativo Task Javier :40 / JAVIER_CHATGPT / TASK_ID `6adc2e55f47c81919f6374e561687076`; scope exclusivo I8-005.C, rama `work/solqaryn-i8-005-c` desde `dev@3696f2838ecfbd318970100e72f3ec1d979b50b1`. Inicio real EN_PROGRESO en PLAN_MAESTRO!77 y BITACORA!1270 con readback previo a codigo.
