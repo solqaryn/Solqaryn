@@ -5,6 +5,20 @@
 - Diff acotado a test nuevo y esta nota aditiva: sin cambios en AuthService, API, JWT real, roles, base de datos, migraciones, infraestructura, secretos, CI requerida, QA/main/PROD. No se ejecuto dotnet local; no certificar PASS hasta CI exact-HEAD/Directed y revision independiente de otra Task. No acredita revocacion de JWT emitidos antes de la rotacion ni auditoria de contrasenas productivas.
 - Reversion proporcional mediante PR protegido que retire solo el test y esta entrada, preservando el historial concurrente.
 
+## 2026-11-07 — I8-002.C: delimitar el contrato de recuperación de usuarios empresa (DEV)
+
+- Scope único I8-002.C, autor Task Javier :00, TASK_ID 6adbb9fff1548191a1bd5b30d9e9984a, rama exclusiva work/solqaryn-i8-002-c desde dev@788acb02bff46b337c7432036c3a4f140931b201; predecesora P1-016.B LISTO y COLA!O74=SI.
+- Archivo delimitado: backend/src/API/Controllers/AuthController.cs, blob original 820134ca13b33e9d84ad3e5f381111db58e30df4. Regresión xUnit añadida backend/tests/Solqaryn.Tests/I8002CRecuperacionUsuariosEmpresaDelimitacionTests.cs, inspección de atributos POST: login presente, renovar marcado [Authorize] y rutas de recuperación/reset/forgot/password ausentes de AuthController.
+- Este micropaso preserva la superficie pública existente y documenta el gate de futura recuperación empresarial sin crear endpoint, token, email ni una vía de bypass. NO certifica la inexistencia de rutas en otros controladores ni prueba HTTP/JWT real, RBAC, MySQL o entrega de correo.
+- Sin cambios runtime, API, DTO, persistencia, migraciones, secretos, workflows/rulesets, QA/main/PROD. No se ejecutó dotnet test local; CI requerida exact HEAD y revisión Task independiente antes de cualquier merge. Para I8, postmerge REQUIRED exact MERGE_SHA antes de LISTO. Rollback mediante revert protegido exclusivo de la prueba y esta entrada.
+
+## 2026-11-07 — P2-019.C: límite verificable de certificación comercial parcial (DEV)
+
+- Autoría nativa: Javier :40 / JAVIER_CHATGPT / TASK_ID `6adc2e55f47c81919f6374e561687076`; rama exclusiva `work/solqaryn-p2-019-c`, base `dev@a71c2c1f8e370442212a80cda516e9fb4e2e6087`. Inicio real PENDIENTE → EN_PROGRESO documentado en PLAN_MAESTRO!161 y BITACORA antes del código.
+- Delimitación causal: `backend/tests/Solqaryn.Tests/P2019CReleaseParcialLimiteTests.cs` verifica sobre documentos versionados que capacidades C08 INICIAL, C13 CONDICIONAL y C17 FUTURO no cambian de clasificación ni se confunden con implementación o estado LISTO. El negativo de preparación exige `PRODUCTION_READY = FALSE`, sin autorización implícita por CI o health verde, y conserva aprobación humana para cualquier promoción productiva.
+- Alcance: prueba documental pura + esta nota aditiva; 0 cambios de runtime, API, RBAC/JWT, datos, migraciones, workflows, secretos, infraestructura o QA/main/PROD. El test NO certifica integridad ERP completa, paridad entre entornos ni un release productivo; deben existir evidencias por capability y readback real para cualquier certificación posterior.
+- `dotnet test` local NO ejecutado en esta entrega; exigir revisión independiente por otra TASK_ID, Scope Lock, Seguridad multiempresa, Build backend y Directed commercial scope exact-HEAD, FIFO protegido y 3 checks requeridos postmerge para P2 antes de LISTO. Rollback: revert protegido sólo de la prueba y esta entrada, sin borrar historia concurrente.
+
 ## 2026-11-07 — P2-017.E: rol de Plataforma y plantilla empresarial A/B (DEV)
 
 - Autora real Task Alex :50 / ALEX_CHATGPT / AUTHOR_TASK_ID=6adcc98a80a48191b71a5156624c21df, GitHub morales35alex. Rama exclusiva work/solqaryn-p2-017-e desde dev@6980a66b4572567e80261bb4cb60256f9f660394; transicion inicial PENDIENTE -> EN_PROGRESO y readback en PLAN_MAESTRO!221, COLA!221 y BITACORA!1071.
