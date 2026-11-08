@@ -1,3 +1,10 @@
+## 2026-11-07 — P2-001.A: matriz de endpoints comerciales CRUD, cierre atomico de cobertura (DEV)
+
+- Autoria nativa Javier :40 / JAVIER_CHATGPT / AUTHOR_TASK_ID=6adc2e55f47c81919f6374e561687076; rama unica `work/solqaryn-p2-001-a` desde `dev@3a9b21b6c5e237a359d39148bfefc42520cf377b`. Inicio real EN_PROGRESO registrado antes de codigo en PLAN_MAESTRO!H/I/M223, COLA!E223 y BITACORA!1322 con readback.
+- Test causal `backend/tests/Solqaryn.Tests/P2001AMatrizCrudComercialTests.cs`: 20 casos xUnit para cinco controladores (clientes, productos, ventas, proveedores, compras), cada uno con GET/POST/PUT/DELETE, comprobando `[Authorize]`, ruta, verbo y filtro `RequierePermiso` correcto (Ver/Crear/Editar/EliminarLogico). Negativo: fallo si aparece `AllowAnonymous` o falta/muta el permiso; DELETE de ventas/compras corresponde a borrador, no eliminacion fisica. Conserva y reutiliza P2-001.C/D/E para matriz GET y rechazo de tenant B ante cabecera falsificada.
+- Alcance acotado: metadata y contrato de endpoints existentes, no respuesta HTTP/JWT, membresias reales, EF/MySQL, integridad de transacciones, inventario de TODAS las rutas ni certificacion productiva. GET/POST/PUT/DELETE identificados no suponen que el resto de capacidades esten liberadas; operaciones ajenas/no probadas permanecen fuera de la certificacion. Prueba y CHANGELOG unicamente; sin modificar runtime, base, secretos, workflows, rulesets ni QA/main/PROD.
+- `dotnet test` local NO ejecutado; requeridos Scope Lock, Seguridad multiempresa, Backend, Directed exact-HEAD, revision independiente TASK_ID distinto, FIFO y 3 required postmerge para LISTO. Rollback mediante revert protegido exclusivamente de prueba y esta entrada conservando historia de dev.
+
 ## 2026-11-07 — P2-016.D: persistencia de datos históricos sin propietario (DEV)
 
 - Autoría: Task nativa Javier :30 / JAVIER_CHATGPT / TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09. Rama exclusiva work/solqaryn-p2-016-d creada desde dev@81556a36fe92683e3d2f546a3d0b02b04ce55812. Dependencia P2-016.C=LISTO, COLA!O202=SI y G202=SI antes de iniciar.
