@@ -1,3 +1,10 @@
+## 2026-11-08 — I8-007.D: cambios de estado empresarial con tenant verificado (DEV)
+
+- Autora funcional: Task nativa Javier :20 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`, GitHub `jmejia31`. Rama original `work/solqaryn-i8-007-d` desde `dev@3a9b21b6c5e237a359d39148bfefc42520cf377b`. PENDIENTE a EN_PROGRESO persistido en PLAN_MAESTRO!90 y BITACORA!1368 antes del codigo; COLA!O90=SI y no existia PR/rama/editor del scope.
+- Regresion independiente de I8-007.C: `I8007DEmpresaEstadoSegregadoTests.cs` comprueba que PATCH activar/desactivar B queda denegado cuando el tenant verificado es A, que falsificar `X-Empresa-Id` sin marca autorizada no permite modificar B, y que desactivar A autentica invoca exclusivamente el servicio para A pese al header B. Mocks estrictos acreditan ausencia de llamadas antes del rechazo.
+- Cambios solo de prueba xUnit y esta entrada aditiva, sin modificar controller productivo, permisos, MySQL, JWT, API, workflows, secretos, ramas protegidas ni QA/main/PROD. No hay prueba local dotnet ni validacion HTTP/JWT/MySQL real; requerir CI y Directed exact-HEAD, revision tecnica de otra Task, dependencias LISTO y merge FIFO protegido con checks postmerge cuando proceda.
+- Rollback: revert selectivo por PR protegido, sin force-push ni eliminar entradas concurrentes de CHANGELOG.
+
 ## 2026-11-07 — P2-016.D: persistencia de datos históricos sin propietario (DEV)
 
 - Autoría: Task nativa Javier :30 / JAVIER_CHATGPT / TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09. Rama exclusiva work/solqaryn-p2-016-d creada desde dev@81556a36fe92683e3d2f546a3d0b02b04ce55812. Dependencia P2-016.C=LISTO, COLA!O202=SI y G202=SI antes de iniciar.
