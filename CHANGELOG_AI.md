@@ -1,3 +1,9 @@
+## 2026-11-08 — I8-003.D: reset admin no altera identidad compartida A/B (DEV)
+
+- Autoría Task nativa Javier :00 / JAVIER_CHATGPT / TASK_ID 6adbb9fff1548191a1bd5b30d9e9984a; rama exclusiva `work/solqaryn-i8-003-d` desde dev@3a9b21b6c5e237a359d39148bfefc42520cf377b. PLAN_MAESTRO H86=EN_PROGRESO y BITACORA!1332 confirmados antes del código.
+- Test causal xUnit `backend/tests/Solqaryn.Tests/I8003DResetAdminIdentidadCompartidaTests.cs`: administrador verificado de empresa A solicita NuevaPassword para usuario con membresía activa A y membresía B inactiva. El servicio rechaza la edición antes de actualizar credenciales o auditar mutación; conserva hash original y ambos estados de membresía. Complementa I8-003.C sin repetir el gate del controlador.
+- Sólo prueba EF InMemory + CHANGELOG, sin cambios productivos, endpoints, DTO, MySQL, migraciones, workflows, secretos o QA/main/PROD. `dotnet test` local NO ejecutado; CI exact-HEAD, Directed, revisión técnica independiente por otro TASK_ID, FIFO y checks postmerge pendientes. Rollback por PR protegido, conservando historia concurrente.
+
 ## 2026-11-07 — P2-016.D: persistencia de datos históricos sin propietario (DEV)
 
 - Autoría: Task nativa Javier :30 / JAVIER_CHATGPT / TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09. Rama exclusiva work/solqaryn-p2-016-d creada desde dev@81556a36fe92683e3d2f546a3d0b02b04ce55812. Dependencia P2-016.C=LISTO, COLA!O202=SI y G202=SI antes de iniciar.
