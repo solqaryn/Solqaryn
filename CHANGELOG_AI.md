@@ -1,3 +1,9 @@
+## 2026-11-08 — P2-015.E: cuarentena residual con empresa secundaria inactiva (DEV)
+
+- Autoria: Task nativa Javier :00 / JAVIER_CHATGPT / TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`. Rama exclusiva `work/solqaryn-p2-015-e` desde `dev@3a9b21b6c5e237a359d39148bfefc42520cf377b`. P2-015.D estaba VALIDANDO y COLA!O219=SI, G219=NO (gate de merge), responsable vacio; inicio EN_PROGRESO registrado antes de editar.
+- Regresion xUnit `P2015ECuarentenaResidualEmpresaInactivaTests.cs`: con una sola empresa A, una lectura comercial legacy atraviesa el middleware; al agregar B inactiva, tres cabeceras falsificables (A, B, desconocida) obtienen 503 `TENANT_DATA_ISOLATION_REQUIRED` sin invocar el siguiente handler. Verifica que el dato historico B permanezca inactivo y no se pierdan las dos identidades.
+- Alcance exclusivo: prueba backend EF InMemory y CHANGELOG_AI.md aditivo. No modifica runtime, RBAC, API, datos productivos, MySQL, migraciones, workflows, rulesets, secretos, QA/main/PROD. No acredita HTTP/JWT real, transacciones MySQL ni ejecucion local dotnet. Requiere CI required 3/3 y Directed exact-HEAD, revision independiente por Task distinta, FIFO y COLA!G=SI antes de merge; postmerge 3/3 exact MERGE_SHA antes de LISTO. Rollback selectivo protegido sin force-push.
+
 ## 2026-11-07 — P2-016.D: persistencia de datos históricos sin propietario (DEV)
 
 - Autoría: Task nativa Javier :30 / JAVIER_CHATGPT / TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09. Rama exclusiva work/solqaryn-p2-016-d creada desde dev@81556a36fe92683e3d2f546a3d0b02b04ce55812. Dependencia P2-016.C=LISTO, COLA!O202=SI y G202=SI antes de iniciar.
