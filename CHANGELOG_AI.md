@@ -1,3 +1,9 @@
+## 2026-11-08 — I8-003.E: reset admin A no altera identidad exclusiva B (DEV)
+
+- Autoría nativa Javier :20 / JAVIER_CHATGPT / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`; scope exclusivo `I8-003.E`, rama `work/solqaryn-i8-003-e` desde `dev@48c0e9d450efac28b43bae496885ad7f49046693`. Inicio real PENDIENTE -> EN_PROGRESO registrado antes de código en PLAN_MAESTRO!97 y BITACORA, EVENT_ID `SQ-I8-003-E-J20-START-48C0E9D4-20261108`.
+- Regresión negativa xUnit `backend/tests/Solqaryn.Tests/I8003EResetAdminSoloTenantBTests.cs`: administrador de empresa A autenticado con permiso Editar no puede restablecer clave de usuario con membresía exclusiva B, ni cambiar hash, membresía o auditar mutación. No se consulta permiso de reset después de detectar titularidad B. Complementa el caso de identidad compartida I8-003.D y el control de cabecera I8-003.C.
+- Sólo prueba sintética EF InMemory + entrada aditiva; sin cambios de runtime, API, base real, secretos, migraciones, workflows ni QA/main/PROD. Sin `dotnet test` local; exigir revisión técnica de otro TASK_ID, CI requerida y Directed exact-HEAD, FIFO y postmerge 3/3 exact MERGE_SHA antes de LISTO. Rollback: revert protegido del test y de esta nota sin borrar cambios concurrentes.
+
 ## 2026-11-07 — I8-003.C: reset administrado con permiso y tenant verificado (DEV)
 
 - Autora Task nativa Javier :00 / JAVIER_CHATGPT / TASK_ID 6adbb9fff1548191a1bd5b30d9e9984a, GitHub jmejia31. Rama original exclusiva `work/solqaryn-i8-003-c` desde dev@e3dd861a9836b4d92493f9e31b94321e6d28c285; estado EN_PROGRESO y BITACORA inicial verificados ANTES del codigo.
