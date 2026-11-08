@@ -1,3 +1,10 @@
+## 2026-11-07 — P2-019.C: límite verificable de certificación comercial parcial (DEV)
+
+- Autoría nativa: Javier :40 / JAVIER_CHATGPT / TASK_ID `6adc2e55f47c81919f6374e561687076`; rama exclusiva `work/solqaryn-p2-019-c`, base `dev@a71c2c1f8e370442212a80cda516e9fb4e2e6087`. Inicio real PENDIENTE → EN_PROGRESO documentado en PLAN_MAESTRO!161 y BITACORA antes del código.
+- Delimitación causal: `backend/tests/Solqaryn.Tests/P2019CReleaseParcialLimiteTests.cs` verifica sobre documentos versionados que capacidades C08 INICIAL, C13 CONDICIONAL y C17 FUTURO no cambian de clasificación ni se confunden con implementación o estado LISTO. El negativo de preparación exige `PRODUCTION_READY = FALSE`, sin autorización implícita por CI o health verde, y conserva aprobación humana para cualquier promoción productiva.
+- Alcance: prueba documental pura + esta nota aditiva; 0 cambios de runtime, API, RBAC/JWT, datos, migraciones, workflows, secretos, infraestructura o QA/main/PROD. El test NO certifica integridad ERP completa, paridad entre entornos ni un release productivo; deben existir evidencias por capability y readback real para cualquier certificación posterior.
+- `dotnet test` local NO ejecutado en esta entrega; exigir revisión independiente por otra TASK_ID, Scope Lock, Seguridad multiempresa, Build backend y Directed commercial scope exact-HEAD, FIFO protegido y 3 checks requeridos postmerge para P2 antes de LISTO. Rollback: revert protegido sólo de la prueba y esta entrada, sin borrar historia concurrente.
+
 ## 2026-11-07 — P2-017.E: rol de Plataforma y plantilla empresarial A/B (DEV)
 
 - Autora real Task Alex :50 / ALEX_CHATGPT / AUTHOR_TASK_ID=6adcc98a80a48191b71a5156624c21df, GitHub morales35alex. Rama exclusiva work/solqaryn-p2-017-e desde dev@6980a66b4572567e80261bb4cb60256f9f660394; transicion inicial PENDIENTE -> EN_PROGRESO y readback en PLAN_MAESTRO!221, COLA!221 y BITACORA!1071.
