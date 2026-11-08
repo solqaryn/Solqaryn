@@ -27,23 +27,27 @@ public sealed class P2003AClientesMatrizEndpointTests
 
         var empresaA = new Empresa("P2003A Empresa A");
         var empresaB = new Empresa("P2003A Empresa B");
-        var tipo = new TipoCliente
-        {
-            Codigo = "P2003A",
-            Nombre = "P2003A Tipo",
-            NombreNormalizado = "P2003A TIPO",
-            EsSistema = true
-        };
         db.Set<Empresa>().AddRange(empresaA, empresaB);
-        db.Set<TipoCliente>().Add(tipo);
         await db.SaveChangesAsync();
 
         const string nombreCompartido = "P2003A Cliente gemelo";
+        // TipoCliente has a tenant-owned SHADOW EmpresaId in the EF model.
+        // Give A and B real verified ownership, not a global NULL category.
         http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = empresaA.Id;
+        var tipoA = new TipoCliente
+        {
+            Codigo = "P2003A-A",
+            Nombre = "P2003A Tipo A",
+            NombreNormalizado = "P2003A TIPO A",
+            EsSistema = true
+        };
+        db.Set<TipoCliente>().Add(tipoA);
+        db.Entry(tipoA).Property<int?>("EmpresaId").CurrentValue = empresaA.Id;
+        await db.SaveChangesAsync();
         var clienteA = new Cliente
         {
             EmpresaId = empresaA.Id,
-            TipoClienteId = tipo.Id,
+            TipoClienteId = tipoA.Id,
             Nombre = nombreCompartido,
             IdentidadORTN = "P2003A-DOC-A",
             Activo = true
@@ -52,10 +56,20 @@ public sealed class P2003AClientesMatrizEndpointTests
         await db.SaveChangesAsync();
 
         http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = empresaB.Id;
+        var tipoB = new TipoCliente
+        {
+            Codigo = "P2003A-B",
+            Nombre = "P2003A Tipo B",
+            NombreNormalizado = "P2003A TIPO B",
+            EsSistema = true
+        };
+        db.Set<TipoCliente>().Add(tipoB);
+        db.Entry(tipoB).Property<int?>("EmpresaId").CurrentValue = empresaB.Id;
+        await db.SaveChangesAsync();
         var clienteB = new Cliente
         {
             EmpresaId = empresaB.Id,
-            TipoClienteId = tipo.Id,
+            TipoClienteId = tipoB.Id,
             Nombre = nombreCompartido,
             IdentidadORTN = "P2003A-DOC-B",
             Activo = true
@@ -78,7 +92,7 @@ public sealed class P2003AClientesMatrizEndpointTests
         Assert.Equal(1, await db.Clientes.CountAsync());
         Assert.Equal(1, await db.Clientes.Include(c => c.TipoCliente).CountAsync());
         // Materialize eager navigations: CountAsync drops Includes during query optimization.
-        Assert.Single(await db.Set<TipoCliente>().ToListAsync());
+        Assert.Equal(tipoA.Id, Assert.Single(await db.Set<TipoCliente>().ToListAsync()).Id);
         Assert.Single(await db.Clientes.Include(c => c.TipoCliente).ToListAsync());
         Assert.Single(await db.Clientes.Include(c => c.Ventas).ToListAsync());
         Assert.Equal(new[] { clienteA.Id }, (await repository.GetAllAsync()).Select(c => c.Id));
@@ -91,6 +105,7 @@ public sealed class P2003AClientesMatrizEndpointTests
         // Reversing the verified binding must not reuse A's visibility.
         http.Request.Headers["X-Empresa-Id"] = empresaA.Id.ToString();
         http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = empresaB.Id;
+        Assert.Equal(tipoB.Id, Assert.Single(await db.Set<TipoCliente>().ToListAsync()).Id);
         Assert.Equal(new[] { clienteB.Id }, (await repository.GetAllAsync()).Select(c => c.Id));
         Assert.Equal(new[] { clienteB.Id }, (await repository.BuscarActivosAsync("P2003A Cliente")).Select(c => c.Id));
         Assert.Null(await repository.GetByIdAsync(clienteA.Id));
