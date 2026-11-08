@@ -1,3 +1,9 @@
+## 2026-11-08 — G0-004.C: conectar la prueba dirigida al clasificador Playwright (DEV)
+
+- La suite dirigida seleccionaba únicamente pruebas xUnit; G0-004.C contiene pruebas Node y el check reportaba cero coincidencias. Se añade una prueba xUnit puente que ejecuta el archivo Node real, exige resumen no vacío y falla ante cualquier prueba fallida o sin reporte.
+- Alcance limitado a la integración de pruebas y este registro; no modifica lógica de producción ni el workflow. La verificación se realiza sobre el SHA exacto del PR.
+- CI exact-HEAD pendiente; no declara aprobación ni merge.
+
 ## 2026-11-07 — I8-009.C: renovar credenciales revocadas sin emitir JWT (DEV)
 
 - Desarrollo auténtico de Task Javier :20 / JAVIER_CHATGPT / AUTHOR_TASK_ID=`6adc2e4bd8a48191ac7d8641ed95a1a3`, rama exclusiva `work/solqaryn-i8-009-c` desde `dev@c9f98f376f261f219aec479819f98582ccc1f35d`; inicio real PENDIENTE -> EN_PROGRESO y readback PLAN/COLA/BITACORA antes del código.
