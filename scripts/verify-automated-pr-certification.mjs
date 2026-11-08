@@ -24,8 +24,7 @@ const isGuarded = name => GUARDED.has(name) || name.startsWith('.agents/skills/'
 const isProductionSource = name => /^(?:backend\/src\/|frontend\/src\/)/.test(name) && !/(?:\/tests?\/|\.spec\.|\.test\.)/.test(name);
 
 // Only known, non-mandatory broad suites may finish after the fast lane.
-// Never defer required security/backend, the directed scope, an unknown check,
-// or the MySQL job while in progress: P2/I8 and unknown tests require MySQL.
+// Never defer required security/backend, the directed scope or an unknown check.
 const CI_IMPACT_CHECK = 'Impacto CI - clasificacion MySQL fail-closed';
 const MYSQL_INTEGRATION_CHECK = 'Migraciones EF Oracle, variantes y cargas masivas en MySQL 8.4';
 const BROAD_OPTIONAL = new Set([
