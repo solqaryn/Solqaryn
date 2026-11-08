@@ -1,3 +1,10 @@
+## 2026-11-07 — I8-009.C: renovar credenciales revocadas sin emitir JWT (DEV)
+
+- Desarrollo auténtico de Task Javier :20 / JAVIER_CHATGPT / AUTHOR_TASK_ID=`6adc2e4bd8a48191ac7d8641ed95a1a3`, rama exclusiva `work/solqaryn-i8-009-c` desde `dev@c9f98f376f261f219aec479819f98582ccc1f35d`; inicio real PENDIENTE -> EN_PROGRESO y readback PLAN/COLA/BITACORA antes del código.
+- Prueba dirigida `backend/tests/Solqaryn.Tests/I8009CRevocacionRenovacionTests.cs`: negativa ante usuario bloqueado y usuario desactivado en `AuthService.RenovarAsync`; ambos rechazan por `BusinessRuleException` y `IJwtService.GenerarToken` se invoca cero veces. Control positivo: usuario vigente con rol relacional activo renueva exactamente un JWT de prueba.
+- Alcance restringido a prueba unitaria de servicio y esta nota aditiva: no altera API, JWT firmado real, runtime, base MySQL, migraciones, secretos, reglas, infraestructura ni QA/main/PROD. No acredita HTTP, alertas notificadas, revocación de tokens ya emitidos ni test local `dotnet` (no ejecutado). Requiere CI exact-HEAD, revisión técnica independiente y FIFO global; I8 exige checks requeridos posmerge exact MERGE_SHA antes de LISTO.
+- Rollback mediante revert protegido únicamente de esta prueba y su entrada, preservando cambios concurrentes de CHANGELOG_AI.md.
+
 ## 2026-11-07 — I8-008.C: autoridad global por ámbito comprobado (DEV)
 
 - Task nativa Javier :00 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`; rama exclusiva `work/solqaryn-i8-008-c` desde dev@`c9f98f376f261f219aec479819f98582ccc1f35d`. `COLA!O80=SI`, `COLA!G80=SI`, transición PENDIENTE a EN_PROGRESO verificada antes del código y evento `SQ-I8-008-C-J00-START-C9F98F37-20261107`.
