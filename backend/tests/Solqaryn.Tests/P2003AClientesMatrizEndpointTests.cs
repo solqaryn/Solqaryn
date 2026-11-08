@@ -72,6 +72,11 @@ public sealed class P2003AClientesMatrizEndpointTests
         // The hostile header asks for B while the trusted server binding grants A.
         http.Request.Headers["X-Empresa-Id"] = empresaB.Id.ToString();
         http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = empresaA.Id;
+        // Forensic guards: distinguish seeded ownership, context-bound filter, and includes.
+        Assert.Equal(empresaA.Id, db.AuthorizedReadEmpresaId);
+        Assert.Equal(1, await db.Clientes.IgnoreQueryFilters().CountAsync(c => c.EmpresaId == empresaA.Id));
+        Assert.Equal(1, await db.Clientes.CountAsync());
+        Assert.Equal(1, await db.Clientes.Include(c => c.TipoCliente).CountAsync());
         Assert.Equal(new[] { clienteA.Id }, (await repository.GetAllAsync()).Select(c => c.Id));
         Assert.Equal(new[] { clienteA.Id }, (await repository.GetActivosAsync()).Select(c => c.Id));
         Assert.Equal(new[] { clienteA.Id }, (await repository.BuscarActivosAsync("P2003A Cliente")).Select(c => c.Id));
