@@ -1,3 +1,10 @@
+## 2026-11-08 — I8-009.D: bloquear renovación JWT tras revocación del rol relacional (DEV)
+
+- Task nativa Javier :40 / JAVIER_CHATGPT / AUTHOR_TASK_ID=`6adc2e55f47c81919f6374e561687076`; scope I8-009.D, rama única `work/solqaryn-i8-009-d`. El estado EN_PROGRESO, responsable y BITACORA se confirmaron con readback antes del primer cambio.
+- Prueba causal xUnit `backend/tests/Solqaryn.Tests/I8009DRevocacionRolRenovacionTests.cs`: rol inactivo, rol eliminado, RolId inválido, RolEntidad ausente y usuario eliminado. En los negativos no se llama `IJwtService.GenerarToken`; usuario eliminado retorna null.
+- Reutiliza `AuthService.RenovarAsync` y `ValidarRolRelacional` existentes. No modifica producción, RBAC, MySQL, migraciones, APIs, workflows, secretos ni entornos main/QA/PROD. Los mocks no certifican HTTP, MySQL, alertas reales ni invalidación de JWT ya emitidos; dotnet no está disponible en esta ejecución y CI exact-HEAD permanece obligatoria.
+- Entrega sujeta a PR original, revisión técnica por TASK_ID distinto, Scope Lock/Seguridad/Backend/Directed exact-HEAD, COLA!G=SI solo para merge, FIFO global, checks postmerge aplicables y readback para LISTO. Rollback: revert protegido solo de prueba y de esta entrada, preservando todo el CHANGELOG.
+
 ## 2026-11-07 — P2-016.D: persistencia de datos históricos sin propietario (DEV)
 
 - Autoría: Task nativa Javier :30 / JAVIER_CHATGPT / TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09. Rama exclusiva work/solqaryn-p2-016-d creada desde dev@81556a36fe92683e3d2f546a3d0b02b04ce55812. Dependencia P2-016.C=LISTO, COLA!O202=SI y G202=SI antes de iniciar.
