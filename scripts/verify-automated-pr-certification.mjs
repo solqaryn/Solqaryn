@@ -383,9 +383,10 @@ else if (args.has('--pr')) {
   const number = event.pull_request?.number;
   const expectedHead = event.pull_request?.head?.sha;
   if (!Number.isInteger(number) || !/^[a-f0-9]{40}$/i.test(expectedHead || '')) throw Error('INVALID_PULL_REQUEST_EVENT');
-  // Bounded wait for required/relevant checks; never occupy a job for half an hour.
-  // If still pending, fail closed so the native retry can run after CI completes.
-  const deadline = Date.now() + 4 * 60 * 1000;
+  // Bounded wait below the 45-minute workflow timeout. MySQL Oracle integration
+  // can take over 20 minutes; a four-minute deadline was producing false failures.
+  // Never waive a required/relevant check: fail closed if still pending after 35m.
+  const deadline = Date.now() + 35 * 60 * 1000;
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
   let report;
   for (;;) {
