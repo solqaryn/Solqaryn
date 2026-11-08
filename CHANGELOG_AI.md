@@ -1,3 +1,10 @@
+## 2026-11-08 — I8-005.D: no reemitir token al revocar el rol relacional (DEV)
+
+- Ejecutor Task nativa Javier :40, JAVIER_CHATGPT, TASK_ID `6adc2e55f47c81919f6374e561687076`. Rama única `work/solqaryn-i8-005-d` desde `dev@3a9b21b6c5e237a359d39148bfefc42520cf377b`; estado PENDIENTE -> EN_PROGRESO con readback previo al código en PLAN_MAESTRO!88, COLA!88 y BITACORA!1345.
+- Prueba causal xUnit `backend/tests/Solqaryn.Tests/I8005DRenovacionRolRevocadoTests.cs`: una primera renovación válida emite un token sintético; al desactivar o eliminar el rol relacional del mismo usuario, la siguiente renovación rechaza con BusinessRuleException y no llama de nuevo a IJwtService.GenerarToken. Dos escenarios negativos parametrizados.
+- Límite explícito: no se acredita invalidación retrospectiva de JWT previamente firmado, rate limiting HTTP 429, bloqueo distribuido, MySQL, ni ejecución local de dotnet. Se preservan RBAC, separación de tenants y código productivo sin alteraciones. Se requieren CI exact-HEAD, prueba dirigida, revisión técnica de otra Task, FIFO y postmerge exact MERGE_SHA antes de LISTO.
+- Rollback: revert selectivo mediante PR protegido de la prueba y esta entrada, sin force-push ni modificar main/QA/PROD.
+
 ## 2026-11-07 — P2-016.D: persistencia de datos históricos sin propietario (DEV)
 
 - Autoría: Task nativa Javier :30 / JAVIER_CHATGPT / TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09. Rama exclusiva work/solqaryn-p2-016-d creada desde dev@81556a36fe92683e3d2f546a3d0b02b04ce55812. Dependencia P2-016.C=LISTO, COLA!O202=SI y G202=SI antes de iniciar.
