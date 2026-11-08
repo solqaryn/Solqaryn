@@ -1,3 +1,10 @@
+## 2026-11-08 — I8-002.D: rechazar renovacion sin identidad o sesion valida (DEV)
+
+- Microtarea I8-002.D; Task nativa Javier :20, TASK_ID 6adc2e4bd8a48191ac7d8641ed95a1a3; rama exclusiva work/solqaryn-i8-002-d desde dev@3a9b21b6c5e237a359d39148bfefc42520cf377b. Predecesora I8-002.C=LISTO, COLA!O85=SI y G85=SI al inicio real.
+- Regresion xUnit backend/tests/Solqaryn.Tests/I8002DRenovacionSinIdentidadValidaTests.cs: la accion AuthController.Renovar rechaza id de claim ausente, no numerico o fuera de rango sin llamar IAuthService; rechaza tambien id numerico cuya sesion no es valida. Incluye cabecera X-Empresa-Id falsificada y NameIdentifier ajeno para demostrar que ninguno sustituye el claim "id". Moq impide efectos y consultas no esperados.
+- Scope exclusivo prueba de controlador y esta entrada aditiva; no se crea un endpoint de recuperacion, no se modifica API productiva, RBAC, tenancy, persistencia, migraciones, secretos ni workflows; tampoco QA/main/PROD. Esta prueba no acredita middleware HTTP real, seguridad JWT, base MySQL, correo ni recuperacion completa de contrasena.
+- Sin dotnet local en este entorno; exigir CI de Scope Lock, Seguridad, Backend y Directed exact HEAD, revision sustantiva por TASK_ID distinto, FIFO protegido y checks postmerge exactos antes de LISTO. Rollback: revert protegido exclusivamente de la prueba y esta entrada.
+
 ## 2026-11-07 — P2-016.D: persistencia de datos históricos sin propietario (DEV)
 
 - Autoría: Task nativa Javier :30 / JAVIER_CHATGPT / TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09. Rama exclusiva work/solqaryn-p2-016-d creada desde dev@81556a36fe92683e3d2f546a3d0b02b04ce55812. Dependencia P2-016.C=LISTO, COLA!O202=SI y G202=SI antes de iniciar.
