@@ -5,6 +5,13 @@
 - Diff acotado a test nuevo y esta nota aditiva: sin cambios en AuthService, API, JWT real, roles, base de datos, migraciones, infraestructura, secretos, CI requerida, QA/main/PROD. No se ejecuto dotnet local; no certificar PASS hasta CI exact-HEAD/Directed y revision independiente de otra Task. No acredita revocacion de JWT emitidos antes de la rotacion ni auditoria de contrasenas productivas.
 - Reversion proporcional mediante PR protegido que retire solo el test y esta entrada, preservando el historial concurrente.
 
+## 2026-11-07 — P2-017.E: rol de Plataforma y plantilla empresarial A/B (DEV)
+
+- Autora real Task Alex :50 / ALEX_CHATGPT / AUTHOR_TASK_ID=6adcc98a80a48191b71a5156624c21df, GitHub morales35alex. Rama exclusiva work/solqaryn-p2-017-e desde dev@6980a66b4572567e80261bb4cb60256f9f660394; transicion inicial PENDIENTE -> EN_PROGRESO y readback en PLAN_MAESTRO!221, COLA!221 y BITACORA!1071.
+- Regresion xUnit P2017EPlantillaRolPlataformaTests: usuario con RolId legacy Plataforma y membresia A manipulada hacia ese rol NO obtiene A; B conserva rol propio. Una plantilla Empresa con EsSistema=true y EmpresaId nulo habilita A solo como operador; al retirar EsSistema o cambiar Ambito a Plataforma se deniega A sin revocar B. Bloqueo de usuario invalida ambas y su desbloqueo restituye roles independientes. Complementa P2-017.C (rol B eliminado) y P2-017.D (rol de B en A).
+- Alcance: un nuevo test EF InMemory y esta entrada aditiva. Sin modificaciones de runtime, API, contratos, migraciones, MySQL, CI/rulesets, secretos ni QA/main/PROD. dotnet test local NO ejecutado; la prueba no certifica JWT/HTTP ni MySQL real. Se exigen Scope Lock, Seguridad multiempresa, Build backend y Directed commercial scope SUCCESS del HEAD final, revision por TASK_ID ajeno y FIFO global; P2 exige controles requeridos postmerge exact MERGE_SHA antes de LISTO.
+- Rollback: revert protegido solo de la prueba y esta entrada, preservando cambios concurrentes y el historial de CHANGELOG.
+
 ## 2026-11-07 — P2-013.E: JWT previo no autoriza rol inactivo ni usuario bloqueado entre empresas (DEV)
 
 - Desarrollo nativo Alex :50 / ALEX_CHATGPT / AUTHOR_TASK_ID `6adcc98a80a48191b71a5156624c21df`; rama exclusiva `work/solqaryn-p2-013-e` iniciada desde dev@`6980a66b4572567e80261bb4cb60256f9f660394`. Dependencia P2-013.D LISTO, COLA!O217=SI y COLA!G217=SI al inicio; registro real PENDIENTE -> EN_PROGRESO y readback.
