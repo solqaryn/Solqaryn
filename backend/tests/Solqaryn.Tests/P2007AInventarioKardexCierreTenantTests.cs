@@ -84,9 +84,12 @@ public sealed class P2007AInventarioKardexCierreTenantTests
         Assert.Null(await db.Set<AjusteInventario>().AsNoTracking()
             .SingleOrDefaultAsync(a => a.Id == ajusteA.Id));
 
-        // Un header y una marca publica nunca otorgan lectura de Kardex privado.
+        // La marca pública solo es válida bajo /tienda y no habilita Kardex privado.
+        http.Request.Path = "/tienda";
         http.Items.Remove(VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey);
         http.Items[VerifiedPublicStoreTenant.AuthorizedEmpresaIdItemKey] = empresaA.Id;
+        Assert.Equal(empresaA.Id, db.AuthorizedReadEmpresaId);
+        Assert.True(db.IsPublicStoreOnlyReadRequest);
         Assert.Empty(await AjustesVisiblesAsync(db));
         Assert.Empty(await MovimientosVisiblesAsync(db));
     }
