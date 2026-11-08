@@ -4,6 +4,26 @@
 - Prueba xUnit `backend/tests/Solqaryn.Tests/I8008DPrivilegioPlataformaMatrizEmpresaTests.cs`: `PermisoService.UpdateMatrizAsync` rechaza permiso de ámbito Plataforma en rol privado A, tanto para permiso de sistema como personalizado, sin mutar matriz ni auditar una concesión; la vista de matriz solo expone permiso empresarial válido. Los fixtures son sintéticos y utilizan Moq; no se modifican contratos, runtime, dependencias, datos, migraciones ni secretos.
 - Validación pendiente por CI exact-HEAD y revisor TASK_ID distinto: este changeset no declara `dotnet test` local, HTTP/JWT real, MySQL ni autorización de merge. La predecesora I8-008.C está VALIDANDO, de modo que COLA!G91=NO impide LISTO. El primer PR FIFO #3941 sigue DIRTY. Rollback proporcional: revert protegido de esta prueba y la presente nota, sin tocar otras contribuciones.
 
+## 2026-11-07 — P2-016.D: persistencia de datos históricos sin propietario (DEV)
+
+- Autoría: Task nativa Javier :30 / JAVIER_CHATGPT / TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09. Rama exclusiva work/solqaryn-p2-016-d creada desde dev@81556a36fe92683e3d2f546a3d0b02b04ce55812. Dependencia P2-016.C=LISTO, COLA!O202=SI y G202=SI antes de iniciar.
+- Ajuste de cobertura por reuso de los filtros existentes: nueva regresión xUnit `P2016DDatosHistoricosPersistenciaTests.cs` en dos instancias separadas de AppDbContext: un dato histórico sintético con EmpresaId nulo se conserva sin atribución tras guardar categorías propias de A/B; la lectura RBAC A/B ignora cabeceras X-Empresa-Id falsificadas; la ruta interna explícita IgnoreQueryFilters comprueba que el owner sigue NULL tras recarga. Difiere de P2-016.C al verificar persistencia entre contextos, no sólo estado rastreado en uno.
+- Alcance sólo prueba EF InMemory + esta entrada aditiva; NO se alteran runtime, HTTP/JWT, MySQL, migraciones, datos históricos reales, secretos, rulesets, QA/main/PROD. No se ejecutó dotnet test local; no atribuir CI PASS hasta Check Runs exact-HEAD y revisión independiente por Task distinta. P2 requiere postmerge required 3/3 exact MERGE_SHA antes de LISTO. Rollback protegido selectivo.
+
+## 2026-11-07 — P2-008.E: capability de factura PDF aislada por empresa (DEV)
+
+- Autor real: Task Javier :20, cuenta JAVIER_CHATGPT, TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Una rama exclusiva `work/solqaryn-p2-008-e`, base `dev@81556a36fe92683e3d2f546a3d0b02b04ce55812`, un PR original hacia dev. Sin reutilizar ramas anteriores.
+- Regresion xUnit `P2008ECapabilityFacturaPrivadaTenantTests`: dos empresas con facturas y folios homonimos; la cabecera `X-Empresa-Id` falsificada y el identificador publico aislados no habilitan PDF. Una marca valida A autoriza solo su factura A, nunca B, listados privados ni busqueda por VentaId; trasplantar la FacturaId de B bajo marca A no autoriza B; B exige su marca propia. Retirar marca o salir de la ruta publica deniega el acceso.
+- Solo se agregan esta prueba y esta entrada de CHANGELOG; sin cambios de runtime, API, JWT/RBAC, datos, migraciones, workflows, secretos ni entornos. EF Core InMemory y mocks no equivalen a una prueba HTTP/JWT ni MySQL real. No se ejecuta dotnet test local; CI dirigida y los checks requeridos sobre HEAD exacto son evidencia pendiente.
+- Requiere revision independiente por TASK_ID distinta, FIFO estricto de PR OPEN contra dev, COLA!G=SI y CI pre/postmerge aplicable antes de certificar LISTO. Rollback por revert protegido del changeset en dev, nunca forzar push.
+
+## 2026-11-07 — I8-002.C: delimitar el contrato de recuperación de usuarios empresa (DEV)
+
+- Scope único I8-002.C, autor Task Javier :00, TASK_ID 6adbb9fff1548191a1bd5b30d9e9984a, rama exclusiva work/solqaryn-i8-002-c desde dev@788acb02bff46b337c7432036c3a4f140931b201; predecesora P1-016.B LISTO y COLA!O74=SI.
+- Archivo delimitado: backend/src/API/Controllers/AuthController.cs, blob original 820134ca13b33e9d84ad3e5f381111db58e30df4. Regresión xUnit añadida backend/tests/Solqaryn.Tests/I8002CRecuperacionUsuariosEmpresaDelimitacionTests.cs, inspección de atributos POST: login presente, renovar marcado [Authorize] y rutas de recuperación/reset/forgot/password ausentes de AuthController.
+- Este micropaso preserva la superficie pública existente y documenta el gate de futura recuperación empresarial sin crear endpoint, token, email ni una vía de bypass. NO certifica la inexistencia de rutas en otros controladores ni prueba HTTP/JWT real, RBAC, MySQL o entrega de correo.
+- Sin cambios runtime, API, DTO, persistencia, migraciones, secretos, workflows/rulesets, QA/main/PROD. No se ejecutó dotnet test local; CI requerida exact HEAD y revisión Task independiente antes de cualquier merge. Para I8, postmerge REQUIRED exact MERGE_SHA antes de LISTO. Rollback mediante revert protegido exclusivo de la prueba y esta entrada.
+
 ## 2026-11-07 — P2-019.C: límite verificable de certificación comercial parcial (DEV)
 
 - Autoría nativa: Javier :40 / JAVIER_CHATGPT / TASK_ID `6adc2e55f47c81919f6374e561687076`; rama exclusiva `work/solqaryn-p2-019-c`, base `dev@a71c2c1f8e370442212a80cda516e9fb4e2e6087`. Inicio real PENDIENTE → EN_PROGRESO documentado en PLAN_MAESTRO!161 y BITACORA antes del código.
