@@ -1,3 +1,10 @@
+## 2026-11-08 — I8-001.E: prueba reproducible de BCrypt y rol relacional valido (DEV)
+
+- Autoria de desarrollo: Task nativa Javier :20 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`; rama exclusiva `work/solqaryn-i8-001-e` desde dev@`3a9b21b6c5e237a359d39148bfefc42520cf377b`. Inicio autentico `PENDIENTE -> EN_PROGRESO` persistido en PLAN_MAESTRO!H95/I95 y BITACORA, con lectura de COLA!O95=SI y dependencia I8-001.D VALIDANDO.
+- Regresion nueva `backend/tests/Solqaryn.Tests/I8001EHashCorrectoRolInvalidoTests.cs`: aun con contrasena BCrypt correcta, AuthService rechaza cuatro combinaciones de RolId invalido, rol relacional ausente, inactivo o eliminado, sin emitir JWT. Con el MISMO hash, restaurar rol activo habilita exclusivamente un token sintetico. La validacion negativa de rol complementa I8-001.C/D sin duplicar la auditoria de sal y rotacion.
+- Changeset limitado a test xUnit y esta entrada historica aditiva; no modifica AuthService, endpoints, JWT reales, MySQL, migraciones, secretos, UI, CI/rulesets, QA/main/PROD. No se ejecuta dotnet local; la prueba no certifica persistencia, RBAC HTTP ni credenciales productivas. Exigir revision independiente por TASK_ID distinto, Scope Lock, Seguridad, Backend y Directed exact HEAD; FIFO global antes de merge, controles I8 posmerge exact MERGE_SHA antes de LISTO.
+- Rollback proporcional: revert protegido exclusivo del test y esta entrada, conservando entradas concurrentes.
+
 ## 2026-11-07 — P2-016.D: persistencia de datos históricos sin propietario (DEV)
 
 - Autoría: Task nativa Javier :30 / JAVIER_CHATGPT / TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09. Rama exclusiva work/solqaryn-p2-016-d creada desde dev@81556a36fe92683e3d2f546a3d0b02b04ce55812. Dependencia P2-016.C=LISTO, COLA!O202=SI y G202=SI antes de iniciar.
