@@ -1,3 +1,7 @@
+## 2026-11-08 — P2-015.D: prueba de cuarentena residual
+
+- Se añade `backend/tests/Solqaryn.Tests/API/P2015DCuarentenaResidualHttpStatusTests.cs`: matriz aislada EF InMemory que verifica la respuesta de cuarentena para cinco rutas comerciales bajo cabeceras tenant falsificadas y claims administrativos no verificados.
+- No acredita HTTP/JWT integrado ni MySQL real. Exigir CI exact-HEAD.
 ## 2026-11-07 — I8-009.C: renovar credenciales revocadas sin emitir JWT (DEV)
 
 - Desarrollo auténtico de Task Javier :20 / JAVIER_CHATGPT / AUTHOR_TASK_ID=`6adc2e4bd8a48191ac7d8641ed95a1a3`, rama exclusiva `work/solqaryn-i8-009-c` desde `dev@c9f98f376f261f219aec479819f98582ccc1f35d`; inicio real PENDIENTE -> EN_PROGRESO y readback PLAN/COLA/BITACORA antes del código.
