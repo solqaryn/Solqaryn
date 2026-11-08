@@ -1,3 +1,10 @@
+## 2026-11-08 — G0-006.C: trazabilidad de cierre con recibos estrictos (DEV)
+
+- Autoría nativa: Javier :40 / JAVIER_CHATGPT / TASK_ID 6adc2e55f47c81919f6374e561687076; rama exclusiva `work/solqaryn-g0-006-c` nacida desde dev@48c0e9d450efac28b43bae496885ad7f49046693, con PLAN_MAESTRO!318 EN_PROGRESO y BITACORA inicial comprobados antes de editar.
+- Requisito vigente G0-006.C / Plan Comercial Inicial: delimitar evidencia requisito → código → prueba → cierre sin reabrir fases históricas. Consumidor técnico `scripts/automation-ci-throughput.mjs`; prueba causal `scripts/tests/g0-006-c-trazabilidad.test.mjs` para denegar falso LISTO si falta MERGE_SHA verificable, CI, revisión independiente, readback PLAN/COLA/BITACORA, si se reutiliza un estado histórico o se duplica un evento.
+- Los recibos de la prueba son sintéticos y NO certifican el scope G0-006.C real. `node --check` local PASS; `node --test` con el módulo del repositorio y CI Directed/required exact-HEAD quedan a acreditar. Ningún cambio a runtime, APIs, BD, auth, reglas, workflows, secretos, entorno QA/main/PROD ni Plan Maestro futuro.
+- Integración sólo por FIFO global, revisión técnica por TASK_ID diferente del autor, checks exact-HEAD y postmerge exigible antes de LISTO. Rollback mediante revert protegido de esta prueba y nota, conservando historial aditivo.
+
 ## 2026-11-07 — I8-003.C: reset administrado con permiso y tenant verificado (DEV)
 
 - Autora Task nativa Javier :00 / JAVIER_CHATGPT / TASK_ID 6adbb9fff1548191a1bd5b30d9e9984a, GitHub jmejia31. Rama original exclusiva `work/solqaryn-i8-003-c` desde dev@e3dd861a9836b4d92493f9e31b94321e6d28c285; estado EN_PROGRESO y BITACORA inicial verificados ANTES del codigo.
