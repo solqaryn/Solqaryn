@@ -1,3 +1,10 @@
+## 2026-11-08 — P2-002.G: rechazo GetById cruzado de producto por tenant verificado (DEV)
+
+- Ejecución nativa: Javier :00 / JAVIER_CHATGPT; AUTHOR_TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`; rama original `work/solqaryn-p2-002-g`, base dev@`3a9b21b6c5e237a359d39148bfefc42520cf377b`. Inicio auténtico PENDIENTE -> EN_PROGRESO en PLAN_MAESTRO!H260/I260/M260 y BITACORA!1389, con readback COLA!O260 antes del código.
+- Prueba causal xUnit `backend/tests/Solqaryn.Tests/P2002GProductoIdAjenoTenantTests.cs`: consulta `ProductoRepository.GetByIdAsync` niega el producto ajeno A/B aun con cabecera `X-Empresa-Id` falsificada y retorna el propio mediante tenant marcado por backend; alternancia A/B en el mismo AppDbContext. Complementa los escenarios paginados P2-002.A y stock bajo P2-002.F sin duplicarlos.
+- Solo prueba EF InMemory y entrada aditiva al CHANGELOG; 0 cambios productivos, sin HTTP/JWT, MySQL ni migraciones. `dotnet test` local no acreditado; CI requerida y Directed deben concluir SUCCESS exact-HEAD. No afirmar PASS ni LISTO por anticipado.
+- Integración condicionada a revisión técnica por TASK_ID distinto, PR CLEAN, COLA!G260=SI, FIFO y tres checks postmerge SUCCESS exact MERGE_SHA. Rollback protegido selectivo del test y esta entrada, preservando historial y trabajo concurrente.
+
 ## 2026-11-07 — P2-016.D: persistencia de datos históricos sin propietario (DEV)
 
 - Autoría: Task nativa Javier :30 / JAVIER_CHATGPT / TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09. Rama exclusiva work/solqaryn-p2-016-d creada desde dev@81556a36fe92683e3d2f546a3d0b02b04ce55812. Dependencia P2-016.C=LISTO, COLA!O202=SI y G202=SI antes de iniciar.
