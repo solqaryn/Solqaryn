@@ -1,3 +1,10 @@
+## 2026-11-08 — G0-001.C: respuesta HTTP obsoleta ante cambio de filtro empresarial (DEV)
+
+- Autor real: Task Javier :40 / JAVIER_CHATGPT / AUTHOR_TASK_ID=6adc2e55f47c81919f6374e561687076; rama original work/solqaryn-g0-001-c desde dev@3a9b21b6c5e237a359d39148bfefc42520cf377b; PLAN_MAESTRO!313 y COLA!313 leídos antes del código, O=SI y G=SI.
+- Regresión específica en `frontend/src/app/features/configuracion/empresa-administracion-card.component.spec.ts`: al cambiar desde Todas a Activas mientras hay dos GET pendientes, un HTTP 503 de la solicitud anterior no debe sobrescribir error ni lista, ni apagar `loading` del filtro actual. Al responder la solicitud activa debe visualizarse únicamente su empresa y finalizar el indicador. Complementa el caso preexistente de dos respuestas exitosas fuera de orden sin modificar el componente ni permisos.
+- Impacto acotado: únicamente spec Angular/Vitest y esta entrada aditiva. Sin cambios en runtime, API, DTO, RBAC/tenant backend, MySQL, datos, secretos, CI, workflows, rulesets, ni main/QA/PROD. La prueba usa `HttpTestingController`; no equivale a tráfico real ni certifica backend. Prueba local no ejecutada; requieren CI exact-HEAD, revisión técnica de otro TASK_ID, FIFO protegido y postmerge según gobierno antes de LISTO.
+- Rollback: revert protegido de la prueba añadida y esta nota, preservando los casos heredados y las entradas concurrentes de CHANGELOG.
+
 ## 2026-11-07 — P2-016.D: persistencia de datos históricos sin propietario (DEV)
 
 - Autoría: Task nativa Javier :30 / JAVIER_CHATGPT / TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09. Rama exclusiva work/solqaryn-p2-016-d creada desde dev@81556a36fe92683e3d2f546a3d0b02b04ce55812. Dependencia P2-016.C=LISTO, COLA!O202=SI y G202=SI antes de iniciar.
