@@ -1,3 +1,10 @@
+## 2026-11-07 — P2-012.D: rechazo previo de lote Outbox cruzado entre tenants (DEV)
+
+- Autoría física Javier :00 / JAVIER_CHATGPT / TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`, GitHub `jmejia31`. Rama exclusiva `work/solqaryn-p2-012-d` nacida de `dev@8edcab917e1498a2ff6888dc9807f76698d50bbf`; inicio real EN_PROGRESO y evento `SQ-P2-012-D-J00-START-8EDCAB91-20261107` registrados antes del código.
+- Test xUnit `backend/tests/Solqaryn.Tests/P2012DOutboxLoteCruzadoTests.cs`: repo defectuoso devuelve lote A/B con misma clave idempotente, tanto cuando el mensaje ajeno es primero como cuando está al final; se exige rechazo de **todo** el lote antes de cualquier dispatch, confirmación o reprogramación de efectos. Complementa P2-012.C, que valida procesamiento A/B correcto sin HTTP.
+- Sólo prueba sintética y esta nota aditiva; no hay cambios al worker de producción, API, JWT/RBAC, proveedor MySQL, migraciones, workflows, secretos, reglas ni QA/main/PROD. `dotnet test` local no disponible en entorno de ejecución; confirmar CI obligatoria y Directed exact HEAD, revisión causal por Task diferente del autor, FIFO y CI postmerge antes de LISTO. Los dobles no demuestran HTTP real ni persistencia MySQL.
+- Rollback por revert protegido de prueba y nota conservando entradas ajenas.
+
 ## 2026-11-07 — P2-018.C: smoke integrado HTTP A/B
 
 - Prueba xUnit incremental en `backend/tests/Solqaryn.Tests/P1010BMultiEmpresaHttpJwtCertificationTests.cs`: `P2018C_SmokeHttpAB_HeaderFalsificado_NoCambiaRolNiPermiteTenantAjeno`; TestServer con JWT de prueba y servicios reales; al falsificar `X-Empresa-Id`, A conserva rol administrador A, B conserva rol de consulta B y una tercera empresa sin membresía devuelve Forbidden. Se usa el fixture EF InMemory existente.
