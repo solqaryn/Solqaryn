@@ -1,3 +1,8 @@
+## 2026-11-08 — P2-001.F: evidencia dirigida de tenant único
+
+- Se añade `backend/tests/Solqaryn.Tests/P2001FMatrizContextoUnicoTests.cs` para probar los filtros de cinco GET comerciales ante contexto ausente y cabecera inválida con un único scope seguro.
+- La prueba es de controlador/filtros con dobles; no acredita HTTP/JWT integrado ni MySQL real. Exigir CI exact-HEAD.
+
 ## 2026-11-07 — I8-009.C: renovar credenciales revocadas sin emitir JWT (DEV)
 
 - Desarrollo auténtico de Task Javier :20 / JAVIER_CHATGPT / AUTHOR_TASK_ID=`6adc2e4bd8a48191ac7d8641ed95a1a3`, rama exclusiva `work/solqaryn-i8-009-c` desde `dev@c9f98f376f261f219aec479819f98582ccc1f35d`; inicio real PENDIENTE -> EN_PROGRESO y readback PLAN/COLA/BITACORA antes del código.
