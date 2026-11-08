@@ -141,6 +141,27 @@ public class PerfilServiceTests
         _usuarioRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
 
+    [Fact]
+    public async Task I8006C_CambiarPasswordAsync_Actual_Incorrecta_No_Modifica_Hash_Ni_Persiste()
+    {
+        var usuario = CrearUsuario();
+        var hashAnterior = usuario.PasswordHash;
+        _usuarioRepository.Setup(r => r.GetByIdAsync(25)).ReturnsAsync(usuario);
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            _service.CambiarPasswordAsync(new CambiarPasswordPropiaDto
+            {
+                PasswordActual = "ClaveInvalida#987",
+                PasswordNueva = "NuevaSegura#456"
+            }));
+
+        Assert.Equal(hashAnterior, usuario.PasswordHash);
+        _usuarioRepository.Verify(r => r.GetByIdAsync(25), Times.Once);
+        _usuarioRepository.Verify(r => r.GetByIdAsync(It.Is<int>(id => id != 25)), Times.Never);
+        _usuarioRepository.Verify(r => r.Update(It.IsAny<Usuario>()), Times.Never);
+        _usuarioRepository.Verify(r => r.SaveChangesAsync(), Times.Never);
+    }
+
     private static Usuario CrearUsuario() => new()
     {
         Id = 25,
