@@ -1,3 +1,10 @@
+## 2026-11-08 — I8-005.E: no filtrar credenciales ni token en rechazos de autenticacion (DEV)
+
+- Task nativa Javier :20 / JAVIER_CHATGPT / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`; rama exclusiva `work/solqaryn-i8-005-e` desde `dev@5a04b35c6d915d8146c16662e2b42daf2b9e6ebd`. Inicio autentico EN_PROGRESO y BITACORA con readback previo al codigo; dependencia I8-005.D VALIDANDO, COLA!O99=SI y G99=NO.
+- Regresion xUnit `I8005ETokenNoLeakAntifuerzaTests.cs`: dos login sinteticamente rechazados producen HTTP 401 generico, sin registrar la clave ni un token bearer sinteticos en `IAuditoriaService` ni filtrarlos en la respuesta; reafirma la politica `AuthLogin`. Una renovacion rechazada por `IAuthService` devuelve 401, no filtra bearer ni genera redireccion. No se utiliza ningun secreto real.
+- Limite honesto: prueba directa del controlador y dobles, no verifica middleware HTTP 429, fuerza bruta distribuida, revocacion retroactiva de JWT real, telemetria global, cabeceras de edge, DB MySQL o escenarios productivos. Ningun cambio a codigo runtime, auth, API, datos, migraciones, secretos, workflows, rulesets o main/QA/PROD.
+- Entrega condicionada a CI Scope Lock, Seguridad multiempresa, Backend y Directed exact-HEAD, revision tecnica sustantiva de TASK_ID distinto del autor y FIFO protegido con postmerge checks antes de LISTO. `dotnet test` local no ejecutado; sin PASS anticipado. Rollback mediante revert protegido del test y esta entrada sin tocar cambios ajenos.
+
 ## 2026-11-07 — I8-006.C: delimitar cambio voluntario de contraseña
 
 - Scope exclusivo I8-006.C (Plan Comercial Inicial). Prueba xUnit negativa agregada a `backend/tests/Solqaryn.Tests/PerfilServiceTests.cs`: el usuario autenticado 25 ingresa contraseña actual incorrecta y una contraseña nueva válida; se comprueba rechazo de la operación, conservación del hash y cero escrituras al repositorio, sin acceder a otro UsuarioId.
