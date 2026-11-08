@@ -1,3 +1,10 @@
+## 2026-11-07 — P2-002.A: cierre atomico de listado y busqueda de productos por EmpresaId (DEV)
+
+- Entrega nativa Javier :30 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`; rama exclusiva `work/solqaryn-p2-002-a` creada desde `dev@f95c0630d7101592be267ed05108d2ce3d4f5d31`, despues de PENDIENTE -> EN_PROGRESO y readback de PLAN/COLA/BITACORA.
+- Nueva prueba causal xUnit `backend/tests/Solqaryn.Tests/P2002AProductoListadoTenantTests.cs`: dos empresas A/B con productos homonimos; `ProductoRepository.GetPagedAsync` con Search y `GetUltimosAgregadosAsync` retornan exclusivamente el tenant certificado aun con `X-Empresa-Id` falsificado, y el mismo DbContext vuelve a evaluar el alcance al alternar A/B.
+- Reuso comprobado de las pruebas P2-002.C/D/E ya LISTO (PR #3894/#3909/#3918); la nueva prueba amplía listado/busqueda pero NO certifica por si sola joins SQL MySQL, mutaciones productivas, HTTP/JWT ni todos los endpoints. El gate de cierre sigue requiriendo revisión de cobertura y pruebas dirigidas. No se ejecuto dotnet test localmente; Scope Lock, Seguridad, Backend y Directed deben acreditarse en CI exact-HEAD antes de fusionar.
+- Diff intencional solo prueba xUnit nueva y esta entrada aditiva. Sin cambios a runtime, datos, migraciones, reglas, secretos ni QA/main/PROD. Rollback protegido selectivo de los dos cambios, sin perder historia ni pruebas previas.
+
 ## 2026-11-07 — I8-006.C: delimitar cambio voluntario de contraseña
 
 - Scope exclusivo I8-006.C (Plan Comercial Inicial). Prueba xUnit negativa agregada a `backend/tests/Solqaryn.Tests/PerfilServiceTests.cs`: el usuario autenticado 25 ingresa contraseña actual incorrecta y una contraseña nueva válida; se comprueba rechazo de la operación, conservación del hash y cero escrituras al repositorio, sin acceder a otro UsuarioId.
