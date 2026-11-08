@@ -1,3 +1,10 @@
+## 2026-11-07 — I8-007.C: edicion de datos empresariales segregada por tenant (DEV)
+
+- Autoría física Javier :40 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6adc2e55f47c81919f6374e561687076`; rama exclusiva `work/solqaryn-i8-007-c` desde dev@`f95c0630d7101592be267ed05108d2ce3d4f5d31`, dependencias P1-016.B LISTO, COLA!O79=SI y G79=SI; PENDIENTE -> EN_PROGRESO acreditado en BITACORA.
+- Pruebas xUnit `I8007CEmpresaEdicionSegregadaTests`: empresa A verificada por `VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey` y cabecera `X-Empresa-Id` falsificada para B. El intento de editar B rechaza con `ForbiddenAccessException` sin llamadas al servicio; el control positivo permite editar solo A y verifica que el servicio recibe exclusivamente ID A.
+- Scope limitado al controlador de empresas con `DefaultHttpContext` sintético: no certifica middleware HTTP real, firma de JWT, RBAC completo ni MySQL. Sin cambios en runtime/API, migraciones, base de datos, secretos, rulesets o QA/main/PROD. Requiere Directed comercial `I8007C`, 3 required exact-HEAD, revisión independiente, FIFO y checks postmerge I8 antes de LISTO.
+- Rollback: revert protegido de la prueba y esta entrada, preservando CHANGELOG concurrente.
+
 ## 2026-11-07 — P2-002.A: cierre atomico de listado y busqueda de productos por EmpresaId (DEV)
 
 - Entrega nativa Javier :30 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`; rama exclusiva `work/solqaryn-p2-002-a` creada desde `dev@f95c0630d7101592be267ed05108d2ce3d4f5d31`, despues de PENDIENTE -> EN_PROGRESO y readback de PLAN/COLA/BITACORA.
