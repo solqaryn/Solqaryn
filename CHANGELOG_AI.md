@@ -1,3 +1,10 @@
+## 2026-11-08 — I8-002.E: regresion de no enumeracion del login empresarial (DEV)
+
+- Microtarea I8-002.E; Task nativa Javier :20, AUTHOR_TASK_ID 6adc2e4bd8a48191ac7d8641ed95a1a3. Inicio PENDIENTE→EN_PROGRESO con PLAN_MAESTRO!96 y BITACORA!1360, readback antes de editar; COLA!O96=SI y dependencia I8-002.D=VALIDANDO. Rama original work/solqaryn-i8-002-e desde dev@3a9b21b6c5e237a359d39148bfefc42520cf377b.
+- Regresion xUnit backend/tests/Solqaryn.Tests/I8002ERecuperacionSinEnumeracionTests.cs: dos intentos sinteticos de login que IAuthService rechaza, con usuarios diferentes y X-Empresa-Id falsificada, deben producir el mismo cuerpo Unauthorized sin exponer usuario, cabecera tenant, contrasena ni Data. Se exige auditoria interna pero la respuesta publica permanece generica.
+- El alcance es exclusivamente el controlador AuthController.Login y mocks de servicios; NO prueba recuperacion por correo, reset, SMTP, middleware/JWT, base de datos ni aislamiento HTTP real; no se modifica funcionalidad productiva ni API de recuperacion.
+- Unico changeset de prueba y CHANGELOG_AI.md aditivo, sin cambios a credenciales, reglas, infra, migraciones, QA/main/PROD. Sin dotnet local; exigir CI de Scope Lock, Seguridad, Backend y Directed exact HEAD, revision tecnica por TASK_ID ajeno y FIFO protegido. Postmerge exact MERGE_SHA antes de LISTO. Rollback: revert protegido selectivo de ambos archivos, sin force-push.
+
 ## 2026-11-07 — P2-016.D: persistencia de datos históricos sin propietario (DEV)
 
 - Autoría: Task nativa Javier :30 / JAVIER_CHATGPT / TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09. Rama exclusiva work/solqaryn-p2-016-d creada desde dev@81556a36fe92683e3d2f546a3d0b02b04ce55812. Dependencia P2-016.C=LISTO, COLA!O202=SI y G202=SI antes de iniciar.
