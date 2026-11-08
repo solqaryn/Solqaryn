@@ -64,6 +64,9 @@ public sealed class P2003AClientesMatrizEndpointTests
         await db.SaveChangesAsync();
 
         Assert.Equal(2, await db.Clientes.IgnoreQueryFilters().CountAsync());
+        // Match the tenant read tests: remove tracked seed entities before switching
+        // the verified A/B/A read scope; keep the malicious header and assertions.
+        db.ChangeTracker.Clear();
         var repository = new ClienteRepository(db);
 
         // The hostile header asks for B while the trusted server binding grants A.
