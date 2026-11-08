@@ -1,3 +1,10 @@
+## 2026-11-08 — P2-004.G: negativo de compra con proveedor ajeno al tenant (DEV)
+
+- Autor nativo Javier :30 / JAVIER_CHATGPT; AUTHOR_TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`. Rama exclusiva `work/solqaryn-p2-004-g` desde `dev@3a9b21b6c5e237a359d39148bfefc42520cf377b`. PLAN_MAESTRO!H262/I262/M262 y BITACORA!1371 registraron PENDIENTE -> EN_PROGRESO con readback antes de editar; COLA!O262=SI por dependencia P2-004.F VALIDANDO.
+- Prueba xUnit `backend/tests/Solqaryn.Tests/P2004GProveedorCompraCrossTenantNegativeTests.cs`: guard `CommercialCrossTenantWriteGuard.ValidateAsync` rechaza una compra de empresa A que referencia ProveedorId de B y el caso inverso, aun con `X-Empresa-Id` falsificado; asegura rechazo antes de persistencia y compra A->A legítima. No duplica pruebas de solo lectura de P2-004.D/E ni coincidencias telefónicas de P2-004.F.
+- Un test EF InMemory y esta entrada aditiva; sin cambios productivos, DTO, API, migraciones, constraints, secretos, rulesets, workflows, QA/main/PROD. No atribuir PASS de `dotnet test` local, MySQL real o HTTP/JWT a esta prueba; requerir CI y Directed exact-HEAD y revisión técnica independiente de distinto TASK_ID.
+- Integración FIFO: PR #3941 permanece primero y bloqueado por conflicto; P2-004.G no puede fusionarse hasta COLA!G262=SI, PR CLEAN, revisiones/checks requeridos y postmerge exact MERGE_SHA. Rollback mediante revert protegido solamente de esta prueba y nota de changelog, sin reescribir cambios ajenos.
+
 ## 2026-11-07 — P2-016.D: persistencia de datos históricos sin propietario (DEV)
 
 - Autoría: Task nativa Javier :30 / JAVIER_CHATGPT / TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09. Rama exclusiva work/solqaryn-p2-016-d creada desde dev@81556a36fe92683e3d2f546a3d0b02b04ce55812. Dependencia P2-016.C=LISTO, COLA!O202=SI y G202=SI antes de iniciar.
