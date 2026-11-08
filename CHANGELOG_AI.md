@@ -1,3 +1,10 @@
+## 2026-11-08 — P2-006.F: ventas con borrado lógico y tenant A/B (DEV)
+
+- Autoría nativa: Javier :20 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Microtarea P2-006.F con COLA!O246=SI y P2-006.A=VALIDANDO al empezar; PLAN_MAESTRO!H246/I246/M246 y BITACORA!1393 registraron EN_PROGRESO real antes del código.
+- Prueba xUnit `backend/tests/Solqaryn.Tests/P2006FVentaBorradoLogicoTenantTests.cs`: dos empresas A/B; ventas A vigente y A eliminada lógicamente, venta B vigente. Con marca A verificada y cabecera falsificada B, solo A vigente es visible; con marca B verificada y cabecera A, solo B es visible; volver a A no resucita registros eliminados.
+- Prueba sintética EF InMemory sin cambios de runtime, API, entidad, MySQL, migraciones, jobs ni secrets. No acredita HTTP/JWT/RBAC de extremo a extremo ni MySQL real; CI exact HEAD, Directed comercial y revisión de TASK_ID distinta obligatorios. COLA!G246 exige dependencias LISTO para integración.
+- Rollback por revert selectivo protegido del test y esta entrada, preservando historial y trabajo ajeno.
+
 ## 2026-11-07 — P2-016.D: persistencia de datos históricos sin propietario (DEV)
 
 - Autoría: Task nativa Javier :30 / JAVIER_CHATGPT / TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09. Rama exclusiva work/solqaryn-p2-016-d creada desde dev@81556a36fe92683e3d2f546a3d0b02b04ce55812. Dependencia P2-016.C=LISTO, COLA!O202=SI y G202=SI antes de iniciar.
