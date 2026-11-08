@@ -1,3 +1,9 @@
+## 2026-11-08 — P2-009.A: regresion de importes KPI A/B y guarda SQL sin tenant (DEV)
+
+- Autor nativo: Javier :00 / JAVIER_CHATGPT / TASK_ID 6adbb9fff1548191a1bd5b30d9e9984a. Inicio real PENDIENTE -> EN_PROGRESO registrado en PLAN_MAESTRO!231 y BITACORA, con COLA!O231=SI previo y sin PR/rama/editor preexistente. Rama unica `work/solqaryn-p2-009-a` desde dev@87e7a888b6c041e98a17ac1135f66453a45516b9.
+- Regresion `backend/tests/Solqaryn.Tests/P2009AKpiVentasTenantTests.cs`: agrupacion y suma de tres ventas con folio coincidente entre A/B; totales 200/900 separados por tenant comercial verificado aun con header falsificado y cambio de tenant en el mismo DbContext. Sin marca autenticada y con dos empresas, CommercialTenantSqlLockScope rechaza iniciar SQL directo. Reutiliza cobertura existente P2-009.C (conteo), D (agrupacion homonimos) y E (servicio sin scope).
+- Delimitacion verificable: EF InMemory y guarda previa, NO ejecuta SQL real, MySQL, endpoint HTTP/JWT, consulta del DashboardService ni reglas contables de estados de ventas. No se alteran codigo productivo, DB/migraciones, secretos, workflows, rulesets, QA/main/PROD. `dotnet test` local no acreditado; exige CI exact HEAD, Directed, revision por otro TASK_ID, FIFO protegido, postmerge 3/3 y readback institucional antes de LISTO. Rollback con revert protegido de test + esta entrada, sin borrar historial.
+
 ## 2026-11-07 — P2-011.E: locators Cloudinary privados con delimitadores codificados (DEV)
 
 - Autoría física Javier :20 / JAVIER_CHATGPT, TASK_ID 6adc2e4bd8a48191ac7d8641ed95a1a3, GitHub jmejia31. Rama exclusiva work/solqaryn-p2-011-e desde dev@788acb02bff46b337c7432036c3a4f140931b201; inicio EN_PROGRESO persistido previamente en PLAN_MAESTRO!215 y BITACORA!1119. COLA!O215=SI permite desarrollo, COLA!G215=NO bloquea merge hasta P2-011.D LISTO.
