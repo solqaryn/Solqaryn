@@ -1,3 +1,9 @@
+## 2026-11-08 — I8-006.D: cuenta vigente y clave nueva en cambio voluntario (DEV)
+
+- Autor nativo: JAVIER_CHATGPT, PRIMARY_01 Javier :00, AUTHOR_TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`. Scope único I8-006.D, rama exclusiva `work/solqaryn-i8-006-d`, base `dev@3a9b21b6c5e237a359d39148bfefc42520cf377b`. PLAN_MAESTRO!H89/I89/M89 y BITACORA!1347 recibieron PENDIENTE -> EN_PROGRESO con readback previo al código; COLA!O89=SI habilitó inicio, COLA!G89=NO bloquea integración hasta I8-006.C LISTO.
+- Prueba causal xUnit `I8006DCambioPasswordCuentaVigenteTests.cs`: usuario con contraseña correcta pero cuenta desactivada, bloqueada o eliminada no cambia hash ni realiza escrituras ni auditoría; tampoco se permite reutilizar la contraseña actual, sin tocar otras identidades. Complementa I8-006.C (contraseña actual incorrecta). No cambia `PerfilService` productivo, API, DTO, JWT/RBAC, MySQL, migraciones, secretos, workflows, QA/main/PROD.
+- Alcance solo tests Moq/xUnit y CHANGELOG aditivo; `dotnet test` local no ejecutado. No prueba HTTP/JWT reales ni MySQL. Requiere revisión por REVIEWER_TASK_ID distinto, Scope Lock, Seguridad multiempresa, Build backend y Directed aplicable SUCCESS exact HEAD, FIFO global, merge protegido y checks postmerge exact MERGE_SHA para LISTO. Revert protegido selectivo de esta prueba y nota, sin force-push.
+
 ## 2026-11-07 — P2-016.D: persistencia de datos históricos sin propietario (DEV)
 
 - Autoría: Task nativa Javier :30 / JAVIER_CHATGPT / TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09. Rama exclusiva work/solqaryn-p2-016-d creada desde dev@81556a36fe92683e3d2f546a3d0b02b04ce55812. Dependencia P2-016.C=LISTO, COLA!O202=SI y G202=SI antes de iniciar.
