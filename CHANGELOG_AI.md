@@ -5,6 +5,13 @@
 - Reuso comprobado de las pruebas P2-002.C/D/E ya LISTO (PR #3894/#3909/#3918); la nueva prueba amplía listado/busqueda pero NO certifica por si sola joins SQL MySQL, mutaciones productivas, HTTP/JWT ni todos los endpoints. El gate de cierre sigue requiriendo revisión de cobertura y pruebas dirigidas. No se ejecuto dotnet test localmente; Scope Lock, Seguridad, Backend y Directed deben acreditarse en CI exact-HEAD antes de fusionar.
 - Diff intencional solo prueba xUnit nueva y esta entrada aditiva. Sin cambios a runtime, datos, migraciones, reglas, secretos ni QA/main/PROD. Rollback protegido selectivo de los dos cambios, sin perder historia ni pruebas previas.
 
+## 2026-11-07 — P2-017.E: rol de Plataforma y plantilla empresarial A/B (DEV)
+
+- Autora real Task Alex :50 / ALEX_CHATGPT / AUTHOR_TASK_ID=6adcc98a80a48191b71a5156624c21df, GitHub morales35alex. Rama exclusiva work/solqaryn-p2-017-e desde dev@6980a66b4572567e80261bb4cb60256f9f660394; transicion inicial PENDIENTE -> EN_PROGRESO y readback en PLAN_MAESTRO!221, COLA!221 y BITACORA!1071.
+- Regresion xUnit P2017EPlantillaRolPlataformaTests: usuario con RolId legacy Plataforma y membresia A manipulada hacia ese rol NO obtiene A; B conserva rol propio. Una plantilla Empresa con EsSistema=true y EmpresaId nulo habilita A solo como operador; al retirar EsSistema o cambiar Ambito a Plataforma se deniega A sin revocar B. Bloqueo de usuario invalida ambas y su desbloqueo restituye roles independientes. Complementa P2-017.C (rol B eliminado) y P2-017.D (rol de B en A).
+- Alcance: un nuevo test EF InMemory y esta entrada aditiva. Sin modificaciones de runtime, API, contratos, migraciones, MySQL, CI/rulesets, secretos ni QA/main/PROD. dotnet test local NO ejecutado; la prueba no certifica JWT/HTTP ni MySQL real. Se exigen Scope Lock, Seguridad multiempresa, Build backend y Directed commercial scope SUCCESS del HEAD final, revision por TASK_ID ajeno y FIFO global; P2 exige controles requeridos postmerge exact MERGE_SHA antes de LISTO.
+- Rollback: revert protegido solo de la prueba y esta entrada, preservando cambios concurrentes y el historial de CHANGELOG.
+
 ## 2026-11-07 — P2-013.E: JWT previo no autoriza rol inactivo ni usuario bloqueado entre empresas (DEV)
 
 - Desarrollo nativo Alex :50 / ALEX_CHATGPT / AUTHOR_TASK_ID `6adcc98a80a48191b71a5156624c21df`; rama exclusiva `work/solqaryn-p2-013-e` iniciada desde dev@`6980a66b4572567e80261bb4cb60256f9f660394`. Dependencia P2-013.D LISTO, COLA!O217=SI y COLA!G217=SI al inicio; registro real PENDIENTE -> EN_PROGRESO y readback.
