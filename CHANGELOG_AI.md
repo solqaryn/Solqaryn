@@ -1,3 +1,9 @@
+## 2026-11-08 — I8-004.E: prueba negativa offline de envio de correo seguro (DEV)
+
+- Ejecucion nativa Javier :00 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`; rama original `work/solqaryn-i8-004-e` iniciada de `dev@b521a87ae57fa784ed422ac1940a9a27ed59be9f`. PENDIENTE→EN_PROGRESO y BITACORA `SQ-I8-004-E-J00-START-B521A87A-20261108` confirmados antes de editar; COLA!O98=SI, I8-004.D VALIDANDO.
+- Regresion `I8004EFlujoCorreoSeguroTests.cs`: host placeholder (CHANGE_ME/REPLACE_ME) y mensajes con destinatario o asunto invalidos rechazan antes del transporte `EnviarAsync`: errores SMTP_NO_CONFIGURADO, DESTINATARIO_INVALIDO o ASUNTO_INVALIDO, cero intentos/MessageId, sin exponer marcadores sinteticos en errores. Cuerpo incluye exclusivamente enlace ficticio `prod.invalid` y marcador no secreto para comprobar rechazo previo a red.
+- Alcance limitado: NO certifica filtrado de contrasenas genericas ni bloqueo de URLs PROD cuando SMTP y mensaje sean validos; esos requisitos necesitan controles independientes. No hubo SMTP externo, API HTTP/JWT, base de datos real, codigo productivo, despliegue ni secretos. Sin `dotnet test` local; CI dirigida/required y revision tecnica por TASK_ID distinto son obligatorias. Rollback solo por revert protegido de esta prueba y entrada aditiva, sin perder historial.
+
 ## 2026-11-07 — I8-005.C: delimitar token y antifuerza bruta (DEV)
 
 - Autor nativo Task Javier :40 / JAVIER_CHATGPT / TASK_ID `6adc2e55f47c81919f6374e561687076`; scope exclusivo I8-005.C, rama `work/solqaryn-i8-005-c` desde `dev@3696f2838ecfbd318970100e72f3ec1d979b50b1`. Inicio real EN_PROGRESO en PLAN_MAESTRO!77 y BITACORA!1270 con readback previo a codigo.
