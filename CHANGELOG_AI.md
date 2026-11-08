@@ -5580,3 +5580,11 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Incidente real: la CI de merge SHA `5b9549c2` para P1-011.D canceló el job MySQL obligatorio porque el workflow `.github/workflows/dev-ci.yml` agrupaba todos los `push` de `dev` por `github.ref` y usaba `cancel-in-progress: true`. La incorporación posterior de P1-015.D puede cancelar CI anterior y retrasar certificaciones aunque los PR ya estén fusionados.
 - Cambio mínimo en DEV CI: para `push` la clave de concurrencia se define por SHA exacto, sin cancelación; para `pull_request` la clave sigue agrupada por ref y se cancelan ejecuciones anteriores cuando cambia el HEAD. Se conservan todos los jobs, triggers, pruebas MySQL 8.4, Scope Lock y controles de seguridad. No cambia API, UI, DB, migraciones ni QA/main/PROD.
 - Coste controlado: los push de commits diferentes pueden ejecutar CI en paralelo, pero no se esperan mediante Tasks programadas; los resultados terminales del SHA correspondiente se comprueban al certificar LISTO. La validación se hace con CI y revisión protegida del PR de gobierno. Reversión: revertir únicamente esta configuración mediante PR protegido.
+
+
+### P2-001.G - rechazo de permiso comercial en cinco endpoints 2026-11-08 J40
+
+- Autoría nativa: Javier :40, JAVIER_CHATGPT, AUTHOR_TASK_ID `6adc2e55f47c81919f6374e561687076`; rama original `work/solqaryn-p2-001-g`, base dev `d978368288fc9c2617388a1a7917bf4bfaa4d1aa`.
+- Regresión negativa xUnit `P2001GRechazoPermisoPorEndpointTests`: cinco GET (clientes, productos, ventas, proveedores y compras) con `X-Empresa-Id=202` válido pero permiso RBAC denegado. El filtro debe propagar `ForbiddenAccessException`, no ejecutar la acción, no marcar ningún tenant verificado y consultar únicamente el permiso del módulo/acción esperados.
+- Alcance y límite causal: mocks del filtro/control de permiso, sin probar en E2E ni la membresía real JWT/MySQL. Cambios exclusivos en test y esta entrada aditiva. CI exact-HEAD, Directed aplicable, revisión técnica de otro TASK_ID, dependencias COLA!G=SI y merge protegido FIFO antes de LISTO. No cambiar runtime, workflows, secrets, rulesets ni entornos main/QA/PROD.
+- Rollback: revert protegido selectivo de test y de esta entrada, preservando historial aditivo.
