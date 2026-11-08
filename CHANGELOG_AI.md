@@ -1,3 +1,9 @@
+## 2026-11-07 — P2-018.C: smoke integrado HTTP A/B
+
+- Prueba xUnit incremental en `backend/tests/Solqaryn.Tests/P1010BMultiEmpresaHttpJwtCertificationTests.cs`: `P2018C_SmokeHttpAB_HeaderFalsificado_NoCambiaRolNiPermiteTenantAjeno`; TestServer con JWT de prueba y servicios reales; al falsificar `X-Empresa-Id`, A conserva rol administrador A, B conserva rol de consulta B y una tercera empresa sin membresía devuelve Forbidden. Se usa el fixture EF InMemory existente.
+- Solo prueba causal y esta entrada aditiva; sin cambios de runtime, DB, API de producción, secretos ni reglas. No se ha ejecutado dotnet test local ni se considera prueba MySQL/DEV remoto; validar con required Scope Lock, Seguridad multiempresa, Build backend y Directed exact-HEAD del PR original. Revisora Task independiente obligatoria.
+- Rama original `work/solqaryn-p2-018-c` desde dev@`c1fa4e083a9b98a5b33a616c9f1d97ecf0b335d1`; FIFO bloqueado por autoría propia en PR #3933. Sin merge/LISTO anticipado; reversión mediante PR protegido, conservando evidencia histórica.
+
 ## 2026-11-07 — I8-004.C: transporte SMTP de recuperación fail-closed en DEV
 
 - Autoría nativa: Javier :20 / JAVIER_CHATGPT / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`; rama exclusiva `work/solqaryn-i8-004-c` creada desde `dev@c1fa4e083a9b98a5b33a616c9f1d97ecf0b335d1`. Inicio real `SQ-I8-004-C-J20-START-C1FA4E08-20261107`.
