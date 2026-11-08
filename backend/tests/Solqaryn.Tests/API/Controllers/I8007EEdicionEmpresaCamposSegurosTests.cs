@@ -99,6 +99,7 @@ public sealed class I8007EEdicionEmpresaCamposSegurosTests
         Assert.Equal("Empresa A segura", resultado!.Nombre);
         Assert.True(empresa.Activa);
         Assert.True(resultado.Activa);
+        repositorio.Verify(x => x.GetByIdAsync(11, It.IsAny<CancellationToken>()), Times.Once);
         repositorio.Verify(x => x.Update(empresa), Times.Once);
         repositorio.Verify(x => x.SaveChangesAsync(
             It.IsAny<CancellationToken>()), Times.Once);
