@@ -1,3 +1,10 @@
+## 2026-11-07 — I8-008.C: autoridad global por ámbito comprobado (DEV)
+
+- Task nativa Javier :00 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`; rama exclusiva `work/solqaryn-i8-008-c` desde dev@`c9f98f376f261f219aec479819f98582ccc1f35d`. `COLA!O80=SI`, `COLA!G80=SI`, transición PENDIENTE a EN_PROGRESO verificada antes del código y evento `SQ-I8-008-C-J00-START-C9F98F37-20261107`.
+- Prueba causal xUnit `backend/tests/Solqaryn.Tests/I8008CAutoridadGlobalAmbitoTests.cs`: los roles `Ambito=Plataforma` no pueden asignarse a empresas A/B aunque indiquen `EsSistema` o se falsifique `EmpresaId`; el rol privado de A no autoriza B; sólo la plantilla empresarial de sistema sin propietario admite reutilización; revocación, inactividad o eliminación niegan asignación.
+- Alcance delimitado a modelo de dominio (`Rol.EsAsignableAEmpresa`) sin cambiar producción, contratos, JWT, endpoints, persistencia, migraciones, secretos o entornos. Esta prueba unitaria NO certifica HTTP, JWT, RBAC completo, MySQL ni comportamiento E2E. `dotnet test` local no ejecutado: requerir CI Directed y los tres checks obligatorios exact-HEAD, revisión independiente, FIFO y CI postmerge I8 antes de LISTO.
+- Reversión por PR protegido del test y esta entrada, preservando commits/contribuciones ajenas.
+
 ## 2026-11-07 — I8-007.C: edicion de datos empresariales segregada por tenant (DEV)
 
 - Autoría física Javier :40 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6adc2e55f47c81919f6374e561687076`; rama exclusiva `work/solqaryn-i8-007-c` desde dev@`f95c0630d7101592be267ed05108d2ce3d4f5d31`, dependencias P1-016.B LISTO, COLA!O79=SI y G79=SI; PENDIENTE -> EN_PROGRESO acreditado en BITACORA.
