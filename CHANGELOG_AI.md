@@ -1,3 +1,11 @@
+## 2026-11-08 — G0-003.C: delimitar medicion de queries catalogo y empresa (DEV)
+
+- Autor funcional: Task nativa Javier :20 / JAVIER_CHATGPT / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`, rama original `work/solqaryn-g0-003-c` desde `dev@e607543ecefad5cfc2a67d61fd93354c084e5c11`; estado EN_PROGRESO registrado con readback en PLAN_MAESTRO!315 y BITACORA!1434 antes del codigo.
+- Test xUnit `backend/tests/Solqaryn.Tests/API/G0003CCatalogoEmpresaQueryMeasurementTests.cs`: intercepta la telemetria `PerformanceBaseline` del middleware actual en dos solicitudes sinteticas separadas, `TiendaController.GetCategorias` y `EmpresaConfiguracionController.GetPublica`, con 3 y 1 comandos simulados. Verifica que `DbQueries` y `DbDurationMs` se contabilizan independientemente en cada HttpContext, y que ambos endpoints usan el umbral especifico de 300 ms. Fallara si se mezcla el estado entre solicitudes o se descalibran las etiquetas de medicion.
+- DELIMITACION, no benchmarking real: no se ejecutan SQL ni MySQL, ni se certifica rendimiento real, SQL optimizado, recuentos reales de repositorios, acceso de empresa ni integraciones; los contadores usan `RequestPerformanceState.RecordDatabaseCommand` sintetico. Los siguientes microalcances deben medir SQL/latencias reales cuando sus gates lo permitan.
+- Solo prueba dirigida y este bloque aditivo de CHANGELOG; sin modificar middleware productivo, endpoints, interfaces, esquema, migraciones, autenticacion, RBAC, secretos, proveedores, reglas de ramas, QA/main/PROD. Sin dotnet test local; CI exact HEAD y revision causal por otro TASK_ID son obligatorias; no se declara PASS ni LISTO anticipadamente.
+- Rollback: revert protegido y no destructivo del test y de esta entrada unica, conservando historia concurrente.
+
 ## 2026-11-07 — P2-012.D: rechazo previo de lote Outbox cruzado entre tenants (DEV)
 
 - Autoría física Javier :00 / JAVIER_CHATGPT / TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`, GitHub `jmejia31`. Rama exclusiva `work/solqaryn-p2-012-d` nacida de `dev@8edcab917e1498a2ff6888dc9807f76698d50bbf`; inicio real EN_PROGRESO y evento `SQ-P2-012-D-J00-START-8EDCAB91-20261107` registrados antes del código.
