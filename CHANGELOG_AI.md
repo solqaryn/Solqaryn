@@ -1,3 +1,10 @@
+## 2026-11-08 — P2-005.F: caso causal de cuentas por pagar segregadas por EmpresaId (DEV)
+
+- Ejecucion autentica Javier :00 / JAVIER_CHATGPT / AUTHOR_TASK_ID 6adbb9fff1548191a1bd5b30d9e9984a; rama unica `work/solqaryn-p2-005-f` desde dev@3a9b21b6c5e237a359d39148bfefc42520cf377b. Inicio PENDIENTE -> EN_PROGRESO registrado y leido de vuelta en PLAN_MAESTRO!245, COLA!245 y BITACORA antes de escribir codigo.
+- Nueva regresion xUnit `P2005FCuentasPorPagarTenantTests`: dos empresas con NumeroCompra homonimo, A confirmada pendiente L125, A pagada L600, A borrador L300 y B confirmada pendiente L80. Con `VerifiedCommercialTenant` A y cabecera falsificada B espera agregado L125; en B con cabecera A espera L80; sin marca de backend en dos empresas espera L0 y nunca acepta scope legacy. El negativo falla si se mezcla deuda entre empresas o se incluyen borradores y compras pagadas.
+- Solo test nuevo y nota aditiva de CHANGELOG_AI.md. Sin codigo productivo, API, DTO, migraciones, MySQL, secretos, workflow, reglas protegidas ni QA/main/PROD. EF InMemory no acredita HTTP/JWT o MySQL real; `dotnet test` local no ejecutado, resultado de CI pendiente hasta readback exact-HEAD.
+- La entrega queda VALIDANDO al crear PR original; no equivale a LISTO. Requiere TECH_REVIEW por TASK_ID diferente, CI Scope Lock/Seguridad/Backend y Directed aplicable SUCCESS exact HEAD, FIFO protegido y 3/3 postmerge exact MERGE_SHA. Rollback mediante revert protegido selectivo del nuevo test y esta entrada, preservando otras contribuciones.
+
 ## 2026-11-07 — P2-016.D: persistencia de datos históricos sin propietario (DEV)
 
 - Autoría: Task nativa Javier :30 / JAVIER_CHATGPT / TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09. Rama exclusiva work/solqaryn-p2-016-d creada desde dev@81556a36fe92683e3d2f546a3d0b02b04ce55812. Dependencia P2-016.C=LISTO, COLA!O202=SI y G202=SI antes de iniciar.
