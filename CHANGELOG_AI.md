@@ -1,3 +1,8 @@
+## 2026-11-07 — I8-003.C: reset administrado con permiso y tenant verificado (DEV)
+
+- Autora Task nativa Javier :00 / JAVIER_CHATGPT / TASK_ID 6adbb9fff1548191a1bd5b30d9e9984a, GitHub jmejia31. Rama original exclusiva `work/solqaryn-i8-003-c` desde dev@e3dd861a9836b4d92493f9e31b94321e6d28c285; estado EN_PROGRESO y BITACORA inicial verificados ANTES del codigo.
+- Regresion xUnit `backend/tests/Solqaryn.Tests/I8003CResetAdminEmpresaAislamientoTests.cs`: PUT usuarios/{id} con NuevaPassword debe exigir el permiso Usuarios:RestablecerContrasena para el tenant A con marca autentica del servidor, aunque la cabecera reclame empresa B. Una cabecera sin marca de servidor se rechaza antes de consultar permisos; en ambos negativos no se edita el usuario.
+- DELIMITACION: llamada directa al controlador, no ejecucion de middleware HTTP/JWT, ni certificacion de MySQL, persistencia, correo o nuevo endpoint de reset; no se cambiaron produccion, API, contratos, migraciones, workflows, secretos, rulesets ni QA/main/PROD. Sin `dotnet test` local; requieren CI exact-HEAD, Directed, revision Task independiente, FIFO protegido, y required postmerge antes de LISTO. Reversion por PR protegido solo del test y la nota, preservando cambios concurrentes.
 ## 2026-11-07 — P2-011.E: locators Cloudinary privados con delimitadores codificados (DEV)
 
 - Autoría física Javier :20 / JAVIER_CHATGPT, TASK_ID 6adc2e4bd8a48191ac7d8641ed95a1a3, GitHub jmejia31. Rama exclusiva work/solqaryn-p2-011-e desde dev@788acb02bff46b337c7432036c3a4f140931b201; inicio EN_PROGRESO persistido previamente en PLAN_MAESTRO!215 y BITACORA!1119. COLA!O215=SI permite desarrollo, COLA!G215=NO bloquea merge hasta P2-011.D LISTO.
