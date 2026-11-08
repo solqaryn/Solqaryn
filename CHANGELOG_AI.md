@@ -1,3 +1,10 @@
+## 2026-11-08 — P2-002.F: caso medible de stock bajo por EmpresaId (DEV)
+
+- Autoria nativa: Javier :30 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`; scope P2-002.F, rama original `work/solqaryn-p2-002-f`, base dev@3a9b21b6c5e237a359d39148bfefc42520cf377b. PENDIENTE -> EN_PROGRESO registrada en PLAN_MAESTRO!242 y BITACORA!1343 con readback; COLA!O242=SI antes de iniciar; P2-002.A=VALIDANDO.
+- Caso causal nuevo `backend/tests/Solqaryn.Tests/P2002FStockBajoTenantCasoTests.cs`: fixture efimero de dos empresas y productos homonimos sin variantes (ambos califican como stock bajo), cabeceras X-Empresa-Id cruzadas y marca VerifiedCommercialTenant autentica. Resultado esperado: ProductoRepository.GetStockBajoAsync devuelve exclusivamente el producto de la empresa verificada A y luego B en el mismo DbContext; nunca el vecino indicado por una cabecera falsa.
+- Alcance test xUnit EF InMemory + entrada aditiva de CHANGELOG; no hay codigo productivo, endpoints, JWT/RBAC, migraciones MySQL, secretos, workflows, rulesets ni cambios de entorno. Caso diseñado sin afirmar PASS local; CI exact-HEAD Scope Lock, Seguridad multiempresa, Backend y Directed quedan por comprobar. No sustituye ensayos HTTP/JWT ni MySQL real.
+- Para integrar: revision tecnica de otro TASK_ID, FIFO estricto, COLA!G242=SI y postmerge 3/3 SUCCESS exact MERGE_SHA antes de LISTO. Rollback protegido selectivo del test y esta entrada; no force-push.
+
 ## 2026-11-07 — P2-016.D: persistencia de datos históricos sin propietario (DEV)
 
 - Autoría: Task nativa Javier :30 / JAVIER_CHATGPT / TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09. Rama exclusiva work/solqaryn-p2-016-d creada desde dev@81556a36fe92683e3d2f546a3d0b02b04ce55812. Dependencia P2-016.C=LISTO, COLA!O202=SI y G202=SI antes de iniciar.
