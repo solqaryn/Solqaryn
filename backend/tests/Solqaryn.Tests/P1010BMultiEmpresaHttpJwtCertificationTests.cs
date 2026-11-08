@@ -163,6 +163,59 @@ public sealed class P1010BMultiEmpresaHttpJwtCertificationTests
         Assert.Equal(HttpStatusCode.Forbidden, contexto.StatusCode);
     }
 
+
+    /// <summary>
+    /// P2-018.D: extiende el smoke HTTP A/B para cubrir revocación en una
+    /// sesión JWT viva mientras el cliente falsifica X-Empresa-Id.
+    /// TestServer + EF InMemory: no certifica Render DEV ni MySQL remoto.
+    /// </summary>
+    [Fact]
+    public async Task P2018D_SmokeHttpRevocacionB_HeaderFalsificadoNoRestauraMembresia()
+    {
+        using var escenario = await CrearEscenarioAsync();
+        using var cliente = escenario.Host.GetTestClient();
+        cliente.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer", CrearJwtPrueba(escenario.UsuarioId, escenario.RolAdminAId));
+
+        // Control positivo: B es accesible con rol de consulta antes de revocarse.
+        using (var antes = await cliente.GetAsync($"/tenant-context/{escenario.EmpresaBId}"))
+        {
+            Assert.Equal(HttpStatusCode.OK, antes.StatusCode);
+            using var json = JsonDocument.Parse(await antes.Content.ReadAsStringAsync());
+            Assert.Equal(escenario.RolConsultaBId,
+                json.RootElement.GetProperty("data").GetProperty("rolId").GetInt32());
+        }
+
+        await using (var scope = escenario.Host.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var membresiaB = await db.UsuarioEmpresas.SingleAsync(m =>
+                m.UsuarioId == escenario.UsuarioId && m.EmpresaId == escenario.EmpresaBId);
+            membresiaB.Desactivar();
+            await db.SaveChangesAsync();
+        }
+
+        // Cabecera B falsificada: no puede resucitar la membresía revocada.
+        cliente.DefaultRequestHeaders.TryAddWithoutValidation(
+            "X-Empresa-Id", escenario.EmpresaBId.ToString());
+        using (var revocada = await cliente.GetAsync($"/tenant-context/{escenario.EmpresaBId}"))
+            Assert.Equal(HttpStatusCode.Forbidden, revocada.StatusCode);
+
+        // La misma cabecera B no desplaza el contexto de A ni su rol verificado.
+        using (var a = await cliente.GetAsync($"/tenant-context/{escenario.EmpresaAId}"))
+        {
+            Assert.Equal(HttpStatusCode.OK, a.StatusCode);
+            using var json = JsonDocument.Parse(await a.Content.ReadAsStringAsync());
+            var datos = json.RootElement.GetProperty("data");
+            Assert.Equal(escenario.RolAdminAId, datos.GetProperty("rolId").GetInt32());
+            Assert.True(datos.GetProperty("esAdministrador").GetBoolean());
+        }
+
+        // Una empresa sin membresía tampoco puede heredarse del JWT o header.
+        using var ajena = await cliente.GetAsync($"/tenant-context/{escenario.EmpresaAjenaId}");
+        Assert.Equal(HttpStatusCode.Forbidden, ajena.StatusCode);
+    }
+
     private static string CrearJwtPrueba(int usuarioId, int rolAdminAId)
     {
         var token = new JwtSecurityToken(
