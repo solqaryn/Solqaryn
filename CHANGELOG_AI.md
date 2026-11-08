@@ -1,3 +1,10 @@
+## 2026-11-08 — P2-007.F: fixture causal de correlacion Kardex entre empresas
+
+- Autora nativa: Javier :00 / JAVIER_CHATGPT / AUTHOR_TASK_ID=6adbb9fff1548191a1bd5b30d9e9984a. Rama original work/solqaryn-p2-007-f desde dev@a203fc38d44a684b6a503a39b657ba8f7174bd54. Inicio real en PLAN_MAESTRO!H247/I247/M247 y BITACORA!1429, con COLA readback antes del codigo.
+- PREPARAR CASO medible: dos movimientos Kardex en empresas A/B, con igual CorrelationId y ReferenciaId=42 pero productos propios; los registros persisten con EmpresaId distinto. Condicion negativa: cabeceras X-Empresa-Id falsificadas y una marca publica sin tenant comercial autenticado nunca mezclan ni exponen el Kardex de otra empresa. Condicion positiva: la misma instancia de DbContext cambia de A a B al cambiar la marca verificada. Resultado esperado: A ve un movimiento con StockNuevo=5; B ve otro con StockNuevo=9; sin marca comercial, cero movimientos.
+- Prueba nueva xUnit backend/tests/Solqaryn.Tests/P2007FKardexCorrelationTenantTests.cs; es fixture EF InMemory, no certifica endpoints HTTP/JWT, MySQL real, valoracion, transferencias ni comportamiento idempotente de workers. Sin cambios a produccion, API, BD, migraciones, workflows, secretos, rulesets, main/QA/PROD. dotnet test local NO ejecutado.
+- Entrega solo a VALIDANDO tras PR y readback; CI exact HEAD y Directed aplicable, revision tecnica por TASK_ID distinto de autora y FIFO estricto antes del merge. P2 exige checks posmerge sobre MERGE_SHA para LISTO. Rollback: revert selectivo protegido, preservando todas las notas y pruebas ajenas.
+
 ## 2026-11-07 — P2-018.C: smoke integrado HTTP A/B
 
 - Prueba xUnit incremental en `backend/tests/Solqaryn.Tests/P1010BMultiEmpresaHttpJwtCertificationTests.cs`: `P2018C_SmokeHttpAB_HeaderFalsificado_NoCambiaRolNiPermiteTenantAjeno`; TestServer con JWT de prueba y servicios reales; al falsificar `X-Empresa-Id`, A conserva rol administrador A, B conserva rol de consulta B y una tercera empresa sin membresía devuelve Forbidden. Se usa el fixture EF InMemory existente.
