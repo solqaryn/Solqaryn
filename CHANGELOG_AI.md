@@ -1,3 +1,10 @@
+## 2026-11-08 — P2-005.G: rechazo de compras con EmpresaId ajeno (DEV)
+
+- Autoría Task nativa Javier :30 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`; rama original `work/solqaryn-p2-005-g` desde `dev@48c0e9d450efac28b43bae496885ad7f49046693`. Inicio real `SQ-P2-005-G-J30-START-48C0E9D4-20261108-0830` con readback de PLAN/COLA/BITACORA antes de escribir.
+- Prueba xUnit `backend/tests/Solqaryn.Tests/P2005GComprasOwnerFalsificadoTests.cs`: bajo marca verificada A, una compra con propietario B es rechazada aunque `X-Empresa-Id` apunte a B; se verifica ausencia de persistencia. Se repite B contra A, con controles positivos de compras A/A y B/B. El guard real `CommercialCrossTenantWriteGuard` y el contexto EF protegen la raíz comercial.
+- Cobertura exclusivamente EF InMemory; no equivale a autenticación HTTP/JWT ni a MySQL transaccional. Sin modificación de código productivo, seguridad, migraciones, secretos, workflows, QA/main/PROD. `COLA!O263=SI` permite desarrollar con P2-005.F en VALIDANDO; `COLA!G263=NO` prohíbe fusionar o declarar LISTO hasta predecesoras LISTO, revisión técnica de otra Task y CI required/Directed exact-HEAD. No se ejecutó dotnet local.
+- Rollback por revert protegido de la prueba y esta entrada, sin force-push, preservando el resto del historial.
+
 ## 2026-11-07 — I8-003.C: reset administrado con permiso y tenant verificado (DEV)
 
 - Autora Task nativa Javier :00 / JAVIER_CHATGPT / TASK_ID 6adbb9fff1548191a1bd5b30d9e9984a, GitHub jmejia31. Rama original exclusiva `work/solqaryn-i8-003-c` desde dev@e3dd861a9836b4d92493f9e31b94321e6d28c285; estado EN_PROGRESO y BITACORA inicial verificados ANTES del codigo.
