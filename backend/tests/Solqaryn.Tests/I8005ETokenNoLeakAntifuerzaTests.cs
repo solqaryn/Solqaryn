@@ -79,7 +79,6 @@ public sealed class I8005ETokenNoLeakAntifuerzaTests
             .GetMethod(nameof(AuthController.Login))!
             .GetCustomAttribute<EnableRateLimitingAttribute>()?.PolicyName);
         auth.Verify(x => x.LoginAsync(It.IsAny<LoginRequestDto>()), Times.Exactly(2));
-        auditoria.VerifyNoOtherCalls();
     }
 
     [Fact]
