@@ -5,6 +5,56 @@
 - Prueba nueva xUnit backend/tests/Solqaryn.Tests/P2007FKardexCorrelationTenantTests.cs; es fixture EF InMemory, no certifica endpoints HTTP/JWT, MySQL real, valoracion, transferencias ni comportamiento idempotente de workers. Sin cambios a produccion, API, BD, migraciones, workflows, secretos, rulesets, main/QA/PROD. dotnet test local NO ejecutado.
 - Entrega solo a VALIDANDO tras PR y readback; CI exact HEAD y Directed aplicable, revision tecnica por TASK_ID distinto de autora y FIFO estricto antes del merge. P2 exige checks posmerge sobre MERGE_SHA para LISTO. Rollback: revert selectivo protegido, preservando todas las notas y pruebas ajenas.
 
+## 2026-11-07 — I8-009.C: renovar credenciales revocadas sin emitir JWT (DEV)
+
+- Desarrollo auténtico de Task Javier :20 / JAVIER_CHATGPT / AUTHOR_TASK_ID=`6adc2e4bd8a48191ac7d8641ed95a1a3`, rama exclusiva `work/solqaryn-i8-009-c` desde `dev@c9f98f376f261f219aec479819f98582ccc1f35d`; inicio real PENDIENTE -> EN_PROGRESO y readback PLAN/COLA/BITACORA antes del código.
+- Prueba dirigida `backend/tests/Solqaryn.Tests/I8009CRevocacionRenovacionTests.cs`: negativa ante usuario bloqueado y usuario desactivado en `AuthService.RenovarAsync`; ambos rechazan por `BusinessRuleException` y `IJwtService.GenerarToken` se invoca cero veces. Control positivo: usuario vigente con rol relacional activo renueva exactamente un JWT de prueba.
+- Alcance restringido a prueba unitaria de servicio y esta nota aditiva: no altera API, JWT firmado real, runtime, base MySQL, migraciones, secretos, reglas, infraestructura ni QA/main/PROD. No acredita HTTP, alertas notificadas, revocación de tokens ya emitidos ni test local `dotnet` (no ejecutado). Requiere CI exact-HEAD, revisión técnica independiente y FIFO global; I8 exige checks requeridos posmerge exact MERGE_SHA antes de LISTO.
+- Rollback mediante revert protegido únicamente de esta prueba y su entrada, preservando cambios concurrentes de CHANGELOG_AI.md.
+
+## 2026-11-07 — I8-008.C: autoridad global por ámbito comprobado (DEV)
+
+- Task nativa Javier :00 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`; rama exclusiva `work/solqaryn-i8-008-c` desde dev@`c9f98f376f261f219aec479819f98582ccc1f35d`. `COLA!O80=SI`, `COLA!G80=SI`, transición PENDIENTE a EN_PROGRESO verificada antes del código y evento `SQ-I8-008-C-J00-START-C9F98F37-20261107`.
+- Prueba causal xUnit `backend/tests/Solqaryn.Tests/I8008CAutoridadGlobalAmbitoTests.cs`: los roles `Ambito=Plataforma` no pueden asignarse a empresas A/B aunque indiquen `EsSistema` o se falsifique `EmpresaId`; el rol privado de A no autoriza B; sólo la plantilla empresarial de sistema sin propietario admite reutilización; revocación, inactividad o eliminación niegan asignación.
+- Alcance delimitado a modelo de dominio (`Rol.EsAsignableAEmpresa`) sin cambiar producción, contratos, JWT, endpoints, persistencia, migraciones, secretos o entornos. Esta prueba unitaria NO certifica HTTP, JWT, RBAC completo, MySQL ni comportamiento E2E. `dotnet test` local no ejecutado: requerir CI Directed y los tres checks obligatorios exact-HEAD, revisión independiente, FIFO y CI postmerge I8 antes de LISTO.
+- Reversión por PR protegido del test y esta entrada, preservando commits/contribuciones ajenas.
+
+## 2026-11-07 — I8-007.C: edicion de datos empresariales segregada por tenant (DEV)
+
+- Autoría física Javier :40 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6adc2e55f47c81919f6374e561687076`; rama exclusiva `work/solqaryn-i8-007-c` desde dev@`f95c0630d7101592be267ed05108d2ce3d4f5d31`, dependencias P1-016.B LISTO, COLA!O79=SI y G79=SI; PENDIENTE -> EN_PROGRESO acreditado en BITACORA.
+- Pruebas xUnit `I8007CEmpresaEdicionSegregadaTests`: empresa A verificada por `VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey` y cabecera `X-Empresa-Id` falsificada para B. El intento de editar B rechaza con `ForbiddenAccessException` sin llamadas al servicio; el control positivo permite editar solo A y verifica que el servicio recibe exclusivamente ID A.
+- Scope limitado al controlador de empresas con `DefaultHttpContext` sintético: no certifica middleware HTTP real, firma de JWT, RBAC completo ni MySQL. Sin cambios en runtime/API, migraciones, base de datos, secretos, rulesets o QA/main/PROD. Requiere Directed comercial `I8007C`, 3 required exact-HEAD, revisión independiente, FIFO y checks postmerge I8 antes de LISTO.
+- Rollback: revert protegido de la prueba y esta entrada, preservando CHANGELOG concurrente.
+
+## 2026-11-07 — P2-002.A: cierre atomico de listado y busqueda de productos por EmpresaId (DEV)
+
+- Entrega nativa Javier :30 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`; rama exclusiva `work/solqaryn-p2-002-a` creada desde `dev@f95c0630d7101592be267ed05108d2ce3d4f5d31`, despues de PENDIENTE -> EN_PROGRESO y readback de PLAN/COLA/BITACORA.
+- Nueva prueba causal xUnit `backend/tests/Solqaryn.Tests/P2002AProductoListadoTenantTests.cs`: dos empresas A/B con productos homonimos; `ProductoRepository.GetPagedAsync` con Search y `GetUltimosAgregadosAsync` retornan exclusivamente el tenant certificado aun con `X-Empresa-Id` falsificado, y el mismo DbContext vuelve a evaluar el alcance al alternar A/B.
+- Reuso comprobado de las pruebas P2-002.C/D/E ya LISTO (PR #3894/#3909/#3918); la nueva prueba amplía listado/busqueda pero NO certifica por si sola joins SQL MySQL, mutaciones productivas, HTTP/JWT ni todos los endpoints. El gate de cierre sigue requiriendo revisión de cobertura y pruebas dirigidas. No se ejecuto dotnet test localmente; Scope Lock, Seguridad, Backend y Directed deben acreditarse en CI exact-HEAD antes de fusionar.
+- Diff intencional solo prueba xUnit nueva y esta entrada aditiva. Sin cambios a runtime, datos, migraciones, reglas, secretos ni QA/main/PROD. Rollback protegido selectivo de los dos cambios, sin perder historia ni pruebas previas.
+
+## 2026-11-07 — I8-006.C: delimitar cambio voluntario de contraseña
+
+- Scope exclusivo I8-006.C (Plan Comercial Inicial). Prueba xUnit negativa agregada a `backend/tests/Solqaryn.Tests/PerfilServiceTests.cs`: el usuario autenticado 25 ingresa contraseña actual incorrecta y una contraseña nueva válida; se comprueba rechazo de la operación, conservación del hash y cero escrituras al repositorio, sin acceder a otro UsuarioId.
+- Alcance: solo test de servicio `PerfilService.CambiarPasswordAsync` y esta entrada aditiva. No se modifican API, runtime, DTO, persistencia, migraciones, JWT, RBAC, secretos ni entornos. No acredita HTTP, firma JWT, SMTP ni MySQL real.
+- Entrega mediante rama exclusiva `work/solqaryn-i8-006-c`, PR original contra dev, con revisión independiente, CI required, Directed y postmerge exigibles antes de LISTO. Sin `dotnet test` local; ninguna afirmación de PASS anticipado.
+- Corrección causal del filtro CI dirigido: el nombre del método xUnit lleva el prefijo `I8006C_` para coincidir con `FullyQualifiedName~I8006C`. No se cambian aserciones ni lógica de seguridad; CI y revisión exact-HEAD deben ejecutarse de nuevo.
+
+## 2026-11-07 — I8-005.C: delimitar token y antifuerza bruta (DEV)
+
+- Autor nativo Task Javier :40 / JAVIER_CHATGPT / TASK_ID `6adc2e55f47c81919f6374e561687076`; scope exclusivo I8-005.C, rama `work/solqaryn-i8-005-c` desde `dev@3696f2838ecfbd318970100e72f3ec1d979b50b1`. Inicio real EN_PROGRESO en PLAN_MAESTRO!77 y BITACORA!1270 con readback previo a codigo.
+- Regresion xUnit `backend/tests/Solqaryn.Tests/I8005CAuthTokenAntifuerzaBrutaDelimitacionTests.cs`: la unica accion POST anonima del AuthController es login bajo politica `AuthLogin`; el endpoint de renovacion exige `[Authorize]`, no `[AllowAnonymous]`. El contrato de Program.cs declara politica `AuthLogin` de ventana fija con rechazo HTTP 429. Si un futuro cambio abre un POST anonimo sin cobertura, falla la prueba.
+- Limite explicito: prueba por reflexion de metadata HTTP y politica declarada, NO certifica token de recuperacion revocable, invalidacion efectiva de JWT, fuerza bruta distribuida, ejecucion HTTP 429, MySQL ni entornos productivos. Las pruebas operativas de revocacion y antifuerza bruta se mantienen pendientes, no se falsea cierre integral.
+- Solo nuevo test y nota aditiva en CHANGELOG; sin modificar runtime, API, JWT/RBAC, datos, migraciones, secretos, workflows, reglas ni main/QA/PROD. Sin dotnet local; exigir required Scope Lock/Seguridad/Backend, Directed comercial aplicable, revision independiente, FIFO global y checks postmerge requeridos I8 exact MERGE_SHA antes de LISTO.
+- Reversion: revert selectivo mediante PR protegido, preservando pruebas y CHANGELOG concurrentes.
+
+## 2026-11-07 — P2-012.D: rechazo previo de lote Outbox cruzado entre tenants (DEV)
+
+- Autoría física Javier :00 / JAVIER_CHATGPT / TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`, GitHub `jmejia31`. Rama exclusiva `work/solqaryn-p2-012-d` nacida de `dev@8edcab917e1498a2ff6888dc9807f76698d50bbf`; inicio real EN_PROGRESO y evento `SQ-P2-012-D-J00-START-8EDCAB91-20261107` registrados antes del código.
+- Test xUnit `backend/tests/Solqaryn.Tests/P2012DOutboxLoteCruzadoTests.cs`: repo defectuoso devuelve lote A/B con misma clave idempotente, tanto cuando el mensaje ajeno es primero como cuando está al final; se exige rechazo de **todo** el lote antes de cualquier dispatch, confirmación o reprogramación de efectos. Complementa P2-012.C, que valida procesamiento A/B correcto sin HTTP.
+- Sólo prueba sintética y esta nota aditiva; no hay cambios al worker de producción, API, JWT/RBAC, proveedor MySQL, migraciones, workflows, secretos, reglas ni QA/main/PROD. `dotnet test` local no disponible en entorno de ejecución; confirmar CI obligatoria y Directed exact HEAD, revisión causal por Task diferente del autor, FIFO y CI postmerge antes de LISTO. Los dobles no demuestran HTTP real ni persistencia MySQL.
+- Rollback por revert protegido de prueba y nota conservando entradas ajenas.
+
 ## 2026-11-07 — P2-018.C: smoke integrado HTTP A/B
 
 - Prueba xUnit incremental en `backend/tests/Solqaryn.Tests/P1010BMultiEmpresaHttpJwtCertificationTests.cs`: `P2018C_SmokeHttpAB_HeaderFalsificado_NoCambiaRolNiPermiteTenantAjeno`; TestServer con JWT de prueba y servicios reales; al falsificar `X-Empresa-Id`, A conserva rol administrador A, B conserva rol de consulta B y una tercera empresa sin membresía devuelve Forbidden. Se usa el fixture EF InMemory existente.
