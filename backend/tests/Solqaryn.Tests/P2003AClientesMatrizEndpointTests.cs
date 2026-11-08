@@ -77,6 +77,10 @@ public sealed class P2003AClientesMatrizEndpointTests
         Assert.Equal(1, await db.Clientes.IgnoreQueryFilters().CountAsync(c => c.EmpresaId == empresaA.Id));
         Assert.Equal(1, await db.Clientes.CountAsync());
         Assert.Equal(1, await db.Clientes.Include(c => c.TipoCliente).CountAsync());
+        // Materialize eager navigations: CountAsync drops Includes during query optimization.
+        Assert.Single(await db.Set<TipoCliente>().ToListAsync());
+        Assert.Single(await db.Clientes.Include(c => c.TipoCliente).ToListAsync());
+        Assert.Single(await db.Clientes.Include(c => c.Ventas).ToListAsync());
         Assert.Equal(new[] { clienteA.Id }, (await repository.GetAllAsync()).Select(c => c.Id));
         Assert.Equal(new[] { clienteA.Id }, (await repository.GetActivosAsync()).Select(c => c.Id));
         Assert.Equal(new[] { clienteA.Id }, (await repository.BuscarActivosAsync("P2003A Cliente")).Select(c => c.Id));
