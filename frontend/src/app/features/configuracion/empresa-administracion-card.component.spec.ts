@@ -98,8 +98,7 @@ describe('N6.1.E Empresa administration UX', () => {
 
     expect(component.empresas()[0].activa).toBe(false);
     expect(component.operandoId()).toBeNull();
-  });
-  it('G0-001.C ignores an obsolete HTTP error while the newest company filter is loading', () => {
+  });  it('G0-001.C ignores an obsolete HTTP error while the newest company filter is loading', () => {
     const component = createComponent();
     component.cargar();
     const stale = httpMock.expectOne(request =>
@@ -127,5 +126,6 @@ describe('N6.1.E Empresa administration UX', () => {
     expect(component.error()).toBeNull();
     expect(component.loading()).toBe(false);
   });
+
 
 });
