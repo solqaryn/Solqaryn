@@ -1,3 +1,7 @@
+## 2026-11-09 — Ampliación de inventario autorizado de Tasks bajo V13
+
+Nueva autorización del propietario para dos Tasks Javier: :10 6af16bb9492c8191b8e8c7d606f11507 y :50 6af16bbad26881918c283abe06e1f32a; distintas de Alex :10 y :50. Hasta CI requerida/revisión independiente/merge protegido y readback Sheets, Tasks nuevas HABILITADAS físicamente según readback, pero NO_GO comercial hasta la autoridad protegida y readback institucional. Autoridad propuesta: docs/AUTOMATION_STATUS.md y docs/AUTOMATION_AUTHORITY.md, censo ocho total = seis Javier + dos Alex, mismos cuatro límites V13. Trabajo posterior: recuperación 52 VALIDANDO FIFO original, cierres comprobados, sin nuevas microtareas ni cambios QA/main/PROD.
+
 ## 2026-11-07 — V13_1000_FIFO_BATCH (PR #3932)
 
 Cambio de gobierno candidato en PR #3932: cuatro techos de 1000, FIFO multiple de cierres independientes en cada corrida, parada ante PR propio, progreso visible y CI asincrona. Se conserva dev, revisión independiente, seguridad, Scope Lock, formulas O/G y no-CAS. Fuente normativa unica: docs/AUTOMATION_V13.md; implementacion en scripts/automation-capacity-v13.mjs y scripts/automation-review-routing.mjs. Vigencia solo posmerge protegido y readback Sheets/Tasks, sin cambios de arquitectura frontend/backend.
