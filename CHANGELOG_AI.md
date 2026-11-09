@@ -1,3 +1,10 @@
+## 2026-11-07 — I8-001.D: auditoria de hash BCrypt y credencial vigente del ERP (DEV)
+
+- Desarrollo nativo Javier :20 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`, rama exclusiva `work/solqaryn-i8-001-d` desde dev@`c9f98f376f261f219aec479819f98582ccc1f35d`. Inicio PENDIENTE -> EN_PROGRESO persistido y releido en PLAN/COLA/BITACORA antes del codigo.
+- Nueva regresion xUnit `backend/tests/Solqaryn.Tests/I8001DPasswordHashAuditoriaTests.cs`: hashes BCrypt del mismo secreto tienen sal distinta, no almacenan texto plano y rechazan secreto alterado; tras cambiar el hash del usuario ERP, el login ya no acepta la clave anterior, no emite JWT por ella y admite solo la nueva con rol activo. El test se limita a datos sinteticos y mocks.
+- Diff acotado a test nuevo y esta nota aditiva: sin cambios en AuthService, API, JWT real, roles, base de datos, migraciones, infraestructura, secretos, CI requerida, QA/main/PROD. No se ejecuto dotnet local; no certificar PASS hasta CI exact-HEAD/Directed y revision independiente de otra Task. No acredita revocacion de JWT emitidos antes de la rotacion ni auditoria de contrasenas productivas.
+- Reversion proporcional mediante PR protegido que retire solo el test y esta entrada, preservando el historial concurrente.
+
 ## 2026-11-07 — I8-011.C: superadmin Plataforma sin bypass de tenant comercial A/B (DEV)
 
 - Autoría nativa: Task Javier :40 / JAVIER_CHATGPT / AUTHOR_TASK_ID=6adc2e55f47c81919f6374e561687076; trabajo exclusivo en rama `work/solqaryn-i8-011-c`, base `dev@c9f98f376f261f219aec479819f98582ccc1f35d`. Inicio real EN_PROGRESO con PLAN_MAESTRO!83 y BITACORA!1301, readback COLA previo al código.
