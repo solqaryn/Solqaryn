@@ -1,3 +1,9 @@
+## 2026-11-09 — Scope Lock: permiso 403 en reintento automático tras review (DEV)
+
+- El workflow auxiliar pull_request_review no pudo relanzar el job fallido vía GitHub Actions API (`SCOPE_REVIEW_RETRY_HTTP_403`). Esta falla secundaria causa `CHECK_FAILED:Revalidar Scope Lock tras aprobacion independiente` en el verificador exact SHA, aunque se registra revisión formal independiente y Seguridad/Backend son SUCCESS.
+- Reparación mínima y fail-closed: cuando y sólo cuando un reintento POST autenticado de `/actions/jobs/<id>/rerun` recibe 403 después de validar PR, SHA, autor/revisor y review, reportar `MANUAL_RETRY_REQUIRED_403` sin declarar un reintento ejecutado. El required check `verify-solqaryn-project-scope` sigue siendo obligatorio y debe aprobar por re-run selectivo de operador; no se desactiva, no se fabrica PASS, no se alteran permisos globales, repositorio, secretos, QA/main/PROD.
+- Prueba: selftests del helper y Scope Lock en CI exact HEAD, revisión independiente, merge protegido, readback postmerge. Rollback por PR protegido.
+
 ## 2026-11-09 — Ampliación protegida Javier :10/:50 para recuperación FIFO (DEV)
 
 - Orden del propietario: se crearon físicamente dos Tasks de JAVIER_CHATGPT, PRIMARY_DEV_05 :10 ID 6af16bb9492c8191b8e8c7d606f11507 y PRIMARY_DEV_06 :50 ID 6af16bbad26881918c283abe06e1f32a, con RRULE horaria America/Tegucigalpa. Se pausaron preventivamente para registrar los IDs en GitHub/Sheets antes de activación. Las Tasks Alex :10/:50 y las cuatro Javier originales no fueron modificadas por esta enmienda.

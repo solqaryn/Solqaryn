@@ -1,6 +1,6 @@
 ## 2026-11-09 — Extensión operativa Javier de cuatro a seis Tasks bajo V13
 
-Tasks Javier PRIMARY_DEV_05 :10 ID 6af16bb9492c8191b8e8c7d606f11507 y PRIMARY_DEV_06 :50 ID 6af16bbad26881918c283abe06e1f32a creadas desde cuenta propietaria y pausadas hasta revisión independiente, CI, merge protegido y conciliación institucional. Censo propuesto: 8 físicas, 6 Javier + 2 Alex. Misión igual a las otras cuatro Javier: sólo 52 PR VALIDANDO originales por FIFO. Cuatro techos V13, arquitectura Angular/.NET/MySQL, Scope Lock, DEV y reglas de seguridad preservadas; Tasks Alex sin modificación ni reactivación. No afirmar autorización efectiva sin readback.
+Tasks Javier PRIMARY_DEV_05 :10 ID 6af16bb9492c8191b8e8c7d606f11507 y PRIMARY_DEV_06 :50 ID 6af16bbad26881918c283abe06e1f32a creadas desde cuenta propietaria, primero pausadas y luego HABILITADAS físicamente según readback; el permiso comercial se mantiene NO_GO hasta revisión independiente, CI, merge protegido y conciliación institucional. Censo propuesto: 8 físicas, 6 Javier + 2 Alex. Misión igual a las otras cuatro Javier: sólo 52 PR VALIDANDO originales por FIFO. Cuatro techos V13, arquitectura Angular/.NET/MySQL, Scope Lock, DEV y reglas de seguridad preservadas; Tasks Alex sin modificación ni reactivación. No afirmar autorización efectiva sin readback.
 
 ## 2026-11-07 — V13_1000_FIFO_BATCH (PR #3932)
 
