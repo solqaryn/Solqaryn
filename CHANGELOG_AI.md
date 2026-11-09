@@ -1,3 +1,9 @@
+## 2026-11-08 — I8-004.D: flujo de correo seguro Outlook y Reply-To (DEV)
+
+- Autoría de ejecución: Javier :20 / JAVIER_CHATGPT / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`; rama única `work/solqaryn-i8-004-d`, base `dev@3a9b21b6c5e237a359d39148bfefc42520cf377b`. `COLA!O87=SI` y predecesora I8-004.C VALIDANDO antes de registrar EN_PROGRESO con readback.
+- Regresión causal `I8004DFlujoCorreoSeguroTests.cs`: rechazo previo a conexión de Outlook SMTP puerto 465 (exige 587 STARTTLS) y `Reply-To` inválido, con diagnóstico y envío `SMTP_NO_CONFIGURADO`, cero intentos/MessageId y sin filtrar token OAuth2 sintético. Control positivo de configuración 587 + respuesta válida. Diferente de I8-004.C (refresh token faltante).
+- Pruebas de validación offline sin SMTP de red ni correo real; CI dirigida/backend/seguridad/Scope Lock exact-HEAD pendientes de GitHub Actions y revisión de otro TASK_ID. No se ejecutó `dotnet test` local. Sin código productivo, migraciones, secretos, cambios de dependencias, rulesets ni QA/main/PROD. Rollback por revert protegido selectivo del test y esta entrada, conservando el resto del CHANGELOG.
+
 ## 2026-11-08 — I8-003.D: reset admin no altera identidad compartida A/B (DEV)
 
 - Autoría Task nativa Javier :00 / JAVIER_CHATGPT / TASK_ID 6adbb9fff1548191a1bd5b30d9e9984a; rama exclusiva `work/solqaryn-i8-003-d` desde dev@3a9b21b6c5e237a359d39148bfefc42520cf377b. PLAN_MAESTRO H86=EN_PROGRESO y BITACORA!1332 confirmados antes del código.
