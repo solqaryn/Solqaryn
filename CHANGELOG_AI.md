@@ -1,3 +1,10 @@
+## 2026-11-08 — P2-018.D: smoke HTTP A/B ante revocación y cabecera falsificada (DEV)
+
+- Autoría nativa original Javier :40 / JAVIER_CHATGPT / TASK_ID `6adc2e55f47c81919f6374e561687076`. Base `dev@3a9b21b6c5e237a359d39148bfefc42520cf377b`, rama única `work/solqaryn-p2-018-d`. Inicio PENDIENTE→EN_PROGRESO acreditado en PLAN_MAESTRO!204 / COLA!204 / BITACORA!1337 antes del código; predecesora P2-018.C=VALIDANDO y COLA!O204=SI.
+- Ajuste causal al smoke HTTP xUnit existente `P1010BMultiEmpresaHttpJwtCertificationTests`: con el mismo JWT y TestServer, B responde 200 con rol de consulta antes de revocar la membresía; al desactivarla en persistencia la cabecera falsificada `X-Empresa-Id=B` no restituye acceso (403), A sigue 200 con rol admin de A y una tercera empresa ajena permanece 403. Ninguna mutación productiva ni alteración RBAC/tenant.
+- Impacto: un único archivo de prueba backend + esta entrada aditiva. Sin cambios a API, DTO, BD productiva, migraciones, secretos, CI/workflows, rulesets, `main`, QA ni PROD. Cobertura TestServer/EF InMemory; no acredita HTTP Render ni MySQL real. Se exige CI exact-HEAD, Directed si aplica, revisión técnica por TASK_ID distinto y FIFO global; P2 exige postmerge 3/3 SUCCESS exact MERGE_SHA antes de LISTO.
+- Rollback: revert protegido selectivo del test y esta entrada, preservando historial y pruebas ajenas. No declarar PASS local ni LISTO antes de readback.
+
 ## 2026-11-08 — P2-015.D: prueba de cuarentena residual
 
 - Se añade `backend/tests/Solqaryn.Tests/API/P2015DCuarentenaResidualHttpStatusTests.cs`: matriz aislada EF InMemory que verifica la respuesta de cuarentena para cinco rutas comerciales bajo cabeceras tenant falsificadas y claims administrativos no verificados.
