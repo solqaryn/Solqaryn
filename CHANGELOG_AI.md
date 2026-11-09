@@ -1,8 +1,15 @@
 ## 2026-11-07 — Estabilizacion de Scope Lock para micropruebas I8 y CI extensa (DEV)
 
 - Autor institucional SOLQARYN Platform. Correccion dedicada del pipeline: scripts/security/ci-impact-routing.mjs reconoce tests I8dddX offline (como I8-004.C e I8-005.C), conserva MySQL para riesgos de datos, integraciones y archivos desconocidos, y agrega ocho pruebas causales positivas/negativas.
-- scripts/verify-automated-pr-certification.mjs amplía exclusivamente la espera de checks realmente obligatorios de 4 a 35 minutos, por debajo del timeout del job Scope Lock de 45 minutos. No omite checks, no concede aprobaciones ni elimina seguridad, revision independiente o CI exact-HEAD.
+- Scope Lock mantiene su espera corta con reintento selectivo del job fallido despues de la CI, ya integrado en dev; esta conciliacion NO amplia la espera a 35 minutos. No omite checks, no concede aprobaciones ni elimina seguridad, revision independiente o CI exact-HEAD.
 - Se actualiza docs/CI_IMPACT_ROUTING.md. No cambia frontend/backend productivo, DB, migraciones, secretos, QA/main/PROD, infraestructura ni reglas de merge. Es un PR de gobernanza que requiere aprobacion independiente y merge protegido antes de tener efecto en dev. Rollback mediante revert protegido.
+
+## 2026-11-07 — Scope Lock: reintento por finalizacion de CI exact-HEAD sin falsos PASS (DEV)
+
+- Cambio de gobierno/CI redactado por SOLQARYN Platform en rama `fix/solqaryn-scope-lock-ci-retry-20261107`; revisión formal humana independiente del HEAD final obligatoria antes de merge, sin adelantar FIFO ni modificar rulesets.
+- Corrige la causa `AUTO_CERT=NO_GO OTHER_CHECKS_PENDING` por checks que finalizan despues de la ventana acotada; nuevo workflow trusted-dev escucha cierre de DEV CI, Core, Directed y Priority 3 y reintenta **solo** un job Scope Lock fallido cuya causa comprobada fue esperar CI, con identidad, SHA, estado y pruebas reales revalidados, límite de intentos y negativos fail-closed. No ejecuta codigo de ramas PR ni aprueba/mergea scopes.
+- Refuerza `scripts/verify-automated-pr-certification.mjs`: un MySQL queued/in_progress nunca se difiere por el mero PASS del clasificador; exige SUCCESS/SKIPPED terminal antes de fast lane de tests. Conserva Core, Security, Directed, independencia, Scope Lock y todas las suites causales; sin alteraciones a frontend/backend de producto, API, auth, DB, secretos, QA/main/PROD ni despliegues.
+- Validación: selftests de verificador y nuevo helper deben aprobarse en CI del SHA final; sin CI/review exacta no publicar ni certificar. Rollback: revert protegido de workflow, helper, verificador, documentación y entrada de changelog.
 
 ## 2026-11-07 — I8-009.C: renovar credenciales revocadas sin emitir JWT (DEV)
 

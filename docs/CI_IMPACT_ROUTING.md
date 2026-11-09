@@ -23,6 +23,14 @@ Siguen obligatorios `verify-solqaryn-project-scope`, `SOLQARYN - Seguridad multi
 - El fast lane no autoriza fusiones con Core incompleta ni cierres `LISTO` prematuros. Las Tasks pausadas siguen pausadas; no cambia la autorizacion individual ni se activa ninguna Task. PR de instalacion exige review independiente, CI, merge protegido y readback.
 - Reversion: PR protegido que revierta el clasificador en el verificador y esta politica, sin modificar rulesets ni entornos.
 
+
+## Reintento por evento de CI completada (2026-11-07)
+
+La falla `OTHER_CHECKS_PENDING` de Scope Lock despues de su espera acotada no puede convertirse en PASS por tiempo ni por un `Impacto CI` verde: ese check valida el clasificador, no que MySQL sea omitible. Se exige que el job MySQL en el HEAD evaluado alcance `completed/success` o `completed/skipped` antes de diferir otras suites de tests unitarios; un MySQL `queued` o `in_progress` sigue siendo causalmente pendiente, especialmente en P2/I8.
+
+`.github/workflows/retry-scope-after-ci-completion.yml` escucha la finalizacion satisfactoria de los workflows DEV, Priority 3, Core y Directed y ejecuta SOLO `scripts/security/auto-retry-scope-after-ci.mjs` desde el `dev` protegido con token limitado. No ejecuta codigo del PR ni cambia ramas, revisiones, estado de negocio, rulesets, credenciales o despliegues. Revalida repositorio, PR OPEN, base dev actual, HEAD exacto, origen GitHub Actions, totalidad de check runs, required + Directed en SUCCESS, y que el fallo anterior de Scope Lock fue UNICAMENTE por comprobaciones pendientes. Reintenta exclusivamente su job fallido, en un maximo de dos reintentos tras el primer intento, y confirma de nuevo HEAD/checks antes del POST. Nunca reintentar un fallo causal, review faltante, CI aun activa/fallida, SHA stale o PR no fusionable. Si no hay evento o permisos efectivos, el bloqueo sigue visible y la Task debe registrar `CI_PENDING_ASYNC` o la causa real sin fabricar `LISTO`.
+
+Esta reparacion exige review formal independiente del ultimo HEAD, Scope Lock y CI protegida porque modifica workflow y verificador. No autoriza saltarse FIFO comercial: el PR normativo se integrara solo en su turno segun `docs/AUTOMATION_V13.md`.
 ## Aseguramiento
 
 Para cambios solo unitarios PddddX se exige de todas formas Core, seguridad multiempresa, prueba dirigida y Scope Lock exact-SHA. Los cambios de backend fuente, migraciones e integracion mantienen cobertura MySQL y, cuando aplican, Playwright/Quality. Los workflows integrales conservan ejecucion manual mediante `workflow_dispatch`.
@@ -35,6 +43,6 @@ El cambio no modifica ERP, autentificacion, RBAC, PII, Aiven, grants, Render, Ve
 
 - I8dddX*Tests.cs aislados entran en la clasificacion segura de MySQL solamente cuando no hay referencias directas a bases de datos ni rasgos Category=Integration. La clasificacion conserva fail-closed ante archivos faltantes, rutas de integracion, migraciones, fixtures, cambios de runtime o cambios mixtos.
 - El preflight clasificador incorpora casos positivos I8-004.C/I8-005.C y negativos DbContext, Category=Integration, rutas Integration, runtime agregado y fuente ausente.
-- Scope Lock espera ahora hasta 35 minutos por verificaciones realmente obligatorias y del SHA exacto, dentro del timeout de workflow de 45 minutos. Nunca declara SUCCESS si un check requerido sigue pendiente, fue cancelado o fallo.
+- Scope Lock mantiene espera acotada de cuatro minutos y reintento nativo selectivo del job fallido tras finalizar la CI exact-HEAD, conforme al workflow protegido de dev. Nunca declara SUCCESS si un check requerido sigue pendiente, fue cancelado o falló.
 - No se elimina seguridad, backend, comprobacion comercial dirigida, revision independiente, CI posmerge ni branch protection. Los PR existentes con SHA anterior requieren conciliacion y nuevo CI; no se altera su historial.
 - El cambio de gobernanza exige revision independiente formal y merge protegido en dev. Rollback por revert protegido de este changeset, sin cambios en QA/main/PROD ni rulesets.
