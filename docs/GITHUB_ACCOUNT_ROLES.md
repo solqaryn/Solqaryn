@@ -1,3 +1,6 @@
+## Adenda actual 2026-11-09 — 6 Javier + 2 Alex, V13 vigente sin alterar cuatro techos
+Task Javier nueva :10 ID 6af16bb9492c8191b8e8c7d606f11507 y nueva :50 ID 6af16bbad26881918c283abe06e1f32a, distintas de las Tasks Alex :10/:50. La nueva autorización protegida entra en vigor sólo tras review independiente, required CI exact-HEAD, merge a dev y readback del Sheet. Las dos nuevas permanecen PAUSADAS/NO_GO durante integración. Su misión posterior es idéntica a las otras cuatro Javier: recuperar exclusivamente los 52 PR VALIDANDO originales por FIFO, sin nuevos scopes, falsa aprobación ni falsos LISTO. No modificar las Tasks Alex, sus permisos, ni QA/main/PROD.
+
 # SOLQARYN — Separación de cuentas GitHub para trabajo gestionado desde ChatGPT
 
 **Decisión expresa del propietario: 31 de octubre de 2026.**
