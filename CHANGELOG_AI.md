@@ -5,12 +5,65 @@
 - Solo prueba xUnit con EF InMemory más entrada aditiva de CHANGELOG; sin cambios en runtime, API, esquema MySQL, migraciones, secretos, permisos, workflows, rulesets ni QA/main/PROD. No se ha ejecutado `dotnet test` local ni se atribuye PASS hasta CI exact-HEAD; no prueba HTTP/JWT, MySQL real ni servicios de pago externos. Requiere revisión técnica por TASK_ID diferente, Scope Lock + Seguridad + Backend + Directed aplicable y FIFO estricto; P2 exige tres required postmerge SUCCESS exact MERGE_SHA para LISTO.
 - Rollback: revert protegido y selectivo de esta nueva prueba y su entrada de historial, sin reescribir historia ni eliminar cobertura preexistente.
 
+## 2026-11-07 — Estabilizacion de Scope Lock para micropruebas I8 y CI extensa (DEV)
+
+- Autor institucional SOLQARYN Platform. Correccion dedicada del pipeline: scripts/security/ci-impact-routing.mjs reconoce tests I8dddX offline (como I8-004.C e I8-005.C), conserva MySQL para riesgos de datos, integraciones y archivos desconocidos, y agrega ocho pruebas causales positivas/negativas.
+- Scope Lock mantiene su espera corta con reintento selectivo del job fallido despues de la CI, ya integrado en dev; esta conciliacion NO amplia la espera a 35 minutos. No omite checks, no concede aprobaciones ni elimina seguridad, revision independiente o CI exact-HEAD.
+- Se actualiza docs/CI_IMPACT_ROUTING.md. No cambia frontend/backend productivo, DB, migraciones, secretos, QA/main/PROD, infraestructura ni reglas de merge. Es un PR de gobernanza que requiere aprobacion independiente y merge protegido antes de tener efecto en dev. Rollback mediante revert protegido.
+
+## 2026-11-07 — P2-003.A: matriz negativa de clientes A/B con EmpresaId verificado (DEV)
+
+- Autora nativa Javier :30 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`, GitHub `jmejia31`; rama exclusiva `work/solqaryn-p2-003-a` desde dev@`e81e1edcd544500fbf40508a73d15b7d1d02fbeb`.
+- Prueba xUnit `backend/tests/Solqaryn.Tests/P2003AClientesMatrizEndpointTests.cs`: matriz de `ClienteRepository` listado, activos, búsqueda, detalle, verificación de identidad y detalle con ventas; dos clientes homónimos A/B, cabecera `X-Empresa-Id` falsificada y cambios de empresa verificada A/B/A. Reutiliza regresiones P2-003.C/D/E ya fusionadas, sin reescribir sus pruebas.
+- Alcance: exclusivamente prueba EF InMemory + esta entrada aditiva, sin cambios a runtime/API/DTO, BD, migraciones, roles, secretos, workflows ni QA/main/PROD. No demuestra HTTP/JWT/MySQL, importaciones o mutaciones; esos controles requieren evidencia independiente. No se ejecutó dotnet test local; CI y revisión independiente exact-HEAD son pendientes, así como FIFO global y posmerge requerido P2.
+- Reversión: revert protegido selectivo de esta prueba y entrada, preservando tests/historial concurrentes. No se certifica LISTO por abrir PR.
+
+## 2026-11-07 — I8-001.D: auditoria de hash BCrypt y credencial vigente del ERP (DEV)
+
+- Desarrollo nativo Javier :20 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`, rama exclusiva `work/solqaryn-i8-001-d` desde dev@`c9f98f376f261f219aec479819f98582ccc1f35d`. Inicio PENDIENTE -> EN_PROGRESO persistido y releido en PLAN/COLA/BITACORA antes del codigo.
+- Nueva regresion xUnit `backend/tests/Solqaryn.Tests/I8001DPasswordHashAuditoriaTests.cs`: hashes BCrypt del mismo secreto tienen sal distinta, no almacenan texto plano y rechazan secreto alterado; tras cambiar el hash del usuario ERP, el login ya no acepta la clave anterior, no emite JWT por ella y admite solo la nueva con rol activo. El test se limita a datos sinteticos y mocks.
+- Diff acotado a test nuevo y esta nota aditiva: sin cambios en AuthService, API, JWT real, roles, base de datos, migraciones, infraestructura, secretos, CI requerida, QA/main/PROD. No se ejecuto dotnet local; no certificar PASS hasta CI exact-HEAD/Directed y revision independiente de otra Task. No acredita revocacion de JWT emitidos antes de la rotacion ni auditoria de contrasenas productivas.
+- Reversion proporcional mediante PR protegido que retire solo el test y esta entrada, preservando el historial concurrente.
+
+## 2026-11-07 — I8-011.C: superadmin Plataforma sin bypass de tenant comercial A/B (DEV)
+
+- Autoría nativa: Task Javier :40 / JAVIER_CHATGPT / AUTHOR_TASK_ID=6adc2e55f47c81919f6374e561687076; trabajo exclusivo en rama `work/solqaryn-i8-011-c`, base `dev@c9f98f376f261f219aec479819f98582ccc1f35d`. Inicio real EN_PROGRESO con PLAN_MAESTRO!83 y BITACORA!1301, readback COLA previo al código.
+- Prueba causal `backend/tests/Solqaryn.Tests/I8011CSuperadminTenantBoundaryTests.cs`: rol global de sistema válido admite ámbito Plataforma, pero sin membresía de empresa deniega A/B, legacy sin tenant y catálogo; un grant empresarial explícito concede únicamente A sin elevar a administrador ni abrir B; bloqueo revoca los scopes global y empresarial.
+- Alcance: únicamente prueba xUnit sintética EF InMemory y esta entrada aditiva. Sin alteraciones en runtime, API, JWT, migraciones, BD MySQL productiva, reglas CI, secretos, QA/main/PROD ni entornos. `dotnet test` local NO ejecutado; no certifica HTTP/JWT real ni MySQL.
+- Gates de entrega: PR original a `dev`, revisión por TASK_ID diferente y contribuyentes no revisados, Check Runs requeridos Scope Lock/Seguridad/Build backend y Directed cuando aplique SUCCESS exact HEAD; FIFO global, COLA G=SI, CI postmerge 3/3 exact MERGE_SHA para I8 antes de LISTO. Rollback solo por revert protegido de prueba/nota, preservando CHANGELOG concurrente.
+
+## 2026-11-09 — Scope Lock: permiso 403 en reintento automático tras review (DEV)
+
+- El workflow auxiliar pull_request_review no pudo relanzar el job fallido vía GitHub Actions API (`SCOPE_REVIEW_RETRY_HTTP_403`). Esta falla secundaria causa `CHECK_FAILED:Revalidar Scope Lock tras aprobacion independiente` en el verificador exact SHA, aunque se registra revisión formal independiente y Seguridad/Backend son SUCCESS.
+- Reparación mínima y fail-closed: cuando y sólo cuando un reintento POST autenticado de `/actions/jobs/<id>/rerun` recibe 403 después de validar PR, SHA, autor/revisor y review, reportar `MANUAL_RETRY_REQUIRED_403` sin declarar un reintento ejecutado. El required check `verify-solqaryn-project-scope` sigue siendo obligatorio y debe aprobar por re-run selectivo de operador; no se desactiva, no se fabrica PASS, no se alteran permisos globales, repositorio, secretos, QA/main/PROD.
+- Prueba: selftests del helper y Scope Lock en CI exact HEAD, revisión independiente, merge protegido, readback postmerge. Rollback por PR protegido.
+
+## 2026-11-09 — Ampliación protegida Javier :10/:50 para recuperación FIFO (DEV)
+
+- Orden del propietario: se crearon físicamente dos Tasks de JAVIER_CHATGPT, PRIMARY_DEV_05 :10 ID 6af16bb9492c8191b8e8c7d606f11507 y PRIMARY_DEV_06 :50 ID 6af16bbad26881918c283abe06e1f32a, con RRULE horaria America/Tegucigalpa. Se pausaron preventivamente para registrar los IDs en GitHub/Sheets antes de activación. Las Tasks Alex :10/:50 y las cuatro Javier originales no fueron modificadas por esta enmienda.
+- Gobierno y pruebas: aumentar el censo de seis a ocho IDs (seis Javier, dos Alex) en AUTORIDAD/ESTADO/AGENTS; corregir el validador hardcode 6 por longitud dinámica sin degradar validación de duplicados, mantener V13 capacidad 1000x4, PROJECT_SCOPE_LOCK=STRICT y revisión formal independiente de gobierno. La autorización efectiva exige CI exact HEAD, merge protegido y readback institucional. Sin permisos de runtime inferidos ni cierre ficticio.
+- Misión de las seis Javier: recuperar exclusivamente el lote original de 52 PR VALIDANDO 2026-11-09 uno por uno FIFO, conciliando conflictos y CI y marcando LISTO solo con merge postmerge y Sheets verificados. Sin cambios runtime, DB, auth, QA/main/PROD, secretos o despliegues. Rollback: pausar sólo nuevas Tasks y revertir por PR protegido.
+
 ## 2026-11-07 — Scope Lock: reintento por finalizacion de CI exact-HEAD sin falsos PASS (DEV)
 
 - Cambio de gobierno/CI redactado por SOLQARYN Platform en rama `fix/solqaryn-scope-lock-ci-retry-20261107`; revisión formal humana independiente del HEAD final obligatoria antes de merge, sin adelantar FIFO ni modificar rulesets.
 - Corrige la causa `AUTO_CERT=NO_GO OTHER_CHECKS_PENDING` por checks que finalizan despues de la ventana acotada; nuevo workflow trusted-dev escucha cierre de DEV CI, Core, Directed y Priority 3 y reintenta **solo** un job Scope Lock fallido cuya causa comprobada fue esperar CI, con identidad, SHA, estado y pruebas reales revalidados, límite de intentos y negativos fail-closed. No ejecuta codigo de ramas PR ni aprueba/mergea scopes.
 - Refuerza `scripts/verify-automated-pr-certification.mjs`: un MySQL queued/in_progress nunca se difiere por el mero PASS del clasificador; exige SUCCESS/SKIPPED terminal antes de fast lane de tests. Conserva Core, Security, Directed, independencia, Scope Lock y todas las suites causales; sin alteraciones a frontend/backend de producto, API, auth, DB, secretos, QA/main/PROD ni despliegues.
 - Validación: selftests de verificador y nuevo helper deben aprobarse en CI del SHA final; sin CI/review exacta no publicar ni certificar. Rollback: revert protegido de workflow, helper, verificador, documentación y entrada de changelog.
+
+## 2026-11-07 — P2-012.E: fallo aislado de Outbox A y entrega B sin HTTP (DEV)
+
+- Autoría nativa: Javier :00 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`, GitHub jmejia31. Rama exclusiva `work/solqaryn-p2-012-e` desde `dev@c9f98f376f261f219aec479819f98582ccc1f35d`; inicio EN_PROGRESO acreditado por PLAN_MAESTRO!216 y BITACORA!1299 antes del código.
+- Test xUnit `P2012EOutboxFalloTenantSinHttpTests`: mensajes Outbox de empresas A/B con idéntica clave idempotente; un fallo externo en A registra únicamente `DELIVERY_FAILED` y reprograma A sin confirmar B; procesar B después entrega B sin heredar el fallo, sin cabeceras HTTP ni HttpContext. Complementa P2-012.C (entrega positiva A/B) y P2-012.D (rechazo de lotes contaminados).
+- Cambios solo en prueba sintética y esta nota aditiva; sin runtime, endpoints, migraciones, MySQL, secretos, workflows, rulesets ni QA/main/PROD. No se ejecutó `dotnet test` local; CI GitHub y Directed exact-HEAD deben acreditar cualquier PASS. No certifica HTTP/JWT/MySQL ni efectos de proveedor real.
+- Requiere PR original, revisión por TASK_ID diferente de autor y contribuyentes, FIFO global, COLA!G216=SI para merge, checks requeridos+Directed SUCCESS exact HEAD y postmerge 3/3 exact MERGE_SHA antes de LISTO. Revert protegido selectivo si corresponde, conservando entradas de otros scopes.
+
+## 2026-11-07 — I8-010.C: límites RBAC de recuperación administrativa por roles (DEV)
+
+- Autoría original: Task Javier :30, JAVIER_CHATGPT, TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`. Rama exclusiva `work/solqaryn-i8-010-c` desde `dev@c9f98f376f261f219aec479819f98582ccc1f35d`. Dependencia P1-016.B LISTO, COLA!O82=SI y G82=SI verificados; PLAN/BT PENDIENTE -> EN_PROGRESO acreditado antes del código.
+- Único archivo de prueba causal `backend/tests/Solqaryn.Tests/I8010CRecuperacionPorRolesTests.cs`: `UsuariosController.Update` niega restablecer clave sin `Usuarios:RestablecerContrasena` en empresa autenticada A=11 incluso ante cabecera forjada empresa B=22, y niega combinar reset con asignación de rol no autorizada. Las dos negativas verifican que el servicio de usuarios no recibe modificaciones. No hay flujo de recuperación anónima, SMTP, JWT real, HTTP end-to-end ni MySQL en esta prueba unitaria.
+- Cambios acotados: nuevo test xUnit + entrada aditiva única en `CHANGELOG_AI.md`. Sin runtime, entidades, DTO, migraciones, secretos, CI/workflows, rulesets, QA/main/PROD. No se ejecutó dotnet local; CI requerida/Directed y revisión independiente del HEAD final se acreditarán en GitHub, sin afirmar PASS antes de resultado.
+- Rollback: revertir mediante PR protegido únicamente el test y esta entrada documental, sin alterar certificados previos. Cierre LISTO condicionado a PR CLEAN, review independiente, COLA G=SI, CI 3/3 pre/postmerge exact-SHA, Directed aplicable y readback PLAN/COLA/BITACORA.
 
 ## 2026-11-07 — I8-009.C: renovar credenciales revocadas sin emitir JWT (DEV)
 
