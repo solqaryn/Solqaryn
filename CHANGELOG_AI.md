@@ -5,6 +5,13 @@
 - Refuerza `scripts/verify-automated-pr-certification.mjs`: un MySQL queued/in_progress nunca se difiere por el mero PASS del clasificador; exige SUCCESS/SKIPPED terminal antes de fast lane de tests. Conserva Core, Security, Directed, independencia, Scope Lock y todas las suites causales; sin alteraciones a frontend/backend de producto, API, auth, DB, secretos, QA/main/PROD ni despliegues.
 - Validación: selftests de verificador y nuevo helper deben aprobarse en CI del SHA final; sin CI/review exacta no publicar ni certificar. Rollback: revert protegido de workflow, helper, verificador, documentación y entrada de changelog.
 
+## 2026-11-07 — I8-010.C: límites RBAC de recuperación administrativa por roles (DEV)
+
+- Autoría original: Task Javier :30, JAVIER_CHATGPT, TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`. Rama exclusiva `work/solqaryn-i8-010-c` desde `dev@c9f98f376f261f219aec479819f98582ccc1f35d`. Dependencia P1-016.B LISTO, COLA!O82=SI y G82=SI verificados; PLAN/BT PENDIENTE -> EN_PROGRESO acreditado antes del código.
+- Único archivo de prueba causal `backend/tests/Solqaryn.Tests/I8010CRecuperacionPorRolesTests.cs`: `UsuariosController.Update` niega restablecer clave sin `Usuarios:RestablecerContrasena` en empresa autenticada A=11 incluso ante cabecera forjada empresa B=22, y niega combinar reset con asignación de rol no autorizada. Las dos negativas verifican que el servicio de usuarios no recibe modificaciones. No hay flujo de recuperación anónima, SMTP, JWT real, HTTP end-to-end ni MySQL en esta prueba unitaria.
+- Cambios acotados: nuevo test xUnit + entrada aditiva única en `CHANGELOG_AI.md`. Sin runtime, entidades, DTO, migraciones, secretos, CI/workflows, rulesets, QA/main/PROD. No se ejecutó dotnet local; CI requerida/Directed y revisión independiente del HEAD final se acreditarán en GitHub, sin afirmar PASS antes de resultado.
+- Rollback: revertir mediante PR protegido únicamente el test y esta entrada documental, sin alterar certificados previos. Cierre LISTO condicionado a PR CLEAN, review independiente, COLA G=SI, CI 3/3 pre/postmerge exact-SHA, Directed aplicable y readback PLAN/COLA/BITACORA.
+
 ## 2026-11-07 — I8-009.C: renovar credenciales revocadas sin emitir JWT (DEV)
 
 - Desarrollo auténtico de Task Javier :20 / JAVIER_CHATGPT / AUTHOR_TASK_ID=`6adc2e4bd8a48191ac7d8641ed95a1a3`, rama exclusiva `work/solqaryn-i8-009-c` desde `dev@c9f98f376f261f219aec479819f98582ccc1f35d`; inicio real PENDIENTE -> EN_PROGRESO y readback PLAN/COLA/BITACORA antes del código.
