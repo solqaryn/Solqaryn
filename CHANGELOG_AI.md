@@ -1,3 +1,10 @@
+## 2026-11-07 — Scope Lock: reintento por finalizacion de CI exact-HEAD sin falsos PASS (DEV)
+
+- Cambio de gobierno/CI redactado por SOLQARYN Platform en rama `fix/solqaryn-scope-lock-ci-retry-20261107`; revisión formal humana independiente del HEAD final obligatoria antes de merge, sin adelantar FIFO ni modificar rulesets.
+- Corrige la causa `AUTO_CERT=NO_GO OTHER_CHECKS_PENDING` por checks que finalizan despues de la ventana acotada; nuevo workflow trusted-dev escucha cierre de DEV CI, Core, Directed y Priority 3 y reintenta **solo** un job Scope Lock fallido cuya causa comprobada fue esperar CI, con identidad, SHA, estado y pruebas reales revalidados, límite de intentos y negativos fail-closed. No ejecuta codigo de ramas PR ni aprueba/mergea scopes.
+- Refuerza `scripts/verify-automated-pr-certification.mjs`: un MySQL queued/in_progress nunca se difiere por el mero PASS del clasificador; exige SUCCESS/SKIPPED terminal antes de fast lane de tests. Conserva Core, Security, Directed, independencia, Scope Lock y todas las suites causales; sin alteraciones a frontend/backend de producto, API, auth, DB, secretos, QA/main/PROD ni despliegues.
+- Validación: selftests de verificador y nuevo helper deben aprobarse en CI del SHA final; sin CI/review exacta no publicar ni certificar. Rollback: revert protegido de workflow, helper, verificador, documentación y entrada de changelog.
+
 ## 2026-11-07 — I8-010.C: límites RBAC de recuperación administrativa por roles (DEV)
 
 - Autoría original: Task Javier :30, JAVIER_CHATGPT, TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`. Rama exclusiva `work/solqaryn-i8-010-c` desde `dev@c9f98f376f261f219aec479819f98582ccc1f35d`. Dependencia P1-016.B LISTO, COLA!O82=SI y G82=SI verificados; PLAN/BT PENDIENTE -> EN_PROGRESO acreditado antes del código.
