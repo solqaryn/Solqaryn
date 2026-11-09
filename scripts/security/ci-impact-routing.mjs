@@ -21,7 +21,9 @@ function isReadOnlyP2ContractTest(code) {
   if (!/\bFile\s*\.\s*ReadAllText\s*\(/.test(code) || !/\bAssert\s*\./.test(code)) return false;
   if (/\bFile\s*\.\s*(?:Write|Append|Delete|Move|Copy|Replace|Open|Create|Set|Encrypt|Decrypt)\w*\s*\(/i.test(code)) return false;
   if (/\bDirectory\s*\.\s*(?:Create|Delete|Move)\w*\s*\(/i.test(code)) return false;
-  if (/\bnew\s+(?!DirectoryInfo\s*\()[A-Za-z_][\w.]*/.test(code)) return false;
+  const constructedTypes = [...code.matchAll(/\bnew\s+([A-Za-z_][\w.]*)\b/g)].map(match => match[1]);
+  if (constructedTypes.some(type => type !== 'DirectoryInfo')) return false;
+  if (/\.\s*(?:Create|Delete|MoveTo|Write|Append)\s*\(/i.test(code)) return false;
   return !P2_RUNTIME_RISK.test(code) && !DB_CODE.test(code) && !INTEGRATION_TRAIT.test(code);
 }
 
@@ -67,7 +69,7 @@ function selfTest() {
   const offlineP2 = 'backend/tests/Solqaryn.Tests/P2005ACierreComprasPermisosTests.cs';
   const p2Source = 'using System.Reflection;\nusing Xunit;\npublic sealed class P2005ACierreComprasPermisosTests { [Fact] public void Metadata() { _ = typeof(string).GetCustomAttribute<ObsoleteAttribute>(); } }';
   const docP2 = 'backend/tests/Solqaryn.Tests/P2019DReadinessGateNoPromotionTests.cs';
-  const docP2Source = 'using System.Text.RegularExpressions;\nusing Xunit;\npublic sealed class P2019DReadinessGateNoPromotionTests { [Fact] public void DocumentOnly() { var d = File.ReadAllText("docs/PRODUCTION_READINESS_CONTRACT.md"); Assert.Contains("PRODUCTION_READY = FALSE", d); } }';
+  const docP2Source = 'using System.Text.RegularExpressions;\nusing Xunit;\npublic sealed class P2019DReadinessGateNoPromotionTests { [Fact] public void DocumentOnly() { var folder = new DirectoryInfo("."); var d = File.ReadAllText("docs/PRODUCTION_READINESS_CONTRACT.md"); Assert.Contains("PRODUCTION_READY = FALSE", d); } }';
   const cases = [
     ['P2 read-only readiness contract avoids unrelated MySQL', [docP2, 'CHANGELOG_AI.md'], docP2Source, false],
     ['P2 nested read-only contract avoids unrelated MySQL', ['backend/tests/Solqaryn.Tests/API/Controllers/P2019DReadinessGateNoPromotionTests.cs'], docP2Source, false],
