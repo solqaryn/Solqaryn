@@ -1,3 +1,9 @@
+## 2026-11-07 — Estabilizacion de Scope Lock para micropruebas I8 y CI extensa (DEV)
+
+- Autor institucional SOLQARYN Platform. Correccion dedicada del pipeline: scripts/security/ci-impact-routing.mjs reconoce tests I8dddX offline (como I8-004.C e I8-005.C), conserva MySQL para riesgos de datos, integraciones y archivos desconocidos, y agrega ocho pruebas causales positivas/negativas.
+- Scope Lock mantiene su espera corta con reintento selectivo del job fallido despues de la CI, ya integrado en dev; esta conciliacion NO amplia la espera a 35 minutos. No omite checks, no concede aprobaciones ni elimina seguridad, revision independiente o CI exact-HEAD.
+- Se actualiza docs/CI_IMPACT_ROUTING.md. No cambia frontend/backend productivo, DB, migraciones, secretos, QA/main/PROD, infraestructura ni reglas de merge. Es un PR de gobernanza que requiere aprobacion independiente y merge protegido antes de tener efecto en dev. Rollback mediante revert protegido.
+
 ## 2026-11-07 — P2-003.A: matriz negativa de clientes A/B con EmpresaId verificado (DEV)
 
 - Autora nativa Javier :30 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`, GitHub `jmejia31`; rama exclusiva `work/solqaryn-p2-003-a` desde dev@`e81e1edcd544500fbf40508a73d15b7d1d02fbeb`.

@@ -4,9 +4,9 @@ import { execFileSync } from 'node:child_process';
 // CI-impact routing is deliberately conservative. Unknown files and database
 // test changes ALWAYS keep the MySQL Oracle integration suite enabled.
 const SHA = /^[a-f0-9]{40}$/i;
-// Allow directed P1 regressions in ordinary nested unit-test folders.
+// Allow directed P1 and I8 offline regressions in ordinary nested unit-test folders.
 // Integration/database/migration/fixture paths remain fail-closed regardless of filename.
-const SCOPED_UNIT = /^backend\/tests\/Solqaryn\.Tests\/(?:[A-Za-z0-9_.-]+\/)*P1\d{3}[A-Z][A-Za-z0-9_]*Tests\.cs$/;
+const SCOPED_UNIT = /^backend\/tests\/Solqaryn\.Tests\/(?:[A-Za-z0-9_.-]+\/)*(?:P1\d{3}|I8\d{3})[A-Z][A-Za-z0-9_]*Tests\.cs$/;
 const DB_RISK_TEST_PATH = /\/(?:Integration(?:Tests)?|Database(?:Tests)?|Migration(?:s)?|Fixture(?:s)?|Infrastructure|E2E)\//i;
 const DB_CODE = /\b(?:MySqlConnection|MySqlConnector|AppDbContext|DbContext|Testcontainers|SqlConnection|DatabaseFixture)\b|(?:\.\s*UseMySql\s*\(|\.\s*Migrate\s*\(|\bDatabase\s*\.)/i;
 const INTEGRATION_TRAIT = /\[\s*Trait\s*\(\s*"Category"\s*,\s*"Integration"\s*\)/i;
@@ -36,9 +36,19 @@ export function needsMySqlIntegration(paths, loadSource = path => readFileSync(p
 function selfTest() {
   const unit = 'backend/tests/Solqaryn.Tests/P1003BSupportRouteCertificationTests.cs';
   const clean = 'using Xunit;\n// MySQL integration is tested elsewhere\npublic sealed class P1003BSupportRouteCertificationTests { [Fact] public void Pass() {} }\n';
+  const offlineI8 = 'backend/tests/Solqaryn.Tests/I8004CCorreoSeguroTests.cs';
+  const offlineI8Source = 'using Xunit;\npublic sealed class I8004CCorreoSeguroTests { [Fact] public void Pass() {} }\n';
   const cases = [
     ['directed offline unit test only', [unit], clean, false],
     ['nested directed offline P1 unit test', ['backend/tests/Solqaryn.Tests/API/Controllers/P1013BOnboardingGateClosureRegressionTests.cs'], clean, false],
+    ['I8-004.C isolated SMTP unit skips unrelated MySQL', [offlineI8, 'CHANGELOG_AI.md'], offlineI8Source, false],
+    ['I8-005.C isolated authentication metadata skips unrelated MySQL', ['backend/tests/Solqaryn.Tests/I8005CAuthTokenAntifuerzaBrutaDelimitacionTests.cs'], offlineI8Source, false],
+    ['nested I8 unit still offline', ['backend/tests/Solqaryn.Tests/API/Controllers/I8003CIsolationTests.cs'], offlineI8Source, false],
+    ['I8 unit referencing DbContext requires MySQL', [offlineI8], 'var db = new AppDbContext();', true],
+    ['I8 Integration trait requires MySQL', [offlineI8], '[Trait("Category", "Integration")] public sealed class I8004CCorreoSeguroTests {}', true],
+    ['I8 integration directory requires MySQL', ['backend/tests/Solqaryn.Tests/Integration/I8004CCorreoSeguroTests.cs'], offlineI8Source, true],
+    ['I8 plus production code requires MySQL', [offlineI8, 'backend/src/API/Program.cs'], offlineI8Source, true],
+    ['missing I8 test fails closed', [offlineI8], null, true],
     ['nested unit + changelog and evidence', ['backend/tests/Solqaryn.Tests/API/Controllers/P1013BOnboardingGateClosureRegressionTests.cs', 'CHANGELOG_AI.md', 'docs/P1-013-B-CONCILIACION-GATES-ONBOARDING-DEV.md'], clean, false],
     ['nested direct DbContext is not offline', ['backend/tests/Solqaryn.Tests/API/Controllers/P1013BOnboardingGateClosureRegressionTests.cs'], 'using Xunit; var context = new AppDbContext();', true],
     ['nested Integration trait is not offline', ['backend/tests/Solqaryn.Tests/API/Controllers/P1013BOnboardingGateClosureRegressionTests.cs'], '[Trait("Category", "Integration")] public class P1013BOnboardingGateClosureRegressionTests {}', true],
