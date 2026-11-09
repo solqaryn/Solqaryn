@@ -1,3 +1,10 @@
+## 2026-11-09 — CI proporcional: tests P2 documentales de solo lectura sin migraciones ajenas (DEV)
+
+- Amplía el router de impacto para tests P2 que exclusivamente leen contratos versionados con `File.ReadAllText` y realizan aserciones; reconoce P2-019.D sin habilitar acceso runtime, EF, Moq, DI, HTTP o DB.
+- Añade 15 autopruebas con cobertura positiva y negativa; conserva fail-closed ante escrituras, procesos, constructores, integración real, cambios productivos y rutas desconocidas.
+- Documenta la decisión en `docs/CI_IMPACT_ROUTING.md`; no cambia workflows, checks requeridos, protección de ramas ni pruebas MySQL aplicables.
+- Requiere CI sobre HEAD exacto, revisión formal independiente por modificación de `scripts/security/**` y merge FIFO protegido. Sin tocar QA/main/PROD.
+
 ## 2026-11-08 — I8-002.D: rechazar renovacion sin identidad o sesion valida (DEV)
 
 - Microtarea I8-002.D; Task nativa Javier :20, TASK_ID 6adc2e4bd8a48191ac7d8641ed95a1a3; rama exclusiva work/solqaryn-i8-002-d desde dev@3a9b21b6c5e237a359d39148bfefc42520cf377b. Predecesora I8-002.C=LISTO, COLA!O85=SI y G85=SI al inicio real.
