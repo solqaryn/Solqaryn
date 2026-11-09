@@ -5,6 +5,12 @@
 - Documenta la decisión en `docs/CI_IMPACT_ROUTING.md`; no cambia workflows, checks requeridos, protección de ramas ni pruebas MySQL aplicables.
 - Requiere CI sobre HEAD exacto, revisión formal independiente por modificación de `scripts/security/**` y merge FIFO protegido. Sin tocar QA/main/PROD.
 
+## 2026-11-08 — P2-019.D: no promocion implicita de release parcial (DEV)
+
+- Autoría nativa: Javier :30 / JAVIER_CHATGPT / TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`; rama original exclusiva `work/solqaryn-p2-019-d` desde `dev@3a9b21b6c5e237a359d39148bfefc42520cf377b`; predecesora P2-019.C LISTO, COLA!O162=SI/G162=SI y PLAN EN_PROGRESO registrados con readback antes del código.
+- Ajuste causal: prueba xUnit `P2019DReadinessGateNoPromotionTests.cs` verifica que la clase C13 permanece CONDICIONAL y que una fusion DEV/CI verde no habilita despliegue; exige 12 gates numerados y continuos de readiness (build, staging/backup, rollback, P0/P1=0, autorizacion humana) y `PRODUCTION_READY = FALSE`. Negativa: eliminar gates, degradar la clase o declarar TRUE rompe la regresion.
+- Cambio solo prueba documental y esta entrada aditiva. No modifica runtime, autorización JWT/RBAC, datos, migraciones, CI/workflows, infraestructura, secretos, QA/main/PROD. No certifica readiness real ni ejecuta deployment; `dotnet test` local no ejecutado, verificar CI exact HEAD y revisión técnica TASK_ID distinta antes de merge protegido en FIFO, y postmerge required 3/3 antes de LISTO. Rollback mediante revert protegido del changeset sin reescritura.
+
 ## 2026-11-08 — I8-002.D: rechazar renovacion sin identidad o sesion valida (DEV)
 
 - Microtarea I8-002.D; Task nativa Javier :20, TASK_ID 6adc2e4bd8a48191ac7d8641ed95a1a3; rama exclusiva work/solqaryn-i8-002-d desde dev@3a9b21b6c5e237a359d39148bfefc42520cf377b. Predecesora I8-002.C=LISTO, COLA!O85=SI y G85=SI al inicio real.
