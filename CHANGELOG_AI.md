@@ -1,3 +1,8 @@
+## 2026-11-08 — P2-001.F: evidencia dirigida de tenant único
+
+- Se añade `backend/tests/Solqaryn.Tests/P2001FMatrizContextoUnicoTests.cs` para probar los filtros de cinco GET comerciales ante contexto ausente y cabecera inválida con un único scope seguro.
+- La prueba es de controlador/filtros con dobles; no acredita HTTP/JWT integrado ni MySQL real. Exigir CI exact-HEAD.
+
 ## 2026-11-08 — P2-019.D: no promocion implicita de release parcial (DEV)
 
 - Autoría nativa: Javier :30 / JAVIER_CHATGPT / TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`; rama original exclusiva `work/solqaryn-p2-019-d` desde `dev@3a9b21b6c5e237a359d39148bfefc42520cf377b`; predecesora P2-019.C LISTO, COLA!O162=SI/G162=SI y PLAN EN_PROGRESO registrados con readback antes del código.
