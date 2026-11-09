@@ -4,9 +4,12 @@ import { execFileSync } from 'node:child_process';
 // CI-impact routing is deliberately conservative. Unknown files and database
 // test changes ALWAYS keep the MySQL Oracle integration suite enabled.
 const SHA = /^[a-f0-9]{40}$/i;
-// Allow directed P1 and I8 offline regressions in ordinary nested unit-test folders.
+// Allow P1/I8 offline tests and strictly declarative P2 metadata tests in ordinary unit folders.
 // Integration/database/migration/fixture paths remain fail-closed regardless of filename.
-const SCOPED_UNIT = /^backend\/tests\/Solqaryn\.Tests\/(?:[A-Za-z0-9_.-]+\/)*(?:P1\d{3}|I8\d{3})[A-Z][A-Za-z0-9_]*Tests\.cs$/;
+const SCOPED_UNIT = /^backend\/tests\/Solqaryn\.Tests\/(?:[A-Za-z0-9_.-]+\/)*(?:P1\d{3}|I8\d{3}|P2\d{3})[A-Z][A-Za-z0-9_]*Tests\.cs$/;
+// Pure P2 metadata only: exclude database, service, HTTP and dependency-injection behavior.
+const P2_METADATA = /^backend\/tests\/Solqaryn\.Tests\/(?:[A-Za-z0-9_.-]+\/)*P2\d{3}[A-Z][A-Za-z0-9_]*Tests\.cs$/;
+const P2_RUNTIME_RISK = /\b(?:EntityFrameworkCore|UseInMemoryDatabase|Sqlite|Dapper|WebApplicationFactory|TestServer|HttpClient|HttpMessageHandler|IServiceProvider|GetRequiredService|Repository|Transaction|DbSet|DbContext|Migration|Oracle|MySql|DependencyInjection|Moq|ControllerContext|ActionContext|DefaultHttpContext|IHttpContextAccessor)\b|\bnew\s+[A-Za-z0-9_.]*(?:Service|Repository)\s*\(/i;
 const DB_RISK_TEST_PATH = /\/(?:Integration(?:Tests)?|Database(?:Tests)?|Migration(?:s)?|Fixture(?:s)?|Infrastructure|E2E)\//i;
 const DB_CODE = /\b(?:MySqlConnection|MySqlConnector|AppDbContext|DbContext|Testcontainers|SqlConnection|DatabaseFixture)\b|(?:\.\s*UseMySql\s*\(|\.\s*Migrate\s*\(|\bDatabase\s*\.)/i;
 const INTEGRATION_TRAIT = /\[\s*Trait\s*\(\s*"Category"\s*,\s*"Integration"\s*\)/i;
@@ -25,6 +28,11 @@ export function needsMySqlIntegration(paths, loadSource = path => readFileSync(p
       const raw = loadSource(path);
       if (typeof raw !== 'string' || raw.length === 0) return true;
       const code = withoutComments(raw);
+      // P2 needs positive evidence of reflection-only behavior; unknown patterns run MySQL.
+      if (P2_METADATA.test(path) &&
+          (!/^\s*using\s+System\.Reflection\s*;/m.test(code) ||
+           !/\bGet(?:CustomAttributes?|Methods?|Properties?)\s*(?:[<(])/.test(code) ||
+           P2_RUNTIME_RISK.test(code))) return true;
       return INTEGRATION_TRAIT.test(code) || DB_CODE.test(code);
     } catch {
       // Deletions, missing files and read errors cannot be classified safely.
@@ -38,7 +46,21 @@ function selfTest() {
   const clean = 'using Xunit;\n// MySQL integration is tested elsewhere\npublic sealed class P1003BSupportRouteCertificationTests { [Fact] public void Pass() {} }\n';
   const offlineI8 = 'backend/tests/Solqaryn.Tests/I8004CCorreoSeguroTests.cs';
   const offlineI8Source = 'using Xunit;\npublic sealed class I8004CCorreoSeguroTests { [Fact] public void Pass() {} }\n';
+  const offlineP2 = 'backend/tests/Solqaryn.Tests/P2005ACierreComprasPermisosTests.cs';
+  const p2Source = 'using System.Reflection;\nusing Xunit;\npublic sealed class P2005ACierreComprasPermisosTests { [Fact] public void Metadata() { _ = typeof(string).GetCustomAttribute<ObsoleteAttribute>(); } }';
   const cases = [
+    ['P2 metadata test avoids unrelated MySQL', [offlineP2, 'CHANGELOG_AI.md'], p2Source, false],
+    ['P2 nested metadata avoids unrelated MySQL', ['backend/tests/Solqaryn.Tests/API/Controllers/P2005ACierreComprasPermisosTests.cs'], p2Source, false],
+    ['P2 non-declarative remains MySQL required', [offlineP2], clean, true],
+    ['P2 EntityFramework remains MySQL required', [offlineP2], p2Source + '\nusing Microsoft.EntityFrameworkCore;', true],
+    ['P2 DbContext remains MySQL required', [offlineP2], p2Source + '\nnew AppDbContext()', true],
+    ['P2 service construction remains MySQL required', [offlineP2], p2Source + '\nnew CompraService()', true],
+    ['P2 DI remains MySQL required', [offlineP2], p2Source + '\nusing Microsoft.Extensions.DependencyInjection;', true],
+    ['P2 HTTP remains MySQL required', [offlineP2], p2Source + '\nnew WebApplicationFactory()', true],
+    ['P2 integration trait remains MySQL required', [offlineP2], p2Source + '\n[Trait("Category", "Integration")]', true],
+    ['P2 integration folder remains MySQL required', ['backend/tests/Solqaryn.Tests/Integration/P2005ACierreComprasPermisosTests.cs'], p2Source, true],
+    ['P2 with runtime source remains MySQL required', [offlineP2, 'backend/src/API/Program.cs'], p2Source, true],
+    ['P2 missing source remains MySQL required', [offlineP2], null, true],
     ['directed offline unit test only', [unit], clean, false],
     ['nested directed offline P1 unit test', ['backend/tests/Solqaryn.Tests/API/Controllers/P1013BOnboardingGateClosureRegressionTests.cs'], clean, false],
     ['I8-004.C isolated SMTP unit skips unrelated MySQL', [offlineI8, 'CHANGELOG_AI.md'], offlineI8Source, false],
@@ -56,7 +78,7 @@ function selfTest() {
     ['database subdirectory stays required', ['backend/tests/Solqaryn.Tests/Database/P1013BOnboardingGateClosureRegressionTests.cs'], clean, true],
     ['migration subdirectory stays required', ['backend/tests/Solqaryn.Tests/Migrations/P1013BOnboardingGateClosureRegressionTests.cs'], clean, true],
     ['non-P1 P9 nested test stays required', ['backend/tests/Solqaryn.Tests/API/Controllers/P9013BUnexpectedTests.cs'], clean, true],
-    ['non-P1 P2 nested test stays required', ['backend/tests/Solqaryn.Tests/API/Controllers/P2013BUnexpectedTests.cs'], clean, true],
+    ['non-declarative P2 nested test stays required', ['backend/tests/Solqaryn.Tests/API/Controllers/P2013BUnexpectedTests.cs'], clean, true],
     ['fixtures subdirectory stays required', ['backend/tests/Solqaryn.Tests/Fixtures/P1013BOnboardingGateClosureRegressionTests.cs'], clean, true],
     ['infrastructure subdirectory stays required', ['backend/tests/Solqaryn.Tests/Infrastructure/P1013BOnboardingGateClosureRegressionTests.cs'], clean, true],
     ['E2E subdirectory stays required', ['backend/tests/Solqaryn.Tests/E2E/P1013BOnboardingGateClosureRegressionTests.cs'], clean, true],

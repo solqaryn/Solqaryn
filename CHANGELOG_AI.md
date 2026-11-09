@@ -1,3 +1,10 @@
+## 2026-11-09 — CI por impacto: pruebas P2 declarativas sin MySQL ajena (DEV)
+
+- Permite omitir MySQL solo en tests P2 de reflexión de metadatos, sin EF/SQL/DI/Moq/servicios/HTTP; todo caso desconocido o de integración mantiene la suite.
+- Incorpora pruebas positivas y negativas del enrutamiento en `--self-test`, conservando Required Scope Lock, Seguridad, Backend, Directed y revisión independiente.
+- Documenta comportamiento en `docs/CI_IMPACT_ROUTING.md`; no retira workflows, alteraciones de base productiva, rulesets ni seguridad.
+- Cambio a `scripts/security/**` sujeto a aprobación formal independiente y merge FIFO protegido. Sin cambios a QA/main/PROD.
+
 ## 2026-11-08 — P2-005.A: cierre de matriz RBAC de compras y recepciones (DEV)
 
 - Desarrollo nativo Javier :00 / JAVIER_CHATGPT / AUTHOR_TASK_ID 6adbb9fff1548191a1bd5b30d9e9984a; rama exclusiva work/solqaryn-p2-005-a desde dev@3a9b21b6c5e237a359d39148bfefc42520cf377b. Dependencia P2-005.E LISTO, COLA!O227=SI y G227=SI al inicio con readback de PLAN_MAESTRO/BITACORA.
