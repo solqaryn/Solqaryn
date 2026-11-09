@@ -17,6 +17,13 @@
 - Refuerza `scripts/verify-automated-pr-certification.mjs`: un MySQL queued/in_progress nunca se difiere por el mero PASS del clasificador; exige SUCCESS/SKIPPED terminal antes de fast lane de tests. Conserva Core, Security, Directed, independencia, Scope Lock y todas las suites causales; sin alteraciones a frontend/backend de producto, API, auth, DB, secretos, QA/main/PROD ni despliegues.
 - Validación: selftests de verificador y nuevo helper deben aprobarse en CI del SHA final; sin CI/review exacta no publicar ni certificar. Rollback: revert protegido de workflow, helper, verificador, documentación y entrada de changelog.
 
+## 2026-11-07 — P2-012.E: fallo aislado de Outbox A y entrega B sin HTTP (DEV)
+
+- Autoría nativa: Javier :00 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`, GitHub jmejia31. Rama exclusiva `work/solqaryn-p2-012-e` desde `dev@c9f98f376f261f219aec479819f98582ccc1f35d`; inicio EN_PROGRESO acreditado por PLAN_MAESTRO!216 y BITACORA!1299 antes del código.
+- Test xUnit `P2012EOutboxFalloTenantSinHttpTests`: mensajes Outbox de empresas A/B con idéntica clave idempotente; un fallo externo en A registra únicamente `DELIVERY_FAILED` y reprograma A sin confirmar B; procesar B después entrega B sin heredar el fallo, sin cabeceras HTTP ni HttpContext. Complementa P2-012.C (entrega positiva A/B) y P2-012.D (rechazo de lotes contaminados).
+- Cambios solo en prueba sintética y esta nota aditiva; sin runtime, endpoints, migraciones, MySQL, secretos, workflows, rulesets ni QA/main/PROD. No se ejecutó `dotnet test` local; CI GitHub y Directed exact-HEAD deben acreditar cualquier PASS. No certifica HTTP/JWT/MySQL ni efectos de proveedor real.
+- Requiere PR original, revisión por TASK_ID diferente de autor y contribuyentes, FIFO global, COLA!G216=SI para merge, checks requeridos+Directed SUCCESS exact HEAD y postmerge 3/3 exact MERGE_SHA antes de LISTO. Revert protegido selectivo si corresponde, conservando entradas de otros scopes.
+
 ## 2026-11-07 — I8-010.C: límites RBAC de recuperación administrativa por roles (DEV)
 
 - Autoría original: Task Javier :30, JAVIER_CHATGPT, TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`. Rama exclusiva `work/solqaryn-i8-010-c` desde `dev@c9f98f376f261f219aec479819f98582ccc1f35d`. Dependencia P1-016.B LISTO, COLA!O82=SI y G82=SI verificados; PLAN/BT PENDIENTE -> EN_PROGRESO acreditado antes del código.
