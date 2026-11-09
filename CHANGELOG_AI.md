@@ -1,3 +1,10 @@
+## 2026-11-08 — P2-005.A: cierre de matriz RBAC de compras y recepciones (DEV)
+
+- Desarrollo nativo Javier :00 / JAVIER_CHATGPT / AUTHOR_TASK_ID 6adbb9fff1548191a1bd5b30d9e9984a; rama exclusiva work/solqaryn-p2-005-a desde dev@3a9b21b6c5e237a359d39148bfefc42520cf377b. Dependencia P2-005.E LISTO, COLA!O227=SI y G227=SI al inicio con readback de PLAN_MAESTRO/BITACORA.
+- Regresion xUnit P2005ACierreComprasPermisosTests: contrato de rutas, verbos, autenticacion [Authorize], ausencia de [AllowAnonymous] y permiso de ModuloSistema.Compras para lectura, creacion de borrador, actualizacion, confirmacion, anulacion, borrado logico, creacion/edicion/confirmacion/anulacion de recepciones. El negativo de regresion falla si se quita el gate, se altera el verbo/ruta o se debilita la accion RBAC. Reutiliza como evidencia contextual las pruebas existentes P2-005.C (filtro A/B), P2-005.D (numero homonimo) y P2-005.E (sin marca verificada); no repite sus suites fuera de CI.
+- Solo nuevo test contractual + entrada aditiva de CHANGELOG_AI.md; sin cambios en endpoints productivos, autorizacion runtime, datos, MySQL, migraciones, CI/rulesets, secretos ni QA/main/PROD. Esta prueba de metadata NO acredita enforcement real HTTP/JWT/tenancy, transacciones, recepcion material ni MySQL; ninguna afirmacion de certificacion completa antes de CI y revisiones.
+- dotnet test local NO EJECUTADO. Requiere checks Scope Lock/Seguridad/Backend y Directed exact-HEAD, TECH_REVIEW por TASK_ID distinto, FIFO global y CI posmerge 3/3 exact MERGE_SHA para LISTO. Rollback por revert protegido del test y de esta entrada conservando historia.
+
 ## 2026-11-07 — P2-001.A: matriz de endpoints comerciales CRUD, cierre atomico de cobertura (DEV)
 
 - Autoria nativa Javier :40 / JAVIER_CHATGPT / AUTHOR_TASK_ID=6adc2e55f47c81919f6374e561687076; rama unica `work/solqaryn-p2-001-a` desde `dev@3a9b21b6c5e237a359d39148bfefc42520cf377b`. Inicio real EN_PROGRESO registrado antes de codigo en PLAN_MAESTRO!H/I/M223, COLA!E223 y BITACORA!1322 con readback.
