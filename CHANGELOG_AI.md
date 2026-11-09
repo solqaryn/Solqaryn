@@ -1,3 +1,7 @@
+## 2026-11-08 — P2-015.D: prueba de cuarentena residual
+
+- Se añade `backend/tests/Solqaryn.Tests/API/P2015DCuarentenaResidualHttpStatusTests.cs`: matriz aislada EF InMemory que verifica la respuesta de cuarentena para cinco rutas comerciales bajo cabeceras tenant falsificadas y claims administrativos no verificados.
+- No acredita HTTP/JWT integrado ni MySQL real. Exigir CI exact-HEAD.
 ## 2026-11-08 — I8-004.D: flujo de correo seguro Outlook y Reply-To (DEV)
 
 - Autoría de ejecución: Javier :20 / JAVIER_CHATGPT / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`; rama única `work/solqaryn-i8-004-d`, base `dev@3a9b21b6c5e237a359d39148bfefc42520cf377b`. `COLA!O87=SI` y predecesora I8-004.C VALIDANDO antes de registrar EN_PROGRESO con readback.
