@@ -1,3 +1,9 @@
+## 2026-11-09 — Scope Lock: permiso 403 en reintento automático tras review (DEV)
+
+- El workflow auxiliar pull_request_review no pudo relanzar el job fallido vía GitHub Actions API (`SCOPE_REVIEW_RETRY_HTTP_403`). Esta falla secundaria causa `CHECK_FAILED:Revalidar Scope Lock tras aprobacion independiente` en el verificador exact SHA, aunque se registra revisión formal independiente y Seguridad/Backend son SUCCESS.
+- Reparación mínima y fail-closed: cuando y sólo cuando un reintento POST autenticado de `/actions/jobs/<id>/rerun` recibe 403 después de validar PR, SHA, autor/revisor y review, reportar `MANUAL_RETRY_REQUIRED_403` sin declarar un reintento ejecutado. El required check `verify-solqaryn-project-scope` sigue siendo obligatorio y debe aprobar por re-run selectivo de operador; no se desactiva, no se fabrica PASS, no se alteran permisos globales, repositorio, secretos, QA/main/PROD.
+- Prueba: selftests del helper y Scope Lock en CI exact HEAD, revisión independiente, merge protegido, readback postmerge. Rollback por PR protegido.
+
 ## 2026-11-07 — Scope Lock: reintento por finalizacion de CI exact-HEAD sin falsos PASS (DEV)
 
 - Cambio de gobierno/CI redactado por SOLQARYN Platform en rama `fix/solqaryn-scope-lock-ci-retry-20261107`; revisión formal humana independiente del HEAD final obligatoria antes de merge, sin adelantar FIFO ni modificar rulesets.
