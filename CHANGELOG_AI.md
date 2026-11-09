@@ -1,3 +1,9 @@
+## 2026-11-09 — Ampliación protegida Javier :10/:50 para recuperación FIFO (DEV)
+
+- Orden del propietario: se crearon físicamente dos Tasks de JAVIER_CHATGPT, PRIMARY_DEV_05 :10 ID 6af16bb9492c8191b8e8c7d606f11507 y PRIMARY_DEV_06 :50 ID 6af16bbad26881918c283abe06e1f32a, con RRULE horaria America/Tegucigalpa. Se pausaron preventivamente para registrar los IDs en GitHub/Sheets antes de activación. Las Tasks Alex :10/:50 y las cuatro Javier originales no fueron modificadas por esta enmienda.
+- Gobierno y pruebas: aumentar el censo de seis a ocho IDs (seis Javier, dos Alex) en AUTORIDAD/ESTADO/AGENTS; corregir el validador hardcode 6 por longitud dinámica sin degradar validación de duplicados, mantener V13 capacidad 1000x4, PROJECT_SCOPE_LOCK=STRICT y revisión formal independiente de gobierno. La autorización efectiva exige CI exact HEAD, merge protegido y readback institucional. Sin permisos de runtime inferidos ni cierre ficticio.
+- Misión de las seis Javier: recuperar exclusivamente el lote original de 52 PR VALIDANDO 2026-11-09 uno por uno FIFO, conciliando conflictos y CI y marcando LISTO solo con merge postmerge y Sheets verificados. Sin cambios runtime, DB, auth, QA/main/PROD, secretos o despliegues. Rollback: pausar sólo nuevas Tasks y revertir por PR protegido.
+
 ## 2026-11-07 — Scope Lock: reintento por finalizacion de CI exact-HEAD sin falsos PASS (DEV)
 
 - Cambio de gobierno/CI redactado por SOLQARYN Platform en rama `fix/solqaryn-scope-lock-ci-retry-20261107`; revisión formal humana independiente del HEAD final obligatoria antes de merge, sin adelantar FIFO ni modificar rulesets.
