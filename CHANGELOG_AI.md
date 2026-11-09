@@ -1,7 +1,7 @@
-## 2026-11-09 — CI proporcional: tests P2 documentales de solo lectura sin migraciones ajenas (DEV)
+## 2026-11-09 — CI proporcional: tests P2 de contratos documentales y filtros mockeados sin migraciones ajenas (DEV)
 
-- Amplía el router de impacto para tests P2 que exclusivamente leen contratos versionados con `File.ReadAllText` y realizan aserciones; reconoce P2-019.D sin habilitar acceso runtime, EF, Moq, DI, HTTP o DB.
-- Añade 15 autopruebas con cobertura positiva y negativa; conserva fail-closed ante escrituras, procesos, constructores, integración real, cambios productivos y rutas desconocidas.
+- Amplía el router de impacto para tests P2 que exclusivamente leen contratos versionados con `File.ReadAllText` y realizan aserciones, o usan filtros comerciales con Moq estricto sin DB real; reconoce P2-019.D y P2-001.F, sin habilitar EF, SQL, HTTP real ni persistencia.
+- Añade 28 autopruebas con cobertura positiva y negativa para contratos documentales y filtros mockeados estrictos; conserva fail-closed ante escrituras, procesos, constructores, integración real, cambios productivos y rutas desconocidas.
 - Documenta la decisión en `docs/CI_IMPACT_ROUTING.md`; no cambia workflows, checks requeridos, protección de ramas ni pruebas MySQL aplicables.
 - Requiere CI sobre HEAD exacto, revisión formal independiente por modificación de `scripts/security/**` y merge FIFO protegido. Sin tocar QA/main/PROD.
 

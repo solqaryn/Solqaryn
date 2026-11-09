@@ -27,6 +27,25 @@ function isReadOnlyP2ContractTest(code) {
   return !P2_RUNTIME_RISK.test(code) && !DB_CODE.test(code) && !INTEGRATION_TRAIT.test(code);
 }
 
+
+// Strictly mocked P2 controller/permission-filter unit tests are covered by Backend;
+// do not run the unrelated full MySQL migration suite if no real DB/HTTP integration exists.
+function isMockOnlyP2FilterTest(code) {
+  if (!/^\s*using\s+Moq\s*;/m.test(code) ||
+      !/\bMockBehavior\s*\.\s*Strict\b/.test(code) ||
+      !/\b(?:VerifyNoOtherCalls|Times\s*\.\s*Never)\b/.test(code) ||
+      !/\bnew\s+DefaultHttpContext\b/.test(code) ||
+      !/\b(?:OnActionExecutionAsync|ControllerContext)\b/.test(code) ||
+      !/\bAddSingleton\s*\(\s*[A-Za-z_]\w*\.Object\s*\)/.test(code)) return false;
+  if (/\b(?:EntityFrameworkCore|DbContext|UseInMemoryDatabase|Sqlite|Dapper|MySql|SqlConnection|Migration|Testcontainers|WebApplicationFactory|TestServer|HttpClient|HttpMessageHandler|Process|Repository|Database|DbSet)\b/i.test(code)) return false;
+  if (/\bnew\s+[A-Za-z0-9_.]*(?:Service|Repository)\s*\(/.test(code) ||
+      /^\s*using\s+Solqaryn\.Infrastructure(?:\.|;)/m.test(code) ||
+      /^\s*using\s+(?:System\.Data|System\.Net)(?:\.|;)/m.test(code) ||
+      /\bGetRequiredService\s*(?:<|\()/.test(code) ||
+      /\bMockBehavior\s*\.\s*Loose\b/.test(code)) return false;
+  return !DB_CODE.test(code) && !INTEGRATION_TRAIT.test(code);
+}
+
 const DB_RISK_TEST_PATH = /\/(?:Integration(?:Tests)?|Database(?:Tests)?|Migration(?:s)?|Fixture(?:s)?|Infrastructure|E2E)\//i;
 const DB_CODE = /\b(?:MySqlConnection|MySqlConnector|AppDbContext|DbContext|Testcontainers|SqlConnection|DatabaseFixture)\b|(?:\.\s*UseMySql\s*\(|\.\s*Migrate\s*\(|\bDatabase\s*\.)/i;
 const INTEGRATION_TRAIT = /\[\s*Trait\s*\(\s*"Category"\s*,\s*"Integration"\s*\)/i;
@@ -51,7 +70,7 @@ export function needsMySqlIntegration(paths, loadSource = path => readFileSync(p
         const reflectionOnly = /^\s*using\s+System\.Reflection\s*;/m.test(code) &&
           /\bGet(?:CustomAttributes?|Methods?|Properties?)\s*(?:[<(])/.test(code) &&
           !P2_RUNTIME_RISK.test(code);
-        if (!reflectionOnly && !isReadOnlyP2ContractTest(code)) return true;
+        if (!reflectionOnly && !isReadOnlyP2ContractTest(code) && !isMockOnlyP2FilterTest(code)) return true;
       }
       return INTEGRATION_TRAIT.test(code) || DB_CODE.test(code);
     } catch {
@@ -70,7 +89,22 @@ function selfTest() {
   const p2Source = 'using System.Reflection;\nusing Xunit;\npublic sealed class P2005ACierreComprasPermisosTests { [Fact] public void Metadata() { _ = typeof(string).GetCustomAttribute<ObsoleteAttribute>(); } }';
   const docP2 = 'backend/tests/Solqaryn.Tests/P2019DReadinessGateNoPromotionTests.cs';
   const docP2Source = 'using System.Text.RegularExpressions;\nusing Xunit;\npublic sealed class P2019DReadinessGateNoPromotionTests { [Fact] public void DocumentOnly() { var folder = new DirectoryInfo("."); var d = File.ReadAllText("docs/PRODUCTION_READINESS_CONTRACT.md"); Assert.Contains("PRODUCTION_READY = FALSE", d); } }';
+  const mockP2 = 'backend/tests/Solqaryn.Tests/P2001FMatrizContextoUnicoTests.cs';
+  const mockP2Source = 'using Moq;\nusing Microsoft.AspNetCore.Http;\nusing Xunit;\npublic sealed class P2001FMatrizContextoUnicoTests { [Fact] public void Filter() { var scopes = new Mock<IUsuarioScopeService>(MockBehavior.Strict); var http = new DefaultHttpContext(); using var services = new ServiceCollection().AddSingleton(scopes.Object).BuildServiceProvider(); var execution = new ActionExecutingContext(); _ = OnActionExecutionAsync(execution); Assert.NotNull(http); scopes.VerifyNoOtherCalls(); } }';
   const cases = [
+    ['P2 strict mock-only permission filter skips unrelated MySQL', [mockP2, 'CHANGELOG_AI.md'], mockP2Source, false],
+    ['P2 nested strict mock-only filter skips unrelated MySQL', ['backend/tests/Solqaryn.Tests/API/Controllers/P2001FMatrizContextoUnicoTests.cs'], mockP2Source, false],
+    ['P2 mock filter with EF remains MySQL required', [mockP2], mockP2Source + '\nusing Microsoft.EntityFrameworkCore;', true],
+    ['P2 mock filter with DbContext remains MySQL required', [mockP2], mockP2Source + '\nnew AppDbContext()', true],
+    ['P2 mock filter with real Service remains MySQL required', [mockP2], mockP2Source + '\nnew ComprasService()', true],
+    ['P2 mock filter with real DI resolve remains MySQL required', [mockP2], mockP2Source + '\nservices.GetRequiredService<DbContext>()', true],
+    ['P2 mock filter with Infrastructure import remains MySQL required', [mockP2], mockP2Source + '\nusing Solqaryn.Infrastructure.Persistence;', true],
+    ['P2 mock filter with HTTP client remains MySQL required', [mockP2], mockP2Source + '\nnew HttpClient()', true],
+    ['P2 mock filter without strict mock evidence remains MySQL required', [mockP2], mockP2Source.replace('MockBehavior.Strict', 'MockBehavior.Loose'), true],
+    ['P2 mock filter with Integration trait remains MySQL required', [mockP2], mockP2Source + '\n[Trait("Category", "Integration")]', true],
+    ['P2 mock filter in Integration directory remains MySQL required', ['backend/tests/Solqaryn.Tests/Integration/P2001FMatrizContextoUnicoTests.cs'], mockP2Source, true],
+    ['P2 mock filter with runtime changes remains MySQL required', [mockP2, 'backend/src/API/Filters/TenantPermissionContext.cs'], mockP2Source, true],
+    ['P2 mock filter absent source remains MySQL required', [mockP2], null, true],
     ['P2 read-only readiness contract avoids unrelated MySQL', [docP2, 'CHANGELOG_AI.md'], docP2Source, false],
     ['P2 nested read-only contract avoids unrelated MySQL', ['backend/tests/Solqaryn.Tests/API/Controllers/P2019DReadinessGateNoPromotionTests.cs'], docP2Source, false],
     ['P2 doc test with EF import still runs MySQL', [docP2], docP2Source + '\nusing Microsoft.EntityFrameworkCore;', true],
