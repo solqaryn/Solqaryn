@@ -1,3 +1,10 @@
+## 2026-11-07 — P2-008.A: cierre atómico de facturas privadas y abonos A/B (DEV)
+
+- Autoría funcional: Task nativa Javier :20 / JAVIER_CHATGPT / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Rama exclusiva original `work/solqaryn-p2-008-a`, creada desde `dev@3a9b21b6c5e237a359d39148bfefc42520cf377b` tras readback de `PLAN_MAESTRO!H230=EN_PROGRESO`, `COLA!O230=SI` y `COLA!G230=SI`. Dependencia P2-008.E LISTO.
+- Cobertura heredada: `P2008CFacturasPrivadasEmpresaIdTests` (lecturas A/B), `P2008DFacturaPorVentaTenantTests` (factura por venta A/B), `P2008ECapabilityFacturaPrivadaTenantTests` (capability pública PDF sin escalar permisos privados). Nueva regresión dirigida `P2008ACierreFacturasPagosTenantTests`: al intentar aplicar un abono a factura B con marca empresarial A válida y `X-Empresa-Id` falsificado, `FacturaService.RegistrarPagoAsync` rechaza antes de escribir; sin tenant verificado también rechaza en entorno multiempresa. Se prueba que la factura ajena conserva saldo, total pagado y pagos vacíos.
+- Solo prueba xUnit con EF InMemory más entrada aditiva de CHANGELOG; sin cambios en runtime, API, esquema MySQL, migraciones, secretos, permisos, workflows, rulesets ni QA/main/PROD. No se ha ejecutado `dotnet test` local ni se atribuye PASS hasta CI exact-HEAD; no prueba HTTP/JWT, MySQL real ni servicios de pago externos. Requiere revisión técnica por TASK_ID diferente, Scope Lock + Seguridad + Backend + Directed aplicable y FIFO estricto; P2 exige tres required postmerge SUCCESS exact MERGE_SHA para LISTO.
+- Rollback: revert protegido y selectivo de esta nueva prueba y su entrada de historial, sin reescribir historia ni eliminar cobertura preexistente.
+
 ## 2026-11-07 — Estabilizacion de Scope Lock para micropruebas I8 y CI extensa (DEV)
 
 - Autor institucional SOLQARYN Platform. Correccion dedicada del pipeline: scripts/security/ci-impact-routing.mjs reconoce tests I8dddX offline (como I8-004.C e I8-005.C), conserva MySQL para riesgos de datos, integraciones y archivos desconocidos, y agrega ocho pruebas causales positivas/negativas.
