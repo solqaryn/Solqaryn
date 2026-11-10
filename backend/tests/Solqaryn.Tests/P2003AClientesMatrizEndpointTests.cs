@@ -1,0 +1,119 @@
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using Solqaryn.Application.Security;
+using Solqaryn.Domain.Entities;
+using Solqaryn.Infrastructure.Persistence;
+using Solqaryn.Infrastructure.Repositories;
+using Xunit;
+
+namespace Solqaryn.Tests;
+
+/// <summary>
+/// P2-003.A: matrix of existing customer list, active search and detail reads.
+/// The verified server-side EmpresaId, not X-Empresa-Id, is the authority.
+/// EF InMemory coverage only; HTTP/JWT, MySQL, mutations and imports are separate gates.
+/// </summary>
+public sealed class P2003AClientesMatrizEndpointTests
+{
+    [Fact]
+    public async Task Listado_busqueda_y_detalle_son_aislados_por_tenant_verificado_A_B_A()
+    {
+        var http = new DefaultHttpContext();
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase("p2003a-" + Guid.NewGuid().ToString("N"))
+            .Options;
+        await using var db = new AppDbContext(options,
+            tenantHttpContextAccessor: new HttpContextAccessor { HttpContext = http });
+
+        var empresaA = new Empresa("P2003A Empresa A");
+        var empresaB = new Empresa("P2003A Empresa B");
+        db.Set<Empresa>().AddRange(empresaA, empresaB);
+        await db.SaveChangesAsync();
+
+        const string nombreCompartido = "P2003A Cliente gemelo";
+        // TipoCliente has a tenant-owned SHADOW EmpresaId in the EF model.
+        // Give A and B real verified ownership, not a global NULL category.
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = empresaA.Id;
+        var tipoA = new TipoCliente
+        {
+            Codigo = "P2003A-A",
+            Nombre = "P2003A Tipo A",
+            NombreNormalizado = "P2003A TIPO A",
+            EsSistema = true
+        };
+        db.Set<TipoCliente>().Add(tipoA);
+        db.Entry(tipoA).Property<int?>("EmpresaId").CurrentValue = empresaA.Id;
+        await db.SaveChangesAsync();
+        var clienteA = new Cliente
+        {
+            EmpresaId = empresaA.Id,
+            TipoClienteId = tipoA.Id,
+            Nombre = nombreCompartido,
+            IdentidadORTN = "P2003A-DOC-A",
+            Activo = true
+        };
+        db.Clientes.Add(clienteA);
+        await db.SaveChangesAsync();
+
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = empresaB.Id;
+        var tipoB = new TipoCliente
+        {
+            Codigo = "P2003A-B",
+            Nombre = "P2003A Tipo B",
+            NombreNormalizado = "P2003A TIPO B",
+            EsSistema = true
+        };
+        db.Set<TipoCliente>().Add(tipoB);
+        db.Entry(tipoB).Property<int?>("EmpresaId").CurrentValue = empresaB.Id;
+        await db.SaveChangesAsync();
+        var clienteB = new Cliente
+        {
+            EmpresaId = empresaB.Id,
+            TipoClienteId = tipoB.Id,
+            Nombre = nombreCompartido,
+            IdentidadORTN = "P2003A-DOC-B",
+            Activo = true
+        };
+        db.Clientes.Add(clienteB);
+        await db.SaveChangesAsync();
+
+        Assert.Equal(2, await db.Clientes.IgnoreQueryFilters().CountAsync());
+        // Match the tenant read tests: remove tracked seed entities before switching
+        // the verified A/B/A read scope; keep the malicious header and assertions.
+        db.ChangeTracker.Clear();
+        var repository = new ClienteRepository(db);
+
+        // The hostile header asks for B while the trusted server binding grants A.
+        http.Request.Headers["X-Empresa-Id"] = empresaB.Id.ToString();
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = empresaA.Id;
+        // Forensic guards: distinguish seeded ownership, context-bound filter, and includes.
+        Assert.Equal(empresaA.Id, db.AuthorizedReadEmpresaId);
+        Assert.Equal(1, await db.Clientes.IgnoreQueryFilters().CountAsync(c => c.EmpresaId == empresaA.Id));
+        Assert.Equal(1, await db.Clientes.CountAsync());
+        Assert.Equal(1, await db.Clientes.Include(c => c.TipoCliente).CountAsync());
+        // Materialize eager navigations: CountAsync drops Includes during query optimization.
+        Assert.Equal(tipoA.Id, Assert.Single(await db.Set<TipoCliente>().ToListAsync()).Id);
+        Assert.Single(await db.Clientes.Include(c => c.TipoCliente).ToListAsync());
+        Assert.Single(await db.Clientes.Include(c => c.Ventas).ToListAsync());
+        Assert.Equal(new[] { clienteA.Id }, (await repository.GetAllAsync()).Select(c => c.Id));
+        Assert.Equal(new[] { clienteA.Id }, (await repository.GetActivosAsync()).Select(c => c.Id));
+        Assert.Equal(new[] { clienteA.Id }, (await repository.BuscarActivosAsync("P2003A Cliente")).Select(c => c.Id));
+        Assert.Null(await repository.GetByIdAsync(clienteB.Id));
+        Assert.Equal(clienteA.Id, (await repository.GetByIdAsync(clienteA.Id))?.Id);
+        Assert.False(await repository.ExisteIdentidadAsync("P2003A-DOC-B"));
+
+        // Reversing the verified binding must not reuse A's visibility.
+        http.Request.Headers["X-Empresa-Id"] = empresaA.Id.ToString();
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = empresaB.Id;
+        Assert.Equal(tipoB.Id, Assert.Single(await db.Set<TipoCliente>().ToListAsync()).Id);
+        Assert.Equal(new[] { clienteB.Id }, (await repository.GetAllAsync()).Select(c => c.Id));
+        Assert.Equal(new[] { clienteB.Id }, (await repository.BuscarActivosAsync("P2003A Cliente")).Select(c => c.Id));
+        Assert.Null(await repository.GetByIdAsync(clienteA.Id));
+        Assert.False(await repository.ExisteIdentidadAsync("P2003A-DOC-A"));
+
+        // Returning to A does not leak the intervening B query.
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = empresaA.Id;
+        Assert.Equal(new[] { clienteA.Id }, (await repository.GetActivosAsync()).Select(c => c.Id));
+        Assert.Null(await repository.GetByIdConVentasAsync(clienteB.Id));
+    }
+}
