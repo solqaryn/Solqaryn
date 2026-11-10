@@ -5,6 +5,8 @@
 - Impacto acotado: únicamente spec Angular/Vitest y esta entrada aditiva. Sin cambios en runtime, API, DTO, RBAC/tenant backend, MySQL, datos, secretos, CI, workflows, rulesets, ni main/QA/PROD. La prueba usa `HttpTestingController`; no equivale a tráfico real ni certifica backend. Prueba local no ejecutada; requieren CI exact-HEAD, revisión técnica de otro TASK_ID, FIFO protegido y postmerge según gobierno antes de LISTO.
 - Rollback: revert protegido de la prueba añadida y esta nota, preservando los casos heredados y las entradas concurrentes de CHANGELOG.
 
+- Corrección causal de CI dirigida (2026-11-10, revisión independiente pendiente): el workflow xUnit-only daba `DIRECTED_SCOPE_NO_GO total=0 passed=0` para la regresión Angular `G0-001.C`. En esta misma rama se añadió ruta dirigida al `ng test`/Vitest real, filtro del caso exacto, comprobación de reporte JSON con al menos un PASS y restricción de archivos permitidos; los demás scopes conservan xUnit y su rechazo de cero pruebas. El cambio en `.github/workflows/solqaryn-commercial-directed.yml` exige revisión formal independiente sobre HEAD final y CI completa antes de merge, sin conceder PASS anticipado. Rollback: revert protegido del cambio de enrutamiento y esta nota aditiva.
+
 ## 2026-11-08 — P2-006.A: cobertura de estados y agregados de ventas A/B (DEV)
 
 - Autoría original: Javier :30 / JAVIER_CHATGPT / TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`, rama única `work/solqaryn-p2-006-a`, base `dev@3a9b21b6c5e237a359d39148bfefc42520cf377b`. Inicio PENDIENTE→EN_PROGRESO persistido y leído en PLAN_MAESTRO!228, COLA!228 y BITACORA.
