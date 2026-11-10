@@ -1,3 +1,9 @@
+## 2026-11-08 — G0-002.C: delimitar composición DI de EmpresaService (DEV)
+
+- Autoría: Task nativa Javier :40 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6adc2e55f47c81919f6374e561687076`. Rama única `work/solqaryn-g0-002-c` desde `dev@3a9b21b6c5e237a359d39148bfefc42520cf377b`, con PLAN_MAESTRO!H314/I314/M314 en EN_PROGRESO y BITACORA PENDIENTE_A_EN_PROGRESO acreditadas antes del primer commit.
+- Escenario delimitado: `backend/src/API/Program.cs`, registro `AddScoped<IEmpresaService, EmpresaService>()` sin composición manual. Prueba causal nueva `backend/tests/Solqaryn.Tests/G0002CEmpresaServiceDiCompositionTests.cs`: exige registro único scoped, inyección de `IEmpresaRepository`, `ICurrentUserService` y `IAuditoriaService`; negativo de dependencia faltante y distinción entre scopes. La prueba de contenedor aislado NO equivale a arranque real de ASP.NET, dos sesiones autenticadas concurrentes ni persistencia MySQL. El micropaso G0-002.E conserva esa validación posterior.
+- Sin cambios en código productivo, contratos públicos, DI de producción, migraciones, datos, secretos, workflows, rulesets, QA/main/PROD. Pruebas locales no ejecutadas; CI, Directed aplicable, revisión por TASK_ID distinto y FIFO son gates aún por acreditar. Rollback mediante revert selectivo protegido de la prueba y de esta entrada, sin force-push.
+
 ## 2026-11-08 — I8-002.E: regresion de no enumeracion del login empresarial (DEV)
 
 - Microtarea I8-002.E; Task nativa Javier :20, AUTHOR_TASK_ID 6adc2e4bd8a48191ac7d8641ed95a1a3. Inicio PENDIENTE→EN_PROGRESO con PLAN_MAESTRO!96 y BITACORA!1360, readback antes de editar; COLA!O96=SI y dependencia I8-002.D=VALIDANDO. Rama original work/solqaryn-i8-002-e desde dev@3a9b21b6c5e237a359d39148bfefc42520cf377b.
