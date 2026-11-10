@@ -99,4 +99,33 @@ describe('N6.1.E Empresa administration UX', () => {
     expect(component.empresas()[0].activa).toBe(false);
     expect(component.operandoId()).toBeNull();
   });
+
+  it('G0-001.C ignores an obsolete HTTP error while the newest company filter is loading', () => {
+    const component = createComponent();
+    component.cargar();
+    const stale = httpMock.expectOne(request =>
+      request.url === `${environment.apiUrl}/empresas` && !request.params.has('activa'));
+
+    component.cambiarEstado('activas');
+    const current = httpMock.expectOne(request =>
+      request.url === `${environment.apiUrl}/empresas` && request.params.get('activa') === 'true');
+
+    stale.flush({ message: 'Error de una solicitud obsoleta' }, {
+      status: 503,
+      statusText: 'Service Unavailable'
+    });
+
+    expect(component.estado()).toBe('activas');
+    expect(component.error()).toBeNull();
+    expect(component.loading()).toBe(true);
+    expect(component.empresas()).toEqual([]);
+
+    current.flush({ data: [
+      { id: 42, nombre: 'Empresa Activa', activa: true, fechaCreacion: '', fechaActualizacion: '' }
+    ] });
+
+    expect(component.empresas().map(item => item.id)).toEqual([42]);
+    expect(component.error()).toBeNull();
+    expect(component.loading()).toBe(false);
+  });
 });

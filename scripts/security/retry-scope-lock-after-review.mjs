@@ -87,6 +87,10 @@ async function live(){
     const response=await fetch((process.env.GITHUB_API_URL||'https://api.github.com')+'/repos/'+REPO+path,{
       method,headers:{Authorization:'Bearer '+token,Accept:'application/vnd.github+json',
       'X-GitHub-Api-Version':'2022-11-28'},signal:AbortSignal.timeout(20000)});
+    if(!response.ok && method==='POST' && response.status===403 && /^\/actions\/jobs\/\d+\/rerun$/.test(path)) {
+      console.log('SCOPE_REVIEW_RETRY=MANUAL_RETRY_REQUIRED_403; independent approval remains valid; mandatory Scope Lock still gates merge');
+      return 403;
+    }
     if(!response.ok)throw Error('SCOPE_REVIEW_RETRY_HTTP_'+response.status+':'+path.split('?')[0]);
     return method==='POST'?response.status:response.json();};
   const pr=await api('/pulls/'+number),head=pr.head?.sha;
@@ -113,6 +117,7 @@ async function live(){
   if(recheck.state!=='open'||recheck.head?.sha!==head){
     console.log('SCOPE_REVIEW_RETRY=SKIP_CHANGED_HEAD');return;}
   const status=await api('/actions/jobs/'+job.id+'/rerun','POST');
+  if(status===403) { console.log('SCOPE_REVIEW_RETRY=NOT_STARTED; operator must selectively re-run failed Scope Lock after dependent checks pass'); return; }
   if(status!==201)throw Error('SCOPE_REVIEW_RETRY_UNEXPECTED_STATUS');
   console.log('SCOPE_REVIEW_RETRY=STARTED JOB='+job.id+' PR='+number+' SHA='+head);
 }
