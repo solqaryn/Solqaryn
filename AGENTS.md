@@ -1,3 +1,6 @@
+## Adenda actual 2026-11-09 — 6 Javier + 2 Alex, V13 vigente sin alterar cuatro techos
+Task Javier nueva :10 ID 6af16bb9492c8191b8e8c7d606f11507 y nueva :50 ID 6af16bbad26881918c283abe06e1f32a, distintas de las Tasks Alex :10/:50. La nueva autorización protegida entra en vigor sólo tras review independiente, required CI exact-HEAD, merge a dev y readback del Sheet. Las dos nuevas ya figuran HABILITADAS físicamente (is_enabled=true; TAREAS_PROGRAMADAS M8/M9) tras readback; la escritura comercial sigue NO_GO hasta merge protegido y readback de autoridad en Sheets. Su misión posterior es idéntica a las otras cuatro Javier: recuperar exclusivamente los 52 PR VALIDANDO originales por FIFO, sin nuevos scopes, falsa aprobación ni falsos LISTO. No modificar las Tasks Alex, sus permisos, ni QA/main/PROD.
+
 ## V13 — contrato consolidado 1000 x 4 y FIFO multicierre (2026-11-07)
 
 CAPACITY_POLICY_VERSION=V13_1000_FIFO_BATCH
@@ -20,7 +23,7 @@ CURRENT_COMMERCIAL_ONLY=TRUE
 AUTOMATION_RUNTIME=ACTIVE_DEV
 TASK_DESIGN=OWNER_CONFIGURABLE_TASK_SET
 TASK_COUNT_LIMIT=PROVIDER_EFFECTIVE_CAPACITY
-CURRENT_REGISTERED_TASKS=6
+CURRENT_REGISTERED_TASKS=8
 AUTO_CERTIFICATION_MODE=REQUIRED_SCOPE_LOCK
 FORMAL_APPROVAL_ROUTINE_COMMERCIAL_REQUIRED=FALSE
 FORMAL_APPROVAL_GOVERNANCE_REQUIRED=TRUE
@@ -59,9 +62,9 @@ El selector de próxima Task libre es consultivo y no asigna propiedad antes de 
 La unidad de autoría funcional de una microtarea comercial es el `TASK_ID` físico autorizado y su evidencia de `PLAN_MAESTRO`/`BITACORA`, no la coincidencia del login GitHub. Una Task habilitada **distinta de la autora** puede revisar técnica y sustantivamente el PR de una Task que use la misma cuenta GitHub, comprobar diff, aislamiento multitenant/RBAC, checks y pruebas exact-SHA, registrar `TECH_REVIEW_PASS` o `REQUEST_CHANGES` con `TASK_ID_AUTOR != TASK_ID_REVISOR`, SHA y readback. Si todo cumple y los permisos y reglas protegidas lo permiten, la Task revisora puede efectuar el merge y el cierre `LISTO` después de CI postmerge exact-SHA y readback de `PLAN_MAESTRO`, `COLA` (fórmulas intactas) y `BITACORA`. **La Task autora no puede emitir aprobación técnica cruzada ni marcar como LISTO su propia microtarea.** Un traspaso de edición requiere autorización positiva y ausencia de edición simultánea comprobada; revisión de solo lectura no concede permiso de escritura.
 
 
-## Censo autorizado actual — seis Tasks físicas (2026-11-05)
+## Censo autorizado actual — ocho Tasks (seis Javier y dos Alex; adenda de 2026-11-09)
 
-El allowlist vigente incluye únicamente los cuatro TASK_ID de Javier (:00, :20, :30, :40) y los dos de Alex (:10, :50), según `REGISTERED_TASK_IDS` y `AUTHORIZED_COMMERCIAL_TASK_IDS` en AUTOMATION_AUTHORITY y AUTOMATION_STATUS. Los techos propuestos V13 1000/1000/1000/1000 NO representan mil Tasks ni reactivan identidades; siguen siendo seis IDs autorizados y la efectividad V13 depende del merge protegido. Los estados físicos reales son independientes de este censo y deben leerse en la cuenta nativa de cada propietario; las Tasks pausadas por el propietario permanecen pausadas hasta el readback de todas las configuraciones. No reintroducir reglas de cupo, censo o roles retirados.
+El censo protegido propuesto contiene seis Tasks Javier (:00,:10,:20,:30,:40,:50) y dos Tasks Alex (:10,:50), con TASK_ID únicos. Los nuevos Javier 6af16bb9492c8191b8e8c7d606f11507 y 6af16bbad26881918c283abe06e1f32a se autorizan sólo tras CI y revisión independiente de este PR, merge protegido a dev y readback institucional. Mientras tanto no pueden escribir ni ejecutar trabajos comerciales. Los cuatro límites V13 de 1000 permanecen intactos. Los estados físicos reales son independientes de este censo y deben leerse en la cuenta nativa de cada propietario; las Tasks pausadas por el propietario permanecen pausadas hasta el readback de todas las configuraciones. No reintroducir reglas de cupo, censo o roles retirados.
 
 
 ## Archivo histórico — Autorizacion adicional M3.2 — Javier :40 y Alex :10/:50
