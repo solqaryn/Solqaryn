@@ -1,3 +1,10 @@
+## 2026-11-08 — P2-004.G: negativo de compra con proveedor ajeno al tenant (DEV)
+
+- Autor nativo Javier :30 / JAVIER_CHATGPT; AUTHOR_TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`. Rama exclusiva `work/solqaryn-p2-004-g` desde `dev@3a9b21b6c5e237a359d39148bfefc42520cf377b`. PLAN_MAESTRO!H262/I262/M262 y BITACORA!1371 registraron PENDIENTE -> EN_PROGRESO con readback antes de editar; COLA!O262=SI por dependencia P2-004.F VALIDANDO.
+- Prueba xUnit `backend/tests/Solqaryn.Tests/P2004GProveedorCompraCrossTenantNegativeTests.cs`: guard `CommercialCrossTenantWriteGuard.ValidateAsync` rechaza una compra de empresa A que referencia ProveedorId de B y el caso inverso, aun con `X-Empresa-Id` falsificado; asegura rechazo antes de persistencia y compra A->A legítima. No duplica pruebas de solo lectura de P2-004.D/E ni coincidencias telefónicas de P2-004.F.
+- Un test EF InMemory y esta entrada aditiva; sin cambios productivos, DTO, API, migraciones, constraints, secretos, rulesets, workflows, QA/main/PROD. No atribuir PASS de `dotnet test` local, MySQL real o HTTP/JWT a esta prueba; requerir CI y Directed exact-HEAD y revisión técnica independiente de distinto TASK_ID.
+- Integración FIFO: PR #3941 permanece primero y bloqueado por conflicto; P2-004.G no puede fusionarse hasta COLA!G262=SI, PR CLEAN, revisiones/checks requeridos y postmerge exact MERGE_SHA. Rollback mediante revert protegido solamente de esta prueba y nota de changelog, sin reescribir cambios ajenos.
+
 ## 2026-11-08 — I8-007.D: cambios de estado empresarial con tenant verificado (DEV)
 
 - Autora funcional: Task nativa Javier :20 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`, GitHub `jmejia31`. Rama original `work/solqaryn-i8-007-d` desde `dev@3a9b21b6c5e237a359d39148bfefc42520cf377b`. PENDIENTE a EN_PROGRESO persistido en PLAN_MAESTRO!90 y BITACORA!1368 antes del codigo; COLA!O90=SI y no existia PR/rama/editor del scope.
