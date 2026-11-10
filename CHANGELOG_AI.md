@@ -1,3 +1,9 @@
+## 2026-11-08 — I8-008.D: negar grants de Plataforma en matriz empresarial (DEV)
+
+- Ejecución nativa Javier :20 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`; rama única `work/solqaryn-i8-008-d` desde dev@`c51efcc415f819be5c93543a76efb85205b8a3f9`. PLAN_MAESTRO!H91/I91/M91, COLA!O91=SI y BITACORA registran el inicio real antes del código.
+- Prueba xUnit `backend/tests/Solqaryn.Tests/I8008DPrivilegioPlataformaMatrizEmpresaTests.cs`: `PermisoService.UpdateMatrizAsync` rechaza permiso de ámbito Plataforma en rol privado A, tanto para permiso de sistema como personalizado, sin mutar matriz ni auditar una concesión; la vista de matriz solo expone permiso empresarial válido. Los fixtures son sintéticos y utilizan Moq; no se modifican contratos, runtime, dependencias, datos, migraciones ni secretos.
+- Validación pendiente por CI exact-HEAD y revisor TASK_ID distinto: este changeset no declara `dotnet test` local, HTTP/JWT real, MySQL ni autorización de merge. La predecesora I8-008.C está VALIDANDO, de modo que COLA!G91=NO impide LISTO. El primer PR FIFO #3941 sigue DIRTY. Rollback proporcional: revert protegido de esta prueba y la presente nota, sin tocar otras contribuciones.
+
 ## 2026-11-08 — P2-005.F: caso causal de cuentas por pagar segregadas por EmpresaId (DEV)
 
 - Ejecucion autentica Javier :00 / JAVIER_CHATGPT / AUTHOR_TASK_ID 6adbb9fff1548191a1bd5b30d9e9984a; rama unica `work/solqaryn-p2-005-f` desde dev@3a9b21b6c5e237a359d39148bfefc42520cf377b. Inicio PENDIENTE -> EN_PROGRESO registrado y leido de vuelta en PLAN_MAESTRO!245, COLA!245 y BITACORA antes de escribir codigo.
