@@ -1,3 +1,21 @@
+## 2026-11-10 — G0-004.C: impedir falso PASS ante errores globales Playwright (DEV)
+
+- Hallazgo tecnico independiente de Javier :50, review #5849124825 sobre HEAD 91750fc00619f6954bac3745dcc5013cb81a2982: el resumen ignoraba `report.errors`, permitiendo PASS ficticio con error de global setup/worker.
+- Reparacion acotada en rama original por Task Javier :00 como CONTRIBUTOR (TASK_ID 6adbb9fff1548191a1bd5b30d9e9984a), no REVIEWER del nuevo HEAD: `report.errors` no vacio => NO_GO y formato invalido => error; nueva prueba negativa y control positivo.
+- Sin runtime comercial, MySQL, JWT, RBAC, workflows, policies, QA/main/PROD ni otros PR. Requiere CI exact-HEAD y DOS revisiones tecnicas sustantivas NUEVAS de Tasks ajenas a autor original J40 y reparador J00; no dar por vigente la review J50 del SHA anterior. Cierre solo postmerge exact SHA en FIFO.
+
+## 2026-11-10 — G0-004.C: reparar lectura fail-closed del resumen Node TAP (DEV)
+
+- CI exact-HEAD `33474787cb8afbd15e3201c6107dc2f17089e2a7`: Directed y backend fallaron en el puente xUnit porque Node imprimio `ℹ tests/pass/fail` mientras el parser esperaba `# tests/pass/fail`; cinco pruebas Node pasaron realmente, pero xUnit rechazo la evidencia.
+- Cambio causal acotado: solicitar `--test-reporter=tap` al ejecutor Node, manteniendo verificaciones `total>0`, `passed==total`, `failed==0`. Comprobacion local Node 22 con reporter TAP; CI renovada requerida en HEAD final, no certificar ni fusionar por autoria propia.
+- Reconciliacion no destructiva de la rama original con `dev` mediante merge Git normal de dos padres; conservar pruebas y TODO `CHANGELOG_AI.md` del actual dev; sin QA/main/PROD, secretos ni modificaciones de workflows.
+
+## 2026-11-08 — G0-004.C: conectar la prueba dirigida al clasificador Playwright (DEV)
+
+- La suite dirigida seleccionaba únicamente pruebas xUnit; G0-004.C contiene pruebas Node y el check reportaba cero coincidencias. Se añade una prueba xUnit puente que ejecuta el archivo Node real, exige resumen no vacío y falla ante cualquier prueba fallida o sin reporte.
+- Alcance limitado a la integración de pruebas y este registro; no modifica lógica de producción ni el workflow. La verificación se realiza sobre el SHA exacto del PR.
+- CI exact-HEAD pendiente; no declara aprobación ni merge.
+
 ## 2026-11-08 — P2-004.G: negativo de compra con proveedor ajeno al tenant (DEV)
 
 - Autor nativo Javier :30 / JAVIER_CHATGPT; AUTHOR_TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`. Rama exclusiva `work/solqaryn-p2-004-g` desde `dev@3a9b21b6c5e237a359d39148bfefc42520cf377b`. PLAN_MAESTRO!H262/I262/M262 y BITACORA!1371 registraron PENDIENTE -> EN_PROGRESO con readback antes de editar; COLA!O262=SI por dependencia P2-004.F VALIDANDO.
