@@ -5,6 +5,12 @@
 - Changeset limitado a test xUnit y esta entrada historica aditiva; no modifica AuthService, endpoints, JWT reales, MySQL, migraciones, secretos, UI, CI/rulesets, QA/main/PROD. No se ejecuta dotnet local; la prueba no certifica persistencia, RBAC HTTP ni credenciales productivas. Exigir revision independiente por TASK_ID distinto, Scope Lock, Seguridad, Backend y Directed exact HEAD; FIFO global antes de merge, controles I8 posmerge exact MERGE_SHA antes de LISTO.
 - Rollback proporcional: revert protegido exclusivo del test y esta entrada, conservando entradas concurrentes.
 
+## 2026-11-08 — P2-015.E: cuarentena residual con empresa secundaria inactiva (DEV)
+
+- Autoria: Task nativa Javier :00 / JAVIER_CHATGPT / TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`. Rama exclusiva `work/solqaryn-p2-015-e` desde `dev@3a9b21b6c5e237a359d39148bfefc42520cf377b`. P2-015.D estaba VALIDANDO y COLA!O219=SI, G219=NO (gate de merge), responsable vacio; inicio EN_PROGRESO registrado antes de editar.
+- Regresion xUnit `P2015ECuarentenaResidualEmpresaInactivaTests.cs`: con una sola empresa A, una lectura comercial legacy atraviesa el middleware; al agregar B inactiva, tres cabeceras falsificables (A, B, desconocida) obtienen 503 `TENANT_DATA_ISOLATION_REQUIRED` sin invocar el siguiente handler. Verifica que el dato historico B permanezca inactivo y no se pierdan las dos identidades.
+- Alcance exclusivo: prueba backend EF InMemory y CHANGELOG_AI.md aditivo. No modifica runtime, RBAC, API, datos productivos, MySQL, migraciones, workflows, rulesets, secretos, QA/main/PROD. No acredita HTTP/JWT real, transacciones MySQL ni ejecucion local dotnet. Requiere CI required 3/3 y Directed exact-HEAD, revision independiente por Task distinta, FIFO y COLA!G=SI antes de merge; postmerge 3/3 exact MERGE_SHA antes de LISTO. Rollback selectivo protegido sin force-push.
+
 ## 2026-11-08 — P2-018.D: smoke HTTP A/B ante revocación y cabecera falsificada (DEV)
 
 - Autoría nativa original Javier :40 / JAVIER_CHATGPT / TASK_ID `6adc2e55f47c81919f6374e561687076`. Base `dev@3a9b21b6c5e237a359d39148bfefc42520cf377b`, rama única `work/solqaryn-p2-018-d`. Inicio PENDIENTE→EN_PROGRESO acreditado en PLAN_MAESTRO!204 / COLA!204 / BITACORA!1337 antes del código; predecesora P2-018.C=VALIDANDO y COLA!O204=SI.
