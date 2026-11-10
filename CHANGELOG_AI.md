@@ -1,3 +1,10 @@
+## 2026-11-08 — I8-002.E: regresion de no enumeracion del login empresarial (DEV)
+
+- Microtarea I8-002.E; Task nativa Javier :20, AUTHOR_TASK_ID 6adc2e4bd8a48191ac7d8641ed95a1a3. Inicio PENDIENTE→EN_PROGRESO con PLAN_MAESTRO!96 y BITACORA!1360, readback antes de editar; COLA!O96=SI y dependencia I8-002.D=VALIDANDO. Rama original work/solqaryn-i8-002-e desde dev@3a9b21b6c5e237a359d39148bfefc42520cf377b.
+- Regresion xUnit backend/tests/Solqaryn.Tests/I8002ERecuperacionSinEnumeracionTests.cs: dos intentos sinteticos de login que IAuthService rechaza, con usuarios diferentes y X-Empresa-Id falsificada, deben producir el mismo cuerpo Unauthorized sin exponer usuario, cabecera tenant, contrasena ni Data. Se exige auditoria interna pero la respuesta publica permanece generica.
+- El alcance es exclusivamente el controlador AuthController.Login y mocks de servicios; NO prueba recuperacion por correo, reset, SMTP, middleware/JWT, base de datos ni aislamiento HTTP real; no se modifica funcionalidad productiva ni API de recuperacion.
+- Unico changeset de prueba y CHANGELOG_AI.md aditivo, sin cambios a credenciales, reglas, infra, migraciones, QA/main/PROD. Sin dotnet local; exigir CI de Scope Lock, Seguridad, Backend y Directed exact HEAD, revision tecnica por TASK_ID ajeno y FIFO protegido. Postmerge exact MERGE_SHA antes de LISTO. Rollback: revert protegido selectivo de ambos archivos, sin force-push.
+
 ## 2026-11-08 — P2-007.A: lectura cruzada de ajustes y Kardex A/B (DEV)
 
 - Autoría nativa: Javier :00 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`; rama original única `work/solqaryn-p2-007-a`; base `dev@3a9b21b6c5e237a359d39148bfefc42520cf377b`. Inicio PENDIENTE→EN_PROGRESO leído antes del código en PLAN_MAESTRO!229, COLA!229 y BITACORA!1357.
