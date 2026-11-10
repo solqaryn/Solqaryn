@@ -32,7 +32,7 @@ export function validateDocuments(src) {
   const registered=key(src.status,'REGISTERED_TASK_IDS')?.split(',')||[];
   const count=Number(key(src.status,'SCHEDULED_CHATGPT_TASKS_AUTHORIZED'));
   if(!Number.isInteger(count)||count<1||auth.length!==count||auth.some(x=>!TASK.test(x)) ||
-     new Set(auth).size!==6 || auth.join(',')!==state.join(',') ||
+     new Set(auth).size!==count || auth.join(',')!==state.join(',') ||
      auth.some(x=>!registered.includes(x))) errors.push('task identity allowlist');
   if(key(src.scope,'PROJECT_SCOPE_LOCK')!=='STRICT' ||
      !src.scope.includes('SIN BLOQUEO EN SHEETS') ||
