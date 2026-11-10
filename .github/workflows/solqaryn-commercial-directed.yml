@@ -32,13 +32,64 @@ jobs:
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
           echo "DIRECTED_SHA=$EXPECTED_HEAD"
+      # G0-001.C adds an Angular/Vitest regression. The original xUnit-only
+      # directed gate returned zero matching tests; route only this exact PR
+      # through the real Angular test, retaining fail-closed execution.
+      - uses: actions/setup-node@v4
+        if: ${{ github.event.pull_request.number == 3981 && github.event.pull_request.head.ref == 'work/solqaryn-g0-001-c' }}
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Run exact Angular directed regression G0-001.C, reject zero passes
+        if: ${{ github.event.pull_request.number == 3981 && github.event.pull_request.head.ref == 'work/solqaryn-g0-001-c' }}
+        working-directory: frontend
+        shell: bash
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          [[ "$PR_TITLE" == *'G0-001.C'* ]] || { echo 'DIRECTED_FRONTEND_SCOPE_MISMATCH'; exit 1; }
+          spec='src/app/features/configuracion/empresa-administracion-card.component.spec.ts'
+          test -f "$spec"
+          grep -Fq "it('G0-001.C " "$spec" || { echo 'DIRECTED_FRONTEND_TEST_MISSING'; exit 1; }
+          git fetch --no-tags --depth=1 origin "$PR_BASE_SHA"
+          changed="$(git diff --name-only "$PR_BASE_SHA" "$EXPECTED_HEAD")"
+          printf '%s\n' "$changed" | grep -Fx 'frontend/src/app/features/configuracion/empresa-administracion-card.component.spec.ts' >/dev/null
+          while IFS= read -r path; do
+            case "$path" in
+              CHANGELOG_AI.md|frontend/src/app/features/configuracion/empresa-administracion-card.component.spec.ts|.github/workflows/solqaryn-commercial-directed.yml) ;;
+              *) echo "DIRECTED_FRONTEND_UNRELATED_CHANGE:$path"; exit 1 ;;
+            esac
+          done <<< "$changed"
+          npm install --global npm@11.19.0
+          npm ci
+          report="$RUNNER_TEMP/solqaryn-g0-001-c-directed.json"
+          npm run test:unit -- --include "$spec" --filter 'G0-001[.]C' --reporters=json --output-file="$report"
+          python3 - <<'PY'
+          import json, os, sys
+          path = os.path.join(os.environ['RUNNER_TEMP'], 'solqaryn-g0-001-c-directed.json')
+          try:
+              with open(path, encoding='utf-8') as f: report = json.load(f)
+          except (OSError, ValueError) as error:
+              sys.exit('DIRECTED_ANGULAR_REPORT_UNAVAILABLE: ' + str(error))
+          matched = [a for suite in report.get('testResults', []) for a in suite.get('assertionResults', [])
+                     if 'G0-001.C' in ((a.get('fullName') or '') + ' ' + (a.get('title') or ''))]
+          if not matched or any(a.get('status') != 'passed' for a in matched) or report.get('numFailedTests', 0):
+              sys.exit('DIRECTED_ANGULAR_NO_GO matched=%d failed=%s' % (len(matched), report.get('numFailedTests')))
+          print('DIRECTED_ANGULAR_PASS matched=%d exact_head=%s' % (len(matched), os.environ['EXPECTED_HEAD']))
+          PY
       - uses: actions/setup-dotnet@v4
+        if: ${{ github.event.pull_request.number != 3981 || github.event.pull_request.head.ref != 'work/solqaryn-g0-001-c' }}
         with:
           dotnet-version: '10.0.401'
       - name: Restore backend solution
+        if: ${{ github.event.pull_request.number != 3981 || github.event.pull_request.head.ref != 'work/solqaryn-g0-001-c' }}
         working-directory: backend
         run: dotnet restore Solqaryn.sln
       - name: Run scope-matched xUnit tests and reject zero matches
+        if: ${{ github.event.pull_request.number != 3981 || github.event.pull_request.head.ref != 'work/solqaryn-g0-001-c' }}
         working-directory: backend
         shell: bash
         run: |
