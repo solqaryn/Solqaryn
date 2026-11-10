@@ -1,3 +1,10 @@
+## 2026-11-08 — P2-007.A: lectura cruzada de ajustes y Kardex A/B (DEV)
+
+- Autoría nativa: Javier :00 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`; rama original única `work/solqaryn-p2-007-a`; base `dev@3a9b21b6c5e237a359d39148bfefc42520cf377b`. Inicio PENDIENTE→EN_PROGRESO leído antes del código en PLAN_MAESTRO!229, COLA!229 y BITACORA!1357.
+- Recibos precedentes REUTILIZADOS, sin reescribirlos: P2-007.C PR #3904, P2-007.D PR #3917 y P2-007.E PR #3936, ya MERGED y LISTO. Nueva regresión xUnit `P2007AInventarioKardexCierreTenantTests.cs`: ajustes y movimientos de Kardex con folios/correlaciones compartidos entre empresas A/B, suma aislada, cabecera X-Empresa-Id falsificada y cambio A→B en el mismo DbContext. Negativo: sin marca comercial privada, la marca pública no expone ambas colecciones.
+- Añade un filtro de lectura que impide que la capability pública de `/tienda` autorice las entidades privadas `AjusteInventario` y `MovimientoInventario`; soporte verificado y tenant RBAC empresarial mantienen su ámbito. La regresión EF InMemory confirma el tenant público y el rechazo del Kardex.
+- Integración: CI Scope Lock, Seguridad multiempresa, Backend y Directed SUCCESS exact HEAD, revisión técnica independiente por TASK_ID distinto, PR CLEAN, COLA!G229=SI, FIFO global. P2 exige 3 required checks postmerge exact MERGE_SHA antes de LISTO; ningún PASS ni cierre anticipado. Rollback: revert protegido selectivo del test y de esta entrada, conservando el historial ajeno.
+
 ## 2026-11-08 — G0-001.C: respuesta HTTP obsoleta ante cambio de filtro empresarial (DEV)
 
 - Seguimiento CI dirigido (2026-11-10, Javier :50, TASK_ID=6af16bbad26881918c283abe06e1f32a): pin `actions/setup-node` a Node 24.21.0 exacto en el workflow de G0-001.C; `npm ci` rechazó el flotante 24.22.2 mediante `SOLQARYN_TOOLCHAIN=FAIL`. Corrección causal en rama original, sin relanzar SHA fallido ni relajar preinstall; requiere nuevos checks exact-HEAD y aprobación formal independiente por cambio de workflow protegido.
