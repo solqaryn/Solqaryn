@@ -25,6 +25,11 @@ export function classifyE2eTest(test) {
 
 export function summarizeE2eJson(report) {
   if (!report || !Array.isArray(report.suites)) throw new Error('INVALID_PLAYWRIGHT_REPORT');
+  // Playwright can report global/setup/worker errors independently of test cases.
+  // Never claim PASS when top-level infrastructure evidence contains errors.
+  if (report.errors !== undefined && !Array.isArray(report.errors))
+    throw new Error('INVALID_PLAYWRIGHT_REPORT_ERRORS');
+  const globalErrors = report.errors?.length ?? 0;
   const counts = { PASS: 0, FLAKY: 0, SKIPPED: 0, FAILURE: 0, EXPECTED_FAILURE: 0, UNEXPECTED_PASS: 0, UNKNOWN: 0 };
   const cases = [];
   function visit(suite) {
@@ -39,7 +44,7 @@ export function summarizeE2eJson(report) {
   }
   for (const suite of report.suites) visit(suite);
   if (!cases.length) throw new Error('NO_E2E_CASES');
-  const verdict = counts.FAILURE || counts.UNEXPECTED_PASS || counts.UNKNOWN ? 'NO_GO' : counts.FLAKY || counts.SKIPPED ? 'REVIEW_REQUIRED' : 'PASS';
+  const verdict = globalErrors || counts.FAILURE || counts.UNEXPECTED_PASS || counts.UNKNOWN ? 'NO_GO' : counts.FLAKY || counts.SKIPPED ? 'REVIEW_REQUIRED' : 'PASS';
   return { verdict, counts, cases };
 }
 

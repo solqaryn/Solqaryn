@@ -41,3 +41,11 @@ test('G0-004.C traverses nested Playwright JSON suites and rejects flaky/skipped
   assert.equal(summary.counts.SKIPPED, 1);
   assert.equal(summary.cases.length, 3);
 });
+
+test('G0-004.C fails closed on top-level Playwright errors even when all tests pass', () => {
+  const suites = [{ specs: [{ title: 'positive-case', tests: [run('passed')] }] }];
+  assert.equal(summarizeE2eJson({ suites, errors: [] }).verdict, 'PASS');
+  assert.equal(summarizeE2eJson({ suites, errors: [{ message: 'global setup failure' }] }).verdict, 'NO_GO');
+  assert.equal(summarizeE2eJson({ suites, errors: [{ message: 'worker interrupted' }] }).counts.PASS, 1);
+  assert.throws(() => summarizeE2eJson({ suites, errors: null }), /INVALID_PLAYWRIGHT_REPORT_ERRORS/);
+});

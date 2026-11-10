@@ -1,3 +1,9 @@
+## 2026-11-10 — G0-004.C: impedir falso PASS ante errores globales Playwright (DEV)
+
+- Hallazgo tecnico independiente de Javier :50, review #5849124825 sobre HEAD 91750fc00619f6954bac3745dcc5013cb81a2982: el resumen ignoraba `report.errors`, permitiendo PASS ficticio con error de global setup/worker.
+- Reparacion acotada en rama original por Task Javier :00 como CONTRIBUTOR (TASK_ID 6adbb9fff1548191a1bd5b30d9e9984a), no REVIEWER del nuevo HEAD: `report.errors` no vacio => NO_GO y formato invalido => error; nueva prueba negativa y control positivo.
+- Sin runtime comercial, MySQL, JWT, RBAC, workflows, policies, QA/main/PROD ni otros PR. Requiere CI exact-HEAD y DOS revisiones tecnicas sustantivas NUEVAS de Tasks ajenas a autor original J40 y reparador J00; no dar por vigente la review J50 del SHA anterior. Cierre solo postmerge exact SHA en FIFO.
+
 ## 2026-11-10 — G0-004.C: reparar lectura fail-closed del resumen Node TAP (DEV)
 
 - CI exact-HEAD `33474787cb8afbd15e3201c6107dc2f17089e2a7`: Directed y backend fallaron en el puente xUnit porque Node imprimio `ℹ tests/pass/fail` mientras el parser esperaba `# tests/pass/fail`; cinco pruebas Node pasaron realmente, pero xUnit rechazo la evidencia.
