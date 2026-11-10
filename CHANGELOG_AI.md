@@ -1,3 +1,10 @@
+## 2026-11-08 — P2-004.F: caso causal de proveedor por tenant y teléfono normalizado (DEV)
+
+- Autor nativo: Javier :00 / JAVIER_CHATGPT / TASK_ID 6adbb9fff1548191a1bd5b30d9e9984a. Rama original `work/solqaryn-p2-004-f` creada desde dev@3a9b21b6c5e237a359d39148bfefc42520cf377b; PLAN_MAESTRO!H244/I244/M244 y BITACORA!1365 registran PENDIENTE -> EN_PROGRESO con readback previo.
+- Prueba xUnit `backend/tests/Solqaryn.Tests/P2004FProveedorTelefonoInactivoTenantTests.cs`: fixture con proveedores activos de A/B y telefonos equivalentes con espacios/guiones; se exige que `BuscarCoincidenciaActivaAsync` retorne solo el registro del tenant verificado, que la cabecera `X-Empresa-Id` ajena no redirija la consulta, que el cambio A -> B sobre el mismo contexto recalcule el filtro y que el proveedor B inactivo no aparezca en coincidencias ni busquedas activas. Aporta un caso medible diferente de P2-004.A/C/D/E.
+- Solo se crea una prueba EF InMemory y esta entrada aditiva, sin modificar API, negocio, datos, MySQL, seguridad de runtime, secretos, workflows, rulesets, QA/main/PROD. No se ejecuta `dotnet test` localmente porque .NET no esta instalado; la regresion debe acreditarse en CI exact-HEAD. El caso EF no prueba HTTP/JWT ni MySQL reales.
+- Revisar mediante TASK_ID distinto al autor y checks obligatorios exact SHA; `COLA!G244=NO` hasta que P2-004.A pase LISTO. Respetar FIFO de integración, postmerge 3/3 SUCCESS cuando corresponda y readback de PLAN/COLA/BITACORA antes de LISTO. Revertir solo la prueba y esta entrada mediante PR protegido.
+
 ## 2026-11-08 — G0-002.C: delimitar composición DI de EmpresaService (DEV)
 
 - Autoría: Task nativa Javier :40 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6adc2e55f47c81919f6374e561687076`. Rama única `work/solqaryn-g0-002-c` desde `dev@3a9b21b6c5e237a359d39148bfefc42520cf377b`, con PLAN_MAESTRO!H314/I314/M314 en EN_PROGRESO y BITACORA PENDIENTE_A_EN_PROGRESO acreditadas antes del primer commit.
