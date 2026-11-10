@@ -1,3 +1,9 @@
+## 2026-11-08 — P2-003.F: caso reproducible de clientes A/B con documento compartido (DEV)
+
+- Autoría nativa: Javier :20 / JAVIER_CHATGPT / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Rama original `work/solqaryn-p2-003-f` desde `dev@3a9b21b6c5e237a359d39148bfefc42520cf377b`. Antes del primer cambio: `PLAN_MAESTRO!H243=EN_PROGRESO`, `COLA!O243=SI`, dependencia `P2-003.A=VALIDANDO` y evento BITACORA único con readback.
+- Prueba xUnit `P2003FClientesCoincidenciaActivaTenantTests.cs`: dos empresas con clientes activos de documento homónimo, cliente inactivo adicional y marca `VerifiedCommercialTenant` A/B/A. Exige que `ClienteRepository.BuscarCoincidenciaActivaAsync` y `BuscarActivosAsync` ignoren una cabecera `X-Empresa-Id` falsificada, no mezclen clientes A/B ni devuelvan el inactivo; aporta un caso nuevo de búsqueda activa, diferente de los tests previos de filtros directos/IDOR.
+- Cobertura limitada a EF Core InMemory con datos sintéticos. NO acredita ruta HTTP/JWT, middleware ni MySQL real; no se modifican runtime, APIs, modelos, migraciones, datos, secretos, workflows, rulesets, QA/main/PROD. No afirmar PASS hasta CI dirigida exact-HEAD y revisión sustantiva de otro TASK_ID; la dependencia `COLA!G243=NO` bloquea MERGE/LISTO hasta P2-003.A LISTO. Requiere postmerge 3/3 exact MERGE_SHA. Rollback: revert protegido selectivo de prueba y entrada, sin force-push.
+
 ## 2026-11-08 — I8-006.D: cuenta vigente y clave nueva en cambio voluntario (DEV)
 
 - Autor nativo: JAVIER_CHATGPT, PRIMARY_01 Javier :00, AUTHOR_TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`. Scope único I8-006.D, rama exclusiva `work/solqaryn-i8-006-d`, base `dev@3a9b21b6c5e237a359d39148bfefc42520cf377b`. PLAN_MAESTRO!H89/I89/M89 y BITACORA!1347 recibieron PENDIENTE -> EN_PROGRESO con readback previo al código; COLA!O89=SI habilitó inicio, COLA!G89=NO bloquea integración hasta I8-006.C LISTO.
