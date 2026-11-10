@@ -1,3 +1,11 @@
+## 2026-11-08 — P2-006.A: cobertura de estados y agregados de ventas A/B (DEV)
+
+- Autoría original: Javier :30 / JAVIER_CHATGPT / TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`, rama única `work/solqaryn-p2-006-a`, base `dev@3a9b21b6c5e237a359d39148bfefc42520cf377b`. Inicio PENDIENTE→EN_PROGRESO persistido y leído en PLAN_MAESTRO!228, COLA!228 y BITACORA.
+- Reutiliza los cierres precedentes acreditados P2-006.C (PR #3903), P2-006.D (PR #3915) y P2-006.E (PR #3930), todos LISTO; no reescribe sus pruebas ni confunde esa evidencia con el cierre de P2-006.A.
+- Nueva prueba causal `backend/tests/Solqaryn.Tests/P2006AVentasEstadosResumenTenantTests.cs`: seis ventas sintéticas (borrador, confirmada y anulada por empresa A/B); una cabecera `X-Empresa-Id` falsificada no cambia el tenant backend verificado. Consulta por Id y agregado de importes confirmados debe excluir ventas ajenas, incluso al alternar A→B→A en el mismo DbContext. Negativo IDOR y contaminación de agregado, con control positivo de cada empresa.
+- Alcance: sólo test xUnit EF InMemory y esta entrada aditiva, sin cambios productivos, flujos reales de confirmación/pago/anulación, transacciones MySQL, migraciones, JWT/HTTP, permisos ni QA/main/PROD. No se ejecutó `dotnet test` local. Arquitectura: SIN_CAMBIO.
+- VALIDANDO pendiente de CI exact-HEAD (Scope Lock, Seguridad multiempresa, Backend y Directed), revisión técnica de otra Task, COLA!G=SI, PR CLEAN y turno FIFO. Exigir además CI postmerge 3/3 SUCCESS exact MERGE_SHA y readback PLAN/COLA/BITACORA para LISTO; no adelantar certificación ni afirmar prueba integral de cobranza. Rollback: revert protegido selectivo sólo del test y esta entrada, conservando el historial ajeno.
+
 ## 2026-11-08 — P2-003.F: caso reproducible de clientes A/B con documento compartido (DEV)
 
 - Autoría nativa: Javier :20 / JAVIER_CHATGPT / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Rama original `work/solqaryn-p2-003-f` desde `dev@3a9b21b6c5e237a359d39148bfefc42520cf377b`. Antes del primer cambio: `PLAN_MAESTRO!H243=EN_PROGRESO`, `COLA!O243=SI`, dependencia `P2-003.A=VALIDANDO` y evento BITACORA único con readback.
