@@ -1,3 +1,10 @@
+## 2026-11-08 — P2-004.H: proveedor con compras propias A/B (DEV)
+
+- Autoria nativa Javier :30 / JAVIER_CHATGPT; AUTHOR_TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`, rama determinista `work/solqaryn-p2-004-h` desde dev@`3a9b21b6c5e237a359d39148bfefc42520cf377b`. PLAN_MAESTRO!H280/I280/M280 y BITACORA!1383 registraron PENDIENTE -> EN_PROGRESO con readback antes del codigo; COLA!O280=SI por P2-004.G VALIDANDO.
+- Regresion xUnit `backend/tests/Solqaryn.Tests/P2004HProveedorComprasIncluidasTenantTests.cs`: dos proveedores activos y compras autenticas propias A/B; `ProveedorRepository.GetByIdConComprasAsync` debe devolver el proveedor autorizado y su compra incluida, mientras que la cabecera manipulada `X-Empresa-Id` no accede al proveedor ajeno ni mezcla la navegacion. Cambio de tenant verificado A -> B con `ChangeTracker.Clear()` para evitar falso positivo por entidades ya rastreadas.
+- Cobertura positiva de navegacion proveedor-compra distinta de P2-004.A/F (coincidencias), P2-004.D/E (lecturas/IDOR sin compras) y P2-004.G (rechazo de escritura cruzada). Solo test EF InMemory + esta nota; sin cambios a API/DTO/negocio, MySQL, migraciones, secretos, rulesets, workflows, main/QA/PROD. CI dirigida y required exact HEAD y revision tecnica por TASK_ID diferente a autora son obligatorias; no afirmar `dotnet test` local, HTTP/JWT o MySQL real.
+- FIFO: #3941 sigue primer PR OPEN, bloqueado por conflicto; esta prueba no se fusiona antes del turno y COLA!G280=SI. P2 requiere postmerge required 3/3 SUCCESS exact MERGE_SHA y readback institucional para LISTO. Reversion selectiva mediante PR protegido, sin force-push.
+
 ## 2026-11-08 — I8-008.D: negar grants de Plataforma en matriz empresarial (DEV)
 
 - Ejecución nativa Javier :20 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`; rama única `work/solqaryn-i8-008-d` desde dev@`c51efcc415f819be5c93543a76efb85205b8a3f9`. PLAN_MAESTRO!H91/I91/M91, COLA!O91=SI y BITACORA registran el inicio real antes del código.
