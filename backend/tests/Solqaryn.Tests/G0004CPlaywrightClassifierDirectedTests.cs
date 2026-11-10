@@ -23,6 +23,8 @@ public sealed class G0004CPlaywrightClassifierDirectedTests
             }
         };
         process.StartInfo.ArgumentList.Add("--test");
+        // Force TAP so the fail-closed summary parser receives portable # tests/pass/fail counters.
+        process.StartInfo.ArgumentList.Add("--test-reporter=tap");
         process.StartInfo.ArgumentList.Add(testFile);
 
         Assert.True(process.Start(), "Could not start Node.js for the G0-004.C directed test.");
