@@ -1,3 +1,16 @@
+## 2026-11-11 — P2-007.F: reparar fixture de ruta pública de Kardex (DEV)
+
+- CI exact-HEAD del PR #4000 (`3f2008455d1fa05ce37fefb8c7242b6bbe43470c`): Directed, Seguridad multiempresa y Backend fallaron en la aserción `Assert.Empty` de la prueba P2007F; Scope Lock quedó NO_GO por controles no verdes y checks asíncronos. La causa fue que el fixture establecía la marca `VerifiedPublicStoreTenant` sin `http.Request.Path = "/tienda"`, por lo que `VerifiedPublicStoreTenant.Resolve` devolvía null y `IsPublicStoreOnlyReadRequest` era falso. Contrastado con el caso existente P2007A.
+- Reparación mínima y causal en la **rama original**: establecer `/tienda`, exigir `AuthorizedCommercialEmpresaId` nulo e `IsPublicStoreOnlyReadRequest=true`, mantener la aserción estricta de Kardex vacío bajo una capability exclusivamente pública. No relajar la prueba, `CommercialTenantReadFilterModel`, RBAC, seguridad ni tocar API, migraciones, DB, frontend, infra, workflows, secretos, QA/main/PROD.
+- Cambio hecho mediante intervención interactiva autorizada, no atribuido falsamente a ninguna Task programada. CI del nuevo HEAD y dos revisiones independientes genuinas todavía obligatorias; no se afirma PASS ni LISTO anticipado. Reversión: revert selectivo de este commit, sin reescribir historia.
+
+## 2026-11-08 — P2-007.F: fixture causal de correlacion Kardex entre empresas
+
+- Autora nativa: Javier :00 / JAVIER_CHATGPT / AUTHOR_TASK_ID=6adbb9fff1548191a1bd5b30d9e9984a. Rama original work/solqaryn-p2-007-f desde dev@a203fc38d44a684b6a503a39b657ba8f7174bd54. Inicio real en PLAN_MAESTRO!H247/I247/M247 y BITACORA!1429, con COLA readback antes del codigo.
+- PREPARAR CASO medible: dos movimientos Kardex en empresas A/B, con igual CorrelationId y ReferenciaId=42 pero productos propios; los registros persisten con EmpresaId distinto. Condicion negativa: cabeceras X-Empresa-Id falsificadas y una marca publica sin tenant comercial autenticado nunca mezclan ni exponen el Kardex de otra empresa. Condicion positiva: la misma instancia de DbContext cambia de A a B al cambiar la marca verificada. Resultado esperado: A ve un movimiento con StockNuevo=5; B ve otro con StockNuevo=9; sin marca comercial, cero movimientos.
+- Prueba nueva xUnit backend/tests/Solqaryn.Tests/P2007FKardexCorrelationTenantTests.cs; es fixture EF InMemory, no certifica endpoints HTTP/JWT, MySQL real, valoracion, transferencias ni comportamiento idempotente de workers. Sin cambios a produccion, API, BD, migraciones, workflows, secretos, rulesets, main/QA/PROD. dotnet test local NO ejecutado.
+- Entrega solo a VALIDANDO tras PR y readback; CI exact HEAD y Directed aplicable, revision tecnica por TASK_ID distinto de autora y FIFO estricto antes del merge. P2 exige checks posmerge sobre MERGE_SHA para LISTO. Rollback: revert selectivo protegido, preservando todas las notas y pruebas ajenas.
+
 ## 2026-11-11 — G0-006.C: estabilizar reporter real de Node 24 en CI (DEV)
 
 - Evidencia GitHub del primer bridge: Directed job 130436060160 ejecutó realmente la prueba xUnit G0006C, pero su aserción de TAP falló porque Node 24 emite reporter spec predeterminado (texto de checks con ✔, sin '# tests 3'). Corrige un único argumento fijo a `node --test --test-reporter=tap` para exigir tres tests Node reales PASS; no altera el código de prueba causal ni acepta resultado vacío o falso.
