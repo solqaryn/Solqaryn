@@ -1,3 +1,10 @@
+## 2026-11-08 — I8-005.E: no filtrar credenciales ni token en rechazos de autenticacion (DEV)
+
+- Task nativa Javier :20 / JAVIER_CHATGPT / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`; rama exclusiva `work/solqaryn-i8-005-e` desde `dev@5a04b35c6d915d8146c16662e2b42daf2b9e6ebd`. Inicio autentico EN_PROGRESO y BITACORA con readback previo al codigo; dependencia I8-005.D VALIDANDO, COLA!O99=SI y G99=NO.
+- Regresion xUnit `I8005ETokenNoLeakAntifuerzaTests.cs`: dos login sinteticamente rechazados producen HTTP 401 generico, sin registrar la clave ni un token bearer sinteticos en `IAuditoriaService` ni filtrarlos en la respuesta; reafirma la politica `AuthLogin`. Una renovacion rechazada por `IAuthService` devuelve 401, no filtra bearer ni genera redireccion. No se utiliza ningun secreto real.
+- Limite honesto: prueba directa del controlador y dobles, no verifica middleware HTTP 429, fuerza bruta distribuida, revocacion retroactiva de JWT real, telemetria global, cabeceras de edge, DB MySQL o escenarios productivos. Ningun cambio a codigo runtime, auth, API, datos, migraciones, secretos, workflows, rulesets o main/QA/PROD.
+- Entrega condicionada a CI Scope Lock, Seguridad multiempresa, Backend y Directed exact-HEAD, revision tecnica sustantiva de TASK_ID distinto del autor y FIFO protegido con postmerge checks antes de LISTO. `dotnet test` local no ejecutado; sin PASS anticipado. Rollback mediante revert protegido del test y esta entrada sin tocar cambios ajenos.
+
 ## 2026-11-11 — I8-004.E: correccion causal de fixture y reconciliacion FIFO (DEV)
 
 - Task fisica Javier :30 / JAVIER_CHATGPT / CONTRIBUTOR_TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09` sobre PR original #4004, NO autor J00 ni revisor elegible tras esta contribucion. CI exact HEAD anterior `299302520185aa5bd0f5536b2f03dd85209e358b`: Directed y Backend fallaron 1/4 y 1/3233 respectivamente; MimeKit admitio la direccion local `destinatario-invalido` y alcanzo OAuth2 (`SMTP_OAUTH2`) en vez de devolver `DESTINATARIO_INVALIDO`.
