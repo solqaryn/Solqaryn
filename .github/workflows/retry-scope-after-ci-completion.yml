@@ -1,0 +1,47 @@
+name: SOLQARYN - Recuperar Scope Lock despues de CI
+
+# Trusted code only; CI completion triggers validation, never approval/merge.
+on:
+  workflow_run:
+    workflows:
+      - DEV - Compilación y pruebas
+      - Priority 3 - ERP security and isolated restore
+      - SOLQARYN - CI permanente del ERP
+      - SOLQARYN - Prueba comercial dirigida
+    types: [completed]
+
+permissions:
+  contents: read
+  pull-requests: read
+  checks: read
+  actions: write
+
+concurrency:
+  group: solqaryn-scope-ci-retry-${{ github.event.workflow_run.head_sha }}
+  cancel-in-progress: false
+
+jobs:
+  retry-only-timing-failure:
+    name: Retry exact-HEAD failed Scope Lock only after completed CI
+    if: >-
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_repository.full_name == 'solqaryn/Solqaryn'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout trusted dev, never PR code
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+          persist-credentials: false
+      - name: Configure Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+      - name: Verify retry guard fail-closed cases
+        run: node scripts/security/auto-retry-scope-after-ci.mjs --self-test
+      - name: Revalidate and retry exact-SHA job only
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/security/auto-retry-scope-after-ci.mjs --ci-event
