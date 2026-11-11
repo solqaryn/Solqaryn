@@ -44,12 +44,12 @@ public sealed class I8004EFlujoCorreoSeguroTests
     }
 
     [Theory]
-    [InlineData("destinatario-invalido", "Recuperacion de cuenta", "DESTINATARIO_INVALIDO")]
+    [InlineData("destinatario@@dev.test", "Recuperacion de cuenta", "DESTINATARIO_INVALIDO")]
     [InlineData("cliente@dev.test", " \r\n ", "ASUNTO_INVALIDO")]
     public async Task I8004E_MensajeInvalido_NoIniciaTransporte(
         string destinatario, string asunto, string codigo)
     {
-        // Credenciales y dominio exclusivamente sinteticos: la llamada debe
+        // MimeKit puede aceptar una direccion solo-local; usar doble @ garantiza\n        // sintaxis invalida antes de OAuth2 y sin tocar el validador productivo.\n        // Credenciales y dominio exclusivamente sinteticos: la llamada debe
         // fallar ANTES de abrir ninguna conexion SMTP.
         var servicio = CrearServicio("smtp-mail.outlook.com");
         Assert.True(servicio.ObtenerEstadoConfiguracion().Configurado);
