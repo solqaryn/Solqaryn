@@ -12,6 +12,13 @@
 - PENDIENTE COLA O=SI habilita desarrollo sin esperar CI previa; COLA G=SI y reglas protegidas gobiernan merge/LISTO; GitHub Actions se mantiene con checks exact SHA pre/post y MySQL cuando corresponda.
 - Seis Tasks Javier: prompts físicos preparados/pausados con IDs/horarios iguales; Sheets y Jira se sincronizan con readback. Dos Tasks Alex pendientes de actualización por su propietaria. Toda vigencia está condicionada a aprobación formal genuina, CI y merge protegido de este PR; no activación automática.
 
+## 2026-11-09 — CI proporcional: tests P2 de contratos documentales y filtros mockeados sin migraciones ajenas (DEV)
+
+- Amplía el router de impacto para tests P2 que exclusivamente leen contratos versionados con `File.ReadAllText` y realizan aserciones, o usan filtros comerciales con Moq estricto sin DB real; reconoce P2-019.D y P2-001.F, sin habilitar EF, SQL, HTTP real ni persistencia.
+- Añade 28 autopruebas con cobertura positiva y negativa para contratos documentales y filtros mockeados estrictos; conserva fail-closed ante escrituras, procesos, constructores, integración real, cambios productivos y rutas desconocidas.
+- Documenta la decisión en `docs/CI_IMPACT_ROUTING.md`; no cambia workflows, checks requeridos, protección de ramas ni pruebas MySQL aplicables.
+- Requiere CI sobre HEAD exacto, revisión formal independiente por modificación de `scripts/security/**` y merge FIFO protegido. Sin tocar QA/main/PROD.
+
 ## 2026-11-08 — I8-008.E: autoridad global por ámbito y lote de permisos sin grants parciales (DEV)
 
 - Ejecución nativa Javier :00 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`. Iniciada auténticamente desde `PENDIENTE` con `COLA!O102=SI`, responsable libre y dependencia I8-008.D VALIDANDO. PLAN_MAESTRO!H102/I102/M102 y evento `SQ-I8-008-E-J00-START-07033759-20261108` leídos después de escribir; rama original `work/solqaryn-i8-008-e` desde dev@`07033759de95dcd5d3c0e6b770a0203a0c8e6c52`.
