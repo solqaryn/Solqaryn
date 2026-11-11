@@ -1,3 +1,9 @@
+## 2026-11-11 — P2-007.F: reparar fixture de ruta pública de Kardex (DEV)
+
+- CI exact-HEAD del PR #4000 (`3f2008455d1fa05ce37fefb8c7242b6bbe43470c`): Directed, Seguridad multiempresa y Backend fallaron en la aserción `Assert.Empty` de la prueba P2007F; Scope Lock quedó NO_GO por controles no verdes y checks asíncronos. La causa fue que el fixture establecía la marca `VerifiedPublicStoreTenant` sin `http.Request.Path = "/tienda"`, por lo que `VerifiedPublicStoreTenant.Resolve` devolvía null y `IsPublicStoreOnlyReadRequest` era falso. Contrastado con el caso existente P2007A.
+- Reparación mínima y causal en la **rama original**: establecer `/tienda`, exigir `AuthorizedCommercialEmpresaId` nulo e `IsPublicStoreOnlyReadRequest=true`, mantener la aserción estricta de Kardex vacío bajo una capability exclusivamente pública. No relajar la prueba, `CommercialTenantReadFilterModel`, RBAC, seguridad ni tocar API, migraciones, DB, frontend, infra, workflows, secretos, QA/main/PROD.
+- Cambio hecho mediante intervención interactiva autorizada, no atribuido falsamente a ninguna Task programada. CI del nuevo HEAD y dos revisiones independientes genuinas todavía obligatorias; no se afirma PASS ni LISTO anticipado. Reversión: revert selectivo de este commit, sin reescribir historia.
+
 ## 2026-11-08 — P2-007.F: fixture causal de correlacion Kardex entre empresas
 
 - Autora nativa: Javier :00 / JAVIER_CHATGPT / AUTHOR_TASK_ID=6adbb9fff1548191a1bd5b30d9e9984a. Rama original work/solqaryn-p2-007-f desde dev@a203fc38d44a684b6a503a39b657ba8f7174bd54. Inicio real en PLAN_MAESTRO!H247/I247/M247 y BITACORA!1429, con COLA readback antes del codigo.

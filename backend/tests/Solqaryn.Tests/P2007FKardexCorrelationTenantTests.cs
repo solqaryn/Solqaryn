@@ -73,9 +73,12 @@ public sealed class P2007FKardexCorrelationTenantTests
             .Where(m => m.CorrelationId == correlacionCompartida)
             .SumAsync(m => m.StockNuevo));
 
-        // Header A y marca PUBLICA B no autorizan lectura de Kardex comercial.
+        // La capacidad publica solo es valida en /tienda y no autoriza Kardex privado.
+        http.Request.Path = "/tienda";
         http.Items.Remove(VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey);
         http.Items[VerifiedPublicStoreTenant.AuthorizedEmpresaIdItemKey] = empresaB.Id;
+        Assert.Null(db.AuthorizedCommercialEmpresaId);
+        Assert.True(db.IsPublicStoreOnlyReadRequest);
         Assert.Empty(await VisiblesAsync(db, correlacionCompartida));
     }
 
