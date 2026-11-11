@@ -1,3 +1,10 @@
+## 2026-11-08 — P2-002.G: rechazo GetById cruzado de producto por tenant verificado (DEV)
+
+- Ejecución nativa: Javier :00 / JAVIER_CHATGPT; AUTHOR_TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`; rama original `work/solqaryn-p2-002-g`, base dev@`3a9b21b6c5e237a359d39148bfefc42520cf377b`. Inicio auténtico PENDIENTE -> EN_PROGRESO en PLAN_MAESTRO!H260/I260/M260 y BITACORA!1389, con readback COLA!O260 antes del código.
+- Prueba causal xUnit `backend/tests/Solqaryn.Tests/P2002GProductoIdAjenoTenantTests.cs`: consulta `ProductoRepository.GetByIdAsync` niega el producto ajeno A/B aun con cabecera `X-Empresa-Id` falsificada y retorna el propio mediante tenant marcado por backend; alternancia A/B en el mismo AppDbContext. Complementa los escenarios paginados P2-002.A y stock bajo P2-002.F sin duplicarlos.
+- Solo prueba EF InMemory y entrada aditiva al CHANGELOG; 0 cambios productivos, sin HTTP/JWT, MySQL ni migraciones. `dotnet test` local no acreditado; CI requerida y Directed deben concluir SUCCESS exact-HEAD. No afirmar PASS ni LISTO por anticipado.
+- Integración condicionada a revisión técnica por TASK_ID distinto, PR CLEAN, COLA!G260=SI, FIFO y tres checks postmerge SUCCESS exact MERGE_SHA. Rollback protegido selectivo del test y esta entrada, preservando historial y trabajo concurrente.
+
 ## 2026-11-08 — I8-009.D: bloquear renovación JWT tras revocación del rol relacional (DEV)
 
 - Task nativa Javier :40 / JAVIER_CHATGPT / AUTHOR_TASK_ID=`6adc2e55f47c81919f6374e561687076`; scope I8-009.D, rama única `work/solqaryn-i8-009-d`. El estado EN_PROGRESO, responsable y BITACORA se confirmaron con readback antes del primer cambio.
