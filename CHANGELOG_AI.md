@@ -1,3 +1,10 @@
+## 2026-11-08 — I8-010.D: reset administrativo autorizado sin escalada (DEV)
+
+- Autoría nativa: Javier :30 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`. Rama exclusiva `work/solqaryn-i8-010-d` desde `dev@e607543ecefad5cfc2a67d61fd93354c084e5c11`; estado PENDIENTE→EN_PROGRESO y evento `SQ-I8-010-D-J30-START-E607543E-20261108` con readback antes del primer commit.
+- Prueba causal xUnit `backend/tests/Solqaryn.Tests/I8010DRecuperacionRolPermitidoTenantTests.cs`: en un reset administrativo con permiso `Usuarios:RestablecerContrasena`, rol no modificado y tenant A verificado, la cabecera `X-Empresa-Id=B` no cambia la autoridad ni el tenant entregado al servicio de escritura. `AsignarRol` no se invoca cuando el rol permanece igual. Complementa negativos de I8-010.C, sin duplicar su prueba.
+- Alcance: solo prueba con mocks, sin código de producción ni modificación de API/DTO, MySQL, migraciones, JWT, SMTP, secretos, workflows, rulesets, QA/main/PROD. La invocación directa no demuestra HTTP 429, revocación JWT, entrega real de correo o persistencia MySQL. Sin `dotnet test` local; CI requerida y Directed exact-HEAD deben terminar SUCCESS, y la revisión técnica debe ser de un TASK_ID distinto del autor.
+- No fusionar fuera del FIFO ni declarar LISTO sin `COLA!G93=SI`, merge protegido, checks posmerge exact MERGE_SHA exigibles y readback institucional. Reversión mediante PR protegido y entrada histórica conservada.
+
 ## 2026-11-08 — G0-003.C: delimitar medicion de queries catalogo y empresa (DEV)
 
 - Autor funcional: Task nativa Javier :20 / JAVIER_CHATGPT / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`, rama original `work/solqaryn-g0-003-c` desde `dev@e607543ecefad5cfc2a67d61fd93354c084e5c11`; estado EN_PROGRESO registrado con readback en PLAN_MAESTRO!315 y BITACORA!1434 antes del codigo.
