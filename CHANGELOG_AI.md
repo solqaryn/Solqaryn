@@ -1,3 +1,15 @@
+## 2026-11-11 — I8-004.E: correccion causal de fixture y reconciliacion FIFO (DEV)
+
+- Task fisica Javier :30 / JAVIER_CHATGPT / CONTRIBUTOR_TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09` sobre PR original #4004, NO autor J00 ni revisor elegible tras esta contribucion. CI exact HEAD anterior `299302520185aa5bd0f5536b2f03dd85209e358b`: Directed y Backend fallaron 1/4 y 1/3233 respectivamente; MimeKit admitio la direccion local `destinatario-invalido` y alcanzo OAuth2 (`SMTP_OAUTH2`) en vez de devolver `DESTINATARIO_INVALIDO`.
+- Correccion exclusivamente del fixture sintético `I8004EFlujoCorreoSeguroTests.cs`: usar `destinatario@@dev.test` (doble @, sintaxis inequívocamente invalida), mantener aserciones de fallo sin intentos, MessageId nulo y sin secretos. No cambiar SmtpEmailService, API, SMTP, credenciales, JWT, RBAC, DB ni policy de seguridad.
+- Reconciliar solamente `work/solqaryn-i8-004-e` mediante merge Git normal de dos padres con dev vigente, preservando el test y union completa aditiva de CHANGELOG. CI y dos revisiones independientes de otras Tasks siguen obligatorias en nuevo HEAD; no MERGED/LISTO anticipado. Rollback selectivo mediante revert protegido.
+
+## 2026-11-08 — I8-004.E: prueba negativa offline de envio de correo seguro (DEV)
+
+- Ejecucion nativa Javier :00 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`; rama original `work/solqaryn-i8-004-e` iniciada de `dev@b521a87ae57fa784ed422ac1940a9a27ed59be9f`. PENDIENTE→EN_PROGRESO y BITACORA `SQ-I8-004-E-J00-START-B521A87A-20261108` confirmados antes de editar; COLA!O98=SI, I8-004.D VALIDANDO.
+- Regresion `I8004EFlujoCorreoSeguroTests.cs`: host placeholder (CHANGE_ME/REPLACE_ME) y mensajes con destinatario o asunto invalidos rechazan antes del transporte `EnviarAsync`: errores SMTP_NO_CONFIGURADO, DESTINATARIO_INVALIDO o ASUNTO_INVALIDO, cero intentos/MessageId, sin exponer marcadores sinteticos en errores. Cuerpo incluye exclusivamente enlace ficticio `prod.invalid` y marcador no secreto para comprobar rechazo previo a red.
+- Alcance limitado: NO certifica filtrado de contrasenas genericas ni bloqueo de URLs PROD cuando SMTP y mensaje sean validos; esos requisitos necesitan controles independientes. No hubo SMTP externo, API HTTP/JWT, base de datos real, codigo productivo, despliegue ni secretos. Sin `dotnet test` local; CI dirigida/required y revision tecnica por TASK_ID distinto son obligatorias. Rollback solo por revert protegido de esta prueba y entrada aditiva, sin perder historial.
+
 ## 2026-11-08 — I8-010.D: reset administrativo autorizado sin escalada (DEV)
 
 - Autoría nativa: Javier :30 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`. Rama exclusiva `work/solqaryn-i8-010-d` desde `dev@e607543ecefad5cfc2a67d61fd93354c084e5c11`; estado PENDIENTE→EN_PROGRESO y evento `SQ-I8-010-D-J30-START-E607543E-20261108` con readback antes del primer commit.
