@@ -1,3 +1,10 @@
+## 2026-11-08 — I8-009.D: bloquear renovación JWT tras revocación del rol relacional (DEV)
+
+- Task nativa Javier :40 / JAVIER_CHATGPT / AUTHOR_TASK_ID=`6adc2e55f47c81919f6374e561687076`; scope I8-009.D, rama única `work/solqaryn-i8-009-d`. El estado EN_PROGRESO, responsable y BITACORA se confirmaron con readback antes del primer cambio.
+- Prueba causal xUnit `backend/tests/Solqaryn.Tests/I8009DRevocacionRolRenovacionTests.cs`: rol inactivo, rol eliminado, RolId inválido, RolEntidad ausente y usuario eliminado. En los negativos no se llama `IJwtService.GenerarToken`; usuario eliminado retorna null.
+- Reutiliza `AuthService.RenovarAsync` y `ValidarRolRelacional` existentes. No modifica producción, RBAC, MySQL, migraciones, APIs, workflows, secretos ni entornos main/QA/PROD. Los mocks no certifican HTTP, MySQL, alertas reales ni invalidación de JWT ya emitidos; dotnet no está disponible en esta ejecución y CI exact-HEAD permanece obligatoria.
+- Entrega sujeta a PR original, revisión técnica por TASK_ID distinto, Scope Lock/Seguridad/Backend/Directed exact-HEAD, COLA!G=SI solo para merge, FIFO global, checks postmerge aplicables y readback para LISTO. Rollback: revert protegido solo de prueba y de esta entrada, preservando todo el CHANGELOG.
+
 ## 2026-11-08 — P2-004.H: proveedor con compras propias A/B (DEV)
 
 - Autoria nativa Javier :30 / JAVIER_CHATGPT; AUTHOR_TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`, rama determinista `work/solqaryn-p2-004-h` desde dev@`3a9b21b6c5e237a359d39148bfefc42520cf377b`. PLAN_MAESTRO!H280/I280/M280 y BITACORA!1383 registraron PENDIENTE -> EN_PROGRESO con readback antes del codigo; COLA!O280=SI por P2-004.G VALIDANDO.
