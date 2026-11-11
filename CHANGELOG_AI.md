@@ -1,3 +1,11 @@
+## 2026-11-08 — G0-003.C: delimitar medicion de queries catalogo y empresa (DEV)
+
+- Autor funcional: Task nativa Javier :20 / JAVIER_CHATGPT / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`, rama original `work/solqaryn-g0-003-c` desde `dev@e607543ecefad5cfc2a67d61fd93354c084e5c11`; estado EN_PROGRESO registrado con readback en PLAN_MAESTRO!315 y BITACORA!1434 antes del codigo.
+- Test xUnit `backend/tests/Solqaryn.Tests/API/G0003CCatalogoEmpresaQueryMeasurementTests.cs`: intercepta la telemetria `PerformanceBaseline` del middleware actual en dos solicitudes sinteticas separadas, `TiendaController.GetCategorias` y `EmpresaConfiguracionController.GetPublica`, con 3 y 1 comandos simulados. Verifica que `DbQueries` y `DbDurationMs` se contabilizan independientemente en cada HttpContext, y que ambos endpoints usan el umbral especifico de 300 ms. Fallara si se mezcla el estado entre solicitudes o se descalibran las etiquetas de medicion.
+- DELIMITACION, no benchmarking real: no se ejecutan SQL ni MySQL, ni se certifica rendimiento real, SQL optimizado, recuentos reales de repositorios, acceso de empresa ni integraciones; los contadores usan `RequestPerformanceState.RecordDatabaseCommand` sintetico. Los siguientes microalcances deben medir SQL/latencias reales cuando sus gates lo permitan.
+- Solo prueba dirigida y este bloque aditivo de CHANGELOG; sin modificar middleware productivo, endpoints, interfaces, esquema, migraciones, autenticacion, RBAC, secretos, proveedores, reglas de ramas, QA/main/PROD. Sin dotnet test local; CI exact HEAD y revision causal por otro TASK_ID son obligatorias; no se declara PASS ni LISTO anticipadamente.
+- Rollback: revert protegido y no destructivo del test y de esta entrada unica, conservando historia concurrente.
+
 ## 2026-11-11 — P2-007.F: reparar fixture de ruta pública de Kardex (DEV)
 
 - CI exact-HEAD del PR #4000 (`3f2008455d1fa05ce37fefb8c7242b6bbe43470c`): Directed, Seguridad multiempresa y Backend fallaron en la aserción `Assert.Empty` de la prueba P2007F; Scope Lock quedó NO_GO por controles no verdes y checks asíncronos. La causa fue que el fixture establecía la marca `VerifiedPublicStoreTenant` sin `http.Request.Path = "/tienda"`, por lo que `VerifiedPublicStoreTenant.Resolve` devolvía null y `IsPublicStoreOnlyReadRequest` era falso. Contrastado con el caso existente P2007A.
