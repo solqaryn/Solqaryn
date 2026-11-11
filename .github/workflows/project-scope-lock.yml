@@ -44,6 +44,8 @@ jobs:
         run: node scripts/security/ci-impact-routing.mjs --self-test
       - name: Validar reintento Scope Lock por revision exacta
         run: node scripts/security/retry-scope-lock-after-review.mjs --self-test
+      - name: Validar recuperacion Scope Lock despues de CI completada
+        run: node scripts/security/auto-retry-scope-after-ci.mjs --self-test
       - name: Fail fast on immutable governance blockers
         if: github.event_name == 'pull_request' && github.base_ref == 'dev'
         shell: bash
