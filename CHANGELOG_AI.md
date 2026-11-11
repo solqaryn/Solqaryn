@@ -1,3 +1,10 @@
+## 2026-11-08 — P2-006.F: ventas con borrado lógico y tenant A/B (DEV)
+
+- Autoría nativa: Javier :20 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Microtarea P2-006.F con COLA!O246=SI y P2-006.A=VALIDANDO al empezar; PLAN_MAESTRO!H246/I246/M246 y BITACORA!1393 registraron EN_PROGRESO real antes del código.
+- Prueba xUnit `backend/tests/Solqaryn.Tests/P2006FVentaBorradoLogicoTenantTests.cs`: dos empresas A/B; ventas A vigente y A eliminada lógicamente, venta B vigente. Con marca A verificada y cabecera falsificada B, solo A vigente es visible; con marca B verificada y cabecera A, solo B es visible; volver a A no resucita registros eliminados.
+- Prueba sintética EF InMemory sin cambios de runtime, API, entidad, MySQL, migraciones, jobs ni secrets. No acredita HTTP/JWT/RBAC de extremo a extremo ni MySQL real; CI exact HEAD, Directed comercial y revisión de TASK_ID distinta obligatorios. COLA!G246 exige dependencias LISTO para integración.
+- Rollback por revert selectivo protegido del test y esta entrada, preservando historial y trabajo ajeno.
+
 ## 2026-11-08 — P2-002.G: rechazo GetById cruzado de producto por tenant verificado (DEV)
 
 - Ejecución nativa: Javier :00 / JAVIER_CHATGPT; AUTHOR_TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`; rama original `work/solqaryn-p2-002-g`, base dev@`3a9b21b6c5e237a359d39148bfefc42520cf377b`. Inicio auténtico PENDIENTE -> EN_PROGRESO en PLAN_MAESTRO!H260/I260/M260 y BITACORA!1389, con readback COLA!O260 antes del código.
