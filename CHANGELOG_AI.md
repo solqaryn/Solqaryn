@@ -1,3 +1,10 @@
+## 2026-11-08 — I8-007.E: negar mass-assignment en edición de empresa (DEV)
+
+- Autor funcional auténtico: Javier :40 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6adc2e55f47c81919f6374e561687076`; rama original exclusiva `work/solqaryn-i8-007-e`, nacida de dev@5a04b35c6d915d8146c16662e2b42daf2b9e6ebd tras readback PRE_CODE PLAN_MAESTRO!101 y BITACORA!1463; predecesora I8-007.D VALIDANDO y COLA!O101=SI al comenzar. No es revisión ni autoaprobación de la propia entrega.
+- Regresión causal xUnit `backend/tests/Solqaryn.Tests/API/Controllers/I8007EEdicionEmpresaCamposSegurosTests.cs`: JSON adversario intenta inyectar `empresaId`, `activa`, `esAdministrador`, `rolGlobal`, `ambito` y `esSistema` en `UpdateEmpresaDto`; se verifica el único campo permitido `Nombre`, preservación de estado al editar empresa A y denegación de editar B con cabecera `X-Empresa-Id` falsa antes de invocar el servicio.
+- Alcance exclusivamente prueba xUnit + changelog aditivo. Sin cambios al servicio/controlador productivos, seguridad runtime, roles, MySQL, migraciones, API, secretos, rulesets o main/QA/PROD. No se ejecutó `dotnet test` localmente: exigir checks Scope Lock, Seguridad, Backend, Directed y pruebas relevantes exact HEAD, revisión técnica por otro TASK_ID, `COLA!G101=SI`, turno FIFO y postmerge exact MERGE_SHA antes de LISTO. La prueba sintética no certifica HTTP/JWT ni MySQL reales.
+- Rollback: revert protegido selectivo del archivo de prueba y esta entrada, conservando historial concurrente.
+
 ## 2026-11-08 — I8-006.E: cambio voluntario limitado a la cuenta autenticada (DEV)
 
 - Microtarea comercial `I8-006.E` del Plan Comercial Inicial; autor nativo Javier :30, TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`. Trabajo iniciado desde `dev@5a04b35c6d915d8146c16662e2b42daf2b9e6ebd` tras PENDIENTE→EN_PROGRESO en PLAN_MAESTRO!100 y evento BITACORA idempotente con readback.
