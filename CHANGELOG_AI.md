@@ -1,3 +1,10 @@
+## 2026-11-11 — Scope Lock: una sola clasificación de CI, reintento selectivo y revisiones autónomas legítimas (PR #4013)
+
+- Consolidación quirúrgica de la política de checks opcionales en `scripts/security/ci-check-deferral.mjs`, utilizada tanto por el certificador exact-SHA como por el reintento automático después de CI.
+- `auto-retry-scope-after-ci.mjs`: vuelve a consultar PR y archivos, solo difiere jobs conocidos PENDIENTES realmente ajenos a cambios documentales/otros casos autorizados por el clasificador; conserva fail-closed de jobs requeridos, HEAD, permisos, errores reales y Directed comercial. Incluye negativos para runtime, checks desconocidos, app no confiable y fallo terminal.
+- Revisión y aprobación formal, cuando corresponda, por scope independiente con credencial auténtica y triple auditoría; ninguna solicitud humana para trabajos ordinarios. Github Actions, protección de dev y reintentos por eventos sin polling intensivo siguen vigentes.
+- Este changeset queda sujeto a aprobación independiente, CI exact HEAD y merge protegido del PR #4013. Nunca fingir LISTO ni publicación anticipada.
+
 ## 2026-11-11 — BITACORA: limpieza física no destructiva y append sin relleno (DEV, en PR #4013)
 
 - Auditoría: inicialmente 1.589 eventos únicos y 133 filas vacías internas en 3 bloques; 10.277 filas vacías finales eliminadas, grid 12.000→1.723 sin perder eventos ni alterar números de filas con evidencia.

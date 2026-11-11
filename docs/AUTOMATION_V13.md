@@ -1,4 +1,11 @@
 # SOLQARYN — V13: contrato FIFO por PR, un revisor independiente y triple auditoría
+
+## Recuperación Scope Lock automática sin espera humana — 2026-11-11 (condicionada al merge protegido)
+- GitHub Actions se mantiene obligatorio y en paralelo para Scope Lock, Seguridad multiempresa, Backend y Directed comercial cuando aplique. La CI no termina ni aprueba artificialmente por alcanzar un tiempo. Un Scope puede continuar PENDIENTE con COLA!O=SI mientras el PR FIFO aguarda CI.
+- Un fallo temporal `OTHER_CHECKS_PENDING` no es aprobación ni se reintenta sin nueva evidencia: el workflow confiable `retry-scope-after-ci-completion.yml` relee PR/dependencias/HEAD exacto y reejecuta SOLO el job de Scope Lock cuando CI relevante terminó satisfactoriamente. Tanto `verify-automated-pr-certification.mjs` como `auto-retry-scope-after-ci.mjs` utilizan el MISMO módulo de clasificación `scripts/security/ci-check-deferral.mjs`; únicamente difieren checks secundarios PENDIENTES reconocidos y demostrablemente ajenos. Cambios de runtime, checks requeridos, Directed comercial, checks desconocidos o fallos reales NO se difieren ni se convierten en SUCCESS.
+- Las revisiones de PR ordinarios pertenecen a scopes autorizados y distintos del autor/contribuyentes, con tres auditorías registradas en HEAD final. Para documentos de gobierno, workflow de seguridad y privilegios, si GitHub exige revisión formal, el scope revisor independiente debe ejecutarla desde su credencial GitHub genuina; una Task no solicita revisión humana ordinaria ni simula aprobaciones, identidades o checks. Escalar a propietario únicamente si permisos críticos/proveedor impiden acción delegada. Nunca eliminar los controles protegidos ni automatizar una aprobación sin revisión sustantiva.
+- Reintentos sin nuevo estado de CI o revisión aprobada: prohibidos. Las seis Tasks Javier permanecen pausadas hasta merge protegido #4013 y readback institucional; las dos Alex solo desde su propietaria.
+
 CAPACITY_POLICY_VERSION=V13_1000_FIFO_BATCH
 MAX_CONCURRENT_SCOPES=1000
 MAX_OPEN_WORK_BRANCHES=1000
