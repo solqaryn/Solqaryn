@@ -49,6 +49,12 @@ public class AppDbContext : DbContext
     public int? AuthorizedCommercialEmpresaId =>
         VerifiedCommercialTenant.Resolve(_tenantHttpContextAccessor?.HttpContext);
 
+    // Una capability de tienda pública no autoriza lecturas de inventario privado.
+    public bool IsPublicStoreOnlyReadRequest =>
+        VerifiedPublicStoreTenant.Resolve(_tenantHttpContextAccessor?.HttpContext) is not null &&
+        VerifiedCommercialTenant.Resolve(_tenantHttpContextAccessor?.HttpContext) is null &&
+        VerifiedPlatformSupportTenant.ResolveEmpresaId(_tenantHttpContextAccessor?.HttpContext) is null;
+
     public DbSet<Producto> Productos => Set<Producto>();
     public DbSet<ProductoVariante> ProductoVariantes => Set<ProductoVariante>();
     public DbSet<ProductoImagen> ProductoImagenes => Set<ProductoImagen>();

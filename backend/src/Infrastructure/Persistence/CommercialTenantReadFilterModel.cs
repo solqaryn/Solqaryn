@@ -44,6 +44,17 @@ public static class CommercialTenantReadFilterModel
 
             Expression scopePredicate = Expression.OrElse(scopeAbsent, ownedByTenant);
 
+            // Inventario y Kardex son privados. El tenant público de /tienda
+            // solo filtra el catálogo, no debe abrir entidades de operación.
+            if (entity.ClrType == typeof(AjusteInventario) ||
+                entity.ClrType == typeof(MovimientoInventario))
+            {
+                var publicStoreOnly = Expression.Property(
+                    Expression.Constant(db), nameof(AppDbContext.IsPublicStoreOnlyReadRequest));
+                scopePredicate = Expression.AndAlso(
+                    Expression.Not(publicStoreOnly), scopePredicate);
+            }
+
             // Solo las plantillas de SISTEMA del ámbito EMPRESA pueden
             // compartirse sin dueño. Ni PLATAFORMA ni roles legacy sin owner
             // son visibles desde el tenant, aunque EmpresaId sea NULL.
