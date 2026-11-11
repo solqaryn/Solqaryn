@@ -1,3 +1,10 @@
+## 2026-11-11 — BITACORA: limpieza física no destructiva y append sin relleno (DEV, en PR #4013)
+
+- Auditoría: inicialmente 1.589 eventos únicos y 133 filas vacías internas en 3 bloques; 10.277 filas vacías finales eliminadas, grid 12.000→1.723 sin perder eventos ni alterar números de filas con evidencia.
+- Filas vacías internas OCULTAS para preservar referencias históricas; no se borraron ni compactaron. Dashboard: 5 fórmulas cambiadas a rangos abiertos y validación estricta de EVENT_ID a columna abierta $A$2:$A, con readback y métrica sin variación.
+- Seis prompts físicos Javier ampliados para un único `appendCells` de 21 campos por evento real, sin `insertDimension` ni reservas en blanco; IDs, horarios y pausa intactos. CONFIG!A128:C128 registra la política; no se alteraron dos Tasks Alex.
+- Contrato V13 preparado en PR #4013; revisión formal independiente, CI y merge protegidos pendientes. No se proclama como vigente ni se desactiva GitHub Actions.
+
 ## 2026-11-11 — V13: consolidación quirúrgica del flujo FIFO comercial (DEV, pendiente de merge)
 
 - Un revisor independiente TASK_ID para PR comercial con tres auditorías funcional/seguridad/integración en HEAD final; cambios de gobierno, Skill, seguridad, CI/workflows exigen aprobación formal independiente cuando corresponde.
