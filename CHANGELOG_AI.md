@@ -1,3 +1,10 @@
+## 2026-11-11 — G0-006.C: reparación del gate dirigido exact-HEAD (DEV)
+
+- Reparación causal sobre PR #3999 y su rama original por Task Javier :20 / TASK_ID 6adc2e4bd8a48191ac7d8641ed95a1a3, distinta del autor original Javier :40. Directed esperaba un xUnit G0006C; solo existía la prueba Node y el TRX reportó 0 coincidencias.
+- Nuevo `backend/tests/Solqaryn.Tests/G0006CTraceabilityDirectedTests.cs`: el filtro xUnit G0006C ejecuta realmente las tres pruebas Node `scripts/tests/g0-006-c-trazabilidad.test.mjs`; falla si Node devuelve error, si no existen tres casos PASS o si hay algún FAIL. No crea pruebas ficticias ni relaja required checks.
+- Conserva el test Node original y su consumidor, sin alterar API, RBAC, tenants, BD, infraestructura, workflows, dev/base, main/QA/PROD ni runtime. CI exact nuevo HEAD todavía pendiente de verificación; no se atribuyen PASS locales.
+- Como Javier :20 se convierte en reparador del nuevo HEAD, su review GitHub anterior no cuenta para ese nuevo HEAD. Exigir DOS revisiones posteriores sustantivas por IDs distintos del autor Javier :40 y del reparador Javier :20, además de checks exact-HEAD y postmerge antes de LISTO. Rollback por revert protegido, sin borrar historial.
+
 ## 2026-11-08 — G0-006.C: trazabilidad de cierre con recibos estrictos (DEV)
 
 - Autoría nativa: Javier :40 / JAVIER_CHATGPT / TASK_ID 6adc2e55f47c81919f6374e561687076; rama exclusiva `work/solqaryn-g0-006-c` nacida desde dev@48c0e9d450efac28b43bae496885ad7f49046693, con PLAN_MAESTRO!318 EN_PROGRESO y BITACORA inicial comprobados antes de editar.
