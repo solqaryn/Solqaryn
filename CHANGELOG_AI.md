@@ -1,3 +1,22 @@
+## 2026-11-11 — G0-006.C: estabilizar reporter real de Node 24 en CI (DEV)
+
+- Evidencia GitHub del primer bridge: Directed job 130436060160 ejecutó realmente la prueba xUnit G0006C, pero su aserción de TAP falló porque Node 24 emite reporter spec predeterminado (texto de checks con ✔, sin '# tests 3'). Corrige un único argumento fijo a `node --test --test-reporter=tap` para exigir tres tests Node reales PASS; no altera el código de prueba causal ni acepta resultado vacío o falso.
+- Rama original PR #3999, reparador Javier :20, CI exact nuevo HEAD por comprobar, dos revisiones independientes externas a Javier :20/Javier :40 pendientes. No merge/LISTO ni modificación de workflows/gobierno/otros PR. Historial anterior preservado.
+
+## 2026-11-11 — G0-006.C: reparación del gate dirigido exact-HEAD (DEV)
+
+- Reparación causal sobre PR #3999 y su rama original por Task Javier :20 / TASK_ID 6adc2e4bd8a48191ac7d8641ed95a1a3, distinta del autor original Javier :40. Directed esperaba un xUnit G0006C; solo existía la prueba Node y el TRX reportó 0 coincidencias.
+- Nuevo `backend/tests/Solqaryn.Tests/G0006CTraceabilityDirectedTests.cs`: el filtro xUnit G0006C ejecuta realmente las tres pruebas Node `scripts/tests/g0-006-c-trazabilidad.test.mjs`; falla si Node devuelve error, si no existen tres casos PASS o si hay algún FAIL. No crea pruebas ficticias ni relaja required checks.
+- Conserva el test Node original y su consumidor, sin alterar API, RBAC, tenants, BD, infraestructura, workflows, dev/base, main/QA/PROD ni runtime. CI exact nuevo HEAD todavía pendiente de verificación; no se atribuyen PASS locales.
+- Como Javier :20 se convierte en reparador del nuevo HEAD, su review GitHub anterior no cuenta para ese nuevo HEAD. Exigir DOS revisiones posteriores sustantivas por IDs distintos del autor Javier :40 y del reparador Javier :20, además de checks exact-HEAD y postmerge antes de LISTO. Rollback por revert protegido, sin borrar historial.
+
+## 2026-11-08 — G0-006.C: trazabilidad de cierre con recibos estrictos (DEV)
+
+- Autoría nativa: Javier :40 / JAVIER_CHATGPT / TASK_ID 6adc2e55f47c81919f6374e561687076; rama exclusiva `work/solqaryn-g0-006-c` nacida desde dev@48c0e9d450efac28b43bae496885ad7f49046693, con PLAN_MAESTRO!318 EN_PROGRESO y BITACORA inicial comprobados antes de editar.
+- Requisito vigente G0-006.C / Plan Comercial Inicial: delimitar evidencia requisito → código → prueba → cierre sin reabrir fases históricas. Consumidor técnico `scripts/automation-ci-throughput.mjs`; prueba causal `scripts/tests/g0-006-c-trazabilidad.test.mjs` para denegar falso LISTO si falta MERGE_SHA verificable, CI, revisión independiente, readback PLAN/COLA/BITACORA, si se reutiliza un estado histórico o se duplica un evento.
+- Los recibos de la prueba son sintéticos y NO certifican el scope G0-006.C real. `node --check` local PASS; `node --test` con el módulo del repositorio y CI Directed/required exact-HEAD quedan a acreditar. Ningún cambio a runtime, APIs, BD, auth, reglas, workflows, secretos, entorno QA/main/PROD ni Plan Maestro futuro.
+- Integración sólo por FIFO global, revisión técnica por TASK_ID diferente del autor, checks exact-HEAD y postmerge exigible antes de LISTO. Rollback mediante revert protegido de esta prueba y nota, conservando historial aditivo.
+
 ## 2026-11-08 — P2-005.G: rechazo de compras con EmpresaId ajeno (DEV)
 
 - Autoría Task nativa Javier :30 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`; rama original `work/solqaryn-p2-005-g` desde `dev@48c0e9d450efac28b43bae496885ad7f49046693`. Inicio real `SQ-P2-005-G-J30-START-48C0E9D4-20261108-0830` con readback de PLAN/COLA/BITACORA antes de escribir.
