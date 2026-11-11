@@ -22,6 +22,7 @@ public sealed class G0006CTraceabilityDirectedTests
             CreateNoWindow = true
         };
         start.ArgumentList.Add("--test");
+        start.ArgumentList.Add("--test-reporter=tap");
         start.ArgumentList.Add("scripts/tests/g0-006-c-trazabilidad.test.mjs");
 
         using var process = new Process { StartInfo = start };

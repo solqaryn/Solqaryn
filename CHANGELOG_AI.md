@@ -1,3 +1,8 @@
+## 2026-11-11 — G0-006.C: estabilizar reporter real de Node 24 en CI (DEV)
+
+- Evidencia GitHub del primer bridge: Directed job 130436060160 ejecutó realmente la prueba xUnit G0006C, pero su aserción de TAP falló porque Node 24 emite reporter spec predeterminado (texto de checks con ✔, sin '# tests 3'). Corrige un único argumento fijo a `node --test --test-reporter=tap` para exigir tres tests Node reales PASS; no altera el código de prueba causal ni acepta resultado vacío o falso.
+- Rama original PR #3999, reparador Javier :20, CI exact nuevo HEAD por comprobar, dos revisiones independientes externas a Javier :20/Javier :40 pendientes. No merge/LISTO ni modificación de workflows/gobierno/otros PR. Historial anterior preservado.
+
 ## 2026-11-11 — G0-006.C: reparación del gate dirigido exact-HEAD (DEV)
 
 - Reparación causal sobre PR #3999 y su rama original por Task Javier :20 / TASK_ID 6adc2e4bd8a48191ac7d8641ed95a1a3, distinta del autor original Javier :40. Directed esperaba un xUnit G0006C; solo existía la prueba Node y el TRX reportó 0 coincidencias.
