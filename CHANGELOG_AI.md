@@ -1,3 +1,10 @@
+## 2026-11-08 — I8-006.E: cambio voluntario limitado a la cuenta autenticada (DEV)
+
+- Microtarea comercial `I8-006.E` del Plan Comercial Inicial; autor nativo Javier :30, TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`. Trabajo iniciado desde `dev@5a04b35c6d915d8146c16662e2b42daf2b9e6ebd` tras PENDIENTE→EN_PROGRESO en PLAN_MAESTRO!100 y evento BITACORA idempotente con readback.
+- Prueba causal xUnit `I8006ECambioVoluntarioPropioTenantTests.cs`: teoría con dos pares de IDs (25/40 y 40/25) confirma que `PerfilService.CambiarPasswordAsync` consulta y actualiza exclusivamente al usuario de `ICurrentUserService.UsuarioId`, conserva hash de la cuenta ajena y no invoca escrituras sobre esta. Prueba de contrato que `PUT /perfil/password` exige autenticación y recibe exclusivamente el DTO de contraseñas, sin ID externo en ruta ni cuerpo.
+- Alcance restringido a test nuevo y esta entrada aditiva; no se modifica runtime de autenticación, API/DTO, repositorio, SQL, migraciones, datos, workflows, ramas protegidas, secretos, QA/main/PROD. El test no demuestra ejecución HTTP real, autenticación JWT firmada ni MySQL transaccional. No declarar PASS de `dotnet test` local si no se ejecutó; CI Scope Lock, Seguridad, Backend y Directed exact SHA y revisión por TASK_ID distinto siguen obligatorias.
+- Una sola rama original `work/solqaryn-i8-006-e` y PR comercial hacia `dev`. Prohibido merge fuera FIFO; la autora de P2-002.A (#3952) no puede revisarlo ni cerrarlo ella misma. Revert protegido de test y entrada propia si la revisión identifica una regresión.
+
 ## 2026-11-08 — I8-005.E: no filtrar credenciales ni token en rechazos de autenticacion (DEV)
 
 - Task nativa Javier :20 / JAVIER_CHATGPT / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`; rama exclusiva `work/solqaryn-i8-005-e` desde `dev@5a04b35c6d915d8146c16662e2b42daf2b9e6ebd`. Inicio autentico EN_PROGRESO y BITACORA con readback previo al codigo; dependencia I8-005.D VALIDANDO, COLA!O99=SI y G99=NO.
