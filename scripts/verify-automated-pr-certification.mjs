@@ -83,8 +83,7 @@ function canDeferUnrelatedSuites(files,byName){
  return impact?.head_sha===mysql?.head_sha&&impact?.status==='completed'&&
    impact.conclusion==='success'&&impact.app?.id===TRUSTED_GITHUB_ACTIONS_APP_ID&&
    mysql?.app?.id===TRUSTED_GITHUB_ACTIONS_APP_ID&&
-   (['queued','in_progress'].includes(mysql.status)||
-   (mysql.status==='completed'&&['success','skipped'].includes(mysql.conclusion)));
+   (mysql.status==='completed'&&['success','skipped'].includes(mysql.conclusion));
 }
 
 function optionalPendingDeferred(files, byName) {
@@ -251,11 +250,16 @@ function selfTest() {
   mixedP1Lane.files = [docs[0],
     {filename:'backend/tests/Solqaryn.Tests/API/Controllers/P1014EGuidedOnboardingPositiveTests.cs',status:'added'},
     {filename:'frontend/src/app/features/plataforma/plataforma-gestion-mvp.component.spec.ts',status:'modified'}];
-  mixedP1Lane.runs.push(makeRun(CI_IMPACT_CHECK,h),pending(MYSQL_INTEGRATION_CHECK));
+  mixedP1Lane.runs.push(makeRun(CI_IMPACT_CHECK,h),makeRun(MYSQL_INTEGRATION_CHECK,h,'skipped'));
   assertPass('P1 nested backend + Angular specs defer broad optional CI', mixedP1Lane);
   const mixedReport=certify(mixedP1Lane);
-  if(!mixedReport.deferred.includes(optional) || !mixedReport.deferred.includes(MYSQL_INTEGRATION_CHECK))
-    throw Error('P1_FAST_LANE_MUST_RECORD_ASYNC_MYSQL_AND_OPTIONAL');
+  if(!mixedReport.deferred.includes(optional) || mixedReport.deferred.includes(MYSQL_INTEGRATION_CHECK))
+    throw Error('P1_FAST_LANE_MUST_WAIT_MYSQL_TERMINAL');
+  assertReject('P1 unit with active MySQL cannot claim safe skip',x=>{
+    x.files=clone(mixedP1Lane.files);x.runs=clone(mixedP1Lane.runs);
+    const m=x.runs.find(run=>run.name===MYSQL_INTEGRATION_CHECK);
+    m.status='in_progress';m.conclusion=null;return x;
+  });
   assertReject('P1 nested unit without trusted impact check',x=>{
     x.files=clone(mixedP1Lane.files);x.runs=clone(mixedP1Lane.runs).filter(run=>run.name!==CI_IMPACT_CHECK);return x;
   });
@@ -275,10 +279,15 @@ function selfTest() {
   classifier.files=[docs[0],{filename:'docs/CI_IMPACT_ROUTING.md',status:'modified'},
     {filename:CI_IMPACT_SOURCE,status:'modified'}];
   classifier.reviews=[{state:'APPROVED',commit_id:h,user:{login:INDEPENDENT_REVIEWER}}];
-  classifier.runs.push(makeRun(CI_IMPACT_CHECK,h),pending(MYSQL_INTEGRATION_CHECK));
-  assertPass('reviewed classifier with optional MySQL pending',classifier);
-  if(!certify(classifier).deferred.includes(MYSQL_INTEGRATION_CHECK))
-    throw Error('CLASSIFIER_OPTIONAL_NOT_DEFERRED');
+  classifier.runs.push(makeRun(CI_IMPACT_CHECK,h),makeRun(MYSQL_INTEGRATION_CHECK,h,'success'));
+  assertPass('reviewed classifier after MySQL SUCCESS',classifier);
+  if(!certify(classifier).deferred.includes(optional))
+    throw Error('CLASSIFIER_BROAD_OPTIONAL_NOT_DEFERRED');
+  assertReject('classifier cannot defer active MySQL',x=>{
+    x.pr=clone(classifier.pr);x.files=clone(classifier.files);x.reviews=clone(classifier.reviews);
+    x.runs=clone(classifier.runs);const m=x.runs.find(z=>z.name===MYSQL_INTEGRATION_CHECK);
+    m.status='in_progress';m.conclusion=null;return x;
+  });
   assertReject('classifier without reviewer',x=>{
     x.pr=clone(classifier.pr);x.files=clone(classifier.files);x.runs=clone(classifier.runs);
     return x;});
