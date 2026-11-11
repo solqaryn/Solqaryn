@@ -1,17 +1,98 @@
-import {TRUSTED_GITHUB_ACTIONS_APP_ID, BLOCKED_RUNTIME_PATHS, isGuarded,
-  CI_IMPACT_CHECK, MYSQL_INTEGRATION_CHECK, BROAD_OPTIONAL,
-  optionalPendingDeferred} from './security/ci-check-deferral.mjs';
 import { readFileSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
 
 // Trusted verifier: on later PRs the required Scope Lock check executes this file
 // from the target DEV base, not from the untrusted pull-request head.
 const REQUIRED = ['SOLQARYN - Seguridad multiempresa', 'SOLQARYN - Build y pruebas backend'];
 const DIRECTED_CHECK = 'SOLQARYN - Directed commercial scope';
+const TRUSTED_GITHUB_ACTIONS_APP_ID = 15368;
 const SCOPE = /\b((?:P\d+|I8|G0)-\d{3}\.[A-Z])\b/i;
 const INSTITUTIONAL_EXECUTOR = 'solqaryn-platform';
 const INDEPENDENT_REVIEWER = ['jmejia', '31'].join('');
+const BLOCKED_RUNTIME_PATHS = /(^|\/)(?:\.env(?:\..*)?|[^/]+\.(?:pem|p12|key)|appsettings\.Production\.json)$|^(?:qa|prod|main)\//i;
+const GUARDED = new Set([
+  'AGENTS.md', 'docs/PROJECT_SCOPE_LOCK.md', 'docs/AUTOMATION_STATUS.md', 'docs/GITHUB_ACCOUNT_ROLES.md',
+  'docs/AUTOMATION_AUTHORITY.md',
+  '.github/workflows/project-scope-lock.yml', '.github/workflows/solqaryn-core-ci.yml',
+  'scripts/automation-stage-ownership.mjs',
+  'scripts/automation-review-routing.mjs', 'scripts/automation-ci-throughput.mjs',
+  'scripts/validate-dual-task-configuration.mjs',
+            'scripts/validate-automation-authority.mjs', 'scripts/verify-project-scope.mjs',
+  'scripts/verify-automated-pr-certification.mjs', 'scripts/verify-solqaryn-skills.mjs',
+]);
 const SECRET = /gh[pousr]_[a-zA-Z0-9_]{20,}|AKIA[A-Z0-9]{16}|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|(?:password|token|secret)\s*[:=]\s*['"][^'"]{12,}['"]/i;
+const isGuarded = name => GUARDED.has(name) || name.startsWith('.agents/skills/') || name.startsWith('.github/') || name.startsWith('scripts/security/');
 const isProductionSource = name => /^(?:backend\/src\/|frontend\/src\/)/.test(name) && !/(?:\/tests?\/|\.spec\.|\.test\.)/.test(name);
+
+// Only known, non-mandatory broad suites may finish after the fast lane.
+// Never defer required security/backend, the directed scope or an unknown check.
+const CI_IMPACT_CHECK = 'Impacto CI - clasificacion MySQL fail-closed';
+const MYSQL_INTEGRATION_CHECK = 'Migraciones EF Oracle, variantes y cargas masivas en MySQL 8.4';
+const BROAD_OPTIONAL = new Set([
+  'Módulos, cargas, sesión, catálogos, variantes, accesibilidad, facturación y correo',
+  'ERP - Contratos, pruebas y build',
+  'Migraciones EF Oracle, variantes y cargas masivas en MySQL 8.4',
+  'Authorization, files, secrets and tenant gate',
+  'MySQL 8.4 isolated backup and restore proof',
+  'Backend Release y pruebas',
+  'Frontend producción',
+  'SOLQARYN - Frontend tipado y build',
+  'Docker y aislamiento de entornos',
+  'Preflight, backfill y autoridad en MySQL 8.4',
+]);
+const ASYNC_REVIEWED_NON_RUNTIME=new Set([
+ 'AGENTS.md','docs/PROJECT_SCOPE_LOCK.md','docs/AUTOMATION_STATUS.md',
+ 'docs/AUTOMATION_AUTHORITY.md','scripts/automation-review-routing.mjs',
+ 'scripts/automation-stage-ownership.mjs','scripts/automation-ci-throughput.mjs',
+ 'scripts/validate-dual-task-configuration.mjs','scripts/security/ci-impact-routing.mjs',
+]);
+const CI_IMPACT_SOURCE='scripts/security/ci-impact-routing.mjs';
+const DOCS_WITH_RUNTIME_CONTRACTS = new Set([
+  'docs/PRODUCTION_READINESS_CONTRACT.md',
+  'docs/PERFORMANCE_BENCHMARK_CONTRACT.md',
+  'docs/DETALLES_PENDIENTES.md',
+]);
+// Test-only P1 changes are already exercised by required backend/security + directed scope jobs.
+// Exclude integration-suite paths, runtime code and protected contracts from the fast lane.
+const OFFLINE_COMMERCIAL_UNIT = /^backend\/tests\/Solqaryn\.Tests\/(?:[A-Za-z0-9_.-]+\/)*P\d{4}[A-Z][A-Za-z0-9_]*Tests\.cs$/;
+const FRONTEND_TEST_ONLY = /^frontend\/src\/[A-Za-z0-9_./-]+\.spec\.ts$/;
+const INTEGRATION_TEST_PATH = /(?:\/Integration(?:Tests)?\/|\/Database(?:Tests)?\/|IntegrationTests\.cs$)/i;
+
+function canDeferUnrelatedSuites(files,byName){
+ if(!Array.isArray(files)||!files.length||files.length>200)return false;
+ if(files.some(f=>!f||!['added','modified'].includes(f.status)||
+   typeof f.filename!=='string'||f.filename.includes('..')||
+   f.filename.includes('\\')||BLOCKED_RUNTIME_PATHS.test(f.filename)||
+   (isGuarded(f.filename)&&!ASYNC_REVIEWED_NON_RUNTIME.has(f.filename))))return false;
+ let units=0,governance=0,classifier=false;
+ for(const f of files){
+  const path=f.filename;
+  if(path==='CHANGELOG_AI.md')continue;
+  if(ASYNC_REVIEWED_NON_RUNTIME.has(path)){
+   governance++;if(path===CI_IMPACT_SOURCE)classifier=true;continue;
+  }
+  if(path.startsWith('docs/')&&path.endsWith('.md')&&
+     !DOCS_WITH_RUNTIME_CONTRACTS.has(path)&&
+     !path.startsWith('docs/evidencias/modernizacion/'))continue;
+  if(!INTEGRATION_TEST_PATH.test(path)&&
+     (OFFLINE_COMMERCIAL_UNIT.test(path)||FRONTEND_TEST_ONLY.test(path))){units++;continue;}
+  return false;
+ }
+ if(units&&governance)return false;
+ if(!units&&!classifier)return true;
+ const impact=byName.get(CI_IMPACT_CHECK),mysql=byName.get(MYSQL_INTEGRATION_CHECK);
+ return impact?.head_sha===mysql?.head_sha&&impact?.status==='completed'&&
+   impact.conclusion==='success'&&impact.app?.id===TRUSTED_GITHUB_ACTIONS_APP_ID&&
+   mysql?.app?.id===TRUSTED_GITHUB_ACTIONS_APP_ID&&
+   (mysql.status==='completed'&&['success','skipped'].includes(mysql.conclusion));
+}
+
+export function optionalPendingDeferred(files, byName) {
+  if (!canDeferUnrelatedSuites(files, byName)) return [];
+  return [...byName.values()].filter(check => BROAD_OPTIONAL.has(check.name) &&
+    ['queued', 'in_progress'].includes(check.status) &&
+    check.app?.id === TRUSTED_GITHUB_ACTIONS_APP_ID).map(check => check.name);
+}
 
 export function certify({ pr, files, runs, reviews = [], commits = [], repository, expectedHead }) {
   const failures = [];
@@ -293,6 +374,11 @@ function shouldWaitForActiveChecks(report, runs, expectedHead) {
     run.name !== 'verify-solqaryn-project-scope' && run.status !== 'completed');
 }
 
+// This module is also imported by the trusted CI-retry script. The CLI
+// remains executable as a self-contained file when copied into RUNNER_TEMP.
+const invokedAsCli = Boolean(process.argv[1]) &&
+  import.meta.url === pathToFileURL(process.argv[1]).href;
+if (invokedAsCli) {
 const args = new Set(process.argv.slice(2));
 if (args.has('--self-test')) selfTest();
 else if (args.has('--pr')) {
@@ -337,3 +423,5 @@ else if (args.has('--pr')) {
   if (!report.pass) throw Error('AUTO_CERT=NO_GO ' + report.failures.join(' | '));
   console.log('AUTO_CERT=PASS (required and relevant checks exact-head, source scope, negative tests, trust boundary)');
 } else throw Error('Provide --self-test or --pr');
+
+}

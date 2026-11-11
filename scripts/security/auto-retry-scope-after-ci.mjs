@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { optionalPendingDeferred } from './ci-check-deferral.mjs';
+import { optionalPendingDeferred } from '../verify-automated-pr-certification.mjs';
 
 // Runs only from protected dev after a trusted Actions workflow finishes.
 // This workflow can rerun a failed exact-HEAD Scope Lock job. It cannot approve,

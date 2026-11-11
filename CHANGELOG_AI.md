@@ -1,6 +1,6 @@
 ## 2026-11-11 — Scope Lock: una sola clasificación de CI, reintento selectivo y revisiones autónomas legítimas (PR #4013)
 
-- Consolidación quirúrgica de la política de checks opcionales en `scripts/security/ci-check-deferral.mjs`, utilizada tanto por el certificador exact-SHA como por el reintento automático después de CI.
+- Consolidación quirúrgica de la política de checks opcionales en `scripts/verify-automated-pr-certification.mjs` (autocontenido en el `RUNNER_TEMP` confiable) y reutilización de su export puro `optionalPendingDeferred` desde `scripts/security/auto-retry-scope-after-ci.mjs` en el checkout confiable de `dev`, sin dependencias de código del PR.
 - `auto-retry-scope-after-ci.mjs`: vuelve a consultar PR y archivos, solo difiere jobs conocidos PENDIENTES realmente ajenos a cambios documentales/otros casos autorizados por el clasificador; conserva fail-closed de jobs requeridos, HEAD, permisos, errores reales y Directed comercial. Incluye negativos para runtime, checks desconocidos, app no confiable y fallo terminal.
 - Revisión y aprobación formal, cuando corresponda, por scope independiente con credencial auténtica y triple auditoría; ninguna solicitud humana para trabajos ordinarios. Github Actions, protección de dev y reintentos por eventos sin polling intensivo siguen vigentes.
 - Este changeset queda sujeto a aprobación independiente, CI exact HEAD y merge protegido del PR #4013. Nunca fingir LISTO ni publicación anticipada.
