@@ -1,3 +1,11 @@
+## 2026-11-10 — P2-001.G: rechazo RBAC sobre cinco GET comerciales (DEV)
+
+- Autor funcional original: Javier :40 / AUTHOR_TASK_ID `6adc2e55f47c81919f6374e561687076`. La rama original `work/solqaryn-p2-001-g` se conserva; Javier :30 / TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09` realizó solo una conciliación Git aditiva de dos padres contra dev sin reescribir historia.
+- Prueba xUnit `backend/tests/Solqaryn.Tests/P2001GRechazoPermisoPorEndpointTests.cs`: cinco GET empresariales (clientes, productos, ventas, proveedores y compras) rechazan `ForbiddenAccessException` ante permiso RBAC denegado con cabecera `X-Empresa-Id` positiva; actionCalls=0 y sin marcar tenant autorizado. Blob causal `d35f1eaf544dc6179a8e6cb45cdd8d641af798e6` preservado.
+- Solo fixture de filtro y esta entrada aditiva: no cambios de código productivo, DB, Angular, workflows, secretos, main/QA/PROD. Prueba aislada con Moq; no acredita HTTP/JWT/membresía/MySQL real. No declarar test local ni checks PASS sin evidencia.
+- Scope Lock, Seguridad multiempresa, Backend y Directed comercial deben finalizar SUCCESS sobre el nuevo HEAD; dos revisiones técnicas genuinas de TASK_ID distintos entre sí, ajenos al autor y al reparador J30, antes del merge protegido. COLA!G259=SI acreditado por fórmula; cierre exige tres checks postmerge exact MERGE_SHA y readback PLAN/COLA/BITACORA.
+- Rollback mediante revert protegido selectivo de los dos cambios del PR, conservando el historial aditivo.
+
 ## 2026-11-08 — P2-006.F: ventas con borrado lógico y tenant A/B (DEV)
 
 - Autoría nativa: Javier :20 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Microtarea P2-006.F con COLA!O246=SI y P2-006.A=VALIDANDO al empezar; PLAN_MAESTRO!H246/I246/M246 y BITACORA!1393 registraron EN_PROGRESO real antes del código.
