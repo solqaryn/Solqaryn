@@ -1,3 +1,10 @@
+## 2026-11-08 — I8-008.E: autoridad global por ámbito y lote de permisos sin grants parciales (DEV)
+
+- Ejecución nativa Javier :00 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`. Iniciada auténticamente desde `PENDIENTE` con `COLA!O102=SI`, responsable libre y dependencia I8-008.D VALIDANDO. PLAN_MAESTRO!H102/I102/M102 y evento `SQ-I8-008-E-J00-START-07033759-20261108` leídos después de escribir; rama original `work/solqaryn-i8-008-e` desde dev@`07033759de95dcd5d3c0e6b770a0203a0c8e6c52`.
+- Regresión xUnit `I8008EAutoridadGlobalLoteAtomicoTests`: cuatro combinaciones de administrador empresarial sí/no y orden de un lote con `Usuarios:Ver` empresarial + `Usuarios:AsignarRol` de ámbito Plataforma. Todos deben lanzar `ForbiddenAccessException` antes de sustituir cualquier matriz o registrar auditoría. Una concesión de Plataforma no sirve como bypass universal aunque se combine con grants empresariales legítimos.
+- Cambios limitados a esta prueba de servicio con Moq y a esta nota aditiva, sin modificar código productivo, auth/JWT, migraciones, datos, secretos, workflows, main, QA o PROD. No hay ejecución local de dotnet; CI Directed + Scope Lock, Seguridad y Backend exact-HEAD quedan exigidos. Esta prueba no acredita HTTP/JWT/DB MySQL real ni certifica todo el modelo de superadmin.
+- Requiere revisión técnica auténtica por TASK_ID diferente, CI exact-HEAD SUCCESS, dependencia I8-008.D LISTO y COLA!G102=SI, integración FIFO protegida y postmerge 3/3 del MERGE_SHA antes de LISTO. Reversión por PR protegido aditivo sin sobrescribir contribuciones concurrentes.
+
 ## 2026-11-08 — I8-007.E: negar mass-assignment en edición de empresa (DEV)
 
 - Autor funcional auténtico: Javier :40 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6adc2e55f47c81919f6374e561687076`; rama original exclusiva `work/solqaryn-i8-007-e`, nacida de dev@5a04b35c6d915d8146c16662e2b42daf2b9e6ebd tras readback PRE_CODE PLAN_MAESTRO!101 y BITACORA!1463; predecesora I8-007.D VALIDANDO y COLA!O101=SI al comenzar. No es revisión ni autoaprobación de la propia entrega.
