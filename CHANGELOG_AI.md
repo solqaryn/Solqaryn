@@ -1,3 +1,9 @@
+## 2026-11-12 — I8-001.F: caso reproducible de credencial ERP exacta (DEV)
+
+- Autor: Javier :30, JAVIER_CHATGPT, AUTHOR_TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`; alcance Plan Comercial Inicial `I8-001.F` PREPARAR CASO, depende de `I8-001.A=LISTO`. START institucional `SQ-I8-001-F-J30-START-68841403-20261112` con COLA!O117/G117=SI por formulas; branch canonica `work/solqaryn-i8-001-f`.
+- Condicion medible: `AuthService.LoginAsync` recibe usuario sintetico normalizado y un hash BCrypt de una clave con espacios inicial/final. Fixture xUnit Theory de cuatro escenarios: clave byte-a-byte exacta admite un token sintetico; sin espacios, sin espacio inicial o sin espacio final deben devolver null y no invocar `IJwtService.GenerarToken`. Se comprueba que el hash no cambia y que la respuesta no serializa la clave ni el hash. La prueba se ejecutara por CI exact-HEAD, no se declara PASS local.
+- Solo prueba nueva `backend/tests/Solqaryn.Tests/I8001FExactitudClaveErpCasoPreparadoTests.cs` y esta entrada aditiva; no modifica runtime, JWT, RBAC, esquema, MySQL, secretos, migraciones, workflows ni main/QA/PROD. Limites: BCrypt sintetico y Mock JWT no acreditan credenciales existentes en la base, middleware HTTP, bearer firmado ni seguridad transaccional. Reversion selectiva protegida de prueba y nota. Autor no puede auto-revisar, fusionar ni certificar.
+
 ## 2026-11-11 — I8-001.A: cierre de auditoria causal de contrasenas ERP (DEV)
 
 - Task fisica Javier :50 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bbad26881918c283abe06e1f32a`; rama original `work/solqaryn-i8-001-a` desde dev `710a0351b161b44ee0d9ee6dce94c4c64bbd5e67`. PLAN_MAESTRO!H106/I106/M106 reclamado PENDIENTE -> EN_PROGRESO y BITACORA EVENT_ID `SQ-I8-001-A-J50-START-710A0351-20261111` confirmado antes del codigo; COLA!O106=SI y G106=SI por formulas; I8-001.C/D/E LISTO verificados con PR #3901/#3960/#3975 fusionados protegidos.
