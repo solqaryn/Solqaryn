@@ -1,3 +1,11 @@
+## 2026-11-11 — I8-009.E: no propagar enlaces de reset ni tokens en la auditoria de login rechazado (DEV)
+
+- Task fisica Javier :10 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507`, rama original `work/solqaryn-i8-009-e` desde dev@`9785be559e11eab66393cbffbdfcc38094a38a63`. Scope Plan Comercial I8-009.E, dependencia I8-009.D LISTO, COLA!O103=SI y G103=SI; START institucional separado.
+- `AuthController.Login` deja de interpolar `dto.NombreUsuario` (controlado por el solicitante) en la descripcion de auditoria al rechazar credenciales; usa texto generico estable. Se preservan `Modulo=Usuarios`, `Accion=ConsultarHistorial`, `Entidad=Sesion`, `Resultado=Rechazado`, error generico y HTTP 401 sin enumeracion.
+- Regresion xUnit `I8009ELoginAuditoriaSinSecretoTests`: dos usuarios sinteticos maliciosos contienen URL de restablecimiento con token o marcador Bearer; comprueba que ningun marcador ni clave ficticia pase a invocacion auditada ni respuesta. Respeta contrato de correlacion server-side en `AuditoriaService`, sin editar esa capa.
+- Alcance acotado a rechazo de login y prueba sintética. NO certifica alertas notificadas, revocacion retroactiva de JWT, rate-limit HTTP 429, SMTP, middleware completo, logs de servicios externos ni MySQL. Sin secretos reales, migraciones, workflows, rulesets, QA/main/PROD o datos productivos. Tests locales no ejecutados: CI Scope Lock, Seguridad, Backend y Directed exact HEAD son gates antes de merger.
+- Rollback: revert protegido del cambio de descripcion, test y esta nota; preservar historial concurrente. Requiere auditoria triple independiente por Task ajena a la autora y los checks posmerge 3/3 SUCCESS exact MERGE_SHA antes de LISTO.
+
 ## 2026-11-11 — Scope Lock: una sola clasificación de CI, reintento selectivo y revisiones autónomas legítimas (PR #4013)
 
 - Consolidación quirúrgica de la política de checks opcionales en `scripts/verify-automated-pr-certification.mjs` (autocontenido en el `RUNNER_TEMP` confiable) y reutilización de su export puro `optionalPendingDeferred` desde `scripts/security/auto-retry-scope-after-ci.mjs` en el checkout confiable de `dev`, sin dependencias de código del PR.
