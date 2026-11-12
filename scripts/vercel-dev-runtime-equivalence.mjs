@@ -20,6 +20,7 @@ const NON_RUNTIME_FILES = new Set([
 ]);
 export function isNonRuntimePath(file) {
   return typeof file === 'string' && !file.includes('..') &&
+    !/[\\\x00-\x1f\x7f]/.test(file) && !file.includes('//') && !file.endsWith('/') &&
     (NON_RUNTIME_PREFIXES.some(prefix => file.startsWith(prefix)) ||
       NON_RUNTIME_FILES.has(file));
 }
@@ -115,6 +116,10 @@ function selfTest() {
     ['no diff files', p => p.compare.files = []],
     ['duplicate tree path', p => p.frontend_after.push(p.frontend_after[0])],
     ['invalid tree sha', p => p.frontend_before[0].sha = 'invalid'],
+    ['path with empty segment', p => p.compare.files = [{filename:'docs//readback.md'}]],
+    ['directory instead of file', p => p.compare.files = [{filename:'docs/'}]],
+    ['Windows path separator', p => p.compare.files = [{filename:'docs/unsafe\\file.md'}]],
+    ['control character path', p => p.compare.files = [{filename:'docs/line\nbreak.md'}]],
     ['unknown file', p => p.compare.files = [{filename:'render.yaml'}]],
     ['head equals ready', p => p.head_sha = old],
     ['different repository', p => p.repository = 'foreign/repo']
