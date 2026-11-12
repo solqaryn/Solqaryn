@@ -1,3 +1,10 @@
+## 2026-11-12 — I8-007.G: rechazo de escalada de perfil comercial (Javier :40 / DEV)
+
+- AUTHOR_TASK_ID `6adc2e55f47c81919f6374e561687076`, cuenta JAVIER_CHATGPT/GitHub jmejia31; Plan Comercial Inicial V3 I8-007.G; PENDIENTE habilitada por COLA O134=SI, predecesora I8-007.F VALIDANDO; START institucional `SQ-I8-007-G-J40-START-0EF1E736-20261112`, PLAN H134 EN_PROGRESO y BITACORA contigua con readback.
+- Negativo nuevo `I8007GPerfilNoElevaRolGlobalTests.cs` sobre `UsuarioAdministracionEmpresaService.ActualizarAsync` real: intento de asignar rol de plataforma mediante perfil empresa A, con y sin solicitud de NuevaPassword; rechaza antes de actualizar usuario, contraseña, membresía o auditoría, y no comprueba permisos de AsignarRol/RestablecerContrasena. Segundo control por reflexión: el DTO comercial no admite propiedades Activo, Bloqueado, Eliminado, EsAdministrador o EmpresaId como mass assignment.
+- Alcance deliberadamente test xUnit y nota aditiva: sin cambio de runtime, DTO, rutas, JWT, RBAC, schema, migraciones, permisos, secretos, workflows, main/QA/PROD o infraestructura. Usa EF InMemory y Moq sintéticos; **no** demuestra ejecución HTTP/JWT/MySQL o resistencia a payloads adversariales en todas las rutas. No se ejecutó `dotnet test` local; CI GitHub exact HEAD y revisión triple por Task ajena a J40 son obligatorios.
+- Se entrega VALIDANDO sin fusionar por delante de #4020, aunque COLA G134=NO hasta I8-007.F LISTO. Rollback mediante revert protegido selectivo del test y esta nota preservando trabajo concurrente.
+
 ## 2026-11-12 — I8-006.A: contraseña propia sin fugas en auditoría (DEV)
 
 - Autor Task física Javier :10 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507`, scope Plan Comercial I8-006.A; rama original `work/solqaryn-i8-006-a` desde dev@`710a0351b161b44ee0d9ee6dce94c4c64bbd5e67`.
