@@ -1,3 +1,9 @@
+## 2026-11-12 — I8-007.H: regresion positiva de perfil empresarial con scope verificado (DEV)
+
+- Autor fisico Javier :10 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507`; rama determinista `work/solqaryn-i8-007-h` sobre dev `0ef1e736a4538c2d48c66bbd12fafb77259400aa`. Plan Comercial Inicial I8-007.H, predecesora I8-007.G en VALIDANDO (COLA O145=SI antes de claim, G145=NO para merge).
+- Test xUnit `I8007HRegresionPerfilEmpresaContextoVerificadoTests.cs` ejecuta `UsuarioAdministracionEmpresaService.ActualizarAsync` real con EF InMemory y mocks: positivo de edicion de perfil de identidad exclusiva A por admin A con contexto vigente; negativos cuando tenant verificado difiere o la identidad del actor no coincide, aun cuando se solicita empresa A. Verifica delegacion unica, auditoria, ausencia de cambio de hash/rol/membresia, ausencia de escalada AsignarRol/RestablecerContrasena y cero mutaciones/auditoria en negativos.
+- No modifica runtime, DTO, migrations, schema, permisos, JWT, secretos, workflows, frontend, main/QA/PROD ni otros scopes. Prueba sintetica/efectos simulados: NO certifica HTTP/JWT, MySQL real, persistencia final del IUsuarioService mock ni sesiones concurrentes. Sin ejecucion local de dotnet; CI exact HEAD requerida y no se atribuye PASS antes de evidencia. Rollback por revert protegido del test y de este bloque de changelog, preservando textos de otros actores. Requiere una revision triple genuina de Task distinta del autor y de contribuyentes, CI y FIFO #4020 antes de merge, postmerge 3/3 y PLAN/COLA/BITACORA/Jira para LISTO.
+
 ## 2026-11-12 — I8-006.A: contraseña propia sin fugas en auditoría (DEV)
 
 - Autor Task física Javier :10 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507`, scope Plan Comercial I8-006.A; rama original `work/solqaryn-i8-006-a` desde dev@`710a0351b161b44ee0d9ee6dce94c4c64bbd5e67`.
