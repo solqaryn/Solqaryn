@@ -1,3 +1,11 @@
+## 2026-11-12 — I8-009.F: preparar contrato de bloqueo en login (DEV)
+
+- TASK física Javier :00, `AUTHOR_TASK_ID=6adbb9fff1548191a1bd5b30d9e9984a`, repositorio `solqaryn/Solqaryn`, dev base `0ef1e736a4538c2d48c66bbd12fafb77259400aa`; PLAN_MAESTRO!H125 PENDIENTE→EN_PROGRESO y BITACORA evento `SQ-I8-009-F-J00-START-0EF1E736-20261112` con readback; COLA!O125=SI y G125=NO (predecesora I8-009.A todavía VALIDANDO).
+- Nuevo fixture y prueba causal xUnit `I8009FLoginBloqueoSinNuevoJwtTests`: con contraseña sintética correcta, `AuthService.LoginAsync` debe rechazar cuentas bloqueadas o inactivas antes de crear JWT; control positivo de cuenta vigente/rol relacional activo emite un único JWT de prueba. Complementa I8-009.C/D de renovación, no los duplica.
+- Se define una condición medible de revocación/bloqueo para I8-009.F sin afirmar revocación retroactiva de JWT emitidos, alertas externas, notificaciones SMTP, HTTP/JWT firmado, MySQL ni cierre completo del plan. Sin datos, cuentas ni secretos reales. `dotnet test` local no ejecutado; exigir Actions exact HEAD.
+- Cambios exclusivamente en nuevo test y CHANGELOG aditivo; sin modificar código productivo, migraciones, API/DTO, seguridad, proveedores, workflows, rulesets, QA/main/PROD ni infraestructura. Revisión técnica triple independiente por TASK_ID distinto del autor, CI requerida y FIFO #4020 funcional NO_GO; nunca adelantar merge ni LISTO.
+- Rollback por revert protegido del test y de esta entrada sin reescribir cambios ajenos.
+
 ## 2026-11-12 — I8-006.A: contraseña propia sin fugas en auditoría (DEV)
 
 - Autor Task física Javier :10 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507`, scope Plan Comercial I8-006.A; rama original `work/solqaryn-i8-006-a` desde dev@`710a0351b161b44ee0d9ee6dce94c4c64bbd5e67`.
