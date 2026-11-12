@@ -1,3 +1,10 @@
+## 2026-11-12 — P2-012.A: inventario causal de jobs/Outbox sin HTTP (DEV)
+
+- Autor Task Javier :10 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507`; fuente Plan Comercial Inicial P2-012.A; rama determinista `work/solqaryn-p2-012-a` desde dev@0ef1e736a4538c2d48c66bbd12fafb77259400aa. Se reutilizan recibos de P2-012.C/D/E ya LISTO sin simular re-ejecución.
+- Catálogo `docs/P2-012-A-CATALOGO-JOBS-SIN-HTTP-DEV.md`: OutboxRetryProcessor, repositorio, MensajeOutbox, API registro y HostedService Cloudinary DEV como worker SEPARADO. No existe un scheduler Outbox nuevo; `HttpContext` no autoriza el procesamiento background.
+- Prueba xUnit `P2012AOutboxSinHttpArranqueTests.cs` con 4 casos sintéticos (UTC incorrecto bloquea antes de repositorio/dispatcher y tenant explícito A/B se propaga a stale/claim, sin efecto externo). Sólo test+doc+CHANGELOG, sin runtime, migraciones, DB, credenciales, API, scripts/security, workflows, producción, QA/main.
+- No se ejecutó dotnet test local. Requiere CI Scope Lock/Seguridad/Backend/Directed exact HEAD, triple auditoría independiente por otra Task, FIFO, posmerge 3/3 y readback PLAN/COLA/BITACORA. No declarar LISTO por green aislado. Rollback: revert protegido y selectivo de los 3 archivos de este PR.
+
 ## 2026-11-12 — I8-006.A: contraseña propia sin fugas en auditoría (DEV)
 
 - Autor Task física Javier :10 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507`, scope Plan Comercial I8-006.A; rama original `work/solqaryn-i8-006-a` desde dev@`710a0351b161b44ee0d9ee6dce94c4c64bbd5e67`.
