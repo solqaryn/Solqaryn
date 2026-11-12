@@ -1,3 +1,10 @@
+## 2026-11-12 — P2-010.A: rechazo de exportaciones sin tenant acreditado (DEV)
+
+- ORIGINAL_AUTHOR_TASK_ID=6af16bb9492c8191b8e8c7d606f11507 (Javier :10, JAVIER_CHATGPT); rama determinista work/solqaryn-p2-010-a, DEV base 0ef1e736a4538c2d48c66bbd12fafb77259400aa. Autoría independiente de P2-010.C/D/E ya LISTO; no modificar sus commits.
+- Nueva regresión xUnit `P2010AExportacionSinTenantVerificadoTests` sobre el servicio real `ReporteAdministrativoService.ExportarAsync`: cinco variantes de exportación administrativa (CSV, XLSX, PDF, usuarios/roles) con cabecera `X-Empresa-Id` falsa o ausente, sin marca RBAC confiable; exige `ForbiddenAccessException` antes de generar archivo y sin mostrar empresa reclamada. EF InMemory aislado y sin cuentas/datos reales.
+- Reuso explícito de P2-010.C (filtrado A/B), P2-010.D (capabilities públicas no equivalen a RBAC) y P2-010.E (inyección de fórmulas en CSV/XLSX). NO se acredita ZIP/galerías, staging de archivos, cargas grandes, middleware HTTP/JWT, MySQL real ni prueba local dotnet; CI exact HEAD y revisión triple de Task ajena al autor requeridas antes de integrar en FIFO. No inferir cobertura integral por test verde.
+- Sin cambios a runtime, schema, roles, endpoints, workflows, secretos o main/QA/PROD. Rollback: revert protegido selectivo de esta prueba y de la entrada propia de CHANGELOG, conservando historial ajeno.
+
 ## 2026-11-12 — I8-006.A: contraseña propia sin fugas en auditoría (DEV)
 
 - Autor Task física Javier :10 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507`, scope Plan Comercial I8-006.A; rama original `work/solqaryn-i8-006-a` desde dev@`710a0351b161b44ee0d9ee6dce94c4c64bbd5e67`.
