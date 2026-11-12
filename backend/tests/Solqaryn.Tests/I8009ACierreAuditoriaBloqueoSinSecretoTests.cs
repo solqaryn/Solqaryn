@@ -84,7 +84,7 @@ public sealed class I8009ACierreAuditoriaBloqueoSinSecretoTests
     [InlineData("Ver https://test.invalid/reset?token=I8009A-MARCADOR-FICTICIO")]
     [InlineData("Ver HTTP://test.invalid/reset")]
     [InlineData("Incidente Bearer I8009A-MARCADOR-PRUEBA")]
-    [InlineData("Incidente BeArEr\\tI8009A-MARCADOR-PRUEBA")]
+    [InlineData("Incidente BeArEr\tI8009A-MARCADOR-PRUEBA")]
     [InlineData("token=I8009A-MARCADOR-FICTICIO")]
     [InlineData("PASSWORD: I8009A-MARCADOR-FICTICIO")]
     [InlineData("authorization: Bearer I8009A-MARCADOR-PRUEBA")]
