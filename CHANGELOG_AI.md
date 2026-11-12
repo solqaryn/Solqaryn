@@ -1,3 +1,10 @@
+## 2026-11-12 — P2-019.E: regresiones negativas del release parcial (DEV)
+
+- Autor: Task física Javier :40, JAVIER_CHATGPT, AUTHOR_TASK_ID `6adc2e55f47c81919f6374e561687076`; Plan Comercial Inicial V3 P2-019.E, predecesora P2-019.D LISTO, COLA!O163=SI y G163=SI por fórmula al iniciar, rama única `work/solqaryn-p2-019-e`.
+- Prueba nueva `P2019EReleaseParcialNegativosTests.cs`: 7 casos de retención de gates de seguridad/backup/RBAC/log sin PII/rollback/P0-P1/autorización; 5 clasificaciones de alcance (INICIAL/CONDICIONAL/FUTURO) y negativo fail-closed PRODUCTION_READY=FALSE con secretos fuera de Git. Datos solo documentales, sin secretos.
+- Alcance: solo pruebas xUnit y CHANGELOG aditivo; no modifica código runtime, PR previos, migraciones, JWT/RBAC, UI, infraestructura, workflows, QA/main/PROD. Reusa `P2019CReleaseParcialLimiteTests` y `P2019DReadinessGateNoPromotionTests`; añade matriz de gates puntuales, sin certificar release real.
+- Límites: lectura de documentos versionados NO prueba despliegue, HTTP, MySQL, backups físicos, seguridad E2E, ni autorización humana de promoción. `dotnet test` local NO ejecutado; CI exact-HEAD y revisión independiente triple por Task distinta de la autora obligatorias, junto con FIFO de integración y posmerge 3/3. No afirmar LISTO anticipado. Rollback: revert protegido de este test y nota sin alterar terceros.
+
 ## 2026-11-12 — I8-006.A: contraseña propia sin fugas en auditoría (DEV)
 
 - Autor Task física Javier :10 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507`, scope Plan Comercial I8-006.A; rama original `work/solqaryn-i8-006-a` desde dev@`710a0351b161b44ee0d9ee6dce94c4c64bbd5e67`.
