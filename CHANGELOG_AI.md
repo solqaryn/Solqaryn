@@ -1,3 +1,10 @@
+## 2026-11-12 — P2-008.G: negar acceso global a facturas con segundo tenant inactivo (J50)
+
+- AUTHOR_TASK_ID `6af16bbad26881918c283abe06e1f32a` / JAVIER_CHATGPT :50; rama canónica `work/solqaryn-p2-008-g` desde dev `0ef1e736a4538c2d48c66bbd12fafb77259400aa`. Plan Comercial P2-008.G, dependencia P2-008.F LISTO; COLA O266=SI y G266=SI comprobados al inicio.
+- Regresión negativa xUnit `P2008GFacturaTenantInactivoNegativoTests` sobre `FacturaRepository` real y EF InMemory: dos empresas sintéticas con facturas, segunda empresa desactivada tras crear datos; sin marca tenant server-side rechaza GetById, GetByVentaId y GetAll aun con rol global y cabecera suplantada. Contraprueba con marca verificada A devuelve solo A y nunca datos de B aunque la cabecera indique B.
+- Cobertura dirigida adicional a P2-008.C/E/F: `IgnoreQueryFilters` debe incluir la empresa inactiva en la barrera de acceso global; no se cambia código productivo, datos reales, migraciones, DTO, IAM, secrets, workflows, main/QA/PROD. NO se ejecutó `dotnet test` localmente; CI exact HEAD y triple revisión independiente pendientes. Prueba offline no equivale a MySQL real, JWT/HTTP ni enlaces públicos PDF.
+- Rollback: revert protegido y selectivo del test y esta nota, preservando trabajo tercero. No certificar LISTO antes de merge FIFO, 3/3 posmerge exact MERGE_SHA y readback institucional.
+
 ## 2026-11-12 — I8-006.A: contraseña propia sin fugas en auditoría (DEV)
 
 - Autor Task física Javier :10 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507`, scope Plan Comercial I8-006.A; rama original `work/solqaryn-i8-006-a` desde dev@`710a0351b161b44ee0d9ee6dce94c4c64bbd5e67`.
