@@ -1,3 +1,10 @@
+## 2026-11-12 — I8-010.F: fixture de permiso denegado en recuperación por roles (DEV)
+
+- Autor original: Task física Javier :10, JAVIER_CHATGPT, TASK_ID `6af16bb9492c8191b8e8c7d606f11507`; plan vigente I8-010.F (PREPARAR CASO), predecesora I8-010.A VALIDANDO y COLA!O126=SI/G126=NO. Inicio institucional `SQ-I8-010-F-J10-START-0EF1E736-20261112`, rama canónica `work/solqaryn-i8-010-f`, base `0ef1e736a4538c2d48c66bbd12fafb77259400aa`.
+- Caso medible con fixture sintética `I8010FPermisoRevocadoImpideResetTests`: tenant A=11 marcado servidor, cabecera falsa B=22, usuario 87 con rol 5, clave ficticia. Dos variantes: rol inmutable con permiso RestablecerContrasena denegado; solicitud de elevar rol 5→6 con permiso AsignarRol denegado. Resultado esperado: ForbiddenAccessException, una consulta GetByIdAsync y cero llamadas a servicio de escritura, sin inferir autoridad por cabecera. Aporta el negativo con TENANT VERIFICADO y PERMISO DENEGADO, distinto de I8-010.E sin marca tenant y de I8-010.D positivo.
+- Solo test xUnit y CHANGELOG aditivo. No se modifican runtime, JWT/RBAC, API/DTO, migraciones, MySQL, SMTP/TLS, workflows, seguridad, secretos, main/QA/PROD. No se ejecutaron pruebas locales ni se afirma PASS, HTTP/JWT real, revocación de sesiones ni cobertura completa de roles suspendidos; requeridos CI exact HEAD, triple auditoría independiente, revisión de dependencias y postmerge antes de LISTO.
+- FIFO bloqueado en PR #4020 I8-002.A: falta recuperación individual real con destinatario verificado, token de un solo uso y expiración; no adelantar merges. Autor J10 excluido de revisión/merge/cierre de esta entrega. Rollback por revert protegido exclusivo del test y esta nota sin perder trabajo concurrente.
+
 ## 2026-11-12 — I8-006.A: contraseña propia sin fugas en auditoría (DEV)
 
 - Autor Task física Javier :10 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507`, scope Plan Comercial I8-006.A; rama original `work/solqaryn-i8-006-a` desde dev@`710a0351b161b44ee0d9ee6dce94c4c64bbd5e67`.
