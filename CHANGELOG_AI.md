@@ -1,3 +1,9 @@
+## 2026-11-12 — I8-002.A: J50 reparacion de enumeracion de cuentas no vigentes (PR #4020, DEV)
+
+- CONTRIBUTOR_TASK_ID=`6af16bbad26881918c283abe06e1f32a` (Javier :50); AUTHOR_TASK_ID original=`6adc2e4bd8a48191ac7d8641ed95a1a3` (Javier :20), conservado. En rama ORIGINAL `work/solqaryn-i8-002-a`, sin force, se corrige `AuthService.LoginAsync`: clave acertada en cuenta bloqueada/inactiva o con rol invalido devuelve `null` y el controlador responde 401 neutro, sin revelar motivo/identidad/empresa. `RenovarAsync` conserva sus validaciones.
+- Regresion `I8002AEstadoCuentaLoginNoEnumeraTests` reproduce cuenta bloqueada con URL/token ficticio y cuenta inactiva, compara respuestas con identidad inexistente, sin JWT y sin secretos en cuerpo/auditoria. CI exact-HEAD pendiente de readback; prueba local .NET no ejecutada. No agregar correo, esquema ni endpoints ficticios.
+- **NO_GO funcional se mantiene:** no hay email recuperacion verificado usuario+tenant, persistencia y consumo atomico de digest, solicitud/consumo HTTP, SMTP ni rate limiting especifico. El cambio no prueba la recuperacion end-to-end. J50 contribuyente queda EXCLUIDO de revision independiente, merge y LISTO de este HEAD. Rollback: revert protegido selectivo de este commit, sin afectar commits previos.
+
 ## 2026-11-12 — I8-002.A: reparacion parcial segura del bloqueo funcional #4020 (DEV, J20)
 
 - La Task autora `6adc2e4bd8a48191ac7d8641ed95a1a3` interviene SOLO la rama original `work/solqaryn-i8-002-a`; no revisa, aprueba ni fusiona su entrega. Análisis causal: `Usuario` carece de correo verificado y `AuthController/AuthService` carecen de solicitud/consumo de recuperación. Un login 401 y CI verde no certifican el requisito funcional.

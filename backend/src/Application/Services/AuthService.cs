@@ -29,8 +29,12 @@ public class AuthService : IAuthService
         if (!BCrypt.Net.BCrypt.Verify(dto.Password, usuario.PasswordHash))
             return null;
 
-        ValidarEstadoCuenta(usuario);
-        ValidarRolRelacional(usuario);
+        // En el acceso publico no revelar si la identidad existe o si esta bloqueada,
+        // inactiva o carece de rol. RenovarAsync conserva sus reglas propias.
+        if (usuario.Bloqueado || !usuario.Activo || usuario.RolId <= 0 ||
+            usuario.RolEntidad is null || usuario.RolEntidad.Eliminado || !usuario.RolEntidad.Activo)
+            return null;
+
         return CrearRespuesta(usuario);
     }
 
