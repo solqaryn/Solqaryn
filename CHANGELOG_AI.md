@@ -1,3 +1,11 @@
+## 2026-11-12 — APPROVAL_ELIGIBILITY_ALEX_JAVIER_20261112: revisión genuina independiente por Alex o Javier (PR de reparación)
+
+- Causa real: PR institucional #4039 HEAD `ca310c4507afb15f37ebeabd5e81790e2b14b74f` recibió `APPROVED` de `morales35alex` (review 5880306042) pero Scope Lock en `dev` exigía exclusivamente `jmejia31`, quien contribuyó al código y por eso NO es revisor independiente. Se generó `AUTO_CERT=NO_GO INSTITUTIONAL_REQUIRES_JAVIER_INDEPENDENT_REVIEW` pese a validación previa formal de Alex.
+- Reparación: el certificador de `dev` seguirá exigiendo `APPROVED` exact-HEAD de una cuenta en allowlist (`morales35alex` o `jmejia31`) independiente del autor y de todos los autores/committers de los commits. Se rechazan autoaprobaciones, contribuciones del revisor, reviews obsoletas, identidades no permitidas y CI no verde. El recuperador de Scope Lock acepta la misma regla de independencia sin restricción fija a Javier.
+- Pruebas añadidas en ambos scripts: casos positivos de Alex revisando PR institucional con commits de Javier y casos negativos de reviewers colaboradores/no autorizados. Sin cambio al ruleset, permisos, autenticación de proveedor, CI requerida ni validaciones de seguridad. Documentación de roles aclarada de forma aditiva.
+- Gobernanza/FIFO: este changeset únicamente prepara una reparación protegida; no modifica `dev` ni adelanta PRs en FIFO por sí solo. La rama necesita checks y aprobación genuina independiente sobre su HEAD final, seguido de merge protegido. Los seis schedulers de Javier están **deshabilitados por decisión expresa del propietario**; se preservan así. No se crean nuevas tareas del plan ni se alteran las Tasks de Alex.
+- Respaldo anterior verificado: rama Git `backup/solqaryn-pre-alex-javier-review-20261112`, PR #4039 snapshot `backup/solqaryn-pr4039-before-review-fix-20261112`; Drive carpeta `1pLwrPVDApXBKqaT0G69mwfu2H89UDloO`, copias del Sheet y Plan y seis prompts con status `is_enabled=false`. Reversión mediante revert protegido selectivo, sin sobrescribir trabajo de otros autores.
+
 ## 2026-11-12 — I8-006.A: contraseña propia sin fugas en auditoría (DEV)
 
 - Autor Task física Javier :10 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507`, scope Plan Comercial I8-006.A; rama original `work/solqaryn-i8-006-a` desde dev@`710a0351b161b44ee0d9ee6dce94c4c64bbd5e67`.
