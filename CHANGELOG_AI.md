@@ -1,3 +1,11 @@
+## 2026-11-12 — I8-006.A: contraseña propia sin fugas en auditoría (DEV)
+
+- Autor Task física Javier :10 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507`, scope Plan Comercial I8-006.A; rama original `work/solqaryn-i8-006-a` desde dev@`710a0351b161b44ee0d9ee6dce94c4c64bbd5e67`.
+- Reutiliza y coteja la evidencia I8-006.C (clave actual incorrecta), I8-006.D (cuenta inactiva/bloqueada/eliminada) e I8-006.E (no mutar ID ajeno y ruta de perfil sin ID externo), ya integradas. Nueva prueba xUnit `I8006ACambioPropioAuditoriaSinSecretosTests.cs`: dos identidades propias 25/40 con otra cuenta adversarial, BCrypt de contraseña nueva, escritura propia solamente y un evento de auditoría sin claves ni hashes; además rechaza identidad nula antes de consultar/persistir/auditar.
+- Alcance de solo test y nota aditiva; `PerfilService` y `PerfilController` de producción quedan inalterados. No verifica ejecución HTTP, firma/revocación JWT, rate limits, MySQL, sesiones distribuidas ni endpoints alternativos; `dotnet test` local NO ejecutado. Ninguna credencial real.
+- Impacto: test de Application y contratos API ya existentes; sin DTO, datos reales, migraciones, frontend, workflows, secretos, infraestructura ni QA/main/PROD. Revisión independiente triple por TASK_ID ajeno al autor, required Scope Lock/Seguridad/Backend/Directed SUCCESS exact HEAD y FIFO antes de merge; posmerge 3/3 exact MERGE_SHA y readback PLAN/COLA/BITACORA para LISTO.
+- Rollback mediante revert protegido de esta prueba y de su entrada, preservando cambios ajenos de CHANGELOG_AI.md.
+
 ## 2026-11-11 — I8-010.E: impedir recuperación administrativa sin tenant verificado (DEV)
 
 - Desarrollo autorizado por Javier :20 / JAVIER_CHATGPT / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3` del Plan Comercial Inicial. PENDIENTE→EN_PROGRESO en PLAN_MAESTRO!H104 con COLA!O104=SI/G104=SI, evento `SQ-I8-010-E-J20-START-9785BE55-20261111` appendCells contiguo y readback; rama original `work/solqaryn-i8-010-e` basada en `dev@9785be559e11eab66393cbffbdfcc38094a38a63`. No se integró PR anterior #4014.
