@@ -153,6 +153,43 @@ public sealed class I8007APerfilEmpresaSinEscaladaGlobalTests
         t.Auditoria.VerifyNoOtherCalls();
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task IdentidadCompartidaConEmpresaB_ActivaOInactiva_DeniegaEdicionDesdeA(bool empresaBActiva)
+    {
+        // Negativo faltante: incluso una membresia B inactiva mantiene
+        // identidad compartida. Una administradora A no debe mutarla.
+        const int empresaB = 22;
+        const int rolB = 223;
+        var t = Crear();
+        using var db = t.Db;
+        db.Roles.Add(new Rol
+        {
+            Id = rolB, Nombre = "Operador B", NombreNormalizado = "OPERADOR_B",
+            Ambito = AmbitoAutorizacion.Empresa, EmpresaId = empresaB, Activo = true
+        });
+        var membresiaB = new UsuarioEmpresa(UsuarioA, empresaB, rolB);
+        if (!empresaBActiva) membresiaB.Desactivar();
+        db.UsuarioEmpresas.Add(membresiaB);
+        db.SaveChanges();
+
+        await Assert.ThrowsAsync<ForbiddenAccessException>(() =>
+            t.Servicio.ActualizarAsync(UsuarioA, Perfil(), EmpresaA));
+
+        var usuario = db.Usuarios.IgnoreQueryFilters().Single(x => x.Id == UsuarioA);
+        Assert.Equal(HashOriginal, usuario.PasswordHash);
+        Assert.Equal(RolEmpresa, usuario.RolId);
+        Assert.Equal(2, db.UsuarioEmpresas.IgnoreQueryFilters()
+            .Count(x => x.UsuarioId == UsuarioA));
+        Assert.Equal(empresaBActiva, db.UsuarioEmpresas.IgnoreQueryFilters()
+            .Single(x => x.EmpresaId == empresaB).Activa);
+        t.Usuarios.VerifyNoOtherCalls();
+        t.Auditoria.VerifyNoOtherCalls();
+        t.Permisos.Verify(x => x.VerificarPermisoAsync(
+            EmpresaA, ModuloSistema.Usuarios, AccionPermiso.Editar), Times.Once);
+    }
+
     [Fact]
     public async Task PerfilSoloEmpresaA_PuedeDelegarEdicionSinEscalarRolesNiPassword()
     {

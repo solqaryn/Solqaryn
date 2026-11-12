@@ -1,3 +1,9 @@
+## 2026-11-12 — I8-007.A: reparación de regresión de identidad A/B compartida (Javier :40)
+
+- Contribuyente técnico: Task física Javier :40, TASK_ID `6adc2e55f47c81919f6374e561687076`, distinto de autora original J50 `6af16bbad26881918c283abe06e1f32a`. Misma rama ORIGINAL `work/solqaryn-i8-007-a`, mismo PR #4021, sin reemplazos ni force-push.
+- Dos negativos nuevos para membresía adicional en empresa B ACTIVA o INACTIVA. El servicio `UsuarioAdministracionEmpresaService.ActualizarAsync` debe negar edición desde A, conservar contraseña/rol, membresías y no invocar la mutación de `IUsuarioService` ni auditoría de edición. Se preservan las cuatro pruebas previas del PR.
+- Reparación limitada a cobertura causal xUnit y este CHANGELOG aditivo; no se modifica código productivo, endpoints, DTO, esquema, JWT/RBAC, permisos, workflows, secretos, main/QA/PROD. No se afirma dotnet test local ni E2E HTTP/MySQL. Revalidar CI exact HEAD y revisión triple independiente por Task distinta tanto de J50 autora como de J40 contribuyente; sin merge ni LISTO antes de resolver #4020 FIFO y los gates obligatorios. Rollback: revert protegido de este changeset preservando commits originales.
+
 ## 2026-11-12 — I8-007.A: perfil de empresa sin edicion de autoridad global (DEV)
 
 - Autor: Task fisica Javier :50 / JAVIER_CHATGPT / TASK_ID `6af16bbad26881918c283abe06e1f32a`; Plan Comercial I8-007.A; rama ORIGINAL `work/solqaryn-i8-007-a` desde dev `710a0351b161b44ee0d9ee6dce94c4c64bbd5e67`. Inicio PENDIENTE -> EN_PROGRESO con readback PLAN H112/COLA E112/G112=SI y BITACORA `SQ-I8-007-A-J50-START-710A0351-20261112`.
