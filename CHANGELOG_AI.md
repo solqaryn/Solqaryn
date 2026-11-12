@@ -1,3 +1,10 @@
+## 2026-11-12 — I8-001.H: regresion positiva de login ERP por servicio y controlador
+
+- Scope comercial autorizado I8-001.H, AUTHOR_TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3` (Javier :20 / JAVIER_CHATGPT / GitHub jmejia31); rama determinista `work/solqaryn-i8-001-h` desde `dev@0ef1e736a4538c2d48c66bbd12fafb77259400aa`. Claim real PLAN_MAESTRO!H139 `PENDIENTE -> EN_PROGRESO` con COLA!O139=SI antes; predecesora I8-001.G=VALIDANDO. Sin PR ni rama previos.
+- Test xUnit `I8001HLoginErpRegresionHttpTests` ejecuta `AuthService.LoginAsync` y `AuthController.Login` reales con identidad/rol/hash BCrypt sinteticos, username con espacios externos, token simulado y auditoria simulada. Exige respuesta tipada HTTP 200, emision JWT abstracta exactamente una vez, auditoria de login exitoso exactamente una vez y ausencia de clave/hash en la respuesta. Complementa la prueba I8-001.A que ejercita principalmente el servicio; no duplica la negativa I8-001.G.
+- Limites: No hay servidor HTTP/middleware, JWT firmado, DB/MySQL, permisos tenant en middleware ni SMTP real en esta prueba. No se ejecuta `dotnet test` local (runtime dotnet no disponible); se exige CI exact HEAD con Scope Lock, Seguridad multiempresa, Backend y Directed, auditoria independiente triple, FIFO, merge protegido y posmerge exact MERGE_SHA antes de LISTO. El PR es VALIDANDO, no implementa recuperacion por correo.
+- Impacto restringido a test de backend y nota de cambios; sin runtime, schema, migracion, secretos, reglas, pipelines, QA/main/PROD. Rollback: revert selectivo protegido de los dos cambios en la rama original sin reescribir historia.
+
 ## 2026-11-12 — I8-006.A: contraseña propia sin fugas en auditoría (DEV)
 
 - Autor Task física Javier :10 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507`, scope Plan Comercial I8-006.A; rama original `work/solqaryn-i8-006-a` desde dev@`710a0351b161b44ee0d9ee6dce94c4c64bbd5e67`.
