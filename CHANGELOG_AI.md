@@ -1,3 +1,10 @@
+## 2026-11-12 — I8-003.G: rechazo admin A contra miembro exclusivo B con RolId legado de A (DEV)
+
+- Autor físico Javier :00; AUTHOR_TASK_ID=6adbb9fff1548191a1bd5b30d9e9984a, GitHub jmejia31 y Drive JAVIER. Plan Comercial Inicial V3 I8-003.G, predecesora I8-003.F VALIDANDO al iniciar, COLA O130=SI/G130=NO (fórmulas intactas), START único SQ-I8-003-G-J00-START-0EF1E736-20261112.
+- Regresión xUnit nueva I8003GResetAdminSoloBConRolLegadoAEnganosoTests (Theory 2 escenarios): usuario objetivo tiene solo membresía de B activa o inactiva, pero RolId legado asignado a rol de A. El servicio real UsuarioAdministracionEmpresaService.ActualizarAsync bajo administrador vivo A debe denegar el reset, conservar hash, rol y membresía B; sin delegación a UpdateAsync, auditoría ni permiso RestablecerContrasena. Diferencia causal respecto de I8-003.E: intenta un desajuste intencional entre RolId global y membresía tenant como bypass.
+- Datos ficticios EF InMemory + Moq, sin cuentas ni SMTP reales; no acredita HTTP/JWT end-to-end, MySQL relacional/transacción, tokens de enlace ni recuperación funcional completa de I8-003.A. No se ejecutó dotnet test local; CI exact HEAD + revisión técnica triple por Task distinta de J00 antes de merge, COLA G=SI y FIFO exigibles. No afirmar LISTO hasta postmerge 3/3 exact MERGE_SHA + readback PLAN/COLA/BITACORA.
+- Alcance test + CHANGELOG aditivo; sin runtime/API/DTO/DB/migraciones, seguridad modificada, infraestructura/workflows, main/QA/PROD o secretos. Rollback por revert protegido de ambos archivos exclusivamente; preserva commits ajenos.
+
 ## 2026-11-12 — I8-006.A: contraseña propia sin fugas en auditoría (DEV)
 
 - Autor Task física Javier :10 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507`, scope Plan Comercial I8-006.A; rama original `work/solqaryn-i8-006-a` desde dev@`710a0351b161b44ee0d9ee6dce94c4c64bbd5e67`.
