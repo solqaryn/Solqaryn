@@ -11,6 +11,7 @@ const TRUSTED_ACTIONS_APP_ID = 15368;
 const SHA = /^[a-f0-9]{40}$/i;
 const SOURCE_WORKFLOWS = new Map([
   ['.github/workflows/dev-ci.yml', 'DEV - Compilación y pruebas'],
+  ['.github/workflows/catalogos-aceptacion.yml', 'DEV - aceptación funcional integral'],
   ['.github/workflows/priority3-erp-security.yml', 'Priority 3 - ERP security and isolated restore'],
   ['.github/workflows/solqaryn-core-ci.yml', 'SOLQARYN - CI permanente del ERP'],
   ['.github/workflows/solqaryn-commercial-directed.yml', 'SOLQARYN - Prueba comercial dirigida'],
@@ -117,6 +118,13 @@ function selfTest() {
     if (got !== result) throw Error('CI_COMPLETION_RETRY_SELF_TEST:' + label + ':' + got);
   };
   check('valid final green after timing error',()=>{},'RETRY');
+  check('acceptance CI completion triggers guarded retry',x=>{
+    x.event.workflow_run.name='DEV - aceptación funcional integral';
+    x.event.workflow_run.path='.github/workflows/catalogos-aceptacion.yml';
+  },'RETRY');
+  check('acceptance name with mismatched path rejected',x=>{
+    x.event.workflow_run.name='DEV - aceptación funcional integral';
+  },'UNTRUSTED_SOURCE_RUN');
   check('wrong repository',x=>{x.repository='other/repo'},'FOREIGN_REPOSITORY');
   check('event not completed',x=>{x.event.action='requested'},'UNTRUSTED_SOURCE_RUN');
   check('untrusted workflow',x=>{x.event.workflow_run.path='evil.yml'},'UNTRUSTED_SOURCE_RUN');
@@ -158,7 +166,7 @@ function selfTest() {
   check('directed skipped',x=>{x.checks[2].conclusion='skipped'},'DIRECTED_OR_SCOPE_MISSING');
   check('governance failure not retried',x=>{x.log='Error: AUTO_CERT=NO_GO GOVERNANCE_REQUIRES_INDEPENDENT_FORMAL_REVIEW'},'NOT_A_CI_TIMING_FAILURE');
   check('secret scan failure not retried',x=>{x.log='Error: AUTO_CERT=NO_GO CHECK_FAILED:Authorization, files, secrets and tenant gate'},'NOT_A_CI_TIMING_FAILURE');
-  console.log('SCOPE_CI_COMPLETION_RETRY_SELF_TEST=PASS (20 cases)');
+  console.log('SCOPE_CI_COMPLETION_RETRY_SELF_TEST=PASS (22 cases)');
 }
 
 async function live() {
