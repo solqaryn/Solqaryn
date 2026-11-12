@@ -5,6 +5,7 @@ on:
   workflow_run:
     workflows:
       - DEV - Compilación y pruebas
+      - DEV - aceptación funcional integral
       - Priority 3 - ERP security and isolated restore
       - SOLQARYN - CI permanente del ERP
       - SOLQARYN - Prueba comercial dirigida
