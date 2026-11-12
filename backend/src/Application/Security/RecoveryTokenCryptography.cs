@@ -29,17 +29,24 @@ public static class RecoveryTokenCryptography
 
     /// <summary>
     /// Comprueba criptografia y caducidad, NO realiza consumo. El llamador debe
-    /// verificar pertenencia usuario/tenant/correo acreditado y marcar ConsumedAt
+    /// verificar pertenencia usuario/tenant/correo acreditado, guardar IssuedAtUtc y marcar ConsumedAt
     /// mediante UPDATE atomico condicionado a ConsumedAt IS NULL antes de cambiar clave.
     /// </summary>
     public static bool MatchesUnconsumedToken(
         string? candidate,
         string? savedDigest,
+        DateTimeOffset issuedAtUtc,
         DateTimeOffset expiresAtUtc,
         DateTimeOffset nowUtc,
         bool alreadyConsumed)
     {
-        if (alreadyConsumed || nowUtc >= expiresAtUtc)
+        // El registro persistido debe conservar issuedAtUtc. Impedir que un
+        // plazo arbitrariamente largo extienda la vida del token en silencio.
+        if (alreadyConsumed ||
+            expiresAtUtc <= issuedAtUtc ||
+            expiresAtUtc - issuedAtUtc > MaximumLifetime ||
+            nowUtc < issuedAtUtc ||
+            nowUtc >= expiresAtUtc)
             return false;
 
         if (!TryDecode32Bytes(candidate, out var candidateBytes) ||
