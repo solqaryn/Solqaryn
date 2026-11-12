@@ -1,3 +1,10 @@
+## 2026-11-12 — I8-004.F: preparar caso negativo de correo seguro (DEV)
+
+- Task física Javier :00 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`, Plan Comercial Inicial I8-004.F, PREPARAR CASO; `COLA!O120=SI` y predecesora I8-004.A VALIDANDO antes de tomar el scope. Ingreso `EN_PROGRESO` con readback en PLAN/COLA; BITACORA evento único `SQ-I8-004-F-J00-START-0EF1E736-20261112` (21 campos).
+- Fixture de regresión xUnit `I8004FPrepararCasoCorreoSeguroTests`: remitente deliberadamente mal formado `remitente@@dev.test` ante SmtpEmailService real con configuración OAuth2 sintética; se espera rechazo `SMTP_NO_CONFIGURADO` del diagnóstico y del intento de correo, cero intentos de entrega, sin MessageId ni eco de un token o enlace sintético de prueba. No usa red SMTP ni cuenta real si funciona el guard existente.
+- Alcance: sólo test backend y CHANGELOG aditivo. No cambia runtime, permisos, secretos, schema, configuración SMTP, pipelines, frontend, QA/main/PROD. Contrato medible de preparación, NO acredita envío real, inexistencia de enlaces a PROD con configuración válida, revocación de tokens, SMTP externo ni E2E. Sin dotnet test local; exigir CI exact HEAD y revisión triple independiente antes de integrar.
+- Rollback: revert protegido de la prueba y esta entrada, preservando trabajo ajeno.
+
 ## 2026-11-12 — I8-006.A: contraseña propia sin fugas en auditoría (DEV)
 
 - Autor Task física Javier :10 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507`, scope Plan Comercial I8-006.A; rama original `work/solqaryn-i8-006-a` desde dev@`710a0351b161b44ee0d9ee6dce94c4c64bbd5e67`.
