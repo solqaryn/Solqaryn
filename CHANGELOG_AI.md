@@ -1,3 +1,10 @@
+## 2026-11-12 — I8-008.H: permiso empresarial positivo sin bypass tenant (Javier :30)
+
+- AUTHOR_TASK_ID=`6aeacb7820ac8191b7d768a6f33dfa09`, scope autorizado `I8-008.H` (Plan Comercial Inicial V3, PLAN_MAESTRO fila 146). Predecesora I8-008.G=VALIDANDO; COLA!O146=SI habilita desarrollo, COLA!G146=NO impide fusionar hasta que la dependencia sea LISTO.
+- Regresion dirigida xUnit `I8008HPermisoPositivoTenantScopeTests`: `PermisoService.TienePermisoAsync(empresaId)` debe respetar un permiso existente para la empresa A cuando el scope tenant-aware confirma su membresia, pero denegar empresa B sin membresia y empresaId=0, tambien cuando el rol empresarial de A tiene EsAdministrador=true. `VerificarPermisoAsync` debe lanzar ForbiddenAccessException para B; se comprueba que la consulta de grants no se hace para B.
+- Prueba causal del servicio de Application con mocks estrictos de scope/repositorio (2 variantes de rol), sin modificar runtime, API, DTO, JWT/RBAC, DB/migraciones, secrets, workflows ni main/QA/PROD. **NO certifica resolucion real de membresias, HTTP/JWT ni MySQL**; la ejecucion dotnet local no se atribuye. Requiere CI GitHub exact HEAD y TECH_REVIEW independiente triple sobre el HEAD final.
+- Rollback: revert protegido solo del test y esta nota, preservando los commits y el trabajo concurrente.
+
 ## 2026-11-12 — I8-006.A: contraseña propia sin fugas en auditoría (DEV)
 
 - Autor Task física Javier :10 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507`, scope Plan Comercial I8-006.A; rama original `work/solqaryn-i8-006-a` desde dev@`710a0351b161b44ee0d9ee6dce94c4c64bbd5e67`.
