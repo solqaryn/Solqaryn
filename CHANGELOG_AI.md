@@ -1,3 +1,10 @@
+## 2026-11-12 — I8-003.F: caso negativo de reset admin con membresia inactiva (DEV)
+
+- AUTHOR_TASK_ID=6adbb9fff1548191a1bd5b30d9e9984a (Javier :00 / JAVIER_CHATGPT, GitHub jmejia31). Se retoma START real SQ-I8-003-F-J00-START-0EF1E736-20261112 de PLAN_MAESTRO H119=EN_PROGRESO, sin duplicar claim ni autor. Rama original canonica work/solqaryn-i8-003-f, creada previamente desde dev@0ef1e736a4538c2d48c66bbd12fafb77259400aa. Dependencia I8-003.A sigue VALIDANDO: COLA G119=NO, O119=NO durante el trabajo.
+- Prueba dirigida backend/tests/Solqaryn.Tests/I8003FResetAdminMembresiaInactivaTests.cs: fixture EF InMemory crea empresa A, administrador vigente, usuario objetivo activo pero membresia A desactivada. Llama a UsuarioAdministracionEmpresaService.ActualizarAsync con cambio de password sintetica y exige ForbiddenAccessException, PasswordHash original inmutable, membresia aun inactiva, ninguna llamada a IUsuarioService ni auditoria, y ningun check de permiso RestablecerContrasena posterior a denegacion. Reutiliza contrato I8-003.E del codigo vigente.
+- Alcance SOLO prueba y nota aditiva. Sin cambio runtime/API/DTO/DB/migraciones/JWT/RBAC/SMTP/workflows/secretos/frontend/main/QA/PROD. No se ejecuto dotnet test local; exigir GitHub Actions exact HEAD y revisar logs si falla. EF InMemory y mocks no prueban MySQL, HTTP/JWT, SMTP, enlace de un uso, entrega de correo ni recuperacion funcional completa de I8-003.A. Este caso de preparacion NO certifica I8-003.A.
+- Integracion FIFO: no fusionar antes de #4020 ni con COLA G119=NO. Revision triple genuina por TASK_ID distinto de autor/contribuyentes sobre HEAD final, Scope Lock/Seguridad/Backend/Directed SUCCESS exact HEAD y posterior postmerge 3/3 exact MERGE_SHA + PLAN/COLA/BITACORA antes de LISTO. Revert protegido selectivo de nuevo test y de esta entrada, sin force-push ni borrar aportes ajenos.
+
 ## 2026-11-12 — I8-006.A: contraseña propia sin fugas en auditoría (DEV)
 
 - Autor Task física Javier :10 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507`, scope Plan Comercial I8-006.A; rama original `work/solqaryn-i8-006-a` desde dev@`710a0351b161b44ee0d9ee6dce94c4c64bbd5e67`.
