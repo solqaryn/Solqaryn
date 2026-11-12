@@ -1,3 +1,9 @@
+## 2026-11-12 — P2-006.G: rechazo de lectura de ventas sin tenant/membresía verificados (DEV)
+
+- TASK física Javier :10, AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507`; Plan Comercial Inicial P2-006.G, predecesora P2-006.F LISTO, COLA O264=SI/G264=SI, rama original `work/solqaryn-p2-006-g` sobre dev `0ef1e736a4538c2d48c66bbd12fafb77259400aa`.
+- Regresión xUnit `P2006GReportesVentasTenantAutenticadoTests` (2 negativos): con dos ventas confirmadas A/B existentes en EF InMemory, la cabecera X-Empresa-Id falsificada sin marca verificada no publica resumen/detalle ni consulta identidad; marca A sin membresía tenant verificada también devuelve cero aunque cabecera señale B. Reutiliza `ReporteVentasService` productivo, sin alterar su comportamiento. Se registra el límite: EF InMemory no acredita middleware HTTP/JWT/RBAC, MySQL, escrituras ni reportes externos. No hubo ejecución local de dotnet test; gates de GitHub Actions deben verificarse exact HEAD.
+- Impacto: tests de Infrastructure/reportes y contrato de aislamiento comercial; sin cambios de esquemas, DTOs, auth runtime, datos productivos, secretos, frontend, workflows ni main/QA/PROD. Revisión triple independiente de otro TASK_ID (no autor ni contribuyente), Scope Lock/Seguridad/Backend/Directed SUCCESS exact HEAD, FIFO por PR.created_at, merge protegido y 3/3 posmerge exact SHA antes de LISTO. Rollback por revert protegido selectivo de prueba y esta nota sin alterar otros aportes.
+
 ## 2026-11-12 — I8-006.A: contraseña propia sin fugas en auditoría (DEV)
 
 - Autor Task física Javier :10 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507`, scope Plan Comercial I8-006.A; rama original `work/solqaryn-i8-006-a` desde dev@`710a0351b161b44ee0d9ee6dce94c4c64bbd5e67`.
