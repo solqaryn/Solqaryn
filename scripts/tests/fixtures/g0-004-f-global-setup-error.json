@@ -1,0 +1,18 @@
+{
+  "suites": [
+    {
+      "specs": [
+        {
+          "tests": [
+            {
+              "status": "expected",
+              "expectedStatus": "passed",
+              "results": [{ "status": "passed" }]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [{ "message": "SYNTHETIC_GLOBAL_SETUP_FAILURE" }]
+}
