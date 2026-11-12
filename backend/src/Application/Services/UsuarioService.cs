@@ -233,8 +233,11 @@ public class UsuarioService : IUsuarioService
         _repository.Update(usuario);
         await _repository.SaveChangesAsync();
 
+        // El motivo completo queda en la ficha del usuario, con los permisos correspondientes.
+        // No copiar texto libre a la bitacora: puede contener tokens o URL de recuperacion.
         await _auditoria.RegistrarAsync(ModuloSistema.Usuarios, AccionPermiso.Desactivar,
-            $"Bloqueó al usuario '{usuario.NombreUsuario}'.", usuario.Id, entidad: "Usuario", motivo: motivo);
+            $"Bloqueó al usuario '{usuario.NombreUsuario}'.", usuario.Id, entidad: "Usuario",
+            motivo: "Bloqueo registrado; consultar motivo en la ficha del usuario.");
         return ToDto(usuario);
     }
 
