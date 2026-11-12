@@ -14,6 +14,13 @@ public class UsuarioService : IUsuarioService
         "^[a-zA-Z0-9._-]{3,50}$",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
+    // No almacenar enlaces ni material de autenticacion en motivos libres de bloqueo:
+    // se exponen en la ficha del usuario y pueden propagarse a otros lectores.
+    private static readonly Regex MotivoBloqueoSensible = new(
+        @"(?:https?://|\bbearer\s+\S+|\b(?:access_token|token|password|clave|contrasena|contraseña|authorization)\s*[:=])",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant,
+        TimeSpan.FromMilliseconds(200));
+
     private readonly IUsuarioRepository _repository;
     private readonly IRolRepository _rolRepository;
     private readonly IEmpresaRepository _empresaRepository;
@@ -216,6 +223,9 @@ public class UsuarioService : IUsuarioService
     {
         if (string.IsNullOrWhiteSpace(motivo))
             throw new BusinessRuleException("El motivo del bloqueo es obligatorio.");
+        if (MotivoBloqueoSensible.IsMatch(motivo))
+            throw new BusinessRuleException(
+                "El motivo del bloqueo no puede incluir enlaces ni credenciales.");
 
         var usuario = await _repository.GetByIdAsync(id)
             ?? throw new BusinessRuleException("El usuario no existe.");
