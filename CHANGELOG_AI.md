@@ -1,3 +1,10 @@
+## 2026-11-12 — I8-006.F: caso medible del contrato controlador de contraseña propia (DEV)
+
+- Task física Javier :10 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507`; fuente exclusiva Plan Comercial Inicial I8-006.F (MICROPASO, ORIGEN=I8-006.B), predecesora I8-006.A LISTO y COLA!O122=SI/G122=SI antes del claim. Rama canónica `work/solqaryn-i8-006-f` desde dev@`0ef1e736a4538c2d48c66bbd12fafb77259400aa`.
+- Fixture xUnit `I8006FContratoControladorCambioPropioTests`: DTO de contraseña sintética y encabezado/valor de ruta `usuarioId=999` no confiable; resultado esperado: `PerfilController` protegido por `[Authorize]`, ruta PUT `/perfil/password` sin parámetro ID de usuario, una única delegación `IPerfilService.CambiarPasswordAsync(dto)`, respuesta de éxito genérica. Complementa pruebas I8-006.C/D/E/A; no reimplementa lógica ni modifica runtime.
+- NEGATIVO/STOP de prueba: inyección de ID ajeno por cabecera o ruta no es un campo de DTO ni argumento del controlador; el test directo por Moq NO demuestra que el middleware HTTP ignore encabezados maliciosos, ni verifica JWT/roles, persistencia MySQL, transacciones, bloqueo, revocación de sesiones o envío SMTP. No atribuir PASS local: `dotnet test` no se ejecutó fuera de CI.
+- Impacto exclusivo: prueba backend y nota aditiva de changelog; sin interfaces productivas, schema/migraciones, secretos, privilegios, workflows, UI, main, QA ni PROD. Rollback: revert protegido del test y esta nota, conservando los demás commits; revisión triple independiente por Task no autora y CI required exact HEAD antes de merge; posmerge 3/3 y ledger antes de LISTO.
+
 ## 2026-11-12 — I8-006.A: contraseña propia sin fugas en auditoría (DEV)
 
 - Autor Task física Javier :10 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507`, scope Plan Comercial I8-006.A; rama original `work/solqaryn-i8-006-a` desde dev@`710a0351b161b44ee0d9ee6dce94c4c64bbd5e67`.
