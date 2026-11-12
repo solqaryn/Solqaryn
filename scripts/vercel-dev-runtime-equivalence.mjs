@@ -33,7 +33,8 @@ function manifest(entries, reasons, label) {
   const result = [];
   for (const item of entries) {
     const path = item?.path;
-    if (typeof path !== 'string' || !/^frontend\/[^/]+$/.test(path) ||
+    if (typeof path !== 'string' || !/^frontend\/[A-Za-z0-9._-]+$/.test(path) ||
+        path === 'frontend/.' || path === 'frontend/..' ||
         found.has(path) || !SHA.test(item?.sha ?? '') ||
         !['file', 'dir'].includes(item?.type)) {
       reasons.push(label + '_ENTRY_INVALID');
@@ -116,6 +117,10 @@ function selfTest() {
     ['no diff files', p => p.compare.files = []],
     ['duplicate tree path', p => p.frontend_after.push(p.frontend_after[0])],
     ['invalid tree sha', p => p.frontend_before[0].sha = 'invalid'],
+    ['manifest parent path', p => p.frontend_before[0].path = 'frontend/..'],
+    ['manifest current path', p => p.frontend_before[0].path = 'frontend/.'],
+    ['manifest Windows separator', p => p.frontend_after[0].path = 'frontend/src' + String.fromCharCode(92) + 'evil'],
+    ['manifest embedded newline', p => p.frontend_after[0].path = 'frontend/path' + String.fromCharCode(10) + 'newline'],
     ['path with empty segment', p => p.compare.files = [{filename:'docs//readback.md'}]],
     ['directory instead of file', p => p.compare.files = [{filename:'docs/'}]],
     ['Windows path separator', p => p.compare.files = [{filename:'docs/unsafe\\file.md'}]],
