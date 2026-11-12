@@ -1,3 +1,11 @@
+## 2026-11-12 — I8-009.A: bloqueo auditable sin filtrar motivos libres con tokens (DEV)
+
+- Plan Comercial Inicial V3, scope I8-009.A, Task fisica Javier :50 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bbad26881918c283abe06e1f32a`, branch canonica `work/solqaryn-i8-009-a`, base dev `710a0351b161b44ee0d9ee6dce94c4c64bbd5e67`. Predecesoras I8-009.C/D/E LISTO; COLA!G114 y O114=SI por formula antes del claim.
+- `UsuarioService.BloquearAsync` conserva el motivo completo en `Usuario.MotivoBloqueo` bajo los permisos de la ficha de usuario, pero evita copiar texto libre no confiable al campo `motivo` de `RegistroAuditoria`, donde podria aparecer una URL de restablecimiento, token o secreto. Auditoria conserva accion, referencia, entidad y descripcion, con motivo fijo.
+- Regresion xUnit `I8009ACierreAuditoriaBloqueoSinSecretoTests`: dos motivos sinteticos adversariales (URL tokenizada y Bearer); exige bloqueo real de entidad y auditoria con accion Desactivar sin filtracion de URL/token, validando escritura de repositorio simulada. Fixture sin tokens reales ni cuentas DEV.
+- Contrato preservado: sin cambiar API, JWT/RBAC, validacion multitenant, DTO, base/migraciones, workflows ni infraestructura. La razon completa persiste en la ficha del usuario; evaluar control de acceso al motivo separado. No se implementan alertas externas, confirmacion por correo, tasa de abuso ni revocacion retroactiva; los recibos C/D/E no sustituyen esa cobertura. No se ejecuto dotnet test local; CI Scope Lock, Seguridad, Backend y Directed exact-HEAD, triple auditoria independiente y FIFO son gates.
+- Rollback: revert protegido del cambio acotado de auditoria, prueba y nota; no reescribir historial, no alterar formulas de PLAN/COLA/BITACORA. PR propio nunca se auto-revisa/merge/certifica LISTO.
+
 ## 2026-11-11 — I8-010.E: impedir recuperación administrativa sin tenant verificado (DEV)
 
 - Desarrollo autorizado por Javier :20 / JAVIER_CHATGPT / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3` del Plan Comercial Inicial. PENDIENTE→EN_PROGRESO en PLAN_MAESTRO!H104 con COLA!O104=SI/G104=SI, evento `SQ-I8-010-E-J20-START-9785BE55-20261111` appendCells contiguo y readback; rama original `work/solqaryn-i8-010-e` basada en `dev@9785be559e11eab66393cbffbdfcc38094a38a63`. No se integró PR anterior #4014.
