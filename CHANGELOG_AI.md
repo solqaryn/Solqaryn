@@ -1,3 +1,10 @@
+## 2026-11-12 — I8-011.F: caso sintetico superadmin sin bypass (DEV)
+
+- Autor original Task Javier :20 / JAVIER_CHATGPT, AUTHOR_TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Plan Comercial Inicial I8-011.F, objetivo preparar UNA condicion medible; predecesora I8-011.A VALIDANDO, COLA!O127=SI antes de reclamar, COLA!G127=NO hasta que la predecesora sea LISTO. Rama canonica `work/solqaryn-i8-011-f` desde dev `0ef1e736a4538c2d48c66bbd12fafb77259400aa`.
+- Nueva prueba dirigida `I8011FSuperadminMarcaTenantNoBypassTests` prepara fixture de superadmin global sintetico: cabecera y query `empresaId=22` no otorgan tenant comercial sin marca server-side; marca invalida 0/-11 o string tampoco; marca entera 11 domina fuente declarada 22. No se usan datos clientes ni credenciales. Prueba sobre `VerifiedCommercialTenant.Resolve` real, no mocks del metodo.
+- Limite: NO acredita filtro RBAC, JWT, HTTP pipeline, migraciones ni MySQL, y no sustituye I8-011.A/C/D/E. No se ejecuto `dotnet test` local; CI exact-HEAD y triple auditoria independiente requeridas. Sin cambios runtime, permisos, esquemas, workflows, secretos ni ramas QA/main/PROD. Entrega VALIDANDO, nunca LISTO anticipado.
+- Rollback: revert protegido del test y este bloque de CHANGELOG sin reescribir historia compartida.
+
 ## 2026-11-12 — I8-006.A: contraseña propia sin fugas en auditoría (DEV)
 
 - Autor Task física Javier :10 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507`, scope Plan Comercial I8-006.A; rama original `work/solqaryn-i8-006-a` desde dev@`710a0351b161b44ee0d9ee6dce94c4c64bbd5e67`.
