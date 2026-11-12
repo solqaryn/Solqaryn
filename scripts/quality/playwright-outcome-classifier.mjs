@@ -1,4 +1,4 @@
-// G0-004.D: Playwright JSON signal classification (no credentials or test titles).
+// G0-004.D/G0-004.A: Playwright JSON signal classification (no credentials or test titles).
 // FAIL, FLAKY, SKIPPED, EXPECTED_FAIL and invalid reports never become green.
 import { readFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
@@ -7,6 +7,11 @@ export function classifyPlaywrightReport(report) {
   const counts = { passed: 0, failed: 0, flaky: 0, skipped: 0, expectedFailed: 0, invalid: 0 };
   if (!report || typeof report !== 'object' || !Array.isArray(report.suites))
     return { status: 'INVALID_REPORT', counts: { ...counts, invalid: 1 }, tests: 0 };
+  // Playwright reports global/worker/setup errors separately from individual tests.
+  // Never mark a green suite when those errors exist, and never echo their bodies.
+  if (report.errors !== undefined && !Array.isArray(report.errors))
+    return { status: 'INVALID_REPORT', counts: { ...counts, invalid: 1 }, tests: 0 };
+  const globalErrors = report.errors?.length ?? 0;
   function visit(suite) {
     if (!suite || typeof suite !== 'object') { counts.invalid++; return; }
     for (const spec of suite.specs || []) {
@@ -28,10 +33,10 @@ export function classifyPlaywrightReport(report) {
   }
   for (const suite of report.suites) visit(suite);
   const tests = Object.values(counts).reduce((a,b)=>a+b, 0);
-  const status = counts.invalid || tests === 0 ? 'INVALID_REPORT' :
-    counts.failed ? 'FAIL' : counts.flaky ? 'FLAKY_REVIEW' :
+  const status = counts.invalid || (tests === 0 && !globalErrors) ? 'INVALID_REPORT' :
+    (counts.failed || globalErrors) ? 'FAIL' : counts.flaky ? 'FLAKY_REVIEW' :
     (counts.skipped || counts.expectedFailed) ? 'INCOMPLETE' : 'PASS';
-  return { status, counts, tests };
+  return { status, counts, tests, ...(globalErrors ? { globalErrors } : {}) };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
