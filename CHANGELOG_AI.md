@@ -1,3 +1,10 @@
+## 2026-11-12 — I8-009.A: reparación causal complementaria de motivos de bloqueo sensibles (Task J40)
+
+- Autoría original preservada: Javier :50 / AUTHOR_TASK_ID `6af16bbad26881918c283abe06e1f32a`; contribuyente posterior Javier :40 / CONTRIBUTOR_TASK_ID `6adc2e55f47c81919f6374e561687076`, en la MISMA rama original `work/solqaryn-i8-009-a`. No se modifica el PR #4020 ni se anticipa su integración.
+- Hallazgo de seguridad: la primera reparación evitaba registrar el motivo libre en `RegistroAuditoria`, pero aún conservaba enlaces/token/bearer en `Usuario.MotivoBloqueo` que puede exponerse mediante `UsuarioDetalleDto.MotivoBloqueo` del endpoint de lectura. Esta corrección rechaza antes de consultar el repositorio motivos que contengan URL, Bearer o marcadores de credenciales. Se conserva la auditoría con texto fijo, así como motivos operativos seguros.
+- Pruebas dirigidas xUnit: negativo de 7 entradas sintéticas (URL HTTP/HTTPS, Bearer con espacio/tab, token, password, authorization), sin consulta ni persistencia/auditoría; positivo de motivo permitido que persiste y audita sin fugas. `dotnet test` local NO ejecutado: falta CI del HEAD final exacto, revisión triple de otra Task diferente de autora y contribuyente J40, y solución de conflicto auténtico con dev antes de integración FIFO.
+- Límites: patrones de motivo no demuestran sanitización universal, restricciones de todos los consumidores/DTO, JWT/HTTP/MySQL, alertas externas, rate limiting ni revocación histórica. Sin cambios de DTO/API/schema/DB/migraciones/workflows/secretos/main/QA/PROD; no reclamar LISTO. Rollback: revert protegido únicamente de los commits complementarios preservando código previo y cambios ajenos.
+
 ## 2026-11-12 — I8-009.A: bloqueo auditable sin filtrar motivos libres con tokens (DEV)
 
 - Plan Comercial Inicial V3, scope I8-009.A, Task fisica Javier :50 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bbad26881918c283abe06e1f32a`, branch canonica `work/solqaryn-i8-009-a`, base dev `710a0351b161b44ee0d9ee6dce94c4c64bbd5e67`. Predecesoras I8-009.C/D/E LISTO; COLA!G114 y O114=SI por formula antes del claim.
