@@ -1,3 +1,9 @@
+## 2026-11-12 — I8-007.F: preparar caso de perfil compartido A/B (DEV)
+
+- Autor real: Javier :10, TASK_ID `6af16bb9492c8191b8e8c7d606f11507`, Plan Comercial Inicial I8-007.F (PREPARAR CASO), rama determinista `work/solqaryn-i8-007-f`; predecesora I8-007.A VALIDANDO, COLA!O123=SI, G123=NO hasta LISTO. Evento inicial `SQ-I8-007-F-J10-START-0EF1E736-20261112` en BITACORA sin filas de relleno.
+- Condicion observable negativa: administrador autorizado de empresa A intenta editar el perfil y la clave de una identidad con membresias en A y B, incluso cuando B esta inactiva. Fixture EF InMemory, empresa A=11, B=22, dos variantes B activa/inactiva; prueba `I8007FIdentidadCompartidaNoEditableTests` invoca `UsuarioAdministracionEmpresaService.ActualizarAsync` real con dependencias simuladas. Esperado: ForbiddenAccessException antes de actualizar usuario/rol/clave o emitir auditoria; dos membresias conservadas, sin llamada a servicio de usuarios ni permisos de AsignarRol/RestablecerContrasena.
+- Esta es preparacion de un recibo aislado y no certificacion integral de edicion multiempresa, HTTP/JWT/RBAC E2E, MySQL, transacciones productivas ni despliegues. No se ejecuto `dotnet test` local; verificar CI exact HEAD, triple revision independiente por Task distinta de autora J10 y gates Scope Lock/Seguridad/Backend/Directed antes de merge. Rollback: revert selectivo de este test y nota manteniendo historia concurrente. Ningun runtime, migracion, workflow, secreto, QA/main/PROD ni infraestructura alterados.
+
 ## 2026-11-12 — I8-006.A: contraseña propia sin fugas en auditoría (DEV)
 
 - Autor Task física Javier :10 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507`, scope Plan Comercial I8-006.A; rama original `work/solqaryn-i8-006-a` desde dev@`710a0351b161b44ee0d9ee6dce94c4c64bbd5e67`.
