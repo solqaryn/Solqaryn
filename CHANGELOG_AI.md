@@ -1,5 +1,9 @@
 # SOLQARYN — Cambios operativos vigentes
 
+## 2026-11-12 — Visibilidad exacta de VALIDANDO y paralelismo real por Scope
+- Precisa la transición inmediata a EN_PROGRESO al reclamar microtarea; VALIDANDO sólo al disponer de candidato completo, ANTES de auditorías funcional, seguridad e integración; misma Task corrige sin abandonar la custodia; commit directo dev, cuarta auditoría posintegración y LISTO verificado. Otras Tasks trabajan en paralelo IDs libres. Meta 1/3 por corrida sin falsos cierres.
+
+
 ## 2026-11-12 — Limpieza definitiva de V13 directo en dev
 - Reemplazados capítulos históricos contradictorios por un único contrato directo en docs/AUTOMATION_V13.md.
 - Censo original y seis horarios Javier conservados, sin reactivación. Alex permanece fuera del control de la cuenta Javier.
