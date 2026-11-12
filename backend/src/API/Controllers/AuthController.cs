@@ -34,7 +34,7 @@ public class AuthController : ControllerBase
             await _auditoria.RegistrarAsync(
                 ModuloSistema.Usuarios,
                 AccionPermiso.ConsultarHistorial,
-                $"Intento fallido de inicio de sesion para '{dto.NombreUsuario}'.",
+                "Intento fallido de inicio de sesion.",
                 entidad: "Sesion",
                 resultado: "Rechazado",
                 error: "Credenciales invalidas");
