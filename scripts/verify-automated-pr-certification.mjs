@@ -9,6 +9,7 @@ const TRUSTED_GITHUB_ACTIONS_APP_ID = 15368;
 const SCOPE = /\b((?:P\d+|I8|G0)-\d{3}\.[A-Z])\b/i;
 const INSTITUTIONAL_EXECUTOR = 'solqaryn-platform';
 const INDEPENDENT_REVIEWER = ['jmejia', '31'].join('');
+const INDEPENDENT_REVIEWERS = new Set([INDEPENDENT_REVIEWER, 'morales35alex']);
 const BLOCKED_RUNTIME_PATHS = /(^|\/)(?:\.env(?:\..*)?|[^/]+\.(?:pem|p12|key)|appsettings\.Production\.json)$|^(?:qa|prod|main)\//i;
 const GUARDED = new Set([
   'AGENTS.md', 'docs/PROJECT_SCOPE_LOCK.md', 'docs/AUTOMATION_STATUS.md', 'docs/GITHUB_ACCOUNT_ROLES.md',
@@ -104,8 +105,8 @@ export function certify({ pr, files, runs, reviews = [], commits = [], repositor
   if (![['jmejia','31'].join(''), 'morales35alex', 'solqaryn-platform'].includes(pr?.user?.login)) fail('GITHUB_AUTHOR_NOT_ALLOWLISTED');
   if (!Array.isArray(files) || files.length === 0 || files.length > 200) fail('PR_FILE_COUNT_INVALID');
   const scope = pr?.title?.match(SCOPE)?.[1]?.toUpperCase();
-  // The owner authorized the institutional account to author commercial PRs;
-  // those PRs need a genuine independent Javier review.
+  // Institutional/guarded PRs require exact-HEAD human approval by Alex or Javier,
+  // provided that reviewer did not author or contribute to any commit in this PR.
   const names = files?.map(x => x.filename) || [];
   if (new Set(names).size !== names.length || names.some(n => typeof n !== 'string' || n.includes('..') || n.includes('\\'))) fail('UNSAFE_FILE_PATH');
   if (names.some(n => BLOCKED_RUNTIME_PATHS.test(n))) fail('QA_PROD_SECRET_FILE_SCOPE_FORBIDDEN');
@@ -141,8 +142,8 @@ export function certify({ pr, files, runs, reviews = [], commits = [], repositor
     for (const commit of commits || []) for (const login of [commit.author?.login, commit.committer?.login]) if (login) contributorLogins.add(login);
     const validReviews = (reviews || []).filter(review => review.state === 'APPROVED' && review.commit_id === expectedHead &&
       review.user?.login && !contributorLogins.has(review.user.login) &&
-      (!institutionalPR || review.user.login === INDEPENDENT_REVIEWER));
-    if (!validReviews.length) fail(institutionalPR ? 'INSTITUTIONAL_REQUIRES_JAVIER_INDEPENDENT_REVIEW' : 'GOVERNANCE_REQUIRES_INDEPENDENT_FORMAL_REVIEW');
+      INDEPENDENT_REVIEWERS.has(review.user.login));
+    if (!validReviews.length) fail(institutionalPR ? 'INSTITUTIONAL_REQUIRES_ALEX_OR_JAVIER_INDEPENDENT_REVIEW' : 'GOVERNANCE_REQUIRES_INDEPENDENT_FORMAL_REVIEW');
   } else if (!scope) {
     fail('UNCLASSIFIED_AUTONOMOUS_CHANGE');
   }
@@ -197,12 +198,16 @@ function selfTest() {
   assertReject('draft', x => { x.pr.draft = true; return x; });
   assertReject('foreign repo', x => { x.pr.head.repo.full_name = 'other/repo'; return x; });
   assertReject('forbidden author', x => { x.pr.user.login = 'unknown'; return x; });
-  assertReject('institutional commercial needs Javier approval', x => { x.pr.user.login = INSTITUTIONAL_EXECUTOR; return x; });
+  assertReject('institutional commercial requires independent Alex or Javier approval', x => { x.pr.user.login = INSTITUTIONAL_EXECUTOR; return x; });
   const commercialInstitution = clone(fixture);
   commercialInstitution.pr.user.login = INSTITUTIONAL_EXECUTOR;
   commercialInstitution.reviews = [{state:'APPROVED', commit_id:h, user:{login:INDEPENDENT_REVIEWER}}];
   assertPass('institutional commercial PR reviewed independently by Javier', commercialInstitution);
-  assertReject('institutional commercial wrong reviewer', x => { x.pr.user.login = INSTITUTIONAL_EXECUTOR; x.reviews = [{state:'APPROVED',commit_id:h,user:{login:'morales35alex'}}];return x; });
+  const commercialAlex = clone(commercialInstitution);
+  commercialAlex.reviews = [{state:'APPROVED',commit_id:h,user:{login:'morales35alex'}}];
+  assertPass('institutional commercial accepts independent Alex approval', commercialAlex);
+  assertReject('institutional commercial rejects other approval', x => { x.pr.user.login = INSTITUTIONAL_EXECUTOR; x.reviews = [{state:'APPROVED',commit_id:h,user:{login:'unknown'}}];return x; });
+  assertReject('institutional commercial rejects Alex contributor', x => { x.pr.user.login = INSTITUTIONAL_EXECUTOR; x.reviews = [{state:'APPROVED',commit_id:h,user:{login:'morales35alex'}}]; x.commits = [{committer:{login:'morales35alex'}}];return x; });
   assertReject('institutional review by contributor', x => { x.pr.user.login = INSTITUTIONAL_EXECUTOR; x.reviews = [{state:'APPROVED',commit_id:h,user:{login:INDEPENDENT_REVIEWER}}]; x.commits = [{author:{login:INDEPENDENT_REVIEWER}}];return x; });
   assertReject('institutional stale review', x => { x.pr.user.login = INSTITUTIONAL_EXECUTOR; x.reviews = [{state:'APPROVED',commit_id:'b'.repeat(40),user:{login:INDEPENDENT_REVIEWER}}];return x; });
   assertReject('forged directed success from untrusted app', x => { x.runs[2].app.id = 1; return x; });
@@ -220,7 +225,12 @@ function selfTest() {
   assertPass('separate formal governance review', human);
   const institution = clone(human); institution.pr.user.login = 'solqaryn-platform'; institution.pr.title = 'docs(governance): Update policy'; institution.pr.head.ref = 'codex/governance-update'; institution.reviews = [{state:'APPROVED',commit_id:h,user:{login:INDEPENDENT_REVIEWER}}];
   assertPass('platform governance with independent Javier review', institution);
-  assertReject('institutional governance with wrong reviewer', x => { x.files.push({filename:'docs/AUTOMATION_STATUS.md'}); x.pr.user.login = INSTITUTIONAL_EXECUTOR; x.reviews = [{state:'APPROVED',commit_id:h,user:{login:'morales35alex'}}];return x; });
+  const institutionAlex = clone(institution);
+  institutionAlex.reviews = [{state:'APPROVED',commit_id:h,user:{login:'morales35alex'}}];
+  assertPass('institutional governance accepts independent Alex', institutionAlex);
+  const contributedByJavier = clone(institutionAlex);
+  contributedByJavier.commits = [{author:{login:INDEPENDENT_REVIEWER},committer:{login:INDEPENDENT_REVIEWER}}];
+  assertPass('institutional governance accepts Alex after Javier contributed', contributedByJavier);
 
   assertReject('self governance approval', x => { x.files.push({filename:'docs/AUTOMATION_STATUS.md'}); x.reviews = [{state:'APPROVED',commit_id:h,user:{login:['jmejia','31'].join('')}}];return x; });
   assertReject('stale governance review', x => { x.files.push({filename:'docs/AUTOMATION_STATUS.md'}); x.reviews = [{state:'APPROVED',commit_id:'b'.repeat(40),user:{login:'morales35alex'}}];return x; });
@@ -365,7 +375,7 @@ function selfTest() {
 }
 
 function shouldWaitForActiveChecks(report, runs, expectedHead) {
-  if (report.failures.includes('GOVERNANCE_REQUIRES_INDEPENDENT_FORMAL_REVIEW') || report.failures.includes('INSTITUTIONAL_REQUIRES_JAVIER_INDEPENDENT_REVIEW')) return false;
+  if (report.failures.includes('GOVERNANCE_REQUIRES_INDEPENDENT_FORMAL_REVIEW') || report.failures.includes('INSTITUTIONAL_REQUIRES_ALEX_OR_JAVIER_INDEPENDENT_REVIEW')) return false;
   const pendingOnly = report.failures.length > 0 && report.failures.every(f => f.startsWith('OTHER_CHECKS_PENDING:') || f.startsWith('REQUIRED_CHECK_NOT_GREEN:') || f.startsWith('SCOPE_DIRECTED_TEST_MISSING:'));
   if (!pendingOnly) return false;
   // Only actually relevant pending jobs may extend certification time.
