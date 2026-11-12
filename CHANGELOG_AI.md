@@ -1,3 +1,11 @@
+## 2026-11-11 — I8-011.E: roles globales no exponen hashes ni campos de token en DTO de usuarios (DEV)
+
+- Autor: Task física Javier :30 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`; rama original `work/solqaryn-i8-011-e-j30` desde dev@02a086e514d7efe1849cca3530ddea1e9d481568. Plan Comercial I8-011.E, predecesora I8-011.D LISTO, COLA!O105/G105=SI en START institucional.
+- Regresión xUnit `I8011ESuperadminDatosUsuariosSinSecretosTests`: rol `Ambito=Plataforma` con `EsAdministrador` true/false, entidad con `PasswordHash` sintético, comprueba proyección `UsuarioService` en GetById/GetAll/GetPaged, JSON sin el marcador ni campos PasswordHash/RefreshToken/ResetToken y contratos DTO sin propiedades Password/Token/Secreto.
+- Verifica metadatos `[Authorize]` de UsuariosController y `[RequierePermiso]` en sus tres consultas. No cambia runtime, JWT, permisos, servicios, MySQL, migraciones, infraestructura, secrets, main/QA/PROD ni workflows; datos sintéticos exclusivamente.
+- Limitaciones: Moq y reflexión no verifican middleware JWT/HTTP real, serialización completa de recursos externos, token storage, cuentas DEV, aislamiento tenant en todas las rutas ni MySQL; no se afirma certificación E2E o prueba local dotnet. Revisión triple independiente y CI exact-HEAD Scope Lock/Seguridad/Backend/Directed antes de merge; postmerge 3/3 y readback PLAN/COLA/BITACORA antes de LISTO.
+- Rollback mediante revert protegido del test y de esta nota, preservando los cambios concurrentes.
+
 ## 2026-11-11 — I8-009.E: no propagar enlaces de reset ni tokens en la auditoria de login rechazado (DEV)
 
 - Task fisica Javier :10 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507`, rama original `work/solqaryn-i8-009-e` desde dev@`9785be559e11eab66393cbffbdfcc38094a38a63`. Scope Plan Comercial I8-009.E, dependencia I8-009.D LISTO, COLA!O103=SI y G103=SI; START institucional separado.
