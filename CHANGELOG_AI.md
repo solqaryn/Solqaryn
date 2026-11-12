@@ -1,3 +1,10 @@
+## 2026-11-12 — P2-018.E smoke integrado de aislamiento API A/B (Javier :30)
+
+- Scope del Plan Comercial Inicial P2-018.E, TASK_ID original `6aeacb7820ac8191b7d768a6f33dfa09`, rama original determinista `work/solqaryn-p2-018-e`. PR de integración FIFO independiente de #4020; no merge fuera de turno ni certificación LISTO.
+- Se agregó `backend/tests/Solqaryn.Tests/P2018ESmokeApiTenantsABTests.cs`: ocho negativos sobre `UnscopedCommercialTenantGuardMiddleware` real en `DefaultHttpContext` con dos empresas y cabecera `X-Empresa-Id` falsificada; sin opt-in del piloto privado las rutas sensibles responden 503, no llaman al endpoint y devuelven cuerpo genérico sin nombres ni caché pública. El segundo test alterna A/B/A sobre un `AppDbContext` InMemory con productos de distinto owner y prueba que sólo la marca interna `VerifiedCommercialTenant` controla el filtro de lectura EF.
+- Límites explícitos: prueba de componentes integrados con HTTP sintético e InMemory, NO certificación HTTP/JWT firmado de extremo a extremo, MySQL real, grants de producción, sesiones ni todas las rutas. Sin ejecución dotnet local; CI exact-HEAD deberá emitir resultado real. No se cambió código runtime, DTO, DB/migraciones, reglas, secretos, workflows, main/QA/PROD ni cuentas. Revisión independiente triple y dependencias por fórmula son gates antes de merge.
+- Rollback: revert protegido selectivo de este test y de esta nota, preservando cualquier otro trabajo concurrente. 
+
 ## 2026-11-12 — I8-006.A: contraseña propia sin fugas en auditoría (DEV)
 
 - Autor Task física Javier :10 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507`, scope Plan Comercial I8-006.A; rama original `work/solqaryn-i8-006-a` desde dev@`710a0351b161b44ee0d9ee6dce94c4c64bbd5e67`.
