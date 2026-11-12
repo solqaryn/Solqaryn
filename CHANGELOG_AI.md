@@ -1,3 +1,10 @@
+## 2026-11-12 — I8-002.F: preparar caso de recuperación sin enumeración (DEV)
+
+- Autoría TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3` Javier :20, rama canónica `work/solqaryn-i8-002-f`; Plan Comercial V3 I8-002.F, dependencia I8-002.A VALIDANDO, COLA!O118=SI/G118=NO por fórmula al iniciar. Inicio EN_PROGRESO real en PLAN_MAESTRO!H118, BITACORA `SQ-I8-002-F-J20-START-AC026A3C-20261112` confirmado.
+- Se agrega fixture xUnit de tres identidades sintéticas: miembro de A, desconocido y usuario exclusivo de B bajo contexto de A, con respuesta pública neutra y efectos privados diferenciados. Documenta oráculo, datos de prueba, negativos y ejecución futura en `docs/testing/I8-002-F-recuperacion-caso.md`.
+- MICROFASE PREPARAR CASO: el test solo comprueba integridad del fixture y NO comprueba endpoint real, envío SMTP, digest de token, expiración, revocación, rate-limit ni MySQL. No se ejecutó `dotnet test` local. Sin cambios de runtime/DTO/DB/JWT/RBAC/seguridad/workflows ni QA/main/PROD. CI exact-HEAD, revisión triple independiente y FIFO siguen obligatorios.
+- Rollback: revert protegido y selectivo del fixture, documento y este bloque, sin borrar notas de otras Tasks.
+
 ## 2026-11-12 — P2-008.F: caso medible de factura privada por venta A/B (DEV)
 
 - Autor físico Javier :00 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`; Plan Comercial Inicial P2-008.F, predecesora P2-008.A LISTO, COLA!O248/G248=SI al START. Rama única normalizada `work/solqaryn-p2-008-f` desde dev@710a0351b161b44ee0d9ee6dce94c4c64bbd5e67. START institucional y BITACORA idempotente `SQ-P2-008-F-J00-START-710A0351-20261112` antes del código.
