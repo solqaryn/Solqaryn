@@ -1,3 +1,10 @@
+## 2026-11-12 — I8-002.A: reparacion parcial segura del bloqueo funcional #4020 (DEV, J20)
+
+- La Task autora `6adc2e4bd8a48191ac7d8641ed95a1a3` interviene SOLO la rama original `work/solqaryn-i8-002-a`; no revisa, aprueba ni fusiona su entrega. Análisis causal: `Usuario` carece de correo verificado y `AuthController/AuthService` carecen de solicitud/consumo de recuperación. Un login 401 y CI verde no certifican el requisito funcional.
+- Se incorpora `RecoveryTokenCryptography` aislado con 256 bits CSPRNG, huella SHA-256 para guardar en lugar del token, comparacion fija, rechazo de entrada malformada, token usado y expirado; pruebas xUnit negativas sintéticas. **No se añade endpoint ni se envía correo:** el material NO se activa mientras falte identidad/tenant y dirección de correo verificada en fuente institucional.
+- **NO_GO_FUNCIONAL pendiente**: (1) fuente persistente verificable de email asociado a `Usuario` y empresa; (2) entrega por SMTP solo al destino verificado; (3) tabla/repo de huellas vinculadas a usuario/tenant con expiracion y consumo atomico (CAS persistente de token, no lease de Tasks); (4) flujo request/consume anti-enumeracion, rate limiting real y cambio de contraseña transaccional; (5) negativas HTTP/DB/SMTP y revisión independiente triple del HEAD final. Ningún material en memoria sustituye el consumo único interinstancia.
+- Sin nuevos secretos ni clientes, sin tocar QA/main/PROD, workflows, permisos, rulesets ni migraciones. Reversión: revert protegido del commit en PR original, sin force-push. No declarar LISTO ni pruebas de CI anticipadas.
+
 ## 2026-11-12 — I8-002.A: contrato negativo de recuperación sin enumeración (DEV)
 
 - Ejecución auténtica PRIMARY_DEV_02 Javier :20, JAVIER_CHATGPT, TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Plan Comercial Inicial I8-002.A; predecesora I8-002.E LISTO, COLA!O107=SI y G107=SI antes del claim; PLAN_MAESTRO!H107 EN_PROGRESO con readback; evento `SQ-I8-002-A-J20-START-710A0351-20261112` añadido con appendCells A:U de 21 campos sin relleno y leído una vez.
