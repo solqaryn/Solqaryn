@@ -21,7 +21,7 @@ GOAL_TARGET_LISTO_PER_RUN=3
 
 ## Autoridad exacta
 - Leer siempre Skill y su copia exacta en HEAD dev, docs/PROJECT_SCOPE_LOCK.md, docs/AUTOMATION_STATUS.md, docs/AUTOMATION_AUTHORITY.md y **docs/AUTOMATION_V13.md**. La única fuente de alcance es el Plan Comercial Inicial. Ningún histórico de otra versión impone condiciones.
-- SIN BLOQUEO EN SHEETS: no usar locks artificiales; sí respetar ID, TASK_ID, edición concurrente y fórmulas. Las seis Tasks Javier permanecen PAUSADAS en último readback; Alex bajo su propia cuenta. No crear, habilitar o tocar Tasks sin orden.
+- SIN BLOQUEO EN SHEETS: no usar locks artificiales; sí respetar ID, TASK_ID, edición concurrente y fórmulas. Las seis Tasks Javier están HABILITADAS según readback nativo del 12-nov-2026; Alex bajo su propia cuenta. No crear, habilitar o tocar Tasks sin orden.
 - DEV: commits directos fast-forward, serializados, sin PR/branch de trabajo ni espera de GitHub APPPROVED/required checks de un ruleset retirado. GitHub Actions siguen aportando evidencia; resolver defectos de seguridad/funcionalidad reales. No tocar main/qa/prod sin permiso.
 - Cada corrida habilitada pretende 1 microtarea LISTO, meta 3. Implementación completa, 4 auditorías distintas con evidencia, reparación causal de conflictos durante la corrida, SHA dev final, PLAN/COLA/BITACORA y Jira sin bloqueo. Prohibido declarar LISTO falsamente.
 - Conservar JWT, BCrypt, RBAC, EmpresaId A/B, MySQL, secretos protegidos, seguridad y pruebas proporcionadas. Revalidar HEAD, permisos y dependencias; nada de force-push, reset destructivo o suplantación de identidades.

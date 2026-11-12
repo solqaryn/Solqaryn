@@ -7,7 +7,7 @@ BRANCH=dev
 EXECUTION_PLAN_DRIVE_FILE_ID=1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA
 CURRENT_COMMERCIAL_ONLY=TRUE
 AUTOMATION_RUNTIME=ACTIVE_DEV
-PHYSICAL_JAVIER_TASKS_ENABLED=0
+PHYSICAL_JAVIER_TASKS_ENABLED=6
 ALEX_TASKS_STATE=REQUIRES_OWNER_READBACK
 SCHEDULED_CHATGPT_TASKS_AUTHORIZED=8
 AUTHORIZED_COMMERCIAL_TASK_IDS=6adbb9fff1548191a1bd5b30d9e9984a,6af16bb9492c8191b8e8c7d606f11507,6adc2e4bd8a48191ac7d8641ed95a1a3,6aeacb7820ac8191b7d768a6f33dfa09,6adc2e55f47c81919f6374e561687076,6af16bbad26881918c283abe06e1f32a,6adbbc9ad9e88191bea8eb69104afb25,6adcc98a80a48191b71a5156624c21df
@@ -38,7 +38,7 @@ STAGES=PENDIENTE,EN_PROGRESO,VALIDANDO,LISTO,BLOQUEADO,CANCELADO
 TIMEZONE=America/Tegucigalpa
 
 ## Interpretación efectiva
-- `AUTOMATION_RUNTIME=ACTIVE_DEV` indica que el contrato contempla DEV; NO afirma que las Tasks se encuentren físicamente habilitadas. En el readback de 2026-11-12 las seis Tasks Javier estaban pausadas (`PHYSICAL_JAVIER_TASKS_ENABLED=0`). Para Alex no se presupone su estado. No reactivar por cambiar documentación.
+- `AUTOMATION_RUNTIME=ACTIVE_DEV` indica que el contrato contempla DEV; NO afirma que las Tasks se encuentren físicamente habilitadas. En el readback de 2026-11-12 las seis Tasks Javier están habilitadas (`PHYSICAL_JAVIER_TASKS_ENABLED=6`). Para Alex no se presupone su estado. No reactivar por cambiar documentación.
 - Las constantes `V13_1000_FIFO_BATCH` y `MAX_OPEN_WORK_BRANCHES=1000` se retienen para compatibilidad con validadores instalados; NO habilitan FIFO de PR, trabajo en branches ni PR nuevos. La regla ejecutiva efectiva es `WORK_BRANCH_CREATION_ALLOWED=FALSE` y publicación serial a `dev`.
 - `FORMAL_APPROVAL_GOVERNANCE_REQUIRED=FALSE` se limita al workflow directo de dev. Cualquier protección que subsista en `qa` o `main` mantiene sus obligaciones nativas.
 - Las seis Tasks de Javier poseen prompts V13 directos; las dos de Alex no pueden editarse desde la cuenta Javier. Cada corrida habilitada debe intentar 1 y aspirar a 3 cierres genuinos con cuatro auditorías y trazabilidad; ningún fallo autoriza falsificar LISTO.

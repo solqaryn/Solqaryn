@@ -9,7 +9,7 @@ BRANCH=dev
 EXECUTION_PLAN_DRIVE_FILE_ID=1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA
 CURRENT_COMMERCIAL_ONLY=TRUE
 AUTOMATION_RUNTIME=ACTIVE_DEV
-PHYSICAL_JAVIER_TASKS_ENABLED=0
+PHYSICAL_JAVIER_TASKS_ENABLED=6
 ALEX_TASKS_STATE=REQUIRES_OWNER_READBACK
 SCHEDULED_CHATGPT_TASKS_AUTHORIZED=8
 AUTHORIZED_COMMERCIAL_TASK_IDS=6adbb9fff1548191a1bd5b30d9e9984a,6af16bb9492c8191b8e8c7d606f11507,6adc2e4bd8a48191ac7d8641ed95a1a3,6aeacb7820ac8191b7d768a6f33dfa09,6adc2e55f47c81919f6374e561687076,6af16bbad26881918c283abe06e1f32a,6adbbc9ad9e88191bea8eb69104afb25,6adcc98a80a48191b71a5156624c21df
@@ -40,7 +40,7 @@ STAGES=PENDIENTE,EN_PROGRESO,VALIDANDO,LISTO,BLOQUEADO,CANCELADO
 TIMEZONE=America/Tegucigalpa
 
 ## Propiedad e identidad
-- Cuenta titular JAVIER_CHATGPT: seis Tasks :00, :10, :20, :30, :40 y :50. Cuenta ALEX_CHATGPT: dos Tasks :10 y :50. Estas ocho identidades conservan su ID físico, horarios y titularidad; sólo el propietario de cada cuenta cambia sus Tasks. Javier tiene seis pausadas en la última lectura. No afirmar estado vivo de Alex sin verificar su propia cuenta.
+- Cuenta titular JAVIER_CHATGPT: seis Tasks :00, :10, :20, :30, :40 y :50. Cuenta ALEX_CHATGPT: dos Tasks :10 y :50. Estas ocho identidades conservan su ID físico, horarios y titularidad; sólo el propietario de cada cuenta cambia sus Tasks. Javier tiene seis habilitadas en la última lectura. No afirmar estado vivo de Alex sin verificar su propia cuenta.
 - PROPIETARIA_INSTITUCIONAL: SOLQARYN Platform. EJECUTOR_PRINCIPAL_01: Javier. EJECUTOR_PRINCIPAL_02: Alex. Ninguna identidad tiene idéntica autoridad de credenciales; los permisos efectivos prevalecen sobre cualquier descripción.
 - ACTOR_HUMANO firma órdenes del propietario; CREADOR_TASK y ACTOR_AUTOMATIZADO usan TASK_ID válido. El RUN_ID/evento de la plataforma no se inventa. En cada tarea, EVENT_ID e IDEMPOTENCY_KEY evitan duplicaciones; REVIEWER/REVISOR debe ser independiente de la autoría al desempeñar una auditoría externa.
 - Separación de deberes: un ejecutor no puede autoaprobarlo como otro usuario, ni usar tokens de Alex/Javier/SOLQARYN intercambiablemente. Revisión cruzada es recomendable cuando tiene lugar, pero la Task puede realizar sus cuatro auditorías técnicas con pruebas sin esperar aprobación GitHub cuando DEV carece de ruleset.

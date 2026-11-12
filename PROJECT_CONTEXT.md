@@ -11,7 +11,7 @@ PROJECT_SCOPE_LOCK=STRICT
 - Plan único: STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES, Drive ID 1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA. Tablero: STANDARD DE AUTOMATIZACIONES EN SOLQARYN, Sheet ID 1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU.
 
 ## Trabajo de automatizaciones
-- Contrato V13: docs/AUTOMATION_V13.md; inventario físico y permisos: docs/AUTOMATION_STATUS.md, docs/AUTOMATION_AUTHORITY.md. Seis Tasks Javier pausadas; dos Alex sólo gestionables por su titular.
+- Contrato V13: docs/AUTOMATION_V13.md; inventario físico y permisos: docs/AUTOMATION_STATUS.md, docs/AUTOMATION_AUTHORITY.md. Seis Tasks Javier habilitadas según readback nativo; dos Alex sólo gestionables por su titular.
 - Cero rulesets obligatorios en dev al último readback; main y qa protegidas. Desarrollo con commits directos serializados sin PR/branch nueva. Cuatro auditorías verificables por tarea y cierre PLAN_MAESTRO/COLA/BITACORA. Mínimo objetivo 1 LISTO y meta 3 por corrida habilitada.
 - Conflictos y errores: corregir en ejecución cuando sea verificable, evitar pérdida de trabajo ajeno, no marcar PASS falso. No recuperar PR cerrados, antiguos pipelines de aprobación ni permisos por inferencia.
 
