@@ -1,3 +1,10 @@
+## 2026-11-12 — P2-003.G: negativo HTTP Clientes A/B con EmpresaId no verificado (DEV)
+
+- AUTHOR_TASK_ID=`6af16bbad26881918c283abe06e1f32a`, Task fisica Javier :50 (JAVIER_CHATGPT, GitHub jmejia31). Rama original determinista `work/solqaryn-p2-003-g` desde `dev@0ef1e736a4538c2d48c66bbd12fafb77259400aa`; Plan Comercial Inicial P2-003.G y COLA!O261=SI comprobados antes de reclamar, predecessor P2-003.F VALIDANDO; START institucional `SQ-P2-003-G-J50-START-0EF1E736-20261112` unico.
+- Test nuevo `P2003GClientesHttpTenantNegativoTests` llama al middleware real de cuarentena multiempresa con dos clientes A/B sinteticos en EF InMemory, identidad autenticada simulada, `X-Empresa-Id` y query `EmpresaId` falsos; verifica HTTP 503, no ejecucion de controlador, codigo `TENANT_DATA_ISOLATION_REQUIRED` y ausencia de nombres/documentos A/B para listado, activos, busqueda y detalle. No se envian datos ni credenciales reales.
+- Alcance solo prueba xUnit mas nota aditiva, SIN runtime, migraciones, MySQL, JWT, DTO, API productiva, frontend, secrets, workflows, main/QA/PROD. Prueba local `dotnet test` no ejecutada; CI y Directed exact HEAD y revision independiente por Task ajena a J50 pendientes. Una prueba de middleware no certifica todo el aislamiento HTTP/RBAC/EF/MySQL. FIFO #4020 sigue bloqueando merges posteriores; `COLA!G261=SI` por formula no basta sin FIFO y CI.
+- Rollback: revert protegido de la prueba y entrada aditiva conservando commits ajenos. No atribuir LISTO por PR ni por tests asincronos.
+
 ## 2026-11-12 — I8-006.A: contraseña propia sin fugas en auditoría (DEV)
 
 - Autor Task física Javier :10 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507`, scope Plan Comercial I8-006.A; rama original `work/solqaryn-i8-006-a` desde dev@`710a0351b161b44ee0d9ee6dce94c4c64bbd5e67`.
