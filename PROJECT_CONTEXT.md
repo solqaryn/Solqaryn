@@ -1,3 +1,4 @@
+PROJECT_SCOPE_LOCK=STRICT
 # SOLQARYN — Contexto vigente del proyecto
 
 **Estado operativo único desde 2026-11-12.** Este documento describe el sistema actual, no una cronología de candidatos de PR. Las versiones anteriores permanecen únicamente en la historia Git del repositorio, no como autoridad de ejecución.
