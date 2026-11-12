@@ -166,7 +166,7 @@ function selfTest() {
   check('directed skipped',x=>{x.checks[2].conclusion='skipped'},'DIRECTED_OR_SCOPE_MISSING');
   check('governance failure not retried',x=>{x.log='Error: AUTO_CERT=NO_GO GOVERNANCE_REQUIRES_INDEPENDENT_FORMAL_REVIEW'},'NOT_A_CI_TIMING_FAILURE');
   check('secret scan failure not retried',x=>{x.log='Error: AUTO_CERT=NO_GO CHECK_FAILED:Authorization, files, secrets and tenant gate'},'NOT_A_CI_TIMING_FAILURE');
-  console.log('SCOPE_CI_COMPLETION_RETRY_SELF_TEST=PASS (22 cases)');
+  console.log('SCOPE_CI_COMPLETION_RETRY_SELF_TEST=PASS (27 cases)');
 }
 
 async function live() {
