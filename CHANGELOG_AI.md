@@ -1,3 +1,9 @@
+## 2026-11-12 — I8-001.G: rechazo dirigido de credencial ERP no persistida (DEV)
+
+- Autor original Javier :20 / JAVIER_CHATGPT, AUTHOR_TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`. Microtarea I8-001.G del Plan Comercial Inicial, predecesora I8-001.F=VALIDANDO, COLA!O128=SI al claim (G128=NO hasta LISTO de la predecesora). Rama original `work/solqaryn-i8-001-g` desde `dev@0ef1e736a4538c2d48c66bbd12fafb77259400aa`.
+- Prueba xUnit `I8001GNuevaPasswordNoRecuperaCredencialErpTests` sobre `AuthService.LoginAsync` real: con hash BCrypt de clave vigente, el valor `NuevaPassword` contenido solamente en un DTO de edición sin ejecutar servicio de actualización debe rechazarse con resultado null y cero emisiones JWT. La prueba comprueba inmutabilidad del hash original y la protección declarativa de `UsuariosController.Update` por autenticación y permisos. Datos íntegramente sintéticos, sin cliente ni secretos.
+- Esta condición NO acredita recuperación individual por correo, reset de un solo uso, verificación de destinatario, permisos RBAC en middleware, SMTP, MySQL ni JWT firmado. No se ejecutó `dotnet test` local; la prueba se somete a CI exact HEAD, revisión independiente triple y FIFO de integración. No alterar runtime ni schema, secretos, workflows ni main/QA/PROD. Rollback mediante revert protegido y selectivo del test y esta nota, sin reescribir historia.
+
 ## 2026-11-12 — I8-006.A: contraseña propia sin fugas en auditoría (DEV)
 
 - Autor Task física Javier :10 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507`, scope Plan Comercial I8-006.A; rama original `work/solqaryn-i8-006-a` desde dev@`710a0351b161b44ee0d9ee6dce94c4c64bbd5e67`.
