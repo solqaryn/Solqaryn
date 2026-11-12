@@ -17,12 +17,10 @@ namespace Solqaryn.Tests;
 /// </summary>
 public sealed class I8009ACierreAuditoriaBloqueoSinSecretoTests
 {
-    [Theory]
-    [InlineData("Ver https://test.invalid/reset?token=I8009A-MARCADOR-FICTICIO", "I8009A-MARCADOR-FICTICIO")]
-    [InlineData("Incidente Bearer I8009A-MARCADOR-PRUEBA", "I8009A-MARCADOR-PRUEBA")]
-    public async Task BloqueoConMotivoLibre_NoPropagaTokenNiEnlaceALaAuditoria(
-        string motivo, string marcador)
+    [Fact]
+    public async Task BloqueoConMotivoOperativoSeguro_PersisteYAuditaSinSecretos()
     {
+        const string motivo = "Incumplimiento operativo documentado";
         const int usuarioId = 9009;
         var usuario = new Usuario
         {
@@ -75,10 +73,40 @@ public sealed class I8009ACierreAuditoriaBloqueoSinSecretoTests
         Assert.Equal("Exito", llamada.Arguments[8]);
 
         var log = string.Join("|", llamada.Arguments.Select(a => a?.ToString() ?? ""));
-        Assert.DoesNotContain(marcador, log, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("TOKEN-FICTICIO", log, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("https://", log, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("Bearer ", log, StringComparison.OrdinalIgnoreCase);
         Assert.Equal("Bloqueo registrado; consultar motivo en la ficha del usuario.",
             llamada.Arguments[7]);
+    }
+
+    [Theory]
+    [InlineData("Ver https://test.invalid/reset?token=I8009A-MARCADOR-FICTICIO")]
+    [InlineData("Ver HTTP://test.invalid/reset")]
+    [InlineData("Incidente Bearer I8009A-MARCADOR-PRUEBA")]
+    [InlineData("Incidente BeArEr\\tI8009A-MARCADOR-PRUEBA")]
+    [InlineData("token=I8009A-MARCADOR-FICTICIO")]
+    [InlineData("PASSWORD: I8009A-MARCADOR-FICTICIO")]
+    [InlineData("authorization: Bearer I8009A-MARCADOR-PRUEBA")]
+    public async Task MotivoConUrlOCredencialSeRechazaAntesDeConsultarOPersistir(
+        string motivo)
+    {
+        var usuarios = new Mock<IUsuarioRepository>(MockBehavior.Strict);
+        var auditoria = new Mock<IAuditoriaService>(MockBehavior.Strict);
+        var servicio = new UsuarioService(
+            usuarios.Object,
+            Mock.Of<IRolRepository>(),
+            Mock.Of<IEmpresaRepository>(),
+            auditoria.Object,
+            Mock.Of<ICurrentUserService>());
+
+        var error = await Assert.ThrowsAsync<Solqaryn.Application.Exceptions.BusinessRuleException>(
+            () => servicio.BloquearAsync(9009, motivo));
+
+        Assert.Equal(
+            "El motivo del bloqueo no puede incluir enlaces ni credenciales.",
+            error.Message);
+        usuarios.VerifyNoOtherCalls();
+        auditoria.VerifyNoOtherCalls();
     }
 }
