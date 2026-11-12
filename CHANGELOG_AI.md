@@ -1,3 +1,6 @@
+## 2026-11-12 — Align V13 for direct DEV and four audits
+Prepared owner-approved operation on dev after ruleset deletion: minimum target one real PENDIENTE→LISTO per run, target three, serial commits and four evidenced audits, causal error repairs and Sheets/Jira readbacks. Six Javier Tasks remain paused with schedules unchanged. Alex and qa/main/prod untouched. Documentation only; no product runtime change.
+
 ## 2026-11-12 — APPROVAL_ELIGIBILITY_ALEX_JAVIER_20261112: revisión genuina independiente por Alex o Javier (PR de reparación)
 
 - Causa real: PR institucional #4039 HEAD `ca310c4507afb15f37ebeabd5e81790e2b14b74f` recibió `APPROVED` de `morales35alex` (review 5880306042) pero Scope Lock en `dev` exigía exclusivamente `jmejia31`, quien contribuyó al código y por eso NO es revisor independiente. Se generó `AUTO_CERT=NO_GO INSTITUTIONAL_REQUIRES_JAVIER_INDEPENDENT_REVIEW` pese a validación previa formal de Alex.
