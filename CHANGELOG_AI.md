@@ -1,3 +1,9 @@
+## 2026-11-12 — I8-008.F: preparar caso sintético de autoridad global por ámbito (DEV)
+
+- Task física Javier :50 / JAVIER_CHATGPT / TASK_ID `6af16bbad26881918c283abe06e1f32a`, Plan Comercial Inicial V3, microtarea `I8-008.F`; predecesora `I8-008.A` en VALIDANDO, `COLA!O124=SI` habilitó desarrollo pero `G124=NO` impide merge/LISTO.
+- Añadida regresión **solo de preparación de fixture** `I8008FPrepararCasoAmbitoGlobalFixtureTests`: matriz empresa propia positiva condicional, empresa ajena con administrador empresarial, y Plataforma sin tenant verificado con/sin indicador administrador; además un caso explícito de contexto global ausente. Documento `docs/test-plans/I8-008-F-ambito-global-fixture.md` describe negativo rector, resultados esperados, limitaciones y rollback.
+- **No es PASS funcional ni de seguridad del producto**: ninguna llamada de permisos real, HTTP/JWT, DB/MySQL, SMTP ni integración; no se alteran API, Domain, Application, Infrastructure, roles/secretos, ramas protegidas o entornos. Se requiere revisión técnica triple independiente, required CI exact HEAD y cierre de la predecesora antes de cualquier merge protegido; posmerge 3/3 y readback institucional antes de LISTO.
+
 ## 2026-11-12 — I8-006.A: contraseña propia sin fugas en auditoría (DEV)
 
 - Autor Task física Javier :10 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507`, scope Plan Comercial I8-006.A; rama original `work/solqaryn-i8-006-a` desde dev@`710a0351b161b44ee0d9ee6dce94c4c64bbd5e67`.
