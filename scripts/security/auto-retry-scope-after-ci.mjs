@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { optionalPendingDeferred } from '../verify-automated-pr-certification.mjs';
 
 // Runs only from protected dev after a trusted Actions workflow finishes.
 // This workflow can rerun a failed exact-HEAD Scope Lock job. It cannot approve,
@@ -18,7 +19,7 @@ const REQUIRED = ['SOLQARYN - Seguridad multiempresa', 'SOLQARYN - Build y prueb
 const DIRECTED = 'SOLQARYN - Directed commercial scope';
 const WAIT_ONLY = /^(?:OTHER_CHECKS_PENDING|REQUIRED_CHECK_NOT_GREEN|SCOPE_DIRECTED_TEST_MISSING):/;
 
-export function decision({repository, event, pr, liveDevSha, checks, scopeRun, job, log}) {
+export function decision({repository, event, pr, liveDevSha, checks, scopeRun, job, log, files = []}) {
   if (repository !== REPO || event?.repository?.full_name !== REPO) return 'FOREIGN_REPOSITORY';
   const trigger = event?.workflow_run;
   if (event?.action !== 'completed' || !trigger || trigger.event !== 'pull_request' ||
@@ -54,8 +55,12 @@ export function decision({repository, event, pr, liveDevSha, checks, scopeRun, j
       scoped[0].conclusion !== 'failure') return 'SCOPE_RUN_NOT_FAILED';
   const others = checks.filter(x => x.name !== SCOPE_CHECK);
   const current = new Map(others.map(x => [x.name, x]));
+  // Do not block on KNOWN unrelated pending jobs after required exact-SHA CI.
+  // Reuse the same conservative policy as the trusted Scope Lock certifier.
+  const deferred = new Set(optionalPendingDeferred(files, current));
   if (current.size !== others.length || !others.length ||
-      others.some(x => x.status !== 'completed' || !['success', 'skipped'].includes(x.conclusion)))
+      others.some(x => (x.status !== 'completed' && !deferred.has(x.name)) ||
+        (x.status === 'completed' && !['success', 'skipped'].includes(x.conclusion))))
     return 'OTHER_CHECKS_NOT_ALL_GREEN';
   for (const required of REQUIRED) {
     const check = current.get(required);
@@ -126,6 +131,27 @@ function selfTest() {
   check('required check still pending',x=>{x.checks[0].status='in_progress'},'OTHER_CHECKS_NOT_ALL_GREEN');
   check('optional MySQL pending',x=>{x.checks.push({name:'Migraciones EF Oracle, variantes y cargas masivas en MySQL 8.4',
     head_sha:h,status:'in_progress',conclusion:null,app:{id:TRUSTED_ACTIONS_APP_ID}})},'OTHER_CHECKS_NOT_ALL_GREEN');
+  // Same CI-impact policy as the trusted certifier; these cases MUST agree.
+  const unrelated = 'Migraciones EF Oracle, variantes y cargas masivas en MySQL 8.4';
+  const docs = [{filename:'CHANGELOG_AI.md',status:'modified'},
+    {filename:'docs/AUTOMATION_STATUS.md',status:'modified'}];
+  const withPending = x => {x.files=structuredClone(docs);
+    x.checks.push({name:unrelated,head_sha:h,status:'in_progress',conclusion:null,
+      app:{id:TRUSTED_ACTIONS_APP_ID}});};
+  check('docs allow known unrelated pending after core green',withPending,'RETRY');
+  check('runtime cannot defer unrelated pending',x=>{
+    withPending(x);x.files.push({filename:'backend/src/API/Controllers/VentaController.cs',status:'modified'});
+  },'OTHER_CHECKS_NOT_ALL_GREEN');
+  check('unknown pending still blocks',x=>{
+    withPending(x);x.checks.at(-1).name='Unknown external CI';
+  },'OTHER_CHECKS_NOT_ALL_GREEN');
+  check('untrusted check app denied',x=>{
+    withPending(x);x.checks.at(-1).app.id=42;
+  },'UNVERIFIED_CHECK_SET');
+  check('completed failure never deferred',x=>{
+    withPending(x);x.checks.at(-1).status='completed';x.checks.at(-1).conclusion='failure';
+  },'OTHER_CHECKS_NOT_ALL_GREEN');
+
   check('completed failure',x=>{x.checks[1].conclusion='failure'},'OTHER_CHECKS_NOT_ALL_GREEN');
   check('forged check app',x=>{x.checks[0].app.id=42},'UNVERIFIED_CHECK_SET');
   check('non-scope branch',x=>{x.pr.head.ref='unknown';x.scopeRun.head_branch='unknown'},'DIRECTED_OR_SCOPE_MISSING');
@@ -167,10 +193,12 @@ async function live() {
     if (!Number.isInteger(link.number)) continue;
     const pr = await api('/pulls/' + link.number);
     if (pr.head?.sha !== source.head_sha) continue;
-    const [checkList,runs] = await Promise.all([
+    const [checkList,runs,files] = await Promise.all([
       api('/commits/' + source.head_sha + '/check-runs?per_page=100'),
-      api('/actions/runs?head_sha=' + source.head_sha + '&per_page=100')]);
-    if (checkList.total_count >= 100 || runs.total_count >= 100) {
+      api('/actions/runs?head_sha=' + source.head_sha + '&per_page=100'),
+      api('/pulls/' + link.number + '/files?per_page=100')]);
+    if (checkList.total_count >= 100 || runs.total_count >= 100 ||
+        !Array.isArray(files) || files.length >= 100) {
       console.log('SCOPE_CI_COMPLETION_RETRY=SKIP_UNBOUNDED'); continue;
     }
     const candidates = (runs.workflow_runs || []).filter(x => x.path === SCOPE_WORKFLOW &&
@@ -192,7 +220,7 @@ async function live() {
       console.log('SCOPE_CI_COMPLETION_RETRY=SKIP_OVERSIZE_LOG'); continue;
     }
     const evidence = {repository,event,pr,liveDevSha,checks:checkList.check_runs,
-      scopeRun,job,log};
+      scopeRun,job,log,files};
     const result = decision(evidence);
     if (result !== 'RETRY') {
       console.log('SCOPE_CI_COMPLETION_RETRY=SKIP_' + result); continue;

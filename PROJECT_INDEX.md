@@ -1,3 +1,7 @@
+## 2026-11-11 — V13 perfil FIFO por PR con una revisión independiente/triple auditoría (condicional)
+
+Rediseño aprobado por propietario: un TECH_REVIEW ajeno a autor y contribuyentes con auditorías funcional, seguridad e integración para PR comerciales ordinarios; requisitos formales críticos intactos; PR.created_at FIFO, behind sin veto automático, merge protegido uno a uno, COLA O=SI abre desarrollo, G=SI restringe merge, CI GitHub Actions/pre+post SHA real y Jira distribuida. Seis prompts Javier ya preparados mientras paused; la autoridad nueva solo entra tras PR protegido, review+CI y readback, Alex en su propia cuenta. No hay cambio de arquitectura frontend/backend, DB, runtime o prod.
+
 ## 2026-11-09 — Ampliación de inventario autorizado de Tasks bajo V13
 
 Nueva autorización del propietario para dos Tasks Javier: :10 6af16bb9492c8191b8e8c7d606f11507 y :50 6af16bbad26881918c283abe06e1f32a; distintas de Alex :10 y :50. Hasta CI requerida/revisión independiente/merge protegido y readback Sheets, Tasks nuevas HABILITADAS físicamente según readback, pero NO_GO comercial hasta la autoridad protegida y readback institucional. Autoridad propuesta: docs/AUTOMATION_STATUS.md y docs/AUTOMATION_AUTHORITY.md, censo ocho total = seis Javier + dos Alex, mismos cuatro límites V13. Trabajo posterior: recuperación 52 VALIDANDO FIFO original, cierres comprobados, sin nuevas microtareas ni cambios QA/main/PROD.

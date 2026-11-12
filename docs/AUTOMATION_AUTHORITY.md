@@ -1,3 +1,7 @@
+## V13 — perfil operativo 2026-11-11 (aplicación condicionada al merge protegido)
+
+Este changeset sustituye, DESPUÉS de merge protegido y readback institucional, el alcance histórico de 52 PR por el Plan Comercial Inicial, mantiene la capacidad V13 1000x4 y declara **un revisor independiente con tres auditorías** para PR comercial ordinario. FIFO por PR.created_at, detrás de dev no es conflicto por sí solo, reconciliación causal no forzada, PENDIENTE O=SI desarrollable, G=SI imprescindible para integración, CI exact SHA y postmerge 3/3. PR gobernanza/seguridad/CI mantiene revisión formal genuinamente independiente. Fuente única detallada: `docs/AUTOMATION_V13.md`. Seis Tasks Javier pausadas mientras se prepara esta enmienda; dos Alex no modificadas. El estado nativo debe releerse al reactivarlas. Ninguna parte de esta nota desactiva GitHub Actions o autoriza bypass de FIFO y rulesets.
+
 
 ## Adenda operativa del propietario — 2026-11-09: 6 Javier / 2 Alex
 Nuevas Tasks físicas JAVIER_CHATGPT PRIMARY_DEV_05 :10 ID 6af16bb9492c8191b8e8c7d606f11507 y PRIMARY_DEV_06 :50 ID 6af16bbad26881918c283abe06e1f32a, FREQ=HOURLY BYSECOND=0 en America/Tegucigalpa. Identidades distintas de las Tasks Alex :10 y :50; sin alterar las cuatro Javier originales ni las dos Alex.

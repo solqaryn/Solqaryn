@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
 
 // Trusted verifier: on later PRs the required Scope Lock check executes this file
 // from the target DEV base, not from the untrusted pull-request head.
@@ -86,7 +87,7 @@ function canDeferUnrelatedSuites(files,byName){
    (mysql.status==='completed'&&['success','skipped'].includes(mysql.conclusion));
 }
 
-function optionalPendingDeferred(files, byName) {
+export function optionalPendingDeferred(files, byName) {
   if (!canDeferUnrelatedSuites(files, byName)) return [];
   return [...byName.values()].filter(check => BROAD_OPTIONAL.has(check.name) &&
     ['queued', 'in_progress'].includes(check.status) &&
@@ -373,6 +374,11 @@ function shouldWaitForActiveChecks(report, runs, expectedHead) {
     run.name !== 'verify-solqaryn-project-scope' && run.status !== 'completed');
 }
 
+// This module is also imported by the trusted CI-retry script. The CLI
+// remains executable as a self-contained file when copied into RUNNER_TEMP.
+const invokedAsCli = Boolean(process.argv[1]) &&
+  import.meta.url === pathToFileURL(process.argv[1]).href;
+if (invokedAsCli) {
 const args = new Set(process.argv.slice(2));
 if (args.has('--self-test')) selfTest();
 else if (args.has('--pr')) {
@@ -417,3 +423,5 @@ else if (args.has('--pr')) {
   if (!report.pass) throw Error('AUTO_CERT=NO_GO ' + report.failures.join(' | '));
   console.log('AUTO_CERT=PASS (required and relevant checks exact-head, source scope, negative tests, trust boundary)');
 } else throw Error('Provide --self-test or --pr');
+
+}

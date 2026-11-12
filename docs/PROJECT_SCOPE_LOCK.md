@@ -1,3 +1,7 @@
+## V13 — perfil operativo 2026-11-11 (aplicación condicionada al merge protegido)
+
+Este changeset sustituye, DESPUÉS de merge protegido y readback institucional, el alcance histórico de 52 PR por el Plan Comercial Inicial, mantiene la capacidad V13 1000x4 y declara **un revisor independiente con tres auditorías** para PR comercial ordinario. FIFO por PR.created_at, detrás de dev no es conflicto por sí solo, reconciliación causal no forzada, PENDIENTE O=SI desarrollable, G=SI imprescindible para integración, CI exact SHA y postmerge 3/3. PR gobernanza/seguridad/CI mantiene revisión formal genuinamente independiente. Fuente única detallada: `docs/AUTOMATION_V13.md`. Seis Tasks Javier pausadas mientras se prepara esta enmienda; dos Alex no modificadas. El estado nativo debe releerse al reactivarlas. Ninguna parte de esta nota desactiva GitHub Actions o autoriza bypass de FIFO y rulesets.
+
 ## V13 — contrato consolidado 1000 x 4 y FIFO multicierre (2026-11-07)
 
 CAPACITY_POLICY_VERSION=V13_1000_FIFO_BATCH
