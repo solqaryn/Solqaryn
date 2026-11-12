@@ -5,8 +5,9 @@ using Xunit;
 namespace Solqaryn.Tests;
 
 /// <summary>
-/// I8-002.A: prueba solo material criptografico aislado. No acredita correo
-/// verificado, binding de tenant, persistencia, consumo atomico, SMTP ni endpoint.
+/// I8-002.A: comprobaciones criptograficas y plazo maximo aislados.
+/// No acredita correo verificado, binding tenant, persistencia, consumo
+/// atomico, SMTP, rate limiting ni endpoints de recuperacion.
 /// </summary>
 public sealed class I8002ARecoveryTokenCryptographyTests
 {
@@ -16,13 +17,14 @@ public sealed class I8002ARecoveryTokenCryptographyTests
         var a = RecoveryTokenCryptography.GenerateOpaqueToken();
         var b = RecoveryTokenCryptography.GenerateOpaqueToken();
         var digest = RecoveryTokenCryptography.ComputeDigest(a);
+        var emitido = DateTimeOffset.UtcNow;
 
         Assert.Equal(64, a.Length);
         Assert.Equal(64, digest.Length);
         Assert.NotEqual(a, digest);
         Assert.NotEqual(a, b);
         Assert.True(RecoveryTokenCryptography.MatchesUnconsumedToken(
-            a, digest, DateTimeOffset.UtcNow.AddMinutes(5), DateTimeOffset.UtcNow, false));
+            a, digest, emitido, emitido.AddMinutes(5), emitido, false));
     }
 
     [Fact]
@@ -32,24 +34,46 @@ public sealed class I8002ARecoveryTokenCryptographyTests
         var otro = RecoveryTokenCryptography.GenerateOpaqueToken();
         var digest = RecoveryTokenCryptography.ComputeDigest(token);
         var ahora = new DateTimeOffset(2026, 11, 12, 15, 0, 0, TimeSpan.Zero);
-        var expira = ahora.AddMinutes(10);
+        var emitido = ahora;
+        var expira = emitido.AddMinutes(10);
 
         Assert.False(RecoveryTokenCryptography.MatchesUnconsumedToken(
-            otro, digest, expira, ahora, false));
+            otro, digest, emitido, expira, ahora, false));
         Assert.False(RecoveryTokenCryptography.MatchesUnconsumedToken(
-            token, digest, expira, ahora, true));
+            token, digest, emitido, expira, ahora, true));
         Assert.False(RecoveryTokenCryptography.MatchesUnconsumedToken(
-            token, digest, expira, expira, false));
+            token, digest, emitido, expira, expira, false));
         Assert.False(RecoveryTokenCryptography.MatchesUnconsumedToken(
-            token, digest, expira, expira.AddSeconds(1), false));
+            token, digest, emitido, expira, expira.AddSeconds(1), false));
         Assert.False(RecoveryTokenCryptography.MatchesUnconsumedToken(
-            "no-es-un-token", digest, expira, ahora, false));
+            "no-es-un-token", digest, emitido, expira, ahora, false));
         Assert.False(RecoveryTokenCryptography.MatchesUnconsumedToken(
-            token, new string('X', 64), expira, ahora, false));
+            token, new string('X', 64), emitido, expira, ahora, false));
         Assert.False(RecoveryTokenCryptography.MatchesUnconsumedToken(
-            null, digest, expira, ahora, false));
+            null, digest, emitido, expira, ahora, false));
         Assert.False(RecoveryTokenCryptography.MatchesUnconsumedToken(
-            token, null, expira, ahora, false));
+            token, null, emitido, expira, ahora, false));
+    }
+
+    [Fact]
+    public void VentanaExcedeDiezMinutos_OFechaDeEmisionFutura_SeRechaza()
+    {
+        var emitido = new DateTimeOffset(2026, 11, 12, 15, 0, 0, TimeSpan.Zero);
+        var token = RecoveryTokenCryptography.GenerateOpaqueToken();
+        var digest = RecoveryTokenCryptography.ComputeDigest(token);
+
+        Assert.True(RecoveryTokenCryptography.MatchesUnconsumedToken(
+            token, digest, emitido, emitido.AddMinutes(10), emitido, false));
+        Assert.False(RecoveryTokenCryptography.MatchesUnconsumedToken(
+            token, digest, emitido, emitido.AddMinutes(10).AddTicks(1),
+            emitido, false));
+        Assert.False(RecoveryTokenCryptography.MatchesUnconsumedToken(
+            token, digest, emitido.AddMinutes(1), emitido.AddMinutes(10),
+            emitido, false));
+        Assert.False(RecoveryTokenCryptography.MatchesUnconsumedToken(
+            token, digest, emitido, emitido, emitido, false));
+        Assert.False(RecoveryTokenCryptography.MatchesUnconsumedToken(
+            token, digest, emitido, emitido.AddMinutes(-1), emitido, false));
     }
 
     [Fact]
