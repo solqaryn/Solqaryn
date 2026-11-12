@@ -1,3 +1,10 @@
+## 2026-11-12 — I8-007.A: perfil de empresa sin edicion de autoridad global (DEV)
+
+- Autor: Task fisica Javier :50 / JAVIER_CHATGPT / TASK_ID `6af16bbad26881918c283abe06e1f32a`; Plan Comercial I8-007.A; rama ORIGINAL `work/solqaryn-i8-007-a` desde dev `710a0351b161b44ee0d9ee6dce94c4c64bbd5e67`. Inicio PENDIENTE -> EN_PROGRESO con readback PLAN H112/COLA E112/G112=SI y BITACORA `SQ-I8-007-A-J50-START-710A0351-20261112`.
+- Test dirigido `I8007APerfilEmpresaSinEscaladaGlobalTests` (4 escenarios: grant de plataforma activo/inactivo, rol legacy de plataforma, edicion positiva solo en tenant A). Usa `UsuarioAdministracionEmpresaService.ActualizarAsync`, EF InMemory y Moq, comprueba negativas sin escritura/auditoria/hash/rol escalado y delegacion positiva de perfil sin pedir AsignarRol ni RestablecerContrasena. Recibos I8-007.C/D/E conservados; no se cambia codigo runtime, entidades, DTO, roles ni migraciones.
+- Alcance y limites: pruebas sinteticas de servicio, no prueban middleware HTTP/JWT en entorno real, UI, cuentas DEV ni MySQL. En caso positivo se usa `IUsuarioService` mock, sin afirmar persistencia de datos productivos; sin ejecucion local `dotnet test`. GitHub CI exact HEAD y revision triple independiente son obligatorias; COLA G=SI y FIFO antes de merge; postmerge 3/3 y readback antes de LISTO.
+- Rollback protegido selectivo del test y esta nota aditiva, conservando todo el CHANGELOG y cambios concurrentes. No tocados workflows, secretos, main/QA/PROD, infraestructura ni configuraciones de seguridad.
+
 ## 2026-11-11 — I8-010.E: impedir recuperación administrativa sin tenant verificado (DEV)
 
 - Desarrollo autorizado por Javier :20 / JAVIER_CHATGPT / TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3` del Plan Comercial Inicial. PENDIENTE→EN_PROGRESO en PLAN_MAESTRO!H104 con COLA!O104=SI/G104=SI, evento `SQ-I8-010-E-J20-START-9785BE55-20261111` appendCells contiguo y readback; rama original `work/solqaryn-i8-010-e` basada en `dev@9785be559e11eab66393cbffbdfcc38094a38a63`. No se integró PR anterior #4014.
