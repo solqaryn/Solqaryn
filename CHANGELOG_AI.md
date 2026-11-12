@@ -1,3 +1,9 @@
+## 2026-11-12 — I8-002.A: limite temporal obligatorio para token (Task :20)
+
+- Correccion parcial causal sobre rama original PR #4020, AUTHOR_TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`, manteniendo contribuciones ajenas. El helper criptografico aceptaba caducidad sin fecha de emision, de modo que su `MaximumLifetime=10m` era solo declarativa. `MatchesUnconsumedToken` exige ahora `issuedAtUtc` y rechaza duracion fuera de (0,10m], emision futura, expiracion ya alcanzada, digest invalido y token consumido. Test dirigido xUnit extiende cobertura de limites sin secretos.
+- PENDIENTE EXTERNO / NO_GO_FUNCIONAL: `Usuario` no registra correo acreditado y ligado a tenant; faltan registro persistido atomico de tokens, solicitud y consumo reales en /login, SMTP institucional, respuesta neutra anti-enumeracion y negativas/rate limit integral. Ningun token se envia ni se habilita endpoint. CI exact HEAD y triple auditoria por Task sin contribucion pendientes: no marcar LISTO, no fusionar ni saltar FIFO.
+- Sin DB/migraciones/workflows/infra/entornos main/QA/PROD. No se ejecuto dotnet test local. Rollback via revert protegido selectivo de helper, test y esta nota, sin reescribir historia.
+
 ## 2026-11-12 — I8-002.A: reparar regresiones exact-HEAD de login (J00, PR #4020)
 
 - CONTRIBUTOR_TASK_ID=6adbb9fff1548191a1bd5b30d9e9984a (Javier :00, autenticado GitHub jmejia31); AUTHOR_TASK_ID original=6adc2e4bd8a48191ac7d8641ed95a1a3 (Javier :20). Rama ORIGINAL work/solqaryn-i8-002-a, sin force ni PR nuevo. El job backend exact SHA previo 9020de8d fallo por siete xUnit existentes que exigian BusinessRuleException para cuenta bloqueada/inactiva y rol relacional invalido; J50 habia cambiado LoginAsync para retornar null, rompiendo esos contratos.
