@@ -1,3 +1,10 @@
+## 2026-11-12 — I8-005.F: preparar fixture de recuperacion revocable, sin PASS de runtime (DEV)
+
+- Autor genuino Task Javier :30 / JAVIER_CHATGPT / TASK_ID `6aeacb7820ac8191b7d768a6f33dfa09`, Plan Comercial Inicial V3. Inicio PENDIENTE→EN_PROGRESO en Sheets H121/I121 con BITACORA unico `SQ-I8-005-F-J30-START-0EF1E736-20261112`; COLA O121=SI y G121=NO porque I8-005.A seguia VALIDANDO.
+- Prueba xUnit de PREPARAR CASO `I8005FTokenRecuperacionFixtureTests`: 8 escenarios de tenant/expiracion/uso/revocacion/rate-limit/digest y 2 huellas SHA-256 de marcadores sinteticos; documento `docs/test-plans/I8-005-F-token-revocable.md` define condicion medible, esperado, negativos y pasos pendientes.
+- Estas pruebas verifican SOLO consistencia del fixture, NO seguridad ni funcionamiento del flujo productivo: no hay consumo de token real, persistencia atomica MySQL, correo, HTTP, JWT, limites reales ni auditoria de secretos. No afirmar certificado comercial ni dotnet local ejecutado.
+- Sin cambios runtime, API, DTO, DB/migraciones, auth/RBAC productivo, SMTP, secretos, workflows, rulesets, main/QA/PROD. Revisor independiente triple por Task distinta, CI exact HEAD Scope Lock/Seguridad/Backend/Directed, FIFO y postmerge 3/3 antes de LISTO; rollback por revert selectivo protegido de estos tres archivos sin borrar cambios ajenos.
+
 ## 2026-11-12 — I8-006.A: contraseña propia sin fugas en auditoría (DEV)
 
 - Autor Task física Javier :10 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507`, scope Plan Comercial I8-006.A; rama original `work/solqaryn-i8-006-a` desde dev@`710a0351b161b44ee0d9ee6dce94c4c64bbd5e67`.
