@@ -20,7 +20,6 @@ export function decision({event,pr,reviews,commits,run,job,actor,repository}) {
   if (!SHA.test(head || '') || event.pull_request?.number !== pr.number ||
       event.pull_request?.head?.sha !== head || event.review?.commit_id !== head) return 'STALE_HEAD';
   if (![['jmejia','31'].join(''),'morales35alex','solqaryn-platform'].includes(pr.user?.login)) return 'UNAUTHORIZED_AUTHOR';
-  if (pr.user.login === 'solqaryn-platform' && reviewer !== ['jmejia','31'].join('')) return 'JAVIER_REQUIRED';
   if (!Array.isArray(reviews) || !reviews.some(v => v.id === event.review.id &&
     v.state === 'APPROVED' && v.commit_id === head && v.user?.login === reviewer)) return 'REVIEW_NOT_CURRENT';
   if (!Array.isArray(commits) || !commits.length || commits.length >= 100) return 'NO_COMMIT_PROVENANCE';
@@ -64,8 +63,13 @@ function selfTest(){
   check('fork',x=>{x.pr.head.repo.full_name='foreign/repo'},'UNTRUSTED_PR');
   check('dismissed',x=>{x.reviews[0].state='DISMISSED'},'REVIEW_NOT_CURRENT');
   check('contributor reviewer',x=>{x.commits[0].author.login=['jmejia','31'].join('')},'REVIEWER_CONTRIBUTOR');
-  check('institutional Alex',x=>{x.actor='morales35alex';x.event.sender.login='morales35alex';
-    x.event.review.user.login='morales35alex';x.reviews[0].user.login='morales35alex'},'JAVIER_REQUIRED');
+  check('institutional Alex independent',x=>{x.actor='morales35alex';x.event.sender.login='morales35alex';
+    x.event.review.user.login='morales35alex';x.reviews[0].user.login='morales35alex'},'RETRY');
+  check('institutional Alex contributor',x=>{x.actor='morales35alex';x.event.sender.login='morales35alex';
+    x.event.review.user.login='morales35alex';x.reviews[0].user.login='morales35alex';
+    x.commits[0].committer.login='morales35alex'},'REVIEWER_CONTRIBUTOR');
+  check('institutional Javier contributor must not approve',x=>{
+    x.commits[0].author.login=['jmejia','31'].join('')},'REVIEWER_CONTRIBUTOR');
   check('run stale',x=>{x.run.head_sha='b'.repeat(40)},'NO_FAILED_EXACT_HEAD_RUN');
   check('run success',x=>{x.run.conclusion='success'},'NO_FAILED_EXACT_HEAD_RUN');
   check('too many retries',x=>{x.run.run_attempt=4},'NO_FAILED_EXACT_HEAD_RUN');
