@@ -1,3 +1,10 @@
+## 2026-11-12 - P2-009.F: caso medible KPI anual/mensual A/B (Javier :00)
+
+- Autor TASK_ID=6adbb9fff1548191a1bd5b30d9e9984a; rama unica work/solqaryn-p2-009-f, base dev@0ef1e736a4538c2d48c66bbd12fafb77259400aa, Plan Comercial Inicial P2-009.F (PREPARAR CASO, no certificar dashboards completos).
+- Nuevo xUnit P2009FReportesKpiAnualesTenantTests.cs: ventas sinteticas A y B con folio coincidente y anios 2025/2026; agrupa por (Year, Month); verifica totales cuando el servidor fijo el tenant autentico y X-Empresa-Id se falsifica en sentido opuesto. No modifica runtime, API, DTO, JWT, RBAC, esquema, secretos ni entornos.
+- LIMITACION: EF InMemory y consulta LINQ aislada NO acreditan SQL MySQL, endpoint HTTP/guard de dashboard ni lecturas sin ninguna marca tenant. CommercialTenantReadFilterModel conserva scopeAbsent OR ownedByTenant para accesos legacy sin marca: exige gate HTTP y tests adicionales antes de afirmar seguridad de ese escenario. dotnet test local NO ejecutado; exigir CI exact HEAD/Directed y revision triple independiente; sin LISTO antes de FIFO merge protegido, 3/3 postmerge y ledger.
+- Rollback: revert selectivo protegido de prueba y nota, sin reescritura de historia.
+
 ## 2026-11-12 — I8-006.A: contraseña propia sin fugas en auditoría (DEV)
 
 - Autor Task física Javier :10 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507`, scope Plan Comercial I8-006.A; rama original `work/solqaryn-i8-006-a` desde dev@`710a0351b161b44ee0d9ee6dce94c4c64bbd5e67`.
