@@ -1,3 +1,10 @@
+## 2026-11-12 — P2-007.G: negativo de suplantación EmpresaId en Kardex privado (DEV)
+
+- Autor físico Javier :40 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6adc2e55f47c81919f6374e561687076`. Plan Comercial Inicial P2-007.G, predecesora P2-007.F LISTO, COLA!O265=SI/G265=SI al inicio y PLAN_MAESTRO!H265 reclamado EN_PROGRESO con readback; EVENT_ID START `SQ-P2-007-G-J40-START-0EF1E736-20261112` asentado en BITACORA. Rama determinista única `work/solqaryn-p2-007-g` desde dev `0ef1e736a4538c2d48c66bbd12fafb77259400aa`.
+- Regresión xUnit `P2007GInventarioKardexHeaderSinTenantTests`: datos sintéticos A/B con mismo CorrelationId y folio; sin marca comercial verificada, una cabecera X-Empresa-Id y query EmpresaId/ReferenciaId suplantadas junto con marca de tienda pública no autorizan leer Kardex ni ajustes privados. Controles positivos con marca privada A/B comprueban aislamiento en el mismo DbContext pese a cabeceras adversariales. Reutiliza pruebas integradas P2-007.C/D/E/F y P2-007.A sin sustituirlas.
+- Cambio delimitado al test + esta nota; sin runtime, API, DTO, JWT/RBAC, esquema, migraciones, secretos, workflows, main/QA/PROD ni infraestructura. Datos ficticios. EF InMemory no demuestra filtros reales de autenticación HTTP/JWT ni MySQL/Oracle, ni bloqueo de consultas que ignoren expresamente filtros por privilegio; no se ejecutó `dotnet test` local y no se anticipa CI SUCCESS.
+- Integración: PR sólo VALIDANDO hasta revisión independiente triple por Task ajena al autor, Scope Lock/Seguridad/Backend/Directed cuando aplique SUCCESS exact HEAD, COLA G=SI por fórmula y FIFO: el PR #4020 sigue primero abierto, NO fusionar este scope por delante. Posmerge 3/3 exact MERGE_SHA y readback PLAN/COLA/BITACORA/Jira antes de LISTO. Rollback por revert protegido selectivo de test + entrada aditiva preservando historial concurrente.
+
 ## 2026-11-12 — I8-006.A: contraseña propia sin fugas en auditoría (DEV)
 
 - Autor Task física Javier :10 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507`, scope Plan Comercial I8-006.A; rama original `work/solqaryn-i8-006-a` desde dev@`710a0351b161b44ee0d9ee6dce94c4c64bbd5e67`.
