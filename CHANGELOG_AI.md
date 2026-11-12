@@ -1,3 +1,11 @@
+## 2026-11-12 — I8-008.G: denegar enumeracion de permisos tenant con rol global (DEV)
+
+- Task fisica Javier :50 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bbad26881918c283abe06e1f32a`. Plan Comercial Inicial V3 I8-008.G `PROBAR NEGATIVO`, precedida por I8-008.F en VALIDANDO; COLA!O135=SI al reclamar y G135=NO para integracion. Rama original determinista `work/solqaryn-i8-008-g`, base DEV `0ef1e736a4538c2d48c66bbd12fafb77259400aa`.
+- Se agrego `backend/tests/Solqaryn.Tests/I8008GGlobalSinMembresiaNoEnumeraPermisosTests.cs` con dos roles globales sinteticos (EsAdministrador true/false). Ejercita tres vias reales de `PermisoService` para empresa B sin `UsuarioTenantScopeActual`: `GetMisPermisosAsync` devuelve lista y rol vacios, `TienePermisoAsync` rechaza y `VerificarPermisoAsync` lanza `ForbiddenAccessException`; verifica que no se consulta matriz RBAC ni se usa el scope global.
+- Riesgo cubierto: no conferir autoridad tenant a un rol global heredado o mostrar roles/permisos ajenos, sin tocar entidades reales ni registrar secretos. La prueba es de Application con Moq: no prueba JWT real, controlador HTTP, permisos de la infraestructura MySQL, roles globales fuera de esta ruta, ni email/SMTP. `dotnet test` local y CI exact-HEAD siguen pendientes de verificacion; no se afirma PASS.
+- Impacto limitado al test xUnit y esta nota: no se modifica runtime, contratos, endpoints, datos/migraciones, seguridad operativa, workflows, secretos, infraestructura, main/QA/PROD. Exige revision triple independiente por Task ajena al autor, Scope Lock/Seguridad/Backend/Directed exact HEAD, FIFO #4020 si sigue primero y postmerge 3/3 exact MERGE_SHA, COLA!G135=SI antes de LISTO.
+- Rollback: revert protegido selectivo del test y esta nota, sin force-push ni reescritura del trabajo de terceros.
+
 ## 2026-11-12 — I8-006.A: contraseña propia sin fugas en auditoría (DEV)
 
 - Autor Task física Javier :10 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507`, scope Plan Comercial I8-006.A; rama original `work/solqaryn-i8-006-a` desde dev@`710a0351b161b44ee0d9ee6dce94c4c64bbd5e67`.
