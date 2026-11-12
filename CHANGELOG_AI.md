@@ -2,7 +2,7 @@
 
 - Diagnóstico causal: Scope Lock PR #4020, run 43258122297, intento 2, falló exclusivamente por `OTHER_CHECKS_PENDING` de integración MySQL y aceptación funcional; Backend/Seguridad/Directed ya estaban verdes. No convertir esperas en aprobaciones.
 - Reparación sobre la rama original del PR de gobernanza #4039: `.github/workflows/retry-scope-after-ci-completion.yml` ahora escucha `DEV - aceptación funcional integral`; `scripts/security/auto-retry-scope-after-ci.mjs` permite únicamente la pareja de ruta/nombre confiable `.github/workflows/catalogos-aceptacion.yml` / `DEV - aceptación funcional integral`.
-- Añade pruebas positiva y negativa en el self-test del reintento (22 casos declarados, ejecución CI pendiente). Conserva exact HEAD, mismo PR, autoría, revisión independiente, controles obligatorios, checks fallidos como bloqueantes y prohibición de merge/autoaprobación. No altera QA/main/PROD, secretos ni datos.
+- Añade pruebas positiva y negativa en el self-test del reintento (27 casos declarados, ejecución CI pendiente). Conserva exact HEAD, mismo PR, autoría, revisión independiente, controles obligatorios, checks fallidos como bloqueantes y prohibición de merge/autoaprobación. No altera QA/main/PROD, secretos ni datos.
 - La publicación en `dev` requiere merge protegido por FIFO y CI/revisión independiente del PR #4039; no declarar la reparación productiva ni `LISTO` de #4020 antes de acreditarlos. Rollback: revert protegido y selectivo del cambio en workflow y allowlist si una evaluación posterior detecta riesgo.
 
 ## 2026-11-12 — I8-006.A: contraseña propia sin fugas en auditoría (DEV)
