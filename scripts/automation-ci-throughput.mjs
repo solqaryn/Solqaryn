@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { verifyDirectDevTraceability } from './quality/direct-dev-traceability.mjs';
 
 // Advisory only: this module NEVER grants a merge, an assignment, or LISTO.
 // Classify trusted exact-SHA checks to avoid idle scheduled-Task runs.
@@ -62,6 +63,11 @@ export function rollingListoThroughput(events, nowIso, ledgerCoverageVerified = 
         typeof x.closedAt !== 'string' || !/(Z|[+-]\d\d:\d\d)$/.test(x.closedAt)) continue;
     const at = Date.parse(x.closedAt);
     if (!Number.isFinite(at) || at > now || now-at >= THROUGHPUT_WINDOW_MS) continue;
+    if (x.integrationMode === 'DIRECT_DEV_FOUR_AUDITS') {
+      if (verifyDirectDevTraceability(x).verified) counted.add(x.scopeId);
+      continue;
+    }
+    // Legacy receipts remain visible only for historical throughput comparisons.
     if (!SHA.test(x.mergeSha || '') || x.mergeVerified !== true ||
         x.requiredCiVerified !== true || x.independentReviewVerified !== true ||
         x.planReadbackVerified !== true || x.colaReadbackVerified !== true ||
