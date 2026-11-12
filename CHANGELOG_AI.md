@@ -1,3 +1,11 @@
+## 2026-11-12 — I8-006.H: regresion positiva de rotacion de clave propia (Javier :10)
+
+- Plan Comercial Inicial V3 / scope I8-006.H (PROBAR REGRESION: Cambio voluntario por usuario), AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507` (PRIMARY_DEV_05 / JAVIER_CHATGPT, OAuth GitHub jmejia31). Rama comercial CANONICA `work/solqaryn-i8-006-h` desde `dev@0ef1e736a4538c2d48c66bbd12fafb77259400aa`, sin duplicado ni force.
+- Prueba xUnit `I8006HRotacionConsecutivaPasswordPropiaTests` usa PerfilService real con Usuario/repo/auditoria simulados: 1) cambio de contraseña propia autentica y hash BCrypt nuevo; 2) la contraseña antigua deja de autorizar una segunda rotacion, sin nueva escritura; 3) con la clave recién vigente sí permite la segunda rotación, persistiendo exactamente dos veces y auditando sólo metadatos no secretos. Excluye lectura/escritura de usuarios ajenos y comprueba ausencia de claves/hashes en argumentos de auditoría.
+- Impacto: únicamente prueba nueva y esta entrada aditiva. Sin alterar API/DTO, código productivo, JWT/RBAC, schema/MySQL, migraciones, workflows, secretos ni entornos QA/main/PROD. Pruebas **NO ejecutadas localmente**; CI exact HEAD requerida para afirmar PASS. Los mocks NO certifican transporte HTTP, autorización JWT del middleware, MySQL real ni revocación de sesiones ya emitidas.
+- PLAN H144 PENDIENTE→EN_PROGRESO con readback, COLA O144=SI cuando se tomó (predecesora I8-006.G VALIDANDO). Al entregar VALIDANDO, COLA G144 permanece NO hasta que I8-006.G sea LISTO. Requiere revisión genuina de otra Task, triple auditoría, Scope Lock/Seguridad/Backend/Directed exact HEAD y FIFO de integración #4020. Autor J10 no revisará, fusionará ni certificará esta entrega.
+- Rollback mediante revert protegido del test/nota, sin reescribir historial de terceros.
+
 ## 2026-11-12 — I8-006.A: contraseña propia sin fugas en auditoría (DEV)
 
 - Autor Task física Javier :10 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507`, scope Plan Comercial I8-006.A; rama original `work/solqaryn-i8-006-a` desde dev@`710a0351b161b44ee0d9ee6dce94c4c64bbd5e67`.
