@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Solqaryn.Application.Common;
 using Solqaryn.Application.DTOs;
 using Solqaryn.Application.Interfaces;
+using Solqaryn.Application.Exceptions;
 using Solqaryn.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -27,7 +28,17 @@ public class AuthController : ControllerBase
     [EnableRateLimiting("AuthLogin")]
     public async Task<IActionResult> Login([FromBody] LoginRequestDto dto)
     {
-        var resultado = await _authService.LoginAsync(dto);
+        LoginResponseDto? resultado;
+        try
+        {
+            resultado = await _authService.LoginAsync(dto);
+        }
+        catch (BusinessRuleException)
+        {
+            // La cuenta bloqueada, inactiva o sin rol no debe enumerarse
+            // en la ruta publica. El detalle interno nunca llega al HTTP/log.
+            resultado = null;
+        }
 
         if (resultado is null)
         {
