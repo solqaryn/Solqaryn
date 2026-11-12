@@ -1,3 +1,10 @@
+## 2026-11-12 — V13_SCOPE_RETRY_ACCEPTANCE_TRIGGER_20261112: recuperación Scope Lock por aceptación funcional integral (PR #4039)
+
+- Diagnóstico causal: Scope Lock PR #4020, run 43258122297, intento 2, falló exclusivamente por `OTHER_CHECKS_PENDING` de integración MySQL y aceptación funcional; Backend/Seguridad/Directed ya estaban verdes. No convertir esperas en aprobaciones.
+- Reparación sobre la rama original del PR de gobernanza #4039: `.github/workflows/retry-scope-after-ci-completion.yml` ahora escucha `DEV - aceptación funcional integral`; `scripts/security/auto-retry-scope-after-ci.mjs` permite únicamente la pareja de ruta/nombre confiable `.github/workflows/catalogos-aceptacion.yml` / `DEV - aceptación funcional integral`.
+- Añade pruebas positiva y negativa en el self-test del reintento (22 casos declarados, ejecución CI pendiente). Conserva exact HEAD, mismo PR, autoría, revisión independiente, controles obligatorios, checks fallidos como bloqueantes y prohibición de merge/autoaprobación. No altera QA/main/PROD, secretos ni datos.
+- La publicación en `dev` requiere merge protegido por FIFO y CI/revisión independiente del PR #4039; no declarar la reparación productiva ni `LISTO` de #4020 antes de acreditarlos. Rollback: revert protegido y selectivo del cambio en workflow y allowlist si una evaluación posterior detecta riesgo.
+
 ## 2026-11-12 — I8-006.A: contraseña propia sin fugas en auditoría (DEV)
 
 - Autor Task física Javier :10 / JAVIER_CHATGPT / AUTHOR_TASK_ID `6af16bb9492c8191b8e8c7d606f11507`, scope Plan Comercial I8-006.A; rama original `work/solqaryn-i8-006-a` desde dev@`710a0351b161b44ee0d9ee6dce94c4c64bbd5e67`.
