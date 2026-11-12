@@ -1,3 +1,8 @@
+## 2026-11-12 - G0-005.E - readback operativo DEV negativo dirigido (Javier :50)
+- Fuente Plan Comercial Inicial V3 G0-005.E, predecesora G0-005.D LISTO. Clasificador determinista sin llamadas externas para distinguir alias SSO protegido, upstream API 503, proyecto Vercel ajeno, READY de SHA distinto y evidencias incompletas.
+- 15 casos sintéticos con Node test; no certifican un despliegue real, paridad externa, login, tenants ni estado LISTO. Resultado positivo solo EVIDENCE_CONSISTENT_NOT_LIVE_ATTESTATION; evidencia insuficiente NO_GO.
+- Archivos scripts/quality/g0-005-e-operational-readback.mjs y scripts/tests/g0-005-e-operational-readback.test.mjs. Rollback: revert selectivo del commit directo en dev sin force; sin cambio de runtime, DB, secretos ni QA/main/PROD.
+
 ## 2026-11-12 - G0-004.G - rechazo dirigido de E2E falso verde (Javier :40)
 - Alcance exclusivo del Standard Comercial V3 G0-004.G: casos sintéticos de retry tras fallo, skip por configuración de secreto no disponible, navegador omitido y fallo global de worker. Se comprueba FLAKY_REVIEW/INCOMPLETE/INVALID_REPORT/FAIL; control positivo limpio PASS. No equivale a E2E browser real ni solicita leer secretos.
 - Script dirigido `scripts/tests/g0-004-g-directed-negative.test.mjs`, compara clasificador existente sin cambiar API, JWT, empresa, MySQL ni frontend productivo. Reversión: revert protegido exclusivamente de esta prueba y nota de CHANGELOG en dev, nunca force-push.
