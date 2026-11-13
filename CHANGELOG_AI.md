@@ -1,3 +1,8 @@
+## 2026-11-12 — P5-006.C: delimitación del modal de confirmación institucional (Javier :30)
+- Archivo de producto único `frontend/src/app/shared/confirm-dialog.component.ts`, blob `f9b73544cc70beba83a891b2fc89537f0718af8b`. Contrato Cancelar=false/Eliminar=true, título/mensaje interpolados, Material Dialog standalone.
+- Prueba estática `scripts/tests/p5-006-c-delimitacion-confirmacion.test.mjs` (Node 22.16.0, seis subtests dirigidos) y `docs/P5-006-C-DELIMITACION-CONFIRMACION-DEV.md` documentan el escenario y negativos. No altera runtime Angular, ni certifica navegador, JWT, MySQL o QA/PROD.
+- Rollback con revert normal selectivo; A4 exige SHA exacto/readback tras dev; A5 independiente pendiente para promoción.
+
 ## 2026-11-12 — P5-004.C: delimitación estática de detalle modal (Javier :40)
 - Fuente única `frontend/src/app/shared/alerts/app-alert.service.ts`, blob `3bde601b54bad7d979fca9029025ce4eb72a44db`, escenario de detalle optativo seguro. No certifica todos los modales ERP.
 - Prueba `scripts/tests/p5-004-c-delimitacion-modal-detalle.test.mjs`, Node 22.16.0 6/6 preflight extracto y 8/8 inspección de fuente real en GitHub, sin afirmar browser/E2E.
