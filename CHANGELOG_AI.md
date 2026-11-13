@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C01-02.M01.05: criterios de aceptación de capabilities [Javier :30]
+- Matriz preparatoria AC01–AC16 de aceptación funcional/técnica y seis negativos documentales para RBAC, entitlement, tenant, sucursal y recurso.
+- No implementa autorización ni prueba runtime; A0–A4 proporcionales al documento, Scope Lock exact-SHA, A5 independiente; sin cambios QA/main/PROD.
+
 ## 2026-11-13 — V5 C01-03.M01.01: objetivo, no-alcance y no-regresión de configuración dinámica [Javier :40]
 - Preparación exclusivamente documental: mapa de fronteras, límites de implementación y NR-01–NR-10 positivos/negativos; no activa configuraciones ni modifica runtime, secretos, permisos, DB o proveedores.
 - Seguridad JWT/RBAC/tenant, inyección, concurrencia, BITACORA A:Z y rollback delimitados. A0–A4 proporcionales; Scope Lock exact-SHA, A5 independiente pendiente; no QA/main/PROD.
