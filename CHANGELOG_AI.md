@@ -1,3 +1,7 @@
+## 2026-11-13 — C03-02.M01.01: objetivo y no-regresión RBAC/ABAC [Javier :00]
+- Documento docs/v5/c03-02-m01-01-objetivo-no-regresion-rbac-abac.md define fronteras server-side de empresa, sucursal, propiedad, archivos y exportaciones y 16 criterios futuros positivos/negativos; 7 contratos Git cotejados por blob, DAG 10/10.
+- Exclusivamente documental: no implementación ni PASS runtime de RBAC/ABAC; A0–A4 proporcionales, Scope Lock exact SHA y A5 independiente de otra Task Javier; sin JWT/roles/DB/UI/QA/main/PROD.
+
 ## 2026-11-13 — V5 C03-01.M01.01: contrato documental de autenticación y recuperación (Javier :50)
 - `docs/v5/c03-01-m01-01-objetivo-autenticacion-recuperacion.md` fija objetivo, exclusiones y 16 casos de no-regresión FUTUROS para login, renovación, revocación, recovery, abuso, tenant A/B y MFA/passkeys solo con proveedor aprobado.
 - Siete fuentes Git inspeccionadas; tipo 1 documental sin C# ni Angular/MySQL/Docker/E2E, A0-A3 verificación documental dirigida. A4 exige SHA nuevo y Scope Lock exacto. A5 pendiente de otra de cinco Tasks Javier; no QA/main/PROD. Rollback: git revert del commit.
