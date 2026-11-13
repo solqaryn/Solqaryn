@@ -778,3 +778,9 @@
 
 - PRIMARY DEV 05 JAVIER (`6adc2e55f47c81919f6374e561687076`) prepara `docs/v5/c03-01-m01-04-riesgos-supuestos-decisiones-autenticacion.md` para registrar R01–R14, S01–S08 y D01–D08 respecto de login, renovación, revocación, recuperación y factores futuros.
 - Alcance TIPO1 exclusivamente documental. Sin cambios de código ejecutable, DB, JWT, permisos, proveedores o entornos. A0–A3 verificaciones documentales; A4 requiere Scope Lock exact SHA y readback de PLAN/COLA/BITACORA, A5 revisión independiente pendiente. Reversión con git revert no destructivo.
+
+## 2026-11-13 — SOLQARYN V5 C03-03.M01.01 (PRIMARY DEV 04 Javier :30)
+- Preparación documental de objetivo, no-alcance y catorce contratos falsables de no-regresión para auditoría de autorización/denegación, cambios críticos, correlación y protección de secretos.
+- Inventario estático de cinco fuentes backend con sus blobs; distingue expresamente evidencia de código de pruebas HTTP/MySQL/retención futuras. No implementa auditoría, permisos ni política de retención y no libera M01.06/M02.
+- A0–A3 documentales dirigidas en VALIDANDO; A4 exclusivamente después de commit FF dev, Scope Lock exact SHA y readback PLAN/COLA/BITACORA A:Z; A5_PENDIENTE de otra Task Javier; no qa/main/PROD, secretos ni pagos.
+- Rollback mediante revert normal del commit publicado sin reescribir trabajo concurrente.
