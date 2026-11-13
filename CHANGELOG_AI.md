@@ -236,3 +236,8 @@
 - Archivo real inalterado `frontend/src/app/shared/anular-dialog.component.ts`, blob `d751503438f963f1deebe371cd14623ad6038e16`. DELIMITAR, no implementar un modal universal.
 - `scripts/tests/p5-005-c-delimitacion-modal-formulario.test.mjs` y `docs/P5-005-C-DELIMITACION-MODAL-FORMULARIO-DEV.md`: Node 22.16.0 `node --check` PASS y `node --test` 6/6 PASS tras VALIDANDO sobre archivo real exact-blob. Negativos de binding, cancelacion, motivo vacio, HTML crudo y dependencia FormsModule; secretos añadidos no detectados.
 - A0-A3 dirigidas a delimitacion estatica real. No acredita navegador Angular, API/JWT/RBAC, MySQL ni datos reales. Sin cambios de runtime, paquetes, migraciones, secretos ni infra. Rollback: revert selectivo normal de estos tres archivos; A5 pendiente independiente antes de promocion.
+
+## 2026-11-12 — P5-011.C: delimitación de lista extensa en modal de inventario (Javier :50)
+- TARGET_PATH único de producto sin modificar: `frontend/src/app/features/inventario/ajustes-list.component.ts`, blob `01dc08065d6bdcde789a2af467fa749dbb385de0`. Modal bounded-scroll con contador de detalles, sin lista extensa virtualizada; listado principal con `mat-paginator` fuera del modal.
+- Prueba estructural Node `scripts/tests/p5-011-c-delimitacion-listas-modal.test.mjs` y acta `docs/P5-011-C-DELIMITACION-LISTAS-MODAL-DEV.md`, positivo y seis negativos de regresión; no se afirma navegador, E2E, API/DB ni tenancy live.
+- Sin cambios Angular runtime, dependencias, migraciones ni secretos. A4 debe verificar commit DEV exacto y readback; A5 independiente antes de QA/main/PROD. Rollback selectivo normal, sin force-push.
