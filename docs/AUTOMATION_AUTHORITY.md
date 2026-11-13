@@ -1,6 +1,6 @@
 # SOLQARYN — Autoridad actual de automatizaciones (V13 Direct DEV)
 
-**Único contrato de ejecución:** `docs/AUTOMATION_V13.md`. Sin gates PR de GitHub en dev; cuatro auditorías reales por trabajo y commit directo a dev. Nunca confundir aprobación de repositorio con autorización sobre permisos reales ni cambiar QA/main/PROD.
+**Único contrato de ejecución:** `docs/AUTOMATION_V13.md`. Sin gates PR de GitHub en dev; A0–A4 obligatorias para cerrar LISTO y A5 independiente obligatoria antes de QA/PROD y commit directo a dev. Nunca confundir aprobación de repositorio con autorización sobre permisos reales ni cambiar QA/main/PROD.
 
 PROJECT_SCOPE_LOCK=STRICT
 PROJECT_ID=SOLQARYN
@@ -31,6 +31,7 @@ WORK_BRANCH_CREATION_ALLOWED=FALSE
 REVIEW_ROUTE_MODE=DETERMINISTIC_AUTHOR_EXCLUSION
 REVIEW_INDEPENDENCE_REQUIRED=TRUE
 AUTO_CERTIFICATION_MODE=DIRECT_DEV_FOUR_AUDITS
+QUALITY_PROTOCOL_VERSION=V13_A0_A5
 FORMAL_APPROVAL_ROUTINE_COMMERCIAL_REQUIRED=FALSE
 FORMAL_APPROVAL_GOVERNANCE_REQUIRED=FALSE
 GOAL_MIN_LISTO_PER_RUN=1
@@ -52,23 +53,23 @@ TIMEZONE=America/Tegucigalpa
 - Transiciones operativas con readback: PENDIENTE→EN_PROGRESO en el claim y antes de desarrollar; EN_PROGRESO→VALIDANDO cuando el código candidato esté completo, **antes de A1/A2/A3** y manteniendo mismo TASK_ID responsable; auditar A1 funcional, A2 seguridad y A3 integración dentro de VALIDANDO; publicar commit directo a dev; A4 posintegración en VALIDANDO; pasar VALIDANDO→LISTO sólo con las cuatro auditorías PASS y lectura confirmada. Todo en la misma corrida cuando sea posible. Reconciliación segura si hay conflicto. El trabajo debe satisfacer dependencias existentes y satisfechas. Los accesos GitHub y Google Sheets deben confirmar permisos efectivos, autorización por empresa y ausencia de bypass PROD.
 - La fuente comercial única está identificada por Drive `1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA` y Sheet `1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU`. No usar otros planes o snapshots. Un permiso NO_VERIFICADO no se convierte en permitido.
 - No activar Tasks, conceder permisos o subir a producción por editar este archivo. Una auditoría fallida bloquea únicamente la tarea afectada. Nunca crear PR/branch o reconstruir fases retiradas. No hacer fuerza de escritura sobre dev ni borrar commits ajenos.
-- Auditar funcionalidad, seguridad, integración y posintegración sobre el SHA exacto; crear registro verificable. Meta mínima 1 cierre/turno y objetivo 3, no garantía ni permiso de declarar PASS ficticio.
+- Validar A0 estática antes del commit, A1 funcional, A2 seguridad, A3 integración y A4 posintegración para LISTO; A5 debe registrarse como PENDIENTE y obtener PASS de otro TASK_ID antes de QA/PROD. Auditar funcionalidad, seguridad, integración y posintegración sobre el SHA exacto; crear registro verificable. Meta mínima 1 cierre/turno y objetivo 3, no garantía ni permiso de declarar PASS ficticio.
 
 ## Registros vigentes
 | Minuto | Cuenta | Función | TASK_ID |
 |---|---|---|---|
 | :00 | JAVIER_CHATGPT | PRIMARY DEV 01 | `6adbb9fff1548191a1bd5b30d9e9984a` |
-| :10 | JAVIER_CHATGPT | PRIMARY DEV 05 | `6af16bb9492c8191b8e8c7d606f11507` |
-| :20 | JAVIER_CHATGPT | PRIMARY DEV 02 | `6adc2e4bd8a48191ac7d8641ed95a1a3` |
+| :10 | JAVIER_CHATGPT | PRIMARY DEV 02 | `6af16bb9492c8191b8e8c7d606f11507` |
+| :20 | JAVIER_CHATGPT | PRIMARY DEV 03 | `6adc2e4bd8a48191ac7d8641ed95a1a3` |
 | :30 | JAVIER_CHATGPT | PRIMARY DEV 04 | `6aeacb7820ac8191b7d768a6f33dfa09` |
-| :40 | JAVIER_CHATGPT | PRIMARY DEV 03 | `6adc2e55f47c81919f6374e561687076` |
+| :40 | JAVIER_CHATGPT | PRIMARY DEV 05 | `6adc2e55f47c81919f6374e561687076` |
 | :50 | JAVIER_CHATGPT | PRIMARY DEV 06 | `6af16bbad26881918c283abe06e1f32a` |
 | :10 | ALEX_CHATGPT | SECONDARY REVIEW 01 | `6adbbc9ad9e88191bea8eb69104afb25` |
 | :50 | ALEX_CHATGPT | SECONDARY REVIEW 03 | `6adcc98a80a48191b71a5156624c21df` |
 
 ## Handoff 6→8 de Alex: preparada documentación, NO credenciales ni Tasks físicas
 
-Las dos identidades de Alex ya forman parte del allowlist, no son nuevas. Originales: `6adbbc9ad9e88191bea8eb69104afb25` (SECONDARY REVIEW 01, RRULE :10) y `6adcc98a80a48191b71a5156624c21df` (SECONDARY REVIEW 03, RRULE :50). Nombres/minutos futuros **PROPUESTOS, no aplicados**: `PRIMARY DEV 07 — ALEX` (:05) y `PRIMARY DEV 08 — ALEX` (:35); zona America/Tegucigalpa; mantener IDs y propiedad. Solo Alex verifica/actualiza prompts y configuración física desde su cuenta y decide posterior habilitación. No certificar estado físico actual por registros del 07-nov-2026. Mantener cuatro auditorías V13 sin ampliación. Detalle operativo: docs/AUTOMATION_V13.md.
+Las dos identidades de Alex ya forman parte del allowlist, no son nuevas. Originales: `6adbbc9ad9e88191bea8eb69104afb25` (SECONDARY REVIEW 01, RRULE :10) y `6adcc98a80a48191b71a5156624c21df` (SECONDARY REVIEW 03, RRULE :50). Nombres/minutos futuros **PROPUESTOS, no aplicados**: `PRIMARY DEV 07 — ALEX` (:05) y `PRIMARY DEV 08 — ALEX` (:35); zona America/Tegucigalpa; mantener IDs y propiedad. Solo Alex verifica/actualiza prompts y configuración física desde su cuenta y decide posterior habilitación. No certificar estado físico actual por registros del 07-nov-2026. Mantener A1–A4 y añadir A0 calidad estática + A5 independiente conforme a V13; prompts físicos Alex aún pendientes. Detalle operativo: docs/AUTOMATION_V13.md.
 
 ## Protección técnica y rollback
 - Arquitectura Angular 22 / ASP.NET 10 / MySQL EF Core 10; auth JWT, RBAC, BCrypt, aislamiento A/B, auditoría, CORS y seguridad de datos sin rebajas. Tests de CI pueden continuar sin convertirse en barreras obligatorias de escritura en dev.

@@ -34,7 +34,7 @@ export function selectWork(tasks,status,account,activeReviewIds=new Set(),taskId
     t.ownerTaskId==null && t.activeEditorConflict!==true && !t.conflictingClaim);
   const next=work[0];
   return next?{action:'CLAIM',task:next,requiresNativeCurrentReadback:true,
-    commitMode:'DIRECT_DEV_FAST_FORWARD',auditCount:4,targetListoPerRun:3}:
+    commitMode:'DIRECT_DEV_FAST_FORWARD',auditCount:4,qualityControls:['A0','A1','A2','A3','A4','A5'],targetListoPerRun:3}:
     {action:'NO_ELIGIBLE',reason:'NO_FREE_ELIGIBLE_SCOPE'};
 }
 export function validateProposedRun(p) {
@@ -52,15 +52,27 @@ export function validateProposedRun(p) {
     p.activeEditorConflictOnTarget===true||p.conflictingClaim===true||
     p.branchName&&p.branchName!=='dev'||p.forcePush===true))
     issues.push('UNSAFE_DIRECT_DEV_WRITE');
-  if(p.operation==='CLOSE' && (p.commitOnDevVerified!==true||p.functionalAuditPassed!==true||
+  if(p.operation==='CLOSE' && (p.commitOnDevVerified!==true||p.staticCodeAuditPassed!==true||p.staticCodeEvidenceVerified!==true||p.a5StatusRecorded!==true||p.functionalAuditPassed!==true||
     p.securityAuditPassed!==true||p.integrationAuditPassed!==true||
     p.postIntegrationAuditPassed!==true||p.sheetReadbackVerified!==true||
     p.ledgerReadbackVerified!==true||p.dependentsRecalculated!==true))
-    issues.push('FOUR_AUDITS_AND_READBACK_REQUIRED');
+    issues.push('A0_A4_A5_PENDING_AND_READBACK_REQUIRED');
   if(p.operation==='REVIEW'&&(p.reviewMode==='TECHNICAL_CROSS_TASK'&&
     (p.technicalEvidenceVerified!==true||p.formalGithubApprovalRequested===true)))
     issues.push('REVIEW_EVIDENCE');
   return issues;
+}
+// A5 is a separate independent post-dev readiness gate, not a new blocker of dev LISTO.
+export function validatePromotionReadiness(p) {
+  if (!p || p.repo!=='solqaryn/Solqaryn' || p.sourceBranch!=='dev' ||
+      !['qa','main'].includes(p.targetBranch) || p.ownerAuthorized!==true ||
+      p.shaPublishedOnDevVerified!==true || p.a0ToA4Passed!==true ||
+      p.a5IndependentAuditPassed!==true || p.a5EvidenceVerified!==true ||
+      !ID.test(p.authorTaskId||'') || !ID.test(p.reviewerTaskId||'') ||
+      p.authorTaskId===p.reviewerTaskId || !authorized.includes(p.authorTaskId) ||
+      !authorized.includes(p.reviewerTaskId) || p.highSeverityFindingsOpen===true)
+    return ['A5_INDEPENDENT_AND_PROMOTION_AUTHORITY_REQUIRED'];
+  return [];
 }
 const errors=validateDocuments(sources);
 if(errors.length){console.error('V13 DIRECT DEV NO_GO: '+errors.join(' | '));process.exitCode=1;}
@@ -70,18 +82,26 @@ else if(process.argv.includes('--self-test')) {
   const scope={id:'I8-002.A',state:'PENDIENTE',developmentEnabled:'SI',
     dependencies:[],permissionsVerified:true};
   const pick=selectWork([scope],{},'JAVIER_CHATGPT',new Set(),task,true);
-  if(pick.action!=='CLAIM'||pick.auditCount!==4)throw Error('direct DEV claim test failed');
+  if(pick.action!=='CLAIM'||pick.auditCount!==4||pick.qualityControls.length!==6)throw Error('direct DEV claim test failed');
   if(selectWork([{...scope,permissionsVerified:false}],{},'JAVIER_CHATGPT',new Set(),task,true).action==='CLAIM')
     throw Error('unsafe scope claim');
   const base={repo:'solqaryn/Solqaryn',branch:'dev',environment:'dev',operation:'CLOSE',
     actorTaskId:task,mode:'ACTIVE_DEV',authorizationVerified:true,permissionVerified:true,
     exactHeadVerified:true,actorNativeOccurrenceVerified:true,dispatchReadbackVerified:true,
-    commitOnDevVerified:true,functionalAuditPassed:true,securityAuditPassed:true,
+    commitOnDevVerified:true,staticCodeAuditPassed:true,staticCodeEvidenceVerified:true,a5StatusRecorded:true,functionalAuditPassed:true,securityAuditPassed:true,
     integrationAuditPassed:true,postIntegrationAuditPassed:true,sheetReadbackVerified:true,
     ledgerReadbackVerified:true,dependentsRecalculated:true};
   if(validateProposedRun(base).length)throw Error('valid closure rejected');
-  for(const bad of [{...base,securityAuditPassed:false},{...base,commitOnDevVerified:false},
+  for(const bad of [{...base,securityAuditPassed:false},{...base,staticCodeAuditPassed:false},{...base,a5StatusRecorded:false},{...base,commitOnDevVerified:false},
     {...base,sheetReadbackVerified:false}])
     if(!validateProposedRun(bad).length)throw Error('false LISTO allowed');
-  console.log('V13 DIRECT DEV four-audit claim and close PASS');
+  const promotion={repo:'solqaryn/Solqaryn',sourceBranch:'dev',targetBranch:'qa',
+    ownerAuthorized:true,shaPublishedOnDevVerified:true,a0ToA4Passed:true,
+    a5IndependentAuditPassed:true,a5EvidenceVerified:true,
+    authorTaskId:authorized[0],reviewerTaskId:authorized[1],highSeverityFindingsOpen:false};
+  if(validatePromotionReadiness(promotion).length)throw Error('valid independent review rejected');
+  for(const bad of [{...promotion,a5IndependentAuditPassed:false},
+    {...promotion,reviewerTaskId:authorized[0]},{...promotion,ownerAuthorized:false}])
+    if(!validatePromotionReadiness(bad).length)throw Error('invalid promotion accepted');
+  console.log('V13 DIRECT DEV A0-A5 evidence gates and independent review PASS');
 }

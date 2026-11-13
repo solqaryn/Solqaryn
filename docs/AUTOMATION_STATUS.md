@@ -29,6 +29,7 @@ WORK_BRANCH_CREATION_ALLOWED=FALSE
 REVIEW_ROUTE_MODE=DETERMINISTIC_AUTHOR_EXCLUSION
 REVIEW_INDEPENDENCE_REQUIRED=TRUE
 AUTO_CERTIFICATION_MODE=DIRECT_DEV_FOUR_AUDITS
+QUALITY_PROTOCOL_VERSION=V13_A0_A5
 FORMAL_APPROVAL_ROUTINE_COMMERCIAL_REQUIRED=FALSE
 FORMAL_APPROVAL_GOVERNANCE_REQUIRED=FALSE
 GOAL_MIN_LISTO_PER_RUN=1
@@ -41,6 +42,7 @@ TIMEZONE=America/Tegucigalpa
 - `AUTOMATION_RUNTIME=ACTIVE_DEV` indica que el contrato contempla DEV; NO afirma que las Tasks se encuentren físicamente habilitadas. En el readback de 2026-11-12 las seis Tasks Javier están habilitadas (`PHYSICAL_JAVIER_TASKS_ENABLED=6`). Para Alex no se presupone su estado. No reactivar por cambiar documentación.
 - Las constantes `V13_1000_FIFO_BATCH` y `MAX_OPEN_WORK_BRANCHES=1000` se retienen para compatibilidad con validadores instalados; NO habilitan FIFO de PR, trabajo en branches ni PR nuevos. La regla ejecutiva efectiva es `WORK_BRANCH_CREATION_ALLOWED=FALSE` y publicación serial a `dev`.
 - `FORMAL_APPROVAL_GOVERNANCE_REQUIRED=FALSE` se limita al workflow directo de dev. Cualquier protección que subsista en `qa` o `main` mantiene sus obligaciones nativas.
+- En el protocolo A0–A5, A0 calidad estática es obligatoria en VALIDANDO antes de A1–A3; A4 verifica el commit publicado; LISTO_DEV requiere A0–A4 PASS y A5_PENDIENTE registrado; revisión A5 de otro TASK_ID obligatoria antes de QA/PROD, sin bloquear la cola de dev. No certificar seis PASS si A5 aún no se ejecutó. Los seis títulos Javier son secuenciales por hora de ejecución; IDs y RRULE intactos.
 - Las seis Tasks Javier ejecutan V13 directa en dev con el orden: al seleccionar PENDIENTE, pasar inmediatamente a EN_PROGRESO con TASK_ID; tras acabar implementación candidata, pasar a VALIDANDO **antes** de A1 funcional, A2 seguridad y A3 integración; mismo Scope audita, corrige, publica commit fast-forward dev, hace A4 posintegración y sólo entonces marca LISTO con evidencia. Otros Scopes toman IDs PENDIENTE libres en su disparo, sin esperar cierres ajenos. Meta mínima 1 LISTO, objetivo 3 por corrida; si se corta una tarea en VALIDANDO, mantener responsable/huella para continuación, no fingir LISTO. Las dos Tasks Alex siguen bajo su cuenta propietaria.
 - La selección y semántica de etapas se definen exclusivamente en `docs/AUTOMATION_V13.md`. No existe un contrato activo de PR FIFO/revisión formal para DEV.
 - **SIN BLOQUEO EN SHEETS:** evitar reservas artificiales; preservar validación de autoría, concurrencia, ID y fórmulas de PLAN/COLA. BITACORA: 21 campos, EVENT_ID único, append contiguo.
@@ -49,17 +51,17 @@ TIMEZONE=America/Tegucigalpa
 | Minuto | Cuenta | Función | TASK_ID |
 |---|---|---|---|
 | :00 | JAVIER_CHATGPT | PRIMARY DEV 01 | `6adbb9fff1548191a1bd5b30d9e9984a` |
-| :10 | JAVIER_CHATGPT | PRIMARY DEV 05 | `6af16bb9492c8191b8e8c7d606f11507` |
-| :20 | JAVIER_CHATGPT | PRIMARY DEV 02 | `6adc2e4bd8a48191ac7d8641ed95a1a3` |
+| :10 | JAVIER_CHATGPT | PRIMARY DEV 02 | `6af16bb9492c8191b8e8c7d606f11507` |
+| :20 | JAVIER_CHATGPT | PRIMARY DEV 03 | `6adc2e4bd8a48191ac7d8641ed95a1a3` |
 | :30 | JAVIER_CHATGPT | PRIMARY DEV 04 | `6aeacb7820ac8191b7d768a6f33dfa09` |
-| :40 | JAVIER_CHATGPT | PRIMARY DEV 03 | `6adc2e55f47c81919f6374e561687076` |
+| :40 | JAVIER_CHATGPT | PRIMARY DEV 05 | `6adc2e55f47c81919f6374e561687076` |
 | :50 | JAVIER_CHATGPT | PRIMARY DEV 06 | `6af16bbad26881918c283abe06e1f32a` |
 | :10 | ALEX_CHATGPT | SECONDARY REVIEW 01 | `6adbbc9ad9e88191bea8eb69104afb25` |
 | :50 | ALEX_CHATGPT | SECONDARY REVIEW 03 | `6adcc98a80a48191b71a5156624c21df` |
 
 ## Alex: 2 Tasks registradas, preparación documental 6→8
 
-Ambas Tasks figuran en el allowlist vigente. El estado físico actual y sus prompts nuevos **NO están certificados desde Javier**. Los RRULE :10 y :50 y nombres SECONDARY REVIEW siguen siendo el último registro, no se cambiaron aquí. Para el eventual paso a ocho ejecutores queda documentada la **propuesta sin ejecutar**: `6adbbc9ad9e88191bea8eb69104afb25` → `PRIMARY DEV 07 — ALEX`, :05; `6adcc98a80a48191b71a5156624c21df` → `PRIMARY DEV 08 — ALEX`, :35. Cada ID requiere actualización de prompt V13 directo y verificación nativa desde la cuenta Alex, sin crear Tasks y sin reactivación hasta su autorización expresa. Las cuatro auditorías A1–A4 permanecen idénticas. Contrato de handoff: `docs/AUTOMATION_V13.md`, sección *Preparación de Alex*.
+Ambas Tasks figuran en el allowlist vigente. El estado físico actual y sus prompts nuevos **NO están certificados desde Javier**. Los RRULE :10 y :50 y nombres SECONDARY REVIEW siguen siendo el último registro, no se cambiaron aquí. Para el eventual paso a ocho ejecutores queda documentada la **propuesta sin ejecutar**: `6adbbc9ad9e88191bea8eb69104afb25` → `PRIMARY DEV 07 — ALEX`, :05; `6adcc98a80a48191b71a5156624c21df` → `PRIMARY DEV 08 — ALEX`, :35. Cada ID requiere actualización de prompt V13 directo y verificación nativa desde la cuenta Alex, sin crear Tasks y sin reactivación hasta su autorización expresa. Las cuatro auditorías originales A1–A4 se conservan; se añaden A0 y A5 según contrato vigente. Contrato de handoff: `docs/AUTOMATION_V13.md`, sección *Preparación de Alex*.
 
 ## Fuentes autorizadas
 - Plan Drive: https://docs.google.com/document/d/1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA/edit

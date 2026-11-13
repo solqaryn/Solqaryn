@@ -4,7 +4,7 @@
 - `.agents/skills/solqaryn-project-governance/SKILL.md`: identidad y límites.
 - `docs/PROJECT_SCOPE_LOCK.md`: plataforma, rama, alcance y seguridad.
 - `AGENTS.md`: reglas condensadas que debe seguir cualquier agente.
-- `docs/AUTOMATION_V13.md`: único flujo ejecutable desde PENDIENTE hasta LISTO, cuatro auditorías y commits directos a dev.
+- `docs/AUTOMATION_V13.md`: único flujo ejecutable desde PENDIENTE hasta LISTO, A0 estática + A1–A4 para LISTO dev y A5 independiente posdev previa a promoción, con commits directos.
 - `docs/AUTOMATION_STATUS.md`: censo efectivo, cuotas 1/3 y estado nativo conocido.
 - `docs/AUTOMATION_AUTHORITY.md`: identidades, permisos, competencia y protección de cuentas.
 - `docs/GITHUB_ACCOUNT_ROLES.md`: credenciales y roles sin aprobaciones GitHub rutinarias DEV.

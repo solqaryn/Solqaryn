@@ -1,3 +1,8 @@
+## 2026-11-12 — Calidad A0–A5, títulos Javier secuenciales y continuidad de Tasks
+- Se añaden A0 estática exigente sobre candidato y A5 revisión independiente posdev con evidencia diferenciada. El cierre dev exige A0–A4 PASS + A5_PENDIENTE; qa/main/PROD requiere A5_PASS y autorización aparte. No se deshabilitan CI ni seguridad existentes.
+- Los nombres de las seis Tasks Javier se normalizan por minuto, preservando ID, RRULE, propietario, historial y estado habilitado. Las dos Alex permanecen pendientes de actualización física desde su cuenta, con propuesta 07 :05 y 08 :35.
+- Pausas automáticas de proveedor: no garantizables ni anulables por prompt; registrar requires_user_action y alertar sin bypass. Mantener throughput, sin nuevos PR, ramas, rulesets ni Tasks.
+
 ## 2026-11-12 - G0-005.E - readback operativo DEV negativo dirigido (Javier :50)
 - Fuente Plan Comercial Inicial V3 G0-005.E, predecesora G0-005.D LISTO. Clasificador determinista sin llamadas externas para distinguir alias SSO protegido, upstream API 503, proyecto Vercel ajeno, READY de SHA distinto y evidencias incompletas.
 - 15 casos sintéticos con Node test; no certifican un despliegue real, paridad externa, login, tenants ni estado LISTO. Resultado positivo solo EVIDENCE_CONSISTENT_NOT_LIVE_ATTESTATION; evidencia insuficiente NO_GO.
