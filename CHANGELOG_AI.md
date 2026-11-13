@@ -1,3 +1,8 @@
+## 2026-11-12 — P5-004.C: delimitación estática de detalle modal (Javier :40)
+- Fuente única `frontend/src/app/shared/alerts/app-alert.service.ts`, blob `3bde601b54bad7d979fca9029025ce4eb72a44db`, escenario de detalle optativo seguro. No certifica todos los modales ERP.
+- Prueba `scripts/tests/p5-004-c-delimitacion-modal-detalle.test.mjs`, Node 22.16.0 6/6 preflight extracto y 8/8 inspección de fuente real en GitHub, sin afirmar browser/E2E.
+- Nota `docs/P5-004-C-DELIMITACION-MODAL-DETALLE-DEV.md`; solo test/nota/changelog, A5 independiente pendiente.
+
 ## 2026-11-12 — P5-008.D: reuso de alertas institucionales existente (Javier :20)
 - REUSE del servicio `frontend/src/app/shared/alerts/app-toast.service.ts` (blob `0478821b246cae5fdf3016a5c25081a1726f925a`): severidades, duración, acción texto Cerrar, anuncio aria y estilos. Sin modificar Angular runtime ni servicios.
 - Prueba dirigida `scripts/tests/p5-008-d-reuso-alertas.test.mjs`: Node 22.16.0 6/6 PASS tras VALIDANDO (control positivo de fuente real, 5 negativos sobre duración, texto/HTML, aria, wrapper error y acción de cerrar). SHA256 `89721265805b7f22b4121d61df2790a1de6bc32ee365e07ce1fd82c9325bead2`. Nota `docs/P5-008-D-REUSO-ALERTAS-DEV.md`.
