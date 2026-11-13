@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C00-01.M04.05: verificación de accesibilidad en login público [Javier :40]
+- Añade Playwright real al gate M10 para /login anónimo a 320px: labels, orden de foco teclado, mostrar/ocultar contraseña, formulario habilitado/deshabilitado, contraste y desbordamiento.
+- Solo alcance de regresión frontend, sin cambios de API, tenancy, esquemas MySQL, claves, infraestructura o permisos. Exigir CI E2E M10 y frontend/SCOPE_LOCK causal SHA; A5 independiente. No autoriza QA/main/PROD.
+
 ## 2026-11-13 — V5 C00-01.M04.02: estados accesibles de dashboard y recuperación [Javier :50]
 - Se corrige el dashboard empresarial que quedaba sin contenido cuando GET /dashboard/resumen fallaba o retornaba data=null. Ahora expone estados de carga, error, vacío y éxito, reintento explícito con 44px y foco visible, sin reflejar detalles internos de HTTP. Conserva authGuard/permisoGuard, RBAC y tenant existentes; no cambia API, contrato SQL, migraciones ni secretos.
 - Regresión Playwright M10 con API/MySQL efímeros: denegación 503 y ausencia de filtración de mensaje, respuesta vacía y reintento exitoso real. Requiere A0 de diff, Angular lint/build, E2E M10, Scope Lock y readback SHA exacto. No promover QA/main/PROD sin A5 independiente.

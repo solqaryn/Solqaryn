@@ -333,4 +333,52 @@ test.describe('M10 — UI/UX empresarial y accesibilidad', () => {
     expect(solicitudes).toBeGreaterThanOrEqual(3);
   });
 
+
+  test('V5 C00-01.M04.05: login público conserva etiquetas, foco, contraste y ancho móvil', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 700 });
+    await page.goto('/login');
+
+    const formulario = page.locator('form[aria-labelledby="login-title"]');
+    const usuario = page.getByRole('textbox', { name: 'Nombre de usuario' });
+    const password = page.getByLabel('Contraseña', { exact: true });
+    const ingresar = page.getByRole('button', { name: 'Ingresar al sistema', exact: true });
+
+    await expect(formulario).toBeVisible();
+    await expect(usuario).toBeVisible();
+    await expect(password).toBeVisible();
+    await expect(ingresar).toBeDisabled();
+    await expect(page.locator('#main-sidebar')).toHaveCount(0);
+
+    await usuario.focus();
+    await expect(usuario).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(password).toBeFocused();
+    await page.keyboard.press('Tab');
+    const mostrar = page.getByRole('button', { name: 'Mostrar contraseña' });
+    await expect(mostrar).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(password).toHaveAttribute('type', 'text');
+    await expect(page.getByRole('button', { name: 'Ocultar contraseña' }))
+      .toHaveAttribute('aria-pressed', 'true');
+    await page.keyboard.press('Enter');
+    await expect(password).toHaveAttribute('type', 'password');
+
+    await usuario.fill('v5_a11y_preflight');
+    await password.fill('');
+    await expect(ingresar).toBeDisabled();
+    await password.fill('SoloValidacionFormulario2026');
+    await expect(ingresar).toBeEnabled();
+    // No enviar credenciales de prueba: se valida el formulario real, no un login de backend.
+
+    const ancho = await page.evaluate(() => ({
+      viewport: document.documentElement.clientWidth,
+      documento: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth)
+    }));
+    expect(ancho.documento - ancho.viewport).toBeLessThanOrEqual(1);
+
+    const colores = await cssVariables(page, ['--color-text', '--color-surface']);
+    expect(contrast(colores['--color-text'], colores['--color-surface']))
+      .toBeGreaterThanOrEqual(4.5);
+  });
+
 });
