@@ -1,3 +1,7 @@
+## 2026-11-13 — C00-03.M01.06: cierre M01 matriz integrada V5 [Javier :00]
+- Documento docs/v5/c00-03-m01-06-cierre-matriz-integrada.md: 5/5 M01 LISTO con A5 causal, C00-01.M06.06 LISTO+A5, matriz de 12 referencias → mejora/contrato/prueba/cierre, 2 casos positivos y 12 negativos de gobierno documental.
+- No crea backlog, cola, PR ni ramas; no ejecuta pruebas de runtime ni libera M02 sin sus puertas. A0–A4 proporcional y Scope Lock exacto; A5 de otra Task Javier, cero QA/main/PROD.
+
 ## 2026-11-13 — C00-02.M01.06: cierre documentado de M01 y puerta condicional M02 [Javier :00]
 - Contrato docs/v5/c00-02-m01-06-bloqueo-rollback-liberacion-modelo.md: cinco M01 LISTO+A5, cierre C00-01.M06.06 LISTO+A5 causal, DAG VALIDADO, máquina de estados, CAS de owner, BITACORA 26 campos, dos casos positivos y doce negativos documentales.
 - Preparación sin ejecución de despachador ni liberación ficticia M02; A0–A4 proporcionales, Scope Lock exact-SHA, A5 de otra Task Javier, sin PR/branches ni QA/main/PROD.
