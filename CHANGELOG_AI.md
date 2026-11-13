@@ -1,4 +1,9 @@
 ## 2026-11-13 — V5 C01-02.M01.04: riesgos y decisiones preliminares de capabilities [Javier :30]
+
+## 2026-11-13 — V5 C00-04.M01.05: criterios de aceptación observables [Javier :10]
+- Contrato documental AC01–AC12, P1/P2, N1–N7 y D01–D05 con gates de autorización, DAG, CI exact-SHA, seguridad, BITACORA A:Z y rollback; sin runtime.
+- A0–A4 dirigidos, Scope Lock en el SHA publicado y A5 pendiente de revisor independiente; QA/main/PROD no autorizados.
+
 - Inventario documental R01–R11, supuestos S01–S06, decisiones D01–D06 y positivos/negativos para RBAC/plan/rubro/tenant/sucursal/recurso, basado en contratos reales.
 - Sólo M01.04 documental; no habilita capabilities, modifica API/Angular/MySQL ni certifica runtime. Aplicar A0–A4 proporcionales, Scope Lock exact-SHA y A5 por Task distinta. No QA/main/PROD.
 
