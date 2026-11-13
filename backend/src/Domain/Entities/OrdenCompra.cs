@@ -48,15 +48,21 @@ public class OrdenCompra : AuditableEntity
     {
         if (string.IsNullOrWhiteSpace(key) || key.Trim().Length > 128)
             throw new ArgumentException("La clave de idempotencia es obligatoria y no puede superar 128 caracteres.", nameof(key));
-        if (string.IsNullOrWhiteSpace(fingerprint) || fingerprint.Trim().Length != 64)
+        if (string.IsNullOrWhiteSpace(fingerprint))
             throw new ArgumentException("El fingerprint de idempotencia debe ser SHA-256 hexadecimal.", nameof(fingerprint));
+
+        var huellaNormalizada = fingerprint.Trim();
+        if (huellaNormalizada.Length != 64 || !huellaNormalizada.All(char.IsAsciiHexDigit))
+            throw new ArgumentException("El fingerprint de idempotencia debe ser SHA-256 hexadecimal.", nameof(fingerprint));
+
+        huellaNormalizada = huellaNormalizada.ToLowerInvariant();
         if (IdempotencyKey is not null && !string.Equals(IdempotencyKey, key.Trim(), StringComparison.Ordinal))
             throw new InvalidOperationException("La clave de idempotencia de una orden no puede sustituirse.");
-        if (IdempotencyFingerprint is not null && !string.Equals(IdempotencyFingerprint, fingerprint.Trim(), StringComparison.Ordinal))
+        if (IdempotencyFingerprint is not null && !string.Equals(IdempotencyFingerprint, huellaNormalizada, StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException("El fingerprint de idempotencia de una orden no puede sustituirse.");
 
         IdempotencyKey = key.Trim();
-        IdempotencyFingerprint = fingerprint.Trim().ToLowerInvariant();
+        IdempotencyFingerprint = huellaNormalizada;
     }
 
     public void AsegurarEditable()

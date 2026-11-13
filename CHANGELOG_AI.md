@@ -1,3 +1,7 @@
+## 2026-11-13 - V5 C00-01.M03.01 dominio: fingerprint SHA-256 fail-closed [Javier :50]
+- Corrige `OrdenCompra.EstablecerIdempotencia`: exige hex ASCII de 64 caracteres y canoniza replay de huella equivalente; rechaza reuso con payload distinto y preserva estado ante error.
+- Añade xUnit positivo/negativo de dominio, contrato documentado y límites de evidencia. A0-A3 deben validarse en candidato; A3 .NET/MySQL en GitHub Actions del SHA nuevo, A4 posdev y A5 por revisor ajeno. Sin QA/main/PROD.
+
 ## 2026-11-13 - V5 C00-01.M02.05 eventos e idempotencia [Javier :00]
 - Definicion documental trazable de correlation HTTP/Kardex, OrdenCompra, MensajeOutbox y MensajeOutboxService, con limites de IdempotencyKey, correlacion, retries y denegacion multiempresa; no cambios runtime, SQL ni providers.
 - Estado EN_PROGRESO y VALIDANDO registrado antes de auditorias formales A0-A3; Node 22.16.0 --check, inspeccion dirigida de secretos y 9/9 pruebas documentales (1 positiva, 8 negativas) PASS. Sin afirmar HTTP/MySQL/live ejecutados.
