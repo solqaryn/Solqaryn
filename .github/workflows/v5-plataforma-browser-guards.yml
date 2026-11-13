@@ -7,6 +7,7 @@ on:
       - '.github/workflows/v5-plataforma-browser-guards.yml'
       - 'frontend/e2e/v5-plataforma-browser-guards.spec.ts'
       - 'frontend/e2e/c00-03-m04-05-accessibility.spec.ts'
+      - 'frontend/e2e/c00-03-m04-06-density.spec.ts'
       - 'frontend/src/app/app.routes.ts'
       - 'frontend/src/app/features/plataforma/plataforma.component.ts'
   workflow_dispatch:
@@ -65,7 +66,7 @@ jobs:
           exit 1
       - name: Browser positivo/negativo y responsive, sin auth real
         working-directory: frontend
-        run: npx playwright test e2e/v5-plataforma-browser-guards.spec.ts e2e/c00-03-m04-05-accessibility.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+        run: npx playwright test e2e/v5-plataforma-browser-guards.spec.ts e2e/c00-03-m04-05-accessibility.spec.ts e2e/c00-03-m04-06-density.spec.ts --config=playwright.config.ts --workers=1 --retries=0
       - name: Publicar trazas sinteticas de navegador
         if: always()
         uses: actions/upload-artifact@v4

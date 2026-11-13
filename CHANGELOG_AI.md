@@ -984,3 +984,8 @@
 - Agrega cuatro verificaciones Playwright sobre /plataforma/cobertura-v5: rechazo sin JWT, denegacion 403 de sesion simulada, mobile 390px/escritorio 1280px, ausencia de overflow exterior, tabla semantica desplazable por teclado, foco y labels, contraste de texto 4.5:1.
 - Amplia el workflow navegador V5 para ejecutar el archivo de pruebas separado sin modificar guards, servicios, rutas, MySQL ni componentes de terceros. Backend de sesion sintetico solo para experiencia UI; no certifica JWT/RBAC/tenant de servidor ni datos live.
 - A0 revision estatica, secretos y CHANGELOG; A1-A3 browser positivo/negativo, Angular lint y build; A4 exige CI causal del SHA, Scope Lock y readback institucional; A5_PENDIENTE para otra Task Javier. Rollback mediante revert normal, sin reescribir commits.
+
+## 2026-11-13 — V5 C00-03.M04.06: densidad y carga progresiva de cobertura [Javier :40]
+- Dos tests Playwright Chromium exclusivos de la ruta /plataforma/cobertura-v5: matriz vacia semantica con cinco columnas y un solo contenedor, sin consultas institucionales ocultas ni widgets de gestion.
+- Verifica revalidacion de sesion con GET sintetico pendiente: progreso visible, boton deshabilitado hasta resolucion y exactamente una solicitud. No modifica API, autorizacion JWT/RBAC, MySQL, tenants ni empresas; no inventa filas de cobertura.
+- Amplia CI navegador exact SHA sin deshabilitar casos anteriores; A0 static/provenance y secretos, A1-A3 Angular lint/build + Chromium positivo/negativo, A4 checks causales y readback, A5 por otra Task Javier. Revert normal, sin PR/ramas/PROD.
