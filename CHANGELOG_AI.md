@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-03.M03.05: cola de evidencias de cobertura sin eventos [Javier :30]
+- Backend Application V5CoverageEvidenceQueue integra la proyeccion de matriz C00-03 con cola inmutable, catalogo, actor/scope allowlist y SHA exacto, sin despachar Tasks.
+- Tests xUnit V5CoverageEvidenceQueueTests cubren escenarios positivos/negativos, A5 no autorrevisable, stale SHA, duplicados, scope, capacidad y evidencia pendiente; contrato docs/v5/c00-03-m03-05-coverage-evidence-queue.md.
+- .NET/seguridad/Scope Lock y CHANGELOG requieren checks causales; MySQL/Angular/Docker/E2E no aplican. Sin webhooks, IAM, secretos, PR, ramas, QA/main/PROD; rollback revert normal.
+
 ## 2026-11-13 - V5 C00-02.M03.05: cola segura sin dispatcher [Javier :30]
 - Codigo real backend/src/Application/AutomationV5/V5WorkItemQueueSelector.cs selecciona una intencion CLAIM validada por PLAN G/O/DAG, catalogo, allowlist y SHA; no despacha ni crea Tasks.
 - Tests xUnit V5WorkItemQueueSelectorTests y contrato docs/v5/c00-02-m03-05-queue-selector.md con positivos y negativos de actor, fuente, capacidad y colisiones.
