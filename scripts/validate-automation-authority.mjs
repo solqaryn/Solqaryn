@@ -36,6 +36,7 @@ export function validateAuthority(input) {
     need(body, 'BRANCH', 'dev', label);
     need(body, 'AUTO_CERTIFICATION_MODE', 'DIRECT_DEV_FOUR_AUDITS', label);
     need(body, 'QUALITY_PROTOCOL_VERSION', 'V13_A0_A5', label);
+    need(body, 'GOAL_MAX_LISTO_PER_RUN', 'NONE_WITHIN_PROVIDER_RUN', label);
     need(body, 'WORK_BRANCH_CREATION_ALLOWED', 'FALSE', label);
     if (/^AUTO_CERTIFICATION_MODE=REQUIRED_SCOPE_LOCK$/m.test(body)) errors.push(label + ': obsolete CI gate');
   }
@@ -56,6 +57,7 @@ export function validateAuthority(input) {
     need(body,'FORMAL_APPROVAL_GOVERNANCE_REQUIRED','FALSE',label);
     need(body,'GOAL_MIN_LISTO_PER_RUN','1',label);
     need(body,'GOAL_TARGET_LISTO_PER_RUN','3',label);
+    need(body,'CONTINUE_WHILE_ELIGIBLE','TRUE',label);
     const registered = roster(key(body,'REGISTERED_TASK_IDS'));
     const authorized = roster(key(body,'AUTHORIZED_COMMERCIAL_TASK_IDS'));
     if (registered.length!==8 || authorized.length!==8 || new Set(registered).size!==8 ||
@@ -85,10 +87,11 @@ if (errors.length) {
     ['missing scope',{scope:source.scope.replace('PROJECT_SCOPE_LOCK=STRICT','PROJECT_SCOPE_LOCK=OFF')}],
     ['fake audit',{authority:source.authority.replace('AUTO_CERTIFICATION_MODE=DIRECT_DEV_FOUR_AUDITS','AUTO_CERTIFICATION_MODE=DISABLED')}],
     ['remove A0 A5',{agents:source.agents.replace('QUALITY_PROTOCOL_VERSION=V13_A0_A5','QUALITY_PROTOCOL_VERSION=DISABLED')}],
+    ['premature stop after 3',{status:source.status.replace('GOAL_MAX_LISTO_PER_RUN=NONE_WITHIN_PROVIDER_RUN','GOAL_MAX_LISTO_PER_RUN=3')}],
     ['work branch allowed',{agents:source.agents.replace('WORK_BRANCH_CREATION_ALLOWED=FALSE','WORK_BRANCH_CREATION_ALLOWED=TRUE')}],
     ['legacy engine',{status:source.status.replace('VAEP_DISPATCH_AUTHORIZED=FALSE','VAEP_DISPATCH_AUTHORIZED=TRUE')}],
     ['wrong plan',{status:source.status.replace('1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA','HISTORICAL')}],
     ['wrong target',{authority:source.authority.replace('REPOSITORY=solqaryn/Solqaryn','REPOSITORY=other/Other')}],
   ]) if (validateAuthority({...source,...mutant}).length===0) throw Error('negative test accepted: '+description);
-  console.log('SOLQARYN V13 DIRECT DEV authority PASS; eight fail-closed mutations rejected');
+  console.log('SOLQARYN V13 DIRECT DEV authority PASS; nine fail-closed mutations rejected');
 } else console.log('SOLQARYN V13 DIRECT DEV authority PASS');

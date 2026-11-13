@@ -16,8 +16,10 @@ TASK_COUNT_LIMIT=PROVIDER_EFFECTIVE_CAPACITY
 CAPACITY_POLICY_VERSION=V13_1000_FIFO_BATCH
 AUTO_CERTIFICATION_MODE=DIRECT_DEV_FOUR_AUDITS
 QUALITY_PROTOCOL_VERSION=V13_A0_A5
+GOAL_MAX_LISTO_PER_RUN=NONE_WITHIN_PROVIDER_RUN
 WORK_BRANCH_CREATION_ALLOWED=FALSE
 
+- Continuidad: GOAL_MAX_LISTO_PER_RUN=NONE_WITHIN_PROVIDER_RUN; se permite superar el hito 3 mientras haya elegibilidad, recursos y pruebas, pero nunca omitir auditorías ni superar límites o suspensiones del proveedor.
 ## Límite de proyecto y seguridad
 - Este Scope Lock identifica exclusivamente al proyecto SOLQARYN, no a un ruleset GitHub. La rama dev carece del antiguo ruleset de PR/CI; main y qa conservan protección independiente.
 - Escritura directa y serializada a dev, HEAD verificado, sin force-push, sin crear PR o ramas auxiliares. SIN BLOQUEO EN SHEETS: no aplicar reservas artificiales, pero sí impedir que dos Tasks sobrescriban el mismo ID.

@@ -1,5 +1,6 @@
 # SOLQARYN — Índice vigente (sin historiales de ejecución)
 
+- El contrato vigente permite cierres por corrida sin máximo artificial de tres, sujetándose a tiempo y recursos del proveedor y a A0–A5. Vigilancia de pausas documentada en docs/AUTOMATION_V13.md.
 ## Autoridad operativa
 - `.agents/skills/solqaryn-project-governance/SKILL.md`: identidad y límites.
 - `docs/PROJECT_SCOPE_LOCK.md`: plataforma, rama, alcance y seguridad.

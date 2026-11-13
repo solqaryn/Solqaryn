@@ -34,7 +34,7 @@ export function selectWork(tasks,status,account,activeReviewIds=new Set(),taskId
     t.ownerTaskId==null && t.activeEditorConflict!==true && !t.conflictingClaim);
   const next=work[0];
   return next?{action:'CLAIM',task:next,requiresNativeCurrentReadback:true,
-    commitMode:'DIRECT_DEV_FAST_FORWARD',auditCount:4,qualityControls:['A0','A1','A2','A3','A4','A5'],targetListoPerRun:3}:
+    commitMode:'DIRECT_DEV_FAST_FORWARD',auditCount:4,qualityControls:['A0','A1','A2','A3','A4','A5'],targetListoPerRun:3,noFixedClosureCap:true,continueWhileEligible:true}:
     {action:'NO_ELIGIBLE',reason:'NO_FREE_ELIGIBLE_SCOPE'};
 }
 export function validateProposedRun(p) {
@@ -82,7 +82,7 @@ else if(process.argv.includes('--self-test')) {
   const scope={id:'I8-002.A',state:'PENDIENTE',developmentEnabled:'SI',
     dependencies:[],permissionsVerified:true};
   const pick=selectWork([scope],{},'JAVIER_CHATGPT',new Set(),task,true);
-  if(pick.action!=='CLAIM'||pick.auditCount!==4||pick.qualityControls.length!==6)throw Error('direct DEV claim test failed');
+  if(pick.action!=='CLAIM'||pick.auditCount!==4||pick.qualityControls.length!==6||pick.noFixedClosureCap!==true||pick.continueWhileEligible!==true)throw Error('direct DEV claim test failed');
   if(selectWork([{...scope,permissionsVerified:false}],{},'JAVIER_CHATGPT',new Set(),task,true).action==='CLAIM')
     throw Error('unsafe scope claim');
   const base={repo:'solqaryn/Solqaryn',branch:'dev',environment:'dev',operation:'CLOSE',

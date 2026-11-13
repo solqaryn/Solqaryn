@@ -14,12 +14,15 @@ CURRENT_REGISTERED_TASKS=8
 CAPACITY_POLICY_VERSION=V13_1000_FIFO_BATCH
 AUTO_CERTIFICATION_MODE=DIRECT_DEV_FOUR_AUDITS
 QUALITY_PROTOCOL_VERSION=V13_A0_A5
+GOAL_MAX_LISTO_PER_RUN=NONE_WITHIN_PROVIDER_RUN
 FORMAL_APPROVAL_ROUTINE_COMMERCIAL_REQUIRED=FALSE
 FORMAL_APPROVAL_GOVERNANCE_REQUIRED=FALSE
 WORK_BRANCH_CREATION_ALLOWED=FALSE
 GOAL_MIN_LISTO_PER_RUN=1
 GOAL_TARGET_LISTO_PER_RUN=3
+CONTINUE_WHILE_ELIGIBLE=TRUE
 
+- Productividad: tres LISTO son un hito, nunca un máximo. Después de cada tarea LISTO_DEV, continuar otra PENDIENTE elegible en la misma corrida si quedan recursos reales, repitiendo A0–A4 y registrando A5_PENDIENTE. No autopausar. Si el proveedor exige intervención, reportar TASK_ID y run_id, sin bypass.
 ## Autoridad exacta
 - Leer siempre Skill y su copia exacta en HEAD dev, docs/PROJECT_SCOPE_LOCK.md, docs/AUTOMATION_STATUS.md, docs/AUTOMATION_AUTHORITY.md y **docs/AUTOMATION_V13.md**. La única fuente de alcance es el Plan Comercial Inicial. Ningún histórico de otra versión impone condiciones.
 - SIN BLOQUEO EN SHEETS: no usar locks artificiales; sí respetar ID, TASK_ID, edición concurrente y fórmulas. Las seis Tasks Javier están HABILITADAS según readback nativo del 12-nov-2026; Alex bajo su propia cuenta. No crear, habilitar o tocar Tasks sin orden.
