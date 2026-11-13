@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C01-04.M01.05: aceptación funcional y técnica de expediente [Javier :10]
+- Documento de 18 criterios AC-01–18 para timeline, decisiones, observaciones, adjuntos, versiones, tenant A/B, concurrencia, UI y comprobación CI causal; incluye negativos y gates por superficie.
+- Sin implantación ni tests runtime; A0–A4 documentales, Scope Lock SHA exacto, A5 independiente; no liberar M01.06/M02, ni QA/main/PROD.
+
 ## 2026-11-13 — V5 C02-02.M01.05: aceptación shared/dedicated [Javier :00]
 - Contrato documental con 20 criterios AC01–AC20, 6 positivos/14 negativos, seis fuentes Git, tenancy, DSN, backfill, migración y rollback; no se crea infraestructura ni se hacen cambios ejecutables.
 - DAG permite preparación M01.01–05, no M01.06/M02; Scope Lock exact-SHA y A5 revisión independiente.
