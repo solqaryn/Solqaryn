@@ -465,3 +465,7 @@
 ## 2026-11-13 — V5 C00-02.M01.02 / M01.04: corrección documental del esquema BITACORA (Alex :05)
 - Rectificación causal de A5_FAIL en dos documentos de autoría propia: el encabezado vivo de BITACORA contiene 26 columnas A:Z, no el esquema antiguo de 21 A:U. No se modifican PLAN, COLA, fórmulas ni eventos históricos.
 - Corrección limitada a los dos docs de C00-02.M01.02 y C00-02.M01.04 más esta entrada aditiva; sin runtime/API/migraciones/secretos. A0–A3: revisión documental causal, 26 encabezados y negativos de duplicación/identidad. A4 pendiente de CI exact SHA tras publicar; A5 independiente pendiente. Rollback: git revert normal sin force. QA/main/PROD no autorizados.
+
+## 2026-11-13 — Rectificación documental A5_FAIL C00-03.M01.01/.02/.03 [Javier :10]
+- Corrige esquema físico de BITACORA de A:U/21 a A:Z/26, EVENT_ID A e IDEMPOTENCY_KEY R, sin reinterpretar ni reescribir eventos históricos.
+- Añade verificación positiva 26/26 y negativas de truncamiento, duplicación y autoaprobación; preserva A5_FAIL anterior, exige Scope Lock exact-SHA y A5 independiente sobre este nuevo commit. Sin cambios ejecutables, QA/main/PROD, nuevos IDs, ramas o PR.
