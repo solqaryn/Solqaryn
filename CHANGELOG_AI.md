@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-01.M02.04 configuracion tipada y feature flags [Javier :40]
+- Reconstruido candidato documental en estado VALIDANDO con mismo TASK_ID; ocho contratos CFG01-CFG08 de configuracion, grants, pilotos UI, aislamiento DB y rollback, fundamentados en cinco blobs reales de dev. No se activaron flags ni modifico runtime, secretos, datos, Angular, QA o PROD.
+- A0 Node 22.16.0 --check y patrones de secretos sin coincidencias; A1 matriz documental positiva; A2 negativos dirigidos de fail-closed y tenant A/B; A3 node --test 9/9 PASS (documentacion y fixtures sinteticos, NO HTTP/MySQL/browser/tenancy live).
+- A4 requiere diff, SHA publicado, CI exacto y readback PLAN/COLA/BITACORA antes de LISTO_DEV. A5_PENDIENTE para otro TASK_ID, sin autoaprobar QA/main/PROD. Rollback: git revert normal sin force-push.
+
 ## 2026-11-13 - V5 C00-01.M02.06 dependencias tecnicas y salida M02 [Javier :00]
 - Contrato documental V5 FINAL de las seis unidades M02; puerta G/O del ID separada de cierre del lote, matriz de dependencias y evidencias, negacion de acceso cross-tenant, A5 independiente, CI exact SHA y rollback no destructivo.
 - Claim y VALIDANDO preservan TASK_ID 6adbb9fff1548191a1bd5b30d9e9984a en PLAN; candidato preparado y auditado despues de VALIDANDO con Node v22.16.0 --check, secreto/whitespace scan sin hallazgos, Node --test 8/8 (1 positivo, 7 negativos), sin dependencia adicional ni cambio a backend/frontend/MySQL.
