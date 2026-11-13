@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C00-03.M02.03: persistencia de matriz de cobertura [Javier :00]
+- `docs/v5/c00-03-m02-03-persistencia-cobertura.md`: esquema lógico propuesto de vínculos requisito–microtarea–contrato–prueba–evidencia, índices y migración reversible futura. Fija 4 oráculos P01–P04 y 10 negativos N01–N10, sin crear SQL, EF migrations ni nuevo backlog.
+- Entrega documental TIPO 1: A0–A3 de diff, fuente, seguridad y casos sobre blob `745e9a3eae0514ee83fe2de12a535fb084548c74`; .NET/Angular/MySQL/Docker/E2E NO_APLICA al diff. A4 requiere commit FF y Scope Lock SUCCESS exact SHA; A5_PENDIENTE de Task Javier diferente, sin QA/main/PROD, ramas ni PR. Reversión por `git revert`.
+
 ## 2026-11-13 — Rectificación causal de procedencia V5 C00-04.M01.01–05 (A5 pendiente)
 - Se reagrupan siete viñetas preexistentes bajo cinco encabezados originales (DAG20, C01-02.M01.04 y C01-03.M01.03/.04/.05). Las secciones C00-04.M01.01–05 de Javier :10 conservan sus propias viñetas. No se borran pruebas ni entradas historicas.
 - El validador `scripts/quality/verify-v5-changelog-provenance.mjs` y workflow `.github/workflows/v5-changelog-provenance.yml` detectan nuevas secciones vacías o atribuciones cruzadas sin compilar código runtime innecesariamente.
