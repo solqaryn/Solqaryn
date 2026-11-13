@@ -21,3 +21,7 @@ Prueba Playwright de /login y /dashboard con API .NET y MySQL 8.4 descartables d
 - A5: otro TASK_ID independiente antes de promoción. No se autoriza QA/main/PROD.
 
 No afirmar que el test es PASS hasta que GitHub Actions haya ejecutado el archivo nuevo en el SHA publicado.
+
+## Corrección dirigida E2E del SHA cca72cfc — 2026-11-13
+
+El run M10 43442476747 falló un caso (11/12 PASS): durante loading el botón de ingreso cambia su nombre accesible y el locator por etiqueta inicial deja de encontrarlo. El selector se fija al botón submit dentro del formulario (form.login-card button.submit-button[type=submit]) y conserva las verificaciones de disabled y POST único durante latencia. La corrección no modifica auth, UI ni API. Requiere nueva CI exact-SHA antes de A4; el fallo original no se contabiliza PASS.

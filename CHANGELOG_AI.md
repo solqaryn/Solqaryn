@@ -1,3 +1,6 @@
+## 2026-11-13 — V5 C00-01.M04.04: corrección del selector de formulario en loading [Javier :00]
+- M10 del SHA cca72cfc falló 1/12 porque la etiqueta de submit cambia al comenzar el login. El E2E mantiene disabled y POST único usando selector estable del botón; exigir nuevo SHA y nueva CI. Sin cambios de auth, base de datos, secretos ni permisos.
+
 ## 2026-11-13 — V5 C00-01.M04.01: mantenimiento causal del inventario de componentes [Javier :10]
 - El check Scope Lock del commit 8bd38254 encontró catalog drift por la nueva vista de ruta desconocida; se conserva el inventario histórico P0-007.A y se añade la nueva ruta al catálogo vigente (138 componentes) con verificador de drift y negativos sin desactivar el gate. No concede certificación del backlog antiguo.
 

@@ -65,7 +65,8 @@ test.describe('V5 C00-01.M04.04: formulario, navegación, errores y doble acció
     await page.goto('/login');
     const usuario = page.locator('input[formcontrolname="nombreUsuario"]');
     const clave = page.locator('input[formcontrolname="password"]');
-    const enviar = page.getByRole('button', { name: 'Ingresar al sistema', exact: true });
+    const enviar = page.locator('form.login-card button.submit-button[type="submit"]');
+    await expect(enviar).toHaveCount(1);
     await usuario.fill(ADMIN_USERNAME);
     await clave.fill(ADMIN_PASSWORD);
 
