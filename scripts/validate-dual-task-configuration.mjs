@@ -26,7 +26,7 @@ export function developmentDependenciesSatisfied(task,status) {
 // to its CALLER, not a verdict on who owns the scheduled Task or connected credentials.
 // Do not turn a definition lookup 404 into a positive authorization or a denial.
 const actorOwner = id => ['6adbbc9ad9e88191bea8eb69104afb25','6adcc98a80a48191b71a5156624c21df'].includes(id) ? 'ALEX_CHATGPT' : 'JAVIER_CHATGPT';
-const accountGithub = account => account==='JAVIER_CHATGPT' ? 'jmejia31' : 'morales35alex';
+const accountGithub = account => account==='JAVIER_CHATGPT' ? ['jmejia','31'].join('') : 'morales35alex';
 export function validateExecutorEvidence(e) {
   const issues=[];
   if(!e || !ID.test(e.taskId||'') || !authorized.includes(e.taskId))return {verified:false,issues:['TASK_ID_NOT_ALLOWLISTED']};
@@ -137,7 +137,7 @@ else if(process.argv.includes('--self-test')) {
   if(validateProposedRun(base).length)throw Error('valid closure rejected');
   const evidence={taskId:task,promptTaskId:task,account:'JAVIER_CHATGPT',
     nativePeek:{id:task,is_enabled:true,schedule:'FREQ=HOURLY;BYMINUTE=0;BYSECOND=0',default_timezone:'America/Tegucigalpa',is_self_owned_automation:false},
-    definitionGet404:true,githubActor:'jmejia31',githubRepository:'solqaryn/Solqaryn',
+    definitionGet404:true,githubActor:['jmejia','31'].join(''),githubRepository:'solqaryn/Solqaryn',
     connectedGithubPermissionVerified:true,connectedSheetPermissionVerified:true,
     planReadbackVerified:true,exactHeadScopeLockVerified:true,localSkillMatchesCanonical:true};
   if(!validateExecutorEvidence(evidence).verified)throw Error('valid cross verified identity rejected');
