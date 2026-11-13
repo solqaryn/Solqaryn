@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C00-02.M02.06: contrato de dependencias y salida M02 [Javier :00]
+- `docs/v5/c00-02-m02-06-dependencias-salida.md`: integra M02.01–05 con prerequisitos, autoridad PLAN/COLA/DAG, transiciones e idempotencia BITACORA A:Z/26, ejemplo de ciclo y oráculos P01–P03/N01–N08; no crea código/servicio/DB.
+- TIPO 1 documental: A0–A3 verificación de fuentes, casos, seguridad y ausencia de secretos sobre blob `95cdaef09583fc859aa25228057e1f2c22f60477`; .NET/Angular/MySQL/Docker/E2E NO_APLICA al diff; A4 posterior con commit FF y Scope Lock SHA exacto; A5 independiente de otra Javier. Sin QA/main/PROD, PR, ramas ni force-push; rollback normal `git revert`.
+
 ## 2026-11-13 — V5 C00-03.M02.02: interfaces, DTO y errores de la matriz integrada [Javier :40]
 - Documento `docs/v5/c00-03-m02-02-contratos-api-dto-errores-cobertura.md`: contratos de lectura/mapeo/validación de cobertura, DTO propuestos, compatibilidad V5 FINAL, errores de seguridad y 16 oráculos P01–P04/N01–N12; no crea API/DB, nuevas Tasks ni sustituye PLAN H/I.
 - TIPO 1 documental, A0–A3 sobre blob 803685cc695660ce2fadee3175b5d97e40e3f3ab; .NET/Angular/MySQL/Docker/E2E NO_APLICA al diff; A4 Scope Lock exact SHA/commit FF dev/readback y A5 independiente pendiente. Sin PR, ramas, force-push ni QA/main/PROD; rollback git revert.
