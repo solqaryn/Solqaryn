@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 M04.01: Chromium real para rutas privadas de flujo y cobertura [Javier :50]
+- Cuatro casos Playwright positivos/negativos incluyen ausencia de JWT, denegacion 403, vista de flujo informativa, navegacion responsive hacia cobertura sin mutaciones ni endpoints institucionales.
+- Workflow dedicado con Node24/npm11, Angular build, Chromium real y backend sintetico solo para UI; NO certifica JWT/RBAC/MySQL productivo ni permite denegar/otorgar permisos.
+- Las dos superficies siguen VALIDANDO hasta Scope Lock, calidad ERP y prueba navegador exact SHA; A5 independiente pendiente.
+
 ## 2026-11-13 — SOLQARYN V5 C00-02.M03.03 correccion A5: vinculo ID→scope de servidor [Javier :20]
 - Corrige A5_FAIL J00 sobre SHA 244e5448: el catalogo global confirma existencia, no pertenencia de cada item al scope solicitado. Guard deniega por defecto ITEM_SCOPE_MISMATCH si trustedItemScopes falta o vincula el ID a otro scope.
 - Tests xUnit: caso positivo del item asociado al scope de su tenant, negativos para ID ajeno presente en catalogo, todos los tipos de operacion y mapa ausente. Sin nuevas grants JWT/RBAC, endpoints, MySQL, workers, eventos o despliegues.

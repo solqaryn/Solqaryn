@@ -19,3 +19,7 @@ A0: revisión de diff, secretos, dependencias, integridad de CHANGELOG y catálo
 ## Corrección de auditoría de seguridad de rutas (13/11/2026)
 
 La ruta `plataforma/cobertura-v5` permanece protegida por `plataformaGuard`. El quality audit conserva el control `FRONTEND_ROUTE_SECURITY_CONTRACT` y reconoce solo las tres rutas exactas del control plane con pruebas de sesión global y denegación server-side. No se usan `authGuard` ni `permisoGuard` ERP porque requieren contexto EmpresaId inapropiado para plataforma. Si la auditoría falla, no declarar A0-A4 PASS ni LISTO_DEV.
+
+## Auditoría adicional de navegador (13/11/2026)
+
+La matriz de cobertura vacía se valida en Chromium real y viewport móvil de 390px, incluyendo cinco encabezados, navegación y prohibición explícita de mutaciones a fuentes institucionales. El test del frontend usa una sesión HTTP sintética y **no** acredita JWT/RBAC/MySQL productivo ni autorizaciones cruzadas. El workflow `v5-plataforma-browser-guards.yml` debe concluir SUCCESS en SHA exacto antes de A4/LISTO_DEV.

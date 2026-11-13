@@ -25,3 +25,7 @@ A0: diff de rutas, template, estilos, secretos y provenance. A1: Vitest de ruta,
 ## Corrección de auditoría de seguridad de rutas (13/11/2026)
 
 La auditoría ERP `FRONTEND_ROUTE_SECURITY_CONTRACT` reconoce el `plataformaGuard` solo para las rutas exactas privadas de control-plane: `plataforma`, `plataforma/flujo-v5`, `plataforma/cobertura-v5`. El reconocimiento exige el mismo guard autenticado y verificaciones server-side, sin aceptar rutas prefijo, comodín, privilegios tenant ERP ni acceso público. El check se exige en el SHA exacto posterior a la corrección. Un fallo obliga a mantener VALIDANDO; no se contabilizan éxitos antiguos ni se omiten gates obligatorios.
+
+## Auditoría adicional de navegador (13/11/2026)
+
+La ruta de lectura se comprueba en **Chromium real** (no en browser simulado): `frontend/e2e/v5-plataforma-browser-guards.spec.ts` cubre token ausente, denegación HTTP 403, render de cuatro pasos y navegación responsive hacia la matriz. El servidor de frontend y respuestas HTTP de prueba son locales/sintéticos; esto NO certifica un grant JWT/MySQL productivo. El workflow `.github/workflows/v5-plataforma-browser-guards.yml` exige test positivo y negativo del SHA exacto sin saltarse seguridad; un check in_progress o fail deja VALIDANDO.
