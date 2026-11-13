@@ -1,3 +1,6 @@
+## 2026-11-13 — V5 C00-01.M06.01: auditoría causal de pruebas vs mocks [Javier :50]
+- Se audita evidencia real de GitHub Actions (M10 MySQL/Angular/Playwright 12/12, security xUnit 1109/1109, backend/frontend y Scope Lock) contra fuente exacta 14ea2e23; se distinguen casos HTTP reales, route.fulfill UI sintético, Subjects unitarios, límites RBAC/tenancy y pruebas de rendimiento no productivas. Solo docs: sin cambios de runtime, datos, secretos o despliegues. A5 independiente queda pendiente; QA/main/PROD no autorizado.
+
 ## 2026-11-13 — Saneamiento documental C00-03.M01.05 esquema BITACORA A:Z/26 [propietario, sin cambio de Task]
 - Alinea dos referencias de aceptación con los 26 campos físicos de BITACORA; incorpora rechazo explícito de eventos 21-25, duplicados y A5 autoaprobado. Preserva la autoria original del TASK_ID y requiere nueva revisión A5 por Task distinta; no implica permiso QA/main/PROD ni pruebas runtime nuevas. Rollback: git revert del commit de documentación, sin force push.
 
