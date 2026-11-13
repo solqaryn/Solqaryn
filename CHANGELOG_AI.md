@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C02-02.M01.03: inventario shared/dedicated [Javier :00]
+- Inventario documental de diez fuentes Git con hash, límites de routing, EF, tenant, hosts, jobs y backup; 2 positivos/4 negativos; no modificaciones runtime ni conexión dedicada.
+- Preparación provisional por DAG VALIDADO, Scope Lock exact-SHA y A5 independiente; no habilita M01.06/M02.
+
 ## 2026-11-13 — V5 C01-04.M01.05: aceptación funcional y técnica de expediente [Javier :10]
 - Documento de 18 criterios AC-01–18 para timeline, decisiones, observaciones, adjuntos, versiones, tenant A/B, concurrencia, UI y comprobación CI causal; incluye negativos y gates por superficie.
 - Sin implantación ni tests runtime; A0–A4 documentales, Scope Lock SHA exacto, A5 independiente; no liberar M01.06/M02, ni QA/main/PROD.
