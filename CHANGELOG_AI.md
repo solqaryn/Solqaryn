@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C01-04.M01.04: riesgos y decisiones del expediente universal [Javier :10]
+- Registro documental EXP-R01–12, EXP-S01–06 y DEC-01–08 sobre 10 fuentes reales, con riesgo de aislamiento de auditoría, adjuntos legacy, secuencia y seguridad sin certificar vulnerabilidades.
+- Sin cambios ejecutables ni despliegues; A0–A4 proporcionales, Scope Lock exact-SHA y A5 pendiente de revisión ajena; rollback por revert normal.
+
 ## 2026-11-13 — V5 C02-02.M01.04: riesgos y decisiones shared/dedicated [Javier :00]
 - Preparación documental: matriz R01–R10, supuestos S01–S05 y decisiones D01–D06 sobre placement, router, migración, aislamiento y rollback; seis fuentes Git; ningún cambio ejecutable.
 - DAG VALIDADO documental; no habilita router, base dedicada, DSN, secretos, MySQL, M01.06/M02 ni QA/main/PROD. Validar Scope Lock y A5 independiente.
