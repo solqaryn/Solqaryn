@@ -1,4 +1,9 @@
 ## 2026-11-13 — V5 C01-03.M01.04: matriz preliminar de riesgos de configuración [Javier :20]
+
+## 2026-11-13 — V5 C00-04.M01.03: inventario de contratos, código y evidencias [Javier :10]
+- Inventario documental con fuentes GitHub de SHA/blobs, Plan V5, Sheet institucional y DAG; prueba de límites de inferencia, permisos y autorizaciones; criterios positivos/negativos para no confundir CI, fuente y certificación.
+- Sin cambios runtime; A0–A4 proporcionales, Scope Lock exact-SHA de publicación, A5 independiente, BITACORA A:Z/26, rollback normal; no QA/main/PROD.
+
 - Documento de preparación M01 para configuración dinámica: diez riesgos R01-R10, cinco supuestos S01-S05, seis decisiones D01-D06 y tres escenarios negativos de integridad/aislamiento/inyección. Referencias V5/DAG, seguridad JWT/RBAC/tenant y rollback, sin implementación ni migración; no se declaran pruebas .NET/Angular/MySQL. A0–A4 documentales y A5 independiente requeridos. No QA/main/PROD.
 
 ## 2026-11-13 — V5 C01-03.M01.05: aceptación preliminar de configuración tipada [Javier :20]
