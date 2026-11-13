@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-01.M01.03: inventario de fuentes, evidencia y contradicciones [Javier :30]
+- Documenta 10 IDs de blob Git verificados, Google Doc V5 FINAL y Sheet 2.340 IDs, limites de hash/autoridad, estado V5, topologia objetivo frente a realidad, pausa/reanudacion y formulas PLAN/COLA. La autoria Git no es firma criptografica del propietario.
+- Cambio documental con prueba Node 22.16.0: 9/9 PASS (1 positivo, 8 negativos fail-closed), node --check PASS y escaneo dirigido de secretos PASS. A0 estatico, A1 funcional documental, A2 limites de tenancy/JWT/RBAC/PII sin runtime modificado, A3 integracion de contrato Node PASS. No afirmar HTTP/MySQL/Playwright ni proveedores reales.
+- A4 sujeto a lectura Git dev FF exact SHA, diff final y readback PLAN/COLA/BITACORA; A5_PENDIENTE para TASK_ID independiente antes de qa/main/PROD. Rollback git revert protegido, no reset/force.
+
 ## 2026-11-13 — V5 C00-01.M01.04: riesgos, supuestos y decisiones pendientes [Javier :20]
 - Inventario causal de nueve riesgos R01–R09, cuatro supuestos y decisiones de salida del baseline: orden posterior V5 frente a hold histórico, claim concurrente J10/J20 de M01.02 resuelto sin tomar trabajo ajeno, infraestructura propuesta no desplegada, imágenes históricas cero (NO_APLICA), seguridad A/B y A5 pendientes sin falsos PASS.
 - Cambios exclusivos: docs/v5/c00-01-m01-04-risks.md, scripts/tests/c00-01-m01-04-risks.test.mjs y CHANGELOG aditivo. A0: Node 22.16.0 --check y grep dirigido de secretos PASS; A1/A2: positivo + cinco negativos fail-closed, 6/6 Node tests; A3: integración documental/protocolo sin runtime, sin deps nuevas. No se simulan .NET, Angular/Playwright browser, HTTP, MySQL, tenants live, providers ni migración.
