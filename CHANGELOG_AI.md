@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C03-03.M01.02: actores/IO auditoría de seguridad [Javier :10]
+- `docs/v5/c03-03-m01-02-actores-entradas-salidas-auditoria.md`: 12 actores ACT01–12, 14 entradas/salidas IO01–14, 10 casos futuros T01–T10 de auditoría de autorizaciones, denegaciones, cambios críticos, correlación, retención y no exposición; 8 blobs reales y 10 antecedentes DAG LISTO. No acredita HTTP/MySQL/export/alerta live ni acceso excepcional real.
+- Autor Task 6af16bb9492c8191b8e8c7d606f11507; A0–A3 PASS documentales sobre candidato, A4 Scope Lock exact SHA + readback pendiente, A5 por otra Task Javier. No se modifican .NET, Angular, MySQL, Docker, secretos, QA/main/PROD, PR o ramas; rollback normal git revert.
+
 ## 2026-11-13 — V5 C00-02.M02.05: eventos, idempotencia y correlación [Javier :20]
 - Documento `docs/v5/c00-02-m02-05-eventos-idempotencia-correlacion.md` define entidades lógicas, 26 columnas A:Z, EVENT_ID/IDEMPOTENCY_KEY, transiciones, SHA causal y rollback, tres casos positivos y nueve negativos; respeta DAG y seis Tasks Javier.
 - Alcance estrictamente documental: A0–A3 verificaciones de artefacto/seguridad, A4 Scope Lock del SHA exacto, A5 independiente. No código, .NET/Angular/MySQL/Docker/E2E, PR, ramas ni QA/main/PROD. Sin certificación runtime ni CAS de Sheets inventado.
