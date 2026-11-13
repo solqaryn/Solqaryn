@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C00-02.M03.01: reglas de dominio para cola V5 [Javier :50]
+- C# real en `backend/src/Domain/AutomationV5/V5WorkItemRules.cs` valida identidad de microtarea, allowlist inyectado, G/O/DAG, exclusividad de owner, candidato, A0–A4, SHA exacto y A5 de revisor distinto; sin efectos externos ni simular CAS de Sheets.
+- Pruebas xUnit en `backend/tests/Solqaryn.Tests/Domain/V5WorkItemRulesTests.cs` y contrato `docs/v5/c00-02-m03-01-domain-rules.md`; .NET y seguridad relevantes en CI exact-SHA, Scope Lock obligatorio. Sin nuevas ramas, PR, MySQL, Angular, cambios de tenants ni QA/main/PROD; rollback aditivo `git revert`.
+
 ## 2026-11-13 — V5 C01-01.M01.06: gates de identidad universal, rollback y salida documental M01 [Javier :40]
 - Documento `docs/v5/c01-01-m01-06-gates-bloqueo-rollback-identidad.md`: siete prerequisitos verificados, sustitución A5 vigente Javier para la M01.05 histórica, fronteras JWT/RBAC/tenant, bloqueo/reversión y liberación M02 solo por preflight individual.
 - Alcance TIPO1 documental: P01–P03/N01–N12, A0–A3 proporcionales y A4 Scope Lock + procedencia exact SHA; no modifica API/Angular/MySQL, no certifica runtime, no PR/ramas ni QA/main/PROD.
