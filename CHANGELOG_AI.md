@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C02-01.M01.05: aceptación documental contexto tenant [Javier :00]
+- Matriz de 18 casos AC01–AC18 (5 positivos, 13 negativos), ocho archivos Git y requisitos futuros de host/JWT/RBAC/membresía. Sin modificaciones de runtime, MySQL, secretos ni permisos.
+- Preparación DAG VALIDADO, A0–A4 documentales proporcionales, Scope Lock exact-SHA y A5 por otro TASK_ID; revalidar antes de M01.06/M02.
+
 ## 2026-11-13 — V5 C02-01.M01.02: actores, IO y superficies de contexto tenant [Javier :30]
 - Matriz documental provisional de 8 actores, 10 interfaces/entradas y salidas, 3 positivos y 10 negativos futuros, con 6 blobs de servidor reales y límites de host/JWT/membresía sin autoridad de cliente.
 - Sin implementar API/DB/Angular, DNS ni workers; A0–A4 proporcionales con Scope Lock exact SHA, BITACORA A:Z y revisión A5 distinta. QA/main/PROD no autorizados.
