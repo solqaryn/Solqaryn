@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C01-01.M01.05: aceptación preliminar identidad universal [Javier :30]
+- Matriz documental ID01–ID16 para Empresa, Sucursal, Usuario, membresías, rol tenant, recursos, seguridad JWT/RBAC y criterios positivos/negativos.
+- No implementa la fase ni prueba runtime; A0–A4 proporcionales con Scope Lock SHA exacto y A5 independiente. Sin QA/main/PROD.
+
 ## 2026-11-13 — V5 C01-01.M01.03: inventario de contratos de identidad [Javier :10]
 - Inventario documental de siete blobs reales de empresa, sucursal, usuario, membresía, rol, contexto tenant y autenticación; dos positivos y ocho negativos de seguridad/alcance.
 - TIPO1 documental: sin runtime, .NET/Angular/MySQL/Docker/E2E no aplican; A0-A4 proporcionales y Scope Lock exact-SHA, A5 independiente; sin QA/main/PROD.
