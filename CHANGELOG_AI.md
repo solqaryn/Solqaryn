@@ -1,3 +1,8 @@
+## 2026-11-13 — Reparación de gate de calidad ERP para censo V5 de seis Tasks
+- `scripts/quality/priority4_quality_audit.py`: mantiene las comprobaciones estrictas de seguridad e identidad, pero actualiza la aserción obsoleta de ocho Tasks a seis Tasks y comprueba `PHYSICAL_TASKS_REGISTERED=6`.
+- `docs/AUTOMATION_STATUS.md`: declara explícitamente `LEGACY_AUTOMATION_RUNTIME=RETIRED`, conservando `VAEP_DISPATCH_AUTHORIZED=FALSE` y `JULES_WORKERS_AUTHORIZED=0`. No se activan motores ni cuentas nuevas.
+- El cambio solo alinea la política CI vigente; no modifica frontend/backend, secrets, QA/main/PROD ni las evidencias independientes de M04.03.
+
 ## 2026-11-13 — C03-02.M01.05: aceptación RBAC/ABAC documental (Javier :50)
 - Nuevo docs/v5/c03-02-m01-05-criterios-aceptacion-tenant-privacidad.md: 14 criterios observables, incluidos BOLA/IDOR, claims falsos, sucursal cruzada, archivos, export y revocación; 6 reglas de no-regresión y rutas de futura prueba HTTP+MySQL/Playwright. Son contratos futuros, no se declaran PASS live.
 - DAG VALIDADO 10/10; Scope Lock exact-SHA, A0-A4 documental proporcional y A5 pendiente de otra Task Javier. Ningún cambio runtime, QA/main/PROD, PR, rama ni Tasks.
