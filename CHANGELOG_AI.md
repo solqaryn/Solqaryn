@@ -1,3 +1,8 @@
+## 2026-11-13 - V5 C00-01.M02.05 eventos e idempotencia [Javier :00]
+- Definicion documental trazable de correlation HTTP/Kardex, OrdenCompra, MensajeOutbox y MensajeOutboxService, con limites de IdempotencyKey, correlacion, retries y denegacion multiempresa; no cambios runtime, SQL ni providers.
+- Estado EN_PROGRESO y VALIDANDO registrado antes de auditorias formales A0-A3; Node 22.16.0 --check, inspeccion dirigida de secretos y 9/9 pruebas documentales (1 positiva, 8 negativas) PASS. Sin afirmar HTTP/MySQL/live ejecutados.
+- Commit directo fast-forward dev con A4 CI 5/5 exact SHA y readback pendientes; registrar A5_PENDIENTE para otro TASK_ID, rollback git revert no destructivo, no QA/main/PROD.
+
 ## 2026-11-13 — V5 C00-01.M02.04 configuracion tipada y feature flags [Javier :40]
 - Reconstruido candidato documental en estado VALIDANDO con mismo TASK_ID; ocho contratos CFG01-CFG08 de configuracion, grants, pilotos UI, aislamiento DB y rollback, fundamentados en cinco blobs reales de dev. No se activaron flags ni modifico runtime, secretos, datos, Angular, QA o PROD.
 - A0 Node 22.16.0 --check y patrones de secretos sin coincidencias; A1 matriz documental positiva; A2 negativos dirigidos de fail-closed y tenant A/B; A3 node --test 9/9 PASS (documentacion y fixtures sinteticos, NO HTTP/MySQL/browser/tenancy live).
