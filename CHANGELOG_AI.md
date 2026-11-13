@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C02-04.M01.03: auditoría de contratos y evidencia de consola global [Javier :40]
+- Inventario documental de diez archivos/blobs observados en dev, capacidades existentes parciales y controles NO_CERTIFICADOS de MFA, reautenticación, grants TTL, auditoría crítica, rollback y consola global. Tres positivos/seis negativos futuros propuestos, no pruebas live.
+- TIPO1 documental; A0-A4 proporcional, Scope Lock SHA exacto y A5 independiente. Sin cambios de JWT/RBAC/Angular/.NET/MySQL, grants, datos ni QA/main/PROD.
+
 ## 2026-11-13 — V5 C02-04.M01.02: actores y entradas/salidas de consola global [Javier :40]
 - Matriz documental de 8 actores, 12 IO y 9 casos (+/-) FUTUROS para consola global: separación de plataforma/ERP, MFA/reautenticación, motivos, grants temporales, aislamiento tenant A/B y auditoría crítica, con seis fuentes Git por blob.
 - M01.02 TIPO1 sin cambios .NET/Angular/MySQL/secretos. A0–A4 documentales, Scope Lock exact-SHA, A5 ajeno; no habilita M01.06, MFA real ni QA/main/PROD.
