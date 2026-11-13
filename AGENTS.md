@@ -4,6 +4,11 @@
 
 **ÚNICA CONFIGURACIÓN OPERATIVA: 6 Tasks de Javier.** Esta orden posterior expresa del propietario revoca toda disposición anterior que permitiera ejecutar, registrar como elegibles, reactivar, recuperar o usar para revisión A5 las Tasks 07/08 de Alex. Toda cita previa de 8 Tasks, roles secundarios activos o reactivación de Alex carece de autoridad operativa. Los registros de auditoría existentes no se borran ni se interpretan como permisos vigentes. Los dos TASK_ID de Alex están excluidos del allowlist SOLQARYN. Según el propietario sus Tasks físicas ya están pausadas; esta sesión no tiene acceso administrativo a ellas, por lo que no certifica su estado físico.
 
+PROJECT_SKILL=.agents/skills/solqaryn-project-governance/SKILL.md
+VAEP_DISPATCH_AUTHORIZED=FALSE
+JULES_WORKERS_AUTHORIZED=0
+DESIGN_TOPOLOGY=OWNER_CONFIGURABLE
+CURRENT_COMMERCIAL_ONLY=TRUE
 PLATFORM=SOLQARYN
 PROJECT_ID=SOLQARYN
 REPOSITORY=solqaryn/Solqaryn
