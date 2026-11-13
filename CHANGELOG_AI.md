@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C02-02.M01.04: riesgos y decisiones shared/dedicated [Javier :00]
+- Preparación documental: matriz R01–R10, supuestos S01–S05 y decisiones D01–D06 sobre placement, router, migración, aislamiento y rollback; seis fuentes Git; ningún cambio ejecutable.
+- DAG VALIDADO documental; no habilita router, base dedicada, DSN, secretos, MySQL, M01.06/M02 ni QA/main/PROD. Validar Scope Lock y A5 independiente.
+
 ## 2026-11-13 — V5 C02-02.M01.01: objetivo shared/dedicated y no-regresión [Javier :30]
 - Documento preliminar de placement server-side compartido/dedicado, fail-closed y rollback, con 6 blobs actuales y 13 casos NR (3 positivos, 10 negativos) previstos, sin conexión, migración ni pruebas live.
 - A0–A4 documentales con Scope Lock SHA exacto, A5 independiente. No se modifican DSN, Aiven, JWT/RBAC, secretos, QA/main/PROD, ramas o providers.
