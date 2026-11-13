@@ -1,3 +1,7 @@
+## 2026-11-13 — C03-02.M01.03: inventario de autorizacion/privacidad V5 (Javier DEV 06)
+- Se incorpora docs/v5/c03-02-m01-03-inventario-autorizacion-privacidad.md: 9 contratos Git con blobs, 5 suites de pruebas existentes y matriz de brechas BOLA/IDOR, claims falsos, sucursal cruzada y exportacion ajena. Alcance M01.03 documental; no se interpreta como certificacion de ABAC o integracion live.
+- DAG VALIDADO y 10/10 prerrequisitos documentales LISTO; A0 revisa estructura/secretos, A1-A3 proporcionales al documento, A4 requiere SHA de publicacion y Scope Lock. A5 de otra Task Javier; rollback por git revert normal. Sin cambios C#/Angular/MySQL, Tasks, QA/main/PROD, ramas o PR.
+
 ## 2026-11-13 — V5 C02-04.M01.01: objetivo/no-regresión de consola global auditada [Javier :40]
 - Contrato documental M01.01 de separación plataforma/ERP, MFA/reautenticación, motivo, acceso excepcional temporal y auditoría crítica; 15 criterios NR (+/-) FUTUROS, seis fuentes Git verificadas por blob SHA.
 - TIPO1 sin código ejecutable ni cambio de JWT/RBAC/MySQL/Angular/secretos; DAG C02-01/02/03 M01.01-05 prerequisitos LISTO. A0–A4 documentales proporcionales, Scope Lock exact-SHA y A5 independiente; no habilitar M01.06/M02, QA/main/PROD.
