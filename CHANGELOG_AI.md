@@ -75,3 +75,7 @@
 - Nuevo `scripts/tests/g0-004-h-positive-regression.test.mjs`: caso positivo de tres pruebas PASS anidadas y CLI exit 0, junto con negativos FAIL/FLAKY_REVIEW/INCOMPLETE/INVALID_REPORT y sanitización de títulos/errores sintéticos.
 - A1 funcional y A2 seguridad fail-closed; A3 integración: Node 22 `node --test scripts/tests/g0-004-h-positive-regression.test.mjs` 4/4 PASS y `node --check` de test y módulo. Módulo original blob `c5085b044ffb0b4ffa8d971ab3280afb4a02c037` sin cambios; no significa ejecución real de navegador Playwright.
 - Cambio limitado a test + CHANGELOG, sin runtime, dependencias, secretos, JWT/RBAC, tenant ni datos. Rollback: revertir sólo test G0-004.H y este bloque aditivo.
+
+## 2026-11-12 — G0-004.B: matriz de recibos G0-004.F/G/H y regresión E2E sintética
+- Matriz `docs/quality/g0-004-b-e2e-receipts.md` identifica 10 condiciones, rutas y negativos: setup global, worker error, retries false-green, skips por secret y navegador, éxito anidado y sanitización. Nuevo test `scripts/tests/g0-004-b-quality-receipts.test.mjs`: 4/4 Node22 PASS, source classifier exact blob c5085b; no se presenta como una ejecución real del navegador.
+- A1 funcional, A2 seguridad fail-closed y A3 integración Node dirigida PASS; no altera runtime, tenants, JWT/RBAC, secretos o dependencias. Rollback selectivo: revertir este test, la matriz y el párrafo de changelog.
