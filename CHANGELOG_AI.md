@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C01-03.M01.01: objetivo, no-alcance y no-regresión de configuración dinámica [Javier :40]
+- Preparación exclusivamente documental: mapa de fronteras, límites de implementación y NR-01–NR-10 positivos/negativos; no activa configuraciones ni modifica runtime, secretos, permisos, DB o proveedores.
+- Seguridad JWT/RBAC/tenant, inyección, concurrencia, BITACORA A:Z y rollback delimitados. A0–A4 proporcionales; Scope Lock exact-SHA, A5 independiente pendiente; no QA/main/PROD.
+
 ## 2026-11-13 — V5 C01-02.M01.02: actores, entradas y superficies de capabilities [Javier :30]
 - Matriz preparatoria de doce actores/consumidores, entradas y salidas, fronteras JWT/RBAC/tenant/sucursal/recurso y seis negativas; decisiones comerciales de M02 siguen pendientes.
 - Sin cambios de runtime, permisos, DTO, MySQL ni frontend; A0-A4 documentales con Scope Lock exact-SHA, A5 independiente; no QA/main/PROD.
