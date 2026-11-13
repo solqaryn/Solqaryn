@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C00-02.M02.04: configuración tipada y flags seguros [Javier :20]
+- Documento `docs/v5/c00-02-m02-04-configuracion-tipada-ambitos-flags.md` define frontera config entorno/tenant/usuario, cinco blobs existentes, validaciones tipadas y feature flags futuros no activos; tres casos positivos y nueve negativos con Scope Lock.
+- Alcance solo documental, sin editar JSON/env/secretos, endpoints, JWT, DB ni Angular. A0–A3 proporcionales, A4 Scope Lock exact SHA, A5 por otra Task Javier. Sin QA/main/PROD, branches o PR; rollback git revert.
+
 ## 2026-11-13 — V5 C03-03.M01.02: actores/IO auditoría de seguridad [Javier :10]
 - `docs/v5/c03-03-m01-02-actores-entradas-salidas-auditoria.md`: 12 actores ACT01–12, 14 entradas/salidas IO01–14, 10 casos futuros T01–T10 de auditoría de autorizaciones, denegaciones, cambios críticos, correlación, retención y no exposición; 8 blobs reales y 10 antecedentes DAG LISTO. No acredita HTTP/MySQL/export/alerta live ni acceso excepcional real.
 - Autor Task 6af16bb9492c8191b8e8c7d606f11507; A0–A3 PASS documentales sobre candidato, A4 Scope Lock exact SHA + readback pendiente, A5 por otra Task Javier. No se modifican .NET, Angular, MySQL, Docker, secretos, QA/main/PROD, PR o ramas; rollback normal git revert.
