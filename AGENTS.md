@@ -16,6 +16,10 @@ AUTO_CERTIFICATION_MODE=DIRECT_DEV_FOUR_AUDITS
 QUALITY_PROTOCOL_VERSION=V13_A0_A5
 GOAL_MAX_LISTO_PER_RUN=NONE_WITHIN_PROVIDER_RUN
 TASK_REASONING_PREFERENCE=MAX_AVAILABLE_REASONING
+TASK_IDENTITY_EVIDENCE_POLICY=ACCOUNT_TASK_CONTEXT_NATIVE_PEEK_AND_SOURCE_LINKS
+TASK_FALSE_SELF_OWNED_POLICY=DIAGNOSTIC_ONLY_NOT_ACCOUNT_DENIAL
+TASK_DEFINITION_404_POLICY=USE_PEEK_READBACK_NO_AUTO_DENIAL
+TASK_CANDIDATE_TRIAGE=SCAN_ALL_ELIGIBLE_WITH_REAL_TOOLCHAIN_PREFLIGHT
 TASK_NATIVE_REASONING_CONTROL=OWNER_OR_PLATFORM_SETTING
 JAVIER_PEER_WATCH_SCOPE=SIX_EXISTING_TASK_IDS
 JAVIER_PEER_AUTORESUME=AUTHORIZED_SINGLE_ATTEMPT_WITH_READBACK
@@ -29,6 +33,7 @@ CONTINUE_WHILE_ELIGIBLE=TRUE
 
 - Productividad: tres LISTO son un hito, nunca un máximo. Después de cada tarea LISTO_DEV, continuar otra PENDIENTE elegible en la misma corrida si quedan recursos reales, repitiendo A0–A4 y registrando A5_PENDIENTE. No autopausar. Si el proveedor exige intervención, reportar TASK_ID y run_id, sin bypass.
 - Ante una compañera Javier pausada: comprobar titularidad, TASK_ID y permisos; un intento de update is_enabled=true, readback y aviso del resultado. La orden de mantener las seis Javier activas está vigente; no cambiar otras opciones ni tocar Tasks Alex. Si un requisito humano persiste no eludirlo ni falsificar reactivación. Usar la preferencia de razonamiento máximo, pero un prompt no cambia ni verifica el modelo real.
+- Identidad Javier: `is_self_owned_automation=false` visto desde otra conversación y `Automations.get` 404 de acción no prueban falta de permiso; validar positivamente ID físico del prompt/allowlist/peek, cuenta Javier real, accesos de GitHub/Sheet, Skill y SHA exacto. No confundir indicador neutral con autorización, ni aceptar identidad basada solamente en prompt. Seleccionar por escaneo completo de PENDIENTE y `DESARROLLO_HABILITADO=SI`, dependencias, propietario, riesgos y herramientas requeridas; un ID que exija .NET/Angular/entorno live no bloquea otras tareas factibles. COLA!E debe ser espejo por fórmula de PLAN_MAESTRO!H; siete valores manuales antiguos fueron reparados con nota. Prohibido simular auditorías, suplantar cuentas o alterar QA/PROD.
 ## Autoridad exacta
 - Leer siempre Skill y su copia exacta en HEAD dev, docs/PROJECT_SCOPE_LOCK.md, docs/AUTOMATION_STATUS.md, docs/AUTOMATION_AUTHORITY.md y **docs/AUTOMATION_V13.md**. La única fuente de alcance es el Plan Comercial Inicial. Ningún histórico de otra versión impone condiciones.
 - SIN BLOQUEO EN SHEETS: no usar locks artificiales; sí respetar ID, TASK_ID, edición concurrente y fórmulas. Las seis Tasks Javier están HABILITADAS según readback nativo del 12-nov-2026; Alex bajo su propia cuenta. No crear ni modificar Tasks salvo reactivación autorizada de las seis Javier con verificación de identidad y readback; no tocar Alex.

@@ -35,6 +35,10 @@ AUTO_CERTIFICATION_MODE=DIRECT_DEV_FOUR_AUDITS
 QUALITY_PROTOCOL_VERSION=V13_A0_A5
 GOAL_MAX_LISTO_PER_RUN=NONE_WITHIN_PROVIDER_RUN
 TASK_REASONING_PREFERENCE=MAX_AVAILABLE_REASONING
+TASK_IDENTITY_EVIDENCE_POLICY=ACCOUNT_TASK_CONTEXT_NATIVE_PEEK_AND_SOURCE_LINKS
+TASK_FALSE_SELF_OWNED_POLICY=DIAGNOSTIC_ONLY_NOT_ACCOUNT_DENIAL
+TASK_DEFINITION_404_POLICY=USE_PEEK_READBACK_NO_AUTO_DENIAL
+TASK_CANDIDATE_TRIAGE=SCAN_ALL_ELIGIBLE_WITH_REAL_TOOLCHAIN_PREFLIGHT
 TASK_NATIVE_REASONING_CONTROL=OWNER_OR_PLATFORM_SETTING
 JAVIER_PEER_WATCH_SCOPE=SIX_EXISTING_TASK_IDS
 JAVIER_PEER_AUTORESUME=AUTHORIZED_SINGLE_ATTEMPT_WITH_READBACK
@@ -50,6 +54,7 @@ TIMEZONE=America/Tegucigalpa
 
 - Continuidad: primer LISTO objetivo mínimo, 3 hito no máximo; completar todas las microtareas reales factibles en la misma corrida, sin perder A0–A5. Una suspensión del proveedor requiere aviso con run_id y causa si existe; no se soluciona por mero prompt ni se auto reactiva sin resolver permisos.
 - El propietario autorizó que cualquiera de las seis Tasks Javier habilitadas intente reanudar otra Task Javier pausada usando solo su TASK_ID y un update is_enabled=true de la misma cuenta, con lectura confirmatoria, un intento por corrida y registro del run_id. Nunca modificar Alex ni concederse permisos. La elección de razonamiento máximo es del selector nativo del propietario; el conector de Tasks no dispone de parámetro para imponerla.
+- Contrato de identidad y selección actual: no usar `is_self_owned_automation=false` ni `Automations.get 404` como único motivo de NO_GO; son diagnósticos del agente/herramienta consultante, no revocaciones. Probar Task ID del prompt y allowlist, propietario, `peek` + enabled/horario, conectores GitHub/Drive del mismo titular y Skill/Scope Lock exact-HEAD antes de atribuir operación. Si hay denegación real, bloquear sólo la operación sin prueba, nunca suplantar. Leer todas las PENDIENTE elegibles, seleccionar una cuya A0–A4 pueda acreditarse, y continuar otras si falta .NET/Angular/proveedor para la primera. Los siete estados manuales divergentes en COLA se reconciliaron a fórmula `PLAN_MAESTRO!H`, con notas de auditoría.
 ## Propiedad e identidad
 - Cuenta titular JAVIER_CHATGPT: seis Tasks :00, :10, :20, :30, :40 y :50. Cuenta ALEX_CHATGPT: dos Tasks :05 y :35, según reporte de Alex. Estas ocho identidades conservan su ID físico, horarios y titularidad; sólo el propietario de cada cuenta cambia sus Tasks. Javier tiene seis habilitadas en la última lectura. Alex reportó lectura nativa y 2/2 habilitadas el 12-nov-2026; no es comprobación independiente desde Javier.
 - PROPIETARIA_INSTITUCIONAL: SOLQARYN Platform. EJECUTOR_PRINCIPAL_01: Javier. EJECUTOR_PRINCIPAL_02: Alex. Ninguna identidad tiene idéntica autoridad de credenciales; los permisos efectivos prevalecen sobre cualquier descripción.

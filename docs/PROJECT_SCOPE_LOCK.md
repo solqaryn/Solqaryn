@@ -18,6 +18,10 @@ AUTO_CERTIFICATION_MODE=DIRECT_DEV_FOUR_AUDITS
 QUALITY_PROTOCOL_VERSION=V13_A0_A5
 GOAL_MAX_LISTO_PER_RUN=NONE_WITHIN_PROVIDER_RUN
 TASK_REASONING_PREFERENCE=MAX_AVAILABLE_REASONING
+TASK_IDENTITY_EVIDENCE_POLICY=ACCOUNT_TASK_CONTEXT_NATIVE_PEEK_AND_SOURCE_LINKS
+TASK_FALSE_SELF_OWNED_POLICY=DIAGNOSTIC_ONLY_NOT_ACCOUNT_DENIAL
+TASK_DEFINITION_404_POLICY=USE_PEEK_READBACK_NO_AUTO_DENIAL
+TASK_CANDIDATE_TRIAGE=SCAN_ALL_ELIGIBLE_WITH_REAL_TOOLCHAIN_PREFLIGHT
 TASK_NATIVE_REASONING_CONTROL=OWNER_OR_PLATFORM_SETTING
 JAVIER_PEER_WATCH_SCOPE=SIX_EXISTING_TASK_IDS
 JAVIER_PEER_AUTORESUME=AUTHORIZED_SINGLE_ATTEMPT_WITH_READBACK
@@ -26,6 +30,7 @@ WORK_BRANCH_CREATION_ALLOWED=FALSE
 
 - Continuidad: GOAL_MAX_LISTO_PER_RUN=NONE_WITHIN_PROVIDER_RUN; se permite superar el hito 3 mientras haya elegibilidad, recursos y pruebas, pero nunca omitir auditorías ni superar límites o suspensiones del proveedor.
 - La autorización vigente permite exclusivamente recuperación física entre seis Javier por la misma cuenta: un intento de is_enabled=true de una hermana pausada, readback y registro; nunca autoaprobar permisos ni habilitar Alex. El razonamiento máximo es una preferencia de operación, no un ajuste verificable desde el conector.
+- Evidencia de identidad permitida: TASK_ID/propietario y prompt de la Task, consulta nativa `peek` real, conexiones autenticadas Javier GitHub/Drive y Skill/Scope Lock de SHA exacto. Un `is_self_owned_automation=false` relativo al agente consultante o un `get 404 Action not found` NO son denegación de cuenta ni permiso positivo; denegación efectiva sigue siendo NO_GO. Candidatas PENDIENTE deben evaluarse todas por factibilidad y seguridad sin bloquear cola por una herramienta faltante. Siete estados antiguos de COLA fueron sincronizados al PLAN mediante fórmulas, conservando evidencia.
 ## Límite de proyecto y seguridad
 - Este Scope Lock identifica exclusivamente al proyecto SOLQARYN, no a un ruleset GitHub. La rama dev carece del antiguo ruleset de PR/CI; main y qa conservan protección independiente.
 - Escritura directa y serializada a dev, HEAD verificado, sin force-push, sin crear PR o ramas auxiliares. SIN BLOQUEO EN SHEETS: no aplicar reservas artificiales, pero sí impedir que dos Tasks sobrescriban el mismo ID.

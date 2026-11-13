@@ -21,7 +21,41 @@ export function dependenciesSatisfied(task,status) {
 export function developmentDependenciesSatisfied(task,status) {
   return dependenciesSatisfied(task,status);
 }
-export function selectWork(tasks,status,account,activeReviewIds=new Set(),taskId=null,ownershipReadbackVerified=false) {
+
+// Live-read evidence of an authorized task run. A dashboard's self-owned flag is relative
+// to its CALLER, not a verdict on who owns the scheduled Task or connected credentials.
+// Do not turn a definition lookup 404 into a positive authorization or a denial.
+const actorOwner = id => ['6adbbc9ad9e88191bea8eb69104afb25','6adcc98a80a48191b71a5156624c21df'].includes(id) ? 'ALEX_CHATGPT' : 'JAVIER_CHATGPT';
+const accountGithub = account => account==='JAVIER_CHATGPT' ? 'jmejia31' : 'morales35alex';
+export function validateExecutorEvidence(e) {
+  const issues=[];
+  if(!e || !ID.test(e.taskId||'') || !authorized.includes(e.taskId))return {verified:false,issues:['TASK_ID_NOT_ALLOWLISTED']};
+  if(e.account!==actorOwner(e.taskId) || e.promptTaskId!==e.taskId ||
+     e.nativePeek?.id!==e.taskId || e.nativePeek?.is_enabled!==true ||
+     !String(e.nativePeek?.schedule||'').includes('FREQ=HOURLY') ||
+     !String(e.nativePeek?.default_timezone||'').includes('America/Tegucigalpa'))
+    issues.push('TASK_CONTEXT_OR_OWNER_MISMATCH');
+  if(e.githubActor!==accountGithub(e.account) || e.githubRepository!=='solqaryn/Solqaryn' ||
+     e.connectedGithubPermissionVerified!==true || e.connectedSheetPermissionVerified!==true ||
+     e.planReadbackVerified!==true || e.exactHeadScopeLockVerified!==true ||
+     e.localSkillMatchesCanonical!==true)
+    issues.push('EFFECTIVE_SOURCE_AUTHORITY_MISSING');
+  if(e.providerPermissionDenied===true || e.credentialMismatch===true)
+    issues.push('EFFECTIVE_PERMISSION_DENIED');
+  // is_self_owned_automation=false is a neutral diagnostic from another agent.
+  // definitionGet404 likewise indicates an unavailable tool action; peek must still succeed.
+  return {verified:issues.length===0,issues};
+}
+export function candidateFeasibility(task,capabilities={}) {
+  if(task?.requiresLiveProvider===true && capabilities.liveProviderVerified!==true)
+    return {possible:false,reason:'LIVE_PROVIDER_NOT_VERIFIED'};
+  const required=Array.isArray(task?.requiredTools)?task.requiredTools:[];
+  const available=Array.isArray(capabilities.availableTools)?capabilities.availableTools:[];
+  const missing=required.filter(t=>!available.includes(t));
+  return missing.length?{possible:false,reason:'MISSING_REQUIRED_TOOLS:'+missing.join(',')}:{possible:true};
+}
+
+export function selectWork(tasks,status,account,activeReviewIds=new Set(),taskId=null,ownershipReadbackVerified=false,capabilities={}) {
   if (!Array.isArray(tasks) || !ID.test(taskId||'') || !authorized.includes(taskId) ||
       !['JAVIER_CHATGPT','ALEX_CHATGPT'].includes(account)||!ownershipReadbackVerified)
     return {action:'NO_ELIGIBLE',reason:'IDENTITY_OR_READBACK_REQUIRED'};
@@ -32,10 +66,11 @@ export function selectWork(tasks,status,account,activeReviewIds=new Set(),taskId
     (t.developmentEnabled===true||t.developmentEnabled==='SI') &&
     dependenciesSatisfied(t,status) && t.permissionsVerified===true &&
     t.ownerTaskId==null && t.activeEditorConflict!==true && !t.conflictingClaim);
-  const next=work[0];
-  return next?{action:'CLAIM',task:next,requiresNativeCurrentReadback:true,
+  const triage=work.map(t=>({task:t,feasibility:candidateFeasibility(t,capabilities)}));
+  const next=triage.find(x=>x.feasibility.possible)?.task;
+  return next?{action:'CLAIM',task:next,skippedUnfeasible:triage.filter(x=>!x.feasibility.possible).map(x=>({id:x.task.id,reason:x.feasibility.reason})),requiresNativeCurrentReadback:true,
     commitMode:'DIRECT_DEV_FAST_FORWARD',auditCount:4,qualityControls:['A0','A1','A2','A3','A4','A5'],targetListoPerRun:3,noFixedClosureCap:true,continueWhileEligible:true}:
-    {action:'NO_ELIGIBLE',reason:'NO_FREE_ELIGIBLE_SCOPE'};
+    {action:'NO_ELIGIBLE',reason:work.length?'NO_VERIFIABLE_CAPABILITY_IN_ELIGIBLE_SET':'NO_FREE_ELIGIBLE_SCOPE',inspected:work.length,missingCapabilities:triage.map(x=>({id:x.task.id,reason:x.feasibility.reason}))};
 }
 export function validateProposedRun(p) {
   const issues=[];
@@ -44,7 +79,8 @@ export function validateProposedRun(p) {
   if(p.operation==='READ')return [];
   if(!ID.test(p.actorTaskId||'')||!authorized.includes(p.actorTaskId)||p.mode!=='ACTIVE_DEV'||
     p.authorizationVerified!==true||p.permissionVerified!==true||p.exactHeadVerified!==true||
-    p.actorNativeOccurrenceVerified!==true||p.dispatchReadbackVerified!==true)
+    !((p.actorNativeOccurrenceVerified===true&&p.dispatchReadbackVerified===true) ||
+      (p.executorEvidence?.taskId===p.actorTaskId && validateExecutorEvidence(p.executorEvidence).verified)))
     issues.push('IDENTITY_AND_PERMISSIONS');
   if (!['WRITE','CLOSE','REVIEW','RECOVER_HANDOFF','DELIVER_VALIDANDO'].includes(p.operation))
     issues.push('UNSUPPORTED_OPERATION');
@@ -83,6 +119,13 @@ else if(process.argv.includes('--self-test')) {
     dependencies:[],permissionsVerified:true};
   const pick=selectWork([scope],{},'JAVIER_CHATGPT',new Set(),task,true);
   if(pick.action!=='CLAIM'||pick.auditCount!==4||pick.qualityControls.length!==6||pick.noFixedClosureCap!==true||pick.continueWhileEligible!==true)throw Error('direct DEV claim test failed');
+  const blocked={...scope,id:'I8-007.A',requiredTools:['dotnet']};
+  const fallback={...scope,id:'I8-009.A',requiredTools:['node']};
+  const feasible=selectWork([blocked,fallback],{},'JAVIER_CHATGPT',new Set(),task,true,{availableTools:['node']});
+  if(feasible.action!=='CLAIM' || feasible.task.id!=='I8-009.A' || feasible.skippedUnfeasible.length!==1)
+    throw Error('capability triage failed');
+  if(selectWork([blocked],{},'JAVIER_CHATGPT',new Set(),task,true,{availableTools:['node']}).reason!=='NO_VERIFIABLE_CAPABILITY_IN_ELIGIBLE_SET')
+    throw Error('toolchain fail-closed failed');
   if(selectWork([{...scope,permissionsVerified:false}],{},'JAVIER_CHATGPT',new Set(),task,true).action==='CLAIM')
     throw Error('unsafe scope claim');
   const base={repo:'solqaryn/Solqaryn',branch:'dev',environment:'dev',operation:'CLOSE',
@@ -92,6 +135,18 @@ else if(process.argv.includes('--self-test')) {
     integrationAuditPassed:true,postIntegrationAuditPassed:true,sheetReadbackVerified:true,
     ledgerReadbackVerified:true,dependentsRecalculated:true};
   if(validateProposedRun(base).length)throw Error('valid closure rejected');
+  const evidence={taskId:task,promptTaskId:task,account:'JAVIER_CHATGPT',
+    nativePeek:{id:task,is_enabled:true,schedule:'FREQ=HOURLY;BYMINUTE=0;BYSECOND=0',default_timezone:'America/Tegucigalpa',is_self_owned_automation:false},
+    definitionGet404:true,githubActor:'jmejia31',githubRepository:'solqaryn/Solqaryn',
+    connectedGithubPermissionVerified:true,connectedSheetPermissionVerified:true,
+    planReadbackVerified:true,exactHeadScopeLockVerified:true,localSkillMatchesCanonical:true};
+  if(!validateExecutorEvidence(evidence).verified)throw Error('valid cross verified identity rejected');
+  if(validateProposedRun({...base,actorNativeOccurrenceVerified:false,dispatchReadbackVerified:false,executorEvidence:evidence}).length)
+    throw Error('false self_owned/404 blocked cross verified identity');
+  for(const bad of [{...evidence,account:'ALEX_CHATGPT'},{...evidence,providerPermissionDenied:true},
+    {...evidence,nativePeek:{...evidence.nativePeek,id:authorized[1]}},
+    {...evidence,connectedGithubPermissionVerified:false}])
+    if(validateExecutorEvidence(bad).verified)throw Error('false identity allowed');
   for(const bad of [{...base,securityAuditPassed:false},{...base,staticCodeAuditPassed:false},{...base,a5StatusRecorded:false},{...base,commitOnDevVerified:false},
     {...base,sheetReadbackVerified:false}])
     if(!validateProposedRun(bad).length)throw Error('false LISTO allowed');

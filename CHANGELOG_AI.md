@@ -1,3 +1,8 @@
+## 2026-11-12 — Identidad DEV 01/05 y selección factible; siete estados COLA sincronizados
+- `is_self_owned_automation=false` significa sólo que la automatización no corre para el agente que hace esa consulta; no es revocación de cuenta. `Automations.get 404` no demuestra inexistencia de la Task; conservar `peek` como lectura positiva y validar propiedad/ID/conectores reales/Skill antes de cualquier escritura. Denegación real continúa NO_GO.
+- V13 exige escanear TODAS las PENDIENTE habilitadas, comprobar herramientas concretas y continuar con otra elegible si .NET/Angular/browser/proveedor real no permite acreditar pruebas del primer candidato. Sin inventar A0–A5 ni completar falsamente.
+- COLA filas 108,110,118,120,127,128,249: E manual VALIDANDO convertido a fórmula que refleja PLAN_MAESTRO H (PENDIENTE al corte). Nota en cada celda conserva antiguo estado, evidencias y autorías J:M. No se cambió PLAN, responsables, PR ni QA/PROD.
+
 ## 2026-11-12 — P5-018.C: delimitación del caso de accesibilidad transversal (Javier :50)
 - Plan Comercial Inicial V3 P5-018.C, antecedente P1-016.B LISTO. Un solo archivo de producto: `frontend/src/styles/_m10-accessibility.scss`, blob de línea base `6140d41b8a7e1e98f4fa1e43e0ab72f04b6ae29f`. Documentación de foco, reduced motion y forced colors en `docs/P5-018-C-DELIMITACION-ACCESIBILIDAD-DEV.md`.
 - Test Node aislado `scripts/tests/p5-018-c-delimitacion-accessibility.test.mjs` con caso positivo y rechazos de eliminación de motion, forced-colors y foco; no altera SCSS de producto, Angular runtime, backend, RBAC, tenants, MySQL, secretos ni entornos QA/main/PROD.

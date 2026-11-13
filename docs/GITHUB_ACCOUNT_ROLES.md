@@ -21,6 +21,7 @@ No editar Tasks físicas desde la cuenta de Javier; las verificaciones futuras d
 - Alex mantiene sus dos IDs y no se renombra físicamente desde Javier; PRIMARY DEV 07 :05 y 08 :35, según certificación transmitida por Alex desde su cuenta.
 
 - Un Scope de Javier puede reanudar una hermana del mismo conjunto físico de seis mediante is_enabled=true, con un intento por corrida y readback. No puede operar las dos Alex. La preferencia de razonamiento máximo requiere selección nativa del propietario; ni prompt ni conector determinan el nivel efectivo.
+- La propiedad de las seis Tasks Javier se acredita con cuenta conectada y censo autorizado, no con `is_self_owned_automation=false` desde un agente ajeno ni con `Automations.get=404` por acción inexistente. `Automations.peek` sirve como evidencia de registro pero no sustituye el permiso efectivo de GitHub/Drive ni el prompt físico y la Skill vigentes. No usar credenciales Alex desde Javier; no convertir fallos de herramientas en autoridad concedida.
 ## Regla de integridad
 - Actor original identificado por TASK_ID, evidencia de cambios y SHA. El ejecutor no emite revisiones en identidad ajena, ni afirma pruebas no realizadas. Conflictos de HEAD deben reconciliarse y probarse antes de publicar.
 - Cualquier solicitud futura para volver a usar PR/APPROVED en DEV requiere una orden nueva del propietario; no aplicar por historia. Fuente operativa única: docs/AUTOMATION_V13.md.

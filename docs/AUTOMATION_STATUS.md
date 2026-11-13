@@ -33,6 +33,10 @@ AUTO_CERTIFICATION_MODE=DIRECT_DEV_FOUR_AUDITS
 QUALITY_PROTOCOL_VERSION=V13_A0_A5
 GOAL_MAX_LISTO_PER_RUN=NONE_WITHIN_PROVIDER_RUN
 TASK_REASONING_PREFERENCE=MAX_AVAILABLE_REASONING
+TASK_IDENTITY_EVIDENCE_POLICY=ACCOUNT_TASK_CONTEXT_NATIVE_PEEK_AND_SOURCE_LINKS
+TASK_FALSE_SELF_OWNED_POLICY=DIAGNOSTIC_ONLY_NOT_ACCOUNT_DENIAL
+TASK_DEFINITION_404_POLICY=USE_PEEK_READBACK_NO_AUTO_DENIAL
+TASK_CANDIDATE_TRIAGE=SCAN_ALL_ELIGIBLE_WITH_REAL_TOOLCHAIN_PREFLIGHT
 TASK_NATIVE_REASONING_CONTROL=OWNER_OR_PLATFORM_SETTING
 JAVIER_PEER_WATCH_SCOPE=SIX_EXISTING_TASK_IDS
 JAVIER_PEER_AUTORESUME=AUTHORIZED_SINGLE_ATTEMPT_WITH_READBACK
@@ -48,6 +52,7 @@ TIMEZONE=America/Tegucigalpa
 
 - Regla V13: hito 3 sin máximo de cierres durante una corrida. Tras cada LISTO_DEV verificar HEAD, dependencias, colisiones y tomar otra PENDIENTE elegible con A0–A4 de nuevo; no pausar por cuota. Si proveedor interrumpe, registrar estado y causa. La lectura anterior de PRIMARY DEV 03 Javier :20 fue PAUSADA con requires_user_action; en la lectura nueva las seis Javier estaban enabled. El propietario autorizó un intento nativo seguro de reactivación por compañero Javier con readback, sin autoaprobar permisos.
 - Readback actual: 6/6 Tasks Javier habilitadas; PRIMARY DEV 03 había estado pausada por requires_user_action, pero el propietario la reanudó y su estado actual es enabled. Las seis están ahora autorizadas para vigilancia cruzada entre sí y reactivación nativa de una compañera pausada mediante un intento por ID y readback. Alex mantiene sus dos IDs bajo su propia cuenta. Preferencia máxima de razonamiento, sin ajuste ni verificación nativos disponibles por conector.
+- Incidencia de productividad 2026-11-12: DEV 01 y 05 reportaron NO_GO por interpretar `is_self_owned_automation=false` y `Automations.get 404` como pérdida de identidad. Son señales insuficientes; en adelante aplicar evidencia positiva de TASK_ID, prompt físico, conexión Javier, `Automations.peek`, Skill/Scope Lock exact-HEAD y accesos GitHub/Sheet. 37 tareas elegibles detectadas en el corte, ninguna con dueño; una limitación .NET/Angular de un ID no bloquea otras. Siete celdas COLA!E históricas se restauraron a fórmula viva sobre PLAN_MAESTRO!H (108,110,118,120,127,128,249); conservar notas y J:M históricos. Revisar conteos vivos, no asumir 37 eternamente.
 ## Interpretación efectiva
 - `AUTOMATION_RUNTIME=ACTIVE_DEV` indica que el contrato contempla DEV; NO afirma que las Tasks se encuentren físicamente habilitadas. En el readback de 2026-11-12 las seis Tasks Javier están habilitadas (`PHYSICAL_JAVIER_TASKS_ENABLED=6`). Alex transmitió verificación nativa desde su propia cuenta: 2/2 habilitadas; no equivale a lectura directa desde Javier. No reactivar por cambiar documentación.
 - Las constantes `V13_1000_FIFO_BATCH` y `MAX_OPEN_WORK_BRANCHES=1000` se retienen para compatibilidad con validadores instalados; NO habilitan FIFO de PR, trabajo en branches ni PR nuevos. La regla ejecutiva efectiva es `WORK_BRANCH_CREATION_ALLOWED=FALSE` y publicación serial a `dev`.

@@ -38,6 +38,10 @@ export function validateAuthority(input) {
     need(body, 'QUALITY_PROTOCOL_VERSION', 'V13_A0_A5', label);
     need(body, 'GOAL_MAX_LISTO_PER_RUN', 'NONE_WITHIN_PROVIDER_RUN', label);
     need(body, 'TASK_REASONING_PREFERENCE', 'MAX_AVAILABLE_REASONING', label);
+    need(body, 'TASK_IDENTITY_EVIDENCE_POLICY', 'ACCOUNT_TASK_CONTEXT_NATIVE_PEEK_AND_SOURCE_LINKS', label);
+    need(body, 'TASK_FALSE_SELF_OWNED_POLICY', 'DIAGNOSTIC_ONLY_NOT_ACCOUNT_DENIAL', label);
+    need(body, 'TASK_DEFINITION_404_POLICY', 'USE_PEEK_READBACK_NO_AUTO_DENIAL', label);
+    need(body, 'TASK_CANDIDATE_TRIAGE', 'SCAN_ALL_ELIGIBLE_WITH_REAL_TOOLCHAIN_PREFLIGHT', label);
     need(body, 'TASK_NATIVE_REASONING_CONTROL', 'OWNER_OR_PLATFORM_SETTING', label);
     need(body, 'JAVIER_PEER_WATCH_SCOPE', 'SIX_EXISTING_TASK_IDS', label);
     need(body, 'JAVIER_PEER_AUTORESUME', 'AUTHORIZED_SINGLE_ATTEMPT_WITH_READBACK', label);
@@ -95,10 +99,12 @@ if (errors.length) {
     ['premature stop after 3',{status:source.status.replace('GOAL_MAX_LISTO_PER_RUN=NONE_WITHIN_PROVIDER_RUN','GOAL_MAX_LISTO_PER_RUN=3')}],
     ['bad peer scope',{authority:source.authority.replace('JAVIER_PEER_AUTORESUME=AUTHORIZED_SINGLE_ATTEMPT_WITH_READBACK','JAVIER_PEER_AUTORESUME=ANY_ACCOUNT')}],
     ['bad thinking',{agents:source.agents.replace('TASK_REASONING_PREFERENCE=MAX_AVAILABLE_REASONING','TASK_REASONING_PREFERENCE=INSTANT')}],
+    ['identity false denial regression',{status:source.status.replace('TASK_FALSE_SELF_OWNED_POLICY=DIAGNOSTIC_ONLY_NOT_ACCOUNT_DENIAL','TASK_FALSE_SELF_OWNED_POLICY=AUTO_NO_GO')}],
+    ['single-candidate starvation',{authority:source.authority.replace('TASK_CANDIDATE_TRIAGE=SCAN_ALL_ELIGIBLE_WITH_REAL_TOOLCHAIN_PREFLIGHT','TASK_CANDIDATE_TRIAGE=FIRST_ONLY')}],
     ['work branch allowed',{agents:source.agents.replace('WORK_BRANCH_CREATION_ALLOWED=FALSE','WORK_BRANCH_CREATION_ALLOWED=TRUE')}],
     ['legacy engine',{status:source.status.replace('VAEP_DISPATCH_AUTHORIZED=FALSE','VAEP_DISPATCH_AUTHORIZED=TRUE')}],
     ['wrong plan',{status:source.status.replace('1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA','HISTORICAL')}],
     ['wrong target',{authority:source.authority.replace('REPOSITORY=solqaryn/Solqaryn','REPOSITORY=other/Other')}],
   ]) if (validateAuthority({...source,...mutant}).length===0) throw Error('negative test accepted: '+description);
-  console.log('SOLQARYN V13 DIRECT DEV authority PASS; eleven fail-closed mutations rejected');
+  console.log('SOLQARYN V13 DIRECT DEV authority PASS; thirteen fail-closed mutations rejected');
 } else console.log('SOLQARYN V13 DIRECT DEV authority PASS');

@@ -2,6 +2,7 @@
 
 - El contrato vigente permite cierres por corrida sin máximo artificial de tres, sujetándose a tiempo y recursos del proveedor y a A0–A5. Vigilancia de pausas documentada en docs/AUTOMATION_V13.md.
 - La recuperación cruzada autorizada de seis Javier y la preferencia máxima de razonamiento están en docs/AUTOMATION_V13.md. El conector de Tasks no cambia el modelo. Alex sigue bajo su titularidad.
+- Resolución del falso NO_GO de DEV 01/05 y selección por factibilidad: `docs/AUTOMATION_V13.md`, `docs/AUTOMATION_AUTHORITY.md` y `scripts/validate-dual-task-configuration.mjs`. COLA!E refleja PLAN_MAESTRO!H mediante fórmula restaurada en siete filas históricas; no duplicar estados de otro motor.
 ## Autoridad operativa
 - `.agents/skills/solqaryn-project-governance/SKILL.md`: identidad y límites.
 - `docs/PROJECT_SCOPE_LOCK.md`: plataforma, rama, alcance y seguridad.
