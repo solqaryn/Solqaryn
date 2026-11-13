@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C00-03.M01.01: objetivo y no-regresión de la matriz integrada [Javier :10]
+- Delimitación documental de fuente V5 única, perímetro de 2.340 IDs, seis familias de evidencia, dependencias del DAG técnico de preparación transversal y aceptación positiva/negativa fail-closed. No implementa ni certifica la matriz completa, C00-01 final, QA/PROD, migraciones ni autorizaciones.
+- Clasificación: TIPO1_DOCUMENTACION; requiere_dotnet=NO; requiere_node_angular=NO; requiere_mysql=NO; requiere_docker=NO; requiere_e2e=NO; requiere_security=SI_REVISION_FRONTERAS_Y_SECRETOS_DOCUMENTAL; requiere_scope_lock=SI_SHA_EXACTO. A0–A3 dirigidas durante VALIDANDO; A4 commit FF, Scope Lock y readback; A5 independiente.
+
 ## 2026-11-13 — V5 C00-02.M01.01: objetivo, no-alcance y no-regresión del modelo de trabajo [Alex :05]
 - Documento acotado de preparación de la cola V5: fuente de 2.340 IDs, PLAN/COLA/BITACORA, exclusividad por TASK_ID, casos de aceptación positivos/negativos, límites de seguridad, A0–A5 y rollback. Sin cambios en runtime, fórmulas institucionales, permisos, API, DB, configuración o Tasks.
 - Validación proporcional: revisión estática/documental de diff y coherencia V5/V13; Scope Lock exact-SHA y readback pospublicación antes de LISTO. No atribuir pruebas de Angular/.NET/MySQL/E2E a una entrega documental y no promover QA/main/PROD.
