@@ -1,3 +1,8 @@
+## 2026-11-12 — P5-009.C: delimitación de scroll, foco y Escape (Javier :20)
+- Un solo archivo de producto inspeccionado: `frontend/src/app/app.component.ts`, blob exacto `11aa993b011119d33e402f3f2bc1d08f133e34bd`, sin cambios funcionales. Contrato observado: foco/retorno de menú, Escape, scroll lock/release, destino de contenido y limpieza de contexto.
+- Test Node v22.16.0 `scripts/tests/p5-009-c-delimitacion-scroll-foco-escape.test.mjs` ejecutado después de VALIDANDO: 6/6 PASS (positivo real-source más cinco negativos); SHA256 `b0aed580f93e6f272b00d1201650b57a70d5d0583568cbf712fb5fa30fc42740`. Nota `docs/P5-009-C-DELIMITACION-SCROLL-FOCO-ESCAPE-DEV.md`.
+- Es delimitación estática, no prueba de navegador, foco real, accesibilidad ni permiso multiempresa. A5 independiente pendiente; rollback con revert aditivo, sin force-push.
+
 ## 2026-11-12 — P5-014.C: delimitación estática de menú accesible (Javier :40)
 - Fuente exclusiva `frontend/src/app/shared/navigation/app-navigation-menu.component.ts` blob `b70ef4ffb252228cf2ab19754a5e30d53f64aca0`, con enlaces semánticos/ARIA y RBAC de navegación, sin alterar el runtime.
 - Test dirigido `scripts/tests/p5-014-c-delimitacion-teclado-aria-menu.test.mjs` (Node 22.16.0, 6/6 preflight sobre extracto, y 8/8 pruebas sobre fuente completa GitHub por inspección dirigida); NO certifica navegador, lector de pantalla ni auth backend.
