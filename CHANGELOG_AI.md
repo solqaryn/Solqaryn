@@ -1,3 +1,8 @@
+## 2026-11-13 — Rectificación causal de procedencia V5 C00-04.M01.01–05 (A5 pendiente)
+- Se reagrupan siete viñetas preexistentes bajo cinco encabezados originales (DAG20, C01-02.M01.04 y C01-03.M01.03/.04/.05). Las secciones C00-04.M01.01–05 de Javier :10 conservan sus propias viñetas. No se borran pruebas ni entradas historicas.
+- El validador `scripts/quality/verify-v5-changelog-provenance.mjs` y workflow `.github/workflows/v5-changelog-provenance.yml` detectan nuevas secciones vacías o atribuciones cruzadas sin compilar código runtime innecesariamente.
+- Los A5_FAIL originales siguen vigentes hasta aprobación independiente sobre SHA correctivo por una Task Javier distinta de J10. No se declara A5_PASS automático ni se cambia QA/main/PROD. Rollback mediante revert normal en dev, nunca force-push.
+
 ## 2026-11-13 — V5 C00-02.M02.06: contrato de dependencias y salida M02 [Javier :00]
 - `docs/v5/c00-02-m02-06-dependencias-salida.md`: integra M02.01–05 con prerequisitos, autoridad PLAN/COLA/DAG, transiciones e idempotencia BITACORA A:Z/26, ejemplo de ciclo y oráculos P01–P03/N01–N08; no crea código/servicio/DB.
 - TIPO 1 documental: A0–A3 verificación de fuentes, casos, seguridad y ausencia de secretos sobre blob `95cdaef09583fc859aa25228057e1f2c22f60477`; .NET/Angular/MySQL/Docker/E2E NO_APLICA al diff; A4 posterior con commit FF y Scope Lock SHA exacto; A5 independiente de otra Javier. Sin QA/main/PROD, PR, ramas ni force-push; rollback normal `git revert`.
@@ -269,49 +274,44 @@
 - Sin cambios de runtime, permisos, DTO, MySQL ni frontend; A0-A4 documentales con Scope Lock exact-SHA, A5 independiente; no QA/main/PROD.
 
 ## 2026-11-13 — V5 C01-02.M01.04: riesgos y decisiones preliminares de capabilities [Javier :30]
+- Inventario documental R01–R11, supuestos S01–S06, decisiones D01–D06 y positivos/negativos para RBAC/plan/rubro/tenant/sucursal/recurso, basado en contratos reales.
+- Sólo M01.04 documental; no habilita capabilities, modifica API/Angular/MySQL ni certifica runtime. Aplicar A0–A4 proporcionales, Scope Lock exact-SHA y A5 por Task distinta. No QA/main/PROD.
 
 ## 2026-11-13 — V5 C00-04.M01.05: criterios de aceptación observables [Javier :10]
 - Contrato documental AC01–AC12, P1/P2, N1–N7 y D01–D05 con gates de autorización, DAG, CI exact-SHA, seguridad, BITACORA A:Z y rollback; sin runtime.
 - A0–A4 dirigidos, Scope Lock en el SHA publicado y A5 pendiente de revisor independiente; QA/main/PROD no autorizados.
 
-- Inventario documental R01–R11, supuestos S01–S06, decisiones D01–D06 y positivos/negativos para RBAC/plan/rubro/tenant/sucursal/recurso, basado en contratos reales.
-- Sólo M01.04 documental; no habilita capabilities, modifica API/Angular/MySQL ni certifica runtime. Aplicar A0–A4 proporcionales, Scope Lock exact-SHA y A5 por Task distinta. No QA/main/PROD.
-
 ## 2026-11-13 — V5 C01-03.M01.02: actores, límites y entradas/salidas de configuración [Javier :20]
 - Se identificaron 6 actores, 8 entradas/salidas propuestas, cuatro superficies fuente con blobs verificables y 2 positivos/6 negativos de tenancy/RBAC/inyección, ámbito/versiones/errores; propuesta M01 sin contrato final ni cambio de runtime. A0–A3 documentales; A4 Scope Lock SHA exacto y readback; A5 revisor distinto. No QA/main/PROD.
 
 ## 2026-11-13 — V5 C01-03.M01.03: inventario preliminar de contratos y evidencia [Javier :20]
+- Se leyeron y fijaron cuatro blobs de código real (TemaVisual DTO/metadata UI, TemaVisualService HTTP, ThemeApplierService hex allowlist y Program.cs) con afirmaciones y límites explícitos; seis casos documentales D-01–06 positivos/negativos de JWT, RBAC, tenancy e inyección. No se certifica API universal ni MySQL/Angular/browser. A0–A3 documentales, A4 exact-SHA Scope Lock y A5 por otra Task; sólo M01, sin QA/main/PROD.
 
 ## 2026-11-13 — V5 C00-04.M01.04: registro de riesgos y decisiones pendientes [Javier :10]
 - Matriz documental R01-R10, supuestos, decisiones D01-D05, cinco negativos, gates de seguridad/identidad/CI/tenant/SHA/rollback y relación con A5_FAIL histórico sin certificar PROD.
 - Sin cambio ejecutable; A0-A4 proporcionales, Scope Lock SHA exacto tras publicar, BITACORA A:Z/26; A5 independiente y no QA/main/PROD.
 
-- Se leyeron y fijaron cuatro blobs de código real (TemaVisual DTO/metadata UI, TemaVisualService HTTP, ThemeApplierService hex allowlist y Program.cs) con afirmaciones y límites explícitos; seis casos documentales D-01–06 positivos/negativos de JWT, RBAC, tenancy e inyección. No se certifica API universal ni MySQL/Angular/browser. A0–A3 documentales, A4 exact-SHA Scope Lock y A5 por otra Task; sólo M01, sin QA/main/PROD.
-
 ## 2026-11-13 — V5 C01-03.M01.04: matriz preliminar de riesgos de configuración [Javier :20]
+- Documento de preparación M01 para configuración dinámica: diez riesgos R01-R10, cinco supuestos S01-S05, seis decisiones D01-D06 y tres escenarios negativos de integridad/aislamiento/inyección. Referencias V5/DAG, seguridad JWT/RBAC/tenant y rollback, sin implementación ni migración; no se declaran pruebas .NET/Angular/MySQL. A0–A4 documentales y A5 independiente requeridos. No QA/main/PROD.
 
 ## 2026-11-13 — V5 C00-04.M01.03: inventario de contratos, código y evidencias [Javier :10]
 - Inventario documental con fuentes GitHub de SHA/blobs, Plan V5, Sheet institucional y DAG; prueba de límites de inferencia, permisos y autorizaciones; criterios positivos/negativos para no confundir CI, fuente y certificación.
 - Sin cambios runtime; A0–A4 proporcionales, Scope Lock exact-SHA de publicación, A5 independiente, BITACORA A:Z/26, rollback normal; no QA/main/PROD.
 
-- Documento de preparación M01 para configuración dinámica: diez riesgos R01-R10, cinco supuestos S01-S05, seis decisiones D01-D06 y tres escenarios negativos de integridad/aislamiento/inyección. Referencias V5/DAG, seguridad JWT/RBAC/tenant y rollback, sin implementación ni migración; no se declaran pruebas .NET/Angular/MySQL. A0–A4 documentales y A5 independiente requeridos. No QA/main/PROD.
-
 ## 2026-11-13 — V5 C01-03.M01.05: aceptación preliminar de configuración tipada [Javier :20]
+- Se fija documento M01 de 10 criterios observables con positivos/negativos de JWT/RBAC, tenant A/B, inyección, versionado, errores y rollback. Sólo preparación documental; no runtime, DB, providers ni migración. A0–A3 de integridad documental; A4 Scope Lock del commit exacto y readback, A5 por otro TASK_ID. No QA/main/PROD; revalidar C00-01 y C01-01 antes de fases ejecutables.
 
 ## 2026-11-13 — V5 C00-04.M01.02: actores y superficies gobierno de cambios [Javier :10]
 - Inventario contractual documental de entradas/salidas, actores Javier/Alex, Drive/Sheets, GitHub, control de estados, interfaces, decisiones y riesgos; positivo y cinco negativos, BITACORA A:Z/26, sin código runtime.
 - Validar A0–A4 proporcionales, Scope Lock SHA de commit documental y readback; A5 independiente, no QA/main/PROD. Rollback git revert ordinario.
 
-- Se fija documento M01 de 10 criterios observables con positivos/negativos de JWT/RBAC, tenant A/B, inyección, versionado, errores y rollback. Sólo preparación documental; no runtime, DB, providers ni migración. A0–A3 de integridad documental; A4 Scope Lock del commit exacto y readback, A5 por otro TASK_ID. No QA/main/PROD; revalidar C00-01 y C01-01 antes de fases ejecutables.
-
 ## 2026-11-13 — Ampliacion V5 DAG20 de preparacion documental independiente [gobierno]
+- Backups nativos del Sheet y Plan V5 verificados. Se registran 20 IDs ya existentes M01.01-05 de C00-04 y C01-01/02/03 con once prerequisitos cerrados, sin ciclo, como documentos preparatorios. Gate C00-01.M06.06 individual, no apertura de implementacion ni QA/main/PROD.
+- El Doc rector, DAG_TECNICO, AGENTS, AUTOMATION_V13, AUTOMATION_STATUS, CONFIG y Jira se sincronizan con lectura posterior; los seis prompts y horarios Javier y dos Alex no se modifican. Rollback GitHub por git revert sin force-push; desactivar filas nuevas del DAG (F=EN_REVISION) antes de revertir el contrato.
 
 ## 2026-11-13 — V5 C00-04.M01.01: alcance de gobierno de cambios [Javier :10]
 - Contrato documental de decisiones, autorizaciones, riesgos, gates, casos positivos/negativos y rollback; distingue preparación M01 de implementación/deploy. Fuente V5; sin cambios de runtime, base de datos, secretos o configuraciones.
 - A0–A4 documentales requeridas y A5 independiente antes de QA/main/PROD; Scope Lock exact SHA al publicar, BITACORA A:Z/26 e idempotencia. Autor conserva TASK_ID original.
-
-- Backups nativos del Sheet y Plan V5 verificados. Se registran 20 IDs ya existentes M01.01-05 de C00-04 y C01-01/02/03 con once prerequisitos cerrados, sin ciclo, como documentos preparatorios. Gate C00-01.M06.06 individual, no apertura de implementacion ni QA/main/PROD.
-- El Doc rector, DAG_TECNICO, AGENTS, AUTOMATION_V13, AUTOMATION_STATUS, CONFIG y Jira se sincronizan con lectura posterior; los seis prompts y horarios Javier y dos Alex no se modifican. Rollback GitHub por git revert sin force-push; desactivar filas nuevas del DAG (F=EN_REVISION) antes de revertir el contrato.
 
 ## 2026-11-13 — V5 C00-02.M01.01: rectificación documental A5_FAIL BITACORA A:Z/26 [Alex :05]
 - Se corrige la referencia obsoleta A:U/21 a A:Z/26, EVENT_ID A, IDEMPOTENCY_KEY R, TASK_ROLE E, ACCOUNT_OWNER F y TASK_ID G, y se añaden negativos reproducibles para eventos truncados de 21 a 25 campos, claves duplicadas y auto-revisión.
@@ -721,7 +721,6 @@
 - Se deja handoff para sincronización física por Alex de prompts V13 direct-dev, readback real de identidad/horario/prompt y habilitación posterior únicamente por autorización expresa.
 - Cuatro auditorías V13 sin cambios. Sin nuevas Tasks, ramas, PR, cambios funcionales o modificaciones de QA/PROD.
 
-
 ## 2026-11-12 — G0-006.E prueba negativa de fases retiradas (Javier :30)
 - Cinco pruebas Node dirigidas al validador de trazabilidad de DEV directo: rechazan FASE8, M13, recibos de PR históricos, estados VALIDANDO disfrazados de LISTO, tests SKIPPED, SHA falso, auditoría A4 ausente y readback institucional no comprobado.
 - Casos sintéticos, sin reabrir migraciones ni autorizar trabajo ajeno; el control del Plan Comercial sigue siendo externo al validador de forma intencional.
@@ -732,7 +731,6 @@
 
 ## 2026-11-12 — Visibilidad exacta de VALIDANDO y paralelismo real por Scope
 - Precisa la transición inmediata a EN_PROGRESO al reclamar microtarea; VALIDANDO sólo al disponer de candidato completo, ANTES de auditorías funcional, seguridad e integración; misma Task corrige sin abandonar la custodia; commit directo dev, cuarta auditoría posintegración y LISTO verificado. Otras Tasks trabajan en paralelo IDs libres. Meta 1/3 por corrida sin falsos cierres.
-
 
 ## 2026-11-12 — Limpieza definitiva de V13 directo en dev
 - Reemplazados capítulos históricos contradictorios por un único contrato directo en docs/AUTOMATION_V13.md.
@@ -782,7 +780,6 @@
 - REUSE_NO_RUNTIME_CHANGE: `frontend/src/app/shared/confirm-dialog.component.ts` blob `f9b73544cc70beba83a891b2fc89537f0718af8b`, Cancelar=false, Eliminar=true/warn, textos interpolados y Angular Material existente.
 - Se reutiliza sin duplicación el test exacto `scripts/tests/p5-006-c-delimitacion-confirmacion.test.mjs` blob `baccb39ccc8845658d6d19773b4cdc4d70fa09fc`; 6/6 Node --test PASS en archivos SHA exactos. Acta `docs/P5-006-D-REUSO-CONFIRMACION-DEV.md`. No se certifica navegador, autorización JWT/RBAC ni QA/PROD.
 - Revert selectivo aditivo, A4 exact-commit y A5 independiente pendiente.
-
 
 ## Orden posterior expresa de arranque V5 — 2026-11-12 (prevalece sobre la pausa del 20:56)
 
