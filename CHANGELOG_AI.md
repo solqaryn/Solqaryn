@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C01-04.M01.01: objetivo documental expediente universal [Alex :05]
+- Contrato preliminar de timeline, decisiones, observaciones, adjuntos y versionado; define alcance/no-alcance y 12 invariantes positivas/negativas para aislamiento tenant/JWT/RBAC, adjuntos, idempotencia, PII, regresión y rollback.
+- Únicamente M01.01 documental: no crea endpoints, datos, UI, migraciones, workers ni adjuntos; .NET/Angular/MySQL/Docker/E2E no aplican. Requiere A0–A4 causal, Scope Lock exact-SHA y A5 independiente; sin QA/main/PROD.
+
 ## 2026-11-13 — Autoactivación VALIDANDO por DAG24 (gobierno reactivo)
 - El propietario exige reponer la cola al pasar prerequisitos a VALIDANDO. Se especifica gate condicional solo para tareas documentales independientes y A5/gates estrictos para cierres y cambios críticos. Fórmulas DAG_TECNICO!G y COLA!G/O se recalculan automáticamente al cambiar PLAN_MAESTRO; las Tasks hacen el despacho real.
 - Fase preparatoria autorizada: C01-04, C02-01, C02-02, C02-03 M01.01-05 (20); cuatro M01.06 preparadas pero bloqueadas por cierres y A5. C00-01.M06.06 exige causal A5 independent sobre M04.03. Reposición futura ante reserva baja se gobierna por verificación técnica por ID, nunca saltando dependencias ni creando tareas ficticias.
