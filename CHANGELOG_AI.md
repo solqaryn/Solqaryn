@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C01-01.M01.02: actores, IO y fronteras de identidad [Javier :40]
+- Análisis documental con siete actores, diez entradas/salidas candidatas, referencias a seis blobs de dominio, tres positivos y ocho negativos de tenancy/RBAC/JWT; no implanta API/DB/Angular.
+- Protocolo A0–A4 proporcional con Scope Lock exact-SHA, BITACORA A:Z/26 y A5 por Task distinta; no QA/main/PROD.
+
 ## 2026-11-13 — V5 C01-02.M01.03: inventario verificable de contratos [Javier :30]
 - Inventario de 7 blobs de código/tests con limitaciones explícitas, matriz de fuentes V5, siete brechas de implementación y casos positivos/negativos documentales.
 - Ninguna prueba runtime atribuida; Scope Lock exact-SHA para commit solo documental, A0–A4 proporcionales y A5 otra Task; no QA/main/PROD.
