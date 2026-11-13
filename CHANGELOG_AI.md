@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C03-04.M01.02: actores y contratos de incidentes/continuidad [Javier :00]
+- Nuevo `docs/v5/c03-04-m01-02-actores-entradas-salidas-continuidad.md`: 15 actores, 16 interfaces y 12 oráculos positivos/negativos para incidentes, revocación, backup, restore y continuidad, distinguiendo YAML/contratos de ejecución real; 15 predecesores DAG LISTO.
+- Entrega documental, sin .NET, Angular, MySQL, Docker, E2E, secretos, datos ni despliegue; A0–A3 documentales, A4 Scope Lock exact-SHA después del FF en dev, A5 por otra Task Javier. Sin QA/main/PROD ni ramas/PR.
+
 ## 2026-11-13 — Seis Tasks Javier: multi-microtarea por corrida, vigilancia segura y monitor de última señal
 - Se reemplazaron exclusivamente los prompts de seis Tasks Javier con bucle hasta agotar trabajo seguro o límites reales, CI independiente en VALIDANDO y verificación de compañeras con readback y exclusión atómica; sin tocar sus horarios, IDs, títulos ni is_enabled.
 - Sheet V5: extendida TAREAS_PROGRAMADAS a AA:AN, añadido Dashboard A41:J51 y CONFIG A149:C150. No se tocaron PLAN_MAESTRO/COLA/BITACORA y sus nueve pestañas se conservan.
