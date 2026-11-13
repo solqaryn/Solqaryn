@@ -784,3 +784,9 @@
 - Inventario estático de cinco fuentes backend con sus blobs; distingue expresamente evidencia de código de pruebas HTTP/MySQL/retención futuras. No implementa auditoría, permisos ni política de retención y no libera M01.06/M02.
 - A0–A3 documentales dirigidas en VALIDANDO; A4 exclusivamente después de commit FF dev, Scope Lock exact SHA y readback PLAN/COLA/BITACORA A:Z; A5_PENDIENTE de otra Task Javier; no qa/main/PROD, secretos ni pagos.
 - Rollback mediante revert normal del commit publicado sin reescribir trabajo concurrente.
+
+## 2026-11-13 — SOLQARYN V5 C03-04.M01.01 (PRIMARY DEV 04 Javier :30)
+- Objetivo de continuidad, respuesta a incidentes, revocación y backup/restore en preparación M01.01; criterios CO01–CO16 positivos/negativos y decisiones pendientes, sin ejecución de proveedor.
+- Fuentes estáticas verificadas: workflows backup-restore de DEV con triggers restringidos, runbook y test de servicio con mocks. Distinguir existencia de YAML de drill efectivo; no fijar RPO/RTO ni confundir environments DEV/Desarrollo.
+- Tipo 1 documental: sin .NET/Angular/MySQL/Docker/E2E ejecutables; controles de seguridad y Scope Lock sí aplican. A0–A3 documentales en VALIDANDO, A4 solo después de SHA publicado, A5 por otra Task Javier.
+- No toca secretos, QA/main/PROD, infraestructura, Tasks ni servicios pagos. Rollback: git revert no destructivo.
