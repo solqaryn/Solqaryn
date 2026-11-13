@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C03-03.M01.05: aceptación de auditoría de seguridad [Javier :10]
+- `docs/v5/c03-03-m01-05-criterios-auditoria-seguridad.md`: 16 criterios AU01–AU16 (autorización/denegación/cambio crítico/acceso excepcional, correlación, retención y no exposición), con ocho fuentes de código y diez prerrequisitos DAG LISTO. Delimita riesgos de tenant A/B, auditoría best-effort vs estricta, redacción PII y pruebas futuras sin declararlas ejecutadas.
+- Autor 6af16bb9492c8191b8e8c7d606f11507; A0–A3 PASS documental antes del commit, A4 exact-SHA y A5 independiente pendientes. No ejecuta .NET/Angular/MySQL/Docker/E2E para un cambio de documentación; no modifica runtime, secretos, QA/main/PROD, ramas o PR; rollback `git revert`.
+
 ## 2026-11-13 — C00-03.M01.06: cierre M01 matriz integrada V5 [Javier :00]
 - Documento docs/v5/c00-03-m01-06-cierre-matriz-integrada.md: 5/5 M01 LISTO con A5 causal, C00-01.M06.06 LISTO+A5, matriz de 12 referencias → mejora/contrato/prueba/cierre, 2 casos positivos y 12 negativos de gobierno documental.
 - No crea backlog, cola, PR ni ramas; no ejecuta pruebas de runtime ni libera M02 sin sus puertas. A0–A4 proporcional y Scope Lock exacto; A5 de otra Task Javier, cero QA/main/PROD.
