@@ -1,3 +1,8 @@
+## 2026-11-12 — P5-018.C: delimitación del caso de accesibilidad transversal (Javier :50)
+- Plan Comercial Inicial V3 P5-018.C, antecedente P1-016.B LISTO. Un solo archivo de producto: `frontend/src/styles/_m10-accessibility.scss`, blob de línea base `6140d41b8a7e1e98f4fa1e43e0ab72f04b6ae29f`. Documentación de foco, reduced motion y forced colors en `docs/P5-018-C-DELIMITACION-ACCESIBILIDAD-DEV.md`.
+- Test Node aislado `scripts/tests/p5-018-c-delimitacion-accessibility.test.mjs` con caso positivo y rechazos de eliminación de motion, forced-colors y foco; no altera SCSS de producto, Angular runtime, backend, RBAC, tenants, MySQL, secretos ni entornos QA/main/PROD.
+- Esta microtarea solo delimita el escenario; no certifica WCAG 2.2 AA, contraste, zoom, teclado/E2E ni lector de pantalla. P5-018.D/E requieren pruebas de uso real; rollback mediante revert selectivo normal en dev, sin force.
+
 ## 2026-11-12 - G0-006.B: cierre de matriz actual F/G/H y rechazo fases historicas (Javier :30)
 - scripts/quality/g0-006-b-traceability-matrix.mjs y scripts/tests/g0-006-b-traceability-matrix.test.mjs verifican forma de recibos comerciales F/G/H: ID, test, SHA commit, estados LISTO, dependencia SI, readback institucional, A5 pendiente o PASS sin permiso de promocion; rechazo de fases 8/13 y reactivacion de migracion Angular concluida.
 - Las referencias de commit son F=6a10d42e, G=9c6f2158, H=a8de9825 leidas de GitHub y PLAN/COLA; control positivo en test sintetico NO certifica por si mismo fuentes externas ni autoriza QA/main/PROD. La matriz real se registra en el ledger institucional, sin introducir otro Plan Maestro.
