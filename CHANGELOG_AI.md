@@ -1,3 +1,9 @@
+## 2026-11-12 - G0-005.G - regresión dirigida 503 y READY ajeno (Javier :50)
+- Autoridad Plan Comercial Inicial V3 G0-005.G; depende de G0-005.F ya LISTO. Se agregan 7 pruebas negativas dirigidas en scripts/tests/g0-005-g-negative-readback.test.mjs; se reutiliza sin modificar el clasificador G0-005.A y el fixture sintético G0-005.F.
+- Rechaza explícitamente: alias SSO 503, API upstream 503 con SSO 403 permitido, Vercel READY de proyecto ajeno, SHA de deployment distinto a HEAD, origen DEV ajeno y cualquier retorno con PII/secreto. No se consulta ningún origen proveedor en vivo: son casos sintéticos que acreditan lógica del clasificador, no disponibilidad externa.
+- A0 Node v22.16.0 node --check y revisión de nuevos secretos/dependencias, PASS; A1 7/7 negativos funcionales PASS; A2 fail-closed de PII y falsos positivos PASS; A3 regresión Node --test G0-005.A/F/G 29/29 PASS. A4 requiere commit SHA exacto dev y readback posterior; A5_PENDIENTE revisión independiente antes QA/main/PROD.
+- Rollback por revert selectivo de este commit directo DEV, sin force-push ni modificación de QA/main/PROD, MySQL, seguridad runtime, credenciales ni workflows.
+
 ## 2026-11-12 - G0-005.F - fixture sintético 503 para readback DEV (Javier :50)
 - Fuente Plan Comercial Inicial V3 G0-005.F; depende de G0-005.A LISTO. Prepara un caso medible de resultado esperado, NO un 503 real: fixtures/g0-005-f-operational-503.json con recibos G0-005.C/D/E, SSO alias 503, API upstream 503, QA y PROD NOT_OBSERVED. DEV SHA del fixture es un identificador SINTÉTICO, no prueba de READY de Vercel.
 - Prueba nueva scripts/tests/g0-005-f-operational-503-fixture.test.mjs: 4 casos dirigidos; NO_GO ante 503, NO_GO cuando falta observación de QA/PROD aunque controles DEV se vuelvan sanos, no promoción ni filtración PII. Regresión conjunta con G0-005.A: 22/22 Node v22.16.0 PASS; JSON parse y node --check correctos, cero dependencias o secretos añadidos.
