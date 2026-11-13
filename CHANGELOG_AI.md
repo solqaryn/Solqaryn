@@ -1,3 +1,8 @@
+## 2026-11-12 — P5-008.D: reuso de alertas institucionales existente (Javier :20)
+- REUSE del servicio `frontend/src/app/shared/alerts/app-toast.service.ts` (blob `0478821b246cae5fdf3016a5c25081a1726f925a`): severidades, duración, acción texto Cerrar, anuncio aria y estilos. Sin modificar Angular runtime ni servicios.
+- Prueba dirigida `scripts/tests/p5-008-d-reuso-alertas.test.mjs`: Node 22.16.0 6/6 PASS tras VALIDANDO (control positivo de fuente real, 5 negativos sobre duración, texto/HTML, aria, wrapper error y acción de cerrar). SHA256 `89721265805b7f22b4121d61df2790a1de6bc32ee365e07ce1fd82c9325bead2`. Nota `docs/P5-008-D-REUSO-ALERTAS-DEV.md`.
+- No certificar navegador, lector, tenants, JWT/DB; A4 SHA/readback poscommit y A5 independiente pendiente. Rollback mediante revert aditivo sin force.
+
 ## 2026-11-12 - P5-012.C: delimitacion del mapa de navegacion jerarquica V1 (Alex :35)
 - Contrato producto existente frontend/src/app/shared/navigation/navigation-contract.json, blob 7142082462d7bc53ff4f0cdf96f67f21405f3a44, no editado.
 - Prueba scripts/tests/p5-012-c-delimitacion-jerarquia-navigation.test.mjs: 5 casos Node real JSON, control de esquema, duplicados, metadatos modulo/accion y admins, rechazo de nietos no soportados; nota docs/P5-012-C-DELIMITACION-NAVEGACION-JERARQUICA-DEV.md.
