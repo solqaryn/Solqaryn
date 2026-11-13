@@ -1,3 +1,6 @@
+## 2026-11-13 — V5 C01-03.M01.05: aceptación preliminar de configuración tipada [Javier :20]
+- Se fija documento M01 de 10 criterios observables con positivos/negativos de JWT/RBAC, tenant A/B, inyección, versionado, errores y rollback. Sólo preparación documental; no runtime, DB, providers ni migración. A0–A3 de integridad documental; A4 Scope Lock del commit exacto y readback, A5 por otro TASK_ID. No QA/main/PROD; revalidar C00-01 y C01-01 antes de fases ejecutables.
+
 ## 2026-11-13 — Ampliacion V5 DAG20 de preparacion documental independiente [gobierno]
 
 ## 2026-11-13 — V5 C00-04.M01.01: alcance de gobierno de cambios [Javier :10]
