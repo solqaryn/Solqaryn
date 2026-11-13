@@ -1,3 +1,7 @@
+## 2026-11-13 — Ampliacion V5 DAG20 de preparacion documental independiente [gobierno]
+- Backups nativos del Sheet y Plan V5 verificados. Se registran 20 IDs ya existentes M01.01-05 de C00-04 y C01-01/02/03 con once prerequisitos cerrados, sin ciclo, como documentos preparatorios. Gate C00-01.M06.06 individual, no apertura de implementacion ni QA/main/PROD.
+- El Doc rector, DAG_TECNICO, AGENTS, AUTOMATION_V13, AUTOMATION_STATUS, CONFIG y Jira se sincronizan con lectura posterior; los seis prompts y horarios Javier y dos Alex no se modifican. Rollback GitHub por git revert sin force-push; desactivar filas nuevas del DAG (F=EN_REVISION) antes de revertir el contrato.
+
 ## 2026-11-13 — V5 C00-02.M01.01: rectificación documental A5_FAIL BITACORA A:Z/26 [Alex :05]
 - Se corrige la referencia obsoleta A:U/21 a A:Z/26, EVENT_ID A, IDEMPOTENCY_KEY R, TASK_ROLE E, ACCOUNT_OWNER F y TASK_ID G, y se añaden negativos reproducibles para eventos truncados de 21 a 25 campos, claves duplicadas y auto-revisión.
 - A0–A3: revisión estática y de contrato documental frente a encabezado vivo de 26 columnas; .NET/Angular/MySQL/Docker/Playwright NO_APLICA al no editar código ejecutable. A4 requiere commit fast-forward dev y Scope Lock del SHA publicado; A5 por otro TASK_ID sobre nuevo SHA, conservando el A5_FAIL histórico. Rollback con git revert ordinario, sin cambios a QA/main/PROD.
