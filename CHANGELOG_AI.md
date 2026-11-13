@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-01.M02.02 contratos API/DTO/errores y validadores [Javier :40]
+- Inventario documental V5 de ocho contratos reales en API/Application con hashes de blobs Git: Empresas API/DTO, tenant-context, Productos API/DTO, FluentValidation producto y login, middleware global de errores 400/403/404/409. Se protegen límites JWT, RBAC, compatibilidad legacy, variantes, tenant A/B y no exposición de secretos.
+- Transición de PLAN PENDIENTE→EN_PROGRESO→VALIDANDO registrada antes de A0–A3, con mismo TASK_ID, BITACORA y COLA por fórmula. Node22 --check, scan dirigido de secretos y 8/8 pruebas documentales (una positiva, siete negativas) PASS sobre candidato; sin cambios runtime/DB/Angular, ni afirmar HTTP/MySQL/browser/tenancy live.
+- Commit directo fast-forward dev, A4 CI exact SHA y readback posteriores necesarios antes de LISTO; A5_PENDIENTE de otro TASK_ID previo a QA/main/PROD; rollback git revert aditivo sin force-push.
+
 ## 2026-11-13 — V5 C00-01.M01.05 aceptación funcional y técnica observable [Javier :20]
 - Definida matriz AC01-AC12 con señales positivas, negativas y evidencia futura de gobierno, V5, autoría, seguridad multitenant, DTO, MySQL, UX, A0-A5, rollback, proveedores e integración. Estado explícito DEFINIDO_NO_CERTIFICADO; el documento no constituye evidencia live.
 - Cambios delimitados a docs/v5/c00-01-m01-05-acceptance.md, scripts/tests/c00-01-m01-05-acceptance.test.mjs y esta nota. Node 22.16.0 node --check y node --test 9/9 (1 positivo, 8 negativos) PASS sobre blobs exactos 308033dd y 74f412ab; revisión dirigida de secretos sin hallazgos y sin dependencias nuevas.
