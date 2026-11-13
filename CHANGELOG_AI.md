@@ -902,3 +902,9 @@
 - Pruebas xUnit `V5WorkItemTenantAuthorizationGuardTests.cs` con positivos y negativos: cross-tenant, actor externo, bindings ausentes, ID no catalogado, conflicto de owner y autorrevisión.
 - No sustituye JWT/RBAC/tenancy HTTP real ni implementa CAS de Google Sheets; la autorizacion aplicativa real y la persistencia requieren consumidores y controles propios. Ningun acceso se concede implicitamente.
 - Clasificacion: .NET=SI, security=SI, scope_lock=SI; Angular/MySQL/Docker/E2E=NO_APLICA al diff; A1-A3 requieren CI real del SHA exacto; A4 readback y A5 independiente. Sin QA/main/PROD, secretos, ramas ni PR. Rollback revert normal.
+
+## 2026-11-13 — SOLQARYN V5 C00-03.M03.03, proyeccion de cobertura con aislamiento tenant [Javier :20]
+- `V5CoverageTenantProjectionService.cs` agrega lectura ejecutable de cobertura con allowlist de actor, binding server-side de scope/tenant, requisito e item al scope correcto, denegacion por defecto y evidencia pendiente por SHA.
+- `V5CoverageTenantProjectionServiceTests.cs` cubre positivos y negativos (actor, scope, tenant, item, requisito, bindings ausentes, SHA y duplicados).
+- La proyeccion es solo lectura, no sustituye JWT/RBAC del backend, CAS ni prueba real de integracion; el caller debe aportar snapshots confiables. A0 estatico, A1-A3 dotnet/security CI SHA exacto y A4 readback/Scope Lock; A5 pendiente por otra Task Javier.
+- .NET=SI; security=SI; Scope Lock=SI; Angular/MySQL/Docker/E2E=NO_APLICA al cambio aislado. No QA/main/PROD, secretos, PR ni ramas. Rollback normal.
