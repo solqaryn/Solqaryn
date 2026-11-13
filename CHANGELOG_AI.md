@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C00-03.M01.02: entradas, salidas, actores y superficies de matriz integrada [Javier :10]
+- Contrato documental con siete entradas autorizadas, seis actores con fronteras de permiso y siete superficies (gobierno, dominio, API/tenancy, EF/MySQL, Angular, integraciones y evidencia), casos positivos/negativos y dependencia C00-01.M02 ya finalizada; no crea nueva microtarea ni certifica matriz completa.
+- TIPO1_DOCUMENTACION; requiere_dotnet/Node/Angular/MySQL/Docker/E2E=NO (sin cambio ejecutable), requiere_security=SI_REVISION_DOCUMENTAL y requiere_scope_lock=SI_EXACT_SHA; A0-A3 dirigidas y A4 readback tras FF dev, A5 independiente. No toca QA/main/PROD.
+
 ## 2026-11-13 — V5 C00-02.M01.03: inventario causal de contratos y evidencias [Javier :00]
 - Fuentes V5 y blobs HEAD, PLAN/COLA/BITACORA y fórmulas E/G/O; contrato de estados e idempotencia, ejemplo real C00-01.M05.01 y negativos de claim/CI; sólo documentación, sin cambios runtime ni autorizaciones QA/PROD. Scope Lock y readback exact-SHA antes de LISTO, A5 independiente.
 
