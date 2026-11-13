@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C01-02.M01.04: riesgos y decisiones preliminares de capabilities [Javier :30]
+- Inventario documental R01–R11, supuestos S01–S06, decisiones D01–D06 y positivos/negativos para RBAC/plan/rubro/tenant/sucursal/recurso, basado en contratos reales.
+- Sólo M01.04 documental; no habilita capabilities, modifica API/Angular/MySQL ni certifica runtime. Aplicar A0–A4 proporcionales, Scope Lock exact-SHA y A5 por Task distinta. No QA/main/PROD.
+
 ## 2026-11-13 — V5 C01-03.M01.02: actores, límites y entradas/salidas de configuración [Javier :20]
 - Se identificaron 6 actores, 8 entradas/salidas propuestas, cuatro superficies fuente con blobs verificables y 2 positivos/6 negativos de tenancy/RBAC/inyección, ámbito/versiones/errores; propuesta M01 sin contrato final ni cambio de runtime. A0–A3 documentales; A4 Scope Lock SHA exacto y readback; A5 revisor distinto. No QA/main/PROD.
 
