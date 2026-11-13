@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C02-03.M01.05: criterios de aceptación del ciclo de vida tenant [Javier :20]
+- Contrato documental preliminar AC01–AC24: seis positivos y dieciocho negativos FUTUROS para alta/suspensión/reactivación/archivo/baja lógica idempotentes, concurrencia, JWT/RBAC/tenant A/B, retención y rollback; cinco fuentes Git con SHA.
+- Sin ejecución runtime ni cambios de entidades/datos/CI; DAG19 documental, A0–A4 proporcional, Scope Lock exact-SHA y A5 otro TASK_ID. No liberar M01.06/M02 ni QA/main/PROD.
+
 ## 2026-11-13 — V5 C02-03.M01.03: contratos, código y evidencia lifecycle tenant [Javier :30]
 - Inventario documental de seis fuentes Git con SHA, límites de autorización y seis capacidades futuras de alta/suspensión/reactivación/archivo/baja lógica/reparación; sin atribuir runtime implementado.
 - A0–A3 dirigidos: 6/6 rutas+hashes, 19/19 prerequisitos DAG LISTO, matriz de seguridad JWT/RBAC/tenant A/B y negativas. No cambia .NET/Angular/MySQL/Docker, CI técnica no aplicable; Scope Lock exact-SHA y A4 pendientes de pospublicación. A5 por otro TASK_ID, sin QA/main/PROD.
