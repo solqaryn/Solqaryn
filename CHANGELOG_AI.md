@@ -1,3 +1,8 @@
+## 2026-11-12 - G0-006.F: preparar caso medible de trazabilidad (Javier :30)
+- Fixture sintetico para detectar recibo de G0-006.F que reutiliza requirementId G0-006.E; esperado contract/NO_GO, no certificacion institucional.
+- Cinco controles Node dirigidos: lectura fixture, baseline sintetico positivo, requisito ajeno negativo, hash de prueba obsoleto negativo y readback BITACORA ausente negativo. El helper de produccion se reutiliza sin alterarlo.
+- A0-A3 dirigidas Node 22.16.0, sin cambios de runtime, RBAC, tenants, DB, CI, API, secretos ni dependencias. A4 requiere SHA exacto publicado y readback; A5_PENDIENTE solicita otra Task antes de QA/PROD. Rollback por git revert del commit directo, sin force.
+
 ## 2026-11-12 — Continuidad productiva sin tope de cierres
 - Se refuerza continuar en una misma ejecución después de 3, 4, 5 o más cierres, sólo si hay tiempo, elegibilidad y evidencia completa A0–A4, registrando A5 pendiente de revisor externo.
 - No autopausar Tasks por metas o cola momentáneamente vacía; si el proveedor impone suspensión o requires_user_action, comunicar causa verificable por run_id. No se garantiza eliminar pausas del proveedor.
