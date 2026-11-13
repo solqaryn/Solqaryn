@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C02-03.M01.03: contratos, código y evidencia lifecycle tenant [Javier :30]
+- Inventario documental de seis fuentes Git con SHA, límites de autorización y seis capacidades futuras de alta/suspensión/reactivación/archivo/baja lógica/reparación; sin atribuir runtime implementado.
+- A0–A3 dirigidos: 6/6 rutas+hashes, 19/19 prerequisitos DAG LISTO, matriz de seguridad JWT/RBAC/tenant A/B y negativas. No cambia .NET/Angular/MySQL/Docker, CI técnica no aplicable; Scope Lock exact-SHA y A4 pendientes de pospublicación. A5 por otro TASK_ID, sin QA/main/PROD.
+
 ## 2026-11-13 — V5 C02-03.M01.01: objetivo y no-regresión de aprovisionamiento [Javier :10]
 - Documentación exclusiva del ciclo alta/suspensión/reactivación/archivo/baja lógica idempotente, ocho conceptos y 16 criterios NR (+/−), sobre 6 blobs existentes.
 - No crea ruta de aprovisionamiento ni migración; A0–A4 proporcional documental, Scope Lock exact-SHA y A5 pendiente ajeno; no QA/main/PROD.
