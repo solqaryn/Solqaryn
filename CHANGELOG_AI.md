@@ -974,3 +974,8 @@
 - Playwright Chromium comprueba cuatro pasos en una única tarjeta de contrato sobre móvil y ausencia de carga de directorio, formularios operativos o consulta institucional oculta; no agrega endpoints ni negocio.
 - Una prueba asíncrona retiene una respuesta GET sintética de sesión para verificar anuncio de espera y acción deshabilitada hasta la confirmación; se contabiliza un único request y se conserva denegación fail-closed en pruebas existentes.
 - A0 static+secrets+CHANGELOG; A1/A2/A3 Playwright UI positivo/negativo y build/lint Angular, A4 solo checks reales del SHA y readback; A5 independent Javier Task distinta. Sin API/DB/MySQL/Docker/eventos ni permisos añadidos; revert sin reescritura.
+
+## 2026-11-13 — SOLQARYN V5 C00-03.M04.04 navegación y acción única de cobertura [Javier :30]
+- Se amplía Playwright real de la matriz de cobertura V5 con recorrido protegido cobertura → administración → cobertura, cinco columnas semánticas y ausencia de formularios/operaciones empresariales o institucionales.
+- Segunda prueba controla un GET de sesión sintético retenido: una sola solicitud, botón desactivado, denegación 403 con mensaje seguro y reintento explícito posterior; no se presume JWT/RBAC/MySQL verificados en vivo.
+- A0 static/procedencia, A1-A3 Chromium positivo/negativo y Angular lint/build, A4 solo exact SHA + readback, A5 independiente Javier; sin nuevo endpoint, DB, workers, despliegue, rama o PR. Rollback git revert.

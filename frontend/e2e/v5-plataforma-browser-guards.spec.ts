@@ -230,3 +230,61 @@ test.describe('C00-02.M04.06 - densidad y carga progresiva segura V5', () => {
     expect(requests).toEqual(['GET']);
   });
 });
+
+test.describe('C00-03.M04.04 - navegacion, mensajes y accion unica de cobertura V5', () => {
+  test.describe.configure({ retries: 0 });
+
+  test('navega desde cobertura a administracion y de regreso sin formularios ni escritura', async ({ page }) => {
+    await syntheticToken(page);
+    await mockPlatformSession(page, true);
+    await page.goto('/plataforma/cobertura-v5');
+    await expect(page.getByRole('heading', { name: 'Cadena de trazabilidad' })).toBeVisible();
+    await expect(page.locator('form, input, textarea, select')).toHaveCount(0);
+    await expect(page.getByRole('columnheader')).toHaveCount(5);
+    await page.getByRole('link', { name: /Administración/ }).click();
+    await expect(page).toHaveURL(/\/plataforma$/);
+    await page.getByRole('link', { name: 'Cobertura V5' }).click();
+    await expect(page).toHaveURL(/\/plataforma\/cobertura-v5$/);
+    await expect(page.getByText('Sin datos de cobertura verificados', { exact: false })).toBeVisible();
+  });
+
+  test('revalidacion 403 es segura, single-flight y reintento autorizado expreso', async ({ page }) => {
+    await syntheticToken(page);
+    await mockPlatformSession(page, true);
+    await page.goto('/plataforma/cobertura-v5');
+    const revalidar = page.getByRole('button', { name: /Revalidar sesión/ });
+    let liberar: (() => void) | undefined;
+    let requests = 0;
+    await page.route(sessionUrl, async route => {
+      if (route.request().method() === 'OPTIONS') {
+        await route.fulfill({ status: 204, headers: cors });
+        return;
+      }
+      requests += 1;
+      if (requests === 1) await new Promise<void>(resolve => { liberar = resolve; });
+      await route.fulfill({
+        status: requests === 1 ? 403 : 200,
+        contentType: 'application/json', headers: cors,
+        body: JSON.stringify(requests === 1
+          ? { success: false, message: 'NO_EXHIBIR_CLAVE_PRIVADA', data: null }
+          : { success: true, data: {
+              nombreUsuario: 'V5 UI synthetic', rolNombre: 'Plataforma UI mock',
+              ambito: 'Plataforma', esAdministrador: true
+            } })
+      });
+    });
+    await revalidar.click();
+    await expect(revalidar).toBeDisabled();
+    await expect.poll(() => Boolean(liberar)).toBe(true);
+    expect(requests).toBe(1);
+    liberar?.();
+    await expect(revalidar).toBeEnabled();
+    await expect(page.getByRole('alert')).toContainText('La sesión global dejó de estar autorizada');
+    await expect(page.locator('body')).not.toContainText('NO_EXHIBIR_CLAVE_PRIVADA');
+    expect(requests).toBe(1);
+    await revalidar.click();
+    await expect(page.getByRole('heading', { name: 'Cadena de trazabilidad' })).toBeVisible();
+    await expect(page.getByRole('columnheader')).toHaveCount(5);
+    expect(requests).toBe(2);
+  });
+});
