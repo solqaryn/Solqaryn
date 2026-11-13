@@ -1,3 +1,8 @@
+## 2026-11-12 — P5-008.C: delimitación de alertas institucionales (Javier :20)
+- Archivo real único `frontend/src/app/shared/alerts/app-toast.service.ts`, blob `0478821b246cae5fdf3016a5c25081a1726f925a`. Escenario acotado de notificaciones toast, no el subsistema modal completo.
+- Prueba estática dirigida `scripts/tests/p5-008-c-delimitacion-alertas.test.mjs` (Node 22.16.0; 5/5 precheck) y nota `docs/P5-008-C-DELIMITACION-ALERTAS-DEV.md`: variantes, urgencia accesible, duración y rechazo de HTML inseguro. No cambia Angular ni certifica browser/tenancy/live.
+- Reversión selectiva aditiva en dev sin force; A4 requiere SHA y readback del mismo changeset; A5 independiente pendiente antes de QA/PROD.
+
 ## 2026-11-12 — P5-013.C: delimitacion de una rama activa de menu (Javier :10)
 - Contrato unico de producto `frontend/src/app/shared/navigation/navigation-contract.json`, blob 7142082462d7bc53ff4f0cdf96f67f21405f3a44. Escenario grupo `administracion`, sin editar runtime ni declarar expansion exclusiva del menu.
 - Nota `docs/P5-013-C-DELIMITACION-RAMA-MENU-DEV.md` y test Node `scripts/tests/p5-013-c-delimitacion-menu.test.mjs`, casos estructurales positivo y negativos de grupos/rutas/permisos. No se acredita prueba Angular, navegador, JWT/backend ni QA/PROD; rollback mediante revert normal del changeset.
