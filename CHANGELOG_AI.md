@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C00-02.M02.02: contrato de API/DTO, errores y compatibilidad [Javier :40]
+- Documento `docs/v5/c00-02-m02-02-api-dto-errores-compatibilidad.md`: contrato documental de lectura, claims, candidato, auditorías, eventos A:Z y cierre con errores lógicos, compatibilidad y casos positivos/negativos. Aclara que no existe CAS nativo demostrado ni nuevo endpoint/worker, con prohibición de elevar permisos tenant.
+- TIPO 1 documental sin código ejecutable; A0–A3 revisión documental previa sobre blob 6e8170eea8fe05bba4f5610fced1d159719e03f1; .NET/Angular/MySQL/Docker/E2E NO_APLICA al diff; A4 requiere Scope Lock exact-SHA, readback institucional y A5 pendiente de otra Task Javier. Sin QA/main/PROD, ramas, PR ni force-push; rollback por git revert.
+
 ## 2026-11-13 — V5 C03-04.M01.02: actores y contratos de incidentes/continuidad [Javier :00]
 - Nuevo `docs/v5/c03-04-m01-02-actores-entradas-salidas-continuidad.md`: 15 actores, 16 interfaces y 12 oráculos positivos/negativos para incidentes, revocación, backup, restore y continuidad, distinguiendo YAML/contratos de ejecución real; 15 predecesores DAG LISTO.
 - Entrega documental, sin .NET, Angular, MySQL, Docker, E2E, secretos, datos ni despliegue; A0–A3 documentales, A4 Scope Lock exact-SHA después del FF en dev, A5 por otra Task Javier. Sin QA/main/PROD ni ramas/PR.
