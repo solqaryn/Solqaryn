@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C01-01.M01.03: inventario de contratos de identidad [Javier :10]
+- Inventario documental de siete blobs reales de empresa, sucursal, usuario, membresía, rol, contexto tenant y autenticación; dos positivos y ocho negativos de seguridad/alcance.
+- TIPO1 documental: sin runtime, .NET/Angular/MySQL/Docker/E2E no aplican; A0-A4 proporcionales y Scope Lock exact-SHA, A5 independiente; sin QA/main/PROD.
+
 ## 2026-11-13 — V5 C01-01.M01.04: riesgos, supuestos y decisiones de identidad universal [Javier :50]
 - Registro documental R-ID-01–12 y supuestos S-01–06, vinculados a 8 blobs reales de dominio, aplicación, infraestructura y M01.01; fronteras A/B, legacy, claims, contexto y bypass bajo decisión pendiente.
 - Solo documentación; ningún cambio runtime, EF/MySQL, Angular, permisos, secretos o despliegues. A0–A4 proporcionales y Scope Lock exact-SHA; A5 independiente para QA/main/PROD.
