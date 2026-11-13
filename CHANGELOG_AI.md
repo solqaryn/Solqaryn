@@ -1,3 +1,6 @@
+## 2026-11-13 — Saneamiento documental C00-03.M01.05 esquema BITACORA A:Z/26 [propietario, sin cambio de Task]
+- Alinea dos referencias de aceptación con los 26 campos físicos de BITACORA; incorpora rechazo explícito de eventos 21-25, duplicados y A5 autoaprobado. Preserva la autoria original del TASK_ID y requiere nueva revisión A5 por Task distinta; no implica permiso QA/main/PROD ni pruebas runtime nuevas. Rollback: git revert del commit de documentación, sin force push.
+
 ## 2026-11-13 — Corrección A5_FAIL C00-03.M01.04: RI10 BITACORA A:Z/26 [Javier :20]
 - Se rectifica en el documento propio RI10: 26 columnas A:Z, EVENT_ID e IDEMPOTENCY_KEY únicos, RUN_ID vacío sin lectura nativa y rechazo explícito de eventos de 21–25 campos; se conserva A5_FAIL del SHA bfb4c325 y se solicita A5 nueva e independiente para el SHA corregido. Sólo documentación; no afecta código ejecutable, fórmulas, Tasks ni QA/main/PROD.
 

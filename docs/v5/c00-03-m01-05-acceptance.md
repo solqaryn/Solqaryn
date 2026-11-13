@@ -15,7 +15,7 @@
 | AC-05 Aislamiento tenant y seguridad | Backend verifica JWT/BCrypt, membresía, RBAC, empresa A positiva y empresa B denegada cuando esa superficie se modifica | `EmpresaId`, slug, URL, cookie o header cliente decide autoridad, se filtran PII o secretos |
 | AC-06 UI y rendimiento | Si cambia Angular, scripts npm/Angular reales, accesibilidad responsive/teclado/foco y Playwright/Chromium proporcional con evidencia causal | Pantalla navegable se considera segura solo por guard frontend; test visual no ejecutado se marca aprobado |
 | AC-07 Persistencia/integraciones | Si cambia SQL/EF/worker/proveedor, job MySQL 8.4/Docker/contrato real pertinente, consistencia, tenant y rollback | Migración destructiva o test simulado sin DB real se usa como evidencia de integración |
-| AC-08 Auditoría independiente | SHA, árbol/diff, blobs, eventos BITACORA de 21 columnas e `A5_PENDIENTE` reservado a otra Task | Autor declara su propio A5_PASS, se promociona QA/main/PROD sin revisión y autorización aparte |
+| AC-08 Auditoría independiente | SHA, árbol/diff, blobs, eventos BITACORA de 26 columnas A:Z (EVENT_ID A, IDEMPOTENCY_KEY R) e `A5_PENDIENTE` reservado a otra Task | Autor declara su propio A5_PASS, se promociona QA/main/PROD sin revisión y autorización aparte |
 | AC-09 Migración/archivos | Inventario previo permite `0` imágenes históricas => migración `NO_APLICA`; archivos futuros con firma, permisos y lifecycle | Se fabrican imágenes o se mueve DNS/Cloudflare R2/MySQL productivo para dar una prueba |
 | AC-10 No-regresión arquitectónica | Angular 22 standalone + ASP.NET Core 10 + EF Core/MySQL Oracle + JWT/RBAC se conservan hasta cambio explícito autorizado | Plan objetivo Hostinger/Cloudflare se declara infraestructura ya activa o cambia proveedor sin gate |
 
@@ -29,7 +29,7 @@ Toda futura fila de matriz integra: `V5_ID`; `FUENTE_DOC_Y_VERSION`; `RESULTADO_
 
 ## Dependencia especial y alcance operativo
 
-El `DAG_TECNICO` permite la **preparación documental independiente** `C00-03.M01.01–05` porque `C00-01.M02.01–06` ya están `LISTO`. Esto NO libera `C00-03.M01.06`, M02–M06 o puertas de fase. Antes de implantar/promocionar revalidar todo C00-01 final, no sólo seis contratos M02. `PLAN_MAESTRO!H` sigue siendo autoridad; `COLA!E` fórmula y `BITACORA!A:U` append-only. No modificar estas fórmulas como parte de la redacción.
+El `DAG_TECNICO` permite la **preparación documental independiente** `C00-03.M01.01–05` porque `C00-01.M02.01–06` ya están `LISTO`. Esto NO libera `C00-03.M01.06`, M02–M06 o puertas de fase. Antes de implantar/promocionar revalidar todo C00-01 final, no sólo seis contratos M02. `PLAN_MAESTRO!H` sigue siendo autoridad; `COLA!E` fórmula y `BITACORA!A:Z` append-only. No modificar estas fórmulas como parte de la redacción.
 
 **Prueba documental positiva de esta microtarea:** el archivo contiene AC-01…AC-10, especificación de evidencia por fila, clasificación de prueba, dependencia por ID y un rollback no destructivo. **Negativos verificables:** rechazar una fila sin `RESULTADO_EXIGIDO`, exigir A5 distinto para promoción, rechazar tenant cliente como identidad, no aceptar SKIPPED o evidencia de otro SHA, no declarar C00-03 terminada con este archivo.
 
@@ -45,3 +45,7 @@ El `DAG_TECNICO` permite la **preparación documental independiente** `C00-03.M0
 - **A5**: `A5_PENDIENTE` hasta revisión de TASK_ID independiente; sin promoción QA, main ni PROD.
 
 **Rollback:** `git revert <SHA>` en commit específico tras revalidar HEAD, sin force-push ni borrar historia o BITACORA. No ejecutar DNS, R2, Hostinger, migración de MySQL, ni cambiar datos de empresas. Inventario histórico de imágenes cero, `NO_APLICA`.
+
+
+## CORRECCION_A5_PENDIENTE_SCHEMA26_20261113
+Correccion documental dirigida sobre la autoridad fisica vigente `BITACORA!A1:Z1`: 26 campos contiguos, EVENT_ID unico en A, IDEMPOTENCY_KEY unico en R y RUN_ID en H solo si existe evidencia nativa. Positivo: readback de 26 encabezados y eventos con 26 posiciones, SHA exacto y Task de autor original conservada. Negativos: rechazar eventos de 21 a 25 campos, duplicados, autoaprobacion A5 y CI SKIPPED contada como PASS. Esta correccion de propiedad del proyecto no cambia el TASK_ID autor original, no reclama una nueva microtarea, no reescribe BITACORA y exige A5 independiente nueva sobre SHA correctivo antes de usar la evidencia para liberar un cierre de fase, QA, main o PROD.
