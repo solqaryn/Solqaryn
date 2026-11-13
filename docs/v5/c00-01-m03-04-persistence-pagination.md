@@ -11,7 +11,7 @@ Capa Infrastructure Repository, consumidores `OrdenCompraService.GetPagedAsync` 
 ## Validacion real
 - A0: diff acotado en persistencia, xUnit y documentacion; sin secretos, cambios de dependencias ni SQL crudo. Inspeccionar candidato antes de publicacion.
 - A1: xUnit positivo pagina 1 y negativo pagina 2 / int.MaxValue; total siempre correcto.
-- A2: xUnit aislacion A/B, header B malicioso no reemplaza marca server-side tenant A. EF InMemory NO acredita JWT/HTTP/MySQL live.
+- A2: no se modifica JWT, RBAC ni filtro tenant. La entidad legacy OrdenCompra no expone EmpresaId, por lo que este test NO afirma aislamiento A/B; las suites CI de seguridad verifican la cuarentena multiempresa por separado. InMemory NO acredita JWT/HTTP/MySQL live.
 - A3: CI GitHub Actions real .NET 10 xUnit + security tenant + MySQL 8.4 Oracle por job efectivo de SHA nuevo; no contar jobs SKIPPED.
 - A4: SHA exacto del commit directo FF, logs, rollback y readback PLAN/COLA/BITACORA.
 - A5: revisora independiente con TASK_ID distinto; no promocion QA/main/PROD.

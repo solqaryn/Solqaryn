@@ -1,6 +1,10 @@
+## 2026-11-13 — V5 C00-01.M03.04 correccion CI CS0117 en test legacy [Javier :30]
+- El commit b64b881f no compilaba por usar EmpresaId en OrdenCompra legacy sin esa propiedad (job 131891745374, error CS0117). Se corrige exclusivamente fixture xUnit para monoempresa; se preserva contrato de seguridad sin fingir aislamiento A/B en esta prueba.
+- Reejecutar GitHub Actions en SHA correctivo para .NET, seguridad y MySQL; mantener VALIDANDO y A5 pendiente.
+
 ## 2026-11-13 — V5 C00-01.M03.04 persistencia, paginacion extrema fail-closed [Javier :30]
 - OrdenCompraRepository.GetPagedAsync calcula offset en long, pagina/tamano acotados, retorna vacio fuera de rango sin desbordamiento int ni filtrado tenant ampliado.
-- xUnit positivos, negativos e aislamiento A/B dirigido; GitHub Actions .NET 10/MySQL 8.4 sobre SHA nuevo exigido, sin modificar API, schema, JWT/RBAC, UI o produccion. A5 independiente.
+- xUnit positivos y negativos de paginacion monoempresa legacy; A/B solo suites de seguridad CI separadas; GitHub Actions .NET 10/MySQL 8.4 sobre SHA nuevo exigido, sin modificar API, schema, JWT/RBAC, UI o produccion. A5 independiente.
 
 ## 2026-11-13 — V5 C00-01.M03.03: ampliar denegaciones de cabeceras duplicadas [Javier :20]
 - La corrección de P2001F en SHA `bed9975bd31d1f0a35b478614385c623807bb92b` cambió solo test P2 y el clasificador `ci-impact-routing` marcó el job MySQL como SKIPPED. Para evaluar el candidato completo bajo las pruebas reales pertinentes, la regresión nueva de seguridad amplía los casos a cabecera multi-valor repetida (17/17, 18/18) y orden invertido (18/17): deben fallar cerrados. Es una prueba causal adicional, no una bandera artificial.
