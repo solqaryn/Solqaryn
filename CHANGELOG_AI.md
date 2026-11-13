@@ -1,3 +1,7 @@
+## 2026-11-12 — P5-002.C: delimitación estática del shell administrativo (Javier :40)
+- Se identifica como único TARGET_PATH de producto `frontend/src/app/app.component.ts`, blob `11aa993b011119d33e402f3f2bc1d08f133e34bd` (HEAD dev comprobado); gate autenticado, navegación lateral, skip-link, foco y reset de contexto.
+- Se agrega `scripts/tests/p5-002-c-delimitacion-shell.test.mjs` con un positivo y negativos de auth, accesibilidad, limpieza tenant y HTML inseguro; preflight de lógica Node 6/6 sobre extracto fuente y lectura directa exacta de GitHub 8/8, sin fingir E2E/browsers.
+- Nota causal `docs/P5-002-C-DELIMITACION-SHELL-DEV.md` con ruta, SHA, evidencia y rollback. No se modifica Angular runtime, permisos, API, DB, dependencias, QA/main/PROD; A5 por otro TASK_ID después de A0–A4.
 ## 2026-11-12 — P5-007.C: delimitación de modal de proceso institucional (Javier :20)
 - Delimitado el componente real de anulación `frontend/src/app/shared/anular-dialog.component.ts` (blob `d751503438f963f1deebe371cd14623ad6038e16`), sin cambio de runtime; flujo motivado, cancelación segura, texto interpolado y diálogo tipado.
 - `scripts/tests/p5-007-c-delimitacion-modal-proceso.test.mjs` prueba el contrato estructural con Node v22.16.0 5/5, positivo y cuatro negativos dirigidos: cancelación, motivo vacío, HTML crudo, contexto perdido; SHA256 `34b37488f05dae7dd68049d892a8436288470a036999f4dfa35324b9ec59332b`. Documentación `docs/P5-007-C-DELIMITACION-MODAL-PROCESO-DEV.md`.
