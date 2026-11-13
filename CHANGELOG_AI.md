@@ -1,3 +1,8 @@
+## 2026-11-12 — G0-006.A: trazabilidad directa V13 A0-A5 (Javier :20)
+- Cierre atómico del Plan Comercial Inicial: evidencia C/D/E LISTO y matriz requisito→consumidor→código→prueba→SHA en docs/G0-006-A-TRAZABILIDAD.md, sin crear otro plan.
+- Puerta asesora scripts/quality/g0-006-a-closure.mjs y pruebas Node deterministas: 1 control positivo, 23 negativos de legado, A0 estática, A5 falso, SHAs/dependencias/readbacks. La puerta no escribe ni certifica externamente.
+- A0-A3 dirigidas a Node 22.16.0; A4 requiere SHA fast-forward/readback dev; A5_PENDIENTE exige otro TASK_ID antes de promover QA/PROD. Rollback: revert aditivo del commit, sin force-push; runtime/tenant/DB intactos.
+
 ## 2026-11-12 — Calidad A0–A5, títulos Javier secuenciales y continuidad de Tasks
 - Se añaden A0 estática exigente sobre candidato y A5 revisión independiente posdev con evidencia diferenciada. El cierre dev exige A0–A4 PASS + A5_PENDIENTE; qa/main/PROD requiere A5_PASS y autorización aparte. No se deshabilitan CI ni seguridad existentes.
 - Los nombres de las seis Tasks Javier se normalizan por minuto, preservando ID, RRULE, propietario, historial y estado habilitado. Las dos Alex permanecen pendientes de actualización física desde su cuenta, con propuesta 07 :05 y 08 :35.
