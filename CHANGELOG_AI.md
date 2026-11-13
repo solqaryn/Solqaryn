@@ -1,3 +1,8 @@
+## 2026-11-12 — P5-015.C: delimitación de estados de carga y vacío (Javier :20)
+- Archivo real único `frontend/src/app/features/usuarios/usuario-detail.component.html` (blob `bca657fd3ede944cb10c77ddc72063c11eb0ec65`): ramas loading spinner, notFound vacío y usuario cargado con interpolación segura; sin modificar runtime.
+- `scripts/tests/p5-015-c-delimitacion-loading-empty.test.mjs` Node22.16.0 (5/5 PASS después de VALIDANDO): positivo, y negativos de spinner ausente, ramas no exclusivas, loaded sin guardia y HTML/PII insegura; `docs/P5-015-C-DELIMITACION-LOADING-EMPTY-DEV.md`. SHA256 `cf33d0e8cca241de789c920b3c869af64c2f1c90143a5fc620e8a4bc46fdea6c`.
+- Alcance exclusivamente estático sobre código real; no afirmar navegador, Angular E2E, tenants o datos live. A4 postcommit y A5 revisión por otra Task. Revert aditivo sin force.
+
 ## 2026-11-12 — P5-002.C: delimitación estática del shell administrativo (Javier :40)
 - Se identifica como único TARGET_PATH de producto `frontend/src/app/app.component.ts`, blob `11aa993b011119d33e402f3f2bc1d08f133e34bd` (HEAD dev comprobado); gate autenticado, navegación lateral, skip-link, foco y reset de contexto.
 - Se agrega `scripts/tests/p5-002-c-delimitacion-shell.test.mjs` con un positivo y negativos de auth, accesibilidad, limpieza tenant y HTML inseguro; preflight de lógica Node 6/6 sobre extracto fuente y lectura directa exacta de GitHub 8/8, sin fingir E2E/browsers.
