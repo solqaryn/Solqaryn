@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C01-02.M01.01: alcance y no regresión capabilities [Javier :30]
+- Objetivo documental, límites, decisiones de M02 y 12 invariantes NR01–NR12 para permiso explícito, entitlement, tenant, sucursal, recurso y soporte.
+- Sin código ejecutable ni autorización nueva; A0–A4 proporcionales, Scope Lock SHA exacto, A5 por Task distinta; no QA/main/PROD.
+
 ## 2026-11-13 — V5 C01-01.M01.02: actores, IO y fronteras de identidad [Javier :40]
 - Análisis documental con siete actores, diez entradas/salidas candidatas, referencias a seis blobs de dominio, tres positivos y ocho negativos de tenancy/RBAC/JWT; no implanta API/DB/Angular.
 - Protocolo A0–A4 proporcional con Scope Lock exact-SHA, BITACORA A:Z/26 y A5 por Task distinta; no QA/main/PROD.
