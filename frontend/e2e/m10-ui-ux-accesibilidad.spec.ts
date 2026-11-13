@@ -296,4 +296,41 @@ test.describe('M10 — UI/UX empresarial y accesibilidad', () => {
     expect(maxDurationMs(reduced.transitionDuration)).toBeLessThanOrEqual(0.1);
     expect(maxDurationMs(reduced.animationDuration)).toBeLessThanOrEqual(0.1);
   });
+  test('V5 M04.02: error, vacío y recuperación del dashboard sin filtrar información interna', async ({ page }) => {
+    await login(page);
+    let solicitudes = 0;
+    await page.route('**/dashboard/resumen*', async (route) => {
+      solicitudes += 1;
+      if (solicitudes === 1) {
+        await route.fulfill({
+          status: 503,
+          contentType: 'application/json',
+          body: JSON.stringify({ message: 'NO_EXPOSURE_SQL_SECRET_2026' })
+        });
+      } else if (solicitudes === 2) {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ success: true, data: null })
+        });
+      } else {
+        await route.continue();
+      }
+    });
+
+    await page.goto('/dashboard');
+    await expect(page.locator('.dashboard-fallback [role="alert"]'))
+      .toContainText('No fue posible obtener el resumen de la empresa');
+    await expect(page.getByText('NO_EXPOSURE_SQL_SECRET_2026')).toHaveCount(0);
+
+    const retry = page.getByRole('button', { name: 'Reintentar cargar resumen' });
+    await retry.click();
+    await expect(page.locator('.dashboard-fallback [role="status"]'))
+      .toContainText('Todavía no hay información disponible');
+
+    await retry.click();
+    await expect(page.getByRole('heading', { name: 'Dashboard de empresa' })).toBeVisible();
+    expect(solicitudes).toBeGreaterThanOrEqual(3);
+  });
+
 });

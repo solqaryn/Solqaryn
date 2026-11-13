@@ -21,6 +21,8 @@ export class DashboardComponent implements OnInit {
   private readonly permisosRuntime = inject(PermisosRuntimeService);
 
   readonly resumen = signal<DashboardResumen | null>(null);
+  readonly errorResumen = signal(false);
+  readonly sinDatosResumen = signal(false);
   readonly automatizacion = signal<AutomatizacionResumen | null>(null);
   readonly kpiConfiguracion = signal<DashboardKpiConfiguracion[]>([]);
   readonly kpisResueltos = signal<DashboardKpiResuelto[]>([]);
@@ -42,13 +44,7 @@ export class DashboardComponent implements OnInit {
     this.puedeVerVentas.set(this.permisosRuntime.puede('Ventas', 'Ver'));
     this.puedeVerProductos.set(this.permisosRuntime.puede('Productos', 'Ver'));
 
-    this.dashboardService.getResumen().subscribe({
-      next: (res) => {
-        this.resumen.set(res.data);
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false)
-    });
+    this.cargarResumen();
 
     this.cargarKpis();
 
@@ -58,6 +54,28 @@ export class DashboardComponent implements OnInit {
         this.loadingAutomatizacion.set(false);
       },
       error: () => this.loadingAutomatizacion.set(false)
+    });
+  }
+
+  cargarResumen(): void {
+    this.loading.set(true);
+    this.errorResumen.set(false);
+    this.sinDatosResumen.set(false);
+    this.resumen.set(null);
+    this.dashboardService.getResumen().subscribe({
+      next: (res) => {
+        if (res.data == null) {
+          this.sinDatosResumen.set(true);
+        } else {
+          this.resumen.set(res.data);
+        }
+        this.loading.set(false);
+      },
+      error: () => {
+        // No mostrar detalles HTTP internos ni respuestas del servidor al usuario.
+        this.errorResumen.set(true);
+        this.loading.set(false);
+      }
     });
   }
 

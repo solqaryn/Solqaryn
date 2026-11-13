@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C00-01.M04.02: estados accesibles de dashboard y recuperación [Javier :50]
+- Se corrige el dashboard empresarial que quedaba sin contenido cuando GET /dashboard/resumen fallaba o retornaba data=null. Ahora expone estados de carga, error, vacío y éxito, reintento explícito con 44px y foco visible, sin reflejar detalles internos de HTTP. Conserva authGuard/permisoGuard, RBAC y tenant existentes; no cambia API, contrato SQL, migraciones ni secretos.
+- Regresión Playwright M10 con API/MySQL efímeros: denegación 503 y ausencia de filtración de mensaje, respuesta vacía y reintento exitoso real. Requiere A0 de diff, Angular lint/build, E2E M10, Scope Lock y readback SHA exacto. No promover QA/main/PROD sin A5 independiente.
+
 ## 2026-11-13 — V5 C00-01.M03.04 correccion CI CS0117 en test legacy [Javier :30]
 - El commit b64b881f no compilaba por usar EmpresaId en OrdenCompra legacy sin esa propiedad (job 131891745374, error CS0117). Se corrige exclusivamente fixture xUnit para monoempresa; se preserva contrato de seguridad sin fingir aislamiento A/B en esta prueba.
 - Reejecutar GitHub Actions en SHA correctivo para .NET, seguridad y MySQL; mantener VALIDANDO y A5 pendiente.

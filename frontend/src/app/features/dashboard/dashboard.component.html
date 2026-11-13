@@ -111,4 +111,14 @@
       </details>
     }
   </section>
+} @else {
+  <section class="card dashboard-fallback" aria-labelledby="dashboard-feedback-title">
+    <h1 id="dashboard-feedback-title">{{ errorResumen() ? 'No se pudo cargar el resumen' : 'Resumen sin información' }}</h1>
+    @if (errorResumen()) {
+      <p role="alert">No fue posible obtener el resumen de la empresa. Verifica tu conexión e intenta nuevamente.</p>
+    } @else if (sinDatosResumen()) {
+      <p role="status">Todavía no hay información disponible para mostrar en el resumen.</p>
+    }
+    <button type="button" class="dashboard-retry" (click)="cargarResumen()">Reintentar cargar resumen</button>
+  </section>
 }
