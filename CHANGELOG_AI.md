@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C00-02.M01.01: objetivo, no-alcance y no-regresión del modelo de trabajo [Alex :05]
+- Documento acotado de preparación de la cola V5: fuente de 2.340 IDs, PLAN/COLA/BITACORA, exclusividad por TASK_ID, casos de aceptación positivos/negativos, límites de seguridad, A0–A5 y rollback. Sin cambios en runtime, fórmulas institucionales, permisos, API, DB, configuración o Tasks.
+- Validación proporcional: revisión estática/documental de diff y coherencia V5/V13; Scope Lock exact-SHA y readback pospublicación antes de LISTO. No atribuir pruebas de Angular/.NET/MySQL/E2E a una entrega documental y no promover QA/main/PROD.
+
 ## 2026-11-13 — V5 C00-01.M05.02: contrato HTTP/DTO y errores seguros [Javier :50]
 - Nuevo test xUnit TestServer que atraviesa ExceptionHandlingMiddleware de ASP.NET Core 10 en HTTP in-memory; verifica contrato ApiResponse 200, ProblemDetails 400/409, envelope 500 y sentinelas privadas ausentes del cuerpo de respuesta (1 positivo y 4 negativos). No cambia servicios, endpoints, migraciones, base de datos, UI ni dependencias.
 - Clasificacion: .NET=SI; Angular/Node=NO; MySQL=NO; Docker=NO; browser E2E=NO; seguridad de respuestas=SI; Scope Lock exact-SHA=SI. A0 revision estatica sin nuevos secretos ni deps; A1-A3 suite GitHub Actions y A4 posintegracion pendientes al publicar; A5 independiente posterior. Sin QA/main/PROD.
