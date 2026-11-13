@@ -1,3 +1,6 @@
+## 2026-11-13 — V5 C00-01.M04.06 verificación UI de densidad/progresividad [Javier :50]
+- Se amplía prueba Playwright N8.2 de portada pública para medir geometría hero/CTAs 390/1440 px, ausencia de desborde, carga diferida y telemetría de rendimiento. Sin modificar producción ni prometer SLA; fixture branding solo en CI. Requiere Node/Angular lint/build, N8.2 y Scope Lock exact-SHA; A5 independiente.
+
 ## 2026-11-13 — V5 C00-01.M04.05: verificación de accesibilidad en login público [Javier :40]
 - Añade Playwright real al gate M10 para /login anónimo a 320px: labels, orden de foco teclado, mostrar/ocultar contraseña, formulario habilitado/deshabilitado, contraste y desbordamiento.
 - Solo alcance de regresión frontend, sin cambios de API, tenancy, esquemas MySQL, claves, infraestructura o permisos. Exigir CI E2E M10 y frontend/SCOPE_LOCK causal SHA; A5 independiente. No autoriza QA/main/PROD.
