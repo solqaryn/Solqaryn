@@ -1,3 +1,7 @@
+## 2026-11-13 — C03-02.M01.02: actores, IO y superficies RBAC/ABAC [Javier :00]
+- Documento docs/v5/c03-02-m01-02-actores-entradas-salidas-superficies-rbac-abac.md: nueve actores conceptuales, catorce entradas/salidas y catorce escenarios documentales positivos/negativos futuros. Siete blobs de código contrastables; límites JWT/RBAC/tenant/propiedad y exportación.
+- Únicamente preparación sin API/DB/UI ni tests runtime nuevos; DAG 10/10, A0–A4 proporcional, A5 otra Task Javier, Scope Lock SHA exacto, sin QA/main/PROD.
+
 ## 2026-11-13 — V5 C03-01.M01.02: actores y superficies de autenticación (Javier :50)
 - Nuevo `docs/v5/c03-01-m01-02-actores-entradas-salidas-autenticacion.md`: diez actores, catorce entradas/salidas y catorce casos de aceptación FUTURA positiva/negativa. Distingue login/renovar existentes de recovery/MFA/passkeys y revocación global no acreditadas.
 - Siete blobs Git revisados, A0-A3 documentales antes de publicar; .NET/Angular/MySQL/Docker/E2E NO_APLICA. A4 requiere commit fast-forward SHA exacto y Scope Lock; A5 a otra Task Javier. Sin runtime, nuevas cuentas, secretos, QA/main/PROD ni PR. Rollback con git revert.
