@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C01-02.M01.02: actores, entradas y superficies de capabilities [Javier :30]
+- Matriz preparatoria de doce actores/consumidores, entradas y salidas, fronteras JWT/RBAC/tenant/sucursal/recurso y seis negativas; decisiones comerciales de M02 siguen pendientes.
+- Sin cambios de runtime, permisos, DTO, MySQL ni frontend; A0-A4 documentales con Scope Lock exact-SHA, A5 independiente; no QA/main/PROD.
+
 ## 2026-11-13 — V5 C01-02.M01.04: riesgos y decisiones preliminares de capabilities [Javier :30]
 
 ## 2026-11-13 — V5 C00-04.M01.05: criterios de aceptación observables [Javier :10]
