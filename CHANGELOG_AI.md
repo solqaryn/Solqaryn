@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C01-01.M01.04: riesgos, supuestos y decisiones de identidad universal [Javier :50]
+- Registro documental R-ID-01–12 y supuestos S-01–06, vinculados a 8 blobs reales de dominio, aplicación, infraestructura y M01.01; fronteras A/B, legacy, claims, contexto y bypass bajo decisión pendiente.
+- Solo documentación; ningún cambio runtime, EF/MySQL, Angular, permisos, secretos o despliegues. A0–A4 proporcionales y Scope Lock exact-SHA; A5 independiente para QA/main/PROD.
+
 ## 2026-11-13 — V5 C01-02.M01.01: alcance y no regresión capabilities [Javier :30]
 - Objetivo documental, límites, decisiones de M02 y 12 invariantes NR01–NR12 para permiso explícito, entitlement, tenant, sucursal, recurso y soporte.
 - Sin código ejecutable ni autorización nueva; A0–A4 proporcionales, Scope Lock SHA exacto, A5 por Task distinta; no QA/main/PROD.
