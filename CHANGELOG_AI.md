@@ -816,3 +816,9 @@
 - Separación entre YAML/triggers/fixtures y restauración MySQL 8.4, y discrepancia documentada DEV/Desarrollo que requiere autenticación de settings; JWT/RBAC/tenant A/B y PII fail-closed.
 - TIPO1 doc: A0–A3 revisión documental; sin cambios de runtime, scripts ni workflows, .NET/Angular/MySQL/Docker/E2E NO_APLICA, Scope Lock exact SHA requerido para A4 y A5 pendiente de otra Task Javier.
 - No QA/main/PROD, pagos, secretos o backups. Rollback git revert normal con HEAD revalidado.
+
+## 2026-11-13 — SOLQARYN V5 C03-04.M01.05 (PRIMARY DEV 06 JAVIER :50)
+- Contrato documental de 18 criterios falsables (8 positivos, 10 negativos) para incidentes, revocacion JWT, backup cifrado, restore MySQL 8.4 descartable, aislamiento A/B, rollback y continuidad; NO se ejecutaron los escenarios futuros.
+- Fuentes estaticas con blobs: dos workflows de backup/restore, runbook DEV/Desarrollo, prueba Moq de renovacion, matriz C03-04.M01.04; 15 prerequisitos documentales de C03-01/02/03 registrados LISTO, DAG VALIDADO.
+- TIPO1: no cambios runtime, contratos API/DTO, migraciones, secretos, permisos o infrastructure; dotnet/Angular/MySQL/Docker/Playwright NO_APLICA para el changeset; A0-A3 documentales y control de JWT/RBAC/tenant en requisitos; Scope Lock exact SHA requerido en A4.
+- A5_PENDIENTE para otra Task JAVIER, M01.06/M02/C10/C12 siguen sujetos a gates propios, sin QA/main/PROD; rollback git revert normal, sin force-push.
