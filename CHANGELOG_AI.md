@@ -1,3 +1,6 @@
+## 2026-11-13 — V5 C00-01.M06.02: manifiesto causal de versiones, diffs y artefactos [Javier :50]
+- Se agregó un manifiesto reproducible con fuente V5, estado Sheet/BITACORA A:Z/26, SHA, tree, blobs, diff documental +53/+3 de M06.01, jobs reales M10 12/12, seguridad 1109/1109 y Scope Lock SHA exacto, más límites mocks vs HTTP y A5 independiente. Sólo documentación; no modifica código runtime, datos, tareas ni entornos QA/main/PROD.
+
 ## 2026-11-13 — V5 C00-01.M06.01: auditoría causal de pruebas vs mocks [Javier :50]
 - Se audita evidencia real de GitHub Actions (M10 MySQL/Angular/Playwright 12/12, security xUnit 1109/1109, backend/frontend y Scope Lock) contra fuente exacta 14ea2e23; se distinguen casos HTTP reales, route.fulfill UI sintético, Subjects unitarios, límites RBAC/tenancy y pruebas de rendimiento no productivas. Solo docs: sin cambios de runtime, datos, secretos o despliegues. A5 independiente queda pendiente; QA/main/PROD no autorizado.
 
