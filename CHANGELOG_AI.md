@@ -1,3 +1,7 @@
+## 2026-11-12 — P5-014.C: delimitación estática de menú accesible (Javier :40)
+- Fuente exclusiva `frontend/src/app/shared/navigation/app-navigation-menu.component.ts` blob `b70ef4ffb252228cf2ab19754a5e30d53f64aca0`, con enlaces semánticos/ARIA y RBAC de navegación, sin alterar el runtime.
+- Test dirigido `scripts/tests/p5-014-c-delimitacion-teclado-aria-menu.test.mjs` (Node 22.16.0, 6/6 preflight sobre extracto, y 8/8 pruebas sobre fuente completa GitHub por inspección dirigida); NO certifica navegador, lector de pantalla ni auth backend.
+- Evidencia y rollback `docs/P5-014-C-DELIMITACION-TECLADO-ARIA-MENU-DEV.md`; no API, migraciones, datos, dependencias, QA/main/PROD; A5 independiente pendiente.
 ## 2026-11-12 - P5-017.C: delimitacion responsive de modal de alerta (Alex :35)
 - Archivo de producto de referencia sin modificar: frontend/src/app/shared/alerts/app-alert.service.ts, blob 3bde601b54bad7d979fca9029025ce4eb72a44db.
 - Test scripts/tests/p5-017-c-delimitacion-layout-responsive.test.mjs: cinco casos Node positivos/negativos sobre ancho 94vw, breakpoint 480px, apilado, foco restaurado, rechazo HTML. Nota docs/P5-017-C-DELIMITACION-LAYOUT-RESPONSIVE-DEV.md.
