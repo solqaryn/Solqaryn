@@ -1,3 +1,6 @@
+## 2026-11-13 — V5 C00-03.M01.04: riesgos, supuestos y decisiones de matriz integrada [Javier :20]
+- Se incorpora registro documental de diez riesgos RI01–RI10, cinco supuestos S01–S05 y seis decisiones D01–D06, más aceptación P1/P2 y ocho rechazos N1–N8; delimita matriz V5 integrada, exige fuente/ID único, fronteras tenant/PII, CI proporcional, Scope Lock y cero migración de imágenes históricas. No implementa software, migra proveedores, crea IDs ni declara cierre de fase o A5_PASS.
+
 ## 2026-11-13 — V5 C00-03.M01.05: aceptación funcional y técnica de matriz integrada [Javier :10]
 - Contrato documental con AC-01–AC-10 observables, evidencia mínima por unidad, negativos fail-closed, independencia de autor/A5, Scope Lock y dependencia DAG C00-01.M02; no cierra matriz completa ni implementa runtime.
 - TIPO1_DOCUMENTACION: dotnet/Node/Angular/MySQL/Docker/E2E=NO_APLICA; security=SI_REVISION_DOCUMENTAL; scope_lock=SI; A0-A3 documentales tras VALIDANDO y A4 SHA/readback, A5 independiente. No QA/main/PROD.
