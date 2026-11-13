@@ -15,7 +15,7 @@
 | Identidad física TASK_ID, cuenta propietaria, conexión GitHub | Autenticación efectiva, allowlist, permiso real y horario físico; nombres no bastan | Actor y responsable reales conservados hasta cierre |
 | HEAD vivo de `dev` y versión de Skill/arquitectura | Comparar Skill instalada con HEAD canónico, revisar Scope Lock y diferencias de código | Candidato verificado sobre base actual; commit sólo fast-forward sin force push |
 | Código/documento/pruebas y resultados CI del SHA | A0 calidad, A1 funcional, A2 seguridad, A3 integración proporcionales; A4 exact-SHA tras publicar | Evidencia causal sin inventar PASS, LISTO DEV sólo después de gates pertinentes |
-| `BITACORA!A:U` y EVENT_ID | 21 columnas, evento único, validaciones y readback; nunca borrar historia | Ledger idempotente de cada transición y revisión |
+| `BITACORA!A:Z` y EVENT_ID | 26 columnas vigentes, evento único, validaciones y readback; nunca borrar historia | Ledger idempotente de cada transición y revisión |
 | Resultado A5 de otra Task | TASK_ID distinto de autor, evidencia exact-SHA, permisos separados | Revisión independiente, **no** promoción automática a QA/main/PROD |
 
 ## Actores y límites de propiedad
@@ -34,7 +34,7 @@
 | Documento V5 / Google Drive | Leer autoridad y requisitos | Plan histórico o ID ajeno no autoriza claim |
 | PLAN_MAESTRO | Actualizar H:M sólo del scope validado | Responsabilidad activa de otra Task impide escritura |
 | COLA | Leer E/I/J/K/L/M/G/O y sus fórmulas | La Task nunca sustituye fórmulas derivadas por texto |
-| BITACORA | Adjuntar evento de 21 campos, leerlo de vuelta | EVENT_ID existente impide un registro duplicado |
+| BITACORA | Adjuntar evento de 26 campos, leerlo de vuelta | EVENT_ID existente impide un registro duplicado |
 | GitHub dev | Publicación fast-forward secuencial con HEAD releído | Divergencia o Scope Lock no acreditado impide publicar |
 | CI y proveedores de prueba | Leer jobs exact SHA e inspeccionar logs causales | Resultado de otro SHA o job SKIPPED no certifica el cambio |
 | Frontend Angular / API .NET / MySQL / integraciones | Pruebas sólo según superficie efectivamente modificada | Aislamiento empresa A/B, JWT/RBAC, PII y secretos son controles del backend y seguridad |
@@ -59,3 +59,5 @@
 **Negativo de integridad:** fórmula perdida, EVENT_ID duplicado o SHA/CI incorrectos impiden declarar LISTO.
 
 Este documento identifica interfaces y actores, **no implementa** nuevos esquemas, workers, endpoints, permisos, conectores, formularios ni reglas de negocio. A0/A1/A2/A3 consisten aquí en validación de la coherencia documental y seguridad de límites; Node/Angular/.NET/MySQL/E2E son NO_APLICA por ausencia de cambios de runtime. A4 debe verificar el nuevo SHA y Scope Lock exacto y hacer readback PLAN/COLA/BITACORA. Rollback mediante `git revert` normal del commit documental, nunca con force-push ni borrado del ledger.
+
+> **Corrección documental por A5_FAIL (2026-11-13):** lectura institucional del encabezado `BITACORA!A1:Z1` confirmó 26 columnas, desde `EVENT_ID` hasta `TIMESTAMP_UTC_ORIGINAL`. El formato heredado de 21 columnas no sirve como contrato para nuevas escrituras. Se conservan los eventos históricos, sus validaciones y autoría; cada nuevo evento debe comprobar esquema vigente y readback. Esta corrección no representa A5_PASS ni autorización para QA/main/PROD.
