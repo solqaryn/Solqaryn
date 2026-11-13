@@ -8,12 +8,24 @@ const validPaths = paths => Array.isArray(paths) && paths.length > 0 &&
   paths.every(path => typeof path === 'string' && SAFE_PATH.test(path) &&
     !path.includes('//') && !path.includes('/../'));
 
+// G0-006.G: deny disguised reopen requests for retired phase 8/13 or the
+// completed Angular migration, even when a current commercial scope ID is used.
+// Only structured authority/action fields are inspected: archived background
+// notes in evidence strings must not accidentally become an authorization.
+const RETIRED_AUTHORITY = /(?:^|[^a-z0-9])(?:fase|phase)[\s_-]*(?:8|13)(?:$|[^a-z0-9])|(?:^|[^a-z0-9])m13(?:$|[^a-z0-9])|(?:^|[^a-z0-9])vaep(?:$|[^a-z0-9])|(?:^|[^a-z0-9])jules(?:$|[^a-z0-9])|angular[\s_-]*migration/i;
+const LEGACY_FIELDS = ['sourceAuthority', 'phaseId', 'legacyPhase', 'reopenSource', 'migrationTarget', 'requestedAction'];
+const legacyReopen = receipt => receipt.reopenCompletedMigration === true ||
+  LEGACY_FIELDS.some(key => typeof receipt[key] === 'string' &&
+    (RETIRED_AUTHORITY.test(receipt[key]) ||
+      /\breopen[\s_-]+(?:completed[\s_-]+)?(?:angular|migration|phase)\b/i.test(receipt[key])));
+
 export function verifyDirectDevTraceability(receipt) {
   const errors = [];
   const requireCheck = (ok, code) => { if (!ok) errors.push(code); };
   const r = receipt && typeof receipt === 'object' && !Array.isArray(receipt) ? receipt : {};
   requireCheck(SCOPE.test(r.scopeId || '') && r.requirementId === r.scopeId &&
     r.state === 'LISTO' && r.integrationMode === 'DIRECT_DEV_FOUR_AUDITS', 'contract');
+  requireCheck(!legacyReopen(r), 'legacy_reopen');
   requireCheck(SHA.test(r.publishedSha || '') && r.publishedSha === r.devReadbackSha &&
     r.commitFastForwardVerified === true && r.devBranchVerified === true,
     'dev_publication');

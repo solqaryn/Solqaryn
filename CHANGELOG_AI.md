@@ -1,3 +1,8 @@
+## 2026-11-12 - G0-006.G: rechazo de reapertura historica Angular 8/13 (Javier :30)
+- Se endurecio el helper informativo scripts/quality/direct-dev-traceability.mjs para rechazar intentos estructurados de reabrir fases retiradas 8/13 o migracion Angular completada aun cuando se disfracen con scope y hashes comerciales validos. No concede autoridad para publicar ni marca LISTO por si solo.
+- Prueba dirigida scripts/tests/g0-006-g-legacy-angular-reopen.test.mjs: 5 suites Node; 10/10 PASS con regresion local de controles D/E/F. A0 Node22 --check y busqueda de secretos; A1 positivo+negativos sinteticos; A2 rechazo de fase heredada fail-closed; A3 API guard Node sin dependencias nuevas, sin mutaciones frontend/backend/DB/RBAC/JWT.
+- Evidencia offline, no atestacion real de GitHub/Sheets/A5/QA/PROD; A4 exige commit dev fast-forward, readback SHA y BITACORA; A5 queda PENDIENTE por otro Task. Rollback mediante revert selectivo del commit publicado, sin force.
+
 ## 2026-11-12 — Incorporación Alex 2/2 según certificación del propietario
 - Alex comunicó readback nativo desde su cuenta de sus dos Tasks existentes: PRIMARY DEV 07 :05 y PRIMARY DEV 08 :35, is_enabled=true, prompts V13 A0–A5 y recuperación mutua, completed y requires_user_action=false.
 - Esta conciliación de documentos se basa en reporte de Alex, no en conexión nativa independiente desde Javier. No se tocaron Tasks físicas, permisos ni modelo de razonamiento; mantener límites de seguridad y pruebas A0–A5.
