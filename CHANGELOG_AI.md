@@ -1,3 +1,8 @@
+## 2026-11-12 - P5-017.C: delimitacion responsive de modal de alerta (Alex :35)
+- Archivo de producto de referencia sin modificar: frontend/src/app/shared/alerts/app-alert.service.ts, blob 3bde601b54bad7d979fca9029025ce4eb72a44db.
+- Test scripts/tests/p5-017-c-delimitacion-layout-responsive.test.mjs: cinco casos Node positivos/negativos sobre ancho 94vw, breakpoint 480px, apilado, foco restaurado, rechazo HTML. Nota docs/P5-017-C-DELIMITACION-LAYOUT-RESPONSIVE-DEV.md.
+- Alcance DELIMITAR, no certifica dispositivo real, WCAG, tenancy/JWT/RBAC, QA/main/PROD; A5 independiente pendiente. Reversión selectiva con commit ordinario sin force.
+
 ## 2026-11-12 — P5-015.C: delimitación de estados de carga y vacío (Javier :20)
 - Archivo real único `frontend/src/app/features/usuarios/usuario-detail.component.html` (blob `bca657fd3ede944cb10c77ddc72063c11eb0ec65`): ramas loading spinner, notFound vacío y usuario cargado con interpolación segura; sin modificar runtime.
 - `scripts/tests/p5-015-c-delimitacion-loading-empty.test.mjs` Node22.16.0 (5/5 PASS después de VALIDANDO): positivo, y negativos de spinner ausente, ramas no exclusivas, loaded sin guardia y HTML/PII insegura; `docs/P5-015-C-DELIMITACION-LOADING-EMPTY-DEV.md`. SHA256 `cf33d0e8cca241de789c920b3c869af64c2f1c90143a5fc620e8a4bc46fdea6c`.
