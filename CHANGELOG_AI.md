@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C02-01.M01.04: matriz documental de riesgos del contexto tenant [Javier :00]
+- Registro inicial de riesgos R01–R10, supuestos S01–S05, decisiones D01–D06, fuentes backend y casos documentales positivos/negativos; no modifica ejecutables, datos, permisos ni infraestructura.
+- Preparación provisional DAG VALIDADO. Scope Lock y A4 exact-SHA exigibles; A5 por otra Task y revalidación al cerrar contratos C00/C01.
+
 ## 2026-11-13 — V5 C01-04.M01.01: objetivo documental expediente universal [Alex :05]
 - Contrato preliminar de timeline, decisiones, observaciones, adjuntos y versionado; define alcance/no-alcance y 12 invariantes positivas/negativas para aislamiento tenant/JWT/RBAC, adjuntos, idempotencia, PII, regresión y rollback.
 - Únicamente M01.01 documental: no crea endpoints, datos, UI, migraciones, workers ni adjuntos; .NET/Angular/MySQL/Docker/E2E no aplican. Requiere A0–A4 causal, Scope Lock exact-SHA y A5 independiente; sin QA/main/PROD.
