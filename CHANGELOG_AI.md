@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C00-04.M01.06: gates de gobierno de cambios y liberación documental M01 [Javier :30]
+- `docs/v5/c00-04-m01-06-bloqueo-rollback-liberacion.md` fija seis dependencias verificadas (cinco C00-04.M01 y C00-01.M06.06), A5 correctiva independiente, DAG VALIDADO, matriz de bloqueos, autorización, rollback y condición de evaluación M02 sin despacho automático.
+- Solo contrato documental TIPO 1: A0–A3 proporcionales, revisión de fronteras JWT/RBAC/tenant y Scope Lock/procedencia exact-SHA para A4; A5 independiente de otra Task Javier. .NET/Angular/MySQL/Docker/E2E no aplican al diff, sin PR/ramas ni QA/main/PROD.
+
 ## 2026-11-13 — V5 C00-03.M02.06: cierre contractual de cobertura M02 [Javier :10]
 - Documento `docs/v5/c00-03-m02-06-dependencias-salida-cobertura.md`: matriz R01–R12, seis fuentes M01/M02 con blobs verificables, dependencias y gates estrictos de salida, 4 positivos/12 negativos documentales; no implementación, activación de dispatcher ni M03 automático.
 - A0–A3 documentales dirigidos, evidencia A:Z/26, JWT/RBAC/tenant, Scope Lock y validación de procedencia exact-SHA antes de A4; A5 independiente. Sin PR/ramas, QA/main/PROD, migraciones ni proveedores activos.
