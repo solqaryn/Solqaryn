@@ -119,6 +119,55 @@ public sealed class N72DOutboxRetryProcessorTests
     }
 
     [Fact]
+    public async Task Claim_Duplicado_No_Despacha_Ningun_Efecto()
+    {
+        var mensaje = CrearClaimed();
+        var repo = new FakeRepository(mensaje, mensaje);
+        var dispatcher = new CountingDispatcher();
+        var processor = new OutboxRetryProcessor(repo, new OutboxRetryProcessorOptions(), () => 0.5);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            processor.ProcesarLoteAsync(7, AhoraUtc, dispatcher));
+        Assert.Equal(0, dispatcher.Calls);
+        Assert.Equal(new[] { "recover", "claim" }, repo.Calls);
+    }
+
+    [Fact]
+    public async Task Clave_Compartida_En_Eventos_Distintos_No_Despacha_Nada()
+    {
+        var primero = CrearClaimed();
+        var segundo = MensajeOutbox.Crear(7, "inventario.cambiado", "{}", "idem-1",
+            creadoEnUtc: AhoraUtc.AddMinutes(-2));
+        segundo.MarcarProcesando(AhoraUtc);
+        Assert.NotEqual(primero.EventoId, segundo.EventoId);
+
+        var repo = new FakeRepository(primero, segundo);
+        var dispatcher = new CountingDispatcher();
+        var processor = new OutboxRetryProcessor(repo, new OutboxRetryProcessorOptions(), () => 0.5);
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            processor.ProcesarLoteAsync(7, AhoraUtc, dispatcher));
+        Assert.Equal(0, dispatcher.Calls);
+        Assert.Equal(new[] { "recover", "claim" }, repo.Calls);
+    }
+
+    [Fact]
+    public async Task Eventos_Y_Claves_Unicos_Se_Despachan_Exactamente_Una_Vez()
+    {
+        var primero = CrearClaimed();
+        var segundo = MensajeOutbox.Crear(7, "inventario.cambiado", "{}", "idem-2",
+            creadoEnUtc: AhoraUtc.AddMinutes(-2));
+        segundo.MarcarProcesando(AhoraUtc);
+
+        var repo = new FakeRepository(primero, segundo);
+        var dispatcher = new CountingDispatcher();
+        var processor = new OutboxRetryProcessor(repo, new OutboxRetryProcessorOptions(), () => 0.5);
+        var resultado = await processor.ProcesarLoteAsync(7, AhoraUtc, dispatcher);
+        Assert.Equal(2, resultado.Entregados);
+        Assert.Equal(2, dispatcher.Calls);
+        Assert.Equal(new[] { "recover", "claim", "delivered", "delivered" }, repo.Calls);
+    }
+
+    [Fact]
     public void Configuracion_Invalida_Falla_Cerrado()
     {
         var repo = new FakeRepository();

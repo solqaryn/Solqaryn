@@ -1,3 +1,7 @@
+## 2026-11-13 - V5 C00-01.M03.05 batch outbox duplicado fail-closed [Javier :50]
+- Prevalida EventoId y ClaveIdempotencia del lote completo para impedir despachos repetidos de un repositorio defectuoso, sin cambio en API/SQL/proveedor.
+- Añade pruebas xUnit positivas/negativas; exige CI .NET10/MySQL exact-SHA y A5 independiente.
+
 ## 2026-11-13 — V5 C00-01.M03.06: corrección dirigida tras CI xUnit [Javier :10]
 - El primer SHA `a1087d334d03941de0b0eba0108d2d411604a61d` compiló en GitHub-hosted .NET 10 pero dev-ci detectó 1 fallo entre 3388 xUnit: `N49FPeriodoContableObservabilityTests` aún esperaba revelar un `ArgumentException.Message` arbitrario. La prueba se reconcilia con el contrato de error público seguro (400 ProblemDetails genérico), verificando además que el texto interno no se expone.
 - Mantiene código de producción del primer commit sin modificaciones adicionales. Los controles A1–A4 se reevalúan en el SHA correctivo exacto mediante GitHub Actions; no atribuir PASS hasta la evidencia causal. `VALIDANDO` conserva el mismo TASK_ID. Rollback: git revert ordenado sin reescritura.

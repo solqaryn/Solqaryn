@@ -125,6 +125,21 @@ public sealed class OutboxRetryProcessor
             throw new InvalidOperationException(
                 "El lote outbox contiene mensajes fuera de la empresa autorizada.");
 
+        // Fail closed antes del primer efecto si un adaptador retorna claims repetidos.
+        var eventosReclamados = new HashSet<Guid>();
+        var clavesReclamadas = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var mensaje in mensajes)
+        {
+            if (mensaje.EventoId == Guid.Empty ||
+                string.IsNullOrWhiteSpace(mensaje.ClaveIdempotencia) ||
+                !eventosReclamados.Add(mensaje.EventoId) ||
+                !clavesReclamadas.Add(mensaje.ClaveIdempotencia))
+            {
+                throw new InvalidOperationException(
+                    "El lote outbox contiene identidades duplicadas o invalidas.");
+            }
+        }
+
         var entregados = 0;
         var reprogramados = 0;
         var deadLetter = 0;
