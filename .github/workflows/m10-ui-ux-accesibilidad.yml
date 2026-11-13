@@ -1,3 +1,4 @@
+# M10 revalidacion operativa 2026-11-13: Playwright autorizado, solo disparo CI, sin cambio de comportamiento.
 name: M10 - UI UX empresarial y accesibilidad
 
 on:
