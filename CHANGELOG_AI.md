@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C01-04.M01.02: actores, entradas, salidas y superficies de expediente universal [Javier :10]
+- Preparación documental exclusiva M01.02: siete perfiles de actor, diez interfaces EXP-IO y seis referencias de código real con límites JWT/RBAC/tenant A/B, adjuntos y versionado.
+- No implementa expediente ni API universal. .NET/Angular/MySQL/Docker/E2E no aplican al diff documental; A0–A4 proporcionales y Scope Lock SHA exacto; A5 independiente; sin QA/main/PROD.
+
 ## 2026-11-13 — V5 C02-01.M01.01: objetivo y no-regresión tenant server-side [Javier :30]
 - Preparación documental preliminar del contexto host/identidad/membresía/ámbito; matriz NR-01–NR-12 con tres positivos y nueve negativos propuestos, cuatro blobs originales contrastables y alcance sin código ejecutable.
 - A0–A4 documentales proporcionales y Scope Lock exact-SHA; A5 independiente. Sin migración, autorización nueva, DNS, QA/main/PROD ni pruebas runtime atribuidas.
