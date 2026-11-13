@@ -31,3 +31,12 @@ A3: frontend npm lint/build y E2E M10 real sobre SHA de commit, no contar SKIPPE
 A4: GitHub SHA exacto, Scope Lock, logs E2E y readback PLAN/COLA/BITACORA.
 A5: otro TASK_ID revisor después del cierre DEV; QA/main/PROD sin autorización.
 Rollback: git revert normal tras revalidación, nunca reset ni force-push.
+
+## Corrección de test tras primera CI
+El commit inicial c45c2d86894a73a02ee2d27b4c3ce6efa1b21e25 falló en el paso
+M10 de GitHub Actions (run 43438696712, job 131930367033): tras mostrar
+contraseña con Enter, el test asumió sin comprobar que el botón mantenía foco
+para una segunda pulsación. La primera acción había funcionado; la segunda
+no devolvió el tipo password. Se reenfoca explícitamente el botón actualizado,
+se comprueba foco y se repite Enter. No se modifican credenciales, lógica de
+login, backend, controles de tenancy, ni se oculta el fallo inicial.

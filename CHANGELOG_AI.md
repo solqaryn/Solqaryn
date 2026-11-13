@@ -1,3 +1,6 @@
+## 2026-11-13 — Corrección CI C00-01.M04.05: segundo toggle de contraseña [Javier :40]
+- Primera CI M10 SHA c45c2d86 falló en test E2E propio (8/9 PASS) porque el segundo Enter se disparaba sin verificar foco en el botón actualizado. Ajuste dirigido Playwright: enfocar y acreditar foco en Ocultar contraseña antes de pulsar Enter; sin cambio funcional de login, API, backend o seguridad. Requiere nueva ejecución exact-SHA M10.
+
 ## 2026-11-13 — V5 C00-01.M04.06 verificación UI de densidad/progresividad [Javier :50]
 - Se amplía prueba Playwright N8.2 de portada pública para medir geometría hero/CTAs 390/1440 px, ausencia de desborde, carga diferida y telemetría de rendimiento. Sin modificar producción ni prometer SLA; fixture branding solo en CI. Requiere Node/Angular lint/build, N8.2 y Scope Lock exact-SHA; A5 independiente.
 

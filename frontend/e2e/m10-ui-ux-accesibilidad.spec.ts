@@ -360,6 +360,11 @@ test.describe('M10 — UI/UX empresarial y accesibilidad', () => {
     await expect(password).toHaveAttribute('type', 'text');
     await expect(page.getByRole('button', { name: 'Ocultar contraseña' }))
       .toHaveAttribute('aria-pressed', 'true');
+    // El control puede perder foco al cambiar el tipo del input en Angular Material.
+    // Antes de la segunda acción de teclado, demostrar foco real en el botón actual.
+    const ocultar = page.getByRole('button', { name: 'Ocultar contraseña' });
+    await ocultar.focus();
+    await expect(ocultar).toBeFocused();
     await page.keyboard.press('Enter');
     await expect(password).toHaveAttribute('type', 'password');
 
