@@ -1,0 +1,23 @@
+{
+  "kind": "G0-005.F_SYNTHETIC_NEGATIVE_NOT_PROVIDER_ATTESTATION",
+  "expected_decision": "NO_GO",
+  "expected_reasons": ["DEV_HTTP_ANOMALY", "DEV_READBACK_NO_GO", "QA_NOT_OBSERVED", "PROD_NOT_OBSERVED"],
+  "proof": {
+    "receipts": [
+      {"id":"G0-005.C","sha":"0cea0aaae291a4d8161791f2b170d7087d5bc0e1","state":"LISTO","repository":"solqaryn/Solqaryn","branch":"dev","source":"https://github.com/solqaryn/Solqaryn/commit/0cea0aaae291a4d8161791f2b170d7087d5bc0e1"},
+      {"id":"G0-005.D","sha":"e9a486776cbecdec8d6dfb6a7b1172cec6c28877","state":"LISTO","repository":"solqaryn/Solqaryn","branch":"dev","source":"https://github.com/solqaryn/Solqaryn/commit/e9a486776cbecdec8d6dfb6a7b1172cec6c28877"},
+      {"id":"G0-005.E","sha":"544a28fca6f63a9d5827086ccd07ac645a8f61e6","state":"LISTO","repository":"solqaryn/Solqaryn","branch":"dev","source":"https://github.com/solqaryn/Solqaryn/commit/544a28fca6f63a9d5827086ccd07ac645a8f61e6"}
+    ],
+    "observations": [
+      {"environment":"DEV","origin":"https://solqaryn-dev.vercel.app/","project":"solqaryn-dev","github_sha":"14d93602932554c33e4cbeef623ac558627b0828","deployment_sha":"14d93602932554c33e4cbeef623ac558627b0828","evidence_status":"OBSERVED","http_surface":"SSO_ALIAS","http_status":503},
+      {"environment":"QA","origin":null,"project":null,"github_sha":null,"deployment_sha":null,"evidence_status":"NOT_OBSERVED"},
+      {"environment":"PROD","origin":null,"project":null,"github_sha":null,"deployment_sha":null,"evidence_status":"NOT_OBSERVED"}
+    ],
+    "dev_readback": {
+      "repository":"solqaryn/Solqaryn","branch":"dev","head_sha":"14d93602932554c33e4cbeef623ac558627b0828",
+      "vercel":{"project_id":"prj_1Anhx5mWyXEBX89lWC24Py6JXe7A","project_name":"solqaryn-dev","state":"READY","branch":"dev","target":"production","sha":"14d93602932554c33e4cbeef623ac558627b0828","aliases":["solqaryn-dev.vercel.app"]},
+      "sso":{"hostname":"solqaryn-dev-solqaryn.vercel.app","status":503},
+      "api":{"environment":"DEV","status":200,"upstream_status":503}
+    }
+  }
+}
