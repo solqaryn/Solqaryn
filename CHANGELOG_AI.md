@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C02-04.M01.04: riesgos y decisiones de consola global [Javier :40]
+- Matriz documental 15 riesgos R, 8 supuestos S y 10 decisiones D sobre privilegios globales, MFA/reauth, TTL, tenant A/B, PII, soporte DEV limitado y auditoría crítica. Fuentes Git verificadas; mecanismos futuros no implementados ni certificados.
+- TIPO1 sin runtime/secretos ni migraciones; A0–A4 documentales y Scope Lock exact SHA; A5 pendiente independiente Javier, sin liberar M01.06/M02 ni QA/main/PROD.
+
 ## 2026-11-13 — C00-01.M06.06: cierre documental con A5 causal y mapa DAG (Javier :50)
 - Se incorpora docs/v5/c00-01-m06-06-cierre-baseline-mapa-dependencias.md: 35/35 predecesoras LISTO, causal A5 de M04.03 (Chromium 3/3, revisor independiente), cuatro dependientes dinámicos, inventario de blobs y contradicciones. El cierre no despacha automáticamente ni autoriza QA/PROD.
 - A0-A4 proporcionales a documento, Scope Lock exact-SHA y readback PLAN/COLA/DAG/BITACORA, A5 independiente pendiente. Sin runtime/DB/UI, Tasks, branches o PR; rollback git revert.
