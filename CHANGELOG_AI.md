@@ -18,6 +18,12 @@
 
 # SOLQARYN — Cambios operativos vigentes
 
+## 2026-11-12 — Preparación documental de Alex 2/2 para eventual 6→8
+- IDs Alex existentes preservados; horarios físicos registrados :10/:50 y nombres SECONDARY REVIEW 01/03 no alterados. Propuesta pendiente de decisión del titular: PRIMARY DEV 07 minuto :05, PRIMARY DEV 08 minuto :35, sin tocar las seis Tasks de Javier.
+- Se deja handoff para sincronización física por Alex de prompts V13 direct-dev, readback real de identidad/horario/prompt y habilitación posterior únicamente por autorización expresa.
+- Cuatro auditorías V13 sin cambios. Sin nuevas Tasks, ramas, PR, cambios funcionales o modificaciones de QA/PROD.
+
+
 ## 2026-11-12 — G0-006.E prueba negativa de fases retiradas (Javier :30)
 - Cinco pruebas Node dirigidas al validador de trazabilidad de DEV directo: rechazan FASE8, M13, recibos de PR históricos, estados VALIDANDO disfrazados de LISTO, tests SKIPPED, SHA falso, auditoría A4 ausente y readback institucional no comprobado.
 - Casos sintéticos, sin reabrir migraciones ni autorizar trabajo ajeno; el control del Plan Comercial sigue siendo externo al validador de forma intencional.

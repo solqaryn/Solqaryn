@@ -57,6 +57,10 @@ TIMEZONE=America/Tegucigalpa
 | :10 | ALEX_CHATGPT | SECONDARY REVIEW 01 | `6adbbc9ad9e88191bea8eb69104afb25` |
 | :50 | ALEX_CHATGPT | SECONDARY REVIEW 03 | `6adcc98a80a48191b71a5156624c21df` |
 
+## Alex: 2 Tasks registradas, preparación documental 6→8
+
+Ambas Tasks figuran en el allowlist vigente. El estado físico actual y sus prompts nuevos **NO están certificados desde Javier**. Los RRULE :10 y :50 y nombres SECONDARY REVIEW siguen siendo el último registro, no se cambiaron aquí. Para el eventual paso a ocho ejecutores queda documentada la **propuesta sin ejecutar**: `6adbbc9ad9e88191bea8eb69104afb25` → `PRIMARY DEV 07 — ALEX`, :05; `6adcc98a80a48191b71a5156624c21df` → `PRIMARY DEV 08 — ALEX`, :35. Cada ID requiere actualización de prompt V13 directo y verificación nativa desde la cuenta Alex, sin crear Tasks y sin reactivación hasta su autorización expresa. Las cuatro auditorías A1–A4 permanecen idénticas. Contrato de handoff: `docs/AUTOMATION_V13.md`, sección *Preparación de Alex*.
+
 ## Fuentes autorizadas
 - Plan Drive: https://docs.google.com/document/d/1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA/edit
 - Sheet operativo: https://docs.google.com/spreadsheets/d/1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU/edit

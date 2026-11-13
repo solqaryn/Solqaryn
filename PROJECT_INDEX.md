@@ -8,6 +8,7 @@
 - `docs/AUTOMATION_STATUS.md`: censo efectivo, cuotas 1/3 y estado nativo conocido.
 - `docs/AUTOMATION_AUTHORITY.md`: identidades, permisos, competencia y protección de cuentas.
 - `docs/GITHUB_ACCOUNT_ROLES.md`: credenciales y roles sin aprobaciones GitHub rutinarias DEV.
+- Ampliación de 6 a 8 Tasks: el handoff para las dos identidades originales de Alex y los títulos/horarios futuros propuestos se encuentra exclusivamente en `docs/AUTOMATION_V13.md` (*Preparación de Alex*). Aún no se editaron las Tasks físicas ni se ampliaron auditorías.
 
 ## Desarrollo y arquitectura
 - `ARCHITECTURE.md` y `.agents/skills/solqaryn-project-governance/references/architecture.md`: límites frontend/backend/database de sistema vivo, no fuente de microtareas.

@@ -14,6 +14,7 @@ PROJECT_SCOPE_LOCK=STRICT
 - Contrato V13: docs/AUTOMATION_V13.md; inventario físico y permisos: docs/AUTOMATION_STATUS.md, docs/AUTOMATION_AUTHORITY.md. Seis Tasks Javier habilitadas según readback nativo; dos Alex sólo gestionables por su titular.
 - Cero rulesets obligatorios en dev al último readback; main y qa protegidas. Scopes paralelos por IDs diferentes, commits directos serializados sin PR/branch nueva. Flujo por Scope: PENDIENTE→EN_PROGRESO al claim; EN_PROGRESO→VALIDANDO al completar candidato y ANTES de A1/A2/A3; corregir y publicar commit en dev; A4 posintegración y VALIDANDO→LISTO con evidencia PLAN/COLA/BITACORA. Mínimo objetivo 1 LISTO y meta 3 por corrida habilitada.
 - Conflictos y errores: corregir en ejecución cuando sea verificable, evitar pérdida de trabajo ajeno, no marcar PASS falso. No recuperar PR cerrados, antiguos pipelines de aprobación ni permisos por inferencia.
+- Preparación documental 6→8: dos Alex ya registrados, IDs físicos y RRULE :10/:50 conservados. Alias propuestos PRIMARY DEV 07 :05 y 08 :35 aún NO aplicados, V13 físico y activación pendientes exclusivamente desde Alex. Auditorías A1–A4 sin cambios; ver docs/AUTOMATION_V13.md.
 
 ## Límite documental
 - Este contexto no prescribe gates ni tareas adicionales. La información de roadmap, candidatos no integrados y estados históricos no se utiliza para decidir el trabajo actual. Las decisiones de implementación deben comprobarse contra el código presente, el plan único y evidencia real.
