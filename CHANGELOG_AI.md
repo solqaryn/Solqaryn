@@ -1,3 +1,6 @@
+## 2026-11-13 — V5 C00-01.M05.01: regresión causal ante respuesta tardía de tienda [Javier :00]
+- AppComponent descarta callbacks tardíos de StorefrontIdentidadService cuando cambia ruta a plataforma, nueva página de tienda o se destruye el shell; no restaura SEO ni CSS de tenant anterior. Tres pruebas unitarias de navegación con NavigationEnd y Subjects RxJS cubren positivo y negativos; Priority4 CI las ejecuta en Angular 22 con Node 24. Enmienda también la brecha señalada por A5_FAIL de M04.03, sin autodeclarar una A5_PASS. Sin cambios de API/MySQL/permisos/secretos; requiere CI exact-SHA y rollback normal.
+
 ## 2026-11-13 — V5 C00-01.M04.04: corrección del selector de formulario en loading [Javier :00]
 - M10 del SHA cca72cfc falló 1/12 porque la etiqueta de submit cambia al comenzar el login. El E2E mantiene disabled y POST único usando selector estable del botón; exigir nuevo SHA y nueva CI. Sin cambios de auth, base de datos, secretos ni permisos.
 

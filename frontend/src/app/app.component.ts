@@ -105,6 +105,8 @@ import { PerformanceBaselineService } from './core/performance/performance-basel
 export class AppComponent implements OnDestroy {
   sidebarAbierto = false;
   routeAnnouncement = '';
+  // La respuesta HTTP del storefront sólo puede alterar el tema/SEO de la ruta que la solicitó.
+  private versionContextoRuta = 0;
 
   constructor(
     public auth: AuthService,
@@ -135,6 +137,7 @@ export class AppComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
+    ++this.versionContextoRuta;
     this.sessionActivity.detener();
     this.document.body.style.removeProperty('overflow');
   }
@@ -202,8 +205,11 @@ export class AppComponent implements OnDestroy {
   }
 
   private aplicarContextoRuta(url: string): void {
+    const version = ++this.versionContextoRuta;
     if (this.esRutaTienda(url)) {
       this.tiendaIdentidad.cargar().subscribe((bootstrap) => {
+        // Cargas antiguas siguen vivas por shareReplay; nunca restaurar tema/SEO ajenos.
+        if (version !== this.versionContextoRuta) return;
         if (bootstrap) this.themeApplier.aplicar(bootstrap.tema);
         else this.themeApplier.aplicarTemaGuardado();
         this.seo.aplicarRuta(url, this.tiendaIdentidad.config().nombreComercial || 'Tienda');

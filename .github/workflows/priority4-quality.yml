@@ -101,6 +101,10 @@ jobs:
         working-directory: frontend
         run: npx ng test --watch=false --include=src/app/services/theme-applier.service.spec.ts
 
+      - name: V5 M05.01 - prueba de navegación frente a bootstrap tardío
+        working-directory: frontend
+        run: npx ng test --watch=false --include=src/app/app.component.spec.ts
+
       - name: Validar seguridad de empresa en WhatsApp
         working-directory: frontend
         run: npx ng test --watch=false --include=src/app/features/configuracion/whatsapp-business-card.component.spec.ts
