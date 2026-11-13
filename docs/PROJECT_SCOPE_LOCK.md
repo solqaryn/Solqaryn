@@ -1,67 +1,60 @@
-# PROJECT_SCOPE_LOCK — SOLQARYN (estado vigente)
+# PROJECT_SCOPE_LOCK — SOLQARYN (autoridad actual)
 
-> **ESTADO OPERATIVO V5 FINAL (readback Javier 2026-11-13).** Seis Tasks Javier originales habilitadas (is_enabled=true, 6/6); pausa del 12-nov HISTORICA REVOCADA por orden posterior. Alex solo desde cuenta propietaria. Fuente ejecutable unica: Google Doc V5 FINAL `1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA` y Sheet `1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU`, 2.340 IDs C00-01.M01.01 a C15-05.M06.06. V13 mantiene A0–A5 y seguridad, no el backlog antiguo. El commit base `f4b8528f57e82625d343dd1590076df44cacaee2` es antecesor del HEAD `4d582aa48dcdf8e9efb8d4c15ec229cbc0d603a5` (13 commits de avance); la autoridad de codigo/CI es siempre HEAD vivo y SHA exacto del candidato, no un SHA congelado. Validar con GitHub Actions (dotnet/Angular/Node/Docker/MySQL cuando los jobs pertinentes realmente corren); sin PASS si el job es SKIPPED o el SHA es anterior. Preservar horarios, IDs y recuperacion cruzada; no fingir nuevas microtareas LISTO.
+# SOLQARYN V5 — autoridad operativa vigente (13 noviembre 2026)
 
+**ÚNICA CONFIGURACIÓN OPERATIVA: 6 Tasks de Javier.** Esta orden posterior expresa del propietario revoca toda disposición anterior que permitiera ejecutar, registrar como elegibles, reactivar, recuperar o usar para revisión A5 las Tasks 07/08 de Alex. Toda cita previa de 8 Tasks, roles secundarios activos o reactivación de Alex carece de autoridad operativa. Los registros de auditoría existentes no se borran ni se interpretan como permisos vigentes. Los dos TASK_ID de Alex están excluidos del allowlist SOLQARYN. Según el propietario sus Tasks físicas ya están pausadas; esta sesión no tiene acceso administrativo a ellas, por lo que no certifica su estado físico.
 
-PROJECT_SCOPE_LOCK=STRICT
 PLATFORM=SOLQARYN
 PROJECT_ID=SOLQARYN
 REPOSITORY=solqaryn/Solqaryn
 BRANCH=dev
-LOCAL_SKILL_COUNT=1
-LOCAL_SKILL=.agents/skills/solqaryn-project-governance/SKILL.md
-EXTERNAL_PROJECT_CONTEXT=DENY_BY_DEFAULT
-CONTEXT_MODE=CURRENT_STATE_ONLY
-EXECUTION_PLAN_DRIVE_FILE_ID=1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA
-COMMERCIAL_AUTHORITY_MODE=CURRENT_PLAN_ONLY
-LEGACY_MASTER_EXECUTABLE=FALSE
-TASK_COUNT_LIMIT=PROVIDER_EFFECTIVE_CAPACITY
-CAPACITY_POLICY_VERSION=V13_1000_FIFO_BATCH
-AUTO_CERTIFICATION_MODE=DIRECT_DEV_FOUR_AUDITS
-QUALITY_PROTOCOL_VERSION=V13_A0_A5
-GOAL_MAX_LISTO_PER_RUN=NONE_WITHIN_PROVIDER_RUN
-TASK_REASONING_PREFERENCE=MAX_AVAILABLE_REASONING
-TASK_IDENTITY_EVIDENCE_POLICY=ACCOUNT_TASK_CONTEXT_NATIVE_PEEK_AND_SOURCE_LINKS
-TASK_FALSE_SELF_OWNED_POLICY=DIAGNOSTIC_ONLY_NOT_ACCOUNT_DENIAL
-TASK_DEFINITION_404_POLICY=USE_PEEK_READBACK_NO_AUTO_DENIAL
-TASK_CANDIDATE_TRIAGE=SCAN_ALL_ELIGIBLE_WITH_REAL_TOOLCHAIN_PREFLIGHT
-TASK_NATIVE_REASONING_CONTROL=OWNER_OR_PLATFORM_SETTING
+PROJECT_SCOPE_LOCK=STRICT
+AUTOMATION_RUNTIME=ACTIVE_DEV
+TASK_DISPATCH_STATE=ACTIVE_V5_JAVIER_6_ONLY
+SCHEDULED_CHATGPT_TASKS_AUTHORIZED=6
+PHYSICAL_JAVIER_TASKS_ENABLED=6
+AUTHORIZED_COMMERCIAL_TASK_IDS=6adbb9fff1548191a1bd5b30d9e9984a,6af16bb9492c8191b8e8c7d606f11507,6adc2e4bd8a48191ac7d8641ed95a1a3,6aeacb7820ac8191b7d768a6f33dfa09,6adc2e55f47c81919f6374e561687076,6af16bbad26881918c283abe06e1f32a
+REGISTERED_TASK_IDS=6adbb9fff1548191a1bd5b30d9e9984a,6af16bb9492c8191b8e8c7d606f11507,6adc2e4bd8a48191ac7d8641ed95a1a3,6aeacb7820ac8191b7d768a6f33dfa09,6adc2e55f47c81919f6374e561687076,6af16bbad26881918c283abe06e1f32a
+PHYSICAL_TASKS_REGISTERED=6
+ALEX_TASKS_PROJECT_AUTHORIZED=0
+ALEX_PEER_WATCH_SCOPE=NONE
 JAVIER_PEER_WATCH_SCOPE=SIX_EXISTING_TASK_IDS
 JAVIER_PEER_AUTORESUME=AUTHORIZED_SINGLE_ATTEMPT_WITH_READBACK
-ALEX_PEER_WATCH_SCOPE=OWNER_ONLY_AFTER_ACTIVATION
 WORK_BRANCH_CREATION_ALLOWED=FALSE
+QUALITY_PROTOCOL_VERSION=V13_A0_A5
+TIMEZONE=America/Tegucigalpa
+EXECUTION_PLAN_DRIVE_FILE_ID=1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA
+SHEET_ID=1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU
 
-- Continuidad: GOAL_MAX_LISTO_PER_RUN=NONE_WITHIN_PROVIDER_RUN; se permite superar el hito 3 mientras haya elegibilidad, recursos y pruebas, pero nunca omitir auditorías ni superar límites o suspensiones del proveedor.
-- La autorización vigente permite exclusivamente recuperación física entre seis Javier por la misma cuenta: un intento de is_enabled=true de una hermana pausada, readback y registro; nunca autoaprobar permisos ni habilitar Alex. El razonamiento máximo es una preferencia de operación, no un ajuste verificable desde el conector.
-- Evidencia de identidad permitida: TASK_ID/propietario y prompt de la Task, consulta nativa `peek` real, conexiones autenticadas Javier GitHub/Drive y Skill/Scope Lock de SHA exacto. Un `is_self_owned_automation=false` relativo al agente consultante o un `get 404 Action not found` NO son denegación de cuenta ni permiso positivo; denegación efectiva sigue siendo NO_GO. Candidatas PENDIENTE deben evaluarse todas por factibilidad y seguridad sin bloquear cola por una herramienta faltante. Siete estados antiguos de COLA fueron sincronizados al PLAN mediante fórmulas, conservando evidencia.
-## REGISTRO HISTÓRICO — suspensión del 2026-11-12 20:56 (NO VIGENTE, revocada por reanudación V5)
+| Ejecutor autorizado | TASK_ID | RRULE |
+| --- | --- | --- |
+| Javier DEV 01 | `6adbb9fff1548191a1bd5b30d9e9984a` | FREQ=HOURLY;BYMINUTE=0;BYSECOND=0 |
+| Javier DEV 02 | `6af16bb9492c8191b8e8c7d606f11507` | FREQ=HOURLY;BYMINUTE=10;BYSECOND=0 |
+| Javier DEV 03 | `6adc2e4bd8a48191ac7d8641ed95a1a3` | FREQ=HOURLY;BYMINUTE=20;BYSECOND=0 |
+| Javier DEV 04 | `6aeacb7820ac8191b7d768a6f33dfa09` | FREQ=HOURLY;BYMINUTE=30;BYSECOND=0 |
+| Javier DEV 05 | `6adc2e55f47c81919f6374e561687076` | FREQ=HOURLY;BYMINUTE=40;BYSECOND=0 |
+| Javier DEV 06 | `6af16bbad26881918c283abe06e1f32a` | FREQ=HOURLY;BYMINUTE=50;BYSECOND=0 |
 
-ORDEN POSTERIOR EXPRESA QUE PREVALECE SOBRE V13 ANTERIOR. Las seis Tasks físicas JAVIER_CHATGPT quedan is_enabled=false por cambio pendiente del plan de implementación. El readback del conector confirmó 6/6 pausadas y sus prompts físicos contienen OWNER_PAUSE_HOLD. Ninguna Task puede reclamar una nueva microtarea, iniciar A5 independiente, entrar a PENDIENTE→EN_PROGRESO, publicar cambios nuevos no iniciados ni reactivar a otra Task. La regla de recuperación cruzada entre Tasks queda SUSPENDIDA, aunque el catálogo de ocho IDs autorizados permanezca. No reactivar ninguna Javier hasta nueva instrucción expresa del propietario; no confundir esta pausa autorizada con un error del proveedor.
+## Despacho, continuidad y rescate
 
-CIERRE SEGURO: al hacer la pausa, DEV 03/04/05/06 se veían in_progress; DEV 01/02 completed. Desactivar is_enabled impide disparos programados nuevos, pero NO garantiza que un run ya iniciado haya recibido el cambio de prompt ni que se haya cancelado. Si una ejecución recibe la orden, sólo terminará la microtarea reclamada antes de la pausa, con las auditorías pertinentes y readback, y terminará sin reclamar otra. No inventar cierres ni cambiar tareas ya reclamadas arbitrariamente.
+1. Conservar habilitadas las seis Tasks Javier existentes; no crear nuevas ni modificar IDs, horarios, TZ, RRULE o prompts sin causa y autorización específica. No activar, ejecutar ni actualizar Tasks privadas ajenas.
+2. Orden por corrida: REVIEW_FIRST de una VALIDANDO propia; rescate de BLOQUEADA/VALIDANDO huérfana con diagnóstico causal; nueva PENDIENTE libre y elegible. Continuar mientras permita el proveedor sin cuota artificial de tres cierres.
+3. Cada claim requiere identidad de Task Javier, estado PLAN_MAESTRO, unicidad del ID/owner, prueba de permisos y readback; la cola es reactiva por fórmulas, no un scheduler. Nunca dos escritores sobre una microtarea.
+4. Para una microtarea cuyo responsable sea un ID retirado, **primero verificar ausencia de corrida/lease/escritura activa**, releer el owner y efectuar relevo exclusivo compare-and-swap hacia una de las seis Tasks Javier; registrar antiguo owner, nuevo TASK_ID, motivo, SHA y timestamp. Si no puede acreditarse la exclusividad, NO_GO al relevo y tomar otra PENDIENTE independiente. No borrar la evidencia original ni marcar LISTO sin auditorías.
+5. Permitir rescate técnico asistido sin transferir owner mientras haya ejecución activa: otra Task Javier puede investigar CI, corregir fallo independiente o generar evidencia, sin reclamar cierre simultáneo.
+6. Si una Task Javier está pausada sin orden de pausa vigente ni acción humana requerida, otra de las seis puede intentar reactivación física **una sola vez** con permisos reales y readback; nunca intentar con cuentas retiradas.
+7. C00-01.M05.04, C01-04.M01.01 y otras asignaciones heredadas requieren revalidación real del estado del Sheet; no se declara concluido ningún bloqueo solo por esta modificación de gobernanza.
 
-ALEX: la cuenta propietaria de las Tasks 07 (:05) y 08 (:35) es distinta y NO está administrable desde esta sesión. El propietario solicitó su suspensión; el estado físico de Alex no está confirmado como PAUSADO. Requiere ejecución desde cuenta Alex. No usar conexiones cruzadas ni declarar 8/8 pausadas.
+## Calidad, seguridad y dependencias
 
-CONSERVAR: ocho IDs, RRULE, zonas, historial, fuente de plan, seis controles A0–A5, arquitectura y límites QA/main/PROD. Nueva activación sólo con orden posterior del propietario y revalidación del plan y los permisos.
+- A0 análisis estático; A1 funcional; A2 seguridad/JWT/RBAC/multitenancy; A3 integración causal; A4 post-publicación exact-SHA en dev. A5 requiere TASK_ID distinto del autor (entre las seis Javier) y revisión independiente. Para documentales, NO_APLICA motivado, nunca PASS inventado.
+- CI pertinente según tecnología; Scope Lock STRICT siempre requerido; CANCELLED, SKIPPED o IN_PROGRESS no son PASS cuando la prueba es obligatoria. Validar check-runs contra SHA exacto y fuente actual.
+- Documentación V5 FINAL contiene 2.340 microtareas. PLAN_MAESTRO!H es estado autoritativo; COLA deriva elegibilidad; BITACORA A:Z registra EVENT_ID e IDEMPOTENCY_KEY únicos y conserva historial inmutable.
+- DAG_TECNICO puede adelantar preparación **documental** independiente ante predecesor VALIDANDO con evidencia, owner y ausencia de FAIL. No permite cierres terminales M01.06/M06, cambios IAM/JWT/RBAC/tenant, migraciones DB, deployments ni QA/main/PROD. Meta elástica de elegibles: MAX(24,3*N), N ejecutores realmente habilitados (actualmente 6), sin liberar dependencias falsas.
+- En C00-01.M06.06 preservar gate A5_FAIL histórico de M04.03 hasta A5_PASS causal independiente del SHA pertinente; no retirar bloqueos técnicos reales por orden administrativa.
+- Repositorio exclusivo solqaryn/Solqaryn, rama dev; commits fast-forward serializados sin PR o rama auxiliar; no force-push. QA/main/PROD, secretos, datos y dominios productivos requieren autorización diferenciada.
+- Autoridad documental única: STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES, Drive ID arriba. No reactivar VAEP/Jules ni planes archivados.
+- Si esta documentación contradice ejecución física, reportar discrepancia y aplicar límites reales; el estado físico exige readback. Se conserva el historial técnico en Git y BITACORA, no como instrucciones activas.
 
-
-## Límite de proyecto y seguridad
-- Este Scope Lock identifica exclusivamente al proyecto SOLQARYN, no a un ruleset GitHub. La rama dev carece del antiguo ruleset de PR/CI; main y qa conservan protección independiente.
-- Escritura directa y serializada a dev, HEAD verificado, sin force-push, sin crear PR o ramas auxiliares. SIN BLOQUEO EN SHEETS: no aplicar reservas artificiales, pero sí impedir que dos Tasks sobrescriban el mismo ID.
-- Plan V5 FINAL único para nuevas microtareas; límites de arquitectura Angular 22.2.1, .NET 10, MySQL EF Core/Oracle, JWT, RBAC, BCrypt y aislamiento A/B. Cuatro auditorías con evidencia antes de LISTO, prueba de SHA publicado y estado PLAN/COLA/BITACORA. Las cuatro auditorías no excusan un fallo real.
-- Tasks físicas conservadas; seis Javier habilitadas en readback nativo del 2026-11-13, pausa antigua histórica; Alex depende de su titular; sin crear nuevas ni extender poderes. No consultar otras cuentas/proyectos por fallback. Nada de acceso a QA/main/PROD, secrets o datos productivos sin autorización específica.
-- Calidad V13: A0 análisis estático y A1–A4 son gate de LISTO_DEV; A5 requiere segundo TASK_ID y PASS para promover a qa/main/PROD, nunca autorización implícita. Reanudar solo las Tasks Javier dentro del permiso explícito del propietario y las facultades reales del proveedor, con readback; nunca aprobar o saltarse acciones pendientes de terceros.
-- No reactivar modelos retirados ni planes previos. El contrato operativo único es docs/AUTOMATION_V13.md; el estado actual y censo, docs/AUTOMATION_STATUS.md; separación de cuentas, docs/GITHUB_ACCOUNT_ROLES.md. Incorporación 6→8 reportada como completada por Alex desde su cuenta, con IDs originales y horarios :05/:35. La constancia no confiere acceso a su cuenta ni autoriza QA/main/PROD.
-
-
-## Orden posterior expresa de arranque V5 — 2026-11-12 (prevalece sobre la pausa del 20:56)
-
-- El propietario AUTORIZA la reanudación de las seis Tasks JAVIER_CHATGPT únicamente después de certificar todos los checks requeridos en SUCCESS en el SHA exacto del nuevo commit base de cierre. Hasta el readback de reanudación, los seis `is_enabled=false` continúan describiendo el estado físico real; la pausa anterior es HISTÓRICA y deja de ordenar la ejecución una vez cumplida esta condición.
-- Nueva fuente de trabajo: Google Doc canónico `1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA`, V5 FINAL; Sheet `1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU`. V5 contiene 2.340 microtareas `C00-01.M01.01` a `C15-05.M06.06`, 16 bloques, 65 fases y 390 microfases. El antiguo Plan Comercial V3/V13 y sus IDs históricos no son fuente de nuevos claims; V13 A0–A5 conserva sólo el protocolo de calidad y ejecución.
-- `PLAN_MAESTRO!H` es estado único editable con evidencia y responsable; `COLA!A:O` son fórmulas y `COLA!P:Q` calculan dependencias explícitas por fase sin tope de seis. Candidata real: PENDIENTE, sin responsable, `COLA!G=SI` y `COLA!O=SI`, permisos reales, evaluación de factibilidad y exclusión por TASK_ID/ID. No reclamar automáticamente todo lo que esté en SI ni crear duplicados; múltiples IDs independientes pueden avanzar en paralelo.
-- Mismo contrato V13: tareas individuales de tamaño ejecutable; PENDIENTE → EN_PROGRESO → VALIDANDO → LISTO únicamente con A0–A4 PASS, commit fast-forward en dev, CI causal SHA exacto y readback PLAN/COLA/BITACORA; A5 por otro TASK_ID para promoción QA/main/PROD, nunca autopromoción. Meta 1 LISTO, hito 3 no techo; continuar mientras haya tiempo/proveedor, dependencias y seguridad. No crear ramas/PR, no modificar QA/main/PROD ni datos existentes de usuarios/empresas.
-- RESTAURAR vigilancia y recuperación cruzada exclusivamente entre seis Tasks Javier, IDs y horarios originales :00/:10/:20/:30/:40/:50. Una Task habilitada comprueba los seis IDs y puede intentar `is_enabled=true` UNA vez por compañera pausada si tiene permisos, no existe nueva orden de pausa ni acción humana obligatoria sin resolver; releer estado y registrar evidencia o error. Nunca suplantar, aprobar permisos ni reactivar Tasks de Alex desde Javier. Conservar sus dos IDs :05/:35 para gestión autónoma de su propietario y recuperación mutua sólo en esa cuenta.
-- La eliminación física de filas/columnas auxiliares está verificada: DASHBOARD 40×10; CONFIG 150×3; LEYENDA 80×3; TAREAS_PROGRAMADAS 20×26; AUTOMATIZACIONES 20×18; PLAN_MAESTRO 2341×15; COLA 2341×17. BITACORA no tiene límite de crecimiento por esta decisión. Ningún bloqueo estructural impide crecimiento legítimo de BITACORA.
-- C10-03 no requiere migrar imágenes inexistentes: inventario real cero → no hay exportaciones ni checksums históricos. Mantener capacidad de archivos futuros segura. La tarea `C15-05.M06.06` es terminal y sólo se habilita con evidencia de cierre de las 2.339 anteriores.
-- Jira `KAN-4` es tablero informativo, NO fuente de backlog duplicado ni gate para LISTO. Los respaldos de la estructura y de los seis prompts antes de reactivación quedan preservados; no cambiar títulos, RRULE, zonas, roles, IDs, parámetros de razonamiento ni vigilancia existente fuera del ajuste temporal de pausa.
-- Validación de arranque: CI exact-HEAD requerida = SUCCESS, Scope Lock SUCCESS, fuente Google Sheet íntegra, conectores autorizados, y readback de cada Task tras reanudar. Un check SKIPPED puramente auxiliar se identifica y no se falsea como PASS. Un fallo crítico o acciones humanas pendientes bloquean sólo la operación correspondiente.
+## Límite de alcance
+La Skill local canónica y su referencia de arquitectura gobiernan este proyecto; consultar `.agents/skills/solqaryn-project-governance/SKILL.md`, `AGENTS.md`, `docs/AUTOMATION_STATUS.md` y el HEAD vigente antes de cada cambio. No trasladar poderes ni fuentes de otros proyectos. La retirada institucional de Alex no modifica sus Tasks privadas; su estado pausado fue informado por el propietario, no verificado desde su cuenta.
