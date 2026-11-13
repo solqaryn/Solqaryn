@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C01-04.M01.03: inventario documental de contratos para expediente universal [Javier :10]
+- Lectura de 10 blobs reales: auditoría controller/DTO/service/repository/domain, storage de compras, contexto tenant y frontend; brechas de cronología, consulta tenant, adjuntos y versionado sin asumir API de expediente existente.
+- Documental; A0–A4 proporcionales, Scope Lock SHA exacto y A5 independiente. No cambian runtime/.NET/Angular/MySQL/Docker/E2E, qa, main ni PROD.
+
 ## 2026-11-13 — V5 C02-01.M01.05: aceptación documental contexto tenant [Javier :00]
 - Matriz de 18 casos AC01–AC18 (5 positivos, 13 negativos), ocho archivos Git y requisitos futuros de host/JWT/RBAC/membresía. Sin modificaciones de runtime, MySQL, secretos ni permisos.
 - Preparación DAG VALIDADO, A0–A4 documentales proporcionales, Scope Lock exact-SHA y A5 por otro TASK_ID; revalidar antes de M01.06/M02.
