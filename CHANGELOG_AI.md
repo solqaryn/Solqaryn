@@ -1,3 +1,7 @@
+## 2026-11-12 — Incorporación Alex 2/2 según certificación del propietario
+- Alex comunicó readback nativo desde su cuenta de sus dos Tasks existentes: PRIMARY DEV 07 :05 y PRIMARY DEV 08 :35, is_enabled=true, prompts V13 A0–A5 y recuperación mutua, completed y requires_user_action=false.
+- Esta conciliación de documentos se basa en reporte de Alex, no en conexión nativa independiente desde Javier. No se tocaron Tasks físicas, permisos ni modelo de razonamiento; mantener límites de seguridad y pruebas A0–A5.
+
 ## 2026-11-12 — G0-005.B: puerta estructural de readback DEV/QA/PROD (Javier :20)
 - Se agregan scripts/quality/g0-005-b-readback-policy.mjs y 4 pruebas Node dirigidas en scripts/tests/g0-005-b-readback-policy.test.mjs; un control positivo sintético y 33 negativos fail-closed para recibos F/G/H, SSO 503, upstream 503, origen, proyecto, SHA y separación de referencias no secretas.
 - El positivo solo afirma STRUCTURAL_CONSISTENCY_NOT_LIVE_ATTESTATION. No certifica proveedores reales, bases/caches/secretos reales, login ni aprobación QA/PROD; ninguna credencial se inspecciona, se almacena o se imprime.

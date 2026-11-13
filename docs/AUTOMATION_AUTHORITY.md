@@ -10,11 +10,12 @@ EXECUTION_PLAN_DRIVE_FILE_ID=1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA
 CURRENT_COMMERCIAL_ONLY=TRUE
 AUTOMATION_RUNTIME=ACTIVE_DEV
 PHYSICAL_JAVIER_TASKS_ENABLED=6
-ALEX_TASKS_STATE=REQUIRES_OWNER_READBACK
+ALEX_TASKS_STATE=OWNER_REPORTED_2_OF_2_ENABLED_V13
 SCHEDULED_CHATGPT_TASKS_AUTHORIZED=8
 AUTHORIZED_COMMERCIAL_TASK_IDS=6adbb9fff1548191a1bd5b30d9e9984a,6af16bb9492c8191b8e8c7d606f11507,6adc2e4bd8a48191ac7d8641ed95a1a3,6aeacb7820ac8191b7d768a6f33dfa09,6adc2e55f47c81919f6374e561687076,6af16bbad26881918c283abe06e1f32a,6adbbc9ad9e88191bea8eb69104afb25,6adcc98a80a48191b71a5156624c21df
 REGISTERED_TASK_IDS=6adbb9fff1548191a1bd5b30d9e9984a,6af16bb9492c8191b8e8c7d606f11507,6adc2e4bd8a48191ac7d8641ed95a1a3,6aeacb7820ac8191b7d768a6f33dfa09,6adc2e55f47c81919f6374e561687076,6af16bbad26881918c283abe06e1f32a,6adbbc9ad9e88191bea8eb69104afb25,6adcc98a80a48191b71a5156624c21df
 PHYSICAL_TASKS_REGISTERED=8
+PHYSICAL_ALEX_TASKS_ENABLED_REPORTED=2
 VAEP_DISPATCH_AUTHORIZED=FALSE
 JULES_WORKERS_AUTHORIZED=0
 LEGACY_AUTOMATION_RUNTIME=RETIRED
@@ -50,7 +51,7 @@ TIMEZONE=America/Tegucigalpa
 - Continuidad: primer LISTO objetivo mínimo, 3 hito no máximo; completar todas las microtareas reales factibles en la misma corrida, sin perder A0–A5. Una suspensión del proveedor requiere aviso con run_id y causa si existe; no se soluciona por mero prompt ni se auto reactiva sin resolver permisos.
 - El propietario autorizó que cualquiera de las seis Tasks Javier habilitadas intente reanudar otra Task Javier pausada usando solo su TASK_ID y un update is_enabled=true de la misma cuenta, con lectura confirmatoria, un intento por corrida y registro del run_id. Nunca modificar Alex ni concederse permisos. La elección de razonamiento máximo es del selector nativo del propietario; el conector de Tasks no dispone de parámetro para imponerla.
 ## Propiedad e identidad
-- Cuenta titular JAVIER_CHATGPT: seis Tasks :00, :10, :20, :30, :40 y :50. Cuenta ALEX_CHATGPT: dos Tasks :10 y :50. Estas ocho identidades conservan su ID físico, horarios y titularidad; sólo el propietario de cada cuenta cambia sus Tasks. Javier tiene seis habilitadas en la última lectura. No afirmar estado vivo de Alex sin verificar su propia cuenta.
+- Cuenta titular JAVIER_CHATGPT: seis Tasks :00, :10, :20, :30, :40 y :50. Cuenta ALEX_CHATGPT: dos Tasks :05 y :35, según reporte de Alex. Estas ocho identidades conservan su ID físico, horarios y titularidad; sólo el propietario de cada cuenta cambia sus Tasks. Javier tiene seis habilitadas en la última lectura. Alex reportó lectura nativa y 2/2 habilitadas el 12-nov-2026; no es comprobación independiente desde Javier.
 - PROPIETARIA_INSTITUCIONAL: SOLQARYN Platform. EJECUTOR_PRINCIPAL_01: Javier. EJECUTOR_PRINCIPAL_02: Alex. Ninguna identidad tiene idéntica autoridad de credenciales; los permisos efectivos prevalecen sobre cualquier descripción.
 - ACTOR_HUMANO firma órdenes del propietario; CREADOR_TASK y ACTOR_AUTOMATIZADO usan TASK_ID válido. El RUN_ID/evento de la plataforma no se inventa. En cada tarea, EVENT_ID e IDEMPOTENCY_KEY evitan duplicaciones; REVIEWER/REVISOR debe ser independiente de la autoría al desempeñar una auditoría externa.
 - Separación de deberes: un ejecutor no puede autoaprobarlo como otro usuario, ni usar tokens de Alex/Javier/SOLQARYN intercambiablemente. Revisión cruzada es recomendable cuando tiene lugar, pero la Task puede realizar sus cuatro auditorías técnicas con pruebas sin esperar aprobación GitHub cuando DEV carece de ruleset.
@@ -73,12 +74,17 @@ TIMEZONE=America/Tegucigalpa
 | :30 | JAVIER_CHATGPT | PRIMARY DEV 04 | `6aeacb7820ac8191b7d768a6f33dfa09` |
 | :40 | JAVIER_CHATGPT | PRIMARY DEV 05 | `6adc2e55f47c81919f6374e561687076` |
 | :50 | JAVIER_CHATGPT | PRIMARY DEV 06 | `6af16bbad26881918c283abe06e1f32a` |
-| :10 | ALEX_CHATGPT | SECONDARY REVIEW 01 | `6adbbc9ad9e88191bea8eb69104afb25` |
-| :50 | ALEX_CHATGPT | SECONDARY REVIEW 03 | `6adcc98a80a48191b71a5156624c21df` |
+| :05 | ALEX_CHATGPT | PRIMARY DEV 07 | `6adbbc9ad9e88191bea8eb69104afb25` |
+| :35 | ALEX_CHATGPT | PRIMARY DEV 08 | `6adcc98a80a48191b71a5156624c21df` |
 
-## Handoff 6→8 de Alex: preparada documentación, NO credenciales ni Tasks físicas
+## Alex: incorporación 6→8 notificada como completada
 
-Las dos identidades de Alex ya forman parte del allowlist, no son nuevas. Originales: `6adbbc9ad9e88191bea8eb69104afb25` (SECONDARY REVIEW 01, RRULE :10) y `6adcc98a80a48191b71a5156624c21df` (SECONDARY REVIEW 03, RRULE :50). Nombres/minutos futuros **PROPUESTOS, no aplicados**: `PRIMARY DEV 07 — ALEX` (:05) y `PRIMARY DEV 08 — ALEX` (:35); zona America/Tegucigalpa; mantener IDs y propiedad. Solo Alex verifica/actualiza prompts y configuración física desde su cuenta y decide posterior habilitación. No certificar estado físico actual por registros del 07-nov-2026. Mantener A1–A4 y añadir A0 calidad estática + A5 independiente conforme a V13; prompts físicos Alex aún pendientes. Detalle operativo: docs/AUTOMATION_V13.md.
+Según certificación comunicada por Alex el 12-nov-2026, ambas Tasks fueron leídas directamente desde SU cuenta y tienen is_enabled=true, V13 A0–A5, vigilancia mutua, producción sin techo artificial y preferencia máxima. Sus últimas corridas constan completed y requires_user_action=false. Esta información es evidencia transmitida por el propietario; NO es una lectura independiente desde Javier. El modelo/razonamiento real y un rescate mutuo durante una pausa aún no están comprobados.
+
+- PRIMARY DEV 07 — ALEX, TASK_ID 6adbbc9ad9e88191bea8eb69104afb25, FREQ=HOURLY;BYMINUTE=5;BYSECOND=0, America/Tegucigalpa
+- PRIMARY DEV 08 — ALEX, TASK_ID 6adcc98a80a48191b71a5156624c21df, FREQ=HOURLY;BYMINUTE=35;BYSECOND=0, America/Tegucigalpa
+
+No editar Tasks físicas desde la cuenta de Javier; las verificaciones futuras del estado de Alex pertenecen a Alex. Mantener A0–A5 y las restricciones de qa/main/PROD.
 
 ## Protección técnica y rollback
 - Arquitectura Angular 22 / ASP.NET 10 / MySQL EF Core 10; auth JWT, RBAC, BCrypt, aislamiento A/B, auditoría, CORS y seguridad de datos sin rebajas. Tests de CI pueden continuar sin convertirse en barreras obligatorias de escritura en dev.

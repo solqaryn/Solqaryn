@@ -8,11 +8,12 @@ EXECUTION_PLAN_DRIVE_FILE_ID=1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA
 CURRENT_COMMERCIAL_ONLY=TRUE
 AUTOMATION_RUNTIME=ACTIVE_DEV
 PHYSICAL_JAVIER_TASKS_ENABLED=6
-ALEX_TASKS_STATE=REQUIRES_OWNER_READBACK
+ALEX_TASKS_STATE=OWNER_REPORTED_2_OF_2_ENABLED_V13
 SCHEDULED_CHATGPT_TASKS_AUTHORIZED=8
 AUTHORIZED_COMMERCIAL_TASK_IDS=6adbb9fff1548191a1bd5b30d9e9984a,6af16bb9492c8191b8e8c7d606f11507,6adc2e4bd8a48191ac7d8641ed95a1a3,6aeacb7820ac8191b7d768a6f33dfa09,6adc2e55f47c81919f6374e561687076,6af16bbad26881918c283abe06e1f32a,6adbbc9ad9e88191bea8eb69104afb25,6adcc98a80a48191b71a5156624c21df
 REGISTERED_TASK_IDS=6adbb9fff1548191a1bd5b30d9e9984a,6af16bb9492c8191b8e8c7d606f11507,6adc2e4bd8a48191ac7d8641ed95a1a3,6aeacb7820ac8191b7d768a6f33dfa09,6adc2e55f47c81919f6374e561687076,6af16bbad26881918c283abe06e1f32a,6adbbc9ad9e88191bea8eb69104afb25,6adcc98a80a48191b71a5156624c21df
 PHYSICAL_TASKS_REGISTERED=8
+PHYSICAL_ALEX_TASKS_ENABLED_REPORTED=2
 VAEP_DISPATCH_AUTHORIZED=FALSE
 JULES_WORKERS_AUTHORIZED=0
 LEGACY_AUTOMATION_RUNTIME=RETIRED
@@ -48,7 +49,7 @@ TIMEZONE=America/Tegucigalpa
 - Regla V13: hito 3 sin máximo de cierres durante una corrida. Tras cada LISTO_DEV verificar HEAD, dependencias, colisiones y tomar otra PENDIENTE elegible con A0–A4 de nuevo; no pausar por cuota. Si proveedor interrumpe, registrar estado y causa. La lectura anterior de PRIMARY DEV 03 Javier :20 fue PAUSADA con requires_user_action; en la lectura nueva las seis Javier estaban enabled. El propietario autorizó un intento nativo seguro de reactivación por compañero Javier con readback, sin autoaprobar permisos.
 - Readback actual: 6/6 Tasks Javier habilitadas; PRIMARY DEV 03 había estado pausada por requires_user_action, pero el propietario la reanudó y su estado actual es enabled. Las seis están ahora autorizadas para vigilancia cruzada entre sí y reactivación nativa de una compañera pausada mediante un intento por ID y readback. Alex mantiene sus dos IDs bajo su propia cuenta. Preferencia máxima de razonamiento, sin ajuste ni verificación nativos disponibles por conector.
 ## Interpretación efectiva
-- `AUTOMATION_RUNTIME=ACTIVE_DEV` indica que el contrato contempla DEV; NO afirma que las Tasks se encuentren físicamente habilitadas. En el readback de 2026-11-12 las seis Tasks Javier están habilitadas (`PHYSICAL_JAVIER_TASKS_ENABLED=6`). Para Alex no se presupone su estado. No reactivar por cambiar documentación.
+- `AUTOMATION_RUNTIME=ACTIVE_DEV` indica que el contrato contempla DEV; NO afirma que las Tasks se encuentren físicamente habilitadas. En el readback de 2026-11-12 las seis Tasks Javier están habilitadas (`PHYSICAL_JAVIER_TASKS_ENABLED=6`). Alex transmitió verificación nativa desde su propia cuenta: 2/2 habilitadas; no equivale a lectura directa desde Javier. No reactivar por cambiar documentación.
 - Las constantes `V13_1000_FIFO_BATCH` y `MAX_OPEN_WORK_BRANCHES=1000` se retienen para compatibilidad con validadores instalados; NO habilitan FIFO de PR, trabajo en branches ni PR nuevos. La regla ejecutiva efectiva es `WORK_BRANCH_CREATION_ALLOWED=FALSE` y publicación serial a `dev`.
 - `FORMAL_APPROVAL_GOVERNANCE_REQUIRED=FALSE` se limita al workflow directo de dev. Cualquier protección que subsista en `qa` o `main` mantiene sus obligaciones nativas.
 - En el protocolo A0–A5, A0 calidad estática es obligatoria en VALIDANDO antes de A1–A3; A4 verifica el commit publicado; LISTO_DEV requiere A0–A4 PASS y A5_PENDIENTE registrado; revisión A5 de otro TASK_ID obligatoria antes de QA/PROD, sin bloquear la cola de dev. No certificar seis PASS si A5 aún no se ejecutó. Los seis títulos Javier son secuenciales por hora de ejecución; IDs y RRULE intactos.
@@ -65,12 +66,17 @@ TIMEZONE=America/Tegucigalpa
 | :30 | JAVIER_CHATGPT | PRIMARY DEV 04 | `6aeacb7820ac8191b7d768a6f33dfa09` |
 | :40 | JAVIER_CHATGPT | PRIMARY DEV 05 | `6adc2e55f47c81919f6374e561687076` |
 | :50 | JAVIER_CHATGPT | PRIMARY DEV 06 | `6af16bbad26881918c283abe06e1f32a` |
-| :10 | ALEX_CHATGPT | SECONDARY REVIEW 01 | `6adbbc9ad9e88191bea8eb69104afb25` |
-| :50 | ALEX_CHATGPT | SECONDARY REVIEW 03 | `6adcc98a80a48191b71a5156624c21df` |
+| :05 | ALEX_CHATGPT | PRIMARY DEV 07 | `6adbbc9ad9e88191bea8eb69104afb25` |
+| :35 | ALEX_CHATGPT | PRIMARY DEV 08 | `6adcc98a80a48191b71a5156624c21df` |
 
-## Alex: 2 Tasks registradas, preparación documental 6→8
+## Alex: incorporación 6→8 notificada como completada
 
-Ambas Tasks figuran en el allowlist vigente. El estado físico actual y sus prompts nuevos **NO están certificados desde Javier**. Los RRULE :10 y :50 y nombres SECONDARY REVIEW siguen siendo el último registro, no se cambiaron aquí. Para el eventual paso a ocho ejecutores queda documentada la **propuesta sin ejecutar**: `6adbbc9ad9e88191bea8eb69104afb25` → `PRIMARY DEV 07 — ALEX`, :05; `6adcc98a80a48191b71a5156624c21df` → `PRIMARY DEV 08 — ALEX`, :35. Cada ID requiere actualización de prompt V13 directo y verificación nativa desde la cuenta Alex, sin crear Tasks y sin reactivación hasta su autorización expresa. Las cuatro auditorías originales A1–A4 se conservan; se añaden A0 y A5 según contrato vigente. Contrato de handoff: `docs/AUTOMATION_V13.md`, sección *Preparación de Alex*.
+Según certificación comunicada por Alex el 12-nov-2026, ambas Tasks fueron leídas directamente desde SU cuenta y tienen is_enabled=true, V13 A0–A5, vigilancia mutua, producción sin techo artificial y preferencia máxima. Sus últimas corridas constan completed y requires_user_action=false. Esta información es evidencia transmitida por el propietario; NO es una lectura independiente desde Javier. El modelo/razonamiento real y un rescate mutuo durante una pausa aún no están comprobados.
+
+- PRIMARY DEV 07 — ALEX, TASK_ID 6adbbc9ad9e88191bea8eb69104afb25, FREQ=HOURLY;BYMINUTE=5;BYSECOND=0, America/Tegucigalpa
+- PRIMARY DEV 08 — ALEX, TASK_ID 6adcc98a80a48191b71a5156624c21df, FREQ=HOURLY;BYMINUTE=35;BYSECOND=0, America/Tegucigalpa
+
+No editar Tasks físicas desde la cuenta de Javier; las verificaciones futuras del estado de Alex pertenecen a Alex. Mantener A0–A5 y las restricciones de qa/main/PROD.
 
 ## Fuentes autorizadas
 - Plan Drive: https://docs.google.com/document/d/1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA/edit
