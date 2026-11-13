@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C00-03.M02.05: contrato de eventos de cobertura integrada [Javier :10]
+- Documento `docs/v5/c00-03-m02-05-eventos-correlacion-cobertura.md`: define tipos de evento lógicos, claves de cobertura e idempotencia, trazabilidad y límites del mapa requisito↔microtarea sin desplegar dispatcher, CAS, API, worker ni DB.
+- Contrato documental TIPO 1: oráculos P01–P04/N01–N10, autoridad PLAN/COLA/DAG/BITACORA A:Z, cinco hashes de fuentes, seguridad tenant/JWT/RBAC, Scope Lock exact-SHA y A5 independiente; sin QA/main/PROD.
+
 ## 2026-11-13 — V5 C00-03.M02.04: configuración tipada de cobertura [Javier :00]
 - `docs/v5/c00-03-m02-04-configuracion-cobertura.md`: contrato de configuración, ámbitos, 11 parámetros tipados propuestos y cuatro feature flags conceptuales no activos, con límites JWT/RBAC/tenant/CI y 4 positivos/10 negativos; sin código ni config real.
 - TIPO 1: A0–A3 documentales sobre blob `d61ab68b98c828dfb09a84912cb15de88ce3e69a`, .NET/Angular/MySQL/Docker/E2E NO_APLICA a este diff. A4 commit FF con Scope Lock + V5 attribution exact-SHA, A5 independiente otra Javier; sin QA/main/PROD/branches/PR, rollback `git revert`.
