@@ -1,3 +1,6 @@
+## 2026-11-13 — Corrección A5_FAIL C00-01.M06.03: matriz BITACORA A:Z/26 [Javier :00]
+- Corrige referencia documental de 21 a 26 columnas físicas, EVENT_ID/IDEMPOTENCY_KEY, RUN_ID no inventado y negativos contra truncamiento y suplantación; conserva evidencia original de A5_FAIL sobre 66b640fb y exige nuevo A5 independiente. No cambia runtime, Sheets, Tasks, QA/main/PROD ni gates M06.
+
 ## 2026-11-13 — Corrección A5_FAIL C00-02.M01.03: BITACORA A:Z/26 [Javier :00]
 - Corrige contrato documental original A:U/21 a encabezado físico institucional A:Z/26; define EVENT_ID e IDEMPOTENCY_KEY únicos, RUN_ID vacío sin ejecución comprobable y negativos contra truncamiento/duplicación/suplantación. Preserva A5_FAIL del SHA 81141057 y eventos históricos, solicita nueva A5 independiente tras Scope Lock exact-SHA. Solo documentación; no altera código, Sheets, Tasks, QA/main/PROD.
 

@@ -9,7 +9,7 @@
 | Elemento | Referencia verificada | Riesgo que delimita |
 | --- | --- | --- |
 | Plan V5 (2.340 microtareas) | Google Doc ID `1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA` | Una sola cola institucional, ningún ID 2341 ni V13 histórico como backlog |
-| PLAN, COLA, BITACORA | Sheet ID `1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU` | PLAN H autoridad, COLA E fórmula y G/O elegibilidad, BITACORA 21 campos |
+| PLAN, COLA, BITACORA | Sheet ID `1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU` | PLAN H autoridad, COLA E fórmula y G/O elegibilidad, **BITACORA A:Z/26 columnas** con EVENT_ID A e IDEMPOTENCY_KEY R |
 | Gobierno de proyecto | `.agents/skills/solqaryn-project-governance/SKILL.md` blob `304e400d5c0f89fcfdcc65caece86c34276734b5` | PROJECT_SCOPE_LOCK=STRICT; ramas, autoría y fuentes |
 | Protocolo A0–A5 | `docs/AUTOMATION_V13.md` blob `008837173c78a9b371f3490ad4d35f7f8da5634b` | PASS proporcional, A5 independiente, no promoción automática |
 | M05.01 corrección de contexto Angular | commit `1de966000059a53ace3faddbb1db53478cf800ff`; AppComponent blob `c73f74717e9480d913b16efea6227ea358d24cba` | Prevención de callback tardío entre contextos de ruta |
@@ -42,6 +42,16 @@
 | M05 todavía con VALIDANDO frente a M06.03 G/O=SI | Se permite **documentar riesgos** M06.03 ahora, pero no se permite liberar M06.06 o la fase siguiente prematuramente |
 | Ausencia local de SDK frente a Actions con .NET/Angular/MySQL | Usar runners GHA reales con jobs, logs y SHA, no elevar ausencia local a bloqueo global |
 | Pauta de no autopausar frente a Requires User Action | Mantener programación; no forzar reactivación sin permisos o nueva pausa explícita vigente |
+
+## Enmienda causal A5_FAIL — bitácora física A:Z/26 (13 de noviembre de 2026)
+
+Revisión independiente Javier :50 detectó que la fuente original de este registro describía **21 campos** cuando el encabezado físico vigente en `BITACORA!A1:Z1` contiene **26**. Se preservan el commit original `66b640fbd7000f1e62e4c881208a9077d006bd44`, el resultado A5_FAIL y los eventos históricos. Esta corrección documental no equivale a A5_PASS y no autoriza promoción a qa/main/PROD.
+
+**Contrato de evento completo:** A=EVENT_ID, B=FECHA_HORA_TEGUCIGALPA, C=CONTRATO_VERSION, D=ACTOR_HUMANO, E=TASK_ROLE, F=ACCOUNT_OWNER, G=TASK_ID, H=RUN_ID, I=REVIEWED_RUN_ID, J=ACTOR_AUTOMATIZADO, K=EJECUTOR_RESPONSABLE, L=REVISOR_INDEPENDIENTE, M=SCOPE_KEY, N=MICROTAREA_ID, O=OPERACION, P=ESTADO_ANTERIOR, Q=ESTADO_NUEVO, R=IDEMPOTENCY_KEY, S=BASE_HEAD, T=RESULT_HEAD, U=AUTORIZACION, V=RESULTADO, W=EVIDENCIA, X=ERROR, Y=READBACK, Z=TIMESTAMP_UTC_ORIGINAL. H queda vacío sin RUN_ID nativo comprobado. Toda nueva escritura exige ambas claves A/R únicas y readback contiguo de **26 campos**, sin filas artificiales.
+
+**Casos positivos/negativos reproducibles en revisión de esquema:** aceptar sólo asignación ordenada de las 26 columnas con fuente/autoría probadas; rechazar 21 valores presentados como evento completo, duplicación de EVENT_ID o IDEMPOTENCY_KEY, revisor A5 igual al autor, RUN_ID inventado y cambios retroactivos a eventos anteriores. Si hay registros antiguos incompletos, diagnosticar y reconciliar sin borrar ni rellenar con datos ficticios.
+
+**Impacto:** sólo documento de riesgos y CHANGELOG; requires_dotnet=NO, requires_node_angular=NO, requires_mysql=NO, requires_docker=NO, requires_e2e=NO; requires_security=SI (autoría, evento/A5, multitenant y permisos), requires_scope_lock=SI en SHA correctivo. A0–A3 aplicables: revisión de Markdown, esquema A:Z, fuentes V5, negativos y ausencia de secretos/alteraciones runtime. A4: fast-forward, blobs, Scope Lock exact-SHA, readback PLAN/COLA/BITACORA. Solicitar nueva revisión A5 independiente del SHA corregido; nunca falsificar PASS. Rollback por `git revert` normal, sin force-push.
 
 ## Condición de salida y auditoría proporcional
 
