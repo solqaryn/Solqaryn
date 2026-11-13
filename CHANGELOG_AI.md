@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C02-02.M01.01: objetivo shared/dedicated y no-regresión [Javier :30]
+- Documento preliminar de placement server-side compartido/dedicado, fail-closed y rollback, con 6 blobs actuales y 13 casos NR (3 positivos, 10 negativos) previstos, sin conexión, migración ni pruebas live.
+- A0–A4 documentales con Scope Lock SHA exacto, A5 independiente. No se modifican DSN, Aiven, JWT/RBAC, secretos, QA/main/PROD, ramas o providers.
+
 ## 2026-11-13 — V5 C01-04.M01.03: inventario documental de contratos para expediente universal [Javier :10]
 - Lectura de 10 blobs reales: auditoría controller/DTO/service/repository/domain, storage de compras, contexto tenant y frontend; brechas de cronología, consulta tenant, adjuntos y versionado sin asumir API de expediente existente.
 - Documental; A0–A4 proporcionales, Scope Lock SHA exacto y A5 independiente. No cambian runtime/.NET/Angular/MySQL/Docker/E2E, qa, main ni PROD.
