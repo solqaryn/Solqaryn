@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C02-03.M01.02: actores e interfaces de ciclo tenant [Javier :20]
+- Preparación documental M01.02 de aprovisionamiento: ocho actores, doce contratos IO, cuatro positivos y doce negativos futuros para alta/suspensión/reactivación/archivado/baja lógica idempotentes; cinco archivos de dominio/seguridad verificados.
+- Sin implementación, jobs, datos ni migraciones reales; A0–A4 documentales, Scope Lock exact-SHA, A5 distinta Task; no habilita M01.06/M02 ni QA/main/PROD.
+
 ## 2026-11-13 — V5 C02-02.M01.02: actores, entradas y superficies shared/dedicated [Javier :20]
 - Matriz documental de ocho actores y doce interfaces IO01–IO12 de placement server-side, shared/dedicated y migración reversible; cuatro positivos y catorce negativos propuestos, seis blobs backend verificados.
 - TIPO1 documental; sin router/migración ejecutados, sin DSN del cliente ni cambios .NET/Angular/MySQL/Docker/E2E. Requiere seguridad documental, Scope Lock exact-SHA, A0–A4 proporcionados, A5 independiente; no liberar M01.06/M02 ni QA/main/PROD.
