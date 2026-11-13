@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C00-03.M02.04: configuración tipada de cobertura [Javier :00]
+- `docs/v5/c00-03-m02-04-configuracion-cobertura.md`: contrato de configuración, ámbitos, 11 parámetros tipados propuestos y cuatro feature flags conceptuales no activos, con límites JWT/RBAC/tenant/CI y 4 positivos/10 negativos; sin código ni config real.
+- TIPO 1: A0–A3 documentales sobre blob `d61ab68b98c828dfb09a84912cb15de88ce3e69a`, .NET/Angular/MySQL/Docker/E2E NO_APLICA a este diff. A4 commit FF con Scope Lock + V5 attribution exact-SHA, A5 independiente otra Javier; sin QA/main/PROD/branches/PR, rollback `git revert`.
+
 ## 2026-11-13 — V5 C00-03.M02.03: persistencia de matriz de cobertura [Javier :00]
 - `docs/v5/c00-03-m02-03-persistencia-cobertura.md`: esquema lógico propuesto de vínculos requisito–microtarea–contrato–prueba–evidencia, índices y migración reversible futura. Fija 4 oráculos P01–P04 y 10 negativos N01–N10, sin crear SQL, EF migrations ni nuevo backlog.
 - Entrega documental TIPO 1: A0–A3 de diff, fuente, seguridad y casos sobre blob `745e9a3eae0514ee83fe2de12a535fb084548c74`; .NET/Angular/MySQL/Docker/E2E NO_APLICA al diff. A4 requiere commit FF y Scope Lock SUCCESS exact SHA; A5_PENDIENTE de Task Javier diferente, sin QA/main/PROD, ramas ni PR. Reversión por `git revert`.
