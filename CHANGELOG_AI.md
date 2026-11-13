@@ -1,3 +1,7 @@
+## 2026-11-12 — P5-013.C: delimitacion de una rama activa de menu (Javier :10)
+- Contrato unico de producto `frontend/src/app/shared/navigation/navigation-contract.json`, blob 7142082462d7bc53ff4f0cdf96f67f21405f3a44. Escenario grupo `administracion`, sin editar runtime ni declarar expansion exclusiva del menu.
+- Nota `docs/P5-013-C-DELIMITACION-RAMA-MENU-DEV.md` y test Node `scripts/tests/p5-013-c-delimitacion-menu.test.mjs`, casos estructurales positivo y negativos de grupos/rutas/permisos. No se acredita prueba Angular, navegador, JWT/backend ni QA/PROD; rollback mediante revert normal del changeset.
+
 ## 2026-11-12 — Identidad DEV 01/05 y selección factible; siete estados COLA sincronizados
 - `is_self_owned_automation=false` significa sólo que la automatización no corre para el agente que hace esa consulta; no es revocación de cuenta. `Automations.get 404` no demuestra inexistencia de la Task; conservar `peek` como lectura positiva y validar propiedad/ID/conectores reales/Skill antes de cualquier escritura. Denegación real continúa NO_GO.
 - V13 exige escanear TODAS las PENDIENTE habilitadas, comprobar herramientas concretas y continuar con otra elegible si .NET/Angular/browser/proveedor real no permite acreditar pruebas del primer candidato. Sin inventar A0–A5 ni completar falsamente.
