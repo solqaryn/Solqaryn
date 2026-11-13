@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C02-01.M01.01: objetivo y no-regresión tenant server-side [Javier :30]
+- Preparación documental preliminar del contexto host/identidad/membresía/ámbito; matriz NR-01–NR-12 con tres positivos y nueve negativos propuestos, cuatro blobs originales contrastables y alcance sin código ejecutable.
+- A0–A4 documentales proporcionales y Scope Lock exact-SHA; A5 independiente. Sin migración, autorización nueva, DNS, QA/main/PROD ni pruebas runtime atribuidas.
+
 ## 2026-11-13 — V5 C02-01.M01.04: matriz documental de riesgos del contexto tenant [Javier :00]
 - Registro inicial de riesgos R01–R10, supuestos S01–S05, decisiones D01–D06, fuentes backend y casos documentales positivos/negativos; no modifica ejecutables, datos, permisos ni infraestructura.
 - Preparación provisional DAG VALIDADO. Scope Lock y A4 exact-SHA exigibles; A5 por otra Task y revalidación al cerrar contratos C00/C01.
