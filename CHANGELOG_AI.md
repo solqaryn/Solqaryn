@@ -1,3 +1,8 @@
+## 2026-11-13 — Autoactivación VALIDANDO por DAG24 (gobierno reactivo)
+- El propietario exige reponer la cola al pasar prerequisitos a VALIDANDO. Se especifica gate condicional solo para tareas documentales independientes y A5/gates estrictos para cierres y cambios críticos. Fórmulas DAG_TECNICO!G y COLA!G/O se recalculan automáticamente al cambiar PLAN_MAESTRO; las Tasks hacen el despacho real.
+- Fase preparatoria autorizada: C01-04, C02-01, C02-02, C02-03 M01.01-05 (20); cuatro M01.06 preparadas pero bloqueadas por cierres y A5. C00-01.M06.06 exige causal A5 independent sobre M04.03. Reposición futura ante reserva baja se gobierna por verificación técnica por ID, nunca saltando dependencias ni creando tareas ficticias.
+- Respaldo previo del Sheet y Doc rector confirmado en Drive; cambio solo de gobierno y fórmulas con lectura posterior, sin tocar aplicación, CI ni prompts/horarios físicos. Rollback normal git revert y restauración de snapshot de hoja si fuera necesario, sin force-push.
+
 ## 2026-11-13 — V5 C01-01.M01.05: aceptación preliminar identidad universal [Javier :30]
 - Matriz documental ID01–ID16 para Empresa, Sucursal, Usuario, membresías, rol tenant, recursos, seguridad JWT/RBAC y criterios positivos/negativos.
 - No implementa la fase ni prueba runtime; A0–A4 proporcionales con Scope Lock SHA exacto y A5 independiente. Sin QA/main/PROD.
