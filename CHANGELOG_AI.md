@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C00-01.M03.03: ampliar denegaciones de cabeceras duplicadas [Javier :20]
+- La corrección de P2001F en SHA `bed9975bd31d1f0a35b478614385c623807bb92b` cambió solo test P2 y el clasificador `ci-impact-routing` marcó el job MySQL como SKIPPED. Para evaluar el candidato completo bajo las pruebas reales pertinentes, la regresión nueva de seguridad amplía los casos a cabecera multi-valor repetida (17/17, 18/18) y orden invertido (18/17): deben fallar cerrados. Es una prueba causal adicional, no una bandera artificial.
+- GitHub Actions dotnet/tenancy/MySQL 8.4 deben ejecutarse sobre un nuevo SHA; no atribuir PASS al job SKIPPED ni cerrar DEV antes de A0–A4. No se modifica el código de producción en esta corrección. Rollback: revert normal, sin PR, rama o despliegue.
+
 ## 2026-11-13 — V5 C00-01.M03.03: alinear regresión P2001F tras CI fallida [Javier :20]
 - GitHub Actions CORE run 43425902857, job 131887123198, compiló el código, pero detectó cinco fallos entre 3402 xUnit: P2001F esperaba fallback desde `X-Empresa-Id=-202`, incompatible con el nuevo contrato fail-closed. Las cinco variantes se corrigen para exigir `ForbiddenAccessException`, cero invocación del controlador, cero autoridad tenant y ningún acceso de permisos/scope. No se relaja la protección en producción ni se alteran migraciones.
 - La corrección necesita nuevo commit fast-forward en dev y revalidación CI exact-SHA de .NET 10, seguridad, MySQL 8.4 y A4; M03.03 sigue VALIDANDO. Rollback mediante git revert seguro.

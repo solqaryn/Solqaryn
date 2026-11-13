@@ -48,12 +48,17 @@ public sealed class V5C0001M0303TenantHeaderFailClosedTests
         });
     }
 
-    [Fact]
-    public async Task ValoresMultiples_NoSeAceptaElPrimerTenant()
+    [Theory]
+    [InlineData("17", "18")]
+    [InlineData("18", "17")]
+    [InlineData("17", "17")]
+    [InlineData("18", "18")]
+    public async Task ValoresMultiples_InclusoDuplicados_NoSeAceptaSelectorAmbiguo(
+        string primero, string segundo)
     {
         await Assert.ThrowsAsync<ForbiddenAccessException>(async () =>
         {
-            await EjecutarAsync(["17", "18"]);
+            await EjecutarAsync([primero, segundo]);
         });
     }
 
