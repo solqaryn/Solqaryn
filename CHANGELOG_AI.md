@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C02-01.M01.03: inventario de contratos de contexto tenant [Javier :00]
+- Preparación documental TIPO1: 12 fuentes de Git, host exacto, JWT, membresía, API, filtros, audit y límites de evidencia; aceptación documental P01-P02/N01-N04; no cambios ejecutables.
+- Conservar DAG validado, no adelantar M01.06/M02; A0-A4 documentales y Scope Lock exact SHA; A5 revisión por otra Task.
+
 ## 2026-11-13 — V5 C01-04.M01.02: actores, entradas, salidas y superficies de expediente universal [Javier :10]
 - Preparación documental exclusiva M01.02: siete perfiles de actor, diez interfaces EXP-IO y seis referencias de código real con límites JWT/RBAC/tenant A/B, adjuntos y versionado.
 - No implementa expediente ni API universal. .NET/Angular/MySQL/Docker/E2E no aplican al diff documental; A0–A4 proporcionales y Scope Lock SHA exacto; A5 independiente; sin QA/main/PROD.
