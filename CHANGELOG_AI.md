@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C02-03.M01.04: riesgos, supuestos y decisiones del lifecycle tenant [Javier :20]
+- Matriz documental preliminar R01–R12, S01–S06 y D01–D08 de altas, suspensiones, reactivaciones, archivo y baja lógica; pruebas positivas/negativas futuras, cinco fuentes Git con SHA.
+- Sin cambios de runtime, MySQL, IAM, secretos ni datos, sin afirmación de pruebas live. Gate DAG documental 19 prerequisitos; A0–A4 documentales con Scope Lock exact-SHA; A5 independiente, sin liberar M01.06/M02 ni QA/main/PROD.
+
 ## 2026-11-13 — V5 C02-03.M01.02: actores e interfaces de ciclo tenant [Javier :20]
 - Preparación documental M01.02 de aprovisionamiento: ocho actores, doce contratos IO, cuatro positivos y doce negativos futuros para alta/suspensión/reactivación/archivado/baja lógica idempotentes; cinco archivos de dominio/seguridad verificados.
 - Sin implementación, jobs, datos ni migraciones reales; A0–A4 documentales, Scope Lock exact-SHA, A5 distinta Task; no habilita M01.06/M02 ni QA/main/PROD.
