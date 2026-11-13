@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C00-02.M02.05: eventos, idempotencia y correlación [Javier :20]
+- Documento `docs/v5/c00-02-m02-05-eventos-idempotencia-correlacion.md` define entidades lógicas, 26 columnas A:Z, EVENT_ID/IDEMPOTENCY_KEY, transiciones, SHA causal y rollback, tres casos positivos y nueve negativos; respeta DAG y seis Tasks Javier.
+- Alcance estrictamente documental: A0–A3 verificaciones de artefacto/seguridad, A4 Scope Lock del SHA exacto, A5 independiente. No código, .NET/Angular/MySQL/Docker/E2E, PR, ramas ni QA/main/PROD. Sin certificación runtime ni CAS de Sheets inventado.
+
 ## 2026-11-13 — V5 C03-03.M01.03: inventario auditado de seguridad [Javier :10]
 - `docs/v5/c03-03-m01-03-inventario-auditoria-seguridad.md`: ocho fuentes de API/servicio/modelo/repository/middleware/test con SHA, 12 controles de cobertura (3 positivos, 8 negativos, 1 control), brechas reales delimitadas: consulta A/B requiere revisar filtros globales; best-effort audit no garantiza durabilidad; correlación no es idempotencia y redacción/retención quedan pendientes.
 - Autor 6af16bb9492c8191b8e8c7d606f11507. A0–A3 PASS documentales, sin runtime/.NET/Angular/MySQL/Docker/E2E por no cambiar código ejecutable. A4 Scope Lock exact-SHA y readback tras FF en dev; A5 independiente pendiente. No QA/main/PROD, no PR/branches, rollback `git revert`.
