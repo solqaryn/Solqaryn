@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-const doc = readFileSync(new URL('../../docs/v5/c00-01-m01-03-source-inventory.md', import.meta.url), 'utf8');
+const doc = readFileSync(new URL('../../docs/v5/c00-01-m01-03-source-audit.md', import.meta.url), 'utf8');
 const required = ['C00-01.M01.03', 'solqaryn/Solqaryn', 'PROJECT_SCOPE_LOCK=STRICT', '2.340 IDs',
   '1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA', '1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU',
   'NO declarar migracion', 'NO reclamar IDs del backlog historico', 'NO editar COLA manualmente',

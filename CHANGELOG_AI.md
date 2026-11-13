@@ -1,3 +1,7 @@
+## 2026-11-13 — correccion causal de Scope Lock V5 C00-01.M01.03 [Javier :30]
+- GitHub Actions exact SHA bac2583c falla Scope Lock y Seguridad porque el nombre de dos archivos incluia una identidad heredada bloqueada por scripts/verify-project-scope.mjs. Se corrigieron solamente las rutas y el import del test; sin alterar politica, scripts de seguridad, runtime ni contratacion.
+- Rutas nuevas docs/v5/c00-01-m01-03-source-audit.md y scripts/tests/c00-01-m01-03-source-audit.test.mjs; rutas viejas retiradas del arbol por commit aditivo, sin reset ni force. Node --check PASS; Node --test 9/9 PASS; el patron prohibido ya no aparece en paths ni fuente del test. A4 y LISTO sujetos a nueva CI exact SHA y readback.
+
 ## 2026-11-13 — V5 C00-01.M01.03: inventario de fuentes, evidencia y contradicciones [Javier :30]
 - Documenta 10 IDs de blob Git verificados, Google Doc V5 FINAL y Sheet 2.340 IDs, limites de hash/autoridad, estado V5, topologia objetivo frente a realidad, pausa/reanudacion y formulas PLAN/COLA. La autoria Git no es firma criptografica del propietario.
 - Cambio documental con prueba Node 22.16.0: 9/9 PASS (1 positivo, 8 negativos fail-closed), node --check PASS y escaneo dirigido de secretos PASS. A0 estatico, A1 funcional documental, A2 limites de tenancy/JWT/RBAC/PII sin runtime modificado, A3 integracion de contrato Node PASS. No afirmar HTTP/MySQL/Playwright ni proveedores reales.
