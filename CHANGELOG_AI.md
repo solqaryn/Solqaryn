@@ -1,3 +1,8 @@
+## 2026-11-13 - V5 C00-02.M03.05: cola segura sin dispatcher [Javier :30]
+- Codigo real backend/src/Application/AutomationV5/V5WorkItemQueueSelector.cs selecciona una intencion CLAIM validada por PLAN G/O/DAG, catalogo, allowlist y SHA; no despacha ni crea Tasks.
+- Tests xUnit V5WorkItemQueueSelectorTests y contrato docs/v5/c00-02-m03-05-queue-selector.md con positivos y negativos de actor, fuente, capacidad y colisiones.
+- .NET y seguridad requieren CI causal; Scope Lock y CHANGELOG obligatorios, MySQL/Angular/Docker/E2E NO_APLICA. A5 pendiente independiente, rollback normal; no eventos ni webhook.
+
 ## 2026-11-13 — V5 C00-02.M03.04: adaptador aislado de estados y revisión CAS [Javier :10]
 - `backend/src/Application/AutomationV5/V5WorkItemMemoryAdapter.cs` implementa estados in-memory con lock, token idempotente, autorización de actor, catálogo y validaciones Domain de G/O/DAG, ownership y A0–A4.
 - Pruebas xUnit `backend/tests/Solqaryn.Tests/Application/V5WorkItemMemoryAdapterTests.cs` cubren positivos, denegaciones, una ganadora entre 32 reclamaciones concurrentes, SHA inválido, auditorías ausentes, tokens/owner y capacidad. Contrato en `docs/v5/c00-02-m03-04-workitem-isolated-adapter.md`.
