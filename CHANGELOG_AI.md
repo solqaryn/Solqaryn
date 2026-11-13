@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C00-02.M01.02: entradas, salidas, actores y superficies [Alex :05]
+- Matriz documental de autoridad V5: PLAN_MAESTRO editable, COLA derivada, BITACORA idempotente, GitHub dev, identidades físicas, CI exact-SHA y revisión A5 ajena. Casos positivos/negativos para propiedad, idempotencia, permisos y preservación de fórmulas.
+- Sin cambios de runtime, secretos, API, DB, dependencias o Tasks; A0–A3 documentales y A4 Scope Lock exact SHA/readback antes de LISTO. No QA/main/PROD.
+
 ## 2026-11-13 — V5 C00-03.M01.01: objetivo y no-regresión de la matriz integrada [Javier :10]
 - Delimitación documental de fuente V5 única, perímetro de 2.340 IDs, seis familias de evidencia, dependencias del DAG técnico de preparación transversal y aceptación positiva/negativa fail-closed. No implementa ni certifica la matriz completa, C00-01 final, QA/PROD, migraciones ni autorizaciones.
 - Clasificación: TIPO1_DOCUMENTACION; requiere_dotnet=NO; requiere_node_angular=NO; requiere_mysql=NO; requiere_docker=NO; requiere_e2e=NO; requiere_security=SI_REVISION_FRONTERAS_Y_SECRETOS_DOCUMENTAL; requiere_scope_lock=SI_SHA_EXACTO. A0–A3 dirigidas durante VALIDANDO; A4 commit FF, Scope Lock y readback; A5 independiente.
