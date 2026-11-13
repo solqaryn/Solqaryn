@@ -1,3 +1,6 @@
+## 2026-11-13 — V5 C01-03.M01.04: matriz preliminar de riesgos de configuración [Javier :20]
+- Documento de preparación M01 para configuración dinámica: diez riesgos R01-R10, cinco supuestos S01-S05, seis decisiones D01-D06 y tres escenarios negativos de integridad/aislamiento/inyección. Referencias V5/DAG, seguridad JWT/RBAC/tenant y rollback, sin implementación ni migración; no se declaran pruebas .NET/Angular/MySQL. A0–A4 documentales y A5 independiente requeridos. No QA/main/PROD.
+
 ## 2026-11-13 — V5 C01-03.M01.05: aceptación preliminar de configuración tipada [Javier :20]
 
 ## 2026-11-13 — V5 C00-04.M01.02: actores y superficies gobierno de cambios [Javier :10]
