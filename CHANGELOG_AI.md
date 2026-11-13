@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C00-02.M02.03: modelo de persistencia, índices y migración reversible [Javier :40]
+- `docs/v5/c00-02-m02-03-persistencia-indices-migraciones-datos-prueba.md`: especifica almacenamiento institucional PLAN/COLA/DAG/BITACORA A:Z/monitor, unicidad, índices relacionales **propuestos no implementados**, plan de migración futuro reversible y casos P01–P04/N01–N09 documentales; reconoce que Sheets no proporciona CAS seguro por una simple lectura/escritura.
+- TIPO 1 documental: A0–A3 proporcionales sobre blob eb3110d591950728b325396a5cf7902d857fff3f; .NET/Angular/MySQL/Docker/E2E NO_APLICA a este diff y NO se ensayó migración/backup live. A4 exige commit FF, Scope Lock exact SHA y readback; A5 revisor distinto del allowlist Javier; sin QA/main/PROD, PR ni ramas; rollback git revert.
+
 ## 2026-11-13 — V5 C00-02.M02.02: contrato de API/DTO, errores y compatibilidad [Javier :40]
 - Documento `docs/v5/c00-02-m02-02-api-dto-errores-compatibilidad.md`: contrato documental de lectura, claims, candidato, auditorías, eventos A:Z y cierre con errores lógicos, compatibilidad y casos positivos/negativos. Aclara que no existe CAS nativo demostrado ni nuevo endpoint/worker, con prohibición de elevar permisos tenant.
 - TIPO 1 documental sin código ejecutable; A0–A3 revisión documental previa sobre blob 6e8170eea8fe05bba4f5610fced1d159719e03f1; .NET/Angular/MySQL/Docker/E2E NO_APLICA al diff; A4 requiere Scope Lock exact-SHA, readback institucional y A5 pendiente de otra Task Javier. Sin QA/main/PROD, ramas, PR ni force-push; rollback por git revert.
