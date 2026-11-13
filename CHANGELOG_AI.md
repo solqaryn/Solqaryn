@@ -979,3 +979,8 @@
 - Se amplía Playwright real de la matriz de cobertura V5 con recorrido protegido cobertura → administración → cobertura, cinco columnas semánticas y ausencia de formularios/operaciones empresariales o institucionales.
 - Segunda prueba controla un GET de sesión sintético retenido: una sola solicitud, botón desactivado, denegación 403 con mensaje seguro y reintento explícito posterior; no se presume JWT/RBAC/MySQL verificados en vivo.
 - A0 static/procedencia, A1-A3 Chromium positivo/negativo y Angular lint/build, A4 solo exact SHA + readback, A5 independiente Javier; sin nuevo endpoint, DB, workers, despliegue, rama o PR. Rollback git revert.
+
+## 2026-11-13 — V5 C00-03.M04.05: accesibilidad de la cobertura privada en Chromium real [Javier :40]
+- Agrega cuatro verificaciones Playwright sobre /plataforma/cobertura-v5: rechazo sin JWT, denegacion 403 de sesion simulada, mobile 390px/escritorio 1280px, ausencia de overflow exterior, tabla semantica desplazable por teclado, foco y labels, contraste de texto 4.5:1.
+- Amplia el workflow navegador V5 para ejecutar el archivo de pruebas separado sin modificar guards, servicios, rutas, MySQL ni componentes de terceros. Backend de sesion sintetico solo para experiencia UI; no certifica JWT/RBAC/tenant de servidor ni datos live.
+- A0 revision estatica, secretos y CHANGELOG; A1-A3 browser positivo/negativo, Angular lint y build; A4 exige CI causal del SHA, Scope Lock y readback institucional; A5_PENDIENTE para otra Task Javier. Rollback mediante revert normal, sin reescribir commits.
