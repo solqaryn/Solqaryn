@@ -1,4 +1,9 @@
 ## 2026-11-13 — Ampliacion V5 DAG20 de preparacion documental independiente [gobierno]
+
+## 2026-11-13 — V5 C00-04.M01.01: alcance de gobierno de cambios [Javier :10]
+- Contrato documental de decisiones, autorizaciones, riesgos, gates, casos positivos/negativos y rollback; distingue preparación M01 de implementación/deploy. Fuente V5; sin cambios de runtime, base de datos, secretos o configuraciones.
+- A0–A4 documentales requeridas y A5 independiente antes de QA/main/PROD; Scope Lock exact SHA al publicar, BITACORA A:Z/26 e idempotencia. Autor conserva TASK_ID original.
+
 - Backups nativos del Sheet y Plan V5 verificados. Se registran 20 IDs ya existentes M01.01-05 de C00-04 y C01-01/02/03 con once prerequisitos cerrados, sin ciclo, como documentos preparatorios. Gate C00-01.M06.06 individual, no apertura de implementacion ni QA/main/PROD.
 - El Doc rector, DAG_TECNICO, AGENTS, AUTOMATION_V13, AUTOMATION_STATUS, CONFIG y Jira se sincronizan con lectura posterior; los seis prompts y horarios Javier y dos Alex no se modifican. Rollback GitHub por git revert sin force-push; desactivar filas nuevas del DAG (F=EN_REVISION) antes de revertir el contrato.
 
