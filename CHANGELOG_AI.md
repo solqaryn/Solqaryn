@@ -1,3 +1,7 @@
+## 2026-11-13 — C03-02.M01.04: riesgos de autorización y privacidad (Javier :50)
+- Nuevo docs/v5/c03-02-m01-04-riesgos-supuestos-decisiones.md: R01–R12, S01–S06 y D01–D06 con trazabilidad a inventario y aceptación, cobertura BOLA/IDOR, claims falsos, sucursales, archivos y exportaciones. No certifica funcionamiento HTTP/MySQL ni aplica cambios JWT/RBAC.
+- Documental A0-A4 proporcional, Scope Lock exact-SHA; A5 independiente de otra Task Javier. No cambia código, migraciones, Tasks, QA/main/PROD; rollback git revert.
+
 ## 2026-11-13 — V5 C02-04.M01.04: riesgos y decisiones de consola global [Javier :40]
 - Matriz documental 15 riesgos R, 8 supuestos S y 10 decisiones D sobre privilegios globales, MFA/reauth, TTL, tenant A/B, PII, soporte DEV limitado y auditoría crítica. Fuentes Git verificadas; mecanismos futuros no implementados ni certificados.
 - TIPO1 sin runtime/secretos ni migraciones; A0–A4 documentales y Scope Lock exact SHA; A5 pendiente independiente Javier, sin liberar M01.06/M02 ni QA/main/PROD.
