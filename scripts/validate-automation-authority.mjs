@@ -103,7 +103,7 @@ if (errors.length) {
     ['single-candidate starvation',{authority:source.authority.replace('TASK_CANDIDATE_TRIAGE=SCAN_ALL_ELIGIBLE_WITH_REAL_TOOLCHAIN_PREFLIGHT','TASK_CANDIDATE_TRIAGE=FIRST_ONLY')}],
     ['work branch allowed',{agents:source.agents.replace('WORK_BRANCH_CREATION_ALLOWED=FALSE','WORK_BRANCH_CREATION_ALLOWED=TRUE')}],
     ['legacy engine',{status:source.status.replace('VAEP_DISPATCH_AUTHORIZED=FALSE','VAEP_DISPATCH_AUTHORIZED=TRUE')}],
-    ['wrong plan',{status:source.status.replace('1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA','HISTORICAL')}],
+    ['wrong plan',{status:source.status.replace('EXECUTION_PLAN_DRIVE_FILE_ID=1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA','EXECUTION_PLAN_DRIVE_FILE_ID=HISTORICAL')}],
     ['wrong target',{authority:source.authority.replace('REPOSITORY=solqaryn/Solqaryn','REPOSITORY=other/Other')}],
   ]) if (validateAuthority({...source,...mutant}).length===0) throw Error('negative test accepted: '+description);
   console.log('SOLQARYN V13 DIRECT DEV authority PASS; thirteen fail-closed mutations rejected');

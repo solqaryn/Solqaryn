@@ -1,3 +1,6 @@
+## 2026-11-13 — Scope Lock: mutación exacta de la clave del plan
+- Corregida exclusivamente la auto-prueba negativa `wrong plan` en `validate-automation-authority.mjs`: ahora modifica `EXECUTION_PLAN_DRIVE_FILE_ID=` en lugar de la primera aparición del ID dentro de la introducción V5; la prueba vuelve a comprobar un plan realmente incorrecto. Se conserva el fail-closed del contrato y la Skill canónica sin modificación.
+
 ## 2026-11-13 — Conciliación V5 y selección de IDs; no modifica el progreso de M03
 - El commit base `f4b8528f57e82625d343dd1590076df44cacaee2` es antecesor confirmado de `4d582aa48dcdf8e9efb8d4c15ec229cbc0d603a5` (13 commits posteriores de C00-01.M01/M02) y del commit `4fc1f138a3323268d3efb6962b1182ced567c435` que publicó código para C00-01.M03.01; el HEAD vivo avanza y nunca se inmoviliza en el SHA base.
 - Seis Tasks Javier verificadas habilitadas con prompts V5 + ruta GitHub Actions; se repararon las claves operativas que aún decían 0/6 y la suspensión antigua pasó a histórico, sin cambiar RRULE/IDs ni el ámbito exclusivo Alex.
