@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C02-04.M01.05: aceptación futura de consola global [Javier :40]
+- Documento de 24 criterios de aceptación AC01–AC24: 6 positivos y 18 negativos FUTUROS para rol global separado de ERP, MFA/reautenticación, grants temporales, motivo, auditoría crítica, tenant A/B, PII y rollback. Seis fuentes Git respaldan limites, sin pruebas runtime atribuidas.
+- TIPO1 documental, A0–A4 proporcional y Scope Lock SHA exacto; A5 de otra Task Javier. No crear permisos/MFA reales ni liberar M01.06/M02, QA/main/PROD.
+
 ## 2026-11-13 — C03-02.M01.04: riesgos de autorización y privacidad (Javier :50)
 - Nuevo docs/v5/c03-02-m01-04-riesgos-supuestos-decisiones.md: R01–R12, S01–S06 y D01–D06 con trazabilidad a inventario y aceptación, cobertura BOLA/IDOR, claims falsos, sucursales, archivos y exportaciones. No certifica funcionamiento HTTP/MySQL ni aplica cambios JWT/RBAC.
 - Documental A0-A4 proporcional, Scope Lock exact-SHA; A5 independiente de otra Task Javier. No cambia código, migraciones, Tasks, QA/main/PROD; rollback git revert.
