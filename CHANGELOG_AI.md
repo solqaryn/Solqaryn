@@ -729,3 +729,8 @@
 ## 2026-11-13 — Rectificación documental A5_FAIL C00-03.M01.01/.02/.03 [Javier :10]
 - Corrige esquema físico de BITACORA de A:U/21 a A:Z/26, EVENT_ID A e IDEMPOTENCY_KEY R, sin reinterpretar ni reescribir eventos históricos.
 - Añade verificación positiva 26/26 y negativas de truncamiento, duplicación y autoaprobación; preserva A5_FAIL anterior, exige Scope Lock exact-SHA y A5 independiente sobre este nuevo commit. Sin cambios ejecutables, QA/main/PROD, nuevos IDs, ramas o PR.
+
+## SOLQARYN V5 — C03-01.M01.04, registro documental de riesgos de autenticación (2026-11-13)
+
+- PRIMARY DEV 05 JAVIER (`6adc2e55f47c81919f6374e561687076`) prepara `docs/v5/c03-01-m01-04-riesgos-supuestos-decisiones-autenticacion.md` para registrar R01–R14, S01–S08 y D01–D08 respecto de login, renovación, revocación, recuperación y factores futuros.
+- Alcance TIPO1 exclusivamente documental. Sin cambios de código ejecutable, DB, JWT, permisos, proveedores o entornos. A0–A3 verificaciones documentales; A4 requiere Scope Lock exact SHA y readback de PLAN/COLA/BITACORA, A5 revisión independiente pendiente. Reversión con git revert no destructivo.
