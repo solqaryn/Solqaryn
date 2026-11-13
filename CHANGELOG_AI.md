@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C00-02.M03.06: auditoría estructurada de ciclo V5 [Javier :50]
+- Implementación real `backend/src/Application/AutomationV5/V5WorkItemAuditLogger.cs`: logging estructurado de cambios de microtarea con formato estricto, códigos de error permitidos, UUID de correlación y rechazo sin emisión de entradas no seguras; no implementa CAS, BITACORA ni nueva autoridad.
+- Pruebas xUnit positivas y negativas `backend/tests/Solqaryn.Tests/Application/V5WorkItemAuditLoggerTests.cs` y contrato `docs/v5/c00-02-m03-06-audit-logging.md`. A0–A3 proporcionales con .NET 10/seguridad, Scope Lock y provenance exact SHA para A4; sin MySQL, frontend, Docker, PR, ramas, QA/main/PROD; reversión `git revert`.
+
 ## 2026-11-13 — V5 C00-03.M03.02: servicio Application de cobertura integrada [Javier :00]
 - `backend/src/Application/AutomationV5/V5RequirementCoverageProjectionService.cs` implementa proyección de matriz requisito→microtarea para IDs existentes con estado/owner/SHA verificados. Conserva faltantes explícitos, no concede PASS por una referencia documental ni crea microtareas, endpoints o persistencia.
 - `backend/tests/Solqaryn.Tests/Application/V5RequirementCoverageProjectionServiceTests.cs` incorpora xUnit positivos y negativos: mapeo uno-a-varios, lote vacío, SHA inválido/obsoleto, snapshot ausente, ID/estado inválido y cobertura duplicada; contrato en `docs/v5/c00-03-m03-02-application-service.md`. Resultado CI .NET/seguridad/Scope Lock exact-SHA pendiente hasta su ejecución.

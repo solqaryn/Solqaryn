@@ -1,0 +1,9 @@
+# SOLQARYN V5 — C00-02.M03.06: auditoría estructurada y errores seguros
+
+**Implementación:** `backend/src/Application/AutomationV5/V5WorkItemAuditLogger.cs` (ASP.NET Application .NET 10). Componente inyectable `ILogger<V5WorkItemAuditLogger>` que emite eventos estructurados de transiciones del trabajo V5 solo con IDs, operación, SHA completo, correlación `Guid`, estado acotado y código de error permitido. Ante entrada no válida rechaza sin escribir; una excepción del proveedor de logs no se transforma en éxito de auditoría.
+
+**Seguridad:** `TaskId` solo 32 dígitos hex, `WorkItemId` patrón estricto `Cdd-dd.Mdd.dd`, SHA exactamente 40 hex, operación/outcome/error code whitelisted, `Guid` no vacío. No acepta mensajes de excepción arbitrarios ni headers, JWT, PII, request body o cadenas SQL. Una cuenta o microtarea con formato correcto NO recibe permisos: allowlist, gates DAG, CAS de owner y aislamiento tenant A/B se validan en el consumidor autorizado antes de invocar este log. No implementa BITACORA, CAS o dispatcher: registrar un log no cambia PLAN/COLA y no es A5_PASS.
+
+**Pruebas xUnit:** `backend/tests/Solqaryn.Tests/Application/V5WorkItemAuditLoggerTests.cs` verifica éxito y estructura/event ID, error controlado, nueve entradas maliciosas/inválidas sin emisión y fallo de proveedor que se propaga. Ejecutar compilación y tests reales en los jobs de GitHub Actions del SHA publicado. Check Scope Lock y atribución de CHANGELOG también obligatorios.
+
+**Clasificación:** requiere_dotnet=SI, requiere_security=SI por auditoría/fail-closed, requiere_node_angular=NO, requiere_mysql=NO (sin persistencia), requiere_docker=NO, requiere_e2e=NO, requiere_scope_lock=SI. Rollback por `git revert` normal, conservando BITACORA histórica de 26 columnas y autoría independiente. Sin API nueva, secrets, migración, modificación de tenants, PR, ramas, qa/main/PROD.
