@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-01.M01.04: riesgos, supuestos y decisiones pendientes [Javier :20]
+- Inventario causal de nueve riesgos R01–R09, cuatro supuestos y decisiones de salida del baseline: orden posterior V5 frente a hold histórico, claim concurrente J10/J20 de M01.02 resuelto sin tomar trabajo ajeno, infraestructura propuesta no desplegada, imágenes históricas cero (NO_APLICA), seguridad A/B y A5 pendientes sin falsos PASS.
+- Cambios exclusivos: docs/v5/c00-01-m01-04-risks.md, scripts/tests/c00-01-m01-04-risks.test.mjs y CHANGELOG aditivo. A0: Node 22.16.0 --check y grep dirigido de secretos PASS; A1/A2: positivo + cinco negativos fail-closed, 6/6 Node tests; A3: integración documental/protocolo sin runtime, sin deps nuevas. No se simulan .NET, Angular/Playwright browser, HTTP, MySQL, tenants live, providers ni migración.
+- A4 requiere SHA fast-forward, diff y tests pospublicación, checks GitHub exact-SHA y readback PLAN/COLA/BITACORA. A5_PENDIENTE corresponde a otro TASK_ID, sin QA/main/PROD. Rollback: git revert aditivo sin force-push.
+
 ## 2026-11-13 — V5 C00-01.M01.02 inventario de actores, interfaces y superficies
 - Matriz de entradas, salidas, actores y límites de confianza para plan V5 (solo documentación baseline). Caso positivo y cinco negativos ejecutados con Node 22: 6/6 PASS, análisis estático y scanner de secretos dirigido; sin .NET, Angular E2E, HTTP, MySQL ni disponibilidad de proveedores. Conserva JWT/BCrypt/RBAC/tenancy A/B, separación QA/main/PROD, migración histórica de imágenes NO_APLICA. A5_PENDIENTE independiente; rollback mediante git revert normal. Ningún PR o branch nuevo.
 
