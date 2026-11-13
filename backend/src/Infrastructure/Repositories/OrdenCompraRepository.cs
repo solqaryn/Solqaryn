@@ -65,9 +65,17 @@ public sealed class OrdenCompraRepository : IOrdenCompraRepository
             _ => desc ? query.OrderByDescending(x => x.FechaCreacion) : query.OrderBy(x => x.FechaCreacion)
         };
 
+        // Evitar overflow int para Page=int.MaxValue; un Skip negativo
+        // nunca debe mostrar la primera pagina a una solicitud fuera de rango.
+        var pagina = Math.Max(1, filtro.Page);
+        var tamanoPagina = Math.Clamp(filtro.PageSize, 1, 100);
+        var desplazamiento = ((long)pagina - 1) * tamanoPagina;
+        if (desplazamiento >= total)
+            return (Array.Empty<OrdenCompra>(), total);
+
         var ids = await query
-            .Skip((filtro.Page - 1) * filtro.PageSize)
-            .Take(filtro.PageSize)
+            .Skip(checked((int)desplazamiento))
+            .Take(tamanoPagina)
             .Select(x => x.Id)
             .ToListAsync();
 

@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C00-01.M03.04 persistencia, paginacion extrema fail-closed [Javier :30]
+- OrdenCompraRepository.GetPagedAsync calcula offset en long, pagina/tamano acotados, retorna vacio fuera de rango sin desbordamiento int ni filtrado tenant ampliado.
+- xUnit positivos, negativos e aislamiento A/B dirigido; GitHub Actions .NET 10/MySQL 8.4 sobre SHA nuevo exigido, sin modificar API, schema, JWT/RBAC, UI o produccion. A5 independiente.
+
 ## 2026-11-13 — V5 C00-01.M03.03: ampliar denegaciones de cabeceras duplicadas [Javier :20]
 - La corrección de P2001F en SHA `bed9975bd31d1f0a35b478614385c623807bb92b` cambió solo test P2 y el clasificador `ci-impact-routing` marcó el job MySQL como SKIPPED. Para evaluar el candidato completo bajo las pruebas reales pertinentes, la regresión nueva de seguridad amplía los casos a cabecera multi-valor repetida (17/17, 18/18) y orden invertido (18/17): deben fallar cerrados. Es una prueba causal adicional, no una bandera artificial.
 - GitHub Actions dotnet/tenancy/MySQL 8.4 deben ejecutarse sobre un nuevo SHA; no atribuir PASS al job SKIPPED ni cerrar DEV antes de A0–A4. No se modifica el código de producción en esta corrección. Rollback: revert normal, sin PR, rama o despliegue.
