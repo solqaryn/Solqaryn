@@ -97,3 +97,80 @@ test.describe('V5 C00-02/03 M04.01 - rutas de plataforma en Chromium real', () =
     expect(observed.length).toBeGreaterThanOrEqual(2);
   });
 });
+
+test.describe('C00-02.M04.05 - responsive, teclado, foco y contraste V5', () => {
+  test.describe.configure({ retries: 0 });
+
+  test('flujo de solo lectura conserva cuatro pasos sin overflow y admite Tab en movil y escritorio', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await syntheticToken(page);
+    const responses = await mockPlatformSession(page, true);
+    await page.goto('/plataforma/flujo-v5');
+    await expect(page.getByRole('heading', { name: 'De la solicitud a la evidencia DEV' })).toBeVisible();
+    const steps = page.getByRole('list', { name: 'Secuencia contractual de estados' }).locator('li');
+    await expect(steps).toHaveCount(4);
+    for (const width of [390, 1280]) {
+      await page.setViewportSize({ width, height: 844 });
+      const overflow = await page.evaluate(() =>
+        Math.max(document.body.scrollWidth, document.documentElement.scrollWidth) - window.innerWidth);
+      expect(overflow).toBeLessThanOrEqual(1);
+      for (const step of await steps.all()) {
+        const rect = await step.boundingBox();
+        expect(rect).not.toBeNull();
+        expect(rect!.width).toBeGreaterThan(120);
+        expect(rect!.x + rect!.width).toBeLessThanOrEqual(width + 1);
+      }
+    }
+    await page.setViewportSize({ width: 390, height: 844 });
+    const refresh = page.getByRole('button', { name: /Revalidar sesión/ });
+    const administration = page.getByRole('link', { name: /Administración/ });
+    await refresh.focus();
+    await expect(refresh).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(administration).toBeFocused();
+    expect(responses).toContain(200);
+  });
+
+  test('cobertura mantiene tabla semantica desplazable mediante teclado sin exponer datos', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await syntheticToken(page);
+    await mockPlatformSession(page, true);
+    await page.goto('/plataforma/cobertura-v5');
+    const region = page.getByRole('region', { name: 'Columnas del contrato de cobertura' });
+    await expect(region).toBeVisible();
+    await expect(page.getByRole('columnheader')).toHaveCount(5);
+    const dimensions = await region.evaluate(element => ({
+      client: element.clientWidth, content: element.scrollWidth,
+      tabindex: element.getAttribute('tabindex')
+    }));
+    expect(dimensions.tabindex).toBe('0');
+    expect(dimensions.content).toBeGreaterThan(dimensions.client);
+    await region.focus();
+    await expect(region).toBeFocused();
+    await page.keyboard.press('ArrowRight');
+    await expect.poll(() => region.evaluate(element => element.scrollLeft)).toBeGreaterThan(0);
+    await expect(page.getByText('Sin datos de cobertura verificados', { exact: false })).toBeVisible();
+  });
+
+  test('titulo de la superficie de contrato cumple contraste de texto normal en tema disponible', async ({ page }) => {
+    await syntheticToken(page);
+    await mockPlatformSession(page, true);
+    await page.goto('/plataforma/flujo-v5');
+    const ratio = await page.locator('.v5-card h2').evaluate(element => {
+      const rgb = (value: string): number[] => (value.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number);
+      const luminosidad = (channels: number[]): number => {
+        const linear = channels.map(channel => {
+          const s = channel / 255;
+          return s <= 0.04045 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+        });
+        return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
+      };
+      const foreground = rgb(getComputedStyle(element).color);
+      const background = rgb(getComputedStyle(element.closest('mat-card') ?? document.body).backgroundColor);
+      if (foreground.length !== 3 || background.length !== 3) return 0;
+      const a = luminosidad(foreground), b = luminosidad(background);
+      return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+    });
+    expect(ratio).toBeGreaterThanOrEqual(4.5);
+  });
+});

@@ -964,3 +964,8 @@
 - No modifica el runtime ni la lógica de autenticación existente; verifica que el botón se desactiva durante una petición y no ejecuta una segunda llamada mientras siga pendiente.
 - El workflow V5 ya existente ejecuta el spec modificado en runner Node 24/npm 11 y reproduce los casos positivos/negativos en SHA exacto. Formularios de edición NO_APLICA porque la vista es deliberadamente solo lectura.
 - A0 revisión estática, A1 y A2 tests UI/guard y fuga de errores, A3 Angular build/lint + Vitest y A4 Scope Lock/readback/rollback; A5 pendiente de otro Javier. No MySQL, Docker, infra, QA/main/PROD ni PR/ramas.
+
+## 2026-11-13 — SOLQARYN V5 C00-02.M04.05 accesibilidad y responsive de la consulta V5 [Javier :30]
+- Se amplía el Playwright Chromium de rutas V5 con pruebas móviles y escritorio (390/1280), cuatro pasos sin overflow, navegación por Tab, tabla semántica desplazable por teclado y contraste de texto mínimo 4.5:1 según estilos computados.
+- Las rutas usan respuestas de sesión sintéticas únicamente para validar experiencia y guardas negativas; no se afirma JWT/MySQL real, tráfico institucional, permisos adicionales ni mutaciones operativas.
+- A0 sobre diff, tipos, secretos y procedencia; A1/A2/A3 mediante browser real positivo y negativo, lint/build Angular; A4 solo check-runs exact-SHA y readback del Sheet; A5 independiente de otra Task Javier. Sin API, DB, Docker, workers, despliegues, PR o ramas; rollback git revert.
