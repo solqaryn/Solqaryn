@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-01.M02.03 persistencia, indices, migraciones y datos de prueba [Javier :20]
+- Se documenta el contrato de nueve invariantes DB01-DB09 de MySQL/EF Core/Oracle, indexes compuestos de Cliente/Producto por EmpresaId, migracion reversible y fixtures aislados A/B. Rutas y blobs Git comprobados en dev, evidencia estatica no es ejecucion DB.
+- Cambio acotado a docs/v5/c00-01-m02-03-persistence-contract.md, scripts/tests/c00-01-m02-03-persistence-contract.test.mjs y CHANGELOG. A0 sintaxis Node 22.16.0 y escaneo de patrones de secretos; A1 positivo documental; A2 ocho negativos fail-closed; A3 Node 9/9 PASS. Sin dependencias nuevas ni cambios en runtime, datos, JWT/RBAC, QA/main/PROD.
+- A4 requiere commit directo fast-forward, diff, CI exact SHA y readback institucional. A5_PENDIENTE exige otro TASK_ID antes de QA/main/PROD, rollback aditivo git revert sin reescribir historia. No inventar ejecucion MySQL, HTTP, Playwright ni migraciones.
+
 ## 2026-11-13 — V5 C00-01.M02.02 contratos API/DTO/errores y validadores [Javier :40]
 - Inventario documental V5 de ocho contratos reales en API/Application con hashes de blobs Git: Empresas API/DTO, tenant-context, Productos API/DTO, FluentValidation producto y login, middleware global de errores 400/403/404/409. Se protegen límites JWT, RBAC, compatibilidad legacy, variantes, tenant A/B y no exposición de secretos.
 - Transición de PLAN PENDIENTE→EN_PROGRESO→VALIDANDO registrada antes de A0–A3, con mismo TASK_ID, BITACORA y COLA por fórmula. Node22 --check, scan dirigido de secretos y 8/8 pruebas documentales (una positiva, siete negativas) PASS sobre candidato; sin cambios runtime/DB/Angular, ni afirmar HTTP/MySQL/browser/tenancy live.
