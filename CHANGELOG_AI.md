@@ -928,3 +928,9 @@
 - `V5CoverageTenantProjectionServiceTests.cs` cubre positivos y negativos (actor, scope, tenant, item, requisito, bindings ausentes, SHA y duplicados).
 - La proyeccion es solo lectura, no sustituye JWT/RBAC del backend, CAS ni prueba real de integracion; el caller debe aportar snapshots confiables. A0 estatico, A1-A3 dotnet/security CI SHA exacto y A4 readback/Scope Lock; A5 pendiente por otra Task Javier.
 - .NET=SI; security=SI; Scope Lock=SI; Angular/MySQL/Docker/E2E=NO_APLICA al cambio aislado. No QA/main/PROD, secretos, PR ni ramas. Rollback normal.
+
+## 2026-11-13 — SOLQARYN V5 C00-02.M04.02 estados de experiencia protegida [Javier :10]
+- Angular: la vista de solo lectura /plataforma/flujo-v5 distingue validación de sesión en curso, falta de permiso global, fallo seguro, sesión autorizada y ausencia explícita de datos institucionales conectados.
+- Pruebas Vitest positivas/negativas para los cinco estados, rechazo de detalles internos en errores y ausencia de peticiones de directorio desde la vista contractual.
+- Sin nuevos endpoints, grants JWT/RBAC, operaciones sobre PLAN/COLA/BITACORA, tablas MySQL, proveedores, eventos, dispatcher, PR o ramas. La decisión de acceso real permanece en /plataforma/sesion.
+- A0–A3 se verifican por diff y CI Angular pertinente en SHA publicado; A4 requiere Scope Lock, pruebas causales y readback; A5 queda pendiente de otra Task Javier. Rollback git revert sin force-push.

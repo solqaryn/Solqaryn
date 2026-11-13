@@ -38,6 +38,21 @@ import { PlataformaGestionMvpComponent } from './plataforma-gestion-mvp.componen
         </div>
       </header>
 
+      @if (vistaFlujoV5) {
+        <div class="v5-feedback" aria-live="polite" aria-atomic="true">
+          @if (validando()) {
+            <p role="status"><mat-spinner diameter="20" aria-label="Comprobando autoridad"></mat-spinner> Verificando permiso de plataforma…</p>
+          } @else if (error()) {
+            <p role="alert" class="v5-feedback-error">No se pudo verificar la sesión. No hay acceso operativo y puede reintentarse la validación.</p>
+          } @else if (!sesion()) {
+            <p role="alert">Permisos de plataforma no confirmados. La consulta V5 está restringida.</p>
+          } @else {
+            <p role="status">Sesión de plataforma verificada para consulta de solo lectura.</p>
+            <p>Sin resultados institucionales conectados: esta vista no lee microtareas ni certifica estados.</p>
+          }
+        </div>
+      }
+
       @if (sesion(); as actual) {
         <mat-card class="authority-card">
           <mat-card-header>
@@ -213,6 +228,10 @@ import { PlataformaGestionMvpComponent } from './plataforma-gestion-mvp.componen
     .pending { color: #955500; }
     .available { color: #22693d; }
     .v5-card mat-card-content { padding: clamp(18px, 3vw, 32px); }
+    .v5-feedback { margin: 0 0 18px; padding: 14px 18px; border: 1px solid #dfe5ec; border-radius: 12px; }
+    .v5-feedback p { margin: 4px 0; }
+    .v5-feedback p:has(mat-spinner) { display: flex; align-items: center; gap: 10px; }
+    .v5-feedback-error { color: var(--color-danger, #b3261e); }
     .v5-overview { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
     .v5-overview > div { max-width: 650px; }
     .v5-kicker { font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; font-weight: 750; color: var(--color-primary); }

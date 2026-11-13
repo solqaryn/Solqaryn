@@ -295,3 +295,75 @@ describe('C00-03.M04.01 - estado vacio honesto de cobertura', () => {
     expect(listar).not.toHaveBeenCalled();
   });
 });
+
+
+describe('C00-02.M04.02 - estados reales de autoridad en superficie V5', () => {
+  const autorizada = {
+    nombreUsuario: 'plataforma-test', rolNombre: 'Super Admin',
+    ambito: 'Plataforma' as const, esAdministrador: true as const
+  };
+
+  async function montar(autenticado: boolean, respuesta?: Subject<typeof autorizada>) {
+    const sesion = signal<typeof autorizada | null>(autenticado ? autorizada : null);
+    const listar = vi.fn();
+    const obtener = vi.fn(() => (respuesta ?? new Subject<typeof autorizada>()).asObservable());
+    TestBed.resetTestingModule();
+    await TestBed.configureTestingModule({
+      imports: [PlataformaComponent, NoopAnimationsModule],
+      providers: [
+        { provide: ActivatedRoute, useValue: { snapshot: { routeConfig: { path: 'plataforma/flujo-v5' } } } },
+        { provide: PlataformaSesionService, useValue: { sesion, obtener } },
+        { provide: PlataformaEmpresasService, useValue: { listar } },
+        { provide: Router, useValue: { navigate: vi.fn() } }
+      ]
+    }).compileComponents();
+    const fixture = TestBed.createComponent(PlataformaComponent);
+    fixture.detectChanges();
+    return { fixture, sesion, listar, obtener };
+  }
+
+  it('distingue sesion verificada y falta de fuente institucional, sin atribuir LISTO', async () => {
+    const { fixture, listar } = await montar(true);
+    const texto = String(fixture.nativeElement.textContent);
+    expect(texto).toContain('Sesión de plataforma verificada para consulta de solo lectura');
+    expect(texto).toContain('Sin resultados institucionales conectados');
+    expect(texto).not.toContain('Directorio global de empresas');
+    expect(listar).not.toHaveBeenCalled();
+  });
+
+  it('deniega la vista sin permisos globales, sin consultar empresas', async () => {
+    const { fixture, listar } = await montar(false);
+    expect(String(fixture.nativeElement.textContent)).toContain('Permisos de plataforma no confirmados');
+    expect(String(fixture.nativeElement.textContent)).not.toContain('De la solicitud a la evidencia DEV');
+    expect(listar).not.toHaveBeenCalled();
+  });
+
+  it('muestra carga durante revalidacion y error seguro al recibir denegacion', async () => {
+    const respuesta = new Subject<typeof autorizada>();
+    const { fixture, obtener } = await montar(true, respuesta);
+    fixture.componentInstance.revalidar();
+    fixture.detectChanges();
+    expect(obtener).toHaveBeenCalledOnce();
+    expect(String(fixture.nativeElement.textContent)).toContain('Verificando permiso de plataforma');
+    respuesta.error({ status: 403, error: { message: 'NO_EXHIBIR_DETALLE_PRIVADO' } });
+    fixture.detectChanges();
+    const texto = String(fixture.nativeElement.textContent);
+    expect(texto).toContain('No se pudo verificar la sesión');
+    expect(texto).not.toContain('NO_EXHIBIR_DETALLE_PRIVADO');
+    expect(fixture.componentInstance.validando()).toBe(false);
+  });
+
+  it('anuncia exito solo al confirmar revalidacion, sin guardar claims locales', async () => {
+    const respuesta = new Subject<typeof autorizada>();
+    const { fixture, sesion } = await montar(false, respuesta);
+    fixture.componentInstance.revalidar();
+    fixture.detectChanges();
+    expect(String(fixture.nativeElement.textContent)).toContain('Verificando permiso de plataforma');
+    sesion.set(autorizada);
+    respuesta.next(autorizada);
+    respuesta.complete();
+    fixture.detectChanges();
+    expect(String(fixture.nativeElement.textContent)).toContain('Sesión de plataforma verificada');
+    expect(fixture.componentInstance.validando()).toBe(false);
+  });
+});
