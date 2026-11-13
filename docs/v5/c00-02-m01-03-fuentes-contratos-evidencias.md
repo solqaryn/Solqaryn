@@ -16,7 +16,7 @@ Leer contratos, código y evidencia antes de declarar cerrado el modelo de traba
 | V5 FINAL, Google Doc | `1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA` | Identidades comerciales, `RESULTADO_EXIGIDO`, fases y precedencias |
 | PLAN_MAESTRO, Google Sheet | `1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU`, columna H | Estado autoritativo editable por ID |
 | COLA, misma Sheet | columnas E, G, I, O; vistas P/Q | Estado reflejado, dependencias calculadas, custodio y elegibilidad; **no editar manualmente A:Q** |
-| BITACORA, misma Sheet | A:U (21 campos), EVENT_ID en A | Evidencia y deduplicación de transiciones |
+| BITACORA, misma Sheet | **A:Z (26 columnas)**; EVENT_ID en A, RUN_ID en H, IDEMPOTENCY_KEY en R y TIMESTAMP_UTC_ORIGINAL en Z | Evidencia, autoría verificable y deduplicación de transiciones |
 | `AGENTS.md` | blob Git `d7d6b2bd4abd015a332ee4a88c31a65eb2928c12` | Autoridad operativa y arquitectura del agente |
 | `docs/PROJECT_SCOPE_LOCK.md` | blob Git `a92ae64d46a82b5255919012b474f7ece430ed6b` | Scope Lock/identidad y límites |
 | `docs/AUTOMATION_V13.md` | blob Git `008837173c78a9b371f3490ad4d35f7f8da5634b` | A0–A5, secuencia y gates dev |
@@ -41,15 +41,27 @@ Los hashes anteriores son **SHA de blobs**, no SHA de checks CI. El check `verif
 4. **LISTO_DEV:** requiere A0 calidad estática, A1 funcional, A2 seguridad, A3 integración y A4 posintegración realmente aplicables. Subpruebas de tecnología no afectada se dejan `NO_APLICA` con motivo y no se presentan como tests ejecutados.
 5. **A5:** un TASK_ID **distinto del autor** revisa el SHA/evidencia en otra operación; `A5_PENDIENTE` no permite promoción a `qa/main/PROD`. A5_FAIL conserva la trazabilidad y bloquea la promoción.
 
-**Invariantes:** `PLAN_MAESTRO!H` es la autoridad; `COLA!E` es fórmula; cada evento ocupa 21 celdas y tiene `EVENT_ID` único; ningún claim cambia permisos, tokens, ramas o cuentas. Fallos de un job no aplicable no se maquillan como PASS, y los gates obligatorios no se omiten.
+**Invariantes:** `PLAN_MAESTRO!H` es la autoridad; `COLA!E` es fórmula; cada evento nuevo debe mapear las **26 columnas A:Z** y tener `EVENT_ID` e `IDEMPOTENCY_KEY` únicos; RUN_ID debe quedar vacío si no existe una ejecución nativa acreditable; ningún claim cambia permisos, tokens, ramas o cuentas. Fallos de un job no aplicable no se maquillan como PASS, y los gates obligatorios no se omiten.
 
 ## Ejemplo real de ciclo (no plantilla ficticia)
 
-`C00-01.M05.01` fue reclamado por `6adbb9fff1548191a1bd5b30d9e9984a`, pasó a VALIDANDO y publicó el commit `1de966000059a53ace3faddbb1db53478cf800ff`. La evidencia dirigida incluye 3/3 pruebas unitarias Angular en workflow Priority4, regresión M10 Playwright 12/12 y Scope Lock SUCCESS sobre el mismo SHA. Sólo tras revisar esa evidencia, en la lectura de PLAN/COLA se certificó `LISTO_DEV`, con A5 pendiente de otra Task. Eventos idempotentes comprobados en BITACORA: `SQ-V5-C00-01-M05-01-J00-A4-1DE96600-20261113`, `...-A5P-...` y `...-LISTO-...` (21 campos cada uno). Es evidencia **de ese ID**, no aprobación de todo M05.
+`C00-01.M05.01` fue reclamado por `6adbb9fff1548191a1bd5b30d9e9984a`, pasó a VALIDANDO y publicó el commit `1de966000059a53ace3faddbb1db53478cf800ff`. La evidencia dirigida incluye 3/3 pruebas unitarias Angular en workflow Priority4, regresión M10 Playwright 12/12 y Scope Lock SUCCESS sobre el mismo SHA. Sólo tras revisar esa evidencia, en la lectura de PLAN/COLA se certificó `LISTO_DEV`, con A5 pendiente de otra Task. Eventos idempotentes comprobados en BITACORA: `SQ-V5-C00-01-M05-01-J00-A4-1DE96600-20261113`, `...-A5P-...` y `...-LISTO-...` (eventos históricos cuya longitud física debe auditarse individualmente; **no se presumen 26 campos ni se reescriben retroactivamente**). Es evidencia **de ese ID**, no aprobación de todo M05.
 
 **Escenario negativo — exclusión:** `C00-01.M05.03` estaba `VALIDANDO` bajo otra Task; cualquier nuevo claim de ese ID debe rechazarse sin reescribir dueño, estado o eventos.  
 **Escenario negativo — CI:** jobs `SKIPPED` no cuentan como PASS cuando su prueba es necesaria; un SHA anterior tampoco certifica un candidato posterior.  
 **Escenario negativo — idempotencia:** si el EVENT_ID ya está en BITACORA, leerlo en lugar de añadirlo por segunda vez.
+
+## Corrección de contrato A:Z/26 tras A5_FAIL independiente — 2026-11-13
+
+El readback de `BITACORA!A1:Z1` confirmó **26 encabezados físicos**, no A:U/21. La revisión independiente A5 del SHA documental original `81141057ceafea341df2a8b646ba93f79b63df20` detectó la contradicción y su A5_FAIL **se conserva**. Este commit corrige exclusivamente la documentación; no declara A5_PASS, no reabre una microtarea LISTO ni autoriza QA/main/PROD.
+
+**Esquema actual por posición:** A EVENT_ID; B FECHA_HORA_TEGUCIGALPA; C CONTRATO_VERSION; D ACTOR_HUMANO; E TASK_ROLE; F ACCOUNT_OWNER; G TASK_ID; H RUN_ID; I REVIEWED_RUN_ID; J ACTOR_AUTOMATIZADO; K EJECUTOR_RESPONSABLE; L REVISOR_INDEPENDIENTE; M SCOPE_KEY; N MICROTAREA_ID; O OPERACION; P ESTADO_ANTERIOR; Q ESTADO_NUEVO; R IDEMPOTENCY_KEY; S BASE_HEAD; T RESULT_HEAD; U AUTORIZACION; V RESULTADO; W EVIDENCIA; X ERROR; Y READBACK; Z TIMESTAMP_UTC_ORIGINAL.
+
+**Caso positivo:** evento nuevo con 26 posiciones en orden, A y R únicos, fuente y autor verificados, Z UTC válido y readback posterior. H permanece vacío si no existe RUN_ID nativo comprobado.
+
+**Negativos obligatorios:** rechazar evento de 21 campos como si fuera completo, duplicados de A o R, reutilización de identidad/revisor ajenos, A5_PASS sin TASK_ID revisor distinto y evidencia real, SHA anterior usado como PASS de candidato nuevo y creación de filas vacías. Los registros históricos de 21 posiciones, si existen, quedan preservados para reconciliación auditada; no se completan inventando datos ni se borra historial.
+
+**Alcance y validaciones:** TIPO1 documental. requires_dotnet=NO, requires_node_angular=NO, requires_mysql=NO, requires_docker=NO, requires_e2e=NO. requires_security=SI (identidad, idempotencia, A5, límites), requires_scope_lock=SI para el SHA documental nuevo. A0–A3: diff/Markdown, fuentes y readback físico A:Z, casos positivos/negativos anteriores; A4: publicación fast-forward, SHA, Scope Lock, blobs y readback. Se necesita **nueva A5 independiente** sobre el SHA corregido. Rollback: git revert normal del commit correctivo, nunca force-push.
 
 ## Impacto, riesgos y A0–A5 para esta entrega
 

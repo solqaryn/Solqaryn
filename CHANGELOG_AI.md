@@ -1,3 +1,6 @@
+## 2026-11-13 — Corrección A5_FAIL C00-02.M01.03: BITACORA A:Z/26 [Javier :00]
+- Corrige contrato documental original A:U/21 a encabezado físico institucional A:Z/26; define EVENT_ID e IDEMPOTENCY_KEY únicos, RUN_ID vacío sin ejecución comprobable y negativos contra truncamiento/duplicación/suplantación. Preserva A5_FAIL del SHA 81141057 y eventos históricos, solicita nueva A5 independiente tras Scope Lock exact-SHA. Solo documentación; no altera código, Sheets, Tasks, QA/main/PROD.
+
 ## 2026-11-13 — V5 C00-03.M01.04: riesgos, supuestos y decisiones de matriz integrada [Javier :20]
 - Se incorpora registro documental de diez riesgos RI01–RI10, cinco supuestos S01–S05 y seis decisiones D01–D06, más aceptación P1/P2 y ocho rechazos N1–N8; delimita matriz V5 integrada, exige fuente/ID único, fronteras tenant/PII, CI proporcional, Scope Lock y cero migración de imágenes históricas. No implementa software, migra proveedores, crea IDs ni declara cierre de fase o A5_PASS.
 
