@@ -1,0 +1,9 @@
+# C00-02.M03.04 — adaptador de estado V5 aislado, sin persistencia institucional
+
+**Código real:** `backend/src/Application/AutomationV5/V5WorkItemMemoryAdapter.cs`, adaptador en memoria para snapshots de `V5WorkItemRules`. Reutiliza validaciones Domain M03.01 y soporta CLAIM → VALIDANDO → LISTO por estados explícitos, owner original, catalog/allowlist inyectados, G/O/DAG y flags de auditoría. Cada mutación es exclusiva dentro del proceso mediante `lock`; tokens de idempotencia y límite de capacidad restringen duplicaciones.
+
+**Pruebas dirigidas:** `V5WorkItemMemoryAdapterTests` incluye caminos positivos y negativos, fallos por actor ajeno, ID fuera de catálogo, cualquiera de las cuatro puertas cerradas, estado/owner ajeno, falta de huella de candidato, SHA inválido, A0–A4 incompletas, token reutilizado, 32 escritores concurrentes con un solo ganador, capacidad y token vacío. El cierre exitoso en memoria jamás equivale a LISTO institucional.
+
+**Límites:** el adaptador no es un CAS real de Google Sheets ni MySQL ni una lease o lock distribuido; pierde estado al terminar el proceso. No escribe PLAN/COLA/BITACORA ni despacha Tasks o eventos, no reemplaza autorización JWT/RBAC real, no accede a tenants y no crea migraciones. El resultado M03.04 autoriza un `adaptador aislado`, no una afirmación de persistencia comercial. Para integración duradera se requieren una microtarea y gates independientes futuros.
+
+**Matriz:** requiere_dotnet=SI; requiere_node_angular=NO; requiere_mysql=NO (almacenamiento efímero); requiere_docker=NO; requiere_e2e=NO; requiere_security=SI (ownership, allowlist y fail-closed); requiere_scope_lock=SI. A0 revisión estática/secretos; A1+A2 xUnit reales positivos/negativos; A3 compile+regresión .NET GitHub Actions SHA exacto; A4 check-runs/readback de archivos/PLAN/COLA/BITACORA; A5 solo otro TASK_ID Javier. Rollback con `git revert` normal, sin QA/main/PROD.

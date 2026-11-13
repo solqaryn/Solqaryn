@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-02.M03.04: adaptador aislado de estados y revisión CAS [Javier :10]
+- `backend/src/Application/AutomationV5/V5WorkItemMemoryAdapter.cs` implementa estados in-memory con lock, token idempotente, autorización de actor, catálogo y validaciones Domain de G/O/DAG, ownership y A0–A4.
+- Pruebas xUnit `backend/tests/Solqaryn.Tests/Application/V5WorkItemMemoryAdapterTests.cs` cubren positivos, denegaciones, una ganadora entre 32 reclamaciones concurrentes, SHA inválido, auditorías ausentes, tokens/owner y capacidad. Contrato en `docs/v5/c00-02-m03-04-workitem-isolated-adapter.md`.
+- El adaptador no es CAS de Sheets/MySQL ni persistencia durable: no crea Tasks, roles ni endpoints, ni sustituye CI y A5. CI real .NET, seguridad, Scope Lock y CHANGELOG exact SHA antes de LISTO; revert normal como rollback.
+
 ## 2026-11-13 — V5 C00-03.M03.04: adaptador aislado para cobertura V5 [Javier :10]
 - `backend/src/Application/AutomationV5/V5CoverageMemoryAdapter.cs` incorpora un adaptador de memoria con revision CAS, reintento idempotente, límites de capacidad y acceso fail-closed por actor/scope. Reutiliza el validador Domain de cobertura.
 - `backend/tests/Solqaryn.Tests/Application/V5CoverageMemoryAdapterTests.cs` comprueba revisión, idempotencia, rechazos, aislamiento y 32 primeros escritores concurrentes con un solo ganador. Contrato explícito en `docs/v5/c00-03-m03-04-isolated-coverage-adapter.md`.
