@@ -7,7 +7,11 @@ BRANCH=dev
 EXECUTION_PLAN_DRIVE_FILE_ID=1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA
 CURRENT_COMMERCIAL_ONLY=TRUE
 AUTOMATION_RUNTIME=ACTIVE_DEV
-PHYSICAL_JAVIER_TASKS_ENABLED=6
+TASK_DISPATCH_STATE=PAUSED_BY_OWNER_2026_11_12
+JAVIER_PHYSICAL_TASKS_PAUSED=6
+JAVIER_PEER_AUTORESUME_EFFECTIVE=DISABLED_BY_OWNER
+ALEX_PHYSICAL_PAUSE_STATUS=UNVERIFIED_OWNER_ACCOUNT
+PHYSICAL_JAVIER_TASKS_ENABLED=0
 ALEX_TASKS_STATE=OWNER_REPORTED_2_OF_2_ENABLED_V13
 SCHEDULED_CHATGPT_TASKS_AUTHORIZED=8
 AUTHORIZED_COMMERCIAL_TASK_IDS=6adbb9fff1548191a1bd5b30d9e9984a,6af16bb9492c8191b8e8c7d606f11507,6adc2e4bd8a48191ac7d8641ed95a1a3,6aeacb7820ac8191b7d768a6f33dfa09,6adc2e55f47c81919f6374e561687076,6af16bbad26881918c283abe06e1f32a,6adbbc9ad9e88191bea8eb69104afb25,6adcc98a80a48191b71a5156624c21df
@@ -53,6 +57,17 @@ TIMEZONE=America/Tegucigalpa
 - Regla V13: hito 3 sin máximo de cierres durante una corrida. Tras cada LISTO_DEV verificar HEAD, dependencias, colisiones y tomar otra PENDIENTE elegible con A0–A4 de nuevo; no pausar por cuota. Si proveedor interrumpe, registrar estado y causa. La lectura anterior de PRIMARY DEV 03 Javier :20 fue PAUSADA con requires_user_action; en la lectura nueva las seis Javier estaban enabled. El propietario autorizó un intento nativo seguro de reactivación por compañero Javier con readback, sin autoaprobar permisos.
 - Readback actual: 6/6 Tasks Javier habilitadas; PRIMARY DEV 03 había estado pausada por requires_user_action, pero el propietario la reanudó y su estado actual es enabled. Las seis están ahora autorizadas para vigilancia cruzada entre sí y reactivación nativa de una compañera pausada mediante un intento por ID y readback. Alex mantiene sus dos IDs bajo su propia cuenta. Preferencia máxima de razonamiento, sin ajuste ni verificación nativos disponibles por conector.
 - Incidencia de productividad 2026-11-12: DEV 01 y 05 reportaron NO_GO por interpretar `is_self_owned_automation=false` y `Automations.get 404` como pérdida de identidad. Son señales insuficientes; en adelante aplicar evidencia positiva de TASK_ID, prompt físico, conexión Javier, `Automations.peek`, Skill/Scope Lock exact-HEAD y accesos GitHub/Sheet. 37 tareas elegibles detectadas en el corte, ninguna con dueño; una limitación .NET/Angular de un ID no bloquea otras. Siete celdas COLA!E históricas se restauraron a fórmula viva sobre PLAN_MAESTRO!H (108,110,118,120,127,128,249); conservar notas y J:M históricos. Revisar conteos vivos, no asumir 37 eternamente.
+## SUSPENSION EJECUTIVA DEL PROPIETARIO — 2026-11-12 20:56 America/Tegucigalpa (PRIORIDAD MAXIMA)
+
+ORDEN POSTERIOR EXPRESA QUE PREVALECE SOBRE V13 ANTERIOR. Las seis Tasks físicas JAVIER_CHATGPT quedan is_enabled=false por cambio pendiente del plan de implementación. El readback del conector confirmó 6/6 pausadas y sus prompts físicos contienen OWNER_PAUSE_HOLD. Ninguna Task puede reclamar una nueva microtarea, iniciar A5 independiente, entrar a PENDIENTE→EN_PROGRESO, publicar cambios nuevos no iniciados ni reactivar a otra Task. La regla de recuperación cruzada entre Tasks queda SUSPENDIDA, aunque el catálogo de ocho IDs autorizados permanezca. No reactivar ninguna Javier hasta nueva instrucción expresa del propietario; no confundir esta pausa autorizada con un error del proveedor.
+
+CIERRE SEGURO: al hacer la pausa, DEV 03/04/05/06 se veían in_progress; DEV 01/02 completed. Desactivar is_enabled impide disparos programados nuevos, pero NO garantiza que un run ya iniciado haya recibido el cambio de prompt ni que se haya cancelado. Si una ejecución recibe la orden, sólo terminará la microtarea reclamada antes de la pausa, con las auditorías pertinentes y readback, y terminará sin reclamar otra. No inventar cierres ni cambiar tareas ya reclamadas arbitrariamente.
+
+ALEX: la cuenta propietaria de las Tasks 07 (:05) y 08 (:35) es distinta y NO está administrable desde esta sesión. El propietario solicitó su suspensión; el estado físico de Alex no está confirmado como PAUSADO. Requiere ejecución desde cuenta Alex. No usar conexiones cruzadas ni declarar 8/8 pausadas.
+
+CONSERVAR: ocho IDs, RRULE, zonas, historial, fuente de plan, seis controles A0–A5, arquitectura y límites QA/main/PROD. Nueva activación sólo con orden posterior del propietario y revalidación del plan y los permisos.
+
+
 ## Interpretación efectiva
 - `AUTOMATION_RUNTIME=ACTIVE_DEV` indica que el contrato contempla DEV; NO afirma que las Tasks se encuentren físicamente habilitadas. En el readback de 2026-11-12 las seis Tasks Javier están habilitadas (`PHYSICAL_JAVIER_TASKS_ENABLED=6`). Alex transmitió verificación nativa desde su propia cuenta: 2/2 habilitadas; no equivale a lectura directa desde Javier. No reactivar por cambiar documentación.
 - Las constantes `V13_1000_FIFO_BATCH` y `MAX_OPEN_WORK_BRANCHES=1000` se retienen para compatibilidad con validadores instalados; NO habilitan FIFO de PR, trabajo en branches ni PR nuevos. La regla ejecutiva efectiva es `WORK_BRANCH_CREATION_ALLOWED=FALSE` y publicación serial a `dev`.

@@ -1,3 +1,9 @@
+## 2026-11-12 20:56 America/Tegucigalpa — Pausa ejecutiva y congelamiento de nuevas reclamaciones
+- El propietario ordenó pausar seis Javier y dos Alex para modificar el Plan Comercial. Se aplicó actualización física a las seis Javier con is_enabled=false y prompt OWNER_PAUSE_HOLD (IDs, títulos, RRULE y zona sin cambios). Readback físico: cero habilitadas Javier.
+- Reanudar compañeras queda expresamente prohibido; únicamente puede terminar una microtarea reclamada antes de recibir la orden y salir sin nuevo claim. DEV 03/04/05/06 estaban in_progress cuando se consultó; el cambio físico no garantiza recepción de la orden por las corridas ya iniciadas.
+- Las dos Alex pertenecen a otra cuenta; no se modificaron y su suspensión no está verificada. No inventar ocho pausadas. Su titular debe gestionar la pausa física.
+- Sin cambios de código productivo ni de seguridad, QA/main/PROD, PR, secretos o roles. Retorno del scheduler únicamente bajo orden posterior y revisión del plan.
+
 ## 2026-11-12 — P5-006.C: delimitación del modal de confirmación institucional (Javier :30)
 - Archivo de producto único `frontend/src/app/shared/confirm-dialog.component.ts`, blob `f9b73544cc70beba83a891b2fc89537f0718af8b`. Contrato Cancelar=false/Eliminar=true, título/mensaje interpolados, Material Dialog standalone.
 - Prueba estática `scripts/tests/p5-006-c-delimitacion-confirmacion.test.mjs` (Node 22.16.0, seis subtests dirigidos) y `docs/P5-006-C-DELIMITACION-CONFIRMACION-DEV.md` documentan el escenario y negativos. No altera runtime Angular, ni certifica navegador, JWT, MySQL o QA/PROD.
