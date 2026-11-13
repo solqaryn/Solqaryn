@@ -105,6 +105,9 @@ public class N49FPeriodoContableObservabilityTests
         var responseBody = await new StreamReader(context.Response.Body).ReadToEndAsync();
 
         Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
-        Assert.Contains("Periodo ID inv\\u00E1lido.", responseBody);
+        using var problem = System.Text.Json.JsonDocument.Parse(responseBody);
+        Assert.Equal("Solicitud inválida", problem.RootElement.GetProperty("title").GetString());
+        Assert.Equal("La solicitud contiene un parámetro inválido.", problem.RootElement.GetProperty("detail").GetString());
+        Assert.DoesNotContain("Periodo ID", responseBody, StringComparison.Ordinal);
     }
 }

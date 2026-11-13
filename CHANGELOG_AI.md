@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C00-01.M03.06: corrección dirigida tras CI xUnit [Javier :10]
+- El primer SHA `a1087d334d03941de0b0eba0108d2d411604a61d` compiló en GitHub-hosted .NET 10 pero dev-ci detectó 1 fallo entre 3388 xUnit: `N49FPeriodoContableObservabilityTests` aún esperaba revelar un `ArgumentException.Message` arbitrario. La prueba se reconcilia con el contrato de error público seguro (400 ProblemDetails genérico), verificando además que el texto interno no se expone.
+- Mantiene código de producción del primer commit sin modificaciones adicionales. Los controles A1–A4 se reevalúan en el SHA correctivo exacto mediante GitHub Actions; no atribuir PASS hasta la evidencia causal. `VALIDANDO` conserva el mismo TASK_ID. Rollback: git revert ordenado sin reescritura.
+
 ## 2026-11-13 — V5 C00-01.M03.06: errores de argumentos seguros y correlación estructurada [Javier :10]
 - En `ExceptionHandlingMiddleware`, las excepciones `ArgumentException` devuelven ProblemDetails 400 con detalle genérico y `traceId`; el mensaje arbitrario potencialmente confidencial no se expone al cliente ni se escribe al log. Se registra únicamente el tipo de excepción y referencia estructurada.
 - Pruebas xUnit dirigidas: dos negativas con datos privados y una positiva de propagación sin error. No se alteran JWT, RBAC, filtros de tenant, modelos ni migraciones.
