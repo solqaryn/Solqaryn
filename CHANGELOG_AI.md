@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C02-04.M01.02: actores y entradas/salidas de consola global [Javier :40]
+- Matriz documental de 8 actores, 12 IO y 9 casos (+/-) FUTUROS para consola global: separación de plataforma/ERP, MFA/reautenticación, motivos, grants temporales, aislamiento tenant A/B y auditoría crítica, con seis fuentes Git por blob.
+- M01.02 TIPO1 sin cambios .NET/Angular/MySQL/secretos. A0–A4 documentales, Scope Lock exact-SHA, A5 ajeno; no habilita M01.06, MFA real ni QA/main/PROD.
+
 ## 2026-11-13 — Reparación de gate de calidad ERP para censo V5 de seis Tasks
 - `scripts/quality/priority4_quality_audit.py`: mantiene las comprobaciones estrictas de seguridad e identidad, pero actualiza la aserción obsoleta de ocho Tasks a seis Tasks y comprueba `PHYSICAL_TASKS_REGISTERED=6`.
 - `docs/AUTOMATION_STATUS.md`: declara explícitamente `LEGACY_AUTOMATION_RUNTIME=RETIRED`, conservando `VAEP_DISPATCH_AUTHORIZED=FALSE` y `JULES_WORKERS_AUTHORIZED=0`. No se activan motores ni cuentas nuevas.
