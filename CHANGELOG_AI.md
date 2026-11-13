@@ -1,3 +1,8 @@
+## 2026-11-12 — P5-007.C: delimitación de modal de proceso institucional (Javier :20)
+- Delimitado el componente real de anulación `frontend/src/app/shared/anular-dialog.component.ts` (blob `d751503438f963f1deebe371cd14623ad6038e16`), sin cambio de runtime; flujo motivado, cancelación segura, texto interpolado y diálogo tipado.
+- `scripts/tests/p5-007-c-delimitacion-modal-proceso.test.mjs` prueba el contrato estructural con Node v22.16.0 5/5, positivo y cuatro negativos dirigidos: cancelación, motivo vacío, HTML crudo, contexto perdido; SHA256 `34b37488f05dae7dd68049d892a8436288470a036999f4dfa35324b9ec59332b`. Documentación `docs/P5-007-C-DELIMITACION-MODAL-PROCESO-DEV.md`.
+- A0–A3 ejecutadas tras VALIDANDO; A4 requiere readback exact dev, A5 independiente pendiente. No certificar navegador, Angular live, tenancy, MySQL, QA/PROD. Rollback con revert aditivo sin force-push.
+
 ## 2026-11-12 - P5-003.C: delimitacion del contrato de cuatro modales (Alex :35)
 - Fuente unica de runtime existente: frontend/src/app/shared/alerts/app-alert.service.ts, blob 3bde601b54bad7d979fca9029025ce4eb72a44db; sin modificar Angular.
 - Prueba estructural scripts/tests/p5-003-c-delimitacion-contrato-modales.test.mjs (5 casos, positivo y negativos de cancelacion, foco, confirmacion, requisito y HTML) y nota docs/P5-003-C-DELIMITACION-CONTRATO-MODALES-DEV.md.
