@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C02-02.M01.05: aceptación shared/dedicated [Javier :00]
+- Contrato documental con 20 criterios AC01–AC20, 6 positivos/14 negativos, seis fuentes Git, tenancy, DSN, backfill, migración y rollback; no se crea infraestructura ni se hacen cambios ejecutables.
+- DAG permite preparación M01.01–05, no M01.06/M02; Scope Lock exact-SHA y A5 revisión independiente.
+
 ## 2026-11-13 — V5 C01-04.M01.04: riesgos y decisiones del expediente universal [Javier :10]
 - Registro documental EXP-R01–12, EXP-S01–06 y DEC-01–08 sobre 10 fuentes reales, con riesgo de aislamiento de auditoría, adjuntos legacy, secuencia y seguridad sin certificar vulnerabilidades.
 - Sin cambios ejecutables ni despliegues; A0–A4 proporcionales, Scope Lock exact-SHA y A5 pendiente de revisión ajena; rollback por revert normal.
