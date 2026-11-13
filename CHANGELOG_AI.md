@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-03.M03.04: adaptador aislado para cobertura V5 [Javier :10]
+- `backend/src/Application/AutomationV5/V5CoverageMemoryAdapter.cs` incorpora un adaptador de memoria con revision CAS, reintento idempotente, límites de capacidad y acceso fail-closed por actor/scope. Reutiliza el validador Domain de cobertura.
+- `backend/tests/Solqaryn.Tests/Application/V5CoverageMemoryAdapterTests.cs` comprueba revisión, idempotencia, rechazos, aislamiento y 32 primeros escritores concurrentes con un solo ganador. Contrato explícito en `docs/v5/c00-03-m03-04-isolated-coverage-adapter.md`.
+- El adaptador es aislado y efímero: no persiste en MySQL/Sheets, no sustituye un CAS distribuido, no modifica tenant JWT/RBAC ni ejecuta Tasks. CI .NET/seguridad y Scope Lock exact-SHA obligatorios antes de LISTO; A5 independiente. Rollback git revert.
+
 ## 2026-11-13 — V5 C00-03.M03.06: auditoría segura y logs estructurados de cobertura [Javier :10]
 - `backend/src/Application/AutomationV5/V5CoverageAuditService.cs` implementa validación de cobertura V5 con `ILogger` y eventos tipados; logs con digest SHA-256 de ID validado, SHA causal, conteo y códigos seguros.
 - Pruebas xUnit positivas/negativas en `backend/tests/Solqaryn.Tests/Application/V5CoverageAuditServiceTests.cs`: requisitos desconocidos, contenido privado, SHA inválido, duplicados, batch válido y sanitización de errores. Contrato en `docs/v5/c00-03-m03-06-coverage-audit.md`.

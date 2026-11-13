@@ -1,0 +1,9 @@
+# C00-03.M03.04 — adaptador aislado para cobertura de requisitos
+
+**Implementación de código real:** `backend/src/Application/AutomationV5/V5CoverageMemoryAdapter.cs`. Adaptador de memoria con sincronización bajo `lock`, revisiones monotónicas por mapping, comprobación exacta de revisión esperada, idempotencia por scope y clave, allowlist de actores y ámbitos, y validación de entradas mediante `V5RequirementCoverageRules`. `TryRead` no devuelve mappings a un actor o scope no autorizados.
+
+**Pruebas:** xUnit `V5CoverageMemoryAdapterTests` cubre positivo, revision 1, replay idempotente, doble uso conflictivo, escritura stale, actualización a revisión 2, actor ajeno, scope ajeno, requisito no catalogado, carrera de 32 escritores con un solo ganador, cota de capacidad y precondiciones inválidas.
+
+**Límites reales:** `V5CoverageMemoryAdapter` **NO persiste fuera de memoria**, ni implementa transacción de Google Sheets, MySQL, migración EF, CAS distribuido, tenant HTTP, acciones entre Tasks, autorizaciones de servidor ni workflows CI. Un reinicio pierde el contenido. Se proporciona como **adaptador aislado**, alternativa autorizada por el resultado M03.04, para probar el contrato de concurrencia sin afirmar que la base institucional ya cuenta con CAS. No conectarlo a ejecución real sin autorización y pruebas integrales de alcance.
+
+**Clasificación de pruebas:** requiere_dotnet=SI; requiere_node_angular=NO; requiere_mysql=NO (no toca persistencia real); requiere_docker=NO; requiere_e2e=NO; requiere_security=SI (actor/scope deny-by-default); requiere_scope_lock=SI. A0 revisión estática + secretos; A1/A2 xUnit positivos/negativos y carrera; A3 build/test .NET real de SHA exacto; A4 readback commit/CI/Sheet/BITACORA. A5 independiente por otra Task Javier. Rollback de commit aditivo mediante `git revert`; sin QA/main/PROD.
