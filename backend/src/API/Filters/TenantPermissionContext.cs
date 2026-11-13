@@ -14,9 +14,21 @@ internal static class TenantPermissionContext
         HttpContext httpContext,
         CancellationToken cancellationToken = default)
     {
-        var raw = httpContext.Request.Headers[EmpresaHeader].FirstOrDefault();
-        if (int.TryParse(raw, out var empresaId) && empresaId > 0)
-            return empresaId;
+        // La cabecera es solo un selector, nunca prueba de autoridad.
+        // Si el cliente envía un selector explícito ambiguo o inválido,
+        // no usar el fallback de membresía única para ocultar el error.
+        if (httpContext.Request.Headers.TryGetValue(EmpresaHeader, out var values))
+        {
+            if (values.Count != 1 ||
+                !int.TryParse(values[0], out var selectedEmpresaId) ||
+                selectedEmpresaId <= 0)
+            {
+                throw new ForbiddenAccessException(
+                    "Se requiere un selector de empresa válido y único.");
+            }
+
+            return selectedEmpresaId;
+        }
 
         var scopeService = httpContext.RequestServices.GetRequiredService<IUsuarioScopeService>();
         var contextoUnico = await scopeService.ObtenerUnicoActualAsync(cancellationToken);

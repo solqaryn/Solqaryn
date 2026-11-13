@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C00-01.M03.03: selector de tenant inválido falla cerrado [Javier :20]
+- `TenantPermissionContext` rechaza cabecera explícita `X-Empresa-Id` vacía, inválida o con múltiples valores antes del fallback de empresa única. Se preservan pertenencia backend verificada, autorización RBAC y selección positiva compatible.
+- xUnit dirigido cubre tenant A positivo, fallback sin cabecera, casos inválidos, duplicados y tenant B sin membresía. Validar en GitHub Actions .NET 10 y MySQL 8.4 según impacto del SHA publicado; no atribuir PASS hasta leer logs. Alcance y rollback documentados en `docs/v5/c00-01-m03-03-tenant-auth.md`. DEV únicamente; A5 independiente.
+
 ## 2026-11-13 - V5 C00-01.M03.05 batch outbox duplicado fail-closed [Javier :50]
 - Prevalida EventoId y ClaveIdempotencia del lote completo para impedir despachos repetidos de un repositorio defectuoso, sin cambio en API/SQL/proveedor.
 - Añade pruebas xUnit positivas/negativas; exige CI .NET10/MySQL exact-SHA y A5 independiente.
