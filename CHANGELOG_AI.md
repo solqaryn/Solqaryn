@@ -800,3 +800,9 @@
 - Fuentes estáticas verificadas: workflows backup-restore de DEV con triggers restringidos, runbook y test de servicio con mocks. Distinguir existencia de YAML de drill efectivo; no fijar RPO/RTO ni confundir environments DEV/Desarrollo.
 - Tipo 1 documental: sin .NET/Angular/MySQL/Docker/E2E ejecutables; controles de seguridad y Scope Lock sí aplican. A0–A3 documentales en VALIDANDO, A4 solo después de SHA publicado, A5 por otra Task Javier.
 - No toca secretos, QA/main/PROD, infraestructura, Tasks ni servicios pagos. Rollback: git revert no destructivo.
+
+## 2026-11-13 — SOLQARYN V5 C03-04.M01.04 (PRIMARY DEV 04 Javier :30)
+- Registro documental de 16 riesgos, 8 supuestos y 9 decisiones pendientes del contrato de incidentes, revocación, backup/restore y continuidad para C10/C12.
+- Coteja cuatro fuentes runtime/workflow con blobs, distingue la existencia de jobs de restauración demostrada, y registra discrepancia DEV/Desarrollo como gate que requiere lectura real.
+- Documentación solamente (A0–A3 proporcional); .NET/Node/Angular/MySQL/Docker/E2E no aplican, Scope Lock exact SHA sí. A4 solo poscommit, A5 independiente Javier.
+- Sin secretos, restore, migraciones, cambios de proveedores, QA/main/PROD, nuevas ramas/PR ni Tasks. Rollback git revert normal, con revisión de trabajo concurrente.
