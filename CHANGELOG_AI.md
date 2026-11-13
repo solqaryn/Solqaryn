@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C03-01.M01.01: contrato documental de autenticación y recuperación (Javier :50)
+- `docs/v5/c03-01-m01-01-objetivo-autenticacion-recuperacion.md` fija objetivo, exclusiones y 16 casos de no-regresión FUTUROS para login, renovación, revocación, recovery, abuso, tenant A/B y MFA/passkeys solo con proveedor aprobado.
+- Siete fuentes Git inspeccionadas; tipo 1 documental sin C# ni Angular/MySQL/Docker/E2E, A0-A3 verificación documental dirigida. A4 exige SHA nuevo y Scope Lock exacto. A5 pendiente de otra de cinco Tasks Javier; no QA/main/PROD. Rollback: git revert del commit.
+
 ## 2026-11-13 — V5 C02-04.M01.05: aceptación futura de consola global [Javier :40]
 - Documento de 24 criterios de aceptación AC01–AC24: 6 positivos y 18 negativos FUTUROS para rol global separado de ERP, MFA/reautenticación, grants temporales, motivo, auditoría crítica, tenant A/B, PII y rollback. Seis fuentes Git respaldan limites, sin pruebas runtime atribuidas.
 - TIPO1 documental, A0–A4 proporcional y Scope Lock SHA exacto; A5 de otra Task Javier. No crear permisos/MFA reales ni liberar M01.06/M02, QA/main/PROD.
