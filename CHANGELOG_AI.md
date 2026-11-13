@@ -1,3 +1,6 @@
+## 2026-11-13 — V5 C00-01.M01.01 alcance y no-regresión
+- Documentado objetivo, no-alcance, fuentes Git con huellas, contradicciones y rollback del baseline de la primera microtarea V5. Sin cambios de API, DB, frontend, migraciones, autenticación ni proveedores. Prueba Node 22 dirigida 5/5 (positivo y cuatro negativos) más A0 scan de secretos; sin E2E/HTTP/MySQL/producción. `A5_PENDIENTE` de Task independiente. Commit directo a `dev`, sin PR/ramas.
+
 ## 2026-11-12 — Base documental V5 y nueva orden condicional de reanudación
 - Plan rector V5 FINAL y Sheet 2.340 IDs verificados; COLA derivada mediante 35.100 fórmulas + 65 gates; DASHBOARD 13; PLAN y BITACORA son fuentes de escrituras reales. Filas auxiliares recortadas y BITACORA sin límite adicional.
 - Autoriza reactivar seis Javier tras todos los checks requeridos verdes del SHA exacto; conservar seis prompts/horarios/IDs/V13 A0–A5, retirar únicamente orden temporal OWNER_PAUSE_HOLD después de CI y restaurar peer-watch. Dos Alex sólo desde su titular. Copia de las seis configuraciones: https://docs.google.com/document/d/1w_nqqAPX3bhvMTVjfrDQEr8Weii8jZ4BcaE8qFvnrsw/edit
