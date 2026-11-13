@@ -1,3 +1,8 @@
+## 2026-11-12 - P5-003.C: delimitacion del contrato de cuatro modales (Alex :35)
+- Fuente unica de runtime existente: frontend/src/app/shared/alerts/app-alert.service.ts, blob 3bde601b54bad7d979fca9029025ce4eb72a44db; sin modificar Angular.
+- Prueba estructural scripts/tests/p5-003-c-delimitacion-contrato-modales.test.mjs (5 casos, positivo y negativos de cancelacion, foco, confirmacion, requisito y HTML) y nota docs/P5-003-C-DELIMITACION-CONTRATO-MODALES-DEV.md.
+- Alcance solamente DELIMITAR; no afirma cuatro modales operativos, browser/E2E, autorizacion RBAC/JWT/tenancy ni QA/main/PROD. A5 independiente pendiente; revert selectivo sin force.
+
 ## 2026-11-12 — P5-010.C: delimitación de paginación y filtros de listas (Javier :20)
 - Foco acotado a `frontend/src/app/core/navigation/list-navigation-state.service.ts` (blob `513765de62e3ad2fac85f1495054448cfea2ba9e`), sin cambiar frontend productivo; se documentan claves permitidas, precedencia query params, `replaceUrl`, almacenamiento tolerante a errores, coerción y clave de usuario.
 - Prueba sobre código fuente real `scripts/tests/p5-010-c-delimitacion-paginacion.test.mjs` con Node 22.16.0: `node --check` y `node --test` 5/5 PASS, control positivo y negativos de allowlist, query, historial, namespace, coerción y storage. SHA256 de prueba `8e76f7e14e5e8dfdb4dee591e62436a31e1e5feef453aa5afe3946c753662293`.
