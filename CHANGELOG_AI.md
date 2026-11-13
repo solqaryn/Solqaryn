@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C00-03.M01.03: lectura causal de fuentes y evidencia, sin certificación [Javier :10]
+- Inventario documental de doce blobs Git originales (Skill, arquitectura, Scope Lock, contratos, frontend net10, CI y C00-03), fuentes Doc/Sheet V5, seis prerrequisitos M02 LISTO y matriz de evidencia disponible versus por comprobar; ningún color de check histórico implica PASS de nueva implementación.
+- TIPO1_DOC, requiere_dotnet/Node/Angular/MySQL/Docker/E2E=NO; requiere_security=SI_REVISION_FRONTERAS; requiere_scope_lock=SI_EXACT_SHA; A0-A3 auditoría documental y A4 diff/readback después de FF dev, A5 de Task distinta. No QA/main/PROD.
+
 ## 2026-11-13 — V5 C00-02.M01.05: aceptación funcional y técnica observable del modelo [Javier :00]
 - Matriz de diez criterios positivos/negativos para elegibilidad DAG, autoría, estados, A0–A5, CI exact-SHA, BITACORA idempotente y rollback; ejemplo real M05.01. Solo documentación; Scope Lock exact-SHA para cierre, A5 independiente, sin QA/main/PROD.
 
