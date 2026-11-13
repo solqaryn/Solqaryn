@@ -45,7 +45,7 @@ export function validateAuthority(input) {
     need(body, 'TASK_NATIVE_REASONING_CONTROL', 'OWNER_OR_PLATFORM_SETTING', label);
     need(body, 'JAVIER_PEER_WATCH_SCOPE', 'SIX_EXISTING_TASK_IDS', label);
     need(body, 'JAVIER_PEER_AUTORESUME', 'AUTHORIZED_SINGLE_ATTEMPT_WITH_READBACK', label);
-    need(body, 'ALEX_PEER_WATCH_SCOPE', 'OWNER_ONLY_AFTER_ACTIVATION', label);
+    need(body, 'ALEX_PEER_WATCH_SCOPE', 'NONE', label);
     need(body, 'WORK_BRANCH_CREATION_ALLOWED', 'FALSE', label);
     if (/^AUTO_CERTIFICATION_MODE=REQUIRED_SCOPE_LOCK$/m.test(body)) errors.push(label + ': obsolete CI gate');
   }
@@ -58,8 +58,8 @@ export function validateAuthority(input) {
     need(body, 'EXECUTION_PLAN_DRIVE_FILE_ID','1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA',label);
     need(body, 'VAEP_DISPATCH_AUTHORIZED', 'FALSE', label);
     need(body, 'JULES_WORKERS_AUTHORIZED', '0', label);
-    need(body, 'SCHEDULED_CHATGPT_TASKS_AUTHORIZED', '8', label);
-    need(body, 'PHYSICAL_TASKS_REGISTERED', '8', label);
+    need(body, 'SCHEDULED_CHATGPT_TASKS_AUTHORIZED', '6', label);
+    need(body, 'PHYSICAL_TASKS_REGISTERED', '6', label);
     need(body, 'CAPACITY_POLICY_VERSION', CAPACITY_POLICY_VERSION, label);
     for (const [k,v] of expectedFour) need(body,k,v,label);
     need(body,'FORMAL_APPROVAL_ROUTINE_COMMERCIAL_REQUIRED','FALSE',label);
@@ -69,7 +69,7 @@ export function validateAuthority(input) {
     need(body,'CONTINUE_WHILE_ELIGIBLE','TRUE',label);
     const registered = roster(key(body,'REGISTERED_TASK_IDS'));
     const authorized = roster(key(body,'AUTHORIZED_COMMERCIAL_TASK_IDS'));
-    if (registered.length!==8 || authorized.length!==8 || new Set(registered).size!==8 ||
+    if (registered.length!==6 || authorized.length!==6 || new Set(registered).size!==6 ||
         registered.some(x=>!ID.test(x)) || registered.join(',')!==authorized.join(','))
       errors.push(label + ': invalid physical task roster');
   }
@@ -92,6 +92,8 @@ if (errors.length) {
   process.exitCode=1;
 } else if (process.argv.includes('--self-test')) {
   for (const [description, mutant] of [
+    ['retired Alex peer watch',{status:source.status.replace('ALEX_PEER_WATCH_SCOPE=NONE','ALEX_PEER_WATCH_SCOPE=OWNER_ONLY_AFTER_ACTIVATION')}],
+    ['seven task roster',{status:source.status.replace(/^REGISTERED_TASK_IDS=(.*)$/m,(_,ids)=>'REGISTERED_TASK_IDS='+ids+',6adbbc9ad9e88191bea8eb69104afb25')}],
     ['duplicate ID',{status:source.status.replace(/^(REGISTERED_TASK_IDS=)(.*)$/m,(_,p,ids)=>p+ids+','+ids.split(',')[0])}],
     ['missing scope',{scope:source.scope.replace('PROJECT_SCOPE_LOCK=STRICT','PROJECT_SCOPE_LOCK=OFF')}],
     ['fake audit',{authority:source.authority.replace('AUTO_CERTIFICATION_MODE=DIRECT_DEV_FOUR_AUDITS','AUTO_CERTIFICATION_MODE=DISABLED')}],
