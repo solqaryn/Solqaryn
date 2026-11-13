@@ -1,3 +1,7 @@
+## 2026-11-13 — C00-02.M01.06: cierre documentado de M01 y puerta condicional M02 [Javier :00]
+- Contrato docs/v5/c00-02-m01-06-bloqueo-rollback-liberacion-modelo.md: cinco M01 LISTO+A5, cierre C00-01.M06.06 LISTO+A5 causal, DAG VALIDADO, máquina de estados, CAS de owner, BITACORA 26 campos, dos casos positivos y doce negativos documentales.
+- Preparación sin ejecución de despachador ni liberación ficticia M02; A0–A4 proporcionales, Scope Lock exact-SHA, A5 de otra Task Javier, sin PR/branches ni QA/main/PROD.
+
 ## 2026-11-13 — V5 C03-01.M01.05: aceptación observable de autenticación y recuperación (Javier :10)
 - `docs/v5/c03-01-m01-05-aceptacion-autenticacion-recuperacion.md`: 16 criterios AC01–AC16 (2 positivos, 12 negativos, 2 controles) de login/renovar/revocación/recuperación futura, con oráculos HTTP/DB, 10 blobs de código/tests y 10 predecesores DAG LISTO. Diferencia evidencias estáticas/mocks de pruebas runtime exigidas a una futura implementación.
 - Autor TASK_ID 6af16bb9492c8191b8e8c7d606f11507. A0–A3 PASS documental antes de publicar: calidad/no secretos, aceptación falsable, seguridad JWT/RBAC/tenant A/B y contratos. Dotnet/Angular/MySQL/Docker/E2E NO_APLICA a este cambio documental. A4 requiere Scope Lock del SHA publicado y readback; A5 pendiente de otra Task Javier. Sin APIs/DB/proveedores/QA/main/PROD/PR/ramas; rollback con git revert no destructivo.
