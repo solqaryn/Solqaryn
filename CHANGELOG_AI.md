@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-03.M03.06: auditoría segura y logs estructurados de cobertura [Javier :10]
+- `backend/src/Application/AutomationV5/V5CoverageAuditService.cs` implementa validación de cobertura V5 con `ILogger` y eventos tipados; logs con digest SHA-256 de ID validado, SHA causal, conteo y códigos seguros.
+- Pruebas xUnit positivas/negativas en `backend/tests/Solqaryn.Tests/Application/V5CoverageAuditServiceTests.cs`: requisitos desconocidos, contenido privado, SHA inválido, duplicados, batch válido y sanitización de errores. Contrato en `docs/v5/c00-03-m03-06-coverage-audit.md`.
+- No revela claves, referencias ni mensajes de excepción; no escribe BITACORA/Sheets ni modifica JWT, RBAC, tenant o MySQL. CI .NET/seguridad y Scope Lock exact-SHA obligatorios antes de LISTO; A5 independiente. Rollback git revert normal.
+
 ## 2026-11-13 — V5 C00-02.M03.06: auditoría estructurada de ciclo V5 [Javier :50]
 - Implementación real `backend/src/Application/AutomationV5/V5WorkItemAuditLogger.cs`: logging estructurado de cambios de microtarea con formato estricto, códigos de error permitidos, UUID de correlación y rechazo sin emisión de entradas no seguras; no implementa CAS, BITACORA ni nueva autoridad.
 - Pruebas xUnit positivas y negativas `backend/tests/Solqaryn.Tests/Application/V5WorkItemAuditLoggerTests.cs` y contrato `docs/v5/c00-02-m03-06-audit-logging.md`. A0–A3 proporcionales con .NET 10/seguridad, Scope Lock y provenance exact SHA para A4; sin MySQL, frontend, Docker, PR, ramas, QA/main/PROD; reversión `git revert`.
