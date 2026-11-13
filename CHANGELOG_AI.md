@@ -1,3 +1,8 @@
+## 2026-11-12 — G0-005.B: puerta estructural de readback DEV/QA/PROD (Javier :20)
+- Se agregan scripts/quality/g0-005-b-readback-policy.mjs y 4 pruebas Node dirigidas en scripts/tests/g0-005-b-readback-policy.test.mjs; un control positivo sintético y 33 negativos fail-closed para recibos F/G/H, SSO 503, upstream 503, origen, proyecto, SHA y separación de referencias no secretas.
+- El positivo solo afirma STRUCTURAL_CONSISTENCY_NOT_LIVE_ATTESTATION. No certifica proveedores reales, bases/caches/secretos reales, login ni aprobación QA/PROD; ninguna credencial se inspecciona, se almacena o se imprime.
+- Implementación Node 22.16.0 sin dependencias nuevas ni modificación de Angular, backend, MySQL, auth, tenancy, QA/main/PROD. Rollback: revert aditivo selectivo de commit directo dev sin force.
+
 ## 2026-11-12 - G0-005.H - positivo estructural y regresión de SHA exacto (Javier :50)
 - Plan Comercial Inicial V3, microtarea G0-005.H, predecesora G0-005.G LISTO. Agrega scripts/tests/g0-005-h-positive-readback.test.mjs, 5 pruebas dirigidas y regresión A/F/G conjunta 34/34 Node22 PASS. SHA GitHub base observado 323e3333e73ce28369d82032c442705a325a9739, no equivale a SHA READY de Vercel real.
 - Caso positivo DEV (sintético): mismo SHA en HEAD, deployment metadata y readback, alias SSO esperado 403, upstream 200. El global permanece NO_GO si QA/PROD no observados. Un segundo positivo completamente sintético utiliza dominios .synthetic.invalid de QA/PROD exclusivamente en memoria para comprobar un contrato estructural, explícitamente NOT_LIVE_ATTESTATION; **NO** representa QA/PROD publicado ni crea configuraciones reales.
