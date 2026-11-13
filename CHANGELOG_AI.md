@@ -1,3 +1,9 @@
+## 2026-11-13 — Seis Tasks Javier: multi-microtarea por corrida, vigilancia segura y monitor de última señal
+- Se reemplazaron exclusivamente los prompts de seis Tasks Javier con bucle hasta agotar trabajo seguro o límites reales, CI independiente en VALIDANDO y verificación de compañeras con readback y exclusión atómica; sin tocar sus horarios, IDs, títulos ni is_enabled.
+- Sheet V5: extendida TAREAS_PROGRAMADAS a AA:AN, añadido Dashboard A41:J51 y CONFIG A149:C150. No se tocaron PLAN_MAESTRO/COLA/BITACORA y sus nueve pestañas se conservan.
+- Monitoring de estado nativo es fotografía fechada, no streaming; los reportes por corrida se actualizarán en futuras ejecuciones verificables. Dispatcher por eventos solo análisis futuro, ningún servicio nuevo ni relanzamientos ciegos.
+- Rollback seguro: revert documental en dev mediante fast-forward, restauración controlada de prompts/sheet previa verificación; sin force-push, QA/main/PROD, secretos ni datos productivos.
+
 ## 2026-11-13 — V5 C03-03.M01.04: riesgos/supuestos/decisiones auditoría de seguridad [Javier :10]
 - `docs/v5/c03-03-m01-04-riesgos-supuestos-decisiones-auditoria.md`: 14 riesgos R01–14, 8 supuestos S01–08 y 8 decisiones D01–08, anclados a ocho blobs de código y diez precedentes DAG LISTO. Delimita consultas A/B, auditoría best-effort, logging de secretos, correlación, retención y acceso excepcional sin afirmar una vulnerabilidad ni certificación runtime sin prueba.
 - Autor 6af16bb9492c8191b8e8c7d606f11507; A0–A3 PASS documentales, .NET/Angular/MySQL/Docker/E2E NO_APLICA al diff de documentos. A4 exige Scope Lock exact SHA y readback, A5 revisor Javier independiente. Sin QA/main/PROD, permisos/infra/código ejecutable, ramas o PR; rollback normal git revert.

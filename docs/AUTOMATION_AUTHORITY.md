@@ -83,3 +83,7 @@ SHEET_ID=1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU
 
 ## Exclusión de reservadores artificiales
 No se importa un reservador de Sheets. Los claims se realizan con lectura actual, compare-and-swap y eventos únicos en la fuente operativa; no se crea ningún lock artificial persistente.
+
+### V5 continuo (contrato posterior 2026-11-13)
+
+Consultar `docs/AUTOMATION_STATUS.md` para el bucle sin cuota rígida, continuidad de CI, rescate seguro entre seis IDs Javier y monitor de último reporte en Dashboard/TAREAS_PROGRAMADAS. Esto NO habilita run_now entre Tasks como ejecución persistente ni instala un dispatcher de eventos. La seguridad y el allowlist original prevalecen.
