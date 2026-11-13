@@ -33,6 +33,11 @@ REVIEW_INDEPENDENCE_REQUIRED=TRUE
 AUTO_CERTIFICATION_MODE=DIRECT_DEV_FOUR_AUDITS
 QUALITY_PROTOCOL_VERSION=V13_A0_A5
 GOAL_MAX_LISTO_PER_RUN=NONE_WITHIN_PROVIDER_RUN
+TASK_REASONING_PREFERENCE=MAX_AVAILABLE_REASONING
+TASK_NATIVE_REASONING_CONTROL=OWNER_OR_PLATFORM_SETTING
+JAVIER_PEER_WATCH_SCOPE=SIX_EXISTING_TASK_IDS
+JAVIER_PEER_AUTORESUME=AUTHORIZED_SINGLE_ATTEMPT_WITH_READBACK
+ALEX_PEER_WATCH_SCOPE=OWNER_ONLY_AFTER_ACTIVATION
 FORMAL_APPROVAL_ROUTINE_COMMERCIAL_REQUIRED=FALSE
 FORMAL_APPROVAL_GOVERNANCE_REQUIRED=FALSE
 GOAL_MIN_LISTO_PER_RUN=1
@@ -43,6 +48,7 @@ STAGES=PENDIENTE,EN_PROGRESO,VALIDANDO,LISTO,BLOQUEADO,CANCELADO
 TIMEZONE=America/Tegucigalpa
 
 - Continuidad: primer LISTO objetivo mínimo, 3 hito no máximo; completar todas las microtareas reales factibles en la misma corrida, sin perder A0–A5. Una suspensión del proveedor requiere aviso con run_id y causa si existe; no se soluciona por mero prompt ni se auto reactiva sin resolver permisos.
+- El propietario autorizó que cualquiera de las seis Tasks Javier habilitadas intente reanudar otra Task Javier pausada usando solo su TASK_ID y un update is_enabled=true de la misma cuenta, con lectura confirmatoria, un intento por corrida y registro del run_id. Nunca modificar Alex ni concederse permisos. La elección de razonamiento máximo es del selector nativo del propietario; el conector de Tasks no dispone de parámetro para imponerla.
 ## Propiedad e identidad
 - Cuenta titular JAVIER_CHATGPT: seis Tasks :00, :10, :20, :30, :40 y :50. Cuenta ALEX_CHATGPT: dos Tasks :10 y :50. Estas ocho identidades conservan su ID físico, horarios y titularidad; sólo el propietario de cada cuenta cambia sus Tasks. Javier tiene seis habilitadas en la última lectura. No afirmar estado vivo de Alex sin verificar su propia cuenta.
 - PROPIETARIA_INSTITUCIONAL: SOLQARYN Platform. EJECUTOR_PRINCIPAL_01: Javier. EJECUTOR_PRINCIPAL_02: Alex. Ninguna identidad tiene idéntica autoridad de credenciales; los permisos efectivos prevalecen sobre cualquier descripción.

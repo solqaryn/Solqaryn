@@ -1,3 +1,8 @@
+## 2026-11-12 — Recuperación entre Scopes de Javier y preferencia máxima
+- Seis Javier verificadas enabled. El propietario autorizó a las seis Tasks a reactivar una compañera pausada con una sola acción nativa is_enabled=true, lectura posterior y sin cambiar permisos o configuración.
+- Preferencia de máximo razonamiento: instrucción y documentación actualizadas; herramienta de Tasks no expone selección model/reasoning_effort, por lo que no se certifica el nivel nativo. Alex sigue fuera de alcance.
+- Se mantiene continuidad sin tope de cierres por corrida, auditorías A0–A5 y control estricto de acceso.
+
 ## 2026-11-12 - G0-006.F: preparar caso medible de trazabilidad (Javier :30)
 - Fixture sintetico para detectar recibo de G0-006.F que reutiliza requirementId G0-006.E; esperado contract/NO_GO, no certificacion institucional.
 - Cinco controles Node dirigidos: lectura fixture, baseline sintetico positivo, requisito ajeno negativo, hash de prueba obsoleto negativo y readback BITACORA ausente negativo. El helper de produccion se reutiliza sin alterarlo.

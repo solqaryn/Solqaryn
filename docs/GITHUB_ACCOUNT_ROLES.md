@@ -14,6 +14,7 @@
 - Identidad de Tasks determinada por TASK_ID real y cuenta, no por título. Javier conserva seis IDs y RRULE horarios; los títulos se normalizan PRIMARY DEV 01 :00, 02 :10, 03 :20, 04 :30, 05 :40 y 06 :50. La plataforma puede suspender por acción pendiente o error; un prompt no anula esa protección. Registrar incidencia, mantener habilitada cuando la plataforma permita, nunca esconderla.
 - Alex mantiene sus dos IDs y no se renombra físicamente desde Javier; propuesta PRIMARY DEV 07 :05 y 08 :35 para ejecución futura desde su cuenta.
 
+- Un Scope de Javier puede reanudar una hermana del mismo conjunto físico de seis mediante is_enabled=true, con un intento por corrida y readback. No puede operar las dos Alex. La preferencia de razonamiento máximo requiere selección nativa del propietario; ni prompt ni conector determinan el nivel efectivo.
 ## Regla de integridad
 - Actor original identificado por TASK_ID, evidencia de cambios y SHA. El ejecutor no emite revisiones en identidad ajena, ni afirma pruebas no realizadas. Conflictos de HEAD deben reconciliarse y probarse antes de publicar.
 - Cualquier solicitud futura para volver a usar PR/APPROVED en DEV requiere una orden nueva del propietario; no aplicar por historia. Fuente operativa única: docs/AUTOMATION_V13.md.

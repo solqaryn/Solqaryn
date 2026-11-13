@@ -1,6 +1,7 @@
 # SOLQARYN — Índice vigente (sin historiales de ejecución)
 
 - El contrato vigente permite cierres por corrida sin máximo artificial de tres, sujetándose a tiempo y recursos del proveedor y a A0–A5. Vigilancia de pausas documentada en docs/AUTOMATION_V13.md.
+- La recuperación cruzada autorizada de seis Javier y la preferencia máxima de razonamiento están en docs/AUTOMATION_V13.md. El conector de Tasks no cambia el modelo. Alex sigue bajo su titularidad.
 ## Autoridad operativa
 - `.agents/skills/solqaryn-project-governance/SKILL.md`: identidad y límites.
 - `docs/PROJECT_SCOPE_LOCK.md`: plataforma, rama, alcance y seguridad.

@@ -11,6 +11,7 @@ PROJECT_SCOPE_LOCK=STRICT
 - Plan único: STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES, Drive ID 1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA. Tablero: STANDARD DE AUTOMATIZACIONES EN SOLQARYN, Sheet ID 1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU.
 
 - Operación continua durante cada corrida: tras los primeros tres cierres legítimos, continuar cuarto y siguientes hasta límite real de recursos, elegibilidad o permisos; no autopausar ni afirmar disponibilidad garantizada ante controles del proveedor. A0–A5 conservadas.
+- Salud del runtime: seis Tasks Javier actualmente habilitadas; autorización de vigilancia cruzada y reanudación de compañeras con un intento de API nativa y readback, sin eludir aprobaciones. Alex continúa en su cuenta. Selección máxima de razonamiento solicitada, pero no configurable ni verificable con el conector presente.
 ## Trabajo de automatizaciones
 - Contrato V13: docs/AUTOMATION_V13.md; inventario físico y permisos: docs/AUTOMATION_STATUS.md, docs/AUTOMATION_AUTHORITY.md. Seis Tasks Javier habilitadas según readback nativo; dos Alex sólo gestionables por su titular.
 - Cero rulesets obligatorios en dev al último readback; main y qa protegidas. Scopes paralelos por IDs diferentes, commits directos serializados sin PR/branch nueva. Flujo por Scope: PENDIENTE→EN_PROGRESO al claim; EN_PROGRESO→VALIDANDO al completar candidato y ANTES de A1/A2/A3; corregir y publicar commit en dev; A4 posintegración y VALIDANDO→LISTO con evidencia PLAN/COLA/BITACORA. Mínimo objetivo 1 LISTO y meta 3 por corrida habilitada.

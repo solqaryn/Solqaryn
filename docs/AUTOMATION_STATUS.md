@@ -31,6 +31,11 @@ REVIEW_INDEPENDENCE_REQUIRED=TRUE
 AUTO_CERTIFICATION_MODE=DIRECT_DEV_FOUR_AUDITS
 QUALITY_PROTOCOL_VERSION=V13_A0_A5
 GOAL_MAX_LISTO_PER_RUN=NONE_WITHIN_PROVIDER_RUN
+TASK_REASONING_PREFERENCE=MAX_AVAILABLE_REASONING
+TASK_NATIVE_REASONING_CONTROL=OWNER_OR_PLATFORM_SETTING
+JAVIER_PEER_WATCH_SCOPE=SIX_EXISTING_TASK_IDS
+JAVIER_PEER_AUTORESUME=AUTHORIZED_SINGLE_ATTEMPT_WITH_READBACK
+ALEX_PEER_WATCH_SCOPE=OWNER_ONLY_AFTER_ACTIVATION
 FORMAL_APPROVAL_ROUTINE_COMMERCIAL_REQUIRED=FALSE
 FORMAL_APPROVAL_GOVERNANCE_REQUIRED=FALSE
 GOAL_MIN_LISTO_PER_RUN=1
@@ -40,7 +45,8 @@ EXECUTION_STYLE=SERIAL_DIRECT_DEV_FAST_FORWARD
 STAGES=PENDIENTE,EN_PROGRESO,VALIDANDO,LISTO,BLOQUEADO,CANCELADO
 TIMEZONE=America/Tegucigalpa
 
-- Regla V13: hito 3 sin máximo de cierres durante una corrida. Tras cada LISTO_DEV verificar HEAD, dependencias, colisiones y tomar otra PENDIENTE elegible con A0–A4 de nuevo; no pausar por cuota. Si proveedor interrumpe, registrar estado y causa. Al último readback, PRIMARY DEV 03 Javier :20 figuraba PAUSADA con requires_user_action=true, sin detalle; otros cinco habilitados. No confundir estado documental con estado físico ni auto eludir controles.
+- Regla V13: hito 3 sin máximo de cierres durante una corrida. Tras cada LISTO_DEV verificar HEAD, dependencias, colisiones y tomar otra PENDIENTE elegible con A0–A4 de nuevo; no pausar por cuota. Si proveedor interrumpe, registrar estado y causa. La lectura anterior de PRIMARY DEV 03 Javier :20 fue PAUSADA con requires_user_action; en la lectura nueva las seis Javier estaban enabled. El propietario autorizó un intento nativo seguro de reactivación por compañero Javier con readback, sin autoaprobar permisos.
+- Readback actual: 6/6 Tasks Javier habilitadas; PRIMARY DEV 03 había estado pausada por requires_user_action, pero el propietario la reanudó y su estado actual es enabled. Las seis están ahora autorizadas para vigilancia cruzada entre sí y reactivación nativa de una compañera pausada mediante un intento por ID y readback. Alex mantiene sus dos IDs bajo su propia cuenta. Preferencia máxima de razonamiento, sin ajuste ni verificación nativos disponibles por conector.
 ## Interpretación efectiva
 - `AUTOMATION_RUNTIME=ACTIVE_DEV` indica que el contrato contempla DEV; NO afirma que las Tasks se encuentren físicamente habilitadas. En el readback de 2026-11-12 las seis Tasks Javier están habilitadas (`PHYSICAL_JAVIER_TASKS_ENABLED=6`). Para Alex no se presupone su estado. No reactivar por cambiar documentación.
 - Las constantes `V13_1000_FIFO_BATCH` y `MAX_OPEN_WORK_BRANCHES=1000` se retienen para compatibilidad con validadores instalados; NO habilitan FIFO de PR, trabajo en branches ni PR nuevos. La regla ejecutiva efectiva es `WORK_BRANCH_CREATION_ALLOWED=FALSE` y publicación serial a `dev`.
