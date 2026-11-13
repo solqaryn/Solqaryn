@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-03.M04.01: pantalla privada de cobertura integrada [Javier :50]
+- Angular agrega /plataforma/cobertura-v5 con plataformaGuard ya verificado, reutiliza PlataformaComponent y muestra las cinco columnas del contrato sin inventar filas de cobertura ni estados del Sheet.
+- Pruebas Vitest de ruta, privacidad y estado vacio, y contrato docs/v5/c00-03-m04-01-coverage-surface.md; sin nuevo *.component.ts, endpoint, dependencia o dato sensible.
+- CI Angular y Scope Lock exact SHA; auditoria A5 independiente posterior, rollback normal; no eventos entre Tasks, MySQL, PR, ramas ni QA/main/PROD.
+
 ## 2026-11-13 — V5 C00-02.M04.01: superficie privada de lectura del ciclo [Javier :50]
 - Angular reutiliza PlataformaComponent con ruta /plataforma/flujo-v5 protegida por plataformaGuard y verificación server-side; muestra pasos contractuales, sin datos live ni mutaciones.
 - Tests de contrato de ruta y regresión de guard; documentación docs/v5/c00-02-m04-01-platform-readonly-surface.md; no añade *.component.ts al inventario canónico.

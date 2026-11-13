@@ -270,3 +270,28 @@ describe('C00-02.M04.01 - ruta y pantalla contractual privada', () => {
     expect(listar).not.toHaveBeenCalled();
   });
 });
+
+describe('C00-03.M04.01 - estado vacio honesto de cobertura', () => {
+  it('no consulta directorio ni inventa evidencia para la cadena requisito a prueba', async () => {
+    const listar = vi.fn();
+    await TestBed.configureTestingModule({
+      imports: [PlataformaComponent, NoopAnimationsModule],
+      providers: [
+        { provide: ActivatedRoute, useValue: { snapshot: { routeConfig: { path: 'plataforma/cobertura-v5' } } } },
+        { provide: PlataformaSesionService, useValue: { sesion: signal({
+          nombreUsuario: 'plataforma-test', rolNombre: 'Super Admin', ambito: 'Plataforma', esAdministrador: true
+        }), obtener: vi.fn() } },
+        { provide: PlataformaEmpresasService, useValue: { listar } },
+        { provide: Router, useValue: { navigate: vi.fn() } }
+      ]
+    }).compileComponents();
+    const fixture = TestBed.createComponent(PlataformaComponent);
+    fixture.detectChanges();
+    const texto = String(fixture.nativeElement.textContent);
+    expect(texto).toContain('Cadena de trazabilidad');
+    expect(texto).toContain('Sin datos de cobertura verificados');
+    expect(texto).toContain('Sin escritura');
+    expect(texto).not.toContain('Directorio global de empresas');
+    expect(listar).not.toHaveBeenCalled();
+  });
+});

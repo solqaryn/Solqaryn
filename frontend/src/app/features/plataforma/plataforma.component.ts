@@ -19,8 +19,8 @@ import { PlataformaGestionMvpComponent } from './plataforma-gestion-mvp.componen
       <header class="heading">
         <div class="heading__text">
           <span class="eyebrow"><mat-icon aria-hidden="true">verified_user</mat-icon> SOLQARYN · Plataforma</span>
-          <h1 id="plataforma-title">{{ vistaFlujoV5 ? 'Ciclo V5 · estados y controles' : 'Administración global' }}</h1>
-          <p>{{ vistaFlujoV5 ? 'Consulta del contrato de ejecución, sin acceso a datos ni acciones operativas.' : 'Acceso independiente de una empresa. La autorización se comprueba directamente en el servidor.' }}</p>
+          <h1 id="plataforma-title">{{ vistaFlujoV5 ? 'Ciclo V5 · estados y controles' : vistaCoberturaV5 ? 'Cobertura V5 · trazabilidad' : 'Administración global' }}</h1>
+          <p>{{ vistaFlujoV5 ? 'Consulta del contrato de ejecución, sin acceso a datos ni acciones operativas.' : vistaCoberturaV5 ? 'Explora las relaciones entre requisito, trabajo y evidencia sin exponer datos empresariales.' : 'Acceso independiente de una empresa. La autorización se comprueba directamente en el servidor.' }}</p>
         </div>
         <div class="heading__actions">
           <button mat-stroked-button type="button" (click)="revalidar()" [disabled]="validando()">
@@ -28,10 +28,11 @@ import { PlataformaGestionMvpComponent } from './plataforma-gestion-mvp.componen
             @else { <mat-icon>refresh</mat-icon> }
             Revalidar sesión
           </button>
-          @if (vistaFlujoV5) {
+          @if (vistaFlujoV5 || vistaCoberturaV5) {
             <a mat-stroked-button routerLink="/plataforma"><mat-icon aria-hidden="true">arrow_back</mat-icon> Administración</a>
           } @else {
             <a mat-stroked-button routerLink="/plataforma/flujo-v5"><mat-icon aria-hidden="true">account_tree</mat-icon> Consultar ciclo V5</a>
+            <a mat-stroked-button routerLink="/plataforma/cobertura-v5"><mat-icon aria-hidden="true">rule</mat-icon> Cobertura V5</a>
           }
           <a mat-button routerLink="/login"><mat-icon>apartment</mat-icon> Acceder a una empresa</a>
         </div>
@@ -72,6 +73,33 @@ import { PlataformaGestionMvpComponent } from './plataforma-gestion-mvp.componen
               </ol>
               <p class="v5-boundary" role="note"><mat-icon aria-hidden="true">shield</mat-icon>
                 Ninguna transición, autorización JWT/RBAC, escritura entre empresas ni promoción a QA o producción se realiza desde esta pantalla.
+              </p>
+            </mat-card-content>
+          </mat-card>
+
+        } @else if (vistaCoberturaV5) {
+          <mat-card class="v5-card" aria-labelledby="cobertura-v5-title">
+            <mat-card-content>
+              <div class="v5-overview">
+                <div>
+                  <p class="v5-kicker">Cobertura integrada · superficie de consulta</p>
+                  <h2 id="cobertura-v5-title">Cadena de trazabilidad</h2>
+                  <p>El contrato conecta requisitos, microtareas, pruebas y evidencia. No hay datos de cobertura en vivo conectados a esta pantalla.</p>
+                </div>
+                <span class="v5-readonly"><mat-icon aria-hidden="true">lock_outline</mat-icon> Sin escritura</span>
+              </div>
+              <div class="v5-coverage-scroll" role="region" aria-label="Columnas del contrato de cobertura" tabindex="0">
+                <table class="v5-coverage">
+                  <thead>
+                    <tr><th scope="col">Requisito</th><th scope="col">Microtarea</th><th scope="col">Contrato</th><th scope="col">Prueba</th><th scope="col">Evidencia</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td colspan="5" class="v5-empty">Sin datos de cobertura verificados. La matriz institucional debe leerse en su fuente autorizada antes de registrar un resultado.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="v5-boundary" role="note"><mat-icon aria-hidden="true">shield</mat-icon>
+                No se infieren PASS, propietarios ni SHAs. Esta vista no consulta ni modifica PLAN_MAESTRO, COLA o BITACORA y no emite operaciones ni eventos.
               </p>
             </mat-card-content>
           </mat-card>
@@ -198,6 +226,11 @@ import { PlataformaGestionMvpComponent } from './plataforma-gestion-mvp.componen
     .v5-boundary { display: flex; align-items: flex-start; gap: 10px; margin: 24px 0 0; padding: 14px; border-radius: 10px; background: var(--color-background, #f5f7fa); font-size: .9rem; }
     .v5-boundary mat-icon { flex: 0 0 24px; }
     @media (max-width: 760px) { .v5-steps { grid-template-columns: 1fr; } }
+    .v5-coverage-scroll { max-width: 100%; overflow: auto; margin-top: 24px; border: 1px solid #dfe5ec; border-radius: 12px; }
+    .v5-coverage { min-width: 650px; width: 100%; border-collapse: collapse; }
+    .v5-coverage th, .v5-coverage td { padding: 16px; text-align: left; border-bottom: 1px solid #dfe5ec; }
+    .v5-coverage th { font-weight: 750; font-size: .85rem; background: var(--color-background, #f5f7fa); }
+    .v5-coverage .v5-empty { color: var(--color-text-muted); line-height: 1.6; }
     .directory-card { margin-top: 20px; }
     .directory-card mat-card-content { padding: 20px 24px; }
     .directory-scroll { max-width: 100%; overflow-x: auto; }
@@ -218,6 +251,7 @@ import { PlataformaGestionMvpComponent } from './plataforma-gestion-mvp.componen
 export class PlataformaComponent {
   private readonly route = inject(ActivatedRoute);
   readonly vistaFlujoV5 = this.route.snapshot.routeConfig?.path === 'plataforma/flujo-v5';
+  readonly vistaCoberturaV5 = this.route.snapshot.routeConfig?.path === 'plataforma/cobertura-v5';
   private readonly plataforma = inject(PlataformaSesionService);
   private readonly empresasApi = inject(PlataformaEmpresasService);
   readonly sesion = this.plataforma.sesion;
@@ -228,7 +262,7 @@ export class PlataformaComponent {
   readonly errorEmpresas = signal<string | null>(null);
 
   constructor() {
-    if (!this.vistaFlujoV5) this.cargarEmpresas();
+    if (!this.vistaFlujoV5 && !this.vistaCoberturaV5) this.cargarEmpresas();
   }
 
   cargarEmpresas(pagina = 1): void {

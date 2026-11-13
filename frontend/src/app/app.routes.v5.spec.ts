@@ -25,3 +25,20 @@ describe('C00-02.M04.01 - superficie privada de lectura V5', () => {
     expect(cargado).toBe(PlataformaComponent);
   });
 });
+
+describe('C00-03.M04.01 - ruta privada de cobertura V5', () => {
+  const ruta = routes.find((item) => item.path === 'plataforma/cobertura-v5');
+
+  it('requiere guard de plataforma verificado en el backend', () => {
+    expect(ruta).toBeDefined();
+    expect(ruta?.canActivate).toEqual([plataformaGuard]);
+    expect(ruta?.children).toBeUndefined();
+  });
+
+  it('reutiliza componente existente y no crea autoridad de API', async () => {
+    const loader = ruta?.loadComponent;
+    expect(typeof loader).toBe('function');
+    expect(await (loader as () => Promise<unknown>)()).toBe(PlataformaComponent);
+    expect(ruta?.data?.['modulo']).toBeUndefined();
+  });
+});
