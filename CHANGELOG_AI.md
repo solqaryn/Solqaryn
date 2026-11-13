@@ -1,3 +1,6 @@
+## 2026-11-13 — V5 C00-01.M01.02 inventario de actores, interfaces y superficies
+- Matriz de entradas, salidas, actores y límites de confianza para plan V5 (solo documentación baseline). Caso positivo y cinco negativos ejecutados con Node 22: 6/6 PASS, análisis estático y scanner de secretos dirigido; sin .NET, Angular E2E, HTTP, MySQL ni disponibilidad de proveedores. Conserva JWT/BCrypt/RBAC/tenancy A/B, separación QA/main/PROD, migración histórica de imágenes NO_APLICA. A5_PENDIENTE independiente; rollback mediante git revert normal. Ningún PR o branch nuevo.
+
 ## 2026-11-13 — V5 C00-01.M01.01 alcance y no-regresión
 - Documentado objetivo, no-alcance, fuentes Git con huellas, contradicciones y rollback del baseline de la primera microtarea V5. Sin cambios de API, DB, frontend, migraciones, autenticación ni proveedores. Prueba Node 22 dirigida 5/5 (positivo y cuatro negativos) más A0 scan de secretos; sin E2E/HTTP/MySQL/producción. `A5_PENDIENTE` de Task independiente. Commit directo a `dev`, sin PR/ramas.
 
