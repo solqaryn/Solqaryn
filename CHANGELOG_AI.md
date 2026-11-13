@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C00-03.M03.01: validación de dominio de cobertura integrada [Javier :50]
+- Implementación .NET 10 en `backend/src/Domain/AutomationV5/V5RequirementCoverageRules.cs`: exige referencia institucional, ID del catálogo existente, versión, contrato, prueba y evidencia; rechaza duplicados compuestos y preserva correspondencias muchos-a-muchos sin abrir un backlog adicional.
+- Pruebas xUnit `backend/tests/Solqaryn.Tests/Domain/V5RequirementCoverageRulesTests.cs` y contrato `docs/v5/c00-03-m03-01-coverage-domain.md`. A0–A3 con código real, CI dirigida a SHA exacto y Scope Lock; ninguna migración, nuevo dispatcher, endpoint, PR, rama ni promoción QA/main/PROD.
+
 ## 2026-11-13 — V5 C00-02.M03.01: reglas de dominio para cola V5 [Javier :50]
 - C# real en `backend/src/Domain/AutomationV5/V5WorkItemRules.cs` valida identidad de microtarea, allowlist inyectado, G/O/DAG, exclusividad de owner, candidato, A0–A4, SHA exacto y A5 de revisor distinto; sin efectos externos ni simular CAS de Sheets.
 - Pruebas xUnit en `backend/tests/Solqaryn.Tests/Domain/V5WorkItemRulesTests.cs` y contrato `docs/v5/c00-02-m03-01-domain-rules.md`; .NET y seguridad relevantes en CI exact-SHA, Scope Lock obligatorio. Sin nuevas ramas, PR, MySQL, Angular, cambios de tenants ni QA/main/PROD; rollback aditivo `git revert`.
