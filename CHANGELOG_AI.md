@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C01-01.M01.06: gates de identidad universal, rollback y salida documental M01 [Javier :40]
+- Documento `docs/v5/c01-01-m01-06-gates-bloqueo-rollback-identidad.md`: siete prerequisitos verificados, sustitución A5 vigente Javier para la M01.05 histórica, fronteras JWT/RBAC/tenant, bloqueo/reversión y liberación M02 solo por preflight individual.
+- Alcance TIPO1 documental: P01–P03/N01–N12, A0–A3 proporcionales y A4 Scope Lock + procedencia exact SHA; no modifica API/Angular/MySQL, no certifica runtime, no PR/ramas ni QA/main/PROD.
+
 ## 2026-11-13 — V5 C00-04.M01.06: gates de gobierno de cambios y liberación documental M01 [Javier :30]
 - `docs/v5/c00-04-m01-06-bloqueo-rollback-liberacion.md` fija seis dependencias verificadas (cinco C00-04.M01 y C00-01.M06.06), A5 correctiva independiente, DAG VALIDADO, matriz de bloqueos, autorización, rollback y condición de evaluación M02 sin despacho automático.
 - Solo contrato documental TIPO 1: A0–A3 proporcionales, revisión de fronteras JWT/RBAC/tenant y Scope Lock/procedencia exact-SHA para A4; A5 independiente de otra Task Javier. .NET/Angular/MySQL/Docker/E2E no aplican al diff, sin PR/ramas ni QA/main/PROD.
