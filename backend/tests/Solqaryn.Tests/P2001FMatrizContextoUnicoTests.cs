@@ -22,9 +22,9 @@ namespace Solqaryn.Tests;
 
 /// <summary>
 /// P2-001.F: caso medible para la matriz GET de cinco endpoints comerciales.
-/// Fixture: header tenant ausente o invalido y selector de contexto unico.
-/// Esperado: sin contexto unico no se ejecuta la accion ni se marca tenant;
-/// con contexto unico A y permiso Ver, solo A puede quedar autorizado.
+/// Fixture: sin cabecera usa contexto único; cabecera explícita inválida falla cerrado.
+/// Esperado: sin contexto único no se ejecuta la acción ni se marca tenant;
+/// un selector inválido no hace fallback y nunca concede autoridad a empresa A.
 /// No equivale a una prueba HTTP/JWT ni a integracion con MySQL.
 /// </summary>
 public sealed class P2001FMatrizContextoUnicoTests
@@ -73,17 +73,12 @@ public sealed class P2001FMatrizContextoUnicoTests
     [InlineData(typeof(VentasController), nameof(VentasController.GetPaged), ModuloSistema.Ventas)]
     [InlineData(typeof(ProveedoresController), nameof(ProveedoresController.GetAll), ModuloSistema.Proveedores)]
     [InlineData(typeof(ComprasController), nameof(ComprasController.GetPaged), ModuloSistema.Compras)]
-    public async Task P2001F_Header_invalido_recae_solo_en_empresa_A_verificada(
+    public async Task P2001F_Header_invalido_NoActivaFallbackNiAutorizaEmpresaA(
         Type controllerType, string actionName, ModuloSistema modulo)
     {
         var filtro = ReadPermissionFilter(controllerType, actionName, modulo);
-        const int empresaA = 101;
         var scopes = new Mock<IUsuarioScopeService>(MockBehavior.Strict);
-        scopes.Setup(s => s.ObtenerUnicoActualAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new UsuarioTenantScopeActual(12, empresaA, 17, "Vendedor", false));
         var permisos = new Mock<IPermisoService>(MockBehavior.Strict);
-        permisos.Setup(p => p.VerificarPermisoAsync(empresaA, modulo, AccionPermiso.Ver))
-            .Returns(Task.CompletedTask);
 
         using var services = new ServiceCollection()
             .AddSingleton(scopes.Object)
@@ -91,7 +86,7 @@ public sealed class P2001FMatrizContextoUnicoTests
             .BuildServiceProvider();
         var http = new DefaultHttpContext { RequestServices = services };
         http.Request.Method = HttpMethods.Get;
-        http.Request.Headers["X-Empresa-Id"] = "-202"; // No es un tenant valido.
+        http.Request.Headers["X-Empresa-Id"] = "-202"; // Selector explicitamente invalido.
         var (execution, filters) = NewExecution(http);
         var actionCalls = 0;
         ActionExecutionDelegate next = () =>
@@ -100,12 +95,11 @@ public sealed class P2001FMatrizContextoUnicoTests
             return Task.FromResult(new ActionExecutedContext(execution, filters, execution.Controller));
         };
 
-        await filtro.OnActionExecutionAsync(execution, next);
-        Assert.Equal(1, actionCalls);
-        Assert.Equal(empresaA,
-            Assert.IsType<int>(http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey]));
-        scopes.Verify(s => s.ObtenerUnicoActualAsync(It.IsAny<CancellationToken>()), Times.Once);
-        permisos.Verify(p => p.VerificarPermisoAsync(empresaA, modulo, AccionPermiso.Ver), Times.Once);
+        await Assert.ThrowsAsync<ForbiddenAccessException>(
+            () => filtro.OnActionExecutionAsync(execution, next));
+        Assert.Equal(0, actionCalls);
+        Assert.False(http.Items.ContainsKey(VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey));
+        scopes.VerifyNoOtherCalls();
         permisos.VerifyNoOtherCalls();
     }
 

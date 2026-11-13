@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C00-01.M03.03: alinear regresión P2001F tras CI fallida [Javier :20]
+- GitHub Actions CORE run 43425902857, job 131887123198, compiló el código, pero detectó cinco fallos entre 3402 xUnit: P2001F esperaba fallback desde `X-Empresa-Id=-202`, incompatible con el nuevo contrato fail-closed. Las cinco variantes se corrigen para exigir `ForbiddenAccessException`, cero invocación del controlador, cero autoridad tenant y ningún acceso de permisos/scope. No se relaja la protección en producción ni se alteran migraciones.
+- La corrección necesita nuevo commit fast-forward en dev y revalidación CI exact-SHA de .NET 10, seguridad, MySQL 8.4 y A4; M03.03 sigue VALIDANDO. Rollback mediante git revert seguro.
+
 ## 2026-11-13 — V5 C00-01.M03.03: selector de tenant inválido falla cerrado [Javier :20]
 - `TenantPermissionContext` rechaza cabecera explícita `X-Empresa-Id` vacía, inválida o con múltiples valores antes del fallback de empresa única. Se preservan pertenencia backend verificada, autorización RBAC y selección positiva compatible.
 - xUnit dirigido cubre tenant A positivo, fallback sin cabecera, casos inválidos, duplicados y tenant B sin membresía. Validar en GitHub Actions .NET 10 y MySQL 8.4 según impacto del SHA publicado; no atribuir PASS hasta leer logs. Alcance y rollback documentados en `docs/v5/c00-01-m03-03-tenant-auth.md`. DEV únicamente; A5 independiente.
