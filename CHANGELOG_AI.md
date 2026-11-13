@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C00-03.M02.01: entidades e invariantes de la matriz integrada de cobertura [Javier :40]
+- `docs/v5/c00-03-m02-01-entidades-ownership-invariantes-cobertura.md`: modelo lógico de doce entidades, catorce invariantes y correspondencia documental R01–R12 entre requisitos, mejoras, contratos, pruebas y evidencias, sin duplicar los 2.340 IDs ni declarar implementación.
+- Entrega TIPO 1: A0–A3 documentales antes del commit sobre blob b6b16dfa1775ef07666d108580f6b21efe9b081a; casos P01–P04 y N01–N12 de aceptación contractual; .NET/Angular/Node/MySQL/Docker/E2E NO_APLICA al diff sin código. A4 exige commit FF dev, Scope Lock exact SHA y readback. A5 pendiente de otra Task Javier, sin QA/main/PROD, sin PR/ramas. Reversión git revert.
+
 ## 2026-11-13 — V5 C00-02.M02.03: modelo de persistencia, índices y migración reversible [Javier :40]
 - `docs/v5/c00-02-m02-03-persistencia-indices-migraciones-datos-prueba.md`: especifica almacenamiento institucional PLAN/COLA/DAG/BITACORA A:Z/monitor, unicidad, índices relacionales **propuestos no implementados**, plan de migración futuro reversible y casos P01–P04/N01–N09 documentales; reconoce que Sheets no proporciona CAS seguro por una simple lectura/escritura.
 - TIPO 1 documental: A0–A3 proporcionales sobre blob eb3110d591950728b325396a5cf7902d857fff3f; .NET/Angular/MySQL/Docker/E2E NO_APLICA a este diff y NO se ensayó migración/backup live. A4 exige commit FF, Scope Lock exact SHA y readback; A5 revisor distinto del allowlist Javier; sin QA/main/PROD, PR ni ramas; rollback git revert.
