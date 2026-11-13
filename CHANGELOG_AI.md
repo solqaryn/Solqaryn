@@ -1,3 +1,7 @@
+## 2026-11-13 — Rescate cruzado seguro entre Tasks [orden expresa propietario]
+- Se autoriza a un ejecutor disponible a resolver bloqueos de microtareas ajenas mediante ayuda con pruebas/CI o correcciones causales, conservando el owner activo. Handoff exclusivo solo sin lease activo, compare-and-swap y eventos idempotentes; revisor A5 siempre independiente. Alex y Javier conservan separación de cuentas y permisos. Ninguna Task ni su horario cambia. 
+- Cambia el gobierno canónico AGENTS, AUTOMATION_V13 y AUTOMATION_STATUS, sin alterar código, DAG, asignaciones, QA/main/PROD. Rollback normal git revert, no force-push.
+
 ## 2026-11-13 — V5 C02-03.M01.05: criterios de aceptación del ciclo de vida tenant [Javier :20]
 - Contrato documental preliminar AC01–AC24: seis positivos y dieciocho negativos FUTUROS para alta/suspensión/reactivación/archivo/baja lógica idempotentes, concurrencia, JWT/RBAC/tenant A/B, retención y rollback; cinco fuentes Git con SHA.
 - Sin ejecución runtime ni cambios de entidades/datos/CI; DAG19 documental, A0–A4 proporcional, Scope Lock exact-SHA y A5 otro TASK_ID. No liberar M01.06/M02 ni QA/main/PROD.

@@ -1,5 +1,18 @@
 # AGENTS — SOLQARYN (instrucciones operativas vigentes)
 
+## RESCATE CRUZADO EXCLUSIVO V5 2026-11-13 — AUTORIZACIÓN OPERATIVA DEL PROPIETARIO
+
+**Regla prioritaria de producción:** si una microtarea está BLOQUEADA, VALIDANDO sin progreso o su ejecutor está temporalmente indisponible, **otra Task autorizada y disponible puede rescatar y resolver el bloqueo sin aprobación humana rutinaria**, con evidencia real. Orden de trabajo: (1) REVIEW_FIRST de VALIDANDO propia; (2) rescate único de bloqueos ajenos verificables; (3) siguiente PENDIENTE independiente habilitada. No esperar que el autor permanezca bloqueado para investigar o ejecutar las pruebas causales.
+
+**Rescate asistido — modalidad preferida:** el ejecutor auxiliar examina HEAD/SHA, logs y dependencia, reejecuta automáticamente las CI pertinentes o corrige un fallo dentro del scope autorizado, y registra su TASK_ID, la TASK autora, SHA, operación y resultado en BITACORA A:Z con EVENT_ID/IDEMPOTENCY_KEY únicos. **Conserva la asignación original** mientras la Task autora tenga trabajo o lease vigente; no escribe un segundo cierre, no reclama el mismo archivo ni sustituye sus A0–A4 por mera suposición. La autora puede reutilizar la evidencia causal nueva sin esperar una aprobación humana.
+
+**Relevo exclusivo — solo cuando necesario:** si la Task autora está realmente indisponible y no mantiene corrida/lease de escritura activo, una Task autorizada puede hacerse cargo del cierre mediante verificación de identidad y permisos, relectura inmediatamente anterior, reserva atómica/compare-and-swap del owner y registro del owner anterior, nuevo TASK_ID, motivo, SHA y timestamp. Si la reserva falla, **abortar el relevo** y trabajar otra tarea; jamás dos escritores simultáneos ni apropiarse de otra cuenta por inferencia. No editar ni ejecutar Tasks físicas de Alex desde la cuenta Javier ni viceversa sin propiedad/permisos verificables. Los recursos compartidos GitHub/Sheet se pueden reparar dentro de las credenciales reales autorizadas y sin usurpar identidad.
+
+**CI y auditoría:** para documentacion sin runtime, distinguir NO_APLICA motivado por diff/arquitectura de PASS real; CANCELLED, SKIPPED o IN_PROGRESS no constituyen PASS requerido. Si la prueba sí es requerida, ejecutarla automáticamente (incluido Playwright cuando aplique), comprobar SHA exacto y registrar readback. La revisión A5 debe realizarla otra Task distinta del autor, incluso en rescate; no ocultar A5_FAIL histórico. Scope Lock STRICT, multitenancy, JWT/RBAC, dev-only, no QA/main/PROD. El desbloqueo DAG de preparatorias en VALIDANDO sigue reactivo y no autoriza promover cierres críticos.
+
+**No interferencia:** no pausar ni modificar RRULE/IDs/prompts de Tasks activas como efecto de esta regla; comunicar en la fuente canónica y comprobar su lectura. Si el scheduler o las credenciales de un ejecutor no permiten el rescate, el hecho se anota como bloqueo de permisos y se utiliza otra Task disponible dentro de su propio alcance. El rescate no promete completar toda la cola ni falsifica certificaciones.
+
+
 ## DAG24 VALIDANDO-TRIGGER 2026-11-13 — REGLA OPERATIVA AUTOACTIVABLE
 
 Regla del propietario: cuando una tarea predecesora entre en VALIDANDO, el sistema debe **evaluar inmediatamente por formula** los sucesores PENDIENTE de preparación documental técnicamente independientes y dejarlos habilitados si tienen evidencia provisional suficiente. No se requiere aprobación humana rutinaria ni esperar que una microfase de seis tareas termine. **VALIDANDO no es LISTO** y solo sirve como prerequisito provisional para análisis de continuidad, nunca para cierres M01.06, M02, cambios IAM/JWT/RBAC/tenant, DB/migraciones, despliegues ni QA/main/PROD.
