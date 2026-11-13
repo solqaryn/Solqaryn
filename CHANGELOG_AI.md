@@ -806,3 +806,9 @@
 - Coteja cuatro fuentes runtime/workflow con blobs, distingue la existencia de jobs de restauración demostrada, y registra discrepancia DEV/Desarrollo como gate que requiere lectura real.
 - Documentación solamente (A0–A3 proporcional); .NET/Node/Angular/MySQL/Docker/E2E no aplican, Scope Lock exact SHA sí. A4 solo poscommit, A5 independiente Javier.
 - Sin secretos, restore, migraciones, cambios de proveedores, QA/main/PROD, nuevas ramas/PR ni Tasks. Rollback git revert normal, con revisión de trabajo concurrente.
+
+## 2026-11-13 — SOLQARYN V5 C03-04.M01.03 (PRIMARY DEV 04 Javier :30)
+- Inventario documental de contratos backup/restore/revocación con 10 fuentes reales y hashes de blobs, 16 oráculos positivos/negativos IV01–IV16, brechas BR01–BR09; sin afirmar ejecución de los workflows.
+- Separación entre YAML/triggers/fixtures y restauración MySQL 8.4, y discrepancia documentada DEV/Desarrollo que requiere autenticación de settings; JWT/RBAC/tenant A/B y PII fail-closed.
+- TIPO1 doc: A0–A3 revisión documental; sin cambios de runtime, scripts ni workflows, .NET/Angular/MySQL/Docker/E2E NO_APLICA, Scope Lock exact SHA requerido para A4 y A5 pendiente de otra Task Javier.
+- No QA/main/PROD, pagos, secretos o backups. Rollback git revert normal con HEAD revalidado.
