@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-03.M03.02: servicio Application de cobertura integrada [Javier :00]
+- `backend/src/Application/AutomationV5/V5RequirementCoverageProjectionService.cs` implementa proyección de matriz requisito→microtarea para IDs existentes con estado/owner/SHA verificados. Conserva faltantes explícitos, no concede PASS por una referencia documental ni crea microtareas, endpoints o persistencia.
+- `backend/tests/Solqaryn.Tests/Application/V5RequirementCoverageProjectionServiceTests.cs` incorpora xUnit positivos y negativos: mapeo uno-a-varios, lote vacío, SHA inválido/obsoleto, snapshot ausente, ID/estado inválido y cobertura duplicada; contrato en `docs/v5/c00-03-m03-02-application-service.md`. Resultado CI .NET/seguridad/Scope Lock exact-SHA pendiente hasta su ejecución.
+- Alcance Application puro, sin JWT/RBAC/tenant nuevo, MySQL, Angular, Docker, migraciones, worker ni despacho de eventos. A5 corresponde a otra Task Javier distinta; rollback mediante `git revert` normal, sin force-push.
+
 ## 2026-11-13 — V5 C00-02.M03.02: caso de uso Application V5 sin efectos externos [Javier :00]
 - Se implementa `backend/src/Application/AutomationV5/V5WorkItemTransitionPlanner.cs`: propuestas inmutables de CLAIM, VALIDANDO y LISTO_DEV con expectativas de estado/owner; rechaza actor no autorizado y retorna intención nula ante gates negativos.
 - Pruebas xUnit reales añadidas en `backend/tests/Solqaryn.Tests/Application/V5WorkItemTransitionPlannerTests.cs`; contrato y límites en `docs/v5/c00-02-m03-02-application-service.md`. CI .NET/seguridad/Scope Lock exact-SHA se verificará después de publicación; no atribuir PASS por anticipado.

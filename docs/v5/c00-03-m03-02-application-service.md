@@ -1,0 +1,11 @@
+# SOLQARYN V5 — C00-03.M03.02: servicio Application de proyeccion de cobertura integrada
+
+**Implementacion real TIPO 2 (.NET 10):** `V5RequirementCoverageProjectionService` transforma correspondencias ya verificadas por `V5RequirementCoverageRules` en filas tipadas de cobertura, sin crear backlog adicional, activar dispatcher ni escribir en PLAN_MAESTRO. Autor PRIMARY DEV 01 Javier, TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`.
+
+Cada proyeccion exige un SHA de 40 hex del HEAD observado, requisitos pertenecientes al V5 FINAL aprobado, IDs dentro del catalogo de 2340, snapshots PLAN H/I consistentes, resultado exigido no vacio y ausencia de duplicados (regla Domain). La relacion uno-a-muchos puede cubrir dos microtareas **existentes**, sin insertar ID 2341. La proyeccion conserva referencias de contrato, test, evidencia, estado, owner y SHA.
+
+**Seguridad y limite epistemico:** `EVIDENCE_NOT_VERIFIED` figura aun para microtareas LISTO: la referencia de un archivo no prueba por si sola HTTP/MySQL, GitHub Actions exact-SHA, A0-A4, A5 ni autorización de QA/PROD. Un estado pendiente incluye `WORK_ITEM_NOT_LISTO`. El metodo nunca expone un PASS de CI ni concede JWT/RBAC/tenant A/B, tampoco escribe Google Sheets o DB, y no crea API, worker, migracion ni webhook. El consumidor futuro debe comprobar permisos, SHA, relaciones, independencia A5 y evidencia causal real antes de usar el resultado para un gate.
+
+**Pruebas:** `V5RequirementCoverageProjectionServiceTests` cubre positivo de un ID existente, mapeo uno-a-varios sin nueva fila, estado pendiente con faltantes explicitos, no auto-certificacion de LISTO, duplicados, requisito externo, snapshot ausente, SHA viejo, estado desconocido y lote vacio.
+
+**Matriz:** requiere_dotnet=SI; requiere_node_angular=NO; requiere_mysql=NO; requiere_docker=NO; requiere_e2e=NO; requiere_security=SI por procedencia y no concesion de permisos; requiere_scope_lock=SI. Compilar y correr xUnit en Github Actions SHA exacto; A0 diff/secretos; A1 casos reales; A2 controles de entrada y límites multiempresa; A3 build y regresiones .NET; A4 checks, SHA y readback institucional. La ausencia de suites real-live SQL/HTTP es NO_APLICA al diff puramente Application; no inferir integraciones de su ausencia. A5 por otra Task Javier; rollback revert normal sin force-push.
