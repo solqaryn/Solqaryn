@@ -7,6 +7,8 @@ on:
       - '.github/workflows/v5-plataforma-ui-tests.yml'
       - 'frontend/src/app/features/plataforma/plataforma.component.ts'
       - 'frontend/src/app/features/plataforma/plataforma-gestion-mvp.component.spec.ts'
+      - 'frontend/src/app/app.component.ts'
+      - 'frontend/src/app/app.component.spec.ts'
 
 permissions:
   contents: read
@@ -38,3 +40,5 @@ jobs:
         run: npm ci
       - name: Ejecutar Vitest de estados protegidos
         run: npm test -- --no-watch --no-progress --include=src/app/features/plataforma/plataforma-gestion-mvp.component.spec.ts
+      - name: Probar aislamiento de branding de plataforma
+        run: npm test -- --no-watch --no-progress --include=src/app/app.component.spec.ts

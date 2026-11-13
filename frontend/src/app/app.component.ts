@@ -217,7 +217,12 @@ export class AppComponent implements OnDestroy {
       return;
     }
 
-    if (this.auth.isAuthenticated() && this.tenantContext.tieneContextoVerificado()) {
+    // La consola global nunca hereda branding del tenant empresarial activo.
+    // Limpiar tokens y cargas pendientes antes de pintar superficies V5 protegidas.
+    if (this.esRutaPlataforma(url)) {
+      this.themeApplier.aplicarTemaPlataforma();
+      this.identidad.usarPlataforma();
+    } else if (this.auth.isAuthenticated() && this.tenantContext.tieneContextoVerificado()) {
       this.themeApplier.aplicarTemaGuardado();
       this.identidad.cargar().subscribe();
     } else {
@@ -226,6 +231,11 @@ export class AppComponent implements OnDestroy {
     }
 
     this.seo.aplicarNoIndex('SOLQARYN');
+  }
+
+  private esRutaPlataforma(url: string): boolean {
+    const path = (url || '/').split(/[?#]/, 1)[0].replace(/\/+$/, '') || '/';
+    return path === '/plataforma' || path.startsWith('/plataforma/');
   }
 
   private esRutaTienda(url: string): boolean {

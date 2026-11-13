@@ -954,3 +954,8 @@
 - El workflow usa Node 24 y npm 11 fijados por el repositorio, checkout SHA dev, npm ci y pruebas del fichero Angular realmente modificado. La compilación/lint es cubierta por los jobs frontend existentes en el mismo SHA.
 - Este gate cubre la ausencia comprobada de un job de pruebas unitarias frontend para el commit inicial de la microtarea; no se contabilizan CHECKS pendientes o SKIPPED como PASS.
 - A0 requiere revisar permisos de workflow contents:read y procedencia de actions; A1/A2/A3 y A4 solo con resultados reales del nuevo SHA, A5 independiente. Sin nuevas Tasks, PR, ramas ni infraestructura, rollback git revert normal.
+## 2026-11-13 — SOLQARYN V5 C00-02.M04.03 branding seguro de plataforma [Javier :10]
+- El shell Angular restablece inmediatamente los tokens e identidad SOLQARYN al entrar a /plataforma y subrutas V5, incluso si la cuenta conserva un contexto empresarial anteriormente verificado.
+- Las rutas empresariales fuera de /plataforma conservan la configuración dinámica existente del tenant; no se acepta branding, CSS, permisos o contexto enviados por URL.
+- Se añaden tres pruebas unitarias de frontera de ruta, retorno a contexto global y prefijo negativo, y se amplía el gate Vitest V5 exact-SHA. El archivo app.component.ts no agrega API, nuevo componente ni endpoint.
+- A0 inspección estática del parser de ruta, dependencias, changelog y seguridad; A1-A3 Vitest + Angular lint/build de CI real; A4 check-runs y Sheet, A5 solo otra Task Javier. No MySQL, Docker, workers, QA/main/PROD; rollback git revert normal.
