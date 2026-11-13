@@ -1,3 +1,6 @@
+## 2026-11-13 — V5 C01-03.M01.03: inventario preliminar de contratos y evidencia [Javier :20]
+- Se leyeron y fijaron cuatro blobs de código real (TemaVisual DTO/metadata UI, TemaVisualService HTTP, ThemeApplierService hex allowlist y Program.cs) con afirmaciones y límites explícitos; seis casos documentales D-01–06 positivos/negativos de JWT, RBAC, tenancy e inyección. No se certifica API universal ni MySQL/Angular/browser. A0–A3 documentales, A4 exact-SHA Scope Lock y A5 por otra Task; sólo M01, sin QA/main/PROD.
+
 ## 2026-11-13 — V5 C01-03.M01.04: matriz preliminar de riesgos de configuración [Javier :20]
 
 ## 2026-11-13 — V5 C00-04.M01.03: inventario de contratos, código y evidencias [Javier :10]
