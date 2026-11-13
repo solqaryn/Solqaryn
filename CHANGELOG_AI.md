@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C00-03.M01.05: aceptación funcional y técnica de matriz integrada [Javier :10]
+- Contrato documental con AC-01–AC-10 observables, evidencia mínima por unidad, negativos fail-closed, independencia de autor/A5, Scope Lock y dependencia DAG C00-01.M02; no cierra matriz completa ni implementa runtime.
+- TIPO1_DOCUMENTACION: dotnet/Node/Angular/MySQL/Docker/E2E=NO_APLICA; security=SI_REVISION_DOCUMENTAL; scope_lock=SI; A0-A3 documentales tras VALIDANDO y A4 SHA/readback, A5 independiente. No QA/main/PROD.
+
 ## 2026-11-13 — V5 C00-01.M06.03: matriz de riesgos, límites y decisiones [Javier :00]
 - Registro firmado por Task/SHA con riesgos abiertos M05.04, A5_FAIL original M04.03, strict -warnaserror N1.1/N1.2, CSS budget, TestServer obsoleto y límites de rendimiento CI. Matriz de contradicciones V5/DAG/CI/autoría, sin liberar M06 ni cambiar runtime; Scope Lock y A5 independiente.
 
