@@ -174,3 +174,59 @@ test.describe('C00-02.M04.05 - responsive, teclado, foco y contraste V5', () => 
     expect(ratio).toBeGreaterThanOrEqual(4.5);
   });
 });
+
+test.describe('C00-02.M04.06 - densidad y carga progresiva segura V5', () => {
+  test.describe.configure({ retries: 0 });
+
+  test('presenta solo cuatro pasos y una tarjeta, sin cargar directorio ni operaciones', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await syntheticToken(page);
+    await mockPlatformSession(page, true);
+    const unwanted: string[] = [];
+    await page.route(/\/(?:plan-maestro|bitacora|cola|directorio|empresas\/listar)(?:\/|\?|$)/i, route => {
+      unwanted.push(route.request().url());
+      return route.abort();
+    });
+    await page.goto('/plataforma/flujo-v5');
+    await expect(page.getByRole('heading', { name: 'De la solicitud a la evidencia DEV' })).toBeVisible();
+    await expect(page.locator('.v5-card')).toHaveCount(1);
+    await expect(page.getByRole('list', { name: 'Secuencia contractual de estados' }).locator('li')).toHaveCount(4);
+    await expect(page.locator('app-plataforma-gestion-mvp')).toHaveCount(0);
+    await expect(page.locator('.directory-card')).toHaveCount(0);
+    expect(unwanted).toEqual([]);
+  });
+
+  test('muestra espera progresiva y bloquea doble revalidacion sin exponer respuesta privada', async ({ page }) => {
+    await syntheticToken(page);
+    await mockPlatformSession(page, true);
+    await page.goto('/plataforma/flujo-v5');
+    const button = page.getByRole('button', { name: /Revalidar sesión/ });
+    await expect(button).toBeEnabled();
+    let release: (() => void) | undefined;
+    const requests: string[] = [];
+    await page.route(sessionUrl, async route => {
+      if (route.request().method() === 'OPTIONS') {
+        await route.fulfill({ status: 204, headers: cors });
+        return;
+      }
+      requests.push(route.request().method());
+      await new Promise<void>(resolve => { release = resolve; });
+      await route.fulfill({
+        status: 200, contentType: 'application/json', headers: cors,
+        body: JSON.stringify({ success: true, data: {
+          nombreUsuario: 'V5 UI synthetic', rolNombre: 'Plataforma UI mock',
+          ambito: 'Plataforma', esAdministrador: true
+        } })
+      });
+    });
+    await button.click();
+    await expect(button).toBeDisabled();
+    await expect(page.getByRole('status').filter({ hasText: 'Verificando permiso de plataforma' })).toBeVisible();
+    await expect.poll(() => Boolean(release)).toBe(true);
+    expect(requests).toEqual(['GET']);
+    release?.();
+    await expect(button).toBeEnabled();
+    await expect(page.getByText('Sesión de plataforma verificada para consulta de solo lectura')).toBeVisible();
+    expect(requests).toEqual(['GET']);
+  });
+});

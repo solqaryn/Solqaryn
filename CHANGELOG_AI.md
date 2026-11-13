@@ -969,3 +969,8 @@
 - Se amplía el Playwright Chromium de rutas V5 con pruebas móviles y escritorio (390/1280), cuatro pasos sin overflow, navegación por Tab, tabla semántica desplazable por teclado y contraste de texto mínimo 4.5:1 según estilos computados.
 - Las rutas usan respuestas de sesión sintéticas únicamente para validar experiencia y guardas negativas; no se afirma JWT/MySQL real, tráfico institucional, permisos adicionales ni mutaciones operativas.
 - A0 sobre diff, tipos, secretos y procedencia; A1/A2/A3 mediante browser real positivo y negativo, lint/build Angular; A4 solo check-runs exact-SHA y readback del Sheet; A5 independiente de otra Task Javier. Sin API, DB, Docker, workers, despliegues, PR o ramas; rollback git revert.
+
+## 2026-11-13 — SOLQARYN V5 C00-02.M04.06 densidad y carga progresiva controlada [Javier :30]
+- Playwright Chromium comprueba cuatro pasos en una única tarjeta de contrato sobre móvil y ausencia de carga de directorio, formularios operativos o consulta institucional oculta; no agrega endpoints ni negocio.
+- Una prueba asíncrona retiene una respuesta GET sintética de sesión para verificar anuncio de espera y acción deshabilitada hasta la confirmación; se contabiliza un único request y se conserva denegación fail-closed en pruebas existentes.
+- A0 static+secrets+CHANGELOG; A1/A2/A3 Playwright UI positivo/negativo y build/lint Angular, A4 solo checks reales del SHA y readback; A5 independent Javier Task distinta. Sin API/DB/MySQL/Docker/eventos ni permisos añadidos; revert sin reescritura.
