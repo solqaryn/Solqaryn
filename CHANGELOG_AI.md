@@ -1,3 +1,6 @@
+## 2026-11-13 — Corrección A5_FAIL C00-03.M01.04: RI10 BITACORA A:Z/26 [Javier :20]
+- Se rectifica en el documento propio RI10: 26 columnas A:Z, EVENT_ID e IDEMPOTENCY_KEY únicos, RUN_ID vacío sin lectura nativa y rechazo explícito de eventos de 21–25 campos; se conserva A5_FAIL del SHA bfb4c325 y se solicita A5 nueva e independiente para el SHA corregido. Sólo documentación; no afecta código ejecutable, fórmulas, Tasks ni QA/main/PROD.
+
 ## 2026-11-13 — Corrección A5_FAIL C00-01.M06.03: matriz BITACORA A:Z/26 [Javier :00]
 - Corrige referencia documental de 21 a 26 columnas físicas, EVENT_ID/IDEMPOTENCY_KEY, RUN_ID no inventado y negativos contra truncamiento y suplantación; conserva evidencia original de A5_FAIL sobre 66b640fb y exige nuevo A5 independiente. No cambia runtime, Sheets, Tasks, QA/main/PROD ni gates M06.
 

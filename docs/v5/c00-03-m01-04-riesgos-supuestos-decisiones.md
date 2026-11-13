@@ -17,7 +17,7 @@
 | RI07 | La arquitectura objetivo se confunde con infraestructura ya migrada | Documento menciona Hostinger/Cloudflare/R2 como si hubiera despliegue, DNS, datos o proveedor activo | Clasificar `FUTURO_NO_EJECUTADO`; no tocar producción ni secretos sin autorización aparte | Propietario de infraestructura |
 | RI08 | CI no proporcional o evidencia atribuida a SHA equivocado | Job `SKIPPED`, `CANCELLED`, fallo requerido, o ejecución sobre ancestor con cambio relevante | Registrar `NO_PASS`; validar check causal del SHA exacto, sólo esperar jobs requeridos | Autor de cambio y revisor |
 | RI09 | Activo histórico inexistente se presenta como migrado | Inventario de imágenes históricas es cero, pero reporte asegura copia a almacenamiento nuevo | Registrar `MIGRACION_HISTORICA=NO_APLICA`; conservar controles para archivos futuros | Responsable de archivos |
-| RI10 | Registro de auditoría duplicado o insuficiente | `BITACORA` tiene `EVENT_ID` duplicado, origen sin TASK_ID, o menos de 21 campos | No certificar cierre; conservar evidencia existente, corregir por operación autorizada y lectura posterior | Task autora / auditor institucional |
+| RI10 | Registro de auditoría duplicado o insuficiente | `BITACORA!A:Z` tiene `EVENT_ID` duplicado, `IDEMPOTENCY_KEY` duplicada, origen sin TASK_ID o un evento con menos de 26 campos físicos | Rechazar eventos truncados de 21 a 25 campos; aceptar sólo estructura de 26 posiciones A:Z con EVENT_ID e IDEMPOTENCY_KEY únicos, RUN_ID vacío si no existe ejecución nativa verificable y readback; conservar historial previo | Task autora / auditor institucional |
 
 ## Supuestos controlados (no certificaciones)
 
@@ -45,6 +45,8 @@
 **Positivo P1:** al registrar un requisito proveniente del V5, se identifica exactamente un ID existente, se preserva el RESULTADO_EXIGIDO, se distingue diseño de implementación, se registra el riesgo de seguridad/tenant y se define evidencia y rollback. **Positivo P2:** un cambio documental sin runtime evalúa fuente, diffs, integridad y Scope Lock cuando proceda, sin esperar MySQL/.NET irrelevantes.
 
 **Negativos obligatorios:** N1 rechazar un ID fuera del catálogo; N2 rechazar un requisito duplicado como nueva ejecución; N3 rechazar cerrar implementación con sólo documentación; N4 rechazar afirmar migración histórica de imágenes cuando inventario=0; N5 rechazar `SKIPPED` como `PASS` de job requerido; N6 rechazar promoción QA/main/PROD sin A5 independiente y autorización explícita; N7 rechazar el acceso entre tenants aunque UI lo permita; N8 rechazar un claim sobre ID con responsable vigente. Estos son **criterios documentales**, no afirmaciones de tests HTTP/DB/browser ya ejecutados.
+
+**Comprobación RI10 (A:Z/26):** caso positivo: evento con 26 posiciones, EVENT_ID e IDEMPOTENCY_KEY distintos y RUN_ID vacío cuando no hay lectura nativa; casos negativos: rechazar 21, 22, 23, 24 o 25 campos, duplicación de claves y suplantación del revisor. Esta regla describe el contrato; no afirma haber ejecutado una inserción de prueba en la hoja institucional.
 
 ## Impacto, validaciones y reversión
 
