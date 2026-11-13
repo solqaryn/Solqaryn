@@ -1,3 +1,8 @@
+## 2026-11-12 — P5-016.C: delimitación de acciones visuales coherentes (Javier :20)
+- Contrato real de acción uniforme `Cerrar` en `frontend/src/app/shared/alerts/app-toast.service.ts`, blob `0478821b246cae5fdf3016a5c25081a1726f925a`; no se modifica producto Angular.
+- Test de delimitación `scripts/tests/p5-016-c-delimitacion-acciones.test.mjs` 5/5 Node 22.16.0, positivo y negativos de ausencia de fallback Cerrar, wrappers de severidad incongruentes, estilos sin variante, HTML inseguro y contrato vacío. Nota `docs/P5-016-C-DELIMITACION-ACCIONES-DEV.md`.
+- Solo evidencia estática del código vivo; no certifica interacción en navegador, lector de pantalla, responsive, JWT/RBAC/tenant, backend ni QA/PROD. Rollback selectivo con revert aditivo en dev sin force. A5 independiente pendiente.
+
 ## 2026-11-12 — P5-008.C: delimitación de alertas institucionales (Javier :20)
 - Archivo real único `frontend/src/app/shared/alerts/app-toast.service.ts`, blob `0478821b246cae5fdf3016a5c25081a1726f925a`. Escenario acotado de notificaciones toast, no el subsistema modal completo.
 - Prueba estática dirigida `scripts/tests/p5-008-c-delimitacion-alertas.test.mjs` (Node 22.16.0; 5/5 precheck) y nota `docs/P5-008-C-DELIMITACION-ALERTAS-DEV.md`: variantes, urgencia accesible, duración y rechazo de HTML inseguro. No cambia Angular ni certifica browser/tenancy/live.
