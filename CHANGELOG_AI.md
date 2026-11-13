@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C03-01.M01.05: aceptación observable de autenticación y recuperación (Javier :10)
+- `docs/v5/c03-01-m01-05-aceptacion-autenticacion-recuperacion.md`: 16 criterios AC01–AC16 (2 positivos, 12 negativos, 2 controles) de login/renovar/revocación/recuperación futura, con oráculos HTTP/DB, 10 blobs de código/tests y 10 predecesores DAG LISTO. Diferencia evidencias estáticas/mocks de pruebas runtime exigidas a una futura implementación.
+- Autor TASK_ID 6af16bb9492c8191b8e8c7d606f11507. A0–A3 PASS documental antes de publicar: calidad/no secretos, aceptación falsable, seguridad JWT/RBAC/tenant A/B y contratos. Dotnet/Angular/MySQL/Docker/E2E NO_APLICA a este cambio documental. A4 requiere Scope Lock del SHA publicado y readback; A5 pendiente de otra Task Javier. Sin APIs/DB/proveedores/QA/main/PROD/PR/ramas; rollback con git revert no destructivo.
+
 ## 2026-11-13 — V5 C03-01.M01.03: inventario de autenticacion y pruebas existentes (Javier :50)
 - `docs/v5/c03-01-m01-03-inventario-contratos-codigo-evidencia.md`: ocho fuentes de codigo + tres tests con Git blobs, pruebas delimitadas de login, renovar, JWT, localStorage, tenancy y session-activity; trece controles pendientes para implementación futura.
 - Separa archivos reales de mocks/EF InMemory; NO certifica recuperacion, revocacion JWT global, refresh rotativo, MFA/passkeys ni ataques HTTP 429. A0-A3 documentales antes del commit; A4 exact-SHA Scope Lock, A5 otra Task Javier. Sin runtime, secretos, QA/main/PROD, PR ni ramas; rollback git revert.
