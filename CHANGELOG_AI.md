@@ -896,3 +896,9 @@
 - Fuentes estaticas con blobs: dos workflows de backup/restore, runbook DEV/Desarrollo, prueba Moq de renovacion, matriz C03-04.M01.04; 15 prerequisitos documentales de C03-01/02/03 registrados LISTO, DAG VALIDADO.
 - TIPO1: no cambios runtime, contratos API/DTO, migraciones, secretos, permisos o infrastructure; dotnet/Angular/MySQL/Docker/Playwright NO_APLICA para el changeset; A0-A3 documentales y control de JWT/RBAC/tenant en requisitos; Scope Lock exact SHA requerido en A4.
 - A5_PENDIENTE para otra Task JAVIER, M01.06/M02/C10/C12 siguen sujetos a gates propios, sin QA/main/PROD; rollback git revert normal, sin force-push.
+
+## 2026-11-13 — SOLQARYN V5 C00-02.M03.03, aislamiento de autorizacion por scope/tenant [Javier :20]
+- Codigo .NET `backend/src/Application/AutomationV5/V5WorkItemTenantAuthorizationGuard.cs`: politica pura fail-closed con allowlist Javier, bindings confiables de scope y tenant, catalogo V5 y owner/A5 independiente.
+- Pruebas xUnit `V5WorkItemTenantAuthorizationGuardTests.cs` con positivos y negativos: cross-tenant, actor externo, bindings ausentes, ID no catalogado, conflicto de owner y autorrevisión.
+- No sustituye JWT/RBAC/tenancy HTTP real ni implementa CAS de Google Sheets; la autorizacion aplicativa real y la persistencia requieren consumidores y controles propios. Ningun acceso se concede implicitamente.
+- Clasificacion: .NET=SI, security=SI, scope_lock=SI; Angular/MySQL/Docker/E2E=NO_APLICA al diff; A1-A3 requieren CI real del SHA exacto; A4 readback y A5 independiente. Sin QA/main/PROD, secretos, ramas ni PR. Rollback revert normal.
