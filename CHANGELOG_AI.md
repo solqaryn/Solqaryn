@@ -1,3 +1,8 @@
+## 2026-11-13 — M04.03: regresión Chromium real A→login y A→B; A5 sujeto a CI
+- Añadido `frontend/e2e/c00-01-m04-03-route-context.spec.ts` con HTTP público retenido en navegador, una prueba positiva de branding y dos negativas de SEO/tema después de navegar sin recarga. No se simula Angular Router ni AppComponent.
+- Añadido workflow dirigido `.github/workflows/v5-m04-03-browser-regression.yml`, que ejecuta lint, build, unitarios y Playwright Chromium en entorno descartable; no requiere deployment Vercel ni toca QA/main/PROD.
+- Histórico A5_FAIL permanece hasta evidencia CI exact-SHA y revisión independiente distinta del autor. Rollback normal por revert en dev.
+
 ## 2026-11-13 — Orden vigente: SOLQARYN con seis Tasks Javier y Alex retirado
 - Por orden expresa del propietario, el allowlist comercial y el despacho operativo quedan restringidos exclusivamente a las seis Tasks Javier existentes (:00, :10, :20, :30, :40, :50). DEV 07 y DEV 08 Alex no conservan permisos institucionales de despacho, reactivación, relevo ni revisión A5. Sus Tasks privadas se reportaron pausadas, sin lectura física desde esta cuenta.
 - Se actualizaron `docs/AUTOMATION_STATUS.md`, `docs/PROJECT_SCOPE_LOCK.md`, `AGENTS.md` y el Google Sheet V5 (CONFIG, TAREAS_PROGRAMADAS, AUTOMATIZACIONES). Se mantuvieron ID, RRULE y habilitación de Javier. Evidencia histórica en BITACORA, Git y PLAN_MAESTRO conservada, sin interpretación como autorización activa.
