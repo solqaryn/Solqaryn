@@ -1,3 +1,8 @@
+## 2026-11-12 - G0-006.H: regresion positiva de trazabilidad V13 Direct DEV (Javier :30)
+- Prueba scripts/tests/g0-006-h-positive-traceability.test.mjs verifica recibo sintetico positivo de requisito G0-006.H a codigo/test/auditorias/readback, junto con negatives SHA/arbol, A4, ausencia de tests, SKIPPED, fase historica y falta de evidencia Sheets/BITACORA. No certifica recibos reales ni promocion de entornos.
+- A0 Node22.16.0 node --check, escaneo de secretos sin patrones; A1 5/5 Node focused suites PASS; A2 fase obsoleta no reabre Angular; A3 15/15 Node test suites compatibles con G0-006.G y pruebas locales D/E/F, sin dependencias ni modificaciones runtime. A4 exige SHA de commit y readback exacto; A5 otro Scope.
+- Rollback via git revert selectivo, sin cambios a frontend/backend/MySQL/JWT/RBAC/QA/main/PROD. Ninguna atestacion externa del control sintetico.
+
 ## 2026-11-12 - G0-006.G: rechazo de reapertura historica Angular 8/13 (Javier :30)
 - Se endurecio el helper informativo scripts/quality/direct-dev-traceability.mjs para rechazar intentos estructurados de reabrir fases retiradas 8/13 o migracion Angular completada aun cuando se disfracen con scope y hashes comerciales validos. No concede autoridad para publicar ni marca LISTO por si solo.
 - Prueba dirigida scripts/tests/g0-006-g-legacy-angular-reopen.test.mjs: 5 suites Node; 10/10 PASS con regresion local de controles D/E/F. A0 Node22 --check y busqueda de secretos; A1 positivo+negativos sinteticos; A2 rechazo de fase heredada fail-closed; A3 API guard Node sin dependencias nuevas, sin mutaciones frontend/backend/DB/RBAC/JWT.
