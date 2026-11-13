@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C00-03.M02.06: cierre contractual de cobertura M02 [Javier :10]
+- Documento `docs/v5/c00-03-m02-06-dependencias-salida-cobertura.md`: matriz R01–R12, seis fuentes M01/M02 con blobs verificables, dependencias y gates estrictos de salida, 4 positivos/12 negativos documentales; no implementación, activación de dispatcher ni M03 automático.
+- A0–A3 documentales dirigidos, evidencia A:Z/26, JWT/RBAC/tenant, Scope Lock y validación de procedencia exact-SHA antes de A4; A5 independiente. Sin PR/ramas, QA/main/PROD, migraciones ni proveedores activos.
+
 ## 2026-11-13 — V5 C00-03.M02.05: contrato de eventos de cobertura integrada [Javier :10]
 - Documento `docs/v5/c00-03-m02-05-eventos-correlacion-cobertura.md`: define tipos de evento lógicos, claves de cobertura e idempotencia, trazabilidad y límites del mapa requisito↔microtarea sin desplegar dispatcher, CAS, API, worker ni DB.
 - Contrato documental TIPO 1: oráculos P01–P04/N01–N10, autoridad PLAN/COLA/DAG/BITACORA A:Z, cinco hashes de fuentes, seguridad tenant/JWT/RBAC, Scope Lock exact-SHA y A5 independiente; sin QA/main/PROD.
