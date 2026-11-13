@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C00-02.M01.01: rectificación documental A5_FAIL BITACORA A:Z/26 [Alex :05]
+- Se corrige la referencia obsoleta A:U/21 a A:Z/26, EVENT_ID A, IDEMPOTENCY_KEY R, TASK_ROLE E, ACCOUNT_OWNER F y TASK_ID G, y se añaden negativos reproducibles para eventos truncados de 21 a 25 campos, claves duplicadas y auto-revisión.
+- A0–A3: revisión estática y de contrato documental frente a encabezado vivo de 26 columnas; .NET/Angular/MySQL/Docker/Playwright NO_APLICA al no editar código ejecutable. A4 requiere commit fast-forward dev y Scope Lock del SHA publicado; A5 por otro TASK_ID sobre nuevo SHA, conservando el A5_FAIL histórico. Rollback con git revert ordinario, sin cambios a QA/main/PROD.
+
 ## 2026-11-13 — V5 C00-01.M06.05: solicitud documental de A5 independiente y matriz de riesgos [Javier :00]
 - Se solicita revisión por otro TASK_ID de M06.01/M06.02/M06.05, preservando A5_PASS de M06.03/M06.04, A5_FAIL transversal M04.03, SHA/blobs, diferencias entre E2E/HTTP/mocks y BITACORA A:Z/26; M06.06 no se libera. Cambios sólo documentales, sin claims de revisión A5 aprobada ni modificación de runtime, DB, workflows, Tasks, QA/main/PROD. Rollback: git revert sin force-push.
 

@@ -8,7 +8,7 @@
 
 Definir un contrato mínimo, trazable y sin duplicados para tramitar las **2.340 microtareas V5**, desde la elección de una fila elegible hasta su cierre en desarrollo. Las identidades de tarea, dependencias, evidencias y propietario se conservan a lo largo de cada transición. Este documento fija los límites de la fase M01; **no** ejecuta ni certifica otras microtareas.
 
-El modelo debe permitir que las Tasks autorizadas trabajen en distintos IDs sin coedición, que el estado editable de `PLAN_MAESTRO!H` se refleje en `COLA!E` por fórmula, y que cada cambio de estado auditado tenga un `EVENT_ID` único en `BITACORA!A:U`.
+El modelo debe permitir que las Tasks autorizadas trabajen en distintos IDs sin coedición, que el estado editable de `PLAN_MAESTRO!H` se refleje en `COLA!E` por fórmula, y que cada cambio de estado auditado tenga un `EVENT_ID` único en `BITACORA!A:Z`.
 
 ## No-alcance
 
@@ -28,7 +28,7 @@ El modelo debe permitir que las Tasks autorizadas trabajen en distintos IDs sin 
 | Exclusividad | Un `TASK_ID` auténtico por ID en trabajo; no pisar autoría ni evidencias de otro actor. |
 | Transiciones | `PENDIENTE → EN_PROGRESO → VALIDANDO → LISTO` sólo con trabajo, auditoría y readback reales. |
 | Calidad proporcional | A0 calidad estática, A1 funcional, A2 seguridad y A3 integración sobre candidato real; A4 sobre publicación/resultado exacto; A5 independiente para promoción. Marcar `NO_APLICA` con motivo cuando no hay runtime. |
-| Idempotencia | Cada evento de `BITACORA!A:U` tiene `EVENT_ID` único y las 21 columnas pertinentes; relectura evita duplicados. |
+| Idempotencia | Cada evento de `BITACORA!A:Z` tiene `EVENT_ID` único y las 26 columnas A:Z completas, con EVENT_ID en A e IDEMPOTENCY_KEY en R; relectura evita duplicados. |
 | Seguridad | Ni un cierre documental ni un `LISTO` DEV conceden permiso de QA/main/PROD. |
 | Concurrencia | Releer HEAD de `dev`, estado, custodio y fórmulas antes de publicar; sólo fast-forward sin force-push. |
 
@@ -41,6 +41,16 @@ El modelo debe permitir que las Tasks autorizadas trabajen en distintos IDs sin 
 **Negativo 2:** si falla seguridad, falta prueba causal o cambia el SHA de forma relevante, la unidad permanece `VALIDANDO` con responsable y siguiente acción; ningún resultado ajeno se convierte en `PASS`.
 
 **Negativo 3:** si ya existe el mismo `EVENT_ID`, se verifica su readback en vez de añadir otro registro.
+
+### Comprobaciones documentales del esquema físico BITACORA A:Z
+
+**Positivo verificable:** el encabezado institucional vivo contiene 26 columnas, desde `EVENT_ID` (A) hasta `TIMESTAMP_UTC_ORIGINAL` (Z), e incluye `IDEMPOTENCY_KEY` (R), `TASK_ROLE` (E), `ACCOUNT_OWNER` (F), `TASK_ID` (G) y `RESULTADO` (V). Un evento futuro válido debe escribir 26 valores coherentes, respetar dropdowns y validaciones de su fila y releer el `EVENT_ID`, el scope y todas las 26 celdas; ninguna escritura se presume aceptada.
+
+**Negativo 4 (truncamiento):** una propuesta con 21, 22, 23, 24 o 25 campos no satisface el contrato A:Z aunque conserve `EVENT_ID`; no se registra como evento completo ni habilita LISTO.
+
+**Negativo 5 (idempotencia y autoría):** un `EVENT_ID` o `IDEMPOTENCY_KEY` duplicado se reconcilia por lectura, nunca mediante append adicional; una `TASK_ID` o cuenta ajena, una atribución de aprobación propia como independiente o una validación de fila incompatible impiden registrar un PASS.
+
+Estas comprobaciones son criterios documentales, **no** afirmaciones de ejecución de eventos nuevos, validaciones de runtime, revisión A5 independiente ni promoción a QA/main/PROD. El encabezado real debe volver a leerse antes de cualquier append si evoluciona el esquema.
 
 ## Evidencia y condición de salida de M01.01
 
