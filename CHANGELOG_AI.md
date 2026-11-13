@@ -1,3 +1,6 @@
+## 2026-11-13 — V5 C00-01.M04.04: navegación y envío único de login [Javier :00]
+- Añade tres escenarios Playwright reales: guard anónimo/formulario inválido, error seguro de credenciales inválidas y POST único durante latencia de la API con tenant server-side. Se incorpora prueba en runner M10 ya autorizado; sin cambios de autenticación, base productiva, secretos o privilegios. Requiere evidencia exact-SHA A0–A4 y A5 independiente.
+
 ## 2026-11-13 — V5 C00-01.M04.03: branding visual seguro por tenant [Javier :00]
 - ThemeApplierService restringe tokens dinámicos a colores hexadecimales, limpia temas previos y descarta respuestas HTTP tardías A al cambiar a B/plataforma. Añade 4 casos positivos/negativos Angular y paso de CI dirigido Priority4; mantiene M10 E2E, Scope Lock y A0–A5 por SHA. No toca API, datos, roles, QA, main ni producción.
 

@@ -17,6 +17,7 @@ on:
       - frontend/src/app/features/cargas-masivas/**
       - frontend/src/app/features/inventario/movimientos-list.component.*
       - frontend/e2e/m10-ui-ux-accesibilidad.spec.ts
+      - frontend/e2e/c00-01-m04-04-login-flujo.spec.ts
       - frontend/e2e/n1-5-kardex.spec.ts
   pull_request:
     branches:
@@ -35,6 +36,7 @@ on:
       - frontend/src/app/features/cargas-masivas/**
       - frontend/src/app/features/inventario/movimientos-list.component.*
       - frontend/e2e/m10-ui-ux-accesibilidad.spec.ts
+      - frontend/e2e/c00-01-m04-04-login-flujo.spec.ts
       - frontend/e2e/n1-5-kardex.spec.ts
   workflow_dispatch:
 
@@ -223,6 +225,7 @@ jobs:
         run: |
           npx playwright test \
             e2e/m10-ui-ux-accesibilidad.spec.ts \
+            e2e/c00-01-m04-04-login-flujo.spec.ts \
             e2e/n1-5-kardex.spec.ts \
             --config=playwright.config.ts
 
