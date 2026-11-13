@@ -939,3 +939,8 @@
 - Pruebas Vitest positivas/negativas para los cinco estados, rechazo de detalles internos en errores y ausencia de peticiones de directorio desde la vista contractual.
 - Sin nuevos endpoints, grants JWT/RBAC, operaciones sobre PLAN/COLA/BITACORA, tablas MySQL, proveedores, eventos, dispatcher, PR o ramas. La decisión de acceso real permanece en /plataforma/sesion.
 - A0–A3 se verifican por diff y CI Angular pertinente en SHA publicado; A4 requiere Scope Lock, pruebas causales y readback; A5 queda pendiente de otra Task Javier. Rollback git revert sin force-push.
+## 2026-11-13 — SOLQARYN V5 C00-02.M04.02 CI dirigida Angular [Javier :10]
+- Se agrega gate GitHub Actions efímero de Vitest para los estados UI de plataforma cuando cambian sus dos fuentes o el propio workflow; no ejecuta despliegues, API, migraciones ni datos.
+- El workflow usa Node 24 y npm 11 fijados por el repositorio, checkout SHA dev, npm ci y pruebas del fichero Angular realmente modificado. La compilación/lint es cubierta por los jobs frontend existentes en el mismo SHA.
+- Este gate cubre la ausencia comprobada de un job de pruebas unitarias frontend para el commit inicial de la microtarea; no se contabilizan CHECKS pendientes o SKIPPED como PASS.
+- A0 requiere revisar permisos de workflow contents:read y procedencia de actions; A1/A2/A3 y A4 solo con resultados reales del nuevo SHA, A5 independiente. Sin nuevas Tasks, PR, ramas ni infraestructura, rollback git revert normal.

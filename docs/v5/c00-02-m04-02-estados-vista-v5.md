@@ -13,3 +13,6 @@
 **Dependencias:** seis C00-02.M03.01–06 LISTO en PLAN, DAG F=VALIDADO/G=SI, COLA G/O=SI al reclamar. No habilita M04.06 ni otras fases por sí misma.
 
 **Seguridad y retroceso:** no hay escritura de tareas, altas, API nueva, imágenes históricas, secrets ni cambios de proveedor. A0 revisión estática/secretos; A1 escenarios de estado; A2 permisos/errores seguros; A3 build/lint/pruebas Angular exact SHA; A4 Scope Lock, commit, código y Sheet readback; A5 pendiente de otra Task Javier. Si el commit requiere reversión, utilizar git revert normal sobre dev tras revalidar HEAD.
+## Gate de pruebas remotas dirigido
+
+La inspección del commit inicial `21f8aee907dd1d5976185fb1f1969ae3f4df8d7f` verificó lint y compilación Angular, pero no un job que ejecutara las cuatro nuevas pruebas Vitest. Por esa causa se añade `.github/workflows/v5-plataforma-ui-tests.yml` como CI dirigida con activación **solo en dev** y rutas limitadas, sin escritura, secretos o servicios. Este workflow es una herramienta de verificación, no un ejecutor comercial. Sus pruebas deben aprobar en el SHA que incorpore el gate; un workflow omitido no es PASS.

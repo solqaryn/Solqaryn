@@ -1,0 +1,40 @@
+name: V5 - Pruebas unitarias de estados de plataforma DEV
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v5-plataforma-ui-tests.yml'
+      - 'frontend/src/app/features/plataforma/plataforma.component.ts'
+      - 'frontend/src/app/features/plataforma/plataforma-gestion-mvp.component.spec.ts'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: v5-plataforma-unit-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  frontend-v5-estados:
+    name: V5 - Estados frontend y permisos con Vitest
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout del SHA de dev
+        uses: actions/checkout@v4
+      - name: Configurar Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Instalar npm del repositorio
+        run: npm install --global npm@11.19.0
+      - name: Instalar dependencias fijas
+        run: npm ci
+      - name: Ejecutar Vitest de estados protegidos
+        run: npm test -- --no-watch --no-progress --include=src/app/features/plataforma/plataforma-gestion-mvp.component.spec.ts
