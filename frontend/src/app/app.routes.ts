@@ -108,5 +108,5 @@ export const routes: Routes = [
   { path: 'configuracion', canActivate: [authGuard, permisoGuard], data: { modulo: 'Configuracion', accion: 'Ver' }, loadComponent: () => import('./features/configuracion/configuracion.component').then(m => m.ConfiguracionComponent) },
   { path: 'periodos-contables', canActivate: [authGuard, permisoGuard], data: { modulo: 'Configuracion', accion: 'Ver' }, loadComponent: () => import('./features/periodos-contables/periodos-contables.component').then(m => m.PeriodosContablesComponent) },
   { path: 'perfil', canActivate: [authGuard], loadComponent: () => import('./features/perfil/perfil.component').then(m => m.PerfilComponent) },
-  { path: '**', redirectTo: '' }
+  { path: '**', loadComponent: () => import('./features/shared/not-found.component').then(m => m.NotFoundComponent) }
 ];

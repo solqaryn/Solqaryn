@@ -7,6 +7,7 @@ on:
     paths:
       - .github/workflows/n8-2-device-compatibility.yml
       - frontend/e2e/n82-device-compatibility.spec.ts
+      - frontend/e2e/c00-01-m04-01-route.spec.ts
       - frontend/src/**
       - frontend/angular.json
       - frontend/package.json
@@ -68,8 +69,8 @@ jobs:
           cat n82-frontend.log >&2 || true
           exit 1
 
-      - name: Ejecutar regresión N8.2 por perfiles de dispositivo
-        run: npx playwright test e2e/n82-device-compatibility.spec.ts --config=playwright.config.ts
+      - name: Ejecutar regresión N8.2 y rutas públicas V5
+        run: npx playwright test e2e/n82-device-compatibility.spec.ts e2e/c00-01-m04-01-route.spec.ts --config=playwright.config.ts
 
       - name: Publicar evidencia N8.2
         if: always()

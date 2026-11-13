@@ -1,3 +1,6 @@
+## 2026-11-13 — V5 C00-01.M04.01: ruta pública de página no encontrada [Javier :10]
+- La ruta Angular wildcard presenta una vista pública accesible con navegación a login/tienda, sin divulgar query, IDs de empresa o rutas internas. Añade regresión Playwright Chromium real al workflow N8.2; rutas privadas siguen usando guards existentes. Sin API, MySQL, Docker, permisos, QA, main ni PROD.
+
 ## 2026-11-13 — V5 C00-01.M04.04: navegación y envío único de login [Javier :00]
 - Añade tres escenarios Playwright reales: guard anónimo/formulario inválido, error seguro de credenciales inválidas y POST único durante latencia de la API con tenant server-side. Se incorpora prueba en runner M10 ya autorizado; sin cambios de autenticación, base productiva, secretos o privilegios. Requiere evidencia exact-SHA A0–A4 y A5 independiente.
 
