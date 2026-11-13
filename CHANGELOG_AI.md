@@ -1,3 +1,6 @@
+## 2026-11-13 — V5 C00-01.M06.05: solicitud documental de A5 independiente y matriz de riesgos [Javier :00]
+- Se solicita revisión por otro TASK_ID de M06.01/M06.02/M06.05, preservando A5_PASS de M06.03/M06.04, A5_FAIL transversal M04.03, SHA/blobs, diferencias entre E2E/HTTP/mocks y BITACORA A:Z/26; M06.06 no se libera. Cambios sólo documentales, sin claims de revisión A5 aprobada ni modificación de runtime, DB, workflows, Tasks, QA/main/PROD. Rollback: git revert sin force-push.
+
 ## 2026-11-13 — V5 C00-01.M06.02: manifiesto causal de versiones, diffs y artefactos [Javier :50]
 - Se agregó un manifiesto reproducible con fuente V5, estado Sheet/BITACORA A:Z/26, SHA, tree, blobs, diff documental +53/+3 de M06.01, jobs reales M10 12/12, seguridad 1109/1109 y Scope Lock SHA exacto, más límites mocks vs HTTP y A5 independiente. Sólo documentación; no modifica código runtime, datos, tareas ni entornos QA/main/PROD.
 
