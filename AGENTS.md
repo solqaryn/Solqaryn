@@ -1,5 +1,8 @@
 # AGENTS — SOLQARYN (instrucciones operativas vigentes)
 
+> **ESTADO OPERATIVO V5 FINAL (readback Javier 2026-11-13).** Seis Tasks Javier originales habilitadas (is_enabled=true, 6/6); pausa del 12-nov HISTORICA REVOCADA por orden posterior. Alex solo desde cuenta propietaria. Fuente ejecutable unica: Google Doc V5 FINAL `1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA` y Sheet `1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU`, 2.340 IDs C00-01.M01.01 a C15-05.M06.06. V13 mantiene A0–A5 y seguridad, no el backlog antiguo. El commit base `f4b8528f57e82625d343dd1590076df44cacaee2` es antecesor del HEAD `4d582aa48dcdf8e9efb8d4c15ec229cbc0d603a5` (13 commits de avance); la autoridad de codigo/CI es siempre HEAD vivo y SHA exacto del candidato, no un SHA congelado. Validar con GitHub Actions (dotnet/Angular/Node/Docker/MySQL cuando los jobs pertinentes realmente corren); sin PASS si el job es SKIPPED o el SHA es anterior. Preservar horarios, IDs y recuperacion cruzada; no fingir nuevas microtareas LISTO.
+
+
 PROJECT_SCOPE_LOCK=STRICT
 PROJECT_ID=SOLQARYN
 REPOSITORY=solqaryn/Solqaryn
@@ -34,7 +37,7 @@ CONTINUE_WHILE_ELIGIBLE=TRUE
 - Productividad: tres LISTO son un hito, nunca un máximo. Después de cada tarea LISTO_DEV, continuar otra PENDIENTE elegible en la misma corrida si quedan recursos reales, repitiendo A0–A4 y registrando A5_PENDIENTE. No autopausar. Si el proveedor exige intervención, reportar TASK_ID y run_id, sin bypass.
 - Ante una compañera Javier pausada: comprobar titularidad, TASK_ID y permisos; un intento de update is_enabled=true, readback y aviso del resultado. La orden de mantener las seis Javier activas está vigente; no cambiar otras opciones ni tocar Tasks Alex. Si un requisito humano persiste no eludirlo ni falsificar reactivación. Usar la preferencia de razonamiento máximo, pero un prompt no cambia ni verifica el modelo real.
 - Identidad Javier: `is_self_owned_automation=false` visto desde otra conversación y `Automations.get` 404 de acción no prueban falta de permiso; validar positivamente ID físico del prompt/allowlist/peek, cuenta Javier real, accesos de GitHub/Sheet, Skill y SHA exacto. No confundir indicador neutral con autorización, ni aceptar identidad basada solamente en prompt. Seleccionar por escaneo completo de PENDIENTE y `DESARROLLO_HABILITADO=SI`, dependencias, propietario, riesgos y herramientas requeridas; un ID que exija .NET/Angular/entorno live no bloquea otras tareas factibles. COLA!E debe ser espejo por fórmula de PLAN_MAESTRO!H; siete valores manuales antiguos fueron reparados con nota. Prohibido simular auditorías, suplantar cuentas o alterar QA/PROD.
-## SUSPENSION EJECUTIVA DEL PROPIETARIO — 2026-11-12 20:56 America/Tegucigalpa (PRIORIDAD MAXIMA)
+## REGISTRO HISTÓRICO — suspensión del 2026-11-12 20:56 (NO VIGENTE, revocada por reanudación V5)
 
 ORDEN POSTERIOR EXPRESA QUE PREVALECE SOBRE V13 ANTERIOR. Las seis Tasks físicas JAVIER_CHATGPT quedan is_enabled=false por cambio pendiente del plan de implementación. El readback del conector confirmó 6/6 pausadas y sus prompts físicos contienen OWNER_PAUSE_HOLD. Ninguna Task puede reclamar una nueva microtarea, iniciar A5 independiente, entrar a PENDIENTE→EN_PROGRESO, publicar cambios nuevos no iniciados ni reactivar a otra Task. La regla de recuperación cruzada entre Tasks queda SUSPENDIDA, aunque el catálogo de ocho IDs autorizados permanezca. No reactivar ninguna Javier hasta nueva instrucción expresa del propietario; no confundir esta pausa autorizada con un error del proveedor.
 
@@ -46,7 +49,7 @@ CONSERVAR: ocho IDs, RRULE, zonas, historial, fuente de plan, seis controles A0�
 
 
 ## Autoridad exacta
-- Leer siempre Skill y su copia exacta en HEAD dev, docs/PROJECT_SCOPE_LOCK.md, docs/AUTOMATION_STATUS.md, docs/AUTOMATION_AUTHORITY.md y **docs/AUTOMATION_V13.md**. La única fuente de alcance es el Plan Comercial Inicial. Ningún histórico de otra versión impone condiciones.
+- Leer siempre Skill y su copia exacta en HEAD dev, docs/PROJECT_SCOPE_LOCK.md, docs/AUTOMATION_STATUS.md, docs/AUTOMATION_AUTHORITY.md y **docs/AUTOMATION_V13.md**. La única fuente de microtareas nuevas es el plan V5 FINAL identificado por EXECUTION_PLAN_DRIVE_FILE_ID; V13 conserva el protocolo A0–A5 y la seguridad. Ningún histórico de otra versión impone condiciones.
 - SIN BLOQUEO EN SHEETS: no usar locks artificiales; sí respetar ID, TASK_ID, edición concurrente y fórmulas. Las seis Tasks Javier están HABILITADAS según readback nativo del 12-nov-2026; Alex bajo su propia cuenta. No crear ni modificar Tasks salvo reactivación autorizada de las seis Javier con verificación de identidad y readback; no tocar Alex.
 - DEV: commits directos fast-forward, serializados, sin PR/branch de trabajo ni espera de GitHub APPPROVED/required checks de un ruleset retirado. GitHub Actions siguen aportando evidencia; resolver defectos de seguridad/funcionalidad reales. No tocar main/qa/prod sin permiso.
 - Control adicional obligatorio: A0 estática antes de publicar y LISTO; A5 revisión independiente posdev de distinto TASK_ID antes de cualquier promoción a QA/PROD. En cierre dev registrar A0–A4 PASS + A5_PENDIENTE; ningún A5 ficticio, sin bloquear productividad de dev por revisión ajena. El protocolo completo está en docs/AUTOMATION_V13.md.

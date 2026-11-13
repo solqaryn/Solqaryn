@@ -1,8 +1,11 @@
 # SOLQARYN — V13 vigente: ejecución directa en DEV con A0–A5
 
+> **ESTADO OPERATIVO V5 FINAL (readback Javier 2026-11-13).** Seis Tasks Javier originales habilitadas (is_enabled=true, 6/6); pausa del 12-nov HISTORICA REVOCADA por orden posterior. Alex solo desde cuenta propietaria. Fuente ejecutable unica: Google Doc V5 FINAL `1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA` y Sheet `1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU`, 2.340 IDs C00-01.M01.01 a C15-05.M06.06. V13 mantiene A0–A5 y seguridad, no el backlog antiguo. El commit base `f4b8528f57e82625d343dd1590076df44cacaee2` es antecesor del HEAD `4d582aa48dcdf8e9efb8d4c15ec229cbc0d603a5` (13 commits de avance); la autoridad de codigo/CI es siempre HEAD vivo y SHA exacto del candidato, no un SHA congelado. Validar con GitHub Actions (dotnet/Angular/Node/Docker/MySQL cuando los jobs pertinentes realmente corren); sin PASS si el job es SKIPPED o el SHA es anterior. Preservar horarios, IDs y recuperacion cruzada; no fingir nuevas microtareas LISTO.
+
+
 **Estado:** vigente en dev. Este documento es el único contrato operativo detallado para las Tasks comerciales. No contiene fases, PR ni aprobaciones de las versiones anteriores como requisitos actuales.
 
-## SUSPENSION EJECUTIVA DEL PROPIETARIO — 2026-11-12 20:56 America/Tegucigalpa (PRIORIDAD MAXIMA)
+## REGISTRO HISTÓRICO — suspensión del 2026-11-12 20:56 (NO VIGENTE, revocada por reanudación V5)
 
 ORDEN POSTERIOR EXPRESA QUE PREVALECE SOBRE V13 ANTERIOR. Las seis Tasks físicas JAVIER_CHATGPT quedan is_enabled=false por cambio pendiente del plan de implementación. El readback del conector confirmó 6/6 pausadas y sus prompts físicos contienen OWNER_PAUSE_HOLD. Ninguna Task puede reclamar una nueva microtarea, iniciar A5 independiente, entrar a PENDIENTE→EN_PROGRESO, publicar cambios nuevos no iniciados ni reactivar a otra Task. La regla de recuperación cruzada entre Tasks queda SUSPENDIDA, aunque el catálogo de ocho IDs autorizados permanezca. No reactivar ninguna Javier hasta nueva instrucción expresa del propietario; no confundir esta pausa autorizada con un error del proveedor.
 
@@ -86,7 +89,7 @@ Los ocho horarios registrados no coinciden: Javier :00/:10/:20/:30/:40/:50 y Ale
 ## Límites y coexistencia
 - Modelo de capacidad conservado `V13_1000_FIFO_BATCH` (nombre de constante de compatibilidad; NO aplica FIFO de PR): 1000 para el catálogo de scopes, propiedad por Task y límites parametrizados. `MAX_OPEN_WORK_BRANCHES=1000` es una cota heredada de la librería, **no** una autorización: `WORK_BRANCH_CREATION_ALLOWED=FALSE`. Cero ramas nuevas para el flujo vigente.
 - Las auditorías no requieren aprobación humana rutinaria o GitHub `APPROVED` en dev. Se permite revisión sustantiva por otro Scope cuando esté disponible, sin suplantar identidades ni prolongar artificialmente la ejecución.
-- Nunca recuperar VAEP/Jules, fases históricas, PR cerrados o un plan fuera del Plan Comercial Inicial. No crear nuevas Tasks, no variar sus seis horarios, no manipular las de Alex desde Javier.
+- Nunca recuperar VAEP/Jules, fases históricas, PR cerrados o un plan fuera del V5 FINAL vigente. No crear nuevas Tasks, no variar sus seis horarios, no manipular las de Alex desde Javier.
 - Este documento regula ejecución. La identidad y arquitectura siguen en `.agents/skills/solqaryn-project-governance/SKILL.md`, `docs/PROJECT_SCOPE_LOCK.md` y el código real; sus límites de seguridad se conservan.
 
 

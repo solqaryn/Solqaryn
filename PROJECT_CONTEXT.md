@@ -1,4 +1,7 @@
 PROJECT_SCOPE_LOCK=STRICT
+
+> **ESTADO OPERATIVO V5 FINAL (readback Javier 2026-11-13).** Seis Tasks Javier originales habilitadas (is_enabled=true, 6/6); pausa del 12-nov HISTORICA REVOCADA por orden posterior. Alex solo desde cuenta propietaria. Fuente ejecutable unica: Google Doc V5 FINAL `1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA` y Sheet `1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU`, 2.340 IDs C00-01.M01.01 a C15-05.M06.06. V13 mantiene A0–A5 y seguridad, no el backlog antiguo. El commit base `f4b8528f57e82625d343dd1590076df44cacaee2` es antecesor del HEAD `4d582aa48dcdf8e9efb8d4c15ec229cbc0d603a5` (13 commits de avance); la autoridad de codigo/CI es siempre HEAD vivo y SHA exacto del candidato, no un SHA congelado. Validar con GitHub Actions (dotnet/Angular/Node/Docker/MySQL cuando los jobs pertinentes realmente corren); sin PASS si el job es SKIPPED o el SHA es anterior. Preservar horarios, IDs y recuperacion cruzada; no fingir nuevas microtareas LISTO.
+
 # SOLQARYN — Contexto vigente del proyecto
 
 **Estado operativo único desde 2026-11-12.** Este documento describe el sistema actual, no una cronología de candidatos de PR. Las versiones anteriores permanecen únicamente en la historia Git del repositorio, no como autoridad de ejecución.
@@ -13,7 +16,7 @@ PROJECT_SCOPE_LOCK=STRICT
 - Operación continua durante cada corrida: tras los primeros tres cierres legítimos, continuar cuarto y siguientes hasta límite real de recursos, elegibilidad o permisos; no autopausar ni afirmar disponibilidad garantizada ante controles del proveedor. A0–A5 conservadas.
 - Salud del runtime: seis Tasks Javier actualmente habilitadas; autorización de vigilancia cruzada y reanudación de compañeras con un intento de API nativa y readback, sin eludir aprobaciones. Alex continúa en su cuenta. Selección máxima de razonamiento solicitada, pero no configurable ni verificable con el conector presente.
 - Incidencia corregida del contrato V13 2026-11-12: falsos NO_GO de identidad DEV 01/05 por `self_owned=false` y `get=404`; exige corroboración positiva de TASK_ID, dueño y accesos sin rebajar permisos. Selección recorre todas las tareas elegibles y deriva requerimientos reales de A0–A3 por ID, saltando sin reclamar los candidatos inviables y siguiendo otros factibles. COLA!E 108/110/118/120/127/128/249 ya restauradas a fórmula desde PLAN_MAESTRO!H; notas de reconciliación preservan historial.
-## SUSPENSION EJECUTIVA DEL PROPIETARIO — 2026-11-12 20:56 America/Tegucigalpa (PRIORIDAD MAXIMA)
+## REGISTRO HISTÓRICO — suspensión del 2026-11-12 20:56 (NO VIGENTE, revocada por reanudación V5)
 
 ORDEN POSTERIOR EXPRESA QUE PREVALECE SOBRE V13 ANTERIOR. Las seis Tasks físicas JAVIER_CHATGPT quedan is_enabled=false por cambio pendiente del plan de implementación. El readback del conector confirmó 6/6 pausadas y sus prompts físicos contienen OWNER_PAUSE_HOLD. Ninguna Task puede reclamar una nueva microtarea, iniciar A5 independiente, entrar a PENDIENTE→EN_PROGRESO, publicar cambios nuevos no iniciados ni reactivar a otra Task. La regla de recuperación cruzada entre Tasks queda SUSPENDIDA, aunque el catálogo de ocho IDs autorizados permanezca. No reactivar ninguna Javier hasta nueva instrucción expresa del propietario; no confundir esta pausa autorizada con un error del proveedor.
 

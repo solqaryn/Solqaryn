@@ -1,5 +1,8 @@
 # SOLQARYN — Sincronización documental del plan V5 FINAL (2026-11-12)
 
+> **ESTADO OPERATIVO V5 FINAL (readback Javier 2026-11-13).** Seis Tasks Javier originales habilitadas (is_enabled=true, 6/6); pausa del 12-nov HISTORICA REVOCADA por orden posterior. Alex solo desde cuenta propietaria. Fuente ejecutable unica: Google Doc V5 FINAL `1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA` y Sheet `1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU`, 2.340 IDs C00-01.M01.01 a C15-05.M06.06. V13 mantiene A0–A5 y seguridad, no el backlog antiguo. El commit base `f4b8528f57e82625d343dd1590076df44cacaee2` es antecesor del HEAD `4d582aa48dcdf8e9efb8d4c15ec229cbc0d603a5` (13 commits de avance); la autoridad de codigo/CI es siempre HEAD vivo y SHA exacto del candidato, no un SHA congelado. Validar con GitHub Actions (dotnet/Angular/Node/Docker/MySQL cuando los jobs pertinentes realmente corren); sin PASS si el job es SKIPPED o el SHA es anterior. Preservar horarios, IDs y recuperacion cruzada; no fingir nuevas microtareas LISTO.
+
+
 > Estado de sincronización de referencias. Este archivo no es una nueva autoridad de ejecución ni una copia del plan; el estándar canónico y los permisos vigentes siguen prevaleciendo.
 
 ## Fuentes únicas
@@ -20,7 +23,7 @@
 - La implementación futura de cargas de imágenes y archivos permanece válida con seguridad, validación MIME/tamaño, control por tenant, pruebas y rollback proporcional. No hay autorización para cambiar datos de usuarios/empresas ni migrar la base de datos por esta sincronización.
 - La fase `C10-03` se aclaró en el documento canónico y en las 36 filas correspondientes de PLAN_MAESTRO. Los IDs se conservan.
 
-## Congelación operativa
+## Congelación operativa (registro histórico, NO VIGENTE tras reanudación V5)
 - Las seis Tasks Javier permanecen `is_enabled=false` por orden del propietario. No se modificaron sus IDs, RRULE, prompts ni vigilancia. La pausa anterior prevalece hasta orden posterior expresa; la supervisión entre compañeras no autoanula el hold.
 - Las dos Tasks Alex son de otra cuenta y su estado de pausa requiere confirmación de su propietario; no inferir que están pausadas ni modificarlas desde Javier.
 - Esta nota no reactiva tareas ni modifica Jira, Render, Vercel, `qa`, `main` o PROD.

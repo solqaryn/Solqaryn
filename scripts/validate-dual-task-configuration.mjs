@@ -6,7 +6,7 @@ import { validateAuthority } from './validate-automation-authority.mjs';
 const read = p => readFileSync(join(process.cwd(),p),'utf8');
 const sources={authority:read('docs/AUTOMATION_AUTHORITY.md'),agents:read('AGENTS.md'),status:read('docs/AUTOMATION_STATUS.md'),scope:read('docs/PROJECT_SCOPE_LOCK.md')};
 const ID=/^[a-f0-9]{32}$/i;
-const SCOPE=/^(?:P\d+|I8|G0)-\d+\.[A-Z]$/;
+const SCOPE=/^C\d{2}-\d{2}\.M\d{2}\.\d{2}$/; // V5 FINAL; rechaza identificadores V13 retirados
 const own = (txt,key) => txt.match(new RegExp('^'+key+'=([^\\r\\n]+)$','m'))?.[1];
 const authorized = own(sources.authority,'AUTHORIZED_COMMERCIAL_TASK_IDS')?.split(',')||[];
 export function validateDocuments(x) {
@@ -115,17 +115,18 @@ if(errors.length){console.error('V13 DIRECT DEV NO_GO: '+errors.join(' | '));pro
 else if(process.argv.includes('--self-test')) {
   selfTestCapacityV13();
   const task=authorized[0];
-  const scope={id:'I8-002.A',state:'PENDIENTE',developmentEnabled:'SI',
+  const scope={id:'C00-01.M03.01',state:'PENDIENTE',developmentEnabled:'SI',
     dependencies:[],permissionsVerified:true};
   const pick=selectWork([scope],{},'JAVIER_CHATGPT',new Set(),task,true);
   if(pick.action!=='CLAIM'||pick.auditCount!==4||pick.qualityControls.length!==6||pick.noFixedClosureCap!==true||pick.continueWhileEligible!==true)throw Error('direct DEV claim test failed');
-  const blocked={...scope,id:'I8-007.A',requiredTools:['dotnet']};
-  const fallback={...scope,id:'I8-009.A',requiredTools:['node']};
+  const blocked={...scope,id:'C00-01.M03.02',requiredTools:['dotnet']};
+  const fallback={...scope,id:'C00-01.M03.03',requiredTools:['node']};
   const feasible=selectWork([blocked,fallback],{},'JAVIER_CHATGPT',new Set(),task,true,{availableTools:['node']});
-  if(feasible.action!=='CLAIM' || feasible.task.id!=='I8-009.A' || feasible.skippedUnfeasible.length!==1)
+  if(feasible.action!=='CLAIM' || feasible.task.id!=='C00-01.M03.03' || feasible.skippedUnfeasible.length!==1)
     throw Error('capability triage failed');
   if(selectWork([blocked],{},'JAVIER_CHATGPT',new Set(),task,true,{availableTools:['node']}).reason!=='NO_VERIFIABLE_CAPABILITY_IN_ELIGIBLE_SET')
     throw Error('toolchain fail-closed failed');
+  if(selectWork([{...scope,id:'I8-002.A'}],{},'JAVIER_CHATGPT',new Set(),task,true).action!=='NO_ELIGIBLE')throw Error('legacy V13 task id accepted');
   if(selectWork([{...scope,permissionsVerified:false}],{},'JAVIER_CHATGPT',new Set(),task,true).action==='CLAIM')
     throw Error('unsafe scope claim');
   const base={repo:'solqaryn/Solqaryn',branch:'dev',environment:'dev',operation:'CLOSE',

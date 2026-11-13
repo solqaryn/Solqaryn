@@ -1,3 +1,9 @@
+## 2026-11-13 — Conciliación V5 y selección de IDs; no modifica el progreso de M03
+- El commit base `f4b8528f57e82625d343dd1590076df44cacaee2` es antecesor confirmado de `4d582aa48dcdf8e9efb8d4c15ec229cbc0d603a5` (13 commits posteriores de C00-01.M01/M02) y del commit `4fc1f138a3323268d3efb6962b1182ced567c435` que publicó código para C00-01.M03.01; el HEAD vivo avanza y nunca se inmoviliza en el SHA base.
+- Seis Tasks Javier verificadas habilitadas con prompts V5 + ruta GitHub Actions; se repararon las claves operativas que aún decían 0/6 y la suspensión antigua pasó a histórico, sin cambiar RRULE/IDs ni el ámbito exclusivo Alex.
+- Selector `scripts/validate-dual-task-configuration.mjs` ahora reconoce IDs Cdd-dd.Mdd.dd del V5, rechaza la cola V13 antigua y conserva pruebas de identidad/seguridad. CI de jobs y logs sólo acredita el SHA exacto y los tests realmente ejecutados; un job SKIPPED nunca equivale a PASS.
+- Snapshot a la hora de la intervención: C00-01.M03.01 registrada VALIDANDO, 12 LISTO, 5 candidatas PENDIENTE habilitadas; este commit documental no la convierte en LISTO ni cambia PLAN_MAESTRO, COLA, BITACORA, backend o datos. Rollback por git revert con HEAD revalidado.
+
 ## 2026-11-13 - V5 C00-01.M03.01 dominio: fingerprint SHA-256 fail-closed [Javier :50]
 - Corrige `OrdenCompra.EstablecerIdempotencia`: exige hex ASCII de 64 caracteres y canoniza replay de huella equivalente; rechaza reuso con payload distinto y preserva estado ante error.
 - Añade xUnit positivo/negativo de dominio, contrato documentado y límites de evidencia. A0-A3 deben validarse en candidato; A3 .NET/MySQL en GitHub Actions del SHA nuevo, A4 posdev y A5 por revisor ajeno. Sin QA/main/PROD.
