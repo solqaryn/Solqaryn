@@ -1,3 +1,7 @@
+## 2026-11-13 - V5 C00-01.M03.02 aplicacion: replay SHA-256 fail-closed [Javier :00]
+- Alinea OrdenCompraService.ResolverReintento con el dominio M03.01: compara bytes de SHA-256 en tiempo constante; rechaza fingerprints heredados invalidos y acepta hex equivalente mayuscula sin duplicar ordenes.
+- Dos xUnit dirigidos y contrato V5 de limites del servicio. CI .NET/MySQL sobre SHA publicado; A0-A4 y A5 se certifican por evidencia real, nunca por tests simulados. No QA/main/PROD.
+
 ## 2026-11-13 — Scope Lock: mutación exacta de la clave del plan
 - Corregida exclusivamente la auto-prueba negativa `wrong plan` en `validate-automation-authority.mjs`: ahora modifica `EXECUTION_PLAN_DRIVE_FILE_ID=` en lugar de la primera aparición del ID dentro de la introducción V5; la prueba vuelve a comprobar un plan realmente incorrecto. Se conserva el fail-closed del contrato y la Skill canónica sin modificación.
 

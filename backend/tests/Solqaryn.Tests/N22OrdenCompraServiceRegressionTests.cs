@@ -75,6 +75,45 @@ public sealed class N22OrdenCompraServiceRegressionTests
     }
 
     [Fact]
+    public async Task Reintento_huella_legacy_hex_mayuscula_equivalente_no_duplica()
+    {
+        const string key = "oc-v5-m03-02-legacy";
+        var dto = CrearDto();
+        var huella = CalcularFingerprint(dto);
+        var existente = CrearOrdenPersistida(key, huella);
+        typeof(OrdenCompra).GetProperty(nameof(OrdenCompra.IdempotencyFingerprint))!
+            .SetValue(existente, huella.ToUpperInvariant()); // Simula registro legado en MySQL.
+        var fixture = CrearFixture();
+        fixture.Repository.Setup(x => x.GetByIdempotencyKeyAsync(key, false)).ReturnsAsync(existente);
+
+        var resultado = await fixture.Service.CreateAsync(dto, key);
+
+        Assert.Equal(existente.Id, resultado.Id);
+        fixture.Repository.Verify(x => x.AddAsync(It.IsAny<OrdenCompra>()), Times.Never);
+        fixture.UnitOfWork.Verify(x => x.ExecuteInTransactionAsync(It.IsAny<Func<Task>>()), Times.Never);
+        fixture.Auditoria.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Reintento_huella_legacy_malformada_rechaza_sin_escrituras()
+    {
+        const string key = "oc-v5-m03-02-invalid";
+        var dto = CrearDto();
+        var existente = CrearOrdenPersistida(key, CalcularFingerprint(dto));
+        typeof(OrdenCompra).GetProperty(nameof(OrdenCompra.IdempotencyFingerprint))!
+            .SetValue(existente, new string('g', 64)); // Estado persistido no canónico.
+        var fixture = CrearFixture();
+        fixture.Repository.Setup(x => x.GetByIdempotencyKeyAsync(key, false)).ReturnsAsync(existente);
+
+        var error = await Assert.ThrowsAsync<ConflictException>(() => fixture.Service.CreateAsync(dto, key));
+
+        Assert.Contains("payload diferente", error.Message, StringComparison.OrdinalIgnoreCase);
+        fixture.Repository.Verify(x => x.AddAsync(It.IsAny<OrdenCompra>()), Times.Never);
+        fixture.UnitOfWork.Verify(x => x.ExecuteInTransactionAsync(It.IsAny<Func<Task>>()), Times.Never);
+        fixture.Auditoria.VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public void Servicio_no_depende_de_inventario_kardex_compra_ni_finanzas()
     {
         var parametros = typeof(OrdenCompraService).GetConstructors().Single().GetParameters();

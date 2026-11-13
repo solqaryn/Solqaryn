@@ -328,7 +328,11 @@ public sealed class OrdenCompraService : IOrdenCompraService
 
     private static OrdenCompra ResolverReintento(OrdenCompra existente, string fingerprint)
     {
-        if (!string.Equals(existente.IdempotencyFingerprint, fingerprint, StringComparison.Ordinal))
+        // Un replay debe ser equivalente al SHA-256 canonico, no solo al texto almacenado.
+        // Los registros heredados con huella malformada se rechazan antes de cualquier efecto.
+        var almacenada = existente.IdempotencyFingerprint;
+        if (almacenada is null || almacenada.Length != 64 || almacenada.Any(ch => !char.IsAsciiHexDigit(ch)) ||
+            !CryptographicOperations.FixedTimeEquals(Convert.FromHexString(almacenada), Convert.FromHexString(fingerprint)))
             throw new ConflictException("La clave de idempotencia ya fue utilizada con un payload diferente.");
         return existente;
     }
