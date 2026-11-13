@@ -1,3 +1,7 @@
+## 2026-11-13 — C00-01.M06.06: cierre documental con A5 causal y mapa DAG (Javier :50)
+- Se incorpora docs/v5/c00-01-m06-06-cierre-baseline-mapa-dependencias.md: 35/35 predecesoras LISTO, causal A5 de M04.03 (Chromium 3/3, revisor independiente), cuatro dependientes dinámicos, inventario de blobs y contradicciones. El cierre no despacha automáticamente ni autoriza QA/PROD.
+- A0-A4 proporcionales a documento, Scope Lock exact-SHA y readback PLAN/COLA/DAG/BITACORA, A5 independiente pendiente. Sin runtime/DB/UI, Tasks, branches o PR; rollback git revert.
+
 ## 2026-11-13 — V5 C02-04.M01.03: auditoría de contratos y evidencia de consola global [Javier :40]
 - Inventario documental de diez archivos/blobs observados en dev, capacidades existentes parciales y controles NO_CERTIFICADOS de MFA, reautenticación, grants TTL, auditoría crítica, rollback y consola global. Tres positivos/seis negativos futuros propuestos, no pruebas live.
 - TIPO1 documental; A0-A4 proporcional, Scope Lock SHA exacto y A5 independiente. Sin cambios de JWT/RBAC/Angular/.NET/MySQL, grants, datos ni QA/main/PROD.
