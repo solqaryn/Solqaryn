@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C02-04.M01.01: objetivo/no-regresión de consola global auditada [Javier :40]
+- Contrato documental M01.01 de separación plataforma/ERP, MFA/reautenticación, motivo, acceso excepcional temporal y auditoría crítica; 15 criterios NR (+/-) FUTUROS, seis fuentes Git verificadas por blob SHA.
+- TIPO1 sin código ejecutable ni cambio de JWT/RBAC/MySQL/Angular/secretos; DAG C02-01/02/03 M01.01-05 prerequisitos LISTO. A0–A4 documentales proporcionales, Scope Lock exact-SHA y A5 independiente; no habilitar M01.06/M02, QA/main/PROD.
+
 ## 2026-11-13 — M04.03: regresión Chromium real A→login y A→B; A5 sujeto a CI
 - Añadido `frontend/e2e/c00-01-m04-03-route-context.spec.ts` con HTTP público retenido en navegador, una prueba positiva de branding y dos negativas de SEO/tema después de navegar sin recarga. No se simula Angular Router ni AppComponent.
 - Añadido workflow dirigido `.github/workflows/v5-m04-03-browser-regression.yml`, que ejecuta lint, build, unitarios y Playwright Chromium en entorno descartable; no requiere deployment Vercel ni toca QA/main/PROD.
