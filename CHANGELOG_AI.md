@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-02.M03.02: caso de uso Application V5 sin efectos externos [Javier :00]
+- Se implementa `backend/src/Application/AutomationV5/V5WorkItemTransitionPlanner.cs`: propuestas inmutables de CLAIM, VALIDANDO y LISTO_DEV con expectativas de estado/owner; rechaza actor no autorizado y retorna intención nula ante gates negativos.
+- Pruebas xUnit reales añadidas en `backend/tests/Solqaryn.Tests/Application/V5WorkItemTransitionPlannerTests.cs`; contrato y límites en `docs/v5/c00-02-m03-02-application-service.md`. CI .NET/seguridad/Scope Lock exact-SHA se verificará después de publicación; no atribuir PASS por anticipado.
+- No implementa CAS, write a Sheets, endpoint, dispatcher, JWT nuevo, MySQL, migraciones ni acceso tenant; sólo preparación de transiciones. A5 corresponde a otra Task Javier; rollback mediante revert normal, sin reescritura.
+
 ## 2026-11-13 — V5 C00-03.M03.01: validación de dominio de cobertura integrada [Javier :50]
 - Implementación .NET 10 en `backend/src/Domain/AutomationV5/V5RequirementCoverageRules.cs`: exige referencia institucional, ID del catálogo existente, versión, contrato, prueba y evidencia; rechaza duplicados compuestos y preserva correspondencias muchos-a-muchos sin abrir un backlog adicional.
 - Pruebas xUnit `backend/tests/Solqaryn.Tests/Domain/V5RequirementCoverageRulesTests.cs` y contrato `docs/v5/c00-03-m03-01-coverage-domain.md`. A0–A3 con código real, CI dirigida a SHA exacto y Scope Lock; ninguna migración, nuevo dispatcher, endpoint, PR, rama ni promoción QA/main/PROD.
