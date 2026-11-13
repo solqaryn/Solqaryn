@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C03-01.M01.03: inventario de autenticacion y pruebas existentes (Javier :50)
+- `docs/v5/c03-01-m01-03-inventario-contratos-codigo-evidencia.md`: ocho fuentes de codigo + tres tests con Git blobs, pruebas delimitadas de login, renovar, JWT, localStorage, tenancy y session-activity; trece controles pendientes para implementación futura.
+- Separa archivos reales de mocks/EF InMemory; NO certifica recuperacion, revocacion JWT global, refresh rotativo, MFA/passkeys ni ataques HTTP 429. A0-A3 documentales antes del commit; A4 exact-SHA Scope Lock, A5 otra Task Javier. Sin runtime, secretos, QA/main/PROD, PR ni ramas; rollback git revert.
+
 ## 2026-11-13 — C03-02.M01.02: actores, IO y superficies RBAC/ABAC [Javier :00]
 - Documento docs/v5/c03-02-m01-02-actores-entradas-salidas-superficies-rbac-abac.md: nueve actores conceptuales, catorce entradas/salidas y catorce escenarios documentales positivos/negativos futuros. Siete blobs de código contrastables; límites JWT/RBAC/tenant/propiedad y exportación.
 - Únicamente preparación sin API/DB/UI ni tests runtime nuevos; DAG 10/10, A0–A4 proporcional, A5 otra Task Javier, Scope Lock SHA exacto, sin QA/main/PROD.
