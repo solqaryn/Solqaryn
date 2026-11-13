@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C03-03.M01.04: riesgos/supuestos/decisiones auditoría de seguridad [Javier :10]
+- `docs/v5/c03-03-m01-04-riesgos-supuestos-decisiones-auditoria.md`: 14 riesgos R01–14, 8 supuestos S01–08 y 8 decisiones D01–08, anclados a ocho blobs de código y diez precedentes DAG LISTO. Delimita consultas A/B, auditoría best-effort, logging de secretos, correlación, retención y acceso excepcional sin afirmar una vulnerabilidad ni certificación runtime sin prueba.
+- Autor 6af16bb9492c8191b8e8c7d606f11507; A0–A3 PASS documentales, .NET/Angular/MySQL/Docker/E2E NO_APLICA al diff de documentos. A4 exige Scope Lock exact SHA y readback, A5 revisor Javier independiente. Sin QA/main/PROD, permisos/infra/código ejecutable, ramas o PR; rollback normal git revert.
+
 ## 2026-11-13 — V5 C00-02.M02.01: entidades y exclusividad [Javier :20]
 - Documento `docs/v5/c00-02-m02-01-entidades-ownership-invariantes.md` define diez entidades, 12 invariantes de identidad, DAG, owner, estados y SHA, ejemplo de ciclo y tres casos positivos/nueve negativos para evitar duplicados.
 - Cambio exclusivamente documental, sin runtime: A0–A3 proporcionales, A4 Scope Lock SHA exacto, A5 otra Task Javier; no nuevas filas/Tasks, branches, PR ni QA/main/PROD. Rollback git revert.
