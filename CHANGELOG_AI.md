@@ -241,3 +241,8 @@
 - TARGET_PATH único de producto sin modificar: `frontend/src/app/features/inventario/ajustes-list.component.ts`, blob `01dc08065d6bdcde789a2af467fa749dbb385de0`. Modal bounded-scroll con contador de detalles, sin lista extensa virtualizada; listado principal con `mat-paginator` fuera del modal.
 - Prueba estructural Node `scripts/tests/p5-011-c-delimitacion-listas-modal.test.mjs` y acta `docs/P5-011-C-DELIMITACION-LISTAS-MODAL-DEV.md`, positivo y seis negativos de regresión; no se afirma navegador, E2E, API/DB ni tenancy live.
 - Sin cambios Angular runtime, dependencias, migraciones ni secretos. A4 debe verificar commit DEV exacto y readback; A5 independiente antes de QA/main/PROD. Rollback selectivo normal, sin force-push.
+
+## 2026-11-12 — P5-006.D: reuso de confirmación institucional (Javier :50)
+- REUSE_NO_RUNTIME_CHANGE: `frontend/src/app/shared/confirm-dialog.component.ts` blob `f9b73544cc70beba83a891b2fc89537f0718af8b`, Cancelar=false, Eliminar=true/warn, textos interpolados y Angular Material existente.
+- Se reutiliza sin duplicación el test exacto `scripts/tests/p5-006-c-delimitacion-confirmacion.test.mjs` blob `baccb39ccc8845658d6d19773b4cdc4d70fa09fc`; 6/6 Node --test PASS en archivos SHA exactos. Acta `docs/P5-006-D-REUSO-CONFIRMACION-DEV.md`. No se certifica navegador, autorización JWT/RBAC ni QA/PROD.
+- Revert selectivo aditivo, A4 exact-commit y A5 independiente pendiente.
