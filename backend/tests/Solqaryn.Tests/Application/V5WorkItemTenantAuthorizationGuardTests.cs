@@ -10,8 +10,15 @@ public sealed class V5WorkItemTenantAuthorizationGuardTests
     private const string Reviewer = "6aeacb7820ac8191b7d768a6f33dfa09";
     private const string Foreign = "6adbbc9ad9e88191bea8eb69104afb25";
     private const string Id = "C00-02.M03.03";
+    private const string ForeignId = "C00-03.M03.03";
     private static readonly IReadOnlySet<string> Actors = new HashSet<string> { Author, Reviewer };
-    private static readonly IReadOnlySet<string> Catalog = new HashSet<string> { Id };
+    private static readonly IReadOnlySet<string> Catalog = new HashSet<string> { Id, ForeignId };
+    private static readonly IReadOnlyDictionary<string, string> ItemScopes =
+        new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            [Id] = "scope-a",
+            [ForeignId] = "scope-b"
+        };
     private static readonly IReadOnlyDictionary<string, IReadOnlySet<string>> ActorScopes =
         new Dictionary<string, IReadOnlySet<string>>
         {
@@ -32,7 +39,7 @@ public sealed class V5WorkItemTenantAuthorizationGuardTests
         string state = "PENDIENTE", string? owner = null, string id = Id)
         => _guard.Authorize(new(actor, scope, tenant,
             new V5WorkItemRules.Snapshot(id, state, owner), operation),
-            Actors, ActorScopes, ScopeTenants, Catalog);
+            Actors, ActorScopes, ScopeTenants, Catalog, ItemScopes);
 
     [Fact]
     public void Read_UsesServerScopeAndTenantBinding()
@@ -91,6 +98,20 @@ public sealed class V5WorkItemTenantAuthorizationGuardTests
     }
 
     [Fact]
+    public void ExistingForeignCatalogItemMustNeverCrossTrustedScope()
+    {
+        // Both IDs exist in the global catalog. Scope-a must not access a scope-b ID.
+        foreach (var operation in Enum.GetValues<V5WorkItemTenantAuthorizationGuard.Operation>())
+            Assert.Equal("ITEM_SCOPE_MISMATCH", Check(operation, id: ForeignId).Code);
+
+        Assert.True(Check(V5WorkItemTenantAuthorizationGuard.Operation.Read,
+            actor: Reviewer, scope: "scope-b", tenant: "tenant-b", id: ForeignId).Allowed);
+        Assert.Equal("ITEM_SCOPE_MISMATCH", Check(
+            V5WorkItemTenantAuthorizationGuard.Operation.Read, actor: Reviewer,
+            scope: "scope-b", tenant: "tenant-b", id: Id).Code);
+    }
+
+    [Fact]
     public void MissingServerBindingsFailClosed()
     {
         var r = new V5WorkItemTenantAuthorizationGuard.AccessRequest(
@@ -100,9 +121,12 @@ public sealed class V5WorkItemTenantAuthorizationGuardTests
         Assert.Equal("SCOPE_DENIED", _guard.Authorize(
             r, Actors,
             new Dictionary<string, IReadOnlySet<string>>(),
-            ScopeTenants, Catalog).Code);
+            ScopeTenants, Catalog, ItemScopes).Code);
         Assert.Equal("TENANT_MISMATCH", _guard.Authorize(
             r, Actors, ActorScopes,
-            new Dictionary<string, string>(), Catalog).Code);
+            new Dictionary<string, string>(), Catalog, ItemScopes).Code);
+        Assert.Equal("ITEM_SCOPE_MISMATCH", _guard.Authorize(
+            r, Actors, ActorScopes, ScopeTenants, Catalog,
+            new Dictionary<string, string>()).Code);
     }
 }

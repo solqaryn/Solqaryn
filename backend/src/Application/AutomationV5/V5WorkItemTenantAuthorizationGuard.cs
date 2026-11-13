@@ -6,6 +6,8 @@ namespace Solqaryn.Application.AutomationV5;
 /// Fail-closed, side-effect-free tenant and actor authorization for V5 work-item
 /// operations. All authorization snapshots MUST originate from a trusted server
 /// source; request headers or client-provided dictionaries are not trusted.
+/// A catalog membership alone never authorizes an item: item-to-scope binding
+/// must match the actor's authorized scope and the scope-to-tenant binding.
 /// This guard does not grant JWT/RBAC rights or replace the authoritative CAS.
 /// </summary>
 public sealed class V5WorkItemTenantAuthorizationGuard
@@ -24,7 +26,8 @@ public sealed class V5WorkItemTenantAuthorizationGuard
         IReadOnlySet<string> authorizedTaskIds,
         IReadOnlyDictionary<string, IReadOnlySet<string>> trustedTaskScopes,
         IReadOnlyDictionary<string, string> trustedScopeTenants,
-        IReadOnlySet<string> existingCatalogIds)
+        IReadOnlySet<string> existingCatalogIds,
+        IReadOnlyDictionary<string, string> trustedItemScopes)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.Item);
@@ -32,6 +35,7 @@ public sealed class V5WorkItemTenantAuthorizationGuard
         ArgumentNullException.ThrowIfNull(trustedTaskScopes);
         ArgumentNullException.ThrowIfNull(trustedScopeTenants);
         ArgumentNullException.ThrowIfNull(existingCatalogIds);
+        ArgumentNullException.ThrowIfNull(trustedItemScopes);
 
         if (string.IsNullOrWhiteSpace(request.ActorTaskId) ||
             !authorizedTaskIds.Contains(request.ActorTaskId))
@@ -51,6 +55,13 @@ public sealed class V5WorkItemTenantAuthorizationGuard
         if (string.IsNullOrWhiteSpace(request.Item.Id) ||
             !existingCatalogIds.Contains(request.Item.Id))
             return V5WorkItemRules.Decision.Deny("INVALID_ID");
+
+        // A global catalog proves existence, not membership in the requested scope.
+        // The item-to-scope binding must be independently supplied by the trusted server.
+        if (!trustedItemScopes.TryGetValue(request.Item.Id, out var actualScope) ||
+            string.IsNullOrWhiteSpace(actualScope) ||
+            !string.Equals(actualScope, request.ScopeKey, StringComparison.Ordinal))
+            return V5WorkItemRules.Decision.Deny("ITEM_SCOPE_MISMATCH");
 
         var item = request.Item;
         return request.RequestedOperation switch

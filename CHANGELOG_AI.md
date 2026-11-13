@@ -1,3 +1,8 @@
+## 2026-11-13 — SOLQARYN V5 C00-02.M03.03 correccion A5: vinculo ID→scope de servidor [Javier :20]
+- Corrige A5_FAIL J00 sobre SHA 244e5448: el catalogo global confirma existencia, no pertenencia de cada item al scope solicitado. Guard deniega por defecto ITEM_SCOPE_MISMATCH si trustedItemScopes falta o vincula el ID a otro scope.
+- Tests xUnit: caso positivo del item asociado al scope de su tenant, negativos para ID ajeno presente en catalogo, todos los tipos de operacion y mapa ausente. Sin nuevas grants JWT/RBAC, endpoints, MySQL, workers, eventos o despliegues.
+- A0 revision estatica previa; A1-A3 requieren .NET y security CI reales, A4 exige exact SHA, Scope Lock y readback; A5 independiente debe repetir revision del SHA nuevo. A5_FAIL historico preservado. Rollback revert normal, sin force-push ni PR.
+
 ## 2026-11-13 — V5 C00-02.M04.01 + C00-03.M04.01: reparar detector de guard privado [Javier :50]
 - El scanner de calidad ERP reconoce exclusivamente /plataforma, /plataforma/flujo-v5 y /plataforma/cobertura-v5 como rutas del control plane protegidas por el MISMO plataformaGuard validado contra el backend.
 - Sin permitir rutas arbitrarias ni debilitar JWT, RBAC, Scope Lock o denegaciones. Se conserva la excepcion exacta server-side y los tests negativos de plataforma; auditoria Priority4 y frontend se verifican en CI exact SHA.
