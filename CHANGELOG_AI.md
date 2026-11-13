@@ -1,3 +1,8 @@
+## 2026-11-12 — P5-010.C: delimitación de paginación y filtros de listas (Javier :20)
+- Foco acotado a `frontend/src/app/core/navigation/list-navigation-state.service.ts` (blob `513765de62e3ad2fac85f1495054448cfea2ba9e`), sin cambiar frontend productivo; se documentan claves permitidas, precedencia query params, `replaceUrl`, almacenamiento tolerante a errores, coerción y clave de usuario.
+- Prueba sobre código fuente real `scripts/tests/p5-010-c-delimitacion-paginacion.test.mjs` con Node 22.16.0: `node --check` y `node --test` 5/5 PASS, control positivo y negativos de allowlist, query, historial, namespace, coerción y storage. SHA256 de prueba `8e76f7e14e5e8dfdb4dee591e62436a31e1e5feef453aa5afe3946c753662293`.
+- Solo delimitación: no acredita browser real, aislamiento multiempresa, Angular runtime, MySQL ni QA/main/PROD. A5 pendiente de otro TASK_ID. Rollback: revert selectivo aditivo, sin force-push.
+
 ## 2026-11-12 — P5-016.C: delimitación de acciones visuales coherentes (Javier :20)
 - Contrato real de acción uniforme `Cerrar` en `frontend/src/app/shared/alerts/app-toast.service.ts`, blob `0478821b246cae5fdf3016a5c25081a1726f925a`; no se modifica producto Angular.
 - Test de delimitación `scripts/tests/p5-016-c-delimitacion-acciones.test.mjs` 5/5 Node 22.16.0, positivo y negativos de ausencia de fallback Cerrar, wrappers de severidad incongruentes, estilos sin variante, HTML inseguro y contrato vacío. Nota `docs/P5-016-C-DELIMITACION-ACCIONES-DEV.md`.
