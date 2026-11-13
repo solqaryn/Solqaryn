@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C02-03.M01.01: objetivo y no-regresión de aprovisionamiento [Javier :10]
+- Documentación exclusiva del ciclo alta/suspensión/reactivación/archivo/baja lógica idempotente, ocho conceptos y 16 criterios NR (+/−), sobre 6 blobs existentes.
+- No crea ruta de aprovisionamiento ni migración; A0–A4 proporcional documental, Scope Lock exact-SHA y A5 pendiente ajeno; no QA/main/PROD.
+
 ## 2026-11-13 — V5 C02-03.M01.04: riesgos, supuestos y decisiones del lifecycle tenant [Javier :20]
 - Matriz documental preliminar R01–R12, S01–S06 y D01–D08 de altas, suspensiones, reactivaciones, archivo y baja lógica; pruebas positivas/negativas futuras, cinco fuentes Git con SHA.
 - Sin cambios de runtime, MySQL, IAM, secretos ni datos, sin afirmación de pruebas live. Gate DAG documental 19 prerequisitos; A0–A4 documentales con Scope Lock exact-SHA; A5 independiente, sin liberar M01.06/M02 ni QA/main/PROD.
