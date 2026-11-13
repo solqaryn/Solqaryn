@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-01.M03.06: errores de argumentos seguros y correlación estructurada [Javier :10]
+- En `ExceptionHandlingMiddleware`, las excepciones `ArgumentException` devuelven ProblemDetails 400 con detalle genérico y `traceId`; el mensaje arbitrario potencialmente confidencial no se expone al cliente ni se escribe al log. Se registra únicamente el tipo de excepción y referencia estructurada.
+- Pruebas xUnit dirigidas: dos negativas con datos privados y una positiva de propagación sin error. No se alteran JWT, RBAC, filtros de tenant, modelos ni migraciones.
+- Rutas de validación: GitHub Actions `solqaryn-core-ci.yml` (.NET 10, pruebas backend y seguridad), `dev-ci.yml` (filtrado backend y MySQL según impacto). A0–A4 y SHA exacto quedan pendientes de resultados causales; no se afirma PASS anticipado. Sin cambios en qa/main/PROD; rollback aditivo mediante git revert no destructivo.
+
 ## 2026-11-13 - V5 C00-01.M03.02 aplicacion: replay SHA-256 fail-closed [Javier :00]
 - Alinea OrdenCompraService.ResolverReintento con el dominio M03.01: compara bytes de SHA-256 en tiempo constante; rechaza fingerprints heredados invalidos y acepta hex equivalente mayuscula sin duplicar ordenes.
 - Dos xUnit dirigidos y contrato V5 de limites del servicio. CI .NET/MySQL sobre SHA publicado; A0-A4 y A5 se certifican por evidencia real, nunca por tests simulados. No QA/main/PROD.

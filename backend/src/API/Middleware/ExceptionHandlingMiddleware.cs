@@ -51,8 +51,17 @@ public class ExceptionHandlingMiddleware
         }
         catch (ArgumentException ex)
         {
-            _logger.LogWarning(ex, "Argumento inválido en la operación");
-            await EscribirProblemaAsync(context, HttpStatusCode.BadRequest, "Solicitud inválida", ex.Message);
+            // Nunca enviar el texto arbitrario de la excepción al cliente ni al log:
+            // puede incorporar identificadores de tenant, credenciales o datos privados.
+            _logger.LogWarning(
+                "Solicitud con argumento inválido. Tipo {ExceptionType}; Referencia {Referencia}",
+                ex.GetType().Name,
+                context.TraceIdentifier);
+            await EscribirProblemaAsync(
+                context,
+                HttpStatusCode.BadRequest,
+                "Solicitud inválida",
+                "La solicitud contiene un parámetro inválido.");
         }
         catch (ForbiddenAccessException ex)
         {
