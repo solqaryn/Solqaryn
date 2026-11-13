@@ -1,11 +1,16 @@
 import { TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { signal } from '@angular/core';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of, Subject, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import { PlataformaGestionMvpService } from '../../core/auth/plataforma-gestion-mvp.service';
 import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.service';
 import { PlataformaGestionMvpComponent } from './plataforma-gestion-mvp.component';
+import { PlataformaComponent } from './plataforma.component';
+import { PlataformaEmpresasService } from '../../core/auth/plataforma-empresas.service';
+import { plataformaGuard } from '../../core/guards/plataforma.guard';
+import { routes } from '../../app.routes';
 
 describe('P1-014.A — alta guiada empresarial', () => {
   const api = {
@@ -230,4 +235,38 @@ describe('P1-014.A — alta guiada empresarial', () => {
     suscripcion.unsubscribe();
   });
 
+});
+
+describe('C00-02.M04.01 - ruta y pantalla contractual privada', () => {
+  const ruta = routes.find((item) => item.path === 'plataforma/flujo-v5');
+
+  it('mantiene la comprobacion global server-side y el componente lazy existente', async () => {
+    expect(ruta?.canActivate).toEqual([plataformaGuard]);
+    expect(ruta?.data?.['modulo']).toBeUndefined();
+    const componente = await (ruta?.loadComponent as () => Promise<unknown>)();
+    expect(componente).toBe(PlataformaComponent);
+  });
+
+  it('solo ofrece lectura y no solicita directorio ni privilegios del tenant', async () => {
+    const listar = vi.fn();
+    await TestBed.configureTestingModule({
+      imports: [PlataformaComponent, NoopAnimationsModule],
+      providers: [
+        { provide: ActivatedRoute, useValue: { snapshot: { routeConfig: { path: 'plataforma/flujo-v5' } } } },
+        { provide: PlataformaSesionService, useValue: { sesion: signal({
+          nombreUsuario: 'plataforma-test', rolNombre: 'Super Admin', ambito: 'Plataforma', esAdministrador: true
+        }), obtener: vi.fn() } },
+        { provide: PlataformaEmpresasService, useValue: { listar } },
+        { provide: Router, useValue: { navigate: vi.fn() } }
+      ]
+    }).compileComponents();
+    const fixture = TestBed.createComponent(PlataformaComponent);
+    fixture.detectChanges();
+    const texto = String(fixture.nativeElement.textContent);
+    expect(texto).toContain('De la solicitud a la evidencia DEV');
+    expect(texto).toContain('Sin operaciones');
+    expect(texto).toContain('No consulta PLAN_MAESTRO');
+    expect(texto).not.toContain('Directorio global de empresas');
+    expect(listar).not.toHaveBeenCalled();
+  });
 });

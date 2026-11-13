@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -19,8 +19,8 @@ import { PlataformaGestionMvpComponent } from './plataforma-gestion-mvp.componen
       <header class="heading">
         <div class="heading__text">
           <span class="eyebrow"><mat-icon aria-hidden="true">verified_user</mat-icon> SOLQARYN · Plataforma</span>
-          <h1 id="plataforma-title">Administración global</h1>
-          <p>Acceso independiente de una empresa. La autorización se comprueba directamente en el servidor.</p>
+          <h1 id="plataforma-title">{{ vistaFlujoV5 ? 'Ciclo V5 · estados y controles' : 'Administración global' }}</h1>
+          <p>{{ vistaFlujoV5 ? 'Consulta del contrato de ejecución, sin acceso a datos ni acciones operativas.' : 'Acceso independiente de una empresa. La autorización se comprueba directamente en el servidor.' }}</p>
         </div>
         <div class="heading__actions">
           <button mat-stroked-button type="button" (click)="revalidar()" [disabled]="validando()">
@@ -28,6 +28,11 @@ import { PlataformaGestionMvpComponent } from './plataforma-gestion-mvp.componen
             @else { <mat-icon>refresh</mat-icon> }
             Revalidar sesión
           </button>
+          @if (vistaFlujoV5) {
+            <a mat-stroked-button routerLink="/plataforma"><mat-icon aria-hidden="true">arrow_back</mat-icon> Administración</a>
+          } @else {
+            <a mat-stroked-button routerLink="/plataforma/flujo-v5"><mat-icon aria-hidden="true">account_tree</mat-icon> Consultar ciclo V5</a>
+          }
           <a mat-button routerLink="/login"><mat-icon>apartment</mat-icon> Acceder a una empresa</a>
         </div>
       </header>
@@ -47,6 +52,30 @@ import { PlataformaGestionMvpComponent } from './plataforma-gestion-mvp.componen
             </dl>
           </mat-card-content>
         </mat-card>
+
+        @if (vistaFlujoV5) {
+          <mat-card class="v5-card" aria-labelledby="v5-title">
+            <mat-card-content>
+              <div class="v5-overview">
+                <div>
+                  <p class="v5-kicker">Modelo de trabajo · solo lectura</p>
+                  <h2 id="v5-title">De la solicitud a la evidencia DEV</h2>
+                  <p>Esta vista explica las puertas del contrato. No consulta PLAN_MAESTRO, COLA ni BITACORA y no refleja el estado actual de ninguna microtarea.</p>
+                </div>
+                <span class="v5-readonly"><mat-icon aria-hidden="true">lock_outline</mat-icon> Sin operaciones</span>
+              </div>
+              <ol class="v5-steps" aria-label="Secuencia contractual de estados">
+                <li><span class="v5-step-index" aria-hidden="true">01</span><div><strong>PENDIENTE</strong><p>El ID existe en el plan; dependencias y DAG deben autorizar el inicio. COLA no concede permisos por sí sola.</p></div></li>
+                <li><span class="v5-step-index" aria-hidden="true">02</span><div><strong>EN_PROGRESO</strong><p>Una Task autorizada conserva la propiedad exclusiva. Sin candidato completo no puede declarar VALIDANDO.</p></div></li>
+                <li><span class="v5-step-index" aria-hidden="true">03</span><div><strong>VALIDANDO</strong><p>Auditorías A0–A3 y pruebas pertinentes; ninguna ejecución pendiente, cancelada o omitida equivale a PASS.</p></div></li>
+                <li><span class="v5-step-index" aria-hidden="true">04</span><div><strong>LISTO_DEV</strong><p>Solo tras A0–A4, SHA exacto, Scope Lock y readback. A5 queda a cargo de una Task distinta.</p></div></li>
+              </ol>
+              <p class="v5-boundary" role="note"><mat-icon aria-hidden="true">shield</mat-icon>
+                Ninguna transición, autorización JWT/RBAC, escritura entre empresas ni promoción a QA o producción se realiza desde esta pantalla.
+              </p>
+            </mat-card-content>
+          </mat-card>
+        } @else {
         <div class="modules" aria-label="Capacidades de la plataforma">
           <mat-card class="module-card">
             <mat-card-content>
@@ -116,6 +145,7 @@ import { PlataformaGestionMvpComponent } from './plataforma-gestion-mvp.componen
           </mat-card-content>
         </mat-card>
         <app-plataforma-gestion-mvp [directorio]="directorio()" (actualizarDirectorio)="cargarEmpresas()"></app-plataforma-gestion-mvp>
+        }
       } @else {
         <mat-card class="denied">
           <mat-card-content>
@@ -154,6 +184,20 @@ import { PlataformaGestionMvpComponent } from './plataforma-gestion-mvp.componen
     .pending, .available { display: inline-block; border: 1px solid currentColor; border-radius: 999px; padding: 5px 11px; font-weight: 650; font-size: .8rem; }
     .pending { color: #955500; }
     .available { color: #22693d; }
+    .v5-card mat-card-content { padding: clamp(18px, 3vw, 32px); }
+    .v5-overview { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+    .v5-overview > div { max-width: 650px; }
+    .v5-kicker { font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; font-weight: 750; color: var(--color-primary); }
+    .v5-readonly { display: inline-flex; align-items: center; gap: 5px; font-weight: 700; font-size: .83rem; padding: 8px 12px; border-radius: 99px; background: var(--color-background, #f5f7fa); }
+    .v5-readonly mat-icon { font-size: 18px; width: 18px; height: 18px; }
+    .v5-steps { list-style: none; margin: 24px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .v5-steps li { display: flex; gap: 14px; min-width: 0; padding: 20px; border: 1px solid #dfe5ec; border-radius: 14px; }
+    .v5-steps strong { display: block; font-weight: 750; letter-spacing: .02em; }
+    .v5-steps p { margin: 7px 0 0; color: var(--color-text-muted); }
+    .v5-step-index { font-weight: 800; font-variant-numeric: tabular-nums; color: var(--color-primary); }
+    .v5-boundary { display: flex; align-items: flex-start; gap: 10px; margin: 24px 0 0; padding: 14px; border-radius: 10px; background: var(--color-background, #f5f7fa); font-size: .9rem; }
+    .v5-boundary mat-icon { flex: 0 0 24px; }
+    @media (max-width: 760px) { .v5-steps { grid-template-columns: 1fr; } }
     .directory-card { margin-top: 20px; }
     .directory-card mat-card-content { padding: 20px 24px; }
     .directory-scroll { max-width: 100%; overflow-x: auto; }
@@ -172,6 +216,8 @@ import { PlataformaGestionMvpComponent } from './plataforma-gestion-mvp.componen
   `]
 })
 export class PlataformaComponent {
+  private readonly route = inject(ActivatedRoute);
+  readonly vistaFlujoV5 = this.route.snapshot.routeConfig?.path === 'plataforma/flujo-v5';
   private readonly plataforma = inject(PlataformaSesionService);
   private readonly empresasApi = inject(PlataformaEmpresasService);
   readonly sesion = this.plataforma.sesion;
@@ -182,7 +228,7 @@ export class PlataformaComponent {
   readonly errorEmpresas = signal<string | null>(null);
 
   constructor() {
-    this.cargarEmpresas();
+    if (!this.vistaFlujoV5) this.cargarEmpresas();
   }
 
   cargarEmpresas(pagina = 1): void {

@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-02.M04.01: superficie privada de lectura del ciclo [Javier :50]
+- Angular reutiliza PlataformaComponent con ruta /plataforma/flujo-v5 protegida por plataformaGuard y verificación server-side; muestra pasos contractuales, sin datos live ni mutaciones.
+- Tests de contrato de ruta y regresión de guard; documentación docs/v5/c00-02-m04-01-platform-readonly-surface.md; no añade *.component.ts al inventario canónico.
+- A0–A4 requieren Angular y Scope Lock SHA exacto. Sin API, MySQL, migraciones, eventos, PR, ramas ni QA/main/PROD; A5 independiente y rollback git revert.
+
 ## 2026-11-13 — V5 C00-03.M03.05: cola de evidencias de cobertura sin eventos [Javier :30]
 - Backend Application V5CoverageEvidenceQueue integra la proyeccion de matriz C00-03 con cola inmutable, catalogo, actor/scope allowlist y SHA exacto, sin despachar Tasks.
 - Tests xUnit V5CoverageEvidenceQueueTests cubren escenarios positivos/negativos, A5 no autorrevisable, stale SHA, duplicados, scope, capacidad y evidencia pendiente; contrato docs/v5/c00-03-m03-05-coverage-evidence-queue.md.

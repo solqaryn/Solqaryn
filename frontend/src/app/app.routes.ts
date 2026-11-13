@@ -22,6 +22,7 @@ export const routes: Routes = [
   { path: 'tienda/pedido/:id', loadComponent: () => import('./features/storefront/storefront-pedido.component').then(m => m.StorefrontPedidoComponent) },
   { path: 'tienda', loadComponent: () => import('./features/storefront/storefront.component').then(m => m.StorefrontComponent) },
   { path: 'login', loadComponent: () => import('./features/login/login.component').then(m => m.LoginComponent) },
+  { path: 'plataforma/flujo-v5', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/plataforma.component').then(m => m.PlataformaComponent) },
   { path: 'plataforma', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/plataforma.component').then(m => m.PlataformaComponent) },
   { path: 'dashboard', canActivate: [authGuard, permisoGuard], data: { modulo: 'Dashboard', accion: 'Ver' }, loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent) },
   { path: 'productos', canActivate: [authGuard, permisoGuard], data: { modulo: 'Productos', accion: 'Ver' }, loadComponent: () => import('./features/productos/productos-list.component').then(m => m.ProductosListComponent) },
