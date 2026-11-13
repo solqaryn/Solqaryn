@@ -1,3 +1,8 @@
+## 2026-11-13 - V5 C00-01.M02.06 dependencias tecnicas y salida M02 [Javier :00]
+- Contrato documental V5 FINAL de las seis unidades M02; puerta G/O del ID separada de cierre del lote, matriz de dependencias y evidencias, negacion de acceso cross-tenant, A5 independiente, CI exact SHA y rollback no destructivo.
+- Claim y VALIDANDO preservan TASK_ID 6adbb9fff1548191a1bd5b30d9e9984a en PLAN; candidato preparado y auditado despues de VALIDANDO con Node v22.16.0 --check, secreto/whitespace scan sin hallazgos, Node --test 8/8 (1 positivo, 7 negativos), sin dependencia adicional ni cambio a backend/frontend/MySQL.
+- Commit directo fast-forward dev condicionado al HEAD; A4 requiere verificacion posdev SHA, pruebas repetidas y CI 5/5 exact SHA antes de LISTO; A5_PENDIENTE de otro Scope. No se certifican HTTP/MySQL/browser ni se promociona QA/main/PROD. Rollback git revert aditivo.
+
 ## 2026-11-13 — V5 C00-01.M02.03 persistencia, indices, migraciones y datos de prueba [Javier :20]
 - Se documenta el contrato de nueve invariantes DB01-DB09 de MySQL/EF Core/Oracle, indexes compuestos de Cliente/Producto por EmpresaId, migracion reversible y fixtures aislados A/B. Rutas y blobs Git comprobados en dev, evidencia estatica no es ejecucion DB.
 - Cambio acotado a docs/v5/c00-01-m02-03-persistence-contract.md, scripts/tests/c00-01-m02-03-persistence-contract.test.mjs y CHANGELOG. A0 sintaxis Node 22.16.0 y escaneo de patrones de secretos; A1 positivo documental; A2 ocho negativos fail-closed; A3 Node 9/9 PASS. Sin dependencias nuevas ni cambios en runtime, datos, JWT/RBAC, QA/main/PROD.
