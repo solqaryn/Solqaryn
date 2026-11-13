@@ -1,3 +1,6 @@
+## 2026-11-13 — V5 C00-02.M01.05: aceptación funcional y técnica observable del modelo [Javier :00]
+- Matriz de diez criterios positivos/negativos para elegibilidad DAG, autoría, estados, A0–A5, CI exact-SHA, BITACORA idempotente y rollback; ejemplo real M05.01. Solo documentación; Scope Lock exact-SHA para cierre, A5 independiente, sin QA/main/PROD.
+
 ## 2026-11-13 — V5 C00-02.M01.04: riesgos, supuestos y decisiones [Alex :05]
 - Matriz de riesgos R01–R10 y supuestos contrastables S1–S6 del modelo V5: exclusión de custodios, fórmulas COLA, unicidad BITACORA, concurrencia Git, Skill/Scope Lock, CI exact-SHA y separación QA/PROD.
 - Sólo docs y CHANGELOG, sin runtime ni permisos nuevos; A0–A3 documentación, A4 exact SHA/readback y A5 independiente pendiente; no QA/main/PROD.
