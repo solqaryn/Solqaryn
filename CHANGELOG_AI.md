@@ -1,3 +1,8 @@
+## 2026-11-12 - P5-012.C: delimitacion del mapa de navegacion jerarquica V1 (Alex :35)
+- Contrato producto existente frontend/src/app/shared/navigation/navigation-contract.json, blob 7142082462d7bc53ff4f0cdf96f67f21405f3a44, no editado.
+- Prueba scripts/tests/p5-012-c-delimitacion-jerarquia-navigation.test.mjs: 5 casos Node real JSON, control de esquema, duplicados, metadatos modulo/accion y admins, rechazo de nietos no soportados; nota docs/P5-012-C-DELIMITACION-NAVEGACION-JERARQUICA-DEV.md.
+- Solo DELIMITAR: padre/hijo V1, no profundidad ilimitada, autorizacion backend o navegador. A5 independiente pendiente; rollback aditivo via git revert sin force.
+
 ## 2026-11-12 — P5-009.C: delimitación de scroll, foco y Escape (Javier :20)
 - Un solo archivo de producto inspeccionado: `frontend/src/app/app.component.ts`, blob exacto `11aa993b011119d33e402f3f2bc1d08f133e34bd`, sin cambios funcionales. Contrato observado: foco/retorno de menú, Escape, scroll lock/release, destino de contenido y limpieza de contexto.
 - Test Node v22.16.0 `scripts/tests/p5-009-c-delimitacion-scroll-foco-escape.test.mjs` ejecutado después de VALIDANDO: 6/6 PASS (positivo real-source más cinco negativos); SHA256 `b0aed580f93e6f272b00d1201650b57a70d5d0583568cbf712fb5fa30fc42740`. Nota `docs/P5-009-C-DELIMITACION-SCROLL-FOCO-ESCAPE-DEV.md`.
