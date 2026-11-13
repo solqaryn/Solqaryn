@@ -1,3 +1,6 @@
+## 2026-11-13 — V5 C00-01.M04.03: branding visual seguro por tenant [Javier :00]
+- ThemeApplierService restringe tokens dinámicos a colores hexadecimales, limpia temas previos y descarta respuestas HTTP tardías A al cambiar a B/plataforma. Añade 4 casos positivos/negativos Angular y paso de CI dirigido Priority4; mantiene M10 E2E, Scope Lock y A0–A5 por SHA. No toca API, datos, roles, QA, main ni producción.
+
 ## 2026-11-13 — Corrección CI C00-01.M04.05: segundo toggle de contraseña [Javier :40]
 - Primera CI M10 SHA c45c2d86 falló en test E2E propio (8/9 PASS) porque el segundo Enter se disparaba sin verificar foco en el botón actualizado. Ajuste dirigido Playwright: enfocar y acreditar foco en Ocultar contraseña antes de pulsar Enter; sin cambio funcional de login, API, backend o seguridad. Requiere nueva ejecución exact-SHA M10.
 

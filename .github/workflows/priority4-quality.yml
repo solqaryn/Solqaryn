@@ -97,6 +97,10 @@ jobs:
         working-directory: frontend
         run: npx ng test --watch=false --include=src/app/features/configuracion/empresa-administracion-card.component.spec.ts
 
+      - name: V5 M04.03 - unitarios de branding seguro entre tenants
+        working-directory: frontend
+        run: npx ng test --watch=false --include=src/app/services/theme-applier.service.spec.ts
+
       - name: Validar seguridad de empresa en WhatsApp
         working-directory: frontend
         run: npx ng test --watch=false --include=src/app/features/configuracion/whatsapp-business-card.component.spec.ts
