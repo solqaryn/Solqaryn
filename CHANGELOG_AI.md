@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C00-01.M05.02: contrato HTTP/DTO y errores seguros [Javier :50]
+- Nuevo test xUnit TestServer que atraviesa ExceptionHandlingMiddleware de ASP.NET Core 10 en HTTP in-memory; verifica contrato ApiResponse 200, ProblemDetails 400/409, envelope 500 y sentinelas privadas ausentes del cuerpo de respuesta (1 positivo y 4 negativos). No cambia servicios, endpoints, migraciones, base de datos, UI ni dependencias.
+- Clasificacion: .NET=SI; Angular/Node=NO; MySQL=NO; Docker=NO; browser E2E=NO; seguridad de respuestas=SI; Scope Lock exact-SHA=SI. A0 revision estatica sin nuevos secretos ni deps; A1-A3 suite GitHub Actions y A4 posintegracion pendientes al publicar; A5 independiente posterior. Sin QA/main/PROD.
+
 ## 2026-11-13 — V5 C00-01.M05.01: regresión causal ante respuesta tardía de tienda [Javier :00]
 - AppComponent descarta callbacks tardíos de StorefrontIdentidadService cuando cambia ruta a plataforma, nueva página de tienda o se destruye el shell; no restaura SEO ni CSS de tenant anterior. Tres pruebas unitarias de navegación con NavigationEnd y Subjects RxJS cubren positivo y negativos; Priority4 CI las ejecuta en Angular 22 con Node 24. Enmienda también la brecha señalada por A5_FAIL de M04.03, sin autodeclarar una A5_PASS. Sin cambios de API/MySQL/permisos/secretos; requiere CI exact-SHA y rollback normal.
 
