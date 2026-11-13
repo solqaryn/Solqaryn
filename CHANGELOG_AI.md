@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C03-03.M01.03: inventario auditado de seguridad [Javier :10]
+- `docs/v5/c03-03-m01-03-inventario-auditoria-seguridad.md`: ocho fuentes de API/servicio/modelo/repository/middleware/test con SHA, 12 controles de cobertura (3 positivos, 8 negativos, 1 control), brechas reales delimitadas: consulta A/B requiere revisar filtros globales; best-effort audit no garantiza durabilidad; correlación no es idempotencia y redacción/retención quedan pendientes.
+- Autor 6af16bb9492c8191b8e8c7d606f11507. A0–A3 PASS documentales, sin runtime/.NET/Angular/MySQL/Docker/E2E por no cambiar código ejecutable. A4 Scope Lock exact-SHA y readback tras FF en dev; A5 independiente pendiente. No QA/main/PROD, no PR/branches, rollback `git revert`.
+
 ## 2026-11-13 — V5 C03-03.M01.05: aceptación de auditoría de seguridad [Javier :10]
 - `docs/v5/c03-03-m01-05-criterios-auditoria-seguridad.md`: 16 criterios AU01–AU16 (autorización/denegación/cambio crítico/acceso excepcional, correlación, retención y no exposición), con ocho fuentes de código y diez prerrequisitos DAG LISTO. Delimita riesgos de tenant A/B, auditoría best-effort vs estricta, redacción PII y pruebas futuras sin declararlas ejecutadas.
 - Autor 6af16bb9492c8191b8e8c7d606f11507; A0–A3 PASS documental antes del commit, A4 exact-SHA y A5 independiente pendientes. No ejecuta .NET/Angular/MySQL/Docker/E2E para un cambio de documentación; no modifica runtime, secretos, QA/main/PROD, ramas o PR; rollback `git revert`.
