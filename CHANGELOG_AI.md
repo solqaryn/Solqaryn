@@ -210,3 +210,8 @@
 ## 2026-11-12 — G0-004.B: matriz de recibos G0-004.F/G/H y regresión E2E sintética
 - Matriz `docs/quality/g0-004-b-e2e-receipts.md` identifica 10 condiciones, rutas y negativos: setup global, worker error, retries false-green, skips por secret y navegador, éxito anidado y sanitización. Nuevo test `scripts/tests/g0-004-b-quality-receipts.test.mjs`: 4/4 Node22 PASS, source classifier exact blob c5085b; no se presenta como una ejecución real del navegador.
 - A1 funcional, A2 seguridad fail-closed y A3 integración Node dirigida PASS; no altera runtime, tenants, JWT/RBAC, secretos o dependencias. Rollback selectivo: revertir este test, la matriz y el párrafo de changelog.
+
+## 2026-11-12 — P5-005.C: delimitacion del formulario de anulacion (Javier :30)
+- Archivo real inalterado `frontend/src/app/shared/anular-dialog.component.ts`, blob `d751503438f963f1deebe371cd14623ad6038e16`. DELIMITAR, no implementar un modal universal.
+- `scripts/tests/p5-005-c-delimitacion-modal-formulario.test.mjs` y `docs/P5-005-C-DELIMITACION-MODAL-FORMULARIO-DEV.md`: Node 22.16.0 `node --check` PASS y `node --test` 6/6 PASS tras VALIDANDO sobre archivo real exact-blob. Negativos de binding, cancelacion, motivo vacio, HTML crudo y dependencia FormsModule; secretos añadidos no detectados.
+- A0-A3 dirigidas a delimitacion estatica real. No acredita navegador Angular, API/JWT/RBAC, MySQL ni datos reales. Sin cambios de runtime, paquetes, migraciones, secretos ni infra. Rollback: revert selectivo normal de estos tres archivos; A5 pendiente independiente antes de promocion.
