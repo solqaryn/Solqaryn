@@ -367,3 +367,10 @@ Cada entrada es una ruta exacta del árbol GitHub; el validador usa estas línea
 - Fuentes de la enumeración: blobs del árbol Git, `truncated=false`. No se leyó el decorador `@Component` de cada archivo; la clasificación es por ruta/extensión.
 - El validador no escribe archivos y la ejecución nativa en checkout requiere verificación independiente antes del cierre.
 - P0-007.B debe ejecutar su certificación negativa UX por separado; P0-007.A no concede tal certificación.
+
+## Actualización aditiva V5 FINAL — 13 de noviembre de 2026
+El inventario histórico P0-007.A de 137 rutas permanece como evidencia del SHA base. El commit comercial C00-01.M04.01 incorpora una ruta pública adicional con componente standalone en `app/features/shared`, por lo que el catálogo **vigente** de archivos `.component.ts` en `features/shared` pasa a **138 (130 features y 8 shared)**; hay **48 carpetas feature**. Esto es mantenimiento de alcance del catálogo existente, no ejecución de una microtarea V3, ni certificación UX/RBAC. La revisión debe detectar tanto omisiones como archivos inexistentes.
+
+- `frontend/src/app/features/shared/not-found.component.ts`
+
+Validación: `node scripts/verify-p0-007-a-component-catalog.mjs --self-test` (casos negativos de entradas faltantes y no documentadas) y verificación Scope Lock sobre el SHA exacto. Las evidencias UI/Playwright pertenecen exclusivamente a V5 M04.01; rollback por revert no destructivo.

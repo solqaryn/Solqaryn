@@ -1,3 +1,6 @@
+## 2026-11-13 — V5 C00-01.M04.01: mantenimiento causal del inventario de componentes [Javier :10]
+- El check Scope Lock del commit 8bd38254 encontró catalog drift por la nueva vista de ruta desconocida; se conserva el inventario histórico P0-007.A y se añade la nueva ruta al catálogo vigente (138 componentes) con verificador de drift y negativos sin desactivar el gate. No concede certificación del backlog antiguo.
+
 ## 2026-11-13 — V5 C00-01.M04.01: ruta pública de página no encontrada [Javier :10]
 - La ruta Angular wildcard presenta una vista pública accesible con navegación a login/tienda, sin divulgar query, IDs de empresa o rutas internas. Añade regresión Playwright Chromium real al workflow N8.2; rutas privadas siguen usando guards existentes. Sin API, MySQL, Docker, permisos, QA, main ni PROD.
 
