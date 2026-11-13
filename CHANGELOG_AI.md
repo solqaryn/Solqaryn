@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C01-02.M01.03: inventario verificable de contratos [Javier :30]
+- Inventario de 7 blobs de código/tests con limitaciones explícitas, matriz de fuentes V5, siete brechas de implementación y casos positivos/negativos documentales.
+- Ninguna prueba runtime atribuida; Scope Lock exact-SHA para commit solo documental, A0–A4 proporcionales y A5 otra Task; no QA/main/PROD.
+
 ## 2026-11-13 — V5 C01-01.M01.01: objetivo y no-regresión de identidad universal [Javier :40]
 - Documento inicial: frontera tenant/sucursal/membresía/rol/plataforma, seis fuentes de código con blob SHA y doce pruebas positivas/negativas propuestas (no ejecutadas en runtime).
 - Excluye cambios de código, EF/MySQL, Angular, secretos, proveedor y QA/main/PROD. A0–A4 documentales con Scope Lock exact-SHA; A5 independiente pendiente.
