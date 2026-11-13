@@ -1,3 +1,6 @@
+## 2026-11-13 — V5 C01-03.M01.02: actores, límites y entradas/salidas de configuración [Javier :20]
+- Se identificaron 6 actores, 8 entradas/salidas propuestas, cuatro superficies fuente con blobs verificables y 2 positivos/6 negativos de tenancy/RBAC/inyección, ámbito/versiones/errores; propuesta M01 sin contrato final ni cambio de runtime. A0–A3 documentales; A4 Scope Lock SHA exacto y readback; A5 revisor distinto. No QA/main/PROD.
+
 ## 2026-11-13 — V5 C01-03.M01.03: inventario preliminar de contratos y evidencia [Javier :20]
 
 ## 2026-11-13 — V5 C00-04.M01.04: registro de riesgos y decisiones pendientes [Javier :10]
