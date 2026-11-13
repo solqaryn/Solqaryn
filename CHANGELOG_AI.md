@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-02.M04.01 + C00-03.M04.01: reparar detector de guard privado [Javier :50]
+- El scanner de calidad ERP reconoce exclusivamente /plataforma, /plataforma/flujo-v5 y /plataforma/cobertura-v5 como rutas del control plane protegidas por el MISMO plataformaGuard validado contra el backend.
+- Sin permitir rutas arbitrarias ni debilitar JWT, RBAC, Scope Lock o denegaciones. Se conserva la excepcion exacta server-side y los tests negativos de plataforma; auditoria Priority4 y frontend se verifican en CI exact SHA.
+- Corrige el fallo FRONTEND_ROUTE_SECURITY_CONTRACT de ambas superficies, que permanecieron VALIDANDO hasta confirmar nuevamente sus auditorias A0-A4; A5 independiente, sin promocion ni despliegue.
+
 ## 2026-11-13 — V5 C00-03.M04.01: pantalla privada de cobertura integrada [Javier :50]
 - Angular agrega /plataforma/cobertura-v5 con plataformaGuard ya verificado, reutiliza PlataformaComponent y muestra las cinco columnas del contrato sin inventar filas de cobertura ni estados del Sheet.
 - Pruebas Vitest de ruta, privacidad y estado vacio, y contrato docs/v5/c00-03-m04-01-coverage-surface.md; sin nuevo *.component.ts, endpoint, dependencia o dato sensible.

@@ -15,3 +15,7 @@
 A0: revisión de diff, secretos, dependencias, integridad de CHANGELOG y catálogo; A1: suite Vitest de rutas, modo de cobertura, estado vacío y denegación global; A2: guard JWT y permisos de plataforma comprobados server-side por tests existentes y no exposición de datos; A3: lint, tipado y build Angular del SHA exacto; A4: commit fast-forward, check-runs requeridos, Scope Lock, reversión `git revert` normal y readback PLAN/COLA/BITACORA. Pruebas .NET/MySQL/Docker ajenas a la vista no acreditan ni bloquean por sí solas. A5 independiente por otra Task Javier antes de cualquier promoción.
 
 **Límite:** esto no crea una matriz dinámica de producción; las tareas M04.02–M06 y cualquier integración de cobertura permanecen sujetas a sus gates y resultados exigidos.
+
+## Corrección de auditoría de seguridad de rutas (13/11/2026)
+
+La ruta `plataforma/cobertura-v5` permanece protegida por `plataformaGuard`. El quality audit conserva el control `FRONTEND_ROUTE_SECURITY_CONTRACT` y reconoce solo las tres rutas exactas del control plane con pruebas de sesión global y denegación server-side. No se usan `authGuard` ni `permisoGuard` ERP porque requieren contexto EmpresaId inapropiado para plataforma. Si la auditoría falla, no declarar A0-A4 PASS ni LISTO_DEV.

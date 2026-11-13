@@ -21,3 +21,7 @@ Se presenta una **guía contractual estática** de PENDIENTE, EN_PROGRESO, VALID
 A0: diff de rutas, template, estilos, secretos y provenance. A1: Vitest de ruta, caso permitido y denegaciones del `plataforma.guard.spec.ts`; ningún mock autoriza acceso real. A2: misma barrera de sesión global, sin grants locales ni datos empresariales. A3: lint, tipado, build Angular y regresiones del SHA exacto en GitHub Actions. Para A4 se exige commit directo fast-forward a dev, Scope Lock SUCCESS y checks técnicos pertinentes, diff, rollback mediante `git revert` normal y readback PLAN/COLA/BITACORA. La navegación visual/e2e no se declara PASS si no se ejecuta realmente cuando sea exigible. A5 independiente solo otra Task Javier autorizada antes de promoción, nunca autorrevisión.
 
 **Límite:** este entregable es una superficie informativa y no una consola operativa ni evidencia de backend V5 expuesto al público.
+
+## Corrección de auditoría de seguridad de rutas (13/11/2026)
+
+La auditoría ERP `FRONTEND_ROUTE_SECURITY_CONTRACT` reconoce el `plataformaGuard` solo para las rutas exactas privadas de control-plane: `plataforma`, `plataforma/flujo-v5`, `plataforma/cobertura-v5`. El reconocimiento exige el mismo guard autenticado y verificaciones server-side, sin aceptar rutas prefijo, comodín, privilegios tenant ERP ni acceso público. El check se exige en el SHA exacto posterior a la corrección. Un fallo obliga a mantener VALIDANDO; no se contabilizan éxitos antiguos ni se omiten gates obligatorios.
