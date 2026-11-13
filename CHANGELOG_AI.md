@@ -959,3 +959,8 @@
 - Las rutas empresariales fuera de /plataforma conservan la configuración dinámica existente del tenant; no se acepta branding, CSS, permisos o contexto enviados por URL.
 - Se añaden tres pruebas unitarias de frontera de ruta, retorno a contexto global y prefijo negativo, y se amplía el gate Vitest V5 exact-SHA. El archivo app.component.ts no agrega API, nuevo componente ni endpoint.
 - A0 inspección estática del parser de ruta, dependencias, changelog y seguridad; A1-A3 Vitest + Angular lint/build de CI real; A4 check-runs y Sheet, A5 solo otra Task Javier. No MySQL, Docker, workers, QA/main/PROD; rollback git revert normal.
+## 2026-11-13 — SOLQARYN V5 C00-02.M04.04 verificación de interacción protegida [Javier :10]
+- Se añaden pruebas Vitest reales sobre la ruta de contrato V5: navegación de salida explícita con guard plataforma, ausencia de formularios/operaciones empresariales, serialización single-flight de revalidación y error 403 genérico con retry consciente.
+- No modifica el runtime ni la lógica de autenticación existente; verifica que el botón se desactiva durante una petición y no ejecuta una segunda llamada mientras siga pendiente.
+- El workflow V5 ya existente ejecuta el spec modificado en runner Node 24/npm 11 y reproduce los casos positivos/negativos en SHA exacto. Formularios de edición NO_APLICA porque la vista es deliberadamente solo lectura.
+- A0 revisión estática, A1 y A2 tests UI/guard y fuga de errores, A3 Angular build/lint + Vitest y A4 Scope Lock/readback/rollback; A5 pendiente de otro Javier. No MySQL, Docker, infra, QA/main/PROD ni PR/ramas.

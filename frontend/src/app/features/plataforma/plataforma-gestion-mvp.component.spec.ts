@@ -367,3 +367,77 @@ describe('C00-02.M04.02 - estados reales de autoridad en superficie V5', () => {
     expect(fixture.componentInstance.validando()).toBe(false);
   });
 });
+
+describe('C00-02.M04.04 — navegacion, mensajes y accion unica de revalidacion V5', () => {
+  const credencial = {
+    nombreUsuario: 'revisor-v5', rolNombre: 'Super Admin',
+    ambito: 'Plataforma' as const, esAdministrador: true as const
+  };
+
+  async function montar(obtener = vi.fn(() => of(credencial))) {
+    const listar = vi.fn();
+    TestBed.resetTestingModule();
+    await TestBed.configureTestingModule({
+      imports: [PlataformaComponent, NoopAnimationsModule],
+      providers: [
+        { provide: ActivatedRoute, useValue: { snapshot: { routeConfig: { path: 'plataforma/flujo-v5' } } } },
+        { provide: PlataformaSesionService, useValue: { sesion: signal(credencial), obtener } },
+        { provide: PlataformaEmpresasService, useValue: { listar } },
+        { provide: Router, useValue: { navigate: vi.fn() } }
+      ]
+    }).compileComponents();
+    const fixture = TestBed.createComponent(PlataformaComponent);
+    fixture.detectChanges();
+    return { fixture, obtener, listar };
+  }
+
+  it('muestra navegacion explicita y no introduce formularios ni escrituras comerciales', async () => {
+    const { fixture, listar } = await montar();
+    const ruta = routes.find(r => r.path === 'plataforma/flujo-v5');
+    expect(ruta?.canActivate).toEqual([plataformaGuard]);
+    const enlaces = Array.from(fixture.nativeElement.querySelectorAll('a')) as HTMLAnchorElement[];
+    expect(enlaces.some(a => a.textContent?.includes('Administración'))).toBe(true);
+    expect(enlaces.some(a => a.textContent?.includes('Acceder a una empresa'))).toBe(true);
+    expect(fixture.nativeElement.querySelector('form, input, textarea, select')).toBeNull();
+    expect(listar).not.toHaveBeenCalled();
+  });
+
+  it('serializa dos acciones repetidas mientras la validacion sigue en curso', async () => {
+    const respuesta = new Subject<typeof credencial>();
+    const obtener = vi.fn(() => respuesta.asObservable());
+    const { fixture } = await montar(obtener);
+    fixture.componentInstance.revalidar();
+    fixture.componentInstance.revalidar();
+    fixture.detectChanges();
+    expect(obtener).toHaveBeenCalledOnce();
+    const boton = (Array.from(fixture.nativeElement.querySelectorAll('button')) as HTMLButtonElement[])
+      .find(b => b.textContent?.includes('Revalidar sesión'));
+    expect(boton?.disabled).toBe(true);
+    respuesta.next(credencial);
+    respuesta.complete();
+    fixture.detectChanges();
+    expect(boton?.disabled).toBe(false);
+    expect(obtener).toHaveBeenCalledOnce();
+  });
+
+  it('permite un reintento deliberado tras 403 sin mostrar el detalle interno', async () => {
+    const primero = new Subject<typeof credencial>();
+    const segundo = new Subject<typeof credencial>();
+    const obtener = vi.fn().mockReturnValueOnce(primero.asObservable())
+      .mockReturnValueOnce(segundo.asObservable());
+    const { fixture } = await montar(obtener);
+    fixture.componentInstance.revalidar();
+    primero.error({ status: 403, error: { message: 'TOKEN_PRIVADO_NO_RENDERIZAR' } });
+    fixture.detectChanges();
+    const texto = String(fixture.nativeElement.textContent);
+    expect(texto).toContain('No se pudo verificar la sesión');
+    expect(texto).not.toContain('TOKEN_PRIVADO_NO_RENDERIZAR');
+    expect(fixture.componentInstance.validando()).toBe(false);
+    fixture.componentInstance.revalidar();
+    expect(obtener).toHaveBeenCalledTimes(2);
+    segundo.next(credencial);
+    segundo.complete();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.validando()).toBe(false);
+  });
+});
