@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C00-02.M01.04: riesgos, supuestos y decisiones [Alex :05]
+- Matriz de riesgos R01–R10 y supuestos contrastables S1–S6 del modelo V5: exclusión de custodios, fórmulas COLA, unicidad BITACORA, concurrencia Git, Skill/Scope Lock, CI exact-SHA y separación QA/PROD.
+- Sólo docs y CHANGELOG, sin runtime ni permisos nuevos; A0–A3 documentación, A4 exact SHA/readback y A5 independiente pendiente; no QA/main/PROD.
+
 ## 2026-11-13 — V5 C00-03.M01.02: entradas, salidas, actores y superficies de matriz integrada [Javier :10]
 - Contrato documental con siete entradas autorizadas, seis actores con fronteras de permiso y siete superficies (gobierno, dominio, API/tenancy, EF/MySQL, Angular, integraciones y evidencia), casos positivos/negativos y dependencia C00-01.M02 ya finalizada; no crea nueva microtarea ni certifica matriz completa.
 - TIPO1_DOCUMENTACION; requiere_dotnet/Node/Angular/MySQL/Docker/E2E=NO (sin cambio ejecutable), requiere_security=SI_REVISION_DOCUMENTAL y requiere_scope_lock=SI_EXACT_SHA; A0-A3 dirigidas y A4 readback tras FF dev, A5 independiente. No toca QA/main/PROD.
