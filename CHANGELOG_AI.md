@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C00-02.M02.01: entidades y exclusividad [Javier :20]
+- Documento `docs/v5/c00-02-m02-01-entidades-ownership-invariantes.md` define diez entidades, 12 invariantes de identidad, DAG, owner, estados y SHA, ejemplo de ciclo y tres casos positivos/nueve negativos para evitar duplicados.
+- Cambio exclusivamente documental, sin runtime: A0–A3 proporcionales, A4 Scope Lock SHA exacto, A5 otra Task Javier; no nuevas filas/Tasks, branches, PR ni QA/main/PROD. Rollback git revert.
+
 ## 2026-11-13 — V5 C00-02.M02.04: configuración tipada y flags seguros [Javier :20]
 - Documento `docs/v5/c00-02-m02-04-configuracion-tipada-ambitos-flags.md` define frontera config entorno/tenant/usuario, cinco blobs existentes, validaciones tipadas y feature flags futuros no activos; tres casos positivos y nueve negativos con Scope Lock.
 - Alcance solo documental, sin editar JSON/env/secretos, endpoints, JWT, DB ni Angular. A0–A3 proporcionales, A4 Scope Lock exact SHA, A5 por otra Task Javier. Sin QA/main/PROD, branches o PR; rollback git revert.
