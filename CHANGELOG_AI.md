@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C05-04.M01.06: gate y rollback documental de ligereza [Javier :10]
+- Cierra contractualmente M01 de C05-04 tras cinco antecedentes LISTO y A5 independientes (J00/J10), con diez puertas G01–G10 para Scope Lock, seguridad, accesibilidad, medición y privacidad.
+- Delimita P01–P06/N01–N14 FUTUROS NO_EJECUTADOS; budgets Angular 650/750 kB son configuración y no benchmarks ni CWV aprobados, D01–D08 permanecen PENDIENTES.
+- Solo documento y CHANGELOG en dev, CI Scope Lock/V5 exact-SHA, PLAN/COLA/BITACORA y A5 propio pendiente de otra Task Javier; no cambios Angular/API, QA/main/PROD, workers, secretos o eventos.
+
 ## 2026-11-14 — V5 C06-01.M01.02: actores y fronteras sitio público SaaS [Javier :10]
 - Define A01–A12 actores e I01–I12 interfaces FUTURAS de landing, planes, sectores, demo, contacto, legal, SEO, robots, navegación y releases; no implementa rutas ni publica precios.
 - Ocho fronteras F01–F08 y oráculos P01–P06/N01–N14 NO_EJECUTADOS para JWT/RBAC/tenant A/B, PII, consentimiento, anti-spam, metadatos, accesibilidad y rollback.
