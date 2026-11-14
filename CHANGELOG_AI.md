@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-03.M06.05: solicitud de revisión independiente del lote de cobertura [Javier :00]
+- Se documenta paquete A5 de seis implementaciones M05 con SHA, contratos, checks y casos positivos/negativos para un revisor Javier distinto, sin declarar revisión realizada ni despachar nuevas Tasks.
+- La solicitud preserva límites de JWT/RBAC/tenant, Sheets CAS, MySQL y pruebas con fixtures/sesiones sintéticas; no certifica LIVE ni cambia QA/main/PROD.
+- Archivo docs/v5/c00-03-m06-05-independent-review-request.md; requieren Scope Lock y procedencia V5 SUCCESS exact-SHA, A5 pendiente para esta propia microtarea y rollback normal git revert.
+
 ## 2026-11-13 — V5 C00-03.M06.02: manifiesto de hashes y corrección de procedencia M06.01 [Javier :00]
 - Se registran seis SHA exactos, árboles, rutas y blobs de los test M05 para reproducción verificable, sin afirmar ejecución nueva de suites ni garantías live de CAS, JWT/RBAC, tenant o MySQL.
 - Se corrige la procedencia documental de M06.01: M05.04 corresponde a c00-03-m04-05-accessibility.spec.ts (e16a8ea3), M05.06 a c00-03-m04-06-density.spec.ts (fd3756ee); el spec genérico citado antes no era el diff original.
