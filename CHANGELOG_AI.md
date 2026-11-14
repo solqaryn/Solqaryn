@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C09-01.M01.04: riesgos, supuestos y decisiones del CRM universal [Javier :00]
+- Registra R01–R16 POTENCIALES, S01–S08 NO_VERIFICADOS y D01–D08 PENDIENTES ligados a Cliente/UsuarioEmpresa, 16 fuentes M01.03, tenant A/B, JWT/RBAC, PII, replay, consentimiento y legacy NULL.
+- Define P01–P08/N01–N08 FUTUROS_NO_EJECUTADOS y controles para timeline, segmentos, oportunidades, exportación, accesibilidad y rollback; no identifica defectos explotables ni PASS runtime.
+- Solo documento y CHANGELOG en dev con CAS fast-forward; Scope Lock/V5 exact-SHA, A5 independiente pendiente, sin CRM ejecutable, DB, eventos, secretos o QA/main/PROD.
+
 ## 2026-11-14 — V5 C09-04.M01.04: riesgos, supuestos y decisiones pendientes de mensajeria [Javier :50]
 - Registra R01–R14, S01–S08 y D01–D08 como riesgos, hipotesis falsables y decisiones abiertas para consentimientos, opt-out, tenant A/B, HMAC/replay, idempotencia, secretos y rollback, sin inferir fallos reales.
 - Vincula tres artefactos M01 previos con blobs reales de Outbox/Email/WhatsApp; P01–P08/N01–N12 FUTUROS_NO_EJECUTADOS y sin activar trabajadores, proveedores, eventos o webhooks.
