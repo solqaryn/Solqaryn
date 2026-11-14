@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C13-03.M01.02 actores y superficies de rendimiento [Javier :40]
+- Delimita A01–A12 actores, I01–I12 entradas, O01–O10 salidas y F01–F08 fronteras de Angular, API, MySQL, caché tenant, medios y observabilidad.
+- Contrasta M01.01, angular.json, app.routes, package y Playwright con ocho pares P/N FUTUROS_NO_EJECUTADOS; budgets 650/750kB son configuracion, no benchmark o PASS medido.
+- Solo documento y CHANGELOG fast-forward CAS dev, Scope Lock/V5 SHA exacto, A5 independiente; sin modificar runtime, CDN, workers, migraciones, QA/main/PROD.
+
 ## 2026-11-14 — V5 C13-02.M01.05 criterios de aceptacion accesible [Javier :30]
 - Define P01–P14/N01–N14 y NF01–NF10 verificables de teclado, foco, formularios, overlays, contraste, reflow, lector, idioma y tenant A/B; TODOS FUTUROS_NO_EJECUTADOS.
 - Preserva NR01–NR14 y brechas B01–B14; ningun WCAG certificado, test runtime ni cumplimiento general se declara por escribir Markdown.
