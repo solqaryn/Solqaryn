@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C05-02.M01.02: actores y superficies de branding [Javier :00]
+- Traza ocho actores, nueve entradas/salidas y nueve fronteras de confianza para tema visual, presets futuros, logo, identidad pública y estado multiempresa, sin conceder autoridad desde el cliente.
+- Coteja ocho blobs Angular/SCSS; seis positivos y doce negativos de aceptación FUTUROS (no ejecutados), diferenciando `restaurar` existente de versionado CAS/publicación aún sin acreditar.
+- M01.02 únicamente documental dev; sin API, MySQL, UI, worker, webhooks ni migración; Scope Lock/CHANGELOG exact SHA, A5 de otra Task Javier y rollback git revert. Sin QA/main/PROD.
+
 ## 2026-11-14 — V5 C05-02.M01.01: frontera de branding y presets [Javier :00]
 - Define objetivo, exclusiones y doce invariantes NR para temas, logos, identidad, presets futuros, accesibilidad, revisión y restauración sin permitir autoridad por branding.
 - Inspección de siete blobs Angular/SCSS; seis oráculos positivos y doce negativos futuros sobre tenant A/B, JWT/RBAC, sanitización, concurrencia y rollback; NO son pruebas runtime ejecutadas.
