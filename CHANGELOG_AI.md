@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C06-04.M01.01: alcance y no-regresión del portal de cliente [Javier :40]
+- Define frontera de cuenta cliente frente a ERP y doce invariantes NR01–NR12 de autenticación, ownership tenant/cliente, recuperación, PII, pedidos, reservas, documentos y preferencias.
+- Contrasta ocho blobs reales Angular/modelos y C06-02; P01–P06/N01–N12 son criterios FUTUROS NO_EJECUTADOS, no portal o API implementados.
+- Solo dos Markdown dev; Scope Lock y V5 provenance exact SHA, A5 pendiente de otro Javier, rollback normal; sin JWT/MySQL/UI, eventos, secretos, QA/main/PROD.
+
 ## 2026-11-14 — V5 C06-02.M01.03: inventario de fuentes de landing tenant [Javier :30]
 - Verifica 14 archivos y blobs Git de contratos, Angular, guards/interceptor, storefront, robots/sitemap y SEO; distingue tienda actual de host binding y publicación FUTUROS.
 - Registra G01–G10 brechas no certificadas y P01–P06/N01–N12 oráculos FUTUROS NO_EJECUTADOS; hostFromRequest usa x-forwarded-host/host sin afirmar vulnerabilidad explotable.
