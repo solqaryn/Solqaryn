@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C13-03.M01.04 riesgos y decisiones de rendimiento [Javier :40]
+- Registra R01–R14 riesgos potenciales, S01–S10 supuestos NO_VERIFICADOS y D01–D10 decisiones ABIERTAS sobre budgets, lazy/preload, requests, cache tenant, medios, PII y observabilidad.
+- Coteja M01.01/M01.02 y fuentes Angular autenticas; M01.03 estaba EN_PROGRESO ajena y no se declara terminada. Ocho pares P/N FUTUROS_NO_EJECUTADOS; no se fingen LCP, INP, CLS, pruebas ni SLAs.
+- Solo documento y CHANGELOG dev FF/CAS; Scope Lock/V5 exact SHA y A5 independiente, sin runtime, workers, CDN, QA/main/PROD.
+
 ## 2026-11-14 — V5 C13-03.M01.03 inventario y brechas de rendimiento [Javier :30]
 - Inventaria catorce blobs de Angular, scripts de budget, preloading, browser, Cloudinary, HTTP cache y contratos; no confunde fuente con test, metrica o build real.
 - Detecta discrepancia documental verificable: budget vigente initial 650/750kB vs 1MiB/2MiB en performance-bundle-baseline.mjs; requiere reconciliacion causal separada, no declara regresion runtime.
