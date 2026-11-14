@@ -1218,3 +1218,8 @@
 - Agrega adapter .NET 10 Infrastructure/Governance exclusivamente efímero, sin MySQL/EF/API/DI, que guarda lecturas no autoritativas por ID/revisión con cuota fija, datos validados y primer escritor local sin reemplazos.
 - Pruebas xUnit reales a ejecutar en GitHub Actions: 64 escritores/1 ganador local, casos positivos de versionado y negativos de ID, SHA, estado, UTC y duplicación; no acredita CAS distribuido, JWT/RBAC ni tenant.
 - A0-A4 condicionadas a CI backend, seguridad, Scope Lock y CHANGELOG exact-SHA, readback institucional y A5 independiente de otra Task Javier. Sin webhooks, dispatcher, workers, nuevas Tasks, QA/main/PROD. Rollback git revert normal.
+
+## 2026-11-14 — SOLQARYN V5 C01-02.M01.06 salida documental capabilities y RBAC [Javier :20]
+- Contrato de bloqueo, rollback y salida M01 para C01-02; siete antecedentes LISTO con revisión A5 Javier válida y DAG individual VALIDADO/SI. No libera M02/M03 en cascada.
+- Denegación por defecto: grant RBAC y entitlement futuro son restricciones acumulativas, siempre con membresía, tenant y ownership verificados; plan, UI o rol legacy no sustituyen grants. Positivos P01-P03 y negativos N01-N07 definidos como oráculos documentales, no pruebas runtime ejecutadas.
+- A0-A4 documentales condicionadas a Scope Lock y procedencia V5 SUCCESS exact SHA, BITACORA 26 columnas y readback PLAN/COLA. A5 pendiente de otra Task Javier. Sin API, JWT, MySQL, migración, worker, dispatcher, cobros, QA/main/PROD; rollback git revert normal.
