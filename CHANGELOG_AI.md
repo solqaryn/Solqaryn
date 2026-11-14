@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C13-04.M01.01 alcance y no-regresion de experiencia unificada [Javier :40]
+- Define objetivo y no-alcance con NR01–NR14 de jerarquia, formularios, tablas, estados, foco, responsive, branding por tenant, JWT/RBAC y UI ligera accesible.
+- Coteja blobs reales styles.scss, app.routes, Angular, design system, accesibilidad y rendimiento; matriz de seis superficies y ocho pares P/N FUTUROS_NO_EJECUTADOS, sin fingir pruebas UI/WCAG.
+- Solo documento y CHANGELOG por fast-forward CAS dev, Scope Lock/V5 exact SHA, A5 independiente; sin cambios Angular/API/MySQL, eventos, QA/main/PROD.
+
 ## 2026-11-14 — V5 C13-03.M01.05 aceptacion de rendimiento y ligereza [Javier :30]
 - Define dieciseis P/N futuros y doce criterios NF de bundle, rutas lazy, cache, imagenes, tablas, LCP/INP/CLS, accesibilidad y tenant A/B; NO_EJECUTADOS.
 - Mantiene budget 650/750kB como configuracion y discrepancia del script 1MiB/2MiB como pendiente de codigo separado; no inventa medidas ni cambia CI o seguridad.
