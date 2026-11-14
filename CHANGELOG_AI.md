@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C13-04.M01.02 actores, entradas, salidas y limites de UI unificada [Javier :50]
+- Documenta doce perfiles de uso, doce contratos de interfaz y ocho fronteras de confianza, referenciando alcance M01.01 e inventario causal M01.03 de Angular, guards, estilos y Playwright.
+- Define ocho pares positivos/negativos FUTUROS_NO_EJECUTADOS sobre foco, responsive, estados, permisos backend y aislamiento tenant A/B; no declara WCAG ni tests runtime ejecutados.
+- Solo docs/v5 y CHANGELOG fast-forward dev con Scope Lock/V5 exact-SHA, A5 independiente; sin eventos, migraciones, QA/main/PROD.
+
 ## 2026-11-14 — V5 C13-04.M01.03 inventario causal de UI, estados y responsive [Javier :50]
 - Registra 14 fuentes Git blob de rutas Angular, styles, tokens, navegacion, feedback, guards tenant, budgets y Playwright con limites comprobables; no confunde archivos de test con ejecuciones.
 - Identifica 12 brechas y ocho pares P/N FUTUROS_NO_EJECUTADOS de coherencia visual, focus, responsive, seguridad A/B y rendimiento; C13-04.M01.01 ajena no se declara completada.
