@@ -1462,3 +1462,8 @@
 - Auditoría documental de nueve archivos reales por blob SHA: SCSS, accesibilidad, rutas, diálogo, feedback ARIA, navegación y ThemeApplier con spec presente; distingue hechos de pruebas pendientes.
 - Ocho dimensiones de diagnóstico y cinco oráculos positivos/doce negativos futuros: contraste, foco, 320px, A/B, CSS seguro y permiso backend; no atribuye Angular/Playwright/HTTP ejecutados a esta lectura.
 - Solo documento y CHANGELOG sin cambios UI/API/datos, workers, eventos, secretos o Tasks. A4 requiere Scope Lock y V5 exact-SHA y readback; A5 independiente de otra Task, rollback git revert normal, sin QA/main/PROD.
+
+## 2026-11-14 — V5 C04-04.M01.06: gate documental y rollback de cobros provider-neutral [Javier :50]
+- Cierra contractualmente M01 de enlaces de cobro con diez puertas G01–G10, políticas NO_GO, reversión futura sin operaciones reales y diferenciación clara entre preparación M02 y autorización comercial/QA/PROD.
+- Verifica cinco antecedentes C04-04.M01.01–05 en LISTO con A5 independiente J50 sobre sus SHA originales y 60 prerrequisitos documentales; AC01–AC20 permanecen NO_EJECUTADOS, D01–D10 sin aprobación económica.
+- Cuatro positivos/doce negativos son criterios de revisión documental, no tests .NET/MySQL/web; solo Markdown y CHANGELOG, sin cobros, webhooks, dispatchers, secretos o migraciones. Scope Lock/V5 exact-SHA, BITACORA/PLAN/COLA readback y A5 independiente posterior obligatorios, rollback git revert.
