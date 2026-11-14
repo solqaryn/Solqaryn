@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C05-04.M01.02: actores y fronteras de ligereza [Javier :00]
+- Delimita 12 actores y 12 entradas/salidas futuras de rendimiento percibido: lazy routing, preload explícito, feedback ARIA, métricas repetibles y aislamiento tenant A/B.
+- Contrasta cinco blobs de Angular y M01.01 con P01–P06/N01–N12 como oráculos FUTUROS NO_EJECUTADOS; el budget 650/750 kB es configuración, no prueba de build.
+- Solo dos Markdown en dev; sin cambiar UI/API/DB, JWT/RBAC, worker ni eventos; Scope Lock y V5 provenance exact SHA, A5 independiente y rollback normal, sin QA/main/PROD.
+
 ## 2026-11-14 — V5 C05-04.M01.01: objetivo y no-regresión de ligereza [Javier :50]
 - Define alcance de futura mejora de carga inicial, duplicación HTTP, densidad visual y percepción con NR01–NR12, seis positivos y doce negativos FUTUROS, sin afirmar mediciones o builds ejecutados.
 - Coteja ocho blobs Angular/SCSS: budgets declarados 650/750 kB, preload selectivo, rutas lazy, foco/feedback y scripts; conserva tenant A/B, JWT/RBAC, accesibilidad, reduced-motion y rollback.
