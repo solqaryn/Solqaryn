@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C10-04.M01.03: inventario de fuentes de cache, jobs, backups y exportaciones [Javier :40]
+- Inspecciona diez rutas fuente con blobs Git exactos de PublicStoreCache, OutboxRetryProcessor, cache HTTP, xUnit y Cloudinary DEV opt-in, distinguiendo código existente de ejecución certificada.
+- Clasifica G01–G12 como brechas de EVIDENCIA, no bugs confirmados; oráculos P01–P08/N01–N12 FUTUROS_NO_EJECUTADOS. Mantiene histórico de archivos NO_VERIFICADO, no cero.
+- Solo inventario documental y CHANGELOG en dev; A5 independiente pendiente; no se activan workers, cron, dispatcher, MySQL, backups, Cloudflare R2, QA/main/PROD o proveedores.
+
 ## 2026-11-14 — V5 C10-04.M01.02: actores e interfaces cache jobs backups [Javier :30]
 - Define A01-A14 actores, I01/O01-I12/O12 contratos propuestos y F01-F09 fronteras para cache, trabajos idempotentes, export y backup aislados por tenant; NO_IMPLEMENTADOS.
 - Traza documentos originales C10-01/02/03; inventario de archivos reales NO_VERIFICADO (no equivale a cero), y P01-P06/N01-N06 FUTUROS_NO_EJECUTADOS, sin afirmar seguridad runtime.
