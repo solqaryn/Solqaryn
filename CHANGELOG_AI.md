@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C14-03.M01.03 inventario de promoción controlada [Javier :10]
+- Verifica 12 rutas y blobs Git de CI, paridad, Scope Lock, frontend, backend y gobierno; identifica 12 brechas NO_ACREDITADO, sin equiparar archivos a ejecuciones.
+- Relaciona 8 pares P/N FUTUROS_NO_EJECUTADOS con NR01–NR16 y actores/interfaces M01.01–02; exige separación DEV/QA/PROD, JWT/RBAC/tenant A/B y SHA exacto.
+- Solo documento y CHANGELOG, con Scope Lock/V5 exact SHA y A5 independiente posterior; no deployments, datos productivos, secretos, eventos ni PR/branches.
+
 ## 2026-11-14 — V5 C14-03.M01.02 actores, interfaces y fronteras de promoción [Javier :10]
 - Documenta 12 actores de análisis, 12 fuentes Git/Sheets y ocho pares P/N FUTUROS_NO_EJECUTADOS para separación DEV/QA/PROD, paridad, autorización y rollback.
 - Delimita SHA/artefacto, Scope Lock, CI causal, JWT/RBAC/tenant A/B y secreto mínimo; existencia de workflows no se trata como ejecución o aprobación de release.
