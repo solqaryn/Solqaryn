@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C11-04.M01.04: riesgos y decisiones de observabilidad [Javier :30]
+- Documenta doce riesgos R01–R12 POTENCIALES, ocho supuestos S01–S08 NO_VERIFICADOS y ocho decisiones D01–D08 PENDIENTES sobre privacidad, costos, cardinalidad, roles y SLO.
+- Ancla ocho blobs Git, relaciona M01.01–03 e incluye ocho pares positivos/negativos FUTUROS_NO_EJECUTADOS; no diagnostica vulnerabilidades confirmadas ni inventa pruebas runtime.
+- Sólo docs/v5 + CHANGELOG por fast-forward CAS en dev, checks Scope Lock/V5 exact SHA y A5 independiente pendiente; sin exporters, servicios de pago, secrets, QA/main/PROD.
+
 ## 2026-11-14 — V5 C11-04.M01.03: inventario de evidencia de observabilidad [Javier :30]
 - Ancla once fuentes con blobs exactos de API, middleware, EF, métricas, xUnit y documentos M01; separa código existente, pruebas definidas y funciones NO_CERTIFICADAS.
 - Registra doce brechas G01–G12 no confirmadas como bugs, y ocho escenarios positivos/negativos FUTUROS_NO_EJECUTADOS; preserva JWT/RBAC, tenant A/B, PII y soporte read-only.
