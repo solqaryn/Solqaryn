@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-02.M06.06: cierre DEV y mapa de dependencias del modelo de Tasks [Javier :30]
+- Inventario 35/35 predecesoras LISTO (M01–M05 completos, M06.01–05), gate DAG F113 VALIDADO/G113 SI, COLA G73/O73 SI y cuenta Javier verificados antes de reclamar C00-02.M06.06.
+- Cierre documental controlado: 136 entradas DAG examinadas sin sucesoras explícitas de C00-02.M06.06; no se liberan tareas sin DAG validado, no se modifican fórmulas ni se crea dispatcher, webhook, PR, rama, Task o permisos.
+- Artefacto docs/v5/c00-02-m06-06-model-phase-release-gate.md; requerir Scope Lock y V5 CHANGELOG SUCCESS exact-SHA para LISTO_DEV, con A5_PENDIENTE de Task Javier distinta y readback institucional; no JWT/MySQL/Sheets CAS/QA/main/PROD.
+
 ## 2026-11-13 — V5 C00-03.M06.06: cierre técnico y mapa de dependencias de cobertura [Javier :20]
 - Se inventarían 35/35 predecesoras LISTO de C00-03 (M01–M05 completos y M06.01–05) con seis SHA M05 y cinco fuentes M06, DAG F137 VALIDADO/G137 SI y COLA G109/O109 SI al reclamar.
 - Se documenta la liberación estrictamente del estado DEV y la ausencia de sucesoras explícitas en DAG: no se crean Tasks, nuevas fases, permisos, fórmulas manuales, webhooks ni nueva microtarea; A5 independiente sigue pendiente y no hay QA/main/PROD.
