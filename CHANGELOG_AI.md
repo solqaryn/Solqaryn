@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C10-02.M01.02: actores e interfaces R2/domains [Javier :30]
+- Define A01–A14 actores conceptuales, I/O01–12 entradas/salidas y F01–F08 fronteras de confianza para objetos privados, prefijos tenant, URL firmada, TTL, replay, caché y lifecycle.
+- Exige JWT/RBAC/owner resuelto en backend y separación tenant A/B; P/N son FUTUROS NO_EJECUTADOS, no se implementaron DTO/API, R2, DNS, secretos, caché ni lifecycle.
+- Solo docs/v5 y CHANGELOG en dev, Scope Lock y procedencia V5 exact-SHA; runtime NO_APLICA y A5 independiente pendiente.
+
 ## 2026-11-14 — V5 C10-02.M01.01: alcance preparatorio de R2 y dominios [Javier :30]
 - Fija objetivo, no-alcance, NR01–NR14 y escenarios P01–P06/N01–N12 FUTUROS NO_EJECUTADOS para acceso privado, prefijos tenant, expiración, replay y lifecycle.
 - Separa R2/DNS/cutover futuros de Cloudinary vigente; preserva permisos server-side JWT/RBAC, aislamiento A/B, retención, secretos y rollback sin crear infraestructura.
