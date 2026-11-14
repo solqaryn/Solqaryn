@@ -1472,3 +1472,8 @@
 - Registra R01–R12 riesgos potenciales, S01–S08 supuestos falsables y D01–D08 decisiones PENDIENTE; no declara vulnerabilidades, cumplimiento WCAG o políticas aprobadas.
 - Coteja nueve blobs reales Angular/SCSS y las fuentes M01.01–03: foco, contraste, responsive 320px, reducción de movimiento, tenant A/B, tema allowlisted y autorización JWT/RBAC server-side.
 - Solo documentación y CHANGELOG en dev, A0–A3 documentales, A4 Scope Lock/V5 exact SHA más PLAN/COLA/BITACORA, A5 independiente por otro TASK_ID; CI runtime NO_APLICA al diff Markdown, rollback git revert sin QA/main/PROD.
+
+## 2026-11-14 — V5 C05-02.M01.05: aceptación funcional y técnica de branding y presets [Javier :30]
+- Criterios de aceptación futuros P01–P08 y escenarios de rechazo N01–N16 para tema global, futura marca tenant, previews, publicación versionada y rollback; cada oráculo permanece NO_EJECUTADO, no equivale a prueba runtime.
+- Diferencia el TemaVisual global existente de branding multiempresa no implementado; D01–D08 y gates M01.06 siguen pendientes. Respeta JWT/RBAC/tenant A/B, allowlist, accesibilidad, idempotencia y ausencia de escrituras en datos reales.
+- Solo documento M01.05 y CHANGELOG; A0–A4 documentales con Scope Lock/V5 provenance exact-SHA y PLAN/COLA/BITACORA readback. A5 independiente de otra Task Javier, rollback git revert; sin UI/backend/DB nuevos, eventos, workers, QA/main/PROD.
