@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C09-02.M01.03: inventario de codigo y brechas de fidelizacion [Javier :30]
+- Contrasta 12 rutas originales con blobs exactos de Domain, Application, Infrastructure, API y Angular para delimitar Cliente, Venta, CreditoCliente, auditoria y permisos frente a futuros puntos, promociones y reseñas.
+- Formula G01-G12 de evidencia y P01-P08/N01-N08 FUTUROS_NO_EJECUTADOS; no confunde ausencia de prueba con defecto real ni afirma runtime certificado.
+- Unicamente doc M01.03 y CHANGELOG en dev por CAS fast-forward, Scope Lock y procedencia V5 exact SHA; A5 independiente pendiente, sin activar MySQL, JWT/RBAC, eventos, workers, proveedores, QA/main/PROD.
+
 ## 2026-11-14 — V5 C09-03.M01.05: aceptacion observable Social Hub [Javier :10]
 - Define AC01-AC16 con dieciseis positivos P y dieciseis negativos N FUTUROS_NO_EJECUTADOS para campañas, segmentos, opt-out, idempotencia, tenant A/B, JWT/RBAC, métricas, auditoría y rollback, sin atribuir PASS runtime.
 - Registra RNF01-RNF10 y traza cuatro documentos M01 anteriores y blobs Cliente, UsuarioEmpresa, MensajeOutbox; .NET/MySQL/Angular/Playwright se reservan para fases de código real y CI dirigida.
