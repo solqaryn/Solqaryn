@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-02.M06.04: ensayo no destructivo de desactivación de cola en memoria [Javier :30]
+- Se incorporan seis casos xUnit reales (4 Theory + 2 Facts) contra V5WorkItemMemoryAdapter: gates cerrados rechazan nuevos claims sin borrar snapshots legítimos, reactivación con token idempotente y rechazo de ownership ajeno.
+- El alcance se limita al adaptador actual en memoria: NO implica rollback de Sheets/MySQL, datos de producción, JWT live ni detener jobs ya iniciados; no modifica código productivo de seguridad ni las seis Tasks Javier.
+- Archivos test y docs/v5/c00-02-m06-04-safe-disable-rehearsal.md; exigir .NET build/test/security y Scope Lock/CHANGELOG exact-SHA; A5_PENDIENTE, rollback normal git revert sin reescribir historia ni liberar M06.06.
+
 ## 2026-11-13 — V5 C00-02.M06.05: solicitud institucional de revisión independiente [Javier :30]
 - Se registra solicitud A5 por ID/SHA del lote C00-02 con origen, autoría y pruebas positivas/negativas; se exige revisor Task Javier distinto, readback y no duplicar A5_PASS/FAIL existentes.
 - La solicitud es documental y consultable en BITACORA, no webhook, dispatcher, nueva Task o notificación entregada; no declara JWT/Sheets CAS/MySQL live ni ensayo de rollback.
