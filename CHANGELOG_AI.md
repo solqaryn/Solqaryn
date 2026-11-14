@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C12-03.M01.04: riesgos y decisiones backend/worker [Javier :20]
+- Documenta R01–R14 riesgos y controles causales de tenant A/B, RBAC diferido, idempotencia, DDL, reinicio, readiness, secrets y logs, sin afirmar trabajadores desplegados.
+- Deja S01–S10 hipótesis NO_VERIFICADAS y D01–D10 decisiones abiertas con dueño y evidencia, enlazadas al inventario G01–G12 y NR01–NR16.
+- Solo dos Markdown en dev, A0–A4 documental, Scope Lock/V5 exact-SHA y A5 independiente; sin workers, eventos, MySQL, QA/main/PROD ni compras.
+
 ## 2026-11-14 — V5 C12-03.M01.03: inventario Git backend y workers [Javier :10]
 - Registra quince fuentes versionadas con SHA de blob comprobable de API, Application, Domain, Infrastructure, DbContext, migraciones, governance y documentos M01, sin afirmar workers desplegados.
 - Expone G01-G12 brechas verificables de cola, tenant fuera de HttpContext, RBAC diferido, idempotencia, migración única, restart y secretos; ocho pares P/N FUTUROS_NO_EJECUTADOS.
