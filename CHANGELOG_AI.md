@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C12-02.M01.03: inventario frontend separado [Javier :00]
+- Inventaria diez fuentes versionadas con SHA de blob verificable de Angular 22.2.1, Vercel, Render, guardas, proxy, headers, caché y arquitectura, sin confundir contrato con proveedor vivo.
+- Registra doce brechas G01-G12 y seis pares de pruebas futuras P/N NO_EJECUTADAS, preservando JWT/RBAC/tenant A/B y segregación de entornos.
+- Únicamente dos Markdown (docs/v5 y CHANGELOG) en dev; Scope Lock/V5 exact-SHA y A5 independiente requeridos; sin CDN, DNS, workers, eventos, QA/main/PROD o gastos.
+
 ## 2026-11-14 — V5 C12-02.M01.02: actores y fronteras frontend separado [Javier :50]
 - Documenta A01-A12 actores, I01/O01-I12/O12 entradas/salidas y F01-F12 fronteras de API proxy, SPA, SEO, headers, CDN, cache y aislamiento tenant.
 - Traza diez rutas Git/blobs de Angular, Vercel, guards, config y Render; ocho pares P/N FUTUROS_NO_EJECUTADOS, no se certifican CDN, smoke, DNS o migracion.
