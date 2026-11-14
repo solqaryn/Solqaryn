@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C01-02.M02.04 configuracion tipada y flags de capabilities [Javier :50]
+- Contrasta diez fuentes Git (FeatureFlagsSaaS, ConfigEmpresa/EF, DTO y contratos M02); define límites plan/rubro/tenant/sucursal/recurso sin duplicar RBAC.
+- Diseña tipado, defaults DENY, versionado/revocación y 4 positivos/14 negativos FUTUROS_NO_EJECUTADOS; no crea permisos, endpoints, flags, tablas o servicios.
+- Solo Markdown y CHANGELOG en dev, Scope Lock/V5 exact-SHA exigidos y A5 de otra Task Javier; sin webhooks, MySQL real, QA/main/PROD.
+
 ## 2026-11-14 — V5 C01-02.M02.03 contrato persistencia y fixtures de capabilities [Javier :50]
 - Contrasta ocho fuentes de código/documentación con blobs exactos; distingue índices EF existentes de modelo futuro de capabilities sin SQL/DDL aplicado.
 - Diseña claves y relaciones tenant-scoped, vigencia/concurrencia, 4 positivos y 12 negativos FUTUROS_NO_EJECUTADOS con fail-closed JWT/RBAC/tenant A/B.
