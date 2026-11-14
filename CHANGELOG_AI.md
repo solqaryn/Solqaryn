@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C09-03.M01.02: actores e interfaces Social Hub/campanas [Javier :10]
+- Documenta A01-A14 actores conceptuales, I01-I14 entradas/salidas propuestas y F01-F10 fronteras para campañas, contenidos, calendarios, consentimiento, opt-out, métricas y aislamiento tenant, sin crear roles o endpoints live.
+- Traza los blobs de C09-03.M01.01, Cliente, UsuarioEmpresa, MensajeOutbox, Auditoria y guard Angular; P01-P04/N01-N08 quedan FUTUROS_NO_EJECUTADOS, sin atribuir PASS runtime.
+- Únicamente docs/v5 y CHANGELOG con CAS fast-forward y checks Scope Lock/V5 del SHA exacto; A5 independiente pendiente, sin proveedores, eventos, secretos, migraciones, QA/main/PROD.
+
 ## 2026-11-14 — V5 C09-03.M01.01: alcance y no-regresion de Social Hub/campanas [Javier :10]
 - Define alcance FUTURO para contenidos, segmentos, calendarios, campañas y métricas con consentimiento por canal, opt-out y límites por tenant, sin habilitar emisiones ni publicaciones reales.
 - Documenta NR01-NR16 y P01-P05/N01-N08 FUTUROS_NO_EJECUTADOS con referencias a blobs de Cliente, UsuarioEmpresa, MensajeOutbox, Auditoria y guarda Angular; no certifica tests runtime.
