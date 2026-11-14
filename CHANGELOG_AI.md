@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C04-03.M01.05: criterios observables de metering [Javier :20]
+- Define AC01–AC14 con negativos N01–N14 como pruebas FUTURAS de tenant A/B, unidades, idempotencia consumo, fuente confiable, periodo UTC, conciliación, retención, JWT/RBAC, API, MySQL y UI, sin atribuir tests ejecutados.
+- Coteja blobs de M01.01–04 y SuscripcionesSaaS, separando idempotencia de onboarding de consumo; D01–D08 quedan PENDIENTE de autorización expresa.
+- Solo aceptación documental M01.05 en dev; sin worker, ledger, migración, cobros, eventos ni QA/main/PROD; exige Scope Lock/V5 exact SHA, A5 independiente y rollback git revert normal.
+
 ## 2026-11-14 — V5 C04-02.M01.05: aceptación contractual observable [Javier :30]
 - Define catorce criterios AC01–AC14 y negativos N01–N14 para alta, estados, renovación, cancelación, mora, tenant/JWT/RBAC, replay, MySQL, UI accesible, auditoría y release seguro.
 - Distingue oráculos FUTUROS no ejecutados de la evidencia existente Domain/Application/API/EF/xUnit/Angular y mantiene ocho decisiones comerciales sin aprobación ni precios inventados.
