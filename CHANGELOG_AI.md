@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C12-03.M01.05: criterios observables backend/worker [Javier :20]
+- Define AC01–AC16 y N01–N16 para API, tenant A/B, JWT/RBAC, idempotencia, retry, health, DDL único, secret ausente, seguridad y rollback; todos FUTUROS_NO_EJECUTADOS.
+- Registra NF01–NF10 mediciones futuras sin SLO inventado, rutas de evidencia M02–M06 y bloqueo estricto de runtime hasta CI causal exact-SHA.
+- Solo docs/v5 y CHANGELOG en dev; A0–A4 documental Scope Lock/V5, A5 independiente pendiente, sin worker, eventos, MySQL, QA/main/PROD ni compras.
+
 ## 2026-11-14 — V5 C12-03.M01.04: riesgos y decisiones backend/worker [Javier :20]
 - Documenta R01–R14 riesgos y controles causales de tenant A/B, RBAC diferido, idempotencia, DDL, reinicio, readiness, secrets y logs, sin afirmar trabajadores desplegados.
 - Deja S01–S10 hipótesis NO_VERIFICADAS y D01–D10 decisiones abiertas con dueño y evidencia, enlazadas al inventario G01–G12 y NR01–NR16.
