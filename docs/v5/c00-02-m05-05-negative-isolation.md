@@ -1,0 +1,7 @@
+# SOLQARYN V5 — C00-02.M05.05: pruebas negativas de aislamiento y abuso
+
+Se incorpora una suite xUnit sobre el control real `V5WorkItemTenantAuthorizationGuard` del módulo AutomationV5, verificando rechazo de IDs de otro scope aunque existan en el catálogo, variantes maliciosas del tenant (incluida capitalización y espacios), cambio de scope, actor retirado, ausencia de binding del servidor y auto-revisión A5.
+
+**No confundir alcance:** las tablas de scopes/tenants son fixtures de prueba; esto NO implementa autenticación JWT, consultas MySQL, CAS de Google Sheets ni endpoints productivos. El guard real recibe snapshots supuestamente confiables del servidor; el consumidor debe validar JWT/RBAC/tenant y obtener dichos snapshots de una fuente autenticada. Los tests prueban respuestas de denegación sin mutación, no una integración HTTP real ni autorización de desarrollo.
+
+**Clasificación:** requiere_dotnet=SI; requiere_node_angular=NO; requiere_mysql=NO; requiere_docker=NO; requiere_e2e=NO; requiere_security=SI (reglas de aislamiento y ausencia de elevación); requiere_scope_lock=SI. A0 diff, secretos, complejidad y CHANGELOG; A1 pruebas positivas/negativas de guard; A2 denegación por origen externo/tenant; A3 compilación y tests en CI del SHA; A4 check-runs exact-SHA y readback institucional, rollback git revert normal. A5 revisión por otra Task Javier. No se modifican rutas de producción, QA/main/PROD ni permisos.

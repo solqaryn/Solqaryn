@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-02.M05.05: seguridad negativa de contexto tenant/scope [Javier :10]
+- Se agrega suite xUnit real V5C0002M0505NegativeIsolationTests con rechazos de IDs de scope ajeno en cinco operaciones, variantes de tenant, actores retirados, bindings ausentes y auto-revisión A5 prohibida.
+- La seguridad se prueba sobre el guard Application real con mapas fiables de fixture, NO JWT live, HTTP productivo, MySQL, CAS institucional, A5_PASS ni dispatcher. Ningún cambio a permisos o datos productivos.
+- Requiere dotnet build/test, seguridad multiempresa, autorización, Scope Lock y procedencia CHANGELOG del SHA exacto; A5_PENDIENTE por otra Task Javier, rollback git revert normal, sin QA/main/PROD.
+
 ## 2026-11-13 — V5 C00-02.M05.06: regresión responsive accesible de flujo V5 [Javier :00]
 - Se amplía Playwright Chromium con una regresión dirigida para la vista de cuatro pasos V5 en tres anchos (390, 768 y 1280), sin desbordamiento horizontal exterior y con navegación por foco/teclado.
 - El navegador comprueba que no se llaman endpoints institucionales de escritura. La sesión es sintética exclusivamente para UI; no afirma autenticar JWT, aislar tenants mediante HTTP real ni medir latencia de backend.
