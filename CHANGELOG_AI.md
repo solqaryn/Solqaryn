@@ -1300,3 +1300,9 @@
 - Fija cuatro oráculos positivos y diez negativos simbólicos para aislamiento A/B, membresía revocada, payload distinto, replay, timeout, host falso y consumidor duplicado; no son tests ejecutados.
 - Sin implementar webhooks, bus, dispatcher, workers, API, tablas, migraciones, JWT/RBAC o permisos; A5 independiente y Scope Lock/V5 exact-SHA, rollback git revert normal; no QA/main/PROD.
 
+
+## 2026-11-14 — V5 C02-04.M02.02: contrato documental API/DTO y compatibilidad de consola global [Javier :00]
+- Documenta fronteras actuales GET global paginado, borrador y alta controlada frente a seis flujos futuros de acceso excepcional; contrasta source blobs de controller, scope, interface y allowlist sin modificar endpoints ni grants.
+- Define doce invariantes, ocho categorías de errores objetivo y 5 casos positivos/15 negativos simbólicos con A/B, MFA, reauth, auditoría y compatibilidad; no son pruebas runtime ni autorización de accesos.
+- A0-A4 documentales sujetos a Scope Lock y V5 provenance exact-SHA, PLAN/COLA/BITACORA readback; A5 exige otra Task Javier. Sin código API, IAM, JWT, MySQL, workers, eventos, QA/main/PROD; rollback git revert normal.
+
