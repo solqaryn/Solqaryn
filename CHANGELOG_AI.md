@@ -1289,3 +1289,9 @@
 - Registra 4 oráculos positivos y 10 negativos documentales de aislamiento A/B, caché revocada, host suplantado, inyección, versión y secretos; no presenta pruebas de ejecución ni configuraciones activadas.
 - Sólo Markdown y CHANGELOG; sin crear endpoints, flags operativos, MySQL/EF, migraciones, workers, eventos o Tasks. A5 independiente y CI Scope Lock/V5 exact-SHA; rollback git revert, sin QA/main/PROD.
 
+
+## 2026-11-14 — V5 C02-04.M02.01: entidades e invariantes conceptuales de consola global [Javier :00]
+- Define contrato documental de ownership global vs empresarial, MFA/reauth futuros, concesiones excepcionales de alcance mínimo y auditoría crítica fail-closed; inspecciona cuatro fuentes reales por blob SHA y seis preparaciones M01 con A5 acreditado.
+- Matriz de 16 invariantes y 4 criterios positivos/14 negativos simbólicos; NO son pruebas ejecutadas ni habilitan implementación IAM, JWT, grants, SQL, frontend, workers, eventos, webhooks o QA/main/PROD.
+- Requiere A0-A4 documentales con GitHub Scope Lock y V5 provenance exact-SHA, PLAN/COLA/BITACORA readback; A5 por otra Task Javier. Rollback git revert normal.
+
