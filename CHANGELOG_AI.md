@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C06-02.M01.01: alcance y no-regresión de landing por tenant [Javier :20]
+- Define objetivo de landing pública administrable por empresa y NR01–NR12 sobre host binding seguro, slug, preview, noindex, branding, tenant A/B, cache y publicación versionada.
+- Contrasta router, storefront, guards, interceptor y contratos V5; P01–P06/N01–N12 son oráculos FUTUROS NO_EJECUTADOS, no host/TLS/DNS implementado ni aprobado.
+- Solo Markdown y CHANGELOG dev, Scope Lock/procedencia exact-SHA y A5 de otra Task; sin endpoints, MySQL, Angular, secrets, dominios, eventos o QA/main/PROD.
+
 ## 2026-11-14 — V5 C06-01.M01.05: aceptación observable de sitio público SaaS [Javier :20]
 - Define 14 criterios AC01–AC14 y 14 negativas N01–N14 FUTURAS NO_EJECUTADAS para landing, precios aprobados, SEO, consentimiento, rate limit, demo, tenant A/B, accesibilidad y rollback.
 - Coteja NR01–NR12, A01–A12/I01–I12, B01–B08 y D01–D08 PENDIENTES; no afirma pruebas Playwright, HTTP, .NET, SEO, aprobación comercial o sitio publicado.
