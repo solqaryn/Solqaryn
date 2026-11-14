@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-01.M01.03 inventario de fuentes de cobertura [Javier :40]
+- Se leyeron 18 blobs de Git del baseline 83089fdbdc9a: contratos .NET/Angular/EF, seguridad declarada, gobernanza y CI; evidencia estática, no ejecución funcional.
+- Define ocho uniones futuras de trazabilidad y diez brechas NO_ACREDITADAS; seis pares P/N FUTUROS_NO_EJECUTADOS, sin certificar cero huérfanos en 2340 IDs.
+- Sólo Markdown y CHANGELOG en dev, A0–A4 documentales y A5 pendiente de otra Task Javier; sin workers, eventos, migraciones, QA/main/PROD ni Secrets.
+
 ## 2026-11-14 — V5 C15-01.M01.02 actores e interfaces de auditoria de cobertura [Javier :30]
 - Define catorce actores, doce entradas, doce salidas, diez fronteras y diez pares PN FUTUROS_NO_EJECUTADOS para comparar V5, PLAN, COLA, DAG, BITACORA, SHA/checks y Tasks Javier por ID exacto.
 - Preserva autoridad dev, CAS exclusivo, A5 independiente, JWT/RBAC/tenant A/B y evidencia causal, sin afirmar cero huérfanos/duplicados críticos, pruebas runtime ni auditoría exhaustiva completada.
