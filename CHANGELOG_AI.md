@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-03.M05.03: integración de proveedor de cobertura en memoria [Javier :00]
+- Se añade suite xUnit de integración real entre V5CoverageMemoryAdapter y V5CoverageTenantProjectionService: guardado/lectura/proyección, namespace de scope, revisión obsoleta y evidencia no certificada.
+- El proveedor es estrictamente en memoria; NO prueba MySQL, Sheets, JWT HTTP ni CAS institucional, y no añade un backend durable. Requiere .NET, controles de seguridad por scope, CHANGELOG y Scope Lock exact-SHA antes de LISTO_DEV; A5 independiente.
+- Documento dirigido: docs/v5/c00-03-m05-03-provider-integration.md. Rollback por git revert normal, sin QA/main/PROD.
+
 ## 2026-11-13 — V5 C00-03.M05.06: regresion y accesibilidad de cobertura [Javier :30]
 - Se amplian pruebas Chromium reales de la ruta Angular V5 con dos casos dirigidos: presupuesto de carga, no overflow 390/1280, tabla y scroll de teclado, ausencia de llamadas institucionales, y denegacion sin token.
 - Solo tests de interfaz con sesion simulada, no JWT, MySQL ni certificacion A5 live; require_node_angular/e2e/seguridad/Scope Lock, rollback por git revert normal.
