@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C14-02.M01.03 inventario causal de seguridad [Javier :00]
+- Inventaria doce fuentes y blobs Git autenticos de filtros API, guardia de autorizacion Application, middleware multitenant, persistencia, xUnit y rutas Angular; delimita lo leido de la integracion no verificada.
+- Documenta doce brechas de evidencia no demostradas como vulnerabilidades y diez pares P/N FUTUROS_NO_EJECUTADOS de BOLA/IDOR, JWT/RBAC, host, archivos, jobs, cache, backups y tenant A/B.
+- Solo documento y CHANGELOG en dev por fast-forward/CAS, Scope Lock/V5 exact-SHA, A5 independiente; no modificaciones runtime ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C14-02.M01.02 actores, interfaces y fronteras de confianza de aceptacion de seguridad [Javier :00]
 - Mapea doce actores de prueba, catorce interfaces y doce fronteras para BOLA/IDOR, JWT/RBAC, tenant A/B, host, archivos, jobs, cache, backup y sesiones, sin atribuir roles runtime inexistentes.
 - Define ocho pares de aceptación positiva/negativa FUTUROS_NO_EJECUTADOS, mantiene M01.01 como alcance y reserva inspección real de codigo para M01.03.
