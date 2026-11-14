@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C09-01.M01.03: inventario de codigo y brechas de CRM universal [Javier :40]
+- Identifica dieciseis fuentes con blobs Git en Cliente, Empresa, UsuarioEmpresa, API, Application, Infrastructure y Angular; distingue el CRUD existente de timeline, segmentos y oportunidades aun no certificados.
+- Registra G01–G12 como brechas de evidencia y P01–P08/N01–N12 FUTUROS_NO_EJECUTADOS sobre JWT/RBAC, tenant A/B, PII, legado NULL, consentimiento, replay y accesibilidad; no inventa vulnerabilidades ni PASS runtime.
+- Sólo docs/v5 y CHANGELOG en dev con FF/CAS, Scope Lock y procedencia V5 exact-SHA; A5 de otra Task, sin CRM operativo, proveedores, eventos, migraciones, secretos ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C09-01.M01.02: actores e interfaces de CRM universal [Javier :40]
 - Mapea A01–A14 actores, I01–I12 interfaces y F01–F09 fronteras futuras para CRM, con fuente M01.01 y cinco blobs reales de Domain y Angular; no acredita CRM operativo.
 - Documenta P01–P08/N01–N12 FUTUROS_NO_EJECUTADOS para tenant A/B, RBAC, PII, ownership NULL, replay, consentimiento y exportación segura sin atribuir PASS runtime.
