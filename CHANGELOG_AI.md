@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C11-03.M01.01: contrato documental Outbox y eventos [Javier :10]
+- Define alcance y no-regresion NR01–NR16, P01–P08/N01–N12 FUTUROS_NO_EJECUTADOS para un futuro outbox/relay tenant-bound con idempotencia, correlacion y fallo parcial.
+- Traza seis fuentes del repositorio con blobs Git; OutboxRetryProcessor no contiene scheduler y CorrelationId no concede autorizacion. No se implementan eventos, webhooks ni ejecucion entre Tasks.
+- Solo docs/v5 y CHANGELOG; fast-forward CAS dev y checks Scope Lock/procedencia V5 exact-SHA; A5 pendiente de Task distinta, sin SQL, proveedores, secrets ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C11-02.M01.02: actores I/O y fronteras API modular [Javier :00]
 - Matriz A01–A12 de actores, I/O01–I/O12 de entradas/salidas y F01–F10 de fronteras de confianza para API modular; P01–P08/N01–N12 escenarios FUTUROS_NO_EJECUTADOS.
 - Traza AuthController, TenantContextController, PlataformaSesionController, Program y versiones .NET/EF con blobs; preserva fail-closed, JWT/RBAC, tenant A/B, plataforma separada y soporte read-only.
