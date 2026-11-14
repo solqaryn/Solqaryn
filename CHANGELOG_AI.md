@@ -1427,3 +1427,8 @@
 - Se definen veinte criterios de aceptación observables para pagos por enlace, webhook, replay, conciliación, aislamiento tenant y reversión, todos como NO_EJECUTADO, en `docs/v5/c04-04-m01-05-criterios-aceptacion-cobros.md`.
 - Se separan pruebas futuras .NET/MySQL/Angular/proveedor de la validación documental actual; no se autoriza cobro real, migración, dispatcher ni configuración de secretos.
 - A4 documental requiere Scope Lock y procedencia CHANGELOG exact-SHA, readback PLAN/COLA/BITACORA. A5 independiente pendiente antes de QA/main/PROD.
+
+## 2026-11-14 — V5 C05-01.M01.01: alcance y no-regresión de design tokens [Javier :50]
+- Delimita el objetivo de tipografía, paleta, espaciado, foco, estados y responsive del sistema de diseño con tres fuentes SCSS y rutas Angular verificadas por blob SHA; no afirma catálogo completo ni E2E ejecutado.
+- Define doce invariantes NR01–NR12 y cinco positivos/doce negativos documentales futuros de contraste, teclado, 320px, modales, branding seguro y aislamiento A/B; no sustituye JWT/RBAC server-side.
+- Solo Markdown y CHANGELOG, sin cambiar estilos activos, API, BD, permisos, workers, eventos o Tasks; A4 condicionado a Scope Lock/V5 exact-SHA, readback institucional y A5 independiente. Rollback git revert, sin QA/main/PROD.
