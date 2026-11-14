@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C05-04.M01.01: objetivo y no-regresión de ligereza [Javier :50]
+- Define alcance de futura mejora de carga inicial, duplicación HTTP, densidad visual y percepción con NR01–NR12, seis positivos y doce negativos FUTUROS, sin afirmar mediciones o builds ejecutados.
+- Coteja ocho blobs Angular/SCSS: budgets declarados 650/750 kB, preload selectivo, rutas lazy, foco/feedback y scripts; conserva tenant A/B, JWT/RBAC, accesibilidad, reduced-motion y rollback.
+- M01.01 solo dos Markdown en dev, sin cambios UI/API/DB ni eventos o tareas; Scope Lock y V5 provenance exact SHA, A5 por otro Javier, revert ordinario, ninguna promoción QA/main/PROD.
+
 ## 2026-11-14 — V5 C10-01.M01.03: inventario real de almacenamiento [Javier :40]
 - Coteja diez blobs de interfaces, Cloudinary actual, StorageTenantContext, ImagenUploadSecurity y fuentes xUnit; distingue código actual de abstracción provider-neutral FUTURA sin R2 activo.
 - Identifica seis brechas de evidencia y P01–P05/N01–N12 como oráculos FUTUROS NO EJECUTADOS: MIME, tamaño, hash real, tenant A/B, ACL, URL temporal, auditoría, migración y rollback.
