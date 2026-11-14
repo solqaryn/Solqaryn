@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C09-04.M01.02: actores, interfaces y fronteras de mensajeria multicanal [Javier :50]
+- Define A01–A14 actores, I01–I12 contratos de entrada/salida y F01–F09 fronteras para email/WhatsApp, tenant A/B, idempotencia, consentimiento y replay; propuesta documental, sin activar transportes ni eventos.
+- Relaciona nueve fuentes reales de Outbox/Email/WhatsApp/SMTP con sus blobs; P01–P08/N01–N12 quedan FUTUROS_NO_EJECUTADOS y se conserva la exigencia de permisos backend, sin supuestos de certificación runtime.
+- Dos archivos Markdown en dev, Scope Lock y control V5 deben aprobar sobre SHA exacto; A5 independiente pendiente, sin migraciones, secretos, QA/main/PROD ni webhook dispatcher.
+
 ## 2026-11-14 — V5 C09-04.M01.01: alcance y no-regresión de mensajería multicanal [Javier :50]
 - Fija NR01–NR14 y P01–P08/N01–N12 FUTUROS_NO_EJECUTADOS para email, WhatsApp, replay, consentimiento, PII, JWT/RBAC, tenant A/B y secretos; sin enviar mensajes ni activar eventos.
 - Inventaría nueve blobs reales de Outbox/Email/WhatsApp/API/SMTP y delimita alcance documental M01 frente a workers/webhooks/migraciones futuros; no atribuye PASS runtime ni autorización QA/main/PROD.
