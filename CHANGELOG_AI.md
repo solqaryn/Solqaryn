@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C13-04.M01.03 inventario causal de UI, estados y responsive [Javier :50]
+- Registra 14 fuentes Git blob de rutas Angular, styles, tokens, navegacion, feedback, guards tenant, budgets y Playwright con limites comprobables; no confunde archivos de test con ejecuciones.
+- Identifica 12 brechas y ocho pares P/N FUTUROS_NO_EJECUTADOS de coherencia visual, focus, responsive, seguridad A/B y rendimiento; C13-04.M01.01 ajena no se declara completada.
+- Solo docs/v5 y CHANGELOG en dev, Scope Lock/V5 exact-SHA y A5 independiente; sin runtime, migraciones, eventos ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C13-04.M01.01 alcance y no-regresion de experiencia unificada [Javier :40]
 - Define objetivo y no-alcance con NR01–NR14 de jerarquia, formularios, tablas, estados, foco, responsive, branding por tenant, JWT/RBAC y UI ligera accesible.
 - Coteja blobs reales styles.scss, app.routes, Angular, design system, accesibilidad y rendimiento; matriz de seis superficies y ocho pares P/N FUTUROS_NO_EJECUTADOS, sin fingir pruebas UI/WCAG.
