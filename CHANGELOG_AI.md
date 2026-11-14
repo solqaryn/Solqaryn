@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C10-04.M01.06: gates rollback liberacion documental [Javier :50]
+- Consolida los cinco antecedentes M01.01-.05 LISTO+A5 independiente y B01-B14 como controles NO_GO de cache/jobs/backups/exportaciones, tenant A/B, idempotencia y reversibilidad; sin simular servicios.
+- Condiciona M02 a A0-A4 y A5 independiente de esta M01.06, con DAG/PLAN/COLA vivo; P01-P06/N01-N10 FUTUROS_NO_EJECUTADOS, no backup/restore ni worker real.
+- Solo docs/v5 y CHANGELOG en dev con Scope Lock/V5 exact-SHA y CAS fast-forward; sin SQL, proveedores, eventos, secretos ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C11-01.M01.05: aceptacion observable modelo relacional [Javier :50]
 - Define criterios P01-P16 y N01-N16 FUTUROS_NO_EJECUTADOS para FK compuestas, tenant A/B, legacy nullable, migraciones expand/contract, soporte read-only y rollback transaccional.
 - Fija RNF01-RNF10 y gate de evidencia MySQL efimero/EF, CI exact-SHA y A5 independiente, sin atribuir PASS funcional a criterios redactados ni indices/migraciones aplicadas.
