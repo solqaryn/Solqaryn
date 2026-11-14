@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C07-01.M01.02: actores e interfaces del catalogo universal [Javier :10]
+- Define 12 actores A01–A12, 12 interfaces I01–I12 y 10 fronteras B01–B10 de ERP, tienda, variantes, precios, stock, impuestos y servicios futuros, sin crear rutas ni permisos.
+- Coteja ocho fuentes Git; P01–P08/N01–N12 son oraculos FUTUROS NO_EJECUTADOS. No atribuye cierre a M01.01 de otro autor ni universalidad a entidades existentes.
+- Solo docs/v5 y CHANGELOG dev; A0–A4 documentales, Scope Lock/procedencia exact SHA, A5 de otra Task Javier, sin migraciones, workers, secretos, QA/main/PROD.
+
 ## 2026-11-14 — V5 C07-01.M01.01: alcance y no-regresión de catálogo universal [Javier :00]
 - Define frontera futura de productos, servicios, variantes, categorías, impuestos, precios, ownership tenant y compatibilidad ERP; doce invariantes con A/B fail-closed.
 - Contrasta seis blobs existentes de Domain y declara los escenarios P01–P06/N01–N12 como FUTUROS NO_EJECUTADOS; no afirma aislamiento perfecto ni un nuevo catálogo operativo.
