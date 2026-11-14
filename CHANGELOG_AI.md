@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C04-03.M01.03: inventario de codigo y evidencia metering [Javier :20]
+- Inspección autenticada de once blobs Domain/Application/DTO/API/EF/repository/tests/Angular/documentos V5, diferenciando límites y ledger de onboarding del metering futuro no acreditado.
+- Identifica seis brechas y cinco escenarios P/doce N documentales no ejecutados: replay por consumo, tenant A/B, unidad/periodo, conciliación, privacidad y persistencia.
+- Solo inventario M01.03 en dev, sin código, DB, workers, eventos, facturación, QA/main/PROD; Scope Lock/V5 exact-SHA, A5 por otra Task Javier y rollback git revert normal.
+
 ## 2026-11-14 — V5 C04-02.M01.03: inventario real de contratos y suscripciones [Javier :30]
 - Relee doce archivos con blobs verificables Domain/Application/DTO/API/EF/MySQL repository/xUnit/Angular y distingue estados SaaS de renovaciones, mora y cobros futuros.
 - Documenta seis contrastes positivos y diez negativos de evidencia, seguridad tenant/JWT/RBAC, idempotencia, compatibilidad y rollback; ningún test de runtime se atribuye por haber leído el código.
