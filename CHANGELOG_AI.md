@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C11-02.M01.05: aceptación observable API modular [Javier :20]
+- Define AC01–AC18, N01–N18 y RNF01–RNF12 como oráculos FUTUROS_NO_EJECUTADOS de HTTP, JWT/RBAC, tenant A/B, soporte read-only, errores, compatibilidad e integración.
+- Traza fuentes API/EF con blobs anteriores e invariantes sin atribuir PASS a HTTP/MySQL/Playwright no ejecutados; no implementa endpoints, trabajadores ni cambios de autorización.
+- Únicamente docs/v5 y CHANGELOG en dev por fast-forward CAS, con Scope Lock/V5 exact-SHA y A5 independiente pendiente; sin QA/main/PROD, secretos ni eventos.
+
 ## 2026-11-14 — V5 C11-03.M01.05: aceptacion observable Outbox y eventos [Javier :10]
 - Define AC01–AC18, N01–N18 y RNF01–RNF12 como oraculos FUTUROS_NO_EJECUTADOS de atomo UoW, tenant A/B, claims, idempotencia, reintentos y fallos parciales.
 - Distingue pruebas xUnit/SQLite existentes de MySQL/HTTP/dispatch real no ejecutado; no inventa PASS, throughput, garantias exactly-once ni autoriza provider.
