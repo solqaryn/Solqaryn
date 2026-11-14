@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C13-03.M01.01 alcance y no-regresion de rendimiento [Javier :30]
+- Define rendimiento y ligereza con 14 invariantes, 4 positivos y 12 negativos FUTUROS_NO_EJECUTADOS; exige baseline SHA/device/red/cache antes de cualquier metrica PASS.
+- Contrasta blobs Git de angular.json, package, rutas lazy, politica bundle, Playwright y C05-04/C12-02; mantiene budget 650/750kB como configuracion, no resultado medido.
+- Solo documento y CHANGELOG fast-forward CAS dev; no cambia frontend/backend, MySQL, auth, CDN, CI, QA/main/PROD; Scope Lock/V5 exact SHA y A5 independiente posterior.
+
 ## 2026-11-14 — V5 C13-02.M01.02 actores y superficies de accesibilidad [Javier :20]
 - Delimita catorce actores, doce entradas, diez salidas y ocho fronteras de UX accesible, foco, teclado, ARIA, contraste, reflow y multitenancy.
 - Contrasta siete blobs Git y M01.01 sin confundir test source con prueba ejecutada; ocho pares P/N FUTUROS_NO_EJECUTADOS y WCAG no certificado.
