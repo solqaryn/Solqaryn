@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C10-04.M01.01: alcance y no-regresión cache, jobs, backups y exportaciones [Javier :40]
+- Delimita NR01–NR16 y oráculos futuros P01–P08/N01–N14 para tenant A/B, idempotencia, retries, backups/restore, PII y exportación; escenarios FUTUROS_NO_EJECUTADOS, nunca PASS runtime.
+- Coteja blobs de PublicStoreMemoryCache, DevCloudinaryLegacyNormalizationHostedService y fuentes C10-01/C10-03; no declara inventario histórico cero, jobs genéricos activos ni R2 disponible.
+- Solo documento M01.01 y CHANGELOG en dev; A5 independiente pendiente, sin dispatcher, worker nuevo, MySQL/DB, secretos, QA/main/PROD ni cambio de proveedores.
+
 ## 2026-11-14 — V5 C09-02.M01.05: aceptacion observable fidelizacion [Javier :30]
 - Establece AC01-AC16 con dieciseis positivos y negativos FUTUROS_NO_EJECUTADOS para saldo, canje, promos, reseñas, moderación, opt-out, posventa, tenant A/B, JWT/RBAC y reversibilidad.
 - Registra RNF01-RNF10 y traza blobs M01.01–04, distinguiendo contratos futuros de pruebas reales, sin atribuir métricas ni PASS de MySQL/.NET/Angular/Playwright inexistentes.
