@@ -1447,3 +1447,8 @@
 - Inventario documental de actores y nueve entradas/salidas I01–I09 para SCSS, Angular, modales, formularios, navegación, estados, foco y preferencias de marca; identifica fuentes reales con SHA o rutas sin inventar implementación.
 - Cinco positivos y doce negativos son oráculos futuros, NO pruebas runtime; preservan 320px, teclado, reduced-motion, límites tenant A/B y JWT/RBAC server-side frente a tokens, tema o host.
 - Solo documento y CHANGELOG, sin cambiar UI activa, API, datos, permisos, workers, eventos ni Tasks; A4 Scope Lock/V5 exact-SHA + readback, A5 independiente pendiente y rollback git revert. Sin QA/main/PROD.
+
+## 2026-11-14 — V5 C05-01.M01.03: manifiesto de fuentes y brechas de design system [Javier :50]
+- Auditoría documental de nueve archivos reales por blob SHA: SCSS, accesibilidad, rutas, diálogo, feedback ARIA, navegación y ThemeApplier con spec presente; distingue hechos de pruebas pendientes.
+- Ocho dimensiones de diagnóstico y cinco oráculos positivos/doce negativos futuros: contraste, foco, 320px, A/B, CSS seguro y permiso backend; no atribuye Angular/Playwright/HTTP ejecutados a esta lectura.
+- Solo documento y CHANGELOG sin cambios UI/API/datos, workers, eventos, secretos o Tasks. A4 requiere Scope Lock y V5 exact-SHA y readback; A5 independiente de otra Task, rollback git revert normal, sin QA/main/PROD.
