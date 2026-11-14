@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C13-02.M01.02 actores y superficies de accesibilidad [Javier :20]
+- Delimita catorce actores, doce entradas, diez salidas y ocho fronteras de UX accesible, foco, teclado, ARIA, contraste, reflow y multitenancy.
+- Contrasta siete blobs Git y M01.01 sin confundir test source con prueba ejecutada; ocho pares P/N FUTUROS_NO_EJECUTADOS y WCAG no certificado.
+- Unicamente Markdown en dev por fast-forward/CAS, Scope Lock y V5 exact SHA, A5 independiente, rollback git revert; sin Angular, API, MySQL, QA/main/PROD.
+
 ## 2026-11-14 — V5 C13-02.M01.01 alcance y no-regresion de accesibilidad [Javier :30]
 - Define objetivo/no-alcance, NR01–NR14, P01–P04 y N01–N12 FUTUROS_NO_EJECUTADOS para teclado, foco, formularios, contraste, lectores, reflow y reduced-motion.
 - Contrasta blobs reales de Angular, rutas, Playwright y contratos de design system/frontend; sin afirmar cumplimiento WCAG ni ejecutar browser, .NET, MySQL o API.
