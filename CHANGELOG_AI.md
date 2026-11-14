@@ -1417,3 +1417,8 @@
 - Se inventarian trece fuentes con blobs GitHub y límites de verificación para pagos online, ingress webhook, EF, xUnit y certificaciones históricas en `docs/v5/c04-04-m01-03-auditoria-fuentes-contratos-cobros.md`.
 - Se registran doce brechas técnicas y escenarios documentales futuros, sin suponer pasarela live, CAS distribuido, migración MySQL real o ejecución de xUnit con un cambio Markdown.
 - A0–A3 documentales; A4 depende de diff, Scope Lock y procedencia de CHANGELOG exact-SHA y readback institucional. A5 independiente pendiente. Sin QA/main/PROD.
+
+## 2026-11-14 — SOLQARYN V5 C04-04.M01.04 riesgos y decisiones de cobros (PRIMARY DEV 05 JAVIER)
+- Se documenta un registro de dieciséis riesgos con mitigaciones y evidencias, más diez decisiones comerciales/técnicas abiertas, en `docs/v5/c04-04-m01-04-riesgos-supuestos-decisiones-cobros.md`.
+- Se separan hechos de código, supuestos y aprobaciones futuras; no se habilita proveedor, cobro, migración, dispatcher ni acción productiva.
+- A0–A3 documentales; A4 exact-SHA requiere Scope Lock, procedencia CHANGELOG y readbacks; A5 independiente queda pendiente, sin QA/main/PROD.
