@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C10-03.M01.05: criterios de aceptación de inventario y archivos [Javier :00]
+- Establece AC01–AC14 con P01–P14/N01–N14 FUTUROS NO_EJECUTADOS y NFR01–NFR08; INVENTARIO_NO_VERIFICADO nunca se interpreta como cero.
+- Si un inventario real completo acredita cero, omitir exportación, copia y checksum históricos; para datos positivos exigir manifiesto, integridad, retención y rollback.
+- Sólo docs/v5 y CHANGELOG en dev, Scope Lock/V5 exact-SHA, A5 independiente pendiente; sin R2/DNS/cutover, secretos, migraciones ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C10-03.M01.04: riesgos, supuestos y decisiones de archivos [Javier :00]
 - Clasifica 14 riesgos POTENCIALES, ocho supuestos falsables y ocho decisiones PENDIENTES; no presume cero objetos históricos ni declara vulnerabilidades comprobadas.
 - Define P01–P08/N01–N12 FUTUROS NO_EJECUTADOS para inventario conciliado, tenant A/B, MIME, TTL/replay, retención y rollback.
