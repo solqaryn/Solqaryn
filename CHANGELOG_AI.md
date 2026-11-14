@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C04-01.M01.02: actores, entradas, salidas y superficies SaaS [Javier :10]
+- Documento de frontera con ocho actores, seis bordes API/Application/Infrastructure/Angular, seis fronteras de confianza y diez negativos futuros; referencias a blobs reales del catálogo SaaS existente.
+- Delimita contrato futuro de versiones, precios, periodicidad y upgrade sin inventar tarifas ni ampliar RBAC, tenant, MySQL, endpoint, worker, webhook, pasarela o secreto; las pruebas P/N están especificadas pero no ejecutadas como runtime.
+- Solo preparación M01.02 en dev; A0–A4 documentales con checks Scope Lock/procedencia V5 exact-SHA, A5 por otra Task Javier, rollback git revert; no QA/main/PROD.
+
 ## 2026-11-14 — V5 C04-01.M01.01: objetivo y frontera del catálogo de planes [Javier :10]
 - Contrato documental de objetivo, no-alcance, diez invariantes NR y quince escenarios P/N no ejecutados; alinea futura versión de planes, capacidades, precios, periodicidad y upgrade con fuentes reales de SuscripcionesSaaS.
 - Preserva tenant server-side, RBAC independiente del entitlement, idempotencia y datos comerciales; no inventa tarifas ni instala billing, workers, webhooks, migraciones, API, nuevos permisos o Tasks.
