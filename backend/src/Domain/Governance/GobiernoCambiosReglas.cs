@@ -45,19 +45,19 @@ public sealed record PropuestaCambioGobernado(
 public static class GobiernoCambiosReglas
 {
     private static readonly Regex IdMicrotarea = new(
-        @"^C[0-9]{2}-[0-9]{2}\.M[0-9]{2}\.[0-9]{2}$",
+        @"^C[0-9]{2}-[0-9]{2}\.M[0-9]{2}\.[0-9]{2}\z",
         RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
     private static readonly Regex IdDecision = new(
-        @"^D[0-9]{2}$",
+        @"^D[0-9]{2}\z",
         RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
     private static readonly Regex ShaGit = new(
-        @"^[a-fA-F0-9]{40}$",
+        @"^[a-fA-F0-9]{40}\z",
         RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
     private static readonly Regex ClaveIdempotencia = new(
-        @"^[a-zA-Z0-9_.:-]{12,128}$",
+        @"^[a-zA-Z0-9_.:-]{12,128}\z",
         RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
     public static PropuestaCambioGobernado CrearPropuesta(

@@ -52,6 +52,7 @@ public sealed class GobiernoCambiosReglasTests
     [InlineData("")]
     [InlineData("C00-04.M03.01;DROP")]
     [InlineData("C00-04.M03")]
+    [InlineData("C00-04.M03.01\n")]
     public void MicrotareaSinFormatoValido_Rechazada(string? microtarea)
     {
         Assert.Throws<ArgumentException>(() => Proponer(microtarea: microtarea));
@@ -61,6 +62,7 @@ public sealed class GobiernoCambiosReglasTests
     [InlineData(null)]
     [InlineData("ADMIN")]
     [InlineData("D1")]
+    [InlineData("D01\n")]
     public void DecisionInvalida_Rechazada(string? decision)
     {
         Assert.Throws<ArgumentException>(() => Proponer(decision: decision));
@@ -84,6 +86,7 @@ public sealed class GobiernoCambiosReglasTests
     [Theory]
     [InlineData(null)]
     [InlineData("50ad7ff7")]
+    [InlineData("50ad7ff7082ac7868293c59f144c5d3b5365844b\n")]
     [InlineData("ZZad7ff7082ac7868293c59f144c5d3b5365844b")]
     public void EvidenciaNoShaCompleto_Rechazada(string? evidencia)
     {
@@ -94,6 +97,7 @@ public sealed class GobiernoCambiosReglasTests
     [InlineData(null)]
     [InlineData("short")]
     [InlineData("tenant/other;run")]
+    [InlineData("scope:decision:001\n")]
     public void ClaveMalformada_Rechazada(string? key)
     {
         Assert.Throws<ArgumentException>(() => Proponer(key: key));
