@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C08-03.M01.03: inventario de código y evidencias de membresías [Javier :10]
+- Inventario documental de 12 archivos y blobs reales: Cliente, UsuarioEmpresa, Suscripción SaaS, servicios, controladores, Angular y stack .NET/MySQL; no se inventa módulo de gimnasio.
+- Registra H01–H06, G01–G10 y P01–P06/N01–N12 FUTUROS NO_EJECUTADOS para seguridad A/B, expiración, suspensión, idempotencia y auditoría.
+- Solo docs/v5 y CHANGELOG, Scope Lock y V5 exact-SHA, A5 pendiente de Task Javier distinta; sin runtime, migraciones, dispositivos, pagos, QA/main/PROD.
+
 ## 2026-11-14 — V5 C10-03.M01.05: criterios de aceptación de inventario y archivos [Javier :00]
 - Establece AC01–AC14 con P01–P14/N01–N14 FUTUROS NO_EJECUTADOS y NFR01–NFR08; INVENTARIO_NO_VERIFICADO nunca se interpreta como cero.
 - Si un inventario real completo acredita cero, omitir exportación, copia y checksum históricos; para datos positivos exigir manifiesto, integridad, retención y rollback.
