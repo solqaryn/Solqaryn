@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C09-04.M01.01: alcance y no-regresión de mensajería multicanal [Javier :50]
+- Fija NR01–NR14 y P01–P08/N01–N12 FUTUROS_NO_EJECUTADOS para email, WhatsApp, replay, consentimiento, PII, JWT/RBAC, tenant A/B y secretos; sin enviar mensajes ni activar eventos.
+- Inventaría nueve blobs reales de Outbox/Email/WhatsApp/API/SMTP y delimita alcance documental M01 frente a workers/webhooks/migraciones futuros; no atribuye PASS runtime ni autorización QA/main/PROD.
+- Publicación estricta en dev con CAS fast-forward; Scope Lock y procedencia V5 requieren SUCCESS en el SHA publicado, A5 independiente por otra Task Javier.
+
 ## 2026-11-14 — V5 C09-01.M01.03: inventario de codigo y brechas de CRM universal [Javier :40]
 - Identifica dieciseis fuentes con blobs Git en Cliente, Empresa, UsuarioEmpresa, API, Application, Infrastructure y Angular; distingue el CRUD existente de timeline, segmentos y oportunidades aun no certificados.
 - Registra G01–G12 como brechas de evidencia y P01–P08/N01–N12 FUTUROS_NO_EJECUTADOS sobre JWT/RBAC, tenant A/B, PII, legado NULL, consentimiento, replay y accesibilidad; no inventa vulnerabilidades ni PASS runtime.
