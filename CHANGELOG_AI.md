@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C11-01.M01.01: alcance y no-regresion de modelo relacional [Javier :50]
+- Fija objetivo/limitaciones de PK, FK, indices, ownership, MySQL y estrategia reversible; NR01-NR14, P01-P07/N01-N10 son criterios futuros NO_EJECUTADOS.
+- Traza Empresa, Cliente.EmpresaId nullable historico, AppDbContext y pin EF/MySQL mediante blobs exactos; no confunde documentos, permisos o migraciones aplicadas.
+- Solo docs/v5 y CHANGELOG en dev, Scope Lock y V5 provenance exact-SHA; A5 independiente pendiente, sin SQL/DB, JWT/RBAC, eventos, QA/main/PROD.
+
 ## 2026-11-14 — V5 C10-04.M01.05: aceptacion observable cache, jobs, backups, exportaciones [Javier :40]
 - Define AC01–AC18, N01–N18 y RNF01–RNF12 para cache tenant A/B, idempotencia, worker, restore efimero, exportacion, seguridad, TTL, CSV injection y observabilidad; todos son oraculos FUTUROS_NO_EJECUTADOS.
 - Traza lineas base de caché, OutboxRetryProcessor, filtro HTTP y worker Cloudinary DEV opt-in; sin atribuir PASS a xUnit/Node/MySQL/Playwright no ejecutados ni inventar RPO/RTO.
