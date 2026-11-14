@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-03.M06.06: cierre técnico y mapa de dependencias de cobertura [Javier :20]
+- Se inventarían 35/35 predecesoras LISTO de C00-03 (M01–M05 completos y M06.01–05) con seis SHA M05 y cinco fuentes M06, DAG F137 VALIDADO/G137 SI y COLA G109/O109 SI al reclamar.
+- Se documenta la liberación estrictamente del estado DEV y la ausencia de sucesoras explícitas en DAG: no se crean Tasks, nuevas fases, permisos, fórmulas manuales, webhooks ni nueva microtarea; A5 independiente sigue pendiente y no hay QA/main/PROD.
+- Artefacto docs/v5/c00-03-m06-06-coverage-phase-release-gate.md; requeridos Scope Lock y prueba V5 CHANGELOG del SHA exacto, readback PLAN/COLA/BITACORA; JWT/MySQL/CAS/tenant productivos NO certificados; rollback ordinario git revert.
+
 ## 2026-11-13 — V5 C00-03.M06.04: ensayo no destructivo de desactivación de cobertura [Javier :10]
 - Se agregan ocho escenarios xUnit (dos variantes Theory y seis Facts) contra V5CoverageMemoryAdapter real: revocación de actor/scope, reapertura, revisión obsoleta, idempotencia, capacidad y namespace sin borrar registros legítimos.
 - El ensayo es in-memory con allowlist provista: NO implementa desactivación de Tasks, rollback Sheets/MySQL, CAS distribuido, JWT/RBAC live, tenant A/B persistido ni workers.
