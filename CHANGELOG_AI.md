@@ -1487,3 +1487,8 @@
 - Delimita interfaz futura para imágenes, documentos, videos y exportaciones, con doce invariantes de propietario/tenant, JWT/RBAC, MIME, tamaño, checksum, URLs temporales, fallos, auditoría y rollback.
 - Define P01–P05 y N01–N12 como oráculos FUTUROS NO_EJECUTADOS; distingue Cloudinary de transición de Hostinger/Cloudflare R2 como topología objetivo sin autorizar cambios ni suponer archivos existentes.
 - Solo documento M01.01 y CHANGELOG, con Scope Lock y V5 provenance exact-SHA, readback institucional y A5 independiente posterior; sin código, storage, MySQL, secretos, workers, pagos, QA/main/PROD ni force-push.
+
+## 2026-11-14 — V5 C05-03.M01.01: objetivo y fronteras del builder gobernado [Javier :20]
+- Delimita builder FUTURO de páginas/secciones configurables con catálogo allowlisted de componentes/campos, sin HTML/JS/SQL ejecutable, URLs peligrosas, payloads excesivos ni bypass JWT/RBAC/tenant.
+- Coteja seis blobs reales Angular/SCSS/API de tema y rutas; NR01–NR12, P01–P05 y N01–N12 son contratos de no-regresión y pruebas FUTURAS NO_EJECUTADAS, no una implementación de builder.
+- Solo Markdown/CHANGELOG dev; A0–A3 documentales, A4 Scope Lock/V5 exact SHA y readback, A5 revisión independiente, rollback git revert, sin QA/main/PROD ni cambios ejecutables.
