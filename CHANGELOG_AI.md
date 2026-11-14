@@ -1432,3 +1432,8 @@
 - Delimita el objetivo de tipografía, paleta, espaciado, foco, estados y responsive del sistema de diseño con tres fuentes SCSS y rutas Angular verificadas por blob SHA; no afirma catálogo completo ni E2E ejecutado.
 - Define doce invariantes NR01–NR12 y cinco positivos/doce negativos documentales futuros de contraste, teclado, 320px, modales, branding seguro y aislamiento A/B; no sustituye JWT/RBAC server-side.
 - Solo Markdown y CHANGELOG, sin cambiar estilos activos, API, BD, permisos, workers, eventos o Tasks; A4 condicionado a Scope Lock/V5 exact-SHA, readback institucional y A5 independiente. Rollback git revert, sin QA/main/PROD.
+
+## 2026-11-14 — V5 C05-01.M01.02: interfaces, actores y superficies de design system [Javier :50]
+- Inventario documental de actores y nueve entradas/salidas I01–I09 para SCSS, Angular, modales, formularios, navegación, estados, foco y preferencias de marca; identifica fuentes reales con SHA o rutas sin inventar implementación.
+- Cinco positivos y doce negativos son oráculos futuros, NO pruebas runtime; preservan 320px, teclado, reduced-motion, límites tenant A/B y JWT/RBAC server-side frente a tokens, tema o host.
+- Solo documento y CHANGELOG, sin cambiar UI activa, API, datos, permisos, workers, eventos ni Tasks; A4 Scope Lock/V5 exact-SHA + readback, A5 independiente pendiente y rollback git revert. Sin QA/main/PROD.
