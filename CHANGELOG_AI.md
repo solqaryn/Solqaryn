@@ -1249,3 +1249,8 @@
 - Contrato M02 estrictamente documental; no crea APIs, permisos, migraciones, flags activos, trabajadores, eventos o integraciones. A0–A3 documentales, A4 requiere checks Scope Lock/procedencia SHA exacto y readback.
 - A5 independiente pendiente de otra Task Javier; sin QA/main/PROD ni certificación runtime. Rollback mediante git revert normal.
 
+## 2026-11-14 — SOLQARYN V5 C01-03.M02.02 API, DTO, errores y compatibilidad documental [Javier :30]
+- Define operaciones futuras de clave/valor allowlisted, DTO tipados, versión/idempotencia y ocho errores seguros; conserva rutas existentes de EmpresaConfiguracion y distingue público/privado con permiso tenant real.
+- Tres positivos y diez negativas documentales de A/B, RBAC, revocación, inyección, versión y secretos; no crea ni modifica endpoints, código .NET/Angular, BD, flags, workers o eventos.
+- Scope Lock y procedencia V5 exact-SHA requeridos para A4, readback institucional y A5 independiente pendiente de otra Task Javier; sin QA/main/PROD, rollback por git revert.
+
