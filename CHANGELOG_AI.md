@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C06-01.M01.04: riesgos y decisiones de sitio público SaaS [Javier :20]
+- Registra R01–R12 riesgos potenciales, S01–S08 supuestos falsables y D01–D08 decisiones PENDIENTES sobre marketing, SEO, privacidad, contacto y separación tenant.
+- Contrasta contratos M01.01/M01.02/M01.03 y código Angular/guards; oráculos P01–P06/N01–N12 FUTUROS NO_EJECUTADOS; no se atribuye incidencia, cumplimiento web ni permiso comercial.
+- Solo dos Markdown en dev; Scope Lock/V5 exact-SHA y A5 de otra Task Javier; sin API/Angular/MySQL/SMTP, secrets, robots publicado, QA/main/PROD o eventos.
+
 ## 2026-11-14 — V5 C06-01.M01.03: inventario causal de sitio público SaaS [Javier :20]
 - Inspecciona doce fuentes y hashes Git para contratos M01, router Angular, guards, interceptor, storefront y feedback; distingue tienda existente de landing FUTURA.
 - Declara brechas B01–B08 y oráculos P01–P06/N01–N12 FUTUROS NO_EJECUTADOS para SEO, consentimiento, contacto, tenant A/B, demo, accesibilidad y rollback.
