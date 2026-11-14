@@ -1264,3 +1264,8 @@
 - Referencias leídas de código .NET y cierre M01.06, predecesores con A5 Javier y DAG propio VALIDADO/SI; no nuevas API, JWT, migraciones, datos, workers, eventos, cuentas ni permisos.
 - A0-A4 documentales sujetos a checks Scope Lock y V5 provenance exact-SHA, CAS institucional y BITACORA A:Z; A5 independiente por Task Javier distinta. Sin QA/main/PROD; rollback git revert normal.
 
+## 2026-11-14 — SOLQARYN V5 C01-03.M02.04 configuración tipada, ámbitos y flags seguros [Javier :30]
+- Catálogo documental de claves allowlisted, tipos, permisos, owner, ámbitos y versionado; separa PlanModulo entitlement de RBAC, evita secretos y valores ejecutables y conserva ThemeApplierService hex/accesibilidad.
+- Cuatro positivos y doce negativos diseñados de cross-tenant, revocación, inyección, scopes, concurrencia y flags reservados, sin implementar API, BD, Angular, workers, eventos ni privilegios.
+- A0–A4 documentales supeditadas a Scope Lock y CHANGELOG V5 exact-SHA, readback institucional, A5 pendiente de otra Task Javier; no QA/main/PROD. Rollback git revert normal.
+
