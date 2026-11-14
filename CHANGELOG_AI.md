@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C13-01.M01.02 actores, entradas y salidas de privacidad [Javier :10]
+- Delimita quince actores/superficies, ocho entradas, ocho salidas esperadas y siete fronteras de confianza para consentimiento/privacidad sin inventar autoridad legal ni runtime.
+- Inspecciona cuatro blobs Git preexistentes y referencia C13-01.M01.01; cuatro positivos/dieciseis negativos FUTUROS_NO_EJECUTADOS, JWT/RBAC/tenant A/B fail-closed.
+- Solo dos archivos Markdown en dev, Scope Lock/V5 exact SHA y A5 independiente necesarios; sin cookies nuevas, proveedor, API, MySQL, eventos, QA/main/PROD.
+
 ## 2026-11-14 — V5 C01-02.M02.06 contrato de dependencias y salida capabilities [Javier :10]
 - Concilia seis antecedentes M01.06/M02.01–05 con blobs Git y A5 independiente; define gates causales de arquitectura, seguridad JWT/RBAC/tenant A/B y DAG antes de M03.
 - Cuatro escenarios positivos y dieciseis negativos FUTUROS_NO_EJECUTADOS; no crea permisos, endpoints, tablas MySQL, workers, eventos ni nuevas Tasks.
