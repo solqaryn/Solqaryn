@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C09-04.M01.05: criterios de aceptacion observables de mensajeria [Javier :50]
+- Define P01–P16 positivos, N01–N16 negativos y RNF01–RNF10 FUTUROS_NO_EJECUTADOS para email, WhatsApp, idempotencia, HMAC/replay, consentimiento, privacidad, tenant A/B y resiliencia.
+- Traza los cuatro artefactos M01 previos y mantiene puertas A0–A5, CI dirigida en fases runtime y decisiones de proveedor abiertas; no crea endpoints, workers, eventos o webhooks.
+- Entrega docs/v5 + CHANGELOG con CAS fast-forward y checks Scope Lock/V5 exact-SHA, A5 independiente pendiente, sin migraciones, secretos, QA/main/PROD.
+
 ## 2026-11-14 — V5 C09-01.M01.04: riesgos, supuestos y decisiones del CRM universal [Javier :00]
 - Registra R01–R16 POTENCIALES, S01–S08 NO_VERIFICADOS y D01–D08 PENDIENTES ligados a Cliente/UsuarioEmpresa, 16 fuentes M01.03, tenant A/B, JWT/RBAC, PII, replay, consentimiento y legacy NULL.
 - Define P01–P08/N01–N08 FUTUROS_NO_EJECUTADOS y controles para timeline, segmentos, oportunidades, exportación, accesibilidad y rollback; no identifica defectos explotables ni PASS runtime.
