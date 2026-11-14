@@ -1,5 +1,6 @@
 using Solqaryn.Application.Governance;
 using Solqaryn.Application.Security;
+using Solqaryn.Domain.Security;
 
 namespace Solqaryn.Infrastructure.Governance;
 

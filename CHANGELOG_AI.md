@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C00-04.M03.05: correccion compilacion namespace tenant [Javier :40]
+- GitHub Actions detecto CS0246 en Infrastructure/GobiernoCambiosIntegracionLocal.cs (ContextoTenantActual no resuelto): se agrega using Solqaryn.Domain.Security, sin cambios de comportamiento ni ampliacion de permisos.
+- Se exige nueva compilacion y pruebas .NET 10, seguridad tenant, Scope Lock y procedencia V5 sobre SHA nuevo; el SHA anterior con CI FAIL no se cuenta como PASS ni autoriza LISTO.
+- Unicamente dev, sin eventos, worker, DI, endpoint, MySQL, QA/main/PROD ni secrets.
+
 ## 2026-11-14 — V5 C00-04.M03.05: integracion local inerte de gobierno [Javier :40]
 - Implementa .NET 10 Infrastructure→Application entre guard tenant/RBAC vigente y copia efímera institucional sin autoridad; el diagnóstico local nunca concede ejecución, aprobación, permisos ni escritura.
 - Agrega siete pruebas xUnit positivas/negativas de tenant B, revocación, SHA distinto/ausente, propuesta NO_GO, ID manipulado y null; no agrega API, DI, MySQL, worker, eventos, webhook ni proveedor.
