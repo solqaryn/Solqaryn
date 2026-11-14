@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C07-01.M01.01: alcance y no-regresión de catálogo universal [Javier :00]
+- Define frontera futura de productos, servicios, variantes, categorías, impuestos, precios, ownership tenant y compatibilidad ERP; doce invariantes con A/B fail-closed.
+- Contrasta seis blobs existentes de Domain y declara los escenarios P01–P06/N01–N12 como FUTUROS NO_EJECUTADOS; no afirma aislamiento perfecto ni un nuevo catálogo operativo.
+- Sólo documentación y CHANGELOG en dev; DAG 60/60 prerrequisitos LISTO, A0–A4 documentales, Scope Lock/provenance exact-SHA, A5 de otra Task pendiente; sin JWT, MySQL, migraciones, eventos, QA/main/PROD.
+
 ## 2026-11-14 — V5 C06-04.M01.05: aceptación verificable del portal de cliente [Javier :10]
 - Establece catorce escenarios positivos P01–P14 y catorce negativos N01–N14 FUTUROS NO_EJECUTADOS, distinguiendo cuenta de tienda existente y capacidades adicionales aún no certificadas.
 - Traza NR01–NR12, A/I/B, brechas y decisiones D01–D08 PENDIENTES; exige aislamiento por tenant y objeto, recuperación antienumeración, documentos TTL, consentimientos y accesibilidad sin afirmar pruebas runtime.
