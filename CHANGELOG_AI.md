@@ -1213,3 +1213,8 @@
 - Fuente EF Core 10 de instantanea actual para Application: membresia empresa/usuario, rol vigente con permisos relacionales, sucursal vinculada; filtros AsNoTracking y denegacion por defecto sin usar rol legacy.
 - xUnit InMemory positivo A y negativos tenant B, revocacion, rol ajeno, usuario bloqueado y sucursal invalida; prueba Integration MySQL efimero local para A/B y revocacion, sin acceso remoto.
 - A0-A4 requieren GitHub Actions .NET, seguridad, MySQL, Scope Lock, CHANGELOG SHA exacto y readback. Sin migracion, DI/API/JWT, escritura, worker/webhook, QA/main/PROD; A5 por Javier independiente; revert git normal.
+
+## 2026-11-14 — SOLQARYN V5 C00-04.M03.04 adaptador aislado de gobierno [Javier :30]
+- Agrega adapter .NET 10 Infrastructure/Governance exclusivamente efímero, sin MySQL/EF/API/DI, que guarda lecturas no autoritativas por ID/revisión con cuota fija, datos validados y primer escritor local sin reemplazos.
+- Pruebas xUnit reales a ejecutar en GitHub Actions: 64 escritores/1 ganador local, casos positivos de versionado y negativos de ID, SHA, estado, UTC y duplicación; no acredita CAS distribuido, JWT/RBAC ni tenant.
+- A0-A4 condicionadas a CI backend, seguridad, Scope Lock y CHANGELOG exact-SHA, readback institucional y A5 independiente de otra Task Javier. Sin webhooks, dispatcher, workers, nuevas Tasks, QA/main/PROD. Rollback git revert normal.
