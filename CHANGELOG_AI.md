@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C13-02.M01.01 alcance y no-regresion de accesibilidad [Javier :30]
+- Define objetivo/no-alcance, NR01–NR14, P01–P04 y N01–N12 FUTUROS_NO_EJECUTADOS para teclado, foco, formularios, contraste, lectores, reflow y reduced-motion.
+- Contrasta blobs reales de Angular, rutas, Playwright y contratos de design system/frontend; sin afirmar cumplimiento WCAG ni ejecutar browser, .NET, MySQL o API.
+- Solo nuevo Markdown y CHANGELOG en dev por fast-forward/CAS; Scope Lock y V5 exact-SHA, PLAN/COLA/BITACORA readback, A5 de otra Task Javier y rollback git revert; sin QA/main/PROD.
+
 ## 2026-11-14 — V5 C13-01.M01.05 criterios de aceptacion de privacidad [Javier :20]
 - Define AC01–AC16 positivos, N01–N16 negativos y NF01–NF10 de privacidad/versionado/revocacion, tenant A/B, JWT/RBAC y datos propios, todos FUTUROS_NO_EJECUTADOS.
 - Concilia M01.01–04, brechas B01–B12 y decisiones D01–D10 sin afirmar legal compliance, consentimiento activo, cookies o tests runtime.
