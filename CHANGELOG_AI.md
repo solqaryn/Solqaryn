@@ -1467,3 +1467,8 @@
 - Cierra contractualmente M01 de enlaces de cobro con diez puertas G01–G10, políticas NO_GO, reversión futura sin operaciones reales y diferenciación clara entre preparación M02 y autorización comercial/QA/PROD.
 - Verifica cinco antecedentes C04-04.M01.01–05 en LISTO con A5 independiente J50 sobre sus SHA originales y 60 prerrequisitos documentales; AC01–AC20 permanecen NO_EJECUTADOS, D01–D10 sin aprobación económica.
 - Cuatro positivos/doce negativos son criterios de revisión documental, no tests .NET/MySQL/web; solo Markdown y CHANGELOG, sin cobros, webhooks, dispatchers, secretos o migraciones. Scope Lock/V5 exact-SHA, BITACORA/PLAN/COLA readback y A5 independiente posterior obligatorios, rollback git revert.
+
+## 2026-11-14 — V5 C05-01.M01.04: riesgos, supuestos y decisiones design system [Javier :20]
+- Registra R01–R12 riesgos potenciales, S01–S08 supuestos falsables y D01–D08 decisiones PENDIENTE; no declara vulnerabilidades, cumplimiento WCAG o políticas aprobadas.
+- Coteja nueve blobs reales Angular/SCSS y las fuentes M01.01–03: foco, contraste, responsive 320px, reducción de movimiento, tenant A/B, tema allowlisted y autorización JWT/RBAC server-side.
+- Solo documentación y CHANGELOG en dev, A0–A3 documentales, A4 Scope Lock/V5 exact SHA más PLAN/COLA/BITACORA, A5 independiente por otro TASK_ID; CI runtime NO_APLICA al diff Markdown, rollback git revert sin QA/main/PROD.
