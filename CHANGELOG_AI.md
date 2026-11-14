@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C07-02.M01.04: riesgos y decisiones storefront/checkout [Javier :00]
+- Registra doce riesgos R01–R12, ocho supuestos falsables S01–S08 y ocho decisiones D01–D08 PENDIENTES sobre host, tenant, cache, HMAC/replay, pagos y móvil; no certifica vulnerabilidades.
+- Contrasta contratos M01.01–02 y catorce blobs API/Application/Domain/Angular; P01–P06/N01–N12 son FUTUROS NO_EJECUTADOS, no tests runtime.
+- Sólo docs/v5 y CHANGELOG en dev; Scope Lock y V5 provenance exact-SHA requeridos, A5 independiente pendiente, sin código, migraciones, secrets, pagos, workers ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C07-02.M01.03: inventario causal de storefront y checkout [Javier :50]
 - Contrasta doce blobs Git reales de contratos M01.01/M01.02 y backend/frontend storefront, binding, catálogo, identidad y SEO; registrar fuentes no demuestra certificación live.
 - Identifica brechas G01–G10 para host/proxy, tenant A/B, caché, checkout, pedido/idempotencia, HMAC/replay, PSP y accesibilidad; P01–P06/N01–N12 son FUTUROS NO_EJECUTADOS.
