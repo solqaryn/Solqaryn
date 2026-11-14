@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C14-01.M01.01 alcance y no-regresion de aceptacion funcional [Javier :50]
+- Define objetivo y exclusiones de aceptacion, catorce invariantes, diez blobs fuente y ocho pares P/N FUTUROS_NO_EJECUTADOS de storefront, sesion, JWT/RBAC, tenant A/B, inventario, UI y CI.
+- Distingue DOC_M01_PREP de pruebas E2E reales, autorizacion de release y gates terminales; no inventa PASS de tests, WCAG, pago, MySQL ni QA.
+- Dos Markdown en dev por FF/CAS, Scope Lock y V5 exact SHA, A5 independiente, rollback git revert; sin runtime ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C13-04.M01.05 aceptacion observable de experiencia visual unificada [Javier :50]
 - Define 16 pares P/N y 10 NF FUTUROS_NO_EJECUTADOS para foco, feedback, responsive, rutas, branding, WCAG no certificado, JWT/RBAC y aislamiento tenant A/B.
 - Correlaciona M01.01/M01.02/M01.03 y fuentes Angular reales; M01.04 de otra autora no se certifica por inferencia, M01.06 permanece bloqueada por gates propios.
