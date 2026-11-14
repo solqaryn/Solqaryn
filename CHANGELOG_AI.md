@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C00-03.M05.02: contrato HTTP de cobertura y errores seguros [Javier :20]
+- Se agrega suite xUnit TestServer del servicio real V5CoverageTenantProjectionService y middleware productivo; HTTP 200 conserva DTO y EVIDENCE_NOT_VERIFIED; 400 rechaza actor, tenant, SHA o requisito invalido sin filtracion.
+- Ruta exclusiva de tests, no API publicada ni autenticacion JWT live/MySQL/Sheets/A5; se exige .NET CI y Scope Lock exact-SHA, provenance y A5 por otra Task Javier.
+
 ## 2026-11-13 — V5 C00-02.M05.05: seguridad negativa de contexto tenant/scope [Javier :10]
 - Se agrega suite xUnit real V5C0002M0505NegativeIsolationTests con rechazos de IDs de scope ajeno en cinco operaciones, variantes de tenant, actores retirados, bindings ausentes y auto-revisión A5 prohibida.
 - La seguridad se prueba sobre el guard Application real con mapas fiables de fixture, NO JWT live, HTTP productivo, MySQL, CAS institucional, A5_PASS ni dispatcher. Ningún cambio a permisos o datos productivos.
