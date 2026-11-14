@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C05-03.M01.02: actores y fronteras del builder [Javier :40]
+- Documenta 12 actores y 12 entradas/salidas FUTURAS de builder allowlisted con preview aislada, publicación versionada y permisos backend/tenant.
+- Coteja seis blobs de tema Angular/SCSS/API/rutas; P01–P05 y N01–N12 son oráculos FUTUROS NO EJECUTADOS sobre código inyectado, URL/SSRF, A/B, JWT/RBAC, profundidad y CAS.
+- M01.02 solo documental en dev, Scope Lock/V5 exact SHA, A5 independiente y git revert normal; sin API, MySQL, workers, dispatcher, QA/main/PROD.
+
 ## 2026-11-14 — V5 C05-02.M01.04: riesgos, supuestos y decisiones de marca [Javier :00]
 - Registra R01–R12 riesgos hipotéticos, S01–S08 supuestos falsables y D01–D08 decisiones PENDIENTE sobre tema global vs tenant, logos, presets, caché, autorización, versionado, publicación y rollback; sin afirmar vulnerabilidades.
 - Siete blobs Domain/API/EF/Angular sustentan cinco oráculos positivos y doce negativos FUTUROS no ejecutados; IAM/JWT/RBAC/tenant y acceso público permanecen bajo autorización backend.
