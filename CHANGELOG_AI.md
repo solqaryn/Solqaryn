@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C08-04.M01.05: criterios de aceptacion de extensiones por rubro [Javier :30]
+- Define AC01–AC14/N01–N14 FUTUROS_NO_EJECUTADOS para capacidades por empresa, JWT/RBAC, tenant A/B, reservas, membresias, catalogo, host confiable, idempotencia y rollback.
+- Establece NFR01–NFR10 y matriz futura .NET/MySQL/Angular/Playwright con fuentes M01.01–03 y blobs reales; no inventa implementacion, test runtime ni vulnerabilidad demostrada.
+- Solo docs/v5 y CHANGELOG en dev con Scope Lock y procedencia V5 exact-SHA; A5 pendiente de otra Task Javier, sin workers, migraciones, QA/main/PROD, secretos ni cambio de Tasks.
+
 ## 2026-11-14 — V5 C10-03.M01.03: inventario de código y brechas de almacenamiento [Javier :30]
 - Inventario ESTATICO verificable de doce fuentes y blobs Git de contratos Cloudinary, contexto tenant, sanitizacion, tests y script de auditoria DEV; NO ejecuta inventario real de objetos ni asume cero.
 - Registra G01–G10 brechas de evidencia y P01–P08/N01–N08 oraculos FUTUROS NO_EJECUTADOS, con tenant A/B, MIME real, TTL, retencion y rollback; INVENTARIO_HISTORICO=NO_VERIFICADO.
