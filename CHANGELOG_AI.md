@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C06-01.M01.03: inventario causal de sitio público SaaS [Javier :20]
+- Inspecciona doce fuentes y hashes Git para contratos M01, router Angular, guards, interceptor, storefront y feedback; distingue tienda existente de landing FUTURA.
+- Declara brechas B01–B08 y oráculos P01–P06/N01–N12 FUTUROS NO_EJECUTADOS para SEO, consentimiento, contacto, tenant A/B, demo, accesibilidad y rollback.
+- Solo dos Markdown dev; exigir Scope Lock y procedencia V5 del SHA publicado y A5 independiente; sin nuevas rutas, API/MySQL/SMTP, secretos, datos reales, eventos o QA/main/PROD.
+
 ## 2026-11-14 — V5 C05-04.M01.06: gate y rollback documental de ligereza [Javier :10]
 - Cierra contractualmente M01 de C05-04 tras cinco antecedentes LISTO y A5 independientes (J00/J10), con diez puertas G01–G10 para Scope Lock, seguridad, accesibilidad, medición y privacidad.
 - Delimita P01–P06/N01–N14 FUTUROS NO_EJECUTADOS; budgets Angular 650/750 kB son configuración y no benchmarks ni CWV aprobados, D01–D08 permanecen PENDIENTES.
