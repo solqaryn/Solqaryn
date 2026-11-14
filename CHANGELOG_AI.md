@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C10-01.M01.04: riesgos y decisiones de storage neutral [Javier :10]
+- Inventaría R01–R12 riesgos potenciales, S01–S08 supuestos falsables y D01–D08 decisiones PENDIENTES de ownership, MIME, tamaño, checksum, TTL, rollback y proveedores; no afirma incidentes probados.
+- Especifica P01–P05/N01–N12 como escenarios FUTUROS NO_EJECUTADOS, exige JWT/RBAC y aislamiento tenant A/B, Cloudinary vigente y R2/Hostinger solo como objetivo condicional.
+- Exclusivamente docs/v5 y CHANGELOG en dev; Scope Lock/V5 exact-SHA, BITACORA/PLAN/COLA y A5 independiente; no SDK, endpoints, workers, secretos, migraciones, objetos ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C05-04.M01.04: riesgos y decisiones de ligereza [Javier :00]
 - Registra R01–R12 riesgos hipotéticos, S01–S08 supuestos falsables y D01–D08 decisiones PENDIENTE sobre bundle, HTTP, tenancy A/B, accesibilidad, RUM, preload y rollback, sin afirmar incidencias.
 - Coteja fuentes documentales y ocho blobs Angular/SCSS; P06/N12 son oráculos FUTUROS NO_EJECUTADOS; ningún presupuesto CWV, permiso o arquitectura nueva queda aprobado.
