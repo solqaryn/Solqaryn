@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C13-02.M01.04 riesgos y decisiones de accesibilidad [Javier :40]
+- Registra R01–R14 riesgos potenciales, S01–S10 supuestos NO_VERIFICADOS y D01–D10 decisiones ABIERTAS para teclado, foco, formularios, contraste, reflow, lector, permisos y tenant A/B.
+- Concilia contratos M01.01–03, blobs de inventario y ocho pares P/N FUTUROS_NO_EJECUTADOS; no confunde archivos de tests con ejecuciones o conformidad WCAG.
+- Solo documento y CHANGELOG en dev, Scope Lock/V5 exact SHA, A5 de otra Task Javier; sin Angular, API, MySQL, eventos, QA/main/PROD.
+
 ## 2026-11-14 — V5 C13-02.M01.03 inventario codigo de accesibilidad [Javier :20]
 - Inventaria doce fuentes Git exactas de Angular, guards, Playwright, Vitest, SCSS y contratos; no confunde archivo de test con ejecucion o cumplimiento WCAG.
 - Registra catorce brechas de evidencia B01–B14 y ocho pares P/N FUTUROS_NO_EJECUTADOS de teclado, foco, formularios, contraste, reflow, semantica y tenant A/B.
