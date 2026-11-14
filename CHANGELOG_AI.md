@@ -1228,3 +1228,8 @@
 - Contrato de cierre M01 de configuración dinámica, siete predecesores concretos y seis negativas fail-closed; los A5 históricos de ejecutores retirados no habilitan M02, revisiones correctivas Javier registradas sin reescribir BITACORA.
 - Sin código runtime, cambios JWT/RBAC/tenant, migraciones, worker, webhook o eventos; M02 únicamente por DAG propio VALIDADO/SI y nueva CAS/readback, QA/main/PROD prohibidos sin orden adicional.
 - Requiere A0–A4 documental y checks Scope Lock/V5 sobre SHA exacto, A5 independiente distinta del autor J10 y rollback por commit git revert normal.
+
+## 2026-11-14 — SOLQARYN V5 C01-04.M01.06 salida documental expediente universal [Javier :20]
+- Define bloqueo, reversión y liberación limitada de M01 para expediente/timeline: cinco preparativos propios y antecedentes C01-01/C01-02/C01-03 M01 verificables con A5 Javier, DAG individual VALIDADO/SI. Ninguna fase se libera en cascada.
+- Rechazos para lectura cross-tenant, membresía revocada, adjuntos externos, observación presentada como aprobación, orden no determinista y owner ambiguo. El hallazgo de filtro explícito ausente en inventario es riesgo a investigar, no prueba de vulnerabilidad explotable. Oráculos P01-P03 y N01-N07 documentales, no runtime.
+- A0-A4 documentales: publicación FF, Scope Lock y V5 provenance SUCCESS SHA exacto + BITACORA A:Z y readback. A5 por Task Javier independiente. Sin API, worker, webhook, MySQL, cambios JWT, eventos activos, QA/main/PROD; rollback git revert normal.
