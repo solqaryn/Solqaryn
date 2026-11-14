@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C04-03.M01.04: riesgos y decisiones del metering [Javier :20]
+- Registra R01–R12 riesgos posibles, S01–S08 supuestos falsables y D01–D08 decisiones PENDIENTE con rol de aprobador futuro; no aprueba cuotas, retención, facturación o políticas.
+- Diferencia ledger idempotente de onboarding, límites PlanLimite y UI de cualquier medidor real; cuatro P/ocho N documentales no ejecutados, sin falsas vulnerabilidades A/B confirmadas.
+- Entrega M01.04 solo documental en dev, sin API, MySQL, migraciones, worker, eventos ni QA/main/PROD; Scope Lock/V5 exact SHA, A5 independiente y rollback git revert normal.
+
 ## 2026-11-14 — V5 C04-02.M01.04: riesgos y decisiones contractuales [Javier :30]
 - Documenta doce riesgos R01–R12, ocho supuestos S01–S08 y ocho decisiones D01–D08 pendientes sobre renovación, mora, cancelación, factura y autoridad económica, sin aprobar reglas financieras.
 - Cinco verificaciones documentales y diez negativos futuros delimitan aislamiento tenant A/B, JWT/RBAC, replay, rollback, MySQL, UI, CI y A5; no atribuyen pruebas runtime.
