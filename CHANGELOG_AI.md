@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-01.M01.02 actores e interfaces de auditoria de cobertura [Javier :30]
+- Define catorce actores, doce entradas, doce salidas, diez fronteras y diez pares PN FUTUROS_NO_EJECUTADOS para comparar V5, PLAN, COLA, DAG, BITACORA, SHA/checks y Tasks Javier por ID exacto.
+- Preserva autoridad dev, CAS exclusivo, A5 independiente, JWT/RBAC/tenant A/B y evidencia causal, sin afirmar cero huérfanos/duplicados críticos, pruebas runtime ni auditoría exhaustiva completada.
+- Sólo documento y CHANGELOG en dev, Scope Lock/V5 success exact-SHA y readback; no QA/main/PROD, nuevas Tasks, workers, migración, datos, secretos o webhooks.
+
 ## 2026-11-14 — V5 C15-01.M01.01 alcance y no-regresion de auditoria de cobertura [Javier :30]
 - Prepara auditoría de trazabilidad V5 sobre requisitos, 2340 IDs PLAN, COLA/DAG/BITACORA, GitHub y seis Tasks Javier, con dieciséis invariantes NR y ocho pares P/N FUTUROS_NO_EJECUTADOS.
 - Preserva dependencias causales, autoría y A5 independiente, seguridad tenant A/B/JWT/RBAC y separación de dev versus QA/main/PROD; cero huérfanos o duplicados críticos permanece NO_CERTIFICADO, sin auditoría exhaustiva fingida.
