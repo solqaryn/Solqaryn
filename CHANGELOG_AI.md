@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C08-04.M01.02: actores y contratos de interfaces sectoriales [Javier :20]
+- Identifica A01–A14 actores/superficies e I01–I12 entradas, salidas y fronteras de capacidades futuras de agenda, membresias, catalogo, sitios, tenancy y auditoria.
+- Coteja seis blobs reales incluyendo Empresa, UsuarioEmpresa, permisoGuard e interceptor; documenta T01–T06 positivos/negativos FUTUROS NO_EJECUTADOS, sin atribuir nueva funcionalidad, backend ni pruebas runtime.
+- Solo docs/v5 y CHANGELOG; A4 requiere Scope Lock y procedencia V5 exact-SHA/readback; A5 independiente pendiente; rollback git revert, sin migraciones, QA/main/PROD ni cambios de Tasks.
+
 ## 2026-11-14 — V5 C08-04.M01.01: alcance y no-regresion de extensiones por rubro [Javier :20]
 - Delimita capabilities futuras de agenda, membresias, catalogo y sitios por empresa sin duplicar tenant, identidad ni permisos; M01.01 solo documental, M01.06 no liberada.
 - Contrasta seis blobs fuente y define NR01–NR12, P01–P06/N01–N06 como escenarios FUTUROS NO_EJECUTADOS, preservando JWT/RBAC, tenant A/B, historial e idempotencia.
