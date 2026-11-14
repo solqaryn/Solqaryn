@@ -288,3 +288,53 @@ test.describe('C00-03.M04.04 - navegacion, mensajes y accion unica de cobertura 
     expect(requests).toBe(2);
   });
 });
+
+
+test.describe('C00-03.M04.02 - estados seguros de cobertura V5', () => {
+  test.describe.configure({ retries: 0 });
+
+  test('muestra confirmacion de consulta y vacio honesto sin filas fabricadas', async ({ page }) => {
+    await syntheticToken(page);
+    const observed = await mockPlatformSession(page, true);
+    await page.goto('/plataforma/cobertura-v5');
+    await expect(page.getByRole('status').filter({ hasText: 'Permiso de consulta confirmado' })).toBeVisible();
+    await expect(page.getByText('Sin datos de cobertura verificados', { exact: false })).toBeVisible();
+    await expect(page.locator('.v5-coverage tbody tr')).toHaveCount(1);
+    await expect(page.locator('.v5-coverage tbody td')).toHaveCount(1);
+    await expect(page.getByText('Sin escritura')).toBeVisible();
+    expect(observed).toContain(200);
+  });
+
+  test('revalidacion anuncia carga y deniega sin filtrar errores del servidor', async ({ page }) => {
+    await syntheticToken(page);
+    await mockPlatformSession(page, true);
+    await page.goto('/plataforma/cobertura-v5');
+    const button = page.getByRole('button', { name: /Revalidar sesión/ });
+    let release: (() => void) | undefined;
+    let requests = 0;
+    await page.route(sessionUrl, async route => {
+      if (route.request().method() === 'OPTIONS') {
+        await route.fulfill({ status: 204, headers: cors });
+        return;
+      }
+      requests++;
+      await new Promise<void>(resolve => { release = resolve; });
+      await route.fulfill({
+        status: 403,
+        contentType: 'application/json',
+        headers: cors,
+        body: JSON.stringify({ success: false, message: 'NO_MOSTRAR_SECRETO_DEL_BACKEND', data: null })
+      });
+    });
+    await button.click();
+    await expect(button).toBeDisabled();
+    await expect(page.getByRole('status').filter({ hasText: 'Comprobando permiso de cobertura' })).toBeVisible();
+    await expect.poll(() => Boolean(release)).toBe(true);
+    expect(requests).toBe(1);
+    release?.();
+    await expect(button).toBeEnabled();
+    await expect(page.getByRole('alert').filter({ hasText: 'No se pudo verificar el permiso de cobertura' })).toBeVisible();
+    await expect(page.locator('body')).not.toContainText('NO_MOSTRAR_SECRETO_DEL_BACKEND');
+    await expect(page.getByText('Identidad de plataforma verificada')).toHaveCount(0);
+  });
+});

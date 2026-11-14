@@ -53,6 +53,21 @@ import { PlataformaGestionMvpComponent } from './plataforma-gestion-mvp.componen
         </div>
       }
 
+
+      @if (vistaCoberturaV5) {
+        <div class="v5-feedback" aria-live="polite" aria-atomic="true">
+          @if (validando()) {
+            <p role="status"><mat-spinner diameter="20" aria-label="Revalidando permiso de cobertura"></mat-spinner> Comprobando permiso de cobertura…</p>
+          } @else if (error()) {
+            <p role="alert" class="v5-feedback-error">No se pudo verificar el permiso de cobertura. No se mostrará información institucional.</p>
+          } @else if (!sesion()) {
+            <p role="alert">Sin permiso de plataforma confirmado. La cobertura permanece restringida.</p>
+          } @else {
+            <p role="status">Permiso de consulta confirmado. La cobertura sigue en modo de solo lectura.</p>
+          }
+        </div>
+      }
+
       @if (sesion(); as actual) {
         <mat-card class="authority-card">
           <mat-card-header>
@@ -189,7 +204,7 @@ import { PlataformaGestionMvpComponent } from './plataforma-gestion-mvp.componen
         </mat-card>
         <app-plataforma-gestion-mvp [directorio]="directorio()" (actualizarDirectorio)="cargarEmpresas()"></app-plataforma-gestion-mvp>
         }
-      } @else {
+      } @else if (!validando()) {
         <mat-card class="denied">
           <mat-card-content>
             <mat-icon aria-hidden="true">gpp_bad</mat-icon>
