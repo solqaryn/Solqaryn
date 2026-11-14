@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C11-02.M01.01: contrato de alcance API modular [Javier :00]
+- Delimita puertos/casos de uso, DTO, validación, compatibilidad y errores seguros sin implementar endpoints; NR01–NR14 y escenarios P01–P08/N01–N12 FUTUROS_NO_EJECUTADOS.
+- Traza AuthController, TenantContextController, PlataformaSesionController, Program y referencias .NET/EF con blobs reales; preserva JWT/RBAC/tenant A/B, soporte read-only y separación plataforma/empresa.
+- Solo docs/v5 y CHANGELOG con CAS fast-forward en dev y checks exact-SHA Scope Lock/V5; A5 independiente pendiente, sin API, SQL, workers, secretos ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C10-04.M01.06: gates rollback liberacion documental [Javier :50]
 - Consolida los cinco antecedentes M01.01-.05 LISTO+A5 independiente y B01-B14 como controles NO_GO de cache/jobs/backups/exportaciones, tenant A/B, idempotencia y reversibilidad; sin simular servicios.
 - Condiciona M02 a A0-A4 y A5 independiente de esta M01.06, con DAG/PLAN/COLA vivo; P01-P06/N01-N10 FUTUROS_NO_EJECUTADOS, no backup/restore ni worker real.
