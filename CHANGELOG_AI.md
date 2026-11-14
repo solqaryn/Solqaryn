@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C08-03.M01.02: actores e interfaces de membresías y acceso [Javier :10]
+- Describe A01–A14 actores/superficies e I01–I14 contratos FUTUROS de perfil, planes, altas, verificación de acceso, check-in, suspensión, renovación, auditoría, dispositivo y conciliación.
+- Define F01–F07 límites API/Application/Domain/Infrastructure con tenant A/B, JWT/RBAC, UTC/IANA, DST, idempotencia, replay y privacidad, además de P01–P06 y N01–N15 FUTUROS NO_EJECUTADOS.
+- Sólo docs/v5 y CHANGELOG en dev, Scope Lock y V5 exact-SHA, BITACORA/readback, A5 independiente pendiente y git revert normal; sin código, lectores, pagos, webhooks, DB, QA/main/PROD.
+
 ## 2026-11-14 — V5 C08-03.M01.01: alcance y no-regresión de membresías de gimnasio [Javier :10]
 - Define membresías y acceso de gimnasio como contrato FUTURO, distinguiendo membresía empresarial JWT/RBAC de derecho comercial, con NR01–NR14 sobre tenant A/B, vigencia UTC/IANA, DST, suspensión, idempotencia y auditoría.
 - Especifica P01–P06 y N01–N14 FUTUROS NO_EJECUTADOS, no una implementación ni autorización para lectores, QR, pasarelas de pago, bases de datos o producción.
