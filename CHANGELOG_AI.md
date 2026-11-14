@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C14-01.M01.04 riesgos y decisiones de aceptacion funcional [Javier :50]
+- Registra R01–R14 riesgos potenciales, S01–S10 supuestos NO_VERIFICADOS y D01–D10 decisiones ABIERTAS de aceptación funcional y seguridad tenant, JWT/RBAC, pago, inventario, UI y CI.
+- Distingue ocho P/N FUTUROS_NO_EJECUTADOS de tests reales; no da por cerrado M01.03 de otra Task ni libera M01.06 o QA/PROD.
+- Solo docs/v5 y CHANGELOG fast-forward dev, Scope Lock/V5 SHA exacto y A5 independiente; sin servicios runtime o migraciones.
+
 ## 2026-11-14 — V5 C14-02.M01.01 alcance y no-regresion de aceptacion de seguridad [Javier :00]
 - Fija objetivo y exclusiones de aceptacion de seguridad: BOLA/IDOR, JWT/RBAC, tenant A/B, host, archivos, jobs, cache, backups y sesiones; sin ejecutar pruebas ni declarar cero P0/P1.
 - Define NR01-NR18 y diez pares de escenarios SEC-01 a SEC-10 FUTUROS_NO_EJECUTADOS, separando preparacion documental M01.01 de certificacion funcional y release.
