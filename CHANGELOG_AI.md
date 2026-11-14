@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-03.M06.04: ensayo no destructivo de desactivación de cobertura [Javier :10]
+- Se agregan ocho escenarios xUnit (dos variantes Theory y seis Facts) contra V5CoverageMemoryAdapter real: revocación de actor/scope, reapertura, revisión obsoleta, idempotencia, capacidad y namespace sin borrar registros legítimos.
+- El ensayo es in-memory con allowlist provista: NO implementa desactivación de Tasks, rollback Sheets/MySQL, CAS distribuido, JWT/RBAC live, tenant A/B persistido ni workers.
+- Test y docs/v5/c00-03-m06-04-safe-disable-rehearsal.md. Requiere CI .NET/seguridad, Scope Lock y CHANGELOG exact-SHA; A5 independiente, M06.06 no liberada, git revert normal, no QA/main/PROD.
+
 ## 2026-11-13 — V5 C00-03.M06.03: riesgos y decisiones de matriz integrada [Javier :10]
 - Se documentan doce riesgos R01-R12 y cinco decisiones D01-D05 con responsabilidad técnica y seis SHA de cobertura M05; se contrastan M06.01 y el manifiesto M06.02 que corrigió rutas de Chromium.
 - Se acotan TestServer, adaptador en memoria y sesiones Chromium simuladas; ninguna es prueba de CAS Sheets, JWT/RBAC live, MySQL durable ni tenancy persistida. Cancelled/skipped/in-progress no son PASS.
