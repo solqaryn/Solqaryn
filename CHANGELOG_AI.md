@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C08-02.M01.02: actores e interfaces de restaurante, mesas y QR [Javier :50]
+- Define catorce actores A01–A14, catorce contratos I01–I14 y nueve fronteras F01–F09 para mesas, QR, menú, pedidos, cocina, caja y auditoría.
+- Documenta P01–P06/N01–N06 FUTUROS NO_EJECUTADOS y denegación de mesa ajena, QR falso, replay, permisos JWT/RBAC y aislamiento tenant A/B; no se implementan API ni runtime.
+- Sólo docs/v5 y CHANGELOG en dev, Scope Lock/V5 exact-SHA requeridos, A5 pendiente de otra Task Javier, rollback git revert; sin secretos, eventos, migraciones, QA/main/PROD.
+
 ## 2026-11-14 — V5 C08-02.M01.01: alcance y no-regresión de mesas, QR y autoservicio [Javier :40]
 - Delimita mesas, QR, menú publicado, pedidos internos, cocina y caja con pertenencia tenant/sucursal y autorización server-side; no afirma implementación de POS ni QR real.
 - Define NR01–NR14 y P01–P10/N01–N14 FUTUROS NO_EJECUTADOS para QR falso, mesa ajena, precio/cierre de pedido, idempotencia, privacidad, permisos y regresión ERP.
