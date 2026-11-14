@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C06-03.M01.02: actores, interfaces y fronteras editoriales [Javier :50]
+- Registra doce actores A01–A12, doce interfaces I01–I12 y ocho fronteras B01–B08 para contenido público, ubicación, horarios y mapas de empresa, sin atribuir funciones nuevas al código actual.
+- Contrasta M01.01 y fuentes reales Angular/storefront/SEO/guards; los oráculos P01–P06/N01–N12 son FUTUROS NO_EJECUTADOS, no prueba runtime ni autorización tenant concedida.
+- Solo docs/v5 y CHANGELOG en dev, Scope Lock/CHG exact-SHA y A5 de otra Task obligatorios; sin API, JWT, MySQL, geocodificación, workers, secretos, DNS ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C06-03.M01.01: alcance y no-regresión de sitios editoriales y mapas [Javier :50]
 - Fija objetivo y exclusiones de páginas, bloques, ubicación, horarios, contacto y mapas futuros por empresa, con doce invariantes de ownership, moderación, sanitización, accesibilidad, SEO y caché segura.
 - Ocho fuentes Git del frontend, storefront, SEO y landing tenant contrastadas por blob; escenarios positivos P01–P06 y negativos N01–N12 son FUTUROS NO_EJECUTADOS, no runtime certificado.
