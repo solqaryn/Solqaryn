@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C12-02.M01.04: riesgos y decisiones frontend separado [Javier :00]
+- Documenta R01-R16 riesgos POTENCIALES, S01-S10 supuestos NO_VERIFICADOS y D01-D10 decisiones abiertas sobre Angular, proxy API, CSP/CORS, cache/CDN, branch binding y rollback.
+- Ancla fuentes Git y el inventario C12-02.M01.03, incluye ocho pares de escenarios futuros NO_EJECUTADOS; no certifica smoke, DNS/TLS, CDN ni JWT/tenant live.
+- Solo docs/v5 + CHANGELOG en dev por CAS fast-forward, Scope Lock/V5 exact SHA; A5 independiente pendiente; sin workers, eventos, QA/main/PROD o proveedores pagos.
+
 ## 2026-11-14 — V5 C12-02.M01.03: inventario frontend separado [Javier :00]
 - Inventaria diez fuentes versionadas con SHA de blob verificable de Angular 22.2.1, Vercel, Render, guardas, proxy, headers, caché y arquitectura, sin confundir contrato con proveedor vivo.
 - Registra doce brechas G01-G12 y seis pares de pruebas futuras P/N NO_EJECUTADAS, preservando JWT/RBAC/tenant A/B y segregación de entornos.
