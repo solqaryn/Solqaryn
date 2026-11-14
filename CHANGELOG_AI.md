@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C12-03.M01.01: alcance backend y workers separados [Javier :10]
+- Fija límites documentales para API .NET 10, EF/MySQL, JWT/RBAC/tenant A/B, workers futuros, migraciones exclusivas, reintentos e idempotencia sin crear servicio ni dispatcher.
+- Establece NR01-NR16 y diez pares P/N de pruebas FUTURAS_NO_EJECUTADAS de arranque, rollback, secretos, aislamiento, reinicio y redelivery.
+- Solo docs/v5 y CHANGELOG en dev, CAS fast-forward, Scope Lock/V5 exact-SHA y A5 independiente; sin QA/main/PROD ni proveedores, DNS o compras.
+
 ## 2026-11-14 — V5 C12-02.M01.04: riesgos y decisiones frontend separado [Javier :00]
 - Documenta R01-R16 riesgos POTENCIALES, S01-S10 supuestos NO_VERIFICADOS y D01-D10 decisiones abiertas sobre Angular, proxy API, CSP/CORS, cache/CDN, branch binding y rollback.
 - Ancla fuentes Git y el inventario C12-02.M01.03, incluye ocho pares de escenarios futuros NO_EJECUTADOS; no certifica smoke, DNS/TLS, CDN ni JWT/tenant live.
