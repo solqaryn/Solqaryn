@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C10-03.M01.01: alcance e inventario real condicionado [Javier :00]
+- Distingue INVENTARIO_DESCONOCIDO del cero acreditado y de inventario positivo; si cero real, omitir exportación, copia y checksum de archivos históricos sin inventar cantidades.
+- Define NR01–NR14, P01–P08/N01–N12 FUTUROS NO_EJECUTADOS y fixtures no productivos para tenant A/B, MIME, retención y rollback; sin consultar objetos reales.
+- Sólo docs/v5 y CHANGELOG en dev con Scope Lock/V5 exact-SHA, A5 pendiente de otra Task Javier; sin activar Cloudinary/R2, DNS, workers, secretos o QA/main/PROD.
+
 ## 2026-11-14 — V5 C08-02.M01.04: riesgos, supuestos y decisiones de mesas/QR [Javier :50]
 - Documenta catorce riesgos R01–R14, ocho supuestos falsables S01–S08 y ocho decisiones D01–D08 PENDIENTES para mesa ajena, QR falso, tenant A/B, idempotencia, cierre y consistencia comercial.
 - Define TP01–TP08 positivos/negativos FUTUROS NO_EJECUTADOS; hipótesis no significan bugs certificados ni PASS de .NET/Angular/MySQL/Playwright.
