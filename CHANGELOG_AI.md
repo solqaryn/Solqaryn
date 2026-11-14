@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C04-03.M01.01: alcance y no-regresion del metering SaaS [Javier :20]
+- Define preparación documental de conteo de usuarios, almacenamiento, operaciones y archivos por tenant con métrica/unidad, corte temporal, idempotencia y conciliación futuros; lectura de blobs reales de PlanLimite y SuscripcionesSaaS, sin asumir ledger ya implementado.
+- Documenta NR01–NR14 y P01–P05/N01–N12 como oráculos futuros no ejecutados; separa JWT/RBAC/tenant server-side, entitlement, replay, cuotas, confidencialidad y estado de suscripción.
+- No implementa eventos, tablas, API, workers, cobros, tarifas, migraciones, runtime, QA/main/PROD; exige Scope Lock/V5 exact-SHA, revisión A5 independiente y rollback por git revert normal.
+
 ## 2026-11-14 — V5 C04-02.M01.01: frontera contractual de suscripciones [Javier :30]
 - Define objetivo y no-alcance de alta, renovación, pausa, cancelación, mora y cierre contractual; diez invariantes NR01–NR10 y quince oráculos futuros positivos/negativos sin declarar pruebas runtime.
 - Lee entidades, servicio SaaS, controlador y DTO existentes; separa membresía tenant/RBAC, estado y vigencia UTC, idempotencia, historia y rollback; no inventa cobros, monedas, tarifas ni pasarelas.
