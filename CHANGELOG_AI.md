@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C05-04.M01.04: riesgos y decisiones de ligereza [Javier :00]
+- Registra R01–R12 riesgos hipotéticos, S01–S08 supuestos falsables y D01–D08 decisiones PENDIENTE sobre bundle, HTTP, tenancy A/B, accesibilidad, RUM, preload y rollback, sin afirmar incidencias.
+- Coteja fuentes documentales y ocho blobs Angular/SCSS; P06/N12 son oráculos FUTUROS NO_EJECUTADOS; ningún presupuesto CWV, permiso o arquitectura nueva queda aprobado.
+- Solo dos Markdown, Scope Lock/procedencia CHANGELOG exact-SHA y A5 independiente, rollback git revert; sin datos, código runtime, workers, eventos, QA/main/PROD.
+
 ## 2026-11-14 — V5 C05-04.M01.03: inventario real de fuentes de ligereza [Javier :00]
 - Inspecciona diez referencias de preparación, Angular, router, preload selectivo, SCSS responsive, estados ARIA y scripts; blobs exactos y límites de inferencia, sin benchmark.
 - Documenta diez brechas de evidencia y P06/N12 oráculos FUTUROS NO_EJECUTADOS para bundle, Core Web Vitals, HTTP, tenant A/B, accesibilidad, preload y rollback.
