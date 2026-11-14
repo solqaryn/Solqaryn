@@ -1243,3 +1243,9 @@
 - Contrato de bloqueo, rollback y salida M01 de consola global auditada; 40/40 antecedentes M01 LISTO+A5 Javier, DAG por ID VALIDADO/SI y CAS único. No libera M02/privilegios en cascada.
 - Separa plataforma de ERP con requisitos futuros de MFA/reauth, motivo, TTL, scope por tenant/recurso/acción, auditoría crítica e idempotencia. P01-P03 y N01-N07 son oráculos documentales, no tests de privilegio en vivo.
 - A0-A4 documentales con Scope Lock y V5 CHANGELOG SUCCESS exact-SHA + BITACORA 26 campos y PLAN/COLA readback; A5 por Task Javier distinta. Sin MFA/JWT/MySQL/API/worker/eventos nuevos, QA/main/PROD; rollback git revert normal.
+
+## 2026-11-14 — SOLQARYN V5 C01-03.M02.01 entidades, ownership e invariantes de configuración dinámica [Javier :30]
+- Define catálogo de claves allowlisted, valor por ámbito y owner, revisiones CAS, auditoría y diez negativos; separa ConfigEmpresa tenant-scoped del legado EmpresaConfiguracion global sin inferir aislamiento inexistente.
+- Contrato M02 estrictamente documental; no crea APIs, permisos, migraciones, flags activos, trabajadores, eventos o integraciones. A0–A3 documentales, A4 requiere checks Scope Lock/procedencia SHA exacto y readback.
+- A5 independiente pendiente de otra Task Javier; sin QA/main/PROD ni certificación runtime. Rollback mediante git revert normal.
+
