@@ -1477,3 +1477,8 @@
 - Criterios de aceptación futuros P01–P08 y escenarios de rechazo N01–N16 para tema global, futura marca tenant, previews, publicación versionada y rollback; cada oráculo permanece NO_EJECUTADO, no equivale a prueba runtime.
 - Diferencia el TemaVisual global existente de branding multiempresa no implementado; D01–D08 y gates M01.06 siguen pendientes. Respeta JWT/RBAC/tenant A/B, allowlist, accesibilidad, idempotencia y ausencia de escrituras en datos reales.
 - Solo documento M01.05 y CHANGELOG; A0–A4 documentales con Scope Lock/V5 provenance exact-SHA y PLAN/COLA/BITACORA readback. A5 independiente de otra Task Javier, rollback git revert; sin UI/backend/DB nuevos, eventos, workers, QA/main/PROD.
+
+## 2026-11-14 — V5 C05-01.M01.05: aceptación documental de design system [Javier :20]
+- Define AC01–AC14 y N01–N14 como oráculos FUTUROS NO_EJECUTADOS de contraste, foco, teclado, diálogo, formulario/ARIA, 320px, reduced-motion, tokens y aislamiento de tema tenant A/B.
+- Vincula fuentes verificadas M01.01–04, NR01–NR12, I01–I09, F01–F09, riesgos R01–R12 y decisiones D01–D08 pendientes; no atribuye Playwright, Angular, .NET, MySQL ni cumplimiento WCAG sin pruebas.
+- Solo nuevo Markdown y CHANGELOG; A0–A3 documentales, A4 Scope Lock/V5 exact SHA y readback institucional, A5 independiente sin autoaprobación, rollback git revert. No QA/main/PROD, eventos ni secretos.
