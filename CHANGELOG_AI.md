@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C14-04.M01.04 riesgos y decisiones de puesta en marcha [Javier :20]
+- Registra 14 riesgos POTENCIALES_NO_VERIFICADOS, 8 supuestos y 8 decisiones ABIERTAS para host, tenant, archivos, backup, incidentes, CI, observabilidad y rollback.
+- Define ocho pares P/N FUTUROS_NO_EJECUTADOS sin declarar incidentes, RPO/RTO medidos, vulnerabilidades confirmadas, cuentas R2 o despliegues autorizados.
+- Sólo documento y CHANGELOG dev, A0–A4 documentales y A5 independiente posterior; Scope Lock/V5 exact SHA, sin código runtime, QA/main/PROD ni compras.
+
 ## 2026-11-14 — V5 C14-04.M01.03 inventario para puesta en marcha [Javier :20]
 - Verifica 19 rutas y blobs Git de gobierno, frontend SEO, API, CI, backups y arquitectura sobre HEAD exacto; no confunde archivos existentes con sistemas operativos.
 - Identifica 12 brechas NO_ACREDITADO y ocho pares P/N FUTUROS_NO_EJECUTADOS para dominios, tenant A/B, archivos, restore, alertas, accesibilidad y promoción.
