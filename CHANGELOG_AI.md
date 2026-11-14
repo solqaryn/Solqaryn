@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-02.M01.01 alcance de auditoria de arquitectura/migracion [Javier :50]
+- Define alcance documental, topologia actual declarada y objetivo futuro Hostinger/Cloudflare/R2, sin afirmar proveedores activos ni migracion ejecutada.
+- Fija 16 invariantes NR y 8 pares ARQ positivos/negativos FUTUROS_NO_EJECUTADOS para JWT/RBAC/tenant A/B, backup/restore MySQL, archivos, DNS/TLS, jobs y exact-SHA CI.
+- Solo Markdown y CHANGELOG en dev, A5 independiente pendiente; sin codigo, secretos, eventos, QA/main/PROD, despliegues ni compras.
+
 ## 2026-11-14 — V5 C15-01.M01.05 criterios de aceptación de cobertura [Javier :40]
 - Define 16 pares de aceptación positiva/negativa FUTUROS_NO_EJECUTADOS para requisitos, PLAN/COLA/DAG, autoría, Git/CI, tenant A/B, A5, seguridad y cierre causal.
 - Propone doce requisitos no funcionales NO_MEDIDOS y formato de evidencia por CASE_ID; la meta de cero huérfanos/duplicados críticos permanece NO_CERTIFICADA.
