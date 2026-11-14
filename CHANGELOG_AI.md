@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C01-01.M02.03: diseño EF/MySQL de identidad, índices y fixtures [Javier :30]
+- Contrato `docs/v5/c01-01-m02-03-persistencia-indices-migraciones-fixtures.md` sobre ocho fuentes EF/Domain/Test con hashes; describe tabla UsuarioEmpresas, FKs restrictivas, unicidad U/E, Sucursal legacy nullable, índice calculado y migración histórica sin ejecutarla.
+- Diez criterios DB01–DB10 y ocho fixtures simbólicos de tenant A/B, rol cruzado, revocación, datos legacy y rollback; ninguna fila real, dato de Aiven, migration, SQL, .NET o MySQL ejecutados en esta unidad documental.
+- Preflight M01.01–06 y M02.01–02 + tres cierres C00 LISTO; DAG F140 VALIDADO/G140 SI, claim exclusivo; A0–A4 doc con Scope Lock y V5 provenance SHA exacto, A5_PENDIENTE otra Task Javier, no M02.04–06/M03/QA/main/PROD.
+
 ## 2026-11-13 — V5 C01-01.M02.02: contratos API/DTO, errores y compatibilidad tenant [Javier :30]
 - Documento `docs/v5/c01-01-m02-02-contratos-api-dto-errores-compatibilidad.md`: nueve contratos fuente GitHub, cinco superficies API/filtros, matriz 200/400/401/403/404/409/429/503 y ocho oráculos positivos/negativos de autorización y compatibilidad.
 - M02.01 LISTO_DEV documental y C01-01.M01.01–06+C00-01.M06.06+C00-03.M01.06+C00-03.M06.06 LISTO; DAG individual F139 VALIDADO/G139 SI; no habilita automáticamente otras M02, M03 ni IAM/JWT/tenant/DB.
