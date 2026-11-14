@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C14-04.M01.02 actores y fronteras de puesta en marcha [Javier :20]
+- Registra 14 actores, 12 entradas, 12 salidas, diez fronteras de confianza y diez pares PN FUTUROS_NO_EJECUTADOS para lanzamiento, soporte, dominios, storage, alertas y backup.
+- Preserva separación DEV/QA/PROD, JWT/RBAC/tenant A/B, archivos, MySQL y secretos; ningún proveedor, alerta, restore, SLO o interfaz se afirma implementado.
+- Sólo documento más CHANGELOG dev; A0–A4 documentales, Scope Lock/V5 exact SHA y A5 de Task Javier distinta pendientes; no runtime, eventos ni compras.
+
 ## 2026-11-14 — V5 C14-04.M01.01 alcance de puesta en marcha y soporte [Javier :20]
 - Delimita preparación documental de landing, dominios, almacenamiento, soporte, alertas, backup/restore y respuesta a incidentes; sin habilitar infraestructura, DNS ni promoción.
 - Define NR01–NR16 y ocho pares P/N FUTUROS_NO_EJECUTADOS, separando JWT/RBAC/tenant A/B, SHA/CI causal, integridad MySQL y continuidad operativa.
