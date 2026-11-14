@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C07-02.M01.05: aceptación observable storefront y checkout [Javier :50]
+- Define 14 positivos P01–P14 y 14 negativos N01–N14 FUTUROS NO_EJECUTADOS sobre binding host, catálogo/tenant A/B, stock, precio, carrito, pedido/idempotencia, HMAC/nonce, PSP, recibo, móvil, caché y privacidad.
+- Traza contratos M01.01–03 y siete blobs de código/documentos; M01.01 sigue VALIDANDO por CI CANCELLED y M01.04 no está aprobado, sin inferir reserva, pago ni HMAC operativo.
+- Sólo docs/v5 y CHANGELOG en dev, DAG documental VALIDADO/SI, Scope Lock/V5 provenance exact-SHA y A5 independiente; sin endpoints, migraciones, workers, secrets, pagos, QA/main/PROD.
+
 ## 2026-11-14 — V5 C07-02.M01.04: riesgos y decisiones storefront/checkout [Javier :00]
 - Registra doce riesgos R01–R12, ocho supuestos falsables S01–S08 y ocho decisiones D01–D08 PENDIENTES sobre host, tenant, cache, HMAC/replay, pagos y móvil; no certifica vulnerabilidades.
 - Contrasta contratos M01.01–02 y catorce blobs API/Application/Domain/Angular; P01–P06/N01–N12 son FUTUROS NO_EJECUTADOS, no tests runtime.
