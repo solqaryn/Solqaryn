@@ -1233,3 +1233,8 @@
 - Define bloqueo, reversión y liberación limitada de M01 para expediente/timeline: cinco preparativos propios y antecedentes C01-01/C01-02/C01-03 M01 verificables con A5 Javier, DAG individual VALIDADO/SI. Ninguna fase se libera en cascada.
 - Rechazos para lectura cross-tenant, membresía revocada, adjuntos externos, observación presentada como aprobación, orden no determinista y owner ambiguo. El hallazgo de filtro explícito ausente en inventario es riesgo a investigar, no prueba de vulnerabilidad explotable. Oráculos P01-P03 y N01-N07 documentales, no runtime.
 - A0-A4 documentales: publicación FF, Scope Lock y V5 provenance SUCCESS SHA exacto + BITACORA A:Z y readback. A5 por Task Javier independiente. Sin API, worker, webhook, MySQL, cambios JWT, eventos activos, QA/main/PROD; rollback git revert normal.
+
+## 2026-11-14 — SOLQARYN V5 C02-01.M01.06 bloqueo y rollback tenant server-side [Javier :10]
+- Cierra solo el contrato documental M01 de contexto tenant: seis predecesores LISTO/A5 Javier, 3 casos positivos y 7 negativos sobre spoofing host/headers, pertenencia revocada, RBAC, sucursal, A/B, caché y privacidad.
+- No implementa resolver host, API, JWT, middleware, EF/MySQL ni DNS; ningún worker/evento/Task nuevo. Evaluación M02 exclusivamente por DAG técnico individual y CAS readback; QA/main/PROD no autorizados.
+- A0–A4 documentales condicionadas a Scope Lock y proveniencia CHANGELOG exact SHA y BITACORA A:Z; A5 independiente por otro Javier; rollback git revert normal.
