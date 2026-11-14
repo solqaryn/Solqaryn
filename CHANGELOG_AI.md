@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C11-01.M01.03: inventario de fuentes y brechas del modelo relacional [Javier :50]
+- Documenta 15 fuentes Git con blobs y clasificación de evidencia para FK/indices/tenant/EF/MySQL, incluyendo legacy nullable, constraints fisicos y migrations sin confundir existencia con esquema aplicado.
+- Registra G01-G12 como brechas de evidencias, P01-P08/N01-N12 FUTUROS_NO_EJECUTADOS; no certifica MySQL, tests, integridad cross-tenant ni migraciones reales.
+- Sólo documento C11-01.M01.03 y CHANGELOG en dev bajo CAS fast-forward y Scope Lock/V5 del SHA; A5 independiente pendiente, sin runtime, datos, APIs, secretos, QA/main/PROD.
+
 ## 2026-11-14 — V5 C11-01.M01.02: actores interfaces y fronteras del modelo relacional [Javier :50]
 - Define A01-A12, I01/O01-I12/O12 y F01-F09 para claves/FK, ownership, transacciones, EF/MySQL, API y tenant A/B; los contratos son FUTUROS_NO_IMPLEMENTADOS.
 - Traza Empresa, Cliente.EmpresaId nullable y AppDbContext con blobs de dev, preservando soporte read-only y frontera pública; P01-P06/N01-N10 son escenarios NO_EJECUTADOS.
