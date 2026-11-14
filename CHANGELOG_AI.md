@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-02.M06.05: solicitud institucional de revisión independiente [Javier :30]
+- Se registra solicitud A5 por ID/SHA del lote C00-02 con origen, autoría y pruebas positivas/negativas; se exige revisor Task Javier distinto, readback y no duplicar A5_PASS/FAIL existentes.
+- La solicitud es documental y consultable en BITACORA, no webhook, dispatcher, nueva Task o notificación entregada; no declara JWT/Sheets CAS/MySQL live ni ensayo de rollback.
+- Archivo docs/v5/c00-02-m06-05-independent-review-request.md, A0-A4 documentales con Scope Lock/CHANGELOG causal; A5_PENDIENTE propia y M06.06 sin liberar, rollback por git revert normal.
+
 ## 2026-11-13 — V5 C00-02.M06.03: riesgos, limitaciones y decisiones [Javier :30]
 - Se documentan once riesgos y cinco decisiones causales sobre C00-02 M05/M06: seis SHA fuente, controles, dueños y límites reales de tests xUnit, TestServer y Chromium. No certificar CAS Sheets, JWT/RBAC live ni MySQL mediante fixtures.
 - Se preservan jobs CANCELLED sin PASS, independencia A5 entre seis Tasks Javier, BITACORA 26 columnas y M06.06 como gate distinto. No se activan despachos ni se autorizan QA/main/PROD.
