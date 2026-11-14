@@ -1,3 +1,7 @@
+## 2026-11-14 — V5 C00-04.M02.02: contratos documentales API/DTO del gobierno de cambios [Javier :40]
+- Definición tipada de consultas, decisiones propuestas, condiciones de ejecución, evidencia idempotente, errores y compatibilidad; siete predecesores LISTO con A5 independiente, DAG147 VALIDADO/SI para este ID exclusivamente.
+- Alcance documental: ninguna ruta HTTP, servicio, autorización, JWT/RBAC/tenant, migración, worker, webhook o Task nueva; exigir A0–A4 con Scope Lock y procedencia exact-SHA y A5 por otra Javier. Rollback git revert sin force-push; QA/main/PROD no autorizados.
+
 ## 2026-11-14 — V5 C01-01.M03.02: revalidación Application de identidad universal [Javier :00]
 - Servicio real `IdentidadUniversalApplicationService` y contrato de lectura server-side `IIdentidadUniversalSnapshotSource`: comprueba tenant autenticado antes del I/O, vuelve a validar membresía/rol/sucursal desde datos confiables y deniega drift, revocación o tenant B.
 - Suite xUnit dirigida `IdentidadUniversalApplicationServiceTests.cs` con positivos y negativos de aislamiento A/B, rol cambiado, usuario ajeno, sucursal inexistente/ajena, ausencia de fuente, revocación y no-escalamiento implícito. No registra DI, API/endpoint, JWT, migración/SQL, workers ni webhooks.
