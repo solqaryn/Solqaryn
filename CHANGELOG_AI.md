@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C08-03.M01.01: alcance y no-regresión de membresías de gimnasio [Javier :10]
+- Define membresías y acceso de gimnasio como contrato FUTURO, distinguiendo membresía empresarial JWT/RBAC de derecho comercial, con NR01–NR14 sobre tenant A/B, vigencia UTC/IANA, DST, suspensión, idempotencia y auditoría.
+- Especifica P01–P06 y N01–N14 FUTUROS NO_EJECUTADOS, no una implementación ni autorización para lectores, QR, pasarelas de pago, bases de datos o producción.
+- Sólo docs/v5 y CHANGELOG en dev con Scope Lock/V5 provenance exact-SHA, BITACORA y readback; A5 independiente pendiente y rollback git revert normal, sin QA/main/PROD.
+
 ## 2026-11-14 — V5 C08-01.M01.01: alcance y no-regresion reservas y agenda [Javier :00]
 - Delimita citas, horarios, disponibilidad, personal, recursos, cancelaciones, zonas IANA y conflictos de agenda con doce invariantes NR01–NR12; no declara la agenda implementada.
 - Define P01–P08 y N01–N12 FUTUROS NO_EJECUTADOS, incluyendo concurrencia, tenant A/B, DST, idempotencia, privacidad y accesibilidad móvil; ninguna prueba runtime pasa por redactarlos.
