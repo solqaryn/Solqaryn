@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C09-03.M01.01: alcance y no-regresion de Social Hub/campanas [Javier :10]
+- Define alcance FUTURO para contenidos, segmentos, calendarios, campañas y métricas con consentimiento por canal, opt-out y límites por tenant, sin habilitar emisiones ni publicaciones reales.
+- Documenta NR01-NR16 y P01-P05/N01-N08 FUTUROS_NO_EJECUTADOS con referencias a blobs de Cliente, UsuarioEmpresa, MensajeOutbox, Auditoria y guarda Angular; no certifica tests runtime.
+- Solo documentación y CHANGELOG en dev por CAS fast-forward con Scope Lock y procedencia V5 exact-SHA; A5 independiente pendiente, sin eventos, proveedores, migraciones, QA/main/PROD.
+
 ## 2026-11-14 — V5 C09-02.M01.02: actores, interfaces y fronteras de fidelizacion [Javier :00]
 - Identifica A01–A14 actores, I01–I12 interfaces futuras y F01–F09 fronteras de confianza para puntos, promociones, resenas, moderacion y posventa; contrasta seis blobs originales sin suponer codigo de fidelizacion vivo.
 - Documenta P01–P08/N01–N08 FUTUROS_NO_EJECUTADOS sobre tenant A/B, JWT/RBAC, PII, canjes concurrentes, replay, consentimiento y antifraude, sin afirmar PASS runtime.
