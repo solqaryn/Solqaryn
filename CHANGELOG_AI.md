@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C01-01.M02.04: diseño de configuración tipada y flags fail-closed [Javier :30]
+- Contrato `docs/v5/c01-01-m02-04-configuracion-tipada-ambitos-flags.md` contrastado contra seis fuentes dev: ConfigEmpresa, EF, PlanModulo/PoliticaModulosSaaS, TenantPermissionContext, VerifiedPlatformSupportTenant y ADR de precedencia.
+- Define ámbitos lógicos y diez casos CFG01–CFG10 positivos/negativos de tenant A/B, RBAC, suscripción, versión CAS, caché y referencias opacas sin credenciales; ningún flag, JWT, API, DB, plan o configuración ejecutable se modifica.
+- Preflight nueve M01/M02.01–03 y tres C00 LISTO, DAG F141 VALIDADO/G141 SI, claim CAS; requiere Scope Lock/V5 provenance exact-SHA y A5 por otra Task Javier, sin liberar M02.05–06/M03/QA/main/PROD.
+
 ## 2026-11-13 — V5 C01-01.M02.03: diseño EF/MySQL de identidad, índices y fixtures [Javier :30]
 - Contrato `docs/v5/c01-01-m02-03-persistencia-indices-migraciones-fixtures.md` sobre ocho fuentes EF/Domain/Test con hashes; describe tabla UsuarioEmpresas, FKs restrictivas, unicidad U/E, Sucursal legacy nullable, índice calculado y migración histórica sin ejecutarla.
 - Diez criterios DB01–DB10 y ocho fixtures simbólicos de tenant A/B, rol cruzado, revocación, datos legacy y rollback; ninguna fila real, dato de Aiven, migration, SQL, .NET o MySQL ejecutados en esta unidad documental.
