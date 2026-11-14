@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C04-01.M01.01: objetivo y frontera del catálogo de planes [Javier :10]
+- Contrato documental de objetivo, no-alcance, diez invariantes NR y quince escenarios P/N no ejecutados; alinea futura versión de planes, capacidades, precios, periodicidad y upgrade con fuentes reales de SuscripcionesSaaS.
+- Preserva tenant server-side, RBAC independiente del entitlement, idempotencia y datos comerciales; no inventa tarifas ni instala billing, workers, webhooks, migraciones, API, nuevos permisos o Tasks.
+- Solo M01.01 y dev; A0–A4 documentales, Scope Lock y procedencia V5 exact-SHA antes de LISTO, A5 por otra Task Javier y rollback git revert normal. Sin QA/main/PROD.
+
 ## 2026-11-14 — V5 C00-04.M03.02: preparación Application inerte de decisiones de gobierno [Javier :50]
 - Agrega servicio .NET 10 Application para crear una proyección consultiva a partir de invariantes Domain validadas, sin ejecutar decisiones, persistir propuestas, aprobar cambios ni otorgar permisos.
 - La salida siempre exige autorización externa y no devuelve motivo ni clave de idempotencia; cambios sensibles o sin rollback permanecen NO_GO. JWT/RBAC/tenant/DAG/CAS siguen fuera de esta preparación y deben comprobarse en su frontera auténtica.
