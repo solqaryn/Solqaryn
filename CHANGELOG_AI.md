@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C06-04.M01.02: actores e interfaces del portal de cliente [Javier :40]
+- Inventaría A01–A12 actores, I01–I12 fronteras funcionales y B01–B08 controles fail-closed de portal futuro: consumidor separado de ERP, tenant/ownership, recuperación, pedidos, reservas, membresías, documentos y privacidad.
+- Coteja siete blobs de código y la entrega M01.01; escenarios P01–P06/N01–N12 FUTUROS NO_EJECUTADOS, no prueba de portal o API live.
+- Solo dos Markdown dev, Scope Lock y V5 provenance exact SHA, A5 independiente pendiente; sin Angular/.NET/MySQL runtime, SMTP, eventos, secretos ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C06-04.M01.01: alcance y no-regresión del portal de cliente [Javier :40]
 - Define frontera de cuenta cliente frente a ERP y doce invariantes NR01–NR12 de autenticación, ownership tenant/cliente, recuperación, PII, pedidos, reservas, documentos y preferencias.
 - Contrasta ocho blobs reales Angular/modelos y C06-02; P01–P06/N01–N12 son criterios FUTUROS NO_EJECUTADOS, no portal o API implementados.
