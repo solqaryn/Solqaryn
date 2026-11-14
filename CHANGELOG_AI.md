@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C07-03.M01.05: criterios de aceptacion inventario/compras [Javier :00]
+- Define 14 pares P01–P14/N01–N14 para almacenes, reservas, ordenes, recepciones, transferencias, conteos, costeo, reconciliacion y UI; TODOS FUTUROS NO_EJECUTADOS.
+- Traza contratos M01.01–04, 12 riesgos R01–R12 y decisiones D01–D08 pendientes; exige MySQL efimero, A/B, RBAC y Playwright causal en futuras tareas de implementacion, no los certifica hoy.
+- Solo docs/v5 y CHANGELOG en dev, DAG preparatorio VALIDADO/SI y Scope Lock/V5 provenance exact-SHA; A5 independiente pendiente, sin codigo, stock real, migraciones, secretos, workers ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C07-03.M01.04: riesgos y decisiones inventario/compras [Javier :00]
 - Identifica doce riesgos R01–R12, ocho supuestos falsables S01–S08 y ocho decisiones D01–D08 PENDIENTES sobre reserva, compras, recepción, transferencias, conciliación y costo; no hay defectos certificados.
 - Contrasta M01.01–03 y referencias a veinte fuentes/5 pruebas, define P01–P08 y N01–N14 FUTUROS NO_EJECUTADOS; sin afirmar ejecución de MySQL, API, seguridad A/B o Playwright.
