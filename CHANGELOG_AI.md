@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C08-01.M01.02: actores e interfaces de reservas y agenda [Javier :20]
+- Define A01–A14 actores, I01–I14 interfaces conceptuales y F01–F07 fronteras para citas, horarios, recursos, personal y cancelaciones, con rol/sede y tenant A/B verificables en fases futuras.
+- Establece P01–P08/N01–N14 FUTUROS NO_EJECUTADOS para concurrencia, UTC/IANA/DST, idempotencia, privacidad, seguridad JWT/RBAC y UX accesible; no acredita implementación ni pruebas runtime.
+- Sólo docs/v5 y CHANGELOG en dev; DAG VALIDADO/SI y CAS owner J20, checks Scope Lock y V5 SHA exacto para cierre, A5 independiente pendiente, git revert normal; sin migraciones, compras, Tasks nuevas, QA/main/PROD.
+
 ## 2026-11-14 — V5 C07-04.M01.06: bloqueo, rollback y salida documental de pedidos/pagos [Javier :10]
 - Formaliza B01–B14 bloqueos fail-closed, RLB01–RLB08 reversión y L01–L12 condiciones de liberación para cotización, pedido, factura, pagos, fiscalidad, stock, autorización tenant, idempotencia y auditoría.
 - Coteja M01.01–05 LISTO con A5_PASS independientes, preservando D01–D08 PENDIENTES; no atribuye pruebas MySQL/HTTP/PSP ejecutadas ni autoriza cobros, migraciones o M02 automáticamente.
