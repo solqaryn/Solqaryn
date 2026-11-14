@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C10-03.M01.02: actores y fronteras de inventario de archivos [Javier :00]
+- Define A01–A14, interfaces candidatas I/O01–14 y F01–F09 para inventario de medios y almacenamiento futuro, manteniendo INVENTARIO_DESCONOCIDO distinto de cero acreditado.
+- Documenta P01–P08/N01–N12 FUTUROS NO_EJECUTADOS para tenant A/B, MIME, TTL, retención, reconciliación y rollback; no conecta proveedores ni inventaría datos reales.
+- Sólo docs/v5 y CHANGELOG en dev; Scope Lock/V5 exact-SHA, A5 pendiente de otra Task Javier; sin R2/DNS, migraciones, secretos ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C08-02.M01.05: aceptación observable de mesas, QR y autoservicio [Javier :50]
 - Define catorce pares P01–P14/N01–N14 FUTUROS NO_EJECUTADOS para QR falso, mesa ajena, menú, cocina, cierre, stock/facturas, replay, rollback y tenant A/B.
 - Añade NFR01–NFR08 y requisitos de evidencia real .NET/MySQL/Angular/Playwright en fases futuras, sin afirmar PASS runtime ni resolver D01–D08 pendientes.
