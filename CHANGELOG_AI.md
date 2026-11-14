@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C12-01.M01.05: criterios observables de topologia futura [Javier :50]
+- Especifica P01-P16 positivos, N01-N16 negativos y NF01-NF10 no funcionales para API, DB privada, proxy, JWT/RBAC/tenant, contenedores, DNS/TLS, restore y rollback.
+- Todos son FUTUROS_NO_EJECUTADOS, sin umbrales SLO/RTO ficticios; conserva infraestructura Vercel/Render/Aiven/Cloudinary y no activa Hostinger, Cloudflare, migraciones o webhooks.
+- Solo docs/v5 y CHANGELOG en dev con CAS fast-forward y Scope Lock/V5 exact-SHA; A5 independiente pendiente, sin QA/main/PROD, secretos, compras o nuevos servicios.
+
 ## 2026-11-14 — V5 C12-01.M01.04: riesgos y decisiones de topologia futura [Javier :50]
 - Registra R01-R16 riesgos, S01-S10 supuestos falsables y D01-D10 decisiones pendientes para topologia objetivo, con evidencia Git de Render/Aiven, proxy Vercel, Docker, tenant y rollback.
 - Mantiene todos los riesgos abiertos; no acredita red privada, proveedor, backups, IAM, DNS, workers o restauracion como hechos ejecutados ni activa servicios/pagos.
