@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C11-04.M01.01: alcance observabilidad sin datos sensibles [Javier :20]
+- Define objetivo y fronteras de logs, métricas, trazas, alertas, SLO y costos; 16 invariantes NR, 6 casos positivos y 8 negativos FUTUROS_NO_EJECUTADOS.
+- Ancla seis fuentes Git reales, distingue counters y CorrelationId existentes de exporters externos y SLO certificados; preserva aislamiento tenant A/B, secretos y soporte read-only.
+- Solo docs/v5 + CHANGELOG con fast-forward CAS dev, Scope Lock/V5 exact-SHA y A5 independiente pendiente; sin instrumentar proveedores, runtime ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C11-02.M01.05: aceptación observable API modular [Javier :20]
 - Define AC01–AC18, N01–N18 y RNF01–RNF12 como oráculos FUTUROS_NO_EJECUTADOS de HTTP, JWT/RBAC, tenant A/B, soporte read-only, errores, compatibilidad e integración.
 - Traza fuentes API/EF con blobs anteriores e invariantes sin atribuir PASS a HTTP/MySQL/Playwright no ejecutados; no implementa endpoints, trabajadores ni cambios de autorización.
