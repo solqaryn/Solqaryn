@@ -1223,3 +1223,8 @@
 - Contrato de bloqueo, rollback y salida M01 para C01-02; siete antecedentes LISTO con revisión A5 Javier válida y DAG individual VALIDADO/SI. No libera M02/M03 en cascada.
 - Denegación por defecto: grant RBAC y entitlement futuro son restricciones acumulativas, siempre con membresía, tenant y ownership verificados; plan, UI o rol legacy no sustituyen grants. Positivos P01-P03 y negativos N01-N07 definidos como oráculos documentales, no pruebas runtime ejecutadas.
 - A0-A4 documentales condicionadas a Scope Lock y procedencia V5 SUCCESS exact SHA, BITACORA 26 columnas y readback PLAN/COLA. A5 pendiente de otra Task Javier. Sin API, JWT, MySQL, migración, worker, dispatcher, cobros, QA/main/PROD; rollback git revert normal.
+
+## 2026-11-14 — SOLQARYN V5 C01-03.M01.06 bloqueo, rollback y salida documental [Javier :10]
+- Contrato de cierre M01 de configuración dinámica, siete predecesores concretos y seis negativas fail-closed; los A5 históricos de ejecutores retirados no habilitan M02, revisiones correctivas Javier registradas sin reescribir BITACORA.
+- Sin código runtime, cambios JWT/RBAC/tenant, migraciones, worker, webhook o eventos; M02 únicamente por DAG propio VALIDADO/SI y nueva CAS/readback, QA/main/PROD prohibidos sin orden adicional.
+- Requiere A0–A4 documental y checks Scope Lock/V5 sobre SHA exacto, A5 independiente distinta del autor J10 y rollback por commit git revert normal.
