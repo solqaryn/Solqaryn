@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C10-02.M01.05: aceptación observable R2 y dominios [Javier :00]
+- Define AC01–AC14 con P01–P14 y N01–N14 FUTUROS NO_EJECUTADOS para tenant A/B, JWT/RBAC, firma/TTL, replay, caché, MIME, retención y rollback.
+- Establece fixtures F01–F06, NFR01–NFR08 y trazabilidad a los cuatro documentos M01 previos; no ejecuta tests ni habilita R2/DNS/migración.
+- Sólo docs/v5 y CHANGELOG en dev por fast-forward CAS; exige Scope Lock/V5 exact-SHA, A5 por otra Task Javier, sin runtime, secretos, QA/main/PROD.
+
 ## 2026-11-14 — V5 C08-02.M01.03: inventario de fuentes reales para mesas y QR [Javier :50]
 - Inspecciona siete blobs exactos en Domain, Application, EF/repositorio y modelo Angular de pedido comercial, preparando la integración futura de restaurante sin asumir endpoint ni módulo completo.
 - Registra G01–G10 brechas y P01–P06/N01–N12 FUTUROS NO_EJECUTADOS de QR falso, mesa ajena, tenant A/B, idempotencia, cocina/caja y cierre sin dobles cobros.
