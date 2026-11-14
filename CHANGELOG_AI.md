@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C08-01.M01.03: inventario de fuentes y brechas de reservas [Javier :20]
+- Contrasta seis blobs .NET de sucursales y reserva de inventario, rutas Angular y árboles actuales, distinguiendo claramente stock reservado de futuras citas con recursos, profesionales y horarios.
+- Registra G01–G10 brechas de evidencia para tenant A/B, agenda, concurrencia, UTC/IANA/DST, permisos, idempotencia, UI, auditoría e integración; P/N son FUTUROS NO_EJECUTADOS, no defectos certificados.
+- Sólo documentos en dev, CAS de C08-01.M01.03 y checks Scope Lock + V5 exact-SHA; A5 independiente pendiente, rollback git revert, sin cambios runtime/MySQL/migraciones, secretos ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C08-01.M01.02: actores e interfaces de reservas y agenda [Javier :20]
 - Define A01–A14 actores, I01–I14 interfaces conceptuales y F01–F07 fronteras para citas, horarios, recursos, personal y cancelaciones, con rol/sede y tenant A/B verificables en fases futuras.
 - Establece P01–P08/N01–N14 FUTUROS NO_EJECUTADOS para concurrencia, UTC/IANA/DST, idempotencia, privacidad, seguridad JWT/RBAC y UX accesible; no acredita implementación ni pruebas runtime.
