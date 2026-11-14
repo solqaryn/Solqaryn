@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C08-01.M01.04: riesgos, supuestos y decisiones de reservas [Javier :40]
+- Registra R01–R16 riesgos de doble ocupación, JWT/RBAC/tenant A/B, DST UTC/IANA, replay, estados, PII, accesibilidad y compatibilidad con inventario: brechas, no bugs certificados.
+- Ordena S01–S08 supuestos, D01–D08 decisiones pendientes y TP01–TP08 escenarios positivos/negativos FUTUROS NO_EJECUTADOS; no crea citas, workers, colas ni migraciones.
+- Cambio documental en dev con claim CAS exclusivo C08-01.M01.04, Scope Lock/V5 exact SHA y A5 pendiente de otra Task Javier; rollback git revert, sin eventos, secretos, QA/main/PROD.
+
 ## 2026-11-14 — V5 C10-02.M01.04: riesgos y decisiones R2/domains [Javier :30]
 - Registra R01–R12 riesgos POTENCIALES, S01–S08 supuestos falsables y D01–D08 decisiones PENDIENTES sobre privacidad, tenant A/B, URL firmada, replay, caché, TTL, retención y rollback.
 - Declara P01–P06/N01–N12 FUTUROS NO_EJECUTADOS; no hay fallo confirmado ni activación R2/DNS/cutover, secrets, Cloudinary o datos reales.
