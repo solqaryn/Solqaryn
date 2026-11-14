@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C14-02.M01.04 riesgos, supuestos y decisiones de aceptacion de seguridad [Javier :00]
+- Registra R01-R16 riesgos POTENCIALES, S01-S10 supuestos NO_VERIFICADOS y D01-D10 decisiones ABIERTAS sobre BOLA/IDOR, RBAC/JWT, tenant A/B, archivos, jobs, cache, backups y sesiones.
+- Usa el inventario real M01.03 y oraculos futuros NO_EJECUTADOS; no declara hallazgos explotables, cero P0/P1 ni seguridad de produccion certificada.
+- Solo documento + CHANGELOG en dev por FF/CAS, Scope Lock/V5 exact-SHA y A5 independiente, sin codigo, eventos, secretos ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C14-02.M01.03 inventario causal de seguridad [Javier :00]
 - Inventaria doce fuentes y blobs Git autenticos de filtros API, guardia de autorizacion Application, middleware multitenant, persistencia, xUnit y rutas Angular; delimita lo leido de la integracion no verificada.
 - Documenta doce brechas de evidencia no demostradas como vulnerabilidades y diez pares P/N FUTUROS_NO_EJECUTADOS de BOLA/IDOR, JWT/RBAC, host, archivos, jobs, cache, backups y tenant A/B.
