@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C05-03.M01.04: riesgos y decisiones del builder [Javier :40]
+- Documenta R01–R12 riesgos hipotéticos, S01–S08 supuestos falsables y D01–D08 decisiones PENDIENTE con roles propuestos de aprobación; ningún permiso ni decisión se concede.
+- Coteja nueve blobs de código y preparación M01; P01–P05/N01–N12 son oráculos FUTUROS NO EJECUTADOS, con guardas de seguridad para XSS/SSRF, tenant A/B, JWT/RBAC, payload y CAS.
+- Solo Markdown M01.04 en dev; Scope Lock/V5 exact SHA, A5 independiente y rollback git revert; no builder, migración, dispatcher, QA/main/PROD.
+
 ## 2026-11-14 — V5 C05-03.M01.03: inventario causal builder gobernado [Javier :50]
 - Audita 12 blobs exactos en frontend, Application, API y estilos: tema visual, filtros de permisos, tenant verificado, configuración empresarial y diseño; NO afirma que exista builder funcional.
 - Distingue patrones reutilizables de siete brechas: catálogo cerrado, XSS/SSRF, JWT/RBAC/tenant A/B, versionado CAS, UI accesible, persistencia y preview/publicación; P01–P05/N01–N12 son criterios FUTUROS, no pruebas ejecutadas.
