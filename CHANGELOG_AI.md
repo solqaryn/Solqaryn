@@ -1482,3 +1482,8 @@
 - Define AC01–AC14 y N01–N14 como oráculos FUTUROS NO_EJECUTADOS de contraste, foco, teclado, diálogo, formulario/ARIA, 320px, reduced-motion, tokens y aislamiento de tema tenant A/B.
 - Vincula fuentes verificadas M01.01–04, NR01–NR12, I01–I09, F01–F09, riesgos R01–R12 y decisiones D01–D08 pendientes; no atribuye Playwright, Angular, .NET, MySQL ni cumplimiento WCAG sin pruebas.
 - Solo nuevo Markdown y CHANGELOG; A0–A3 documentales, A4 Scope Lock/V5 exact SHA y readback institucional, A5 independiente sin autoaprobación, rollback git revert. No QA/main/PROD, eventos ni secretos.
+
+## 2026-11-14 — V5 C10-01.M01.01: objetivo y no-regresión de storage provider-neutral [Javier :30]
+- Delimita interfaz futura para imágenes, documentos, videos y exportaciones, con doce invariantes de propietario/tenant, JWT/RBAC, MIME, tamaño, checksum, URLs temporales, fallos, auditoría y rollback.
+- Define P01–P05 y N01–N12 como oráculos FUTUROS NO_EJECUTADOS; distingue Cloudinary de transición de Hostinger/Cloudflare R2 como topología objetivo sin autorizar cambios ni suponer archivos existentes.
+- Solo documento M01.01 y CHANGELOG, con Scope Lock y V5 provenance exact-SHA, readback institucional y A5 independiente posterior; sin código, storage, MySQL, secretos, workers, pagos, QA/main/PROD ni force-push.
