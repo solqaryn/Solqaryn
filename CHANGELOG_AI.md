@@ -1,3 +1,7 @@
+## 2026-11-14 — V5 C00-04.M02.05: contrato documental de eventos, idempotencia y limites [Javier :30]
+- Define sobre logico futuro, deduplicacion por tenant/scope/clave, correlacion y causacion, cuotas, seguridad y oraculos P01-P05/N01-N13 como criterios NO ejecutados; A5 independiente de M02.04 y DAG150 VALIDADO/SI.
+- Solo documento y CHANGELOG; sin workers, webhooks, dispatcher, outbox, Task-to-Task, MySQL, API, JWT/RBAC, nuevos permisos ni QA/main/PROD. A0-A4 documentales requieren Scope Lock y V5 exact-SHA; A5 posterior por otra Task; rollback git revert.
+
 ## 2026-11-14 — V5 C00-04.M02.04: contrato documental de configuración tipada y feature flags seguros [Javier :10]
 - Diseño allowlisted y fail-closed de claves tipadas, ámbitos PLATFORM/ENVIRONMENT/TENANT_BOUND, precedencia, TTL/revisión, once negativos y cuatro positivos documentales; nueve predecesores LISTO/A5 y DAG149 individual VALIDADO/SI.
 - Solo Markdown y CHANGELOG, sin appsettings, secrets, runtime, JWT/RBAC/tenant, MySQL, API, eventos, webhooks, Tasks, permisos QA/main/PROD; A0–A4 documentales con Scope Lock/V5 exact-SHA, A5 independiente y rollback git revert.
