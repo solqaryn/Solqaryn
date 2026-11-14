@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C10-04.M01.02: actores e interfaces cache jobs backups [Javier :30]
+- Define A01-A14 actores, I01/O01-I12/O12 contratos propuestos y F01-F09 fronteras para cache, trabajos idempotentes, export y backup aislados por tenant; NO_IMPLEMENTADOS.
+- Traza documentos originales C10-01/02/03; inventario de archivos reales NO_VERIFICADO (no equivale a cero), y P01-P06/N01-N06 FUTUROS_NO_EJECUTADOS, sin afirmar seguridad runtime.
+- Sólo documento M01.02 y CHANGELOG mediante CAS fast-forward dev con checks Scope Lock/V5 exact SHA; M01.01 de otro autor se respeta, A5 pendiente, ningún worker/evento/proveedor/QA/main/PROD.
+
 ## 2026-11-14 — V5 C10-04.M01.01: alcance y no-regresión cache, jobs, backups y exportaciones [Javier :40]
 - Delimita NR01–NR16 y oráculos futuros P01–P08/N01–N14 para tenant A/B, idempotencia, retries, backups/restore, PII y exportación; escenarios FUTUROS_NO_EJECUTADOS, nunca PASS runtime.
 - Coteja blobs de PublicStoreMemoryCache, DevCloudinaryLegacyNormalizationHostedService y fuentes C10-01/C10-03; no declara inventario histórico cero, jobs genéricos activos ni R2 disponible.
