@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-02.M05.04: aceptación positiva .NET del ciclo V5 [Javier :10]
+- Se añade la suite xUnit real V5C0002M0504PositiveAcceptanceTests: CLAIM autorizado, paso a VALIDANDO, LISTO con auditorías declaradas y readback de propiedad en el adaptador en memoria; dos ítems independientes conservan sus autores.
+- El test NO implementa un CAS institucional de Sheets, JWT vivo, base MySQL, A5 independiente ni eventos entre Tasks. Un PASS de estas pruebas no sustituye controles reales A0-A4 del SHA exacto.
+- Requiere dotnet build/test y gates Scope Lock, seguridad proporcional y procedencia CHANGELOG SUCCESS sobre el SHA publicado; A5_PENDIENTE para otra Task Javier, sin QA/main/PROD.
+
 ## 2026-11-13 — V5 C00-03.M05.04: aceptación positiva de cobertura V5 en Chromium [Javier :00]
 - Se amplía la suite Playwright de cobertura V5 con aceptación positiva real de navegador: sesión simulada 200, tabla de cinco columnas, estado sin datos verificados y revalidación explícita sin escritura a PLAN_MAESTRO, COLA, BITACORA ni claims.
 - La autenticación usada en este test es deliberadamente sintética y no acredita JWT/RBAC, MySQL ni datos entre empresas. La experiencia conserva controles de lectura sin certificar estados institucionales.
