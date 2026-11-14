@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C06-02.M01.02: actores y fronteras de landing por tenant [Javier :30]
+- Identifica A01–A12 actores e I01–I12 interfaces futuras de host/slug, draft/preview, editor, RBAC, publicación, SEO, CDN y rollback con B01–B08 fronteras fail-closed.
+- Contrasta cinco blobs reales Angular/guards/storefront y el alcance M01.01; P01–P06/N01–N12 son oráculos FUTUROS NO_EJECUTADOS, no bindings, DNS/TLS, API ni permisos implementados.
+- Solo dos archivos Markdown en dev; Scope Lock/V5 de SHA exacto, readback y A5 independiente; ningún cambio JWT/RBAC/MySQL, UI, secrets, workers, eventos, QA/main/PROD.
+
 ## 2026-11-14 — V5 C06-02.M01.01: alcance y no-regresión de landing por tenant [Javier :20]
 - Define objetivo de landing pública administrable por empresa y NR01–NR12 sobre host binding seguro, slug, preview, noindex, branding, tenant A/B, cache y publicación versionada.
 - Contrasta router, storefront, guards, interceptor y contratos V5; P01–P06/N01–N12 son oráculos FUTUROS NO_EJECUTADOS, no host/TLS/DNS implementado ni aprobado.
