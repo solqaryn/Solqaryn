@@ -1306,3 +1306,8 @@
 - Define doce invariantes, ocho categorías de errores objetivo y 5 casos positivos/15 negativos simbólicos con A/B, MFA, reauth, auditoría y compatibilidad; no son pruebas runtime ni autorización de accesos.
 - A0-A4 documentales sujetos a Scope Lock y V5 provenance exact-SHA, PLAN/COLA/BITACORA readback; A5 exige otra Task Javier. Sin código API, IAM, JWT, MySQL, workers, eventos, QA/main/PROD; rollback git revert normal.
 
+## 2026-11-14 — V5 C02-04.M02.03: diseño documental de persistencia de consola global [Javier :50]
+- Contrato futuro de grants excepcionales, comprobantes MFA de un solo uso, TTL/revocación, auditoría crítica, idempotencia y relaciones de propiedad; separa explícitamente roles plataforma/ERP y carece de SQL ejecutado.
+- Incluye plan expand/rollback condicionado y 4 fixtures positivos/10 negativos simbólicos para aislamiento A/B, MFA/reauth, abuso de scope, simultaneidad, expiración y falla de auditoría; no son pruebas MySQL.
+- Sólo Markdown y CHANGELOG: ningún grant, endpoint, migración, base productiva, worker o evento real. A5 independiente, Scope Lock/V5 exact-SHA, rollback documental git revert y sin QA/main/PROD.
+
