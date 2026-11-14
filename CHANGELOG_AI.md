@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C01-01.M02.02: contratos API/DTO, errores y compatibilidad tenant [Javier :30]
+- Documento `docs/v5/c01-01-m02-02-contratos-api-dto-errores-compatibilidad.md`: nueve contratos fuente GitHub, cinco superficies API/filtros, matriz 200/400/401/403/404/409/429/503 y ocho oráculos positivos/negativos de autorización y compatibilidad.
+- M02.01 LISTO_DEV documental y C01-01.M01.01–06+C00-01.M06.06+C00-03.M01.06+C00-03.M06.06 LISTO; DAG individual F139 VALIDADO/G139 SI; no habilita automáticamente otras M02, M03 ni IAM/JWT/tenant/DB.
+- Alcance solo documental: no cambiar rutas, DTOs, Angular, EF, JWT/RBAC ni datos; requerir Scope Lock y V5 provenance exact-SHA, A5_PENDIENTE por Task Javier diferente, no QA/main/PROD.
+
 ## 2026-11-13 — V5 C01-01.M02.01: contratos de entidades, ownership e invariantes de identidad universal [Javier :30]
 - Documento `docs/v5/c01-01-m02-01-contratos-entidades-ownership-invariantes.md`: matriz de siete fuentes de código reales con blob, grafo de pertenencia y doce invariantes positivas/negativas, tenant A/B, revocación, rol y privacidad.
 - Preflight individual C01-01.M01.01–06 + C00-01.M06.06 + C00-03.M01.06 + C00-03.M06.06 LISTO; DAG F138 VALIDADO/G138 SI y claim CAS exclusivo; COLA sola no constituye autorización general.
