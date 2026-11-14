@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C07-04.M01.01: alcance y no-regresión de pedidos, pagos y documentos [Javier :30]
+- Define frontera documental de cotizaciones, pedidos, ventas, facturas, cobros, caja y comprobantes; NR01–NR12 de aislamiento tenant, EmpresaId NULL, idempotencia, snapshots, conciliación, autorización, reversión y concurrencia.
+- Contrasta seis blobs reales de Domain/API; P01–P06 y N01–N14 son oráculos FUTUROS NO_EJECUTADOS, sin afirmar certificación HTTP/EF/MySQL, pagos, fiscalidad ni stock real.
+- Solo docs/v5 y CHANGELOG en dev; DAG preparatorio VALIDADO/SI, Scope Lock y V5 provenance exact-SHA, A5 independiente; sin endpoints, JWT/RBAC, migraciones, workers, secretos, QA/main/PROD.
+
 ## 2026-11-14 — V5 C07-02.M01.01: alcance y no regresión de storefront/checkout [Javier :20]
 - Fija alcance y doce invariantes NR01–NR12 para binding host/tenant, carrito, validación sin reserva, precios server-side, HMAC/replay futuro, confirmaciones idempotentes y uso móvil; no implementa cobros ni pedidos ERP.
 - Contrasta cinco blobs actuales de TiendaController, TiendaBindingController, PublicStoreBinding, CatalogoPublicoService y storefront.models; define P01–P12/N01–N12 FUTUROS NO_EJECUTADOS.
