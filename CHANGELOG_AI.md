@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C12-02.M01.02: actores y fronteras frontend separado [Javier :50]
+- Documenta A01-A12 actores, I01/O01-I12/O12 entradas/salidas y F01-F12 fronteras de API proxy, SPA, SEO, headers, CDN, cache y aislamiento tenant.
+- Traza diez rutas Git/blobs de Angular, Vercel, guards, config y Render; ocho pares P/N FUTUROS_NO_EJECUTADOS, no se certifican CDN, smoke, DNS o migracion.
+- Solo docs/v5 y CHANGELOG en dev, CAS fast-forward y Scope Lock/V5 exact-SHA; A5 pendiente de Task Javier independiente, sin compras, QA/main/PROD ni eventos.
+
 ## 2026-11-14 — V5 C12-02.M01.01: alcance de frontend separado [Javier :50]
 - Define NR01-NR16 invariantes, P01-P16 positivos y N01-N16 negativos FUTUROS_NO_EJECUTADOS de Angular 22.2.1, Zone.js, routing/guards, Vercel, proxy, headers, cache, build y rollback.
 - Contrasta diez fuentes Git por blob, incluido script ignore-build por rama y contratos de Render; mantiene Vercel/Render/Aiven/Cloudinary sin activar CDN nuevo, DNS, host ni secretos.
