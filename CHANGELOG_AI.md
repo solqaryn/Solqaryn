@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-03.M06.01: auditoría causal de suficiencia de pruebas de cobertura [Javier :00]
+- Se cotejan seis entregables M05.01–06 con pruebas .NET/TestServer/in-memory/Chromium y sus SHA exactos, sin ejecutar de nuevo pipelines ajenos al diff documental.
+- Evidencia suficiente sólo para contratos acotados: no certificar Sheets CAS, JWT/RBAC live, MySQL durable ni tenant persistido por fixtures o sesiones sintéticas; CANCELLED no es PASS.
+- Archivo docs/v5/c00-03-m06-01-test-sufficiency-audit.md; Scope Lock, procedencia V5, readback y A5 independiente requeridos. Sin liberar M06.06, QA/main/PROD; rollback git revert normal.
+
 ## 2026-11-13 — V5 C00-02.M06.04: ensayo no destructivo de desactivación de cola en memoria [Javier :30]
 - Se incorporan seis casos xUnit reales (4 Theory + 2 Facts) contra V5WorkItemMemoryAdapter: gates cerrados rechazan nuevos claims sin borrar snapshots legítimos, reactivación con token idempotente y rechazo de ownership ajeno.
 - El alcance se limita al adaptador actual en memoria: NO implica rollback de Sheets/MySQL, datos de producción, JWT live ni detener jobs ya iniciados; no modifica código productivo de seguridad ni las seis Tasks Javier.
