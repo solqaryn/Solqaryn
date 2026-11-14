@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C06-03.M01.01: alcance y no-regresión de sitios editoriales y mapas [Javier :50]
+- Fija objetivo y exclusiones de páginas, bloques, ubicación, horarios, contacto y mapas futuros por empresa, con doce invariantes de ownership, moderación, sanitización, accesibilidad, SEO y caché segura.
+- Ocho fuentes Git del frontend, storefront, SEO y landing tenant contrastadas por blob; escenarios positivos P01–P06 y negativos N01–N12 son FUTUROS NO_EJECUTADOS, no runtime certificado.
+- Solo documentación y CHANGELOG en dev; sin implementación de mapas, API, base de datos, JWT/RBAC, dominios, pagos ni despliegue. A5 independiente pendiente, Scope Lock y provenance exigidos sobre el SHA exacto.
+
 ## 2026-11-14 — V5 C06-04.M01.04: riesgos y decisiones pendientes del portal de cliente [Javier :40]
 - Registra R01–R12 riesgos potenciales, S01–S08 supuestos falsables y D01–D08 decisiones PENDIENTES sin otorgar aprobaciones, privilegios ni cambios de arquitectura.
 - Coteja M01.01–03 y sesión storefront vigente; P01–P06/N01–N14 son oráculos FUTUROS NO_EJECUTADOS, no hallazgos de vulnerabilidad ni pruebas de portal completado.
