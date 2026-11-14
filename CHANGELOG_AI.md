@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C06-04.M01.05: aceptación verificable del portal de cliente [Javier :10]
+- Establece catorce escenarios positivos P01–P14 y catorce negativos N01–N14 FUTUROS NO_EJECUTADOS, distinguiendo cuenta de tienda existente y capacidades adicionales aún no certificadas.
+- Traza NR01–NR12, A/I/B, brechas y decisiones D01–D08 PENDIENTES; exige aislamiento por tenant y objeto, recuperación antienumeración, documentos TTL, consentimientos y accesibilidad sin afirmar pruebas runtime.
+- Solo documento docs/v5 y CHANGELOG en dev; requiere Scope Lock y procedencia exact-SHA, A0–A4 documentales, readbacks y A5 independiente. Sin JWT/MySQL/Angular, eventos, workers, SMTP, secretos, QA/main/PROD.
+
 ## 2026-11-14 — V5 C06-03.M01.05: criterios de aceptación editoriales y mapas [Javier :00]
 - Define 14 escenarios positivos P01–P14 y 14 negativos N01–N14 futuros con oráculos API/DB/Angular/SEO/seguridad por tenant, host, RBAC, sanitización, mapas opcionales y accesibilidad; NO_EJECUTADOS.
 - Traza riesgos R01–R12, contratos M01.01–04, cache/preview y regresión tienda/ERP a evidencias y pruebas futuras sin declarar CMS, mapas, permisos o proveedor implementados.
