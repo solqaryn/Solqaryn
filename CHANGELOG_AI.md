@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C06-03.M01.03: inventario causal de fuentes editoriales y mapas [Javier :50]
+- Contrasta doce fuentes V5, Angular/storefront, autorización solicitada y SEO/robots/sitemap por blobs Git y registra ocho brechas pendientes G01–G08 de sitios editoriales y mapas por tenant, sin inventar implementación.
+- Los oráculos futuros P01–P06/N01–N12 son NO_EJECUTADOS; no se presenta inventario selectivo como auditoría backend exhaustiva ni como certificación live.
+- Solo docs/v5 y CHANGELOG en dev, Scope Lock y provenance exigidos SHA exacto, A5 distinto pendiente; sin endpoints, migraciones, mapas activados, secretos, DNS ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C06-03.M01.02: actores, interfaces y fronteras editoriales [Javier :50]
 - Registra doce actores A01–A12, doce interfaces I01–I12 y ocho fronteras B01–B08 para contenido público, ubicación, horarios y mapas de empresa, sin atribuir funciones nuevas al código actual.
 - Contrasta M01.01 y fuentes reales Angular/storefront/SEO/guards; los oráculos P01–P06/N01–N12 son FUTUROS NO_EJECUTADOS, no prueba runtime ni autorización tenant concedida.
