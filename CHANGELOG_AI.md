@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C06-04.M01.03: inventario causal del portal de cliente [Javier :40]
+- Contrasta 16 blobs reales Angular/storefront/ERP: ya existe cuenta de tienda con login, registro, direcciones, favoritos, pedidos y notificaciones; separa esas interfaces de la certificación integral de portal C06-04.
+- Registra G01–G12 brechas de pruebas/contratos no certificadas, y P01–P06/N01–N14 como oráculos FUTUROS NO_EJECUTADOS; no imputa vulnerabilidades ni ausencia global sin evidencia.
+- Dos Markdown en dev, Scope Lock/V5 exact SHA y A5 independiente; sin backend/Angular/MySQL, sesiones, trabajadores, eventos, secretos o QA/main/PROD.
+
 ## 2026-11-14 — V5 C06-02.M01.05: aceptación de landing por tenant [Javier :30]
 - Establece AC01–AC14 positivos y N01–N14 negativos FUTUROS NO_EJECUTADOS para host/slug, JWT/RBAC, preview noindex, tenant A/B, SEO, cache, publicación CAS y rollback.
 - Contrasta M01.01–M01.04 y blobs de router/interceptor/seo-utils; D01–D08 siguen PENDIENTES. No declara pruebas Playwright, HTTP/.NET, MySQL, host binding, DNS/TLS ni seguridad runtime.
