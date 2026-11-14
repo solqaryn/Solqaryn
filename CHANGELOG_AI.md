@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C08-02.M01.05: aceptación observable de mesas, QR y autoservicio [Javier :50]
+- Define catorce pares P01–P14/N01–N14 FUTUROS NO_EJECUTADOS para QR falso, mesa ajena, menú, cocina, cierre, stock/facturas, replay, rollback y tenant A/B.
+- Añade NFR01–NFR08 y requisitos de evidencia real .NET/MySQL/Angular/Playwright en fases futuras, sin afirmar PASS runtime ni resolver D01–D08 pendientes.
+- Solo docs/v5 y CHANGELOG en dev, Scope Lock y procedencia V5 exact-SHA obligatorios, A5 por otra Task Javier, rollback git revert; sin pagos, eventos, migraciones ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C10-03.M01.01: alcance e inventario real condicionado [Javier :00]
 - Distingue INVENTARIO_DESCONOCIDO del cero acreditado y de inventario positivo; si cero real, omitir exportación, copia y checksum de archivos históricos sin inventar cantidades.
 - Define NR01–NR14, P01–P08/N01–N12 FUTUROS NO_EJECUTADOS y fixtures no productivos para tenant A/B, MIME, retención y rollback; sin consultar objetos reales.
