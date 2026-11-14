@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C04-02.M01.01: frontera contractual de suscripciones [Javier :30]
+- Define objetivo y no-alcance de alta, renovación, pausa, cancelación, mora y cierre contractual; diez invariantes NR01–NR10 y quince oráculos futuros positivos/negativos sin declarar pruebas runtime.
+- Lee entidades, servicio SaaS, controlador y DTO existentes; separa membresía tenant/RBAC, estado y vigencia UTC, idempotencia, historia y rollback; no inventa cobros, monedas, tarifas ni pasarelas.
+- Entrega exclusivamente documentación M01 en dev, Scope Lock/V5 exact-SHA y A5 independiente; sin migraciones, endpoints, workers, webhooks, automations, QA/main/PROD. Rollback git revert normal.
+
 ## 2026-11-14 — V5 C03-03.M01.06: puertas de auditoría de seguridad documental [Javier :20]
 - Cierra únicamente la definición M01 de bloqueo, rollback y salida para auditoría de autorización/denegación con cinco documentos M01 y C02-04.M01.06 LISTO/A5; conserva R01–R14 y AU01–AU16 como pendientes de evidencia runtime.
 - Establece G01–G07, cuatro oráculos P y doce negativos N: aislamiento tenant A/B, permisos backend, correlación segura, minimización de secretos, falla DB, idempotencia, retención y revisión independiente.
