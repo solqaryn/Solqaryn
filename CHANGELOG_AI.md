@@ -1193,3 +1193,8 @@
 - Dos tests Playwright Chromium exclusivos de la ruta /plataforma/cobertura-v5: matriz vacia semantica con cinco columnas y un solo contenedor, sin consultas institucionales ocultas ni widgets de gestion.
 - Verifica revalidacion de sesion con GET sintetico pendiente: progreso visible, boton deshabilitado hasta resolucion y exactamente una solicitud. No modifica API, autorizacion JWT/RBAC, MySQL, tenants ni empresas; no inventa filas de cobertura.
 - Amplia CI navegador exact SHA sin deshabilitar casos anteriores; A0 static/provenance y secretos, A1-A3 Angular lint/build + Chromium positivo/negativo, A4 checks causales y readback, A5 por otra Task Javier. Revert normal, sin PR/ramas/PROD.
+
+## 2026-11-14 — SOLQARYN V5 C01-01.M03.03 autorización y aislamiento por permiso empresarial [Javier :10]
+- Nueva guardia Application .NET 10 fail-closed: membresía actual del servidor, rol empresarial activo, permiso relacional explícito por módulo/acción y sucursal de la misma empresa; rol global legacy no concede acceso.
+- xUnit positivos tenant A y sucursal A, negativos empresa B antes de I/O, revocación de membresía, cambio de rol, permisos ausentes/inactivos/foreign, módulo inválido y sucursal B. La fuente es un fixture controlado, no HTTP/JWT/EF/MySQL real.
+- A0-A4 requieren CI backend y seguridad SHA exacto, Scope Lock, integridad de CHANGELOG y readback. A5 reservado para Javier independiente. Sin nueva ruta/DI/API, migración, trabajador, eventos, QA/main/PROD; rollback revert normal.
