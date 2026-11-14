@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C04-01.M01.05: criterios observables del catálogo SaaS [Javier :10]
+- Define 14 criterios AC con respectivos negativos N01–N14 para versión inmutable, límites, tarifas aprobadas, A/B tenant, JWT/RBAC, replay, integridad MySQL, API, UI, privacidad y gate CI exact-SHA.
+- AC/N son contratos futuros y NO pruebas runtime ejecutadas; no inventa precios, monedas, impuestos, autorización comercial, migraciones, workers o cobros.
+- Entrega M01.05 solo documental en dev, A0–A4 Scope Lock/V5 exact-SHA y A5 independiente; no libera M01.06/M02 ni QA/main/PROD. Rollback: git revert normal.
+
 ## 2026-11-14 — V5 C04-01.M01.04: matriz de riesgos y decisiones abiertas del catálogo [Javier :10]
 - Documenta 12 riesgos, ocho supuestos con estado de evidencia y ocho decisiones D01–D08 explícitamente pendientes sobre versionado, tarifa, periodicidad, downgrade, cobros, RBAC y datos; cinco controles P y diez N son oráculos documentales no ejecutados.
 - Delimita A/B tenant, JWT/RBAC, idempotencia y preservación de historia; no inventa importes ni aprueba precios, impuestos, pasarelas, migraciones, endpoints, workers o eventos.
