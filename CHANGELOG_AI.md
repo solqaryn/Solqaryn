@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C14-02.M01.05 criterios observables de aceptacion de seguridad [Javier :00]
+- Define dieciseis pares P/N FUTUROS_NO_EJECUTADOS y doce requisitos NF NO_MEDIDOS para BOLA/IDOR, JWT/RBAC, tenant A/B, host, archivos, jobs, cache, backups y CI.
+- Distingue evidencia documental de pruebas HTTP/MySQL/Playwright y del gate final cero P0/P1 mitigados: ninguno certificado por esta microtarea.
+- Solo documento y CHANGELOG en dev FF/CAS, Scope Lock/V5 exact-SHA, A5 independiente; sin runtime, eventos ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C14-02.M01.04 riesgos, supuestos y decisiones de aceptacion de seguridad [Javier :00]
 - Registra R01-R16 riesgos POTENCIALES, S01-S10 supuestos NO_VERIFICADOS y D01-D10 decisiones ABIERTAS sobre BOLA/IDOR, RBAC/JWT, tenant A/B, archivos, jobs, cache, backups y sesiones.
 - Usa el inventario real M01.03 y oraculos futuros NO_EJECUTADOS; no declara hallazgos explotables, cero P0/P1 ni seguridad de produccion certificada.
