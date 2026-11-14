@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C08-03.M01.05: criterios de aceptación de gimnasio [Javier :10]
+- Define AC01–AC14 con P01–P14/N01–N14 FUTUROS NO_EJECUTADOS, integrando membresía, tenant A/B, JWT/RBAC, vencimiento UTC/DST, suspensión, replay e idempotencia.
+- Establece NFR01–NFR08 y futura matriz CI .NET/MySQL/Angular/Playwright, sin atribuir pruebas reales a contratos Markdown ni resolver decisiones D01–D08 pendientes.
+- Sólo docs/v5 y CHANGELOG en dev por FF/CAS; Scope Lock/V5 exact-SHA y A5 por otra Task Javier; sin pagos, hardware, migraciones, workers ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C08-03.M01.04: riesgos, supuestos y decisiones de membresías [Javier :10]
 - Define R01–R14 POTENCIALES, S01–S08 NO_VERIFICADOS y D01–D08 PENDIENTES, sobre evidencias de 12 blobs reales del inventario M01.03.
 - Especifica TP01–TP08/TN01–TN12 FUTUROS NO_EJECUTADOS para JWT/RBAC, tenant A/B, expiración, suspensión, replay e idempotencia, sin certificar gimnasio real.
