@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C10-02.M01.01: alcance preparatorio de R2 y dominios [Javier :30]
+- Fija objetivo, no-alcance, NR01–NR14 y escenarios P01–P06/N01–N12 FUTUROS NO_EJECUTADOS para acceso privado, prefijos tenant, expiración, replay y lifecycle.
+- Separa R2/DNS/cutover futuros de Cloudinary vigente; preserva permisos server-side JWT/RBAC, aislamiento A/B, retención, secretos y rollback sin crear infraestructura.
+- Solo documentos en dev, Scope Lock y procedencia V5 exact-SHA; pruebas runtime NO_APLICA al Markdown y A5 independiente pendiente.
+
 ## 2026-11-14 — V5 C08-01.M01.03: inventario de fuentes y brechas de reservas [Javier :20]
 - Contrasta seis blobs .NET de sucursales y reserva de inventario, rutas Angular y árboles actuales, distinguiendo claramente stock reservado de futuras citas con recursos, profesionales y horarios.
 - Registra G01–G10 brechas de evidencia para tenant A/B, agenda, concurrencia, UTC/IANA/DST, permisos, idempotencia, UI, auditoría e integración; P/N son FUTUROS NO_EJECUTADOS, no defectos certificados.
