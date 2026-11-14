@@ -1,3 +1,7 @@
+## 2026-11-14 — V5 C00-04.M02.04: contrato documental de configuración tipada y feature flags seguros [Javier :10]
+- Diseño allowlisted y fail-closed de claves tipadas, ámbitos PLATFORM/ENVIRONMENT/TENANT_BOUND, precedencia, TTL/revisión, once negativos y cuatro positivos documentales; nueve predecesores LISTO/A5 y DAG149 individual VALIDADO/SI.
+- Solo Markdown y CHANGELOG, sin appsettings, secrets, runtime, JWT/RBAC/tenant, MySQL, API, eventos, webhooks, Tasks, permisos QA/main/PROD; A0–A4 documentales con Scope Lock/V5 exact-SHA, A5 independiente y rollback git revert.
+
 ## 2026-11-14 — V5 C00-04.M02.03: diseño documental de persistencia y rollback del gobierno [Javier :00]
 - Modelo de fuentes institucionales PLAN/COLA/DAG/BITACORA y Git; catálogo de proyecciones FUTURAS no autoritativas, índices lógicos y ocho fixtures negativos/positivos. Ocho predecesores C00-04.M01.01–06/M02.01–02 LISTO con A5 independiente; DAG148 F=VALIDADO/G=SI individual.
 - Solo documentación y CHANGELOG; ninguna entidad EF, MySQL, SQL, migración, webhook, worker, API, JWT/RBAC, tenant, Task, QA/main/PROD o datos reales. A0–A4 documentales requieren Scope Lock y procedencia V5 exact SHA; A5 por otra Javier. Rollback con revert ordinario.
