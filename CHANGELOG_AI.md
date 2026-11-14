@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C07-03.M01.04: riesgos y decisiones inventario/compras [Javier :00]
+- Identifica doce riesgos R01–R12, ocho supuestos falsables S01–S08 y ocho decisiones D01–D08 PENDIENTES sobre reserva, compras, recepción, transferencias, conciliación y costo; no hay defectos certificados.
+- Contrasta M01.01–03 y referencias a veinte fuentes/5 pruebas, define P01–P08 y N01–N14 FUTUROS NO_EJECUTADOS; sin afirmar ejecución de MySQL, API, seguridad A/B o Playwright.
+- Solo docs/v5 y CHANGELOG en dev; DAG VALIDADO/SI preparación 65/65 prerequisitos LISTO, Scope Lock/V5 provenance exact SHA requeridos, A5 independiente pendiente; sin migración, cambios stock, workers, secrets ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C07-02.M01.05: aceptación observable storefront y checkout [Javier :50]
 - Define 14 positivos P01–P14 y 14 negativos N01–N14 FUTUROS NO_EJECUTADOS sobre binding host, catálogo/tenant A/B, stock, precio, carrito, pedido/idempotencia, HMAC/nonce, PSP, recibo, móvil, caché y privacidad.
 - Traza contratos M01.01–03 y siete blobs de código/documentos; M01.01 sigue VALIDANDO por CI CANCELLED y M01.04 no está aprobado, sin inferir reserva, pago ni HMAC operativo.
