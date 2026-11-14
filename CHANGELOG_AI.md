@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C07-02.M01.02: actores e interfaces de storefront/checkout [Javier :20]
+- Define 12 actores A01–A12, 12 interfaces I01–I12 y 10 fronteras B01–B10 de host/tenant, carrito, precio server-side, HMAC/replay futuro, accesibilidad y pagos no implementados.
+- Contrasta seis blobs Git de API, Application, Domain, Angular y contrato M01.01; P01–P06/N01–N12 son FUTUROS NO_EJECUTADOS, sin afirmar reserva, pedido ERP o PSP.
+- Solo docs/v5 y CHANGELOG en dev; DAG 70/70 preparaciones LISTO, Scope Lock/V5 exact-SHA, A0–A4 documentales y A5 independiente; sin nuevos servicios, secretos, QA/main/PROD.
+
 ## 2026-11-14 — V5 C07-04.M01.02: actores y fronteras de pedidos, pagos y documentos [Javier :30]
 - Inventaría doce actores A01–A12, doce interfaces I01–I12 y ocho fronteras B01–B08 de cotizaciones, pedidos, ventas, facturas, pagos online y emisión fiscal, con alcance por tenant y permisos backend.
 - Contrasta seis controladores y blobs Git; P01–P08/N01–N14 son oráculos FUTUROS NO_EJECUTADOS, no ejecución .NET/EF/MySQL, pagos, fiscal ni autorización productiva.
