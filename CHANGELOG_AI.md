@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C13-04.M01.04 riesgos, supuestos y decisiones de experiencia unificada [Javier :30]
+- Documenta R01–R14 riesgos potenciales, S01–S10 supuestos NO_VERIFICADOS y D01–D10 decisiones ABIERTAS de UX, foco, estados, reflow, branding tenant A/B y permisos backend.
+- Concilia M01.01/M01.03 y siete fuentes Git blob; ocho pares P/N FUTUROS_NO_EJECUTADOS, sin fingir pruebas WCAG, browser, rendimiento o JWT reales.
+- Solo docs/v5 y CHANGELOG por fast-forward CAS dev; Scope Lock/V5 exact SHA y A5 independiente. Sin runtime, MySQL, QA/main/PROD ni eventos.
+
 ## 2026-11-14 — V5 C13-04.M01.02 actores, entradas, salidas y limites de UI unificada [Javier :50]
 - Documenta doce perfiles de uso, doce contratos de interfaz y ocho fronteras de confianza, referenciando alcance M01.01 e inventario causal M01.03 de Angular, guards, estilos y Playwright.
 - Define ocho pares positivos/negativos FUTUROS_NO_EJECUTADOS sobre foco, responsive, estados, permisos backend y aislamiento tenant A/B; no declara WCAG ni tests runtime ejecutados.
