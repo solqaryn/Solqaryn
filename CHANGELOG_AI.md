@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C14-04.M01.05 criterios de aceptación de puesta en marcha [Javier :30]
+- Define dieciséis pares positivos/negativos FUTUROS_NO_EJECUTADOS de SHA/CI, landing/host, JWT/RBAC/tenant A/B, archivos, backups, health, alertas, incidentes, accesibilidad y rollback.
+- Registra doce requisitos no funcionales NO_MEDIDOS con oráculos y evidencia causal exigida; enlaza contratos C14-04.M01.01–03 y brechas G01–G12, sin afirmar runtime ni proveedores certificados.
+- Sólo Markdown y CHANGELOG en dev, A0–A4 documentales con checks Scope Lock/V5 exact-SHA y A5 pendiente a otra Task Javier; sin QA/main/PROD, DNS, R2, MySQL real, secretos, eventos o compras.
+
 ## 2026-11-14 — V5 C14-04.M01.04 riesgos y decisiones de puesta en marcha [Javier :20]
 - Registra 14 riesgos POTENCIALES_NO_VERIFICADOS, 8 supuestos y 8 decisiones ABIERTAS para host, tenant, archivos, backup, incidentes, CI, observabilidad y rollback.
 - Define ocho pares P/N FUTUROS_NO_EJECUTADOS sin declarar incidentes, RPO/RTO medidos, vulnerabilidades confirmadas, cuentas R2 o despliegues autorizados.
