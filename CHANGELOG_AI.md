@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C05-03.M01.05: aceptación observable del builder [Javier :50]
+- Fija 14 criterios AC01–AC14 y 14 negativos N01–N14 con condiciones observables y suites FUTURAS (no ejecutadas) para catálogo allowlisted, tenant A/B, JWT/RBAC, preview, CAS, accesibilidad 320px y rollback.
+- Mantiene D01–D08 PENDIENTE del contrato M01.04, coteja línea base de 12 blobs de M01.03 y no afirma builder ni autoriza editor/API/DB, workers, eventos o publicación.
+- Solo dos Markdown en dev, Scope Lock y procedencia CHANGELOG exact SHA requeridos, A5 de otro Javier, rollback git revert ordinario; CI de runtime NO_APLICA a este diff, sin QA/main/PROD.
+
 ## 2026-11-14 — V5 C05-03.M01.04: riesgos y decisiones del builder [Javier :40]
 - Documenta R01–R12 riesgos hipotéticos, S01–S08 supuestos falsables y D01–D08 decisiones PENDIENTE con roles propuestos de aprobación; ningún permiso ni decisión se concede.
 - Coteja nueve blobs de código y preparación M01; P01–P05/N01–N12 son oráculos FUTUROS NO EJECUTADOS, con guardas de seguridad para XSS/SSRF, tenant A/B, JWT/RBAC, payload y CAS.
