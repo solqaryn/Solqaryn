@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C00-04.M03.01: invariantes Domain de propuestas de gobierno [Javier :00]
+- Agrega reglas puras .NET 10 para validar microtarea, decision, motivo, SHA de evidencia, clave de idempotencia, revision y clasificacion de riesgo; rechaza entradas malformadas, cambios sensibles y propuestas sin rollback.
+- Ningun resultado concede ejecucion o aprobacion: tenant, RBAC, DAG, A5 y CAS institucional exigen autoridad externa. Sin endpoints, EF/MySQL, workers, webhooks, Tasks nuevas ni QA/main/PROD.
+- Pruebas xUnit positivas y negativas en Domain; CI backend, seguridad, Scope Lock y procedencia CHANGELOG sobre SHA exacto; A5 por otra Task Javier y rollback mediante revert normal.
+
 ## 2026-11-14 — V5 C00-04.M02.06: contrato documental de salida M02 y dependencias [Javier :40]
 - Cierra el mapa documental de 13 predecesoras LISTO/A5, seis contratos M02, controles fail-closed, oraculos P01-P04/N01-N12 y handoff condicionado a DAG individual; no habilita automaticamente M03, QA/main/PROD.
 - Solo Markdown y CHANGELOG: sin API, JWT/RBAC/tenant runtime, MySQL/EF, migracion, dispatcher, webhook, worker, nuevas Tasks o eventos. A0-A4 documentales y Scope Lock/V5 exact-SHA; A5 por otra Javier; rollback git revert.
