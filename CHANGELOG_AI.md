@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C12-04.M01.03: inventario Git MySQL privado y cutover [Javier :30]
+- Inventaria 16 blobs Git del HEAD 213d08d6 (DbContext, API, EF/MySQL migrations, arquitectura, frontend y contratos C10/C12), diferenciando código versionado de datos/servicios live NO_VERIFICADOS.
+- Registra G01–G14 brechas de exportación, restore, conteos, checksum, FK, tenancy A/B, DDL único, seguridad, infraestructura y rollback; ocho pares P/N FUTUROS_NO_EJECUTADOS.
+- Cambia solo dos Markdown en dev por CAS fast-forward, Scope Lock/V5 exact-SHA y A5 de Task Javier distinta; sin MySQL real, DDL, Hostinger, Cloudflare, DNS, QA/main/PROD o compras.
+
 ## 2026-11-14 — V5 C12-04.M01.02: actores y fronteras MySQL privado/cutover [Javier :30]
 - Identifica A01–A14 actores, I/O01–I/O12 entradas/salidas y F01–F10 fronteras de confianza de export, restore efímero, comparación, DDL único, cutover y reversión; preserva JWT/RBAC/tenant A/B.
 - Define P01/N01–P10/N10 FUTUROS_NO_EJECUTADOS, con controles de snapshot, checksum, FK, pertenencia, logs sin secretos, writes transaccionales y rollback, sin afirmar MySQL/infra real verificada.
