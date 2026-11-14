@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C12-03.M01.02: actores y fronteras backend/worker [Javier :10]
+- Describe A01-A14 actores, F01-F12 entradas/salidas y fronteras de confianza API, Application, Domain, DbContext/VerifiedTenant, MySQL y worker futuro, sin introducir runtime.
+- Ocho pares P/N de aceptación FUTURA_NO_EJECUTADA; la ausencia de HttpContext en worker no autoriza tenant global ni bypass JWT/RBAC; secretos y transacciones fail-closed.
+- Solo docs/v5 y CHANGELOG en dev por CAS fast-forward, Scope Lock/V5 SHA exacto y A5 independiente pendiente; sin eventos, DNS, QA/main/PROD, migraciones ni compras.
+
 ## 2026-11-14 — V5 C12-02.M01.05: criterios verificables frontend separado [Javier :00]
 - Define AC01-AC16 positivos, N01-N16 negativos y NF01-NF10 para Angular, SPA, proxy, JWT/RBAC/tenant, headers/cache, SEO, accesibilidad y rollback; TODOS FUTUROS_NO_EJECUTADOS.
 - Usa blobs Git del inventario C12-02.M01.03 y riesgos C12-02.M01.04; no inventa pruebas live ni umbrales técnicos/productivos.
