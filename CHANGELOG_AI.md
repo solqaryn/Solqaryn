@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C09-01.M01.05: aceptacion observable y pruebas futuras de CRM universal [Javier :00]
+- Especifica AC01–AC14 positivos/N01–N14 negativos FUTUROS_NO_EJECUTADOS para ficha, timeline, oportunidades, segmento, export, consentimiento, tenant A/B, JWT/RBAC, legacy NULL y replay.
+- Define NFR01–NFR10 y matriz futura .NET 10, MySQL 8.4/EF, Angular 22.2.1 y Playwright sin inventar umbrales, suites ejecutadas o autorización de implementación.
+- Sólo docs/v5 y CHANGELOG en dev con CAS fast-forward y checks Scope Lock/V5 exact-SHA; A5 independiente pendiente, sin CRM live, eventos, migraciones, secretos ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C09-04.M01.05: criterios de aceptacion observables de mensajeria [Javier :50]
 - Define P01–P16 positivos, N01–N16 negativos y RNF01–RNF10 FUTUROS_NO_EJECUTADOS para email, WhatsApp, idempotencia, HMAC/replay, consentimiento, privacidad, tenant A/B y resiliencia.
 - Traza los cuatro artefactos M01 previos y mantiene puertas A0–A5, CI dirigida en fases runtime y decisiones de proveedor abiertas; no crea endpoints, workers, eventos o webhooks.
