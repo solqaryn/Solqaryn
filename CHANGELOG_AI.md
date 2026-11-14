@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C13-04.M01.05 aceptacion observable de experiencia visual unificada [Javier :50]
+- Define 16 pares P/N y 10 NF FUTUROS_NO_EJECUTADOS para foco, feedback, responsive, rutas, branding, WCAG no certificado, JWT/RBAC y aislamiento tenant A/B.
+- Correlaciona M01.01/M01.02/M01.03 y fuentes Angular reales; M01.04 de otra autora no se certifica por inferencia, M01.06 permanece bloqueada por gates propios.
+- Solo docs/v5 y CHANGELOG fast-forward dev, Scope Lock/V5 exact-SHA y A5 independiente; no frontend, backend, eventos, migraciones ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C13-04.M01.04 riesgos, supuestos y decisiones de experiencia unificada [Javier :30]
 - Documenta R01–R14 riesgos potenciales, S01–S10 supuestos NO_VERIFICADOS y D01–D10 decisiones ABIERTAS de UX, foco, estados, reflow, branding tenant A/B y permisos backend.
 - Concilia M01.01/M01.03 y siete fuentes Git blob; ocho pares P/N FUTUROS_NO_EJECUTADOS, sin fingir pruebas WCAG, browser, rendimiento o JWT reales.
