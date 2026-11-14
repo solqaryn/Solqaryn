@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C00-04.M03.02: preparación Application inerte de decisiones de gobierno [Javier :50]
+- Agrega servicio .NET 10 Application para crear una proyección consultiva a partir de invariantes Domain validadas, sin ejecutar decisiones, persistir propuestas, aprobar cambios ni otorgar permisos.
+- La salida siempre exige autorización externa y no devuelve motivo ni clave de idempotencia; cambios sensibles o sin rollback permanecen NO_GO. JWT/RBAC/tenant/DAG/CAS siguen fuera de esta preparación y deben comprobarse en su frontera auténtica.
+- Añade pruebas xUnit positivas y negativas de propuesta, rollback, cambios sensibles, entradas inválidas y no elevación de permisos; exige CI backend/seguridad/Scope Lock y control V5 exact-SHA antes de LISTO_DEV, A5 independiente de otra Task Javier. Sin API, DB, workers, webhooks, nuevas Tasks ni QA/main/PROD. Rollback: git revert normal.
+
 ## 2026-11-14 — V5 C00-04.M03.01: invariantes Domain de propuestas de gobierno [Javier :00]
 - Agrega reglas puras .NET 10 para validar microtarea, decision, motivo, SHA de evidencia, clave de idempotencia, revision y clasificacion de riesgo; rechaza entradas malformadas, cambios sensibles y propuestas sin rollback.
 - Ningun resultado concede ejecucion o aprobacion: tenant, RBAC, DAG, A5 y CAS institucional exigen autoridad externa. Sin endpoints, EF/MySQL, workers, webhooks, Tasks nuevas ni QA/main/PROD.
