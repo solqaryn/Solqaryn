@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C14-02.M01.02 actores, interfaces y fronteras de confianza de aceptacion de seguridad [Javier :00]
+- Mapea doce actores de prueba, catorce interfaces y doce fronteras para BOLA/IDOR, JWT/RBAC, tenant A/B, host, archivos, jobs, cache, backup y sesiones, sin atribuir roles runtime inexistentes.
+- Define ocho pares de aceptación positiva/negativa FUTUROS_NO_EJECUTADOS, mantiene M01.01 como alcance y reserva inspección real de codigo para M01.03.
+- Solo Markdown + CHANGELOG fast-forward/CAS dev; Scope Lock y V5 exact-SHA, A5 independiente; sin cambios de API, MySQL, permisos, webhooks, QA/main/PROD.
+
 ## 2026-11-14 — V5 C14-01.M01.04 riesgos y decisiones de aceptacion funcional [Javier :50]
 - Registra R01–R14 riesgos potenciales, S01–S10 supuestos NO_VERIFICADOS y D01–D10 decisiones ABIERTAS de aceptación funcional y seguridad tenant, JWT/RBAC, pago, inventario, UI y CI.
 - Distingue ocho P/N FUTUROS_NO_EJECUTADOS de tests reales; no da por cerrado M01.03 de otra Task ni libera M01.06 o QA/PROD.
