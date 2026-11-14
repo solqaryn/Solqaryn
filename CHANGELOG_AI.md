@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-02.M05.02: regresión HTTP de DTO y errores seguros [Javier :50]
+- Se agregan pruebas xUnit reales sobre TestServer HTTP y middleware de excepciones para respuesta correcta, denegación segura 400, conflicto 409 y error interno 500 sin detalles privados de otras empresas.
+- La ruta de prueba es un stub, no un endpoint nuevo ni permiso de producción; no se simula autorización JWT, CAS Sheets ni persistencia MySQL.
+- Validación de compilación y pruebas .NET 10, seguridad, Scope Lock y provenance requiere jobs SUCCESS del SHA exacto, con A5 independiente posterior y sin QA/main/PROD.
+
 ## 2026-11-13 — V5 C00-02.M05.01: regresiones unitarias de ciclo y autoría [Javier :50]
 - Se incorpora suite xUnit reproducible de reglas V5 para seis Task IDs autorizadas, rechazo de Task retirada, puertas COLA/DAG, doble claim, SHA, auditorías y A5 independiente.
 - Solo se verifica lógica pura de dominio; no se simulan permisos reales, CAS de Sheets, JWT, MySQL, llamadas a Tasks ni producción.
