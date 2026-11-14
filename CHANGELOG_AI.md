@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C04-01.M01.06 bloqueo y salida de catalogo de planes [Javier :00]
+- Concilia cinco documentos M01.01–05 con blobs exactos y establece gates para catalogo/plan/version/limites, RBAC multiempresa, idempotencia y rollback comercial.
+- Catorce negativos y cuatro positivos FUTUROS_NO_EJECUTADOS; no crea precios, facturacion, cobros, proveedor, migraciones o autorizaciones ejecutables.
+- Publicacion solo Markdown en dev con Scope Lock/V5 exact SHA, A5 independiente Javier; sin workers, webhooks, QA/main/PROD o secretos.
+
 ## 2026-11-14 — V5 C03-02.M01.06 puertas de RBAC/ABAC y privacidad [Javier :00]
 - Concilia cinco artefactos previos M01.01–05 con blobs Git exactos; fija bloqueos de identidad, membresia, recurso/sucursal, exportacion, URLs de media y soporte restringido.
 - Documenta cuatro positivos y doce negativos FUTUROS_NO_EJECUTADOS, reglas de pruebas HTTP/EF/MySQL posteriores, no confunde test source con PASS runtime.
