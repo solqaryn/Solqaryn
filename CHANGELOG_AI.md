@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C07-02.M01.01: alcance y no regresión de storefront/checkout [Javier :20]
+- Fija alcance y doce invariantes NR01–NR12 para binding host/tenant, carrito, validación sin reserva, precios server-side, HMAC/replay futuro, confirmaciones idempotentes y uso móvil; no implementa cobros ni pedidos ERP.
+- Contrasta cinco blobs actuales de TiendaController, TiendaBindingController, PublicStoreBinding, CatalogoPublicoService y storefront.models; define P01–P12/N01–N12 FUTUROS NO_EJECUTADOS.
+- Sólo docs/v5 y CHANGELOG en dev, 70/70 prerequisitos M01 de preparación LISTO, Scope Lock/V5 exact-SHA, A5 independiente. Sin MySQL, UI nueva, APIs, pagos, DNS ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C07-01.M01.05: aceptación observable del catálogo universal [Javier :20]
 - Define 14 pares P01–P14/N01–N14 de aceptación futura para producto, variante, NULL histórico, categoría, tributos, snapshots, stock, sucursal, servicios, tienda, DTO, caché, revocación y SKU/media; todos FUTUROS NO_EJECUTADOS.
 - Traza las matrices M01.01–04, hipótesis R01–R12 y decisiones D01–D08 PENDIENTES; separa aislamiento A/B, permisos JWT/RBAC y compatibilidad ERP de cualquier certificación runtime.
