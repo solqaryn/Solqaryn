@@ -1259,3 +1259,8 @@
 - Doce fixtures simbólicos (cuatro positivos y ocho negativos) y plan de expansión/rollback futuro con MySQL/EF efímero; no crea tablas, datos, migraciones, scripts activos, workers o autorizaciones.
 - A0–A4 documentales sujetos a checks Scope Lock y CHANGELOG V5 exact-SHA y readback institucional. A5 por Javier distinto de la autoría, sin QA/main/PROD; rollback del documento por git revert normal.
 
+## 2026-11-14 — SOLQARYN V5 C02-01.M02.01 entidades, ownership e invariantes tenant [Javier :40]
+- Contrato M02 documental: entidades Usuario, Empresa y UsuarioEmpresa existentes; contexto comercial server-side, ownership por recurso/sucursal, host propuesto y auditoría mínima; 10 invariantes fail-closed y casos P01-P04/N01-N10 como oráculos futuros, no tests runtime.
+- Referencias leídas de código .NET y cierre M01.06, predecesores con A5 Javier y DAG propio VALIDADO/SI; no nuevas API, JWT, migraciones, datos, workers, eventos, cuentas ni permisos.
+- A0-A4 documentales sujetos a checks Scope Lock y V5 provenance exact-SHA, CAS institucional y BITACORA A:Z; A5 independiente por Task Javier distinta. Sin QA/main/PROD; rollback git revert normal.
+
