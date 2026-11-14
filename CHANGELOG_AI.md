@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C10-02.M01.04: riesgos y decisiones R2/domains [Javier :30]
+- Registra R01–R12 riesgos POTENCIALES, S01–S08 supuestos falsables y D01–D08 decisiones PENDIENTES sobre privacidad, tenant A/B, URL firmada, replay, caché, TTL, retención y rollback.
+- Declara P01–P06/N01–N12 FUTUROS NO_EJECUTADOS; no hay fallo confirmado ni activación R2/DNS/cutover, secrets, Cloudinary o datos reales.
+- Solo docs/v5 y CHANGELOG en dev, Scope Lock/V5 provenance exact-SHA, runtime NO_APLICA y A5 por otra Task Javier, sin QA/main/PROD.
+
 ## 2026-11-14 — V5 C10-02.M01.03: inventario verificable R2/domains [Javier :30]
 - Inspecciona diez blobs Git exactos de interfaces/storage tenant, adaptadores Cloudinary, seguridad de imágenes, xUnit y contratos C10-02; separa evidencia presente de objetivo R2 futuro.
 - Registra G01–G12 brechas sobre prefijos A/B, URLs firmadas, expiración, replay, CDN, lifecycle, datos, secrets y rollback; escenarios P/N FUTUROS NO_EJECUTADOS.
