@@ -52,18 +52,18 @@ Estos son hashes de blobs de código/documento inspeccionados, **no resultados d
 
 ## 4. Decisiones pendientes y responsables de aprobación
 
-| Decisión | Pregunta concreta | Criterio de aceptación de la decisión |
-| --- | --- | --- |
-| D01 | ¿Revocación por token, sesión o versión de credenciales, con qué almacenamiento? | TTL, consistencia, fail-closed y pruebas de token previamente emitido |
-| D02 | ¿Refresh token rotativo y almacenado seguro o solo renovación JWT autenticada? | Contrato, expiración, replay y compatibilidad API/frontend explícitos |
-| D03 | ¿Canal y proveedor aprobado para recuperación? | Protección anti-enumeración, enlace de un uso, auditoría, abuso y coste autorizado |
-| D04 | ¿MFA/passkeys para qué actores y qué proveedor? | Política de enrolamiento/recuperación, fallback seguro, amenaza phishing/replay y presupuesto |
-| D05 | ¿Política de credenciales y límites de abuso por identidad/IP/dispositivo? | Pruebas de bloqueo legítimo, límites distribuidos y accesibilidad |
-| D06 | ¿Qué eventos de identidad son auditables y cuánto PII retener? | Esquema mínimo, redacción, retención, cifrado y respuesta ante falla de auditoría |
-| D07 | ¿Revalidar membresía/rol por solicitud o versión/cache invalidable? | Denegación inmediata de A→B y después de revocación, bajo carga |
-| D08 | ¿Rollback y compatibilidad de tokens activos ante cambio futuro? | Plan aditivo, contingencia, no comprometer datos ni mantener grants antiguos |
+| Decisión | Pregunta concreta | Responsable de aprobación futura (rol) | Dictamen técnico previo (función por designar) | Criterio de aceptación de la decisión |
+| --- | --- | --- | --- | --- |
+| D01 | ¿Revocación por token, sesión o versión de credenciales, con qué almacenamiento? | Propietario SOLQARYN, autorización expresa pendiente | Seguridad y Backend/API | TTL, consistencia, fail-closed y pruebas de token previamente emitido |
+| D02 | ¿Refresh token rotativo y almacenado seguro o solo renovación JWT autenticada? | Propietario SOLQARYN, autorización expresa pendiente | Backend/API y Frontend | Contrato, expiración, replay y compatibilidad API/frontend explícitos |
+| D03 | ¿Canal y proveedor aprobado para recuperación? | Propietario SOLQARYN, aprobación expresa de proveedor y coste pendiente | Seguridad y Operaciones | Protección anti-enumeración, enlace de un uso, auditoría, abuso y coste autorizado |
+| D04 | ¿MFA/passkeys para qué actores y qué proveedor? | Propietario SOLQARYN, aprobación expresa de alcance y proveedor pendiente | Seguridad y UX/accesibilidad | Política de enrolamiento/recuperación, fallback seguro, amenaza phishing/replay y presupuesto |
+| D05 | ¿Política de credenciales y límites de abuso por identidad/IP/dispositivo? | Propietario SOLQARYN, aprobación expresa de política pendiente | Seguridad, Backend y UX/accesibilidad | Pruebas de bloqueo legítimo, límites distribuidos y accesibilidad |
+| D06 | ¿Qué eventos de identidad son auditables y cuánto PII retener? | Propietario SOLQARYN, aprobación expresa de retención pendiente | Seguridad/privacidad y Operaciones | Esquema mínimo, redacción, retención, cifrado y respuesta ante falla de auditoría |
+| D07 | ¿Revalidar membresía/rol por solicitud o versión/cache invalidable? | Propietario SOLQARYN, aprobación expresa de modelo pendiente | Seguridad, Backend y Persistencia | Denegación inmediata entre tenants A/B y después de revocación, bajo carga |
+| D08 | ¿Rollback y compatibilidad de tokens activos ante cambio futuro? | Propietario SOLQARYN, autorización expresa de plan de cambio pendiente | Backend, Seguridad y Operaciones | Plan aditivo, contingencia, no comprometer datos ni mantener grants antiguos |
 
-**Ninguna decisión aquí está aprobada ni implementada.** La autorización para introducir cualquier componente nuevo o proveedor será otro acto específico con pruebas y arquitectura, no una inferencia de este M01.04.
+**Autoridades por rol, no personas nombradas:** el propietario de SOLQARYN es la autoridad de aprobación futura propuesta para D01–D08; las funciones de dictamen técnico se indican para asignación posterior, no son aprobadores efectivos ni permisos concedidos. Cada decisión requiere constancia expresa del propietario, alcance y evidencia causal antes de ejecutar. **Ninguna decisión aquí está aprobada ni implementada.** La autorización para introducir cualquier componente nuevo o proveedor será otro acto específico con pruebas y arquitectura, no una inferencia de este M01.04.
 
 ## 5. Aceptación documental y gates
 

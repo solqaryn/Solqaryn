@@ -1,3 +1,7 @@
+## 2026-11-14 — V5 C03-01.M01.04: reparación documental A5_FAIL sobre autoridad aprobadora [Javier :40]
+- Corrección por autor original TASK_ID `6adc2e55f47c81919f6374e561687076` del documento `docs/v5/c03-01-m01-04-riesgos-supuestos-decisiones-autenticacion.md`: D01–D08 ahora identifican explícitamente el rol responsable de futura aprobación y el dictamen técnico previo, sin asumir personas designadas, decisiones aprobadas ni cambios de proveedores.
+- Conserva el A5_FAIL independiente histórico del SHA `e214487251a9c09028382594fa33f63770afa01e`; requiere nuevo A0–A4 en SHA corregido y nueva A5 de otra Task Javier. Scope documental solamente; JWT/RBAC/tenant, API, DB, MFA, workers, QA/main/PROD y programación intactos. Rollback: git revert normal.
+
 ## 2026-11-14 — V5 C00-04.M02.01: entidades, ownership e invariantes del gobierno de cambios [Javier :10]
 - Documento contractual `docs/v5/c00-04-m02-01-entidades-ownership-invariantes.md`: define nueve entidades lógicas de gobierno, diez invariantes y relaciones de decisión, autorización, owner, riesgo, auditoría y rollback; no crea tablas, DTO, API ni automatizaciones.
 - Entrada causal: seis `C00-04.M01.01–06` LISTO con A5 correctiva/independiente, DAG145 `VALIDADO/SI`; propiedad exclusiva `C00-04.M02.01`, sin liberar M02.02–06, IAM, JWT/RBAC, migraciones ni QA/main/PROD por inferencia.
