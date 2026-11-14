@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C12-04.M01.02: actores y fronteras MySQL privado/cutover [Javier :30]
+- Identifica A01–A14 actores, I/O01–I/O12 entradas/salidas y F01–F10 fronteras de confianza de export, restore efímero, comparación, DDL único, cutover y reversión; preserva JWT/RBAC/tenant A/B.
+- Define P01/N01–P10/N10 FUTUROS_NO_EJECUTADOS, con controles de snapshot, checksum, FK, pertenencia, logs sin secretos, writes transaccionales y rollback, sin afirmar MySQL/infra real verificada.
+- Solo este Markdown y CHANGELOG en dev con CAS fast-forward, Scope Lock y procedencia V5 exact-SHA y A5 independiente pendiente; sin dump, migración, proveedores, DNS, QA/main/PROD o compras.
+
 ## 2026-11-14 — V5 C12-04.M01.01: alcance de restore y reversión [Javier :20]
 - Define límites de exportación, restore de ensayo, comparación, ventana de cambio y rollback futuros; M01 es únicamente documental, sin conexión a datos productivos.
 - Establece NR01–NR16 de no-regresión y P01–P10/N01–N10 FUTUROS_NO_EJECUTADOS para tenant A/B, JWT/RBAC, checksums, conteos, schema, transacciones y cutover.
