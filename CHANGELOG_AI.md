@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C11-03.M01.02: actores contratos y fronteras Outbox [Javier :10]
+- Define actores A01–A14, interfaces I/O01–I/O12 y fronteras F01–F12 tenant A/B, UoW, idempotencia, dispatcher y proveedor futuro, sin ejecutar ni habilitar eventos o Tasks.
+- Traza seis fuentes con blobs reales y P01–P08/N01–N14 FUTUROS_NO_EJECUTADOS; no confunde interfaces con infraestructura, transacciones o workers certificados.
+- Solo docs/v5 y CHANGELOG con fast-forward CAS dev, Scope Lock/procedencia V5 exact SHA, A5 independiente pendiente; sin SQL, JWT/RBAC operativo, secretos, QA/main/PROD.
+
 ## 2026-11-14 — V5 C11-02.M01.03: inventario de contratos API por blobs [Javier :00]
 - Inventaría 16 fuentes reales de API, Application, middleware, filtros y .NET/EF, con blobs y lectura acotada de Auth/tenant/plataforma, DTO, errores y soporte read-only; no declara cobertura completa.
 - Enumera G01–G12 brechas de evidencia NO_FALLOS_CONFIRMADOS y pruebas P01–P08/N01–N12 FUTUROS_NO_EJECUTADOS; preserva JWT/RBAC/tenant A/B y compatibilidad Angular.
