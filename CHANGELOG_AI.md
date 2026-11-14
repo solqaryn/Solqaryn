@@ -1284,3 +1284,8 @@
 - Incorpora 4 oráculos positivos y 10 negativos simbólicos sobre repetición, A/B, permisos revocados, versión obsoleta, timeouts, inyección y consumidor duplicado; son criterios documentales, no pruebas runtime.
 - Sin desplegar eventos, webhook, dispatcher, workers, API, migración, secretos ni Tasks; M03/M05 dependen de DAG individual, CI causal y A5 independiente. Scope Lock y CHANGELOG exact-SHA; rollback git revert normal, jamás QA/main/PROD.
 
+## 2026-11-14 — V5 C02-01.M02.04: catálogo tipado y ámbitos seguros para tenancy [Javier :50]
+- Especifica claves/flags de contexto tenant, límites de ámbito PLATFORM/TENANT/BRANCH/USER y política de denegación: membresía y RBAC server-side nunca se sustituyen por plan, header, host o flag.
+- Registra 4 oráculos positivos y 10 negativos documentales de aislamiento A/B, caché revocada, host suplantado, inyección, versión y secretos; no presenta pruebas de ejecución ni configuraciones activadas.
+- Sólo Markdown y CHANGELOG; sin crear endpoints, flags operativos, MySQL/EF, migraciones, workers, eventos o Tasks. A5 independiente y CI Scope Lock/V5 exact-SHA; rollback git revert, sin QA/main/PROD.
+
