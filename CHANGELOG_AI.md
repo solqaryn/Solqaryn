@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C14-01.M01.05 criterios observables de aceptación funcional [Javier :10]
+- Especifica 16 pares P/N de prueba FUTUROS_NO_EJECUTADOS para superficies públicas/privadas, sesión, RBAC, tenant A/B, ventas, inventario, contabilidad, accesibilidad y sectores.
+- Vincula NR01–NR14 y documentos M01.01–04, evidencia requerida por SHA exacto y gates de no-regresión; no atribuye PASS HTTP, Angular, Playwright, MySQL o pagos inexistentes.
+- Solo Markdown y CHANGELOG en dev; Scope Lock y V5 provenance por exact SHA, A5 independiente pendiente; sin implementación, QA/main/PROD, eventos ni secretos.
+
 ## 2026-11-14 — V5 C14-02.M01.05 criterios observables de aceptacion de seguridad [Javier :00]
 - Define dieciseis pares P/N FUTUROS_NO_EJECUTADOS y doce requisitos NF NO_MEDIDOS para BOLA/IDOR, JWT/RBAC, tenant A/B, host, archivos, jobs, cache, backups y CI.
 - Distingue evidencia documental de pruebas HTTP/MySQL/Playwright y del gate final cero P0/P1 mitigados: ninguno certificado por esta microtarea.
