@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C13-01.M01.01 privacidad y consentimiento, preparacion [Javier :00]
+- Define alcance de versionado de políticas, consentimiento donde corresponda, revocación y retención sin afirmar obligaciones legales no verificadas o existencia de banner/runtime.
+- Traza cuatro archivos Git y 16 invariantes con cuatro positivos y doce negativos FUTUROS_NO_EJECUTADOS, preservando JWT/RBAC/tenancy y PII.
+- Solo Markdown en dev, Scope Lock/V5 exact SHA, A5 independiente Javier, rollback git revert; sin instalar cookies, worker, evento, DB, QA/main/PROD.
+
 ## 2026-11-14 — V5 C04-01.M01.06 bloqueo y salida de catalogo de planes [Javier :00]
 - Concilia cinco documentos M01.01–05 con blobs exactos y establece gates para catalogo/plan/version/limites, RBAC multiempresa, idempotencia y rollback comercial.
 - Catorce negativos y cuatro positivos FUTUROS_NO_EJECUTADOS; no crea precios, facturacion, cobros, proveedor, migraciones o autorizaciones ejecutables.
