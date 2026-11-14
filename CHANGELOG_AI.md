@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C14-04.M01.01 alcance de puesta en marcha y soporte [Javier :20]
+- Delimita preparación documental de landing, dominios, almacenamiento, soporte, alertas, backup/restore y respuesta a incidentes; sin habilitar infraestructura, DNS ni promoción.
+- Define NR01–NR16 y ocho pares P/N FUTUROS_NO_EJECUTADOS, separando JWT/RBAC/tenant A/B, SHA/CI causal, integridad MySQL y continuidad operativa.
+- Sólo documento y CHANGELOG en dev; Scope Lock/V5 exact SHA, A0–A4 documentales y A5 independiente pendiente; sin runtime, QA/main/PROD, secretos ni eventos.
+
 ## 2026-11-14 — V5 C14-03.M01.05 criterios de promoción controlada [Javier :10]
 - Define 16 pares P/N FUTUROS_NO_EJECUTADOS y 10 requisitos NF NO_MEDIDOS para SHA/artefacto, CI, JWT/RBAC/tenant, MySQL, accesibilidad, rollback y auditoría.
 - Distingue pruebas causales de Angular/.NET/Playwright/MySQL y autorización separada DEV/QA/main/PROD; no certifica ni despliega infraestructura.
