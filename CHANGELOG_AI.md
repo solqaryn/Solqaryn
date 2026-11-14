@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C06-01.M01.02: actores y fronteras sitio público SaaS [Javier :10]
+- Define A01–A12 actores e I01–I12 interfaces FUTURAS de landing, planes, sectores, demo, contacto, legal, SEO, robots, navegación y releases; no implementa rutas ni publica precios.
+- Ocho fronteras F01–F08 y oráculos P01–P06/N01–N14 NO_EJECUTADOS para JWT/RBAC/tenant A/B, PII, consentimiento, anti-spam, metadatos, accesibilidad y rollback.
+- Solo docs/v5 y CHANGELOG, A0–A4 documentales con Scope Lock/V5 exact SHA + readback; A5 independiente; sin Angular/API/MySQL/SMTP live, tracking, pagos, secrets ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C06-01.M01.01: alcance y no-regresión de sitio público SaaS [Javier :10]
 - Delimita propuesta de valor, planes/sectores, demo, contacto, legal y SEO con doce invariantes NR01–NR12; la ruta raíz actual redirige a login y no prueba una landing comercial terminada.
 - Define P01–P06/N01–N14 como pruebas FUTURAS NO_EJECUTADAS de privacidad, anti-spam, rutas públicas/privadas, sitemap, tenant A/B, accesibilidad y no inventar ofertas ni metadatos aprobados.
