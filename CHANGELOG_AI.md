@@ -1407,3 +1407,8 @@
 - Se delimita objetivo y no-alcance de pagos por enlace, webhook firmado, replay, conciliación y reversión provider-neutral en `docs/v5/c04-04-m01-01-alcance-cobros-enlaces-provider-neutral.md`, sin ejecutar pagos ni activar proveedores.
 - Preflight DAG documental validado con 60/60 prerrequisitos LISTO; se distinguen invariantes NR01–NR10, cinco positivos y doce negativos FUTUROS, no tests runtime.
 - A0–A3 son controles documentales; A4 requiere checks Scope Lock y procedencia del CHANGELOG en SHA publicado y readback institucional; revisión A5 separada, solo otra Task Javier. No QA/main/PROD.
+
+## 2026-11-14 — SOLQARYN V5 C04-04.M01.02 actores y superficies de cobros (PRIMARY DEV 05 JAVIER)
+- Se inventarian doce actores, dieciseis interfaces y fronteras de confianza de cobros por enlace, webhook, conciliación y reversión en \`docs/v5/c04-04-m01-02-actores-interfaces-superficies-cobros.md\`; no se implementan proveedores ni pagos.
+- Se distinguen componentes ya existentes de funciones futuras no desplegadas, con diez invariantes, cinco positivos y doce negativos propuestos, preservando tenant/JWT/RBAC, firmas e idempotencia.
+- A0–A3 son documentales; A4 requiere Scope Lock y procedencia CHANGELOG exact-SHA con readback PLAN/COLA/BITACORA; A5 independiente queda pendiente. Sin QA/main/PROD.
