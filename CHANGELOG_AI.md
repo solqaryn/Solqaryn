@@ -1274,3 +1274,8 @@
 - Contrato M02 documental con fuente de tres blobs de código observados y gate institucional por ID; no crea API, migraciones, permisos, JWT, workers, eventos, cuentas o datos productivos.
 - A0-A4 documentales sujetos a Scope Lock/V5 provenance SHA exacto y BITACORA/PLAN/COLA readback; A5 pendiente de otra Task Javier. Sin QA/main/PROD, rollback git revert normal.
 
+## 2026-11-14 — SOLQARYN V5 C02-01.M02.03 diseño persistencia, índices y fixtures tenant [Javier :40]
+- Documenta esquema EF existente UsuarioEmpresas y Empresas con FK restrictivas/índices reales del código, ownership tenant y un eventual host binding condicional, sin crear ni ejecutar migraciones/SQL, nuevos grants o datos.
+- Plan futuro expand/contract reversible y 12 fixtures simbólicos F01-F12 (4 positivos, 8 negativos) para aislamiento A/B, membresía revocada, host falso, índice único, rol y auditoría; no se presentan como tests MySQL/HTTP.
+- A0-A4 documentales condicionadas a Scope Lock y V5 provenance exact-SHA, BITACORA A:Z y PLAN/COLA readbacks; A5 por Task Javier distinta. Sin QA/main/PROD, rollback git revert normal.
+
