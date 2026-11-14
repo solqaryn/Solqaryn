@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C07-04.M01.05: criterios de aceptación pedidos, pagos y documentos [Javier :50]
+- Define 14 escenarios positivos P01–P14 y 14 negativos N01–N14 FUTUROS NO_EJECUTADOS para tenant, idempotencia, stock, facturación, pago, cambio, anulación, PSP, fiscalidad, exportación y reversión.
+- Traza cuatro contratos anteriores M01.01–04 y blobs reales de PedidoVenta, FacturaPago y controladores; las ocho decisiones D01–D08 permanecen PENDIENTES y no se declara certificación transaccional.
+- Sólo docs/v5 y CHANGELOG en dev; DAG documental VALIDADO/SI, Scope Lock/V5 exact-SHA, A5 independiente pendiente; sin migraciones, cobros, secrets, workers ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C07-03.M01.05: criterios de aceptacion inventario/compras [Javier :00]
 - Define 14 pares P01–P14/N01–N14 para almacenes, reservas, ordenes, recepciones, transferencias, conteos, costeo, reconciliacion y UI; TODOS FUTUROS NO_EJECUTADOS.
 - Traza contratos M01.01–04, 12 riesgos R01–R12 y decisiones D01–D08 pendientes; exige MySQL efimero, A/B, RBAC y Playwright causal en futuras tareas de implementacion, no los certifica hoy.
