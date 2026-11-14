@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C04-01.M01.04: matriz de riesgos y decisiones abiertas del catálogo [Javier :10]
+- Documenta 12 riesgos, ocho supuestos con estado de evidencia y ocho decisiones D01–D08 explícitamente pendientes sobre versionado, tarifa, periodicidad, downgrade, cobros, RBAC y datos; cinco controles P y diez N son oráculos documentales no ejecutados.
+- Delimita A/B tenant, JWT/RBAC, idempotencia y preservación de historia; no inventa importes ni aprueba precios, impuestos, pasarelas, migraciones, endpoints, workers o eventos.
+- Solo preparación documental M01.04 en dev, con Scope Lock/V5 SHA exacto antes de A4 y revisión A5 independiente; sin QA/main/PROD. Rollback git revert ordinario.
+
 ## 2026-11-14 — V5 C04-01.M01.03: inventario comprobado de código y evidencia SaaS [Javier :10]
 - Registra doce blobs reales Domain/Application/API/EF/Angular/tests de SuscripcionesSaaS, siete capacidades con certeza limitada y cinco brechas de catálogo comercial versionado.
 - Diferencia explícitamente código leído, tests Moq existentes, snapshot EF y CI runtime realmente ejecutada; no inventa precios, monedas, migraciones aplicadas, accesos tenant ni certificaciones.
