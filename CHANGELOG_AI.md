@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C07-04.M01.06: bloqueo, rollback y salida documental de pedidos/pagos [Javier :10]
+- Formaliza B01–B14 bloqueos fail-closed, RLB01–RLB08 reversión y L01–L12 condiciones de liberación para cotización, pedido, factura, pagos, fiscalidad, stock, autorización tenant, idempotencia y auditoría.
+- Coteja M01.01–05 LISTO con A5_PASS independientes, preservando D01–D08 PENDIENTES; no atribuye pruebas MySQL/HTTP/PSP ejecutadas ni autoriza cobros, migraciones o M02 automáticamente.
+- Solo docs/v5 y CHANGELOG en dev, checks Scope Lock/V5 exact-SHA, BITACORA/readback y A5 pendiente de otra Task Javier; sin QA/main/PROD ni eventos.
+
 ## 2026-11-14 — V5 C08-03.M01.02: actores e interfaces de membresías y acceso [Javier :10]
 - Describe A01–A14 actores/superficies e I01–I14 contratos FUTUROS de perfil, planes, altas, verificación de acceso, check-in, suspensión, renovación, auditoría, dispositivo y conciliación.
 - Define F01–F07 límites API/Application/Domain/Infrastructure con tenant A/B, JWT/RBAC, UTC/IANA, DST, idempotencia, replay y privacidad, además de P01–P06 y N01–N15 FUTUROS NO_EJECUTADOS.
