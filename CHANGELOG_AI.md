@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C07-03.M01.03: inventario causal ERP inventario/compras [Javier :40]
+- Inventaría veinte blobs Git de Domain/API/Application/Infrastructure y cinco pruebas existentes para compras, reservas, transferencias, conteos, costeo, reportes, aislamiento y concurrencia; no se ejecutaron tests.
+- Identifica diez brechas G01–G10 para tenant A/B, NULL legado, stock concurrente, idempotencia, transferencias, costo/censura y rollback; son hipótesis, no fallos certificados.
+- Sólo docs/v5 y CHANGELOG en dev, DAG VALIDADO/SI y Scope Lock/V5 exact-SHA requeridos; A5 independiente pendiente, sin código, migraciones, secrets, workers, QA/main/PROD.
+
 ## 2026-11-14 — V5 C07-03.M01.02: actores e interfaces de inventario/compras [Javier :40]
 - Identifica 12 actores A01–A12, 12 interfaces I01–I12 y 10 fronteras B01–B10 de ERP, compras, reservas, conciliación y costeo; no cambia roles, stock ni código.
 - Contrasta diez blobs reales API y distingue dos superficies pendientes de auditoría M01.03; P01–P06 y N01–N10 son FUTUROS NO_EJECUTADOS, no pruebas de aislamiento HTTP/MySQL.
