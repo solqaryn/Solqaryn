@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C12-02.M01.05: criterios verificables frontend separado [Javier :00]
+- Define AC01-AC16 positivos, N01-N16 negativos y NF01-NF10 para Angular, SPA, proxy, JWT/RBAC/tenant, headers/cache, SEO, accesibilidad y rollback; TODOS FUTUROS_NO_EJECUTADOS.
+- Usa blobs Git del inventario C12-02.M01.03 y riesgos C12-02.M01.04; no inventa pruebas live ni umbrales técnicos/productivos.
+- Solo dos Markdown (docs/v5 + CHANGELOG) en dev, CAS fast-forward y Scope Lock/V5 exact-SHA, A5 independiente pendiente; sin CDN, DNS, workers, QA/main/PROD o pagos.
+
 ## 2026-11-14 — V5 C12-03.M01.01: alcance backend y workers separados [Javier :10]
 - Fija límites documentales para API .NET 10, EF/MySQL, JWT/RBAC/tenant A/B, workers futuros, migraciones exclusivas, reintentos e idempotencia sin crear servicio ni dispatcher.
 - Establece NR01-NR16 y diez pares P/N de pruebas FUTURAS_NO_EJECUTADAS de arranque, rollback, secretos, aislamiento, reinicio y redelivery.
