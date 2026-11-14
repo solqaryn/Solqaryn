@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C09-02.M01.05: aceptacion observable fidelizacion [Javier :30]
+- Establece AC01-AC16 con dieciseis positivos y negativos FUTUROS_NO_EJECUTADOS para saldo, canje, promos, reseñas, moderación, opt-out, posventa, tenant A/B, JWT/RBAC y reversibilidad.
+- Registra RNF01-RNF10 y traza blobs M01.01–04, distinguiendo contratos futuros de pruebas reales, sin atribuir métricas ni PASS de MySQL/.NET/Angular/Playwright inexistentes.
+- Sólo docs/v5 y CHANGELOG por CAS fast-forward dev, Scope Lock y V5 exact SHA; A5 por otra Task Javier pendiente, sin eventos, secrets, proveedores, QA/main/PROD.
+
 ## 2026-11-14 — V5 C09-02.M01.04: riesgos, supuestos y decisiones fidelizacion [Javier :30]
 - Documenta R01-R14 riesgos POTENCIALES (no vulnerabilidades acreditadas), S01-S08 supuestos con estatus verificable y D01-D08 decisiones pendientes para puntos, promociones, reseñas y posventa, preservando la frontera tenant A/B.
 - Traza los blobs M01.01/02/03 y las entidades Cliente, Venta, CreditoCliente y UsuarioEmpresa; P01-P08/N01-N08 son FUTUROS_NO_EJECUTADOS, nunca PASS runtime.
