@@ -1295,3 +1295,8 @@
 - Matriz de 16 invariantes y 4 criterios positivos/14 negativos simbólicos; NO son pruebas ejecutadas ni habilitan implementación IAM, JWT, grants, SQL, frontend, workers, eventos, webhooks o QA/main/PROD.
 - Requiere A0-A4 documentales con GitHub Scope Lock y V5 provenance exact-SHA, PLAN/COLA/BITACORA readback; A5 por otra Task Javier. Rollback git revert normal.
 
+## 2026-11-14 — V5 C02-01.M02.05: contrato documental de correlación de contexto tenant [Javier :50]
+- Define envelope conceptual de cambios autorizados por servidor, idempotencia por actor/empresa/revisión, trazas mínimas, cuota y rechazo de host, header o flag como autoridad; eventos exclusivamente futuros.
+- Fija cuatro oráculos positivos y diez negativos simbólicos para aislamiento A/B, membresía revocada, payload distinto, replay, timeout, host falso y consumidor duplicado; no son tests ejecutados.
+- Sin implementar webhooks, bus, dispatcher, workers, API, tablas, migraciones, JWT/RBAC o permisos; A5 independiente y Scope Lock/V5 exact-SHA, rollback git revert normal; no QA/main/PROD.
+
