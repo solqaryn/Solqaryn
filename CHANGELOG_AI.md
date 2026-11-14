@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C11-01.M01.05: aceptacion observable modelo relacional [Javier :50]
+- Define criterios P01-P16 y N01-N16 FUTUROS_NO_EJECUTADOS para FK compuestas, tenant A/B, legacy nullable, migraciones expand/contract, soporte read-only y rollback transaccional.
+- Fija RNF01-RNF10 y gate de evidencia MySQL efimero/EF, CI exact-SHA y A5 independiente, sin atribuir PASS funcional a criterios redactados ni indices/migraciones aplicadas.
+- Solo docs/v5 y CHANGELOG mediante CAS fast-forward dev, controles Scope Lock/V5 del SHA, sin SQL real, endpoints, providers, secrets, QA/main/PROD.
+
 ## 2026-11-14 — V5 C11-01.M01.04: riesgos, supuestos y decisiones relacionales [Javier :50]
 - Registra R01-R16 riesgos POTENCIALES, S01-S10 supuestos NO_VERIFICADOS y D01-D10 decisiones PENDIENTES sobre tenant A/B, claves FK, historial nullable, migraciones, índices y rollback.
 - Traza código real de Empresa, Cliente, Sucursal, UsuarioEmpresa, EF, filtros y constraints, sin inferir migraciones aplicadas ni defectos certificados; P01-P08/N01-N12 FUTUROS_NO_EJECUTADOS.
