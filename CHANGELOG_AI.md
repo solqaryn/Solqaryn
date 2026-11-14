@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-03.M06.02: manifiesto de hashes y corrección de procedencia M06.01 [Javier :00]
+- Se registran seis SHA exactos, árboles, rutas y blobs de los test M05 para reproducción verificable, sin afirmar ejecución nueva de suites ni garantías live de CAS, JWT/RBAC, tenant o MySQL.
+- Se corrige la procedencia documental de M06.01: M05.04 corresponde a c00-03-m04-05-accessibility.spec.ts (e16a8ea3), M05.06 a c00-03-m04-06-density.spec.ts (fd3756ee); el spec genérico citado antes no era el diff original.
+- Se documenta el reparo sin reescribir eventos; requiere Scope Lock y procedencia CHANGELOG SUCCESS exact-SHA, A5 independiente; no QA/main/PROD, rollback normal por git revert.
+
 ## 2026-11-13 — V5 C00-03.M06.01: auditoría causal de suficiencia de pruebas de cobertura [Javier :00]
 - Se cotejan seis entregables M05.01–06 con pruebas .NET/TestServer/in-memory/Chromium y sus SHA exactos, sin ejecutar de nuevo pipelines ajenos al diff documental.
 - Evidencia suficiente sólo para contratos acotados: no certificar Sheets CAS, JWT/RBAC live, MySQL durable ni tenant persistido por fixtures o sesiones sintéticas; CANCELLED no es PASS.
