@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C05-02.M01.01: frontera de branding y presets [Javier :00]
+- Define objetivo, exclusiones y doce invariantes NR para temas, logos, identidad, presets futuros, accesibilidad, revisión y restauración sin permitir autoridad por branding.
+- Inspección de siete blobs Angular/SCSS; seis oráculos positivos y doce negativos futuros sobre tenant A/B, JWT/RBAC, sanitización, concurrencia y rollback; NO son pruebas runtime ejecutadas.
+- M01.01 solo documental dev; sin cambios en API, DB, UI, eventos, worker o migración; requiere Scope Lock/procedencia CHANGELOG exact SHA y A5 independiente. Revert regular y ninguna promoción QA/main/PROD.
+
 ## 2026-11-14 — V5 C04-03.M01.05: criterios observables de metering [Javier :20]
 - Define AC01–AC14 con negativos N01–N14 como pruebas FUTURAS de tenant A/B, unidades, idempotencia consumo, fuente confiable, periodo UTC, conciliación, retención, JWT/RBAC, API, MySQL y UI, sin atribuir tests ejecutados.
 - Coteja blobs de M01.01–04 y SuscripcionesSaaS, separando idempotencia de onboarding de consumo; D01–D08 quedan PENDIENTE de autorización expresa.
