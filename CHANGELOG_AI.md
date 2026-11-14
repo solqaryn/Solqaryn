@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C10-01.M01.05: aceptación de storage neutral [Javier :10]
+- Define AC01–AC16 y N01–N16 de pruebas FUTURAS NO_EJECUTADAS para storage provider-neutral: JWT/RBAC, tenant A/B, MIME real, tamaños, checksum, TTL, errores y rollback.
+- Alinea NR01–NR12, I01–I12, R01–R12, S01–S08 y D01–D08 pendientes; no atribuye migración, Cloudinary/R2, datos reales, xUnit/Playwright ni aprobación de proveedores.
+- Solo Markdown y CHANGELOG en dev; A0–A4 documental, Scope Lock/V5 exact-SHA y BITACORA/PLAN/COLA readback; A5 de otra Task Javier, sin QA/main/PROD, workers, eventos ni secretos.
+
 ## 2026-11-14 — V5 C05-04.M01.05: aceptación observable de ligereza [Javier :00]
 - Define AC01–AC14/N01–N14 como oráculos FUTUROS NO_EJECUTADOS para bundle, Core Web Vitals, preload, HTTP, A/B, JWT/RBAC, ARIA, móvil 320px, privacidad y rollback.
 - Preserva R01–R12, S01–S08 y D01–D08 PENDIENTE de M01.04; no aprueba umbrales CWV ni presupuestos nuevos, coteja ocho blobs de documentación/Angular.
