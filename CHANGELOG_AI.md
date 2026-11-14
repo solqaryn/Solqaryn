@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C13-03.M01.03 inventario y brechas de rendimiento [Javier :30]
+- Inventaria catorce blobs de Angular, scripts de budget, preloading, browser, Cloudinary, HTTP cache y contratos; no confunde fuente con test, metrica o build real.
+- Detecta discrepancia documental verificable: budget vigente initial 650/750kB vs 1MiB/2MiB en performance-bundle-baseline.mjs; requiere reconciliacion causal separada, no declara regresion runtime.
+- Documenta B01–B14 y P01–P08/N01–N08 FUTUROS_NO_EJECUTADOS; solo Markdown y A5 independiente; sin QA/main/PROD.
+
 ## 2026-11-14 — V5 C13-03.M01.02 actores y superficies de rendimiento [Javier :40]
 - Delimita A01–A12 actores, I01–I12 entradas, O01–O10 salidas y F01–F08 fronteras de Angular, API, MySQL, caché tenant, medios y observabilidad.
 - Contrasta M01.01, angular.json, app.routes, package y Playwright con ocho pares P/N FUTUROS_NO_EJECUTADOS; budgets 650/750kB son configuracion, no benchmark o PASS medido.
