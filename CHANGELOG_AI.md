@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C01-02.M02.03 contrato persistencia y fixtures de capabilities [Javier :50]
+- Contrasta ocho fuentes de código/documentación con blobs exactos; distingue índices EF existentes de modelo futuro de capabilities sin SQL/DDL aplicado.
+- Diseña claves y relaciones tenant-scoped, vigencia/concurrencia, 4 positivos y 12 negativos FUTUROS_NO_EJECUTADOS con fail-closed JWT/RBAC/tenant A/B.
+- Modifica solo contrato Markdown M02.03 y CHANGELOG en dev; Scope Lock/V5 exact-SHA requerido, A5 de otra Task; no MySQL real, API/DTO, workers/webhooks, QA/main/PROD.
+
 ## 2026-11-14 — V5 C01-02.M02.02 contratos API/DTO y compatibilidad capabilities [Javier :40]
 - Diseña contratos conceptuales de evaluación de capacidades, catálogo y plan versionado, validaciones de ingreso y rutas FUTURAS no registradas; mantiene endpoints reales de permisos/matriz sin modificación.
 - Documenta JWT/RBAC y tenant A/B fail-closed, códigos 401/403/404/409/422/503, tres oráculos positivos y diez negativos documentales NO_EJECUTADOS; sin autoridad por DTO, UI o plan.
