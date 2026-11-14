@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-01.M01.04 riesgos y decisiones de cobertura [Javier :40]
+- Delimita 14 riesgos POTENCIALES_NO_VERIFICADOS, diez supuestos pendientes y diez decisiones abiertas sobre requisitos, IDs, DAG, BITACORA, Git/CI y seguridad multiempresa.
+- Prepara diez pares P/N FUTUROS_NO_EJECUTADOS, preservando que cero huérfanos/duplicados críticos y P0/P1=0 no están certificados; no inventa vulnerabilidades.
+- Sólo documento y CHANGELOG en dev, A0–A4 documentales y A5 independiente pendiente; sin runtime, eventos, QA/main/PROD ni cambios a seis Tasks.
+
 ## 2026-11-14 — V5 C15-01.M01.03 inventario de fuentes de cobertura [Javier :40]
 - Se leyeron 18 blobs de Git del baseline 83089fdbdc9a: contratos .NET/Angular/EF, seguridad declarada, gobernanza y CI; evidencia estática, no ejecución funcional.
 - Define ocho uniones futuras de trazabilidad y diez brechas NO_ACREDITADAS; seis pares P/N FUTUROS_NO_EJECUTADOS, sin certificar cero huérfanos en 2340 IDs.
