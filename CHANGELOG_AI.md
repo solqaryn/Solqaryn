@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C10-04.M01.05: aceptacion observable cache, jobs, backups, exportaciones [Javier :40]
+- Define AC01–AC18, N01–N18 y RNF01–RNF12 para cache tenant A/B, idempotencia, worker, restore efimero, exportacion, seguridad, TTL, CSV injection y observabilidad; todos son oraculos FUTUROS_NO_EJECUTADOS.
+- Traza lineas base de caché, OutboxRetryProcessor, filtro HTTP y worker Cloudinary DEV opt-in; sin atribuir PASS a xUnit/Node/MySQL/Playwright no ejecutados ni inventar RPO/RTO.
+- Solo Markdown + CHANGELOG en dev con checks Scope Lock/procedencia V5 exact SHA, A5 independiente pendiente; no tareas, dispatcher, cron, proveedores, secretos, QA/main/PROD.
+
 ## 2026-11-14 — V5 C10-04.M01.04: riesgos, supuestos y decisiones cache/jobs/backups [Javier :40]
 - Registra R01–R16 como riesgos POTENCIALES, S01–S10 NO_VERIFICADOS y D01–D10 PENDIENTES, con controles tenant A/B, JWT/RBAC, idempotencia, reintentos, cifrado, restauración, exportación y PII.
 - Traza blobs reales de caché, OutboxRetryProcessor, worker Cloudinary DEV opt-in y documentos M01 previos; P01–P08/N01–N12 son FUTUROS_NO_EJECUTADOS, no defectos ni pruebas confirmados.
