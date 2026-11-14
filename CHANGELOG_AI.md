@@ -1279,3 +1279,8 @@
 - Plan futuro expand/contract reversible y 12 fixtures simbólicos F01-F12 (4 positivos, 8 negativos) para aislamiento A/B, membresía revocada, host falso, índice único, rol y auditoría; no se presentan como tests MySQL/HTTP.
 - A0-A4 documentales condicionadas a Scope Lock y V5 provenance exact-SHA, BITACORA A:Z y PLAN/COLA readbacks; A5 por Task Javier distinta. Sin QA/main/PROD, rollback git revert normal.
 
+## 2026-11-14 — V5 C01-03.M02.05: protocolo documental de eventos de configuración [Javier :50]
+- Define sobre conceptual post-commit, idempotencia ligada a actor/tenant/clave/version, correlación opaca, límites de cuota y prohibición explícita de payload privado y elevación JWT/RBAC.
+- Incorpora 4 oráculos positivos y 10 negativos simbólicos sobre repetición, A/B, permisos revocados, versión obsoleta, timeouts, inyección y consumidor duplicado; son criterios documentales, no pruebas runtime.
+- Sin desplegar eventos, webhook, dispatcher, workers, API, migración, secretos ni Tasks; M03/M05 dependen de DAG individual, CI causal y A5 independiente. Scope Lock y CHANGELOG exact-SHA; rollback git revert normal, jamás QA/main/PROD.
+
