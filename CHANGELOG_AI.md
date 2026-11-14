@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C11-03.M01.03: inventario de fuentes Outbox y brechas [Javier :10]
+- Inventaria 15 archivos y contratos con blobs Git reales Domain/Application/Infrastructure/API/xUnit; los tests codificados no se presentan como ejecutados ni MySQL certificado.
+- Clasifica G01–G14 como brechas de evidencia NO BUGS confirmados y P01–P08/N01–N14 como FUTUROS_NO_EJECUTADOS, protegiendo tenant A/B, idempotencia y confidencialidad.
+- Solo docs/v5 y CHANGELOG; fast-forward CAS dev, checks exact-SHA Scope Lock/V5 y A5 independiente pendiente, sin crear eventos, workers, dispatcher, proveedores ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C11-02.M01.04: riesgos y decisiones de API modular [Javier :00]
 - Registra R01–R16 POTENCIALES, S01–S10 NO_VERIFICADOS y D01–D10 PENDIENTES sobre API, contratos, tenant A/B, JWT/RBAC, errores, compatibilidad y soporte; no afirma vulnerabilidades.
 - Ancla ocho superficies API/Application en blobs reales y P01–P08/N01–N12 FUTUROS_NO_EJECUTADOS, preservando separación plataforma/empresa, validación backend y rollback.
