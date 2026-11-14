@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C08-04.M01.01: alcance y no-regresion de extensiones por rubro [Javier :20]
+- Delimita capabilities futuras de agenda, membresias, catalogo y sitios por empresa sin duplicar tenant, identidad ni permisos; M01.01 solo documental, M01.06 no liberada.
+- Contrasta seis blobs fuente y define NR01–NR12, P01–P06/N01–N06 como escenarios FUTUROS NO_EJECUTADOS, preservando JWT/RBAC, tenant A/B, historial e idempotencia.
+- Solo nuevo Markdown y CHANGELOG en dev; A4 Scope Lock/V5 exact-SHA y PLAN/COLA/BITACORA readback, A5 independiente pendiente; rollback git revert sin QA/main/PROD.
+
 ## 2026-11-14 — V5 C08-03.M01.05: criterios de aceptación de gimnasio [Javier :10]
 - Define AC01–AC14 con P01–P14/N01–N14 FUTUROS NO_EJECUTADOS, integrando membresía, tenant A/B, JWT/RBAC, vencimiento UTC/DST, suspensión, replay e idempotencia.
 - Establece NFR01–NFR08 y futura matriz CI .NET/MySQL/Angular/Playwright, sin atribuir pruebas reales a contratos Markdown ni resolver decisiones D01–D08 pendientes.
