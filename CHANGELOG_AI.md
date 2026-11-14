@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C11-03.M01.04: riesgos supuestos y decisiones Outbox [Javier :10]
+- Registra R01–R16 como riesgos POTENCIALES, S01–S10 NO_VERIFICADOS y D01–D10 PENDIENTES sobre transaccion, tenant A/B, idempotencia, reintentos, orden y seguridad.
+- Traza contratos Domain/Application/Infrastructure y evidencia xUnit no ejecutada; P01–P08/N01–N12 son FUTUROS_NO_EJECUTADOS, no bugs ni pruebas certificadas.
+- Solo docs/v5 y CHANGELOG con CAS FF dev, Scope Lock/V5 exact-SHA, A5 pendiente de otra Task; sin implementar eventos, workers, SQL, provider ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C11-03.M01.03: inventario de fuentes Outbox y brechas [Javier :10]
 - Inventaria 15 archivos y contratos con blobs Git reales Domain/Application/Infrastructure/API/xUnit; los tests codificados no se presentan como ejecutados ni MySQL certificado.
 - Clasifica G01–G14 como brechas de evidencia NO BUGS confirmados y P01–P08/N01–N14 como FUTUROS_NO_EJECUTADOS, protegiendo tenant A/B, idempotencia y confidencialidad.
