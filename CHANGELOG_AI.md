@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C06-01.M01.05: aceptación observable de sitio público SaaS [Javier :20]
+- Define 14 criterios AC01–AC14 y 14 negativas N01–N14 FUTURAS NO_EJECUTADAS para landing, precios aprobados, SEO, consentimiento, rate limit, demo, tenant A/B, accesibilidad y rollback.
+- Coteja NR01–NR12, A01–A12/I01–I12, B01–B08 y D01–D08 PENDIENTES; no afirma pruebas Playwright, HTTP, .NET, SEO, aprobación comercial o sitio publicado.
+- Solo dos Markdown dev con Scope Lock/procedencia V5 exact-SHA y A5 independiente; sin código UI/API, SMTP, MySQL, secretos, eventos ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C06-01.M01.04: riesgos y decisiones de sitio público SaaS [Javier :20]
 - Registra R01–R12 riesgos potenciales, S01–S08 supuestos falsables y D01–D08 decisiones PENDIENTES sobre marketing, SEO, privacidad, contacto y separación tenant.
 - Contrasta contratos M01.01/M01.02/M01.03 y código Angular/guards; oráculos P01–P06/N01–N12 FUTUROS NO_EJECUTADOS; no se atribuye incidencia, cumplimiento web ni permiso comercial.
