@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C14-03.M01.04 riesgos de promoción controlada [Javier :10]
+- Registra 14 riesgos POTENCIALES, 8 supuestos NO_VERIFICADOS y 8 decisiones ABIERTAS sobre CI exact-SHA, JWT/RBAC/tenant, paridad y rollback.
+- Define ocho parejas P/N FUTURAS_NO_EJECUTADAS; no declara seguridad/QA/PROD certificadas ni vulnerabilidades demostradas.
+- Solo documento y CHANGELOG dev, Scope Lock/V5 exact-SHA y A5 independiente pendiente; sin deployment, secretos ni eventos.
+
 ## 2026-11-14 — V5 C14-03.M01.03 inventario de promoción controlada [Javier :10]
 - Verifica 12 rutas y blobs Git de CI, paridad, Scope Lock, frontend, backend y gobierno; identifica 12 brechas NO_ACREDITADO, sin equiparar archivos a ejecuciones.
 - Relaciona 8 pares P/N FUTUROS_NO_EJECUTADOS con NR01–NR16 y actores/interfaces M01.01–02; exige separación DEV/QA/PROD, JWT/RBAC/tenant A/B y SHA exacto.
