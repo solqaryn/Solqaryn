@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C06-02.M01.04: riesgos y decisiones landing tenant [Javier :30]
+- Documenta R01–R12 riesgos potenciales, S01–S08 supuestos falsables y D01–D08 decisiones PENDIENTES para host/tenant, preview, noindex, SEO, cache, RBAC, publicación, rollback y DNS/TLS.
+- Contrasta tres documentos de fase y blobs de router, storefront, interceptor y seo-utils; P01–P06/N01–N12 son oráculos FUTUROS NO_EJECUTADOS, no vulnerabilidades ni tests runtime confirmados.
+- Solo dos Markdown en dev con Scope Lock y V5 exact-SHA, readback y A5 independiente; sin cambios API/Angular/MySQL/JWT, DNS, secrets, eventos ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C06-04.M01.02: actores e interfaces del portal de cliente [Javier :40]
 - Inventaría A01–A12 actores, I01–I12 fronteras funcionales y B01–B08 controles fail-closed de portal futuro: consumidor separado de ERP, tenant/ownership, recuperación, pedidos, reservas, membresías, documentos y privacidad.
 - Coteja siete blobs de código y la entrega M01.01; escenarios P01–P06/N01–N12 FUTUROS NO_EJECUTADOS, no prueba de portal o API live.
