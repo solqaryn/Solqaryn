@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C13-01.M01.03 inventario codigo privacidad y consentimiento [Javier :10]
+- Inventaria once archivos reales con blobs exactos, auth localStorage, tenant server-side, proxy, E2E y auditoria; diferencia lectura estatica de prueba real de cookies/consentimiento.
+- Documenta doce brechas de evidencia, cuatro positivos y dieciseis negativos FUTUROS_NO_EJECUTADOS con controles JWT/RBAC/tenant A/B y sin declaracion de cumplimiento legal.
+- Exclusivamente dos Markdown en dev, Scope Lock/V5 exact SHA y A5 independiente; sin endpoints, cookies, migraciones, eventos, QA/main/PROD ni secretos.
+
 ## 2026-11-14 — V5 C13-01.M01.02 actores, entradas y salidas de privacidad [Javier :10]
 - Delimita quince actores/superficies, ocho entradas, ocho salidas esperadas y siete fronteras de confianza para consentimiento/privacidad sin inventar autoridad legal ni runtime.
 - Inspecciona cuatro blobs Git preexistentes y referencia C13-01.M01.01; cuatro positivos/dieciseis negativos FUTUROS_NO_EJECUTADOS, JWT/RBAC/tenant A/B fail-closed.
